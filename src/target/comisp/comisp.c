@@ -1,0 +1,395 @@
+/***************************************************************************
+ *   Copyright (C) 2009 by Simon Qian <SimonQian@SimonQian.com>            *
+ *                                                                         *
+ *   This program is free software; you can redistribute it and/or modify  *
+ *   it under the terms of the GNU General Public License as published by  *
+ *   the Free Software Foundation; either version 2 of the License, or     *
+ *   (at your option) any later version.                                   *
+ *                                                                         *
+ *   This program is distributed in the hope that it will be useful,       *
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
+ *   GNU General Public License for more details.                          *
+ *                                                                         *
+ *   You should have received a copy of the GNU General Public License     *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
+ ***************************************************************************/
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
+#include "port.h"
+#include "app_cfg.h"
+#include "app_type.h"
+#include "app_err.h"
+#include "app_log.h"
+#include "prog_interface.h"
+
+#include "memlist.h"
+#include "pgbar.h"
+
+#include "vsprog.h"
+#include "programmer.h"
+#include "target.h"
+
+#include "comisp.h"
+#include "stm32isp.h"
+#include "lpcarmisp.h"
+
+#include "comport.h"
+
+#define CUR_TARGET_STRING			COMISP_STRING
+#define cur_chip_param				comisp_chip_param
+#define cur_chips_param				comisp_chips_param
+#define cur_flash_offset			comisp_flash_offset
+
+#define COMISP_MAX_BUFSIZE			(1024 * 1204)
+
+const program_area_map_t comisp_program_area_map[] = 
+{
+	{APPLICATION, 'f', 1},
+//	{LOCK, 'l', 0},
+	{0, 0}
+};
+
+#define COMISP_STM32		0
+#define COMISP_LPCARM		1
+const comisp_param_t comisp_chips_param[] = {
+//	chip_name,			com_mode,																												default_char,		flash_start_addr
+//						{comport,	baudrate,	datalength,	paritybit,			stopbit,		handshake,				aux_pin}	
+	{"comisp_stm32",	{"",		-1,			8,			COMM_PARITYBIT_EVEN,COMM_STOPBIT_1,	COMM_PARAMETER_UNSURE,	COMM_PARAMETER_UNSURE},	STM32_FLASH_CHAR,	0x08000000},
+	{"comisp_lpcarm",	{"",		-1,			8,			COMM_PARITYBIT_NONE,COMM_STOPBIT_1,	COMM_PARAMETER_UNSURE,	COMM_PARAMETER_UNSURE},	LPCARM_FLASH_CHAR,	0x00000000},
+};
+static uint8 comisp_chip_index = 0;
+comisp_param_t comisp_chip_param;
+
+uint8 comisp_execute_flag = 0;
+uint32 comisp_execute_addr = 0;
+
+static const com_mode_t default_mode = 
+{"", 115200, 8, COMM_PARITYBIT_NONE, COMM_STOPBIT_1, 
+COMM_HANDSHAKE_NONE, COMM_AUXPIN_DISABLE};
+
+com_mode_t com_mode = {"", 0, 0, 0, 0, 0, 0};
+
+static uint32 comisp_flash_offset = 0;
+
+static void comisp_usage(void)
+{
+	printf("\
+Usage of %s:\n\
+  -C,  --comport <COMM_ATTRIBUTE>   set com port\n\
+  -x,  --execute <ADDRESS>          execute program\n\n", CUR_TARGET_STRING);
+}
+
+static void comisp_support(void)
+{
+	uint32 i;
+
+	printf("Support list of %s:\n", CUR_TARGET_STRING);
+	for (i = 0; i < dimof(cur_chips_param); i++)
+	{
+		printf("\
+%s: baudrate = %d, datalength = %d, paritybit = %c, stopbit = %c, \
+handshake = %c, auxpin = %c\n",
+				cur_chips_param[i].chip_name, 
+				cur_chips_param[i].com_mode.baudrate,
+				cur_chips_param[i].com_mode.datalength,
+				cur_chips_param[i].com_mode.paritybit,
+				cur_chips_param[i].com_mode.stopbit,
+				cur_chips_param[i].com_mode.handshake,
+				cur_chips_param[i].com_mode.auxpin);
+	}
+	printf("\n");
+}
+
+RESULT comisp_parse_argument(char cmd, const char *argu)
+{
+	char *end_pointer, *cur_pointer;
+	
+	switch (cmd)
+	{
+	case 'h':
+		comisp_usage();
+		break;
+	case 'S':
+		comisp_support();
+		break;
+	case 'C':
+		// COM Mode
+		if ((NULL == argu) || (strlen(argu) == 0))
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), cmd);
+			return ERRCODE_INVALID_OPTION;
+		}
+		
+		// Format: port:baudrate_attribute_extra
+		// Eg: COM1:115200_8N1_HA
+		// parse "port:*"
+		cur_pointer = strrchr(argu, ':');
+		if (NULL == cur_pointer)
+		{
+			strncpy(com_mode.comport, argu, sizeof(com_mode.comport));
+			return ERROR_OK;
+		}
+		else
+		{
+			*cur_pointer = '\0';
+			strncpy(com_mode.comport, argu, sizeof(com_mode.comport));
+		}
+		
+		cur_pointer++;
+		if (*cur_pointer != '\0')
+		{
+			// parse "baudrate*"
+			com_mode.baudrate = (uint32)strtoul(cur_pointer, &end_pointer, 0);
+			
+			if (cur_pointer == end_pointer)
+			{
+				LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), cmd);
+				return ERRCODE_INVALID_OPTION;
+			}
+			
+			cur_pointer = end_pointer;
+			if ((*cur_pointer != '\0'))
+			{
+				// parse "_attribute*"
+				if ((strlen(cur_pointer) < 4) 
+					|| ((cur_pointer[0] != ' ') && (cur_pointer[0] != '-') 
+						&& (cur_pointer[0] != '_')) 
+					|| (cur_pointer[1] < '5') || (cur_pointer[1] > '9') 
+					|| ((cur_pointer[2] != 'N') && (cur_pointer[2] != 'E') 
+						&& (cur_pointer[2] != 'O')) 
+					|| ((cur_pointer[3] != '1') 
+						&& (cur_pointer[3] != '0')))
+				{
+					LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), cmd);
+					return ERRCODE_INVALID_OPTION;
+				}
+				
+				com_mode.datalength = cur_pointer[1] - '0';
+				com_mode.paritybit = cur_pointer[2];
+				com_mode.stopbit = cur_pointer[3] - '0';
+				
+				cur_pointer += 4;
+				if (*cur_pointer != '\0')
+				{
+					// parse "_extra"
+					if ((strlen(cur_pointer) != 3) 
+						|| ((cur_pointer[0] != ' ') && (cur_pointer[0] != '-') 
+							&&(cur_pointer[0] != '_')) 
+						|| ((cur_pointer[1] != 'H') 
+							&& (cur_pointer[1] != 'N')) 
+						|| ((cur_pointer[2] != 'A') 
+							&& (cur_pointer[2] != 'N')))
+					{
+						LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), cmd);
+						return ERRCODE_INVALID_OPTION;
+					}
+					
+					com_mode.handshake = cur_pointer[1];
+					com_mode.auxpin = cur_pointer[2];
+				}
+			}
+		}
+		break;
+	case 'x':
+		if (NULL == argu)
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), cmd);
+			return ERRCODE_INVALID_OPTION;
+		}
+		
+		comisp_execute_addr = (uint32)strtoul(argu, NULL, 0);
+		comisp_execute_flag = 1;
+		break;
+	default:
+		return ERROR_FAIL;
+		break;
+	}
+	
+	return ERROR_OK;
+}
+
+RESULT comisp_probe_chip(char *chip_name)
+{
+	uint32 i;
+	
+	for (i = 0; i < dimof(cur_chips_param); i++)
+	{
+		if (!strcmp(cur_chips_param[i].chip_name, chip_name))
+		{
+			return ERROR_OK;
+		}
+	}
+	
+	return ERROR_FAIL;
+}
+
+RESULT comisp_prepare_buffer(program_info_t *pi)
+{
+	if (pi->app != NULL)
+	{
+		memset(pi->app, cur_chip_param.default_char, pi->app_size);
+	}
+	else
+	{
+		return ERROR_FAIL;
+	}
+	
+	return ERROR_OK;
+}
+
+RESULT comisp_write_buffer_from_file_callback(uint32 address, uint32 seg_addr, 
+											  uint8* data, uint32 length, 
+											  void* buffer)
+{
+	program_info_t *pi = (program_info_t *)buffer;
+	uint32 mem_addr = address, page_size;
+	RESULT ret;
+	
+	seg_addr = seg_addr;
+	
+#ifdef PARAM_CHECK
+	if ((length > 0) && (NULL == data))
+	{
+		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_PARAMETER), __FUNCTION__);
+		return ERRCODE_INVALID_PARAMETER;
+	}
+	if (NULL == pi->app)
+	{
+		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_BUFFER), 
+				  "pi->app");
+		return ERRCODE_INVALID_BUFFER;
+	}
+#endif
+	
+	mem_addr += cur_flash_offset;
+	if (((mem_addr - cur_chip_param.flash_start_addr) >= COMISP_MAX_BUFSIZE) 
+		|| (length > COMISP_MAX_BUFSIZE) 
+		|| ((mem_addr - cur_chip_param.flash_start_addr + length) 
+			> COMISP_MAX_BUFSIZE))
+	{
+		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_RANGE), "flash memory");
+		return ERRCODE_INVALID;
+	}
+	memcpy(pi->app + mem_addr - cur_chip_param.flash_start_addr, 
+		   data, length);
+	pi->app_size_valid += (uint32)length;
+	
+	switch (comisp_chip_index)
+	{
+	case COMISP_STM32:
+		page_size = STM32ISP_PAGE_SIZE;
+		break;
+	case COMISP_LPCARM:
+		page_size = LPCARMISP_PAGE_SIZE;
+		break;
+	default:
+		// invalid target
+		LOG_BUG(_GETTEXT(ERRMSG_INVALID), TO_STR(comisp_chip_index), 
+				CUR_TARGET_STRING);
+		return ERRCODE_INVALID;
+	}
+	
+	ret = MEMLIST_Add(&pi->app_memlist, mem_addr, length, page_size);
+	if (ret != ERROR_OK)
+	{
+		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "add memory list");
+		return ERRCODE_FAILURE_OPERATION;
+	}
+	
+	return ERROR_OK;
+}
+
+RESULT comisp_fini(program_info_t *pi, programmer_info_t *prog)
+{
+	pi = pi;
+	prog = prog;
+	
+	if (strlen(com_mode.comport) > 0)
+	{
+		strcpy(com_mode.comport, "");
+	}
+	
+	return ERROR_OK;
+}
+
+RESULT comisp_init(program_info_t *pi, const char *dir, 
+				   programmer_info_t *prog)
+{
+	uint8 i;
+	
+	dir = dir;
+	prog = prog;
+	
+	if (strcmp(pi->chip_type, CUR_TARGET_STRING))
+	{
+		LOG_BUG(_GETTEXT(ERRMSG_INVALID_HANDLER), CUR_TARGET_STRING, 
+				pi->chip_type);
+		return ERRCODE_INVALID_HANDLER;
+	}
+	
+	if (NULL == pi->chip_name)
+	{
+		// auto detect
+		LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "Auto-detect", 
+				  CUR_TARGET_STRING);
+		return ERRCODE_NOT_SUPPORT;
+	}
+	else
+	{
+		for (i = 0; i < dimof(cur_chips_param); i++)
+		{
+			if (!strcmp(cur_chips_param[i].chip_name, pi->chip_name))
+			{
+				comisp_chip_index = i;
+				memcpy(&cur_chip_param, cur_chips_param + comisp_chip_index, 
+					   sizeof(cur_chip_param));
+				
+				pi->app_size = COMISP_MAX_BUFSIZE;
+				pi->app_size_valid = 0;
+				
+				return ERROR_OK;
+			}
+		}
+		
+		return ERROR_FAIL;
+	}
+}
+
+uint32 comisp_interface_needed(void)
+{
+	// comisp uses COM ports only
+	return 0;
+}
+
+RESULT comisp_program(operation_t operations, program_info_t *pi, 
+					  programmer_info_t *prog)
+{
+	pi = pi;
+	prog = prog;
+	
+	if (!strlen(com_mode.comport))
+	{
+		memcpy(&com_mode, &default_mode, sizeof(com_mode));
+		LOG_WARNING(_GETTEXT(INFOMSG_USE_DEFAULT), "Com port", 
+					DEFAULT_COMPORT);
+	}
+	
+	switch(comisp_chip_index)
+	{
+	case COMISP_STM32:
+		return stm32isp_program(operations, pi);
+	case COMISP_LPCARM:
+		return lpcarmisp_program(operations, pi);
+	default:
+		// invalid target
+		LOG_BUG(_GETTEXT(ERRMSG_INVALID), TO_STR(comisp_chip_index), 
+				CUR_TARGET_STRING);
+		return ERRCODE_INVALID;
+	}
+}
+
