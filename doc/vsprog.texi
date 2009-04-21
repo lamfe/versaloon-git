@@ -1,0 +1,571 @@
+\input texinfo	@c -*-texinfo-*-
+@c %**start of header
+@setfilename vsprog.info
+@settitle Versaloon Programmer (VSProg)
+@dircategory Development
+@direntry
+@paragraphindent 0
+* VSProg: (vsprog).      Versaloon Programmer.
+@end direntry
+@c %**end of header
+
+@include version.texi
+
+@copying
+
+@itemize @bullet
+@item Copyright @copyright{} 2008-2009 Versaloon Project
+@item Copyright @copyright{} 2008-2009 SimonQian @email{SimonQian@@SimonQian.com}
+@end itemize
+
+@quotation
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.2 or
+any later version published by the Free Software Foundation; with no
+Invariant Sections, with no Front-Cover Texts, and with no Back-Cover
+Texts.  A copy of the license is included in the section entitled ``GNU
+Free Documentation License''.
+@end quotation
+@end copying
+
+@titlepage
+@title Versaloon Programmer (VSProg)
+@subtitle Edition @value{EDITION} for VSProg version @value{VERSION}
+@subtitle @value{UPDATED}
+@page
+@vskip 0pt plus 1filll
+@insertcopying
+@end titlepage
+
+@summarycontents
+@contents
+
+@node Top, About, , (dir)
+@top VSProg
+
+This manual documents edition @value{EDITION} of the Versaloon Programmer
+(VSProg) version @value{VERSION}, @value{UPDATED}.
+
+@insertcopying
+
+@menu
+* About::                            About VSProg.
+* Developers::                       VSProg Developers
+* Building::                         Building VSProg
+* Running::                          Running VSProg
+* More support::                     More support planed to add into VSProg
+* FAQ::                              Frequently Asked Questions
+* License::                          GNU Free Documentation License
+@end menu
+
+@node About
+@unnumbered About
+@cindex about
+
+The Versaloon Programmer (VSProg) aims to provide in-system programming 
+for multiple embeded target devices.
+
+@b{Hardware:} VSProg uses Versaloon as hardware with different types of 
+interfaces to different embeded target devices. 
+See @uref{www.SimonQian.com/en/Versaloon}.
+
+@b{target devices:} VSProg can now support S51_ISP, AVR_ISP/JTAG, 
+C8051F_JTAG/C2, STM32_ISP(Com port), MSP430_JTAG(without TEST pin), 
+PSOC_ISSP(reset mode), CPLD/FPGA_JTAG(by SVF_Player).
+
+@node Developers
+@chapter Developers
+@cindex developers
+
+VSProg was created by SimonQian as CLI interface of Versaloon Programmer.
+Others interested in improving the state of free and open debug and testing technology
+are welcome to participate.
+
+Other developers have contributed support for additional targets and flashes as well
+as numerous bugfixes and enhancements. See the AUTHORS file for regular contributors. 
+
+The Versaloon web site is available at @uref{www.SimonQian.com/en/Versaloon}.
+
+@node Building
+@chapter Building
+@cindex building VSProg
+
+@section Pre-Built Tools
+You can find compiled binaries in Versaloon Project web site.
+
+@section Building From Source
+
+You can download the current released source code form Versaloon Project web site:
+@uref{www.SimonQian.com/en/Versaloon}. And you can also download source 
+code of VSGui, which is the GUI front-end of VSProg, compiled by Lazarus.
+
+Building VSProg requires a recent version of the GNU autotools and libusb.
+
+To build VSProg (on both Linux and Cygwin), use the following commands:
+@example
+ ./bootstrap 
+@end example
+Bootstrap generates the configure script, and prepares building on your system.
+@example
+ ./configure
+@end example
+Configure generates the Makefiles used to build VSProg.
+@example
+ make 
+ make install-strip
+@end example
+Make builds VSProg, and places the final executable in ./src/, the last step, 
+``make install-strip'' is optional.
+
+@node Running
+@chapter Running
+@cindex running VSProg
+@cindex Base options
+@cindex Versaloon options
+@cindex AT89S5X options
+@cindex PSOC options
+@cindex MSP430 options
+@cindex C8051F options
+@cindex AVR8 options
+@cindex COMISP options
+@cindex SVF_Player options
+
+The @option{--help} option shows:
+@verbatim
+bash$ vsprog --help
+Usage: vsprog [OPTION]...
+  -h,  --help                       display this help
+  -v,  --version                    display vsprog version
+  -S,  --support <target>           display support information
+  -d,  --debug <LEVEL>              set debug level <0-3>
+  -s,  --target-series <SERIES>     set target series
+  -c,  --target-module <MODULE>     set target module
+  -p,  --programmer <PROGRAMMER>    set programmer
+  -o,  --operation <OPERATIONS>     set programming operation
+  -i,  --hex <HEXFILE>              set input hex file
+  -M,  --mass-product               set mass_product mode
+  -G,  --gui_mode                   set gui_mode
+
+Usage of versaloon:
+  -U,  --usb <VID_PID_EPIN_EPOUT>   set usb PID, VID, EPIN, EPOUT
+
+Usage of at89s5x:
+  -F,  --frequency <FREQUENCY>      set ISP frequency, in KHz
+  -l,  --lock <LOCK>                set lock(1..4)
+  -f,  --fuse <FUSE>                set fuse
+  -m,  --mode <MODE>                set program mode<b|p>
+
+Usage of psoc:
+  -m,  --mode <MODE>                set mode<r|p>
+
+Usage of msp430:
+  -m,  --mode <MODE>                set mode<j|s|b>
+
+Usage of c8051f:
+  -m,  --mode <MODE>                set mode<j|c>
+
+Usage of avr8:
+  -F,  --frequency <FREQUENCY>      set ISP frequency, in KHz
+  -l,  --lock <LOCK>                set lock
+  -f,  --fuse <FUSE>                set fuse
+  -m,  --mode <MODE>                set mode<b|p>
+
+Usage of comisp:
+  -C,  --comport <COMM_ATTRIBUTE>   set com port
+  -x,  --execute <ADDRESS>          execute program
+
+Usage of svf_player:
+  -I,  --inputfile <FILENAME>       set svf file
+  -F,  --frequency <FREQUENCY>      set JTAG frequency, in KHz
+
+@end verbatim
+
+@section Base options
+
+You can use Base options for non target-defined usage.
+
+@subsection @option{-h} or @option{--help} option
+
+This option is used to print help information of VSProg.
+
+@subsection @option{-v} or @option{--version} option
+
+This options is used to print version information of VSProg.
+
+@subsection @option{-S} or @option{--support} option
+
+This option is used to print support information of VSProg. It has 
+one parameter, which defines the object to printf the support messages.
+
+You can use:
+
+@itemize @bullet
+@item @b{all}
+@* Print support messages for all objects.
+@item @b{programmer}
+@* Print support messages for all programmers.
+@item @b{target}
+@* Print support messages for all target devices.
+@item @b{programmer-name}
+@* Print support messages for programmer-name defined.
+@item @b{target-name}
+@* Print support messages for target-name defined.
+@end itemize
+
+@subsection @option{-d} or @option{--debug} option
+
+This option is used to set the debug level, which is from 0 to 2.
+
+According to different debug level, different debug messages will 
+be printed. The larger the debug level is, the more messages will 
+be printed. VSProg will use debug level 1 as default, which print 
+information messages.
+
+@itemize @bullet
+@item @b{debug level 0}
+@* For debug level 0, only error and warning messages will be printed.
+@item @b{debug level 1}
+@* For debug level 1, inforamtion messages will also be printed along 
+with messages in debug level 0.
+@item @b{debug level 2}
+@* For debug level 2, debug messages will also be printed along with 
+messages in debug level 0.
+@end itemize
+
+@subsection @option{-s} or @option{--target-series} option
+
+This option is used to define the target series. If only target series 
+if defined, VSProg will try to auto-detect the module of the target 
+device if the target supports.You can use @option{-s target} or 
+@option{--support target} to print the target modules and target series.
+
+@subsection @option{-c} or @option{--target-module} option
+
+This option is used to define the target module. Target module should be 
+in lower cases. You can use @option{-s target} or @option{--support target} 
+to print the target modules and target series.
+
+@subsection @option{-p} or @option{--programmer} option
+
+This option is used to define the programmer hardware. Currently 
+supported programmer is Versaloon only. It will use Versaloon programmer 
+by defaul if this option is not used.
+
+@subsection @option{-i} or @option{--hex} option
+
+This option is used to define the hex file which contain data to program 
+into the target devices.
+
+@subsection @option{-o} or @option{--operation} option
+
+This option is used to define the operation you want to perform as well as 
+the target areas on which you want to operform the operation. The first 
+character of the parameter of this option defines the operation. Each 
+operation can be defined in one option, that is if you want to perform 
+more operations, you will have to define more options.
+
+For operation, you can use:
+
+@itemize @bullet
+@item @b{e} for erase operation
+@item @b{w} for write operation, not implemented
+@item @b{r} for read operation
+@item @b{v} for verify operation
+@end itemize
+
+For target areas, reference to sections of different target series.
+
+@subsection @option{-M} or @option{--mass-product} option
+
+This option is used to download mass-product data into the programmer if 
+the programmer support mass-product for the chip specified.
+
+@subsection @option{-G} or @option{--gui-mode} option
+
+This option is used to inform VSProg that there is GUI front-end program 
+parsing output of VSProg. There will be some difference between output 
+formats.
+
+@section Versaloon options
+
+Programmer name of Versaloon is "versaloon".
+
+Versaloon is the hardware which support many programming interfaces. It's 
+equipped with a USB2.0 full speed port.
+
+@subsection @option{-U} or @option{--usb} option
+
+This option is used to define the VID/PID of the USB interface for Versaloon. 
+It also deifnes the endpoints which can accept commands. Parameter format is: 
+"VID PID EPIN EPOUT". Versaloon hardware is based on ST's STM32 VCOM demo, so 
+default setting is the same in STM32's VCOM demo code.
+
+@example
+  vsprog -U "0x0483 0x5740 0x82 0x03" ......
+  vsprog -U 0x0483-0x5740-0x82-0x03 ......
+  vsprog -U 0x0483_0x5740_0x82_0x03 ......
+@end example
+
+@section AT89S5X options
+
+Series name of AT89S5S is "at89s5x".
+
+@sp 1
+
+Supported Target Area(s):
+
+@itemize @bullet
+@item @b{f} for flash defined in hex file
+@item @b{l} for lockbit defined by "-l" option
+@end itemize
+
+@subsection @option{-F} or @option{--frequency} option
+
+This option is used to define the ISP frequency of S5X targets. Parameter of 
+this option is the frequency in KHz. Default value is 560.
+
+@subsection @option{-l} or @option{--lock} option
+
+This option is used to define the lockbit of S5X targets. Parameter of this 
+option should be from "1" to "4", according to different lock level.
+
+@subsection @option{-f} or @option{--fuse} option
+
+This option is used to define the fuse of S5X targets. Fuse is NOT current 
+supported because a error-typed value will kill the S5X targets.
+
+@subsection @option{-m} or @option{--mode} option
+
+This option is used to define the programming mode of S5X targets. S5X can be 
+programmed in both byte mode and page mode. Use "-mb" for byte mode, "-mp" for 
+page mode. Default mode is page mode, which is faster.
+
+@sp 1
+
+For example:
+
+@example
+  vsprog -sat89s5x -F 2000 -mb -l 4 -oe -owfl -ovfl -i flash.hex
+@end example
+
+@section PSOC options
+
+Series name of PSOC is "psoc".
+
+@sp 1
+
+Supported Target Area(s):
+
+@itemize @bullet
+@item @b{f} for flash defined in hex file
+@item @b{s} for secure data defined in hex file
+@item @b{c} for checksum defined in hex file
+@end itemize
+
+@subsection @option{-m} or @option{--mode} option
+
+This option is used to define the programming mode of PSOC targets. PSOC can be 
+programmed in different modes according to whether PSOC target has reset pin. If 
+target has reset pin, reset mode can be used, or power-on mode MUST be used. Use 
+"-mp" for power-on mode, "-mr" for reset mode. Default mode is reset mode.
+
+Note that current Versaloon hardware has no control over power line, so power-on 
+mode is not supported by current Versaloon hardwares.
+
+@sp 1
+
+For example:
+
+@example
+  vsprog -spsoc -mr -oe -owfs -ovfc -i flash.hex
+@end example
+
+@section MSP430 options
+
+Series name of MSP430 is "msp430".
+
+@sp 1
+
+Supported Target Area(s):
+
+@itemize @bullet
+@item @b{f} for flash defined in hex file
+@end itemize
+
+@subsection @option{-m} or @option{--mode} option
+
+This option is used to define the programming interface. MSP430 can be programmed 
+through JTAG/SBW/BSL interfaces. VSProg can only support JTAG interface on MSP430 
+targets without TEST pin. Use "-mj" for JTAG interface. Default interface is JTAG 
+interface.
+
+@sp 1
+
+@example
+  vsprog -cmsp430f149 -mj -oe -owf -ovf -i flash.hex
+@end example
+
+@section C8051F options
+
+Series name of C8051F is ``c8051f''.
+
+@sp 1
+
+Supported Target Area(s):
+
+@itemize @bullet
+@item @b{f} for flash defined in hex file
+@end itemize
+
+@subsection @option{-m} or @option{--mode} option
+
+This option is used to define the programming interface. C8051F can be programmed 
+through JTAG/C2 interfaces. Use "-mj" for JTAG interface, "-mc" for C2 interface. 
+Default interface is C2 interface.
+
+@sp 1
+
+@example
+  vsprog -sc8051f -mc -oe -owf -ovf -i flash.hex
+@end example
+
+@section AVR8 options
+
+Series name of AVR8 is ``avr8''.
+
+@sp 1
+
+Supported Target Area(s):
+
+@itemize @bullet
+@item @b{f} for flash defined in hex file
+@end itemize
+
+@subsection @option{-F} or @option{--frequency} option
+
+This option is used to define the ISP frequency of AVR8 targets. Parameter of 
+this option is the frequency in KHz. Default value is 560.
+
+@subsection @option{-l} or @option{--lock} option
+
+This option is used to define the lockbit of AVR8 targets. Lockbit is NOT 
+currently support by VSProg.
+
+@subsection @option{-f} or @option{--fuse} option
+
+This option is used to define the fuse of AVR8 targets. Fuse is NOT current 
+supported because a error-typed value will kill the AVR8 targets.
+
+@subsection @option{-m} or @option{--mode} option
+
+This option is used to define the programming interfaces of AVR8 targets. 
+AVR8 can be programmed through ISP/JTAG/HVPP/HVSP interfaces. Current Versaloon 
+has on High-Voltage control, so HVPP and HVSP can NOT be supported. Use "-mi" 
+for ISP interface, "-mj" for JTAG interface. Default interface is ISP interface.
+
+@sp 1
+
+For example:
+
+@example
+  vsprog -savr8 -F 2250 -mi -oe -owf -ovf -i flash.hex
+@end example
+
+@section COMISP options
+
+Series name of COMISP is ``comisp''. It's used to support ISP protocol on Com port. 
+COMISP can not support auto-detect of target module.
+
+@sp 1
+
+Supported Target Area(s):
+
+@itemize @bullet
+@item @b{f} for flash defined in hex file
+@end itemize
+
+@subsection @option{-C} or @option{--commport} option
+
+This option is used to define the Com port. Parameter should be as: 
+COMPORTNAME:BAUDRATE_ATTRIBUTE_EXTRA. ATTRIBUTE is 3 characters, the first is 
+datalength, the second is parity bit, the third is stopbit. Datalength can be from 
+"5" to "9". Parity bit can be "N" for no parity, "E" for even parity, "O" for odd 
+parity. Stopbit can be "1" for 1 stopbit, "P" for 1.5 stopbits, "2" for 2 stopbits.
+EXTRA is 2 characters, the first is handshake, the second is auxtra pin. Handshake 
+can only support "N" for no handshake. There are 2 auxtra pin, one is DTR for reset 
+control, the other is RTS for mode control. Auxtra pin can be "A" to enable these 
+control, "N" to disable. You can define only partial of the parameters, default 
+BAUDRATE is 115200, defaul ATTRIBUTE is "8N1", default EXTRA is "NN". Defaul Com 
+port is COM1 for Windows, ttyS0 for Linux. For example:
+
+@example
+  -C COM3
+  -C ttyACM0:9600_8E1
+  -C COM1:115200_8N1_NA
+  -C COM1:115200-8N1-NA
+  -C "COM1:115200 8N1 NA"
+@end example
+
+@subsection @option{-x} or @option{--execute} option
+
+This option is used to define the address to execute after programming.
+
+@sp 1
+
+For example:
+
+@example
+  vsprog -cstm32isp -C "ttyS1:9600_8E1_NA" -oe -owf -ovf -i flash.hex
+@end example
+
+@section SVF_Player options
+
+Series name of SVF_Player is "svf_player". SVF_Player can not support auto-detect 
+of target module. No target area is supported by SVR_Player.
+
+@subsection @option{-F} or @option{--frequency} option
+
+This option is used to define the initial JTAG frequency in KHz. Default is 560.
+
+@subsection @option{-I} or @option{--intpufile} option
+
+This option is used to define the SVF file to play.
+
+@sp 1
+
+For example:
+
+@example
+  vsprog -ssvf_player -F 18000 -I program.svf
+@end example
+
+@node More support
+@chapter More support
+@cindex more support
+
+More supports are planed to be added into VSProg. Below is the list:
+
+@itemize @bullet
+@item @b{EEPROM_I2C/SPI}
+@item @b{FLASH_I2C/SPI}
+@item @b{MSP430_JTAG with TEST pin}
+@item @b{MSP430_SBW}
+@item @b{MSP430_BSL}
+@item @b{Renesas_ISP}
+@item @b{CPLD/FPGA_JTAG test for more devices}
+@item @b{STM8_ISSP}
+@end itemize
+
+@node FAQ
+@chapter FAQ
+@cindex faq
+
+TODO: add information
+
+@include fdl.texi
+
+@unnumbered VSProg Index
+
+@printindex cp
+
+@bye
