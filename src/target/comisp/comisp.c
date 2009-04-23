@@ -16,6 +16,10 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -68,11 +72,9 @@ comisp_param_t comisp_chip_param;
 uint8 comisp_execute_flag = 0;
 uint32 comisp_execute_addr = 0;
 
-static const com_mode_t default_mode = 
+com_mode_t com_mode = 
 {"", 115200, 8, COMM_PARITYBIT_NONE, COMM_STOPBIT_1, 
-COMM_HANDSHAKE_NONE, COMM_AUXPIN_DISABLE};
-
-com_mode_t com_mode = {"", 0, 0, 0, 0, 0, 0};
+COMM_HANDSHAKE_NONE, COMM_AUXPIN_DISABLE};;
 
 static uint32 comisp_flash_offset = 0;
 
@@ -374,7 +376,7 @@ RESULT comisp_program(operation_t operations, program_info_t *pi,
 	
 	if (!strlen(com_mode.comport))
 	{
-		memcpy(&com_mode, &default_mode, sizeof(com_mode));
+		strncpy(com_mode.comport, DEFAULT_COMPORT, sizeof(com_mode.comport));
 		LOG_WARNING(_GETTEXT(INFOMSG_USE_DEFAULT), "Com port", 
 					DEFAULT_COMPORT);
 	}

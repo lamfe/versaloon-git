@@ -18,7 +18,9 @@
  ***************************************************************************/
 #define VSPROG_VERSION "VSProg " VERSION " (" PKGBLDDATE ") "RELSTR PKGBLDREV
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #if !IS_MSVC
 #	include <unistd.h>
@@ -829,18 +831,20 @@ int main(int argc, char* argv[])
 	else
 	{
 		// in system programmer
-		if ((0 == cur_target->areas) 
-			|| (operations.checksum_operations || operations.erase_operations 
-				|| operations.read_operations || operations.verify_operations 
-				|| operations.write_operations))
+		if (operations.checksum_operations || operations.erase_operations 
+			|| operations.read_operations || operations.verify_operations 
+			|| operations.write_operations)
 		{
-			ret = cur_target->program(operations, &program_info, 
-									  cur_programmer);
-			if (ret != ERROR_OK)
-			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATE_DEVICE), cur_target->name);
-				free_all_and_exit(EXIT_FAILURE);
-			}
+			// no operation defined, read chip_id only
+			operations.read_operations = CHIP_ID;
+		}
+		
+		ret = cur_target->program(operations, &program_info, 
+								  cur_programmer);
+		if (ret != ERROR_OK)
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATE_DEVICE), cur_target->name);
+			free_all_and_exit(EXIT_FAILURE);
 		}
 	}
 	

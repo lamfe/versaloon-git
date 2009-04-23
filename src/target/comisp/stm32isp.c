@@ -16,6 +16,10 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -729,7 +733,8 @@ RESULT stm32isp_program(operation_t operations, program_info_t *pi)
 		ret = ERRCODE_FAILURE_OPERATION;
 		goto leave_program_mode;
 	}
-	LOG_INFO(_GETTEXT("Product id = 0x%04X\n"), product_id);
+	pi->chip_id = product_id;
+	LOG_INFO(_GETTEXT("Product id = 0x%04X\n"), pi->chip_id);
 	
 	// read memory size
 	page_size = 4;
@@ -744,6 +749,11 @@ RESULT stm32isp_program(operation_t operations, program_info_t *pi)
 	sram_kb = (page_buf[3] << 8) + page_buf[2];
 	LOG_INFO(_GETTEXT("Flash memory size: %i KB, SRAM memory size:  %i KB\n"), 
 			 flash_kb, sram_kb);
+	
+	if (operations.read_operations & CHIP_ID)
+	{
+		goto leave_program_mode;
+	}
 	
 	// erase
 	if (operations.erase_operations > 0)
