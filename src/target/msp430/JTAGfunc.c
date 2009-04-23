@@ -1,4 +1,8 @@
 // This file is rewritten from the same file in slaa149f
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>

@@ -19,7 +19,9 @@
 #ifndef __PORT_H_INCLUDED__
 #define __PORT_H_INCLUDED__
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #if IS_WIN32
 
