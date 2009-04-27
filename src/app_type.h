@@ -34,7 +34,7 @@ typedef signed short	int16;
 typedef unsigned int	uint32;
 typedef signed int		int32;
 
-#define dimof(arr)				(sizeof(arr) / sizeof(arr[0]))
+#define dimof(arr)				(sizeof(arr) / sizeof((arr)[0]))
 #define TO_STR(name)			#name
 
 #endif /* __APP_TYPE_H_INCLUDED__ */
