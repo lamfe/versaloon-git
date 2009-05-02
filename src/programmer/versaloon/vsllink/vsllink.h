@@ -33,7 +33,6 @@ RESULT vsllink_jtagll_tms(uint8 *tms, uint8 len);
 RESULT vsllink_jtagll_tms_clocks(uint32 len, uint8 tms);
 RESULT vsllink_jtagll_xr(uint8* r, uint16 len, uint8 tms_before_valid, 
 						 uint8 tms_before, uint8 tms_after0, uint8 tms_after1);
-RESULT vsllink_jtagll_commit(void);
 
 
 // JTAG_HL
