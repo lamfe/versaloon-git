@@ -48,9 +48,9 @@ void pgbar_set_gui_mode(uint8 gui_mode)
 	gui_mode_flag = gui_mode;
 }
 
-void pgbar_update(uint32 step)
+void pgbar_update(int32 step)
 {
-	uint32 noc;
+	int32 noc;
 	
 	// erase previous characters
 	noc = 3;		// 3 is "%xx"
@@ -58,7 +58,7 @@ void pgbar_update(uint32 step)
 	{
 		if (!gui_mode_flag)
 		{
-			printf("\b");
+			printf("\b \b");
 		}
 	}
 	noc = pgbar_get_char_num(position);
@@ -76,9 +76,18 @@ void pgbar_update(uint32 step)
 	
 	// output new characters
 	noc = pgbar_get_char_num(position) - noc;
-	while (noc-- > 0)
+	while (noc != 0)
 	{
-		printf("%c", disp_char);
+		if (noc > 0)
+		{
+			printf("%c", disp_char);
+			noc--;
+		}
+		else
+		{
+			printf("\b \b");
+			noc++;
+		}
 	}
 	
 	// output percentage
