@@ -798,7 +798,7 @@ RESULT stm32isp_program(operation_t operations, program_info_t *pi)
 		LOG_INFO(_GETTEXT(INFOMSG_ERASED), "chip");
 	}
 	
-	page_size = STM32ISP_PAGE_SIZE;
+	page_size = STM32ISP_PAGE_SIZE_TX;
 	
 	if (operations.write_operations & APPLICATION)
 	{
@@ -806,7 +806,7 @@ RESULT stm32isp_program(operation_t operations, program_info_t *pi)
 		pgbar_init("writing flash |", "|", 0, pi->app_size_valid, 
 				   PROGRESS_STEP, '=');
 		
-		page_size = STM32ISP_PAGE_SIZE;
+		page_size = STM32ISP_PAGE_SIZE_TX;
 		ml_tmp = pi->app_memlist;
 		while (ml_tmp != NULL)
 		{
@@ -835,6 +835,8 @@ RESULT stm32isp_program(operation_t operations, program_info_t *pi)
 									page_size);
 				if (ret != ERROR_OK)
 				{
+					uint32 tmp32;
+					
 					if (++error_cnt > STM32ISP_MAX_ERROR_CNT)
 					{
 						pgbar_fini();
@@ -843,7 +845,8 @@ RESULT stm32isp_program(operation_t operations, program_info_t *pi)
 						ret = ERRCODE_FAILURE_OPERATION_ADDR;
 						goto leave_program_mode;
 					}
-					tmp8 = (uint8)((ml_tmp->addr - start_addr + i) / 1024);
+					tmp32 = ml_tmp->addr - start_addr + i;
+					tmp8 = (uint8)(tmp32 / 1024);
 					if (ERROR_OK != stm32isp_erase_sector(1, &tmp8))
 					{
 						pgbar_fini();
@@ -852,8 +855,9 @@ RESULT stm32isp_program(operation_t operations, program_info_t *pi)
 						ret = ERRCODE_FAILURE_OPERATION_ADDR;
 						goto leave_program_mode;
 					}
-					len_current_list += i - tmp8 * 1024;
-					pgbar_update(-(i - tmp8 * 1024));
+					tmp32 -= tmp8 * 1024;
+					len_current_list += tmp32;
+					pgbar_update(-(int32)tmp32);
 					
 					if (i > 1024)
 					{
@@ -886,6 +890,8 @@ RESULT stm32isp_program(operation_t operations, program_info_t *pi)
 		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMED_SIZE), "flash", 
 				 pi->app_size_valid);
 	}
+
+	page_size = STM32ISP_PAGE_SIZE_RX;
 	
 	if (operations.read_operations & APPLICATION)
 	{
@@ -936,9 +942,15 @@ RESULT stm32isp_program(operation_t operations, program_info_t *pi)
 						ret = ERRCODE_FAILURE_OPERATION_ADDR;
 						goto leave_program_mode;
 					}
+					
 					page_size = page_size_tmp;
 					i -= page_size;
 					continue;
+				}
+				else
+				{
+					// read success, clear error
+					error_cnt = 0;
 				}
 				for (j = 0; j < page_size; j++)
 				{
