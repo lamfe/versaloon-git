@@ -49,6 +49,8 @@
 #define STM32ISP_CMD_READOUT_UNPROTECT	0x92
 
 // STM32ISP
+#define STM32ISP_PAGE_SIZE_TX			256
+#define STM32ISP_PAGE_SIZE_RX			64
 #define STM32ISP_PAGE_SIZE				256
 
 RESULT stm32isp_program(operation_t operations, program_info_t *pi);

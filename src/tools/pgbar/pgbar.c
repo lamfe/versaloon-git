@@ -53,7 +53,14 @@ void pgbar_update(int32 step)
 	int32 noc;
 	
 	// erase previous characters
-	noc = 3;		// 3 is "%xx"
+	if (100 == pgbar_get_char_num(position) * 100 / max_num_of_chars)
+	{
+		noc = 4;	// "%100"
+	}
+	else
+	{
+		noc = 3;	// "%xx"
+	}
 	while (noc-- > 0)
 	{
 		if (!gui_mode_flag)
