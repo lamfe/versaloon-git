@@ -26,7 +26,7 @@ RESULT pgbar_init(char *s, char *e, uint32 min, uint32 max, uint32 max_chars,
 				char c);
 void pgbar_fini(void);
 void pgbar_set_gui_mode(uint8 gui_mode);
-void pgbar_update(uint32 step);
+void pgbar_update(int32 step);
 
 #endif /* __PGBAR_H_INCLUDED__ */
 

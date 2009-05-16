@@ -831,9 +831,9 @@ int main(int argc, char* argv[])
 	else
 	{
 		// in system programmer
-		if (operations.checksum_operations || operations.erase_operations 
+		if (!(operations.checksum_operations || operations.erase_operations 
 			|| operations.read_operations || operations.verify_operations 
-			|| operations.write_operations)
+			|| operations.write_operations))
 		{
 			// no operation defined, read chip_id only
 			operations.read_operations = CHIP_ID;

@@ -178,13 +178,18 @@ RESULT stm32isp_send_command(uint8 cmd, const char *cmd_name,
 	return ERROR_OK;
 }
 
-RESULT stm32isp_get_ack(uint8 accept_0_as_final_ack, uint8 quiet)
+RESULT stm32isp_get_ack(uint8 accept_0_as_final_ack, uint8 *ret, uint8 quiet)
 {
 	uint8 buffer[1];
 	
-	if ((1 != comm_read(buffer, 1)) 
-		|| ((buffer[0] != STM32ISP_ACK) 
-			&& (!accept_0_as_final_ack || (buffer[0] != 0))))
+	*ret = (uint8)comm_read(buffer, 1);
+	if (*ret != 1)
+	{
+		return ERROR_FAIL;
+	}
+	
+	if ((buffer[0] != STM32ISP_ACK) 
+		&& (!accept_0_as_final_ack || (buffer[0] != 0)))
 	{
 		if (!quiet)
 		{
@@ -293,13 +298,14 @@ RESULT stm32isp_read_bootloader_version(uint8 *rev)
 	}
 	// process data
 	*rev = buffer[0];
-	return stm32isp_get_ack(0, 0);
+	return stm32isp_get_ack(0, buffer, 0);
 }
 
 RESULT stm32isp_read_product_id(uint32 *id)
 {
 	RESULT ret;
 	uint16 len = 4;
+	uint8 buffer[1];
 	
 	// send command
 	ret = stm32isp_send_command(STM32ISP_CMD_GET_ID, "Get ID", NULL);
@@ -315,12 +321,13 @@ RESULT stm32isp_read_product_id(uint32 *id)
 		LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), "get product id");
 		return ERRCODE_FAILURE_OPERATION;
 	}
-	return stm32isp_get_ack(0, 0);
+	return stm32isp_get_ack(0, buffer, 0);
 }
 
 RESULT stm32isp_readout_protect(void)
 {
 	RESULT ret;
+	uint8 buffer[1];
 	
 	// send command
 	ret = stm32isp_send_command(STM32ISP_CMD_READOUT_PROTECT, 
@@ -331,12 +338,13 @@ RESULT stm32isp_readout_protect(void)
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
-	return stm32isp_get_ack(1, 0);
+	return stm32isp_get_ack(1, buffer, 0);
 }
 
 RESULT stm32isp_readout_unprotect(void)
 {
 	RESULT ret;
+	uint8 buffer[1];
 	
 	// send command
 	ret = stm32isp_send_command(STM32ISP_CMD_READOUT_UNPROTECT, 
@@ -347,12 +355,13 @@ RESULT stm32isp_readout_unprotect(void)
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
-	return stm32isp_get_ack(1, 0);
+	return stm32isp_get_ack(1, buffer, 0);
 }
 
 RESULT stm32isp_write_protect(void)
 {
 	RESULT ret;
+	uint8 buffer[1];
 	
 	// send command
 	ret = stm32isp_send_command(STM32ISP_CMD_WRITE_PROTECT, 
@@ -363,12 +372,13 @@ RESULT stm32isp_write_protect(void)
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
-	return stm32isp_get_ack(1, 0);
+	return stm32isp_get_ack(1, buffer, 0);
 }
 
 RESULT stm32isp_write_unprotect(void)
 {
 	RESULT ret;
+	uint8 buffer[1];
 	
 	// send command
 	ret = stm32isp_send_command(STM32ISP_CMD_WRITE_UNPROTECT, 
@@ -379,7 +389,7 @@ RESULT stm32isp_write_unprotect(void)
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
-	return stm32isp_get_ack(1, 0);
+	return stm32isp_get_ack(1, buffer, 0);
 }
 
 RESULT stm32isp_read_memory(uint32 addr, uint8 *data, uint16 *data_len)
@@ -443,7 +453,7 @@ RESULT stm32isp_read_memory(uint32 addr, uint8 *data, uint16 *data_len)
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	// read ack
-	if (ERROR_OK != stm32isp_get_ack(0, 0))
+	if (ERROR_OK != stm32isp_get_ack(0, buffer, 0))
 	{
 		return ERROR_FAIL;
 	}
@@ -457,8 +467,8 @@ RESULT stm32isp_read_memory(uint32 addr, uint8 *data, uint16 *data_len)
 		LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), "send data");
 		return ERRCODE_FAILURE_OPERATION;
 	}
-	// read acd
-	if (ERROR_OK != stm32isp_get_ack(0, 0))
+	// read ack
+	if (ERROR_OK != stm32isp_get_ack(0, buffer, 0))
 	{
 		return ERROR_FAIL;
 	}
@@ -541,7 +551,7 @@ RESULT stm32isp_write_memory(uint32 addr, uint8 *data, uint16 data_len)
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	// read ack
-	if (ERROR_OK != stm32isp_get_ack(0, 0))
+	if (ERROR_OK != stm32isp_get_ack(0, buffer, 0))
 	{
 		return ERROR_FAIL;
 	}
@@ -569,8 +579,13 @@ RESULT stm32isp_write_memory(uint32 addr, uint8 *data, uint16 data_len)
 	// get final ack
 	while (time_out--)
 	{
-		if (ERROR_OK != stm32isp_get_ack(0, 1))
+		if (ERROR_OK != stm32isp_get_ack(0, buffer, 1))
 		{
+			if (1 == buffer[0])
+			{
+				time_out = 0;
+				break;
+			}
 			continue;
 		}
 		else
@@ -641,7 +656,7 @@ RESULT stm32isp_erase_sector(uint8 num_of_sector, uint8 *sector_num)
 	}
 	// delay
 	dly_cnt = 60;
-	while (ERROR_OK != stm32isp_get_ack(0, 1))
+	while (ERROR_OK != stm32isp_get_ack(0, buffer, 1))
 	{
 		sleep_ms(50);
 		if (!--dly_cnt)
@@ -681,7 +696,7 @@ RESULT stm32isp_execute_code(uint32 addr)
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
-	return stm32isp_get_ack(0, 0);
+	return stm32isp_get_ack(0, buffer, 0);
 }
 
 RESULT stm32isp_program(operation_t operations, program_info_t *pi)
@@ -837,6 +852,8 @@ RESULT stm32isp_program(operation_t operations, program_info_t *pi)
 						ret = ERRCODE_FAILURE_OPERATION_ADDR;
 						goto leave_program_mode;
 					}
+					len_current_list += i - tmp8 * 1024;
+					pgbar_update(-(i - tmp8 * 1024));
 					
 					if (i > 1024)
 					{
