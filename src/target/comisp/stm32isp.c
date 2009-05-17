@@ -861,7 +861,7 @@ RESULT stm32isp_program(operation_t operations, program_info_t *pi)
 					
 					if (i > 1024)
 					{
-						i = tmp8 * 1024;
+						i = tmp8 * 1024 - (ml_tmp->addr - start_addr);
 					}
 					else
 					{
