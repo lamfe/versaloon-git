@@ -739,6 +739,9 @@ int main(int argc, char* argv[])
 		fclose(hex_file);
 		hex_file = NULL;
 	}
+
+	// short delay
+	sleep_ms(10);
 	
 	// do programming
 	if (mass_product_flag)

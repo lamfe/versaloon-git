@@ -18,6 +18,7 @@ libtgt_a_SOURCES = \
     avr8/avr8_hvsp.c \
     avr8/avr8_isp.c \
     avr8/avr8_jtag.c \
+    lpc900/lpc900.c \
     c8051f/c8051f.c \
     c8051f/c8051f_c2.c \
     c8051f/c8051f_jtag.c \
@@ -38,6 +39,7 @@ libtgt_a_SOURCES = \
 #    target.h \
 #    at89s5x/at89s5x.h \
 #    avr8/avr8.h \
+#    lpc900/lpc900.h \
 #    c8051f/c8051f_c2.h \
 #    c8051f/c8051f_jtag.h \
 #    comisp/comisp.h 

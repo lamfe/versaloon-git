@@ -57,6 +57,16 @@ RESULT usbtoissp_vector(uint8 interface_index, uint8 operate, uint8 addr,
 
 
 
+// USB_TO_LPCICP
+RESULT usbtolpcicp_init(void);
+RESULT usbtolpcicp_fini(void);
+RESULT usbtolpcicp_config(uint8 interface_index);
+RESULT usbtolpcicp_enter_program_mode(uint8 interface_index);
+RESULT usbtolpcicp_in(uint8 interface_index, uint8 *buff, uint16 len);
+RESULT usbtolpcicp_out(uint8 interface_index, uint8 *buff, uint16 len);
+RESULT usbtolpcicp_poll_ready(uint8 interface_index);
+
+
 // USB_TO_JTAG_HL
 RESULT usbtojtaghl_init(void);
 RESULT usbtojtaghl_fini(void);

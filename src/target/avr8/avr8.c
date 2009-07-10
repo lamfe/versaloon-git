@@ -96,6 +96,7 @@ const avr8_param_t avr8_chips_param[] = {
 	{"atmega169",	0x001E9405,		AVR8_ISP | AVR8_JTAG | AVR8_HVPP,								128,				128,			4,					128},
 	{"atmega325",	0x001E9505,		AVR8_ISP | AVR8_JTAG | AVR8_HVPP,								128,				256,			4,					256},
 	{"atmega3250",	0x001E9506,		AVR8_ISP | AVR8_JTAG | AVR8_HVPP,								128,				256,			4,					256},
+	{"atmega64",	0x001E9602,		AVR8_ISP | AVR8_JTAG | AVR8_HVPP,								256,				256,			8,					256},
 	{"atmega645",	0x001E9605,		AVR8_ISP | AVR8_JTAG | AVR8_HVPP,								256,				256,			8,					256},
 	{"atmega6450",	0x001E9606,		AVR8_ISP | AVR8_JTAG | AVR8_HVPP,								256,				256,			8,					256},
 	{"atmega329",	0x001E9503,		AVR8_ISP | AVR8_JTAG | AVR8_HVPP,								128,				256,			4,					256},

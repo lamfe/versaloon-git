@@ -35,10 +35,11 @@
 #define MSP430_SBW				(1 << 19)
 #define C2						(1 << 20)
 #define MSP430_JTAG				(1 << 21)
+#define LPC_ICP					(1 << 22)
 #define INVALID_INTERFACE		(1 << 30)
 #define INTERFACES_MASK			(USART | SPI | I2C | GPIO | CAN | CLOCK | ADC \
 								 | DAC | POWER | ISSP | JTAG | MSP430_JTAG \
-								 | MSP430_SBW)
+								 | LPC_ICP | MSP430_SBW)
 
 
 // GPIO pins
