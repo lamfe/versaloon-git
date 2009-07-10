@@ -40,6 +40,7 @@
 #include "target.h"
 #include "at89s5x/at89s5x.h"
 #include "psoc/psoc.h"
+#include "lpc900/lpc900.h"
 #include "msp430/msp430.h"
 #include "c8051f/c8051f.h"
 #include "avr8/avr8.h"
@@ -177,6 +178,25 @@ target_info_t targets_info[] =
 											// write_buffer_from_file_callback
 		NULL,								// write_file_from_buffer_callback
 		svfp_program,						// program
+		
+		NULL,								// get_mass_product_data_size
+		NULL,								// prepare_mass_product_data
+	},
+	// lpc900
+	{
+		LPC900_STRING,						// name
+		APPLICATION,						// areas
+		lpc900_program_area_map,			// program_area_map
+		lpc900_parse_argument,				// parse_argument
+		lpc900_probe_chip,					// probe_chip
+		lpc900_init,						// init
+		lpc900_fini,						// fini
+		lpc900_interface_needed,			// interfaces_needed
+		lpc900_prepare_buffer,				// prepare_buffer
+		lpc900_write_buffer_from_file_callback,
+											// write_buffer_from_file_callback
+		NULL,								// write_file_from_buffer_callback
+		lpc900_program,						// program
 		
 		NULL,								// get_mass_product_data_size
 		NULL,								// prepare_mass_product_data

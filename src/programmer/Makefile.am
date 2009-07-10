@@ -22,6 +22,7 @@ libprog_a_SOURCES = \
     versaloon/usbtoxxx/usbtospi.c \
     versaloon/usbtoxxx/usbtousart.c \
     versaloon/usbtoxxx/usbtoxxx.c \
+    versaloon/usbtoxxx/usbtolpcicp.c \
     versaloon/vsllink/vsllink.c
 
 #noinst_HEADERS = \

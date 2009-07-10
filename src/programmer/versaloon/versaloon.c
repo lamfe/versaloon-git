@@ -757,6 +757,31 @@ RESULT versaloon_issp_vector(uint8 operate, uint8 addr, uint8 data, uint8 *buf)
 {
 	return usbtoissp_vector(VERSALOON_ISSP_PORT, operate, addr, data, buf);
 }
+// LPCICP
+RESULT versaloon_lpcicp_init(void)
+{
+	return usbtolpcicp_init();
+}
+RESULT versaloon_lpcicp_fini(void)
+{
+	return usbtolpcicp_fini();
+}
+RESULT versaloon_lpcicp_enter_program_mode(void)
+{
+	return usbtolpcicp_enter_program_mode(VERSALOON_LPCICP_PORT);
+}
+RESULT versaloon_lpcicp_in(uint8 *buff, uint16 len)
+{
+	return usbtolpcicp_in(VERSALOON_LPCICP_PORT, buff, len);
+}
+RESULT versaloon_lpcicp_out(uint8 *buff, uint16 len)
+{
+	return usbtolpcicp_out(VERSALOON_LPCICP_PORT, buff, len);
+}
+RESULT versaloon_lpcicp_poll_ready(void)
+{
+	return usbtolpcicp_poll_ready(VERSALOON_LPCICP_PORT);
+}
 // JTAG
 RESULT versaloon_jtaghl_init(void)
 {
@@ -938,7 +963,7 @@ RESULT versaloon_init_capability(void *p)
 	
 	((programmer_info_t *)p)->interfaces = (SPI | GPIO | ISSP | JTAG_LL 
 											 | JTAG_HL | C2 | MSP430_JTAG 
-											 | MSP430_SBW);
+											 | MSP430_SBW | LPC_ICP);
 	
 	// SPI
 	((programmer_info_t *)p)->spi_init = versaloon_spi_init;
@@ -970,6 +995,15 @@ RESULT versaloon_init_capability(void *p)
 											versaloon_issp_wait_and_poll;
 	((programmer_info_t *)p)->issp_vector = versaloon_issp_vector;
 	((programmer_info_t *)p)->issp_commit = versaloon_peripheral_commit;
+	
+	// LPCICP
+	((programmer_info_t *)p)->lpcicp_init = versaloon_lpcicp_init;
+	((programmer_info_t *)p)->lpcicp_fini = versaloon_lpcicp_fini;
+	((programmer_info_t *)p)->lpcicp_enter_program_mode = versaloon_lpcicp_enter_program_mode;
+	((programmer_info_t *)p)->lpcicp_in = versaloon_lpcicp_in;
+	((programmer_info_t *)p)->lpcicp_out = versaloon_lpcicp_out;
+	((programmer_info_t *)p)->lpcicp_poll_ready = versaloon_lpcicp_poll_ready;
+	((programmer_info_t *)p)->lpcicp_commit = versaloon_peripheral_commit;
 	
 	// Target voltage
 	((programmer_info_t *)p)->get_target_voltage = 

@@ -152,6 +152,15 @@ typedef struct
 						uint16 data_len, uint8 stop);
 	RESULT (*i2c_commit)(void);
 	
+	// lpcicp
+	RESULT (*lpcicp_init)(void);
+	RESULT (*lpcicp_fini)(void);
+	RESULT (*lpcicp_enter_program_mode)(void);
+	RESULT (*lpcicp_in)(uint8 *buff, uint16 len);
+	RESULT (*lpcicp_out)(uint8 *buff, uint16 len);
+	RESULT (*lpcicp_poll_ready)(void);
+	RESULT (*lpcicp_commit)(void);
+	
 	// mass-product support
 	RESULT (*query_mass_product_data_size)(uint32 *size);
 	RESULT (*download_mass_product_data)(const char *name, uint8 *buffer, 
