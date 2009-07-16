@@ -291,16 +291,15 @@ RESULT lpc900_write_buffer_from_file_callback(uint32 address, uint32 seg_addr,
 		}
 */		
 		mem_addr += cur_flash_offset;
-		if ((mem_addr >= cur_chip_param.flash_size) 
-			|| (length > cur_chip_param.flash_size) 
-			|| ((mem_addr + length) > cur_chip_param.flash_size))
+		if ((mem_addr >= cur_chip_param.flash_size)
+ 			|| (length > cur_chip_param.flash_size)
+ 			|| ((mem_addr + length) > cur_chip_param.flash_size))
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_RANGE), "flash memory");
 			return ERRCODE_INVALID;
 		}
 		memcpy(pi->app + mem_addr, data, length);
 		pi->app_size_valid += (uint16)length;
-		
 		ret = MEMLIST_Add(&pi->app_memlist, mem_addr, length, 
 						  cur_chip_param.flash_page_size);
 		if (ret != ERROR_OK)
@@ -407,8 +406,7 @@ RESULT lpc900_program(operation_t operations, program_info_t *pi,
 	if (voltage > 2000)
 	{
 		LOG_ERROR(_GETTEXT("Target should power off\n"));
-		ret = ERROR_FAIL;
-		goto leave_program_mode;
+		return ERROR_FAIL;
 	}
 	
 	// here we go
