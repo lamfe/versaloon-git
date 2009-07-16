@@ -21,7 +21,7 @@
 
 #define LPC900_INTERFACE_NEEDED			(LPC_ICP)
 
-#define LPC900_FLASH_CHAR				0xFF
+#define LPC900_FLASH_CHAR				0x00
 #define LPC900_PAGE_SIZE				256
 
 typedef struct

@@ -16,6 +16,7 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
+
 #ifndef __AVR8_INTERNAL_H_INCLUDED__
 #define __AVR8_INTERNAL_H_INCLUDED__
 
@@ -51,12 +52,8 @@ typedef struct
 	uint16 eeprom_page_num;
 	uint32 flash_size;
 	uint16 eeprom_size;
-}avr8_param_t;
-
-extern avr8_param_t avr8_chip_param;
-extern uint16 avr8_isp_frequency;
-
-RESULT avr8_isp_program(operation_t operations, program_info_t *pi, 
+}avr8_param_t;extern avr8_param_t avr8_chip_param;
+extern uint16 avr8_isp_frequency;RESULT avr8_isp_program(operation_t operations, program_info_t *pi, 
 						programmer_info_t *prog);
 RESULT avr8_jtag_program(operation_t operations, program_info_t *pi, 
 						 programmer_info_t *prog);
@@ -64,6 +61,5 @@ RESULT avr8_hvpp_program(operation_t operations, program_info_t *pi,
 						 programmer_info_t *prog);
 RESULT avr8_hvsp_program(operation_t operations, program_info_t *pi, 
 						 programmer_info_t *prog);
- 
 #endif /* __AVR8_INTERNAL_H_INCLUDED__ */
 
