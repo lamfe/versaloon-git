@@ -741,7 +741,7 @@ int main(int argc, char* argv[])
 	}
 
 	// short delay
-	sleep_ms(10);
+	sleep_ms(100);
 	
 	// do programming
 	if (mass_product_flag)

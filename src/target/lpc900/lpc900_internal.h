@@ -22,11 +22,15 @@
 #define LPC900_INTERFACE_NEEDED			(LPC_ICP)
 
 #define LPC900_FLASH_CHAR				0xFF
+#define LPC900_PAGE_SIZE				256
 
 typedef struct
 {
 	const char *chip_name;
 	uint32 chip_id;
+	uint16 flash_page_size;
+	uint16 flash_page_num;
+	uint32 flash_size;
 }lpc900_param_t;
 
 #endif /* __LPC900_INTERNAL_H_INCLUDED__ */

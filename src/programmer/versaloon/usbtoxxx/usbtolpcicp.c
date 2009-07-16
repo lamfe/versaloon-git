@@ -84,8 +84,8 @@ RESULT usbtolpcicp_in(uint8 interface_index, uint8 *buff, uint16 len)
 	}
 #endif
 	
-	return usbtoxxx_in_command(USB_TO_LPCICP, interface_index, buff, len, 0, 
-							   NULL, 0, 0, 0);
+	return usbtoxxx_in_command(USB_TO_LPCICP, interface_index, buff, len, len, 
+							   buff, 0, len, 0);
 }
 
 RESULT usbtolpcicp_out(uint8 interface_index, uint8 *buff, uint16 len)
