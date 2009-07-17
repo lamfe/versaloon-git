@@ -41,7 +41,7 @@
 #include "avr8_internal.h"
 
 #define CUR_TARGET_STRING		AVR8_STRING
-#define cur_chip_param			avr8_chip_param
+#define cur_chip_param			target_chip_param
 
 #define AVR_JTAG_INS_LEN							4
 // Public Instructions:
@@ -215,10 +215,10 @@ RESULT avr8_jtag_program(operation_t operations, program_info_t *pi,
 	LOG_INFO(_GETTEXT(INFOMSG_TARGET_CHIP_ID), pi->chip_id);
 	if (!(operations.read_operations & CHIP_ID))
 	{
-		if (pi->chip_id != cur_chip_param.signature)
+		if (pi->chip_id != cur_chip_param.chip_id)
 		{
 			LOG_WARNING(_GETTEXT(ERRMSG_INVALID_CHIP_ID), pi->chip_id, 
-						cur_chip_param.signature);
+						cur_chip_param.chip_id);
 		}
 	}
 	else
@@ -247,9 +247,9 @@ RESULT avr8_jtag_program(operation_t operations, program_info_t *pi,
 		LOG_INFO(_GETTEXT(INFOMSG_ERASED), "chip");
 	}
 	
-	if (cur_chip_param.flash_page_num > 1)
+	if (cur_chip_param.app_page_num > 1)
 	{
-		page_size = cur_chip_param.flash_page_size;
+		page_size = cur_chip_param.app_page_size;
 	}
 	else
 	{
@@ -290,14 +290,14 @@ RESULT avr8_jtag_program(operation_t operations, program_info_t *pi,
 				AVR_JTAG_PROG_LoadAddrLowByte((ml_tmp->addr + i) >> 1);
 				AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_PAGELOAD);
 				
-				if (cur_chip_param.prog_mode & AVR8_JTAG_FULL_BITSTREAM)
+				if (cur_chip_param.param[AVR8_PARAM_JTAG_FULL_BITSTREAM])
 				{
 					jtag_dr_write(pi->app + ml_tmp->addr + i, 
-								  cur_chip_param.flash_page_size * 8);
+								  (uint16)(cur_chip_param.app_page_size * 8));
 				}
 				else
 				{
-					for (j = 0; j < cur_chip_param.flash_page_size; j++)
+					for (j = 0; j < cur_chip_param.app_page_size; j++)
 					{
 						jtag_dr_write(pi->app + ml_tmp->addr + i + j, 8);
 					}
@@ -316,9 +316,9 @@ RESULT avr8_jtag_program(operation_t operations, program_info_t *pi,
 				
 				pgbar_update(k);
 				len_current_list -= k;
-				if (len_current_list >= cur_chip_param.flash_page_size)
+				if (len_current_list >= cur_chip_param.app_page_size)
 				{
-					k = cur_chip_param.flash_page_size;
+					k = cur_chip_param.app_page_size;
 				}
 				else
 				{
@@ -342,7 +342,7 @@ RESULT avr8_jtag_program(operation_t operations, program_info_t *pi,
 		}
 		else
 		{
-			pi->app_size_valid = cur_chip_param.flash_size;
+			pi->app_size_valid = cur_chip_param.app_size;
 			LOG_INFO(_GETTEXT(INFOMSG_READING), "flash");
 		}
 		pgbar_init("reading flash |", "|", 0, pi->app_size_valid, 
@@ -373,16 +373,16 @@ RESULT avr8_jtag_program(operation_t operations, program_info_t *pi,
 				AVR_JTAG_PROG_LoadAddrLowByte((ml_tmp->addr + i) >> 1);
 				AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_PAGEREAD);
 				
-				if (cur_chip_param.prog_mode & AVR8_JTAG_FULL_BITSTREAM)
+				if (cur_chip_param.param[AVR8_PARAM_JTAG_FULL_BITSTREAM])
 				{
 					dr = 0;
 					jtag_dr_write(&dr, 8);
 					jtag_dr_read(page_buf, 
-								 cur_chip_param.flash_page_size * 8);
+								 (uint16)(cur_chip_param.app_page_size * 8));
 				}
 				else
 				{
-					for (j = 0; j < cur_chip_param.flash_page_size; j++)
+					for (j = 0; j < cur_chip_param.app_page_size; j++)
 					{
 						jtag_dr_read(page_buf + j, 8);
 					}
@@ -422,9 +422,9 @@ RESULT avr8_jtag_program(operation_t operations, program_info_t *pi,
 				
 				pgbar_update(k);
 				len_current_list -= k;
-				if (len_current_list >= cur_chip_param.flash_page_size)
+				if (len_current_list >= cur_chip_param.app_page_size)
 				{
-					k = cur_chip_param.flash_page_size;
+					k = cur_chip_param.app_page_size;
 				}
 				else
 				{

@@ -34,26 +34,16 @@
 #define AVR8_HVSP						(1 << 3)
 #define AVR8_PROG_MODE_MASK				(AVR8_ISP | AVR8_JTAG \
 										 | AVR8_HVPP | AVR8_HVSP)
-#define AVR8_JTAG_FULL_BITSTREAM		(1 << 4)
+
+#define AVR8_PARAM_JTAG_FULL_BITSTREAM	0
 
 #define AVR8_ISP_INTERFACE_NEEDED		(SPI | GPIO)
 #define AVR8_JTAG_INTERFACE_NEEDED		(JTAG_HL)
 #define AVR8_HVPP_INTERFACE_NEEDED		(GPIO | POWER)
 #define AVR8_HVSP_INTERFACE_NEEDED		(GPIO | POWER)
 
-typedef struct
-{
-	const char *chip_name;
-	uint32 signature;
-	uint8 prog_mode;
-	uint16 flash_page_size;
-	uint16 flash_page_num;
-	uint8 eeprom_page_size;
-	uint16 eeprom_page_num;
-	uint32 flash_size;
-	uint16 eeprom_size;
-}avr8_param_t;extern avr8_param_t avr8_chip_param;
-extern uint16 avr8_isp_frequency;RESULT avr8_isp_program(operation_t operations, program_info_t *pi, 
+extern uint16 avr8_isp_frequency;
+RESULT avr8_isp_program(operation_t operations, program_info_t *pi, 
 						programmer_info_t *prog);
 RESULT avr8_jtag_program(operation_t operations, program_info_t *pi, 
 						 programmer_info_t *prog);

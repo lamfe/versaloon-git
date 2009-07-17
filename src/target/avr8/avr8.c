@@ -41,8 +41,8 @@
 #include "avr8_internal.h"
 
 #define CUR_TARGET_STRING			AVR8_STRING
-#define cur_chip_param				avr8_chip_param
-#define cur_chips_param				avr8_chips_param
+#define cur_chip_param				target_chip_param
+#define cur_chips_param				target_chips.chips_param
 #define cur_flash_offset			avr8_flash_offset
 #define cur_eeprom_offset			avr8_eeprom_offset
 #define cur_prog_mode				avr8_prog_mode
@@ -56,63 +56,6 @@ const program_area_map_t avr8_program_area_map[] =
 //	{LOCK, 'l', 0},
 	{0, 0}
 };
-
-const avr8_param_t avr8_chips_param[] = {
-//	chip_name,		signature,		prog_mode,														flash_page_size,	flash_page_num,	ee_page_size,		ee_page_num,
-	{"attiny11",	0x001E9004,		AVR8_HVSP,														1024,				1,				64,					1},
-	{"attiny12",	0x001E9005,		AVR8_ISP | AVR8_HVSP,											1024,				1,				64,					1},
-	{"attiny13",	0x001E9007,		AVR8_ISP | AVR8_HVSP,											32,					32,				4,					16},
-	{"attiny15",	0x001E9006,		AVR8_ISP | AVR8_HVSP,											1024,				1,				64,					1},
-	{"attiny24",	0x001E910B,		AVR8_ISP | AVR8_HVSP,											32,					64,				4,					32},
-	{"attiny44",	0x001E9207,		AVR8_ISP | AVR8_HVSP,											64,					64,				4,					64},
-	{"attiny84",	0x001E930C,		AVR8_ISP | AVR8_HVSP,											64,					128,			4,					128},
-	{"attiny25",	0x001E9108,		AVR8_ISP | AVR8_HVSP,											32,					64,				4,					32},
-	{"attiny45",	0x001E9206,		AVR8_ISP | AVR8_HVSP,											64,					64,				4,					64},
-	{"attiny85",	0x001E930B,		AVR8_ISP | AVR8_HVSP,											64,					128,			4,					128},
-	{"attiny26",	0x001E9109,		AVR8_ISP | AVR8_HVPP,											32,					64,				4,					32},
-	{"attiny28",	0x001E9107,		AVR8_HVPP,														2048,				1,				0,					0},
-	{"attiny48",	0x001E9209,		AVR8_ISP | AVR8_HVPP,											64,					64,				4,					16},
-	{"attiny88",	0x001E9311,		AVR8_ISP | AVR8_HVPP,											64,					128,			4,					16},
-	{"attiny261",	0x001E910C,		AVR8_ISP | AVR8_HVPP,											32,					64,				4,					64},
-	{"attiny461",	0x001E9208,		AVR8_ISP | AVR8_HVPP,											64,					64,				4,					64},
-	{"attiny861",	0x001E930D,		AVR8_ISP | AVR8_HVPP,											64,					128,			4,					128},
-	{"attiny2313",	0x001E910A,		AVR8_ISP | AVR8_HVPP,											32,					64,				4,					32},
-	{"at90can32",	0x001E9581,		AVR8_ISP | AVR8_JTAG | AVR8_HVPP,								256,				128,			8,					128},
-	{"at90can64",	0x001E9681,		AVR8_ISP | AVR8_JTAG | AVR8_HVPP,								256,				256,			8,					256},
-	{"at90can128",	0x001E9781,		AVR8_ISP | AVR8_JTAG | AVR8_HVPP,								256,				512,			8,					512},
-	{"at90pwm2/3",	0x001E9381,		AVR8_ISP | AVR8_HVPP,											64,					128,			4,					128},
-	{"at90pwm2/3B",	0x001E9383,		AVR8_ISP | AVR8_HVPP,											64,					128,			4,					128},
-	{"atmega8",		0x001E9307,		AVR8_ISP | AVR8_HVPP,											64,					128,			4,					128},
-	{"atmega16",	0x001E9403,		AVR8_ISP | AVR8_JTAG | AVR8_HVPP | AVR8_JTAG_FULL_BITSTREAM,	128,				128,			4,					128},
-	{"atmega32",	0x001E9502,		AVR8_ISP | AVR8_JTAG | AVR8_HVPP | AVR8_JTAG_FULL_BITSTREAM,	128,				256,			4,					256},
-	{"atmega48",	0x001E9205,		AVR8_ISP | AVR8_HVPP,											64,					64,				4,					64},
-	{"atmega88",	0x001E930a,		AVR8_ISP | AVR8_HVPP,											64,					128,			4,					128},
-	{"atmega168",	0x001E9406,		AVR8_ISP | AVR8_HVPP,											128,				128,			4,					128},
-	{"atmega162",	0x001E9404,		AVR8_ISP | AVR8_JTAG | AVR8_HVPP | AVR8_JTAG_FULL_BITSTREAM,	128,				128,			4,					128},
-	{"atmega164p",	0x001E940A,		AVR8_ISP | AVR8_JTAG | AVR8_HVPP,								128,				128,			4,					128},
-	{"atmega324p",	0x001E9508,		AVR8_ISP | AVR8_JTAG | AVR8_HVPP,								128,				256,			4,					256},
-	{"atmega644p",	0x001E960A,		AVR8_ISP | AVR8_JTAG | AVR8_HVPP,								256,				256,			8,					256},
-	{"atmega165",	0x001E9407,		AVR8_ISP | AVR8_JTAG | AVR8_HVPP,								128,				128,			4,					128},
-	{"atmega169",	0x001E9405,		AVR8_ISP | AVR8_JTAG | AVR8_HVPP,								128,				128,			4,					128},
-	{"atmega325",	0x001E9505,		AVR8_ISP | AVR8_JTAG | AVR8_HVPP,								128,				256,			4,					256},
-	{"atmega3250",	0x001E9506,		AVR8_ISP | AVR8_JTAG | AVR8_HVPP,								128,				256,			4,					256},
-	{"atmega64",	0x001E9602,		AVR8_ISP | AVR8_JTAG | AVR8_HVPP,								256,				256,			8,					256},
-	{"atmega645",	0x001E9605,		AVR8_ISP | AVR8_JTAG | AVR8_HVPP,								256,				256,			8,					256},
-	{"atmega6450",	0x001E9606,		AVR8_ISP | AVR8_JTAG | AVR8_HVPP,								256,				256,			8,					256},
-	{"atmega329",	0x001E9503,		AVR8_ISP | AVR8_JTAG | AVR8_HVPP,								128,				256,			4,					256},
-	{"atmega3290",	0x001E9504,		AVR8_ISP | AVR8_JTAG | AVR8_HVPP,								128,				256,			4,					256},
-	{"atmega649",	0x001E9603,		AVR8_ISP | AVR8_JTAG | AVR8_HVPP,								256,				256,			8,					256},
-	{"atmega6490",	0x001E9604,		AVR8_ISP | AVR8_JTAG | AVR8_HVPP,								256,				256,			8,					256},
-	{"atmega640",	0x001E9608,		AVR8_ISP | AVR8_JTAG | AVR8_HVPP,								256,				256,			8,					512},
-	{"atmega1280",	0x001E9703,		AVR8_ISP | AVR8_JTAG | AVR8_HVPP,								256,				512,			8,					512},
-	{"atmega1281",	0x001E9704,		AVR8_ISP | AVR8_JTAG | AVR8_HVPP,								256,				512,			8,					512},
-	{"atmega2560",	0x001E9801,		AVR8_ISP | AVR8_JTAG | AVR8_HVPP,								256,				1024,			8,					512},
-	{"atmega2561",	0x001E9802,		AVR8_ISP | AVR8_JTAG | AVR8_HVPP,								256,				1024,			8,					512},
-	{"atmega8515",	0x001E9306,		AVR8_ISP | AVR8_HVPP,											64,					128,			4,					128},
-	{"atmega8535",	0x001E9308,		AVR8_ISP | AVR8_HVPP,											64,					128,			4,					128},
-	{"atmega128",	0x001E9702,		AVR8_ISP | AVR8_JTAG | AVR8_HVPP | AVR8_JTAG_FULL_BITSTREAM,	256,				512,			8,					512},
-};
-avr8_param_t avr8_chip_param;
 
 static uint32 avr8_flash_offset = 0;
 static uint32 avr8_eeprom_offset = 0;
@@ -139,12 +82,12 @@ static void avr8_support(void)
 	uint32 i;
 	
 	printf("Support list of %s:\n", CUR_TARGET_STRING);
-	for (i = 0; i < dimof(cur_chips_param); i++)
+	for (i = 0; i < target_chips.num_of_chips; i++)
 	{
 		printf("%s: signature = 0x%06x, prog_mode = 0x%02x\n", 
 				cur_chips_param[i].chip_name, 
-				cur_chips_param[i].signature, 
-				cur_chips_param[i].prog_mode);
+				cur_chips_param[i].chip_id, 
+				cur_chips_param[i].program_mode);
 	}
 	printf("\n");
 }
@@ -236,7 +179,7 @@ RESULT avr8_probe_chip(char *chip_name)
 {
 	uint32 i;
 
-	for (i = 0; i < dimof(cur_chips_param); i++)
+	for (i = 0; i < target_chips.num_of_chips; i++)
 	{
 		if (!strcmp(cur_chips_param[i].chip_name, chip_name))
 		{
@@ -301,8 +244,8 @@ RESULT avr8_write_buffer_from_file_callback(uint32 address, uint32 seg_addr,
 			return ERRCODE_INVALID_BUFFER;
 		}
 		
-		if ((0 == cur_chip_param.flash_page_num) 
-			|| (0 == cur_chip_param.flash_page_size))
+		if ((0 == cur_chip_param.app_page_num) 
+			|| (0 == cur_chip_param.app_page_size))
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_INVALID), "Flash", 
 					  cur_chip_param.chip_name);
@@ -310,9 +253,9 @@ RESULT avr8_write_buffer_from_file_callback(uint32 address, uint32 seg_addr,
 		}
 		
 		mem_addr += cur_flash_offset;
-		if ((mem_addr >= cur_chip_param.flash_size) 
-			|| (length > cur_chip_param.flash_size) 
-			|| ((mem_addr + length) > cur_chip_param.flash_size))
+		if ((mem_addr >= cur_chip_param.app_size) 
+			|| (length > cur_chip_param.app_size) 
+			|| ((mem_addr + length) > cur_chip_param.app_size))
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_RANGE), "flash memory");
 			return ERRCODE_INVALID;
@@ -320,9 +263,9 @@ RESULT avr8_write_buffer_from_file_callback(uint32 address, uint32 seg_addr,
 		memcpy(pi->app + mem_addr, data, length);
 		pi->app_size_valid += (uint16)length;
 		
-		if (cur_chip_param.flash_page_num > 1)
+		if (cur_chip_param.app_page_num > 1)
 		{
-			page_size = cur_chip_param.flash_page_size;
+			page_size = cur_chip_param.app_page_size;
 		}
 		else
 		{
@@ -346,8 +289,8 @@ RESULT avr8_write_buffer_from_file_callback(uint32 address, uint32 seg_addr,
 			return ERRCODE_INVALID_BUFFER;
 		}
 		
-		if ((0 == cur_chip_param.eeprom_page_num) 
-			|| (0 == cur_chip_param.eeprom_page_size))
+		if ((0 == cur_chip_param.ee_page_num) 
+			|| (0 == cur_chip_param.ee_page_size))
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_INVALID), "Eeprom", 
 					  cur_chip_param.chip_name);
@@ -355,9 +298,9 @@ RESULT avr8_write_buffer_from_file_callback(uint32 address, uint32 seg_addr,
 		}
 		
 		mem_addr += cur_eeprom_offset;
-		if ((mem_addr >= cur_chip_param.eeprom_size) || 
-			(length > cur_chip_param.eeprom_size) || 
-			((mem_addr + length) > cur_chip_param.eeprom_size))
+		if ((mem_addr >= cur_chip_param.ee_size) || 
+			(length > cur_chip_param.ee_size) || 
+			((mem_addr + length) > cur_chip_param.ee_size))
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_RANGE), "eeprom memory");
 			return ERRCODE_INVALID;
@@ -365,9 +308,9 @@ RESULT avr8_write_buffer_from_file_callback(uint32 address, uint32 seg_addr,
 		memcpy(pi->eeprom + mem_addr, data, length);
 		pi->eeprom_size_valid += (uint16)length;
 		
-		if (cur_chip_param.eeprom_page_num > 1)
+		if (cur_chip_param.ee_page_num > 1)
 		{
-			page_size = cur_chip_param.eeprom_page_size;
+			page_size = cur_chip_param.ee_page_size;
 		}
 		else
 		{
@@ -419,7 +362,7 @@ RESULT avr8_init(program_info_t *pi, const char *dir, programmer_info_t *prog)
 		// auto detect
 		LOG_INFO(_GETTEXT(INFOMSG_TRY_AUTODETECT));
 		opt_tmp.read_operations = CHIP_ID;
-		cur_chip_param.prog_mode = AVR8_PROG_MODE_MASK;
+		cur_chip_param.program_mode = AVR8_PROG_MODE_MASK;
 		
 		if (ERROR_OK != avr8_program(opt_tmp, pi, prog))
 		{
@@ -428,19 +371,19 @@ RESULT avr8_init(program_info_t *pi, const char *dir, programmer_info_t *prog)
 		}
 		
 		LOG_INFO(_GETTEXT(INFOMSG_AUTODETECT_SIGNATURE), pi->chip_id);
-		for (i = 0; i < dimof(cur_chips_param); i++)
+		for (i = 0; i < target_chips.num_of_chips; i++)
 		{
-			if (pi->chip_id == cur_chips_param[i].signature)
+			if (pi->chip_id == cur_chips_param[i].chip_id)
 			{
 				memcpy(&cur_chip_param, cur_chips_param + i, 
 					   sizeof(cur_chip_param));
-				cur_chip_param.flash_size = cur_chip_param.flash_page_num 
-											* cur_chip_param.flash_page_size;
-				cur_chip_param.eeprom_size = cur_chip_param.eeprom_page_num 
-											 * cur_chip_param.eeprom_page_size;
-				pi->app_size = cur_chip_param.flash_size;
+				cur_chip_param.app_size = cur_chip_param.app_page_num 
+										  * cur_chip_param.app_page_size;
+				cur_chip_param.ee_size = cur_chip_param.ee_page_num 
+										 * cur_chip_param.ee_page_size;
+				pi->app_size = cur_chip_param.app_size;
 				pi->app_size_valid = 0;
-				pi->eeprom_size = cur_chip_param.eeprom_size;
+				pi->eeprom_size = cur_chip_param.ee_size;
 				pi->eeprom_size_valid = 0;
 				
 				LOG_INFO(_GETTEXT(INFOMSG_CHIP_FOUND), 
@@ -456,20 +399,20 @@ RESULT avr8_init(program_info_t *pi, const char *dir, programmer_info_t *prog)
 	}
 	else
 	{
-		for (i = 0; i < dimof(cur_chips_param); i++)
+		for (i = 0; i < target_chips.num_of_chips; i++)
 		{
 			if (!strcmp(cur_chips_param[i].chip_name, pi->chip_name))
 			{
 				memcpy(&cur_chip_param, cur_chips_param + i, 
 					   sizeof(cur_chip_param));
-				cur_chip_param.flash_size = cur_chip_param.flash_page_num 
-											* cur_chip_param.flash_page_size;
-				cur_chip_param.eeprom_size = cur_chip_param.eeprom_page_num 
-											 * cur_chip_param.eeprom_page_size;
+				cur_chip_param.app_size = cur_chip_param.app_page_num 
+										  * cur_chip_param.app_page_size;
+				cur_chip_param.ee_size = cur_chip_param.ee_page_num 
+										 * cur_chip_param.ee_page_size;
 				
-				pi->app_size = cur_chip_param.flash_size;
+				pi->app_size = cur_chip_param.app_size;
 				pi->app_size_valid = 0;
-				pi->eeprom_size = cur_chip_param.eeprom_size;
+				pi->eeprom_size = cur_chip_param.ee_size;
 				pi->eeprom_size_valid = 0;
 				
 				return ERROR_OK;
@@ -556,7 +499,7 @@ RESULT avr8_program(operation_t operations, program_info_t *pi,
 		LOG_WARNING(_GETTEXT(INFOMSG_USE_DEFAULT), "Program interface", "ISP");
 		cur_prog_mode = AVR8_ISP;
 	case AVR8_ISP:
-		if (cur_chip_param.prog_mode & AVR8_ISP)
+		if (cur_chip_param.program_mode & AVR8_ISP)
 		{
 			return avr8_isp_program(operations, pi, prog);
 		}
@@ -567,7 +510,7 @@ RESULT avr8_program(operation_t operations, program_info_t *pi,
 			return ERRCODE_NOT_SUPPORT;
 		}
 	case AVR8_JTAG:
-		if (cur_chip_param.prog_mode & AVR8_JTAG)
+		if (cur_chip_param.program_mode & AVR8_JTAG)
 		{
 			return avr8_jtag_program(operations, pi, prog);
 		}
@@ -578,7 +521,7 @@ RESULT avr8_program(operation_t operations, program_info_t *pi,
 			return ERRCODE_NOT_SUPPORT;
 		}
 	case AVR8_HVPP:
-		if (cur_chip_param.prog_mode & AVR8_HVPP)
+		if (cur_chip_param.program_mode & AVR8_HVPP)
 		{
 			return avr8_hvpp_program(operations, pi, prog);
 		}
@@ -589,7 +532,7 @@ RESULT avr8_program(operation_t operations, program_info_t *pi,
 			return ERRCODE_NOT_SUPPORT;
 		}
 	case AVR8_HVSP:
-		if (cur_chip_param.prog_mode & AVR8_HVSP)
+		if (cur_chip_param.program_mode & AVR8_HVSP)
 		{
 			return avr8_hvsp_program(operations, pi, prog);
 		}

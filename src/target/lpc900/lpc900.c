@@ -672,7 +672,7 @@ RESULT lpc900_program(operation_t operations, program_info_t *pi,
 		pgbar_update(1);
 		pgbar_fini();
 		
-		LOG_INFO("CRC in flash is %08X\r\n", crc_in_chip);
+		LOG_INFO("CRC in flash is %08X\n", crc_in_chip);
 		
 		// calc crc in file
 		{
@@ -729,14 +729,14 @@ RESULT lpc900_program(operation_t operations, program_info_t *pi,
 				}
 			}
 		}
-		LOG_INFO("CRC in file is %08X\r\n", crc_in_file);
+		LOG_INFO("CRC in file is %08X\n", crc_in_file);
 		if (crc_in_file == crc_in_chip)
 		{
-			LOG_INFO("CRC match\r\n");
+			LOG_INFO("CRC match\n");
 		}
 		else
 		{
-			LOG_ERROR("CRC mismatch\r\n");
+			LOG_ERROR("CRC mismatch\n");
 		}
 	}
 	

@@ -1,7 +1,466 @@
 <?xml version="1.0"?>
-<series name="avr8" number="1">
+<series name="avr8" number="52">
+  <chip name="attiny11">
+    <program_mode>s</program_mode>
+	<chip_id>0x001E9004</chip_id>
+	<app_page_size>1024</app_page_size>
+	<app_page_num>1</app_page_num>
+	<ee_page_size>64</ee_page_size>
+	<ee_page_num>1</ee_page_num>
+	<param0>0</param0>
+  </chip>
+  <chip name="attiny12">
+    <program_mode>is</program_mode>
+	<chip_id>0x001E9005</chip_id>
+	<app_page_size>1024</app_page_size>
+	<app_page_num>1</app_page_num>
+	<ee_page_size>64</ee_page_size>
+	<ee_page_num>1</ee_page_num>
+	<param0>0</param0>
+  </chip>
+  <chip name="attiny13">
+    <program_mode>is</program_mode>
+	<chip_id>0x001E9007</chip_id>
+	<app_page_size>32</app_page_size>
+	<app_page_num>32</app_page_num>
+	<ee_page_size>4</ee_page_size>
+	<ee_page_num>16</ee_page_num>
+	<param0>0</param0>
+  </chip>
+  <chip name="attiny15">
+    <program_mode>is</program_mode>
+	<chip_id>0x001E9006</chip_id>
+	<app_page_size>1024</app_page_size>
+	<app_page_num>1</app_page_num>
+	<ee_page_size>64</ee_page_size>
+	<ee_page_num>1</ee_page_num>
+	<param0>0</param0>
+  </chip>
+  <chip name="attiny24">
+    <program_mode>is</program_mode>
+	<chip_id>0x001E910B</chip_id>
+	<app_page_size>32</app_page_size>
+	<app_page_num>64</app_page_num>
+	<ee_page_size>4</ee_page_size>
+	<ee_page_num>32</ee_page_num>
+	<param0>0</param0>
+  </chip>
+  <chip name="attiny44">
+    <program_mode>is</program_mode>
+	<chip_id>0x001E9207</chip_id>
+	<app_page_size>64</app_page_size>
+	<app_page_num>64</app_page_num>
+	<ee_page_size>4</ee_page_size>
+	<ee_page_num>64</ee_page_num>
+	<param0>0</param0>
+  </chip>
+  <chip name="attiny84">
+    <program_mode>is</program_mode>
+	<chip_id>0x001E930C</chip_id>
+	<app_page_size>64</app_page_size>
+	<app_page_num>128</app_page_num>
+	<ee_page_size>4</ee_page_size>
+	<ee_page_num>128</ee_page_num>
+	<param0>0</param0>
+  </chip>
+  <chip name="attiny25">
+    <program_mode>is</program_mode>
+	<chip_id>0x001E9108</chip_id>
+	<app_page_size>32</app_page_size>
+	<app_page_num>64</app_page_num>
+	<ee_page_size>4</ee_page_size>
+	<ee_page_num>32</ee_page_num>
+	<param0>0</param0>
+  </chip>
+  <chip name="attiny45">
+    <program_mode>is</program_mode>
+	<chip_id>0x001E9206</chip_id>
+	<app_page_size>64</app_page_size>
+	<app_page_num>64</app_page_num>
+	<ee_page_size>4</ee_page_size>
+	<ee_page_num>64</ee_page_num>
+	<param0>0</param0>
+  </chip>
+  <chip name="attiny84">
+    <program_mode>is</program_mode>
+	<chip_id>0x001E930B</chip_id>
+	<app_page_size>64</app_page_size>
+	<app_page_num>128</app_page_num>
+	<ee_page_size>4</ee_page_size>
+	<ee_page_num>128</ee_page_num>
+	<param0>0</param0>
+  </chip>
+  <chip name="attiny26">
+    <program_mode>is</program_mode>
+	<chip_id>0x001E9109</chip_id>
+	<app_page_size>32</app_page_size>
+	<app_page_num>64</app_page_num>
+	<ee_page_size>4</ee_page_size>
+	<ee_page_num>32</ee_page_num>
+	<param0>0</param0>
+  </chip>
+  <chip name="attiny28">
+    <program_mode>p</program_mode>
+	<chip_id>0x001E9107</chip_id>
+	<app_page_size>2048</app_page_size>
+	<app_page_num>1</app_page_num>
+	<ee_page_size>0</ee_page_size>
+	<ee_page_num>0</ee_page_num>
+	<param0>0</param0>
+  </chip>
+  <chip name="attiny48">
+    <program_mode>ip</program_mode>
+	<chip_id>0x001E9209</chip_id>
+	<app_page_size>64</app_page_size>
+	<app_page_num>64</app_page_num>
+	<ee_page_size>4</ee_page_size>
+	<ee_page_num>16</ee_page_num>
+	<param0>0</param0>
+  </chip>
+  <chip name="attiny88">
+    <program_mode>ip</program_mode>
+	<chip_id>0x001E9311</chip_id>
+	<app_page_size>64</app_page_size>
+	<app_page_num>128</app_page_num>
+	<ee_page_size>4</ee_page_size>
+	<ee_page_num>16</ee_page_num>
+	<param0>0</param0>
+  </chip>
+  <chip name="attiny261">
+    <program_mode>ip</program_mode>
+	<chip_id>0x001E910C</chip_id>
+	<app_page_size>32</app_page_size>
+	<app_page_num>64</app_page_num>
+	<ee_page_size>4</ee_page_size>
+	<ee_page_num>64</ee_page_num>
+	<param0>0</param0>
+  </chip>
+  <chip name="attiny461">
+    <program_mode>ip</program_mode>
+	<chip_id>0x001E9208</chip_id>
+	<app_page_size>64</app_page_size>
+	<app_page_num>64</app_page_num>
+	<ee_page_size>4</ee_page_size>
+	<ee_page_num>64</ee_page_num>
+	<param0>0</param0>
+  </chip>
+  <chip name="attiny861">
+    <program_mode>ip</program_mode>
+	<chip_id>0x001E930D</chip_id>
+	<app_page_size>64</app_page_size>
+	<app_page_num>128</app_page_num>
+	<ee_page_size>4</ee_page_size>
+	<ee_page_num>128</ee_page_num>
+	<param0>0</param0>
+  </chip>
+  <chip name="attiny2313">
+    <program_mode>ip</program_mode>
+	<chip_id>0x001E910A</chip_id>
+	<app_page_size>32</app_page_size>
+	<app_page_num>64</app_page_num>
+	<ee_page_size>4</ee_page_size>
+	<ee_page_num>32</ee_page_num>
+	<param0>0</param0>
+  </chip>
+  <chip name="at90can32">
+    <program_mode>ijp</program_mode>
+	<chip_id>0x001E9581</chip_id>
+	<app_page_size>256</app_page_size>
+	<app_page_num>128</app_page_num>
+	<ee_page_size>8</ee_page_size>
+	<ee_page_num>128</ee_page_num>
+	<param0>0</param0>
+  </chip>
+  <chip name="at90can64">
+    <program_mode>ijp</program_mode>
+	<chip_id>0x001E9681</chip_id>
+	<app_page_size>256</app_page_size>
+	<app_page_num>256</app_page_num>
+	<ee_page_size>8</ee_page_size>
+	<ee_page_num>256</ee_page_num>
+	<param0>0</param0>
+  </chip>
+  <chip name="at90can128">
+    <program_mode>ijp</program_mode>
+	<chip_id>0x001E9781</chip_id>
+	<app_page_size>256</app_page_size>
+	<app_page_num>512</app_page_num>
+	<ee_page_size>8</ee_page_size>
+	<ee_page_num>512</ee_page_num>
+	<param0>0</param0>
+  </chip>
+  <chip name="at90pwm2/3">
+    <program_mode>ip</program_mode>
+	<chip_id>0x001E9381</chip_id>
+	<app_page_size>64</app_page_size>
+	<app_page_num>128</app_page_num>
+	<ee_page_size>4</ee_page_size>
+	<ee_page_num>128</ee_page_num>
+	<param0>0</param0>
+  </chip>
+  <chip name="at90pwm2/3B">
+    <program_mode>ip</program_mode>
+	<chip_id>0x001E9383</chip_id>
+	<app_page_size>64</app_page_size>
+	<app_page_num>128</app_page_num>
+	<ee_page_size>4</ee_page_size>
+	<ee_page_num>128</ee_page_num>
+	<param0>0</param0>
+  </chip>
+  <chip name="atmega8">
+    <program_mode>ip</program_mode>
+	<chip_id>0x001E9307</chip_id>
+	<app_page_size>64</app_page_size>
+	<app_page_num>128</app_page_num>
+	<ee_page_size>4</ee_page_size>
+	<ee_page_num>128</ee_page_num>
+	<param0>0</param0>
+  </chip>
+  <chip name="atmega16">
+    <program_mode>ijp</program_mode>
+	<chip_id>0x001E9403</chip_id>
+	<app_page_size>128</app_page_size>
+	<app_page_num>128</app_page_num>
+	<ee_page_size>4</ee_page_size>
+	<ee_page_num>128</ee_page_num>
+	<param0>1</param0>
+  </chip>
+  <chip name="atmega32">
+    <program_mode>ijp</program_mode>
+	<chip_id>0x001E9502</chip_id>
+	<app_page_size>128</app_page_size>
+	<app_page_num>256</app_page_num>
+	<ee_page_size>4</ee_page_size>
+	<ee_page_num>256</ee_page_num>
+	<param0>1</param0>
+  </chip>
+  <chip name="atmega48">
+    <program_mode>ip</program_mode>
+	<chip_id>0x001E9205</chip_id>
+	<app_page_size>64</app_page_size>
+	<app_page_num>64</app_page_num>
+	<ee_page_size>4</ee_page_size>
+	<ee_page_num>64</ee_page_num>
+	<param0>0</param0>
+  </chip>
+  <chip name="atmega88">
+    <program_mode>ip</program_mode>
+	<chip_id>0x001E930A</chip_id>
+	<app_page_size>64</app_page_size>
+	<app_page_num>128</app_page_num>
+	<ee_page_size>4</ee_page_size>
+	<ee_page_num>128</ee_page_num>
+	<param0>0</param0>
+  </chip>
+  <chip name="atmega168">
+    <program_mode>ip</program_mode>
+	<chip_id>0x001E9406</chip_id>
+	<app_page_size>128</app_page_size>
+	<app_page_num>128</app_page_num>
+	<ee_page_size>4</ee_page_size>
+	<ee_page_num>128</ee_page_num>
+	<param0>0</param0>
+  </chip>
+  <chip name="atmega162">
+    <program_mode>ijp</program_mode>
+	<chip_id>0x001E9404</chip_id>
+	<app_page_size>128</app_page_size>
+	<app_page_num>128</app_page_num>
+	<ee_page_size>4</ee_page_size>
+	<ee_page_num>128</ee_page_num>
+	<param0>1</param0>
+  </chip>
+  <chip name="atmega164p">
+    <program_mode>ijp</program_mode>
+	<chip_id>0x001E940A</chip_id>
+	<app_page_size>128</app_page_size>
+	<app_page_num>128</app_page_num>
+	<ee_page_size>4</ee_page_size>
+	<ee_page_num>128</ee_page_num>
+	<param0>0</param0>
+  </chip>
+  <chip name="atmega324p">
+    <program_mode>ijp</program_mode>
+	<chip_id>0x001E9508</chip_id>
+	<app_page_size>128</app_page_size>
+	<app_page_num>256</app_page_num>
+	<ee_page_size>4</ee_page_size>
+	<ee_page_num>256</ee_page_num>
+	<param0>0</param0>
+  </chip>
+  <chip name="atmega644p">
+    <program_mode>ijp</program_mode>
+	<chip_id>0x001E960A</chip_id>
+	<app_page_size>256</app_page_size>
+	<app_page_num>256</app_page_num>
+	<ee_page_size>8</ee_page_size>
+	<ee_page_num>256</ee_page_num>
+	<param0>0</param0>
+  </chip>
+  <chip name="atmega165">
+    <program_mode>ijp</program_mode>
+	<chip_id>0x001E9407</chip_id>
+	<app_page_size>128</app_page_size>
+	<app_page_num>128</app_page_num>
+	<ee_page_size>4</ee_page_size>
+	<ee_page_num>128</ee_page_num>
+	<param0>0</param0>
+  </chip>
+  <chip name="atmega169">
+    <program_mode>ijp</program_mode>
+	<chip_id>0x001E9405</chip_id>
+	<app_page_size>128</app_page_size>
+	<app_page_num>128</app_page_num>
+	<ee_page_size>4</ee_page_size>
+	<ee_page_num>128</ee_page_num>
+	<param0>0</param0>
+  </chip>
+  <chip name="atmega325">
+    <program_mode>ijp</program_mode>
+	<chip_id>0x001E9505</chip_id>
+	<app_page_size>128</app_page_size>
+	<app_page_num>256</app_page_num>
+	<ee_page_size>4</ee_page_size>
+	<ee_page_num>256</ee_page_num>
+	<param0>0</param0>
+  </chip>
+  <chip name="atmega3250">
+    <program_mode>ijp</program_mode>
+	<chip_id>0x001E9506</chip_id>
+	<app_page_size>128</app_page_size>
+	<app_page_num>256</app_page_num>
+	<ee_page_size>4</ee_page_size>
+	<ee_page_num>256</ee_page_num>
+	<param0>0</param0>
+  </chip>
+  <chip name="atmega64">
+    <program_mode>ijp</program_mode>
+	<chip_id>0x001E9602</chip_id>
+	<app_page_size>256</app_page_size>
+	<app_page_num>256</app_page_num>
+	<ee_page_size>8</ee_page_size>
+	<ee_page_num>256</ee_page_num>
+	<param0>0</param0>
+  </chip>
+  <chip name="atmega645">
+    <program_mode>ijp</program_mode>
+	<chip_id>0x001E9605</chip_id>
+	<app_page_size>256</app_page_size>
+	<app_page_num>256</app_page_num>
+	<ee_page_size>8</ee_page_size>
+	<ee_page_num>256</ee_page_num>
+	<param0>0</param0>
+  </chip>
+  <chip name="atmega6450">
+    <program_mode>ijp</program_mode>
+	<chip_id>0x001E9606</chip_id>
+	<app_page_size>256</app_page_size>
+	<app_page_num>256</app_page_num>
+	<ee_page_size>8</ee_page_size>
+	<ee_page_num>256</ee_page_num>
+	<param0>0</param0>
+  </chip>
+  <chip name="atmega329">
+    <program_mode>ijp</program_mode>
+	<chip_id>0x001E9503</chip_id>
+	<app_page_size>128</app_page_size>
+	<app_page_num>256</app_page_num>
+	<ee_page_size>4</ee_page_size>
+	<ee_page_num>256</ee_page_num>
+	<param0>0</param0>
+  </chip>
+  <chip name="atmega3290">
+    <program_mode>ijp</program_mode>
+	<chip_id>0x001E9504</chip_id>
+	<app_page_size>128</app_page_size>
+	<app_page_num>256</app_page_num>
+	<ee_page_size>4</ee_page_size>
+	<ee_page_num>256</ee_page_num>
+	<param0>0</param0>
+  </chip>
+  <chip name="atmega649">
+    <program_mode>ijp</program_mode>
+	<chip_id>0x001E9603</chip_id>
+	<app_page_size>256</app_page_size>
+	<app_page_num>256</app_page_num>
+	<ee_page_size>8</ee_page_size>
+	<ee_page_num>256</ee_page_num>
+	<param0>0</param0>
+  </chip>
+  <chip name="atmega6490">
+    <program_mode>ijp</program_mode>
+	<chip_id>0x001E9604</chip_id>
+	<app_page_size>256</app_page_size>
+	<app_page_num>256</app_page_num>
+	<ee_page_size>8</ee_page_size>
+	<ee_page_num>256</ee_page_num>
+	<param0>0</param0>
+  </chip>
+  <chip name="atmega640">
+    <program_mode>ijp</program_mode>
+	<chip_id>0x001E9608</chip_id>
+	<app_page_size>256</app_page_size>
+	<app_page_num>256</app_page_num>
+	<ee_page_size>8</ee_page_size>
+	<ee_page_num>512</ee_page_num>
+	<param0>0</param0>
+  </chip>
+  <chip name="atmega1280">
+    <program_mode>ijp</program_mode>
+	<chip_id>0x001E9703</chip_id>
+	<app_page_size>256</app_page_size>
+	<app_page_num>512</app_page_num>
+	<ee_page_size>8</ee_page_size>
+	<ee_page_num>512</ee_page_num>
+	<param0>0</param0>
+  </chip>
+  <chip name="atmega1281">
+    <program_mode>ijp</program_mode>
+	<chip_id>0x001E9704</chip_id>
+	<app_page_size>256</app_page_size>
+	<app_page_num>512</app_page_num>
+	<ee_page_size>8</ee_page_size>
+	<ee_page_num>512</ee_page_num>
+	<param0>0</param0>
+  </chip>
+  <chip name="atmega2560">
+    <program_mode>ijp</program_mode>
+	<chip_id>0x001E9801</chip_id>
+	<app_page_size>256</app_page_size>
+	<app_page_num>1024</app_page_num>
+	<ee_page_size>8</ee_page_size>
+	<ee_page_num>512</ee_page_num>
+	<param0>0</param0>
+  </chip>
+  <chip name="atmega2561">
+    <program_mode>ijp</program_mode>
+	<chip_id>0x001E9802</chip_id>
+	<app_page_size>256</app_page_size>
+	<app_page_num>1024</app_page_num>
+	<ee_page_size>8</ee_page_size>
+	<ee_page_num>512</ee_page_num>
+	<param0>0</param0>
+  </chip>
+  <chip name="atmega8515">
+    <program_mode>ip</program_mode>
+	<chip_id>0x001E9306</chip_id>
+	<app_page_size>64</app_page_size>
+	<app_page_num>128</app_page_num>
+	<ee_page_size>4</ee_page_size>
+	<ee_page_num>128</ee_page_num>
+	<param0>0</param0>
+  </chip>
+  <chip name="atmega8535">
+    <program_mode>ip</program_mode>
+	<chip_id>0x001E9308</chip_id>
+	<app_page_size>64</app_page_size>
+	<app_page_num>128</app_page_num>
+	<ee_page_size>4</ee_page_size>
+	<ee_page_num>128</ee_page_num>
+	<param0>0</param0>
+  </chip>
   <chip name="atmega128">
-    <program_mode>ijps</program_mode>
+    <program_mode>ijp</program_mode>
 	<chip_id>0x001E9702</chip_id>
 	<app_page_size>256</app_page_size>
 	<app_page_num>512</app_page_num>

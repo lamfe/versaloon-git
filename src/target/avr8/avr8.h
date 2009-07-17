@@ -20,6 +20,7 @@
 #define __AVR8_H_INCLUDED__
 
 #define AVR8_STRING						"avr8"
+#define AVR8_PROGRAM_MODE_STR			"ijps"
 
 extern const program_area_map_t avr8_program_area_map[];
 

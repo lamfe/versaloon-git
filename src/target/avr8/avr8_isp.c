@@ -41,7 +41,7 @@
 #include "avr8_internal.h"
 
 #define CUR_TARGET_STRING		AVR8_STRING
-#define cur_chip_param			avr8_chip_param
+#define cur_chip_param			target_chip_param
 #define cur_frequency			avr8_isp_frequency
 
 RESULT avr8_isp_program(operation_t operations, program_info_t *pi, 
@@ -149,10 +149,10 @@ RESULT avr8_isp_program(operation_t operations, program_info_t *pi,
 	LOG_INFO(_GETTEXT(INFOMSG_TARGET_CHIP_ID), pi->chip_id);
 	if (!(operations.read_operations & CHIP_ID))
 	{
-		if (pi->chip_id != cur_chip_param.signature)
+		if (pi->chip_id != cur_chip_param.chip_id)
 		{
 			LOG_WARNING(_GETTEXT(ERRMSG_INVALID_CHIP_ID), pi->chip_id, 
-						cur_chip_param.signature);
+						cur_chip_param.chip_id);
 		}
 	}
 	else
@@ -184,9 +184,9 @@ RESULT avr8_isp_program(operation_t operations, program_info_t *pi,
 		LOG_INFO(_GETTEXT(INFOMSG_ERASED), "chip");
 	}
 	
-	if (cur_chip_param.flash_page_num > 1)
+	if (cur_chip_param.app_page_num > 1)
 	{
-		page_size = cur_chip_param.flash_page_size;
+		page_size = cur_chip_param.app_page_size;
 	}
 	else
 	{
@@ -218,7 +218,7 @@ RESULT avr8_isp_program(operation_t operations, program_info_t *pi,
 				 i < ((int32)ml_tmp->len - (int32)(ml_tmp->addr % page_size)); 
 				 i += page_size)
 			{
-				if (cur_chip_param.flash_page_num > 1)
+				if (cur_chip_param.app_page_num > 1)
 				{
 					// Page mode
 					for (j = 0; j < page_size; j++)
@@ -317,7 +317,7 @@ RESULT avr8_isp_program(operation_t operations, program_info_t *pi,
 		}
 		else
 		{
-			pi->app_size_valid = cur_chip_param.flash_size;
+			pi->app_size_valid = cur_chip_param.app_size;
 			LOG_INFO(_GETTEXT(INFOMSG_READING), "flash");
 		}
 		pgbar_init("reading flash |", "|", 0, pi->app_size_valid, 
