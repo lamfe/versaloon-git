@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<series name="avr8" number="1">
+  <chip name="atmega128">
+    <program_mode>ijps</program_mode>
+	<chip_id>0x001E9702</chip_id>
+	<app_page_size>256</app_page_size>
+	<app_page_num>512</app_page_num>
+	<ee_page_size>8</ee_page_size>
+	<ee_page_num>512</ee_page_num>
+	<param0>1</param0>
+  </chip>
+</series>
