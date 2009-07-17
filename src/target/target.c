@@ -32,6 +32,7 @@
 
 #include "memlist.h"
 #include "pgbar.h"
+#include <libxml/parser.h>
 
 #include "vsprog.h"
 #include "programmer.h"
@@ -47,6 +48,9 @@
 #include "comisp/comisp.h"
 #include "svf_player/svf_player.h"
 
+chip_series_t target_chips = {0, NULL};
+chip_param_t target_chip_param;
+
 target_info_t targets_info[] = 
 {
 	// at89s5x
@@ -54,6 +58,7 @@ target_info_t targets_info[] =
 		S5X_STRING,							// name
 		APPLICATION | LOCK,					// areas
 		s5x_program_area_map,				// program_area_map
+		"",									// program_mode_str
 		s5x_parse_argument,					// parse_argument
 		s5x_probe_chip,						// probe_chip
 		s5x_init,							// init
@@ -73,6 +78,7 @@ target_info_t targets_info[] =
 		PSOC_STRING,						// name
 		APPLICATION | LOCK | CHECKSUM,		// areas
 		psoc_program_area_map,				// program_area_map
+		"",									// program_mode_str
 		psoc_parse_argument,				// parse_argument
 		psoc_probe_chip,					// probe_chip
 		psoc_init,							// init
@@ -92,6 +98,7 @@ target_info_t targets_info[] =
 		MSP430_STRING,						// name
 		APPLICATION,						// areas
 		msp430_program_area_map,			// program_area_map
+		"",									// program_mode_str
 		msp430_parse_argument,				// parse_argument
 		msp430_probe_chip,					// probe_chip
 		msp430_init,						// init
@@ -111,6 +118,7 @@ target_info_t targets_info[] =
 		C8051F_STRING,						// name
 		APPLICATION,						// areas
 		c8051f_program_area_map,			// program_area_map
+		"",									// program_mode_str
 		c8051f_parse_argument,				// parse_argument
 		c8051f_probe_chip,					// probe_chip
 		c8051f_init,						// init
@@ -130,6 +138,7 @@ target_info_t targets_info[] =
 		AVR8_STRING,						// name
 		APPLICATION | EEPROM | LOCK | FUSE,	// areas
 		avr8_program_area_map,				// program_area_map
+		AVR8_PROGRAM_MODE_STR,				// program_mode_str
 		avr8_parse_argument,				// parse_argument
 		avr8_probe_chip,					// probe_chip
 		avr8_init,							// init
@@ -149,6 +158,7 @@ target_info_t targets_info[] =
 		COMISP_STRING,						// name
 		APPLICATION | EEPROM | LOCK | FUSE,	// areas
 		comisp_program_area_map,			// program_area_map
+		"",									// program_mode_str
 		comisp_parse_argument,				// parse_argument
 		comisp_probe_chip,					// probe_chip
 		comisp_init,						// init
@@ -168,6 +178,7 @@ target_info_t targets_info[] =
 		SVFP_STRING,						// name
 		0,									// areas
 		svfp_program_area_map,				// program_area_map
+		"",									// program_mode_str
 		svfp_parse_argument,				// parse_argument
 		svfp_probe_chip,					// probe_chip
 		svfp_init,							// init
@@ -187,6 +198,7 @@ target_info_t targets_info[] =
 		LPC900_STRING,						// name
 		APPLICATION,						// areas
 		lpc900_program_area_map,			// program_area_map
+		"",									// program_mode_str
 		lpc900_parse_argument,				// parse_argument
 		lpc900_probe_chip,					// probe_chip
 		lpc900_init,						// init
@@ -336,6 +348,8 @@ RESULT target_alloc_data_buffer(void)
 
 void target_free_data_buffer(void)
 {
+	target_release_chip_series(&target_chips);
+	
 	if (program_info.boot != NULL)
 	{
 		free(program_info.boot);
@@ -456,6 +470,15 @@ void target_free_data_buffer(void)
 	}
 }
 
+void target_print_target(uint32 i)
+{
+	target_build_chip_series(targets_info[i].name, 
+							 targets_info[i].program_mode_str, 
+							 &target_chips);
+	targets_info[i].parse_argument('S', NULL);
+	target_release_chip_series(&target_chips);
+}
+
 void target_print_list(void)
 {
 	uint32 i;
@@ -463,7 +486,7 @@ void target_print_list(void)
 	printf(_GETTEXT("Supported targets:\n"));
 	for (i = 0; targets_info[i].name != NULL; i++)
 	{
-		targets_info[i].parse_argument('S', NULL);
+		target_print_target(i);
 	}
 }
 
@@ -494,11 +517,16 @@ RESULT target_init(program_info_t *pi)
 	}
 #endif
 	
+	target_release_chip_series(&target_chips);
+	
 	if (NULL == pi->chip_type)
 	{
 		// find which series of target contain current chip_name
 		for (i = 0; targets_info[i].name != NULL; i++)
 		{
+			target_build_chip_series(targets_info[i].name, 
+									 targets_info[i].program_mode_str, 
+									 &target_chips);
 			if (targets_info[i].probe_chip(pi->chip_name) == ERROR_OK)
 			{
 				cur_target = &targets_info[i];
@@ -508,6 +536,7 @@ RESULT target_init(program_info_t *pi)
 				
 				return ERROR_OK;
 			}
+			target_release_chip_series(&target_chips);
 		}
 		
 		LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT), pi->chip_name);
@@ -519,11 +548,17 @@ RESULT target_init(program_info_t *pi)
 		{
 			if (!strcmp(targets_info[i].name, pi->chip_type))
 			{
+				target_build_chip_series(targets_info[i].name, 
+									 targets_info[i].program_mode_str, 
+									 &target_chips);
+				
 				if ((pi->chip_name != NULL) 
 				   && (ERROR_OK != targets_info[i].probe_chip(pi->chip_name)))
 				{
 					LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), 
 							  pi->chip_name, targets_info[i].name);
+					target_release_chip_series(&target_chips);
+					cur_target = NULL;
 					return ERRCODE_NOT_SUPPORT;
 				}
 				else
@@ -540,5 +575,284 @@ RESULT target_init(program_info_t *pi)
 	
 	cur_target = NULL;
 	return ERRCODE_NOT_SUPPORT;
+}
+
+extern char *program_dir;
+RESULT target_build_chip_series(const char *chip_series, 
+								const char *program_mode, chip_series_t *s)
+{
+	xmlDocPtr doc = NULL;
+	xmlNodePtr curNode = NULL;
+	char *filename = NULL;
+	uint32 i, j;
+	RESULT ret = ERROR_OK;
+	FILE *fp;
+	
+#if PARAM_CHECK
+	if ((NULL == chip_series) || (NULL == s))
+	{
+		LOG_BUG(_GETTEXT(ERRMSG_INVALID_PARAMETER), __FUNCTION__);
+		return ERRCODE_INVALID_PARAMETER;
+	}
+#endif
+	
+	// release first if necessary
+	target_release_chip_series(s);
+	
+	filename = (char *)malloc(strlen(program_dir)
+							  + strlen(TARGET_CONF_FILE_PATH) 
+							  + strlen(chip_series) 
+							  + strlen(TARGET_CONF_FILE_EXT) + 1);
+	if (NULL == filename)
+	{
+		LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+		return ERRCODE_NOT_ENOUGH_MEMORY;
+	}
+	strcpy(filename, program_dir);
+	strcat(filename, TARGET_CONF_FILE_PATH);
+	strcat(filename, chip_series);
+	strcat(filename, TARGET_CONF_FILE_EXT);
+	fp = fopen(filename, "r");
+	if (NULL == fp)
+	{
+		// no error message, just return error
+		ret = ERROR_FAIL;
+		goto free_and_exit;
+	}
+	else
+	{
+		fclose(fp);
+		fp = NULL;
+	}
+	
+	doc = xmlReadFile(filename, "", XML_PARSE_RECOVER);
+	if (NULL == doc)
+	{
+		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPEN), filename);
+		ret = ERRCODE_FAILURE_OPEN;
+		goto free_and_exit;
+	}
+	curNode = xmlDocGetRootElement(doc);
+	if (NULL == curNode)
+	{
+		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read config file");
+		ret = ERRCODE_FAILURE_OPERATION;
+		goto free_and_exit;
+	}
+	
+	// valid check
+	if (xmlStrcmp(curNode->name, BAD_CAST "series") 
+		|| !xmlHasProp(curNode, BAD_CAST "name") 
+		|| xmlStrcmp(xmlGetProp(curNode, BAD_CAST "name"), 
+					 (const xmlChar *)chip_series) 
+		|| !xmlHasProp(curNode, BAD_CAST "number"))
+	{
+		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read config file");
+		ret = ERRCODE_FAILURE_OPERATION;
+		goto free_and_exit;
+	}
+	s->num_of_chips = atoi((const char *)xmlGetProp(curNode, 
+													BAD_CAST "number"));
+	if (0 == s->num_of_chips)
+	{
+		LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT), chip_series);
+		ret = ERRCODE_NOT_SUPPORT;
+		goto free_and_exit;
+	}
+	s->chips_param = (chip_param_t *)malloc(sizeof(chip_param_t) 
+											* s->num_of_chips);
+	if (NULL == s->chips_param)
+	{
+		LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+		ret = ERRCODE_NOT_ENOUGH_MEMORY;
+		goto free_and_exit;
+	}
+	
+	// read data
+	curNode = curNode->children->next;
+	for (i = 0; i < s->num_of_chips; i++)
+	{
+		xmlNodePtr paramNode;
+		
+		// check
+		if ((NULL == curNode) 
+			|| xmlStrcmp(curNode->name, BAD_CAST "chip")
+			|| !xmlHasProp(curNode, BAD_CAST "name"))
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read config file");
+			ret = ERRCODE_FAILURE_OPERATION;
+			goto free_and_exit;
+		}
+		
+		// read name
+		strncpy(s->chips_param[i].chip_name, 
+				(const char *)xmlGetProp(curNode, BAD_CAST "name"), 
+				sizeof(s->chips_param[i].chip_name));
+		
+		// read parameters
+		paramNode = curNode->children->next;
+		while(paramNode != NULL)
+		{
+			// check
+			if (!xmlStrcmp(paramNode->name, BAD_CAST "chip_id"))
+			{
+				s->chips_param[i].chip_id = (uint32)strtoul(
+								(const char *)xmlNodeGetContent(paramNode), 
+								NULL, 0);
+			}
+			else if (!xmlStrcmp(paramNode->name, BAD_CAST "program_mode"))
+			{
+				char *mode_tmp = (char *)xmlNodeGetContent(paramNode);
+				char *first;
+				
+				s->chips_param[i].program_mode = 0;
+				for (j = 0; j < strlen(mode_tmp); j++)
+				{
+					first = strchr(program_mode, mode_tmp[j]);
+					if (first != NULL)
+					{
+						s->chips_param[i].program_mode |= 
+												1 << (first - program_mode);
+					}
+					else
+					{
+						LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), mode_tmp, 
+								  "program_mode of current target");
+						ret = ERRCODE_NOT_SUPPORT;
+						goto free_and_exit;
+					}
+				}
+			}
+			else if (!xmlStrcmp(paramNode->name, BAD_CAST "boot_page_size"))
+			{
+				s->chips_param[i].boot_page_size = (uint32)strtoul(
+								(const char *)xmlNodeGetContent(paramNode), 
+								NULL, 0);
+			}
+			else if (!xmlStrcmp(paramNode->name, BAD_CAST "boot_page_num"))
+			{
+				s->chips_param[i].boot_page_num = (uint32)strtoul(
+								(const char *)xmlNodeGetContent(paramNode), 
+								NULL, 0);
+			}
+			else if (!xmlStrcmp(paramNode->name, BAD_CAST "app_page_size"))
+			{
+				s->chips_param[i].app_page_size = (uint32)strtoul(
+								(const char *)xmlNodeGetContent(paramNode), 
+								NULL, 0);
+			}
+			else if (!xmlStrcmp(paramNode->name, BAD_CAST "app_page_num"))
+			{
+				s->chips_param[i].app_page_num = (uint32)strtoul(
+								(const char *)xmlNodeGetContent(paramNode), 
+								NULL, 0);
+			}
+			else if (!xmlStrcmp(paramNode->name, BAD_CAST "ee_page_size"))
+			{
+				s->chips_param[i].ee_page_size = (uint32)strtoul(
+								(const char *)xmlNodeGetContent(paramNode), 
+								NULL, 0);
+			}
+			else if (!xmlStrcmp(paramNode->name, BAD_CAST "ee_page_num"))
+			{
+				s->chips_param[i].ee_page_num = (uint32)strtoul(
+								(const char *)xmlNodeGetContent(paramNode), 
+								NULL, 0);
+			}
+			else if (!xmlStrcmp(paramNode->name, BAD_CAST "optrom_page_size"))
+			{
+				s->chips_param[i].optrom_page_size = (uint32)strtoul(
+								(const char *)xmlNodeGetContent(paramNode), 
+								NULL, 0);
+			}
+			else if (!xmlStrcmp(paramNode->name, BAD_CAST "optrom_page_num"))
+			{
+				s->chips_param[i].optrom_page_num = (uint32)strtoul(
+								(const char *)xmlNodeGetContent(paramNode), 
+								NULL, 0);
+			}
+			else if (!xmlStrcmp(paramNode->name, BAD_CAST "usrsig_page_size"))
+			{
+				s->chips_param[i].usrsig_page_size = (uint32)strtoul(
+								(const char *)xmlNodeGetContent(paramNode), 
+								NULL, 0);
+			}
+			else if (!xmlStrcmp(paramNode->name, BAD_CAST "usrsig_page_num"))
+			{
+				s->chips_param[i].usrsig_page_num = (uint32)strtoul(
+								(const char *)xmlNodeGetContent(paramNode), 
+								NULL, 0);
+			}
+			else if (!xmlStrcmp(paramNode->name, BAD_CAST "fuse_size"))
+			{
+				s->chips_param[i].fuse_size = (uint32)strtoul(
+								(const char *)xmlNodeGetContent(paramNode), 
+								NULL, 0);
+			}
+			else if (!xmlStrcmp(paramNode->name, BAD_CAST "lock_size"))
+			{
+				s->chips_param[i].lock_size = (uint32)strtoul(
+								(const char *)xmlNodeGetContent(paramNode), 
+								NULL, 0);
+			}
+			else
+			{
+				char *str_tmp = (char *)paramNode->name;
+				
+				if ((strlen(str_tmp) >= 6) 
+					&& ('p' == str_tmp[0]) 
+					&& ('a' == str_tmp[1])
+					&& ('r' == str_tmp[2])
+					&& ('a' == str_tmp[3])
+					&& ('m' == str_tmp[4]))
+				{
+					// parameters
+					j = atoi(&str_tmp[5]);
+					s->chips_param[i].param[j] = (uint32)strtoul(
+								(const char *)xmlNodeGetContent(paramNode), 
+								NULL, 0);
+				}
+				else
+				{
+					// wrong parameter
+					LOG_ERROR(_GETTEXT(ERRMSG_INVALID), 
+							  (const char *)xmlNodeGetContent(paramNode), 
+							  chip_series);
+					ret = ERRCODE_INVALID;
+					goto free_and_exit;
+				}
+			}
+			
+			paramNode = paramNode->next->next;
+		}
+		
+		curNode = curNode->next->next;
+	}
+	
+free_and_exit:
+	if (filename != NULL)
+	{
+		free(filename);
+		filename = NULL;
+	}
+	if (doc != NULL)
+	{
+		xmlFreeDoc(doc);
+		doc = NULL;
+	}
+	
+	return ret;
+}
+
+RESULT target_release_chip_series(chip_series_t *s)
+{
+	if ((s != NULL) && ((s->num_of_chips > 0) || (s->chips_param != NULL)))
+	{
+		free(s->chips_param);
+		s->chips_param = NULL;
+		s->num_of_chips = 0;
+	}
+	
+	return ERROR_OK;
 }
 

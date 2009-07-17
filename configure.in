@@ -37,6 +37,7 @@ AC_C_BIGENDIAN
 AC_CHECK_FUNCS(usleep)
 AC_CHECK_FUNCS(strtoul)
 AC_CHECK_FUNCS(gettimeofday)
+AC_CHECK_FUNCS(strchr)
 
 is_cygwin=no
 is_mingw=no

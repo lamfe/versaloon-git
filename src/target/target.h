@@ -100,6 +100,7 @@ typedef struct
 	const char *name;
 	const uint32 areas;
 	const program_area_map_t *program_area_map;
+	const char *program_mode_str;
 	RESULT (*parse_argument)(char cmd, const char *argu);
 	
 	RESULT (*probe_chip)(char *chip_name);
@@ -121,6 +122,8 @@ typedef struct
 										program_info_t *pi, uint8 *buff);
 }target_info_t;
 
+#define TARGET_CONF_FILE_PATH			"config/"
+#define TARGET_CONF_FILE_EXT			".xml"
 #define TARGET_MAX_CHIP_NAME_LEN		32
 typedef struct
 {
@@ -144,19 +147,27 @@ typedef struct
 	uint32 ee_size;
 	uint32 optrom_size;
 	uint32 usrsig_size;
-	uint32 para[32];
+	uint32 param[32];
 }chip_param_t;
 
 typedef struct
 {
 	uint32 num_of_chips;
-	chip_param_t *params;
+	chip_param_t *chips_param;
 }chip_series_t;
 
 extern target_info_t *cur_target;
 extern target_info_t targets_info[];
 extern program_info_t program_info;
+extern chip_series_t target_chips;
+extern chip_param_t target_chip_param;
 
+RESULT target_build_chip_series(const char *chip_name, 
+								const char *program_mode, 
+								chip_series_t *s);
+RESULT target_release_chip_series(chip_series_t *s);
+
+void target_print_target(uint32 i);
 void target_print_list(void);
 void target_print_help(void);
 uint32 target_get_number(void);

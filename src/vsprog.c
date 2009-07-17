@@ -75,7 +75,7 @@ int verbosity = LOG_DEFAULT_LEVEL;
 operation_t operations;
 
 static char *program_name = NULL;
-static char *program_dir = NULL;
+char *program_dir = NULL;
 static FILE *hex_file = NULL;
 
 static void free_all(void)
@@ -366,7 +366,7 @@ int main(int argc, char* argv[])
 				{
 					if (!strcmp(targets_info[i].name, optarg))
 					{
-						targets_info[i].parse_argument('S', optarg);
+						target_print_target(i);
 						free_all_and_exit(EXIT_SUCCESS);
 					}
 				}

@@ -31,6 +31,6 @@ vsprog_LDADD = \
     $(top_builddir)/src/target/libtgt.a \
     $(top_builddir)/src/tools/libtool.a \
     $(top_builddir)/src/driver/libdrv.a \
-    $(MINGWLDADD) -lusb
+    $(MINGWLDADD) -lusb -lxml2
 
 MAINTAINERCLEANFILES = Makefile.in
