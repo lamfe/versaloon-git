@@ -1,0 +1,26 @@
+object FormHexEditor: TFormHexEditor
+  Left = 184
+  Height = 410
+  Top = 256
+  Width = 590
+  HorzScrollBar.Page = 589
+  VertScrollBar.Page = 409
+  AutoScroll = False
+  BorderIcons = [biSystemMenu, biMinimize]
+  BorderStyle = bsSingle
+  Caption = 'FormHexEditor'
+  ClientHeight = 410
+  ClientWidth = 590
+  OnCreate = FormCreate
+  OnShow = FormShow
+  ParentFont = False
+  Position = poScreenCenter
+  LCLVersion = '0.9.27'
+  object pnlHexEditorCommand: TPanel
+    Height = 74
+    Top = 336
+    Width = 590
+    Align = alBottom
+    TabOrder = 0
+  end
+end
