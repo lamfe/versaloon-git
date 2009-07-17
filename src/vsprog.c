@@ -22,9 +22,7 @@
 #include "config.h"
 #endif
 
-#if !IS_MSVC
-#	include <unistd.h>
-#endif
+#include <unistd.h>
 
 #include <getopt.h>
 #include <locale.h>
