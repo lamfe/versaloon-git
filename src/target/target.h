@@ -121,9 +121,10 @@ typedef struct
 										program_info_t *pi, uint8 *buff);
 }target_info_t;
 
+#define TARGET_MAX_CHIP_NAME_LEN		32
 typedef struct
 {
-	const char *chip_name;
+	char chip_name[TARGET_MAX_CHIP_NAME_LEN];
 	uint32 chip_id;
 	uint32 program_mode;
 	uint32 boot_page_size;
@@ -143,7 +144,14 @@ typedef struct
 	uint32 ee_size;
 	uint32 optrom_size;
 	uint32 usrsig_size;
+	uint32 para[32];
 }chip_param_t;
+
+typedef struct
+{
+	uint32 num_of_chips;
+	chip_param_t *params;
+}chip_series_t;
 
 extern target_info_t *cur_target;
 extern target_info_t targets_info[];
