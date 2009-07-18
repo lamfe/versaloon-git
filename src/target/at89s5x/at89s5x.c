@@ -40,12 +40,13 @@
 #include "at89s5x.h"
 #include "at89s5x_internal.h"
 
-#define CUR_TARGET_STRING		S5X_STRING
-#define cur_chip_param			s5x_chip_param
-#define cur_chips_param			s5x_chips_param
-#define cur_flash_offset		s5x_flash_offset
-#define cur_prog_mode			s5x_prog_mode
-#define cur_frequency			s5x_isp_frequency
+#define CUR_TARGET_STRING			S5X_STRING
+#define cur_chip_param				target_chip_param
+#define cur_chips_param				target_chips.chips_param
+#define cur_chips_num				target_chips.num_of_chips
+#define cur_flash_offset			s5x_flash_offset
+#define cur_prog_mode				s5x_prog_mode
+#define cur_frequency				s5x_isp_frequency
 
 const program_area_map_t s5x_program_area_map[] = 
 {
@@ -56,18 +57,6 @@ const program_area_map_t s5x_program_area_map[] =
 	{LOCK, 'l', 0},
 	{0, 0}
 };
-
-const s5x_param_t s5x_chips_param[] = {
-//	chip_name,		signature,	program_mode,	flash_page_size,	flash_page_num,	eeprom_page_size,	eeprom_page_num,	usrsig_page_size,	fuse_size,	pe_out
-	{"at89s51",		0x001E5106,	0x03,			256,				16,				0,					0,					0,					0,			0x69},
-	{"at89s52",		0x001E5206,	0x03,			256,				32,				0,					0,					0,					0,			0x69},
-	{"at89ls51",	0x001E6106,	0x03,			256,				16,				0,					0,					0,					0,			0x69},
-	{"at89ls52",	0x001E6206,	0x03,			256,				32,				0,					0,					0,					0,			0x69},
-	{"at89s2051",	0x001E23FF,	0x03,			32,					64,				0,					0,					32,					1,			0xFF},
-	{"at89s4051",	0x001E43FF,	0x03,			32,					128,			0,					0,					32,					1,			0xFF},
-	{"at89s8253",	0x001E7300,	0x03,			64,					192,			32,					64,					64,					1,			0xFF},
-};
-static s5x_param_t s5x_chip_param;
 
 static uint8 s5x_lock = 0;
 static uint8 s5x_fuse = 0;
@@ -94,13 +83,13 @@ void s5x_support(void)
 	uint32 i;
 
 	printf("Support list of %s:\n", CUR_TARGET_STRING);
-	for (i = 0; i < dimof(cur_chips_param); i++)
+	for (i = 0; i < cur_chips_num; i++)
 	{
 		printf("\
 %s: id = 0x%06x, flash_size = %d, fuse_size = %d, usrsig_size = %d\n", 
-			   cur_chips_param[i].chip_name, cur_chips_param[i].signature, 
-			   cur_chips_param[i].flash_page_size 
-					* cur_chips_param[i].flash_page_num, 
+			   cur_chips_param[i].chip_name, cur_chips_param[i].chip_id, 
+			   cur_chips_param[i].app_page_size 
+					* cur_chips_param[i].app_page_num, 
 			   cur_chips_param[i].fuse_size, 
 			   cur_chips_param[i].usrsig_page_size);
 	}
@@ -216,7 +205,7 @@ RESULT s5x_probe_chip(char *chip_name)
 {
 	uint32 i;
 	
-	for (i = 0; i < dimof(cur_chips_param); i++)
+	for (i = 0; i < cur_chips_num; i++)
 	{
 		if (!strcmp(cur_chips_param[i].chip_name, chip_name))
 		{
@@ -277,8 +266,8 @@ RESULT s5x_write_buffer_from_file_callback(uint32 address, uint32 seg_addr,
 			return ERRCODE_INVALID_BUFFER;
 		}
 		
-		if ((0 == cur_chip_param.flash_page_num) 
-			|| (0 == cur_chip_param.flash_page_size))
+		if ((0 == cur_chip_param.app_page_num) 
+			|| (0 == cur_chip_param.app_page_size))
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_INVALID), "Flash", 
 					  cur_chip_param.chip_name);
@@ -286,9 +275,9 @@ RESULT s5x_write_buffer_from_file_callback(uint32 address, uint32 seg_addr,
 		}
 		
 		mem_addr += cur_flash_offset;
-		if ((mem_addr >= cur_chip_param.flash_size) 
-			|| (length > cur_chip_param.flash_size) 
-			|| ((mem_addr + length) > cur_chip_param.flash_size))
+		if ((mem_addr >= cur_chip_param.app_size) 
+			|| (length > cur_chip_param.app_size) 
+			|| ((mem_addr + length) > cur_chip_param.app_size))
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_RANGE), "flash memory");
 			return ERRCODE_INVALID;
@@ -298,7 +287,7 @@ RESULT s5x_write_buffer_from_file_callback(uint32 address, uint32 seg_addr,
 		
 		if (cur_prog_mode & S5X_PAGE_MODE)
 		{
-			page_size = cur_chip_param.flash_page_size;
+			page_size = cur_chip_param.app_page_size;
 		}
 		else
 		{
@@ -351,7 +340,7 @@ RESULT s5x_init(program_info_t *pi, const char *dir, programmer_info_t *prog)
 		// auto detect
 		LOG_INFO(_GETTEXT(INFOMSG_TRY_AUTODETECT));
 		opt_tmp.read_operations = CHIP_ID;
-		s5x_chip_param.pe_out = 0x69;
+		cur_chip_param.param[S5X_PARAM_PE_OUT] = 0x69;
 		
 		if (ERROR_OK != s5x_program(opt_tmp, pi, prog))
 		{
@@ -360,17 +349,17 @@ RESULT s5x_init(program_info_t *pi, const char *dir, programmer_info_t *prog)
 		}
 		
 		LOG_INFO(_GETTEXT(INFOMSG_AUTODETECT_SIGNATURE), pi->chip_id);
-		for (i = 0; i < dimof(cur_chips_param); i++)
+		for (i = 0; i < cur_chips_num; i++)
 		{
-			if (pi->chip_id == cur_chips_param[i].signature)
+			if (pi->chip_id == cur_chips_param[i].chip_id)
 			{
 				memcpy(&cur_chip_param, cur_chips_param + i, 
 					   sizeof(cur_chip_param));
-				cur_chip_param.flash_size = cur_chip_param.flash_page_num 
-											* cur_chip_param.flash_page_size;
-				cur_chip_param.eeprom_size = cur_chip_param.eeprom_page_num 
-										 * cur_chip_param.eeprom_page_size;
-				pi->app_size = cur_chip_param.flash_size;
+				cur_chip_param.app_size = cur_chip_param.app_page_num 
+										  * cur_chip_param.app_page_size;
+				cur_chip_param.ee_size = cur_chip_param.ee_page_num 
+										 * cur_chip_param.ee_page_size;
+				pi->app_size = cur_chip_param.app_size;
 				pi->app_size_valid = 0;
 				pi->eeprom_size_valid = 0;
 				
@@ -387,17 +376,17 @@ RESULT s5x_init(program_info_t *pi, const char *dir, programmer_info_t *prog)
 	}
 	else
 	{
-		for (i = 0; i < dimof(cur_chips_param); i++)
+		for (i = 0; i < cur_chips_num; i++)
 		{
 			if (!strcmp(cur_chips_param[i].chip_name, pi->chip_name))
 			{
 				memcpy(&cur_chip_param, cur_chips_param + i, 
 					   sizeof(cur_chip_param));
-				cur_chip_param.flash_size = cur_chip_param.flash_page_num 
-											* cur_chip_param.flash_page_size;
-				cur_chip_param.eeprom_size = cur_chip_param.eeprom_page_num 
-										 * cur_chip_param.eeprom_page_size;
-				pi->app_size = cur_chip_param.flash_size;
+				cur_chip_param.app_size = cur_chip_param.app_page_num 
+										  * cur_chip_param.app_page_size;
+				cur_chip_param.ee_size = cur_chip_param.ee_page_num 
+										 * cur_chip_param.ee_page_size;
+				pi->app_size = cur_chip_param.app_size;
 				pi->app_size_valid = 0;
 				pi->eeprom_size_valid = 0;
 				
@@ -581,8 +570,8 @@ RESULT s5x_program(operation_t operations, program_info_t *pi,
 		// ret[3] should be 0x69
 		spi_io(cmd_buf, 4, &poll_value, 3, 1);
 		if ((ERROR_OK != commit()) 
-			|| ((s5x_chip_param.pe_out != 0xFF) 
-				&& (s5x_chip_param.pe_out != poll_value)))
+			|| ((cur_chip_param.param[S5X_PARAM_PE_OUT] != 0xFF) 
+				&& (cur_chip_param.param[S5X_PARAM_PE_OUT] != poll_value)))
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_ENTER_PROG_MODE));
 			ret = ERRCODE_FAILURE_ENTER_PROG_MODE;
@@ -625,10 +614,10 @@ RESULT s5x_program(operation_t operations, program_info_t *pi,
 	LOG_INFO(_GETTEXT(INFOMSG_TARGET_CHIP_ID), pi->chip_id);
 	if (!(operations.read_operations & CHIP_ID))
 	{
-		if (pi->chip_id != cur_chip_param.signature)
+		if (pi->chip_id != cur_chip_param.chip_id)
 		{
 			LOG_WARNING(_GETTEXT(ERRMSG_INVALID_CHIP_ID), pi->chip_id, 
-						cur_chip_param.signature);
+						cur_chip_param.chip_id);
 		}
 	}
 	else
@@ -662,7 +651,7 @@ RESULT s5x_program(operation_t operations, program_info_t *pi,
 	
 	if (cur_prog_mode & S5X_PAGE_MODE)
 	{
-		page_size = cur_chip_param.flash_page_size;
+		page_size = cur_chip_param.app_page_size;
 	}
 	else
 	{
@@ -777,7 +766,7 @@ RESULT s5x_program(operation_t operations, program_info_t *pi,
 		}
 		else
 		{
-			pi->app_size_valid = cur_chip_param.flash_size;
+			pi->app_size_valid = cur_chip_param.app_size;
 			LOG_INFO(_GETTEXT(INFOMSG_READING), "flash");
 		}
 		pgbar_init("reading flash |", "|", 0, pi->app_size_valid, 

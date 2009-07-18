@@ -58,7 +58,7 @@ target_info_t targets_info[] =
 		S5X_STRING,							// name
 		APPLICATION | LOCK,					// areas
 		s5x_program_area_map,				// program_area_map
-		"",									// program_mode_str
+		S5X_PROGRAM_MODE_STR,				// program_mode_str
 		s5x_parse_argument,					// parse_argument
 		s5x_probe_chip,						// probe_chip
 		s5x_init,							// init
@@ -78,7 +78,7 @@ target_info_t targets_info[] =
 		PSOC_STRING,						// name
 		APPLICATION | LOCK | CHECKSUM,		// areas
 		psoc_program_area_map,				// program_area_map
-		"",									// program_mode_str
+		PSOC_PROGRAM_MODE_STR,				// program_mode_str
 		psoc_parse_argument,				// parse_argument
 		psoc_probe_chip,					// probe_chip
 		psoc_init,							// init
@@ -98,7 +98,7 @@ target_info_t targets_info[] =
 		MSP430_STRING,						// name
 		APPLICATION,						// areas
 		msp430_program_area_map,			// program_area_map
-		"",									// program_mode_str
+		MSP430_PROGRAM_MODE_STR,			// program_mode_str
 		msp430_parse_argument,				// parse_argument
 		msp430_probe_chip,					// probe_chip
 		msp430_init,						// init
@@ -118,7 +118,7 @@ target_info_t targets_info[] =
 		C8051F_STRING,						// name
 		APPLICATION,						// areas
 		c8051f_program_area_map,			// program_area_map
-		"",									// program_mode_str
+		C8051F_PROGRAM_MODE_STR,			// program_mode_str
 		c8051f_parse_argument,				// parse_argument
 		c8051f_probe_chip,					// probe_chip
 		c8051f_init,						// init
@@ -198,7 +198,7 @@ target_info_t targets_info[] =
 		LPC900_STRING,						// name
 		APPLICATION,						// areas
 		lpc900_program_area_map,			// program_area_map
-		"",									// program_mode_str
+		LPC900_PROGRAM_MODE_STR,			// program_mode_str
 		lpc900_parse_argument,				// parse_argument
 		lpc900_probe_chip,					// probe_chip
 		lpc900_init,						// init
@@ -792,6 +792,36 @@ RESULT target_build_chip_series(const char *chip_series,
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "lock_size"))
 			{
 				s->chips_param[i].lock_size = (uint32)strtoul(
+								(const char *)xmlNodeGetContent(paramNode), 
+								NULL, 0);
+			}
+			else if (!xmlStrcmp(paramNode->name, BAD_CAST "boot_size"))
+			{
+				s->chips_param[i].boot_size = (uint32)strtoul(
+								(const char *)xmlNodeGetContent(paramNode), 
+								NULL, 0);
+			}
+			else if (!xmlStrcmp(paramNode->name, BAD_CAST "app_size"))
+			{
+				s->chips_param[i].app_size = (uint32)strtoul(
+								(const char *)xmlNodeGetContent(paramNode), 
+								NULL, 0);
+			}
+			else if (!xmlStrcmp(paramNode->name, BAD_CAST "ee_size"))
+			{
+				s->chips_param[i].ee_size = (uint32)strtoul(
+								(const char *)xmlNodeGetContent(paramNode), 
+								NULL, 0);
+			}
+			else if (!xmlStrcmp(paramNode->name, BAD_CAST "optrom_size"))
+			{
+				s->chips_param[i].optrom_size = (uint32)strtoul(
+								(const char *)xmlNodeGetContent(paramNode), 
+								NULL, 0);
+			}
+			else if (!xmlStrcmp(paramNode->name, BAD_CAST "usrsig_size"))
+			{
+				s->chips_param[i].usrsig_size = (uint32)strtoul(
 								(const char *)xmlNodeGetContent(paramNode), 
 								NULL, 0);
 			}

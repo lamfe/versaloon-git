@@ -25,31 +25,9 @@
 
 #define C8051F_BLOCK_SIZE				256
 
-typedef struct
-{
-	uint16 erase_addr;
-}c8051f_jtag_param_t;
-
-typedef struct
-{
-	uint8 fpctl_addr;
-	uint8 fpdat_addr;
-}c8051f_c2_param_t;
-
-typedef struct
-{
-	const char *chip_name;
-	uint32 chip_id;
-	uint16 flash_page_size;
-	uint16 flash_page_num;
-	uint32 flash_size;
-	uint8 interface;
-	
-	c8051f_jtag_param_t jtag_param;
-	c8051f_c2_param_t c2_param;
-}c8051f_param_t;
-
-extern c8051f_param_t c8051f_chip_param;
+#define C8051F_PARAM_ERASE_ADDR			0
+#define C8051F_PARAM_FPCTL_ADDR			1
+#define C8051F_PARAM_FPDAT_ADDR			2
 
 // JTAG
 #define C8051F_JTAG_INTERFACE_NEEDED	(JTAG_HL)

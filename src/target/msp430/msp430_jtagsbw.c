@@ -41,7 +41,7 @@
 #include "JTAGfunc.h"
 #include "msp430_internal.h"
 
-#define cur_chip_param				msp430_chip_param
+#define cur_chip_param				target_chip_param
 
 RESULT msp430_jtag_program(operation_t operations, program_info_t *pi, 
 						   programmer_info_t *prog)
@@ -79,7 +79,7 @@ RESULT msp430_jtag_program(operation_t operations, program_info_t *pi,
 	
 	// here we go
 	msp430_jtag_init();
-	if ((msp430_chip_param.program_mode & MSP430_MODE_TEST) > 0)
+	if (DeviceHas_TestPin())
 	{
 		// TEST pin
 		msp430_jtag_config(1);
@@ -110,7 +110,7 @@ RESULT msp430_jtag_program(operation_t operations, program_info_t *pi,
 			// re-init
 			msp430_jtag_fini();
 			msp430_jtag_init();
-			if ((msp430_chip_param.program_mode & MSP430_MODE_TEST) > 0)
+			if (DeviceHas_TestPin())
 			{
 				// TEST pin
 				msp430_jtag_config(1);
@@ -169,7 +169,7 @@ RESULT msp430_jtag_program(operation_t operations, program_info_t *pi,
 	LOG_INFO(_GETTEXT(INFOMSG_TARGET_CHIP_ID), pi->chip_id);
 	if (!(operations.read_operations & CHIP_ID))
 	{
-		if (pi->chip_id != msp430_chip_param.chip_id)
+		if (pi->chip_id != cur_chip_param.chip_id)
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_CHIP_ID), pi->chip_id, 
 						cur_chip_param.chip_id);
@@ -182,8 +182,8 @@ RESULT msp430_jtag_program(operation_t operations, program_info_t *pi,
 		goto leave_program_mode;
 	}
 	
-	page_size = cur_chip_param.flash_page_size;
-	addr_start = cur_chip_param.main_start;
+	page_size = (word)cur_chip_param.app_page_size;
+	addr_start = Device_MainStart();
 	
 	if (operations.erase_operations > 0)
 	{
@@ -222,10 +222,10 @@ RESULT msp430_jtag_program(operation_t operations, program_info_t *pi,
 		// check blank
 		LOG_INFO(_GETTEXT(INFOMSG_CHECKING), "blank");
 		pgbar_init("checking blank |", "|", 0, 
-					msp430_chip_param.flash_page_num, 
+					cur_chip_param.app_page_num, 
 					PROGRESS_STEP, '=');
 		
-		for (i = 0; i < msp430_chip_param.flash_page_num; i++)
+		for (i = 0; i < (int32)cur_chip_param.app_page_num; i++)
 		{
 			CRC_calc = CRC_check = 0;
 			CRC_calc = EraseCheck((word)(addr_start + i * page_size), 
@@ -320,7 +320,7 @@ RESULT msp430_jtag_program(operation_t operations, program_info_t *pi,
 		}
 		else
 		{
-			pi->app_size_valid = cur_chip_param.flash_size;
+			pi->app_size_valid = cur_chip_param.app_size;
 			LOG_INFO(_GETTEXT(INFOMSG_READING), "flash");
 		}
 		pgbar_init("reading flash |", "|", 0, pi->app_size_valid, 
