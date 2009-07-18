@@ -20,6 +20,7 @@
 #define __PSOC_H_INCLUDED__
 
 #define PSOC_STRING						"psoc"
+#define PSOC_PROGRAM_MODE_STR			"rp"
 
 extern const program_area_map_t psoc_program_area_map[];
 

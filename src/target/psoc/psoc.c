@@ -41,12 +41,10 @@
 #include "psoc_internal.h"
 
 #define CUR_TARGET_STRING			PSOC_STRING
-#define cur_chip_param				psoc_chip_param
-#define cur_chips_param				psoc_chips_param
+#define cur_chip_param				target_chip_param
+#define cur_chips_param				target_chips.chips_param
+#define cur_chips_num				target_chips.num_of_chips
 #define cur_prog_mode				psoc_prog_mode
-
-static psoc_param_t psoc_chip_param;
-static uint8 psoc_prog_mode = 0;
 
 const program_area_map_t psoc_program_area_map[] = 
 {
@@ -56,43 +54,7 @@ const program_area_map_t psoc_program_area_map[] =
 	{0, 0}
 };
 
-const psoc_param_t psoc_chips_param[] = {
-//		chip_name,		chip_id,	init_mode,	block_size,	block_num_in_bank,	bank_num,	Tvddwait
-		// 2026A
-		{"cy8c21123",	0x1700,		0x02,		64,			64,					1,			35},
-		{"cy8c21223",	0x1800,		0x02,		64,			64,					1,			35},
-		{"cy8c21323",	0x1900,		0x03,		64,			64,					1,			35},
-		{"cy8c21234",	0x3600,		0x02,		64,			128,				1,			35},
-		{"cy8c21334",	0x3700,		0x03,		64,			128,				1,			35},
-		{"cy8c21434",	0x3800,		0x03,		64,			128,				1,			35},
-		{"cy8c21534",	0x4000,		0x03,		64,			128,				1,			35},
-		{"cy8c21634",	0x4900,		0x03,		64,			128,				1,			35},
-		{"cy8c22113",	0x0F00,		0x02,		64,			32,					1,			35},
-		{"cy8c22213",	0x1000,		0x03,		64,			32,					1,			35},
-		{"cy8c24123",	0x1200,		0x02,		64,			64,					1,			35},
-		{"cy8c24223",	0x1300,		0x03,		64,			64,					1,			35},
-		{"cy8c24423",	0x1400,		0x03,		64,			64,					1,			35},
-		{"cy8c24123a",	0x3200,		0x02,		64,			64,					1,			35},
-		{"cy8c24223a",	0x3300,		0x03,		64,			64,					1,			35},
-		{"cy8c24423a",	0x3400,		0x03,		64,			64,					1,			35},
-		{"cy8c27143",	0x0800,		0x02,		64,			256,				1,			35},
-		{"cy8c27243",	0x0A00,		0x03,		64,			256,				1,			35},
-		{"cy8c27443",	0x0B00,		0x03,		64,			256,				1,			35},
-		{"cy8c27543",	0x0C00,		0x03,		64,			256,				1,			35},
-		{"cy8c27643",	0x0D00,		0x03,		64,			256,				1,			35},
-		// 2026B
-		{"cy8c24794",	0x1D00,		0x03,		64,			128,				2,			35},
-		{"cy8c24894",	0x1F00,		0x03,		64,			128,				2,			35},
-		{"cy8c24994",	0x5900,		0x03,		64,			128,				2,			35},
-		{"cy8c29466",	0x2A00,		0x03,		64,			128,				4,			35},
-		{"cy8c29566",	0x2B00,		0x03,		64,			128,				4,			35},
-		{"cy8c29666",	0x2C00,		0x03,		64,			128,				4,			35},
-		{"cy8c29866",	0x2D00,		0x03,		64,			128,				4,			35},
-		// Unknown
-//		{"cy7c64215",	0x0000,		0x03,		64,			128,				2,			35},
-//		{"cy7c603xx",	0x0000,		0x03,		64,			128,				1,			35},
-//		{"cywusb6953",	0x0000,		0x03,		64,			128,				1,			35},
-		};
+static uint8 psoc_prog_mode = 0;
 
 #define VECTORS_NUM				17
 #define VECTORS_TABLE_SIZE		128
@@ -109,18 +71,18 @@ void psoc_support(void)
 	uint32 i;
 
 	printf("Support list of %s:\n", CUR_TARGET_STRING);
-	for (i = 0; i < dimof(cur_chips_param); i++)
+	for (i = 0; i < cur_chips_num; i++)
 	{
 		printf("\
 %s: id = 0x%04x, init_mode = %d, flash_size = %d, secure_size = %d\n", 
 				cur_chips_param[i].chip_name, 
 				cur_chips_param[i].chip_id,
-				cur_chips_param[i].init_mode, 
-				cur_chips_param[i].block_size 
-					* cur_chips_param[i].block_num_in_bank 
-					* cur_chips_param[i].bank_num,
-				cur_chips_param[i].bank_num 
-					* cur_chips_param[i].block_num_in_bank >> 2);
+				cur_chips_param[i].program_mode | PSOC_POWERON_MODE, 
+				cur_chips_param[i].app_page_size 
+					* cur_chips_param[i].app_page_num 
+					* cur_chips_param[i].param[PSOC_PARAM_BANK_NUM],
+				cur_chips_param[i].param[PSOC_PARAM_BANK_NUM] 
+					* cur_chips_param[i].app_page_num >> 2);
 	}
 	printf("\n");
 }
@@ -172,7 +134,7 @@ RESULT psoc_probe_chip(char *chip_name)
 {
 	uint32 i;
 	
-	for (i = 0; i < dimof(cur_chips_param); i++)
+	for (i = 0; i < cur_chips_num; i++)
 	{
 		if (!strcmp(cur_chips_param[i].chip_name, chip_name))
 		{
@@ -234,7 +196,7 @@ RESULT psoc_init(program_info_t *pi, const char *dir,
 		// auto detect
 		LOG_INFO(_GETTEXT(INFOMSG_TRY_AUTODETECT));
 		opt_tmp.read_operations = CHIP_ID;
-		cur_chip_param.init_mode = PSOC_RESET_MODE | PSOC_POWERON_MODE;
+		cur_chip_param.program_mode = PSOC_RESET_MODE | PSOC_POWERON_MODE;
 		
 		if (ERROR_OK != psoc_program(opt_tmp, pi, prog))
 		{
@@ -243,26 +205,26 @@ RESULT psoc_init(program_info_t *pi, const char *dir,
 		}
 		
 		LOG_INFO(_GETTEXT(INFOMSG_AUTODETECT_SIGNATURE), pi->chip_id);
-		for (i = 0; i < dimof(cur_chips_param); i++)
+		for (i = 0; i < cur_chips_num; i++)
 		{
 			if (pi->chip_id == cur_chips_param[i].chip_id)
 			{
 				memcpy(&cur_chip_param, cur_chips_param + i, 
 					   sizeof(cur_chip_param));
-				cur_chip_param.secure_size = 
-									cur_chip_param.bank_num 
-									* cur_chip_param.block_num_in_bank >> 2;
-				if (cur_chip_param.secure_size < PSOC_MIN_SECURE_SIZE)
+				cur_chip_param.lock_size = 
+									cur_chip_param.param[PSOC_PARAM_BANK_NUM] 
+									* cur_chip_param.app_page_num >> 2;
+				if (cur_chip_param.lock_size < PSOC_MIN_SECURE_SIZE)
 				{
-					cur_chip_param.secure_size = PSOC_MIN_SECURE_SIZE;
+					cur_chip_param.lock_size = PSOC_MIN_SECURE_SIZE;
 				}
-				cur_chip_param.flash_size = 
-									cur_chip_param.bank_num 
-									* cur_chip_param.block_num_in_bank 
-									* cur_chip_param.block_size;
+				cur_chip_param.app_size = 
+									cur_chip_param.param[PSOC_PARAM_BANK_NUM] 
+									* cur_chip_param.app_page_num 
+									* cur_chip_param.app_page_size;
 				
-				pi->app_size = cur_chip_param.flash_size;
-				pi->lock_size = cur_chip_param.secure_size;
+				pi->app_size = cur_chip_param.app_size;
+				pi->lock_size = cur_chip_param.lock_size;
 				pi->app_size_valid = 0;
 				pi->lock_size_valid = 0;
 				
@@ -279,26 +241,26 @@ RESULT psoc_init(program_info_t *pi, const char *dir,
 	}
 	else
 	{
-		for (i = 0; i < dimof(cur_chips_param); i++)
+		for (i = 0; i < cur_chips_num; i++)
 		{
 			if (!strcmp(cur_chips_param[i].chip_name, pi->chip_name))
 			{
 				memcpy(&cur_chip_param, cur_chips_param + i, 
 					   sizeof(cur_chip_param));
-				cur_chip_param.secure_size = 
-									cur_chip_param.bank_num 
-									* cur_chip_param.block_num_in_bank >> 2;
-				if (cur_chip_param.secure_size < PSOC_MIN_SECURE_SIZE)
+				cur_chip_param.lock_size = 
+									cur_chip_param.param[PSOC_PARAM_BANK_NUM] 
+									* cur_chip_param.app_page_num >> 2;
+				if (cur_chip_param.lock_size < PSOC_MIN_SECURE_SIZE)
 				{
-					cur_chip_param.secure_size = PSOC_MIN_SECURE_SIZE;
+					cur_chip_param.lock_size = PSOC_MIN_SECURE_SIZE;
 				}
-				cur_chip_param.flash_size = 
-									cur_chip_param.bank_num 
-									* cur_chip_param.block_num_in_bank 
-									* cur_chip_param.block_size;
+				cur_chip_param.app_size = 
+									cur_chip_param.param[PSOC_PARAM_BANK_NUM] 
+									* cur_chip_param.app_page_num 
+									* cur_chip_param.app_page_size;
 				
-				pi->app_size = cur_chip_param.flash_size;
-				pi->lock_size = cur_chip_param.secure_size;
+				pi->app_size = cur_chip_param.app_size;
+				pi->lock_size = cur_chip_param.lock_size;
 				pi->app_size_valid = 0;
 				pi->lock_size_valid = 0;
 				
@@ -349,9 +311,9 @@ RESULT psoc_write_buffer_from_file_callback(uint32 address, uint32 seg_addr,
 			return ERRCODE_INVALID_BUFFER;
 		}
 		
-		if ((mem_addr >= cur_chip_param.flash_size) 
-			|| (length > cur_chip_param.flash_size) 
-			|| ((mem_addr + length) > cur_chip_param.flash_size))
+		if ((mem_addr >= cur_chip_param.app_size) 
+			|| (length > cur_chip_param.app_size) 
+			|| ((mem_addr + length) > cur_chip_param.app_size))
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_RANGE), "flash memory");
 			return ERRCODE_INVALID;
@@ -360,7 +322,7 @@ RESULT psoc_write_buffer_from_file_callback(uint32 address, uint32 seg_addr,
 		pi->app_size_valid += (uint16)length;
 		
 		ret = MEMLIST_Add(&pi->app_memlist, mem_addr, length, 
-						  cur_chip_param.block_size);
+						  cur_chip_param.app_page_size);
 		if (ret != ERROR_OK)
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "add memory list");
@@ -375,9 +337,9 @@ RESULT psoc_write_buffer_from_file_callback(uint32 address, uint32 seg_addr,
 			return ERRCODE_INVALID_BUFFER;
 		}
 		
-		if ((mem_addr >= cur_chip_param.secure_size) 
-			|| (length > cur_chip_param.secure_size) 
-			|| ((mem_addr + length) > cur_chip_param.secure_size))
+		if ((mem_addr >= cur_chip_param.lock_size) 
+			|| (length > cur_chip_param.lock_size) 
+			|| ((mem_addr + length) > cur_chip_param.lock_size))
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_RANGE), "secure memory");
 			return ERRCODE_INVALID;
@@ -453,7 +415,7 @@ RESULT psoc_prepare_mass_product_data(operation_t operations,
 					"RESET mode");
 		cur_prog_mode = PSOC_RESET_MODE;
 	case PSOC_RESET_MODE:
-		if (!(cur_chip_param.init_mode & PSOC_RESET_MODE))
+		if (!(cur_chip_param.program_mode & PSOC_RESET_MODE))
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "RESET", 
 					  cur_chip_param.chip_name);
@@ -461,7 +423,7 @@ RESULT psoc_prepare_mass_product_data(operation_t operations,
 		}
 		break;
 	case PSOC_POWERON_MODE:
-		if (!(cur_chip_param.init_mode & PSOC_POWERON_MODE))
+		if (!(cur_chip_param.program_mode & PSOC_POWERON_MODE))
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "POWERON", 
 					  cur_chip_param.chip_name);
@@ -680,16 +642,17 @@ RESULT psoc_program(operation_t operations, program_info_t *pi,
 	if ((operations.read_operations & APPLICATION) 
 		&& !(operations.verify_operations & APPLICATION))
 	{
-		pi->app_size_valid = cur_chip_param.bank_num 
-							 * cur_chip_param.block_num_in_bank 
-							 * cur_chip_param.block_size;
+		pi->app_size_valid = cur_chip_param.param[PSOC_PARAM_BANK_NUM] 
+							 * cur_chip_param.app_page_num 
+							 * cur_chip_param.app_page_size;
 	}
 	if ((operations.read_operations & APPLICATION) 
 		|| (operations.write_operations & APPLICATION))
 	{
-		if (pi->app_size_valid != (uint32)(cur_chip_param.bank_num 
-										  * cur_chip_param.block_num_in_bank 
-										  * cur_chip_param.block_size))
+		if (pi->app_size_valid != (uint32)(
+									cur_chip_param.param[PSOC_PARAM_BANK_NUM] 
+									* cur_chip_param.app_page_num 
+									* cur_chip_param.app_page_size))
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_INVALID), "flash size", "target chip");
 			return ERRCODE_INVALID;
@@ -704,7 +667,7 @@ RESULT psoc_program(operation_t operations, program_info_t *pi,
 					"RESET mode");
 		cur_prog_mode = PSOC_RESET_MODE;
 	case PSOC_RESET_MODE:
-		if (!(cur_chip_param.init_mode & PSOC_RESET_MODE))
+		if (!(cur_chip_param.program_mode & PSOC_RESET_MODE))
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "RESET", 
 					  cur_chip_param.chip_name);
@@ -712,7 +675,7 @@ RESULT psoc_program(operation_t operations, program_info_t *pi,
 		}
 		break;
 	case PSOC_POWERON_MODE:
-		if (!(cur_chip_param.init_mode & PSOC_POWERON_MODE))
+		if (!(cur_chip_param.program_mode & PSOC_POWERON_MODE))
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "POWERON", 
 					  cur_chip_param.chip_name);
@@ -868,29 +831,30 @@ RESULT psoc_program(operation_t operations, program_info_t *pi,
 		// program flash
 		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMING), "flash");
 		pgbar_init("writing flash |", "|", 0, 
-				   (pi->app_size_valid + cur_chip_param.block_size - 1) 
-						/ cur_chip_param.block_size, 
+				   (pi->app_size_valid + cur_chip_param.app_page_size - 1) 
+						/ cur_chip_param.app_page_size, 
 				   PROGRESS_STEP, '=');
 		
 		checksum = 0;
-		for (bank = 0; bank < cur_chip_param.bank_num; bank++)
+		for (bank = 0; bank < cur_chip_param.param[PSOC_PARAM_BANK_NUM]; 
+			 bank++)
 		{
 			// select bank by write xio in fls_pr1(in reg_bank 1)
-			if (cur_chip_param.bank_num > 1)
+			if (cur_chip_param.param[PSOC_PARAM_BANK_NUM] > 1)
 			{
 				issp_sel_reg_bank(1);
 				issp_set_flash_bank(bank);
 				issp_sel_reg_bank(0);
 			}
 			
-			for (block = 0; block < cur_chip_param.block_num_in_bank; block++)
+			for (block = 0; block < cur_chip_param.app_page_num; block++)
 			{
 				uint32 block_num = 
-							bank * cur_chip_param.block_num_in_bank + block;
-				uint32 block_addr = block_num * cur_chip_param.block_size;
+							bank * cur_chip_param.app_page_num + block;
+				uint32 block_addr = block_num * cur_chip_param.app_page_size;
 				
 				// write data into sram
-				for (addr = 0; addr < cur_chip_param.block_size; addr++)
+				for (addr = 0; addr < cur_chip_param.app_page_size; addr++)
 				{
 					checksum += pi->app[block_addr + addr];
 					issp_write_sram(PSOC_ISSP_SSC_DEFAULT_POINTER + addr, 
@@ -930,29 +894,30 @@ RESULT psoc_program(operation_t operations, program_info_t *pi,
 		}
 		else
 		{
-			pi->app_size_valid = cur_chip_param.flash_size;
+			pi->app_size_valid = cur_chip_param.app_size;
 			LOG_INFO(_GETTEXT(INFOMSG_READING), "flash");
 		}
 		pgbar_init("reading flash |", "|", 0, 
-					(pi->app_size_valid + cur_chip_param.block_size - 1) 
-						/ cur_chip_param.block_size, 
+					(pi->app_size_valid + cur_chip_param.app_page_size - 1) 
+						/ cur_chip_param.app_page_size, 
 					PROGRESS_STEP, '=');
 		
 		checksum = 0;
-		for (bank = 0; bank < cur_chip_param.bank_num; bank++)
+		for (bank = 0; bank < cur_chip_param.param[PSOC_PARAM_BANK_NUM]; 
+			 bank++)
 		{
-			if (cur_chip_param.bank_num > 1)
+			if (cur_chip_param.param[PSOC_PARAM_BANK_NUM] > 1)
 			{
 				issp_sel_reg_bank(1);
 				issp_set_flash_bank(bank);
 				issp_sel_reg_bank(0);
 			}
 			
-			for (block = 0; block < cur_chip_param.block_num_in_bank; block++)
+			for (block = 0; block < cur_chip_param.app_page_num; block++)
 			{
 				uint32 block_num = 
-							bank * cur_chip_param.block_num_in_bank + block;
-				uint32 block_addr = block_num * cur_chip_param.block_size;
+							bank * cur_chip_param.app_page_num + block;
+				uint32 block_addr = block_num * cur_chip_param.app_page_size;
 				
 				ret = issp_call_ssc(PSOC_SSC_CMD_ReadBlock, 
 									(uint8)(block & 0xFF), 1, &tmp8, 1);
@@ -966,7 +931,7 @@ RESULT psoc_program(operation_t operations, program_info_t *pi,
 					goto leave_program_mode;
 				}
 				
-				for (addr = 0; addr < cur_chip_param.block_size; addr++)
+				for (addr = 0; addr < cur_chip_param.app_page_size; addr++)
 				{
 					issp_read_sram(PSOC_ISSP_SSC_DEFAULT_POINTER + addr, 
 								   page_buf + addr);
@@ -981,7 +946,7 @@ RESULT psoc_program(operation_t operations, program_info_t *pi,
 				}
 				
 				// read or verify
-				for (addr = 0; addr < cur_chip_param.block_size; addr++)
+				for (addr = 0; addr < cur_chip_param.app_page_size; addr++)
 				{
 					checksum += page_buf[addr];
 					if (operations.verify_operations & APPLICATION)
@@ -1029,22 +994,24 @@ RESULT psoc_program(operation_t operations, program_info_t *pi,
 	{
 		// program secure
 		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMING), "secure");
-		pgbar_init("writing secure |", "|", 0, cur_chip_param.bank_num, 
+		pgbar_init("writing secure |", "|", 0, 
+				   cur_chip_param.param[PSOC_PARAM_BANK_NUM], 
 				   PROGRESS_STEP, '=');
 		
-		for (bank = 0; bank < cur_chip_param.bank_num; bank++)
+		for (bank = 0; bank < cur_chip_param.param[PSOC_PARAM_BANK_NUM]; 
+			 bank++)
 		{
 			uint32 lock_bank_addr = 
-								bank * (cur_chip_param.block_num_in_bank >> 2);
+								bank * (cur_chip_param.app_page_num >> 2);
 			
-			if (cur_chip_param.bank_num > 1)
+			if (cur_chip_param.param[PSOC_PARAM_BANK_NUM] > 1)
 			{
 				issp_sel_reg_bank(1);
 				issp_set_flash_bank(bank);
 				issp_sel_reg_bank(0);
 			}
 			for (addr = 0; 
-				 addr < (cur_chip_param.block_num_in_bank >> 2); 
+				 addr < (cur_chip_param.app_page_num >> 2); 
 				 addr++)
 			{
 				issp_write_sram(PSOC_ISSP_SSC_DEFAULT_POINTER + addr, 
@@ -1080,9 +1047,9 @@ RESULT psoc_program(operation_t operations, program_info_t *pi,
 		}
 		
 		checksum = 0;
-		for (bank = 0; bank < cur_chip_param.bank_num; bank++)
+		for (bank = 0; bank < cur_chip_param.param[PSOC_PARAM_BANK_NUM]; bank++)
 		{
-			if (cur_chip_param.bank_num > 1)
+			if (cur_chip_param.param[PSOC_PARAM_BANK_NUM] > 1)
 			{
 				issp_sel_reg_bank(1);
 				issp_set_flash_bank(bank);
@@ -1090,7 +1057,7 @@ RESULT psoc_program(operation_t operations, program_info_t *pi,
 			}
 			
 			ret = issp_call_ssc(PSOC_SSC_CMD_CheckSum, 
-								(uint8)(cur_chip_param.block_num_in_bank), 
+								(uint8)(cur_chip_param.app_page_num), 
 								1, (uint8*)&tmp16, 2);
 			if (ret != ERROR_OK)
 			{

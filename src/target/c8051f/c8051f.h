@@ -20,6 +20,7 @@
 #define __C8051F_H_INCLUDED__
 
 #define C8051F_STRING					"c8051f"
+#define C8051F_PROGRAM_MODE_STR			"jc"
 
 extern const program_area_map_t c8051f_program_area_map[];
 

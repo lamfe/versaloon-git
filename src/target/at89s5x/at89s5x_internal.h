@@ -19,21 +19,7 @@
 #ifndef __AT89S5X_INTERNAL_H_INCLUDED__
 #define __AT89S5X_INTERNAL_H_INCLUDED__
 
-typedef struct
-{
-	const char *chip_name;
-	uint32 signature;
-	uint8 program_mode;
-	uint16 flash_page_size;
-	uint16 flash_page_num;
-	uint16 eeprom_page_size;
-	uint16 eeprom_page_num;
-	uint16 usrsig_page_size;
-	uint8 fuse_size;
-	uint8 pe_out;
-	uint16 flash_size;
-	uint16 eeprom_size;
-}s5x_param_t;
+#define S5X_PARAM_PE_OUT			0
 
 #define S5X_INTERFACE_NEEDED		(SPI | GPIO)
 

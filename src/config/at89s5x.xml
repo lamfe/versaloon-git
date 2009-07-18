@@ -1,0 +1,87 @@
+<?xml version="1.0"?>
+<series name="at89s5x" number="7">
+  <chip name="at89s51">
+    <program_mode>bp</program_mode>
+    <chip_id>0x001E5106</chip_id>
+    <app_page_size>256</app_page_size>
+    <app_page_num>16</app_page_num>
+    <ee_page_size>0</ee_page_size>
+    <ee_page_num>0</ee_page_num>
+    <usrsig_page_size>0</usrsig_page_size>
+	<usrsig_page_num>0</usrsig_page_num>
+	<fuse_size>0</fuse_size>
+    <param0>0x69</param0>
+  </chip>
+  <chip name="at89s52">
+    <program_mode>bp</program_mode>
+    <chip_id>0x001E5206</chip_id>
+    <app_page_size>256</app_page_size>
+    <app_page_num>32</app_page_num>
+    <ee_page_size>0</ee_page_size>
+    <ee_page_num>0</ee_page_num>
+    <usrsig_page_size>0</usrsig_page_size>
+	<usrsig_page_num>0</usrsig_page_num>
+	<fuse_size>0</fuse_size>
+    <param0>0x69</param0>
+  </chip>
+  <chip name="at89ls51">
+    <program_mode>bp</program_mode>
+    <chip_id>0x001E6106</chip_id>
+    <app_page_size>256</app_page_size>
+    <app_page_num>16</app_page_num>
+    <ee_page_size>0</ee_page_size>
+    <ee_page_num>0</ee_page_num>
+    <usrsig_page_size>0</usrsig_page_size>
+	<usrsig_page_num>0</usrsig_page_num>
+	<fuse_size>0</fuse_size>
+    <param0>0x69</param0>
+  </chip>
+  <chip name="at89ls52">
+    <program_mode>bp</program_mode>
+    <chip_id>0x001E6206</chip_id>
+    <app_page_size>256</app_page_size>
+    <app_page_num>32</app_page_num>
+    <ee_page_size>0</ee_page_size>
+    <ee_page_num>0</ee_page_num>
+    <usrsig_page_size>0</usrsig_page_size>
+	<usrsig_page_num>0</usrsig_page_num>
+	<fuse_size>0</fuse_size>
+    <param0>0x69</param0>
+  </chip>
+  <chip name="at89s2051">
+    <program_mode>bp</program_mode>
+    <chip_id>0x001E23FF</chip_id>
+    <app_page_size>32</app_page_size>
+    <app_page_num>64</app_page_num>
+    <ee_page_size>0</ee_page_size>
+    <ee_page_num>0</ee_page_num>
+    <usrsig_page_size>32</usrsig_page_size>
+	<usrsig_page_num>1</usrsig_page_num>
+	<fuse_size>1</fuse_size>
+    <param0>0xFF</param0>
+  </chip>
+  <chip name="at89s4051">
+    <program_mode>bp</program_mode>
+    <chip_id>0x001E43FF</chip_id>
+    <app_page_size>32</app_page_size>
+    <app_page_num>128</app_page_num>
+    <ee_page_size>0</ee_page_size>
+    <ee_page_num>0</ee_page_num>
+    <usrsig_page_size>32</usrsig_page_size>
+	<usrsig_page_num>1</usrsig_page_num>
+	<fuse_size>1</fuse_size>
+    <param0>0xFF</param0>
+  </chip>
+  <chip name="at89s8253">
+    <program_mode>bp</program_mode>
+    <chip_id>0x001E7300</chip_id>
+    <app_page_size>64</app_page_size>
+    <app_page_num>192</app_page_num>
+    <ee_page_size>32</ee_page_size>
+    <ee_page_num>64</ee_page_num>
+    <usrsig_page_size>64</usrsig_page_size>
+	<usrsig_page_num>1</usrsig_page_num>
+	<fuse_size>1</fuse_size>
+    <param0>0xFF</param0>
+  </chip>
+</series>

@@ -20,6 +20,7 @@
 #define __MSP430_H_INCLUDED__
 
 #define MSP430_STRING					"msp430"
+#define MSP430_PROGRAM_MODE_STR			"jsb"
 
 extern const program_area_map_t msp430_program_area_map[];
 

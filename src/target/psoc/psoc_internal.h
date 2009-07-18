@@ -34,18 +34,7 @@
 #define PSOC_CHECKSUM_CHAR				0x00
 #define PSOC_ID_MASK					0xFFFF
 
-typedef struct
-{
-	const char *chip_name;
-	uint16 chip_id;
-	uint8 init_mode;
-	uint8 block_size;
-	uint16 block_num_in_bank;
-	uint8 bank_num;
-	uint8 Tvddwait;
-	uint16 flash_size;
-	uint16 secure_size;
-}psoc_param_t;
+#define PSOC_PARAM_BANK_NUM				0
 
 // parameters
 #define PSOC_RESET_MODE					(1 << 0)

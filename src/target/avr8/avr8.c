@@ -43,6 +43,7 @@
 #define CUR_TARGET_STRING			AVR8_STRING
 #define cur_chip_param				target_chip_param
 #define cur_chips_param				target_chips.chips_param
+#define cur_chips_num				target_chips.num_of_chips
 #define cur_flash_offset			avr8_flash_offset
 #define cur_eeprom_offset			avr8_eeprom_offset
 #define cur_prog_mode				avr8_prog_mode
@@ -82,7 +83,7 @@ static void avr8_support(void)
 	uint32 i;
 	
 	printf("Support list of %s:\n", CUR_TARGET_STRING);
-	for (i = 0; i < target_chips.num_of_chips; i++)
+	for (i = 0; i < cur_chips_num; i++)
 	{
 		printf("%s: signature = 0x%06x, prog_mode = 0x%02x\n", 
 				cur_chips_param[i].chip_name, 
@@ -179,7 +180,7 @@ RESULT avr8_probe_chip(char *chip_name)
 {
 	uint32 i;
 
-	for (i = 0; i < target_chips.num_of_chips; i++)
+	for (i = 0; i < cur_chips_num; i++)
 	{
 		if (!strcmp(cur_chips_param[i].chip_name, chip_name))
 		{
@@ -371,7 +372,7 @@ RESULT avr8_init(program_info_t *pi, const char *dir, programmer_info_t *prog)
 		}
 		
 		LOG_INFO(_GETTEXT(INFOMSG_AUTODETECT_SIGNATURE), pi->chip_id);
-		for (i = 0; i < target_chips.num_of_chips; i++)
+		for (i = 0; i < cur_chips_num; i++)
 		{
 			if (pi->chip_id == cur_chips_param[i].chip_id)
 			{
@@ -399,7 +400,7 @@ RESULT avr8_init(program_info_t *pi, const char *dir, programmer_info_t *prog)
 	}
 	else
 	{
-		for (i = 0; i < target_chips.num_of_chips; i++)
+		for (i = 0; i < cur_chips_num; i++)
 		{
 			if (!strcmp(cur_chips_param[i].chip_name, pi->chip_name))
 			{

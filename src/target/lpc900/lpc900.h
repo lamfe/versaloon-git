@@ -19,7 +19,8 @@
 #ifndef __LPC900_H_INCLUDED__
 #define __LPC900_H_INCLUDED__
 
-#define LPC900_STRING						"lpc900"
+#define LPC900_STRING					"lpc900"
+#define LPC900_PROGRAM_MODE_STR			""
 
 extern const program_area_map_t lpc900_program_area_map[];
 

@@ -41,7 +41,7 @@
 #include "c8051f_internal.h"
 
 #define CUR_TARGET_STRING		C8051F_STRING
-#define cur_chip_param			c8051f_chip_param
+#define cur_chip_param			target_chip_param
 
 static programmer_info_t *p = NULL;
 
@@ -198,7 +198,7 @@ RESULT c8051f_jtag_program(operation_t operations, program_info_t *pi,
 		pgbar_init("erasing flash |", "|", 0, 1, PROGRESS_STEP, '=');
 		
 		// set FLASHADR to erase_addr
-		dr = cur_chip_param.jtag_param.erase_addr;
+		dr = cur_chip_param.param[C8051F_PARAM_ERASE_ADDR];
 		c8051f_jtag_ind_write(C8051F_IR_FLASHADR, &dr, 
 							  C8051F_DR_FLASHADR_LEN);
 		// set FLASHCON for flash erase operation(0x20)
@@ -263,7 +263,7 @@ RESULT c8051f_jtag_program(operation_t operations, program_info_t *pi,
 		
 		for (i = 0; 
 			 i < (int32)pi->app_size_valid; 
-			 i += cur_chip_param.flash_page_size)
+			 i += cur_chip_param.app_page_size)
 		{
 			// set FLASHADR to erase_addr
 			dr = i;
@@ -294,7 +294,7 @@ RESULT c8051f_jtag_program(operation_t operations, program_info_t *pi,
 				goto leave_program_mode;
 			}
 			
-			pgbar_update(cur_chip_param.flash_page_size);
+			pgbar_update(cur_chip_param.app_page_size);
 		}
 		
 		pgbar_fini();
@@ -402,7 +402,7 @@ RESULT c8051f_jtag_program(operation_t operations, program_info_t *pi,
 		}
 		else
 		{
-			pi->app_size_valid = cur_chip_param.flash_size;
+			pi->app_size_valid = cur_chip_param.app_size;
 			LOG_INFO(_GETTEXT(INFOMSG_READING), "flash");
 		}
 		pgbar_init("reading flash |", "|", 0, pi->app_size_valid, 

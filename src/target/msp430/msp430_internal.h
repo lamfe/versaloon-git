@@ -22,37 +22,23 @@
 #define	MSP430_FLASH_CHAR				0xFF
 
 // program mode
-#define MSP430_MODE_JTAG				0x01
-#define MSP430_MODE_SBW					0x02
-#define MSP430_MODE_BSL					0x04
+#define MSP430_MODE_JTAG				(1 << 0)
+#define MSP430_MODE_SBW					(1 << 1)
+#define MSP430_MODE_BSL					(1 << 2)
 #define MSP430_PROG_MODE_MASK			(MSP430_MODE_JTAG | MSP430_MODE_SBW \
 										 | MSP430_MODE_BSL)
-#define MSP430_MODE_TEST				0x0100
-#define MSP430_MODE_CPUX				0x0200
-#define MSP430_MODE_DATAQUICK			0x0400
-#define MSP430_MODE_FASTFLASH			0x0800
-#define MSP430_MODE_ENHVERIFY			0x1000
 
 #define MSP430_CUR_PROG_MODE			(msp430_program_mode \
 										 & MSP430_PROG_MODE_MASK)
 
-typedef struct
-{
-	const char *chip_name;
-	uint16 chip_id;
-	uint16 program_mode;
-	uint16 flash_page_size;
-	uint16 flash_page_num;
-	uint16 info_page_size;
-	uint16 info_page_num;
-	uint16 ram_start;
-	uint16 ram_end;
-	uint16 main_start;
-	uint16 vector_start;
-	uint16 flash_size;
-}msp430_param_t;
-
-extern msp430_param_t msp430_chip_param;
+#define MSP430_PARAM_MAINSTART			0
+#define MSP430_PARAM_RAMSTART			1
+#define MSP430_PARAM_RAMEND				2
+#define MSP430_PARAM_TEST				3
+#define MSP430_PARAM_CPUX				4
+#define MSP430_PARAM_DATAQUICK			5
+#define MSP430_PARAM_FASTFLASH			6
+#define MSP430_PARAM_ENHVERIFY			7
 
 extern RESULT (*msp430jtagsbw_init)(void);
 extern RESULT (*msp430jtagsbw_fini)(void);
@@ -87,23 +73,21 @@ RESULT msp430_bsl_program(operation_t operations, program_info_t *pi,
 #define ERASE_MAIN				0xA504 // main        of SELECTED mem arrays
 #define ERASE_SGMT				0xA502 // SELECTED segment
 
-#define DeviceHas_TestPin()		\
-					(msp430_chip_param.program_mode & MSP430_MODE_TEST)
-#define DeviceHas_CpuX()		\
-					(msp430_chip_param.program_mode & MSP430_MODE_CPUX)
-#define DeviceHas_DataQuick()	\
-					(msp430_chip_param.program_mode & MSP430_MODE_DATAQUICK)
-#define DeviceHas_FastFlash()	\
-					(msp430_chip_param.program_mode & MSP430_MODE_FASTFLASH)
-#define DeviceHas_EnhVerify()	\
-					(msp430_chip_param.program_mode & MSP430_MODE_ENHVERIFY)
+#define DeviceHas_TestPin()		cur_chip_param.param[MSP430_PARAM_TEST]
+#define DeviceHas_CpuX()		cur_chip_param.param[MSP430_PARAM_CPUX]
+#define DeviceHas_DataQuick()	cur_chip_param.param[MSP430_PARAM_DATAQUICK]
+#define DeviceHas_FastFlash()	cur_chip_param.param[MSP430_PARAM_FASTFLASH]
+#define DeviceHas_EnhVerify()	cur_chip_param.param[MSP430_PARAM_ENHVERIFY]
 #define DeviceHas_JTAG()		\
-					(msp430_chip_param.program_mode & MSP430_MODE_JTAG)
+							(cur_chip_param.program_mode & MSP430_MODE_JTAG)
 #define DeviceHas_SpyBiWire()	\
-					(msp430_chip_param.program_mode & MSP430_MODE_SPW)
-#define Device_RamStart()		(msp430_chip_param.ram_start)
-#define Device_RamEnd()			(msp430_chip_param.ram_end)
-#define Device_MainStart()		(msp430_chip_param.main_start)
+							(cur_chip_param.program_mode & MSP430_MODE_SPW)
+#define Device_RamStart()		\
+						(word)(cur_chip_param.param[MSP430_PARAM_RAMSTART])
+#define Device_RamEnd()			\
+						(word)(cur_chip_param.param[MSP430_PARAM_RAMEND])
+#define Device_MainStart()		\
+						(word)(cur_chip_param.param[MSP430_PARAM_MAINSTART])
 
 #endif /* __MSP430_INTERNAL_H_INCLUDED__ */
 

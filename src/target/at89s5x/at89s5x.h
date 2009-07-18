@@ -20,6 +20,7 @@
 #define __AT89S5X_H_INCLUDED__
 
 #define S5X_STRING					"at89s5x"
+#define S5X_PROGRAM_MODE_STR		"pb"
 
 extern const program_area_map_t s5x_program_area_map[];
 

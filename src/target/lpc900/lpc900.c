@@ -42,53 +42,15 @@
 #include "lpc900_internal.h"
 
 #define CUR_TARGET_STRING			LPC900_STRING
-#define cur_chip_param				lpc900_chip_param
-#define cur_chips_param				lpc900_chips_param
+#define cur_chip_param				target_chip_param
+#define cur_chips_param				target_chips.chips_param
+#define cur_chips_num				target_chips.num_of_chips
 #define cur_flash_offset			lpc900_flash_offset
-
-static lpc900_param_t lpc900_chip_param;
 
 const program_area_map_t lpc900_program_area_map[] = 
 {
 	{APPLICATION, 'f', 1},
 	{0, 0}
-};
-
-const lpc900_param_t lpc900_chips_param[] = {
-//		chip_name,		chip_id,	flash_page_size,	flash_page_num
-		{"p89lpc901",	0x0015DD0D,	16,					64},
-		{"p89lpc902",	0x0015DD0F,	0,					0},
-		{"p89lpc903",	0x0015DD10,	0,					0},
-		{"p89lpc904",	0x0015DD21,	0,					0},
-		{"p89lpc906",	0x0015DD11,	0,					0},
-		{"p89lpc907",	0x0015DD12,	0,					0},
-		{"p89lpc908",	0x0015DD13,	0,					0},
-		{"p89lpc9102",	0x0015DD22,	0,					0},
-		{"p89lpc9103",	0x0015DD23,	0,					0},
-		{"p89lpc9107",	0x0015DD27,	0,					0},
-		{"p89lpc912",	0x0015DD14,	0,					0},
-		{"p89lpc913",	0x0015DD15,	0,					0},
-		{"p89lpc914",	0x0015DD16,	0,					0},
-		{"p89lpc915",	0x0015DD17,	0,					0},
-		{"p89lpc916",	0x0015DD18,	0,					0},
-		{"p89lpc917",	0x0015DD20,	0,					0},
-		{"p89lpc918",	0x0015DD2D,	0,					0},
-		{"p89lpc920",	0x0015DD1A,	0,					0},
-		{"p89lpc921",	0x0015DD0B,	0,					0},
-		{"p89lpc922",	0x0015DD0C,	0,					0},
-		{"p89lpc924",	0x0015DD1B,	0,					0},
-		{"p89lpc925",	0x0015DD1C,	0,					0},
-		{"p89lpc930",	0x0015DD19,	0,					0},
-		{"p89lpc931",	0x0015DD09,	0,					0},
-		{"p89lpc932a1",	0x0015DD1F,	0,					0},
-		{"p89lpc933",	0x0015DDA0,	0,					0},
-		{"p89lpc934",	0x0015DD1D,	0,					0},
-		{"p89lpc935",	0x0015DD1E,	0,					0},
-		{"p89lpc936",	0x0015DD24,	0,					0},
-		{"p89lpc938",	0x0015DD25,	0,					0},
-		{"p89lpc9401",	0x0015DD26,	0,					0},
-		{"p89lpc9408",	0x0015DD29,	0,					0},
-		{"p89lpc952",	0x0015DD28,	0,					0}
 };
 
 static uint32 lpc900_flash_offset = 0;
@@ -104,7 +66,7 @@ void lpc900_support(void)
 	uint32 i;
 
 	printf("Support list of %s:\n", CUR_TARGET_STRING);
-	for (i = 0; i < dimof(cur_chips_param); i++)
+	for (i = 0; i < cur_chips_num; i++)
 	{
 		printf("\
 %s: id = 0x%04x\n", 
@@ -138,7 +100,7 @@ RESULT lpc900_probe_chip(char *chip_name)
 {
 	uint32 i;
 	
-	for (i = 0; i < dimof(cur_chips_param); i++)
+	for (i = 0; i < cur_chips_num; i++)
 	{
 		if (!strcmp(cur_chips_param[i].chip_name, chip_name))
 		{
@@ -199,16 +161,16 @@ RESULT lpc900_init(program_info_t *pi, const char *dir,
 		}
 		
 		LOG_INFO(_GETTEXT(INFOMSG_AUTODETECT_SIGNATURE), pi->chip_id);
-		for (i = 0; i < dimof(cur_chips_param); i++)
+		for (i = 0; i < cur_chips_num; i++)
 		{
 			if (pi->chip_id == cur_chips_param[i].chip_id)
 			{
 				memcpy(&cur_chip_param, cur_chips_param + i, 
 					   sizeof(cur_chip_param));
-				cur_chip_param.flash_size = cur_chip_param.flash_page_num
-											* cur_chip_param.flash_page_size;
+				cur_chip_param.app_size = cur_chip_param.app_page_num
+										  * cur_chip_param.app_page_size;
 				
-				pi->app_size = cur_chip_param.flash_size;
+				pi->app_size = cur_chip_param.app_size;
 				pi->app_size_valid = 0;
 				
 				LOG_INFO(_GETTEXT(INFOMSG_CHIP_FOUND), 
@@ -224,16 +186,16 @@ RESULT lpc900_init(program_info_t *pi, const char *dir,
 	}
 	else
 	{
-		for (i = 0; i < dimof(cur_chips_param); i++)
+		for (i = 0; i < cur_chips_num; i++)
 		{
 			if (!strcmp(cur_chips_param[i].chip_name, pi->chip_name))
 			{
 				memcpy(&cur_chip_param, cur_chips_param + i, 
 					   sizeof(cur_chip_param));
-				cur_chip_param.flash_size = cur_chip_param.flash_page_num
-											* cur_chip_param.flash_page_size;
+				cur_chip_param.app_size = cur_chip_param.app_page_num
+										  * cur_chip_param.app_page_size;
 				
-				pi->app_size = cur_chip_param.flash_size;
+				pi->app_size = cur_chip_param.app_size;
 				pi->app_size_valid = 0;
 				
 				return ERROR_OK;
@@ -291,9 +253,9 @@ RESULT lpc900_write_buffer_from_file_callback(uint32 address, uint32 seg_addr,
 		}
 */		
 		mem_addr += cur_flash_offset;
-		if ((mem_addr >= cur_chip_param.flash_size)
- 			|| (length > cur_chip_param.flash_size)
- 			|| ((mem_addr + length) > cur_chip_param.flash_size))
+		if ((mem_addr >= cur_chip_param.app_size)
+ 			|| (length > cur_chip_param.app_size)
+ 			|| ((mem_addr + length) > cur_chip_param.app_size))
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_RANGE), "flash memory");
 			return ERRCODE_INVALID;
@@ -301,7 +263,7 @@ RESULT lpc900_write_buffer_from_file_callback(uint32 address, uint32 seg_addr,
 		memcpy(pi->app + mem_addr, data, length);
 		pi->app_size_valid += (uint16)length;
 		ret = MEMLIST_Add(&pi->app_memlist, mem_addr, length, 
-						  cur_chip_param.flash_page_size);
+						  cur_chip_param.app_page_size);
 		if (ret != ERROR_OK)
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "add memory list");
@@ -515,7 +477,7 @@ RESULT lpc900_program(operation_t operations, program_info_t *pi,
 		LOG_INFO(_GETTEXT(INFOMSG_ERASED), "chip");
 	}
 	
-	page_size = cur_chip_param.flash_page_size;
+	page_size = (uint16)cur_chip_param.app_page_size;
 	
 	// write flash
 	if (operations.write_operations & APPLICATION)
@@ -682,7 +644,7 @@ RESULT lpc900_program(operation_t operations, program_info_t *pi,
 			uint32 loop;
 			
 			crc_in_file = 0;
-			for (loop = 0; loop < cur_chip_param.flash_size; loop++)
+			for (loop = 0; loop < cur_chip_param.app_size; loop++)
 			{
 				uint8 byte = pi->app[loop];
 				
