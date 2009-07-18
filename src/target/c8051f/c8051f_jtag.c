@@ -261,6 +261,7 @@ RESULT c8051f_jtag_program(operation_t operations, program_info_t *pi,
 		pgbar_init("erasing flash |", "|", 0, pi->app_size_valid, 
 				   PROGRESS_STEP, '=');
 		
+		jtag_delay_ms(500);
 		for (i = 0; 
 			 i < (int32)pi->app_size_valid; 
 			 i += cur_chip_param.app_page_size)
