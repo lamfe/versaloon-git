@@ -347,6 +347,7 @@ RESULT lpc900_program(operation_t operations, program_info_t *pi,
 	uint16 page_size;
 	RESULT ret = ERROR_OK;
 	memlist *ml_tmp;
+	uint8 retry = 0;
 	
 	p = prog;
 	
@@ -373,6 +374,7 @@ RESULT lpc900_program(operation_t operations, program_info_t *pi,
 	
 	// here we go
 	// ICP Init
+ProgramStart:
 	if (ERROR_OK != icp_init())
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "initialize icp");
@@ -421,6 +423,24 @@ RESULT lpc900_program(operation_t operations, program_info_t *pi,
 		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read chip id");
 		ret = ERRCODE_FAILURE_OPERATION;
 		goto leave_program_mode;
+	}
+	if ((device_id & 0x00FF0000) != 0x00150000)
+	{
+		icp_fini();
+		if (ERROR_OK != icp_commit())
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATE_DEVICE), 
+					  "target chip");
+			return ERRCODE_FAILURE_OPERATION;
+		}
+		if (++retry < 10)
+		{
+			goto ProgramStart;
+		}
+		else
+		{
+			return ERRCODE_FAILURE_OPERATION;
+		}
 	}
 	pi->chip_id = device_id;
 	LOG_INFO(_GETTEXT(INFOMSG_TARGET_CHIP_ID), pi->chip_id);
