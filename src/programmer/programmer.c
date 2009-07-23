@@ -37,9 +37,10 @@ programmer_info_t programmers_info[] =
 {
 	// versaloon
 	{
-		VERSALOON_STRING,			// name
-		versaloon_check_argument,	// check_argument
-		versaloon_init_capability,	// init_capability
+		VERSALOON_STRING,				// name
+		versaloon_check_argument,		// check_argument
+		versaloon_init_capability,		// init_capability
+		versaloon_display_programmer,	// display_programmer
 	},
 	{ NULL }
 };
