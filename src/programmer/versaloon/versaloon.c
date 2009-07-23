@@ -263,8 +263,18 @@ RESULT versaloon_init(void)
 											  versaloon_serialstring);
 	if (NULL == versaloon_device_handle)
 	{
-		LOG_ERROR(_GETTEXT("No usb device with vid=0x%04x, pid = 0x%04x.\n"), 
-				  versaloon_vid, versaloon_pid);
+		if (versaloon_serialstring != NULL)
+		{
+			LOG_ERROR(
+				_GETTEXT("Not found vid=0x%04x,pid = 0x%04x,serial = %s.\n"), 
+				versaloon_vid, versaloon_pid, versaloon_serialstring);
+		}
+		else
+		{
+			LOG_ERROR(
+				_GETTEXT("Not found vid=0x%04x,pid = 0x%04x.\n"), 
+				versaloon_vid, versaloon_pid);
+		}
 		return ERROR_FAIL;
 	}
 	
