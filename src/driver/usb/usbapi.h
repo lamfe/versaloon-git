@@ -21,7 +21,10 @@
 
 #include "usb.h"
 
-usb_dev_handle* find_usb_device(uint16 VID, uint16 PID);
+uint32 print_usb_devices(uint16 VID, uint16 PID, uint8 stringindex, 
+					   char *serialstring);
+usb_dev_handle* find_usb_device(uint16 VID, uint16 PID, uint8 stringindex, 
+								char *serialstring);
 
 #endif /* __USBAPI_H_INCLUDED__ */
 

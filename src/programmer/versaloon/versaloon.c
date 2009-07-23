@@ -56,6 +56,7 @@ uint16 versaloon_pending_idx = 0;
 static usb_dev_handle *versaloon_device_handle = NULL;
 static uint16 versaloon_vid = VERSALOON_VID;
 static uint16 versaloon_pid = VERSALOON_PID;
+static char *versaloon_serialstring = NULL;
 static uint8 versaloon_epout = VERSALOON_OUTP;
 static uint8 versaloon_epin = VERSALOON_INP;
 static uint32 versaloon_to = VERSALOON_TIMEOUT;
@@ -101,7 +102,7 @@ RESULT versaloon_check_argument(char cmd, const char *argu)
 		
 		cur_pointer = (char *)argu;
 		
-		// Format: VID_PID_EPIN_EPOUT
+		// Format: VID_PID_EPIN_EPOUT_SERIALSTRING
 		versaloon_vid = (uint16)strtoul(cur_pointer, &end_pointer, 0);
 		if ((end_pointer == cur_pointer) 
 			|| ((*end_pointer != '_') && (*end_pointer != ' ') 
@@ -133,15 +134,36 @@ RESULT versaloon_check_argument(char cmd, const char *argu)
 		}
 		cur_pointer = end_pointer + 1;
 		versaloon_epout = (uint8)strtoul(cur_pointer, &end_pointer, 0);
+		if ((end_pointer == cur_pointer) 
+			|| ((*end_pointer != '_') && (*end_pointer != ' ') 
+				&& (*end_pointer != '-')) 
+			|| ('\0' == *(end_pointer + 1)))
+		{
+			goto print_usb_device;
+		}
+		cur_pointer = end_pointer + 1;
+		versaloon_serialstring = cur_pointer;
+		end_pointer = cur_pointer + strlen(versaloon_serialstring);
 		if ((end_pointer == cur_pointer) || (*end_pointer != '\0'))
 		{
 			LOG_BUG(_GETTEXT(ERRMSG_INVALID_OPTION), cmd);
 			return ERRCODE_INVALID_OPTION;
 		}
 		
-		LOG_DEBUG(_GETTEXT("Versaloon is on 0x%04X:0x%04X(0x%02x_0x%02X).\n"), 
-				  versaloon_vid, versaloon_pid, 
-				  versaloon_epin, versaloon_epout);
+print_usb_device:
+		if (versaloon_serialstring != NULL)
+		{
+			LOG_DEBUG(
+			   _GETTEXT("Versaloon is on 0x%04X:0x%04X(0x%02x_0x%02X):%s.\n"), 
+			   versaloon_vid, versaloon_pid, versaloon_epin, versaloon_epout, 
+			   versaloon_serialstring);
+		}
+		else
+		{
+			LOG_DEBUG(
+				_GETTEXT("Versaloon is on 0x%04X:0x%04X(0x%02x_0x%02X).\n"), 
+				versaloon_vid, versaloon_pid, versaloon_epin, versaloon_epout);
+		}
 		break;
 	default:
 		return ERROR_FAIL;
@@ -236,7 +258,9 @@ RESULT versaloon_init(void)
 	int verbosity_tmp;
 	uint32 timeout_tmp;
 	
-	versaloon_device_handle = find_usb_device(versaloon_vid, versaloon_pid);
+	versaloon_device_handle = find_usb_device(versaloon_vid, versaloon_pid, 
+											  VERSALOON_SERIALSTRING_INDEX, 
+											  versaloon_serialstring);
 	if (NULL == versaloon_device_handle)
 	{
 		LOG_ERROR(_GETTEXT("No usb device with vid=0x%04x, pid = 0x%04x.\n"), 
@@ -1113,5 +1137,12 @@ RESULT versaloon_init_capability(void *p)
 										versaloon_enter_firmware_update_mode;
 	
 	return ERROR_OK;
+}
+
+uint32 versaloon_display_programmer(void)
+{
+	return print_usb_devices(versaloon_vid, versaloon_pid, 
+							 VERSALOON_SERIALSTRING_INDEX, 
+							 versaloon_serialstring);
 }
 

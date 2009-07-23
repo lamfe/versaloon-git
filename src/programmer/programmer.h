@@ -26,6 +26,7 @@ typedef struct
 	char *name;
 	RESULT (*parse_argument)(char cmd, const char *argu);
 	RESULT (*init_capability)(void *p);
+	uint32 (*display_programmer)(void);
 	
 	// init and fini
 	RESULT (*init)(void);

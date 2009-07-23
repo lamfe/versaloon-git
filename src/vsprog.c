@@ -44,20 +44,21 @@
 #include "target.h"
 #include "hex.h"
 
-#define OPTSTR			"hvS:i:s:c:Mp:U:d:Go:l:f:F:m:x:C:I:JZ"
+#define OPTSTR			"hvS:i:s:c:Mp:U:Dd:Go:l:f:F:m:x:C:I:JZ"
 static const struct option long_opts[] =
 {
 	{"help", no_argument, NULL, 'h'},
 	{"version", no_argument, NULL, 'v'},
 	{"support", required_argument, NULL, 'S'},
-	{"hex", required_argument, NULL, 'i'},
+	{"input-file", required_argument, NULL, 'i'},
 	{"target-series", required_argument, NULL, 's'},
 	{"target-module", required_argument, NULL, 'c'},
 	{"mass-product", no_argument, NULL, 'M'},
 	{"programmer", required_argument, NULL, 'p'},
 	{"usb", required_argument, NULL, 'U'},
+	{"display-programmer", no_argument, NULL, 'D'},
 	{"debug", required_argument, NULL, 'd'},
-	{"gui_mode", no_argument, NULL, 'G'},
+	{"gui-mode", no_argument, NULL, 'G'},
 	{"operation", required_argument, NULL, 'o'},
 	{"lock", required_argument, NULL, 'l'},
 	{"fuse", required_argument, NULL, 'f'},
@@ -221,9 +222,9 @@ Usage: %s [OPTION]...\n\
   -c,  --target-module <MODULE>     set target module\n\
   -p,  --programmer <PROGRAMMER>    set programmer\n\
   -o,  --operation <OPERATIONS>     set programming operation\n\
-  -i,  --hex <HEXFILE>              set input hex file\n\
+  -i,  --input-file <HEXFILE>       set input hex file\n\
   -M,  --mass-product               set mass_product mode\n\
-  -G,  --gui_mode                   set gui_mode\n\
+  -G,  --gui-mode                   set gui_mode\n\
   -Z,  --firmware_update            enter into firmware update mode\n\n"), 
 			program_name);
 
@@ -313,14 +314,17 @@ int main(int argc, char* argv[])
 			free_all_and_exit(EXIT_FAILURE);
 			break;
 		case 'h':
+			// --help
 			print_help();
 			free_all_and_exit(EXIT_SUCCESS);
 			break;
 		case 'v':
+			// --version
 			print_version();
 			free_all_and_exit(EXIT_SUCCESS);
 			break;
 		case 'd':
+			// --debug level
 			if (((strlen(optarg) != 1)) || (optarg[0] > '3') 
 				|| (optarg[0] < '1'))
 			{
@@ -331,7 +335,20 @@ int main(int argc, char* argv[])
 			
 			verbosity = optarg[0] - '0';
 			break;
+		case 'D':
+			// --display-programmer
+			j = 0;
+			for (i = 0; programmers_info[i].name != NULL; i++)
+			{
+				j += programmers_info[i].display_programmer();
+			}
+			if (0 == j)
+			{
+				LOG_INFO(_GETTEXT("no programmer supported found.\n"));
+			}
+			free_all_and_exit(EXIT_SUCCESS);
 		case 'S':
+			// --support [target/programmer]
 			if (!strcmp(optarg, "all"))
 			{
 				// print all Supported programmers
@@ -377,6 +394,7 @@ int main(int argc, char* argv[])
 			}
 			break;
 		case 's':
+			// --target-series
 			program_info.chip_type = optarg;
 			ret = target_init(&program_info);
 			if (ret != ERROR_OK)
@@ -388,6 +406,7 @@ int main(int argc, char* argv[])
 			}
 			break;
 		case 'c':
+			// --target-module
 			program_info.chip_name = optarg;
 			ret = target_init(&program_info);
 			if (ret != ERROR_OK)
@@ -399,6 +418,7 @@ int main(int argc, char* argv[])
 			}
 			break;
 		case 'p':
+			// --programmer
 			ret = programmer_init(optarg, program_dir);
 			if (ret != ERROR_OK)
 			{
@@ -408,6 +428,7 @@ int main(int argc, char* argv[])
 			}
 			break;
 		case 'o':
+			// --operation
 			argu_num = (int)strlen(optarg) - 1;
 			if (argu_num > NUM_OF_TARGET_AREA)
 			{
@@ -556,6 +577,7 @@ int main(int argc, char* argv[])
 			}
 			break;
 		case 'i':
+			// --input-file
 			hex_filename = (char *)malloc(strlen(optarg) + 1);
 			if (NULL == hex_filename)
 			{
@@ -565,12 +587,15 @@ int main(int argc, char* argv[])
 			strcpy(hex_filename, optarg);
 			break;
 		case 'M':
+			// --mass-product
 			mass_product_flag = 1;
 			break;
 		case 'G':
+			// --gui-mode
 			pgbar_set_gui_mode(1);
 			break;
 		case 'Z':
+			// --firmware_update
 			firmware_update_flag = 1;
 			break;
 		default:
