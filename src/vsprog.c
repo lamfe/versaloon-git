@@ -737,9 +737,6 @@ int main(int argc, char* argv[])
 		fclose(hex_file);
 		hex_file = NULL;
 	}
-
-	// short delay
-	sleep_ms(100);
 	
 	// do programming
 	if (mass_product_flag)
@@ -836,8 +833,8 @@ int main(int argc, char* argv[])
 			|| operations.read_operations || operations.verify_operations 
 			|| operations.write_operations))
 		{
-			// no operation defined, read chip_id only
-			operations.read_operations = CHIP_ID;
+			// no operation defined, exit
+			free_all_and_exit(EXIT_SUCCESS);
 		}
 		
 		ret = cur_target->program(operations, &program_info, 
