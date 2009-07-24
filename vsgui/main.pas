@@ -230,8 +230,8 @@ const
   AUTODETECT_STR: string = 'AutoDetect';
   FREQ_STR:string = 'Freq(KHz):';
   EXECUTE_ADDR_STR: string = 'execute:';
-  ST_PROG_STR: string = '-U "0x0483 0x5740 0x82 0x03"';
-  ATMEL_PROG_STR: string = '-U "0x03eb 0x2103 0x82 0x02"';
+  ST_PROG_STR: string = '-U "0x0483 0x5740 0x82 0x03 2"';
+  ATMEL_PROG_STR: string = '-U "0x03eb 0x2103 0x82 0x02 0"';
   LOGMEMO_WIDTH: integer = 400;
 
 implementation
