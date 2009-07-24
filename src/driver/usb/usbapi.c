@@ -118,8 +118,8 @@ uint32 print_usb_devices(uint16 VID, uint16 PID, uint8 stringindex,
 	return c;
 }
 
-usb_dev_handle* find_usb_device(uint16 VID, uint16 PID, uint8 stringindex, 
-								char *serialstring)
+usb_dev_handle* find_usb_device(uint16 VID, uint16 PID, uint8 interface, 
+								uint8 stringindex, char *serialstring)
 {
 	usb_dev_handle *usb = NULL;
 	struct usb_bus *busses;
@@ -188,7 +188,7 @@ usb_dev_handle* find_usb_device(uint16 VID, uint16 PID, uint8 stringindex,
 					usb = NULL;
 					continue;
 				}
-				if (usb_claim_interface(usb, 0) != 0)
+				if (usb_claim_interface(usb, interface) != 0)
 				{
 					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_MESSAGE), 
 							  "claim interface", 

@@ -59,6 +59,7 @@ static uint16 versaloon_pid = VERSALOON_PID;
 static char *versaloon_serialstring = NULL;
 static uint8 versaloon_epout = VERSALOON_OUTP;
 static uint8 versaloon_epin = VERSALOON_INP;
+static uint8 versaloon_interface = 0;
 static uint32 versaloon_to = VERSALOON_TIMEOUT;
 
 static uint8 use_usbtojtaghl = 1;
@@ -102,7 +103,7 @@ RESULT versaloon_check_argument(char cmd, const char *argu)
 		
 		cur_pointer = (char *)argu;
 		
-		// Format: VID_PID_EPIN_EPOUT_SERIALSTRING
+		// Format: VID_PID_EPIN_EPOUT_INTERFACE_SERIALSTRING
 		versaloon_vid = (uint16)strtoul(cur_pointer, &end_pointer, 0);
 		if ((end_pointer == cur_pointer) 
 			|| ((*end_pointer != '_') && (*end_pointer != ' ') 
@@ -124,6 +125,16 @@ RESULT versaloon_check_argument(char cmd, const char *argu)
 		}
 		cur_pointer = end_pointer + 1;
 		versaloon_epin = (uint8)strtoul(cur_pointer, &end_pointer, 0);
+		if ((end_pointer == cur_pointer) 
+			|| ((*end_pointer != '_') && (*end_pointer != ' ') 
+				&& (*end_pointer != '-')) 
+			|| ('\0' == *(end_pointer + 1)))
+		{
+			LOG_BUG(_GETTEXT(ERRMSG_INVALID_OPTION), cmd);
+			return ERRCODE_INVALID_OPTION;
+		}
+		cur_pointer = end_pointer + 1;
+		versaloon_interface = (uint8)strtoul(cur_pointer, &end_pointer, 0);
 		if ((end_pointer == cur_pointer) 
 			|| ((*end_pointer != '_') && (*end_pointer != ' ') 
 				&& (*end_pointer != '-')) 
@@ -259,6 +270,7 @@ RESULT versaloon_init(void)
 	uint32 timeout_tmp;
 	
 	versaloon_device_handle = find_usb_device(versaloon_vid, versaloon_pid, 
+											  versaloon_interface, 
 											  VERSALOON_SERIALSTRING_INDEX, 
 											  versaloon_serialstring);
 	if (NULL == versaloon_device_handle)
@@ -334,6 +346,7 @@ RESULT versaloon_fini(void)
 {
 	if (versaloon_device_handle != NULL)
 	{
+		usb_release_interface(versaloon_device_handle, versaloon_interface);
 		usb_close(versaloon_device_handle);
 		versaloon_device_handle = NULL;
 		
