@@ -153,9 +153,10 @@ usb_dev_handle* find_usb_device(uint16 VID, uint16 PID, uint8 interface,
 					uint8 buf[256];
 					
 					config_value = usb_get_string_simple(usb, stringindex, 
-														 (char *)buf, 256);
+														 (char *)buf, 
+														 sizeof(buf));
 					if ((config_value < 0) 
-						|| (config_value != (int)strlen(serialstring)) - 1)
+						|| (config_value != ((int)strlen(serialstring) + 1)))
 					{
 						usb_close(usb);
 						usb = NULL;
