@@ -134,17 +134,16 @@ RESULT versaloon_check_argument(char cmd, const char *argu)
 			return ERRCODE_INVALID_OPTION;
 		}
 		cur_pointer = end_pointer + 1;
-		versaloon_interface = (uint8)strtoul(cur_pointer, &end_pointer, 0);
+		versaloon_epout = (uint8)strtoul(cur_pointer, &end_pointer, 0);
 		if ((end_pointer == cur_pointer) 
 			|| ((*end_pointer != '_') && (*end_pointer != ' ') 
 				&& (*end_pointer != '-')) 
 			|| ('\0' == *(end_pointer + 1)))
 		{
-			LOG_BUG(_GETTEXT(ERRMSG_INVALID_OPTION), cmd);
-			return ERRCODE_INVALID_OPTION;
+			goto print_usb_device;
 		}
 		cur_pointer = end_pointer + 1;
-		versaloon_epout = (uint8)strtoul(cur_pointer, &end_pointer, 0);
+		versaloon_interface = (uint8)strtoul(cur_pointer, &end_pointer, 0);
 		if ((end_pointer == cur_pointer) 
 			|| ((*end_pointer != '_') && (*end_pointer != ' ') 
 				&& (*end_pointer != '-')) 
