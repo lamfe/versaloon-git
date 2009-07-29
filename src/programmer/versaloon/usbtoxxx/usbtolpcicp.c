@@ -101,8 +101,11 @@ RESULT usbtolpcicp_out(uint8 interface_index, uint8 *buff, uint16 len)
 	return usbtoxxx_out_command(USB_TO_LPCICP, interface_index, buff, len, 0);
 }
 
-RESULT usbtolpcicp_poll_ready(uint8 interface_index)
+RESULT usbtolpcicp_poll_ready(uint8 interface_index, uint8 *ret, uint8 data, 
+							  uint8 setmask, uint8 clearmask, uint16 pollcnt)
 {
+	uint8 cmdbuf[5];
+	
 #if PARAM_CHECK
 	if (interface_index > 7)
 	{
@@ -111,6 +114,13 @@ RESULT usbtolpcicp_poll_ready(uint8 interface_index)
 	}
 #endif
 	
-	return usbtoxxx_poll_command(USB_TO_LPCICP, interface_index, NULL, 0);
+	cmdbuf[0] = data;
+	cmdbuf[1] = setmask;
+	cmdbuf[2] = clearmask;
+	cmdbuf[3] = (pollcnt >> 0) & 0xFF;
+	cmdbuf[4] = (pollcnt >> 8) & 0xFF;
+	
+	return usbtoxxx_poll_command(USB_TO_LPCICP, interface_index, cmdbuf, 5, 
+								 ret, 1);
 }
 

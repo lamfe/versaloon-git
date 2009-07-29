@@ -126,6 +126,7 @@ RESULT usbtoissp_wait_and_poll(uint8 interface_index)
 	}
 #endif
 	
-	return usbtoxxx_poll_command(USB_TO_ISSP, interface_index, NULL, 0);
+	return usbtoxxx_poll_command(USB_TO_ISSP, interface_index, NULL, 0, NULL, 
+								 0);
 }
 

@@ -824,9 +824,11 @@ RESULT versaloon_lpcicp_out(uint8 *buff, uint16 len)
 {
 	return usbtolpcicp_out(VERSALOON_LPCICP_PORT, buff, len);
 }
-RESULT versaloon_lpcicp_poll_ready(void)
+RESULT versaloon_lpcicp_poll_ready(uint8 data, uint8 *ret, uint8 setmask, 
+								   uint8 clearmask, uint16 pollcnt)
 {
-	return usbtolpcicp_poll_ready(VERSALOON_LPCICP_PORT);
+	return usbtolpcicp_poll_ready(VERSALOON_LPCICP_PORT, ret, data, setmask, 
+								  clearmask, pollcnt);
 }
 // JTAG
 RESULT versaloon_jtaghl_init(void)

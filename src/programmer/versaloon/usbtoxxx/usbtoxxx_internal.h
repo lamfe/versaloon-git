@@ -142,9 +142,9 @@ RESULT usbtoxxx_add_command(uint8 type, uint8 cmd, uint8 *cmdbuf,
 #define usbtoxxx_out_command(type, port, cmdbuf, cmdlen, c)					\
 			usbtoxxx_add_command((type), (USB_TO_XXX_OUT | (port)), (cmdbuf), \
 								 (cmdlen), 0, NULL, 0, 0, (c))
-#define usbtoxxx_poll_command(type, port, cmdbuf, cmdlen)					\
-			usbtoxxx_add_command((type), (USB_TO_XXX_POLL | (port)), \
-								 (cmdbuf), (cmdlen), 0, NULL, 0, 0, 0)
+#define usbtoxxx_poll_command(type, port, cmdbuf, cmdlen, retbuf, retlen)	\
+			usbtoxxx_add_command((type), (USB_TO_XXX_POLL | (port)), (cmdbuf),\
+								 (cmdlen), (retlen), (retbuf), 0, (retlen), 0)
 #define usbtoxxx_special_command(type, port, cmdbuf, cmdlen, retlen, wantbuf, \
 								 wantpos, wantlen, c)						\
 			usbtoxxx_add_command((type), (USB_TO_XXX_SPECIAL | (port)), \

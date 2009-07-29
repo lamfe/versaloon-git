@@ -125,6 +125,7 @@ RESULT usbtoc2_addr_poll(uint8 interface_index, uint8 mask, uint8 value,
 	cmdbuf[2] = (uint8)poll_cnt;
 	cmdbuf[3] = (uint8)(poll_cnt >> 8);
 	
-	return usbtoxxx_poll_command(USB_TO_C2, interface_index, cmdbuf, 4);
+	return usbtoxxx_poll_command(USB_TO_C2, interface_index, cmdbuf, 4, NULL, 
+								 0);
 }
 

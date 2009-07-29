@@ -64,7 +64,8 @@ RESULT usbtolpcicp_config(uint8 interface_index);
 RESULT usbtolpcicp_enter_program_mode(uint8 interface_index);
 RESULT usbtolpcicp_in(uint8 interface_index, uint8 *buff, uint16 len);
 RESULT usbtolpcicp_out(uint8 interface_index, uint8 *buff, uint16 len);
-RESULT usbtolpcicp_poll_ready(uint8 interface_index);
+RESULT usbtolpcicp_poll_ready(uint8 interface_index, uint8 *ret, uint8 data, 
+							  uint8 setmask, uint8 clearmask, uint16 pollcnt);
 
 
 // USB_TO_JTAG_HL
