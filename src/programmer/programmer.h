@@ -159,7 +159,8 @@ typedef struct
 	RESULT (*lpcicp_enter_program_mode)(void);
 	RESULT (*lpcicp_in)(uint8 *buff, uint16 len);
 	RESULT (*lpcicp_out)(uint8 *buff, uint16 len);
-	RESULT (*lpcicp_poll_ready)(void);
+	RESULT (*lpcicp_poll_ready)(uint8 data, uint8 *ret, uint8 setmask, 
+								uint8 clearmask, uint16 pollcnt);
 	RESULT (*lpcicp_commit)(void);
 	
 	// mass-product support

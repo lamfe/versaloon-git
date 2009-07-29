@@ -293,10 +293,18 @@ static programmer_info_t *p = NULL;
 #define icp_fini()							p->lpcicp_fini()
 #define icp_enter_program_mode()			p->lpcicp_enter_program_mode()
 #define icp_leave_program_mode()			p->lpcicp_leave_program_mode()
-#define icp_poll_ready()					p->lpcicp_poll_ready()
 #define icp_commit()						p->lpcicp_commit()
 #define icp_in(buf, len)					p->lpcicp_in((buf), (len))
 #define icp_out(buf, len)					p->lpcicp_out((buf), (len))
+#define icp_poll(dat, ptr, set, clear, cnt)	p->lpcicp_poll_ready((dat), \
+																 (ptr), \
+																 (set), \
+																 (clear), \
+																 (cnt))
+
+#define LPCICP_POLL_ON_SET					0
+#define LPCICP_POLL_ON_CLEAR				1
+#define LPCICP_POLL_TIME_OUT				2
 
 #define ICP_CMD_READ						0x01
 #define ICP_CMD_WRITE						0x00
@@ -340,7 +348,7 @@ RESULT lpc900_program(operation_t operations, program_info_t *pi,
 {
 	uint16 voltage;
 	uint8 page_buf[LPC900_PAGE_SIZE + 20];
-	uint32 device_id, poll_cnt;
+	uint32 device_id;
 	int32 i;
 	uint32 j, k, len_current_list;
 	uint32 crc_in_file, crc_in_chip;
@@ -468,6 +476,7 @@ ProgramStart:
 		page_buf[0] = ICP_CMD_WRITE | ICP_CMD_FMCON;
 		page_buf[1] = ICP_FMCMD_ERS_G;
 		icp_out(page_buf, 2);
+		icp_poll(ICP_CMD_READ | ICP_CMD_FMDATA_I, page_buf, 0x80, 0x00, 10000);
 		if (ERROR_OK != icp_commit())
 		{
 			pgbar_fini();
@@ -475,22 +484,6 @@ ProgramStart:
 			ret = ERRCODE_FAILURE_OPERATION;
 			goto leave_program_mode;
 		}
-		
-		// poll ready
-		poll_cnt = 0;
-		do{
-			page_buf[0] = ICP_CMD_READ | ICP_CMD_FMCON;
-			icp_out(page_buf, 1);
-			icp_in(page_buf, 1);
-			if ((ERROR_OK != icp_commit()) || ((page_buf[0] & 0x0F) != 0) 
-				|| (++poll_cnt > 100))
-			{
-				pgbar_fini();
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "erase chip");
-				ret = ERRCODE_FAILURE_OPERATION;
-				goto leave_program_mode;
-			}
-		}while (page_buf[0] & 0x80);
 		
 		pgbar_update(1);
 		pgbar_fini();
@@ -544,29 +537,15 @@ ProgramStart:
 				page_buf[5 + page_size + 5] = ICP_FMCMD_PROG;
 				
 				icp_out(page_buf, 11 + page_size);
-				if (ERROR_OK != icp_commit())
+				icp_poll(ICP_CMD_READ | ICP_CMD_FMCON, page_buf, 0x0F, 0x80, 10000);
+				if ((ERROR_OK != icp_commit()) 
+					|| (page_buf[0] != LPCICP_POLL_ON_CLEAR))
 				{
 					pgbar_fini();
 					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "program flash");
 					ret = ERRCODE_FAILURE_OPERATION;
 					goto leave_program_mode;
 				}
-				
-				// poll ready
-				poll_cnt = 0;
-				do{
-					page_buf[0] = ICP_CMD_READ | ICP_CMD_FMCON;
-					icp_out(page_buf, 1);
-					icp_in(page_buf, 1);
-					if ((ERROR_OK != icp_commit()) || ((page_buf[0] & 0x0F) != 0) 
-						|| (++poll_cnt > 100))
-					{
-						pgbar_fini();
-						LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "program flash");
-						ret = ERRCODE_FAILURE_OPERATION;
-						goto leave_program_mode;
-					}
-				}while (page_buf[0] & 0x80);
 				
 				pgbar_update(k);
 				len_current_list -= k;
@@ -607,29 +586,15 @@ ProgramStart:
 		page_buf[0] = ICP_CMD_WRITE | ICP_CMD_FMCON;
 		page_buf[1] = ICP_FMCMD_CRC_G;
 		icp_out(page_buf, 2);
-		if (ERROR_OK != icp_commit())
+		icp_poll(ICP_CMD_READ | ICP_CMD_FMCON, page_buf, 0x0F, 0x80, 10000);
+		if ((ERROR_OK != icp_commit()) 
+			|| (page_buf[0] != LPCICP_POLL_ON_CLEAR))
 		{
 			pgbar_fini();
 			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "verify flash");
 			ret = ERRCODE_FAILURE_OPERATION;
 			goto leave_program_mode;
 		}
-		
-		// poll ready
-		poll_cnt = 0;
-		do{
-			page_buf[0] = ICP_CMD_READ | ICP_CMD_FMCON;
-			icp_out(page_buf, 1);
-			icp_in(page_buf, 1);
-			if ((ERROR_OK != icp_commit()) || ((page_buf[0] & 0x0F) != 0) 
-				|| (++poll_cnt > 1000))
-			{
-				pgbar_fini();
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "verify chip");
-				ret = ERRCODE_FAILURE_OPERATION;
-				goto leave_program_mode;
-			}
-		}while (page_buf[0] & 0x80);
 		
 		page_buf[0] = ICP_CMD_READ | ICP_CMD_FMDATA_I;
 		icp_out(page_buf, 1);

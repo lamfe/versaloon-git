@@ -177,6 +177,6 @@ RESULT usbtomsp430jtag_poll(uint8 interface_index, uint32 dr, uint32 mask,
 	memcpy(buff + 11, (uint8*)&value, 4);
 	
 	return usbtoxxx_poll_command(USB_TO_MSP430_JTAG, interface_index, 
-								 buff, 15);
+								 buff, 15, NULL, 0);
 }
 

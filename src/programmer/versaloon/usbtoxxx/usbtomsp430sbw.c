@@ -179,6 +179,6 @@ RESULT usbtomsp430sbw_poll(uint8 interface_index, uint32 dr, uint32 mask,
 	memcpy(buff + 7, (uint8*)&mask, 4);
 	memcpy(buff + 11, (uint8*)&value, 4);
 	
-	return usbtoxxx_poll_command(USB_TO_SBW, interface_index, buff, 15);
+	return usbtoxxx_poll_command(USB_TO_SBW, interface_index, buff, 15, NULL, 0);
 }
 
