@@ -58,11 +58,13 @@ const program_area_map_t comisp_program_area_map[] =
 	{0, 0}
 };
 
-#define COMISP_STM32		0
-#define COMISP_LPCARM		1
+#define COMISP_TEST			0
+#define COMISP_STM32		1
+#define COMISP_LPCARM		2
 const comisp_param_t comisp_chips_param[] = {
 //	chip_name,			com_mode,																												default_char,		flash_start_addr
 //						{comport,	baudrate,	datalength,	paritybit,			stopbit,		handshake,				aux_pin}	
+	{"comisp_test",		{"",		-1,			8,			COMM_PARITYBIT_NONE,COMM_STOPBIT_1,	COMM_PARAMETER_UNSURE,	COMM_PARAMETER_UNSURE},	0x00,				0x00000000},
 	{"comisp_stm32",	{"",		-1,			8,			COMM_PARITYBIT_EVEN,COMM_STOPBIT_1,	COMM_PARAMETER_UNSURE,	COMM_PARAMETER_UNSURE},	STM32_FLASH_CHAR,	0x08000000},
 	{"comisp_lpcarm",	{"",		-1,			8,			COMM_PARITYBIT_NONE,COMM_STOPBIT_1,	COMM_PARAMETER_UNSURE,	COMM_PARAMETER_UNSURE},	LPCARM_FLASH_CHAR,	0x00000000},
 };
@@ -77,13 +79,16 @@ com_mode_t com_mode =
 COMM_HANDSHAKE_NONE, COMM_AUXPIN_DISABLE};;
 
 static uint32 comisp_flash_offset = 0;
+static uint32 comisp_test_buffsize = 0;
 
 static void comisp_usage(void)
 {
 	printf("\
 Usage of %s:\n\
   -C,  --comport <COMM_ATTRIBUTE>   set com port\n\
-  -x,  --execute <ADDRESS>          execute program\n\n", CUR_TARGET_STRING);
+  -x,  --execute <ADDRESS>          execute program\n\
+  -b,  --buffsize <BUFFSIZE>        set test buff size\n\n", 
+		   CUR_TARGET_STRING);
 }
 
 static void comisp_support(void)
@@ -118,6 +123,15 @@ RESULT comisp_parse_argument(char cmd, const char *argu)
 		break;
 	case 'S':
 		comisp_support();
+		break;
+	case 'b':
+		if ((NULL == argu) || (strlen(argu) == 0))
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), cmd);
+			return ERRCODE_INVALID_OPTION;
+		}
+		
+		comisp_test_buffsize = (uint32)strtoul(argu, NULL, 0);
 		break;
 	case 'C':
 		// COM Mode
@@ -371,6 +385,10 @@ uint32 comisp_interface_needed(void)
 RESULT comisp_program(operation_t operations, program_info_t *pi, 
 					  programmer_info_t *prog)
 {
+	RESULT ret = ERROR_OK;
+	uint32 retry;
+	uint8 *buff_w = NULL, *buff_r = NULL;
+	
 	pi = pi;
 	prog = prog;
 	
@@ -383,6 +401,86 @@ RESULT comisp_program(operation_t operations, program_info_t *pi,
 	
 	switch(comisp_chip_index)
 	{
+	case COMISP_TEST:
+		if (0 == comisp_test_buffsize)
+		{
+			LOG_INFO(_GETTEXT("buffsize not defined, use 64 for default.\n"));
+			comisp_test_buffsize = 64;
+		}
+		buff_w = (uint8*)malloc(comisp_test_buffsize);
+		buff_r = (uint8*)malloc(comisp_test_buffsize);
+		if ((NULL == buff_r) || (NULL == buff_w))
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+			ret = ERRCODE_NOT_ENOUGH_MEMORY;
+			goto comtest_end;
+		}
+		
+		ret = comm_open(com_mode.comport, com_mode.baudrate, 8, 
+					COMM_PARITYBIT_EVEN, COMM_STOPBIT_1, COMM_HANDSHAKE_NONE);
+		if (ret != ERROR_OK)
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPEN), com_mode.comport);
+			ret = ERROR_FAIL;
+			goto comtest_end;
+		}
+		
+		LOG_INFO(_GETTEXT("start to run com test for buffsize = %d.\n"), 
+				 comisp_test_buffsize);
+		retry = 0;
+		while(1)
+		{
+			uint16 i;
+			int32 comm_ret;
+			
+			for (i = 0; i < comisp_test_buffsize; i++)
+			{
+				buff_w[i] = (uint8)(i ^ retry);
+			}
+			
+			// send
+			comm_ret = comm_write(buff_w, comisp_test_buffsize);
+			if (comm_ret != (int32)comisp_test_buffsize)
+			{
+				LOG_ERROR("Fail to send %d bytes.\n", comisp_test_buffsize);
+				ret = ERROR_FAIL;
+				break;
+			}
+			// read
+			comm_ret = comm_read(buff_r, comisp_test_buffsize);
+			if (comm_ret != (int32)comisp_test_buffsize)
+			{
+				LOG_ERROR("Fail to receive %d bytes.\n", comisp_test_buffsize);
+				ret = ERROR_FAIL;
+				break;
+			}
+			// check
+			for (i = 0; i < comisp_test_buffsize; i++)
+			{
+				if (buff_w[i] != buff_r[i])
+				{
+					LOG_ERROR("Data error at %d.\n", i);
+					break;
+				}
+			}
+			retry++;
+			LOG_INFO(_GETTEXT("round %d OK.\n"), retry);
+		}
+		
+comtest_end:
+		comm_close();
+		comisp_test_buffsize = 0;
+		if (buff_w != NULL)
+		{
+			free(buff_w);
+			buff_w = NULL;
+		}
+		if (buff_r != NULL)
+		{
+			free(buff_r);
+			buff_r = NULL;
+		}
+		return ret;
 	case COMISP_STM32:
 		return stm32isp_program(operations, pi);
 	case COMISP_LPCARM:

@@ -44,7 +44,7 @@
 #include "target.h"
 #include "hex.h"
 
-#define OPTSTR			"hvS:i:s:c:Mp:U:Dd:Go:l:f:F:m:x:C:I:JZ"
+#define OPTSTR			"hvS:i:s:c:Mp:U:Dd:Go:l:f:F:m:x:C:I:JZb:"
 static const struct option long_opts[] =
 {
 	{"help", no_argument, NULL, 'h'},
@@ -69,6 +69,7 @@ static const struct option long_opts[] =
 	{"inputfile", required_argument, NULL, 'I'},
 	{"jtag", no_argument, NULL, 'J'},
 	{"firmware_update", no_argument, NULL, 'Z'},
+	{"buffsize", required_argument, NULL, 'b'},
 	{NULL, 0, NULL, 0},
 };
 
