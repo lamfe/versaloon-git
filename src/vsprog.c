@@ -858,8 +858,8 @@ int main(int argc, char* argv[])
 			|| operations.read_operations || operations.verify_operations 
 			|| operations.write_operations))
 		{
-			// no operation defined, exit
-			free_all_and_exit(EXIT_SUCCESS);
+			// no operation defined, read chip id
+			operations.read_operations = CHIP_ID;
 		}
 		
 		ret = cur_target->program(operations, &program_info, 
