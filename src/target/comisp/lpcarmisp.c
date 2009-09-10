@@ -40,13 +40,15 @@
 #include "comisp.h"
 #include "lpcarmisp.h"
 
+#include "comport.h"
+
 RESULT lpcarmisp_program(operation_t operations, program_info_t *pi)
 {
 	operations = operations;
 	pi = pi;
-
+	
 	LOG_ERROR("comisp_lpcarm not supported\n");
-
+	
 	return ERROR_FAIL;
 }
 
