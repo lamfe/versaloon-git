@@ -52,6 +52,7 @@ RESULT stm32isp_sycn(void)
 {
 	uint32 num;
 	uint8 buffer[1], retry = 10;
+	int32 comm_ret;
 
 	if (com_mode.auxpin)
 	{
@@ -66,10 +67,18 @@ RESULT stm32isp_sycn(void)
 		sleep_ms(10);
 	}
 	
-	if (0 > comm_read(buffer, 1))
+	while(1)
 	{
-		LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATE_DEVICE), com_mode.comport);
-		return ERRCODE_FAILURE_OPERATION;
+		comm_ret = comm_read(buffer, 1);
+		if (comm_ret < 0)
+		{
+			LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATE_DEVICE), com_mode.comport);
+			return ERRCODE_FAILURE_OPERATION;
+		}
+		if (comm_ret == 0)
+		{
+			break;
+		}
 	}
 	
 	// write the sync byte to the chip

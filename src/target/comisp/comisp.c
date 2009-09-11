@@ -388,6 +388,7 @@ RESULT comisp_program(operation_t operations, program_info_t *pi,
 	RESULT ret = ERROR_OK;
 	uint32 retry;
 	uint8 *buff_w = NULL, *buff_r = NULL;
+	int32 comm_ret;
 	
 	pi = pi;
 	prog = prog;
@@ -425,34 +426,62 @@ RESULT comisp_program(operation_t operations, program_info_t *pi,
 			goto comtest_end;
 		}
 		
+		while(1)
+		{
+			comm_ret = comm_read(buff_r, 1);
+			if (comm_ret < 0)
+			{
+				LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATE_DEVICE), com_mode.comport);
+				ret = ERRCODE_FAILURE_OPERATION;
+				goto comtest_end;
+			}
+			if (comm_ret == 0)
+			{
+				break;
+			}
+		}
+		
 		LOG_INFO(_GETTEXT("start to run com test for buffsize = %d.\n"), 
 				 comisp_test_buffsize);
 		retry = 0;
 		while(1)
 		{
 			uint16 i;
-			int32 comm_ret;
 			
 			for (i = 0; i < comisp_test_buffsize; i++)
 			{
-				buff_w[i] = (uint8)(i ^ retry);
+				buff_w[i] = (uint8)(i/* ^ retry*/);
 			}
 			
 			// send
 			comm_ret = comm_write(buff_w, comisp_test_buffsize);
+			if (comm_ret < 0)
+			{
+				LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATE_DEVICE), com_mode.comport);
+				ret = ERRCODE_FAILURE_OPERATION;
+				goto comtest_end;
+			}
 			if (comm_ret != (int32)comisp_test_buffsize)
 			{
 				LOG_ERROR("Fail to send %d bytes.\n", comisp_test_buffsize);
 				ret = ERROR_FAIL;
-				break;
+				goto comtest_end;
 			}
 			// read
+			memset(buff_r, 0, comisp_test_buffsize);
 			comm_ret = comm_read(buff_r, comisp_test_buffsize);
+			if (comm_ret < 0)
+			{
+				LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATE_DEVICE), com_mode.comport);
+				ret = ERRCODE_FAILURE_OPERATION;
+				goto comtest_end;
+			}
 			if (comm_ret != (int32)comisp_test_buffsize)
 			{
-				LOG_ERROR("Fail to receive %d bytes.\n", comisp_test_buffsize);
+				LOG_ERROR("Fail to receive %d bytes, %d bytes received.\n", 
+						  comisp_test_buffsize, 
+						  comm_ret);
 				ret = ERROR_FAIL;
-				break;
 			}
 			// check
 			for (i = 0; i < comisp_test_buffsize; i++)
@@ -460,7 +489,7 @@ RESULT comisp_program(operation_t operations, program_info_t *pi,
 				if (buff_w[i] != buff_r[i])
 				{
 					LOG_ERROR("Data error at %d.\n", i);
-					break;
+					goto comtest_end;
 				}
 			}
 			retry++;
