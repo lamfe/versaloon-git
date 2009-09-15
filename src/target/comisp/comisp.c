@@ -490,6 +490,7 @@ RESULT comisp_program(operation_t operations, program_info_t *pi,
 				{
 					LOG_ERROR("Data error at %d.\n", i);
 //					goto comtest_end;
+					break;
 				}
 			}
 			retry++;
