@@ -486,7 +486,7 @@ RESULT comisp_program(operation_t operations, program_info_t *pi,
 				LOG_ERROR("Fail to receive %d bytes, %d bytes received.\n", 
 						  comisp_test_buffsize, 
 						  comm_ret);
-//				ret = ERROR_FAIL;
+				ret = ERROR_FAIL;
 			}
 			// check
 			for (i = 0; i < comisp_test_buffsize; i++)
@@ -494,8 +494,8 @@ RESULT comisp_program(operation_t operations, program_info_t *pi,
 				if (buff_w[i] != buff_r[i])
 				{
 					LOG_ERROR("Data error at %d.\n", i);
-//					goto comtest_end;
-					break;
+					goto comtest_end;
+//					break;
 				}
 			}
 			retry++;
