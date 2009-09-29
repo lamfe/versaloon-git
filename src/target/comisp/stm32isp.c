@@ -50,7 +50,6 @@
 
 RESULT stm32isp_sycn(void)
 {
-	uint32 num;
 	uint8 buffer[1], retry = 10;
 	int32 comm_ret;
 
@@ -88,17 +87,17 @@ RESULT stm32isp_sycn(void)
 		LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), "write sync byte");
 		return ERRCODE_FAILURE_OPERATION;
 	}
-	num = comm_read(buffer, 1);
-	if (num < 0)
+	comm_ret = comm_read(buffer, 1);
+	if (comm_ret < 0)
 	{
 		LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
 				  "read ACK byte from chip");
 		return ERRCODE_FAILURE_OPERATION;
 	}
-	while (((1 == num) && (0 == buffer[0])) && (--retry > 0))
+	while (((1 == comm_ret) && (0 == buffer[0])) && (--retry > 0))
 	{
-		num = comm_read(buffer, 1);
-		if (num < 0)
+		comm_ret = comm_read(buffer, 1);
+		if (comm_ret < 0)
 		{
 			LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
 				  "read ACK byte from chip");
@@ -118,7 +117,7 @@ RESULT stm32isp_sycn(void)
 //		chip is already sync'd...
 //		chip is not in boot loader mode
 //		must have switches set and then chip reset
-	if (0 == num)
+	if (0 == comm_ret)
 	{
 		// write bummy byte
 		buffer[0] = 0;

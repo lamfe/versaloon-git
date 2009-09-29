@@ -55,7 +55,7 @@ const program_area_map_t comisp_program_area_map[] =
 {
 	{APPLICATION, 'f', 1},
 //	{LOCK, 'l', 0},
-	{0, 0}
+	{0, 0, 0}
 };
 
 #define COMISP_TEST			0

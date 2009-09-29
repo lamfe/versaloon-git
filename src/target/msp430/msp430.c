@@ -51,7 +51,7 @@
 const program_area_map_t msp430_program_area_map[] = 
 {
 	{APPLICATION, 'f', 1},
-	{0, 0}
+	{0, 0, 0}
 };
 
 uint8 msp430_prog_mode = 0;
@@ -238,9 +238,10 @@ RESULT msp430_init(program_info_t *pi, const char *dir,
 				   programmer_info_t *prog)
 {
 	uint8 i;
-	operation_t opt_tmp = {0};
+	operation_t opt_tmp;
 	
 	dir = dir;
+	memset(&opt_tmp, 0, sizeof(opt_tmp));
 	
 	if (strcmp(pi->chip_type, CUR_TARGET_STRING))
 	{

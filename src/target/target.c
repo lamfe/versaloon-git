@@ -70,8 +70,8 @@ target_info_t targets_info[] =
 		NULL,								// write_file_from_buffer_callback
 		s5x_program,						// program
 		
-//		NULL,								// get_mass_product_data_size
-//		NULL,								// prepare_mass_product_data
+		NULL,								// get_mass_product_data_size
+		NULL,								// prepare_mass_product_data
 	},
 	// psoc
 	{
@@ -213,10 +213,27 @@ target_info_t targets_info[] =
 		NULL,								// get_mass_product_data_size
 		NULL,								// prepare_mass_product_data
 	},
-	{ NULL }
+	{
+		NULL,								// name
+		0,									// areas
+		NULL,								// program_area_map
+		NULL,								// program_mode_str
+		NULL,								// parse_argument
+		NULL,								// probe_chip
+		NULL,								// init
+		NULL,								// fini
+		NULL,								// interfaces_needed
+		NULL,								// prepare_buffer
+		NULL,								// write_buffer_from_file_callback
+		NULL,								// write_file_from_buffer_callback
+		NULL,								// program
+		
+		NULL,								// get_mass_product_data_size
+		NULL,								// prepare_mass_product_data
+	}
 };
 target_info_t *cur_target = NULL;
-program_info_t program_info = {0};
+program_info_t program_info;
 
 RESULT target_alloc_data_buffer(void)
 {

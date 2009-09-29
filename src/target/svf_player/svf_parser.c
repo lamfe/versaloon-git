@@ -1095,9 +1095,8 @@ XXR_common:
 	
 	if (verbosity >= DEBUG_LEVEL)
 	{
-		if ((svf_parser_buffer_index >= 0) 
-			&& (((command != STATE) && (command != RUNTEST)) 
-				|| ((command == STATE) && (num_of_argu == 2))))
+		if (((command != STATE) && (command != RUNTEST)) 
+				|| ((command == STATE) && (num_of_argu == 2)))
 		{
 			if (ERROR_OK != tap_commit())
 			{
