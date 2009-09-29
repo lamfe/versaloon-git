@@ -236,11 +236,11 @@ Usage: %s [OPTION]...\n\
 static void print_version(void)
 {
 	printf(_GETTEXT("\
-vsprog %s\n\
+vsprog %s(%s) svn:%s\n\
 CopyRight(c) %s-%s by SimonQian <SimonQian@SimonQian.com>\n\n\
 This is free software; see the source for copying conditions.\n\
 There is NO warranty; not even for MERCHANTABILITY or FITNESS\n\
-FOR A PARTICULAR PURPOSE.\n"), VERSION, "2008", "2009");
+FOR A PARTICULAR PURPOSE.\n"), VERSION, PKGBLDDATE, PKGBLDREV, "2008", "2009");
 }
 
 int main(int argc, char* argv[])
