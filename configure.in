@@ -91,8 +91,7 @@ AM_CONDITIONAL(IS_WIN32, test $is_win32 = yes)
 
 GCC_WARNINGS="-Wall -Wstrict-prototypes -Wformat-security"
 GCC_WARNINGS="${GCC_WARNINGS} -Werror"
-#GCC_WARNINGS="${GCC_WARNINGS} -Wextra -Wno-unused-parameter"
-GCC_WARNINGS="${GCC_WARNINGS} -Wno-unused-parameter"
+GCC_WARNINGS="${GCC_WARNINGS} -Wextra -Wno-unused-parameter"
 GCC_WARNINGS="${GCC_WARNINGS} -Wbad-function-cast"
 GCC_WARNINGS="${GCC_WARNINGS} -Wcast-align"
 GCC_WARNINGS="${GCC_WARNINGS} -Wredundant-decls"

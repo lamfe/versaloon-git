@@ -172,6 +172,17 @@ typedef struct
 	RESULT (*enter_firmware_update_mode)(void);
 }programmer_info_t;
 
+#define PROGRAMMER_DEFINE(name, parse_argument, init_capability, 	\
+						  display_programmer)						\
+	{\
+		name, parse_argument, init_capability, display_programmer, 	\
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0\
+	}
+
 extern programmer_info_t *cur_programmer;
 extern programmer_info_t programmers_info[];
 

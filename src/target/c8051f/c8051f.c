@@ -50,7 +50,7 @@
 const program_area_map_t c8051f_program_area_map[] = 
 {
 	{APPLICATION, 'f', 1},
-	{0, 0}
+	{0, 0, 0}
 };
 
 static uint8 c8051f_prog_mode = 0;
@@ -232,9 +232,10 @@ RESULT c8051f_init(program_info_t *pi, const char *dir,
 				   programmer_info_t *prog)
 {
 	uint32 i;
-	operation_t opt_tmp = {0};
+	operation_t opt_tmp;
 	
 	dir = dir;
+	memset(&opt_tmp, 0, sizeof(opt_tmp));
 	
 	if (strcmp(pi->chip_type, CUR_TARGET_STRING))
 	{

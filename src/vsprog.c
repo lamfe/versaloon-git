@@ -284,6 +284,9 @@ int main(int argc, char* argv[])
 		}
 	}
 	
+	// initialize varibles
+	memset(&program_info, 0, sizeof(program_info));
+	
 	// if no argument, print help
 	if (1 == argc)
 	{

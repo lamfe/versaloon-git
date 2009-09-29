@@ -55,7 +55,7 @@ const program_area_map_t s5x_program_area_map[] =
 //	{USER_SIG, 'u', 1},
 //	{FUSE, 'f', 0},
 	{LOCK, 'l', 0},
-	{0, 0}
+	{0, 0, 0}
 };
 
 static uint8 s5x_lock = 0;
@@ -324,9 +324,10 @@ RESULT s5x_fini(program_info_t *pi, programmer_info_t *prog)
 RESULT s5x_init(program_info_t *pi, const char *dir, programmer_info_t *prog)
 {
 	uint8 i;
-	operation_t opt_tmp = {0};
+	operation_t opt_tmp;
 	
 	dir = dir;
+	memset(&opt_tmp, 0, sizeof(opt_tmp));
 	
 	if (strcmp(pi->chip_type, CUR_TARGET_STRING))
 	{
