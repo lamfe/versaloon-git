@@ -149,6 +149,20 @@ RESULT stm32isp_sycn(void)
 		return ERROR_FAIL;
 		break;
 	}
+	
+	while(1)
+	{
+		comm_ret = comm_read(buffer, 1);
+		if (comm_ret < 0)
+		{
+			LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATE_DEVICE), com_mode.comport);
+			return ERRCODE_FAILURE_OPERATION;
+		}
+		if (comm_ret == 0)
+		{
+			break;
+		}
+	}
 }
 
 RESULT stm32isp_send_command(uint8 cmd, const char *cmd_name, 
@@ -741,28 +755,20 @@ RESULT stm32isp_program(operation_t operations, program_info_t *pi)
 	// read bootloader version
 	if (ERROR_OK != stm32isp_read_bootloader_version(&bootloader_version))
 	{
-		// try again
-		if (ERROR_OK != stm32isp_read_bootloader_version(&bootloader_version))
-		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-					"read bootloader version");
-			ret = ERRCODE_FAILURE_OPERATION;
-			goto leave_program_mode;
-		}
+		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+				"read bootloader version");
+		ret = ERRCODE_FAILURE_OPERATION;
+		goto leave_program_mode;
 	}
 	LOG_INFO(_GETTEXT("Bootloader version %1X.%1X detected\n"), 
 			 (bootloader_version & 0xF0) >> 4, bootloader_version & 0x0F);
 	// Get ID command returns chip ID (same as JTAG ID)
 	if (ERROR_OK != stm32isp_read_product_id(&product_id))
 	{
-		// try again
-		if (ERROR_OK != stm32isp_read_product_id(&product_id))
-		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-					"read product id");
-			ret = ERRCODE_FAILURE_OPERATION;
-			goto leave_program_mode;
-		}
+		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+				"read product id");
+		ret = ERRCODE_FAILURE_OPERATION;
+		goto leave_program_mode;
 	}
 	pi->chip_id = product_id;
 	LOG_INFO(_GETTEXT("Product id = 0x%04X\n"), pi->chip_id);
