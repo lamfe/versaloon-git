@@ -149,20 +149,6 @@ RESULT stm32isp_sycn(void)
 		return ERROR_FAIL;
 		break;
 	}
-	
-	while(1)
-	{
-		comm_ret = comm_read(buffer, 1);
-		if (comm_ret < 0)
-		{
-			LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATE_DEVICE), com_mode.comport);
-			return ERRCODE_FAILURE_OPERATION;
-		}
-		if (comm_ret == 0)
-		{
-			break;
-		}
-	}
 }
 
 RESULT stm32isp_send_command(uint8 cmd, const char *cmd_name, 
