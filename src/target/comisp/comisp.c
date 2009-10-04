@@ -433,12 +433,12 @@ RESULT comisp_program(operation_t operations, program_info_t *pi,
 			comm_ret = comm_read(buff_r, 1);
 			if (comm_ret < 0)
 			{
-				LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATE_DEVICE), 
-						  com_mode.comport);
+				LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_HANDLE_DEVICE), 
+						  "read", com_mode.comport);
 				ret = ERRCODE_FAILURE_OPERATION;
 				goto comtest_end;
 			}
-			if (comm_ret == 0)
+			else if (comm_ret == 0)
 			{
 				break;
 			}
@@ -460,8 +460,8 @@ RESULT comisp_program(operation_t operations, program_info_t *pi,
 			comm_ret = comm_write(buff_w, comisp_test_buffsize);
 			if (comm_ret < 0)
 			{
-				LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATE_DEVICE), 
-						  com_mode.comport);
+				LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_HANDLE_DEVICE), 
+						  "write", com_mode.comport);
 				ret = ERRCODE_FAILURE_OPERATION;
 				goto comtest_end;
 			}
@@ -478,8 +478,8 @@ RESULT comisp_program(operation_t operations, program_info_t *pi,
 			comm_ret = comm_read(buff_r, comisp_test_buffsize);
 			if (comm_ret < 0)
 			{
-				LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATE_DEVICE), 
-						  com_mode.comport);
+				LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_HANDLE_DEVICE), 
+						  "read", com_mode.comport);
 				ret = ERRCODE_FAILURE_OPERATION;
 				goto comtest_end;
 			}
@@ -501,6 +501,21 @@ RESULT comisp_program(operation_t operations, program_info_t *pi,
 				}
 			}
 			retry++;
+			
+			comm_ret = comm_read(buff_r, 1);
+			if (comm_ret < 0)
+			{
+				LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_HANDLE_DEVICE), 
+						  "write", com_mode.comport);
+				ret = ERRCODE_FAILURE_OPERATION;
+				goto comtest_end;
+			}
+			else if (comm_ret > 0)
+			{
+				LOG_ERROR("Too many data received.\n");
+				goto comtest_end;
+			}
+			
 			LOG_INFO(_GETTEXT("round %d OK.\n"), retry);
 		}
 		
