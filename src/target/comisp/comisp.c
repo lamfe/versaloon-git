@@ -59,15 +59,15 @@ const program_area_map_t comisp_program_area_map[] =
 	{0, 0, 0}
 };
 
-#define COMISP_TEST			0
-#define COMISP_STM32		1
-#define COMISP_LPCARM		2
+#define COMISP_STM32		0
+#define COMISP_LPCARM		1
+#define COMISP_TEST			2
 const comisp_param_t comisp_chips_param[] = {
 //	chip_name,			com_mode,																												default_char,		flash_start_addr
 //						{comport,	baudrate,	datalength,	paritybit,			stopbit,		handshake,				aux_pin}	
-	{"comisp_test",		{"",		-1,			8,			COMM_PARITYBIT_NONE,COMM_STOPBIT_1,	COMM_PARAMETER_UNSURE,	COMM_PARAMETER_UNSURE},	0x00,				0x00000000},
 	{"comisp_stm32",	{"",		-1,			8,			COMM_PARITYBIT_EVEN,COMM_STOPBIT_1,	COMM_PARAMETER_UNSURE,	COMM_PARAMETER_UNSURE},	STM32_FLASH_CHAR,	0x08000000},
 	{"comisp_lpcarm",	{"",		-1,			8,			COMM_PARITYBIT_NONE,COMM_STOPBIT_1,	COMM_PARAMETER_UNSURE,	COMM_PARAMETER_UNSURE},	LPCARM_FLASH_CHAR,	0x00000000},
+	{"comisp_test",		{"",		-1,			8,			COMM_PARITYBIT_NONE,COMM_STOPBIT_1,	COMM_PARAMETER_UNSURE,	COMM_PARAMETER_UNSURE},	0x00,				0x00000000},
 };
 static uint8 comisp_chip_index = 0;
 comisp_param_t comisp_chip_param;
