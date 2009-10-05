@@ -26,7 +26,9 @@ AC_CHECK_HEADERS(sys/time.h)
 AC_CHECK_HEADERS(strings.h)
 AC_CHECK_HEADERS(unistd.h)
 AC_CHECK_HEADERS([usb.h],[],
-  [AC_MSG_ERROR([usb.h is required to build some OpenOCD driver(s)])])
+  [AC_MSG_ERROR([usb.h is required to build Versaloon])])
+AC_CHECK_HEADERS([libxml/parser.h],[],
+  [AC_MSG_ERROR([libxml/parser.h is required to build Versaloon])])
 
 AC_HEADER_ASSERT
 AC_HEADER_STDBOOL
