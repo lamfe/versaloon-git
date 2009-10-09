@@ -31,8 +31,8 @@ Configuration:
   Windows:
     without MSC: ../driver/win32/stmcdc.inf
     with MSC:    ../driver/win32/stmcdc_with_MSC.inf for CDC, and MSC can be installed automatically.
-  Linux:
-    TBD
+  Linux(Tested on Ubuntu 8.04LTS):
+    No driver needed.
 5. image generation
   simple load the firmware to the defined flash start address, and load udisk image to the address defined by MSD_MEMORY_START_ADDR.
 6. ......
