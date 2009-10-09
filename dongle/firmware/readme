@@ -19,7 +19,7 @@ Configuration:
   For IAR, just configure the target chip in the option dialog, and modify the linker file according to the application. Select the corresponding startup file under HW-->Lib-->CMSIS-->startup virtual directory. Remember to select "release" to save about 0.2K flash.
   For GCC, TBD.
   Modify NVIC_Configuration function in HW/HW.c to configure the flash start address. Modify HSE_Value definitation in stm3210x.h in HW/lib/CMSIS/Core/CM3/stm32f10x.h to the real frequency of external oscillator, available values are 8000000/12000000/16000000.
-2. functionality(in app_cfg.h)
+2. functionality(in Projects/CDC/app_cfg.h)
   MSC enable: USB_WITH_MASSSTORAGE, if defined as 0, MSC is disabled; if defined as 1, MSC is enabled.
   udisk start address: MSD_MEMORY_START_ADDR, it should start after firmware and aligned to flash block size of target chip.
   USB buffer size: USB_DATA_BUFF_SIZE, as much as possilbe,
