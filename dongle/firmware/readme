@@ -21,7 +21,7 @@ Configuration:
   Modify NVIC_Configuration function in HW/HW.c to configure the flash start address. Modify HSE_Value definitation in stm3210x.h in HW/lib/CMSIS/Core/CM3/stm32f10x.h to the real frequency of external oscillator, available values are 8000000/12000000/16000000.
 2. functionality(in app_cfg.h)
   MSC enable: USB_WITH_MASSSTORAGE, if defined as 0, MSC is disabled; if defined as 1, MSC is enabled.
-  udisk start address: MSD_MEMORY_START_ADDR, it should start after firmware.
+  udisk start address: MSD_MEMORY_START_ADDR, it should start after firmware and aligned to flash block size of target chip.
   USB buffer size: USB_DATA_BUFF_SIZE, as much as possilbe,
   UART buffer size: ASYN_DATA_BUFF_SIZE, 1K is enough(UART will receive less than 1K in 10ms under 921600bps).
 3. MSC udisk configuration:
