@@ -36,7 +36,7 @@
 #define ERRMSG_INVALID_HEX_MESSAGE			"0x%X is invalid for %s, %s\n"
 #define ERRMSG_INVALID_ADDRESS				"Address 0x%X is invalid for %s.\n"
 #define ERRMSG_INVALID_INDEX				"Index %d is invalid for %s.\n"
-#define	ERRMSG_INVALID_RANGE				"Invalid range for %s.\n"
+#define ERRMSG_INVALID_RANGE				"Invalid range for %s.\n"
 #define ERRCODE_INVALID						ERROR_FAIL
 
 #define ERRMSG_INVALID_OPTION				"Invalid option: %c.\n"
@@ -63,7 +63,7 @@
 #define ERRMSG_FAILURE_HANDLE_DEVICE		"Fail to %s %s.\n"
 #define ERRCODE_FAILURE_OPERATION			ERROR_FAIL
 
-#define	ERRMSG_FAILURE_OPEN					"Fail to open %s.\n"
+#define ERRMSG_FAILURE_OPEN					"Fail to open %s.\n"
 #define ERRCODE_FAILURE_OPEN				ERROR_FAIL
 
 
@@ -99,7 +99,7 @@
 #define INFOMSG_AUTODETECT_SIGNATURE		"Auto-detect signature is 0x%X\n"
 #define INFOMSG_CHIP_FOUND					"%s found\n"
 #define INFOMSG_TARGET_VOLTAGE				"Target runs at %d.%dV\n"
-#define	INFOMSG_TARGET_LOW_POWER			"No power is detected on target.\n"
+#define INFOMSG_TARGET_LOW_POWER			"No power is detected on target.\n"
 #define INFOMSG_USE_DEFAULT					"%s not defined, use %s as default.\n"
 #define INFOMSG_TARGET_CHIP_ID				"Chip-id read is 0x%X.\n"
 #define INFOMSG_CHECKSUM					"Checksum is 0x%X.\n"
