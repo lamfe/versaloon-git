@@ -17,7 +17,7 @@ Compilation environment:
 Configuration:
 1. target chip
   For IAR, just configure the target chip in the option dialog, and modify the linker file according to the application. Select the corresponding startup file under HW-->Lib-->CMSIS-->startup virtual directory. Remember to select "release" to save about 0.2K flash.
-  For GCC, TBD.
+  For GCC, edit stm32.ld for RAM, FLASH, and _estack. To build with GCC, just make in Projects/CDC/GCC.
   Modify NVIC_Configuration function in HW/HW.c to configure the flash start address. Modify HSE_Value definitation in stm3210x.h in HW/lib/CMSIS/Core/CM3/stm32f10x.h to the real frequency of external oscillator, available values are 8000000/12000000/16000000.
 2. functionality(in Projects/CDC/app_cfg.h)
   MSC enable: USB_WITH_MASSSTORAGE, if defined as 0, MSC is disabled; if defined as 1, MSC is enabled.
@@ -31,7 +31,7 @@ Configuration:
   Windows:
     without MSC: ../driver/win32/stmcdc.inf
     with MSC:    ../driver/win32/stmcdc_with_MSC.inf for CDC, and MSC can be installed automatically.
-  Linux(Tested on Ubuntu 8.04LTS):
+  Linux(Tested on Ubuntu 8.04LTS, Linux kernel later than 2.6.21.3 supports IAD):
     No driver needed.
 5. image generation
   simple load the firmware to the defined flash start address, and load udisk image to the address defined by MSD_MEMORY_START_ADDR.
