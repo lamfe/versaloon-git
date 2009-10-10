@@ -179,9 +179,11 @@ void GPIO_Configuration(void)
 	SW_SETINPUT();
 	SW_DIR_INIT();
 
+#if MP_EN
 	// Key Init
 	BKP_TamperPinCmd(DISABLE);
 	KEY_Init();
+#endif
 
 	// LED Init
 	Led_RW_OFF();

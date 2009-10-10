@@ -1654,6 +1654,10 @@
       </file>
       <file>
         <name>$PROJ_DIR$\..\..\..\HW\lib\src\stm32f10x_bkp.c</name>
+        <excluded>
+          <configuration>Debug</configuration>
+          <configuration>Release</configuration>
+        </excluded>
       </file>
       <file>
         <name>$PROJ_DIR$\..\..\..\HW\lib\src\stm32f10x_can.c</name>
@@ -1726,6 +1730,10 @@
       </file>
       <file>
         <name>$PROJ_DIR$\..\..\..\HW\lib\src\stm32f10x_pwr.c</name>
+        <excluded>
+          <configuration>Debug</configuration>
+          <configuration>Release</configuration>
+        </excluded>
       </file>
       <file>
         <name>$PROJ_DIR$\..\..\..\HW\lib\src\stm32f10x_rcc.c</name>
