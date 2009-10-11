@@ -521,7 +521,7 @@
         </option>
         <option>
           <name>OOCOutputFile</name>
-          <state>Versaloon_IAR.hex</state>
+          <state>CDC_IAR.hex</state>
         </option>
         <option>
           <name>OOCCommandLineProducer</name>
@@ -563,7 +563,7 @@
         <debug>1</debug>
         <option>
           <name>IlinkOutputFile</name>
-          <state>Versaloon.out</state>
+          <state>CDC.out</state>
         </option>
         <option>
           <name>IlinkLibIOConfig</name>
@@ -639,7 +639,7 @@
         </option>
         <option>
           <name>IlinkIcfFile</name>
-          <state>$PROJ_DIR$\Versaloon.icf</state>
+          <state>$PROJ_DIR$\CDC.icf</state>
         </option>
         <option>
           <name>IlinkIcfFileSlave</name>
@@ -1321,7 +1321,7 @@
         </option>
         <option>
           <name>OOCOutputFile</name>
-          <state>Versaloon_IAR.hex</state>
+          <state>CDC_IAR.hex</state>
         </option>
         <option>
           <name>OOCCommandLineProducer</name>
@@ -1363,7 +1363,7 @@
         <debug>0</debug>
         <option>
           <name>IlinkOutputFile</name>
-          <state>Versaloon.out</state>
+          <state>CDC.out</state>
         </option>
         <option>
           <name>IlinkLibIOConfig</name>
@@ -1439,7 +1439,7 @@
         </option>
         <option>
           <name>IlinkIcfFile</name>
-          <state>$PROJ_DIR$\Versaloon.icf</state>
+          <state>$PROJ_DIR$\CDC.icf</state>
         </option>
         <option>
           <name>IlinkIcfFileSlave</name>
