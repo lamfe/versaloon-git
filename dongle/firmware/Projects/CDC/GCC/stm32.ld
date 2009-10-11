@@ -23,7 +23,7 @@ MEMORY
 }
 
 /* highest address of the user mode stack */
-_estack = 0x20000400;
+_estack = 0x20005000;
 
 /* include the section management sub-script */
 /* (either "STM32_SEC_FLASH.ld" or "STM32_SEC_RAM.ld") */
