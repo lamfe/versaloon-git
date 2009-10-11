@@ -56,4 +56,4 @@ ServiceBinary=%12%\usbser.sys
 
 [Strings] 
 STM="STMicroelectronics"
-DESCRIPTION="STM32 Virtual COM Port" 
+DESCRIPTION="STM32 Virtual COM Port with MSC" 
