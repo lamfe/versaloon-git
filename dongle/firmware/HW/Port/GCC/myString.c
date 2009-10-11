@@ -1,7 +1,7 @@
 #include "app_cfg.h"
 
-#if 0
-void* memcpy(u8 *m0, const u8 *m1, u32 len)
+#if 1
+void* memcpy(void *m0, const void *m1, u32 len)
 {
   u8 *ret = m0;
 
