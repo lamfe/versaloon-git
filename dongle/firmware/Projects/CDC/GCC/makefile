@@ -94,7 +94,7 @@ STR_DIV	= ------------------------------------------------------------
 
 # all
 
-all: start gcc-info $(MAIN_OUT_ELF) $(MAIN_OUT_PROG) flash end
+all: start gcc-info $(MAIN_OUT_ELF) $(MAIN_OUT_PROG) size flash end
 
 # misc
 
@@ -126,12 +126,13 @@ $(MAIN_OUT_BIN): $(MAIN_OUT_ELF)
 $(MAIN_OUT_HEX): $(MAIN_OUT_ELF)
 	$(OBJCP) -O ihex $< $@
 
-
-# flash
+size: $(MAIN_OUT_ELF)
+	@echo $(STR_DIV)
+	size $(MAIN_OUT_ELF)
 
 flash: $(MAIN_OUT_PROG)
 	@echo $(STR_DIV)
-	@echo write your command here to download program to flash
+	vsprog -ccomisp_stm32 -C "COM3" -i Versaloon_GCC.hex -x0x08002000 -oe -owf
 
 $(ASM_OBJS): $(ASM_SRCS)
 	$(CC) -c $(CFLAGS) $^
