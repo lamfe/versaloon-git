@@ -216,9 +216,7 @@ void NVIC_Configuration(void)
 	/* Set the Vector Table base location at 0x20000000 */ 
 	NVIC_SetVectorTable(NVIC_VectTab_RAM, 0x0); 
 #else	/* VECT_TAB_FLASH	*/
-	/* Set the Vector Table base location at 0x08000000 */ 
-//	NVIC_SetVectorTable(NVIC_VectTab_FLASH, 0x0);	 
-	NVIC_SetVectorTable(NVIC_VectTab_FLASH, 0x2000);
+	NVIC_SetVectorTable(NVIC_VectTab_FLASH, _SYS_FLASH_VECTOR_TABLE_SHIFT);
 #endif
 
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);

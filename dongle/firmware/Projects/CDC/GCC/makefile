@@ -34,17 +34,46 @@ USR_INCS+= -I $(SRCDIR)/HW/Mass
 USR_SRCS+= $(SRCDIR)/Tools/fifo/fifo.c
 USR_INCS+= -I $(SRCDIR)/Tools/fifo
 
+#SPI
+USR_SRCS+= $(SRCDIR)/Interfaces/SPI/SPI.c
+USR_INCS+= -I $(SRCDIR)/Interfaces/SPI
+
+# JTAG
+USR_SRCS+= $(SRCDIR)/Interfaces/JTAG/JTAG_TAP.c
+USR_INCS+= -I $(SRCDIR)/Interfaces/JTAG
+
 # PowerExt
 USR_SRCS+= $(SRCDIR)/Interfaces/PowerExt/PowerExt.c
 USR_INCS+= -I $(SRCDIR)/Interfaces/PowerExt
+
+# I2C
+USR_SRCS+= $(SRCDIR)/Interfaces/I2C/I2C.c
+USR_INCS+= -I $(SRCDIR)/Interfaces/I2C
+
+# VSLLink
+USR_SRCS+= $(SRCDIR)/VSLLink/VSLLink.c
+USR_INCS+= -I $(SRCDIR)/VSLLink
+
+# USB_TO_XXX
+USR_SRCS+= $(SRCDIR)/USB_TO_XXX/USB_TO_XXX.c $(SRCDIR)/USB_TO_XXX/USB_TO_USART.c
+USR_SRCS+= $(SRCDIR)/USB_TO_XXX/USB_TO_SPI.c $(SRCDIR)/USB_TO_XXX/USB_TO_I2C.c
+USR_SRCS+= $(SRCDIR)/USB_TO_XXX/USB_TO_GPIO.c $(SRCDIR)/USB_TO_XXX/USB_TO_PWM.c
+USR_SRCS+= $(SRCDIR)/USB_TO_XXX/USB_TO_ADC.c $(SRCDIR)/USB_TO_XXX/USB_TO_DAC.c
+USR_SRCS+= $(SRCDIR)/USB_TO_XXX/USB_TO_POWER.c 
+USR_INCS+= -I $(SRCDIR)/USB_TO_XXX
 
 
 
 LIBSTM32_SRCS = \
  $(SRCDIR)/HW/lib/src/misc.c \
+ $(SRCDIR)/HW/lib/src/stm32f10x_adc.c \
+ $(SRCDIR)/HW/lib/src/stm32f10x_bkp.c \
+ $(SRCDIR)/HW/lib/src/stm32f10x_dma.c \
  $(SRCDIR)/HW/lib/src/stm32f10x_flash.c \
  $(SRCDIR)/HW/lib/src/stm32f10x_gpio.c \
+ $(SRCDIR)/HW/lib/src/stm32f10x_pwr.c \
  $(SRCDIR)/HW/lib/src/stm32f10x_rcc.c \
+ $(SRCDIR)/HW/lib/src/stm32f10x_spi.c \
  $(SRCDIR)/HW/lib/src/stm32f10x_usart.c \
  $(SRCDIR)/HW/lib/src/usb_core.c \
  $(SRCDIR)/HW/lib/src/usb_init.c \
@@ -132,7 +161,7 @@ size: $(MAIN_OUT_ELF)
 
 flash: $(MAIN_OUT_PROG)
 	@echo $(STR_DIV)
-	vsprog -ccomisp_stm32 -C "COM3" -i CDC_GCC.hex -x0x08002000 -oe -owf
+	vsprog -ccomisp_stm32 -C "COM3" -i $(MAIN_OUT_HEX) -x0x08002000 -oe -owf
 
 $(ASM_OBJS): $(ASM_SRCS)
 	$(CC) -c $(CFLAGS) $^
