@@ -93,7 +93,7 @@ INCLUDE_DIRS = -I $(PRJDIR) -I $(SRCDIR) -I $(LIBSTM32_INCS) $(USR_INCS)
 COMPILE_OPTS = -mcpu=cortex-m3 -mthumb -mfpu=vfp -nostartfiles -fno-common -fomit-frame-pointer -ffunction-sections -Wall -g -O$(OPT)
 #-mabi=apcs-gnu 
 LIBRARY_DIRS = 
-PREDEFINES   = -D USE_STDPERIPH_DRIVER -D STM32F10X_MD
+PREDEFINES   = -DUSE_STDPERIPH_DRIVER -DSTM32F10X_MD -DNDEBUG
 
 CC = $(TCHAIN)-gcc
 CFLAGS = $(COMPILE_OPTS) $(INCLUDE_DIRS) $(PREDEFINES)
