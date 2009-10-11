@@ -59,7 +59,6 @@
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 uint16 Vtarget = 0;
-SPI_InitTypeDef		SPI_InitStructure;
 
 uint8 asyn_rx_buf[ASYN_DATA_BUFF_SIZE];		// used as temporary buff in In-System-Programming
 uint16 asyn_rx_idx, asyn_tx_idx;
@@ -181,7 +180,6 @@ void PWREXT_Check(uint8 b_control_led)
 		Vtarget = ADC_GetConversionValue(TVCC_ADC_PORT);
 		// convert target power to be in mV unit
 		Vtarget = Vtarget * TVCC_SAMPLE_VREF * TVCC_SAMPLE_DIV / TVCC_SAMPLE_MAXVAL;
-
 #if POWER_OUT_EN
 		// if PowerExt is enabled and no power on the line
 		if((Vtarget < TVCC_SAMPLE_MIN_POWER))

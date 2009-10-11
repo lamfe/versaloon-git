@@ -243,6 +243,8 @@ void NVIC_Configuration(void)
 	NVIC_Init(&NVIC_InitStructure);
 }
 
+#if INTERFACE_SPI_EN
+SPI_InitTypeDef		SPI_InitStructure;
 /*******************************************************************************
 * Function Name	: SPI_Configuration
 * Description		: Configures SPI Interface.
@@ -268,7 +270,9 @@ void SPI_Configuration(SPI_TypeDef* SPIx,u16 mode,u16 brp,u16 fb,u16 cpol,u16 cp
 
 	SPI_Cmd(SPIx, ENABLE);
 }
+#endif
 
+#if INTERFACE_JTAG_EN
 void JTAG_DMA_Fini(void)
 {
 	DMA_DeInit(JTAG_TAP_HS_SPI_M_RX_DMA);
@@ -299,6 +303,7 @@ void JTAG_DMA_Init(void)
 
 	JTAG_TAP_HS_SPI_EnableDMA();
 }
+#endif
 
 /*******************************************************************************
 * Function Name	: ADC_Configuration

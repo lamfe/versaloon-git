@@ -599,9 +599,6 @@
 #define ASYN_DATA_BUFF_SIZE				(4 * 1024)
 
 /***************************** EXTERN ****************************/
-extern SPI_InitTypeDef   SPI_InitStructure;
-void SPI_Configuration(SPI_TypeDef* SPIx, u16 mode, u16 brp, u16 fb, u16 cpol, u16 cpha);
-
 extern __IO uint32_t rep_len, cmd_len;
 extern uint8_t buffer_out[USB_DATA_BUFF_SIZE], *buffer_in;
 extern __IO uint32_t count_out, usb_ovf;

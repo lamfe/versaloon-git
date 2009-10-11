@@ -60,8 +60,15 @@ void CDC_IF_Disable_Int(void);
 void CDC_IF_RX_Int(uint8 dat);
 void CDC_IF_TX_Int(void);
 
+#if INTERFACE_JTAG_EN
 void JTAG_DMA_Fini(void);
 void JTAG_DMA_Init(void);
+#endif
+
+#if INTERFACE_SPI_EN
+extern SPI_InitTypeDef   SPI_InitStructure;
+void SPI_Configuration(SPI_TypeDef* SPIx,u16 mode,u16 brp,u16 fb,u16 cpol,u16 cpha);
+#endif
 
 void DOVR_Callback(void);
 void ERR_Callback(void);
