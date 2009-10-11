@@ -2,7 +2,7 @@
 
 <workspace>
   <project>
-    <path>$WS_DIR$\Versaloon.ewp</path>
+    <path>$WS_DIR$\CDC.ewp</path>
   </project>
   <batchBuild/>
 </workspace>

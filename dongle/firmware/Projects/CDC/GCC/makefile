@@ -1,5 +1,5 @@
 OPT	= s
-TARGET	= Versaloon
+TARGET	= CDC
 PRJDIR	= ..
 SRCDIR  = ../../..
 OBJ_DIR = .
@@ -132,7 +132,7 @@ size: $(MAIN_OUT_ELF)
 
 flash: $(MAIN_OUT_PROG)
 	@echo $(STR_DIV)
-	vsprog -ccomisp_stm32 -C "COM3" -i Versaloon_GCC.hex -x0x08002000 -oe -owf
+	vsprog -ccomisp_stm32 -C "COM3" -i CDC_GCC.hex -x0x08002000 -oe -owf
 
 $(ASM_OBJS): $(ASM_SRCS)
 	$(CC) -c $(CFLAGS) $^
