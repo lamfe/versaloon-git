@@ -11,7 +11,7 @@ External oscillator should be 8M/12M/16M.
 Compilation environment:
 1. IAR EWARM 5.40 KS, under Projects/CDC/EWARM5.40
   See http://www.iar.com.
-2. Codesourcery G++ Lite, under Projects/CDC/GCC, not currently available
+2. Codesourcery G++ Lite, under Projects/CDC/GCC
   See http://www.codesourcery.com
 
 Configuration:
