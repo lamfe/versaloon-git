@@ -1,6 +1,6 @@
 #include "app_cfg.h"
 
-#if 1
+#ifndef USE_BUILDIN_STRING_H
 void* memcpy(void *m0, const void *m1, u32 len)
 {
   u8 *ret = m0;
