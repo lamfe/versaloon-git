@@ -15,14 +15,13 @@
  *      2008-11-22:     rewrite GPIO_Dir(by SimonQian)                    *
  **************************************************************************/
 
-/*************************** Includes ***************************/
+/*************************** Includes Library ***************************/
 #include "stm32f10x_conf.h"
 #include "stm32f10x.h"
 #include "app_type.h"
 #include "port.h"
 #include "myString.h"
 #include "delay.h"
-#include "HW.h"
 
 /************************ What do U have ************************/
 #define STM32_NANO						0x03
@@ -499,3 +498,6 @@ extern void GLOBAL_OUTPUT_Release(void);
 #define INTERFACE_SPI_EN				((USB_TO_XXX_EN && USB_TO_SPI_EN) || AVR_ISP_EN || (MP_EN && MP_S5X_EN))
 #define INTERFACE_SWIM_EN				((USB_TO_XXX_EN && USB_TO_SWIM_EN) || (MP_EN && MP_STM8_EN))
 #define INTERFACE_USART_EN				(USB_TO_XXX_EN && USB_TO_USART_EN)
+
+/*************************** Includes Application ***************************/
+#include "HW.h"
