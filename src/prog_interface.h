@@ -36,14 +36,22 @@
 #define C2						(1 << 20)
 #define MSP430_JTAG				(1 << 21)
 #define LPC_ICP					(1 << 22)
+#define SWJ						(1 << 23)
 #define INVALID_INTERFACE		(1 << 30)
 #define INTERFACES_MASK			(USART | SPI | I2C | GPIO | CAN | CLOCK | ADC \
 								 | DAC | POWER | ISSP | JTAG | MSP430_JTAG \
-								 | LPC_ICP | MSP430_SBW)
+								 | LPC_ICP | MSP430_SBW | SWJ)
 
 
 // GPIO pins
 #define GPIO_SRST				(1 << 0)
+
+// SWJ
+#define SWJ_SUCCESS				0x00
+#define SWJ_RETRY_OUT			0x01
+#define SWJ_FAULT				0x02
+#define SWJ_ACK_ERROR			0x03
+#define SWJ_PARITY_ERROR		0x04
 
 // JTAG pins
 #define JTAG_SRST				(1 << 0)

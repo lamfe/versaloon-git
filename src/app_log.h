@@ -55,7 +55,7 @@ extern int verbosity;
 #	define LOG_DEBUG(...)	do{\
 								if (verbosity >= DEBUG_LEVEL)\
 								{\
-									fprintf(stderr, "Debug:  ");\
+									fprintf(stdout, "Debug:  ");\
 									fprintf(stdout, __VA_ARGS__);\
 								}\
 							}while(0)
@@ -75,7 +75,7 @@ extern int verbosity;
 #	define LOG_WARNING(...)	do{\
 								if (verbosity >= WARNING_LEVEL)\
 								{\
-									fprintf(stderr, "Warning:%s:%d %s: ", \
+									fprintf(stdout, "Warning:%s:%d %s: ", \
 											__FILE__, __LINE__, __FUNCTION__);\
 									fprintf(stdout, __VA_ARGS__);\
 								}\
@@ -83,7 +83,7 @@ extern int verbosity;
 #	define LOG_INFO(...)	do{\
 								if (verbosity >= INFO_LEVEL)\
 								{\
-									fprintf(stderr, "Info:   %s:%d %s: ", \
+									fprintf(stdout, "Info:   %s:%d %s: ", \
 											__FILE__, __LINE__, __FUNCTION__);\
 									fprintf(stdout, __VA_ARGS__);\
 								}\
@@ -91,7 +91,7 @@ extern int verbosity;
 #	define LOG_DEBUG(...)	do{\
 								if (verbosity >= DEBUG_LEVEL)\
 								{\
-									fprintf(stderr, "Debug:  %s:%d %s: ", \
+									fprintf(stdout, "Debug:  %s:%d %s: ", \
 											__FILE__, __LINE__, __FUNCTION__);\
 									fprintf(stdout, __VA_ARGS__);\
 								}\

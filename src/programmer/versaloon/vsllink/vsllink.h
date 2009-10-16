@@ -19,6 +19,14 @@
 #ifndef __VSLLINK_H_INCLUDED__
 #define __VSLLINK_H_INCLUDED__
 
+// SWJ
+RESULT vsllink_swj_connect(void);
+RESULT vsllink_swj_disconnect(void);
+RESULT vsllink_swj_commit(void);
+RESULT vsllink_swj_seqout(uint8 *data, uint16 bit_len);
+RESULT vsllink_swj_seqin(uint8 *data, uint16 bit_len);
+RESULT vsllink_swj_transact(uint8 request, uint32 *data);
+
 // JTAG common
 RESULT vsllink_jtag_connect(void);
 RESULT vsllink_jtag_set_freq(uint16 kHz);

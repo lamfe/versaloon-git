@@ -130,7 +130,15 @@ RESULT usbtoxxx_execute_command(void)
 							&& (versaloon_pending[i].cmd 
 								== versaloon_pending[i - 1].cmd)))
 		{
-			if (USB_TO_XXX_SUCCESS != versaloon_buf[usbtoxxx_buffer_index])
+			if (USB_TO_XXX_CMD_NOT_SUPPORT 
+				== versaloon_buf[usbtoxxx_buffer_index])
+			{
+				LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), 
+						  usbtoxxx_get_type_name(versaloon_pending[i].type), 
+						  "current dongle");
+				return ERROR_FAIL;
+			}
+			else if (USB_TO_XXX_OK != versaloon_buf[usbtoxxx_buffer_index])
 			{
 				LOG_ERROR(_GETTEXT("%s command 0x%02x failed with 0x%02x\n"), 
 					usbtoxxx_get_type_name(versaloon_pending[i].type), 

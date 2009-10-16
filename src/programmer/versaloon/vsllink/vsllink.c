@@ -37,12 +37,18 @@
 #include "vsllink.h"
 #include "vsllink_internal.h"
 
-static uint16 vsllink_jtag_buffer_index = 0;
+static uint16 vsllink_buffer_index = 0;
 static uint8 *buf_tmp = NULL;
 
-RESULT vsllink_jtag_connect(void)
+RESULT vsllink_connect(uint8 mode)
 {
 	uint16 ret;
+	
+	if (buf_tmp != NULL)
+	{
+		LOG_BUG(_GETTEXT("unmatch vslllink_connect and vsllink_disconnect.\n"));
+		return ERROR_FAIL;
+	}
 	
 	buf_tmp = (uint8*)malloc(versaloon_buf_size);
 	if (NULL == buf_tmp)
@@ -50,11 +56,12 @@ RESULT vsllink_jtag_connect(void)
 		LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
 		return ERRCODE_NOT_ENOUGH_MEMORY;
 	}
-	vsllink_jtag_buffer_index = 0;
+	vsllink_buffer_index = 0;
 	
 	versaloon_buf[0] = VSLLINK_CMD_CONN;
+	versaloon_buf[1] = mode;
 	
-	if (ERROR_OK != versaloon_send_command(1, &ret) || (ret < 3))
+	if (ERROR_OK != versaloon_send_command(2, &ret) || (ret < 3))
 	{
 		return ERROR_FAIL;
 	}
@@ -68,9 +75,32 @@ RESULT vsllink_jtag_connect(void)
 	}
 }
 
+RESULT vsllink_disconnect(void)
+{
+	RESULT ret;
+	
+	versaloon_buf[0] = VSLLINK_CMD_DISCONN;
+	
+	ret = versaloon_send_command(1, NULL);
+	sleep_ms(10);
+	
+	if (buf_tmp != NULL)
+	{
+		free(buf_tmp);
+		buf_tmp = NULL;
+	}
+	
+	return ret;
+}
+
+RESULT vsllink_jtag_connect(void)
+{
+	return vsllink_connect(VSLLINK_MODE_JTAG | VSLLINK_MODE_NORMAL);
+}
+
 RESULT vsllink_jtag_set_freq(uint16 kHz)
 {
-	if (vsllink_jtag_buffer_index > 0)
+	if (vsllink_buffer_index > 0)
 	{
 		LOG_BUG(_GETTEXT("there is jtag_tap command uncommited\n"));
 		return ERROR_FAIL;
@@ -111,7 +141,7 @@ static uint8 vsllink_jtag_get_pin_map(uint8 mask)
 
 RESULT vsllink_jtag_auxio_config(uint8 pin_mask, uint8 io)
 {
-	if (vsllink_jtag_buffer_index > 0)
+	if (vsllink_buffer_index > 0)
 	{
 		LOG_BUG(_GETTEXT("there is jtag_tap command uncommited\n"));
 		return ERROR_FAIL;
@@ -133,7 +163,7 @@ RESULT vsllink_jtag_auxio_config(uint8 pin_mask, uint8 io)
 
 RESULT vsllink_jtag_auxio_out(uint8 pin_mask, uint8 value)
 {
-	if (vsllink_jtag_buffer_index > 0)
+	if (vsllink_buffer_index > 0)
 	{
 		LOG_BUG(_GETTEXT("there is jtag_tap command uncommited\n"));
 		return ERROR_FAIL;
@@ -158,7 +188,7 @@ RESULT vsllink_jtag_auxio_in(uint8 pin_mask, uint8 *value)
 	uint8 port_value = 0;
 	uint16 inlen;
 	
-	if (vsllink_jtag_buffer_index > 0)
+	if (vsllink_buffer_index > 0)
 	{
 		LOG_BUG(_GETTEXT("there is jtag_tap command uncommited\n"));
 		return ERROR_FAIL;
@@ -192,7 +222,7 @@ RESULT vsllink_jtagll_commit(void)
 	uint16 inlen = 0, i, *pinlen;
 	uint8 command;
 	
-	if (0 == vsllink_jtag_buffer_index)
+	if (0 == vsllink_buffer_index)
 	{
 		return ERROR_OK;
 	}
@@ -207,43 +237,49 @@ RESULT vsllink_jtagll_commit(void)
 	}
 	
 	versaloon_buf[0] = VSLLINK_CMD_HW_JTAGSEQCMD;
-	versaloon_buf[1] = (vsllink_jtag_buffer_index >> 0) & 0xFF;
-	versaloon_buf[2] = (vsllink_jtag_buffer_index >> 8) & 0xFF;
+	versaloon_buf[1] = (vsllink_buffer_index >> 0) & 0xFF;
+	versaloon_buf[2] = (vsllink_buffer_index >> 8) & 0xFF;
 	
-	if (ERROR_OK != versaloon_send_command(vsllink_jtag_buffer_index, pinlen))
+	if (ERROR_OK != versaloon_send_command(vsllink_buffer_index, pinlen))
 	{
 		return ERROR_FAIL;
 	}
 	
-	vsllink_jtag_buffer_index = 0;
+	vsllink_buffer_index = 0;
 	for (i = 0; i < versaloon_pending_idx; i++)
 	{
+		if (vsllink_buffer_index + versaloon_pending[i].actual_data_size 
+			> inlen)
+		{
+			LOG_ERROR(_GETTEXT("invalid received data length"));
+			return ERROR_FAIL;
+		}
 		command = versaloon_pending[i].cmd & VSLLINK_CMDJTAGSEQ_CMDMSK;
 		switch (command)
 		{
 		case VSLLINK_CMDJTAGSEQ_TMSBYTE:
 			LOG_BUG("0x%02x has return data?\n", command);
-			vsllink_jtag_buffer_index = 0;
+			vsllink_buffer_index = 0;
 			versaloon_pending_idx = 0;
 			return ERROR_FAIL;
 			break;
-		case VSLLINK_CMDJTAGSEQ_TMS0BYTE:
+		case VSLLINK_CMDJTAGSEQ_TMSCLOCK:
 			// no need to check, return data is only used to notify ready
-			vsllink_jtag_buffer_index++;
+			vsllink_buffer_index++;
 			break;
 		case VSLLINK_CMDJTAGSEQ_SCAN:
 			if ((versaloon_pending[i].actual_data_size > 0) 
 				&& (versaloon_pending[i].data_buffer != NULL))
 			{
 				memcpy(versaloon_pending[i].data_buffer, 
-					   versaloon_buf + vsllink_jtag_buffer_index, 
+					   versaloon_buf + vsllink_buffer_index, 
 					   versaloon_pending[i].actual_data_size);
 			}
-			vsllink_jtag_buffer_index += versaloon_pending[i].actual_data_size;
+			vsllink_buffer_index += versaloon_pending[i].actual_data_size;
 			break;
 		default:
 			LOG_BUG("is this really my command?\n");
-			vsllink_jtag_buffer_index = 0;
+			vsllink_buffer_index = 0;
 			versaloon_pending_idx = 0;
 			return ERROR_FAIL;
 			break;
@@ -251,13 +287,13 @@ RESULT vsllink_jtagll_commit(void)
 	}
 	
 	// data received, but not the right size
-	if ((versaloon_pending_idx > 0) && (inlen != vsllink_jtag_buffer_index))
+	if ((versaloon_pending_idx > 0) && (inlen != vsllink_buffer_index))
 	{
 		LOG_ERROR(_GETTEXT("length of return data invalid\n"));
 		return ERROR_FAIL;
 	}
 	
-	vsllink_jtag_buffer_index = 0;
+	vsllink_buffer_index = 0;
 	
 	if (versaloon_pending_idx > 0)
 	{
@@ -275,25 +311,13 @@ RESULT vsllink_jtagll_commit(void)
 
 RESULT vsllink_jtagll_disconnect(void)
 {
-	RESULT ret;
-	
-	if (vsllink_jtag_buffer_index > 0)
+	if (vsllink_buffer_index > 0)
 	{
-		LOG_BUG(_GETTEXT("there is jtag_tap command uncommited\n"));
-		return ERROR_FAIL;
+		// there is command in buffer, try to send
+		vsllink_jtagll_commit();
 	}
 	
-	versaloon_buf[0] = VSLLINK_CMD_DISCONN;
-	
-	ret = versaloon_send_command(1, NULL);
-	sleep_ms(10);
-	
-	if (buf_tmp != NULL)
-	{
-		free(buf_tmp);
-	}
-	
-	return ret;
+	return vsllink_disconnect();
 }
 
 RESULT vsllink_jtagll_add_pending(uint8 cmd, uint8 *buf, uint16 len)
@@ -302,7 +326,7 @@ RESULT vsllink_jtagll_add_pending(uint8 cmd, uint8 *buf, uint16 len)
 	{
 	case VSLLINK_CMDJTAGSEQ_TMSBYTE:
 		return ERROR_OK;
-	case VSLLINK_CMDJTAGSEQ_TMS0BYTE:
+	case VSLLINK_CMDJTAGSEQ_TMSCLOCK:
 		versaloon_add_pending(0, cmd, len, 0, 0, buf, 0);
 		return ERROR_OK;
 	case VSLLINK_CMDJTAGSEQ_SCAN:
@@ -320,7 +344,7 @@ RESULT vsllink_jtagll_add_command(uint8 cmd, uint8 *cmddata, uint16 cmdlen,
 								  uint8 *retdata, uint16 retlen)
 {
 	// check free space, commit if not enough
-	if ((vsllink_jtag_buffer_index + cmdlen + 1)>= versaloon_buf_size)
+	if ((vsllink_buffer_index + cmdlen + 1)>= versaloon_buf_size)
 	{
 		if (ERROR_OK != vsllink_jtagll_commit())
 		{
@@ -328,16 +352,16 @@ RESULT vsllink_jtagll_add_command(uint8 cmd, uint8 *cmddata, uint16 cmdlen,
 		}
 	}
 	
-	if (0 == vsllink_jtag_buffer_index)
+	if (0 == vsllink_buffer_index)
 	{
-		vsllink_jtag_buffer_index = 3;
+		vsllink_buffer_index = 3;
 	}
 	
-	versaloon_buf[vsllink_jtag_buffer_index++] = cmd;
+	versaloon_buf[vsllink_buffer_index++] = cmd;
 	if ((cmdlen > 0) && (NULL != cmddata))
 	{
-		memcpy(versaloon_buf + vsllink_jtag_buffer_index, cmddata, cmdlen);
-		vsllink_jtag_buffer_index += cmdlen;
+		memcpy(versaloon_buf + vsllink_buffer_index, cmddata, cmdlen);
+		vsllink_buffer_index += cmdlen;
 	}
 	
 	return vsllink_jtagll_add_pending(cmd, retdata, retlen);
@@ -362,7 +386,7 @@ RESULT vsllink_jtagll_tms_clocks(uint32 len, uint8 tms)
 	buf_tmp[2] = (len >> 16) & 0xFF;
 	buf_tmp[3] = (len >> 24) & 0xFF;
 	
-	return vsllink_jtagll_add_command(VSLLINK_CMDJTAGSEQ_TMS0BYTE | (tms > 0), 
+	return vsllink_jtagll_add_command(VSLLINK_CMDJTAGSEQ_TMSCLOCK | (tms > 0), 
 									  buf_tmp, 4, NULL, 1);
 }
 
@@ -401,18 +425,18 @@ RESULT vsllink_jtagll_xr(uint8* r, uint16 len, uint8 tms_before_valid,
 
 RESULT vsllink_jtaghl_disconnect(void)
 {
-	if (vsllink_jtag_buffer_index > 0)
+	if (vsllink_buffer_index > 0)
 	{
 		// there is command in buffer, try to send
 		vsllink_jtaghl_commit();
 	}
  
-	return vsllink_jtagll_disconnect();
+	return vsllink_disconnect();
 }
 
 RESULT vsllink_jtaghl_set_daisychain(uint8 ub, uint8 ua, uint16 bb, uint16 ba)
 {
-	if (vsllink_jtag_buffer_index > 0)
+	if (vsllink_buffer_index > 0)
 	{
 		LOG_BUG(_GETTEXT("there is jtag_tap command uncommited\n"));
 		return ERROR_FAIL;
@@ -454,9 +478,6 @@ RESULT vsllink_jtaghl_config(uint16 kHz, uint8 ub, uint8 ua, uint16 bb,
 	return ERROR_OK;
 }
 
-
-
-
 RESULT vsllink_jtaghl_add_pending(uint8 cmd, uint8 *buf, uint16 len)
 {
 	switch (cmd & VSLLINK_CMDJTAGHL_CMDMSK)
@@ -480,7 +501,7 @@ RESULT vsllink_jtaghl_add_command(uint8 cmd, uint8 *cmddata, uint16 cmdlen,
 								  uint8 *retdata, uint16 retlen)
 {
 	// check free space, commit if not enough
-	if ((vsllink_jtag_buffer_index + cmdlen + 1)>= versaloon_buf_size)
+	if ((vsllink_buffer_index + cmdlen + 1)>= versaloon_buf_size)
 	{
 		if (ERROR_OK != vsllink_jtaghl_commit())
 		{
@@ -488,16 +509,16 @@ RESULT vsllink_jtaghl_add_command(uint8 cmd, uint8 *cmddata, uint16 cmdlen,
 		}
 	}
 	
-	if (0 == vsllink_jtag_buffer_index)
+	if (0 == vsllink_buffer_index)
 	{
-		vsllink_jtag_buffer_index = 3;
+		vsllink_buffer_index = 3;
 	}
 	
-	versaloon_buf[vsllink_jtag_buffer_index++] = cmd;
+	versaloon_buf[vsllink_buffer_index++] = cmd;
 	if ((cmdlen > 0) && (NULL != cmddata))
 	{
-		memcpy(versaloon_buf + vsllink_jtag_buffer_index, cmddata, cmdlen);
-		vsllink_jtag_buffer_index += cmdlen;
+		memcpy(versaloon_buf + vsllink_buffer_index, cmddata, cmdlen);
+		vsllink_buffer_index += cmdlen;
 	}
 	
 	return vsllink_jtaghl_add_pending(cmd, retdata, retlen);
@@ -508,7 +529,7 @@ RESULT vsllink_jtaghl_commit(void)
 	uint16 inlen = 0, *pinlen, i;
 	uint8 command;
 	
-	if (0 == vsllink_jtag_buffer_index)
+	if (0 == vsllink_buffer_index)
 	{
 		return ERROR_OK;
 	}
@@ -523,31 +544,37 @@ RESULT vsllink_jtaghl_commit(void)
 	}
 	
 	versaloon_buf[0] = VSLLINK_CMD_HW_JTAGHLCMD;
-	versaloon_buf[1] = (vsllink_jtag_buffer_index >> 0) & 0xFF;
-	versaloon_buf[2] = (vsllink_jtag_buffer_index >> 8) & 0xFF;
+	versaloon_buf[1] = (vsllink_buffer_index >> 0) & 0xFF;
+	versaloon_buf[2] = (vsllink_buffer_index >> 8) & 0xFF;
 	
-	if (ERROR_OK != versaloon_send_command(vsllink_jtag_buffer_index, pinlen))
+	if (ERROR_OK != versaloon_send_command(vsllink_buffer_index, pinlen))
 	{
 		return ERROR_FAIL;
 	}
 	
-	vsllink_jtag_buffer_index = 0;
+	vsllink_buffer_index = 0;
 	for (i = 0; i < versaloon_pending_idx; i++)
 	{
+		if (vsllink_buffer_index + versaloon_pending[i].actual_data_size 
+			> inlen)
+		{
+			LOG_ERROR(_GETTEXT("invalid received data length"));
+			return ERROR_FAIL;
+		}
 		command = versaloon_pending[i].cmd & VSLLINK_CMDJTAGHL_CMDMSK;
 		switch (command)
 		{
 		case VSLLINK_CMDJTAGHL_TMS:
 			LOG_BUG(_GETTEXT("0x%02x has return data?\n"), command);
-			vsllink_jtag_buffer_index = 0;
+			vsllink_buffer_index = 0;
 			versaloon_pending_idx = 0;
 			return ERROR_FAIL;
 			break;
 		case VSLLINK_CMDJTAGHL_POLL_DLY:
-			if (versaloon_buf[vsllink_jtag_buffer_index++] > 0)
+			if (versaloon_buf[vsllink_buffer_index++] > 0)
 			{
 				LOG_ERROR(_GETTEXT("poll timeout\n"));
-				vsllink_jtag_buffer_index = 0;
+				vsllink_buffer_index = 0;
 				versaloon_pending_idx = 0;
 				return ERROR_FAIL;
 			}
@@ -558,14 +585,14 @@ RESULT vsllink_jtaghl_commit(void)
 				&& (versaloon_pending[i].data_buffer != NULL))
 			{
 				memcpy(versaloon_pending[i].data_buffer, 
-					   versaloon_buf + vsllink_jtag_buffer_index, 
+					   versaloon_buf + vsllink_buffer_index, 
 					   versaloon_pending[i].actual_data_size);
 			}
-			vsllink_jtag_buffer_index += versaloon_pending[i].actual_data_size;
+			vsllink_buffer_index += versaloon_pending[i].actual_data_size;
 			break;
 		default:
 			LOG_BUG(_GETTEXT("is this really my command?\n"));
-			vsllink_jtag_buffer_index = 0;
+			vsllink_buffer_index = 0;
 			versaloon_pending_idx = 0;
 			return ERROR_FAIL;
 			break;
@@ -573,13 +600,13 @@ RESULT vsllink_jtaghl_commit(void)
 	}
 	
 	// data received, but not the right size
-	if ((versaloon_pending_idx > 0) && (inlen != vsllink_jtag_buffer_index))
+	if ((versaloon_pending_idx > 0) && (inlen != vsllink_buffer_index))
 	{
 		LOG_ERROR(_GETTEXT("length of return data invalid\n"));
 		return ERROR_FAIL;
 	}
 	
-	vsllink_jtag_buffer_index = 0;
+	vsllink_buffer_index = 0;
 	
 	if (versaloon_pending_idx > 0)
 	{
@@ -775,5 +802,205 @@ RESULT vsllink_jtaghl_delay_ms(uint16 ms)
 	ms |= 0x8000;
 	return vsllink_jtaghl_add_command(VSLLINK_CMDJTAGHL_POLL_DLY, (uint8*)&ms, 
 									  2, NULL, 0);
+}
+
+
+
+
+
+
+RESULT vsllink_swj_connect(void)
+{
+	return vsllink_connect(VSLLINK_MODE_SWJ);
+}
+
+RESULT vsllink_swj_disconnect(void)
+{
+	if (vsllink_buffer_index > 0)
+	{
+		// there is command in buffer, try to send
+		vsllink_swj_commit();
+	}
+	
+	return vsllink_disconnect();
+}
+
+RESULT vsllink_swj_commit(void)
+{
+	uint16 inlen = 0, i, *pinlen;
+	uint8 command;
+	
+	if (0 == vsllink_buffer_index)
+	{
+		return ERROR_OK;
+	}
+	
+	if (versaloon_pending_idx > 0)
+	{
+		pinlen = &inlen;
+	}
+	else
+	{
+		pinlen = NULL;
+	}
+	
+	versaloon_buf[0] = VSLLINK_CMD_HW_SWJCMD;
+	versaloon_buf[1] = (vsllink_buffer_index >> 0) & 0xFF;
+	versaloon_buf[2] = (vsllink_buffer_index >> 8) & 0xFF;
+	
+	if (ERROR_OK != versaloon_send_command(vsllink_buffer_index, pinlen))
+	{
+		return ERROR_FAIL;
+	}
+	
+	vsllink_buffer_index = 0;
+	for (i = 0; i < versaloon_pending_idx; i++)
+	{
+		if (vsllink_buffer_index + versaloon_pending[i].actual_data_size 
+			> inlen)
+		{
+			LOG_ERROR(_GETTEXT("invalid received data length"));
+			return ERROR_FAIL;
+		}
+		command = versaloon_pending[i].cmd & VSLLINK_CMDSWJ_CMDMSK;
+		switch (command)
+		{
+		case VSLLINK_CMDSWJ_SEQOUT:
+			LOG_BUG("0x%02x has return data?\n", command);
+			vsllink_buffer_index = 0;
+			versaloon_pending_idx = 0;
+			return ERROR_FAIL;
+			break;
+		case VSLLINK_CMDSWJ_SEQIN:
+			memcpy(versaloon_pending[i].data_buffer, 
+				   versaloon_buf + vsllink_buffer_index, 
+				   versaloon_pending[i].actual_data_size);
+			vsllink_buffer_index += versaloon_pending[i].actual_data_size;
+			break;
+		case VSLLINK_CMDSWJ_TRANS:
+			if (versaloon_buf[vsllink_buffer_index] != SWJ_SUCCESS)
+			{
+				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+						  "do swj transaction");
+				return ERROR_FAIL;
+			}
+			else
+			{
+				memcpy(versaloon_pending[i].data_buffer, 
+					   versaloon_buf + vsllink_buffer_index, 
+					   4);
+			}
+			vsllink_buffer_index += 5;
+			break;
+		default:
+			LOG_BUG("is this really my command?\n");
+			vsllink_buffer_index = 0;
+			versaloon_pending_idx = 0;
+			return ERROR_FAIL;
+			break;
+		}
+	}
+	
+	// data received, but not the right size
+	if ((versaloon_pending_idx > 0) && (inlen != vsllink_buffer_index))
+	{
+		LOG_ERROR(_GETTEXT("length of return data invalid\n"));
+		return ERROR_FAIL;
+	}
+	
+	vsllink_buffer_index = 0;
+	
+	if (versaloon_pending_idx > 0)
+	{
+		versaloon_pending_idx = 0;
+	}
+	else
+	{
+		// no receive data, avoid collision
+		// it's not efficient to call this function is no data is returned
+		sleep_ms(10);
+	}
+	
+	return ERROR_OK;
+}
+
+RESULT vsllink_swj_add_pending(uint8 cmd, uint8 *buf, uint16 len)
+{
+	switch (cmd & VSLLINK_CMDSWJ_CMDMSK)
+	{
+	case VSLLINK_CMDSWJ_SEQOUT:
+		return ERROR_OK;
+	case VSLLINK_CMDSWJ_SEQIN:
+		versaloon_add_pending(0, cmd, len, 0, 0, buf, 0);
+		return ERROR_OK;
+	case VSLLINK_CMDSWJ_TRANS:
+		versaloon_add_pending(0, cmd, len, 0, 0, buf, 0);
+		return ERROR_OK;
+		break;
+	default:
+		LOG_BUG(_GETTEXT("Is this really my command?\n"));
+		return ERROR_FAIL;
+		break;
+	}
+}
+
+RESULT vsllink_swj_add_command(uint8 cmd, uint8 *cmddata, uint16 cmdlen, 
+							   uint8 *retdata, uint16 retlen)
+{
+	// check free space, commit if not enough
+	if ((vsllink_buffer_index + cmdlen + 1)>= versaloon_buf_size)
+	{
+		if (ERROR_OK != vsllink_swj_commit())
+		{
+			return ERROR_FAIL;
+		}
+	}
+	
+	if (0 == vsllink_buffer_index)
+	{
+		vsllink_buffer_index = 3;
+	}
+	
+	versaloon_buf[vsllink_buffer_index++] = cmd;
+	if ((cmdlen > 0) && (NULL != cmddata))
+	{
+		memcpy(versaloon_buf + vsllink_buffer_index, cmddata, cmdlen);
+		vsllink_buffer_index += cmdlen;
+	}
+	
+	return vsllink_swj_add_pending(cmd, retdata, retlen);
+}
+
+RESULT vsllink_swj_seqout(uint8 *data, uint16 bit_len)
+{
+	uint16 data_len = (bit_len + 7) / 8;
+	
+	buf_tmp[0] = (bit_len >> 0) & 0xFF;
+	buf_tmp[1] = (bit_len >> 8) & 0xFF;
+	memcpy(buf_tmp + 2, data, data_len);
+	
+	return vsllink_swj_add_command(VSLLINK_CMDSWJ_SEQOUT, buf_tmp, 
+								   2 + data_len, NULL, 0);
+}
+
+RESULT vsllink_swj_seqin(uint8 *data, uint16 bit_len)
+{
+	uint16 data_len = (bit_len + 7) / 8;
+	
+	buf_tmp[0] = (bit_len >> 0) & 0xFF;
+	buf_tmp[1] = (bit_len >> 8) & 0xFF;
+	memcpy(buf_tmp + 2, data, data_len);
+	
+	return vsllink_swj_add_command(VSLLINK_CMDSWJ_SEQIN, buf_tmp, 
+								   2 + data_len, data, data_len);
+}
+
+RESULT vsllink_swj_transact(uint8 request, uint32 *data)
+{
+	buf_tmp[0] = request;
+	memcpy(buf_tmp + 1, (uint8*)data, 4);
+	
+	return vsllink_swj_add_command(VSLLINK_CMDSWJ_TRANS, buf_tmp, 5, 
+								   (uint8*)data, 5);
 }
 
