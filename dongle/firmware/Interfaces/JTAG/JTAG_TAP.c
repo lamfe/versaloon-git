@@ -175,7 +175,7 @@ RAMFUNC static void JTAG_TAP_ProcessDataRW(uint8 *tdo, uint8 *tdi, uint8 tms_bef
 	uint16 iSend = 0, iReceive = 0, iTmp = 0, bit_len_remain, receiveFromByte;
 
 	bit_len_remain = bit_len;
-	receiveFromByte = len_of_1s_after + len_before;
+	receiveFromByte = len_of_1s_before + len_before;
 	Rec_offset = receiveFromByte & 0x07;
 	receiveFromByte = (receiveFromByte + 7) >> 3;
 
@@ -192,11 +192,11 @@ RAMFUNC static void JTAG_TAP_ProcessDataRW(uint8 *tdo, uint8 *tdi, uint8 tms_bef
 			{
 				if(len_of_1s_before >= 8 - len_tmp)
 				{
-					tdi_tmp |= JTAG_TAP_1s[8 - len_tmp] << offset;
+					tdi_tmp = JTAG_TAP_1s[8 - len_tmp] << offset;
 				}
 				else
 				{
-					tdi_tmp |= JTAG_TAP_1s[len_of_1s_before] << offset;
+					tdi_tmp = JTAG_TAP_1s[len_of_1s_before] << offset;
 				}
 			}
 			else
@@ -407,8 +407,8 @@ void JTAG_TAP_DataOutPtr(uint8 *tdi, uint16 bit_len, uint8 idle)
 						   JTAG_TAP_TMS_UPDATERTI2SD,
 						   JTAG_TAP_TMS_UPDATERTI2SD_LEN,
 						   bit_len,
-						   JTAG_TAP_UnitsAfter,
 						   JTAG_TAP_UnitsBefore,
+						   JTAG_TAP_UnitsAfter,
 						   idle);
 }
 
@@ -419,8 +419,8 @@ void JTAG_TAP_DataInPtr(uint8 *tdo, uint16 bit_len, uint8 idle)
 						   JTAG_TAP_TMS_UPDATERTI2SD,
 						   JTAG_TAP_TMS_UPDATERTI2SD_LEN,
 						   bit_len,
-						   JTAG_TAP_UnitsAfter,
 						   JTAG_TAP_UnitsBefore,
+						   JTAG_TAP_UnitsAfter,
 						   idle);
 }
 
@@ -431,8 +431,8 @@ void JTAG_TAP_DataPtr(uint8 *tdi, uint8 *tdo, uint16 bit_len, uint8 idle)
 						   JTAG_TAP_TMS_UPDATERTI2SD,
 						   JTAG_TAP_TMS_UPDATERTI2SD_LEN,
 						   bit_len,
-						   JTAG_TAP_UnitsAfter,
 						   JTAG_TAP_UnitsBefore,
+						   JTAG_TAP_UnitsAfter,
 						   idle);
 }
 
@@ -445,8 +445,8 @@ uint32 JTAG_TAP_Data(uint32 tdi, uint16 bit_len, uint8 idle)
 						   JTAG_TAP_TMS_UPDATERTI2SD,
 						   JTAG_TAP_TMS_UPDATERTI2SD_LEN,
 						   bit_len,
-						   JTAG_TAP_UnitsAfter,
 						   JTAG_TAP_UnitsBefore,
+						   JTAG_TAP_UnitsAfter,
 						   idle);
 
 	return tdo;
@@ -459,8 +459,8 @@ void JTAG_TAP_DataOut(uint32 tdi, uint16 bit_len, uint8 idle)
 						   JTAG_TAP_TMS_UPDATERTI2SD,
 						   JTAG_TAP_TMS_UPDATERTI2SD_LEN,
 						   bit_len,
-						   JTAG_TAP_UnitsAfter,
 						   JTAG_TAP_UnitsBefore,
+						   JTAG_TAP_UnitsAfter,
 						   idle);
 }
 
@@ -473,8 +473,8 @@ uint32 JTAG_TAP_DataIn(uint16 bit_len, uint8 idle)
 						   JTAG_TAP_TMS_UPDATERTI2SD,
 						   JTAG_TAP_TMS_UPDATERTI2SD_LEN,
 						   bit_len,
-						   JTAG_TAP_UnitsAfter,
 						   JTAG_TAP_UnitsBefore,
+						   JTAG_TAP_UnitsAfter,
 						   idle);
 
 	return tdo;
