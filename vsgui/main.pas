@@ -654,15 +654,15 @@ begin
   end;
   if cbboxOpenOCDInterface.Text <> '' then
   begin
-    OpenOCD_Caller.AddParameter('f ' + Application.Location + cbboxOpenOCDInterface.Text);
+    OpenOCD_Caller.AddParameter('f "' + Application.Location + cbboxOpenOCDInterface.Text + '"');
   end;
   if cbboxOpenOCDTarget.Text <> '' then
   begin
-    OpenOCD_Caller.AddParameter('f ' + Application.Location + cbboxOpenOCDTarget.Text);
+    OpenOCD_Caller.AddParameter('f "' + Application.Location + cbboxOpenOCDTarget.Text + '"');
   end;
   if cbboxOpenOCDScript.Text <> '' then
   begin
-    OpenOCD_Caller.AddParameter('f ' + Application.Location + cbboxOpenOCDScript.Text);
+    OpenOCD_Caller.AddParameter('f "' + Application.Location + cbboxOpenOCDScript.Text + '"');
   end;
 
   memoInfo.Clear;
