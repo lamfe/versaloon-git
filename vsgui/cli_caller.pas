@@ -111,7 +111,7 @@ begin
   BytesRead := 0;
   P := TProcess.Create(nil);
 {$ifdef MSWINDOWS}
-  P.CommandLine := application + Utf8ToAnsi(parameter);
+  P.CommandLine := '"' + application + '"' + Utf8ToAnsi(parameter);
 {$else}
   P.CommandLine := application + parameter;
 {$endif}
