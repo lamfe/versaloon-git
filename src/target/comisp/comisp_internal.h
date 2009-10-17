@@ -16,28 +16,37 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
+#ifndef __COMISP_INTERNAL_H_INCLUDED__
+#define __COMISP_INTERNAL_H_INCLUDED__
 
-#ifndef __APP_TYPE_H_INCLUDED__
-#define __APP_TYPE_H_INCLUDED__
+#define COMM_PARAMETER_UNSURE			'*'
 
-typedef enum
+#define COMM_AUXPIN_DISABLE				'N'
+#define COMM_AUXPIN_ENABLE				'A'
+
+typedef struct
 {
-	ERROR_OK = 0,
-	ERROR_FAIL = 1
-} RESULT;
+	char comport[21];
+	int32 baudrate;
+	int8 datalength;
+	char paritybit;
+	char stopbit;
+	char handshake;
+	char auxpin;
+}com_mode_t;
 
-// typedefines
-typedef unsigned char		uint8;
-typedef signed char			int8;
-typedef unsigned short		uint16;
-typedef signed short		int16;
-typedef unsigned int		uint32;
-typedef signed int			int32;
-typedef unsigned long long	uint64;
-typedef signed long long	int64;
+typedef struct
+{
+	const char *chip_name;
+	com_mode_t com_mode;
+	uint8 default_char;
+	uint32 flash_start_addr;
+}comisp_param_t;
 
-#define dimof(arr)				(sizeof(arr) / sizeof((arr)[0]))
-#define TO_STR(name)			#name
+extern comisp_param_t comisp_chip_param;
+extern com_mode_t com_mode;
+extern uint8 comisp_execute_flag;
+extern uint32 comisp_execute_addr;
 
-#endif /* __APP_TYPE_H_INCLUDED__ */
+#endif /* __COMISP_INTERNAL_H_INCLUDED__ */
 

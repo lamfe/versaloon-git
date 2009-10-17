@@ -93,7 +93,7 @@ static uint16 ir_flashdat = C8051F_IR_FLASHDAT | C8051F_IR_STATECNTL_SUSPEND;
 
 RESULT c8051f_jtag_ind_read(uint8 addr, uint32 *value, uint8 num_bits)
 {
-	static uint16 ir, dr;
+	uint16 ir, dr;
 
 #ifdef PARAM_CHECK
 	if ((addr < C8051F_IR_FLASHCON) || (addr > C8051F_IR_FLASHSCL))
@@ -119,7 +119,7 @@ RESULT c8051f_jtag_ind_read(uint8 addr, uint32 *value, uint8 num_bits)
 
 RESULT c8051f_jtag_ind_write(uint8 addr, uint32 *value, uint8 num_bits)
 {
-	static uint16 ir, dr;
+	uint16 ir, dr;
 	
 #ifdef PARAM_CHECK
 	if ((addr < C8051F_IR_FLASHCON) || (addr > C8051F_IR_FLASHSCL))
