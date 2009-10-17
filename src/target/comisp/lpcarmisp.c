@@ -40,6 +40,8 @@
 #include "comisp.h"
 #include "lpcarmisp.h"
 
+#include "comisp_internal.h"
+
 #include "comport.h"
 
 RESULT lpcarmisp_program(operation_t operations, program_info_t *pi)

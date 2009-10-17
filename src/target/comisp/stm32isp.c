@@ -41,6 +41,8 @@
 #include "comisp.h"
 #include "stm32isp.h"
 
+#include "comisp_internal.h"
+
 #include "comport.h"
 
 #define CUR_TARGET_STRING			COMISP_STRING

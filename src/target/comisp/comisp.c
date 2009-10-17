@@ -43,6 +43,8 @@
 #include "stm32isp.h"
 #include "lpcarmisp.h"
 
+#include "comisp_internal.h"
+
 #include "comport.h"
 
 #define CUR_TARGET_STRING			COMISP_STRING
@@ -50,7 +52,7 @@
 #define cur_chips_param				comisp_chips_param
 #define cur_flash_offset			comisp_flash_offset
 
-#define COMISP_MAX_BUFSIZE			(1024 * 1204)
+#define COMISP_MAX_BUFSIZE			(1024 * 1024)
 
 const program_area_map_t comisp_program_area_map[] = 
 {
@@ -77,7 +79,7 @@ uint32 comisp_execute_addr = 0;
 
 com_mode_t com_mode = 
 {"", 115200, 8, COMM_PARITYBIT_NONE, COMM_STOPBIT_1, 
-COMM_HANDSHAKE_NONE, COMM_AUXPIN_DISABLE};;
+COMM_HANDSHAKE_NONE, COMM_AUXPIN_DISABLE};
 
 static uint32 comisp_flash_offset = 0;
 static uint32 comisp_test_buffsize = 0;

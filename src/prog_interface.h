@@ -53,7 +53,15 @@
 #define SWJ_ACK_ERROR			0x03
 #define SWJ_PARITY_ERROR		0x04
 
-// JTAG pins
+// JTAG
+typedef struct
+{
+	uint8 ub;		// units before
+	uint8 ua;		// bits before
+	uint16 bb;		// units after
+	uint16 ba;		// bits after
+}jtag_pos_t;
+
 #define JTAG_SRST				(1 << 0)
 #define JTAG_TRST				(1 << 1)
 #define JTAG_USR1				(1 << 2)

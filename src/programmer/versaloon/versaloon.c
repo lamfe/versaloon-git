@@ -1011,7 +1011,7 @@ RESULT versaloon_init_capability(void *p)
 	
 	((programmer_info_t *)p)->interfaces = (SPI | GPIO | ISSP | JTAG_LL 
 											 | JTAG_HL | C2 | MSP430_JTAG 
-											 | MSP430_SBW | LPC_ICP);
+											 | MSP430_SBW | LPC_ICP | SWJ);
 	
 	// SPI
 	((programmer_info_t *)p)->spi_init = versaloon_spi_init;
