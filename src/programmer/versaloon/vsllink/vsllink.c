@@ -32,6 +32,8 @@
 #include "app_log.h"
 #include "prog_interface.h"
 
+#include "programmer.h"
+
 #include "../versaloon.h"
 #include "../versaloon_internal.h"
 #include "vsllink.h"
@@ -327,10 +329,10 @@ RESULT vsllink_jtagll_add_pending(uint8 cmd, uint8 *buf, uint16 len)
 	case VSLLINK_CMDJTAGSEQ_TMSBYTE:
 		return ERROR_OK;
 	case VSLLINK_CMDJTAGSEQ_TMSCLOCK:
-		versaloon_add_pending(0, cmd, len, 0, 0, buf, 0);
+		versaloon_add_pending(0, cmd, len, 0, 0, buf, 0, 0);
 		return ERROR_OK;
 	case VSLLINK_CMDJTAGSEQ_SCAN:
-		versaloon_add_pending(0, cmd, len, 0, 0, buf, 0);
+		versaloon_add_pending(0, cmd, len, 0, 0, buf, 0, 0);
 		return ERROR_OK;
 		break;
 	default:
@@ -423,6 +425,8 @@ RESULT vsllink_jtagll_xr(uint8* r, uint16 len, uint8 tms_before_valid,
 
 
 
+jtag_callback_t vsllink_jtaghl_callback = NULL;
+uint32 vsllink_jtaghl_ir_backup = 0;
 RESULT vsllink_jtaghl_disconnect(void)
 {
 	if (vsllink_buffer_index > 0)
@@ -487,7 +491,8 @@ RESULT vsllink_jtaghl_add_pending(uint8 cmd, uint8 *buf, uint16 len)
 	case VSLLINK_CMDJTAGHL_POLL_DLY:
 	case VSLLINK_CMDJTAGHL_IR:
 	case VSLLINK_CMDJTAGHL_DR:
-		versaloon_add_pending(0, cmd, len, 0, 0, buf, 0);
+		versaloon_add_pending(0, cmd, len, 0, 0, buf, 0, 
+							  vsllink_jtaghl_ir_backup);
 		return ERROR_OK;
 		break;
 	default:
@@ -524,10 +529,17 @@ RESULT vsllink_jtaghl_add_command(uint8 cmd, uint8 *cmddata, uint16 cmdlen,
 	return vsllink_jtaghl_add_pending(cmd, retdata, retlen);
 }
 
+RESULT vsllink_jtaghl_register_callback(jtag_callback_t callback)
+{
+	vsllink_jtaghl_callback = callback;
+	return ERROR_OK;
+}
+
 RESULT vsllink_jtaghl_commit(void)
 {
 	uint16 inlen = 0, *pinlen, i;
-	uint8 command;
+	uint8 command, processed;
+	RESULT ret;
 	
 	if (0 == vsllink_buffer_index)
 	{
@@ -581,7 +593,41 @@ RESULT vsllink_jtaghl_commit(void)
 			break;
 		case VSLLINK_CMDJTAGHL_IR:
 		case VSLLINK_CMDJTAGHL_DR:
-			if ((versaloon_pending[i].actual_data_size > 0) 
+			processed = 0;
+			if (vsllink_jtaghl_callback != NULL)
+			{
+				if (VSLLINK_CMDJTAGHL_IR == command)
+				{
+					ret = vsllink_jtaghl_callback(JTAG_SCANTYPE_IR, 
+										versaloon_pending[i].id, 
+										versaloon_pending[i].data_buffer, 
+										versaloon_buf + vsllink_buffer_index, 
+										versaloon_pending[i].actual_data_size, 
+										&processed);
+					if (ERROR_OK != ret)
+					{
+						LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+								  "call callback");
+						return ERROR_FAIL;
+					}
+				}
+				else
+				{
+					ret = vsllink_jtaghl_callback(JTAG_SCANTYPE_DR, 
+										versaloon_pending[i].id, 
+										versaloon_pending[i].data_buffer, 
+										versaloon_buf + vsllink_buffer_index, 
+										versaloon_pending[i].actual_data_size, 
+										&processed);
+					if (ERROR_OK != ret)
+					{
+						LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+								  "call callback");
+						return ERROR_FAIL;
+					}
+				}
+			}
+			if (!processed && (versaloon_pending[i].actual_data_size > 0) 
 				&& (versaloon_pending[i].data_buffer != NULL))
 			{
 				memcpy(versaloon_pending[i].data_buffer, 
@@ -647,6 +693,24 @@ RESULT vsllink_jtaghl_ir(uint8 *ir, uint8 len, uint8 idle, uint8 want_ret)
 	
 	buf_tmp[0] = len;
 	memcpy(buf_tmp + 1, ir, byte_len);
+	
+	if (len < 8)
+	{
+		vsllink_jtaghl_ir_backup = ir[0];
+	}
+	else if (len < 16)
+	{
+		vsllink_jtaghl_ir_backup = ir[0] + (ir[1] << 8);
+	}
+	else if (len < 24)
+	{
+		vsllink_jtaghl_ir_backup = ir[0] + (ir[1] << 8) + (ir[2] << 16);
+	}
+	else if (len < 32)
+	{
+		vsllink_jtaghl_ir_backup = ir[0] + (ir[1] << 8) + (ir[2] << 16) 
+								   + (ir[3] << 24);
+	}
 	
 	if (want_ret)
 	{
@@ -931,10 +995,10 @@ RESULT vsllink_swj_add_pending(uint8 cmd, uint8 *buf, uint16 len)
 	case VSLLINK_CMDSWJ_SEQOUT:
 		return ERROR_OK;
 	case VSLLINK_CMDSWJ_SEQIN:
-		versaloon_add_pending(0, cmd, len, 0, 0, buf, 0);
+		versaloon_add_pending(0, cmd, len, 0, 0, buf, 0, 0);
 		return ERROR_OK;
 	case VSLLINK_CMDSWJ_TRANS:
-		versaloon_add_pending(0, cmd, len, 0, 0, buf, 0);
+		versaloon_add_pending(0, cmd, len, 0, 0, buf, 0, 0);
 		return ERROR_OK;
 		break;
 	default:

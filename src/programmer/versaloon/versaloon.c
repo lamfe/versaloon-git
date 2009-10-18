@@ -62,8 +62,6 @@ static uint8 versaloon_epin = VERSALOON_INP;
 static uint8 versaloon_interface = 0;
 static uint32 versaloon_to = VERSALOON_TIMEOUT;
 
-static uint8 use_usbtojtaghl = 1;
-
 
 void versaloon_usage(void)
 {
@@ -90,9 +88,6 @@ RESULT versaloon_check_argument(char cmd, const char *argu)
 		break;
 	case 'S':
 		versaloon_support();
-		break;
-	case 'J':
-		use_usbtojtaghl = 0;
 		break;
 	case 'U':
 		if (NULL == argu)
@@ -188,7 +183,7 @@ print_usb_device:
 
 RESULT versaloon_add_pending(uint8 type, uint8 cmd, uint16 actual_szie, 
 							 uint16 want_pos, uint16 want_size, 
-							 uint8 *buffer, uint8 collect)
+							 uint8 *buffer, uint8 collect, uint32 id)
 {
 #if PARAM_CHECK
 	if (versaloon_pending_idx >= VERSALOON_MAX_PENDING_NUMBER)
@@ -206,6 +201,7 @@ RESULT versaloon_add_pending(uint8 type, uint8 cmd, uint16 actual_szie,
 	versaloon_pending[versaloon_pending_idx].want_data_size = want_size;
 	versaloon_pending[versaloon_pending_idx].data_buffer = buffer;
 	versaloon_pending[versaloon_pending_idx].collect = collect;
+	versaloon_pending[versaloon_pending_idx].id = id;
 	versaloon_pending_idx++;
 	
 	return ERROR_OK;
@@ -830,32 +826,6 @@ RESULT versaloon_lpcicp_poll_ready(uint8 data, uint8 *ret, uint8 setmask,
 	return usbtolpcicp_poll_ready(VERSALOON_LPCICP_PORT, ret, data, setmask, 
 								  clearmask, pollcnt);
 }
-// JTAG
-RESULT versaloon_jtaghl_init(void)
-{
-	return usbtojtaghl_init();
-}
-RESULT versaloon_jtaghl_fini(void)
-{
-	return usbtojtaghl_fini();
-}
-RESULT versaloon_jtaghl_config(uint16 kHz, uint8 ub, uint8 ua, uint16 bb, 
-							   uint16 ba)
-{
-	return usbtojtaghl_config(VERSALOON_JTAGHL_PORT, kHz, ub, ua, bb, ba);
-}
-RESULT versaloon_jtaghl_tms(uint8 *tms, uint8 len)
-{
-	return usbtojtaghl_tmsbyte(VERSALOON_JTAGHL_PORT, tms, len);
-}
-RESULT versaloon_jtaghl_ir(uint8 *ir, uint8 len, uint8 idle, uint8 want_ret)
-{
-	return usbtojtaghl_ir(VERSALOON_JTAGHL_PORT, ir, len, idle, want_ret);
-}
-RESULT versaloon_jtaghl_dr(uint8 *dr, uint16 len, uint8 idle, uint8 want_ret)
-{
-	return usbtojtaghl_dr(VERSALOON_JTAGHL_PORT, dr, len, idle, want_ret);
-}
 // MSP430_JTAG
 RESULT versaloon_msp430jtag_init(void)
 {
@@ -1058,42 +1028,23 @@ RESULT versaloon_init_capability(void *p)
 											versaloon_get_target_voltage;
 	
 	// JTAG_HL
-	if (use_usbtojtaghl)
-	{
-		((programmer_info_t *)p)->jtag_hl_init = versaloon_jtaghl_init;
-		((programmer_info_t *)p)->jtag_hl_fini = versaloon_jtaghl_fini;
-		((programmer_info_t *)p)->jtag_hl_config= versaloon_jtaghl_config;
-		((programmer_info_t *)p)->jtag_hl_tms = versaloon_jtaghl_tms;
-		((programmer_info_t *)p)->jtag_hl_ir = versaloon_jtaghl_ir;
-		((programmer_info_t *)p)->jtag_hl_dr = versaloon_jtaghl_dr;
-		((programmer_info_t *)p)->jtag_hl_aux_io_init = versaloon_gpio_init;
-		((programmer_info_t *)p)->jtag_hl_aux_io_fini = versaloon_gpio_fini;
-		((programmer_info_t *)p)->jtag_hl_aux_io_config = 
-											versaloon_gpio_config_8bit;
-		((programmer_info_t *)p)->jtag_hl_aux_io_out = versaloon_gpio_out_8bit;
-		((programmer_info_t *)p)->jtag_hl_aux_io_in = versaloon_gpio_in_8bit;
-		((programmer_info_t *)p)->jtag_hl_delay_us = versaloon_delay_us;
-		((programmer_info_t *)p)->jtag_hl_delay_ms = versaloon_delay_ms;
-		((programmer_info_t *)p)->jtag_hl_commit = versaloon_peripheral_commit;
-	}
-	else
-	{
-		((programmer_info_t *)p)->jtag_hl_init = vsllink_jtag_connect;
-		((programmer_info_t *)p)->jtag_hl_fini = vsllink_jtaghl_disconnect;
-		((programmer_info_t *)p)->jtag_hl_config= vsllink_jtaghl_config;
-		((programmer_info_t *)p)->jtag_hl_tms = vsllink_jtaghl_tms;
-		((programmer_info_t *)p)->jtag_hl_ir = vsllink_jtaghl_ir;
-		((programmer_info_t *)p)->jtag_hl_dr = vsllink_jtaghl_dr;
-		((programmer_info_t *)p)->jtag_hl_aux_io_init = versaloon_null;
-		((programmer_info_t *)p)->jtag_hl_aux_io_fini = versaloon_null;
-		((programmer_info_t *)p)->jtag_hl_aux_io_config = 
-											vsllink_jtag_auxio_config;
-		((programmer_info_t *)p)->jtag_hl_aux_io_out = vsllink_jtag_auxio_out;
-		((programmer_info_t *)p)->jtag_hl_aux_io_in = vsllink_jtag_auxio_in;
-		((programmer_info_t *)p)->jtag_hl_delay_us = vsllink_jtaghl_delay_us;
-		((programmer_info_t *)p)->jtag_hl_delay_ms = vsllink_jtaghl_delay_ms;
-		((programmer_info_t *)p)->jtag_hl_commit = vsllink_jtaghl_commit;
-	}
+	((programmer_info_t *)p)->jtag_hl_init = vsllink_jtag_connect;
+	((programmer_info_t *)p)->jtag_hl_fini = vsllink_jtaghl_disconnect;
+	((programmer_info_t *)p)->jtag_hl_config= vsllink_jtaghl_config;
+	((programmer_info_t *)p)->jtag_hl_tms = vsllink_jtaghl_tms;
+	((programmer_info_t *)p)->jtag_hl_ir = vsllink_jtaghl_ir;
+	((programmer_info_t *)p)->jtag_hl_dr = vsllink_jtaghl_dr;
+	((programmer_info_t *)p)->jtag_hl_aux_io_init = versaloon_null;
+	((programmer_info_t *)p)->jtag_hl_aux_io_fini = versaloon_null;
+	((programmer_info_t *)p)->jtag_hl_aux_io_config = 
+													vsllink_jtag_auxio_config;
+	((programmer_info_t *)p)->jtag_hl_aux_io_out = vsllink_jtag_auxio_out;
+	((programmer_info_t *)p)->jtag_hl_aux_io_in = vsllink_jtag_auxio_in;
+	((programmer_info_t *)p)->jtag_hl_delay_us = vsllink_jtaghl_delay_us;
+	((programmer_info_t *)p)->jtag_hl_delay_ms = vsllink_jtaghl_delay_ms;
+	((programmer_info_t *)p)->jtag_hl_register_callback = 
+											vsllink_jtaghl_register_callback;
+	((programmer_info_t *)p)->jtag_hl_commit = vsllink_jtaghl_commit;
 	
 	// JTAG_LL
 	((programmer_info_t *)p)->jtag_ll_init = vsllink_jtag_connect;

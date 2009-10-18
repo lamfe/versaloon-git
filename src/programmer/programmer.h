@@ -19,6 +19,15 @@
 #ifndef __PROGRAMMER_H_INCLUDED__
 #define __PROGRAMMER_H_INCLUDED__
 
+typedef enum
+{
+	JTAG_SCANTYPE_IR, 
+	JTAG_SCANTYPE_DR
+}jtag_irdr_t;
+typedef RESULT (*jtag_callback_t)(jtag_irdr_t cmd, uint32 ir, 
+								  uint8 *dest_buffer, uint8 *src_buffer, 
+								  uint16 buffer_len, uint8 *processed);
+
 typedef struct
 {
 	// the 3 element listed below MUST be define valid
@@ -93,6 +102,7 @@ typedef struct
 	RESULT (*jtag_hl_aux_io_config)(uint8 pin_mask, uint8 io);
 	RESULT (*jtag_hl_aux_io_out)(uint8 pin_mask, uint8 value);
 	RESULT (*jtag_hl_aux_io_in)(uint8 pin_mask, uint8 *value);
+	RESULT (*jtag_hl_register_callback)(jtag_callback_t callback);
 	RESULT (*jtag_hl_commit)(void);
 	
 	// jtag_ll
@@ -180,7 +190,7 @@ typedef struct
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0\
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0\
 	}
 
 extern programmer_info_t *cur_programmer;

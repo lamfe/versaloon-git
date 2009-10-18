@@ -60,6 +60,7 @@ RESULT vsllink_jtaghl_poll(uint8 *ir0, uint8 ir0idle, uint8 ir0len,
 						   uint16 poll_count);
 RESULT vsllink_jtaghl_delay_us(uint16 us);
 RESULT vsllink_jtaghl_delay_ms(uint16 ms);
+RESULT vsllink_jtaghl_register_callback(jtag_callback_t callback);
 RESULT vsllink_jtaghl_commit(void);
 
 #endif /* __VSLLINK_H_INCLUDED__ */

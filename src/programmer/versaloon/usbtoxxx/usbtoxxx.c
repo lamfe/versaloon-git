@@ -264,7 +264,7 @@ RESULT usbtoxxx_add_command(uint8 type, uint8 cmd, uint8 *cmdbuf,
 	}
 	
 	return versaloon_add_pending(type, cmd, retlen, wantpos, wantlen, 
-								 wantbuf, collect);
+								 wantbuf, collect, 0);
 }
 
 
@@ -283,6 +283,6 @@ RESULT usbtodelay_delay(uint16 dly)
 	usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = (dly >> 0) & 0xFF;
 	usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = (dly >> 8) & 0xFF;
 	
-	return versaloon_add_pending(USB_TO_DELAY, 0, 0, 0, 0, NULL, 0);
+	return versaloon_add_pending(USB_TO_DELAY, 0, 0, 0, 0, NULL, 0, 0);
 }
 

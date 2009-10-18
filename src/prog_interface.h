@@ -61,6 +61,7 @@ typedef struct
 	uint16 bb;		// units after
 	uint16 ba;		// bits after
 }jtag_pos_t;
+extern jtag_pos_t target_jtag_pos;
 
 #define JTAG_SRST				(1 << 0)
 #define JTAG_TRST				(1 << 1)
