@@ -16,7 +16,6 @@ libprog_a_SOURCES = \
     versaloon/usbtoxxx/usbtogpio.c \
     versaloon/usbtoxxx/usbtoi2c.c \
     versaloon/usbtoxxx/usbtoissp.c \
-    versaloon/usbtoxxx/usbtojtaghl.c \
     versaloon/usbtoxxx/usbtomsp430jtag.c \
     versaloon/usbtoxxx/usbtomsp430sbw.c \
     versaloon/usbtoxxx/usbtospi.c \

@@ -91,12 +91,13 @@ typedef struct
 	uint16 actual_data_size;
 	uint8 *data_buffer;
 	uint8 collect;
+	uint32 id;
 }versaloon_pending_t;
 extern versaloon_pending_t versaloon_pending[VERSALOON_MAX_PENDING_NUMBER];
 extern uint16 versaloon_pending_idx;
 RESULT versaloon_add_pending(uint8 type, uint8 cmd, uint16 actual_szie, 
 							 uint16 want_pos, uint16 want_size, uint8 *buffer, 
-							 uint8 collect);
+							 uint8 collect, uint32 id);
 
 
 

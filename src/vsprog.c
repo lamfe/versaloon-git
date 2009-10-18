@@ -35,6 +35,7 @@
 #include "app_type.h"
 #include "app_log.h"
 #include "app_err.h"
+#include "prog_interface.h"
 
 #include "memlist.h"
 #include "pgbar.h"
@@ -44,7 +45,7 @@
 #include "target.h"
 #include "hex.h"
 
-#define OPTSTR			"hvS:i:s:c:Mp:U:Dd:Go:l:f:F:m:x:C:I:JZb:"
+#define OPTSTR			"hvS:i:s:c:Mp:U:Dd:Go:l:f:F:m:x:C:I:J:Zb:"
 static const struct option long_opts[] =
 {
 	{"help", no_argument, NULL, 'h'},
@@ -67,7 +68,7 @@ static const struct option long_opts[] =
 	{"execute", required_argument, NULL, 'x'},
 	{"comport", required_argument, NULL, 'C'},
 	{"inputfile", required_argument, NULL, 'I'},
-	{"jtag", no_argument, NULL, 'J'},
+	{"jtag-dc", required_argument, NULL, 'J'},
 	{"firmware_update", no_argument, NULL, 'Z'},
 	{"buffsize", required_argument, NULL, 'b'},
 	{NULL, 0, NULL, 0},
@@ -79,6 +80,9 @@ operation_t operations;
 static char *program_name = NULL;
 char *program_dir = NULL;
 static FILE *hex_file = NULL;
+
+// for JTAT
+jtag_pos_t target_jtag_pos;
 
 static void free_all(void)
 {
@@ -250,7 +254,7 @@ int main(int argc, char* argv[])
 	uint32 i, j, argu_num;
 	uint32 require_hex_file_for_read = 0;
 	uint32 require_hex_file_for_write = 0;
-	char *hex_filename = NULL;
+	char *hex_filename = NULL, *cur_pointer, *end_pointer;
 	RESULT ret;
 	
 	// get directory of the application
@@ -589,6 +593,48 @@ int main(int argc, char* argv[])
 				free_all_and_exit(ERRCODE_NOT_ENOUGH_MEMORY);
 			}
 			strcpy(hex_filename, optarg);
+			break;
+		case 'J':
+			// --jtag-dc
+			cur_pointer = optarg;
+			
+			target_jtag_pos.ub = (uint8)strtoul(cur_pointer, &end_pointer, 0);
+			if ((cur_pointer == end_pointer) || ('\0' == end_pointer[0]) 
+				|| ('\0' == end_pointer[1]))
+			{
+				LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), (char)optc);
+				LOG_ERROR(_GETTEXT(ERRMSG_TRY_HELP));
+				free_all_and_exit(ERRCODE_INVALID_OPTION);
+			}
+			
+			cur_pointer = end_pointer + 1;
+			target_jtag_pos.ua = (uint8)strtoul(cur_pointer, &end_pointer, 0);
+			if ((cur_pointer == end_pointer) || ('\0' == end_pointer[0]) 
+				|| ('\0' == end_pointer[1]))
+			{
+				LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), (char)optc);
+				LOG_ERROR(_GETTEXT(ERRMSG_TRY_HELP));
+				free_all_and_exit(ERRCODE_INVALID_OPTION);
+			}
+			
+			cur_pointer = end_pointer + 1;
+			target_jtag_pos.bb = (uint16)strtoul(cur_pointer, &end_pointer, 0);
+			if ((cur_pointer == end_pointer) || ('\0' == end_pointer[0]) 
+				|| ('\0' == end_pointer[1]))
+			{
+				LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), (char)optc);
+				LOG_ERROR(_GETTEXT(ERRMSG_TRY_HELP));
+				free_all_and_exit(ERRCODE_INVALID_OPTION);
+			}
+			
+			cur_pointer = end_pointer + 1;
+			target_jtag_pos.ba = (uint16)strtoul(cur_pointer, &end_pointer, 0);
+			if (cur_pointer == end_pointer)
+			{
+				LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), (char)optc);
+				LOG_ERROR(_GETTEXT(ERRMSG_TRY_HELP));
+				free_all_and_exit(ERRCODE_INVALID_OPTION);
+			}
 			break;
 		case 'M':
 			// --mass-product
