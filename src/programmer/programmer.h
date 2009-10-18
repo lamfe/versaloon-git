@@ -26,7 +26,7 @@ typedef enum
 }jtag_irdr_t;
 typedef RESULT (*jtag_callback_t)(jtag_irdr_t cmd, uint32 ir, 
 								  uint8 *dest_buffer, uint8 *src_buffer, 
-								  uint16 buffer_len, uint8 *processed);
+								  uint16 buffer_len, uint16 *processed);
 
 typedef struct
 {
@@ -102,7 +102,8 @@ typedef struct
 	RESULT (*jtag_hl_aux_io_config)(uint8 pin_mask, uint8 io);
 	RESULT (*jtag_hl_aux_io_out)(uint8 pin_mask, uint8 value);
 	RESULT (*jtag_hl_aux_io_in)(uint8 pin_mask, uint8 *value);
-	RESULT (*jtag_hl_register_callback)(jtag_callback_t callback);
+	RESULT (*jtag_hl_register_callback)(jtag_callback_t send_callback, 
+										jtag_callback_t receive_callback);
 	RESULT (*jtag_hl_commit)(void);
 	
 	// jtag_ll

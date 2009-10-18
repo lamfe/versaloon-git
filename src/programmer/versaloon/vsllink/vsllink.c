@@ -425,7 +425,8 @@ RESULT vsllink_jtagll_xr(uint8* r, uint16 len, uint8 tms_before_valid,
 
 
 
-jtag_callback_t vsllink_jtaghl_callback = NULL;
+jtag_callback_t vsllink_jtaghl_receive_callback = NULL;
+jtag_callback_t vsllink_jtaghl_send_callback = NULL;
 uint32 vsllink_jtaghl_ir_backup = 0;
 RESULT vsllink_jtaghl_disconnect(void)
 {
@@ -505,6 +506,8 @@ RESULT vsllink_jtaghl_add_pending(uint8 cmd, uint8 *buf, uint16 len)
 RESULT vsllink_jtaghl_add_command(uint8 cmd, uint8 *cmddata, uint16 cmdlen, 
 								  uint8 *retdata, uint16 retlen)
 {
+	uint16 processed_len = 0;
+	
 	// check free space, commit if not enough
 	if ((vsllink_buffer_index + cmdlen + 1)>= versaloon_buf_size)
 	{
@@ -520,7 +523,37 @@ RESULT vsllink_jtaghl_add_command(uint8 cmd, uint8 *cmddata, uint16 cmdlen,
 	}
 	
 	versaloon_buf[vsllink_buffer_index++] = cmd;
-	if ((cmdlen > 0) && (NULL != cmddata))
+	
+	if (vsllink_jtaghl_send_callback != NULL)
+	{
+		if ((cmd & VSLLINK_CMDJTAGHL_CMDMSK) == VSLLINK_CMDJTAGHL_DR)
+		{
+			// first 2 bytes of dr data is bit_len
+			versaloon_buf[vsllink_buffer_index++] = cmddata[0];
+			versaloon_buf[vsllink_buffer_index++] = cmddata[1];
+			cmddata += 2;
+			cmdlen -= 2;
+			vsllink_jtaghl_send_callback(JTAG_SCANTYPE_DR, 
+										 vsllink_jtaghl_ir_backup, 
+										 versaloon_buf + vsllink_buffer_index, 
+										 cmddata, cmdlen, &processed_len);
+			vsllink_buffer_index += processed_len;
+		}
+		else if((cmd & VSLLINK_CMDJTAGHL_CMDMSK) == VSLLINK_CMDJTAGHL_IR)
+		{
+			// first 1 byte of ir data is bit_len
+			versaloon_buf[vsllink_buffer_index++] = cmddata[0];
+			cmddata += 1;
+			cmdlen -= 1;
+			vsllink_jtaghl_send_callback(JTAG_SCANTYPE_IR, 
+										 vsllink_jtaghl_ir_backup, 
+										 versaloon_buf + vsllink_buffer_index, 
+										 cmddata, cmdlen, &processed_len);
+			vsllink_buffer_index += processed_len;
+		}
+	}
+	
+	if (!processed_len && (cmdlen > 0) && (NULL != cmddata))
 	{
 		memcpy(versaloon_buf + vsllink_buffer_index, cmddata, cmdlen);
 		vsllink_buffer_index += cmdlen;
@@ -529,16 +562,19 @@ RESULT vsllink_jtaghl_add_command(uint8 cmd, uint8 *cmddata, uint16 cmdlen,
 	return vsllink_jtaghl_add_pending(cmd, retdata, retlen);
 }
 
-RESULT vsllink_jtaghl_register_callback(jtag_callback_t callback)
+RESULT vsllink_jtaghl_register_callback(jtag_callback_t send_callback, 
+										jtag_callback_t receive_callback)
 {
-	vsllink_jtaghl_callback = callback;
+	vsllink_jtaghl_receive_callback = receive_callback;
+	vsllink_jtaghl_send_callback = send_callback;
 	return ERROR_OK;
 }
 
 RESULT vsllink_jtaghl_commit(void)
 {
 	uint16 inlen = 0, *pinlen, i;
-	uint8 command, processed;
+	uint8 command;
+	uint16 processed;
 	RESULT ret;
 	
 	if (0 == vsllink_buffer_index)
@@ -594,11 +630,11 @@ RESULT vsllink_jtaghl_commit(void)
 		case VSLLINK_CMDJTAGHL_IR:
 		case VSLLINK_CMDJTAGHL_DR:
 			processed = 0;
-			if (vsllink_jtaghl_callback != NULL)
+			if (vsllink_jtaghl_receive_callback != NULL)
 			{
 				if (VSLLINK_CMDJTAGHL_IR == command)
 				{
-					ret = vsllink_jtaghl_callback(JTAG_SCANTYPE_IR, 
+					ret = vsllink_jtaghl_receive_callback(JTAG_SCANTYPE_IR, 
 										versaloon_pending[i].id, 
 										versaloon_pending[i].data_buffer, 
 										versaloon_buf + vsllink_buffer_index, 
@@ -613,7 +649,7 @@ RESULT vsllink_jtaghl_commit(void)
 				}
 				else
 				{
-					ret = vsllink_jtaghl_callback(JTAG_SCANTYPE_DR, 
+					ret = vsllink_jtaghl_receive_callback(JTAG_SCANTYPE_DR, 
 										versaloon_pending[i].id, 
 										versaloon_pending[i].data_buffer, 
 										versaloon_buf + vsllink_buffer_index, 

@@ -148,7 +148,8 @@
 
 #define jtag_init()					p->jtag_hl_init()
 #define jtag_fini()					p->jtag_hl_fini()
-#define jtag_config(kHz)			p->jtag_hl_config((kHz), 0, 0, 0, 0)
+#define jtag_config(kHz,a,b,c,d)	\
+								p->jtag_hl_config((kHz), (a), (b), (c), (d))
 #define jtag_tms(tms, len)			p->jtag_hl_tms((tms), (len))
 #define jtag_ir_write(ir, len)		p->jtag_hl_ir((uint8*)(ir), (len), 1, 0)
 #define jtag_dr_write(dr, len)		p->jtag_hl_dr((uint8*)(dr), (len), 1, 0)
@@ -187,7 +188,8 @@ RESULT avr8_jtag_program(operation_t operations, program_info_t *pi,
 	// here we go
 	// init
 	jtag_init();
-	jtag_config(4500);
+	jtag_config(4500, target_jtag_pos.ub, target_jtag_pos.ua, 
+				target_jtag_pos.bb, target_jtag_pos.ba);
 	
 	// enter program mode
 	AVR_JTAG_Reset(1);
