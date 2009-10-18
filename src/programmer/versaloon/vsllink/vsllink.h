@@ -47,7 +47,7 @@ RESULT vsllink_jtagll_xr(uint8* r, uint16 len, uint8 tms_before_valid,
 RESULT vsllink_jtaghl_disconnect(void);
 RESULT vsllink_jtaghl_config(uint16 kHz, uint8 ub, uint8 ua, uint16 bb, 
 							 uint16 ba);
-RESULT vsllink_jtaghl_tms(uint8 *tms, uint8 len);
+RESULT vsllink_jtaghl_runtest(uint32 cycles);
 RESULT vsllink_jtaghl_ir(uint8 *ir, uint8 len, uint8 idle, uint8 want_ret);
 RESULT vsllink_jtaghl_dr(uint8 *dr, uint16 len, uint8 idle, uint8 want_ret);
 RESULT vsllink_jtaghl_poll(uint8 *ir0, uint8 ir0idle, uint8 ir0len, 

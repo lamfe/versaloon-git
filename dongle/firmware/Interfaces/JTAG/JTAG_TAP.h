@@ -49,6 +49,7 @@ RAMFUNC void JTAG_TAP_HS_W(uint8 *tdi, uint8 tms_before, uint8 tms_after0, uint8
 // About idle parameter: 
 // If 0,		JTAG_TAP will stay in UPDATE_IR or UPDATE_DR
 // If 1 -- 5,	JTAG_TAP will stay in RT/I, and idle - 1 shifts on RT/I
+RAMFUNC void JTAG_TAP_TMS_Bit(uint8* tms, uint8 bit_len);
 uint32 JTAG_TAP_Instr(uint32 instr, uint8 bit_len, uint8 idle);
 void JTAG_TAP_InstrPtr(uint8 *instr, uint8 *tdo, uint16 bit_len, uint8 idle);
 void JTAG_TAP_InstrOutPtr(uint8 *instr, uint16 bit_len, uint8 idle);
