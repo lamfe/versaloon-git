@@ -150,7 +150,7 @@
 #define jtag_fini()					p->jtag_hl_fini()
 #define jtag_config(kHz,a,b,c,d)	\
 								p->jtag_hl_config((kHz), (a), (b), (c), (d))
-#define jtag_tms(tms, len)			p->jtag_hl_tms((tms), (len))
+#define jtag_runtest(len)			p->jtag_hl_runtest(len)
 #define jtag_ir_write(ir, len)		p->jtag_hl_ir((uint8*)(ir), (len), 1, 0)
 #define jtag_dr_write(dr, len)		p->jtag_hl_dr((uint8*)(dr), (len), 1, 0)
 #define jtag_dr_read(dr, len)		p->jtag_hl_dr((uint8*)(dr), (len), 1, 1)

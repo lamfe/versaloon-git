@@ -1031,7 +1031,7 @@ RESULT versaloon_init_capability(void *p)
 	((programmer_info_t *)p)->jtag_hl_init = vsllink_jtag_connect;
 	((programmer_info_t *)p)->jtag_hl_fini = vsllink_jtaghl_disconnect;
 	((programmer_info_t *)p)->jtag_hl_config= vsllink_jtaghl_config;
-	((programmer_info_t *)p)->jtag_hl_tms = vsllink_jtaghl_tms;
+	((programmer_info_t *)p)->jtag_hl_runtest = vsllink_jtaghl_runtest;
 	((programmer_info_t *)p)->jtag_hl_ir = vsllink_jtaghl_ir;
 	((programmer_info_t *)p)->jtag_hl_dr = vsllink_jtaghl_dr;
 	((programmer_info_t *)p)->jtag_hl_aux_io_init = versaloon_null;

@@ -168,11 +168,6 @@ void VSLLink_ProcessCmd(uint8* dat, uint16 len)
 	switch(dat[0])
 	{
 	case VSLLINK_CMD_CONN:
-		if(len <= 1)
-		{
-			dat[1] = 0;
-		}
-
 		GLOBAL_OUTPUT_Acquire();
 		PWREXT_Acquire();
 		DelayMS(1);
@@ -265,7 +260,7 @@ void VSLLink_ProcessCmd(uint8* dat, uint16 len)
 
 				cur_cmd &= 1;
 				JTAG_TAP_HS_RW(dat + rep_len,								// tdo
-							   dat + cur_cmd_pos + cur_cmd,		// tdi
+							   dat + cur_cmd_pos + cur_cmd,					// tdi
 							   dat[cur_cmd_pos],							// tms_before
 							   dat[cur_cmd_pos + cur_dat_len + cur_cmd],	// tms_after0
 							   dat[cur_cmd_pos + cur_dat_len + cur_cmd + 1],// tms_after1
@@ -290,10 +285,8 @@ void VSLLink_ProcessCmd(uint8* dat, uint16 len)
 			case VSLLINK_CMDJTAGHL_TMS:
 				cur_dat_len = (cur_cmd & VSLLINK_CMDJTAGHL_LENMSK) + 1;
 
-				while(cur_dat_len--)
-				{
-					JTAG_TAP_HS_WriteTMSByte_ASYN(dat[cur_cmd_pos++]);
-				}
+				JTAG_TAP_TMS_Bit(dat + cur_cmd_pos, cur_dat_len);
+				cur_cmd_pos += (cur_dat_len + 7) >> 3;
 				break;
 			case VSLLINK_CMDJTAGHL_IR:
 				length = cur_cmd & VSLLINK_CMDJTAGHL_LENMSK;
@@ -390,6 +383,7 @@ void VSLLink_ProcessCmd(uint8* dat, uint16 len)
 			}
 		}
 		break;
+#endif	// VSLLINK_HL_EN
 	case VSLLINK_CMD_HW_JTAGRAWCMD:
 		cur_dat_len = (len - 3) / 2;
 
@@ -397,7 +391,6 @@ void VSLLink_ProcessCmd(uint8* dat, uint16 len)
 		rep_len += cur_dat_len;
 		break;
 	case VSLLINK_CMD_HW_SWDCMD:
-#endif
 	default:
 		break;
 	}

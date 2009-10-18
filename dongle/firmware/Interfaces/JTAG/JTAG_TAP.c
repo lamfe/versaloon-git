@@ -167,22 +167,58 @@ RAMFUNC void JTAG_TAP_HS_W(uint8 *tdi, uint8 tms_before, uint8 tms_after0, uint8
 
 
 uint8 JTAG_TAP_1s[] = {0x00, 0x01, 0x03, 0x07, 0x0F, 0x1F, 0x3F, 0x7F, 0xFF};
+uint8 JTAG_TAP_TMS_scrap = 0;
+uint8 JTAG_TAP_TMS_scraplen = 0;
+RAMFUNC void JTAG_TAP_TMS_Bit(uint8* tms, uint8 bit_len)
+{
+	while (bit_len >= 8)
+	{
+		JTAG_TAP_HS_WriteTMSByte_ASYN(*tms);
+		tms++;
+		bit_len -= 8;
+	}
+	if (bit_len)
+	{
+		JTAG_TAP_TMS_scraplen = bit_len;
+		JTAG_TAP_TMS_scrap = *tms;
+	}
+}
 
-RAMFUNC static void JTAG_TAP_ProcessDataRW(uint8 *tdo, uint8 *tdi, uint8 tms_before, uint8 len_before, uint16 bit_len, uint8 len_of_1s_before, uint8 len_of_1s_after, uint8 idle)
+RAMFUNC static void JTAG_TAP_ProcessDataRW(uint8 *tdo, uint8 *tdi, uint8 tms_before, uint8 tms_len_before, uint16 bit_len, uint8 len_of_1s_before, uint8 len_of_1s_after, uint8 idle)
 {
 	uint8 tdi_tmp, tdo_tmp, tms_tmp, len_tmp;
 	uint8 offset, Rec_offset;
 	uint16 iSend = 0, iReceive = 0, iTmp = 0, bit_len_remain, receiveFromByte;
 
 	bit_len_remain = bit_len;
-	receiveFromByte = len_of_1s_before + len_before;
+	receiveFromByte = len_of_1s_before + tms_len_before;
 	Rec_offset = receiveFromByte & 0x07;
 	receiveFromByte = (receiveFromByte + 7) >> 3;
 
+	// process TMS scrap
+	if (JTAG_TAP_TMS_scraplen)
+	{
+		if ((tms_len_before + JTAG_TAP_TMS_scraplen) > 8)
+		{
+			JTAG_TAP_TMS_scrap |= tms_before << JTAG_TAP_TMS_scraplen;
+			JTAG_TAP_HS_WriteTMSByte_ASYN(JTAG_TAP_TMS_scrap);
+
+			tms_before >>= 8 - JTAG_TAP_TMS_scraplen;
+			tms_len_before -= 8 - JTAG_TAP_TMS_scraplen;
+			JTAG_TAP_TMS_scraplen = 0;
+		}
+		else
+		{
+			tms_before |= JTAG_TAP_TMS_scrap << tms_len_before;
+			tms_len_before += JTAG_TAP_TMS_scraplen;
+			JTAG_TAP_TMS_scraplen = 0;
+		}
+	}
+
 	tms_tmp = tms_before;
 	tdi_tmp = 0;
-	len_tmp = len_before;
-	offset = len_before;
+	len_tmp = tms_len_before;
+	offset = tms_len_before;
 
 	while(len_of_1s_before + bit_len + len_of_1s_after > 0)
 	{

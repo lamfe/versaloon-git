@@ -606,7 +606,7 @@ RESULT vsllink_jtaghl_commit(void)
 		if (vsllink_buffer_index + versaloon_pending[i].actual_data_size 
 			> inlen)
 		{
-			LOG_ERROR(_GETTEXT("invalid received data length"));
+			LOG_ERROR(_GETTEXT("invalid received data length\n"));
 			return ERROR_FAIL;
 		}
 		command = versaloon_pending[i].cmd & VSLLINK_CMDJTAGHL_CMDMSK;
@@ -712,8 +712,36 @@ RESULT vsllink_jtaghl_tms(uint8 *tms, uint8 len)
 		return ERROR_FAIL;
 	}
 	
-	return vsllink_jtaghl_add_command(VSLLINK_CMDJTAGHL_TMS | len, tms, 
-									  (len + 7) >> 3, tms, len);
+	return vsllink_jtaghl_add_command(VSLLINK_CMDJTAGHL_TMS | (len - 1), 
+									  tms, (len + 7) >> 3, NULL, 0);
+}
+
+RESULT vsllink_jtaghl_runtest(uint32 cycles)
+{
+	uint8 tms[(VSLLINK_CMDJTAGHL_LENMSK + 7) >> 3];
+	uint8 cur_cycles;
+	
+	memset(tms, 0, sizeof(tms));		// tms = 0 in runtest
+	while(cycles > 0)
+	{
+		if (cycles > (VSLLINK_CMDJTAGHL_LENMSK + 1))
+		{
+			cur_cycles = VSLLINK_CMDJTAGHL_LENMSK + 1;
+		}
+		else
+		{
+			cur_cycles = (uint8)cycles;
+		}
+		
+		if (ERROR_OK != vsllink_jtaghl_tms((uint8*)&tms, cur_cycles))
+		{
+			return ERROR_FAIL;
+		}
+		
+		cycles -= cur_cycles;
+	}
+	
+	return ERROR_OK;
 }
 
 RESULT vsllink_jtaghl_ir(uint8 *ir, uint8 len, uint8 idle, uint8 want_ret)
