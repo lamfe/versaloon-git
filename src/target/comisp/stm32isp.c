@@ -772,8 +772,16 @@ RESULT stm32isp_program(operation_t operations, program_info_t *pi)
 	}
 	flash_kb = (page_buf[1] << 8) + page_buf[0];
 	sram_kb = (page_buf[3] << 8) + page_buf[2];
-	LOG_INFO(_GETTEXT("Flash memory size: %i KB, SRAM memory size:  %i KB\n"), 
-			 flash_kb, sram_kb);
+	if (sram_kb != 0xFFFF)
+	{
+		LOG_INFO(
+			_GETTEXT("Flash memory size: %i KB, SRAM memory size:  %i KB\n"), 
+					 flash_kb, sram_kb);
+	}
+	else
+	{
+		LOG_INFO(_GETTEXT("Flash memory size: %i KB\n"), flash_kb);
+	}
 	
 	if (operations.read_operations & CHIP_ID)
 	{
