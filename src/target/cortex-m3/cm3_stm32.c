@@ -111,31 +111,52 @@ RESULT stm32_program(operation_t operations, program_info_t *pi,
 	uint32 cur_block_size, block_size, block_size_tmp, cur_address;
 	
 	uint8 stm32x_flash_write_code[] = {
-								/* init: */
-		0xDF, 0xF8, 0x24, 0x40,	/* ldr.w	r4, STM32_FLASH_CR */
-		0x09, 0x4D,				/* ldr.n	r5, STM32_FLASH_SR */
-								/* write: */
-		0x4F, 0xF0, 0x01, 0x03,	/* mov.w	r3, #1 */
-		0x23, 0x60,				/* str		r3, [r4, #0] */
-								/* STM32_FLASH_CR = CR_PG_Set */
-		0x30, 0xF8, 0x02, 0x3B,	/* ldrh.w	r3, [r0], #2 */
-								/* r3 = data */
-		0x21, 0xF8, 0x02, 0x3B,	/* strh.w	r3, [r1], #2 */
-								/* address = r3 */
-								/* busy: */
-		0x2B, 0x68,				/* ldr		r3, [r5, #0] */
-		0x13, 0xF0, 0x01, 0x0F,	/* tst.w	r3, #0x01 */
-								/* FLASH_FLAG_BSY */
-		0xFB, 0xD0,				/* beq.n	busy */
-		0x13, 0xF0, 0x14, 0x0F,	/* tst.w	r3, #0x14 */
-								/* FLASH_FLAG_PGERR | FLASH_FLAG_WRPRTERR */
-		0x01, 0xD1,				/* bne.n	exit */
-		0x01, 0x3A,				/* subs		r2, r2, #1 */
-		0xED, 0xD1,				/* bne.n	write */
-								/* exit: */
-		0xFE, 0xE7,				/* b.n		exit */
-		0x10, 0x20, 0x02, 0x40,	/* STM32_FLASH_CR:	.word 0x40022010 */
-		0x0C, 0x20, 0x02, 0x40	/* STM32_FLASH_SR:	.word 0x4002200C */
+									/* init: */
+		0x14, 0x4C,					/* ldr.n	r4, STM32_FLASH_CR */
+		0x15, 0x4D,					/* ldr.n	r5, STM32_FLASH_SR */
+		0x15, 0x4F,					/* ldr.n	r7, result */
+									/* update: */
+		0x16, 0x48,					/* ldr.n	r0, ram_ptr */
+		0x16, 0x49,					/* ldr.n	r1, flash_ptr */
+		0x4F, 0xF0, 0x00, 0x06,		/* mov.w	r6, #0 */
+		0x16, 0x4A,					/* ldr.n	r2, number_of_words */
+									/* write: */
+		0x4F, 0xF0, 0x01, 0x03,		/* mov.w	r3, #1 */
+		0x23, 0x60,					/* str		r3, [r4, #0] */
+		0x30, 0xF8, 0x02, 0x3B,		/* ldrh.w	r3, [r0], #2 */
+		0x21, 0xF8, 0x02, 0x3B,		/* strh.w	r3, [r1], #2 */
+									/* busy: */
+		0x2B, 0x68,					/* ldr 		r3, [r5, #0] */
+		0x13, 0xF0, 0x01, 0x0F,		/* tst 		r3, #0x01 */
+		0xFB, 0xD0,					/* beq 		busy */
+		0x13, 0xF0, 0x14, 0x0F,		/* tst		r3, #0x14 */
+		0x0F, 0xD1,					/* bne		exit */
+		0x06, 0xF1, 0x01, 0x06,		/* add		r6, r6, #1 */
+		0x96, 0x42,					/* cmp		r2, r6 */
+		0xED, 0xD3,					/* bcc		write */
+		0x13, 0x00,					/* movs		r3, r2 */
+		0x3A, 0x60,					/* str		r2, [r7] */
+									/* wait_data */
+		0x0B, 0x4A,					/* ldr.n	r2, number_of_words */
+		0x93, 0x42,					/* cmp		r3, r2 */
+		0xFC, 0xD2,					/* bcs.n	wait_data */
+		0x12, 0x04,					/* lsls		r2, r2, #16 */
+		0xE5, 0xD5,					/* bpl.n	write */
+		0x52, 0x00,					/* lsls		r2, r2, #1 */
+		0x52, 0x0C,					/* lsrs		r2, r2, #17 */
+		0x47, 0xF8, 0x04, 0x2C,		/* str.w	r2, [r7, #-4] */
+		0xDC, 0xE7,					/* b		update */
+									/* exit: */
+		0x6F, 0xF0, 0x00, 0x02,		/* mvn.w	r2, #0 */
+		0x3A, 0x60,					/* str		r2, [r7] */
+		0xFE, 0xE7,					/* b $ */
+		0x10, 0x20, 0x02, 0x40,		/* STM32_FLASH_CR:	.word 0x40022010 */
+		0x0C, 0x20, 0x02, 0x40,		/* STM32_FLASH_SR:	.word 0x4002200C */
+		0xE4, 0x03, 0x00, 0x20,		/* address of result */
+		0x00, 0x04, 0x00, 0x20, 	/* ram address */
+		0x00, 0x00, 0x00, 0x80,		/* flash address */
+		0x00, 0x01, 0x00, 0x00,		/* number_of_words(2-byte) */
+		0x00, 0x00, 0x00, 0x00,		/* result */
 	};
 	uint8 page_buf[4 * 1024 + sizeof(stm32x_flash_write_code)];
 	
@@ -186,6 +207,17 @@ RESULT stm32_program(operation_t operations, program_info_t *pi,
 	
 	if (operations.write_operations & APPLICATION)
 	{
+		// halt target first
+		if (ERROR_OK != cm3_dp_halt())
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "halt stm32");
+			ret = ERRCODE_FAILURE_OPERATION;
+			goto leave_program_mode;
+		}
+		
+		// prepare code data
+		
+		
 		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMING), "flash");
 		pgbar_init("writing flash |", "|", 0, pi->app_size_valid, 
 				   PROGRESS_STEP, '=');
