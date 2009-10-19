@@ -978,8 +978,7 @@ RESULT stm32isp_program(operation_t operations, program_info_t *pi)
 						pgbar_fini();
 						LOG_ERROR(
 							_GETTEXT(ERRMSG_FAILURE_VERIFY_TARGET_AT_02X), 
-							"flash", 
-							ml_tmp->addr + i + j, page_buf[j], 
+							"flash", ml_tmp->addr + i + j, page_buf[j], 
 							pi->app[ml_tmp->addr + i + j - start_addr]);
 						ret = ERRCODE_FAILURE_VERIFY_TARGET;
 						goto leave_program_mode;

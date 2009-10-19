@@ -26,6 +26,9 @@ RESULT cm3_dp_fini(void);
 RESULT cm3_dp_init(programmer_info_t *prog, adi_dp_if_t *interf);
 
 RESULT cm3_dp_halt(void);
+RESULT cm3_dp_run(void);
+
+uint32 cm3_get_max_block_size(uint32 address);
 
 #endif	// __CM3_COMMON_H_INCLUDED__
 

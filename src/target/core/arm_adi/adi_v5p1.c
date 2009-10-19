@@ -454,11 +454,16 @@ RESULT adi_memap_read_reg(uint32 address, uint32 *reg, uint8 check_result)
 						   check_result);
 }
 
+uint32 adi_memap_get_max_tar_block_size(uint32 tar_autoincr_block, 
+										uint32 address)
+{
+	return (tar_autoincr_block - ((tar_autoincr_block - 1) & address)) >> 2;
+}
+
 // only support 32-bit aligned operation
-RESULT adi_memap_write_buf(uint8 *buffer, uint32 len, uint32 address)
+RESULT adi_memap_write_buf(uint32 address, uint8 *buffer, uint32 len)
 {
 	uint32 block_dword_size, write_count;
-	uint32 autoincr_block_size = adi_dp_if->tar_autoincr_block;
 	
 	if ((address & 0x03) || (len & 0x03) || (NULL == buffer) || (0 == len))
 	{
@@ -468,13 +473,13 @@ RESULT adi_memap_write_buf(uint8 *buffer, uint32 len, uint32 address)
 	
 	while (len > 0)
 	{
-		block_dword_size = autoincr_block_size;
-		block_dword_size -= ((autoincr_block_size - 1) & address);
-		if (block_dword_size > len)
+		block_dword_size = \
+			adi_memap_get_max_tar_block_size(adi_dp_if->tar_autoincr_block, 
+											 address);
+		if (block_dword_size > (len >> 2))
 		{
-			block_dword_size = len;
+			block_dword_size = len >> 2;
 		}
-		block_dword_size >>= 2;			// dword size
 		
 		adi_dp_setup_accessport(
 			ADI_AP_REG_CSW_32BIT | ADI_AP_REG_CSW_ADDRINC_SINGLE, address);
@@ -500,10 +505,9 @@ RESULT adi_memap_write_buf(uint8 *buffer, uint32 len, uint32 address)
 	return ERROR_OK;
 }
 
-RESULT adi_memap_read_buf(uint8 *buffer, uint32 len, uint32 address)
+RESULT adi_memap_read_buf(uint32 address, uint8 *buffer, uint32 len)
 {
 	uint32 block_dword_size, read_count, dummy;
-	uint32 autoincr_block_size = adi_dp_if->tar_autoincr_block;
 	
 	if ((address & 0x03) || (len & 0x03) || (NULL == buffer) || (0 == len))
 	{
@@ -513,13 +517,13 @@ RESULT adi_memap_read_buf(uint8 *buffer, uint32 len, uint32 address)
 	
 	while (len > 0)
 	{
-		block_dword_size = autoincr_block_size;
-		block_dword_size -= ((autoincr_block_size - 1) & address);
-		if (block_dword_size > len)
+		block_dword_size = \
+			adi_memap_get_max_tar_block_size(adi_dp_if->tar_autoincr_block, 
+											 address);
+		if (block_dword_size > (len >> 2))
 		{
-			block_dword_size = len;
+			block_dword_size = len >> 2;
 		}
-		block_dword_size >>= 2;			// dword size
 		
 		adi_dp_setup_accessport(
 			ADI_AP_REG_CSW_32BIT | ADI_AP_REG_CSW_ADDRINC_SINGLE, address);

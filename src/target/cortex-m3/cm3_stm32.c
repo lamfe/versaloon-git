@@ -43,6 +43,9 @@
 
 #include "cm3_internal.h"
 
+#include "adi_v5p1.h"
+#include "cm3_common.h"
+
 #define CUR_TARGET_STRING			CM3_STRING
 #define cur_chip_param				cm3_chip_param
 
@@ -103,7 +106,38 @@ RESULT stm32_program(operation_t operations, program_info_t *pi,
 {
 	RESULT ret = ERROR_OK;
 	memlist *ml_tmp;
+	uint32 i;
 	uint32 reg;
+	uint32 cur_block_size, block_size, block_size_tmp, cur_address;
+	
+	uint8 stm32x_flash_write_code[] = {
+								/* init: */
+		0xDF, 0xF8, 0x24, 0x40,	/* ldr.w	r4, STM32_FLASH_CR */
+		0x09, 0x4D,				/* ldr.n	r5, STM32_FLASH_SR */
+								/* write: */
+		0x4F, 0xF0, 0x01, 0x03,	/* mov.w	r3, #1 */
+		0x23, 0x60,				/* str		r3, [r4, #0] */
+								/* STM32_FLASH_CR = CR_PG_Set */
+		0x30, 0xF8, 0x02, 0x3B,	/* ldrh.w	r3, [r0], #2 */
+								/* r3 = data */
+		0x21, 0xF8, 0x02, 0x3B,	/* strh.w	r3, [r1], #2 */
+								/* address = r3 */
+								/* busy: */
+		0x2B, 0x68,				/* ldr		r3, [r5, #0] */
+		0x13, 0xF0, 0x01, 0x0F,	/* tst.w	r3, #0x01 */
+								/* FLASH_FLAG_BSY */
+		0xFB, 0xD0,				/* beq.n	busy */
+		0x13, 0xF0, 0x14, 0x0F,	/* tst.w	r3, #0x14 */
+								/* FLASH_FLAG_PGERR | FLASH_FLAG_WRPRTERR */
+		0x01, 0xD1,				/* bne.n	exit */
+		0x01, 0x3A,				/* subs		r2, r2, #1 */
+		0xED, 0xD1,				/* bne.n	write */
+								/* exit: */
+		0xFE, 0xE7,				/* b.n		exit */
+		0x10, 0x20, 0x02, 0x40,	/* STM32_FLASH_CR:	.word 0x40022010 */
+		0x0C, 0x20, 0x02, 0x40	/* STM32_FLASH_SR:	.word 0x4002200C */
+	};
+	uint8 page_buf[4 * 1024 + sizeof(stm32x_flash_write_code)];
 	
 	pi = pi;
 	dp_info = dp_info;
@@ -117,6 +151,14 @@ RESULT stm32_program(operation_t operations, program_info_t *pi,
 	// erase
 	if (operations.erase_operations > 0)
 	{
+		// halt target first
+		if (ERROR_OK != cm3_dp_halt())
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "halt stm32");
+			ret = ERRCODE_FAILURE_OPERATION;
+			goto leave_program_mode;
+		}
+		
 		LOG_INFO(_GETTEXT(INFOMSG_ERASING), "chip");
 		pgbar_init("erasing chip |", "|", 0, 1, PROGRESS_STEP, '=');
 		
@@ -155,16 +197,78 @@ RESULT stm32_program(operation_t operations, program_info_t *pi,
 				 pi->app_size_valid);
 	}
 	
-	if (operations.write_operations & LOCK)
+	if (operations.read_operations & APPLICATION)
 	{
-		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMING), "lock");
-		pgbar_init("writing lock |", "|", 0, 1, PROGRESS_STEP, '=');
+		if (operations.verify_operations & APPLICATION)
+		{
+			LOG_INFO(_GETTEXT(INFOMSG_VERIFYING), "flash");
+		}
+		else
+		{
+			LOG_INFO(_GETTEXT(INFOMSG_READING), "flash");
+		}
+		pgbar_init("reading flash |", "|", 0, pi->app_size_valid, 
+				   PROGRESS_STEP, '=');
 		
+		ml_tmp = pi->app_memlist;
+		while (ml_tmp != NULL)
+		{
+			block_size = ml_tmp->len;
+			cur_address = ml_tmp->addr;
+			while (block_size)
+			{
+				// cm3_get_max_block_size return size in dword(4-byte)
+				cur_block_size = cm3_get_max_block_size(ml_tmp->addr);
+				if (cur_block_size > (ml_tmp->len >> 2))
+				{
+					cur_block_size = ml_tmp->len;
+				}
+				else
+				{
+					cur_block_size <<= 2;
+				}
+				block_size_tmp = (cur_block_size + 3) & 0xFFFFFFFC;
+				if (ERROR_OK != adi_memap_read_buf(cur_address, page_buf, 
+												   cur_block_size))
+				{
+					pgbar_fini();
+					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ADDR), 
+							  "write flash block", ml_tmp->addr);
+					ret = ERRCODE_FAILURE_OPERATION_ADDR;
+					goto leave_program_mode;
+				}
+				for (i = 0; i < cur_block_size; i++)
+				{
+					if (page_buf[i] != pi->app[cur_address + i - 0x08000000])
+					{
+						pgbar_fini();
+						LOG_ERROR(
+							_GETTEXT(ERRMSG_FAILURE_VERIFY_TARGET_AT_02X), 
+							"flash", cur_address, page_buf[i], 
+							pi->app[cur_address + i - 0x08000000]);
+						ret = ERRCODE_FAILURE_VERIFY_TARGET;
+						goto leave_program_mode;
+					}
+				}
+				
+				block_size -= cur_block_size;
+				cur_address += cur_block_size;
+				pgbar_update(cur_block_size);
+			}
+			
+			ml_tmp = ml_tmp->next;
+		}
 		
-		
-		pgbar_update(1);
 		pgbar_fini();
-		LOG_INFO("lock programmed\n");
+		if (operations.verify_operations & APPLICATION)
+		{
+			LOG_INFO(_GETTEXT(INFOMSG_VERIFIED_SIZE), "flash", 
+				 pi->app_size_valid);
+		}
+		else
+		{
+			LOG_INFO(_GETTEXT(INFOMSG_READ), "flash");
+		}
 	}
 	
 leave_program_mode:
