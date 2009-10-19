@@ -239,13 +239,15 @@ RESULT stm32_program(operation_t operations, program_info_t *pi,
 				}
 				for (i = 0; i < cur_block_size; i++)
 				{
-					if (page_buf[i] != pi->app[cur_address + i - 0x08000000])
+					if (page_buf[i] != pi->app[cur_address + i 
+												- STM32_FLASH_START_ADDRESS])
 					{
 						pgbar_fini();
 						LOG_ERROR(
 							_GETTEXT(ERRMSG_FAILURE_VERIFY_TARGET_AT_02X), 
 							"flash", cur_address, page_buf[i], 
-							pi->app[cur_address + i - 0x08000000]);
+							pi->app[cur_address + i 
+									- STM32_FLASH_START_ADDRESS]);
 						ret = ERRCODE_FAILURE_VERIFY_TARGET;
 						goto leave_program_mode;
 					}
