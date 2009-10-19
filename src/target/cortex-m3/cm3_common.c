@@ -37,6 +37,8 @@
 #include "adi_v5p1.h"
 #include "cm3_common.h"
 
+adi_dp_if_t *cm3_dp_if = NULL;
+
 RESULT cm3_dp_parameter_init(adi_dp_if_t *dp)
 {
 	dp->memaccess_tck = 8;
@@ -47,6 +49,7 @@ RESULT cm3_dp_parameter_init(adi_dp_if_t *dp)
 
 RESULT cm3_dp_fini(void)
 {
+	cm3_dp_if = NULL;
 	return adi_fini();
 }
 
@@ -54,8 +57,10 @@ RESULT cm3_dp_init(programmer_info_t *prog, adi_dp_if_t *dp)
 {
 	uint32 cpuid;
 	
-	cm3_dp_parameter_init(dp);
-	if (ERROR_OK != adi_init(prog, dp))
+	cm3_dp_if = dp;
+	
+	cm3_dp_parameter_init(cm3_dp_if);
+	if (ERROR_OK != adi_init(prog, cm3_dp_if))
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
 				  "initialize cm3 interface");
@@ -77,6 +82,70 @@ RESULT cm3_dp_init(programmer_info_t *prog, adi_dp_if_t *dp)
 	LOG_INFO("CPUID: 0x%08X\n", cpuid);
 	
 	return ERROR_OK;
+}
+
+uint32 cm3_get_max_block_size(uint32 address)
+{
+	return adi_memap_get_max_tar_block_size(cm3_dp_if->tar_autoincr_block, 
+											address);
+}
+
+RESULT cm3_dp_run(void)
+{
+	uint32 dcb_dhcsr = 0;
+	uint8 wait_halt_clear_delay_in_10ms;
+	
+	if (ERROR_OK != adi_memap_read_reg(CM3_DCB_DHCSR, &dcb_dhcsr, 1))
+	{
+		return ERROR_FAIL;
+	}
+	
+	// enable debug
+	if (!(dcb_dhcsr & CM3_DCB_DHCSR_C_DEBUGEN))
+	{
+		dcb_dhcsr = (uint32)(CM3_DCB_DHCSR_DBGKEY | CM3_DCB_DHCSR_C_DEBUGEN);
+		adi_memap_write_reg(CM3_DCB_DHCSR, &dcb_dhcsr, 0);
+		
+		if (ERROR_OK != adi_memap_read_reg(CM3_DCB_DHCSR, &dcb_dhcsr, 1))
+		{
+			return ERROR_FAIL;
+		}
+	}
+	
+	if (dcb_dhcsr & CM3_DCB_DHCSR_S_HALT)
+	{
+		// clear halt
+		dcb_dhcsr = (uint32)(CM3_DCB_DHCSR_DBGKEY | CM3_DCB_DHCSR_C_DEBUGEN);
+		adi_memap_write_reg(CM3_DCB_DHCSR, &dcb_dhcsr, 0);
+		
+		if (ERROR_OK != adi_memap_read_reg(CM3_DCB_DHCSR, &dcb_dhcsr, 1))
+		{
+			return ERROR_FAIL;
+		}
+	}
+	// wait halt clear
+	wait_halt_clear_delay_in_10ms = 100;	// 1000ms max delay in all
+	while ((dcb_dhcsr & CM3_DCB_DHCSR_S_HALT) && wait_halt_clear_delay_in_10ms)
+	{
+		if (ERROR_OK != adi_memap_read_reg(CM3_DCB_DHCSR, &dcb_dhcsr, 1))
+		{
+			return ERROR_FAIL;
+		}
+		wait_halt_clear_delay_in_10ms--;
+		sleep_ms(10);
+	}
+	
+	LOG_INFO(_GETTEXT("dhcsr: 0x%08X\n"), dcb_dhcsr);
+	if (dcb_dhcsr & CM3_DCB_DHCSR_S_HALT)
+	{
+		LOG_INFO(_GETTEXT("Fail to run target.\n"));
+		return ERROR_OK;
+	}
+	else
+	{
+		LOG_INFO(_GETTEXT("Target running.\n"));
+		return ERROR_FAIL;
+	}
 }
 
 RESULT cm3_dp_halt(void)

@@ -125,10 +125,13 @@ typedef struct
 RESULT adi_init(programmer_info_t *prog, adi_dp_if_t *interf);
 RESULT adi_fini(void);
 
+uint32 adi_memap_get_max_tar_block_size(uint32 tar_autoincr_block, 
+										uint32 address);
+
 RESULT adi_memap_read_reg(uint32 address, uint32 *reg, uint8 check_result);
 RESULT adi_memap_write_reg(uint32 address, uint32 *reg, uint8 check_result);
-RESULT adi_memap_read_buf(uint8 *buffer, uint32 len, uint32 address);
-RESULT adi_memap_write_buf(uint8 *buffer, uint32 len, uint32 address);
+RESULT adi_memap_read_buf(uint32 address, uint8 *buffer, uint32 len);
+RESULT adi_memap_write_buf(uint32 address, uint8 *buffer, uint32 len);
 
 extern adi_dp_info_t adi_dp_info;
 

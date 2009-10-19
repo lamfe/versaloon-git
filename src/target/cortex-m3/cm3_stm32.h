@@ -24,7 +24,8 @@
 #define STM32_JTAG_KHZ					500
 
 #define STM32_FLASH_CHAR				0xFF
-#define STM32_PAGE_SIZE					256
+#define STM32_PAGE_SIZE					4
+#define STM32_PAGE_SIZE_RW				4096
 
 /* stm32 flash register locations */
 #define STM32_FLASH_ACR				0x40022000

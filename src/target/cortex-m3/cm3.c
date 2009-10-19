@@ -341,12 +341,6 @@ RESULT cm3_program(operation_t operations, program_info_t *pi,
 		ret = ERRCODE_FAILURE_OPERATION;
 		goto leave_program_mode;
 	}
-	if (ERROR_OK != cm3_dp_halt())
-	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "halt cm3");
-		ret = ERRCODE_FAILURE_OPERATION;
-		goto leave_program_mode;
-	}
 	
 	switch(cm3_chip_index)
 	{
