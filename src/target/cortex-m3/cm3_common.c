@@ -139,12 +139,12 @@ RESULT cm3_dp_run(void)
 	if (dcb_dhcsr & CM3_DCB_DHCSR_S_HALT)
 	{
 		LOG_INFO(_GETTEXT("Fail to run target.\n"));
-		return ERROR_OK;
+		return ERROR_FAIL;
 	}
 	else
 	{
 		LOG_INFO(_GETTEXT("Target running.\n"));
-		return ERROR_FAIL;
+		return ERROR_OK;
 	}
 }
 
