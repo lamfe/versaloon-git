@@ -47,6 +47,7 @@
 #include "avr8/avr8.h"
 #include "comisp/comisp.h"
 #include "svf_player/svf_player.h"
+#include "cortex-m3/cm3.h"
 
 chip_series_t target_chips = {0, NULL};
 chip_param_t target_chip_param;
@@ -209,6 +210,26 @@ target_info_t targets_info[] =
 											// write_buffer_from_file_callback
 		NULL,								// write_file_from_buffer_callback
 		lpc900_program,						// program
+		
+		NULL,								// get_mass_product_data_size
+		NULL,								// prepare_mass_product_data
+	},
+	// cortex-m3
+	{
+		CM3_STRING,							// name
+		APPLICATION,						// areas
+		cm3_program_area_map,				// program_area_map
+		CM3_PROGRAM_MODE_STR,				// program_mode_str
+		cm3_parse_argument,					// parse_argument
+		cm3_probe_chip,						// probe_chip
+		cm3_init,							// init
+		cm3_fini,							// fini
+		cm3_interface_needed,				// interfaces_needed
+		cm3_prepare_buffer,					// prepare_buffer
+		cm3_write_buffer_from_file_callback,
+											// write_buffer_from_file_callback
+		NULL,								// write_file_from_buffer_callback
+		cm3_program,						// program
 		
 		NULL,								// get_mass_product_data_size
 		NULL,								// prepare_mass_product_data
