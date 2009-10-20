@@ -48,6 +48,7 @@
 
 #define CUR_TARGET_STRING			CM3_STRING
 #define cur_chip_param				cm3_chip_param
+#define cur_buffer_size				cm3_buffer_size
 
 RESULT stm32_wait_status_busy(uint32 *status, uint32 timeout)
 {
@@ -177,6 +178,19 @@ RESULT stm32_program(operation_t operations, program_info_t *pi,
 	pi = pi;
 	dp_info = dp_info;
 	
+	// check buffer size
+	if (0 == cur_buffer_size)
+	{
+		// use default
+		cur_buffer_size = 512;
+	}
+	if (cur_buffer_size > STM32_PAGE_SIZE_RW)
+	{
+		LOG_WARNING(_GETTEXT("Max buffer_size for STM32 is %d\n"), 
+					STM32_PAGE_SIZE_RW);
+		cur_buffer_size = STM32_PAGE_SIZE_RW;
+	}
+	
 	// read MCU ID at STM32_REG_MCU_ID
 	if (ERROR_OK != adi_memap_read_reg(STM32_REG_MCU_ID, &mcu_id, 1))
 	{
@@ -279,7 +293,6 @@ RESULT stm32_program(operation_t operations, program_info_t *pi,
 		LOG_INFO(_GETTEXT(INFOMSG_ERASED), "chip");
 	}
 	
-#define STM32_PAGE_SIZE_EVERY_WRITE		1024
 	if (operations.write_operations & APPLICATION)
 	{
 		// halt target first
@@ -381,9 +394,9 @@ RESULT stm32_program(operation_t operations, program_info_t *pi,
 			i = 0;
 			while (block_size)
 			{
-				if (block_size > STM32_PAGE_SIZE_EVERY_WRITE)
+				if (block_size > cur_buffer_size)
 				{
-					cur_block_size = STM32_PAGE_SIZE_EVERY_WRITE;
+					cur_block_size = cur_buffer_size;
 				}
 				else
 				{
@@ -430,7 +443,7 @@ RESULT stm32_program(operation_t operations, program_info_t *pi,
 				
 				// wait ready
 				if ((cur_run_size >=  STM32_PAGE_SIZE_RW) 
-					|| (block_size <= STM32_PAGE_SIZE_EVERY_WRITE))
+					|| (block_size <= cur_buffer_size))
 				{
 					reg = 0;
 					do{
