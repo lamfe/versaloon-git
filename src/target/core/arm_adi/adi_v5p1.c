@@ -329,7 +329,12 @@ RESULT adi_dp_rw(uint8 instr, uint8 reg_addr, uint8 RnW, uint32 *value,
 		} while(adi_dp.ack != ADI_JTAGDP_ACK_OK_FAIL);
 		
 		// check ctrl_stat
-		LOG_DEBUG(_GETTEXT("ctrl_stat read is %x\n"), ctrl_stat);
+		if (ctrl_stat & (ADI_DP_REG_CTRL_STAT_SSTICKYORUN 
+							| ADI_DP_REG_CTRL_STAT_SSTICKYERR))
+		{
+			LOG_ERROR(_GETTEXT("Stiky Error/Overrun.\n"));
+			return ERROR_FAIL;
+		}
 		//if (ctrl_stat )
 	}
 	
@@ -379,7 +384,13 @@ RESULT adi_dp_transaction_endcheck(void)
 	} while(adi_dp.ack != ADI_JTAGDP_ACK_OK_FAIL);
 	
 	// check ctrl_stat
-	LOG_DEBUG(_GETTEXT("ctrl_stat read is %x\n"), ctrl_stat);
+	if (ctrl_stat & (ADI_DP_REG_CTRL_STAT_SSTICKYORUN 
+						| ADI_DP_REG_CTRL_STAT_SSTICKYERR))
+	{
+		LOG_ERROR(_GETTEXT("Stiky Error/Overrun.\n"));
+		return ERROR_FAIL;
+	}
+
 	return ERROR_OK;
 }
 
