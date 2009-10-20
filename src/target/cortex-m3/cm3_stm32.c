@@ -290,6 +290,9 @@ RESULT stm32_program(operation_t operations, program_info_t *pi,
 			goto leave_program_mode;
 		}
 		
+		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMING), "flash_loader");
+		pgbar_init("writing flash |", "|", 0, 1, PROGRESS_STEP, '=');
+		
 		block_size = sizeof(stm32_fl_code);
 		// last_but_three dword is RAM address for data, set to 1K at SRAM
 		*(uint32 *)(stm32_fl_code + block_size - 4 * 4) = FL_ADDR_DATA;
@@ -305,6 +308,14 @@ RESULT stm32_program(operation_t operations, program_info_t *pi,
 			ret = ERRCODE_FAILURE_OPERATION;
 			goto leave_program_mode;
 		}
+		
+		pgbar_update(1);
+		pgbar_fini();
+		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMED_SIZE), "flash_loader", block_size);
+		
+		LOG_INFO(_GETTEXT(INFOMSG_VERIFYING), "flash_loader");
+		pgbar_init("writing flash |", "|", 0, 1, PROGRESS_STEP, '=');
+		
 		// read back for verify
 		memset(page_buf, 0, block_size);
 		if (ERROR_OK != adi_memap_read_buf(STM32_SRAM_START_ADDRESS, 
@@ -325,7 +336,10 @@ RESULT stm32_program(operation_t operations, program_info_t *pi,
 				goto leave_program_mode;
 			}
 		}
-		LOG_DEBUG(_GETTEXT("flash_loader download success.\n"));
+		
+		pgbar_update(1);
+		pgbar_fini();
+		LOG_INFO(_GETTEXT(INFOMSG_VERIFIED_SIZE), "flash_loader", block_size);
 		
 		reg = STM32_SRAM_START_ADDRESS;
 		if (ERROR_OK != cm3_write_core_register(CM3_COREREG_PC, &reg))
