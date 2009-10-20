@@ -327,7 +327,7 @@ RESULT adi_dp_rw(uint8 instr, uint8 reg_addr, uint8 RnW, uint32 *value,
 				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "access dap");
 				return ERRCODE_FAILURE_OPERATION;
 			}
-		} while ((adi_dp.ack != ADI_JTAGDP_ACK_OK_FAIL) && (cnt--));
+		} while ((adi_dp.ack != ADI_JTAGDP_ACK_OK_FAIL) && (--cnt));
 		
 		if (!cnt)
 		{
@@ -389,7 +389,7 @@ RESULT adi_dp_transaction_endcheck(void)
 			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "access dap");
 			return ERRCODE_FAILURE_OPERATION;
 		}
-	} while ((adi_dp.ack != ADI_JTAGDP_ACK_OK_FAIL) && (cnt--));
+	} while ((adi_dp.ack != ADI_JTAGDP_ACK_OK_FAIL) && (--cnt));
 	
 	if (!cnt)
 	{
