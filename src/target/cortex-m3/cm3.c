@@ -52,6 +52,7 @@
 #define cur_chips_param				cm3_chips_param
 #define cur_flash_offset			cm3_flash_offset
 #define cur_prog_mode				cm3_prog_mode
+#define cur_frequency				cm3_frequency
 
 #define CM3_MAX_BUFSIZE				(1024 * 1024)
 
@@ -76,6 +77,7 @@ cm3_param_t cm3_chip_param;
 adi_dp_if_type_t cm3_prog_mode = 0;
 uint8 cm3_execute_flag = 0;
 uint32 cm3_execute_addr = 0;
+uint16 cm3_frequency = 0;
 
 static uint32 cm3_flash_offset = 0;
 
@@ -83,7 +85,8 @@ static void cm3_usage(void)
 {
 	printf("\
 Usage of %s:\n\
-  -m,  --mode <MODE>                set mode<j|s>\n\n", 
+  -m,  --mode <MODE>                set mode<j|s>\n\
+  -F,  --frequency <FREQUENCY>      set JTAG/SWJ frequency, in KHz\n", 
 		   CUR_TARGET_STRING);
 }
 
@@ -135,6 +138,17 @@ RESULT cm3_parse_argument(char cmd, const char *argu)
 			return ERRCODE_INVALID;
 			break;
 		}
+		
+		break;
+	case 'F':
+		// set Frequency
+		if (NULL == argu)
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), cmd);
+			return ERRCODE_INVALID_OPTION;
+		}
+		
+		cur_frequency = (uint16)strtoul(argu, NULL, 0);
 		
 		break;
 	case 'x':
@@ -326,7 +340,14 @@ RESULT cm3_program(operation_t operations, program_info_t *pi,
 	switch(cur_prog_mode)
 	{
 	case ADI_DP_JTAG:
-		dp.adi_dp_if_info.adi_dp_jtag.jtag_khz = cur_chip_param.jtag_khz;
+		if (cm3_frequency)
+		{
+			dp.adi_dp_if_info.adi_dp_jtag.jtag_khz = cm3_frequency;
+		}
+		else
+		{
+			dp.adi_dp_if_info.adi_dp_jtag.jtag_khz = cur_chip_param.jtag_khz;
+		}
 		dp.adi_dp_if_info.adi_dp_jtag.ub = cur_chip_param.pos.ub;
 		dp.adi_dp_if_info.adi_dp_jtag.ua = cur_chip_param.pos.ua;
 		dp.adi_dp_if_info.adi_dp_jtag.bb = cur_chip_param.pos.bb;
