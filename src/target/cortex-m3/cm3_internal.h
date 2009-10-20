@@ -29,6 +29,7 @@ typedef struct
 }cm3_param_t;
 
 extern cm3_param_t cm3_chip_param;
+extern uint16 cm3_buffer_size;
 
 #endif /* __CM3_INTERNAL_H_INCLUDED__ */
 

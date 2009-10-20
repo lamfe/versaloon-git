@@ -53,6 +53,7 @@
 #define cur_flash_offset			cm3_flash_offset
 #define cur_prog_mode				cm3_prog_mode
 #define cur_frequency				cm3_frequency
+#define cur_buffer_size				cm3_buffer_size
 
 #define CM3_MAX_BUFSIZE				(1024 * 1024)
 
@@ -78,6 +79,7 @@ adi_dp_if_type_t cm3_prog_mode = 0;
 uint8 cm3_execute_flag = 0;
 uint32 cm3_execute_addr = 0;
 uint16 cm3_frequency = 0;
+uint16 cm3_buffer_size = 0;
 
 static uint32 cm3_flash_offset = 0;
 
@@ -86,7 +88,8 @@ static void cm3_usage(void)
 	printf("\
 Usage of %s:\n\
   -m,  --mode <MODE>                set mode<j|s>\n\
-  -F,  --frequency <FREQUENCY>      set JTAG/SWJ frequency, in KHz\n", 
+  -F,  --frequency <FREQUENCY>      set JTAG/SWJ frequency, in KHz\n\
+  -b,  --buffsize <BUFFSIZE>        set JTAG buffer size\n", 
 		   CUR_TARGET_STRING);
 }
 
@@ -113,6 +116,16 @@ RESULT cm3_parse_argument(char cmd, const char *argu)
 		break;
 	case 'S':
 		cm3_support();
+		break;
+	case 'b':
+		// set buffer size
+		if (NULL == argu)
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), cmd);
+			return ERRCODE_INVALID_OPTION;
+		}
+		
+		cur_buffer_size = (uint16)strtoul(argu, NULL, 0);
 		break;
 	case 'm':
 		// program Mode
