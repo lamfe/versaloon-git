@@ -184,6 +184,12 @@ RESULT stm32_program(operation_t operations, program_info_t *pi,
 		// use default
 		cur_buffer_size = 512;
 	}
+	if (cur_buffer_size & 0x03)
+	{
+		LOG_ERROR(_GETTEXT("STM32 buffer_size can only be aligned to 4.\n"));
+		ret = ERRCODE_INVALID_OPTION;
+		goto leave_program_mode;
+	}
 	if (cur_buffer_size > STM32_PAGE_SIZE_RW)
 	{
 		LOG_WARNING(_GETTEXT("Max buffer_size for STM32 is %d\n"), 
