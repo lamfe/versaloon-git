@@ -342,7 +342,7 @@ RESULT cm3_program(operation_t operations, program_info_t *pi,
 		goto leave_program_mode;
 	}
 	
-	switch(cm3_chip_index)
+	switch (cm3_chip_index)
 	{
 	case CM3_STM32:
 		ret = stm32_program(operations, pi, &adi_dp_info);

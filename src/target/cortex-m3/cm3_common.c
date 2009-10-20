@@ -84,6 +84,38 @@ RESULT cm3_dp_init(programmer_info_t *prog, adi_dp_if_t *dp)
 	return ERROR_OK;
 }
 
+RESULT cm3_write_core_register(uint8 reg_idx, uint32 *value)
+{
+	uint32 dcrdr, reg;
+	
+	if (ERROR_OK != adi_memap_read_reg(CM3_DCB_DCRDR, &dcrdr, 1))
+	{
+		return ERROR_FAIL;
+	}
+	
+	reg = reg_idx | CM3_DCB_DCRSR_WnR;
+	adi_memap_write_reg(CM3_DCB_DCRDR, value, 0);
+	adi_memap_write_reg(CM3_DCB_DCRSR, &reg, 0);
+	
+	return adi_memap_write_reg(CM3_DCB_DCRDR, &dcrdr, 1);
+}
+
+RESULT cm3_read_core_register(uint8 reg_idx, uint32 *value)
+{
+	uint32 dcrdr, reg;
+	
+	if (ERROR_OK != adi_memap_read_reg(CM3_DCB_DCRDR, &dcrdr, 1))
+	{
+		return ERROR_FAIL;
+	}
+	
+	reg = reg_idx;
+	adi_memap_write_reg(CM3_DCB_DCRSR, &reg, 0);
+	adi_memap_read_reg(CM3_DCB_DCRDR, value, 0);
+	
+	return adi_memap_write_reg(CM3_DCB_DCRDR, &dcrdr, 1);
+}
+
 uint32 cm3_get_max_block_size(uint32 address)
 {
 	return adi_memap_get_max_tar_block_size(cm3_dp_if->tar_autoincr_block, 
@@ -135,10 +167,10 @@ RESULT cm3_dp_run(void)
 		sleep_ms(10);
 	}
 	
-	LOG_INFO(_GETTEXT("dhcsr: 0x%08X\n"), dcb_dhcsr);
+	LOG_DEBUG(_GETTEXT("dhcsr: 0x%08X\n"), dcb_dhcsr);
 	if (dcb_dhcsr & CM3_DCB_DHCSR_S_HALT)
 	{
-		LOG_INFO(_GETTEXT("Fail to run target.\n"));
+		LOG_ERROR(_GETTEXT("Fail to run target.\n"));
 		return ERROR_FAIL;
 	}
 	else
@@ -194,7 +226,7 @@ RESULT cm3_dp_halt(void)
 		sleep_ms(10);
 	}
 	
-	LOG_INFO(_GETTEXT("dhcsr: 0x%08X\n"), dcb_dhcsr);
+	LOG_DEBUG(_GETTEXT("dhcsr: 0x%08X\n"), dcb_dhcsr);
 	if (dcb_dhcsr & CM3_DCB_DHCSR_S_HALT)
 	{
 		LOG_INFO(_GETTEXT("Target halted.\n"));
@@ -202,7 +234,7 @@ RESULT cm3_dp_halt(void)
 	}
 	else
 	{
-		LOG_INFO(_GETTEXT("Fail to halt target.\n"));
+		LOG_ERROR(_GETTEXT("Fail to halt target.\n"));
 		return ERROR_FAIL;
 	}
 }
