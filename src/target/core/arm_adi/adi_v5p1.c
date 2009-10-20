@@ -313,6 +313,7 @@ RESULT adi_dp_rw(uint8 instr, uint8 reg_addr, uint8 RnW, uint32 *value,
 	if (check_result)
 	{
 		uint32 ctrl_stat;
+		uint32 cnt = 1000;
 		
 		do
 		{
@@ -326,7 +327,13 @@ RESULT adi_dp_rw(uint8 instr, uint8 reg_addr, uint8 RnW, uint32 *value,
 				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "access dap");
 				return ERRCODE_FAILURE_OPERATION;
 			}
-		} while(adi_dp.ack != ADI_JTAGDP_ACK_OK_FAIL);
+		} while ((adi_dp.ack != ADI_JTAGDP_ACK_OK_FAIL) && (cnt--));
+		
+		if (!cnt)
+		{
+			LOG_ERROR(_GETTEXT("Timeout......\n"));
+			return ERROR_FAIL;
+		}
 		
 		// check ctrl_stat
 		if (ctrl_stat & (ADI_DP_REG_CTRL_STAT_SSTICKYORUN 
@@ -368,6 +375,7 @@ RESULT adi_dp_write_reg(uint8 reg_addr, uint32 *value, uint8 check_result)
 RESULT adi_dp_transaction_endcheck(void)
 {
 	uint32 ctrl_stat;
+	uint32 cnt = 1000;
 	
 	do
 	{
@@ -376,12 +384,18 @@ RESULT adi_dp_transaction_endcheck(void)
 					ADI_DAP_READ, &ctrl_stat);
 		adi_dp_scan(ADI_JTAGDP_IR_DPACC, ADI_DP_REG_RDBUFF, 
 					ADI_DAP_READ, &ctrl_stat);
-		if (ERROR_OK != jtag_commit())
+		if (ERROR_OK != adi_dp_commit())
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "access dap");
 			return ERRCODE_FAILURE_OPERATION;
 		}
-	} while(adi_dp.ack != ADI_JTAGDP_ACK_OK_FAIL);
+	} while ((adi_dp.ack != ADI_JTAGDP_ACK_OK_FAIL) && (cnt--));
+	
+	if (!cnt)
+	{
+		LOG_ERROR(_GETTEXT("Timeout......\n"));
+		return ERROR_FAIL;
+	}
 	
 	// check ctrl_stat
 	if (ctrl_stat & (ADI_DP_REG_CTRL_STAT_SSTICKYORUN 
@@ -411,19 +425,15 @@ RESULT adi_dp_bankselect(uint8 ap_reg)
 RESULT adi_ap_read_reg(uint8 reg_addr, uint32 *value, uint8 check_result)
 {
 	adi_dp_bankselect(reg_addr);
-	adi_dp_rw(ADI_JTAGDP_IR_APACC, reg_addr, ADI_DAP_READ, value, 
-			  check_result);
-	
-	return ERROR_OK;
+	return adi_dp_rw(ADI_JTAGDP_IR_APACC, reg_addr, ADI_DAP_READ, value, 
+					 check_result);
 }
 
 RESULT adi_ap_write_reg(uint8 reg_addr, uint32 *value, uint8 check_result)
 {
 	adi_dp_bankselect(reg_addr);
-	adi_dp_rw(ADI_JTAGDP_IR_APACC, reg_addr, ADI_DAP_WRITE, value, 
-			  check_result);
-	
-	return ERROR_OK;
+	return adi_dp_rw(ADI_JTAGDP_IR_APACC, reg_addr, ADI_DAP_WRITE, value, 
+					 check_result);
 }
 
 RESULT adi_dp_setup_accessport(uint32 csw, uint32 tar)
