@@ -110,6 +110,8 @@ RESULT stm32_program(operation_t operations, program_info_t *pi,
 	uint32 reg;
 	uint32 cur_block_size, block_size, block_size_tmp, cur_address;
 	uint32 cur_run_size;
+	uint32 mcu_id;
+	char rev;
 	
 #define FL_PARA_ADDR_BASE			\
 					(STM32_SRAM_START_ADDRESS + sizeof(stm32_fl_code) - 4 * 4)
@@ -174,6 +176,66 @@ RESULT stm32_program(operation_t operations, program_info_t *pi,
 	
 	pi = pi;
 	dp_info = dp_info;
+	
+	// read MCU ID at STM32_REG_MCU_ID
+	if (ERROR_OK != adi_memap_read_reg(STM32_REG_MCU_ID, &mcu_id, 1))
+	{
+		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read stm32 MCU_ID");
+		ret = ERRCODE_FAILURE_OPERATION;
+		goto leave_program_mode;
+	}
+	LOG_INFO(_GETTEXT("STM32 MCU_ID: 0x%08X\n"), mcu_id);
+	switch (mcu_id & STM32_REV_MSK)
+	{
+	case STM32_REV_A:
+		rev = 'A';
+		break;
+	case STM32_REV_B:
+		rev = 'B';
+		break;
+	case STM32_REV_Z:
+		rev = 'Z';
+		break;
+	case STM32_REV_Y:
+		rev = 'Y';
+		break;
+	default :
+		rev = '?';
+		break;
+	}
+	LOG_INFO(_GETTEXT("STM32 revision: %c\n"), rev);
+	switch (mcu_id & STM32_DEN_MSK)
+	{
+	case STM32_DEN_LOW:
+		LOG_INFO(_GETTEXT("STM32 type: low-density device\n"));
+		break;
+	case STM32_DEN_MEDIUM:
+		LOG_INFO(_GETTEXT("STM32 type: medium-density device\n"));
+		break;
+	case STM32_DEN_HIGH:
+		LOG_INFO(_GETTEXT("STM32 type: high-density device\n"));
+		break;
+	case STM32_DEN_CONNECTIVITY:
+		LOG_INFO(_GETTEXT("STM32 type: connectivity device\n"));
+		break;
+	default:
+		LOG_INFO(_GETTEXT("STM32 type: unknown device\n"));
+		break;
+	}
+	
+	// read flash and ram size
+	if (ERROR_OK != adi_memap_read_reg(STM32_REG_FLASH_RAM_SIZE, &mcu_id, 1))
+	{
+		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+				  "read stm32 flash_ram size");
+		ret = ERRCODE_FAILURE_OPERATION;
+		goto leave_program_mode;
+	}
+	LOG_INFO(_GETTEXT("STM32 flash_size: %dK Bytes\n"), mcu_id & 0xFFFF);
+	if ((mcu_id >> 16) != 0xFFFF)
+	{
+		LOG_INFO(_GETTEXT("STM32 sram_size: %dK Bytes\n"), mcu_id >> 16);
+	}
 	
 	// unlock flash registers
 	reg = STM32_FLASH_UNLOCK_KEY1;
