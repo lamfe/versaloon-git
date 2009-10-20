@@ -21,7 +21,7 @@
 
 #include "adi_v5p1.h"
 
-#define STM32_JTAG_KHZ				500
+#define STM32_JTAG_KHZ				570
 
 #define STM32_FLASH_CHAR			0xFF
 #define STM32_PAGE_SIZE				4

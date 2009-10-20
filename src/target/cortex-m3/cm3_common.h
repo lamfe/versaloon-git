@@ -2,11 +2,16 @@
 #define __CM3_COMMON_H_INCLUDED__
 
 #define CM3_CPUID					0xE000ED00
+
+#define CM3_COREREG_PC				15
+
 /* Debug Control Block */
 #define CM3_DCB_DHCSR				0xE000EDF0
 #define CM3_DCB_DCRSR				0xE000EDF4
 #define CM3_DCB_DCRDR				0xE000EDF8
 #define CM3_DCB_DEMCR				0xE000EDFC
+
+#define CM3_DCB_DCRSR_WnR			(1 << 16)
 
 /* DCB_DHCSR bit and field definitions */
 #define CM3_DCB_DHCSR_DBGKEY		(0xA05F << 16)
@@ -27,6 +32,9 @@ RESULT cm3_dp_init(programmer_info_t *prog, adi_dp_if_t *interf);
 
 RESULT cm3_dp_halt(void);
 RESULT cm3_dp_run(void);
+
+RESULT cm3_read_core_register(uint8 reg_idx, uint32 *value);
+RESULT cm3_write_core_register(uint8 reg_idx, uint32 *value);
 
 uint32 cm3_get_max_block_size(uint32 address);
 

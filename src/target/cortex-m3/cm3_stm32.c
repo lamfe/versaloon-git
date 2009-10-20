@@ -109,8 +109,16 @@ RESULT stm32_program(operation_t operations, program_info_t *pi,
 	uint32 i;
 	uint32 reg;
 	uint32 cur_block_size, block_size, block_size_tmp, cur_address;
+	uint32 cur_run_size;
 	
-	uint8 stm32x_flash_write_code[] = {
+#define FL_PARA_ADDR_BASE			\
+					(STM32_SRAM_START_ADDRESS + sizeof(stm32_fl_code) - 4 * 4)
+#define FL_ADDR_RAM_SRC				(FL_PARA_ADDR_BASE + 0)
+#define FL_ADDR_FLASH_DEST			(FL_PARA_ADDR_BASE + 4)
+#define FL_ADDR_WORD_LENGTH			(FL_PARA_ADDR_BASE + 8)
+#define FL_ADDR_RESULT				(FL_PARA_ADDR_BASE + 12)
+#define FL_ADDR_DATA				(STM32_SRAM_START_ADDRESS + 1024)
+	uint8 stm32_fl_code[] = {
 									/* init: */
 		0x16, 0x4C,					/* ldr.n	r4, STM32_FLASH_CR */
 		0x17, 0x4D,					/* ldr.n	r5, STM32_FLASH_SR */
@@ -157,10 +165,10 @@ RESULT stm32_program(operation_t operations, program_info_t *pi,
 		0x10, 0x20, 0x02, 0x40,		/* STM32_FLASH_CR:	.word 0x40022010 */
 		0x0C, 0x20, 0x02, 0x40,		/* STM32_FLASH_SR:	.word 0x4002200C */
 		0xEC, 0x03, 0x00, 0x20,		/* address of result */
-		0x00, 0x04, 0x00, 0x20, 	/* ram address */
-		0x00, 0x00, 0x00, 0x80,		/* flash address */
-		0x00, 0x01, 0x00, 0x00,		/* number_of_words(2-byte) */
-		0x00, 0x00, 0x00, 0x00		/* result */
+		0x00, 0x00, 0x00, 0x00, 	/* ram address */
+		0x00, 0x00, 0x00, 0x00,		/* flash address */
+		0x00, 0x00, 0x00, 0x00,		/* number_of_words(2-byte), set to 0 */
+		0x00, 0x00, 0x00, 0x00		/* result, set to 0 */
 	};
 	uint8 page_buf[STM32_PAGE_SIZE_RW];
 	
@@ -209,6 +217,7 @@ RESULT stm32_program(operation_t operations, program_info_t *pi,
 		LOG_INFO(_GETTEXT(INFOMSG_ERASED), "chip");
 	}
 	
+#define STM32_PAGE_SIZE_EVERY_WRITE		1024
 	if (operations.write_operations & APPLICATION)
 	{
 		// halt target first
@@ -219,25 +228,15 @@ RESULT stm32_program(operation_t operations, program_info_t *pi,
 			goto leave_program_mode;
 		}
 		
-		block_size = sizeof(stm32x_flash_write_code);
-		// last dword is result, assigned to 0
-		*(uint32 *)(stm32x_flash_write_code + block_size - 4 * 1) = 0x00000000;
-		// last_but_one dword is number_of_words to write
-		// set to 0 so that ASM code will wait for valid data
-		*(uint32 *)(stm32x_flash_write_code + block_size - 4 * 2) = 0x00000000;
-		// last_but_two dword is flash_address, reset to 0xFFFFFFFF
-		*(uint32 *)(stm32x_flash_write_code + block_size - 4 * 3) = 0xFFFFFFFF;
+		block_size = sizeof(stm32_fl_code);
 		// last_but_three dword is RAM address for data, set to 1K at SRAM
-		*(uint32 *)(stm32x_flash_write_code + block_size - 4 * 4) = 
-											STM32_SRAM_START_ADDRESS + 1024;
+		*(uint32 *)(stm32_fl_code + block_size - 4 * 4) = FL_ADDR_DATA;
 		// last_but_four dword is SRAM address of last dword
-		*(uint32 *)(stm32x_flash_write_code + block_size - 4 * 5) = 
-									STM32_SRAM_START_ADDRESS + block_size - 4;
+		*(uint32 *)(stm32_fl_code + block_size - 4 * 5) = FL_ADDR_RESULT;
 		
 		// write code to target SRAM
 		if (ERROR_OK != adi_memap_write_buf(STM32_SRAM_START_ADDRESS, 
-											stm32x_flash_write_code, 
-											block_size))
+											stm32_fl_code, block_size))
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
 					  "load flash_loader to SRAM");
@@ -256,7 +255,7 @@ RESULT stm32_program(operation_t operations, program_info_t *pi,
 		}
 		for (i = 0; i < block_size; i++)
 		{
-			if (stm32x_flash_write_code[i] != page_buf[i])
+			if (stm32_fl_code[i] != page_buf[i])
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
 						  "verify flash_loader");
@@ -264,22 +263,122 @@ RESULT stm32_program(operation_t operations, program_info_t *pi,
 				goto leave_program_mode;
 			}
 		}
-		LOG_INFO(_GETTEXT("flash_loader download success.\n"));
+		LOG_DEBUG(_GETTEXT("flash_loader download success.\n"));
+		
+		reg = STM32_SRAM_START_ADDRESS;
+		if (ERROR_OK != cm3_write_core_register(CM3_COREREG_PC, &reg))
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "write PC");
+			ret = ERRCODE_FAILURE_OPERATION;
+			goto leave_program_mode;
+		}
+		reg = 0;
+		if ((ERROR_OK != cm3_read_core_register(CM3_COREREG_PC, &reg)) 
+			|| (reg != STM32_SRAM_START_ADDRESS))
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "verify written PC");
+			ret = ERRCODE_FAILURE_OPERATION;
+			goto leave_program_mode;
+		}
+		LOG_DEBUG(_GETTEXT("PC is set to run flash_loader.\n"));
 		
 		// run target
 		if (ERROR_OK != cm3_dp_run())
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "run stm32");
+			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "run flash_loader");
 			ret = ERRCODE_FAILURE_OPERATION;
 			goto leave_program_mode;
 		}
-		
+		LOG_DEBUG(_GETTEXT("flash_loader is running.\n"));
 		
 		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMING), "flash");
 		pgbar_init("writing flash |", "|", 0, pi->app_size_valid, 
 				   PROGRESS_STEP, '=');
 		
-		ml_tmp = 0;
+		ml_tmp = pi->app_memlist;
+		while (ml_tmp != NULL)
+		{
+			block_size = ml_tmp->len;
+			cur_address = ml_tmp->addr;
+			block_size_tmp = 0;
+			cur_run_size = 0;
+			i = 0;
+			while (block_size)
+			{
+				if (block_size > STM32_PAGE_SIZE_EVERY_WRITE)
+				{
+					cur_block_size = STM32_PAGE_SIZE_EVERY_WRITE;
+				}
+				else
+				{
+					cur_block_size = block_size;
+				}
+				
+				// write flash content to FL_PARA_ADDR_DATA
+				if (ERROR_OK != adi_memap_write_buf(FL_ADDR_DATA + cur_run_size, 
+						&pi->app[cur_address - STM32_FLASH_START_ADDRESS], 
+						cur_block_size))
+				{
+					pgbar_fini();
+					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+							  "download flash data");
+					ret = ERRCODE_FAILURE_OPERATION;
+					goto leave_program_mode;
+				}
+				
+				// write flash address
+				if (0 == cur_run_size)
+				{
+					// first run, update flash address
+					adi_memap_write_reg(FL_ADDR_FLASH_DEST, &cur_address, 0);
+				}
+				// write word length
+				cur_run_size += cur_block_size;
+				reg = cur_run_size / 2;
+				if (i)
+				{
+					i = 0;
+					// not the first run
+					// or the length by 0x8000 to indicate reload addresses
+					reg |= 0x8000;
+				}
+				if (ERROR_OK != adi_memap_write_reg(FL_ADDR_WORD_LENGTH, 
+													&reg, 1))
+				{
+					pgbar_fini();
+					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+							  "download parameters to flash_loader");
+					ret = ERRCODE_FAILURE_OPERATION;
+					goto leave_program_mode;
+				}
+				
+				// wait ready
+				if ((cur_run_size >=  STM32_PAGE_SIZE_RW) 
+					|| (block_size <= STM32_PAGE_SIZE_EVERY_WRITE))
+				{
+					reg = 0;
+					do{
+						if (ERROR_OK != adi_memap_read_reg(FL_ADDR_RESULT, 
+															&reg, 1))
+						{
+							pgbar_fini();
+							LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+									  "read result from flash_loader");
+							ret = ERRCODE_FAILURE_OPERATION;
+							goto leave_program_mode;
+						}
+					} while(reg != cur_run_size / 2);
+					cur_run_size = 0;
+					i = 1;		// need to update settings
+				}
+				
+				block_size -= cur_block_size;
+				cur_address += cur_block_size;
+				pgbar_update(cur_block_size);
+			}
+			
+			ml_tmp = ml_tmp->next;
+		}
 		
 		pgbar_fini();
 		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMED_SIZE), "flash", 
@@ -307,10 +406,10 @@ RESULT stm32_program(operation_t operations, program_info_t *pi,
 			while (block_size)
 			{
 				// cm3_get_max_block_size return size in dword(4-byte)
-				cur_block_size = cm3_get_max_block_size(ml_tmp->addr);
-				if (cur_block_size > (ml_tmp->len >> 2))
+				cur_block_size = cm3_get_max_block_size(cur_address);
+				if (cur_block_size > (block_size >> 2))
 				{
-					cur_block_size = ml_tmp->len;
+					cur_block_size = block_size;
 				}
 				else
 				{
@@ -334,7 +433,7 @@ RESULT stm32_program(operation_t operations, program_info_t *pi,
 						pgbar_fini();
 						LOG_ERROR(
 							_GETTEXT(ERRMSG_FAILURE_VERIFY_TARGET_AT_02X), 
-							"flash", cur_address, page_buf[i], 
+							"flash", cur_address + i, page_buf[i], 
 							pi->app[cur_address + i 
 									- STM32_FLASH_START_ADDRESS]);
 						ret = ERRCODE_FAILURE_VERIFY_TARGET;
