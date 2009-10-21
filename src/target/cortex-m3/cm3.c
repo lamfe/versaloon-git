@@ -378,8 +378,8 @@ RESULT cm3_program(operation_t operations, program_info_t *pi,
 		return ERRCODE_INVALID;
 	}
 	
-leave_program_mode:
 	cm3_reset();
+leave_program_mode:
 	cm3_dp_fini();
 	return ret;
 }
