@@ -164,16 +164,6 @@ RESULT cm3_parse_argument(char cmd, const char *argu)
 		cur_frequency = (uint16)strtoul(argu, NULL, 0);
 		
 		break;
-	case 'x':
-		if (NULL == argu)
-		{
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), cmd);
-			return ERRCODE_INVALID_OPTION;
-		}
-		
-		cm3_execute_addr = (uint32)strtoul(argu, NULL, 0);
-		cm3_execute_flag = 1;
-		break;
 	default:
 		return ERROR_FAIL;
 		break;
@@ -389,6 +379,7 @@ RESULT cm3_program(operation_t operations, program_info_t *pi,
 	}
 	
 leave_program_mode:
+	cm3_reset();
 	cm3_dp_fini();
 	return ret;
 }

@@ -122,6 +122,14 @@ uint32 cm3_get_max_block_size(uint32 address)
 											address);
 }
 
+RESULT cm3_reset(void)
+{
+	uint32 reg;
+	
+	reg = CM3_REG_NVIC_AIRCR_VECTKEY | CM3_REG_NVIC_AIRCR_SYSRESETREQ;
+	return adi_memap_write_reg(CM3_REG_NVIC_AIRCR, &reg, 1);
+}
+
 RESULT cm3_dp_run(void)
 {
 	uint32 dcb_dhcsr = 0;
