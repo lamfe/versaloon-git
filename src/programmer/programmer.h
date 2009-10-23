@@ -77,6 +77,15 @@ typedef struct
 	RESULT (*issp_vector)(uint8 operate, uint8 addr, uint8 data, uint8 *buf);
 	RESULT (*issp_commit)(void);
 	
+	// swj
+	RESULT (*swj_init)(void);
+	RESULT (*swj_fini)(void);
+	RESULT (*swj_seqout)(uint8 *data, uint16 bit_len);
+	RESULT (*swj_seqin)(uint8 *data, uint16 bit_len);
+	RESULT (*swj_transact)(uint8 request, uint32 *data);
+	RESULT (*swj_setpara)(uint8 trn, uint16 retry, uint16 dly);
+	RESULT (*swj_commit)(uint8 *result);
+	
 	// jtag_hl
 	RESULT (*jtag_hl_init)(void);
 	RESULT (*jtag_hl_fini)(void);
@@ -191,7 +200,7 @@ typedef struct
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0\
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0\
 	}
 
 extern programmer_info_t *cur_programmer;

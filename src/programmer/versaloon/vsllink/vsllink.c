@@ -947,13 +947,13 @@ RESULT vsllink_swj_disconnect(void)
 	if (vsllink_buffer_index > 0)
 	{
 		// there is command in buffer, try to send
-		vsllink_swj_commit();
+		vsllink_swj_commit(NULL);
 	}
 	
 	return vsllink_disconnect();
 }
 
-RESULT vsllink_swj_commit(void)
+RESULT vsllink_swj_commit(uint8 *result)
 {
 	uint16 inlen = 0, i, *pinlen;
 	uint8 command;
@@ -994,10 +994,12 @@ RESULT vsllink_swj_commit(void)
 		switch (command)
 		{
 		case VSLLINK_CMDSWJ_SEQOUT:
-			LOG_BUG("0x%02x has return data?\n", command);
-			vsllink_buffer_index = 0;
-			versaloon_pending_idx = 0;
-			return ERROR_FAIL;
+			if (versaloon_buf[vsllink_buffer_index] != 0)
+			{
+				LOG_ERROR(_GETTEXT("fail to execute swj_seqout\n"));
+				return ERROR_FAIL;
+			}
+			vsllink_buffer_index += versaloon_pending[i].actual_data_size;
 			break;
 		case VSLLINK_CMDSWJ_SEQIN:
 			memcpy(versaloon_pending[i].data_buffer, 
@@ -1006,16 +1008,24 @@ RESULT vsllink_swj_commit(void)
 			vsllink_buffer_index += versaloon_pending[i].actual_data_size;
 			break;
 		case VSLLINK_CMDSWJ_TRANS:
-			if (versaloon_buf[vsllink_buffer_index] != SWJ_SUCCESS)
+			if (result != NULL)
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-						  "do swj transaction");
+				*result = versaloon_buf[vsllink_buffer_index] & 0x07;
+			}
+			if ((versaloon_buf[vsllink_buffer_index] & 0xF0) != SWJ_SUCCESS)
+			{
+				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ERRCODE16), 
+						  "do swj transaction", 
+						  versaloon_buf[vsllink_buffer_index]);
+				
+				vsllink_buffer_index = 0;
+				versaloon_pending_idx = 0;
 				return ERROR_FAIL;
 			}
 			else
 			{
 				memcpy(versaloon_pending[i].data_buffer, 
-					   versaloon_buf + vsllink_buffer_index, 
+					   versaloon_buf + vsllink_buffer_index + 1, 
 					   4);
 			}
 			vsllink_buffer_index += 5;
@@ -1057,6 +1067,7 @@ RESULT vsllink_swj_add_pending(uint8 cmd, uint8 *buf, uint16 len)
 	switch (cmd & VSLLINK_CMDSWJ_CMDMSK)
 	{
 	case VSLLINK_CMDSWJ_SEQOUT:
+		versaloon_add_pending(0, cmd, len, 0, 0, buf, 0, 0);
 		return ERROR_OK;
 	case VSLLINK_CMDSWJ_SEQIN:
 		versaloon_add_pending(0, cmd, len, 0, 0, buf, 0, 0);
@@ -1065,6 +1076,8 @@ RESULT vsllink_swj_add_pending(uint8 cmd, uint8 *buf, uint16 len)
 		versaloon_add_pending(0, cmd, len, 0, 0, buf, 0, 0);
 		return ERROR_OK;
 		break;
+	case VSLLINK_CMDSWJ_PARA:
+		return ERROR_OK;
 	default:
 		LOG_BUG(_GETTEXT("Is this really my command?\n"));
 		return ERROR_FAIL;
@@ -1078,7 +1091,7 @@ RESULT vsllink_swj_add_command(uint8 cmd, uint8 *cmddata, uint16 cmdlen,
 	// check free space, commit if not enough
 	if ((vsllink_buffer_index + cmdlen + 1)>= versaloon_buf_size)
 	{
-		if (ERROR_OK != vsllink_swj_commit())
+		if (ERROR_OK != vsllink_swj_commit(NULL))
 		{
 			return ERROR_FAIL;
 		}
@@ -1099,6 +1112,18 @@ RESULT vsllink_swj_add_command(uint8 cmd, uint8 *cmddata, uint16 cmdlen,
 	return vsllink_swj_add_pending(cmd, retdata, retlen);
 }
 
+RESULT vsllink_swj_setpara(uint8 trn, uint16 retry, uint16 dly)
+{
+	buf_tmp[0] = trn;
+	buf_tmp[1] = (retry >> 0) & 0xFF;
+	buf_tmp[2] = (retry >> 8) & 0xFF;
+	buf_tmp[3] = (dly >> 0) & 0xFF;
+	buf_tmp[4] = (dly >> 8) & 0xFF;
+	
+	return vsllink_swj_add_command(VSLLINK_CMDSWJ_PARA, buf_tmp, 
+								   5, NULL, 0);
+}
+
 RESULT vsllink_swj_seqout(uint8 *data, uint16 bit_len)
 {
 	uint16 data_len = (bit_len + 7) / 8;
@@ -1108,7 +1133,7 @@ RESULT vsllink_swj_seqout(uint8 *data, uint16 bit_len)
 	memcpy(buf_tmp + 2, data, data_len);
 	
 	return vsllink_swj_add_command(VSLLINK_CMDSWJ_SEQOUT, buf_tmp, 
-								   2 + data_len, NULL, 0);
+								   2 + data_len, data, 1);
 }
 
 RESULT vsllink_swj_seqin(uint8 *data, uint16 bit_len)
@@ -1125,7 +1150,14 @@ RESULT vsllink_swj_seqin(uint8 *data, uint16 bit_len)
 
 RESULT vsllink_swj_transact(uint8 request, uint32 *data)
 {
-	buf_tmp[0] = request;
+	uint8 parity;
+	
+	parity = (request >> 1) & 1;
+	parity += (request >> 2) & 1;
+	parity += (request >> 3) & 1;
+	parity += (request >> 4) & 1;
+	parity &= 1;
+	buf_tmp[0] = (request | 0x81 | (parity << 5)) & ~0x40;
 	memcpy(buf_tmp + 1, (uint8*)data, 4);
 	
 	return vsllink_swj_add_command(VSLLINK_CMDSWJ_TRANS, buf_tmp, 5, 

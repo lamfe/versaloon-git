@@ -41,7 +41,9 @@ typedef struct
 		}adi_dp_jtag;
 		struct
 		{
-			uint16 swj_khz;
+			uint8 swj_trn;
+			uint16 swj_retry;
+			uint16 swj_dly;
 		}adi_dp_swj;
 	}adi_dp_if_info;
 	uint8 memaccess_tck;
@@ -69,6 +71,20 @@ typedef struct
 	adi_dp_t dp_state;
 }adi_dp_info_t;
 
+#define ADI_DP_IR_DPACC						0
+#define ADI_DP_IR_APACC						1
+
+#define ADI_SWJDP_REG_DPIDR					0x00
+#define ADI_SWJDP_REG_ABORT					0x00
+#define ADI_SWJDP_REG_DLCR					0x04
+#define ADI_SWJDP_REG_RESEND				0x08
+
+#define ADI_SWJDP_REG_ABORT_DAPABORT		(1<<0)
+#define ADI_SWJDP_REG_ABORT_STKCMPCLR		(1<<1)
+#define ADI_SWJDP_REG_ABORT_STKERRCLR		(1<<2)
+#define ADI_SWJDP_REG_ABORT_WDERRCLR		(1<<3)
+#define ADI_SWJDP_REG_ABORT_ORUNERRCLR		(1<<4)
+
 #define ADI_JTAGDP_IRLEN					4
 #define ADI_JTAGDP_IR_ABORT					0x04
 #define ADI_JTAGDP_IR_ABORT_LEN				32
@@ -81,6 +97,10 @@ typedef struct
 
 #define ADI_DAP_READ						1
 #define ADI_DAP_WRITE						0
+
+#define ADI_SWJDP_ACK_OK					0x01
+#define ADI_SWJDP_ACK_WAIT					0x02
+#define ADI_SWJDP_ACK_FAIL					0x04
 
 #define ADI_JTAGDP_ACK_WAIT					0x01
 #define ADI_JTAGDP_ACK_OK_FAIL				0x02
@@ -103,6 +123,7 @@ typedef struct
 #define ADI_DP_REG_CTRL_STAT_CORUNDETECT	(1 << 0)
 #define ADI_DP_REG_CTRL_STAT_SSTICKYORUN	(1 << 1)
 #define ADI_DP_REG_CTRL_STAT_SSTICKYERR		(1 << 5)
+#define ADI_DP_REG_CTRL_STAT_WDATAERR		(1 << 7)
 #define ADI_DP_REG_CTRL_STAT_CDBGRSTREQ		(1 << 26)
 #define ADI_DP_REG_CTRL_STAT_CDBGRSTACK		(1 << 27)
 #define ADI_DP_REG_CTRL_STAT_CDBGPWRUPREQ	(1 << 28)
