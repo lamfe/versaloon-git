@@ -69,8 +69,8 @@ const program_area_map_t cm3_program_area_map[] =
 #define CM3_LM3S		2
 #define CM3_SAM3		3
 const cm3_param_t cm3_chips_param[] = {
-//	chip_name,		default_char,		flash_start_addr,	jtag_khz,		pos
-	{"cm3_stm32",	STM32_FLASH_CHAR,	0x08000000,			STM32_JTAG_KHZ,	{0,1,0,5}},
+//	chip_name,		default_char,		flash_start_addr,	jtag_khz,		pos			swj_trn
+	{"cm3_stm32",	STM32_FLASH_CHAR,	0x08000000,			STM32_JTAG_KHZ,	{0,1,0,5},	0},
 };
 static uint8 cm3_chip_index = 0;
 cm3_param_t cm3_chip_param;
@@ -355,7 +355,13 @@ RESULT cm3_program(operation_t operations, program_info_t *pi,
 		dp.adi_dp_if_info.adi_dp_jtag.ua = cur_chip_param.pos.ua;
 		dp.adi_dp_if_info.adi_dp_jtag.bb = cur_chip_param.pos.bb;
 		dp.adi_dp_if_info.adi_dp_jtag.ba = cur_chip_param.pos.ba;
+		
+		break;
 	case ADI_DP_SWJ:
+		dp.adi_dp_if_info.adi_dp_swj.swj_trn = cur_chip_param.swj_trn;
+		dp.adi_dp_if_info.adi_dp_swj.swj_dly = 0;
+		dp.adi_dp_if_info.adi_dp_swj.swj_retry = 0;
+		
 		break;
 	}
 	

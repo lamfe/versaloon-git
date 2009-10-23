@@ -19,6 +19,8 @@
 #include "VSLLink.h"
 
 #include "JTAG_TAP.h"
+#include "SWJ.h"
+
 #if POWER_OUT_EN
 #	include "PowerExt.h"
 #endif
@@ -172,8 +174,19 @@ void VSLLink_ProcessCmd(uint8* dat, uint16 len)
 		PWREXT_Acquire();
 		DelayMS(1);
 
-		JTAG_TAP_HS_Fini();
-		JTAG_TAP_HS_Init(JTAG_TAP_HS_MIN_SPEED, dat[1] & 1);
+		if (dat[1] & 0x80)
+		{
+			// SWJ
+			SWJ_SetRetryCount(0);
+			SWJ_SetTurnaround(1);
+			SWJ_Init();
+		}
+		else
+		{
+			// JTAG
+			JTAG_TAP_HS_Fini();
+			JTAG_TAP_HS_Init(JTAG_TAP_HS_MIN_SPEED, dat[1] & 1);
+		}
 
 		dat[0] = USB_DATA_BUFF_SIZE & 0xFF;
 		dat[1] = (USB_DATA_BUFF_SIZE >> 8) & 0xFF;
@@ -390,7 +403,47 @@ void VSLLink_ProcessCmd(uint8* dat, uint16 len)
 		JTAG_TAP_HS_Operate_DMA(cur_dat_len, &dat[3], &dat[3 + cur_dat_len], &dat[rep_len]);
 		rep_len += cur_dat_len;
 		break;
-	case VSLLINK_CMD_HW_SWDCMD:
+	case VSLLINK_CMD_HW_SWJCMD:
+		cur_cmd_pos = 3;
+
+		while(cur_cmd_pos < len)
+		{
+			cur_cmd = dat[cur_cmd_pos];
+			cur_cmd_pos += 1;
+
+			switch(cur_cmd & VSLLINK_CMDSWJ_CMDMSK)
+			{
+			case VSLLINK_CMDSWJ_SEQOUT:
+				cur_dat_len = dat[cur_cmd_pos] + ((uint16)dat[cur_cmd_pos + 1] << 8);
+				cur_cmd_pos += 2;
+
+				SWJ_SeqOut(dat + cur_cmd_pos, cur_dat_len);
+				dat[rep_len++] = 0x00;
+				cur_cmd_pos += (cur_dat_len + 7) / 8;
+				break;
+			case VSLLINK_CMDSWJ_SEQIN:
+				cur_dat_len = dat[cur_cmd_pos] + ((uint16)dat[cur_cmd_pos + 1] << 8);
+				cur_cmd_pos += 2;
+
+				SWJ_SeqIn(dat + rep_len, cur_dat_len);
+				cur_cmd_pos += (cur_dat_len + 7) / 8;
+				rep_len += (cur_dat_len + 7) / 8;
+				break;
+			case VSLLINK_CMDSWJ_TRANS:
+				dat[rep_len] = SWJ_Transaction(dat[cur_cmd_pos], (uint32*)(dat + cur_cmd_pos + 1));
+				memcpy(dat + rep_len + 1, dat + cur_cmd_pos + 1, 4);
+				cur_cmd_pos += 5;
+				rep_len += 5;
+				break;
+			case VSLLINK_CMDSWJ_PARA:
+				SWJ_SetTurnaround(dat[cur_cmd_pos + 0]);
+				SWJ_SetRetryCount(dat[cur_cmd_pos + 1] + (dat[cur_cmd_pos + 2] << 8));
+				SWJ_SetDelay(dat[cur_cmd_pos + 3] + (dat[cur_cmd_pos + 4] << 8));
+				cur_cmd_pos += 5;
+				break;
+			}
+		}
+		break;
 	default:
 		break;
 	}

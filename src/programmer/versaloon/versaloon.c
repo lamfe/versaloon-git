@@ -1027,6 +1027,15 @@ RESULT versaloon_init_capability(void *p)
 	((programmer_info_t *)p)->get_target_voltage = 
 											versaloon_get_target_voltage;
 	
+	// SWJ
+	((programmer_info_t *)p)->swj_init = vsllink_swj_connect;
+	((programmer_info_t *)p)->swj_fini = vsllink_swj_disconnect;
+	((programmer_info_t *)p)->swj_seqout = vsllink_swj_seqout;
+	((programmer_info_t *)p)->swj_seqin = vsllink_swj_seqin;
+	((programmer_info_t *)p)->swj_transact = vsllink_swj_transact;
+	((programmer_info_t *)p)->swj_setpara = vsllink_swj_setpara;
+	((programmer_info_t *)p)->swj_commit = vsllink_swj_commit;
+	
 	// JTAG_HL
 	((programmer_info_t *)p)->jtag_hl_init = vsllink_jtag_connect;
 	((programmer_info_t *)p)->jtag_hl_fini = vsllink_jtaghl_disconnect;

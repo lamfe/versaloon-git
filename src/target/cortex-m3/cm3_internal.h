@@ -26,6 +26,7 @@ typedef struct
 	uint32 flash_start_addr;
 	uint16 jtag_khz;
 	jtag_pos_t pos;
+	uint8 swj_trn;
 }cm3_param_t;
 
 extern cm3_param_t cm3_chip_param;

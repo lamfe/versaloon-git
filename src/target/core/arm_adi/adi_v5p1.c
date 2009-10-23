@@ -39,6 +39,7 @@
 static programmer_info_t *adi_prog = NULL;
 static adi_dp_if_t *adi_dp_if;
 static adi_dp_t adi_dp;
+static uint8 ack_value;
 adi_dp_info_t adi_dp_info;
 
 
@@ -59,9 +60,44 @@ adi_dp_info_t adi_dp_info;
 #define jtag_commit()			adi_prog->jtag_hl_commit()
 
 // SWJ
-#define swj_init()					
-#define swj_fini()					
-#define swj_commit(ack)			ERROR_FAIL			// not supported yet
+#define swj_init()				adi_prog->swj_init()
+#define swj_fini()				adi_prog->swj_fini()
+#define swj_seqout(b, l)		adi_prog->swj_seqout((b), (l))
+#define swj_seqin(b, l)			adi_prog->swj_seqin((b), (l))
+#define swj_transact(r, v)		adi_prog->swj_transact((r), (v))
+#define swj_setpara(t, r, d)	adi_prog->swj_setpara((t), (r), (d))
+#define swj_commit(ack)			adi_prog->swj_commit(ack)
+
+extern RESULT adi_dp_read_reg(uint8 reg_addr, uint32 *value, 
+							  uint8 check_result);
+extern RESULT adi_dp_write_reg(uint8 reg_addr, uint32 *value, 
+							   uint8 check_result);
+
+const uint8 adi_swj_reset_seq[] = 
+{
+	// at least 50-bit '1'
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
+};
+
+const uint8 adi_jtag_to_swj_seq[] = 
+{
+	// at least 50-bit '1'
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 
+	// 16-bit JTAG-to-SWD sequence
+	0x9E, 0xE7, 
+	// at least 50-bit '1'
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x0F
+};
+
+const uint8 adi_swj_to_jtag_seq[] = 
+{
+	// at least 50-bit '1'
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 
+	// 16-bit JTAG-to-SWD sequence
+	0x3C, 0xE7, 
+	// at least 5-bit '1'
+	0xFF
+};
 
 RESULT adi_dpif_receive_callback(jtag_irdr_t cmd, uint32 ir, 
 								 uint8 *dest_buffer, uint8 *src_buffer, 
@@ -133,9 +169,25 @@ RESULT adi_dpif_send_callback(jtag_irdr_t cmd, uint32 ir,
 	return ERROR_FAIL;
 }
 
+RESULT adi_dp_commit(void)
+{
+	switch (adi_dp_if->type)
+	{
+	case ADI_DP_JTAG:
+		return jtag_commit();
+		break;
+	case ADI_DP_SWJ:
+		return swj_commit(&adi_dp.ack);
+		break;
+	default:
+		return ERROR_FAIL;
+	}
+}
+
 static RESULT adi_dpif_fini(void)
 {
 	adi_dp_if_type_t dp_type;
+	RESULT ret = ERROR_OK;
 	
 	if (NULL == adi_dp_if)
 	{
@@ -144,22 +196,24 @@ static RESULT adi_dpif_fini(void)
 	}
 	
 	dp_type = adi_dp_if->type;
-	adi_dp_if = NULL;
 	switch(dp_type)
 	{
 	case ADI_DP_JTAG:
 		jtag_register_callback(NULL, NULL);
-		jtag_fini();
-		return jtag_commit();
+		adi_dp_commit();
+		ret = jtag_fini();
+		adi_dp_if = NULL;
 		break;
 	case ADI_DP_SWJ:
-		swj_fini();
-		return swj_commit(&adi_dp.ack);
+		adi_dp_commit();
+		ret = swj_fini();
+		adi_dp_if = NULL;
 		break;
 	default:
-		return ERROR_FAIL;
+		ret = ERROR_FAIL;
 		break;
 	}
+	return ret;
 }
 
 static RESULT adi_dpif_init(programmer_info_t *prog, adi_dp_if_t *interf)
@@ -177,13 +231,14 @@ static RESULT adi_dpif_init(programmer_info_t *prog, adi_dp_if_t *interf)
 	switch(adi_dp_if->type)
 	{
 	case ADI_DP_JTAG:
+		ack_value = ADI_JTAGDP_ACK_OK_FAIL;
 		jtag_init();
 		jtag_config(adi_dp_if->adi_dp_if_info.adi_dp_jtag.jtag_khz, 
 				adi_dp_if->adi_dp_if_info.adi_dp_jtag.ub + target_jtag_pos.ub, 
 				adi_dp_if->adi_dp_if_info.adi_dp_jtag.ua + target_jtag_pos.ua, 
 				adi_dp_if->adi_dp_if_info.adi_dp_jtag.bb + target_jtag_pos.bb, 
 				adi_dp_if->adi_dp_if_info.adi_dp_jtag.ba + target_jtag_pos.ba);
-		if (ERROR_OK == jtag_commit())
+		if (ERROR_OK == adi_dp_commit())
 		{
 			jtag_register_callback(adi_dpif_send_callback, 
 								   adi_dpif_receive_callback);
@@ -195,13 +250,83 @@ static RESULT adi_dpif_init(programmer_info_t *prog, adi_dp_if_t *interf)
 		}
 		break;
 	case ADI_DP_SWJ:
-		// not supported now
-		return ERROR_FAIL;
+		ack_value = ADI_SWJDP_ACK_OK;
+		swj_init();
+		swj_setpara(adi_dp_if->adi_dp_if_info.adi_dp_swj.swj_trn, 
+					adi_dp_if->adi_dp_if_info.adi_dp_swj.swj_retry, 
+					adi_dp_if->adi_dp_if_info.adi_dp_swj.swj_dly);
+		swj_seqout((uint8*)adi_jtag_to_swj_seq, 
+				   sizeof(adi_jtag_to_swj_seq) * 8);
+		return adi_dp_commit();
 		break;
 	default:
 		return ERROR_FAIL;
 		break;
 	}
+}
+
+RESULT adi_dp_scan(uint8 instr, uint8 reg_addr, uint8 RnW, uint32 *value)
+{
+	switch(adi_dp_if->type)
+	{
+	case ADI_DP_JTAG:
+		// convert to JTAG IR
+		switch (instr)
+		{
+		case ADI_DP_IR_DPACC:
+			instr = ADI_JTAGDP_IR_DPACC;
+			break;
+		case ADI_DP_IR_APACC:
+			instr = ADI_JTAGDP_IR_APACC;
+			break;
+		default:
+			LOG_BUG(_GETTEXT("Invalid instruction\n"));
+			return ERROR_FAIL;
+			break;
+		}
+		// scan ir if necessary
+		if (adi_dp.cur_ir != instr)
+		{
+			adi_dp.cur_ir = instr;
+			jtag_ir_w(&instr, ADI_JTAGDP_IRLEN);
+		}
+		
+		// memory access tck clocks
+		if ((ADI_JTAGDP_IR_APACC == instr) 
+			&& ((reg_addr == ADI_AP_REG_DRW) 
+				|| ((reg_addr & 0xF0) == ADI_AP_REG_BD0)) 
+			&& (adi_dp_if->memaccess_tck != 0))
+		{
+			jtag_runtest(adi_dp_if->memaccess_tck);
+		}
+		
+		// scan dr
+		adi_dp_first3bits = ((reg_addr >> 1) & 0x06) | (RnW & 1);
+		if (RnW)
+		{
+			// read
+			jtag_dr_rw(value, ADI_JTAGDP_IR_APDPACC_LEN);
+		}
+		else
+		{
+			// write
+			jtag_dr_w(value, ADI_JTAGDP_IR_APDPACC_LEN);
+		}
+		break;
+	case ADI_DP_SWJ:
+		if (instr > 1)
+		{
+			LOG_BUG(_GETTEXT("Invalid instruction\n"));
+			return ERROR_FAIL;
+		}
+		// switch reg_addr
+		reg_addr = (reg_addr << 1) & 0x18;
+		swj_transact(reg_addr | ((RnW & 1) << 2) 
+						| ((instr & 1) << 1), value);
+		break;
+	}
+	
+	return ERROR_OK;
 }
 
 RESULT adi_dpif_read_id(uint32 *id)
@@ -221,7 +346,7 @@ RESULT adi_dpif_read_id(uint32 *id)
 		jtag_ir_w(&ir, ADI_JTAGDP_IRLEN);
 		jtag_dr_rw(id, ADI_JTAGDP_IR_IDCODE_LEN);
 		
-		if (ERROR_OK != jtag_commit())
+		if (ERROR_OK != adi_dp_commit())
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read JTAG_ID");
 			return ERRCODE_FAILURE_OPERATION;
@@ -229,8 +354,9 @@ RESULT adi_dpif_read_id(uint32 *id)
 		LOG_INFO(_GETTEXT("JTAG_ID: 0x%X.\n"), *id);
 		break;
 	case ADI_DP_SWJ:
+		adi_dp_read_reg(ADI_SWJDP_REG_DPIDR, id, 0);
 		
-		if (ERROR_OK != swj_commit(&adi_dp.ack))
+		if (ERROR_OK != adi_dp_commit())
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read SWJ_ID");
 			return ERRCODE_FAILURE_OPERATION;
@@ -245,69 +371,17 @@ RESULT adi_dpif_read_id(uint32 *id)
 	return ERROR_OK;
 }
 
-RESULT adi_dp_commit(void)
-{
-	switch (adi_dp_if->type)
-	{
-	case ADI_DP_JTAG:
-		return jtag_commit();
-		break;
-	case ADI_DP_SWJ:
-		return swj_commit(&adi_dp.ack);
-		break;
-	default:
-		return ERROR_FAIL;
-	}
-}
-
-RESULT adi_dp_scan(uint8 instr, uint8 reg_addr, uint8 RnW, uint32 *value)
-{
-	// scan ir if necessary
-	if (adi_dp.cur_ir != instr)
-	{
-		adi_dp.cur_ir = instr;
-LOG_DEBUG("IR: 0x%02X\n", instr);
-		jtag_ir_w(&instr, ADI_JTAGDP_IRLEN);
-	}
-	
-	// memory access tck clocks
-	if ((ADI_JTAGDP_IR_APACC == instr) 
-		&& ((reg_addr == ADI_AP_REG_DRW) 
-			|| ((reg_addr & 0xF0) == ADI_AP_REG_BD0)) 
-		&& (adi_dp_if->memaccess_tck != 0))
-	{
-LOG_DEBUG("RUNTEST: %d\n", adi_dp_if->memaccess_tck);
-		jtag_runtest(adi_dp_if->memaccess_tck);
-	}
-	
-	// scan dr
-	adi_dp_first3bits = ((reg_addr >> 1) & 0x06) | (RnW & 1);
-LOG_DEBUG("DR: 0x%02X 0x%08X\n", adi_dp_first3bits, *value);
-	if (RnW)
-	{
-		// read
-		jtag_dr_rw(value, ADI_JTAGDP_IR_APDPACC_LEN);
-	}
-	else
-	{
-		// write
-		jtag_dr_w(value, ADI_JTAGDP_IR_APDPACC_LEN);
-	}
-	
-	return ERROR_OK;
-}
-
 // codes below are interface independent
 RESULT adi_dp_rw(uint8 instr, uint8 reg_addr, uint8 RnW, uint32 *value, 
 					 uint8 check_result)
 {
 	adi_dp_scan(instr, reg_addr, RnW, value);
 	
-	// read result
-	if (ADI_DAP_READ == RnW)
+	// read result, DP registers of SWJ are not posted
+	if ((ADI_DAP_READ == RnW) 
+		&& ((adi_dp_if->type == ADI_DP_JTAG) || (instr == ADI_DP_IR_APACC)))
 	{
-		adi_dp_scan(ADI_JTAGDP_IR_DPACC, ADI_DP_REG_RDBUFF, ADI_DAP_READ, 
-					value);
+		adi_dp_scan(ADI_DP_IR_DPACC, ADI_DP_REG_RDBUFF, ADI_DAP_READ, value);
 	}
 	
 	if (check_result)
@@ -318,16 +392,14 @@ RESULT adi_dp_rw(uint8 instr, uint8 reg_addr, uint8 RnW, uint32 *value,
 		do
 		{
 			ctrl_stat = 0;
-			adi_dp_scan(ADI_JTAGDP_IR_DPACC, ADI_DP_REG_CTRL_STAT, 
-						ADI_DAP_READ, &ctrl_stat);
-			adi_dp_scan(ADI_JTAGDP_IR_DPACC, ADI_DP_REG_RDBUFF, 
-						ADI_DAP_READ, &ctrl_stat);
-			if (ERROR_OK != adi_dp_commit())
+			adi_dp_rw(ADI_DP_IR_DPACC, ADI_DP_REG_CTRL_STAT, 
+					  ADI_DAP_READ, &ctrl_stat, 0);
+ 			if (ERROR_OK != adi_dp_commit())
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "access dap");
 				return ERRCODE_FAILURE_OPERATION;
 			}
-		} while ((adi_dp.ack != ADI_JTAGDP_ACK_OK_FAIL) && (--cnt));
+		} while ((adi_dp.ack != ack_value) && (--cnt));
 		
 		if (!cnt)
 		{
@@ -336,13 +408,14 @@ RESULT adi_dp_rw(uint8 instr, uint8 reg_addr, uint8 RnW, uint32 *value,
 		}
 		
 		// check ctrl_stat
+		LOG_INFO("CTRL_STAT: 0x%08X\n", ctrl_stat);
 		if (ctrl_stat & (ADI_DP_REG_CTRL_STAT_SSTICKYORUN 
-							| ADI_DP_REG_CTRL_STAT_SSTICKYERR))
+							| ADI_DP_REG_CTRL_STAT_SSTICKYERR 
+							| ADI_DP_REG_CTRL_STAT_WDATAERR))
 		{
 			LOG_ERROR(_GETTEXT("Stiky Error/Overrun.\n"));
 			return ERROR_FAIL;
 		}
-		//if (ctrl_stat )
 	}
 	
 	return ERROR_OK;
@@ -356,7 +429,7 @@ RESULT adi_dp_read_reg(uint8 reg_addr, uint32 *value, uint8 check_result)
 		return ERROR_FAIL;
 	}
 	
-	return adi_dp_rw(ADI_JTAGDP_IR_DPACC, reg_addr, ADI_DAP_READ, 
+	return adi_dp_rw(ADI_DP_IR_DPACC, reg_addr, ADI_DAP_READ, 
 					 value, check_result);
 }
 
@@ -368,7 +441,7 @@ RESULT adi_dp_write_reg(uint8 reg_addr, uint32 *value, uint8 check_result)
 		return ERROR_FAIL;
 	}
 	
-	return adi_dp_rw(ADI_JTAGDP_IR_DPACC, reg_addr, ADI_DAP_WRITE, 
+	return adi_dp_rw(ADI_DP_IR_DPACC, reg_addr, ADI_DAP_WRITE, 
 					 value, check_result);
 }
 
@@ -380,16 +453,14 @@ RESULT adi_dp_transaction_endcheck(void)
 	do
 	{
 		ctrl_stat = 0;
-		adi_dp_scan(ADI_JTAGDP_IR_DPACC, ADI_DP_REG_CTRL_STAT, 
-					ADI_DAP_READ, &ctrl_stat);
-		adi_dp_scan(ADI_JTAGDP_IR_DPACC, ADI_DP_REG_RDBUFF, 
-					ADI_DAP_READ, &ctrl_stat);
+		adi_dp_rw(ADI_DP_IR_DPACC, ADI_DP_REG_CTRL_STAT, 
+					  ADI_DAP_READ, &ctrl_stat, 0);
 		if (ERROR_OK != adi_dp_commit())
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "access dap");
 			return ERRCODE_FAILURE_OPERATION;
 		}
-	} while ((adi_dp.ack != ADI_JTAGDP_ACK_OK_FAIL) && (--cnt));
+	} while ((adi_dp.ack != ack_value) && (--cnt));
 	
 	if (!cnt)
 	{
@@ -398,8 +469,10 @@ RESULT adi_dp_transaction_endcheck(void)
 	}
 	
 	// check ctrl_stat
+	LOG_INFO("CTRL_STAT: 0x%08X\n", ctrl_stat);
 	if (ctrl_stat & (ADI_DP_REG_CTRL_STAT_SSTICKYORUN 
-						| ADI_DP_REG_CTRL_STAT_SSTICKYERR))
+						| ADI_DP_REG_CTRL_STAT_SSTICKYERR 
+						| ADI_DP_REG_CTRL_STAT_WDATAERR))
 	{
 		LOG_ERROR(_GETTEXT("Stiky Error/Overrun.\n"));
 		return ERROR_FAIL;
@@ -425,14 +498,15 @@ RESULT adi_dp_bankselect(uint8 ap_reg)
 RESULT adi_ap_read_reg(uint8 reg_addr, uint32 *value, uint8 check_result)
 {
 	adi_dp_bankselect(reg_addr);
-	return adi_dp_rw(ADI_JTAGDP_IR_APACC, reg_addr, ADI_DAP_READ, value, 
+//	adi_dp_read_reg(0x04, value, 0);
+	return adi_dp_rw(ADI_DP_IR_APACC, reg_addr, ADI_DAP_READ, value, 
 					 check_result);
 }
 
 RESULT adi_ap_write_reg(uint8 reg_addr, uint32 *value, uint8 check_result)
 {
 	adi_dp_bankselect(reg_addr);
-	return adi_dp_rw(ADI_JTAGDP_IR_APACC, reg_addr, ADI_DAP_WRITE, value, 
+	return adi_dp_rw(ADI_DP_IR_APACC, reg_addr, ADI_DAP_WRITE, value, 
 					 check_result);
 }
 
@@ -550,13 +624,13 @@ RESULT adi_memap_read_buf(uint32 address, uint8 *buffer, uint32 len)
 			ADI_AP_REG_CSW_32BIT | ADI_AP_REG_CSW_ADDRINC_SINGLE, address);
 		
 		// first read
-		adi_dp_scan(ADI_JTAGDP_IR_APACC, ADI_AP_REG_DRW, ADI_DAP_READ, &dummy);
+		adi_dp_scan(ADI_DP_IR_APACC, ADI_AP_REG_DRW, ADI_DAP_READ, &dummy);
 		for (read_count = 0; read_count < block_dword_size - 1; read_count++)
 		{
-			adi_dp_scan(ADI_JTAGDP_IR_APACC, ADI_AP_REG_DRW, ADI_DAP_READ, (uint32*)(buffer + 4 * read_count));
+			adi_dp_scan(ADI_DP_IR_APACC, ADI_AP_REG_DRW, ADI_DAP_READ, (uint32*)(buffer + 4 * read_count));
 		}
 		// last read
-		adi_dp_scan(ADI_JTAGDP_IR_DPACC, ADI_DP_REG_RDBUFF, ADI_DAP_READ, (uint32*)(buffer + 4 * read_count));
+		adi_dp_scan(ADI_DP_IR_DPACC, ADI_DP_REG_RDBUFF, ADI_DAP_READ, (uint32*)(buffer + 4 * read_count));
 		
 		if (ERROR_OK != adi_dp_transaction_endcheck())
 		{
@@ -606,20 +680,41 @@ RESULT adi_init(programmer_info_t *prog, adi_dp_if_t *interf)
 	adi_dp.ap_csw_value = 0xFFFFFFFF;
 	adi_dp.cur_ir = 0xFF;
 	
+	// read all registers
 	tmp = 0;
-	adi_dp_read_reg(ADI_DP_REG_CTRL_STAT, &tmp, 0);
-	tmp = ADI_DP_REG_CTRL_STAT_SSTICKYERR;
-	adi_dp_write_reg(ADI_DP_REG_CTRL_STAT, &tmp, 0);
+	adi_dp_read_reg(ADI_DP_REG_CTRL_STAT, &tmp, 1);
+	LOG_INFO("CTRL_STAT: 0x%08X\n", tmp);
+	
+	if (adi_dp_if->type == ADI_DP_JTAG)
+	{
+		tmp = ADI_DP_REG_CTRL_STAT_SSTICKYERR;
+		adi_dp_write_reg(ADI_DP_REG_CTRL_STAT, &tmp, 0);
+	}
+	else
+	{
+		tmp = ADI_SWJDP_REG_ABORT_STKERRCLR 
+				| ADI_SWJDP_REG_ABORT_WDERRCLR 
+				| ADI_SWJDP_REG_ABORT_ORUNERRCLR 
+				| ADI_SWJDP_REG_ABORT_DAPABORT;
+		tmp |= 0x20;
+		adi_dp_write_reg(ADI_SWJDP_REG_ABORT, &tmp, 0);
+	}
+	
 	tmp = 0;
-	adi_dp_read_reg(ADI_DP_REG_CTRL_STAT, &tmp, 0);
+	adi_dp_read_reg(ADI_DP_REG_CTRL_STAT, &tmp, 1);
+	LOG_INFO("CTRL_STAT: 0x%08X\n", tmp);
+	
 	tmp = ADI_DP_REG_CTRL_STAT_CDBGPWRUPREQ 
-			| ADI_DP_REG_CTRL_STAT_CSYSPWRUPREQ;
+			| ADI_DP_REG_CTRL_STAT_CSYSPWRUPREQ
+			| ADI_DP_REG_CTRL_STAT_CDBGRSTREQ;
 	adi_dp_write_reg(ADI_DP_REG_CTRL_STAT, &tmp, 0);
+	tmp = 0;
 	adi_dp_read_reg(ADI_DP_REG_CTRL_STAT, &tmp, 0);
-	if (ERROR_OK != jtag_commit())
+	if (ERROR_OK != adi_dp_commit())
 	{
 		return ERROR_FAIL;
 	}
+	LOG_INFO("CTRL_STAT: 0x%08X\n", tmp);
 	
 	cnt = 0;
 	while (!(tmp & ADI_DP_REG_CTRL_STAT_CDBGPWRUPACK) && (cnt++ < 10))
@@ -641,13 +736,17 @@ RESULT adi_init(programmer_info_t *prog, adi_dp_if_t *interf)
 		sleep_ms(10);
 	}
 	
-	// activate OVERRUN checking
-	adi_dp_read_reg(ADI_DP_REG_CTRL_STAT, &tmp, 0);
-	adi_dp.dp_ctrl_stat = ADI_DP_REG_CTRL_STAT_CDBGPWRUPREQ 
-							| ADI_DP_REG_CTRL_STAT_CSYSPWRUPREQ 
-							| ADI_DP_REG_CTRL_STAT_CORUNDETECT;
-	adi_dp_write_reg(ADI_DP_REG_CTRL_STAT, &adi_dp.dp_ctrl_stat, 0);
-	adi_dp_read_reg(ADI_DP_REG_CTRL_STAT, &tmp, 0);
+	// activate OVERRUN checking in JTAG mode
+	if (ADI_DP_JTAG == adi_dp_if->type)
+	{
+		adi_dp_read_reg(ADI_DP_REG_CTRL_STAT, &tmp, 0);
+		adi_dp.dp_ctrl_stat = ADI_DP_REG_CTRL_STAT_CDBGPWRUPREQ 
+								| ADI_DP_REG_CTRL_STAT_CSYSPWRUPREQ 
+								| ADI_DP_REG_CTRL_STAT_CORUNDETECT;
+		adi_dp_write_reg(ADI_DP_REG_CTRL_STAT, &adi_dp.dp_ctrl_stat, 0);
+		adi_dp_read_reg(ADI_DP_REG_CTRL_STAT, &tmp, 1);
+		LOG_INFO("CTRL_STAT: 0x%08X\n", tmp);
+	}
 	
 	// read AHB-AP ID and Debug ROM address
 	if (ERROR_OK != adi_ap_read_reg(ADI_AP_REG_IDR, &adi_dp_info.ahb_ap_id, 1))
