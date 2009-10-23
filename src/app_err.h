@@ -57,6 +57,7 @@
 
 #define ERRMSG_FAILURE_OPERATION			"Fail to %s.\n"
 #define ERRMSG_FAILURE_OPERATION_ERRCODE	"Fail to %s, error code is %d.\n"
+#define ERRMSG_FAILURE_OPERATION_ERRCODE16	"Fail to %s, error code is 0x%X.\n"
 #define ERRMSG_FAILURE_OPERATION_ERRSTRING	"Fail to %s, error string is %s.\n"
 #define ERRMSG_FAILURE_OPERATION_MESSAGE	"Fail to %s, %s\n"
 #define ERRMSG_FAILURE_OPERATE_DEVICE		"Fail to operate %s.\n"

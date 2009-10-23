@@ -310,7 +310,7 @@ RESULT stm32_program(operation_t operations, program_info_t *pi,
 		}
 		
 		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMING), "flash_loader");
-		pgbar_init("writing flash |", "|", 0, 1, PROGRESS_STEP, '=');
+		pgbar_init("writing flash_loader |", "|", 0, 1, PROGRESS_STEP, '=');
 		
 		block_size = sizeof(stm32_fl_code);
 		// last_but_three dword is RAM address for data, set to 1K at SRAM
@@ -333,7 +333,7 @@ RESULT stm32_program(operation_t operations, program_info_t *pi,
 		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMED_SIZE), "flash_loader", block_size);
 		
 		LOG_INFO(_GETTEXT(INFOMSG_VERIFYING), "flash_loader");
-		pgbar_init("writing flash |", "|", 0, 1, PROGRESS_STEP, '=');
+		pgbar_init("reading flash_loader |", "|", 0, 1, PROGRESS_STEP, '=');
 		
 		// read back for verify
 		memset(page_buf, 0, block_size);
