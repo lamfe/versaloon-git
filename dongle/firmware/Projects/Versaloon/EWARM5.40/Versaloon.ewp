@@ -91,7 +91,7 @@
         </option>
         <option>
           <name>OGLastSavedByProductVersion</name>
-          <state>5.30.0.51236</state>
+          <state>5.40.0.51529</state>
         </option>
         <option>
           <name>GeneralEnableMisra</name>
@@ -291,6 +291,7 @@
           <state>$PROJ_DIR$\..\..\..\HW\VCOM\</state>
           <state>$PROJ_DIR$\..\..\..\HW\Mass\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\JTAG\</state>
+          <state>$PROJ_DIR$\..\..\..\Interfaces\SWJ\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\SWIM\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\SPI\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\PowerExt\</state>
@@ -1097,6 +1098,7 @@
           <state>$PROJ_DIR$\..\..\..\HW\VCOM\</state>
           <state>$PROJ_DIR$\..\..\..\HW\Mass\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\JTAG\</state>
+          <state>$PROJ_DIR$\..\..\..\Interfaces\SWJ\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\SWIM\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\SPI\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\PowerExt\</state>
@@ -1869,6 +1871,12 @@
       <name>SWIM</name>
       <file>
         <name>$PROJ_DIR$\..\..\..\Interfaces\SWIM\SWIM.c</name>
+      </file>
+    </group>
+    <group>
+      <name>SWJ</name>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\Interfaces\SWJ\SWJ.c</name>
       </file>
     </group>
   </group>
