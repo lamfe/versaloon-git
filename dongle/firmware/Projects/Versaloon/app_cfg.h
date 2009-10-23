@@ -186,6 +186,18 @@
 #define SW_RST_CLR()					GPIO_ClrPins(SW_RST_PORT, GPIO_PIN_GetMask(SW_RST_PIN))
 #define SW_RST_GET()					GPIO_GetOutPins(SW_RST_PORT, GPIO_PIN_GetMask(SW_RST_PIN))
 
+/***************************** SWJ ******************************/
+#define SWJ_SWDIO_SETOUTPUT()			JTAG_TAP_TMS_SETOUTPUT()
+#define SWJ_SWDIO_SETINPUT()			JTAG_TAP_TMS_SETINPUT()
+#define SWJ_SWDIO_SET()					JTAG_TAP_TMS_SET()
+#define SWJ_SWDIO_CLR()					JTAG_TAP_TMS_CLR()
+#define SWJ_SWDIO_GET()					JTAG_TAP_TMS_GET()
+
+#define SWJ_SWCLK_SETOUTPUT()			JTAG_TAP_TCK_SETOUTPUT()
+#define SWJ_SWCLK_SETINPUT()			JTAG_TAP_TCK_SETINPUT()
+#define SWJ_SWCLK_SET()					JTAG_TAP_TCK_SET()
+#define SWJ_SWCLK_CLR()					JTAG_TAP_TCK_CLR()
+
 /***************************** JTAG ******************************/
 #define JTAG_TAP_PORT					GPIOB
 #define JTAG_TAP_TCK_PIN				GPIO_PIN_13
@@ -221,7 +233,7 @@
 #define JTAG_TAP_TMS_SETINPUT()			GPIO_Dir(JTAG_TAP_TMS_PORT, GPIO_MODE_IN_FLOATING, JTAG_TAP_TMS_PIN)
 #define JTAG_TAP_TMS_SET()				GPIO_SetPins(JTAG_TAP_PORT, GPIO_PIN_GetMask(JTAG_TAP_TMS_PIN))
 #define JTAG_TAP_TMS_CLR()				GPIO_ClrPins(JTAG_TAP_PORT, GPIO_PIN_GetMask(JTAG_TAP_TMS_PIN))
-#define JTAG_TAP_TMS_GET()				GPIO_GetOutPins(JTAG_TAP_PORT, GPIO_PIN_GetMask(JTAG_TAP_TMS_PIN))
+#define JTAG_TAP_TMS_GET()				GPIO_GetInPins(JTAG_TAP_PORT, GPIO_PIN_GetMask(JTAG_TAP_TMS_PIN))
 
 #define JTAG_TAP_TCK_SETOUTPUT()		GPIO_Dir(JTAG_TAP_PORT, GPIO_MODE_OUT_PP, JTAG_TAP_TCK_PIN)
 #define JTAG_TAP_TCK_SETINPUT()			GPIO_Dir(JTAG_TAP_PORT, GPIO_MODE_IN_FLOATING, JTAG_TAP_TCK_PIN)
@@ -340,11 +352,11 @@
 #define SPI_SCK_SETINPUT()				JTAG_TAP_TCK_SETINPUT()
 
 #define SPI_Disable()					SPI_I2S_DeInit(SPI_Interface)
-#define SPI_SetData(d)					SPI_I2S_SendData(SPI_Interface, (d))
-#define SPI_GetData()					SPI_I2S_ReceiveData(SPI_Interface)
-#define SPI_WaitReady()					SPI_WaitRxReady()//while((SPI_Interface->SR & SPI_I2S_FLAG_BSY) == (u16)SET)
-#define SPI_WaitRxReady()				while((SPI_Interface->SR & SPI_I2S_FLAG_RXNE) == (u16)RESET)
-#define SPI_WaitTxReady()				while((SPI_Interface->SR & SPI_I2S_FLAG_TXE) == (u16)RESET)
+#define SPI_SetData(d)					SPI_Interface->DR = (d)
+#define SPI_GetData()					SPI_Interface->DR
+#define SPI_WaitReady()					while((SPI_Interface->SR & SPI_I2S_FLAG_BSY))
+#define SPI_WaitRxReady()				while(!(SPI_Interface->SR & SPI_I2S_FLAG_RXNE))
+#define SPI_WaitTxReady()				while(!(SPI_Interface->SR & SPI_I2S_FLAG_TXE))
 
 #define SPI_AllInput()					do{\
 											GLOBAL_OUTPUT_Release();\
@@ -373,8 +385,6 @@
 
 #define ISP_SetRSTOutput()				SW_SETOUTPUT()
 #define ISP_SetRSTInput()				SW_SETINPUT()
-
-#define ISP_WaitReady()					while(!(SPI_GetFlagStatus(SPI_Interface,SPI_FLAG_RXNE) == SET))
 
 /************************** MSP430 JTAG ****************************/
 #define MSP430_JTAG_TEST_SETOUTPUT()	JTAG_TAP_TRST_SETOUTPUT()

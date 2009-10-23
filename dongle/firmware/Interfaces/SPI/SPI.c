@@ -158,11 +158,11 @@ uint8 SPI_RW(uint8 data)
 	}
 	else
 	{
-//		SPI_WaitTxReady();
 		SPI_SetData(data);
 
 		SPI_WaitRxReady();
 		ret = SPI_GetData();
+		SPI_WaitReady();
 	}
 
 	return ret;
