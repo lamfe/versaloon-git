@@ -479,6 +479,7 @@ RESULT vsllink_jtaghl_config(uint16 kHz, uint8 ub, uint8 ua, uint16 bb,
 		LOG_ERROR(_GETTEXT("fail to set jtag daisy chain\n"));
 		return ERROR_FAIL;
 	}
+	sleep_ms(10);
 	
 	return ERROR_OK;
 }
@@ -1022,7 +1023,7 @@ RESULT vsllink_swj_commit(uint8 *result)
 				versaloon_pending_idx = 0;
 				return ERROR_FAIL;
 			}
-			else
+			else if (versaloon_pending[i].data_buffer != NULL)
 			{
 				memcpy(versaloon_pending[i].data_buffer, 
 					   versaloon_buf + vsllink_buffer_index + 1, 
@@ -1160,7 +1161,17 @@ RESULT vsllink_swj_transact(uint8 request, uint32 *data)
 	buf_tmp[0] = (request | 0x81 | (parity << 5)) & ~0x40;
 	memcpy(buf_tmp + 1, (uint8*)data, 4);
 	
-	return vsllink_swj_add_command(VSLLINK_CMDSWJ_TRANS, buf_tmp, 5, 
-								   (uint8*)data, 5);
+	if (request & 0x04)
+	{
+		// read
+		return vsllink_swj_add_command(VSLLINK_CMDSWJ_TRANS, buf_tmp, 5, 
+									   (uint8*)data, 5);
+	}
+	else
+	{
+		// write
+		return vsllink_swj_add_command(VSLLINK_CMDSWJ_TRANS, buf_tmp, 5, 
+									   NULL, 5);
+	}
 }
 

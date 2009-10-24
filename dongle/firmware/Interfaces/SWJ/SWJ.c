@@ -96,8 +96,8 @@ SWJ_RETRY:
 
 	if (read)
 	{
-		// receive trn and 3-bit reply
-		SWJ_SeqIn((uint8*)&reply, SWJ_Trn + 3);
+		// receive 3-bit reply
+		SWJ_SeqIn((uint8*)&reply, 3);
 		// receive data and parity
 		parity = SWJ_SeqIn((uint8*)buff, 32);
 		parity += SWJ_SeqIn((uint8*)&data_parity, 1);
@@ -107,13 +107,13 @@ SWJ_RETRY:
 	else
 	{
 		// receive trn and 3-bit reply and then trn
-		SWJ_SeqIn((uint8*)&reply, SWJ_Trn * 2 + 3);
+		SWJ_SeqIn((uint8*)&reply, SWJ_Trn + 3);
 		// send data and parity
 		parity = SWJ_SeqOut((uint8*)buff, 32);
 		parity += SWJ_SeqOut(&parity, 1);
 	}
 	SWJ_StopClock();
-	reply = (reply >> SWJ_Trn) & 0x07; 
+	reply &= 0x07; 
 	switch (reply)
 	{
 	case SWJ_ACK_OK:

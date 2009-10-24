@@ -70,7 +70,7 @@ const program_area_map_t cm3_program_area_map[] =
 #define CM3_SAM3		3
 const cm3_param_t cm3_chips_param[] = {
 //	chip_name,		default_char,		flash_start_addr,	jtag_khz,		pos			swj_trn
-	{"cm3_stm32",	STM32_FLASH_CHAR,	0x08000000,			STM32_JTAG_KHZ,	{0,1,0,5},	0},
+	{"cm3_stm32",	STM32_FLASH_CHAR,	0x08000000,			STM32_JTAG_KHZ,	{0,1,0,5},	2},
 };
 static uint8 cm3_chip_index = 0;
 cm3_param_t cm3_chip_param;
