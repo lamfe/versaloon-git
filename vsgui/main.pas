@@ -12,7 +12,8 @@ uses
 type
 
   TTargetType = (TT_NONE, TT_PSOC, TT_AT89S5X, TT_C8051F, TT_MSP430, TT_STM8,
-                 TT_EEPROM, TT_JTAG, TT_AVR8, TT_PIC8, TT_COMISP, TT_LPCICP);
+                 TT_EEPROM, TT_JTAG, TT_AVR8, TT_PIC8, TT_COMISP, TT_LPCICP,
+                 TT_CORTEXM3);
   { TFormMain }
 
   TFormMain = class(TForm)
@@ -78,6 +79,7 @@ type
     pcMain: TPageControl;
     pmTray: TPopupMenu;
     sbMain: TStatusBar;
+    tsCortexM3: TTabSheet;
     tsLPCICP: TTabSheet;
     tDelay: TTimer;
     tsCOMISP: TTabSheet;
@@ -199,6 +201,13 @@ type
     function LPCICP_AddWriteParameters(): boolean;
     function LPCICP_AddReadParameters(): boolean;
     function LPCICP_AddVerifyParameters(): boolean;
+    { CortexM3 declarations }
+    function CortexM3_Init(): boolean;
+    function CortexM3_Init_Para(line: string): string;
+    procedure CortexM3_Update_chip(p_str: string);
+    function CortexM3_AddWriteParameters(): boolean;
+    function CortexM3_AddReadParameters(): boolean;
+    function CortexM3_AddVerifyParameters(): boolean;
   private
     { private declarations }
     bFatalError: boolean;
@@ -461,6 +470,10 @@ begin
     begin
       TargetType := TT_LPCICP;
     end
+    else if pcMain.ActivePage = tsCortexM3 then
+    begin
+      TargetType := TT_CORTEXM3;
+    end
     else
     begin
       // what page? does it exists?
@@ -596,6 +609,8 @@ begin
       success := COMISP_AddVerifyParameters();
     TT_LPCICP:
       success := LPCICP_AddVerifyParameters();
+    TT_CORTEXM3:
+      success := CortexM3_AddVerifyParameters();
   end;
 
   if not success then
@@ -790,6 +805,8 @@ begin
       success := COMISP_AddWriteParameters();
     TT_LPCICP:
       success := LPCICP_AddWriteParameters();
+    TT_CORTEXM3:
+      success := CortexM3_AddWriteParameters();
   end;
 
   if not success then
@@ -846,6 +863,8 @@ begin
       COMISP_Update_Chip(ParaString.Strings[cbboxTarget.ItemIndex]);
 //    TT_LPCICP:
 //      LPCICP_Update_chip(ParaString.Strings[cbboxTarget.ItemIndex]);
+    TT_CORTEXM3:
+      CortexM3_Update_chip(ParaString.Strings[cbboxTarget.ItemIndex]);
   end;
 
   AdjustComponentColor(cbboxMode);
@@ -1076,7 +1095,7 @@ begin
   caller.AddParameter('G');
 
   // target series_name or chip_name
-  if (TargetType <> TT_COMISP) and (cbboxTarget.ItemIndex = 0) then
+  if ((TargetType <> TT_COMISP) and (TargetType <> TT_CORTEXM3)) and (cbboxTarget.ItemIndex = 0) then
   begin
     caller.AddParameter('s' + cbboxTarget.Items.Strings[cbboxTarget.ItemIndex]);
   end
@@ -1175,6 +1194,8 @@ begin
       success := COMISP_Init();
     TT_LPCICP:
       success := LPCICP_Init();
+    TT_CORTEXM3:
+      success := CortexM3_Init();
   else
       bPageLock := FALSE;
       exit;
@@ -1287,6 +1308,8 @@ begin
       chip_module_header := 'comisp_';
     TT_LPCICP:
       chip_module_header := 'p89lpc';
+    TT_CORTEXM3:
+      chip_module_header := 'cm3_';
   end;
 
   if Pos(chip_module_header, line) = 1 then
@@ -1315,6 +1338,8 @@ begin
         str_tmp := COMISP_Init_Para(line);
       TT_LPCICP:
         str_tmp := LPCICP_Init_Para(line);
+      TT_CORTEXM3:
+        str_tmp := CortexM3_Init_Para(line);
     end;
 
     cbboxTarget.Items.Add(chip_name);
@@ -1656,7 +1681,7 @@ begin
   cbboxMode.Enabled := TRUE;
 end;
 
-{ C8051F declarations }
+{ C8051F implementations }
 function TFormMain.C8051F_AddWriteParameters(): boolean;
 var
   para_tmp: string;
@@ -1780,7 +1805,7 @@ begin
   end;
 end;
 
-{ AT89S5X declarations }
+{ AT89S5X implementations }
 function TFormMain.AT89S5X_AddWriteParameters(): boolean;
 var
   para_tmp: string;
@@ -1934,7 +1959,7 @@ begin
   cbboxMode.Enabled := TRUE;
 end;
 
-{ MSP430 declarations }
+{ MSP430 implementations }
 function TFormMain.MSP430_Init_Para(line: string): string;
 var
   int_tmp: integer;
@@ -2082,7 +2107,7 @@ begin
   end;
 end;
 
-{ STM8 declarations }
+{ STM8 implementations }
 function TFormMain.STM8_Init(): boolean;
 begin
   result := TRUE;
@@ -2118,7 +2143,7 @@ begin
   VSProg_CommonInit('fA');
 end;
 
-{ EEPROM declarations }
+{ EEPROM implementations }
 function TFormMain.EEPROM_Init(): boolean;
 begin
   result := TRUE;
@@ -2250,7 +2275,7 @@ begin
   Result := TRUE;
 end;
 
-{ AVR8 declarations }
+{ AVR8 implementations }
 function TFormMain.AVR8_Init(): boolean;
 begin
   result := TRUE;
@@ -2449,7 +2474,7 @@ begin
   end;
 end;
 
-{ PIC8 declarations }
+{ PIC8 implementations }
 function TFormMain.PIC8_Init(): boolean;
 begin
   result := TRUE;
@@ -2517,7 +2542,7 @@ begin
 //    cbboxTargetChange(cbboxTarget);
   end;
 
-  // flash, Autodetect
+  // flash
   VSProg_CommonInit('CflX');
   chkboxLock.Checked := FALSE;
   lbledtLock.Enabled := FALSE;
@@ -2615,7 +2640,7 @@ begin
   end;
 end;
 
-{ LPCICP implementation }
+{ LPCICP implementations }
 function TFormMain.LPCICP_Init(): boolean;
 begin
   result := TRUE;
@@ -2662,6 +2687,7 @@ end;
 
 procedure TFormMain.LPCICP_Update_Chip(p_str: string);
 begin
+  p_str := p_str;
 end;
 
 function TFormMain.LPCICP_AddWriteParameters(): boolean;
@@ -2704,6 +2730,123 @@ begin
 end;
 
 function TFormMain.LPCICP_AddVerifyParameters(): boolean;
+var
+  para_tmp: string;
+begin
+  if not chkboxApp.Checked then
+  begin
+    result := FALSE;
+  end
+  else
+  begin
+    para_tmp := 'ov';
+    if chkboxApp.Checked then
+    begin
+      para_tmp := para_tmp + 'f';
+    end;
+    caller.AddParameter(para_tmp);
+    result := TRUE;
+  end;
+end;
+
+{ CortexM3 implementations }
+function TFormMain.CortexM3_Init(): boolean;
+begin
+  result := TRUE;
+
+  cbboxTarget.Clear;
+  ParaString.Clear;
+
+  // call 'vsprog -Scm3' to extract supported comisp targets
+  if not PrepareToRunCLI() then
+  begin
+    result := FALSE;
+    exit;
+  end;
+  caller.AddParameter('Scm3');
+  LogInfo('Running...');
+  caller.Run(@VSProg_CommonParseSupportCallback, FALSE, TRUE);
+  LogInfo('Idle');
+
+  if bFatalError then
+  begin
+    tsCOMISP.Enabled := FALSE;
+    result := FALSE;
+    exit;
+  end
+  else
+  begin
+    cbboxTarget.ItemIndex := 0;
+//    cbboxTargetChange(cbboxTarget);
+  end;
+
+  // flash
+  VSProg_CommonInit('fF');
+  chkboxLock.Checked := FALSE;
+  lbledtLock.Enabled := FALSE;
+  btnEditLock.Enabled := FALSE;
+  cbboxMode.Enabled := TRUE;
+end;
+
+function TFormMain.CortexM3_Init_Para(line: string): string;
+begin
+  line := line;
+  result := 'js';
+end;
+
+procedure TFormMain.CortexM3_Update_chip(p_str: string);
+begin
+  p_str := p_str;
+
+  cbboxMode.Items.Add('j:JTAG');
+  cbboxMode.Items.Add('s:SWJ');
+
+  if (cbboxMode.ItemIndex <> 0) and (cbboxMode.ItemIndex <> 1) then
+  begin
+    cbboxMode.ItemIndex := 0;
+  end;
+end;
+
+function TFormMain.CortexM3_AddWriteParameters(): boolean;
+var
+  para_tmp: string;
+begin
+  // Erase before write
+  if chkboxEraseBeforeWrite.Checked then
+  begin
+    caller.AddParameter('oe');
+  end;
+
+  if chkboxApp.Checked then
+  begin
+    para_tmp := 'ow';
+    if chkboxApp.Checked then
+    begin
+      para_tmp := para_tmp + 'f';
+    end;
+    caller.AddParameter(para_tmp);
+  end
+  else
+  begin
+    result := FALSE;
+    exit;
+  end;
+
+  // Verify after write
+  if chkboxVerifyAfterWrite.Checked then
+  begin
+    CortexM3_AddVerifyParameters();
+  end;
+
+  result := TRUE;
+end;
+
+function TFormMain.CortexM3_AddReadParameters(): boolean;
+begin
+  result := TRUE;
+end;
+
+function TFormMain.CortexM3_AddVerifyParameters(): boolean;
 var
   para_tmp: string;
 begin
