@@ -68,10 +68,9 @@ adi_dp_info_t adi_dp_info;
 #define swj_setpara(t, r, d)	adi_prog->swj_setpara((t), (r), (d))
 #define swj_commit(ack)			adi_prog->swj_commit(ack)
 
-extern RESULT adi_dp_read_reg(uint8 reg_addr, uint32 *value, 
-							  uint8 check_result);
-extern RESULT adi_dp_write_reg(uint8 reg_addr, uint32 *value, 
-							   uint8 check_result);
+RESULT adi_dp_read_reg(uint8 reg_addr, uint32 *value, uint8 check_result);
+RESULT adi_dp_write_reg(uint8 reg_addr, uint32 *value, uint8 check_result);
+RESULT adi_dp_transaction_endcheck(void);
 
 const uint8 adi_swj_reset_seq[] = 
 {
@@ -386,36 +385,7 @@ RESULT adi_dp_rw(uint8 instr, uint8 reg_addr, uint8 RnW, uint32 *value,
 	
 	if (check_result)
 	{
-		uint32 ctrl_stat;
-		uint32 cnt = 1000;
-		
-		do
-		{
-			ctrl_stat = 0;
-			adi_dp_rw(ADI_DP_IR_DPACC, ADI_DP_REG_CTRL_STAT, 
-					  ADI_DAP_READ, &ctrl_stat, 0);
- 			if (ERROR_OK != adi_dp_commit())
-			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "access dap");
-				return ERRCODE_FAILURE_OPERATION;
-			}
-		} while ((adi_dp.ack != ack_value) && (--cnt));
-		
-		if (!cnt)
-		{
-			LOG_ERROR(_GETTEXT("Timeout......\n"));
-			return ERROR_FAIL;
-		}
-		
-		// check ctrl_stat
-		LOG_INFO("CTRL_STAT: 0x%08X\n", ctrl_stat);
-		if (ctrl_stat & (ADI_DP_REG_CTRL_STAT_SSTICKYORUN 
-							| ADI_DP_REG_CTRL_STAT_SSTICKYERR 
-							| ADI_DP_REG_CTRL_STAT_WDATAERR))
-		{
-			LOG_ERROR(_GETTEXT("Stiky Error/Overrun.\n"));
-			return ERROR_FAIL;
-		}
+		return adi_dp_transaction_endcheck();
 	}
 	
 	return ERROR_OK;
@@ -448,7 +418,7 @@ RESULT adi_dp_write_reg(uint8 reg_addr, uint32 *value, uint8 check_result)
 RESULT adi_dp_transaction_endcheck(void)
 {
 	uint32 ctrl_stat;
-	uint32 cnt = 1000;
+	uint32 cnt = 20;
 	
 	do
 	{
@@ -469,7 +439,6 @@ RESULT adi_dp_transaction_endcheck(void)
 	}
 	
 	// check ctrl_stat
-	LOG_INFO("CTRL_STAT: 0x%08X\n", ctrl_stat);
 	if (ctrl_stat & (ADI_DP_REG_CTRL_STAT_SSTICKYORUN 
 						| ADI_DP_REG_CTRL_STAT_SSTICKYERR 
 						| ADI_DP_REG_CTRL_STAT_WDATAERR))
@@ -498,7 +467,6 @@ RESULT adi_dp_bankselect(uint8 ap_reg)
 RESULT adi_ap_read_reg(uint8 reg_addr, uint32 *value, uint8 check_result)
 {
 	adi_dp_bankselect(reg_addr);
-//	adi_dp_read_reg(0x04, value, 0);
 	return adi_dp_rw(ADI_DP_IR_APACC, reg_addr, ADI_DAP_READ, value, 
 					 check_result);
 }
@@ -680,10 +648,8 @@ RESULT adi_init(programmer_info_t *prog, adi_dp_if_t *interf)
 	adi_dp.ap_csw_value = 0xFFFFFFFF;
 	adi_dp.cur_ir = 0xFF;
 	
-	// read all registers
 	tmp = 0;
-	adi_dp_read_reg(ADI_DP_REG_CTRL_STAT, &tmp, 1);
-	LOG_INFO("CTRL_STAT: 0x%08X\n", tmp);
+	adi_dp_read_reg(ADI_DP_REG_CTRL_STAT, &tmp, 0);
 	
 	if (adi_dp_if->type == ADI_DP_JTAG)
 	{
@@ -696,17 +662,14 @@ RESULT adi_init(programmer_info_t *prog, adi_dp_if_t *interf)
 				| ADI_SWJDP_REG_ABORT_WDERRCLR 
 				| ADI_SWJDP_REG_ABORT_ORUNERRCLR 
 				| ADI_SWJDP_REG_ABORT_DAPABORT;
-		tmp |= 0x20;
 		adi_dp_write_reg(ADI_SWJDP_REG_ABORT, &tmp, 0);
 	}
 	
 	tmp = 0;
-	adi_dp_read_reg(ADI_DP_REG_CTRL_STAT, &tmp, 1);
-	LOG_INFO("CTRL_STAT: 0x%08X\n", tmp);
+	adi_dp_read_reg(ADI_DP_REG_CTRL_STAT, &tmp, 0);
 	
 	tmp = ADI_DP_REG_CTRL_STAT_CDBGPWRUPREQ 
-			| ADI_DP_REG_CTRL_STAT_CSYSPWRUPREQ
-			| ADI_DP_REG_CTRL_STAT_CDBGRSTREQ;
+			| ADI_DP_REG_CTRL_STAT_CSYSPWRUPREQ;
 	adi_dp_write_reg(ADI_DP_REG_CTRL_STAT, &tmp, 0);
 	tmp = 0;
 	adi_dp_read_reg(ADI_DP_REG_CTRL_STAT, &tmp, 0);
@@ -714,7 +677,6 @@ RESULT adi_init(programmer_info_t *prog, adi_dp_if_t *interf)
 	{
 		return ERROR_FAIL;
 	}
-	LOG_INFO("CTRL_STAT: 0x%08X\n", tmp);
 	
 	cnt = 0;
 	while (!(tmp & ADI_DP_REG_CTRL_STAT_CDBGPWRUPACK) && (cnt++ < 10))
@@ -737,16 +699,12 @@ RESULT adi_init(programmer_info_t *prog, adi_dp_if_t *interf)
 	}
 	
 	// activate OVERRUN checking in JTAG mode
-	if (ADI_DP_JTAG == adi_dp_if->type)
-	{
-		adi_dp_read_reg(ADI_DP_REG_CTRL_STAT, &tmp, 0);
-		adi_dp.dp_ctrl_stat = ADI_DP_REG_CTRL_STAT_CDBGPWRUPREQ 
-								| ADI_DP_REG_CTRL_STAT_CSYSPWRUPREQ 
-								| ADI_DP_REG_CTRL_STAT_CORUNDETECT;
-		adi_dp_write_reg(ADI_DP_REG_CTRL_STAT, &adi_dp.dp_ctrl_stat, 0);
-		adi_dp_read_reg(ADI_DP_REG_CTRL_STAT, &tmp, 1);
-		LOG_INFO("CTRL_STAT: 0x%08X\n", tmp);
-	}
+	adi_dp_read_reg(ADI_DP_REG_CTRL_STAT, &tmp, 0);
+	adi_dp.dp_ctrl_stat = ADI_DP_REG_CTRL_STAT_CDBGPWRUPREQ 
+							| ADI_DP_REG_CTRL_STAT_CSYSPWRUPREQ 
+							| ADI_DP_REG_CTRL_STAT_CORUNDETECT;
+	adi_dp_write_reg(ADI_DP_REG_CTRL_STAT, &adi_dp.dp_ctrl_stat, 0);
+	adi_dp_read_reg(ADI_DP_REG_CTRL_STAT, &tmp, 0);
 	
 	// read AHB-AP ID and Debug ROM address
 	if (ERROR_OK != adi_ap_read_reg(ADI_AP_REG_IDR, &adi_dp_info.ahb_ap_id, 1))

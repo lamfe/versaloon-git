@@ -182,7 +182,8 @@ void EP3_OUT_Callback(void)
 			// JTAG Debugger Support
 			if((buffer_out[0] == VSLLINK_CMD_HW_JTAGSEQCMD) 
 				|| (buffer_out[0] == VSLLINK_CMD_HW_JTAGHLCMD) 
-				|| (buffer_out[0] == VSLLINK_CMD_HW_JTAGRAWCMD))
+				|| (buffer_out[0] == VSLLINK_CMD_HW_JTAGRAWCMD) 
+				|| (buffer_out[0] == VSLLINK_CMD_HW_SWJCMD))
 			{
 				cmd_len = buffer_out[1] + ((u16)buffer_out[2] << 8);
 			}
