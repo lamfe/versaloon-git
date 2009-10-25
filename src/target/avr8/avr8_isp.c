@@ -82,6 +82,7 @@ RESULT avr8_isp_program(operation_t operations, program_info_t *pi,
 	spi_init();
 	reset_init();
 	
+try_frequency:
 	// enter program mode
 	if (cur_frequency > 0)
 	{
@@ -108,9 +109,19 @@ RESULT avr8_isp_program(operation_t operations, program_info_t *pi,
 		spi_io(cmd_buf, 4, &poll_byte, 2, 1);
 		if ((ERROR_OK != commit()) || (poll_byte != 0x53))
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_ENTER_PROG_MODE));
-			ret = ERRCODE_FAILURE_ENTER_PROG_MODE;
-			goto leave_program_mode;
+			if (cur_frequency > 0)
+			{
+				cur_frequency /= 2;
+				LOG_WARNING(_GETTEXT("frequency too fast, try slower: %d\n"), 
+							cur_frequency);
+				goto try_frequency;
+			}
+			else
+			{
+				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_ENTER_PROG_MODE));
+				ret = ERRCODE_FAILURE_ENTER_PROG_MODE;
+				goto leave_program_mode;
+			}
 		}
 	}
 	else
