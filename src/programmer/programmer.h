@@ -91,6 +91,7 @@ typedef struct
 	RESULT (*jtag_hl_fini)(void);
 	RESULT (*jtag_hl_config)(uint16 kHz, uint8 ub, uint8 ua, uint16 bb, 
 							 uint16 ba);
+	RESULT (*jtag_hl_tms)(uint8* tms, uint8 len);
 	RESULT (*jtag_hl_runtest)(uint32 len);
 	RESULT (*jtag_hl_ir)(uint8 *ir, uint8 len, uint8 idle, uint8 want_ret);
 	RESULT (*jtag_hl_dr)(uint8 *dr, uint16 len, uint8 idle, uint8 want_ret);
@@ -200,7 +201,7 @@ typedef struct
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0\
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0\
 	}
 
 extern programmer_info_t *cur_programmer;

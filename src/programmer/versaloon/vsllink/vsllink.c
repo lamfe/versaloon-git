@@ -706,15 +706,36 @@ RESULT vsllink_jtaghl_commit(void)
 
 RESULT vsllink_jtaghl_tms(uint8 *tms, uint8 len)
 {
-	if ((len - 1) > VSLLINK_CMDJTAGHL_LENMSK)
+	uint8 data[(VSLLINK_CMDJTAGHL_LENMSK + 7) >> 3];
+	uint8 cur_cycles, cycles = 0;
+	
+	memset(data, 0, sizeof(data));		// tms = 0 in runtest
+	while(len > 0)
 	{
-		LOG_BUG(_GETTEXT("invalid len, must be < %d\n"), 
-				VSLLINK_CMDJTAGHL_LENMSK + 1);
-		return ERROR_FAIL;
+		if (len > (VSLLINK_CMDJTAGHL_LENMSK + 1))
+		{
+			cur_cycles = VSLLINK_CMDJTAGHL_LENMSK + 1;
+		}
+		else
+		{
+			cur_cycles = (uint8)len;
+		}
+		
+		memcpy(data, tms + cycles / 8, (cur_cycles + 7) >> 3);
+		
+		if (ERROR_OK != vsllink_jtaghl_add_command(
+									VSLLINK_CMDJTAGHL_TMS | (cur_cycles - 1), 
+									(uint8*)data, (cur_cycles + 7) >> 3, 
+									NULL, 0))
+		{
+			return ERROR_FAIL;
+		}
+		
+		len -= cur_cycles;
+		cycles += cur_cycles;
 	}
 	
-	return vsllink_jtaghl_add_command(VSLLINK_CMDJTAGHL_TMS | (len - 1), 
-									  tms, (len + 7) >> 3, NULL, 0);
+	return ERROR_OK;
 }
 
 RESULT vsllink_jtaghl_runtest(uint32 cycles)

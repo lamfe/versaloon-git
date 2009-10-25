@@ -48,6 +48,7 @@ adi_dp_info_t adi_dp_info;
 #define jtag_fini()				adi_prog->jtag_hl_fini()
 #define jtag_config(kHz,a,b,c,d)	\
 							adi_prog->jtag_hl_config((kHz), (a), (b), (c), (d))
+#define jtag_tms(tms, len)		adi_prog->jtag_hl_tms((tms), (len))
 #define jtag_runtest(len)		adi_prog->jtag_hl_runtest(len)
 #define jtag_ir_w(ir, len)		adi_prog->jtag_hl_ir((uint8*)(ir), (len), 1, 0)
 #define jtag_dr_w(dr, len)		adi_prog->jtag_hl_dr((uint8*)(dr), (len), 1, 0)
@@ -237,6 +238,7 @@ static RESULT adi_dpif_init(programmer_info_t *prog, adi_dp_if_t *interf)
 				adi_dp_if->adi_dp_if_info.adi_dp_jtag.ua + target_jtag_pos.ua, 
 				adi_dp_if->adi_dp_if_info.adi_dp_jtag.bb + target_jtag_pos.bb, 
 				adi_dp_if->adi_dp_if_info.adi_dp_jtag.ba + target_jtag_pos.ba);
+		jtag_tms((uint8*)adi_swj_to_jtag_seq, sizeof(adi_swj_to_jtag_seq) * 8);
 		if (ERROR_OK == adi_dp_commit())
 		{
 			jtag_register_callback(adi_dpif_send_callback, 
