@@ -106,7 +106,7 @@ void EP3_OUT_Callback(void)
 		}
 
 		// check memory available
-		if (FIFO_Get_AvailableLength(&CDC_OUT_fifo) < 3 * VIRTUAL_COM_PORT_DATA_SIZE)
+		if (FIFO_Get_AvailableLength(&CDC_OUT_fifo) < 4 * VIRTUAL_COM_PORT_DATA_SIZE)
 		{
 			CDC_Out_En = 0;
 		}
