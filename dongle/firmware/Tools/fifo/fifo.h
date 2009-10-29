@@ -29,6 +29,7 @@ typedef struct
 uint32 FIFO_Add_Buffer(FIFO *fifo, uint8 *src_buff, uint32 len);
 uint32 FIFO_Get_Buffer(FIFO *fifo, uint8 *dest_buff, uint32 len);
 uint32 FIFO_Get_Length(FIFO *fifo);
+uint32 FIFO_Get_AvailableLength(FIFO *fifo);
 // make sure there is data in the buffer than call this, if no data is in the buffer, 0 is returned
 uint32 FIFO_Add_Byte(FIFO *fifo, uint8 data);
 uint8 FIFO_Get_Byte(FIFO *fifo);

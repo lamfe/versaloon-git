@@ -55,6 +55,8 @@ FIFO CDC_IN_fifo = FIFO_Init(CDC_IN_buff);
 __IO uint8_t CDC_USART_IsBusy = 0;
 __IO uint8_t CDC_USB_IsBusy = 0;
 
+__IO uint8_t CDC_Out_En = 1;
+
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 /*******************************************************************************
@@ -74,24 +76,39 @@ void EP3_OUT_Callback(void)
 #if USB_RX_DOUBLEBUFFER_EN
 		if(GetENDPOINT(ENDP3) & EP_DTOG_TX)
 		{
-			FreeUserBuffer(ENDP3, EP_DBUF_OUT);
+			if (CDC_Out_En)
+			{
+				FreeUserBuffer(ENDP3, EP_DBUF_OUT);
+			}
 			pkg_len = GetEPDblBuf0Count(ENDP3);
 			PMAToUserBufferCopy(buff, ENDP3_RXADDR0, pkg_len);
 		}
 		else
 		{
-			FreeUserBuffer(ENDP3, EP_DBUF_OUT);
+			if (CDC_Out_En)
+			{
+				FreeUserBuffer(ENDP3, EP_DBUF_OUT);
+			}
 			pkg_len = GetEPDblBuf1Count(ENDP3);
 			PMAToUserBufferCopy(buff, ENDP3_RXADDR1, pkg_len);
 		}
 #else
 		pkg_len = GetEPRxCount(ENDP3);
 		PMAToUserBufferCopy(buff, ENDP3_RXADDR, pkg_len);
-		SetEPRxValid(ENDP3);
+		if (CDC_Out_En)
+		{
+			SetEPRxValid(ENDP3);
+		}
 #endif
 		if(!pkg_len)
 		{
 			return;
+		}
+
+		// check memory available
+		if (FIFO_Get_AvailableLength(&CDC_OUT_fifo) < 2 * VIRTUAL_COM_PORT_DATA_SIZE)
+		{
+			CDC_Out_En = 0;
 		}
 
 		// copy to fifo
@@ -131,17 +148,16 @@ void EP3_OUT_Callback(void)
 	}
 
 #if USB_RX_DOUBLEBUFFER_EN
+	FreeUserBuffer(ENDP3, EP_DBUF_OUT);
 	if(GetENDPOINT(ENDP3) & EP_DTOG_TX)
 	{
-		FreeUserBuffer(ENDP3, EP_DBUF_OUT);
-		pkg_len = GetEPDblBuf0Count(ENDP3);
-		PMAToUserBufferCopy(buffer_out + count_out, ENDP3_RXADDR0, pkg_len);
+		pkg_len = GetEPDblBuf1Count(ENDP3);
+		PMAToUserBufferCopy(buffer_out + count_out, ENDP3_RXADDR1, pkg_len);
 	}
 	else
 	{
-		FreeUserBuffer(ENDP3, EP_DBUF_OUT);
-		pkg_len = GetEPDblBuf1Count(ENDP3);
-		PMAToUserBufferCopy(buffer_out + count_out, ENDP3_RXADDR1, pkg_len);
+		pkg_len = GetEPDblBuf0Count(ENDP3);
+		PMAToUserBufferCopy(buffer_out + count_out, ENDP3_RXADDR0, pkg_len);
 	}
 #else
 	pkg_len = GetEPRxCount(ENDP3);
