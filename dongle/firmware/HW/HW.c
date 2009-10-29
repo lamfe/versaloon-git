@@ -479,7 +479,7 @@ void CDC_Process(void)
 		if (len > 0)
 		{
 			USART_SendData(USART_DEF_PORT, FIFO_Get_Byte(&CDC_OUT_fifo));
-			if (!CDC_Out_En && (FIFO_Get_AvailableLength(&CDC_OUT_fifo) >= 3 * USB_DATA_SIZE))
+			if (!CDC_Out_En && (FIFO_Get_AvailableLength(&CDC_OUT_fifo) >= 4 * USB_DATA_SIZE))
 			{
 				CDC_Out_En = 1;
 #if USB_RX_DOUBLEBUFFER_EN
