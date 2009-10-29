@@ -29,6 +29,11 @@ static uint32 FIFO_Get_Next_Idx(uint32 pos, uint32 size)
 	return pos;
 }
 
+uint32 FIFO_Get_AvailableLength(FIFO *fifo)
+{
+	return fifo->size - FIFO_Get_Length(fifo);
+}
+
 uint32 FIFO_Get_Length(FIFO *fifo)
 {
 	if (fifo->header >= fifo->tail)
@@ -43,7 +48,7 @@ uint32 FIFO_Get_Length(FIFO *fifo)
 
 uint32 FIFO_Add_Byte(FIFO *fifo, uint8 data)
 {
-	if ((fifo->size - FIFO_Get_Length(fifo)) > 1)
+	if (FIFO_Get_AvailableLength(fifo) > 1)
 	{
 		fifo->buffer[fifo->header] = data;
 		fifo->header = FIFO_Get_Next_Idx(fifo->header, fifo->size);
@@ -59,7 +64,7 @@ uint32 FIFO_Add_Buffer(FIFO *fifo, uint8 *src_buff, uint32 len)
 {
 	uint32 actual_len = len;
 
-	if(actual_len >= (fifo->size - FIFO_Get_Length(fifo)))
+	if(actual_len >= FIFO_Get_AvailableLength(fifo))
 	{
 		return 0;
 	}

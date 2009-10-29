@@ -464,6 +464,7 @@ void CDC_IF_Setup(uint32 baudrate, uint8 datatype, uint8 paritytype, uint8 stopb
 	PWREXT_Acquire();
 }
 
+extern __IO uint8 CDC_Out_En;
 void CDC_Process(void)
 {
 #if USB_CDC_BY_POLLING
@@ -478,6 +479,15 @@ void CDC_Process(void)
 		if (len > 0)
 		{
 			USART_SendData(USART_DEF_PORT, FIFO_Get_Byte(&CDC_OUT_fifo));
+			if (!CDC_Out_En && (FIFO_Get_AvailableLength(&CDC_OUT_fifo) >= 2 * USB_DATA_SIZE))
+			{
+				CDC_Out_En = 1;
+#if USB_RX_DOUBLEBUFFER_EN
+				FreeUserBuffer(ENDP3, EP_DBUF_OUT);
+#else
+				SetEPRxValid(ENDP3);
+#endif
+			}
 			usart_out_buff_len = 1;
 			Led_RW_ON();
 		}
