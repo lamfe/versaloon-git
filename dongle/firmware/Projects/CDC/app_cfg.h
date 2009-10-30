@@ -421,7 +421,7 @@
 #define USB_D_CLR()						GPIO_ClrPins(USB_DP_PORT, GPIO_PIN_GetMask(USB_DP_PIN))
 
 /***************************** Buffer ****************************/
-#define USB_DATA_BUFF_SIZE				(6 * 1024)
+#define USB_DATA_BUFF_SIZE				(256)
 #define ASYN_DATA_BUFF_SIZE				(1 * 1024)
 
 /***************************** EXTERN ****************************/

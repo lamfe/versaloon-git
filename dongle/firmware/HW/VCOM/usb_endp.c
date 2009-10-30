@@ -49,7 +49,7 @@ __IO uint32_t rep_len = 0;
 #define CDC_OUT_buff			buffer_out
 #define CDC_IN_buff				asyn_rx_buf
 
-FIFO CDC_OUT_fifo = FIFO_Init(CDC_OUT_buff);
+FIFO CDC_OUT_fifo = {CDC_OUT_buff, 256, 0, 0};
 FIFO CDC_IN_fifo = FIFO_Init(CDC_IN_buff);
 
 __IO uint8_t CDC_USART_IsBusy = 0;
