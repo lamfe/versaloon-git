@@ -260,89 +260,69 @@ static RESULT svf_parser_copy_hexstring_to_binary(char *str, uint8 **bin,
 												  uint32 orig_bit_len, 
 												  uint32 bit_len)
 {
-	uint32 i, str_len = (uint32)strlen(str);
-	uint32 str_byte_len = (bit_len + 3) >> 2, loop_cnt;
-	uint8 ch, need_write = 1;
-	
+	uint32 i, str_len = strlen(str), str_hbyte_len = (bit_len + 3) >> 2;
+	uint8 ch = 0;
+
 	if (ERROR_OK != svf_parser_adjust_array_length(bin, orig_bit_len, bit_len))
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-				  "adjust length of array");
-		return ERRCODE_FAILURE_OPERATION;
+		LOG_ERROR("fail to adjust length of array");
+		return ERROR_FAIL;
 	}
-	
-	if (str_byte_len > str_len)
+
+	for (i = 0; i < str_hbyte_len; i++)
 	{
-		loop_cnt = str_byte_len;
-	}
-	else
-	{
-		loop_cnt = str_len;
-	}
-	
-	for (i = 0; i < loop_cnt; i++)
-	{
-		if (i < str_len)
+		ch = 0;
+		while (str_len > 0)
 		{
-			ch = str[str_len - i - 1];
-			if ((ch >= '0') && (ch <= '9'))
+			ch = str[--str_len];
+
+			if (ch != ' ')
 			{
-				ch = ch - '0';
+				if ((ch >= '0') && (ch <= '9'))
+				{
+					ch = ch - '0';
+					break;
+				}
+				else if ((ch >= 'A') && (ch <= 'F'))
+				{
+					ch = ch - 'A' + 10;
+					break;
+				}
+				else
+				{
+					LOG_ERROR("invalid hex string");
+					return ERROR_FAIL;
+				}
 			}
-			else if ((ch >= 'A') && (ch <= 'F'))
-			{
-				ch = ch - 'A' + 10;
-			}
-			else
-			{
-				LOG_ERROR(_GETTEXT("invalid hex string\n"));
-				return ERROR_FAIL;
-			}
+
+			ch = 0;
+		}
+
+		// write bin
+		if (i % 2)
+		{
+			// MSB
+			(*bin)[i / 2] |= ch << 4;
 		}
 		else
 		{
-			ch = 0;
-		}
-		
-		// check valid
-		if (i >= str_byte_len)
-		{
-			// all data written, 
-			// other data should be all '0's and needn't to be written
-			need_write = 0;
-			if (ch != 0)
-			{
-				LOG_ERROR(_GETTEXT("value execede length\n"));
-				return ERROR_FAIL;
-			}
-		}
-		else if (i == (str_byte_len - 1))
-		{
-			// last data byte, written if valid
-			if ((ch & ~((1 << (bit_len - 4 * i)) - 1)) != 0)
-			{
-				LOG_ERROR(_GETTEXT("value execede length\n"));
-				return ERROR_FAIL;
-			}
-		}
-		
-		if (need_write)
-		{
-			// write bin
-			if (i % 2)
-			{
-				// MSB
-				(*bin)[i / 2] |= ch << 4;
-			}
-			else
-			{
-				// LSB
-				(*bin)[i / 2] = 0;
-				(*bin)[i / 2] |= ch;
-			}
+			// LSB
+			(*bin)[i / 2] = 0;
+			(*bin)[i / 2] |= ch;
 		}
 	}
-	
+
+	// consume optional leading '0' characters
+	while (str_len > 0 && str[str_len - 1] == '0')
+		str_len--;
+
+	// check valid
+	if (str_len > 0 || (ch & ~((2 << ((bit_len - 1) % 4)) - 1)) != 0)
+	{
+		LOG_ERROR("value execeeds length");
+		return ERROR_FAIL;
+	}
+
 	return ERROR_OK;
 }
 
@@ -1095,6 +1075,8 @@ XXR_common:
 	
 	if (verbosity >= DEBUG_LEVEL)
 	{
+		uint32 read_value;
+		
 		if (((command != STATE) && (command != RUNTEST)) 
 				|| ((command == STATE) && (num_of_argu == 2)))
 		{
@@ -1113,14 +1095,11 @@ XXR_common:
 			switch (command)
 			{
 			case SIR:
-				LOG_DEBUG("\tTDO read = 0x%X\n", 
-						  ( *(uint32*)svf_parser_tdi_buffer) 
-							& ((1 << svf_parser_para.sir_para.len) - 1));
-				break;
 			case SDR:
+				memcpy(&read_value, svf_parser_tdi_buffer, sizeof(read_value));
 				LOG_DEBUG("\tTDO read = 0x%X\n", 
-						  ( *(uint32*)svf_parser_tdi_buffer) 
-							& ((1 << svf_parser_para.sdr_para.len) - 1));
+							read_value 
+							& ((1 << svf_parser_check[0].bit_len) - 1));
 				break;
 			default:
 				break;
