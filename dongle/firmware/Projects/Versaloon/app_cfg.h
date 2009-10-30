@@ -604,7 +604,7 @@
 #define VERSALOON_OFFLINE_PAGE_SIZE		(1 * 1024)
 
 /***************************** Buffer ****************************/
-#define USB_DATA_BUFF_SIZE				(8 * 1024)
+#define USB_DATA_BUFF_SIZE				(12 * 1024)
 #define ASYN_DATA_BUFF_SIZE				(4 * 1024)
 
 /***************************** EXTERN ****************************/
