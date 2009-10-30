@@ -42,6 +42,10 @@ USR_INCS+= -I $(SRCDIR)/Interfaces/SPI
 USR_SRCS+= $(SRCDIR)/Interfaces/JTAG/JTAG_TAP.c
 USR_INCS+= -I $(SRCDIR)/Interfaces/JTAG
 
+# SWJ
+USR_SRCS+= $(SRCDIR)/Interfaces/SWJ/SWJ.c
+USR_INCS+= -I $(SRCDIR)/Interfaces/SWJ
+
 # PowerExt
 USR_SRCS+= $(SRCDIR)/Interfaces/PowerExt/PowerExt.c
 USR_INCS+= -I $(SRCDIR)/Interfaces/PowerExt
