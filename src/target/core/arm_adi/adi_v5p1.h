@@ -33,41 +33,41 @@ typedef struct
 	{
 		struct
 		{
-			uint8 ub;
-			uint8 ua;
-			uint16 bb;
-			uint16 ba;
-			uint16 jtag_khz;
+			uint8_t ub;
+			uint8_t ua;
+			uint16_t bb;
+			uint16_t ba;
+			uint16_t jtag_khz;
 		}adi_dp_jtag;
 		struct
 		{
-			uint8 swj_trn;
-			uint16 swj_retry;
-			uint16 swj_dly;
+			uint8_t swj_trn;
+			uint16_t swj_retry;
+			uint16_t swj_dly;
 		}adi_dp_swj;
 	}adi_dp_if_info;
-	uint8 memaccess_tck;
-	uint32 tar_autoincr_block;
+	uint8_t memaccess_tck;
+	uint32_t tar_autoincr_block;
 }adi_dp_if_t;
 
 typedef struct
 {
-	uint8 cur_ir;
-	uint8 ack;
-	uint32 dp_ctrl_stat;
-	uint32 ap_sel_value;
-	uint32 dp_sel_value;
-	uint32 ap_csw_value;
-	uint32 ap_tar_value;
+	uint8_t cur_ir;
+	uint8_t ack;
+	uint32_t dp_ctrl_stat;
+	uint32_t ap_sel_value;
+	uint32_t dp_sel_value;
+	uint32_t ap_csw_value;
+	uint32_t ap_tar_value;
 }adi_dp_t;
 
 typedef struct
 {
 	adi_dp_if_type_t type;
-	uint32 if_id;
-	uint32 config;			// MEM-AP register: CFG
-	uint32 rom_address;		// MEM-AP register: BASE
-	uint32 ahb_ap_id;		// MEM-AP register: IDR
+	uint32_t if_id;
+	uint32_t config;			// MEM-AP register: CFG
+	uint32_t rom_address;		// MEM-AP register: BASE
+	uint32_t ahb_ap_id;		// MEM-AP register: IDR
 	adi_dp_t dp_state;
 }adi_dp_info_t;
 
@@ -146,13 +146,13 @@ typedef struct
 RESULT adi_init(programmer_info_t *prog, adi_dp_if_t *interf);
 RESULT adi_fini(void);
 
-uint32 adi_memap_get_max_tar_block_size(uint32 tar_autoincr_block, 
-										uint32 address);
+uint32_t adi_memap_get_max_tar_block_size(uint32_t tar_autoincr_block, 
+										uint32_t address);
 
-RESULT adi_memap_read_reg(uint32 address, uint32 *reg, uint8 check_result);
-RESULT adi_memap_write_reg(uint32 address, uint32 *reg, uint8 check_result);
-RESULT adi_memap_read_buf(uint32 address, uint8 *buffer, uint32 len);
-RESULT adi_memap_write_buf(uint32 address, uint8 *buffer, uint32 len);
+RESULT adi_memap_read_reg(uint32_t address, uint32_t *reg, uint8_t check_result);
+RESULT adi_memap_write_reg(uint32_t address, uint32_t *reg, uint8_t check_result);
+RESULT adi_memap_read_buf(uint32_t address, uint8_t *buffer, uint32_t len);
+RESULT adi_memap_write_buf(uint32_t address, uint8_t *buffer, uint32_t len);
 
 extern adi_dp_info_t adi_dp_info;
 

@@ -68,12 +68,12 @@ RESULT avr8_isp_program(operation_t operations, program_info_t *pi,
 #define commit()				prog->peripheral_commit()
 
 
-	uint8 chip_sig[3];
-	uint8 cmd_buf[4];
-	uint8 poll_byte;
-	int32 i;
-	uint32 j, k, page_size, len_current_list;
-	uint8 page_buf[256];
+	uint8_t chip_sig[3];
+	uint8_t cmd_buf[4];
+	uint8_t poll_byte;
+	int32_t i;
+	uint32_t j, k, page_size, len_current_list;
+	uint8_t page_buf[256];
 	RESULT ret = ERROR_OK;
 	memlist *ml_tmp;
 	
@@ -224,9 +224,9 @@ try_frequency:
 				k = page_size - (ml_tmp->addr % page_size);
 			}
 			
-			len_current_list = (uint32)ml_tmp->len;
-			for (i = -(int32)(ml_tmp->addr % page_size); 
-				 i < ((int32)ml_tmp->len - (int32)(ml_tmp->addr % page_size)); 
+			len_current_list = (uint32_t)ml_tmp->len;
+			for (i = -(int32_t)(ml_tmp->addr % page_size); 
+				 i < ((int32_t)ml_tmp->len - (int32_t)(ml_tmp->addr % page_size)); 
 				 i += page_size)
 			{
 				if (cur_chip_param.app_page_num > 1)
@@ -244,16 +244,16 @@ try_frequency:
 							// low byte
 							cmd_buf[0] = 0x40;
 						}
-						cmd_buf[1] = (uint8)(j >> 9);
-						cmd_buf[2] = (uint8)(j >> 1);
+						cmd_buf[1] = (uint8_t)(j >> 9);
+						cmd_buf[2] = (uint8_t)(j >> 1);
 						cmd_buf[3] = pi->app[ml_tmp->addr + i + j];
 						spi_io(cmd_buf, 4, NULL, 0, 0);
 					}
 					
 					// write page
 					cmd_buf[0] = 0x4C;
-					cmd_buf[1] = (uint8)((ml_tmp->addr + i) >> 9);
-					cmd_buf[2] = (uint8)((ml_tmp->addr + i) >> 1);
+					cmd_buf[1] = (uint8_t)((ml_tmp->addr + i) >> 9);
+					cmd_buf[2] = (uint8_t)((ml_tmp->addr + i) >> 1);
 					cmd_buf[3] = 0x00;
 					spi_io(cmd_buf, 4, NULL, 0, 0);
 					delay_ms(5);
@@ -282,8 +282,8 @@ try_frequency:
 						{
 							cmd_buf[0] = 0x40;
 						}
-						cmd_buf[1] = (uint8)((ml_tmp->addr + i + j) >> 9);
-						cmd_buf[2] = (uint8)((ml_tmp->addr + i + j) >> 1);
+						cmd_buf[1] = (uint8_t)((ml_tmp->addr + i + j) >> 9);
+						cmd_buf[2] = (uint8_t)((ml_tmp->addr + i + j) >> 1);
 						cmd_buf[3] = pi->app[ml_tmp->addr + i + j];
 						spi_io(cmd_buf, 4, NULL, 0, 0);
 						delay_ms(5);
@@ -347,9 +347,9 @@ try_frequency:
 				k = page_size - (ml_tmp->addr % page_size);
 			}
 			
-			len_current_list = (uint32)ml_tmp->len;
-			for (i = -(int32)(ml_tmp->addr % page_size); 
-				 i < ((int32)ml_tmp->len - (int32)(ml_tmp->addr % page_size)); 
+			len_current_list = (uint32_t)ml_tmp->len;
+			for (i = -(int32_t)(ml_tmp->addr % page_size); 
+				 i < ((int32_t)ml_tmp->len - (int32_t)(ml_tmp->addr % page_size)); 
 				 i += page_size)
 			{
 				for (j = 0; j < page_size; j++)
@@ -364,8 +364,8 @@ try_frequency:
 						// low byte
 						cmd_buf[0] = 0x20;
 					}
-					cmd_buf[1] = (uint8)((ml_tmp->addr + i + j) >> 9);
-					cmd_buf[2] = (uint8)((ml_tmp->addr + i + j) >> 1);
+					cmd_buf[1] = (uint8_t)((ml_tmp->addr + i + j) >> 9);
+					cmd_buf[2] = (uint8_t)((ml_tmp->addr + i + j) >> 1);
 					cmd_buf[3] = 0;
 					spi_io(cmd_buf, 4, page_buf + j, 3, 1);
 				}

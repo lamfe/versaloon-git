@@ -34,7 +34,7 @@
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
 
-uint8 usbtolpcicp_num_of_interface = 0;
+uint8_t usbtolpcicp_num_of_interface = 0;
 
 
 RESULT usbtolpcicp_init(void)
@@ -47,7 +47,7 @@ RESULT usbtolpcicp_fini(void)
 	return usbtoxxx_fini_command(USB_TO_LPCICP);
 }
 
-RESULT usbtolpcicp_config(uint8 interface_index)
+RESULT usbtolpcicp_config(uint8_t interface_index)
 {
 #if PARAM_CHECK
 	if (interface_index > 7)
@@ -60,7 +60,7 @@ RESULT usbtolpcicp_config(uint8 interface_index)
 	return usbtoxxx_conf_command(USB_TO_LPCICP, interface_index, NULL, 0);
 }
 
-RESULT usbtolpcicp_enter_program_mode(uint8 interface_index)
+RESULT usbtolpcicp_enter_program_mode(uint8_t interface_index)
 {
 #if PARAM_CHECK
 	if (interface_index > 7)
@@ -74,7 +74,7 @@ RESULT usbtolpcicp_enter_program_mode(uint8 interface_index)
 									0, 0, NULL, 0, 0, 0);
 }
 
-RESULT usbtolpcicp_in(uint8 interface_index, uint8 *buff, uint16 len)
+RESULT usbtolpcicp_in(uint8_t interface_index, uint8_t *buff, uint16_t len)
 {
 #if PARAM_CHECK
 	if (interface_index > 7)
@@ -88,7 +88,7 @@ RESULT usbtolpcicp_in(uint8 interface_index, uint8 *buff, uint16 len)
 							   buff, 0, len, 0);
 }
 
-RESULT usbtolpcicp_out(uint8 interface_index, uint8 *buff, uint16 len)
+RESULT usbtolpcicp_out(uint8_t interface_index, uint8_t *buff, uint16_t len)
 {
 #if PARAM_CHECK
 	if (interface_index > 7)
@@ -101,10 +101,10 @@ RESULT usbtolpcicp_out(uint8 interface_index, uint8 *buff, uint16 len)
 	return usbtoxxx_out_command(USB_TO_LPCICP, interface_index, buff, len, 0);
 }
 
-RESULT usbtolpcicp_poll_ready(uint8 interface_index, uint8 *ret, uint8 data, 
-							  uint8 setmask, uint8 clearmask, uint16 pollcnt)
+RESULT usbtolpcicp_poll_ready(uint8_t interface_index, uint8_t *ret, uint8_t data, 
+							  uint8_t setmask, uint8_t clearmask, uint16_t pollcnt)
 {
-	uint8 cmdbuf[5];
+	uint8_t cmdbuf[5];
 	
 #if PARAM_CHECK
 	if (interface_index > 7)

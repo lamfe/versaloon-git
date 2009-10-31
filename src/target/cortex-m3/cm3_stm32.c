@@ -50,9 +50,9 @@
 #define cur_chip_param				cm3_chip_param
 #define cur_buffer_size				cm3_buffer_size
 
-RESULT stm32_wait_status_busy(uint32 *status, uint32 timeout)
+RESULT stm32_wait_status_busy(uint32_t *status, uint32_t timeout)
 {
-	uint32 reg;
+	uint32_t reg;
 	
 	if (ERROR_OK != adi_memap_read_reg(STM32_FLASH_SR, &reg, 1))
 	{
@@ -79,7 +79,7 @@ RESULT stm32_wait_status_busy(uint32 *status, uint32 timeout)
 
 RESULT stm32_mass_erase(void)
 {
-	uint32 reg;
+	uint32_t reg;
 	
 	// mass erase flash memory
 	reg = STM32_FLASH_CR_MER;
@@ -107,11 +107,11 @@ RESULT stm32_program(operation_t operations, program_info_t *pi,
 {
 	RESULT ret = ERROR_OK;
 	memlist *ml_tmp;
-	uint32 i;
-	uint32 reg;
-	uint32 cur_block_size, block_size, block_size_tmp, cur_address;
-	uint32 cur_run_size;
-	uint32 mcu_id;
+	uint32_t i;
+	uint32_t reg;
+	uint32_t cur_block_size, block_size, block_size_tmp, cur_address;
+	uint32_t cur_run_size;
+	uint32_t mcu_id;
 	char rev;
 	
 #define FL_PARA_ADDR_BASE			\
@@ -121,7 +121,7 @@ RESULT stm32_program(operation_t operations, program_info_t *pi,
 #define FL_ADDR_WORD_LENGTH			(FL_PARA_ADDR_BASE + 8)
 #define FL_ADDR_RESULT				(FL_PARA_ADDR_BASE + 12)
 #define FL_ADDR_DATA				(STM32_SRAM_START_ADDRESS + 1024)
-	uint8 stm32_fl_code[] = {
+	uint8_t stm32_fl_code[] = {
 									/* init: */
 		0x16, 0x4C,					/* ldr.n	r4, STM32_FLASH_CR */
 		0x17, 0x4D,					/* ldr.n	r5, STM32_FLASH_SR */
@@ -173,7 +173,7 @@ RESULT stm32_program(operation_t operations, program_info_t *pi,
 		0x00, 0x00, 0x00, 0x00,		/* number_of_words(2-byte), set to 0 */
 		0x00, 0x00, 0x00, 0x00		/* result, set to 0 */
 	};
-	uint8 page_buf[STM32_PAGE_SIZE_RW];
+	uint8_t page_buf[STM32_PAGE_SIZE_RW];
 	
 	pi = pi;
 	dp_info = dp_info;
@@ -314,9 +314,9 @@ RESULT stm32_program(operation_t operations, program_info_t *pi,
 		
 		block_size = sizeof(stm32_fl_code);
 		// last_but_three dword is RAM address for data, set to 1K at SRAM
-		*(uint32 *)(stm32_fl_code + block_size - 4 * 4) = FL_ADDR_DATA;
+		*(uint32_t *)(stm32_fl_code + block_size - 4 * 4) = FL_ADDR_DATA;
 		// last_but_four dword is SRAM address of last dword
-		*(uint32 *)(stm32_fl_code + block_size - 4 * 5) = FL_ADDR_RESULT;
+		*(uint32_t *)(stm32_fl_code + block_size - 4 * 5) = FL_ADDR_RESULT;
 		
 		// write code to target SRAM
 		if (ERROR_OK != adi_memap_write_buf(STM32_SRAM_START_ADDRESS, 

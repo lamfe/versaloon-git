@@ -34,7 +34,7 @@
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
 
-uint8 usbtomsp430sbw_num_of_interface = 0;
+uint8_t usbtomsp430sbw_num_of_interface = 0;
 
 RESULT usbtomsp430sbw_init(void)
 {
@@ -46,7 +46,7 @@ RESULT usbtomsp430sbw_fini(void)
 	return usbtoxxx_fini_command(USB_TO_SBW);
 }
 
-RESULT usbtomsp430sbw_config(uint8 interface_index)
+RESULT usbtomsp430sbw_config(uint8_t interface_index)
 {
 #if PARAM_CHECK
 	if (interface_index > 7)
@@ -59,9 +59,9 @@ RESULT usbtomsp430sbw_config(uint8 interface_index)
 	return usbtoxxx_conf_command(USB_TO_SBW, interface_index, NULL, 0);
 }
 
-RESULT usbtomsp430sbw_ir(uint8 interface_index, uint8 *ir, uint8 want_ret)
+RESULT usbtomsp430sbw_ir(uint8_t interface_index, uint8_t *ir, uint8_t want_ret)
 {
-	uint8 buff[2];
+	uint8_t buff[2];
 	
 #if PARAM_CHECK
 	if (interface_index > 7)
@@ -86,10 +86,10 @@ RESULT usbtomsp430sbw_ir(uint8 interface_index, uint8 *ir, uint8 want_ret)
 	}
 }
 
-RESULT usbtomsp430sbw_dr(uint8 interface_index, uint32 *dr, uint8 len, 
-						 uint8 want_ret)
+RESULT usbtomsp430sbw_dr(uint8_t interface_index, uint32_t *dr, uint8_t len, 
+						 uint8_t want_ret)
 {
-	uint8 buff[5], byte_len = (len + 7) >> 3;
+	uint8_t buff[5], byte_len = (len + 7) >> 3;
 	
 #if PARAM_CHECK
 	if (interface_index > 7)
@@ -105,7 +105,7 @@ RESULT usbtomsp430sbw_dr(uint8 interface_index, uint32 *dr, uint8 len,
 	if (want_ret)
 	{
 		return usbtoxxx_inout_command(USB_TO_SBW, interface_index, buff, 
-									  byte_len + 1, byte_len, (uint8*)dr, 
+									  byte_len + 1, byte_len, (uint8_t*)dr, 
 									  0, byte_len, 1);
 	}
 	else
@@ -115,7 +115,7 @@ RESULT usbtomsp430sbw_dr(uint8 interface_index, uint32 *dr, uint8 len,
 	}
 }
 
-RESULT usbtomsp430sbw_tclk(uint8 interface_index, uint8 value)
+RESULT usbtomsp430sbw_tclk(uint8_t interface_index, uint8_t value)
 {
 #if PARAM_CHECK
 	if (interface_index > 7)
@@ -128,7 +128,7 @@ RESULT usbtomsp430sbw_tclk(uint8 interface_index, uint8 value)
 	return usbtoxxx_out_command(USB_TO_SBW, interface_index, &value, 1, 0);
 }
 
-RESULT usbtomsp430sbw_tclk_strobe(uint8 interface_index, uint16 cnt)
+RESULT usbtomsp430sbw_tclk_strobe(uint8_t interface_index, uint16_t cnt)
 {
 #if PARAM_CHECK
 	if (interface_index > 7)
@@ -138,11 +138,11 @@ RESULT usbtomsp430sbw_tclk_strobe(uint8 interface_index, uint16 cnt)
 	}
 #endif
 	
-	return usbtoxxx_special_command(USB_TO_SBW, interface_index, (uint8*)&cnt, 
+	return usbtoxxx_special_command(USB_TO_SBW, interface_index, (uint8_t*)&cnt, 
 									2, 0, NULL, 0, 0, 0);
 }
 
-RESULT usbtomsp430sbw_reset(uint8 interface_index)
+RESULT usbtomsp430sbw_reset(uint8_t interface_index)
 {
 #if PARAM_CHECK
 	if (interface_index > 7)
@@ -155,11 +155,11 @@ RESULT usbtomsp430sbw_reset(uint8 interface_index)
 	return usbtoxxx_reset_command(USB_TO_SBW, interface_index, NULL, 0);
 }
 
-RESULT usbtomsp430sbw_poll(uint8 interface_index, uint32 dr, uint32 mask, 
-						   uint32 value, uint8 len, uint16 poll_cnt, 
-						   uint8 toggle_tclk)
+RESULT usbtomsp430sbw_poll(uint8_t interface_index, uint32_t dr, uint32_t mask, 
+						   uint32_t value, uint8_t len, uint16_t poll_cnt, 
+						   uint8_t toggle_tclk)
 {
-	uint8 buff[15];
+	uint8_t buff[15];
 	
 #if PARAM_CHECK
 	if (interface_index > 7)
@@ -174,10 +174,10 @@ RESULT usbtomsp430sbw_poll(uint8 interface_index, uint32 dr, uint32 mask,
 	{
 		poll_cnt |= 0x8000;
 	}
-	memcpy(buff + 1, (uint8*)&poll_cnt, 2);
-	memcpy(buff + 3, (uint8*)&dr, 4);
-	memcpy(buff + 7, (uint8*)&mask, 4);
-	memcpy(buff + 11, (uint8*)&value, 4);
+	memcpy(buff + 1, (uint8_t*)&poll_cnt, 2);
+	memcpy(buff + 3, (uint8_t*)&dr, 4);
+	memcpy(buff + 7, (uint8_t*)&mask, 4);
+	memcpy(buff + 11, (uint8_t*)&value, 4);
 	
 	return usbtoxxx_poll_command(USB_TO_SBW, interface_index, buff, 15, NULL, 0);
 }

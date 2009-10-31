@@ -54,7 +54,7 @@ const program_area_map_t psoc_program_area_map[] =
 	{0, 0, 0}
 };
 
-static uint8 psoc_prog_mode = 0;
+static uint8_t psoc_prog_mode = 0;
 
 #define VECTORS_NUM				17
 #define VECTORS_TABLE_SIZE		128
@@ -68,7 +68,7 @@ Usage of %s:\n\
 
 void psoc_support(void)
 {
-	uint32 i;
+	uint32_t i;
 
 	printf("Support list of %s:\n", CUR_TARGET_STRING);
 	for (i = 0; i < cur_chips_num; i++)
@@ -132,7 +132,7 @@ RESULT psoc_parse_argument(char cmd, const char *argu)
 
 RESULT psoc_probe_chip(char *chip_name)
 {
-	uint32 i;
+	uint32_t i;
 	
 	for (i = 0; i < cur_chips_num; i++)
 	{
@@ -179,7 +179,7 @@ RESULT psoc_fini(program_info_t *pi, programmer_info_t *prog)
 RESULT psoc_init(program_info_t *pi, const char *dir, 
 				 programmer_info_t *prog)
 {
-	uint8 i;
+	uint8_t i;
 	operation_t opt_tmp;
 	
 	dir = dir;
@@ -273,17 +273,17 @@ RESULT psoc_init(program_info_t *pi, const char *dir,
 	}
 }
 
-uint32 psoc_interface_needed(void)
+uint32_t psoc_interface_needed(void)
 {
 	return PSOC_INTERFACE_NEEDED;
 }
 
-RESULT psoc_write_buffer_from_file_callback(uint32 address, uint32 seg_addr, 
-											uint8* data, uint32 length, 
+RESULT psoc_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr, 
+											uint8_t* data, uint32_t length, 
 											void* buffer)
 {
 	program_info_t *pi = (program_info_t *)buffer;
-	uint32 mem_addr = address & 0x0000FFFF;
+	uint32_t mem_addr = address & 0x0000FFFF;
 	RESULT ret;
 	
 #ifdef PARAM_CHECK
@@ -320,7 +320,7 @@ RESULT psoc_write_buffer_from_file_callback(uint32 address, uint32 seg_addr,
 			return ERRCODE_INVALID;
 		}
 		memcpy(pi->app + mem_addr, data, length);
-		pi->app_size_valid += (uint16)length;
+		pi->app_size_valid += (uint16_t)length;
 		
 		ret = MEMLIST_Add(&pi->app_memlist, mem_addr, length, 
 						  cur_chip_param.app_page_size);
@@ -346,7 +346,7 @@ RESULT psoc_write_buffer_from_file_callback(uint32 address, uint32 seg_addr,
 			return ERRCODE_INVALID;
 		}
 		memcpy(pi->lock + mem_addr, data, length);
-		pi->lock_size_valid += (uint16)length;
+		pi->lock_size_valid += (uint16_t)length;
 		break;
 	case 0x0020:
 		if ((mem_addr != 0) || (length != 2))
@@ -368,7 +368,7 @@ RESULT psoc_write_buffer_from_file_callback(uint32 address, uint32 seg_addr,
 
 
 RESULT psoc_get_mass_product_data_size(operation_t operations, 
-									   program_info_t *pi, uint32 *size)
+									   program_info_t *pi, uint32_t *size)
 {
 	operations = operations;
 	
@@ -381,9 +381,9 @@ RESULT psoc_get_mass_product_data_size(operation_t operations,
 }
 
 RESULT psoc_prepare_mass_product_data(operation_t operations, 
-									  program_info_t *pi, uint8 *buff)
+									  program_info_t *pi, uint8_t *buff)
 {
-	uint32 index = 0;
+	uint32_t index = 0;
 	
 #ifdef PARAM_CHECK
 	if ((   (operations.read_operations & APPLICATION) 
@@ -487,9 +487,9 @@ static programmer_info_t *p = NULL;
 #define issp_commit()						p->issp_commit()
 
 #define issp_0s()							p->issp_vector(ISSP_VECTOR_0S, 0x00, 0x00, NULL)
-#define issp_read_sram(addr, buf)			p->issp_vector(ISSP_VECTOR_READ_SRAM, (uint8)(addr), 0x00, (buf))
-#define issp_write_sram(addr, data)			p->issp_vector(ISSP_VECTOR_WRITE_SRAM, (uint8)(addr), (uint8)(data), NULL)
-#define issp_write_reg(addr, data)			p->issp_vector(ISSP_VECTOR_WRITE_REG, (uint8)(addr), (uint8)(data), NULL)
+#define issp_read_sram(addr, buf)			p->issp_vector(ISSP_VECTOR_READ_SRAM, (uint8_t)(addr), 0x00, (buf))
+#define issp_write_sram(addr, data)			p->issp_vector(ISSP_VECTOR_WRITE_SRAM, (uint8_t)(addr), (uint8_t)(data), NULL)
+#define issp_write_reg(addr, data)			p->issp_vector(ISSP_VECTOR_WRITE_REG, (uint8_t)(addr), (uint8_t)(data), NULL)
 
 #define issp_set_cup_a(cmd)					issp_write_reg(0xF0, (cmd))
 #define issp_set_cup_sp(sp)					issp_write_reg(0xF6, (sp))
@@ -514,9 +514,9 @@ static programmer_info_t *p = NULL;
 #define PSOC_ISSP_SSC_DEFAULT_DELAY			0x56
 #define PSOC_ISSP_SSC_RETURN_OK				0x00
 
-RESULT issp_wait_and_poll_with_ret(uint8 *buf, uint8 want_ssc_return_value)
+RESULT issp_wait_and_poll_with_ret(uint8_t *buf, uint8_t want_ssc_return_value)
 {
-	uint8 i;
+	uint8_t i;
 
 #ifdef PARAM_CHECK
 	if (want_ssc_return_value > 8)
@@ -546,7 +546,7 @@ RESULT issp_wait_and_poll_with_ret(uint8 *buf, uint8 want_ssc_return_value)
 	return ERROR_OK;
 }
 
-RESULT issp_init3_half(uint8 f9_1, uint8 f9_2)
+RESULT issp_init3_half(uint8_t f9_1, uint8_t f9_2)
 {
 	issp_write_reg(0xF7, 0x00);
 	issp_write_reg(0xF4, 0x03);
@@ -572,8 +572,8 @@ RESULT issp_init3_half(uint8 f9_1, uint8 f9_2)
 	return ERROR_OK;
 }
 
-RESULT issp_call_ssc(uint8 cmd, uint8 id, uint8 poll_ready, uint8 * buf, 
-					 uint8 want_return)
+RESULT issp_call_ssc(uint8_t cmd, uint8_t id, uint8_t poll_ready, uint8_t * buf, 
+					 uint8_t want_return)
 {
 	issp_sel_reg_bank(0x00);
 	issp_set_cup_sp(PSOC_ISSP_SSC_DEFAULT_SP);
@@ -602,13 +602,13 @@ RESULT issp_call_ssc(uint8 cmd, uint8 id, uint8 poll_ready, uint8 * buf,
 RESULT psoc_program(operation_t operations, program_info_t *pi, 
 					programmer_info_t *prog)
 {
-	uint16 voltage;
-	uint8 bank, addr, page_buf[64];
+	uint16_t voltage;
+	uint8_t bank, addr, page_buf[64];
 	RESULT ret = ERROR_OK;
-	uint8 tmp8;
-	uint16 tmp16;
-	uint16 block;
-	uint16 checksum = 0;
+	uint8_t tmp8;
+	uint16_t tmp16;
+	uint16_t block;
+	uint16_t checksum = 0;
 	
 	p = prog;
 	
@@ -650,7 +650,7 @@ RESULT psoc_program(operation_t operations, program_info_t *pi,
 	if ((operations.read_operations & APPLICATION) 
 		|| (operations.write_operations & APPLICATION))
 	{
-		if (pi->app_size_valid != (uint32)(
+		if (pi->app_size_valid != (uint32_t)(
 									cur_chip_param.param[PSOC_PARAM_BANK_NUM] 
 									* cur_chip_param.app_page_num 
 									* cur_chip_param.app_page_size))
@@ -744,7 +744,7 @@ RESULT psoc_program(operation_t operations, program_info_t *pi,
 	// read chip_id
 	// call table_read no.0 and read 2 bytes from 0xF8 in sram
 	pi->chip_id = 0;
-	ret = issp_call_ssc(PSOC_SSC_CMD_TableRead, 0, 1, (uint8*)&pi->chip_id, 2);
+	ret = issp_call_ssc(PSOC_SSC_CMD_TableRead, 0, 1, (uint8_t*)&pi->chip_id, 2);
 	if (ret != ERROR_OK)
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read chip id");
@@ -850,9 +850,9 @@ RESULT psoc_program(operation_t operations, program_info_t *pi,
 			
 			for (block = 0; block < cur_chip_param.app_page_num; block++)
 			{
-				uint32 block_num = 
+				uint32_t block_num = 
 							bank * cur_chip_param.app_page_num + block;
-				uint32 block_addr = block_num * cur_chip_param.app_page_size;
+				uint32_t block_addr = block_num * cur_chip_param.app_page_size;
 				
 				// write data into sram
 				for (addr = 0; addr < cur_chip_param.app_page_size; addr++)
@@ -865,7 +865,7 @@ RESULT psoc_program(operation_t operations, program_info_t *pi,
 				issp_ssc_set_delay(PSOC_ISSP_SSC_DEFAULT_DELAY);
 				
 				ret = issp_call_ssc(PSOC_SSC_CMD_WriteBlock, 
-									(uint8)(block & 0xFF), 1, &tmp8, 1);
+									(uint8_t)(block & 0xFF), 1, &tmp8, 1);
 				if ((ret != ERROR_OK) || (tmp8 != PSOC_ISSP_SSC_RETURN_OK))
 				{
 					pgbar_fini();
@@ -916,12 +916,12 @@ RESULT psoc_program(operation_t operations, program_info_t *pi,
 			
 			for (block = 0; block < cur_chip_param.app_page_num; block++)
 			{
-				uint32 block_num = 
+				uint32_t block_num = 
 							bank * cur_chip_param.app_page_num + block;
-				uint32 block_addr = block_num * cur_chip_param.app_page_size;
+				uint32_t block_addr = block_num * cur_chip_param.app_page_size;
 				
 				ret = issp_call_ssc(PSOC_SSC_CMD_ReadBlock, 
-									(uint8)(block & 0xFF), 1, &tmp8, 1);
+									(uint8_t)(block & 0xFF), 1, &tmp8, 1);
 				if ((ret != ERROR_OK) || (tmp8 != PSOC_ISSP_SSC_RETURN_OK))
 				{
 					pgbar_fini();
@@ -1002,7 +1002,7 @@ RESULT psoc_program(operation_t operations, program_info_t *pi,
 		for (bank = 0; bank < cur_chip_param.param[PSOC_PARAM_BANK_NUM]; 
 			 bank++)
 		{
-			uint32 lock_bank_addr = 
+			uint32_t lock_bank_addr = 
 								bank * (cur_chip_param.app_page_num >> 2);
 			
 			if (cur_chip_param.param[PSOC_PARAM_BANK_NUM] > 1)
@@ -1058,8 +1058,8 @@ RESULT psoc_program(operation_t operations, program_info_t *pi,
 			}
 			
 			ret = issp_call_ssc(PSOC_SSC_CMD_CheckSum, 
-								(uint8)(cur_chip_param.app_page_num), 
-								1, (uint8*)&tmp16, 2);
+								(uint8_t)(cur_chip_param.app_page_num), 
+								1, (uint8_t*)&tmp16, 2);
 			if (ret != ERROR_OK)
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 

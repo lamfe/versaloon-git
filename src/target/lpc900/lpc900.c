@@ -53,7 +53,7 @@ const program_area_map_t lpc900_program_area_map[] =
 	{0, 0, 0}
 };
 
-static uint32 lpc900_flash_offset = 0;
+static uint32_t lpc900_flash_offset = 0;
 
 void lpc900_usage(void)
 {
@@ -63,7 +63,7 @@ Usage of %s:\n\n", CUR_TARGET_STRING);
 
 void lpc900_support(void)
 {
-	uint32 i;
+	uint32_t i;
 
 	printf("Support list of %s:\n", CUR_TARGET_STRING);
 	for (i = 0; i < cur_chips_num; i++)
@@ -98,7 +98,7 @@ RESULT lpc900_parse_argument(char cmd, const char *argu)
 
 RESULT lpc900_probe_chip(char *chip_name)
 {
-	uint32 i;
+	uint32_t i;
 	
 	for (i = 0; i < cur_chips_num; i++)
 	{
@@ -136,7 +136,7 @@ RESULT lpc900_fini(program_info_t *pi, programmer_info_t *prog)
 RESULT lpc900_init(program_info_t *pi, const char *dir, 
 				 programmer_info_t *prog)
 {
-	uint8 i;
+	uint8_t i;
 	operation_t opt_tmp;
 	
 	dir = dir;
@@ -207,17 +207,17 @@ RESULT lpc900_init(program_info_t *pi, const char *dir,
 	}
 }
 
-uint32 lpc900_interface_needed(void)
+uint32_t lpc900_interface_needed(void)
 {
 	return LPC900_INTERFACE_NEEDED;
 }
 
-RESULT lpc900_write_buffer_from_file_callback(uint32 address, uint32 seg_addr, 
-											  uint8* data, uint32 length, 
+RESULT lpc900_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr, 
+											  uint8_t* data, uint32_t length, 
 											  void* buffer)
 {
 	program_info_t *pi = (program_info_t *)buffer;
-	uint32 mem_addr = address & 0x0000FFFF;
+	uint32_t mem_addr = address & 0x0000FFFF;
 	RESULT ret;
 	
 #ifdef PARAM_CHECK
@@ -262,7 +262,7 @@ RESULT lpc900_write_buffer_from_file_callback(uint32 address, uint32 seg_addr,
 			return ERRCODE_INVALID;
 		}
 		memcpy(pi->app + mem_addr, data, length);
-		pi->app_size_valid += (uint16)length;
+		pi->app_size_valid += (uint16_t)length;
 		ret = MEMLIST_Add(&pi->app_memlist, mem_addr, length, 
 						  cur_chip_param.app_page_size);
 		if (ret != ERROR_OK)
@@ -347,16 +347,16 @@ static programmer_info_t *p = NULL;
 RESULT lpc900_program(operation_t operations, program_info_t *pi, 
 					  programmer_info_t *prog)
 {
-	uint16 voltage;
-	uint8 page_buf[LPC900_PAGE_SIZE + 20];
-	uint32 device_id;
-	int32 i;
-	uint32 j, k, len_current_list;
-	uint32 crc_in_file, crc_in_chip;
-	uint16 page_size;
+	uint16_t voltage;
+	uint8_t page_buf[LPC900_PAGE_SIZE + 20];
+	uint32_t device_id;
+	int32_t i;
+	uint32_t j, k, len_current_list;
+	uint32_t crc_in_file, crc_in_chip;
+	uint16_t page_size;
 	RESULT ret = ERROR_OK;
 	memlist *ml_tmp;
-	uint8 retry = 0;
+	uint8_t retry = 0;
 	
 	p = prog;
 	
@@ -409,7 +409,7 @@ ProgramStart:
 	page_buf[3] = ICP_CFG_MFGID;
 	page_buf[4] = ICP_CMD_READ | ICP_CMD_FMDATA;
 	icp_out(page_buf, 5);
-	icp_in((uint8*)&device_id + 2, 1);
+	icp_in((uint8_t*)&device_id + 2, 1);
 	
 	page_buf[0] = ICP_CMD_WRITE | ICP_CMD_FMCON;
 	page_buf[1] = ICP_FMCMD_CONF;
@@ -417,7 +417,7 @@ ProgramStart:
 	page_buf[3] = ICP_CFG_ID1;
 	page_buf[4] = ICP_CMD_READ | ICP_CMD_FMDATA;
 	icp_out(page_buf, 5);
-	icp_in((uint8*)&device_id + 1, 1);
+	icp_in((uint8_t*)&device_id + 1, 1);
 	
 	page_buf[0] = ICP_CMD_WRITE | ICP_CMD_FMCON;
 	page_buf[1] = ICP_FMCMD_CONF;
@@ -425,7 +425,7 @@ ProgramStart:
 	page_buf[3] = ICP_CFG_ID2;
 	page_buf[4] = ICP_CMD_READ | ICP_CMD_FMDATA;
 	icp_out(page_buf, 5);
-	icp_in((uint8*)&device_id + 0, 1);
+	icp_in((uint8_t*)&device_id + 0, 1);
 	
 	if (ERROR_OK != icp_commit())
 	{
@@ -491,7 +491,7 @@ ProgramStart:
 		LOG_INFO(_GETTEXT(INFOMSG_ERASED), "chip");
 	}
 	
-	page_size = (uint16)cur_chip_param.app_page_size;
+	page_size = (uint16_t)cur_chip_param.app_page_size;
 	
 	// write flash
 	if (operations.write_operations & APPLICATION)
@@ -514,9 +514,9 @@ ProgramStart:
 				k = page_size - (ml_tmp->addr % page_size);
 			}
 			
-			len_current_list = (uint32)ml_tmp->len;
-			for (i = -(int32)(ml_tmp->addr % page_size); 
-				 i < ((int32)ml_tmp->len - (int32)(ml_tmp->addr % page_size)); 
+			len_current_list = (uint32_t)ml_tmp->len;
+			for (i = -(int32_t)(ml_tmp->addr % page_size); 
+				 i < ((int32_t)ml_tmp->len - (int32_t)(ml_tmp->addr % page_size)); 
 				 i += page_size)
 			{
 				page_buf[0] = ICP_CMD_WRITE | ICP_CMD_FMCON;
@@ -599,16 +599,16 @@ ProgramStart:
 		
 		page_buf[0] = ICP_CMD_READ | ICP_CMD_FMDATA_I;
 		icp_out(page_buf, 1);
-		icp_in((uint8*)&crc_in_chip, 1);
+		icp_in((uint8_t*)&crc_in_chip, 1);
 		page_buf[0] = ICP_CMD_READ | ICP_CMD_FMDATA_I;
 		icp_out(page_buf, 1);
-		icp_in((uint8*)&crc_in_chip + 1, 1);
+		icp_in((uint8_t*)&crc_in_chip + 1, 1);
 		page_buf[0] = ICP_CMD_READ | ICP_CMD_FMDATA_I;
 		icp_out(page_buf, 1);
-		icp_in((uint8*)&crc_in_chip + 2, 1);
+		icp_in((uint8_t*)&crc_in_chip + 2, 1);
 		page_buf[0] = ICP_CMD_READ | ICP_CMD_FMDATA_I;
 		icp_out(page_buf, 1);
-		icp_in((uint8*)&crc_in_chip + 3, 1);
+		icp_in((uint8_t*)&crc_in_chip + 3, 1);
 		if (ERROR_OK != icp_commit())
 		{
 			pgbar_fini();
@@ -624,15 +624,15 @@ ProgramStart:
 		
 		// calc crc in file
 		{
-			uint32 crc_poly = 0x00400007;
-			uint32 crc_tmp = 0x00000000;
-			uint8 crc_msb = 0;
-			uint32 loop;
+			uint32_t crc_poly = 0x00400007;
+			uint32_t crc_tmp = 0x00000000;
+			uint8_t crc_msb = 0;
+			uint32_t loop;
 			
 			crc_in_file = 0;
 			for (loop = 0; loop < cur_chip_param.app_size; loop++)
 			{
-				uint8 byte = pi->app[loop];
+				uint8_t byte = pi->app[loop];
 				
 				crc_tmp = 0;
 				if (byte & (1 << 0))
@@ -668,7 +668,7 @@ ProgramStart:
 					crc_tmp |= (1 << 18);
 				}
 				
-				crc_msb = (uint8)((crc_in_file & 0x80000000) > 0);
+				crc_msb = (uint8_t)((crc_in_file & 0x80000000) > 0);
 				crc_in_file <<= 1;
 				crc_in_file ^= crc_tmp;
 				if (crc_msb)

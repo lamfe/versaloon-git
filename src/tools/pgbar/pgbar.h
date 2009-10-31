@@ -22,11 +22,11 @@
 
 #define PROGRESS_STEP			40
 
-RESULT pgbar_init(char *s, char *e, uint32 min, uint32 max, uint32 max_chars, 
+RESULT pgbar_init(char *s, char *e, uint32_t min, uint32_t max, uint32_t max_chars, 
 				char c);
 void pgbar_fini(void);
-void pgbar_set_gui_mode(uint8 gui_mode);
-void pgbar_update(int32 step);
+void pgbar_set_gui_mode(uint8_t gui_mode);
+void pgbar_update(int32_t step);
 
 #endif /* __PGBAR_H_INCLUDED__ */
 

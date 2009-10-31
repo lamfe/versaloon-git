@@ -65,15 +65,15 @@ typedef enum
 extern const char *tap_state_name[TAP_NUM_OF_STATE];
 
 RESULT tap_init(void);
-uint8 tap_state_is_stable(tap_state_t state);
-uint8 tap_state_is_valid(tap_state_t state);
+uint8_t tap_state_is_stable(tap_state_t state);
+uint8_t tap_state_is_valid(tap_state_t state);
 RESULT tap_state_move(void);
 RESULT tap_end_state(tap_state_t state);
-RESULT tap_path_move(uint32 num_states, tap_state_t *path);
+RESULT tap_path_move(uint32_t num_states, tap_state_t *path);
 RESULT tap_runtest(tap_state_t run_state, tap_state_t end_state, 
-				   uint32 num_cycles);
-RESULT tap_scan_ir(uint8 *buffer, uint32 bit_size);
-RESULT tap_scan_dr(uint8 *buffer, uint32 bit_size);
+				   uint32_t num_cycles);
+RESULT tap_scan_ir(uint8_t *buffer, uint32_t bit_size);
+RESULT tap_scan_dr(uint8_t *buffer, uint32_t bit_size);
 RESULT tap_commit(void);
 
 #endif /* __BYTE_TAP_H_INCLUDED__ */

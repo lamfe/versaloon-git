@@ -30,18 +30,18 @@ RESULT psoc_prepare_buffer(program_info_t *pi);
 
 RESULT psoc_init(program_info_t *pi, const char *dir, programmer_info_t *prog);
 RESULT psoc_fini(program_info_t *pi, programmer_info_t *prog);
-uint32 psoc_interface_needed(void);
-RESULT psoc_write_buffer_from_file_callback(uint32 address, uint32 seg_addr, 
-											uint8* data, uint32 length, 
+uint32_t psoc_interface_needed(void);
+RESULT psoc_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr, 
+											uint8_t* data, uint32_t length, 
 											void* buffer);
 
 RESULT psoc_program(operation_t operations, program_info_t *pi, 
 					programmer_info_t *prog);
 
 RESULT psoc_get_mass_product_data_size(operation_t operations, 
-									   program_info_t *pi, uint32 *size);
+									   program_info_t *pi, uint32_t *size);
 RESULT psoc_prepare_mass_product_data(operation_t operations, 
-									  program_info_t *pi, uint8 *buff);
+									  program_info_t *pi, uint8_t *buff);
 
 #endif /* __PSOC_H_INCLUDED__ */
 

@@ -55,14 +55,14 @@ N_A, N_A, N_A, N_A, N_A, N_A, N_A, "usbtoall"
 			types_name[((type) - VERSALOON_USB_TO_XXX_CMD_START) \
 					   % (sizeof(types_name) / sizeof(types_name[0]))]
 
-static uint8 type_pre = 0;
-static uint16 usbtoxxx_buffer_index = 0;
-static uint16 usbtoxxx_current_cmd_index = 0;
-static uint8 *usbtoxxx_buffer = NULL;
-uint8 null_char = 0;
+static uint8_t type_pre = 0;
+static uint16_t usbtoxxx_buffer_index = 0;
+static uint16_t usbtoxxx_current_cmd_index = 0;
+static uint8_t *usbtoxxx_buffer = NULL;
+uint8_t null_char = 0;
 
-uint16 collect_index = 0;
-uint8 collect_cmd;
+uint16_t collect_index = 0;
+uint8_t collect_cmd;
 
 RESULT usbtoxxx_validate_current_command_type(void)
 {
@@ -101,9 +101,9 @@ RESULT usbtoxxx_validate_current_command_type(void)
 
 RESULT usbtoxxx_execute_command(void)
 {
-	uint16 i;
-	uint16 inlen;
-	uint8 result = ERROR_OK;
+	uint16_t i;
+	uint16_t inlen;
+	uint8_t result = ERROR_OK;
 	
 	if (ERROR_OK != usbtoxxx_validate_current_command_type())
 	{
@@ -206,11 +206,11 @@ void usbtoxxx_fini(void)
 
 
 
-RESULT usbtoxxx_add_command(uint8 type, uint8 cmd, uint8 *cmdbuf, 
-							uint16 cmdlen, uint16 retlen, uint8 *wantbuf, 
-							uint16 wantpos, uint16 wantlen, uint8 collect)
+RESULT usbtoxxx_add_command(uint8_t type, uint8_t cmd, uint8_t *cmdbuf, 
+							uint16_t cmdlen, uint16_t retlen, uint8_t *wantbuf, 
+							uint16_t wantpos, uint16_t wantlen, uint8_t collect)
 {
-	uint16 len_tmp;
+	uint16_t len_tmp;
 	
 	// check free space, commit if not enough
 	if ((3 + usbtoxxx_buffer_index + usbtoxxx_current_cmd_index + 3 + cmdlen) 
@@ -271,7 +271,7 @@ RESULT usbtoxxx_add_command(uint8 type, uint8 cmd, uint8 *cmdbuf,
 
 
 
-RESULT usbtodelay_delay(uint16 dly)
+RESULT usbtodelay_delay(uint16_t dly)
 {
 	if (ERROR_OK != usbtoxxx_validate_current_command_type())
 	{

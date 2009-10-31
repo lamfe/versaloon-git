@@ -25,9 +25,9 @@ extern const program_area_map_t comisp_program_area_map[];
 RESULT comisp_parse_argument(char cmd, const char *argu);
 RESULT comisp_probe_chip(char *chip_name);
 RESULT comisp_prepare_buffer(program_info_t *pi);
-uint32 comisp_interface_needed(void);
-RESULT comisp_write_buffer_from_file_callback(uint32 address, uint32 seg_addr, 
-											  uint8* data, uint32 length, 
+uint32_t comisp_interface_needed(void);
+RESULT comisp_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr, 
+											  uint8_t* data, uint32_t length, 
 											  void* buffer);
 RESULT comisp_init(program_info_t *pi, const char *dir, 
 				   programmer_info_t *prog);

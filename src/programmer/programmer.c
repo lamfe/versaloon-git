@@ -48,7 +48,7 @@ programmer_info_t *cur_programmer = NULL;
 
 RESULT programmer_init(const char *programmer, const char *app_dir)
 {
-	uint32 i;
+	uint32_t i;
 	
 	app_dir = app_dir;
 	
@@ -73,7 +73,7 @@ RESULT programmer_init(const char *programmer, const char *app_dir)
 
 void programmer_print_list(void)
 {
-	uint32 i;
+	uint32_t i;
 	
 	printf("Supported programmers:\n");
 	for (i = 0; programmers_info[i].name != NULL; i++)
@@ -85,7 +85,7 @@ void programmer_print_list(void)
 
 void programmer_print_help(void)
 {
-	uint32 i;
+	uint32_t i;
 	
 	for (i = 0; programmers_info[i].name != NULL; i++)
 	{

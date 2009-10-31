@@ -33,24 +33,24 @@
 #include "pgbar.h"
 
 static char *end_str = NULL, disp_char = 0;
-static int32 min_num = 0, max_num = 0, position = 0;
-static uint32 max_num_of_chars = 0;
-static uint32 start_time, end_time;
-static uint8 gui_mode_flag = 0;
+static int32_t min_num = 0, max_num = 0, position = 0;
+static uint32_t max_num_of_chars = 0;
+static uint32_t start_time, end_time;
+static uint8_t gui_mode_flag = 0;
 
-static uint32 pgbar_get_char_num(int32 pos)
+static uint32_t pgbar_get_char_num(int32_t pos)
 {
 	return (pos - min_num) * max_num_of_chars / (max_num - min_num);
 }
 
-void pgbar_set_gui_mode(uint8 gui_mode)
+void pgbar_set_gui_mode(uint8_t gui_mode)
 {
 	gui_mode_flag = gui_mode;
 }
 
-void pgbar_update(int32 step)
+void pgbar_update(int32_t step)
 {
-	int32 noc;
+	int32_t noc;
 	
 	// erase previous characters
 	if (100 == pgbar_get_char_num(position) * 100 / max_num_of_chars)
@@ -109,8 +109,8 @@ void pgbar_update(int32 step)
 	fflush(stdout);
 }
 
-RESULT pgbar_init(char *s, char *e, uint32 min, uint32 max, 
-				  uint32 max_chars, char c)
+RESULT pgbar_init(char *s, char *e, uint32_t min, uint32_t max, 
+				  uint32_t max_chars, char c)
 {
 	// save settings
 	if (e != NULL)

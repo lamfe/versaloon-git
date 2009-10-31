@@ -23,7 +23,7 @@
 
 RESULT versaloon_check_argument(char cmd, const char *argu);
 RESULT versaloon_init_capability(void *p);
-uint32 versaloon_display_programmer(void);
+uint32_t versaloon_display_programmer(void);
 
 #endif /* __VERSALOON_H_INCLUDED__ */
 

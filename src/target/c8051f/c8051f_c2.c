@@ -60,11 +60,11 @@
 RESULT c8051f_c2_program(operation_t operations, program_info_t *pi, 
 						 programmer_info_t *prog)
 {
-	uint8 dr;
-	uint16 i;
-	uint16 j, k, page_size, len_current_list;
+	uint8_t dr;
+	uint16_t i;
+	uint16_t j, k, page_size, len_current_list;
 	RESULT ret = ERROR_OK;
-	uint8 page_buf[C8051F_BLOCK_SIZE];
+	uint8_t page_buf[C8051F_BLOCK_SIZE];
 	memlist *ml_tmp;
 	
 	c2_init();
@@ -95,7 +95,7 @@ RESULT c8051f_c2_program(operation_t operations, program_info_t *pi,
 	}
 	
 	// enable flash programming
-	c2_write_ir((uint8)cur_chip_param.param[C8051F_PARAM_FPCTL_ADDR]);
+	c2_write_ir((uint8_t)cur_chip_param.param[C8051F_PARAM_FPCTL_ADDR]);
 	dr = 0x02;
 	c2_write_dr(dr);
 	dr = 0x01;
@@ -108,7 +108,7 @@ RESULT c8051f_c2_program(operation_t operations, program_info_t *pi,
 		LOG_INFO(_GETTEXT(INFOMSG_ERASING), "flash");
 		pgbar_init("erasing flash |", "|", 0, 1, PROGRESS_STEP, '=');
 		
-		c2_write_ir((uint8)cur_chip_param.param[C8051F_PARAM_FPDAT_ADDR]);
+		c2_write_ir((uint8_t)cur_chip_param.param[C8051F_PARAM_FPDAT_ADDR]);
 		dr = C8051F_C2_CMD_DEVICE_ERASE;
 		c2_write_dr(dr);
 		c2_poll_in_busy();
@@ -162,20 +162,20 @@ RESULT c8051f_c2_program(operation_t operations, program_info_t *pi,
 			if ((ml_tmp->addr + ml_tmp->len) 
 				<= (ml_tmp->addr - (ml_tmp->addr % page_size) + page_size))
 			{
-				k = (uint16)ml_tmp->len;
+				k = (uint16_t)ml_tmp->len;
 			}
 			else
 			{
-				k = page_size - (uint16)(ml_tmp->addr % page_size);
+				k = page_size - (uint16_t)(ml_tmp->addr % page_size);
 			}
 			
-			len_current_list = (uint16)ml_tmp->len;
-			for (i = -(int32)(ml_tmp->addr % page_size); 
-				 i < ((int32)ml_tmp->len - (int32)(ml_tmp->addr % page_size)); 
+			len_current_list = (uint16_t)ml_tmp->len;
+			for (i = -(int32_t)(ml_tmp->addr % page_size); 
+				 i < ((int32_t)ml_tmp->len - (int32_t)(ml_tmp->addr % page_size)); 
 				 i += page_size)
 			{
 				c2_write_ir(
-					(uint8)cur_chip_param.param[C8051F_PARAM_FPDAT_ADDR]);
+					(uint8_t)cur_chip_param.param[C8051F_PARAM_FPDAT_ADDR]);
 				
 				dr = C8051F_C2_CMD_BLOCK_WRITE;
 				c2_write_dr(dr);
@@ -193,12 +193,12 @@ RESULT c8051f_c2_program(operation_t operations, program_info_t *pi,
 				}
 				
 				// write address high byte
-				dr = (uint8)((ml_tmp->addr + i) >> 8);
+				dr = (uint8_t)((ml_tmp->addr + i) >> 8);
 				c2_write_dr(dr);
 				c2_poll_in_busy();
 				
 				// write address low byte
-				dr = (uint8)((ml_tmp->addr + i) & 0xFF);
+				dr = (uint8_t)((ml_tmp->addr + i) & 0xFF);
 				c2_write_dr(dr);
 				c2_poll_in_busy();
 				dr = 0;
@@ -272,20 +272,20 @@ RESULT c8051f_c2_program(operation_t operations, program_info_t *pi,
 			if ((ml_tmp->addr + ml_tmp->len) 
 				<= (ml_tmp->addr - (ml_tmp->addr % page_size) + page_size))
 			{
-				k = (uint16)ml_tmp->len;
+				k = (uint16_t)ml_tmp->len;
 			}
 			else
 			{
-				k = page_size - (uint16)(ml_tmp->addr % page_size);
+				k = page_size - (uint16_t)(ml_tmp->addr % page_size);
 			}
 			
-			len_current_list = (uint16)ml_tmp->len;
-			for (i = -(int32)(ml_tmp->addr % page_size); 
-				 i < ((int32)ml_tmp->len - (int32)(ml_tmp->addr % page_size)); 
+			len_current_list = (uint16_t)ml_tmp->len;
+			for (i = -(int32_t)(ml_tmp->addr % page_size); 
+				 i < ((int32_t)ml_tmp->len - (int32_t)(ml_tmp->addr % page_size)); 
 				 i += page_size)
 			{
 				c2_write_ir(
-					(uint8)cur_chip_param.param[C8051F_PARAM_FPDAT_ADDR]);
+					(uint8_t)cur_chip_param.param[C8051F_PARAM_FPDAT_ADDR]);
 				
 				dr = C8051F_C2_CMD_BLOCK_READ;
 				c2_write_dr(dr);
@@ -303,11 +303,11 @@ RESULT c8051f_c2_program(operation_t operations, program_info_t *pi,
 				}
 				
 				// write address high byte
-				dr = (uint8)((ml_tmp->addr + i) >> 8);
+				dr = (uint8_t)((ml_tmp->addr + i) >> 8);
 				c2_write_dr(dr);
 				c2_poll_in_busy();
 				// write address low byte
-				dr = (uint8)((ml_tmp->addr + i) & 0xFF);
+				dr = (uint8_t)((ml_tmp->addr + i) & 0xFF);
 				c2_write_dr(dr);
 				c2_poll_in_busy();
 				dr = 0;

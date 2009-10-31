@@ -120,11 +120,11 @@ static void free_all_and_exit(int exit_code)
 	exit(exit_code);
 }
 
-static RESULT parse_operation(uint32 *operation, uint32 *require_input_num, 
-							  const char *opt, uint32 optlen)
+static RESULT parse_operation(uint32_t *operation, uint32_t *require_input_num, 
+							  const char *opt, uint32_t optlen)
 {
-	uint32 mask = 0;
-	uint32 i, j;
+	uint32_t mask = 0;
+	uint32_t i, j;
 	
 #if PARAM_CHECK
 	if ((NULL == operation) || (NULL == opt))
@@ -250,10 +250,10 @@ FOR A PARTICULAR PURPOSE.\n"), VERSION, PKGBLDDATE, PKGBLDREV, "2008", "2009");
 int main(int argc, char* argv[])
 {
 	int optc;
-	uint8 lose_argu = 0, mass_product_flag, firmware_update_flag;
-	uint32 i, j, argu_num;
-	uint32 require_hex_file_for_read = 0;
-	uint32 require_hex_file_for_write = 0;
+	uint8_t lose_argu = 0, mass_product_flag, firmware_update_flag;
+	uint32_t i, j, argu_num;
+	uint32_t require_hex_file_for_read = 0;
+	uint32_t require_hex_file_for_write = 0;
 	char *hex_filename = NULL, *cur_pointer, *end_pointer;
 	RESULT ret;
 	
@@ -492,7 +492,7 @@ int main(int argc, char* argv[])
 				}
 				else
 				{
-					uint32 require_input_num;
+					uint32_t require_input_num;
 					ret = parse_operation(&operations.read_operations, 
 										  &require_input_num, optarg + 1, 
 										  argu_num);
@@ -526,7 +526,7 @@ int main(int argc, char* argv[])
 				}
 				else
 				{
-					uint32 require_input_num;
+					uint32_t require_input_num;
 					
 					ret = parse_operation(&operations.read_operations, 
 										  &require_input_num, optarg + 1, 
@@ -563,7 +563,7 @@ int main(int argc, char* argv[])
 				}
 				else
 				{
-					uint32 require_input_num;
+					uint32_t require_input_num;
 					
 					ret = parse_operation(&operations.write_operations, 
 										  &require_input_num, optarg + 1, 
@@ -598,7 +598,7 @@ int main(int argc, char* argv[])
 			// --jtag-dc
 			cur_pointer = optarg;
 			
-			target_jtag_pos.ub = (uint8)strtoul(cur_pointer, &end_pointer, 0);
+			target_jtag_pos.ub = (uint8_t)strtoul(cur_pointer, &end_pointer, 0);
 			if ((cur_pointer == end_pointer) || ('\0' == end_pointer[0]) 
 				|| ('\0' == end_pointer[1]))
 			{
@@ -608,7 +608,7 @@ int main(int argc, char* argv[])
 			}
 			
 			cur_pointer = end_pointer + 1;
-			target_jtag_pos.ua = (uint8)strtoul(cur_pointer, &end_pointer, 0);
+			target_jtag_pos.ua = (uint8_t)strtoul(cur_pointer, &end_pointer, 0);
 			if ((cur_pointer == end_pointer) || ('\0' == end_pointer[0]) 
 				|| ('\0' == end_pointer[1]))
 			{
@@ -618,7 +618,7 @@ int main(int argc, char* argv[])
 			}
 			
 			cur_pointer = end_pointer + 1;
-			target_jtag_pos.bb = (uint16)strtoul(cur_pointer, &end_pointer, 0);
+			target_jtag_pos.bb = (uint16_t)strtoul(cur_pointer, &end_pointer, 0);
 			if ((cur_pointer == end_pointer) || ('\0' == end_pointer[0]) 
 				|| ('\0' == end_pointer[1]))
 			{
@@ -628,7 +628,7 @@ int main(int argc, char* argv[])
 			}
 			
 			cur_pointer = end_pointer + 1;
-			target_jtag_pos.ba = (uint16)strtoul(cur_pointer, &end_pointer, 0);
+			target_jtag_pos.ba = (uint16_t)strtoul(cur_pointer, &end_pointer, 0);
 			if (cur_pointer == end_pointer)
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), (char)optc);
@@ -816,8 +816,8 @@ int main(int argc, char* argv[])
 	// do programming
 	if (mass_product_flag)
 	{
-		uint8 *data_buf = NULL;
-		uint32 target_size, programmer_size;
+		uint8_t *data_buf = NULL;
+		uint32_t target_size, programmer_size;
 		
 		// mass-product
 		if ((operations.read_operations > 0) 
@@ -860,7 +860,7 @@ int main(int argc, char* argv[])
 		target_size += 1;		// 1 more byte for target index
 		if (programmer_size >= target_size)
 		{
-			data_buf = (uint8*)malloc(target_size);
+			data_buf = (uint8_t*)malloc(target_size);
 			if (NULL == data_buf)
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
@@ -880,7 +880,7 @@ int main(int argc, char* argv[])
 			
 			// set target index
 			data_buf[0] = 
-				(uint8)abs((int)((uint8*)cur_target - (uint8*)&targets_info)) 
+				(uint8_t)abs((int)((uint8_t*)cur_target - (uint8_t*)&targets_info)) 
 				/ sizeof(targets_info[0]);
 			
 			// download mass-product data to programmer

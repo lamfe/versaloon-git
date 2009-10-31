@@ -25,12 +25,12 @@ void svf_parser_free_xxr_para(svf_xxr_para_t *para);
 void svf_parser_init(void);
 void svf_parser_fini(void);
 
-uint32 svf_parser_get_command(FILE *file, char **cmd_buffer, uint32 *cmd_len);
+uint32_t svf_parser_get_command(FILE *file, char **cmd_buffer, uint32_t *cmd_len);
 RESULT svf_parser_run_command(char *cmd_str);
 RESULT svf_parser_check_tdo(void);
 
-extern uint32 svf_file_index;
-extern uint32 svf_line_number;
+extern uint32_t svf_file_index;
+extern uint32_t svf_line_number;
 
 #endif /* __SVF_PARSER_H_INCLUDED__ */
 

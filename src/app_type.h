@@ -20,21 +20,13 @@
 #ifndef __APP_TYPE_H_INCLUDED__
 #define __APP_TYPE_H_INCLUDED__
 
+#include <stdint.h>
+
 typedef enum
 {
 	ERROR_OK = 0,
 	ERROR_FAIL = 1
 } RESULT;
-
-// typedefines
-typedef unsigned char		uint8;
-typedef signed char			int8;
-typedef unsigned short		uint16;
-typedef signed short		int16;
-typedef unsigned int		uint32;
-typedef signed int			int32;
-typedef unsigned long long	uint64;
-typedef signed long long	int64;
 
 #define dimof(arr)				(sizeof(arr) / sizeof((arr)[0]))
 #define TO_STR(name)			#name

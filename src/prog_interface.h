@@ -56,10 +56,10 @@
 // JTAG
 typedef struct
 {
-	uint8 ub;		// units before
-	uint8 ua;		// bits before
-	uint16 bb;		// units after
-	uint16 ba;		// bits after
+	uint8_t ub;		// units before
+	uint8_t ua;		// bits before
+	uint16_t bb;		// units after
+	uint16_t ba;		// bits after
 }jtag_pos_t;
 extern jtag_pos_t target_jtag_pos;
 

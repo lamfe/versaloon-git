@@ -29,7 +29,7 @@
 
 #include "usbapi.h"
 
-uint32 print_usb_devices(uint16 VID, uint16 PID, uint8 stringindex, 
+uint32_t print_usb_devices(uint16_t VID, uint16_t PID, uint8_t stringindex, 
 					   char *serialstring)
 {
 	usb_dev_handle *usb = NULL;
@@ -37,7 +37,7 @@ uint32 print_usb_devices(uint16 VID, uint16 PID, uint8 stringindex,
 	struct usb_bus *bus;
 	struct usb_device *dev;
 	int config_value, i, c = 0;
-	uint8 buf[256];
+	uint8_t buf[256];
 
 	usb_init();
 	usb_find_busses();
@@ -119,8 +119,8 @@ uint32 print_usb_devices(uint16 VID, uint16 PID, uint8 stringindex,
 	return c;
 }
 
-usb_dev_handle* find_usb_device(uint16 VID, uint16 PID, uint8 interface, 
-								uint8 stringindex, char *serialstring)
+usb_dev_handle* find_usb_device(uint16_t VID, uint16_t PID, uint8_t interface, 
+								uint8_t stringindex, char *serialstring)
 {
 	usb_dev_handle *usb = NULL;
 	struct usb_bus *busses;
@@ -151,7 +151,7 @@ usb_dev_handle* find_usb_device(uint16 VID, uint16 PID, uint8 interface,
 				// check serialstring
 				if (serialstring != NULL)
 				{
-					uint8 buf[256];
+					uint8_t buf[256];
 					
 					config_value = usb_get_string_simple(usb, stringindex, 
 														 (char *)buf, 

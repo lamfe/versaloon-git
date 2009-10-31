@@ -41,7 +41,7 @@ void comm_close(void)
 	}
 }
 
-RESULT comm_open(char *comport, uint32 baudrate, uint8 datalength, 
+RESULT comm_open(char *comport, uint32_t baudrate, uint8_t datalength, 
 				 char paritybit, char stopbit, char handshake)
 {
 	DCB dcb; // device control block for serial port
@@ -200,7 +200,7 @@ RESULT comm_open(char *comport, uint32 baudrate, uint8 datalength,
 	return ERROR_OK;
 }
 
-int32 comm_read(uint8 *buffer, uint32 num_of_bytes)
+int32_t comm_read(uint8_t *buffer, uint32_t num_of_bytes)
 {
 	DWORD number;
 	
@@ -214,7 +214,7 @@ int32 comm_read(uint8 *buffer, uint32 num_of_bytes)
 	}
 }
 
-int32 comm_write(uint8 *buffer, uint32 num_of_bytes)
+int32_t comm_write(uint8_t *buffer, uint32_t num_of_bytes)
 {
 	DWORD number;
 	
@@ -228,7 +228,7 @@ int32 comm_write(uint8 *buffer, uint32 num_of_bytes)
 	}
 }
 
-int32 comm_ctrl(uint8 dtr, uint8 rts)
+int32_t comm_ctrl(uint8_t dtr, uint8_t rts)
 {
 	if (dtr)
 	{
@@ -259,7 +259,7 @@ const int speed_arr[] = {	B50, B75, B110, B134, B150, B200, B300, B600,
 							B57600, B115200, B230400, B460800, B500000, 
 							B576000, B921600, B1000000, B1152000, B1500000, 
 							B2000000, B2500000, B3000000, B3500000, B4000000};
-const uint32 name_arr[] = {	50, 75, 110, 134, 150, 200, 300, 600, 1200, 1800, 
+const uint32_t name_arr[] = {	50, 75, 110, 134, 150, 200, 300, 600, 1200, 1800, 
 							2400, 4800, 9600, 19200, 38400, 57600, 115200, 
 							230400, 460800, 500000, 576000, 921600, 1000000, 
 							1152000, 1500000, 2000000, 2500000, 3000000, 
@@ -274,11 +274,11 @@ void comm_close(void)
 	}
 }
 
-RESULT comm_open(char *comport, uint32 baudrate, uint8 datalength, 
+RESULT comm_open(char *comport, uint32_t baudrate, uint8_t datalength, 
 				 char paritybit, char stopbit, char handshake)
 {
 	struct termios opt;
-	uint32 i;
+	uint32_t i;
 	
 	if ((NULL == comport) || (datalength < 5) || (datalength > 8) 
 		|| ((paritybit != COMM_PARITYBIT_NONE) 
@@ -399,17 +399,17 @@ RESULT comm_open(char *comport, uint32 baudrate, uint8 datalength,
 	return ERROR_OK;
 }
 
-int32 comm_read(uint8 *buffer, uint32 num_of_bytes)
+int32_t comm_read(uint8_t *buffer, uint32_t num_of_bytes)
 {
 	return read(hComm, buffer, num_of_bytes);
 }
 
-int32 comm_write(uint8 *buffer, uint32 num_of_bytes)
+int32_t comm_write(uint8_t *buffer, uint32_t num_of_bytes)
 {
 	return write(hComm, buffer, num_of_bytes);
 }
 
-int32 comm_ctrl(uint8 dtr, uint8 rts)
+int32_t comm_ctrl(uint8_t dtr, uint8_t rts)
 {
 	return 0;
 }

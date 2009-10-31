@@ -46,12 +46,12 @@ extern const char *svf_command_name[14];
 #define XXR_SMASK			(1 << 3)
 typedef struct
 {
-	uint32 len;
-	uint32 data_mask;
-	uint8 *tdi;
-	uint8 *tdo;
-	uint8 *mask;
-	uint8 *smask;
+	uint32_t len;
+	uint32_t data_mask;
+	uint8_t *tdi;
+	uint8_t *tdo;
+	uint8_t *mask;
+	uint8_t *smask;
 }svf_xxr_para_t;
 
 typedef enum

@@ -19,13 +19,13 @@
 #ifndef __HEX_H_INCLUDED__
 #define __HEX_H_INCLUDED__
 
-typedef RESULT (*HEX_WRITE_MEMORY_CALLBACK)(uint32, uint32, uint8*, uint32, 
+typedef RESULT (*HEX_WRITE_MEMORY_CALLBACK)(uint32_t, uint32_t, uint8_t*, uint32_t, 
 											void *);
 
 RESULT read_hex_file(FILE *hex_file, HEX_WRITE_MEMORY_CALLBACK callback, 
 					 void *buffer);
-RESULT write_hex_file_line(FILE *hex_file, uint32 data_addr, uint32 seg_addr, 
-						   uint8 *data, uint8 len);
+RESULT write_hex_file_line(FILE *hex_file, uint32_t data_addr, uint32_t seg_addr, 
+						   uint8_t *data, uint8_t len);
 
 #endif /* __HEX_H_INCLUDED__ */
 

@@ -39,12 +39,12 @@
 #include "vsllink.h"
 #include "vsllink_internal.h"
 
-static uint16 vsllink_buffer_index = 0;
-static uint8 *buf_tmp = NULL;
+static uint16_t vsllink_buffer_index = 0;
+static uint8_t *buf_tmp = NULL;
 
-RESULT vsllink_connect(uint8 mode)
+RESULT vsllink_connect(uint8_t mode)
 {
-	uint16 ret;
+	uint16_t ret;
 	
 	if (buf_tmp != NULL)
 	{
@@ -52,7 +52,7 @@ RESULT vsllink_connect(uint8 mode)
 		return ERROR_FAIL;
 	}
 	
-	buf_tmp = (uint8*)malloc(versaloon_buf_size);
+	buf_tmp = (uint8_t*)malloc(versaloon_buf_size);
 	if (NULL == buf_tmp)
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
@@ -100,7 +100,7 @@ RESULT vsllink_jtag_connect(void)
 	return vsllink_connect(VSLLINK_MODE_JTAG | VSLLINK_MODE_NORMAL);
 }
 
-RESULT vsllink_jtag_set_freq(uint16 kHz)
+RESULT vsllink_jtag_set_freq(uint16_t kHz)
 {
 	if (vsllink_buffer_index > 0)
 	{
@@ -122,7 +122,7 @@ RESULT vsllink_jtag_set_freq(uint16 kHz)
 	return ERROR_OK;
 }
 
-static uint8 vsllink_jtag_get_pin_remap(uint8 mask)
+static uint8_t vsllink_jtag_get_pin_remap(uint8_t mask)
 {
 	if (mask & ~(JTAG_SRST | JTAG_TRST | JTAG_USR1 | JTAG_USR2))
 	{
@@ -131,7 +131,7 @@ static uint8 vsllink_jtag_get_pin_remap(uint8 mask)
 	
 	return mask;
 }
-static uint8 vsllink_jtag_get_pin_map(uint8 mask)
+static uint8_t vsllink_jtag_get_pin_map(uint8_t mask)
 {
 	if (mask & ~(JTAG_SRST | JTAG_TRST | JTAG_USR1 | JTAG_USR2))
 	{
@@ -141,7 +141,7 @@ static uint8 vsllink_jtag_get_pin_map(uint8 mask)
 	return mask;
 }
 
-RESULT vsllink_jtag_auxio_config(uint8 pin_mask, uint8 io)
+RESULT vsllink_jtag_auxio_config(uint8_t pin_mask, uint8_t io)
 {
 	if (vsllink_buffer_index > 0)
 	{
@@ -163,7 +163,7 @@ RESULT vsllink_jtag_auxio_config(uint8 pin_mask, uint8 io)
 	return ERROR_OK;
 }
 
-RESULT vsllink_jtag_auxio_out(uint8 pin_mask, uint8 value)
+RESULT vsllink_jtag_auxio_out(uint8_t pin_mask, uint8_t value)
 {
 	if (vsllink_buffer_index > 0)
 	{
@@ -185,10 +185,10 @@ RESULT vsllink_jtag_auxio_out(uint8 pin_mask, uint8 value)
 	return ERROR_OK;
 }
 
-RESULT vsllink_jtag_auxio_in(uint8 pin_mask, uint8 *value)
+RESULT vsllink_jtag_auxio_in(uint8_t pin_mask, uint8_t *value)
 {
-	uint8 port_value = 0;
-	uint16 inlen;
+	uint8_t port_value = 0;
+	uint16_t inlen;
 	
 	if (vsllink_buffer_index > 0)
 	{
@@ -221,8 +221,8 @@ RESULT vsllink_jtag_auxio_in(uint8 pin_mask, uint8 *value)
 
 RESULT vsllink_jtagll_commit(void)
 {
-	uint16 inlen = 0, i, *pinlen;
-	uint8 command;
+	uint16_t inlen = 0, i, *pinlen;
+	uint8_t command;
 	
 	if (0 == vsllink_buffer_index)
 	{
@@ -322,7 +322,7 @@ RESULT vsllink_jtagll_disconnect(void)
 	return vsllink_disconnect();
 }
 
-RESULT vsllink_jtagll_add_pending(uint8 cmd, uint8 *buf, uint16 len)
+RESULT vsllink_jtagll_add_pending(uint8_t cmd, uint8_t *buf, uint16_t len)
 {
 	switch (cmd & VSLLINK_CMDJTAGSEQ_CMDMSK)
 	{
@@ -342,8 +342,8 @@ RESULT vsllink_jtagll_add_pending(uint8 cmd, uint8 *buf, uint16 len)
 	}
 }
 
-RESULT vsllink_jtagll_add_command(uint8 cmd, uint8 *cmddata, uint16 cmdlen, 
-								  uint8 *retdata, uint16 retlen)
+RESULT vsllink_jtagll_add_command(uint8_t cmd, uint8_t *cmddata, uint16_t cmdlen, 
+								  uint8_t *retdata, uint16_t retlen)
 {
 	// check free space, commit if not enough
 	if ((vsllink_buffer_index + cmdlen + 1)>= versaloon_buf_size)
@@ -369,7 +369,7 @@ RESULT vsllink_jtagll_add_command(uint8 cmd, uint8 *cmddata, uint16 cmdlen,
 	return vsllink_jtagll_add_pending(cmd, retdata, retlen);
 }
 
-RESULT vsllink_jtagll_tms(uint8 *tms, uint8 len)
+RESULT vsllink_jtagll_tms(uint8_t *tms, uint8_t len)
 {
 	if ((len - 1) > VSLLINK_CMDJTAGHL_LENMSK)
 	{
@@ -381,7 +381,7 @@ RESULT vsllink_jtagll_tms(uint8 *tms, uint8 len)
 									  tms, len, tms, len);
 }
 
-RESULT vsllink_jtagll_tms_clocks(uint32 len, uint8 tms)
+RESULT vsllink_jtagll_tms_clocks(uint32_t len, uint8_t tms)
 {
 	buf_tmp[0] = (len >> 0) & 0xFF;
 	buf_tmp[1] = (len >> 8) & 0xFF;
@@ -392,10 +392,10 @@ RESULT vsllink_jtagll_tms_clocks(uint32 len, uint8 tms)
 									  buf_tmp, 4, NULL, 1);
 }
 
-RESULT vsllink_jtagll_xr(uint8* r, uint16 len, uint8 tms_before_valid, 
-						 uint8 tms_before, uint8 tms_after0, uint8 tms_after1)
+RESULT vsllink_jtagll_xr(uint8_t* r, uint16_t len, uint8_t tms_before_valid, 
+						 uint8_t tms_before, uint8_t tms_after0, uint8_t tms_after1)
 {
-	uint16 byte_len = (len + 7) >> 3;
+	uint16_t byte_len = (len + 7) >> 3;
 	
 	// shift byte length
 	buf_tmp[0] = (byte_len >> 0) & 0xFF;
@@ -427,7 +427,7 @@ RESULT vsllink_jtagll_xr(uint8* r, uint16 len, uint8 tms_before_valid,
 
 jtag_callback_t vsllink_jtaghl_receive_callback = NULL;
 jtag_callback_t vsllink_jtaghl_send_callback = NULL;
-uint32 vsllink_jtaghl_ir_backup = 0;
+uint32_t vsllink_jtaghl_ir_backup = 0;
 RESULT vsllink_jtaghl_disconnect(void)
 {
 	if (vsllink_buffer_index > 0)
@@ -439,7 +439,7 @@ RESULT vsllink_jtaghl_disconnect(void)
 	return vsllink_disconnect();
 }
 
-RESULT vsllink_jtaghl_set_daisychain(uint8 ub, uint8 ua, uint16 bb, uint16 ba)
+RESULT vsllink_jtaghl_set_daisychain(uint8_t ub, uint8_t ua, uint16_t bb, uint16_t ba)
 {
 	if (vsllink_buffer_index > 0)
 	{
@@ -465,8 +465,8 @@ RESULT vsllink_jtaghl_set_daisychain(uint8 ub, uint8 ua, uint16 bb, uint16 ba)
 	return ERROR_OK;
 }
 
-RESULT vsllink_jtaghl_config(uint16 kHz, uint8 ub, uint8 ua, uint16 bb, 
-							 uint16 ba)
+RESULT vsllink_jtaghl_config(uint16_t kHz, uint8_t ub, uint8_t ua, uint16_t bb, 
+							 uint16_t ba)
 {
 	if (ERROR_OK != vsllink_jtag_set_freq(kHz))
 	{
@@ -484,7 +484,7 @@ RESULT vsllink_jtaghl_config(uint16 kHz, uint8 ub, uint8 ua, uint16 bb,
 	return ERROR_OK;
 }
 
-RESULT vsllink_jtaghl_add_pending(uint8 cmd, uint8 *buf, uint16 len)
+RESULT vsllink_jtaghl_add_pending(uint8_t cmd, uint8_t *buf, uint16_t len)
 {
 	switch (cmd & VSLLINK_CMDJTAGHL_CMDMSK)
 	{
@@ -504,10 +504,10 @@ RESULT vsllink_jtaghl_add_pending(uint8 cmd, uint8 *buf, uint16 len)
 	}
 }
 
-RESULT vsllink_jtaghl_add_command(uint8 cmd, uint8 *cmddata, uint16 cmdlen, 
-								  uint8 *retdata, uint16 retlen)
+RESULT vsllink_jtaghl_add_command(uint8_t cmd, uint8_t *cmddata, uint16_t cmdlen, 
+								  uint8_t *retdata, uint16_t retlen)
 {
-	uint16 processed_len = 0;
+	uint16_t processed_len = 0;
 	
 	// check free space, commit if not enough
 	if ((vsllink_buffer_index + cmdlen + 1)>= versaloon_buf_size)
@@ -573,9 +573,9 @@ RESULT vsllink_jtaghl_register_callback(jtag_callback_t send_callback,
 
 RESULT vsllink_jtaghl_commit(void)
 {
-	uint16 inlen = 0, *pinlen, i;
-	uint8 command;
-	uint16 processed;
+	uint16_t inlen = 0, *pinlen, i;
+	uint8_t command;
+	uint16_t processed;
 	RESULT ret;
 	
 	if (0 == vsllink_buffer_index)
@@ -704,10 +704,10 @@ RESULT vsllink_jtaghl_commit(void)
 	return ERROR_OK;
 }
 
-RESULT vsllink_jtaghl_tms(uint8 *tms, uint8 len)
+RESULT vsllink_jtaghl_tms(uint8_t *tms, uint8_t len)
 {
-	uint8 data[(VSLLINK_CMDJTAGHL_LENMSK + 7) >> 3];
-	uint8 cur_cycles, cycles = 0;
+	uint8_t data[(VSLLINK_CMDJTAGHL_LENMSK + 7) >> 3];
+	uint8_t cur_cycles, cycles = 0;
 	
 	memset(data, 0, sizeof(data));		// tms = 0 in runtest
 	while(len > 0)
@@ -718,14 +718,14 @@ RESULT vsllink_jtaghl_tms(uint8 *tms, uint8 len)
 		}
 		else
 		{
-			cur_cycles = (uint8)len;
+			cur_cycles = (uint8_t)len;
 		}
 		
 		memcpy(data, tms + cycles / 8, (cur_cycles + 7) >> 3);
 		
 		if (ERROR_OK != vsllink_jtaghl_add_command(
 									VSLLINK_CMDJTAGHL_TMS | (cur_cycles - 1), 
-									(uint8*)data, (cur_cycles + 7) >> 3, 
+									(uint8_t*)data, (cur_cycles + 7) >> 3, 
 									NULL, 0))
 		{
 			return ERROR_FAIL;
@@ -738,10 +738,10 @@ RESULT vsllink_jtaghl_tms(uint8 *tms, uint8 len)
 	return ERROR_OK;
 }
 
-RESULT vsllink_jtaghl_runtest(uint32 cycles)
+RESULT vsllink_jtaghl_runtest(uint32_t cycles)
 {
-	uint8 tms[(VSLLINK_CMDJTAGHL_LENMSK + 7) >> 3];
-	uint8 cur_cycles;
+	uint8_t tms[(VSLLINK_CMDJTAGHL_LENMSK + 7) >> 3];
+	uint8_t cur_cycles;
 	
 	memset(tms, 0, sizeof(tms));		// tms = 0 in runtest
 	while(cycles > 0)
@@ -752,10 +752,10 @@ RESULT vsllink_jtaghl_runtest(uint32 cycles)
 		}
 		else
 		{
-			cur_cycles = (uint8)cycles;
+			cur_cycles = (uint8_t)cycles;
 		}
 		
-		if (ERROR_OK != vsllink_jtaghl_tms((uint8*)&tms, cur_cycles))
+		if (ERROR_OK != vsllink_jtaghl_tms((uint8_t*)&tms, cur_cycles))
 		{
 			return ERROR_FAIL;
 		}
@@ -766,9 +766,9 @@ RESULT vsllink_jtaghl_runtest(uint32 cycles)
 	return ERROR_OK;
 }
 
-RESULT vsllink_jtaghl_ir(uint8 *ir, uint8 len, uint8 idle, uint8 want_ret)
+RESULT vsllink_jtaghl_ir(uint8_t *ir, uint8_t len, uint8_t idle, uint8_t want_ret)
 {
-	uint16 byte_len = (len + 7) >> 3;
+	uint16_t byte_len = (len + 7) >> 3;
 	RESULT ret;
 	
 	if ((idle - 1) > VSLLINK_CMDJTAGHL_LENMSK)
@@ -812,9 +812,9 @@ RESULT vsllink_jtaghl_ir(uint8 *ir, uint8 len, uint8 idle, uint8 want_ret)
 	return ret;
 }
 
-RESULT vsllink_jtaghl_dr(uint8 *dr, uint16 len, uint8 idle, uint8 want_ret)
+RESULT vsllink_jtaghl_dr(uint8_t *dr, uint16_t len, uint8_t idle, uint8_t want_ret)
 {
-	uint16 byte_len = (len + 7) >> 3;
+	uint16_t byte_len = (len + 7) >> 3;
 	RESULT ret;
 	
 	if ((idle - 1) > VSLLINK_CMDJTAGHL_LENMSK)
@@ -841,17 +841,17 @@ RESULT vsllink_jtaghl_dr(uint8 *dr, uint16 len, uint8 idle, uint8 want_ret)
 	return ret;
 }
 
-RESULT vsllink_jtaghl_poll(uint8 *ir0, uint8 ir0idle, uint8 ir0len, 
-						   uint8 *dr0, uint8 dr0idle, uint8 dr0len,
-						   uint8 *ir1, uint8 ir1idle, uint8 ir1len, 
-						   uint8 *dr1, uint8 dr1idle, uint8 dr1len,
-						   uint8 *ir2, uint8 ir2idle, uint8 ir2len, 
-						   uint8 *dr2, uint8 dr2idle, uint8 dr2len,
-						   uint8 pos, uint8 mask, uint8 value, 
-						   uint16 poll_count)
+RESULT vsllink_jtaghl_poll(uint8_t *ir0, uint8_t ir0idle, uint8_t ir0len, 
+						   uint8_t *dr0, uint8_t dr0idle, uint8_t dr0len,
+						   uint8_t *ir1, uint8_t ir1idle, uint8_t ir1len, 
+						   uint8_t *dr1, uint8_t dr1idle, uint8_t dr1len,
+						   uint8_t *ir2, uint8_t ir2idle, uint8_t ir2len, 
+						   uint8_t *dr2, uint8_t dr2idle, uint8_t dr2len,
+						   uint8_t pos, uint8_t mask, uint8_t value, 
+						   uint16_t poll_count)
 {
-	uint8 buf_tmp[1024], cmd;
-	uint16 idx = 0;
+	uint8_t buf_tmp[1024], cmd;
+	uint16_t idx = 0;
 	
 	cmd = VSLLINK_CMDJTAGHL_POLL_DLY;
 	
@@ -929,7 +929,7 @@ RESULT vsllink_jtaghl_poll(uint8 *ir0, uint8 ir0idle, uint8 ir0len,
 	return vsllink_jtaghl_add_command(cmd, buf_tmp, idx, NULL, 0);
 }
 
-RESULT vsllink_jtaghl_delay_us(uint16 us)
+RESULT vsllink_jtaghl_delay_us(uint16_t us)
 {
 	if (us > 0x8000)
 	{
@@ -937,11 +937,11 @@ RESULT vsllink_jtaghl_delay_us(uint16 us)
 		return ERRCODE_INVALID_PARAMETER;
 	}
 	
-	return vsllink_jtaghl_add_command(VSLLINK_CMDJTAGHL_POLL_DLY, (uint8*)&us, 
+	return vsllink_jtaghl_add_command(VSLLINK_CMDJTAGHL_POLL_DLY, (uint8_t*)&us, 
 									  2, NULL, 0);
 }
 
-RESULT vsllink_jtaghl_delay_ms(uint16 ms)
+RESULT vsllink_jtaghl_delay_ms(uint16_t ms)
 {
 	if (ms > 0x8000)
 	{
@@ -950,7 +950,7 @@ RESULT vsllink_jtaghl_delay_ms(uint16 ms)
 	}
 	
 	ms |= 0x8000;
-	return vsllink_jtaghl_add_command(VSLLINK_CMDJTAGHL_POLL_DLY, (uint8*)&ms, 
+	return vsllink_jtaghl_add_command(VSLLINK_CMDJTAGHL_POLL_DLY, (uint8_t*)&ms, 
 									  2, NULL, 0);
 }
 
@@ -975,10 +975,10 @@ RESULT vsllink_swj_disconnect(void)
 	return vsllink_disconnect();
 }
 
-RESULT vsllink_swj_commit(uint8 *result)
+RESULT vsllink_swj_commit(uint8_t *result)
 {
-	uint16 inlen = 0, i, *pinlen;
-	uint8 command;
+	uint16_t inlen = 0, i, *pinlen;
+	uint8_t command;
 	
 	if (0 == vsllink_buffer_index)
 	{
@@ -1084,7 +1084,7 @@ RESULT vsllink_swj_commit(uint8 *result)
 	return ERROR_OK;
 }
 
-RESULT vsllink_swj_add_pending(uint8 cmd, uint8 *buf, uint16 len)
+RESULT vsllink_swj_add_pending(uint8_t cmd, uint8_t *buf, uint16_t len)
 {
 	switch (cmd & VSLLINK_CMDSWJ_CMDMSK)
 	{
@@ -1107,8 +1107,8 @@ RESULT vsllink_swj_add_pending(uint8 cmd, uint8 *buf, uint16 len)
 	}
 }
 
-RESULT vsllink_swj_add_command(uint8 cmd, uint8 *cmddata, uint16 cmdlen, 
-							   uint8 *retdata, uint16 retlen)
+RESULT vsllink_swj_add_command(uint8_t cmd, uint8_t *cmddata, uint16_t cmdlen, 
+							   uint8_t *retdata, uint16_t retlen)
 {
 	// check free space, commit if not enough
 	if ((vsllink_buffer_index + cmdlen + 1)>= versaloon_buf_size)
@@ -1134,7 +1134,7 @@ RESULT vsllink_swj_add_command(uint8 cmd, uint8 *cmddata, uint16 cmdlen,
 	return vsllink_swj_add_pending(cmd, retdata, retlen);
 }
 
-RESULT vsllink_swj_setpara(uint8 trn, uint16 retry, uint16 dly)
+RESULT vsllink_swj_setpara(uint8_t trn, uint16_t retry, uint16_t dly)
 {
 	buf_tmp[0] = trn;
 	buf_tmp[1] = (retry >> 0) & 0xFF;
@@ -1146,9 +1146,9 @@ RESULT vsllink_swj_setpara(uint8 trn, uint16 retry, uint16 dly)
 								   5, NULL, 0);
 }
 
-RESULT vsllink_swj_seqout(uint8 *data, uint16 bit_len)
+RESULT vsllink_swj_seqout(uint8_t *data, uint16_t bit_len)
 {
-	uint16 data_len = (bit_len + 7) / 8;
+	uint16_t data_len = (bit_len + 7) / 8;
 	
 	buf_tmp[0] = (bit_len >> 0) & 0xFF;
 	buf_tmp[1] = (bit_len >> 8) & 0xFF;
@@ -1158,9 +1158,9 @@ RESULT vsllink_swj_seqout(uint8 *data, uint16 bit_len)
 								   2 + data_len, data, 1);
 }
 
-RESULT vsllink_swj_seqin(uint8 *data, uint16 bit_len)
+RESULT vsllink_swj_seqin(uint8_t *data, uint16_t bit_len)
 {
-	uint16 data_len = (bit_len + 7) / 8;
+	uint16_t data_len = (bit_len + 7) / 8;
 	
 	buf_tmp[0] = (bit_len >> 0) & 0xFF;
 	buf_tmp[1] = (bit_len >> 8) & 0xFF;
@@ -1170,9 +1170,9 @@ RESULT vsllink_swj_seqin(uint8 *data, uint16 bit_len)
 								   2 + data_len, data, data_len);
 }
 
-RESULT vsllink_swj_transact(uint8 request, uint32 *data)
+RESULT vsllink_swj_transact(uint8_t request, uint32_t *data)
 {
-	uint8 parity;
+	uint8_t parity;
 	
 	parity = (request >> 1) & 1;
 	parity += (request >> 2) & 1;
@@ -1180,13 +1180,13 @@ RESULT vsllink_swj_transact(uint8 request, uint32 *data)
 	parity += (request >> 4) & 1;
 	parity &= 1;
 	buf_tmp[0] = (request | 0x81 | (parity << 5)) & ~0x40;
-	memcpy(buf_tmp + 1, (uint8*)data, 4);
+	memcpy(buf_tmp + 1, (uint8_t*)data, 4);
 	
 	if (request & 0x04)
 	{
 		// read
 		return vsllink_swj_add_command(VSLLINK_CMDSWJ_TRANS, buf_tmp, 5, 
-									   (uint8*)data, 5);
+									   (uint8_t*)data, 5);
 	}
 	else
 	{

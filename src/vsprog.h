@@ -36,14 +36,14 @@
 
 typedef struct
 {
-	uint32 erase_operations;
-	uint32 write_operations;
-	uint32 read_operations;
-	uint32 verify_operations;
-	uint32 checksum_operations;
+	uint32_t erase_operations;
+	uint32_t write_operations;
+	uint32_t read_operations;
+	uint32_t verify_operations;
+	uint32_t checksum_operations;
 }operation_t;
 
-extern uint8 gui_mode;
+extern uint8_t gui_mode;
 
 #endif /* __VSPROG_H_INCLUDED__ */
 

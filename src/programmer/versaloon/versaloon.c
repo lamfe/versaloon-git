@@ -47,20 +47,20 @@ const char *versaloon_hardwares[] =
 	"Versaloon_Nano",		// 3
 };
 
-uint8 *versaloon_buf = NULL;
-uint16 versaloon_buf_size = 256;
+uint8_t *versaloon_buf = NULL;
+uint16_t versaloon_buf_size = 256;
 
 versaloon_pending_t versaloon_pending[VERSALOON_MAX_PENDING_NUMBER];
-uint16 versaloon_pending_idx = 0;
+uint16_t versaloon_pending_idx = 0;
 
 static usb_dev_handle *versaloon_device_handle = NULL;
-static uint16 versaloon_vid = VERSALOON_VID;
-static uint16 versaloon_pid = VERSALOON_PID;
+static uint16_t versaloon_vid = VERSALOON_VID;
+static uint16_t versaloon_pid = VERSALOON_PID;
 static char *versaloon_serialstring = NULL;
-static uint8 versaloon_epout = VERSALOON_OUTP;
-static uint8 versaloon_epin = VERSALOON_INP;
-static uint8 versaloon_interface = 0;
-static uint32 versaloon_to = VERSALOON_TIMEOUT;
+static uint8_t versaloon_epout = VERSALOON_OUTP;
+static uint8_t versaloon_epin = VERSALOON_INP;
+static uint8_t versaloon_interface = 0;
+static uint32_t versaloon_to = VERSALOON_TIMEOUT;
 
 
 void versaloon_usage(void)
@@ -99,7 +99,7 @@ RESULT versaloon_check_argument(char cmd, const char *argu)
 		cur_pointer = (char *)argu;
 		
 		// Format: VID_PID_EPIN_EPOUT_INTERFACE_SERIALSTRING
-		versaloon_vid = (uint16)strtoul(cur_pointer, &end_pointer, 0);
+		versaloon_vid = (uint16_t)strtoul(cur_pointer, &end_pointer, 0);
 		if ((end_pointer == cur_pointer) 
 			|| ((*end_pointer != '_') && (*end_pointer != ' ') 
 				&& (*end_pointer != '-')) 
@@ -109,7 +109,7 @@ RESULT versaloon_check_argument(char cmd, const char *argu)
 			return ERRCODE_INVALID_OPTION;
 		}
 		cur_pointer = end_pointer + 1;
-		versaloon_pid = (uint16)strtoul(cur_pointer, &end_pointer, 0);
+		versaloon_pid = (uint16_t)strtoul(cur_pointer, &end_pointer, 0);
 		if ((end_pointer == cur_pointer) 
 			|| ((*end_pointer != '_') && (*end_pointer != ' ') 
 				&& (*end_pointer != '-')) 
@@ -119,7 +119,7 @@ RESULT versaloon_check_argument(char cmd, const char *argu)
 			return ERRCODE_INVALID_OPTION;
 		}
 		cur_pointer = end_pointer + 1;
-		versaloon_epin = (uint8)strtoul(cur_pointer, &end_pointer, 0);
+		versaloon_epin = (uint8_t)strtoul(cur_pointer, &end_pointer, 0);
 		if ((end_pointer == cur_pointer) 
 			|| ((*end_pointer != '_') && (*end_pointer != ' ') 
 				&& (*end_pointer != '-')) 
@@ -129,7 +129,7 @@ RESULT versaloon_check_argument(char cmd, const char *argu)
 			return ERRCODE_INVALID_OPTION;
 		}
 		cur_pointer = end_pointer + 1;
-		versaloon_epout = (uint8)strtoul(cur_pointer, &end_pointer, 0);
+		versaloon_epout = (uint8_t)strtoul(cur_pointer, &end_pointer, 0);
 		if ((end_pointer == cur_pointer) 
 			|| ((*end_pointer != '_') && (*end_pointer != ' ') 
 				&& (*end_pointer != '-')) 
@@ -138,7 +138,7 @@ RESULT versaloon_check_argument(char cmd, const char *argu)
 			goto print_usb_device;
 		}
 		cur_pointer = end_pointer + 1;
-		versaloon_interface = (uint8)strtoul(cur_pointer, &end_pointer, 0);
+		versaloon_interface = (uint8_t)strtoul(cur_pointer, &end_pointer, 0);
 		if ((end_pointer == cur_pointer) 
 			|| ((*end_pointer != '_') && (*end_pointer != ' ') 
 				&& (*end_pointer != '-')) 
@@ -181,9 +181,9 @@ print_usb_device:
 
 
 
-RESULT versaloon_add_pending(uint8 type, uint8 cmd, uint16 actual_szie, 
-							 uint16 want_pos, uint16 want_size, 
-							 uint8 *buffer, uint8 collect, uint32 id)
+RESULT versaloon_add_pending(uint8_t type, uint8_t cmd, uint16_t actual_szie, 
+							 uint16_t want_pos, uint16_t want_size, 
+							 uint8_t *buffer, uint8_t collect, uint32_t id)
 {
 #if PARAM_CHECK
 	if (versaloon_pending_idx >= VERSALOON_MAX_PENDING_NUMBER)
@@ -207,7 +207,7 @@ RESULT versaloon_add_pending(uint8 type, uint8 cmd, uint16 actual_szie,
 	return ERROR_OK;
 }
 
-RESULT versaloon_send_command(uint16 out_len, uint16 *inlen)
+RESULT versaloon_send_command(uint16_t out_len, uint16_t *inlen)
 {
 	int ret;
 	
@@ -240,7 +240,7 @@ RESULT versaloon_send_command(uint16 out_len, uint16 *inlen)
 							versaloon_to);
 		if (ret > 0)
 		{
-			*inlen = (uint16)ret;
+			*inlen = (uint16_t)ret;
 			return ERROR_OK;
 		}
 		else
@@ -259,10 +259,10 @@ RESULT versaloon_send_command(uint16 out_len, uint16 *inlen)
 #define VERSALOON_RETRY_CNT				10
 RESULT versaloon_init(void)
 {
-	uint16 ret = 0;
-	uint8 retry;
+	uint16_t ret = 0;
+	uint8_t retry;
 	int verbosity_tmp;
-	uint32 timeout_tmp;
+	uint32_t timeout_tmp;
 	
 	versaloon_device_handle = find_usb_device(versaloon_vid, versaloon_pid, 
 											  versaloon_interface, 
@@ -286,7 +286,7 @@ RESULT versaloon_init(void)
 	}
 	
 	// malloc temporary buffer
-	versaloon_buf = (uint8 *)malloc(versaloon_buf_size);
+	versaloon_buf = (uint8_t *)malloc(versaloon_buf_size);
 	if (NULL == versaloon_buf)
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
@@ -326,7 +326,7 @@ RESULT versaloon_init(void)
 	free(versaloon_buf);
 	versaloon_buf = NULL;
 	
-	versaloon_buf = (uint8 *)malloc(versaloon_buf_size);
+	versaloon_buf = (uint8_t *)malloc(versaloon_buf_size);
 	if (NULL == versaloon_buf)
 	{
 		versaloon_fini();
@@ -381,7 +381,7 @@ RESULT versaloon_enter_firmware_update_mode(void)
 	}
 }
 
-const char* versaloon_get_hardware_name(uint8 idx)
+const char* versaloon_get_hardware_name(uint8_t idx)
 {
 	if (idx < dimof(versaloon_hardwares))
 	{
@@ -393,9 +393,9 @@ const char* versaloon_get_hardware_name(uint8 idx)
 	}
 }
 
-RESULT versaloon_get_hardware(uint8 *hardware)
+RESULT versaloon_get_hardware(uint8_t *hardware)
 {
-	uint16 inlen;
+	uint16_t inlen;
 	
 #if PARAM_CHECK
 	if (NULL == versaloon_buf)
@@ -427,9 +427,9 @@ RESULT versaloon_get_hardware(uint8 *hardware)
 	}
 }
 
-RESULT versaloon_get_target_voltage(uint16 *voltage)
+RESULT versaloon_get_target_voltage(uint16_t *voltage)
 {
-	uint16 inlen;
+	uint16_t inlen;
 	
 #if PARAM_CHECK
 	if (NULL == versaloon_buf)
@@ -459,9 +459,9 @@ RESULT versaloon_get_target_voltage(uint16 *voltage)
 	}
 }
 
-RESULT versaloon_query_mass_product_data_size(uint32 *size)
+RESULT versaloon_query_mass_product_data_size(uint32_t *size)
 {
-	uint16 inlen;
+	uint16_t inlen;
 	
 #if PARAM_CHECK
 	if (NULL == versaloon_buf)
@@ -494,7 +494,7 @@ RESULT versaloon_query_mass_product_data_size(uint32 *size)
 
 RESULT versaloon_erase_mass_product_data(void)
 {
-	uint16 inlen;
+	uint16_t inlen;
 	
 #if PARAM_CHECK
 	if (NULL == versaloon_buf)
@@ -522,9 +522,9 @@ RESULT versaloon_erase_mass_product_data(void)
 	return ERROR_OK;
 }
 
-RESULT versaloon_checksum_mass_product_data(uint16 * checksum, uint16 len)
+RESULT versaloon_checksum_mass_product_data(uint16_t * checksum, uint16_t len)
 {
-	uint16 inlen;
+	uint16_t inlen;
 	
 #if PARAM_CHECK
 	if (NULL == versaloon_buf)
@@ -554,11 +554,11 @@ RESULT versaloon_checksum_mass_product_data(uint16 * checksum, uint16 len)
 	return ERROR_OK;
 }
 
-RESULT versaloon_download_mass_product_data(const char *name, uint8 *buffer, 
-											uint32 len)
+RESULT versaloon_download_mass_product_data(const char *name, uint8_t *buffer, 
+											uint32_t len)
 {
-	uint32 size = 0, i, j;
-	uint16 inlen, checksum = 0;
+	uint32_t size = 0, i, j;
+	uint16_t inlen, checksum = 0;
 	
 #if PARAM_CHECK
 	if ((NULL == buffer) || (0 == len))
@@ -646,7 +646,7 @@ RESULT versaloon_download_mass_product_data(const char *name, uint8 *buffer,
 	pgbar_fini();
 	
 	// verify checksum
-	if (ERROR_OK != versaloon_checksum_mass_product_data(&inlen, (uint16)len))
+	if (ERROR_OK != versaloon_checksum_mass_product_data(&inlen, (uint16_t)len))
 	{
 		LOG_WARNING(_GETTEXT(ERRMSG_FAILURE_OPERATION_MESSAGE), 
 				  "get checksum of mass product data", "verify omitted!!");
@@ -677,11 +677,11 @@ RESULT versaloon_download_mass_product_data(const char *name, uint8 *buffer,
 // Interfaces:
 
 // capability
-static uint16 versaloon_get_pin_remap(uint16 mask)
+static uint16_t versaloon_get_pin_remap(uint16_t mask)
 {
 	return mask;
 }
-static uint16 versaloon_get_pin_map(uint16 mask)
+static uint16_t versaloon_get_pin_map(uint16_t mask)
 {
 	return mask;
 }
@@ -699,13 +699,13 @@ RESULT versaloon_spi_fini(void)
 {
 	return usbtospi_fini();
 }
-RESULT versaloon_spi_config(uint16 kHz, uint8 cpol, uint8 cpha, 
-							uint8 first_bit)
+RESULT versaloon_spi_config(uint16_t kHz, uint8_t cpol, uint8_t cpha, 
+							uint8_t first_bit)
 {
 	return usbtospi_config(VERSALOON_SPI_PORT, kHz, cpol, cpha, first_bit);
 }
-RESULT versaloon_spi_io(uint8 *out, uint8 *in, uint16 len, uint16 inpos, 
-						uint16 inlen)
+RESULT versaloon_spi_io(uint8_t *out, uint8_t *in, uint16_t len, uint16_t inpos, 
+						uint16_t inlen)
 {
 	return usbtospi_io(VERSALOON_SPI_PORT, out, in, len, inpos, inlen);
 }
@@ -718,19 +718,19 @@ RESULT versaloon_gpio_fini(void)
 {
 	return usbtogpio_fini();
 }
-RESULT versaloon_gpio_config(uint16 mask, uint16 direction)
+RESULT versaloon_gpio_config(uint16_t mask, uint16_t direction)
 {
 	return usbtogpio_config(VERSALOON_GPIO_PORT, 
 							versaloon_get_pin_remap(mask), direction > 0);
 }
-RESULT versaloon_gpio_config_8bit(uint8 mask, uint8 direction)
+RESULT versaloon_gpio_config_8bit(uint8_t mask, uint8_t direction)
 {
 	return usbtogpio_config(VERSALOON_GPIO_PORT, 
 							versaloon_get_pin_remap(mask), direction > 0);
 }
-RESULT versaloon_gpio_in(uint16 mask, uint16 *value)
+RESULT versaloon_gpio_in(uint16_t mask, uint16_t *value)
 {
-	uint16 value_tmp;
+	uint16_t value_tmp;
 	RESULT ret;
 	
 	ret = usbtogpio_in(VERSALOON_GPIO_PORT, versaloon_get_pin_remap(mask), 
@@ -739,33 +739,33 @@ RESULT versaloon_gpio_in(uint16 mask, uint16 *value)
 	
 	return ret;
 }
-RESULT versaloon_gpio_in_8bit(uint8 mask, uint8 *value)
+RESULT versaloon_gpio_in_8bit(uint8_t mask, uint8_t *value)
 {
-	uint16 value_tmp;
+	uint16_t value_tmp;
 	RESULT ret;
 	
 	ret = usbtogpio_in(VERSALOON_GPIO_PORT, versaloon_get_pin_remap(mask), 
 					   &value_tmp);
-	*value = (uint8)versaloon_get_pin_map(value_tmp);
+	*value = (uint8_t)versaloon_get_pin_map(value_tmp);
 	
 	return ret;
 }
-RESULT versaloon_gpio_out(uint16 mask, uint16 value)
+RESULT versaloon_gpio_out(uint16_t mask, uint16_t value)
 {
 	return usbtogpio_out(VERSALOON_GPIO_PORT, versaloon_get_pin_remap(mask), 
 						 versaloon_get_pin_remap(value));
 }
-RESULT versaloon_gpio_out_8bit(uint8 mask, uint8 value)
+RESULT versaloon_gpio_out_8bit(uint8_t mask, uint8_t value)
 {
 	return usbtogpio_out(VERSALOON_GPIO_PORT, versaloon_get_pin_remap(mask), 
 						 versaloon_get_pin_remap(value));
 }
 // Delay
-RESULT versaloon_delay_ms(uint16 ms)
+RESULT versaloon_delay_ms(uint16_t ms)
 {
 	return usbtodelay_delay(ms | 0x8000);
 }
-RESULT versaloon_delay_us(uint16 us)
+RESULT versaloon_delay_us(uint16_t us)
 {
 	return usbtodelay_delay(us & 0x7FFF);
 }
@@ -783,11 +783,11 @@ RESULT versaloon_issp_fini(void)
 {
 	return usbtoissp_fini();
 }
-RESULT versaloon_issp_enter_program_mode(uint8 mode)
+RESULT versaloon_issp_enter_program_mode(uint8_t mode)
 {
 	return usbtoissp_enter_program_mode(VERSALOON_ISSP_PORT, mode);
 }
-RESULT versaloon_issp_leave_program_mode(uint8 mode)
+RESULT versaloon_issp_leave_program_mode(uint8_t mode)
 {
 	return usbtoissp_leave_program_mode(VERSALOON_ISSP_PORT, mode);
 }
@@ -795,7 +795,7 @@ RESULT versaloon_issp_wait_and_poll(void)
 {
 	return usbtoissp_wait_and_poll(VERSALOON_ISSP_PORT);
 }
-RESULT versaloon_issp_vector(uint8 operate, uint8 addr, uint8 data, uint8 *buf)
+RESULT versaloon_issp_vector(uint8_t operate, uint8_t addr, uint8_t data, uint8_t *buf)
 {
 	return usbtoissp_vector(VERSALOON_ISSP_PORT, operate, addr, data, buf);
 }
@@ -812,16 +812,16 @@ RESULT versaloon_lpcicp_enter_program_mode(void)
 {
 	return usbtolpcicp_enter_program_mode(VERSALOON_LPCICP_PORT);
 }
-RESULT versaloon_lpcicp_in(uint8 *buff, uint16 len)
+RESULT versaloon_lpcicp_in(uint8_t *buff, uint16_t len)
 {
 	return usbtolpcicp_in(VERSALOON_LPCICP_PORT, buff, len);
 }
-RESULT versaloon_lpcicp_out(uint8 *buff, uint16 len)
+RESULT versaloon_lpcicp_out(uint8_t *buff, uint16_t len)
 {
 	return usbtolpcicp_out(VERSALOON_LPCICP_PORT, buff, len);
 }
-RESULT versaloon_lpcicp_poll_ready(uint8 data, uint8 *ret, uint8 setmask, 
-								   uint8 clearmask, uint16 pollcnt)
+RESULT versaloon_lpcicp_poll_ready(uint8_t data, uint8_t *ret, uint8_t setmask, 
+								   uint8_t clearmask, uint16_t pollcnt)
 {
 	return usbtolpcicp_poll_ready(VERSALOON_LPCICP_PORT, ret, data, setmask, 
 								  clearmask, pollcnt);
@@ -835,19 +835,19 @@ RESULT versaloon_msp430jtag_fini(void)
 {
 	return usbtomsp430jtag_fini();
 }
-RESULT versaloon_msp430jtag_config(uint8 has_test)
+RESULT versaloon_msp430jtag_config(uint8_t has_test)
 {
 	return usbtomsp430jtag_config(VERSALOON_MSP430_JTAG_PORT, has_test);
 }
-RESULT versaloon_msp430jtag_ir(uint8 *ir, uint8 want_ret)
+RESULT versaloon_msp430jtag_ir(uint8_t *ir, uint8_t want_ret)
 {
 	return usbtomsp430jtag_ir(VERSALOON_MSP430_JTAG_PORT, ir, want_ret);
 }
-RESULT versaloon_msp430jtag_dr(uint32 *dr, uint8 len, uint8 want_ret)
+RESULT versaloon_msp430jtag_dr(uint32_t *dr, uint8_t len, uint8_t want_ret)
 {
 	return usbtomsp430jtag_dr(VERSALOON_MSP430_JTAG_PORT, dr, len, want_ret);
 }
-RESULT versaloon_msp430jtag_tclk(uint8 value)
+RESULT versaloon_msp430jtag_tclk(uint8_t value)
 {
 	return usbtomsp430jtag_tclk(VERSALOON_MSP430_JTAG_PORT, value);
 }
@@ -855,13 +855,13 @@ RESULT versaloon_msp430jtag_reset(void)
 {
 	return usbtomsp430jtag_reset(VERSALOON_MSP430_JTAG_PORT);
 }
-RESULT versaloon_msp430jtag_poll(uint32 dr, uint32 mask, uint32 value, 
-								 uint8 len, uint16 poll_cnt, uint8 toggle_tclk)
+RESULT versaloon_msp430jtag_poll(uint32_t dr, uint32_t mask, uint32_t value, 
+								 uint8_t len, uint16_t poll_cnt, uint8_t toggle_tclk)
 {
 	return usbtomsp430jtag_poll(VERSALOON_MSP430_JTAG_PORT, dr, mask, value, 
 								len, poll_cnt, toggle_tclk);
 }
-RESULT versaloon_msp430jtag_tclk_strobe(uint16 cnt)
+RESULT versaloon_msp430jtag_tclk_strobe(uint16_t cnt)
 {
 	return usbtomsp430jtag_tclk_strobe(VERSALOON_MSP430_JTAG_PORT, cnt);
 }
@@ -874,7 +874,7 @@ RESULT versaloon_msp430sbw_fini(void)
 {
 	return usbtomsp430sbw_fini();
 }
-RESULT versaloon_msp430sbw_config(uint8 has_test)
+RESULT versaloon_msp430sbw_config(uint8_t has_test)
 {
 	if (has_test)
 	{
@@ -885,15 +885,15 @@ RESULT versaloon_msp430sbw_config(uint8 has_test)
 		return ERROR_FAIL;
 	}
 }
-RESULT versaloon_msp430sbw_ir(uint8 *ir, uint8 want_ret)
+RESULT versaloon_msp430sbw_ir(uint8_t *ir, uint8_t want_ret)
 {
 	return usbtomsp430sbw_ir(VERSALOON_MSP430_JTAG_PORT, ir, want_ret);
 }
-RESULT versaloon_msp430sbw_dr(uint32 *dr, uint8 len, uint8 want_ret)
+RESULT versaloon_msp430sbw_dr(uint32_t *dr, uint8_t len, uint8_t want_ret)
 {
 	return usbtomsp430sbw_dr(VERSALOON_MSP430_JTAG_PORT, dr, len, want_ret);
 }
-RESULT versaloon_msp430sbw_tclk(uint8 value)
+RESULT versaloon_msp430sbw_tclk(uint8_t value)
 {
 	return usbtomsp430sbw_tclk(VERSALOON_MSP430_JTAG_PORT, value);
 }
@@ -901,13 +901,13 @@ RESULT versaloon_msp430sbw_reset(void)
 {
 	return usbtomsp430sbw_reset(VERSALOON_MSP430_JTAG_PORT);
 }
-RESULT versaloon_msp430sbw_poll(uint32 dr, uint32 mask, uint32 value, 
-								uint8 len, uint16 poll_cnt, uint8 toggle_tclk)
+RESULT versaloon_msp430sbw_poll(uint32_t dr, uint32_t mask, uint32_t value, 
+								uint8_t len, uint16_t poll_cnt, uint8_t toggle_tclk)
 {
 	return usbtomsp430sbw_poll(VERSALOON_MSP430_JTAG_PORT, dr, mask, value, 
 							   len, poll_cnt, toggle_tclk);
 }
-RESULT versaloon_msp430sbw_tclk_strobe(uint16 cnt)
+RESULT versaloon_msp430sbw_tclk_strobe(uint16_t cnt)
 {
 	return usbtomsp430sbw_tclk_strobe(VERSALOON_MSP430_JTAG_PORT, cnt);
 }
@@ -925,19 +925,19 @@ RESULT versaloon_c2_fini(void)
 {
 	return usbtoc2_fini();
 }
-RESULT versaloon_c2_addr_write(uint8 addr)
+RESULT versaloon_c2_addr_write(uint8_t addr)
 {
 	return usbtoc2_addr(VERSALOON_C2_PORT, addr);
 }
-RESULT versaloon_c2_data_write(uint8 *data, uint8 len)
+RESULT versaloon_c2_data_write(uint8_t *data, uint8_t len)
 {
 	return usbtoc2_data(VERSALOON_C2_PORT, 0, len, data);
 }
-RESULT versaloon_c2_data_read(uint8 *data, uint8 len)
+RESULT versaloon_c2_data_read(uint8_t *data, uint8_t len)
 {
 	return usbtoc2_data(VERSALOON_C2_PORT, 1, len, data);
 }
-RESULT versaloon_c2_addr_poll(uint8 mask, uint8 value, uint16 poll_cnt)
+RESULT versaloon_c2_addr_poll(uint8_t mask, uint8_t value, uint16_t poll_cnt)
 {
 	return usbtoc2_addr_poll(VERSALOON_C2_PORT, mask, value, poll_cnt);
 }
@@ -950,18 +950,18 @@ RESULT versaloon_i2c_fini(void)
 {
 	return usbtoi2c_fini();
 }
-RESULT versaloon_i2c_set_speed(uint16 kHz)
+RESULT versaloon_i2c_set_speed(uint16_t kHz)
 {
 	return usbtoi2c_set_speed(VERSALOON_I2C_PORT, kHz);
 }
-RESULT versaloon_i2c_read(uint16 chip_addr, uint8 chip_addr_len, uint8 *data, 
-						  uint16 data_len, uint8 stop)
+RESULT versaloon_i2c_read(uint16_t chip_addr, uint8_t chip_addr_len, uint8_t *data, 
+						  uint16_t data_len, uint8_t stop)
 {
 	return usbtoi2c_read(VERSALOON_I2C_PORT, chip_addr, chip_addr_len, data, 
 						 data_len, stop);
 }
-RESULT versaloon_i2c_write(uint16 chip_addr, uint8 chip_addr_len, uint8 *data, 
-						   uint16 data_len, uint8 stop)
+RESULT versaloon_i2c_write(uint16_t chip_addr, uint8_t chip_addr_len, uint8_t *data, 
+						   uint16_t data_len, uint8_t stop)
 {
 	return usbtoi2c_write(VERSALOON_I2C_PORT, chip_addr, chip_addr_len, data, 
 						  data_len, stop);
@@ -1124,7 +1124,7 @@ RESULT versaloon_init_capability(void *p)
 	return ERROR_OK;
 }
 
-uint32 versaloon_display_programmer(void)
+uint32_t versaloon_display_programmer(void)
 {
 	LOG_INFO(_GETTEXT("\nSupported Programmer by Versaloon driver:\n"));
 	return print_usb_devices(versaloon_vid, versaloon_pid, 

@@ -34,7 +34,7 @@
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
 
-uint8 usbtospi_num_of_interface = 0;
+uint8_t usbtospi_num_of_interface = 0;
 
 
 RESULT usbtospi_init(void)
@@ -47,10 +47,10 @@ RESULT usbtospi_fini(void)
 	return usbtoxxx_fini_command(USB_TO_SPI);
 }
 
-RESULT usbtospi_config(uint8 interface_index, uint16 freq, uint8 cpol, 
-					   uint8 cpha, uint8 firstbit)
+RESULT usbtospi_config(uint8_t interface_index, uint16_t freq, uint8_t cpol, 
+					   uint8_t cpha, uint8_t firstbit)
 {
-	uint8 conf[3];
+	uint8_t conf[3];
 	
 #if PARAM_CHECK
 	if (interface_index > 7)
@@ -67,8 +67,8 @@ RESULT usbtospi_config(uint8 interface_index, uint16 freq, uint8 cpol,
 	return usbtoxxx_conf_command(USB_TO_SPI, interface_index, conf, 3);
 }
 
-RESULT usbtospi_io(uint8 interface_index, uint8 *out, uint8 *in, 
-				   uint16 outlen, uint16 inpos, uint16 inlen)
+RESULT usbtospi_io(uint8_t interface_index, uint8_t *out, uint8_t *in, 
+				   uint16_t outlen, uint16_t inpos, uint16_t inlen)
 {
 #if PARAM_CHECK
 	if (interface_index > 7)

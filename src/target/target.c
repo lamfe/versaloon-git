@@ -508,7 +508,7 @@ void target_free_data_buffer(void)
 	}
 }
 
-void target_print_target(uint32 i)
+void target_print_target(uint32_t i)
 {
 	target_build_chip_series(targets_info[i].name, 
 							 targets_info[i].program_mode_str, 
@@ -519,7 +519,7 @@ void target_print_target(uint32 i)
 
 void target_print_list(void)
 {
-	uint32 i;
+	uint32_t i;
 	
 	printf(_GETTEXT("Supported targets:\n"));
 	for (i = 0; targets_info[i].name != NULL; i++)
@@ -530,7 +530,7 @@ void target_print_list(void)
 
 void target_print_help(void)
 {
-	uint32 i;
+	uint32_t i;
 	
 	for (i = 0; targets_info[i].name != NULL; i++)
 	{
@@ -538,14 +538,14 @@ void target_print_help(void)
 	}
 }
 
-uint32 target_get_number(void)
+uint32_t target_get_number(void)
 {
 	return sizeof(targets_info) / sizeof(targets_info[0]) - 1;
 }
 
 RESULT target_init(program_info_t *pi)
 {
-	uint32 i;
+	uint32_t i;
 	
 #if PARAM_CHECK
 	if ((NULL == pi) || ((NULL == pi->chip_name) && (NULL == pi->chip_type)))
@@ -622,7 +622,7 @@ RESULT target_build_chip_series(const char *chip_series,
 	xmlDocPtr doc = NULL;
 	xmlNodePtr curNode = NULL;
 	char *filename = NULL;
-	uint32 i, j;
+	uint32_t i, j;
 	RESULT ret = ERROR_OK;
 	FILE *fp;
 	
@@ -734,7 +734,7 @@ RESULT target_build_chip_series(const char *chip_series,
 			// check
 			if (!xmlStrcmp(paramNode->name, BAD_CAST "chip_id"))
 			{
-				s->chips_param[i].chip_id = (uint32)strtoul(
+				s->chips_param[i].chip_id = (uint32_t)strtoul(
 								(const char *)xmlNodeGetContent(paramNode), 
 								NULL, 0);
 			}
@@ -763,103 +763,103 @@ RESULT target_build_chip_series(const char *chip_series,
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "boot_page_size"))
 			{
-				s->chips_param[i].boot_page_size = (uint32)strtoul(
+				s->chips_param[i].boot_page_size = (uint32_t)strtoul(
 								(const char *)xmlNodeGetContent(paramNode), 
 								NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "boot_page_num"))
 			{
-				s->chips_param[i].boot_page_num = (uint32)strtoul(
+				s->chips_param[i].boot_page_num = (uint32_t)strtoul(
 								(const char *)xmlNodeGetContent(paramNode), 
 								NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "app_page_size"))
 			{
-				s->chips_param[i].app_page_size = (uint32)strtoul(
+				s->chips_param[i].app_page_size = (uint32_t)strtoul(
 								(const char *)xmlNodeGetContent(paramNode), 
 								NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "app_page_num"))
 			{
-				s->chips_param[i].app_page_num = (uint32)strtoul(
+				s->chips_param[i].app_page_num = (uint32_t)strtoul(
 								(const char *)xmlNodeGetContent(paramNode), 
 								NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "ee_page_size"))
 			{
-				s->chips_param[i].ee_page_size = (uint32)strtoul(
+				s->chips_param[i].ee_page_size = (uint32_t)strtoul(
 								(const char *)xmlNodeGetContent(paramNode), 
 								NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "ee_page_num"))
 			{
-				s->chips_param[i].ee_page_num = (uint32)strtoul(
+				s->chips_param[i].ee_page_num = (uint32_t)strtoul(
 								(const char *)xmlNodeGetContent(paramNode), 
 								NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "optrom_page_size"))
 			{
-				s->chips_param[i].optrom_page_size = (uint32)strtoul(
+				s->chips_param[i].optrom_page_size = (uint32_t)strtoul(
 								(const char *)xmlNodeGetContent(paramNode), 
 								NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "optrom_page_num"))
 			{
-				s->chips_param[i].optrom_page_num = (uint32)strtoul(
+				s->chips_param[i].optrom_page_num = (uint32_t)strtoul(
 								(const char *)xmlNodeGetContent(paramNode), 
 								NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "usrsig_page_size"))
 			{
-				s->chips_param[i].usrsig_page_size = (uint32)strtoul(
+				s->chips_param[i].usrsig_page_size = (uint32_t)strtoul(
 								(const char *)xmlNodeGetContent(paramNode), 
 								NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "usrsig_page_num"))
 			{
-				s->chips_param[i].usrsig_page_num = (uint32)strtoul(
+				s->chips_param[i].usrsig_page_num = (uint32_t)strtoul(
 								(const char *)xmlNodeGetContent(paramNode), 
 								NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "fuse_size"))
 			{
-				s->chips_param[i].fuse_size = (uint32)strtoul(
+				s->chips_param[i].fuse_size = (uint32_t)strtoul(
 								(const char *)xmlNodeGetContent(paramNode), 
 								NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "lock_size"))
 			{
-				s->chips_param[i].lock_size = (uint32)strtoul(
+				s->chips_param[i].lock_size = (uint32_t)strtoul(
 								(const char *)xmlNodeGetContent(paramNode), 
 								NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "boot_size"))
 			{
-				s->chips_param[i].boot_size = (uint32)strtoul(
+				s->chips_param[i].boot_size = (uint32_t)strtoul(
 								(const char *)xmlNodeGetContent(paramNode), 
 								NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "app_size"))
 			{
-				s->chips_param[i].app_size = (uint32)strtoul(
+				s->chips_param[i].app_size = (uint32_t)strtoul(
 								(const char *)xmlNodeGetContent(paramNode), 
 								NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "ee_size"))
 			{
-				s->chips_param[i].ee_size = (uint32)strtoul(
+				s->chips_param[i].ee_size = (uint32_t)strtoul(
 								(const char *)xmlNodeGetContent(paramNode), 
 								NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "optrom_size"))
 			{
-				s->chips_param[i].optrom_size = (uint32)strtoul(
+				s->chips_param[i].optrom_size = (uint32_t)strtoul(
 								(const char *)xmlNodeGetContent(paramNode), 
 								NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "usrsig_size"))
 			{
-				s->chips_param[i].usrsig_size = (uint32)strtoul(
+				s->chips_param[i].usrsig_size = (uint32_t)strtoul(
 								(const char *)xmlNodeGetContent(paramNode), 
 								NULL, 0);
 			}
@@ -876,7 +876,7 @@ RESULT target_build_chip_series(const char *chip_series,
 				{
 					// parameters
 					j = atoi(&str_tmp[5]);
-					s->chips_param[i].param[j] = (uint32)strtoul(
+					s->chips_param[i].param[j] = (uint32_t)strtoul(
 								(const char *)xmlNodeGetContent(paramNode), 
 								NULL, 0);
 				}

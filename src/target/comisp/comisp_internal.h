@@ -27,8 +27,8 @@
 typedef struct
 {
 	char comport[21];
-	int32 baudrate;
-	int8 datalength;
+	int32_t baudrate;
+	int8_t datalength;
 	char paritybit;
 	char stopbit;
 	char handshake;
@@ -39,14 +39,14 @@ typedef struct
 {
 	const char *chip_name;
 	com_mode_t com_mode;
-	uint8 default_char;
-	uint32 flash_start_addr;
+	uint8_t default_char;
+	uint32_t flash_start_addr;
 }comisp_param_t;
 
 extern comisp_param_t comisp_chip_param;
 extern com_mode_t com_mode;
-extern uint8 comisp_execute_flag;
-extern uint32 comisp_execute_addr;
+extern uint8_t comisp_execute_flag;
+extern uint32_t comisp_execute_addr;
 
 #endif /* __COMISP_INTERNAL_H_INCLUDED__ */
 

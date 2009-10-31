@@ -58,14 +58,14 @@ const program_area_map_t s5x_program_area_map[] =
 	{0, 0, 0}
 };
 
-static uint8 s5x_lock = 0;
-static uint8 s5x_fuse = 0;
+static uint8_t s5x_lock = 0;
+static uint8_t s5x_fuse = 0;
 
-static uint16 s5x_flash_offset = 0;
-static uint8 s5x_prog_mode = 0;
+static uint16_t s5x_flash_offset = 0;
+static uint8_t s5x_prog_mode = 0;
 
-static uint16 s5x_byte_delay_us = 500;
-static uint16 s5x_isp_frequency = 560;
+static uint16_t s5x_byte_delay_us = 500;
+static uint16_t s5x_isp_frequency = 560;
 
 void s5x_usage(void)
 {
@@ -80,7 +80,7 @@ Usage of %s:\n\
 
 void s5x_support(void)
 {
-	uint32 i;
+	uint32_t i;
 
 	printf("Support list of %s:\n", CUR_TARGET_STRING);
 	for (i = 0; i < cur_chips_num; i++)
@@ -114,7 +114,7 @@ RESULT s5x_parse_argument(char cmd, const char *argu)
 			return ERRCODE_INVALID_OPTION;
 		}
 		
-		cur_frequency = (uint16)strtoul(argu, NULL, 0);
+		cur_frequency = (uint16_t)strtoul(argu, NULL, 0);
 		
 		break;
 	case 'w':
@@ -125,7 +125,7 @@ RESULT s5x_parse_argument(char cmd, const char *argu)
 			return ERRCODE_INVALID_OPTION;
 		}
 		
-		s5x_byte_delay_us = (uint16)strtoul(argu, NULL, 0);
+		s5x_byte_delay_us = (uint16_t)strtoul(argu, NULL, 0);
 		if (s5x_byte_delay_us & 0x8000)
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), cmd);
@@ -141,7 +141,7 @@ RESULT s5x_parse_argument(char cmd, const char *argu)
 			return ERRCODE_INVALID_OPTION;
 		}
 		
-		s5x_lock = (uint8)strtoul(argu, NULL, 0);
+		s5x_lock = (uint8_t)strtoul(argu, NULL, 0);
 		if ((s5x_lock < 1) || (s5x_lock > 4))
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), cmd);
@@ -158,7 +158,7 @@ RESULT s5x_parse_argument(char cmd, const char *argu)
 			return ERRCODE_INVALID_OPTION;
 		}
 		
-		s5x_fuse = (uint8)strtoul(argu, NULL, 0);
+		s5x_fuse = (uint8_t)strtoul(argu, NULL, 0);
 		if (s5x_fuse > 0x0F)
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_HEX_MESSAGE), s5x_fuse, 
@@ -203,7 +203,7 @@ RESULT s5x_parse_argument(char cmd, const char *argu)
 
 RESULT s5x_probe_chip(char *chip_name)
 {
-	uint32 i;
+	uint32_t i;
 	
 	for (i = 0; i < cur_chips_num; i++)
 	{
@@ -233,12 +233,12 @@ RESULT s5x_prepare_buffer(program_info_t *pi)
 	return ERROR_OK;
 }
 
-RESULT s5x_write_buffer_from_file_callback(uint32 address, uint32 seg_addr, 
-										   uint8* data, uint32 length, 
+RESULT s5x_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr, 
+										   uint8_t* data, uint32_t length, 
 										   void* buffer)
 {
 	program_info_t *pi = (program_info_t *)buffer;
-	uint32 mem_addr = address & 0x0000FFFF, page_size;
+	uint32_t mem_addr = address & 0x0000FFFF, page_size;
 	RESULT ret;
 	
 #ifdef PARAM_CHECK
@@ -283,7 +283,7 @@ RESULT s5x_write_buffer_from_file_callback(uint32 address, uint32 seg_addr,
 			return ERRCODE_INVALID;
 		}
 		memcpy(pi->app + mem_addr, data, length);
-		pi->app_size_valid += (uint16)length;
+		pi->app_size_valid += (uint16_t)length;
 		
 		if (cur_prog_mode & S5X_PAGE_MODE)
 		{
@@ -323,7 +323,7 @@ RESULT s5x_fini(program_info_t *pi, programmer_info_t *prog)
 
 RESULT s5x_init(program_info_t *pi, const char *dir, programmer_info_t *prog)
 {
-	uint8 i;
+	uint8_t i;
 	operation_t opt_tmp;
 	
 	dir = dir;
@@ -399,13 +399,13 @@ RESULT s5x_init(program_info_t *pi, const char *dir, programmer_info_t *prog)
 	}
 }
 
-uint32 s5x_interface_needed(void)
+uint32_t s5x_interface_needed(void)
 {
 	return S5X_INTERFACE_NEEDED;
 }
 
 RESULT s5x_get_mass_product_data_size(operation_t operations, 
-									  program_info_t pi, uint32 *size)
+									  program_info_t pi, uint32_t *size)
 {
 	operations = operations;
 	pi = pi;
@@ -415,7 +415,7 @@ RESULT s5x_get_mass_product_data_size(operation_t operations,
 }
 
 RESULT s5x_prepare_mass_product_data(operation_t operations, 
-									 program_info_t pi, uint8 *buff)
+									 program_info_t pi, uint8_t *buff)
 {
 	operations = operations;
 	pi = pi;
@@ -456,13 +456,13 @@ RESULT s5x_program(operation_t operations, program_info_t *pi,
 
 #define commit()				prog->peripheral_commit()
 
-	uint8 chip_sig[3];
-	uint16 voltage;
-	uint8 cmd_buf[4];
-	uint8 poll_value, tmp8;
-	int32 i;
-	uint32 j, k, len_current_list, page_size;
-	uint8 page_buf[256];
+	uint8_t chip_sig[3];
+	uint16_t voltage;
+	uint8_t cmd_buf[4];
+	uint8_t poll_value, tmp8;
+	int32_t i;
+	uint32_t j, k, len_current_list, page_size;
+	uint8_t page_buf[256];
 	RESULT ret = ERROR_OK;
 	memlist *ml_tmp;
 
@@ -679,9 +679,9 @@ RESULT s5x_program(operation_t operations, program_info_t *pi,
 				k = page_size - (ml_tmp->addr % page_size);
 			}
 			
-			len_current_list = (uint32)ml_tmp->len;
-			for (i = -(int32)(ml_tmp->addr % page_size); 
-				 i < ((int32)ml_tmp->len - (int32)(ml_tmp->addr % page_size)); 
+			len_current_list = (uint32_t)ml_tmp->len;
+			for (i = -(int32_t)(ml_tmp->addr % page_size); 
+				 i < ((int32_t)ml_tmp->len - (int32_t)(ml_tmp->addr % page_size)); 
 				 i += page_size)
 			{
 				if (cur_prog_mode & S5X_PAGE_MODE)
@@ -721,8 +721,8 @@ RESULT s5x_program(operation_t operations, program_info_t *pi,
 					for (j = 0; j < page_size; j++)
 					{
 						cmd_buf[0] = 0x40;
-						cmd_buf[1] = (uint8)((ml_tmp->addr + i + j) >> 8);
-						cmd_buf[2] = (uint8)((ml_tmp->addr + i + j) >> 0);
+						cmd_buf[1] = (uint8_t)((ml_tmp->addr + i + j) >> 8);
+						cmd_buf[2] = (uint8_t)((ml_tmp->addr + i + j) >> 0);
 						cmd_buf[3] = pi->app[ml_tmp->addr + i + j];
 						spi_io(cmd_buf, 4, NULL, 0, 0);
 						delay_us(s5x_byte_delay_us);
@@ -786,9 +786,9 @@ RESULT s5x_program(operation_t operations, program_info_t *pi,
 				k = page_size - (ml_tmp->addr % page_size);
 			}
 			
-			len_current_list = (uint32)ml_tmp->len;
-			for (i = -(int32)(ml_tmp->addr % page_size); 
-				 i < ((int32)ml_tmp->len - (int32)(ml_tmp->addr % page_size)); 
+			len_current_list = (uint32_t)ml_tmp->len;
+			for (i = -(int32_t)(ml_tmp->addr % page_size); 
+				 i < ((int32_t)ml_tmp->len - (int32_t)(ml_tmp->addr % page_size)); 
 				 i += page_size)
 			{
 				if (cur_prog_mode & S5X_PAGE_MODE)
@@ -807,8 +807,8 @@ RESULT s5x_program(operation_t operations, program_info_t *pi,
 					}
 					
 					memset(page_buf, 0, page_size);
-					spi_io(page_buf, (uint16)page_size, page_buf, 0, 
-						   (uint16)page_size);
+					spi_io(page_buf, (uint16_t)page_size, page_buf, 0, 
+						   (uint16_t)page_size);
 					
 					if (ERROR_OK != commit())
 					{
@@ -825,8 +825,8 @@ RESULT s5x_program(operation_t operations, program_info_t *pi,
 					for (j = 0; j < page_size; j++)
 					{
 						cmd_buf[0] = 0x20;
-						cmd_buf[1] = (uint8)((ml_tmp->addr + i + j) >> 8);
-						cmd_buf[2] = (uint8)((ml_tmp->addr + i + j) >> 0);
+						cmd_buf[1] = (uint8_t)((ml_tmp->addr + i + j) >> 8);
+						cmd_buf[2] = (uint8_t)((ml_tmp->addr + i + j) >> 0);
 						cmd_buf[3] = 0;
 						spi_io(cmd_buf, 4, page_buf + j, 3, 1);
 					}
@@ -989,10 +989,10 @@ RESULT s5x_program(operation_t operations, program_info_t *pi,
 		{
 			for (i = 1; i < 4; i++)
 			{
-				if (pi->lock_value >= (uint32)i)
+				if (pi->lock_value >= (uint32_t)i)
 				{
 					cmd_buf[0] = 0xAC;
-					cmd_buf[1] = 0xE0 + (uint8)i;
+					cmd_buf[1] = 0xE0 + (uint8_t)i;
 					cmd_buf[2] = 0x00;
 					cmd_buf[3] = 0x00;
 					spi_io(cmd_buf, 4, NULL, 0, 0);
@@ -1016,7 +1016,7 @@ RESULT s5x_program(operation_t operations, program_info_t *pi,
 	
 	if (operations.read_operations & LOCK)
 	{
-		uint8 lock;
+		uint8_t lock;
 		
 		if (operations.verify_operations & LOCK)
 		{

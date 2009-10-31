@@ -70,23 +70,23 @@ const char *svf_command_name[14] =
 
 typedef struct
 {
-	uint32 line_num;
-	uint8 enabled;
-	uint32 buffer_offset;
-	uint32 bit_len;
+	uint32_t line_num;
+	uint8_t enabled;
+	uint32_t buffer_offset;
+	uint32_t bit_len;
 }svf_parser_check_tdo_para_t;
 
-uint32 svf_file_index = 0;
-uint32 svf_line_number = 0;
+uint32_t svf_file_index = 0;
+uint32_t svf_line_number = 0;
 
-static uint8 svf_parser_tdo_buffer[SVF_PARSER_DATA_BUFFER_SIZE];
-static uint8 svf_parser_mask_buffer[SVF_PARSER_DATA_BUFFER_SIZE];
-static uint32 svf_parser_buffer_index = 0;
+static uint8_t svf_parser_tdo_buffer[SVF_PARSER_DATA_BUFFER_SIZE];
+static uint8_t svf_parser_mask_buffer[SVF_PARSER_DATA_BUFFER_SIZE];
+static uint32_t svf_parser_buffer_index = 0;
 
-static uint8 svf_parser_tdi_buffer[SVF_PARSER_DATA_BUFFER_SIZE];
+static uint8_t svf_parser_tdi_buffer[SVF_PARSER_DATA_BUFFER_SIZE];
 static svf_parser_check_tdo_para_t 
 						svf_parser_check[SVF_PARSER_DATA_BUFFER_SIZE];
-static uint32 svf_parser_check_index = 0;
+static uint32_t svf_parser_check_index = 0;
 
 static svf_para_t svf_parser_para;
 
@@ -140,10 +140,10 @@ void svf_parser_fini(void)
 	jtag_fini();
 }
 
-static RESULT svf_parser_adjust_array_length(uint8 **arr, uint32 orig_bit_len, 
-											 uint32 new_bit_len)
+static RESULT svf_parser_adjust_array_length(uint8_t **arr, uint32_t orig_bit_len, 
+											 uint32_t new_bit_len)
 {
-	uint32 new_byte_len = (new_bit_len + 7) >> 3;
+	uint32_t new_byte_len = (new_bit_len + 7) >> 3;
 	
 	if ((NULL == *arr) 
 		|| (((orig_bit_len + 7) >> 3) < ((new_bit_len + 7) >> 3)))
@@ -153,7 +153,7 @@ static RESULT svf_parser_adjust_array_length(uint8 **arr, uint32 orig_bit_len,
 			free(*arr);
 			*arr = NULL;
 		}
-		*arr = (uint8*)malloc(new_byte_len);
+		*arr = (uint8_t*)malloc(new_byte_len);
 		if (NULL == *arr)
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
@@ -165,10 +165,10 @@ static RESULT svf_parser_adjust_array_length(uint8 **arr, uint32 orig_bit_len,
 	return ERROR_OK;
 }
 
-static void svf_parser_append_1s(uint8 *dest, uint32 dest_bit_len, 
-								 uint32 append_bit_len)
+static void svf_parser_append_1s(uint8_t *dest, uint32_t dest_bit_len, 
+								 uint32_t append_bit_len)
 {
-	uint32 i;
+	uint32_t i;
 	
 	for (i = 0; i < append_bit_len; i++)
 	{
@@ -180,10 +180,10 @@ static void svf_parser_append_1s(uint8 *dest, uint32 dest_bit_len,
 	}
 }
 
-static void svf_parser_append_bit(uint8 *dest, uint32 dest_bit_len, 
-								  uint8 *src, uint32 src_bit_len)
+static void svf_parser_append_bit(uint8_t *dest, uint32_t dest_bit_len, 
+								  uint8_t *src, uint32_t src_bit_len)
 {
-	uint32 i;
+	uint32_t i;
 	
 	if ((src_bit_len > 0) && ((NULL == src) || (NULL == dest)))
 	{
@@ -204,10 +204,10 @@ static void svf_parser_append_bit(uint8 *dest, uint32 dest_bit_len,
 	}
 }
 
-static uint8 svf_parser_find_string_in_array(char *str, char **strs, 
-											 uint32 num_of_element)
+static uint8_t svf_parser_find_string_in_array(char *str, char **strs, 
+											 uint32_t num_of_element)
 {
-	uint8 i;
+	uint8_t i;
 	
 	for (i = 0; i < num_of_element; i++)
 	{
@@ -220,11 +220,11 @@ static uint8 svf_parser_find_string_in_array(char *str, char **strs,
 	return 0xFF;
 }
 
-static RESULT svf_parser_parse_cmd_string(char *str, uint32 len, char **argus, 
-										  uint32 *num_of_argu)
+static RESULT svf_parser_parse_cmd_string(char *str, uint32_t len, char **argus, 
+										  uint32_t *num_of_argu)
 {
-	uint32 pos = 0, num = 0;
-	uint8 space_found = 1;
+	uint32_t pos = 0, num = 0;
+	uint8_t space_found = 1;
 	
 	while (pos < len)
 	{
@@ -256,12 +256,12 @@ static RESULT svf_parser_parse_cmd_string(char *str, uint32 len, char **argus,
 	return ERROR_OK;
 }
 
-static RESULT svf_parser_copy_hexstring_to_binary(char *str, uint8 **bin, 
-												  uint32 orig_bit_len, 
-												  uint32 bit_len)
+static RESULT svf_parser_copy_hexstring_to_binary(char *str, uint8_t **bin, 
+												  uint32_t orig_bit_len, 
+												  uint32_t bit_len)
 {
-	uint32 i, str_len = strlen(str), str_hbyte_len = (bit_len + 3) >> 2;
-	uint8 ch = 0;
+	uint32_t i, str_len = strlen(str), str_hbyte_len = (bit_len + 3) >> 2;
+	uint8_t ch = 0;
 
 	if (ERROR_OK != svf_parser_adjust_array_length(bin, orig_bit_len, bit_len))
 	{
@@ -327,12 +327,12 @@ static RESULT svf_parser_copy_hexstring_to_binary(char *str, uint8 **bin,
 }
 
 #define SVFP_CMD_INC_CNT			1024
-uint32 svf_parser_get_command(FILE *file, char **cmd_buffer, uint32 *cmd_len)
+uint32_t svf_parser_get_command(FILE *file, char **cmd_buffer, uint32_t *cmd_len)
 {
 	char *tmp_buffer = NULL;
-	uint32 cmd_pos = 0;
+	uint32_t cmd_pos = 0;
 	char ch;
-	uint8 comment = 0, slash = 0, cmd_ok = 0;
+	uint8_t comment = 0, slash = 0, cmd_ok = 0;
 	
 	// get 1 valid command
 	while (!feof(file) && !cmd_ok)
@@ -410,8 +410,8 @@ uint32 svf_parser_get_command(FILE *file, char **cmd_buffer, uint32 *cmd_len)
 
 RESULT svf_parser_check_tdo(void)
 {
-	uint32 i, j, byte_len, index;
-	uint32 bit_mask;
+	uint32_t i, j, byte_len, index;
+	uint32_t bit_mask;
 
 	for (i = 0; i < svf_parser_check_index; i++)
 	{
@@ -436,11 +436,11 @@ RESULT svf_parser_check_tdo(void)
 					LOG_ERROR("\
 tdo check error at line %d, read = 0x%X, want = 0x%X, mask = 0x%X\n", 
 							svf_parser_check[i].line_num, 
-							(*(uint32*)(svf_parser_tdi_buffer + index)) 
+							(*(uint32_t*)(svf_parser_tdi_buffer + index)) 
 								& bit_mask, 
-							(*(uint32*)(svf_parser_tdo_buffer + index)) 
+							(*(uint32_t*)(svf_parser_tdo_buffer + index)) 
 								& bit_mask, 
-							(*(uint32*)(svf_parser_mask_buffer + index)) 
+							(*(uint32_t*)(svf_parser_mask_buffer + index)) 
 								& bit_mask);
 					
 					return ERROR_FAIL;
@@ -455,8 +455,8 @@ tdo check error at line %d, read = 0x%X, want = 0x%X, mask = 0x%X\n",
 	return ERROR_OK;
 }
 
-RESULT svf_parser_add_check_para(uint8 enabled, uint32 buffer_offset, 
-								 uint32 bit_len)
+RESULT svf_parser_add_check_para(uint8_t enabled, uint32_t buffer_offset, 
+								 uint32_t bit_len)
 {
 	if (svf_parser_check_index >= SVF_PARSER_DATA_BUFFER_SIZE)
 	{
@@ -476,25 +476,25 @@ RESULT svf_parser_add_check_para(uint8 enabled, uint32 buffer_offset,
 RESULT svf_parser_run_command(char *cmd_str)
 {
 	char *argus[256];
-	uint32 num_of_argu = 0;
-	uint32 i, i_tmp;
-	uint8 command;
+	uint32_t num_of_argu = 0;
+	uint32_t i, i_tmp;
+	uint8_t command;
 	RESULT ret = ERROR_OK;
 	
 	// for RUNTEST
-	uint32 run_count;
+	uint32_t run_count;
 	float min_time, max_time;
 	
 	// for XXR
 	svf_xxr_para_t *xxr_para_tmp;
-	uint8 **pbuffer_tmp;
+	uint8_t **pbuffer_tmp;
 	
 	// for STATE
 	tap_state_t *path = NULL;
 	
 	LOG_DEBUG("%s\n", cmd_str);
 	
-	ret = svf_parser_parse_cmd_string(cmd_str, (uint32)strlen(cmd_str), 
+	ret = svf_parser_parse_cmd_string(cmd_str, (uint32_t)strlen(cmd_str), 
 									  argus, &num_of_argu);
 	if (ret != ERROR_OK)
 	{
@@ -567,7 +567,7 @@ RESULT svf_parser_run_command(char *cmd_str)
 			}
 			
 			svf_parser_para.frequency = (float)atof(argus[1]);
-			jtag_set_frequency((uint16)(svf_parser_para.frequency / 1000));
+			jtag_set_frequency((uint16_t)(svf_parser_para.frequency / 1000));
 			
 			LOG_DEBUG("\tfrequency = %f\n", svf_parser_para.frequency);
 		}
@@ -911,7 +911,7 @@ XXR_common:
 		// calculate run_count
 		if ((0 == run_count) && (min_time > 0))
 		{
-			run_count = (uint32)(min_time * svf_parser_para.frequency);
+			run_count = (uint32_t)(min_time * svf_parser_para.frequency);
 		}
 		// all parameter should be parsed
 		if (i == num_of_argu)
@@ -1075,7 +1075,7 @@ XXR_common:
 	
 	if (verbosity >= DEBUG_LEVEL)
 	{
-		uint32 read_value;
+		uint32_t read_value;
 		
 		if (((command != STATE) && (command != RUNTEST)) 
 				|| ((command == STATE) && (num_of_argu == 2)))

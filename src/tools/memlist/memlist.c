@@ -33,8 +33,8 @@
 #define MEMLIST_AdjustLen(len, page_size)		\
 						(((len) + (page_size) - 1) / (page_size) * (page_size))
 
-static RESULT MEMLIST_Merge(memlist *ml, uint32 addr, uint32 len, 
-							uint32 page_size)
+static RESULT MEMLIST_Merge(memlist *ml, uint32_t addr, uint32_t len, 
+							uint32_t page_size)
 {
 	while (ml != NULL)
 	{
@@ -59,7 +59,7 @@ static void MEMLIST_InsertLast(memlist *ml, memlist *newitem)
 	ml->next = newitem;
 }
 
-RESULT MEMLIST_Add(memlist **ml, uint32 addr, uint32 len, uint32 page_size)
+RESULT MEMLIST_Add(memlist **ml, uint32_t addr, uint32_t len, uint32_t page_size)
 {
 	memlist *newitem = NULL;
 	

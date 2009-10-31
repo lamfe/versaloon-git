@@ -42,7 +42,7 @@
 #define AVR8_HVPP_INTERFACE_NEEDED		(GPIO | POWER)
 #define AVR8_HVSP_INTERFACE_NEEDED		(GPIO | POWER)
 
-extern uint16 avr8_isp_frequency;
+extern uint16_t avr8_isp_frequency;
 RESULT avr8_isp_program(operation_t operations, program_info_t *pi, 
 						programmer_info_t *prog);
 RESULT avr8_jtag_program(operation_t operations, program_info_t *pi, 

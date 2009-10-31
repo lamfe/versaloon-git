@@ -19,7 +19,7 @@
 #ifndef __TIMER_H_INCLUDED__
 #define __TIMER_H_INCLUDED__
 
-uint32 get_time_in_ms(void);
+uint32_t get_time_in_ms(void);
 
 #endif /* __TIMER_H_INCLUDED__ */
 

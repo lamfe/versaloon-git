@@ -54,10 +54,10 @@ RESULT cm3_dp_halt(void);
 RESULT cm3_dp_run(void);
 RESULT cm3_reset(void);
 
-RESULT cm3_read_core_register(uint8 reg_idx, uint32 *value);
-RESULT cm3_write_core_register(uint8 reg_idx, uint32 *value);
+RESULT cm3_read_core_register(uint8_t reg_idx, uint32_t *value);
+RESULT cm3_write_core_register(uint8_t reg_idx, uint32_t *value);
 
-uint32 cm3_get_max_block_size(uint32 address);
+uint32_t cm3_get_max_block_size(uint32_t address);
 
 #endif	// __CM3_COMMON_H_INCLUDED__
 
