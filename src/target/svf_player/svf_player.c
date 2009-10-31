@@ -79,7 +79,7 @@ Usage of %s:\n\
 
 static void svfp_support(void)
 {
-	uint32 i;
+	uint32_t i;
 	
 	printf("Support list of %s:\n", CUR_TARGET_STRING);
 	for (i = 0; i < dimof(cur_chips_param); i++)
@@ -93,8 +93,8 @@ static void svfp_support(void)
 
 RESULT svfp_parse_argument(char cmd, const char *argu)
 {
-	uint32 filename_len;
-	uint16 jtag_initial_speed;
+	uint32_t filename_len;
+	uint16_t jtag_initial_speed;
 	
 	switch (cmd)
 	{
@@ -118,7 +118,7 @@ RESULT svfp_parse_argument(char cmd, const char *argu)
 			((char *)argu)[strlen(argu) - 1] = '\0';
 			strcpy((char *)argu, argu + 1);
 		}
-		filename_len = (uint32)strlen(argu);
+		filename_len = (uint32_t)strlen(argu);
 		svfp_filename = (char *)malloc(filename_len + 1);
 		if (NULL == svfp_filename)
 		{
@@ -136,7 +136,7 @@ RESULT svfp_parse_argument(char cmd, const char *argu)
 			return ERRCODE_INVALID_OPTION;
 		}
 		
-		jtag_initial_speed = (uint16)strtoul(argu, NULL, 0);
+		jtag_initial_speed = (uint16_t)strtoul(argu, NULL, 0);
 		first_command = (char*)malloc(strlen(SVF_SET_FREQ_CMD) + 20);
 		sprintf(first_command, SVF_SET_FREQ_CMD, 
 				(float)jtag_initial_speed * 1000);
@@ -162,8 +162,8 @@ RESULT svfp_prepare_buffer(program_info_t *pi)
 	return ERROR_OK;
 }
 
-RESULT svfp_write_buffer_from_file_callback(uint32 address, uint32 seg_addr, 
-											uint8* data, uint32 length, 
+RESULT svfp_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr, 
+											uint8_t* data, uint32_t length, 
 											void* buffer)
 {
 	address = address;
@@ -205,7 +205,7 @@ RESULT svfp_init(program_info_t *pi, const char *dir, programmer_info_t *prog)
 	return ERROR_OK;
 }
 
-uint32 svfp_interface_needed(void)
+uint32_t svfp_interface_needed(void)
 {
 	return JTAG_LL;
 }
@@ -215,9 +215,9 @@ RESULT svfp_program(operation_t operations, program_info_t *pi,
 					programmer_info_t *prog)
 {
 	FILE *svf_file = NULL;
-	uint32 svf_file_size = 0, command_num = 0;
+	uint32_t svf_file_size = 0, command_num = 0;
 	char *svfp_command_buffer = NULL;
-	uint32 svfp_command_buffer_len = 0;
+	uint32_t svfp_command_buffer_len = 0;
 	RESULT ret = ERROR_OK;
 	
 #ifdef PARAM_CHECK

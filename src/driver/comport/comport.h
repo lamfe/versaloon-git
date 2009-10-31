@@ -32,11 +32,11 @@
 #define COMM_HANDSHAKE_HARDWARE			'H'
 
 void comm_close(void);
-RESULT comm_open(char *comport, uint32 baudrate, uint8 datalength, 
+RESULT comm_open(char *comport, uint32_t baudrate, uint8_t datalength, 
 				 char paritybit, char stopbit, char handshake);
-int32 comm_read(uint8 *buffer, uint32 num_of_bytes);
-int32 comm_write(uint8 *buffer, uint32 num_of_bytes);
-int32 comm_ctrl(uint8 dtr, uint8 rts);
+int32_t comm_read(uint8_t *buffer, uint32_t num_of_bytes);
+int32_t comm_write(uint8_t *buffer, uint32_t num_of_bytes);
+int32_t comm_ctrl(uint8_t dtr, uint8_t rts);
 
 #endif /* __COMPORT_H_INCLUDED__ */
 

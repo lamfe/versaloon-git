@@ -33,12 +33,12 @@
 #define msp430_jtag_config(has_test)						msp430jtagsbw_config(has_test)
 #define msp430_jtag_clr_tclk()								msp430jtagsbw_tclk(0)
 #define msp430_jtag_set_tclk()								msp430jtagsbw_tclk(1)
-#define msp430_jtag_ir_w(i)									{ ir = i; msp430jtagsbw_ir((uint8*)&ir, 0); }
-#define msp430_jtag_ir_rw(i, ptr)							{ *(uint8*)(ptr) = i; msp430jtagsbw_ir((uint8*)(ptr), 1); }
-#define msp430_jtag_dr16_w(d)								{ dr = d; msp430jtagsbw_dr((uint32*)&dr, 16, 0); }
-#define msp430_jtag_dr16_rw(d, ptr)							{ *(uint32*)(ptr) = d; msp430jtagsbw_dr((uint32*)(ptr), 16, 1); }
-#define msp430_jtag_dr20_w(d)								{ dr = d; msp430jtagsbw_dr((uint32*)&dr, 20, 0); } while(0)
-#define msp430_jtag_dr20_rw(d, ptr)							{ *(uint32*)(ptr) = d; msp430jtagsbw_dr((uint32*)(ptr), 20, 1); }
+#define msp430_jtag_ir_w(i)									{ ir = i; msp430jtagsbw_ir((uint8_t*)&ir, 0); }
+#define msp430_jtag_ir_rw(i, ptr)							{ *(uint8_t*)(ptr) = i; msp430jtagsbw_ir((uint8_t*)(ptr), 1); }
+#define msp430_jtag_dr16_w(d)								{ dr = d; msp430jtagsbw_dr((uint32_t*)&dr, 16, 0); }
+#define msp430_jtag_dr16_rw(d, ptr)							{ *(uint32_t*)(ptr) = d; msp430jtagsbw_dr((uint32_t*)(ptr), 16, 1); }
+#define msp430_jtag_dr20_w(d)								{ dr = d; msp430jtagsbw_dr((uint32_t*)&dr, 20, 0); } while(0)
+#define msp430_jtag_dr20_rw(d, ptr)							{ *(uint32_t*)(ptr) = d; msp430jtagsbw_dr((uint32_t*)(ptr), 20, 1); }
 #define msp430_jtag_dr_poll(dr, mask, value, len, cnt, t)	msp430jtagsbw_poll((dr), (mask), (value), (len), (cnt), (t))
 #define msp430_jtag_dr16_poll(dr, mask, value, cnt, t)		msp430jtagsbw_poll((dr), (mask), (value), 16, (cnt), (t))
 #define msp430_jtag_reset()									msp430jtagsbw_reset()
@@ -48,7 +48,7 @@
 #define commit()											prog->peripheral_commit()
 
 
-typedef uint16 word;
+typedef uint16_t word;
 #define IR_Shift(i)											msp430_jtag_ir_w(i)
 #define DR_Shift16(d)										msp430_jtag_dr16_w(d)
 #define DR_Shift20(d)										msp430_jtag_dr20_w(d)
@@ -58,7 +58,7 @@ typedef uint16 word;
 
 #define DR_Shift16_Read(d, ptr)								msp430_jtag_dr16_rw((d), (ptr))
 #define IR_Shift_Read(i, ptr)								msp430_jtag_ir_rw((i), (ptr))
-#define DR_Shift0()											{ dr = 1; msp430jtagsbw_dr((uint32*)&dr, 1, 0); }
+#define DR_Shift0()											{ dr = 1; msp430jtagsbw_dr((uint32_t*)&dr, 1, 0); }
 #define TCLKstrobes(cnt)									msp430jtagsbw_tclk_strobe(cnt)
 
 

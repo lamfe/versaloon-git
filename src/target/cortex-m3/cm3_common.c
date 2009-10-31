@@ -55,7 +55,7 @@ RESULT cm3_dp_fini(void)
 
 RESULT cm3_dp_init(programmer_info_t *prog, adi_dp_if_t *dp)
 {
-	uint32 cpuid;
+	uint32_t cpuid;
 	
 	cm3_dp_if = dp;
 	
@@ -84,9 +84,9 @@ RESULT cm3_dp_init(programmer_info_t *prog, adi_dp_if_t *dp)
 	return ERROR_OK;
 }
 
-RESULT cm3_write_core_register(uint8 reg_idx, uint32 *value)
+RESULT cm3_write_core_register(uint8_t reg_idx, uint32_t *value)
 {
-	uint32 dcrdr, reg;
+	uint32_t dcrdr, reg;
 	
 	if (ERROR_OK != adi_memap_read_reg(CM3_DCB_DCRDR, &dcrdr, 1))
 	{
@@ -100,9 +100,9 @@ RESULT cm3_write_core_register(uint8 reg_idx, uint32 *value)
 	return adi_memap_write_reg(CM3_DCB_DCRDR, &dcrdr, 1);
 }
 
-RESULT cm3_read_core_register(uint8 reg_idx, uint32 *value)
+RESULT cm3_read_core_register(uint8_t reg_idx, uint32_t *value)
 {
-	uint32 dcrdr, reg;
+	uint32_t dcrdr, reg;
 	
 	if (ERROR_OK != adi_memap_read_reg(CM3_DCB_DCRDR, &dcrdr, 1))
 	{
@@ -116,7 +116,7 @@ RESULT cm3_read_core_register(uint8 reg_idx, uint32 *value)
 	return adi_memap_write_reg(CM3_DCB_DCRDR, &dcrdr, 1);
 }
 
-uint32 cm3_get_max_block_size(uint32 address)
+uint32_t cm3_get_max_block_size(uint32_t address)
 {
 	return adi_memap_get_max_tar_block_size(cm3_dp_if->tar_autoincr_block, 
 											address);
@@ -124,7 +124,7 @@ uint32 cm3_get_max_block_size(uint32 address)
 
 RESULT cm3_reset(void)
 {
-	uint32 reg;
+	uint32_t reg;
 	
 	reg = CM3_REG_NVIC_AIRCR_VECTKEY | CM3_REG_NVIC_AIRCR_SYSRESETREQ;
 	return adi_memap_write_reg(CM3_REG_NVIC_AIRCR, &reg, 1);
@@ -132,8 +132,8 @@ RESULT cm3_reset(void)
 
 RESULT cm3_dp_run(void)
 {
-	uint32 dcb_dhcsr = 0;
-	uint8 wait_halt_clear_delay_in_10ms;
+	uint32_t dcb_dhcsr = 0;
+	uint8_t wait_halt_clear_delay_in_10ms;
 	
 	if (ERROR_OK != adi_memap_read_reg(CM3_DCB_DHCSR, &dcb_dhcsr, 1))
 	{
@@ -143,7 +143,7 @@ RESULT cm3_dp_run(void)
 	// enable debug
 	if (!(dcb_dhcsr & CM3_DCB_DHCSR_C_DEBUGEN))
 	{
-		dcb_dhcsr = (uint32)(CM3_DCB_DHCSR_DBGKEY | CM3_DCB_DHCSR_C_DEBUGEN);
+		dcb_dhcsr = (uint32_t)(CM3_DCB_DHCSR_DBGKEY | CM3_DCB_DHCSR_C_DEBUGEN);
 		adi_memap_write_reg(CM3_DCB_DHCSR, &dcb_dhcsr, 0);
 		
 		if (ERROR_OK != adi_memap_read_reg(CM3_DCB_DHCSR, &dcb_dhcsr, 1))
@@ -155,7 +155,7 @@ RESULT cm3_dp_run(void)
 	if (dcb_dhcsr & CM3_DCB_DHCSR_S_HALT)
 	{
 		// clear halt
-		dcb_dhcsr = (uint32)(CM3_DCB_DHCSR_DBGKEY | CM3_DCB_DHCSR_C_DEBUGEN);
+		dcb_dhcsr = (uint32_t)(CM3_DCB_DHCSR_DBGKEY | CM3_DCB_DHCSR_C_DEBUGEN);
 		adi_memap_write_reg(CM3_DCB_DHCSR, &dcb_dhcsr, 0);
 		
 		if (ERROR_OK != adi_memap_read_reg(CM3_DCB_DHCSR, &dcb_dhcsr, 1))
@@ -190,8 +190,8 @@ RESULT cm3_dp_run(void)
 
 RESULT cm3_dp_halt(void)
 {
-	uint32 dcb_dhcsr = 0;
-	uint8 wait_halt_delay_in_10ms;
+	uint32_t dcb_dhcsr = 0;
+	uint8_t wait_halt_delay_in_10ms;
 	
 	if (ERROR_OK != adi_memap_read_reg(CM3_DCB_DHCSR, &dcb_dhcsr, 1))
 	{
@@ -201,7 +201,7 @@ RESULT cm3_dp_halt(void)
 	// enable debug
 	if (!(dcb_dhcsr & CM3_DCB_DHCSR_C_DEBUGEN))
 	{
-		dcb_dhcsr = (uint32)(CM3_DCB_DHCSR_DBGKEY | CM3_DCB_DHCSR_C_DEBUGEN 
+		dcb_dhcsr = (uint32_t)(CM3_DCB_DHCSR_DBGKEY | CM3_DCB_DHCSR_C_DEBUGEN 
 								| CM3_DCB_DHCSR_C_HALT);
 		adi_memap_write_reg(CM3_DCB_DHCSR, &dcb_dhcsr, 0);
 		
@@ -213,7 +213,7 @@ RESULT cm3_dp_halt(void)
 	// halt
 	if (!(dcb_dhcsr & CM3_DCB_DHCSR_S_HALT))
 	{
-		dcb_dhcsr = (uint32)(CM3_DCB_DHCSR_DBGKEY | CM3_DCB_DHCSR_C_DEBUGEN 
+		dcb_dhcsr = (uint32_t)(CM3_DCB_DHCSR_DBGKEY | CM3_DCB_DHCSR_C_DEBUGEN 
 								| CM3_DCB_DHCSR_C_HALT);
 		adi_memap_write_reg(CM3_DCB_DHCSR, &dcb_dhcsr, 0);
 		

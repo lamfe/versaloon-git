@@ -58,14 +58,14 @@ const program_area_map_t avr8_program_area_map[] =
 	{0, 0, 0}
 };
 
-static uint32 avr8_flash_offset = 0;
-static uint32 avr8_eeprom_offset = 0;
+static uint32_t avr8_flash_offset = 0;
+static uint32_t avr8_eeprom_offset = 0;
 
-static uint8 avr8_lock = AVR8_LOCK_CHAR;
-static uint32 avr8_fuse = AVR8_FUSE_CHAR;
+static uint8_t avr8_lock = AVR8_LOCK_CHAR;
+static uint32_t avr8_fuse = AVR8_FUSE_CHAR;
 
-uint16 avr8_isp_frequency = 560;
-static uint8 avr8_prog_mode = 0;
+uint16_t avr8_isp_frequency = 560;
+static uint8_t avr8_prog_mode = 0;
 
 
 static void avr8_usage(void)
@@ -80,7 +80,7 @@ Usage of %s:\n\
 
 static void avr8_support(void)
 {
-	uint32 i;
+	uint32_t i;
 	
 	printf("Support list of %s:\n", CUR_TARGET_STRING);
 	for (i = 0; i < cur_chips_num; i++)
@@ -111,7 +111,7 @@ RESULT avr8_parse_argument(char cmd, const char *argu)
 			return ERRCODE_INVALID_OPTION;
 		}
 		
-		cur_frequency = (uint16)strtoul(argu, NULL, 0);
+		cur_frequency = (uint16_t)strtoul(argu, NULL, 0);
 		
 		break;
 	case 'l':
@@ -122,7 +122,7 @@ RESULT avr8_parse_argument(char cmd, const char *argu)
 			return ERRCODE_INVALID_OPTION;
 		}
 		
-		avr8_lock = (uint8)strtoul(argu, NULL, 0);
+		avr8_lock = (uint8_t)strtoul(argu, NULL, 0);
 		
 		break;
 	case 'f':
@@ -133,7 +133,7 @@ RESULT avr8_parse_argument(char cmd, const char *argu)
 			return ERRCODE_INVALID_OPTION;
 		}
 		
-		avr8_fuse = (uint32)strtoul(argu, NULL, 0);
+		avr8_fuse = (uint32_t)strtoul(argu, NULL, 0);
 		
 		break;
 	case 'm':
@@ -178,7 +178,7 @@ RESULT avr8_parse_argument(char cmd, const char *argu)
 
 RESULT avr8_probe_chip(char *chip_name)
 {
-	uint32 i;
+	uint32_t i;
 
 	for (i = 0; i < cur_chips_num; i++)
 	{
@@ -217,12 +217,12 @@ RESULT avr8_prepare_buffer(program_info_t *pi)
 	return ERROR_OK;
 }
 
-RESULT avr8_write_buffer_from_file_callback(uint32 address, uint32 seg_addr, 
-											uint8* data, uint32 length, 
+RESULT avr8_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr, 
+											uint8_t* data, uint32_t length, 
 											void* buffer)
 {
 	program_info_t *pi = (program_info_t *)buffer;
-	uint32 mem_addr = address & 0x0000FFFF, page_size;
+	uint32_t mem_addr = address & 0x0000FFFF, page_size;
 	RESULT ret;
 
 #ifdef PARAM_CHECK
@@ -262,7 +262,7 @@ RESULT avr8_write_buffer_from_file_callback(uint32 address, uint32 seg_addr,
 			return ERRCODE_INVALID;
 		}
 		memcpy(pi->app + mem_addr, data, length);
-		pi->app_size_valid += (uint16)length;
+		pi->app_size_valid += (uint16_t)length;
 		
 		if (cur_chip_param.app_page_num > 1)
 		{
@@ -307,7 +307,7 @@ RESULT avr8_write_buffer_from_file_callback(uint32 address, uint32 seg_addr,
 			return ERRCODE_INVALID;
 		}
 		memcpy(pi->eeprom + mem_addr, data, length);
-		pi->eeprom_size_valid += (uint16)length;
+		pi->eeprom_size_valid += (uint16_t)length;
 		
 		if (cur_chip_param.ee_page_num > 1)
 		{
@@ -346,7 +346,7 @@ RESULT avr8_fini(program_info_t *pi, programmer_info_t *prog)
 
 RESULT avr8_init(program_info_t *pi, const char *dir, programmer_info_t *prog)
 {
-	uint8 i;
+	uint8_t i;
 	operation_t opt_tmp;
 	
 	dir = dir;
@@ -425,7 +425,7 @@ RESULT avr8_init(program_info_t *pi, const char *dir, programmer_info_t *prog)
 	}
 }
 
-uint32 avr8_interface_needed(void)
+uint32_t avr8_interface_needed(void)
 {
 	switch (cur_prog_mode)
 	{
@@ -454,7 +454,7 @@ uint32 avr8_interface_needed(void)
 RESULT avr8_program(operation_t operations, program_info_t *pi, 
 					programmer_info_t *prog)
 {
-	uint16 voltage;
+	uint16_t voltage;
 	
 #ifdef PARAM_CHECK
 	if (NULL == prog)

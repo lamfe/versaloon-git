@@ -26,8 +26,8 @@
 
 #define cur_chip_param				target_chip_param
 
-static uint8 ir;
-static uint32 dr;
+static uint8_t ir;
+static uint32_t dr;
 
 //----------------------------------------------------------------------------
 /* Function to set target CPU JTAG FSM into the instruction fetch state

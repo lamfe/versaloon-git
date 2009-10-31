@@ -52,8 +52,8 @@
 
 RESULT stm32isp_sycn(void)
 {
-	uint8 buffer[1], retry = 10;
-	int32 comm_ret;
+	uint8_t buffer[1], retry = 10;
+	int32_t comm_ret;
 
 	if (com_mode.auxpin)
 	{
@@ -153,10 +153,10 @@ RESULT stm32isp_sycn(void)
 	}
 }
 
-RESULT stm32isp_send_command(uint8 cmd, const char *cmd_name, 
-							 uint8 *test_protect)
+RESULT stm32isp_send_command(uint8_t cmd, const char *cmd_name, 
+							 uint8_t *test_protect)
 {
-	uint8 buffer[2];
+	uint8_t buffer[2];
 	
 	// send command
 	buffer[0] = cmd;
@@ -188,11 +188,11 @@ RESULT stm32isp_send_command(uint8 cmd, const char *cmd_name,
 	return ERROR_OK;
 }
 
-RESULT stm32isp_get_ack(uint8 accept_0_as_final_ack, uint8 *ret, uint8 quiet)
+RESULT stm32isp_get_ack(uint8_t accept_0_as_final_ack, uint8_t *ret, uint8_t quiet)
 {
-	uint8 buffer[1];
+	uint8_t buffer[1];
 	
-	*ret = (uint8)comm_read(buffer, 1);
+	*ret = (uint8_t)comm_read(buffer, 1);
 	if (*ret != 1)
 	{
 		return ERROR_FAIL;
@@ -216,10 +216,10 @@ RESULT stm32isp_get_ack(uint8 accept_0_as_final_ack, uint8 *ret, uint8 quiet)
 #define STM32ISP_RECEIVE			0
 // data_len_size > 0 means that data_len bytes 
 // MUST be send/received first for data_len_size bytes
-RESULT stm32isp_process_data(uint16 *data_len, uint8 data_len_size, 
-							 uint8 *data, uint8 send1_receive0)
+RESULT stm32isp_process_data(uint16_t *data_len, uint8_t data_len_size, 
+							 uint8_t *data, uint8_t send1_receive0)
 {
-	uint16 actual_len = 0;
+	uint16_t actual_len = 0;
 	
 #if PARAM_CHECK
 	if ((NULL == data_len) || (NULL == data))
@@ -237,7 +237,7 @@ RESULT stm32isp_process_data(uint16 *data_len, uint8 data_len_size,
 		{
 			// send *data_len first
 			(*data_len)--;
-			if (data_len_size != comm_write((uint8*)data_len, data_len_size))
+			if (data_len_size != comm_write((uint8_t*)data_len, data_len_size))
 			{
 				LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
 						  "send data size");
@@ -261,7 +261,7 @@ RESULT stm32isp_process_data(uint16 *data_len, uint8 data_len_size,
 			// receive actual_len first
 			// if large than data_len, return with error
 			if (data_len_size 
-				!= comm_read((uint8*)&actual_len, data_len_size))
+				!= comm_read((uint8_t*)&actual_len, data_len_size))
 			{
 				LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
 						  "read data size");
@@ -286,11 +286,11 @@ RESULT stm32isp_process_data(uint16 *data_len, uint8 data_len_size,
 	return ERROR_OK;
 }
 
-RESULT stm32isp_read_bootloader_version(uint8 *rev)
+RESULT stm32isp_read_bootloader_version(uint8_t *rev)
 {
 	RESULT ret;
-	uint8 buffer[3];
-	uint16 len = 3;
+	uint8_t buffer[3];
+	uint16_t len = 3;
 	
 	// send command
 	ret = stm32isp_send_command(STM32ISP_CMD_GET_VERSION, "Get Version", NULL);
@@ -311,11 +311,11 @@ RESULT stm32isp_read_bootloader_version(uint8 *rev)
 	return stm32isp_get_ack(0, buffer, 0);
 }
 
-RESULT stm32isp_read_product_id(uint32 *id)
+RESULT stm32isp_read_product_id(uint32_t *id)
 {
 	RESULT ret;
-	uint16 len = 4;
-	uint8 buffer[1];
+	uint16_t len = 4;
+	uint8_t buffer[1];
 	
 	// send command
 	ret = stm32isp_send_command(STM32ISP_CMD_GET_ID, "Get ID", NULL);
@@ -325,7 +325,7 @@ RESULT stm32isp_read_product_id(uint32 *id)
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	// read data
-	ret = stm32isp_process_data(&len, 1, (uint8*)id, STM32ISP_RECEIVE);
+	ret = stm32isp_process_data(&len, 1, (uint8_t*)id, STM32ISP_RECEIVE);
 	if (ret != ERROR_OK)
 	{
 		LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), "get product id");
@@ -337,7 +337,7 @@ RESULT stm32isp_read_product_id(uint32 *id)
 RESULT stm32isp_readout_protect(void)
 {
 	RESULT ret;
-	uint8 buffer[1];
+	uint8_t buffer[1];
 	
 	// send command
 	ret = stm32isp_send_command(STM32ISP_CMD_READOUT_PROTECT, 
@@ -354,7 +354,7 @@ RESULT stm32isp_readout_protect(void)
 RESULT stm32isp_readout_unprotect(void)
 {
 	RESULT ret;
-	uint8 buffer[1];
+	uint8_t buffer[1];
 	
 	// send command
 	ret = stm32isp_send_command(STM32ISP_CMD_READOUT_UNPROTECT, 
@@ -371,7 +371,7 @@ RESULT stm32isp_readout_unprotect(void)
 RESULT stm32isp_write_protect(void)
 {
 	RESULT ret;
-	uint8 buffer[1];
+	uint8_t buffer[1];
 	
 	// send command
 	ret = stm32isp_send_command(STM32ISP_CMD_WRITE_PROTECT, 
@@ -388,7 +388,7 @@ RESULT stm32isp_write_protect(void)
 RESULT stm32isp_write_unprotect(void)
 {
 	RESULT ret;
-	uint8 buffer[1];
+	uint8_t buffer[1];
 	
 	// send command
 	ret = stm32isp_send_command(STM32ISP_CMD_WRITE_UNPROTECT, 
@@ -402,10 +402,10 @@ RESULT stm32isp_write_unprotect(void)
 	return stm32isp_get_ack(1, buffer, 0);
 }
 
-RESULT stm32isp_read_memory(uint32 addr, uint8 *data, uint16 *data_len)
+RESULT stm32isp_read_memory(uint32_t addr, uint8_t *data, uint16_t *data_len)
 {
-	uint8 buffer[5], test_protect = 0;
-	uint16 len = 5;
+	uint8_t buffer[5], test_protect = 0;
+	uint16_t len = 5;
 	RESULT ret;
 	int comm_ret;
 	
@@ -468,7 +468,7 @@ RESULT stm32isp_read_memory(uint32 addr, uint8 *data, uint16 *data_len)
 		return ERROR_FAIL;
 	}
 	// send data
-	buffer[0] = (uint8)(*data_len - 1);
+	buffer[0] = (uint8_t)(*data_len - 1);
 	buffer[1] = ~buffer[0];
 	len = 2;
 	ret = stm32isp_process_data(&len, 0, buffer, STM32ISP_SEND);
@@ -483,12 +483,12 @@ RESULT stm32isp_read_memory(uint32 addr, uint8 *data, uint16 *data_len)
 		return ERROR_FAIL;
 	}
 	// get data
-	comm_ret = (uint16)comm_read(data, *data_len);
+	comm_ret = (uint16_t)comm_read(data, *data_len);
 	if (comm_ret != *data_len)
 	{
 		if (comm_ret > 0)
 		{
-			*data_len = (uint16)comm_ret;
+			*data_len = (uint16_t)comm_ret;
 		}
 		else
 		{
@@ -501,10 +501,10 @@ RESULT stm32isp_read_memory(uint32 addr, uint8 *data, uint16 *data_len)
 	return ERROR_OK;
 }
 
-RESULT stm32isp_write_memory(uint32 addr, uint8 *data, uint16 data_len)
+RESULT stm32isp_write_memory(uint32_t addr, uint8_t *data, uint16_t data_len)
 {
-	uint8 buffer[5], test_protect = 0, time_out = 10;
-	uint16 len = 5, i;
+	uint8_t buffer[5], test_protect = 0, time_out = 10;
+	uint16_t len = 5, i;
 	RESULT ret;
 	
 	// send command
@@ -574,7 +574,7 @@ RESULT stm32isp_write_memory(uint32 addr, uint8 *data, uint16 data_len)
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	// send checksum
-	buffer[0] = (uint8)(len - 1);
+	buffer[0] = (uint8_t)(len - 1);
 	for (i = 0; i < len; i++)
 	{
 		buffer[0] ^= data[i];
@@ -613,11 +613,11 @@ RESULT stm32isp_write_memory(uint32 addr, uint8 *data, uint16 data_len)
 	return ERROR_OK;
 }
 
-RESULT stm32isp_erase_sector(uint8 num_of_sector, uint8 *sector_num)
+RESULT stm32isp_erase_sector(uint8_t num_of_sector, uint8_t *sector_num)
 {
-	uint8 buffer[2], dly_cnt, i;
+	uint8_t buffer[2], dly_cnt, i;
 	RESULT ret;
-	uint16 len = 5;
+	uint16_t len = 5;
 	
 	// send command
 	ret = stm32isp_send_command(STM32ISP_CMD_ERASE, "Erase", NULL);
@@ -680,11 +680,11 @@ RESULT stm32isp_erase_sector(uint8 num_of_sector, uint8 *sector_num)
 	return ERROR_OK;
 }
 
-RESULT stm32isp_execute_code(uint32 addr)
+RESULT stm32isp_execute_code(uint32_t addr)
 {
-	uint8 buffer[5];
+	uint8_t buffer[5];
 	RESULT ret;
-	uint16 len = 5;
+	uint16_t len = 5;
 	
 	// send command
 	ret = stm32isp_send_command(STM32ISP_CMD_GO, "Go", NULL);
@@ -711,13 +711,13 @@ RESULT stm32isp_execute_code(uint32 addr)
 
 RESULT stm32isp_program(operation_t operations, program_info_t *pi)
 {
-	uint8 page_buf[STM32ISP_PAGE_SIZE];
-	uint16 page_size, page_size_tmp;
-	uint8 bootloader_version = 0;
-	int32 i, j, k, len_current_list;
-	uint32 product_id = 0;
-	uint32 flash_kb, sram_kb;
-	uint8 error_cnt, tmp8;
+	uint8_t page_buf[STM32ISP_PAGE_SIZE];
+	uint16_t page_size, page_size_tmp;
+	uint8_t bootloader_version = 0;
+	int32_t i, j, k, len_current_list;
+	uint32_t product_id = 0;
+	uint32_t flash_kb, sram_kb;
+	uint8_t error_cnt, tmp8;
 	RESULT ret = ERROR_OK;
 	memlist *ml_tmp;
 
@@ -840,12 +840,12 @@ RESULT stm32isp_program(operation_t operations, program_info_t *pi)
 			}
 			
 			len_current_list = ml_tmp->len;
-			for (i = -(int32)(ml_tmp->addr % 1024); 
-				 i < ((int32)ml_tmp->len - (int32)(ml_tmp->addr % 1024)); 
+			for (i = -(int32_t)(ml_tmp->addr % 1024); 
+				 i < ((int32_t)ml_tmp->len - (int32_t)(ml_tmp->addr % 1024)); 
 				 i += page_size)
 			{
-				uint32 start_addr = cur_chip_param.flash_start_addr;
-				uint32 page_addr = start_addr + i;
+				uint32_t start_addr = cur_chip_param.flash_start_addr;
+				uint32_t page_addr = start_addr + i;
 				
 				ret = stm32isp_write_memory(
 									ml_tmp->addr + i, 
@@ -853,7 +853,7 @@ RESULT stm32isp_program(operation_t operations, program_info_t *pi)
 									page_size);
 				if (ret != ERROR_OK)
 				{
-					uint32 tmp32;
+					uint32_t tmp32;
 					
 					if (++error_cnt > STM32ISP_MAX_ERROR_CNT)
 					{
@@ -864,7 +864,7 @@ RESULT stm32isp_program(operation_t operations, program_info_t *pi)
 						goto leave_program_mode;
 					}
 					tmp32 = ml_tmp->addr - start_addr + i;
-					tmp8 = (uint8)(tmp32 / 1024);
+					tmp8 = (uint8_t)(tmp32 / 1024);
 					if (ERROR_OK != stm32isp_erase_sector(1, &tmp8))
 					{
 						pgbar_fini();
@@ -875,7 +875,7 @@ RESULT stm32isp_program(operation_t operations, program_info_t *pi)
 					}
 					tmp32 -= tmp8 * 1024;
 					len_current_list += tmp32;
-					pgbar_update(-(int32)tmp32);
+					pgbar_update(-(int32_t)tmp32);
 					
 					if (i > 1024)
 					{
@@ -883,7 +883,7 @@ RESULT stm32isp_program(operation_t operations, program_info_t *pi)
 					}
 					else
 					{
-						i = -(int32)(ml_tmp->addr % 1024);
+						i = -(int32_t)(ml_tmp->addr % 1024);
 					}
 					i -= page_size;
 					continue;
@@ -940,12 +940,12 @@ RESULT stm32isp_program(operation_t operations, program_info_t *pi)
 			}
 			
 			len_current_list = ml_tmp->len;
-			for (i = -(int32)(ml_tmp->addr % 1024); 
-				 i < ((int32)ml_tmp->len - (int32)(ml_tmp->addr % 1024)); 
+			for (i = -(int32_t)(ml_tmp->addr % 1024); 
+				 i < ((int32_t)ml_tmp->len - (int32_t)(ml_tmp->addr % 1024)); 
 				 i += page_size)
 			{
-				uint32 start_addr = cur_chip_param.flash_start_addr;
-				uint32 page_addr = start_addr + i;
+				uint32_t start_addr = cur_chip_param.flash_start_addr;
+				uint32_t page_addr = start_addr + i;
 				
 				page_size_tmp = page_size;
 				ret = stm32isp_read_memory(ml_tmp->addr + i, page_buf, 

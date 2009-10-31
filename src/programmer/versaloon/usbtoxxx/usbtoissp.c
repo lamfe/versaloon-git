@@ -34,7 +34,7 @@
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
 
-uint8 usbtoissp_num_of_interface = 0;
+uint8_t usbtoissp_num_of_interface = 0;
 
 
 RESULT usbtoissp_init(void)
@@ -47,7 +47,7 @@ RESULT usbtoissp_fini(void)
 	return usbtoxxx_fini_command(USB_TO_ISSP);
 }
 
-RESULT usbtoissp_config(uint8 interface_index)
+RESULT usbtoissp_config(uint8_t interface_index)
 {
 #if PARAM_CHECK
 	if (interface_index > 7)
@@ -60,10 +60,10 @@ RESULT usbtoissp_config(uint8 interface_index)
 	return usbtoxxx_conf_command(USB_TO_ISSP, interface_index, NULL, 0);
 }
 
-RESULT usbtoissp_vector(uint8 interface_index, uint8 operate, uint8 addr, 
-						uint8 data, uint8 *buf)
+RESULT usbtoissp_vector(uint8_t interface_index, uint8_t operate, uint8_t addr, 
+						uint8_t data, uint8_t *buf)
 {
-	uint8 cmd_buf[3];
+	uint8_t cmd_buf[3];
 	
 #if PARAM_CHECK
 	if (interface_index > 7)
@@ -89,7 +89,7 @@ RESULT usbtoissp_vector(uint8 interface_index, uint8 operate, uint8 addr,
 	}
 }
 
-RESULT usbtoissp_enter_program_mode(uint8 interface_index, uint8 mode)
+RESULT usbtoissp_enter_program_mode(uint8_t interface_index, uint8_t mode)
 {
 #if PARAM_CHECK
 	if (interface_index > 7)
@@ -103,7 +103,7 @@ RESULT usbtoissp_enter_program_mode(uint8 interface_index, uint8 mode)
 							   NULL, 0, 0, 0);
 }
 
-RESULT usbtoissp_leave_program_mode(uint8 interface_index, uint8 mode)
+RESULT usbtoissp_leave_program_mode(uint8_t interface_index, uint8_t mode)
 {
 #if PARAM_CHECK
 	if (interface_index > 7)
@@ -116,7 +116,7 @@ RESULT usbtoissp_leave_program_mode(uint8 interface_index, uint8 mode)
 	return usbtoxxx_out_command(USB_TO_ISSP, interface_index, &mode, 1, 0);
 }
 
-RESULT usbtoissp_wait_and_poll(uint8 interface_index)
+RESULT usbtoissp_wait_and_poll(uint8_t interface_index)
 {
 #if PARAM_CHECK
 	if (interface_index > 7)

@@ -27,13 +27,13 @@ extern const program_area_map_t msp430_program_area_map[];
 RESULT msp430_parse_argument(char cmd, const char *argu);
 RESULT msp430_probe_chip(char *chip_name);
 RESULT msp430_prepare_buffer(program_info_t *pi);
-RESULT msp430_write_buffer_from_file_callback(uint32 address, uint32 seg_addr, 
-											  uint8* data, uint32 length, 
+RESULT msp430_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr, 
+											  uint8_t* data, uint32_t length, 
 											  void* buffer);
 RESULT msp430_init(program_info_t *pi, const char *dir, 
 				   programmer_info_t *prog);
 RESULT msp430_fini(program_info_t *pi, programmer_info_t *prog);
-uint32 msp430_interface_needed(void);
+uint32_t msp430_interface_needed(void);
 RESULT msp430_program(operation_t operations, program_info_t *pi, 
 					  programmer_info_t *prog);
 

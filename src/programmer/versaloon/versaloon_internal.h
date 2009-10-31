@@ -84,37 +84,37 @@
 #define VERSALOON_MAX_PENDING_NUMBER	4096//1024
 typedef struct
 {
-	uint8 type;
-	uint8 cmd;
-	uint16 want_data_pos;
-	uint16 want_data_size;
-	uint16 actual_data_size;
-	uint8 *data_buffer;
-	uint8 collect;
-	uint32 id;
+	uint8_t type;
+	uint8_t cmd;
+	uint16_t want_data_pos;
+	uint16_t want_data_size;
+	uint16_t actual_data_size;
+	uint8_t *data_buffer;
+	uint8_t collect;
+	uint32_t id;
 }versaloon_pending_t;
 extern versaloon_pending_t versaloon_pending[VERSALOON_MAX_PENDING_NUMBER];
-extern uint16 versaloon_pending_idx;
-RESULT versaloon_add_pending(uint8 type, uint8 cmd, uint16 actual_szie, 
-							 uint16 want_pos, uint16 want_size, uint8 *buffer, 
-							 uint8 collect, uint32 id);
+extern uint16_t versaloon_pending_idx;
+RESULT versaloon_add_pending(uint8_t type, uint8_t cmd, uint16_t actual_szie, 
+							 uint16_t want_pos, uint16_t want_size, uint8_t *buffer, 
+							 uint8_t collect, uint32_t id);
 
 
 
 
-RESULT versaloon_get_target_voltage(uint16 *voltage);
-RESULT versaloon_get_hardware(uint8 *hardware);
-const char* versaloon_get_hardware_name(uint8 idx);
-RESULT versaloon_send_command(uint16 out_len, uint16 *inlen);
+RESULT versaloon_get_target_voltage(uint16_t *voltage);
+RESULT versaloon_get_hardware(uint8_t *hardware);
+const char* versaloon_get_hardware_name(uint8_t idx);
+RESULT versaloon_send_command(uint16_t out_len, uint16_t *inlen);
 RESULT versaloon_init(void);
 RESULT versaloon_fini(void);
 
-RESULT versaloon_download_mass_product_data(const char *name, uint8 *buffer, 
-											uint32 len);
-RESULT versaloon_query_mass_product_data_size(uint32 *size);
+RESULT versaloon_download_mass_product_data(const char *name, uint8_t *buffer, 
+											uint32_t len);
+RESULT versaloon_query_mass_product_data_size(uint32_t *size);
 
-extern uint8 *versaloon_buf;
-extern uint16 versaloon_buf_size;
+extern uint8_t *versaloon_buf;
+extern uint16_t versaloon_buf_size;
 
 #endif /* __VERSALOON_INTERNAL_H_INCLUDED__ */
 

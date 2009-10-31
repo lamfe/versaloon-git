@@ -46,14 +46,14 @@
 RESULT msp430_jtag_program(operation_t operations, program_info_t *pi, 
 						   programmer_info_t *prog)
 {
-	uint16 chip_id;
-	uint8 tmp8;
+	uint16_t chip_id;
+	uint8_t tmp8;
 	
-	uint8 erased = 0;
-	uint8 ir;
-	uint32 dr;
-	int32 i;
-	uint32 k, len_current_list;
+	uint8_t erased = 0;
+	uint8_t ir;
+	uint32_t dr;
+	int32_t i;
+	uint32_t k, len_current_list;
 	word page_size, addr_start;
 	RESULT ret = ERROR_OK;
 	word CRC_check, CRC_calc;
@@ -225,7 +225,7 @@ RESULT msp430_jtag_program(operation_t operations, program_info_t *pi,
 					cur_chip_param.app_page_num, 
 					PROGRESS_STEP, '=');
 		
-		for (i = 0; i < (int32)cur_chip_param.app_page_num; i++)
+		for (i = 0; i < (int32_t)cur_chip_param.app_page_num; i++)
 		{
 			CRC_calc = CRC_check = 0;
 			CRC_calc = EraseCheck((word)(addr_start + i * page_size), 
@@ -277,8 +277,8 @@ RESULT msp430_jtag_program(operation_t operations, program_info_t *pi,
 			}
 			
 			len_current_list = ml_tmp->len;
-			for (i = -(int32)(ml_tmp->addr % page_size); 
-				 i < ((int32)ml_tmp->len - (int32)(ml_tmp->addr % page_size)); 
+			for (i = -(int32_t)(ml_tmp->addr % page_size); 
+				 i < ((int32_t)ml_tmp->len - (int32_t)(ml_tmp->addr % page_size)); 
 				 i += page_size)
 			{
 				WriteFLASH((word)(ml_tmp->addr + i), page_size / 2, 
@@ -340,8 +340,8 @@ RESULT msp430_jtag_program(operation_t operations, program_info_t *pi,
 			}
 			
 			len_current_list = ml_tmp->len;
-			for (i = -(int32)(ml_tmp->addr % page_size); 
-				 i < ((int32)ml_tmp->len - (int32)(ml_tmp->addr % page_size)); 
+			for (i = -(int32_t)(ml_tmp->addr % page_size); 
+				 i < ((int32_t)ml_tmp->len - (int32_t)(ml_tmp->addr % page_size)); 
 				 i += page_size)
 			{
 				CRC_calc = CRC_check = 0;

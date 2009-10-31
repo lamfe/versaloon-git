@@ -54,7 +54,7 @@ const program_area_map_t msp430_program_area_map[] =
 	{0, 0, 0}
 };
 
-uint8 msp430_prog_mode = 0;
+uint8_t msp430_prog_mode = 0;
 
 void msp430_usage(void)
 {
@@ -65,7 +65,7 @@ Usage of %s:\n\
 
 void msp430_support(void)
 {
-	uint32 i;
+	uint32_t i;
 	
 	printf("Support list of %s:\n", CUR_TARGET_STRING);
 	for (i = 0; i < cur_chips_num; i++)
@@ -126,7 +126,7 @@ RESULT msp430_parse_argument(char cmd, const char *argu)
 
 RESULT msp430_probe_chip(char *chip_name)
 {
-	uint32 i;
+	uint32_t i;
 	
 	for (i = 0; i < cur_chips_num; i++)
 	{
@@ -153,12 +153,12 @@ RESULT msp430_prepare_buffer(program_info_t *pi)
 	return ERROR_OK;
 }
 
-RESULT msp430_write_buffer_from_file_callback(uint32 address, uint32 seg_addr, 
-											  uint8* data, uint32 length, 
+RESULT msp430_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr, 
+											  uint8_t* data, uint32_t length, 
 											  void* buffer)
 {
 	program_info_t *pi = (program_info_t *)buffer;
-	uint32 mem_addr = address & 0x0000FFFF;
+	uint32_t mem_addr = address & 0x0000FFFF;
 	RESULT ret;
 	
 #ifdef PARAM_CHECK
@@ -189,16 +189,16 @@ RESULT msp430_write_buffer_from_file_callback(uint32 address, uint32 seg_addr,
 			}
 			
 			if ((mem_addr > 
-					(uint32)(Device_MainStart() + cur_chip_param.app_size)) 
+					(uint32_t)(Device_MainStart() + cur_chip_param.app_size)) 
 				|| (length > cur_chip_param.app_size) 
 				|| ((mem_addr + length) 
-					> (uint32)(Device_MainStart() + cur_chip_param.app_size)))
+					> (uint32_t)(Device_MainStart() + cur_chip_param.app_size)))
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_INVALID_RANGE), "flash memory");
 			return ERRCODE_INVALID;
 			}
 			memcpy(pi->app + mem_addr - Device_MainStart(), data, length);
-			pi->app_size_valid += (uint16)length;
+			pi->app_size_valid += (uint16_t)length;
 			
 			ret = MEMLIST_Add(&pi->app_memlist, mem_addr, length, 
 							  cur_chip_param.app_page_size);
@@ -237,7 +237,7 @@ RESULT msp430_fini(program_info_t *pi, programmer_info_t *prog)
 RESULT msp430_init(program_info_t *pi, const char *dir, 
 				   programmer_info_t *prog)
 {
-	uint8 i;
+	uint8_t i;
 	operation_t opt_tmp;
 	
 	dir = dir;
@@ -309,7 +309,7 @@ RESULT msp430_init(program_info_t *pi, const char *dir,
 	}
 }
 
-uint32 msp430_interface_needed(void)
+uint32_t msp430_interface_needed(void)
 {
 	switch(msp430_prog_mode & MSP430_PROG_MODE_MASK)
 	{
@@ -329,21 +329,21 @@ uint32 msp430_interface_needed(void)
 
 RESULT (*msp430jtagsbw_init)(void);
 RESULT (*msp430jtagsbw_fini)(void);
-RESULT (*msp430jtagsbw_config)(uint8 has_test);
-RESULT (*msp430jtagsbw_ir)(uint8 *ir, uint8 want_ret);
-RESULT (*msp430jtagsbw_dr)(uint32 *dr, uint8 len, uint8 want_ret);
-RESULT (*msp430jtagsbw_tclk)(uint8 value);
-RESULT (*msp430jtagsbw_tclk_strobe)(uint16 cnt);
+RESULT (*msp430jtagsbw_config)(uint8_t has_test);
+RESULT (*msp430jtagsbw_ir)(uint8_t *ir, uint8_t want_ret);
+RESULT (*msp430jtagsbw_dr)(uint32_t *dr, uint8_t len, uint8_t want_ret);
+RESULT (*msp430jtagsbw_tclk)(uint8_t value);
+RESULT (*msp430jtagsbw_tclk_strobe)(uint16_t cnt);
 RESULT (*msp430jtagsbw_reset)(void);
-RESULT (*msp430jtagsbw_poll)(uint32 dr, uint32 mask, uint32 value, uint8 len, 
-							 uint16 poll_cnt, uint8 toggle_tclk);
+RESULT (*msp430jtagsbw_poll)(uint32_t dr, uint32_t mask, uint32_t value, uint8_t len, 
+							 uint16_t poll_cnt, uint8_t toggle_tclk);
 
 
 #define get_target_voltage(v)					prog->get_target_voltage(v)
 RESULT msp430_program(operation_t operations, program_info_t *pi, 
 					  programmer_info_t *prog)
 {
-	uint16 voltage;
+	uint16_t voltage;
 	
 #ifdef PARAM_CHECK
 	if (NULL == prog)

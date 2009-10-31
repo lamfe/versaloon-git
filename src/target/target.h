@@ -23,82 +23,82 @@ typedef struct
 {
 	char *chip_type;
 	char *chip_name;
-	uint32 chip_id;
+	uint32_t chip_id;
 	
-	uint8 *boot;
-	uint32 boot_size;
-	uint32 boot_size_valid;
-	uint8 *boot_checksum;
-	uint32 boot_checksum_value;
-	uint32 boot_checksum_size;
+	uint8_t *boot;
+	uint32_t boot_size;
+	uint32_t boot_size_valid;
+	uint8_t *boot_checksum;
+	uint32_t boot_checksum_value;
+	uint32_t boot_checksum_size;
 	memlist *boot_memlist;
 	
-	uint8 *app;
-	uint32 app_size;
-	uint32 app_size_valid;
+	uint8_t *app;
+	uint32_t app_size;
+	uint32_t app_size_valid;
 	memlist *app_memlist;
-	uint8 *app_checksum;
-	uint32 app_checksum_value;
-	uint32 app_checksum_size;
+	uint8_t *app_checksum;
+	uint32_t app_checksum_value;
+	uint32_t app_checksum_size;
 	
-	uint8 *eeprom;
-	uint32 eeprom_size;
-	uint32 eeprom_size_valid;
+	uint8_t *eeprom;
+	uint32_t eeprom_size;
+	uint32_t eeprom_size_valid;
 	memlist *eeprom_memlist;
-	uint8 *eeprom_checksum;
-	uint32 eeprom_checksum_value;
-	uint32 eeprom_checksum_size;
+	uint8_t *eeprom_checksum;
+	uint32_t eeprom_checksum_value;
+	uint32_t eeprom_checksum_size;
 	
-	uint8 *otp_rom;
-	uint32 otp_rom_size;
-	uint32 otp_rom_size_valid;
+	uint8_t *otp_rom;
+	uint32_t otp_rom_size;
+	uint32_t otp_rom_size_valid;
 	memlist *opt_rom_memlist;
-	uint8 *otp_rom_checksum;
-	uint32 otp_rom_checksum_value;
-	uint32 otp_rom_checksum_size;
+	uint8_t *otp_rom_checksum;
+	uint32_t otp_rom_checksum_value;
+	uint32_t otp_rom_checksum_size;
 	
-	uint8 *fuse;
-	uint32 fuse_value;
-	uint32 fuse_size;
-	uint32 fuse_size_valid;
+	uint8_t *fuse;
+	uint32_t fuse_value;
+	uint32_t fuse_size;
+	uint32_t fuse_size_valid;
 	memlist *fuse_memlist;
-	uint8 *fuse_checksum;
-	uint32 fuse_checksum_value;
-	uint32 fuse_checksum_size;
+	uint8_t *fuse_checksum;
+	uint32_t fuse_checksum_value;
+	uint32_t fuse_checksum_size;
 	
-	uint8 *lock;
-	uint32 lock_value;
-	uint32 lock_size;
-	uint32 lock_size_valid;
+	uint8_t *lock;
+	uint32_t lock_value;
+	uint32_t lock_size;
+	uint32_t lock_size_valid;
 	memlist *lock_memlist;
-	uint8 *lock_checksum;
-	uint32 lock_checksum_value;
-	uint32 lock_checksum_size;
+	uint8_t *lock_checksum;
+	uint32_t lock_checksum_value;
+	uint32_t lock_checksum_size;
 	
-	uint8 *user_area;
-	uint32 user_area_value;
-	uint32 user_area_size;
-	uint32 user_area_size_valid;
+	uint8_t *user_area;
+	uint32_t user_area_value;
+	uint32_t user_area_size;
+	uint32_t user_area_size_valid;
 	memlist *user_area_memlist;
-	uint8 *user_area_checksum;
-	uint32 user_area_checksum_value;
-	uint32 user_area_checksum_size;
+	uint8_t *user_area_checksum;
+	uint32_t user_area_checksum_value;
+	uint32_t user_area_checksum_size;
 	
-	uint8 *mass_product_data;
-	uint32 mass_product_data_size;
+	uint8_t *mass_product_data;
+	uint32_t mass_product_data_size;
 }program_info_t;
 
 typedef struct
 {
-	uint32 area_mask;
+	uint32_t area_mask;
 	char area_char;
-	uint8 data_pos;
+	uint8_t data_pos;
 }program_area_map_t;
 
 typedef struct
 {
 	const char *name;
-	const uint32 areas;
+	const uint32_t areas;
 	const program_area_map_t *program_area_map;
 	const char *program_mode_str;
 	RESULT (*parse_argument)(char cmd, const char *argu);
@@ -107,19 +107,19 @@ typedef struct
 	RESULT (*init)(program_info_t *pi, const char *dir, 
 				   programmer_info_t *prog);
 	RESULT (*fini)(program_info_t *pi, programmer_info_t *prog);
-	uint32 (*interface_needed)(void);
+	uint32_t (*interface_needed)(void);
 	RESULT (*prepare_buffer)(program_info_t *pi);
 	RESULT (*write_buffer_from_file_callback)(
-									uint32 address, uint32 seg_addr, 
-									uint8* data, uint32 length, void* buffer);
+									uint32_t address, uint32_t seg_addr, 
+									uint8_t* data, uint32_t length, void* buffer);
 	RESULT (*write_file_from_buffer_callback)(void);
 	RESULT (*program)(operation_t operations, program_info_t *pi, 
 					  programmer_info_t *prog);
 	
 	RESULT (*get_mass_product_data_size)(operation_t operations, 
-										 program_info_t *pi, uint32 *size);
+										 program_info_t *pi, uint32_t *size);
 	RESULT (*prepare_mass_product_data)(operation_t operations, 
-										program_info_t *pi, uint8 *buff);
+										program_info_t *pi, uint8_t *buff);
 }target_info_t;
 
 #define TARGET_CONF_FILE_PATH			"config/"
@@ -128,31 +128,31 @@ typedef struct
 typedef struct
 {
 	char chip_name[TARGET_MAX_CHIP_NAME_LEN];
-	uint32 chip_id;
-	uint32 program_mode;
-	uint32 boot_page_size;
-	uint32 boot_page_num;
-	uint32 app_page_size;
-	uint32 app_page_num;
-	uint32 ee_page_size;
-	uint32 ee_page_num;
-	uint32 optrom_page_size;
-	uint32 optrom_page_num;
-	uint32 usrsig_page_size;
-	uint32 usrsig_page_num;
-	uint32 fuse_size;
-	uint32 lock_size;
-	uint32 boot_size;
-	uint32 app_size;
-	uint32 ee_size;
-	uint32 optrom_size;
-	uint32 usrsig_size;
-	uint32 param[32];
+	uint32_t chip_id;
+	uint32_t program_mode;
+	uint32_t boot_page_size;
+	uint32_t boot_page_num;
+	uint32_t app_page_size;
+	uint32_t app_page_num;
+	uint32_t ee_page_size;
+	uint32_t ee_page_num;
+	uint32_t optrom_page_size;
+	uint32_t optrom_page_num;
+	uint32_t usrsig_page_size;
+	uint32_t usrsig_page_num;
+	uint32_t fuse_size;
+	uint32_t lock_size;
+	uint32_t boot_size;
+	uint32_t app_size;
+	uint32_t ee_size;
+	uint32_t optrom_size;
+	uint32_t usrsig_size;
+	uint32_t param[32];
 }chip_param_t;
 
 typedef struct
 {
-	uint32 num_of_chips;
+	uint32_t num_of_chips;
 	chip_param_t *chips_param;
 }chip_series_t;
 
@@ -167,10 +167,10 @@ RESULT target_build_chip_series(const char *chip_name,
 								chip_series_t *s);
 RESULT target_release_chip_series(chip_series_t *s);
 
-void target_print_target(uint32 i);
+void target_print_target(uint32_t i);
 void target_print_list(void);
 void target_print_help(void);
-uint32 target_get_number(void);
+uint32_t target_get_number(void);
 RESULT target_init(program_info_t *pi);
 RESULT target_alloc_data_buffer(void);
 void target_free_data_buffer(void);

@@ -74,7 +74,7 @@
 // JTAG Programming Instructions:
 #define AVR_JTAG_PROG_OPERATIONCOMPLETE				0x0200
 #define AVR_JTAG_PROG_INS(d)						AVR_JTAG_SendDat((d), AVR_JTAG_REG_ProgrammingCommand_Len)
-#define AVR_JTAG_PROG_ReadDATA(d, p)				AVR_JTAG_ReadDat((d), (uint16*)(p), AVR_JTAG_REG_ProgrammingCommand_Len)
+#define AVR_JTAG_PROG_ReadDATA(d, p)				AVR_JTAG_ReadDat((d), (uint16_t*)(p), AVR_JTAG_REG_ProgrammingCommand_Len)
 #define AVR_JTAG_PROG_LoadAddrExtendedHighByte(c)	AVR_JTAG_PROG_INS(0xB00 | ((c) & 0xFF))
 #define AVR_JTAG_PROG_LoadAddrHighByte(a)			AVR_JTAG_PROG_INS(0x0700 | ((a) & 0xFF))
 #define AVR_JTAG_PROG_LoadAddrLowByte(b)			AVR_JTAG_PROG_INS(0x0300 | ((b) & 0xFF))
@@ -151,9 +151,9 @@
 #define jtag_config(kHz,a,b,c,d)	\
 								p->jtag_hl_config((kHz), (a), (b), (c), (d))
 #define jtag_runtest(len)			p->jtag_hl_runtest(len)
-#define jtag_ir_write(ir, len)		p->jtag_hl_ir((uint8*)(ir), (len), 1, 0)
-#define jtag_dr_write(dr, len)		p->jtag_hl_dr((uint8*)(dr), (len), 1, 0)
-#define jtag_dr_read(dr, len)		p->jtag_hl_dr((uint8*)(dr), (len), 1, 1)
+#define jtag_ir_write(ir, len)		p->jtag_hl_ir((uint8_t*)(ir), (len), 1, 0)
+#define jtag_dr_write(dr, len)		p->jtag_hl_dr((uint8_t*)(dr), (len), 1, 0)
+#define jtag_dr_read(dr, len)		p->jtag_hl_dr((uint8_t*)(dr), (len), 1, 1)
 
 #define jtag_delay_us(us)			p->jtag_hl_delay_us((us))
 #define jtag_delay_ms(ms)			p->jtag_hl_delay_ms((ms))
@@ -164,7 +164,7 @@ static programmer_info_t *p = NULL;
 #define AVR_JTAG_SendIns(i)			(ir = (i), \
 									 jtag_ir_write(&ir, AVR_JTAG_INS_LEN))
 #define AVR_JTAG_SendDat(d, len)	(dr = (d), jtag_dr_write(&dr, (len)))
-void AVR_JTAG_ReadDat(uint16 w, uint16* r, uint8 len)
+void AVR_JTAG_ReadDat(uint16_t w, uint16_t* r, uint8_t len)
 {
 	*r = w;
 	jtag_dr_read(r, len);
@@ -173,13 +173,13 @@ void AVR_JTAG_ReadDat(uint16 w, uint16* r, uint8 len)
 RESULT avr8_jtag_program(operation_t operations, program_info_t *pi, 
 						 programmer_info_t *prog)
 {
-	uint16 chip_sig[3];
-	uint8 ir;
-	uint32 dr;
+	uint16_t chip_sig[3];
+	uint8_t ir;
+	uint32_t dr;
 	
-	int32 i;
-	uint32 j, k, page_size, len_current_list;
-	uint8 page_buf[256];
+	int32_t i;
+	uint32_t j, k, page_size, len_current_list;
+	uint8_t page_buf[256];
 	RESULT ret = ERROR_OK;
 	memlist *ml_tmp;
 
@@ -280,9 +280,9 @@ RESULT avr8_jtag_program(operation_t operations, program_info_t *pi,
 				k = page_size - (ml_tmp->addr % page_size);
 			}
 			
-			len_current_list = (uint32)ml_tmp->len;
-			for (i = -(int32)(ml_tmp->addr % page_size); 
-				 i < ((int32)ml_tmp->len - (int32)(ml_tmp->addr % page_size)); 
+			len_current_list = (uint32_t)ml_tmp->len;
+			for (i = -(int32_t)(ml_tmp->addr % page_size); 
+				 i < ((int32_t)ml_tmp->len - (int32_t)(ml_tmp->addr % page_size)); 
 				 i += page_size)
 			{
 				AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
@@ -295,7 +295,7 @@ RESULT avr8_jtag_program(operation_t operations, program_info_t *pi,
 				if (cur_chip_param.param[AVR8_PARAM_JTAG_FULL_BITSTREAM])
 				{
 					jtag_dr_write(pi->app + ml_tmp->addr + i, 
-								  (uint16)(cur_chip_param.app_page_size * 8));
+								  (uint16_t)(cur_chip_param.app_page_size * 8));
 				}
 				else
 				{
@@ -363,9 +363,9 @@ RESULT avr8_jtag_program(operation_t operations, program_info_t *pi,
 				k = page_size - (ml_tmp->addr % page_size);
 			}
 			
-			len_current_list = (uint32)ml_tmp->len;
-			for (i = -(int32)(ml_tmp->addr % page_size); 
-				 i < ((int32)ml_tmp->len - (int32)(ml_tmp->addr % page_size)); 
+			len_current_list = (uint32_t)ml_tmp->len;
+			for (i = -(int32_t)(ml_tmp->addr % page_size); 
+				 i < ((int32_t)ml_tmp->len - (int32_t)(ml_tmp->addr % page_size)); 
 				 i += page_size)
 			{
 				AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
@@ -380,7 +380,7 @@ RESULT avr8_jtag_program(operation_t operations, program_info_t *pi,
 					dr = 0;
 					jtag_dr_write(&dr, 8);
 					jtag_dr_read(page_buf, 
-								 (uint16)(cur_chip_param.app_page_size * 8));
+								 (uint16_t)(cur_chip_param.app_page_size * 8));
 				}
 				else
 				{

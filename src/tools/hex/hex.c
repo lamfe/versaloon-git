@@ -39,7 +39,7 @@ typedef enum
 	HEX_TYPE_EXT_ADDR	= 0x04
 } HEX_TEYP;
 
-RESULT get_hex_from_str(uint8 *str, uint8 len, uint32 *value)
+RESULT get_hex_from_str(uint8_t *str, uint8_t len, uint32_t *value)
 {
 	char num[5], *ptr;
 	
@@ -65,12 +65,12 @@ RESULT get_hex_from_str(uint8 *str, uint8 len, uint32 *value)
 	}
 }
 
-static RESULT write_hex_line_internal(FILE *hex_file, uint8 data_len, 
-									  uint16 data_addr, uint8 type, 
-									  uint8 *data)
+static RESULT write_hex_line_internal(FILE *hex_file, uint8_t data_len, 
+									  uint16_t data_addr, uint8_t type, 
+									  uint8_t *data)
 {
-	uint8 line_buf[10 + 0xFF * 2 + 2], checksum = 0, pos = 0;
-	uint32 i;
+	uint8_t line_buf[10 + 0xFF * 2 + 2], checksum = 0, pos = 0;
+	uint32_t i;
 	
 #ifdef PARAM_CHECK
 	if ((NULL == hex_file) || ((data_len > 0) && (NULL == data)))
@@ -89,8 +89,8 @@ static RESULT write_hex_line_internal(FILE *hex_file, uint8 data_len,
 	pos += 2;
 	
 	// address
-	checksum += (uint8)data_addr;
-	checksum += (uint8)(data_addr >> 8);
+	checksum += (uint8_t)data_addr;
+	checksum += (uint8_t)(data_addr >> 8);
 	sprintf((char *)line_buf + pos, "%04x", data_addr);
 	pos += 4;
 	
@@ -118,11 +118,11 @@ static RESULT write_hex_line_internal(FILE *hex_file, uint8 data_len,
 	return (pos == fwrite(line_buf, 1, pos, hex_file));
 }
 
-RESULT write_hex_file_line(FILE *hex_file, uint32 data_addr, uint32 seg_addr, 
-						   uint8 *data, uint8 len)
+RESULT write_hex_file_line(FILE *hex_file, uint32_t data_addr, uint32_t seg_addr, 
+						   uint8_t *data, uint8_t len)
 {
-	static uint16 data_addr_ext_pre = 0;
-	static uint32 seg_addr_pre = 0;
+	static uint16_t data_addr_ext_pre = 0;
+	static uint32_t seg_addr_pre = 0;
 	RESULT ret;
 	
 #ifdef PARAM_CHECK
@@ -151,8 +151,8 @@ RESULT write_hex_file_line(FILE *hex_file, uint32 data_addr, uint32 seg_addr,
 	{
 		// write new seg_addr
 		seg_addr_pre = seg_addr;
-		ret = write_hex_line_internal(hex_file, 4, (uint16)0x0000, 
-									HEX_TYPE_SEG_ADDR, (uint8 *)&seg_addr_pre);
+		ret = write_hex_line_internal(hex_file, 4, (uint16_t)0x0000, 
+									HEX_TYPE_SEG_ADDR, (uint8_t *)&seg_addr_pre);
 		if (ret != ERROR_OK)
 		{
 			return ERROR_FAIL;
@@ -162,8 +162,8 @@ RESULT write_hex_file_line(FILE *hex_file, uint32 data_addr, uint32 seg_addr,
 	{
 		// write new data_addr_ext
 		data_addr_ext_pre = data_addr >> 16;
-		ret = write_hex_line_internal(hex_file, 2, (uint16)0x0000, 
-							HEX_TYPE_EXT_ADDR, (uint8 *)&data_addr_ext_pre);
+		ret = write_hex_line_internal(hex_file, 2, (uint16_t)0x0000, 
+							HEX_TYPE_EXT_ADDR, (uint8_t *)&data_addr_ext_pre);
 		if (ret != ERROR_OK)
 		{
 			return ERROR_FAIL;
@@ -172,7 +172,7 @@ RESULT write_hex_file_line(FILE *hex_file, uint32 data_addr, uint32 seg_addr,
 	
 	// write data
 	ret = write_hex_line_internal(hex_file, len, 
-						(uint16)(data_addr & 0x0000FFFF), HEX_TYPE_DATA, data);
+						(uint16_t)(data_addr & 0x0000FFFF), HEX_TYPE_DATA, data);
 	if (ret != ERROR_OK)
 	{
 		return ERROR_FAIL;
@@ -184,9 +184,9 @@ RESULT write_hex_file_line(FILE *hex_file, uint32 data_addr, uint32 seg_addr,
 RESULT read_hex_file(FILE *hex_file, HEX_WRITE_MEMORY_CALLBACK callback, 
 					 void *buffer)
 {
-	uint8 line_buf[10 + 0xFF * 2 + 2], pos, type, checksum;
+	uint8_t line_buf[10 + 0xFF * 2 + 2], pos, type, checksum;
 	char ch;
-	uint32 data_addr = 0, seg_addr = 0, length, tmp32, i;
+	uint32_t data_addr = 0, seg_addr = 0, length, tmp32, i;
 	RESULT ret;
 	
 #ifdef PARAM_CHECK
@@ -236,7 +236,7 @@ RESULT read_hex_file(FILE *hex_file, HEX_WRITE_MEMORY_CALLBACK callback,
 			return ERROR_FAIL;
 		}
 		pos += 2;
-		checksum += (uint8)tmp32;
+		checksum += (uint8_t)tmp32;
 		// verify data length
 		if (length != (10 + tmp32 * 2))
 		{
@@ -251,8 +251,8 @@ RESULT read_hex_file(FILE *hex_file, HEX_WRITE_MEMORY_CALLBACK callback,
 			return ERROR_FAIL;
 		}
 		pos += 4;
-		checksum += (uint8)tmp32;
-		checksum += (uint8)(tmp32 >> 8);
+		checksum += (uint8_t)tmp32;
+		checksum += (uint8_t)(tmp32 >> 8);
 		data_addr = (data_addr & 0xFFFF0000) | (tmp32 & 0x0000FFFF);
 		
 		// get type
@@ -262,8 +262,8 @@ RESULT read_hex_file(FILE *hex_file, HEX_WRITE_MEMORY_CALLBACK callback,
 			return ERROR_FAIL;
 		}
 		pos += 2;
-		checksum += (uint8)tmp32;
-		type = (uint8)tmp32;
+		checksum += (uint8_t)tmp32;
+		type = (uint8_t)tmp32;
 		
 		// get data
 		for (i = 0; i < length; i++)
@@ -275,8 +275,8 @@ RESULT read_hex_file(FILE *hex_file, HEX_WRITE_MEMORY_CALLBACK callback,
 			}
 			
 			pos += 2;
-			checksum += (uint8)tmp32;
-			line_buf[i] = (uint8)tmp32;
+			checksum += (uint8_t)tmp32;
+			line_buf[i] = (uint8_t)tmp32;
 		}
 		
 		// get checksum

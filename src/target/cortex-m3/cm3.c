@@ -72,16 +72,16 @@ const cm3_param_t cm3_chips_param[] = {
 //	chip_name,		default_char,		flash_start_addr,	jtag_khz,		pos			swj_trn
 	{"cm3_stm32",	STM32_FLASH_CHAR,	0x08000000,			STM32_JTAG_KHZ,	{0,1,0,5},	2},
 };
-static uint8 cm3_chip_index = 0;
+static uint8_t cm3_chip_index = 0;
 cm3_param_t cm3_chip_param;
 
 adi_dp_if_type_t cm3_prog_mode = 0;
-uint8 cm3_execute_flag = 0;
-uint32 cm3_execute_addr = 0;
-uint16 cm3_frequency = 0;
-uint16 cm3_buffer_size = 0;
+uint8_t cm3_execute_flag = 0;
+uint32_t cm3_execute_addr = 0;
+uint16_t cm3_frequency = 0;
+uint16_t cm3_buffer_size = 0;
 
-static uint32 cm3_flash_offset = 0;
+static uint32_t cm3_flash_offset = 0;
 
 static void cm3_usage(void)
 {
@@ -95,7 +95,7 @@ Usage of %s:\n\
 
 static void cm3_support(void)
 {
-	uint32 i;
+	uint32_t i;
 
 	printf("Support list of %s:\n", CUR_TARGET_STRING);
 	for (i = 0; i < dimof(cur_chips_param); i++)
@@ -125,7 +125,7 @@ RESULT cm3_parse_argument(char cmd, const char *argu)
 			return ERRCODE_INVALID_OPTION;
 		}
 		
-		cur_buffer_size = (uint16)strtoul(argu, NULL, 0);
+		cur_buffer_size = (uint16_t)strtoul(argu, NULL, 0);
 		break;
 	case 'm':
 		// program Mode
@@ -161,7 +161,7 @@ RESULT cm3_parse_argument(char cmd, const char *argu)
 			return ERRCODE_INVALID_OPTION;
 		}
 		
-		cur_frequency = (uint16)strtoul(argu, NULL, 0);
+		cur_frequency = (uint16_t)strtoul(argu, NULL, 0);
 		
 		break;
 	default:
@@ -174,7 +174,7 @@ RESULT cm3_parse_argument(char cmd, const char *argu)
 
 RESULT cm3_probe_chip(char *chip_name)
 {
-	uint32 i;
+	uint32_t i;
 	
 	for (i = 0; i < dimof(cur_chips_param); i++)
 	{
@@ -201,12 +201,12 @@ RESULT cm3_prepare_buffer(program_info_t *pi)
 	return ERROR_OK;
 }
 
-RESULT cm3_write_buffer_from_file_callback(uint32 address, uint32 seg_addr, 
-										   uint8* data, uint32 length, 
+RESULT cm3_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr, 
+										   uint8_t* data, uint32_t length, 
 										   void* buffer)
 {
 	program_info_t *pi = (program_info_t *)buffer;
-	uint32 mem_addr = address, page_size;
+	uint32_t mem_addr = address, page_size;
 	RESULT ret;
 	
 	seg_addr = seg_addr;
@@ -236,7 +236,7 @@ RESULT cm3_write_buffer_from_file_callback(uint32 address, uint32 seg_addr,
 	}
 	memcpy(pi->app + mem_addr - cur_chip_param.flash_start_addr, 
 		   data, length);
-	pi->app_size_valid += (uint32)length;
+	pi->app_size_valid += (uint32_t)length;
 	
 	switch (cm3_chip_index)
 	{
@@ -271,7 +271,7 @@ RESULT cm3_fini(program_info_t *pi, programmer_info_t *prog)
 RESULT cm3_init(program_info_t *pi, const char *dir, 
 				   programmer_info_t *prog)
 {
-	uint8 i;
+	uint8_t i;
 	
 	dir = dir;
 	prog = prog;
@@ -311,7 +311,7 @@ RESULT cm3_init(program_info_t *pi, const char *dir,
 	}
 }
 
-uint32 cm3_interface_needed(void)
+uint32_t cm3_interface_needed(void)
 {
 	return JTAG_HL | SWJ;
 }

@@ -21,12 +21,12 @@
 
 typedef struct MEMLIST
 {
-	uint32 addr;
-	uint32 len;
+	uint32_t addr;
+	uint32_t len;
 	struct MEMLIST *next;
 }memlist;
 
-RESULT MEMLIST_Add(memlist **ml, uint32 addr, uint32 len, uint32 page_size);
+RESULT MEMLIST_Add(memlist **ml, uint32_t addr, uint32_t len, uint32_t page_size);
 void MEMLIST_Free(memlist **ml);
 
 #endif /* __MEMLIST_H_INCLUDED__ */

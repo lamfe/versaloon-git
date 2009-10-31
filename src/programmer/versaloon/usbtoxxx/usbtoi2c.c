@@ -34,8 +34,8 @@
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
 
-uint8 usbtoi2c_num_of_interface = 0;
-uint8 usbtoi2c_buffer[256 + 6];
+uint8_t usbtoi2c_num_of_interface = 0;
+uint8_t usbtoi2c_buffer[256 + 6];
 
 RESULT usbtoi2c_init(void)
 {
@@ -47,7 +47,7 @@ RESULT usbtoi2c_fini(void)
 	return usbtoxxx_fini_command(USB_TO_I2C);
 }
 
-RESULT usbtoi2c_set_speed(uint8 interface_index, uint16 kHz)
+RESULT usbtoi2c_set_speed(uint8_t interface_index, uint16_t kHz)
 {
 #if PARAM_CHECK
 	if (interface_index > 7)
@@ -64,9 +64,9 @@ RESULT usbtoi2c_set_speed(uint8 interface_index, uint16 kHz)
 								 usbtoi2c_buffer, 2);
 }
 
-RESULT usbtoi2c_read(uint8 interface_index, uint16 chip_addr, 
-					 uint8 chip_addr_len, uint8 *data, uint16 data_len, 
-					 uint8 stop)
+RESULT usbtoi2c_read(uint8_t interface_index, uint16_t chip_addr, 
+					 uint8_t chip_addr_len, uint8_t *data, uint16_t data_len, 
+					 uint8_t stop)
 {
 #if PARAM_CHECK
 	if (interface_index > 7)
@@ -99,9 +99,9 @@ RESULT usbtoi2c_read(uint8 interface_index, uint16 chip_addr,
 							   data_len + 6, data_len, data, 0, data_len, 0);
 }
 
-RESULT usbtoi2c_write(uint8 interface_index, uint16 chip_addr, 
-					  uint8 chip_addr_len, uint8 *data, 
-					  uint16 data_len, uint8 stop)
+RESULT usbtoi2c_write(uint8_t interface_index, uint16_t chip_addr, 
+					  uint8_t chip_addr_len, uint8_t *data, 
+					  uint16_t data_len, uint8_t stop)
 {
 #if PARAM_CHECK
 	if (interface_index > 7)

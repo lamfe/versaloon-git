@@ -34,7 +34,7 @@
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
 
-uint8 usbtoc2_num_of_interface = 0;
+uint8_t usbtoc2_num_of_interface = 0;
 
 RESULT usbtoc2_init(void)
 {
@@ -46,7 +46,7 @@ RESULT usbtoc2_fini(void)
 	return usbtoxxx_fini_command(USB_TO_C2);
 }
 
-RESULT usbtoc2_config(uint8 interface_index)
+RESULT usbtoc2_config(uint8_t interface_index)
 {
 #if PARAM_CHECK
 	if (interface_index > 7)
@@ -59,7 +59,7 @@ RESULT usbtoc2_config(uint8 interface_index)
 	return usbtoxxx_conf_command(USB_TO_C2, interface_index, NULL, 0);
 }
 
-RESULT usbtoc2_addr(uint8 interface_index, uint8 addr)
+RESULT usbtoc2_addr(uint8_t interface_index, uint8_t addr)
 {
 #if PARAM_CHECK
 	if (interface_index > 7)
@@ -72,9 +72,9 @@ RESULT usbtoc2_addr(uint8 interface_index, uint8 addr)
 	return usbtoxxx_out_command(USB_TO_C2, interface_index, &addr, 1, 0);
 }
 
-RESULT usbtoc2_data(uint8 interface_index, uint8 r, uint8 len, uint8 *buf)
+RESULT usbtoc2_data(uint8_t interface_index, uint8_t r, uint8_t len, uint8_t *buf)
 {
-	uint8 cmdbuf[5];
+	uint8_t cmdbuf[5];
 	
 #if PARAM_CHECK
 	if (interface_index > 7)
@@ -107,10 +107,10 @@ RESULT usbtoc2_data(uint8 interface_index, uint8 r, uint8 len, uint8 *buf)
 	}
 }
 
-RESULT usbtoc2_addr_poll(uint8 interface_index, uint8 mask, uint8 value, 
-						 uint16 poll_cnt)
+RESULT usbtoc2_addr_poll(uint8_t interface_index, uint8_t mask, uint8_t value, 
+						 uint16_t poll_cnt)
 {
-	uint8 cmdbuf[4];
+	uint8_t cmdbuf[4];
 	
 #if PARAM_CHECK
 	if (interface_index > 7)
@@ -122,8 +122,8 @@ RESULT usbtoc2_addr_poll(uint8 interface_index, uint8 mask, uint8 value,
 	
 	cmdbuf[0] = mask;
 	cmdbuf[1] = value;
-	cmdbuf[2] = (uint8)poll_cnt;
-	cmdbuf[3] = (uint8)(poll_cnt >> 8);
+	cmdbuf[2] = (uint8_t)poll_cnt;
+	cmdbuf[3] = (uint8_t)(poll_cnt >> 8);
 	
 	return usbtoxxx_poll_command(USB_TO_C2, interface_index, cmdbuf, 4, NULL, 
 								 0);

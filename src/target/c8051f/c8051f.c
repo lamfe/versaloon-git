@@ -53,8 +53,8 @@ const program_area_map_t c8051f_program_area_map[] =
 	{0, 0, 0}
 };
 
-static uint8 c8051f_prog_mode = 0;
-static uint32 c8051f_flash_offset = 0;
+static uint8_t c8051f_prog_mode = 0;
+static uint32_t c8051f_flash_offset = 0;
 
 static void c8051f_usage(void)
 {
@@ -65,7 +65,7 @@ Usage of %s:\n\
 
 static void c8051f_support(void)
 {
-	uint32 i;
+	uint32_t i;
 	
 	printf("Support list of %s:\n", CUR_TARGET_STRING);
 	for (i = 0; i < cur_chips_num; i++)
@@ -124,7 +124,7 @@ RESULT c8051f_parse_argument(char cmd, const char *argu)
 
 RESULT c8051f_probe_chip(char *chip_name)
 {
-	uint32 i;
+	uint32_t i;
 	
 	for (i = 0; i < cur_chips_num; i++)
 	{
@@ -151,12 +151,12 @@ RESULT c8051f_prepare_buffer(program_info_t *pi)
 	return ERROR_OK;
 }
 
-RESULT c8051f_write_buffer_from_file_callback(uint32 address, uint32 seg_addr, 
-											  uint8* data, uint32 length, 
+RESULT c8051f_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr, 
+											  uint8_t* data, uint32_t length, 
 											  void* buffer)
 {
 	program_info_t *pi = (program_info_t *)buffer;
-	uint32 mem_addr = address & 0x0000FFFF;
+	uint32_t mem_addr = address & 0x0000FFFF;
 	RESULT ret;
 	
 #ifdef PARAM_CHECK
@@ -201,7 +201,7 @@ RESULT c8051f_write_buffer_from_file_callback(uint32 address, uint32 seg_addr,
 			return ERRCODE_INVALID;
 		}
 		memcpy(pi->app + mem_addr, data, length);
-		pi->app_size_valid += (uint16)length;
+		pi->app_size_valid += (uint16_t)length;
 		
 		ret = MEMLIST_Add(&pi->app_memlist, mem_addr, length, C8051F_BLOCK_SIZE);
 		if (ret != ERROR_OK)
@@ -231,7 +231,7 @@ RESULT c8051f_fini(program_info_t *pi, programmer_info_t *prog)
 RESULT c8051f_init(program_info_t *pi, const char *dir, 
 				   programmer_info_t *prog)
 {
-	uint32 i;
+	uint32_t i;
 	operation_t opt_tmp;
 	
 	dir = dir;
@@ -295,7 +295,7 @@ RESULT c8051f_init(program_info_t *pi, const char *dir,
 	}
 }
 
-uint32 c8051f_interface_needed(void)
+uint32_t c8051f_interface_needed(void)
 {
 	switch (cur_prog_mode)
 	{
@@ -319,7 +319,7 @@ uint32 c8051f_interface_needed(void)
 RESULT c8051f_program(operation_t operations, program_info_t *pi, 
 					  programmer_info_t *prog)
 {
-	uint16 voltage;
+	uint16_t voltage;
 
 #ifdef PARAM_CHECK
 	if (NULL == prog)

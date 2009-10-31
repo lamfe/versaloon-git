@@ -42,15 +42,15 @@
 
 extern RESULT (*msp430jtagsbw_init)(void);
 extern RESULT (*msp430jtagsbw_fini)(void);
-extern RESULT (*msp430jtagsbw_config)(uint8 has_test);
-extern RESULT (*msp430jtagsbw_ir)(uint8 *ir, uint8 want_ret);
-extern RESULT (*msp430jtagsbw_dr)(uint32 *dr, uint8 len, uint8 want_ret);
-extern RESULT (*msp430jtagsbw_tclk)(uint8 value);
-extern RESULT (*msp430jtagsbw_tclk_strobe)(uint16 cnt);
+extern RESULT (*msp430jtagsbw_config)(uint8_t has_test);
+extern RESULT (*msp430jtagsbw_ir)(uint8_t *ir, uint8_t want_ret);
+extern RESULT (*msp430jtagsbw_dr)(uint32_t *dr, uint8_t len, uint8_t want_ret);
+extern RESULT (*msp430jtagsbw_tclk)(uint8_t value);
+extern RESULT (*msp430jtagsbw_tclk_strobe)(uint16_t cnt);
 extern RESULT (*msp430jtagsbw_reset)(void);
-extern RESULT (*msp430jtagsbw_poll)(uint32 dr, uint32 mask, uint32 value, 
-									uint8 len, uint16 poll_cnt, 
-									uint8 toggle_tclk);
+extern RESULT (*msp430jtagsbw_poll)(uint32_t dr, uint32_t mask, uint32_t value, 
+									uint8_t len, uint16_t poll_cnt, 
+									uint8_t toggle_tclk);
 
 RESULT msp430_sbw_program(operation_t operations, program_info_t *pi, 
 						  programmer_info_t *prog);

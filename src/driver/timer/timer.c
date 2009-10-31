@@ -31,14 +31,14 @@
 
 #include "timer.h"
 
-uint32 get_time_in_ms(void)
+uint32_t get_time_in_ms(void)
 {
 #if IS_WIN32
-	return (uint32)(clock() / (CLOCKS_PER_SEC / 1000));
+	return (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
 #else
 	struct timeval cur_time;
 	gettimeofday(&cur_time, NULL);
-	return (uint32)(cur_time.tv_usec / 1000 + cur_time.tv_sec * 1000);
+	return (uint32_t)(cur_time.tv_usec / 1000 + cur_time.tv_sec * 1000);
 #endif /* IS_WIN32 */
 }
 

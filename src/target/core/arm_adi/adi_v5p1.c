@@ -39,7 +39,7 @@
 static programmer_info_t *adi_prog = NULL;
 static adi_dp_if_t *adi_dp_if;
 static adi_dp_t adi_dp;
-static uint8 ack_value;
+static uint8_t ack_value;
 adi_dp_info_t adi_dp_info;
 
 
@@ -50,9 +50,9 @@ adi_dp_info_t adi_dp_info;
 							adi_prog->jtag_hl_config((kHz), (a), (b), (c), (d))
 #define jtag_tms(tms, len)		adi_prog->jtag_hl_tms((tms), (len))
 #define jtag_runtest(len)		adi_prog->jtag_hl_runtest(len)
-#define jtag_ir_w(ir, len)		adi_prog->jtag_hl_ir((uint8*)(ir), (len), 1, 0)
-#define jtag_dr_w(dr, len)		adi_prog->jtag_hl_dr((uint8*)(dr), (len), 1, 0)
-#define jtag_dr_rw(dr, len)		adi_prog->jtag_hl_dr((uint8*)(dr), (len), 1, 1)
+#define jtag_ir_w(ir, len)		adi_prog->jtag_hl_ir((uint8_t*)(ir), (len), 1, 0)
+#define jtag_dr_w(dr, len)		adi_prog->jtag_hl_dr((uint8_t*)(dr), (len), 1, 0)
+#define jtag_dr_rw(dr, len)		adi_prog->jtag_hl_dr((uint8_t*)(dr), (len), 1, 1)
 
 #define jtag_delay_us(us)		adi_prog->jtag_hl_delay_us((us))
 #define jtag_delay_ms(ms)		adi_prog->jtag_hl_delay_ms((ms))
@@ -69,17 +69,17 @@ adi_dp_info_t adi_dp_info;
 #define swj_setpara(t, r, d)	adi_prog->swj_setpara((t), (r), (d))
 #define swj_commit(ack)			adi_prog->swj_commit(ack)
 
-RESULT adi_dp_read_reg(uint8 reg_addr, uint32 *value, uint8 check_result);
-RESULT adi_dp_write_reg(uint8 reg_addr, uint32 *value, uint8 check_result);
+RESULT adi_dp_read_reg(uint8_t reg_addr, uint32_t *value, uint8_t check_result);
+RESULT adi_dp_write_reg(uint8_t reg_addr, uint32_t *value, uint8_t check_result);
 RESULT adi_dp_transaction_endcheck(void);
 
-const uint8 adi_swj_reset_seq[] = 
+const uint8_t adi_swj_reset_seq[] = 
 {
 	// at least 50-bit '1'
 	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
 };
 
-const uint8 adi_jtag_to_swj_seq[] = 
+const uint8_t adi_jtag_to_swj_seq[] = 
 {
 	// at least 50-bit '1'
 	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 
@@ -89,7 +89,7 @@ const uint8 adi_jtag_to_swj_seq[] =
 	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x0F
 };
 
-const uint8 adi_swj_to_jtag_seq[] = 
+const uint8_t adi_swj_to_jtag_seq[] = 
 {
 	// at least 50-bit '1'
 	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 
@@ -99,9 +99,9 @@ const uint8 adi_swj_to_jtag_seq[] =
 	0xFF
 };
 
-RESULT adi_dpif_receive_callback(jtag_irdr_t cmd, uint32 ir, 
-								 uint8 *dest_buffer, uint8 *src_buffer, 
-								 uint16 buffer_len, uint16 *processed)
+RESULT adi_dpif_receive_callback(jtag_irdr_t cmd, uint32_t ir, 
+								 uint8_t *dest_buffer, uint8_t *src_buffer, 
+								 uint16_t buffer_len, uint16_t *processed)
 {
 	if (NULL == src_buffer)
 	{
@@ -134,10 +134,10 @@ RESULT adi_dpif_receive_callback(jtag_irdr_t cmd, uint32 ir,
 	return ERROR_FAIL;
 }
 
-static uint8 adi_dp_first3bits;
-RESULT adi_dpif_send_callback(jtag_irdr_t cmd, uint32 ir, 
-							  uint8 *dest_buffer, uint8 *src_buffer, 
-							  uint16 buffer_len, uint16 *processed_len)
+static uint8_t adi_dp_first3bits;
+RESULT adi_dpif_send_callback(jtag_irdr_t cmd, uint32_t ir, 
+							  uint8_t *dest_buffer, uint8_t *src_buffer, 
+							  uint16_t buffer_len, uint16_t *processed_len)
 {
 	if ((NULL == src_buffer) || (NULL == dest_buffer))
 	{
@@ -238,7 +238,7 @@ static RESULT adi_dpif_init(programmer_info_t *prog, adi_dp_if_t *interf)
 				adi_dp_if->adi_dp_if_info.adi_dp_jtag.ua + target_jtag_pos.ua, 
 				adi_dp_if->adi_dp_if_info.adi_dp_jtag.bb + target_jtag_pos.bb, 
 				adi_dp_if->adi_dp_if_info.adi_dp_jtag.ba + target_jtag_pos.ba);
-		jtag_tms((uint8*)adi_swj_to_jtag_seq, sizeof(adi_swj_to_jtag_seq) * 8);
+		jtag_tms((uint8_t*)adi_swj_to_jtag_seq, sizeof(adi_swj_to_jtag_seq) * 8);
 		if (ERROR_OK == adi_dp_commit())
 		{
 			jtag_register_callback(adi_dpif_send_callback, 
@@ -256,7 +256,7 @@ static RESULT adi_dpif_init(programmer_info_t *prog, adi_dp_if_t *interf)
 		swj_setpara(adi_dp_if->adi_dp_if_info.adi_dp_swj.swj_trn, 
 					adi_dp_if->adi_dp_if_info.adi_dp_swj.swj_retry, 
 					adi_dp_if->adi_dp_if_info.adi_dp_swj.swj_dly);
-		swj_seqout((uint8*)adi_jtag_to_swj_seq, 
+		swj_seqout((uint8_t*)adi_jtag_to_swj_seq, 
 				   sizeof(adi_jtag_to_swj_seq) * 8);
 		return adi_dp_commit();
 		break;
@@ -266,7 +266,7 @@ static RESULT adi_dpif_init(programmer_info_t *prog, adi_dp_if_t *interf)
 	}
 }
 
-RESULT adi_dp_scan(uint8 instr, uint8 reg_addr, uint8 RnW, uint32 *value)
+RESULT adi_dp_scan(uint8_t instr, uint8_t reg_addr, uint8_t RnW, uint32_t *value)
 {
 	switch(adi_dp_if->type)
 	{
@@ -330,9 +330,9 @@ RESULT adi_dp_scan(uint8 instr, uint8 reg_addr, uint8 RnW, uint32 *value)
 	return ERROR_OK;
 }
 
-RESULT adi_dpif_read_id(uint32 *id)
+RESULT adi_dpif_read_id(uint32_t *id)
 {
-	uint16 ir;
+	uint16_t ir;
 	
 	if (NULL == adi_dp_if)
 	{
@@ -373,8 +373,8 @@ RESULT adi_dpif_read_id(uint32 *id)
 }
 
 // codes below are interface independent
-RESULT adi_dp_rw(uint8 instr, uint8 reg_addr, uint8 RnW, uint32 *value, 
-					 uint8 check_result)
+RESULT adi_dp_rw(uint8_t instr, uint8_t reg_addr, uint8_t RnW, uint32_t *value, 
+					 uint8_t check_result)
 {
 	adi_dp_scan(instr, reg_addr, RnW, value);
 	
@@ -393,7 +393,7 @@ RESULT adi_dp_rw(uint8 instr, uint8 reg_addr, uint8 RnW, uint32 *value,
 	return ERROR_OK;
 }
 
-RESULT adi_dp_read_reg(uint8 reg_addr, uint32 *value, uint8 check_result)
+RESULT adi_dp_read_reg(uint8_t reg_addr, uint32_t *value, uint8_t check_result)
 {
 	if (NULL == adi_dp_if)
 	{
@@ -405,7 +405,7 @@ RESULT adi_dp_read_reg(uint8 reg_addr, uint32 *value, uint8 check_result)
 					 value, check_result);
 }
 
-RESULT adi_dp_write_reg(uint8 reg_addr, uint32 *value, uint8 check_result)
+RESULT adi_dp_write_reg(uint8_t reg_addr, uint32_t *value, uint8_t check_result)
 {
 	if (NULL == adi_dp_if)
 	{
@@ -419,8 +419,8 @@ RESULT adi_dp_write_reg(uint8 reg_addr, uint32 *value, uint8 check_result)
 
 RESULT adi_dp_transaction_endcheck(void)
 {
-	uint32 ctrl_stat;
-	uint32 cnt = 20;
+	uint32_t ctrl_stat;
+	uint32_t cnt = 20;
 	
 	do
 	{
@@ -452,9 +452,9 @@ RESULT adi_dp_transaction_endcheck(void)
 	return ERROR_OK;
 }
 
-RESULT adi_dp_bankselect(uint8 ap_reg)
+RESULT adi_dp_bankselect(uint8_t ap_reg)
 {
-	uint32 select = ap_reg & 0x000000F0;
+	uint32_t select = ap_reg & 0x000000F0;
 	
 	if (select != adi_dp.dp_sel_value)
 	{
@@ -466,21 +466,21 @@ RESULT adi_dp_bankselect(uint8 ap_reg)
 	return ERROR_OK;
 }
 
-RESULT adi_ap_read_reg(uint8 reg_addr, uint32 *value, uint8 check_result)
+RESULT adi_ap_read_reg(uint8_t reg_addr, uint32_t *value, uint8_t check_result)
 {
 	adi_dp_bankselect(reg_addr);
 	return adi_dp_rw(ADI_DP_IR_APACC, reg_addr, ADI_DAP_READ, value, 
 					 check_result);
 }
 
-RESULT adi_ap_write_reg(uint8 reg_addr, uint32 *value, uint8 check_result)
+RESULT adi_ap_write_reg(uint8_t reg_addr, uint32_t *value, uint8_t check_result)
 {
 	adi_dp_bankselect(reg_addr);
 	return adi_dp_rw(ADI_DP_IR_APACC, reg_addr, ADI_DAP_WRITE, value, 
 					 check_result);
 }
 
-RESULT adi_dp_setup_accessport(uint32 csw, uint32 tar)
+RESULT adi_dp_setup_accessport(uint32_t csw, uint32_t tar)
 {
 	csw = csw | ADI_AP_REG_CSW_DBGSWENABLE | ADI_AP_REG_CSW_MASTER_DEBUG 
 			| ADI_AP_REG_CSW_HPROT;
@@ -501,7 +501,7 @@ RESULT adi_dp_setup_accessport(uint32 csw, uint32 tar)
 	return ERROR_OK;
 }
 
-RESULT adi_memap_write_reg(uint32 address, uint32 *reg, uint8 check_result)
+RESULT adi_memap_write_reg(uint32_t address, uint32_t *reg, uint8_t check_result)
 {
 	adi_dp_setup_accessport(ADI_AP_REG_CSW_32BIT | ADI_AP_REG_CSW_ADDRINC_OFF, 
 							address & 0xFFFFFFF0);
@@ -510,7 +510,7 @@ RESULT adi_memap_write_reg(uint32 address, uint32 *reg, uint8 check_result)
 							check_result);
 }
 
-RESULT adi_memap_read_reg(uint32 address, uint32 *reg, uint8 check_result)
+RESULT adi_memap_read_reg(uint32_t address, uint32_t *reg, uint8_t check_result)
 {
 	adi_dp_setup_accessport(ADI_AP_REG_CSW_32BIT | ADI_AP_REG_CSW_ADDRINC_OFF, 
 							address & 0xFFFFFFF0);
@@ -519,16 +519,16 @@ RESULT adi_memap_read_reg(uint32 address, uint32 *reg, uint8 check_result)
 						   check_result);
 }
 
-uint32 adi_memap_get_max_tar_block_size(uint32 tar_autoincr_block, 
-										uint32 address)
+uint32_t adi_memap_get_max_tar_block_size(uint32_t tar_autoincr_block, 
+										uint32_t address)
 {
 	return (tar_autoincr_block - ((tar_autoincr_block - 1) & address)) >> 2;
 }
 
 // only support 32-bit aligned operation
-RESULT adi_memap_write_buf(uint32 address, uint8 *buffer, uint32 len)
+RESULT adi_memap_write_buf(uint32_t address, uint8_t *buffer, uint32_t len)
 {
-	uint32 block_dword_size, write_count;
+	uint32_t block_dword_size, write_count;
 	
 	if ((address & 0x03) || (len & 0x03) || (NULL == buffer) || (0 == len))
 	{
@@ -552,7 +552,7 @@ RESULT adi_memap_write_buf(uint32 address, uint8 *buffer, uint32 len)
 		for (write_count = 0; write_count < block_dword_size; write_count++)
 		{
 			adi_ap_write_reg(ADI_AP_REG_DRW, 
-							 (uint32*)(buffer + 4 * write_count), 0);
+							 (uint32_t*)(buffer + 4 * write_count), 0);
 		}
 		
 		if (ERROR_OK != adi_dp_transaction_endcheck())
@@ -570,9 +570,9 @@ RESULT adi_memap_write_buf(uint32 address, uint8 *buffer, uint32 len)
 	return ERROR_OK;
 }
 
-RESULT adi_memap_read_buf(uint32 address, uint8 *buffer, uint32 len)
+RESULT adi_memap_read_buf(uint32_t address, uint8_t *buffer, uint32_t len)
 {
-	uint32 block_dword_size, read_count, dummy;
+	uint32_t block_dword_size, read_count, dummy;
 	
 	if ((address & 0x03) || (len & 0x03) || (NULL == buffer) || (0 == len))
 	{
@@ -597,10 +597,10 @@ RESULT adi_memap_read_buf(uint32 address, uint8 *buffer, uint32 len)
 		adi_dp_scan(ADI_DP_IR_APACC, ADI_AP_REG_DRW, ADI_DAP_READ, &dummy);
 		for (read_count = 0; read_count < block_dword_size - 1; read_count++)
 		{
-			adi_dp_scan(ADI_DP_IR_APACC, ADI_AP_REG_DRW, ADI_DAP_READ, (uint32*)(buffer + 4 * read_count));
+			adi_dp_scan(ADI_DP_IR_APACC, ADI_AP_REG_DRW, ADI_DAP_READ, (uint32_t*)(buffer + 4 * read_count));
 		}
 		// last read
-		adi_dp_scan(ADI_DP_IR_DPACC, ADI_DP_REG_RDBUFF, ADI_DAP_READ, (uint32*)(buffer + 4 * read_count));
+		adi_dp_scan(ADI_DP_IR_DPACC, ADI_DP_REG_RDBUFF, ADI_DAP_READ, (uint32_t*)(buffer + 4 * read_count));
 		
 		if (ERROR_OK != adi_dp_transaction_endcheck())
 		{
@@ -624,8 +624,8 @@ RESULT adi_fini(void)
 
 RESULT adi_init(programmer_info_t *prog, adi_dp_if_t *interf)
 {
-	uint32 tmp;
-	uint8 cnt;
+	uint32_t tmp;
+	uint8_t cnt;
 	
 	// initialize interface
 	if (ERROR_OK != adi_dpif_init(prog, interf))

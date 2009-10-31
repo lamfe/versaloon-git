@@ -34,7 +34,7 @@
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
 
-uint8 usbtogpio_num_of_interface;
+uint8_t usbtogpio_num_of_interface;
 
 RESULT usbtogpio_init(void)
 {
@@ -46,9 +46,9 @@ RESULT usbtogpio_fini(void)
 	return usbtoxxx_fini_command(USB_TO_GPIO);
 }
 
-RESULT usbtogpio_config(uint8 interface_index, uint16 mask, uint16 direction)
+RESULT usbtogpio_config(uint8_t interface_index, uint16_t mask, uint16_t direction)
 {
-	uint8 conf[3];
+	uint8_t conf[3];
 	
 #if PARAM_CHECK
 	if (interface_index > 7)
@@ -72,9 +72,9 @@ RESULT usbtogpio_config(uint8 interface_index, uint16 mask, uint16 direction)
 	return usbtoxxx_conf_command(USB_TO_GPIO, interface_index, conf, 3);
 }
 
-RESULT usbtogpio_in(uint8 interface_index, uint16 mask, uint16 *value)
+RESULT usbtogpio_in(uint8_t interface_index, uint16_t mask, uint16_t *value)
 {
-	uint8 buf[2];
+	uint8_t buf[2];
 	
 #if PARAM_CHECK
 	if (interface_index > 7)
@@ -88,12 +88,12 @@ RESULT usbtogpio_in(uint8 interface_index, uint16 mask, uint16 *value)
 	buf[1] = (mask >> 8) & 0xFF;
 	
 	return usbtoxxx_in_command(USB_TO_GPIO, interface_index, buf, 2, 2, 
-							   (uint8*)value, 0, 2, 0);
+							   (uint8_t*)value, 0, 2, 0);
 }
 
-RESULT usbtogpio_out(uint8 interface_index, uint16 mask, uint16 value)
+RESULT usbtogpio_out(uint8_t interface_index, uint16_t mask, uint16_t value)
 {
-	uint8 buf[4];
+	uint8_t buf[4];
 	
 #if PARAM_CHECK
 	if (interface_index > 7)
