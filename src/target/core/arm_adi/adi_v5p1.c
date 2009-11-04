@@ -42,6 +42,13 @@ static adi_dp_t adi_dp;
 static uint8_t ack_value;
 adi_dp_info_t adi_dp_info;
 
+// Reset
+#define reset_init()			adi_prog->jtag_hl_aux_io_init()
+#define reset_fini()			adi_prog->jtag_hl_aux_io_fini()
+#define reset_output()			adi_prog->jtag_hl_aux_io_config(JTAG_SRST, 1)
+#define reset_input()			adi_prog->jtag_hl_aux_io_config(JTAG_SRST, 0)
+#define reset_set()				reset_input()
+#define reset_clr()				adi_prog->jtag_hl_aux_io_out(JTAG_SRST, 0)
 
 // JTAG
 #define jtag_init()				adi_prog->jtag_hl_init()
@@ -195,6 +202,8 @@ static RESULT adi_dpif_fini(void)
 		return ERROR_FAIL;
 	}
 	
+	reset_fini();
+	
 	dp_type = adi_dp_if->type;
 	switch(dp_type)
 	{
@@ -227,6 +236,9 @@ static RESULT adi_dpif_init(programmer_info_t *prog, adi_dp_if_t *interf)
 	
 	adi_prog = prog;
 	adi_dp_if = interf;
+	
+	reset_init();
+	reset_input();
 	
 	switch(adi_dp_if->type)
 	{
