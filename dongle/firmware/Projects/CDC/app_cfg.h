@@ -117,8 +117,8 @@
 #define MSD_MEMORY_BLOCK_SIZE			1024
 
 /***************************** Buffer ****************************/
-#define USB_DATA_BUFF_SIZE				(256)
-#define ASYN_DATA_BUFF_SIZE				(1 * 1024)
+#define USB_DATA_BUFF_SIZE				(12 * 1024)
+#define ASYN_DATA_BUFF_SIZE				(4 * 1024)
 
 /***************************** EXTERN ****************************/
 extern __IO uint32_t rep_len, cmd_len;
