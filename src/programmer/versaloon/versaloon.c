@@ -718,15 +718,10 @@ RESULT versaloon_gpio_fini(void)
 {
 	return usbtogpio_fini();
 }
-RESULT versaloon_gpio_config(uint16_t mask, uint16_t direction)
+RESULT versaloon_gpio_config(uint16_t mask, uint16_t dir_mask, uint16_t value)
 {
 	return usbtogpio_config(VERSALOON_GPIO_PORT, 
-							versaloon_get_pin_remap(mask), direction > 0);
-}
-RESULT versaloon_gpio_config_8bit(uint8_t mask, uint8_t direction)
-{
-	return usbtogpio_config(VERSALOON_GPIO_PORT, 
-							versaloon_get_pin_remap(mask), direction > 0);
+							versaloon_get_pin_remap(mask), dir_mask, value);
 }
 RESULT versaloon_gpio_in(uint16_t mask, uint16_t *value)
 {

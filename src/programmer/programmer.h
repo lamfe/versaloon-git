@@ -55,7 +55,7 @@ typedef struct
 	// gpio
 	RESULT (*gpio_init)(void);
 	RESULT (*gpio_fini)(void);
-	RESULT (*gpio_config)(uint16_t pin_mask, uint16_t io);
+	RESULT (*gpio_config)(uint16_t pin_mask, uint16_t io, uint16_t value);
 	RESULT (*gpio_out)(uint16_t pin_mask, uint16_t value);
 	RESULT (*gpio_in)(uint16_t pin_mask, uint16_t *value);
 	
