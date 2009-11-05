@@ -73,12 +73,12 @@
 										}while(0)
 #define SW_SETINPUT_PU()				do{\
 											SW_PULL_SET();\
-											GPIO_Dir(SW_PORT, GPIO_MODE_IN_FLOATING, SW_PIN);\
+											GPIO_Dir(SW_PORT, GPIO_MODE_IPU, SW_PIN);\
 											GPIO_ClrPins(SW_DIR_PORT, GPIO_PIN_GetMask(SW_DIR_PIN));\
 										}while(0)
 #define SW_SETINPUT_PD()				do{\
 											SW_PULL_CLR();\
-											GPIO_Dir(SW_PORT, GPIO_MODE_IN_FLOATING, SW_PIN);\
+											GPIO_Dir(SW_PORT, GPIO_MODE_IPD, SW_PIN);\
 											GPIO_ClrPins(SW_DIR_PORT, GPIO_PIN_GetMask(SW_DIR_PIN));\
 										}while(0)
 #define SW_SETOUTPUT()					do{\
@@ -102,12 +102,12 @@
 										}while(0)
 #define SW_RST_SETINPUT_PU()			do{\
 											SW_RST_PULL_SET();\
-											GPIO_Dir(SW_RST_PORT, GPIO_MODE_IN_FLOATING, SW_RST_PIN);\
+											GPIO_Dir(SW_RST_PORT, GPIO_MODE_IPU, SW_RST_PIN);\
 											GPIO_ClrPins(SW_RST_DIR_PORT, GPIO_PIN_GetMask(SW_RST_DIR_PIN));\
 										}while(0)
 #define SW_RST_SETINPUT_PD()			do{\
 											SW_RST_PULL_CLR();\
-											GPIO_Dir(SW_RST_PORT, GPIO_MODE_IN_FLOATING, SW_RST_PIN);\
+											GPIO_Dir(SW_RST_PORT, GPIO_MODE_IPD, SW_RST_PIN);\
 											GPIO_ClrPins(SW_RST_DIR_PORT, GPIO_PIN_GetMask(SW_RST_DIR_PIN));\
 										}while(0)
 #define SW_RST_SETOUTPUT()				do{\
@@ -120,7 +120,7 @@
 
 #define SYNCSW_DIR_INIT()				do{\
 											SYNCSW_SETINPUT();\
-											GPIO_Dir(SYNCSW_IN_PORT, GPIO_MODE_IN_FLOATING, SYNCSW_IN_PIN);\
+											GPIO_Dir(SYNCSW_IN_PORT, GPIO_MODE_IPU, SYNCSW_IN_PIN);\
 											GPIO_Dir(SYNCSW_DIR_PORT, GPIO_MODE_OUT_PP, SYNCSW_DIR_PIN);\
 										}while(0)
 #define SYNCSW_SETINPUT()				do{\
