@@ -19,20 +19,11 @@
 #define _HARDWARE_VER					STM32_MINI_RC3
 
 /****************************** Power ******************************/
-#define PWREXT_EN_PORT					GPIOB
-#define PWREXT_EN_PIN					GPIO_PIN_8
-
-#define PWREXT_INIT()					PWREXT_DISABLE()
-#define PWREXT_ENABLE()					do{\
-											GPIO_ClrPins(PWREXT_EN_PORT, GPIO_PIN_GetMask(PWREXT_EN_PIN));\
-											GPIO_Dir(PWREXT_EN_PORT, GPIO_MODE_OUT_PP, PWREXT_EN_PIN);\
-										}while(0)
-#define PWREXT_DISABLE()				GPIO_Dir(PWREXT_EN_PORT, GPIO_MODE_IN_FLOATING, PWREXT_EN_PIN)
+#define PWREXT_INIT()					
+#define PWREXT_ENABLE()					
+#define PWREXT_DISABLE()				
 
 /****************************** Global Output ******************************/
-#define GLOBAL_OUTPUT_ENABLE_PORT		GPIOB
-#define GLOBAL_OUTPUT_ENABLE_PIN		GPIO_PIN_1
-
 #define GLOBAL_OUTPUT_INIT()			
 #define GLOBAL_OUTPUT_ENABLE()			
 #define GLOBAL_OUTPUT_DISABLE()			
