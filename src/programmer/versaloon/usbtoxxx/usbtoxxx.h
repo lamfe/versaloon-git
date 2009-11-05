@@ -39,7 +39,8 @@ RESULT usbtospi_io(uint8_t interface_index, uint8_t *out, uint8_t *in,
 // USB_TO_GPIO
 RESULT usbtogpio_init(void);
 RESULT usbtogpio_fini(void);
-RESULT usbtogpio_config(uint8_t interface_index, uint16_t mask, uint16_t direction);
+RESULT usbtogpio_config(uint8_t interface_index, uint16_t mask, 
+						uint16_t dir_mask, uint16_t value);
 RESULT usbtogpio_in(uint8_t interface_index, uint16_t mask, uint16_t *value);
 RESULT usbtogpio_out(uint8_t interface_index, uint16_t mask, uint16_t value);
 

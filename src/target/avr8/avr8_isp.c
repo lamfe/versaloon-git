@@ -57,8 +57,8 @@ RESULT avr8_isp_program(operation_t operations, program_info_t *pi,
 
 #define reset_init()			prog->gpio_init()
 #define reset_fini()			prog->gpio_fini()
-#define reset_output()			prog->gpio_config(GPIO_SRST, 1)
-#define reset_input()			prog->gpio_config(GPIO_SRST, 0)
+#define reset_output()			prog->gpio_config(GPIO_SRST, 1, 0)
+#define reset_input()			prog->gpio_config(GPIO_SRST, 0, GPIO_SRST)
 #define reset_set()				reset_input()
 #define reset_clr()				prog->gpio_out(GPIO_SRST, 0)
 
