@@ -27,6 +27,7 @@ uint16 I2C_Delay;
 
 uint8 I2C_Init(uint16 kHz)
 {
+	I2C_PULL_INIT();
 	EMIIC_USBTOXXX_Init();
 	return I2C_SetParameter(kHz);
 }

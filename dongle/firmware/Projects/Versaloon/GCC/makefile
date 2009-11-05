@@ -93,7 +93,7 @@ ASM_OBJS = $(addprefix $(OBJ_DIR)/, $(notdir $(ASM_SRCS:.s=.o)))
 
 TCHAIN = arm-none-eabi
 
-INCLUDE_DIRS = -I $(PRJDIR) -I $(SRCDIR) -I $(LIBSTM32_INCS) $(USR_INCS)
+INCLUDE_DIRS = -I $(PRJDIR) -I $(PRJDIR)/../ -I $(SRCDIR) -I $(LIBSTM32_INCS) $(USR_INCS)
 COMPILE_OPTS = -mcpu=cortex-m3 -mthumb -mfpu=vfp -nostartfiles -fno-common -fomit-frame-pointer -ffunction-sections -Wall -g -O$(OPT)
 #-mabi=apcs-gnu 
 LIBRARY_DIRS = 

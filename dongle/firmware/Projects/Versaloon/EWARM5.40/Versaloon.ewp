@@ -281,6 +281,7 @@
         <option>
           <name>CCIncludePath2</name>
           <state>$PROJ_DIR$\..\</state>
+          <state>$PROJ_DIR$\..\..\</state>
           <state>$PROJ_DIR$\..\..\..\</state>
           <state>$PROJ_DIR$\..\..\..\HW\Port\IAR\</state>
           <state>$PROJ_DIR$\..\..\..\HW\Port\IAR\Delay\</state>
@@ -1088,6 +1089,7 @@
         <option>
           <name>CCIncludePath2</name>
           <state>$PROJ_DIR$\..\</state>
+          <state>$PROJ_DIR$\..\..\</state>
           <state>$PROJ_DIR$\..\..\..\</state>
           <state>$PROJ_DIR$\..\..\..\HW\Port\IAR\</state>
           <state>$PROJ_DIR$\..\..\..\HW\Port\IAR\Delay\</state>
@@ -1839,6 +1841,24 @@
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\..\HW\stm32f10x_it.c</name>
+    </file>
+  </group>
+  <group>
+    <name>hw_cfg</name>
+    <file>
+      <name>$PROJ_DIR$\..\..\hw_cfg_MiniRC2.h</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\hw_cfg_MiniRC3.h</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\hw_cfg_MiniRC4.h</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\hw_cfg_NanoRC1.h</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\hw_cfg_ProRC1.h</name>
     </file>
   </group>
   <group>

@@ -176,8 +176,11 @@ void GPIO_Configuration(void)
 	// Enable pin
 	GLOBAL_OUTPUT_DISABLE();
 	GLOBAL_OUTPUT_INIT();
-	SW_SETINPUT();
+	SW_PULL_INIT();
 	SW_DIR_INIT();
+	SW_RST_PULL_INIT();
+	SW_RST_DIR_INIT();
+	SYNCSW_DIR_INIT();
 
 #if MP_EN
 	// Key Init

@@ -33,6 +33,18 @@ uint8 VSLLink_Ver[] = "VSLLink_20080905 by Simon(compiled on " __DATE__ ")";
 
 static void VSLLink_SetPortDir(uint8 msk, uint8 dir)
 {
+	if(msk & JTAG_PINMSK_SRST)
+	{
+		if(dir & JTAG_PINMSK_SRST)
+		{
+			JTAG_TAP_SRST_SETOUTPUT();
+		}
+		else
+		{
+			JTAG_TAP_SRST_SETINPUT();
+		}
+	}
+
 	if(msk & JTAG_PINMSK_TRST)
 	{
 		if(dir & JTAG_PINMSK_TRST)
@@ -417,7 +429,11 @@ void VSLLink_ProcessCmd(uint8* dat, uint16 len)
 				cur_dat_len = dat[cur_cmd_pos] + ((uint16)dat[cur_cmd_pos + 1] << 8);
 				cur_cmd_pos += 2;
 
+				SWJ_SWDIO_SET();
+				SWJ_SWDIO_SETOUTPUT();
 				SWJ_SeqOut(dat + cur_cmd_pos, cur_dat_len);
+				SWJ_SWDIO_SETINPUT();
+
 				dat[rep_len++] = 0x00;
 				cur_cmd_pos += (cur_dat_len + 7) / 8;
 				break;
