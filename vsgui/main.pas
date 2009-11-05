@@ -205,6 +205,7 @@ type
     function CortexM3_Init(): boolean;
     function CortexM3_Init_Para(line: string): string;
     procedure CortexM3_Update_chip(p_str: string);
+    procedure CortexM3_Update_Mode(m_str: string);
     function CortexM3_AddWriteParameters(): boolean;
     function CortexM3_AddReadParameters(): boolean;
     function CortexM3_AddVerifyParameters(): boolean;
@@ -835,6 +836,8 @@ begin
       exit;
     TT_AVR8:
       AVR8_Update_Mode(cbboxMode.Text);
+    TT_CortexM3:
+      CortexM3_Update_Mode(cbboxMode.Text);
   end;
 
   AdjustComponentColor(cbboxMode);
@@ -2795,15 +2798,41 @@ begin
 end;
 
 procedure TFormMain.CortexM3_Update_chip(p_str: string);
+var
+  str_tmp: string;
 begin
   p_str := p_str;
 
+  str_tmp := cbboxMode.Text;
+  cbboxMode.Clear;
   cbboxMode.Items.Add('j:JTAG');
   cbboxMode.Items.Add('s:SWJ');
 
   if (cbboxMode.ItemIndex <> 0) and (cbboxMode.ItemIndex <> 1) then
   begin
     cbboxMode.ItemIndex := 0;
+  end;
+
+  if cbboxMode.Items.IndexOf(str_tmp) >= 0 then
+  begin
+    cbboxMode.ItemIndex := cbboxMode.Items.IndexOf(str_tmp);
+  end
+  else
+  begin
+    cbboxMode.ItemIndex := 0;
+    CortexM3_Update_Mode(cbboxMode.Text);
+  end;
+end;
+
+procedure TFormMain.CortexM3_Update_Mode(m_str: string);
+begin
+  if m_str = 'j:JTAG' then
+  begin
+    lbledtFreq.Enabled := TRUE;
+  end
+  else
+  begin
+    lbledtFreq.Enabled := FALSE;
   end;
 end;
 
