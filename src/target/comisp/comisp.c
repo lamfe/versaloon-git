@@ -451,7 +451,7 @@ RESULT comisp_program(operation_t operations, program_info_t *pi,
 		retry = 0;
 		while(1)
 		{
-			uint16_t i;
+			uint32_t i;
 			
 			for (i = 0; i < comisp_test_buffsize; i++)
 			{
