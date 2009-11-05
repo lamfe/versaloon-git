@@ -1399,6 +1399,8 @@ begin
 end;
 
 procedure TFormMain.VSProg_CommonInit(para: string);
+var
+  str_tmp: string;
 begin
   btnEditApp.Caption := 'Flash';
   chkboxApp.Caption := 'Flash';
@@ -1491,6 +1493,7 @@ begin
     chkboxMP.Enabled := FALSE;
   end;
 
+  str_tmp := lbledtFreq.EditLabel.Caption;
   if (Pos('F', para) > 0) or (Pos('X', para) > 0) then
   begin
     if Pos('F', para) > 0 then
@@ -1500,6 +1503,10 @@ begin
     else
     begin
       lbledtFreq.EditLabel.Caption := EXECUTE_ADDR_STR;
+    end;
+    if lbledtFreq.EditLabel.Caption <> str_tmp then
+    begin
+      lbledtFreq.Text := '';
     end;
     lbledtFreq.Enabled := TRUE;
   end
