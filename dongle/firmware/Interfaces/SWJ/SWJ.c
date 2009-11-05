@@ -54,8 +54,6 @@ uint8 SWJ_SeqOut(uint8 *seq, uint16 num_of_bits)
 	uint16 i;
 	uint8 parity = 0;
 
-	SWJ_SWDIO_SET();
-	SWJ_SWDIO_SETOUTPUT();
 	for (i = 0; i < num_of_bits; i++)
 	{
 		if (seq[i / 8] & (1 << (i % 8)))
@@ -72,7 +70,7 @@ uint8 SWJ_SeqOut(uint8 *seq, uint16 num_of_bits)
 		SWJ_Delay();
 		SWJ_SWCLK_CLR();
 	}
-	SWJ_SWDIO_SETINPUT();
+
 	return parity & 1;
 }
 
@@ -91,8 +89,15 @@ uint8 SWJ_Transaction(uint8 request, uint32 *buff)
 	uint16 retry = 0;
 
 SWJ_RETRY:
+	// set swdio output to output request
+	SWJ_SWDIO_SET();
+	SWJ_SWDIO_SETOUTPUT();
+
 	// send out request
 	SWJ_SeqOut(&request, 8);
+
+	// set swdio input to receive reply
+	SWJ_SWDIO_SETINPUT();
 
 	if (read)
 	{
@@ -103,16 +108,27 @@ SWJ_RETRY:
 		parity += SWJ_SeqIn((uint8*)&data_parity, 1);
 		// trn
 		SWJ_SeqIn((uint8*)&data_parity, SWJ_Trn);
+
+		// set swdio output to output stop clock
+		SWJ_SWDIO_SET();
+		SWJ_SWDIO_SETOUTPUT();
 	}
 	else
 	{
 		// receive trn and 3-bit reply and then trn
 		SWJ_SeqIn((uint8*)&reply, SWJ_Trn + 3);
+
+		// set swdio output to output data
+		SWJ_SWDIO_SET();
+		SWJ_SWDIO_SETOUTPUT();
+
 		// send data and parity
 		parity = SWJ_SeqOut((uint8*)buff, 32);
 		parity += SWJ_SeqOut(&parity, 1);
 	}
 	SWJ_StopClock();
+	// set swdio input after clock is stopped
+	SWJ_SWDIO_SETINPUT();
 	reply &= 0x07; 
 	switch (reply)
 	{

@@ -27,7 +27,7 @@ void USB_TO_GPIO_ProcessCmd(uint8* dat, uint16 len)
 	uint16 index, device_num, length;
 	uint8 command;
 
-	uint16 port_data, mask_data;
+	uint16 port_data, mask_data, io_data;
 
 	index = 0;
 	while(index < len)
@@ -55,68 +55,94 @@ void USB_TO_GPIO_ProcessCmd(uint8* dat, uint16 len)
 			break;
 		case USB_TO_XXX_CONFIG:
 			mask_data = dat[index + 0] + (dat[index + 1] << 8);
+			io_data   = dat[index + 2] + (dat[index + 3] << 8);
+			port_data = dat[index + 4] + (dat[index + 5] << 8);
+			io_data  &= mask_data;
 
-			if(dat[index + 2] & USB_TO_GPIO_DIR_MSK)
+			if ((mask_data & io_data & ~USB_TO_GPIO_OUT_MSK) 
+				|| (mask_data & ~io_data & ~USB_TO_GPIO_IN_MSK))
 			{
-				// output
-				if(mask_data & ~USB_TO_GPIO_OUT_MSK)
-				{
-					buffer_out[rep_len++] = USB_TO_XXX_INVALID_PARA;
-					return;
-				}
-
-				if(mask_data & USB_TO_GPIO_SRST)
-				{
-					ISP_SetRSTOutput();
-				}
-				if(mask_data & USB_TO_GPIO_TRST)
-				{
-					JTAG_TAP_TRST_SETOUTPUT();
-				}
-#if JTAG_HAS_USER_PIN
-				if(mask_data & USB_TO_GPIO_USR1)
-				{
-					JTAG_TAP_USR1_SETOUTPUT();
-				}
-#endif
-				if(mask_data & USB_TO_GPIO_TCK)
-				{
-					JTAG_TAP_TCK_SETOUTPUT();
-				}
-				if(mask_data & USB_TO_GPIO_TDI)
-				{
-					JTAG_TAP_TDI_SETOUTPUT();
-				}
+				buffer_out[rep_len++] = USB_TO_XXX_INVALID_PARA;
+				return;
 			}
-			else
-			{
-				// input
-				if(mask_data & ~USB_TO_GPIO_IN_MSK)
-				{
-					buffer_out[rep_len++] = USB_TO_XXX_INVALID_PARA;
-					return;
-				}
 
-				if(mask_data & USB_TO_GPIO_SRST)
+			if (mask_data & USB_TO_GPIO_SRST)
+			{
+				if (io_data & USB_TO_GPIO_SRST)
 				{
-					ISP_SetRSTInput();
+					SW_SETOUTPUT();
 				}
-#if JTAG_HAS_USER_PIN
-				if(mask_data & USB_TO_GPIO_USR2)
+				else
 				{
-					JTAG_TAP_USR2_SETINPUT();
-				}
-#endif
-				if(mask_data & USB_TO_GPIO_TDO)
-				{
-					JTAG_TAP_TDO_SETINPUT();
-				}
-				if(mask_data & USB_TO_GPIO_RTCK)
-				{
-					JTAG_TAP_RTCK_SETINPUT();
+					if (port_data & USB_TO_GPIO_SRST)
+					{
+						SW_SETINPUT_PU();
+					}
+					else
+					{
+						SW_SETINPUT_PD();
+					}
 				}
 			}
 
+			if (mask_data & USB_TO_GPIO_TRST)
+			{
+				if (io_data & USB_TO_GPIO_TRST)
+				{
+					SW_RST_SETOUTPUT();
+				}
+				else
+				{
+					if (port_data & USB_TO_GPIO_TRST)
+					{
+						SW_RST_SETINPUT_PU();
+					}
+					else
+					{
+						SW_RST_SETINPUT_PD();
+					}
+				}
+			}
+
+			if (mask_data & USB_TO_GPIO_TMS)
+			{
+				if (io_data & USB_TO_GPIO_TMS)
+				{
+					JTAG_TAP_TMS_SETOUTPUT();
+				}
+				else
+				{
+					JTAG_TAP_TMS_SETINPUT();
+				}
+			}
+
+#if JTAG_HAS_USER_PIN
+			if (mask_data & USB_TO_GPIO_USR1)
+			{
+				JTAG_TAP_USR1_SETOUTPUT();
+			}
+			if (mask_data & USB_TO_GPIO_USR2)
+			{
+				JTAG_TAP_USR2_SETINPUT();
+			}
+#endif
+
+			if (mask_data & USB_TO_GPIO_TCK)
+			{
+				JTAG_TAP_TCK_SETOUTPUT();
+			}
+			if (mask_data & USB_TO_GPIO_TDI)
+			{
+				JTAG_TAP_TDI_SETOUTPUT();
+			}
+			if(mask_data & USB_TO_GPIO_TDO)
+			{
+				JTAG_TAP_TDO_SETINPUT();
+			}
+			if(mask_data & USB_TO_GPIO_RTCK)
+			{
+				JTAG_TAP_RTCK_SETINPUT();
+			}
 			buffer_out[rep_len++] = USB_TO_XXX_OK;
 
 			break;
@@ -139,9 +165,23 @@ void USB_TO_GPIO_ProcessCmd(uint8* dat, uint16 len)
 			port_data = 0;
 			if(mask_data & USB_TO_GPIO_SRST)
 			{
-				if(ISP_GetRST())
+				if(SW_GET())
 				{
 					port_data |= USB_TO_GPIO_SRST;
+				}
+			}
+			if(mask_data & USB_TO_GPIO_TRST)
+			{
+				if(SW_RST_GET())
+				{
+					port_data |= USB_TO_GPIO_TRST;
+				}
+			}
+			if(mask_data & USB_TO_GPIO_TMS)
+			{
+				if(JTAG_TAP_TMS_GET())
+				{
+					port_data |= USB_TO_GPIO_TMS;
 				}
 			}
 #if JTAG_HAS_USER_PIN
@@ -188,22 +228,33 @@ void USB_TO_GPIO_ProcessCmd(uint8* dat, uint16 len)
 			{
 				if(port_data & USB_TO_GPIO_SRST)
 				{
-					ISP_SetRST();
+					SW_SET();
 				}
 				else
 				{
-					ISP_ClrRST();
+					SW_CLR();
 				}
 			}
 			if(mask_data & USB_TO_GPIO_TRST)
 			{
 				if(port_data & USB_TO_GPIO_TRST)
 				{
-					JTAG_TAP_TRST_SET();
+					SW_RST_SET();
 				}
 				else
 				{
-					JTAG_TAP_TRST_SET();
+					SW_RST_CLR();
+				}
+			}
+			if(mask_data & USB_TO_GPIO_TMS)
+			{
+				if(port_data & USB_TO_GPIO_TMS)
+				{
+					JTAG_TAP_TMS_SET();
+				}
+				else
+				{
+					JTAG_TAP_TMS_CLR();
 				}
 			}
 #if JTAG_HAS_USER_PIN
