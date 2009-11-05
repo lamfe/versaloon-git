@@ -492,7 +492,6 @@
 #define KEY_Init()						GPIO_Dir(KEY_PORT, GPIO_MODE_IPU, KEY_PIN)
 #define KEY_Fini()						GPIO_Dir(KEY_PORT, GPIO_MODE_IN_FLOATING, KEY_PIN)
 
-
 /****************************** USB *****************************/
 // For USB 2.0, use DP
 // For USB 1.1, use DM
