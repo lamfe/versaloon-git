@@ -19,29 +19,29 @@
 #ifndef __PSOC_H_INCLUDED__
 #define __PSOC_H_INCLUDED__
 
-#define PSOC_STRING						"psoc"
-#define PSOC_PROGRAM_MODE_STR			"rp"
+#define PSOC1_STRING					"psoc"
+#define PSOC1_PROGRAM_MODE_STR			"rp"
 
-extern const program_area_map_t psoc_program_area_map[];
+extern const program_area_map_t psoc1_program_area_map[];
 
-RESULT psoc_parse_argument(char cmd, const char *argu);
-RESULT psoc_probe_chip(char *name);
-RESULT psoc_prepare_buffer(program_info_t *pi);
+RESULT psoc1_parse_argument(char cmd, const char *argu);
+RESULT psoc1_probe_chip(char *name);
+RESULT psoc1_prepare_buffer(program_info_t *pi);
 
-RESULT psoc_init(program_info_t *pi, const char *dir, programmer_info_t *prog);
-RESULT psoc_fini(program_info_t *pi, programmer_info_t *prog);
-uint32_t psoc_interface_needed(void);
-RESULT psoc_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr, 
-											uint8_t* data, uint32_t length, 
-											void* buffer);
+RESULT psoc1_init(program_info_t *pi, const char *dir, programmer_info_t *prog);
+RESULT psoc1_fini(program_info_t *pi, programmer_info_t *prog);
+uint32_t psoc1_interface_needed(void);
+RESULT psoc1_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr, 
+											 uint8_t* data, uint32_t length, 
+											 void* buffer);
 
-RESULT psoc_program(operation_t operations, program_info_t *pi, 
-					programmer_info_t *prog);
+RESULT psoc1_program(operation_t operations, program_info_t *pi, 
+					 programmer_info_t *prog);
 
-RESULT psoc_get_mass_product_data_size(operation_t operations, 
-									   program_info_t *pi, uint32_t *size);
-RESULT psoc_prepare_mass_product_data(operation_t operations, 
-									  program_info_t *pi, uint8_t *buff);
+RESULT psoc1_get_mass_product_data_size(operation_t operations, 
+										program_info_t *pi, uint32_t *size);
+RESULT psoc1_prepare_mass_product_data(operation_t operations, 
+									   program_info_t *pi, uint8_t *buff);
 
 #endif /* __PSOC_H_INCLUDED__ */
 
