@@ -1296,7 +1296,7 @@ begin
     TT_NONE:
       exit;
     TT_PSOC1:
-      chip_module_header := 'cy8c';
+      chip_module_header := 'cy8c2';
     TT_AT89S5X:
       chip_module_header := 'at89s';
     TT_C8051F:
