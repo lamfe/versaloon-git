@@ -40,7 +40,7 @@
 
 #include "target.h"
 #include "at89s5x/at89s5x.h"
-#include "psoc/psoc.h"
+#include "psoc1/psoc1.h"
 #include "lpc900/lpc900.h"
 #include "msp430/msp430.h"
 #include "c8051f/c8051f.h"
@@ -76,23 +76,23 @@ target_info_t targets_info[] =
 	},
 	// psoc
 	{
-		PSOC_STRING,						// name
+		PSOC1_STRING,						// name
 		APPLICATION | LOCK | CHECKSUM,		// areas
-		psoc_program_area_map,				// program_area_map
-		PSOC_PROGRAM_MODE_STR,				// program_mode_str
-		psoc_parse_argument,				// parse_argument
-		psoc_probe_chip,					// probe_chip
-		psoc_init,							// init
-		psoc_fini,							// fini
-		psoc_interface_needed,				// interfaces_needed
-		psoc_prepare_buffer,				// prepare_buffer
-		psoc_write_buffer_from_file_callback,
+		psoc1_program_area_map,				// program_area_map
+		PSOC1_PROGRAM_MODE_STR,				// program_mode_str
+		psoc1_parse_argument,				// parse_argument
+		psoc1_probe_chip,					// probe_chip
+		psoc1_init,							// init
+		psoc1_fini,							// fini
+		psoc1_interface_needed,				// interfaces_needed
+		psoc1_prepare_buffer,				// prepare_buffer
+		psoc1_write_buffer_from_file_callback,
 											// write_buffer_from_file_callback
 		NULL,								// write_file_from_buffer_callback
-		psoc_program,						// program
+		psoc1_program,						// program
 		
-		psoc_get_mass_product_data_size,	// get_mass_product_data_size
-		psoc_prepare_mass_product_data,		// prepare_mass_product_data
+		psoc1_get_mass_product_data_size,	// get_mass_product_data_size
+		psoc1_prepare_mass_product_data,		// prepare_mass_product_data
 	},
 	// msp430
 	{

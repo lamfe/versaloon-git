@@ -34,7 +34,7 @@ libtgt_a_SOURCES = \
     msp430/msp430.c \
     msp430/msp430_jtagsbw.c \
     msp430/msp430_bsl.c \
-    psoc/psoc.c \
+    psoc1/psoc1.c \
     stm8/stm8.c \
     svf_player/svf_player.c \
     svf_player/byte_tap.c \
@@ -53,7 +53,7 @@ libtgt_a_SOURCES = \
 #    msp430/JTAGfunc.h \
 #    msp430/msp430.h \
 #    msp430/msp430_const.h \
-#    psoc/psoc.h \
+#    psoc1/psoc1.h \
 #    stm8/stm8.h \
 #    svf_player/byte_tap.h \
 #    svf_player/svf.h \

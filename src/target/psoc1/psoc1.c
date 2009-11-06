@@ -37,16 +37,16 @@
 #include "programmer.h"
 #include "target.h"
 
-#include "psoc.h"
-#include "psoc_internal.h"
+#include "psoc1.h"
+#include "psoc1_internal.h"
 
-#define CUR_TARGET_STRING			PSOC_STRING
+#define CUR_TARGET_STRING			PSOC1_STRING
 #define cur_chip_param				target_chip_param
 #define cur_chips_param				target_chips.chips_param
 #define cur_chips_num				target_chips.num_of_chips
-#define cur_prog_mode				psoc_prog_mode
+#define cur_prog_mode				psoc1_prog_mode
 
-const program_area_map_t psoc_program_area_map[] = 
+const program_area_map_t psoc1_program_area_map[] = 
 {
 	{APPLICATION, 'f', 1},
 	{LOCK, 's', 1},
@@ -54,19 +54,19 @@ const program_area_map_t psoc_program_area_map[] =
 	{0, 0, 0}
 };
 
-static uint8_t psoc_prog_mode = 0;
+static uint8_t psoc1_prog_mode = 0;
 
 #define VECTORS_NUM				17
 #define VECTORS_TABLE_SIZE		128
 
-void psoc_usage(void)
+void psoc1_usage(void)
 {
 	printf("\
 Usage of %s:\n\
   -m,  --mode <MODE>                set mode<r|p>\n\n", CUR_TARGET_STRING);
 }
 
-void psoc_support(void)
+void psoc1_support(void)
 {
 	uint32_t i;
 
@@ -77,25 +77,25 @@ void psoc_support(void)
 %s: id = 0x%04x, init_mode = %d, flash_size = %d, secure_size = %d\n", 
 				cur_chips_param[i].chip_name, 
 				cur_chips_param[i].chip_id,
-				cur_chips_param[i].program_mode | PSOC_POWERON_MODE, 
+				cur_chips_param[i].program_mode | PSOC1_POWERON_MODE, 
 				cur_chips_param[i].app_page_size 
 					* cur_chips_param[i].app_page_num 
-					* cur_chips_param[i].param[PSOC_PARAM_BANK_NUM],
-				cur_chips_param[i].param[PSOC_PARAM_BANK_NUM] 
+					* cur_chips_param[i].param[PSOC1_PARAM_BANK_NUM],
+				cur_chips_param[i].param[PSOC1_PARAM_BANK_NUM] 
 					* cur_chips_param[i].app_page_num >> 2);
 	}
 	printf("\n");
 }
 
-RESULT psoc_parse_argument(char cmd, const char *argu)
+RESULT psoc1_parse_argument(char cmd, const char *argu)
 {
 	switch (cmd)
 	{
 	case 'h':
-		psoc_usage();
+		psoc1_usage();
 		break;
 	case 'S':
-		psoc_support();
+		psoc1_support();
 		break;
 	case 'm':
 		// program Mode
@@ -109,11 +109,11 @@ RESULT psoc_parse_argument(char cmd, const char *argu)
 		{
 		case 'r':
 			// Reset mode
-			cur_prog_mode = PSOC_RESET_MODE;
+			cur_prog_mode = PSOC1_RESET_MODE;
 			break;
 		case 'p':
 			// Power-on mode
-			cur_prog_mode = PSOC_POWERON_MODE;
+			cur_prog_mode = PSOC1_POWERON_MODE;
 			break;
 		default:
 			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_CHARACTER_MESSAGE), cmd, 
@@ -130,7 +130,7 @@ RESULT psoc_parse_argument(char cmd, const char *argu)
 	return ERROR_OK;
 }
 
-RESULT psoc_probe_chip(char *chip_name)
+RESULT psoc1_probe_chip(char *chip_name)
 {
 	uint32_t i;
 	
@@ -145,11 +145,11 @@ RESULT psoc_probe_chip(char *chip_name)
 	return ERROR_FAIL;
 }
 
-RESULT psoc_prepare_buffer(program_info_t *pi)
+RESULT psoc1_prepare_buffer(program_info_t *pi)
 {
 	if (pi->app != NULL)
 	{
-		memset(pi->app, PSOC_FLASH_CHAR, pi->app_size);
+		memset(pi->app, PSOC1_FLASH_CHAR, pi->app_size);
 	}
 	else
 	{
@@ -158,7 +158,7 @@ RESULT psoc_prepare_buffer(program_info_t *pi)
 	
 	if (pi->lock != NULL)
 	{
-		memset(pi->lock, PSOC_SECURE_CHAR, pi->lock_size);
+		memset(pi->lock, PSOC1_SECURE_CHAR, pi->lock_size);
 	}
 	else
 	{
@@ -168,7 +168,7 @@ RESULT psoc_prepare_buffer(program_info_t *pi)
 	return ERROR_OK;
 }
 
-RESULT psoc_fini(program_info_t *pi, programmer_info_t *prog)
+RESULT psoc1_fini(program_info_t *pi, programmer_info_t *prog)
 {
 	pi = pi;
 	prog = prog;
@@ -176,8 +176,8 @@ RESULT psoc_fini(program_info_t *pi, programmer_info_t *prog)
 	return ERROR_OK;
 }
 
-RESULT psoc_init(program_info_t *pi, const char *dir, 
-				 programmer_info_t *prog)
+RESULT psoc1_init(program_info_t *pi, const char *dir, 
+				  programmer_info_t *prog)
 {
 	uint8_t i;
 	operation_t opt_tmp;
@@ -197,9 +197,9 @@ RESULT psoc_init(program_info_t *pi, const char *dir,
 		// auto detect
 		LOG_INFO(_GETTEXT(INFOMSG_TRY_AUTODETECT));
 		opt_tmp.read_operations = CHIP_ID;
-		cur_chip_param.program_mode = PSOC_RESET_MODE | PSOC_POWERON_MODE;
+		cur_chip_param.program_mode = PSOC1_RESET_MODE | PSOC1_POWERON_MODE;
 		
-		if (ERROR_OK != psoc_program(opt_tmp, pi, prog))
+		if (ERROR_OK != psoc1_program(opt_tmp, pi, prog))
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_AUTODETECT_FAIL), pi->chip_type);
 			return ERRCODE_AUTODETECT_FAIL;
@@ -213,14 +213,14 @@ RESULT psoc_init(program_info_t *pi, const char *dir,
 				memcpy(&cur_chip_param, cur_chips_param + i, 
 					   sizeof(cur_chip_param));
 				cur_chip_param.lock_size = 
-									cur_chip_param.param[PSOC_PARAM_BANK_NUM] 
+									cur_chip_param.param[PSOC1_PARAM_BANK_NUM] 
 									* cur_chip_param.app_page_num >> 2;
-				if (cur_chip_param.lock_size < PSOC_MIN_SECURE_SIZE)
+				if (cur_chip_param.lock_size < PSOC1_MIN_SECURE_SIZE)
 				{
-					cur_chip_param.lock_size = PSOC_MIN_SECURE_SIZE;
+					cur_chip_param.lock_size = PSOC1_MIN_SECURE_SIZE;
 				}
 				cur_chip_param.app_size = 
-									cur_chip_param.param[PSOC_PARAM_BANK_NUM] 
+									cur_chip_param.param[PSOC1_PARAM_BANK_NUM] 
 									* cur_chip_param.app_page_num 
 									* cur_chip_param.app_page_size;
 				
@@ -249,14 +249,14 @@ RESULT psoc_init(program_info_t *pi, const char *dir,
 				memcpy(&cur_chip_param, cur_chips_param + i, 
 					   sizeof(cur_chip_param));
 				cur_chip_param.lock_size = 
-									cur_chip_param.param[PSOC_PARAM_BANK_NUM] 
+									cur_chip_param.param[PSOC1_PARAM_BANK_NUM] 
 									* cur_chip_param.app_page_num >> 2;
-				if (cur_chip_param.lock_size < PSOC_MIN_SECURE_SIZE)
+				if (cur_chip_param.lock_size < PSOC1_MIN_SECURE_SIZE)
 				{
-					cur_chip_param.lock_size = PSOC_MIN_SECURE_SIZE;
+					cur_chip_param.lock_size = PSOC1_MIN_SECURE_SIZE;
 				}
 				cur_chip_param.app_size = 
-									cur_chip_param.param[PSOC_PARAM_BANK_NUM] 
+									cur_chip_param.param[PSOC1_PARAM_BANK_NUM] 
 									* cur_chip_param.app_page_num 
 									* cur_chip_param.app_page_size;
 				
@@ -273,14 +273,14 @@ RESULT psoc_init(program_info_t *pi, const char *dir,
 	}
 }
 
-uint32_t psoc_interface_needed(void)
+uint32_t psoc1_interface_needed(void)
 {
-	return PSOC_INTERFACE_NEEDED;
+	return PSOC1_INTERFACE_NEEDED;
 }
 
-RESULT psoc_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr, 
-											uint8_t* data, uint32_t length, 
-											void* buffer)
+RESULT psoc1_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr, 
+											 uint8_t* data, uint32_t length, 
+											 void* buffer)
 {
 	program_info_t *pi = (program_info_t *)buffer;
 	uint32_t mem_addr = address & 0x0000FFFF;
@@ -367,8 +367,8 @@ RESULT psoc_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr,
 }
 
 
-RESULT psoc_get_mass_product_data_size(operation_t operations, 
-									   program_info_t *pi, uint32_t *size)
+RESULT psoc1_get_mass_product_data_size(operation_t operations, 
+										program_info_t *pi, uint32_t *size)
 {
 	operations = operations;
 	
@@ -380,8 +380,8 @@ RESULT psoc_get_mass_product_data_size(operation_t operations,
 	return ERROR_OK;
 }
 
-RESULT psoc_prepare_mass_product_data(operation_t operations, 
-									  program_info_t *pi, uint8_t *buff)
+RESULT psoc1_prepare_mass_product_data(operation_t operations, 
+									   program_info_t *pi, uint8_t *buff)
 {
 	uint32_t index = 0;
 	
@@ -409,22 +409,22 @@ RESULT psoc_prepare_mass_product_data(operation_t operations,
 #endif
 	
 	// check mode
-	switch (cur_prog_mode & PSOC_MODE_MASK)
+	switch (cur_prog_mode & PSOC1_MODE_MASK)
 	{
 	case 0:
 		LOG_WARNING(_GETTEXT(INFOMSG_USE_DEFAULT), "Program mode", 
 					"RESET mode");
-		cur_prog_mode = PSOC_RESET_MODE;
-	case PSOC_RESET_MODE:
-		if (!(cur_chip_param.program_mode & PSOC_RESET_MODE))
+		cur_prog_mode = PSOC1_RESET_MODE;
+	case PSOC1_RESET_MODE:
+		if (!(cur_chip_param.program_mode & PSOC1_RESET_MODE))
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "RESET", 
 					  cur_chip_param.chip_name);
 			return ERRCODE_NOT_SUPPORT;
 		}
 		break;
-	case PSOC_POWERON_MODE:
-		if (!(cur_chip_param.program_mode & PSOC_POWERON_MODE))
+	case PSOC1_POWERON_MODE:
+		if (!(cur_chip_param.program_mode & PSOC1_POWERON_MODE))
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "POWERON", 
 					  cur_chip_param.chip_name);
@@ -466,16 +466,16 @@ RESULT psoc_prepare_mass_product_data(operation_t operations,
 
 static programmer_info_t *p = NULL;
 
-#define PSOC_SSC_CMD_SWBootReset			0x00
-#define PSOC_SSC_CMD_ReadBlock				0x01
-#define PSOC_SSC_CMD_WriteBlock				0x02
-#define PSOC_SSC_CMD_EraseBlock				0x03
-#define PSOC_SSC_CMD_ProtectBlock			0x04
-#define PSOC_SSC_CMD_EraseAll				0x05
-#define PSOC_SSC_CMD_TableRead				0x06
-#define PSOC_SSC_CMD_CheckSum				0x07
-#define PSOC_SSC_CMD_Calibrate0				0x08
-#define PSOC_SSC_CMD_Calibrate1				0x09
+#define PSOC1_SSC_CMD_SWBootReset			0x00
+#define PSOC1_SSC_CMD_ReadBlock				0x01
+#define PSOC1_SSC_CMD_WriteBlock			0x02
+#define PSOC1_SSC_CMD_EraseBlock			0x03
+#define PSOC1_SSC_CMD_ProtectBlock			0x04
+#define PSOC1_SSC_CMD_EraseAll				0x05
+#define PSOC1_SSC_CMD_TableRead				0x06
+#define PSOC1_SSC_CMD_CheckSum				0x07
+#define PSOC1_SSC_CMD_Calibrate0			0x08
+#define PSOC1_SSC_CMD_Calibrate1			0x09
 
 #define get_target_voltage(v)				p->get_target_voltage(v)
 
@@ -507,12 +507,12 @@ static programmer_info_t *p = NULL;
 #define issp_sel_reg_bank(xio)				issp_set_cpu_f((xio) ? 0x10 : 0x00)
 #define issp_set_flash_bank(bank)			issp_write_reg(0xFA, (bank) & 0x03)
 
-#define PSOC_ISSP_SSC_DEFAULT_SP			0x08
-#define PSOC_ISSP_SSC_DEFAULT_POINTER		0x80
-#define PSOC_ISSP_SSC_DEFAULT_CLOCK_ERASE	0x15
-#define PSOC_ISSP_SSC_DEFAULT_CLOCK_FLASH	0x54
-#define PSOC_ISSP_SSC_DEFAULT_DELAY			0x56
-#define PSOC_ISSP_SSC_RETURN_OK				0x00
+#define PSOC1_ISSP_SSC_DEFAULT_SP			0x08
+#define PSOC1_ISSP_SSC_DEFAULT_POINTER		0x80
+#define PSOC1_ISSP_SSC_DEFAULT_CLOCK_ERASE	0x15
+#define PSOC1_ISSP_SSC_DEFAULT_CLOCK_FLASH	0x54
+#define PSOC1_ISSP_SSC_DEFAULT_DELAY		0x56
+#define PSOC1_ISSP_SSC_RETURN_OK			0x00
 
 RESULT issp_wait_and_poll_with_ret(uint8_t *buf, uint8_t want_ssc_return_value)
 {
@@ -576,9 +576,9 @@ RESULT issp_call_ssc(uint8_t cmd, uint8_t id, uint8_t poll_ready, uint8_t * buf,
 					 uint8_t want_return)
 {
 	issp_sel_reg_bank(0x00);
-	issp_set_cup_sp(PSOC_ISSP_SSC_DEFAULT_SP);
+	issp_set_cup_sp(PSOC1_ISSP_SSC_DEFAULT_SP);
 	issp_ssc_set_key1();
-	issp_ssc_set_key2(PSOC_ISSP_SSC_DEFAULT_SP + 3);
+	issp_ssc_set_key2(PSOC1_ISSP_SSC_DEFAULT_SP + 3);
 	issp_write_reg(0xF5, 0x00);
 	issp_write_reg(0xF4, 0x03);
 	issp_ssc_set_pointer(0x80);
@@ -599,8 +599,8 @@ RESULT issp_call_ssc(uint8_t cmd, uint8_t id, uint8_t poll_ready, uint8_t * buf,
 	}
 }
 
-RESULT psoc_program(operation_t operations, program_info_t *pi, 
-					programmer_info_t *prog)
+RESULT psoc1_program(operation_t operations, program_info_t *pi, 
+					 programmer_info_t *prog)
 {
 	uint16_t voltage;
 	uint8_t bank, addr, page_buf[64];
@@ -643,7 +643,7 @@ RESULT psoc_program(operation_t operations, program_info_t *pi,
 	if ((operations.read_operations & APPLICATION) 
 		&& !(operations.verify_operations & APPLICATION))
 	{
-		pi->app_size_valid = cur_chip_param.param[PSOC_PARAM_BANK_NUM] 
+		pi->app_size_valid = cur_chip_param.param[PSOC1_PARAM_BANK_NUM] 
 							 * cur_chip_param.app_page_num 
 							 * cur_chip_param.app_page_size;
 	}
@@ -651,7 +651,7 @@ RESULT psoc_program(operation_t operations, program_info_t *pi,
 		|| (operations.write_operations & APPLICATION))
 	{
 		if (pi->app_size_valid != (uint32_t)(
-									cur_chip_param.param[PSOC_PARAM_BANK_NUM] 
+									cur_chip_param.param[PSOC1_PARAM_BANK_NUM] 
 									* cur_chip_param.app_page_num 
 									* cur_chip_param.app_page_size))
 		{
@@ -661,22 +661,22 @@ RESULT psoc_program(operation_t operations, program_info_t *pi,
 	}
 	
 	// check mode
-	switch (cur_prog_mode & PSOC_MODE_MASK)
+	switch (cur_prog_mode & PSOC1_MODE_MASK)
 	{
 	case 0:
 		LOG_WARNING(_GETTEXT(INFOMSG_USE_DEFAULT), "Program mode", 
 					"RESET mode");
-		cur_prog_mode = PSOC_RESET_MODE;
-	case PSOC_RESET_MODE:
-		if (!(cur_chip_param.program_mode & PSOC_RESET_MODE))
+		cur_prog_mode = PSOC1_RESET_MODE;
+	case PSOC1_RESET_MODE:
+		if (!(cur_chip_param.program_mode & PSOC1_RESET_MODE))
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "RESET", 
 					  cur_chip_param.chip_name);
 			return ERRCODE_NOT_SUPPORT;
 		}
 		break;
-	case PSOC_POWERON_MODE:
-		if (!(cur_chip_param.program_mode & PSOC_POWERON_MODE))
+	case PSOC1_POWERON_MODE:
+		if (!(cur_chip_param.program_mode & PSOC1_POWERON_MODE))
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "POWERON", 
 					  cur_chip_param.chip_name);
@@ -711,7 +711,7 @@ RESULT psoc_program(operation_t operations, program_info_t *pi,
 	}
 	
 	// enter program mode
-	if (cur_prog_mode & PSOC_RESET_MODE)
+	if (cur_prog_mode & PSOC1_RESET_MODE)
 	{
 		// Reset Mode
 		// enter prog mode
@@ -744,7 +744,7 @@ RESULT psoc_program(operation_t operations, program_info_t *pi,
 	// read chip_id
 	// call table_read no.0 and read 2 bytes from 0xF8 in sram
 	pi->chip_id = 0;
-	ret = issp_call_ssc(PSOC_SSC_CMD_TableRead, 0, 1, (uint8_t*)&pi->chip_id, 2);
+	ret = issp_call_ssc(PSOC1_SSC_CMD_TableRead, 0, 1, (uint8_t*)&pi->chip_id, 2);
 	if (ret != ERROR_OK)
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read chip id");
@@ -770,7 +770,7 @@ RESULT psoc_program(operation_t operations, program_info_t *pi,
 	// init
 	// init1 call_calibrate
 	// call calibrate1
-	ret = issp_call_ssc(PSOC_SSC_CMD_Calibrate1, 0, 1, NULL, 0);
+	ret = issp_call_ssc(PSOC1_SSC_CMD_Calibrate1, 0, 1, NULL, 0);
 	if (ret != ERROR_OK)
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
@@ -779,7 +779,7 @@ RESULT psoc_program(operation_t operations, program_info_t *pi,
 		goto leave_program_mode;
 	}
 	// init2 read table no.1
-	ret = issp_call_ssc(PSOC_SSC_CMD_TableRead, 1, 1, NULL, 0);
+	ret = issp_call_ssc(PSOC1_SSC_CMD_TableRead, 1, 1, NULL, 0);
 	if (ret != ERROR_OK)
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
@@ -810,11 +810,11 @@ RESULT psoc_program(operation_t operations, program_info_t *pi,
 		LOG_INFO(_GETTEXT(INFOMSG_ERASING), "chip");
 		pgbar_init("erasing chip |", "|", 0, 1, PROGRESS_STEP, '=');
 		
-		issp_ssc_set_clock(PSOC_ISSP_SSC_DEFAULT_CLOCK_ERASE);
-		issp_ssc_set_delay(PSOC_ISSP_SSC_DEFAULT_DELAY);
+		issp_ssc_set_clock(PSOC1_ISSP_SSC_DEFAULT_CLOCK_ERASE);
+		issp_ssc_set_delay(PSOC1_ISSP_SSC_DEFAULT_DELAY);
 		
-		ret = issp_call_ssc(PSOC_SSC_CMD_EraseAll, 0, 1, &tmp8, 1);
-		if ((ret != ERROR_OK) || (tmp8 != PSOC_ISSP_SSC_RETURN_OK))
+		ret = issp_call_ssc(PSOC1_SSC_CMD_EraseAll, 0, 1, &tmp8, 1);
+		if ((ret != ERROR_OK) || (tmp8 != PSOC1_ISSP_SSC_RETURN_OK))
 		{
 			pgbar_fini();
 			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "call erase_all");
@@ -837,11 +837,11 @@ RESULT psoc_program(operation_t operations, program_info_t *pi,
 				   PROGRESS_STEP, '=');
 		
 		checksum = 0;
-		for (bank = 0; bank < cur_chip_param.param[PSOC_PARAM_BANK_NUM]; 
+		for (bank = 0; bank < cur_chip_param.param[PSOC1_PARAM_BANK_NUM]; 
 			 bank++)
 		{
 			// select bank by write xio in fls_pr1(in reg_bank 1)
-			if (cur_chip_param.param[PSOC_PARAM_BANK_NUM] > 1)
+			if (cur_chip_param.param[PSOC1_PARAM_BANK_NUM] > 1)
 			{
 				issp_sel_reg_bank(1);
 				issp_set_flash_bank(bank);
@@ -858,15 +858,15 @@ RESULT psoc_program(operation_t operations, program_info_t *pi,
 				for (addr = 0; addr < cur_chip_param.app_page_size; addr++)
 				{
 					checksum += pi->app[block_addr + addr];
-					issp_write_sram(PSOC_ISSP_SSC_DEFAULT_POINTER + addr, 
+					issp_write_sram(PSOC1_ISSP_SSC_DEFAULT_POINTER + addr, 
 									pi->app[block_addr + addr]);
 				}
-				issp_ssc_set_clock(PSOC_ISSP_SSC_DEFAULT_CLOCK_FLASH);
-				issp_ssc_set_delay(PSOC_ISSP_SSC_DEFAULT_DELAY);
+				issp_ssc_set_clock(PSOC1_ISSP_SSC_DEFAULT_CLOCK_FLASH);
+				issp_ssc_set_delay(PSOC1_ISSP_SSC_DEFAULT_DELAY);
 				
-				ret = issp_call_ssc(PSOC_SSC_CMD_WriteBlock, 
+				ret = issp_call_ssc(PSOC1_SSC_CMD_WriteBlock, 
 									(uint8_t)(block & 0xFF), 1, &tmp8, 1);
-				if ((ret != ERROR_OK) || (tmp8 != PSOC_ISSP_SSC_RETURN_OK))
+				if ((ret != ERROR_OK) || (tmp8 != PSOC1_ISSP_SSC_RETURN_OK))
 				{
 					pgbar_fini();
 					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_MESSAGE), 
@@ -904,10 +904,10 @@ RESULT psoc_program(operation_t operations, program_info_t *pi,
 					PROGRESS_STEP, '=');
 		
 		checksum = 0;
-		for (bank = 0; bank < cur_chip_param.param[PSOC_PARAM_BANK_NUM]; 
+		for (bank = 0; bank < cur_chip_param.param[PSOC1_PARAM_BANK_NUM]; 
 			 bank++)
 		{
-			if (cur_chip_param.param[PSOC_PARAM_BANK_NUM] > 1)
+			if (cur_chip_param.param[PSOC1_PARAM_BANK_NUM] > 1)
 			{
 				issp_sel_reg_bank(1);
 				issp_set_flash_bank(bank);
@@ -920,9 +920,9 @@ RESULT psoc_program(operation_t operations, program_info_t *pi,
 							bank * cur_chip_param.app_page_num + block;
 				uint32_t block_addr = block_num * cur_chip_param.app_page_size;
 				
-				ret = issp_call_ssc(PSOC_SSC_CMD_ReadBlock, 
+				ret = issp_call_ssc(PSOC1_SSC_CMD_ReadBlock, 
 									(uint8_t)(block & 0xFF), 1, &tmp8, 1);
-				if ((ret != ERROR_OK) || (tmp8 != PSOC_ISSP_SSC_RETURN_OK))
+				if ((ret != ERROR_OK) || (tmp8 != PSOC1_ISSP_SSC_RETURN_OK))
 				{
 					pgbar_fini();
 					LOG_ERROR(
@@ -934,7 +934,7 @@ RESULT psoc_program(operation_t operations, program_info_t *pi,
 				
 				for (addr = 0; addr < cur_chip_param.app_page_size; addr++)
 				{
-					issp_read_sram(PSOC_ISSP_SSC_DEFAULT_POINTER + addr, 
+					issp_read_sram(PSOC1_ISSP_SSC_DEFAULT_POINTER + addr, 
 								   page_buf + addr);
 				}
 				
@@ -996,16 +996,16 @@ RESULT psoc_program(operation_t operations, program_info_t *pi,
 		// program secure
 		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMING), "secure");
 		pgbar_init("writing secure |", "|", 0, 
-				   cur_chip_param.param[PSOC_PARAM_BANK_NUM], 
+				   cur_chip_param.param[PSOC1_PARAM_BANK_NUM], 
 				   PROGRESS_STEP, '=');
 		
-		for (bank = 0; bank < cur_chip_param.param[PSOC_PARAM_BANK_NUM]; 
+		for (bank = 0; bank < cur_chip_param.param[PSOC1_PARAM_BANK_NUM]; 
 			 bank++)
 		{
 			uint32_t lock_bank_addr = 
 								bank * (cur_chip_param.app_page_num >> 2);
 			
-			if (cur_chip_param.param[PSOC_PARAM_BANK_NUM] > 1)
+			if (cur_chip_param.param[PSOC1_PARAM_BANK_NUM] > 1)
 			{
 				issp_sel_reg_bank(1);
 				issp_set_flash_bank(bank);
@@ -1015,14 +1015,14 @@ RESULT psoc_program(operation_t operations, program_info_t *pi,
 				 addr < (cur_chip_param.app_page_num >> 2); 
 				 addr++)
 			{
-				issp_write_sram(PSOC_ISSP_SSC_DEFAULT_POINTER + addr, 
+				issp_write_sram(PSOC1_ISSP_SSC_DEFAULT_POINTER + addr, 
 								pi->lock[lock_bank_addr + addr]);
 			}
-			issp_ssc_set_clock(PSOC_ISSP_SSC_DEFAULT_CLOCK_FLASH);
-			issp_ssc_set_delay(PSOC_ISSP_SSC_DEFAULT_DELAY);
+			issp_ssc_set_clock(PSOC1_ISSP_SSC_DEFAULT_CLOCK_FLASH);
+			issp_ssc_set_delay(PSOC1_ISSP_SSC_DEFAULT_DELAY);
 			
-			ret = issp_call_ssc(PSOC_SSC_CMD_ProtectBlock, 0, 1, &tmp8, 1);
-			if ((ret != ERROR_OK) || (tmp8 != PSOC_ISSP_SSC_RETURN_OK))
+			ret = issp_call_ssc(PSOC1_SSC_CMD_ProtectBlock, 0, 1, &tmp8, 1);
+			if ((ret != ERROR_OK) || (tmp8 != PSOC1_ISSP_SSC_RETURN_OK))
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "write secure");
 				ret = ERRCODE_FAILURE_OPERATION;
@@ -1048,16 +1048,16 @@ RESULT psoc_program(operation_t operations, program_info_t *pi,
 		}
 		
 		checksum = 0;
-		for (bank = 0; bank < cur_chip_param.param[PSOC_PARAM_BANK_NUM]; bank++)
+		for (bank = 0; bank < cur_chip_param.param[PSOC1_PARAM_BANK_NUM]; bank++)
 		{
-			if (cur_chip_param.param[PSOC_PARAM_BANK_NUM] > 1)
+			if (cur_chip_param.param[PSOC1_PARAM_BANK_NUM] > 1)
 			{
 				issp_sel_reg_bank(1);
 				issp_set_flash_bank(bank);
 				issp_sel_reg_bank(0);
 			}
 			
-			ret = issp_call_ssc(PSOC_SSC_CMD_CheckSum, 
+			ret = issp_call_ssc(PSOC1_SSC_CMD_CheckSum, 
 								(uint8_t)(cur_chip_param.app_page_num), 
 								1, (uint8_t*)&tmp16, 2);
 			if (ret != ERROR_OK)
@@ -1094,7 +1094,7 @@ RESULT psoc_program(operation_t operations, program_info_t *pi,
 	
 leave_program_mode:
 	// leave program mode
-	if (cur_prog_mode & PSOC_RESET_MODE)
+	if (cur_prog_mode & PSOC1_RESET_MODE)
 	{
 		if (ERROR_OK != issp_leave_program_mode(ISSP_PM_RESET))
 		{
