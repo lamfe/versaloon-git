@@ -69,7 +69,7 @@
 // mass-product support
 #define MP_EN							0
 #if MP_EN
-#	define MP_PSOC_EN					0
+#	define MP_PSOC1_EN					0
 #	define MP_C8051F_C2_EN				0
 #	define MP_C8051F_JTAG_EN			0
 #	define MP_S5X_EN					0
@@ -177,7 +177,7 @@ extern void GLOBAL_OUTPUT_Release(void);
 #endif
 
 #if MP_EN == 0
-#	define MP_PSOC_EN					0
+#	define MP_PSOC1_EN					0
 #	define MP_C8051F_C2_EN				0
 #	define MP_C8051F_JTAG_EN			0
 #	define MP_S5X_EN					0
@@ -186,7 +186,7 @@ extern void GLOBAL_OUTPUT_Release(void);
 
 #define INTERFACE_C2_EN					((USB_TO_XXX_EN && USB_TO_C2_EN) || (MP_EN && MP_C8051F_C2_EN))
 #define INTERFACE_I2C_EN				(USB_TO_XXX_EN && USB_TO_I2C_EN)
-#define INTERFACE_ISSP_EN				((USB_TO_XXX_EN && USB_TO_ISSP_EN) || (MP_EN && MP_PSOC_EN))
+#define INTERFACE_ISSP_EN				((USB_TO_XXX_EN && USB_TO_ISSP_EN) || (MP_EN && MP_PSOC1_EN))
 #define INTERFACE_LPC_ICP_EN			((USB_TO_XXX_EN && USB_TO_LPCICP_EN) || (MP_EN && MP_LPCICP_EN))
 #define INTERFACE_JTAG_EN				((USB_TO_XXX_EN && (USB_TO_JTAG_HL_EN || USB_TO_JTAG_LL_EN)) || AVR_JTAG_EN || AVR32_JTAG_EN || AVRX_JTAG_EN || VSLLINK_EN || (MP_EN && MP_C8051F_JTAG_EN))
 #define INTERFACE_MSP430_JTAG_EN		USB_TO_MSP430_JTAG_EN

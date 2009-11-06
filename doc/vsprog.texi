@@ -71,7 +71,7 @@ See @uref{www.SimonQian.com/en/Versaloon}.
 
 @b{target devices:} VSProg can now support S51_ISP, AVR_ISP/JTAG, 
 C8051F_JTAG/C2, STM32_ISP(Com port), MSP430_JTAG(without TEST pin), 
-PSOC_ISSP(reset mode), CPLD/FPGA_JTAG(by SVF_Player).
+PSOC1_ISSP(reset mode), CPLD/FPGA_JTAG(by SVF_Player).
 
 @node Developers
 @chapter Developers
@@ -123,7 +123,7 @@ Make builds VSProg, and places the final executable in ./src/, the last step,
 @cindex Base options
 @cindex Versaloon options
 @cindex AT89S5X options
-@cindex PSOC options
+@cindex PSOC1 options
 @cindex MSP430 options
 @cindex C8051F options
 @cindex AVR8 options
@@ -155,7 +155,7 @@ Usage of at89s5x:
   -f,  --fuse <FUSE>                set fuse
   -m,  --mode <MODE>                set program mode<b|p>
 
-Usage of psoc:
+Usage of psoc1:
   -m,  --mode <MODE>                set mode<r|p>
 
 Usage of msp430:
@@ -348,9 +348,9 @@ For example:
   vsprog -sat89s5x -F 2000 -mb -l 4 -oe -owfl -ovfl -i flash.hex
 @end example
 
-@section PSOC options
+@section PSOC1 options
 
-Series name of PSOC is "psoc".
+Series name of PSOC1 is "psoc1".
 
 @sp 1
 
@@ -364,8 +364,8 @@ Supported Target Area(s):
 
 @subsection @option{-m} or @option{--mode} option
 
-This option is used to define the programming mode of PSOC targets. PSOC can be 
-programmed in different modes according to whether PSOC target has reset pin. If 
+This option is used to define the programming mode of PSOC1 targets. PSOC1 can be 
+programmed in different modes according to whether PSOC1 target has reset pin. If 
 target has reset pin, reset mode can be used, or power-on mode MUST be used. Use 
 "-mp" for power-on mode, "-mr" for reset mode. Default mode is reset mode.
 
@@ -377,7 +377,7 @@ mode is not supported by current Versaloon hardwares.
 For example:
 
 @example
-  vsprog -spsoc -mr -oe -owfs -ovfc -i flash.hex
+  vsprog -spsoc1 -mr -oe -owfs -ovfc -i flash.hex
 @end example
 
 @section MSP430 options

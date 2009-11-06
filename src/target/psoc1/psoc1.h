@@ -16,10 +16,10 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#ifndef __PSOC_H_INCLUDED__
-#define __PSOC_H_INCLUDED__
+#ifndef __PSOC1_H_INCLUDED__
+#define __PSOC1_H_INCLUDED__
 
-#define PSOC1_STRING					"psoc"
+#define PSOC1_STRING					"psoc1"
 #define PSOC1_PROGRAM_MODE_STR			"rp"
 
 extern const program_area_map_t psoc1_program_area_map[];
@@ -43,5 +43,5 @@ RESULT psoc1_get_mass_product_data_size(operation_t operations,
 RESULT psoc1_prepare_mass_product_data(operation_t operations, 
 									   program_info_t *pi, uint8_t *buff);
 
-#endif /* __PSOC_H_INCLUDED__ */
+#endif /* __PSOC1_H_INCLUDED__ */
 

@@ -220,8 +220,8 @@ object FormMain: TFormMain
           Top = 5
           Width = 369
           Caption = 'Chip Name'
-          ClientHeight = 55
-          ClientWidth = 369
+          ClientHeight = 37
+          ClientWidth = 365
           TabOrder = 0
           object lblTarget: TLabel
             Left = 22
@@ -260,8 +260,8 @@ object FormMain: TFormMain
           Top = 205
           Width = 369
           Caption = 'Option'
-          ClientHeight = 137
-          ClientWidth = 369
+          ClientHeight = 119
+          ClientWidth = 365
           TabOrder = 1
           object lblMode: TLabel
             Left = 13
@@ -405,8 +405,8 @@ object FormMain: TFormMain
           Top = 69
           Width = 369
           Caption = 'File'
-          ClientHeight = 128
-          ClientWidth = 369
+          ClientHeight = 110
+          ClientWidth = 365
           TabOrder = 2
           object lblInputFile: TLabel
             Left = 22
@@ -518,8 +518,8 @@ object FormMain: TFormMain
           Top = 349
           Width = 369
           Caption = 'Operation'
-          ClientHeight = 57
-          ClientWidth = 369
+          ClientHeight = 39
+          ClientWidth = 365
           TabOrder = 3
           object btnRead: TButton
             Left = 278
@@ -571,8 +571,8 @@ object FormMain: TFormMain
       object tsC8051F: TTabSheet
         Caption = 'C8051F'
       end
-      object tsPSoC: TTabSheet
-        Caption = 'PSoC'
+      object tsPSoC1: TTabSheet
+        Caption = 'PSoC1'
       end
       object tsLPCICP: TTabSheet
         Caption = 'LPCICP'
