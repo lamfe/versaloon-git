@@ -11,7 +11,7 @@ uses
 
 type
 
-  TTargetType = (TT_NONE, TT_PSOC, TT_AT89S5X, TT_C8051F, TT_MSP430, TT_STM8,
+  TTargetType = (TT_NONE, TT_PSOC1, TT_AT89S5X, TT_C8051F, TT_MSP430, TT_STM8,
                  TT_EEPROM, TT_JTAG, TT_AVR8, TT_PIC8, TT_COMISP, TT_LPCICP,
                  TT_CORTEXM3);
   { TFormMain }
@@ -93,7 +93,7 @@ type
     tsAbout: TTabSheet;
     tsAT89S5X: TTabSheet;
     tsC8051F: TTabSheet;
-    tsPSoC: TTabSheet;
+    tsPSoC1: TTabSheet;
     procedure btnEditAppClick(Sender: TObject);
     procedure btnEditEEClick(Sender: TObject);
     procedure btnEditFuseClick(Sender: TObject);
@@ -143,13 +143,13 @@ type
     function VSProg_CommonParseAboutCallback(line: string): boolean;
     function VSProg_CommonParseChipIDCallback(line: string): boolean;
     procedure VSProg_CommonInit(para: string);
-    { PSoC declarations }
-    function PSoC_Init(): boolean;
-    function PSoC_Init_Para(line: string): string;
-    procedure PSoC_Update_Chip(p_str: string);
-    function PSoC_AddWriteParameters(): boolean;
-    function PSoC_AddReadParameters(): boolean;
-    function PSoC_AddVerifyParameters(): boolean;
+    { PSoC1 declarations }
+    function PSoC1_Init(): boolean;
+    function PSoC1_Init_Para(line: string): string;
+    procedure PSoC1_Update_Chip(p_str: string);
+    function PSoC1_AddWriteParameters(): boolean;
+    function PSoC1_AddReadParameters(): boolean;
+    function PSoC1_AddVerifyParameters(): boolean;
     { C8051F declarations }
     function C8051F_Init(): boolean;
     function C8051F_Init_Para(line: string): string;
@@ -431,9 +431,9 @@ begin
   begin
     HideDebugLog();
 
-    if pcMain.ActivePage = tsPSoC then
+    if pcMain.ActivePage = tsPSoC1 then
     begin
-      TargetType := TT_PSOC;
+      TargetType := TT_PSOC1;
     end
     else if pcMain.ActivePage = tsC8051F then
     begin
@@ -596,8 +596,8 @@ begin
   case TargetType of
     TT_NONE:
       exit;
-    TT_PSOC:
-      success := PSoC_AddVerifyParameters();
+    TT_PSOC1:
+      success := PSoC1_AddVerifyParameters();
     TT_AT89S5X:
       success := AT89S5X_AddVerifyParameters();
     TT_C8051F:
@@ -792,8 +792,8 @@ begin
   case TargetType of
     TT_NONE:
       exit;
-    TT_PSOC:
-      success := PSoC_AddWriteParameters();
+    TT_PSOC1:
+      success := PSoC1_AddWriteParameters();
     TT_AT89S5X:
       success := AT89S5X_AddWriteParameters();
     TT_C8051F:
@@ -828,7 +828,7 @@ begin
   case TargetType of
     TT_NONE:
       exit;
-    TT_PSOC:
+    TT_PSOC1:
       exit;
     TT_AT89S5X:
       exit;
@@ -852,8 +852,8 @@ begin
   case TargetType of
     TT_NONE:
       exit;
-    TT_PSOC:
-      PSoC_Update_Chip(ParaString.Strings[cbboxTarget.ItemIndex]);
+    TT_PSOC1:
+      PSoC1_Update_Chip(ParaString.Strings[cbboxTarget.ItemIndex]);
     TT_AT89S5X:
       AT89S5X_Update_Chip(ParaString.Strings[cbboxTarget.ItemIndex]);
     TT_C8051F:
@@ -906,7 +906,7 @@ begin
   begin
     if Pos('show all support', fnEdit.Text) = 1 then
     begin
-      tsPSoC.TabVisible := TRUE;
+      tsPSoC1.TabVisible := TRUE;
       tsC8051F.TabVisible := TRUE;
       tsAT89S5X.TabVisible := TRUE;
       tsMSP430.TabVisible := TRUE;
@@ -1177,8 +1177,8 @@ begin
   tDelay.Enabled := FALSE;
 
   case TargetType of
-    TT_PSOC:
-      success := PSoC_Init();
+    TT_PSOC1:
+      success := PSoC1_Init();
     TT_C8051F:
       success := C8051F_Init();
     TT_AT89S5X:
@@ -1295,7 +1295,7 @@ begin
   case TargetType of
     TT_NONE:
       exit;
-    TT_PSOC:
+    TT_PSOC1:
       chip_module_header := 'cy8c';
     TT_AT89S5X:
       chip_module_header := 'at89s';
@@ -1327,8 +1327,8 @@ begin
     case TargetType of
       TT_NONE:
         exit;
-      TT_PSOC:
-        str_tmp := PSoC_Init_Para(line);
+      TT_PSOC1:
+        str_tmp := PSoC1_Init_Para(line);
       TT_AT89S5X:
         str_tmp := AT89S5X_Init_Para(line);
       TT_C8051F:
@@ -1543,8 +1543,8 @@ begin
   cbboxMode.Enabled := FALSE;
 end;
 
-{ PSoC implementation }
-function TFormMain.PSoC_AddWriteParameters(): boolean;
+{ PSoC1 implementation }
+function TFormMain.PSoC1_AddWriteParameters(): boolean;
 var
   para_tmp: string;
 begin
@@ -1576,18 +1576,18 @@ begin
   // Verify after write
   if chkboxVerifyAfterWrite.Checked and chkboxApp.Checked then
   begin
-    PSoC_AddVerifyParameters();
+    PSoC1_AddVerifyParameters();
   end;
   
   result := TRUE;
 end;
 
-function TFormMain.PSoC_AddReadParameters(): boolean;
+function TFormMain.PSoC1_AddReadParameters(): boolean;
 begin
   result := TRUE;
 end;
 
-function TFormMain.PSoC_AddVerifyParameters(): boolean;
+function TFormMain.PSoC1_AddVerifyParameters(): boolean;
 var
   para_tmp: string;
 begin
@@ -1607,7 +1607,7 @@ begin
   end;
 end;
 
-procedure TFormMain.PSoC_Update_Chip(p_str: string);
+procedure TFormMain.PSoC1_Update_Chip(p_str: string);
 var
   str_tmp: string;
 begin
@@ -1632,7 +1632,7 @@ begin
   end;
 end;
 
-function TFormMain.PSoC_Init_Para(line: string): string;
+function TFormMain.PSoC1_Init_Para(line: string): string;
 var
   int_tmp: integer;
 begin
@@ -1649,29 +1649,29 @@ begin
   end;
 end;
 
-function TFormMain.PSoC_Init(): boolean;
+function TFormMain.PSoC1_Init(): boolean;
 begin
   result := TRUE;
 
   cbboxTarget.Clear;
-  cbboxTarget.Items.Add('psoc');
+  cbboxTarget.Items.Add('psoc1');
   ParaString.Clear;
   ParaString.Add('rp');
 
-  // call 'vsprog -Spsoc' to extract supported psoc targets
+  // call 'vsprog -Spsoc1' to extract supported psoc1 targets
   if not PrepareToRunCLI() then
   begin
     result := FALSE;
     exit;
   end;
-  caller.AddParameter('Spsoc');
+  caller.AddParameter('Spsoc1');
   LogInfo('Running...');
   caller.Run(@VSProg_CommonParseSupportCallback, FALSE, TRUE);
   LogInfo('Idle');
 
   if bFatalError then
   begin
-    tsPSoC.Enabled := FALSE;
+    tsPSoC1.Enabled := FALSE;
     result := FALSE;
     exit;
   end

@@ -117,7 +117,7 @@ RESULT psoc1_parse_argument(char cmd, const char *argu)
 			break;
 		default:
 			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_CHARACTER_MESSAGE), cmd, 
-					  "psoc program mode", "MUST be 'r' or 'p'!!");
+					  "psoc1 program mode", "MUST be 'r' or 'p'!!");
 			return ERRCODE_INVALID;
 			break;
 		}

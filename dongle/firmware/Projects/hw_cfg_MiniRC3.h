@@ -274,7 +274,7 @@
 #define MSP430_SBWTCK_SET()				MSP430_JTAG_TCK_SET()
 #define MSP430_SBWTCK_CLR()				MSP430_JTAG_TCK_CLR()
 
-/************************** PSoC ISSP ****************************/
+/************************** PSoC1 ISSP ****************************/
 #define ISSP_SDATA_SET()				SW_SET()
 #define ISSP_SDATA_CLR()				SW_CLR()
 #define ISSP_SDATA_GET()				SW_GET()

@@ -16,8 +16,8 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#ifndef __PSOC_INTERNAL_H_INCLUDED__
-#define __PSOC_INTERNAL_H_INCLUDED__
+#ifndef __PSOC1_INTERNAL_H_INCLUDED__
+#define __PSOC1_INTERNAL_H_INCLUDED__
 
 #define PSOC1_INTERFACE_NEEDED			(ISSP)
 
@@ -41,5 +41,5 @@
 #define PSOC1_POWERON_MODE				(1 << 1)
 #define PSOC1_MODE_MASK					(PSOC1_RESET_MODE | PSOC1_POWERON_MODE)
 
-#endif /* __PSOC_INTERNAL_H_INCLUDED__ */
+#endif /* __PSOC1_INTERNAL_H_INCLUDED__ */
 
