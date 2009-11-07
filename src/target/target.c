@@ -863,6 +863,14 @@ RESULT target_build_chip_series(const char *chip_series,
 								(const char *)xmlNodeGetContent(paramNode), 
 								NULL, 0);
 			}
+			else if (!xmlStrcmp(paramNode->name, BAD_CAST "fuse"))
+			{
+				// TODO: add parser to fuse settings
+			}
+			else if (!xmlStrcmp(paramNode->name, BAD_CAST "lock"))
+			{
+				// TODO: add parser to lock settings
+			}
 			else
 			{
 				char *str_tmp = (char *)paramNode->name;

@@ -88,6 +88,7 @@
 #define ERRMSG_FAILURE_VERIFY_TARGET_AT_02X	"%s verify failed at 0x%X, read=0x%02X, want=0x%02X.\n"
 #define ERRMSG_FAILURE_VERIFY_TARGET_04X	"%s verify failed, read=0x%04X, want=0x%04X.\n"
 #define ERRMSG_FAILURE_VERIFY_TARGET_AT_04X	"%s verify failed at 0x%X, read=0x%04X, want=0x%04X.\n"
+#define ERRMSG_FAILURE_VERIFY_TARGET_06X	"%s verify failed, read=0x%06X, want=0x%06X.\n"
 #define ERRMSG_FAILURE_VERIFY_TARGET_D		"%s verify failed, read=%d, want=%d.\n"
 #define ERRMSG_FAILURE_VERIFY_TARGET_AT_D	"%s verify failed at 0x%X, read=%d, want=%d.\n"
 #define ERRCODE_FAILURE_VERIFY_TARGET		ERROR_FAIL
@@ -120,6 +121,10 @@
 #define INFOMSG_READ_SIZE					"%s read for %dbytes\n"
 #define INFOMSG_READ						"%s read\n"
 #define INFOMSG_READ_VALUE					"%s read is %d\n"
+#define INFOMSG_READ_VALUE_02X				"%s read is 0x%02X\n"
+#define INFOMSG_READ_VALUE_04X				"%s read is 0x%04X\n"
+#define INFOMSG_READ_VALUE_06X				"%s read is 0x%06X\n"
+#define INFOMSG_READ_VALUE_08X				"%s read is 0x%08X\n"
 
 #endif /* __APP_ERR_H_INCLUDED__ */
 

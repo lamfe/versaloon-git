@@ -119,10 +119,10 @@
 
 // Read Fuses/Lockbits
 #define AVR_JTAG_PROG_EnterFuseLockbitRead()		AVR_JTAG_PROG_INS(0x2304)
-#define AVR_JTAG_PROG_ReadExtFuseByte()				(AVR_JTAG_PROG_INS(0x3A00), AVR_JTAG_PROG_INS(0x3B00))
-#define AVR_JTAG_PROG_ReadFuseHighByte()			(AVR_JTAG_PROG_INS(0x3E00), AVR_JTAG_PROG_INS(0x3F00))
-#define AVR_JTAG_PROG_ReadFuseLowByte()				(AVR_JTAG_PROG_INS(0x3200), AVR_JTAG_PROG_INS(0x3300))
-#define AVR_JTAG_PROG_ReadLockbit()					(AVR_JTAG_PROG_INS(0x3600), AVR_JTAG_PROG_INS(0x3700))
+#define AVR_JTAG_PROG_ReadExtFuseByte(e)			(AVR_JTAG_PROG_INS(0x3A00), AVR_JTAG_PROG_ReadDATA(0x3B00, &(e)))
+#define AVR_JTAG_PROG_ReadFuseHighByte(h)			(AVR_JTAG_PROG_INS(0x3E00), AVR_JTAG_PROG_ReadDATA(0x3F00, &(h)))
+#define AVR_JTAG_PROG_ReadFuseLowByte(l)			(AVR_JTAG_PROG_INS(0x3200), AVR_JTAG_PROG_ReadDATA(0x3300, &(l)))
+#define AVR_JTAG_PROG_ReadLockbit(l)				(AVR_JTAG_PROG_INS(0x3600), AVR_JTAG_PROG_ReadDATA(0x3700, &(l)))
 
 // Read Signature
 #define AVR_JTAG_PROG_EnterSignByteRead()			AVR_JTAG_PROG_INS(0x2308)
@@ -173,7 +173,7 @@ void AVR_JTAG_ReadDat(uint16_t w, uint16_t* r, uint8_t len)
 RESULT avr8_jtag_program(operation_t operations, program_info_t *pi, 
 						 programmer_info_t *prog)
 {
-	uint16_t chip_sig[3];
+	uint16_t data_tmp[3];
 	uint8_t ir;
 	uint32_t dr;
 	
@@ -201,19 +201,19 @@ RESULT avr8_jtag_program(operation_t operations, program_info_t *pi,
 	AVR_JTAG_PROG_EnterSignByteRead();
 	
 	AVR_JTAG_PROG_LoadAddrByte(0);
-	AVR_JTAG_PROG_ReadSignByte(chip_sig[0]);
+	AVR_JTAG_PROG_ReadSignByte(data_tmp[0]);
 	AVR_JTAG_PROG_LoadAddrByte(1);
-	AVR_JTAG_PROG_ReadSignByte(chip_sig[1]);
+	AVR_JTAG_PROG_ReadSignByte(data_tmp[1]);
 	AVR_JTAG_PROG_LoadAddrByte(2);
-	AVR_JTAG_PROG_ReadSignByte(chip_sig[2]);
+	AVR_JTAG_PROG_ReadSignByte(data_tmp[2]);
 	if (ERROR_OK != jtag_commit())
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read signature");
 		ret = ERRCODE_FAILURE_OPERATION;
 		goto leave_program_mode;
 	}
-	pi->chip_id = ((chip_sig[2] & 0xFF) << 0) | ((chip_sig[1] & 0xFF) << 8) 
-				   | ((chip_sig[0] & 0xFF) << 16);
+	pi->chip_id = ((data_tmp[2] & 0xFF) << 0) | ((data_tmp[1] & 0xFF) << 8) 
+				   | ((data_tmp[0] & 0xFF) << 16);
 	LOG_INFO(_GETTEXT(INFOMSG_TARGET_CHIP_ID), pi->chip_id);
 	if (!(operations.read_operations & CHIP_ID))
 	{
@@ -446,6 +446,161 @@ RESULT avr8_jtag_program(operation_t operations, program_info_t *pi,
 		else
 		{
 			LOG_INFO(_GETTEXT(INFOMSG_READ), "flash");
+		}
+	}
+	
+	if (operations.write_operations & FUSE)
+	{
+		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMING), "fuse");
+		pgbar_init("writing fuse |", "|", 0, 1, PROGRESS_STEP, '=');
+		
+		// write fuse
+		// low bits
+		AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
+		AVR_JTAG_PROG_EnterFuseWrite();
+		AVR_JTAG_PROG_LoadDataLowByte((pi->fuse_value >> 0) & 0xFF);
+		AVR_JTAG_PROG_WriteFuseLowByte();
+		jtag_delay_ms(5);
+		// high bits
+		AVR_JTAG_PROG_LoadDataLowByte((pi->fuse_value >> 8) & 0xFF);
+		AVR_JTAG_PROG_WriteFuseHighByte();
+		jtag_delay_ms(5);
+		// extended bits
+		AVR_JTAG_PROG_LoadDataLowByte((pi->fuse_value >> 16) & 0xFF);
+		AVR_JTAG_PROG_WriteFuseExtByte();
+		jtag_delay_ms(5);
+		if (ERROR_OK != jtag_commit())
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "write fuse");
+			ret = ERRCODE_FAILURE_OPERATION;
+			goto leave_program_mode;
+		}
+		pgbar_update(1);
+		
+		pgbar_fini();
+		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMED), "fuse");
+	}
+	
+	if (operations.read_operations & FUSE)
+	{
+		if (operations.verify_operations & FUSE)
+		{
+			LOG_INFO(_GETTEXT(INFOMSG_VERIFYING), "fuse");
+		}
+		else
+		{
+			LOG_INFO(_GETTEXT(INFOMSG_READING), "fuse");
+		}
+		pgbar_init("reading fuse |", "|", 0, 1, PROGRESS_STEP, '=');
+		
+		// read fuse
+		// low bits
+		AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
+		AVR_JTAG_PROG_EnterFuseLockbitRead();
+		AVR_JTAG_PROG_ReadFuseLowByte(data_tmp[0]);
+		// high bits
+		AVR_JTAG_PROG_ReadFuseHighByte(data_tmp[1]);
+		// extended bits
+		AVR_JTAG_PROG_ReadExtFuseByte(data_tmp[2]);
+		if (ERROR_OK != jtag_commit())
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read fuse");
+			ret = ERRCODE_FAILURE_OPERATION;
+			goto leave_program_mode;
+		}
+		data_tmp[0] &= 0xFF;
+		data_tmp[1] &= 0xFF;
+		data_tmp[2] &= 0xFF;
+		pgbar_update(1);
+		
+		pgbar_fini();
+		if (operations.verify_operations & FUSE)
+		{
+			if ((uint32_t)(data_tmp[0] + (data_tmp[1] << 8) 
+									   + (data_tmp[2] << 16)) 
+				== pi->fuse_value)
+			{
+				LOG_INFO(_GETTEXT(INFOMSG_VERIFIED), "fuse");
+			}
+			else
+			{
+				LOG_INFO(_GETTEXT(ERRMSG_FAILURE_VERIFY_TARGET_06X), 
+					 "fuse", 
+					 data_tmp[0] + (data_tmp[1] << 8) + (data_tmp[2] << 16), 
+					 pi->fuse_value);
+			}
+		}
+		else
+		{
+			LOG_INFO(_GETTEXT(INFOMSG_READ_VALUE_06X), "fuse", 
+					 data_tmp[0] + (data_tmp[1] << 8) + (data_tmp[2] << 16));
+		}
+	}
+	
+	if (operations.write_operations & LOCK)
+	{
+		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMING), "lock");
+		pgbar_init("writing lock |", "|", 0, 1, PROGRESS_STEP, '=');
+		
+		// write lock
+		AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
+		AVR_JTAG_PROG_EnterLockbitWrite();
+		AVR_JTAG_PROG_LoadDataByte(pi->lock_value);
+		AVR_JTAG_PROG_WriteLockbit();
+		jtag_delay_ms(5);
+		if (ERROR_OK != jtag_commit())
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "write lock");
+			ret = ERRCODE_FAILURE_OPERATION;
+			goto leave_program_mode;
+		}
+		pgbar_update(1);
+		
+		pgbar_fini();
+		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMED), "lock");
+	}
+	
+	if (operations.read_operations & LOCK)
+	{
+		if (operations.verify_operations & LOCK)
+		{
+			LOG_INFO(_GETTEXT(INFOMSG_VERIFYING), "lock");
+		}
+		else
+		{
+			LOG_INFO(_GETTEXT(INFOMSG_READING), "lock");
+		}
+		pgbar_init("reading lock |", "|", 0, 1, PROGRESS_STEP, '=');
+		
+		// read lock
+		AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
+		AVR_JTAG_PROG_EnterFuseLockbitRead();
+		AVR_JTAG_PROG_ReadLockbit(data_tmp[0]);
+		if (ERROR_OK != jtag_commit())
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read lock");
+			ret = ERRCODE_FAILURE_OPERATION;
+			goto leave_program_mode;
+		}
+		data_tmp[0] &= 0xFF;
+		pgbar_update(1);
+		
+		pgbar_fini();
+		if (operations.verify_operations & LOCK)
+		{
+			if ((uint8_t)data_tmp[0] == (uint8_t)pi->lock_value)
+			{
+				LOG_INFO(_GETTEXT(INFOMSG_VERIFIED), "lock");
+			}
+			else
+			{
+				LOG_INFO(_GETTEXT(ERRMSG_FAILURE_VERIFY_TARGET_02X), 
+						 "lock", data_tmp[0], pi->lock_value);
+			}
+		}
+		else
+		{
+			LOG_INFO(_GETTEXT(INFOMSG_READ_VALUE_02X), "lock", data_tmp[0]);
 		}
 	}
 	
