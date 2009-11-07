@@ -1603,10 +1603,10 @@
       <data/>
     </settings>
   </configuration>
-  <mfc_discard>
+  <mfc>
     <configuration>Debug</configuration>
     <configuration>Release</configuration>
-  </mfc_discard>
+  </mfc>
   <group>
     <name>HW</name>
     <group>
