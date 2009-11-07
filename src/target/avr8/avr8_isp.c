@@ -68,7 +68,7 @@ RESULT avr8_isp_program(operation_t operations, program_info_t *pi,
 #define commit()				prog->peripheral_commit()
 
 
-	uint8_t chip_sig[3];
+	uint8_t data_tmp[3];
 	uint8_t cmd_buf[4];
 	uint8_t poll_byte;
 	int32_t i;
@@ -138,25 +138,25 @@ try_frequency:
 	cmd_buf[1] = 0x00;
 	cmd_buf[2] = 0x00;
 	cmd_buf[3] = 0x00;
-	spi_io(cmd_buf, 4, &chip_sig[2], 3, 1);
+	spi_io(cmd_buf, 4, &data_tmp[2], 3, 1);
 	cmd_buf[0] = 0x30;
 	cmd_buf[1] = 0x00;
 	cmd_buf[2] = 0x01;
 	cmd_buf[3] = 0x00;
-	spi_io(cmd_buf, 4, &chip_sig[1], 3, 1);
+	spi_io(cmd_buf, 4, &data_tmp[1], 3, 1);
 	cmd_buf[0] = 0x30;
 	cmd_buf[1] = 0x00;
 	cmd_buf[2] = 0x02;
 	cmd_buf[3] = 0x00;
-	spi_io(cmd_buf, 4, &chip_sig[0], 3, 1);
+	spi_io(cmd_buf, 4, &data_tmp[0], 3, 1);
 	if (ERROR_OK != commit())
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read signature");
 		ret = ERRCODE_FAILURE_OPERATION;
 		goto leave_program_mode;
 	}
-	pi->chip_id = ((chip_sig[2] & 0xFF) << 16) | ((chip_sig[1] & 0xFF) << 8) 
-				   | ((chip_sig[0] & 0xFF) << 0);
+	pi->chip_id = ((data_tmp[2] & 0xFF) << 16) | ((data_tmp[1] & 0xFF) << 8) 
+				   | ((data_tmp[0] & 0xFF) << 0);
 	LOG_INFO(_GETTEXT(INFOMSG_TARGET_CHIP_ID), pi->chip_id);
 	if (!(operations.read_operations & CHIP_ID))
 	{
@@ -426,6 +426,177 @@ try_frequency:
 		else
 		{
 			LOG_INFO(_GETTEXT(INFOMSG_READ), "flash");
+		}
+	}
+	
+	if (operations.write_operations & FUSE)
+	{
+		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMING), "fuse");
+		pgbar_init("writing fuse |", "|", 0, 1, PROGRESS_STEP, '=');
+		
+		// write fuse
+		// low bits
+		cmd_buf[0] = 0xAC;
+		cmd_buf[1] = 0xA0;
+		cmd_buf[2] = 0x00;
+		cmd_buf[3] = (pi->fuse_value >> 0) & 0xFF;
+		spi_io(cmd_buf, 4, NULL, 0, 0);
+		delay_ms(5);
+		// high bits
+		cmd_buf[0] = 0xAC;
+		cmd_buf[1] = 0xA8;
+		cmd_buf[2] = 0x00;
+		cmd_buf[3] = (pi->fuse_value >> 8) & 0xFF;
+		spi_io(cmd_buf, 4, NULL, 0, 0);
+		delay_ms(5);
+		// extended bits
+		cmd_buf[0] = 0xAC;
+		cmd_buf[1] = 0xA4;
+		cmd_buf[2] = 0x00;
+		cmd_buf[3] = (pi->fuse_value >> 16) & 0xFF;
+		spi_io(cmd_buf, 4, NULL, 0, 0);
+		delay_ms(5);
+		if (ERROR_OK != commit())
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "write fuse");
+			ret = ERRCODE_FAILURE_OPERATION;
+			goto leave_program_mode;
+		}
+		pgbar_update(1);
+		
+		pgbar_fini();
+		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMED), "fuse");
+	}
+	
+	if (operations.read_operations & FUSE)
+	{
+		if (operations.verify_operations & FUSE)
+		{
+			LOG_INFO(_GETTEXT(INFOMSG_VERIFYING), "fuse");
+		}
+		else
+		{
+			LOG_INFO(_GETTEXT(INFOMSG_READING), "fuse");
+		}
+		pgbar_init("reading fuse |", "|", 0, 1, PROGRESS_STEP, '=');
+		
+		// read fuse
+		// low bits
+		cmd_buf[0] = 0x50;
+		cmd_buf[1] = 0x00;
+		cmd_buf[2] = 0x00;
+		cmd_buf[3] = 0x00;
+		spi_io(cmd_buf, 4, &data_tmp[0], 3, 1);
+		// high bits
+		cmd_buf[0] = 0x58;
+		cmd_buf[1] = 0x08;
+		cmd_buf[2] = 0x00;
+		cmd_buf[3] = 0x00;
+		spi_io(cmd_buf, 4, &data_tmp[1], 3, 1);
+		// extended bits
+		cmd_buf[0] = 0x50;
+		cmd_buf[1] = 0x08;
+		cmd_buf[2] = 0x00;
+		cmd_buf[3] = 0x00;
+		spi_io(cmd_buf, 4, &data_tmp[2], 3, 1);
+		if (ERROR_OK != commit())
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read fuse");
+			ret = ERRCODE_FAILURE_OPERATION;
+			goto leave_program_mode;
+		}
+		pgbar_update(1);
+		
+		pgbar_fini();
+		if (operations.verify_operations & FUSE)
+		{
+			if ((uint32_t)(data_tmp[0] + (data_tmp[1] << 8) 
+									   + (data_tmp[2] << 16)) 
+				== pi->fuse_value)
+			{
+				LOG_INFO(_GETTEXT(INFOMSG_VERIFIED), "fuse");
+			}
+			else
+			{
+				LOG_INFO(_GETTEXT(ERRMSG_FAILURE_VERIFY_TARGET_06X), 
+					 "fuse", 
+					 data_tmp[0] + (data_tmp[1] << 8) + (data_tmp[2] << 16), 
+					 pi->fuse_value);
+			}
+		}
+		else
+		{
+			LOG_INFO(_GETTEXT(INFOMSG_READ_VALUE_06X), "fuse", 
+					 data_tmp[0] + (data_tmp[1] << 8) + (data_tmp[2] << 16));
+		}
+	}
+	
+	if (operations.write_operations & LOCK)
+	{
+		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMING), "lock");
+		pgbar_init("writing lock |", "|", 0, 1, PROGRESS_STEP, '=');
+		
+		// write lock
+		cmd_buf[0] = 0xAC;
+		cmd_buf[1] = 0xE0;
+		cmd_buf[2] = 0x00;
+		cmd_buf[3] = (pi->lock_value >> 0) & 0xFF;
+		spi_io(cmd_buf, 4, NULL, 0, 0);
+		delay_ms(5);
+		if (ERROR_OK != commit())
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "write lock");
+			ret = ERRCODE_FAILURE_OPERATION;
+			goto leave_program_mode;
+		}
+		pgbar_update(1);
+		
+		pgbar_fini();
+		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMED), "lock");
+	}
+	
+	if (operations.read_operations & LOCK)
+	{
+		if (operations.verify_operations & LOCK)
+		{
+			LOG_INFO(_GETTEXT(INFOMSG_VERIFYING), "lock");
+		}
+		else
+		{
+			LOG_INFO(_GETTEXT(INFOMSG_READING), "lock");
+		}
+		pgbar_init("reading lock |", "|", 0, 1, PROGRESS_STEP, '=');
+		
+		// read lock
+		cmd_buf[0] = 0x58;
+		cmd_buf[1] = 0x00;
+		cmd_buf[2] = 0x00;
+		cmd_buf[3] = 0x00;
+		spi_io(cmd_buf, 4, &data_tmp[0], 3, 1);
+		if (ERROR_OK != commit())
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read lock");
+			ret = ERRCODE_FAILURE_OPERATION;
+			goto leave_program_mode;
+		}
+		pgbar_update(1);
+		
+		pgbar_fini();
+		if (operations.verify_operations & LOCK)
+		{
+			if (data_tmp[0] == (uint8_t)pi->lock_value)
+			{
+				LOG_INFO(_GETTEXT(INFOMSG_VERIFIED), "lock");
+			}
+			else
+			{
+				LOG_INFO(_GETTEXT(ERRMSG_FAILURE_VERIFY_TARGET_02X), 
+						 "lock", data_tmp[0], pi->lock_value);
+			}
+		}
+		else
+		{
+			LOG_INFO(_GETTEXT(INFOMSG_READ_VALUE_02X), "lock", data_tmp[0]);
 		}
 	}
 	

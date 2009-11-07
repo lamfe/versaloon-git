@@ -473,7 +473,9 @@ int main(int argc, char* argv[])
 				break;
 			case 'r':
 				// Read
-				if (operations.read_operations != 0)
+				if ((operations.read_operations 
+						& ~operations.verify_operations) 
+					!= 0)
 				{
 					LOG_ERROR(_GETTEXT(ERRMSG_MUTIPLE_DEFINED), 
 							  "read operation");
@@ -493,15 +495,16 @@ int main(int argc, char* argv[])
 				else
 				{
 					uint32_t require_input_num;
-					ret = parse_operation(&operations.read_operations, 
-										  &require_input_num, optarg + 1, 
-										  argu_num);
+					uint32_t tmp_value;
+					ret = parse_operation(&tmp_value, &require_input_num, 
+										  optarg + 1, argu_num);
 					if (ret != ERROR_OK)
 					{
 						LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
 								  "parse read operation");
 						free_all_and_exit(EXIT_FAILURE);
 					}
+					operations.read_operations |= tmp_value;
 					require_hex_file_for_write += require_input_num;
 				}
 				break;
@@ -528,7 +531,7 @@ int main(int argc, char* argv[])
 				{
 					uint32_t require_input_num;
 					
-					ret = parse_operation(&operations.read_operations, 
+					ret = parse_operation(&operations.verify_operations, 
 										  &require_input_num, optarg + 1, 
 										  argu_num);
 					if (ret != ERROR_OK)
@@ -540,7 +543,7 @@ int main(int argc, char* argv[])
 					require_hex_file_for_read += require_input_num;
 				}
 				
-				operations.verify_operations = operations.read_operations;
+				operations.read_operations |= operations.verify_operations;
 				break;
 			case 'w':
 				// Write
