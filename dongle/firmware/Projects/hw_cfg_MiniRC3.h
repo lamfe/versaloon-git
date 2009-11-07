@@ -3,7 +3,7 @@
  *  SimonQian@SimonQian.com                                               *
  *                                                                        *
  *  Project:    Versaloon                                                 *
- *  File:       hw_cfg_ProRC1.h                                           *
+ *  File:       hw_cfg_MiniRC3.h                                          *
  *  Author:     SimonQian                                                 *
  *  Versaion:   See changelog                                             *
  *  Purpose:    hardware configuration file for Mini Version RC3          *
