@@ -552,7 +552,7 @@ begin
     caller_tmp := TCLI_Caller.Create;
     caller_tmp.SetApplication(Application.Location + VSPROG_STR);
     caller.SetDelimiter('-');
-    caller_tmp.AddParametersString('-G -ccomisp_stm32 -C' + cbboxCOM.Text + ' ' +
+    caller_tmp.AddParametersString('-G -Z -ccomisp_stm32 -C' + cbboxCOM.Text + ' ' +
                                    ' -x0x08002000 -oe -owf -i"' + fnFW.FileName + '"');
 
     memoLog.Clear;
