@@ -194,6 +194,8 @@ void GPIO_Configuration(void)
 	LED_RED_OFF();
 	LED_GREEN_OFF();
 	LED_Init();
+	LED_USB_OFF();
+	LED_USB_INIT();
 
 #if POWER_SAMPLE_EN
 	// VSample Init

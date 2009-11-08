@@ -404,6 +404,11 @@
 #define Led_RW_ON()						LED_GREEN_OFF()
 #define Led_RW_OFF()					LED_GREEN_ON()
 
+// LED_USB
+#define LED_USB_INIT()					
+#define LED_USB_ON()					LED_GREEN_ON()
+#define LED_USB_OFF()					LED_GREEN_OFF()
+
 /****************************** KEY ******************************/
 #define KEY_PORT						GPIOC
 #define KEY_PIN							GPIO_PIN_13
