@@ -57,8 +57,8 @@
         <IsPartOfProject Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="main"/>
-        <CursorPos X="35" Y="1299"/>
-        <TopLine Value="1277"/>
+        <CursorPos X="73" Y="545"/>
+        <TopLine Value="528"/>
         <EditorIndex Value="0"/>
         <UsageCount Value="155"/>
         <Loaded Value="True"/>
@@ -398,7 +398,7 @@
         <Loaded Value="True"/>
       </Unit49>
     </Units>
-    <JumpHistory Count="29" HistoryIndex="28">
+    <JumpHistory Count="30" HistoryIndex="29">
       <Position1>
         <Filename Value="main.pas"/>
         <Caret Line="434" Column="34" TopLine="412"/>
@@ -515,6 +515,10 @@
         <Filename Value="main.pas"/>
         <Caret Line="37" Column="23" TopLine="25"/>
       </Position29>
+      <Position30>
+        <Filename Value="main.pas"/>
+        <Caret Line="5" Column="29" TopLine="1"/>
+      </Position30>
     </JumpHistory>
   </ProjectOptions>
   <CompilerOptions>
