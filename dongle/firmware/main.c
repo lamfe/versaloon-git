@@ -214,6 +214,7 @@ int main(void)
 	Sys_Init();
 
 	LED_GREEN_ON();
+	LED_USB_ON();
 
 	while(1)							// system main loop
 	{
@@ -229,7 +230,7 @@ int main(void)
 		else if(cmd_len & 0x80000000)
 		{
 			// A valid USB package has been received
-			LED_GREEN_OFF();			// Green LED indicate the USB transmission
+			LED_USB_OFF();				// USB LED indicate the USB transmission
 
 			cmd = buffer_out[0];		// first byte of the USB package is the command byte
 			// check command and call corresponding module
@@ -326,7 +327,7 @@ int main(void)
 			cmd_len = 0;
 			rep_len = 0;
 		}
-		LED_GREEN_ON();				// command processed, light green LED
+		LED_USB_ON();					// command processed, light USB LED
 	}
 }
 

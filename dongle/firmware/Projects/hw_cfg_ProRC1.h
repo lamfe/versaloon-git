@@ -485,6 +485,11 @@
 #define Led_RW_ON()						GPIO_ClrPins(LED_RW_PORT, GPIO_PIN_GetMask(LED_RW_PIN))
 #define Led_RW_OFF()					GPIO_SetPins(LED_RW_PORT, GPIO_PIN_GetMask(LED_RW_PIN))
 
+// LED_USB
+#define LED_USB_INIT()					
+#define LED_USB_ON()					Led_RW_OFF()
+#define LED_USB_OFF()					Led_RW_ON()
+
 /****************************** KEY ******************************/
 #define KEY_PORT						GPIOB
 #define KEY_PIN							GPIO_PIN_9

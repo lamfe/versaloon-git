@@ -40,8 +40,8 @@
 #include "avr8.h"
 #include "avr8_internal.h"
 
-#define CUR_TARGET_STRING		AVR8_STRING
-#define cur_chip_param			target_chip_param
+#define CUR_TARGET_STRING							AVR8_STRING
+#define cur_chip_param								target_chip_param
 
 #define AVR_JTAG_INS_LEN							4
 // Public Instructions:
