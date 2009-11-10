@@ -49,6 +49,7 @@ type
     Init_Value, Param_Value, Value_ByteLen: integer;
   public
     { public declarations }
+    function WipeTailEnter(var line: string): string;
     function GetResult(): integer;
     procedure SettingToValue();
     procedure ValueToSetting();
@@ -77,15 +78,24 @@ const
 
 implementation
 
-function TFormParaEditor.GetStringParameter(line, para_name: string; var value: string): boolean;
-var
-  pos_start, pos_end: integer;
-  str_tmp: string;
+function TFormParaEditor.WipeTailEnter(var line: string): string;
 begin
   if Pos(#13 + '', line) > 0 then
   begin
     SetLength(line, Length(line) - 1);
   end;
+  if Pos(#10 + '', line) > 0 then
+  begin
+    SetLength(line, Length(line) - 1);
+  end;
+end;
+
+function TFormParaEditor.GetStringParameter(line, para_name: string; var value: string): boolean;
+var
+  pos_start, pos_end: integer;
+  str_tmp: string;
+begin
+  WipeTailEnter(line);
 
   pos_start := Pos(para_name + EQUAL_STR, line);
   if pos_start > 0 then
