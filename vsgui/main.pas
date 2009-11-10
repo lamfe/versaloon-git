@@ -139,6 +139,8 @@ type
     { VSProg common declarations }
     function VSProg_CommonCallback(line: string): boolean;
     function VSProg_CommonParseParaCallback(line: string): boolean;
+    function VSProg_CommonParseFuseCallback(line: string): boolean;
+    function VSProg_CommonParseLockCallback(line: string): boolean;
     procedure VSProg_AddParaString(para: string; fuseByteLen, fuseDefault, lockByteLen, lockDefault: integer);
     function VSProg_CommonParseSupportCallback(line: string): boolean;
     function VSProg_CommonParseAboutCallback(line: string): boolean;
@@ -245,6 +247,8 @@ const
   ST_PROG_STR: string = '-U "0x0483 0x5740 0x82 0x03 2"';
   ATMEL_PROG_STR: string = '-U "0x03eb 0x2103 0x82 0x02 0"';
   LOGMEMO_WIDTH: integer = 400;
+  FUSE_READ_STR: string = 'fuse read is ';
+  LOCK_READ_STR: string = 'lock read is ';
 
 implementation
 
@@ -711,36 +715,55 @@ end;
 
 procedure TFormMain.btnEditFuseClick(Sender: TObject);
 var
-  targetdefine: string;
+  targetdefine, str_tmp: string;
   init, bytelen: integer;
 begin
-  if caller.IsRunning() then
-  begin
-    exit;
-  end;
-  caller.Take;
-  // call 'vsprog -Ppara' to extract para settings
-  if not PrepareToRunCLI() then
-  begin
-    caller.UnTake;
-    exit;
-  end;
   targetdefine := GetTargetDefineParameters();
   if targetdefine[1] = 's' then
   begin
     MessageDlg('Error', 'Please select a target chip.', mtError, [mbOK], 0);
     exit;
   end;
+
+  if caller.IsRunning() then
+  begin
+    exit;
+  end;
+  caller.Take;
+
+  // call 'vsprog -oru' to read fuse settings from target
+  if not PrepareToRunCLI() then
+  begin
+    caller.UnTake;
+    exit;
+  end;
+  caller.AddParameter(targetdefine);
+  caller.AddParameter('oru');
+  caller.Run(@VSProg_CommonParseFuseCallback, FALSE, TRUE);
+  if bFatalError then
+  begin
+    exit;
+  end;
+
+  // call 'vsprog -Ppara' to extract para settings
+  if not PrepareToRunCLI() then
+  begin
+    exit;
+  end;
   caller.AddParameter(targetdefine);
   caller.AddParameter('Pfuse');
   FormParaEditor.FreeRecord();
   caller.Run(@VSProg_CommonParseParaCallback, FALSE, TRUE);
+  if bFatalError then
+  begin
+    exit;
+  end;
 
-  targetdefine := ParaString.Strings[cbboxTarget.ItemIndex];
+  str_tmp := ParaString.Strings[cbboxTarget.ItemIndex];
   init := 0;
   bytelen := 0;
-  FormParaEditor.GetIntegerParameter(targetdefine, 'fuse_default', init);
-  FormParaEditor.GetIntegerParameter(targetdefine, 'fuse_bytelen', bytelen);
+  FormParaEditor.GetIntegerParameter(str_tmp, 'fuse_default', init);
+  FormParaEditor.GetIntegerParameter(str_tmp, 'fuse_bytelen', bytelen);
   FormParaEditor.SetParameter(init, bytelen, StrToInt(lbledtFuse.Text), 'Fuse');
   if mrOK = FormParaEditor.ShowModal then
   begin
@@ -751,24 +774,40 @@ end;
 
 procedure TFormMain.btnEditLockClick(Sender: TObject);
 var
-  targetdefine: string;
+  targetdefine, str_tmp: string;
   init, bytelen: integer;
 begin
+  targetdefine := GetTargetDefineParameters();
+  if targetdefine[1] = 's' then
+  begin
+    MessageDlg('Error', 'Please select a target chip.', mtError, [mbOK], 0);
+    exit;
+  end;
+
   if caller.IsRunning() then
   begin
     exit;
   end;
   caller.Take;
-  // call 'vsprog -Ppara' to extract para settings
+
+  // call 'vsprog -orl' to read lock settings from target
   if not PrepareToRunCLI() then
   begin
     caller.UnTake;
     exit;
   end;
-  targetdefine := GetTargetDefineParameters();
-  if targetdefine[1] = 's' then
+  caller.AddParameter(targetdefine);
+  caller.AddParameter('orl');
+  caller.Run(@VSProg_CommonParseLockCallback, FALSE, TRUE);
+  if bFatalError then
   begin
-    MessageDlg('Error', 'Please select a target chip.', mtError, [mbOK], 0);
+    exit;
+  end;
+
+  // call 'vsprog -Ppara' to extract para settings
+  if not PrepareToRunCLI() then
+  begin
+    caller.UnTake;
     exit;
   end;
   caller.AddParameter(targetdefine);
@@ -776,11 +815,11 @@ begin
   FormParaEditor.FreeRecord();
   caller.Run(@VSProg_CommonParseParaCallback, FALSE, TRUE);
 
-  targetdefine := ParaString.Strings[cbboxTarget.ItemIndex];
+  str_tmp := ParaString.Strings[cbboxTarget.ItemIndex];
   init := 0;
   bytelen := 0;
-  FormParaEditor.GetIntegerParameter(targetdefine, 'lock_default', init);
-  FormParaEditor.GetIntegerParameter(targetdefine, 'lock_bytelen', bytelen);
+  FormParaEditor.GetIntegerParameter(str_tmp, 'lock_default', init);
+  FormParaEditor.GetIntegerParameter(str_tmp, 'lock_bytelen', bytelen);
   FormParaEditor.SetParameter(init, bytelen, StrToInt(lbledtLock.Text), 'Lock');
   if mrOK = FormParaEditor.ShowModal then
   begin
@@ -1073,7 +1112,7 @@ function TFormMain.CheckFatalError(line: string): boolean;
 begin
   memoLog.Lines.Add(line);
 
-  if (Pos('Error:', line) > 0) and not bFatalError then
+  if ((Pos('Error:', line) > 0) or (Pos('fail', line) <> 0)) and not bFatalError then
   begin
     MessageDlg('Error', line, mtError, [mbOK], 0);
     bFatalError := TRUE;
@@ -1081,11 +1120,6 @@ begin
   if (Pos('/****Bug****/:', line) = 1) and not bFatalError  then
   begin
     MessageDlg('Bug', line, mtError, [mbOK], 0);
-    bFatalError := TRUE;
-  end;
-  if (Pos('fail', line) <> 0) and not bFatalError then
-  begin
-    MessageDlg('Error', line, mtError, [mbOK], 0);
     bFatalError := TRUE;
   end;
 
@@ -1301,10 +1335,63 @@ begin
   end;
 end;
 
+function TFormMain.VSProg_CommonParseFuseCallback(line: string): boolean;
+var
+  fuse_str: string;
+  pos_start, bytelen: integer;
+begin
+  if CheckFatalError(line) then
+  begin
+    result := FALSE;
+    exit;
+  end;
+  result := TRUE;
+
+  pos_start := Pos(FUSE_READ_STR, line);
+  if pos_start > 0 then
+  begin
+    fuse_str := Copy(line, pos_start + Length(FUSE_READ_STR), Length(line) - pos_start);
+    FormParaEditor.WipeTailEnter(fuse_str);
+    bytelen := 0;
+    FormParaEditor.GetIntegerParameter(ParaString.Strings[cbboxTarget.ItemIndex], 'fuse_bytelen', bytelen);
+    VSProg_CommonUpdateFuse(StrToInt(fuse_str), bytelen);
+  end;
+end;
+
+function TFormMain.VSProg_CommonParseLockCallback(line: string): boolean;
+var
+  lock_str: string;
+  pos_start, bytelen: integer;
+begin
+  if CheckFatalError(line) then
+  begin
+    result := FALSE;
+    exit;
+  end;
+  result := TRUE;
+
+  pos_start := Pos(LOCK_READ_STR, line);
+  if pos_start > 0 then
+  begin
+    lock_str := Copy(line, pos_start + Length(LOCK_READ_STR), Length(line) - pos_start);
+    FormParaEditor.WipeTailEnter(lock_str);
+    bytelen := 0;
+    FormParaEditor.GetIntegerParameter(ParaString.Strings[cbboxTarget.ItemIndex], 'lock_bytelen', bytelen);
+    VSProg_CommonUpdateLock(StrToInt(lock_str), bytelen);
+  end;
+end;
+
 function TFormMain.VSProg_CommonParseParaCallback(line: string): boolean;
 var
   dis: string;
 begin
+  if CheckFatalError(line) then
+  begin
+    result := FALSE;
+    exit;
+  end;
+  result := TRUE;
+
   if Pos('setting: ', line) = 1 then
   begin
     // check disable
@@ -1313,12 +1400,12 @@ begin
     if Pos(cbboxMode.Text[1], dis) > 0 then
     begin
       // current setting is disabled in current mode
-    line := line + ', disabled = 1 '
+      FormParaEditor.WipeTailEnter(line);
+      line := line + ', disabled = 1'
     end;
   end;
 
   FormParaEditor.ParseLine(line);
-  result := TRUE;
 end;
 
 procedure TFormMain.VSProg_AddParaString(para: string; fuseByteLen, fuseDefault, lockByteLen, lockDefault: integer);
