@@ -23,6 +23,7 @@
 #define ERRMSG_TRY_HELP						"Try add '--help' or '-h' for more information.\n"
 #define ERRMSG_TRY_SUPPORT					"Try add '--support' or '-S' for more information.\n"
 #define ERRMSG_MUTIPLE_DEFINED				"Mutiple %s defined.\n"
+#define ERRMSG_NOT_DEFINED					"%s is not defined, please define first.\n"
 
 #define ERRMSG_NOT_ENOUGH_MEMORY			"Lack of memory.\n"
 #define ERRCODE_NOT_ENOUGH_MEMORY			ERROR_FAIL

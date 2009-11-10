@@ -156,6 +156,36 @@ typedef struct
 	chip_param_t *chips_param;
 }chip_series_t;
 
+typedef struct
+{
+	uint32_t mask;
+	uint32_t value;
+	char *msg;
+}chip_fl_warning_t;
+
+typedef struct
+{
+	uint32_t value;
+	char *msg;
+}chip_fl_choice_t;
+
+typedef struct
+{
+	char *name;
+	uint32_t mask;
+	uint16_t num_of_choices;
+	chip_fl_choice_t *choices;
+}chip_fl_setting_t;
+
+typedef struct
+{
+	uint32_t init_value;
+	uint16_t num_of_fl_warnings;
+	chip_fl_warning_t *warnings;
+	uint16_t num_of_fl_settings;
+	chip_fl_setting_t *settings;
+}chip_fl_t;
+
 extern target_info_t *cur_target;
 extern target_info_t targets_info[];
 extern program_info_t program_info;
@@ -167,6 +197,11 @@ RESULT target_build_chip_series(const char *chip_name,
 								chip_series_t *s);
 RESULT target_release_chip_series(chip_series_t *s);
 
+RESULT target_build_chip_fl(const char *chip_series, const char *chip_module, 
+							char *type, chip_fl_t *fl);
+RESULT target_release_chip_fl(chip_fl_t *fl);
+
+void target_print_fl(char *type);
 void target_print_target(uint32_t i);
 void target_print_list(void);
 void target_print_help(void);

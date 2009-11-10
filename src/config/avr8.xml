@@ -467,5 +467,136 @@
     <ee_page_size>8</ee_page_size>
     <ee_page_num>512</ee_page_num>
     <param0>1</param0>
+    <fuse number="12" init="0xFFFFFFFF">
+      <warning number="2">
+        <w mask="0x00004000" value="0x00004000">WARNING! These fuse settings will disable the JTAG interface!</w>
+        <w mask="0x00002000" value="0x00002000">WARNING! These fuse settings will disable the ISP interface!</w>
+      </warning>
+      <setting number="2" name="BODLEVEL" mask="0x00000080">
+        <choice value="0x00000000">Brown-out detection level at VCC=4.0 V; [BODLEVEL=0]</choice>
+        <choice value="0x00000080">Brown-out detection level at VCC=2.7 V; [BODLEVEL=1]</choice>
+      </setting>
+      <setting number="2" name="BODEN" mask="0x00000040">
+        <choice value="0x00000000">Brown-out detection enabled; [BODEN=0]</choice>
+        <choice value="0x00000040">Brown-out detection disabled; [BODEN=1]</choice>
+      </setting>
+      <setting number="58" name="SUT_CKSEL" mask="0x0000003F">
+        <choice value="0x00000000">Ext. Clock; Start-up time: 6 CK + 0 ms; [CKSEL=0000 SUT=00]</choice>
+        <choice value="0x00000010">Ext. Clock; Start-up time: 6 CK + 4 ms; [CKSEL=0000 SUT=01]</choice>
+        <choice value="0x00000020">Ext. Clock; Start-up time: 6 CK + 64 ms; [CKSEL=0000 SUT=10]</choice>
+        <choice value="0x00000001">Int. RC Osc. 1 MHz; Start-up time: 6 CK + 0 ms; [CKSEL=0001 SUT=00]</choice>
+        <choice value="0x00000011">Int. RC Osc. 1 MHz; Start-up time: 6 CK + 4 ms; [CKSEL=0001 SUT=01]</choice>
+        <choice value="0x00000021">Int. RC Osc. 1 MHz; Start-up time: 6 CK + 64 ms; [CKSEL=0001 SUT=10]; default value</choice>
+        <choice value="0x00000002">Int. RC Osc. 2 MHz; Start-up time: 6 CK + 0 ms; [CKSEL=0010 SUT=00]</choice>
+        <choice value="0x00000012">Int. RC Osc. 2 MHz; Start-up time: 6 CK + 4 ms; [CKSEL=0010 SUT=01]</choice>
+        <choice value="0x00000022">Int. RC Osc. 2 MHz; Start-up time: 6 CK + 64 ms; [CKSEL=0010 SUT=10]</choice>
+        <choice value="0x00000003">Int. RC Osc. 4 MHz; Start-up time: 6 CK + 0 ms; [CKSEL=0011 SUT=00]</choice>
+        <choice value="0x00000013">Int. RC Osc. 4 MHz; Start-up time: 6 CK + 4 ms; [CKSEL=0011 SUT=01]</choice>
+        <choice value="0x00000023">Int. RC Osc. 4 MHz; Start-up time: 6 CK + 64 ms; [CKSEL=0011 SUT=10]</choice>
+        <choice value="0x00000004">Int. RC Osc. 8 MHz; Start-up time: 6 CK + 0 ms; [CKSEL=0100 SUT=00]</choice>
+        <choice value="0x00000014">Int. RC Osc. 8 MHz; Start-up time: 6 CK + 4 ms; [CKSEL=0100 SUT=01]</choice>
+        <choice value="0x00000024">Int. RC Osc. 8 MHz; Start-up time: 6 CK + 64 ms; [CKSEL=0100 SUT=10]</choice>
+        <choice value="0x00000005">Ext. RC Osc.         -  0.9 MHz; Start-up time: 18 CK + 0 ms; [CKSEL=0101 SUT=00]</choice>
+        <choice value="0x00000015">Ext. RC Osc.         -  0.9 MHz; Start-up time: 18 CK + 4 ms; [CKSEL=0101 SUT=01]</choice>
+        <choice value="0x00000025">Ext. RC Osc.         -  0.9 MHz; Start-up time: 18 CK + 64 ms; [CKSEL=0101 SUT=10]</choice>
+        <choice value="0x00000035">Ext. RC Osc.         -  0.9 MHz; Start-up time: 6 CK + 4 ms; [CKSEL=0101 SUT=11]</choice>
+        <choice value="0x00000006">Ext. RC Osc. 0.9 MHz -  3.0 MHz; Start-up time: 18 CK + 0 ms; [CKSEL=0110 SUT=00]</choice>
+        <choice value="0x00000016">Ext. RC Osc. 0.9 MHz -  3.0 MHz; Start-up time: 18 CK + 4 ms; [CKSEL=0110 SUT=01]</choice>
+        <choice value="0x00000026">Ext. RC Osc. 0.9 MHz -  3.0 MHz; Start-up time: 18 CK + 64 ms; [CKSEL=0110 SUT=10]</choice>
+        <choice value="0x00000036">Ext. RC Osc. 0.9 MHz -  3.0 MHz; Start-up time: 6 CK + 4 ms; [CKSEL=0110 SUT=11]</choice>
+        <choice value="0x00000007">Ext. RC Osc. 3.0 MHz -  8.0 MHz; Start-up time: 18 CK + 0 ms; [CKSEL=0111 SUT=00]</choice>
+        <choice value="0x00000017">Ext. RC Osc. 3.0 MHz -  8.0 MHz; Start-up time: 18 CK + 4 ms; [CKSEL=0111 SUT=01]</choice>
+        <choice value="0x00000027">Ext. RC Osc. 3.0 MHz -  8.0 MHz; Start-up time: 18 CK + 64 ms; [CKSEL=0111 SUT=10]</choice>
+        <choice value="0x00000037">Ext. RC Osc. 3.0 MHz -  8.0 MHz; Start-up time: 6 CK + 4 ms; [CKSEL=0111 SUT=11]</choice>
+        <choice value="0x00000008">Ext. RC Osc. 8.0 MHz - 12.0 MHz; Start-up time: 18 CK + 0 ms; [CKSEL=1000 SUT=00]</choice>
+        <choice value="0x00000018">Ext. RC Osc. 8.0 MHz - 12.0 MHz; Start-up time: 18 CK + 4 ms; [CKSEL=1000 SUT=01]</choice>
+        <choice value="0x00000028">Ext. RC Osc. 8.0 MHz - 12.0 MHz; Start-up time: 18 CK + 64 ms; [CKSEL=1000 SUT=10]</choice>
+        <choice value="0x00000038">Ext. RC Osc. 8.0 MHz - 12.0 MHz; Start-up time: 6 CK + 4 ms; [CKSEL=1000 SUT=11]</choice>
+        <choice value="0x00000009">Ext. Low-Freq. Crystal; Start-up time: 1K CK + 4 ms; [CKSEL=1001 SUT=00]</choice>
+        <choice value="0x00000019">Ext. Low-Freq. Crystal; Start-up time: 1K CK + 64 ms; [CKSEL=1001 SUT=01]</choice>
+        <choice value="0x00000029">Ext. Low-Freq. Crystal; Start-up time: 32K CK + 64 ms; [CKSEL=1001 SUT=10]</choice>
+        <choice value="0x0000000A">Ext. Crystal/Resonator Low Freq.; Start-up time: 258 CK + 4 ms; [CKSEL=1010 SUT=00]</choice>
+        <choice value="0x0000001A">Ext. Crystal/Resonator Low Freq.; Start-up time: 258 CK + 64 ms; [CKSEL=1010 SUT=01]</choice>
+        <choice value="0x0000002A">Ext. Crystal/Resonator Low Freq.; Start-up time: 1K CK + 0 ms; [CKSEL=1010 SUT=10]</choice>
+        <choice value="0x0000003A">Ext. Crystal/Resonator Low Freq.; Start-up time: 1K CK + 4 ms; [CKSEL=1010 SUT=11]</choice>
+        <choice value="0x0000000B">Ext. Crystal/Resonator Low Freq.; Start-up time: 1K CK + 64 ms; [CKSEL=1011 SUT=00]</choice>
+        <choice value="0x0000001B">Ext. Crystal/Resonator Low Freq.; Start-up time: 16K CK + 0 ms; [CKSEL=1011 SUT=01]</choice>
+        <choice value="0x0000002B">Ext. Crystal/Resonator Low Freq.; Start-up time: 16K CK + 4 ms; [CKSEL=1011 SUT=10]</choice>
+        <choice value="0x0000003B">Ext. Crystal/Resonator Low Freq.; Start-up time: 16K CK + 64 ms; [CKSEL=1011 SUT=11]</choice>
+        <choice value="0x0000000C">Ext. Crystal/Resonator Medium Freq.; Start-up time: 258 CK + 4 ms; [CKSEL=1100 SUT=00]</choice>
+        <choice value="0x0000001C">Ext. Crystal/Resonator Medium Freq.; Start-up time: 258 CK + 64 ms; [CKSEL=1100 SUT=01]</choice>
+        <choice value="0x0000002C">Ext. Crystal/Resonator Medium Freq.; Start-up time: 1K CK + 0 ms; [CKSEL=1100 SUT=10]</choice>
+        <choice value="0x0000003C">Ext. Crystal/Resonator Medium Freq.; Start-up time: 1K CK + 4 ms; [CKSEL=1100 SUT=11]</choice>
+        <choice value="0x0000000D">Ext. Crystal/Resonator Medium Freq.; Start-up time: 1K CK + 64 ms; [CKSEL=1101 SUT=00]</choice>
+        <choice value="0x0000001D">Ext. Crystal/Resonator Medium Freq.; Start-up time: 16K CK + 0 ms; [CKSEL=1101 SUT=01]</choice>
+        <choice value="0x0000002D">Ext. Crystal/Resonator Medium Freq.; Start-up time: 16K CK + 4 ms; [CKSEL=1101 SUT=10]</choice>
+        <choice value="0x0000003D">Ext. Crystal/Resonator Medium Freq.; Start-up time: 16K CK + 64 ms; [CKSEL=1101 SUT=11]</choice>
+        <choice value="0x0000000E">Ext. Crystal/Resonator High Freq.; Start-up time: 258 CK + 4 ms; [CKSEL=1110 SUT=00]</choice>
+        <choice value="0x0000001E">Ext. Crystal/Resonator High Freq.; Start-up time: 258 CK + 64 ms; [CKSEL=1110 SUT=01]</choice>
+        <choice value="0x0000002E">Ext. Crystal/Resonator High Freq.; Start-up time: 1K CK + 0 ms; [CKSEL=1110 SUT=10]</choice>
+        <choice value="0x0000003E">Ext. Crystal/Resonator High Freq.; Start-up time: 1K CK + 4 ms; [CKSEL=1110 SUT=11]</choice>
+        <choice value="0x0000000F">Ext. Crystal/Resonator High Freq.; Start-up time: 1K CK + 64 ms; [CKSEL=1111 SUT=00]</choice>
+        <choice value="0x0000001F">Ext. Crystal/Resonator High Freq.; Start-up time: 16K CK + 0 ms; [CKSEL=1111 SUT=01]</choice>
+        <choice value="0x0000002F">Ext. Crystal/Resonator High Freq.; Start-up time: 16K CK + 4 ms; [CKSEL=1111 SUT=10]</choice>
+        <choice value="0x0000003F">Ext. Crystal/Resonator High Freq.; Start-up time: 16K CK + 64 ms; [CKSEL=1111 SUT=11]</choice>
+      </setting>
+      <setting number="2" name="OCDEN" mask="0x00008000">
+        <choice value="0x00000000">On-Chip Debug Enabled; [OCDEN=0]</choice>
+        <choice value="0x00008000">On-Chip Debug Disabled; [OCDEN=1]</choice>
+      </setting>
+      <setting number="2" name="JTAGEN" mask="0x00004000">
+        <choice value="0x00000000">JTAG Interface Enabled; [JTAGEN=0]</choice>
+        <choice value="0x00004000">JTAG Interface Disabled; [JTAGEN=1]</choice>
+      </setting>
+      <setting number="2" name="SPIEN" mask="0x00002000" ban="i">
+        <choice value="0x00000000">Serial program downloading (SPI) enabled; [SPIEN=0]</choice>
+        <choice value="0x00002000">Serial program downloading (SPI) disabled; [SPIEN=1]</choice>
+      </setting>
+      <setting number="2" name="CKOPT" mask="0x00001000">
+        <choice value="0x00000000">CKOPT fuse (operation dependent of CKSEL fuses); [CKOPT=0]</choice>
+        <choice value="0x00001000">CKOPT fuse (operation dependent of CKSEL fuses); [CKOPT=1]</choice>
+      </setting>
+      <setting number="2" name="EESAVE" mask="0x00000800">
+        <choice value="0x00000000">Preserve EEPROM memory through the Chip Erase cycle; [EESAVE=0]</choice>
+        <choice value="0x00000800">No Preserve EEPROM memory through the Chip Erase cycle; [EESAVE=1]</choice>
+      </setting>
+      <setting number="4" name="BOOTSZ" mask="0x00000600">
+        <choice value="0x00000600">Boot Flash section size=512 words Boot start address=$FE00; [BOOTSZ=11]</choice>
+        <choice value="0x00000400">Boot Flash section size=1024 words Boot start address=$FC00; [BOOTSZ=10]</choice>
+        <choice value="0x00000200">Boot Flash section size=2048 words Boot start address=$F800; [BOOTSZ=01]</choice>
+        <choice value="0x00000000">Boot Flash section size=4096 words Boot start address=$F000; [BOOTSZ=00] ; default value</choice>
+      </setting>
+      <setting number="2" name="BOOTRST" mask="0x00000100">
+        <choice value="0x00000000">Boot Reset vector Enabled (default address=$0000); [BOOTRST=0]</choice>
+        <choice value="0x00000100">Boot Reset vector Disabled; [BOOTRST=1]</choice>
+      </setting>
+      <setting number="2" name="M103C" mask="0x00020000">
+        <choice value="0x00000000">ATmega103 Compatibility Mode [M103C=0]</choice>
+        <choice value="0x00020000">No ATmega103 Compatibility Mode [M103C=1]</choice>
+      </setting>
+      <setting number="2" name="WDTON" mask="0x00010000">
+        <choice value="0x00000000">Watchdog Timer always on; [WDTON=0]</choice>
+        <choice value="0x00010000">No Watchdog Timer always on; [WDTON=1]</choice>
+      </setting>
+    </fuse>
+    <lock number="3" init="0xFFFFFFFF">
+      <setting number="3" name="LB" mask="0x00000003">
+        <choice value="0x00000003">Mode 1: No memory lock features enabled</choice>
+        <choice value="0x00000002">Mode 2: Further programming disabled</choice>
+        <choice value="0x00000000">Mode 3: Further programming and verification disabled</choice>
+      </setting>
+      <setting number="3" name="BLB0" mask="0x0000000C">
+        <choice value="0x0000000C">Application Protection Mode 1: No lock on SPM and LPM in Application Section</choice>
+        <choice value="0x00000008">Application Protection Mode 2: SPM prohibited in Application Section</choice>
+        <choice value="0x00000000">Application Protection Mode 3: LPM and SPM prohibited in Application Section</choice>
+        <choice value="0x00000004">Application Protection Mode 4: LPM prohibited in Application Section</choice>
+      </setting>
+      <setting number="4" name="BLB1" mask="0x00000030">
+        <choice value="0x00000030">Boot Loader Protection Mode 1: No lock on SPM and LPM in Boot Loader Section</choice>
+        <choice value="0x00000020">Boot Loader Protection Mode 2: SPM prohibited in Boot Loader Section</choice>
+        <choice value="0x00000000">Boot Loader Protection Mode 3: LPM and SPM prohibited in Boot Loader Section</choice>
+        <choice value="0x00000010">Boot Loader Protection Mode 4: LPM prohibited in Boot Loader Section</choice>
+      </setting>
+    </lock>
   </chip>
 </series>
