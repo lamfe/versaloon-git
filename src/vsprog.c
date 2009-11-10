@@ -45,12 +45,13 @@
 #include "target.h"
 #include "hex.h"
 
-#define OPTSTR			"hvS:i:s:c:Mp:U:Dd:Go:l:f:F:m:x:C:I:J:Zb:"
+#define OPTSTR			"hvS:P:i:s:c:Mp:U:Dd:Go:l:f:F:m:x:C:I:J:Zb:"
 static const struct option long_opts[] =
 {
 	{"help", no_argument, NULL, 'h'},
 	{"version", no_argument, NULL, 'v'},
 	{"support", required_argument, NULL, 'S'},
+	{"parameter", required_argument, NULL, 'P'},
 	{"input-file", required_argument, NULL, 'i'},
 	{"target-series", required_argument, NULL, 's'},
 	{"target-module", required_argument, NULL, 'c'},
@@ -355,6 +356,16 @@ int main(int argc, char* argv[])
 				LOG_INFO(_GETTEXT("no programmer supported found.\n"));
 			}
 			free_all_and_exit(EXIT_SUCCESS);
+		case 'P':
+			// --parameter [fuse/lock]
+			if ((NULL == program_info.chip_name) || (NULL == program_info.chip_type))
+			{
+				LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "Target");
+				free_all_and_exit(ERROR_FAIL);
+			}
+			
+			target_print_fl(optarg);
+			free_all_and_exit(ERROR_OK);
 		case 'S':
 			// --support [target/programmer]
 			if (!strcmp(optarg, "all"))
@@ -400,7 +411,7 @@ int main(int argc, char* argv[])
 				LOG_ERROR(_GETTEXT(ERRMSG_TRY_SUPPORT));
 				free_all_and_exit(ERRCODE_NOT_SUPPORT);
 			}
-			break;
+			free_all_and_exit(ERROR_OK);
 		case 's':
 			// --target-series
 			program_info.chip_type = optarg;
