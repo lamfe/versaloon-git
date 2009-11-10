@@ -660,10 +660,10 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 {
 	xmlDocPtr doc = NULL;
 	xmlNodePtr curNode = NULL;
+	xmlNodePtr paramNode, settingNode;
 	char *filename = NULL;
 	uint32_t i, j, k, num_of_chips;
 	RESULT ret = ERROR_OK;
-	uint8_t parsed;
 	FILE *fp;
 	uint32_t str_len;
 	char *m;
@@ -741,13 +741,10 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 		goto free_and_exit;
 	}
 	
-	parsed = 0;
 	// read data
 	curNode = curNode->children->next;
-	for (i = 0; !parsed && (i < num_of_chips); i++)
+	for (i = 0; i < num_of_chips; i++)
 	{
-		xmlNodePtr paramNode, settingNode;
-		
 		// check
 		if ((NULL == curNode) 
 			|| xmlStrcmp(curNode->name, BAD_CAST "chip")
@@ -765,17 +762,95 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 			curNode = curNode->next->next;
 			continue;
 		}
-		
-		paramNode = curNode->children->next;
-		// read parameters
-		while(!parsed && (paramNode != NULL))
+		else
 		{
-			if (!xmlStrcmp(paramNode->name, BAD_CAST type))
+			break;
+		}
+	}
+	if (i >= num_of_chips)
+	{
+		// not found
+		goto free_and_exit;
+	}
+	
+	paramNode = curNode->children->next;
+	// read parameters
+	while((paramNode != NULL) && xmlStrcmp(paramNode->name, BAD_CAST type))
+	{
+		paramNode = paramNode->next->next;
+	}
+	if (NULL == paramNode)
+	{
+		LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), type, chip_module);
+		ret = ERRCODE_NOT_SUPPORT;
+		goto free_and_exit;
+	}
+	
+	// we found the parameter
+	// valid check
+	if (!xmlHasProp(paramNode, BAD_CAST "number") 
+		|| !xmlHasProp(paramNode, BAD_CAST "init"))
+	{
+		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+				  "read config file");
+		ret = ERRCODE_FAILURE_OPERATION;
+		goto free_and_exit;
+	}
+	
+	// read fl number
+	fl->num_of_fl_settings = 
+		(uint16_t)strtoul(
+			(const char *)xmlGetProp(paramNode, BAD_CAST "number"), 
+			NULL, 0);
+	if (0 == fl->num_of_fl_settings)
+	{
+		LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), type, chip_module);
+		ret = ERRCODE_NOT_SUPPORT;
+		goto free_and_exit;
+	}
+	
+	// read fl init value
+	fl->init_value = 
+		strtoul((const char *)xmlGetProp(paramNode, BAD_CAST "init"), NULL, 0);
+	
+	// alloc memory for settings
+	fl->settings = (chip_fl_setting_t*)malloc(
+		fl->num_of_fl_settings * sizeof(chip_fl_setting_t));
+	if (NULL == fl->settings)
+	{
+		LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+		ret = ERRCODE_NOT_ENOUGH_MEMORY;
+		goto free_and_exit;
+	}
+	
+	settingNode = paramNode->children->next;
+	// has warning?
+	if ((settingNode != NULL) && 
+		!strcmp((const char *)settingNode->name, "warning"))
+	{
+		xmlNodePtr warningNode = settingNode;
+		xmlNodePtr wNode;
+		
+		settingNode = settingNode->next->next;
+		// parse warning
+		fl->num_of_fl_warnings = (uint16_t)strtoul(
+			(const char *)xmlGetProp(warningNode, BAD_CAST "number"), NULL, 0);
+		if (fl->num_of_fl_warnings != 0)
+		{
+			fl->warnings = (chip_fl_warning_t*)malloc(
+				fl->num_of_fl_warnings * sizeof(chip_fl_warning_t));
+			if (NULL == fl->warnings)
 			{
-				// we found the parameter
-				// valid check
-				if (!xmlHasProp(paramNode, BAD_CAST "number") 
-					|| !xmlHasProp(paramNode, BAD_CAST "init"))
+				LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+				ret = ERRCODE_NOT_ENOUGH_MEMORY;
+				goto free_and_exit;
+			}
+			
+			wNode = warningNode->children->next;
+			for (j = 0; j < fl->num_of_fl_warnings; j++)
+			{
+				// check
+				if (strcmp((const char *)wNode->name, "w"))
 				{
 					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
 							  "read config file");
@@ -783,173 +858,106 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 					goto free_and_exit;
 				}
 				
-				// read fl number
-				fl->num_of_fl_settings = 
-					(uint16_t)strtoul((const char *)xmlGetProp(paramNode, BAD_CAST "number"), NULL, 0);
-				if (0 == fl->num_of_fl_settings)
-				{
-					LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), type, 
-							  chip_module);
-					ret = ERRCODE_NOT_SUPPORT;
-					goto free_and_exit;
-				}
-				
-				// read fl init value
-				fl->init_value = 
-					strtoul((const char *)xmlGetProp(paramNode, BAD_CAST "init"), NULL, 0);
-				
-				// alloc memory for settings
-				fl->settings = (chip_fl_setting_t*)malloc(
-					fl->num_of_fl_settings * sizeof(chip_fl_setting_t));
-				if (NULL == fl->settings)
+				fl->warnings[j].mask = strtoul(
+					(const char *)xmlGetProp(wNode, BAD_CAST "mask"), 
+					NULL, 0);
+				fl->warnings[j].value = strtoul(
+					(const char *)xmlGetProp(wNode, BAD_CAST "value"), 
+					NULL, 0);
+				m = (char *)xmlNodeGetContent(wNode->children);
+				str_len = strlen(m);
+				fl->warnings[j].msg = (char *)malloc(str_len + 1);
+				if (NULL == fl->warnings[j].msg)
 				{
 					LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
 					ret = ERRCODE_NOT_ENOUGH_MEMORY;
 					goto free_and_exit;
 				}
+				strcpy(fl->warnings[j].msg, (const char *)m);
 				
-				settingNode = paramNode->children->next;
-				// has warning?
-				if ((settingNode != NULL) && 
-					!strcmp((const char *)settingNode->name, "warning"))
-				{
-					xmlNodePtr warningNode = settingNode;
-					xmlNodePtr wNode;
-					
-					settingNode = settingNode->next->next;
-					// parse warning
-					fl->num_of_fl_warnings = 
-						(uint16_t)strtoul((const char *)xmlGetProp(warningNode, BAD_CAST "number"), NULL, 0);
-					if (fl->num_of_fl_warnings != 0)
-					{
-						fl->warnings = (chip_fl_warning_t*)malloc(
-							fl->num_of_fl_warnings * sizeof(chip_fl_warning_t));
-						if (NULL == fl->warnings)
-						{
-							LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
-							ret = ERRCODE_NOT_ENOUGH_MEMORY;
-							goto free_and_exit;
-						}
-						
-						wNode = warningNode->children->next;
-						for (j = 0; j < fl->num_of_fl_warnings; j++)
-						{
-							// check
-							if (strcmp((const char *)wNode->name, "w"))
-							{
-								LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-										  "read config file");
-								ret = ERRCODE_FAILURE_OPERATION;
-								goto free_and_exit;
-							}
-							
-							fl->warnings[j].mask = 
-								strtoul((const char *)xmlGetProp(wNode, BAD_CAST "mask"), NULL, 0);
-							fl->warnings[j].value = 
-								strtoul((const char *)xmlGetProp(wNode, BAD_CAST "value"), NULL, 0);
-							m = (char *)xmlNodeGetContent(wNode->children);
-							str_len = strlen(m);
-							fl->warnings[j].msg = (char *)malloc(str_len + 1);
-							if (NULL == fl->warnings[j].msg)
-							{
-								LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
-								ret = ERRCODE_NOT_ENOUGH_MEMORY;
-								goto free_and_exit;
-							}
-							strcpy(fl->warnings[j].msg, (const char *)m);
-							
-							wNode = wNode->next->next;
-						}
-					}
-				}
-				
-				// parse settings
-				for (j = 0; j < fl->num_of_fl_settings; j++)
-				{
-					xmlNodePtr choiceNode;
-					
-					// check
-					if (strcmp((const char *)settingNode->name, "setting"))
-					{
-						LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-								  "read config file");
-						ret = ERRCODE_FAILURE_OPERATION;
-						goto free_and_exit;
-					}
-					
-					fl->settings[j].num_of_choices = 
-						(uint16_t)strtoul((const char *)xmlGetProp(settingNode, BAD_CAST "number"), NULL, 0);
-					if (0 == fl->settings[j].num_of_choices)
-					{
-						// why this setting exists? Ignore
-						LOG_WARNING(_GETTEXT("Settings has no choice.\n"));
-						continue;
-					}
-					
-					// malloc memory for choices
-					fl->settings[j].choices = 
-						(chip_fl_choice_t*)malloc(fl->settings[j].num_of_choices * sizeof(chip_fl_choice_t));
-					if (NULL == fl->settings[j].choices)
-					{
-						LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
-						ret = ERRCODE_NOT_ENOUGH_MEMORY;
-						goto free_and_exit;
-					}
-					
-					// parse
-					m = (char *)xmlGetProp(settingNode, BAD_CAST "name");
-					str_len = strlen(m);
-					fl->settings[j].name = (char *)malloc(str_len + 1);
-					if (NULL == fl->settings[j].name)
-					{
-						LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
-						ret = ERRCODE_NOT_ENOUGH_MEMORY;
-						goto free_and_exit;
-					}
-					strcpy(fl->settings[j].name, m);
-					fl->settings[j].mask = 
-						strtoul((const char *)xmlGetProp(settingNode, BAD_CAST "mask"), NULL, 0);
-					
-					choiceNode = settingNode->children->next;
-					// parse choices
-					for (k = 0; k < fl->settings[j].num_of_choices; k++)
-					{
-						// check
-						if (strcmp((const char *)choiceNode->name, "choice"))
-						{
-							LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-									  "read config file");
-							ret = ERRCODE_FAILURE_OPERATION;
-							goto free_and_exit;
-						}
-						
-						// parse
-						fl->settings[j].choices[k].value = 
-							strtoul((const char *)xmlGetProp(choiceNode, BAD_CAST "value"), NULL, 0);
-						m = (char *)xmlNodeGetContent(choiceNode->children);
-						str_len = strlen(m);
-						fl->settings[j].choices[k].msg = (char *)malloc(str_len + 1);
-						if (NULL == fl->settings[j].choices[k].msg)
-						{
-							LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
-							ret = ERRCODE_NOT_ENOUGH_MEMORY;
-							goto free_and_exit;
-						}
-						strcpy(fl->settings[j].choices[k].msg, m);
-						
-						choiceNode = choiceNode->next->next;
-					}
-					settingNode = settingNode->next->next;
-				}
-				
-				parsed = 1;
-				break;
+				wNode = wNode->next->next;
 			}
-			
-			paramNode = paramNode->next->next;
+		}
+	}
+	
+	// parse settings
+	for (j = 0; j < fl->num_of_fl_settings; j++)
+	{
+		xmlNodePtr choiceNode;
+		
+		// check
+		if (strcmp((const char *)settingNode->name, "setting"))
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+					  "read config file");
+			ret = ERRCODE_FAILURE_OPERATION;
+			goto free_and_exit;
 		}
 		
-		curNode = curNode->next->next;
+		fl->settings[j].num_of_choices = (uint16_t)strtoul(
+			(const char *)xmlGetProp(settingNode, BAD_CAST "number"), NULL, 0);
+		if (0 == fl->settings[j].num_of_choices)
+		{
+			// why this setting exists? Ignore
+			LOG_WARNING(_GETTEXT("Settings has no choice.\n"));
+			continue;
+		}
+		
+		// malloc memory for choices
+		fl->settings[j].choices = (chip_fl_choice_t*)malloc(
+			fl->settings[j].num_of_choices * sizeof(chip_fl_choice_t));
+		if (NULL == fl->settings[j].choices)
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+			ret = ERRCODE_NOT_ENOUGH_MEMORY;
+			goto free_and_exit;
+		}
+		
+		// parse
+		m = (char *)xmlGetProp(settingNode, BAD_CAST "name");
+		str_len = strlen(m);
+		fl->settings[j].name = (char *)malloc(str_len + 1);
+		if (NULL == fl->settings[j].name)
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+			ret = ERRCODE_NOT_ENOUGH_MEMORY;
+			goto free_and_exit;
+		}
+		strcpy(fl->settings[j].name, m);
+		fl->settings[j].mask = strtoul(
+			(const char *)xmlGetProp(settingNode, BAD_CAST "mask"), NULL, 0);
+		
+		choiceNode = settingNode->children->next;
+		// parse choices
+		for (k = 0; k < fl->settings[j].num_of_choices; k++)
+		{
+			// check
+			if (strcmp((const char *)choiceNode->name, "choice"))
+			{
+				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+						  "read config file");
+				ret = ERRCODE_FAILURE_OPERATION;
+				goto free_and_exit;
+			}
+			
+			// parse
+			fl->settings[j].choices[k].value = strtoul(
+				(const char *)xmlGetProp(choiceNode, BAD_CAST "value"), 
+				NULL, 0);
+			m = (char *)xmlNodeGetContent(choiceNode->children);
+			str_len = strlen(m);
+			fl->settings[j].choices[k].msg = (char *)malloc(str_len + 1);
+			if (NULL == fl->settings[j].choices[k].msg)
+			{
+				LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+				ret = ERRCODE_NOT_ENOUGH_MEMORY;
+				goto free_and_exit;
+			}
+			strcpy(fl->settings[j].choices[k].msg, m);
+			
+			choiceNode = choiceNode->next->next;
+		}
+		settingNode = settingNode->next->next;
 	}
 	
 free_and_exit:
@@ -1097,7 +1105,8 @@ RESULT target_build_chip_series(const char *chip_series,
 		goto free_and_exit;
 	}
 	
-	s->num_of_chips = strtoul((const char *)xmlGetProp(curNode, BAD_CAST "number"), NULL, 0);
+	s->num_of_chips = strtoul(
+		(const char *)xmlGetProp(curNode, BAD_CAST "number"), NULL, 0);
 	if (0 == s->num_of_chips)
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT), chip_series);
