@@ -129,6 +129,7 @@ typedef struct
 {
 	char chip_name[TARGET_MAX_CHIP_NAME_LEN];
 	uint32_t chip_id;
+	char *program_mode_str;
 	uint32_t program_mode;
 	uint32_t boot_page_size;
 	uint32_t boot_page_num;
@@ -141,7 +142,9 @@ typedef struct
 	uint32_t usrsig_page_size;
 	uint32_t usrsig_page_num;
 	uint32_t fuse_size;
+	uint32_t fuse_default_value;
 	uint32_t lock_size;
+	uint32_t lock_default_value;
 	uint32_t boot_size;
 	uint32_t app_size;
 	uint32_t ee_size;
@@ -174,6 +177,7 @@ typedef struct
 	char *name;
 	uint32_t mask;
 	uint16_t num_of_choices;
+	char *ban;
 	chip_fl_choice_t *choices;
 }chip_fl_setting_t;
 

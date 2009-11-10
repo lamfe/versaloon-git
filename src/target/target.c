@@ -530,16 +530,27 @@ void target_print_fl(char *type)
 		fl.init_value, fl.num_of_fl_warnings, fl.num_of_fl_settings);
 	for (i = 0; i < fl.num_of_fl_warnings; i++)
 	{
-		printf("warning: mask = 0x%08X, value = 0x%08X, info = %s\n", 
+		printf("warning: mask = 0x%08X, value = 0x%08X, msg = %s\n", 
 			fl.warnings[i].mask, fl.warnings[i].value, fl.warnings[i].msg);
 	}
 	for (i = 0; i < fl.num_of_fl_settings; i++)
 	{
-		printf("setting: name = %s, mask = 0x%08X, num_of_choices = %d\n", 
-			fl.settings[i].name, fl.settings[i].mask, fl.settings[i].num_of_choices);
+		if (fl.settings[i].ban != NULL)
+		{
+			printf("setting: name = %s, mask = 0x%08X, num_of_choices = %d, \
+ban = %s\n", 
+				fl.settings[i].name, fl.settings[i].mask, 
+				fl.settings[i].num_of_choices, fl.settings[i].ban);
+		}
+		else
+		{
+			printf("setting: name = %s, mask = 0x%08X, num_of_choices = %d\n", 
+				fl.settings[i].name, fl.settings[i].mask, 
+				fl.settings[i].num_of_choices);
+		}
 		for (j = 0; j < fl.settings[i].num_of_choices; j++)
 		{
-			printf("chioce: value = 0x%08X, msg = %s\n", 
+			printf("choice: value = 0x%08X, msg = %s\n", 
 				fl.settings[i].choices[j].value, fl.settings[i].choices[j].msg);
 		}
 	}
@@ -662,7 +673,7 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 	xmlNodePtr curNode = NULL;
 	xmlNodePtr paramNode, settingNode;
 	char *filename = NULL;
-	uint32_t i, j, k, num_of_chips;
+	uint32_t i, j, num_of_chips;
 	RESULT ret = ERROR_OK;
 	FILE *fp;
 	uint32_t str_len;
@@ -822,6 +833,8 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 		ret = ERRCODE_NOT_ENOUGH_MEMORY;
 		goto free_and_exit;
 	}
+	memset(fl->settings, 0, 
+		   fl->num_of_fl_settings * sizeof(chip_fl_setting_t));
 	
 	settingNode = paramNode->children->next;
 	// has warning?
@@ -847,7 +860,7 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 			}
 			
 			wNode = warningNode->children->next;
-			for (j = 0; j < fl->num_of_fl_warnings; j++)
+			for (i = 0; i < fl->num_of_fl_warnings; i++)
 			{
 				// check
 				if (strcmp((const char *)wNode->name, "w"))
@@ -858,22 +871,22 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 					goto free_and_exit;
 				}
 				
-				fl->warnings[j].mask = strtoul(
+				fl->warnings[i].mask = strtoul(
 					(const char *)xmlGetProp(wNode, BAD_CAST "mask"), 
 					NULL, 0);
-				fl->warnings[j].value = strtoul(
+				fl->warnings[i].value = strtoul(
 					(const char *)xmlGetProp(wNode, BAD_CAST "value"), 
 					NULL, 0);
 				m = (char *)xmlNodeGetContent(wNode->children);
 				str_len = strlen(m);
-				fl->warnings[j].msg = (char *)malloc(str_len + 1);
-				if (NULL == fl->warnings[j].msg)
+				fl->warnings[i].msg = (char *)malloc(str_len + 1);
+				if (NULL == fl->warnings[i].msg)
 				{
 					LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
 					ret = ERRCODE_NOT_ENOUGH_MEMORY;
 					goto free_and_exit;
 				}
-				strcpy(fl->warnings[j].msg, (const char *)m);
+				strcpy(fl->warnings[i].msg, (const char *)m);
 				
 				wNode = wNode->next->next;
 			}
@@ -881,7 +894,7 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 	}
 	
 	// parse settings
-	for (j = 0; j < fl->num_of_fl_settings; j++)
+	for (i = 0; i < fl->num_of_fl_settings; i++)
 	{
 		xmlNodePtr choiceNode;
 		
@@ -894,9 +907,9 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 			goto free_and_exit;
 		}
 		
-		fl->settings[j].num_of_choices = (uint16_t)strtoul(
+		fl->settings[i].num_of_choices = (uint16_t)strtoul(
 			(const char *)xmlGetProp(settingNode, BAD_CAST "number"), NULL, 0);
-		if (0 == fl->settings[j].num_of_choices)
+		if (0 == fl->settings[i].num_of_choices)
 		{
 			// why this setting exists? Ignore
 			LOG_WARNING(_GETTEXT("Settings has no choice.\n"));
@@ -904,9 +917,9 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 		}
 		
 		// malloc memory for choices
-		fl->settings[j].choices = (chip_fl_choice_t*)malloc(
-			fl->settings[j].num_of_choices * sizeof(chip_fl_choice_t));
-		if (NULL == fl->settings[j].choices)
+		fl->settings[i].choices = (chip_fl_choice_t*)malloc(
+			fl->settings[i].num_of_choices * sizeof(chip_fl_choice_t));
+		if (NULL == fl->settings[i].choices)
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
 			ret = ERRCODE_NOT_ENOUGH_MEMORY;
@@ -916,20 +929,33 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 		// parse
 		m = (char *)xmlGetProp(settingNode, BAD_CAST "name");
 		str_len = strlen(m);
-		fl->settings[j].name = (char *)malloc(str_len + 1);
-		if (NULL == fl->settings[j].name)
+		fl->settings[i].name = (char *)malloc(str_len + 1);
+		if (NULL == fl->settings[i].name)
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
 			ret = ERRCODE_NOT_ENOUGH_MEMORY;
 			goto free_and_exit;
 		}
-		strcpy(fl->settings[j].name, m);
-		fl->settings[j].mask = strtoul(
+		strcpy(fl->settings[i].name, m);
+		fl->settings[i].mask = strtoul(
 			(const char *)xmlGetProp(settingNode, BAD_CAST "mask"), NULL, 0);
+		if (xmlHasProp(settingNode, BAD_CAST "ban"))
+		{
+			m = (char *)xmlGetProp(settingNode, BAD_CAST "ban");
+			str_len = strlen(m);
+			fl->settings[i].ban = (char *)malloc(str_len + 1);
+			if (NULL == fl->settings[i].ban)
+			{
+				LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+				ret = ERRCODE_NOT_ENOUGH_MEMORY;
+				goto free_and_exit;
+			}
+			strcpy(fl->settings[i].ban, m);
+		}
 		
 		choiceNode = settingNode->children->next;
 		// parse choices
-		for (k = 0; k < fl->settings[j].num_of_choices; k++)
+		for (j = 0; j < fl->settings[i].num_of_choices; j++)
 		{
 			// check
 			if (strcmp((const char *)choiceNode->name, "choice"))
@@ -941,19 +967,19 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 			}
 			
 			// parse
-			fl->settings[j].choices[k].value = strtoul(
+			fl->settings[i].choices[j].value = strtoul(
 				(const char *)xmlGetProp(choiceNode, BAD_CAST "value"), 
 				NULL, 0);
 			m = (char *)xmlNodeGetContent(choiceNode->children);
 			str_len = strlen(m);
-			fl->settings[j].choices[k].msg = (char *)malloc(str_len + 1);
-			if (NULL == fl->settings[j].choices[k].msg)
+			fl->settings[i].choices[j].msg = (char *)malloc(str_len + 1);
+			if (NULL == fl->settings[i].choices[j].msg)
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
 				ret = ERRCODE_NOT_ENOUGH_MEMORY;
 				goto free_and_exit;
 			}
-			strcpy(fl->settings[j].choices[k].msg, m);
+			strcpy(fl->settings[i].choices[j].msg, m);
 			
 			choiceNode = choiceNode->next->next;
 		}
@@ -1009,6 +1035,11 @@ RESULT target_release_chip_fl(chip_fl_t *fl)
 			{
 				free(fl->settings[i].name);
 				fl->settings[i].name = NULL;
+			}
+			if (fl->settings[i].ban != NULL)
+			{
+				free(fl->settings[i].ban);
+				fl->settings[i].ban = NULL;
 			}
 			if (fl->settings[i].choices != NULL)
 			{
@@ -1121,6 +1152,7 @@ RESULT target_build_chip_series(const char *chip_series,
 		ret = ERRCODE_NOT_ENOUGH_MEMORY;
 		goto free_and_exit;
 	}
+	memset(s->chips_param, 0, sizeof(chip_param_t) * s->num_of_chips);
 	
 	// read data
 	curNode = curNode->children->next;
@@ -1158,6 +1190,15 @@ RESULT target_build_chip_series(const char *chip_series,
 				char *mode_tmp = (char *)xmlNodeGetContent(paramNode);
 				char *first;
 				
+				s->chips_param[i].program_mode_str = 
+										(char *)malloc(strlen(mode_tmp) + 1);
+				if (NULL == s->chips_param[i].program_mode_str)
+				{
+					LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+					ret = ERRCODE_NOT_ENOUGH_MEMORY;
+					goto free_and_exit;
+				}
+				strcpy(s->chips_param[i].program_mode_str, mode_tmp);
 				s->chips_param[i].program_mode = 0;
 				for (j = 0; j < strlen(mode_tmp); j++)
 				{
@@ -1280,11 +1321,21 @@ RESULT target_build_chip_series(const char *chip_series,
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "fuse"))
 			{
-				// No need to parse fuse here
+				s->chips_param[i].fuse_size = (uint32_t)strtoul(
+					(const char *)xmlGetProp(paramNode, BAD_CAST "bytesize"), 
+					NULL, 0);
+				s->chips_param[i].fuse_default_value = (uint32_t)strtoul(
+					(const char *)xmlGetProp(paramNode, BAD_CAST "init"), 
+					NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "lock"))
 			{
-				// No need to parse lock here
+				s->chips_param[i].lock_size = (uint32_t)strtoul(
+					(const char *)xmlGetProp(paramNode, BAD_CAST "bytesize"), 
+					NULL, 0);
+				s->chips_param[i].lock_default_value = (uint32_t)strtoul(
+					(const char *)xmlGetProp(paramNode, BAD_CAST "init"), 
+					NULL, 0);
 			}
 			else
 			{
@@ -1337,8 +1388,18 @@ free_and_exit:
 
 RESULT target_release_chip_series(chip_series_t *s)
 {
+	uint32_t i;
+	
 	if ((s != NULL) && ((s->num_of_chips > 0) || (s->chips_param != NULL)))
 	{
+		for (i = 0; i < s->num_of_chips; i++)
+		{
+			if (s->chips_param[i].program_mode_str != NULL)
+			{
+				free(s->chips_param[i].program_mode_str);
+				s->chips_param[i].program_mode_str = NULL;
+			}
+		}
 		free(s->chips_param);
 		s->chips_param = NULL;
 		s->num_of_chips = 0;

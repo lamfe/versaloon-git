@@ -467,7 +467,7 @@
     <ee_page_size>8</ee_page_size>
     <ee_page_num>512</ee_page_num>
     <param0>1</param0>
-    <fuse number="12" init="0xFFFFFFFF">
+    <fuse number="12" init="0x00FFFFFF" bytesize="3">
       <warning number="2">
         <w mask="0x00004000" value="0x00004000">WARNING! These fuse settings will disable the JTAG interface!</w>
         <w mask="0x00002000" value="0x00002000">WARNING! These fuse settings will disable the ISP interface!</w>
@@ -579,7 +579,7 @@
         <choice value="0x00010000">No Watchdog Timer always on; [WDTON=1]</choice>
       </setting>
     </fuse>
-    <lock number="3" init="0xFFFFFFFF">
+    <lock number="3" init="0xFF" bytesize="1">
       <setting number="3" name="LB" mask="0x00000003">
         <choice value="0x00000003">Mode 1: No memory lock features enabled</choice>
         <choice value="0x00000002">Mode 2: Further programming disabled</choice>

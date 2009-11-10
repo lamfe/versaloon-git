@@ -74,10 +74,10 @@ void psoc1_support(void)
 	for (i = 0; i < cur_chips_num; i++)
 	{
 		printf("\
-%s: id = 0x%04x, init_mode = %d, flash_size = %d, secure_size = %d\n", 
+%s: id = 0x%04x, init_mode = %s, flash_size = %d, secure_size = %d\n", 
 				cur_chips_param[i].chip_name, 
 				cur_chips_param[i].chip_id,
-				cur_chips_param[i].program_mode | PSOC1_POWERON_MODE, 
+				cur_chips_param[i].program_mode_str, 
 				cur_chips_param[i].app_page_size 
 					* cur_chips_param[i].app_page_num 
 					* cur_chips_param[i].param[PSOC1_PARAM_BANK_NUM],
