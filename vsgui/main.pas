@@ -1841,6 +1841,7 @@ begin
   VSProg_CommonInit('flA');
 
   btnEditLock.Caption := 'Secure';
+  btnEditLock.Enabled := FALSE;
   lbledtLock.Enabled := FALSE;
   chkboxLock.Caption := 'Secure';
   cbboxMode.Enabled := TRUE;
@@ -2039,10 +2040,10 @@ begin
   FormParaEditor.GetStringParameter(p_str, 'para', mode_str);
   if Pos('f', mode_str) > 0 then
   begin
-    lbledtFuse.Enabled := TRUE;
-    btnEditFuse.Enabled := TRUE;
+    lbledtFuse.Enabled := FALSE;
+    btnEditFuse.Enabled := FALSE;
     chkboxFuse.Checked := FALSE;
-    chkboxFuse.Enabled := TRUE;
+    chkboxFuse.Enabled := FALSE;
   end
   else
   begin
@@ -2527,12 +2528,14 @@ begin
     btnEditFuse.Enabled := False;
   end;
 
-  lbledtLock.Text := '';
+  fl_num := 0;
+  fl_default := 0;
   FormParaEditor.GetIntegerParameter(p_str, 'lock_bytelen', fl_num);
+  VSProg_CommonUpdateLock(0, fl_num);
   if fl_num > 0 then
   begin
     FormParaEditor.GetIntegerParameter(p_str, 'lock_default', fl_default);
-    lbledtLock.Text := '0x' + IntToHex(fl_default, fl_num);
+    VSProg_CommonUpdateLock(fl_default, fl_num);
     lbledtLock.Enabled := True;
     btnEditLock.Enabled := True;
   end
