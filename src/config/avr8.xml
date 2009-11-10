@@ -585,7 +585,7 @@
         <choice value="0x00000002">Mode 2: Further programming disabled</choice>
         <choice value="0x00000000">Mode 3: Further programming and verification disabled</choice>
       </setting>
-      <setting number="3" name="BLB0" mask="0x0000000C">
+      <setting number="4" name="BLB0" mask="0x0000000C">
         <choice value="0x0000000C">Application Protection Mode 1: No lock on SPM and LPM in Application Section</choice>
         <choice value="0x00000008">Application Protection Mode 2: SPM prohibited in Application Section</choice>
         <choice value="0x00000000">Application Protection Mode 3: LPM and SPM prohibited in Application Section</choice>
