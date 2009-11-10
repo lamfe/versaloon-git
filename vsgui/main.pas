@@ -120,6 +120,8 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure FormResize(Sender: TObject);
     procedure FormShow(Sender: TObject);
+    procedure lbledtFuseKeyPress(Sender: TObject; var Key: char);
+    procedure lbledtLockKeyPress(Sender: TObject; var Key: char);
     procedure miExitClick(Sender: TObject);
     procedure pcMainChanging(Sender: TObject; var AllowChange: Boolean);
     procedure pcMainPageChanged(Sender: TObject);
@@ -313,6 +315,16 @@ end;
 procedure TFormMain.FormShow(Sender: TObject);
 begin
   FormResize(Sender);
+end;
+
+procedure TFormMain.lbledtFuseKeyPress(Sender: TObject; var Key: char);
+begin
+  Key := Char(0);
+end;
+
+procedure TFormMain.lbledtLockKeyPress(Sender: TObject; var Key: char);
+begin
+  Key := Char(0);
 end;
 
 procedure TFormMain.miExitClick(Sender: TObject);
