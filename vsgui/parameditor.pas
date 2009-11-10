@@ -38,7 +38,7 @@ type
     pnlSettings: TPanel;
     pnlButton: TPanel;
     procedure ComboBoxChange(Sender: TObject);
-    procedure FormDestroy(Sender: TObject);
+    procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormShow(Sender: TObject);
   private
     { private declarations }
@@ -108,13 +108,6 @@ begin
   end;
 end;
 
-procedure TFormParaEditor.FormDestroy(Sender: TObject);
-begin
-  FreeRecord();
-  SetLength(ParaEdtArr, 0);
-  SetLength(ParaComboArr, 0);
-end;
-
 procedure TFormParaEditor.ComboBoxChange(Sender: TObject);
 var
   i: integer;
@@ -129,6 +122,26 @@ begin
   end;
 
   UpdateTitle();
+end;
+
+procedure TFormParaEditor.FormClose(Sender: TObject;
+  var CloseAction: TCloseAction);
+var
+  i: integer;
+begin
+  FreeRecord();
+
+  for i := 0 to Length(ParaEdtArr) - 1 do
+  begin
+    ParaEdtArr[i].Destroy;
+  end;
+  for i := 0 to Length(ParaComboArr) - 1 do
+  begin
+    ParaComboArr[i].Destroy;
+  end;
+
+  SetLength(ParaEdtArr, 0);
+  SetLength(ParaComboArr, 0);
 end;
 
 procedure TFormParaEditor.UpdateTitle();

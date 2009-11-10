@@ -8,7 +8,7 @@ object FormParaEditor: TFormParaEditor
   Caption = 'FormParaEditor'
   ClientHeight = 193
   ClientWidth = 323
-  OnDestroy = FormDestroy
+  OnClose = FormClose
   OnShow = FormShow
   Position = poMainFormCenter
   LCLVersion = '0.9.26.2'
