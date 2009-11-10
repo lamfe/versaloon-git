@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs, ComCtrls,
-  StdCtrls, EditBtn, ExtCtrls, cli_caller{, hexeditor, checkeditor}, Menus,
+  StdCtrls, EditBtn, ExtCtrls, cli_caller{, hexeditor}, parameditor, Menus,
   Synaser, com_setup;
 
 type
@@ -130,19 +130,22 @@ type
 
     procedure LogInfo(info: string);
 
-    function GetIntegerParameter(line, para_name: string; var value: integer): boolean;
-    function GetStringParameter(line, para_name: string; var value: string): boolean;
     function CheckFatalError(line: string): boolean;
     function PrepareToRunCLI(): boolean;
+    function GetTargetDefineParameters(): string;
     procedure PrepareCommonParameters();
     procedure tDelayTimer(Sender: TObject);
     procedure tiMainClick(Sender: TObject);
     { VSProg common declarations }
     function VSProg_CommonCallback(line: string): boolean;
+    function VSProg_CommonParseParaCallback(line: string): boolean;
+    procedure VSProg_AddParaString(para: string; fuseByteLen, fuseDefault, lockByteLen, lockDefault: integer);
     function VSProg_CommonParseSupportCallback(line: string): boolean;
     function VSProg_CommonParseAboutCallback(line: string): boolean;
     function VSProg_CommonParseChipIDCallback(line: string): boolean;
     procedure VSProg_CommonInit(para: string);
+    procedure VSProg_CommonUpdateFuse(fuse, bytelen: integer);
+    procedure VSProg_CommonUpdateLock(lock, bytelen: integer);
     { PSoC1 declarations }
     function PSoC1_Init(): boolean;
     function PSoC1_Init_Para(line: string): string;
@@ -234,7 +237,6 @@ const
   VERSION_STR: string = 'Alpha';
   VSPROG_STR: string = {$IFDEF UNIX}'vsprog'{$ELSE}'vsprog.exe'{$ENDIF};
   OPENOCD_APP_STR: string = {$IFDEF UNIX}'openocd'{$ELSE}'openocd.exe'{$ENDIF};
-  EQUAL_STR: string = ' = ';
   SLASH_STR: string = {$IFDEF UNIX}'/'{$ELSE}'\'{$ENDIF};
   COMSETUP_STR: string = 'COM Setup';
   AUTODETECT_STR: string = 'AutoDetect';
@@ -289,6 +291,7 @@ end;
 
 procedure TFormMain.FormDestroy(Sender: TObject);
 begin
+  FormParaEditor.FreeRecord();
   ParaString.Destroy();
   caller.Destroy();
   OpenOCD_Caller.Destroy();
@@ -707,15 +710,83 @@ begin
 end;
 
 procedure TFormMain.btnEditFuseClick(Sender: TObject);
+var
+  targetdefine: string;
+  init, bytelen: integer;
 begin
-//  FormCheckEditor.Caption := (Sender as TButton).Caption;
-//  FormCheckEditor.ShowModal;
+  if caller.IsRunning() then
+  begin
+    exit;
+  end;
+  caller.Take;
+  // call 'vsprog -Ppara' to extract para settings
+  if not PrepareToRunCLI() then
+  begin
+    caller.UnTake;
+    exit;
+  end;
+  targetdefine := GetTargetDefineParameters();
+  if targetdefine[1] = 's' then
+  begin
+    MessageDlg('Error', 'Please select a target chip.', mtError, [mbOK], 0);
+    exit;
+  end;
+  caller.AddParameter(targetdefine);
+  caller.AddParameter('Pfuse');
+  FormParaEditor.FreeRecord();
+  caller.Run(@VSProg_CommonParseParaCallback, FALSE, TRUE);
+
+  targetdefine := ParaString.Strings[cbboxTarget.ItemIndex];
+  init := 0;
+  bytelen := 0;
+  FormParaEditor.GetIntegerParameter(targetdefine, 'fuse_default', init);
+  FormParaEditor.GetIntegerParameter(targetdefine, 'fuse_bytelen', bytelen);
+  FormParaEditor.SetParameter(init, bytelen, StrToInt(lbledtFuse.Text), 'Fuse');
+  if mrOK = FormParaEditor.ShowModal then
+  begin
+    // OK clicked, get value
+    VSProg_CommonUpdateFuse(FormParaEditor.GetResult(), bytelen);
+  end;
 end;
 
 procedure TFormMain.btnEditLockClick(Sender: TObject);
+var
+  targetdefine: string;
+  init, bytelen: integer;
 begin
-//  FormCheckEditor.Caption := (Sender as TButton).Caption;
-//  FormCheckEditor.ShowModal;
+  if caller.IsRunning() then
+  begin
+    exit;
+  end;
+  caller.Take;
+  // call 'vsprog -Ppara' to extract para settings
+  if not PrepareToRunCLI() then
+  begin
+    caller.UnTake;
+    exit;
+  end;
+  targetdefine := GetTargetDefineParameters();
+  if targetdefine[1] = 's' then
+  begin
+    MessageDlg('Error', 'Please select a target chip.', mtError, [mbOK], 0);
+    exit;
+  end;
+  caller.AddParameter(targetdefine);
+  caller.AddParameter('Plock');
+  FormParaEditor.FreeRecord();
+  caller.Run(@VSProg_CommonParseParaCallback, FALSE, TRUE);
+
+  targetdefine := ParaString.Strings[cbboxTarget.ItemIndex];
+  init := 0;
+  bytelen := 0;
+  FormParaEditor.GetIntegerParameter(targetdefine, 'lock_default', init);
+  FormParaEditor.GetIntegerParameter(targetdefine, 'lock_bytelen', bytelen);
+  FormParaEditor.SetParameter(init, bytelen, StrToInt(lbledtLock.Text), 'Lock');
+  if mrOK = FormParaEditor.ShowModal then
+  begin
+    // OK clicked, get value
+    VSProg_CommonUpdateLock(FormParaEditor.GetResult(), bytelen);
+  end;
 end;
 
 procedure TFormMain.btnEditUsrSigClick(Sender: TObject);
@@ -823,8 +894,11 @@ begin
 end;
 
 procedure TFormMain.cbboxModeChange(Sender: TObject);
+var
+  str_tmp: string;
 begin
   // to do: change the GUI according to different mode
+  str_tmp := cbboxMode.Text;
   case TargetType of
     TT_NONE:
       exit;
@@ -835,9 +909,9 @@ begin
     TT_C8051F:
       exit;
     TT_AVR8:
-      AVR8_Update_Mode(cbboxMode.Text);
+      AVR8_Update_Mode(str_tmp);
     TT_CortexM3:
-      CortexM3_Update_Mode(cbboxMode.Text);
+      CortexM3_Update_Mode(str_tmp);
   end;
 
   AdjustComponentColor(cbboxMode);
@@ -847,27 +921,30 @@ begin
 end;
 
 procedure TFormMain.cbboxTargetChange(Sender: TObject);
+var
+  str_tmp: string;
 begin
   // to do: change the GUI according to different chip
+  str_tmp := ParaString.Strings[cbboxTarget.ItemIndex];
   case TargetType of
     TT_NONE:
       exit;
     TT_PSOC1:
-      PSoC1_Update_Chip(ParaString.Strings[cbboxTarget.ItemIndex]);
+      PSoC1_Update_Chip(str_tmp);
     TT_AT89S5X:
-      AT89S5X_Update_Chip(ParaString.Strings[cbboxTarget.ItemIndex]);
+      AT89S5X_Update_Chip(str_tmp);
     TT_C8051F:
-      C8051F_Update_Chip(ParaString.Strings[cbboxTarget.ItemIndex]);
+      C8051F_Update_Chip(str_tmp);
     TT_AVR8:
-      AVR8_Update_Chip(ParaString.Strings[cbboxTarget.ItemIndex]);
+      AVR8_Update_Chip(str_tmp);
     TT_MSP430:
-      MSP430_Update_Chip(ParaString.Strings[cbboxTarget.ItemIndex]);
+      MSP430_Update_Chip(str_tmp);
     TT_COMISP:
-      COMISP_Update_Chip(ParaString.Strings[cbboxTarget.ItemIndex]);
+      COMISP_Update_Chip(str_tmp);
 //    TT_LPCICP:
-//      LPCICP_Update_chip(ParaString.Strings[cbboxTarget.ItemIndex]);
+//      LPCICP_Update_chip(str_tmp);
     TT_CORTEXM3:
-      CortexM3_Update_chip(ParaString.Strings[cbboxTarget.ItemIndex]);
+      CortexM3_Update_chip(str_tmp);
   end;
 
   AdjustComponentColor(cbboxMode);
@@ -990,67 +1067,7 @@ end;
 
 
 
-function TFormMain.GetStringParameter(line, para_name: string; var value: string): boolean;
-var
-  pos_start, pos_end: integer;
-  str_tmp: string;
-begin
-  if Pos(#13 + '', line) > 0 then
-  begin
-    SetLength(line, Length(line) - 1);
-  end;
 
-  pos_start := Pos(para_name + EQUAL_STR, line);
-  if pos_start > 0 then
-  begin
-    str_tmp := Copy(line, pos_start + Length(para_name + EQUAL_STR), Length(line) - pos_start);
-
-    pos_end := Pos(',', str_tmp);
-    if pos_end > 1 then
-    begin
-      str_tmp := Copy(str_tmp, 1, pos_end - 1);
-    end;
-
-    value := str_tmp;
-    result := TRUE;
-  end
-  else
-  begin
-    value := '';
-    result := FALSE;
-  end;
-end;
-
-function TFormMain.GetIntegerParameter(line, para_name: string; var value: integer): boolean;
-var
-  pos_start, pos_end: integer;
-  str_tmp: string;
-begin
-  if Pos(#13 + '', line) > 0 then
-  begin
-    SetLength(line, Length(line) - 1);
-  end;
-
-  pos_start := Pos(para_name + EQUAL_STR, line);
-  if pos_start > 0 then
-  begin
-    str_tmp := Copy(line, pos_start + Length(para_name + EQUAL_STR), Length(line) - pos_start);
-
-    pos_end := Pos(',', str_tmp);
-    if pos_end > 1 then
-    begin
-      str_tmp := Copy(str_tmp, 1, pos_end - 1);
-    end;
-
-    value := StrToInt(str_tmp);
-    result := TRUE;
-  end
-  else
-  begin
-    value := 0;
-    result := FALSE;
-  end;
-end;
 
 function TFormMain.CheckFatalError(line: string): boolean;
 begin
@@ -1092,20 +1109,24 @@ begin
   memoInfo.Clear;
 end;
 
+function TFormMain.GetTargetDefineParameters(): string;
+begin
+  // target series_name or chip_name
+  if ((TargetType <> TT_COMISP) and (TargetType <> TT_CORTEXM3)) and (cbboxTarget.ItemIndex = 0) then
+  begin
+    result := 's' + cbboxTarget.Items.Strings[cbboxTarget.ItemIndex];
+  end
+  else
+  begin
+    result := 'c' + cbboxTarget.Items.Strings[cbboxTarget.ItemIndex];
+  end;
+end;
+
 procedure TFormMain.PrepareCommonParameters();
 begin
   // enable GUI mode
   caller.AddParameter('G');
-
-  // target series_name or chip_name
-  if ((TargetType <> TT_COMISP) and (TargetType <> TT_CORTEXM3)) and (cbboxTarget.ItemIndex = 0) then
-  begin
-    caller.AddParameter('s' + cbboxTarget.Items.Strings[cbboxTarget.ItemIndex]);
-  end
-  else
-  begin
-    caller.AddParameter('c' + cbboxTarget.Items.Strings[cbboxTarget.ItemIndex]);
-  end;
+  caller.AddParameter(GetTargetDefineParameters());
 
   // COM Mode
   if btnTargetDetect.Caption = COMSETUP_STR then
@@ -1249,10 +1270,10 @@ begin
 
   if ((Pos('writing', line)  = 1) or
       (Pos('reading', line)  = 1) or
-      (Pos('verifying', line) = 1) or
+      (Pos('verifying', line)= 1) or
       (Pos('erasing', line)  = 1) or
       (Pos('checking', line) = 1) or
-      (Pos('executing', line) = 1)) and
+      (Pos('executing', line)= 1)) and
      (Length(line) > 9) then
   begin
     operating := TRUE;
@@ -1280,10 +1301,41 @@ begin
   end;
 end;
 
+function TFormMain.VSProg_CommonParseParaCallback(line: string): boolean;
+var
+  dis: string;
+begin
+  if Pos('setting: ', line) = 1 then
+  begin
+    // check disable
+    dis := '';
+    FormParaEditor.GetStringParameter(line, 'ban', dis);
+    if Pos(cbboxMode.Text[1], dis) > 0 then
+    begin
+      // current setting is disabled in current mode
+    line := line + ', disabled = 1 '
+    end;
+  end;
+
+  FormParaEditor.ParseLine(line);
+  result := TRUE;
+end;
+
+procedure TFormMain.VSProg_AddParaString(para: string; fuseByteLen, fuseDefault, lockByteLen, lockDefault: integer);
+begin
+  ParaString.Add('para = ' + para
+                       + ', fuse_bytelen = ' + IntToStr(fuseByteLen)
+                       + ', fuse_default = ' + IntToStr(fuseDefault)
+                       + ', lock_bytelen = ' + IntToStr(lockByteLen)
+                       + ', lock_default = ' + IntToStr(lockDefault));
+end;
+
 function TFormMain.VSProg_CommonParseSupportCallback(line: string): boolean;
 var
   chip_name: string;
   str_tmp: string;
+  fuseByteLen, lockByteLen: integer;
+  fuseDefault, lockDefault: integer;
 begin
   if CheckFatalError(line) then
   begin
@@ -1345,8 +1397,22 @@ begin
         str_tmp := CortexM3_Init_Para(line);
     end;
 
+    // fuse and lock support
+    fuseByteLen := 0;
+    if FormParaEditor.GetIntegerParameter(line, 'fuse_bytelen', fuseByteLen) and (fuseByteLen > 0) then
+    begin
+      fuseDefault := 0;
+      FormParaEditor.GetIntegerParameter(line, 'fuse_default', fuseDefault);
+    end;
+    lockByteLen := 0;
+    if FormParaEditor.GetIntegerParameter(line, 'lock_bytelen', lockByteLen) and (lockByteLen > 0) then
+    begin
+      lockDefault := 0;
+      FormParaEditor.GetIntegerParameter(line, 'lock_default', lockDefault);
+    end;
+
     cbboxTarget.Items.Add(chip_name);
-    ParaString.Add(str_tmp);
+    VSProg_AddParaString(str_tmp, fuseByteLen, fuseDefault, lockByteLen, lockDefault);
   end;
   
   result := TRUE;
@@ -1396,6 +1462,16 @@ begin
     // chip not found
     result := FALSE;
   end;
+end;
+
+procedure TFormMain.VSProg_CommonUpdateLock(lock, bytelen: integer);
+begin
+  lbledtLock.Text := '0x' + IntToHex(lock, bytelen);
+end;
+
+procedure TFormMain.VSProg_CommonUpdateFuse(fuse, bytelen: integer);
+begin
+  lbledtFuse.Text := '0x' + IntToHex(fuse, bytelen);
 end;
 
 procedure TFormMain.VSProg_CommonInit(para: string);
@@ -1610,14 +1686,17 @@ end;
 procedure TFormMain.PSoC1_Update_Chip(p_str: string);
 var
   str_tmp: string;
+  mode_str: string;
 begin
+  mode_str := '';
+  FormParaEditor.GetStringParameter(p_str, 'para', mode_str);
   str_tmp := cbboxMode.Text;
   cbboxMode.Clear;
-  if Pos('r', p_str) > 0 then
+  if Pos('r', mode_str) > 0 then
   begin
     cbboxMode.Items.Add('r:Reset');
   end;
-  if Pos('p', p_str) > 0 then
+  if Pos('p', mode_str) > 0 then
   begin
     cbboxMode.Items.Add('p:Power-On');
   end;
@@ -1633,20 +1712,9 @@ begin
 end;
 
 function TFormMain.PSoC1_Init_Para(line: string): string;
-var
-  int_tmp: integer;
 begin
   result := '';
-  int_tmp := 0;
-  GetIntegerParameter(line, 'init_mode', int_tmp);
-  if (int_tmp and $01) = $01 then
-  begin
-    result := result + 'r';
-  end;
-  if (int_tmp and $02) = $02 then
-  begin
-    result := result + 'p';
-  end;
+  FormParaEditor.GetStringParameter(line, 'init_mode', result);
 end;
 
 function TFormMain.PSoC1_Init(): boolean;
@@ -1656,7 +1724,7 @@ begin
   cbboxTarget.Clear;
   cbboxTarget.Items.Add('psoc1');
   ParaString.Clear;
-  ParaString.Add('rp');
+  VSProg_AddParaString('rp', 0, 0, 0, 0);
 
   // call 'vsprog -Spsoc1' to extract supported psoc1 targets
   if not PrepareToRunCLI() then
@@ -1754,7 +1822,7 @@ begin
   cbboxTarget.Clear;
   cbboxTarget.Items.Add('c8051f');
   ParaString.Clear;
-  ParaString.Add('jc');
+  VSProg_AddParaString('jc', 0, 0, 0, 0);
 
   // call 'vsprog -Sc8051f' to check support
   if not PrepareToRunCLI() then
@@ -1785,13 +1853,17 @@ begin
 end;
 
 procedure TFormMain.C8051F_Update_Chip(p_str: string);
+var
+  mode_str: string;
 begin
+  mode_str := '';
+  FormParaEditor.GetStringParameter(p_str, 'para', mode_str);
   cbboxMode.Items.Clear;
-  if Pos('j', p_str) > 0 then
+  if Pos('j', mode_str) > 0 then
   begin
     cbboxMode.Items.Add('j:JTAG');
   end;
-  if Pos('c', p_str) > 0 then
+  if Pos('c', mode_str) > 0 then
   begin
     cbboxMode.Items.Add('c:C2');
   end;
@@ -1799,20 +1871,9 @@ begin
 end;
 
 function TFormMain.C8051F_Init_Para(line: string): string;
-var
-  int_tmp: integer;
 begin
   result := '';
-  int_tmp := 0;
-  GetIntegerParameter(line, 'prog_mode', int_tmp);
-  if int_tmp = 2 then
-  begin
-    result := result + 'c';
-  end
-  else
-  begin
-    result := result + 'j';
-  end;
+  FormParaEditor.GetStringParameter(line, 'prog_mode', result);
 end;
 
 { AT89S5X implementations }
@@ -1884,8 +1945,12 @@ begin
 end;
 
 procedure TFormMain.AT89S5X_Update_Chip(p_str: string);
+var
+  mode_str: string;
 begin
-  if Pos('f', p_str) > 0 then
+  mode_str := '';
+  FormParaEditor.GetStringParameter(p_str, 'para', mode_str);
+  if Pos('f', mode_str) > 0 then
   begin
     lbledtFuse.Enabled := TRUE;
     btnEditFuse.Enabled := TRUE;
@@ -1899,7 +1964,7 @@ begin
     chkboxFuse.Checked := FALSE;
     chkboxFuse.Enabled := FALSE;
   end;
-  if Pos('u', p_str) > 0 then
+  if Pos('u', mode_str) > 0 then
   begin
     btnEditUsrSig.Enabled := TRUE;
   end
@@ -1915,12 +1980,12 @@ var
 begin
   result := '';
   int_tmp := 0;
-  GetIntegerParameter(line, 'fuse_size', int_tmp);
+  FormParaEditor.GetIntegerParameter(line, 'fuse_size', int_tmp);
   if int_tmp > 0 then
   begin
     result := result + 'f';
   end;
-  GetIntegerParameter(line, 'usrsig_size', int_tmp);
+  FormParaEditor.GetIntegerParameter(line, 'usrsig_size', int_tmp);
   if int_tmp > 0 then
   begin
     result := result + 'u';
@@ -1934,7 +1999,7 @@ begin
   cbboxTarget.Clear;
   cbboxTarget.Items.Add('at89s5x');
   ParaString.Clear;
-  ParaString.Add('fu');
+  VSProg_AddParaString('fu', 0, 0, 0, 0);
 
   // call 'vsprog -Sat89s5x' to extract supported at89s5x targets
   if not PrepareToRunCLI() then
@@ -1971,24 +2036,9 @@ end;
 
 { MSP430 implementations }
 function TFormMain.MSP430_Init_Para(line: string): string;
-var
-  int_tmp: integer;
 begin
   result := '';
-  int_tmp := 0;
-  GetIntegerParameter(line, 'prog_mode', int_tmp);
-  if (int_tmp and $01) = $01 then
-  begin
-    result := result + 'j';
-  end;
-  if (int_tmp and $02) = $02 then
-  begin
-    result := result + 's';
-  end;
-  if (int_tmp and $04) = $04 then
-  begin
-    result := result + 'b';
-  end;
+  FormParaEditor.GetStringParameter(line, 'prog_mode', result);
 end;
 
 function TFormMain.MSP430_Init(): boolean;
@@ -1998,7 +2048,7 @@ begin
   cbboxTarget.Clear;
   cbboxTarget.Items.Add('msp430');
   ParaString.Clear;
-  ParaString.Add('jsb');
+  VSProg_AddParaString('jsb', 0, 0, 0, 0);
 
   // call 'vsprog -Smsp430' to extract supported at89s5x targets
   if not PrepareToRunCLI() then
@@ -2032,18 +2082,21 @@ end;
 procedure TFormMain.MSP430_Update_Chip(p_str: string);
 var
   str_tmp: string;
+  mode_str: string;
 begin
+  mode_str := '';
+  FormParaEditor.GetStringParameter(p_str, 'para', mode_str);
   str_tmp := cbboxMode.Text;
   cbboxMode.Clear;
-  if Pos('j', p_str) > 0 then
+  if Pos('j', mode_str) > 0 then
   begin
     cbboxMode.Items.Add('j:JTAG');
   end;
-  if Pos('s', p_str) > 0 then
+  if Pos('s', mode_str) > 0 then
   begin
     cbboxMode.Items.Add('s:SBW');
   end;
-  if Pos('b', p_str) > 0 then
+  if Pos('b', mode_str) > 0 then
   begin
     cbboxMode.Items.Add('b:BSL');
   end;
@@ -2293,9 +2346,9 @@ begin
   cbboxTarget.Clear;
   cbboxTarget.Items.Add('avr8');
   ParaString.Clear;
-  ParaString.Add('ijps');
+  VSProg_AddParaString('ijps', 0, 0, 0, 0);
 
-  // call 'vsprog -Sat89s5x' to extract supported at89s5x targets
+  // call 'vsprog -Savr8' to extract supported avr8 targets
   if not PrepareToRunCLI() then
   begin
     result := FALSE;
@@ -2320,10 +2373,8 @@ begin
 
   // flash, eeprom, fuse, lock, Autodetect, Frequency
 //  VSProg_CommonInit('feulAF');
-  VSProg_CommonInit('fAF');
+  VSProg_CommonInit('fulAF');
 
-  lbledtFuse.Text := '0xFFFFFF';
-  lbledtLock.Text := '0xFF';
   chkboxEE.Checked := FALSE;
   chkboxLock.Checked := FALSE;
   chkboxFuse.Checked := FALSE;
@@ -2331,49 +2382,33 @@ begin
 end;
 
 function TFormMain.AVR8_Init_Para(line: string): string;
-var
-  int_tmp: integer;
 begin
   result := '';
-  int_tmp := 0;
-  GetIntegerParameter(line, 'prog_mode', int_tmp);
-  if (int_tmp and $01) = $01 then
-  begin
-    result := result + 'i';
-  end;
-  if (int_tmp and $02) = $02 then
-  begin
-    result := result + 'j';
-  end;
-  if (int_tmp and $04) = $04 then
-  begin
-    result := result + 'p';
-  end;
-  if (int_tmp and $08) = $08 then
-  begin
-    result := result + 's';
-  end;
+  FormParaEditor.GetStringParameter(line, 'prog_mode', result);
 end;
 
 procedure TFormMain.AVR8_Update_Chip(p_str: string);
 var
-  str_tmp: string;
+  str_tmp, mode_str: string;
+  fl_num, fl_default: integer;
 begin
+  mode_str := '';
+  FormParaEditor.GetStringParameter(p_str, 'para', mode_str);
   str_tmp := cbboxMode.Text;
   cbboxMode.Clear;
-  if Pos('i', p_str) > 0 then
+  if Pos('i', mode_str) > 0 then
   begin
     cbboxMode.Items.Add('i:ISP');
   end;
-  if Pos('j', p_str) > 0 then
+  if Pos('j', mode_str) > 0 then
   begin
     cbboxMode.Items.Add('j:JTAG');
   end;
-  if Pos('p', p_str) > 0 then
+  if Pos('p', mode_str) > 0 then
   begin
     cbboxMode.Items.Add('p:HVPP');
   end;
-  if Pos('s', p_str) > 0 then
+  if Pos('s', mode_str) > 0 then
   begin
     cbboxMode.Items.Add('s:HVSP');
   end;
@@ -2386,6 +2421,38 @@ begin
   begin
     cbboxMode.ItemIndex := 0;
     AVR8_Update_Mode(cbboxMode.Text);
+  end;
+
+  fl_num := 0;
+  fl_default := 0;
+  FormParaEditor.GetIntegerParameter(p_str, 'fuse_bytelen', fl_num);
+  VSProg_CommonUpdateFuse(0, fl_num);
+  if fl_num > 0 then
+  begin
+    FormParaEditor.GetIntegerParameter(p_str, 'fuse_default', fl_default);
+    VSProg_CommonUpdateFuse(fl_default, fl_num);
+    lbledtFuse.Enabled := True;
+    btnEditFuse.Enabled := True;
+  end
+  else
+  begin
+    lbledtFuse.Enabled := False;
+    btnEditFuse.Enabled := False;
+  end;
+
+  lbledtLock.Text := '';
+  FormParaEditor.GetIntegerParameter(p_str, 'lock_bytelen', fl_num);
+  if fl_num > 0 then
+  begin
+    FormParaEditor.GetIntegerParameter(p_str, 'lock_default', fl_default);
+    lbledtLock.Text := '0x' + IntToHex(fl_default, fl_num);
+    lbledtLock.Enabled := True;
+    btnEditLock.Enabled := True;
+  end
+  else
+  begin
+    lbledtLock.Enabled := False;
+    btnEditLock.Enabled := False;
   end;
 end;
 
@@ -2492,7 +2559,7 @@ begin
   cbboxTarget.Clear;
   cbboxTarget.Items.Add('pic8');
   ParaString.Clear;
-  ParaString.Add('');
+  VSProg_AddParaString('', 0, 0, 0, 0);
 
   // call 'vsprog -Spic8' to extract supported pic8 targets
   if not PrepareToRunCLI() then
@@ -2570,15 +2637,15 @@ var
 begin
   str_tmp := '';
 
-  GetIntegerParameter(p_str, 'baudrate', ComModeInit.baudrate);
-  GetIntegerParameter(p_str, 'datalength', ComModeInit.datalength);
-  GetStringParameter(p_str, 'paritybit', str_tmp);
+  FormParaEditor.GetIntegerParameter(p_str, 'baudrate', ComModeInit.baudrate);
+  FormParaEditor.GetIntegerParameter(p_str, 'datalength', ComModeInit.datalength);
+  FormParaEditor.GetStringParameter(p_str, 'paritybit', str_tmp);
   ComModeInit.paritybit := str_tmp[1];
-  GetStringParameter(p_str, 'stopbit', str_tmp);
+  FormParaEditor.GetStringParameter(p_str, 'stopbit', str_tmp);
   ComModeInit.stopbit := str_tmp[1];
-  GetStringParameter(p_str, 'handshake', str_tmp);
+  FormParaEditor.GetStringParameter(p_str, 'handshake', str_tmp);
   ComModeInit.handshake := str_tmp[1];
-  GetStringParameter(p_str, 'auxpin', str_tmp);
+  FormParaEditor.GetStringParameter(p_str, 'auxpin', str_tmp);
   ComModeInit.auxpin := str_tmp[1];
   FormComSetup.ComInitPara(ComModeInit);
 end;
@@ -2658,7 +2725,7 @@ begin
   cbboxTarget.Clear;
   cbboxTarget.Items.Add('lpc900');
   ParaString.Clear;
-  ParaString.Add('');
+  VSProg_AddParaString('', 0, 0, 0, 0);
 
   // call 'vsprog -Scomisp' to extract supported comisp targets
   if not PrepareToRunCLI() then

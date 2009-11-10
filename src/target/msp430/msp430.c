@@ -70,9 +70,9 @@ void msp430_support(void)
 	printf("Support list of %s:\n", CUR_TARGET_STRING);
 	for (i = 0; i < cur_chips_num; i++)
 	{
-		printf("%s: id = 0x%04x, prog_mode = 0x%02x\n", 
+		printf("%s: id = 0x%04x, prog_mode = %s\n", 
 			   cur_chips_param[i].chip_name, cur_chips_param[i].chip_id,
-			   cur_chips_param[i].program_mode | MSP430_MODE_BSL);
+			   cur_chips_param[i].program_mode_str);
 	}
 	printf("\n");
 }

@@ -8,7 +8,7 @@ uses
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
   Forms
-  { you can add units after this }, main, cli_caller{, hexeditor, checkeditor},
+  { you can add units after this }, main, cli_caller{, hexeditor}, parameditor,
   LResources, com_setup;
 
 {$IFDEF WINDOWS}{$R vsgui.rc}{$ENDIF}
@@ -18,6 +18,7 @@ begin
   Application.Initialize;
   Application.CreateForm(TFormMain, FormMain);
   Application.CreateForm(TFormComSetup, FormComSetup);
+  Application.CreateForm(TFormParaEditor, FormParaEditor);
   Application.Run;
 end.
 

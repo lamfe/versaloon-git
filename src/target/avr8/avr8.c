@@ -85,10 +85,16 @@ static void avr8_support(void)
 	printf("Support list of %s:\n", CUR_TARGET_STRING);
 	for (i = 0; i < cur_chips_num; i++)
 	{
-		printf("%s: signature = 0x%06x, prog_mode = 0x%02x\n", 
+		printf("%s: signature = 0x%06x, prog_mode = %s, \
+fuse_default = 0x%06X, fuse_bytelen = %d, \
+lock_default = 0x%02X, lock_bytelen = %d\n", 
 				cur_chips_param[i].chip_name, 
 				cur_chips_param[i].chip_id, 
-				cur_chips_param[i].program_mode);
+				cur_chips_param[i].program_mode_str, 
+				cur_chips_param[i].fuse_default_value, 
+				cur_chips_param[i].fuse_size, 
+				cur_chips_param[i].lock_default_value, 
+				cur_chips_param[i].lock_size);
 	}
 	printf("\n");
 }
