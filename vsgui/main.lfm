@@ -491,6 +491,7 @@ object FormMain: TFormMain
             EditLabel.ParentColor = False
             LabelPosition = lpLeft
             TabOrder = 6
+            OnKeyPress = lbledtFuseKeyPress
           end
           object lbledtLock: TLabeledEdit
             Left = 224
@@ -510,6 +511,7 @@ object FormMain: TFormMain
             EditLabel.ParentColor = False
             LabelPosition = lpLeft
             TabOrder = 7
+            OnKeyPress = lbledtLockKeyPress
           end
         end
         object gbOperation: TGroupBox
