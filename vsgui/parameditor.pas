@@ -334,6 +334,7 @@ begin
       ParaCheckArr[i].Height := ITEM_HEIGHT;
       ParaCheckArr[i].OnChange := @SettingChange;
       ParaCheckArr[i].Tag := Param_Record.settings[i].mask;
+      ParaCheckArr[i].Enabled := Param_Record.settings[i].enabled;
       ParaCheckArr[i].Caption := '';
       ParaCheckArr[i].Checked := FALSE;
     end
