@@ -1,7 +1,7 @@
 object FormParaEditor: TFormParaEditor
-  Left = 515
+  Left = 590
   Height = 193
-  Top = 209
+  Top = 249
   Width = 323
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle

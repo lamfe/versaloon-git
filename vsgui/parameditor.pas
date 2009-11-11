@@ -16,11 +16,15 @@ type
   end;
   TParam_Choice = record
     value: integer;
-    msg: string;
+    text: string;
   end;
   TParam_Setting = record
     name: string;
+    info: string;
     mask: integer;
+    use_checkbox: boolean;
+    checked: integer;
+    unchecked: integer;
     enabled: boolean;
     choices: array of TParam_Choice;
   end;
@@ -37,7 +41,7 @@ type
     btnCancel: TButton;
     pnlSettings: TPanel;
     pnlButton: TPanel;
-    procedure ComboBoxChange(Sender: TObject);
+    procedure SettingChange(Sender: TObject);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormShow(Sender: TObject);
   private
@@ -45,8 +49,10 @@ type
     Param_Record: TParam_Record;
     ParaEdtArr: array of TEdit;
     ParaComboArr: array of TComboBox;
+    ParaCheckArr: array of TCheckBox;
     Param_name: string;
     Init_Value, Param_Value, Value_ByteLen: integer;
+    SettingParameter: boolean;
   public
     { public declarations }
     function WipeTailEnter(var line: string): string;
@@ -88,6 +94,7 @@ begin
   begin
     SetLength(line, Length(line) - 1);
   end;
+  result := line;
 end;
 
 function TFormParaEditor.GetStringParameter(line, para_name: string; var value: string): boolean;
@@ -118,14 +125,35 @@ begin
   end;
 end;
 
-procedure TFormParaEditor.ComboBoxChange(Sender: TObject);
+procedure TFormParaEditor.SettingChange(Sender: TObject);
 var
   i: integer;
+  setting_mask: integer;
 begin
+  if SettingParameter then
+  begin
+    exit;
+  end;
+
   SettingToValue();
+
+  if Sender is TComboBox then
+  begin
+    setting_mask := (Sender as TComboBox).Tag;
+  end
+  else if Sender is TCheckBox then
+  begin
+    setting_mask := (Sender as TCheckBox).Tag;
+  end
+  else
+  begin
+    // this component is not supported as a setting component
+    exit;
+  end;
+
   for i := 0 to Length(Param_Record.warnings) - 1 do
   begin
-    if (Param_Value and Param_Record.warnings[i].mask and (Sender as TComboBox).Tag) = Param_Record.warnings[i].value then
+    if (Param_Value and Param_Record.warnings[i].mask and setting_mask) = Param_Record.warnings[i].value then
     begin
       MessageDlg(Param_Record.warnings[i].msg, mtWarning, [mbOK], 0);
     end;
@@ -143,15 +171,29 @@ begin
 
   for i := 0 to Length(ParaEdtArr) - 1 do
   begin
-    ParaEdtArr[i].Destroy;
+    if Assigned(ParaEdtArr[i]) then
+    begin
+      ParaEdtArr[i].Destroy;
+    end;
   end;
   for i := 0 to Length(ParaComboArr) - 1 do
   begin
-    ParaComboArr[i].Destroy;
+    if Assigned(ParaComboArr[i]) then
+    begin
+      ParaComboArr[i].Destroy;
+    end;
+  end;
+  for i := 0 to Length(ParaCheckArr) - 1 do
+  begin
+    if Assigned(ParaCheckArr[i]) then
+    begin
+      ParaCheckArr[i].Destroy;
+    end;
   end;
 
   SetLength(ParaEdtArr, 0);
   SetLength(ParaComboArr, 0);
+  SetLength(ParaCheckArr, 0);
 end;
 
 procedure TFormParaEditor.UpdateTitle();
@@ -180,7 +222,21 @@ begin
   for i := 0 to Length(Param_Record.settings) - 1 do
   begin
     Param_Value := Param_Value and (not Param_Record.settings[i].mask);
-    Param_Value := Param_Value or Param_record.settings[i].choices[ParaComboArr[i].ItemIndex].value;
+    if Param_Record.settings[i].use_checkbox then
+    begin
+      if ParaCheckArr[i].Checked then
+      begin
+        Param_Value := Param_Value or Param_Record.settings[i].checked;
+      end
+      else
+      begin
+        Param_Value := Param_Value or Param_Record.settings[i].unchecked;
+      end;
+    end
+    else
+    begin
+      Param_Value := Param_Value or Param_Record.settings[i].choices[ParaComboArr[i].ItemIndex].value;
+    end;
   end;
 end;
 
@@ -190,26 +246,47 @@ var
   value: integer;
   found: boolean;
 begin
+  SettingParameter := TRUE;
   for i := 0 to Length(Param_Record.settings) - 1 do
   begin
     value := Param_Value and Param_Record.settings[i].mask;
-    found := FALSE;
-    for j := 0 to Length(Param_Record.settings[i].choices) - 1 do
+    if Param_Record.settings[i].use_checkbox then
     begin
-      if value = Param_Record.settings[i].choices[j].value then
+      if value = Param_Record.settings[i].checked then
       begin
-        ParaEdtArr[i].Color := clWindow;
-        ParaComboArr[i].ItemIndex := j;
-        found := TRUE;
-        break;
+        ParaCheckArr[i].Checked := TRUE;
+      end
+      else if value = Param_Record.settings[i].unchecked then
+      begin
+        ParaCheckArr[i].Checked := FALSE;
+      end
+      else
+      begin
+        // unrecognized value
+        ParaEdtArr[i].Color := clRed;
+      end;
+    end
+    else
+    begin
+      found := FALSE;
+      for j := 0 to Length(Param_Record.settings[i].choices) - 1 do
+      begin
+        if value = Param_Record.settings[i].choices[j].value then
+        begin
+          ParaEdtArr[i].Color := clWindow;
+          ParaComboArr[i].ItemIndex := j;
+          found := TRUE;
+          break;
+        end;
+      end;
+      if not found then
+      begin
+        // there is an error
+        ParaEdtArr[i].Color := clRed;
       end;
     end;
-    if not found then
-    begin
-      // there is an error
-      ParaEdtArr[i].Color := clRed;
-    end;
   end;
+  SettingParameter := FALSE;
 end;
 
 procedure TFormParaEditor.FormShow(Sender: TObject);
@@ -221,6 +298,7 @@ begin
   settings_num := Length(Param_Record.settings);
   SetLength(ParaEdtArr, settings_num);
   SetLength(ParaComboArr, settings_num);
+  SetLength(ParaCheckArr, settings_num);
 
   i := TOP_MARGIN + BOTTOM_MARGIN + settings_num * (Y_MARGIN + ITEM_HEIGHT);
   ClientHeight := i + pnlButton.Height;
@@ -235,6 +313,7 @@ begin
   btnOK.Left := (pnlButton.Width div 2 - btnOK.Width) div 2;
   btnCancel.Left := pnlButton.Width div 2 + (pnlButton.Width div 2 - btnOK.Width) div 2;
 
+  SettingParameter := FALSE;
   for i := 0 to settings_num - 1 do
   begin
     ParaEdtArr[i] := TEdit.Create(Self);
@@ -246,21 +325,36 @@ begin
     ParaEdtArr[i].Text := Param_Record.settings[i].name;
     ParaEdtArr[i].Color := clWindow;
     ParaEdtArr[i].ReadOnly := TRUE;
-    ParaComboArr[i] := TComboBox.Create(Self);
-    ParaComboArr[i].Parent := pnlSettings;
-    ParaComboArr[i].Top := TOP_MARGIN + i * (Y_MARGIN + ITEM_HEIGHT);
-    ParaComboArr[i].Left := LEFT_MARGIN + EDT_WIDTH + X_MARGIN;
-    ParaComboArr[i].Width := COMBO_WIDTH;
-    ParaComboArr[i].Height := ITEM_HEIGHT;
-    ParaComboArr[i].OnChange := @ComboBoxChange;
-    ParaComboArr[i].Style := csDropDownList;
-    ParaComboArr[i].Tag := Param_Record.settings[i].mask;
-    ParaComboArr[i].Enabled := Param_Record.settings[i].enabled;
-    ParaComboArr[i].Clear;
-    choices_num := Length(Param_Record.settings[i].choices);
-    for j := 0 to choices_num - 1 do
+    if Param_Record.settings[i].use_checkbox then
     begin
-      ParaComboArr[i].Items.Add(Param_Record.settings[i].choices[j].msg);
+      ParaCheckArr[i] := TCheckBox.Create(Self);
+      ParaCheckArr[i].Parent := pnlSettings;
+      ParaCheckArr[i].Top := TOP_MARGIN + i * (Y_MARGIN + ITEM_HEIGHT);
+      ParaCheckArr[i].Left := LEFT_MARGIN + EDT_WIDTH + X_MARGIN;
+      ParaCheckArr[i].Height := ITEM_HEIGHT;
+      ParaCheckArr[i].OnChange := @SettingChange;
+      ParaCheckArr[i].Tag := Param_Record.settings[i].mask;
+      ParaCheckArr[i].Caption := '';
+      ParaCheckArr[i].Checked := FALSE;
+    end
+    else
+    begin
+      ParaComboArr[i] := TComboBox.Create(Self);
+      ParaComboArr[i].Parent := pnlSettings;
+      ParaComboArr[i].Top := TOP_MARGIN + i * (Y_MARGIN + ITEM_HEIGHT);
+      ParaComboArr[i].Left := LEFT_MARGIN + EDT_WIDTH + X_MARGIN;
+      ParaComboArr[i].Width := COMBO_WIDTH;
+      ParaComboArr[i].Height := ITEM_HEIGHT;
+      ParaComboArr[i].OnChange := @SettingChange;
+      ParaComboArr[i].Style := csDropDownList;
+      ParaComboArr[i].Tag := Param_Record.settings[i].mask;
+      ParaComboArr[i].Enabled := Param_Record.settings[i].enabled;
+      ParaComboArr[i].Clear;
+      choices_num := Length(Param_Record.settings[i].choices);
+      for j := 0 to choices_num - 1 do
+      begin
+        ParaComboArr[i].Items.Add(Param_Record.settings[i].choices[j].text);
+      end;
     end;
   end;
   ValueToSetting();
@@ -322,6 +416,15 @@ begin
     SetLength(Param_Record.settings[i - 1].choices, 0);
     GetStringParameter(line, 'name', Param_Record.settings[i - 1].name);
     GetIntegerParameter(line, 'mask', Param_Record.settings[i - 1].mask);
+    GetStringParameter(line, 'info', Param_Record.settings[i - 1].info);
+    if GetIntegerParameter(line, 'checked', Param_Record.settings[i - 1].checked) then
+    begin
+      Param_Record.settings[i - 1].use_checkbox := TRUE;
+    end;
+    if GetIntegerParameter(line, 'unchecked', Param_Record.settings[i - 1].unchecked) then
+    begin
+      Param_Record.settings[i - 1].use_checkbox := TRUE;
+    end;
     dis := 0;
     GetIntegerParameter(line, 'disabled', dis);
     if dis > 0 then
@@ -341,7 +444,7 @@ begin
     j := Length(Param_Record.settings[i - 1].choices) + 1;
     SetLength(Param_Record.settings[i - 1].choices, j);
     GetIntegerParameter(line, 'value', Param_Record.settings[i - 1].choices[j - 1].value);
-    GetStringParameter(line, 'msg', Param_Record.settings[i - 1].choices[j - 1].msg);
+    GetStringParameter(line, 'text', Param_Record.settings[i - 1].choices[j - 1].text);
   end;
 end;
 

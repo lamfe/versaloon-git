@@ -169,15 +169,19 @@ typedef struct
 typedef struct
 {
 	uint32_t value;
-	char *msg;
+	char *text;
 }chip_fl_choice_t;
 
 typedef struct
 {
 	char *name;
+	char *info;
 	uint32_t mask;
-	uint16_t num_of_choices;
 	char *ban;
+	uint8_t use_checkbox;
+	uint32_t checked;
+	uint32_t unchecked;
+	uint16_t num_of_choices;
 	chip_fl_choice_t *choices;
 }chip_fl_setting_t;
 
