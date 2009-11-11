@@ -1,7 +1,7 @@
 object FormMain: TFormMain
-  Left = 660
+  Left = 663
   Height = 527
-  Top = 188
+  Top = 259
   Width = 841
   HorzScrollBar.Page = 840
   HorzScrollBar.Range = 400
@@ -400,7 +400,7 @@ object FormMain: TFormMain
           end
         end
         object gbInputFile: TGroupBox
-          Left = 12
+          Left = 11
           Height = 128
           Top = 69
           Width = 369
@@ -474,16 +474,16 @@ object FormMain: TFormMain
             TabOrder = 5
           end
           object lbledtFuse: TLabeledEdit
-            Left = 58
+            Left = 45
             Height = 23
             Top = 40
-            Width = 112
+            Width = 80
             EditLabel.AnchorSideLeft.Control = lbledtFuse
             EditLabel.AnchorSideTop.Control = lbledtFuse
             EditLabel.AnchorSideTop.Side = asrCenter
             EditLabel.AnchorSideRight.Control = lbledtFuse
             EditLabel.AnchorSideBottom.Control = lbledtFuse
-            EditLabel.Left = 21
+            EditLabel.Left = 8
             EditLabel.Height = 17
             EditLabel.Top = 43
             EditLabel.Width = 34
@@ -494,16 +494,16 @@ object FormMain: TFormMain
             OnKeyPress = lbledtFuseKeyPress
           end
           object lbledtLock: TLabeledEdit
-            Left = 224
+            Left = 173
             Height = 23
             Top = 40
-            Width = 112
+            Width = 80
             EditLabel.AnchorSideLeft.Control = lbledtLock
             EditLabel.AnchorSideTop.Control = lbledtLock
             EditLabel.AnchorSideTop.Side = asrCenter
             EditLabel.AnchorSideRight.Control = lbledtLock
             EditLabel.AnchorSideBottom.Control = lbledtLock
-            EditLabel.Left = 188
+            EditLabel.Left = 137
             EditLabel.Height = 17
             EditLabel.Top = 43
             EditLabel.Width = 33
@@ -512,6 +512,14 @@ object FormMain: TFormMain
             LabelPosition = lpLeft
             TabOrder = 7
             OnKeyPress = lbledtLockKeyPress
+          end
+          object chkboxNoconnect: TCheckBox
+            Left = 269
+            Height = 20
+            Top = 40
+            Width = 82
+            Caption = 'NoConnect'
+            TabOrder = 8
           end
         end
         object gbOperation: TGroupBox

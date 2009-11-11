@@ -27,6 +27,7 @@ type
     cbboxOpenOCDInterface: TComboBox;
     cbboxOpenOCDScript: TComboBox;
     cbboxOpenOCDTarget: TComboBox;
+    chkboxNoconnect: TCheckBox;
     chkboxUsrSig: TCheckBox;
     chkboxMP: TCheckBox;
     chkboxFuse: TCheckBox;
@@ -743,18 +744,21 @@ begin
   end;
   caller.Take;
 
-  // call 'vsprog -oru' to read fuse settings from target
-  if not PrepareToRunCLI() then
+  if not chkboxNoconnect.Checked then
   begin
-    caller.UnTake;
-    exit;
-  end;
-  caller.AddParameter(targetdefine);
-  caller.AddParameter('oru');
-  caller.Run(@VSProg_CommonParseFuseCallback, FALSE, TRUE);
-  if bFatalError then
-  begin
-    exit;
+    // call 'vsprog -oru' to read fuse settings from target
+    if not PrepareToRunCLI() then
+    begin
+      caller.UnTake;
+      exit;
+    end;
+    caller.AddParameter(targetdefine);
+    caller.AddParameter('oru');
+    caller.Run(@VSProg_CommonParseFuseCallback, FALSE, TRUE);
+    if bFatalError then
+    begin
+      exit;
+    end;
   end;
 
   // call 'vsprog -Ppara' to extract para settings
@@ -802,18 +806,21 @@ begin
   end;
   caller.Take;
 
-  // call 'vsprog -orl' to read lock settings from target
-  if not PrepareToRunCLI() then
+  if not chkboxNoconnect.Checked then
   begin
-    caller.UnTake;
-    exit;
-  end;
-  caller.AddParameter(targetdefine);
-  caller.AddParameter('orl');
-  caller.Run(@VSProg_CommonParseLockCallback, FALSE, TRUE);
-  if bFatalError then
-  begin
-    exit;
+    // call 'vsprog -orl' to read lock settings from target
+    if not PrepareToRunCLI() then
+    begin
+      caller.UnTake;
+      exit;
+    end;
+    caller.AddParameter(targetdefine);
+    caller.AddParameter('orl');
+    caller.Run(@VSProg_CommonParseLockCallback, FALSE, TRUE);
+    if bFatalError then
+    begin
+      exit;
+    end;
   end;
 
   // call 'vsprog -Ppara' to extract para settings
