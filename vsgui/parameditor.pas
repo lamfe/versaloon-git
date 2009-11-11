@@ -362,6 +362,7 @@ begin
     end;
   end;
   ValueToSetting();
+  UpdateShowing;
 end;
 
 function TFormParaEditor.GetIntegerParameter(line, para_name: string; var value: integer): boolean;
