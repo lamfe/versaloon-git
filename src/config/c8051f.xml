@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<series name="c8051f" number="18">
+<series name="c8051f">
   <chip name="c8051f30x">
     <program_mode>c</program_mode>
     <chip_id>0x00000004</chip_id>

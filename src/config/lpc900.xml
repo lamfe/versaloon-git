@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<series name="lpc900" number="36">
+<series name="lpc900">
   <chip name="p89lpc901">
     <chip_id>0x0015DD0D</chip_id>
     <app_page_size>16</app_page_size>

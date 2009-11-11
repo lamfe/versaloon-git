@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<series name="msp430" number="19">
+<series name="msp430">
   <chip name="msp430f112">
     <chip_id>0xF112</chip_id>
     <program_mode>jb</program_mode>
