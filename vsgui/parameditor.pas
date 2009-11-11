@@ -153,9 +153,12 @@ begin
 
   for i := 0 to Length(Param_Record.warnings) - 1 do
   begin
-    if (Param_Value and Param_Record.warnings[i].mask and setting_mask) = Param_Record.warnings[i].value then
+    if (Param_Record.warnings[i].mask and setting_mask) <> 0 then
     begin
-      MessageDlg(Param_Record.warnings[i].msg, mtWarning, [mbOK], 0);
+      if (Param_Value and Param_Record.warnings[i].mask) = Param_Record.warnings[i].value then
+      begin
+        MessageDlg(Param_Record.warnings[i].msg, mtWarning, [mbOK], 0);
+      end;
     end;
   end;
 
