@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<series name="psoc1" number="19">
+<series name="psoc1">
   <chip name="cy8c21123">
     <chip_id>0x1700</chip_id>
     <program_mode>p</program_mode>
