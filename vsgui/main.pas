@@ -136,6 +136,7 @@ type
     function CheckFatalError(line: string): boolean;
     function PrepareToRunCLI(): boolean;
     function GetTargetDefineParameters(): string;
+    procedure PrepareBaseParameters();
     procedure PrepareCommonParameters();
     procedure tDelayTimer(Sender: TObject);
     procedure tiMainClick(Sender: TObject);
@@ -752,7 +753,7 @@ begin
       caller.UnTake;
       exit;
     end;
-    caller.AddParameter(targetdefine);
+    PrepareBaseParameters();
     caller.AddParameter('oru');
     caller.Run(@VSProg_CommonParseFuseCallback, FALSE, TRUE);
     if bFatalError then
@@ -766,7 +767,7 @@ begin
   begin
     exit;
   end;
-  caller.AddParameter(targetdefine);
+  PrepareBaseParameters();
   caller.AddParameter('Pfuse');
   FormParaEditor.FreeRecord();
   caller.Run(@VSProg_CommonParseParaCallback, FALSE, TRUE);
@@ -814,7 +815,7 @@ begin
       caller.UnTake;
       exit;
     end;
-    caller.AddParameter(targetdefine);
+    PrepareBaseParameters();
     caller.AddParameter('orl');
     caller.Run(@VSProg_CommonParseLockCallback, FALSE, TRUE);
     if bFatalError then
@@ -829,7 +830,7 @@ begin
     caller.UnTake;
     exit;
   end;
-  caller.AddParameter(targetdefine);
+  PrepareBaseParameters();
   caller.AddParameter('Plock');
   FormParaEditor.FreeRecord();
   caller.Run(@VSProg_CommonParseParaCallback, FALSE, TRUE);
@@ -1175,10 +1176,8 @@ begin
   end;
 end;
 
-procedure TFormMain.PrepareCommonParameters();
+procedure TFormMain.PrepareBaseParameters();
 begin
-  // enable GUI mode
-  caller.AddParameter('G');
   caller.AddParameter(GetTargetDefineParameters());
 
   // COM Mode
@@ -1199,7 +1198,7 @@ begin
   begin
     caller.AddParameter('i"' + fnEdit.Text + '"');
   end;
-  
+
   // extra parameters
   if lbledtExtraPara.Text <> '' then
   begin
@@ -1211,6 +1210,22 @@ begin
   begin
     caller.AddParameter('m' + cbboxMode.Text[1]);
   end;
+
+  // Frequency
+  if lbledtFreq.Enabled and (lbledtFreq.Text <> '') then
+  begin
+    if lbledtFreq.EditLabel.Caption <> EXECUTE_ADDR_STR then
+    begin
+      caller.AddParameter('F' + lbledtFreq.Text);
+    end;
+  end;
+end;
+
+procedure TFormMain.PrepareCommonParameters();
+begin
+  // enable GUI mode
+  caller.AddParameter('G');
+  PrepareBaseParameters();
 
   // Fuse
   if lbledtFuse.Enabled and chkboxFuse.Enabled and chkboxFuse.Checked and (lbledtFuse.Text <> '') then
@@ -1224,16 +1239,12 @@ begin
     caller.AddParameter('l' + lbledtLock.Text);
   end;
 
-  // Frequency
+  // Execute
   if lbledtFreq.Enabled and (lbledtFreq.Text <> '') then
   begin
     if lbledtFreq.EditLabel.Caption = EXECUTE_ADDR_STR then
     begin
       caller.AddParameter('x' + lbledtFreq.Text);
-    end
-    else
-    begin
-      caller.AddParameter('F' + lbledtFreq.Text);
     end;
   end;
 
