@@ -10,7 +10,7 @@ object FormComSetup: TFormComSetup
   ClientWidth = 203
   OnShow = FormShow
   Position = poMainFormCenter
-  LCLVersion = '0.9.27'
+  LCLVersion = '0.9.26.2'
   object lblBaudrate: TLabel
     Left = 16
     Height = 13
@@ -205,6 +205,7 @@ object FormComSetup: TFormComSetup
     Top = 184
     Width = 75
     Caption = 'OK'
+    Default = True
     OnClick = btnOKClick
     TabOrder = 7
   end
