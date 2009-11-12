@@ -23,6 +23,9 @@ type
     info: string;
     mask: integer;
     use_checkbox: boolean;
+    use_edit: boolean;
+    hex: integer;
+    shift: integer;
     checked: integer;
     unchecked: integer;
     enabled: boolean;
@@ -47,9 +50,10 @@ type
   private
     { private declarations }
     Param_Record: TParam_Record;
-    ParaEdtArr: array of TEdit;
+    ParaEdtNameArr: array of TEdit;
     ParaComboArr: array of TComboBox;
     ParaCheckArr: array of TCheckBox;
+    ParaEdtValueArr: array of TEdit;
     Param_name: string;
     Init_Value, Param_Value, Value_ByteLen: integer;
     EnableWarning: boolean;
@@ -148,6 +152,10 @@ begin
     begin
       setting_mask := (Sender as TCheckBox).Tag;
     end
+    else if Sender is TEdit then
+    begin
+      setting_mask := (Sender as TEdit).Tag;
+    end
     else
     begin
       // this component is not supported as a setting component
@@ -176,11 +184,11 @@ var
 begin
   FreeRecord();
 
-  for i := 0 to Length(ParaEdtArr) - 1 do
+  for i := 0 to Length(ParaEdtNameArr) - 1 do
   begin
-    if Assigned(ParaEdtArr[i]) then
+    if Assigned(ParaEdtNameArr[i]) then
     begin
-      ParaEdtArr[i].Destroy;
+      ParaEdtNameArr[i].Destroy;
     end;
   end;
   for i := 0 to Length(ParaComboArr) - 1 do
@@ -197,10 +205,18 @@ begin
       ParaCheckArr[i].Destroy;
     end;
   end;
+  for i := 0 to Length(ParaEdtValueArr) - 1 do
+  begin
+    if Assigned(ParaEdtValueArr[i]) then
+    begin
+      ParaEdtValueArr[i].Destroy;
+    end;
+  end;
 
-  SetLength(ParaEdtArr, 0);
+  SetLength(ParaEdtNameArr, 0);
   SetLength(ParaComboArr, 0);
   SetLength(ParaCheckArr, 0);
+  SetLength(ParaEdtValueArr, 0);
 end;
 
 procedure TFormParaEditor.UpdateTitle();
@@ -224,13 +240,18 @@ end;
 
 procedure TFormParaEditor.SettingToValue();
 var
-  i: integer;
+  i, value: integer;
 begin
   Param_Value := Init_Value;
   for i := 0 to Length(Param_Record.settings) - 1 do
   begin
     Param_Value := Param_Value and (not Param_Record.settings[i].mask);
-    if Param_Record.settings[i].use_checkbox then
+    if Param_Record.settings[i].use_edit then
+    begin
+      value := StrToInt(ParaEdtValueArr[i].Text) shl Param_Record.settings[i].shift;
+      Param_Value := Param_Value or value;
+    end
+    else if Param_Record.settings[i].use_checkbox then
     begin
       if ParaCheckArr[i].Checked then
       begin
@@ -258,7 +279,19 @@ begin
   for i := 0 to Length(Param_Record.settings) - 1 do
   begin
     value := Param_Value and Param_Record.settings[i].mask;
-    if Param_Record.settings[i].use_checkbox then
+    if Param_Record.settings[i].use_edit then
+    begin
+      value := value shr Param_Record.settings[i].shift;
+      if Param_Record.settings[i].hex > 0 then
+      begin
+        ParaEdtValueArr[i].Text := '0x' + IntToHex(value, 0);
+      end
+      else
+      begin
+        ParaEdtValueArr[i].Text := IntToStr(value);
+      end;
+    end
+    else if Param_Record.settings[i].use_checkbox then
     begin
       if value = Param_Record.settings[i].checked then
       begin
@@ -271,7 +304,7 @@ begin
       else
       begin
         // unrecognized value
-        ParaEdtArr[i].Color := clRed;
+        ParaEdtNameArr[i].Color := clRed;
       end;
     end
     else
@@ -281,7 +314,7 @@ begin
       begin
         if value = Param_Record.settings[i].choices[j].value then
         begin
-          ParaEdtArr[i].Color := clWindow;
+          ParaEdtNameArr[i].Color := clWindow;
           ParaComboArr[i].ItemIndex := j;
           found := TRUE;
           break;
@@ -290,7 +323,7 @@ begin
       if not found then
       begin
         // there is an error
-        ParaEdtArr[i].Color := clRed;
+        ParaEdtNameArr[i].Color := clRed;
       end;
     end;
   end;
@@ -304,9 +337,10 @@ var
 begin
   // create components according to Param_Record
   settings_num := Length(Param_Record.settings);
-  SetLength(ParaEdtArr, settings_num);
+  SetLength(ParaEdtNameArr, settings_num);
   SetLength(ParaComboArr, settings_num);
   SetLength(ParaCheckArr, settings_num);
+  SetLength(ParaEdtValueArr, settings_num);
 
   i := TOP_MARGIN + BOTTOM_MARGIN + settings_num * (Y_MARGIN + ITEM_HEIGHT);
   ClientHeight := i + pnlButton.Height;
@@ -324,16 +358,30 @@ begin
   SettingParameter := FALSE;
   for i := 0 to settings_num - 1 do
   begin
-    ParaEdtArr[i] := TEdit.Create(Self);
-    ParaEdtArr[i].Parent := pnlSettings;
-    ParaEdtArr[i].Top := TOP_MARGIN + i * (Y_MARGIN + ITEM_HEIGHT);
-    ParaEdtArr[i].Left := LEFT_MARGIN;
-    ParaEdtArr[i].Width := EDT_WIDTH;
-    ParaEdtArr[i].Height := ITEM_HEIGHT;
-    ParaEdtArr[i].Text := Param_Record.settings[i].name;
-    ParaEdtArr[i].Color := clWindow;
-    ParaEdtArr[i].ReadOnly := TRUE;
-    if Param_Record.settings[i].use_checkbox then
+    ParaEdtNameArr[i] := TEdit.Create(Self);
+    ParaEdtNameArr[i].Parent := pnlSettings;
+    ParaEdtNameArr[i].Top := TOP_MARGIN + i * (Y_MARGIN + ITEM_HEIGHT);
+    ParaEdtNameArr[i].Left := LEFT_MARGIN;
+    ParaEdtNameArr[i].Width := EDT_WIDTH;
+    ParaEdtNameArr[i].Height := ITEM_HEIGHT;
+    ParaEdtNameArr[i].Text := Param_Record.settings[i].name;
+    ParaEdtNameArr[i].Color := clWindow;
+    ParaEdtNameArr[i].Hint := Param_Record.settings[i].info;
+    ParaEdtNameArr[i].ShowHint := TRUE;
+    ParaEdtNameArr[i].ReadOnly := TRUE;
+    if Param_Record.settings[i].use_edit then
+    begin
+      ParaEdtValueArr[i] := TEdit.Create(Self);
+      ParaEdtValueArr[i].Parent := pnlSettings;
+      ParaEdtValueArr[i].Top := TOP_MARGIN + i * (Y_MARGIN + ITEM_HEIGHT);
+      ParaEdtValueArr[i].Width := COMBO_WIDTH;
+      ParaEdtValueArr[i].Left := LEFT_MARGIN + EDT_WIDTH + X_MARGIN;
+      ParaEdtValueArr[i].Height := ITEM_HEIGHT;
+      ParaEdtValueArr[i].OnExit := @SettingChange;
+      ParaEdtValueArr[i].Tag := Param_Record.settings[i].mask;
+      ParaEdtValueArr[i].Enabled := Param_Record.settings[i].enabled;
+    end
+    else if Param_Record.settings[i].use_checkbox then
     begin
       ParaCheckArr[i] := TCheckBox.Create(Self);
       ParaCheckArr[i].Parent := pnlSettings;
@@ -426,7 +474,10 @@ begin
     SetLength(Param_Record.settings[i - 1].choices, 0);
     GetStringParameter(line, 'name', Param_Record.settings[i - 1].name);
     GetIntegerParameter(line, 'mask', Param_Record.settings[i - 1].mask);
+    GetIntegerParameter(line, 'hex', Param_Record.settings[i - 1].hex);
+    GetIntegerParameter(line, 'shift', Param_Record.settings[i - 1].shift);
     GetStringParameter(line, 'info', Param_Record.settings[i - 1].info);
+    Param_Record.settings[i - 1].use_checkbox := FALSE;
     if GetIntegerParameter(line, 'checked', Param_Record.settings[i - 1].checked) then
     begin
       Param_Record.settings[i - 1].use_checkbox := TRUE;
@@ -447,6 +498,14 @@ begin
     end;
     num := 0;
     GetIntegerParameter(line, 'num_of_choices', num);
+    if not Param_Record.settings[i - 1].use_checkbox and (num = 0) then
+    begin
+      Param_Record.settings[i - 1].use_edit := TRUE;
+    end
+    else
+    begin
+      Param_Record.settings[i - 1].use_edit := FALSE;
+    end;
   end
   else if Pos('choice: ', line) = 1 then
   begin
