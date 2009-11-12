@@ -38,6 +38,7 @@ type
     lblStopbit: TLabel;
     lblHandshake: TLabel;
     procedure btnOKClick(Sender: TObject);
+    procedure FormKeyPress(Sender: TObject; var Key: char);
     procedure FormShow(Sender: TObject);
     procedure CheckComPort();
   private
@@ -74,6 +75,14 @@ implementation
 procedure TFormComSetup.btnOKClick(Sender: TObject);
 begin
   Close;
+end;
+
+procedure TFormComSetup.FormKeyPress(Sender: TObject; var Key: char);
+begin
+  if Key = Char(27) then
+  begin
+    close;
+  end;
 end;
 
 procedure TFormComSetup.CheckComPort();
