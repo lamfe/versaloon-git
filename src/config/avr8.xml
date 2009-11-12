@@ -1319,7 +1319,7 @@
     </lock>
     <calibration init="0xFFFF" bytesize="2">
       <setting name="8.0 MHz" mask="0x00FF" info="OSCCAL at 8.0 MHz" ban="ijps" hex="1" shift="0" />
-	  <setting name="4.0 MHz" mask="0xFF00" info="OSCCAL at 4.0 MHz" ban="ijps" hex="1" shift="0" />
+	  <setting name="4.0 MHz" mask="0xFF00" info="OSCCAL at 4.0 MHz" ban="ijps" hex="1" shift="8" />
     </calibration>
   </chip>
   <chip name="at90can32">
