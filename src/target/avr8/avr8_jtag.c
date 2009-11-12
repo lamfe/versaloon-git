@@ -130,7 +130,7 @@
 
 // Read Calibration Byte
 #define AVR_JTAG_PROG_EnterCaliByteRead()			AVR_JTAG_PROG_INS(0x2308)
-#define AVR_JTAG_PROG_ReadCaliByte()				(AVR_JTAG_PROG_INS(0x3600), AVR_JTAG_PROG_INS(0x3700))
+#define AVR_JTAG_PROG_ReadCaliByte(c)				(AVR_JTAG_PROG_INS(0x3600), AVR_JTAG_PROG_ReadDATA(0x3700, &(c)))
 
 // No Operation Command
 #define AVR_JTAG_PROG_LoadNoOperationCommand()		(AVR_JTAG_PROG_INS(0x2300), AVR_JTAG_PROG_INS(0x3300))
@@ -173,7 +173,7 @@ void AVR_JTAG_ReadDat(uint16_t w, uint16_t* r, uint8_t len)
 RESULT avr8_jtag_program(operation_t operations, program_info_t *pi, 
 						 programmer_info_t *prog)
 {
-	uint16_t data_tmp[3];
+	uint16_t data_tmp[4];
 	uint8_t ir;
 	uint32_t dr;
 	
@@ -602,6 +602,40 @@ RESULT avr8_jtag_program(operation_t operations, program_info_t *pi,
 		{
 			LOG_INFO(_GETTEXT(INFOMSG_READ_VALUE_02X), "lock", data_tmp[0]);
 		}
+	}
+	
+	if (operations.read_operations & CALIBRATION)
+	{
+		LOG_INFO(_GETTEXT(INFOMSG_READING), "calibration");
+		pgbar_init("reading calibration |", "|", 0, 1, PROGRESS_STEP, '=');
+		
+		// read calibration
+		AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
+		AVR_JTAG_PROG_EnterCaliByteRead();
+		AVR_JTAG_PROG_LoadAddrByte(0);
+		AVR_JTAG_PROG_ReadCaliByte(data_tmp[0]);
+		AVR_JTAG_PROG_LoadAddrByte(1);
+		AVR_JTAG_PROG_ReadCaliByte(data_tmp[1]);
+		AVR_JTAG_PROG_LoadAddrByte(2);
+		AVR_JTAG_PROG_ReadCaliByte(data_tmp[2]);
+		AVR_JTAG_PROG_LoadAddrByte(3);
+		AVR_JTAG_PROG_ReadCaliByte(data_tmp[3]);
+		if (ERROR_OK != jtag_commit())
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read calibration");
+			ret = ERRCODE_FAILURE_OPERATION;
+			goto leave_program_mode;
+		}
+		data_tmp[0] &= 0xFF;
+		data_tmp[1] &= 0xFF;
+		data_tmp[2] &= 0xFF;
+		data_tmp[3] &= 0xFF;
+		pgbar_update(1);
+		
+		pgbar_fini();
+		LOG_INFO(_GETTEXT(INFOMSG_READ_VALUE_08X), "calibration", 
+			data_tmp[0] + (data_tmp[1] << 8) + 
+			(data_tmp[2] << 16) + (data_tmp[3] << 24));
 	}
 	
 leave_program_mode:
