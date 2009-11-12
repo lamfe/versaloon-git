@@ -68,7 +68,7 @@ RESULT avr8_isp_program(operation_t operations, program_info_t *pi,
 #define commit()				prog->peripheral_commit()
 
 
-	uint8_t data_tmp[3];
+	uint8_t data_tmp[4];
 	uint8_t cmd_buf[4];
 	uint8_t poll_byte;
 	int32_t i;
@@ -598,6 +598,46 @@ try_frequency:
 		{
 			LOG_INFO(_GETTEXT(INFOMSG_READ_VALUE_02X), "lock", data_tmp[0]);
 		}
+	}
+	
+	if (operations.read_operations & CALIBRATION)
+	{
+		LOG_INFO(_GETTEXT(INFOMSG_READING), "calibration");
+		pgbar_init("reading calibration |", "|", 0, 1, PROGRESS_STEP, '=');
+		
+		// read calibration
+		cmd_buf[0] = 0x38;
+		cmd_buf[1] = 0x00;
+		cmd_buf[2] = 0x00;
+		cmd_buf[3] = 0x00;
+		spi_io(cmd_buf, 4, &data_tmp[0], 3, 1);
+		cmd_buf[0] = 0x38;
+		cmd_buf[1] = 0x00;
+		cmd_buf[2] = 0x01;
+		cmd_buf[3] = 0x00;
+		spi_io(cmd_buf, 4, &data_tmp[1], 3, 1);
+		cmd_buf[0] = 0x38;
+		cmd_buf[1] = 0x00;
+		cmd_buf[2] = 0x02;
+		cmd_buf[3] = 0x00;
+		spi_io(cmd_buf, 4, &data_tmp[2], 3, 1);
+		cmd_buf[0] = 0x38;
+		cmd_buf[1] = 0x00;
+		cmd_buf[2] = 0x03;
+		cmd_buf[3] = 0x00;
+		spi_io(cmd_buf, 4, &data_tmp[3], 3, 1);
+		if (ERROR_OK != commit())
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read calibration");
+			ret = ERRCODE_FAILURE_OPERATION;
+			goto leave_program_mode;
+		}
+		pgbar_update(1);
+		
+		pgbar_fini();
+		LOG_INFO(_GETTEXT(INFOMSG_READ_VALUE_08X), "calibration", 
+			data_tmp[0] + (data_tmp[1] << 8) + 
+			(data_tmp[2] << 16) + (data_tmp[3] << 24));
 	}
 	
 leave_program_mode:

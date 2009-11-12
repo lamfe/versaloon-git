@@ -55,6 +55,7 @@ const program_area_map_t avr8_program_area_map[] =
 //	{EEPROM, EEPROM_CHAR, 1},
 	{FUSE, FUSE_CHAR, 0},
 	{LOCK, LOCK_CHAR, 0},
+	{CALIBRATION, CALIBRATION_CHAR, 0},
 	{0, 0, 0}
 };
 
