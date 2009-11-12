@@ -48,9 +48,9 @@
 
 const program_area_map_t psoc1_program_area_map[] = 
 {
-	{APPLICATION, 'f', 1},
-	{LOCK, 's', 1},
-	{CHECKSUM, 'c', 1},
+	{APPLICATION, APPLICATION_CHAR, 1},
+	{LOCK, LOCK_CHAR, 1},
+	{CHECKSUM, CHECKSUM_CHAR, 1},
 	{0, 0, 0}
 };
 

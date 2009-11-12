@@ -56,8 +56,8 @@
 
 const program_area_map_t comisp_program_area_map[] = 
 {
-	{APPLICATION, 'f', 1},
-//	{LOCK, 'l', 0},
+	{APPLICATION, APPLICATION_CHAR, 1},
+//	{LOCK, LOCK_CHAR, 0},
 	{0, 0, 0}
 };
 

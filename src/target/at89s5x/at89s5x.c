@@ -50,11 +50,11 @@
 
 const program_area_map_t s5x_program_area_map[] = 
 {
-	{APPLICATION, 'f', 1},
-//	{EEPROM, 'e', 1},
-//	{USER_SIG, 'u', 1},
-//	{FUSE, 'f', 0},
-	{LOCK, 'l', 0},
+	{APPLICATION, APPLICATION_CHAR, 1},
+//	{EEPROM, EEPROM_CHAR, 1},
+//	{USER_SIG, USER_SIG_CHAR, 1},
+//	{FUSE, FUSE_CHAR, 0},
+	{LOCK, LOCK_CHAR, 0},
 	{0, 0, 0}
 };
 
@@ -73,7 +73,7 @@ void s5x_usage(void)
 Usage of %s:\n\
   -F,  --frequency <FREQUENCY>      set ISP frequency, in KHz\n\
   -l,  --lock <LOCK>                set lock(1..4)\n\
-  -f,  --fuse <FUSE>                set fuse\n\
+  -u,  --fuse <FUSE>                set fuse\n\
   -m,  --mode <MODE>                set program mode<b|p>\n\n", 
 			CUR_TARGET_STRING);
 }
