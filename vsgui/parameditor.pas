@@ -44,6 +44,7 @@ type
     btnCancel: TButton;
     pnlSettings: TPanel;
     pnlButton: TPanel;
+    procedure FormKeyPress(Sender: TObject; var Key: char);
     procedure SettingChange(Sender: TObject);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormShow(Sender: TObject);
@@ -175,6 +176,14 @@ begin
   end;
 
   UpdateTitle();
+end;
+
+procedure TFormParaEditor.FormKeyPress(Sender: TObject; var Key: char);
+begin
+  if Key = Char(27) then
+  begin
+    close;
+  end;
 end;
 
 procedure TFormParaEditor.FormClose(Sender: TObject;

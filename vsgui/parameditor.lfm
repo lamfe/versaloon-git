@@ -8,7 +8,9 @@ object FormParaEditor: TFormParaEditor
   Caption = 'FormParaEditor'
   ClientHeight = 193
   ClientWidth = 323
+  KeyPreview = True
   OnClose = FormClose
+  OnKeyPress = FormKeyPress
   OnShow = FormShow
   Position = poMainFormCenter
   LCLVersion = '0.9.26.2'

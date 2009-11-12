@@ -8,6 +8,8 @@ object FormComSetup: TFormComSetup
   Caption = 'COM Setup'
   ClientHeight = 220
   ClientWidth = 203
+  KeyPreview = True
+  OnKeyPress = FormKeyPress
   OnShow = FormShow
   Position = poMainFormCenter
   LCLVersion = '0.9.26.2'
