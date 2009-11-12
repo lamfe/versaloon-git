@@ -259,6 +259,13 @@ const
   ATMEL_PROG_STR: string = '-U "0x03eb 0x2103 0x82 0x02 0"';
   LOGMEMO_WIDTH: integer = 400;
 
+  FLASH_CHAR: string = 'f';
+  EEPROM_CHAR: string = 'e';
+  FUSE_CHAR: string = 'u';
+  LOCK_CHAR: string = 'l';
+  CALI_CHAR: string = 'c';
+  USRSIG_CHAR: string = 's';
+
 implementation
 
 { TFormMain }
@@ -603,27 +610,27 @@ begin
   result := '';
   if chkboxApp.Enabled and chkboxApp.Checked then
   begin
-    result := result + 'f';
+    result := result + FLASH_CHAR;
   end;
   if chkboxEE.Enabled and chkboxEE.Checked then
   begin
-    result := result + 'e';
+    result := result + EEPROM_CHAR;
   end;
   if chkboxFuse.Enabled and chkboxFuse.Checked then
   begin
-    result := result + 'u';
+    result := result + FUSE_CHAR;
   end;
   if chkboxLock.Enabled and chkboxLock.Checked then
   begin
-    result := result + 'l';
+    result := result + LOCK_CHAR;
   end;
   if chkboxUsrSig.Enabled and chkboxUsrSig.Checked then
   begin
-    result := result + 's';
+    result := result + USRSIG_CHAR;
   end;
   if chkboxCali.Enabled and chkboxCali.Checked then
   begin
-    result := result + 'c';
+    result := result + CALI_CHAR;
   end;
 end;
 
@@ -1773,7 +1780,7 @@ procedure TFormMain.VSProg_CommonTargetInit(para: string);
 begin
   btnEditApp.Caption := 'Flash';
   chkboxApp.Caption := 'Flash';
-  if Pos('f', para) > 0 then
+  if Pos(FLASH_CHAR, para) > 0 then
   begin
     btnEditApp.Enabled := TRUE;
     chkboxApp.Enabled := TRUE;
@@ -1788,7 +1795,7 @@ begin
 
   btnEditEE.Caption := 'EE';
   chkboxEE.Caption := 'EE';
-  if Pos('e', para) > 0 then
+  if Pos(EEPROM_CHAR, para) > 0 then
   begin
     btnEditEE.Enabled := TRUE;
     chkboxEE.Enabled := TRUE;
@@ -1804,7 +1811,7 @@ begin
   btnEditLock.Caption := 'Lock';
   chkboxLock.Caption := 'Lock';
   lbledtLock.Text := '';
-  if Pos('l', para) > 0 then
+  if Pos(LOCK_CHAR, para) > 0 then
   begin
     btnEditLock.Enabled := TRUE;
     lbledtLock.Enabled := TRUE;
@@ -1822,7 +1829,7 @@ begin
   btnEditFuse.Caption := 'Fuse';
   chkboxFuse.Caption := 'Fuse';
   lbledtFuse.Text := '';
-  if Pos('u', para) > 0 then
+  if Pos(FUSE_CHAR, para) > 0 then
   begin
     btnEditFuse.Enabled := TRUE;
     lbledtFuse.Enabled := TRUE;
@@ -1839,7 +1846,7 @@ begin
 
   btnEditUsrSig.Caption := 'UsrSig';
   chkboxUsrSig.Caption := 'UsrSig';
-  if Pos('s', para) > 0 then
+  if Pos(USRSIG_CHAR, para) > 0 then
   begin
     btnEditUsrSig.Enabled := TRUE;
     lbledtUsrSig.Enabled := TRUE;
@@ -1856,7 +1863,7 @@ begin
 
   btnEditCali.Caption := 'Cali.';
   chkboxCali.Caption := 'Cali.';
-  if Pos('c', para) > 0 then
+  if Pos(CALI_CHAR, para) > 0 then
   begin
     btnEditCali.Enabled := TRUE;
     lbledtCali.Enabled := TRUE;
@@ -1984,7 +1991,7 @@ end;
 function TFormMain.PSoC1_Init_Para(line: string; var setting: TTargetSetting): boolean;
 begin
   FormParaEditor.GetStringParameter(line, 'init_mode', setting.mode);
-  setting.target := 'fl';
+  setting.target := FLASH_CHAR + LOCK_CHAR;
   result := TRUE;
 end;
 
@@ -1999,7 +2006,7 @@ begin
 
   VSProg_TargetSettingInit(setting);
   setting.mode := 'rp';
-  setting.target := 'fl';
+  setting.target := FLASH_CHAR + LOCK_CHAR;
   VSProg_AddTargetSetting(setting);
 
   // call 'vsprog -Spsoc1' to extract supported psoc1 targets
@@ -2040,7 +2047,7 @@ begin
 
   VSProg_TargetSettingInit(setting);
   setting.mode := 'jc';
-  setting.target := 'f';
+  setting.target := FLASH_CHAR;
   VSProg_AddTargetSetting(setting);
 
   // call 'vsprog -Sc8051f' to check support
@@ -2089,7 +2096,7 @@ end;
 function TFormMain.C8051F_Init_Para(line: string; var setting: TTargetSetting): boolean;
 begin
   FormParaEditor.GetStringParameter(line, 'prog_mode', setting.mode);
-  setting.target := 'f';
+  setting.target := FLASH_CHAR;
   result := TRUE;
 end;
 
@@ -2125,7 +2132,9 @@ begin
   line := line;
 
   setting.mode := 'pb';
-  setting.target := 'f';
+  setting.target := FLASH_CHAR + LOCK_CHAR;
+  setting.lock_bytelen := 1;
+  setting.lock_default := 1;
   result := TRUE;
 end;
 
@@ -2140,7 +2149,7 @@ begin
 
   VSProg_TargetSettingInit(setting);
   setting.mode := 'pb';
-  setting.target := 'fl';
+  setting.target := FLASH_CHAR + LOCK_CHAR;
   setting.lock_bytelen := 1;
   setting.lock_default := 1;
   VSProg_AddTargetSetting(setting);
@@ -2175,7 +2184,7 @@ end;
 function TFormMain.MSP430_Init_Para(line: string; var setting: TTargetSetting): boolean;
 begin
   FormParaEditor.GetStringParameter(line, 'prog_mode', setting.mode);
-  setting.target := 'f';
+  setting.target := FLASH_CHAR;
   result := TRUE;
 end;
 
@@ -2190,7 +2199,7 @@ begin
 
   VSProg_TargetSettingInit(setting);
   setting.mode := 'jsb';
-  setting.target := 'f';
+  setting.target := FLASH_CHAR;
   VSProg_AddTargetSetting(setting);
 
   // call 'vsprog -Smsp430' to extract supported at89s5x targets
@@ -2261,7 +2270,7 @@ begin
   cbboxTarget.Items.Add('stm8');
 
   VSProg_TargetSettingInit(setting);
-  setting.target := 'f';
+  setting.target := FLASH_CHAR;
   VSProg_AddTargetSetting(setting);
 
   // call 'vsprog -Sstm8' to extract supported at89s5x targets
@@ -2405,7 +2414,7 @@ begin
 
   VSProg_TargetSettingInit(setting);
   setting.mode := 'ijps';
-  setting.target := 'ful';
+  setting.target := FLASH_CHAR + FUSE_CHAR + LOCK_CHAR;
   setting.fuse_bytelen := 3;
   setting.fuse_default := $FFFFFF;
   setting.lock_bytelen := 1;
@@ -2441,7 +2450,7 @@ end;
 function TFormMain.AVR8_Init_Para(line: string; var setting: TTargetSetting): boolean;
 begin
   FormParaEditor.GetStringParameter(line, 'prog_mode', setting.mode);
-  setting.target := 'ful';
+  setting.target := FLASH_CHAR + FUSE_CHAR + LOCK_CHAR;
   result := TRUE;
 end;
 
@@ -2503,7 +2512,7 @@ begin
   cbboxTarget.Items.Add('pic8');
 
   VSProg_TargetSettingInit(setting);
-  setting.target := 'f';
+  setting.target := FLASH_CHAR;
   VSProg_AddTargetSetting(setting);
 
   // call 'vsprog -Spic8' to extract supported pic8 targets
@@ -2567,7 +2576,7 @@ end;
 function TFormMain.COMISP_Init_Para(line: string; var setting: TTargetSetting): boolean;
 begin
   setting.extra := line;
-  setting.target := 'f';
+  setting.target := FLASH_CHAR;
   result := TRUE;
 end;
 
@@ -2615,7 +2624,7 @@ begin
   cbboxTarget.Items.Add('lpc900');
 
   VSProg_TargetSettingInit(setting);
-  setting.target := 'f';
+  setting.target := FLASH_CHAR;
   VSProg_AddTargetSetting(setting);
 
   // call 'vsprog -Scomisp' to extract supported comisp targets
@@ -2648,7 +2657,7 @@ function TFormMain.LPCICP_Init_Para(line: string; var setting: TTargetSetting): 
 begin
   line := line;
 
-  setting.target := 'f';
+  setting.target := FLASH_CHAR;
   result := TRUE;
 end;
 
@@ -2695,7 +2704,7 @@ begin
   line := line;
 
   setting.mode := 'js';
-  setting.target := 'f';
+  setting.target := FLASH_CHAR;
   result := TRUE;
 end;
 
