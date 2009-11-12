@@ -2006,7 +2006,7 @@ begin
     else
     begin
       btnTargetDetect.Caption := AUTODETECT_STR;
-      btnTargetDetect.Hint := COMSETUP_HINT;
+      btnTargetDetect.Hint := AUTODETECT_HINT;
     end;
     btnTargetDetect.Enabled := TRUE;
   end
