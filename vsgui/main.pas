@@ -115,6 +115,7 @@ type
     tsC8051F: TTabSheet;
     tsPSoC1: TTabSheet;
     procedure btnEditAppClick(Sender: TObject);
+    procedure btnEditCaliClick(Sender: TObject);
     procedure btnEditEEClick(Sender: TObject);
     procedure btnEditFuseClick(Sender: TObject);
     procedure btnEditLockClick(Sender: TObject);
@@ -164,6 +165,7 @@ type
     function VSProg_CommonParseReadTargetCallback(line, target: string; var result_str: string): boolean;
     function VSProg_CommonParseReadFuseCallback(line: string): boolean;
     function VSProg_CommonParseReadLockCallback(line: string): boolean;
+    function VSProg_CommonParseReadCaliCallback(line: string): boolean;
     procedure VSProg_TargetSettingInit(var setting: TTargetSetting);
     procedure VSProg_AddTargetSetting(setting: TTargetSetting);
     function VSProg_CommonParseSupportCallback(line: string): boolean;
@@ -809,6 +811,65 @@ procedure TFormMain.btnEditAppClick(Sender: TObject);
 begin
 //  FormHexEditor.Caption := (Sender as TButton).Caption;
 //  FormHexEditor.ShowModal;
+end;
+
+procedure TFormMain.btnEditCaliClick(Sender: TObject);
+var
+  targetdefine: string;
+  init, bytelen: integer;
+begin
+  targetdefine := GetTargetDefineParameters();
+  if targetdefine[1] = 's' then
+  begin
+    MessageDlg('Error', 'Please select a target chip.', mtError, [mbOK], 0);
+    exit;
+  end;
+
+  if caller.IsRunning() then
+  begin
+    exit;
+  end;
+  caller.Take;
+
+  if not chkboxNoconnect.Checked then
+  begin
+    // call 'vsprog -orc' to read calibration settings from target
+    if not PrepareToRunCLI() then
+    begin
+      caller.UnTake;
+      exit;
+    end;
+    PrepareBaseParameters();
+    caller.AddParameter('orc');
+    caller.Run(@VSProg_CommonParseReadCaliCallback, FALSE, TRUE);
+    if bFatalError then
+    begin
+      exit;
+    end;
+  end;
+
+  // call 'vsprog -Ppara' to extract para settings
+  if not PrepareToRunCLI() then
+  begin
+    exit;
+  end;
+  PrepareBaseParameters();
+  caller.AddParameter('Pcalibration');
+  FormParaEditor.FreeRecord();
+  caller.Run(@VSProg_CommonParseParaCallback, FALSE, TRUE);
+  if bFatalError then
+  begin
+    exit;
+  end;
+
+  init := TargetSetting[cbboxTarget.ItemIndex].cali_default;
+  bytelen := TargetSetting[cbboxTarget.ItemIndex].cali_bytelen;
+  FormParaEditor.SetParameter(init, bytelen, StrToInt(lbledtCali.Text), 'Calibration', not chkboxNowarning.Checked);
+  if mrOK = FormParaEditor.ShowModal then
+  begin
+    // OK clicked, get value
+    VSProg_CommonUpdateCali(FormParaEditor.GetResult(), bytelen);
+  end;
 end;
 
 procedure TFormMain.btnEditEEClick(Sender: TObject);
@@ -1546,6 +1607,23 @@ begin
   end;
 end;
 
+function TFormMain.VSProg_CommonParseReadCaliCallback(line: string): boolean;
+var
+  cali_str: string;
+begin
+  result := TRUE;
+  cali_str := '';
+  if not VSProg_CommonParseReadTargetCallback(line, 'calibration', cali_str) then
+  begin
+    result := FALSE;
+  end;
+
+  if cali_str <> '' then
+  begin
+    VSProg_CommonUpdateCali(StrToInt(cali_str), TargetSetting[cbboxTarget.ItemIndex].cali_bytelen);
+  end;
+end;
+
 function TFormMain.VSProg_CommonParseReadLockCallback(line: string): boolean;
 var
   lock_str: string;
@@ -1746,7 +1824,7 @@ procedure TFormMain.VSProg_CommonUpdateSetting(value, bytelen: integer; edt: TLa
 begin
   if bytelen > 0 then
   begin
-    edt.Text := '0x' + IntToHex(value, bytelen);
+    edt.Text := '0x' + IntToHex(value, bytelen * 2);
   end
   else
   begin
@@ -2414,11 +2492,13 @@ begin
 
   VSProg_TargetSettingInit(setting);
   setting.mode := 'ijps';
-  setting.target := FLASH_CHAR + FUSE_CHAR + LOCK_CHAR;
+  setting.target := FLASH_CHAR + FUSE_CHAR + LOCK_CHAR + CALI_CHAR;
   setting.fuse_bytelen := 3;
   setting.fuse_default := $FFFFFF;
   setting.lock_bytelen := 1;
   setting.lock_default := $FF;
+  setting.cali_bytelen := 4;
+  setting.cali_default := $FFFFFFFF;
   VSProg_AddTargetSetting(setting);
 
   // call 'vsprog -Savr8' to extract supported avr8 targets
@@ -2450,7 +2530,7 @@ end;
 function TFormMain.AVR8_Init_Para(line: string; var setting: TTargetSetting): boolean;
 begin
   FormParaEditor.GetStringParameter(line, 'prog_mode', setting.mode);
-  setting.target := FLASH_CHAR + FUSE_CHAR + LOCK_CHAR;
+  setting.target := FLASH_CHAR + FUSE_CHAR + LOCK_CHAR + CALI_CHAR;
   result := TRUE;
 end;
 

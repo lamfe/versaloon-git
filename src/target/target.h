@@ -145,6 +145,8 @@ typedef struct
 	uint32_t fuse_default_value;
 	uint32_t lock_size;
 	uint32_t lock_default_value;
+	uint32_t cali_size;
+	uint32_t cali_default_value;
 	uint32_t boot_size;
 	uint32_t app_size;
 	uint32_t ee_size;
@@ -179,6 +181,9 @@ typedef struct
 	uint32_t mask;
 	char *ban;
 	uint8_t use_checkbox;
+	uint8_t use_edit;
+	uint8_t shift;
+	uint8_t hex;
 	uint32_t checked;
 	uint32_t unchecked;
 	uint16_t num_of_choices;

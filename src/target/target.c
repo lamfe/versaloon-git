@@ -513,7 +513,8 @@ void target_print_fl(char *type)
 	chip_fl_t fl;
 	uint32_t i, j;
 	
-	if (strcmp(type, "fuse") && strcmp(type, "lock"))
+	if (strcmp(type, "fuse") && strcmp(type, "lock") 
+		&& strcmp(type, "calibration"))
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), type, 
 				  program_info.chip_name);
@@ -550,6 +551,11 @@ void target_print_fl(char *type)
 		{
 			printf(", checked = 0x%08X, unchecked = 0x%08X", 
 				fl.settings[i].checked, fl.settings[i].unchecked);
+		}
+		else if (fl.settings[i].use_edit)
+		{
+			printf(", hex = %d, shift = %d", 
+				fl.settings[i].hex, fl.settings[i].shift);
 		}
 		printf("\n");
 		for (j = 0; j < fl.settings[i].num_of_choices; j++)
@@ -925,10 +931,7 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 		// check
 		if (strcmp((const char *)settingNode->name, "setting") 
 			|| (!xmlHasProp(settingNode, BAD_CAST "name"))
-			|| (!xmlHasProp(settingNode, BAD_CAST "mask"))
-			|| ((0 == fl->settings[i].num_of_choices) 
-				&& !xmlHasProp(settingNode, BAD_CAST "checked") 
-				&& !xmlHasProp(settingNode, BAD_CAST "unchecked")))
+			|| (!xmlHasProp(settingNode, BAD_CAST "mask")))
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
 					  "read config file");
@@ -977,6 +980,22 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 			strcpy(fl->settings[i].info, m);
 		}
 		
+		// parse hex if exists
+		if (xmlHasProp(settingNode, BAD_CAST "hex"))
+		{
+			fl->settings[i].hex = (uint8_t)strtoul(
+				(const char *)xmlGetProp(settingNode, BAD_CAST "hex"), 
+				NULL, 0);
+		}
+		
+		// parse shift if exists
+		if (xmlHasProp(settingNode, BAD_CAST "shift"))
+		{
+			fl->settings[i].shift = (uint8_t)strtoul(
+				(const char *)xmlGetProp(settingNode, BAD_CAST "shift"), 
+				NULL, 0);
+		}
+		
 		// parse checked or unchecked
 		checked_exists = 0;
 		if (xmlHasProp(settingNode, BAD_CAST "checked"))
@@ -1000,6 +1019,16 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 				fl->settings[i].unchecked ^ fl->settings[i].mask;
 			}
 			fl->settings[i].use_checkbox = 1;
+		}
+		
+		if (!fl->settings[i].use_checkbox 
+			&& (0 == fl->settings[i].num_of_choices))
+		{
+			fl->settings[i].use_edit = 1;
+		}
+		else
+		{
+			fl->settings[i].use_edit = 0;
 		}
 		
 		// parse choices
@@ -1403,6 +1432,15 @@ RESULT target_build_chip_series(const char *chip_series,
 					(const char *)xmlGetProp(paramNode, BAD_CAST "bytesize"), 
 					NULL, 0);
 				s->chips_param[i].lock_default_value = (uint32_t)strtoul(
+					(const char *)xmlGetProp(paramNode, BAD_CAST "init"), 
+					NULL, 0);
+			}
+			else if (!xmlStrcmp(paramNode->name, BAD_CAST "calibration"))
+			{
+				s->chips_param[i].cali_size = (uint32_t)strtoul(
+					(const char *)xmlGetProp(paramNode, BAD_CAST "bytesize"), 
+					NULL, 0);
+				s->chips_param[i].cali_default_value = (uint32_t)strtoul(
 					(const char *)xmlGetProp(paramNode, BAD_CAST "init"), 
 					NULL, 0);
 			}

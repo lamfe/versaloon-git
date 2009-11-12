@@ -1,7 +1,7 @@
 object FormMain: TFormMain
-  Left = 717
+  Left = 719
   Height = 579
-  Top = 11
+  Top = 134
   Width = 841
   HorzScrollBar.Page = 840
   HorzScrollBar.Range = 400
@@ -606,6 +606,7 @@ object FormMain: TFormMain
             Top = 109
             Width = 45
             Caption = 'Cali.'
+            OnClick = btnEditCaliClick
             ParentShowHint = False
             ShowHint = True
             TabOrder = 9
