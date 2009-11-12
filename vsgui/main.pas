@@ -1603,7 +1603,8 @@ begin
 
   if fuse_str <> '' then
   begin
-    VSProg_CommonUpdateFuse(StrToInt(fuse_str), TargetSetting[cbboxTarget.ItemIndex].fuse_bytelen);
+    VSProg_CommonUpdateFuse(StrToInt(fuse_str) and TargetSetting[cbboxTarget.ItemIndex].fuse_default,
+                            TargetSetting[cbboxTarget.ItemIndex].fuse_bytelen);
   end;
 end;
 
@@ -1620,7 +1621,8 @@ begin
 
   if cali_str <> '' then
   begin
-    VSProg_CommonUpdateCali(StrToInt(cali_str), TargetSetting[cbboxTarget.ItemIndex].cali_bytelen);
+    VSProg_CommonUpdateCali(StrToInt(cali_str) and TargetSetting[cbboxTarget.ItemIndex].cali_default,
+                            TargetSetting[cbboxTarget.ItemIndex].cali_bytelen);
   end;
 end;
 
@@ -1637,7 +1639,8 @@ begin
 
   if lock_str <> '' then
   begin
-    VSProg_CommonUpdateLock(StrToInt(lock_str), TargetSetting[cbboxTarget.ItemIndex].lock_bytelen);
+    VSProg_CommonUpdateLock(StrToInt(lock_str) and TargetSetting[cbboxTarget.ItemIndex].lock_default,
+                            TargetSetting[cbboxTarget.ItemIndex].lock_bytelen);
   end;
 end;
 
