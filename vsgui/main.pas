@@ -14,6 +14,20 @@ type
   TTargetType = (TT_NONE, TT_PSOC1, TT_AT89S5X, TT_C8051F, TT_MSP430, TT_STM8,
                  TT_EEPROM, TT_JTAG, TT_AVR8, TT_PIC8, TT_COMISP, TT_LPCICP,
                  TT_CORTEXM3);
+
+  TTargetSetting = record
+    extra: string;
+    target: string;
+    mode: string;
+    fuse_bytelen: integer;
+    fuse_default: integer;
+    lock_bytelen: integer;
+    lock_default: integer;
+    cali_bytelen: integer;
+    cali_default: integer;
+    usrsig_bytelen: integer;
+    usrsig_default: integer;
+  end;
   { TFormMain }
 
   TFormMain = class(TForm)
@@ -24,9 +38,12 @@ type
     btnOpenOCDStop: TButton;
     btnUpdate: TButton;
     btnSVFPlayerRun: TButton;
+    btnEditCali: TButton;
     cbboxOpenOCDInterface: TComboBox;
     cbboxOpenOCDScript: TComboBox;
     cbboxOpenOCDTarget: TComboBox;
+    chkboxNowarning: TCheckBox;
+    chkboxCali: TCheckBox;
     chkboxNoconnect: TCheckBox;
     chkboxUsrSig: TCheckBox;
     chkboxMP: TCheckBox;
@@ -58,6 +75,8 @@ type
     gbUpdate: TGroupBox;
     gbOpenOCD: TGroupBox;
     gbSVFPlayer: TGroupBox;
+    lbledtCali: TLabeledEdit;
+    lbledtUsrSig: TLabeledEdit;
     lblSVFOption: TLabel;
     lblSVFPlayerSelectFile: TLabel;
     lblOpenOCDOption: TLabel;
@@ -121,8 +140,7 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure FormResize(Sender: TObject);
     procedure FormShow(Sender: TObject);
-    procedure lbledtFuseKeyPress(Sender: TObject; var Key: char);
-    procedure lbledtLockKeyPress(Sender: TObject; var Key: char);
+    procedure lbledtTargetKeyPress(Sender: TObject; var Key: char);
     procedure miExitClick(Sender: TObject);
     procedure pcMainChanging(Sender: TObject; var AllowChange: Boolean);
     procedure pcMainPageChanged(Sender: TObject);
@@ -143,43 +161,43 @@ type
     { VSProg common declarations }
     function VSProg_CommonCallback(line: string): boolean;
     function VSProg_CommonParseParaCallback(line: string): boolean;
-    function VSProg_CommonParseFuseCallback(line: string): boolean;
-    function VSProg_CommonParseLockCallback(line: string): boolean;
-    procedure VSProg_AddParaString(para: string; fuseByteLen, fuseDefault, lockByteLen, lockDefault: integer);
+    function VSProg_CommonParseReadTargetCallback(line, target: string; var result_str: string): boolean;
+    function VSProg_CommonParseReadFuseCallback(line: string): boolean;
+    function VSProg_CommonParseReadLockCallback(line: string): boolean;
+    procedure VSProg_TargetSettingInit(var setting: TTargetSetting);
+    procedure VSProg_AddTargetSetting(setting: TTargetSetting);
     function VSProg_CommonParseSupportCallback(line: string): boolean;
     function VSProg_CommonParseAboutCallback(line: string): boolean;
     function VSProg_CommonParseChipIDCallback(line: string): boolean;
+    procedure VSProg_CommonTargetInit(para: string);
     procedure VSProg_CommonInit(para: string);
+    procedure VSProg_CommonUpdateSetting(value, bytelen: integer; edt: TLabeledEdit);
     procedure VSProg_CommonUpdateFuse(fuse, bytelen: integer);
     procedure VSProg_CommonUpdateLock(lock, bytelen: integer);
+    procedure VSProg_CommonUpdateUsrSig(sig, bytelen: integer);
+    procedure VSProg_CommonUpdateCali(cali, bytelen: integer);
+    function VSProg_CommonGetEnabledOperationString(): string;
+    function VSProg_CommonAddEraseOperation(): boolean;
+    function VSProg_CommonAddWriteOperation(): boolean;
+    function VSProg_CommonAddVerifyOperation(): boolean;
+    function VSProg_CommonAddReadOperation(): boolean;
     { PSoC1 declarations }
     function PSoC1_Init(): boolean;
-    function PSoC1_Init_Para(line: string): string;
-    procedure PSoC1_Update_Chip(p_str: string);
-    function PSoC1_AddWriteParameters(): boolean;
-    function PSoC1_AddReadParameters(): boolean;
-    function PSoC1_AddVerifyParameters(): boolean;
+    function PSoC1_Init_Para(line: string; var setting: TTargetSetting): boolean;
+    procedure PSoC1_Update_Chip(setting: TTargetSetting);
+    function PSoC1_AddVerifyParameters(var para: string): boolean;
     { C8051F declarations }
     function C8051F_Init(): boolean;
-    function C8051F_Init_Para(line: string): string;
-    procedure C8051F_Update_Chip(p_str: string);
-    function C8051F_AddWriteParameters(): boolean;
-    function C8051F_AddReadParameters(): boolean;
-    function C8051F_AddVerifyParameters(): boolean;
+    function C8051F_Init_Para(line: string; var setting: TTargetSetting): boolean;
+    procedure C8051F_Update_Chip(setting: TTargetSetting);
     { AT89S5X declarations }
     function AT89S5X_Init(): boolean;
-    function AT89S5X_Init_Para(line: string): string;
-    procedure AT89S5X_Update_Chip(p_str: string);
-    function AT89S5X_AddWriteParameters(): boolean;
-    function AT89S5X_AddReadParameters(): boolean;
-    function AT89S5X_AddVerifyParameters(): boolean;
+    function AT89S5X_Init_Para(line: string; var setting: TTargetSetting): boolean;
+    procedure AT89S5X_Update_Chip(setting: TTargetSetting);
     { MSP430 declarations }
     function MSP430_Init(): boolean;
-    function MSP430_Init_Para(line: string): string;
-    procedure MSP430_Update_Chip(p_str: string);
-    function MSP430_AddWriteParameters(): boolean;
-    function MSP430_AddReadParameters(): boolean;
-    function MSP430_AddVerifyParameters(): boolean;
+    function MSP430_Init_Para(line: string; var setting: TTargetSetting): boolean;
+    procedure MSP430_Update_Chip(setting: TTargetSetting);
     { STM8 declarations }
     function STM8_Init(): boolean;
     { EEPROM declarations }
@@ -188,41 +206,29 @@ type
     function ARM_Init(): boolean;
     { AVR8 declarations }
     function AVR8_Init(): boolean;
-    function AVR8_Init_Para(line: string): string;
-    procedure AVR8_Update_Chip(p_str: string);
+    function AVR8_Init_Para(line: string; var setting: TTargetSetting): boolean;
+    procedure AVR8_Update_Chip(setting: TTargetSetting);
     procedure AVR8_Update_Mode(m_str: string);
-    function AVR8_AddWriteParameters(): boolean;
-    function AVR8_AddReadParameters(): boolean;
-    function AVR8_AddVerifyParameters(): boolean;
     { PIC8 declarations }
     function PIC8_Init(): boolean;
     { COMISP declarations }
     function COMISP_Init(): boolean;
-    function COMISP_Init_Para(line: string): string;
-    procedure COMISP_Update_Chip(p_str: string);
-    function COMISP_AddWriteParameters(): boolean;
-    function COMISP_AddReadParameters(): boolean;
-    function COMISP_AddVerifyParameters(): boolean;
+    function COMISP_Init_Para(line: string; var setting: TTargetSetting): boolean;
+    procedure COMISP_Update_Chip(setting: TTargetSetting);
     { LPCICP declarations }
     function LPCICP_Init(): boolean;
-    function LPCICP_Init_Para(line: string): string;
-    procedure LPCICP_Update_Chip(p_str: string);
-    function LPCICP_AddWriteParameters(): boolean;
-    function LPCICP_AddReadParameters(): boolean;
-    function LPCICP_AddVerifyParameters(): boolean;
+    function LPCICP_Init_Para(line: string; var setting: TTargetSetting): boolean;
+    procedure LPCICP_Update_Chip(setting: TTargetSetting);
     { CortexM3 declarations }
     function CortexM3_Init(): boolean;
-    function CortexM3_Init_Para(line: string): string;
-    procedure CortexM3_Update_chip(p_str: string);
+    function CortexM3_Init_Para(line: string; var setting: TTargetSetting): boolean;
+    procedure CortexM3_Update_Chip(setting: TTargetSetting);
     procedure CortexM3_Update_Mode(m_str: string);
-    function CortexM3_AddWriteParameters(): boolean;
-    function CortexM3_AddReadParameters(): boolean;
-    function CortexM3_AddVerifyParameters(): boolean;
   private
     { private declarations }
     bFatalError: boolean;
     TargetType: TTargetType;
-    ParaString: TStringList;
+    TargetSetting: array of TTargetSetting;
     bPageLock: boolean;
   public
     { public declarations }
@@ -232,7 +238,6 @@ var
   FormMain: TFormMain;
   caller: TCLI_Caller;
   OpenOCD_Caller: TCLI_Caller;
-  chip_module_header: string;
   ComMode: TComMode;
   ComModeInit: TComMode;
 
@@ -245,14 +250,14 @@ const
   OPENOCD_APP_STR: string = {$IFDEF UNIX}'openocd'{$ELSE}'openocd.exe'{$ENDIF};
   SLASH_STR: string = {$IFDEF UNIX}'/'{$ELSE}'\'{$ENDIF};
   COMSETUP_STR: string = 'COM Setup';
+  COMSETUP_HINT: string = 'Setup COM Port';
   AUTODETECT_STR: string = 'AutoDetect';
+  AUTODETECT_HINT: string = 'Detect Target Module';
   FREQ_STR:string = 'Freq(KHz):';
   EXECUTE_ADDR_STR: string = 'execute:';
   ST_PROG_STR: string = '-U "0x0483 0x5740 0x82 0x03 2"';
   ATMEL_PROG_STR: string = '-U "0x03eb 0x2103 0x82 0x02 0"';
   LOGMEMO_WIDTH: integer = 400;
-  FUSE_READ_STR: string = 'fuse read is ';
-  LOCK_READ_STR: string = 'lock read is ';
 
 implementation
 
@@ -264,8 +269,6 @@ begin
   bPageLock := FALSE;
 
   HideDebugLog();
-  chip_module_header := '';
-  ParaString := TStringList.Create;
 
   // caller init
   caller := TCLI_Caller.Create();
@@ -281,6 +284,7 @@ begin
   lblInputFile.Top := fnEdit.Top + (fnEdit.Height - lblInputFile.Height) div 2;
   lblMode.Top := cbboxMode.Top + (cbboxMode.Height - lblMode.Height) div 2;
   Caption := APP_STR + ' ' + VERSION_STR;
+  btnTargetDetect.Hint := AUTODETECT_HINT;
 
   FormMain.Width := pnlMain.Width + LOGMEMO_WIDTH + 2;
   memoLog.Width := LOGMEMO_WIDTH;
@@ -300,10 +304,10 @@ end;
 procedure TFormMain.FormDestroy(Sender: TObject);
 begin
   FormParaEditor.FreeRecord();
-  ParaString.Destroy();
   caller.Destroy();
   OpenOCD_Caller.Destroy();
   tiMain.Hide;
+  SetLength(TargetSetting, 0);
 end;
 
 procedure TFormMain.FormResize(Sender: TObject);
@@ -317,16 +321,7 @@ end;
 procedure TFormMain.FormShow(Sender: TObject);
 begin
   FormResize(Sender);
-end;
-
-procedure TFormMain.lbledtFuseKeyPress(Sender: TObject; var Key: char);
-begin
-  Key := Char(0);
-end;
-
-procedure TFormMain.lbledtLockKeyPress(Sender: TObject; var Key: char);
-begin
-  Key := Char(0);
+  UpdateShowing;
 end;
 
 procedure TFormMain.miExitClick(Sender: TObject);
@@ -385,6 +380,11 @@ begin
   end;
 end;
 
+procedure TFormMain.lbledtTargetKeyPress(Sender: TObject; var Key: char);
+begin
+  Key := Char(0);
+end;
+
 procedure TFormMain.pcMainPageChanged(Sender: TObject);
 var
   index: integer;
@@ -396,6 +396,8 @@ begin
     bPageLock := FALSE;
     exit;
   end;
+
+  SetLength(TargetSetting, 0);
 
   // initialize GUI
   if pcMain.ActivePage = tsAbout then
@@ -596,9 +598,112 @@ begin
   update_lock := FALSE;
 end;
 
-procedure TFormMain.btnVerifyClick(Sender: TObject);
+function TFormMain.VSProg_CommonGetEnabledOperationString(): string;
+begin
+  result := '';
+  if chkboxApp.Enabled and chkboxApp.Checked then
+  begin
+    result := result + 'f';
+  end;
+  if chkboxEE.Enabled and chkboxEE.Checked then
+  begin
+    result := result + 'e';
+  end;
+  if chkboxFuse.Enabled and chkboxFuse.Checked then
+  begin
+    result := result + 'u';
+  end;
+  if chkboxLock.Enabled and chkboxLock.Checked then
+  begin
+    result := result + 'l';
+  end;
+  if chkboxUsrSig.Enabled and chkboxUsrSig.Checked then
+  begin
+    result := result + 's';
+  end;
+  if chkboxCali.Enabled and chkboxCali.Checked then
+  begin
+    result := result + 'c';
+  end;
+end;
+
+function TFormMain.VSProg_CommonAddEraseOperation(): boolean;
+begin
+  caller.AddParameter('oe');
+  result := TRUE;
+end;
+
+function TFormMain.VSProg_CommonAddWriteOperation(): boolean;
 var
-  success: boolean;
+  para: string;
+begin
+  para := VSProg_CommonGetEnabledOperationString();
+  if para = '' then
+  begin
+    result := FALSE;
+  end
+  else
+  begin
+    result := TRUE;
+    case TargetType of
+      TT_PSOC1:
+    end;
+    para := 'ow' + para;
+    if result then
+    begin
+      caller.AddParameter(para);
+    end;
+  end;
+end;
+
+function TFormMain.VSProg_CommonAddVerifyOperation(): boolean;
+var
+  para: string;
+begin
+  para := VSProg_CommonGetEnabledOperationString();
+  if para = '' then
+  begin
+    result := FALSE;
+  end
+  else
+  begin
+    result := TRUE;
+    case TargetType of
+      TT_PSOC1:
+        result := PSoC1_AddVerifyParameters(para);
+    end;
+    para := 'ov' + para;
+    if result then
+    begin
+      caller.AddParameter(para);
+    end;
+  end;
+end;
+
+function TFormMain.VSProg_CommonAddReadOperation(): boolean;
+var
+  para: string;
+begin
+  para := VSProg_CommonGetEnabledOperationString();
+  if para = '' then
+  begin
+    result := FALSE;
+  end
+  else
+  begin
+    result := TRUE;
+    case TargetType of
+      TT_PSOC1:
+    end;
+    para := 'or' + para;
+    if result then
+    begin
+      caller.AddParameter(para);
+    end;
+  end;
+end;
+
+procedure TFormMain.btnVerifyClick(Sender: TObject);
 begin
   if OpenOCD_Caller.IsRunning() or caller.IsRunning() then
   begin
@@ -613,31 +718,9 @@ begin
 
   PrepareCommonParameters();
 
-  // operations
-  case TargetType of
-    TT_NONE:
-      exit;
-    TT_PSOC1:
-      success := PSoC1_AddVerifyParameters();
-    TT_AT89S5X:
-      success := AT89S5X_AddVerifyParameters();
-    TT_C8051F:
-      success := C8051F_AddVerifyParameters();
-    TT_AVR8:
-      success := AVR8_AddVerifyParameters();
-    TT_MSP430:
-      success := MSP430_AddVerifyParameters();
-    TT_COMISP:
-      success := COMISP_AddVerifyParameters();
-    TT_LPCICP:
-      success := LPCICP_AddVerifyParameters();
-    TT_CORTEXM3:
-      success := CortexM3_AddVerifyParameters();
-  end;
-
-  if not success then
+  if not VSProg_CommonAddVerifyOperation() then
   begin
-    MessageDlg('Error', 'Option Error!', mtError, [mbOK], 0);
+    MessageDlg('Error', 'Fail to add verify operation', mtError, [mbOK], 0);
     caller.UnTake;
     exit;
   end;
@@ -729,7 +812,7 @@ end;
 
 procedure TFormMain.btnEditFuseClick(Sender: TObject);
 var
-  targetdefine, str_tmp: string;
+  targetdefine: string;
   init, bytelen: integer;
 begin
   targetdefine := GetTargetDefineParameters();
@@ -755,7 +838,7 @@ begin
     end;
     PrepareBaseParameters();
     caller.AddParameter('oru');
-    caller.Run(@VSProg_CommonParseFuseCallback, FALSE, TRUE);
+    caller.Run(@VSProg_CommonParseReadFuseCallback, FALSE, TRUE);
     if bFatalError then
     begin
       exit;
@@ -776,12 +859,9 @@ begin
     exit;
   end;
 
-  str_tmp := ParaString.Strings[cbboxTarget.ItemIndex];
-  init := 0;
-  bytelen := 0;
-  FormParaEditor.GetIntegerParameter(str_tmp, 'fuse_default', init);
-  FormParaEditor.GetIntegerParameter(str_tmp, 'fuse_bytelen', bytelen);
-  FormParaEditor.SetParameter(init, bytelen, StrToInt(lbledtFuse.Text), 'Fuse');
+  init := TargetSetting[cbboxTarget.ItemIndex].fuse_default;
+  bytelen := TargetSetting[cbboxTarget.ItemIndex].fuse_bytelen;
+  FormParaEditor.SetParameter(init, bytelen, StrToInt(lbledtFuse.Text), 'Fuse', not chkboxNowarning.Checked);
   if mrOK = FormParaEditor.ShowModal then
   begin
     // OK clicked, get value
@@ -791,7 +871,7 @@ end;
 
 procedure TFormMain.btnEditLockClick(Sender: TObject);
 var
-  targetdefine, str_tmp: string;
+  targetdefine: string;
   init, bytelen: integer;
 begin
   targetdefine := GetTargetDefineParameters();
@@ -817,7 +897,7 @@ begin
     end;
     PrepareBaseParameters();
     caller.AddParameter('orl');
-    caller.Run(@VSProg_CommonParseLockCallback, FALSE, TRUE);
+    caller.Run(@VSProg_CommonParseReadLockCallback, FALSE, TRUE);
     if bFatalError then
     begin
       exit;
@@ -835,12 +915,9 @@ begin
   FormParaEditor.FreeRecord();
   caller.Run(@VSProg_CommonParseParaCallback, FALSE, TRUE);
 
-  str_tmp := ParaString.Strings[cbboxTarget.ItemIndex];
-  init := 0;
-  bytelen := 0;
-  FormParaEditor.GetIntegerParameter(str_tmp, 'lock_default', init);
-  FormParaEditor.GetIntegerParameter(str_tmp, 'lock_bytelen', bytelen);
-  FormParaEditor.SetParameter(init, bytelen, StrToInt(lbledtLock.Text), 'Lock');
+  init := TargetSetting[cbboxTarget.ItemIndex].lock_default;
+  bytelen := TargetSetting[cbboxTarget.ItemIndex].lock_bytelen;
+  FormParaEditor.SetParameter(init, bytelen, StrToInt(lbledtLock.Text), 'Lock', not chkboxNowarning.Checked);
   if mrOK = FormParaEditor.ShowModal then
   begin
     // OK clicked, get value
@@ -902,8 +979,6 @@ begin
 end;
 
 procedure TFormMain.btnWriteClick(Sender: TObject);
-var
-  success: boolean;
 begin
   if OpenOCD_Caller.IsRunning() or caller.IsRunning() then
   begin
@@ -918,31 +993,23 @@ begin
 
   PrepareCommonParameters();
 
-  // operations
-  case TargetType of
-    TT_NONE:
-      exit;
-    TT_PSOC1:
-      success := PSoC1_AddWriteParameters();
-    TT_AT89S5X:
-      success := AT89S5X_AddWriteParameters();
-    TT_C8051F:
-      success := C8051F_AddWriteParameters();
-    TT_AVR8:
-      success := AVR8_AddWriteParameters();
-    TT_MSP430:
-      success := MSP430_AddWriteParameters();
-    TT_COMISP:
-      success := COMISP_AddWriteParameters();
-    TT_LPCICP:
-      success := LPCICP_AddWriteParameters();
-    TT_CORTEXM3:
-      success := CortexM3_AddWriteParameters();
+  if chkboxEraseBeforeWrite.Checked and not VSProg_CommonAddEraseOperation() then
+  begin
+    MessageDlg('Error', 'Fail to add erase operation', mtError, [mbOK], 0);
+    caller.UnTake;
+    exit;
   end;
 
-  if not success then
+  if not VSProg_CommonAddWriteOperation() then
   begin
-    MessageDlg('Error', 'Option Error!', mtError, [mbOK], 0);
+    MessageDlg('Error', 'Fail to add write operation', mtError, [mbOK], 0);
+    caller.UnTake;
+    exit;
+  end;
+
+  if chkboxVerifyAfterWrite.Checked and not VSProg_CommonAddVerifyOperation() then
+  begin
+    MessageDlg('Error', 'Fail to add verify operation', mtError, [mbOK], 0);
     caller.UnTake;
     exit;
   end;
@@ -976,39 +1043,107 @@ begin
   AdjustComponentColor(cbboxMode);
   AdjustComponentColor(lbledtFuse);
   AdjustComponentColor(lbledtLock);
+  AdjustComponentColor(lbledtCali);
+  AdjustComponentColor(lbledtUsrSig);
   AdjustComponentColor(lbledtFreq);
 end;
 
 procedure TFormMain.cbboxTargetChange(Sender: TObject);
 var
-  str_tmp: string;
+  index: integer;
 begin
-  // to do: change the GUI according to different chip
-  str_tmp := ParaString.Strings[cbboxTarget.ItemIndex];
+  index := cbboxTarget.ItemIndex;
+
+  VSProg_CommonTargetInit(TargetSetting[index].target);
+
+  if TargetSetting[index].fuse_bytelen > 0 then
+  begin
+    lbledtFuse.Enabled := TRUE;
+    btnEditFuse.Enabled := TRUE;
+  end
+  else
+  begin
+    lbledtFuse.Enabled := False;
+    btnEditFuse.Enabled := False;
+  end;
+  VSProg_CommonUpdateFuse(TargetSetting[index].fuse_default,
+                          TargetSetting[index].fuse_bytelen);
+
+  if TargetSetting[index].lock_bytelen > 0 then
+  begin
+    lbledtLock.Enabled := TRUE;
+    btnEditLock.Enabled := TRUE;
+  end
+  else
+  begin
+    lbledtLock.Enabled := FALSE;
+    btnEditLock.Enabled := FALSE;
+  end;
+  VSProg_CommonUpdateLock(TargetSetting[index].lock_default,
+                          TargetSetting[index].lock_bytelen);
+
+  if TargetSetting[index].cali_bytelen > 0 then
+  begin
+    lbledtCali.Enabled := TRUE;
+    btnEditCali.Enabled := TRUE;
+  end
+  else
+  begin
+    lbledtCali.Enabled := FALSE;
+    btnEditCali.Enabled := FALSE;
+  end;
+  VSProg_CommonUpdateCali(TargetSetting[index].cali_default,
+                          TargetSetting[index].cali_bytelen);
+
+  if TargetSetting[index].usrsig_bytelen > 0 then
+  begin
+    lbledtUsrSig.Enabled := TRUE;
+    btnEditUsrSig.Enabled := TRUE;
+  end
+  else
+  begin
+    lbledtUsrSig.Enabled := FALSE;
+    btnEditUsrSig.Enabled := FALSE;
+  end;
+  VSProg_CommonUpdateUsrSig(TargetSetting[index].usrsig_default,
+                            TargetSetting[index].usrsig_bytelen);
+
+  if TargetSetting[index].mode = '' then
+  begin
+    cbboxMode.Clear;
+    cbboxMode.Enabled := FALSE;
+  end
+  else
+  begin
+    cbboxMode.Enabled := TRUE;
+  end;
+
   case TargetType of
     TT_NONE:
       exit;
     TT_PSOC1:
-      PSoC1_Update_Chip(str_tmp);
+      PSoC1_Update_Chip(TargetSetting[index]);
     TT_AT89S5X:
-      AT89S5X_Update_Chip(str_tmp);
+      AT89S5X_Update_Chip(TargetSetting[index]);
     TT_C8051F:
-      C8051F_Update_Chip(str_tmp);
+      C8051F_Update_Chip(TargetSetting[index]);
     TT_AVR8:
-      AVR8_Update_Chip(str_tmp);
+      AVR8_Update_Chip(TargetSetting[index]);
     TT_MSP430:
-      MSP430_Update_Chip(str_tmp);
+      MSP430_Update_Chip(TargetSetting[index]);
     TT_COMISP:
-      COMISP_Update_Chip(str_tmp);
-//    TT_LPCICP:
-//      LPCICP_Update_chip(str_tmp);
+      COMISP_Update_Chip(TargetSetting[index]);
+    TT_LPCICP:
+      LPCICP_Update_chip(TargetSetting[index]);
     TT_CORTEXM3:
-      CortexM3_Update_chip(str_tmp);
+      CortexM3_Update_chip(TargetSetting[index]);
   end;
 
   AdjustComponentColor(cbboxMode);
   AdjustComponentColor(lbledtFuse);
   AdjustComponentColor(lbledtLock);
+  AdjustComponentColor(lbledtCali);
+  AdjustComponentColor(lbledtUsrSig);
   AdjustComponentColor(lbledtFreq);
 end;
 
@@ -1303,6 +1438,8 @@ begin
     AdjustComponentColor(cbboxMode);
     AdjustComponentColor(lbledtFuse);
     AdjustComponentColor(lbledtLock);
+    AdjustComponentColor(lbledtCali);
+    AdjustComponentColor(lbledtUsrSig);
     AdjustComponentColor(lbledtFreq);
   end
   else
@@ -1365,10 +1502,9 @@ begin
   end;
 end;
 
-function TFormMain.VSProg_CommonParseFuseCallback(line: string): boolean;
+function TFormMain.VSProg_CommonParseReadTargetCallback(line, target: string; var result_str: string): boolean;
 var
-  fuse_str: string;
-  pos_start, bytelen: integer;
+  pos_start: integer;
 begin
   if CheckFatalError(line) then
   begin
@@ -1377,37 +1513,46 @@ begin
   end;
   result := TRUE;
 
-  pos_start := Pos(FUSE_READ_STR, line);
+  result_str := '';
+  pos_start := Pos(target + ' read is ', line);
   if pos_start > 0 then
   begin
-    fuse_str := Copy(line, pos_start + Length(FUSE_READ_STR), Length(line) - pos_start);
-    FormParaEditor.WipeTailEnter(fuse_str);
-    bytelen := 0;
-    FormParaEditor.GetIntegerParameter(ParaString.Strings[cbboxTarget.ItemIndex], 'fuse_bytelen', bytelen);
-    VSProg_CommonUpdateFuse(StrToInt(fuse_str), bytelen);
+    result_str := Copy(line, pos_start + Length(target + ' read is '), Length(line) - pos_start);
+    FormParaEditor.WipeTailEnter(result_str);
   end;
 end;
 
-function TFormMain.VSProg_CommonParseLockCallback(line: string): boolean;
+function TFormMain.VSProg_CommonParseReadFuseCallback(line: string): boolean;
 var
-  lock_str: string;
-  pos_start, bytelen: integer;
+  fuse_str: string;
 begin
-  if CheckFatalError(line) then
+  result := TRUE;
+  fuse_str := '';
+  if not VSProg_CommonParseReadTargetCallback(line, 'fuse', fuse_str) then
   begin
     result := FALSE;
-    exit;
   end;
-  result := TRUE;
 
-  pos_start := Pos(LOCK_READ_STR, line);
-  if pos_start > 0 then
+  if fuse_str <> '' then
   begin
-    lock_str := Copy(line, pos_start + Length(LOCK_READ_STR), Length(line) - pos_start);
-    FormParaEditor.WipeTailEnter(lock_str);
-    bytelen := 0;
-    FormParaEditor.GetIntegerParameter(ParaString.Strings[cbboxTarget.ItemIndex], 'lock_bytelen', bytelen);
-    VSProg_CommonUpdateLock(StrToInt(lock_str), bytelen);
+    VSProg_CommonUpdateFuse(StrToInt(fuse_str), TargetSetting[cbboxTarget.ItemIndex].fuse_bytelen);
+  end;
+end;
+
+function TFormMain.VSProg_CommonParseReadLockCallback(line: string): boolean;
+var
+  lock_str: string;
+begin
+  result := TRUE;
+  lock_str := '';
+  if not VSProg_CommonParseReadTargetCallback(line, 'lock', lock_str) then
+  begin
+    result := FALSE;
+  end;
+
+  if lock_str <> '' then
+  begin
+    VSProg_CommonUpdateLock(StrToInt(lock_str), TargetSetting[cbboxTarget.ItemIndex].lock_bytelen);
   end;
 end;
 
@@ -1438,21 +1583,34 @@ begin
   FormParaEditor.ParseLine(line);
 end;
 
-procedure TFormMain.VSProg_AddParaString(para: string; fuseByteLen, fuseDefault, lockByteLen, lockDefault: integer);
+procedure TFormMain.VSProg_AddTargetSetting(setting: TTargetSetting);
+var
+  index: integer;
 begin
-  ParaString.Add('para = ' + para
-                       + ', fuse_bytelen = ' + IntToStr(fuseByteLen)
-                       + ', fuse_default = ' + IntToStr(fuseDefault)
-                       + ', lock_bytelen = ' + IntToStr(lockByteLen)
-                       + ', lock_default = ' + IntToStr(lockDefault));
+  index := Length(TargetSetting);
+  SetLength(TargetSetting, index + 1);
+
+  TargetSetting[index] := setting;
+end;
+
+procedure TFormMain.VSProg_TargetSettingInit(var setting: TTargetSetting);
+begin
+  setting.mode := '';
+  setting.target := '';
+  setting.fuse_bytelen := 0;
+  setting.fuse_default := 0;
+  setting.lock_bytelen := 0;
+  setting.lock_default := 0;
+  setting.cali_bytelen := 0;
+  setting.cali_default := 0;
+  setting.usrsig_bytelen := 0;
+  setting.usrsig_default := 0;
 end;
 
 function TFormMain.VSProg_CommonParseSupportCallback(line: string): boolean;
 var
-  chip_name: string;
-  str_tmp: string;
-  fuseByteLen, lockByteLen: integer;
-  fuseDefault, lockDefault: integer;
+  chip_name, chip_module_header: string;
+  setting: TTargetSetting;
 begin
   if CheckFatalError(line) then
   begin
@@ -1492,44 +1650,40 @@ begin
   if chip_name <> '' then
   begin
     // Add special parameter
-    str_tmp := '';
+    VSProg_TargetSettingInit(setting);
+
     case TargetType of
       TT_NONE:
         exit;
       TT_PSOC1:
-        str_tmp := PSoC1_Init_Para(line);
+        PSoC1_Init_Para(line, setting);
       TT_AT89S5X:
-        str_tmp := AT89S5X_Init_Para(line);
+        AT89S5X_Init_Para(line, setting);
       TT_C8051F:
-        str_tmp := C8051F_Init_Para(line);
+        C8051F_Init_Para(line, setting);
       TT_AVR8:
-        str_tmp := AVR8_Init_Para(line);
+        AVR8_Init_Para(line, setting);
       TT_MSP430:
-        str_tmp := MSP430_Init_Para(line);
+        MSP430_Init_Para(line, setting);
       TT_COMISP:
-        str_tmp := COMISP_Init_Para(line);
+        COMISP_Init_Para(line, setting);
       TT_LPCICP:
-        str_tmp := LPCICP_Init_Para(line);
+        LPCICP_Init_Para(line, setting);
       TT_CORTEXM3:
-        str_tmp := CortexM3_Init_Para(line);
+        CortexM3_Init_Para(line, setting);
     end;
 
-    // fuse and lock support
-    fuseByteLen := 0;
-    if FormParaEditor.GetIntegerParameter(line, 'fuse_bytelen', fuseByteLen) and (fuseByteLen > 0) then
-    begin
-      fuseDefault := 0;
-      FormParaEditor.GetIntegerParameter(line, 'fuse_default', fuseDefault);
-    end;
-    lockByteLen := 0;
-    if FormParaEditor.GetIntegerParameter(line, 'lock_bytelen', lockByteLen) and (lockByteLen > 0) then
-    begin
-      lockDefault := 0;
-      FormParaEditor.GetIntegerParameter(line, 'lock_default', lockDefault);
-    end;
+    FormParaEditor.GetIntegerParameter(line, 'fuse_bytelen', setting.fuse_bytelen);
+    FormParaEditor.GetIntegerParameter(line, 'fuse_default', setting.fuse_default);
+    FormParaEditor.GetIntegerParameter(line, 'lock_bytelen', setting.lock_bytelen);
+    FormParaEditor.GetIntegerParameter(line, 'lock_default', setting.lock_default);
+    FormParaEditor.GetIntegerParameter(line, 'cali_bytelen', setting.cali_bytelen);
+    FormParaEditor.GetIntegerParameter(line, 'cali_default', setting.cali_default);
+    FormParaEditor.GetIntegerParameter(line, 'usrsig_bytelen', setting.usrsig_bytelen);
+    FormParaEditor.GetIntegerParameter(line, 'usrsig_default', setting.usrsig_default);
 
     cbboxTarget.Items.Add(chip_name);
-    VSProg_AddParaString(str_tmp, fuseByteLen, fuseDefault, lockByteLen, lockDefault);
+    VSProg_AddTargetSetting(setting);
   end;
   
   result := TRUE;
@@ -1581,19 +1735,41 @@ begin
   end;
 end;
 
+procedure TFormMain.VSProg_CommonUpdateSetting(value, bytelen: integer; edt: TLabeledEdit);
+begin
+  if bytelen > 0 then
+  begin
+    edt.Text := '0x' + IntToHex(value, bytelen);
+  end
+  else
+  begin
+    edt.Text := '';
+  end;
+end;
+
+procedure TFormMain.VSProg_CommonUpdateUsrSig(sig, bytelen: integer);
+begin
+  VSProg_CommonUpdateSetting(sig, bytelen, lbledtUsrSig);
+end;
+
+procedure TFormMain.VSProg_CommonUpdateCali(cali, bytelen: integer);
+begin
+  VSProg_CommonUpdateSetting(cali, bytelen, lbledtCali);
+end;
+
 procedure TFormMain.VSProg_CommonUpdateLock(lock, bytelen: integer);
 begin
-  lbledtLock.Text := '0x' + IntToHex(lock, bytelen);
+  VSProg_CommonUpdateSetting(lock, bytelen, lbledtLock);
 end;
 
 procedure TFormMain.VSProg_CommonUpdateFuse(fuse, bytelen: integer);
 begin
-  lbledtFuse.Text := '0x' + IntToHex(fuse, bytelen);
+  VSProg_CommonUpdateSetting(fuse, bytelen, lbledtFuse);
 end;
 
-procedure TFormMain.VSProg_CommonInit(para: string);
-var
-  str_tmp: string;
+// f: Flash, e: EEprom, l: Lock, u: Fuse, s: User Signature, c: Calibration Value
+// M: Mass-Product, F: Frequency, X: Execute, A: AutoDetect, C: COM Port Setting
+procedure TFormMain.VSProg_CommonTargetInit(para: string);
 begin
   btnEditApp.Caption := 'Flash';
   chkboxApp.Caption := 'Flash';
@@ -1666,15 +1842,41 @@ begin
   if Pos('s', para) > 0 then
   begin
     btnEditUsrSig.Enabled := TRUE;
+    lbledtUsrSig.Enabled := TRUE;
     chkboxUsrSig.Enabled := TRUE;
     chkboxUsrSig.Checked := TRUE;
   end
   else
   begin
     btnEditUsrSig.Enabled := FALSE;
+    lbledtUsrSig.Enabled := FALSE;
     chkboxUsrSig.Enabled := FALSE;
     chkboxUsrSig.Checked := FALSE;
   end;
+
+  btnEditCali.Caption := 'Cali.';
+  chkboxCali.Caption := 'Cali.';
+  if Pos('c', para) > 0 then
+  begin
+    btnEditCali.Enabled := TRUE;
+    lbledtCali.Enabled := TRUE;
+    chkboxCali.Enabled := TRUE;
+    chkboxCali.Checked := TRUE;
+  end
+  else
+  begin
+    btnEditCali.Enabled := FALSE;
+    lbledtCali.Enabled := FALSE;
+    chkboxCali.Enabled := FALSE;
+    chkboxCali.Checked := FALSE;
+  end;
+end;
+
+procedure TFormMain.VSProg_CommonInit(para: string);
+var
+  str_tmp: string;
+begin
+  VSProg_CommonTargetInit(para);
 
   chkboxMP.Checked := FALSE;
   if Pos('M', para) > 0 then
@@ -1714,10 +1916,12 @@ begin
     if Pos('C', para) > 0 then
     begin
       btnTargetDetect.Caption := COMSETUP_STR;
+      btnTargetDetect.Hint := COMSETUP_HINT;
     end
     else
     begin
       btnTargetDetect.Caption := AUTODETECT_STR;
+      btnTargetDetect.Hint := COMSETUP_HINT;
     end;
     btnTargetDetect.Enabled := TRUE;
   end
@@ -1737,52 +1941,7 @@ begin
 end;
 
 { PSoC1 implementation }
-function TFormMain.PSoC1_AddWriteParameters(): boolean;
-var
-  para_tmp: string;
-begin
-  // Erase before write
-  if chkboxEraseBeforeWrite.Checked then
-  begin
-    caller.AddParameter('oe');
-  end;
-
-  if chkboxApp.Checked or chkboxLock.Checked then
-  begin
-    para_tmp := 'ow';
-    if chkboxApp.Checked then
-    begin
-      para_tmp := para_tmp + 'f';
-    end;
-    if chkboxLock.Checked then
-    begin
-      para_tmp := para_tmp + 's';
-    end;
-    caller.AddParameter(para_tmp);
-  end
-  else
-  begin
-    result := FALSE;
-    exit;
-  end;
-
-  // Verify after write
-  if chkboxVerifyAfterWrite.Checked and chkboxApp.Checked then
-  begin
-    PSoC1_AddVerifyParameters();
-  end;
-  
-  result := TRUE;
-end;
-
-function TFormMain.PSoC1_AddReadParameters(): boolean;
-begin
-  result := TRUE;
-end;
-
-function TFormMain.PSoC1_AddVerifyParameters(): boolean;
-var
-  para_tmp: string;
+function TFormMain.PSoC1_AddVerifyParameters(var para: string): boolean;
 begin
   if not chkboxApp.Checked then
   begin
@@ -1790,23 +1949,17 @@ begin
   end
   else
   begin
-    para_tmp := 'ov';
-    if chkboxApp.Checked then
-    begin
-      para_tmp := para_tmp + 'fc';
-    end;
-    caller.AddParameter(para_tmp);
+    para := 'fk';
     result := TRUE;
   end;
 end;
 
-procedure TFormMain.PSoC1_Update_Chip(p_str: string);
+procedure TFormMain.PSoC1_Update_Chip(setting: TTargetSetting);
 var
   str_tmp: string;
   mode_str: string;
 begin
-  mode_str := '';
-  FormParaEditor.GetStringParameter(p_str, 'para', mode_str);
+  mode_str := setting.mode;
   str_tmp := cbboxMode.Text;
   cbboxMode.Clear;
   if Pos('r', mode_str) > 0 then
@@ -1828,20 +1981,26 @@ begin
   end;
 end;
 
-function TFormMain.PSoC1_Init_Para(line: string): string;
+function TFormMain.PSoC1_Init_Para(line: string; var setting: TTargetSetting): boolean;
 begin
-  result := '';
-  FormParaEditor.GetStringParameter(line, 'init_mode', result);
+  FormParaEditor.GetStringParameter(line, 'init_mode', setting.mode);
+  setting.target := 'fl';
+  result := TRUE;
 end;
 
 function TFormMain.PSoC1_Init(): boolean;
+var
+  setting: TTargetSetting;
 begin
   result := TRUE;
 
   cbboxTarget.Clear;
   cbboxTarget.Items.Add('psoc1');
-  ParaString.Clear;
-  VSProg_AddParaString('rp', 0, 0, 0, 0);
+
+  VSProg_TargetSettingInit(setting);
+  setting.mode := 'rp';
+  setting.target := 'fl';
+  VSProg_AddTargetSetting(setting);
 
   // call 'vsprog -Spsoc1' to extract supported psoc1 targets
   if not PrepareToRunCLI() then
@@ -1863,84 +2022,26 @@ begin
   else
   begin
     cbboxTarget.ItemIndex := 0;
-//    cbboxTargetChange(cbboxTarget);
   end;
 
-  // flash, lock, Mass-product, Autodetect
-//  VSProg_CommonInit('flAM');
-  VSProg_CommonInit('flA');
-
-  btnEditLock.Caption := 'Secure';
-  btnEditLock.Enabled := FALSE;
-  lbledtLock.Enabled := FALSE;
-  chkboxLock.Caption := 'Secure';
-  cbboxMode.Enabled := TRUE;
+  // Autodetect
+  VSProg_CommonInit('A');
 end;
 
 { C8051F implementations }
-function TFormMain.C8051F_AddWriteParameters(): boolean;
-var
-  para_tmp: string;
-begin
-  // Erase before write
-  if chkboxEraseBeforeWrite.Checked then
-  begin
-    caller.AddParameter('oef');
-  end;
-
-  if chkboxApp.Checked then
-  begin
-    para_tmp := 'owf';
-    caller.AddParameter(para_tmp);
-  end
-  else
-  begin
-    result := FALSE;
-    exit;
-  end;
-
-  // Verify after write
-  if chkboxVerifyAfterWrite.Checked and chkboxApp.Checked then
-  begin
-    C8051F_AddVerifyParameters();
-  end;
-
-  result := TRUE;
-end;
-
-function TFormMain.C8051F_AddReadParameters(): boolean;
-begin
-  result := TRUE;
-end;
-
-function TFormMain.C8051F_AddVerifyParameters(): boolean;
-var
-  para_tmp: string;
-begin
-  if not chkboxApp.Checked then
-  begin
-    result := FALSE;
-  end
-  else
-  begin
-    para_tmp := 'ov';
-    if chkboxApp.Checked then
-    begin
-      para_tmp := para_tmp + 'f';
-    end;
-    caller.AddParameter(para_tmp);
-    result := TRUE;
-  end;
-end;
-
 function TFormMain.C8051F_Init(): boolean;
+var
+  setting: TTargetSetting;
 begin
   result := TRUE;
 
   cbboxTarget.Clear;
   cbboxTarget.Items.Add('c8051f');
-  ParaString.Clear;
-  VSProg_AddParaString('jc', 0, 0, 0, 0);
+
+  VSProg_TargetSettingInit(setting);
+  setting.mode := 'jc';
+  setting.target := 'f';
+  VSProg_AddTargetSetting(setting);
 
   // call 'vsprog -Sc8051f' to check support
   if not PrepareToRunCLI() then
@@ -1962,20 +2063,17 @@ begin
   else
   begin
     cbboxTarget.ItemIndex := 0;
-//    cbboxTargetChange(cbboxTarget);
   end;
 
-  // flash, Autodetect
-  VSProg_CommonInit('fA');
-  cbboxMode.Enabled := TRUE;
+  // Autodetect
+  VSProg_CommonInit('A');
 end;
 
-procedure TFormMain.C8051F_Update_Chip(p_str: string);
+procedure TFormMain.C8051F_Update_Chip(setting: TTargetSetting);
 var
   mode_str: string;
 begin
-  mode_str := '';
-  FormParaEditor.GetStringParameter(p_str, 'para', mode_str);
+  mode_str := setting.mode;
   cbboxMode.Items.Clear;
   if Pos('j', mode_str) > 0 then
   begin
@@ -1988,136 +2086,64 @@ begin
   cbboxMode.ItemIndex := 0;
 end;
 
-function TFormMain.C8051F_Init_Para(line: string): string;
+function TFormMain.C8051F_Init_Para(line: string; var setting: TTargetSetting): boolean;
 begin
-  result := '';
-  FormParaEditor.GetStringParameter(line, 'prog_mode', result);
+  FormParaEditor.GetStringParameter(line, 'prog_mode', setting.mode);
+  setting.target := 'f';
+  result := TRUE;
 end;
 
 { AT89S5X implementations }
-function TFormMain.AT89S5X_AddWriteParameters(): boolean;
+procedure TFormMain.AT89S5X_Update_Chip(setting: TTargetSetting);
 var
-  para_tmp: string;
+  mode_str, str_tmp: string;
 begin
-  // Erase before write
-  if chkboxEraseBeforeWrite.Checked then
+  mode_str := setting.mode;
+  str_tmp := cbboxMode.Text;
+  cbboxMode.Clear;
+  if Pos('p', mode_str) > 0 then
   begin
-    caller.AddParameter('oe');
+    cbboxMode.Items.Add('p:Page');
+  end;
+  if Pos('b', mode_str) > 0 then
+  begin
+    cbboxMode.Items.Add('b:Byte');
   end;
 
-  if chkboxApp.Checked or chkboxLock.Checked then
+  if cbboxMode.Items.IndexOf(str_tmp) >= 0 then
   begin
-    para_tmp := 'ow';
-    if chkboxApp.Checked then
-    begin
-      para_tmp := para_tmp + 'f';
-    end;
-    if chkboxLock.Checked then
-    begin
-      para_tmp := para_tmp + 'l';
-    end;
-    caller.AddParameter(para_tmp);
+    cbboxMode.ItemIndex := cbboxMode.Items.IndexOf(str_tmp);
   end
   else
   begin
-    result := FALSE;
-    exit;
+    cbboxMode.ItemIndex := 0;
   end;
+end;
 
-  // Verify after write
-  if chkboxVerifyAfterWrite.Checked then
-  begin
-    AT89S5X_AddVerifyParameters();
-  end;
+function TFormMain.AT89S5X_Init_Para(line: string; var setting: TTargetSetting): boolean;
+begin
+  line := line;
 
+  setting.mode := 'pb';
+  setting.target := 'f';
   result := TRUE;
-end;
-
-function TFormMain.AT89S5X_AddReadParameters(): boolean;
-begin
-  result := TRUE;
-end;
-
-function TFormMain.AT89S5X_AddVerifyParameters(): boolean;
-var
-  para_tmp: string;
-begin
-  if not chkboxApp.Checked and not chkboxLock.Checked then
-  begin
-    result := FALSE;
-  end
-  else
-  begin
-    para_tmp := 'ov';
-    if chkboxApp.Checked then
-    begin
-      para_tmp := para_tmp + 'f';
-    end;
-    if chkboxLock.Checked then
-    begin
-      para_tmp := para_tmp + 'l'
-    end;
-    caller.AddParameter(para_tmp);
-    result := TRUE;
-  end;
-end;
-
-procedure TFormMain.AT89S5X_Update_Chip(p_str: string);
-var
-  mode_str: string;
-begin
-  mode_str := '';
-  FormParaEditor.GetStringParameter(p_str, 'para', mode_str);
-  if Pos('f', mode_str) > 0 then
-  begin
-    lbledtFuse.Enabled := FALSE;
-    btnEditFuse.Enabled := FALSE;
-    chkboxFuse.Checked := FALSE;
-    chkboxFuse.Enabled := FALSE;
-  end
-  else
-  begin
-    lbledtFuse.Enabled := FALSE;
-    btnEditFuse.Enabled := FALSE;
-    chkboxFuse.Checked := FALSE;
-    chkboxFuse.Enabled := FALSE;
-  end;
-  if Pos('u', mode_str) > 0 then
-  begin
-    btnEditUsrSig.Enabled := TRUE;
-  end
-  else
-  begin
-    btnEditUsrSig.Enabled := FALSE;
-  end;
-end;
-
-function TFormMain.AT89S5X_Init_Para(line: string): string;
-var
-  int_tmp: integer;
-begin
-  result := '';
-  int_tmp := 0;
-  FormParaEditor.GetIntegerParameter(line, 'fuse_size', int_tmp);
-  if int_tmp > 0 then
-  begin
-    result := result + 'f';
-  end;
-  FormParaEditor.GetIntegerParameter(line, 'usrsig_size', int_tmp);
-  if int_tmp > 0 then
-  begin
-    result := result + 'u';
-  end;
 end;
 
 function TFormMain.AT89S5X_Init(): boolean;
+var
+  setting: TTargetSetting;
 begin
   result := TRUE;
 
   cbboxTarget.Clear;
   cbboxTarget.Items.Add('at89s5x');
-  ParaString.Clear;
-  VSProg_AddParaString('fu', 0, 0, 0, 0);
+
+  VSProg_TargetSettingInit(setting);
+  setting.mode := 'pb';
+  setting.target := 'fl';
+  setting.lock_bytelen := 1;
+  setting.lock_default := 1;
+  VSProg_AddTargetSetting(setting);
 
   // call 'vsprog -Sat89s5x' to extract supported at89s5x targets
   if not PrepareToRunCLI() then
@@ -2139,34 +2165,33 @@ begin
   else
   begin
     cbboxTarget.ItemIndex := 0;
-//    cbboxTargetChange(cbboxTarget);
   end;
 
-  // flash, lock, Frequency, Autodetect
-  VSProg_CommonInit('flFA');
-
-  lbledtLock.Text := '1';
-  cbboxMode.Items.Add('p:Page');
-  cbboxMode.Items.Add('b:Byte');
-  cbboxMode.ItemIndex := 0;
-  cbboxMode.Enabled := TRUE;
+  // Frequency, Autodetect
+  VSProg_CommonInit('FA');
 end;
 
 { MSP430 implementations }
-function TFormMain.MSP430_Init_Para(line: string): string;
+function TFormMain.MSP430_Init_Para(line: string; var setting: TTargetSetting): boolean;
 begin
-  result := '';
-  FormParaEditor.GetStringParameter(line, 'prog_mode', result);
+  FormParaEditor.GetStringParameter(line, 'prog_mode', setting.mode);
+  setting.target := 'f';
+  result := TRUE;
 end;
 
 function TFormMain.MSP430_Init(): boolean;
+var
+  setting: TTargetSetting;
 begin
   result := TRUE;
 
   cbboxTarget.Clear;
   cbboxTarget.Items.Add('msp430');
-  ParaString.Clear;
-  VSProg_AddParaString('jsb', 0, 0, 0, 0);
+
+  VSProg_TargetSettingInit(setting);
+  setting.mode := 'jsb';
+  setting.target := 'f';
+  VSProg_AddTargetSetting(setting);
 
   // call 'vsprog -Smsp430' to extract supported at89s5x targets
   if not PrepareToRunCLI() then
@@ -2188,22 +2213,18 @@ begin
   else
   begin
     cbboxTarget.ItemIndex := 0;
-//    cbboxTargetChange(cbboxTarget);
   end;
 
   // flash, Autodetect
-  VSProg_CommonInit('fA');
-
-  cbboxMode.Enabled := TRUE;
+  VSProg_CommonInit('A');
 end;
 
-procedure TFormMain.MSP430_Update_Chip(p_str: string);
+procedure TFormMain.MSP430_Update_Chip(setting: TTargetSetting);
 var
   str_tmp: string;
   mode_str: string;
 begin
-  mode_str := '';
-  FormParaEditor.GetStringParameter(p_str, 'para', mode_str);
+  mode_str := setting.mode;
   str_tmp := cbboxMode.Text;
   cbboxMode.Clear;
   if Pos('j', mode_str) > 0 then
@@ -2229,75 +2250,21 @@ begin
   end;
 end;
 
-function TFormMain.MSP430_AddWriteParameters(): boolean;
-var
-  para_tmp: string;
-begin
-  // Erase before write
-  if chkboxEraseBeforeWrite.Checked then
-  begin
-    caller.AddParameter('oe');
-  end;
-
-  if chkboxApp.Checked then
-  begin
-    para_tmp := 'ow';
-    if chkboxApp.Checked then
-    begin
-      para_tmp := para_tmp + 'f';
-    end;
-    caller.AddParameter(para_tmp);
-  end
-  else
-  begin
-    result := FALSE;
-    exit;
-  end;
-
-  // Verify after write
-  if chkboxVerifyAfterWrite.Checked then
-  begin
-    MSP430_AddVerifyParameters();
-  end;
-
-  result := TRUE;
-end;
-
-function TFormMain.MSP430_AddReadParameters(): boolean;
-begin
-  result := TRUE;
-end;
-
-function TFormMain.MSP430_AddVerifyParameters(): boolean;
-var
-  para_tmp: string;
-begin
-  if not chkboxApp.Checked then
-  begin
-    result := FALSE;
-  end
-  else
-  begin
-    para_tmp := 'ov';
-    if chkboxApp.Checked then
-    begin
-      para_tmp := para_tmp + 'f';
-    end;
-    caller.AddParameter(para_tmp);
-    result := TRUE;
-  end;
-end;
-
 { STM8 implementations }
 function TFormMain.STM8_Init(): boolean;
+var
+  setting: TTargetSetting;
 begin
   result := TRUE;
 
   cbboxTarget.Clear;
   cbboxTarget.Items.Add('stm8');
-  ParaString.Clear;
 
-  // call 'vsprog -Smsp430' to extract supported at89s5x targets
+  VSProg_TargetSettingInit(setting);
+  setting.target := 'f';
+  VSProg_AddTargetSetting(setting);
+
+  // call 'vsprog -Sstm8' to extract supported at89s5x targets
   if not PrepareToRunCLI() then
   begin
     result := FALSE;
@@ -2317,11 +2284,10 @@ begin
   else
   begin
     cbboxTarget.ItemIndex := 0;
-//    cbboxTargetChange(cbboxTarget);
   end;
 
-  // flash, Autodetect
-  VSProg_CommonInit('fA');
+  // Autodetect
+  VSProg_CommonInit('A');
 end;
 
 { EEPROM implementations }
@@ -2330,35 +2296,6 @@ begin
   result := TRUE;
 
   cbboxTarget.Clear;
-  cbboxTarget.Items.Add('eeprom_i2c');
-  cbboxTarget.Items.Add('eeprom_spi');
-  ParaString.Clear;
-
-  // call 'vsprog -Smsp430' to extract supported at89s5x targets
-  if not PrepareToRunCLI() then
-  begin
-    result := FALSE;
-    exit;
-  end;
-  caller.AddParameter('Seeprom_i2c');
-  LogInfo('Running...');
-  caller.Run(@VSProg_CommonParseSupportCallback, FALSE, TRUE);
-  LogInfo('Idle');
-
-  if bFatalError then
-  begin
-    tsEEPROM.Enabled := FALSE;
-    result := FALSE;
-    exit;
-  end
-  else
-  begin
-    cbboxTarget.ItemIndex := 0;
-//    cbboxTargetChange(cbboxTarget);
-  end;
-
-  // flash, Autodetect
-  VSProg_CommonInit('e');
 end;
 
 { ARM functions }
@@ -2458,13 +2395,22 @@ end;
 
 { AVR8 implementations }
 function TFormMain.AVR8_Init(): boolean;
+var
+  setting: TTargetSetting;
 begin
   result := TRUE;
 
   cbboxTarget.Clear;
   cbboxTarget.Items.Add('avr8');
-  ParaString.Clear;
-  VSProg_AddParaString('ijps', 0, 0, 0, 0);
+
+  VSProg_TargetSettingInit(setting);
+  setting.mode := 'ijps';
+  setting.target := 'ful';
+  setting.fuse_bytelen := 3;
+  setting.fuse_default := $FFFFFF;
+  setting.lock_bytelen := 1;
+  setting.lock_default := $FF;
+  VSProg_AddTargetSetting(setting);
 
   // call 'vsprog -Savr8' to extract supported avr8 targets
   if not PrepareToRunCLI() then
@@ -2486,32 +2432,24 @@ begin
   else
   begin
     cbboxTarget.ItemIndex := 0;
-//    cbboxTargetChange(cbboxTarget);
   end;
 
-  // flash, eeprom, fuse, lock, Autodetect, Frequency
-//  VSProg_CommonInit('feulAF');
-  VSProg_CommonInit('fulAF');
-
-  chkboxEE.Checked := FALSE;
-  chkboxLock.Checked := FALSE;
-  chkboxFuse.Checked := FALSE;
-  cbboxMode.Enabled := TRUE;
+  // Autodetect, Frequency
+  VSProg_CommonInit('AF');
 end;
 
-function TFormMain.AVR8_Init_Para(line: string): string;
+function TFormMain.AVR8_Init_Para(line: string; var setting: TTargetSetting): boolean;
 begin
-  result := '';
-  FormParaEditor.GetStringParameter(line, 'prog_mode', result);
+  FormParaEditor.GetStringParameter(line, 'prog_mode', setting.mode);
+  setting.target := 'ful';
+  result := TRUE;
 end;
 
-procedure TFormMain.AVR8_Update_Chip(p_str: string);
+procedure TFormMain.AVR8_Update_Chip(setting: TTargetSetting);
 var
   str_tmp, mode_str: string;
-  fl_num, fl_default: integer;
 begin
-  mode_str := '';
-  FormParaEditor.GetStringParameter(p_str, 'para', mode_str);
+  mode_str := setting.mode;
   str_tmp := cbboxMode.Text;
   cbboxMode.Clear;
   if Pos('i', mode_str) > 0 then
@@ -2540,40 +2478,6 @@ begin
     cbboxMode.ItemIndex := 0;
     AVR8_Update_Mode(cbboxMode.Text);
   end;
-
-  fl_num := 0;
-  fl_default := 0;
-  FormParaEditor.GetIntegerParameter(p_str, 'fuse_bytelen', fl_num);
-  VSProg_CommonUpdateFuse(0, fl_num);
-  if fl_num > 0 then
-  begin
-    FormParaEditor.GetIntegerParameter(p_str, 'fuse_default', fl_default);
-    VSProg_CommonUpdateFuse(fl_default, fl_num);
-    lbledtFuse.Enabled := True;
-    btnEditFuse.Enabled := True;
-  end
-  else
-  begin
-    lbledtFuse.Enabled := False;
-    btnEditFuse.Enabled := False;
-  end;
-
-  fl_num := 0;
-  fl_default := 0;
-  FormParaEditor.GetIntegerParameter(p_str, 'lock_bytelen', fl_num);
-  VSProg_CommonUpdateLock(0, fl_num);
-  if fl_num > 0 then
-  begin
-    FormParaEditor.GetIntegerParameter(p_str, 'lock_default', fl_default);
-    VSProg_CommonUpdateLock(fl_default, fl_num);
-    lbledtLock.Enabled := True;
-    btnEditLock.Enabled := True;
-  end
-  else
-  begin
-    lbledtLock.Enabled := False;
-    btnEditLock.Enabled := False;
-  end;
 end;
 
 procedure TFormMain.AVR8_Update_Mode(m_str: string);
@@ -2588,98 +2492,19 @@ begin
   end;
 end;
 
-function TFormMain.AVR8_AddReadParameters(): boolean;
-begin
-  result := TRUE;
-end;
-
-function TFormMain.AVR8_AddWriteParameters(): boolean;
-var
-  para_tmp: string;
-begin
-  // Erase before write
-  if chkboxEraseBeforeWrite.Checked then
-  begin
-    caller.AddParameter('oe');
-  end;
-
-  if chkboxApp.Checked or chkboxLock.Checked or chkboxEE.Checked or chkboxFuse.Checked then
-  begin
-    para_tmp := 'ow';
-    if chkboxApp.Checked then
-    begin
-      para_tmp := para_tmp + 'f';
-    end;
-    if chkboxEE.Checked then
-    begin
-      para_tmp := para_tmp + 'e';
-    end;
-    if chkboxFuse.Checked then
-    begin
-      para_tmp := para_tmp + 'u';
-    end;
-    if chkboxLock.Checked then
-    begin
-      para_tmp := para_tmp + 'l'
-    end;
-    caller.AddParameter(para_tmp);
-  end
-  else
-  begin
-    result := FALSE;
-    exit;
-  end;
-
-  // Verify after write
-  if chkboxVerifyAfterWrite.Checked then
-  begin
-    AVR8_AddVerifyParameters();
-  end;
-
-  result := TRUE;
-end;
-
-function TFormMain.AVR8_AddVerifyParameters(): boolean;
-var
-  para_tmp: string;
-begin
-  if not chkboxApp.Checked and not chkboxLock.Checked and not chkboxEE.Checked and not chkboxFuse.Checked then
-  begin
-    result := FALSE;
-  end
-  else
-  begin
-    para_tmp := 'ov';
-    if chkboxApp.Checked then
-    begin
-      para_tmp := para_tmp + 'f';
-    end;
-    if chkboxEE.Checked then
-    begin
-      para_tmp := para_tmp + 'e';
-    end;
-    if chkboxFuse.Checked then
-    begin
-      para_tmp := para_tmp + 'u';
-    end;
-    if chkboxLock.Checked then
-    begin
-      para_tmp := para_tmp + 'l'
-    end;
-    caller.AddParameter(para_tmp);
-    result := TRUE;
-  end;
-end;
-
 { PIC8 implementations }
 function TFormMain.PIC8_Init(): boolean;
+var
+  setting: TTargetSetting;
 begin
   result := TRUE;
 
   cbboxTarget.Clear;
   cbboxTarget.Items.Add('pic8');
-  ParaString.Clear;
-  VSProg_AddParaString('', 0, 0, 0, 0);
+
+  VSProg_TargetSettingInit(setting);
+  setting.target := 'f';
+  VSProg_AddTargetSetting(setting);
 
   // call 'vsprog -Spic8' to extract supported pic8 targets
   if not PrepareToRunCLI() then
@@ -2701,11 +2526,10 @@ begin
   else
   begin
     cbboxTarget.ItemIndex := 0;
-//    cbboxTargetChange(cbboxTarget);
   end;
 
-  // flash, Autodetect
-  VSProg_CommonInit('fA');
+  // Autodetect
+  VSProg_CommonInit('A');
 end;
 
 { COMISP declarations }
@@ -2714,7 +2538,6 @@ begin
   result := TRUE;
 
   cbboxTarget.Clear;
-  ParaString.Clear;
 
   // call 'vsprog -Scomisp' to extract supported comisp targets
   if not PrepareToRunCLI() then
@@ -2736,116 +2559,64 @@ begin
   else
   begin
     cbboxTarget.ItemIndex := 0;
-//    cbboxTargetChange(cbboxTarget);
   end;
 
-  // flash
-  VSProg_CommonInit('CflX');
-  chkboxLock.Checked := FALSE;
-  lbledtLock.Enabled := FALSE;
-  btnEditLock.Enabled := FALSE;
+  VSProg_CommonInit('CX');
 end;
 
-function TFormMain.COMISP_Init_Para(line: string): string;
+function TFormMain.COMISP_Init_Para(line: string; var setting: TTargetSetting): boolean;
 begin
-  result := line;
+  setting.extra := line;
+  setting.target := 'f';
+  result := TRUE;
 end;
 
-procedure TFormMain.COMISP_Update_Chip(p_str: string);
+procedure TFormMain.COMISP_Update_Chip(setting: TTargetSetting);
 var
   str_tmp: string;
+  setting_str: string;
 begin
   str_tmp := '';
 
-  FormParaEditor.GetIntegerParameter(p_str, 'baudrate', ComModeInit.baudrate);
-  FormParaEditor.GetIntegerParameter(p_str, 'datalength', ComModeInit.datalength);
-  FormParaEditor.GetStringParameter(p_str, 'paritybit', str_tmp);
-  ComModeInit.paritybit := str_tmp[1];
-  FormParaEditor.GetStringParameter(p_str, 'stopbit', str_tmp);
-  ComModeInit.stopbit := str_tmp[1];
-  FormParaEditor.GetStringParameter(p_str, 'handshake', str_tmp);
-  ComModeInit.handshake := str_tmp[1];
-  FormParaEditor.GetStringParameter(p_str, 'auxpin', str_tmp);
-  ComModeInit.auxpin := str_tmp[1];
+  setting_str := setting.extra;
+  FormParaEditor.GetIntegerParameter(setting_str, 'baudrate', ComModeInit.baudrate);
+  FormParaEditor.GetIntegerParameter(setting_str, 'datalength', ComModeInit.datalength);
+  FormParaEditor.GetStringParameter(setting_str, 'paritybit', str_tmp);
+  if str_tmp <> '' then
+  begin
+    ComModeInit.paritybit := str_tmp[1];
+  end;
+  FormParaEditor.GetStringParameter(setting_str, 'stopbit', str_tmp);
+  if str_tmp <> '' then
+  begin
+    ComModeInit.stopbit := str_tmp[1];
+  end;
+  FormParaEditor.GetStringParameter(setting_str, 'handshake', str_tmp);
+  if str_tmp <> '' then
+  begin
+    ComModeInit.handshake := str_tmp[1];
+  end;
+  FormParaEditor.GetStringParameter(setting_str, 'auxpin', str_tmp);
+  if str_tmp <> '' then
+  begin
+    ComModeInit.auxpin := str_tmp[1];
+  end;
   FormComSetup.ComInitPara(ComModeInit);
-end;
-
-function TFormMain.COMISP_AddReadParameters(): boolean;
-begin
-  result := TRUE;
-end;
-
-function TFormMain.COMISP_AddWriteParameters(): boolean;
-var
-  para_tmp: string;
-begin
-  // Erase before write
-  if chkboxEraseBeforeWrite.Checked then
-  begin
-    caller.AddParameter('oe');
-  end;
-
-  if chkboxApp.Checked or chkboxLock.Checked then
-  begin
-    para_tmp := 'ow';
-    if chkboxApp.Checked then
-    begin
-      para_tmp := para_tmp + 'f';
-    end;
-    if chkboxLock.Checked then
-    begin
-      para_tmp := para_tmp + 'l'
-    end;
-    caller.AddParameter(para_tmp);
-  end
-  else
-  begin
-    result := FALSE;
-    exit;
-  end;
-
-  // Verify after write
-  if chkboxVerifyAfterWrite.Checked then
-  begin
-    COMISP_AddVerifyParameters();
-  end;
-
-  result := TRUE;
-end;
-
-function TFormMain.COMISP_AddVerifyParameters(): boolean;
-var
-  para_tmp: string;
-begin
-  if not chkboxApp.Checked and not chkboxLock.Checked then
-  begin
-    result := FALSE;
-  end
-  else
-  begin
-    para_tmp := 'ov';
-    if chkboxApp.Checked then
-    begin
-      para_tmp := para_tmp + 'f';
-    end;
-    if chkboxLock.Checked then
-    begin
-      para_tmp := para_tmp + 'l'
-    end;
-    caller.AddParameter(para_tmp);
-    result := TRUE;
-  end;
 end;
 
 { LPCICP implementations }
 function TFormMain.LPCICP_Init(): boolean;
+var
+  setting: TTargetSetting;
 begin
   result := TRUE;
 
   cbboxTarget.Clear;
   cbboxTarget.Items.Add('lpc900');
-  ParaString.Clear;
-  VSProg_AddParaString('', 0, 0, 0, 0);
+
+  VSProg_TargetSettingInit(setting);
+  setting.target := 'f';
+  VSProg_AddTargetSetting(setting);
 
   // call 'vsprog -Scomisp' to extract supported comisp targets
   if not PrepareToRunCLI() then
@@ -2867,83 +2638,23 @@ begin
   else
   begin
     cbboxTarget.ItemIndex := 0;
-//    cbboxTargetChange(cbboxTarget);
   end;
 
-  // flash, Autodetect
-  VSProg_CommonInit('fA');
-  chkboxLock.Checked := FALSE;
-  lbledtLock.Enabled := FALSE;
-  btnEditLock.Enabled := FALSE;
+  // Autodetect
+  VSProg_CommonInit('A');
 end;
 
-function TFormMain.LPCICP_Init_Para(line: string): string;
+function TFormMain.LPCICP_Init_Para(line: string; var setting: TTargetSetting): boolean;
 begin
-  result := line;
-end;
+  line := line;
 
-procedure TFormMain.LPCICP_Update_Chip(p_str: string);
-begin
-  p_str := p_str;
-end;
-
-function TFormMain.LPCICP_AddWriteParameters(): boolean;
-var
-  para_tmp: string;
-begin
-  // Erase before write
-  if chkboxEraseBeforeWrite.Checked then
-  begin
-    caller.AddParameter('oe');
-  end;
-
-  if chkboxApp.Checked then
-  begin
-    para_tmp := 'ow';
-    if chkboxApp.Checked then
-    begin
-      para_tmp := para_tmp + 'f';
-    end;
-    caller.AddParameter(para_tmp);
-  end
-  else
-  begin
-    result := FALSE;
-    exit;
-  end;
-
-  // Verify after write
-  if chkboxVerifyAfterWrite.Checked then
-  begin
-    LPCICP_AddVerifyParameters();
-  end;
-
+  setting.target := 'f';
   result := TRUE;
 end;
 
-function TFormMain.LPCICP_AddReadParameters(): boolean;
+procedure TFormMain.LPCICP_Update_Chip(setting: TTargetSetting);
 begin
-  result := TRUE;
-end;
-
-function TFormMain.LPCICP_AddVerifyParameters(): boolean;
-var
-  para_tmp: string;
-begin
-  if not chkboxApp.Checked then
-  begin
-    result := FALSE;
-  end
-  else
-  begin
-    para_tmp := 'ov';
-    if chkboxApp.Checked then
-    begin
-      para_tmp := para_tmp + 'f';
-    end;
-    caller.AddParameter(para_tmp);
-    result := TRUE;
-  end;
+  setting := setting;
 end;
 
 { CortexM3 implementations }
@@ -2952,7 +2663,6 @@ begin
   result := TRUE;
 
   cbboxTarget.Clear;
-  ParaString.Clear;
 
   // call 'vsprog -Scm3' to extract supported comisp targets
   if not PrepareToRunCLI() then
@@ -2974,37 +2684,43 @@ begin
   else
   begin
     cbboxTarget.ItemIndex := 0;
-//    cbboxTargetChange(cbboxTarget);
   end;
 
-  // flash
-  VSProg_CommonInit('fF');
-  chkboxLock.Checked := FALSE;
-  lbledtLock.Enabled := FALSE;
-  btnEditLock.Enabled := FALSE;
-  cbboxMode.Enabled := TRUE;
+  // Auto-detect
+  VSProg_CommonInit('A');
 end;
 
-function TFormMain.CortexM3_Init_Para(line: string): string;
+function TFormMain.CortexM3_Init_Para(line: string; var setting: TTargetSetting): boolean;
 begin
   line := line;
-  result := 'js';
+
+  setting.mode := 'js';
+  setting.target := 'f';
+  result := TRUE;
 end;
 
-procedure TFormMain.CortexM3_Update_chip(p_str: string);
+procedure TFormMain.CortexM3_Update_Chip(setting: TTargetSetting);
 var
   str_tmp: string;
 begin
-  p_str := p_str;
-
   str_tmp := cbboxMode.Text;
   cbboxMode.Clear;
-  cbboxMode.Items.Add('j:JTAG');
-  cbboxMode.Items.Add('s:SWJ');
 
-  if (cbboxMode.ItemIndex <> 0) and (cbboxMode.ItemIndex <> 1) then
+  if setting.mode = '' then
   begin
-    cbboxMode.ItemIndex := 0;
+    cbboxMode.Items.Add('j:JTAG');
+    cbboxMode.Items.Add('s:SWJ');
+  end
+  else
+  begin
+    if Pos('j', setting.mode) > 0 then
+    begin
+      cbboxMode.Items.Add('j:JTAG');
+    end;
+    if Pos('s', setting.mode) > 0 then
+    begin
+      cbboxMode.Items.Add('s:SWJ');
+    end;
   end;
 
   if cbboxMode.Items.IndexOf(str_tmp) >= 0 then
@@ -3027,65 +2743,6 @@ begin
   else
   begin
     lbledtFreq.Enabled := FALSE;
-  end;
-end;
-
-function TFormMain.CortexM3_AddWriteParameters(): boolean;
-var
-  para_tmp: string;
-begin
-  // Erase before write
-  if chkboxEraseBeforeWrite.Checked then
-  begin
-    caller.AddParameter('oe');
-  end;
-
-  if chkboxApp.Checked then
-  begin
-    para_tmp := 'ow';
-    if chkboxApp.Checked then
-    begin
-      para_tmp := para_tmp + 'f';
-    end;
-    caller.AddParameter(para_tmp);
-  end
-  else
-  begin
-    result := FALSE;
-    exit;
-  end;
-
-  // Verify after write
-  if chkboxVerifyAfterWrite.Checked then
-  begin
-    CortexM3_AddVerifyParameters();
-  end;
-
-  result := TRUE;
-end;
-
-function TFormMain.CortexM3_AddReadParameters(): boolean;
-begin
-  result := TRUE;
-end;
-
-function TFormMain.CortexM3_AddVerifyParameters(): boolean;
-var
-  para_tmp: string;
-begin
-  if not chkboxApp.Checked then
-  begin
-    result := FALSE;
-  end
-  else
-  begin
-    para_tmp := 'ov';
-    if chkboxApp.Checked then
-    begin
-      para_tmp := para_tmp + 'f';
-    end;
-    caller.AddParameter(para_tmp);
-    result := TRUE;
   end;
 end;
 

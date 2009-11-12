@@ -1,7 +1,7 @@
 object FormMain: TFormMain
-  Left = 663
-  Height = 527
-  Top = 259
+  Left = 717
+  Height = 579
+  Top = 11
   Width = 841
   HorzScrollBar.Page = 840
   HorzScrollBar.Range = 400
@@ -11,7 +11,7 @@ object FormMain: TFormMain
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'FormMain'
-  ClientHeight = 527
+  ClientHeight = 579
   ClientWidth = 841
   Font.CharSet = ANSI_CHARSET
   Font.Color = clBlack
@@ -28,13 +28,13 @@ object FormMain: TFormMain
   LCLVersion = '0.9.26.2'
   object pnlMain: TPanel
     Left = 1
-    Height = 503
+    Height = 555
     Top = 1
     Width = 439
     Align = alLeft
     BorderSpacing.Around = 1
     Caption = 'pnlMain'
-    ClientHeight = 503
+    ClientHeight = 555
     ClientWidth = 439
     Font.Height = -17
     Font.Name = 'Sans'
@@ -42,7 +42,7 @@ object FormMain: TFormMain
     TabOrder = 0
     object pcMain: TPageControl
       Left = 1
-      Height = 430
+      Height = 462
       Top = 1
       Width = 437
       ActivePage = tsCOMISP
@@ -212,7 +212,7 @@ object FormMain: TFormMain
       end
       object tsCOMISP: TTabSheet
         Caption = 'COMISP'
-        ClientHeight = 422
+        ClientHeight = 454
         ClientWidth = 389
         object gbChipName: TGroupBox
           Left = 11
@@ -234,6 +234,7 @@ object FormMain: TFormMain
           object cbboxTarget: TComboBox
             Left = 108
             Height = 24
+            Hint = 'Select Target'
             Top = 5
             Width = 128
             CharCase = ecLowerCase
@@ -241,23 +242,28 @@ object FormMain: TFormMain
             ItemHeight = 16
             MaxLength = 65535
             OnChange = cbboxTargetChange
+            ParentShowHint = False
+            ShowHint = True
             Style = csDropDownList
             TabOrder = 0
           end
           object btnTargetDetect: TButton
             Left = 252
             Height = 25
+            Hint = 'Detect Target Module'
             Top = 4
             Width = 96
             Caption = 'AutoDetect'
             OnClick = btnTargetDetectClick
+            ParentShowHint = False
+            ShowHint = True
             TabOrder = 1
           end
         end
         object gbOption: TGroupBox
-          Left = 12
+          Left = 10
           Height = 137
-          Top = 205
+          Top = 242
           Width = 369
           Caption = 'Option'
           ClientHeight = 119
@@ -274,94 +280,122 @@ object FormMain: TFormMain
           object chkboxApp: TCheckBox
             Left = 14
             Height = 20
+            Hint = 'Enable Flash Operation'
             Top = 8
             Width = 50
             Caption = 'Flash'
             Checked = True
+            ParentShowHint = False
+            ShowHint = True
             State = cbChecked
             TabOrder = 0
           end
           object chkboxLock: TCheckBox
-            Left = 224
+            Left = 180
             Height = 20
+            Hint = 'Enable Lock Operation'
             Top = 8
             Width = 46
             Caption = 'Lock'
             Checked = True
+            ParentShowHint = False
+            ShowHint = True
             State = cbChecked
             TabOrder = 1
           end
           object chkboxVerifyAfterWrite: TCheckBox
             Left = 154
             Height = 20
+            Hint = 'Verify content after write'
             Top = 64
             Width = 111
             Caption = 'Verify after write'
             Checked = True
+            ParentShowHint = False
+            ShowHint = True
             State = cbChecked
             TabOrder = 2
           end
           object chkboxEraseBeforeWrite: TCheckBox
             Left = 13
             Height = 20
+            Hint = 'Erase target before write'
             Top = 64
             Width = 122
             Caption = 'Erase before write'
             Checked = True
+            ParentShowHint = False
+            ShowHint = True
             State = cbChecked
             TabOrder = 3
           end
           object chkboxEE: TCheckBox
-            Left = 84
+            Left = 75
             Height = 20
+            Hint = 'Enable EEprom Operation'
             Top = 8
             Width = 36
             Caption = 'EE'
             Checked = True
+            ParentShowHint = False
+            ShowHint = True
             State = cbChecked
             TabOrder = 4
           end
           object chkboxFuse: TCheckBox
-            Left = 154
+            Left = 122
             Height = 20
+            Hint = 'Enable Fuse Operation'
             Top = 8
             Width = 47
             Caption = 'Fuse'
             Checked = True
+            ParentShowHint = False
+            ShowHint = True
             State = cbChecked
             TabOrder = 5
           end
           object chkboxUsrSig: TCheckBox
-            Left = 294
+            Left = 237
             Height = 20
+            Hint = 'Enable User Signature Operation'
             Top = 8
             Width = 57
             Caption = 'UsrSig'
             Checked = True
+            ParentShowHint = False
+            ShowHint = True
             State = cbChecked
             TabOrder = 6
           end
           object chkboxMP: TCheckBox
             Left = 294
             Height = 20
+            Hint = 'Enable Mass Product Mode'
             Top = 64
             Width = 50
             Caption = 'Mass'
+            ParentShowHint = False
+            ShowHint = True
             TabOrder = 7
           end
           object cbboxMode: TComboBox
             Left = 58
             Height = 24
+            Hint = 'Select Mode'
             Top = 37
             Width = 118
             ItemHeight = 16
             OnChange = cbboxModeChange
+            ParentShowHint = False
+            ShowHint = True
             Style = csDropDownList
             TabOrder = 8
           end
           object lbledtExtraPara: TLabeledEdit
             Left = 125
             Height = 23
+            Hint = 'Setting External Command Line Parameters'
             Top = 87
             Width = 228
             EditLabel.AnchorSideLeft.Control = lbledtExtraPara
@@ -376,6 +410,8 @@ object FormMain: TFormMain
             EditLabel.Caption = 'ExtraParameters:'
             EditLabel.ParentColor = False
             LabelPosition = lpLeft
+            ParentShowHint = False
+            ShowHint = True
             TabOrder = 9
             OnDblClick = ToggleIF
           end
@@ -396,16 +432,31 @@ object FormMain: TFormMain
             EditLabel.Caption = 'Freq(KHz):'
             EditLabel.ParentColor = False
             LabelPosition = lpLeft
+            ParentShowHint = False
+            ShowHint = True
             TabOrder = 10
+          end
+          object chkboxCali: TCheckBox
+            Left = 305
+            Height = 20
+            Hint = 'Enable Calibration Operation'
+            Top = 8
+            Width = 44
+            Caption = 'Cali.'
+            Checked = True
+            ParentShowHint = False
+            ShowHint = True
+            State = cbChecked
+            TabOrder = 11
           end
         end
         object gbInputFile: TGroupBox
           Left = 11
-          Height = 128
+          Height = 165
           Top = 69
           Width = 369
           Caption = 'File'
-          ClientHeight = 110
+          ClientHeight = 147
           ClientWidth = 365
           TabOrder = 2
           object lblInputFile: TLabel
@@ -419,113 +470,208 @@ object FormMain: TFormMain
           object fnEdit: TFileNameEdit
             Left = 58
             Height = 23
+            Hint = 'Select Hex File'
             Top = 6
             Width = 259
             DialogTitle = 'Open HEX File...'
             Filter = 'HEX file|*.hex'
             ButtonWidth = 23
             NumGlyphs = 1
+            ParentShowHint = False
+            ShowHint = True
             TabOrder = 0
             OnKeyPress = fnEditKeyPress
           end
           object btnEditApp: TButton
             Left = 13
             Height = 25
-            Top = 72
-            Width = 56
+            Hint = 'Display Flash Content'
+            Top = 109
+            Width = 45
             Caption = 'Flash'
             OnClick = btnEditAppClick
+            ParentShowHint = False
+            ShowHint = True
             TabOrder = 1
           end
           object btnEditLock: TButton
-            Left = 224
+            Left = 187
             Height = 25
-            Top = 72
-            Width = 56
+            Hint = 'Display Lock Settings'
+            Top = 109
+            Width = 45
             Caption = 'Lock'
             OnClick = btnEditLockClick
+            ParentShowHint = False
+            ShowHint = True
             TabOrder = 2
           end
           object btnEditFuse: TButton
-            Left = 154
+            Left = 129
             Height = 25
-            Top = 72
-            Width = 56
+            Hint = 'Display Fuse Settings'
+            Top = 109
+            Width = 45
             Caption = 'Fuse'
             OnClick = btnEditFuseClick
+            ParentShowHint = False
+            ShowHint = True
             TabOrder = 3
           end
           object btnEditEE: TButton
-            Left = 84
+            Left = 71
             Height = 25
-            Top = 72
-            Width = 56
+            Hint = 'Display EEprom Content'
+            Top = 109
+            Width = 45
             Caption = 'EE'
             OnClick = btnEditEEClick
+            ParentShowHint = False
+            ShowHint = True
             TabOrder = 4
           end
           object btnEditUsrSig: TButton
-            Left = 294
+            Left = 245
             Height = 25
-            Top = 72
-            Width = 56
+            Hint = 'Display User Signature'
+            Top = 109
+            Width = 45
             Caption = 'UsrSig'
             OnClick = btnEditUsrSigClick
+            ParentShowHint = False
+            ShowHint = True
             TabOrder = 5
           end
           object lbledtFuse: TLabeledEdit
-            Left = 45
+            Left = 57
             Height = 23
+            Hint = 'Fuse Value'
             Top = 40
-            Width = 80
+            Width = 93
             EditLabel.AnchorSideLeft.Control = lbledtFuse
             EditLabel.AnchorSideTop.Control = lbledtFuse
             EditLabel.AnchorSideTop.Side = asrCenter
             EditLabel.AnchorSideRight.Control = lbledtFuse
             EditLabel.AnchorSideBottom.Control = lbledtFuse
-            EditLabel.Left = 8
+            EditLabel.Left = 20
             EditLabel.Height = 17
             EditLabel.Top = 43
             EditLabel.Width = 34
             EditLabel.Caption = 'Fuse:'
             EditLabel.ParentColor = False
             LabelPosition = lpLeft
+            ParentShowHint = False
+            ShowHint = True
             TabOrder = 6
-            OnKeyPress = lbledtFuseKeyPress
+            OnKeyPress = lbledtTargetKeyPress
           end
           object lbledtLock: TLabeledEdit
-            Left = 173
+            Left = 197
             Height = 23
+            Hint = 'Lock Value'
             Top = 40
-            Width = 80
+            Width = 93
             EditLabel.AnchorSideLeft.Control = lbledtLock
             EditLabel.AnchorSideTop.Control = lbledtLock
             EditLabel.AnchorSideTop.Side = asrCenter
             EditLabel.AnchorSideRight.Control = lbledtLock
             EditLabel.AnchorSideBottom.Control = lbledtLock
-            EditLabel.Left = 137
+            EditLabel.Left = 161
             EditLabel.Height = 17
             EditLabel.Top = 43
             EditLabel.Width = 33
             EditLabel.Caption = 'Lock:'
             EditLabel.ParentColor = False
             LabelPosition = lpLeft
+            ParentShowHint = False
+            ShowHint = True
             TabOrder = 7
-            OnKeyPress = lbledtLockKeyPress
+            OnKeyPress = lbledtTargetKeyPress
           end
           object chkboxNoconnect: TCheckBox
-            Left = 269
+            Left = 304
             Height = 20
-            Top = 40
-            Width = 82
-            Caption = 'NoConnect'
+            Hint = 'No Connect'
+            Top = 43
+            Width = 44
+            Caption = 'N.C.'
+            ParentShowHint = False
+            ShowHint = True
             TabOrder = 8
+          end
+          object btnEditCali: TButton
+            Left = 303
+            Height = 25
+            Hint = 'Display Calibration Value'
+            Top = 109
+            Width = 45
+            Caption = 'Cali.'
+            ParentShowHint = False
+            ShowHint = True
+            TabOrder = 9
+          end
+          object lbledtCali: TLabeledEdit
+            Left = 57
+            Height = 23
+            Hint = 'Calibration Value'
+            Top = 72
+            Width = 93
+            EditLabel.AnchorSideLeft.Control = lbledtCali
+            EditLabel.AnchorSideTop.Control = lbledtCali
+            EditLabel.AnchorSideTop.Side = asrCenter
+            EditLabel.AnchorSideRight.Control = lbledtCali
+            EditLabel.AnchorSideBottom.Control = lbledtCali
+            EditLabel.Left = 27
+            EditLabel.Height = 17
+            EditLabel.Top = 75
+            EditLabel.Width = 27
+            EditLabel.Caption = 'Cali.'
+            EditLabel.ParentColor = False
+            LabelPosition = lpLeft
+            ParentShowHint = False
+            ShowHint = True
+            TabOrder = 10
+            OnKeyPress = lbledtTargetKeyPress
+          end
+          object lbledtUsrSig: TLabeledEdit
+            Left = 197
+            Height = 23
+            Hint = 'UsrSig Value'
+            Top = 72
+            Width = 93
+            EditLabel.AnchorSideLeft.Control = lbledtUsrSig
+            EditLabel.AnchorSideTop.Control = lbledtUsrSig
+            EditLabel.AnchorSideTop.Side = asrCenter
+            EditLabel.AnchorSideRight.Control = lbledtUsrSig
+            EditLabel.AnchorSideBottom.Control = lbledtUsrSig
+            EditLabel.Left = 154
+            EditLabel.Height = 17
+            EditLabel.Top = 75
+            EditLabel.Width = 40
+            EditLabel.Caption = 'UsrSig'
+            EditLabel.ParentColor = False
+            LabelPosition = lpLeft
+            ParentShowHint = False
+            ShowHint = True
+            TabOrder = 11
+            OnKeyPress = lbledtTargetKeyPress
+          end
+          object chkboxNowarning: TCheckBox
+            Left = 304
+            Height = 20
+            Hint = 'No Warning'
+            Top = 75
+            Width = 48
+            Caption = 'N.W.'
+            ParentShowHint = False
+            ShowHint = True
+            TabOrder = 12
           end
         end
         object gbOperation: TGroupBox
           Left = 11
           Height = 57
-          Top = 349
+          Top = 386
           Width = 369
           Caption = 'Operation'
           ClientHeight = 39
@@ -534,37 +680,49 @@ object FormMain: TFormMain
           object btnRead: TButton
             Left = 278
             Height = 25
+            Hint = 'Do Read Operation'
             Top = 7
             Width = 75
             Caption = '&Read'
             OnClick = btnReadClick
+            ParentShowHint = False
+            ShowHint = True
             TabOrder = 0
           end
           object btnWrite: TButton
             Left = 102
             Height = 25
+            Hint = 'Do Write Operation'
             Top = 7
             Width = 75
             Caption = '&Write'
             OnClick = btnWriteClick
+            ParentShowHint = False
+            ShowHint = True
             TabOrder = 1
           end
           object btnVerify: TButton
             Left = 190
             Height = 25
+            Hint = 'Do Verify Operation'
             Top = 7
             Width = 75
             Caption = '&Verify'
             OnClick = btnVerifyClick
+            ParentShowHint = False
+            ShowHint = True
             TabOrder = 2
           end
           object btnErase: TButton
             Left = 14
             Height = 25
+            Hint = 'Do Erase Operation'
             Top = 7
             Width = 75
             Caption = '&Erase'
             OnClick = btnEraseClick
+            ParentShowHint = False
+            ShowHint = True
             TabOrder = 3
           end
         end
@@ -664,8 +822,8 @@ object FormMain: TFormMain
     end
     object memoInfo: TMemo
       Left = 1
-      Height = 71
-      Top = 431
+      Height = 91
+      Top = 463
       Width = 437
       Align = alClient
       Font.CharSet = ANSI_CHARSET
@@ -681,7 +839,7 @@ object FormMain: TFormMain
   end
   object sbMain: TStatusBar
     Height = 22
-    Top = 505
+    Top = 557
     Width = 841
     Panels = <    
       item
@@ -698,14 +856,14 @@ object FormMain: TFormMain
   object pgbarMain: TProgressBar
     Left = 104
     Height = 18
-    Top = 507
+    Top = 560
     Width = 295
     Max = 40
     TabOrder = 2
   end
   object memoLog: TMemo
     Left = 441
-    Height = 505
+    Height = 557
     Width = 400
     Align = alClient
     Font.CharSet = ANSI_CHARSET

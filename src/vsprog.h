@@ -28,11 +28,20 @@
 #define LOCK						(1 << 6)
 #define USER_SIG					(1 << 7)
 #define CHECKSUM					(1 << 8)
+#define CALIBRATION					(1 << 9)
 #define ALL							(1 << 31)
 #define TARGET_AREA_MASK			(BOOTLOADER | APPLICATION | EEPROM \
 									 | OTP_ROM | FUSE | LOCK | USER_SIG \
 									 | CHECKSUM | ALL)
 #define NUM_OF_TARGET_AREA			9
+
+#define	APPLICATION_CHAR			'f'
+#define EEPROM_CHAR					'e'
+#define FUSE_CHAR					'u'
+#define LOCK_CHAR					'l'
+#define USER_SIG_CHAR				's'
+#define CHECKSUM_CHAR				'k'
+#define CALIBRATION_CHAR			'c'
 
 typedef struct
 {

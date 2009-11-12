@@ -51,10 +51,10 @@
 
 const program_area_map_t avr8_program_area_map[] = 
 {
-	{APPLICATION, 'f', 1},
-//	{EEPROM, 'e', 1},
-	{FUSE, 'u', 0},
-	{LOCK, 'l', 0},
+	{APPLICATION, APPLICATION_CHAR, 1},
+//	{EEPROM, EEPROM_CHAR, 1},
+	{FUSE, FUSE_CHAR, 0},
+	{LOCK, LOCK_CHAR, 0},
 	{0, 0, 0}
 };
 

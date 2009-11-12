@@ -52,6 +52,7 @@ type
     ParaCheckArr: array of TCheckBox;
     Param_name: string;
     Init_Value, Param_Value, Value_ByteLen: integer;
+    EnableWarning: boolean;
     SettingParameter: boolean;
   public
     { public declarations }
@@ -62,7 +63,7 @@ type
     procedure UpdateTitle();
     function GetIntegerParameter(line, para_name: string; var value: integer): boolean;
     function GetStringParameter(line, para_name: string; var value: string): boolean;
-    procedure SetParameter(init, bytelen, value: integer; title: string);
+    procedure SetParameter(init, bytelen, value: integer; title: string; warnEnabled: boolean);
     procedure ParseLine(line: string);
     procedure FreeRecord();
   end; 
@@ -137,27 +138,30 @@ begin
 
   SettingToValue();
 
-  if Sender is TComboBox then
+  if EnableWarning then
   begin
-    setting_mask := (Sender as TComboBox).Tag;
-  end
-  else if Sender is TCheckBox then
-  begin
-    setting_mask := (Sender as TCheckBox).Tag;
-  end
-  else
-  begin
-    // this component is not supported as a setting component
-    exit;
-  end;
-
-  for i := 0 to Length(Param_Record.warnings) - 1 do
-  begin
-    if (Param_Record.warnings[i].mask and setting_mask) <> 0 then
+    if Sender is TComboBox then
     begin
-      if (Param_Value and Param_Record.warnings[i].mask) = Param_Record.warnings[i].value then
+      setting_mask := (Sender as TComboBox).Tag;
+    end
+    else if Sender is TCheckBox then
+    begin
+      setting_mask := (Sender as TCheckBox).Tag;
+    end
+    else
+    begin
+      // this component is not supported as a setting component
+      exit;
+    end;
+
+    for i := 0 to Length(Param_Record.warnings) - 1 do
+    begin
+      if (Param_Record.warnings[i].mask and setting_mask) <> 0 then
       begin
-        MessageDlg(Param_Record.warnings[i].msg, mtWarning, [mbOK], 0);
+        if (Param_Value and Param_Record.warnings[i].mask) = Param_Record.warnings[i].value then
+        begin
+          MessageDlg(Param_Record.warnings[i].msg, mtWarning, [mbOK], 0);
+        end;
       end;
     end;
   end;
@@ -209,12 +213,13 @@ begin
   result := Param_Value;
 end;
 
-procedure TFormParaEditor.SetParameter(init, bytelen, value: integer; title: string);
+procedure TFormParaEditor.SetParameter(init, bytelen, value: integer; title: string; warnEnabled: boolean);
 begin
   Init_Value := init;
   Value_ByteLen := bytelen;
   Param_Value := value;
   Param_Name := title;
+  EnableWarning := warnEnabled;
 end;
 
 procedure TFormParaEditor.SettingToValue();

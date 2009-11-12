@@ -49,7 +49,7 @@
 
 const program_area_map_t c8051f_program_area_map[] = 
 {
-	{APPLICATION, 'f', 1},
+	{APPLICATION, APPLICATION_CHAR, 1},
 	{0, 0, 0}
 };
 
