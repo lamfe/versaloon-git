@@ -342,6 +342,14 @@ begin
   SetLength(ParaCheckArr, settings_num);
   SetLength(ParaEdtValueArr, settings_num);
 
+  // adjust Param_Value according to settings
+  j := 0;
+  for i := 0 to settings_num do
+  begin
+    j := j or Param_Record.settings[i].mask;
+  end;
+  Param_Value := Param_Value and j;
+
   i := TOP_MARGIN + BOTTOM_MARGIN + settings_num * (Y_MARGIN + ITEM_HEIGHT);
   ClientHeight := i + pnlButton.Height;
   pnlSettings.ClientHeight := i;
