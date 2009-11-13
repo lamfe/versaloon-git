@@ -24,7 +24,7 @@ type
     mask: integer;
     use_checkbox: boolean;
     use_edit: boolean;
-    hex: integer;
+    radix: integer;
     shift: integer;
     checked: integer;
     unchecked: integer;
@@ -61,6 +61,7 @@ type
     SettingParameter: boolean;
   public
     { public declarations }
+    function IntToStrRadix(aData, radix: Integer): String;
     function WipeTailEnter(var line: string): string;
     function GetResult(): integer;
     procedure SettingToValue();
@@ -89,6 +90,21 @@ const
   COMBO_WIDTH: integer = 400;
 
 implementation
+
+function TFormParaEditor.IntToStrRadix(aData, radix: Integer): String;
+var
+  t: Integer;
+begin
+  Result := '';
+  repeat
+    t := aData mod radix;
+    if t < 10 then
+      Result := InttoStr(t)+Result
+    else
+      Result := InttoHex(t, 1)+Result;
+    aData := aData div radix;
+  until (aData = 0);
+end;
 
 function TFormParaEditor.WipeTailEnter(var line: string): string;
 begin
@@ -291,14 +307,7 @@ begin
     if Param_Record.settings[i].use_edit then
     begin
       value := value shr Param_Record.settings[i].shift;
-      if Param_Record.settings[i].hex > 0 then
-      begin
-        ParaEdtValueArr[i].Text := '0x' + IntToHex(value, 0);
-      end
-      else
-      begin
-        ParaEdtValueArr[i].Text := IntToStr(value);
-      end;
+      ParaEdtValueArr[i].Text := IntToStrRadix(value, Param_Record.settings[i].radix);
     end
     else if Param_Record.settings[i].use_checkbox then
     begin
@@ -491,7 +500,12 @@ begin
     SetLength(Param_Record.settings[i - 1].choices, 0);
     GetStringParameter(line, 'name', Param_Record.settings[i - 1].name);
     GetIntegerParameter(line, 'mask', Param_Record.settings[i - 1].mask);
-    GetIntegerParameter(line, 'hex', Param_Record.settings[i - 1].hex);
+    Param_Record.settings[i - 1].radix := 0;
+    GetIntegerParameter(line, 'radix', Param_Record.settings[i - 1].radix);
+    if Param_Record.settings[i - 1].radix = 0 then
+    begin
+      Param_Record.settings[i - 1].radix := 10;
+    end;
     GetIntegerParameter(line, 'shift', Param_Record.settings[i - 1].shift);
     GetStringParameter(line, 'info', Param_Record.settings[i - 1].info);
     Param_Record.settings[i - 1].use_checkbox := FALSE;

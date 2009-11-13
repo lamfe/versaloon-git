@@ -183,7 +183,7 @@ typedef struct
 	uint8_t use_checkbox;
 	uint8_t use_edit;
 	uint8_t shift;
-	uint8_t hex;
+	uint8_t radix;
 	uint32_t checked;
 	uint32_t unchecked;
 	uint16_t num_of_choices;
