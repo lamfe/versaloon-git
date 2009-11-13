@@ -554,8 +554,8 @@ void target_print_fl(char *type)
 		}
 		else if (fl.settings[i].use_edit)
 		{
-			printf(", hex = %d, shift = %d", 
-				fl.settings[i].hex, fl.settings[i].shift);
+			printf(", radix = %d, shift = %d", 
+				fl.settings[i].radix, fl.settings[i].shift);
 		}
 		printf("\n");
 		for (j = 0; j < fl.settings[i].num_of_choices; j++)
@@ -980,11 +980,11 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 			strcpy(fl->settings[i].info, m);
 		}
 		
-		// parse hex if exists
-		if (xmlHasProp(settingNode, BAD_CAST "hex"))
+		// parse radix if exists
+		if (xmlHasProp(settingNode, BAD_CAST "radix"))
 		{
-			fl->settings[i].hex = (uint8_t)strtoul(
-				(const char *)xmlGetProp(settingNode, BAD_CAST "hex"), 
+			fl->settings[i].radix = (uint8_t)strtoul(
+				(const char *)xmlGetProp(settingNode, BAD_CAST "radix"), 
 				NULL, 0);
 		}
 		
