@@ -109,7 +109,7 @@ try_frequency:
 		spi_io(cmd_buf, 4, &poll_byte, 2, 1);
 		if ((ERROR_OK != commit()) || (poll_byte != 0x53))
 		{
-			if (cur_frequency > 0)
+			if (cur_frequency > 1)
 			{
 				cur_frequency /= 2;
 				LOG_WARNING(_GETTEXT("frequency too fast, try slower: %d\n"), 
