@@ -1660,7 +1660,7 @@ begin
     // check disable
     dis := '';
     FormParaEditor.GetStringParameter(line, 'ban', dis);
-    if Pos(cbboxMode.Text[1], dis) > 0 then
+    if (dis = '*') or (Pos(cbboxMode.Text[1], dis) > 0) then
     begin
       // current setting is disabled in current mode
       FormParaEditor.WipeTailEnter(line);
