@@ -798,6 +798,13 @@ int main(int argc, char* argv[])
 		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "initialize target");
 		free_all_and_exit(ERRCODE_FAILURE_OPERATION);
 	}
+	// exit here is no operation defined
+	if (!(operations.checksum_operations || operations.erase_operations 
+		|| operations.read_operations || operations.verify_operations 
+		|| operations.write_operations))
+	{
+		free_all_and_exit(EXIT_SUCCESS);
+	}
 	
 	// malloc buffer
 	ret = target_alloc_data_buffer();
