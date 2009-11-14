@@ -404,7 +404,7 @@
         <IsPartOfProject Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="parameditor"/>
-        <CursorPos X="70" Y="358"/>
+        <CursorPos X="93" Y="345"/>
         <TopLine Value="323"/>
         <EditorIndex Value="1"/>
         <UsageCount Value="76"/>
