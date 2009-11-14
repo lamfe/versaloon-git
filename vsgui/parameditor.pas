@@ -412,6 +412,7 @@ begin
       begin
         ParaEdtValueArr[i].Text := '0'+ParaEdtValueArr[i].Text;
       end;
+      ParaEdtValueArr[i].Hint := ParaEdtValueArr[i].Text;
     end
     else if Param_Record.settings[i].use_checkbox then
     begin
@@ -447,6 +448,7 @@ begin
         // there is an error
         ParaEdtNameArr[i].Color := clRed;
       end;
+      ParaComboArr[i].Hint := ParaComboArr[i].Text;
     end;
   end;
   SettingParameter := FALSE;
@@ -504,6 +506,7 @@ begin
       ParaEdtValueArr[i].Height := ITEM_HEIGHT;
       ParaEdtValueArr[i].OnExit := @SettingChange;
       ParaEdtValueArr[i].Tag := i;
+      ParaEdtValueArr[i].ShowHint := TRUE;
       ParaEdtValueArr[i].Enabled := Param_Record.settings[i].enabled;
     end
     else if Param_Record.settings[i].use_checkbox then
@@ -530,6 +533,7 @@ begin
       ParaComboArr[i].OnChange := @SettingChange;
       ParaComboArr[i].Style := csDropDownList;
       ParaComboArr[i].Tag := i;
+      ParaComboArr[i].ShowHint := TRUE;
       ParaComboArr[i].Enabled := Param_Record.settings[i].enabled;
       ParaComboArr[i].Clear;
       choices_num := Length(Param_Record.settings[i].choices);
