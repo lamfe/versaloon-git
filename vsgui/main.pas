@@ -2575,6 +2575,10 @@ begin
     cbboxMode.ItemIndex := 0;
     AVR8_Update_Mode(cbboxMode.Text);
   end;
+  // Fuse, Lock and Cali are not enabled by default
+  chkboxFuse.Checked := FALSE;
+  chkboxLock.Checked := FALSE;
+  chkboxCali.Checked := FALSE;
 end;
 
 procedure TFormMain.AVR8_Update_Mode(m_str: string);

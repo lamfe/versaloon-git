@@ -69,8 +69,8 @@ object FormMain: TFormMain
           Top = 5
           Width = 369
           Caption = 'OpenOCD'
-          ClientHeight = 182
-          ClientWidth = 365
+          ClientHeight = 200
+          ClientWidth = 369
           TabOrder = 0
           object lblOpenOCDScript: TLabel
             Left = 16
@@ -163,8 +163,8 @@ object FormMain: TFormMain
           Top = 213
           Width = 369
           Caption = 'SVF Player'
-          ClientHeight = 126
-          ClientWidth = 365
+          ClientHeight = 144
+          ClientWidth = 369
           TabOrder = 1
           object lblSVFPlayerSelectFile: TLabel
             Left = 16
