@@ -10,6 +10,7 @@ object FormParaEditor: TFormParaEditor
   ClientWidth = 323
   KeyPreview = True
   OnClose = FormClose
+  OnCloseQuery = FormCloseQuery
   OnKeyPress = FormKeyPress
   OnShow = FormShow
   Position = poMainFormCenter
@@ -36,6 +37,7 @@ object FormParaEditor: TFormParaEditor
       Caption = '&OK'
       Default = True
       ModalResult = 1
+      OnClick = btnOKClick
       TabOrder = 0
     end
     object btnCancel: TButton
