@@ -44,8 +44,11 @@ type
     btnCancel: TButton;
     pnlSettings: TPanel;
     pnlButton: TPanel;
+    procedure btnOKClick(Sender: TObject);
+    procedure FormCloseQuery(Sender: TObject; var CanClose: boolean);
     procedure FormKeyPress(Sender: TObject; var Key: char);
     procedure SettingChange(Sender: TObject);
+    procedure NumbericEditKeyPress(Sender: TObject;  var Key: char);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormShow(Sender: TObject);
   private
@@ -61,10 +64,10 @@ type
     SettingParameter: boolean;
   public
     { public declarations }
+    function StrToIntRadix(sData: string; radix: integer): integer;
     function IntToStrRadix(aData, radix: Integer): String;
     function WipeTailEnter(var line: string): string;
     function GetResult(): integer;
-    procedure SettingToValue();
     procedure ValueToSetting();
     procedure UpdateTitle();
     function GetIntegerParameter(line, para_name: string; var value: integer): boolean;
@@ -76,6 +79,7 @@ type
 
 var
   FormParaEditor: TFormParaEditor;
+  bCancel: boolean;
 
 const
   EQUAL_STR: string = ' = ';
@@ -88,14 +92,49 @@ const
   ITEM_HEIGHT: integer = 20;
   EDT_WIDTH: integer = 100;
   COMBO_WIDTH: integer = 400;
+  SECTION_DIV_HEIGHT: integer = 20;
+  HEX_PARSE_STR: string = '0123456789ABCDEF';
+  DATALEN_ACCORDING_TO_RADIX: array[2..16] of integer = (32, 0, 16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8);
 
 implementation
+
+function TFormParaEditor.StrToIntRadix(sData: string; radix: integer): integer;
+var
+  i, r: integer;
+begin
+  result := 0;
+  sData := UpperCase(sData);
+  if (radix = 0) or (radix > 16)
+     or (Length(sData) >= DATALEN_ACCORDING_TO_RADIX[radix]) then
+  begin
+    exit;
+  end;
+  for i := 1 to Length(sData) do
+  begin
+    if Pos(sData[i], HEX_PARSE_STR) < 1 then
+    begin
+      exit;
+    end;
+  end;
+
+  r := 1;
+  for i := Length(sData) downto 1 do
+  begin
+    result := result + r * (Pos(sData[i], HEX_PARSE_STR) - 1);
+    r := r * radix;
+  end;
+end;
 
 function TFormParaEditor.IntToStrRadix(aData, radix: Integer): String;
 var
   t: Integer;
 begin
   Result := '';
+  if (radix = 0) or (radix > 16) then
+  begin
+    exit;
+  end;
+
   repeat
     t := aData mod radix;
     if t < 10 then
@@ -147,31 +186,49 @@ begin
   end;
 end;
 
+procedure TFormParaEditor.NumbericEditKeyPress(Sender: TObject;  var Key: char);
+var
+  radix, value: integer;
+begin
+  if (Key = Char(8)) then
+  begin
+    exit;
+  end;
+
+  Key := UpperCase(Key)[1];
+  radix := Param_Record.settings[(Sender as TEdit).Tag].radix;
+
+  value := Pos(Key, HEX_PARSE_STR);
+  if (value < 1) or (value > radix)
+     or (Length((Sender as TEdit).Text) >= DATALEN_ACCORDING_TO_RADIX[radix]) then
+  begin
+    Key := Char(0);
+  end;
+end;
+
 procedure TFormParaEditor.SettingChange(Sender: TObject);
 var
   i: integer;
-  setting_mask: integer;
+  setting_mask, setting_value: integer;
 begin
   if SettingParameter then
   begin
     exit;
   end;
 
-  SettingToValue();
-
   if EnableWarning then
   begin
     if Sender is TComboBox then
     begin
-      setting_mask := (Sender as TComboBox).Tag;
+      i := (Sender as TComboBox).Tag;
     end
     else if Sender is TCheckBox then
     begin
-      setting_mask := (Sender as TCheckBox).Tag;
+      i := (Sender as TCheckBox).Tag;
     end
     else if Sender is TEdit then
     begin
-      setting_mask := (Sender as TEdit).Tag;
+      i := (Sender as TEdit).Tag;
     end
     else
     begin
@@ -179,16 +236,37 @@ begin
       exit;
     end;
 
-    for i := 0 to Length(Param_Record.warnings) - 1 do
+    setting_mask := Param_Record.settings[i].mask;
+    Param_Value := Param_Value and not setting_mask;
+    if Param_Record.settings[i].use_edit then
     begin
-      if (Param_Record.warnings[i].mask and setting_mask) <> 0 then
+      setting_value := StrToIntRadix(ParaEdtValueArr[i].Text, Param_Record.settings[i].radix) shl Param_Record.settings[i].shift;
+      if (setting_value and not Param_Record.settings[i].mask) > 0 then
       begin
-        if (Param_Value and Param_Record.warnings[i].mask) = Param_Record.warnings[i].value then
-        begin
-          MessageDlg(Param_Record.warnings[i].msg, mtWarning, [mbOK], 0);
-        end;
+        setting_value := setting_value and Param_Record.settings[i].mask;
+        ParaEdtValueArr[i].Text := IntToStrRadix(setting_value, Param_Record.settings[i].radix);
       end;
+      Param_Value := Param_Value or setting_value;
+    end
+    else if Param_Record.settings[i].use_checkbox then
+    begin
+      if ParaCheckArr[i].Checked then
+      begin
+        Param_Value := Param_Value or Param_Record.settings[i].checked;
+      end
+      else
+      begin
+        Param_Value := Param_Value or Param_Record.settings[i].unchecked;
+      end;
+    end
+    else
+      Param_Value := Param_Value or Param_Record.settings[i].choices[ParaComboArr[i].ItemIndex].value;
+    begin
     end;
+
+    SettingParameter := TRUE;
+    ValueToSetting();
+    SettingParameter := FALSE;
   end;
 
   UpdateTitle();
@@ -199,6 +277,37 @@ begin
   if Key = Char(27) then
   begin
     close;
+  end;
+end;
+
+procedure TFormParaEditor.btnOKClick(Sender: TObject);
+begin
+  bCancel := FALSE;  
+end;
+
+procedure TFormParaEditor.FormCloseQuery(Sender: TObject; var CanClose: boolean
+  );
+var
+  i: integer;
+begin
+  FormParaEditor.ActiveControl := btnOK;
+
+  CanClose := TRUE;
+
+  if not bCancel then
+  begin
+    for i := 0 to Length(Param_Record.warnings) - 1 do
+    begin
+      if (Param_Value and Param_Record.warnings[i].mask) = Param_Record.warnings[i].value then
+      begin
+        if mrNo = MessageDlg(Param_Record.warnings[i].msg, mtWarning, [mbYes, mbNo], 0) then
+        begin
+          bCancel := TRUE;
+          CanClose := FALSE;
+          exit;
+        end
+      end;
+    end;
   end;
 end;
 
@@ -263,37 +372,6 @@ begin
   EnableWarning := warnEnabled;
 end;
 
-procedure TFormParaEditor.SettingToValue();
-var
-  i, value: integer;
-begin
-  Param_Value := Init_Value;
-  for i := 0 to Length(Param_Record.settings) - 1 do
-  begin
-    Param_Value := Param_Value and (not Param_Record.settings[i].mask);
-    if Param_Record.settings[i].use_edit then
-    begin
-      value := StrToInt(ParaEdtValueArr[i].Text) shl Param_Record.settings[i].shift;
-      Param_Value := Param_Value or value;
-    end
-    else if Param_Record.settings[i].use_checkbox then
-    begin
-      if ParaCheckArr[i].Checked then
-      begin
-        Param_Value := Param_Value or Param_Record.settings[i].checked;
-      end
-      else
-      begin
-        Param_Value := Param_Value or Param_Record.settings[i].unchecked;
-      end;
-    end
-    else
-    begin
-      Param_Value := Param_Value or Param_Record.settings[i].choices[ParaComboArr[i].ItemIndex].value;
-    end;
-  end;
-end;
-
 procedure TFormParaEditor.ValueToSetting();
 var
   i, j: integer;
@@ -351,8 +429,10 @@ end;
 procedure TFormParaEditor.FormShow(Sender: TObject);
 var
   i, j: integer;
-  settings_num, choices_num: integer;
+  settings_num, choices_num, section_num, mask: integer;
 begin
+  bCancel := TRUE;
+
   // create components according to Param_Record
   settings_num := Length(Param_Record.settings);
   SetLength(ParaEdtNameArr, settings_num);
@@ -360,37 +440,34 @@ begin
   SetLength(ParaCheckArr, settings_num);
   SetLength(ParaEdtValueArr, settings_num);
 
-{  // adjust Param_Value according to settings
-  j := 0;
-  for i := 0 to settings_num do
-  begin
-    j := j or Param_Record.settings[i].mask;
-  end;
-  Param_Value := Param_Value and j;
-}
-  i := TOP_MARGIN + BOTTOM_MARGIN + settings_num * (Y_MARGIN + ITEM_HEIGHT);
-  ClientHeight := i + pnlButton.Height;
-  pnlSettings.ClientHeight := i;
-  i := LEFT_MARGIN + RIGHT_MARGIN + EDT_WIDTH + X_MARGIN + COMBO_WIDTH;
-  ClientWidth := i;
-  pnlSettings.ClientWidth := i;
-  pnlButton.ClientWidth := i;
-  UpdateTitle();
-
   // center buttons
   btnOK.Left := (pnlButton.Width div 2 - btnOK.Width) div 2;
   btnCancel.Left := pnlButton.Width div 2 + (pnlButton.Width div 2 - btnOK.Width) div 2;
 
+  section_num := 0;
+  mask := 0;
+
   SettingParameter := FALSE;
   for i := 0 to settings_num - 1 do
   begin
+    if (Param_Record.settings[i].mask and mask) > 0 then
+    begin
+      section_num := section_num + 1;
+      mask := 0;
+    end;
+    mask := mask or Param_Record.settings[i].mask;
+
     ParaEdtNameArr[i] := TEdit.Create(Self);
     ParaEdtNameArr[i].Parent := pnlSettings;
-    ParaEdtNameArr[i].Top := TOP_MARGIN + i * (Y_MARGIN + ITEM_HEIGHT);
+    ParaEdtNameArr[i].Top := TOP_MARGIN + i * (Y_MARGIN + ITEM_HEIGHT) + section_num * SECTION_DIV_HEIGHT;
     ParaEdtNameArr[i].Left := LEFT_MARGIN;
     ParaEdtNameArr[i].Width := EDT_WIDTH;
     ParaEdtNameArr[i].Height := ITEM_HEIGHT;
     ParaEdtNameArr[i].Text := Param_Record.settings[i].name;
+    if Param_Record.settings[i].use_edit then
+    begin
+      ParaEdtNameArr[i].Text := ParaEdtNameArr[i].Text + '(r:' + IntToStr(Param_Record.settings[i].radix) + ')';
+    end;
     ParaEdtNameArr[i].Color := clWindow;
     ParaEdtNameArr[i].Hint := Param_Record.settings[i].info;
     ParaEdtNameArr[i].ShowHint := TRUE;
@@ -399,23 +476,24 @@ begin
     begin
       ParaEdtValueArr[i] := TEdit.Create(Self);
       ParaEdtValueArr[i].Parent := pnlSettings;
-      ParaEdtValueArr[i].Top := TOP_MARGIN + i * (Y_MARGIN + ITEM_HEIGHT);
+      ParaEdtValueArr[i].Top := TOP_MARGIN + i * (Y_MARGIN + ITEM_HEIGHT) + section_num * SECTION_DIV_HEIGHT;
       ParaEdtValueArr[i].Width := COMBO_WIDTH;
       ParaEdtValueArr[i].Left := LEFT_MARGIN + EDT_WIDTH + X_MARGIN;
       ParaEdtValueArr[i].Height := ITEM_HEIGHT;
       ParaEdtValueArr[i].OnExit := @SettingChange;
-      ParaEdtValueArr[i].Tag := Param_Record.settings[i].mask;
+      ParaEdtValueArr[i].OnKeyPress := @NumbericEditKeyPress;
+      ParaEdtValueArr[i].Tag := i;
       ParaEdtValueArr[i].Enabled := Param_Record.settings[i].enabled;
     end
     else if Param_Record.settings[i].use_checkbox then
     begin
       ParaCheckArr[i] := TCheckBox.Create(Self);
       ParaCheckArr[i].Parent := pnlSettings;
-      ParaCheckArr[i].Top := TOP_MARGIN + i * (Y_MARGIN + ITEM_HEIGHT);
+      ParaCheckArr[i].Top := TOP_MARGIN + i * (Y_MARGIN + ITEM_HEIGHT) + section_num * SECTION_DIV_HEIGHT;
       ParaCheckArr[i].Left := LEFT_MARGIN + EDT_WIDTH + X_MARGIN;
       ParaCheckArr[i].Height := ITEM_HEIGHT;
       ParaCheckArr[i].OnChange := @SettingChange;
-      ParaCheckArr[i].Tag := Param_Record.settings[i].mask;
+      ParaCheckArr[i].Tag := i;
       ParaCheckArr[i].Enabled := Param_Record.settings[i].enabled;
       ParaCheckArr[i].Caption := '';
       ParaCheckArr[i].Checked := FALSE;
@@ -424,13 +502,13 @@ begin
     begin
       ParaComboArr[i] := TComboBox.Create(Self);
       ParaComboArr[i].Parent := pnlSettings;
-      ParaComboArr[i].Top := TOP_MARGIN + i * (Y_MARGIN + ITEM_HEIGHT);
+      ParaComboArr[i].Top := TOP_MARGIN + i * (Y_MARGIN + ITEM_HEIGHT) + section_num * SECTION_DIV_HEIGHT;
       ParaComboArr[i].Left := LEFT_MARGIN + EDT_WIDTH + X_MARGIN;
       ParaComboArr[i].Width := COMBO_WIDTH;
       ParaComboArr[i].Height := ITEM_HEIGHT;
       ParaComboArr[i].OnChange := @SettingChange;
       ParaComboArr[i].Style := csDropDownList;
-      ParaComboArr[i].Tag := Param_Record.settings[i].mask;
+      ParaComboArr[i].Tag := i;
       ParaComboArr[i].Enabled := Param_Record.settings[i].enabled;
       ParaComboArr[i].Clear;
       choices_num := Length(Param_Record.settings[i].choices);
@@ -440,6 +518,16 @@ begin
       end;
     end;
   end;
+
+  i := TOP_MARGIN + BOTTOM_MARGIN + settings_num * (Y_MARGIN + ITEM_HEIGHT) + section_num * SECTION_DIV_HEIGHT;
+  ClientHeight := i + pnlButton.Height;
+  pnlSettings.ClientHeight := i;
+  i := LEFT_MARGIN + RIGHT_MARGIN + EDT_WIDTH + X_MARGIN + COMBO_WIDTH;
+  ClientWidth := i;
+  pnlSettings.ClientWidth := i;
+  pnlButton.ClientWidth := i;
+  UpdateTitle();
+
   ValueToSetting();
   UpdateShowing;
 end;
@@ -502,7 +590,7 @@ begin
     GetIntegerParameter(line, 'mask', Param_Record.settings[i - 1].mask);
     Param_Record.settings[i - 1].radix := 0;
     GetIntegerParameter(line, 'radix', Param_Record.settings[i - 1].radix);
-    if Param_Record.settings[i - 1].radix = 0 then
+    if (Param_Record.settings[i - 1].radix < 2) or (Param_Record.settings[i - 1].radix > 16) then
     begin
       Param_Record.settings[i - 1].radix := 10;
     end;

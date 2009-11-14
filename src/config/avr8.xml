@@ -18,6 +18,7 @@
         <choice value="0x04" text="Internal RC Oscillator" />
         <choice value="0x00" text="External Clock" />
       </setting>
+      <setting name="LOW" mask="0xFF" info="LOW" radix="16" shift="0" />
     </fuse>
     <lock init="0xFF" bytesize="1">
       <setting name="LB" mask="0x06" info="Memory Lock">
@@ -25,6 +26,7 @@
         <choice value="0x04" text="Further programming disabled" />
         <choice value="0x06" text="No memory lock features enabled" />
       </setting>
+      <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" />
     </lock>
   </chip>
   <chip name="attiny12">
@@ -65,6 +67,7 @@
         <choice value="0x01" text="External Clock" />
         <choice value="0x00" text="External Clock" />
       </setting>
+      <setting name="LOW" mask="0xFF" info="LOW" radix="16" shift="0" />
     </fuse>
     <lock init="0xFF" bytesize="1">
       <setting name="LB" mask="0x06" info="Memory Lock">
@@ -72,6 +75,7 @@
         <choice value="0x04" text="Further programming disabled" />
         <choice value="0x06" text="No memory lock features enabled" />
       </setting>
+      <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" />
     </lock>
     <calibration init="0xFF" bytesize="1">
       <setting name="1.2 MHz" mask="0xFF" info="OSCCAL at 1.2 MHz" ban="*" radix="16" shift="0" />
@@ -117,6 +121,8 @@
         <choice value="0x0007" text="Int. RC Osc. 128 kHz; Start-up time: 14 CK + 4 ms" />
         <choice value="0x000B" text="Int. RC Osc. 128 kHz; Start-up time: 14 CK + 64 ms" />
       </setting>
+      <setting name="HIGH" mask="0xFF00" info="HIGH" radix="16" shift="8" />
+      <setting name="LOW" mask="0x00FF" info="LOW" radix="16" shift="0" />
     </fuse>
     <lock init="0xFF" bytesize="1">
       <setting name="LB" mask="0x03" info="Memory Lock">
@@ -124,6 +130,7 @@
         <choice value="0x02" text="Further programming disabled" />
         <choice value="0x03" text="No memory lock features enabled" />
       </setting>
+      <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" />
     </lock>
     <calibration init="0xFFFF" bytesize="2">
       <setting name="9.6 MHz" mask="0x00FF" info="OSCCAL at 9.6 MHz" ban="*" radix="16" shift="0" />
@@ -155,6 +162,7 @@
         <choice value="0x02" text="Quickly rising power" />
         <choice value="0x01" text="Slowly rising power" />
       </setting>
+      <setting name="LOW" mask="0xFF" info="LOW" radix="16" shift="0" />
     </fuse>
     <lock init="0xFF" bytesize="1">
       <setting name="LB" mask="0x06" info="Memory Lock">
@@ -162,6 +170,7 @@
         <choice value="0x04" text="Further programming disabled" />
         <choice value="0x06" text="No memory lock features enabled" />
       </setting>
+      <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" />
     </lock>
     <calibration init="0xFF" bytesize="1">
       <setting name="1.6 MHz" mask="0xFF" info="OSCCAL at 1.6 MHz" ban="*" radix="16" shift="0" />
@@ -244,6 +253,9 @@
         <choice value="0x00002F" text="Ext. Crystal Osc. 8.0-    MHz; Start-up time PWRDWN/RESET: 16K CK/14 CK + 4.1 ms" />
         <choice value="0x00003F" text="Ext. Crystal Osc. 8.0-    MHz; Start-up time PWRDWN/RESET: 16K CK/14 CK + 65 ms" />
       </setting>
+      <setting name="EXTENDED" mask="0xFF0000" info="EXTENDED" radix="16" shift="16" />
+      <setting name="HIGH" mask="0x00FF00" info="HIGH" radix="16" shift="8" />
+      <setting name="LOW" mask="0x0000FF" info="LOW" radix="16" shift="0" />
     </fuse>
     <lock init="0xFF" bytesize="1">
       <setting name="LB" mask="0x03" info="Memory Lock">
@@ -251,6 +263,7 @@
         <choice value="0x02" text="Further programming disabled" />
         <choice value="0x03" text="No memory lock features enabled" />
       </setting>
+      <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" />
     </lock>
     <calibration init="0xFF" bytesize="1">
       <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
@@ -333,6 +346,9 @@
         <choice value="0x00002F" text="Ext. Crystal Osc. 8.0-    MHz; Start-up time PWRDWN/RESET: 16K CK/14 CK + 4.1 ms" />
         <choice value="0x00003F" text="Ext. Crystal Osc. 8.0-    MHz; Start-up time PWRDWN/RESET: 16K CK/14 CK + 65 ms" />
       </setting>
+      <setting name="EXTENDED" mask="0xFF0000" info="EXTENDED" radix="16" shift="16" />
+      <setting name="HIGH" mask="0x00FF00" info="HIGH" radix="16" shift="8" />
+      <setting name="LOW" mask="0x0000FF" info="LOW" radix="16" shift="0" />
     </fuse>
     <lock init="0xFF" bytesize="1">
       <setting name="LB" mask="0x03" info="Memory Lock">
@@ -340,6 +356,7 @@
         <choice value="0x02" text="Further programming disabled" />
         <choice value="0x03" text="No memory lock features enabled" />
       </setting>
+      <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" />
     </lock>
     <calibration init="0xFF" bytesize="1">
       <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
@@ -422,6 +439,9 @@
         <choice value="0x00002F" text="Ext. Crystal Osc. 8.0-    MHz; Start-up time PWRDWN/RESET: 16K CK/14 CK + 4.1 ms" />
         <choice value="0x00003F" text="Ext. Crystal Osc. 8.0-    MHz; Start-up time PWRDWN/RESET: 16K CK/14 CK + 65 ms" />
       </setting>
+      <setting name="EXTENDED" mask="0xFF0000" info="EXTENDED" radix="16" shift="16" />
+      <setting name="HIGH" mask="0x00FF00" info="HIGH" radix="16" shift="8" />
+      <setting name="LOW" mask="0x0000FF" info="LOW" radix="16" shift="0" />
     </fuse>
     <lock init="0xFF" bytesize="1">
       <setting name="LB" mask="0x03" info="Memory Lock">
@@ -429,6 +449,7 @@
         <choice value="0x02" text="Further programming disabled" />
         <choice value="0x03" text="No memory lock features enabled" />
       </setting>
+      <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" />
     </lock>
     <calibration init="0xFF" bytesize="1">
       <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
@@ -515,6 +536,9 @@
         <choice value="0x00002F" text="Ext. Crystal Osc. 8.0-    MHz; Start-up time PWRDWN/RESET: 16K CK/14 CK + 4.1 ms" />
         <choice value="0x00003F" text="Ext. Crystal Osc. 8.0-    MHz; Start-up time PWRDWN/RESET: 16K CK/14 CK + 65 ms" />
       </setting>
+      <setting name="EXTENDED" mask="0xFF0000" info="EXTENDED" radix="16" shift="16" />
+      <setting name="HIGH" mask="0x00FF00" info="HIGH" radix="16" shift="8" />
+      <setting name="LOW" mask="0x0000FF" info="LOW" radix="16" shift="0" />
     </fuse>
     <lock init="0xFF" bytesize="1">
       <setting name="LB" mask="0x03" info="Memory Lock">
@@ -522,6 +546,7 @@
         <choice value="0x02" text="Further programming disabled" />
         <choice value="0x03" text="No memory lock features enabled" />
       </setting>
+      <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" />
     </lock>
     <calibration init="0xFFFF" bytesize="2">
       <setting name="8.0 MHz" mask="0x00FF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
@@ -609,6 +634,9 @@
         <choice value="0x00002F" text="Ext. Crystal Osc. 8.0-    MHz; Start-up time PWRDWN/RESET: 16K CK/14 CK + 4.1 ms" />
         <choice value="0x00003F" text="Ext. Crystal Osc. 8.0-    MHz; Start-up time PWRDWN/RESET: 16K CK/14 CK + 65 ms" />
       </setting>
+      <setting name="EXTENDED" mask="0xFF0000" info="EXTENDED" radix="16" shift="16" />
+      <setting name="HIGH" mask="0x00FF00" info="HIGH" radix="16" shift="8" />
+      <setting name="LOW" mask="0x0000FF" info="LOW" radix="16" shift="0" />
     </fuse>
     <lock init="0xFF" bytesize="1">
       <setting name="LB" mask="0x03" info="Memory Lock">
@@ -616,6 +644,7 @@
         <choice value="0x02" text="Further programming disabled" />
         <choice value="0x03" text="No memory lock features enabled" />
       </setting>
+      <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" />
     </lock>
     <calibration init="0xFFFF" bytesize="2">
       <setting name="8.0 MHz" mask="0x00FF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
@@ -703,6 +732,9 @@
         <choice value="0x00002F" text="Ext. Crystal Osc. 8.0-    MHz; Start-up time PWRDWN/RESET: 16K CK/14 CK + 4.1 ms" />
         <choice value="0x00003F" text="Ext. Crystal Osc. 8.0-    MHz; Start-up time PWRDWN/RESET: 16K CK/14 CK + 65 ms" />
       </setting>
+      <setting name="EXTENDED" mask="0xFF0000" info="EXTENDED" radix="16" shift="16" />
+      <setting name="HIGH" mask="0x00FF00" info="HIGH" radix="16" shift="8" />
+      <setting name="LOW" mask="0x0000FF" info="LOW" radix="16" shift="0" />
     </fuse>
     <lock init="0xFF" bytesize="1">
       <setting name="LB" mask="0x03" info="Memory Lock">
@@ -710,6 +742,7 @@
         <choice value="0x02" text="Further programming disabled" />
         <choice value="0x03" text="No memory lock features enabled" />
       </setting>
+      <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" />
     </lock>
     <calibration init="0xFFFF" bytesize="2">
       <setting name="8.0 MHz" mask="0x00FF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
@@ -802,6 +835,8 @@
         <choice value="0x006F" text="Ext. Crystal/Resonator High Freq.; Start-up time: 16K CK + 4 ms" />
         <choice value="0x007F" text="Ext. Crystal/Resonator High Freq.; Start-up time: 16K CK + 64 ms" />
       </setting>
+      <setting name="HIGH" mask="0xFF00" info="HIGH" radix="16" shift="8" />
+      <setting name="LOW" mask="0x00FF" info="LOW" radix="16" shift="0" />
     </fuse>
     <lock init="0xFF" bytesize="1">
       <setting name="LB" mask="0x03" info="Memory Lock">
@@ -809,6 +844,7 @@
         <choice value="0x02" text="Further programming disabled" />
         <choice value="0x03" text="No memory lock features enabled" />
       </setting>
+      <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" />
     </lock>
     <calibration init="0xFFFFFFFF" bytesize="4">
       <setting name="1.0 MHz" mask="0x000000FF" info="OSCCAL at 1.0 MHz" ban="*" radix="16" shift="0" />
@@ -845,6 +881,7 @@
         <choice value="0x01" text="External Clock" />
         <choice value="0x00" text="External Clock" />
       </setting>
+      <setting name="LOW" mask="0xFF" info="LOW" radix="16" shift="0" />
     </fuse>
     <lock init="0xFF" bytesize="1">
       <setting name="LB" mask="0x06" info="Memory Lock">
@@ -852,6 +889,7 @@
         <choice value="0x04" text="Further programming disabled" />
         <choice value="0x06" text="No memory lock features enabled" />
       </setting>
+      <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" />
     </lock>
     <calibration init="0xFF" bytesize="1">
       <setting name="1.2 MHz" mask="0xFF" info="OSCCAL at 1.2 MHz" ban="*" radix="16" shift="0" />
@@ -895,6 +933,9 @@
         <choice value="0x00001F" text="Int. RC Osc. 128kHz; Start-up time PWRDWN/RESET: 6 CK/14 CK + 4.1 ms" />
         <choice value="0x00002F" text="Int. RC Osc. 128kHz; Start-up time PWRDWN/RESET: 6 CK/14 CK + 65 ms" />
       </setting>
+      <setting name="EXTENDED" mask="0xFF0000" info="EXTENDED" radix="16" shift="16" />
+      <setting name="HIGH" mask="0x00FF00" info="HIGH" radix="16" shift="8" />
+      <setting name="LOW" mask="0x0000FF" info="LOW" radix="16" shift="0" />
     </fuse>
     <lock init="0xFF" bytesize="1">
       <setting name="LB" mask="0x03" info="Memory Lock">
@@ -902,6 +943,7 @@
         <choice value="0x02" text="Further programming disabled" />
         <choice value="0x03" text="No memory lock features enabled" />
       </setting>
+      <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" />
     </lock>
     <calibration init="0xFF" bytesize="1">
       <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
@@ -945,6 +987,9 @@
         <choice value="0x00001F" text="Int. RC Osc. 128kHz; Start-up time PWRDWN/RESET: 6 CK/14 CK + 4.1 ms" />
         <choice value="0x00002F" text="Int. RC Osc. 128kHz; Start-up time PWRDWN/RESET: 6 CK/14 CK + 65 ms" />
       </setting>
+      <setting name="EXTENDED" mask="0xFF0000" info="EXTENDED" radix="16" shift="16" />
+      <setting name="HIGH" mask="0x00FF00" info="HIGH" radix="16" shift="8" />
+      <setting name="LOW" mask="0x0000FF" info="LOW" radix="16" shift="0" />
     </fuse>
     <lock init="0xFF" bytesize="1">
       <setting name="LB" mask="0x03" info="Memory Lock">
@@ -952,6 +997,7 @@
         <choice value="0x02" text="Further programming disabled" />
         <choice value="0x03" text="No memory lock features enabled" />
       </setting>
+      <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" />
     </lock>
     <calibration init="0xFF" bytesize="1">
       <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
@@ -1038,6 +1084,9 @@
         <choice value="0x00002F" text="Ext. Crystal Osc. 8.0-    MHz; Start-up time PWRDWN/RESET: 16K CK/14 CK + 4.1 ms" />
         <choice value="0x00003F" text="Ext. Crystal Osc. 8.0-    MHz; Start-up time PWRDWN/RESET: 16K CK/14 CK + 65 ms" />
       </setting>
+      <setting name="EXTENDED" mask="0xFF0000" info="EXTENDED" radix="16" shift="16" />
+      <setting name="HIGH" mask="0x00FF00" info="HIGH" radix="16" shift="8" />
+      <setting name="LOW" mask="0x0000FF" info="LOW" radix="16" shift="0" />
     </fuse>
     <lock init="0xFF" bytesize="1">
       <setting name="LB" mask="0x03" info="Memory Lock">
@@ -1045,6 +1094,7 @@
         <choice value="0x02" text="Further programming disabled" />
         <choice value="0x03" text="No memory lock features enabled" />
       </setting>
+      <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" />
     </lock>
     <calibration init="0xFF" bytesize="1">
       <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
@@ -1131,6 +1181,9 @@
         <choice value="0x00002F" text="Ext. Crystal Osc. 8.0-    MHz; Start-up time PWRDWN/RESET: 16K CK/14 CK + 4.1 ms" />
         <choice value="0x00003F" text="Ext. Crystal Osc. 8.0-    MHz; Start-up time PWRDWN/RESET: 16K CK/14 CK + 65 ms" />
       </setting>
+      <setting name="EXTENDED" mask="0xFF0000" info="EXTENDED" radix="16" shift="16" />
+      <setting name="HIGH" mask="0x00FF00" info="HIGH" radix="16" shift="8" />
+      <setting name="LOW" mask="0x0000FF" info="LOW" radix="16" shift="0" />
     </fuse>
     <lock init="0xFF" bytesize="1">
       <setting name="LB" mask="0x03" info="Memory Lock">
@@ -1138,6 +1191,7 @@
         <choice value="0x02" text="Further programming disabled" />
         <choice value="0x03" text="No memory lock features enabled" />
       </setting>
+      <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" />
     </lock>
     <calibration init="0xFF" bytesize="1">
       <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
@@ -1224,6 +1278,9 @@
         <choice value="0x00002F" text="Ext. Crystal Osc. 8.0-    MHz; Start-up time PWRDWN/RESET: 16K CK/14 CK + 4.1 ms" />
         <choice value="0x00003F" text="Ext. Crystal Osc. 8.0-    MHz; Start-up time PWRDWN/RESET: 16K CK/14 CK + 65 ms" />
       </setting>
+      <setting name="EXTENDED" mask="0xFF0000" info="EXTENDED" radix="16" shift="16" />
+      <setting name="HIGH" mask="0x00FF00" info="HIGH" radix="16" shift="8" />
+      <setting name="LOW" mask="0x0000FF" info="LOW" radix="16" shift="0" />
     </fuse>
     <lock init="0xFF" bytesize="1">
       <setting name="LB" mask="0x03" info="Memory Lock">
@@ -1231,6 +1288,7 @@
         <choice value="0x02" text="Further programming disabled" />
         <choice value="0x03" text="No memory lock features enabled" />
       </setting>
+      <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" />
     </lock>
     <calibration init="0xFF" bytesize="1">
       <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
@@ -1309,6 +1367,9 @@
         <choice value="0x00002F" text="Ext. Crystal Osc. 8.0-    MHz; Start-up time: 14 CK + 4.1 ms" />
         <choice value="0x00003F" text="Ext. Crystal Osc. 8.0-    MHz; Start-up time: 14 CK + 65 ms" />
       </setting>
+      <setting name="EXTENDED" mask="0xFF0000" info="EXTENDED" radix="16" shift="16" />
+      <setting name="HIGH" mask="0x00FF00" info="HIGH" radix="16" shift="8" />
+      <setting name="LOW" mask="0x0000FF" info="LOW" radix="16" shift="0" />
     </fuse>
     <lock init="0xFF" bytesize="1">
       <setting name="LB" mask="0x03" info="Memory Lock">
@@ -1316,10 +1377,11 @@
         <choice value="0x02" text="Further programming disabled" />
         <choice value="0x03" text="No memory lock features enabled" />
       </setting>
+      <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" />
     </lock>
     <calibration init="0xFFFF" bytesize="2">
       <setting name="8.0 MHz" mask="0x00FF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
-	  <setting name="4.0 MHz" mask="0xFF00" info="OSCCAL at 4.0 MHz" ban="*" radix="16" shift="8" />
+      <setting name="4.0 MHz" mask="0xFF00" info="OSCCAL at 4.0 MHz" ban="*" radix="16" shift="8" />
     </calibration>
   </chip>
   <chip name="at90can32">
@@ -1400,6 +1462,9 @@
         <choice value="0x00003E" text="Ext. Crystal Osc. 8.0-16.0 MHz; Start-up time: 1K CK + 4.1 ms" />
         <choice value="0x00000F" text="Ext. Crystal Osc. 8.0-16.0 MHz; Start-up time: 1K CK + 65 ms" />
       </setting>
+      <setting name="EXTENDED" mask="0xFF0000" info="EXTENDED" radix="16" shift="16" />
+      <setting name="HIGH" mask="0x00FF00" info="HIGH" radix="16" shift="8" />
+      <setting name="LOW" mask="0x0000FF" info="LOW" radix="16" shift="0" />
     </fuse>
     <lock init="0xFF" bytesize="1">
       <setting name="LB" mask="0x03" info="Memory Lock">
@@ -1419,6 +1484,7 @@
         <choice value="0x20" text="SPM prohibited in Boot Loader Section" />
         <choice value="0x30" text="No lock on SPM and LPM in Boot Loader Section" />
       </setting>
+      <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" />
     </lock>
     <calibration init="0xFF" bytesize="1">
       <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
@@ -1502,6 +1568,9 @@
         <choice value="0x00003E" text="Ext. Crystal Osc. 8.0-16.0 MHz; Start-up time: 1K CK + 4.1 ms" />
         <choice value="0x00000F" text="Ext. Crystal Osc. 8.0-16.0 MHz; Start-up time: 1K CK + 65 ms" />
       </setting>
+      <setting name="EXTENDED" mask="0xFF0000" info="EXTENDED" radix="16" shift="16" />
+      <setting name="HIGH" mask="0x00FF00" info="HIGH" radix="16" shift="8" />
+      <setting name="LOW" mask="0x0000FF" info="LOW" radix="16" shift="0" />
     </fuse>
     <lock init="0xFF" bytesize="1">
       <setting name="LB" mask="0x03" info="Memory Lock">
@@ -1521,6 +1590,7 @@
         <choice value="0x20" text="SPM prohibited in Boot Loader Section" />
         <choice value="0x30" text="No lock on SPM and LPM in Boot Loader Section" />
       </setting>
+      <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" />
     </lock>
     <calibration init="0xFF" bytesize="1">
       <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
@@ -1604,6 +1674,9 @@
         <choice value="0x00003E" text="Ext. Crystal Osc. 8.0-16.0 MHz; Start-up time: 1K CK + 4.1 ms" />
         <choice value="0x00000F" text="Ext. Crystal Osc. 8.0-16.0 MHz; Start-up time: 1K CK + 65 ms" />
       </setting>
+      <setting name="EXTENDED" mask="0xFF0000" info="EXTENDED" radix="16" shift="16" />
+      <setting name="HIGH" mask="0x00FF00" info="HIGH" radix="16" shift="8" />
+      <setting name="LOW" mask="0x0000FF" info="LOW" radix="16" shift="0" />
     </fuse>
     <lock init="0xFF" bytesize="1">
       <setting name="LB" mask="0x03" info="Memory Lock">
@@ -1623,6 +1696,7 @@
         <choice value="0x20" text="SPM prohibited in Boot Loader Section" />
         <choice value="0x30" text="No lock on SPM and LPM in Boot Loader Section" />
       </setting>
+      <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" />
     </lock>
     <calibration init="0xFF" bytesize="1">
       <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
@@ -1713,6 +1787,9 @@
         <choice value="0x000023" text="PLL clock 16 MHz; Start-up time PWRDWN/RESET: 1K CK/14 CK + 65 ms" />
         <choice value="0x000033" text="PLL clock 16 MHz; Start-up time PWRDWN/RESET: 16K CK/14 CK + 0 ms" />
       </setting>
+      <setting name="EXTENDED" mask="0xFF0000" info="EXTENDED" radix="16" shift="16" />
+      <setting name="HIGH" mask="0x00FF00" info="HIGH" radix="16" shift="8" />
+      <setting name="LOW" mask="0x0000FF" info="LOW" radix="16" shift="0" />
     </fuse>
     <lock init="0xFF" bytesize="1">
       <setting name="LB" mask="0x03" info="Memory Lock">
@@ -1732,6 +1809,7 @@
         <choice value="0x20" text="SPM prohibited in Boot Loader Section" />
         <choice value="0x30" text="No lock on SPM and LPM in Boot Loader Section" />
       </setting>
+      <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" />
     </lock>
     <calibration init="0xFF" bytesize="1">
       <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
@@ -1822,6 +1900,9 @@
         <choice value="0x000023" text="PLL clock 16 MHz; Start-up time PWRDWN/RESET: 1K CK/14 CK + 65 ms" />
         <choice value="0x000033" text="PLL clock 16 MHz; Start-up time PWRDWN/RESET: 16K CK/14 CK + 0 ms" />
       </setting>
+      <setting name="EXTENDED" mask="0xFF0000" info="EXTENDED" radix="16" shift="16" />
+      <setting name="HIGH" mask="0x00FF00" info="HIGH" radix="16" shift="8" />
+      <setting name="LOW" mask="0x0000FF" info="LOW" radix="16" shift="0" />
     </fuse>
     <lock init="0xFF" bytesize="1">
       <setting name="LB" mask="0x03" info="Memory Lock">
@@ -1841,6 +1922,7 @@
         <choice value="0x20" text="SPM prohibited in Boot Loader Section" />
         <choice value="0x30" text="No lock on SPM and LPM in Boot Loader Section" />
       </setting>
+      <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" />
     </lock>
     <calibration init="0xFF" bytesize="1">
       <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
@@ -1936,6 +2018,8 @@
         <choice value="0x002F" text="Ext. Crystal/Resonator High Freq.; Start-up time: 16K CK + 4 ms" />
         <choice value="0x003F" text="Ext. Crystal/Resonator High Freq.; Start-up time: 16K CK + 64 ms" />
       </setting>
+      <setting name="HIGH" mask="0xFF00" info="HIGH" radix="16" shift="8" />
+      <setting name="LOW" mask="0x00FF" info="LOW" radix="16" shift="0" />
     </fuse>
     <lock init="0xFF" bytesize="1">
       <setting name="LB" mask="0x03" info="Memory Lock">
@@ -1955,6 +2039,7 @@
         <choice value="0x20" text="SPM prohibited in Boot Loader Section" />
         <choice value="0x30" text="No lock on SPM and LPM in Boot Loader Section" />
       </setting>
+      <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" />
     </lock>
     <calibration init="0xFFFFFFFF" bytesize="4">
       <setting name="1.0 MHz" mask="0x000000FF" info="OSCCAL at 1.0 MHz" ban="*" radix="16" shift="0" />
@@ -2053,6 +2138,8 @@
         <choice value="0x002F" text="Ext. Crystal/Resonator High Freq.; Start-up time: 16K CK + 4 ms" />
         <choice value="0x003F" text="Ext. Crystal/Resonator High Freq.; Start-up time: 16K CK + 64 ms" />
       </setting>
+      <setting name="HIGH" mask="0xFF00" info="HIGH" radix="16" shift="8" />
+      <setting name="LOW" mask="0x00FF" info="LOW" radix="16" shift="0" />
     </fuse>
     <lock init="0xFF" bytesize="1">
       <setting name="LB" mask="0x03" info="Memory Lock">
@@ -2072,6 +2159,7 @@
         <choice value="0x20" text="SPM prohibited in Boot Loader Section" />
         <choice value="0x30" text="No lock on SPM and LPM in Boot Loader Section" />
       </setting>
+      <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" />
     </lock>
     <calibration init="0xFFFFFFFF" bytesize="4">
       <setting name="1.0 MHz" mask="0x000000FF" info="OSCCAL at 1.0 MHz" ban="*" radix="16" shift="0" />
@@ -2170,6 +2258,8 @@
         <choice value="0x002F" text="Ext. Crystal/Resonator High Freq.; Start-up time: 16K CK + 4 ms" />
         <choice value="0x003F" text="Ext. Crystal/Resonator High Freq.; Start-up time: 16K CK + 64 ms" />
       </setting>
+      <setting name="HIGH" mask="0xFF00" info="HIGH" radix="16" shift="8" />
+      <setting name="LOW" mask="0x00FF" info="LOW" radix="16" shift="0" />
     </fuse>
     <lock init="0xFF" bytesize="1">
       <setting name="LB" mask="0x03" info="Memory Lock">
@@ -2189,6 +2279,7 @@
         <choice value="0x20" text="SPM prohibited in Boot Loader Section" />
         <choice value="0x30" text="No lock on SPM and LPM in Boot Loader Section" />
       </setting>
+      <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" />
     </lock>
     <calibration init="0xFFFFFFFF" bytesize="4">
       <setting name="1.0 MHz" mask="0x000000FF" info="OSCCAL at 1.0 MHz" ban="*" radix="16" shift="0" />
@@ -2281,6 +2372,9 @@
         <choice value="0x00002F" text="Ext. Crystal Osc. 8.0- MHz; Start-up time PWRDWN/RESET: 16K CK/14 CK + 4.1 ms" />
         <choice value="0x00003F" text="Ext. Crystal Osc. 8.0- MHz; Start-up time PWRDWN/RESET: 16K CK/14 CK + 65 ms" />
       </setting>
+      <setting name="EXTENDED" mask="0xFF0000" info="EXTENDED" radix="16" shift="16" />
+      <setting name="HIGH" mask="0x00FF00" info="HIGH" radix="16" shift="8" />
+      <setting name="LOW" mask="0x0000FF" info="LOW" radix="16" shift="0" />
     </fuse>
     <lock init="0xFF" bytesize="1">
       <setting name="LB" mask="0x03" info="Memory Lock">
@@ -2288,6 +2382,7 @@
         <choice value="0x02" text="Further programming disabled" />
         <choice value="0x03" text="No memory lock features enabled" />
       </setting>
+      <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" />
     </lock>
     <calibration init="0xFF" bytesize="1">
       <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
@@ -2383,6 +2478,9 @@
         <choice value="0x00002F" text="Ext. Crystal Osc. 8.0- MHz; Start-up time PWRDWN/RESET: 16K CK/14 CK + 4.1 ms" />
         <choice value="0x00003F" text="Ext. Crystal Osc. 8.0- MHz; Start-up time PWRDWN/RESET: 16K CK/14 CK + 65 ms" />
       </setting>
+      <setting name="EXTENDED" mask="0xFF0000" info="EXTENDED" radix="16" shift="16" />
+      <setting name="HIGH" mask="0x00FF00" info="HIGH" radix="16" shift="8" />
+      <setting name="LOW" mask="0x0000FF" info="LOW" radix="16" shift="0" />
     </fuse>
     <lock init="0xFF" bytesize="1">
       <setting name="LB" mask="0x03" info="Memory Lock">
@@ -2402,6 +2500,7 @@
         <choice value="0x20" text="SPM prohibited in Boot Loader Section" />
         <choice value="0x30" text="No lock on SPM and LPM in Boot Loader Section" />
       </setting>
+      <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" />
     </lock>
     <calibration init="0xFF" bytesize="1">
       <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
@@ -2497,6 +2596,9 @@
         <choice value="0x00002F" text="Ext. Crystal Osc. 8.0- MHz; Start-up time PWRDWN/RESET: 16K CK/14 CK + 4.1 ms" />
         <choice value="0x00003F" text="Ext. Crystal Osc. 8.0- MHz; Start-up time PWRDWN/RESET: 16K CK/14 CK + 65 ms" />
       </setting>
+      <setting name="EXTENDED" mask="0xFF0000" info="EXTENDED" radix="16" shift="16" />
+      <setting name="HIGH" mask="0x00FF00" info="HIGH" radix="16" shift="8" />
+      <setting name="LOW" mask="0x0000FF" info="LOW" radix="16" shift="0" />
     </fuse>
     <lock init="0xFF" bytesize="1">
       <setting name="LB" mask="0x03" info="Memory Lock">
@@ -2516,6 +2618,7 @@
         <choice value="0x20" text="SPM prohibited in Boot Loader Section" />
         <choice value="0x30" text="No lock on SPM and LPM in Boot Loader Section" />
       </setting>
+      <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" />
     </lock>
     <calibration init="0xFF" bytesize="1">
       <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
@@ -2607,6 +2710,9 @@
         <choice value="0x00002F" text="Ext. Crystal Osc. 8.0- MHz; Start-up time: 16K CK + 4.1 ms" />
         <choice value="0x00003F" text="Ext. Crystal Osc. 8.0- MHz; Start-up time: 16K CK + 65 ms" />
       </setting>
+      <setting name="EXTENDED" mask="0xFF0000" info="EXTENDED" radix="16" shift="16" />
+      <setting name="HIGH" mask="0x00FF00" info="HIGH" radix="16" shift="8" />
+      <setting name="LOW" mask="0x0000FF" info="LOW" radix="16" shift="0" />
     </fuse>
     <lock init="0xFF" bytesize="1">
       <setting name="LB" mask="0x03" info="Memory Lock">
@@ -2626,6 +2732,7 @@
         <choice value="0x20" text="SPM prohibited in Boot Loader Section" />
         <choice value="0x30" text="No lock on SPM and LPM in Boot Loader Section" />
       </setting>
+      <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" />
     </lock>
     <calibration init="0xFF" bytesize="1">
       <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
@@ -2721,6 +2828,9 @@
         <choice value="0x00002F" text="Ext. Crystal Osc. 8.0- MHz; Start-up time: 16K CK + 4.1 ms" />
         <choice value="0x00003F" text="Ext. Crystal Osc. 8.0- MHz; Start-up time: 16K CK + 65 ms" />
       </setting>
+      <setting name="EXTENDED" mask="0xFF0000" info="EXTENDED" radix="16" shift="16" />
+      <setting name="HIGH" mask="0x00FF00" info="HIGH" radix="16" shift="8" />
+      <setting name="LOW" mask="0x0000FF" info="LOW" radix="16" shift="0" />
     </fuse>
     <lock init="0xFF" bytesize="1">
       <setting name="LB" mask="0x03" info="Memory Lock">
@@ -2740,6 +2850,7 @@
         <choice value="0x20" text="SPM prohibited in Boot Loader Section" />
         <choice value="0x30" text="No lock on SPM and LPM in Boot Loader Section" />
       </setting>
+      <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" />
     </lock>
     <calibration init="0xFF" bytesize="1">
       <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
@@ -2835,6 +2946,9 @@
         <choice value="0x00002F" text="Ext. Crystal Osc. 8.0- MHz; Start-up time: 16K CK + 4.1 ms" />
         <choice value="0x00003F" text="Ext. Crystal Osc. 8.0- MHz; Start-up time: 16K CK + 65 ms" />
       </setting>
+      <setting name="EXTENDED" mask="0xFF0000" info="EXTENDED" radix="16" shift="16" />
+      <setting name="HIGH" mask="0x00FF00" info="HIGH" radix="16" shift="8" />
+      <setting name="LOW" mask="0x0000FF" info="LOW" radix="16" shift="0" />
     </fuse>
     <lock init="0xFF" bytesize="1">
       <setting name="LB" mask="0x03" info="Memory Lock">
@@ -2854,6 +2968,7 @@
         <choice value="0x20" text="SPM prohibited in Boot Loader Section" />
         <choice value="0x30" text="No lock on SPM and LPM in Boot Loader Section" />
       </setting>
+      <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" />
     </lock>
     <calibration init="0xFF" bytesize="1">
       <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
@@ -2949,6 +3064,9 @@
         <choice value="0x00002F" text="Ext. Crystal Osc. 8.0- MHz; Start-up time: 16K CK + 4.1 ms" />
         <choice value="0x00003F" text="Ext. Crystal Osc. 8.0- MHz; Start-up time: 16K CK + 65 ms" />
       </setting>
+      <setting name="EXTENDED" mask="0xFF0000" info="EXTENDED" radix="16" shift="16" />
+      <setting name="HIGH" mask="0x00FF00" info="HIGH" radix="16" shift="8" />
+      <setting name="LOW" mask="0x0000FF" info="LOW" radix="16" shift="0" />
     </fuse>
     <lock init="0xFF" bytesize="1">
       <setting name="LB" mask="0x03" info="Memory Lock">
@@ -2968,6 +3086,7 @@
         <choice value="0x20" text="SPM prohibited in Boot Loader Section" />
         <choice value="0x30" text="No lock on SPM and LPM in Boot Loader Section" />
       </setting>
+      <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" />
     </lock>
     <calibration init="0xFF" bytesize="1">
       <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
@@ -3054,6 +3173,9 @@
         <choice value="0x00002F" text="Ext. Crystal Osc. 8.0-    MHz; Start-up time: 16K CK + 4.1 ms" />
         <choice value="0x00003F" text="Ext. Crystal Osc. 8.0-    MHz; Start-up time: 16K CK + 65 ms" />
       </setting>
+      <setting name="EXTENDED" mask="0xFF0000" info="EXTENDED" radix="16" shift="16" />
+      <setting name="HIGH" mask="0x00FF00" info="HIGH" radix="16" shift="8" />
+      <setting name="LOW" mask="0x0000FF" info="LOW" radix="16" shift="0" />
     </fuse>
     <lock init="0xFF" bytesize="1">
       <setting name="LB" mask="0x03" info="Memory Lock">
@@ -3073,6 +3195,7 @@
         <choice value="0x20" text="SPM prohibited in Boot Loader Section" />
         <choice value="0x30" text="No lock on SPM and LPM in Boot Loader Section" />
       </setting>
+      <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" />
     </lock>
     <calibration init="0xFF" bytesize="1">
       <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
@@ -3159,6 +3282,9 @@
         <choice value="0x00002F" text="Ext. Crystal Osc. 8.0-    MHz; Start-up time: 16K CK + 4.1 ms" />
         <choice value="0x00003F" text="Ext. Crystal Osc. 8.0-    MHz; Start-up time: 16K CK + 65 ms" />
       </setting>
+      <setting name="EXTENDED" mask="0xFF0000" info="EXTENDED" radix="16" shift="16" />
+      <setting name="HIGH" mask="0x00FF00" info="HIGH" radix="16" shift="8" />
+      <setting name="LOW" mask="0x0000FF" info="LOW" radix="16" shift="0" />
     </fuse>
     <lock init="0xFF" bytesize="1">
       <setting name="LB" mask="0x03" info="Memory Lock">
@@ -3178,6 +3304,7 @@
         <choice value="0x20" text="SPM prohibited in Boot Loader Section" />
         <choice value="0x30" text="No lock on SPM and LPM in Boot Loader Section" />
       </setting>
+      <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" />
     </lock>
     <calibration init="0xFF" bytesize="1">
       <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
@@ -3264,6 +3391,9 @@
         <choice value="0x00002F" text="Ext. Crystal Osc. 8.0-    MHz; Start-up time: 16K CK + 4.1 ms" />
         <choice value="0x00003F" text="Ext. Crystal Osc. 8.0-    MHz; Start-up time: 16K CK + 65 ms" />
       </setting>
+      <setting name="EXTENDED" mask="0xFF0000" info="EXTENDED" radix="16" shift="16" />
+      <setting name="HIGH" mask="0x00FF00" info="HIGH" radix="16" shift="8" />
+      <setting name="LOW" mask="0x0000FF" info="LOW" radix="16" shift="0" />
     </fuse>
     <lock init="0xFF" bytesize="1">
       <setting name="LB" mask="0x03" info="Memory Lock">
@@ -3283,6 +3413,7 @@
         <choice value="0x20" text="SPM prohibited in Boot Loader Section" />
         <choice value="0x30" text="No lock on SPM and LPM in Boot Loader Section" />
       </setting>
+      <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" />
     </lock>
     <calibration init="0xFF" bytesize="1">
       <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
@@ -3369,6 +3500,9 @@
         <choice value="0x00002F" text="Ext. Crystal Osc. 8.0-    MHz; Start-up time: 16K CK + 4.1 ms" />
         <choice value="0x00003F" text="Ext. Crystal Osc. 8.0-    MHz; Start-up time: 16K CK + 65 ms" />
       </setting>
+      <setting name="EXTENDED" mask="0xFF0000" info="EXTENDED" radix="16" shift="16" />
+      <setting name="HIGH" mask="0x00FF00" info="HIGH" radix="16" shift="8" />
+      <setting name="LOW" mask="0x0000FF" info="LOW" radix="16" shift="0" />
     </fuse>
     <lock init="0xFF" bytesize="1">
       <setting name="LB" mask="0x03" info="Memory Lock">
@@ -3388,6 +3522,7 @@
         <choice value="0x20" text="SPM prohibited in Boot Loader Section" />
         <choice value="0x30" text="No lock on SPM and LPM in Boot Loader Section" />
       </setting>
+      <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" />
     </lock>
     <calibration init="0xFF" bytesize="1">
       <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
@@ -3485,6 +3620,9 @@
         <choice value="0x00002F" text="Ext. Crystal/Resonator High Freq.; Start-up time: 16K CK + 4 ms" />
         <choice value="0x00003F" text="Ext. Crystal/Resonator High Freq.; Start-up time: 16K CK + 64 ms" />
       </setting>
+      <setting name="EXTENDED" mask="0xFF0000" info="EXTENDED" radix="16" shift="16" />
+      <setting name="HIGH" mask="0x00FF00" info="HIGH" radix="16" shift="8" />
+      <setting name="LOW" mask="0x0000FF" info="LOW" radix="16" shift="0" />
     </fuse>
     <lock init="0xFF" bytesize="1">
       <setting name="LB" mask="0x03" info="Memory Lock">
@@ -3504,6 +3642,7 @@
         <choice value="0x20" text="SPM prohibited in Boot Loader Section" />
         <choice value="0x30" text="No lock on SPM and LPM in Boot Loader Section" />
       </setting>
+      <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" />
     </lock>
     <calibration init="0xFFFFFFFF" bytesize="4">
       <setting name="1.0 MHz" mask="0x000000FF" info="OSCCAL at 1.0 MHz" ban="*" radix="16" shift="0" />
@@ -3593,6 +3732,9 @@
         <choice value="0x00002F" text="Ext. Crystal Osc. 8.0-    MHz; Start-up time: 16K CK + 4.1 ms" />
         <choice value="0x00003F" text="Ext. Crystal Osc. 8.0-    MHz; Start-up time: 16K CK + 65 ms" />
       </setting>
+      <setting name="EXTENDED" mask="0xFF0000" info="EXTENDED" radix="16" shift="16" />
+      <setting name="HIGH" mask="0x00FF00" info="HIGH" radix="16" shift="8" />
+      <setting name="LOW" mask="0x0000FF" info="LOW" radix="16" shift="0" />
     </fuse>
     <lock init="0xFF" bytesize="1">
       <setting name="LB" mask="0x03" info="Memory Lock">
@@ -3612,6 +3754,7 @@
         <choice value="0x20" text="SPM prohibited in Boot Loader Section" />
         <choice value="0x30" text="No lock on SPM and LPM in Boot Loader Section" />
       </setting>
+      <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" />
     </lock>
     <calibration init="0xFF" bytesize="1">
       <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
@@ -3698,6 +3841,9 @@
         <choice value="0x00002F" text="Ext. Crystal Osc. 8.0-    MHz; Start-up time: 16K CK + 4.1 ms" />
         <choice value="0x00003F" text="Ext. Crystal Osc. 8.0-    MHz; Start-up time: 16K CK + 65 ms" />
       </setting>
+      <setting name="EXTENDED" mask="0xFF0000" info="EXTENDED" radix="16" shift="16" />
+      <setting name="HIGH" mask="0x00FF00" info="HIGH" radix="16" shift="8" />
+      <setting name="LOW" mask="0x0000FF" info="LOW" radix="16" shift="0" />
     </fuse>
     <lock init="0xFF" bytesize="1">
       <setting name="LB" mask="0x03" info="Memory Lock">
@@ -3717,6 +3863,7 @@
         <choice value="0x20" text="SPM prohibited in Boot Loader Section" />
         <choice value="0x30" text="No lock on SPM and LPM in Boot Loader Section" />
       </setting>
+      <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" />
     </lock>
     <calibration init="0xFF" bytesize="1">
       <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
@@ -3803,6 +3950,9 @@
         <choice value="0x00002F" text="Ext. Crystal Osc. 8.0-    MHz; Start-up time: 16K CK + 4.1 ms" />
         <choice value="0x00003F" text="Ext. Crystal Osc. 8.0-    MHz; Start-up time: 16K CK + 65 ms" />
       </setting>
+      <setting name="EXTENDED" mask="0xFF0000" info="EXTENDED" radix="16" shift="16" />
+      <setting name="HIGH" mask="0x00FF00" info="HIGH" radix="16" shift="8" />
+      <setting name="LOW" mask="0x0000FF" info="LOW" radix="16" shift="0" />
     </fuse>
     <lock init="0xFF" bytesize="1">
       <setting name="LB" mask="0x03" info="Memory Lock">
@@ -3822,6 +3972,7 @@
         <choice value="0x20" text="SPM prohibited in Boot Loader Section" />
         <choice value="0x30" text="No lock on SPM and LPM in Boot Loader Section" />
       </setting>
+      <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" />
     </lock>
     <calibration init="0xFF" bytesize="1">
       <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
@@ -3908,6 +4059,9 @@
         <choice value="0x00002F" text="Ext. Crystal Osc. 8.0-    MHz; Start-up time: 16K CK + 4.1 ms" />
         <choice value="0x00003F" text="Ext. Crystal Osc. 8.0-    MHz; Start-up time: 16K CK + 65 ms" />
       </setting>
+      <setting name="EXTENDED" mask="0xFF0000" info="EXTENDED" radix="16" shift="16" />
+      <setting name="HIGH" mask="0x00FF00" info="HIGH" radix="16" shift="8" />
+      <setting name="LOW" mask="0x0000FF" info="LOW" radix="16" shift="0" />
     </fuse>
     <lock init="0xFF" bytesize="1">
       <setting name="LB" mask="0x03" info="Memory Lock">
@@ -3927,6 +4081,7 @@
         <choice value="0x20" text="SPM prohibited in Boot Loader Section" />
         <choice value="0x30" text="No lock on SPM and LPM in Boot Loader Section" />
       </setting>
+      <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" />
     </lock>
     <calibration init="0xFF" bytesize="1">
       <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
@@ -4013,6 +4168,9 @@
         <choice value="0x00002F" text="Ext. Crystal Osc. 8.0-    MHz; Start-up time: 16K CK + 4.1 ms" />
         <choice value="0x00003F" text="Ext. Crystal Osc. 8.0-    MHz; Start-up time: 16K CK + 65 ms" />
       </setting>
+      <setting name="EXTENDED" mask="0xFF0000" info="EXTENDED" radix="16" shift="16" />
+      <setting name="HIGH" mask="0x00FF00" info="HIGH" radix="16" shift="8" />
+      <setting name="LOW" mask="0x0000FF" info="LOW" radix="16" shift="0" />
     </fuse>
     <lock init="0xFF" bytesize="1">
       <setting name="LB" mask="0x03" info="Memory Lock">
@@ -4032,6 +4190,7 @@
         <choice value="0x20" text="SPM prohibited in Boot Loader Section" />
         <choice value="0x30" text="No lock on SPM and LPM in Boot Loader Section" />
       </setting>
+      <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" />
     </lock>
     <calibration init="0xFF" bytesize="1">
       <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
@@ -4118,6 +4277,9 @@
         <choice value="0x00002F" text="Ext. Crystal Osc. 8.0-    MHz; Start-up time: 16K CK + 4.1 ms" />
         <choice value="0x00003F" text="Ext. Crystal Osc. 8.0-    MHz; Start-up time: 16K CK + 65 ms" />
       </setting>
+      <setting name="EXTENDED" mask="0xFF0000" info="EXTENDED" radix="16" shift="16" />
+      <setting name="HIGH" mask="0x00FF00" info="HIGH" radix="16" shift="8" />
+      <setting name="LOW" mask="0x0000FF" info="LOW" radix="16" shift="0" />
     </fuse>
     <lock init="0xFF" bytesize="1">
       <setting name="LB" mask="0x03" info="Memory Lock">
@@ -4137,6 +4299,7 @@
         <choice value="0x20" text="SPM prohibited in Boot Loader Section" />
         <choice value="0x30" text="No lock on SPM and LPM in Boot Loader Section" />
       </setting>
+      <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" />
     </lock>
     <calibration init="0xFF" bytesize="1">
       <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
@@ -4232,6 +4395,9 @@
         <choice value="0x00002F" text="Ext. Crystal Osc. 8.0-    MHz; Start-up time: 16K CK + 4.1 ms" />
         <choice value="0x00003F" text="Ext. Crystal Osc. 8.0-    MHz; Start-up time: 16K CK + 65 ms" />
       </setting>
+      <setting name="EXTENDED" mask="0xFF0000" info="EXTENDED" radix="16" shift="16" />
+      <setting name="HIGH" mask="0x00FF00" info="HIGH" radix="16" shift="8" />
+      <setting name="LOW" mask="0x0000FF" info="LOW" radix="16" shift="0" />
     </fuse>
     <lock init="0xFF" bytesize="1">
       <setting name="LB" mask="0x03" info="Memory Lock">
@@ -4251,6 +4417,7 @@
         <choice value="0x20" text="SPM prohibited in Boot Loader Section" />
         <choice value="0x30" text="No lock on SPM and LPM in Boot Loader Section" />
       </setting>
+      <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" />
     </lock>
     <calibration init="0xFF" bytesize="1">
       <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
@@ -4346,6 +4513,9 @@
         <choice value="0x00002F" text="Ext. Crystal Osc. 8.0-    MHz; Start-up time: 16K CK + 4.1 ms" />
         <choice value="0x00003F" text="Ext. Crystal Osc. 8.0-    MHz; Start-up time: 16K CK + 65 ms" />
       </setting>
+      <setting name="EXTENDED" mask="0xFF0000" info="EXTENDED" radix="16" shift="16" />
+      <setting name="HIGH" mask="0x00FF00" info="HIGH" radix="16" shift="8" />
+      <setting name="LOW" mask="0x0000FF" info="LOW" radix="16" shift="0" />
     </fuse>
     <lock init="0xFF" bytesize="1">
       <setting name="LB" mask="0x03" info="Memory Lock">
@@ -4365,6 +4535,7 @@
         <choice value="0x20" text="SPM prohibited in Boot Loader Section" />
         <choice value="0x30" text="No lock on SPM and LPM in Boot Loader Section" />
       </setting>
+      <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" />
     </lock>
     <calibration init="0xFF" bytesize="1">
       <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
@@ -4460,6 +4631,9 @@
         <choice value="0x00002F" text="Ext. Crystal Osc. 8.0-    MHz; Start-up time: 16K CK + 4.1 ms" />
         <choice value="0x00003F" text="Ext. Crystal Osc. 8.0-    MHz; Start-up time: 16K CK + 65 ms" />
       </setting>
+      <setting name="EXTENDED" mask="0xFF0000" info="EXTENDED" radix="16" shift="16" />
+      <setting name="HIGH" mask="0x00FF00" info="HIGH" radix="16" shift="8" />
+      <setting name="LOW" mask="0x0000FF" info="LOW" radix="16" shift="0" />
     </fuse>
     <lock init="0xFF" bytesize="1">
       <setting name="LB" mask="0x03" info="Memory Lock">
@@ -4479,6 +4653,7 @@
         <choice value="0x20" text="SPM prohibited in Boot Loader Section" />
         <choice value="0x30" text="No lock on SPM and LPM in Boot Loader Section" />
       </setting>
+      <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" />
     </lock>
     <calibration init="0xFF" bytesize="1">
       <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
@@ -4574,6 +4749,9 @@
         <choice value="0x00002F" text="Ext. Crystal Osc. 8.0-    MHz; Start-up time: 16K CK + 4.1 ms" />
         <choice value="0x00003F" text="Ext. Crystal Osc. 8.0-    MHz; Start-up time: 16K CK + 65 ms" />
       </setting>
+      <setting name="EXTENDED" mask="0xFF0000" info="EXTENDED" radix="16" shift="16" />
+      <setting name="HIGH" mask="0x00FF00" info="HIGH" radix="16" shift="8" />
+      <setting name="LOW" mask="0x0000FF" info="LOW" radix="16" shift="0" />
     </fuse>
     <lock init="0xFF" bytesize="1">
       <setting name="LB" mask="0x03" info="Memory Lock">
@@ -4593,6 +4771,7 @@
         <choice value="0x20" text="SPM prohibited in Boot Loader Section" />
         <choice value="0x30" text="No lock on SPM and LPM in Boot Loader Section" />
       </setting>
+      <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" />
     </lock>
     <calibration init="0xFF" bytesize="1">
       <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
@@ -4688,6 +4867,9 @@
         <choice value="0x00002F" text="Ext. Crystal Osc. 8.0-    MHz; Start-up time: 16K CK + 4.1 ms" />
         <choice value="0x00003F" text="Ext. Crystal Osc. 8.0-    MHz; Start-up time: 16K CK + 65 ms" />
       </setting>
+      <setting name="EXTENDED" mask="0xFF0000" info="EXTENDED" radix="16" shift="16" />
+      <setting name="HIGH" mask="0x00FF00" info="HIGH" radix="16" shift="8" />
+      <setting name="LOW" mask="0x0000FF" info="LOW" radix="16" shift="0" />
     </fuse>
     <lock init="0xFF" bytesize="1">
       <setting name="LB" mask="0x03" info="Memory Lock">
@@ -4707,6 +4889,7 @@
         <choice value="0x20" text="SPM prohibited in Boot Loader Section" />
         <choice value="0x30" text="No lock on SPM and LPM in Boot Loader Section" />
       </setting>
+      <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" />
     </lock>
     <calibration init="0xFF" bytesize="1">
       <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
@@ -4801,6 +4984,8 @@
         <choice value="0x002F" text="Ext. Crystal/Resonator High Freq.; Start-up time: 16K CK + 4 ms" />
         <choice value="0x003F" text="Ext. Crystal/Resonator High Freq.; Start-up time: 16K CK + 64 ms" />
       </setting>
+      <setting name="HIGH" mask="0xFF00" info="HIGH" radix="16" shift="8" />
+      <setting name="LOW" mask="0x00FF" info="LOW" radix="16" shift="0" />
     </fuse>
     <lock init="0xFF" bytesize="1">
       <setting name="LB" mask="0x03" info="Memory Lock">
@@ -4820,6 +5005,7 @@
         <choice value="0x20" text="SPM prohibited in Boot Loader Section" />
         <choice value="0x30" text="No lock on SPM and LPM in Boot Loader Section" />
       </setting>
+      <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" />
     </lock>
     <calibration init="0xFFFFFFFF" bytesize="4">
       <setting name="1.0 MHz" mask="0x000000FF" info="OSCCAL at 1.0 MHz" ban="*" radix="16" shift="0" />
@@ -4917,6 +5103,8 @@
         <choice value="0x002F" text="Ext. Crystal/Resonator High Freq.; Start-up time: 16K CK + 4 ms" />
         <choice value="0x003F" text="Ext. Crystal/Resonator High Freq.; Start-up time: 16K CK + 64 ms" />
       </setting>
+      <setting name="HIGH" mask="0xFF00" info="HIGH" radix="16" shift="8" />
+      <setting name="LOW" mask="0x00FF" info="LOW" radix="16" shift="0" />
     </fuse>
     <lock init="0xFF" bytesize="1">
       <setting name="LB" mask="0x03" info="Memory Lock">
@@ -4936,6 +5124,7 @@
         <choice value="0x20" text="SPM prohibited in Boot Loader Section" />
         <choice value="0x30" text="No lock on SPM and LPM in Boot Loader Section" />
       </setting>
+      <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" />
     </lock>
     <calibration init="0xFFFFFFFF" bytesize="4">
       <setting name="1.0 MHz" mask="0x000000FF" info="OSCCAL at 1.0 MHz" ban="*" radix="16" shift="0" />
@@ -5036,6 +5225,9 @@
         <choice value="0x00002F" text="Ext. Crystal/Resonator High Freq.; Start-up time: 16K CK + 4 ms" />
         <choice value="0x00003F" text="Ext. Crystal/Resonator High Freq.; Start-up time: 16K CK + 64 ms" />
       </setting>
+      <setting name="EXTENDED" mask="0xFF0000" info="EXTENDED" radix="16" shift="16" />
+      <setting name="HIGH" mask="0x00FF00" info="HIGH" radix="16" shift="8" />
+      <setting name="LOW" mask="0x0000FF" info="LOW" radix="16" shift="0" />
     </fuse>
     <lock init="0xFF" bytesize="1">
       <setting name="LB" mask="0x03" info="Memory Lock">
@@ -5055,6 +5247,7 @@
         <choice value="0x20" text="SPM prohibited in Boot Loader Section" />
         <choice value="0x30" text="No lock on SPM and LPM in Boot Loader Section" />
       </setting>
+      <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" />
     </lock>
     <calibration init="0xFFFFFFFF" bytesize="4">
       <setting name="1.0 MHz" mask="0x000000FF" info="OSCCAL at 1.0 MHz" ban="*" radix="16" shift="0" />
