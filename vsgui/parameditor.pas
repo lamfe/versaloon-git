@@ -29,6 +29,7 @@ type
     checked: integer;
     unchecked: integer;
     enabled: boolean;
+    bytelen: integer;
     choices: array of TParam_Choice;
   end;
   TParam_Record = record
@@ -48,7 +49,6 @@ type
     procedure FormCloseQuery(Sender: TObject; var CanClose: boolean);
     procedure FormKeyPress(Sender: TObject; var Key: char);
     procedure SettingChange(Sender: TObject);
-    procedure NumbericEditKeyPress(Sender: TObject;  var Key: char);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormShow(Sender: TObject);
   private
@@ -68,6 +68,7 @@ type
     function IntToStrRadix(aData, radix: Integer): String;
     function WipeTailEnter(var line: string): string;
     function GetResult(): integer;
+    function ParseSettingMaskValue(Sender: TObject; var mask, value: integer): boolean;
     procedure ValueToSetting();
     procedure UpdateTitle();
     function GetIntegerParameter(line, para_name: string; var value: integer): boolean;
@@ -94,9 +95,20 @@ const
   COMBO_WIDTH: integer = 400;
   SECTION_DIV_HEIGHT: integer = 20;
   HEX_PARSE_STR: string = '0123456789ABCDEF';
-  DATALEN_ACCORDING_TO_RADIX: array[2..16] of integer = (32, 0, 16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8);
+  BYTELEN_ACCORDING_TO_RADIX: array[2..16] of integer = (8, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2);
 
 implementation
+
+function GetStringLen_To_ByteLen(bytelen, radix: integer): integer;
+begin
+  if (radix < 2) or (radix > 16) or (BYTELEN_ACCORDING_TO_RADIX[radix] = 0) then
+  begin
+    result := 0;
+    exit;
+  end;
+
+  result := bytelen * BYTELEN_ACCORDING_TO_RADIX[radix];
+end;
 
 function TFormParaEditor.StrToIntRadix(sData: string; radix: integer): integer;
 var
@@ -104,14 +116,15 @@ var
 begin
   result := 0;
   sData := UpperCase(sData);
-  if (radix = 0) or (radix > 16)
-     or (Length(sData) >= DATALEN_ACCORDING_TO_RADIX[radix]) then
+  if (radix < 2) or (radix > 16)
+     or (Length(sData) > (BYTELEN_ACCORDING_TO_RADIX[radix] * 4)) then
   begin
     exit;
   end;
+
   for i := 1 to Length(sData) do
   begin
-    if Pos(sData[i], HEX_PARSE_STR) < 1 then
+    if (Pos(sData[i], HEX_PARSE_STR) < 1) or (Pos(sData[i], HEX_PARSE_STR) > radix) then
     begin
       exit;
     end;
@@ -186,95 +199,34 @@ begin
   end;
 end;
 
-procedure TFormParaEditor.NumbericEditKeyPress(Sender: TObject;  var Key: char);
-var
-  radix, value: integer;
-begin
-  if (Key = Char(8)) then
-  begin
-    exit;
-  end;
-
-  Key := UpperCase(Key)[1];
-  radix := Param_Record.settings[(Sender as TEdit).Tag].radix;
-
-  value := Pos(Key, HEX_PARSE_STR);
-  if (value < 1) or (value > radix)
-     or (Length((Sender as TEdit).Text) >= DATALEN_ACCORDING_TO_RADIX[radix]) then
-  begin
-    Key := Char(0);
-  end;
-end;
-
 procedure TFormParaEditor.SettingChange(Sender: TObject);
 var
-  i: integer;
-  setting_mask, setting_value: integer;
+  mask, value: integer;
 begin
   if SettingParameter then
   begin
     exit;
   end;
 
-  if EnableWarning then
+  mask := 0;
+  value := 0;
+  if ParseSettingMaskValue(Sender, mask, value) = FALSE then
   begin
-    if Sender is TComboBox then
-    begin
-      i := (Sender as TComboBox).Tag;
-    end
-    else if Sender is TCheckBox then
-    begin
-      i := (Sender as TCheckBox).Tag;
-    end
-    else if Sender is TEdit then
-    begin
-      i := (Sender as TEdit).Tag;
-    end
-    else
-    begin
-      // this component is not supported as a setting component
-      exit;
-    end;
-
-    setting_mask := Param_Record.settings[i].mask;
-    Param_Value := Param_Value and not setting_mask;
-    if Param_Record.settings[i].use_edit then
-    begin
-      setting_value := StrToIntRadix(ParaEdtValueArr[i].Text, Param_Record.settings[i].radix) shl Param_Record.settings[i].shift;
-      if (setting_value and not Param_Record.settings[i].mask) > 0 then
-      begin
-        setting_value := setting_value and Param_Record.settings[i].mask;
-        ParaEdtValueArr[i].Text := IntToStrRadix(setting_value, Param_Record.settings[i].radix);
-      end;
-      Param_Value := Param_Value or setting_value;
-    end
-    else if Param_Record.settings[i].use_checkbox then
-    begin
-      if ParaCheckArr[i].Checked then
-      begin
-        Param_Value := Param_Value or Param_Record.settings[i].checked;
-      end
-      else
-      begin
-        Param_Value := Param_Value or Param_Record.settings[i].unchecked;
-      end;
-    end
-    else
-      Param_Value := Param_Value or Param_Record.settings[i].choices[ParaComboArr[i].ItemIndex].value;
-    begin
-    end;
-
-    SettingParameter := TRUE;
-    ValueToSetting();
-    SettingParameter := FALSE;
+    exit;
   end;
+  Param_Value := Param_Value and not mask;
+  Param_Value := Param_Value or value;
+
+  SettingParameter := TRUE;
+  ValueToSetting();
+  SettingParameter := FALSE;
 
   UpdateTitle();
 end;
 
 procedure TFormParaEditor.FormKeyPress(Sender: TObject; var Key: char);
 begin
-  if Key = Char(27) then
+  if Key = #27 then
   begin
     close;
   end;
@@ -294,7 +246,7 @@ begin
 
   CanClose := TRUE;
 
-  if not bCancel then
+  if not bCancel and EnableWarning then
   begin
     for i := 0 to Length(Param_Record.warnings) - 1 do
     begin
@@ -372,6 +324,62 @@ begin
   EnableWarning := warnEnabled;
 end;
 
+function TFormParaEditor.ParseSettingMaskValue(Sender: TObject; var mask, value: integer): boolean;
+var
+  i: integer;
+  str_tmp: string;
+begin
+  result := TRUE;
+
+  if Sender is TComboBox then
+  begin
+    i := (Sender as TComboBox).Tag;
+  end
+  else if Sender is TCheckBox then
+  begin
+    i := (Sender as TCheckBox).Tag;
+  end
+  else if Sender is TEdit then
+  begin
+    i := (Sender as TEdit).Tag;
+  end
+  else
+  begin
+    // this component is not supported as a setting component
+    result := FALSE;
+    exit;
+  end;
+
+  mask := Param_Record.settings[i].mask;
+  if Param_Record.settings[i].use_edit then
+  begin
+    str_tmp := Copy(ParaEdtValueArr[i].Text, 1,
+            GetStringLen_To_ByteLen(Param_Record.settings[i].bytelen,
+                                    Param_Record.settings[i].radix));
+    value := StrToIntRadix(str_tmp, Param_Record.settings[i].radix);
+    value := value shl Param_Record.settings[i].shift;
+    if (value and not mask) > 0 then
+    begin
+      value := value and mask;
+    end;
+  end
+  else if Param_Record.settings[i].use_checkbox then
+  begin
+    if ParaCheckArr[i].Checked then
+    begin
+      value := Param_Record.settings[i].checked;
+    end
+    else
+    begin
+      value := Param_Record.settings[i].unchecked;
+    end;
+  end
+  else
+  begin
+    value := Param_Record.settings[i].choices[ParaComboArr[i].ItemIndex].value;
+  end;
+end;
+
 procedure TFormParaEditor.ValueToSetting();
 var
   i, j: integer;
@@ -386,6 +394,12 @@ begin
     begin
       value := value shr Param_Record.settings[i].shift;
       ParaEdtValueArr[i].Text := IntToStrRadix(value, Param_Record.settings[i].radix);
+      while Length(ParaEdtValueArr[i].Text)
+            < GetStringLen_To_ByteLen(Param_Record.settings[i].bytelen,
+                                      Param_Record.settings[i].radix) do
+      begin
+        ParaEdtValueArr[i].Text := '0'+ParaEdtValueArr[i].Text;
+      end;
     end
     else if Param_Record.settings[i].use_checkbox then
     begin
@@ -477,7 +491,6 @@ begin
       ParaEdtValueArr[i].Left := LEFT_MARGIN + EDT_WIDTH + X_MARGIN;
       ParaEdtValueArr[i].Height := ITEM_HEIGHT;
       ParaEdtValueArr[i].OnExit := @SettingChange;
-      ParaEdtValueArr[i].OnKeyPress := @NumbericEditKeyPress;
       ParaEdtValueArr[i].Tag := i;
       ParaEdtValueArr[i].Enabled := Param_Record.settings[i].enabled;
     end
@@ -587,6 +600,8 @@ begin
     SetLength(Param_Record.settings[i - 1].choices, 0);
     GetStringParameter(line, 'name', Param_Record.settings[i - 1].name);
     GetIntegerParameter(line, 'mask', Param_Record.settings[i - 1].mask);
+    Param_Record.settings[i - 1].bytelen := 0;
+    GetIntegerParameter(line, 'bytelen', Param_Record.settings[i - 1].bytelen);
     Param_Record.settings[i - 1].radix := 0;
     GetIntegerParameter(line, 'radix', Param_Record.settings[i - 1].radix);
     if (Param_Record.settings[i - 1].radix < 2) or (Param_Record.settings[i - 1].radix > 16) then

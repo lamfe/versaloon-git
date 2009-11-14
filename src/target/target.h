@@ -186,6 +186,7 @@ typedef struct
 	uint8_t radix;
 	uint32_t checked;
 	uint32_t unchecked;
+	uint8_t bytelen;
 	uint16_t num_of_choices;
 	chip_fl_choice_t *choices;
 }chip_fl_setting_t;

@@ -554,8 +554,9 @@ void target_print_fl(char *type)
 		}
 		else if (fl.settings[i].use_edit)
 		{
-			printf(", radix = %d, shift = %d", 
-				fl.settings[i].radix, fl.settings[i].shift);
+			printf(", radix = %d, shift = %d, bytelen = %d", 
+				fl.settings[i].radix, fl.settings[i].shift, 
+				fl.settings[i].bytelen);
 		}
 		printf("\n");
 		for (j = 0; j < fl.settings[i].num_of_choices; j++)
@@ -980,6 +981,14 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 			strcpy(fl->settings[i].info, m);
 		}
 		
+		// parse bytelen if exists
+		if (xmlHasProp(settingNode, BAD_CAST "bytelen"))
+		{
+			fl->settings[i].bytelen = (uint8_t)strtoul(
+				(const char *)xmlGetProp(settingNode, BAD_CAST "bytelen"), 
+				NULL, 0);
+		}
+		
 		// parse radix if exists
 		if (xmlHasProp(settingNode, BAD_CAST "radix"))
 		{
@@ -1158,6 +1167,7 @@ RESULT target_release_chip_fl(chip_fl_t *fl)
 		free(fl->settings);
 		fl->settings = NULL;
 	}
+	memset(fl, 0, sizeof(chip_fl_t));
 	
 	return ERROR_OK;
 }
@@ -1511,6 +1521,7 @@ RESULT target_release_chip_series(chip_series_t *s)
 		s->chips_param = NULL;
 		s->num_of_chips = 0;
 	}
+	memset(s, 0, sizeof(chip_series_t));
 	
 	return ERROR_OK;
 }
