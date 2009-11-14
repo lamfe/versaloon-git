@@ -48,6 +48,8 @@ type
     procedure btnOKClick(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: boolean);
     procedure FormKeyPress(Sender: TObject; var Key: char);
+    procedure pnlButtonClick(Sender: TObject);
+    procedure pnlSettingsClick(Sender: TObject);
     procedure SettingChange(Sender: TObject);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormShow(Sender: TObject);
@@ -230,6 +232,16 @@ begin
   begin
     close;
   end;
+end;
+
+procedure TFormParaEditor.pnlButtonClick(Sender: TObject);
+begin
+  ActiveControl := btnOK;
+end;
+
+procedure TFormParaEditor.pnlSettingsClick(Sender: TObject);
+begin
+  ActiveControl := btnOK;
 end;
 
 procedure TFormParaEditor.btnOKClick(Sender: TObject);

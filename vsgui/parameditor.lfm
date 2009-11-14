@@ -20,6 +20,7 @@ object FormParaEditor: TFormParaEditor
     Width = 323
     Align = alClient
     TabOrder = 0
+    OnClick = pnlSettingsClick
   end
   object pnlButton: TPanel
     Height = 66
@@ -29,6 +30,7 @@ object FormParaEditor: TFormParaEditor
     ClientHeight = 66
     ClientWidth = 323
     TabOrder = 1
+    OnClick = pnlButtonClick
     object btnOK: TButton
       Left = 56
       Height = 25
