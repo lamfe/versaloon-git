@@ -256,7 +256,9 @@ const
   AUTODETECT_STR: string = 'AutoDetect';
   AUTODETECT_HINT: string = 'Detect Target Module';
   FREQ_STR:string = 'Freq(KHz):';
+  FREQ_HINT: string = 'Set operation frequency';
   EXECUTE_ADDR_STR: string = 'execute:';
+  EXECUTE_ADDR_HINT: string = 'Set address to execute after operation';
   ST_PROG_STR: string = '-U "0x0483 0x5740 0x82 0x03 2"';
   ATMEL_PROG_STR: string = '-U "0x03eb 0x2103 0x82 0x02 0"';
   LOGMEMO_WIDTH: integer = 400;
@@ -293,7 +295,6 @@ begin
   lblInputFile.Top := fnEdit.Top + (fnEdit.Height - lblInputFile.Height) div 2;
   lblMode.Top := cbboxMode.Top + (cbboxMode.Height - lblMode.Height) div 2;
   Caption := APP_STR + ' ' + VERSION_STR;
-  btnTargetDetect.Hint := AUTODETECT_HINT;
 
   FormMain.Width := pnlMain.Width + LOGMEMO_WIDTH + 2;
   memoLog.Width := LOGMEMO_WIDTH;
@@ -1982,10 +1983,12 @@ begin
     if Pos('F', para) > 0 then
     begin
       lbledtFreq.EditLabel.Caption := FREQ_STR;
+      lbledtFreq.Hint := FREQ_HINT;
     end
     else
     begin
       lbledtFreq.EditLabel.Caption := EXECUTE_ADDR_STR;
+      lbledtFreq.Hint := EXECUTE_ADDR_HINT;
     end;
     if lbledtFreq.EditLabel.Caption <> str_tmp then
     begin
@@ -1996,6 +1999,7 @@ begin
   else
   begin
     lbledtFreq.Text := '';
+    lbledtFreq.Hint := '';
     lbledtFreq.Enabled := FALSE;
   end;
 
@@ -2016,6 +2020,7 @@ begin
   else
   begin
     btnTargetDetect.Caption := 'No use';
+    btnTargetDetect.Hint := 'No use';
     btnTargetDetect.Enabled := FALSE;
   end;
 
