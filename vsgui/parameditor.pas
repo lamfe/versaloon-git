@@ -440,10 +440,6 @@ begin
   SetLength(ParaCheckArr, settings_num);
   SetLength(ParaEdtValueArr, settings_num);
 
-  // center buttons
-  btnOK.Left := (pnlButton.Width div 2 - btnOK.Width) div 2;
-  btnCancel.Left := pnlButton.Width div 2 + (pnlButton.Width div 2 - btnOK.Width) div 2;
-
   section_num := 0;
   mask := 0;
 
@@ -526,6 +522,9 @@ begin
   ClientWidth := i;
   pnlSettings.ClientWidth := i;
   pnlButton.ClientWidth := i;
+  // center buttons
+  btnOK.Left := (pnlButton.Width div 2 - btnOK.Width) div 2;
+  btnCancel.Left := pnlButton.Width div 2 + (pnlButton.Width div 2 - btnOK.Width) div 2;
   UpdateTitle();
 
   ValueToSetting();
