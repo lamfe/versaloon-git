@@ -220,8 +220,8 @@ object FormMain: TFormMain
           Top = 5
           Width = 369
           Caption = 'Chip Name'
-          ClientHeight = 37
-          ClientWidth = 365
+          ClientHeight = 55
+          ClientWidth = 369
           TabOrder = 0
           object lblTarget: TLabel
             Left = 22
@@ -266,8 +266,8 @@ object FormMain: TFormMain
           Top = 242
           Width = 369
           Caption = 'Option'
-          ClientHeight = 119
-          ClientWidth = 365
+          ClientHeight = 137
+          ClientWidth = 369
           TabOrder = 1
           object lblMode: TLabel
             Left = 13
@@ -456,8 +456,8 @@ object FormMain: TFormMain
           Top = 69
           Width = 369
           Caption = 'File'
-          ClientHeight = 147
-          ClientWidth = 365
+          ClientHeight = 165
+          ClientWidth = 369
           TabOrder = 2
           object lblInputFile: TLabel
             Left = 22
@@ -675,8 +675,8 @@ object FormMain: TFormMain
           Top = 386
           Width = 369
           Caption = 'Operation'
-          ClientHeight = 39
-          ClientWidth = 365
+          ClientHeight = 57
+          ClientWidth = 369
           TabOrder = 3
           object btnRead: TButton
             Left = 278

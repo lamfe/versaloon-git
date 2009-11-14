@@ -391,7 +391,7 @@ end;
 
 procedure TFormMain.lbledtTargetKeyPress(Sender: TObject; var Key: char);
 begin
-  Key := Char(0);
+  Key := #0;
 end;
 
 procedure TFormMain.pcMainPageChanged(Sender: TObject);
@@ -1268,7 +1268,7 @@ begin
       btnWrite.Click;
     end;
 
-    Key := Char(0);
+    Key := #0;
   end;
 end;
 
