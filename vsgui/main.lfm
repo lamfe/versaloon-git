@@ -45,7 +45,7 @@ object FormMain: TFormMain
       Height = 462
       Top = 1
       Width = 437
-      ActivePage = tsJTAG
+      ActivePage = tsCOMISP
       Align = alTop
       Font.CharSet = ANSI_CHARSET
       Font.Color = clBlack
@@ -53,7 +53,7 @@ object FormMain: TFormMain
       Font.Name = 'Arial'
       Font.Pitch = fpVariable
       ParentFont = False
-      TabIndex = 0
+      TabIndex = 1
       TabOrder = 0
       TabPosition = tpLeft
       OnChange = pcMainPageChanged
@@ -220,8 +220,8 @@ object FormMain: TFormMain
           Top = 5
           Width = 369
           Caption = 'Chip Name'
-          ClientHeight = 55
-          ClientWidth = 369
+          ClientHeight = 37
+          ClientWidth = 365
           TabOrder = 0
           object lblTarget: TLabel
             Left = 22
@@ -266,8 +266,8 @@ object FormMain: TFormMain
           Top = 242
           Width = 369
           Caption = 'Option'
-          ClientHeight = 137
-          ClientWidth = 369
+          ClientHeight = 119
+          ClientWidth = 365
           TabOrder = 1
           object lblMode: TLabel
             Left = 13
@@ -456,8 +456,8 @@ object FormMain: TFormMain
           Top = 69
           Width = 369
           Caption = 'File'
-          ClientHeight = 165
-          ClientWidth = 369
+          ClientHeight = 147
+          ClientWidth = 365
           TabOrder = 2
           object lblInputFile: TLabel
             Left = 22
@@ -675,8 +675,8 @@ object FormMain: TFormMain
           Top = 386
           Width = 369
           Caption = 'Operation'
-          ClientHeight = 57
-          ClientWidth = 369
+          ClientHeight = 39
+          ClientWidth = 365
           TabOrder = 3
           object btnRead: TButton
             Left = 278
