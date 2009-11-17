@@ -46,7 +46,7 @@
 #define cur_chips_num				target_chips.num_of_chips
 #define cur_flash_offset			avr8_flash_offset
 #define cur_eeprom_offset			avr8_eeprom_offset
-#define cur_prog_mode				avr8_prog_mode
+#define cur_prog_mode				program_mode
 #define cur_frequency				avr8_isp_frequency
 
 const program_area_map_t avr8_program_area_map[] = 
@@ -66,7 +66,6 @@ static uint8_t avr8_lock = AVR8_LOCK_CHAR;
 static uint32_t avr8_fuse = AVR8_FUSE_CHAR;
 
 uint16_t avr8_isp_frequency = 560;
-static uint8_t avr8_prog_mode = 0;
 
 
 static void avr8_usage(void)
@@ -144,38 +143,6 @@ RESULT avr8_parse_argument(char cmd, const char *argu)
 		}
 		
 		avr8_fuse = (uint32_t)strtoul(argu, NULL, 0);
-		
-		break;
-	case 'm':
-		// program Mode
-		if ((NULL == argu) || (strlen(argu) != 1))
-		{
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), cmd);
-			return ERRCODE_INVALID_OPTION;
-		}
-		
-		switch (argu[0])
-		{
-		case 'i':
-			// ISP mode
-			cur_prog_mode = AVR8_ISP;
-			break;
-		case 'j':
-			// JTAG mode
-			cur_prog_mode = AVR8_JTAG;
-			break;
-		case 'p':
-			cur_prog_mode = AVR8_HVPP;
-			break;
-		case 's':
-			cur_prog_mode = AVR8_HVSP;
-			break;
-		default:
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_CHARACTER_MESSAGE), cmd, 
-					  "avr8 program mode", "MUST be 'i', 'j', 'p' or 's'!!");
-			return ERRCODE_INVALID;
-			break;
-		}
 		
 		break;
 	default:

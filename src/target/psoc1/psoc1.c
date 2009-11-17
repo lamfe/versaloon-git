@@ -44,7 +44,7 @@
 #define cur_chip_param				target_chip_param
 #define cur_chips_param				target_chips.chips_param
 #define cur_chips_num				target_chips.num_of_chips
-#define cur_prog_mode				psoc1_prog_mode
+#define cur_prog_mode				program_mode
 
 const program_area_map_t psoc1_program_area_map[] = 
 {
@@ -53,8 +53,6 @@ const program_area_map_t psoc1_program_area_map[] =
 	{CHECKSUM, CHECKSUM_CHAR, 1},
 	{0, 0, 0}
 };
-
-static uint8_t psoc1_prog_mode = 0;
 
 #define VECTORS_NUM				17
 #define VECTORS_TABLE_SIZE		128
@@ -89,6 +87,8 @@ void psoc1_support(void)
 
 RESULT psoc1_parse_argument(char cmd, const char *argu)
 {
+	argu = argu;
+	
 	switch (cmd)
 	{
 	case 'h':
@@ -96,31 +96,6 @@ RESULT psoc1_parse_argument(char cmd, const char *argu)
 		break;
 	case 'S':
 		psoc1_support();
-		break;
-	case 'm':
-		// program Mode
-		if (NULL == argu)
-		{
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), cmd);
-			return ERRCODE_INVALID_OPTION;
-		}
-		
-		switch (argu[0])
-		{
-		case 'r':
-			// Reset mode
-			cur_prog_mode = PSOC1_RESET_MODE;
-			break;
-		case 'p':
-			// Power-on mode
-			cur_prog_mode = PSOC1_POWERON_MODE;
-			break;
-		default:
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_CHARACTER_MESSAGE), cmd, 
-					  "psoc1 program mode", "MUST be 'r' or 'p'!!");
-			return ERRCODE_INVALID;
-			break;
-		}
 		break;
 	default:
 		return ERROR_FAIL;
