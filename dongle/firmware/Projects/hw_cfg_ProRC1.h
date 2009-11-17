@@ -302,19 +302,16 @@
 #define SPI_WaitTxReady()				while(!(SPI_Interface->SR & SPI_I2S_FLAG_TXE))
 
 #define SPI_AllInput()					do{\
-											GLOBAL_OUTPUT_Release();\
 											SPI_SCK_SETINPUT();\
 											SPI_MISO_SETINPUT();\
 											SPI_MOSI_SETINPUT();\
 										}while(0)
 #define SPI_AllSPIIO()					do{\
-											GLOBAL_OUTPUT_Acquire();\
 											SPI_SCK_SETOUTPUT();\
 											SPI_MOSI_SETOUTPUT();\
 											SPI_MISO_SETINPUT_PU();\
 										}while(0)
 #define SPI_AllSPIHW()					do{\
-											GLOBAL_OUTPUT_Acquire();\
 											GPIO_Dir(JTAG_TAP_PORT, GPIO_MODE_AF_PP, JTAG_TAP_TCK_PIN);\
 											GPIO_Dir(JTAG_TAP_PORT, GPIO_MODE_AF_PP, JTAG_TAP_TDO_PIN);\
 											GPIO_Dir(JTAG_TAP_PORT, GPIO_MODE_AF_PP, JTAG_TAP_TDI_PIN);\

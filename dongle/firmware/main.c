@@ -162,10 +162,13 @@ void GLOBAL_OUTPUT_Acquire(void)
 
 void GLOBAL_OUTPUT_Release(void)
 {
-	GLOBAL_OUTPUT_Count--;
-	if(!GLOBAL_OUTPUT_Count)
+	if (GLOBAL_OUTPUT_Count)
 	{
-		GLOBAL_OUTPUT_DISABLE();
+		GLOBAL_OUTPUT_Count--;
+		if(!GLOBAL_OUTPUT_Count)
+		{
+			GLOBAL_OUTPUT_DISABLE();
+		}
 	}
 }
 

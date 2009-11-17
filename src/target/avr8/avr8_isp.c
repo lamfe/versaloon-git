@@ -107,7 +107,13 @@ try_frequency:
 		poll_byte = 0;
 		// ret[2] should be 0x53
 		spi_io(cmd_buf, 4, &poll_byte, 2, 1);
-		if ((ERROR_OK != commit()) || (poll_byte != 0x53))
+		if (ERROR_OK != commit())
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_ENTER_PROG_MODE));
+			ret = ERRCODE_FAILURE_ENTER_PROG_MODE;
+			goto leave_program_mode;
+		}
+		if (poll_byte != 0x53)
 		{
 			if (cur_frequency > 1)
 			{
