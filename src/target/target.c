@@ -661,7 +661,8 @@ RESULT target_init(program_info_t *pi)
 				// use probe function defined by target chip
 				if (NULL == targets_info[i].probe_chip)
 				{
-					LOG_BUG(_GETTEXT("probe_chip not defined by %s\n"), pi->chip_type);
+					LOG_BUG(_GETTEXT("probe_chip not defined by %s\n"), 
+							targets_info[i].name);
 					return ERROR_FAIL;
 				}
 				
@@ -701,7 +702,8 @@ RESULT target_init(program_info_t *pi)
 					// use probe function defined by target chip
 					if (NULL == targets_info[i].probe_chip)
 					{
-						LOG_BUG(_GETTEXT("probe_chip not defined by %s\n"), pi->chip_type);
+						LOG_BUG(_GETTEXT("probe_chip not defined by %s\n"), 
+								targets_info[i].name);
 						return ERROR_FAIL;
 					}
 					
