@@ -124,21 +124,6 @@ RESULT msp430_parse_argument(char cmd, const char *argu)
 	return ERROR_OK;
 }
 
-RESULT msp430_probe_chip(char *chip_name)
-{
-	uint32_t i;
-	
-	for (i = 0; i < cur_chips_num; i++)
-	{
-		if (!strcmp(cur_chips_param[i].chip_name, chip_name))
-		{
-			return ERROR_OK;
-		}
-	}
-	
-	return ERROR_FAIL;
-}
-
 RESULT msp430_prepare_buffer(program_info_t *pi)
 {
 	if (pi->app != NULL)

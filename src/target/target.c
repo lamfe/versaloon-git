@@ -61,7 +61,7 @@ target_info_t targets_info[] =
 		s5x_program_area_map,				// program_area_map
 		S5X_PROGRAM_MODE_STR,				// program_mode_str
 		s5x_parse_argument,					// parse_argument
-		s5x_probe_chip,						// probe_chip
+		NULL,								// probe_chip
 		s5x_init,							// init
 		s5x_fini,							// fini
 		s5x_interface_needed,				// interfaces_needed
@@ -81,7 +81,7 @@ target_info_t targets_info[] =
 		psoc1_program_area_map,				// program_area_map
 		PSOC1_PROGRAM_MODE_STR,				// program_mode_str
 		psoc1_parse_argument,				// parse_argument
-		psoc1_probe_chip,					// probe_chip
+		NULL,								// probe_chip
 		psoc1_init,							// init
 		psoc1_fini,							// fini
 		psoc1_interface_needed,				// interfaces_needed
@@ -101,7 +101,7 @@ target_info_t targets_info[] =
 		msp430_program_area_map,			// program_area_map
 		MSP430_PROGRAM_MODE_STR,			// program_mode_str
 		msp430_parse_argument,				// parse_argument
-		msp430_probe_chip,					// probe_chip
+		NULL,								// probe_chip
 		msp430_init,						// init
 		msp430_fini,						// fini
 		msp430_interface_needed,			// interfaces_needed
@@ -121,7 +121,7 @@ target_info_t targets_info[] =
 		c8051f_program_area_map,			// program_area_map
 		C8051F_PROGRAM_MODE_STR,			// program_mode_str
 		c8051f_parse_argument,				// parse_argument
-		c8051f_probe_chip,					// probe_chip
+		NULL,								// probe_chip
 		c8051f_init,						// init
 		c8051f_fini,						// fini
 		c8051f_interface_needed,			// interfaces_needed
@@ -141,7 +141,7 @@ target_info_t targets_info[] =
 		avr8_program_area_map,				// program_area_map
 		AVR8_PROGRAM_MODE_STR,				// program_mode_str
 		avr8_parse_argument,				// parse_argument
-		avr8_probe_chip,					// probe_chip
+		NULL,								// probe_chip
 		avr8_init,							// init
 		avr8_fini,							// fini
 		avr8_interface_needed,				// interfaces_needed
@@ -201,7 +201,7 @@ target_info_t targets_info[] =
 		lpc900_program_area_map,			// program_area_map
 		LPC900_PROGRAM_MODE_STR,			// program_mode_str
 		lpc900_parse_argument,				// parse_argument
-		lpc900_probe_chip,					// probe_chip
+		NULL,								// probe_chip
 		lpc900_init,						// init
 		lpc900_fini,						// fini
 		lpc900_interface_needed,			// interfaces_needed
@@ -604,9 +604,35 @@ uint32_t target_get_number(void)
 	return sizeof(targets_info) / sizeof(targets_info[0]) - 1;
 }
 
+static RESULT target_probe_chip(char *chip_name)
+{
+	uint32_t i;
+	
+	if (NULL == chip_name)
+	{
+		return ERROR_FAIL;
+	}
+	
+	for (i = 0; i < target_chips.num_of_chips; i++)
+	{
+		if (NULL == target_chips.chips_param[i].chip_name)
+		{
+			continue;
+		}
+		
+		if (!strcmp(target_chips.chips_param[i].chip_name, chip_name))
+		{
+			return ERROR_OK;
+		}
+	}
+	
+	return ERROR_FAIL;
+}
+
 RESULT target_init(program_info_t *pi)
 {
 	uint32_t i;
+	RESULT (*probe_chip)(char *chip_name);
 	
 #if PARAM_CHECK
 	if ((NULL == pi) || ((NULL == pi->chip_name) && (NULL == pi->chip_type)))
@@ -623,10 +649,26 @@ RESULT target_init(program_info_t *pi)
 		// find which series of target contain current chip_name
 		for (i = 0; targets_info[i].name != NULL; i++)
 		{
-			target_build_chip_series(targets_info[i].name, 
-									 targets_info[i].program_mode_str, 
-									 &target_chips);
-			if (targets_info[i].probe_chip(pi->chip_name) == ERROR_OK)
+			if (ERROR_OK == target_build_chip_series(targets_info[i].name, 
+										targets_info[i].program_mode_str, 
+										&target_chips))
+			{
+				// configuration file exists, use default probe function
+				probe_chip = target_probe_chip;
+			}
+			else
+			{
+				// use probe function defined by target chip
+				if (NULL == targets_info[i].probe_chip)
+				{
+					LOG_BUG(_GETTEXT("probe_chip not defined by %s\n"), pi->chip_type);
+					return ERROR_FAIL;
+				}
+				
+				probe_chip = targets_info[i].probe_chip;
+			}
+			
+			if (probe_chip(pi->chip_name) == ERROR_OK)
 			{
 				cur_target = &targets_info[i];
 				pi->chip_type = (char *)targets_info[i].name;
@@ -647,12 +689,27 @@ RESULT target_init(program_info_t *pi)
 		{
 			if (!strcmp(targets_info[i].name, pi->chip_type))
 			{
-				target_build_chip_series(targets_info[i].name, 
-										 targets_info[i].program_mode_str, 
-										 &target_chips);
+				if (ERROR_OK == target_build_chip_series(targets_info[i].name, 
+											targets_info[i].program_mode_str, 
+											&target_chips))
+				{
+					// configuration file exists, use default probe function
+					probe_chip = target_probe_chip;
+				}
+				else
+				{
+					// use probe function defined by target chip
+					if (NULL == targets_info[i].probe_chip)
+					{
+						LOG_BUG(_GETTEXT("probe_chip not defined by %s\n"), pi->chip_type);
+						return ERROR_FAIL;
+					}
+					
+					probe_chip = targets_info[i].probe_chip;
+				}
 				
 				if ((pi->chip_name != NULL) 
-				   && (ERROR_OK != targets_info[i].probe_chip(pi->chip_name)))
+				   && (ERROR_OK != probe_chip(pi->chip_name)))
 				{
 					LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), 
 							  pi->chip_name, targets_info[i].name);
