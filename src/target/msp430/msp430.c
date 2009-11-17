@@ -46,15 +46,13 @@
 #define cur_chip_param				target_chip_param
 #define cur_chips_param				target_chips.chips_param
 #define cur_chips_num				target_chips.num_of_chips
-#define cur_prog_mode				msp430_prog_mode
+#define cur_prog_mode				program_mode
 
 const program_area_map_t msp430_program_area_map[] = 
 {
 	{APPLICATION, APPLICATION_CHAR, 1},
 	{0, 0, 0}
 };
-
-uint8_t msp430_prog_mode = 0;
 
 void msp430_usage(void)
 {
@@ -79,6 +77,8 @@ void msp430_support(void)
 
 RESULT msp430_parse_argument(char cmd, const char *argu)
 {
+	argu = argu;
+	
 	switch (cmd)
 	{
 	case 'h':
@@ -86,35 +86,6 @@ RESULT msp430_parse_argument(char cmd, const char *argu)
 		break;
 	case 'S':
 		msp430_support();
-		break;
-	case 'm':
-		// program Mode
-		if ((NULL == argu) || (strlen(argu) != 1))
-		{
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), cmd);
-			return ERRCODE_INVALID_OPTION;
-		}
-		
-		switch (argu[0])
-		{
-		case 'j':
-			// Jtag
-			msp430_prog_mode = MSP430_MODE_JTAG;
-			break;
-		case 's':
-			// Sbw
-			msp430_prog_mode = MSP430_MODE_SBW;
-			break;
-		case 'b':
-			// Bsl
-			msp430_prog_mode = MSP430_MODE_BSL;
-			break;
-		default:
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_CHARACTER_MESSAGE), cmd, 
-					  "msp430 program mode", "MUST be 'j', 's' or 'b'!!");
-			return ERRCODE_INVALID;
-			break;
-		}
 		break;
 	default:
 		return ERROR_FAIL;
@@ -296,7 +267,7 @@ RESULT msp430_init(program_info_t *pi, const char *dir,
 
 uint32_t msp430_interface_needed(void)
 {
-	switch(msp430_prog_mode & MSP430_PROG_MODE_MASK)
+	switch(cur_prog_mode & MSP430_PROG_MODE_MASK)
 	{
 	case 0:			// default is JTAG
 	case MSP430_MODE_JTAG:
@@ -366,11 +337,11 @@ RESULT msp430_program(operation_t operations, program_info_t *pi,
 		LOG_WARNING(_GETTEXT(INFOMSG_TARGET_LOW_POWER));
 	}
 	
-	switch(msp430_prog_mode & MSP430_PROG_MODE_MASK)
+	switch(cur_prog_mode & MSP430_PROG_MODE_MASK)
 	{
 	case 0:
 		LOG_WARNING(_GETTEXT(INFOMSG_USE_DEFAULT), "Program interface", "JTAG");
-		msp430_prog_mode = MSP430_MODE_JTAG;
+		cur_prog_mode = MSP430_MODE_JTAG;
 	case MSP430_MODE_JTAG:
 		if (cur_chip_param.program_mode & MSP430_MODE_JTAG)
 		{

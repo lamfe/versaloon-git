@@ -53,6 +53,7 @@ typedef struct
 }operation_t;
 
 extern uint8_t gui_mode;
+extern uint8_t program_mode;
 
 #endif /* __VSPROG_H_INCLUDED__ */
 

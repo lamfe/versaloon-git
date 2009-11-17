@@ -45,7 +45,7 @@
 #define cur_chips_param				target_chips.chips_param
 #define cur_chips_num				target_chips.num_of_chips
 #define cur_flash_offset			s5x_flash_offset
-#define cur_prog_mode				s5x_prog_mode
+#define cur_prog_mode				program_mode
 #define cur_frequency				s5x_isp_frequency
 
 const program_area_map_t s5x_program_area_map[] = 
@@ -62,7 +62,6 @@ static uint8_t s5x_lock = 0;
 static uint8_t s5x_fuse = 0;
 
 static uint16_t s5x_flash_offset = 0;
-static uint8_t s5x_prog_mode = 0;
 
 static uint16_t s5x_byte_delay_us = 500;
 static uint16_t s5x_isp_frequency = 560;
@@ -164,32 +163,6 @@ RESULT s5x_parse_argument(char cmd, const char *argu)
 			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_HEX_MESSAGE), s5x_fuse, 
 					  "s5x fuse", "MUST be <= 0x0F!!");
 			return ERROR_FAIL;
-		}
-		
-		break;
-	case 'm':
-		// program Mode
-		if ((NULL == argu) || (strlen(argu) != 1))
-		{
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), cmd);
-			return ERRCODE_INVALID_OPTION;
-		}
-		
-		switch (argu[0])
-		{
-		case 'b':
-			// Byte mode
-			cur_prog_mode = S5X_BYTE_MODE;
-			break;
-		case 'p':
-			// Page mode
-			cur_prog_mode = S5X_PAGE_MODE;
-			break;
-		default:
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_CHARACTER_MESSAGE), cmd, 
-					  "s5x program mode", "MUST be 'b' or 'p'!!");
-			return ERRCODE_INVALID;
-			break;
 		}
 		
 		break;

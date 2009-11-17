@@ -51,7 +51,7 @@
 #define cur_chip_param				cm3_chip_param
 #define cur_chips_param				cm3_chips_param
 #define cur_flash_offset			cm3_flash_offset
-#define cur_prog_mode				cm3_prog_mode
+#define cur_prog_mode				program_mode
 #define cur_frequency				cm3_frequency
 #define cur_buffer_size				cm3_buffer_size
 
@@ -75,7 +75,6 @@ const cm3_param_t cm3_chips_param[] = {
 static uint8_t cm3_chip_index = 0;
 cm3_param_t cm3_chip_param;
 
-adi_dp_if_type_t cm3_prog_mode = 0;
 uint8_t cm3_execute_flag = 0;
 uint32_t cm3_execute_addr = 0;
 uint16_t cm3_frequency = 0;
@@ -126,32 +125,6 @@ RESULT cm3_parse_argument(char cmd, const char *argu)
 		}
 		
 		cur_buffer_size = (uint16_t)strtoul(argu, NULL, 0);
-		break;
-	case 'm':
-		// program Mode
-		if ((NULL == argu) || (strlen(argu) != 1))
-		{
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), cmd);
-			return ERRCODE_INVALID_OPTION;
-		}
-		
-		switch (argu[0])
-		{
-		case 'j':
-			// JTAG mode
-			cur_prog_mode = ADI_DP_JTAG;
-			break;
-		case 's':
-			// SWJ mode
-			cur_prog_mode = ADI_DP_SWJ;
-			break;
-		default:
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_CHARACTER_MESSAGE), cmd, 
-					  "c8051f program mode", "MUST be 'c' or 'j'!!");
-			return ERRCODE_INVALID;
-			break;
-		}
-		
 		break;
 	case 'F':
 		// set Frequency

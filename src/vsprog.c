@@ -82,6 +82,8 @@ static char *program_name = NULL;
 char *program_dir = NULL;
 static FILE *hex_file = NULL;
 
+uint8_t program_mode = 0;
+
 // for JTAT
 jtag_pos_t target_jtag_pos;
 
@@ -649,6 +651,26 @@ int main(int argc, char* argv[])
 				LOG_ERROR(_GETTEXT(ERRMSG_TRY_HELP));
 				free_all_and_exit(ERRCODE_INVALID_OPTION);
 			}
+			break;
+		case 'm':
+			// --mode, accept one character
+			if (strlen(optarg) != 1)
+			{
+				LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), (char)optc);
+				LOG_ERROR(_GETTEXT(ERRMSG_TRY_HELP));
+				free_all_and_exit(ERRCODE_INVALID_OPTION);
+			}
+			if ((NULL == cur_target->program_mode_str) 
+				|| (NULL == strchr(cur_target->program_mode_str, optarg[0])))
+			{
+				LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), optarg, 
+						  cur_target->name);
+				return ERRCODE_NOT_SUPPORT;
+			}
+			
+			program_mode = 
+				1 << (strchr(cur_target->program_mode_str, optarg[0]) 
+											- cur_target->program_mode_str);
 			break;
 		case 'M':
 			// --mass-product

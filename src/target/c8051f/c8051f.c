@@ -45,7 +45,7 @@
 #define cur_chips_param				target_chips.chips_param
 #define cur_chips_num				target_chips.num_of_chips
 #define cur_flash_offset			c8051f_flash_offset
-#define cur_prog_mode				c8051f_prog_mode
+#define cur_prog_mode				program_mode
 
 const program_area_map_t c8051f_program_area_map[] = 
 {
@@ -53,7 +53,6 @@ const program_area_map_t c8051f_program_area_map[] =
 	{0, 0, 0}
 };
 
-static uint8_t c8051f_prog_mode = 0;
 static uint32_t c8051f_flash_offset = 0;
 
 static void c8051f_usage(void)
@@ -80,6 +79,8 @@ static void c8051f_support(void)
 
 RESULT c8051f_parse_argument(char cmd, const char *argu)
 {
+	argu = argu;
+	
 	switch (cmd)
 	{
 	case 'h':
@@ -87,32 +88,6 @@ RESULT c8051f_parse_argument(char cmd, const char *argu)
 		break;
 	case 'S':
 		c8051f_support();
-		break;
-	case 'm':
-		// program Mode
-		if ((NULL == argu) || (strlen(argu) != 1))
-		{
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), cmd);
-			return ERRCODE_INVALID_OPTION;
-		}
-		
-		switch (argu[0])
-		{
-		case 'c':
-			// C2 mode
-			cur_prog_mode = C8051F_C2;
-			break;
-		case 'j':
-			// JTAG mode
-			cur_prog_mode = C8051F_JTAG;
-			break;
-		default:
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_CHARACTER_MESSAGE), cmd, 
-					  "c8051f program mode", "MUST be 'c' or 'j'!!");
-			return ERRCODE_INVALID;
-			break;
-		}
-		
 		break;
 	default:
 		return ERROR_FAIL;
