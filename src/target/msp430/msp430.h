@@ -25,7 +25,6 @@
 extern const program_area_map_t msp430_program_area_map[];
 
 RESULT msp430_parse_argument(char cmd, const char *argu);
-RESULT msp430_probe_chip(char *chip_name);
 RESULT msp430_prepare_buffer(program_info_t *pi);
 RESULT msp430_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr, 
 											  uint8_t* data, uint32_t length, 

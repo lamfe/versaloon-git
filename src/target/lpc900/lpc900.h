@@ -25,7 +25,6 @@
 extern const program_area_map_t lpc900_program_area_map[];
 
 RESULT lpc900_parse_argument(char cmd, const char *argu);
-RESULT lpc900_probe_chip(char *name);
 RESULT lpc900_prepare_buffer(program_info_t *pi);
 
 RESULT lpc900_init(program_info_t *pi, const char *dir, 

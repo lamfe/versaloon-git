@@ -25,7 +25,6 @@
 extern const program_area_map_t avr8_program_area_map[];
 
 RESULT avr8_parse_argument(char cmd, const char *argu);
-RESULT avr8_probe_chip(char *name);
 RESULT avr8_prepare_buffer(program_info_t *pi);
 
 RESULT avr8_init(program_info_t *pi, const char *dir, programmer_info_t *prog);

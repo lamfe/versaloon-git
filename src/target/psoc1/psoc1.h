@@ -25,7 +25,6 @@
 extern const program_area_map_t psoc1_program_area_map[];
 
 RESULT psoc1_parse_argument(char cmd, const char *argu);
-RESULT psoc1_probe_chip(char *name);
 RESULT psoc1_prepare_buffer(program_info_t *pi);
 
 RESULT psoc1_init(program_info_t *pi, const char *dir, programmer_info_t *prog);
