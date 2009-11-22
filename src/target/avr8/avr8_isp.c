@@ -442,30 +442,51 @@ try_frequency:
 		
 		// write fuse
 		// low bits
-		cmd_buf[0] = 0xAC;
-		cmd_buf[1] = 0xA0;
-		cmd_buf[2] = 0x00;
-		cmd_buf[3] = (pi->fuse_value >> 0) & 0xFF;
-		spi_io(cmd_buf, 4, NULL, 0, 0);
-		delay_ms(5);
-		// high bits
-		cmd_buf[0] = 0xAC;
-		cmd_buf[1] = 0xA8;
-		cmd_buf[2] = 0x00;
-		cmd_buf[3] = (pi->fuse_value >> 8) & 0xFF;
-		spi_io(cmd_buf, 4, NULL, 0, 0);
-		delay_ms(5);
-		// extended bits
-		cmd_buf[0] = 0xAC;
-		cmd_buf[1] = 0xA4;
-		cmd_buf[2] = 0x00;
-		cmd_buf[3] = (pi->fuse_value >> 16) & 0xFF;
-		spi_io(cmd_buf, 4, NULL, 0, 0);
-		delay_ms(5);
-		if (ERROR_OK != commit())
+		if (cur_chip_param.fuse_size > 0)
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "write fuse");
-			ret = ERRCODE_FAILURE_OPERATION;
+			cmd_buf[0] = 0xAC;
+			cmd_buf[1] = 0xA0;
+			cmd_buf[2] = 0x00;
+			cmd_buf[3] = (pi->fuse_value >> 0) & 0xFF;
+			spi_io(cmd_buf, 4, NULL, 0, 0);
+			delay_ms(5);
+		}
+		// high bits
+		if (cur_chip_param.fuse_size > 1)
+		{
+			cmd_buf[0] = 0xAC;
+			cmd_buf[1] = 0xA8;
+			cmd_buf[2] = 0x00;
+			cmd_buf[3] = (pi->fuse_value >> 8) & 0xFF;
+			spi_io(cmd_buf, 4, NULL, 0, 0);
+			delay_ms(5);
+		}
+		// extended bits
+		if (cur_chip_param.fuse_size > 2)
+		{
+			cmd_buf[0] = 0xAC;
+			cmd_buf[1] = 0xA4;
+			cmd_buf[2] = 0x00;
+			cmd_buf[3] = (pi->fuse_value >> 16) & 0xFF;
+			spi_io(cmd_buf, 4, NULL, 0, 0);
+			delay_ms(5);
+		}
+		if (cur_chip_param.fuse_size> 0)
+		{
+			if (ERROR_OK != commit())
+			{
+				pgbar_fini();
+				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "write fuse");
+				ret = ERRCODE_FAILURE_OPERATION;
+				goto leave_program_mode;
+			}
+		}
+		else
+		{
+			pgbar_fini();
+			LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "fuse", 
+						cur_chip_param.chip_name);
+			ret = ERRCODE_NOT_SUPPORT;
 			goto leave_program_mode;
 		}
 		pgbar_update(1);
@@ -486,54 +507,97 @@ try_frequency:
 		}
 		pgbar_init("reading fuse |", "|", 0, 1, PROGRESS_STEP, '=');
 		
+		memset(data_tmp, 0, sizeof(data_tmp));
 		// read fuse
 		// low bits
-		cmd_buf[0] = 0x50;
-		cmd_buf[1] = 0x00;
-		cmd_buf[2] = 0x00;
-		cmd_buf[3] = 0x00;
-		spi_io(cmd_buf, 4, &data_tmp[0], 3, 1);
-		// high bits
-		cmd_buf[0] = 0x58;
-		cmd_buf[1] = 0x08;
-		cmd_buf[2] = 0x00;
-		cmd_buf[3] = 0x00;
-		spi_io(cmd_buf, 4, &data_tmp[1], 3, 1);
-		// extended bits
-		cmd_buf[0] = 0x50;
-		cmd_buf[1] = 0x08;
-		cmd_buf[2] = 0x00;
-		cmd_buf[3] = 0x00;
-		spi_io(cmd_buf, 4, &data_tmp[2], 3, 1);
-		if (ERROR_OK != commit())
+		if (cur_chip_param.fuse_size > 0)
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read fuse");
-			ret = ERRCODE_FAILURE_OPERATION;
+			cmd_buf[0] = 0x50;
+			cmd_buf[1] = 0x00;
+			cmd_buf[2] = 0x00;
+			cmd_buf[3] = 0x00;
+			spi_io(cmd_buf, 4, &data_tmp[0], 3, 1);
+		}
+		// high bits
+		if (cur_chip_param.fuse_size > 1)
+		{
+			cmd_buf[0] = 0x58;
+			cmd_buf[1] = 0x08;
+			cmd_buf[2] = 0x00;
+			cmd_buf[3] = 0x00;
+			spi_io(cmd_buf, 4, &data_tmp[1], 3, 1);
+		}
+		// extended bits
+		if (cur_chip_param.fuse_size > 2)
+		{
+			cmd_buf[0] = 0x50;
+			cmd_buf[1] = 0x08;
+			cmd_buf[2] = 0x00;
+			cmd_buf[3] = 0x00;
+			spi_io(cmd_buf, 4, &data_tmp[2], 3, 1);
+		}
+		if (cur_chip_param.fuse_size > 0)
+		{
+			if (ERROR_OK != commit())
+			{
+				pgbar_fini();
+				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read fuse");
+				ret = ERRCODE_FAILURE_OPERATION;
+				goto leave_program_mode;
+			}
+		}
+		else
+		{
+			pgbar_fini();
+			LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "fuse", 
+						cur_chip_param.chip_name);
+			ret = ERRCODE_NOT_SUPPORT;
 			goto leave_program_mode;
 		}
 		pgbar_update(1);
 		
 		pgbar_fini();
+		i = (uint32_t)(data_tmp[0] + (data_tmp[1] << 8) 
+								   + (data_tmp[2] << 16));
 		if (operations.verify_operations & FUSE)
 		{
-			if ((uint32_t)(data_tmp[0] + (data_tmp[1] << 8) 
-									   + (data_tmp[2] << 16)) 
-				== pi->fuse_value)
+			if ((uint32_t)i == pi->fuse_value)
 			{
 				LOG_INFO(_GETTEXT(INFOMSG_VERIFIED), "fuse");
 			}
 			else
 			{
-				LOG_INFO(_GETTEXT(ERRMSG_FAILURE_VERIFY_TARGET_06X), 
-					 "fuse", 
-					 data_tmp[0] + (data_tmp[1] << 8) + (data_tmp[2] << 16), 
-					 pi->fuse_value);
+				if (cur_chip_param.fuse_size > 2)
+				{
+					LOG_INFO(_GETTEXT(ERRMSG_FAILURE_VERIFY_TARGET_06X), 
+							 "fuse", i, pi->fuse_value);
+				}
+				else if (cur_chip_param.fuse_size > 1)
+				{
+					LOG_INFO(_GETTEXT(ERRMSG_FAILURE_VERIFY_TARGET_04X), 
+							 "fuse", i, pi->fuse_value);
+				}
+				else if (cur_chip_param.fuse_size > 0)
+				{
+					LOG_INFO(_GETTEXT(ERRMSG_FAILURE_VERIFY_TARGET_02X), 
+							 "fuse", i, pi->fuse_value);
+				}
 			}
 		}
 		else
 		{
-			LOG_INFO(_GETTEXT(INFOMSG_READ_VALUE_06X), "fuse", 
-					 data_tmp[0] + (data_tmp[1] << 8) + (data_tmp[2] << 16));
+			if (cur_chip_param.fuse_size > 2)
+			{
+				LOG_INFO(_GETTEXT(INFOMSG_READ_VALUE_06X), "fuse", i);
+			}
+			else if (cur_chip_param.fuse_size > 1)
+			{
+				LOG_INFO(_GETTEXT(INFOMSG_READ_VALUE_04X), "fuse", i);
+			}
+			else if (cur_chip_param.fuse_size > 0)
+			{
+				LOG_INFO(_GETTEXT(INFOMSG_READ_VALUE_02X), "fuse", i);
+			}
 		}
 	}
 	
@@ -543,16 +607,28 @@ try_frequency:
 		pgbar_init("writing lock |", "|", 0, 1, PROGRESS_STEP, '=');
 		
 		// write lock
-		cmd_buf[0] = 0xAC;
-		cmd_buf[1] = 0xE0;
-		cmd_buf[2] = 0x00;
-		cmd_buf[3] = (pi->lock_value >> 0) & 0xFF;
-		spi_io(cmd_buf, 4, NULL, 0, 0);
-		delay_ms(5);
-		if (ERROR_OK != commit())
+		if (cur_chip_param.lock_size > 0)
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "write lock");
-			ret = ERRCODE_FAILURE_OPERATION;
+			cmd_buf[0] = 0xAC;
+			cmd_buf[1] = 0xE0;
+			cmd_buf[2] = 0x00;
+			cmd_buf[3] = (pi->lock_value >> 0) & 0xFF;
+			spi_io(cmd_buf, 4, NULL, 0, 0);
+			delay_ms(5);
+			if (ERROR_OK != commit())
+			{
+				pgbar_fini();
+				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "write lock");
+				ret = ERRCODE_FAILURE_OPERATION;
+				goto leave_program_mode;
+			}
+		}
+		else
+		{
+			pgbar_fini();
+			LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "lock", 
+						cur_chip_param.chip_name);
+			ret = ERRCODE_NOT_SUPPORT;
 			goto leave_program_mode;
 		}
 		pgbar_update(1);
@@ -573,16 +649,29 @@ try_frequency:
 		}
 		pgbar_init("reading lock |", "|", 0, 1, PROGRESS_STEP, '=');
 		
+		memset(data_tmp, 0, sizeof(data_tmp));
 		// read lock
-		cmd_buf[0] = 0x58;
-		cmd_buf[1] = 0x00;
-		cmd_buf[2] = 0x00;
-		cmd_buf[3] = 0x00;
-		spi_io(cmd_buf, 4, &data_tmp[0], 3, 1);
-		if (ERROR_OK != commit())
+		if (cur_chip_param.lock_size > 0)
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read lock");
-			ret = ERRCODE_FAILURE_OPERATION;
+			cmd_buf[0] = 0x58;
+			cmd_buf[1] = 0x00;
+			cmd_buf[2] = 0x00;
+			cmd_buf[3] = 0x00;
+			spi_io(cmd_buf, 4, &data_tmp[0], 3, 1);
+			if (ERROR_OK != commit())
+			{
+				pgbar_fini();
+				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read lock");
+				ret = ERRCODE_FAILURE_OPERATION;
+				goto leave_program_mode;
+			}
+		}
+		else
+		{
+			pgbar_fini();
+			LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "lock", 
+						cur_chip_param.chip_name);
+			ret = ERRCODE_NOT_SUPPORT;
 			goto leave_program_mode;
 		}
 		pgbar_update(1);
@@ -611,39 +700,79 @@ try_frequency:
 		LOG_INFO(_GETTEXT(INFOMSG_READING), "calibration");
 		pgbar_init("reading calibration |", "|", 0, 1, PROGRESS_STEP, '=');
 		
+		memset(data_tmp, 0, sizeof(data_tmp));
 		// read calibration
-		cmd_buf[0] = 0x38;
-		cmd_buf[1] = 0x00;
-		cmd_buf[2] = 0x00;
-		cmd_buf[3] = 0x00;
-		spi_io(cmd_buf, 4, &data_tmp[0], 3, 1);
-		cmd_buf[0] = 0x38;
-		cmd_buf[1] = 0x00;
-		cmd_buf[2] = 0x01;
-		cmd_buf[3] = 0x00;
-		spi_io(cmd_buf, 4, &data_tmp[1], 3, 1);
-		cmd_buf[0] = 0x38;
-		cmd_buf[1] = 0x00;
-		cmd_buf[2] = 0x02;
-		cmd_buf[3] = 0x00;
-		spi_io(cmd_buf, 4, &data_tmp[2], 3, 1);
-		cmd_buf[0] = 0x38;
-		cmd_buf[1] = 0x00;
-		cmd_buf[2] = 0x03;
-		cmd_buf[3] = 0x00;
-		spi_io(cmd_buf, 4, &data_tmp[3], 3, 1);
-		if (ERROR_OK != commit())
+		if (cur_chip_param.cali_size > 0)
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read calibration");
-			ret = ERRCODE_FAILURE_OPERATION;
+			cmd_buf[0] = 0x38;
+			cmd_buf[1] = 0x00;
+			cmd_buf[2] = 0x00;
+			cmd_buf[3] = 0x00;
+			spi_io(cmd_buf, 4, &data_tmp[0], 3, 1);
+		}
+		if (cur_chip_param.cali_size > 1)
+		{
+			cmd_buf[0] = 0x38;
+			cmd_buf[1] = 0x00;
+			cmd_buf[2] = 0x01;
+			cmd_buf[3] = 0x00;
+			spi_io(cmd_buf, 4, &data_tmp[1], 3, 1);
+		}
+		if (cur_chip_param.cali_size > 2)
+		{
+			cmd_buf[0] = 0x38;
+			cmd_buf[1] = 0x00;
+			cmd_buf[2] = 0x02;
+			cmd_buf[3] = 0x00;
+			spi_io(cmd_buf, 4, &data_tmp[2], 3, 1);
+		}
+		if (cur_chip_param.cali_size > 3)
+		{
+			cmd_buf[0] = 0x38;
+			cmd_buf[1] = 0x00;
+			cmd_buf[2] = 0x03;
+			cmd_buf[3] = 0x00;
+			spi_io(cmd_buf, 4, &data_tmp[3], 3, 1);
+		}
+		if (cur_chip_param.cali_size > 0)
+		{
+			if (ERROR_OK != commit())
+			{
+				pgbar_fini();
+				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read calibration");
+				ret = ERRCODE_FAILURE_OPERATION;
+				goto leave_program_mode;
+			}
+		}
+		else
+		{
+			pgbar_fini();
+			LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "calibration", 
+						cur_chip_param.chip_name);
+			ret = ERRCODE_NOT_SUPPORT;
 			goto leave_program_mode;
 		}
 		pgbar_update(1);
 		
 		pgbar_fini();
-		LOG_INFO(_GETTEXT(INFOMSG_READ_VALUE_08X), "calibration", 
-			data_tmp[0] + (data_tmp[1] << 8) + 
-			(data_tmp[2] << 16) + (data_tmp[3] << 24));
+		i = (uint32_t)(data_tmp[0] + (data_tmp[1] << 8) 
+					+ (data_tmp[2] << 16) + (data_tmp[3] << 24));
+		if (cur_chip_param.fuse_size > 3)
+		{
+			LOG_INFO(_GETTEXT(INFOMSG_READ_VALUE_08X), "calibration", i);
+		}
+		else if (cur_chip_param.fuse_size > 2)
+		{
+			LOG_INFO(_GETTEXT(INFOMSG_READ_VALUE_06X), "calibration", i);
+		}
+		else if (cur_chip_param.fuse_size > 1)
+		{
+			LOG_INFO(_GETTEXT(INFOMSG_READ_VALUE_04X), "calibration", i);
+		}
+		else if (cur_chip_param.fuse_size > 0)
+		{
+			LOG_INFO(_GETTEXT(INFOMSG_READ_VALUE_02X), "calibration", i);
+		}
 	}
 	
 leave_program_mode:
