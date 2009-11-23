@@ -28,6 +28,7 @@
 #include "app_type.h"
 #include "app_err.h"
 #include "app_log.h"
+#include "file_parser.h"
 
 #include "hex.h"
 
@@ -181,8 +182,8 @@ RESULT write_hex_file_line(FILE *hex_file, uint32_t data_addr, uint32_t seg_addr
 	return ERROR_OK;
 }
 
-RESULT read_hex_file(FILE *hex_file, HEX_WRITE_MEMORY_CALLBACK callback, 
-					 void *buffer)
+RESULT read_hex_file(FILE *hex_file, WRITE_MEMORY_CALLBACK callback, 
+					 void *buffer, uint32_t seg_offset, uint32_t addr_offset)
 {
 	uint8_t line_buf[10 + 0xFF * 2 + 2], pos, type, checksum;
 	char ch;
@@ -296,7 +297,8 @@ RESULT read_hex_file(FILE *hex_file, HEX_WRITE_MEMORY_CALLBACK callback,
 		{
 		case HEX_TYPE_DATA:
 			// data record
-			ret = callback(data_addr, seg_addr, line_buf, length, buffer);
+			ret = callback(data_addr + addr_offset, seg_addr + seg_offset, 
+							line_buf, length, buffer);
 			if (ret != ERROR_OK)
 			{
 				return ERROR_FAIL;
