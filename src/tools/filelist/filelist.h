@@ -16,23 +16,26 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#ifndef __MEMLIST_H_INCLUDED__
-#define __MEMLIST_H_INCLUDED__
+#ifndef __FILELIST_H_INCLUDED__
+#define __FILELIST_H_INCLUDED__
 
 #include "list.h"
 
-typedef struct MEMLIST
+typedef struct FILELIST
 {
-	uint32_t addr;
-	uint32_t len;
+	char *path;
+	FILE *file;
+	uint32_t seg_offset;
+	uint32_t addr_offset;
 	struct SLLIST list;
-}memlist;
+}filelist;
 
-#define MEMLIST_GetNext(ml)						\
-						sllist_get_container(ml->list.next, memlist, list)
+#define FILELIST_GetNext(fl)						\
+						sllist_get_container(fl->list.next, filelist, list)
 
-RESULT MEMLIST_Add(memlist **ml, uint32_t addr, uint32_t len, uint32_t page_size);
-void MEMLIST_Free(memlist **ml);
+RESULT FILELIST_Add(filelist **fl, char *path, uint32_t seg_offset, 
+					uint32_t addr_offset, char *attr);
+void FILELIST_Free(filelist **fl);
 
-#endif /* __MEMLIST_H_INCLUDED__ */
+#endif /* __FILELIST_H_INCLUDED__ */
 

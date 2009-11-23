@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <ctype.h>
 
 #include "app_cfg.h"
 #include "app_type.h"
@@ -31,6 +32,7 @@
 #include "prog_interface.h"
 
 #include "memlist.h"
+#include "filelist.h"
 #include "pgbar.h"
 
 #include "vsprog.h"
@@ -63,8 +65,6 @@ const program_area_map_t svfp_program_area_map[] =
 	{0, 0, 0}
 };
 
-static char *svfp_filename = NULL;
-
 #define SVF_SET_FREQ_CMD			"FREQUENCY %.02f HZ"
 static char *first_command = NULL;
 
@@ -93,7 +93,6 @@ static void svfp_support(void)
 
 RESULT svfp_parse_argument(char cmd, const char *argu)
 {
-	uint32_t filename_len;
 	uint16_t jtag_initial_speed;
 	
 	switch (cmd)
@@ -103,30 +102,6 @@ RESULT svfp_parse_argument(char cmd, const char *argu)
 		break;
 	case 'S':
 		svfp_support();
-		break;
-	case 'I':
-		// Input SVF file
-		if (NULL == argu)
-		{
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), cmd);
-			return ERRCODE_INVALID_OPTION;
-		}
-		
-		if ((('"' == argu[0]) && ('"' == argu[strlen(argu) - 1])) 
-			|| (('\'' == argu[0]) && ('\'' == argu[strlen(argu) - 1])))
-		{
-			((char *)argu)[strlen(argu) - 1] = '\0';
-			strcpy((char *)argu, argu + 1);
-		}
-		filename_len = (uint32_t)strlen(argu);
-		svfp_filename = (char *)malloc(filename_len + 1);
-		if (NULL == svfp_filename)
-		{
-			LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
-			return ERRCODE_NOT_ENOUGH_MEMORY;
-		}
-		strcpy(svfp_filename, argu);
-		
 		break;
 	case 'F':
 		// set JTAG initial frequency
@@ -181,12 +156,6 @@ RESULT svfp_fini(program_info_t *pi, programmer_info_t *prog)
 	pi = pi;
 	prog = prog;
 	
-	if (svfp_filename != NULL)
-	{
-		free(svfp_filename);
-		svfp_filename = NULL;
-	}
-	
 	if (first_command != NULL)
 	{
 		free(first_command);
@@ -211,6 +180,7 @@ uint32_t svfp_interface_needed(void)
 }
 
 programmer_info_t *p = NULL;
+extern filelist *fl_in;
 RESULT svfp_program(operation_t operations, program_info_t *pi, 
 					programmer_info_t *prog)
 {
@@ -232,12 +202,18 @@ RESULT svfp_program(operation_t operations, program_info_t *pi,
 	pi = pi;
 	p = prog;
 	
-	svf_file = fopen(svfp_filename, "rb");
-	if (NULL == svf_file)
+	if ((NULL == fl_in) || (NULL == fl_in->path) || (NULL == fl_in->file) 
+		|| (strlen(fl_in->path) <= 4) 
+		|| (toupper(fl_in->path[strlen(fl_in->path) - 4]) != '.') 
+		|| (toupper(fl_in->path[strlen(fl_in->path) - 3]) != 'S') 
+		|| (toupper(fl_in->path[strlen(fl_in->path) - 2]) != 'V') 
+		|| (toupper(fl_in->path[strlen(fl_in->path) - 1]) != 'F'))
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPEN), svfp_filename);
-		return ERRCODE_FAILURE_OPEN;
+		LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "svf file");
+		return ERROR_FAIL;
 	}
+	svf_file = fl_in->file;
+	
 	fseek(svf_file, 0L, SEEK_END);
 	svf_file_size = ftell(svf_file);
 	rewind(svf_file);

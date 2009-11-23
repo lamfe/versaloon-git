@@ -235,8 +235,7 @@ RESULT avr8_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr,
 			page_size = 256;
 		}
 		
-		ret = MEMLIST_Add(&pi->app_memlist, mem_addr, 
-						  length, page_size);
+		ret = MEMLIST_Add(&pi->app_memlist, mem_addr, length, page_size);
 		if (ret != ERROR_OK)
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "add memory list");
@@ -280,8 +279,7 @@ RESULT avr8_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr,
 			page_size = 256;
 		}
 		
-		ret = MEMLIST_Add(&pi->eeprom_memlist, mem_addr, 
-						  length, page_size);
+		ret = MEMLIST_Add(&pi->eeprom_memlist, mem_addr, length, page_size);
 		if (ret != ERROR_OK)
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "add memory list");

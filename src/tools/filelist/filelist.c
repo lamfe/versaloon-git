@@ -22,95 +22,94 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "app_type.h"
 #include "app_log.h"
 #include "app_err.h"
 
-#include "memlist.h"
+#include "filelist.h"
 
-#define MEMLIST_AdjustAddr(addr, page_size)		\
-						((addr) / (page_size) * (page_size))
-#define MEMLIST_AdjustLen(len, page_size)		\
-						(((len) + (page_size) - 1) / (page_size) * (page_size))
-
-static RESULT MEMLIST_Merge(memlist *ml, uint32_t addr, uint32_t len, 
-							uint32_t page_size)
+static void FILELIST_InsertLast(filelist *fl, filelist *newitem)
 {
-	while (ml != NULL)
+	while (FILELIST_GetNext(fl) != NULL)
 	{
-		if ((addr >= ml->addr) && ((ml->addr + ml->len) >= addr))
-		{
-			ml->len = MEMLIST_AdjustLen(len + addr - ml->addr, page_size);
-			return ERROR_OK;
-		}
-		ml = MEMLIST_GetNext(ml);
+		fl = FILELIST_GetNext(fl);
 	}
 	
-	return ERROR_FAIL;
+	fl->list.next = &newitem->list;
 }
 
-static void MEMLIST_InsertLast(memlist *ml, memlist *newitem)
+RESULT FILELIST_Add(filelist **fl, char *path, uint32_t seg_offset, 
+					uint32_t addr_offset, char *attr)
 {
-	while (MEMLIST_GetNext(ml) != NULL)
+	filelist *newitem = NULL;
+	
+	newitem = (filelist*)malloc(sizeof(filelist));
+	if (NULL == newitem)
 	{
-		ml = MEMLIST_GetNext(ml);
+		LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+		return ERROR_FAIL;
 	}
-	
-	ml->list.next = &newitem->list;
-}
-
-RESULT MEMLIST_Add(memlist **ml, uint32_t addr, uint32_t len, uint32_t page_size)
-{
-	memlist *newitem = NULL;
-	
-	if (NULL == *ml)
+	newitem->path = (char *)malloc(strlen(path) + 1);
+	if (NULL == newitem->path)
 	{
-		*ml = (memlist*)malloc(sizeof(memlist));
-		if (NULL == *ml)
-		{
-			LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
-			return ERROR_FAIL;
-		}
+		free(newitem);
+		newitem = NULL;
 		
-		(*ml)->addr = MEMLIST_AdjustAddr(addr, page_size);
-		(*ml)->len = MEMLIST_AdjustLen(len, page_size);
-		sllist_init_node((*ml)->list);
+		LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+		return ERROR_FAIL;
+	}
+	strcpy(newitem->path, path);
+	newitem->seg_offset = seg_offset;
+	newitem->addr_offset = addr_offset;
+	sllist_init_node(newitem->list);
+	newitem->file = fopen((const char *)newitem->path, (const char *)attr);
+	if (NULL == newitem->file)
+	{
+		free(newitem->path);
+		free(newitem);
+		
+		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_HANDLE_DEVICE), 
+					"open", newitem->path);
+		return ERRCODE_FAILURE_OPERATION;
+	}
+	
+	if (NULL == *fl)
+	{
+		*fl = newitem;
 	}
 	else
 	{
-		if (ERROR_OK != MEMLIST_Merge(*ml, addr, len, page_size))
-		{
-			newitem = (memlist*)malloc(sizeof(memlist));
-			if (NULL == newitem)
-			{
-				LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
-				return ERROR_FAIL;
-			}
-			
-			newitem->addr = MEMLIST_AdjustAddr(addr, page_size);
-			newitem->len = MEMLIST_AdjustLen(len, page_size);
-			sllist_init_node(newitem->list);
-			MEMLIST_InsertLast(*ml, newitem);
-		}
+		FILELIST_InsertLast(*fl, newitem);
 	}
 	
 	return ERROR_OK;
 }
 
-void MEMLIST_Free(memlist **ml)
+void FILELIST_Free(filelist **fl)
 {
-	memlist *tmp1, *tmp2;
+	filelist *tmp1, *tmp2;
 	
-	tmp1 = *ml;
+	tmp1 = *fl;
 	while (tmp1 != NULL)
 	{
 		tmp2 = tmp1;
-		tmp1 = MEMLIST_GetNext(tmp1);
+		tmp1 = FILELIST_GetNext(tmp1);
 		sllist_init_node(tmp2->list);
+		if (tmp2->path != NULL)
+		{
+			free(tmp2->path);
+			tmp2->path = NULL;
+		}
+		if (tmp2->file != NULL)
+		{
+			fclose(tmp2->file);
+			tmp2->file = NULL;
+		}
 		free(tmp2);
 	}
 	tmp1 = tmp2 = NULL;
-	*ml = NULL;
+	*fl = NULL;
 }
 
