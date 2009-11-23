@@ -15,7 +15,7 @@ object FormHexEditor: TFormHexEditor
   OnShow = FormShow
   ParentFont = False
   Position = poScreenCenter
-  LCLVersion = '0.9.27'
+  LCLVersion = '0.9.28.2'
   object pnlHexEditorCommand: TPanel
     Height = 74
     Top = 336

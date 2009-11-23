@@ -14,7 +14,7 @@ object FormParaEditor: TFormParaEditor
   OnKeyPress = FormKeyPress
   OnShow = FormShow
   Position = poMainFormCenter
-  LCLVersion = '0.9.26.2'
+  LCLVersion = '0.9.28.2'
   object pnlSettings: TPanel
     Height = 127
     Width = 323

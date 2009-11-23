@@ -53,8 +53,8 @@
       </Unit0>
       <Unit1>
         <Filename Value="main.pas"/>
-        <ComponentName Value="FormMain"/>
         <IsPartOfProject Value="True"/>
+        <ComponentName Value="FormMain"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="main"/>
         <CursorPos X="52" Y="2578"/>
@@ -180,8 +180,8 @@
       </Unit18>
       <Unit19>
         <Filename Value="hexeditor.pas"/>
-        <ComponentName Value="FormHexEditor"/>
         <IsPartOfProject Value="True"/>
+        <ComponentName Value="FormHexEditor"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="hexeditor"/>
         <CursorPos X="21" Y="9"/>
@@ -190,8 +190,8 @@
       </Unit19>
       <Unit20>
         <Filename Value="checkeditor.pas"/>
-        <ComponentName Value="FormCheckEditor"/>
         <IsPartOfProject Value="True"/>
+        <ComponentName Value="FormCheckEditor"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="fleditor"/>
         <CursorPos X="10" Y="14"/>
@@ -364,8 +364,8 @@
       </Unit45>
       <Unit46>
         <Filename Value="com_setup.pas"/>
-        <ComponentName Value="FormComSetup"/>
         <IsPartOfProject Value="True"/>
+        <ComponentName Value="FormComSetup"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="com_setup"/>
         <CursorPos X="1" Y="82"/>
@@ -400,8 +400,8 @@
       </Unit50>
       <Unit51>
         <Filename Value="parameditor.pas"/>
-        <ComponentName Value="FormParaEditor"/>
         <IsPartOfProject Value="True"/>
+        <ComponentName Value="FormParaEditor"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="parameditor"/>
         <CursorPos X="64" Y="94"/>
