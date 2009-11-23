@@ -1400,7 +1400,7 @@ begin
   // input file
   if fnEdit.Text <> '' then
   begin
-    caller.AddParameter('i"' + fnEdit.Text + '"');
+    caller.AddParameter('I"' + fnEdit.Text + '"');
   end;
 
   // extra parameters
