@@ -37,6 +37,7 @@
 #include "app_log.h"
 #include "app_err.h"
 #include "prog_interface.h"
+#include "file_parser.h"
 
 #include "memlist.h"
 #include "filelist.h"
@@ -615,7 +616,7 @@ int main(int argc, char* argv[])
 				strcpy((char *)optarg, optarg + 1);
 			}
 			
-			if (ERROR_OK != FILELIST_Add(&fl_in, optarg, 0, 0, "rt"))
+			if (ERROR_OK != FILELIST_Add(&fl_in, optarg, 0, 0, "r"))
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_HANDLE_DEVICE), 
 							"add file", optarg);
@@ -631,7 +632,7 @@ int main(int argc, char* argv[])
 				strcpy((char *)optarg, optarg + 1);
 			}
 			
-			if (ERROR_OK != FILELIST_Add(&fl_out, optarg, 0, 0, "wt"))
+			if (ERROR_OK != FILELIST_Add(&fl_out, optarg, 0, 0, "w"))
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_HANDLE_DEVICE), 
 							"add file", optarg);
@@ -853,18 +854,14 @@ int main(int argc, char* argv[])
 		}
 		
 		while ((fl != NULL) && (fl->path != NULL) && (fl->file != NULL) 
-			&& (strlen(fl->path) > 4) 
-			&& (toupper(fl->path[strlen(fl->path) - 4]) == '.') 
-			&& (toupper(fl->path[strlen(fl->path) - 3]) == 'H') 
-			&& (toupper(fl->path[strlen(fl->path) - 2]) == 'E') 
-			&& (toupper(fl->path[strlen(fl->path) - 1]) == 'X'))
+			&& (strlen(fl->path) > 4))
 		{
-			ret = read_hex_file(fl->file, 
+			ret = parse_file(fl->path, fl->file, (void *)&program_info, 
 								cur_target->write_buffer_from_file_callback, 
-								(void *)&program_info);
+								fl->seg_offset, fl->addr_offset);
 			if (ret != ERROR_OK)
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read hex file");
+				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "parse input file");
 				free_all_and_exit(EXIT_FAILURE);
 			}
 			

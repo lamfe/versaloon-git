@@ -48,6 +48,7 @@
 
 #define ERRMSG_NOT_SUPPORT					"%s is not supported.\n"
 #define ERRMSG_NOT_SUPPORT_BY				"%s is not supported by %s.\n"
+#define ERRMSG_NOT_SUPPORT_AS				"%s is not supported as %s.\n"
 #define ERRCODE_NOT_SUPPORT					ERROR_FAIL
 
 #define ERRMSG_INVALID_BUFFER				"Buffer %s is not valid.\n"

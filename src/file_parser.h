@@ -16,13 +16,23 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#ifndef __HEX_H_INCLUDED__
-#define __HEX_H_INCLUDED__
 
-RESULT read_hex_file(FILE *hex_file, WRITE_MEMORY_CALLBACK callback, 
+#ifndef __FILE_PARSER_H_INCLUDED__
+#define __FILE_PARSER_H_INCLUDED__
+
+typedef RESULT (*WRITE_MEMORY_CALLBACK)(uint32_t, uint32_t, uint8_t*, 
+										uint32_t, void *);
+
+typedef struct
+{
+	char ext[4];
+	RESULT (*parser)(FILE *hex_file, WRITE_MEMORY_CALLBACK callback, 
 					 void *buffer, uint32_t seg_offset, uint32_t addr_offset);
-RESULT write_hex_file_line(FILE *hex_file, uint32_t data_addr, 
-						   uint32_t seg_addr, uint8_t *data, uint8_t len);
+} file_parser_t;
 
-#endif /* __HEX_H_INCLUDED__ */
+RESULT parse_file(char *file_name, FILE *file, void *para, 
+				  WRITE_MEMORY_CALLBACK callback, 
+				  uint32_t seg_offset, uint32_t addr_offset);
+
+#endif //__FILE_PARSER_H_INCLUDED__
 
