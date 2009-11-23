@@ -244,7 +244,7 @@ RESULT c8051f_c2_program(operation_t operations, program_info_t *pi,
 				}
 			}
 			
-			ml_tmp = ml_tmp->next;
+			ml_tmp = MEMLIST_GetNext(ml_tmp);
 		}
 		
 		pgbar_fini();
@@ -376,7 +376,7 @@ RESULT c8051f_c2_program(operation_t operations, program_info_t *pi,
 				}
 			}
 			
-			ml_tmp = ml_tmp->next;
+			ml_tmp = MEMLIST_GetNext(ml_tmp);
 		}
 		
 		pgbar_fini();

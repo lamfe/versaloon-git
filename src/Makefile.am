@@ -10,7 +10,9 @@ INCLUDES = \
     -I$(top_srcdir)/src \
     -I$(top_srcdir)/src/tools/hex \
     -I$(top_srcdir)/src/tools/pgbar \
+    -I$(top_srcdir)/src/tools/list \
     -I$(top_srcdir)/src/tools/memlist \
+    -I$(top_srcdir)/src/tools/filelist \
     -I$(top_srcdir)/src/target \
     -I$(top_srcdir)/src/driver \
     -I$(top_srcdir)/src/programmer

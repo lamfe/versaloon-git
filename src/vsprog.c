@@ -29,6 +29,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #include "port.h"
 #include "app_cfg.h"
@@ -38,6 +39,7 @@
 #include "prog_interface.h"
 
 #include "memlist.h"
+#include "filelist.h"
 #include "pgbar.h"
 
 #include "vsprog.h"
@@ -45,14 +47,13 @@
 #include "target.h"
 #include "hex.h"
 
-#define OPTSTR			"hvS:P:i:s:c:Mp:U:Dd:Go:l:f:F:m:x:C:I:J:Zb:"
+#define OPTSTR			"hvS:P:s:c:Mp:U:Dd:Go:l:f:F:m:x:C:I:O:J:Zb:"
 static const struct option long_opts[] =
 {
 	{"help", no_argument, NULL, 'h'},
 	{"version", no_argument, NULL, 'v'},
 	{"support", required_argument, NULL, 'S'},
 	{"parameter", required_argument, NULL, 'P'},
-	{"input-file", required_argument, NULL, 'i'},
 	{"target-series", required_argument, NULL, 's'},
 	{"target-module", required_argument, NULL, 'c'},
 	{"mass-product", no_argument, NULL, 'M'},
@@ -68,7 +69,8 @@ static const struct option long_opts[] =
 	{"mode", required_argument, NULL, 'm'},
 	{"execute", required_argument, NULL, 'x'},
 	{"comport", required_argument, NULL, 'C'},
-	{"inputfile", required_argument, NULL, 'I'},
+	{"input-file", required_argument, NULL, 'I'},
+	{"output-file", required_argument, NULL, 'O'},
 	{"jtag-dc", required_argument, NULL, 'J'},
 	{"firmware_update", no_argument, NULL, 'Z'},
 	{"buffsize", required_argument, NULL, 'b'},
@@ -80,15 +82,19 @@ operation_t operations;
 
 static char *program_name = NULL;
 char *program_dir = NULL;
-static FILE *hex_file = NULL;
 
 uint8_t program_mode = 0;
+
+filelist *fl_in = NULL, *fl_out = NULL;
 
 // for JTAT
 jtag_pos_t target_jtag_pos;
 
 static void free_all(void)
 {
+	FILELIST_Free(&fl_in);
+	FILELIST_Free(&fl_out);
+	
 	if (program_name != NULL)
 	{
 		free(program_name);
@@ -257,7 +263,7 @@ int main(int argc, char* argv[])
 	uint32_t i, j, argu_num;
 	uint32_t require_hex_file_for_read = 0;
 	uint32_t require_hex_file_for_write = 0;
-	char *hex_filename = NULL, *cur_pointer, *end_pointer;
+	char *cur_pointer, *end_pointer;
 	RESULT ret;
 	
 	// get directory of the application
@@ -600,15 +606,37 @@ int main(int argc, char* argv[])
 				break;
 			}
 			break;
-		case 'i':
+		case 'I':
 			// --input-file
-			hex_filename = (char *)malloc(strlen(optarg) + 1);
-			if (NULL == hex_filename)
+			if ((('"' == optarg[0]) && ('"' == optarg[strlen(optarg) - 1])) 
+			|| (('\'' == optarg[0]) && ('\'' == optarg[strlen(optarg) - 1])))
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
-				free_all_and_exit(ERRCODE_NOT_ENOUGH_MEMORY);
+				((char *)optarg)[strlen(optarg) - 1] = '\0';
+				strcpy((char *)optarg, optarg + 1);
 			}
-			strcpy(hex_filename, optarg);
+			
+			if (ERROR_OK != FILELIST_Add(&fl_in, optarg, 0, 0, "rt"))
+			{
+				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_HANDLE_DEVICE), 
+							"add file", optarg);
+				free_all_and_exit(ERRCODE_FAILURE_OPERATION);
+			}
+			break;
+		case 'O':
+			// --output-file
+			if ((('"' == optarg[0]) && ('"' == optarg[strlen(optarg) - 1])) 
+			|| (('\'' == optarg[0]) && ('\'' == optarg[strlen(optarg) - 1])))
+			{
+				((char *)optarg)[strlen(optarg) - 1] = '\0';
+				strcpy((char *)optarg, optarg + 1);
+			}
+			
+			if (ERROR_OK != FILELIST_Add(&fl_out, optarg, 0, 0, "wt"))
+			{
+				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_HANDLE_DEVICE), 
+							"add file", optarg);
+				free_all_and_exit(ERRCODE_FAILURE_OPERATION);
+			}
 			break;
 		case 'J':
 			// --jtag-dc
@@ -738,41 +766,19 @@ int main(int argc, char* argv[])
 		free_all_and_exit(EXIT_FAILURE);
 	}
 	
-	// open file
-	if ((require_hex_file_for_read > 0) || (require_hex_file_for_write > 0))
+	// check file
+	if ((require_hex_file_for_read > 0) 
+		&& ((NULL == fl_in) || (NULL == fl_in->path) || (NULL == fl_in->file)))
 	{
-		if ((hex_filename != NULL) && (strlen(hex_filename) > 0))
-		{
-			LOG_DEBUG("open file: %s\n", hex_filename);
-			
-			if ((operations.read_operations > 0) 
-					&& (0 == operations.verify_operations))
-			{
-				// open file for write
-				hex_file = fopen(hex_filename, "wt");
-			}
-			else// if ((operations.write_operations > 0) 
-				//	|| (operations.verify_operations > 0))
-			{
-				// open file for read, default is read
-				hex_file = fopen(hex_filename, "rt");
-			}
-			if (NULL == hex_file)
-			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPEN), hex_filename);
-				
-				free(hex_filename);
-				hex_filename = NULL;
-				free_all_and_exit(ERRCODE_FAILURE_OPEN);
-			}
-			free(hex_filename);
-			hex_filename = NULL;
-		}
-		else
-		{
-			LOG_ERROR(_GETTEXT("Input hex file not defined, use -i.\n"));
-			free_all_and_exit(EXIT_FAILURE);
-		}
+		LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "input file");
+		free_all_and_exit(EXIT_FAILURE);
+	}
+	if ((require_hex_file_for_write > 0) 
+		&& ((NULL == fl_out) || (NULL == fl_out->path) 
+			|| (NULL == fl_out->file)))
+	{
+		LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "output file");
+		free_all_and_exit(EXIT_FAILURE);
 	}
 	
 	// init programmer
@@ -836,24 +842,34 @@ int main(int argc, char* argv[])
 		free_all_and_exit(ERRCODE_NOT_ENOUGH_MEMORY);
 	}
 	cur_target->prepare_buffer(&program_info);
-	if ((require_hex_file_for_read > 0) && (hex_file != NULL))
+	if (require_hex_file_for_read > 0)
 	{
+		filelist *fl = fl_in;
+		
 		if (NULL == cur_target->write_buffer_from_file_callback)
 		{
 			LOG_BUG(_GETTEXT("Invalid target struct.\n"));
 			free_all_and_exit(EXIT_FAILURE);
 		}
 		
-		ret = read_hex_file(hex_file, 
-							cur_target->write_buffer_from_file_callback, 
-							(void *)&program_info);
-		if (ret != ERROR_OK)
+		while ((fl != NULL) && (fl->path != NULL) && (fl->file != NULL) 
+			&& (strlen(fl->path) > 4) 
+			&& (toupper(fl->path[strlen(fl->path) - 4]) == '.') 
+			&& (toupper(fl->path[strlen(fl->path) - 3]) == 'H') 
+			&& (toupper(fl->path[strlen(fl->path) - 2]) == 'E') 
+			&& (toupper(fl->path[strlen(fl->path) - 1]) == 'X'))
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read hex file");
-			free_all_and_exit(EXIT_FAILURE);
+			ret = read_hex_file(fl->file, 
+								cur_target->write_buffer_from_file_callback, 
+								(void *)&program_info);
+			if (ret != ERROR_OK)
+			{
+				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read hex file");
+				free_all_and_exit(EXIT_FAILURE);
+			}
+			
+			fl = FILELIST_GetNext(fl);
 		}
-		fclose(hex_file);
-		hex_file = NULL;
 	}
 	
 	// do programming

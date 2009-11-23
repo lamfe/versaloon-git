@@ -318,7 +318,7 @@ try_frequency:
 				}
 			}
 			
-			ml_tmp = ml_tmp->next;
+			ml_tmp = MEMLIST_GetNext(ml_tmp);
 		}
 		
 		pgbar_fini();
@@ -420,7 +420,7 @@ try_frequency:
 				}
 			}
 			
-			ml_tmp = ml_tmp->next;
+			ml_tmp = MEMLIST_GetNext(ml_tmp);
 		}
 		
 		pgbar_fini();

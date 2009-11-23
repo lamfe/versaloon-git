@@ -2,21 +2,23 @@ INCLUDES = \
     $(all_includes) \
     -I$(top_srcdir)/src \
     -I$(top_srcdir)/src/programmer \
+    -I$(top_srcdir)/src/tools/list \
     -I$(top_srcdir)/src/tools/memlist \
+    -I$(top_srcdir)/src/tools/filelist \
     -I$(top_srcdir)/src/tools/pgbar \
     -I$(top_srcdir)/src/driver \
     -I$(top_srcdir)/src/driver/comport \
-	-I$(top_srcdir)/src/target/core/arm_adi
+    -I$(top_srcdir)/src/target/core/arm_adi
 
 METASOURCES = AUTO
 noinst_LIBRARIES = libtgt.a
 
 libtgt_a_SOURCES = \
     target.c \
-	core/arm_adi/adi_v5p1.c \
-	cortex-m3/cm3.c \
-	cortex-m3/cm3_stm32.c \
-	cortex-m3/cm3_common.c \
+    core/arm_adi/adi_v5p1.c \
+    cortex-m3/cm3.c \
+    cortex-m3/cm3_stm32.c \
+    cortex-m3/cm3_common.c \
     at89s5x/at89s5x.c \
     avr8/avr8.c \
     avr8/avr8_hvpp.c \
