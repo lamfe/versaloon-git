@@ -12,7 +12,7 @@ object FormComSetup: TFormComSetup
   OnKeyPress = FormKeyPress
   OnShow = FormShow
   Position = poMainFormCenter
-  LCLVersion = '0.9.26.2'
+  LCLVersion = '0.9.28.2'
   object lblBaudrate: TLabel
     Left = 16
     Height = 13
