@@ -81,8 +81,8 @@ RESULT parse_file(char *file_name, FILE *file, void *para,
 	if (i >= dimof(file_parser))
 	{
 		// file type not supported
-		LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_AS), file_name, "input file");
-		return ERRCODE_NOT_SUPPORT;
+		// return SUCCESS, hope target code will process this
+		return ERROR_OK;
 	}
 	
 	// call parser
