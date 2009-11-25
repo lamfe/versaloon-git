@@ -51,6 +51,7 @@
 
 chip_series_t target_chips = {0, NULL};
 chip_param_t target_chip_param;
+uint32_t target_defined = 0;
 
 target_info_t targets_info[] = 
 {
@@ -505,6 +506,71 @@ void target_free_data_buffer(void)
 	if (program_info.user_area_memlist != NULL)
 	{
 		MEMLIST_Free(&program_info.user_area_memlist);
+	}
+}
+
+static RESULT target_check_single_defined(uint32_t opt)
+{
+	opt = (target_defined ^ opt) & opt;
+	
+	if (opt & BOOTLOADER)
+	{
+		LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "BOOTLOADER area");
+		return ERROR_FAIL;
+	}
+	else if (opt & APPLICATION)
+	{
+		LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "APPLICATION area");
+		return ERROR_FAIL;
+	}
+	else if (opt & EEPROM)
+	{
+		LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "EEPROM area");
+		return ERROR_FAIL;
+	}
+	else if (opt & OTP_ROM)
+	{
+		LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "OTP_ROM area");
+		return ERROR_FAIL;
+	}
+	else if (opt & FUSE)
+	{
+		LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "FUSE area");
+		return ERROR_FAIL;
+	}
+	else if (opt & LOCK)
+	{
+		LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "LOCK area");
+		return ERROR_FAIL;
+	}
+	else if (opt & USER_SIG)
+	{
+		LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "USER_SIG area");
+		return ERROR_FAIL;
+	}
+	else if (opt & CHECKSUM)
+	{
+		LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "CHECKSUM area");
+		return ERROR_FAIL;
+	}
+	else if (opt & CALIBRATION)
+	{
+		LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "CALIBRATION area");
+		return ERROR_FAIL;
+	}
+	return ERROR_OK;
+}
+
+RESULT target_check_defined(operation_t operations)
+{
+	if (ERROR_OK != target_check_single_defined(operations.verify_operations) 
+		|| (ERROR_OK != target_check_single_defined(operations.write_operations)))
+	{
+		return ERROR_FAIL;
+	}
+	else
+	{
+		return ERROR_OK;
 	}
 }
 
@@ -1520,6 +1586,7 @@ RESULT target_build_chip_series(const char *chip_series,
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "fuse"))
 			{
+				target_para_size_defined |= FUSE;
 				s->chips_param[i].fuse_size = (uint32_t)strtoul(
 					(const char *)xmlGetProp(paramNode, BAD_CAST "bytesize"), 
 					NULL, 0);
@@ -1529,6 +1596,7 @@ RESULT target_build_chip_series(const char *chip_series,
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "lock"))
 			{
+				target_para_size_defined |= LOCK;
 				s->chips_param[i].lock_size = (uint32_t)strtoul(
 					(const char *)xmlGetProp(paramNode, BAD_CAST "bytesize"), 
 					NULL, 0);

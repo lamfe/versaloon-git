@@ -273,13 +273,13 @@ int main(int argc, char* argv[])
 	if (NULL == program_dir)
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
-		free_all_and_exit(ERRCODE_NOT_ENOUGH_MEMORY);
+		free_all_and_exit(EXIT_FAILURE);
 	}
 	program_name = (char *)malloc(strlen(argv[0]) + 1);
 	if (NULL == program_name)
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
-		free_all_and_exit(ERRCODE_NOT_ENOUGH_MEMORY);
+		free_all_and_exit(EXIT_FAILURE);
 	}
 	strcpy(program_dir, argv[0]);
 	
@@ -349,7 +349,7 @@ int main(int argc, char* argv[])
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), (char)optc);
 				LOG_ERROR(_GETTEXT(ERRMSG_TRY_HELP));
-				free_all_and_exit(ERRCODE_INVALID_OPTION);
+				free_all_and_exit(EXIT_FAILURE);
 			}
 			
 			verbosity = optarg[0] - '0';
@@ -371,11 +371,11 @@ int main(int argc, char* argv[])
 			if ((NULL == program_info.chip_name) || (NULL == program_info.chip_type))
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "Target");
-				free_all_and_exit(ERROR_FAIL);
+				free_all_and_exit(EXIT_FAILURE);
 			}
 			
 			target_print_fl(optarg);
-			free_all_and_exit(ERROR_OK);
+			free_all_and_exit(EXIT_SUCCESS);
 		case 'S':
 			// --support [target/programmer]
 			if (!strcmp(optarg, "all"))
@@ -419,9 +419,9 @@ int main(int argc, char* argv[])
 				
 				LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT), optarg);
 				LOG_ERROR(_GETTEXT(ERRMSG_TRY_SUPPORT));
-				free_all_and_exit(ERRCODE_NOT_SUPPORT);
+				free_all_and_exit(EXIT_FAILURE);
 			}
-			free_all_and_exit(ERROR_OK);
+			free_all_and_exit(EXIT_SUCCESS);
 		case 's':
 			// --target-series
 			program_info.chip_type = optarg;
@@ -431,7 +431,7 @@ int main(int argc, char* argv[])
 				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
 						  "initialize target");
 				LOG_ERROR(_GETTEXT(ERRMSG_TRY_HELP));
-				free_all_and_exit(ERRCODE_FAILURE_OPERATION);
+				free_all_and_exit(EXIT_FAILURE);
 			}
 			break;
 		case 'c':
@@ -443,7 +443,7 @@ int main(int argc, char* argv[])
 				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
 						  "initialize target");
 				LOG_ERROR(_GETTEXT(ERRMSG_TRY_HELP));
-				free_all_and_exit(ERRCODE_FAILURE_OPERATION);
+				free_all_and_exit(EXIT_FAILURE);
 			}
 			break;
 		case 'p':
@@ -453,7 +453,7 @@ int main(int argc, char* argv[])
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT), optarg);
 				LOG_ERROR(_GETTEXT(ERRMSG_TRY_SUPPORT));
-				free_all_and_exit(ERRCODE_NOT_SUPPORT);
+				free_all_and_exit(EXIT_FAILURE);
 			}
 			break;
 		case 'o':
@@ -463,7 +463,7 @@ int main(int argc, char* argv[])
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), (char)optc);
 				LOG_ERROR(_GETTEXT(ERRMSG_TRY_SUPPORT));
-				free_all_and_exit(ERRCODE_INVALID_OPTION);
+				free_all_and_exit(EXIT_FAILURE);
 			}
 			
 			switch (optarg[0])
@@ -604,7 +604,7 @@ int main(int argc, char* argv[])
 			default:
 				LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), (char)optc);
 				LOG_ERROR(_GETTEXT(ERRMSG_TRY_HELP));
-				free_all_and_exit(ERRCODE_INVALID_OPTION);
+				free_all_and_exit(EXIT_FAILURE);
 				break;
 			}
 			break;
@@ -637,7 +637,7 @@ int main(int argc, char* argv[])
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_HANDLE_DEVICE), 
 							"add file", optarg);
-				free_all_and_exit(ERRCODE_FAILURE_OPERATION);
+				free_all_and_exit(EXIT_FAILURE);
 			}
 			break;
 		case 'O':
@@ -669,7 +669,7 @@ int main(int argc, char* argv[])
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_HANDLE_DEVICE), 
 							"add file", optarg);
-				free_all_and_exit(ERRCODE_FAILURE_OPERATION);
+				free_all_and_exit(EXIT_FAILURE);
 			}
 			break;
 		case 'J':
@@ -682,7 +682,7 @@ int main(int argc, char* argv[])
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), (char)optc);
 				LOG_ERROR(_GETTEXT(ERRMSG_TRY_HELP));
-				free_all_and_exit(ERRCODE_INVALID_OPTION);
+				free_all_and_exit(EXIT_FAILURE);
 			}
 			
 			cur_pointer = end_pointer + 1;
@@ -692,7 +692,7 @@ int main(int argc, char* argv[])
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), (char)optc);
 				LOG_ERROR(_GETTEXT(ERRMSG_TRY_HELP));
-				free_all_and_exit(ERRCODE_INVALID_OPTION);
+				free_all_and_exit(EXIT_FAILURE);
 			}
 			
 			cur_pointer = end_pointer + 1;
@@ -702,7 +702,7 @@ int main(int argc, char* argv[])
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), (char)optc);
 				LOG_ERROR(_GETTEXT(ERRMSG_TRY_HELP));
-				free_all_and_exit(ERRCODE_INVALID_OPTION);
+				free_all_and_exit(EXIT_FAILURE);
 			}
 			
 			cur_pointer = end_pointer + 1;
@@ -711,7 +711,7 @@ int main(int argc, char* argv[])
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), (char)optc);
 				LOG_ERROR(_GETTEXT(ERRMSG_TRY_HELP));
-				free_all_and_exit(ERRCODE_INVALID_OPTION);
+				free_all_and_exit(EXIT_FAILURE);
 			}
 			break;
 		case 'm':
@@ -720,7 +720,7 @@ int main(int argc, char* argv[])
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), (char)optc);
 				LOG_ERROR(_GETTEXT(ERRMSG_TRY_HELP));
-				free_all_and_exit(ERRCODE_INVALID_OPTION);
+				free_all_and_exit(EXIT_FAILURE);
 			}
 			if ((NULL == cur_target->program_mode_str) 
 				|| (NULL == strchr(cur_target->program_mode_str, optarg[0])))
@@ -832,7 +832,7 @@ int main(int argc, char* argv[])
 				{
 					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
 							  "enter into firmware update mode");
-					free_all_and_exit(ERRCODE_FAILURE_OPERATION);
+					free_all_and_exit(EXIT_FAILURE);
 				}
 			}
 			
@@ -858,7 +858,7 @@ int main(int argc, char* argv[])
 	if (ret != ERROR_OK)
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "initialize target");
-		free_all_and_exit(ERRCODE_FAILURE_OPERATION);
+		free_all_and_exit(EXIT_FAILURE);
 	}
 	// exit here is no operation defined
 	if (!(operations.checksum_operations || operations.erase_operations 
@@ -873,7 +873,7 @@ int main(int argc, char* argv[])
 	if (ret != ERROR_OK)
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
-		free_all_and_exit(ERRCODE_NOT_ENOUGH_MEMORY);
+		free_all_and_exit(EXIT_FAILURE);
 	}
 	cur_target->prepare_buffer(&program_info);
 	if (require_hex_file_for_read > 0)
@@ -902,6 +902,13 @@ int main(int argc, char* argv[])
 			fl = FILELIST_GetNext(fl);
 		}
 	}
+	if (ERROR_OK != target_check_defined(operations))
+	{
+		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+					"check target defined content");
+		free_all_and_exit(EXIT_FAILURE);
+	}
+	sleep_ms(100);	// delay 100ms
 	
 	// do programming
 	if (mass_product_flag)
@@ -954,7 +961,7 @@ int main(int argc, char* argv[])
 			if (NULL == data_buf)
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
-				free_all_and_exit(ERRCODE_NOT_ENOUGH_MEMORY);
+				free_all_and_exit(EXIT_FAILURE);
 			}
 			
 			// get mass-product data

@@ -29,7 +29,6 @@
 #include "app_err.h"
 #include "app_log.h"
 #include "prog_interface.h"
-#include "port.h"
 
 #include "memlist.h"
 #include "pgbar.h"
@@ -49,6 +48,7 @@
 #define cur_eeprom_offset			avr8_eeprom_offset
 #define cur_prog_mode				program_mode
 #define cur_frequency				avr8_isp_frequency
+#define cur_target_defined			target_defined
 
 const program_area_map_t avr8_program_area_map[] = 
 {
@@ -135,6 +135,7 @@ RESULT avr8_parse_argument(char cmd, const char *argu)
 		}
 		
 		avr8_lock = (uint8_t)strtoul(argu, NULL, 0);
+		cur_target_defined |= LOCK;
 		
 		break;
 	case 'f':
@@ -146,6 +147,7 @@ RESULT avr8_parse_argument(char cmd, const char *argu)
 		}
 		
 		avr8_fuse = (uint32_t)strtoul(argu, NULL, 0);
+		cur_target_defined |= FUSE;
 		
 		break;
 	default:
@@ -226,6 +228,8 @@ RESULT avr8_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr,
 			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_RANGE), "flash memory");
 			return ERRCODE_INVALID;
 		}
+		cur_target_defined |= APPLICATION;
+		
 		memcpy(pi->app + mem_addr, data, length);
 		pi->app_size_valid += (uint16_t)length;
 		
@@ -270,6 +274,8 @@ RESULT avr8_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr,
 			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_RANGE), "eeprom memory");
 			return ERRCODE_INVALID;
 		}
+		cur_target_defined |= EEPROM;
+		
 		memcpy(pi->eeprom + mem_addr, data, length);
 		pi->eeprom_size_valid += (uint16_t)length;
 		
@@ -321,6 +327,8 @@ RESULT avr8_init(program_info_t *pi, const char *dir, programmer_info_t *prog)
 				pi->chip_type);
 		return ERRCODE_INVALID_HANDLER;
 	}
+	// define read only targets
+	cur_target_defined |= CALIBRATION;
 	
 	if (NULL == pi->chip_name)
 	{
@@ -334,7 +342,6 @@ RESULT avr8_init(program_info_t *pi, const char *dir, programmer_info_t *prog)
 			LOG_ERROR(_GETTEXT(ERRMSG_AUTODETECT_FAIL), pi->chip_type);
 			return ERRCODE_AUTODETECT_FAIL;
 		}
-		sleep_ms(100);
 		
 		LOG_INFO(_GETTEXT(INFOMSG_AUTODETECT_SIGNATURE), pi->chip_id);
 		for (i = 0; i < cur_chips_num; i++)

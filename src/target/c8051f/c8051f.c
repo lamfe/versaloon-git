@@ -46,6 +46,7 @@
 #define cur_chips_num				target_chips.num_of_chips
 #define cur_flash_offset			c8051f_flash_offset
 #define cur_prog_mode				program_mode
+#define cur_target_defined			target_defined
 
 const program_area_map_t c8051f_program_area_map[] = 
 {
@@ -160,6 +161,8 @@ RESULT c8051f_write_buffer_from_file_callback(uint32_t address, uint32_t seg_add
 			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_RANGE), "flash memory");
 			return ERRCODE_INVALID;
 		}
+		cur_target_defined |= APPLICATION;
+		
 		memcpy(pi->app + mem_addr, data, length);
 		pi->app_size_valid += (uint16_t)length;
 		

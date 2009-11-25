@@ -47,6 +47,7 @@
 #define cur_flash_offset			s5x_flash_offset
 #define cur_prog_mode				program_mode
 #define cur_frequency				s5x_isp_frequency
+#define cur_target_defined			target_defined
 
 const program_area_map_t s5x_program_area_map[] = 
 {
@@ -147,6 +148,7 @@ RESULT s5x_parse_argument(char cmd, const char *argu)
 			return ERRCODE_INVALID_OPTION;
 		}
 		s5x_lock--;
+		cur_target_defined |= LOCK;
 		
 		break;
 	case 'f':
@@ -164,6 +166,7 @@ RESULT s5x_parse_argument(char cmd, const char *argu)
 					  "s5x fuse", "MUST be <= 0x0F!!");
 			return ERROR_FAIL;
 		}
+		cur_target_defined |= FUSE;
 		
 		break;
 	default:
@@ -240,6 +243,8 @@ RESULT s5x_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr,
 			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_RANGE), "flash memory");
 			return ERRCODE_INVALID;
 		}
+		cur_target_defined |= APPLICATION;
+		
 		memcpy(pi->app + mem_addr, data, length);
 		pi->app_size_valid += (uint16_t)length;
 		

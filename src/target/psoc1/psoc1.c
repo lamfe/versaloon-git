@@ -45,6 +45,7 @@
 #define cur_chips_param				target_chips.chips_param
 #define cur_chips_num				target_chips.num_of_chips
 #define cur_prog_mode				program_mode
+#define cur_target_defined			target_defined
 
 const program_area_map_t psoc1_program_area_map[] = 
 {
@@ -279,6 +280,8 @@ RESULT psoc1_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr
 			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_RANGE), "flash memory");
 			return ERRCODE_INVALID;
 		}
+		cur_target_defined |= APPLICATION;
+		
 		memcpy(pi->app + mem_addr, data, length);
 		pi->app_size_valid += (uint16_t)length;
 		
@@ -305,6 +308,7 @@ RESULT psoc1_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr
 			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_RANGE), "secure memory");
 			return ERRCODE_INVALID;
 		}
+		cur_target_defined |= LOCK;
 		memcpy(pi->lock + mem_addr, data, length);
 		pi->lock_size_valid += (uint16_t)length;
 		break;
@@ -314,6 +318,7 @@ RESULT psoc1_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr
 			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_RANGE), "checksum memory");
 			return ERRCODE_INVALID;
 		}
+		cur_target_defined |= CHECKSUM;
 		pi->app_checksum_value = (data[0] << 8) + data[1];
 		break;
 	default:

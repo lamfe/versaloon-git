@@ -51,6 +51,7 @@
 #define cur_chip_param				comisp_chip_param
 #define cur_chips_param				comisp_chips_param
 #define cur_flash_offset			comisp_flash_offset
+#define cur_target_defined			target_defined
 
 #define COMISP_MAX_BUFSIZE			(1024 * 1024)
 
@@ -295,6 +296,8 @@ RESULT comisp_write_buffer_from_file_callback(uint32_t address, uint32_t seg_add
 		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_RANGE), "flash memory");
 		return ERRCODE_INVALID;
 	}
+	cur_target_defined |= APPLICATION;
+	
 	memcpy(pi->app + mem_addr - cur_chip_param.flash_start_addr, 
 		   data, length);
 	pi->app_size_valid += (uint32_t)length;
