@@ -854,18 +854,18 @@ begin
       for i := 0 to file_num - 1 do
       begin
         TargetFile[i].filename := FormFileSelector.GetFileNameByTargetName(TargetFile[i].target);
-        cbboxInputFile.Items.Add(TargetFile[i].filename);
         if TargetFile[i].filename <> '' then
         begin
+          cbboxInputFile.Items.Add(TargetFile[i].target + ':' + TargetFile[i].filename);
           valid_filename_num := valid_filename_num + 1;
         end;
       end;
-      if valid_filename_num > 0 then
+      if valid_filename_num > 1 then
       begin
         cbboxInputFile.Items.Insert(0, 'ALL');
-        cbboxInputFile.ItemIndex := 0;
         cbboxInputFile.Hint := 'ALL';
       end;
+      cbboxInputFile.ItemIndex := 0;
     end;
   end
   else
@@ -1449,6 +1449,7 @@ end;
 procedure TFormMain.PrepareBaseParameters();
 var
   i: integer;
+  str: string;
 begin
   caller.AddParameter(GetTargetDefineParameters());
 
@@ -1466,15 +1467,22 @@ begin
   end;
 
   // input file
-  if cbboxInputFile.ItemIndex > 0 then
+  if cbboxInputFile.Text <> 'ALL' then
   begin
     // enable selected input file
-    i := cbboxInputFile.ItemIndex - 1;
-    if TargetFile[i].filename <> '' then
+    for i := 0 to Length(TargetFile) - 1 do
     begin
-      caller.AddParameter('I"' + TargetFile[i].filename + '@'
-                               + IntToStr(TargetFile[i].seg_offset) + ','
-                               + IntToStr(TargetFile[i].addr_offset) + '"');
+      str := Copy(cbboxInputFile.Text, 1, Pos(':', cbboxInputFile.Text) - 1);
+      if TargetFile[i].target = str then
+      begin
+        if TargetFile[i].filename <> '' then
+        begin
+          caller.AddParameter('I"' + TargetFile[i].filename + '@'
+                                   + IntToStr(TargetFile[i].seg_offset) + ','
+                                   + IntToStr(TargetFile[i].addr_offset) + '"');
+        end;
+        break;
+      end;
     end;
   end
   else
