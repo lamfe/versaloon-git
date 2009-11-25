@@ -70,8 +70,7 @@ RESULT FILELIST_Add(filelist **fl, char *path, uint32_t seg_offset,
 		free(newitem->path);
 		free(newitem);
 		
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_HANDLE_DEVICE), 
-					"open", newitem->path);
+		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_HANDLE_DEVICE), "open", path);
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	

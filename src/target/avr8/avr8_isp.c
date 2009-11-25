@@ -201,6 +201,7 @@ try_frequency:
 		LOG_INFO(_GETTEXT(INFOMSG_ERASED), "chip");
 	}
 	
+	// set page size for flash
 	if (cur_chip_param.app_page_num > 1)
 	{
 		page_size = cur_chip_param.app_page_size;
@@ -432,6 +433,217 @@ try_frequency:
 		else
 		{
 			LOG_INFO(_GETTEXT(INFOMSG_READ), "flash");
+		}
+	}
+	
+	// set page size for eeprom
+	if (cur_chip_param.ee_page_num > 1)
+	{
+		page_size = cur_chip_param.ee_page_size;
+	}
+	else
+	{
+		page_size = 256;
+	}
+	
+	if (operations.write_operations & EEPROM)
+	{
+		// program eeprom
+		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMING), "eeprom");
+		pgbar_init("writing eeprom |", "|", 0, pi->eeprom_size_valid, 
+				   PROGRESS_STEP, '=');
+		
+		ml_tmp = pi->eeprom_memlist;
+		while(ml_tmp != NULL)
+		{
+			if ((ml_tmp->addr + ml_tmp->len) 
+				<= (ml_tmp->addr - (ml_tmp->addr % page_size) + page_size))
+			{
+				k = ml_tmp->len;
+			}
+			else
+			{
+				k = page_size - (ml_tmp->addr % page_size);
+			}
+			
+			len_current_list = (uint32_t)ml_tmp->len;
+			for (i = -(int32_t)(ml_tmp->addr % page_size); 
+				 i < ((int32_t)ml_tmp->len - (int32_t)(ml_tmp->addr % page_size)); 
+				 i += page_size)
+			{
+				if ((cur_chip_param.ee_page_num > 1) 
+					&& (cur_chip_param.param[AVR8_PARAM_ISP_EERPOM_PAGE_EN]))
+				{
+					// Page mode
+					for (j = 0; j < page_size; j++)
+					{
+						cmd_buf[0] = 0xC1;
+						cmd_buf[1] = 0x00;
+						cmd_buf[2] = (uint8_t)j;
+						cmd_buf[3] = pi->eeprom[ml_tmp->addr + i + j];
+						spi_io(cmd_buf, 4, NULL, 0, 0);
+					}
+					
+					// write page
+					cmd_buf[0] = 0xC2;
+					cmd_buf[1] = (uint8_t)((ml_tmp->addr + i) >> 8);
+					cmd_buf[2] = (uint8_t)((ml_tmp->addr + i) >> 0);
+					cmd_buf[3] = 0x00;
+					spi_io(cmd_buf, 4, NULL, 0, 0);
+					delay_ms(5);
+					
+					if (ERROR_OK != commit())
+					{
+						pgbar_fini();
+						LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ADDR), 
+								  "program eeprom in page mode", 
+								  ml_tmp->addr + i);
+						ret = ERRCODE_FAILURE_OPERATION;
+						goto leave_program_mode;
+					}
+				}
+				else
+				{
+					// Byte mode
+					for (j = 0; j < page_size; j++)
+					{
+						cmd_buf[0] = 0xC0;
+						cmd_buf[1] = (uint8_t)((ml_tmp->addr + i + j) >> 8);
+						cmd_buf[2] = (uint8_t)((ml_tmp->addr + i + j) >> 0);
+						cmd_buf[3] = pi->eeprom[ml_tmp->addr + i + j];
+						spi_io(cmd_buf, 4, NULL, 0, 0);
+						delay_ms(8);
+					}
+					
+					if (ERROR_OK != commit())
+					{
+						pgbar_fini();
+						LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ADDR), 
+								  "program eeprom in byte mode", 
+								  ml_tmp->addr + i);
+						ret = ERRCODE_FAILURE_OPERATION;
+						goto leave_program_mode;
+					}
+				}
+				
+				pgbar_update(k);
+				len_current_list -= k;
+				if (len_current_list >= page_size)
+				{
+					k = page_size;
+				}
+				else
+				{
+					k = len_current_list;
+				}
+			}
+			
+			ml_tmp = MEMLIST_GetNext(ml_tmp);
+		}
+		
+		pgbar_fini();
+		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMED_SIZE), "eeprom", 
+					pi->eeprom_size_valid);
+	}
+	
+	if (operations.read_operations & EEPROM)
+	{
+		if (operations.verify_operations & EEPROM)
+		{
+			LOG_INFO(_GETTEXT(INFOMSG_VERIFYING), "eeprom");
+		}
+		else
+		{
+			pi->eeprom_size_valid = cur_chip_param.ee_size;
+			LOG_INFO(_GETTEXT(INFOMSG_READING), "eeprom");
+		}
+		pgbar_init("reading eeprom |", "|", 0, pi->eeprom_size_valid, 
+				   PROGRESS_STEP, '=');
+		
+		ml_tmp = pi->eeprom_memlist;
+		page_size = 256;
+		while (ml_tmp != NULL)
+		{
+			if ((ml_tmp->addr + ml_tmp->len)
+				<= (ml_tmp->addr - (ml_tmp->addr % page_size) + page_size))
+			{
+				k = ml_tmp->len;
+			}
+			else
+			{
+				k = page_size - (ml_tmp->addr % page_size);
+			}
+			
+			len_current_list = (uint32_t)ml_tmp->len;
+			for (i = -(int32_t)(ml_tmp->addr % page_size); 
+				 i < ((int32_t)ml_tmp->len - (int32_t)(ml_tmp->addr % page_size)); 
+				 i += page_size)
+			{
+				for (j = 0; j < page_size; j++)
+				{
+					cmd_buf[0] = 0xA0;
+					cmd_buf[1] = (uint8_t)((ml_tmp->addr + i + j) >> 8);
+					cmd_buf[2] = (uint8_t)((ml_tmp->addr + i + j) >> 0);
+					cmd_buf[3] = 0;
+					spi_io(cmd_buf, 4, page_buf + j, 3, 1);
+				}
+				
+				if (ERROR_OK != commit())
+				{
+					pgbar_fini();
+					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ADDR), 
+								  "read eeprom in byte mode", ml_tmp->addr + i);
+						ret = ERRCODE_FAILURE_OPERATION;
+					goto leave_program_mode;
+				}
+				
+				for (j = 0; j < page_size; j++)
+				{
+					if (operations.verify_operations & EEPROM)
+					{
+						if (page_buf[j] != pi->eeprom[ml_tmp->addr + i + j])
+						{
+							pgbar_fini();
+							LOG_ERROR(
+								_GETTEXT(ERRMSG_FAILURE_VERIFY_TARGET_AT_02X), 
+								"eeprom", 
+								ml_tmp->addr + i + j, page_buf[j], 
+								pi->eeprom[ml_tmp->addr + i + j]);
+							ret = ERRCODE_FAILURE_VERIFY_TARGET;
+							goto leave_program_mode;
+						}
+					}
+					else
+					{
+						memcpy(&pi->eeprom[ml_tmp->addr + i], page_buf, 
+							   page_size);
+					}
+				}
+				
+				pgbar_update(k);
+				len_current_list -= k;
+				if (len_current_list >= page_size)
+				{
+					k = page_size;
+				}
+				else
+				{
+					k = len_current_list;
+				}
+			}
+			
+			ml_tmp = MEMLIST_GetNext(ml_tmp);
+		}
+		
+		pgbar_fini();
+		if (operations.verify_operations & EEPROM)
+		{
+			LOG_INFO(_GETTEXT(INFOMSG_VERIFIED_SIZE), "eeprom", 
+					 pi->eeprom_size_valid);
+		}
+		else
+		{
+			LOG_INFO(_GETTEXT(INFOMSG_READ), "eeprom");
 		}
 	}
 	
