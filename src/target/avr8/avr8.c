@@ -343,10 +343,7 @@ RESULT avr8_init(program_info_t *pi, const char *dir, programmer_info_t *prog)
 			{
 				memcpy(&cur_chip_param, cur_chips_param + i, 
 					   sizeof(cur_chip_param));
-				cur_chip_param.app_size = cur_chip_param.app_page_num 
-										  * cur_chip_param.app_page_size;
-				cur_chip_param.ee_size = cur_chip_param.ee_page_num 
-										 * cur_chip_param.ee_page_size;
+				
 				pi->app_size = cur_chip_param.app_size;
 				pi->app_size_valid = 0;
 				pi->eeprom_size = cur_chip_param.ee_size;
@@ -371,10 +368,6 @@ RESULT avr8_init(program_info_t *pi, const char *dir, programmer_info_t *prog)
 			{
 				memcpy(&cur_chip_param, cur_chips_param + i, 
 					   sizeof(cur_chip_param));
-				cur_chip_param.app_size = cur_chip_param.app_page_num 
-										  * cur_chip_param.app_page_size;
-				cur_chip_param.ee_size = cur_chip_param.ee_page_num 
-										 * cur_chip_param.ee_page_size;
 				
 				pi->app_size = cur_chip_param.app_size;
 				pi->app_size_valid = 0;

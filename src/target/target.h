@@ -141,6 +141,10 @@ typedef struct
 	uint32_t optrom_page_num;
 	uint32_t usrsig_page_size;
 	uint32_t usrsig_page_num;
+	uint32_t lock_page_size;
+	uint32_t lock_page_num;
+	uint32_t fuse_page_size;
+	uint32_t fuse_page_num;
 	uint32_t fuse_size;
 	uint32_t fuse_default_value;
 	uint32_t lock_size;

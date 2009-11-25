@@ -1237,7 +1237,7 @@ RESULT target_build_chip_series(const char *chip_series,
 	xmlDocPtr doc = NULL;
 	xmlNodePtr curNode = NULL;
 	char *filename = NULL;
-	uint32_t i, j;
+	uint32_t i, j, target_para_size_defined;
 	RESULT ret = ERROR_OK;
 	FILE *fp;
 	
@@ -1343,6 +1343,7 @@ RESULT target_build_chip_series(const char *chip_series,
 				sizeof(s->chips_param[i].chip_name));
 		
 		// read parameters
+		target_para_size_defined = 0;
 		paramNode = curNode->children->next;
 		while(paramNode != NULL)
 		{
@@ -1444,44 +1445,75 @@ RESULT target_build_chip_series(const char *chip_series,
 								(const char *)xmlNodeGetContent(paramNode), 
 								NULL, 0);
 			}
+			else if (!xmlStrcmp(paramNode->name, BAD_CAST "fuse_page_num"))
+			{
+				s->chips_param[i].fuse_page_num = (uint32_t)strtoul(
+								(const char *)xmlNodeGetContent(paramNode), 
+								NULL, 0);
+			}
+			else if (!xmlStrcmp(paramNode->name, BAD_CAST "fuse_page_size"))
+			{
+				s->chips_param[i].fuse_page_size = (uint32_t)strtoul(
+								(const char *)xmlNodeGetContent(paramNode), 
+								NULL, 0);
+			}
+			else if (!xmlStrcmp(paramNode->name, BAD_CAST "lock_page_num"))
+			{
+				s->chips_param[i].lock_page_num = (uint32_t)strtoul(
+								(const char *)xmlNodeGetContent(paramNode), 
+								NULL, 0);
+			}
+			else if (!xmlStrcmp(paramNode->name, BAD_CAST "lock_page_size"))
+			{
+				s->chips_param[i].lock_page_size = (uint32_t)strtoul(
+								(const char *)xmlNodeGetContent(paramNode), 
+								NULL, 0);
+			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "fuse_size"))
 			{
+				target_para_size_defined |= FUSE;
 				s->chips_param[i].fuse_size = (uint32_t)strtoul(
 								(const char *)xmlNodeGetContent(paramNode), 
 								NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "lock_size"))
 			{
+				target_para_size_defined |= LOCK;
 				s->chips_param[i].lock_size = (uint32_t)strtoul(
 								(const char *)xmlNodeGetContent(paramNode), 
 								NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "boot_size"))
 			{
+				target_para_size_defined |= BOOTLOADER;
 				s->chips_param[i].boot_size = (uint32_t)strtoul(
 								(const char *)xmlNodeGetContent(paramNode), 
 								NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "app_size"))
 			{
+				target_para_size_defined |= APPLICATION;
 				s->chips_param[i].app_size = (uint32_t)strtoul(
 								(const char *)xmlNodeGetContent(paramNode), 
 								NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "ee_size"))
 			{
+				target_para_size_defined |= EEPROM;
 				s->chips_param[i].ee_size = (uint32_t)strtoul(
 								(const char *)xmlNodeGetContent(paramNode), 
 								NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "optrom_size"))
 			{
+				target_para_size_defined |= OTP_ROM;
 				s->chips_param[i].optrom_size = (uint32_t)strtoul(
 								(const char *)xmlNodeGetContent(paramNode), 
 								NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "usrsig_size"))
 			{
+				target_para_size_defined |= USER_SIG;
 				s->chips_param[i].usrsig_size = (uint32_t)strtoul(
 								(const char *)xmlNodeGetContent(paramNode), 
 								NULL, 0);
@@ -1542,6 +1574,42 @@ RESULT target_build_chip_series(const char *chip_series,
 			}
 			
 			paramNode = paramNode->next->next;
+		}
+		
+		if (!(target_para_size_defined & APPLICATION))
+		{
+			s->chips_param[i].app_size = s->chips_param[i].app_page_size 
+											* s->chips_param[i].app_page_num;
+		}
+		if (!(target_para_size_defined & EEPROM))
+		{
+			s->chips_param[i].ee_size = s->chips_param[i].ee_page_size 
+											* s->chips_param[i].ee_page_num;
+		}
+		if (!(target_para_size_defined & BOOTLOADER))
+		{
+			s->chips_param[i].boot_size = s->chips_param[i].boot_page_size 
+											* s->chips_param[i].boot_page_num;
+		}
+		if (!(target_para_size_defined & FUSE))
+		{
+			s->chips_param[i].fuse_size = s->chips_param[i].fuse_page_size 
+											* s->chips_param[i].fuse_page_num;
+		}
+		if (!(target_para_size_defined & LOCK))
+		{
+			s->chips_param[i].lock_size = s->chips_param[i].lock_page_size 
+											* s->chips_param[i].lock_page_num;
+		}
+		if (!(target_para_size_defined & OTP_ROM))
+		{
+			s->chips_param[i].optrom_size = s->chips_param[i].optrom_page_size 
+											* s->chips_param[i].optrom_page_num;
+		}
+		if (!(target_para_size_defined & USER_SIG))
+		{
+			s->chips_param[i].usrsig_size = s->chips_param[i].usrsig_page_size 
+											* s->chips_param[i].usrsig_page_num;
 		}
 		
 		curNode = curNode->next->next;
