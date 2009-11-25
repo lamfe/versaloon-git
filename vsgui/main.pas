@@ -854,9 +854,9 @@ begin
       for i := 0 to file_num - 1 do
       begin
         TargetFile[i].filename := FormFileSelector.GetFileNameByTargetName(TargetFile[i].target);
+        cbboxInputFile.Items.Add(TargetFile[i].filename);
         if TargetFile[i].filename <> '' then
         begin
-          cbboxInputFile.Items.Add(TargetFile[i].filename);
           valid_filename_num := valid_filename_num + 1;
         end;
       end;
@@ -1470,9 +1470,12 @@ begin
   begin
     // enable selected input file
     i := cbboxInputFile.ItemIndex - 1;
-    caller.AddParameter('I"' + TargetFile[i].filename + '@'
-                             + IntToStr(TargetFile[i].seg_offset) + ','
-                             + IntToStr(TargetFile[i].addr_offset) + '"');
+    if TargetFile[i].filename <> '' then
+    begin
+      caller.AddParameter('I"' + TargetFile[i].filename + '@'
+                               + IntToStr(TargetFile[i].seg_offset) + ','
+                               + IntToStr(TargetFile[i].addr_offset) + '"');
+    end;
   end
   else
   begin
