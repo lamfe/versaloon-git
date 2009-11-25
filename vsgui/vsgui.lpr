@@ -7,9 +7,7 @@ uses
   cthreads,
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms
-  { you can add units after this }, main, cli_caller{, hexeditor}, parameditor,
-  LResources, com_setup;
+  Forms, LResources, main, cli_caller, parameditor, com_setup, fileselector;
 
 {$IFDEF WINDOWS}{$R vsgui.rc}{$ENDIF}
 
@@ -19,6 +17,7 @@ begin
   Application.CreateForm(TFormMain, FormMain);
   Application.CreateForm(TFormComSetup, FormComSetup);
   Application.CreateForm(TFormParaEditor, FormParaEditor);
+  Application.CreateForm(TFormFileSelector, FormFileSelector);
   Application.Run;
 end.
 

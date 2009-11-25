@@ -1,7 +1,7 @@
 object FormMain: TFormMain
-  Left = 721
+  Left = 553
   Height = 579
-  Top = 131
+  Top = 192
   Width = 841
   HorzScrollBar.Page = 840
   HorzScrollBar.Range = 400
@@ -44,7 +44,7 @@ object FormMain: TFormMain
       Height = 462
       Top = 1
       Width = 437
-      ActivePage = tsJTAG
+      ActivePage = tsCOMISP
       Align = alTop
       Font.CharSet = ANSI_CHARSET
       Font.Color = clBlack
@@ -52,7 +52,7 @@ object FormMain: TFormMain
       Font.Name = 'Arial'
       Font.Pitch = fpVariable
       ParentFont = False
-      TabIndex = 0
+      TabIndex = 1
       TabOrder = 0
       TabPosition = tpLeft
       OnChange = pcMainPageChanged
@@ -256,7 +256,7 @@ object FormMain: TFormMain
             Hint = 'Detect Target Module'
             Top = 4
             Width = 96
-            Caption = 'AutoDetect'
+            Caption = '&AutoDetect'
             OnClick = btnTargetDetectClick
             ParentShowHint = False
             ShowHint = True
@@ -417,6 +417,7 @@ object FormMain: TFormMain
             ShowHint = True
             TabOrder = 9
             OnDblClick = ToggleIF
+            OnKeyPress = lbledtExtraParaKeyPress
           end
           object lbledtFreq: TLabeledEdit
             Left = 252
@@ -470,24 +471,6 @@ object FormMain: TFormMain
             Caption = 'File:'
             ParentColor = False
           end
-          object fnEdit: TFileNameEdit
-            Left = 58
-            Height = 24
-            Hint = 'Select Hex File'
-            Top = 6
-            Width = 259
-            DialogTitle = 'Open HEX File...'
-            DialogOptions = []
-            Filter = 'HEX file|*.hex'
-            FilterIndex = 0
-            HideDirectories = False
-            ButtonWidth = 23
-            NumGlyphs = 1
-            ParentShowHint = False
-            ShowHint = True
-            TabOrder = 0
-            OnKeyPress = fnEditKeyPress
-          end
           object btnEditApp: TButton
             Left = 13
             Height = 25
@@ -498,7 +481,7 @@ object FormMain: TFormMain
             OnClick = btnEditAppClick
             ParentShowHint = False
             ShowHint = True
-            TabOrder = 1
+            TabOrder = 0
           end
           object btnEditLock: TButton
             Left = 187
@@ -510,7 +493,7 @@ object FormMain: TFormMain
             OnClick = btnEditLockClick
             ParentShowHint = False
             ShowHint = True
-            TabOrder = 2
+            TabOrder = 1
           end
           object btnEditFuse: TButton
             Left = 129
@@ -522,7 +505,7 @@ object FormMain: TFormMain
             OnClick = btnEditFuseClick
             ParentShowHint = False
             ShowHint = True
-            TabOrder = 3
+            TabOrder = 2
           end
           object btnEditEE: TButton
             Left = 71
@@ -534,7 +517,7 @@ object FormMain: TFormMain
             OnClick = btnEditEEClick
             ParentShowHint = False
             ShowHint = True
-            TabOrder = 4
+            TabOrder = 3
           end
           object btnEditUsrSig: TButton
             Left = 245
@@ -546,7 +529,7 @@ object FormMain: TFormMain
             OnClick = btnEditUsrSigClick
             ParentShowHint = False
             ShowHint = True
-            TabOrder = 5
+            TabOrder = 4
           end
           object lbledtFuse: TLabeledEdit
             Left = 57
@@ -567,9 +550,9 @@ object FormMain: TFormMain
             EditLabel.ParentColor = False
             LabelPosition = lpLeft
             ParentShowHint = False
+            ReadOnly = True
             ShowHint = True
-            TabOrder = 6
-            OnKeyPress = lbledtTargetKeyPress
+            TabOrder = 5
           end
           object lbledtLock: TLabeledEdit
             Left = 197
@@ -590,9 +573,9 @@ object FormMain: TFormMain
             EditLabel.ParentColor = False
             LabelPosition = lpLeft
             ParentShowHint = False
+            ReadOnly = True
             ShowHint = True
-            TabOrder = 7
-            OnKeyPress = lbledtTargetKeyPress
+            TabOrder = 6
           end
           object chkboxNoconnect: TCheckBox
             Left = 304
@@ -603,7 +586,7 @@ object FormMain: TFormMain
             Caption = 'N.C.'
             ParentShowHint = False
             ShowHint = True
-            TabOrder = 8
+            TabOrder = 7
           end
           object btnEditCali: TButton
             Left = 303
@@ -615,7 +598,7 @@ object FormMain: TFormMain
             OnClick = btnEditCaliClick
             ParentShowHint = False
             ShowHint = True
-            TabOrder = 9
+            TabOrder = 8
           end
           object lbledtCali: TLabeledEdit
             Left = 57
@@ -636,9 +619,9 @@ object FormMain: TFormMain
             EditLabel.ParentColor = False
             LabelPosition = lpLeft
             ParentShowHint = False
+            ReadOnly = True
             ShowHint = True
-            TabOrder = 10
-            OnKeyPress = lbledtTargetKeyPress
+            TabOrder = 9
           end
           object lbledtUsrSig: TLabeledEdit
             Left = 197
@@ -659,9 +642,9 @@ object FormMain: TFormMain
             EditLabel.ParentColor = False
             LabelPosition = lpLeft
             ParentShowHint = False
+            ReadOnly = True
             ShowHint = True
-            TabOrder = 11
-            OnKeyPress = lbledtTargetKeyPress
+            TabOrder = 10
           end
           object chkboxNowarning: TCheckBox
             Left = 304
@@ -672,7 +655,31 @@ object FormMain: TFormMain
             Caption = 'N.W.'
             ParentShowHint = False
             ShowHint = True
+            TabOrder = 11
+          end
+          object cbboxInputFile: TComboBox
+            Left = 58
+            Height = 24
+            Top = 5
+            Width = 243
+            ItemHeight = 16
+            OnChange = cbboxInputFileChange
+            ParentShowHint = False
+            ShowHint = True
+            Style = csDropDownList
             TabOrder = 12
+          end
+          object btnOpenFile: TButton
+            Left = 305
+            Height = 25
+            Hint = 'Open HEX File'
+            Top = 4
+            Width = 43
+            Caption = '&Open'
+            OnClick = btnOpenFileClick
+            ParentShowHint = False
+            ShowHint = True
+            TabOrder = 13
           end
         end
         object gbOperation: TGroupBox
@@ -801,7 +808,7 @@ object FormMain: TFormMain
           end
           object fnFW: TFileNameEdit
             Left = 16
-            Height = 23
+            Height = 24
             Top = 7
             Width = 128
             DialogTitle = 'Select Firmware'
@@ -823,9 +830,6 @@ object FormMain: TFormMain
             TabOrder = 2
           end
         end
-      end
-      object tsPIC8: TTabSheet
-        Caption = 'PIC8'
       end
       object tsSTM8: TTabSheet
         Caption = 'STM8'
@@ -895,12 +899,12 @@ object FormMain: TFormMain
   end
   object tiMain: TTrayIcon
     OnClick = tiMainClick
-    left = 712
-    top = 472
+    left = 688
+    top = 488
   end
   object pmTray: TPopupMenu
-    left = 680
-    top = 472
+    left = 648
+    top = 488
     object miExit: TMenuItem
       Caption = 'exit'
       OnClick = miExitClick
@@ -910,7 +914,13 @@ object FormMain: TFormMain
     Enabled = False
     Interval = 10
     OnTimer = tDelayTimer
-    left = 648
-    top = 472
+    left = 608
+    top = 488
+  end
+  object odInputFile: TOpenDialog
+    DefaultExt = '.hex'
+    Filter = 'HEX File|*.hex'
+    left = 552
+    top = 488
   end
 end

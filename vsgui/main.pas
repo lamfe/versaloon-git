@@ -6,8 +6,8 @@ interface
 
 uses
   Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs, ComCtrls,
-  StdCtrls, EditBtn, ExtCtrls, cli_caller{, hexeditor}, parameditor, Menus,
-  Synaser, com_setup;
+  StdCtrls, EditBtn, ExtCtrls, cli_caller, parameditor, Menus, Buttons, Synaser,
+  com_setup, fileselector;
 
 type
 
@@ -28,6 +28,14 @@ type
     usrsig_bytelen: integer;
     usrsig_default: integer;
   end;
+
+  TTargetFileSetting = record
+    target: string;
+    filename: string;
+    seg_offset: integer;
+    addr_offset: integer;
+  end;
+
   { TFormMain }
 
   TFormMain = class(TForm)
@@ -39,6 +47,7 @@ type
     btnUpdate: TButton;
     btnSVFPlayerRun: TButton;
     btnEditCali: TButton;
+    btnOpenFile: TButton;
     cbboxOpenOCDInterface: TComboBox;
     cbboxOpenOCDScript: TComboBox;
     cbboxOpenOCDTarget: TComboBox;
@@ -51,6 +60,7 @@ type
     chkboxEE: TCheckBox;
     cbboxMode: TComboBox;
     cbboxCOM: TComboBox;
+    cbboxInputFile: TComboBox;
     edtSVFOption: TEdit;
     edtOpenOCDOption: TEdit;
     fneditSVFFile: TFileNameEdit;
@@ -68,7 +78,6 @@ type
     chkboxEraseBeforeWrite: TCheckBox;
     chkboxLock: TCheckBox;
     chkboxVerifyAfterWrite: TCheckBox;
-    fnEdit: TFileNameEdit;
     gbInputFile: TGroupBox;
     gbOperation: TGroupBox;
     gbOption: TGroupBox;
@@ -94,6 +103,7 @@ type
     memoInfo: TMemo;
     memoLog: TMemo;
     miExit: TMenuItem;
+    odInputFile: TOpenDialog;
     pgbarMain: TProgressBar;
     pnlMain: TPanel;
     pcMain: TPageControl;
@@ -104,7 +114,6 @@ type
     tDelay: TTimer;
     tsCOMISP: TTabSheet;
     tsJTAG: TTabSheet;
-    tsPIC8: TTabSheet;
     tsAVR8: TTabSheet;
     tsEEPROM: TTabSheet;
     tiMain: TTrayIcon;
@@ -121,6 +130,7 @@ type
     procedure btnEditLockClick(Sender: TObject);
     procedure btnEditUsrSigClick(Sender: TObject);
     procedure btnEraseClick(Sender: TObject);
+    procedure btnOpenFileClick(Sender: TObject);
     procedure btnOpenOCDRunClick(Sender: TObject);
     procedure btnOpenOCDStopClick(Sender: TObject);
     procedure btnReadClick(Sender: TObject);
@@ -129,19 +139,16 @@ type
     procedure btnUpdateClick(Sender: TObject);
     procedure btnVerifyClick(Sender: TObject);
     procedure btnWriteClick(Sender: TObject);
+    procedure cbboxInputFileChange(Sender: TObject);
     procedure cbboxModeChange(Sender: TObject);
     procedure cbboxTargetChange(Sender: TObject);
-    procedure edtExtraParaKeyPress(Sender: TObject; var Key: char);
-    procedure edtFuseKeyPress(Sender: TObject; var Key: char);
-    procedure edtLockKeyPress(Sender: TObject; var Key: char);
-    procedure fnEditKeyPress(Sender: TObject; var Key: char);
     procedure FormActivate(Sender: TObject);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormResize(Sender: TObject);
     procedure FormShow(Sender: TObject);
-    procedure lbledtTargetKeyPress(Sender: TObject; var Key: char);
+    procedure lbledtExtraParaKeyPress(Sender: TObject; var Key: char);
     procedure miExitClick(Sender: TObject);
     procedure pcMainChanging(Sender: TObject; var AllowChange: Boolean);
     procedure pcMainPageChanged(Sender: TObject);
@@ -211,8 +218,6 @@ type
     function AVR8_Init_Para(line: string; var setting: TTargetSetting): boolean;
     procedure AVR8_Update_Chip(setting: TTargetSetting);
     procedure AVR8_Update_Mode(m_str: string);
-    { PIC8 declarations }
-    function PIC8_Init(): boolean;
     { COMISP declarations }
     function COMISP_Init(): boolean;
     function COMISP_Init_Para(line: string; var setting: TTargetSetting): boolean;
@@ -242,6 +247,7 @@ var
   OpenOCD_Caller: TCLI_Caller;
   ComMode: TComMode;
   ComModeInit: TComMode;
+  TargetFile: array of TTargetFileSetting;
 
 const
   DEBUG_LOG_SHOW: boolean = FALSE;
@@ -251,9 +257,9 @@ const
   VSPROG_STR: string = {$IFDEF UNIX}'vsprog'{$ELSE}'vsprog.exe'{$ENDIF};
   OPENOCD_APP_STR: string = {$IFDEF UNIX}'openocd'{$ELSE}'openocd.exe'{$ENDIF};
   SLASH_STR: string = {$IFDEF UNIX}'/'{$ELSE}'\'{$ENDIF};
-  COMSETUP_STR: string = 'COM Setup';
+  COMSETUP_STR: string = '&COM Setup';
   COMSETUP_HINT: string = 'Setup COM Port';
-  AUTODETECT_STR: string = 'AutoDetect';
+  AUTODETECT_STR: string = '&AutoDetect';
   AUTODETECT_HINT: string = 'Detect Target Module';
   FREQ_STR:string = 'Freq(KHz):';
   FREQ_HINT: string = 'Set operation frequency';
@@ -271,6 +277,58 @@ const
   USRSIG_CHAR: string = 's';
 
 implementation
+
+procedure ClearTargetFile();
+begin
+  SetLength(TargetFile, 0);
+end;
+
+procedure RemoveTargetFile(name: string);
+var
+  i, j: integer;
+  found: boolean;
+begin
+  found := FALSE;
+  for i := 0 to Length(TargetFile) - 1 do
+  begin
+    if TargetFile[i].target = name then
+    begin
+      found := TRUE;
+    end;
+  end;
+  if found then
+  begin
+    for j := i to Length(TargetFile) - 2 do
+    begin
+      TargetFile[j] := TargetFile[j + 1];
+    end;
+    SetLength(TargetFile, Length(TargetFile) - 1);
+  end;
+end;
+
+procedure AddTargetFile(name: string; seg_offset, addr_offset: integer);
+var
+  i: integer;
+  found: boolean;
+begin
+  found := FALSE;
+  for i := 0 to Length(TargetFile) - 1 do
+  begin
+    if TargetFile[i].target = name then
+    begin
+      found := TRUE;
+    end;
+  end;
+  if not found then
+  begin
+    SetLength(TargetFile, Length(TargetFile) + 1);
+    i := Length(TargetFile) - 1;
+    TargetFile[i].target := name;
+    TargetFile[i].filename := '';
+    TargetFile[i].seg_offset := seg_offset;
+    TargetFile[i].addr_offset := addr_offset;
+  end;
+end;
 
 { TFormMain }
 
@@ -292,7 +350,7 @@ begin
 
   lblTarget.Top := cbboxTarget.Top + (cbboxTarget.Height - lblTarget.Height) div 2;
   btnTargetDetect.Top := cbboxTarget.Top + (cbboxTarget.Height - btnTargetDetect.Height) div 2;
-  lblInputFile.Top := fnEdit.Top + (fnEdit.Height - lblInputFile.Height) div 2;
+  lblInputFile.Top := cbboxInputFile.Top + (cbboxInputFile.Height - lblInputFile.Height) div 2;
   lblMode.Top := cbboxMode.Top + (cbboxMode.Height - lblMode.Height) div 2;
   Caption := APP_STR + ' ' + VERSION_STR;
 
@@ -303,7 +361,6 @@ begin
   tiMain.PopUpMenu := pmTray;
   tiMain.Show;
 
-  tsPIC8.TabVisible := FALSE;
   tsSTM8.TabVisible := FALSE;
   tsEEPROM.TabVisible := FALSE;
 
@@ -332,6 +389,30 @@ procedure TFormMain.FormShow(Sender: TObject);
 begin
   FormResize(Sender);
   UpdateShowing;
+end;
+
+procedure TFormMain.lbledtExtraParaKeyPress(Sender: TObject; var Key: char);
+begin
+  if Key = #13 then
+  begin
+    if Pos('show all support', lbledtExtraPara.Text) = 1 then
+    begin
+      tsSTM8.TabVisible := TRUE;
+      tsEEPROM.TabVisible := TRUE;
+      lbledtExtraPara.Text := '';
+    end
+    else if Pos('show debug log', lbledtExtraPara.Text) = 1 then
+    begin
+      ShowDebugLog();
+      lbledtExtraPara.Text := '';
+    end
+    else if lbledtExtraPara.Text = 'exit' then
+    begin
+      Close;
+    end;
+
+    Key := #0;
+  end;
 end;
 
 procedure TFormMain.miExitClick(Sender: TObject);
@@ -390,11 +471,6 @@ begin
   end;
 end;
 
-procedure TFormMain.lbledtTargetKeyPress(Sender: TObject; var Key: char);
-begin
-  Key := #0;
-end;
-
 procedure TFormMain.pcMainPageChanged(Sender: TObject);
 var
   index: integer;
@@ -408,6 +484,8 @@ begin
   end;
 
   SetLength(TargetSetting, 0);
+  ClearTargetFile();
+  cbboxInputFile.Clear;
 
   // initialize GUI
   if pcMain.ActivePage = tsAbout then
@@ -491,10 +569,6 @@ begin
     else if pcMain.ActivePage = tsAVR8 then
     begin
       TargetType := TT_AVR8;
-    end
-    else if pcMain.ActivePage = tsPIC8 then
-    begin
-      TargetType := TT_PIC8;
     end
     else if pcMain.ActivePage = tsCOMISP then
     begin
@@ -759,6 +833,50 @@ begin
   LogInfo('Running...');
   caller.Run(@VSProg_CommonCallback, FALSE, TRUE);
   LogInfo('Idle');
+end;
+
+procedure TFormMain.btnOpenFileClick(Sender: TObject);
+var
+  i, file_num, valid_filename_num: integer;
+begin
+  file_num := Length(TargetFile);
+  if file_num > 1 then
+  begin
+    FormFileSelector.Reset;
+    for i := 0 to file_num - 1 do
+    begin
+      FormFileSelector.AddFileSetting(TargetFile[i].target, TargetFile[i].filename);
+    end;
+    if mrOK = FormFileSelector.ShowModal then
+    begin
+      cbboxInputFile.Clear;
+      valid_filename_num := 0;
+      for i := 0 to file_num - 1 do
+      begin
+        TargetFile[i].filename := FormFileSelector.GetFileNameByTargetName(TargetFile[i].target);
+        if TargetFile[i].filename <> '' then
+        begin
+          cbboxInputFile.Items.Add(TargetFile[i].filename);
+          valid_filename_num := valid_filename_num + 1;
+        end;
+      end;
+      if valid_filename_num > 0 then
+      begin
+        cbboxInputFile.Items.Insert(0, 'ALL');
+        cbboxInputFile.ItemIndex := 0;
+        cbboxInputFile.Hint := 'ALL';
+      end;
+    end;
+  end
+  else
+  begin
+    if odInputFile.Execute then
+    begin
+      cbboxInputFile.Clear;
+      cbboxInputFile.Items.Add(odInputFile.FileName);
+      cbboxInputFile.ItemIndex := 0;
+    end;
+  end;
 end;
 
 procedure TFormMain.btnOpenOCDRunClick(Sender: TObject);
@@ -1088,6 +1206,11 @@ begin
   LogInfo('Idle');
 end;
 
+procedure TFormMain.cbboxInputFileChange(Sender: TObject);
+begin
+  cbboxInputFile.Hint := cbboxInputFile.Text;
+end;
+
 procedure TFormMain.cbboxModeChange(Sender: TObject);
 var
   str_tmp: string;
@@ -1216,63 +1339,6 @@ begin
   AdjustComponentColor(lbledtFreq);
 end;
 
-procedure TFormMain.edtExtraParaKeyPress(Sender: TObject; var Key: char);
-begin
-  if Key = #13 then
-  begin
-    fnEditKeyPress(fnEdit, Key);
-  end;
-end;
-
-procedure TFormMain.edtFuseKeyPress(Sender: TObject; var Key: char);
-begin
-  if Key = #13 then
-  begin
-    fnEditKeyPress(fnEdit, Key);
-  end;
-end;
-
-procedure TFormMain.edtLockKeyPress(Sender: TObject; var Key: char);
-begin
-  if Key = #13 then
-  begin
-    fnEditKeyPress(fnEdit, Key);
-  end;
-end;
-
-procedure TFormMain.fnEditKeyPress(Sender: TObject; var Key: char);
-begin
-  if Key = #13 then
-  begin
-    if Pos('show all support', fnEdit.Text) = 1 then
-    begin
-      tsPSoC1.TabVisible := TRUE;
-      tsC8051F.TabVisible := TRUE;
-      tsAT89S5X.TabVisible := TRUE;
-      tsMSP430.TabVisible := TRUE;
-      tsSTM8.TabVisible := TRUE;
-      fnEdit.Text := '';
-    end
-    else if Pos('show debug log', fnEdit.Text) = 1 then
-    begin
-      ShowDebugLog();
-      fnEdit.Text := '';
-    end
-    else if fnEdit.Text = 'exit' then
-    begin
-      Close;
-    end
-    else
-    begin
-      // write the file
-      fnEdit.SelectAll;
-      btnWrite.Click;
-    end;
-
-    Key := #0;
-  end;
-end;
-
 procedure TFormMain.FormActivate(Sender: TObject);
 begin
   FormResize(Sender);
@@ -1381,6 +1447,8 @@ begin
 end;
 
 procedure TFormMain.PrepareBaseParameters();
+var
+  i: integer;
 begin
   caller.AddParameter(GetTargetDefineParameters());
 
@@ -1398,9 +1466,26 @@ begin
   end;
 
   // input file
-  if fnEdit.Text <> '' then
+  if cbboxInputFile.ItemIndex > 0 then
   begin
-    caller.AddParameter('I"' + fnEdit.Text + '"');
+    // enable selected input file
+    i := cbboxInputFile.ItemIndex - 1;
+    caller.AddParameter('I"' + TargetFile[i].filename + '@'
+                             + IntToStr(TargetFile[i].seg_offset) + ','
+                             + IntToStr(TargetFile[i].addr_offset) + '"');
+  end
+  else
+  begin
+    // enable all input file
+    for i := 0 to Length(TargetFile) - 1 do
+    begin
+      if TargetFile[i].filename <> '' then
+      begin
+        caller.AddParameter('I"' + TargetFile[i].filename + '@'
+                                 + IntToStr(TargetFile[i].seg_offset) + ','
+                                 + IntToStr(TargetFile[i].addr_offset) + '"');
+      end;
+    end;
   end;
 
   // extra parameters
@@ -1480,8 +1565,6 @@ begin
       success := EEPROM_Init();
     TT_AVR8:
       success := AVR8_Init();
-    TT_PIC8:
-      success := PIC8_Init();
     TT_COMISP:
       success := COMISP_Init();
     TT_LPCICP:
@@ -1499,8 +1582,6 @@ begin
     gbInputFile.Parent := pcMain.ActivePage;
     gbOption.Parent := pcMain.ActivePage;
     gbOperation.Parent := pcMain.ActivePage;
-    ActiveControl := fnEdit;
-    fnEdit.SelectAll;
 
     cbboxTargetChange(cbboxTarget);
 
@@ -2500,7 +2581,7 @@ begin
 
   VSProg_TargetSettingInit(setting);
   setting.mode := 'ijps';
-  setting.target := FLASH_CHAR + FUSE_CHAR + LOCK_CHAR + CALI_CHAR;
+  setting.target := FLASH_CHAR + FUSE_CHAR + LOCK_CHAR + CALI_CHAR + EEPROM_CHAR;
   setting.fuse_bytelen := 3;
   setting.fuse_default := $FFFFFF;
   setting.lock_bytelen := 1;
@@ -2508,6 +2589,8 @@ begin
   setting.cali_bytelen := 4;
   setting.cali_default := $FFFFFFFF;
   VSProg_AddTargetSetting(setting);
+  AddTargetFile('Flash', 0, 0);
+  AddTargetFile('EEPROM', 2, 0);
 
   // call 'vsprog -Savr8' to extract supported avr8 targets
   if not PrepareToRunCLI() then
@@ -2536,9 +2619,20 @@ begin
 end;
 
 function TFormMain.AVR8_Init_Para(line: string; var setting: TTargetSetting): boolean;
+var
+  size: integer;
 begin
   FormParaEditor.GetStringParameter(line, 'prog_mode', setting.mode);
-  setting.target := FLASH_CHAR + FUSE_CHAR + LOCK_CHAR + CALI_CHAR;
+  size := 0;
+  FormParaEditor.GetIntegerParameter(line, 'eeprom_size', size);
+  if size > 0 then
+  begin
+    setting.target := FLASH_CHAR + FUSE_CHAR + LOCK_CHAR + CALI_CHAR + EEPROM_CHAR;
+  end
+  else
+  begin
+    setting.target := FLASH_CHAR + FUSE_CHAR + LOCK_CHAR + CALI_CHAR;
+  end;
   result := TRUE;
 end;
 
@@ -2575,7 +2669,27 @@ begin
     cbboxMode.ItemIndex := 0;
     AVR8_Update_Mode(cbboxMode.Text);
   end;
+
+  str_tmp := setting.target;
+  if Pos(FLASH_CHAR, str_tmp) > 0 then
+  begin
+    AddTargetFile('Flash', 0, 0);
+  end
+  else
+  begin
+    RemoveTargetFile('Flash');
+  end;
+  if Pos(EEPROM_CHAR, str_tmp) > 0 then
+  begin
+    AddTargetFile('EEPROM', 2, 0);
+  end
+  else
+  begin
+    RemoveTargetFile('EEPROM');
+  end;
+
   // Fuse, Lock and Cali are not enabled by default
+  chkboxEE.Checked := FALSE;
   chkboxFuse.Checked := FALSE;
   chkboxLock.Checked := FALSE;
   chkboxCali.Checked := FALSE;
@@ -2591,46 +2705,6 @@ begin
   begin
     lbledtFreq.Enabled := FALSE;
   end;
-end;
-
-{ PIC8 implementations }
-function TFormMain.PIC8_Init(): boolean;
-var
-  setting: TTargetSetting;
-begin
-  result := TRUE;
-
-  cbboxTarget.Clear;
-  cbboxTarget.Items.Add('pic8');
-
-  VSProg_TargetSettingInit(setting);
-  setting.target := FLASH_CHAR;
-  VSProg_AddTargetSetting(setting);
-
-  // call 'vsprog -Spic8' to extract supported pic8 targets
-  if not PrepareToRunCLI() then
-  begin
-    result := FALSE;
-    exit;
-  end;
-  caller.AddParameter('Spic8');
-  LogInfo('Running...');
-  caller.Run(@VSProg_CommonParseSupportCallback, FALSE, TRUE);
-  LogInfo('Idle');
-
-  if bFatalError then
-  begin
-    tsPIC8.Enabled := FALSE;
-    result := FALSE;
-    exit;
-  end
-  else
-  begin
-    cbboxTarget.ItemIndex := 0;
-  end;
-
-  // Autodetect
-  VSProg_CommonInit('A');
 end;
 
 { COMISP declarations }
