@@ -868,14 +868,20 @@ begin
       cbboxInputFileChange(cbboxInputFile);
     end;
   end
-  else
+  else if odInputFile.Execute then
   begin
-    if odInputFile.Execute then
+    cbboxInputFile.Clear;
+    if file_num > 0 then
     begin
-      cbboxInputFile.Clear;
+      cbboxInputFile.Items.Add(TargetFile[0].target + ':' + odInputFile.FileName);
+      TargetFile[0].filename := odInputFile.FileName;
+    end
+    else
+    begin
       cbboxInputFile.Items.Add(odInputFile.FileName);
-      cbboxInputFile.ItemIndex := 0;
     end;
+    cbboxInputFile.ItemIndex := 0;
+    cbboxInputFileChange(cbboxInputFile);
   end;
 end;
 
