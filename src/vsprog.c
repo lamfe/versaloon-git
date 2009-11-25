@@ -264,6 +264,7 @@ int main(int argc, char* argv[])
 	uint32_t i, j, argu_num;
 	uint32_t require_hex_file_for_read = 0;
 	uint32_t require_hex_file_for_write = 0;
+	uint32_t seg_offset, addr_offset;
 	char *cur_pointer, *end_pointer;
 	RESULT ret;
 	
@@ -616,7 +617,23 @@ int main(int argc, char* argv[])
 				strcpy((char *)optarg, optarg + 1);
 			}
 			
-			if (ERROR_OK != FILELIST_Add(&fl_in, optarg, 0, 0, "r"))
+			for (i = strlen(optarg) - 1; i > 0; i--)
+			{
+				if ('@' == optarg[i])
+				{
+					break;
+				}
+			}
+			seg_offset = addr_offset = 0;
+			if ((i > 0) && (i != (sizeof(optarg) - 1)))
+			{
+				optarg[i] = '\0';
+				sscanf((const char *)&optarg[i + 1], "%d,%d", 
+						&seg_offset, &addr_offset);
+			}
+			
+			if (ERROR_OK != 
+					FILELIST_Add(&fl_in, optarg, seg_offset, addr_offset, "r"))
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_HANDLE_DEVICE), 
 							"add file", optarg);
@@ -632,7 +649,23 @@ int main(int argc, char* argv[])
 				strcpy((char *)optarg, optarg + 1);
 			}
 			
-			if (ERROR_OK != FILELIST_Add(&fl_out, optarg, 0, 0, "w"))
+			for (i = strlen(optarg) - 1; i > 0; i--)
+			{
+				if ('@' == optarg[i])
+				{
+					break;
+				}
+			}
+			seg_offset = addr_offset = 0;
+			if ((i > 0) && (i != (sizeof(optarg) - 1)))
+			{
+				optarg[i] = '\0';
+				sscanf((const char *)&optarg[i + 1], "%d,%d", 
+						&seg_offset, &addr_offset);
+			}
+			
+			if (ERROR_OK != 
+					FILELIST_Add(&fl_in, optarg, seg_offset, addr_offset, "w"))
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_HANDLE_DEVICE), 
 							"add file", optarg);
@@ -861,7 +894,8 @@ int main(int argc, char* argv[])
 								fl->seg_offset, fl->addr_offset);
 			if (ret != ERROR_OK)
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "parse input file");
+				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+							"parse input file");
 				free_all_and_exit(EXIT_FAILURE);
 			}
 			

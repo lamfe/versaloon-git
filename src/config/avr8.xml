@@ -89,6 +89,7 @@
     <ee_page_size>4</ee_page_size>
     <ee_page_num>16</ee_page_num>
     <param0>0</param0>
+    <param1>1</param1>
     <fuse init="0xFFFF" bytesize="2">
       <warning>
         <w mask="0x0100" value="0x0000" msg="WARNING! Disabling external reset will make the ISP interface inaccessible!" />
@@ -184,6 +185,7 @@
     <ee_page_size>4</ee_page_size>
     <ee_page_num>32</ee_page_num>
     <param0>0</param0>
+    <param1>1</param1>
     <fuse init="0xFFFFFF" bytesize="3">
       <warning>
         <w mask="0x008000" value="0x000000" msg="WARNING! Disabling external reset will make the ISP interface inaccessible!" />
@@ -277,6 +279,7 @@
     <ee_page_size>4</ee_page_size>
     <ee_page_num>64</ee_page_num>
     <param0>0</param0>
+    <param1>1</param1>
     <fuse init="0xFFFFFF" bytesize="3">
       <warning>
         <w mask="0x008000" value="0x000000" msg="WARNING! Disabling external reset will make the ISP interface inaccessible!" />
@@ -370,6 +373,7 @@
     <ee_page_size>4</ee_page_size>
     <ee_page_num>128</ee_page_num>
     <param0>0</param0>
+    <param1>1</param1>
     <fuse init="0xFFFFFF" bytesize="3">
       <warning>
         <w mask="0x008000" value="0x000000" msg="WARNING! Disabling external reset will make the ISP interface inaccessible!" />
@@ -463,6 +467,7 @@
     <ee_page_size>4</ee_page_size>
     <ee_page_num>32</ee_page_num>
     <param0>0</param0>
+    <param1>1</param1>
     <fuse init="0xFFFFFF" bytesize="3">
       <warning>
         <w mask="0x008000" value="0x000000" msg="WARNING! Disabling external reset will make the ISP interface inaccessible!" />
@@ -561,6 +566,7 @@
     <ee_page_size>4</ee_page_size>
     <ee_page_num>64</ee_page_num>
     <param0>0</param0>
+    <param1>1</param1>
     <fuse init="0xFFFFFF" bytesize="3">
       <warning>
         <w mask="0x008000" value="0x000000" msg="WARNING! Disabling external reset will make the ISP interface inaccessible!" />
@@ -659,6 +665,7 @@
     <ee_page_size>4</ee_page_size>
     <ee_page_num>128</ee_page_num>
     <param0>0</param0>
+    <param1>1</param1>
     <fuse init="0xFFFFFF" bytesize="3">
       <warning>
         <w mask="0x008000" value="0x000000" msg="WARNING! Disabling external reset will make the ISP interface inaccessible!" />
@@ -757,6 +764,7 @@
     <ee_page_size>4</ee_page_size>
     <ee_page_num>32</ee_page_num>
     <param0>0</param0>
+    <param1>1</param1>
     <fuse init="0xFFFF" bytesize="2">
       <warning>
         <w mask="0x0100" value="0x0000" msg="WARNING! Disabling external reset will make the ISP interface inaccessible!" />
@@ -903,6 +911,7 @@
     <ee_page_size>4</ee_page_size>
     <ee_page_num>16</ee_page_num>
     <param0>0</param0>
+    <param1>1</param1>
     <fuse init="0xFFFFFF" bytesize="3">
       <warning>
         <w mask="0x008000" value="0x000000" msg="WARNING! Disabling external reset will make the ISP interface inaccessible!" />
@@ -957,6 +966,7 @@
     <ee_page_size>4</ee_page_size>
     <ee_page_num>16</ee_page_num>
     <param0>0</param0>
+    <param1>1</param1>
     <fuse init="0xFFFFFF" bytesize="3">
       <warning>
         <w mask="0x008000" value="0x000000" msg="WARNING! Disabling external reset will make the ISP interface inaccessible!" />
@@ -1011,6 +1021,7 @@
     <ee_page_size>4</ee_page_size>
     <ee_page_num>64</ee_page_num>
     <param0>0</param0>
+    <param1>1</param1>
     <fuse init="0xFFFFFF" bytesize="3">
       <warning>
         <w mask="0x008000" value="0x000000" msg="WARNING! Disabling external reset will make the ISP interface inaccessible!" />
@@ -1108,6 +1119,7 @@
     <ee_page_size>4</ee_page_size>
     <ee_page_num>64</ee_page_num>
     <param0>0</param0>
+    <param1>1</param1>
     <fuse init="0xFFFFFF" bytesize="3">
       <warning>
         <w mask="0x008000" value="0x000000" msg="WARNING! Disabling external reset will make the ISP interface inaccessible!" />
@@ -1205,6 +1217,7 @@
     <ee_page_size>4</ee_page_size>
     <ee_page_num>128</ee_page_num>
     <param0>0</param0>
+    <param1>1</param1>
     <fuse init="0xFFFFFF" bytesize="3">
       <warning>
         <w mask="0x008000" value="0x000000" msg="WARNING! Disabling external reset will make the ISP interface inaccessible!" />
@@ -1302,6 +1315,7 @@
     <ee_page_size>4</ee_page_size>
     <ee_page_num>32</ee_page_num>
     <param0>0</param0>
+    <param1>1</param1>
     <fuse init="0xFFFFFF" bytesize="3">
       <warning>
         <w mask="0x008000" value="0x000000" msg="WARNING! Disabling external reset will make the ISP interface inaccessible!" />
@@ -1392,6 +1406,7 @@
     <ee_page_size>8</ee_page_size>
     <ee_page_num>128</ee_page_num>
     <param0>0</param0>
+    <param1>1</param1>
     <fuse init="0xFFFFFF" bytesize="3">
       <warning>
         <w mask="0x004000" value="0x004000" msg="WARNING! These fuse settings will disable the JTAG interface!" />
@@ -1498,6 +1513,7 @@
     <ee_page_size>8</ee_page_size>
     <ee_page_num>256</ee_page_num>
     <param0>0</param0>
+    <param1>1</param1>
     <fuse init="0xFFFFFF" bytesize="3">
       <warning>
         <w mask="0x004000" value="0x004000" msg="WARNING! These fuse settings will disable the JTAG interface!" />
@@ -1604,6 +1620,7 @@
     <ee_page_size>8</ee_page_size>
     <ee_page_num>512</ee_page_num>
     <param0>0</param0>
+    <param1>1</param1>
     <fuse init="0xFFFFFF" bytesize="3">
       <warning>
         <w mask="0x004000" value="0x004000" msg="WARNING! These fuse settings will disable the JTAG interface!" />
@@ -1710,6 +1727,7 @@
     <ee_page_size>4</ee_page_size>
     <ee_page_num>128</ee_page_num>
     <param0>0</param0>
+    <param1>1</param1>
     <fuse init="0xFFFFFF" bytesize="3">
       <warning>
         <w mask="0x008000" value="0x000000" msg="WARNING! Disabling external reset will make the ISP interface inaccessible!" />
@@ -1823,6 +1841,7 @@
     <ee_page_size>4</ee_page_size>
     <ee_page_num>128</ee_page_num>
     <param0>0</param0>
+    <param1>1</param1>
     <fuse init="0xFFFFFF" bytesize="3">
       <warning>
         <w mask="0x008000" value="0x000000" msg="WARNING! Disabling external reset will make the ISP interface inaccessible!" />
@@ -1936,6 +1955,7 @@
     <ee_page_size>4</ee_page_size>
     <ee_page_num>128</ee_page_num>
     <param0>0</param0>
+    <param1>1</param1>
     <fuse init="0xFFFF" bytesize="2">
       <warning>
         <w mask="0x8000" value="0x0000" msg="WARNING! Disabling external reset will make the ISP interface inaccessible!" />
@@ -2056,6 +2076,7 @@
     <ee_page_size>4</ee_page_size>
     <ee_page_num>128</ee_page_num>
     <param0>1</param0>
+    <param1>1</param1>
     <fuse init="0xFFFF" bytesize="2">
       <warning>
         <w mask="0x8000" value="0x8000" msg="WARNING! These fuse settings will disable the JTAG interface!" />
@@ -2176,6 +2197,7 @@
     <ee_page_size>4</ee_page_size>
     <ee_page_num>256</ee_page_num>
     <param0>1</param0>
+    <param1>1</param1>
     <fuse init="0xFFFF" bytesize="2">
       <warning>
         <w mask="0x8000" value="0x8000" msg="WARNING! These fuse settings will disable the JTAG interface!" />
@@ -2296,6 +2318,7 @@
     <ee_page_size>4</ee_page_size>
     <ee_page_num>64</ee_page_num>
     <param0>0</param0>
+    <param1>1</param1>
     <fuse init="0xFFFFFF" bytesize="3">
       <warning>
         <w mask="0x008000" value="0x000000" msg="WARNING! Disabling external reset will make the ISP interface inaccessible!" />
@@ -2396,6 +2419,7 @@
     <ee_page_size>4</ee_page_size>
     <ee_page_num>128</ee_page_num>
     <param0>0</param0>
+    <param1>1</param1>
     <fuse init="0xFFFFFF" bytesize="3">
       <warning>
         <w mask="0x008000" value="0x000000" msg="WARNING! Disabling external reset will make the ISP interface inaccessible!" />
@@ -2514,6 +2538,7 @@
     <ee_page_size>4</ee_page_size>
     <ee_page_num>128</ee_page_num>
     <param0>0</param0>
+    <param1>1</param1>
     <fuse init="0xFFFFFF" bytesize="3">
       <warning>
         <w mask="0x008000" value="0x000000" msg="WARNING! Disabling external reset will make the ISP interface inaccessible!" />
@@ -2632,6 +2657,7 @@
     <ee_page_size>4</ee_page_size>
     <ee_page_num>128</ee_page_num>
     <param0>1</param0>
+    <param1>1</param1>
     <fuse init="0xFFFFFF" bytesize="3">
       <warning>
         <w mask="0x004000" value="0x004000" msg="WARNING! These fuse settings will disable the JTAG interface!" />
@@ -2746,6 +2772,7 @@
     <ee_page_size>4</ee_page_size>
     <ee_page_num>128</ee_page_num>
     <param0>0</param0>
+    <param1>1</param1>
     <fuse init="0xFFFFFF" bytesize="3">
       <warning>
         <w mask="0x004000" value="0x004000" msg="WARNING! These fuse settings will disable the JTAG interface!" />
@@ -2864,6 +2891,7 @@
     <ee_page_size>4</ee_page_size>
     <ee_page_num>256</ee_page_num>
     <param0>0</param0>
+    <param1>1</param1>
     <fuse init="0xFFFFFF" bytesize="3">
       <warning>
         <w mask="0x004000" value="0x004000" msg="WARNING! These fuse settings will disable the JTAG interface!" />
@@ -2982,6 +3010,7 @@
     <ee_page_size>8</ee_page_size>
     <ee_page_num>256</ee_page_num>
     <param0>0</param0>
+    <param1>1</param1>
     <fuse init="0xFFFFFF" bytesize="3">
       <warning>
         <w mask="0x004000" value="0x004000" msg="WARNING! These fuse settings will disable the JTAG interface!" />
@@ -3100,6 +3129,7 @@
     <ee_page_size>4</ee_page_size>
     <ee_page_num>128</ee_page_num>
     <param0>0</param0>
+    <param1>1</param1>
     <fuse init="0xFFFFFF" bytesize="3">
       <warning>
         <w mask="0x010000" value="0x000000" msg="WARNING! Disabling external reset will make the ISP interface inaccessible!" />
@@ -3209,6 +3239,7 @@
     <ee_page_size>4</ee_page_size>
     <ee_page_num>128</ee_page_num>
     <param0>0</param0>
+    <param1>1</param1>
     <fuse init="0xFFFFFF" bytesize="3">
       <warning>
         <w mask="0x010000" value="0x000000" msg="WARNING! Disabling external reset will make the ISP interface inaccessible!" />
@@ -3318,6 +3349,7 @@
     <ee_page_size>4</ee_page_size>
     <ee_page_num>256</ee_page_num>
     <param0>0</param0>
+    <param1>1</param1>
     <fuse init="0xFFFFFF" bytesize="3">
       <warning>
         <w mask="0x010000" value="0x000000" msg="WARNING! Disabling external reset will make the ISP interface inaccessible!" />
@@ -3427,6 +3459,7 @@
     <ee_page_size>4</ee_page_size>
     <ee_page_num>256</ee_page_num>
     <param0>0</param0>
+    <param1>1</param1>
     <fuse init="0xFFFFFF" bytesize="3">
       <warning>
         <w mask="0x010000" value="0x000000" msg="WARNING! Disabling external reset will make the ISP interface inaccessible!" />
@@ -3536,6 +3569,7 @@
     <ee_page_size>8</ee_page_size>
     <ee_page_num>256</ee_page_num>
     <param0>0</param0>
+    <param1>1</param1>
     <fuse init="0xFFFFFF" bytesize="3">
       <warning>
         <w mask="0x004000" value="0x004000" msg="WARNING! These fuse settings will disable the JTAG interface!" />
@@ -3659,6 +3693,7 @@
     <ee_page_size>8</ee_page_size>
     <ee_page_num>256</ee_page_num>
     <param0>0</param0>
+    <param1>1</param1>
     <fuse init="0xFFFFFF" bytesize="3">
       <warning>
         <w mask="0x010000" value="0x000000" msg="WARNING! Disabling external reset will make the ISP interface inaccessible!" />
@@ -3768,6 +3803,7 @@
     <ee_page_size>8</ee_page_size>
     <ee_page_num>256</ee_page_num>
     <param0>0</param0>
+    <param1>1</param1>
     <fuse init="0xFFFFFF" bytesize="3">
       <warning>
         <w mask="0x010000" value="0x000000" msg="WARNING! Disabling external reset will make the ISP interface inaccessible!" />
@@ -3877,6 +3913,7 @@
     <ee_page_size>4</ee_page_size>
     <ee_page_num>256</ee_page_num>
     <param0>0</param0>
+    <param1>1</param1>
     <fuse init="0xFFFFFF" bytesize="3">
       <warning>
         <w mask="0x010000" value="0x000000" msg="WARNING! Disabling external reset will make the ISP interface inaccessible!" />
@@ -3986,6 +4023,7 @@
     <ee_page_size>4</ee_page_size>
     <ee_page_num>256</ee_page_num>
     <param0>0</param0>
+    <param1>1</param1>
     <fuse init="0xFFFFFF" bytesize="3">
       <warning>
         <w mask="0x010000" value="0x000000" msg="WARNING! Disabling external reset will make the ISP interface inaccessible!" />
@@ -4095,6 +4133,7 @@
     <ee_page_size>8</ee_page_size>
     <ee_page_num>256</ee_page_num>
     <param0>0</param0>
+    <param1>1</param1>
     <fuse init="0xFFFFFF" bytesize="3">
       <warning>
         <w mask="0x010000" value="0x000000" msg="WARNING! Disabling external reset will make the ISP interface inaccessible!" />
@@ -4204,6 +4243,7 @@
     <ee_page_size>8</ee_page_size>
     <ee_page_num>256</ee_page_num>
     <param0>0</param0>
+    <param1>1</param1>
     <fuse init="0xFFFFFF" bytesize="3">
       <warning>
         <w mask="0x010000" value="0x000000" msg="WARNING! Disabling external reset will make the ISP interface inaccessible!" />
@@ -4313,6 +4353,7 @@
     <ee_page_size>8</ee_page_size>
     <ee_page_num>512</ee_page_num>
     <param0>0</param0>
+    <param1>1</param1>
     <fuse init="0xFFFFFF" bytesize="3">
       <warning>
         <w mask="0x004000" value="0x004000" msg="WARNING! These fuse settings will disable the JTAG interface!" />
@@ -4431,6 +4472,7 @@
     <ee_page_size>8</ee_page_size>
     <ee_page_num>512</ee_page_num>
     <param0>0</param0>
+    <param1>1</param1>
     <fuse init="0xFFFFFF" bytesize="3">
       <warning>
         <w mask="0x004000" value="0x004000" msg="WARNING! These fuse settings will disable the JTAG interface!" />
@@ -4549,6 +4591,7 @@
     <ee_page_size>8</ee_page_size>
     <ee_page_num>512</ee_page_num>
     <param0>0</param0>
+    <param1>1</param1>
     <fuse init="0xFFFFFF" bytesize="3">
       <warning>
         <w mask="0x004000" value="0x004000" msg="WARNING! These fuse settings will disable the JTAG interface!" />
@@ -4667,6 +4710,7 @@
     <ee_page_size>8</ee_page_size>
     <ee_page_num>512</ee_page_num>
     <param0>0</param0>
+    <param1>1</param1>
     <fuse init="0xFFFFFF" bytesize="3">
       <warning>
         <w mask="0x004000" value="0x004000" msg="WARNING! These fuse settings will disable the JTAG interface!" />
@@ -4785,6 +4829,7 @@
     <ee_page_size>8</ee_page_size>
     <ee_page_num>512</ee_page_num>
     <param0>0</param0>
+    <param1>1</param1>
     <fuse init="0xFFFFFF" bytesize="3">
       <warning>
         <w mask="0x004000" value="0x004000" msg="WARNING! These fuse settings will disable the JTAG interface!" />
@@ -4903,6 +4948,7 @@
     <ee_page_size>4</ee_page_size>
     <ee_page_num>128</ee_page_num>
     <param0>0</param0>
+    <param1>1</param1>
     <fuse init="0xFFFF" bytesize="2">
       <warning>
         <w mask="0x2000" value="0x2000" msg="WARNING! These fuse settings will disable the ISP interface!" />
@@ -5022,6 +5068,7 @@
     <ee_page_size>4</ee_page_size>
     <ee_page_num>128</ee_page_num>
     <param0>0</param0>
+    <param1>1</param1>
     <fuse init="0xFFFF" bytesize="2">
       <warning>
         <w mask="0x2000" value="0x2000" msg="WARNING! These fuse settings will disable the ISP interface!" />
@@ -5141,6 +5188,7 @@
     <ee_page_size>8</ee_page_size>
     <ee_page_num>512</ee_page_num>
     <param0>1</param0>
+    <param1>0</param1>
     <fuse init="0xFFFFFF" bytesize="3">
       <warning>
         <w mask="0x004000" value="0x004000" msg="WARNING! These fuse settings will disable the JTAG interface!" />

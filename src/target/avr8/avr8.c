@@ -29,6 +29,7 @@
 #include "app_err.h"
 #include "app_log.h"
 #include "prog_interface.h"
+#include "port.h"
 
 #include "memlist.h"
 #include "pgbar.h"
@@ -52,7 +53,7 @@
 const program_area_map_t avr8_program_area_map[] = 
 {
 	{APPLICATION, APPLICATION_CHAR, 1},
-//	{EEPROM, EEPROM_CHAR, 1},
+	{EEPROM, EEPROM_CHAR, 1},
 	{FUSE, FUSE_CHAR, 0},
 	{LOCK, LOCK_CHAR, 0},
 	{CALIBRATION, CALIBRATION_CHAR, 0},
@@ -86,12 +87,14 @@ static void avr8_support(void)
 	for (i = 0; i < cur_chips_num; i++)
 	{
 		printf("%s: signature = 0x%06x, prog_mode = %s, \
+eeprom_size = %d, \
 fuse_default = 0x%06X, fuse_bytelen = %d, \
 lock_default = 0x%02X, lock_bytelen = %d, \
 cali_default = 0x%08X, cali_bytelen = %d\n", 
 				cur_chips_param[i].chip_name, 
 				cur_chips_param[i].chip_id, 
 				cur_chips_param[i].program_mode_str, 
+				cur_chips_param[i].ee_size, 
 				cur_chips_param[i].fuse_default_value, 
 				cur_chips_param[i].fuse_size, 
 				cur_chips_param[i].lock_default_value, 
@@ -242,7 +245,7 @@ RESULT avr8_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr,
 			return ERRCODE_FAILURE_OPERATION;
 		}
 		break;
-	case 0x0020:
+	case 0x0002:
 		// EEPROM
 		if (NULL == pi->eeprom)
 		{
@@ -287,7 +290,7 @@ RESULT avr8_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr,
 		}
 		break;
 	default:
-		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_ADDRESS), address, 
+		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_ADDRESS), seg_addr, 
 				  CUR_TARGET_STRING);
 		return ERRCODE_INVALID;
 		break;
@@ -331,6 +334,7 @@ RESULT avr8_init(program_info_t *pi, const char *dir, programmer_info_t *prog)
 			LOG_ERROR(_GETTEXT(ERRMSG_AUTODETECT_FAIL), pi->chip_type);
 			return ERRCODE_AUTODETECT_FAIL;
 		}
+		sleep_ms(100);
 		
 		LOG_INFO(_GETTEXT(INFOMSG_AUTODETECT_SIGNATURE), pi->chip_id);
 		for (i = 0; i < cur_chips_num; i++)
