@@ -863,9 +863,9 @@ begin
       if valid_filename_num > 1 then
       begin
         cbboxInputFile.Items.Insert(0, 'ALL');
-        cbboxInputFile.Hint := 'ALL';
       end;
       cbboxInputFile.ItemIndex := 0;
+      cbboxInputFileChange(cbboxInputFile);
     end;
   end
   else
