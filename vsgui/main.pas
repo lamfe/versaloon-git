@@ -1467,7 +1467,14 @@ begin
   end;
 
   // input file
-  if cbboxInputFile.Text <> 'ALL' then
+  if Length(TargetFile) = 0 then
+  begin
+    if cbboxInputFile.Text <> '' then
+    begin
+      caller.AddParameter('I"' + cbboxInputFile.Text + '"');
+    end;
+  end
+  else if cbboxInputFile.Text <> 'ALL' then
   begin
     // enable selected input file
     for i := 0 to Length(TargetFile) - 1 do
