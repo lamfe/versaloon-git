@@ -54,6 +54,7 @@
 #define cur_prog_mode				program_mode
 #define cur_frequency				cm3_frequency
 #define cur_buffer_size				cm3_buffer_size
+#define cur_target_defined			target_defined
 
 #define CM3_MAX_BUFSIZE				(1024 * 1024)
 
@@ -207,6 +208,8 @@ RESULT cm3_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr,
 		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_RANGE), "flash memory");
 		return ERRCODE_INVALID;
 	}
+	cur_target_defined |= APPLICATION;
+	
 	memcpy(pi->app + mem_addr - cur_chip_param.flash_start_addr, 
 		   data, length);
 	pi->app_size_valid += (uint32_t)length;

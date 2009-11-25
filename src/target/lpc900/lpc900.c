@@ -46,6 +46,7 @@
 #define cur_chips_param				target_chips.chips_param
 #define cur_chips_num				target_chips.num_of_chips
 #define cur_flash_offset			lpc900_flash_offset
+#define cur_target_defined			target_defined
 
 const program_area_map_t lpc900_program_area_map[] = 
 {
@@ -242,6 +243,8 @@ RESULT lpc900_write_buffer_from_file_callback(uint32_t address, uint32_t seg_add
 			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_RANGE), "flash memory");
 			return ERRCODE_INVALID;
 		}
+		cur_target_defined |= APPLICATION;
+		
 		memcpy(pi->app + mem_addr, data, length);
 		pi->app_size_valid += (uint16_t)length;
 		ret = MEMLIST_Add(&pi->app_memlist, mem_addr, length, 

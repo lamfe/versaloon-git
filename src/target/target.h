@@ -209,6 +209,7 @@ extern target_info_t targets_info[];
 extern program_info_t program_info;
 extern chip_series_t target_chips;
 extern chip_param_t target_chip_param;
+extern uint32_t target_defined;
 
 RESULT target_build_chip_series(const char *chip_name, 
 								const char *program_mode, 
@@ -227,6 +228,7 @@ uint32_t target_get_number(void);
 RESULT target_init(program_info_t *pi);
 RESULT target_alloc_data_buffer(void);
 void target_free_data_buffer(void);
+RESULT target_check_defined(operation_t operations);
 
 #endif /* __TARGET_H_INCLUDED__ */
 
