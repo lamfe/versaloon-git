@@ -988,14 +988,16 @@ begin
   end;
 
   // call 'vsprog -Ppara' to extract para settings
+  DisableLogOutput();
   if not PrepareToRunCLI() then
   begin
+    EnableLogOutput();
+    caller.UnTake;
     exit;
   end;
   PrepareBaseParameters();
   caller.AddParameter('Pcalibration');
   FormParaEditor.FreeRecord();
-  DisableLogOutput();
   caller.Run(@VSProg_CommonParseParaCallback, FALSE, TRUE);
   EnableLogOutput();
   if bFatalError then
@@ -1055,14 +1057,16 @@ begin
   end;
 
   // call 'vsprog -Ppara' to extract para settings
+  DisableLogOutput();
   if not PrepareToRunCLI() then
   begin
+    EnableLogOutput();
+    caller.UnTake;
     exit;
   end;
   PrepareBaseParameters();
   caller.AddParameter('Pfuse');
   FormParaEditor.FreeRecord();
-  DisableLogOutput();
   caller.Run(@VSProg_CommonParseParaCallback, FALSE, TRUE);
   EnableLogOutput();
   if bFatalError then
@@ -1116,17 +1120,22 @@ begin
   end;
 
   // call 'vsprog -Ppara' to extract para settings
+  DisableLogOutput();
   if not PrepareToRunCLI() then
   begin
+    EnableLogOutput();
     caller.UnTake;
     exit;
   end;
   PrepareBaseParameters();
   caller.AddParameter('Plock');
   FormParaEditor.FreeRecord();
-  DisableLogOutput();
   caller.Run(@VSProg_CommonParseParaCallback, FALSE, TRUE);
   EnableLogOutput();
+  if bFatalError then
+  begin
+    exit;
+  end;
 
   init := TargetSetting[cbboxTarget.ItemIndex].lock_default;
   bytelen := TargetSetting[cbboxTarget.ItemIndex].lock_bytelen;
@@ -1458,8 +1467,11 @@ begin
     caller.RemoveAllParameters();
     result := TRUE;
   end;
-  memoLog.Clear;
-  memoInfo.Clear;
+  if LogOutput then
+  begin
+    memoLog.Clear;
+    memoInfo.Clear;
+  end;
 end;
 
 function TFormMain.GetTargetDefineParameters(): string;
@@ -2224,17 +2236,18 @@ begin
   VSProg_AddTargetSetting(setting);
 
   // call 'vsprog -Spsoc1' to extract supported psoc1 targets
+  DisableLogOutput();
   if not PrepareToRunCLI() then
   begin
+    EnableLogOutput();
     result := FALSE;
     exit;
   end;
   caller.AddParameter('Spsoc1');
   LogInfo('Running...');
-  DisableLogOutput();
   caller.Run(@VSProg_CommonParseSupportCallback, FALSE, TRUE);
-  EnableLogOutput();
   LogInfo('Idle');
+  EnableLogOutput();
 
   if bFatalError then
   begin
@@ -2267,17 +2280,18 @@ begin
   VSProg_AddTargetSetting(setting);
 
   // call 'vsprog -Sc8051f' to check support
+  DisableLogOutput();
   if not PrepareToRunCLI() then
   begin
+    EnableLogOutput();
     result := FALSE;
     exit;
   end;
   caller.AddParameter('Sc8051f');
   LogInfo('Running...');
-  DisableLogOutput();
   caller.Run(@VSProg_CommonParseSupportCallback, FALSE, TRUE);
-  EnableLogOutput();
   LogInfo('Idle');
+  EnableLogOutput();
 
   if bFatalError then
   begin
@@ -2373,17 +2387,18 @@ begin
   VSProg_AddTargetSetting(setting);
 
   // call 'vsprog -Sat89s5x' to extract supported at89s5x targets
+  DisableLogOutput();
   if not PrepareToRunCLI() then
   begin
+    EnableLogOutput();
     result := FALSE;
     exit;
   end;
   caller.AddParameter('Sat89s5x');
   LogInfo('Running...');
-  DisableLogOutput();
   caller.Run(@VSProg_CommonParseSupportCallback, FALSE, TRUE);
-  EnableLogOutput();
   LogInfo('Idle');
+  EnableLogOutput();
 
   if bFatalError then
   begin
@@ -2423,17 +2438,18 @@ begin
   VSProg_AddTargetSetting(setting);
 
   // call 'vsprog -Smsp430' to extract supported at89s5x targets
+  DisableLogOutput();
   if not PrepareToRunCLI() then
   begin
+    EnableLogOutput();
     result := FALSE;
     exit;
   end;
   caller.AddParameter('Smsp430');
   LogInfo('Running...');
-  DisableLogOutput();
   caller.Run(@VSProg_CommonParseSupportCallback, FALSE, TRUE);
-  EnableLogOutput();
   LogInfo('Idle');
+  EnableLogOutput();
 
   if bFatalError then
   begin
@@ -2496,17 +2512,18 @@ begin
   VSProg_AddTargetSetting(setting);
 
   // call 'vsprog -Sstm8' to extract supported at89s5x targets
+  DisableLogOutput();
   if not PrepareToRunCLI() then
   begin
+    EnableLogOutput();
     result := FALSE;
     exit;
   end;
   caller.AddParameter('Sstm8');
   LogInfo('Running...');
-  DisableLogOutput();
   caller.Run(@VSProg_CommonParseSupportCallback, FALSE, TRUE);
-  EnableLogOutput();
   LogInfo('Idle');
+  EnableLogOutput();
 
   if bFatalError then
   begin
@@ -2650,17 +2667,18 @@ begin
   AddTargetFile('EEPROM', 2, 0);
 
   // call 'vsprog -Savr8' to extract supported avr8 targets
+  DisableLogOutput();
   if not PrepareToRunCLI() then
   begin
+    EnableLogOutput();
     result := FALSE;
     exit;
   end;
   caller.AddParameter('Savr8');
   LogInfo('Running...');
-  DisableLogOutput();
   caller.Run(@VSProg_CommonParseSupportCallback, FALSE, TRUE);
-  EnableLogOutput();
   LogInfo('Idle');
+  EnableLogOutput();
 
   if bFatalError then
   begin
@@ -2774,17 +2792,18 @@ begin
   cbboxTarget.Clear;
 
   // call 'vsprog -Scomisp' to extract supported comisp targets
+  DisableLogOutput();
   if not PrepareToRunCLI() then
   begin
+    EnableLogOutput();
     result := FALSE;
     exit;
   end;
   caller.AddParameter('Scomisp');
   LogInfo('Running...');
-  DisableLogOutput();
   caller.Run(@VSProg_CommonParseSupportCallback, FALSE, TRUE);
-  EnableLogOutput();
   LogInfo('Idle');
+  EnableLogOutput();
 
   if bFatalError then
   begin
@@ -2855,17 +2874,18 @@ begin
   VSProg_AddTargetSetting(setting);
 
   // call 'vsprog -Scomisp' to extract supported comisp targets
+  DisableLogOutput();
   if not PrepareToRunCLI() then
   begin
+    EnableLogOutput();
     result := FALSE;
     exit;
   end;
   caller.AddParameter('Slpc900');
   LogInfo('Running...');
-  DisableLogOutput();
   caller.Run(@VSProg_CommonParseSupportCallback, FALSE, TRUE);
-  EnableLogOutput();
   LogInfo('Idle');
+  EnableLogOutput();
 
   if bFatalError then
   begin
@@ -2903,17 +2923,18 @@ begin
   cbboxTarget.Clear;
 
   // call 'vsprog -Scm3' to extract supported comisp targets
+  DisableLogOutput();
   if not PrepareToRunCLI() then
   begin
+    EnableLogOutput();
     result := FALSE;
     exit;
   end;
   caller.AddParameter('Scm3');
   LogInfo('Running...');
-  DisableLogOutput();
   caller.Run(@VSProg_CommonParseSupportCallback, FALSE, TRUE);
-  EnableLogOutput();
   LogInfo('Idle');
+  EnableLogOutput();
 
   if bFatalError then
   begin
