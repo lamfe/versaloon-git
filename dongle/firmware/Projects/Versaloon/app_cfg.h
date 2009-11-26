@@ -91,12 +91,12 @@
 // page 1
 #	define USB_TO_JTAG_LL_EN			0
 #	define USB_TO_JTAG_HL_EN			0
-#	define USB_TO_ISSP_EN				0
-#	define USB_TO_C2_EN					0
-#	define USB_TO_MSP430_JTAG_EN		0
+#	define USB_TO_ISSP_EN				1
+#	define USB_TO_C2_EN					1
+#	define USB_TO_MSP430_JTAG_EN		1
 #	define USB_TO_MSP430_SBW_EN			0
 #	define USB_TO_SBW_EN				0
-#	define USB_TO_LPCICP_EN				0
+#	define USB_TO_LPCICP_EN				1
 // page 2
 #	define USB_TO_POWER_EN				1
 #endif

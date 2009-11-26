@@ -297,6 +297,10 @@
           <state>$PROJ_DIR$\..\..\..\Interfaces\SPI\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\PowerExt\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\I2C\</state>
+          <state>$PROJ_DIR$\..\..\..\Interfaces\C2\</state>
+          <state>$PROJ_DIR$\..\..\..\Interfaces\ISSP\</state>
+          <state>$PROJ_DIR$\..\..\..\Interfaces\LPC_ICP\</state>
+          <state>$PROJ_DIR$\..\..\..\Interfaces\MSP430_JTAG\</state>
           <state>$PROJ_DIR$\..\..\..\VSLLink\</state>
           <state>$PROJ_DIR$\..\..\..\USB_TO_XXX\</state>
         </option>
@@ -1105,6 +1109,10 @@
           <state>$PROJ_DIR$\..\..\..\Interfaces\SPI\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\PowerExt\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\I2C\</state>
+          <state>$PROJ_DIR$\..\..\..\Interfaces\C2\</state>
+          <state>$PROJ_DIR$\..\..\..\Interfaces\ISSP\</state>
+          <state>$PROJ_DIR$\..\..\..\Interfaces\LPC_ICP\</state>
+          <state>$PROJ_DIR$\..\..\..\Interfaces\MSP430_JTAG\</state>
           <state>$PROJ_DIR$\..\..\..\VSLLink\</state>
           <state>$PROJ_DIR$\..\..\..\USB_TO_XXX\</state>
         </option>
@@ -1864,15 +1872,39 @@
   <group>
     <name>Interfaces</name>
     <group>
+      <name>C2</name>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\Interfaces\C2\C2.c</name>
+      </file>
+    </group>
+    <group>
       <name>I2C</name>
       <file>
         <name>$PROJ_DIR$\..\..\..\Interfaces\I2C\I2C.c</name>
       </file>
     </group>
     <group>
+      <name>ISSP</name>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\Interfaces\ISSP\ISSP.c</name>
+      </file>
+    </group>
+    <group>
       <name>JTAG</name>
       <file>
         <name>$PROJ_DIR$\..\..\..\Interfaces\JTAG\JTAG_TAP.c</name>
+      </file>
+    </group>
+    <group>
+      <name>LPC_ICP</name>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\Interfaces\LPC_ICP\LPC_ICP.c</name>
+      </file>
+    </group>
+    <group>
+      <name>MSP430_JTAG</name>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\Interfaces\MSP430_JTAG\MSP430_JTAG.c</name>
       </file>
     </group>
     <group>
@@ -1915,6 +1947,9 @@
       <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB_TO_ADC.c</name>
     </file>
     <file>
+      <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB_TO_C2.c</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB_TO_DAC.c</name>
     </file>
     <file>
@@ -1924,7 +1959,16 @@
       <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB_TO_I2C.c</name>
     </file>
     <file>
+      <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB_TO_ISSP.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB_TO_LPCICP.c</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB_TO_MICROWIRE.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB_TO_MSP430_JTAG.c</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB_TO_POWER.c</name>
