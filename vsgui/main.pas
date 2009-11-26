@@ -158,6 +158,8 @@ type
     procedure ToggleIF(Sender: TObject);
 
     procedure LogInfo(info: string);
+    procedure EnableLogOutput();
+    procedure DisableLogOutput();
 
     function CheckFatalError(line: string): boolean;
     function PrepareToRunCLI(): boolean;
@@ -248,6 +250,7 @@ var
   ComMode: TComMode;
   ComModeInit: TComMode;
   TargetFile: array of TTargetFileSetting;
+  LogOutput: boolean;
 
 const
   DEBUG_LOG_SHOW: boolean = FALSE;
@@ -332,10 +335,21 @@ end;
 
 { TFormMain }
 
+procedure TFormMain.EnableLogOutput();
+begin
+  LogOutput := TRUE;
+end;
+
+procedure TFormMain.DisableLogOutput();
+begin
+  LogOutput := FALSE;
+end;
+
 procedure TFormMain.FormCreate(Sender: TObject);
 begin
   btnRead.Enabled := FALSE;
   bPageLock := FALSE;
+  EnableLogOutput();
 
   HideDebugLog();
 
@@ -981,7 +995,9 @@ begin
   PrepareBaseParameters();
   caller.AddParameter('Pcalibration');
   FormParaEditor.FreeRecord();
+  DisableLogOutput();
   caller.Run(@VSProg_CommonParseParaCallback, FALSE, TRUE);
+  EnableLogOutput();
   if bFatalError then
   begin
     exit;
@@ -1046,7 +1062,9 @@ begin
   PrepareBaseParameters();
   caller.AddParameter('Pfuse');
   FormParaEditor.FreeRecord();
+  DisableLogOutput();
   caller.Run(@VSProg_CommonParseParaCallback, FALSE, TRUE);
+  EnableLogOutput();
   if bFatalError then
   begin
     exit;
@@ -1106,7 +1124,9 @@ begin
   PrepareBaseParameters();
   caller.AddParameter('Plock');
   FormParaEditor.FreeRecord();
+  DisableLogOutput();
   caller.Run(@VSProg_CommonParseParaCallback, FALSE, TRUE);
+  EnableLogOutput();
 
   init := TargetSetting[cbboxTarget.ItemIndex].lock_default;
   bytelen := TargetSetting[cbboxTarget.ItemIndex].lock_bytelen;
@@ -1406,7 +1426,10 @@ end;
 
 function TFormMain.CheckFatalError(line: string): boolean;
 begin
-  memoLog.Lines.Add(line);
+  if LogOutput then
+  begin
+    memoLog.Lines.Add(line);
+  end;
 
   if ((Pos('Error:', line) > 0) or (Pos('fail', line) <> 0)) and not bFatalError then
   begin
@@ -2208,7 +2231,9 @@ begin
   end;
   caller.AddParameter('Spsoc1');
   LogInfo('Running...');
+  DisableLogOutput();
   caller.Run(@VSProg_CommonParseSupportCallback, FALSE, TRUE);
+  EnableLogOutput();
   LogInfo('Idle');
 
   if bFatalError then
@@ -2249,7 +2274,9 @@ begin
   end;
   caller.AddParameter('Sc8051f');
   LogInfo('Running...');
+  DisableLogOutput();
   caller.Run(@VSProg_CommonParseSupportCallback, FALSE, TRUE);
+  EnableLogOutput();
   LogInfo('Idle');
 
   if bFatalError then
@@ -2353,7 +2380,9 @@ begin
   end;
   caller.AddParameter('Sat89s5x');
   LogInfo('Running...');
+  DisableLogOutput();
   caller.Run(@VSProg_CommonParseSupportCallback, FALSE, TRUE);
+  EnableLogOutput();
   LogInfo('Idle');
 
   if bFatalError then
@@ -2401,7 +2430,9 @@ begin
   end;
   caller.AddParameter('Smsp430');
   LogInfo('Running...');
+  DisableLogOutput();
   caller.Run(@VSProg_CommonParseSupportCallback, FALSE, TRUE);
+  EnableLogOutput();
   LogInfo('Idle');
 
   if bFatalError then
@@ -2472,7 +2503,9 @@ begin
   end;
   caller.AddParameter('Sstm8');
   LogInfo('Running...');
+  DisableLogOutput();
   caller.Run(@VSProg_CommonParseSupportCallback, FALSE, TRUE);
+  EnableLogOutput();
   LogInfo('Idle');
 
   if bFatalError then
@@ -2624,7 +2657,9 @@ begin
   end;
   caller.AddParameter('Savr8');
   LogInfo('Running...');
+  DisableLogOutput();
   caller.Run(@VSProg_CommonParseSupportCallback, FALSE, TRUE);
+  EnableLogOutput();
   LogInfo('Idle');
 
   if bFatalError then
@@ -2746,7 +2781,9 @@ begin
   end;
   caller.AddParameter('Scomisp');
   LogInfo('Running...');
+  DisableLogOutput();
   caller.Run(@VSProg_CommonParseSupportCallback, FALSE, TRUE);
+  EnableLogOutput();
   LogInfo('Idle');
 
   if bFatalError then
@@ -2825,7 +2862,9 @@ begin
   end;
   caller.AddParameter('Slpc900');
   LogInfo('Running...');
+  DisableLogOutput();
   caller.Run(@VSProg_CommonParseSupportCallback, FALSE, TRUE);
+  EnableLogOutput();
   LogInfo('Idle');
 
   if bFatalError then
@@ -2871,7 +2910,9 @@ begin
   end;
   caller.AddParameter('Scm3');
   LogInfo('Running...');
+  DisableLogOutput();
   caller.Run(@VSProg_CommonParseSupportCallback, FALSE, TRUE);
+  EnableLogOutput();
   LogInfo('Idle');
 
   if bFatalError then
