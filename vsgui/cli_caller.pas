@@ -176,14 +176,14 @@ try
     end
     else
     begin
-      // no data, wait 100 ms
+      // no data, wait 10 ms
       dly := dly + 1;
-//      if bTimeout and (dly > 100) then
+//      if bTimeout and (dly > 10) then
 //      begin
         // Timeout
 //        P.Terminate(0);
 //      end;
-      Sleep(100);
+      Sleep(10);
     end;
     Forms.Application.ProcessMessages;
   end;
