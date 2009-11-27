@@ -2947,8 +2947,7 @@ begin
     cbboxTarget.ItemIndex := 0;
   end;
 
-  // Auto-detect
-  VSProg_CommonInit('A');
+  VSProg_CommonInit('');
 end;
 
 function TFormMain.CortexM3_Init_Para(line: string; var setting: TTargetSetting): boolean;
