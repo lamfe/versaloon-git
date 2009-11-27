@@ -637,8 +637,9 @@ RESULT adi_fini(void)
 RESULT adi_init(programmer_info_t *prog, adi_dp_if_t *interf)
 {
 	uint32_t tmp;
-	uint8_t cnt;
+	uint8_t cnt, retry = 3;
 	
+init:
 	// initialize interface
 	if (ERROR_OK != adi_dpif_init(prog, interf))
 	{
@@ -654,6 +655,23 @@ RESULT adi_init(programmer_info_t *prog, adi_dp_if_t *interf)
 		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
 				  "read cm3 id");
 		return ERROR_FAIL;
+	}
+	if ((adi_dp_info.if_id & 0x0FFFEFFF) != 0x0BA00477)
+	{
+		if (retry-- > 0)
+		{
+			LOG_WARNING(_GETTEXT(ERRMSG_INVALID_HEX_MESSAGE), 
+						adi_dp_info.if_id, "id", "retry...");
+			adi_dpif_fini();
+			sleep_ms(100);
+			goto init;
+		}
+		else
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_HEX), 
+						adi_dp_info.if_id, "id");
+			return ERRCODE_INVALID;
+		}
 	}
 	
 	// initialize debugport
