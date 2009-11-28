@@ -52,6 +52,14 @@ typedef struct
 	uint32_t checksum_operations;
 }operation_t;
 
+// msic_cmd
+typedef struct
+{
+	const char *help_str;
+	const char *cmd_name;
+	RESULT (*processor)(uint8_t argc, const char *argv[]);
+} misc_cmd_t;
+
 extern uint8_t gui_mode;
 extern uint8_t program_mode;
 

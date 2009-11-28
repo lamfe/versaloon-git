@@ -41,6 +41,7 @@
 #define ERRCODE_INVALID						ERROR_FAIL
 
 #define ERRMSG_INVALID_OPTION				"Invalid option: %c.\n"
+#define ERRMSG_INVALID_CMD					"Invalid cmd: %s.\n"
 #define ERRCODE_INVALID_OPTION				ERROR_FAIL
 
 #define ERRMSG_INVALID_PARAMETER			"Invalid parameter of %s.\n"
