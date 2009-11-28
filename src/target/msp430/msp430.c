@@ -329,8 +329,7 @@ RESULT msp430_program(operation_t operations, program_info_t *pi,
 	{
 		return ERROR_FAIL;
 	}
-	LOG_DEBUG(_GETTEXT(INFOMSG_TARGET_VOLTAGE), voltage / 1000, 
-			  voltage % 1000);
+	LOG_DEBUG(_GETTEXT(INFOMSG_TARGET_VOLTAGE), voltage / 1000.0);
 	if (voltage < 2700)
 	{
 		LOG_WARNING(_GETTEXT(INFOMSG_TARGET_LOW_POWER));

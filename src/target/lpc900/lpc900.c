@@ -357,8 +357,7 @@ RESULT lpc900_program(operation_t operations, program_info_t *pi,
 	{
 		return ERROR_FAIL;
 	}
-	LOG_DEBUG(_GETTEXT(INFOMSG_TARGET_VOLTAGE), voltage / 1000, 
-			  voltage % 1000);
+	LOG_DEBUG(_GETTEXT(INFOMSG_TARGET_VOLTAGE), voltage / 1000.0);
 	if (voltage > 2000)
 	{
 		LOG_ERROR(_GETTEXT("Target should power off\n"));

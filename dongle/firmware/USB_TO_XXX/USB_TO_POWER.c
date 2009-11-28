@@ -60,6 +60,10 @@ void USB_TO_POWER_ProcessCmd(uint8* dat, uint16 len)
 			break;
 		case USB_TO_XXX_OUT:
 			voltage = dat[index + 0] + (dat[index + 1] << 8);
+			if (!PWREXT_EnableCount)
+			{
+				power_state = 0;
+			}
 
 			if(voltage == 3300)
 			{
