@@ -22,6 +22,8 @@
 #	include "PowerExt.h"
 #endif
 
+uint8 power_state = 0;
+
 void USB_TO_POWER_ProcessCmd(uint8* dat, uint16 len)
 {
 	uint16 index, device_num, length, voltage;
@@ -53,7 +55,6 @@ void USB_TO_POWER_ProcessCmd(uint8* dat, uint16 len)
 
 			break;
 		case USB_TO_XXX_FINI:
-			PWREXT_Release();
 			buffer_out[rep_len++] = USB_TO_XXX_OK;
 
 			break;
@@ -64,7 +65,20 @@ void USB_TO_POWER_ProcessCmd(uint8* dat, uint16 len)
 			{
 				// only support 3.3V
 				buffer_out[rep_len++] = USB_TO_XXX_OK;
-				PWREXT_Acquire();
+				if (!power_state)
+				{
+					power_state++;
+					PWREXT_Acquire();
+				}
+			}
+			else if(voltage == 0)
+			{
+				buffer_out[rep_len++] = USB_TO_XXX_OK;
+				if (power_state)
+				{
+					power_state--;
+					PWREXT_Release();
+				}
 			}
 			else
 			{

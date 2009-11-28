@@ -25,71 +25,52 @@
 
 #include "app_cfg.h"
 #include "app_type.h"
-#include "app_log.h"
 #include "app_err.h"
+#include "app_log.h"
+#include "prog_interface.h"
 
-#include "programmer.h"
-#include "versaloon/versaloon.h"
+#include "../versaloon.h"
+#include "../versaloon_internal.h"
+#include "usbtoxxx.h"
+#include "usbtoxxx_internal.h"
 
-#define PROGRAMMER_DEFAULT				0
+uint8_t usbtopwr_num_of_interface = 0;
 
-programmer_info_t programmers_info[] = 
+
+RESULT usbtopwr_init(void)
 {
-	// versaloon
-	PROGRAMMER_DEFINE(VERSALOON_STRING, 			// name
-					  versaloon_check_argument, 	// check_argument
-					  versaloon_init_capability, 	// init_capability
-					  versaloon_display_programmer,	// display_programmer
-					  versaloon_cmd),
-	PROGRAMMER_DEFINE(NULL, NULL, NULL, NULL, NULL)
-};
+	return usbtoxxx_init_command(USB_TO_POWER, &usbtopwr_num_of_interface);
+}
 
-programmer_info_t *cur_programmer = NULL;
-
-RESULT programmer_init(const char *programmer, const char *app_dir)
+RESULT usbtopwr_fini(void)
 {
-	uint32_t i;
-	
-	app_dir = app_dir;
-	
-	if (programmer != NULL)
+	return usbtoxxx_fini_command(USB_TO_POWER);
+}
+
+RESULT usbtopwr_config(uint8_t interface_index)
+{
+#if PARAM_CHECK
+	if (interface_index > 7)
 	{
-		for (i = 0; programmers_info[i].name != NULL; i++)
-		{
-			if (!strcmp(programmers_info[i].name, programmer))
-			{
-				cur_programmer = &programmers_info[i];
-				return ERROR_OK;
-			}
-		}
+		LOG_BUG(_GETTEXT("invalid inteface_index %d.\n"), interface_index);
 		return ERROR_FAIL;
 	}
-	else
-	{
-		cur_programmer = &programmers_info[PROGRAMMER_DEFAULT];
-		return ERROR_OK;
-	}
+#endif
+	
+	return usbtoxxx_conf_command(USB_TO_POWER, interface_index, NULL, 0);
 }
 
-void programmer_print_list(void)
+RESULT usbtopwr_output(uint8_t interface_index, uint16_t mV)
 {
-	uint32_t i;
-	
-	printf("Supported programmers:\n");
-	for (i = 0; programmers_info[i].name != NULL; i++)
+#if PARAM_CHECK
+	if (interface_index > 7)
 	{
-		programmers_info[i].parse_argument('S', NULL);
+		LOG_BUG(_GETTEXT("invalid inteface_index %d.\n"), interface_index);
+		return ERROR_FAIL;
 	}
-	printf("\n");
-}
-
-void programmer_print_help(void)
-{
-	uint32_t i;
+#endif
 	
-	for (i = 0; programmers_info[i].name != NULL; i++)
-	{
-		programmers_info[i].parse_argument('h', NULL);
-	}
+	return usbtoxxx_out_command(USB_TO_POWER, interface_index, (uint8_t *)&mV, 
+								2, 0);
 }
 

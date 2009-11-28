@@ -48,7 +48,7 @@
 #include "target.h"
 #include "hex.h"
 
-#define OPTSTR			"hvS:P:s:c:Mp:U:Dd:Go:l:f:F:m:x:C:I:O:J:Zb:"
+#define OPTSTR			"hvS:P:s:c:Mp:U:Dd:Go:l:f:F:m:x:C:I:O:J:Zb:V:"
 static const struct option long_opts[] =
 {
 	{"help", no_argument, NULL, 'h'},
@@ -75,6 +75,7 @@ static const struct option long_opts[] =
 	{"jtag-dc", required_argument, NULL, 'J'},
 	{"firmware_update", no_argument, NULL, 'Z'},
 	{"buffsize", required_argument, NULL, 'b'},
+	{"misc_cmd", required_argument, NULL, 'V'},
 	{NULL, 0, NULL, 0},
 };
 
@@ -266,6 +267,8 @@ int main(int argc, char* argv[])
 	uint32_t require_hex_file_for_write = 0;
 	uint32_t seg_offset, addr_offset;
 	char *cur_pointer, *end_pointer;
+	char *arg[8], *cmd = NULL;
+	uint8_t arg_num;
 	RESULT ret;
 	
 	// get directory of the application
@@ -745,6 +748,86 @@ int main(int argc, char* argv[])
 		case 'Z':
 			// --firmware_update
 			firmware_update_flag = 1;
+			break;
+		case 'V':
+			// --misc_cmd
+			if (NULL == cur_programmer)
+			{
+				LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "Programmer");
+				free_all_and_exit(EXIT_FAILURE);
+			}
+			
+			if ((('"' == optarg[0]) && ('"' == optarg[strlen(optarg) - 1])) 
+			|| (('\'' == optarg[0]) && ('\'' == optarg[strlen(optarg) - 1])))
+			{
+				((char *)optarg)[strlen(optarg) - 1] = '\0';
+				strcpy((char *)optarg, optarg + 1);
+			}
+			
+			// process if help cmd
+			if (!strcmp((const char *)optarg, "help"))
+			{
+				printf("misc_cmd list of current programmer:\n");
+				i = 0;
+				while (cur_programmer->misc_cmd[i].cmd_name != NULL)
+				{
+					printf("\t%s: %s", cur_programmer->misc_cmd[i].cmd_name, 
+										cur_programmer->misc_cmd[i].help_str);
+					i++;
+				}
+				free_all_and_exit(EXIT_SUCCESS);
+			}
+			
+			// parse cmd
+			while (' ' == optarg[0])
+			{
+				strcpy((char *)optarg, optarg + 1);
+			}
+			cmd = optarg;
+			
+			// parse arg
+			memset(arg, 0, sizeof(arg));
+			arg_num = 0;
+			for (i = 0; i < strlen(optarg); i++)
+			{
+				if ((' ' == optarg[i]) && (optarg[i + 1] != '\0'))
+				{
+					optarg[i]= '\0';
+					arg[arg_num++] = &optarg[i + 1];
+				}
+			}
+			
+			// find processor
+			i = 0;
+			while (cur_programmer->misc_cmd[i].cmd_name != NULL)
+			{
+				if (!strcmp((const char *)cur_programmer->misc_cmd[i].cmd_name, 
+							(const char *)cmd))
+				{
+					break;
+				}
+				i++;
+			}
+			
+			if (NULL == cur_programmer->misc_cmd[i].cmd_name)
+			{
+				LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), cmd, 
+							cur_programmer->name);
+				free_all_and_exit(EXIT_FAILURE);
+			}
+			
+			// prepare and call processor
+			cur_programmer->init_capability(cur_programmer);
+			ret = cur_programmer->init();
+			if (ret != ERROR_OK)
+			{
+				LOG_ERROR(_GETTEXT("Programmer %s not initialized.\n"), 
+						  cur_programmer->name);
+				free_all_and_exit(EXIT_FAILURE);
+			}
+			cur_programmer->misc_cmd[i].processor(arg_num, (const char **)&arg);
+			cur_programmer->fini();
+			free_all_and_exit(EXIT_SUCCESS);
 			break;
 		default:
 			if (cur_target != NULL)

@@ -62,6 +62,29 @@ static uint8_t versaloon_epin = VERSALOON_INP;
 static uint8_t versaloon_interface = 0;
 static uint32_t versaloon_to = VERSALOON_TIMEOUT;
 
+RESULT versaloon_cmd_get_voltage(uint8_t argc, const char *argv[]);
+RESULT versaloon_cmd_power_out(uint8_t argc, const char *argv[]);
+misc_cmd_t versaloon_cmd[] = 
+{
+	// voltage
+	{
+		"get target voltage, format: voltage", 
+		"voltage", 
+		versaloon_cmd_get_voltage
+	}, 
+	// powerout
+	{
+		"output power, format: powerout VOLTAGE_IN_MV", 
+		"powerout", 
+		versaloon_cmd_power_out
+	}, 
+	// null
+	{
+		NULL, 
+		NULL, 
+		NULL
+	}
+};
 
 void versaloon_usage(void)
 {
@@ -90,6 +113,7 @@ RESULT versaloon_check_argument(char cmd, const char *argu)
 		versaloon_support();
 		break;
 	case 'U':
+		// --usb
 		if (NULL == argu)
 		{
 			LOG_BUG(_GETTEXT(ERRMSG_INVALID_OPTION), cmd);
@@ -180,7 +204,55 @@ print_usb_device:
 
 
 
+// versaloon_cmd
+RESULT versaloon_cmd_get_voltage(uint8_t argc, const char *argv[])
+{
+	uint16_t voltage;
+	const uint8_t cmd_index = 0;
+	argv = argv;
+	
+	if (argc != 0)
+	{
+		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_CMD), 
+					versaloon_cmd[cmd_index].cmd_name);
+		LOG_INFO("%s", versaloon_cmd[cmd_index].help_str);
+		return ERROR_FAIL;
+	}
+	
+	if (ERROR_OK != versaloon_get_target_voltage(&voltage))
+	{
+		return ERROR_FAIL;
+	}
+	LOG_INFO(_GETTEXT(INFOMSG_TARGET_VOLTAGE), voltage / 1000, voltage % 1000);
+	
+	return ERROR_OK;
+}
+RESULT versaloon_cmd_power_out(uint8_t argc, const char *argv[])
+{
+	uint16_t voltage = 0;
+	const uint8_t cmd_index = 1;
+	
+	if (argc != 1)
+	{
+		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_CMD), 
+					versaloon_cmd[cmd_index].cmd_name);
+		LOG_INFO("%s", versaloon_cmd[cmd_index].help_str);
+		return ERROR_FAIL;
+	}
+	
+	voltage = (uint16_t)strtoul(argv[0], NULL, 0);
+	
+	usbtopwr_init();
+	usbtopwr_config(VERSALOON_POWER_PORT);
+	usbtopwr_output(VERSALOON_POWER_PORT, voltage);
+	usbtopwr_fini();
+	return usbtoxxx_execute_command();
+}
 
+
+
+
+// programmer_cmd
 RESULT versaloon_add_pending(uint8_t type, uint8_t cmd, uint16_t actual_szie, 
 							 uint16_t want_pos, uint16_t want_size, 
 							 uint8_t *buffer, uint8_t collect, uint32_t id)

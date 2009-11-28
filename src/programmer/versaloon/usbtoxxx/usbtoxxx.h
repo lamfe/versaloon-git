@@ -136,5 +136,13 @@ RESULT usbtomsp430sbw_poll(uint8_t interface_index, uint32_t dr, uint32_t mask,
 						   uint32_t value, uint8_t len, uint16_t poll_cnt, 
 						   uint8_t toggle_tclk);
 
+
+
+// USB_TO_POWER
+RESULT usbtopwr_init(void);
+RESULT usbtopwr_fini(void);
+RESULT usbtopwr_config(uint8_t interface_index);
+RESULT usbtopwr_output(uint8_t interface_index, uint16_t mV);
+
 #endif /* __USBTOXXX_H_INCLUDED__ */
 

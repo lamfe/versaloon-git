@@ -28,6 +28,7 @@ typedef RESULT (*jtag_callback_t)(jtag_irdr_t cmd, uint32_t ir,
 								  uint8_t *dest_buffer, uint8_t *src_buffer, 
 								  uint16_t buffer_len, uint16_t *processed);
 
+#include "vsprog.h"
 typedef struct
 {
 	// the 3 element listed below MUST be define valid
@@ -36,6 +37,7 @@ typedef struct
 	RESULT (*parse_argument)(char cmd, const char *argu);
 	RESULT (*init_capability)(void *p);
 	uint32_t (*display_programmer)(void);
+	misc_cmd_t *misc_cmd;
 	
 	// init and fini
 	RESULT (*init)(void);
@@ -194,9 +196,10 @@ typedef struct
 }programmer_info_t;
 
 #define PROGRAMMER_DEFINE(name, parse_argument, init_capability, 	\
-						  display_programmer)						\
+						  display_programmer, misc_cmd)				\
 	{\
 		name, parse_argument, init_capability, display_programmer, 	\
+		misc_cmd, \
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
