@@ -223,7 +223,7 @@ RESULT versaloon_cmd_get_voltage(uint8_t argc, const char *argv[])
 	{
 		return ERROR_FAIL;
 	}
-	LOG_INFO(_GETTEXT(INFOMSG_TARGET_VOLTAGE), voltage / 1000, voltage % 1000);
+	LOG_INFO(_GETTEXT(INFOMSG_TARGET_VOLTAGE), voltage / 1000.0);
 	
 	return ERROR_OK;
 }
