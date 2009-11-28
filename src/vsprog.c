@@ -771,7 +771,7 @@ int main(int argc, char* argv[])
 				i = 0;
 				while (cur_programmer->misc_cmd[i].cmd_name != NULL)
 				{
-					printf("\t%s: %s", cur_programmer->misc_cmd[i].cmd_name, 
+					printf("\t%s: %s\n", cur_programmer->misc_cmd[i].cmd_name, 
 										cur_programmer->misc_cmd[i].help_str);
 					i++;
 				}
