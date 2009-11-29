@@ -8,7 +8,8 @@ INCLUDES = \
     -I$(top_srcdir)/src/tools/pgbar \
     -I$(top_srcdir)/src/driver \
     -I$(top_srcdir)/src/driver/comport \
-    -I$(top_srcdir)/src/target/core/arm_adi
+    -I$(top_srcdir)/src/driver/timer \
+    -I$(top_srcdir)/src/target/core/arm_adi 
 
 METASOURCES = AUTO
 noinst_LIBRARIES = libtgt.a
