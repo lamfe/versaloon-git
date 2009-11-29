@@ -46,6 +46,8 @@
 #include "adi_v5p1.h"
 #include "cm3_common.h"
 
+#include "timer.h"
+
 #define CUR_TARGET_STRING			CM3_STRING
 #define cur_chip_param				cm3_chip_param
 #define cur_buffer_size				cm3_buffer_size
@@ -113,6 +115,7 @@ RESULT stm32_program(operation_t operations, program_info_t *pi,
 	uint32_t cur_run_size;
 	uint32_t mcu_id;
 	char rev;
+	uint32_t start_time, run_time;
 	
 #define FL_PARA_ADDR_BASE			\
 					(STM32_SRAM_START_ADDRESS + sizeof(stm32_fl_code) - 4 * 4)
@@ -448,6 +451,7 @@ RESULT stm32_program(operation_t operations, program_info_t *pi,
 				}
 				
 				// wait ready
+				start_time = get_time_in_ms();
 				if ((cur_run_size >=  STM32_PAGE_SIZE_RW) 
 					|| (block_size <= cur_buffer_size))
 				{
@@ -459,6 +463,16 @@ RESULT stm32_program(operation_t operations, program_info_t *pi,
 							pgbar_fini();
 							LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
 									  "read result from flash_loader");
+							ret = ERRCODE_FAILURE_OPERATION;
+							goto leave_program_mode;
+						}
+						
+						run_time = get_time_in_ms();
+						if ((run_time - start_time) > 1000)
+						{
+							pgbar_fini();
+							LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+									  "wait OK from flash_loader");
 							ret = ERRCODE_FAILURE_OPERATION;
 							goto leave_program_mode;
 						}
