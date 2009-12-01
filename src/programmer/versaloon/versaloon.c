@@ -215,7 +215,7 @@ RESULT versaloon_cmd_get_voltage(uint8_t argc, const char *argv[])
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_CMD), 
 					versaloon_cmd[cmd_index].cmd_name);
-		LOG_INFO("%s", versaloon_cmd[cmd_index].help_str);
+		LOG_INFO("%s\n", versaloon_cmd[cmd_index].help_str);
 		return ERROR_FAIL;
 	}
 	
@@ -236,7 +236,7 @@ RESULT versaloon_cmd_power_out(uint8_t argc, const char *argv[])
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_CMD), 
 					versaloon_cmd[cmd_index].cmd_name);
-		LOG_INFO("%s", versaloon_cmd[cmd_index].help_str);
+		LOG_INFO("%s\n", versaloon_cmd[cmd_index].help_str);
 		return ERROR_FAIL;
 	}
 	
