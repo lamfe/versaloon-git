@@ -49,7 +49,7 @@ RESULT usbtogpio_fini(void)
 RESULT usbtogpio_config(uint8_t interface_index, uint16_t mask, 
 						uint16_t dir_mask, uint16_t value)
 {
-	uint8_t conf[3];
+	uint8_t conf[6];
 	
 #if PARAM_CHECK
 	if (interface_index > 7)
