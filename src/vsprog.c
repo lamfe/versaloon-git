@@ -318,7 +318,7 @@ int main(int argc, char* argv[])
 	if (strlen(program_dir) > 0)
 	{
 		// find program_dir first
-		config_dir = (char *)malloc(strlen(program_dir) + strlen("config") + 1);
+		config_dir = (char *)malloc(strlen(program_dir) + strlen("config") + 2);
 		if (NULL == config_dir)
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
@@ -327,6 +327,8 @@ int main(int argc, char* argv[])
 		strcpy(config_dir, "");
 		strcat(config_dir, program_dir);
 		strcat(config_dir, "config");
+		config_dir[strlen(config_dir) + 1] = '\0';
+		config_dir[strlen(config_dir)] = FILE_SEPARATOR;
 		if (access(config_dir, 0) != 0)
 		{
 			// not found, free config_dir
