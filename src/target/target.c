@@ -844,7 +844,6 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 	target_release_chip_fl(fl);
 	
 	filename = (char *)malloc(strlen(config_dir)
-							  + strlen(TARGET_CONF_FILE_PATH) 
 							  + strlen(chip_series) 
 							  + strlen(TARGET_CONF_FILE_EXT) + 1);
 	if (NULL == filename)
@@ -853,7 +852,6 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 		return ERRCODE_NOT_ENOUGH_MEMORY;
 	}
 	strcpy(filename, config_dir);
-	strcat(filename, TARGET_CONF_FILE_PATH);
 	strcat(filename, chip_series);
 	strcat(filename, TARGET_CONF_FILE_EXT);
 	fp = fopen(filename, "r");
@@ -1316,7 +1314,6 @@ RESULT target_build_chip_series(const char *chip_series,
 	target_release_chip_series(s);
 	
 	filename = (char *)malloc(strlen(config_dir)
-							  + strlen(TARGET_CONF_FILE_PATH) 
 							  + strlen(chip_series) 
 							  + strlen(TARGET_CONF_FILE_EXT) + 1);
 	if (NULL == filename)
@@ -1325,12 +1322,12 @@ RESULT target_build_chip_series(const char *chip_series,
 		return ERRCODE_NOT_ENOUGH_MEMORY;
 	}
 	strcpy(filename, config_dir);
-	strcat(filename, TARGET_CONF_FILE_PATH);
 	strcat(filename, chip_series);
 	strcat(filename, TARGET_CONF_FILE_EXT);
 	fp = fopen(filename, "r");
 	if (NULL == fp)
 	{
+LOG_ERROR("%s not found\n", filename);
 		// no error message, just return error
 		ret = ERROR_FAIL;
 		goto free_and_exit;

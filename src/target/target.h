@@ -121,7 +121,6 @@ typedef struct
 										program_info_t *pi, uint8_t *buff);
 }target_info_t;
 
-#define TARGET_CONF_FILE_PATH			"config/"
 #define TARGET_CONF_FILE_EXT			".xml"
 #define TARGET_MAX_CHIP_NAME_LEN		32
 typedef struct
