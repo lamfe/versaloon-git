@@ -500,6 +500,7 @@ begin
   SetLength(TargetSetting, 0);
   ClearTargetFile();
   cbboxInputFile.Clear;
+  memoInfo.Clear;
 
   // initialize GUI
   if pcMain.ActivePage = tsAbout then
@@ -2776,6 +2777,7 @@ procedure TFormMain.AVR8_Update_Mode(m_str: string);
 begin
   if m_str = 'i:ISP' then
   begin
+    lbledtFreq.Hint := FREQ_HINT;
     lbledtFreq.Enabled := TRUE;
   end
   else
@@ -2998,6 +3000,7 @@ procedure TFormMain.CortexM3_Update_Mode(m_str: string);
 begin
   if m_str = 'j:JTAG' then
   begin
+    lbledtFreq.Hint := FREQ_HINT;
     lbledtFreq.Enabled := TRUE;
   end
   else

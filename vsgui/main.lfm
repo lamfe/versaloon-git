@@ -106,53 +106,71 @@ object FormMain: TFormMain
           object cbboxOpenOCDInterface: TComboBox
             Left = 78
             Height = 24
+            Hint = 'Select Interface configuration file'
             Top = 8
             Width = 272
             ItemHeight = 16
+            ParentShowHint = False
+            ShowHint = True
             Style = csDropDownList
             TabOrder = 0
           end
           object cbboxOpenOCDTarget: TComboBox
             Left = 78
             Height = 24
+            Hint = 'Select Target configuration file'
             Top = 40
             Width = 272
             ItemHeight = 16
+            ParentShowHint = False
+            ShowHint = True
             Style = csDropDownList
             TabOrder = 1
           end
           object cbboxOpenOCDScript: TComboBox
             Left = 78
             Height = 24
+            Hint = 'Select Script configuration file'
             Top = 72
             Width = 272
             ItemHeight = 16
+            ParentShowHint = False
+            ShowHint = True
             Style = csDropDownList
             TabOrder = 2
           end
           object edtOpenOCDOption: TEdit
             Left = 78
             Height = 24
+            Hint = 'Pass other options to OpenOCD'
             Top = 104
             Width = 272
+            ParentShowHint = False
+            ShowHint = True
             TabOrder = 3
           end
           object btnOpenOCDRun: TButton
             Left = 70
             Height = 25
+            Hint = 'Run OpenOCD'
             Top = 144
             Width = 75
             Caption = '&Go...'
             OnClick = btnOpenOCDRunClick
+            ParentShowHint = False
+            ShowHint = True
             TabOrder = 4
           end
           object btnOpenOCDStop: TButton
             Left = 214
             Height = 25
+            Hint = 'Stop OpenOCD'
             Top = 144
             Width = 75
             Caption = '&Stop'
             OnClick = btnOpenOCDStopClick
+            ParentShowHint = False
+            ShowHint = True
             TabOrder = 5
           end
         end
@@ -184,15 +202,19 @@ object FormMain: TFormMain
           object btnSVFPlayerRun: TButton
             Left = 142
             Height = 25
+            Hint = 'Run SVF_Player'
             Top = 88
             Width = 75
             Caption = '&Run'
             OnClick = btnSVFPlayerRunClick
+            ParentShowHint = False
+            ShowHint = True
             TabOrder = 0
           end
           object fneditSVFFile: TFileNameEdit
             Left = 78
             Height = 24
+            Hint = 'Select SVF file'
             Top = 11
             Width = 248
             DialogOptions = []
@@ -201,14 +223,19 @@ object FormMain: TFormMain
             HideDirectories = False
             ButtonWidth = 23
             NumGlyphs = 0
+            ParentShowHint = False
+            ShowHint = True
             TabOrder = 1
           end
           object edtSVFOption: TEdit
             Left = 78
             Height = 24
+            Hint = 'Pass other options to SVF_Player'
             Top = 48
             Width = 272
             OnDblClick = ToggleIF
+            ParentShowHint = False
+            ShowHint = True
             TabOrder = 2
           end
         end
