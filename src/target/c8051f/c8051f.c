@@ -60,7 +60,7 @@ static void c8051f_usage(void)
 {
 	printf("\
 Usage of %s:\n\
-  -m,  --mode <MODE>                set mode<j|c>\n\n", CUR_TARGET_STRING);
+  -m,  --mode <MODE>                        set mode<j|c>\n\n", CUR_TARGET_STRING);
 }
 
 static void c8051f_support(void)

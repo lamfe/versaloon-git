@@ -59,7 +59,7 @@ void msp430_usage(void)
 {
 	printf("\
 Usage of %s:\n\
-  -m,  --mode <MODE>                set mode<j|s|b>\n\n", CUR_TARGET_STRING);
+  -m,  --mode <MODE>                        set mode<j|s|b>\n\n", CUR_TARGET_STRING);
 }
 
 void msp430_support(void)

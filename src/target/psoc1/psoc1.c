@@ -62,7 +62,7 @@ void psoc1_usage(void)
 {
 	printf("\
 Usage of %s:\n\
-  -m,  --mode <MODE>                set mode<r|p>\n\n", CUR_TARGET_STRING);
+  -m,  --mode <MODE>                        set mode<r|p>\n\n", CUR_TARGET_STRING);
 }
 
 void psoc1_support(void)

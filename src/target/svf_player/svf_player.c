@@ -72,8 +72,7 @@ static void svfp_usage(void)
 {
 	printf("\
 Usage of %s:\n\
-  -I,  --inputfile <FILENAME>       set svf file\n\
-  -F,  --frequency <FREQUENCY>      set JTAG frequency, in KHz\n\n", 
+  -F,  --frequency <FREQUENCY>              set JTAG frequency, in KHz\n\n", 
 		   CUR_TARGET_STRING);
 }
 
