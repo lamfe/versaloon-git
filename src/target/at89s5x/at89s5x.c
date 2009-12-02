@@ -71,10 +71,10 @@ void s5x_usage(void)
 {
 	printf("\
 Usage of %s:\n\
-  -F,  --frequency <FREQUENCY>      set ISP frequency, in KHz\n\
-  -l,  --lock <LOCK>                set lock(1..4)\n\
-  -u,  --fuse <FUSE>                set fuse\n\
-  -m,  --mode <MODE>                set program mode<b|p>\n\n", 
+  -F,  --frequency <FREQUENCY>              set ISP frequency, in KHz\n\
+  -l,  --lock <LOCK>                        set lock(1..4)\n\
+  -f,  --fuse <FUSE>                        set fuse\n\
+  -m,  --mode <MODE>                        set program mode<b|p>\n\n", 
 			CUR_TARGET_STRING);
 }
 

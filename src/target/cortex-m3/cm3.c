@@ -87,9 +87,8 @@ static void cm3_usage(void)
 {
 	printf("\
 Usage of %s:\n\
-  -m,  --mode <MODE>                set mode<j|s>\n\
-  -F,  --frequency <FREQUENCY>      set JTAG/SWJ frequency, in KHz\n\
-  -b,  --buffsize <BUFFSIZE>        set JTAG buffer size\n", 
+  -m,  --mode <MODE>                        set mode<j|s>\n\
+  -F,  --frequency <FREQUENCY>              set JTAG/SWJ frequency, in KHz\n\n", 
 		   CUR_TARGET_STRING);
 }
 

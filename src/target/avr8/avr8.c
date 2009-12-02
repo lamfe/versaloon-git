@@ -73,10 +73,10 @@ static void avr8_usage(void)
 {
 	printf("\
 Usage of %s:\n\
-  -F,  --frequency <FREQUENCY>      set ISP frequency, in KHz\n\
-  -l,  --lock <LOCK>                set lock\n\
-  -f,  --fuse <FUSE>                set fuse\n\
-  -m,  --mode <MODE>                set mode<b|p>\n\n", CUR_TARGET_STRING);
+  -F,  --frequency <FREQUENCY>              set ISP frequency, in KHz\n\
+  -l,  --lock <LOCK>                        set lock\n\
+  -f,  --fuse <FUSE>                        set fuse\n\
+  -m,  --mode <MODE>                        set mode<b|p>\n\n", CUR_TARGET_STRING);
 }
 
 static void avr8_support(void)

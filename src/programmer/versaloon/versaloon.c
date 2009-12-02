@@ -90,7 +90,7 @@ void versaloon_usage(void)
 {
 	printf("\
 Usage of %s:\n\
-  -U,  --usb <PID_VID_EPIN_EPOUT>   set usb VID, PID, EPIN, EPOUT\n\n", 
+  -U,  --usb <PID_VID_EPIN_EPOUT>           set usb VID, PID, EPIN, EPOUT\n\n", 
 		   VERSALOON_STRING);
 }
 

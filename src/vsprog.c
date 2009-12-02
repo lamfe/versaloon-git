@@ -73,9 +73,9 @@ static const struct option long_opts[] =
 	{"input-file", required_argument, NULL, 'I'},
 	{"output-file", required_argument, NULL, 'O'},
 	{"jtag-dc", required_argument, NULL, 'J'},
-	{"firmware_update", no_argument, NULL, 'Z'},
+	{"firmware-update", no_argument, NULL, 'Z'},
 	{"buffsize", required_argument, NULL, 'b'},
-	{"misc_cmd", required_argument, NULL, 'V'},
+	{"misc-cmd", required_argument, NULL, 'V'},
 	{NULL, 0, NULL, 0},
 };
 
@@ -243,18 +243,21 @@ static void print_help(void)
 {
 	printf(_GETTEXT("\
 Usage: %s [OPTION]...\n\
-  -h,  --help                       display this help\n\
-  -v,  --version                    display vsprog version\n\
-  -S,  --support <target>           display support information\n\
-  -d,  --debug <LEVEL>              set debug level <0-2>\n\
-  -s,  --target-series <SERIES>     set target series\n\
-  -c,  --target-module <MODULE>     set target module\n\
-  -p,  --programmer <PROGRAMMER>    set programmer\n\
-  -o,  --operation <OPERATIONS>     set programming operation\n\
-  -i,  --input-file <HEXFILE>       set input hex file\n\
-  -M,  --mass-product               set mass_product mode\n\
-  -G,  --gui-mode                   set gui_mode\n\
-  -Z,  --firmware_update            enter into firmware update mode\n\n"), 
+  -h,  --help                               display this help\n\
+  -v,  --version                            display vsprog version\n\
+  -S,  --support <TARGET>                   display support information\n\
+  -V,  --misc-cmd \"<CMD PARA>\"              run programmer defined command\n\
+  -P,  --parameter <AREA>                   display parameter for target area\n\
+  -J,  --jtag-dc <UB UA BB BA>              set JTAG Daisy Chain\n\
+  -d,  --debug <LEVEL>                      set debug level <0-2>\n\
+  -s,  --target-series <SERIES>             set target series\n\
+  -c,  --target-module <MODULE>             set target module\n\
+  -p,  --programmer <PROGRAMMER>            set programmer\n\
+  -o,  --operation <OPERATIONS>             set programming operation\n\
+  -I,  --input-file \"<FILE>[ seg addr]\"     set input file\n\
+  -M,  --mass-product                       set mass_product mode\n\
+  -G,  --gui-mode                           set gui_mode\n\
+  -Z,  --firmware-update                    enter into firmware update mode\n\n"), 
 			program_name);
 
 	programmer_print_help();

@@ -89,9 +89,8 @@ static void comisp_usage(void)
 {
 	printf("\
 Usage of %s:\n\
-  -C,  --comport <COMM_ATTRIBUTE>   set com port\n\
-  -x,  --execute <ADDRESS>          execute program\n\
-  -b,  --buffsize <BUFFSIZE>        set test buff size\n\n", 
+  -C,  --comport <COMM_ATTRIBUTE>           set com port\n\
+  -x,  --execute <ADDRESS>                  execute program\n\n", 
 		   CUR_TARGET_STRING);
 }
 
