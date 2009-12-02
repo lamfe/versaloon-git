@@ -87,9 +87,9 @@ static char *program_dir = NULL;
 char *config_dir = NULL;
 const char *config_dirs[] = 
 {
-	"/usr/share/vsprog/config",
-	"/usr/local/share/vsprog/config",
-	"/etc/vsprog/config"
+	"/usr/share/vsprog/config/",
+	"/usr/local/share/vsprog/config/",
+	"/etc/vsprog/config/"
 };
 
 uint8_t program_mode = 0;
