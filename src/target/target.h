@@ -104,8 +104,7 @@ typedef struct
 	RESULT (*parse_argument)(char cmd, const char *argu);
 	
 	RESULT (*probe_chip)(char *chip_name);
-	RESULT (*init)(program_info_t *pi, const char *dir, 
-				   programmer_info_t *prog);
+	RESULT (*init)(program_info_t *pi, programmer_info_t *prog);
 	RESULT (*fini)(program_info_t *pi, programmer_info_t *prog);
 	uint32_t (*interface_needed)(void);
 	RESULT (*prepare_buffer)(program_info_t *pi);

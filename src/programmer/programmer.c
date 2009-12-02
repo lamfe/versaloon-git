@@ -46,11 +46,9 @@ programmer_info_t programmers_info[] =
 
 programmer_info_t *cur_programmer = NULL;
 
-RESULT programmer_init(const char *programmer, const char *app_dir)
+RESULT programmer_init(const char *programmer)
 {
 	uint32_t i;
-	
-	app_dir = app_dir;
 	
 	if (programmer != NULL)
 	{

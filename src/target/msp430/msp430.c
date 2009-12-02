@@ -193,13 +193,11 @@ RESULT msp430_fini(program_info_t *pi, programmer_info_t *prog)
 	return ERROR_OK;
 }
 
-RESULT msp430_init(program_info_t *pi, const char *dir, 
-				   programmer_info_t *prog)
+RESULT msp430_init(program_info_t *pi, programmer_info_t *prog)
 {
 	uint8_t i;
 	operation_t opt_tmp;
 	
-	dir = dir;
 	memset(&opt_tmp, 0, sizeof(opt_tmp));
 	
 	if (strcmp(pi->chip_type, CUR_TARGET_STRING))
