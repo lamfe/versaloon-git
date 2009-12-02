@@ -83,7 +83,14 @@ int verbosity = LOG_DEFAULT_LEVEL;
 operation_t operations;
 
 static char *program_name = NULL;
-char *program_dir = NULL;
+static char *program_dir = NULL;
+char *config_dir = NULL;
+const char *config_dirs[] = 
+{
+	"/usr/share/vsprog/config",
+	"/usr/local/share/vsprog/config",
+	"/etc/vsprog/config"
+};
 
 uint8_t program_mode = 0;
 
@@ -105,7 +112,12 @@ static void free_all(void)
 	if (program_dir != NULL)
 	{
 		free(program_dir);
-		program_name = NULL;
+		program_dir = NULL;
+	}
+	if (config_dir != NULL)
+	{
+		free(config_dir);
+		config_dir = NULL;
 	}
 	
 	if ((cur_target != NULL) && (cur_programmer != NULL) 
@@ -302,6 +314,48 @@ int main(int argc, char* argv[])
 		}
 	}
 	
+	// set config_dir
+	if (strlen(program_dir) > 0)
+	{
+		// find program_dir first
+		config_dir = (char *)malloc(strlen(program_dir) + strlen("config") + 1);
+		if (NULL == config_dir)
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+			free_all_and_exit(EXIT_FAILURE);
+		}
+		strcpy(config_dir, "");
+		strcat(config_dir, program_dir);
+		strcat(config_dir, "config");
+		if (access(config_dir, 0) != 0)
+		{
+			// not found, free config_dir
+			free(config_dir);
+			config_dir = NULL;
+		}
+	}
+	if (NULL == config_dir)
+	{
+		for (i = 0; i < dimof(config_dirs); i++)
+		{
+			if (access(config_dirs[i], 0) == 0)
+			{
+				config_dir = (char *)malloc(strlen(config_dirs[i]) + 1);
+				strcpy(config_dir, "");
+				strcat(config_dir, config_dirs[i]);
+				break;
+			}
+		}
+	}
+	if (NULL == config_dir)
+	{
+		LOG_WARNING(_GETTEXT("config_dir not found\n"));
+	}
+	else
+	{
+		LOG_INFO(_GETTEXT("config_dir found at %s\n"), config_dir);
+	}
+	
 	// initialize varibles
 	memset(&program_info, 0, sizeof(program_info));
 	
@@ -320,7 +374,7 @@ int main(int argc, char* argv[])
 	// non gui mode by default
 	pgbar_set_gui_mode(0);
 	// set to NULL programmer
-	programmer_init(NULL, program_dir);
+	programmer_init(NULL);
 	
 	// parse options
 	while ((optc = getopt_long(argc, argv, OPTSTR, long_opts, NULL)) != -1)
@@ -451,7 +505,7 @@ int main(int argc, char* argv[])
 			break;
 		case 'p':
 			// --programmer
-			ret = programmer_init(optarg, program_dir);
+			ret = programmer_init(optarg);
 			if (ret != ERROR_OK)
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT), optarg);
@@ -937,7 +991,7 @@ int main(int argc, char* argv[])
 	}
 	
 	// init target
-	ret = cur_target->init(&program_info, program_dir, cur_programmer);
+	ret = cur_target->init(&program_info, cur_programmer);
 	if (ret != ERROR_OK)
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "initialize target");

@@ -27,7 +27,7 @@ extern const program_area_map_t psoc1_program_area_map[];
 RESULT psoc1_parse_argument(char cmd, const char *argu);
 RESULT psoc1_prepare_buffer(program_info_t *pi);
 
-RESULT psoc1_init(program_info_t *pi, const char *dir, programmer_info_t *prog);
+RESULT psoc1_init(program_info_t *pi, programmer_info_t *prog);
 RESULT psoc1_fini(program_info_t *pi, programmer_info_t *prog);
 uint32_t psoc1_interface_needed(void);
 RESULT psoc1_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr, 

@@ -30,8 +30,7 @@ uint32_t cm3_interface_needed(void);
 RESULT cm3_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr, 
 										   uint8_t* data, uint32_t length, 
 										   void* buffer);
-RESULT cm3_init(program_info_t *pi, const char *dir, 
-				   programmer_info_t *prog);
+RESULT cm3_init(program_info_t *pi, programmer_info_t *prog);
 RESULT cm3_fini(program_info_t *pi, programmer_info_t *prog);
 RESULT cm3_program(operation_t operations, program_info_t *pi, 
 				   programmer_info_t *prog);

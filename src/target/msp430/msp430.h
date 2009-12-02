@@ -29,8 +29,7 @@ RESULT msp430_prepare_buffer(program_info_t *pi);
 RESULT msp430_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr, 
 											  uint8_t* data, uint32_t length, 
 											  void* buffer);
-RESULT msp430_init(program_info_t *pi, const char *dir, 
-				   programmer_info_t *prog);
+RESULT msp430_init(program_info_t *pi, programmer_info_t *prog);
 RESULT msp430_fini(program_info_t *pi, programmer_info_t *prog);
 uint32_t msp430_interface_needed(void);
 RESULT msp430_program(operation_t operations, program_info_t *pi, 

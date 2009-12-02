@@ -29,8 +29,7 @@ uint32_t comisp_interface_needed(void);
 RESULT comisp_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr, 
 											  uint8_t* data, uint32_t length, 
 											  void* buffer);
-RESULT comisp_init(program_info_t *pi, const char *dir, 
-				   programmer_info_t *prog);
+RESULT comisp_init(program_info_t *pi, programmer_info_t *prog);
 RESULT comisp_fini(program_info_t *pi, programmer_info_t *prog);
 RESULT comisp_program(operation_t operations, program_info_t *pi, 
 					  programmer_info_t *prog);

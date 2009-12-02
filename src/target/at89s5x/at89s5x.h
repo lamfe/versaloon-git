@@ -27,7 +27,7 @@ extern const program_area_map_t s5x_program_area_map[];
 RESULT s5x_parse_argument(char cmd, const char *argu);
 RESULT s5x_check_mode(uint32_t *mode);
 
-RESULT s5x_init(program_info_t *pi, const char *dir, programmer_info_t *prog);
+RESULT s5x_init(program_info_t *pi, programmer_info_t *prog);
 RESULT s5x_fini(program_info_t *pi, programmer_info_t *prog);
 uint32_t s5x_interface_needed(void);
 

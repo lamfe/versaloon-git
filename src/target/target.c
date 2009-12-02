@@ -819,7 +819,6 @@ static uint32_t target_xml_get_child_number(xmlNodePtr parentNode, char * child_
 	return result;
 }
 
-extern char *program_dir;
 RESULT target_build_chip_fl(const char *chip_series, const char *chip_module, 
 							char *type, chip_fl_t *fl)
 {
@@ -844,7 +843,7 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 	// release first if necessary
 	target_release_chip_fl(fl);
 	
-	filename = (char *)malloc(strlen(program_dir)
+	filename = (char *)malloc(strlen(config_dir)
 							  + strlen(TARGET_CONF_FILE_PATH) 
 							  + strlen(chip_series) 
 							  + strlen(TARGET_CONF_FILE_EXT) + 1);
@@ -853,7 +852,7 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 		LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
 		return ERRCODE_NOT_ENOUGH_MEMORY;
 	}
-	strcpy(filename, program_dir);
+	strcpy(filename, config_dir);
 	strcat(filename, TARGET_CONF_FILE_PATH);
 	strcat(filename, chip_series);
 	strcat(filename, TARGET_CONF_FILE_EXT);
@@ -1316,7 +1315,7 @@ RESULT target_build_chip_series(const char *chip_series,
 	// release first if necessary
 	target_release_chip_series(s);
 	
-	filename = (char *)malloc(strlen(program_dir)
+	filename = (char *)malloc(strlen(config_dir)
 							  + strlen(TARGET_CONF_FILE_PATH) 
 							  + strlen(chip_series) 
 							  + strlen(TARGET_CONF_FILE_EXT) + 1);
@@ -1325,7 +1324,7 @@ RESULT target_build_chip_series(const char *chip_series,
 		LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
 		return ERRCODE_NOT_ENOUGH_MEMORY;
 	}
-	strcpy(filename, program_dir);
+	strcpy(filename, config_dir);
 	strcat(filename, TARGET_CONF_FILE_PATH);
 	strcat(filename, chip_series);
 	strcat(filename, TARGET_CONF_FILE_EXT);

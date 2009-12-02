@@ -165,10 +165,9 @@ RESULT svfp_fini(program_info_t *pi, programmer_info_t *prog)
 	return ERROR_OK;
 }
 
-RESULT svfp_init(program_info_t *pi, const char *dir, programmer_info_t *prog)
+RESULT svfp_init(program_info_t *pi, programmer_info_t *prog)
 {
 	pi = pi;
-	dir = dir;
 	prog = prog;
 	
 	return ERROR_OK;

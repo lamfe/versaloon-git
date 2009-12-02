@@ -340,12 +340,10 @@ RESULT comisp_fini(program_info_t *pi, programmer_info_t *prog)
 	return ERROR_OK;
 }
 
-RESULT comisp_init(program_info_t *pi, const char *dir, 
-				   programmer_info_t *prog)
+RESULT comisp_init(program_info_t *pi, programmer_info_t *prog)
 {
 	uint8_t i;
 	
-	dir = dir;
 	prog = prog;
 	
 	if (strcmp(pi->chip_type, CUR_TARGET_STRING))

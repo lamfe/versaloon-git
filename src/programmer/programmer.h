@@ -212,7 +212,7 @@ extern programmer_info_t programmers_info[];
 
 void programmer_print_list(void);
 void programmer_print_help(void);
-RESULT programmer_init(const char *programmer, const char *app_dir);
+RESULT programmer_init(const char *programmer);
 
 #endif /* __PROGRAMMER_H_INCLUDED__ */
 

@@ -27,8 +27,7 @@ extern const program_area_map_t lpc900_program_area_map[];
 RESULT lpc900_parse_argument(char cmd, const char *argu);
 RESULT lpc900_prepare_buffer(program_info_t *pi);
 
-RESULT lpc900_init(program_info_t *pi, const char *dir, 
-				   programmer_info_t *prog);
+RESULT lpc900_init(program_info_t *pi, programmer_info_t *prog);
 RESULT lpc900_fini(program_info_t *pi, programmer_info_t *prog);
 uint32_t lpc900_interface_needed(void);
 RESULT lpc900_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr, 
