@@ -840,6 +840,11 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 	}
 #endif
 	
+	if (NULL == config_dir)
+	{
+		return ERROR_FAIL;
+	}
+	
 	// release first if necessary
 	target_release_chip_fl(fl);
 	
@@ -1309,6 +1314,11 @@ RESULT target_build_chip_series(const char *chip_series,
 		return ERRCODE_INVALID_PARAMETER;
 	}
 #endif
+	
+	if (NULL == config_dir)
+	{
+		return ERROR_FAIL;
+	}
 	
 	// release first if necessary
 	target_release_chip_series(s);
