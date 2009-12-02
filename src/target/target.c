@@ -1327,7 +1327,6 @@ RESULT target_build_chip_series(const char *chip_series,
 	fp = fopen(filename, "r");
 	if (NULL == fp)
 	{
-LOG_ERROR("%s not found\n", filename);
 		// no error message, just return error
 		ret = ERROR_FAIL;
 		goto free_and_exit;
