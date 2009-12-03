@@ -179,6 +179,7 @@ uint32_t svfp_interface_needed(void)
 
 programmer_info_t *p = NULL;
 extern filelist *fl_in;
+#define get_target_voltage(v)					prog->get_target_voltage(v)
 RESULT svfp_program(operation_t operations, program_info_t *pi, 
 					programmer_info_t *prog)
 {
@@ -187,6 +188,7 @@ RESULT svfp_program(operation_t operations, program_info_t *pi,
 	char *svfp_command_buffer = NULL;
 	uint32_t svfp_command_buffer_len = 0;
 	RESULT ret = ERROR_OK;
+	uint16_t voltage;
 	
 #ifdef PARAM_CHECK
 	if (NULL == prog)
@@ -199,6 +201,17 @@ RESULT svfp_program(operation_t operations, program_info_t *pi,
 	operations = operations;
 	pi = pi;
 	p = prog;
+	
+	// get target voltage
+	if (ERROR_OK != get_target_voltage(&voltage))
+	{
+		return ERROR_FAIL;
+	}
+	LOG_DEBUG(_GETTEXT(INFOMSG_TARGET_VOLTAGE), voltage / 1000.0);
+	if (voltage < 2700)
+	{
+		LOG_WARNING(_GETTEXT(INFOMSG_TARGET_LOW_POWER));
+	}
 	
 	if ((NULL == fl_in) || (NULL == fl_in->path) || (NULL == fl_in->file) 
 		|| (strlen(fl_in->path) <= 4) 
