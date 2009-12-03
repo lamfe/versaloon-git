@@ -297,14 +297,26 @@ uint32_t cm3_interface_needed(void)
 
 
 
-
+#define get_target_voltage(v)					prog->get_target_voltage(v)
 RESULT cm3_program(operation_t operations, program_info_t *pi, 
 					  programmer_info_t *prog)
 {
 	RESULT ret = ERROR_OK;
 	adi_dp_if_t dp;
+	uint16_t voltage;
 	
 	pi = pi;
+	
+	// get target voltage
+	if (ERROR_OK != get_target_voltage(&voltage))
+	{
+		return ERROR_FAIL;
+	}
+	LOG_DEBUG(_GETTEXT(INFOMSG_TARGET_VOLTAGE), voltage / 1000.0);
+	if (voltage < 2700)
+	{
+		LOG_WARNING(_GETTEXT(INFOMSG_TARGET_LOW_POWER));
+	}
 	
 	if ((cur_prog_mode != ADI_DP_JTAG) && (cur_prog_mode != ADI_DP_SWJ))
 	{
