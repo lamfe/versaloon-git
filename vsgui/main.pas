@@ -268,7 +268,7 @@ const
   FREQ_HINT: string = 'Set operation frequency';
   EXECUTE_ADDR_STR: string = 'execute:';
   EXECUTE_ADDR_HINT: string = 'Set address to execute after operation';
-  ST_PROG_STR: string = '-U "0x0483 0x5740 0x82 0x03 2"';
+  ST_PROG_STR: string = '-U "0x0483 0x5740 0x82 0x03 1"';
   ATMEL_PROG_STR: string = '-U "0x03eb 0x2103 0x82 0x02 0"';
   LOGMEMO_WIDTH: integer = 400;
 
