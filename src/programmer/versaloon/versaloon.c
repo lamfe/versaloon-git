@@ -59,7 +59,7 @@ static uint16_t versaloon_pid = VERSALOON_PID;
 static char *versaloon_serialstring = NULL;
 static uint8_t versaloon_epout = VERSALOON_OUTP;
 static uint8_t versaloon_epin = VERSALOON_INP;
-static uint8_t versaloon_interface = 0;
+static uint8_t versaloon_interface = 1;
 static uint32_t versaloon_to = VERSALOON_TIMEOUT;
 
 RESULT versaloon_cmd_get_voltage(uint8_t argc, const char *argv[]);
