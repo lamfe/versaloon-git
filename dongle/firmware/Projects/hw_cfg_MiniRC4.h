@@ -30,90 +30,34 @@
 #define PWREXT_DISABLE()				GPIO_Dir(PWREXT_EN_PORT, GPIO_MODE_IN_FLOATING, PWREXT_EN_PIN)
 
 /****************************** Global Output ******************************/
-#define GLOBAL_OUTPUT_ENABLE_PORT		GPIOB
-#define GLOBAL_OUTPUT_ENABLE_PIN		GPIO_PIN_1
-
-#define GLOBAL_OUTPUT_INIT()			do{\
-											GLOBAL_OUTPUT_DISABLE();\
-											GPIO_Dir(GLOBAL_OUTPUT_ENABLE_PORT, GPIO_MODE_OUT_PP, GLOBAL_OUTPUT_ENABLE_PIN);\
-										}while(0)
-#define GLOBAL_OUTPUT_ENABLE()			GPIO_ClrPins(GLOBAL_OUTPUT_ENABLE_PORT, GPIO_PIN_GetMask(GLOBAL_OUTPUT_ENABLE_PIN))
-#define GLOBAL_OUTPUT_DISABLE()			GPIO_SetPins(GLOBAL_OUTPUT_ENABLE_PORT, GPIO_PIN_GetMask(GLOBAL_OUTPUT_ENABLE_PIN))
+#define GLOBAL_OUTPUT_INIT()			
+#define GLOBAL_OUTPUT_ENABLE()			
+#define GLOBAL_OUTPUT_DISABLE()			
 
 /****************************** SW ******************************/
 #define SW_PORT							GPIOB
 #define SW_PIN							GPIO_PIN_11
-#define SW_DIR_PORT						GPIOB
-#define SW_DIR_PIN						GPIO_PIN_12
-#define SW_PULL_PORT					GPIOA
-#define SW_PULL_PIN						GPIO_PIN_2
 #define SW_RST_PORT						GPIOB
 #define SW_RST_PIN						GPIO_PIN_10
-#define SW_RST_DIR_PORT					GPIOA
-#define SW_RST_DIR_PIN					GPIO_PIN_0
-#define SW_RST_PULL_PORT				GPIOA
-#define SW_RST_PULL_PIN					GPIO_PIN_15
 #define SYNCSW_IN_PORT					GPIOB
 #define SYNCSW_IN_PIN					GPIO_PIN_4
 #define SYNCSW_OUT_PORT					GPIOB
 #define SYNCSW_OUT_PIN					GPIO_PIN_5
-#define SYNCSW_DIR_PORT					GPIOA
-#define SYNCSW_DIR_PIN					GPIO_PIN_1
 
-#define SW_PULL_INIT()					do{\
-											GPIO_ClrPins(SW_PULL_PORT, GPIO_PIN_GetMask(SW_PULL_PIN));\
-											GPIO_Dir(SW_PULL_PORT, GPIO_MODE_OUT_PP, SW_PULL_PIN);\
-										}while(0)
-#define SW_PULL_SET()					GPIO_SetPins(SW_PULL_PORT, GPIO_PIN_GetMask(SW_PULL_PIN))
-#define SW_PULL_CLR()					GPIO_ClrPins(SW_PULL_PORT, GPIO_PIN_GetMask(SW_PULL_PIN))
-
-#define SW_DIR_INIT()					do{\
-											SW_SETINPUT_PD();\
-											GPIO_Dir(SW_DIR_PORT, GPIO_MODE_OUT_PP, SW_DIR_PIN);\
-										}while(0)
-#define SW_SETINPUT_PU()				do{\
-											SW_PULL_SET();\
-											GPIO_Dir(SW_PORT, GPIO_MODE_IPU, SW_PIN);\
-											GPIO_ClrPins(SW_DIR_PORT, GPIO_PIN_GetMask(SW_DIR_PIN));\
-										}while(0)
-#define SW_SETINPUT_PD()				do{\
-											SW_PULL_CLR();\
-											GPIO_Dir(SW_PORT, GPIO_MODE_IPD, SW_PIN);\
-											GPIO_ClrPins(SW_DIR_PORT, GPIO_PIN_GetMask(SW_DIR_PIN));\
-										}while(0)
-#define SW_SETOUTPUT()					do{\
-											GPIO_SetPins(SW_DIR_PORT, GPIO_PIN_GetMask(SW_DIR_PIN));\
-											GPIO_Dir(SW_PORT, GPIO_MODE_OUT_PP, SW_PIN);\
-										}while(0)
+#define SW_PULL_INIT()					
+#define SW_DIR_INIT()					SW_SETINPUT_PD()
+#define SW_SETINPUT_PU()				GPIO_Dir(SW_PORT, GPIO_MODE_IPU, SW_PIN)
+#define SW_SETINPUT_PD()				GPIO_Dir(SW_PORT, GPIO_MODE_IPD, SW_PIN)
+#define SW_SETOUTPUT()					GPIO_Dir(SW_PORT, GPIO_MODE_OUT_PP, SW_PIN)
 #define SW_SET()						GPIO_SetPins(SW_PORT, GPIO_PIN_GetMask(SW_PIN))
 #define SW_CLR()						GPIO_ClrPins(SW_PORT, GPIO_PIN_GetMask(SW_PIN))
 #define SW_GET()						GPIO_GetInPins(SW_PORT, GPIO_PIN_GetMask(SW_PIN))
 
-#define SW_RST_PULL_INIT()				do{\
-											GPIO_ClrPins(SW_RST_PULL_PORT, GPIO_PIN_GetMask(SW_RST_PULL_PIN));\
-											GPIO_Dir(SW_RST_PULL_PORT, GPIO_MODE_OUT_PP, SW_RST_PULL_PIN);\
-										}while(0)
-#define SW_RST_PULL_SET()				GPIO_SetPins(SW_RST_PULL_PORT, GPIO_PIN_GetMask(SW_RST_PULL_PIN))
-#define SW_RST_PULL_CLR()				GPIO_ClrPins(SW_RST_PULL_PORT, GPIO_PIN_GetMask(SW_RST_PULL_PIN))
-
-#define SW_RST_DIR_INIT()				do{\
-											SW_RST_SETINPUT_PD();\
-											GPIO_Dir(SW_RST_DIR_PORT, GPIO_MODE_OUT_PP, SW_RST_DIR_PIN);\
-										}while(0)
-#define SW_RST_SETINPUT_PU()			do{\
-											SW_RST_PULL_SET();\
-											GPIO_Dir(SW_RST_PORT, GPIO_MODE_IPU, SW_RST_PIN);\
-											GPIO_ClrPins(SW_RST_DIR_PORT, GPIO_PIN_GetMask(SW_RST_DIR_PIN));\
-										}while(0)
-#define SW_RST_SETINPUT_PD()			do{\
-											SW_RST_PULL_CLR();\
-											GPIO_Dir(SW_RST_PORT, GPIO_MODE_IPD, SW_RST_PIN);\
-											GPIO_ClrPins(SW_RST_DIR_PORT, GPIO_PIN_GetMask(SW_RST_DIR_PIN));\
-										}while(0)
-#define SW_RST_SETOUTPUT()				do{\
-											GPIO_SetPins(SW_RST_DIR_PORT, GPIO_PIN_GetMask(SW_RST_DIR_PIN));\
-											GPIO_Dir(SW_RST_PORT, GPIO_MODE_OUT_PP, SW_RST_PIN);\
-										}while(0)
+#define SW_RST_PULL_INIT()				
+#define SW_RST_DIR_INIT()				SW_RST_SETINPUT_PD()
+#define SW_RST_SETINPUT_PU()			GPIO_Dir(SW_RST_PORT, GPIO_MODE_IPU, SW_RST_PIN)
+#define SW_RST_SETINPUT_PD()			GPIO_Dir(SW_RST_PORT, GPIO_MODE_IPD, SW_RST_PIN)
+#define SW_RST_SETOUTPUT()				GPIO_Dir(SW_RST_PORT, GPIO_MODE_OUT_PP, SW_RST_PIN)
 #define SW_RST_SET()					GPIO_SetPins(SW_RST_PORT, GPIO_PIN_GetMask(SW_RST_PIN))
 #define SW_RST_CLR()					GPIO_ClrPins(SW_RST_PORT, GPIO_PIN_GetMask(SW_RST_PIN))
 #define SW_RST_GET()					GPIO_GetInPins(SW_RST_PORT, GPIO_PIN_GetMask(SW_RST_PIN))
@@ -121,16 +65,9 @@
 #define SYNCSW_DIR_INIT()				do{\
 											SYNCSW_SETINPUT();\
 											GPIO_Dir(SYNCSW_IN_PORT, GPIO_MODE_IPU, SYNCSW_IN_PIN);\
-											GPIO_Dir(SYNCSW_DIR_PORT, GPIO_MODE_OUT_PP, SYNCSW_DIR_PIN);\
 										}while(0)
-#define SYNCSW_SETINPUT()				do{\
-											GPIO_Dir(SYNCSW_OUT_PORT, GPIO_MODE_IN_FLOATING, SYNCSW_OUT_PIN);\
-											GPIO_ClrPins(SYNCSW_DIR_PORT, GPIO_PIN_GetMask(SYNCSW_DIR_PIN));\
-										}while(0)
-#define SYNCSW_SETOUTPUT()				do{\
-											GPIO_SetPins(SYNCSW_DIR_PORT, GPIO_PIN_GetMask(SYNCSW_DIR_PIN));\
-											GPIO_Dir(SYNCSW_OUT_PORT, GPIO_MODE_OUT_PP, SYNCSW_OUT_PIN);\
-										}while(0)
+#define SYNCSW_SETINPUT()				GPIO_Dir(SYNCSW_OUT_PORT, GPIO_MODE_IN_FLOATING, SYNCSW_OUT_PIN)
+#define SYNCSW_SETOUTPUT()				GPIO_Dir(SYNCSW_OUT_PORT, GPIO_MODE_OUT_PP, SYNCSW_OUT_PIN)
 #define SYNCSW_SET()					GPIO_SetPins(SYNCSW_OUT_PORT, GPIO_PIN_GetMask(SYNCSW_OUT_PIN))
 #define SYNCSW_CLR()					GPIO_ClrPins(SYNCSW_OUT_PORT, GPIO_PIN_GetMask(SYNCSW_OUT_PIN))
 #define SYNCSW_GET()					GPIO_GetInPins(SYNCSW_IN_PORT, GPIO_PIN_GetMask(SYNCSW_IN_PIN))
@@ -395,10 +332,7 @@
 #define LPCICP_XRES_SETINPUT()			SW_RST_SETINPUT_PU()
 
 /****************************** I2C ******************************/
-#define I2C_PULL_INIT()					do{\
-											SW_PULL_SET();\
-											SW_RST_PULL_SET();\
-										} while(0)
+#define I2C_PULL_INIT()					
 
 #define I2C_SCL_SETOUTPUT()				SW_RST_SETOUTPUT()
 #define I2C_SCL_SETINPUT()				SW_RST_SETINPUT_PU()
