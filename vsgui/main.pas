@@ -2949,7 +2949,7 @@ begin
     cbboxTarget.ItemIndex := 0;
   end;
 
-  VSProg_CommonInit('');
+  VSProg_CommonInit('F');
 end;
 
 function TFormMain.CortexM3_Init_Para(line: string; var setting: TTargetSetting): boolean;
