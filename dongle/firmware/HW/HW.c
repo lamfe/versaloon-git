@@ -478,7 +478,7 @@ void CDC_Process(void)
 	static uint32 usb_out_buff_len = 0;
 	static uint32 usart_out_buff_len = 0;
 
-	if (USART_GetFlagStatus(USART_DEF_PORT, USART_FLAG_TXE) == SET)
+	if (USART_GetFlagStatus(USART_DEF_PORT, USART_FLAG_TC) == SET)
 	{
 		len = FIFO_Get_Length(&CDC_OUT_fifo);
 		if (len > 0)
