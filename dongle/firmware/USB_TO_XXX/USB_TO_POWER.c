@@ -36,7 +36,7 @@ void USB_TO_POWER_ProcessCmd(uint8* dat, uint16 len)
 		device_num = dat[index] & USB_TO_XXX_IDXMASK;
 		if(device_num >= USB_TO_POWER_NUM)
 		{
-			buffer_out[rep_len++] = USB_TO_XXX_INVALID_INDEX;
+			buffer_reply[rep_len++] = USB_TO_XXX_INVALID_INDEX;
 			return;
 		}
 		length = dat[index + 1] + (dat[index + 2] << 8);
@@ -45,17 +45,17 @@ void USB_TO_POWER_ProcessCmd(uint8* dat, uint16 len)
 		switch(command)
 		{
 		case USB_TO_XXX_INIT:
-			buffer_out[rep_len++] = USB_TO_XXX_OK;
-			buffer_out[rep_len++] = USB_TO_POWER_NUM;
+			buffer_reply[rep_len++] = USB_TO_XXX_OK;
+			buffer_reply[rep_len++] = USB_TO_POWER_NUM;
 
 			break;
 		case USB_TO_XXX_CONFIG:
-			buffer_out[rep_len++] = USB_TO_XXX_OK;
+			buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			// no need to configure in this implementation for they are already configured
 
 			break;
 		case USB_TO_XXX_FINI:
-			buffer_out[rep_len++] = USB_TO_XXX_OK;
+			buffer_reply[rep_len++] = USB_TO_XXX_OK;
 
 			break;
 		case USB_TO_XXX_OUT:
@@ -68,7 +68,7 @@ void USB_TO_POWER_ProcessCmd(uint8* dat, uint16 len)
 			if(voltage == 3300)
 			{
 				// only support 3.3V
-				buffer_out[rep_len++] = USB_TO_XXX_OK;
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 				if (!power_state)
 				{
 					power_state++;
@@ -77,7 +77,7 @@ void USB_TO_POWER_ProcessCmd(uint8* dat, uint16 len)
 			}
 			else if(voltage == 0)
 			{
-				buffer_out[rep_len++] = USB_TO_XXX_OK;
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 				if (power_state)
 				{
 					power_state--;
@@ -86,12 +86,12 @@ void USB_TO_POWER_ProcessCmd(uint8* dat, uint16 len)
 			}
 			else
 			{
-				buffer_out[rep_len++] = USB_TO_XXX_FAILED;
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
 
 			break;
 		default:
-			buffer_out[rep_len++] = USB_TO_XXX_CMD_NOT_SUPPORT;
+			buffer_reply[rep_len++] = USB_TO_XXX_CMD_NOT_SUPPORT;
 
 			break;
 		}

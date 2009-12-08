@@ -38,9 +38,11 @@
 // Page2
 #define USB_TO_POWER				(VERSALOON_USB_TO_XXX_CMD_START + 0x40)
 #define USB_TO_DELAY				(VERSALOON_USB_TO_XXX_CMD_START + 0x41)
+#define USB_TO_POLL					(VERSALOON_USB_TO_XXX_CMD_START + 0x42)
 #define USB_TO_ALL					(VERSALOON_USB_TO_XXX_CMD_START + 0x5F)
 
 // USB_TO_XXX USB Processors
+extern uint8* buffer_reply;
 void USB_TO_XXX_ProcessCmd(uint8* dat, uint16 len);
 // Page0
 void USB_TO_USART_ProcessCmd(uint8* dat, uint16 len);

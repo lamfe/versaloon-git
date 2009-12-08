@@ -276,6 +276,7 @@ int main(void)
 #if USB_TO_XXX_EN
 			else if(cmd <= VERSALOON_USB_TO_XXX_CMD_END)
 			{
+				buffer_reply = buffer_out;
 				USB_TO_XXX_ProcessCmd(buffer_out, cmd_len & 0xFFFF);
 			}
 #endif		// #if USB_TO_XXX_EN

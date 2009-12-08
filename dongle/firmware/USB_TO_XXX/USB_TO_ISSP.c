@@ -35,7 +35,7 @@ void USB_TO_ISSP_ProcessCmd(uint8* dat, uint16 len)
 		device_num = dat[index] & USB_TO_XXX_IDXMASK;
 		if(device_num >= USB_TO_ISSP_NUM)
 		{
-			buffer_out[rep_len++] = USB_TO_XXX_INVALID_INDEX;
+			buffer_reply[rep_len++] = USB_TO_XXX_INVALID_INDEX;
 			return;
 		}
 		length = dat[index + 1] + (dat[index + 2] << 8);
@@ -44,31 +44,31 @@ void USB_TO_ISSP_ProcessCmd(uint8* dat, uint16 len)
 		switch(command)
 		{
 		case USB_TO_XXX_INIT:
-			buffer_out[rep_len++] = USB_TO_XXX_OK;
-			buffer_out[rep_len++] = USB_TO_ISSP_NUM;
+			buffer_reply[rep_len++] = USB_TO_XXX_OK;
+			buffer_reply[rep_len++] = USB_TO_ISSP_NUM;
 
 			break;
 		case USB_TO_XXX_CONFIG:
 			ISSP_Init();
 
-			buffer_out[rep_len++] = USB_TO_XXX_OK;
+			buffer_reply[rep_len++] = USB_TO_XXX_OK;
 
 			break;
 		case USB_TO_XXX_FINI:
 			ISSP_Fini();
 
-			buffer_out[rep_len++] = USB_TO_XXX_OK;
+			buffer_reply[rep_len++] = USB_TO_XXX_OK;
 
 			break;
 		case USB_TO_ISSP_Vector:
 			if(length % 3 != 0)
 			{
-				buffer_out[rep_len++] = USB_TO_XXX_INVALID_PARA;
+				buffer_reply[rep_len++] = USB_TO_XXX_INVALID_PARA;
 				return;
 			}
 			vector_num = length / 3;
 
-			buffer_out[rep_len++] = USB_TO_XXX_OK;
+			buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			for(i = 0; i < vector_num; i++)
 			{
 				para = dat[index + i * 3];
@@ -81,7 +81,7 @@ void USB_TO_ISSP_ProcessCmd(uint8* dat, uint16 len)
 					if(para & USB_TO_ISSP_ATTR_READ)
 					{
 						// Read
-						buffer_out[rep_len++] = 
+						buffer_reply[rep_len++] = 
 							ISSP_Vector(para & USB_TO_ISSP_ATTR_BANK,
 										dat[index + i * 3 + 1],
 										dat[index + i * 3 + 2],
@@ -105,33 +105,33 @@ void USB_TO_ISSP_ProcessCmd(uint8* dat, uint16 len)
 			if((dat[index] == ISSP_PM_POWER_ON) && (Vtarget > TVCC_SAMPLE_MIN_POWER))
 			{
 				// No power should be on the target if using power-on mode
-				buffer_out[rep_len++] = USB_TO_XXX_FAILED;
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
 			else
 			{
 				ISSP_EnterProgMode(dat[index]);
-				buffer_out[rep_len++] = USB_TO_XXX_OK;
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
 
 			break;
 		case USB_TO_ISSP_LeaveProgMode:
 			ISSP_LeaveProgMode(dat[index]);
-			buffer_out[rep_len++] = USB_TO_XXX_OK;
+			buffer_reply[rep_len++] = USB_TO_XXX_OK;
 
 			break;
 		case USB_TO_ISSP_WaitAndPoll:
 			if(ISSP_WaitAndPoll() == ISSP_WAP_OK)
 			{
-				buffer_out[rep_len++] = USB_TO_XXX_OK;
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
 			else
 			{
-				buffer_out[rep_len++] = USB_TO_XXX_FAILED;
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
 
 			break;
 		default:
-			buffer_out[rep_len++] = USB_TO_XXX_CMD_NOT_SUPPORT;
+			buffer_reply[rep_len++] = USB_TO_XXX_CMD_NOT_SUPPORT;
 
 			break;
 		}

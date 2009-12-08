@@ -38,7 +38,7 @@ void USB_TO_C2_ProcessCmd(uint8* dat, uint16 len)
 		device_num = dat[index] & USB_TO_XXX_IDXMASK;
 		if(device_num >= USB_TO_C2_NUM)
 		{
-			buffer_out[rep_len++] = USB_TO_XXX_INVALID_INDEX;
+			buffer_reply[rep_len++] = USB_TO_XXX_INVALID_INDEX;
 			return;
 		}
 		length = dat[index + 1] + (dat[index + 2] << 8);
@@ -47,8 +47,8 @@ void USB_TO_C2_ProcessCmd(uint8* dat, uint16 len)
 		switch(command)
 		{
 		case USB_TO_XXX_INIT:
-			buffer_out[rep_len++] = USB_TO_XXX_OK;
-			buffer_out[rep_len++] = USB_TO_C2_NUM;
+			buffer_reply[rep_len++] = USB_TO_XXX_OK;
+			buffer_reply[rep_len++] = USB_TO_C2_NUM;
 
 			GLOBAL_OUTPUT_Acquire();
 			PWREXT_Acquire();
@@ -56,13 +56,13 @@ void USB_TO_C2_ProcessCmd(uint8* dat, uint16 len)
 
 			break;
 		case USB_TO_XXX_CONFIG:
-			buffer_out[rep_len++] = USB_TO_XXX_OK;
+			buffer_reply[rep_len++] = USB_TO_XXX_OK;
 
 			C2_Init();
 
 			break;
 		case USB_TO_XXX_FINI:
-			buffer_out[rep_len++] = USB_TO_XXX_OK;
+			buffer_reply[rep_len++] = USB_TO_XXX_OK;
 
 			C2_Fini();
 
@@ -74,13 +74,13 @@ void USB_TO_C2_ProcessCmd(uint8* dat, uint16 len)
 			tmp = dat[index + 0] & 0x07;
 			if(dat[index + 0] & 0x80)
 			{
-				if(C2_ReadData(buffer_out + rep_len + 1))
+				if(C2_ReadData(buffer_reply + rep_len + 1))
 				{
-					buffer_out[rep_len] = USB_TO_XXX_FAILED;
+					buffer_reply[rep_len] = USB_TO_XXX_FAILED;
 				}
 				else
 				{
-					buffer_out[rep_len] = USB_TO_XXX_OK;
+					buffer_reply[rep_len] = USB_TO_XXX_OK;
 				}
 				rep_len += 1 + tmp;
 			}
@@ -88,18 +88,18 @@ void USB_TO_C2_ProcessCmd(uint8* dat, uint16 len)
 			{
 				if(C2_WriteData(dat[index + 1]))
 				{
-					buffer_out[rep_len++] = USB_TO_XXX_FAILED;
+					buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 				}
 				else
 				{
-					buffer_out[rep_len++] = USB_TO_XXX_OK;
+					buffer_reply[rep_len++] = USB_TO_XXX_OK;
 				}
 			}
 
 			break;
 		case USB_TO_C2_Addr:
 			C2_WriteAddr(dat[index]);
-			buffer_out[rep_len++] = USB_TO_XXX_OK;
+			buffer_reply[rep_len++] = USB_TO_XXX_OK;
 
 			break;
 		case USB_TO_C2_PollStats:
@@ -109,7 +109,7 @@ void USB_TO_C2_ProcessCmd(uint8* dat, uint16 len)
 				C2_ReadAddr(&tmp);
 				if((tmp & dat[index + 0]) == dat[index + 1])
 				{
-					buffer_out[rep_len++] = USB_TO_XXX_OK;
+					buffer_reply[rep_len++] = USB_TO_XXX_OK;
 					break;
 				}
 				poll_cnt--;
@@ -117,12 +117,12 @@ void USB_TO_C2_ProcessCmd(uint8* dat, uint16 len)
 			}
 			if(!poll_cnt)
 			{
-				buffer_out[rep_len++] = USB_TO_XXX_FAILED;
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
 
 			break;
 		default:
-			buffer_out[rep_len++] = USB_TO_XXX_INVALID_CMD;
+			buffer_reply[rep_len++] = USB_TO_XXX_INVALID_CMD;
 
 			break;
 		}

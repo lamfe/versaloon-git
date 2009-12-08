@@ -42,7 +42,7 @@ void USB_TO_SPI_ProcessCmd(uint8* dat, uint16 len)
 		device_num = dat[index] & USB_TO_XXX_IDXMASK;
 		if(device_num >= USB_TO_SPI_NUM)
 		{
-			buffer_out[rep_len++] = USB_TO_XXX_INVALID_INDEX;
+			buffer_reply[rep_len++] = USB_TO_XXX_INVALID_INDEX;
 			return;
 		}
 		length = dat[index + 1] + (dat[index + 2] << 8);
@@ -51,8 +51,8 @@ void USB_TO_SPI_ProcessCmd(uint8* dat, uint16 len)
 		switch(command)
 		{
 		case USB_TO_XXX_INIT:
-			buffer_out[rep_len++] = USB_TO_XXX_OK;
-			buffer_out[rep_len++] = USB_TO_SPI_NUM;
+			buffer_reply[rep_len++] = USB_TO_XXX_OK;
+			buffer_reply[rep_len++] = USB_TO_SPI_NUM;
 
 			GLOBAL_OUTPUT_Acquire();
 			PWREXT_Acquire();
@@ -106,7 +106,7 @@ void USB_TO_SPI_ProcessCmd(uint8* dat, uint16 len)
 				SPI_SetClk(frequency * 1000);
 			}
 
-			buffer_out[rep_len++] = USB_TO_XXX_OK;
+			buffer_reply[rep_len++] = USB_TO_XXX_OK;
 
 			break;
 		case USB_TO_XXX_FINI:
@@ -116,20 +116,20 @@ void USB_TO_SPI_ProcessCmd(uint8* dat, uint16 len)
 			PWREXT_Release();
 			GLOBAL_OUTPUT_Release();
 
-			buffer_out[rep_len++] = USB_TO_XXX_OK;
+			buffer_reply[rep_len++] = USB_TO_XXX_OK;
 
 			break;
 		case USB_TO_XXX_IN_OUT:
-			buffer_out[rep_len++] = USB_TO_XXX_OK;
+			buffer_reply[rep_len++] = USB_TO_XXX_OK;
 
 			for(i = 0; i < length; i++)
 			{
-				buffer_out[rep_len++] = SPI_RW(dat[index + i]);
+				buffer_reply[rep_len++] = SPI_RW(dat[index + i]);
 			}
 
 			break;
 		default:
-			buffer_out[rep_len++] = USB_TO_XXX_CMD_NOT_SUPPORT;
+			buffer_reply[rep_len++] = USB_TO_XXX_CMD_NOT_SUPPORT;
 
 			break;
 		}
