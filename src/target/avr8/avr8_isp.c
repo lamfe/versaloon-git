@@ -512,7 +512,7 @@ try_frequency:
 						cmd_buf[2] = (uint8_t)((ml_tmp->addr + i + j) >> 0);
 						cmd_buf[3] = pi->eeprom[ml_tmp->addr + i + j];
 						spi_io(cmd_buf, 4, NULL, 0, 0);
-						delay_ms(8);
+						delay_ms(10);
 					}
 					
 					if (ERROR_OK != commit())
