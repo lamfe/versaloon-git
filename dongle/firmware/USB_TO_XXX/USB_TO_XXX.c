@@ -19,6 +19,8 @@
 
 #include "USB_TO_XXX.h"
 
+uint8* buffer_reply = NULL;
+
 void USB_TO_XXX_ProcessCmd(uint8* dat, uint16 len)
 {
 	uint16 USB_TO_XXX_CmdIdx;
@@ -130,10 +132,13 @@ void USB_TO_XXX_ProcessCmd(uint8* dat, uint16 len)
 		case USB_TO_DELAY:
 			DelayUSMS(dat[USB_TO_XXX_CmdIdx + 3] + (dat[USB_TO_XXX_CmdIdx + 4] << 8));
 
-			buffer_out[rep_len++] = USB_TO_XXX_OK;
+			buffer_reply[rep_len++] = USB_TO_XXX_OK;
+			break;
+		case USB_TO_POLL:
+			
 			break;
 		default:
-			buffer_out[rep_len++] = USB_TO_XXX_CMD_NOT_SUPPORT;
+			buffer_reply[rep_len++] = USB_TO_XXX_CMD_NOT_SUPPORT;
 			break;
 		}
 

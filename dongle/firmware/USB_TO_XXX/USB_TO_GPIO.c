@@ -36,7 +36,7 @@ void USB_TO_GPIO_ProcessCmd(uint8* dat, uint16 len)
 		device_num = dat[index] & USB_TO_XXX_IDXMASK;
 		if(device_num >= USB_TO_GPIO_NUM)
 		{
-			buffer_out[rep_len++] = USB_TO_XXX_INVALID_INDEX;
+			buffer_reply[rep_len++] = USB_TO_XXX_INVALID_INDEX;
 			return;
 		}
 		length = dat[index + 1] + (dat[index + 2] << 8);
@@ -45,8 +45,8 @@ void USB_TO_GPIO_ProcessCmd(uint8* dat, uint16 len)
 		switch(command)
 		{
 		case USB_TO_XXX_INIT:
-			buffer_out[rep_len++] = USB_TO_XXX_OK;
-			buffer_out[rep_len++] = USB_TO_GPIO_NUM;
+			buffer_reply[rep_len++] = USB_TO_XXX_OK;
+			buffer_reply[rep_len++] = USB_TO_GPIO_NUM;
 
 			GLOBAL_OUTPUT_Acquire();
 			PWREXT_Acquire();
@@ -62,7 +62,7 @@ void USB_TO_GPIO_ProcessCmd(uint8* dat, uint16 len)
 			if ((mask_data & io_data & ~USB_TO_GPIO_OUT_MSK) 
 				|| (mask_data & ~io_data & ~USB_TO_GPIO_IN_MSK))
 			{
-				buffer_out[rep_len++] = USB_TO_XXX_INVALID_PARA;
+				buffer_reply[rep_len++] = USB_TO_XXX_INVALID_PARA;
 				return;
 			}
 
@@ -143,11 +143,11 @@ void USB_TO_GPIO_ProcessCmd(uint8* dat, uint16 len)
 			{
 				JTAG_TAP_RTCK_SETINPUT();
 			}
-			buffer_out[rep_len++] = USB_TO_XXX_OK;
+			buffer_reply[rep_len++] = USB_TO_XXX_OK;
 
 			break;
 		case USB_TO_XXX_FINI:
-			buffer_out[rep_len++] = USB_TO_XXX_OK;
+			buffer_reply[rep_len++] = USB_TO_XXX_OK;
 
 			PWREXT_Release();
 			GLOBAL_OUTPUT_Release();
@@ -157,10 +157,10 @@ void USB_TO_GPIO_ProcessCmd(uint8* dat, uint16 len)
 			mask_data = dat[index + 0] + (dat[index + 1] << 8);
 			if(mask_data & ~USB_TO_GPIO_IN_MSK)
 			{
-				buffer_out[rep_len++] = USB_TO_XXX_INVALID_PARA;
+				buffer_reply[rep_len++] = USB_TO_XXX_INVALID_PARA;
 				return;
 			}
-			buffer_out[rep_len++] = USB_TO_XXX_OK;
+			buffer_reply[rep_len++] = USB_TO_XXX_OK;
 
 			port_data = 0;
 			if(mask_data & USB_TO_GPIO_SRST)
@@ -208,19 +208,19 @@ void USB_TO_GPIO_ProcessCmd(uint8* dat, uint16 len)
 				}
 			}
 
-			buffer_out[rep_len++] = (uint8)port_data;
-			buffer_out[rep_len++] = (uint8)(port_data >> 8);
+			buffer_reply[rep_len++] = (uint8)port_data;
+			buffer_reply[rep_len++] = (uint8)(port_data >> 8);
 
 			break;
 		case USB_TO_XXX_OUT:
 			mask_data = dat[index + 0] + (dat[index + 1] << 8);
 			if((mask_data & ~USB_TO_GPIO_MSK) > 0)
 			{
-				buffer_out[rep_len++] = USB_TO_XXX_INVALID_PARA;
+				buffer_reply[rep_len++] = USB_TO_XXX_INVALID_PARA;
 				return;
 			}
 
-			buffer_out[rep_len++] = USB_TO_XXX_OK;
+			buffer_reply[rep_len++] = USB_TO_XXX_OK;
 
 			port_data = dat[index + 2] + (dat[index + 3] << 8);
 
@@ -295,7 +295,7 @@ void USB_TO_GPIO_ProcessCmd(uint8* dat, uint16 len)
 
 			break;
 		default:
-			buffer_out[rep_len++] = USB_TO_XXX_CMD_NOT_SUPPORT;
+			buffer_reply[rep_len++] = USB_TO_XXX_CMD_NOT_SUPPORT;
 
 			break;
 		}

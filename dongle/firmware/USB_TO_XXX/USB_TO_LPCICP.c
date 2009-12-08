@@ -32,7 +32,7 @@ void USB_TO_LPCICP_ProcessCmd(uint8* dat, uint16 len)
 		device_num = dat[index] & USB_TO_XXX_IDXMASK;
 		if(device_num >= USB_TO_LPCICP_NUM)
 		{
-			buffer_out[rep_len++] = USB_TO_XXX_INVALID_INDEX;
+			buffer_reply[rep_len++] = USB_TO_XXX_INVALID_INDEX;
 			return;
 		}
 		length = dat[index + 1] + (dat[index + 2] << 8);
@@ -41,57 +41,57 @@ void USB_TO_LPCICP_ProcessCmd(uint8* dat, uint16 len)
 		switch(command)
 		{
 		case USB_TO_XXX_INIT:
-			buffer_out[rep_len++] = USB_TO_XXX_OK;
-			buffer_out[rep_len++] = USB_TO_LPCICP_NUM;
+			buffer_reply[rep_len++] = USB_TO_XXX_OK;
+			buffer_reply[rep_len++] = USB_TO_LPCICP_NUM;
 
 			LPCICP_Init();
 
 			break;
 		case USB_TO_XXX_CONFIG:
-			buffer_out[rep_len++] = USB_TO_XXX_OK;
+			buffer_reply[rep_len++] = USB_TO_XXX_OK;
 
 			break;
 		case USB_TO_XXX_FINI:
 			LPCICP_LeavrProgMode();
 			LPCICP_Fini();
-			buffer_out[rep_len++] = USB_TO_XXX_OK;
+			buffer_reply[rep_len++] = USB_TO_XXX_OK;
 
 			break;
 		case USB_TO_LPCICP_EnterProgMode:
 			if (Vtarget > TVCC_SAMPLE_MIN_POWER)
 			{
 				// No power should be on the target
-				buffer_out[rep_len++] = USB_TO_XXX_FAILED;
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
 			else
 			{
 				LPCICP_EnterProgMode();
-				buffer_out[rep_len++] = USB_TO_XXX_OK;
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
 
 			break;
 		case USB_TO_LPCICP_In:
 			LPCICP_In(&dat[index], length);
-			buffer_out[rep_len++] = USB_TO_XXX_OK;
-			memcpy(&buffer_out[rep_len], &dat[index], length);
+			buffer_reply[rep_len++] = USB_TO_XXX_OK;
+			memcpy(&buffer_reply[rep_len], &dat[index], length);
 			rep_len += length;
 
 			break;
 		case USB_TO_LPCICP_Out:
 			LPCICP_Out(&dat[index], length);
-			buffer_out[rep_len++] = USB_TO_XXX_OK;
+			buffer_reply[rep_len++] = USB_TO_XXX_OK;
 
 			break;
 		case USB_TO_LPCICP_PollRdy:
-			buffer_out[rep_len++] = USB_TO_XXX_OK;
-			buffer_out[rep_len++] = LPCICP_Poll(dat[index], 		// out
+			buffer_reply[rep_len++] = USB_TO_XXX_OK;
+			buffer_reply[rep_len++] = LPCICP_Poll(dat[index], 		// out
 												dat[index + 1], 	// setbit
 												dat[index + 2],		// clearbit
 												dat[index + 3] + (dat[index + 4] << 8));	// pollcnt
 
 			break;
 		default:
-			buffer_out[rep_len++] = USB_TO_XXX_CMD_NOT_SUPPORT;
+			buffer_reply[rep_len++] = USB_TO_XXX_CMD_NOT_SUPPORT;
 
 			break;
 		}

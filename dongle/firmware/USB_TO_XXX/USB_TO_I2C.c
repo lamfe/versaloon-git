@@ -37,7 +37,7 @@ void USB_TO_I2C_ProcessCmd(uint8* dat, uint16 len)
 		device_num = dat[index] & USB_TO_XXX_IDXMASK;
 		if(device_num >= USB_TO_I2C_NUM)
 		{
-			buffer_out[rep_len++] = USB_TO_XXX_INVALID_INDEX;
+			buffer_reply[rep_len++] = USB_TO_XXX_INVALID_INDEX;
 			return;
 		}
 		length = dat[index + 1] + (dat[index + 2] << 8);
@@ -46,8 +46,8 @@ void USB_TO_I2C_ProcessCmd(uint8* dat, uint16 len)
 		switch(command)
 		{
 		case USB_TO_XXX_INIT:
-			buffer_out[rep_len++] = USB_TO_XXX_OK;
-			buffer_out[rep_len++] = USB_TO_I2C_NUM;
+			buffer_reply[rep_len++] = USB_TO_XXX_OK;
+			buffer_reply[rep_len++] = USB_TO_I2C_NUM;
 
 			PWREXT_Acquire();
 			DelayMS(1);
@@ -56,16 +56,16 @@ void USB_TO_I2C_ProcessCmd(uint8* dat, uint16 len)
 		case USB_TO_XXX_CONFIG:
 			if(I2C_Init(dat[index + 0] + (dat[index + 1] << 8)) == 0)
 			{
-				buffer_out[rep_len++] = USB_TO_XXX_OK;
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
 			else
 			{
-				buffer_out[rep_len++] = USB_TO_XXX_FAILED;
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
 
 			break;
 		case USB_TO_XXX_FINI:
-			buffer_out[rep_len++] = USB_TO_XXX_OK;
+			buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			I2C_Fini();
 
 			break;
@@ -73,17 +73,17 @@ void USB_TO_I2C_ProcessCmd(uint8* dat, uint16 len)
 			result_index = rep_len;
 			data_len = dat[index + 1] + (dat[index + 2] << 8);
 			result = I2C_Read(	dat[index + 0],							// chip_addr
-								&buffer_out[rep_len + 1],				// data
+								&buffer_reply[rep_len + 1],				// data
 								data_len,								// data_len
 								dat[index + 3]);						// stop
 
 			if(result == data_len)
 			{
-				buffer_out[result_index] = USB_TO_XXX_OK;
+				buffer_reply[result_index] = USB_TO_XXX_OK;
 			}
 			else
 			{
-				buffer_out[result_index] = USB_TO_XXX_FAILED;
+				buffer_reply[result_index] = USB_TO_XXX_FAILED;
 			}
 			rep_len += data_len + 1;
 
@@ -98,17 +98,17 @@ void USB_TO_I2C_ProcessCmd(uint8* dat, uint16 len)
 
 			if(result == data_len)
 			{
-				buffer_out[result_index] = USB_TO_XXX_OK;
+				buffer_reply[result_index] = USB_TO_XXX_OK;
 			}
 			else
 			{
-				buffer_out[result_index] = USB_TO_XXX_FAILED;
+				buffer_reply[result_index] = USB_TO_XXX_FAILED;
 			}
 			rep_len += 1;
 
 			break;
 		default:
-			buffer_out[rep_len++] = USB_TO_XXX_CMD_NOT_SUPPORT;
+			buffer_reply[rep_len++] = USB_TO_XXX_CMD_NOT_SUPPORT;
 
 			break;
 		}
