@@ -14,7 +14,7 @@
  *      2009-06-20:     created(by SimonQian)                             *
  **************************************************************************/
 
-extern uint8 PWREXT_EnableCount;
-
 void PWREXT_Acquire(void);
 void PWREXT_Release(void);
+void PWREXT_ForceRelease(void);
+uint8 PWREXT_GetState(void);

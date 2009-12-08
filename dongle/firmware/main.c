@@ -188,10 +188,7 @@ void PWREXT_Check(uint8 b_control_led)
 		if((Vtarget < TVCC_SAMPLE_MIN_POWER))
 		{
 			// release power
-			while(PWREXT_EnableCount)
-			{
-				PWREXT_Release();
-			}
+			PWREXT_ForceRelease();
 		}
 #endif
 		if (b_control_led)

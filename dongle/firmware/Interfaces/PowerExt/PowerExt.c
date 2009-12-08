@@ -19,7 +19,7 @@
 
 #include "PowerExt.h"
 
-uint8 PWREXT_EnableCount = 0;
+static uint8 PWREXT_EnableCount = 0;
 
 void PWREXT_Acquire(void)
 {
@@ -43,6 +43,19 @@ void PWREXT_Release(void)
 			PWREXT_DISABLE();
 		}
 	}
+}
+
+void PWREXT_ForceRelease(void)
+{
+	while(PWREXT_EnableCount)
+	{
+		PWREXT_Release();
+	}
+}
+
+uint8 PWREXT_GetState(void)
+{
+	return PWREXT_EnableCount;
 }
 
 #endif /* USB_TO_POWER_EN || POWER_OUT_EN*/
