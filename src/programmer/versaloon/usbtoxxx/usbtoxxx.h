@@ -156,5 +156,18 @@ RESULT usbtopoll_start(uint16_t retry, uint16_t interval_us);
 RESULT usbtopoll_end(void);
 RESULT usbtopoll_checkbyte(uint8_t offset, uint8_t mask, uint8_t value);
 
+
+
+// USB_TO_SWJ
+RESULT usbtoswj_init(void);
+RESULT usbtoswj_fini(void);
+RESULT usbtoswj_config(uint8_t interface_index, uint8_t trn, uint16_t retry, 
+					   uint16_t dly);
+RESULT usbtoswj_seqout(uint8_t interface_index, uint8_t *data, uint16_t bit_len);
+RESULT usbtoswj_seqin(uint8_t interface_index, uint8_t *data, uint16_t bit_len);
+RESULT usbtoswj_transact(uint8_t interface_index, uint8_t request, uint32_t *data);
+uint8_t usbtoswj_get_last_ack(void);
+
+
 #endif /* __USBTOXXX_H_INCLUDED__ */
 

@@ -97,6 +97,7 @@
 #	define USB_TO_MSP430_SBW_EN			0
 #	define USB_TO_SBW_EN				0
 #	define USB_TO_LPCICP_EN				0
+#	define USB_TO_SWJ_EN				0
 // page 2
 #	define USB_TO_POWER_EN				1
 #endif
@@ -116,9 +117,14 @@
 #define MSD_MEMORY_START_ADDR			0x08005000	// from 20K
 #define MSD_MEMORY_BLOCK_SIZE			1024
 
+/*************************** Mass-prodct ***************************/
+#define VERSALOON_OFFLINE_ADDR			(0x08000000 + 40 * 1024)
+#define VERSALOON_OFFLINE_SIZE			(32 * 1024)
+#define VERSALOON_OFFLINE_PAGE_SIZE		(1 * 1024)
+
 /***************************** Buffer ****************************/
-#define USB_DATA_BUFF_SIZE				(12 * 1024)
-#define ASYN_DATA_BUFF_SIZE				(4 * 1024)
+#define USB_DATA_BUFF_SIZE				(1 * 1024)
+#define ASYN_DATA_BUFF_SIZE				(512)
 
 /***************************** EXTERN ****************************/
 extern __IO uint32_t rep_len, cmd_len;
@@ -133,6 +139,9 @@ extern uint16 Vtarget;
 extern void System_Idle_Loop(void);
 extern void GLOBAL_OUTPUT_Acquire(void);
 extern void GLOBAL_OUTPUT_Release(void);
+
+/*************************** Off-Line ***************************/
+#define VERSALOON_OFFDATA_SIZE			(24 * 1024)
 
 /**************************** Checks ****************************/
 #define _HARDWARE_VER_STR				make_ver(_HARDWARE_VER)

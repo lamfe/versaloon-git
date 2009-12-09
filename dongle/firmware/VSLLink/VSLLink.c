@@ -203,6 +203,7 @@ void VSLLink_ProcessCmd(uint8* dat, uint16 len)
 		rep_len = sizeof(VSLLink_Ver) + 2;
 		break;
 	case VSLLINK_CMD_DISCONN:
+		SWJ_Fini();
 		JTAG_TAP_HS_Fini();
 		VSLLink_SetPortDir(0xFF, 0x00);
 

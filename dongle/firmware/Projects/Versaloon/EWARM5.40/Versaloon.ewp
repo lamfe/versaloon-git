@@ -1983,6 +1983,9 @@
       <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB_TO_SPI.c</name>
     </file>
     <file>
+      <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB_TO_SWJ.c</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB_TO_USART.c</name>
     </file>
     <file>

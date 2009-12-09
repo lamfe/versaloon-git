@@ -34,6 +34,7 @@
 #define USB_TO_C2					(VERSALOON_USB_TO_XXX_CMD_START + 0x23)
 #define USB_TO_SBW					(VERSALOON_USB_TO_XXX_CMD_START + 0x24)
 #define USB_TO_LPCICP				(VERSALOON_USB_TO_XXX_CMD_START + 0x25)
+#define USB_TO_SWJ					(VERSALOON_USB_TO_XXX_CMD_START + 0x26)
 #define USB_TO_MSP430_JTAG			(VERSALOON_USB_TO_XXX_CMD_START + 0x38)
 // Page2
 #define USB_TO_POWER				(VERSALOON_USB_TO_XXX_CMD_START + 0x40)
@@ -60,6 +61,7 @@ void USB_TO_JTAG_HL_ProcessCmd(uint8* dat, uint16 len);
 void USB_TO_ISSP_ProcessCmd(uint8* dat, uint16 len);
 void USB_TO_C2_ProcessCmd(uint8* dat, uint16 len);
 void USB_TO_LPCICP_ProcessCmd(uint8* dat, uint16 len);
+void USB_TO_SWJ_ProcessCmd(uint8* dat, uint16 len);
 void USB_TO_MSP430_JTAG_ProcessCmd(uint8* dat, uint16 len);
 // Page2
 void USB_TO_POWER_ProcessCmd(uint8* dat, uint16 len);
@@ -99,6 +101,10 @@ extern int8 USB_TO_POLL_Index;
 #define USB_TO_LPCICP_In			USB_TO_XXX_IN
 #define USB_TO_LPCICP_Out			USB_TO_XXX_OUT
 #define USB_TO_LPCICP_PollRdy		USB_T0_XXX_POLL
+// USB_TO_SWJ
+#define USB_TO_SWJ_SEQOUT			USB_TO_XXX_OUT
+#define USB_TO_SWJ_SEQIN			USB_TO_XXX_IN
+#define USB_TO_SWJ_Transact			USB_TO_XXX_IN_OUT
 // USB_TO_I2C
 #define USB_TO_I2C_Read				USB_TO_XXX_IN
 #define USB_TO_I2C_Write			USB_TO_XXX_OUT
@@ -189,6 +195,7 @@ extern int8 USB_TO_POLL_Index;
 #define USB_TO_JTAG_HL_NUM			1
 #define USB_TO_ISSP_NUM				1
 #define USB_TO_LPCICP_NUM			1
+#define USB_TO_SWJ_NUM				1
 #define USB_TO_C2_NUM				1
 #define USB_TO_MSP430_JTAG_NUM		1
 #define USB_TO_SBW_NUM				1
