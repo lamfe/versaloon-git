@@ -887,6 +887,40 @@ RESULT versaloon_lpcicp_poll_ready(uint8_t data, uint8_t *ret, uint8_t setmask,
 	return usbtolpcicp_poll_ready(VERSALOON_LPCICP_PORT, ret, data, setmask, 
 								  clearmask, pollcnt);
 }
+// SWJ
+RESULT versaloon_swj_commit(uint8_t *result)
+{
+	RESULT ret;
+	
+	ret = usbtoxxx_execute_command();
+	*result = usbtoswj_get_last_ack();
+	
+	return ret;
+}
+RESULT versaloon_swj_init(void)
+{
+	return usbtoswj_init();
+}
+RESULT versaloon_swj_fini(void)
+{
+	return usbtoswj_fini();
+}
+RESULT versaloon_swj_setpara(uint8_t trn, uint16_t retry, uint16_t dly)
+{
+	return usbtoswj_config(VERSALOON_SWJ_PORT, trn, retry, dly);
+}
+RESULT versaloon_swj_seqout(uint8_t *data, uint16_t bit_len)
+{
+	return usbtoswj_seqout(VERSALOON_SWJ_PORT, data, bit_len);
+}
+RESULT versaloon_swj_seqin(uint8_t *data, uint16_t bit_len)
+{
+	return usbtoswj_seqin(VERSALOON_SWJ_PORT, data, bit_len);
+}
+RESULT versaloon_swj_transact(uint8_t request, uint32_t *data)
+{
+	return usbtoswj_transact(VERSALOON_SWJ_PORT, request, data);
+}
 // JTAG
 RESULT versaloon_jtaghl_register_callback(jtag_callback_t send_callback, 
 									 jtag_callback_t receive_callback)
@@ -1125,13 +1159,13 @@ RESULT versaloon_init_capability(void *p)
 	
 	// JTAG_HL & SWJ
 #if 1
-	((programmer_info_t *)p)->swj_init = vsllink_swj_connect;
-	((programmer_info_t *)p)->swj_fini = vsllink_swj_disconnect;
-	((programmer_info_t *)p)->swj_seqout = vsllink_swj_seqout;
-	((programmer_info_t *)p)->swj_seqin = vsllink_swj_seqin;
-	((programmer_info_t *)p)->swj_transact = vsllink_swj_transact;
-	((programmer_info_t *)p)->swj_setpara = vsllink_swj_setpara;
-	((programmer_info_t *)p)->swj_commit = vsllink_swj_commit;
+	((programmer_info_t *)p)->swj_init = versaloon_swj_init;
+	((programmer_info_t *)p)->swj_fini = versaloon_swj_fini;
+	((programmer_info_t *)p)->swj_seqout = versaloon_swj_seqout;
+	((programmer_info_t *)p)->swj_seqin = versaloon_swj_seqin;
+	((programmer_info_t *)p)->swj_transact = versaloon_swj_transact;
+	((programmer_info_t *)p)->swj_setpara = versaloon_swj_setpara;
+	((programmer_info_t *)p)->swj_commit = versaloon_swj_commit;
 
 	((programmer_info_t *)p)->jtag_hl_init = versaloon_jtaghl_init;
 	((programmer_info_t *)p)->jtag_hl_fini = versaloon_jtaghl_fini;

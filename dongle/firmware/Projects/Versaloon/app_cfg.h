@@ -97,6 +97,7 @@
 #	define USB_TO_MSP430_SBW_EN			0
 #	define USB_TO_SBW_EN				0
 #	define USB_TO_LPCICP_EN				1
+#	define USB_TO_SWJ_EN				1
 // page 2
 #	define USB_TO_POWER_EN				1
 #endif
