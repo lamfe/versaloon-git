@@ -3,6 +3,7 @@ object FormFileSelector: TFormFileSelector
   Height = 300
   Top = 442
   Width = 400
+  BorderIcons = [biSystemMenu, biMinimize]
   Caption = 'Select File'
   ClientHeight = 300
   ClientWidth = 400
