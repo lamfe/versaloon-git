@@ -2319,6 +2319,7 @@
     <ee_page_num>64</ee_page_num>
     <param0>0</param0>
     <param1>1</param1>
+	<param2>1</param2>
     <fuse init="0xFFFFFF" bytesize="3">
       <warning>
         <w mask="0x008000" value="0x000000" msg="WARNING! Disabling external reset will make the ISP interface inaccessible!" />

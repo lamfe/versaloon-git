@@ -144,5 +144,12 @@ RESULT usbtopwr_fini(void);
 RESULT usbtopwr_config(uint8_t interface_index);
 RESULT usbtopwr_output(uint8_t interface_index, uint16_t mV);
 
+
+
+// USB_TO_POLL
+RESULT usbtopoll_start(uint16_t retry, uint16_t interval_us);
+RESULT usbtopoll_end(void);
+RESULT usbtopoll_checkbyte(uint8_t offset, uint8_t mask, uint8_t value);
+
 #endif /* __USBTOXXX_H_INCLUDED__ */
 

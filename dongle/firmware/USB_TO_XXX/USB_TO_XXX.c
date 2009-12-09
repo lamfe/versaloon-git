@@ -19,7 +19,31 @@
 
 #include "USB_TO_XXX.h"
 
-uint8* buffer_reply = NULL;
+typedef struct
+{
+	uint8 *buffer_reply_save;
+	uint32 rep_len_save;
+	uint16 cmd_index;
+	uint16 poll_retry;
+	uint16 poll_interval;
+	uint8 poll_result;
+} USB_TO_POLL_Context_t;
+USB_TO_POLL_Context_t USB_TO_POLL_Context[USB_TO_POLL_NUM];
+static const uint8 *USB_TO_POLL_buffer_reply[USB_TO_POLL_NUM] = 
+{
+#if USB_TO_POLL_NUM >= 1
+	asyn_rx_buf + 1024 * 1
+#endif
+#if USB_TO_POLL_NUM >= 2
+	,asyn_rx_buf + 1024 * 2
+#endif
+#if USB_TO_POLL_NUM >= 3
+	,asyn_rx_buf + 1024 * 3
+#endif
+};
+int8 USB_TO_POLL_Index;
+
+uint8* buffer_reply;
 
 void USB_TO_XXX_ProcessCmd(uint8* dat, uint16 len)
 {
@@ -135,7 +159,101 @@ void USB_TO_XXX_ProcessCmd(uint8* dat, uint16 len)
 			buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			break;
 		case USB_TO_POLL:
-			
+			switch(dat[USB_TO_XXX_CmdIdx + 3])
+			{
+			case USB_TO_POLL_START:
+				USB_TO_POLL_Index++;
+				if ((USB_TO_POLL_Index >= USB_TO_POLL_NUM) || (USB_TO_POLL_Index < 0))
+				{
+					buffer_reply[rep_len++] = USB_TO_XXX_INVALID_INDEX;
+				}
+				else
+				{
+					buffer_reply[rep_len++] = USB_TO_XXX_OK;
+
+					USB_TO_POLL_Context[USB_TO_POLL_Index].buffer_reply_save = buffer_reply;
+					USB_TO_POLL_Context[USB_TO_POLL_Index].rep_len_save = rep_len;
+					USB_TO_POLL_Context[USB_TO_POLL_Index].cmd_index = USB_TO_XXX_CmdIdx + USB_TO_XXX_CmdLen_tmp + 3;
+					USB_TO_POLL_Context[USB_TO_POLL_Index].poll_retry = dat[USB_TO_XXX_CmdIdx + 4] + (dat[USB_TO_XXX_CmdIdx + 5] << 8);
+					USB_TO_POLL_Context[USB_TO_POLL_Index].poll_interval = dat[USB_TO_XXX_CmdIdx + 6] + (dat[USB_TO_XXX_CmdIdx + 7] << 8);
+					USB_TO_POLL_Context[USB_TO_POLL_Index].poll_result = 1;
+
+					buffer_reply = (uint8 *)USB_TO_POLL_buffer_reply[USB_TO_POLL_Index];
+					rep_len = 0;
+				}
+				break;
+			case USB_TO_POLL_END:
+				if (USB_TO_POLL_Index < 0)
+				{
+					buffer_reply[rep_len++] = USB_TO_XXX_INVALID_CMD;
+				}
+				else if (USB_TO_POLL_Index >= USB_TO_POLL_NUM)
+				{
+					buffer_reply[rep_len++] = USB_TO_XXX_INVALID_INDEX;
+					USB_TO_POLL_Index--;
+				}
+				else
+				{
+					if (USB_TO_POLL_Context[USB_TO_POLL_Index].poll_result)
+					{
+						// poll success
+						memcpy(USB_TO_POLL_Context[USB_TO_POLL_Index].buffer_reply_save + 
+							   USB_TO_POLL_Context[USB_TO_POLL_Index].rep_len_save, 
+							   buffer_reply, rep_len);
+
+						buffer_reply = USB_TO_POLL_Context[USB_TO_POLL_Index].buffer_reply_save;
+						rep_len += USB_TO_POLL_Context[USB_TO_POLL_Index].rep_len_save;
+
+						buffer_reply[rep_len++] = USB_TO_XXX_OK;
+						USB_TO_POLL_Index--;
+					}
+					else
+					{
+						// poll fail
+						if (!USB_TO_POLL_Context[USB_TO_POLL_Index].poll_retry)
+						{
+							// timeout
+							memcpy(USB_TO_POLL_Context[USB_TO_POLL_Index].buffer_reply_save + 
+								   USB_TO_POLL_Context[USB_TO_POLL_Index].rep_len_save, 
+								   buffer_reply, rep_len);
+
+							buffer_reply = USB_TO_POLL_Context[USB_TO_POLL_Index].buffer_reply_save;
+							rep_len += USB_TO_POLL_Context[USB_TO_POLL_Index].rep_len_save;
+
+							buffer_reply[rep_len++] = USB_TO_XXX_TIME_OUT;
+							USB_TO_POLL_Index--;
+						}
+						else
+						{
+							// retry
+							USB_TO_POLL_Context[USB_TO_POLL_Index].poll_retry--;
+							if (USB_TO_POLL_Context[USB_TO_POLL_Index].poll_interval)
+							{
+								DelayUSMS(USB_TO_POLL_Context[USB_TO_POLL_Index].poll_interval);
+							}
+
+							USB_TO_POLL_Context[USB_TO_POLL_Index].poll_result = 1;
+
+							buffer_reply = (uint8 *)USB_TO_POLL_buffer_reply[USB_TO_POLL_Index];
+							rep_len = 0;
+							USB_TO_XXX_CmdIdx = USB_TO_POLL_Context[USB_TO_POLL_Index].cmd_index - USB_TO_XXX_CmdLen_tmp - 3;
+						}
+					}
+				}
+				break;
+			case USB_TO_POLL_CHECKBYTE:
+				if (USB_TO_POLL_Index < USB_TO_POLL_NUM)
+				{
+					if (!((buffer_reply[rep_len - 1 - dat[USB_TO_XXX_CmdIdx + 4]] 
+						 	& dat[USB_TO_XXX_CmdIdx + 5]) == dat[USB_TO_XXX_CmdIdx + 6]))
+					{
+						USB_TO_POLL_Context[USB_TO_POLL_Index].poll_result = 0;
+					}
+				}
+				break;
+			default:
+				break;
+			}
 			break;
 		default:
 			buffer_reply[rep_len++] = USB_TO_XXX_CMD_NOT_SUPPORT;

@@ -44,30 +44,51 @@
 #define cur_chip_param			target_chip_param
 #define cur_frequency			avr8_isp_frequency
 
+
+
+#define spi_init()				p->spi_init()
+#define spi_fini()				p->spi_fini()
+#define spi_conf(speed)			p->spi_config((speed), SPI_CPOL_LOW, \
+												 SPI_CPHA_1EDGE, SPI_MSB_FIRST)
+#define spi_io(out, outlen, in, inpos, inlen)	\
+								p->spi_io((out), (in), (outlen), \
+											 (inpos), (inlen))
+
+#define reset_init()			p->gpio_init()
+#define reset_fini()			p->gpio_fini()
+#define reset_output()			p->gpio_config(GPIO_SRST, 1, 0)
+#define reset_input()			p->gpio_config(GPIO_SRST, 0, GPIO_SRST)
+#define reset_set()				reset_input()
+#define reset_clr()				p->gpio_out(GPIO_SRST, 0)
+
+#define poll_start()			p->poll_start(20, 500)
+#define poll_end()				p->poll_end()
+#define poll_check(o, m, v)		p->poll_checkbyte((o), (m), (v))
+
+#define delay_ms(ms)			p->delayms((ms) | 0x8000)
+#define delay_us(us)			p->delayus((us) & 0x7FFF)
+
+#define commit()				p->peripheral_commit()
+
+static programmer_info_t *p = NULL;
+
+static void avr8_isp_pollready(void)
+{
+	uint8_t cmd_buf[4];
+	
+	poll_start();
+	cmd_buf[0] = 0xF0;
+	cmd_buf[1] = 0x00;
+	cmd_buf[2] = 0x00;
+	cmd_buf[3] = 0x00;
+	spi_io(cmd_buf, 4, NULL, 0, 0);
+	poll_check(0, 0x01, 0x00);
+	poll_end();
+}
+
 RESULT avr8_isp_program(operation_t operations, program_info_t *pi, 
 						programmer_info_t *prog)
 {
-#define spi_init()				prog->spi_init()
-#define spi_fini()				prog->spi_fini()
-#define spi_conf(speed)			prog->spi_config((speed), SPI_CPOL_LOW, \
-												 SPI_CPHA_1EDGE, SPI_MSB_FIRST)
-#define spi_io(out, outlen, in, inpos, inlen)	\
-								prog->spi_io((out), (in), (outlen), \
-											 (inpos), (inlen))
-
-#define reset_init()			prog->gpio_init()
-#define reset_fini()			prog->gpio_fini()
-#define reset_output()			prog->gpio_config(GPIO_SRST, 1, 0)
-#define reset_input()			prog->gpio_config(GPIO_SRST, 0, GPIO_SRST)
-#define reset_set()				reset_input()
-#define reset_clr()				prog->gpio_out(GPIO_SRST, 0)
-
-#define delay_ms(ms)			prog->delayms((ms) | 0x8000)
-#define delay_us(us)			prog->delayus((us) & 0x7FFF)
-
-#define commit()				prog->peripheral_commit()
-
-
 	uint8_t data_tmp[4];
 	uint8_t cmd_buf[4];
 	uint8_t poll_byte;
@@ -76,6 +97,8 @@ RESULT avr8_isp_program(operation_t operations, program_info_t *pi,
 	uint8_t page_buf[256];
 	RESULT ret = ERROR_OK;
 	memlist *ml_tmp;
+	
+	p = prog;
 	
 	// here we go
 	// init
@@ -187,7 +210,16 @@ try_frequency:
 		cmd_buf[2] = 0x00;
 		cmd_buf[3] = 0x00;
 		spi_io(cmd_buf, 4, NULL, 0, 0);
-		delay_ms(20);
+		
+		if (cur_chip_param.param[AVR8_PARAM_ISP_POLL])
+		{
+			avr8_isp_pollready();
+		}
+		else
+		{
+			delay_ms(10);
+		}
+		
 		if (ERROR_OK != commit())
 		{
 			pgbar_fini();
@@ -263,7 +295,15 @@ try_frequency:
 					cmd_buf[2] = (uint8_t)((ml_tmp->addr + i) >> 1);
 					cmd_buf[3] = 0x00;
 					spi_io(cmd_buf, 4, NULL, 0, 0);
-					delay_ms(5);
+					
+					if (cur_chip_param.param[AVR8_PARAM_ISP_POLL])
+					{
+						avr8_isp_pollready();
+					}
+					else
+					{
+						delay_ms(5);
+					}
 					
 					if (ERROR_OK != commit())
 					{
@@ -293,7 +333,15 @@ try_frequency:
 						cmd_buf[2] = (uint8_t)((ml_tmp->addr + i + j) >> 1);
 						cmd_buf[3] = pi->app[ml_tmp->addr + i + j];
 						spi_io(cmd_buf, 4, NULL, 0, 0);
-						delay_ms(5);
+						
+						if (cur_chip_param.param[AVR8_PARAM_ISP_POLL])
+						{
+							avr8_isp_pollready();
+						}
+						else
+						{
+							delay_ms(5);
+						}
 					}
 					
 					if (ERROR_OK != commit())
@@ -490,7 +538,15 @@ try_frequency:
 					cmd_buf[2] = (uint8_t)((ml_tmp->addr + i) >> 0);
 					cmd_buf[3] = 0x00;
 					spi_io(cmd_buf, 4, NULL, 0, 0);
-					delay_ms(5);
+					
+					if (cur_chip_param.param[AVR8_PARAM_ISP_POLL])
+					{
+						avr8_isp_pollready();
+					}
+					else
+					{
+						delay_ms(5);
+					}
 					
 					if (ERROR_OK != commit())
 					{
@@ -512,7 +568,15 @@ try_frequency:
 						cmd_buf[2] = (uint8_t)((ml_tmp->addr + i + j) >> 0);
 						cmd_buf[3] = pi->eeprom[ml_tmp->addr + i + j];
 						spi_io(cmd_buf, 4, NULL, 0, 0);
-						delay_ms(10);
+						
+						if (cur_chip_param.param[AVR8_PARAM_ISP_POLL])
+						{
+							avr8_isp_pollready();
+						}
+						else
+						{
+							delay_ms(10);
+						}
 					}
 					
 					if (ERROR_OK != commit())
@@ -661,7 +725,15 @@ try_frequency:
 			cmd_buf[2] = 0x00;
 			cmd_buf[3] = (pi->fuse_value >> 0) & 0xFF;
 			spi_io(cmd_buf, 4, NULL, 0, 0);
-			delay_ms(5);
+			
+			if (cur_chip_param.param[AVR8_PARAM_ISP_POLL])
+			{
+				avr8_isp_pollready();
+			}
+			else
+			{
+				delay_ms(5);
+			}
 		}
 		// high bits
 		if (cur_chip_param.fuse_size > 1)
@@ -671,7 +743,15 @@ try_frequency:
 			cmd_buf[2] = 0x00;
 			cmd_buf[3] = (pi->fuse_value >> 8) & 0xFF;
 			spi_io(cmd_buf, 4, NULL, 0, 0);
-			delay_ms(5);
+			
+			if (cur_chip_param.param[AVR8_PARAM_ISP_POLL])
+			{
+				avr8_isp_pollready();
+			}
+			else
+			{
+				delay_ms(5);
+			}
 		}
 		// extended bits
 		if (cur_chip_param.fuse_size > 2)
@@ -681,7 +761,15 @@ try_frequency:
 			cmd_buf[2] = 0x00;
 			cmd_buf[3] = (pi->fuse_value >> 16) & 0xFF;
 			spi_io(cmd_buf, 4, NULL, 0, 0);
-			delay_ms(5);
+			
+			if (cur_chip_param.param[AVR8_PARAM_ISP_POLL])
+			{
+				avr8_isp_pollready();
+			}
+			else
+			{
+				delay_ms(5);
+			}
 		}
 		if (cur_chip_param.fuse_size> 0)
 		{
@@ -826,7 +914,16 @@ try_frequency:
 			cmd_buf[2] = 0x00;
 			cmd_buf[3] = (pi->lock_value >> 0) & 0xFF;
 			spi_io(cmd_buf, 4, NULL, 0, 0);
-			delay_ms(5);
+			
+			if (cur_chip_param.param[AVR8_PARAM_ISP_POLL])
+			{
+				avr8_isp_pollready();
+			}
+			else
+			{
+				delay_ms(5);
+			}
+			
 			if (ERROR_OK != commit())
 			{
 				pgbar_fini();
