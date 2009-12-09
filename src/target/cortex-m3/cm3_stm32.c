@@ -573,7 +573,7 @@ RESULT stm32_program(operation_t operations, program_info_t *pi,
 leave_program_mode:
 	// lock flash
 	reg = STM32_FLASH_CR_LOCK;
-	adi_memap_write_reg(STM32_FLASH_CR, &reg, 0);
+	adi_memap_write_reg(STM32_FLASH_CR, &reg, 1);
 	return ret;
 }
 

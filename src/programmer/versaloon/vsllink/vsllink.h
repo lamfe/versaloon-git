@@ -48,20 +48,10 @@ RESULT vsllink_jtagll_xr(uint8_t* r, uint16_t len, uint8_t tms_before_valid,
 RESULT vsllink_jtaghl_disconnect(void);
 RESULT vsllink_jtaghl_config(uint16_t kHz, uint8_t ub, uint8_t ua, uint16_t bb, 
 							 uint16_t ba);
-RESULT vsllink_jtaghl_tms(uint8_t *tms, uint8_t len);
+RESULT vsllink_jtaghl_tms(uint8_t *tms, uint16_t len);
 RESULT vsllink_jtaghl_runtest(uint32_t cycles);
 RESULT vsllink_jtaghl_ir(uint8_t *ir, uint8_t len, uint8_t idle, uint8_t want_ret);
 RESULT vsllink_jtaghl_dr(uint8_t *dr, uint16_t len, uint8_t idle, uint8_t want_ret);
-RESULT vsllink_jtaghl_poll(uint8_t *ir0, uint8_t ir0idle, uint8_t ir0len, 
-						   uint8_t *dr0, uint8_t dr0idle, uint8_t dr0len,
-						   uint8_t *ir1, uint8_t ir1idle, uint8_t ir1len, 
-						   uint8_t *dr1, uint8_t dr1idle, uint8_t dr1len,
-						   uint8_t *ir2, uint8_t ir2idle, uint8_t ir2len, 
-						   uint8_t *dr2, uint8_t dr2idle, uint8_t dr2len,
-						   uint8_t pos, uint8_t mask, uint8_t value, 
-						   uint16_t poll_count);
-RESULT vsllink_jtaghl_delay_us(uint16_t us);
-RESULT vsllink_jtaghl_delay_ms(uint16_t ms);
 RESULT vsllink_jtaghl_register_callback(jtag_callback_t send_callback, 
 										jtag_callback_t receive_callback);
 RESULT vsllink_jtaghl_commit(void);

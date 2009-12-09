@@ -329,10 +329,10 @@ RESULT vsllink_jtagll_add_pending(uint8_t cmd, uint8_t *buf, uint16_t len)
 	case VSLLINK_CMDJTAGSEQ_TMSBYTE:
 		return ERROR_OK;
 	case VSLLINK_CMDJTAGSEQ_TMSCLOCK:
-		versaloon_add_pending(0, cmd, len, 0, 0, buf, 0, 0);
+		versaloon_add_pending(0, cmd, len, 0, 0, buf, 0);
 		return ERROR_OK;
 	case VSLLINK_CMDJTAGSEQ_SCAN:
-		versaloon_add_pending(0, cmd, len, 0, 0, buf, 0, 0);
+		versaloon_add_pending(0, cmd, len, 0, 0, buf, 0);
 		return ERROR_OK;
 		break;
 	default:
@@ -493,8 +493,8 @@ RESULT vsllink_jtaghl_add_pending(uint8_t cmd, uint8_t *buf, uint16_t len)
 	case VSLLINK_CMDJTAGHL_POLL_DLY:
 	case VSLLINK_CMDJTAGHL_IR:
 	case VSLLINK_CMDJTAGHL_DR:
-		versaloon_add_pending(0, cmd, len, 0, 0, buf, 0, 
-							  vsllink_jtaghl_ir_backup);
+		versaloon_set_pending_id(vsllink_jtaghl_ir_backup);
+		versaloon_add_pending(0, cmd, len, 0, 0, buf, 0);
 		return ERROR_OK;
 		break;
 	default:
@@ -704,7 +704,7 @@ RESULT vsllink_jtaghl_commit(void)
 	return ERROR_OK;
 }
 
-RESULT vsllink_jtaghl_tms(uint8_t *tms, uint8_t len)
+RESULT vsllink_jtaghl_tms(uint8_t *tms, uint16_t len)
 {
 	uint8_t data[(VSLLINK_CMDJTAGHL_LENMSK + 7) >> 3];
 	uint8_t cur_cycles, cycles = 0;
@@ -1089,13 +1089,13 @@ RESULT vsllink_swj_add_pending(uint8_t cmd, uint8_t *buf, uint16_t len)
 	switch (cmd & VSLLINK_CMDSWJ_CMDMSK)
 	{
 	case VSLLINK_CMDSWJ_SEQOUT:
-		versaloon_add_pending(0, cmd, len, 0, 0, buf, 0, 0);
+		versaloon_add_pending(0, cmd, len, 0, 0, buf, 0);
 		return ERROR_OK;
 	case VSLLINK_CMDSWJ_SEQIN:
-		versaloon_add_pending(0, cmd, len, 0, 0, buf, 0, 0);
+		versaloon_add_pending(0, cmd, len, 0, 0, buf, 0);
 		return ERROR_OK;
 	case VSLLINK_CMDSWJ_TRANS:
-		versaloon_add_pending(0, cmd, len, 0, 0, buf, 0, 0);
+		versaloon_add_pending(0, cmd, len, 0, 0, buf, 0);
 		return ERROR_OK;
 		break;
 	case VSLLINK_CMDSWJ_PARA:

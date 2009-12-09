@@ -47,7 +47,7 @@ RESULT usbtogpio_fini(void)
 }
 
 RESULT usbtogpio_config(uint8_t interface_index, uint16_t mask, 
-						uint16_t dir_mask, uint16_t value)
+						uint16_t dir_mask, uint16_t input_pull_mask)
 {
 	uint8_t conf[6];
 	
@@ -64,8 +64,8 @@ RESULT usbtogpio_config(uint8_t interface_index, uint16_t mask,
 	conf[1] = (mask >> 8) & 0xFF;
 	conf[2] = (dir_mask >> 0) & 0xFF;
 	conf[3] = (dir_mask >> 8) & 0xFF;
-	conf[4] = (value >> 0) & 0xFF;
-	conf[5] = (value >> 8) & 0xFF;
+	conf[4] = (input_pull_mask >> 0) & 0xFF;
+	conf[5] = (input_pull_mask >> 8) & 0xFF;
 	
 	return usbtoxxx_conf_command(USB_TO_GPIO, interface_index, conf, 6);
 }

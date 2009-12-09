@@ -19,6 +19,8 @@
 #ifndef __USBTOXXX_H_INCLUDED__
 #define __USBTOXXX_H_INCLUDED__
 
+#include "programmer.h"
+
 RESULT usbtoxxx_execute_command(void);
 
 // USB_TO_DELAY
@@ -40,7 +42,7 @@ RESULT usbtospi_io(uint8_t interface_index, uint8_t *out, uint8_t *in,
 RESULT usbtogpio_init(void);
 RESULT usbtogpio_fini(void);
 RESULT usbtogpio_config(uint8_t interface_index, uint16_t mask, 
-						uint16_t dir_mask, uint16_t value);
+						uint16_t dir_mask, uint16_t input_pull_mask);
 RESULT usbtogpio_in(uint8_t interface_index, uint16_t mask, uint16_t *value);
 RESULT usbtogpio_out(uint8_t interface_index, uint16_t mask, uint16_t value);
 
@@ -78,7 +80,10 @@ RESULT usbtojtaghl_ir(uint8_t interface_index, uint8_t *ir, uint16_t bitlen,
 					  uint8_t idle, uint8_t want_ret);
 RESULT usbtojtaghl_dr(uint8_t interface_index, uint8_t *dr, uint16_t bitlen, 
 					  uint8_t idle, uint8_t want_ret);
-RESULT usbtojtaghl_tmsbyte(uint8_t interface_index, uint8_t *tms, uint8_t bytelen);
+RESULT usbtojtaghl_tms(uint8_t interface_index, uint8_t *tms, uint16_t bitlen);
+RESULT usbtojtaghl_runtest(uint8_t interface_index, uint32_t cycles);
+RESULT usbtojtaghl_register_callback(jtag_callback_t send_callback, 
+									 jtag_callback_t receive_callback);
 
 
 

@@ -175,9 +175,6 @@ void VSLLink_ProcessCmd(uint8* dat, uint16 len)
 	uint32 cur_dat_len;
 	uint8 cur_cmd;
 	uint8 port_msk, port_value;
-#if VSLLINK_HL_EN
-	uint8 poll_buf[32], tmp8;
-#endif
 
 	switch(dat[0])
 	{
@@ -339,71 +336,6 @@ void VSLLink_ProcessCmd(uint8* dat, uint16 len)
 				cur_dat_len = (cur_dat_len + 7) >> 3;
 				rep_len += cur_dat_len;
 				cur_cmd_pos += cur_dat_len;
-				break;
-			case VSLLINK_CMDJTAGHL_POLL_DLY:
-				port_msk = cur_cmd & VSLLINK_CMDJTAGHL_LENMSK;
-				if(port_msk > 0)
-				{
-					// max times to poll
-					length = dat[cur_cmd_pos] + (dat[cur_cmd_pos + 1] << 8);
-					cur_cmd_pos += 2;
-
-					while(length > 0)
-					{
-						cur_cmd = 0;
-						for(port_value = 0; port_value < 3; port_value++)
-						{
-							// ir
-							if(port_msk & (1 << port_value))
-							{
-								cur_dat_len = dat[cur_cmd_pos + cur_cmd + 0] + 1;
-								JTAG_TAP_InstrPtr(dat + cur_cmd_pos + cur_cmd + 2,	// intstr
-												    poll_buf,						// tdo
-													cur_dat_len,					// length_in_bits
-													dat[cur_cmd_pos + cur_cmd + 1]);// idle
-								cur_cmd += 2 + ((cur_dat_len + 7) >> 3);
-							}
-							// dr
-							if(port_msk & (1 << (port_value + 3)))
-							{
-								cur_dat_len = dat[cur_cmd_pos + cur_cmd + 0] + 1;
-								JTAG_TAP_DataPtr(dat + cur_cmd_pos + cur_cmd + 2,	// tdi
-												 poll_buf,							// tdo
-												 cur_dat_len,						// length_in_bits
-												 dat[cur_cmd_pos + cur_cmd + 1]);	// idle
-								cur_cmd += 2 + ((cur_dat_len + 7) >> 3);
-							}
-						}
-						// check
-						tmp8 = dat[cur_cmd_pos + cur_cmd++];
-						for(port_value = 0; port_value < tmp8; port_value++)
-						{
-							if((poll_buf[dat[cur_cmd_pos + cur_cmd + 3 * port_value]] & dat[cur_cmd_pos + cur_cmd + 3 * port_value + 1]) != dat[cur_cmd_pos + cur_cmd + 3 * port_value + 2])
-							{
-								break;
-							}
-							cur_cmd += 3;
-						}
-						if(port_value == tmp8)
-						{
-							// poll_ok
-							break;
-						}
-						else
-						{
-							length--;
-						}
-					}
-					cur_cmd_pos += cur_cmd;
-				}
-				else
-				{
-					// simple delay
-					DelayUSMS(dat[cur_cmd_pos + 0] + (dat[cur_cmd_pos + 1] << 8));
-					cur_cmd_pos += 2;
-					length = 1;
-				}
-				dat[rep_len++] = (0 == length);
 				break;
 			}
 		}
