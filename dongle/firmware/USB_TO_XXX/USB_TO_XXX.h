@@ -63,6 +63,7 @@ void USB_TO_LPCICP_ProcessCmd(uint8* dat, uint16 len);
 void USB_TO_MSP430_JTAG_ProcessCmd(uint8* dat, uint16 len);
 // Page2
 void USB_TO_POWER_ProcessCmd(uint8* dat, uint16 len);
+extern int8 USB_TO_POLL_Index;
 
 // USB_TO_XXX Masks
 #define USB_TO_XXX_CMDMASK			0xF8
@@ -117,6 +118,10 @@ void USB_TO_POWER_ProcessCmd(uint8* dat, uint16 len);
 #define USB_TO_MSP430_SBW_TCLK		USB_TO_XXX_OUT
 #define USB_TO_MSP430_SBW_TCLK_STROBE	USB_TO_XXX_SPECIAL
 #define USB_TO_MSP430_SBW_Poll		USB_T0_XXX_POLL
+// USB_TO_POLL
+#define USB_TO_POLL_START			0x00
+#define USB_TO_POLL_END				0x01
+#define USB_TO_POLL_CHECKBYTE		0x02
 
 // USB_TO_XXX Replys
 #define USB_TO_XXX_OK				0x00
@@ -188,3 +193,4 @@ void USB_TO_POWER_ProcessCmd(uint8* dat, uint16 len);
 #define USB_TO_MSP430_JTAG_NUM		1
 #define USB_TO_SBW_NUM				1
 #define USB_TO_POWER_NUM			1
+#define USB_TO_POLL_NUM				3

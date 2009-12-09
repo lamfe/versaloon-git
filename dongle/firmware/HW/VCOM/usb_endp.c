@@ -50,7 +50,7 @@ __IO uint32_t rep_len = 0;
 #define CDC_IN_buff				buffer_out
 
 FIFO CDC_OUT_fifo = {CDC_OUT_buff, 8 * VIRTUAL_COM_PORT_DATA_SIZE, 0, 0};
-FIFO CDC_IN_fifo = FIFO_Init(CDC_IN_buff);
+FIFO CDC_IN_fifo = {CDC_IN_buff, 1024, 0, 0};
 
 __IO uint8_t CDC_USART_IsBusy = 0;
 __IO uint8_t CDC_USB_IsBusy = 0;

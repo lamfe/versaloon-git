@@ -836,6 +836,19 @@ RESULT versaloon_delay_us(uint16_t us)
 {
 	return usbtodelay_delay(us & 0x7FFF);
 }
+// POLL
+RESULT versaloon_poll_start(uint16_t retry, uint16_t interval_us)
+{
+	return usbtopoll_start(retry, interval_us);
+}
+RESULT versaloon_poll_end(void)
+{
+	return usbtopoll_end();
+}
+RESULT versaloon_poll_checkbyte(uint8_t offset, uint8_t mask, uint8_t value)
+{
+	return usbtopoll_checkbyte(offset, mask, value);
+}
 // ISSP
 RESULT versaloon_issp_init(void)
 {
@@ -1177,6 +1190,11 @@ RESULT versaloon_init_capability(void *p)
 	((programmer_info_t *)p)->i2c_set_speed = versaloon_i2c_set_speed;
 	((programmer_info_t *)p)->i2c_read = versaloon_i2c_read;
 	((programmer_info_t *)p)->i2c_write = versaloon_i2c_write;
+	
+	// POLL
+	((programmer_info_t *)p)->poll_start = versaloon_poll_start;
+	((programmer_info_t *)p)->poll_end = versaloon_poll_end;
+	((programmer_info_t *)p)->poll_checkbyte = versaloon_poll_checkbyte;
 	
 	// Mass-product
 	((programmer_info_t *)p)->download_mass_product_data = 

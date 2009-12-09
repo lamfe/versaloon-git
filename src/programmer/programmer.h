@@ -191,6 +191,11 @@ typedef struct
 	RESULT (*download_mass_product_data)(const char *name, uint8_t *buffer, 
 										 uint32_t len);
 	
+	// poll support
+	RESULT (*poll_start)(uint16_t retry, uint16_t interval_us);
+	RESULT (*poll_end)(void);
+	RESULT (*poll_checkbyte)(uint8_t offset, uint8_t mask, uint8_t value);
+	
 	// firmware update support
 	RESULT (*enter_firmware_update_mode)(void);
 }programmer_info_t;
@@ -204,7 +209,8 @@ typedef struct
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0\
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+		0\
 	}
 
 extern programmer_info_t *cur_programmer;
