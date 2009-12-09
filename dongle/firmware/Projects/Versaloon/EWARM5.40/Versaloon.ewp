@@ -1962,6 +1962,9 @@
       <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB_TO_ISSP.c</name>
     </file>
     <file>
+      <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB_TO_JTAG_HL.c</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB_TO_LPCICP.c</name>
     </file>
     <file>

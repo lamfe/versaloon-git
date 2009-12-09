@@ -85,12 +85,12 @@
 #define AVR_JTAG_PROG_LatchData()					(AVR_JTAG_PROG_INS(0x3700), AVR_JTAG_PROG_INS(0x7700), AVR_JTAG_PROG_INS(0x3700))
 // Chip Erase
 #define AVR_JTAG_PROG_ChipErase()					(AVR_JTAG_PROG_INS(0x2380), AVR_JTAG_PROG_INS(0x3180), AVR_JTAG_PROG_INS(0x3380), AVR_JTAG_PROG_INS(0x3380))
-#define AVR_JTAG_PROG_ChipEraseComplete()			(AVR_JTAG_PROG_INS(0x3380) & AVR_JTAG_PROG_OPERATIONCOMPLETE)
+#define AVR_JTAG_PROG_ChipEraseComplete_CMD			0x3380
 
 // Write Flash
 #define AVR_JTAG_PROG_EnterFlashWrite()				AVR_JTAG_PROG_INS(0x2310)
 #define AVR_JTAG_PROG_WriteFlashPage()				(AVR_JTAG_PROG_INS(0x3700), AVR_JTAG_PROG_INS(0x3500), AVR_JTAG_PROG_INS(0x3700), AVR_JTAG_PROG_INS(0x3700))
-#define AVR_JTAG_PROG_WriteFlashPageComplete()		(AVR_JTAG_PROG_INS(0x3700) & AVR_JTAG_PROG_OPERATIONCOMPLETE)
+#define AVR_JTAG_PROG_WriteFlashPageComplete_CMD	0x3700
 
 // Read Flash
 #define AVR_JTAG_PROG_EnterFlashRead()				AVR_JTAG_PROG_INS(0x2302)
@@ -98,7 +98,7 @@
 // Write EEPROM
 #define AVR_JTAG_PROG_EnterEEPROMWrite()			AVR_JTAG_PROG_INS(0x2311)
 #define AVR_JTAG_PROG_WriteEEPROMPage()				(AVR_JTAG_PROG_INS(0x3300), AVR_JTAG_PROG_INS(0x3100), AVR_JTAG_PROG_INS(0x3300), AVR_JTAG_PROG_INS(0x3300))
-#define AVR_JTAG_PROG_WriteEEPROMPageComplete()		(AVR_JTAG_PROG_INS(0x3300) & AVR_JTAG_PROG_OPERATIONCOMPLETE)
+#define AVR_JTAG_PROG_WriteEEPROMPageComplete_CMD	0x3300
 
 // Read EEPROM
 #define AVR_JTAG_PROG_EnterEEPROMRead()				AVR_JTAG_PROG_INS(0x2303)
@@ -107,16 +107,16 @@
 // Write Fuses
 #define AVR_JTAG_PROG_EnterFuseWrite()				AVR_JTAG_PROG_INS(0x2340)
 #define AVR_JTAG_PROG_WriteFuseExtByte()			(AVR_JTAG_PROG_INS(0x3B00), AVR_JTAG_PROG_INS(0x3900), AVR_JTAG_PROG_INS(0x3B00), AVR_JTAG_PROG_INS(0x3B00))
-#define AVR_JTAG_PROG_WriteFuseExtByteComplete()	(AVR_JTAG_PROG_INS(0x3700) & AVR_JTAG_PROG_OPERATIONCOMPLETE)
+#define AVR_JTAG_PROG_WriteFuseExtByteComplete_CMD	0x3700
 #define AVR_JTAG_PROG_WriteFuseHighByte()			(AVR_JTAG_PROG_INS(0x3700), AVR_JTAG_PROG_INS(0x3500), AVR_JTAG_PROG_INS(0x3700), AVR_JTAG_PROG_INS(0x3700))
-#define AVR_JTAG_PROG_WriteFuseHighByteComplete()	(AVR_JTAG_PROG_INS(0x3700) & AVR_JTAG_PROG_OPERATIONCOMPLETE)
+#define AVR_JTAG_PROG_WriteFuseHighByteComplete_CMD	0x3700
 #define AVR_JTAG_PROG_WriteFuseLowByte()			(AVR_JTAG_PROG_INS(0x3300), AVR_JTAG_PROG_INS(0x3100), AVR_JTAG_PROG_INS(0x3300), AVR_JTAG_PROG_INS(0x3300))
-#define AVR_JTAG_PROG_WriteFuseLowByteComplete()	(AVR_JTAG_PROG_INS(0x3300) & AVR_JTAG_PROG_OPERATIONCOMPLETE)
+#define AVR_JTAG_PROG_WriteFuseLowByteComplete_CMD	0x3300
 
 // Write Lockbits
 #define AVR_JTAG_PROG_EnterLockbitWrite()			AVR_JTAG_PROG_INS(0x2320)
 #define AVR_JTAG_PROG_WriteLockbit()				(AVR_JTAG_PROG_INS(0x3300), AVR_JTAG_PROG_INS(0x3100), AVR_JTAG_PROG_INS(0x3300), AVR_JTAG_PROG_INS(0x3300))
-#define AVR_JTAG_PROG_WriteLockbitComplete()		(AVR_JTAG_PROG_INS(0x3300) & AVR_JTAG_PROG_OPERATIONCOMPLETE)
+#define AVR_JTAG_PROG_WriteLockbitComplete_CMD		0x3300
 
 // Read Fuses/Lockbits
 #define AVR_JTAG_PROG_EnterFuseLockbitRead()		AVR_JTAG_PROG_INS(0x2304)
@@ -149,12 +149,15 @@
 
 #define jtag_init()					p->jtag_hl_init()
 #define jtag_fini()					p->jtag_hl_fini()
-#define jtag_config(kHz,a,b,c,d)	\
-								p->jtag_hl_config((kHz), (a), (b), (c), (d))
+#define jtag_config(kHz,a,b,c,d)	p->jtag_hl_config((kHz), (a), (b), (c), (d))
 #define jtag_runtest(len)			p->jtag_hl_runtest(len)
 #define jtag_ir_write(ir, len)		p->jtag_hl_ir((uint8_t*)(ir), (len), 1, 0)
 #define jtag_dr_write(dr, len)		p->jtag_hl_dr((uint8_t*)(dr), (len), 1, 0)
 #define jtag_dr_read(dr, len)		p->jtag_hl_dr((uint8_t*)(dr), (len), 1, 1)
+
+#define poll_start()				p->poll_start(20, 500)
+#define poll_end()					p->poll_end()
+#define poll_check(o, m, v)			p->poll_checkbyte((o), (m), (v))
 
 #define jtag_delay_us(us)			p->jtag_hl_delay_us((us))
 #define jtag_delay_ms(ms)			p->jtag_hl_delay_ms((ms))
@@ -169,6 +172,16 @@ void AVR_JTAG_ReadDat(uint16_t w, uint16_t* r, uint8_t len)
 {
 	*r = w;
 	jtag_dr_read(r, len);
+}
+
+void AVR_JTAG_WaitComplete(uint16_t cmd)
+{
+	uint16_t dr;
+	
+	poll_start();
+	AVR_JTAG_PROG_INS(cmd);
+	poll_check(0, 0x02, 0x02);
+	poll_end();
 }
 
 RESULT avr8_jtag_program(operation_t operations, program_info_t *pi, 
@@ -236,7 +249,7 @@ RESULT avr8_jtag_program(operation_t operations, program_info_t *pi,
 
 		AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
 		AVR_JTAG_PROG_ChipErase();
-		jtag_delay_ms(20);
+		AVR_JTAG_WaitComplete(AVR_JTAG_PROG_ChipEraseComplete_CMD);
 		if (ERROR_OK != jtag_commit())
 		{
 			pgbar_fini();
@@ -308,7 +321,7 @@ RESULT avr8_jtag_program(operation_t operations, program_info_t *pi,
 				}
 				AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
 				AVR_JTAG_PROG_WriteFlashPage();
-				jtag_delay_ms(5);
+				AVR_JTAG_WaitComplete(AVR_JTAG_PROG_WriteFlashPageComplete_CMD);
 				if (ERROR_OK != jtag_commit())
 				{
 					pgbar_fini();
@@ -502,7 +515,7 @@ RESULT avr8_jtag_program(operation_t operations, program_info_t *pi,
 					
 					// write page
 					AVR_JTAG_PROG_WriteEEPROMPage();
-					jtag_delay_ms(5);
+					AVR_JTAG_WaitComplete(AVR_JTAG_PROG_WriteEEPROMPageComplete_CMD);
 					
 					if (ERROR_OK != jtag_commit())
 					{
@@ -656,21 +669,21 @@ RESULT avr8_jtag_program(operation_t operations, program_info_t *pi,
 			AVR_JTAG_PROG_EnterFuseWrite();
 			AVR_JTAG_PROG_LoadDataLowByte((pi->fuse_value >> 0) & 0xFF);
 			AVR_JTAG_PROG_WriteFuseLowByte();
-			jtag_delay_ms(5);
+			AVR_JTAG_WaitComplete(AVR_JTAG_PROG_WriteFuseLowByteComplete_CMD);
 		}
 		// high bits
 		if (cur_chip_param.fuse_size > 1)
 		{
 			AVR_JTAG_PROG_LoadDataLowByte((pi->fuse_value >> 8) & 0xFF);
 			AVR_JTAG_PROG_WriteFuseHighByte();
-			jtag_delay_ms(5);
+			AVR_JTAG_WaitComplete(AVR_JTAG_PROG_WriteFuseHighByteComplete_CMD);
 		}
 		// extended bits
 		if (cur_chip_param.fuse_size > 2)
 		{
 			AVR_JTAG_PROG_LoadDataLowByte((pi->fuse_value >> 16) & 0xFF);
 			AVR_JTAG_PROG_WriteFuseExtByte();
-			jtag_delay_ms(5);
+			AVR_JTAG_WaitComplete(AVR_JTAG_PROG_WriteFuseExtByteComplete_CMD);
 		}
 		if (cur_chip_param.fuse_size > 0)
 		{
@@ -807,7 +820,7 @@ RESULT avr8_jtag_program(operation_t operations, program_info_t *pi,
 			AVR_JTAG_PROG_EnterLockbitWrite();
 			AVR_JTAG_PROG_LoadDataByte(pi->lock_value);
 			AVR_JTAG_PROG_WriteLockbit();
-			jtag_delay_ms(5);
+			AVR_JTAG_WaitComplete(AVR_JTAG_PROG_WriteLockbitComplete_CMD);
 			if (ERROR_OK != jtag_commit())
 			{
 				pgbar_fini();

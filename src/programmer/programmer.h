@@ -57,7 +57,7 @@ typedef struct
 	// gpio
 	RESULT (*gpio_init)(void);
 	RESULT (*gpio_fini)(void);
-	RESULT (*gpio_config)(uint16_t pin_mask, uint16_t io, uint16_t value);
+	RESULT (*gpio_config)(uint16_t pin_mask, uint16_t io, uint16_t input_pull_mask);
 	RESULT (*gpio_out)(uint16_t pin_mask, uint16_t value);
 	RESULT (*gpio_in)(uint16_t pin_mask, uint16_t *value);
 	
@@ -93,27 +93,10 @@ typedef struct
 	RESULT (*jtag_hl_fini)(void);
 	RESULT (*jtag_hl_config)(uint16_t kHz, uint8_t ub, uint8_t ua, uint16_t bb, 
 							 uint16_t ba);
-	RESULT (*jtag_hl_tms)(uint8_t* tms, uint8_t len);
+	RESULT (*jtag_hl_tms)(uint8_t* tms, uint16_t bitlen);
 	RESULT (*jtag_hl_runtest)(uint32_t len);
 	RESULT (*jtag_hl_ir)(uint8_t *ir, uint8_t len, uint8_t idle, uint8_t want_ret);
 	RESULT (*jtag_hl_dr)(uint8_t *dr, uint16_t len, uint8_t idle, uint8_t want_ret);
-/*
-	RESULT (*jtag_hl_poll)(uint8_t *ir0, uint8_t ir0idle, uint8_t ir0len, 
-						   uint8_t *dr0, uint8_t dr0idle, uint8_t dr0len,
-						   uint8_t *ir1, uint8_t ir1idle, uint8_t ir1len, 
-						   uint8_t *dr1, uint8_t dr1idle, uint8_t dr1len,
-						   uint8_t *ir2, uint8_t ir2idle, uint8_t ir2len, 
-						   uint8_t *dr2, uint8_t dr2idle, uint8_t dr2len,
-						   uint8_t pos, uint8_t mask, uint8_t value, 
-						   uint16_t poll_count);
-*/
-	RESULT (*jtag_hl_delay_us)(uint16_t us);
-	RESULT (*jtag_hl_delay_ms)(uint16_t ms);
-	RESULT (*jtag_hl_aux_io_init)(void);
-	RESULT (*jtag_hl_aux_io_fini)(void);
-	RESULT (*jtag_hl_aux_io_config)(uint8_t pin_mask, uint8_t io);
-	RESULT (*jtag_hl_aux_io_out)(uint8_t pin_mask, uint8_t value);
-	RESULT (*jtag_hl_aux_io_in)(uint8_t pin_mask, uint8_t *value);
 	RESULT (*jtag_hl_register_callback)(jtag_callback_t send_callback, 
 										jtag_callback_t receive_callback);
 	RESULT (*jtag_hl_commit)(void);
@@ -209,8 +192,7 @@ typedef struct
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
-		0, 0\
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0\
 	}
 
 extern programmer_info_t *cur_programmer;

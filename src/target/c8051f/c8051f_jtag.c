@@ -53,8 +53,7 @@ static uint16_t ir_flashdat = C8051F_IR_FLASHDAT | C8051F_IR_STATECNTL_SUSPEND;
 
 #define jtag_init()					p->jtag_hl_init()
 #define jtag_fini()					p->jtag_hl_fini()
-#define jtag_config(kHz,a,b,c,d)	\
-								p->jtag_hl_config((kHz), (a), (b), (c), (d))
+#define jtag_config(kHz,a,b,c,d)	p->jtag_hl_config((kHz), (a), (b), (c), (d))
 #define jtag_runtest(len)			p->jtag_hl_runtest(len)
 #define jtag_ir_write(ir, len)		p->jtag_hl_ir((uint8_t*)(ir), (len), 1, 0)
 #define jtag_dr_write(dr, len)		p->jtag_hl_dr((uint8_t*)(dr), (len), 1, 0)
@@ -64,7 +63,7 @@ static uint16_t ir_flashdat = C8051F_IR_FLASHDAT | C8051F_IR_STATECNTL_SUSPEND;
 													1, 0, 1, 0, poll_count)
 
 #if 1
-#define jtag_poll_busy()			p->jtag_hl_delay_us(20)
+#define jtag_poll_busy()			p->delayus(20)
 #else
 #define jtag_poll_busy()			p->jtag_hl_poll(NULL, 0, 0, \
 													(uint8_t*)&dr0, 1, 1, \
@@ -88,8 +87,8 @@ static uint16_t ir_flashdat = C8051F_IR_FLASHDAT | C8051F_IR_STATECNTL_SUSPEND;
 													0, 0x02, 0x00, \
 													C8051F_MAX_POLL_COUNT)
 #endif
-#define jtag_delay_us(us)			p->jtag_hl_delay_us((us))
-#define jtag_delay_ms(ms)			p->jtag_hl_delay_ms((ms))
+#define jtag_delay_us(us)			p->delayus((us))
+#define jtag_delay_ms(ms)			p->delayms((ms))
 #define jtag_commit()				p->jtag_hl_commit()
 
 RESULT c8051f_jtag_ind_read(uint8_t addr, uint32_t *value, uint8_t num_bits)

@@ -47,7 +47,7 @@ N_A, N_A, N_A, N_A, N_A, N_A, N_A,
 N_A, N_A, N_A, N_A, N_A, N_A, N_A, N_A, 
 N_A, N_A, N_A, N_A, N_A, N_A, N_A, N_A, 
 "usbtomsp430jtag", N_A, N_A, N_A, N_A, N_A, N_A, N_A, 
-"usbtopower", "usbtodelay", N_A, N_A, N_A, N_A, N_A, N_A, 
+"usbtopower", "usbtodelay", "usbtopoll", N_A, N_A, N_A, N_A, N_A, 
 N_A, N_A, N_A, N_A, N_A, N_A, N_A, "usbtoall"
 };
 
@@ -103,6 +103,7 @@ RESULT usbtoxxx_execute_command(void)
 {
 	uint16_t i;
 	uint16_t inlen;
+	uint8_t processed;
 	uint8_t result = ERROR_OK;
 	
 	if (ERROR_OK != usbtoxxx_validate_current_command_type())
@@ -110,6 +111,10 @@ RESULT usbtoxxx_execute_command(void)
 		LOG_BUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
 				"validate previous commands");
 		return ERRCODE_FAILURE_OPERATION;
+	}
+	if (3 == usbtoxxx_buffer_index)
+	{
+		return ERROR_OK;
 	}
 	
 	versaloon_buf[0] = USB_TO_ALL;
@@ -151,7 +156,14 @@ RESULT usbtoxxx_execute_command(void)
 		}
 		
 		// get result data
-		if ((versaloon_pending[i].want_data_size > 0) 
+		processed = 0;
+		if (versaloon_pending[i].callback != NULL)
+		{
+			versaloon_pending[i].callback(&versaloon_pending[i], 
+										versaloon_buf + usbtoxxx_buffer_index, 
+										&processed);
+		}
+		if (!processed && (versaloon_pending[i].want_data_size > 0) 
 			&& (versaloon_pending[i].data_buffer != NULL))
 		{
 			memcpy(versaloon_pending[i].data_buffer, 
@@ -266,7 +278,7 @@ RESULT usbtoxxx_add_command(uint8_t type, uint8_t cmd, uint8_t *cmdbuf,
 	}
 	
 	return versaloon_add_pending(type, cmd, retlen, wantpos, wantlen, 
-								 wantbuf, collect, 0);
+								 wantbuf, collect);
 }
 
 
@@ -291,7 +303,7 @@ RESULT usbtopoll_start(uint16_t retry, uint16_t interval_us)
 	usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = (interval_us >> 0) & 0xFF;
 	usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = (interval_us >> 8) & 0xFF;
 	
-	return versaloon_add_pending(USB_TO_POLL, 0, 0, 0, 0, NULL, 0, 0);
+	return versaloon_add_pending(USB_TO_POLL, 0, 0, 0, 0, NULL, 0);
 }
 
 RESULT usbtopoll_end(void)
@@ -308,11 +320,12 @@ RESULT usbtopoll_end(void)
 				"check poll nesting");
 		return ERRCODE_FAILURE_OPERATION;
 	}
+	poll_nesting--;
 	type_pre = USB_TO_POLL;
 	
 	usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = USB_TO_POLL_END;
 	
-	return versaloon_add_pending(USB_TO_POLL, 0, 0, 0, 0, NULL, 0, 0);
+	return versaloon_add_pending(USB_TO_POLL, 0, 0, 0, 0, NULL, 0);
 }
 
 RESULT usbtopoll_checkbyte(uint8_t offset, uint8_t mask, uint8_t value)
@@ -355,6 +368,6 @@ RESULT usbtodelay_delay(uint16_t dly)
 	usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = (dly >> 0) & 0xFF;
 	usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = (dly >> 8) & 0xFF;
 	
-	return versaloon_add_pending(USB_TO_DELAY, 0, 0, 0, 0, NULL, 0, 0);
+	return versaloon_add_pending(USB_TO_DELAY, 0, 0, 0, 0, NULL, 0);
 }
 

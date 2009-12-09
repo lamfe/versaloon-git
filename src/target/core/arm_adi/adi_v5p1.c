@@ -43,12 +43,13 @@ static uint8_t ack_value;
 adi_dp_info_t adi_dp_info;
 
 // Reset
-#define reset_init()			adi_prog->jtag_hl_aux_io_init()
-#define reset_fini()			adi_prog->jtag_hl_aux_io_fini()
-#define reset_output()			adi_prog->jtag_hl_aux_io_config(JTAG_SRST, 1)
-#define reset_input()			adi_prog->jtag_hl_aux_io_config(JTAG_SRST, 0)
+#define reset_init()			adi_prog->gpio_init()
+#define reset_fini()			adi_prog->gpio_fini()
+#define reset_output()			adi_prog->gpio_config(JTAG_SRST, JTAG_SRST, 0)
+#define reset_input()			adi_prog->gpio_config(JTAG_SRST, 0, JTAG_SRST)
 #define reset_set()				reset_input()
-#define reset_clr()				adi_prog->jtag_hl_aux_io_out(JTAG_SRST, 0)
+#define reset_clr()				adi_prog->gpio_out(JTAG_SRST, 0)
+#define reset_commit()			adi_prog->peripheral_commit()
 
 // JTAG
 #define jtag_init()				adi_prog->jtag_hl_init()
@@ -61,8 +62,6 @@ adi_dp_info_t adi_dp_info;
 #define jtag_dr_w(dr, len)		adi_prog->jtag_hl_dr((uint8_t*)(dr), (len), 1, 0)
 #define jtag_dr_rw(dr, len)		adi_prog->jtag_hl_dr((uint8_t*)(dr), (len), 1, 1)
 
-#define jtag_delay_us(us)		adi_prog->jtag_hl_delay_us((us))
-#define jtag_delay_ms(ms)		adi_prog->jtag_hl_delay_ms((ms))
 #define jtag_register_callback(s,r)	\
 								adi_prog->jtag_hl_register_callback((s), (r))
 #define jtag_commit()			adi_prog->jtag_hl_commit()
@@ -203,6 +202,7 @@ static RESULT adi_dpif_fini(void)
 	}
 	
 	reset_fini();
+	reset_commit();
 	
 	dp_type = adi_dp_if->type;
 	switch(dp_type)
@@ -210,12 +210,14 @@ static RESULT adi_dpif_fini(void)
 	case ADI_DP_JTAG:
 		jtag_register_callback(NULL, NULL);
 		adi_dp_commit();
-		ret = jtag_fini();
+		jtag_fini();
+		adi_dp_commit();
 		adi_dp_if = NULL;
 		break;
 	case ADI_DP_SWJ:
 		adi_dp_commit();
-		ret = swj_fini();
+		swj_fini();
+		adi_dp_commit();
 		adi_dp_if = NULL;
 		break;
 	default:
@@ -239,6 +241,7 @@ static RESULT adi_dpif_init(programmer_info_t *prog, adi_dp_if_t *interf)
 	
 	reset_init();
 	reset_input();
+	reset_commit();
 	
 	switch(adi_dp_if->type)
 	{
