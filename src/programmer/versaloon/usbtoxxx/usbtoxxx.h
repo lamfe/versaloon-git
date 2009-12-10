@@ -91,10 +91,9 @@ RESULT usbtojtaghl_register_callback(jtag_callback_t send_callback,
 RESULT usbtoc2_init(void);
 RESULT usbtoc2_fini(void);
 RESULT usbtoc2_config(uint8_t interface_index);
-RESULT usbtoc2_addr(uint8_t interface_index, uint8_t addr);
+RESULT usbtoc2_writeaddr(uint8_t interface_index, uint8_t addr);
+RESULT usbtoc2_readaddr(uint8_t interface_index, uint8_t *data);
 RESULT usbtoc2_data(uint8_t interface_index, uint8_t r, uint8_t len, uint8_t *buf);
-RESULT usbtoc2_addr_poll(uint8_t interface_index, uint8_t mask, uint8_t value, 
-						 uint16_t poll_cnt);
 
 
 

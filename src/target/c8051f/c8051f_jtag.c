@@ -45,11 +45,6 @@
 
 static programmer_info_t *p = NULL;
 
-#if 0
-static uint16_t dr0 = 0, dr_read = C8051F_INDOPTCODE_READ;
-static uint16_t ir_flashdat = C8051F_IR_FLASHDAT | C8051F_IR_STATECNTL_SUSPEND;
-#endif
-
 
 #define jtag_init()					p->jtag_hl_init()
 #define jtag_fini()					p->jtag_hl_fini()
@@ -58,38 +53,39 @@ static uint16_t ir_flashdat = C8051F_IR_FLASHDAT | C8051F_IR_STATECNTL_SUSPEND;
 #define jtag_ir_write(ir, len)		p->jtag_hl_ir((uint8_t*)(ir), (len), 1, 0)
 #define jtag_dr_write(dr, len)		p->jtag_hl_dr((uint8_t*)(dr), (len), 1, 0)
 #define jtag_dr_read(dr, len)		p->jtag_hl_dr((uint8_t*)(dr), (len), 1, 1)
-#define jtag_poll_dr1(dr, poll_count)	\
-									p->jtag_hl_poll(NULL, 0, 0, (uint8_t*)dr, 1, \
-													1, 0, 1, 0, poll_count)
 
-#if 1
+#if 0
+#define C8051F_JTAG_BLOCK_SIZE		47
+#define jtag_poll_busy()			c8051f_jtag_poll_busy()
+#define jtag_poll_flbusy(dly, int)	c8051f_jtag_poll_flbusy((dly), (int))
+#else
+#define C8051F_JTAG_BLOCK_SIZE		128
 #define jtag_poll_busy()			p->delayus(20)
-#else
-#define jtag_poll_busy()			p->jtag_hl_poll(NULL, 0, 0, \
-													(uint8_t*)&dr0, 1, 1, \
-													NULL, 0, 0, \
-													NULL, 0, 0, \
-													NULL, 0, 0, \
-													NULL, 0, 0, \
-													0, 0x01, 0x00, \
-													C8051F_MAX_POLL_COUNT)
+#define jtag_poll_flbusy(dly, int)	jtag_delay_us((dly) * ((int) + 1))
 #endif
 
-#if 1
-#define jtag_poll_flbusy(dly)		jtag_delay_us((dly))
-#else
-#define jtag_poll_flbusy()			p->jtag_hl_poll((uint8_t*)&ir_flashdat, 16, 1, \
-													(uint8_t*)&dr_read, 2, 1, \
-													NULL, 0, 0, \
-													(uint8_t*)&dr0, 1, 1, \
-													NULL, 0, 0, \
-													(uint8_t*)&dr0, 2, 1, \
-													0, 0x02, 0x00, \
-													C8051F_MAX_POLL_COUNT)
-#endif
 #define jtag_delay_us(us)			p->delayus((us))
 #define jtag_delay_ms(ms)			p->delayms((ms))
+
+#define poll_start(cnt, int)		p->poll_start((cnt), (int))
+#define poll_end()					p->poll_end()
+#define poll_check(o, m, v)			p->poll_checkbyte((o), (m), (v))
+
 #define jtag_commit()				p->jtag_hl_commit()
+
+uint32_t dummy;
+
+RESULT c8051f_jtag_poll_busy(void)
+{
+	poll_start(C8051F_JTAG_MAX_POLL_COUNT, 0);
+	
+	jtag_dr_read(&dummy, 1);
+	poll_check(0, 0x01, 0x00);
+	
+	poll_end();
+	
+	return ERROR_OK;
+}
 
 RESULT c8051f_jtag_ind_read(uint8_t addr, uint32_t *value, uint8_t num_bits)
 {
@@ -141,6 +137,18 @@ RESULT c8051f_jtag_ind_write(uint8_t addr, uint32_t *value, uint8_t num_bits)
 	return ERROR_OK;
 }
 
+RESULT c8051f_jtag_poll_flbusy(uint16_t poll_cnt, uint16_t interval)
+{
+	poll_start(poll_cnt, interval);
+	
+	c8051f_jtag_ind_read(C8051F_IR_FLASHDAT, &dummy, 1);
+	poll_check(0, 0x02, 0x00);
+	
+	poll_end();
+	
+	return ERROR_OK;
+}
+
 RESULT c8051f_jtag_program(operation_t operations, program_info_t *pi, 
 						   programmer_info_t *prog)
 {
@@ -149,7 +157,7 @@ RESULT c8051f_jtag_program(operation_t operations, program_info_t *pi,
 	
 	int32_t i;
 	uint32_t j, k, len_current_list, page_size;
-	uint32_t page_buf[C8051F_BLOCK_SIZE];
+	uint32_t page_buf[C8051F_JTAG_BLOCK_SIZE];
 	RESULT ret = ERROR_OK;
 	memlist *ml_tmp;
 	
@@ -214,24 +222,7 @@ RESULT c8051f_jtag_program(operation_t operations, program_info_t *pi,
 		dr = 0;
 		c8051f_jtag_ind_write(C8051F_IR_FLASHCON, &dr, 
 							  C8051F_DR_FLASHCON_LEN);
-		// 3 times 500 ms is 1.5s
-		jtag_delay_ms(500);
-		if (ERROR_OK != jtag_commit())
-		{
-			pgbar_fini();
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "erase flash");
-			ret = ERRCODE_FAILURE_OPERATION;
-			goto leave_program_mode;
-		}
-		jtag_delay_ms(500);
-		if (ERROR_OK != jtag_commit())
-		{
-			pgbar_fini();
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "erase flash");
-			ret = ERRCODE_FAILURE_OPERATION;
-			goto leave_program_mode;
-		}
-		jtag_delay_ms(500);
+		c8051f_jtag_poll_flbusy(1500, 1000);
 		if (ERROR_OK != jtag_commit())
 		{
 			pgbar_fini();
@@ -284,7 +275,7 @@ RESULT c8051f_jtag_program(operation_t operations, program_info_t *pi,
 			c8051f_jtag_ind_write(C8051F_IR_FLASHCON, &dr, 
 								  C8051F_DR_FLASHCON_LEN);
 			// poll for FLBusy
-			jtag_poll_flbusy(20000);
+			c8051f_jtag_poll_flbusy(2000, 1000);
 			// read FLBusy and FLFail
 			c8051f_jtag_ind_read(C8051F_IR_FLASHDAT, &dr, 2);
 			
@@ -303,7 +294,7 @@ RESULT c8051f_jtag_program(operation_t operations, program_info_t *pi,
 		LOG_INFO(_GETTEXT(INFOMSG_ERASED), "flash");
 	}
 	
-	page_size = C8051F_BLOCK_SIZE;
+	page_size = C8051F_JTAG_BLOCK_SIZE;
 	
 	if (operations.write_operations & APPLICATION)
 	{
@@ -350,7 +341,7 @@ RESULT c8051f_jtag_program(operation_t operations, program_info_t *pi,
 					c8051f_jtag_ind_write(C8051F_IR_FLASHCON, &dr, 
 										  C8051F_DR_FLASHCON_LEN);
 					// poll for FLBusy
-					jtag_poll_flbusy(60);
+					jtag_poll_flbusy(60, 0);
 					c8051f_jtag_ind_read(C8051F_IR_FLASHDAT, 
 										 ((uint32_t*)page_buf + j), 2);
 				}
@@ -448,7 +439,7 @@ RESULT c8051f_jtag_program(operation_t operations, program_info_t *pi,
 					c8051f_jtag_ind_write(C8051F_IR_FLASHCON, &dr, 
 										  C8051F_DR_FLASHCON_LEN);
 					// poll for FLBusy
-					jtag_poll_flbusy(0);
+					jtag_poll_flbusy(0, 0);
 					c8051f_jtag_ind_read(C8051F_IR_FLASHDAT, 
 										 ((uint32_t*)page_buf + j), 
 										 C8051F_DR_FLASHDAT_RLEN);

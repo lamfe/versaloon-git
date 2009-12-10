@@ -1057,7 +1057,11 @@ RESULT versaloon_c2_fini(void)
 }
 RESULT versaloon_c2_addr_write(uint8_t addr)
 {
-	return usbtoc2_addr(VERSALOON_C2_PORT, addr);
+	return usbtoc2_writeaddr(VERSALOON_C2_PORT, addr);
+}
+RESULT versaloon_c2_addr_read(uint8_t *data)
+{
+	return usbtoc2_readaddr(VERSALOON_C2_PORT, data);
 }
 RESULT versaloon_c2_data_write(uint8_t *data, uint8_t len)
 {
@@ -1066,10 +1070,6 @@ RESULT versaloon_c2_data_write(uint8_t *data, uint8_t len)
 RESULT versaloon_c2_data_read(uint8_t *data, uint8_t len)
 {
 	return usbtoc2_data(VERSALOON_C2_PORT, 1, len, data);
-}
-RESULT versaloon_c2_addr_poll(uint8_t mask, uint8_t value, uint16_t poll_cnt)
-{
-	return usbtoc2_addr_poll(VERSALOON_C2_PORT, mask, value, poll_cnt);
 }
 // I2C
 RESULT versaloon_i2c_init(void)
@@ -1158,7 +1158,6 @@ RESULT versaloon_init_capability(void *p)
 											versaloon_get_target_voltage;
 	
 	// JTAG_HL & SWJ
-#if 1
 	((programmer_info_t *)p)->swj_init = versaloon_swj_init;
 	((programmer_info_t *)p)->swj_fini = versaloon_swj_fini;
 	((programmer_info_t *)p)->swj_seqout = versaloon_swj_seqout;
@@ -1177,26 +1176,6 @@ RESULT versaloon_init_capability(void *p)
 	((programmer_info_t *)p)->jtag_hl_commit = versaloon_peripheral_commit;
 	((programmer_info_t *)p)->jtag_hl_register_callback = 
 											versaloon_jtaghl_register_callback;
-#else
-	((programmer_info_t *)p)->swj_init = vsllink_swj_connect;
-	((programmer_info_t *)p)->swj_fini = vsllink_swj_disconnect;
-	((programmer_info_t *)p)->swj_seqout = vsllink_swj_seqout;
-	((programmer_info_t *)p)->swj_seqin = vsllink_swj_seqin;
-	((programmer_info_t *)p)->swj_transact = vsllink_swj_transact;
-	((programmer_info_t *)p)->swj_setpara = vsllink_swj_setpara;
-	((programmer_info_t *)p)->swj_commit = vsllink_swj_commit;
-
-	((programmer_info_t *)p)->jtag_hl_init = vsllink_jtag_connect;
-	((programmer_info_t *)p)->jtag_hl_fini = vsllink_jtaghl_disconnect;
-	((programmer_info_t *)p)->jtag_hl_config= vsllink_jtaghl_config;
-	((programmer_info_t *)p)->jtag_hl_runtest = vsllink_jtaghl_runtest;
-	((programmer_info_t *)p)->jtag_hl_tms = vsllink_jtaghl_tms;
-	((programmer_info_t *)p)->jtag_hl_ir = vsllink_jtaghl_ir;
-	((programmer_info_t *)p)->jtag_hl_dr = vsllink_jtaghl_dr;
-	((programmer_info_t *)p)->jtag_hl_register_callback = 
-											vsllink_jtaghl_register_callback;
-	((programmer_info_t *)p)->jtag_hl_commit = vsllink_jtaghl_commit;
-#endif
 	
 	// JTAG_LL
 	((programmer_info_t *)p)->jtag_ll_init = vsllink_jtag_connect;
@@ -1241,9 +1220,9 @@ RESULT versaloon_init_capability(void *p)
 	((programmer_info_t *)p)->c2_init = versaloon_c2_init;
 	((programmer_info_t *)p)->c2_fini = versaloon_c2_fini;
 	((programmer_info_t *)p)->c2_addr_write = versaloon_c2_addr_write;
+	((programmer_info_t *)p)->c2_addr_read = versaloon_c2_addr_read;
 	((programmer_info_t *)p)->c2_data_write = versaloon_c2_data_write;
 	((programmer_info_t *)p)->c2_data_read = versaloon_c2_data_read;
-	((programmer_info_t *)p)->c2_addr_poll = versaloon_c2_addr_poll;
 	((programmer_info_t *)p)->c2_commit = versaloon_peripheral_commit;
 	
 	// I2C

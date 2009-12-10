@@ -44,18 +44,37 @@
 #define cur_chip_param			target_chip_param
 
 
-#define delay_ms(ms)			prog->delayms((ms) | 0x8000)
-#define delay_us(us)			prog->delayus((us) & 0x7FFF)
+#define delay_ms(ms)			p->delayms((ms) | 0x8000)
+#define delay_us(us)			p->delayus((us) & 0x7FFF)
 
-#define c2_init()				prog->c2_init()
-#define c2_fini()				prog->c2_fini()
-#define c2_write_ir(ir)			prog->c2_addr_write(ir)
-#define c2_write_dr(dr)			prog->c2_data_write(&dr, 1)
-#define c2_read_dr(dr)			prog->c2_data_read(dr, 1)
-#define c2_poll_out_ready()		prog->c2_addr_poll(0x01, 0x01, 500)
-#define c2_poll_in_busy()		prog->c2_addr_poll(0x02, 0x00, 500)
+#define c2_init()				p->c2_init()
+#define c2_fini()				p->c2_fini()
+#define c2_write_ir(ir)			p->c2_addr_write(ir)
+#define c2_read_ir(ir)			p->c2_addr_read(ir);
+#define c2_write_dr(dr)			p->c2_data_write(&dr, 1)
+#define c2_read_dr(dr)			p->c2_data_read(dr, 1)
+#define c2_poll_out_ready()		c8051f_c2_addr_poll(0x01, 0x01, 500)
+#define c2_poll_in_busy()		c8051f_c2_addr_poll(0x02, 0x00, 500)
 
-#define commit()				prog->c2_commit()
+#define poll_start(cnt)			p->poll_start((cnt), 100)
+#define poll_end()				p->poll_end()
+#define poll_check(o, m, v)		p->poll_checkbyte((o), (m), (v))
+
+#define commit()				p->c2_commit()
+
+static programmer_info_t *p = NULL;
+
+RESULT c8051f_c2_addr_poll(uint8_t mask, uint8_t value, uint16_t poll_cnt)
+{
+	poll_start(poll_cnt * 10);
+	
+	c2_read_ir(NULL);
+	poll_check(0, mask, value);
+	
+	poll_end();
+	
+	return ERROR_OK;
+}
 
 RESULT c8051f_c2_program(operation_t operations, program_info_t *pi, 
 						 programmer_info_t *prog)
@@ -66,6 +85,8 @@ RESULT c8051f_c2_program(operation_t operations, program_info_t *pi,
 	RESULT ret = ERROR_OK;
 	uint8_t page_buf[C8051F_BLOCK_SIZE];
 	memlist *ml_tmp;
+	
+	p = prog;
 	
 	c2_init();
 	
@@ -327,7 +348,7 @@ RESULT c8051f_c2_program(operation_t operations, program_info_t *pi,
 				
 				for (j = 0; j < page_size; j++)
 				{
-					c2_poll_out_ready();
+//					c2_poll_out_ready();
 					c2_read_dr(&page_buf[j]);
 				}
 				
