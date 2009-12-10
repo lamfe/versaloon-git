@@ -905,7 +905,10 @@ RESULT versaloon_swj_commit(uint8_t *result)
 	RESULT ret;
 	
 	ret = usbtoxxx_execute_command();
-	*result = usbtoswj_get_last_ack();
+	if (result != NULL)
+	{
+		*result = usbtoswj_get_last_ack();
+	}
 	
 	return ret;
 }
