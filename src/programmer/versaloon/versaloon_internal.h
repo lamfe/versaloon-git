@@ -74,6 +74,7 @@
 #define VERSALOON_ISSP_PORT				0
 #define VERSALOON_LPCICP_PORT			0
 #define VERSALOON_JTAGHL_PORT			0
+#define VERSALOON_JTAGLL_PORT			0
 #define VERSALOON_SWJ_PORT				0
 #define VERSALOON_C2_PORT				0
 #define VERSALOON_I2C_PORT				0
@@ -120,6 +121,7 @@ RESULT versaloon_download_mass_product_data(const char *name, uint8_t *buffer,
 RESULT versaloon_query_mass_product_data_size(uint32_t *size);
 
 extern uint8_t *versaloon_buf;
+extern uint8_t *versaloon_cmd_buf;
 extern uint16_t versaloon_buf_size;
 
 #endif /* __VERSALOON_INTERNAL_H_INCLUDED__ */

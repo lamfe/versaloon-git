@@ -273,7 +273,7 @@ void VSLLink_ProcessCmd(uint8* dat, uint16 len)
 				cur_cmd_pos += 4;
 				while(cur_dat_len--)
 				{
-					JTAG_TAP_HS_WriteTMSByte_ASYN(0);
+					JTAG_TAP_HS_WriteTMSByte_ASYN(cur_cmd);
 				}
 				dat[rep_len++] = 0;
 				break;

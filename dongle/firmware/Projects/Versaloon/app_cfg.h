@@ -28,8 +28,8 @@
 //#include "hw_cfg_NanoRC1.h"
 //#include "hw_cfg_MiniRC2.h"
 //#include "hw_cfg_MiniRC3.h"
-//#include "hw_cfg_MiniRC4.h"
-#include "hw_cfg_ProRC1.h"
+#include "hw_cfg_MiniRC4.h"
+//#include "hw_cfg_ProRC1.h"
 
 #define _SYS_FREQUENCY					72		// in MHz
 #define _SYS_FLASH_VECTOR_TABLE_SHIFT	0x2000	// application will locate at 0x08002000
@@ -89,7 +89,7 @@
 #	define USB_TO_DAC_EN				0
 #	define USB_TO_MICROWIRE_EN			0
 // page 1
-#	define USB_TO_JTAG_LL_EN			0
+#	define USB_TO_JTAG_LL_EN			1
 #	define USB_TO_JTAG_HL_EN			1
 #	define USB_TO_ISSP_EN				1
 #	define USB_TO_C2_EN					1

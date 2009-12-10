@@ -36,7 +36,6 @@
 
 uint8_t usbtopwr_num_of_interface = 0;
 
-
 RESULT usbtopwr_init(void)
 {
 	return usbtoxxx_init_command(USB_TO_POWER, &usbtopwr_num_of_interface);

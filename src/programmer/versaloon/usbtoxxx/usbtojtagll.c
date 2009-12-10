@@ -34,35 +34,22 @@
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
 
-uint8_t usbtoissp_num_of_interface = 0;
+uint8_t usbtojtagll_num_of_interface = 0;
 
-RESULT usbtoissp_init(void)
+RESULT usbtojtagll_init(void)
 {
-	return usbtoxxx_init_command(USB_TO_ISSP, &usbtoissp_num_of_interface);
+	return usbtoxxx_init_command(USB_TO_JTAG_LL, 
+								 &usbtojtagll_num_of_interface);
 }
 
-RESULT usbtoissp_fini(void)
+RESULT usbtojtagll_fini(void)
 {
-	return usbtoxxx_fini_command(USB_TO_ISSP);
+	return usbtoxxx_fini_command(USB_TO_JTAG_LL);
 }
 
-RESULT usbtoissp_config(uint8_t interface_index)
+RESULT usbtojtagll_config(uint8_t interface_index, uint16_t kHz)
 {
-#if PARAM_CHECK
-	if (interface_index > 7)
-	{
-		LOG_BUG(_GETTEXT("invalid inteface_index %d.\n"), interface_index);
-		return ERROR_FAIL;
-	}
-#endif
-	
-	return usbtoxxx_conf_command(USB_TO_ISSP, interface_index, NULL, 0);
-}
-
-RESULT usbtoissp_vector(uint8_t interface_index, uint8_t operate, uint8_t addr, 
-						uint8_t data, uint8_t *buf)
-{
-	uint8_t cmd_buf[3];
+	uint8_t cfg_buf[2];
 	
 #if PARAM_CHECK
 	if (interface_index > 7)
@@ -72,24 +59,58 @@ RESULT usbtoissp_vector(uint8_t interface_index, uint8_t operate, uint8_t addr,
 	}
 #endif
 	
-	cmd_buf[0] = operate;
-	cmd_buf[1] = addr;
-	cmd_buf[2] = data;
+	cfg_buf[0] = (kHz >> 0) & 0xFF;
+	cfg_buf[1] = (kHz >> 8) & 0xFF;
 	
-	if (operate & ISSP_VECTOR_ATTR_READ)
+	return usbtoxxx_conf_command(USB_TO_JTAG_LL, interface_index, cfg_buf, 2);
+}
+
+RESULT usbtojtagll_tms(uint8_t interface_index, uint8_t *tms, uint8_t bytelen)
+{
+#if PARAM_CHECK
+	if (interface_index > 7)
 	{
-		return usbtoxxx_inout_command(USB_TO_ISSP, interface_index, cmd_buf, 
-									  3, 1, buf, 0, 1, 1);
+		LOG_BUG(_GETTEXT("invalid inteface_index %d.\n"), interface_index);
+		return ERROR_FAIL;
+	}
+#endif
+	return usbtoxxx_out_command(USB_TO_JTAG_LL, interface_index, tms, bytelen, 1);
+}
+
+RESULT usbtojtagll_tms_clocks(uint8_t interface_index, uint32_t bytelen, uint8_t tms)
+{
+	uint8_t buff[5];
+	
+#if PARAM_CHECK
+	if (interface_index > 7)
+	{
+		LOG_BUG(_GETTEXT("invalid inteface_index %d.\n"), interface_index);
+		return ERROR_FAIL;
+	}
+#endif
+	
+	if (tms)
+	{
+		buff[0] = 0xFF;
 	}
 	else
 	{
-		return usbtoxxx_inout_command(USB_TO_ISSP, interface_index, cmd_buf, 
-									  3, 0, NULL, 0, 0, 1);
+		buff[0] = 0x00;
 	}
+	buff[1] = (bytelen >> 0) & 0xFF;
+	buff[2] = (bytelen >> 8) & 0xFF;
+	buff[3] = (bytelen >> 16) & 0xFF;
+	buff[4] = (bytelen >> 24) & 0xFF;
+	
+	return usbtoxxx_poll_command(USB_TO_JTAG_LL, interface_index, buff, 5, NULL, 0);
 }
 
-RESULT usbtoissp_enter_program_mode(uint8_t interface_index, uint8_t mode)
+RESULT usbtojtagll_scan(uint8_t interface_index, uint8_t* r, uint16_t bitlen, 
+						uint8_t tms_before_valid, uint8_t tms_before, 
+						uint8_t tms_after0, uint8_t tms_after1)
 {
+	uint16_t bytelen = (bitlen + 7) >> 3;
+	
 #if PARAM_CHECK
 	if (interface_index > 7)
 	{
@@ -98,34 +119,24 @@ RESULT usbtoissp_enter_program_mode(uint8_t interface_index, uint8_t mode)
 	}
 #endif
 	
-	return usbtoxxx_in_command(USB_TO_ISSP, interface_index, &mode, 1, 0, 
-							   NULL, 0, 0, 0);
-}
-
-RESULT usbtoissp_leave_program_mode(uint8_t interface_index, uint8_t mode)
-{
-#if PARAM_CHECK
-	if (interface_index > 7)
+	if (tms_before_valid)
 	{
-		LOG_BUG(_GETTEXT("invalid inteface_index %d.\n"), interface_index);
-		return ERROR_FAIL;
+		tms_before_valid = 1;
+		versaloon_cmd_buf[0] = (bytelen >> 0) & 0xFF;
+		versaloon_cmd_buf[1] = ((bytelen >> 8) & 0xFF) | 0x80;
+		versaloon_cmd_buf[2] = tms_before;
 	}
-#endif
-	
-	return usbtoxxx_out_command(USB_TO_ISSP, interface_index, &mode, 1, 0);
-}
-
-RESULT usbtoissp_wait_and_poll(uint8_t interface_index)
-{
-#if PARAM_CHECK
-	if (interface_index > 7)
+	else
 	{
-		LOG_BUG(_GETTEXT("invalid inteface_index %d.\n"), interface_index);
-		return ERROR_FAIL;
+		versaloon_cmd_buf[0] = (bytelen >> 0) & 0xFF;
+		versaloon_cmd_buf[1] = (bytelen >> 8) & 0xFF;
 	}
-#endif
+	memcpy(&versaloon_cmd_buf[2 + tms_before_valid], r, bytelen);
+	versaloon_cmd_buf[2 + tms_before_valid + bytelen + 0] = tms_after0;
+	versaloon_cmd_buf[2 + tms_before_valid + bytelen + 1] = tms_after1;
 	
-	return usbtoxxx_poll_command(USB_TO_ISSP, interface_index, NULL, 0, NULL, 
-								 0);
+	return usbtoxxx_inout_command(USB_TO_JTAG_LL, interface_index, 
+									versaloon_cmd_buf, bytelen + tms_before_valid + 4, 
+									bytelen, r, 0, bytelen, 0);
 }
 

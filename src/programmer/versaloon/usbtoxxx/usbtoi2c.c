@@ -35,7 +35,6 @@
 #include "usbtoxxx_internal.h"
 
 uint8_t usbtoi2c_num_of_interface = 0;
-uint8_t usbtoi2c_buffer[256 + 6];
 
 RESULT usbtoi2c_init(void)
 {
@@ -57,11 +56,11 @@ RESULT usbtoi2c_set_speed(uint8_t interface_index, uint16_t kHz)
 	}
 #endif
 	
-	usbtoi2c_buffer[0] = (kHz >> 0) & 0xFF;
-	usbtoi2c_buffer[1] = (kHz >> 8) & 0xFF;
+	versaloon_cmd_buf[0] = (kHz >> 0) & 0xFF;
+	versaloon_cmd_buf[1] = (kHz >> 8) & 0xFF;
 	
 	return usbtoxxx_conf_command(USB_TO_I2C, interface_index, 
-								 usbtoi2c_buffer, 2);
+								 versaloon_cmd_buf, 2);
 }
 
 RESULT usbtoi2c_read(uint8_t interface_index, uint16_t chip_addr, 
@@ -87,15 +86,15 @@ RESULT usbtoi2c_read(uint8_t interface_index, uint16_t chip_addr,
 		return ERROR_FAIL;
 	}
 	
-	usbtoi2c_buffer[0] = (chip_addr >> 0) & 0xFF;
-	usbtoi2c_buffer[1] = (chip_addr >> 8) & 0xFF;
-	usbtoi2c_buffer[2] = chip_addr_len;
-	usbtoi2c_buffer[3] = (data_len >> 0) & 0xFF;
-	usbtoi2c_buffer[4] = (data_len >> 8) & 0xFF;
-	usbtoi2c_buffer[5] = stop;
-	memset(&usbtoi2c_buffer[6], 0, data_len);
+	versaloon_cmd_buf[0] = (chip_addr >> 0) & 0xFF;
+	versaloon_cmd_buf[1] = (chip_addr >> 8) & 0xFF;
+	versaloon_cmd_buf[2] = chip_addr_len;
+	versaloon_cmd_buf[3] = (data_len >> 0) & 0xFF;
+	versaloon_cmd_buf[4] = (data_len >> 8) & 0xFF;
+	versaloon_cmd_buf[5] = stop;
+	memset(&versaloon_cmd_buf[6], 0, data_len);
 	
-	return usbtoxxx_in_command(USB_TO_I2C, interface_index, usbtoi2c_buffer, 
+	return usbtoxxx_in_command(USB_TO_I2C, interface_index, versaloon_cmd_buf, 
 							   data_len + 6, data_len, data, 0, data_len, 0);
 }
 
@@ -122,15 +121,15 @@ RESULT usbtoi2c_write(uint8_t interface_index, uint16_t chip_addr,
 		return ERROR_FAIL;
 	}
 	
-	usbtoi2c_buffer[0] = (chip_addr >> 0) & 0xFF;
-	usbtoi2c_buffer[1] = (chip_addr >> 8) & 0xFF;
-	usbtoi2c_buffer[2] = chip_addr_len;
-	usbtoi2c_buffer[3] = (data_len >> 0) & 0xFF;
-	usbtoi2c_buffer[4] = (data_len >> 8) & 0xFF;
-	usbtoi2c_buffer[5] = stop;
-	memcpy(&usbtoi2c_buffer[6], data, data_len);
+	versaloon_cmd_buf[0] = (chip_addr >> 0) & 0xFF;
+	versaloon_cmd_buf[1] = (chip_addr >> 8) & 0xFF;
+	versaloon_cmd_buf[2] = chip_addr_len;
+	versaloon_cmd_buf[3] = (data_len >> 0) & 0xFF;
+	versaloon_cmd_buf[4] = (data_len >> 8) & 0xFF;
+	versaloon_cmd_buf[5] = stop;
+	memcpy(&versaloon_cmd_buf[6], data, data_len);
 	
-	return usbtoxxx_out_command(USB_TO_I2C, interface_index, usbtoi2c_buffer, 
+	return usbtoxxx_out_command(USB_TO_I2C, interface_index, versaloon_cmd_buf, 
 								data_len + 6, 0);
 }
 

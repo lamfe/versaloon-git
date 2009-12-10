@@ -86,11 +86,10 @@ RESULT usbtoswj_config(uint8_t interface_index, uint8_t trn, uint16_t retry,
 	return usbtoxxx_conf_command(USB_TO_SWJ, interface_index, cfg_buf, 5);
 }
 
-RESULT usbtoswj_seqout(uint8_t interface_index, uint8_t *data, uint16_t bit_len)
+RESULT usbtoswj_seqout(uint8_t interface_index, uint8_t *data, uint16_t bitlen)
 {
-	uint16_t bytelen = (bit_len + 7) >> 3;
+	uint16_t bytelen = (bitlen + 7) >> 3;
 	RESULT ret;
-	uint8_t *buff = NULL;
 	
 #if PARAM_CHECK
 	if (interface_index > 7)
@@ -100,31 +99,17 @@ RESULT usbtoswj_seqout(uint8_t interface_index, uint8_t *data, uint16_t bit_len)
 	}
 #endif
 	
-	buff = (uint8_t *)malloc(bytelen + 2);
-	if (NULL == buff)
-	{
-		LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
-		return ERRCODE_NOT_ENOUGH_MEMORY;
-	}
+	versaloon_cmd_buf[0] = (bitlen >> 0) & 0xFF;
+	versaloon_cmd_buf[1] = (bitlen >> 8) & 0xFF;
+	memcpy(versaloon_cmd_buf + 2, data, bytelen);
 	
-	buff[0] = (bit_len >> 0) & 0xFF;
-	buff[1] = (bit_len >> 8) & 0xFF;
-	memcpy(buff + 2, data, bytelen);
-	
-	ret = usbtoxxx_out_command(USB_TO_SWJ, interface_index, buff, bytelen + 2, 0);
-	
-	if (buff != NULL)
-	{
-		free(buff);
-		buff = NULL;
-	}
-	
-	return ret;
+	return usbtoxxx_out_command(USB_TO_SWJ, interface_index, 
+								versaloon_cmd_buf, bytelen + 2, 0);
 }
 
-RESULT usbtoswj_seqin(uint8_t interface_index, uint8_t *data, uint16_t bit_len)
+RESULT usbtoswj_seqin(uint8_t interface_index, uint8_t *data, uint16_t bitlen)
 {
-	uint16_t bytelen = (bit_len + 7) >> 3;
+	uint16_t bytelen = (bitlen + 7) >> 3;
 	uint8_t buff[2];
 	
 #if PARAM_CHECK
@@ -135,8 +120,8 @@ RESULT usbtoswj_seqin(uint8_t interface_index, uint8_t *data, uint16_t bit_len)
 	}
 #endif
 	
-	buff[0] = (bit_len >> 0) & 0xFF;
-	buff[1] = (bit_len >> 8) & 0xFF;
+	buff[0] = (bitlen >> 0) & 0xFF;
+	buff[1] = (bitlen >> 8) & 0xFF;
 	
 	return usbtoxxx_in_command(USB_TO_SWJ, interface_index, buff, 2, bytelen, 
 								data, 0, bytelen, 0);

@@ -37,7 +37,6 @@
 #include "versaloon.h"
 #include "versaloon_internal.h"
 #include "usbtoxxx/usbtoxxx.h"
-#include "vsllink/vsllink.h"
 
 
 const char *versaloon_hardwares[] = 
@@ -48,6 +47,7 @@ const char *versaloon_hardwares[] =
 };
 
 uint8_t *versaloon_buf = NULL;
+uint8_t *versaloon_cmd_buf = NULL;
 uint16_t versaloon_buf_size = 256;
 
 versaloon_pending_t versaloon_pending[VERSALOON_MAX_PENDING_NUMBER];
@@ -419,6 +419,13 @@ RESULT versaloon_init(void)
 		LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
 		return ERRCODE_NOT_ENOUGH_MEMORY;
 	}
+	versaloon_cmd_buf = (uint8_t *)malloc(versaloon_buf_size - 3);
+	if (NULL == versaloon_cmd_buf)
+	{
+		versaloon_fini();
+		LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+		return ERRCODE_NOT_ENOUGH_MEMORY;
+	}
 	
 	return ERROR_OK;
 }
@@ -435,6 +442,11 @@ RESULT versaloon_fini(void)
 		{
 			free(versaloon_buf);
 			versaloon_buf = NULL;
+		}
+		if (versaloon_cmd_buf != NULL)
+		{
+			free(versaloon_cmd_buf);
+			versaloon_cmd_buf = NULL;
 		}
 	}
 	
@@ -909,19 +921,45 @@ RESULT versaloon_swj_setpara(uint8_t trn, uint16_t retry, uint16_t dly)
 {
 	return usbtoswj_config(VERSALOON_SWJ_PORT, trn, retry, dly);
 }
-RESULT versaloon_swj_seqout(uint8_t *data, uint16_t bit_len)
+RESULT versaloon_swj_seqout(uint8_t *data, uint16_t bitlen)
 {
-	return usbtoswj_seqout(VERSALOON_SWJ_PORT, data, bit_len);
+	return usbtoswj_seqout(VERSALOON_SWJ_PORT, data, bitlen);
 }
-RESULT versaloon_swj_seqin(uint8_t *data, uint16_t bit_len)
+RESULT versaloon_swj_seqin(uint8_t *data, uint16_t bitlen)
 {
-	return usbtoswj_seqin(VERSALOON_SWJ_PORT, data, bit_len);
+	return usbtoswj_seqin(VERSALOON_SWJ_PORT, data, bitlen);
 }
 RESULT versaloon_swj_transact(uint8_t request, uint32_t *data)
 {
 	return usbtoswj_transact(VERSALOON_SWJ_PORT, request, data);
 }
 // JTAG
+RESULT versaloon_jtagll_connect(void)
+{
+	return usbtojtagll_init();
+}
+RESULT versaloon_jtagll_disconnect(void)
+{
+	return usbtojtagll_fini();
+}
+RESULT versaloon_jtagll_set_frequency(uint16_t kHz)
+{
+	return usbtojtagll_config(VERSALOON_JTAGLL_PORT, kHz);
+}
+RESULT versaloon_jtagll_tms(uint8_t *tms, uint8_t bytelen)
+{
+	return usbtojtagll_tms(VERSALOON_JTAGLL_PORT, tms, bytelen);
+}
+RESULT versaloon_jtagll_tms_clocks(uint32_t bytelen, uint8_t tms)
+{
+	return usbtojtagll_tms_clocks(VERSALOON_JTAGLL_PORT, bytelen, tms);
+}
+RESULT versaloon_jtagll_scan(uint8_t* r, uint16_t bitlen, uint8_t tms_before_valid, 
+							 uint8_t tms_before, uint8_t tms_after0, uint8_t tms_after1)
+{
+	return usbtojtagll_scan(VERSALOON_JTAGLL_PORT, r, bitlen, tms_before_valid, 
+							tms_before, tms_after0, tms_after1);
+}
 RESULT versaloon_jtaghl_register_callback(jtag_callback_t send_callback, 
 									 jtag_callback_t receive_callback)
 {
@@ -1178,19 +1216,14 @@ RESULT versaloon_init_capability(void *p)
 											versaloon_jtaghl_register_callback;
 	
 	// JTAG_LL
-	((programmer_info_t *)p)->jtag_ll_init = vsllink_jtag_connect;
-	((programmer_info_t *)p)->jtag_ll_fini = vsllink_jtagll_disconnect;
-	((programmer_info_t *)p)->jtag_ll_set_frequency = vsllink_jtag_set_freq;
-	((programmer_info_t *)p)->jtag_ll_tms = vsllink_jtagll_tms;
-	((programmer_info_t *)p)->jtag_ll_tms_clocks = vsllink_jtagll_tms_clocks;
-	((programmer_info_t *)p)->jtag_ll_xr = vsllink_jtagll_xr;
-	((programmer_info_t *)p)->jtag_ll_aux_io_init = versaloon_null;
-	((programmer_info_t *)p)->jtag_ll_aux_io_fini = versaloon_null;
-	((programmer_info_t *)p)->jtag_ll_aux_io_config = 
-											vsllink_jtag_auxio_config;
-	((programmer_info_t *)p)->jtag_ll_aux_io_out = vsllink_jtag_auxio_out;
-	((programmer_info_t *)p)->jtag_ll_aux_io_in = vsllink_jtag_auxio_in;
-	((programmer_info_t *)p)->jtag_ll_commit = vsllink_jtagll_commit;
+	((programmer_info_t *)p)->jtag_ll_init = versaloon_jtagll_connect;
+	((programmer_info_t *)p)->jtag_ll_fini = versaloon_jtagll_disconnect;
+	((programmer_info_t *)p)->jtag_ll_set_frequency = 
+											versaloon_jtagll_set_frequency;
+	((programmer_info_t *)p)->jtag_ll_tms = versaloon_jtagll_tms;
+	((programmer_info_t *)p)->jtag_ll_tms_clocks = versaloon_jtagll_tms_clocks;
+	((programmer_info_t *)p)->jtag_ll_scan = versaloon_jtagll_scan;
+	((programmer_info_t *)p)->jtag_ll_commit = versaloon_peripheral_commit;
 	
 	// MSP430_JTAG
 	((programmer_info_t *)p)->msp430jtag_init = versaloon_msp430jtag_init;

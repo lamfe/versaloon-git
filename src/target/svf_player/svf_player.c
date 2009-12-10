@@ -303,6 +303,8 @@ RESULT svfp_program(operation_t operations, program_info_t *pi,
 	
 leave_program_mode:
 	// free all
+	tap_fini();
+	tap_commit();
 	svf_parser_fini();
 	if (svfp_command_buffer)
 	{

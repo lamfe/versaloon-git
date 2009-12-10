@@ -696,7 +696,7 @@ int main(int argc, char* argv[])
 			}
 			
 			if (ERROR_OK != 
-					FILELIST_Add(&fl_in, optarg, seg_offset, addr_offset, "r"))
+					FILELIST_Add(&fl_in, optarg, seg_offset, addr_offset, "rb"))
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_HANDLE_DEVICE), 
 							"add file", optarg);
@@ -728,7 +728,7 @@ int main(int argc, char* argv[])
 			}
 			
 			if (ERROR_OK != 
-					FILELIST_Add(&fl_in, optarg, seg_offset, addr_offset, "w"))
+					FILELIST_Add(&fl_in, optarg, seg_offset, addr_offset, "wb"))
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_HANDLE_DEVICE), 
 							"add file", optarg);
@@ -1002,13 +1002,6 @@ int main(int argc, char* argv[])
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "initialize target");
 		free_all_and_exit(EXIT_FAILURE);
-	}
-	// exit here is no operation defined
-	if (!(operations.checksum_operations || operations.erase_operations 
-		|| operations.read_operations || operations.verify_operations 
-		|| operations.write_operations))
-	{
-		free_all_and_exit(EXIT_SUCCESS);
 	}
 	
 	// malloc buffer
