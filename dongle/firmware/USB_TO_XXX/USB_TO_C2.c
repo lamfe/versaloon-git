@@ -28,7 +28,6 @@ void USB_TO_C2_ProcessCmd(uint8* dat, uint16 len)
 	uint16 index, device_num, length;
 	uint8 command;
 
-	uint16 poll_cnt;
 	uint8 tmp;
 
 	index = 0;
@@ -97,28 +96,15 @@ void USB_TO_C2_ProcessCmd(uint8* dat, uint16 len)
 			}
 
 			break;
-		case USB_TO_C2_Addr:
+		case USB_TO_C2_WriteAddr:
 			C2_WriteAddr(dat[index]);
 			buffer_reply[rep_len++] = USB_TO_XXX_OK;
 
 			break;
-		case USB_TO_C2_PollStats:
-			poll_cnt = dat[index + 2] + (dat[index + 3] << 8);
-			while(poll_cnt)
-			{
-				C2_ReadAddr(&tmp);
-				if((tmp & dat[index + 0]) == dat[index + 1])
-				{
-					buffer_reply[rep_len++] = USB_TO_XXX_OK;
-					break;
-				}
-				poll_cnt--;
-				DelayMS(1);
-			}
-			if(!poll_cnt)
-			{
-				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
-			}
+		case USB_TO_C2_ReadAddr:
+			C2_ReadAddr(&buffer_reply[rep_len + 1]);
+			buffer_reply[rep_len] = USB_TO_XXX_OK;
+			rep_len += 2;
 
 			break;
 		default:

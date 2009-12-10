@@ -110,8 +110,8 @@ extern int8 USB_TO_POLL_Index;
 #define USB_TO_I2C_Write			USB_TO_XXX_OUT
 // USB_TO_C2
 #define USB_TO_C2_Data				USB_TO_XXX_IN_OUT
-#define USB_TO_C2_Addr				USB_TO_XXX_OUT
-#define USB_TO_C2_PollStats			USB_T0_XXX_POLL
+#define USB_TO_C2_WriteAddr			USB_TO_XXX_OUT
+#define USB_TO_C2_ReadAddr			USB_TO_XXX_IN
 // USB_TO_MSP430_JTAG
 #define USB_TO_MSP430_JTAG_Reset	USB_TO_XXX_RESET
 #define USB_TO_MSP430_JTAG_IRDR		USB_TO_XXX_IN_OUT

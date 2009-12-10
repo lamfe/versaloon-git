@@ -144,9 +144,9 @@ typedef struct
 	RESULT (*c2_init)(void);
 	RESULT (*c2_fini)(void);
 	RESULT (*c2_addr_write)(uint8_t addr);
+	RESULT (*c2_addr_read)(uint8_t *data);
 	RESULT (*c2_data_read)(uint8_t *data, uint8_t len);
 	RESULT (*c2_data_write)(uint8_t *data, uint8_t len);
-	RESULT (*c2_addr_poll)(uint8_t mask, uint8_t value, uint16_t poll_cnt);
 	RESULT (*c2_commit)(void);
 	
 	// i2c

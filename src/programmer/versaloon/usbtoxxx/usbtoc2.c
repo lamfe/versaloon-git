@@ -59,7 +59,28 @@ RESULT usbtoc2_config(uint8_t interface_index)
 	return usbtoxxx_conf_command(USB_TO_C2, interface_index, NULL, 0);
 }
 
-RESULT usbtoc2_addr(uint8_t interface_index, uint8_t addr)
+RESULT usbtoc2_readaddr(uint8_t interface_index, uint8_t *data)
+{
+#if PARAM_CHECK
+	if (interface_index > 7)
+	{
+		LOG_BUG(_GETTEXT("invalid inteface_index %d.\n"), interface_index);
+		return ERROR_FAIL;
+	}
+#endif
+	if (data != NULL)
+	{
+		return usbtoxxx_in_command(USB_TO_C2, interface_index, NULL, 0, 1, 
+									data, 0, 1, 0);
+	}
+	else
+	{
+		return usbtoxxx_in_command(USB_TO_C2, interface_index, NULL, 0, 1, 
+									NULL, 0, 0, 0);
+	}
+}
+
+RESULT usbtoc2_writeaddr(uint8_t interface_index, uint8_t addr)
 {
 #if PARAM_CHECK
 	if (interface_index > 7)
@@ -105,27 +126,5 @@ RESULT usbtoc2_data(uint8_t interface_index, uint8_t r, uint8_t len, uint8_t *bu
 		return usbtoxxx_inout_command(USB_TO_C2, interface_index, cmdbuf, 
 									  1 + len, 0, NULL, 0, 0, 0);
 	}
-}
-
-RESULT usbtoc2_addr_poll(uint8_t interface_index, uint8_t mask, uint8_t value, 
-						 uint16_t poll_cnt)
-{
-	uint8_t cmdbuf[4];
-	
-#if PARAM_CHECK
-	if (interface_index > 7)
-	{
-		LOG_BUG(_GETTEXT("invalid inteface_index %d.\n"), interface_index);
-		return ERROR_FAIL;
-	}
-#endif
-	
-	cmdbuf[0] = mask;
-	cmdbuf[1] = value;
-	cmdbuf[2] = (uint8_t)poll_cnt;
-	cmdbuf[3] = (uint8_t)(poll_cnt >> 8);
-	
-	return usbtoxxx_poll_command(USB_TO_C2, interface_index, cmdbuf, 4, NULL, 
-								 0);
 }
 
