@@ -30,13 +30,15 @@ extern programmer_info_t *p;
 #define jtag_tms_clocks(len, tms)	\
 								p->jtag_ll_tms_clocks(len, tms)
 #define jtag_xr(d, l, v, b, a0, a1)	\
-								p->jtag_ll_xr((d), (l), (v), (v), (a0), (a1))
+								p->jtag_ll_scan((d), (l), (v), (v), (a0), (a1))
 #define jtag_commit()			p->jtag_ll_commit()
 
-#define jtag_trst_output()		p->jtag_ll_aux_io_config(JTAG_TRST, JTAG_TRST)
-#define jtag_trst_input()		p->jtag_ll_aux_io_config(JTAG_TRST, 0)
-#define jtag_trst_1()			p->jtag_ll_aux_io_out(JTAG_TRST, JTAG_TRST)
-#define jtag_trst_0()			p->jtag_ll_aux_io_out(JTAG_TRST, 0)
+#define jtag_trst_init()		p->gpio_init()
+#define jtag_trst_fini()		p->gpio_fini()
+#define jtag_trst_output()		p->gpio_config(JTAG_TRST, JTAG_TRST, 0)
+#define jtag_trst_input()		p->gpio_config(JTAG_TRST, 0, JTAG_TRST)
+#define jtag_trst_1()			p->gpio_out(JTAG_TRST, JTAG_TRST)
+#define jtag_trst_0()			p->gpio_out(JTAG_TRST, 0)
 
 
 #define TAP_NUM_OF_STATE		16
@@ -65,6 +67,7 @@ typedef enum
 extern const char *tap_state_name[TAP_NUM_OF_STATE];
 
 RESULT tap_init(void);
+RESULT tap_fini(void);
 uint8_t tap_state_is_stable(tap_state_t state);
 uint8_t tap_state_is_valid(tap_state_t state);
 RESULT tap_state_move(void);

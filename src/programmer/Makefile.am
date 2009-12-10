@@ -24,12 +24,10 @@ libprog_a_SOURCES = \
     versaloon/usbtoxxx/usbtolpcicp.c \
     versaloon/usbtoxxx/usbtopwr.c \
     versaloon/usbtoxxx/usbtojtaghl.c \
-    versaloon/usbtoxxx/usbtoswj.c \
-    versaloon/vsllink/vsllink.c
+    versaloon/usbtoxxx/usbtoswj.c 
 
 #noinst_HEADERS = \
     programmer.h \
-    versaloon/usbtoxxx/usbtoxxx.h \
-    versaloon/vsllink/vsllink.h
+    versaloon/usbtoxxx/usbtoxxx.h
 
 MAINTAINERCLEANFILES = Makefile.in

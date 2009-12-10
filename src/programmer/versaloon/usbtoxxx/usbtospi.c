@@ -36,7 +36,6 @@
 
 uint8_t usbtospi_num_of_interface = 0;
 
-
 RESULT usbtospi_init(void)
 {
 	return usbtoxxx_init_command(USB_TO_SPI, &usbtospi_num_of_interface);

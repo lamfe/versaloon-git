@@ -82,8 +82,8 @@ typedef struct
 	// swj
 	RESULT (*swj_init)(void);
 	RESULT (*swj_fini)(void);
-	RESULT (*swj_seqout)(uint8_t *data, uint16_t bit_len);
-	RESULT (*swj_seqin)(uint8_t *data, uint16_t bit_len);
+	RESULT (*swj_seqout)(uint8_t *data, uint16_t bitlen);
+	RESULT (*swj_seqin)(uint8_t *data, uint16_t bitlen);
 	RESULT (*swj_transact)(uint8_t request, uint32_t *data);
 	RESULT (*swj_setpara)(uint8_t trn, uint16_t retry, uint16_t dly);
 	RESULT (*swj_commit)(uint8_t *result);
@@ -94,7 +94,7 @@ typedef struct
 	RESULT (*jtag_hl_config)(uint16_t kHz, uint8_t ub, uint8_t ua, uint16_t bb, 
 							 uint16_t ba);
 	RESULT (*jtag_hl_tms)(uint8_t* tms, uint16_t bitlen);
-	RESULT (*jtag_hl_runtest)(uint32_t len);
+	RESULT (*jtag_hl_runtest)(uint32_t cycles);
 	RESULT (*jtag_hl_ir)(uint8_t *ir, uint8_t len, uint8_t idle, uint8_t want_ret);
 	RESULT (*jtag_hl_dr)(uint8_t *dr, uint16_t len, uint8_t idle, uint8_t want_ret);
 	RESULT (*jtag_hl_register_callback)(jtag_callback_t send_callback, 
@@ -105,15 +105,10 @@ typedef struct
 	RESULT (*jtag_ll_init)(void);
 	RESULT (*jtag_ll_fini)(void);
 	RESULT (*jtag_ll_set_frequency)(uint16_t kHz);
-	RESULT (*jtag_ll_tms)(uint8_t *tms, uint8_t len);
-	RESULT (*jtag_ll_tms_clocks)(uint32_t len, uint8_t tms);
-	RESULT (*jtag_ll_xr)(uint8_t* r, uint16_t len, uint8_t tms_before_valid, 
-						 uint8_t tms_before, uint8_t tms_after0, uint8_t tms_after1);
-	RESULT (*jtag_ll_aux_io_init)(void);
-	RESULT (*jtag_ll_aux_io_fini)(void);
-	RESULT (*jtag_ll_aux_io_config)(uint8_t pin_mask, uint8_t io);
-	RESULT (*jtag_ll_aux_io_out)(uint8_t pin_mask, uint8_t value);
-	RESULT (*jtag_ll_aux_io_in)(uint8_t pin_mask, uint8_t *value);
+	RESULT (*jtag_ll_tms)(uint8_t *tms, uint8_t bytelen);
+	RESULT (*jtag_ll_tms_clocks)(uint32_t bytelen, uint8_t tms);
+	RESULT (*jtag_ll_scan)(uint8_t* r, uint16_t bitlen, uint8_t tms_before_valid, 
+							uint8_t tms_before, uint8_t tms_after0, uint8_t tms_after1);
 	RESULT (*jtag_ll_commit)(void);
 	
 	// msp430_jtag
@@ -192,7 +187,7 @@ typedef struct
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0\
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0\
 	}
 
 extern programmer_info_t *cur_programmer;

@@ -36,7 +36,6 @@
 
 uint8_t usbtolpcicp_num_of_interface = 0;
 
-
 RESULT usbtolpcicp_init(void)
 {
 	return usbtoxxx_init_command(USB_TO_LPCICP, &usbtolpcicp_num_of_interface);

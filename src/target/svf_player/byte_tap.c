@@ -396,6 +396,14 @@ RESULT tap_init(void)
 	{
 		return ERROR_FAIL;
 	}
+	if (ERROR_OK != jtag_set_frequency(1000))
+	{
+		return ERROR_FAIL;
+	}
+	if (ERROR_OK != jtag_trst_init())
+	{
+		return ERROR_FAIL;
+	}
 	if (ERROR_OK != tap_end_state(RESET))
 	{
 		return ERROR_FAIL;
@@ -408,6 +416,14 @@ RESULT tap_init(void)
 	{
 		return ERROR_FAIL;
 	}
+	
+	return ERROR_OK;
+}
+
+RESULT tap_fini(void)
+{
+	jtag_fini();
+	jtag_trst_fini();
 	
 	return ERROR_OK;
 }
