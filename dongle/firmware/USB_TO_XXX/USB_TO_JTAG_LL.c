@@ -29,7 +29,7 @@ void USB_TO_JTAG_LL_ProcessCmd(uint8* dat, uint16 len)
 	uint8 command;
 
 	uint8 para;
-	uint16 cur_dat_len, i;
+	uint32 cur_dat_len, i;
 
 	index = 0;
 	while(index < len)
