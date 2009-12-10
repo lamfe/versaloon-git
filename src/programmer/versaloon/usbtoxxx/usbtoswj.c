@@ -89,7 +89,6 @@ RESULT usbtoswj_config(uint8_t interface_index, uint8_t trn, uint16_t retry,
 RESULT usbtoswj_seqout(uint8_t interface_index, uint8_t *data, uint16_t bitlen)
 {
 	uint16_t bytelen = (bitlen + 7) >> 3;
-	RESULT ret;
 	
 #if PARAM_CHECK
 	if (interface_index > 7)
