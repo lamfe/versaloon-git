@@ -60,9 +60,9 @@
 
 const program_area_map_t cm3_program_area_map[] = 
 {
-	{APPLICATION, APPLICATION_CHAR, 1},
-//	{LOCK, LOCK_CHAR, 0},
-	{0, 0, 0}
+	{APPLICATION, APPLICATION_CHAR, 1, 0, 0},
+//	{LOCK, LOCK_CHAR, 0, 0, 0},
+	{0, 0, 0, 0, 0}
 };
 
 #define CM3_STM32		0

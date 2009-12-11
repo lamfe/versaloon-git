@@ -49,10 +49,10 @@
 
 const program_area_map_t psoc1_program_area_map[] = 
 {
-	{APPLICATION, APPLICATION_CHAR, 1},
-	{LOCK, LOCK_CHAR, 1},
-	{CHECKSUM, CHECKSUM_CHAR, 1},
-	{0, 0, 0}
+	{APPLICATION, APPLICATION_CHAR, 1, 0, 0},
+	{LOCK, LOCK_CHAR, 1, 0, 0x00100000},
+	{CHECKSUM, CHECKSUM_CHAR, 1, 0, 0x00200000},
+	{0, 0, 0, 0, 0}
 };
 
 #define VECTORS_NUM				17

@@ -52,12 +52,12 @@
 
 const program_area_map_t avr8_program_area_map[] = 
 {
-	{APPLICATION, APPLICATION_CHAR, 1},
-	{EEPROM, EEPROM_CHAR, 1},
-	{FUSE, FUSE_CHAR, 0},
-	{LOCK, LOCK_CHAR, 0},
-	{CALIBRATION, CALIBRATION_CHAR, 0},
-	{0, 0, 0}
+	{APPLICATION, APPLICATION_CHAR, 1, 0, 0},
+	{EEPROM, EEPROM_CHAR, 1, 2, 0},
+	{FUSE, FUSE_CHAR, 0, 0, 0},
+	{LOCK, LOCK_CHAR, 0, 0, 0},
+	{CALIBRATION, CALIBRATION_CHAR, 0, 0, 0},
+	{0, 0, 0, 0, 0}
 };
 
 static uint32_t avr8_flash_offset = 0;

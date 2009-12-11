@@ -27,6 +27,7 @@ typedef struct FILELIST
 	FILE *file;
 	uint32_t seg_offset;
 	uint32_t addr_offset;
+	uint32_t access;
 	struct SLLIST list;
 }filelist;
 

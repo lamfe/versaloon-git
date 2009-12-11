@@ -509,6 +509,50 @@ void target_free_data_buffer(void)
 	}
 }
 
+void target_get_target_by_mask(uint32_t mask, uint8_t **buff, uint32_t *size)
+{
+	if (mask & BOOTLOADER)
+	{
+		*buff = program_info.boot;
+		*size = program_info.boot_size;
+	}
+	else if (mask & APPLICATION)
+	{
+		*buff = program_info.app;
+		*size = program_info.app_size;
+	}
+	else if (mask & EEPROM)
+	{
+		*buff = program_info.eeprom;
+		*size = program_info.eeprom_size;
+	}
+	else if (mask & OTP_ROM)
+	{
+		*buff = program_info.otp_rom;
+		*size = program_info.otp_rom_size;
+	}
+	else if (mask & FUSE)
+	{
+		*buff = program_info.fuse;
+		*size = program_info.fuse_size;
+	}
+	else if (mask & LOCK)
+	{
+		*buff = program_info.lock;
+		*size = program_info.lock_size;
+	}
+	else if (mask & USER_SIG)
+	{
+		*buff = program_info.user_area;
+		*size = program_info.user_area_size;
+	}
+	else
+	{
+		*buff = NULL;
+		*size = 0;
+	}
+}
+
 static RESULT target_check_single_defined(uint32_t opt)
 {
 	opt = (target_defined ^ opt) & opt;

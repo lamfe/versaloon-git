@@ -1240,11 +1240,24 @@ int main(int argc, char* argv[])
 					&& (operations.read_operations & p_map->area_mask) 
 					&& !(operations.verify_operations & p_map->area_mask))
 				{
-					LOG_INFO("saving to output file");
+					uint8_t *buff = NULL;
+					uint32_t size = 0;
+					
+					target_get_target_by_mask(p_map->area_mask, &buff, &size);
+					if ((buff != NULL) && (size > 0) && (fl_out != NULL))
+					{
+						if (ERROR_OK != save_target_to_file(fl_out, buff, size, 
+															p_map->area_seg_addr, 
+															p_map->area_start_addr))
+						{
+							free_all_and_exit(EXIT_FAILURE);
+						}
+					}
 				}
 				
 				p_map++;
 			}
+			end_file(fl_out);
 		}
 	}
 	
