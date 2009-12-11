@@ -118,7 +118,7 @@ begin
     FileNameEdtArr[i].Left := LEFT_MARGIN + X_MARGIN + FILELABEL_WIDTH;
     FileNameEdtArr[i].Width := FILEEDIT_WIDTH - FileNameEdtArr[i].ButtonWidth;
     FileNameEdtArr[i].Height := ITEM_HEIGHT;
-    FileNameEdtArr[i].Filter := 'HEX File|*.hex';
+    FileNameEdtArr[i].Filter := 'HEX File|*.hex|BIN File|*.bin';
     FileNameEdtArr[i].Hint := filename;
     FileNameEdtArr[i].ShowHint := TRUE;
   end;
