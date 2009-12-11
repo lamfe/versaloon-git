@@ -34,6 +34,7 @@ type
     filename: string;
     seg_offset: integer;
     addr_offset: integer;
+    def_start_addr: integer;
   end;
 
   { TFormMain }
@@ -309,7 +310,7 @@ begin
   end;
 end;
 
-procedure AddTargetFile(name: string; seg_offset, addr_offset: integer);
+procedure AddTargetFile(name: string; seg_offset, addr_offset, def_start_addr: integer);
 var
   i: integer;
   found: boolean;
@@ -330,6 +331,7 @@ begin
     TargetFile[i].filename := '';
     TargetFile[i].seg_offset := seg_offset;
     TargetFile[i].addr_offset := addr_offset;
+    TargetFile[i].def_start_addr := def_start_addr;
   end;
 end;
 
@@ -1526,9 +1528,19 @@ begin
       begin
         if TargetFile[i].filename <> '' then
         begin
-          caller.AddParameter('I"' + TargetFile[i].filename + '@'
-                                   + IntToStr(TargetFile[i].seg_offset) + ','
-                                   + IntToStr(TargetFile[i].addr_offset) + '"');
+          str := ExtractFileExt(TargetFile[i].filename);
+          if str = '.hex' then
+          begin
+            caller.AddParameter('I"' + TargetFile[i].filename + '@'
+                                     + IntToStr(TargetFile[i].seg_offset) + ','
+                                     + IntToStr(TargetFile[i].addr_offset) + '"');
+          end
+          else if str = '.bin' then
+          begin
+            caller.AddParameter('I"' + TargetFile[i].filename + '@'
+                                     + IntToStr(TargetFile[i].seg_offset) + ','
+                                     + IntToStr(TargetFile[i].addr_offset + TargetFile[i].def_start_addr) + '"');
+          end;
         end;
         break;
       end;
@@ -1541,9 +1553,19 @@ begin
     begin
       if TargetFile[i].filename <> '' then
       begin
-        caller.AddParameter('I"' + TargetFile[i].filename + '@'
-                                 + IntToStr(TargetFile[i].seg_offset) + ','
-                                 + IntToStr(TargetFile[i].addr_offset) + '"');
+        str := ExtractFileExt(TargetFile[i].filename);
+        if str = '.hex' then
+        begin
+          caller.AddParameter('I"' + TargetFile[i].filename + '@'
+                                   + IntToStr(TargetFile[i].seg_offset) + ','
+                                   + IntToStr(TargetFile[i].addr_offset) + '"');
+        end
+        else if str = '.bin' then
+        begin
+          caller.AddParameter('I"' + TargetFile[i].filename + '@'
+                                   + IntToStr(TargetFile[i].seg_offset) + ','
+                                   + IntToStr(TargetFile[i].addr_offset + TargetFile[i].def_start_addr) + '"');
+        end;
       end;
     end;
   end;
@@ -2664,8 +2686,8 @@ begin
   setting.cali_bytelen := 4;
   setting.cali_default := $FFFFFFFF;
   VSProg_AddTargetSetting(setting);
-  AddTargetFile('Flash', 0, 0);
-  AddTargetFile('EEPROM', 2, 0);
+  AddTargetFile('Flash', 0, 0, 0);
+  AddTargetFile('EEPROM', 2, 0, 0);
 
   // call 'vsprog -Savr8' to extract supported avr8 targets
   DisableLogOutput();
@@ -2751,7 +2773,7 @@ begin
   str_tmp := setting.target;
   if Pos(FLASH_CHAR, str_tmp) > 0 then
   begin
-    AddTargetFile('Flash', 0, 0);
+    AddTargetFile('Flash', 0, 0, 0);
   end
   else
   begin
@@ -2759,7 +2781,7 @@ begin
   end;
   if Pos(EEPROM_CHAR, str_tmp) > 0 then
   begin
-    AddTargetFile('EEPROM', 2, 0);
+    AddTargetFile('EEPROM', 2, 0, 0);
   end
   else
   begin
@@ -2825,6 +2847,7 @@ function TFormMain.COMISP_Init_Para(line: string; var setting: TTargetSetting): 
 begin
   setting.extra := line;
   setting.target := FLASH_CHAR;
+
   result := TRUE;
 end;
 
@@ -2834,6 +2857,16 @@ var
   setting_str: string;
 begin
   str_tmp := '';
+
+  if cbboxTarget.Text = 'comisp_stm32' then
+  begin
+    // STM32
+    AddTargetFile('Flash', 0, 0, $08000000);
+  end
+  else
+  begin
+    AddTargetFile('Flash', 0, 0, 0);
+  end;
 
   setting_str := setting.extra;
   FormParaEditor.GetIntegerParameter(setting_str, 'baudrate', ComModeInit.baudrate);
@@ -2967,6 +3000,16 @@ var
 begin
   str_tmp := cbboxMode.Text;
   cbboxMode.Clear;
+
+  if cbboxTarget.Text = 'cm3_stm32' then
+  begin
+    // STM32
+    AddTargetFile('Flash', 0, 0, $08000000);
+  end
+  else
+  begin
+    AddTargetFile('Flash', 0, 0, 0);
+  end;
 
   if setting.mode = '' then
   begin

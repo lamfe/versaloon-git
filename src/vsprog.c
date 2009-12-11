@@ -688,11 +688,31 @@ int main(int argc, char* argv[])
 				}
 			}
 			seg_offset = addr_offset = 0;
-			if ((i > 0) && (i != (sizeof(optarg) - 1)))
+			if (i > 0)
 			{
 				optarg[i] = '\0';
-				sscanf((const char *)&optarg[i + 1], "%d,%d", 
-						&seg_offset, &addr_offset);
+				cur_pointer = &optarg[i + 1];
+				seg_offset = (uint32_t)strtoul(cur_pointer, &end_pointer, 0);
+				if ((cur_pointer == end_pointer) 
+					|| ((*end_pointer != '\0') 
+						&& ((*end_pointer != ',') 
+							|| (*(end_pointer + 1) == '\0'))))
+				{
+					LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), (char)optc);
+					LOG_ERROR(_GETTEXT(ERRMSG_TRY_HELP));
+					free_all_and_exit(EXIT_FAILURE);
+				}
+				if (*end_pointer != '\0')
+				{
+					cur_pointer = end_pointer + 1;
+					addr_offset = (uint32_t)strtoul(cur_pointer, &end_pointer, 0);
+					if ((cur_pointer == end_pointer) || (*end_pointer != '\0'))
+					{
+						LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), (char)optc);
+						LOG_ERROR(_GETTEXT(ERRMSG_TRY_HELP));
+						free_all_and_exit(EXIT_FAILURE);
+					}
+				}
 			}
 			
 			if (ERROR_OK != 

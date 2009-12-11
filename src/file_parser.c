@@ -32,11 +32,14 @@
 #include "port.h"
 
 #include "hex.h"
-//#include "bin.h"
+
+RESULT read_bin_file(FILE *bin_file, WRITE_MEMORY_CALLBACK callback, 
+					 void *buffer, uint32_t seg_offset, uint32_t addr_offset);
 
 static file_parser_t file_parser[] = 
 {
-	{"HEX", read_hex_file}
+	{"HEX", read_hex_file}, 
+	{"BIN", read_bin_file}
 };
 
 static uint8_t check_file_ext(char *file_name, char *ext)
@@ -89,5 +92,42 @@ RESULT parse_file(char *file_name, FILE *file, void *para,
 	// call parser
 	return file_parser[i].parser(file, callback, para, 
 									seg_offset, addr_offset);
+}
+
+RESULT read_bin_file(FILE *bin_file, WRITE_MEMORY_CALLBACK callback, 
+					 void *buffer, uint32_t seg_offset, uint32_t addr_offset)
+{
+	uint8_t cur_buff[8];
+	uint32_t addr = 0, cur_len;
+	RESULT ret;
+	
+	rewind(bin_file);
+	while (1)
+	{
+		cur_len = fread(cur_buff, 1, sizeof(cur_buff), bin_file);
+		if (0 == cur_len)
+		{
+			if (feof(bin_file))
+			{
+				break;
+			}
+			else
+			{
+				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+							"read input binary file");
+				return ERRCODE_FAILURE_OPERATION;
+			}
+		}
+		
+		ret = callback(addr + addr_offset, seg_offset, 
+						cur_buff, cur_len, buffer);
+		if (ret != ERROR_OK)
+		{
+			return ERROR_FAIL;
+		}
+		addr += cur_len;
+	}
+	
+	return ERROR_OK;
 }
 
