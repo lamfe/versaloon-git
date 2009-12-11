@@ -34,7 +34,8 @@ typedef struct FILELIST
 						sllist_get_container(fl->list.next, filelist, list)
 
 RESULT FILELIST_Add(filelist **fl, char *path, uint32_t seg_offset, 
-					uint32_t addr_offset, char *attr);
+					uint32_t addr_offset);
+RESULT FILELIST_Open(filelist *fl, char *attr);
 void FILELIST_Free(filelist **fl);
 
 #endif /* __FILELIST_H_INCLUDED__ */
