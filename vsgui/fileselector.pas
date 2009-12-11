@@ -81,6 +81,7 @@ procedure TFormFileSelector.AddFileSetting(target, filename: string);
 var
   i: integer;
   found: boolean;
+  str: string;
 begin
   found := FALSE;
   for i := 0 to Length(FileNameLabelArr) - 1 do
@@ -121,6 +122,17 @@ begin
     FileNameEdtArr[i].Filter := 'HEX File|*.hex|BIN File|*.bin';
     FileNameEdtArr[i].Hint := filename;
     FileNameEdtArr[i].ShowHint := TRUE;
+    FileNameEdtArr[i].OnChange := @FileNameEditChange;
+
+    str := ExtractFileExt(filename);
+    if (str = '.hex') or (str = '') then
+    begin
+      FileNameEdtArr[i].FilterIndex := 1;
+    end
+    else if str = '.bin' then
+    begin
+      FileNameEdtArr[i].FilterIndex := 2;
+    end;
   end;
 end;
 
@@ -145,8 +157,20 @@ begin
 end;
 
 procedure TFormFileSelector.FileNameEditChange(Sender: TObject);
+var
+  str: string;
 begin
   (Sender as TFileNameEdit).Hint := (Sender as TFileNameEdit).FileName;
+
+  str := ExtractFileExt((Sender as TFileNameEdit).filename);
+  if (str = '.hex') or (str = '') then
+  begin
+    (Sender as TFileNameEdit).FilterIndex := 1;
+  end
+  else if str = '.bin' then
+  begin
+    (Sender as TFileNameEdit).FilterIndex := 2;
+  end;
 end;
 
 procedure TFormFileSelector.FormKeyPress(Sender: TObject; var Key: char);
