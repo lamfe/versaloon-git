@@ -22,7 +22,7 @@
 #define MSP430_STRING					"msp430"
 #define MSP430_PROGRAM_MODE_STR			"jsb"
 
-extern const program_area_map_t msp430_program_area_map[];
+extern program_area_map_t msp430_program_area_map[];
 
 RESULT msp430_parse_argument(char cmd, const char *argu);
 RESULT msp430_prepare_buffer(program_info_t *pi);

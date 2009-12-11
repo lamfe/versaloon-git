@@ -21,8 +21,10 @@
 
 RESULT read_hex_file(FILE *hex_file, WRITE_MEMORY_CALLBACK callback, 
 					 void *buffer, uint32_t seg_offset, uint32_t addr_offset);
-RESULT write_hex_file_line(FILE *hex_file, uint32_t data_addr, 
-						   uint32_t seg_addr, uint8_t *data, uint8_t len);
+RESULT write_hex_file(FILE *hex_file, uint32_t file_addr, 
+						uint8_t *buff, uint32_t buff_size, 
+						uint32_t seg_addr, uint32_t start_addr);
+RESULT write_hex_file_end(FILE *hex_file);
 
 #endif /* __HEX_H_INCLUDED__ */
 

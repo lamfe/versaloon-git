@@ -51,12 +51,9 @@
 
 const program_area_map_t s5x_program_area_map[] = 
 {
-	{APPLICATION, APPLICATION_CHAR, 1},
-//	{EEPROM, EEPROM_CHAR, 1},
-//	{USER_SIG, USER_SIG_CHAR, 1},
-//	{FUSE, FUSE_CHAR, 0},
-	{LOCK, LOCK_CHAR, 0},
-	{0, 0, 0}
+	{APPLICATION, APPLICATION_CHAR, 1, 0, 0},
+	{LOCK, LOCK_CHAR, 0, 0, 0},
+	{0, 0, 0, 0, 0}
 };
 
 static uint8_t s5x_lock = 0;

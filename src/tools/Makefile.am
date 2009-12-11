@@ -2,7 +2,8 @@ INCLUDES = \
     $(all_includes) \
     -I$(top_srcdir)/src \
     -I$(top_srcdir)/src/driver/timer \
-    -I$(top_srcdir)/src/tools/list
+    -I$(top_srcdir)/src/tools/list \
+    -I$(top_srcdir)/src/tools/filelist
 
 METASOURCES = AUTO
 noinst_LIBRARIES = libtool.a

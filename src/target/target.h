@@ -93,6 +93,8 @@ typedef struct
 	uint32_t area_mask;
 	char area_char;
 	uint8_t data_pos;
+	uint32_t area_seg_addr;
+	uint32_t area_start_addr;
 }program_area_map_t;
 
 typedef struct
@@ -223,6 +225,7 @@ void target_print_target(uint32_t i);
 void target_print_list(void);
 void target_print_help(void);
 uint32_t target_get_number(void);
+void target_get_target_by_mask(uint32_t mask, uint8_t **buff, uint32_t *size);
 RESULT target_init(program_info_t *pi);
 RESULT target_alloc_data_buffer(void);
 void target_free_data_buffer(void);
