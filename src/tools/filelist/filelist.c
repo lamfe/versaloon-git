@@ -32,6 +32,11 @@
 
 static void FILELIST_InsertLast(filelist *fl, filelist *newitem)
 {
+	if (NULL == fl)
+	{
+		return;
+	}
+	
 	while (FILELIST_GetNext(fl) != NULL)
 	{
 		fl = FILELIST_GetNext(fl);
@@ -40,10 +45,37 @@ static void FILELIST_InsertLast(filelist *fl, filelist *newitem)
 	fl->list.next = &newitem->list;
 }
 
+RESULT FILELIST_Open(filelist *fl, char *attr)
+{
+	if (NULL == fl)
+	{
+		return ERROR_FAIL;
+	}
+	
+	do{
+		if ((NULL == fl->file) && (fl->path != NULL))
+		{
+			fl->file = fopen((const char *)fl->path, (const char *)attr);
+			if (NULL == fl->file)
+			{
+				return ERROR_FAIL;
+			}
+		}
+		fl = FILELIST_GetNext(fl);
+	} while(fl != NULL);
+	
+	return ERROR_OK;
+}
+
 RESULT FILELIST_Add(filelist **fl, char *path, uint32_t seg_offset, 
-					uint32_t addr_offset, char *attr)
+					uint32_t addr_offset)
 {
 	filelist *newitem = NULL;
+	
+	if (NULL == fl)
+	{
+		return ERROR_FAIL;
+	}
 	
 	newitem = (filelist*)malloc(sizeof(filelist));
 	if (NULL == newitem)
@@ -64,15 +96,7 @@ RESULT FILELIST_Add(filelist **fl, char *path, uint32_t seg_offset,
 	newitem->seg_offset = seg_offset;
 	newitem->addr_offset = addr_offset;
 	sllist_init_node(newitem->list);
-	newitem->file = fopen((const char *)newitem->path, (const char *)attr);
-	if (NULL == newitem->file)
-	{
-		free(newitem->path);
-		free(newitem);
-		
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_HANDLE_DEVICE), "open", path);
-		return ERRCODE_FAILURE_OPERATION;
-	}
+	newitem->file = NULL;
 	
 	if (NULL == *fl)
 	{
@@ -89,6 +113,11 @@ RESULT FILELIST_Add(filelist **fl, char *path, uint32_t seg_offset,
 void FILELIST_Free(filelist **fl)
 {
 	filelist *tmp1, *tmp2;
+	
+	if (NULL == fl)
+	{
+		return;
+	}
 	
 	tmp1 = *fl;
 	while (tmp1 != NULL)

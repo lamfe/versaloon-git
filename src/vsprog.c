@@ -716,7 +716,7 @@ int main(int argc, char* argv[])
 			}
 			
 			if (ERROR_OK != 
-					FILELIST_Add(&fl_in, optarg, seg_offset, addr_offset, "rb"))
+					FILELIST_Add(&fl_in, optarg, seg_offset, addr_offset))
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_HANDLE_DEVICE), 
 							"add file", optarg);
@@ -740,15 +740,35 @@ int main(int argc, char* argv[])
 				}
 			}
 			seg_offset = addr_offset = 0;
-			if ((i > 0) && (i != (sizeof(optarg) - 1)))
+			if (i > 0)
 			{
 				optarg[i] = '\0';
-				sscanf((const char *)&optarg[i + 1], "%d,%d", 
-						&seg_offset, &addr_offset);
+				cur_pointer = &optarg[i + 1];
+				seg_offset = (uint32_t)strtoul(cur_pointer, &end_pointer, 0);
+				if ((cur_pointer == end_pointer) 
+					|| ((*end_pointer != '\0') 
+						&& ((*end_pointer != ',') 
+							|| (*(end_pointer + 1) == '\0'))))
+				{
+					LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), (char)optc);
+					LOG_ERROR(_GETTEXT(ERRMSG_TRY_HELP));
+					free_all_and_exit(EXIT_FAILURE);
+				}
+				if (*end_pointer != '\0')
+				{
+					cur_pointer = end_pointer + 1;
+					addr_offset = (uint32_t)strtoul(cur_pointer, &end_pointer, 0);
+					if ((cur_pointer == end_pointer) || (*end_pointer != '\0'))
+					{
+						LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), (char)optc);
+						LOG_ERROR(_GETTEXT(ERRMSG_TRY_HELP));
+						free_all_and_exit(EXIT_FAILURE);
+					}
+				}
 			}
 			
 			if (ERROR_OK != 
-					FILELIST_Add(&fl_in, optarg, seg_offset, addr_offset, "wb"))
+					FILELIST_Add(&fl_out, optarg, seg_offset, addr_offset))
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_HANDLE_DEVICE), 
 							"add file", optarg);
@@ -941,10 +961,45 @@ int main(int argc, char* argv[])
 			LOG_ERROR(_GETTEXT(ERRMSG_TRY_HELP));
 			free_all_and_exit(EXIT_FAILURE);
 		}
-		
 	}
 	
 	print_title();
+	
+	// check filelist and open file
+	// error if output file is meanwhile input file
+	{
+		filelist *fl_out_tmp = fl_out;
+		
+		while (fl_out_tmp != NULL)
+		{
+			filelist *fl_in_tmp = fl_in;
+			
+			while (fl_in_tmp != NULL)
+			{
+				if (!strcmp(fl_out_tmp->path, fl_in_tmp->path))
+				{
+					LOG_ERROR(
+						_GETTEXT("%s is meanwhile outputfile and inputfile"), 
+						fl_out_tmp->path);
+					free_all_and_exit(EXIT_FAILURE);
+				}
+				
+				fl_in_tmp = FILELIST_GetNext(fl_in_tmp);
+			}
+			
+			fl_out_tmp = FILELIST_GetNext(fl_out_tmp);
+		}
+	}
+	if (ERROR_OK != FILELIST_Open(fl_in, "rb"))
+	{
+		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "open input file");
+		free_all_and_exit(EXIT_FAILURE);
+	}
+	if (ERROR_OK != FILELIST_Open(fl_out, "wb"))
+	{
+		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "open output file");
+		free_all_and_exit(EXIT_FAILURE);
+	}
 	
 	// init programmer capabilities
 	cur_programmer->init_capability(cur_programmer);
@@ -1171,6 +1226,25 @@ int main(int argc, char* argv[])
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATE_DEVICE), cur_target->name);
 			free_all_and_exit(EXIT_FAILURE);
+		}
+		
+		// save contect to file for read operation
+		if (cur_target != NULL)
+		{
+			program_area_map_t *p_map = 
+					(program_area_map_t *)cur_target->program_area_map;
+			
+			while (p_map->area_mask != 0)
+			{
+				if ((p_map->data_pos) 
+					&& (operations.read_operations & p_map->area_mask) 
+					&& !(operations.verify_operations & p_map->area_mask))
+				{
+					LOG_INFO("saving to output file");
+				}
+				
+				p_map++;
+			}
 		}
 	}
 	
