@@ -123,6 +123,7 @@ begin
     FileNameEdtArr[i].Hint := filename;
     FileNameEdtArr[i].ShowHint := TRUE;
     FileNameEdtArr[i].OnChange := @FileNameEditChange;
+    FileNameEdtArr[i].OnEditingDone := @FileNameEditChange;
 
     str := ExtractFileExt(filename);
     if (str = '.hex') or (str = '') then
