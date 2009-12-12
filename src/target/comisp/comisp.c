@@ -52,10 +52,11 @@
 #define cur_chips_param				comisp_chips_param
 #define cur_flash_offset			comisp_flash_offset
 #define cur_target_defined			target_defined
+#define cur_program_area_map		comisp_program_area_map
 
 #define COMISP_MAX_BUFSIZE			(1024 * 1024)
 
-const program_area_map_t comisp_program_area_map[] = 
+program_area_map_t comisp_program_area_map[] = 
 {
 	{APPLICATION, APPLICATION_CHAR, 1, 0, 0},
 //	{LOCK, LOCK_CHAR, 0, 0, 0},
@@ -371,6 +372,9 @@ RESULT comisp_init(program_info_t *pi, programmer_info_t *prog)
 				
 				pi->app_size = COMISP_MAX_BUFSIZE;
 				pi->app_size_valid = 0;
+				
+				cur_program_area_map[0].area_start_addr = 
+										cur_chips_param[i].flash_start_addr;
 				
 				return ERROR_OK;
 			}

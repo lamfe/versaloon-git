@@ -22,7 +22,7 @@
 #define CM3_STRING						"cm3"
 #define CM3_PROGRAM_MODE_STR			"js"
 
-extern const program_area_map_t cm3_program_area_map[];
+extern program_area_map_t cm3_program_area_map[];
 RESULT cm3_parse_argument(char cmd, const char *argu);
 RESULT cm3_probe_chip(char *chip_name);
 RESULT cm3_prepare_buffer(program_info_t *pi);

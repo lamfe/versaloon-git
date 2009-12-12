@@ -771,6 +771,15 @@ RESULT stm32isp_program(operation_t operations, program_info_t *pi)
 		goto leave_program_mode;
 	}
 	flash_kb = (page_buf[1] << 8) + page_buf[0];
+	if (flash_kb <= 1024)
+	{
+		pi->app_size = flash_kb * 1024;
+	}
+	else
+	{
+		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_VALUE), flash_kb, "stm32 flash size");
+		return ERRCODE_INVALID;
+	}
 	sram_kb = (page_buf[3] << 8) + page_buf[2];
 	if (sram_kb != 0xFFFF)
 	{

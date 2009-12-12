@@ -254,7 +254,17 @@ RESULT stm32_program(operation_t operations, program_info_t *pi,
 		ret = ERRCODE_FAILURE_OPERATION;
 		goto leave_program_mode;
 	}
-	LOG_INFO(_GETTEXT("STM32 flash_size: %dK Bytes\n"), mcu_id & 0xFFFF);
+	if ((mcu_id & 0xFFFF) <= 1024)
+	{
+		pi->app_size = (mcu_id & 0xFFFF) * 1024;
+		LOG_INFO(_GETTEXT("STM32 flash_size: %dK Bytes\n"), mcu_id & 0xFFFF);
+	}
+	else
+	{
+		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_VALUE), mcu_id & 0xFFFF, 
+					"stm32 flash size");
+		return ERRCODE_INVALID;
+	}
 	if ((mcu_id >> 16) != 0xFFFF)
 	{
 		LOG_INFO(_GETTEXT("STM32 sram_size: %dK Bytes\n"), mcu_id >> 16);

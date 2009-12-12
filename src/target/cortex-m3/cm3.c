@@ -55,10 +55,11 @@
 #define cur_frequency				cm3_frequency
 #define cur_buffer_size				cm3_buffer_size
 #define cur_target_defined			target_defined
+#define cur_program_area_map		cm3_program_area_map
 
 #define CM3_MAX_BUFSIZE				(1024 * 1024)
 
-const program_area_map_t cm3_program_area_map[] = 
+program_area_map_t cm3_program_area_map[] = 
 {
 	{APPLICATION, APPLICATION_CHAR, 1, 0, 0},
 //	{LOCK, LOCK_CHAR, 0, 0, 0},
@@ -275,6 +276,9 @@ RESULT cm3_init(program_info_t *pi, programmer_info_t *prog)
 				
 				pi->app_size = CM3_MAX_BUFSIZE;
 				pi->app_size_valid = 0;
+				
+				cur_program_area_map[0].area_start_addr = 
+										cur_chips_param[i].flash_start_addr;
 				
 				return ERROR_OK;
 			}

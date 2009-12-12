@@ -97,6 +97,7 @@ RESULT FILELIST_Add(filelist **fl, char *path, uint32_t seg_offset,
 	newitem->addr_offset = addr_offset;
 	sllist_init_node(newitem->list);
 	newitem->file = NULL;
+	newitem->access = 0;
 	
 	if (NULL == *fl)
 	{
