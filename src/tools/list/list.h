@@ -26,7 +26,7 @@ typedef struct SLLIST
 } sllist;
 
 #define sllist_init_node(node)		((node).next = NULL)
-#define sllist_append(new, last)	((last).next = new)
+#define sllint_insert(node, new)	((node).next = &(new))
 #define sllist_get_container(node, type, member)	\
 	(node ? \
 		((type *)((char *)(node)-(unsigned long)&(((type *)0)->member))) \

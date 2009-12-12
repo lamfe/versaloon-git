@@ -160,6 +160,7 @@ RESULT c8051f_jtag_program(operation_t operations, program_info_t *pi,
 	uint32_t page_buf[C8051F_JTAG_BLOCK_SIZE];
 	RESULT ret = ERROR_OK;
 	memlist *ml_tmp;
+	uint32_t target_size;
 	
 	p = prog;
 	
@@ -200,7 +201,8 @@ RESULT c8051f_jtag_program(operation_t operations, program_info_t *pi,
 	dr = 0x86;
 	c8051f_jtag_ind_write(C8051F_IR_FLASHSCL, &dr, C8051F_DR_FLASHSCL_LEN);
 	
-	if ((operations.erase_operations & ALL) || (0 == pi->app_size_valid))
+	target_size = MEMLIST_CalcAllSize(pi->app_memlist);
+	if ((operations.erase_operations & ALL) || (0 == target_size))
 	{
 		// erase all flash
 		LOG_INFO(_GETTEXT(INFOMSG_ERASING), "flash");
@@ -250,12 +252,11 @@ RESULT c8051f_jtag_program(operation_t operations, program_info_t *pi,
 	{
 		// erase according to flash size
 		LOG_INFO(_GETTEXT(INFOMSG_ERASING), "flash");
-		pgbar_init("erasing flash |", "|", 0, pi->app_size_valid, 
-				   PROGRESS_STEP, '=');
+		pgbar_init("erasing flash |", "|", 0, target_size, PROGRESS_STEP, '=');
 		
 		jtag_delay_ms(500);
 		for (i = 0; 
-			 i < (int32_t)pi->app_size_valid; 
+			 i < (int32_t)target_size; 
 			 i += cur_chip_param.app_page_size)
 		{
 			// set FLASHADR to erase_addr
@@ -300,8 +301,7 @@ RESULT c8051f_jtag_program(operation_t operations, program_info_t *pi,
 	{
 		// program flash
 		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMING), "flash");
-		pgbar_init("writing flash |", "|", 0, pi->app_size_valid, 
-				   PROGRESS_STEP, '=');
+		pgbar_init("writing flash |", "|", 0, target_size, PROGRESS_STEP, '=');
 		
 		ml_tmp = pi->app_memlist;
 		while (ml_tmp != NULL)
@@ -383,8 +383,7 @@ RESULT c8051f_jtag_program(operation_t operations, program_info_t *pi,
 		}
 		
 		pgbar_fini();
-		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMED_SIZE), "flash", 
-				 pi->app_size_valid);
+		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMED_SIZE), "flash", target_size);
 	}
 	
 	if (operations.read_operations & APPLICATION)
@@ -395,11 +394,16 @@ RESULT c8051f_jtag_program(operation_t operations, program_info_t *pi,
 		}
 		else
 		{
-			pi->app_size_valid = cur_chip_param.app_size;
+			ret = MEMLIST_Add(&pi->app_memlist, 0, pi->app_size, page_size);
+			if (ret != ERROR_OK)
+			{
+				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "add memory list");
+				return ERRCODE_FAILURE_OPERATION;
+			}
+			target_size = MEMLIST_CalcAllSize(pi->app_memlist);
 			LOG_INFO(_GETTEXT(INFOMSG_READING), "flash");
 		}
-		pgbar_init("reading flash |", "|", 0, pi->app_size_valid, 
-				   PROGRESS_STEP, '=');
+		pgbar_init("reading flash |", "|", 0, target_size, PROGRESS_STEP, '=');
 		
 		ml_tmp = pi->app_memlist;
 		while (ml_tmp != NULL)
@@ -505,8 +509,7 @@ RESULT c8051f_jtag_program(operation_t operations, program_info_t *pi,
 		pgbar_fini();
 		if (operations.verify_operations & APPLICATION)
 		{
-			LOG_INFO(_GETTEXT(INFOMSG_VERIFIED_SIZE), "flash", 
-					 pi->app_size_valid);
+			LOG_INFO(_GETTEXT(INFOMSG_VERIFIED_SIZE), "flash", target_size);
 		}
 		else
 		{

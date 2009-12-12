@@ -185,8 +185,6 @@ RESULT psoc1_init(program_info_t *pi, programmer_info_t *prog)
 				
 				pi->app_size = cur_chip_param.app_size;
 				pi->lock_size = cur_chip_param.lock_size;
-				pi->app_size_valid = 0;
-				pi->lock_size_valid = 0;
 				
 				LOG_INFO(_GETTEXT(INFOMSG_CHIP_FOUND), 
 						 cur_chip_param.chip_name);
@@ -221,8 +219,6 @@ RESULT psoc1_init(program_info_t *pi, programmer_info_t *prog)
 				
 				pi->app_size = cur_chip_param.app_size;
 				pi->lock_size = cur_chip_param.lock_size;
-				pi->app_size_valid = 0;
-				pi->lock_size_valid = 0;
 				
 				return ERROR_OK;
 			}
@@ -281,7 +277,6 @@ RESULT psoc1_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr
 		cur_target_defined |= APPLICATION;
 		
 		memcpy(pi->app + mem_addr, data, length);
-		pi->app_size_valid += (uint16_t)length;
 		
 		ret = MEMLIST_Add(&pi->app_memlist, mem_addr, length, 
 						  cur_chip_param.app_page_size);
@@ -308,7 +303,6 @@ RESULT psoc1_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr
 		}
 		cur_target_defined |= LOCK;
 		memcpy(pi->lock + mem_addr, data, length);
-		pi->lock_size_valid += (uint16_t)length;
 		break;
 	case 0x0020:
 		if ((mem_addr != 0) || (length != 2))
@@ -338,7 +332,8 @@ RESULT psoc1_get_mass_product_data_size(operation_t operations,
 	// prog_mode(1 byte), flash_size(4 bytes), 
 	// secure_size(4 bytes), checksum(2 bytes)
 	*size = sizeof(cur_chip_param) + sizeof(operations) + 9 
-		+ pi->app_size_valid + pi->lock_size_valid;
+		+ MEMLIST_CalcAllSize(pi->app_memlist) 
+		+ MEMLIST_CalcAllSize(pi->lock_memlist);
 	
 	return ERROR_OK;
 }
@@ -347,14 +342,14 @@ RESULT psoc1_prepare_mass_product_data(operation_t operations,
 									   program_info_t *pi, uint8_t *buff)
 {
 	uint32_t index = 0;
+	uint32_t target_size;
 	
 #ifdef PARAM_CHECK
 	if ((   (operations.read_operations & APPLICATION) 
 			&& (NULL == pi->app)) 
 		|| ((   (operations.write_operations & APPLICATION) 
 				|| (operations.verify_operations & APPLICATION)) 
-			&& ((NULL == pi->app) 
-				|| (0 == pi->app_size_valid))))
+			&& (NULL == pi->app)))
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_BUFFER), "for flash");
 		return ERRCODE_INVALID_BUFFER;
@@ -363,8 +358,7 @@ RESULT psoc1_prepare_mass_product_data(operation_t operations,
 			&& (NULL == pi->lock)) 
 		|| ((   (operations.write_operations & LOCK) 
 				|| (operations.verify_operations & LOCK)) 
-			&& ((NULL == pi->lock) 
-				|| (0 == pi->lock_size_valid))))
+			&& (NULL == pi->lock)))
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_BUFFER), "for secure");
 		return ERRCODE_INVALID_BUFFER;
@@ -407,17 +401,19 @@ RESULT psoc1_prepare_mass_product_data(operation_t operations,
 	index += sizeof(operations);
 	memcpy(buff + index, &cur_prog_mode, sizeof(cur_prog_mode));
 	index += sizeof(cur_prog_mode);
-	memcpy(buff + index, &pi->app_size_valid, sizeof(pi->app_size_valid));
-	index += sizeof(pi->app_size_valid);
-	memcpy(buff + index, &pi->lock_size_valid, sizeof(pi->lock_size_valid));
-	index += sizeof(pi->lock_size_valid);
+	target_size = MEMLIST_CalcAllSize(pi->app_memlist);
+	memcpy(buff + index, &target_size, sizeof(target_size));
+	index += sizeof(target_size);
+	target_size = MEMLIST_CalcAllSize(pi->lock_memlist);
+	memcpy(buff + index, &target_size, sizeof(target_size));
+	index += sizeof(target_size);
 	memcpy(buff + index, &pi->app_checksum_value, 
 		   sizeof(pi->app_checksum_value));
 	index += sizeof(pi->app_checksum_value);
-	memcpy(buff + index, pi->app, pi->app_size_valid);
-	index += pi->app_size_valid;
-	memcpy(buff + index, pi->lock, pi->lock_size_valid);
-	index += pi->lock_size_valid;
+	memcpy(buff + index, pi->app, MEMLIST_CalcAllSize(pi->app_memlist));
+	index += MEMLIST_CalcAllSize(pi->app_memlist);
+	memcpy(buff + index, pi->lock, MEMLIST_CalcAllSize(pi->lock_memlist));
+	index += MEMLIST_CalcAllSize(pi->lock_memlist);
 	
 	return ERROR_OK;
 }
@@ -572,6 +568,7 @@ RESULT psoc1_program(operation_t operations, program_info_t *pi,
 	uint16_t tmp16;
 	uint16_t block;
 	uint16_t checksum = 0;
+	uint32_t target_size;
 	
 	p = prog;
 	
@@ -585,8 +582,7 @@ RESULT psoc1_program(operation_t operations, program_info_t *pi,
 			&& (NULL == pi->app)) 
 		|| ((   (operations.write_operations & APPLICATION) 
 				|| (operations.verify_operations & APPLICATION)) 
-			&& ((NULL == pi->app) 
-				|| (0 == pi->app_size_valid))))
+			&& (NULL == pi->app)))
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_BUFFER), "for flash");
 		return ERRCODE_INVALID_BUFFER;
@@ -595,28 +591,21 @@ RESULT psoc1_program(operation_t operations, program_info_t *pi,
 			&& (NULL == pi->lock)) 
 		|| ((   (operations.write_operations & LOCK) 
 				|| (operations.verify_operations & LOCK)) 
-			&& ((NULL == pi->lock) 
-				|| (0 == pi->lock_size_valid))))
+			&& (NULL == pi->lock)))
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_BUFFER), "for secure");
 		return ERRCODE_INVALID_BUFFER;
 	}
 #endif
 	
-	if ((operations.read_operations & APPLICATION) 
-		&& !(operations.verify_operations & APPLICATION))
-	{
-		pi->app_size_valid = cur_chip_param.param[PSOC1_PARAM_BANK_NUM] 
-							 * cur_chip_param.app_page_num 
-							 * cur_chip_param.app_page_size;
-	}
+	target_size = MEMLIST_CalcAllSize(pi->app_memlist);
 	if ((operations.read_operations & APPLICATION) 
 		|| (operations.write_operations & APPLICATION))
 	{
-		if (pi->app_size_valid != (uint32_t)(
-									cur_chip_param.param[PSOC1_PARAM_BANK_NUM] 
-									* cur_chip_param.app_page_num 
-									* cur_chip_param.app_page_size))
+		if (target_size != (uint32_t)(
+								cur_chip_param.param[PSOC1_PARAM_BANK_NUM] 
+								* cur_chip_param.app_page_num 
+								* cur_chip_param.app_page_size))
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_INVALID), "flash size", "target chip");
 			return ERRCODE_INVALID;
@@ -794,7 +783,7 @@ RESULT psoc1_program(operation_t operations, program_info_t *pi,
 		// program flash
 		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMING), "flash");
 		pgbar_init("writing flash |", "|", 0, 
-				   (pi->app_size_valid + cur_chip_param.app_page_size - 1) 
+				   (target_size + cur_chip_param.app_page_size - 1) 
 						/ cur_chip_param.app_page_size, 
 				   PROGRESS_STEP, '=');
 		
@@ -845,8 +834,7 @@ RESULT psoc1_program(operation_t operations, program_info_t *pi,
 		{
 			LOG_DEBUG(_GETTEXT(INFOMSG_CHECKSUM), checksum);
 		}
-		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMED_SIZE), "flash", 
-				 pi->app_size_valid);
+		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMED_SIZE), "flash", target_size);
 	}
 	
 	if (operations.read_operations & APPLICATION)
@@ -857,11 +845,18 @@ RESULT psoc1_program(operation_t operations, program_info_t *pi,
 		}
 		else
 		{
-			pi->app_size_valid = cur_chip_param.app_size;
+			ret = MEMLIST_Add(&pi->app_memlist, 0, pi->app_size, 
+								cur_chip_param.app_page_size);
+			if (ret != ERROR_OK)
+			{
+				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "add memory list");
+				return ERRCODE_FAILURE_OPERATION;
+			}
+			target_size = MEMLIST_CalcAllSize(pi->app_memlist);
 			LOG_INFO(_GETTEXT(INFOMSG_READING), "flash");
 		}
 		pgbar_init("reading flash |", "|", 0, 
-					(pi->app_size_valid + cur_chip_param.app_page_size - 1) 
+					(target_size + cur_chip_param.app_page_size - 1) 
 						/ cur_chip_param.app_page_size, 
 					PROGRESS_STEP, '=');
 		
@@ -944,8 +939,7 @@ RESULT psoc1_program(operation_t operations, program_info_t *pi,
 		}
 		if (operations.verify_operations & APPLICATION)
 		{
-			LOG_INFO(_GETTEXT(INFOMSG_VERIFIED_SIZE), "flash", 
-					 pi->app_size_valid);
+			LOG_INFO(_GETTEXT(INFOMSG_VERIFIED_SIZE), "flash", target_size);
 		}
 		else
 		{

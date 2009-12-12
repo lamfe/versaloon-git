@@ -158,7 +158,6 @@ RESULT msp430_write_buffer_from_file_callback(uint32_t address, uint32_t seg_add
 			cur_target_defined |= APPLICATION;
 			
 			memcpy(pi->app + mem_addr - Device_MainStart(), data, length);
-			pi->app_size_valid += (uint16_t)length;
 			
 			ret = MEMLIST_Add(&pi->app_memlist, mem_addr, length, 
 							  cur_chip_param.app_page_size);
@@ -230,7 +229,6 @@ RESULT msp430_init(program_info_t *pi, programmer_info_t *prog)
 					   sizeof(cur_chip_param));
 				
 				pi->app_size = cur_chip_param.app_size;
-				pi->app_size_valid = 0;
 				
 				LOG_INFO(_GETTEXT(INFOMSG_CHIP_FOUND), 
 						 cur_chip_param.chip_name);
@@ -255,7 +253,6 @@ RESULT msp430_init(program_info_t *pi, programmer_info_t *prog)
 					   sizeof(cur_chip_param));
 				
 				pi->app_size = cur_chip_param.app_size;
-				pi->app_size_valid = 0;
 				
 				return ERROR_OK;
 			}
@@ -311,19 +308,12 @@ RESULT msp430_program(operation_t operations, program_info_t *pi,
 			&& (NULL == pi->app)) 
 		|| ((   (operations.write_operations & APPLICATION) 
 				|| (operations.verify_operations & APPLICATION)) 
-			&& ((NULL == pi->app) 
-				|| (0 == pi->app_size_valid))))
+			&& (NULL == pi->app)))
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_BUFFER), "for flash");
 		return ERRCODE_INVALID_BUFFER;
 	}
 #endif
-	
-	if ((operations.read_operations & APPLICATION) 
-		&& !(operations.verify_operations & APPLICATION))
-	{
-		pi->app_size_valid = cur_chip_param.app_size;
-	}
 
 	// get target voltage
 	if (ERROR_OK != get_target_voltage(&voltage))

@@ -231,7 +231,6 @@ RESULT avr8_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr,
 		cur_target_defined |= APPLICATION;
 		
 		memcpy(pi->app + mem_addr, data, length);
-		pi->app_size_valid += (uint16_t)length;
 		
 		if (cur_chip_param.app_page_num > 1)
 		{
@@ -277,7 +276,6 @@ RESULT avr8_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr,
 		cur_target_defined |= EEPROM;
 		
 		memcpy(pi->eeprom + mem_addr, data, length);
-		pi->eeprom_size_valid += (uint16_t)length;
 		
 		if (cur_chip_param.ee_page_num > 1)
 		{
@@ -351,9 +349,7 @@ RESULT avr8_init(program_info_t *pi, programmer_info_t *prog)
 					   sizeof(cur_chip_param));
 				
 				pi->app_size = cur_chip_param.app_size;
-				pi->app_size_valid = 0;
 				pi->eeprom_size = cur_chip_param.ee_size;
-				pi->eeprom_size_valid = 0;
 				
 				LOG_INFO(_GETTEXT(INFOMSG_CHIP_FOUND), 
 						 cur_chip_param.chip_name);
@@ -376,9 +372,7 @@ RESULT avr8_init(program_info_t *pi, programmer_info_t *prog)
 					   sizeof(cur_chip_param));
 				
 				pi->app_size = cur_chip_param.app_size;
-				pi->app_size_valid = 0;
 				pi->eeprom_size = cur_chip_param.ee_size;
-				pi->eeprom_size_valid = 0;
 				
 				return ERROR_OK;
 			}
@@ -429,8 +423,7 @@ RESULT avr8_program(operation_t operations, program_info_t *pi,
 			&& (NULL == pi->app)) 
 		|| ((   (operations.write_operations & APPLICATION) 
 				|| (operations.verify_operations & APPLICATION)) 
-			&& ((NULL == pi->app) 
-				|| (0 == pi->app_size_valid))))
+			&& (NULL == pi->app)))
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_BUFFER), "for flash");
 		return ERRCODE_INVALID_BUFFER;
@@ -439,8 +432,7 @@ RESULT avr8_program(operation_t operations, program_info_t *pi,
 			&& (NULL == pi->eeprom)) 
 		|| ((   (operations.write_operations & EEPROM) 
 				|| (operations.verify_operations & EEPROM)) 
-			&& ((NULL == pi->eeprom) 
-				|| (0 == pi->eeprom_size_valid))))
+			&& (NULL == pi->eeprom)))
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_BUFFER), "for eeprom");
 		return ERRCODE_INVALID_BUFFER;

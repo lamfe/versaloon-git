@@ -240,6 +240,8 @@ type
     TargetType: TTargetType;
     TargetSetting: array of TTargetSetting;
     bPageLock: boolean;
+    bReadOperation: boolean;
+    bOpenFileOK: boolean;
   public
     { public declarations }
   end; 
@@ -349,7 +351,8 @@ end;
 
 procedure TFormMain.FormCreate(Sender: TObject);
 begin
-  btnRead.Enabled := FALSE;
+  bOpenFileOK := FALSE;
+  bReadOperation := FALSE;
   bPageLock := FALSE;
   EnableLogOutput();
 
@@ -856,6 +859,7 @@ procedure TFormMain.btnOpenFileClick(Sender: TObject);
 var
   i, file_num, valid_filename_num: integer;
 begin
+  bOpenFileOK := FALSE;
   file_num := Length(TargetFile);
   if file_num > 1 then
   begin
@@ -883,6 +887,7 @@ begin
       end;
       cbboxInputFile.ItemIndex := 0;
       cbboxInputFileChange(cbboxInputFile);
+      bOpenFileOK := TRUE;
     end;
   end
   else if odInputFile.Execute then
@@ -899,6 +904,7 @@ begin
     end;
     cbboxInputFile.ItemIndex := 0;
     cbboxInputFileChange(cbboxInputFile);
+    bOpenFileOK := TRUE;
   end;
 end;
 
@@ -1168,6 +1174,27 @@ begin
     caller.UnTake;
     exit;
   end;
+
+  // select output file
+  bReadOperation := TRUE;
+  btnOpenFile.Click;
+  if not bOpenFileOK then
+  begin
+    exit;
+  end;
+  PrepareCommonParameters();
+
+  if not VSProg_CommonAddReadOperation() then
+  begin
+    MessageDlg('Error', 'Fail to add read operation', mtError, [mbOK], 0);
+    caller.UnTake;
+    exit;
+  end;
+
+  LogInfo('Running...');
+  caller.Run(@VSProg_CommonCallback, FALSE, TRUE);
+  LogInfo('Idle');
+  bReadOperation := FALSE;
 end;
 
 procedure TFormMain.btnSVFPlayerRunClick(Sender: TObject);
@@ -1493,7 +1520,7 @@ end;
 procedure TFormMain.PrepareBaseParameters();
 var
   i: integer;
-  str: string;
+  io_file_opt, str: string;
 begin
   caller.AddParameter(GetTargetDefineParameters());
 
@@ -1510,12 +1537,20 @@ begin
                         ComMode.auxpin + '"');
   end;
 
-  // input file
+  // input/output file
+  if bReadOperation then
+  begin
+    io_file_opt := 'O';
+  end
+  else
+  begin
+    io_file_opt := 'I';
+  end;
   if Length(TargetFile) = 0 then
   begin
     if cbboxInputFile.Text <> '' then
     begin
-      caller.AddParameter('I"' + cbboxInputFile.Text + '"');
+      caller.AddParameter(io_file_opt + '"' + cbboxInputFile.Text + '"');
     end;
   end
   else if cbboxInputFile.Text <> 'ALL' then
@@ -1531,13 +1566,13 @@ begin
           str := ExtractFileExt(TargetFile[i].filename);
           if str = '.hex' then
           begin
-            caller.AddParameter('I"' + TargetFile[i].filename + '@'
+            caller.AddParameter(io_file_opt + '"' + TargetFile[i].filename + '@'
                                      + IntToStr(TargetFile[i].seg_offset) + ','
                                      + IntToStr(TargetFile[i].addr_offset) + '"');
           end
           else if str = '.bin' then
           begin
-            caller.AddParameter('I"' + TargetFile[i].filename + '@'
+            caller.AddParameter(io_file_opt + '"' + TargetFile[i].filename + '@'
                                      + IntToStr(TargetFile[i].seg_offset) + ','
                                      + IntToStr(TargetFile[i].addr_offset + TargetFile[i].def_start_addr) + '"');
           end;
@@ -1556,13 +1591,13 @@ begin
         str := ExtractFileExt(TargetFile[i].filename);
         if str = '.hex' then
         begin
-          caller.AddParameter('I"' + TargetFile[i].filename + '@'
+          caller.AddParameter(io_file_opt + '"' + TargetFile[i].filename + '@'
                                    + IntToStr(TargetFile[i].seg_offset) + ','
                                    + IntToStr(TargetFile[i].addr_offset) + '"');
         end
         else if str = '.bin' then
         begin
-          caller.AddParameter('I"' + TargetFile[i].filename + '@'
+          caller.AddParameter(io_file_opt + '"' + TargetFile[i].filename + '@'
                                    + IntToStr(TargetFile[i].seg_offset) + ','
                                    + IntToStr(TargetFile[i].addr_offset + TargetFile[i].def_start_addr) + '"');
         end;

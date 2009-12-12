@@ -85,6 +85,7 @@ RESULT c8051f_c2_program(operation_t operations, program_info_t *pi,
 	RESULT ret = ERROR_OK;
 	uint8_t page_buf[C8051F_BLOCK_SIZE];
 	memlist *ml_tmp;
+	uint32_t target_size;
 	
 	p = prog;
 	
@@ -169,13 +170,12 @@ RESULT c8051f_c2_program(operation_t operations, program_info_t *pi,
 	}
 	
 	page_size = C8051F_BLOCK_SIZE;
-	
+	target_size = MEMLIST_CalcAllSize(pi->app_memlist);
 	if (operations.write_operations & APPLICATION)
 	{
 		// program
 		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMING), "flash");
-		pgbar_init("writing flash |", "|", 0, pi->app_size_valid, 
-				   PROGRESS_STEP, '=');
+		pgbar_init("writing flash |", "|", 0, target_size, PROGRESS_STEP, '=');
 		
 		ml_tmp = pi->app_memlist;
 		while (ml_tmp != NULL)
@@ -269,8 +269,7 @@ RESULT c8051f_c2_program(operation_t operations, program_info_t *pi,
 		}
 		
 		pgbar_fini();
-		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMED_SIZE), "flash", 
-				 pi->app_size_valid);
+		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMED_SIZE), "flash", target_size);
 	}
 	
 	if (operations.read_operations & APPLICATION)
@@ -281,11 +280,16 @@ RESULT c8051f_c2_program(operation_t operations, program_info_t *pi,
 		}
 		else
 		{
-			pi->app_size_valid = cur_chip_param.app_size;
+			ret = MEMLIST_Add(&pi->app_memlist, 0, pi->app_size, page_size);
+			if (ret != ERROR_OK)
+			{
+				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "add memory list");
+				return ERRCODE_FAILURE_OPERATION;
+			}
+			target_size = MEMLIST_CalcAllSize(pi->app_memlist);
 			LOG_INFO(_GETTEXT(INFOMSG_READING), "flash");
 		}
-		pgbar_init("reading flash |", "|", 0, pi->app_size_valid, 
-				   PROGRESS_STEP, '=');
+		pgbar_init("reading flash |", "|", 0, target_size, PROGRESS_STEP, '=');
 		
 		ml_tmp = pi->app_memlist;
 		while (ml_tmp != NULL)
@@ -403,8 +407,7 @@ RESULT c8051f_c2_program(operation_t operations, program_info_t *pi,
 		pgbar_fini();
 		if (operations.verify_operations & APPLICATION)
 		{
-			LOG_INFO(_GETTEXT(INFOMSG_VERIFIED_SIZE), "flash", 
-					 pi->app_size_valid);
+			LOG_INFO(_GETTEXT(INFOMSG_VERIFIED_SIZE), "flash", target_size);
 		}
 		else
 		{

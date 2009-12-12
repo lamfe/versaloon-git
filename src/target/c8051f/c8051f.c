@@ -164,7 +164,6 @@ RESULT c8051f_write_buffer_from_file_callback(uint32_t address, uint32_t seg_add
 		cur_target_defined |= APPLICATION;
 		
 		memcpy(pi->app + mem_addr, data, length);
-		pi->app_size_valid += (uint16_t)length;
 		
 		ret = MEMLIST_Add(&pi->app_memlist, mem_addr, length, C8051F_BLOCK_SIZE);
 		if (ret != ERROR_OK)
@@ -290,8 +289,7 @@ RESULT c8051f_program(operation_t operations, program_info_t *pi,
 	}
 	if ((   (operations.write_operations & APPLICATION) 
 			|| (operations.verify_operations & APPLICATION)) 
-		&& ((NULL == pi->app) 
-			|| (0 == pi->app_size_valid)))
+		&& (NULL == pi->app))
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_BUFFER), "for flash");
 		return ERRCODE_INVALID_BUFFER;

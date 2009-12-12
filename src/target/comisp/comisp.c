@@ -300,7 +300,6 @@ RESULT comisp_write_buffer_from_file_callback(uint32_t address, uint32_t seg_add
 	
 	memcpy(pi->app + mem_addr - cur_chip_param.flash_start_addr, 
 		   data, length);
-	pi->app_size_valid += (uint32_t)length;
 	
 	switch (comisp_chip_index)
 	{
@@ -371,7 +370,6 @@ RESULT comisp_init(program_info_t *pi, programmer_info_t *prog)
 					   sizeof(cur_chip_param));
 				
 				pi->app_size = COMISP_MAX_BUFSIZE;
-				pi->app_size_valid = 0;
 				
 				cur_program_area_map[0].area_start_addr = 
 										cur_chips_param[i].flash_start_addr;

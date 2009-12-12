@@ -100,13 +100,13 @@ RESULT parse_file(char *file_name, FILE *file, void *para,
 {
 	uint8_t i;
 	
-	if (ERROR_OK != get_file_parser(file_name, &i))
+	if (ERROR_OK != get_file_parser(file_name, &i) 
+		|| (NULL == file_parser[i].parse_file))
 	{
 		// hope target handler will handle this file
 		return ERROR_OK;
 	}
 	
-	// call parser
 	return file_parser[i].parse_file(file, callback, para, 
 										seg_offset, addr_offset);
 }
@@ -128,7 +128,8 @@ RESULT end_file(filelist *fl)
 				continue;
 			}
 			
-			if (ERROR_OK != file_parser[i].end_file(fl->file))
+			if ((file_parser[i].end_file != NULL) 
+				&& (ERROR_OK != file_parser[i].end_file(fl->file)))
 			{
 				return ERROR_FAIL;
 			}
@@ -172,7 +173,8 @@ RESULT save_target_to_file(filelist *fl, uint8_t *buff, uint32_t buff_size,
 	{
 		return ERROR_FAIL;
 	}
-	if (ERROR_OK != get_file_parser(target_file->path, &i))
+	if (ERROR_OK != get_file_parser(target_file->path, &i) 
+		|| (NULL == file_parser[i].save_target_to_file))
 	{
 		return ERROR_FAIL;
 	}
