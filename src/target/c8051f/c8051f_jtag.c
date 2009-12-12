@@ -202,7 +202,7 @@ RESULT c8051f_jtag_program(operation_t operations, program_info_t *pi,
 	c8051f_jtag_ind_write(C8051F_IR_FLASHSCL, &dr, C8051F_DR_FLASHSCL_LEN);
 	
 	target_size = MEMLIST_CalcAllSize(pi->app_memlist);
-	if ((operations.erase_operations & ALL) || (0 == target_size))
+	if ((operations.erase_operations & ALL) && (0 == target_size))
 	{
 		// erase all flash
 		LOG_INFO(_GETTEXT(INFOMSG_ERASING), "flash");
@@ -462,11 +462,22 @@ RESULT c8051f_jtag_program(operation_t operations, program_info_t *pi,
 				{
 					if ((*((uint32_t*)page_buf + j) & 0x06) != 0)
 					{
-						pgbar_fini();
-						LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-								  "read flash");
-						ret = ERRCODE_FAILURE_OPERATION;
-						goto leave_program_mode;
+						if (((ml_tmp->addr + i + 512) == pi->app_size) 
+							|| ((ml_tmp->addr + i + 1024) == pi->app_size))
+						{
+							// protect flash of ISP, not available
+							pgbar_update(pi->app_size - ml_tmp->addr - i);
+							pi->app_size = ml_tmp->addr + i;
+							goto fake_read_ok;
+						}
+						else
+						{
+							pgbar_fini();
+							LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+									  "read flash");
+							ret = ERRCODE_FAILURE_OPERATION;
+							goto leave_program_mode;
+						}
 					}
 					
 					if (operations.verify_operations & APPLICATION)
@@ -502,7 +513,7 @@ RESULT c8051f_jtag_program(operation_t operations, program_info_t *pi,
 					k = len_current_list;
 				}
 			}
-			
+fake_read_ok:
 			ml_tmp = MEMLIST_GetNext(ml_tmp);
 		}
 		
