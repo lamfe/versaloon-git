@@ -98,6 +98,7 @@ void USB_TO_SPI_ProcessCmd(uint8* dat, uint16 len)
 				// SPI Mode
 				USB_TO_SPI_HW_Enable(index);
 				SPI_Configuration(USB_TO_SPI_GetSPI(index), SPI_Mode_Master, SPI_GetSCKDiv(frequency), firstbit, cpol, cpha);
+				SPI_SetClk(frequency * 1000);
 			}
 			else
 			{

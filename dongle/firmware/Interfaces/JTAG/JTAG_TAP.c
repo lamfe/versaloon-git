@@ -18,6 +18,7 @@
 #if INTERFACE_JTAG_EN
 
 #include "JTAG_TAP.h"
+#include "SPI.h"
 
 #define JTAG_TAP_DR_IR_PREPARE_DLY()	
 
@@ -528,40 +529,7 @@ void JTAG_TAP_SetDaisyChainPos(uint32 ub, uint32 ua, uint32 bb, uint32 ba)
 
 static uint8 JTAG_TAP_HS_GetDivFromFreq(uint16 freq)
 {
-	if(freq >= _SYS_FREQUENCY * 500 / 2)
-	{
-		freq = 0;
-	}
-	else if(freq >= _SYS_FREQUENCY * 500 / 4)
-	{
-		freq = 1;
-	}
-	else if(freq >= _SYS_FREQUENCY * 500 / 8)
-	{
-		freq = 2;
-	}
-	else if(freq >= _SYS_FREQUENCY * 500 / 16)
-	{
-		freq = 3;
-	}
-	else if(freq >= _SYS_FREQUENCY * 500 / 32)
-	{
-		freq = 4;
-	}
-	else if(freq > _SYS_FREQUENCY * 500 / 64)
-	{
-		freq = 5;
-	}
-	else if(freq > _SYS_FREQUENCY * 500 / 128)
-	{
-		freq = 6;
-	}
-	else
-	{
-		freq = 7;
-	}
-
-	return (uint8)(freq << 3);
+	return SPI_GetSCKDiv(freq);
 }
 
 // freq is in KHz
