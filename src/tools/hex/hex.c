@@ -304,50 +304,56 @@ RESULT write_hex_file(FILE *hex_file, uint32_t file_addr,
 						uint8_t *buff, uint32_t buff_size, 
 						uint32_t seg_addr, uint32_t start_addr)
 {
-	uint32_t tmp;
+	uint8_t tmp;
+	uint16_t addr_high_orig, addr_tmp_big_endian;
 	RESULT ret;
 	
 	file_addr = file_addr;
 	
 	// write seg_addr
-	if (seg_addr != 0)
+	seg_addr = ((seg_addr >> 8) & 0x000000FF) | ((seg_addr << 8) & 0x0000FF00);
+	ret = write_hex_line(hex_file, 2, (uint16_t)0, HEX_TYPE_SEG_ADDR, 
+							(uint8_t *)&seg_addr);
+	if (ret != ERROR_OK)
 	{
-		seg_addr = ((seg_addr >> 24) & 0x000000FF) 
-					| ((seg_addr >> 8) & 0x0000FF00) 
-					| ((seg_addr << 8) & 0x00FF0000) 
-					| ((seg_addr << 24) & 0xFF000000);
-		
-		ret = write_hex_line(hex_file, 4, (uint16_t)0, HEX_TYPE_SEG_ADDR, 
-								(uint8_t *)&seg_addr);
-		if (ret != ERROR_OK)
-		{
-			return ret;
-		}
+		return ret;
 	}
 	
 	// write ext_addr
-	tmp = start_addr >> 16;
-	if (tmp != 0)
+	addr_high_orig = start_addr >> 16;
+	addr_tmp_big_endian = ((addr_high_orig >> 8) & 0x000000FF) 
+							| ((addr_high_orig << 8) & 0x0000FF00);
+	ret = write_hex_line(hex_file, 2, (uint16_t)0, HEX_TYPE_EXT_ADDR, 
+							(uint8_t *)&addr_tmp_big_endian);
+	if (ret != ERROR_OK)
 	{
-		tmp = ((tmp >> 8) & 0x000000FF) | ((tmp << 8) & 0x0000FF00);
-		ret = write_hex_line(hex_file, 2, (uint16_t)0, HEX_TYPE_EXT_ADDR, 
-								(uint8_t *)&tmp);
-		if (ret != ERROR_OK)
-		{
-			return ret;
-		}
+		return ret;
 	}
 	
 	// write data
 	while (buff_size)
 	{
+		// write ext_addr if necessary
+		if (addr_high_orig != (start_addr >> 16))
+		{
+			addr_high_orig = start_addr >> 16;
+			addr_tmp_big_endian = ((addr_high_orig >> 8) & 0x000000FF) 
+									| ((addr_high_orig << 8) & 0x0000FF00);
+			ret = write_hex_line(hex_file, 2, (uint16_t)0, HEX_TYPE_EXT_ADDR, 
+									(uint8_t *)&addr_tmp_big_endian);
+			if (ret != ERROR_OK)
+			{
+				return ret;
+			}
+		}
+		
 		if (buff_size > 16)
 		{
 			tmp = 16;
 		}
 		else
 		{
-			tmp = buff_size;
+			tmp = (uint8_t)buff_size;
 		}
 		
 		// write

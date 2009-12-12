@@ -182,7 +182,8 @@ RESULT save_target_to_file(filelist *fl, uint8_t *buff, uint32_t buff_size,
 	return file_parser[i].save_target_to_file(target_file->file, 
 												target_file->addr_offset, 
 												buff, buff_size, 
-												seg_addr, start_addr);
+												seg_addr - fl->seg_offset, 
+												start_addr);
 }
 
 RESULT read_bin_file(FILE *bin_file, WRITE_MEMORY_CALLBACK callback, 
