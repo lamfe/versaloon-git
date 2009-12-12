@@ -241,42 +241,51 @@ static RESULT write_hex_line(FILE *hex_file, uint8_t data_len,
 	}
 #endif
 	
+	memset(line_buf, 0, sizeof(line_buf));
 	line_buf[pos] = ':';
 	pos += 1;
 	
 	// data length
 	checksum += data_len;
-	sprintf((char *)line_buf + pos, "%02x", data_len);
+	sprintf((char *)line_buf + pos, "%02X", data_len);
 	pos += 2;
 	
 	// address
 	checksum += (uint8_t)data_addr;
 	checksum += (uint8_t)(data_addr >> 8);
-	sprintf((char *)line_buf + pos, "%04x", data_addr);
+	sprintf((char *)line_buf + pos, "%04X", data_addr);
 	pos += 4;
 	
 	// type
 	checksum += type;
-	sprintf((char *)line_buf + pos, "%02x", type);
+	sprintf((char *)line_buf + pos, "%02X", type);
 	pos += 2;
 	
 	// data
 	for (i = 0; i < data_len; i++)
 	{
 		checksum += data[i];
-		sprintf((char *)line_buf + pos, "%02x", data[i]);
+		sprintf((char *)line_buf + pos, "%02X", data[i]);
 		pos += 2;
 	}
 	
 	// checksum
-	sprintf((char *)line_buf + pos, "%02x", checksum);
+	checksum = ~checksum + 1;
+	sprintf((char *)line_buf + pos, "%02X", checksum);
 	pos += 2;
 	
 	// \n\r
 	sprintf((char *)line_buf + pos, "\r\n");
 	pos += 2;
 	
-	return (pos == fwrite(line_buf, 1, pos, hex_file));
+	if (pos == fwrite(line_buf, 1, pos, hex_file))
+	{
+		return ERROR_OK;
+	}
+	else
+	{
+		return ERROR_FAIL;
+	}
 }
 
 RESULT write_hex_file(FILE *hex_file, uint32_t file_addr, 
@@ -289,20 +298,34 @@ RESULT write_hex_file(FILE *hex_file, uint32_t file_addr,
 	file_addr = file_addr;
 	
 	// write seg_addr
-	ret = write_hex_line(hex_file, 4, (uint16_t)0, HEX_TYPE_SEG_ADDR, 
-							(uint8_t *)&seg_addr);
-	if (ret != ERROR_OK)
+	if (seg_addr != 0)
 	{
-		return ret;
+		seg_addr = ((seg_addr >> 24) & 0x000000FF) 
+					| ((seg_addr >> 8) & 0x0000FF00) 
+					| ((seg_addr << 8) & 0x00FF0000) 
+					| ((seg_addr << 24) & 0xFF000000);
+		
+		ret = write_hex_line(hex_file, 4, (uint16_t)0, HEX_TYPE_SEG_ADDR, 
+								(uint8_t *)&seg_addr);
+		if (ret != ERROR_OK)
+		{
+			return ret;
+		}
 	}
+	
 	// write ext_addr
 	tmp = start_addr >> 16;
-	ret = write_hex_line(hex_file, 2, (uint16_t)0, HEX_TYPE_EXT_ADDR, 
-							(uint8_t *)&tmp);
-	if (ret != ERROR_OK)
+	if (tmp != 0)
 	{
-		return ret;
+		tmp = ((tmp >> 8) & 0x000000FF) | ((tmp << 8) & 0x0000FF00);
+		ret = write_hex_line(hex_file, 2, (uint16_t)0, HEX_TYPE_EXT_ADDR, 
+								(uint8_t *)&tmp);
+		if (ret != ERROR_OK)
+		{
+			return ret;
+		}
 	}
+	
 	// write data
 	while (buff_size)
 	{
@@ -334,7 +357,7 @@ RESULT write_hex_file(FILE *hex_file, uint32_t file_addr,
 
 RESULT write_hex_file_end(FILE *hex_file)
 {
-	if (fwrite(":00000001ff\n\r", 1, 13, hex_file) != 13)
+	if (fwrite(":00000001FF\r\n", 1, 13, hex_file) != 13)
 	{
 		return ERROR_FAIL;
 	}
