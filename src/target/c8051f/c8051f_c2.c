@@ -343,11 +343,22 @@ RESULT c8051f_c2_program(operation_t operations, program_info_t *pi,
 				c2_read_dr(&dr);
 				if ((ERROR_OK != commit()) || (dr != C8051F_C2_REP_COMMAND_OK))
 				{
-					pgbar_fini();
-					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ADDR), 
-							  "read flash", ml_tmp->addr + i);
-					ret = ERRCODE_FAILURE_OPERATION;
-					goto leave_program_mode;
+					if (((ml_tmp->addr + i + 512) == pi->app_size) 
+						|| ((ml_tmp->addr + i + 1024) == pi->app_size))
+					{
+						// protect flash of ISP, not available
+						pgbar_update(pi->app_size - ml_tmp->addr - i);
+						pi->app_size = ml_tmp->addr + i;
+						goto fake_read_ok;
+					}
+					else
+					{
+						pgbar_fini();
+						LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ADDR), 
+								  "read flash", ml_tmp->addr + i);
+						ret = ERRCODE_FAILURE_OPERATION;
+						goto leave_program_mode;
+					}
 				}
 				
 				for (j = 0; j < page_size; j++)
@@ -400,7 +411,7 @@ RESULT c8051f_c2_program(operation_t operations, program_info_t *pi,
 					k = len_current_list;
 				}
 			}
-			
+fake_read_ok:
 			ml_tmp = MEMLIST_GetNext(ml_tmp);
 		}
 		
