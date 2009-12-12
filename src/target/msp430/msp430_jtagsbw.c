@@ -58,6 +58,7 @@ RESULT msp430_jtag_program(operation_t operations, program_info_t *pi,
 	RESULT ret = ERROR_OK;
 	word CRC_check, CRC_calc;
 	memlist *ml_tmp;
+	uint32_t target_size;
 	
 #ifdef PARAM_CHECK
 	if (NULL == prog)
@@ -69,8 +70,7 @@ RESULT msp430_jtag_program(operation_t operations, program_info_t *pi,
 			&& (NULL == pi->app)) 
 		|| ((   (operations.write_operations & APPLICATION) 
 				|| (operations.verify_operations & APPLICATION)) 
-			&& ((NULL == pi->app) 
-				|| (0 == pi->app_size_valid))))
+			&& (NULL == pi->app)))
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_BUFFER), "for flash");
 		return ERRCODE_INVALID_BUFFER;
@@ -256,12 +256,12 @@ RESULT msp430_jtag_program(operation_t operations, program_info_t *pi,
 		LOG_INFO("blank checked\n");
 	}
 	
+	target_size = MEMLIST_CalcAllSize(pi->app_memlist);
 	if (operations.write_operations & APPLICATION)
 	{
 		// program flash
 		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMING), "flash");
-		pgbar_init("writing flash |", "|", 0, pi->app_size_valid, 
-				   PROGRESS_STEP, '=');
+		pgbar_init("writing flash |", "|", 0, target_size, PROGRESS_STEP, '=');
 		
 		ml_tmp = pi->app_memlist;
 		while (ml_tmp != NULL)
@@ -308,8 +308,7 @@ RESULT msp430_jtag_program(operation_t operations, program_info_t *pi,
 		}
 		
 		pgbar_fini();
-		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMED_SIZE), "flash", 
-				 pi->app_size_valid);
+		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMED_SIZE), "flash", target_size);
 	}
 	
 	if (operations.read_operations & APPLICATION)
@@ -320,11 +319,16 @@ RESULT msp430_jtag_program(operation_t operations, program_info_t *pi,
 		}
 		else
 		{
-			pi->app_size_valid = cur_chip_param.app_size;
+			ret = MEMLIST_Add(&pi->app_memlist, addr_start, pi->app_size, page_size);
+			if (ret != ERROR_OK)
+			{
+				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "add memory list");
+				return ERRCODE_FAILURE_OPERATION;
+			}
+			target_size = MEMLIST_CalcAllSize(pi->app_memlist);
 			LOG_INFO(_GETTEXT(INFOMSG_READING), "flash");
 		}
-		pgbar_init("reading flash |", "|", 0, pi->app_size_valid, 
-				   PROGRESS_STEP, '=');
+		pgbar_init("reading flash |", "|", 0, target_size, PROGRESS_STEP, '=');
 		
 		ml_tmp = pi->app_memlist;
 		while (ml_tmp != NULL)
@@ -384,8 +388,7 @@ RESULT msp430_jtag_program(operation_t operations, program_info_t *pi,
 		pgbar_fini();
 		if (operations.verify_operations & APPLICATION)
 		{
-			LOG_INFO(_GETTEXT(INFOMSG_VERIFIED_SIZE), "flash", 
-					 pi->app_size_valid);
+			LOG_INFO(_GETTEXT(INFOMSG_VERIFIED_SIZE), "flash", target_size);
 		}
 		else
 		{

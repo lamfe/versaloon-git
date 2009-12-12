@@ -37,32 +37,125 @@
 static RESULT MEMLIST_Merge(memlist *ml, uint32_t addr, uint32_t len, 
 							uint32_t page_size)
 {
-	while (ml != NULL)
+	memlist *ml_tmp = ml;
+	uint32_t head, cur_head, tail, cur_tail;
+	
+	if (NULL == ml_tmp)
 	{
-		if ((addr >= ml->addr) && ((ml->addr + ml->len) >= addr))
+		return ERROR_FAIL;
+	}
+	
+	head = addr;
+	tail = addr + len;
+	while (ml_tmp != NULL)
+	{
+		cur_head = ml_tmp->addr;
+		cur_tail = ml_tmp->addr + ml_tmp->len;
+		
+		if (head > cur_tail)
 		{
-			ml->len = MEMLIST_AdjustLen(len + addr - ml->addr, page_size);
-			return ERROR_OK;
+			ml_tmp = MEMLIST_GetNext(ml_tmp);
+			continue;
 		}
-		ml = MEMLIST_GetNext(ml);
+		if (tail < cur_head)
+		{
+			return ERROR_FAIL;
+		}
+		break;
+	}
+	if (ml_tmp != NULL)
+	{
+		// merget to ml_tmp
+		ml_tmp->addr = MEMLIST_AdjustAddr(min(head, cur_head), page_size);
+		ml_tmp->len = MEMLIST_AdjustLen(max(tail, cur_tail) - ml_tmp->addr, 
+										page_size);
+		
+		head = ml_tmp->addr;
+		tail = ml_tmp->addr + ml_tmp->len;
+		// check if next in the list can be merged
+		ml = MEMLIST_GetNext(ml_tmp);
+		while (ml != NULL)
+		{
+			memlist *ml_swap;
+			
+			cur_head = ml->addr;
+			cur_tail = ml->addr + ml->len;
+			
+			if (tail < cur_head)
+			{
+				break;
+			}
+			
+			// merge this ml
+			ml_tmp->len = MEMLIST_AdjustLen(max(tail, cur_tail) - head, page_size);
+			// save next ml in the list
+			ml_swap = MEMLIST_GetNext(ml);
+			// fix the list
+			if (NULL == ml_swap)
+			{
+				sllist_init_node(ml_tmp->list);
+			}
+			else
+			{
+				sllint_insert(ml_tmp->list, ml_swap->list);
+			}
+			// free this ml
+			free(ml);
+			// loop from next ml
+			ml = ml_swap;
+		}
+		
+		return ERROR_OK;
 	}
 	
 	return ERROR_FAIL;
 }
 
-static void MEMLIST_InsertLast(memlist *ml, memlist *newitem)
+static void MEMLIST_Insert(memlist **ml, memlist **newitem)
 {
-	while (MEMLIST_GetNext(ml) != NULL)
+	memlist *ml_tmp, ml_virtual_head;
+	
+	if ((NULL == ml) || (NULL == *ml) || (NULL == newitem) || (NULL == *newitem))
 	{
+		return;
+	}
+	
+	sllint_insert(ml_virtual_head.list, (*ml)->list);
+	ml_tmp = &ml_virtual_head;
+	while ((MEMLIST_GetNext(ml_tmp) != NULL) 
+			&& ((*newitem)->addr > MEMLIST_GetNext(ml_tmp)->addr))
+	{
+		ml_tmp = MEMLIST_GetNext(ml_tmp);
+	}
+	
+	if (MEMLIST_GetNext(ml_tmp) != NULL)
+	{
+		sllint_insert((*newitem)->list, MEMLIST_GetNext(ml_tmp)->list);
+	}
+	sllint_insert(ml_tmp->list, (*newitem)->list);
+}
+
+uint32_t MEMLIST_CalcAllSize(memlist *ml)
+{
+	uint32_t size = 0;
+	
+	while (ml != NULL)
+	{
+		size += ml->len;
 		ml = MEMLIST_GetNext(ml);
 	}
 	
-	ml->list.next = &newitem->list;
+	return size;
 }
 
 RESULT MEMLIST_Add(memlist **ml, uint32_t addr, uint32_t len, uint32_t page_size)
 {
 	memlist *newitem = NULL;
+	
+	if (NULL == ml)
+	{
+		return ERROR_FAIL;
+	}
 	
 	if (NULL == *ml)
 	{
@@ -91,7 +184,7 @@ RESULT MEMLIST_Add(memlist **ml, uint32_t addr, uint32_t len, uint32_t page_size
 			newitem->addr = MEMLIST_AdjustAddr(addr, page_size);
 			newitem->len = MEMLIST_AdjustLen(len, page_size);
 			sllist_init_node(newitem->list);
-			MEMLIST_InsertLast(*ml, newitem);
+			MEMLIST_Insert(ml, &newitem);
 		}
 	}
 	
@@ -101,6 +194,11 @@ RESULT MEMLIST_Add(memlist **ml, uint32_t addr, uint32_t len, uint32_t page_size
 void MEMLIST_Free(memlist **ml)
 {
 	memlist *tmp1, *tmp2;
+	
+	if (NULL == ml)
+	{
+		return;
+	}
 	
 	tmp1 = *ml;
 	while (tmp1 != NULL)

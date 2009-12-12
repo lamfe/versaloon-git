@@ -990,12 +990,12 @@ int main(int argc, char* argv[])
 			fl_out_tmp = FILELIST_GetNext(fl_out_tmp);
 		}
 	}
-	if (ERROR_OK != FILELIST_Open(fl_in, "rb"))
+	if ((fl_in != NULL) && (ERROR_OK != FILELIST_Open(fl_in, "rb")))
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "open input file");
 		free_all_and_exit(EXIT_FAILURE);
 	}
-	if (ERROR_OK != FILELIST_Open(fl_out, "wb"))
+	if ((fl_out != NULL) && (ERROR_OK != FILELIST_Open(fl_out, "wb")))
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "open output file");
 		free_all_and_exit(EXIT_FAILURE);

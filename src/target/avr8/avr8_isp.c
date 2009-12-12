@@ -97,6 +97,7 @@ RESULT avr8_isp_program(operation_t operations, program_info_t *pi,
 	uint8_t page_buf[256];
 	RESULT ret = ERROR_OK;
 	memlist *ml_tmp;
+	uint32_t target_size;
 	
 	p = prog;
 	
@@ -243,12 +244,12 @@ try_frequency:
 		page_size = 256;
 	}
 	
+	target_size = MEMLIST_CalcAllSize(pi->app_memlist);
 	if (operations.write_operations & APPLICATION)
 	{
 		// program flash
 		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMING), "flash");
-		pgbar_init("writing flash |", "|", 0, pi->app_size_valid, 
-				   PROGRESS_STEP, '=');
+		pgbar_init("writing flash |", "|", 0, target_size, PROGRESS_STEP, '=');
 		
 		ml_tmp = pi->app_memlist;
 		while(ml_tmp != NULL)
@@ -371,8 +372,7 @@ try_frequency:
 		}
 		
 		pgbar_fini();
-		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMED_SIZE), "flash", 
-				 pi->app_size_valid);
+		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMED_SIZE), "flash", target_size);
 	}
 	
 	if (operations.read_operations & APPLICATION)
@@ -383,11 +383,16 @@ try_frequency:
 		}
 		else
 		{
-			pi->app_size_valid = cur_chip_param.app_size;
+			ret = MEMLIST_Add(&pi->app_memlist, 0, pi->app_size, page_size);
+			if (ret != ERROR_OK)
+			{
+				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "add memory list");
+				return ERRCODE_FAILURE_OPERATION;
+			}
+			target_size = MEMLIST_CalcAllSize(pi->app_memlist);
 			LOG_INFO(_GETTEXT(INFOMSG_READING), "flash");
 		}
-		pgbar_init("reading flash |", "|", 0, pi->app_size_valid, 
-				   PROGRESS_STEP, '=');
+		pgbar_init("reading flash |", "|", 0, target_size, PROGRESS_STEP, '=');
 		
 		ml_tmp = pi->app_memlist;
 		while (ml_tmp != NULL)
@@ -475,8 +480,7 @@ try_frequency:
 		pgbar_fini();
 		if (operations.verify_operations & APPLICATION)
 		{
-			LOG_INFO(_GETTEXT(INFOMSG_VERIFIED_SIZE), "flash", 
-					 pi->app_size_valid);
+			LOG_INFO(_GETTEXT(INFOMSG_VERIFIED_SIZE), "flash", target_size);
 		}
 		else
 		{
@@ -494,12 +498,12 @@ try_frequency:
 		page_size = 256;
 	}
 	
+	target_size = MEMLIST_CalcAllSize(pi->eeprom_memlist);
 	if (operations.write_operations & EEPROM)
 	{
 		// program eeprom
 		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMING), "eeprom");
-		pgbar_init("writing eeprom |", "|", 0, pi->eeprom_size_valid, 
-				   PROGRESS_STEP, '=');
+		pgbar_init("writing eeprom |", "|", 0, target_size, PROGRESS_STEP, '=');
 		
 		ml_tmp = pi->eeprom_memlist;
 		while(ml_tmp != NULL)
@@ -606,8 +610,7 @@ try_frequency:
 		}
 		
 		pgbar_fini();
-		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMED_SIZE), "eeprom", 
-					pi->eeprom_size_valid);
+		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMED_SIZE), "eeprom", target_size);
 	}
 	
 	if (operations.read_operations & EEPROM)
@@ -618,11 +621,16 @@ try_frequency:
 		}
 		else
 		{
-			pi->eeprom_size_valid = cur_chip_param.ee_size;
+			ret = MEMLIST_Add(&pi->eeprom_memlist, 0, pi->eeprom_size, page_size);
+			if (ret != ERROR_OK)
+			{
+				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "add memory list");
+				return ERRCODE_FAILURE_OPERATION;
+			}
+			target_size = MEMLIST_CalcAllSize(pi->eeprom_memlist);
 			LOG_INFO(_GETTEXT(INFOMSG_READING), "eeprom");
 		}
-		pgbar_init("reading eeprom |", "|", 0, pi->eeprom_size_valid, 
-				   PROGRESS_STEP, '=');
+		pgbar_init("reading eeprom |", "|", 0, target_size, PROGRESS_STEP, '=');
 		
 		ml_tmp = pi->eeprom_memlist;
 		page_size = 256;
@@ -702,8 +710,7 @@ try_frequency:
 		pgbar_fini();
 		if (operations.verify_operations & EEPROM)
 		{
-			LOG_INFO(_GETTEXT(INFOMSG_VERIFIED_SIZE), "eeprom", 
-					 pi->eeprom_size_valid);
+			LOG_INFO(_GETTEXT(INFOMSG_VERIFIED_SIZE), "eeprom", target_size);
 		}
 		else
 		{

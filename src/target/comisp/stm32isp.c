@@ -720,6 +720,7 @@ RESULT stm32isp_program(operation_t operations, program_info_t *pi)
 	uint8_t error_cnt, tmp8;
 	RESULT ret = ERROR_OK;
 	memlist *ml_tmp;
+	uint32_t target_size;
 
 	// comm init
 	ret = comm_open(com_mode.comport, com_mode.baudrate, 8, 
@@ -798,12 +799,13 @@ RESULT stm32isp_program(operation_t operations, program_info_t *pi)
 	}
 	
 	// erase
+	target_size = MEMLIST_CalcAllSize(pi->app_memlist);
 	if (operations.erase_operations > 0)
 	{
 		LOG_INFO(_GETTEXT(INFOMSG_ERASING), "chip");
 		pgbar_init("erasing chip |", "|", 0, 1, PROGRESS_STEP, '=');
 		
-/*		if (pi->app_size_valid > 0)
+/*		if (target_size > 0)
 		{
 			// erase flash according to data
 		}
@@ -830,8 +832,7 @@ RESULT stm32isp_program(operation_t operations, program_info_t *pi)
 	if (operations.write_operations & APPLICATION)
 	{
 		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMING), "flash");
-		pgbar_init("writing flash |", "|", 0, pi->app_size_valid, 
-				   PROGRESS_STEP, '=');
+		pgbar_init("writing flash |", "|", 0, target_size, PROGRESS_STEP, '=');
 		
 		page_size = STM32ISP_PAGE_SIZE_TX;
 		ml_tmp = pi->app_memlist;
@@ -914,8 +915,7 @@ RESULT stm32isp_program(operation_t operations, program_info_t *pi)
 		}
 		
 		pgbar_fini();
-		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMED_SIZE), "flash", 
-				 pi->app_size_valid);
+		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMED_SIZE), "flash", target_size);
 	}
 
 	page_size = STM32ISP_PAGE_SIZE_RX;
@@ -928,11 +928,17 @@ RESULT stm32isp_program(operation_t operations, program_info_t *pi)
 		}
 		else
 		{
-			pi->app_size_valid =flash_kb * 1024;
+			ret = MEMLIST_Add(&pi->app_memlist, cur_chip_param.flash_start_addr, 
+								pi->app_size, page_size);
+			if (ret != ERROR_OK)
+			{
+				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "add memory list");
+				return ERRCODE_FAILURE_OPERATION;
+			}
+			target_size = MEMLIST_CalcAllSize(pi->app_memlist);
 			LOG_INFO(_GETTEXT(INFOMSG_READING), "flash");
 		}
-		pgbar_init("reading flash |", "|", 0, pi->app_size_valid, 
-				   PROGRESS_STEP, '=');
+		pgbar_init("reading flash |", "|", 0, target_size, PROGRESS_STEP, '=');
 		
 		ml_tmp = pi->app_memlist;
 		while (ml_tmp != NULL)
@@ -1012,8 +1018,7 @@ RESULT stm32isp_program(operation_t operations, program_info_t *pi)
 		pgbar_fini();
 		if (operations.verify_operations & APPLICATION)
 		{
-			LOG_INFO(_GETTEXT(INFOMSG_VERIFIED_SIZE), "flash", 
-				 pi->app_size_valid);
+			LOG_INFO(_GETTEXT(INFOMSG_VERIFIED_SIZE), "flash", target_size);
 		}
 		else
 		{

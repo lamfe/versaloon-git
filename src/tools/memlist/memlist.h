@@ -31,6 +31,7 @@ typedef struct MEMLIST
 #define MEMLIST_GetNext(ml)						\
 						sllist_get_container(ml->list.next, memlist, list)
 
+uint32_t MEMLIST_CalcAllSize(memlist *ml);
 RESULT MEMLIST_Add(memlist **ml, uint32_t addr, uint32_t len, uint32_t page_size);
 void MEMLIST_Free(memlist **ml);
 

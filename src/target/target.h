@@ -27,7 +27,6 @@ typedef struct
 	
 	uint8_t *boot;
 	uint32_t boot_size;
-	uint32_t boot_size_valid;
 	uint8_t *boot_checksum;
 	uint32_t boot_checksum_value;
 	uint32_t boot_checksum_size;
@@ -35,7 +34,6 @@ typedef struct
 	
 	uint8_t *app;
 	uint32_t app_size;
-	uint32_t app_size_valid;
 	memlist *app_memlist;
 	uint8_t *app_checksum;
 	uint32_t app_checksum_value;
@@ -43,7 +41,6 @@ typedef struct
 	
 	uint8_t *eeprom;
 	uint32_t eeprom_size;
-	uint32_t eeprom_size_valid;
 	memlist *eeprom_memlist;
 	uint8_t *eeprom_checksum;
 	uint32_t eeprom_checksum_value;
@@ -51,7 +48,6 @@ typedef struct
 	
 	uint8_t *otp_rom;
 	uint32_t otp_rom_size;
-	uint32_t otp_rom_size_valid;
 	memlist *opt_rom_memlist;
 	uint8_t *otp_rom_checksum;
 	uint32_t otp_rom_checksum_value;
@@ -60,7 +56,6 @@ typedef struct
 	uint8_t *fuse;
 	uint32_t fuse_value;
 	uint32_t fuse_size;
-	uint32_t fuse_size_valid;
 	memlist *fuse_memlist;
 	uint8_t *fuse_checksum;
 	uint32_t fuse_checksum_value;
@@ -69,7 +64,6 @@ typedef struct
 	uint8_t *lock;
 	uint32_t lock_value;
 	uint32_t lock_size;
-	uint32_t lock_size_valid;
 	memlist *lock_memlist;
 	uint8_t *lock_checksum;
 	uint32_t lock_checksum_value;
@@ -78,7 +72,6 @@ typedef struct
 	uint8_t *user_area;
 	uint32_t user_area_value;
 	uint32_t user_area_size;
-	uint32_t user_area_size_valid;
 	memlist *user_area_memlist;
 	uint8_t *user_area_checksum;
 	uint32_t user_area_checksum_value;

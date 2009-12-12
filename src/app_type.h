@@ -29,6 +29,12 @@ typedef enum
 } RESULT;
 
 #define dimof(arr)				(sizeof(arr) / sizeof((arr)[0]))
+#ifndef min
+#	define min(a,b)				(((a) < (b)) ? (a) : (b))
+#endif
+#ifndef max
+#	define max(a,b)				(((a) > (b)) ? (a) : (b))
+#endif
 #define TO_STR(name)			#name
 
 #endif /* __APP_TYPE_H_INCLUDED__ */

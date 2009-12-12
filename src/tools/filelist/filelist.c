@@ -42,7 +42,7 @@ static void FILELIST_InsertLast(filelist *fl, filelist *newitem)
 		fl = FILELIST_GetNext(fl);
 	}
 	
-	fl->list.next = &newitem->list;
+	sllint_insert(fl->list, newitem->list);
 }
 
 RESULT FILELIST_Open(filelist *fl, char *attr)

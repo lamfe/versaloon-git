@@ -154,7 +154,6 @@ RESULT lpc900_init(program_info_t *pi, programmer_info_t *prog)
 					   sizeof(cur_chip_param));
 				
 				pi->app_size = cur_chip_param.app_size;
-				pi->app_size_valid = 0;
 				
 				LOG_INFO(_GETTEXT(INFOMSG_CHIP_FOUND), 
 						 cur_chip_param.chip_name);
@@ -177,7 +176,6 @@ RESULT lpc900_init(program_info_t *pi, programmer_info_t *prog)
 					   sizeof(cur_chip_param));
 				
 				pi->app_size = cur_chip_param.app_size;
-				pi->app_size_valid = 0;
 				
 				return ERROR_OK;
 			}
@@ -244,7 +242,6 @@ RESULT lpc900_write_buffer_from_file_callback(uint32_t address, uint32_t seg_add
 		cur_target_defined |= APPLICATION;
 		
 		memcpy(pi->app + mem_addr, data, length);
-		pi->app_size_valid += (uint16_t)length;
 		ret = MEMLIST_Add(&pi->app_memlist, mem_addr, length, 
 						  cur_chip_param.app_page_size);
 		if (ret != ERROR_OK)
@@ -339,6 +336,7 @@ RESULT lpc900_program(operation_t operations, program_info_t *pi,
 	RESULT ret = ERROR_OK;
 	memlist *ml_tmp;
 	uint8_t retry = 0;
+	uint32_t target_size;
 	
 	p = prog;
 	
@@ -475,12 +473,12 @@ ProgramStart:
 	page_size = (uint16_t)cur_chip_param.app_page_size;
 	
 	// write flash
+	target_size = MEMLIST_CalcAllSize(pi->app_memlist);
 	if (operations.write_operations & APPLICATION)
 	{
 		// program flash
 		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMING), "flash");
-		pgbar_init("writing flash |", "|", 0, pi->app_size_valid, 
-				   PROGRESS_STEP, '=');
+		pgbar_init("writing flash |", "|", 0, target_size, PROGRESS_STEP, '=');
 		
 		ml_tmp = pi->app_memlist;
 		while (ml_tmp != NULL)
@@ -545,8 +543,7 @@ ProgramStart:
 		}
 		
 		pgbar_fini();
-		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMED_SIZE), "flash", 
-				 pi->app_size_valid);
+		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMED_SIZE), "flash", target_size);
 	}
 	
 	// verify
