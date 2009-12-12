@@ -995,11 +995,6 @@ int main(int argc, char* argv[])
 		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "open input file");
 		free_all_and_exit(EXIT_FAILURE);
 	}
-	if ((fl_out != NULL) && (ERROR_OK != FILELIST_Open(fl_out, "wb")))
-	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "open output file");
-		free_all_and_exit(EXIT_FAILURE);
-	}
 	
 	// init programmer capabilities
 	cur_programmer->init_capability(cur_programmer);
@@ -1026,8 +1021,7 @@ int main(int argc, char* argv[])
 		free_all_and_exit(EXIT_FAILURE);
 	}
 	if ((require_hex_file_for_write > 0) 
-		&& ((NULL == fl_out) || (NULL == fl_out->path) 
-			|| (NULL == fl_out->file)))
+		&& ((NULL == fl_out) || (NULL == fl_out->path)))
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "output file");
 		free_all_and_exit(EXIT_FAILURE);
@@ -1250,6 +1244,8 @@ int main(int argc, char* argv[])
 															p_map->area_seg_addr, 
 															p_map->area_start_addr))
 						{
+							LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+										"write data to file");
 							free_all_and_exit(EXIT_FAILURE);
 						}
 					}
