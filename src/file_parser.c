@@ -168,10 +168,21 @@ RESULT save_target_to_file(filelist *fl, uint8_t *buff, uint32_t buff_size,
 	} while ((fl != NULL) && (fl->file != NULL) && (fl->path != NULL));
 	
 	// write target to file
-	if ((NULL == target_file->file) || (NULL == target_file->path))
+	if (NULL == target_file->path)
 	{
 		return ERROR_FAIL;
 	}
+	if (NULL == target_file->file)
+	{
+		target_file->file = fopen(target_file->path, "wb");
+		if (NULL == target_file->file)
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_HANDLE_DEVICE), "open", 
+						target_file->path);
+			return ERROR_FAIL;
+		}
+	}
+	
 	if (ERROR_OK != get_file_parser(target_file->path, &i) 
 		|| (NULL == file_parser[i].save_target_to_file))
 	{
