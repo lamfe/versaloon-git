@@ -38,7 +38,7 @@ static RESULT MEMLIST_Merge(memlist *ml, uint32_t addr, uint32_t len,
 							uint32_t page_size)
 {
 	memlist *ml_tmp = ml;
-	uint32_t head, cur_head, tail, cur_tail;
+	uint32_t head = 0, cur_head = 0, tail = 0, cur_tail = 0;
 	
 	if (NULL == ml_tmp)
 	{
