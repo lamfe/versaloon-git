@@ -48,6 +48,7 @@
 #define cur_chips_num				target_chips.num_of_chips
 #define cur_prog_mode				program_mode
 #define cur_target_defined			target_defined
+#define cur_program_area_map		msp430_program_area_map
 
 program_area_map_t msp430_program_area_map[] = 
 {
@@ -235,7 +236,7 @@ RESULT msp430_init(program_info_t *pi, programmer_info_t *prog)
 						 cur_chip_param.chip_name);
 				pi->chip_name = (char *)cur_chip_param.chip_name;
 				
-				msp430_program_area_map[0].area_start_addr = Device_MainStart();
+				cur_program_area_map[0].area_start_addr = Device_MainStart();
 
 				return ERROR_OK;
 			}

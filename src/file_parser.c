@@ -72,9 +72,7 @@ static uint8_t check_file_ext(char *file_name, char *ext)
 	return 1;
 }
 
-RESULT parse_file(char *file_name, FILE *file, void *para, 
-				  WRITE_MEMORY_CALLBACK callback, 
-				  uint32_t seg_offset, uint32_t addr_offset)
+static RESULT get_file_parser(char *file_name, uint8_t *index)
 {
 	uint8_t i;
 	
@@ -89,7 +87,22 @@ RESULT parse_file(char *file_name, FILE *file, void *para,
 	if (i >= dimof(file_parser))
 	{
 		// file type not supported
-		// return SUCCESS, hope target code will process this
+		return ERROR_FAIL;
+	}
+	
+	*index = i;
+	return ERROR_OK;
+}
+
+RESULT parse_file(char *file_name, FILE *file, void *para, 
+				  WRITE_MEMORY_CALLBACK callback, 
+				  uint32_t seg_offset, uint32_t addr_offset)
+{
+	uint8_t i;
+	
+	if (ERROR_OK != get_file_parser(file_name, &i))
+	{
+		// hope target handler will handle this file
 		return ERROR_OK;
 	}
 	
@@ -106,22 +119,15 @@ RESULT end_file(filelist *fl)
 	}
 	
 	do {
-		uint32_t i;
+		uint8_t i;
 		
 		if ((fl->file != NULL) && (fl->path != NULL) && fl->access)
 		{
-			for (i = 0; i < dimof(file_parser); i++)
-			{
-				// check file ext
-				if (check_file_ext(fl->path, file_parser[i].ext))
-				{
-					break;
-				}
-			}
-			if (i >= dimof(file_parser))
+			if (ERROR_OK != get_file_parser(fl->path, &i))
 			{
 				continue;
 			}
+			
 			if (ERROR_OK != file_parser[i].end_file(fl->file))
 			{
 				return ERROR_FAIL;
@@ -166,19 +172,11 @@ RESULT save_target_to_file(filelist *fl, uint8_t *buff, uint32_t buff_size,
 	{
 		return ERROR_FAIL;
 	}
-	for (i = 0; i < dimof(file_parser); i++)
+	if (ERROR_OK != get_file_parser(target_file->path, &i))
 	{
-		// check file ext
-		if (check_file_ext(target_file->path, file_parser[i].ext))
-		{
-			break;
-		}
-	}
-	if (i >= dimof(file_parser))
-	{
-		// file type not supported
 		return ERROR_FAIL;
 	}
+	
 	target_file->access = 1;
 	return file_parser[i].save_target_to_file(target_file->file, 
 												target_file->addr_offset, 
