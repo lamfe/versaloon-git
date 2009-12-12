@@ -103,7 +103,7 @@
 #define INFOMSG_TRY_AUTODETECT				"Chip name undefined, try auto-detecting.\n"
 #define INFOMSG_AUTODETECT_SIGNATURE		"Auto-detect signature is 0x%X\n"
 #define INFOMSG_CHIP_FOUND					"%s found\n"
-#define INFOMSG_TARGET_VOLTAGE				"Target runs at %.2fV\n"
+#define INFOMSG_TARGET_VOLTAGE				"Target runs at %.3fV\n"
 #define INFOMSG_TARGET_LOW_POWER			"No power is detected on target.\n"
 #define INFOMSG_USE_DEFAULT					"%s not defined, use %s as default.\n"
 #define INFOMSG_TARGET_CHIP_ID				"Chip-id read is 0x%X.\n"
