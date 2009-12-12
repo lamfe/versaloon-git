@@ -985,19 +985,27 @@ RESULT stm32isp_program(operation_t operations, program_info_t *pi)
 					// read success, clear error
 					error_cnt = 0;
 				}
-				for (j = 0; j < page_size; j++)
+				if (operations.verify_operations & APPLICATION)
 				{
-					if (page_buf[j] != pi->app[ml_tmp->addr + i 
-											  + j - start_addr])
+					for (j = 0; j < page_size; j++)
 					{
-						pgbar_fini();
-						LOG_ERROR(
-							_GETTEXT(ERRMSG_FAILURE_VERIFY_TARGET_AT_02X), 
-							"flash", ml_tmp->addr + i + j, page_buf[j], 
-							pi->app[ml_tmp->addr + i + j - start_addr]);
-						ret = ERRCODE_FAILURE_VERIFY_TARGET;
-						goto leave_program_mode;
+						if (page_buf[j] != pi->app[ml_tmp->addr + i 
+												  + j - start_addr])
+						{
+							pgbar_fini();
+							LOG_ERROR(
+								_GETTEXT(ERRMSG_FAILURE_VERIFY_TARGET_AT_02X), 
+								"flash", ml_tmp->addr + i + j, page_buf[j], 
+								pi->app[ml_tmp->addr + i + j - start_addr]);
+							ret = ERRCODE_FAILURE_VERIFY_TARGET;
+							goto leave_program_mode;
+						}
 					}
+				}
+				else
+				{
+					memcpy(&pi->app[ml_tmp->addr + i - start_addr], page_buf, 
+							page_size);
 				}
 				
 				pgbar_update(k);

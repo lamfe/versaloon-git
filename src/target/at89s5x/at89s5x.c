@@ -792,9 +792,9 @@ RESULT s5x_program(operation_t operations, program_info_t *pi,
 					}
 				}
 				
-				for (j = 0; j < page_size; j++)
+				if (operations.verify_operations & APPLICATION)
 				{
-					if (operations.verify_operations & APPLICATION)
+					for (j = 0; j < page_size; j++)
 					{
 						if (page_buf[j] != pi->app[ml_tmp->addr + i + j])
 						{
@@ -808,11 +808,10 @@ RESULT s5x_program(operation_t operations, program_info_t *pi,
 							goto leave_program_mode;
 						}
 					}
-					else
-					{
-						memcpy(&pi->app[ml_tmp->addr + i], page_buf, 
-							   page_size);
-					}
+				}
+				else
+				{
+					memcpy(&pi->app[ml_tmp->addr + i], page_buf, page_size);
 				}
 				
 				pgbar_update(k);
@@ -910,7 +909,7 @@ RESULT s5x_program(operation_t operations, program_info_t *pi,
 		pgbar_fini();
 		
 		tmp8 &= 0x0F;
-		if (operations.verify_operations & LOCK)
+		if (operations.verify_operations & FUSE)
 		{
 			if (tmp8 == pi->fuse_value)
 			{
