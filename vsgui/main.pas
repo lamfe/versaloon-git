@@ -1550,7 +1550,7 @@ begin
   begin
     if cbboxInputFile.Text <> '' then
     begin
-      caller.AddParameter(io_file_opt + '"' + cbboxInputFile.Text + '"');
+      caller.AddParameter(io_file_opt + '"' + cbboxInputFile.Text + '@0,0"');
     end;
   end
   else if cbboxInputFile.Text <> 'ALL' then
