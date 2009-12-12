@@ -189,7 +189,7 @@ RESULT avr8_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr,
 											void* buffer)
 {
 	program_info_t *pi = (program_info_t *)buffer;
-	uint32_t mem_addr = address & 0x0000FFFF, page_size;
+	uint32_t mem_addr = address & 0x0001FFFF, page_size;
 	RESULT ret;
 
 #ifdef PARAM_CHECK
