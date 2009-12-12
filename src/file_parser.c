@@ -38,12 +38,11 @@ RESULT read_bin_file(FILE *bin_file, WRITE_MEMORY_CALLBACK callback,
 RESULT write_bin_file(FILE *bin_file, uint32_t file_addr, 
 						uint8_t *buff, uint32_t buff_size, 
 						uint32_t seg_addr, uint32_t start_addr);
-RESULT write_bin_file_end(FILE *bin_file);
 
 static file_parser_t file_parser[] = 
 {
 	{"HEX", read_hex_file, write_hex_file, write_hex_file_end}, 
-	{"BIN", read_bin_file, write_bin_file, write_bin_file_end}
+	{"BIN", read_bin_file, write_bin_file, NULL}
 };
 
 static uint8_t check_file_ext(char *file_name, char *ext)
@@ -271,12 +270,6 @@ RESULT write_bin_file(FILE *bin_file, uint32_t file_addr,
 	{
 		return ERROR_FAIL;
 	}
-	return ERROR_OK;
-}
-
-RESULT write_bin_file_end(FILE *bin_file)
-{
-	bin_file = bin_file;
 	return ERROR_OK;
 }
 
