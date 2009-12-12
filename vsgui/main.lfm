@@ -1,7 +1,7 @@
 object FormMain: TFormMain
-  Left = 553
+  Left = 352
   Height = 579
-  Top = 192
+  Top = 197
   Width = 841
   HorzScrollBar.Page = 840
   HorzScrollBar.Range = 400
@@ -64,11 +64,11 @@ object FormMain: TFormMain
         ClientWidth = 389
         object gbOpenOCD: TGroupBox
           Left = 10
-          Height = 200
+          Height = 197
           Top = 5
           Width = 369
           Caption = 'OpenOCD'
-          ClientHeight = 182
+          ClientHeight = 179
           ClientWidth = 365
           TabOrder = 0
           object lblOpenOCDScript: TLabel
@@ -80,7 +80,7 @@ object FormMain: TFormMain
             ParentColor = False
           end
           object lblOpenOCDTarget: TLabel
-            Left = 14
+            Left = 16
             Height = 17
             Top = 43
             Width = 41
@@ -153,7 +153,7 @@ object FormMain: TFormMain
             Left = 70
             Height = 25
             Hint = 'Run OpenOCD'
-            Top = 144
+            Top = 141
             Width = 75
             Caption = '&Go...'
             OnClick = btnOpenOCDRunClick
@@ -165,7 +165,7 @@ object FormMain: TFormMain
             Left = 214
             Height = 25
             Hint = 'Stop OpenOCD'
-            Top = 144
+            Top = 141
             Width = 75
             Caption = '&Stop'
             OnClick = btnOpenOCDStopClick
@@ -176,11 +176,11 @@ object FormMain: TFormMain
         end
         object gbSVFPlayer: TGroupBox
           Left = 10
-          Height = 144
-          Top = 213
+          Height = 104
+          Top = 210
           Width = 369
           Caption = 'SVF Player'
-          ClientHeight = 126
+          ClientHeight = 86
           ClientWidth = 365
           TabOrder = 1
           object lblSVFPlayerSelectFile: TLabel
@@ -200,10 +200,10 @@ object FormMain: TFormMain
             ParentColor = False
           end
           object btnSVFPlayerRun: TButton
-            Left = 142
+            Left = 275
             Height = 25
             Hint = 'Run SVF_Player'
-            Top = 88
+            Top = 46
             Width = 75
             Caption = '&Run'
             OnClick = btnSVFPlayerRunClick
@@ -232,11 +232,76 @@ object FormMain: TFormMain
             Height = 24
             Hint = 'Pass other options to SVF_Player'
             Top = 48
-            Width = 272
+            Width = 176
             OnDblClick = ToggleIF
             ParentShowHint = False
             ShowHint = True
             TabOrder = 2
+          end
+        end
+        object gbPower: TGroupBox
+          Left = 10
+          Height = 105
+          Top = 322
+          Width = 369
+          Caption = 'Power'
+          ClientHeight = 87
+          ClientWidth = 365
+          TabOrder = 2
+          object lblPowerUnit: TLabel
+            Left = 329
+            Height = 17
+            Top = 15
+            Width = 21
+            Caption = 'mV'
+            ParentColor = False
+          end
+          object btnSetPower: TButton
+            Left = 70
+            Height = 25
+            Hint = 'Set Output Power'
+            Top = 48
+            Width = 75
+            Caption = 'S&et'
+            OnClick = btnSetPowerClick
+            ParentShowHint = False
+            ShowHint = True
+            TabOrder = 0
+          end
+          object btnGetPower: TButton
+            Left = 214
+            Height = 25
+            Hint = 'Get Input Power'
+            Top = 48
+            Width = 75
+            Caption = 'Ge&t'
+            OnClick = btnGetPowerClick
+            ParentShowHint = False
+            ShowHint = True
+            TabOrder = 1
+          end
+          object sedtPower: TSpinEdit
+            Left = 238
+            Height = 24
+            Top = 8
+            Width = 88
+            MaxValue = 6600
+            OnChange = sedtPowerChange
+            ParentShowHint = False
+            ShowHint = True
+            TabOrder = 2
+          end
+          object tbPower: TTrackBar
+            Left = 16
+            Height = 25
+            Top = 8
+            Width = 214
+            Max = 6600
+            OnChange = tbPowerChange
+            Position = 0
+            ParentShowHint = False
+            ShowHint = True
+            TabOrder = 3
           end
         end
       end
@@ -903,7 +968,7 @@ object FormMain: TFormMain
     Left = 104
     Height = 18
     Top = 560
-    Width = 295
+    Width = 336
     Max = 40
     TabOrder = 2
   end

@@ -6,8 +6,8 @@ interface
 
 uses
   Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs, ComCtrls,
-  StdCtrls, EditBtn, ExtCtrls, cli_caller, parameditor, Menus, Buttons, Synaser,
-  com_setup, fileselector;
+  StdCtrls, EditBtn, ExtCtrls, cli_caller, parameditor, Menus, Buttons, Spin,
+  Synaser, com_setup, fileselector;
 
 type
 
@@ -49,6 +49,8 @@ type
     btnSVFPlayerRun: TButton;
     btnEditCali: TButton;
     btnOpenFile: TButton;
+    btnSetPower: TButton;
+    btnGetPower: TButton;
     cbboxOpenOCDInterface: TComboBox;
     cbboxOpenOCDScript: TComboBox;
     cbboxOpenOCDTarget: TComboBox;
@@ -85,6 +87,8 @@ type
     gbUpdate: TGroupBox;
     gbOpenOCD: TGroupBox;
     gbSVFPlayer: TGroupBox;
+    gbPower: TGroupBox;
+    lblPowerUnit: TLabel;
     lbledtCali: TLabeledEdit;
     lbledtUsrSig: TLabeledEdit;
     lblSVFOption: TLabel;
@@ -110,6 +114,8 @@ type
     pcMain: TPageControl;
     pmTray: TPopupMenu;
     sbMain: TStatusBar;
+    sedtPower: TSpinEdit;
+    tbPower: TTrackBar;
     tsCortexM3: TTabSheet;
     tsLPCICP: TTabSheet;
     tDelay: TTimer;
@@ -131,10 +137,12 @@ type
     procedure btnEditLockClick(Sender: TObject);
     procedure btnEditUsrSigClick(Sender: TObject);
     procedure btnEraseClick(Sender: TObject);
+    procedure btnGetPowerClick(Sender: TObject);
     procedure btnOpenFileClick(Sender: TObject);
     procedure btnOpenOCDRunClick(Sender: TObject);
     procedure btnOpenOCDStopClick(Sender: TObject);
     procedure btnReadClick(Sender: TObject);
+    procedure btnSetPowerClick(Sender: TObject);
     procedure btnSVFPlayerRunClick(Sender: TObject);
     procedure btnTargetDetectClick(Sender: TObject);
     procedure btnUpdateClick(Sender: TObject);
@@ -154,8 +162,10 @@ type
     procedure pcMainChanging(Sender: TObject; var AllowChange: Boolean);
     procedure pcMainPageChanged(Sender: TObject);
     procedure AdjustComponentColor(Sender: TObject);
+    procedure sedtPowerChange(Sender: TObject);
     procedure ShowDebugLog();
     procedure HideDebugLog();
+    procedure tbPowerChange(Sender: TObject);
     procedure ToggleIF(Sender: TObject);
 
     procedure LogInfo(info: string);
@@ -176,6 +186,7 @@ type
     function VSProg_CommonParseReadFuseCallback(line: string): boolean;
     function VSProg_CommonParseReadLockCallback(line: string): boolean;
     function VSProg_CommonParseReadCaliCallback(line: string): boolean;
+    function VSProg_CommonParseTargetVoltageCallback(line: string): boolean;
     procedure VSProg_TargetSettingInit(var setting: TTargetSetting);
     procedure VSProg_AddTargetSetting(setting: TTargetSetting);
     function VSProg_CommonParseSupportCallback(line: string): boolean;
@@ -385,6 +396,7 @@ begin
 
   pcMain.ActivePage := tsJTAG;
   pcMainPageChanged(Sender);
+  tbPowerChange(tbPower);
 end;
 
 procedure TFormMain.FormDestroy(Sender: TObject);
@@ -450,6 +462,13 @@ begin
   begin
     Width := pnlMain.Width + 1;
   end;
+end;
+
+procedure TFormMain.tbPowerChange(Sender: TObject);
+begin
+  sedtPower.Value := (Sender as TTrackBar).Position;
+  sedtPower.Hint := IntToStr(sedtPower.Value) + 'mV';
+  (Sender as TTrackBar).Hint := sedtPower.Hint;
 end;
 
 procedure TFormMain.ToggleIF(Sender: TObject);
@@ -855,6 +874,27 @@ begin
   LogInfo('Idle');
 end;
 
+procedure TFormMain.btnGetPowerClick(Sender: TObject);
+begin
+  if OpenOCD_Caller.IsRunning() or caller.IsRunning() then
+  begin
+    exit;
+  end;
+
+  caller.Take;
+  if not PrepareToRunCLI() then
+  begin
+    caller.UnTake;
+    exit;
+  end;
+
+  caller.AddParameter('V"voltage"');
+  LogInfo('Running...');
+  caller.Run(@VSProg_CommonParseTargetVoltageCallback, FALSE, TRUE);
+  LogInfo('Idle');
+  bFatalError := FALSE;
+end;
+
 procedure TFormMain.btnOpenFileClick(Sender: TObject);
 var
   i, file_num, valid_filename_num: integer;
@@ -1197,6 +1237,27 @@ begin
   bReadOperation := FALSE;
 end;
 
+procedure TFormMain.btnSetPowerClick(Sender: TObject);
+begin
+  if OpenOCD_Caller.IsRunning() or caller.IsRunning() then
+  begin
+    exit;
+  end;
+
+  caller.Take;
+  if not PrepareToRunCLI() then
+  begin
+    caller.UnTake;
+    exit;
+  end;
+
+  caller.AddParameter('V"powerout ' + IntToStr(sedtPower.Value) + '"');
+  LogInfo('Running...');
+  caller.Run(@CheckFatalError, FALSE, TRUE);
+  LogInfo('Idle');
+  bFatalError := FALSE;
+end;
+
 procedure TFormMain.btnSVFPlayerRunClick(Sender: TObject);
 begin
   if OpenOCD_Caller.IsRunning() or caller.IsRunning() then
@@ -1442,6 +1503,13 @@ begin
       (Sender as TComboBox).Color := clBtnFace;
     end;
   end;
+end;
+
+procedure TFormMain.sedtPowerChange(Sender: TObject);
+begin
+  tbPower.Position := (Sender as TSpinEdit).Value;
+  tbPower.Hint := IntToStr(tbPower.Position) + 'mV';
+  (Sender as TSpinEdit).Hint := tbPower.Hint;
 end;
 
 procedure TFormMain.LogInfo(info: string);
@@ -1822,6 +1890,28 @@ begin
   begin
     VSProg_CommonUpdateCali(StrToInt(cali_str) and TargetSetting[cbboxTarget.ItemIndex].cali_default,
                             TargetSetting[cbboxTarget.ItemIndex].cali_bytelen);
+  end;
+end;
+
+function TFormMain.VSProg_CommonParseTargetVoltageCallback(line: string): boolean;
+var
+  voltage: integer;
+  pos_start: integer;
+begin
+  if CheckFatalError(line) then
+  begin
+    result := FALSE;
+    exit;
+  end;
+  result := TRUE;
+
+  pos_start := Pos('Target runs at ', line);
+  if pos_start > 0 then
+  begin
+    pos_start := pos_start + Length('Target runs at ');
+    voltage := Trunc(StrToFloat(Copy(line, pos_start, Length(line) - pos_start - 1)) * 1000);
+    sedtPower.Value := voltage;
+    sedtPowerChange(sedtPower);
   end;
 end;
 

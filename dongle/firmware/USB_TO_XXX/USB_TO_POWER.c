@@ -71,7 +71,7 @@ void USB_TO_POWER_ProcessCmd(uint8* dat, uint16 len)
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 				if (!power_state)
 				{
-					power_state++;
+					power_state = 1;
 					PWREXT_Acquire();
 				}
 			}
@@ -80,8 +80,8 @@ void USB_TO_POWER_ProcessCmd(uint8* dat, uint16 len)
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 				if (power_state)
 				{
-					power_state--;
-					PWREXT_Release();
+					power_state = 0;
+					PWREXT_ForceRelease();
 				}
 			}
 			else
