@@ -194,11 +194,23 @@ RESULT read_hex_file(FILE *hex_file, WRITE_MEMORY_CALLBACK callback,
 			break;
 		case HEX_TYPE_SEG_ADDR:
 			// segment address
-			if (length > 4)
+			if ((length > 4) || (3 == length))
 			{
 				return ERROR_FAIL;
 			}
-			memcpy(&seg_addr, line_buf, length);
+			if (1 == length)
+			{
+				seg_addr = line_buf[0];
+			}
+			else if (2 == length)
+			{
+				seg_addr = (line_buf[0] << 8) | line_buf[1];
+			}
+			else //if (4 == length)
+			{
+				seg_addr = (line_buf[0] << 24) | (line_buf[1] << 16) 
+							| (line_buf[2] << 8) | line_buf[3];
+			}
 			break;
 		case HEX_TYPE_EXT_ADDR:
 			// extended address
