@@ -319,14 +319,9 @@ RESULT msp430_jtag_program(operation_t operations, program_info_t *pi,
 		}
 		else
 		{
-			ret = MEMLIST_Add(&pi->app_memlist, addr_start, pi->app_size, page_size);
-			if (ret != ERROR_OK)
-			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "add memory list");
-				return ERRCODE_FAILURE_OPERATION;
-			}
-			target_size = MEMLIST_CalcAllSize(pi->app_memlist);
-			LOG_INFO(_GETTEXT(INFOMSG_READING), "flash");
+			LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT), "read msp430 flash");
+			ret = ERRCODE_FAILURE_OPERATION;
+			goto leave_program_mode;
 		}
 		pgbar_init("reading flash |", "|", 0, target_size, PROGRESS_STEP, '=');
 		

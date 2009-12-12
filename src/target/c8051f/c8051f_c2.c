@@ -386,7 +386,7 @@ RESULT c8051f_c2_program(operation_t operations, program_info_t *pi,
 				else
 				{
 					// read
-					memcpy(pi->app + ml_tmp->addr + i, page_buf, page_size);
+					memcpy(&pi->app[ml_tmp->addr + i], page_buf, page_size);
 				}
 				
 				pgbar_update(k);
