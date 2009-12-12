@@ -133,12 +133,12 @@
     <app_size>65536</app_size>
     <param0>0xFDFF</param0>
   </chip>
-  <chip name="c8051f02x/12x/13x">
+  <chip name="c8051f02x">
     <program_mode>j</program_mode>
     <chip_id>0x00003243</chip_id>
     <app_page_size>512</app_page_size>
-    <app_page_num>256</app_page_num>
-    <app_size>131072</app_size>
+    <app_page_num>128</app_page_num>
+    <app_size>65536</app_size>
     <param0>0xFDFF</param0>
   </chip>
   <chip name="c8051f04x">
