@@ -1853,7 +1853,7 @@ begin
   if pos_start > 0 then
   begin
     result_str := Copy(line, pos_start + Length(target + ' read is '), Length(line) - pos_start);
-    FormParaEditor.WipeTailEnter(result_str);
+    WipeTailEnter(result_str);
   end;
 end;
 
@@ -1948,11 +1948,11 @@ begin
   begin
     // check disable
     dis := '';
-    FormParaEditor.GetStringParameter(line, 'ban', dis);
+    GetStringParameter(line, 'ban', dis);
     if (dis = '*') or (Pos(cbboxMode.Text[1], dis) > 0) then
     begin
       // current setting is disabled in current mode
-      FormParaEditor.WipeTailEnter(line);
+      WipeTailEnter(line);
       line := line + ', disabled = 1'
     end;
   end;
@@ -2050,14 +2050,14 @@ begin
         CortexM3_Init_Para(line, setting);
     end;
 
-    FormParaEditor.GetIntegerParameter(line, 'fuse_bytelen', setting.fuse_bytelen);
-    FormParaEditor.GetIntegerParameter(line, 'fuse_default', setting.fuse_default);
-    FormParaEditor.GetIntegerParameter(line, 'lock_bytelen', setting.lock_bytelen);
-    FormParaEditor.GetIntegerParameter(line, 'lock_default', setting.lock_default);
-    FormParaEditor.GetIntegerParameter(line, 'cali_bytelen', setting.cali_bytelen);
-    FormParaEditor.GetIntegerParameter(line, 'cali_default', setting.cali_default);
-    FormParaEditor.GetIntegerParameter(line, 'usrsig_bytelen', setting.usrsig_bytelen);
-    FormParaEditor.GetIntegerParameter(line, 'usrsig_default', setting.usrsig_default);
+    GetIntegerParameter(line, 'fuse_bytelen', setting.fuse_bytelen);
+    GetIntegerParameter(line, 'fuse_default', setting.fuse_default);
+    GetIntegerParameter(line, 'lock_bytelen', setting.lock_bytelen);
+    GetIntegerParameter(line, 'lock_default', setting.lock_default);
+    GetIntegerParameter(line, 'cali_bytelen', setting.cali_bytelen);
+    GetIntegerParameter(line, 'cali_default', setting.cali_default);
+    GetIntegerParameter(line, 'usrsig_bytelen', setting.usrsig_bytelen);
+    GetIntegerParameter(line, 'usrsig_default', setting.usrsig_default);
 
     cbboxTarget.Items.Add(chip_name);
     VSProg_AddTargetSetting(setting);
@@ -2364,7 +2364,7 @@ end;
 
 function TFormMain.PSoC1_Init_Para(line: string; var setting: TTargetSetting): boolean;
 begin
-  FormParaEditor.GetStringParameter(line, 'init_mode', setting.mode);
+  GetStringParameter(line, 'init_mode', setting.mode);
   setting.target := FLASH_CHAR + LOCK_CHAR;
   result := TRUE;
 end;
@@ -2475,7 +2475,7 @@ end;
 
 function TFormMain.C8051F_Init_Para(line: string; var setting: TTargetSetting): boolean;
 begin
-  FormParaEditor.GetStringParameter(line, 'prog_mode', setting.mode);
+  GetStringParameter(line, 'prog_mode', setting.mode);
   setting.target := FLASH_CHAR;
   result := TRUE;
 end;
@@ -2566,7 +2566,7 @@ end;
 { MSP430 implementations }
 function TFormMain.MSP430_Init_Para(line: string; var setting: TTargetSetting): boolean;
 begin
-  FormParaEditor.GetStringParameter(line, 'prog_mode', setting.mode);
+  GetStringParameter(line, 'prog_mode', setting.mode);
   setting.target := FLASH_CHAR;
   result := TRUE;
 end;
@@ -2847,9 +2847,9 @@ function TFormMain.AVR8_Init_Para(line: string; var setting: TTargetSetting): bo
 var
   size: integer;
 begin
-  FormParaEditor.GetStringParameter(line, 'prog_mode', setting.mode);
+  GetStringParameter(line, 'prog_mode', setting.mode);
   size := 0;
-  FormParaEditor.GetIntegerParameter(line, 'eeprom_size', size);
+  GetIntegerParameter(line, 'eeprom_size', size);
   if size > 0 then
   begin
     setting.target := FLASH_CHAR + FUSE_CHAR + LOCK_CHAR + CALI_CHAR + EEPROM_CHAR;
@@ -2994,24 +2994,24 @@ begin
   end;
 
   setting_str := setting.extra;
-  FormParaEditor.GetIntegerParameter(setting_str, 'baudrate', ComModeInit.baudrate);
-  FormParaEditor.GetIntegerParameter(setting_str, 'datalength', ComModeInit.datalength);
-  FormParaEditor.GetStringParameter(setting_str, 'paritybit', str_tmp);
+  GetIntegerParameter(setting_str, 'baudrate', ComModeInit.baudrate);
+  GetIntegerParameter(setting_str, 'datalength', ComModeInit.datalength);
+  GetStringParameter(setting_str, 'paritybit', str_tmp);
   if str_tmp <> '' then
   begin
     ComModeInit.paritybit := str_tmp[1];
   end;
-  FormParaEditor.GetStringParameter(setting_str, 'stopbit', str_tmp);
+  GetStringParameter(setting_str, 'stopbit', str_tmp);
   if str_tmp <> '' then
   begin
     ComModeInit.stopbit := str_tmp[1];
   end;
-  FormParaEditor.GetStringParameter(setting_str, 'handshake', str_tmp);
+  GetStringParameter(setting_str, 'handshake', str_tmp);
   if str_tmp <> '' then
   begin
     ComModeInit.handshake := str_tmp[1];
   end;
-  FormParaEditor.GetStringParameter(setting_str, 'auxpin', str_tmp);
+  GetStringParameter(setting_str, 'auxpin', str_tmp);
   if str_tmp <> '' then
   begin
     ComModeInit.auxpin := str_tmp[1];

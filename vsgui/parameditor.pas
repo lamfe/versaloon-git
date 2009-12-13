@@ -66,19 +66,20 @@ type
     SettingParameter: boolean;
   public
     { public declarations }
-    function StrToIntRadix(sData: string; radix: integer): integer;
-    function IntToStrRadix(aData, radix: Integer): String;
-    function WipeTailEnter(var line: string): string;
     function GetResult(): integer;
     function ParseSettingMaskValue(Sender: TObject; var mask, value: integer): boolean;
     procedure ValueToSetting();
     procedure UpdateTitle();
-    function GetIntegerParameter(line, para_name: string; var value: integer): boolean;
-    function GetStringParameter(line, para_name: string; var value: string): boolean;
     procedure SetParameter(init, bytelen, value: integer; title: string; warnEnabled: boolean);
     procedure ParseLine(line: string);
     procedure FreeRecord();
-  end; 
+  end;
+
+  function StrToIntRadix(sData: string; radix: integer): integer;
+  function IntToStrRadix(aData, radix: Integer): String;
+  function GetIntegerParameter(line, para_name: string; var value: integer): boolean;
+  function GetStringParameter(line, para_name: string; var value: string): boolean;
+  function WipeTailEnter(var line: string): string;
 
 var
   FormParaEditor: TFormParaEditor;
@@ -101,18 +102,27 @@ const
 
 implementation
 
-function GetStringLen_To_ByteLen(bytelen, radix: integer): integer;
+function IntToStrRadix(aData, radix: Integer): String;
+var
+  t: Integer;
 begin
-  if (radix < 2) or (radix > 16) or (BYTELEN_ACCORDING_TO_RADIX[radix] = 0) then
+  Result := '';
+  if (radix = 0) or (radix > 16) then
   begin
-    result := 0;
     exit;
   end;
 
-  result := bytelen * BYTELEN_ACCORDING_TO_RADIX[radix];
+  repeat
+    t := aData mod radix;
+    if t < 10 then
+      Result := InttoStr(t)+Result
+    else
+      Result := InttoHex(t, 1)+Result;
+    aData := aData div radix;
+  until (aData = 0);
 end;
 
-function TFormParaEditor.StrToIntRadix(sData: string; radix: integer): integer;
+function StrToIntRadix(sData: string; radix: integer): integer;
 var
   i, r: integer;
 begin
@@ -140,27 +150,7 @@ begin
   end;
 end;
 
-function TFormParaEditor.IntToStrRadix(aData, radix: Integer): String;
-var
-  t: Integer;
-begin
-  Result := '';
-  if (radix = 0) or (radix > 16) then
-  begin
-    exit;
-  end;
-
-  repeat
-    t := aData mod radix;
-    if t < 10 then
-      Result := InttoStr(t)+Result
-    else
-      Result := InttoHex(t, 1)+Result;
-    aData := aData div radix;
-  until (aData = 0);
-end;
-
-function TFormParaEditor.WipeTailEnter(var line: string): string;
+function WipeTailEnter(var line: string): string;
 begin
   if Pos(#13 + '', line) > 0 then
   begin
@@ -173,7 +163,7 @@ begin
   result := line;
 end;
 
-function TFormParaEditor.GetStringParameter(line, para_name: string; var value: string): boolean;
+function GetStringParameter(line, para_name: string; var value: string): boolean;
 var
   pos_start, pos_end: integer;
   str_tmp: string;
@@ -199,6 +189,48 @@ begin
     value := '';
     result := FALSE;
   end;
+end;
+
+function GetIntegerParameter(line, para_name: string; var value: integer): boolean;
+var
+  pos_start, pos_end: integer;
+  str_tmp: string;
+begin
+  if Pos(#13 + '', line) > 0 then
+  begin
+    SetLength(line, Length(line) - 1);
+  end;
+
+  pos_start := Pos(para_name + EQUAL_STR, line);
+  if pos_start > 0 then
+  begin
+    str_tmp := Copy(line, pos_start + Length(para_name + EQUAL_STR), Length(line) - pos_start);
+
+    pos_end := Pos(',', str_tmp);
+    if pos_end > 1 then
+    begin
+      str_tmp := Copy(str_tmp, 1, pos_end - 1);
+    end;
+
+    value := StrToInt(str_tmp);
+    result := TRUE;
+  end
+  else
+  begin
+    value := 0;
+    result := FALSE;
+  end;
+end;
+
+function GetStringLen_To_ByteLen(bytelen, radix: integer): integer;
+begin
+  if (radix < 2) or (radix > 16) or (BYTELEN_ACCORDING_TO_RADIX[radix] = 0) then
+  begin
+    result := 0;
+    exit;
+  end;
+
+  result := bytelen * BYTELEN_ACCORDING_TO_RADIX[radix];
 end;
 
 procedure TFormParaEditor.SettingChange(Sender: TObject);
@@ -558,37 +590,6 @@ begin
 
   ValueToSetting();
   UpdateShowing;
-end;
-
-function TFormParaEditor.GetIntegerParameter(line, para_name: string; var value: integer): boolean;
-var
-  pos_start, pos_end: integer;
-  str_tmp: string;
-begin
-  if Pos(#13 + '', line) > 0 then
-  begin
-    SetLength(line, Length(line) - 1);
-  end;
-
-  pos_start := Pos(para_name + EQUAL_STR, line);
-  if pos_start > 0 then
-  begin
-    str_tmp := Copy(line, pos_start + Length(para_name + EQUAL_STR), Length(line) - pos_start);
-
-    pos_end := Pos(',', str_tmp);
-    if pos_end > 1 then
-    begin
-      str_tmp := Copy(str_tmp, 1, pos_end - 1);
-    end;
-
-    value := StrToInt(str_tmp);
-    result := TRUE;
-  end
-  else
-  begin
-    value := 0;
-    result := FALSE;
-  end;
 end;
 
 procedure TFormParaEditor.FreeRecord();
