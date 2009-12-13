@@ -168,6 +168,7 @@ type
     procedure tbPowerChange(Sender: TObject);
     procedure ToggleIF(Sender: TObject);
 
+    procedure UpdateTitle();
     procedure LogInfo(info: string);
     procedure EnableLogOutput();
     procedure DisableLogOutput();
@@ -181,6 +182,7 @@ type
     procedure tiMainClick(Sender: TObject);
     { VSProg common declarations }
     function VSProg_CommonCallback(line: string): boolean;
+    function VSProg_CommonParseVersionCallback(line: string): boolean;
     function VSProg_CommonParseParaCallback(line: string): boolean;
     function VSProg_CommonParseReadTargetCallback(line, target: string; var result_str: string): boolean;
     function VSProg_CommonParseReadFuseCallback(line: string): boolean;
@@ -265,12 +267,13 @@ var
   ComModeInit: TComMode;
   TargetFile: array of TTargetFileSetting;
   LogOutput: boolean;
+  VSProg_Version: string;
 
 const
   DEBUG_LOG_SHOW: boolean = FALSE;
   DISPLAY_ALL_COMPORT_WHEN_UPDATE = TRUE;
-  APP_STR: string = 'vsgui';
-  VERSION_STR: string = 'Alpha';
+  APP_STR: string = 'Vsgui';
+  VERSION_STR: string = 'RC1';
   VSPROG_STR: string = {$IFDEF UNIX}'vsprog'{$ELSE}'vsprog.exe'{$ENDIF};
   OPENOCD_APP_STR: string = {$IFDEF UNIX}'openocd'{$ELSE}'openocd.exe'{$ENDIF};
   SLASH_STR: string = {$IFDEF UNIX}'/'{$ELSE}'\'{$ENDIF};
@@ -360,6 +363,22 @@ begin
   LogOutput := FALSE;
 end;
 
+procedure TFormMain.UpdateTitle();
+var
+  enable_str: string;
+begin
+  if pcMain.ActivePage.Enabled then
+  begin
+    enable_str := '';
+  end
+  else
+  begin
+    enable_str := '(*)';
+  end;
+  Caption := APP_STR + VERSION_STR + '-' + pcMain.ActivePage.Caption + enable_str
+             + ' ' + VSProg_Version;
+end;
+
 procedure TFormMain.FormCreate(Sender: TObject);
 begin
   bOpenFileOK := FALSE;
@@ -382,7 +401,6 @@ begin
   btnTargetDetect.Top := cbboxTarget.Top + (cbboxTarget.Height - btnTargetDetect.Height) div 2;
   lblInputFile.Top := cbboxInputFile.Top + (cbboxInputFile.Height - lblInputFile.Height) div 2;
   lblMode.Top := cbboxMode.Top + (cbboxMode.Height - lblMode.Height) div 2;
-  Caption := APP_STR + ' ' + VERSION_STR;
 
   FormMain.Width := pnlMain.Width + LOGMEMO_WIDTH + 2;
   memoLog.Width := LOGMEMO_WIDTH;
@@ -397,6 +415,18 @@ begin
   pcMain.ActivePage := tsJTAG;
   pcMainPageChanged(Sender);
   tbPowerChange(tbPower);
+
+  // get VSProg_Version
+  DisableLogOutput();
+  if not PrepareToRunCLI() then
+  begin
+    // shouldn't run here
+  end;
+  VSProg_Version := '';
+  caller.AddParametersString('--version');
+  caller.Run(@VSProg_CommonParseVersionCallback, FALSE, TRUE);
+  EnableLogOutput();
+  UpdateTitle();
 end;
 
 procedure TFormMain.FormDestroy(Sender: TObject);
@@ -525,6 +555,7 @@ begin
   ClearTargetFile();
   cbboxInputFile.Clear;
   memoInfo.Clear;
+  UpdateTitle();
 
   // initialize GUI
   if pcMain.ActivePage = tsAbout then
@@ -1834,6 +1865,24 @@ begin
       pgbarMain.Position := pgbarMain.Position + 1;
       Inc(i);
     end;
+  end;
+end;
+
+function TFormMain.VSProg_CommonParseVersionCallback(line: string): boolean;
+var
+  s_tmp: string;
+begin
+  if CheckFatalError(line) then
+  begin
+    result := FALSE;
+    exit;
+  end;
+  result := TRUE;
+
+  s_tmp := LowerCase(line);
+  if Pos('vsprog', s_tmp) = 1 then
+  begin
+    VSProg_Version := WipeTailEnter(line);
   end;
 end;
 

@@ -16,7 +16,8 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#define VSPROG_VERSION "VSProg " VERSION " (" PKGBLDDATE ") "RELSTR PKGBLDREV
+#define VSPROG_VERSION		"VSProg " VERSION " " RELSTR PKGBLDREV
+#define VSPROG_COPYRIGHT	"CopyRight(c) 2008-2010 by SimonQian <SimonQian@SimonQian.com>"
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -233,10 +234,9 @@ static RESULT parse_operation(uint32_t *operation, uint32_t *require_input_num,
 
 static void print_title(void)
 {
-	printf(_GETTEXT(VSPROG_VERSION "\n\
-CopyRight(c) %s-%s by SimonQian <SimonQian@SimonQian.com>\n\n\
+	printf(_GETTEXT(VSPROG_VERSION "\n" VSPROG_COPYRIGHT "\n\n\
 URL: http://www.SimonQian.com/en/Versaloon\n\
-mail: SimonQian@SimonQian.com\n\n"), "2008", "2009");
+mail: SimonQian@SimonQian.com\n\n"));
 }
 
 static void print_help(void)
@@ -266,12 +266,18 @@ Usage: %s [OPTION]...\n\
 
 static void print_version(void)
 {
-	printf(_GETTEXT("\
-vsprog %s(%s) svn:%s\n\
-CopyRight(c) %s-%s by SimonQian <SimonQian@SimonQian.com>\n\n\
+	printf(_GETTEXT(VSPROG_VERSION "\n" VSPROG_COPYRIGHT "\n\n\
 This is free software; see the source for copying conditions.\n\
 There is NO warranty; not even for MERCHANTABILITY or FITNESS\n\
-FOR A PARTICULAR PURPOSE.\n"), VERSION, PKGBLDDATE, PKGBLDREV, "2008", "2009");
+FOR A PARTICULAR PURPOSE.\n"), VERSION, PKGBLDDATE, PKGBLDREV, "2008", "2010");
+}
+
+static void print_system_info(void)
+{
+	printf("System Information:\n");
+	printf("config_dir = %s\n", config_dir);
+	
+	printf("\n");
 }
 
 int main(int argc, char* argv[])
@@ -353,14 +359,6 @@ int main(int argc, char* argv[])
 			}
 		}
 	}
-	if (NULL == config_dir)
-	{
-		LOG_WARNING(_GETTEXT("config_dir not found\n"));
-	}
-	else
-	{
-		LOG_INFO(_GETTEXT("config_dir found at %s\n"), config_dir);
-	}
 	
 	// initialize varibles
 	memset(&program_info, 0, sizeof(program_info));
@@ -440,13 +438,20 @@ int main(int argc, char* argv[])
 			target_print_fl(optarg);
 			free_all_and_exit(EXIT_SUCCESS);
 		case 'S':
-			// --support [target/programmer]
+			// --support [target/programmer/system]
 			if (!strcmp(optarg, "all"))
 			{
+				// print system information
+				print_system_info();
 				// print all Supported programmers
 				programmer_print_list();
 				// print all Supported devices
 				target_print_list();
+				free_all_and_exit(EXIT_SUCCESS);
+			}
+			else if (!strcmp(optarg, "system"))
+			{
+				print_system_info();
 				free_all_and_exit(EXIT_SUCCESS);
 			}
 			else if (!strcmp(optarg, "programmer"))
