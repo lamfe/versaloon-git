@@ -10,7 +10,7 @@
       <MainUnit Value="0"/>
       <TargetFileExt Value=".exe"/>
       <Icon Value="0"/>
-      <ActiveEditorIndexAtStart Value="5"/>
+      <ActiveEditorIndexAtStart Value="0"/>
     </General>
     <VersionInfo>
       <ProjectVersion Value=""/>
@@ -58,8 +58,8 @@
         <ComponentName Value="FormMain"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="main"/>
-        <CursorPos X="7" Y="2034"/>
-        <TopLine Value="2028"/>
+        <CursorPos X="16" Y="3559"/>
+        <TopLine Value="3548"/>
         <EditorIndex Value="0"/>
         <UsageCount Value="200"/>
         <Loaded Value="True"/>
@@ -187,8 +187,8 @@
         <ComponentName Value="FormHexEditor"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="hexeditor"/>
-        <CursorPos X="32" Y="179"/>
-        <TopLine Value="164"/>
+        <CursorPos X="26" Y="289"/>
+        <TopLine Value="482"/>
         <EditorIndex Value="5"/>
         <UsageCount Value="200"/>
         <Loaded Value="True"/>
@@ -502,123 +502,127 @@
         <UsageCount Value="10"/>
       </Unit63>
     </Units>
-    <JumpHistory Count="29" HistoryIndex="28">
+    <JumpHistory Count="30" HistoryIndex="29">
       <Position1>
         <Filename Value="hexeditor.pas"/>
-        <Caret Line="242" Column="82" TopLine="228"/>
+        <Caret Line="144" Column="1" TopLine="126"/>
       </Position1>
       <Position2>
         <Filename Value="hexeditor.pas"/>
-        <Caret Line="312" Column="11" TopLine="300"/>
+        <Caret Line="146" Column="1" TopLine="128"/>
       </Position2>
       <Position3>
         <Filename Value="hexeditor.pas"/>
-        <Caret Line="128" Column="3" TopLine="104"/>
+        <Caret Line="151" Column="1" TopLine="133"/>
       </Position3>
       <Position4>
         <Filename Value="hexeditor.pas"/>
-        <Caret Line="105" Column="3" TopLine="77"/>
+        <Caret Line="153" Column="1" TopLine="135"/>
       </Position4>
       <Position5>
         <Filename Value="hexeditor.pas"/>
-        <Caret Line="257" Column="6" TopLine="234"/>
+        <Caret Line="157" Column="1" TopLine="139"/>
       </Position5>
       <Position6>
         <Filename Value="hexeditor.pas"/>
-        <Caret Line="129" Column="11" TopLine="106"/>
+        <Caret Line="163" Column="1" TopLine="145"/>
       </Position6>
       <Position7>
         <Filename Value="hexeditor.pas"/>
-        <Caret Line="221" Column="11" TopLine="193"/>
+        <Caret Line="165" Column="1" TopLine="147"/>
       </Position7>
       <Position8>
         <Filename Value="hexeditor.pas"/>
-        <Caret Line="129" Column="3" TopLine="101"/>
+        <Caret Line="193" Column="23" TopLine="176"/>
       </Position8>
       <Position9>
         <Filename Value="hexeditor.pas"/>
-        <Caret Line="221" Column="19" TopLine="193"/>
+        <Caret Line="239" Column="32" TopLine="229"/>
       </Position9>
       <Position10>
         <Filename Value="hexeditor.pas"/>
-        <Caret Line="129" Column="3" TopLine="101"/>
+        <Caret Line="119" Column="32" TopLine="101"/>
       </Position10>
       <Position11>
         <Filename Value="hexeditor.pas"/>
-        <Caret Line="221" Column="19" TopLine="193"/>
+        <Caret Line="114" Column="32" TopLine="101"/>
       </Position11>
       <Position12>
         <Filename Value="hexeditor.pas"/>
-        <Caret Line="129" Column="3" TopLine="106"/>
+        <Caret Line="107" Column="3" TopLine="101"/>
       </Position12>
       <Position13>
         <Filename Value="hexeditor.pas"/>
-        <Caret Line="199" Column="11" TopLine="174"/>
+        <Caret Line="11" Column="36" TopLine="1"/>
       </Position13>
       <Position14>
         <Filename Value="hexeditor.pas"/>
-        <Caret Line="270" Column="80" TopLine="242"/>
+        <Caret Line="20" Column="49" TopLine="1"/>
       </Position14>
       <Position15>
         <Filename Value="hexeditor.pas"/>
-        <Caret Line="119" Column="76" TopLine="77"/>
+        <Caret Line="22" Column="50" TopLine="1"/>
       </Position15>
       <Position16>
         <Filename Value="hexeditor.pas"/>
-        <Caret Line="134" Column="26" TopLine="105"/>
+        <Caret Line="80" Column="44" TopLine="62"/>
       </Position16>
       <Position17>
         <Filename Value="hexeditor.pas"/>
-        <Caret Line="79" Column="23" TopLine="51"/>
+        <Caret Line="82" Column="44" TopLine="62"/>
       </Position17>
       <Position18>
         <Filename Value="hexeditor.pas"/>
-        <Caret Line="95" Column="39" TopLine="51"/>
+        <Caret Line="84" Column="44" TopLine="62"/>
       </Position18>
       <Position19>
         <Filename Value="hexeditor.pas"/>
-        <Caret Line="106" Column="6" TopLine="62"/>
+        <Caret Line="86" Column="44" TopLine="62"/>
       </Position19>
       <Position20>
         <Filename Value="hexeditor.pas"/>
-        <Caret Line="109" Column="20" TopLine="81"/>
+        <Caret Line="105" Column="42" TopLine="87"/>
       </Position20>
       <Position21>
         <Filename Value="hexeditor.pas"/>
-        <Caret Line="67" Column="16" TopLine="63"/>
+        <Caret Line="107" Column="27" TopLine="87"/>
       </Position21>
       <Position22>
         <Filename Value="hexeditor.pas"/>
-        <Caret Line="95" Column="25" TopLine="63"/>
+        <Caret Line="114" Column="42" TopLine="99"/>
       </Position22>
       <Position23>
         <Filename Value="hexeditor.pas"/>
-        <Caret Line="96" Column="25" TopLine="63"/>
+        <Caret Line="119" Column="42" TopLine="99"/>
       </Position23>
       <Position24>
         <Filename Value="hexeditor.pas"/>
-        <Caret Line="119" Column="55" TopLine="88"/>
+        <Caret Line="239" Column="42" TopLine="221"/>
       </Position24>
       <Position25>
         <Filename Value="hexeditor.pas"/>
-        <Caret Line="201" Column="74" TopLine="173"/>
+        <Caret Line="119" Column="32" TopLine="101"/>
       </Position25>
       <Position26>
         <Filename Value="hexeditor.pas"/>
-        <Caret Line="244" Column="44" TopLine="216"/>
+        <Caret Line="114" Column="32" TopLine="101"/>
       </Position26>
       <Position27>
         <Filename Value="hexeditor.pas"/>
-        <Caret Line="119" Column="42" TopLine="88"/>
+        <Caret Line="107" Column="3" TopLine="101"/>
       </Position27>
       <Position28>
         <Filename Value="hexeditor.pas"/>
-        <Caret Line="196" Column="36" TopLine="168"/>
+        <Caret Line="105" Column="32" TopLine="101"/>
       </Position28>
       <Position29>
         <Filename Value="hexeditor.pas"/>
-        <Caret Line="119" Column="55" TopLine="91"/>
+        <Caret Line="107" Column="27" TopLine="101"/>
       </Position29>
+      <Position30>
+        <Filename Value="hexeditor.pas"/>
+        <Caret Line="114" Column="42" TopLine="101"/>
+      </Position30>
     </JumpHistory>
   </ProjectOptions>
   <CompilerOptions>

@@ -193,11 +193,6 @@ begin
     case buff[3] of
       0://htData
         begin
-          if seg_addr <> seg_offset then
-          begin
-            continue;
-          end;
-
           data_addr := ext_addr + (buff[1] shl 8) + buff[2] - start_addr;
           if data_addr < addr_offset then
           begin
@@ -295,6 +290,8 @@ begin
   CurCellRow := 0;
   CurCellCol := 0;
   CurCellPos := 0;
+  sgData.Row := 0;
+  sgData.Col := 0;
   Caption := Caption + ' ' + FileName;
   sgData.RowCount := 0;
   sgData.TopRow := 0;
