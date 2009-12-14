@@ -269,7 +269,7 @@ static void print_version(void)
 	printf(_GETTEXT(VSPROG_VERSION "\n" VSPROG_COPYRIGHT "\n\n\
 This is free software; see the source for copying conditions.\n\
 There is NO warranty; not even for MERCHANTABILITY or FITNESS\n\
-FOR A PARTICULAR PURPOSE.\n"), VERSION, PKGBLDDATE, PKGBLDREV, "2008", "2010");
+FOR A PARTICULAR PURPOSE.\n"));
 }
 
 static void print_system_info(void)
@@ -428,14 +428,36 @@ int main(int argc, char* argv[])
 			}
 			free_all_and_exit(EXIT_SUCCESS);
 		case 'P':
-			// --parameter [fuse/lock]
-			if ((NULL == program_info.chip_name) || (NULL == program_info.chip_type))
+			// --parameter [fuse/lock/flash/eeprom]
+			if ((NULL == program_info.chip_name) 
+				|| (NULL == program_info.chip_type) 
+				|| (NULL == cur_target))
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "Target");
 				free_all_and_exit(EXIT_FAILURE);
 			}
 			
-			target_print_fl(optarg);
+			ret = cur_target->init(&program_info, cur_programmer);
+			if (ret != ERROR_OK)
+			{
+				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "initialize target");
+				free_all_and_exit(EXIT_FAILURE);
+			}
+			
+			if (!strcmp(optarg, "fuse") || !strcmp(optarg, "lock") 
+				|| !strcmp(optarg, "calibration"))
+			{
+				target_print_fl(optarg);
+			}
+			else if (!strcmp(optarg, "flash") || !strcmp(optarg, "eeprom"))
+			{
+				target_printf_fe(optarg);
+			}
+			else
+			{
+				LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT), optarg);
+				free_all_and_exit(EXIT_FAILURE);
+			}
 			free_all_and_exit(EXIT_SUCCESS);
 		case 'S':
 			// --support [target/programmer/system]

@@ -51,9 +51,9 @@
 
 const program_area_map_t s5x_program_area_map[] = 
 {
-	{APPLICATION, APPLICATION_CHAR, 1, 0, 0},
-	{LOCK, LOCK_CHAR, 0, 0, 0},
-	{0, 0, 0, 0, 0}
+	{APPLICATION, APPLICATION_CHAR, 1, 0, 0, S5X_FLASH_CHAR},
+	{LOCK, LOCK_CHAR, 0, 0, 0, 1},
+	{0, 0, 0, 0, 0, 0}
 };
 
 static uint8_t s5x_lock = 0;

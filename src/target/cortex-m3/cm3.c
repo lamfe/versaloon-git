@@ -57,13 +57,11 @@
 #define cur_target_defined			target_defined
 #define cur_program_area_map		cm3_program_area_map
 
-#define CM3_MAX_BUFSIZE				(1024 * 1024)
-
 program_area_map_t cm3_program_area_map[] = 
 {
-	{APPLICATION, APPLICATION_CHAR, 1, 0, 0},
-//	{LOCK, LOCK_CHAR, 0, 0, 0},
-	{0, 0, 0, 0, 0}
+	{APPLICATION, APPLICATION_CHAR, 1, 0, 0, 0xFF},
+//	{LOCK, LOCK_CHAR, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0}
 };
 
 #define CM3_STM32		0
@@ -71,8 +69,8 @@ program_area_map_t cm3_program_area_map[] =
 #define CM3_LM3S		2
 #define CM3_SAM3		3
 const cm3_param_t cm3_chips_param[] = {
-//	chip_name,		default_char,		flash_start_addr,	jtag_khz,		pos			swj_trn
-	{"cm3_stm32",	STM32_FLASH_CHAR,	0x08000000,			STM32_JTAG_KHZ,	{0,1,0,5},	2},
+//	chip_name,		default_char,		flash_start_addr,	flash_max_size,	jtag_khz,		pos			swj_trn
+	{"cm3_stm32",	STM32_FLASH_CHAR,	0x08000000,			512 * 1024,		STM32_JTAG_KHZ,	{0,1,0,5},	2},
 };
 static uint8_t cm3_chip_index = 0;
 cm3_param_t cm3_chip_param;
@@ -200,10 +198,11 @@ RESULT cm3_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr,
 #endif
 	
 	mem_addr += cur_flash_offset;
-	if (((mem_addr - cur_chip_param.flash_start_addr) >= CM3_MAX_BUFSIZE) 
-		|| (length > CM3_MAX_BUFSIZE) 
+	if (((mem_addr - cur_chip_param.flash_start_addr) 
+			>= cur_chip_param.flash_max_size) 
+		|| (length > cur_chip_param.flash_max_size) 
 		|| ((mem_addr - cur_chip_param.flash_start_addr + length) 
-			> CM3_MAX_BUFSIZE))
+			> cur_chip_param.flash_max_size))
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_RANGE), "flash memory");
 		return ERRCODE_INVALID;
@@ -273,7 +272,7 @@ RESULT cm3_init(program_info_t *pi, programmer_info_t *prog)
 				memcpy(&cur_chip_param, cur_chips_param + cm3_chip_index, 
 					   sizeof(cur_chip_param));
 				
-				pi->app_size = CM3_MAX_BUFSIZE;
+				pi->app_size = cur_chip_param.flash_max_size;
 				
 				cur_program_area_map[0].area_start_addr = 
 										cur_chips_param[i].flash_start_addr;

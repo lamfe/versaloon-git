@@ -618,6 +618,55 @@ RESULT target_check_defined(operation_t operations)
 	}
 }
 
+void target_printf_fe(char *type)
+{
+	uint32_t i, size = 0;
+	char target_char = 0;
+	
+	if (strcmp(type, "flash") && strcmp(type, "eeprom"))
+	{
+		LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), type, 
+				  program_info.chip_name);
+		return;
+	}
+	if (NULL == cur_target)
+	{
+		LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "Target");
+		return;
+	}
+	
+	if (!strcmp(type, "flash"))
+	{
+		size = program_info.app_size;
+		target_char = APPLICATION_CHAR;
+	}
+	else if (!strcmp(type, "eeprom"))
+	{
+		size = program_info.eeprom_size;
+		target_char = EEPROM_CHAR;
+	}
+	
+	i = 0;
+	while ((cur_target->program_area_map[i].area_mask != 0) 
+		&& (cur_target->program_area_map[i].area_char != target_char))
+	{
+		i++;
+	}
+	if (0 == cur_target->program_area_map[i].area_mask)
+	{
+		LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), type, 
+				  program_info.chip_name);
+		return;
+	}
+	
+	printf("%s of %s:\n", type, program_info.chip_name);
+	printf("seg_addr = 0x%08X, start_addr = 0x%08X, default_byte = 0x%02X, ", 
+			cur_target->program_area_map[i].area_seg_addr, 
+			cur_target->program_area_map[i].area_start_addr, 
+			cur_target->program_area_map[i].area_default_data);
+	printf("byte_size = %d\n", size);
+}
+
 void target_print_fl(char *type)
 {
 	chip_fl_t fl;

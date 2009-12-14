@@ -10,7 +10,7 @@
       <MainUnit Value="0"/>
       <TargetFileExt Value=".exe"/>
       <Icon Value="0"/>
-      <ActiveEditorIndexAtStart Value="0"/>
+      <ActiveEditorIndexAtStart Value="5"/>
     </General>
     <VersionInfo>
       <ProjectVersion Value=""/>
@@ -41,12 +41,12 @@
         <MinVersion Major="1" Valid="True"/>
       </Item3>
     </RequiredPackages>
-    <Units Count="55">
+    <Units Count="64">
       <Unit0>
         <Filename Value="vsgui.lpr"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="vsgui"/>
-        <CursorPos X="40" Y="23"/>
+        <CursorPos X="61" Y="13"/>
         <TopLine Value="1"/>
         <EditorIndex Value="2"/>
         <UsageCount Value="200"/>
@@ -58,8 +58,8 @@
         <ComponentName Value="FormMain"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="main"/>
-        <CursorPos X="18" Y="657"/>
-        <TopLine Value="649"/>
+        <CursorPos X="7" Y="2034"/>
+        <TopLine Value="2028"/>
         <EditorIndex Value="0"/>
         <UsageCount Value="200"/>
         <Loaded Value="True"/>
@@ -69,7 +69,7 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="cli_caller"/>
         <CursorPos X="7" Y="186"/>
-        <TopLine Value="155"/>
+        <TopLine Value="150"/>
         <EditorIndex Value="1"/>
         <UsageCount Value="203"/>
         <Loaded Value="True"/>
@@ -78,108 +78,108 @@
         <Filename Value="D:\ProfessionalTools\lazarus\fpc\2.2.0\source\rtl\inc\objpash.inc"/>
         <CursorPos X="8" Y="142"/>
         <TopLine Value="127"/>
-        <UsageCount Value="8"/>
+        <UsageCount Value="6"/>
       </Unit3>
       <Unit4>
         <Filename Value="D:\ProfessionalTools\lazarus\fpc\2.2.0\source\rtl\win32\classes.pp"/>
         <UnitName Value="Classes"/>
         <CursorPos X="1" Y="1"/>
         <TopLine Value="1"/>
-        <UsageCount Value="8"/>
+        <UsageCount Value="6"/>
       </Unit4>
       <Unit5>
         <Filename Value="D:\ProfessionalTools\lazarus\fpc\2.2.0\source\rtl\win\sysutils.pp"/>
         <UnitName Value="sysutils"/>
         <CursorPos X="1" Y="1"/>
         <TopLine Value="55"/>
-        <UsageCount Value="8"/>
+        <UsageCount Value="6"/>
       </Unit5>
       <Unit6>
         <Filename Value="D:\ProfessionalTools\lazarus\lcl\forms.pp"/>
         <UnitName Value="Forms"/>
         <CursorPos X="14" Y="527"/>
         <TopLine Value="510"/>
-        <UsageCount Value="6"/>
+        <UsageCount Value="4"/>
       </Unit6>
       <Unit7>
         <Filename Value="D:\ProfessionalTools\lazarus\lcl\stdctrls.pp"/>
         <UnitName Value="StdCtrls"/>
         <CursorPos X="15" Y="724"/>
         <TopLine Value="706"/>
-        <UsageCount Value="9"/>
+        <UsageCount Value="7"/>
       </Unit7>
       <Unit8>
         <Filename Value="D:\ProfessionalTools\lazarus\fpc\2.2.0\source\rtl\objpas\sysutils\sysstrh.inc"/>
         <CursorPos X="20" Y="68"/>
         <TopLine Value="1"/>
-        <UsageCount Value="8"/>
+        <UsageCount Value="6"/>
       </Unit8>
       <Unit9>
         <Filename Value="D:\ProfessionalTools\lazarus\lcl\include\customform.inc"/>
         <CursorPos X="40" Y="650"/>
         <TopLine Value="621"/>
-        <UsageCount Value="10"/>
+        <UsageCount Value="8"/>
       </Unit9>
       <Unit10>
         <Filename Value="D:\ProfessionalTools\lazarus\lcl\dialogs.pp"/>
         <UnitName Value="Dialogs"/>
-        <CursorPos X="26" Y="38"/>
-        <TopLine Value="10"/>
+        <CursorPos X="32" Y="36"/>
+        <TopLine Value="18"/>
         <UsageCount Value="9"/>
       </Unit10>
       <Unit11>
         <Filename Value="D:\ProfessionalTools\lazarus\lcl\interfaces\win32\win32listsl.inc"/>
         <CursorPos X="1" Y="172"/>
         <TopLine Value="150"/>
-        <UsageCount Value="10"/>
+        <UsageCount Value="8"/>
       </Unit11>
       <Unit12>
         <Filename Value="D:\ProfessionalTools\lazarus\fpc\2.2.0\source\packages\fcl-base\src\inc\process.pp"/>
         <UnitName Value="process"/>
         <CursorPos X="32" Y="25"/>
         <TopLine Value="3"/>
-        <UsageCount Value="2"/>
+        <UsageCount Value="10"/>
       </Unit12>
       <Unit13>
         <Filename Value="D:\ProfessionalTools\lazarus\fpc\2.2.0\source\packages\fcl-base\src\inc\pipes.pp"/>
         <UnitName Value="Pipes"/>
         <CursorPos X="66" Y="41"/>
         <TopLine Value="19"/>
-        <UsageCount Value="2"/>
+        <UsageCount Value="10"/>
       </Unit13>
       <Unit14>
         <Filename Value="D:\ProfessionalTools\lazarus\lcl\interfaces\win32\interfaces.pp"/>
         <UnitName Value="Interfaces"/>
         <CursorPos X="1" Y="1"/>
         <TopLine Value="1"/>
-        <UsageCount Value="10"/>
+        <UsageCount Value="8"/>
       </Unit14>
       <Unit15>
         <Filename Value="D:\ProfessionalTools\lazarus\lcl\comctrls.pp"/>
         <UnitName Value="ComCtrls"/>
         <CursorPos X="14" Y="244"/>
         <TopLine Value="2380"/>
-        <UsageCount Value="10"/>
+        <UsageCount Value="8"/>
       </Unit15>
       <Unit16>
         <Filename Value="D:\ProfessionalTools\lazarus\lcl\controls.pp"/>
         <UnitName Value="Controls"/>
-        <CursorPos X="12" Y="2764"/>
-        <TopLine Value="2742"/>
-        <UsageCount Value="10"/>
+        <CursorPos X="15" Y="1097"/>
+        <TopLine Value="803"/>
+        <UsageCount Value="9"/>
       </Unit16>
       <Unit17>
         <Filename Value="D:\ProfessionalTools\lazarus\components\printers\design\sourceprinter.pas"/>
         <UnitName Value="SourcePrinter"/>
         <CursorPos X="3" Y="103"/>
         <TopLine Value="81"/>
-        <UsageCount Value="10"/>
+        <UsageCount Value="8"/>
       </Unit17>
       <Unit18>
         <Filename Value="D:\ProfessionalTools\lazarus\fpc\2.2.0\source\rtl\objpas\sysutils\filutilh.inc"/>
         <CursorPos X="10" Y="84"/>
         <TopLine Value="58"/>
-        <UsageCount Value="10"/>
+        <UsageCount Value="8"/>
       </Unit18>
       <Unit19>
         <Filename Value="hexeditor.pas"/>
@@ -187,9 +187,11 @@
         <ComponentName Value="FormHexEditor"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="hexeditor"/>
-        <CursorPos X="21" Y="9"/>
-        <TopLine Value="1"/>
-        <UsageCount Value="174"/>
+        <CursorPos X="22" Y="272"/>
+        <TopLine Value="257"/>
+        <EditorIndex Value="5"/>
+        <UsageCount Value="200"/>
+        <Loaded Value="True"/>
       </Unit19>
       <Unit20>
         <Filename Value="checkeditor.pas"/>
@@ -198,151 +200,151 @@
         <UnitName Value="fleditor"/>
         <CursorPos X="10" Y="14"/>
         <TopLine Value="1"/>
-        <UsageCount Value="161"/>
+        <UsageCount Value="159"/>
       </Unit20>
       <Unit21>
         <Filename Value="D:\ProfessionalTools\lazarus\lazarus\lcl\include\customform.inc"/>
         <CursorPos X="1" Y="1329"/>
         <TopLine Value="1305"/>
-        <UsageCount Value="3"/>
+        <UsageCount Value="1"/>
       </Unit21>
       <Unit22>
         <Filename Value="D:\ProfessionalTools\lazarus\lazarus\lcl\include\control.inc"/>
         <CursorPos X="1" Y="3056"/>
         <TopLine Value="3026"/>
-        <UsageCount Value="3"/>
+        <UsageCount Value="1"/>
       </Unit22>
       <Unit23>
         <Filename Value="D:\ProfessionalTools\lazarus\lazarus\lcl\include\scrollingwincontrol.inc"/>
         <CursorPos X="1" Y="76"/>
         <TopLine Value="52"/>
-        <UsageCount Value="3"/>
+        <UsageCount Value="1"/>
       </Unit23>
       <Unit24>
         <Filename Value="D:\ProfessionalTools\lazarus\lazarus\lcl\include\wincontrol.inc"/>
         <CursorPos X="1" Y="7083"/>
         <TopLine Value="7053"/>
-        <UsageCount Value="3"/>
+        <UsageCount Value="1"/>
       </Unit24>
       <Unit25>
         <Filename Value="D:\ProfessionalTools\lazarus\lazarus\lcl\include\application.inc"/>
         <CursorPos X="1" Y="1083"/>
         <TopLine Value="1059"/>
-        <UsageCount Value="3"/>
+        <UsageCount Value="1"/>
       </Unit25>
       <Unit26>
         <Filename Value="D:\ProfessionalTools\lazarus\lazarus\lcl\forms.pp"/>
         <UnitName Value="Forms"/>
         <CursorPos X="14" Y="527"/>
         <TopLine Value="503"/>
-        <UsageCount Value="9"/>
+        <UsageCount Value="7"/>
       </Unit26>
       <Unit27>
         <Filename Value="D:\ProfessionalTools\lazarus\lazarus\fpc\2.2.2\source\rtl\inc\wstringh.inc"/>
         <CursorPos X="10" Y="88"/>
         <TopLine Value="56"/>
-        <UsageCount Value="2"/>
+        <UsageCount Value="10"/>
       </Unit27>
       <Unit28>
         <Filename Value="D:\ProfessionalTools\lazarus\lazarus\lcl\interfaces\win32\win32int.pp"/>
         <UnitName Value="Win32Int"/>
         <CursorPos X="26" Y="27"/>
         <TopLine Value="3"/>
-        <UsageCount Value="2"/>
+        <UsageCount Value="10"/>
       </Unit28>
       <Unit29>
         <Filename Value="D:\ProfessionalTools\lazarus\lazarus\lcl\include\customnotebook.inc"/>
         <CursorPos X="1" Y="335"/>
         <TopLine Value="305"/>
-        <UsageCount Value="3"/>
+        <UsageCount Value="1"/>
       </Unit29>
       <Unit30>
         <Filename Value="D:\ProfessionalTools\lazarus\lazarus\lcl\lclproc.pas"/>
         <UnitName Value="LCLProc"/>
         <CursorPos X="1" Y="1789"/>
         <TopLine Value="1759"/>
-        <UsageCount Value="3"/>
+        <UsageCount Value="1"/>
       </Unit30>
       <Unit31>
         <Filename Value="D:\ProfessionalTools\lazarus\lazarus\lcl\dialogs.pp"/>
         <UnitName Value="Dialogs"/>
         <CursorPos X="10" Y="479"/>
         <TopLine Value="455"/>
-        <UsageCount Value="3"/>
+        <UsageCount Value="1"/>
       </Unit31>
       <Unit32>
         <Filename Value="D:\ProfessionalTools\lazarus\lazarus\fpc\2.2.2\source\rtl\objpas\sysutils\filutilh.inc"/>
         <CursorPos X="19" Y="86"/>
         <TopLine Value="54"/>
-        <UsageCount Value="2"/>
+        <UsageCount Value="10"/>
       </Unit32>
       <Unit33>
         <Filename Value="synafpc.pas"/>
         <UnitName Value="synafpc"/>
         <CursorPos X="28" Y="74"/>
         <TopLine Value="44"/>
-        <UsageCount Value="3"/>
+        <UsageCount Value="1"/>
       </Unit33>
       <Unit34>
         <Filename Value="D:\ProfessionalTools\lazarus\lazarus\fpc\2.2.2\source\rtl\inc\dynlibs.pas"/>
         <UnitName Value="dynlibs"/>
         <CursorPos X="49" Y="85"/>
         <TopLine Value="1"/>
-        <UsageCount Value="2"/>
+        <UsageCount Value="10"/>
       </Unit34>
       <Unit35>
         <Filename Value="D:\ProfessionalTools\lazarus\lazarus\fpc\2.2.2\source\rtl\win\dynlibs.inc"/>
         <CursorPos X="88" Y="34"/>
         <TopLine Value="1"/>
-        <UsageCount Value="2"/>
+        <UsageCount Value="10"/>
       </Unit35>
       <Unit36>
         <Filename Value="synaser.pas"/>
         <UnitName Value="synaser"/>
         <CursorPos X="62" Y="1423"/>
         <TopLine Value="1398"/>
-        <UsageCount Value="6"/>
+        <UsageCount Value="4"/>
       </Unit36>
       <Unit37>
         <Filename Value="D:\ProfessionalTools\lazarus\lazarus\ide\lazarus.pp"/>
         <UnitName Value="Lazarus"/>
         <CursorPos X="1" Y="123"/>
         <TopLine Value="76"/>
-        <UsageCount Value="2"/>
+        <UsageCount Value="10"/>
       </Unit37>
       <Unit38>
         <Filename Value="C:\Documents and Settings\Administrator\桌面\hexedit\vcl\Delphi-7\MPHexEditor_D7.pas"/>
         <UnitName Value="MPHexEditor_D7"/>
         <CursorPos X="1" Y="1"/>
         <TopLine Value="1"/>
-        <UsageCount Value="2"/>
+        <UsageCount Value="10"/>
       </Unit38>
       <Unit39>
         <Filename Value="E:\hexedit\vcl\mphexeditor.pas"/>
         <UnitName Value="MPHexEditor"/>
         <CursorPos X="7" Y="314"/>
         <TopLine Value="290"/>
-        <UsageCount Value="2"/>
+        <UsageCount Value="10"/>
       </Unit39>
       <Unit40>
         <Filename Value="D:\ProfessionalTools\lazarus\lazarus\lcl\graphics.pp"/>
         <UnitName Value="Graphics"/>
         <CursorPos X="9" Y="1"/>
         <TopLine Value="1"/>
-        <UsageCount Value="2"/>
+        <UsageCount Value="10"/>
       </Unit40>
       <Unit41>
         <Filename Value="D:\ProfessionalTools\lazarus\lazarus\fpc\2.2.2\source\rtl\win32\classes.pp"/>
         <UnitName Value="Classes"/>
         <CursorPos X="1" Y="1"/>
         <TopLine Value="1"/>
-        <UsageCount Value="2"/>
+        <UsageCount Value="10"/>
       </Unit41>
       <Unit42>
         <Filename Value="vsgui.lpi"/>
         <CursorPos X="1" Y="1"/>
         <TopLine Value="1"/>
-        <UsageCount Value="2"/>
+        <UsageCount Value="10"/>
         <SyntaxHighlighter Value="XML"/>
       </Unit42>
       <Unit43>
@@ -350,19 +352,19 @@
         <UnitName Value="CustApp"/>
         <CursorPos X="14" Y="74"/>
         <TopLine Value="50"/>
-        <UsageCount Value="2"/>
+        <UsageCount Value="10"/>
       </Unit43>
       <Unit44>
         <Filename Value="D:\ProfessionalTools\lazarus\lazarus\fpc\2.2.2\source\rtl\objpas\classes\classesh.inc"/>
         <CursorPos X="37" Y="554"/>
         <TopLine Value="530"/>
-        <UsageCount Value="6"/>
+        <UsageCount Value="4"/>
       </Unit44>
       <Unit45>
         <Filename Value="D:\ProfessionalTools\lazarus\lazarus\fpc\2.2.2\source\rtl\objpas\sysutils\finah.inc"/>
         <CursorPos X="24" Y="27"/>
         <TopLine Value="1"/>
-        <UsageCount Value="2"/>
+        <UsageCount Value="10"/>
       </Unit45>
       <Unit46>
         <Filename Value="com_setup.pas"/>
@@ -372,33 +374,33 @@
         <UnitName Value="com_setup"/>
         <CursorPos X="1" Y="82"/>
         <TopLine Value="64"/>
-        <UsageCount Value="115"/>
+        <UsageCount Value="142"/>
       </Unit46>
       <Unit47>
         <Filename Value="com_setup.lfm"/>
         <CursorPos X="1" Y="1"/>
         <TopLine Value="1"/>
-        <UsageCount Value="3"/>
+        <UsageCount Value="1"/>
         <SyntaxHighlighter Value="LFM"/>
       </Unit47>
       <Unit48>
         <Filename Value="D:\ProfessionalTools\lazarus\lazarus\lcl\include\pagecontrol.inc"/>
         <CursorPos X="1" Y="53"/>
         <TopLine Value="23"/>
-        <UsageCount Value="3"/>
+        <UsageCount Value="1"/>
       </Unit48>
       <Unit49>
         <Filename Value="D:\ProfessionalTools\lazarus\fpc\2.2.2\source\rtl\inc\wstringh.inc"/>
         <CursorPos X="20" Y="87"/>
         <TopLine Value="1"/>
-        <UsageCount Value="5"/>
+        <UsageCount Value="3"/>
       </Unit49>
       <Unit50>
         <Filename Value="fleditor.pas"/>
         <UnitName Value="fleditor"/>
         <CursorPos X="1" Y="1"/>
         <TopLine Value="1"/>
-        <UsageCount Value="4"/>
+        <UsageCount Value="2"/>
       </Unit50>
       <Unit51>
         <Filename Value="parameditor.pas"/>
@@ -406,23 +408,23 @@
         <ComponentName Value="FormParaEditor"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="parameditor"/>
-        <CursorPos X="25" Y="553"/>
-        <TopLine Value="517"/>
+        <CursorPos X="3" Y="535"/>
+        <TopLine Value="515"/>
         <EditorIndex Value="4"/>
-        <UsageCount Value="88"/>
+        <UsageCount Value="115"/>
         <Loaded Value="True"/>
       </Unit51>
       <Unit52>
         <Filename Value="D:\ProfessionalTools\lazarus\fpc\2.2.2\source\rtl\objpas\sysutils\sysstrh.inc"/>
         <CursorPos X="10" Y="93"/>
         <TopLine Value="87"/>
-        <UsageCount Value="9"/>
+        <UsageCount Value="7"/>
       </Unit52>
       <Unit53>
         <Filename Value="D:\ProfessionalTools\lazarus\fpc\2.2.2\source\rtl\inc\systemh.inc"/>
         <CursorPos X="3" Y="218"/>
         <TopLine Value="200"/>
-        <UsageCount Value="8"/>
+        <UsageCount Value="6"/>
       </Unit53>
       <Unit54>
         <Filename Value="fileselector.pas"/>
@@ -430,133 +432,198 @@
         <ComponentName Value="FormFileSelector"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="fileselector"/>
-        <CursorPos X="18" Y="111"/>
-        <TopLine Value="106"/>
+        <CursorPos X="68" Y="35"/>
+        <TopLine Value="15"/>
         <EditorIndex Value="3"/>
-        <UsageCount Value="32"/>
+        <UsageCount Value="59"/>
         <Loaded Value="True"/>
       </Unit54>
+      <Unit55>
+        <Filename Value="D:\ProfessionalTools\lazarus\fpc\2.2.4\source\rtl\objpas\sysutils\filutilh.inc"/>
+        <CursorPos X="16" Y="60"/>
+        <TopLine Value="46"/>
+        <UsageCount Value="12"/>
+      </Unit55>
+      <Unit56>
+        <Filename Value="D:\ProfessionalTools\lazarus\fpc\2.2.4\source\rtl\win32\system.pp"/>
+        <UnitName Value="System"/>
+        <CursorPos X="20" Y="273"/>
+        <TopLine Value="843"/>
+        <UsageCount Value="9"/>
+      </Unit56>
+      <Unit57>
+        <Filename Value="D:\ProfessionalTools\lazarus\lcl\grids.pas"/>
+        <UnitName Value="Grids"/>
+        <CursorPos X="1" Y="5822"/>
+        <TopLine Value="5804"/>
+        <EditorIndex Value="6"/>
+        <UsageCount Value="11"/>
+        <Loaded Value="True"/>
+      </Unit57>
+      <Unit58>
+        <Filename Value="inputdialog.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="FormInputDialog"/>
+        <ResourceBaseClass Value="Form"/>
+        <UnitName Value="inputdialog"/>
+        <CursorPos X="7" Y="154"/>
+        <TopLine Value="143"/>
+        <EditorIndex Value="7"/>
+        <UsageCount Value="36"/>
+        <Loaded Value="True"/>
+      </Unit58>
+      <Unit59>
+        <Filename Value="D:\ProfessionalTools\lazarus\fpc\2.2.4\source\rtl\objpas\sysutils\sysstrh.inc"/>
+        <CursorPos X="22" Y="90"/>
+        <TopLine Value="63"/>
+        <UsageCount Value="9"/>
+      </Unit59>
+      <Unit60>
+        <Filename Value="D:\ProfessionalTools\lazarus\fpc\2.2.4\source\packages\fcl-xml\src\xmlcfg.pp"/>
+        <UnitName Value="XMLCfg"/>
+        <CursorPos X="23" Y="73"/>
+        <TopLine Value="65"/>
+        <UsageCount Value="10"/>
+      </Unit60>
+      <Unit61>
+        <Filename Value="D:\ProfessionalTools\lazarus\fpc\2.2.4\source\rtl\inc\systemh.inc"/>
+        <CursorPos X="11" Y="428"/>
+        <TopLine Value="410"/>
+        <UsageCount Value="10"/>
+      </Unit61>
+      <Unit62>
+        <Filename Value="D:\ProfessionalTools\lazarus\fpc\2.2.4\source\rtl\objpas\classes\classesh.inc"/>
+        <CursorPos X="17" Y="788"/>
+        <TopLine Value="770"/>
+        <UsageCount Value="10"/>
+      </Unit62>
+      <Unit63>
+        <Filename Value="D:\ProfessionalTools\lazarus\fpc\2.2.4\source\rtl\objpas\sysutils\sysutilh.inc"/>
+        <CursorPos X="28" Y="106"/>
+        <TopLine Value="76"/>
+        <UsageCount Value="10"/>
+      </Unit63>
     </Units>
     <JumpHistory Count="30" HistoryIndex="29">
       <Position1>
-        <Filename Value="main.pas"/>
-        <Caret Line="2670" Column="19" TopLine="2642"/>
+        <Filename Value="hexeditor.pas"/>
+        <Caret Line="242" Column="82" TopLine="228"/>
       </Position1>
       <Position2>
-        <Filename Value="main.pas"/>
-        <Caret Line="2795" Column="19" TopLine="2767"/>
+        <Filename Value="hexeditor.pas"/>
+        <Caret Line="62" Column="24" TopLine="78"/>
       </Position2>
       <Position3>
-        <Filename Value="main.pas"/>
-        <Caret Line="2877" Column="19" TopLine="2849"/>
+        <Filename Value="hexeditor.pas"/>
+        <Caret Line="312" Column="11" TopLine="300"/>
       </Position3>
       <Position4>
-        <Filename Value="main.pas"/>
-        <Caret Line="16" Column="29" TopLine="1"/>
+        <Filename Value="hexeditor.pas"/>
+        <Caret Line="128" Column="3" TopLine="104"/>
       </Position4>
       <Position5>
-        <Filename Value="main.pas"/>
-        <Caret Line="597" Column="32" TopLine="569"/>
+        <Filename Value="hexeditor.pas"/>
+        <Caret Line="105" Column="3" TopLine="77"/>
       </Position5>
       <Position6>
-        <Filename Value="main.pas"/>
-        <Caret Line="1266" Column="16" TopLine="1238"/>
+        <Filename Value="hexeditor.pas"/>
+        <Caret Line="257" Column="6" TopLine="234"/>
       </Position6>
       <Position7>
-        <Filename Value="main.pas"/>
-        <Caret Line="1365" Column="16" TopLine="1337"/>
+        <Filename Value="hexeditor.pas"/>
+        <Caret Line="129" Column="11" TopLine="106"/>
       </Position7>
       <Position8>
-        <Filename Value="main.pas"/>
-        <Caret Line="1477" Column="45" TopLine="1452"/>
+        <Filename Value="hexeditor.pas"/>
+        <Caret Line="221" Column="11" TopLine="193"/>
       </Position8>
       <Position9>
-        <Filename Value="main.pas"/>
-        <Caret Line="25" Column="33" TopLine="1"/>
+        <Filename Value="hexeditor.pas"/>
+        <Caret Line="129" Column="3" TopLine="101"/>
       </Position9>
       <Position10>
-        <Filename Value="main.pas"/>
-        <Caret Line="166" Column="39" TopLine="138"/>
+        <Filename Value="hexeditor.pas"/>
+        <Caret Line="221" Column="19" TopLine="193"/>
       </Position10>
       <Position11>
-        <Filename Value="main.pas"/>
-        <Caret Line="960" Column="44" TopLine="932"/>
+        <Filename Value="hexeditor.pas"/>
+        <Caret Line="129" Column="3" TopLine="101"/>
       </Position11>
       <Position12>
-        <Filename Value="main.pas"/>
-        <Caret Line="1029" Column="44" TopLine="1001"/>
+        <Filename Value="hexeditor.pas"/>
+        <Caret Line="221" Column="19" TopLine="193"/>
       </Position12>
       <Position13>
-        <Filename Value="main.pas"/>
-        <Caret Line="1092" Column="44" TopLine="1064"/>
+        <Filename Value="hexeditor.pas"/>
+        <Caret Line="129" Column="3" TopLine="106"/>
       </Position13>
       <Position14>
-        <Filename Value="main.pas"/>
-        <Caret Line="1477" Column="45" TopLine="1449"/>
+        <Filename Value="hexeditor.pas"/>
+        <Caret Line="199" Column="11" TopLine="174"/>
       </Position14>
       <Position15>
-        <Filename Value="main.pas"/>
-        <Caret Line="16" Column="29" TopLine="1"/>
+        <Filename Value="hexeditor.pas"/>
+        <Caret Line="270" Column="80" TopLine="242"/>
       </Position15>
       <Position16>
-        <Filename Value="main.pas"/>
-        <Caret Line="597" Column="32" TopLine="579"/>
+        <Filename Value="hexeditor.pas"/>
+        <Caret Line="119" Column="76" TopLine="77"/>
       </Position16>
       <Position17>
-        <Filename Value="main.pas"/>
-        <Caret Line="1266" Column="16" TopLine="1248"/>
+        <Filename Value="hexeditor.pas"/>
+        <Caret Line="134" Column="26" TopLine="105"/>
       </Position17>
       <Position18>
-        <Filename Value="main.pas"/>
-        <Caret Line="1365" Column="16" TopLine="1347"/>
+        <Filename Value="hexeditor.pas"/>
+        <Caret Line="79" Column="23" TopLine="51"/>
       </Position18>
       <Position19>
-        <Filename Value="main.pas"/>
-        <Caret Line="1480" Column="63" TopLine="1462"/>
+        <Filename Value="hexeditor.pas"/>
+        <Caret Line="95" Column="39" TopLine="51"/>
       </Position19>
       <Position20>
-        <Filename Value="main.pas"/>
-        <Caret Line="1365" Column="5" TopLine="1347"/>
+        <Filename Value="hexeditor.pas"/>
+        <Caret Line="106" Column="6" TopLine="62"/>
       </Position20>
       <Position21>
-        <Filename Value="main.pas"/>
-        <Caret Line="1266" Column="5" TopLine="1248"/>
+        <Filename Value="hexeditor.pas"/>
+        <Caret Line="109" Column="20" TopLine="81"/>
       </Position21>
       <Position22>
-        <Filename Value="main.pas"/>
-        <Caret Line="597" Column="21" TopLine="579"/>
+        <Filename Value="hexeditor.pas"/>
+        <Caret Line="67" Column="16" TopLine="63"/>
       </Position22>
       <Position23>
-        <Filename Value="main.pas"/>
-        <Caret Line="1266" Column="16" TopLine="1248"/>
+        <Filename Value="hexeditor.pas"/>
+        <Caret Line="95" Column="25" TopLine="63"/>
       </Position23>
       <Position24>
-        <Filename Value="main.pas"/>
-        <Caret Line="1365" Column="16" TopLine="1347"/>
+        <Filename Value="hexeditor.pas"/>
+        <Caret Line="96" Column="25" TopLine="63"/>
       </Position24>
       <Position25>
-        <Filename Value="main.pas"/>
-        <Caret Line="1480" Column="63" TopLine="1462"/>
+        <Filename Value="hexeditor.pas"/>
+        <Caret Line="119" Column="55" TopLine="88"/>
       </Position25>
       <Position26>
-        <Filename Value="main.pas"/>
-        <Caret Line="1632" Column="31" TopLine="1613"/>
+        <Filename Value="hexeditor.pas"/>
+        <Caret Line="201" Column="74" TopLine="173"/>
       </Position26>
       <Position27>
-        <Filename Value="main.pas"/>
-        <Caret Line="1902" Column="22" TopLine="1884"/>
+        <Filename Value="hexeditor.pas"/>
+        <Caret Line="244" Column="44" TopLine="216"/>
       </Position27>
       <Position28>
-        <Filename Value="main.pas"/>
-        <Caret Line="2919" Column="33" TopLine="2901"/>
+        <Filename Value="hexeditor.pas"/>
+        <Caret Line="119" Column="42" TopLine="88"/>
       </Position28>
       <Position29>
-        <Filename Value="main.pas"/>
-        <Caret Line="2954" Column="33" TopLine="2936"/>
+        <Filename Value="hexeditor.pas"/>
+        <Caret Line="196" Column="36" TopLine="168"/>
       </Position29>
       <Position30>
-        <Filename Value="main.pas"/>
-        <Caret Line="2950" Column="22" TopLine="2919"/>
+        <Filename Value="hexeditor.pas"/>
+        <Caret Line="119" Column="55" TopLine="91"/>
       </Position30>
     </JumpHistory>
   </ProjectOptions>
@@ -597,29 +664,6 @@
     </Other>
   </CompilerOptions>
   <Debugging>
-    <Watches Count="7">
-      <Item1>
-        <Expression Value="BytesRead"/>
-      </Item1>
-      <Item2>
-        <Expression Value="callback"/>
-      </Item2>
-      <Item3>
-        <Expression Value="buff"/>
-      </Item3>
-      <Item4>
-        <Expression Value="i"/>
-      </Item4>
-      <Item5>
-        <Expression Value="buff[i]"/>
-      </Item5>
-      <Item6>
-        <Expression Value="n"/>
-      </Item6>
-      <Item7>
-        <Expression Value="parameter"/>
-      </Item7>
-    </Watches>
     <Exceptions Count="2">
       <Item1>
         <Name Value="ECodetoolError"/>

@@ -1015,4 +1015,11 @@ object FormMain: TFormMain
     left = 552
     top = 488
   end
+  object xmlcfgMain: TXMLConfig
+    Filename = 'vsgui.xml'
+    StartEmpty = False
+    RootName = 'CONFIG'
+    left = 744
+    top = 488
+  end
 end

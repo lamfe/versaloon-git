@@ -1,26 +1,99 @@
 object FormHexEditor: TFormHexEditor
-  Left = 184
-  Height = 410
-  Top = 256
-  Width = 590
+  Left = 448
+  Height = 541
+  Top = 270
+  Width = 393
   HorzScrollBar.Page = 589
   VertScrollBar.Page = 409
-  AutoScroll = False
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'FormHexEditor'
-  ClientHeight = 410
-  ClientWidth = 590
+  ClientHeight = 541
+  ClientWidth = 393
+  KeyPreview = True
   OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  OnKeyPress = FormKeyPress
   OnShow = FormShow
-  ParentFont = False
-  Position = poScreenCenter
+  Position = poMainFormCenter
   LCLVersion = '0.9.28.2'
-  object pnlHexEditorCommand: TPanel
-    Height = 74
-    Top = 336
-    Width = 590
+  object lblMeasureSize: TLabel
+    Left = 47
+    Height = 13
+    Top = 27
+    Width = 1
+    ParentColor = False
+  end
+  object pnlButton: TPanel
+    Left = 0
+    Height = 69
+    Top = 472
+    Width = 393
     Align = alBottom
+    ClientHeight = 69
+    ClientWidth = 393
     TabOrder = 0
+    object btnSave: TButton
+      Left = 88
+      Height = 25
+      Top = 21
+      Width = 75
+      Caption = '&Save'
+      Enabled = False
+      ModalResult = 1
+      OnClick = btnSaveClick
+      TabOrder = 0
+    end
+    object btnCancel: TButton
+      Left = 218
+      Height = 25
+      Top = 21
+      Width = 75
+      Caption = '&Cancel'
+      ModalResult = 2
+      TabOrder = 1
+    end
+  end
+  object pnlData: TPanel
+    Left = 0
+    Height = 472
+    Top = 0
+    Width = 393
+    Align = alClient
+    BevelWidth = 10
+    ClientHeight = 472
+    ClientWidth = 393
+    TabOrder = 1
+    object sgData: TStringGrid
+      Left = 10
+      Height = 452
+      Top = 10
+      Width = 373
+      Align = alClient
+      Color = 15400959
+      ColCount = 0
+      FixedCols = 0
+      FixedRows = 0
+      Flat = True
+      Font.Color = 12937777
+      GridLineWidth = 0
+      Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goSmoothScroll]
+      ParentFont = False
+      RowCount = 0
+      ScrollBars = ssVertical
+      TabOrder = 0
+      TitleFont.Color = clBlack
+      OnKeyPress = sgDataKeyPress
+      OnPrepareCanvas = sgDataPrepareCanvas
+      OnSelectCell = sgDataSelectCell
+      OnTopLeftChanged = sgDataTopLeftChanged
+    end
+  end
+  object timerInitSize: TTimer
+    Enabled = False
+    Interval = 10
+    OnTimer = timerInitSizeTimer
+    left = 352
+    top = 504
   end
 end

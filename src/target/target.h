@@ -88,6 +88,7 @@ typedef struct
 	uint8_t data_pos;
 	uint32_t area_seg_addr;
 	uint32_t area_start_addr;
+	uint8_t area_default_data;
 }program_area_map_t;
 
 typedef struct
@@ -213,6 +214,7 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 							char *type, chip_fl_t *fl);
 RESULT target_release_chip_fl(chip_fl_t *fl);
 
+void target_printf_fe(char *type);
 void target_print_fl(char *type);
 void target_print_target(uint32_t i);
 void target_print_list(void);

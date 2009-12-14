@@ -26,7 +26,7 @@
 #define AVR8_FLASH_CHAR					0xFF
 #define AVR8_EEPROM_CHAR				0xFF
 #define AVR8_LOCK_CHAR					0xFF
-#define AVR8_FUSE_CHAR					0xFFFFFFFF
+#define AVR8_FUSE_CHAR					0xFF
 
 #define AVR8_ISP						(1 << 0)
 #define AVR8_JTAG						(1 << 1)
