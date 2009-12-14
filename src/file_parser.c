@@ -20,6 +20,7 @@
 #include "config.h"
 #endif
 
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
@@ -258,7 +259,7 @@ RESULT write_bin_file(FILE *bin_file, uint32_t file_addr,
 	if (file_size < (start_addr - file_addr))
 	{
 		uint32_t append_size = start_addr - file_addr - file_size;
-		uint8_t *buff_append = malloc(append_size);
+		uint8_t *buff_append = (uint8_t *)malloc(append_size);
 		if (NULL == buff_append)
 		{
 			return ERROR_FAIL;
