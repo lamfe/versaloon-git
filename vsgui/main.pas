@@ -371,7 +371,7 @@ begin
   begin
     for i := 0 to Length(TargetFile) - 1 do
     begin
-      if (TargetFile[i].target = target_str) or (TargetFile[i].target = 'ALL') then
+      if TargetFile[i].target = target_str then
       begin
         result := i;
         exit;
@@ -2115,7 +2115,7 @@ begin
         ComboBoxSetText(cbboxMode, xmlcfgMain.GetValue('target/mode', ''));
         cbboxModeChange(cbboxMode);
         lbledtFreq.Text := xmlcfgMain.GetValue('target/freq', '');
-        if Length(TargetFile) <> xmlcfgMain.GetValue('tatget/files/number', 0) then
+        if Length(TargetFile) < xmlcfgMain.GetValue('tatget/files/number', 0) then
         begin
           // Error here
           TargetType := TT_NONE;
@@ -2124,6 +2124,13 @@ begin
         for i := 0 to Length(TargetFile) - 1 do
         begin
           j := GetTargetFileIndex(xmlcfgMain.GetValue('target/files/' + IntToStr(i) + '/target', ''));
+          if j < 0 then
+          begin
+            // Error here
+            TargetType := TT_NONE;
+            pcMain.ActivePage.Enabled := FALSE;
+            break;
+          end;
           TargetFile[j].filename := xmlcfgMain.GetValue('target/files/' + IntToStr(i) + '/filename', '');
         end;
         UpdateTargetFile();
