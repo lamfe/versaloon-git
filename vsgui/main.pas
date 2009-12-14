@@ -1748,12 +1748,18 @@ begin
   xmlcfgMain.SetValue('target/mode', cbboxMode.Text);
   xmlcfgMain.SetValue('target/filename', cbboxInputFile.Text);
   xmlcfgMain.SetValue('target/freq', lbledtFreq.Text);
-  xmlcfgMain.DeletePath('target/files');
-  xmlcfgMain.SetValue('tatget/files/number', Length(TargetFile));
-  for i := 0 to Length(TargetFile) - 1 do
+  xmlcfgMain.SetValue('target/files/number', Length(TargetFile));
+  for i := 0 to 10 do    // max 10 files
   begin
-    xmlcfgMain.SetValue('target/files/' + IntToStr(i) + '/target', TargetFile[i].target);
-    xmlcfgMain.SetValue('target/files/' + IntToStr(i) + '/filename', TargetFile[i].filename);
+    if i < Length(TargetFile) then
+    begin
+      xmlcfgMain.SetValue('target/files/' + IntToStr(i) + '/target', TargetFile[i].target);
+      xmlcfgMain.SetValue('target/files/' + IntToStr(i) + '/filename', TargetFile[i].filename);
+    end
+    else
+    begin
+      xmlcfgMain.DeletePath('target/files/' + IntToStr(i) + '/');
+    end;
   end;
   xmlcfgMain.SetValue('target/fuse', lbledtFuse.Text);
   xmlcfgMain.SetValue('target/lock', lbledtLock.Text);
@@ -2049,6 +2055,7 @@ var
   success: boolean;
   i, j: integer;
   str_tmp: string;
+  int_tmp: integer;
 begin
   tDelay.Enabled := FALSE;
 
@@ -2115,23 +2122,29 @@ begin
         ComboBoxSetText(cbboxMode, xmlcfgMain.GetValue('target/mode', ''));
         cbboxModeChange(cbboxMode);
         lbledtFreq.Text := xmlcfgMain.GetValue('target/freq', '');
-        if Length(TargetFile) < xmlcfgMain.GetValue('tatget/files/number', 0) then
+        int_tmp := xmlcfgMain.GetValue('target/files/number', 0);
+        if Length(TargetFile) < int_tmp then
         begin
-          // Error here
-          TargetType := TT_NONE;
-          pcMain.ActivePage.Enabled := FALSE;
+          // Error here, try to recovery
+          xmlcfgMain.DeletePath('target/files');
+          xmlcfgMain.SetValue('target/files/number', 0);
+          int_tmp := 0;
         end;
-        for i := 0 to Length(TargetFile) - 1 do
+        if int_tmp > 0 then
         begin
-          j := GetTargetFileIndex(xmlcfgMain.GetValue('target/files/' + IntToStr(i) + '/target', ''));
-          if j < 0 then
+          for i := 0 to int_tmp - 1 do
           begin
-            // Error here
-            TargetType := TT_NONE;
-            pcMain.ActivePage.Enabled := FALSE;
-            break;
+            j := GetTargetFileIndex(xmlcfgMain.GetValue('target/files/' + IntToStr(i) + '/target', ''));
+            if j < 0 then
+            begin
+              // Error here, try to recovery
+              xmlcfgMain.DeletePath('target/files');
+              xmlcfgMain.SetValue('target/files/number', 0);
+              int_tmp := 0;
+              break;
+            end;
+            TargetFile[j].filename := xmlcfgMain.GetValue('target/files/' + IntToStr(i) + '/filename', '');
           end;
-          TargetFile[j].filename := xmlcfgMain.GetValue('target/files/' + IntToStr(i) + '/filename', '');
         end;
         UpdateTargetFile();
         ComboBoxSetText(cbboxInputFile, xmlcfgMain.GetValue('target/filename', ''));
