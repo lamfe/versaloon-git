@@ -290,6 +290,7 @@ begin
   CurCellRow := 0;
   CurCellCol := 0;
   CurCellPos := 0;
+  CurCellAddress := 0;
   sgData.Row := 0;
   sgData.Col := 0;
   Caption := Caption + ' ' + FileName;
@@ -356,6 +357,8 @@ begin
   begin
     sgData.Cells[0, i] := UpperCase(IntToHex(StartAddress + (i - 1) * $10, 8));
   end;
+  sgData.Row := 1;
+  sgData.Col := 1;
 
   timerInitSize.Enabled := TRUE;
 end;
@@ -409,12 +412,14 @@ begin
         begin
           DataBuff[CurCellAddress] := (DataBuff[CurCellAddress] and $0F) or (i shl 4);
           CurCellPos := CurCellPos + 1;
+          RowDirty[CurCellAddress div BYTES_IN_ROW] := TRUE;
         end;
       1:
         // move to next address
         begin
           DataBuff[CurCellAddress] := (DataBuff[CurCellAddress] and $F0) or i;
           CurCellPos := 0;
+          RowDirty[CurCellAddress div BYTES_IN_ROW] := TRUE;
           if not (CurCellAddress = DataByteSize - 1) then
           begin
             if (CurCellAddress mod BYTES_IN_ROW) = (BYTES_IN_ROW - 1) then
@@ -430,7 +435,6 @@ begin
         end;
     end;
     // update dirty
-    RowDirty[(CurCellAddress + (BYTES_IN_ROW - 1)) div BYTES_IN_ROW] := TRUE;
     sgDataTopLeftChanged(sgData);
   end;
 end;
@@ -467,13 +471,13 @@ begin
   // update data
   for i := sgData.TopRow to sgData.TopRow + sgData.VisibleRowCount do
   begin
-    if (i < sgData.RowCount) and RowDirty[i] then
+    if (i < sgData.RowCount) and RowDirty[i - 1] then
     begin
       for j := 1 to sgData.ColCount - 1 do
       begin
         sgData.Cells[j, i] := UpperCase(IntToHex(DataBuff[(i - 1) * 16 + (j - 1)], 2));
       end;
-      RowDirty[i] := FALSE;
+      RowDirty[i - 1] := FALSE;
     end;
   end;
 end;
