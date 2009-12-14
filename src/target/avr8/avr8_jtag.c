@@ -187,13 +187,12 @@ void AVR_JTAG_WaitComplete(uint16_t cmd)
 RESULT avr8_jtag_program(operation_t operations, program_info_t *pi, 
 						 programmer_info_t *prog)
 {
-	uint16_t data_tmp[4];
 	uint8_t ir;
 	uint32_t dr;
 	
 	int32_t i;
 	uint32_t j, k, page_size, len_current_list;
-	uint8_t page_buf[256 + 1];
+	uint8_t page_buf[256 + 1]; // one more byte for dummy 16bit read
 	RESULT ret = ERROR_OK;
 	memlist *ml_tmp;
 	uint32_t target_size;
@@ -216,19 +215,18 @@ RESULT avr8_jtag_program(operation_t operations, program_info_t *pi,
 	AVR_JTAG_PROG_EnterSignByteRead();
 	
 	AVR_JTAG_PROG_LoadAddrByte(0);
-	AVR_JTAG_PROG_ReadSignByte(data_tmp[0]);
+	AVR_JTAG_PROG_ReadSignByte(page_buf[0]);
 	AVR_JTAG_PROG_LoadAddrByte(1);
-	AVR_JTAG_PROG_ReadSignByte(data_tmp[1]);
+	AVR_JTAG_PROG_ReadSignByte(page_buf[1]);
 	AVR_JTAG_PROG_LoadAddrByte(2);
-	AVR_JTAG_PROG_ReadSignByte(data_tmp[2]);
+	AVR_JTAG_PROG_ReadSignByte(page_buf[2]);
 	if (ERROR_OK != jtag_commit())
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read signature");
 		ret = ERRCODE_FAILURE_OPERATION;
 		goto leave_program_mode;
 	}
-	pi->chip_id = ((data_tmp[2] & 0xFF) << 0) | ((data_tmp[1] & 0xFF) << 8) 
-				   | ((data_tmp[0] & 0xFF) << 16);
+	pi->chip_id = page_buf[2] | (page_buf[1] << 8) | (page_buf[0] << 16);
 	LOG_INFO(_GETTEXT(INFOMSG_TARGET_CHIP_ID), pi->chip_id);
 	if (!(operations.read_operations & CHIP_ID))
 	{
@@ -726,24 +724,24 @@ RESULT avr8_jtag_program(operation_t operations, program_info_t *pi,
 		}
 		pgbar_init("reading fuse |", "|", 0, 1, PROGRESS_STEP, '=');
 		
-		memset(data_tmp, 0, sizeof(data_tmp));
+		memset(page_buf, 0, 3);
 		// read fuse
 		// low bits
 		if (cur_chip_param.fuse_size > 0)
 		{
 			AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
 			AVR_JTAG_PROG_EnterFuseLockbitRead();
-			AVR_JTAG_PROG_ReadFuseLowByte(data_tmp[0]);
+			AVR_JTAG_PROG_ReadFuseLowByte(page_buf[0]);
 		}
 		// high bits
 		if (cur_chip_param.fuse_size > 1)
 		{
-			AVR_JTAG_PROG_ReadFuseHighByte(data_tmp[1]);
+			AVR_JTAG_PROG_ReadFuseHighByte(page_buf[1]);
 		}
 		// extended bits
 		if (cur_chip_param.fuse_size > 2)
 		{
-			AVR_JTAG_PROG_ReadExtFuseByte(data_tmp[2]);
+			AVR_JTAG_PROG_ReadExtFuseByte(page_buf[2]);
 		}
 		if (cur_chip_param.fuse_size > 0)
 		{
@@ -763,14 +761,10 @@ RESULT avr8_jtag_program(operation_t operations, program_info_t *pi,
 			ret = ERRCODE_NOT_SUPPORT;
 			goto leave_program_mode;
 		}
-		data_tmp[0] &= 0xFF;
-		data_tmp[1] &= 0xFF;
-		data_tmp[2] &= 0xFF;
 		pgbar_update(1);
 		
 		pgbar_fini();
-		i = (uint32_t)(data_tmp[0] + (data_tmp[1] << 8) 
-								   + (data_tmp[2] << 16));
+		i = (uint32_t)(page_buf[0] + (page_buf[1] << 8) + (page_buf[2] << 16));
 		if (operations.verify_operations & FUSE)
 		{
 			if ((uint32_t)i == pi->fuse_value)
@@ -860,13 +854,13 @@ RESULT avr8_jtag_program(operation_t operations, program_info_t *pi,
 		}
 		pgbar_init("reading lock |", "|", 0, 1, PROGRESS_STEP, '=');
 		
-		memset(data_tmp, 0, sizeof(data_tmp));
+		memset(page_buf, 0, 1);
 		// read lock
 		if (cur_chip_param.lock_size > 0)
 		{
 			AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
 			AVR_JTAG_PROG_EnterFuseLockbitRead();
-			AVR_JTAG_PROG_ReadLockbit(data_tmp[0]);
+			AVR_JTAG_PROG_ReadLockbit(page_buf[0]);
 			if (ERROR_OK != jtag_commit())
 			{
 				pgbar_fini();
@@ -883,25 +877,24 @@ RESULT avr8_jtag_program(operation_t operations, program_info_t *pi,
 			ret = ERRCODE_NOT_SUPPORT;
 			goto leave_program_mode;
 		}
-		data_tmp[0] &= 0xFF;
 		pgbar_update(1);
 		
 		pgbar_fini();
 		if (operations.verify_operations & LOCK)
 		{
-			if ((uint8_t)data_tmp[0] == (uint8_t)pi->lock_value)
+			if (page_buf[0] == (uint8_t)pi->lock_value)
 			{
 				LOG_INFO(_GETTEXT(INFOMSG_VERIFIED), "lock");
 			}
 			else
 			{
 				LOG_INFO(_GETTEXT(ERRMSG_FAILURE_VERIFY_TARGET_02X), 
-						 "lock", data_tmp[0], pi->lock_value);
+						 "lock", page_buf[0], pi->lock_value);
 			}
 		}
 		else
 		{
-			LOG_INFO(_GETTEXT(INFOMSG_READ_VALUE_02X), "lock", data_tmp[0]);
+			LOG_INFO(_GETTEXT(INFOMSG_READ_VALUE_02X), "lock", page_buf[0]);
 		}
 	}
 	
@@ -910,29 +903,29 @@ RESULT avr8_jtag_program(operation_t operations, program_info_t *pi,
 		LOG_INFO(_GETTEXT(INFOMSG_READING), "calibration");
 		pgbar_init("reading calibration |", "|", 0, 1, PROGRESS_STEP, '=');
 		
-		memset(data_tmp, 0, sizeof(data_tmp));
+		memset(page_buf, 0, 4);
 		// read calibration
 		if (cur_chip_param.cali_size > 0)
 		{
 			AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
 			AVR_JTAG_PROG_EnterCaliByteRead();
 			AVR_JTAG_PROG_LoadAddrByte(0);
-			AVR_JTAG_PROG_ReadCaliByte(data_tmp[0]);
+			AVR_JTAG_PROG_ReadCaliByte(page_buf[0]);
 		}
 		if (cur_chip_param.cali_size > 1)
 		{
 			AVR_JTAG_PROG_LoadAddrByte(1);
-			AVR_JTAG_PROG_ReadCaliByte(data_tmp[1]);
+			AVR_JTAG_PROG_ReadCaliByte(page_buf[1]);
 		}
 		if (cur_chip_param.cali_size > 2)
 		{
 			AVR_JTAG_PROG_LoadAddrByte(2);
-			AVR_JTAG_PROG_ReadCaliByte(data_tmp[2]);
+			AVR_JTAG_PROG_ReadCaliByte(page_buf[2]);
 		}
 		if (cur_chip_param.cali_size > 3)
 		{
 			AVR_JTAG_PROG_LoadAddrByte(3);
-			AVR_JTAG_PROG_ReadCaliByte(data_tmp[3]);
+			AVR_JTAG_PROG_ReadCaliByte(page_buf[3]);
 		}
 		if (cur_chip_param.cali_size > 0)
 		{
@@ -952,15 +945,11 @@ RESULT avr8_jtag_program(operation_t operations, program_info_t *pi,
 			ret = ERRCODE_NOT_SUPPORT;
 			goto leave_program_mode;
 		}
-		data_tmp[0] &= 0xFF;
-		data_tmp[1] &= 0xFF;
-		data_tmp[2] &= 0xFF;
-		data_tmp[3] &= 0xFF;
 		pgbar_update(1);
 		
 		pgbar_fini();
-		i = (uint32_t)(data_tmp[0] + (data_tmp[1] << 8) 
-					+ (data_tmp[2] << 16) + (data_tmp[3] << 24));
+		i = (uint32_t)(page_buf[0] + (page_buf[1] << 8) 
+					+ (page_buf[2] << 16) + (page_buf[3] << 24));
 		if (cur_chip_param.fuse_size > 3)
 		{
 			LOG_INFO(_GETTEXT(INFOMSG_READ_VALUE_08X), "calibration", i);
