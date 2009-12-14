@@ -1471,6 +1471,7 @@ begin
   btnOpenFile.Click;
   if not bOpenFileOK then
   begin
+    bReadOperation := FALSE;
     exit;
   end;
   PrepareCommonParameters();
@@ -1479,6 +1480,7 @@ begin
   begin
     MessageDlg('Error', 'Fail to add read operation', mtError, [mbOK], 0);
     caller.UnTake;
+    bReadOperation := FALSE;
     exit;
   end;
 
