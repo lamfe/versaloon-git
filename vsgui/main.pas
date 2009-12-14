@@ -1154,10 +1154,14 @@ begin
   end;
 
   index := GetTargetFileIndex('Flash');
-  if (index < 0) or (TargetFile[index].filename = '') then
+  if (index < 0) then
   begin
-    MessageDlg('Error', 'No File Defined.', mtError, [mbOK], 0);
-    exit;
+    index := GetTargetFileIndex('ALL');
+    if (index < 0) or (TargetFile[index].filename = '') then
+    begin
+      MessageDlg('Error', 'No File Defined.', mtError, [mbOK], 0);
+      exit;
+    end;
   end;
   if not FileExists(TargetFile[index].filename) then
   begin
@@ -1279,10 +1283,14 @@ begin
   end;
 
   index := GetTargetFileIndex('EEPROM');
-  if (index < 0) or (TargetFile[index].filename = '') then
+  if (index < 0) then
   begin
-    MessageDlg('Error', 'No File Defined.', mtError, [mbOK], 0);
-    exit;
+    index := GetTargetFileIndex('ALL');
+    if (index < 0) or (TargetFile[index].filename = '') then
+    begin
+      MessageDlg('Error', 'No File Defined.', mtError, [mbOK], 0);
+      exit;
+    end;
   end;
   if not FileExists(TargetFile[index].filename) then
   begin
