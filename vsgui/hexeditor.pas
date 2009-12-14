@@ -296,6 +296,7 @@ begin
   Caption := Caption + ' ' + FileName;
   sgData.RowCount := 0;
   sgData.TopRow := 0;
+  ActiveControl := sgData;
 
   // prepare memory
   DataByteSize := (DataByteSize + (BYTES_IN_ROW - 1)) div BYTES_IN_ROW * BYTES_IN_ROW;
