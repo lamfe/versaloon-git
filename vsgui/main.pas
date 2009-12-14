@@ -649,7 +649,6 @@ begin
   end;
 
   SetLength(TargetSetting, 0);
-  SetLength(TargetFile, 0);
   cbboxInputFile.Clear;
   memoInfo.Clear;
 
@@ -747,6 +746,7 @@ begin
   end
   else
   begin
+    SetLength(TargetFile, 0);
     HideDebugLog();
 
     if pcMain.ActivePage = tsPSoC1 then
@@ -1748,17 +1748,13 @@ begin
   xmlcfgMain.SetValue('target/mode', cbboxMode.Text);
   xmlcfgMain.SetValue('target/filename', cbboxInputFile.Text);
   xmlcfgMain.SetValue('target/freq', lbledtFreq.Text);
-  xmlcfgMain.SetValue('target/files/number', Length(TargetFile));
-  for i := 0 to 10 do    // max 10 files
+  if Length(TargetFile) > 0 then
   begin
-    if i < Length(TargetFile) then
+    xmlcfgMain.SetValue('target/files/number', Length(TargetFile));
+    for i := 0 to Length(TargetFile) - 1 do
     begin
       xmlcfgMain.SetValue('target/files/' + IntToStr(i) + '/target', TargetFile[i].target);
       xmlcfgMain.SetValue('target/files/' + IntToStr(i) + '/filename', TargetFile[i].filename);
-    end
-    else
-    begin
-      xmlcfgMain.DeletePath('target/files/' + IntToStr(i) + '/');
     end;
   end;
   xmlcfgMain.SetValue('target/fuse', lbledtFuse.Text);
