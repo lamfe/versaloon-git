@@ -579,7 +579,7 @@ end;
 procedure TFormMain.ShowDebugLog();
 begin
   Width := pnlMain.Width + LOGMEMO_WIDTH + 2;
-  UpdateShowing;
+  memoLog.AdjustSize;
 end;
 
 procedure TFormMain.HideDebugLog();
@@ -1747,8 +1747,9 @@ begin
   xmlcfgMain.SetValue('target/chip', cbboxTarget.Text);
   xmlcfgMain.SetValue('target/mode', cbboxMode.Text);
   xmlcfgMain.SetValue('target/filename', cbboxInputFile.Text);
-  xmlcfgMain.SetValue('tatget/files/number', Length(TargetFile));
   xmlcfgMain.SetValue('target/freq', lbledtFreq.Text);
+  xmlcfgMain.DeletePath('target/files');
+  xmlcfgMain.SetValue('tatget/files/number', Length(TargetFile));
   for i := 0 to Length(TargetFile) - 1 do
   begin
     xmlcfgMain.SetValue('target/files/' + IntToStr(i) + '/target', TargetFile[i].target);
