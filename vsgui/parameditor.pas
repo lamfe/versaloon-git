@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, LResources, Forms, Controls, Graphics, Dialogs,
-  StdCtrls, ExtCtrls;
+  StdCtrls, ExtCtrls, inputdialog;
 
 type
   TParam_Warning = record
@@ -75,8 +75,6 @@ type
     procedure FreeRecord();
   end;
 
-  function StrToIntRadix(sData: string; radix: integer): integer;
-  function IntToStrRadix(aData, radix: Integer): String;
   function GetIntegerParameter(line, para_name: string; var value: integer): boolean;
   function GetStringParameter(line, para_name: string; var value: string): boolean;
   function WipeTailEnter(var line: string): string;
@@ -97,58 +95,8 @@ const
   EDT_WIDTH: integer = 100;
   COMBO_WIDTH: integer = 400;
   SECTION_DIV_HEIGHT: integer = 20;
-  HEX_PARSE_STR: string = '0123456789ABCDEF';
-  BYTELEN_ACCORDING_TO_RADIX: array[2..16] of integer = (8, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2);
 
 implementation
-
-function IntToStrRadix(aData, radix: Integer): String;
-var
-  t: Integer;
-begin
-  Result := '';
-  if (radix = 0) or (radix > 16) then
-  begin
-    exit;
-  end;
-
-  repeat
-    t := aData mod radix;
-    if t < 10 then
-      Result := InttoStr(t)+Result
-    else
-      Result := InttoHex(t, 1)+Result;
-    aData := aData div radix;
-  until (aData = 0);
-end;
-
-function StrToIntRadix(sData: string; radix: integer): integer;
-var
-  i, r: integer;
-begin
-  result := 0;
-  sData := UpperCase(sData);
-  if (radix < 2) or (radix > 16)
-     or (Length(sData) > (BYTELEN_ACCORDING_TO_RADIX[radix] * 4)) then
-  begin
-    exit;
-  end;
-
-  for i := 1 to Length(sData) do
-  begin
-    if (Pos(sData[i], HEX_PARSE_STR) < 1) or (Pos(sData[i], HEX_PARSE_STR) > radix) then
-    begin
-      exit;
-    end;
-  end;
-
-  r := 1;
-  for i := Length(sData) downto 1 do
-  begin
-    result := result + r * (Pos(sData[i], HEX_PARSE_STR) - 1);
-    r := r * radix;
-  end;
-end;
 
 function WipeTailEnter(var line: string): string;
 begin

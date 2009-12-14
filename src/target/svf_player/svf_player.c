@@ -62,7 +62,7 @@ svfp_param_t svfp_chips_param[] =
 
 const program_area_map_t svfp_program_area_map[] = 
 {
-	{0, 0, 0, 0, 0}
+	{0, 0, 0, 0, 0, 0}
 };
 
 #define SVF_SET_FREQ_CMD			"FREQUENCY %.02f HZ"

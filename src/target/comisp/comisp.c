@@ -54,24 +54,22 @@
 #define cur_target_defined			target_defined
 #define cur_program_area_map		comisp_program_area_map
 
-#define COMISP_MAX_BUFSIZE			(1024 * 1024)
-
 program_area_map_t comisp_program_area_map[] = 
 {
-	{APPLICATION, APPLICATION_CHAR, 1, 0, 0},
-//	{LOCK, LOCK_CHAR, 0, 0, 0},
-	{0, 0, 0, 0, 0}
+	{APPLICATION, APPLICATION_CHAR, 1, 0, 0, 0xFF},
+//	{LOCK, LOCK_CHAR, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0}
 };
 
 #define COMISP_STM32		0
 #define COMISP_LPCARM		1
 #define COMISP_TEST			2
 const comisp_param_t comisp_chips_param[] = {
-//	chip_name,			com_mode,																												default_char,		flash_start_addr
+//	chip_name,			com_mode,																												default_char,		flash_start_addr,	flash_max_size
 //						{comport,	baudrate,	datalength,	paritybit,			stopbit,		handshake,				aux_pin}	
-	{"comisp_stm32",	{"",		-1,			8,			COMM_PARITYBIT_EVEN,COMM_STOPBIT_1,	COMM_PARAMETER_UNSURE,	COMM_PARAMETER_UNSURE},	STM32_FLASH_CHAR,	0x08000000},
-	{"comisp_lpcarm",	{"",		-1,			8,			COMM_PARITYBIT_NONE,COMM_STOPBIT_1,	COMM_PARAMETER_UNSURE,	COMM_PARAMETER_UNSURE},	LPCARM_FLASH_CHAR,	0x00000000},
-	{"comisp_test",		{"",		-1,			8,			COMM_PARITYBIT_NONE,COMM_STOPBIT_1,	COMM_PARAMETER_UNSURE,	COMM_PARAMETER_UNSURE},	0x00,				0x00000000},
+	{"comisp_stm32",	{"",		-1,			8,			COMM_PARITYBIT_EVEN,COMM_STOPBIT_1,	COMM_PARAMETER_UNSURE,	COMM_PARAMETER_UNSURE},	STM32_FLASH_CHAR,	0x08000000,			512 * 1024},
+	{"comisp_lpcarm",	{"",		-1,			8,			COMM_PARITYBIT_NONE,COMM_STOPBIT_1,	COMM_PARAMETER_UNSURE,	COMM_PARAMETER_UNSURE},	LPCARM_FLASH_CHAR,	0x00000000,			512 * 1024},
+	{"comisp_test",		{"",		-1,			8,			COMM_PARITYBIT_NONE,COMM_STOPBIT_1,	COMM_PARAMETER_UNSURE,	COMM_PARAMETER_UNSURE},	0x00,				0x00000000,			512 * 1024},
 };
 static uint8_t comisp_chip_index = 0;
 comisp_param_t comisp_chip_param;
@@ -288,10 +286,11 @@ RESULT comisp_write_buffer_from_file_callback(uint32_t address, uint32_t seg_add
 #endif
 	
 	mem_addr += cur_flash_offset;
-	if (((mem_addr - cur_chip_param.flash_start_addr) >= COMISP_MAX_BUFSIZE) 
-		|| (length > COMISP_MAX_BUFSIZE) 
+	if (((mem_addr - cur_chip_param.flash_start_addr) 
+			>= cur_chip_param.flash_max_size) 
+		|| (length > cur_chip_param.flash_max_size) 
 		|| ((mem_addr - cur_chip_param.flash_start_addr + length) 
-			> COMISP_MAX_BUFSIZE))
+			> cur_chip_param.flash_max_size))
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_RANGE), "flash memory");
 		return ERRCODE_INVALID;
@@ -369,7 +368,7 @@ RESULT comisp_init(program_info_t *pi, programmer_info_t *prog)
 				memcpy(&cur_chip_param, cur_chips_param + comisp_chip_index, 
 					   sizeof(cur_chip_param));
 				
-				pi->app_size = COMISP_MAX_BUFSIZE;
+				pi->app_size = cur_chip_param.flash_max_size;
 				
 				cur_program_area_map[0].area_start_addr = 
 										cur_chips_param[i].flash_start_addr;

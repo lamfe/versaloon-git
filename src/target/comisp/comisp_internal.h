@@ -41,6 +41,7 @@ typedef struct
 	com_mode_t com_mode;
 	uint8_t default_char;
 	uint32_t flash_start_addr;
+	uint32_t flash_max_size;
 }comisp_param_t;
 
 extern comisp_param_t comisp_chip_param;

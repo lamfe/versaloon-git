@@ -38,41 +38,14 @@ typedef enum
 	HEX_TYPE_EOF		= 0x01,
 	HEX_TYPE_SEG_ADDR	= 0x02,
 	HEX_TYPE_EXT_ADDR	= 0x04
-} HEX_TEYP;
-
-RESULT get_hex_from_str(uint8_t *str, uint8_t len, uint32_t *value)
-{
-	char num[5], *ptr;
-	
-#ifdef PARAM_CHECK
-	if ((NULL == str) || (NULL == value) || (len > 4))
-	{
-		LOG_BUG(_GETTEXT(ERRMSG_INVALID_PARAMETER), __FUNCTION__);
-		return ERRCODE_INVALID_PARAMETER;
-	}
-#endif
-	
-	memcpy(num, str, len);
-	num[len] = 0;
-	
-	*value = strtoul(num, &ptr, 16);
-	if ((num + len) == ptr)
-	{
-		return ERROR_OK;
-	}
-	else
-	{
-		return ERROR_FAIL;
-	}
-}
+} HEX_TYPE;
 
 RESULT read_hex_file(FILE *hex_file, WRITE_MEMORY_CALLBACK callback, 
 					 void *buffer, uint32_t seg_offset, uint32_t addr_offset)
 {
-	uint8_t line_buf[10 + 0xFF * 2 + 2], pos, type, checksum;
-	char ch;
-	uint32_t data_addr = 0, seg_addr = 0, length, tmp32, i;
-	RESULT ret;
+	uint8_t line_buf[10 + 0xFF * 2 + 2], checksum;
+	char ch, *ptr, tmp_buff[3];
+	uint32_t ext_addr = 0, seg_addr = 0, length, i;
 	
 #ifdef PARAM_CHECK
 	if ((NULL == hex_file) || (NULL == callback))
@@ -107,83 +80,47 @@ RESULT read_hex_file(FILE *hex_file, WRITE_MEMORY_CALLBACK callback,
 		length -= 1;
 		
 		// process line
-		if (length < 9)
+		if ((length < 10) || ((length % 2) == 1))
+		{
+			return ERROR_FAIL;
+		}
+		tmp_buff[2] = '\0';
+		for (i = 0; i < length; i+=2)
+		{
+			tmp_buff[0] = line_buf[i];
+			tmp_buff[1] = line_buf[i + 1];
+			line_buf[i >> 1] = (uint8_t)strtoul((const char *)tmp_buff, &ptr, 16);
+			if (ptr != &tmp_buff[2])
+			{
+				return ERROR_FAIL;
+			}
+		}
+		i >>= 1;
+		
+		// valid check
+		length = line_buf[0];
+		if ((0 == length) || ((length + 5) != i))
 		{
 			return ERROR_FAIL;
 		}
 		checksum = 0;
-		pos = 0;
-		
-		// get data length
-		ret = get_hex_from_str(line_buf + pos, 2, &tmp32);
-		if (ret != ERROR_OK)
+		while (i > 0)
 		{
-			return ERROR_FAIL;
+			checksum += line_buf[i-- - 1];
 		}
-		pos += 2;
-		checksum += (uint8_t)tmp32;
-		// verify data length
-		if (length != (10 + tmp32 * 2))
-		{
-			return ERROR_FAIL;
-		}
-		length = tmp32;
-		
-		// get address
-		ret = get_hex_from_str(line_buf + pos, 4, &tmp32);
-		if (ret != ERROR_OK)
-		{
-			return ERROR_FAIL;
-		}
-		pos += 4;
-		checksum += (uint8_t)tmp32;
-		checksum += (uint8_t)(tmp32 >> 8);
-		data_addr = (data_addr & 0xFFFF0000) | (tmp32 & 0x0000FFFF);
-		
-		// get type
-		ret = get_hex_from_str(line_buf + pos, 2, &tmp32);
-		if (ret != ERROR_OK)
-		{
-			return ERROR_FAIL;
-		}
-		pos += 2;
-		checksum += (uint8_t)tmp32;
-		type = (uint8_t)tmp32;
-		
-		// get data
-		for (i = 0; i < length; i++)
-		{
-			ret = get_hex_from_str(line_buf + pos, 2, &tmp32);
-			if (ret != ERROR_OK)
-			{
-				return ERROR_FAIL;
-			}
-			
-			pos += 2;
-			checksum += (uint8_t)tmp32;
-			line_buf[i] = (uint8_t)tmp32;
-		}
-		
-		// get checksum
-		ret = get_hex_from_str(line_buf + pos, 2, &tmp32);
-		if (ret != ERROR_OK)
-		{
-			return ERROR_FAIL;
-		}
-		// verify checksum
-		if (((checksum + tmp32) & 0xFF) != 0)
+		if (checksum != 0)
 		{
 			return ERROR_FAIL;
 		}
 		
 		// process data according data type
-		switch (type)
+		switch (line_buf[3])
 		{
 		case HEX_TYPE_DATA:
 			// data record
-			ret = callback(data_addr + addr_offset, seg_addr + seg_offset, 
-							line_buf, length, buffer);
-			if (ret != ERROR_OK)
+			if (ERROR_OK != callback(
+					ext_addr + addr_offset + (line_buf[1] << 8) + line_buf[2], 
+					seg_addr + seg_offset, &line_buf[4], length, buffer))
 			{
 				return ERROR_FAIL;
 			}
@@ -194,42 +131,22 @@ RESULT read_hex_file(FILE *hex_file, WRITE_MEMORY_CALLBACK callback,
 			break;
 		case HEX_TYPE_SEG_ADDR:
 			// segment address
-			if ((length > 4) || (3 == length))
+			if (length != 2)
 			{
 				return ERROR_FAIL;
 			}
-			if (1 == length)
-			{
-				seg_addr = line_buf[0];
-			}
-			else if (2 == length)
-			{
-				seg_addr = (line_buf[0] << 8) | line_buf[1];
-			}
-			else //if (4 == length)
-			{
-				seg_addr = (line_buf[0] << 24) | (line_buf[1] << 16) 
-							| (line_buf[2] << 8) | line_buf[3];
-			}
+			seg_addr = (line_buf[4] << 8) | line_buf[5];
 			break;
 		case HEX_TYPE_EXT_ADDR:
 			// extended address
-			if (length > 2)
+			if (length != 2)
 			{
 				return ERROR_FAIL;
 			}
-			if (1 == length)
-			{
-				data_addr = (data_addr & 0x0000FFFF) | (line_buf[0] << 16);
-			}
-			else //if (2 == length)
-			{
-				data_addr = (data_addr & 0x0000FFFF) | (line_buf[0] << 24) 
-							| (line_buf[1] << 16);
-			}
+			ext_addr = (line_buf[4] << 24) | (line_buf[5] << 16);
 			break;
 		default:
-			LOG_WARNING(_GETTEXT(ERRMSG_INVALID_VALUE_MESSAGE), type, 
+			LOG_WARNING(_GETTEXT(ERRMSG_INVALID_VALUE_MESSAGE), line_buf[3], 
 						"hex type", "current line ignored!!");
 			break;
 		}

@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs, ComCtrls,
   StdCtrls, EditBtn, ExtCtrls, cli_caller, parameditor, Menus, Buttons, Spin,
-  Synaser, com_setup, fileselector;
+  Synaser, com_setup, fileselector, hexeditor, XMLCfg;
 
 type
 
@@ -35,6 +35,13 @@ type
     seg_offset: integer;
     addr_offset: integer;
     def_start_addr: integer;
+  end;
+
+  TMemoryInfo = record
+    start_addr: integer;
+    seg_addr: integer;
+    default_byte: byte;
+    byte_size: integer;
   end;
 
   { TFormMain }
@@ -130,6 +137,7 @@ type
     tsAT89S5X: TTabSheet;
     tsC8051F: TTabSheet;
     tsPSoC1: TTabSheet;
+    xmlcfgMain: TXMLConfig;
     procedure btnEditAppClick(Sender: TObject);
     procedure btnEditCaliClick(Sender: TObject);
     procedure btnEditEEClick(Sender: TObject);
@@ -169,11 +177,13 @@ type
     procedure ToggleIF(Sender: TObject);
 
     procedure UpdateTitle();
+    procedure UpdateTargetFile();
     procedure LogInfo(info: string);
     procedure EnableLogOutput();
     procedure DisableLogOutput();
 
     function CheckFatalError(line: string): boolean;
+    function PrepareToRunOpenOCD(): boolean;
     function PrepareToRunCLI(): boolean;
     function GetTargetDefineParameters(): string;
     procedure PrepareBaseParameters();
@@ -183,7 +193,8 @@ type
     { VSProg common declarations }
     function VSProg_CommonCallback(line: string): boolean;
     function VSProg_CommonParseVersionCallback(line: string): boolean;
-    function VSProg_CommonParseParaCallback(line: string): boolean;
+    function VSProg_CommonParseSettingParaCallback(line: string): boolean;
+    function VSProg_CommonParseMemoryParaCallback(line: string): boolean;
     function VSProg_CommonParseReadTargetCallback(line, target: string; var result_str: string): boolean;
     function VSProg_CommonParseReadFuseCallback(line: string): boolean;
     function VSProg_CommonParseReadLockCallback(line: string): boolean;
@@ -255,6 +266,9 @@ type
     bPageLock: boolean;
     bReadOperation: boolean;
     bOpenFileOK: boolean;
+    JTAGPage_Init: boolean;
+    TargetPage_Init: boolean;
+    AboutPage_Init: boolean;
   public
     { public declarations }
   end; 
@@ -268,6 +282,8 @@ var
   TargetFile: array of TTargetFileSetting;
   LogOutput: boolean;
   VSProg_Version: string;
+  MemoryInfo: TMemoryInfo;
+  VSProg_Exists: boolean;
 
 const
   DEBUG_LOG_SHOW: boolean = FALSE;
@@ -276,7 +292,6 @@ const
   VERSION_STR: string = 'RC1';
   VSPROG_STR: string = {$IFDEF UNIX}'vsprog'{$ELSE}'vsprog.exe'{$ENDIF};
   OPENOCD_APP_STR: string = {$IFDEF UNIX}'openocd'{$ELSE}'openocd.exe'{$ENDIF};
-  SLASH_STR: string = {$IFDEF UNIX}'/'{$ELSE}'\'{$ENDIF};
   COMSETUP_STR: string = '&COM Setup';
   COMSETUP_HINT: string = 'Setup COM Port';
   AUTODETECT_STR: string = '&AutoDetect';
@@ -297,11 +312,6 @@ const
   USRSIG_CHAR: string = 's';
 
 implementation
-
-procedure ClearTargetFile();
-begin
-  SetLength(TargetFile, 0);
-end;
 
 procedure RemoveTargetFile(name: string);
 var
@@ -351,6 +361,24 @@ begin
   end;
 end;
 
+function GetTargetFileIndex(target_str: string): integer;
+var
+  i: integer;
+begin
+  result := -1;
+  if Length(TargetFile) > 0 then
+  begin
+    for i := 0 to Length(TargetFile) - 1 do
+    begin
+      if (TargetFile[i].target = target_str) or (TargetFile[i].target = 'ALL') then
+      begin
+        result := i;
+        exit;
+      end;
+    end;
+  end;
+end;
+
 { TFormMain }
 
 procedure TFormMain.EnableLogOutput();
@@ -376,11 +404,50 @@ begin
     enable_str := '(*)';
   end;
   Caption := APP_STR + VERSION_STR + '-' + pcMain.ActivePage.Caption + enable_str
-             + ' ' + VSProg_Version;
+             + ' (' + VSProg_Version + ')';
+end;
+
+procedure TFormMain.UpdateTargetFile();
+var
+  valid_file_num, i: integer;
+begin
+  valid_file_num := 0;
+  cbboxInputFile.Clear;
+  for i := 0 to Length(TargetFile) - 1 do
+  begin
+    if TargetFile[i].filename <> '' then
+    begin
+      cbboxInputFile.Items.Add(TargetFile[i].target + ':' + TargetFile[i].filename);
+      valid_file_num := valid_file_num + 1;
+    end;
+  end;
+  if valid_file_num > 1 then
+  begin
+    cbboxInputFile.Items.Insert(0, 'ALL');
+  end;
+  cbboxInputFile.ItemIndex := 0;
+  cbboxInputFileChange(cbboxInputFile);
 end;
 
 procedure TFormMain.FormCreate(Sender: TObject);
+var
+  i: integer;
+  str_tmp: string;
 begin
+  if FileExists(Application.Location + xmlcfgMain.Filename) then
+  begin
+    JTAGPage_Init := FALSE;
+    TargetPage_Init := FALSE;
+    AboutPage_Init := FALSE;
+  end
+  else
+  begin
+    JTAGPage_Init := TRUE;
+    TargetPage_Init := TRUE;
+    AboutPage_Init := TRUE;
+  end;
+
+  VSProg_Exists := TRUE;
   bOpenFileOK := FALSE;
   bReadOperation := FALSE;
   bPageLock := FALSE;
@@ -412,21 +479,33 @@ begin
   tsSTM8.TabVisible := FALSE;
   tsEEPROM.TabVisible := FALSE;
 
-  pcMain.ActivePage := tsJTAG;
-  pcMainPageChanged(Sender);
-  tbPowerChange(tbPower);
-
   // get VSProg_Version
+  VSProg_Version := '';
   DisableLogOutput();
   if not PrepareToRunCLI() then
   begin
-    // shouldn't run here
+    EnableLogOutput();
+    VSProg_Version := 'No Exists';
+    UpdateTitle();
+  end
+  else
+  begin
+    caller.AddParametersString('--version');
+    caller.Run(@VSProg_CommonParseVersionCallback, FALSE, TRUE);
+    EnableLogOutput();
+    UpdateTitle();
   end;
-  VSProg_Version := '';
-  caller.AddParametersString('--version');
-  caller.Run(@VSProg_CommonParseVersionCallback, FALSE, TRUE);
-  EnableLogOutput();
-  UpdateTitle();
+
+  // load last settings
+  str_tmp := xmlcfgMain.GetValue('activepage', 'JTAG');
+  for i := 0 to pcMain.PageCount - 1 do
+  begin
+    if pcMain.Page[i].Caption = str_tmp then
+    begin
+      pcMain.ActivePage := (pcMain.Page[i] as TTabSheet);
+    end;
+  end;
+  pcMainPageChanged(Sender);
 end;
 
 procedure TFormMain.FormDestroy(Sender: TObject);
@@ -547,15 +626,15 @@ begin
   if not pcMain.ActivePage.Enabled then
   begin
     HideDebugLog();
+    UpdateTitle();
     bPageLock := FALSE;
     exit;
   end;
 
   SetLength(TargetSetting, 0);
-  ClearTargetFile();
+  SetLength(TargetFile, 0);
   cbboxInputFile.Clear;
   memoInfo.Clear;
-  UpdateTitle();
 
   // initialize GUI
   if pcMain.ActivePage = tsAbout then
@@ -592,12 +671,23 @@ begin
       cbboxCOM.ItemIndex := 0;
     end;
 
+    if not PrepareToRunCli() then
+    begin
+      pcMain.ActivePage.Enabled := FALSE;
+    end;
+
+    // update settings
+    if not AboutPage_Init then
+    begin
+      AboutPage_Init := TRUE;
+      fnFW.FileName := xmlcfgMain.GetValue('fw/filename', '');
+      cbboxCOM.Text := xmlcfgMain.GetValue('fw/comm', '');
+    end;
+    UpdateTitle();
     bPageLock := FALSE;
     exit;
-  end;
-
-  // initialize target
-  if pcMain.ActivePage = tsJTAG then
+  end
+  else if pcMain.ActivePage = tsJTAG then
   begin
     TargetType := TT_JTAG;
     ARM_Init();
@@ -605,6 +695,36 @@ begin
     memoLog.Clear;
     ShowDebugLog();
 
+    if (not PrepareToRunCli()) and (not PrepareToRunOpenOCD()) then
+    begin
+      TargetType := TT_NONE;
+      pcMain.ActivePage.Enabled := FALSE;
+    end
+    else if not PrepareToRunOpenOCD() then
+    begin
+      gbOpenOCD.Enabled := FALSE;
+    end
+    else if not PrepareToRunCli() then
+    begin
+      gbSVFPlayer.Enabled := FALSE;
+      gbPower.Enabled := FALSE;
+    end;
+
+    // update settings
+    if not JTAGPage_Init then
+    begin
+      JTAGPage_Init := TRUE;
+      cbboxOpenOCDInterface.Text := xmlcfgMain.GetValue('openocd/interface', '');
+      cbboxOpenOCDTarget.Text := xmlcfgMain.GetValue('openocd/target', '');
+      cbboxOpenOCDScript.Text := xmlcfgMain.GetValue('openocd/script', '');
+      edtOpenOCDOption.Text := xmlcfgMain.GetValue('openocd/option', '');
+      fneditSVFFile.FileName := xmlcfgMain.GetValue('svf/filename', '');
+      edtSVFOption.Text := xmlcfgMain.GetValue('svf/option', '');
+      sedtPower.Value := xmlcfgMain.GetValue('power/voltage', 0);
+      sedtPowerChange(sedtPower);
+    end;
+
+    UpdateTitle();
     bPageLock := FALSE;
     exit;
   end
@@ -713,11 +833,6 @@ begin
     exit;
   end;
   update_lock := TRUE;
-  if not FileExists(Application.Location + VSPROG_STR) then
-  begin
-    MessageDlg('Error, missing vsprog', 'Opps, Where is my vsprog? I cannot work without her.', mtError, [mbOK], 0);
-    exit;
-  end;
   if cbboxCOM.Text = '' then
   begin
     MessageDlg('Error, no comm port found?', '......', mtError, [mbOK], 0);
@@ -932,7 +1047,11 @@ var
 begin
   bOpenFileOK := FALSE;
   file_num := Length(TargetFile);
-  if file_num > 1 then
+  if file_num = 0 then
+  begin
+    exit;
+  end
+  else if file_num > 1 then
   begin
     FormFileSelector.Reset;
     for i := 0 to file_num - 1 do
@@ -941,41 +1060,23 @@ begin
     end;
     if mrOK = FormFileSelector.ShowModal then
     begin
-      cbboxInputFile.Clear;
-      valid_filename_num := 0;
       for i := 0 to file_num - 1 do
       begin
         TargetFile[i].filename := FormFileSelector.GetFileNameByTargetName(TargetFile[i].target);
-        if TargetFile[i].filename <> '' then
-        begin
-          cbboxInputFile.Items.Add(TargetFile[i].target + ':' + TargetFile[i].filename);
-          valid_filename_num := valid_filename_num + 1;
-        end;
       end;
-      if valid_filename_num > 1 then
-      begin
-        cbboxInputFile.Items.Insert(0, 'ALL');
-      end;
-      cbboxInputFile.ItemIndex := 0;
-      cbboxInputFileChange(cbboxInputFile);
+      UpdateTargetFile();
       bOpenFileOK := TRUE;
     end;
   end
-  else if odInputFile.Execute then
+  else
   begin
-    cbboxInputFile.Clear;
-    if file_num > 0 then
+    odInputFile.FileName := TargetFile[0].filename;
+    if odInputFile.Execute then
     begin
-      cbboxInputFile.Items.Add(TargetFile[0].target + ':' + odInputFile.FileName);
       TargetFile[0].filename := odInputFile.FileName;
-    end
-    else
-    begin
-      cbboxInputFile.Items.Add(odInputFile.FileName);
+      UpdateTargetFile();
+      bOpenFileOK := TRUE;
     end;
-    cbboxInputFile.ItemIndex := 0;
-    cbboxInputFileChange(cbboxInputFile);
-    bOpenFileOK := TRUE;
   end;
 end;
 
@@ -987,14 +1088,11 @@ begin
   end;
 
   OpenOCD_Caller.Take;
-  if not FileExists(Application.Location + OPENOCD_APP_STR) then
+  if not PrepareToRunOpenOCD() then
   begin
-    MessageDlg('Error, missing OpenOCD', 'Opps, Where is OpenOCD? I cannot work without her.', mtError, [mbOK], 0);
     OpenOCD_Caller.UnTake;
     exit;
   end;
-
-  OpenOCD_Caller.RemoveAllParameters();
 
   if edtOpenOCDOption.Text <> '' then
   begin
@@ -1027,9 +1125,65 @@ begin
 end;
 
 procedure TFormMain.btnEditAppClick(Sender: TObject);
+var
+  index: integer;
+  targetdefine: string;
 begin
-//  FormHexEditor.Caption := (Sender as TButton).Caption;
-//  FormHexEditor.ShowModal;
+  targetdefine := GetTargetDefineParameters();
+  if targetdefine[1] = 's' then
+  begin
+    MessageDlg('Error', 'Please select a target chip.', mtError, [mbOK], 0);
+    exit;
+  end;
+
+  index := GetTargetFileIndex('Flash');
+  if (index < 0) or (TargetFile[index].filename = '') then
+  begin
+    MessageDlg('Error', 'No File Defined.', mtError, [mbOK], 0);
+    exit;
+  end;
+  if not FileExists(TargetFile[index].filename) then
+  begin
+    MessageDlg('Error', TargetFile[index].filename + 'not exists.', mtError, [mbOK], 0);
+    exit;
+  end;
+  FormHexEditor.FileName := TargetFile[index].filename;
+
+  FormHexEditor.SegOffset := TargetFile[index].seg_offset;
+  FormHexEditor.AddressOffset := TargetFile[index].addr_offset;
+  FormHexEditor.StartAddress := TargetFile[index].def_start_addr;
+
+  if caller.IsRunning() then
+  begin
+    exit;
+  end;
+  caller.Take;
+  // call 'vsprog -Ppara' to extract para settings
+  DisableLogOutput();
+  if not PrepareToRunCLI() then
+  begin
+    EnableLogOutput();
+    caller.UnTake;
+    exit;
+  end;
+  PrepareBaseParameters();
+  caller.AddParameter('Pflash');
+  FormParaEditor.FreeRecord();
+  caller.Run(@VSProg_CommonParseMemoryParaCallback, FALSE, TRUE);
+  EnableLogOutput();
+  if bFatalError then
+  begin
+    exit;
+  end;
+
+  if (FormHexEditor.StartAddress) <> MemoryInfo.start_addr then
+  begin
+    FormHexEditor.StartAddress := MemoryInfo.start_addr;
+  end;
+  FormHexEditor.DataByteSize := MemoryInfo.byte_size;
+  FormHexEditor.DefaultData := MemoryInfo.default_byte;
+  FormHexEditor.Caption := (Sender as TButton).Caption;
+  FormHexEditor.ShowModal;
 end;
 
 procedure TFormMain.btnEditCaliClick(Sender: TObject);
@@ -1078,7 +1232,7 @@ begin
   PrepareBaseParameters();
   caller.AddParameter('Pcalibration');
   FormParaEditor.FreeRecord();
-  caller.Run(@VSProg_CommonParseParaCallback, FALSE, TRUE);
+  caller.Run(@VSProg_CommonParseSettingParaCallback, FALSE, TRUE);
   EnableLogOutput();
   if bFatalError then
   begin
@@ -1096,9 +1250,61 @@ begin
 end;
 
 procedure TFormMain.btnEditEEClick(Sender: TObject);
+var
+  index: integer;
+  targetdefine: string;
 begin
-//  FormHexEditor.Caption := (Sender as TButton).Caption;
-//  FormHexEditor.ShowModal;
+  targetdefine := GetTargetDefineParameters();
+  if targetdefine[1] = 's' then
+  begin
+    MessageDlg('Error', 'Please select a target chip.', mtError, [mbOK], 0);
+    exit;
+  end;
+
+  index := GetTargetFileIndex('EEPROM');
+  if (index < 0) or (TargetFile[index].filename = '') then
+  begin
+    MessageDlg('Error', 'No File Defined.', mtError, [mbOK], 0);
+    exit;
+  end;
+  if not FileExists(TargetFile[index].filename) then
+  begin
+    MessageDlg('Error', TargetFile[index].filename + 'not exists.', mtError, [mbOK], 0);
+    exit;
+  end;
+  FormHexEditor.FileName := TargetFile[index].filename;
+
+  FormHexEditor.SegOffset := TargetFile[index].seg_offset;
+  FormHexEditor.AddressOffset := TargetFile[index].addr_offset;
+
+  if caller.IsRunning() then
+  begin
+    exit;
+  end;
+  caller.Take;
+  // call 'vsprog -Ppara' to extract para settings
+  DisableLogOutput();
+  if not PrepareToRunCLI() then
+  begin
+    EnableLogOutput();
+    caller.UnTake;
+    exit;
+  end;
+  PrepareBaseParameters();
+  caller.AddParameter('Peeprom');
+  FormParaEditor.FreeRecord();
+  caller.Run(@VSProg_CommonParseMemoryParaCallback, FALSE, TRUE);
+  EnableLogOutput();
+  if bFatalError then
+  begin
+    exit;
+  end;
+
+  FormHexEditor.StartAddress := MemoryInfo.start_addr;
+  FormHexEditor.DataByteSize := MemoryInfo.byte_size;
+  FormHexEditor.DefaultData := MemoryInfo.default_byte;
+  FormHexEditor.Caption := (Sender as TButton).Caption;
+  FormHexEditor.ShowModal;
 end;
 
 procedure TFormMain.btnEditFuseClick(Sender: TObject);
@@ -1147,7 +1353,7 @@ begin
   PrepareBaseParameters();
   caller.AddParameter('Pfuse');
   FormParaEditor.FreeRecord();
-  caller.Run(@VSProg_CommonParseParaCallback, FALSE, TRUE);
+  caller.Run(@VSProg_CommonParseSettingParaCallback, FALSE, TRUE);
   EnableLogOutput();
   if bFatalError then
   begin
@@ -1210,7 +1416,7 @@ begin
   PrepareBaseParameters();
   caller.AddParameter('Plock');
   FormParaEditor.FreeRecord();
-  caller.Run(@VSProg_CommonParseParaCallback, FALSE, TRUE);
+  caller.Run(@VSProg_CommonParseSettingParaCallback, FALSE, TRUE);
   EnableLogOutput();
   if bFatalError then
   begin
@@ -1502,9 +1708,50 @@ begin
 end;
 
 procedure TFormMain.FormClose(Sender: TObject; var CloseAction: TCloseAction);
+var
+  i: integer;
 begin
   caller.Stop();
   OpenOCD_Caller.Stop();
+
+  // save settings to config file
+  xmlcfgMain.SetValue('activepage', pcMain.ActivePage.Caption);
+  xmlcfgMain.SetValue('openocd/interface', cbboxOpenOCDInterface.Text);
+  xmlcfgMain.SetValue('openocd/target', cbboxOpenOCDTarget.Text);
+  xmlcfgMain.SetValue('openocd/script', cbboxOpenOCDScript.Text);
+  xmlcfgMain.SetValue('openocd/option', edtOpenOCDOption.Text);
+  xmlcfgMain.SetValue('svf/filename', fneditSVFFile.FileName);
+  xmlcfgMain.SetValue('svf/option', edtSVFOption.Text);
+  xmlcfgMain.SetValue('power/voltage', sedtPower.Value);
+  xmlcfgMain.SetValue('fw/filename', fnFW.FileName);
+  xmlcfgMain.SetValue('fw/comm', cbboxCOM.Text);
+  xmlcfgMain.SetValue('target/chip', cbboxTarget.Text);
+  xmlcfgMain.SetValue('target/mode', cbboxMode.Text);
+  xmlcfgMain.SetValue('target/filename', cbboxInputFile.Text);
+  xmlcfgMain.SetValue('tatget/files/number', Length(TargetFile));
+  xmlcfgMain.SetValue('target/freq', lbledtFreq.Text);
+  for i := 0 to Length(TargetFile) - 1 do
+  begin
+    xmlcfgMain.SetValue('target/files/' + IntToStr(i) + '/target', TargetFile[i].target);
+    xmlcfgMain.SetValue('target/files/' + IntToStr(i) + '/filename', TargetFile[i].filename);
+  end;
+  xmlcfgMain.SetValue('target/fuse', lbledtFuse.Text);
+  xmlcfgMain.SetValue('target/lock', lbledtLock.Text);
+  xmlcfgMain.SetValue('target/cali', lbledtCali.Text);
+  xmlcfgMain.SetValue('target/usrsig', lbledtUsrSig.Text);
+  xmlcfgMain.SetValue('target/nc', chkboxNoconnect.Checked);
+  xmlcfgMain.SetValue('target/nw', chkboxNowarning.Checked);
+  xmlcfgMain.SetValue('target/flashen', chkboxApp.Checked);
+  xmlcfgMain.SetValue('target/eepromen', chkboxEE.Checked);
+  xmlcfgMain.SetValue('target/fuseen', chkboxFuse.Checked);
+  xmlcfgMain.SetValue('target/locken', chkboxLock.Checked);
+  xmlcfgMain.SetValue('target/usrsigen', chkboxUsrSig.Checked);
+  xmlcfgMain.SetValue('target/calien', chkboxCali.Checked);
+  xmlcfgMain.SetValue('target/ebw', chkboxEraseBeforeWrite.Checked);
+  xmlcfgMain.SetValue('target/vaw', chkboxVerifyAfterWrite.Checked);
+  xmlcfgMain.SetValue('target/mass', chkboxMP.Checked);
+  xmlcfgMain.SetValue('target/extraparam', lbledtExtraPara.Text);
+  xmlcfgMain.Flush;
 
   CloseAction := caFree;
 end;
@@ -1583,11 +1830,28 @@ begin
   result := bFatalError;
 end;
 
+function TFormMain.PrepareToRunOpenOCD(): boolean;
+begin
+  if not FileExists(OpenOCD_Caller.GetApplication()) then
+  begin
+    result := FALSE;
+  end
+  else
+  begin
+    OpenOCD_Caller.RemoveAllParameters();
+    result := TRUE;
+  end;
+end;
+
 function TFormMain.PrepareToRunCLI(): boolean;
 begin
   if not FileExists(caller.GetApplication()) then
   begin
-    MessageDlg('Error, missing vsprog', 'Opps, Where is my vsprog? I cannot work without her.', mtError, [mbOK], 0);
+    if VSProg_Exists then
+    begin
+      MessageDlg('Error, missing vsprog', 'Opps, Where is my vsprog? I cannot work without her.', mtError, [mbOK], 0);
+    end;
+    VSProg_Exists := FALSE;
     result := FALSE;
   end
   else
@@ -1763,6 +2027,7 @@ end;
 procedure TFormMain.tDelayTimer(Sender: TObject);
 var
   success: boolean;
+  i, j: integer;
 begin
   tDelay.Enabled := FALSE;
 
@@ -1788,6 +2053,7 @@ begin
     TT_CORTEXM3:
       success := CortexM3_Init();
   else
+      UpdateTitle();
       bPageLock := FALSE;
       exit;
   end;
@@ -1807,12 +2073,54 @@ begin
     AdjustComponentColor(lbledtCali);
     AdjustComponentColor(lbledtUsrSig);
     AdjustComponentColor(lbledtFreq);
+
+    if not TargetPage_Init then
+    begin
+      TargetPage_Init := TRUE;
+      if xmlcfgMain.GetValue('target/chip', '') = cbboxTarget.Text then
+      begin
+        cbboxTargetChange(cbboxTarget);
+        cbboxMode.Text := xmlcfgMain.GetValue('target/mode', '');
+        cbboxModeChange(cbboxMode);
+        lbledtFreq.Text := xmlcfgMain.GetValue('target/freq', '');
+        if Length(TargetFile) <> xmlcfgMain.GetValue('tatget/files/number', 0) then
+        begin
+          // Error here
+          TargetType := TT_NONE;
+          pcMain.ActivePage.Enabled := FALSE;
+        end;
+        for i := 0 to Length(TargetFile) - 1 do
+        begin
+          j := GetTargetFileIndex(xmlcfgMain.GetValue('target/files/' + IntToStr(i) + '/target', ''));
+          TargetFile[j].filename := xmlcfgMain.GetValue('target/files/' + IntToStr(i) + '/filename', '');
+        end;
+        UpdateTargetFile();
+        cbboxInputFile.Text := xmlcfgMain.GetValue('target/filename', '');
+        lbledtFuse.Text := xmlcfgMain.GetValue('target/fuse', '');
+        lbledtLock.Text := xmlcfgMain.GetValue('target/lock', '');
+        lbledtCali.Text := xmlcfgMain.GetValue('target/cali', '');
+        lbledtUsrSig.Text := xmlcfgMain.GetValue('target/usrsig', '');
+        chkboxNoconnect.Checked := xmlcfgMain.GetValue('target/nc', FALSE);
+        chkboxNowarning.Checked := xmlcfgMain.GetValue('target/nw', FALSE);
+        chkboxApp.Checked := xmlcfgMain.GetValue('target/flashen', FALSE);
+        chkboxEE.Checked := xmlcfgMain.GetValue('target/eepromen', FALSE);
+        chkboxFuse.Checked := xmlcfgMain.GetValue('target/fuseen', FALSE);
+        chkboxLock.Checked := xmlcfgMain.GetValue('target/locken', FALSE);
+        chkboxUsrSig.Checked := xmlcfgMain.GetValue('target/usrsigen', FALSE);
+        chkboxCali.Checked := xmlcfgMain.GetValue('target/calien', FALSE);
+        chkboxEraseBeforeWrite.Checked := xmlcfgMain.GetValue('target/ebw', FALSE);
+        chkboxVerifyAfterWrite.Checked := xmlcfgMain.GetValue('target/vaw', FALSE);
+        chkboxMP.Checked := xmlcfgMain.GetValue('target/mass', FALSE);
+        lbledtExtraPara.Text := xmlcfgMain.GetValue('target/extraparam', '');
+      end;
+    end;
   end
   else
   begin
     TargetType := TT_NONE;
     pcMain.ActivePage.Enabled := FALSE;
   end;
+  UpdateTitle();
   bPageLock := FALSE;
 end;
 
@@ -1869,8 +2177,6 @@ begin
 end;
 
 function TFormMain.VSProg_CommonParseVersionCallback(line: string): boolean;
-var
-  s_tmp: string;
 begin
   if CheckFatalError(line) then
   begin
@@ -1879,8 +2185,7 @@ begin
   end;
   result := TRUE;
 
-  s_tmp := LowerCase(line);
-  if Pos('vsprog', s_tmp) = 1 then
+  if Pos('vsprog', LowerCase(line)) = 1 then
   begin
     VSProg_Version := WipeTailEnter(line);
   end;
@@ -1982,7 +2287,32 @@ begin
   end;
 end;
 
-function TFormMain.VSProg_CommonParseParaCallback(line: string): boolean;
+function TFormMain.VSProg_CommonParseMemoryParaCallback(line: string): boolean;
+var
+  seg_addr, start_addr, byte_size, default_byte: integer;
+  parse_result: boolean;
+begin
+  if CheckFatalError(line) then
+  begin
+    result := FALSE;
+    exit;
+  end;
+  result := TRUE;
+
+  parse_result := GetIntegerParameter(line, 'seg_addr', seg_addr);
+  parse_result := parse_result and GetIntegerParameter(line, 'start_addr', start_addr);
+  parse_result := parse_result and GetIntegerParameter(line, 'default_byte', default_byte);
+  parse_result := parse_result and GetIntegerParameter(line, 'byte_size', byte_size);
+  if parse_result then
+  begin
+    MemoryInfo.seg_addr := seg_addr;
+    MemoryInfo.start_addr := start_addr;
+    MemoryInfo.default_byte := byte(default_byte);
+    MemoryInfo.byte_size := byte_size;
+  end;
+end;
+
+function TFormMain.VSProg_CommonParseSettingParaCallback(line: string): boolean;
 var
   dis: string;
 begin
@@ -2431,6 +2761,7 @@ begin
   setting.mode := 'rp';
   setting.target := FLASH_CHAR + LOCK_CHAR;
   VSProg_AddTargetSetting(setting);
+  AddTargetFile('ALL', 0, 0, 0);
 
   // call 'vsprog -Spsoc1' to extract supported psoc1 targets
   DisableLogOutput();
@@ -2475,6 +2806,7 @@ begin
   setting.mode := 'jc';
   setting.target := FLASH_CHAR;
   VSProg_AddTargetSetting(setting);
+  AddTargetFile('ALL', 0, 0, 0);
 
   // call 'vsprog -Sc8051f' to check support
   DisableLogOutput();
@@ -2582,6 +2914,7 @@ begin
   setting.lock_bytelen := 1;
   setting.lock_default := 1;
   VSProg_AddTargetSetting(setting);
+  AddTargetFile('ALL', 0, 0, 0);
 
   // call 'vsprog -Sat89s5x' to extract supported at89s5x targets
   DisableLogOutput();
@@ -2633,6 +2966,7 @@ begin
   setting.mode := 'jsb';
   setting.target := FLASH_CHAR;
   VSProg_AddTargetSetting(setting);
+  AddTargetFile('ALL', 0, 0, 0);
 
   // call 'vsprog -Smsp430' to extract supported at89s5x targets
   DisableLogOutput();
@@ -2707,6 +3041,7 @@ begin
   VSProg_TargetSettingInit(setting);
   setting.target := FLASH_CHAR;
   VSProg_AddTargetSetting(setting);
+  AddTargetFile('ALL', 0, 0, 0);
 
   // call 'vsprog -Sstm8' to extract supported at89s5x targets
   DisableLogOutput();
@@ -2753,19 +3088,19 @@ var
 begin
   if (cbboxOpenOCDInterface.Items.Count = 0) and DirectoryExists(Application.Location + 'interface') then
   begin
-    if FindFirst(Application.Location + 'interface' + SLASH_STR + '*',
+    if FindFirst(Application.Location + 'interface' + System.DirectorySeparator + '*',
                  (faAnyFile and not faDirectory),
                  SearchResult) = 0 then
     begin
       if ExtractFileExt(SearchResult.Name) = '.cfg' then
       begin
-        cbboxOpenOCDInterface.Items.Add('interface' + SLASH_STR + SearchResult.Name);
+        cbboxOpenOCDInterface.Items.Add('interface' + System.DirectorySeparator + SearchResult.Name);
       end;
       while FindNext(SearchResult) = 0 do
       begin
         if ExtractFileExt(SearchResult.Name) = '.cfg' then
         begin
-          cbboxOpenOCDInterface.Items.Add('interface' + SLASH_STR + SearchResult.Name);
+          cbboxOpenOCDInterface.Items.Add('interface' + System.DirectorySeparator + SearchResult.Name);
         end;
       end;
     end;
@@ -2773,7 +3108,7 @@ begin
 
     if cbboxOpenOCDInterface.Items.Count > 0 then
     begin
-      index := cbboxOpenOCDInterface.Items.IndexOf('interface' + SLASH_STR + 'vsllink.cfg');
+      index := cbboxOpenOCDInterface.Items.IndexOf('interface' + System.DirectorySeparator + 'vsllink.cfg');
       if index > 0 then
       begin
         cbboxOpenOCDInterface.ItemIndex := index;
@@ -2787,19 +3122,19 @@ begin
 
   if (cbboxOpenOCDTarget.Items.Count = 0) and  DirectoryExists(Application.Location + 'target') then
   begin
-    if FindFirst(Application.Location + 'target' + SLASH_STR + '*',
+    if FindFirst(Application.Location + 'target' + System.DirectorySeparator + '*',
                  (faAnyFile and not faDirectory),
                  SearchResult) = 0 then
     begin
       if ExtractFileExt(SearchResult.Name) = '.cfg' then
       begin
-        cbboxOpenOCDTarget.Items.Add('target' + SLASH_STR + SearchResult.Name);
+        cbboxOpenOCDTarget.Items.Add('target' + System.DirectorySeparator + SearchResult.Name);
       end;
       while FindNext(SearchResult) = 0 do
       begin
         if ExtractFileExt(SearchResult.Name) = '.cfg' then
         begin
-          cbboxOpenOCDTarget.Items.Add('target' + SLASH_STR + SearchResult.Name);
+          cbboxOpenOCDTarget.Items.Add('target' + System.DirectorySeparator + SearchResult.Name);
         end;
       end;
     end;
@@ -2813,19 +3148,19 @@ begin
 
   if (cbboxOpenOCDScript.Items.Count = 0) and  DirectoryExists(Application.Location + 'script') then
   begin
-    if FindFirst(Application.Location + 'script' + SLASH_STR + '*',
+    if FindFirst(Application.Location + 'script' + System.DirectorySeparator + '*',
                  (faAnyFile and not faDirectory),
                  SearchResult) = 0 then
     begin
       if ExtractFileExt(SearchResult.Name) = '.cfg' then
       begin
-        cbboxOpenOCDScript.Items.Add('script' + SLASH_STR + SearchResult.Name);
+        cbboxOpenOCDScript.Items.Add('script' + System.DirectorySeparator + SearchResult.Name);
       end;
       while FindNext(SearchResult) = 0 do
       begin
         if ExtractFileExt(SearchResult.Name) = '.cfg' then
         begin
-          cbboxOpenOCDScript.Items.Add('script' + SLASH_STR + SearchResult.Name);
+          cbboxOpenOCDScript.Items.Add('script' + System.DirectorySeparator + SearchResult.Name);
         end;
       end;
     end;
@@ -3081,6 +3416,7 @@ begin
   VSProg_TargetSettingInit(setting);
   setting.target := FLASH_CHAR;
   VSProg_AddTargetSetting(setting);
+  AddTargetFile('ALL', 0, 0, 0);
 
   // call 'vsprog -Scomisp' to extract supported comisp targets
   DisableLogOutput();
