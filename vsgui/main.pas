@@ -401,6 +401,7 @@ begin
     if combo.Items.Strings[i] = aText then
     begin
       combo.ItemIndex := i;
+      break;
     end;
   end;
 end;
@@ -517,9 +518,9 @@ begin
     if pcMain.Page[i].Caption = str_tmp then
     begin
       pcMain.ActivePage := (pcMain.Page[i] as TTabSheet);
+      break;
     end;
   end;
-  pcMainPageChanged(Sender);
 end;
 
 procedure TFormMain.FormDestroy(Sender: TObject);
@@ -2044,6 +2045,7 @@ procedure TFormMain.tDelayTimer(Sender: TObject);
 var
   success: boolean;
   i, j: integer;
+  str_tmp: string;
 begin
   tDelay.Enabled := FALSE;
 
@@ -2093,40 +2095,53 @@ begin
     if not TargetPage_Init then
     begin
       TargetPage_Init := TRUE;
-      ComboBoxSetText(cbboxTarget, xmlcfgMain.GetValue('target/chip', ''));
-      cbboxTargetChange(cbboxTarget);
-      ComboBoxSetText(cbboxMode, xmlcfgMain.GetValue('target/mode', ''));
-      cbboxModeChange(cbboxMode);
-      lbledtFreq.Text := xmlcfgMain.GetValue('target/freq', '');
-      if Length(TargetFile) <> xmlcfgMain.GetValue('tatget/files/number', 0) then
+      str_tmp := xmlcfgMain.GetValue('target/chip', '');
+      success := FALSE;
+      for i := 0 to cbboxTarget.Items.Count - 1 do
       begin
-        // Error here
-        TargetType := TT_NONE;
-        pcMain.ActivePage.Enabled := FALSE;
+        if str_tmp = cbboxTarget.Items.Strings[i] then
+        begin
+          success := TRUE;
+          break;
+        end;
       end;
-      for i := 0 to Length(TargetFile) - 1 do
+      if success then
       begin
-        j := GetTargetFileIndex(xmlcfgMain.GetValue('target/files/' + IntToStr(i) + '/target', ''));
-        TargetFile[j].filename := xmlcfgMain.GetValue('target/files/' + IntToStr(i) + '/filename', '');
+        ComboBoxSetText(cbboxTarget, xmlcfgMain.GetValue('target/chip', ''));
+        cbboxTargetChange(cbboxTarget);
+        ComboBoxSetText(cbboxMode, xmlcfgMain.GetValue('target/mode', ''));
+        cbboxModeChange(cbboxMode);
+        lbledtFreq.Text := xmlcfgMain.GetValue('target/freq', '');
+        if Length(TargetFile) <> xmlcfgMain.GetValue('tatget/files/number', 0) then
+        begin
+          // Error here
+          TargetType := TT_NONE;
+          pcMain.ActivePage.Enabled := FALSE;
+        end;
+        for i := 0 to Length(TargetFile) - 1 do
+        begin
+          j := GetTargetFileIndex(xmlcfgMain.GetValue('target/files/' + IntToStr(i) + '/target', ''));
+          TargetFile[j].filename := xmlcfgMain.GetValue('target/files/' + IntToStr(i) + '/filename', '');
+        end;
+        UpdateTargetFile();
+        ComboBoxSetText(cbboxInputFile, xmlcfgMain.GetValue('target/filename', ''));
+        lbledtFuse.Text := xmlcfgMain.GetValue('target/fuse', '');
+        lbledtLock.Text := xmlcfgMain.GetValue('target/lock', '');
+        lbledtCali.Text := xmlcfgMain.GetValue('target/cali', '');
+        lbledtUsrSig.Text := xmlcfgMain.GetValue('target/usrsig', '');
+        chkboxNoconnect.Checked := xmlcfgMain.GetValue('target/nc', FALSE);
+        chkboxNowarning.Checked := xmlcfgMain.GetValue('target/nw', FALSE);
+        chkboxApp.Checked := xmlcfgMain.GetValue('target/flashen', FALSE);
+        chkboxEE.Checked := xmlcfgMain.GetValue('target/eepromen', FALSE);
+        chkboxFuse.Checked := xmlcfgMain.GetValue('target/fuseen', FALSE);
+        chkboxLock.Checked := xmlcfgMain.GetValue('target/locken', FALSE);
+        chkboxUsrSig.Checked := xmlcfgMain.GetValue('target/usrsigen', FALSE);
+        chkboxCali.Checked := xmlcfgMain.GetValue('target/calien', FALSE);
+        chkboxEraseBeforeWrite.Checked := xmlcfgMain.GetValue('target/ebw', FALSE);
+        chkboxVerifyAfterWrite.Checked := xmlcfgMain.GetValue('target/vaw', FALSE);
+        chkboxMP.Checked := xmlcfgMain.GetValue('target/mass', FALSE);
+        lbledtExtraPara.Text := xmlcfgMain.GetValue('target/extraparam', '');
       end;
-      UpdateTargetFile();
-      ComboBoxSetText(cbboxInputFile, xmlcfgMain.GetValue('target/filename', ''));
-      lbledtFuse.Text := xmlcfgMain.GetValue('target/fuse', '');
-      lbledtLock.Text := xmlcfgMain.GetValue('target/lock', '');
-      lbledtCali.Text := xmlcfgMain.GetValue('target/cali', '');
-      lbledtUsrSig.Text := xmlcfgMain.GetValue('target/usrsig', '');
-      chkboxNoconnect.Checked := xmlcfgMain.GetValue('target/nc', FALSE);
-      chkboxNowarning.Checked := xmlcfgMain.GetValue('target/nw', FALSE);
-      chkboxApp.Checked := xmlcfgMain.GetValue('target/flashen', FALSE);
-      chkboxEE.Checked := xmlcfgMain.GetValue('target/eepromen', FALSE);
-      chkboxFuse.Checked := xmlcfgMain.GetValue('target/fuseen', FALSE);
-      chkboxLock.Checked := xmlcfgMain.GetValue('target/locken', FALSE);
-      chkboxUsrSig.Checked := xmlcfgMain.GetValue('target/usrsigen', FALSE);
-      chkboxCali.Checked := xmlcfgMain.GetValue('target/calien', FALSE);
-      chkboxEraseBeforeWrite.Checked := xmlcfgMain.GetValue('target/ebw', FALSE);
-      chkboxVerifyAfterWrite.Checked := xmlcfgMain.GetValue('target/vaw', FALSE);
-      chkboxMP.Checked := xmlcfgMain.GetValue('target/mass', FALSE);
-      lbledtExtraPara.Text := xmlcfgMain.GetValue('target/extraparam', '');
     end;
   end
   else
