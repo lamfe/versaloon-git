@@ -193,7 +193,7 @@ RESULT avr8_jtag_program(operation_t operations, program_info_t *pi,
 	
 	int32_t i;
 	uint32_t j, k, page_size, len_current_list;
-	uint8_t page_buf[256];
+	uint8_t page_buf[256 + 1];
 	RESULT ret = ERROR_OK;
 	memlist *ml_tmp;
 	uint32_t target_size;
