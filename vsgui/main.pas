@@ -176,6 +176,7 @@ type
     procedure tbPowerChange(Sender: TObject);
     procedure ToggleIF(Sender: TObject);
 
+    procedure ComboBoxSetText(var combo: TComboBox; aText: string);
     procedure UpdateTitle();
     procedure UpdateTargetFile();
     procedure LogInfo(info: string);
@@ -389,6 +390,19 @@ end;
 procedure TFormMain.DisableLogOutput();
 begin
   LogOutput := FALSE;
+end;
+
+procedure TFormMain.ComboBoxSetText(var combo: TComboBox; aText: string);
+var
+  i: integer;
+begin
+  for i := 0 to combo.Items.Count - 1 do
+  begin
+    if combo.Items.Strings[i] = aText then
+    begin
+      combo.ItemIndex := i;
+    end;
+  end;
 end;
 
 procedure TFormMain.UpdateTitle();
@@ -681,7 +695,7 @@ begin
     begin
       AboutPage_Init := TRUE;
       fnFW.FileName := xmlcfgMain.GetValue('fw/filename', '');
-      cbboxCOM.Text := xmlcfgMain.GetValue('fw/comm', '');
+      ComboBoxSetText(cbboxCOM, xmlcfgMain.GetValue('fw/comm', ''));
     end;
     UpdateTitle();
     bPageLock := FALSE;
@@ -714,9 +728,9 @@ begin
     if not JTAGPage_Init then
     begin
       JTAGPage_Init := TRUE;
-      cbboxOpenOCDInterface.Text := xmlcfgMain.GetValue('openocd/interface', '');
-      cbboxOpenOCDTarget.Text := xmlcfgMain.GetValue('openocd/target', '');
-      cbboxOpenOCDScript.Text := xmlcfgMain.GetValue('openocd/script', '');
+      ComboBoxSetText(cbboxOpenOCDInterface, xmlcfgMain.GetValue('openocd/interface', ''));
+      ComboBoxSetText(cbboxOpenOCDTarget, xmlcfgMain.GetValue('openocd/target', ''));
+      ComboBoxSetText(cbboxOpenOCDScript, xmlcfgMain.GetValue('openocd/script', ''));
       edtOpenOCDOption.Text := xmlcfgMain.GetValue('openocd/option', '');
       fneditSVFFile.FileName := xmlcfgMain.GetValue('svf/filename', '');
       edtSVFOption.Text := xmlcfgMain.GetValue('svf/option', '');
@@ -2077,10 +2091,11 @@ begin
     if not TargetPage_Init then
     begin
       TargetPage_Init := TRUE;
-      if xmlcfgMain.GetValue('target/chip', '') = cbboxTarget.Text then
+      if xmlcfgMain.GetValue('target/chip', '') <> cbboxTarget.Text then
       begin
+        ComboBoxSetText(cbboxTarget, xmlcfgMain.GetValue('target/chip', ''));
         cbboxTargetChange(cbboxTarget);
-        cbboxMode.Text := xmlcfgMain.GetValue('target/mode', '');
+        ComboBoxSetText(cbboxMode, xmlcfgMain.GetValue('target/mode', ''));
         cbboxModeChange(cbboxMode);
         lbledtFreq.Text := xmlcfgMain.GetValue('target/freq', '');
         if Length(TargetFile) <> xmlcfgMain.GetValue('tatget/files/number', 0) then
@@ -2095,7 +2110,7 @@ begin
           TargetFile[j].filename := xmlcfgMain.GetValue('target/files/' + IntToStr(i) + '/filename', '');
         end;
         UpdateTargetFile();
-        cbboxInputFile.Text := xmlcfgMain.GetValue('target/filename', '');
+        ComboBoxSetText(cbboxInputFile, xmlcfgMain.GetValue('target/filename', ''));
         lbledtFuse.Text := xmlcfgMain.GetValue('target/fuse', '');
         lbledtLock.Text := xmlcfgMain.GetValue('target/lock', '');
         lbledtCali.Text := xmlcfgMain.GetValue('target/cali', '');
