@@ -176,7 +176,7 @@ begin
     i := i div 2;
     // validity check
     line_data_len := buff[0];
-    if (line_data_len = 0) or ((line_data_len + 5) <> i) then
+    if (line_data_len + 5) <> i then
     begin
       exit;
     end;

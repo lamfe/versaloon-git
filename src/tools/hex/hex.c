@@ -99,7 +99,7 @@ RESULT read_hex_file(FILE *hex_file, WRITE_MEMORY_CALLBACK callback,
 		
 		// valid check
 		length = line_buf[0];
-		if ((0 == length) || ((length + 5) != i))
+		if ((length + 5) != i)
 		{
 			return ERROR_FAIL;
 		}
