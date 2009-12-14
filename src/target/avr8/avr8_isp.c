@@ -89,7 +89,6 @@ static void avr8_isp_pollready(void)
 RESULT avr8_isp_program(operation_t operations, program_info_t *pi, 
 						programmer_info_t *prog)
 {
-	uint8_t data_tmp[4];
 	uint8_t cmd_buf[4];
 	uint8_t poll_byte;
 	int32_t i;
@@ -168,25 +167,24 @@ try_frequency:
 	cmd_buf[1] = 0x00;
 	cmd_buf[2] = 0x00;
 	cmd_buf[3] = 0x00;
-	spi_io(cmd_buf, 4, &data_tmp[2], 3, 1);
+	spi_io(cmd_buf, 4, &page_buf[2], 3, 1);
 	cmd_buf[0] = 0x30;
 	cmd_buf[1] = 0x00;
 	cmd_buf[2] = 0x01;
 	cmd_buf[3] = 0x00;
-	spi_io(cmd_buf, 4, &data_tmp[1], 3, 1);
+	spi_io(cmd_buf, 4, &page_buf[1], 3, 1);
 	cmd_buf[0] = 0x30;
 	cmd_buf[1] = 0x00;
 	cmd_buf[2] = 0x02;
 	cmd_buf[3] = 0x00;
-	spi_io(cmd_buf, 4, &data_tmp[0], 3, 1);
+	spi_io(cmd_buf, 4, &page_buf[0], 3, 1);
 	if (ERROR_OK != commit())
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read signature");
 		ret = ERRCODE_FAILURE_OPERATION;
 		goto leave_program_mode;
 	}
-	pi->chip_id = ((data_tmp[2] & 0xFF) << 16) | ((data_tmp[1] & 0xFF) << 8) 
-				   | ((data_tmp[0] & 0xFF) << 0);
+	pi->chip_id = (page_buf[2] << 16) | (page_buf[1] << 8) | page_buf[0];
 	LOG_INFO(_GETTEXT(INFOMSG_TARGET_CHIP_ID), pi->chip_id);
 	if (!(operations.read_operations & CHIP_ID))
 	{
@@ -812,7 +810,7 @@ try_frequency:
 		}
 		pgbar_init("reading fuse |", "|", 0, 1, PROGRESS_STEP, '=');
 		
-		memset(data_tmp, 0, sizeof(data_tmp));
+		memset(page_buf, 0, 3);
 		// read fuse
 		// low bits
 		if (cur_chip_param.fuse_size > 0)
@@ -821,7 +819,7 @@ try_frequency:
 			cmd_buf[1] = 0x00;
 			cmd_buf[2] = 0x00;
 			cmd_buf[3] = 0x00;
-			spi_io(cmd_buf, 4, &data_tmp[0], 3, 1);
+			spi_io(cmd_buf, 4, &page_buf[0], 3, 1);
 		}
 		// high bits
 		if (cur_chip_param.fuse_size > 1)
@@ -830,7 +828,7 @@ try_frequency:
 			cmd_buf[1] = 0x08;
 			cmd_buf[2] = 0x00;
 			cmd_buf[3] = 0x00;
-			spi_io(cmd_buf, 4, &data_tmp[1], 3, 1);
+			spi_io(cmd_buf, 4, &page_buf[1], 3, 1);
 		}
 		// extended bits
 		if (cur_chip_param.fuse_size > 2)
@@ -839,7 +837,7 @@ try_frequency:
 			cmd_buf[1] = 0x08;
 			cmd_buf[2] = 0x00;
 			cmd_buf[3] = 0x00;
-			spi_io(cmd_buf, 4, &data_tmp[2], 3, 1);
+			spi_io(cmd_buf, 4, &page_buf[2], 3, 1);
 		}
 		if (cur_chip_param.fuse_size > 0)
 		{
@@ -862,8 +860,7 @@ try_frequency:
 		pgbar_update(1);
 		
 		pgbar_fini();
-		i = (uint32_t)(data_tmp[0] + (data_tmp[1] << 8) 
-								   + (data_tmp[2] << 16));
+		i = (uint32_t)(page_buf[0] + (page_buf[1] << 8) + (page_buf[2] << 16));
 		if (operations.verify_operations & FUSE)
 		{
 			if ((uint32_t)i == pi->fuse_value)
@@ -963,7 +960,7 @@ try_frequency:
 		}
 		pgbar_init("reading lock |", "|", 0, 1, PROGRESS_STEP, '=');
 		
-		memset(data_tmp, 0, sizeof(data_tmp));
+		memset(page_buf, 0, 1);
 		// read lock
 		if (cur_chip_param.lock_size > 0)
 		{
@@ -971,7 +968,7 @@ try_frequency:
 			cmd_buf[1] = 0x00;
 			cmd_buf[2] = 0x00;
 			cmd_buf[3] = 0x00;
-			spi_io(cmd_buf, 4, &data_tmp[0], 3, 1);
+			spi_io(cmd_buf, 4, &page_buf[0], 3, 1);
 			if (ERROR_OK != commit())
 			{
 				pgbar_fini();
@@ -993,19 +990,19 @@ try_frequency:
 		pgbar_fini();
 		if (operations.verify_operations & LOCK)
 		{
-			if (data_tmp[0] == (uint8_t)pi->lock_value)
+			if (page_buf[0] == (uint8_t)pi->lock_value)
 			{
 				LOG_INFO(_GETTEXT(INFOMSG_VERIFIED), "lock");
 			}
 			else
 			{
 				LOG_INFO(_GETTEXT(ERRMSG_FAILURE_VERIFY_TARGET_02X), 
-						 "lock", data_tmp[0], pi->lock_value);
+						 "lock", page_buf[0], pi->lock_value);
 			}
 		}
 		else
 		{
-			LOG_INFO(_GETTEXT(INFOMSG_READ_VALUE_02X), "lock", data_tmp[0]);
+			LOG_INFO(_GETTEXT(INFOMSG_READ_VALUE_02X), "lock", page_buf[0]);
 		}
 	}
 	
@@ -1014,7 +1011,7 @@ try_frequency:
 		LOG_INFO(_GETTEXT(INFOMSG_READING), "calibration");
 		pgbar_init("reading calibration |", "|", 0, 1, PROGRESS_STEP, '=');
 		
-		memset(data_tmp, 0, sizeof(data_tmp));
+		memset(page_buf, 0, 4);
 		// read calibration
 		if (cur_chip_param.cali_size > 0)
 		{
@@ -1022,7 +1019,7 @@ try_frequency:
 			cmd_buf[1] = 0x00;
 			cmd_buf[2] = 0x00;
 			cmd_buf[3] = 0x00;
-			spi_io(cmd_buf, 4, &data_tmp[0], 3, 1);
+			spi_io(cmd_buf, 4, &page_buf[0], 3, 1);
 		}
 		if (cur_chip_param.cali_size > 1)
 		{
@@ -1030,7 +1027,7 @@ try_frequency:
 			cmd_buf[1] = 0x00;
 			cmd_buf[2] = 0x01;
 			cmd_buf[3] = 0x00;
-			spi_io(cmd_buf, 4, &data_tmp[1], 3, 1);
+			spi_io(cmd_buf, 4, &page_buf[1], 3, 1);
 		}
 		if (cur_chip_param.cali_size > 2)
 		{
@@ -1038,7 +1035,7 @@ try_frequency:
 			cmd_buf[1] = 0x00;
 			cmd_buf[2] = 0x02;
 			cmd_buf[3] = 0x00;
-			spi_io(cmd_buf, 4, &data_tmp[2], 3, 1);
+			spi_io(cmd_buf, 4, &page_buf[2], 3, 1);
 		}
 		if (cur_chip_param.cali_size > 3)
 		{
@@ -1046,7 +1043,7 @@ try_frequency:
 			cmd_buf[1] = 0x00;
 			cmd_buf[2] = 0x03;
 			cmd_buf[3] = 0x00;
-			spi_io(cmd_buf, 4, &data_tmp[3], 3, 1);
+			spi_io(cmd_buf, 4, &page_buf[3], 3, 1);
 		}
 		if (cur_chip_param.cali_size > 0)
 		{
@@ -1069,8 +1066,8 @@ try_frequency:
 		pgbar_update(1);
 		
 		pgbar_fini();
-		i = (uint32_t)(data_tmp[0] + (data_tmp[1] << 8) 
-					+ (data_tmp[2] << 16) + (data_tmp[3] << 24));
+		i = (uint32_t)(page_buf[0] + (page_buf[1] << 8) 
+					+ (page_buf[2] << 16) + (page_buf[3] << 24));
 		if (cur_chip_param.fuse_size > 3)
 		{
 			LOG_INFO(_GETTEXT(INFOMSG_READ_VALUE_08X), "calibration", i);

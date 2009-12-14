@@ -404,7 +404,6 @@ RESULT s5x_program(operation_t operations, program_info_t *pi,
 
 #define commit()				prog->peripheral_commit()
 
-	uint8_t chip_sig[3];
 	uint16_t voltage;
 	uint8_t cmd_buf[4];
 	uint8_t poll_value, tmp8;
@@ -540,25 +539,25 @@ RESULT s5x_program(operation_t operations, program_info_t *pi,
 	cmd_buf[1] = 0x00;
 	cmd_buf[2] = 0x00;
 	cmd_buf[3] = 0x00;
-	spi_io(cmd_buf, 4, &chip_sig[2], 3, 1);
+	spi_io(cmd_buf, 4, &page_buf[2], 3, 1);
 	cmd_buf[0] = 0x28;
 	cmd_buf[1] = 0x01;
 	cmd_buf[2] = 0x00;
 	cmd_buf[3] = 0x00;
-	spi_io(cmd_buf, 4, &chip_sig[1], 3, 1);
+	spi_io(cmd_buf, 4, &page_buf[1], 3, 1);
 	cmd_buf[0] = 0x28;
 	cmd_buf[1] = 0x02;
 	cmd_buf[2] = 0x00;
 	cmd_buf[3] = 0x00;
-	spi_io(cmd_buf, 4, &chip_sig[0], 3, 1);
+	spi_io(cmd_buf, 4, &page_buf[0], 3, 1);
 	if (ERROR_OK != commit())
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read signature");
 		ret = ERRCODE_FAILURE_OPERATION;
 		goto leave_program_mode;
 	}
-	pi->chip_id = ((chip_sig[2] & 0xFF) << 0) | ((chip_sig[1] & 0xFF) << 8) 
-				   | ((chip_sig[0] & 0xFF) << 16);
+	pi->chip_id = ((page_buf[2] & 0xFF) << 0) | ((page_buf[1] & 0xFF) << 8) 
+				   | ((page_buf[0] & 0xFF) << 16);
 	LOG_INFO(_GETTEXT(INFOMSG_TARGET_CHIP_ID), pi->chip_id);
 	if (!(operations.read_operations & CHIP_ID))
 	{

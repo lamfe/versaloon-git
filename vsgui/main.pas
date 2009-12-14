@@ -449,7 +449,8 @@ var
   i: integer;
   str_tmp: string;
 begin
-  if FileExists(Application.Location + xmlcfgMain.Filename) then
+  xmlcfgMain.FileName := GetUserDir + 'vsgui.xml';
+  if FileExists(xmlcfgMain.FileName) then
   begin
     JTAGPage_Init := FALSE;
     TargetPage_Init := FALSE;
@@ -578,6 +579,7 @@ end;
 procedure TFormMain.ShowDebugLog();
 begin
   Width := pnlMain.Width + LOGMEMO_WIDTH + 2;
+  UpdateShowing;
 end;
 
 procedure TFormMain.HideDebugLog();
