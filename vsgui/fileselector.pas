@@ -58,7 +58,7 @@ procedure TFormFileSelector.Reset();
 var
   i: integer;
 begin
-  for i := 0 to Length(FileNameLabelArr) - 1 do
+  for i := low(FileNameLabelArr) to high(FileNameLabelArr) do
   begin
     if Assigned(FileNameLabelArr[i]) then
     begin
@@ -67,7 +67,7 @@ begin
   end;
   SetLength(FileNameLabelArr, 0);
 
-  for i := 0 to Length(FileNameEdtArr) - 1 do
+  for i := low(FileNameEdtArr) to high(FileNameEdtArr) do
   begin
     if Assigned(FileNameEdtArr[i]) then
     begin
@@ -84,7 +84,7 @@ var
   str: string;
 begin
   found := FALSE;
-  for i := 0 to Length(FileNameLabelArr) - 1 do
+  for i := low(FileNameLabelArr) to high(FileNameLabelArr) do
   begin
     if FileNameLabelArr[i].Caption = target then
     begin
@@ -143,7 +143,7 @@ var
 begin
   result := '';
 
-  for i := 0 to Length(FileNameLabelArr) - 1 do
+  for i := low(FileNameLabelArr) to high(FileNameLabelArr) do
   begin
     if FileNameLabelArr[i].Caption = target then
     begin
