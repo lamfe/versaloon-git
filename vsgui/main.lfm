@@ -970,6 +970,7 @@ object FormMain: TFormMain
     Top = 560
     Width = 336
     Max = 40
+    Step = 1
     TabOrder = 2
   end
   object memoLog: TMemo

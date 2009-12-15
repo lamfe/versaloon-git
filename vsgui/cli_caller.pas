@@ -177,7 +177,7 @@ try
     else
     begin
       // no data, wait 10 ms
-      dly := dly + 1;
+      Inc(dly);
 //      if bTimeout and (dly > 10) then
 //      begin
         // Timeout
