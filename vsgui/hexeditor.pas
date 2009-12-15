@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs,
-  StdCtrls, ExtCtrls, Grids, parameditor, inputdialog, Contnrs, math;
+  StdCtrls, ExtCtrls, Grids, ActnList, parameditor, inputdialog, Contnrs, math;
 
 type
 
@@ -53,6 +53,8 @@ type
   { TFormHexEditor }
 
   TFormHexEditor = class(TForm)
+    actGoto: TAction;
+    alHotKey: TActionList;
     btnSave: TButton;
     btnExit: TButton;
     lblMeasureSize: TLabel;
@@ -60,6 +62,7 @@ type
     pnlButton: TPanel;
     sgData: TStringGrid;
     timerInitSize: TTimer;
+    procedure actGotoExecute(Sender: TObject);
     procedure btnExitClick(Sender: TObject);
     procedure btnSaveClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
@@ -454,6 +457,31 @@ begin
   end;
 end;
 
+procedure TFormHexEditor.actGotoExecute(Sender: TObject);
+var
+  goto_addr: Cardinal;
+begin
+  FormInputDialog.CommonMaxLength := 8;
+  FormInputDialog.CommonCase := scUpper;
+  FormInputDialog.InputType := itNumeric;
+  FormInputDialog.NumMax := 0;
+  FormInputDialog.NumMin := 0;
+  FormInputDialog.NumRadix := nrHexadecimal;
+  FormInputDialog.CommonPrefix := '0x';
+  FormInputDialog.Caption := 'Goto: input hex address';
+  if FormInputDialog.ShowModal = mrOK then
+  begin
+    goto_addr := FormInputDialog.GetNumber;
+    if (goto_addr >= StartAddress) and (goto_addr < (StartAddress + DataByteSize)) then
+    begin
+      Dec(goto_addr, StartAddress);
+      sgData.TopRow := 1 + goto_addr div BYTES_IN_ROW;
+      sgData.Row := 1 + goto_addr div BYTES_IN_ROW;
+      sgData.Col := 1 + (goto_addr mod BYTES_IN_ROW);
+    end;
+  end;
+end;
+
 procedure TFormHexEditor.FormClose(Sender: TObject;
   var CloseAction: TCloseAction);
 begin
@@ -564,40 +592,13 @@ end;
 
 procedure TFormHexEditor.sgDataKeyPress(Sender: TObject; var Key: char);
 var
-  goto_addr: integer;
   i: integer;
   value: byte;
   IncPos: integer;
 begin
   IncPos := 0;
 
-{  if (Key = 'g') or (Key = 'G') then
-  begin
-    FormInputDialog.CommonMaxLength := 8;
-    FormInputDialog.CommonCase := scUpper;
-    FormInputDialog.InputType := itNumeric;
-    FormInputDialog.NumMax := 0;
-    FormInputDialog.NumMin := 0;
-    FormInputDialog.NumRadix := nrHexadecimal;
-    FormInputDialog.CommonPrefix := '0x';
-    FormInputDialog.Caption := 'Goto: input hex address';
-    if FormInputDialog.ShowModal = mrOK then
-    begin
-      goto_addr := FormInputDialog.GetNumber;
-      goto_addr := goto_addr shr 4 shl 4;
-      for i := 1 to sgData.RowCount -1 do
-      begin
-        if StrToIntRadix(sgData.Cells[0, i], 16) = goto_addr then
-        begin
-          sgData.TopRow := i;
-          Key := char(0);
-          exit;
-        end;
-      end;
-    end;
-    Key := char(0);
-  end
-  else }if CurCellAddressValid then
+  if CurCellAddressValid then
   begin
     // data input
     if CurCellCol > 1 + BYTES_IN_ROW then

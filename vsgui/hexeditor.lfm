@@ -95,6 +95,14 @@ object FormHexEditor: TFormHexEditor
     Interval = 10
     OnTimer = timerInitSizeTimer
     left = 352
-    top = 504
+    top = 488
+  end
+  object alHotKey: TActionList
+    left = 310
+    top = 488
+    object actGoto: TAction
+      OnExecute = actGotoExecute
+      ShortCut = 16455
+    end
   end
 end
