@@ -240,7 +240,7 @@ begin
 
   if not bCancel and EnableWarning then
   begin
-    for i := 0 to Length(Param_Record.warnings) - 1 do
+    for i := low(Param_Record.warnings) to high(Param_Record.warnings) do
     begin
       if (Param_Value and Param_Record.warnings[i].mask) = Param_Record.warnings[i].value then
       begin
@@ -262,28 +262,28 @@ var
 begin
   FreeRecord();
 
-  for i := 0 to Length(ParaEdtNameArr) - 1 do
+  for i := low(ParaEdtNameArr) to high(ParaEdtNameArr) do
   begin
     if Assigned(ParaEdtNameArr[i]) then
     begin
       ParaEdtNameArr[i].Destroy;
     end;
   end;
-  for i := 0 to Length(ParaComboArr) - 1 do
+  for i := low(ParaComboArr) to high(ParaComboArr) do
   begin
     if Assigned(ParaComboArr[i]) then
     begin
       ParaComboArr[i].Destroy;
     end;
   end;
-  for i := 0 to Length(ParaCheckArr) - 1 do
+  for i := low(ParaCheckArr) to high(ParaCheckArr) do
   begin
     if Assigned(ParaCheckArr[i]) then
     begin
       ParaCheckArr[i].Destroy;
     end;
   end;
-  for i := 0 to Length(ParaEdtValueArr) - 1 do
+  for i := low(ParaEdtValueArr) to high(ParaEdtValueArr) do
   begin
     if Assigned(ParaEdtValueArr[i]) then
     begin
@@ -379,7 +379,7 @@ var
   found: boolean;
 begin
   SettingParameter := TRUE;
-  for i := 0 to Length(Param_Record.settings) - 1 do
+  for i := low(Param_Record.settings) to high(Param_Record.settings) do
   begin
     value := Param_Value and Param_Record.settings[i].mask;
     if Param_Record.settings[i].use_edit then
@@ -413,7 +413,7 @@ begin
     else
     begin
       found := FALSE;
-      for j := 0 to Length(Param_Record.settings[i].choices) - 1 do
+      for j := low(Param_Record.settings[i].choices) to high(Param_Record.settings[i].choices) do
       begin
         if value = Param_Record.settings[i].choices[j].value then
         begin

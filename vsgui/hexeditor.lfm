@@ -11,6 +11,7 @@ object FormHexEditor: TFormHexEditor
   ClientHeight = 541
   ClientWidth = 393
   KeyPreview = True
+  OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnKeyPress = FormKeyPress
@@ -39,18 +40,18 @@ object FormHexEditor: TFormHexEditor
       Top = 21
       Width = 75
       Caption = '&Save'
-      Enabled = False
-      ModalResult = 1
       OnClick = btnSaveClick
       TabOrder = 0
     end
-    object btnCancel: TButton
+    object btnExit: TButton
       Left = 218
       Height = 25
       Top = 21
       Width = 75
-      Caption = '&Cancel'
-      ModalResult = 2
+      Caption = '&Exit'
+      Default = True
+      ModalResult = 1
+      OnClick = btnExitClick
       TabOrder = 1
     end
   end

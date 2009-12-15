@@ -320,7 +320,7 @@ var
   found: boolean;
 begin
   found := FALSE;
-  for i := 0 to Length(TargetFile) - 1 do
+  for i := low(TargetFile) to high(TargetFile) do
   begin
     if TargetFile[i].target = name then
     begin
@@ -329,7 +329,7 @@ begin
   end;
   if found then
   begin
-    for j := i to Length(TargetFile) - 2 do
+    for j := i to high(TargetFile) - 1 do
     begin
       TargetFile[j] := TargetFile[j + 1];
     end;
@@ -343,7 +343,7 @@ var
   found: boolean;
 begin
   found := FALSE;
-  for i := 0 to Length(TargetFile) - 1 do
+  for i := low(TargetFile) to high(TargetFile) do
   begin
     if TargetFile[i].target = name then
     begin
@@ -369,7 +369,7 @@ begin
   result := -1;
   if Length(TargetFile) > 0 then
   begin
-    for i := 0 to Length(TargetFile) - 1 do
+    for i := low(TargetFile) to high(TargetFile) do
     begin
       if TargetFile[i].target = target_str then
       begin
@@ -428,7 +428,7 @@ var
 begin
   valid_file_num := 0;
   cbboxInputFile.Clear;
-  for i := 0 to Length(TargetFile) - 1 do
+  for i := low(TargetFile) to high(TargetFile) do
   begin
     if TargetFile[i].filename <> '' then
     begin
@@ -661,7 +661,7 @@ begin
     // Init serial port combobox
     cbboxCOM.Clear;
 
-    for index := 0 to Length(COMPORTS) - 1 do
+    for index := low(COMPORTS) to high(COMPORTS) do
     begin
       if DISPLAY_ALL_COMPORT_WHEN_UPDATE then
       begin
@@ -1759,7 +1759,7 @@ begin
   if Length(TargetFile) > 0 then
   begin
     xmlcfgMain.SetValue('target/files/number', Length(TargetFile));
-    for i := 0 to Length(TargetFile) - 1 do
+    for i := low(TargetFile) to high(TargetFile) do
     begin
       xmlcfgMain.SetValue('target/files/' + IntToStr(i) + '/target', TargetFile[i].target);
       xmlcfgMain.SetValue('target/files/' + IntToStr(i) + '/filename', TargetFile[i].filename);
@@ -1949,7 +1949,7 @@ begin
   else if cbboxInputFile.Text <> 'ALL' then
   begin
     // enable selected input file
-    for i := 0 to Length(TargetFile) - 1 do
+    for i := low(TargetFile) to high(TargetFile) do
     begin
       str := Copy(cbboxInputFile.Text, 1, Pos(':', cbboxInputFile.Text) - 1);
       if TargetFile[i].target = str then
@@ -1977,7 +1977,7 @@ begin
   else
   begin
     // enable all input file
-    for i := 0 to Length(TargetFile) - 1 do
+    for i := low(TargetFile) to high(TargetFile) do
     begin
       if TargetFile[i].filename <> '' then
       begin

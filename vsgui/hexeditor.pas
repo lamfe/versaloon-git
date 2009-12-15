@@ -6,40 +6,63 @@ interface
 
 uses
   Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs,
-  StdCtrls, ExtCtrls, Grids, parameditor, inputdialog;
+  StdCtrls, ExtCtrls, Grids, parameditor, inputdialog, Contnrs, math;
 
 type
 
-  { TFileParser }
-  TFileInfo = record
-    start_addr: integer;
-    byte_size: integer;
+  { TMemList TMemInfo }
+
+  TMemInfo = class(TObject)
+  private
+    FStartAddr: Cardinal;
+    FByteSize: Cardinal;
+    function GetTail: Cardinal;
+  public
+    constructor Create(aStartAddr, aByteSize: Cardinal);
+    property StartAddr: Cardinal read FStartAddr write FStartAddr;
+    property ByteSize: Cardinal read FByteSize write FByteSize;
+    property Head: Cardinal read FStartAddr;
+    property Tail: Cardinal read GetTail;
   end;
 
+  TMemList = class(TObjectList)
+  private
+    function GetMemInfoItem(Index: integer): TMemInfo;
+    procedure SetMemInfoItem(Index: integer; aMemInfoObject: TMemInfo);
+  public
+    constructor Create;
+    function Add(aStartAddr, aByteSize: Cardinal): integer;
+    function Add(aMemInfo: TMemInfo): Integer;
+    function GetIndexByAddr(aAddr: Cardinal): integer;
+    property MemInfoItems[Index: Integer]: TMemInfo read GetMemInfoItem write SetMemInfoItem; default;
+  end;
+
+  { TFileParser }
+
   TReadFileFunc = function(hFile: TFileStream; var buffer: array of byte;
-                bytesize, start_addr, seg_offset, addr_offset: integer): TFileInfo;
-  TWriteFileFunc = function(hFile: TFileStream; buffer: array of byte; default_byte: byte;
-                 bytesize, start_addr, seg_offset, addr_offset: integer): integer;
-  TEndFileFunc = procedure(hFile: TFileStream);
+                bytesize, start_addr, seg_offset, addr_offset: integer): boolean;
+  TValidateFileFunc = function(hFile: TFileStream; buffer: array of byte; default_byte: byte;
+                 bytesize, start_addr, seg_offset, addr_offset: integer): boolean;
 
   TFileParser = record
     ext: string;
     ReadFile: TReadFileFunc;
-    WriteFile: TWriteFileFunc;
-    EndFile: TEndFileFunc;
+    ValidateFile: TValidateFileFunc;
   end;
 
   { TFormHexEditor }
 
   TFormHexEditor = class(TForm)
     btnSave: TButton;
-    btnCancel: TButton;
+    btnExit: TButton;
     lblMeasureSize: TLabel;
     pnlData: TPanel;
     pnlButton: TPanel;
     sgData: TStringGrid;
     timerInitSize: TTimer;
+    procedure btnExitClick(Sender: TObject);
     procedure btnSaveClick(Sender: TObject);
+    procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormKeyPress(Sender: TObject; var Key: char);
@@ -51,11 +74,13 @@ type
       var CanSelect: Boolean);
     procedure sgDataTopLeftChanged(Sender: TObject);
     procedure timerInitSizeTimer(Sender: TObject);
+    procedure DataBuffChangeRequire(addr: integer; aValue: byte);
   private
     { private declarations }
     DataGridWidth: integer;
     AddressGridWidth: integer;
     DataBuff: array of byte;
+    DataBuffChangeList: TMemList;
     RowDirty: array of boolean;
     StrGridInited: boolean;
     CurCellRow: integer;
@@ -64,27 +89,27 @@ type
     CurCellAddress: integer;
     CurFileParserIndex: integer;
     hFile: TFileStream;
-    CurFileInfo: TFileInfo;
+    ChangedFont: TFont;
+    procedure SetGridCanvasFont(aFont: TFont);
   public
     { public declarations }
     FileName: string;
     SegOffset: integer;
     AddressOffset: integer;
 
-    StartAddress: integer;
-    DataByteSize: integer;
+    StartAddress: Cardinal;
+    DataByteSize: Cardinal;
     DefaultData: byte;
   end;
 
   function ReadBinFile(hFile: TFileStream; var buffer: array of byte;
-           bytesize, start_addr, seg_offset, addr_offset: integer): TFileInfo;
-  function WriteBinFile(hFile: TFileStream; buffer: array of byte; default_byte: byte;
-           bytesize, start_addr, seg_offset, addr_offset: integer): integer;
+           bytesize, start_addr, seg_offset, addr_offset: integer): boolean;
+  function ValidateBinFile(hFile: TFileStream; buffer: array of byte; default_byte: byte;
+           bytesize, start_addr, seg_offset, addr_offset: integer): boolean;
   function ReadHexFile(hFile: TFileStream; var buffer: array of byte;
-           bytesize, start_addr, seg_offset, addr_offset: integer): TFileInfo;
-  function WriteHexFile(hFile: TFileStream; buffer: array of byte; default_byte: byte;
-           bytesize, start_addr, seg_offset, addr_offset: integer): integer;
-  procedure EndHexFile(hFile: TFileStream);
+           bytesize, start_addr, seg_offset, addr_offset: integer): boolean;
+  function ValidateHexFile(hFile: TFileStream; buffer: array of byte; default_byte: byte;
+           bytesize, start_addr, seg_offset, addr_offset: integer): boolean;
 
 var
   FormHexEditor: TFormHexEditor;
@@ -92,8 +117,8 @@ var
 const
   FileParser: array[0..1] of TFileParser =
   (
-  (ext: '.bin'; ReadFile: @ReadBinFile; WriteFile: @WriteBinFile; EndFile: nil),
-  (ext: '.hex'; ReadFile: @ReadHexFile; WriteFile: @WriteHexFile; EndFile: @EndHexFile)
+  (ext: '.bin'; ReadFile: @ReadBinFile; ValidateFile: @ValidateBinFile;),
+  (ext: '.hex'; ReadFile: @ReadHexFile; ValidateFile: @ValidateHexFile;)
   );
   BYTES_IN_ROW: integer = 16;
 
@@ -102,21 +127,21 @@ const
 implementation
 
 function ReadBinFile(hFile: TFileStream; var buffer: array of byte;
-         bytesize, start_addr, seg_offset, addr_offset: integer): TFileInfo;
+         bytesize, start_addr, seg_offset, addr_offset: integer): boolean;
 begin
   seg_offset := seg_offset;
   hFile.Position := addr_offset;
-  result.byte_size := hFile.Read(buffer[0], bytesize);
-  result.start_addr := start_addr;
+  hFile.Read(buffer[0], bytesize);
+  result := TRUE;
 end;
 
-function WriteBinFile(hFile: TFileStream; buffer: array of byte; default_byte: byte;
-         bytesize, start_addr, seg_offset, addr_offset: integer): integer;
+function ValidateBinFile(hFile: TFileStream; buffer: array of byte; default_byte: byte;
+         bytesize, start_addr, seg_offset, addr_offset: integer): boolean;
 begin
 end;
 
 function ReadHexFile(hFile: TFileStream; var buffer: array of byte;
-         bytesize, start_addr, seg_offset, addr_offset: integer): TFileInfo;
+         bytesize, start_addr, seg_offset, addr_offset: integer): boolean;
 var
   ch: char;
   line: string;
@@ -130,8 +155,7 @@ begin
   ext_addr := 0;
 
   hFile.Position := 0;
-  result.byte_size := 0;
-  result.start_addr := 0;
+  result := FALSE;
 
   while TRUE do
   begin
@@ -139,6 +163,7 @@ begin
     repeat
       if hFile.Read(ch, 1) <> 1 then
       begin
+        result := TRUE;
         exit;
       end;
     until (ch <> char(10)) and (ch <> char(13));
@@ -150,11 +175,7 @@ begin
     // read line
     line := '';
     repeat
-      if hFile.Read(ch, 1) <> 1 then
-      begin
-        exit;
-      end;
-      if (ch = char(10)) or (ch = char(13)) then
+      if (hFile.Read(ch, 1) <> 1) or (ch = char(10)) or (ch = char(13)) then
       begin
         break;
       end
@@ -212,7 +233,10 @@ begin
           Move(buff[4], buffer[data_addr - addr_offset], line_data_len);
         end;
       1://htEOF
-        exit;
+        begin
+          result := TRUE;
+          exit;
+        end;
       2://htSegAddr
         begin
           if line_data_len <> 2 then
@@ -230,23 +254,150 @@ begin
           ext_addr := (buff[4] shl 24) + (buff[5] shl 16);
         end
     else
-      exit;
+      // ignore data
+      continue;
     end;
   end;
 end;
 
-function WriteHexFile(hFile: TFileStream; buffer: array of byte; default_byte: byte;
-         bytesize, start_addr, seg_offset, addr_offset: integer): integer;
+function ValidateHexFile(hFile: TFileStream; buffer: array of byte; default_byte: byte;
+         bytesize, start_addr, seg_offset, addr_offset: integer): boolean;
 begin
 
 end;
 
-procedure EndHexFile(hFile: TFileStream);
-begin
+{ TMemInfo }
 
+constructor TMemInfo.Create(aStartAddr, aByteSize: Cardinal);
+begin
+  inherited Create;
+
+  StartAddr := aStartAddr;
+  ByteSize := aByteSize;
+end;
+
+function TMemInfo.GetTail: Cardinal;
+begin
+  if (StartAddr = 0) and (ByteSize = 0) then
+  begin
+    result := 0;
+  end
+  else
+  begin
+    result := StartAddr + ByteSize - 1;
+  end;
+end;
+
+{ TMemList }
+
+procedure TMemList.SetMemInfoItem(Index: integer; aMemInfoObject: TMemInfo);
+begin
+  Put(Index, Pointer(aMemInfoObject));
+end;
+
+function TMemList.GetMemInfoItem(Index: integer): TMemInfo;
+begin
+  Result := TMemInfo(Inherited Get(Index));
+end;
+
+function TMemList.GetIndexByAddr(aAddr: Cardinal): integer;
+var
+  i: integer;
+begin
+  result := -1;
+  for i := 0 to Count - 1 do
+  begin
+    if (MemInfoItems[i].StartAddr <= aAddr) and
+        ((MemInfoItems[i].StartAddr + MemInfoItems[i].ByteSize) > aAddr) then
+    begin
+      result := i;
+      break;
+    end;
+  end;
+end;
+
+function TMemList.Add(aStartAddr, aByteSize: Cardinal): integer;
+var
+  i: integer;
+  aTail: integer;
+  found: boolean;
+begin
+  if aByteSize = 0 then
+  begin
+    result := -1;
+    exit;
+  end;
+
+  aTail := aStartAddr + aByteSize - 1;
+  // find a location to insert or merge
+  found := FALSE;
+  for i := 0 to Count - 1 do
+  begin
+    if aStartAddr <= (MemInfoItems[i].Tail + 1) then
+    begin
+      found := TRUE;
+      break;
+    end;
+  end;
+  if not found then
+  begin
+    // add last
+    result := inherited Add(TMemInfo.Create(aStartAddr, aByteSize));
+    exit;
+  end;
+  result := i;
+  // merge or insert
+  if ((aTail + 1) < MemInfoItems[result].Head) then
+  begin
+    // insert before
+    Insert(i, TmemInfo.Create(aStartAddr, aByteSize));
+  end
+  else
+  begin
+    // merge
+    MemInfoItems[result].StartAddr := Min(MemInfoItems[result].StartAddr, aStartAddr);
+    MemInfoItems[result].ByteSize := 1 + Max(MemInfoItems[result].Tail, aTail) - MemInfoItems[result].StartAddr;
+    // try merge the descendant
+    i := i + 1;
+    while i < Count do
+    begin
+      if (MemInfoItems[result].Tail + 1) < MemInfoItems[i].Head then
+      begin
+        break;
+      end;
+
+      // merge current
+      MemInfoItems[result].ByteSize := 1 + Max(MemInfoItems[result].Tail, MemInfoItems[i].Tail) - MemInfoItems[result].StartAddr;
+      Delete(i);
+
+      i := i + 1;
+    end;
+  end;
+end;
+
+function TMemList.Add(aMemInfo: TMemInfo): Integer;
+begin
+  result := Add(aMemInfo.StartAddr, aMemInfo.ByteSize);
+end;
+
+constructor TMemList.Create;
+begin
+  inherited Create(TRUE);
 end;
 
 { TFormHexEditor }
+
+procedure TFormHexEditor.DataBuffChangeRequire(addr: integer; aValue: byte);
+var
+  i: integer;
+  index: integer;
+begin
+  if DataBuff[addr] <> aValue then
+  begin
+    DataBuff[addr] := aValue;
+    DataBuffChangeList.Add(addr, 1);
+  end;
+end;
 
 procedure TFormHexEditor.FormDestroy(Sender: TObject);
 begin
@@ -256,20 +407,58 @@ end;
 
 procedure TFormHexEditor.FormCreate(Sender: TObject);
 begin
-  pnlButton.Height := 0;
+  ChangedFont := TFont.Create;
+  ChangedFont := Font;
+  ChangedFont.Color := clRed;
 end;
 
 procedure TFormHexEditor.btnSaveClick(Sender: TObject);
+var
+  i: integer;
+  start, lines: integer;
 begin
-  if FileParser[CurFileParserIndex].WriteFile <> nil then
+  if (CurFileParserIndex >= Length(FileParser)) then
   begin
-    FileParser[CurFileParserIndex].WriteFile(hFile,
-        DataBuff[0], DefaultData, CurFileInfo.byte_size,
-        CurFileInfo.start_addr, SegOffset, AddressOffset);
+    exit;
   end;
-  if FileParser[CurFileParserIndex].EndFile <> nil then
+
+  if (FileParser[CurFileParserIndex].ValidateFile <> nil) then
   begin
-    FileParser[CurFileParserIndex].EndFile(hFile);
+//    FileParser[CurFileParserIndex].ValidateFile(hFile,
+//        DataBuff[0], DefaultData, CurFileInfo.byte_size,
+//        CurFileInfo.start_addr, SegOffset, AddressOffset);
+  end;
+
+  // Dirty corresponding lines
+  for i := 0 to DataBuffChangeList.Count - 1 do
+  begin
+    start := DataBuffChangeList.MemInfoItems[i].Head div BYTES_IN_ROW;
+    lines := DataBuffChangeList.MemInfoItems[i].tail div BYTES_IN_ROW;
+    Dec(lines, start);
+    FillChar(RowDirty[start], lines, TRUE);
+  end;
+  DataBuffChangeList.Clear;
+  // update dirty color
+  sgData.Invalidate;
+end;
+
+procedure TFormHexEditor.btnExitClick(Sender: TObject);
+begin
+  if DataBuffChangeList.Count > 0 then
+  begin
+    if mrYes = MessageDlg('Query','Data changed, Save?', mtConfirmation, [mbYes, mbNo], 0) then
+    begin
+      btnSave.Click;
+    end;
+  end;
+end;
+
+procedure TFormHexEditor.FormClose(Sender: TObject;
+  var CloseAction: TCloseAction);
+begin
+  if Assigned(DataBuffChangeList) then
+  begin
+    DataBuffChangeList.Destroy;
   end;
 end;
 
@@ -285,7 +474,9 @@ procedure TFormHexEditor.FormShow(Sender: TObject);
 var
   i, j: integer;
   ext: string;
+  success: boolean;
 begin
+  DataBuffChangeList := TMemList.Create;
   StrGridInited := FALSE;
   CurCellRow := 0;
   CurCellCol := 0;
@@ -311,29 +502,39 @@ begin
   // open file and read
   if FileExists(FileName) then
   begin
-    try
-      hFile := TFileStream.Create(FileName, fmOpenRead);
-    except
-      begin
-        MessageDlg('Error', 'File Open Failed:' + FileName, mtError, [mbOK], 0);
-        exit;
-      end;
-    end;
     ext := ExtractFileExt(FileName);
     CurFileParserIndex := 0;
-    for i := 0 to Length(FileParser) - 1 do
+    for i := low(FileParser) to high(FileParser) do
     begin
       if LowerCase(ext) = FileParser[i].ext then
       begin
         CurFileParserIndex := i;
-        if FileParser[i].ReadFile <> nil then
+      end;
+    end;
+    success := TRUE;
+    try
+      hFile := TFileStream.Create(FileName, fmOpenRead);
+      if FileParser[CurFileParserIndex].ReadFile <> nil then
+      begin
+        if not FileParser[CurFileParserIndex].ReadFile(hFile, DataBuff[0],
+                    DataByteSize, StartAddress, SegOffset, AddressOffset) then
         begin
-          CurFileInfo := FileParser[i].ReadFile(hFile, DataBuff[0],
-                      DataByteSize, StartAddress, SegOffset, AddressOffset);
+          success := FALSE;
+          MessageDlg('Error','fail to read ' + FileName + '.', mtError, [mbOK], 0);
         end;
+      end;
+    except
+      begin
+        success := FALSE;
+        MessageDlg('Error', 'File Open Failed:' + FileName, mtError, [mbOK], 0);
       end;
     end;
     hFile.Free;
+    if not success then
+    begin
+      close;
+      exit;
+    end;
   end
   else
   begin
@@ -406,19 +607,21 @@ begin
     begin
       exit;
     end;
-    i := i - 1;
+    value := i - 1;
     // valid input, change data
     case CurCellPos of
       0:
         begin
-          DataBuff[CurCellAddress] := (DataBuff[CurCellAddress] and $0F) or (i shl 4);
+          value := (DataBuff[CurCellAddress] and $0F) or (value shl 4);
+          DataBuffChangeRequire(CurCellAddress, value);
           CurCellPos := CurCellPos + 1;
           RowDirty[CurCellAddress div BYTES_IN_ROW] := TRUE;
         end;
       1:
         // move to next address
         begin
-          DataBuff[CurCellAddress] := (DataBuff[CurCellAddress] and $F0) or i;
+          value := (DataBuff[CurCellAddress] and $F0) or value;
+          DataBuffChangeRequire(CurCellAddress, value);
           CurCellPos := 0;
           RowDirty[CurCellAddress div BYTES_IN_ROW] := TRUE;
           if not (CurCellAddress = DataByteSize - 1) then
@@ -435,17 +638,44 @@ begin
           end;
         end;
     end;
-    // update dirty
+    // update dirty data
     sgDataTopLeftChanged(sgData);
+  end;
+end;
+
+procedure TFormHexEditor.SetGridCanvasFont(aFont: TFont);
+const
+  lastFont: TFont = nil;
+begin
+  if (aFont <> nil) and (aFont <> lastFont) then
+  begin
+    sgData.Canvas.Font := aFont;
   end;
 end;
 
 procedure TFormHexEditor.sgDataPrepareCanvas(sender: TObject; aCol,
   aRow: Integer; aState: TGridDrawState);
+var
+  addr: Cardinal;
 begin
   if gdFixed in aState then
   begin
-//    (Sender as TCustomGrid).SetCanvasFont(TitleFont);
+    SetGridCanvasFont((Sender as TStringGrid).TitleFont);
+  end
+  else
+  begin
+    if (aRow > 0) and (aCol > 0) then
+    begin
+      addr := (aRow - 1) * BYTES_IN_ROW + aCol - 1;
+      if DataBuffChangeList.GetIndexByAddr(addr) >= 0 then
+      begin
+        SetGridCanvasFont(ChangedFont);
+      end
+      else
+      begin
+        SetGridCanvasFont((Sender as TStringGrid).Font);
+      end;
+    end;
   end;
 end;
 
@@ -509,7 +739,7 @@ begin
 
   // Center Buttons
   btnSave.Left := (pnlButton.Width div 2 - btnSave.Width) div 2;
-  btnCancel.Left := pnlButton.Width div 2 + (pnlButton.Width div 2 - btnSave.Width) div 2;
+  btnExit.Left := pnlButton.Width div 2 + (pnlButton.Width div 2 - btnSave.Width) div 2;
 
   StrGridInited := TRUE;
   sgDataTopLeftChanged(sgData);
