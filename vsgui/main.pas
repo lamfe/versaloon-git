@@ -3155,19 +3155,19 @@ var
   SearchResult : TSearchRec;
   index: integer;
 begin
-  if (cbboxOpenOCDInterface.Items.Count = 0) and DirectoryExists(Application.Location + 'interface') then
+  if (cbboxOpenOCDInterface.Items.Count = 0) and
+     DirectoryExists(Application.Location + 'interface') then
   begin
     if FindFirst(Application.Location + 'interface' + System.DirectorySeparator + '*',
-                 (faAnyFile and not faDirectory),
-                 SearchResult) = 0 then
+                 (faAnyFile and not faDirectory), SearchResult) = 0 then
     begin
-      if ExtractFileExt(SearchResult.Name) = '.cfg' then
+      if LowerCase(ExtractFileExt(SearchResult.Name)) = '.cfg' then
       begin
         cbboxOpenOCDInterface.Items.Add('interface' + System.DirectorySeparator + SearchResult.Name);
       end;
       while FindNext(SearchResult) = 0 do
       begin
-        if ExtractFileExt(SearchResult.Name) = '.cfg' then
+        if LowerCase(ExtractFileExt(SearchResult.Name)) = '.cfg' then
         begin
           cbboxOpenOCDInterface.Items.Add('interface' + System.DirectorySeparator + SearchResult.Name);
         end;
@@ -3195,13 +3195,13 @@ begin
                  (faAnyFile and not faDirectory),
                  SearchResult) = 0 then
     begin
-      if ExtractFileExt(SearchResult.Name) = '.cfg' then
+      if LowerCase(ExtractFileExt(SearchResult.Name)) = '.cfg' then
       begin
         cbboxOpenOCDTarget.Items.Add('target' + System.DirectorySeparator + SearchResult.Name);
       end;
       while FindNext(SearchResult) = 0 do
       begin
-        if ExtractFileExt(SearchResult.Name) = '.cfg' then
+        if LowerCase(ExtractFileExt(SearchResult.Name)) = '.cfg' then
         begin
           cbboxOpenOCDTarget.Items.Add('target' + System.DirectorySeparator + SearchResult.Name);
         end;
@@ -3221,13 +3221,13 @@ begin
                  (faAnyFile and not faDirectory),
                  SearchResult) = 0 then
     begin
-      if ExtractFileExt(SearchResult.Name) = '.cfg' then
+      if LowerCase(ExtractFileExt(SearchResult.Name)) = '.cfg' then
       begin
         cbboxOpenOCDScript.Items.Add('script' + System.DirectorySeparator + SearchResult.Name);
       end;
       while FindNext(SearchResult) = 0 do
       begin
-        if ExtractFileExt(SearchResult.Name) = '.cfg' then
+        if LowerCase(ExtractFileExt(SearchResult.Name)) = '.cfg' then
         begin
           cbboxOpenOCDScript.Items.Add('script' + System.DirectorySeparator + SearchResult.Name);
         end;

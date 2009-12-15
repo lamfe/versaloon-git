@@ -125,12 +125,12 @@ begin
     FileNameEdtArr[i].OnChange := @FileNameEditChange;
     FileNameEdtArr[i].OnEditingDone := @FileNameEditChange;
 
-    str := ExtractFileExt(filename);
-    if (LowerCase(str) = '.hex') or (str = '') then
+    str := LowerCase(ExtractFileExt(filename));
+    if (str = '.hex') or (str = '') then
     begin
       FileNameEdtArr[i].FilterIndex := 1;
     end
-    else if LowerCase(str) = '.bin' then
+    else if str = '.bin' then
     begin
       FileNameEdtArr[i].FilterIndex := 2;
     end;
@@ -163,12 +163,12 @@ var
 begin
   (Sender as TFileNameEdit).Hint := (Sender as TFileNameEdit).FileName;
 
-  str := ExtractFileExt((Sender as TFileNameEdit).filename);
-  if (LowerCase(str) = '.hex') or (str = '') then
+  str := LowerCase(ExtractFileExt((Sender as TFileNameEdit).filename));
+  if (str = '.hex') or (str = '') then
   begin
     (Sender as TFileNameEdit).FilterIndex := 1;
   end
-  else if LowerCase(str) = '.bin' then
+  else if str = '.bin' then
   begin
     (Sender as TFileNameEdit).FilterIndex := 2;
   end;
