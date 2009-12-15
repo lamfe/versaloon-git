@@ -40,9 +40,12 @@ type
   { TFileParser }
 
   TReadFileFunc = function(hFile: TFileStream; var buffer: array of byte;
-                bytesize, start_addr, seg_offset, addr_offset: integer): boolean;
-  TValidateFileFunc = function(hFile: TFileStream; buffer: array of byte; default_byte: byte;
-                 bytesize, start_addr, seg_offset, addr_offset: integer): boolean;
+                                  bytesize, start_addr: Cardinal;
+                                  seg_offset, addr_offset: Int64): boolean;
+  TValidateFileFunc = function(hFile: TFileStream; buffer: array of byte;
+                                      ChangeList: TMemList; default_byte: byte;
+                                      bytesize, start_addr: Cardinal;
+                                      seg_offset, addr_offset: Int64): boolean;
 
   TFileParser = record
     ext: string;
@@ -96,22 +99,35 @@ type
   public
     { public declarations }
     FileName: string;
-    SegOffset: integer;
-    AddressOffset: integer;
-
+    Target: string;
+    SegOffset: Int64;
+    AddressOffset: Int64;
     StartAddress: Cardinal;
     DataByteSize: Cardinal;
     DefaultData: byte;
   end;
 
+  THexFileLineInfo = record
+    Addr: Word;
+    ByteSize: byte;
+    DataType: byte;
+    DataOffset: byte;
+  end;
+
   function ReadBinFile(hFile: TFileStream; var buffer: array of byte;
-           bytesize, start_addr, seg_offset, addr_offset: integer): boolean;
-  function ValidateBinFile(hFile: TFileStream; buffer: array of byte; default_byte: byte;
-           bytesize, start_addr, seg_offset, addr_offset: integer): boolean;
+                              bytesize, start_addr: Cardinal;
+                              seg_offset, addr_offset: Int64): boolean;
+  function ValidateBinFile(hFile: TFileStream; buffer: array of byte;
+                                  ChangeList: TMemList; default_byte: byte;
+                                  bytesize, start_addr: Cardinal;
+                                  seg_offset, addr_offset: Int64): boolean;
   function ReadHexFile(hFile: TFileStream; var buffer: array of byte;
-           bytesize, start_addr, seg_offset, addr_offset: integer): boolean;
-  function ValidateHexFile(hFile: TFileStream; buffer: array of byte; default_byte: byte;
-           bytesize, start_addr, seg_offset, addr_offset: integer): boolean;
+                              bytesize, start_addr: Cardinal;
+                              seg_offset, addr_offset: Int64): boolean;
+  function ValidateHexFile(hFile: TFileStream; buffer: array of byte;
+                                  ChangeList: TMemList; default_byte: byte;
+                                  bytesize, start_addr: Cardinal;
+                                  seg_offset, addr_offset: Int64): boolean;
 
 var
   FormHexEditor: TFormHexEditor;
@@ -130,29 +146,114 @@ const
 implementation
 
 function ReadBinFile(hFile: TFileStream; var buffer: array of byte;
-         bytesize, start_addr, seg_offset, addr_offset: integer): boolean;
+                            bytesize, start_addr: Cardinal;
+                            seg_offset, addr_offset: Int64): boolean;
 begin
   seg_offset := seg_offset;
+  start_addr := start_addr;
+
   hFile.Position := addr_offset;
   hFile.Read(buffer[0], bytesize);
   result := TRUE;
 end;
 
-function ValidateBinFile(hFile: TFileStream; buffer: array of byte; default_byte: byte;
-         bytesize, start_addr, seg_offset, addr_offset: integer): boolean;
+function ValidateBinFile(hFile: TFileStream; buffer: array of byte;
+                                ChangeList: TMemList; default_byte: byte;
+                                bytesize, start_addr: Cardinal;
+                                seg_offset, addr_offset: Int64): boolean;
+var
+  i: integer;
 begin
+  seg_offset := seg_offset;
+  default_byte := default_byte;
+  bytesize := bytesize;
+  start_addr := start_addr;
+
+  for i := 0 to ChangeList.Count - 1 do
+  begin
+    hFile.Position := addr_offset + ChangeList.MemInfoItems[i].StartAddr;
+    hFile.Write(buffer[0], ChangeList.MemInfoItems[i].ByteSize);
+  end;
+  result := TRUE;
+end;
+
+function ReadHexFileLine(hFile: TFileStream; var buffer: array of byte;
+                                var LineInfo: THexFileLineInfo): boolean;
+var
+  ch: char;
+  checksum: byte;
+  line: string;
+  i, j: integer;
+begin
+  result := FALSE;
+
+  // ignore empty lines
+  repeat
+    if hFile.Read(ch, 1) <> 1 then
+    begin
+      result := TRUE;
+      LineInfo.ByteSize := 0;
+      exit;
+    end;
+  until (ch <> char(10)) and (ch <> char(13));
+  // first char MUST be :
+  if (ch <> ':') then
+  begin
+    exit;
+  end;
+
+  // read line
+  line := '';
+  repeat
+    if (hFile.Read(ch, 1) <> 1) or (ch = char(10)) or (ch = char(13)) then
+    begin
+      break;
+    end
+    else
+    begin
+      line := line + ch;
+    end;
+  until FALSE;
+  if (Length(line) < 10) or ((Length(line) mod 2) = 1) then
+  begin
+    exit;
+  end;
+  i := 0;
+  while i < Length(line) do
+  begin
+    buffer[i div 2] := byte(StrToIntRadix(Copy(line, i + 1, 2), 16));
+    Inc(i, 2);
+  end;
+  i := i div 2;
+  // validity check
+  if (buffer[0] + 5) <> i then
+  begin
+    exit;
+  end;
+  checksum := 0;
+  for j := 0 to i - 1 do
+  begin
+    checksum := checksum + buffer[j];
+  end;
+  if checksum <> 0 then
+  begin
+    exit;
+  end;
+
+  LineInfo.ByteSize := buffer[0];
+  LineInfo.Addr := (buffer[1] shl 8) + buffer[2];
+  LineInfo.DataOffset := 4;
+  LineInfo.DataType := buffer[3];
+  result := TRUE;
 end;
 
 function ReadHexFile(hFile: TFileStream; var buffer: array of byte;
-         bytesize, start_addr, seg_offset, addr_offset: integer): boolean;
+                            bytesize, start_addr: Cardinal;
+                            seg_offset, addr_offset: Int64): boolean;
 var
-  ch: char;
-  line: string;
   buff: array[0 .. 260] of byte;
-  i, j: integer;
-  checksum: byte;
-  line_data_len, line_addr, line_type: integer;
-  seg_addr, ext_addr, data_addr: Int64;
+  seg_addr, ext_addr, data_addr: Cardinal;
+  LineInfo: THexFileLineInfo;
 begin
   seg_addr := 0;
   ext_addr := 0;
@@ -162,78 +263,39 @@ begin
 
   while TRUE do
   begin
-    // ignore empty lines
-    repeat
-      if hFile.Read(ch, 1) <> 1 then
-      begin
-        result := TRUE;
-        exit;
-      end;
-    until (ch <> char(10)) and (ch <> char(13));
-    // first char MUST be :
-    if (ch <> ':') then
+    if not ReadHexFileLine(hFile, buff[0], LineInfo) then
     begin
       exit;
     end;
-    // read line
-    line := '';
-    repeat
-      if (hFile.Read(ch, 1) <> 1) or (ch = char(10)) or (ch = char(13)) then
-      begin
-        break;
-      end
-      else
-      begin
-        line := line + ch;
-      end;
-    until FALSE;
-    if (Length(line) < 10) or ((Length(line) mod 2) = 1) then
+    if LineInfo.ByteSize = 0 then
     begin
+      result := TRUE;
       exit;
     end;
-    i := 0;
-    while i < Length(line) do
-    begin
-      buff[i div 2] := byte(StrToIntRadix(Copy(line, i + 1, 2), 16));
-      i := i + 2;
-    end;
-    i := i div 2;
-    // validity check
-    line_data_len := buff[0];
-    if (line_data_len + 5) <> i then
-    begin
-      exit;
-    end;
-    checksum := 0;
-    for j := 0 to i - 1 do
-    begin
-      checksum := checksum + buff[j];
-    end;
-    if checksum <> 0 then
-    begin
-      exit;
-    end;
+
     // process data
-    case buff[3] of
+    case LineInfo.DataType of
       0://htData
         begin
-          data_addr := ext_addr + (buff[1] shl 8) + buff[2] - start_addr;
-          if data_addr < addr_offset then
+          data_addr := ext_addr + LineInfo.Addr;
+          if (seg_addr <> seg_offset) or (data_addr < start_addr) or
+              (data_addr < (addr_offset + start_addr)) then
           begin
             continue;
           end;
-          if (line_data_len + data_addr) > bytesize then
+          Dec(data_addr, start_addr);
+          if (LineInfo.ByteSize + data_addr) > bytesize then
           begin
             if data_addr > bytesize then
             begin
-              line_data_len := 0;
+              LineInfo.ByteSize := 0;
             end
             else
             begin
-              line_data_len := bytesize - data_addr;
+              LineInfo.ByteSize := bytesize - data_addr;
             end;
           end;
-          Move(buff[4], buffer[data_addr - addr_offset], line_data_len);
+          Move(buff[4], buffer[data_addr - addr_offset], LineInfo.ByteSize);
         end;
       1://htEOF
         begin
@@ -242,7 +304,7 @@ begin
         end;
       2://htSegAddr
         begin
-          if line_data_len <> 2 then
+          if LineInfo.ByteSize <> 2 then
           begin
             exit;
           end;
@@ -250,7 +312,7 @@ begin
         end;
       4://htExtAddr
         begin
-          if line_data_len <> 2 then
+          if LineInfo.ByteSize <> 2 then
           begin
             exit;
           end;
@@ -263,10 +325,18 @@ begin
   end;
 end;
 
-function ValidateHexFile(hFile: TFileStream; buffer: array of byte; default_byte: byte;
-         bytesize, start_addr, seg_offset, addr_offset: integer): boolean;
+function ValidateHexFile(hFile: TFileStream; buffer: array of byte;
+                                ChangeList: TMemList; default_byte: byte;
+                                bytesize, start_addr: Cardinal;
+                                seg_offset, addr_offset: Int64): boolean;
+var
+  i: integer;
 begin
-
+  for i := 0 to ChangeList.Count - 1 do
+  begin
+    hFile.Position := 0;
+  end;
+  result := TRUE;
 end;
 
 { TMemInfo }
@@ -322,7 +392,7 @@ end;
 function TMemList.Add(aStartAddr, aByteSize: Cardinal): integer;
 var
   i: integer;
-  aTail: integer;
+  aTail: Cardinal;
   found: boolean;
 begin
   if aByteSize = 0 then
@@ -373,7 +443,7 @@ begin
       MemInfoItems[result].ByteSize := 1 + Max(MemInfoItems[result].Tail, MemInfoItems[i].Tail) - MemInfoItems[result].StartAddr;
       Delete(i);
 
-      i := i + 1;
+      Inc(i);
     end;
   end;
 end;
@@ -391,9 +461,6 @@ end;
 { TFormHexEditor }
 
 procedure TFormHexEditor.DataBuffChangeRequire(addr: integer; aValue: byte);
-var
-  i: integer;
-  index: integer;
 begin
   if DataBuff[addr] <> aValue then
   begin
@@ -418,7 +485,7 @@ end;
 procedure TFormHexEditor.btnSaveClick(Sender: TObject);
 var
   i: integer;
-  start, lines: integer;
+  start, lines: Cardinal;
 begin
   if (CurFileParserIndex >= Length(FileParser)) then
   begin
@@ -428,9 +495,9 @@ begin
   if (FileParser[CurFileParserIndex].ValidateFile <> nil) then
   begin
     // TODO: Add Validate function here
-//    FileParser[CurFileParserIndex].ValidateFile(hFile,
-//        DataBuff[0], DefaultData, CurFileInfo.byte_size,
-//        CurFileInfo.start_addr, SegOffset, AddressOffset);
+    FileParser[CurFileParserIndex].ValidateFile(hFile,
+        DataBuff[0], DataBuffChangeList, DefaultData, DataByteSize,
+        StartAddress, SegOffset, AddressOffset);
   end;
 
   // Dirty corresponding lines
@@ -489,6 +556,7 @@ begin
   begin
     DataBuffChangeList.Destroy;
   end;
+  CloseAction:= caHide;
 end;
 
 procedure TFormHexEditor.FormKeyPress(Sender: TObject; var Key: char);
@@ -501,7 +569,7 @@ end;
 
 procedure TFormHexEditor.FormShow(Sender: TObject);
 var
-  i, j: integer;
+  i: integer;
   ext: string;
   success: boolean;
 begin
@@ -514,7 +582,7 @@ begin
   CurCellAddressValid := FALSE;
   sgData.Row := 0;
   sgData.Col := 0;
-  Caption := Caption + ' ' + FileName;
+  Caption := Target + ' ' + FileName;
   sgData.RowCount := 0;
   sgData.TopRow := 0;
   ActiveControl := sgData;
@@ -608,7 +676,6 @@ begin
       Key := char (0);
       // change data
       DataBuffChangeRequire(CurCellAddress, value);
-      CurCellPos := CurCellPos + 1;
       IncPos := 2 + BYTES_IN_ROW;
     end
     else
@@ -628,13 +695,12 @@ begin
           begin
             value := (DataBuff[CurCellAddress] and $0F) or (value shl 4);
             DataBuffChangeRequire(CurCellAddress, value);
-            CurCellPos := CurCellPos + 1;
+            Inc(CurCellPos);
           end;
         1:
           begin
             value := (DataBuff[CurCellAddress] and $F0) or value;
             DataBuffChangeRequire(CurCellAddress, value);
-            CurCellPos := 0;
             IncPos := 1;
           end;
       end;
@@ -701,21 +767,20 @@ end;
 procedure TFormHexEditor.sgDataSelectCell(Sender: TObject; aCol, aRow: Integer;
   var CanSelect: Boolean);
 begin
-  if (CurCellRow <> aRow) or (CurCellCol <> aCol) then
+  if aCol = (1 + BYTES_IN_ROW) then
   begin
+    CanSelect := FALSE;
+  end
+  else if (CurCellRow <> aRow) or (CurCellCol <> aCol) then
+  begin
+    CanSelect := TRUE;
     CurCellPos := 0;
     CurCellRow := aRow;
     CurCellCol := aCol;
 
     if (sgData.ColCount > 0) and (sgData.RowCount > 0) then
     begin
-      if aCol = 1 + BYTES_IN_ROW then
-      begin
-        CurCellAddressValid := FALSE;
-        sgData.Cells[0,0] := '';
-        exit;
-      end
-      else if aCol > 1 + BYTES_IN_ROW then
+      if aCol > 1 + BYTES_IN_ROW then
       begin
         Dec(aCol, BYTES_IN_ROW + 1);
       end;

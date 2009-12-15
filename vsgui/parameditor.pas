@@ -456,7 +456,7 @@ begin
   begin
     if (Param_Record.settings[i].mask and mask) > 0 then
     begin
-      section_num := section_num + 1;
+      Inc(section_num);
       mask := 0;
     end;
     mask := mask or Param_Record.settings[i].mask;

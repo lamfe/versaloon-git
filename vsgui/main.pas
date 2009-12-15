@@ -35,6 +35,7 @@ type
     seg_offset: integer;
     addr_offset: integer;
     def_start_addr: integer;
+    offset_is_fake: boolean;
   end;
 
   TMemoryInfo = record
@@ -337,7 +338,8 @@ begin
   end;
 end;
 
-procedure AddTargetFile(name: string; seg_offset, addr_offset, def_start_addr: integer);
+procedure AddTargetFile(name: string; offset_is_fake: boolean;
+          seg_offset, addr_offset, def_start_addr: integer);
 var
   i: integer;
   found: boolean;
@@ -358,6 +360,7 @@ begin
     TargetFile[i].filename := '';
     TargetFile[i].seg_offset := seg_offset;
     TargetFile[i].addr_offset := addr_offset;
+    TargetFile[i].offset_is_fake := offset_is_fake;
     TargetFile[i].def_start_addr := def_start_addr;
   end;
 end;
@@ -433,7 +436,7 @@ begin
     if TargetFile[i].filename <> '' then
     begin
       cbboxInputFile.Items.Add(TargetFile[i].target + ':' + TargetFile[i].filename);
-      valid_file_num := valid_file_num + 1;
+      Inc(valid_file_num);
     end;
   end;
   if valid_file_num > 1 then
@@ -1168,11 +1171,6 @@ begin
     MessageDlg('Error', TargetFile[index].filename + 'not exists.', mtError, [mbOK], 0);
     exit;
   end;
-  FormHexEditor.FileName := TargetFile[index].filename;
-
-  FormHexEditor.SegOffset := TargetFile[index].seg_offset;
-  FormHexEditor.AddressOffset := TargetFile[index].addr_offset;
-  FormHexEditor.StartAddress := TargetFile[index].def_start_addr;
 
   if caller.IsRunning() then
   begin
@@ -1197,13 +1195,21 @@ begin
     exit;
   end;
 
-  if (FormHexEditor.StartAddress) <> MemoryInfo.start_addr then
-  begin
-    FormHexEditor.StartAddress := MemoryInfo.start_addr;
-  end;
+  FormHexEditor.FileName := TargetFile[index].filename;
+  FormHexEditor.StartAddress := MemoryInfo.start_addr;
   FormHexEditor.DataByteSize := MemoryInfo.byte_size;
   FormHexEditor.DefaultData := MemoryInfo.default_byte;
-  FormHexEditor.Caption := (Sender as TButton).Caption;
+  FormHexEditor.Target := (Sender as TButton).Caption;
+  if not TargetFile[index].offset_is_fake then
+  begin
+    FormHexEditor.SegOffset := TargetFile[index].seg_offset;
+    FormHexEditor.AddressOffset := TargetFile[index].addr_offset;
+  end
+  else
+  begin
+    FormHexEditor.SegOffset := 0;
+    FormHexEditor.AddressOffset := 0;
+  end;
   FormHexEditor.ShowModal;
 end;
 
@@ -1297,10 +1303,6 @@ begin
     MessageDlg('Error', TargetFile[index].filename + 'not exists.', mtError, [mbOK], 0);
     exit;
   end;
-  FormHexEditor.FileName := TargetFile[index].filename;
-
-  FormHexEditor.SegOffset := TargetFile[index].seg_offset;
-  FormHexEditor.AddressOffset := TargetFile[index].addr_offset;
 
   if caller.IsRunning() then
   begin
@@ -1325,10 +1327,21 @@ begin
     exit;
   end;
 
+  FormHexEditor.FileName := TargetFile[index].filename;
   FormHexEditor.StartAddress := MemoryInfo.start_addr;
   FormHexEditor.DataByteSize := MemoryInfo.byte_size;
   FormHexEditor.DefaultData := MemoryInfo.default_byte;
-  FormHexEditor.Caption := (Sender as TButton).Caption;
+  FormHexEditor.Target := (Sender as TButton).Caption;
+  if not TargetFile[index].offset_is_fake then
+  begin
+    FormHexEditor.SegOffset := TargetFile[index].seg_offset;
+    FormHexEditor.AddressOffset := TargetFile[index].addr_offset;
+  end
+  else
+  begin
+    FormHexEditor.SegOffset := 0;
+    FormHexEditor.AddressOffset := 0;
+  end;
   FormHexEditor.ShowModal;
 end;
 
@@ -1956,7 +1969,7 @@ begin
       begin
         if TargetFile[i].filename <> '' then
         begin
-          str := ExtractFileExt(TargetFile[i].filename);
+          str := LowerCase(ExtractFileExt(TargetFile[i].filename));
           if str = '.hex' then
           begin
             caller.AddParameter(io_file_opt + '"' + TargetFile[i].filename + '@'
@@ -1981,7 +1994,7 @@ begin
     begin
       if TargetFile[i].filename <> '' then
       begin
-        str := ExtractFileExt(TargetFile[i].filename);
+        str := LowerCase(ExtractFileExt(TargetFile[i].filename));
         if str = '.hex' then
         begin
           caller.AddParameter(io_file_opt + '"' + TargetFile[i].filename + '@'
@@ -2226,7 +2239,7 @@ begin
     while line[i] = PChar('=') do
     begin
       sbMain.Panels.Items[1].text := sbMain.Panels.Items[1].text + '=';
-      pgbarMain.Position := pgbarMain.Position + 1;
+      pgbarMain.StepIt;
       Inc(i);
     end;
   end;
@@ -2318,7 +2331,7 @@ begin
   pos_start := Pos('Target runs at ', line);
   if pos_start > 0 then
   begin
-    pos_start := pos_start + Length('Target runs at ');
+    Inc(pos_start, Length('Target runs at '));
     voltage := Trunc(StrToFloat(Copy(line, pos_start, Length(line) - pos_start - 1)) * 1000);
     sedtPower.Value := voltage;
     sedtPowerChange(sedtPower);
@@ -2817,7 +2830,7 @@ begin
   setting.mode := 'rp';
   setting.target := FLASH_CHAR + LOCK_CHAR;
   VSProg_AddTargetSetting(setting);
-  AddTargetFile('ALL', 0, 0, 0);
+  AddTargetFile('ALL', FALSE, 0, 0, 0);
 
   // call 'vsprog -Spsoc1' to extract supported psoc1 targets
   DisableLogOutput();
@@ -2862,7 +2875,7 @@ begin
   setting.mode := 'jc';
   setting.target := FLASH_CHAR;
   VSProg_AddTargetSetting(setting);
-  AddTargetFile('ALL', 0, 0, 0);
+  AddTargetFile('ALL', FALSE, 0, 0, 0);
 
   // call 'vsprog -Sc8051f' to check support
   DisableLogOutput();
@@ -2970,7 +2983,7 @@ begin
   setting.lock_bytelen := 1;
   setting.lock_default := 1;
   VSProg_AddTargetSetting(setting);
-  AddTargetFile('ALL', 0, 0, 0);
+  AddTargetFile('ALL', FALSE, 0, 0, 0);
 
   // call 'vsprog -Sat89s5x' to extract supported at89s5x targets
   DisableLogOutput();
@@ -3022,7 +3035,7 @@ begin
   setting.mode := 'jsb';
   setting.target := FLASH_CHAR;
   VSProg_AddTargetSetting(setting);
-  AddTargetFile('ALL', 0, 0, 0);
+  AddTargetFile('ALL', FALSE, 0, 0, 0);
 
   // call 'vsprog -Smsp430' to extract supported at89s5x targets
   DisableLogOutput();
@@ -3097,7 +3110,7 @@ begin
   VSProg_TargetSettingInit(setting);
   setting.target := FLASH_CHAR;
   VSProg_AddTargetSetting(setting);
-  AddTargetFile('ALL', 0, 0, 0);
+  AddTargetFile('ALL', FALSE, 0, 0, 0);
 
   // call 'vsprog -Sstm8' to extract supported at89s5x targets
   DisableLogOutput();
@@ -3251,8 +3264,8 @@ begin
   setting.cali_bytelen := 4;
   setting.cali_default := $FFFFFFFF;
   VSProg_AddTargetSetting(setting);
-  AddTargetFile('Flash', 0, 0, 0);
-  AddTargetFile('EEPROM', 2, 0, 0);
+  AddTargetFile('Flash', FALSE, 0, 0, 0);
+  AddTargetFile('EEPROM', TRUE, 2, 0, 0);
 
   // call 'vsprog -Savr8' to extract supported avr8 targets
   DisableLogOutput();
@@ -3338,7 +3351,7 @@ begin
   str_tmp := setting.target;
   if Pos(FLASH_CHAR, str_tmp) > 0 then
   begin
-    AddTargetFile('Flash', 0, 0, 0);
+    AddTargetFile('Flash', FALSE, 0, 0, 0);
   end
   else
   begin
@@ -3346,7 +3359,7 @@ begin
   end;
   if Pos(EEPROM_CHAR, str_tmp) > 0 then
   begin
-    AddTargetFile('EEPROM', 2, 0, 0);
+    AddTargetFile('EEPROM', TRUE, 2, 0, 0);
   end
   else
   begin
@@ -3426,11 +3439,11 @@ begin
   if cbboxTarget.Text = 'comisp_stm32' then
   begin
     // STM32
-    AddTargetFile('Flash', 0, 0, $08000000);
+    AddTargetFile('Flash', FALSE, 0, 0, $08000000);
   end
   else
   begin
-    AddTargetFile('Flash', 0, 0, 0);
+    AddTargetFile('Flash', FALSE, 0, 0, 0);
   end;
 
   setting_str := setting.extra;
@@ -3472,7 +3485,7 @@ begin
   VSProg_TargetSettingInit(setting);
   setting.target := FLASH_CHAR;
   VSProg_AddTargetSetting(setting);
-  AddTargetFile('ALL', 0, 0, 0);
+  AddTargetFile('ALL', FALSE, 0, 0, 0);
 
   // call 'vsprog -Scomisp' to extract supported comisp targets
   DisableLogOutput();
@@ -3570,11 +3583,11 @@ begin
   if cbboxTarget.Text = 'cm3_stm32' then
   begin
     // STM32
-    AddTargetFile('Flash', 0, 0, $08000000);
+    AddTargetFile('Flash', FALSE, 0, 0, $08000000);
   end
   else
   begin
-    AddTargetFile('Flash', 0, 0, 0);
+    AddTargetFile('Flash', FALSE, 0, 0, 0);
   end;
 
   if setting.mode = '' then

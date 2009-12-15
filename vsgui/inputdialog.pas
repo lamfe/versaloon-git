@@ -95,7 +95,7 @@ begin
   r := 1;
   for i := Length(sData) downto 1 do
   begin
-    result := result + r * (Pos(sData[i], HEX_PARSE_STR) - 1);
+    Inc(result, r * (Pos(sData[i], HEX_PARSE_STR) - 1));
     r := r * radix;
   end;
 end;

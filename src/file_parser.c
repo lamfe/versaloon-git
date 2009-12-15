@@ -166,7 +166,7 @@ RESULT save_target_to_file(filelist *fl, uint8_t *buff, uint32_t buff_size,
 			}
 		}
 		fl = FILELIST_GetNext(fl);
-	} while ((fl != NULL) && (fl->file != NULL) && (fl->path != NULL));
+	} while ((fl != NULL) && (fl->path != NULL));
 	
 	// write target to file
 	if (NULL == target_file->path)

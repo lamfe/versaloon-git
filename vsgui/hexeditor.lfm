@@ -2,14 +2,14 @@ object FormHexEditor: TFormHexEditor
   Left = 448
   Height = 541
   Top = 270
-  Width = 393
+  Width = 626
   HorzScrollBar.Page = 589
   VertScrollBar.Page = 409
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'FormHexEditor'
   ClientHeight = 541
-  ClientWidth = 393
+  ClientWidth = 626
   KeyPreview = True
   OnClose = FormClose
   OnCreate = FormCreate
@@ -29,13 +29,13 @@ object FormHexEditor: TFormHexEditor
     Left = 0
     Height = 69
     Top = 472
-    Width = 393
+    Width = 626
     Align = alBottom
     ClientHeight = 69
-    ClientWidth = 393
+    ClientWidth = 626
     TabOrder = 0
     object btnSave: TButton
-      Left = 88
+      Left = 120
       Height = 25
       Top = 21
       Width = 75
@@ -44,7 +44,7 @@ object FormHexEditor: TFormHexEditor
       TabOrder = 0
     end
     object btnExit: TButton
-      Left = 218
+      Left = 448
       Height = 25
       Top = 21
       Width = 75
@@ -59,17 +59,17 @@ object FormHexEditor: TFormHexEditor
     Left = 0
     Height = 472
     Top = 0
-    Width = 393
+    Width = 626
     Align = alClient
     BevelWidth = 10
     ClientHeight = 472
-    ClientWidth = 393
+    ClientWidth = 626
     TabOrder = 1
     object sgData: TStringGrid
       Left = 10
       Height = 452
       Top = 10
-      Width = 373
+      Width = 606
       Align = alClient
       Color = 15400959
       ColCount = 0
