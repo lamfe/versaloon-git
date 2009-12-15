@@ -77,8 +77,6 @@ type
     procedure DataBuffChangeRequire(addr: integer; aValue: byte);
   private
     { private declarations }
-    DataGridWidth: integer;
-    AddressGridWidth: integer;
     DataBuff: array of byte;
     DataBuffChangeList: TMemList;
     RowDirty: array of boolean;
@@ -87,6 +85,7 @@ type
     CurCellCol: integer;
     CurCellPos: integer;
     CurCellAddress: integer;
+    CurCellAddressValid: boolean;
     CurFileParserIndex: integer;
     hFile: TFileStream;
     ChangedFont: TFont;
@@ -121,6 +120,7 @@ const
   (ext: '.hex'; ReadFile: @ReadHexFile; ValidateFile: @ValidateHexFile;)
   );
   BYTES_IN_ROW: integer = 16;
+  DIVIDER_WIDTH: integer = 20;
 
 
 
@@ -424,6 +424,7 @@ begin
 
   if (FileParser[CurFileParserIndex].ValidateFile <> nil) then
   begin
+    // TODO: Add Validate function here
 //    FileParser[CurFileParserIndex].ValidateFile(hFile,
 //        DataBuff[0], DefaultData, CurFileInfo.byte_size,
 //        CurFileInfo.start_addr, SegOffset, AddressOffset);
@@ -482,6 +483,7 @@ begin
   CurCellCol := 0;
   CurCellPos := 0;
   CurCellAddress := 0;
+  CurCellAddressValid := FALSE;
   sgData.Row := 0;
   sgData.Col := 0;
   Caption := Caption + ' ' + FileName;
@@ -547,17 +549,12 @@ begin
   sgData.RowCount := 1 + DataByteSize div BYTES_IN_ROW;
   SetLength(RowDirty, DataByteSize div BYTES_IN_ROW);
   FillChar(RowDirty[0], Length(RowDirty), TRUE);
-  sgData.ColCount := 1 + BYTES_IN_ROW;
+  sgData.ColCount := 2 + 2 * BYTES_IN_ROW;
   sgData.FixedRows := 1;
   sgData.FixedCols := 1;
-  for i := 1 to sgData.ColCount-1 do
+  for i := 1 to BYTES_IN_ROW do
   begin
     sgData.Cells[i,0] := UpperCase(IntToHex(i - 1,1));
-    sgData.ColWidths[i] := DataGridWidth;
-  end;
-  for i := 1 to sgData.RowCount - 1 do
-  begin
-    sgData.Cells[0, i] := UpperCase(IntToHex(StartAddress + (i - 1) * $10, 8));
   end;
   sgData.Row := 1;
   sgData.Col := 1;
@@ -570,8 +567,11 @@ var
   goto_addr: integer;
   i: integer;
   value: byte;
+  IncPos: integer;
 begin
-  if (Key = 'g') or (Key = 'G') then
+  IncPos := 0;
+
+{  if (Key = 'g') or (Key = 'G') then
   begin
     FormInputDialog.CommonMaxLength := 8;
     FormInputDialog.CommonCase := scUpper;
@@ -597,47 +597,63 @@ begin
     end;
     Key := char(0);
   end
-  else
+  else }if CurCellAddressValid then
   begin
     // data input
-    Key := AnsiStrUpper(@Key)^;
-    i := Pos(Key, HEX_PARSE_STR);
-    Key := char(0);
-    if (i < 1) or (i > 16) then
+    if CurCellCol > 1 + BYTES_IN_ROW then
     begin
-      exit;
-    end;
-    value := i - 1;
-    // valid input, change data
-    case CurCellPos of
-      0:
-        begin
-          value := (DataBuff[CurCellAddress] and $0F) or (value shl 4);
-          DataBuffChangeRequire(CurCellAddress, value);
-          CurCellPos := CurCellPos + 1;
-          RowDirty[CurCellAddress div BYTES_IN_ROW] := TRUE;
-        end;
-      1:
-        // move to next address
-        begin
-          value := (DataBuff[CurCellAddress] and $F0) or value;
-          DataBuffChangeRequire(CurCellAddress, value);
-          CurCellPos := 0;
-          RowDirty[CurCellAddress div BYTES_IN_ROW] := TRUE;
-          if not (CurCellAddress = DataByteSize - 1) then
+      // input char data
+      value := byte(Key);
+      Key := char (0);
+      // change data
+      DataBuffChangeRequire(CurCellAddress, value);
+      CurCellPos := CurCellPos + 1;
+      IncPos := 2 + BYTES_IN_ROW;
+    end
+    else
+    begin
+      // input hex value
+      Key := AnsiStrUpper(@Key)^;
+      i := Pos(Key, HEX_PARSE_STR);
+      Key := char(0);
+      if (i < 1) or (i > 16) then
+      begin
+        exit;
+      end;
+      value := i - 1;
+      // valid input, change data
+      case CurCellPos of
+        0:
           begin
-            if (CurCellAddress mod BYTES_IN_ROW) = (BYTES_IN_ROW - 1) then
-            begin
-              SgData.Col := 1;
-              sgData.Row := sgData.Row + 1;
-            end
-            else
-            begin
-              sgData.Col := sgData.Col + 1;
-            end;
+            value := (DataBuff[CurCellAddress] and $0F) or (value shl 4);
+            DataBuffChangeRequire(CurCellAddress, value);
+            CurCellPos := CurCellPos + 1;
           end;
-        end;
+        1:
+          begin
+            value := (DataBuff[CurCellAddress] and $F0) or value;
+            DataBuffChangeRequire(CurCellAddress, value);
+            CurCellPos := 0;
+            IncPos := 1;
+          end;
+      end;
     end;
+
+    RowDirty[CurCellAddress div BYTES_IN_ROW] := TRUE;
+    // increase address if required
+    if (IncPos > 0) and (not (CurCellAddress = DataByteSize - 1)) then
+    begin
+      if (CurCellAddress mod BYTES_IN_ROW) = (BYTES_IN_ROW - 1) then
+      begin
+        SgData.Col := IncPos;
+        sgData.Row := sgData.Row + 1;
+      end
+      else
+      begin
+        sgData.Col := sgData.Col + 1;
+      end;
+    end;
+
     // update dirty data
     sgDataTopLeftChanged(sgData);
   end;
@@ -662,19 +678,21 @@ begin
   begin
     SetGridCanvasFont((Sender as TStringGrid).TitleFont);
   end
-  else
+  else if (aRow > 0) and (aCol > 0) then
   begin
-    if (aRow > 0) and (aCol > 0) then
+    if aCol > (1 + BYTES_IN_ROW) then
     begin
-      addr := (aRow - 1) * BYTES_IN_ROW + aCol - 1;
-      if DataBuffChangeList.GetIndexByAddr(addr) >= 0 then
-      begin
-        SetGridCanvasFont(ChangedFont);
-      end
-      else
-      begin
-        SetGridCanvasFont((Sender as TStringGrid).Font);
-      end;
+      Dec(aCol, 1 + BYTES_IN_ROW);
+    end;
+
+    addr := (aRow - 1) * BYTES_IN_ROW + aCol - 1;
+    if DataBuffChangeList.GetIndexByAddr(addr) >= 0 then
+    begin
+      SetGridCanvasFont(ChangedFont);
+    end
+    else
+    begin
+      SetGridCanvasFont((Sender as TStringGrid).Font);
     end;
   end;
 end;
@@ -687,9 +705,22 @@ begin
     CurCellPos := 0;
     CurCellRow := aRow;
     CurCellCol := aCol;
+
     if (sgData.ColCount > 0) and (sgData.RowCount > 0) then
     begin
-      CurCellAddress := (CurCellRow - 1) * BYTES_IN_ROW + CurCellCol - 1;
+      if aCol = 1 + BYTES_IN_ROW then
+      begin
+        CurCellAddressValid := FALSE;
+        sgData.Cells[0,0] := '';
+        exit;
+      end
+      else if aCol > 1 + BYTES_IN_ROW then
+      begin
+        Dec(aCol, BYTES_IN_ROW + 1);
+      end;
+
+      CurCellAddressValid := TRUE;
+      CurCellAddress := (aRow - 1) * BYTES_IN_ROW + aCol - 1;
       sgData.Cells[0,0] := IntToHex(StartAddress + CurCellAddress, 8);
     end;
   end;
@@ -704,9 +735,14 @@ begin
   begin
     if (i < sgData.RowCount) and RowDirty[i - 1] then
     begin
-      for j := 1 to sgData.ColCount - 1 do
+      sgData.Cells[0, i] := UpperCase(IntToHex(StartAddress + (i - 1) * $10, 8));
+      for j := 1 to BYTES_IN_ROW do
       begin
         sgData.Cells[j, i] := UpperCase(IntToHex(DataBuff[(i - 1) * 16 + (j - 1)], 2));
+      end;
+      for j := 2 + BYTES_IN_ROW to 1 + 2 * BYTES_IN_ROW do
+      begin
+        sgData.Cells[j, i] := Char(DataBuff[(i - 1) * 16 + (j - 2 - BYTES_IN_ROW)]);
       end;
       RowDirty[i - 1] := FALSE;
     end;
@@ -716,24 +752,40 @@ end;
 procedure TFormHexEditor.timerInitSizeTimer(Sender: TObject);
 var
   i: integer;
+  tmpWidth, allWidth: integer;
 begin
   (Sender as TTimer).Enabled := FALSE;
+  allWidth := 0;
+
+  lblMeasureSize.Caption := '000000000';
+  lblMeasureSize.AdjustSize;
+  tmpWidth := lblMeasureSize.Width;
+  sgData.ColWidths[0] := tmpWidth;
+  Inc(allWidth, tmpWidth);
 
   lblMeasureSize.Caption := '000';
   lblMeasureSize.AdjustSize;
-  DataGridWidth := lblMeasureSize.Width;
-  lblMeasureSize.Caption := '000000000';
-  lblMeasureSize.AdjustSize;
-  AddressGridWidth := lblMeasureSize.Width;
-
-  for i := 1 to sgData.ColCount-1 do
+  tmpWidth := lblMeasureSize.Width;
+  for i := 1 to BYTES_IN_ROW do
   begin
-    sgData.ColWidths[i] := DataGridWidth;
+    sgData.ColWidths[i] := tmpWidth;
   end;
-  sgData.ColWidths[0] := AddressGridWidth;
+  Inc(allWidth, BYTES_IN_ROW * tmpWidth);
+
+  sgData.ColWidths[BYTES_IN_ROW + 1] := DIVIDER_WIDTH;
+  Inc(allWidth, DIVIDER_WIDTH);
+
+  lblMeasureSize.Caption := '00';
+  lblMeasureSize.AdjustSize;
+  tmpWidth := lblMeasureSize.Width;
+  for i := 2 + BYTES_IN_ROW to 1 + 2 * BYTES_IN_ROW do
+  begin
+    sgData.ColWidths[i] := tmpWidth;
+  end;
+  Inc(allWidth, BYTES_IN_ROW * tmpWidth);
 
   sgData.Align := alCustom;
-  sgData.Width := AddressGridWidth + DataGridWidth * 16;
+  sgData.Width := allWidth;
   Width := pnlData.BevelWidth * 2 + sgData.Width + 20;
   sgData.Align := alClient;
 
