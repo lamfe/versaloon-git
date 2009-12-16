@@ -10,16 +10,16 @@ uses
 
 type
   TTargetFile = record
-    target: string;
+    target:   string;
     filename: string;
   end;
 
   { TFormFileSelector }
 
   TFormFileSelector = class(TForm)
-    btnOK: TButton;
+    btnOK:     TButton;
     btnCancel: TButton;
-    pnlMain: TPanel;
+    pnlMain:   TPanel;
     pnlButton: TPanel;
     procedure FileNameEditChange(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -28,25 +28,25 @@ type
   private
     { private declarations }
     FileNameLabelArr: array of TLabel;
-    FileNameEdtArr: array of TFileNameEdit;
+    FileNameEdtArr:   array of TFileNameEdit;
   public
     { public declarations }
     procedure Reset();
     function GetFileNameByTargetName(target: string): string;
     procedure AddFileSetting(target, filename: string);
-  end; 
+  end;
 
 var
   FormFileSelector: TFormFileSelector;
 
 const
-  LEFT_MARGIN: integer = 10;
-  RIGHT_MARGIN: integer = 10;
-  TOP_MARGIN: integer = 10;
+  LEFT_MARGIN: integer   = 10;
+  RIGHT_MARGIN: integer  = 10;
+  TOP_MARGIN: integer    = 10;
   BOTTOM_MARGIN: integer = 10;
-  X_MARGIN: integer = 4;
-  Y_MARGIN: integer = 4;
-  ITEM_HEIGHT: integer = 20;
+  X_MARGIN: integer      = 4;
+  Y_MARGIN: integer      = 4;
+  ITEM_HEIGHT: integer   = 20;
   FILELABEL_WIDTH: integer = 100;
   FILEEDIT_WIDTH: integer = 400;
 
@@ -79,16 +79,16 @@ end;
 
 procedure TFormFileSelector.AddFileSetting(target, filename: string);
 var
-  i: integer;
+  i:     integer;
   found: boolean;
-  str: string;
+  str:   string;
 begin
-  found := FALSE;
+  found := False;
   for i := low(FileNameLabelArr) to high(FileNameLabelArr) do
   begin
     if FileNameLabelArr[i].Caption = target then
     begin
-      found := TRUE;
+      found := True;
     end;
   end;
 
@@ -102,26 +102,26 @@ begin
     SetLength(FileNameLabelArr, Length(FileNameLabelArr) + 1);
     i := Length(FileNameLabelArr) - 1;
 
-    FileNameLabelArr[i] := TLabel.Create(Self);
+    FileNameLabelArr[i]      := TLabel.Create(Self);
     FileNameLabelArr[i].Parent := pnlMain;
     FileNameLabelArr[i].Caption := target;
-    FileNameLabelArr[i].Top := TOP_MARGIN + i * (Y_MARGIN + ITEM_HEIGHT);
+    FileNameLabelArr[i].Top  := TOP_MARGIN + i * (Y_MARGIN + ITEM_HEIGHT);
     FileNameLabelArr[i].Left := LEFT_MARGIN;
     FileNameLabelArr[i].Width := FILELABEL_WIDTH;
     FileNameLabelArr[i].Height := ITEM_HEIGHT;
     FileNameLabelArr[i].Hint := target;
-    FileNameLabelArr[i].ShowHint := TRUE;
+    FileNameLabelArr[i].ShowHint := True;
 
-    FileNameEdtArr[i] := TFileNameEdit.Create(Self);
+    FileNameEdtArr[i]      := TFileNameEdit.Create(Self);
     FileNameEdtArr[i].Parent := pnlMain;
     FileNameEdtArr[i].FileName := filename;
-    FileNameEdtArr[i].Top := TOP_MARGIN + i * (Y_MARGIN + ITEM_HEIGHT);
+    FileNameEdtArr[i].Top  := TOP_MARGIN + i * (Y_MARGIN + ITEM_HEIGHT);
     FileNameEdtArr[i].Left := LEFT_MARGIN + X_MARGIN + FILELABEL_WIDTH;
     FileNameEdtArr[i].Width := FILEEDIT_WIDTH - FileNameEdtArr[i].ButtonWidth;
     FileNameEdtArr[i].Height := ITEM_HEIGHT;
     FileNameEdtArr[i].Filter := 'HEX File|*.hex|BIN File|*.bin';
     FileNameEdtArr[i].Hint := filename;
-    FileNameEdtArr[i].ShowHint := TRUE;
+    FileNameEdtArr[i].ShowHint := True;
     FileNameEdtArr[i].OnChange := @FileNameEditChange;
     FileNameEdtArr[i].OnEditingDone := @FileNameEditChange;
 
@@ -141,13 +141,13 @@ function TFormFileSelector.GetFileNameByTargetName(target: string): string;
 var
   i: integer;
 begin
-  result := '';
+  Result := '';
 
   for i := low(FileNameLabelArr) to high(FileNameLabelArr) do
   begin
     if FileNameLabelArr[i].Caption = target then
     begin
-      result := FileNameEdtArr[i].FileName;
+      Result := FileNameEdtArr[i].FileName;
     end;
   end;
 end;
@@ -178,7 +178,7 @@ procedure TFormFileSelector.FormKeyPress(Sender: TObject; var Key: char);
 begin
   if Key = #27 then
   begin
-    close;
+    Close;
   end;
 end;
 
@@ -186,13 +186,15 @@ procedure TFormFileSelector.FormShow(Sender: TObject);
 var
   int_tmp: integer;
 begin
-  int_tmp:= LEFT_MARGIN + RIGHT_MARGIN + FILELABEL_WIDTH + X_MARGIN + FILEEDIT_WIDTH;
-  ClientWidth := int_tmp;
-  ClientHeight := TOP_MARGIN + BOTTOM_MARGIN + Length(FileNameLabelArr) * (Y_MARGIN + ITEM_HEIGHT) + pnlButton.Height;
+  int_tmp      := LEFT_MARGIN + RIGHT_MARGIN + FILELABEL_WIDTH +
+    X_MARGIN + FILEEDIT_WIDTH;
+  ClientWidth  := int_tmp;
+  ClientHeight := TOP_MARGIN + BOTTOM_MARGIN + Length(FileNameLabelArr) *
+    (Y_MARGIN + ITEM_HEIGHT) + pnlButton.Height;
   pnlMain.Width := int_tmp;
   pnlButton.Width := int_tmp;
   // center buttons
-  btnOK.Left := (pnlButton.Width div 2 - btnOK.Width) div 2;
+  btnOK.Left   := (pnlButton.Width div 2 - btnOK.Width) div 2;
   btnCancel.Left := pnlButton.Width div 2 + (pnlButton.Width div 2 - btnOK.Width) div 2;
 
   UpdateShowing;

@@ -8,7 +8,8 @@ uses
   Classes, SysUtils, process, Forms;
 
 type
-  TCLI_Callback = function(line: string): boolean of Object;
+  TCLI_Callback = function(line: string): boolean of object;
+
   TCLI_Caller = class(TObject)
     procedure Take();
     procedure UnTake();
@@ -26,7 +27,7 @@ type
     application: string;
     parameter: string;
     delimiter: char;
-    P: TProcess;
+    P:     TProcess;
     running: boolean;
     taken: boolean;
   public
@@ -45,7 +46,7 @@ end;
 
 function TCLI_Caller.GetApplication(): string;
 begin
-  result := application;
+  Result := application;
 end;
 
 procedure TCLI_Caller.SetDelimiter(deli: char);
@@ -70,23 +71,23 @@ end;
 
 procedure TCLI_Caller.Take;
 begin
-  taken := TRUE;
+  taken := True;
 end;
 
 procedure TCLI_Caller.UnTake;
 begin
-  taken := FALSE;
+  taken := False;
 end;
 
 function TCLI_Caller.IsRunning(): boolean;
 begin
   if (P <> nil) and ((running and P.Running) or taken) then
   begin
-    result := TRUE;
+    Result := True;
   end
   else
   begin
-    result := FALSE;
+    Result := False;
   end;
 end;
 
@@ -100,13 +101,13 @@ end;
 
 procedure TCLI_Caller.Run(callback: TCLI_Callback; bView: boolean; bTimeout: boolean);
 var
-  n, BytesRead: LongInt;
-  dly: integer;
+  n, BytesRead: longint;
+  dly:  integer;
   buff: string;
-  i: integer;
+  i:    integer;
 begin
   buff := '';
-  dly := 0;
+  dly  := 0;
 
   BytesRead := 0;
   P := TProcess.Create(nil);
@@ -130,19 +131,70 @@ begin
   end;
   P.Options := P.Options + [poUsePipes, poStderrToOutPut] - [poWaitOnExit];
 
-try
-  running := TRUE;
-  P.Execute;
+  try
+    running := True;
+    P.Execute;
 
-  while P.Running do
-  begin
-    // make sure we have room
-    SetLength(buff, BytesRead + BUF_INC);
-
-    // try reading it
-    if P.Output.NumBytesAvailable > 0 then
+    while P.Running do
     begin
-      dly := 0;
+      // make sure we have room
+      SetLength(buff, BytesRead + BUF_INC);
+
+      // try reading it
+      if P.Output.NumBytesAvailable > 0 then
+      begin
+        dly := 0;
+        n   := P.Output.Read(buff[BytesRead + 1], BUF_INC);
+        if n > 0 then
+        begin
+          Inc(BytesRead, n);
+
+          if callback <> nil then
+          begin
+            SetLength(buff, BytesRead);
+
+            i := 0;
+            while (BytesRead > 0) and (i <= BytesRead) do
+            begin
+              if buff[i] = #10 then
+              begin
+{$ifdef MSWINDOWS}
+                callback(AnsiToUtf8(Copy(buff, 1, i - 1)));
+{$else}
+                callback(Copy(buff, 1, i - 1));
+{$endif}
+                Delete(buff, 1, i);
+                Dec(BytesRead, i);
+                i := 0;
+              end
+              else
+              begin
+                Inc(i);
+              end;
+            end;
+          end;
+        end;
+      end
+      else
+      begin
+        // no data, wait 10 ms
+        Inc(dly);
+        //      if bTimeout and (dly > 10) then
+        //      begin
+        // Timeout
+        //        P.Terminate(0);
+        //      end;
+        Sleep(10);
+      end;
+      Forms.Application.ProcessMessages;
+    end;
+
+    // read last part, process finished
+    repeat
+      // make sure we have room
+      SetLength(buff, BytesRead + BUF_INC);
+
+      // try reading it
       n := P.Output.Read(buff[BytesRead + 1], BUF_INC);
       if n > 0 then
       begin
@@ -173,63 +225,12 @@ try
           end;
         end;
       end;
-    end
-    else
-    begin
-      // no data, wait 10 ms
-      Inc(dly);
-//      if bTimeout and (dly > 10) then
-//      begin
-        // Timeout
-//        P.Terminate(0);
-//      end;
-      Sleep(10);
-    end;
-    Forms.Application.ProcessMessages;
+    until n <= 0;
+  finally
+    FreeAndNil(P);
   end;
-
-  // read last part, process finished
-  repeat
-    // make sure we have room
-    SetLength(buff, BytesRead + BUF_INC);
-
-    // try reading it
-    n := P.Output.Read(buff[BytesRead + 1], BUF_INC);
-    if n > 0 then
-    begin
-      Inc(BytesRead, n);
-      
-      if callback <> nil then
-      begin
-        SetLength(buff, BytesRead);
-        
-        i := 0;
-        while (BytesRead > 0) and (i <= BytesRead) do
-        begin
-          if buff[i] = #10 then
-          begin
-{$ifdef MSWINDOWS}
-            callback(AnsiToUtf8(Copy(buff, 1, i - 1)));
-{$else}
-            callback(Copy(buff, 1, i - 1));
-{$endif}
-            Delete(buff, 1, i);
-            Dec(BytesRead, i);
-            i := 0;
-          end
-          else
-          begin
-            Inc(i);
-          end;
-        end;
-      end;
-    end;
-  until n <= 0;
-finally
-  FreeAndNil(P);
-end;
-  running := FALSE;
-  taken := FALSE;
+  running := False;
+  taken   := False;
 end;
 
 end.

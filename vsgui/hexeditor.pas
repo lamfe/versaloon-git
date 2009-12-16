@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs,
-  StdCtrls, ExtCtrls, Grids, ActnList, parameditor, inputdialog, Contnrs, math;
+  StdCtrls, ExtCtrls, Grids, ActnList, parameditor, inputdialog, Contnrs, Math;
 
 type
 
@@ -14,15 +14,15 @@ type
 
   TMemInfo = class(TObject)
   private
-    FStartAddr: Cardinal;
-    FByteSize: Cardinal;
-    function GetTail: Cardinal;
+    FStartAddr: cardinal;
+    FByteSize:  cardinal;
+    function GetTail: cardinal;
   public
-    constructor Create(aStartAddr, aByteSize: Cardinal);
-    property StartAddr: Cardinal read FStartAddr write FStartAddr;
-    property ByteSize: Cardinal read FByteSize write FByteSize;
-    property Head: Cardinal read FStartAddr;
-    property Tail: Cardinal read GetTail;
+    constructor Create(aStartAddr, aByteSize: cardinal);
+    property StartAddr: cardinal Read FStartAddr Write FStartAddr;
+    property ByteSize: cardinal Read FByteSize Write FByteSize;
+    property Head: cardinal Read FStartAddr;
+    property Tail: cardinal Read GetTail;
   end;
 
   TMemList = class(TObjectList)
@@ -31,24 +31,23 @@ type
     procedure SetMemInfoItem(Index: integer; aMemInfoObject: TMemInfo);
   public
     constructor Create;
-    function Add(aStartAddr, aByteSize: Cardinal): integer;
-    function Add(aMemInfo: TMemInfo): Integer;
-    function GetIndexByAddr(aAddr: Cardinal): integer;
-    property MemInfoItems[Index: Integer]: TMemInfo read GetMemInfoItem write SetMemInfoItem; default;
+    function Add(aStartAddr, aByteSize: cardinal): integer;
+    function Add(aMemInfo: TMemInfo): integer;
+    function GetIndexByAddr(aAddr: cardinal): integer;
+    property MemInfoItems[Index: integer]: TMemInfo
+      Read GetMemInfoItem Write SetMemInfoItem; default;
   end;
 
   { TFileParser }
 
   TReadFileFunc = function(hFile: TFileStream; var buffer: array of byte;
-                                  bytesize, start_addr: Cardinal;
-                                  seg_offset, addr_offset: Int64): boolean;
-  TValidateFileFunc = function(hFile: TFileStream; buffer: array of byte;
-                                      ChangeList: TMemList; default_byte: byte;
-                                      bytesize, start_addr: Cardinal;
-                                      seg_offset, addr_offset: Int64): boolean;
+    bytesize, start_addr: cardinal; seg_offset, addr_offset: int64): boolean;
+  TValidateFileFunc = function(hFile: TFileStream; var buffer: array of byte;
+    ChangeList: TMemList; default_byte: byte; bytesize, start_addr: cardinal;
+    seg_offset, addr_offset: int64): boolean;
 
   TFileParser = record
-    ext: string;
+    ext:      string;
     ReadFile: TReadFileFunc;
     ValidateFile: TValidateFileFunc;
   end;
@@ -56,14 +55,14 @@ type
   { TFormHexEditor }
 
   TFormHexEditor = class(TForm)
-    actGoto: TAction;
-    alHotKey: TActionList;
-    btnSave: TButton;
-    btnExit: TButton;
+    actGoto:   TAction;
+    alHotKey:  TActionList;
+    btnSave:   TButton;
+    btnExit:   TButton;
     lblMeasureSize: TLabel;
-    pnlData: TPanel;
+    pnlData:   TPanel;
     pnlButton: TPanel;
-    sgData: TStringGrid;
+    sgData:    TStringGrid;
     timerInitSize: TTimer;
     procedure actGotoExecute(Sender: TObject);
     procedure btnExitClick(Sender: TObject);
@@ -74,10 +73,10 @@ type
     procedure FormKeyPress(Sender: TObject; var Key: char);
     procedure FormShow(Sender: TObject);
     procedure sgDataKeyPress(Sender: TObject; var Key: char);
-    procedure sgDataPrepareCanvas(sender: TObject; aCol, aRow: Integer;
+    procedure sgDataPrepareCanvas(Sender: TObject; aCol, aRow: integer;
       aState: TGridDrawState);
-    procedure sgDataSelectCell(Sender: TObject; aCol, aRow: Integer;
-      var CanSelect: Boolean);
+    procedure sgDataSelectCell(Sender: TObject; aCol, aRow: integer;
+      var CanSelect: boolean);
     procedure sgDataTopLeftChanged(Sender: TObject);
     procedure timerInitSizeTimer(Sender: TObject);
     procedure DataBuffChangeRequire(addr: integer; aValue: byte);
@@ -98,47 +97,45 @@ type
     procedure SetGridCanvasFont(aFont: TFont);
   public
     { public declarations }
-    FileName: string;
-    Target: string;
-    SegOffset: Int64;
-    AddressOffset: Int64;
-    StartAddress: Cardinal;
-    DataByteSize: Cardinal;
+    FileName:    string;
+    Target:      string;
+    SegOffset:   int64;
+    AddressOffset: int64;
+    StartAddress: cardinal;
+    DataByteSize: cardinal;
     DefaultData: byte;
   end;
 
   THexFileLineInfo = record
-    Addr: Word;
-    ByteSize: byte;
+    Addr:     cardinal;
+    ByteSize: cardinal;
     DataType: byte;
     DataOffset: byte;
+    FileLineLength: cardinal;
+    EmptyLeadingByteLength: cardinal;
   end;
 
-  function ReadBinFile(hFile: TFileStream; var buffer: array of byte;
-                              bytesize, start_addr: Cardinal;
-                              seg_offset, addr_offset: Int64): boolean;
-  function ValidateBinFile(hFile: TFileStream; buffer: array of byte;
-                                  ChangeList: TMemList; default_byte: byte;
-                                  bytesize, start_addr: Cardinal;
-                                  seg_offset, addr_offset: Int64): boolean;
-  function ReadHexFile(hFile: TFileStream; var buffer: array of byte;
-                              bytesize, start_addr: Cardinal;
-                              seg_offset, addr_offset: Int64): boolean;
-  function ValidateHexFile(hFile: TFileStream; buffer: array of byte;
-                                  ChangeList: TMemList; default_byte: byte;
-                                  bytesize, start_addr: Cardinal;
-                                  seg_offset, addr_offset: Int64): boolean;
+function ReadBinFile(hFile: TFileStream; var buffer: array of byte;
+  bytesize, start_addr: cardinal; seg_offset, addr_offset: int64): boolean;
+function ValidateBinFile(hFile: TFileStream; var buffer: array of byte;
+  ChangeList: TMemList; default_byte: byte; bytesize, start_addr: cardinal;
+  seg_offset, addr_offset: int64): boolean;
+function ReadHexFile(hFile: TFileStream; var buffer: array of byte;
+  bytesize, start_addr: cardinal; seg_offset, addr_offset: int64): boolean;
+function ValidateHexFile(hFile: TFileStream; var buffer: array of byte;
+  ChangeList: TMemList; default_byte: byte; bytesize, start_addr: cardinal;
+  seg_offset, addr_offset: int64): boolean;
 
 var
   FormHexEditor: TFormHexEditor;
 
 const
   FileParser: array[0..1] of TFileParser =
-  (
-  (ext: '.bin'; ReadFile: @ReadBinFile; ValidateFile: @ValidateBinFile;),
-  (ext: '.hex'; ReadFile: @ReadHexFile; ValidateFile: @ValidateHexFile;)
-  );
-  BYTES_IN_ROW: integer = 16;
+    (
+    (ext: '.bin'; ReadFile: @ReadBinFile; ValidateFile: @ValidateBinFile; ),
+    (ext: '.hex'; ReadFile: @ReadHexFile; ValidateFile: @ValidateHexFile; )
+    );
+  BYTES_IN_ROW: integer  = 16;
   DIVIDER_WIDTH: integer = 20;
 
 
@@ -146,21 +143,19 @@ const
 implementation
 
 function ReadBinFile(hFile: TFileStream; var buffer: array of byte;
-                            bytesize, start_addr: Cardinal;
-                            seg_offset, addr_offset: Int64): boolean;
+  bytesize, start_addr: cardinal; seg_offset, addr_offset: int64): boolean;
 begin
   seg_offset := seg_offset;
   start_addr := start_addr;
 
   hFile.Position := addr_offset;
   hFile.Read(buffer[0], bytesize);
-  result := TRUE;
+  Result := True;
 end;
 
-function ValidateBinFile(hFile: TFileStream; buffer: array of byte;
-                                ChangeList: TMemList; default_byte: byte;
-                                bytesize, start_addr: Cardinal;
-                                seg_offset, addr_offset: Int64): boolean;
+function ValidateBinFile(hFile: TFileStream; var buffer: array of byte;
+  ChangeList: TMemList; default_byte: byte; bytesize, start_addr: cardinal;
+  seg_offset, addr_offset: int64): boolean;
 var
   i: integer;
 begin
@@ -168,34 +163,68 @@ begin
   default_byte := default_byte;
   bytesize := bytesize;
   start_addr := start_addr;
+  Result := False;
 
   for i := 0 to ChangeList.Count - 1 do
   begin
+    if (addr_offset + ChangeList.MemInfoItems[i].StartAddr + 1) > hFile.Size then
+    begin
+      continue;
+    end
+    else if (addr_offset + ChangeList.MemInfoItems[i].StartAddr +
+      ChangeList.MemInfoItems[i].ByteSize) > hFile.Size then
+    begin
+      ChangeList.MemInfoItems[i].ByteSize :=
+        hFile.Size - addr_offset - ChangeList.MemInfoItems[i].StartAddr;
+    end;
+
     hFile.Position := addr_offset + ChangeList.MemInfoItems[i].StartAddr;
-    hFile.Write(buffer[0], ChangeList.MemInfoItems[i].ByteSize);
+    hFile.Write(buffer[ChangeList.MemInfoItems[i].StartAddr],
+      ChangeList.MemInfoItems[i].ByteSize);
   end;
-  result := TRUE;
+  Result := True;
 end;
 
-function ReadHexFileLine(hFile: TFileStream; var buffer: array of byte;
-                                var LineInfo: THexFileLineInfo): boolean;
+function IgnoreEmptyLine(hFile: TFileStream; var lastchar: char;
+  var haslastchar: boolean): cardinal;
 var
   ch: char;
-  checksum: byte;
-  line: string;
-  i, j: integer;
 begin
-  result := FALSE;
-
-  // ignore empty lines
+  Result      := 0;
+  haslastchar := False;
   repeat
     if hFile.Read(ch, 1) <> 1 then
     begin
-      result := TRUE;
-      LineInfo.ByteSize := 0;
       exit;
     end;
+    Inc(Result);
   until (ch <> char(10)) and (ch <> char(13));
+  lastchar    := ch;
+  haslastchar := True;
+end;
+
+function ReadHexFileLine(hFile: TFileStream; var buff: array of byte;
+  var LineInfo: THexFileLineInfo): boolean;
+var
+  ch:   char;
+  checksum: byte;
+  line: string;
+  i, j: integer;
+  headread: boolean;
+  FileLineLength: cardinal;
+begin
+  Result := False;
+
+  FileLineLength := IgnoreEmptyLine(hFile, ch, headread);
+  if (FileLineLength = 0) or (not headread) then
+  begin
+    Result := True;
+    LineInfo.EmptyLeadingByteLength := FileLineLength;
+    LineInfo.FileLineLength := 0;
+    exit;
+  end;
+  LineInfo.EmptyLeadingByteLength := FileLineLength - 1;
+
   // first char MUST be :
   if (ch <> ':') then
   begin
@@ -205,84 +234,80 @@ begin
   // read line
   line := '';
   repeat
-    if (hFile.Read(ch, 1) <> 1) or (ch = char(10)) or (ch = char(13)) then
+    if (hFile.Read(ch, 1) <> 1) then
     begin
+      break;
+    end
+    else if (ch = char(10)) or (ch = char(13)) then
+    begin
+      Inc(FileLineLength);
       break;
     end
     else
     begin
+      Inc(FileLineLength);
       line := line + ch;
     end;
-  until FALSE;
+  until False;
   if (Length(line) < 10) or ((Length(line) mod 2) = 1) then
   begin
     exit;
   end;
   i := 0;
+  checksum := 0;
   while i < Length(line) do
   begin
-    buffer[i div 2] := byte(StrToIntRadix(Copy(line, i + 1, 2), 16));
+    buff[i div 2] := byte(StrToIntRadix(Copy(line, i + 1, 2), 16));
+    Inc(checksum, buff[i div 2]);
     Inc(i, 2);
   end;
   i := i div 2;
   // validity check
-  if (buffer[0] + 5) <> i then
-  begin
-    exit;
-  end;
-  checksum := 0;
-  for j := 0 to i - 1 do
-  begin
-    checksum := checksum + buffer[j];
-  end;
-  if checksum <> 0 then
+  if ((buff[0] + 5) <> i) or (checksum <> 0) then
   begin
     exit;
   end;
 
-  LineInfo.ByteSize := buffer[0];
-  LineInfo.Addr := (buffer[1] shl 8) + buffer[2];
+  LineInfo.ByteSize := buff[0];
+  LineInfo.Addr := (buff[1] shl 8) + buff[2];
   LineInfo.DataOffset := 4;
-  LineInfo.DataType := buffer[3];
-  result := TRUE;
+  LineInfo.DataType := buff[3];
+  LineInfo.FileLineLength := FileLineLength;
+  Result := True;
 end;
 
 function ReadHexFile(hFile: TFileStream; var buffer: array of byte;
-                            bytesize, start_addr: Cardinal;
-                            seg_offset, addr_offset: Int64): boolean;
+  bytesize, start_addr: cardinal; seg_offset, addr_offset: int64): boolean;
 var
-  buff: array[0 .. 260] of byte;
-  seg_addr, ext_addr, data_addr: Cardinal;
+  buff:     array[0 .. 260] of byte;
+  seg_addr, ext_addr, data_addr: cardinal;
   LineInfo: THexFileLineInfo;
 begin
   seg_addr := 0;
   ext_addr := 0;
-
   hFile.Position := 0;
-  result := FALSE;
+  Result   := False;
 
-  while TRUE do
+  while True do
   begin
     if not ReadHexFileLine(hFile, buff[0], LineInfo) then
     begin
       exit;
     end;
-    if LineInfo.ByteSize = 0 then
+    if LineInfo.FileLineLength = 0 then
     begin
-      result := TRUE;
+      Result := True;
       exit;
     end;
 
     // process data
     case LineInfo.DataType of
       0://htData
+      begin
+        data_addr := ext_addr + LineInfo.Addr;
+        if not ((seg_addr <> seg_offset) or (data_addr < start_addr) or
+          (data_addr < (addr_offset + start_addr))) then
         begin
-          data_addr := ext_addr + LineInfo.Addr;
-          if (seg_addr <> seg_offset) or (data_addr < start_addr) or
-              (data_addr < (addr_offset + start_addr)) then
-          begin
-            continue;
-          end;
           Dec(data_addr, start_addr);
           if (LineInfo.ByteSize + data_addr) > bytesize then
           begin
@@ -295,69 +320,171 @@ begin
               LineInfo.ByteSize := bytesize - data_addr;
             end;
           end;
-          Move(buff[4], buffer[data_addr - addr_offset], LineInfo.ByteSize);
         end;
+        Move(buff[4], buffer[data_addr - addr_offset], LineInfo.ByteSize);
+      end;
       1://htEOF
+      begin
+        Result := True;
+        exit;
+      end;
+      2://htSegAddr
+      begin
+        if LineInfo.ByteSize <> 2 then
         begin
-          result := TRUE;
           exit;
         end;
-      2://htSegAddr
-        begin
-          if LineInfo.ByteSize <> 2 then
-          begin
-            exit;
-          end;
-          seg_addr := (buff[4] shl 8) + buff[5];
-        end;
+        seg_addr := (buff[4] shl 8) + buff[5];
+      end;
       4://htExtAddr
+      begin
+        if LineInfo.ByteSize <> 2 then
         begin
-          if LineInfo.ByteSize <> 2 then
-          begin
-            exit;
-          end;
-          ext_addr := (buff[4] shl 24) + (buff[5] shl 16);
-        end
-    else
-      // ignore data
-      continue;
+          exit;
+        end;
+        ext_addr := (buff[4] shl 24) + (buff[5] shl 16);
+      end;
     end;
   end;
 end;
 
-function ValidateHexFile(hFile: TFileStream; buffer: array of byte;
-                                ChangeList: TMemList; default_byte: byte;
-                                bytesize, start_addr: Cardinal;
-                                seg_offset, addr_offset: Int64): boolean;
+function ReadHexFileLineByAddr(hFile: TFileStream; var buff: array of byte;
+  addr, seg: cardinal; var LineInfo: THexFileLineInfo): int64;
 var
-  i: integer;
+  seg_addr, ext_addr, data_addr: cardinal;
+  FileLinePos: int64;
+begin
+  seg_addr    := 0;
+  ext_addr    := 0;
+  hFile.Position := 0;
+  FilelinePos := 0;
+
+  while True do
+  begin
+    if (not ReadHexFileLine(hFile, buff[0], LineInfo)) or
+      (LineInfo.FileLineLength = 0) then
+    begin
+      Result := -1;
+    end;
+
+    case LineInfo.DataType of
+      0://htData
+      begin
+        data_addr := ext_addr + LineInfo.Addr;
+        if not ((seg_addr <> seg) or (data_addr > addr) or
+          (addr >= (data_addr + LineInfo.ByteSize))) then
+        begin
+          LineInfo.Addr := addr;
+          LineInfo.DataOffset := LineInfo.DataOffset + (addr - data_addr);
+          LineInfo.ByteSize := LineInfo.ByteSize - (addr - data_addr);
+          Result := FilelinePos + LineInfo.EmptyLeadingByteLength;
+          exit;
+        end;
+      end;
+      1://htEOF
+      begin
+        Result := -1;
+        exit;
+      end;
+      2://htSegAddr
+      begin
+        if LineInfo.ByteSize <> 2 then
+        begin
+          exit;
+        end;
+        seg_addr := (buff[4] shl 8) + buff[5];
+      end;
+      4://htExtAddr
+      begin
+        if LineInfo.ByteSize <> 2 then
+        begin
+          exit;
+        end;
+        ext_addr := (buff[4] shl 24) + (buff[5] shl 16);
+      end;
+    end;
+    Inc(FileLinePos, LineInfo.FileLineLength);
+  end;
+end;
+
+function ValidateHexFile(hFile: TFileStream; var buffer: array of byte;
+  ChangeList: TMemList; default_byte: byte; bytesize, start_addr: cardinal;
+  seg_offset, addr_offset: int64): boolean;
+var
+  i, j:     integer;
+  checksum: byte;
+  headread: boolean;
+  cur_write_len: cardinal;
+  buff:     array[0 .. 260] of byte;
+  seg_addr, ext_addr, data_addr: cardinal;
+  FileLinePos: int64;
+  LineInfo: THexFileLineInfo;
+  str_tmp:  string;
 begin
   for i := 0 to ChangeList.Count - 1 do
   begin
-    hFile.Position := 0;
+    while ChangeList.MemInfoItems[i].ByteSize > 0 do
+    begin
+      FileLinePos := ReadHexFileLineByAddr(hFile, buff[0], start_addr +
+        addr_offset + ChangeList.MemInfoItems[i].StartAddr, seg_offset, LineInfo);
+
+      if FileLinePos >= 0 then
+      begin
+        // found
+        cur_write_len := Min(LineInfo.ByteSize, ChangeList.MemInfoItems[i].ByteSize);
+        Move(buffer[LineInfo.Addr - start_addr], buff[LineInfo.DataOffset],
+          cur_write_len);
+
+        hFile.Position := FileLinePos + 1 + 2 * LineInfo.DataOffset;
+        for j := LineInfo.DataOffset to LineInfo.DataOffset + cur_write_len - 1 do
+        begin
+          str_tmp := IntToHex(buff[j], 2);
+          hFile.Write(str_tmp[1], 2);
+        end;
+        // write checksum
+        checksum := 0;
+        for j := 0 to LineInfo.DataOffset + LineInfo.ByteSize - 1 do
+        begin
+          Inc(checksum, buff[j]);
+        end;
+        checksum := $100 - checksum;
+        str_tmp  := IntToHex(checksum, 2);
+        hFile.Position := FileLinePos + 1 + 2 * (LineInfo.DataOffset +
+          LineInfo.ByteSize);
+        hFile.Write(str_tmp[1], 2);
+
+        ChangeList.MemInfoItems[i].ByteSize :=
+          ChangeList.MemInfoItems[i].ByteSize - cur_write_len;
+      end
+      else
+      begin
+        // no expanding hex file
+        ChangeList.MemInfoItems[i].ByteSize := 0;
+      end;
+    end;
   end;
-  result := TRUE;
+  Result := True;
 end;
 
 { TMemInfo }
 
-constructor TMemInfo.Create(aStartAddr, aByteSize: Cardinal);
+constructor TMemInfo.Create(aStartAddr, aByteSize: cardinal);
 begin
   inherited Create;
 
   StartAddr := aStartAddr;
-  ByteSize := aByteSize;
+  ByteSize  := aByteSize;
 end;
 
-function TMemInfo.GetTail: Cardinal;
+function TMemInfo.GetTail: cardinal;
 begin
   if (StartAddr = 0) and (ByteSize = 0) then
   begin
-    result := 0;
+    Result := 0;
   end
   else
   begin
-    result := StartAddr + ByteSize - 1;
+    Result := StartAddr + ByteSize - 1;
   end;
 end;
 
@@ -370,57 +497,57 @@ end;
 
 function TMemList.GetMemInfoItem(Index: integer): TMemInfo;
 begin
-  Result := TMemInfo(Inherited Get(Index));
+  Result := TMemInfo(inherited Get(Index));
 end;
 
-function TMemList.GetIndexByAddr(aAddr: Cardinal): integer;
+function TMemList.GetIndexByAddr(aAddr: cardinal): integer;
 var
   i: integer;
 begin
-  result := -1;
+  Result := -1;
   for i := 0 to Count - 1 do
   begin
     if (MemInfoItems[i].StartAddr <= aAddr) and
-        ((MemInfoItems[i].StartAddr + MemInfoItems[i].ByteSize) > aAddr) then
+      ((MemInfoItems[i].StartAddr + MemInfoItems[i].ByteSize) > aAddr) then
     begin
-      result := i;
+      Result := i;
       break;
     end;
   end;
 end;
 
-function TMemList.Add(aStartAddr, aByteSize: Cardinal): integer;
+function TMemList.Add(aStartAddr, aByteSize: cardinal): integer;
 var
-  i: integer;
-  aTail: Cardinal;
+  i:     integer;
+  aTail: cardinal;
   found: boolean;
 begin
   if aByteSize = 0 then
   begin
-    result := -1;
+    Result := -1;
     exit;
   end;
 
   aTail := aStartAddr + aByteSize - 1;
   // find a location to insert or merge
-  found := FALSE;
+  found := False;
   for i := 0 to Count - 1 do
   begin
     if aStartAddr <= (MemInfoItems[i].Tail + 1) then
     begin
-      found := TRUE;
+      found := True;
       break;
     end;
   end;
   if not found then
   begin
     // add last
-    result := inherited Add(TMemInfo.Create(aStartAddr, aByteSize));
+    Result := inherited Add(TMemInfo.Create(aStartAddr, aByteSize));
     exit;
   end;
-  result := i;
+  Result := i;
   // merge or insert
-  if ((aTail + 1) < MemInfoItems[result].Head) then
+  if ((aTail + 1) < MemInfoItems[Result].Head) then
   begin
     // insert before
     Insert(i, TmemInfo.Create(aStartAddr, aByteSize));
@@ -428,19 +555,22 @@ begin
   else
   begin
     // merge
-    MemInfoItems[result].StartAddr := Min(MemInfoItems[result].StartAddr, aStartAddr);
-    MemInfoItems[result].ByteSize := 1 + Max(MemInfoItems[result].Tail, aTail) - MemInfoItems[result].StartAddr;
+    MemInfoItems[Result].StartAddr := Min(MemInfoItems[Result].StartAddr, aStartAddr);
+    MemInfoItems[Result].ByteSize :=
+      1 + Max(MemInfoItems[Result].Tail, aTail) - MemInfoItems[Result].StartAddr;
     // try merge the descendant
     i := i + 1;
     while i < Count do
     begin
-      if (MemInfoItems[result].Tail + 1) < MemInfoItems[i].Head then
+      if (MemInfoItems[Result].Tail + 1) < MemInfoItems[i].Head then
       begin
         break;
       end;
 
       // merge current
-      MemInfoItems[result].ByteSize := 1 + Max(MemInfoItems[result].Tail, MemInfoItems[i].Tail) - MemInfoItems[result].StartAddr;
+      MemInfoItems[Result].ByteSize :=
+        1 + Max(MemInfoItems[Result].Tail, MemInfoItems[i].Tail) -
+        MemInfoItems[Result].StartAddr;
       Delete(i);
 
       Inc(i);
@@ -448,14 +578,14 @@ begin
   end;
 end;
 
-function TMemList.Add(aMemInfo: TMemInfo): Integer;
+function TMemList.Add(aMemInfo: TMemInfo): integer;
 begin
-  result := Add(aMemInfo.StartAddr, aMemInfo.ByteSize);
+  Result := Add(aMemInfo.StartAddr, aMemInfo.ByteSize);
 end;
 
 constructor TMemList.Create;
 begin
-  inherited Create(TRUE);
+  inherited Create(True);
 end;
 
 { TFormHexEditor }
@@ -485,28 +615,29 @@ end;
 procedure TFormHexEditor.btnSaveClick(Sender: TObject);
 var
   i: integer;
-  start, lines: Cardinal;
+  start, Lines: cardinal;
 begin
   if (CurFileParserIndex >= Length(FileParser)) then
   begin
     exit;
   end;
 
-  if (FileParser[CurFileParserIndex].ValidateFile <> nil) then
+  if (FileParser[CurFileParserIndex].ValidateFile <> nil) and
+    (not FileParser[CurFileParserIndex].ValidateFile(hFile, DataBuff[0],
+    DataBuffChangeList, DefaultData, DataByteSize, StartAddress,
+    SegOffset, AddressOffset)) then
   begin
-    // TODO: Add Validate function here
-    FileParser[CurFileParserIndex].ValidateFile(hFile,
-        DataBuff[0], DataBuffChangeList, DefaultData, DataByteSize,
-        StartAddress, SegOffset, AddressOffset);
+    MessageDlg('Error', 'fail to write ' + FileName + '.', mtError, [mbOK], 0);
+    exit;
   end;
 
   // Dirty corresponding lines
   for i := 0 to DataBuffChangeList.Count - 1 do
   begin
     start := DataBuffChangeList.MemInfoItems[i].Head div BYTES_IN_ROW;
-    lines := DataBuffChangeList.MemInfoItems[i].tail div BYTES_IN_ROW;
-    Dec(lines, start);
-    FillChar(RowDirty[start], lines, TRUE);
+    Lines := DataBuffChangeList.MemInfoItems[i].tail div BYTES_IN_ROW;
+    Dec(Lines, start);
+    FillChar(RowDirty[start], Lines, True);
   end;
   DataBuffChangeList.Clear;
   // update dirty color
@@ -517,7 +648,8 @@ procedure TFormHexEditor.btnExitClick(Sender: TObject);
 begin
   if DataBuffChangeList.Count > 0 then
   begin
-    if mrYes = MessageDlg('Query','Data changed, Save?', mtConfirmation, [mbYes, mbNo], 0) then
+    if mrYes = MessageDlg('Query', 'Data changed, Save?', mtConfirmation,
+      [mbYes, mbNo], 0) then
     begin
       btnSave.Click;
     end;
@@ -526,60 +658,63 @@ end;
 
 procedure TFormHexEditor.actGotoExecute(Sender: TObject);
 var
-  goto_addr: Cardinal;
+  goto_addr: cardinal;
 begin
   FormInputDialog.CommonMaxLength := 8;
   FormInputDialog.CommonCase := scUpper;
   FormInputDialog.InputType := itNumeric;
-  FormInputDialog.NumMax := 0;
-  FormInputDialog.NumMin := 0;
-  FormInputDialog.NumRadix := nrHexadecimal;
+  FormInputDialog.NumMax    := 0;
+  FormInputDialog.NumMin    := 0;
+  FormInputDialog.NumRadix  := nrHexadecimal;
   FormInputDialog.CommonPrefix := '0x';
-  FormInputDialog.Caption := 'Goto: input hex address';
-  if FormInputDialog.ShowModal = mrOK then
+  FormInputDialog.Caption   := 'Goto: input hex address';
+  if FormInputDialog.ShowModal = mrOk then
   begin
     goto_addr := FormInputDialog.GetNumber;
     if (goto_addr >= StartAddress) and (goto_addr < (StartAddress + DataByteSize)) then
     begin
       Dec(goto_addr, StartAddress);
       sgData.TopRow := 1 + goto_addr div BYTES_IN_ROW;
-      sgData.Row := 1 + goto_addr div BYTES_IN_ROW;
-      sgData.Col := 1 + (goto_addr mod BYTES_IN_ROW);
+      sgData.Row    := 1 + goto_addr div BYTES_IN_ROW;
+      sgData.Col    := 1 + (goto_addr mod BYTES_IN_ROW);
     end;
   end;
 end;
 
-procedure TFormHexEditor.FormClose(Sender: TObject;
-  var CloseAction: TCloseAction);
+procedure TFormHexEditor.FormClose(Sender: TObject; var CloseAction: TCloseAction);
 begin
+  if Assigned(hFile) then
+  begin
+    hFile.Free;
+  end;
   if Assigned(DataBuffChangeList) then
   begin
     DataBuffChangeList.Destroy;
   end;
-  CloseAction:= caHide;
+  CloseAction := caHide;
 end;
 
 procedure TFormHexEditor.FormKeyPress(Sender: TObject; var Key: char);
 begin
   if Key = #27 then
   begin
-    close;
+    Close;
   end;
 end;
 
 procedure TFormHexEditor.FormShow(Sender: TObject);
 var
-  i: integer;
+  i:   integer;
   ext: string;
   success: boolean;
 begin
   DataBuffChangeList := TMemList.Create;
-  StrGridInited := FALSE;
+  StrGridInited := False;
   CurCellRow := 0;
   CurCellCol := 0;
   CurCellPos := 0;
   CurCellAddress := 0;
-  CurCellAddressValid := FALSE;
+  CurCellAddressValid := False;
   sgData.Row := 0;
   sgData.Col := 0;
   Caption := Target + ' ' + FileName;
@@ -600,68 +735,68 @@ begin
   // open file and read
   if FileExists(FileName) then
   begin
-    ext := ExtractFileExt(FileName);
+    ext := LowerCase(ExtractFileExt(FileName));
     CurFileParserIndex := 0;
     for i := low(FileParser) to high(FileParser) do
     begin
-      if LowerCase(ext) = FileParser[i].ext then
+      if ext = FileParser[i].ext then
       begin
         CurFileParserIndex := i;
       end;
     end;
-    success := TRUE;
+    success := True;
     try
-      hFile := TFileStream.Create(FileName, fmOpenRead);
+      hFile := TFileStream.Create(FileName, fmOpenReadWrite);
       if FileParser[CurFileParserIndex].ReadFile <> nil then
       begin
-        if not FileParser[CurFileParserIndex].ReadFile(hFile, DataBuff[0],
-                    DataByteSize, StartAddress, SegOffset, AddressOffset) then
+        if not FileParser[CurFileParserIndex].ReadFile(hFile,
+          DataBuff[0], DataByteSize, StartAddress, SegOffset,
+          AddressOffset) then
         begin
-          success := FALSE;
-          MessageDlg('Error','fail to read ' + FileName + '.', mtError, [mbOK], 0);
+          success := False;
+          MessageDlg('Error', 'fail to read ' + FileName + '.', mtError, [mbOK], 0);
         end;
       end;
     except
       begin
-        success := FALSE;
+        success := False;
         MessageDlg('Error', 'File Open Failed:' + FileName, mtError, [mbOK], 0);
       end;
     end;
-    hFile.Free;
     if not success then
     begin
-      close;
+      Close;
       exit;
     end;
   end
   else
   begin
-    MessageDlg('Error',FileName + ' not exists.', mtError, [mbOK], 0);
-    close;
+    MessageDlg('Error', FileName + ' not exists.', mtError, [mbOK], 0);
+    Close;
     exit;
   end;
 
   // adjust GUI and display data
   sgData.RowCount := 1 + DataByteSize div BYTES_IN_ROW;
   SetLength(RowDirty, DataByteSize div BYTES_IN_ROW);
-  FillChar(RowDirty[0], Length(RowDirty), TRUE);
-  sgData.ColCount := 2 + 2 * BYTES_IN_ROW;
+  FillChar(RowDirty[0], Length(RowDirty), True);
+  sgData.ColCount  := 2 + 2 * BYTES_IN_ROW;
   sgData.FixedRows := 1;
   sgData.FixedCols := 1;
   for i := 1 to BYTES_IN_ROW do
   begin
-    sgData.Cells[i,0] := UpperCase(IntToHex(i - 1,1));
+    sgData.Cells[i, 0] := UpperCase(IntToHex(i - 1, 1));
   end;
   sgData.Row := 1;
   sgData.Col := 1;
 
-  timerInitSize.Enabled := TRUE;
+  timerInitSize.Enabled := True;
 end;
 
 procedure TFormHexEditor.sgDataKeyPress(Sender: TObject; var Key: char);
 var
-  i: integer;
-  value: byte;
+  i:      integer;
+  Value:  byte;
   IncPos: integer;
 begin
   IncPos := 0;
@@ -672,41 +807,41 @@ begin
     if CurCellCol > 1 + BYTES_IN_ROW then
     begin
       // input char data
-      value := byte(Key);
-      Key := char (0);
+      Value := byte(Key);
+      Key   := char(0);
       // change data
-      DataBuffChangeRequire(CurCellAddress, value);
+      DataBuffChangeRequire(CurCellAddress, Value);
       IncPos := 2 + BYTES_IN_ROW;
     end
     else
     begin
       // input hex value
       Key := AnsiStrUpper(@Key)^;
-      i := Pos(Key, HEX_PARSE_STR);
+      i   := Pos(Key, HEX_PARSE_STR);
       Key := char(0);
       if (i < 1) or (i > 16) then
       begin
         exit;
       end;
-      value := i - 1;
+      Value := i - 1;
       // valid input, change data
       case CurCellPos of
         0:
-          begin
-            value := (DataBuff[CurCellAddress] and $0F) or (value shl 4);
-            DataBuffChangeRequire(CurCellAddress, value);
-            Inc(CurCellPos);
-          end;
+        begin
+          Value := (DataBuff[CurCellAddress] and $0F) or (Value shl 4);
+          DataBuffChangeRequire(CurCellAddress, Value);
+          Inc(CurCellPos);
+        end;
         1:
-          begin
-            value := (DataBuff[CurCellAddress] and $F0) or value;
-            DataBuffChangeRequire(CurCellAddress, value);
-            IncPos := 1;
-          end;
+        begin
+          Value := (DataBuff[CurCellAddress] and $F0) or Value;
+          DataBuffChangeRequire(CurCellAddress, Value);
+          IncPos := 1;
+        end;
       end;
     end;
 
-    RowDirty[CurCellAddress div BYTES_IN_ROW] := TRUE;
+    RowDirty[CurCellAddress div BYTES_IN_ROW] := True;
     // increase address if required
     if (IncPos > 0) and (not (CurCellAddress = DataByteSize - 1)) then
     begin
@@ -736,10 +871,10 @@ begin
   end;
 end;
 
-procedure TFormHexEditor.sgDataPrepareCanvas(sender: TObject; aCol,
-  aRow: Integer; aState: TGridDrawState);
+procedure TFormHexEditor.sgDataPrepareCanvas(Sender: TObject;
+  aCol, aRow: integer; aState: TGridDrawState);
 var
-  addr: Cardinal;
+  addr: cardinal;
 begin
   if gdFixed in aState then
   begin
@@ -764,16 +899,16 @@ begin
   end;
 end;
 
-procedure TFormHexEditor.sgDataSelectCell(Sender: TObject; aCol, aRow: Integer;
-  var CanSelect: Boolean);
+procedure TFormHexEditor.sgDataSelectCell(Sender: TObject; aCol, aRow: integer;
+  var CanSelect: boolean);
 begin
   if aCol = (1 + BYTES_IN_ROW) then
   begin
-    CanSelect := FALSE;
+    CanSelect := False;
   end
   else if (CurCellRow <> aRow) or (CurCellCol <> aCol) then
   begin
-    CanSelect := TRUE;
+    CanSelect  := True;
     CurCellPos := 0;
     CurCellRow := aRow;
     CurCellCol := aCol;
@@ -785,9 +920,9 @@ begin
         Dec(aCol, BYTES_IN_ROW + 1);
       end;
 
-      CurCellAddressValid := TRUE;
-      CurCellAddress := (aRow - 1) * BYTES_IN_ROW + aCol - 1;
-      sgData.Cells[0,0] := IntToHex(StartAddress + CurCellAddress, 8);
+      CurCellAddressValid := True;
+      CurCellAddress      := (aRow - 1) * BYTES_IN_ROW + aCol - 1;
+      sgData.Cells[0, 0]  := IntToHex(StartAddress + CurCellAddress, 8);
     end;
   end;
 end;
@@ -808,9 +943,9 @@ begin
       end;
       for j := 2 + BYTES_IN_ROW to 1 + 2 * BYTES_IN_ROW do
       begin
-        sgData.Cells[j, i] := Char(DataBuff[(i - 1) * 16 + (j - 2 - BYTES_IN_ROW)]);
+        sgData.Cells[j, i] := char(DataBuff[(i - 1) * 16 + (j - 2 - BYTES_IN_ROW)]);
       end;
-      RowDirty[i - 1] := FALSE;
+      RowDirty[i - 1] := False;
     end;
   end;
 end;
@@ -820,7 +955,7 @@ var
   i: integer;
   tmpWidth, allWidth: integer;
 begin
-  (Sender as TTimer).Enabled := FALSE;
+  (Sender as TTimer).Enabled := False;
   allWidth := 0;
 
   lblMeasureSize.Caption := '000000000';
@@ -859,7 +994,7 @@ begin
   btnSave.Left := (pnlButton.Width div 2 - btnSave.Width) div 2;
   btnExit.Left := pnlButton.Width div 2 + (pnlButton.Width div 2 - btnSave.Width) div 2;
 
-  StrGridInited := TRUE;
+  StrGridInited := True;
   sgDataTopLeftChanged(sgData);
   UpdateShowing();
 end;

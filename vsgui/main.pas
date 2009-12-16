@@ -1063,7 +1063,7 @@ end;
 
 procedure TFormMain.btnOpenFileClick(Sender: TObject);
 var
-  i, file_num, valid_filename_num: integer;
+  i, file_num: integer;
 begin
   bOpenFileOK := FALSE;
   file_num := Length(TargetFile);
