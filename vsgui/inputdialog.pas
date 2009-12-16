@@ -10,15 +10,15 @@ uses
 
 type
   TInputType = (itNumeric, itLiteral);
-  TStrCase = (scBoth, scUpper, scLower);
-  TNumRadix = (nrBinary = 2, nrDecimal = 10, nrHexadecimal = 16);
+  TStrCase   = (scBoth, scUpper, scLower);
+  TNumRadix  = (nrBinary = 2, nrDecimal = 10, nrHexadecimal = 16);
 
   { TFormInputDialog }
 
   TFormInputDialog = class(TForm)
-    btnOK: TButton;
+    btnOK:     TButton;
     btnCancel: TButton;
-    edtInput: TEdit;
+    edtInput:  TEdit;
     lblPrefix: TLabel;
     procedure edtInputKeyPress(Sender: TObject; var Key: char);
     procedure FormKeyPress(Sender: TObject; var Key: char);
@@ -34,26 +34,27 @@ type
     CommonMaxLength: integer;
     CommonPrefix: string;
     CommonCase: TStrCase;
-    NumMin: Int64;
-    NumMax: Int64;
+    NumMin:   int64;
+    NumMax:   int64;
     NumRadix: TNumRadix;
   end;
 
-  function StrToIntRadix(sData: string; radix: integer): integer;
-  function IntToStrRadix(aData, radix: Integer): String;
+function StrToIntRadix(sData: string; radix: integer): integer;
+function IntToStrRadix(aData, radix: integer): string;
 
 var
   FormInputDialog: TFormInputDialog;
 
 const
   HEX_PARSE_STR: string = '0123456789ABCDEF';
-  BYTELEN_ACCORDING_TO_RADIX: array[2..16] of integer = (8, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2);
+  BYTELEN_ACCORDING_TO_RADIX: array[2..16] of integer =
+    (8, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2);
 
 implementation
 
-function IntToStrRadix(aData, radix: Integer): String;
+function IntToStrRadix(aData, radix: integer): string;
 var
-  t: Integer;
+  t: integer;
 begin
   Result := '';
   if (radix = 0) or (radix > 16) then
@@ -64,9 +65,9 @@ begin
   repeat
     t := aData mod radix;
     if t < 10 then
-      Result := InttoStr(t)+Result
+      Result := IntToStr(t) + Result
     else
-      Result := InttoHex(t, 1)+Result;
+      Result := InttoHex(t, 1) + Result;
     aData := aData div radix;
   until (aData = 0);
 end;
@@ -75,10 +76,10 @@ function StrToIntRadix(sData: string; radix: integer): integer;
 var
   i, r: integer;
 begin
-  result := 0;
-  sData := UpperCase(sData);
-  if (radix < 2) or (radix > 16)
-     or (Length(sData) > (BYTELEN_ACCORDING_TO_RADIX[radix] * 4)) then
+  Result := 0;
+  sData  := UpperCase(sData);
+  if (radix < 2) or (radix > 16) or (Length(sData) >
+    (BYTELEN_ACCORDING_TO_RADIX[radix] * 4)) then
   begin
     exit;
   end;
@@ -95,15 +96,15 @@ begin
   r := 1;
   for i := Length(sData) downto 1 do
   begin
-    Inc(result, r * (Pos(sData[i], HEX_PARSE_STR) - 1));
+    Inc(Result, r * (Pos(sData[i], HEX_PARSE_STR) - 1));
     r := r * radix;
   end;
 end;
 
 procedure TFormInputDialog.edtInputKeyPress(Sender: TObject; var Key: char);
 var
-  value, radix: integer;
-  key_upper: char;
+  Value, radix: integer;
+  key_upper:    char;
 begin
   if Key = char(8) then
   begin
@@ -123,13 +124,13 @@ begin
   end;
 
   case InputType of
-  itNumeric:
+    itNumeric:
     begin
       // process radix
-      radix := Integer(NumRadix);
+      radix     := integer(NumRadix);
       key_upper := AnsiStrUpper(@Key)^;
-      value := Pos(key_upper, HEX_PARSE_STR);
-      if (value > radix) or (value = 0) then
+      Value     := Pos(key_upper, HEX_PARSE_STR);
+      if (Value > radix) or (Value = 0) then
       begin
         Key := char(0);
         exit;
@@ -139,7 +140,7 @@ begin
         // process Min Max value
       end;
     end;
-  itLiteral:
+    itLiteral:
     begin
 
     end;
@@ -150,20 +151,20 @@ procedure TFormInputDialog.FormKeyPress(Sender: TObject; var Key: char);
 begin
   if Key = #27 then
   begin
-    close;
+    Close;
   end;
 end;
 
 procedure TFormInputDialog.FormShow(Sender: TObject);
 begin
-  lblPrefix.Caption := CommonPrefix;
+  lblPrefix.Caption  := CommonPrefix;
   edtInput.MaxLength := CommonMaxLength;
-  edtInput.Text := '';
+  edtInput.Text      := '';
 end;
 
 function TFormInputDialog.GetString: string;
 begin
-  result := edtInput.Text;
+  Result := edtInput.Text;
 end;
 
 function TFormInputDialog.GetNumber: integer;
@@ -172,7 +173,7 @@ var
 begin
   str_result := edtInput.Text;
 
-  result := StrToIntRadix(str_result, Integer(NumRadix));
+  Result := StrToIntRadix(str_result, integer(NumRadix));
 end;
 
 initialization

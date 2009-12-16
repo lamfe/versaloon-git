@@ -2,13 +2,18 @@ program vsgui;
 
 {$mode objfpc}{$H+}
 
-uses
-  {$IFDEF UNIX}{$IFDEF UseCThreads}
-  cthreads,
-  {$ENDIF}{$ENDIF}
+uses {$IFDEF UNIX} {$IFDEF UseCThreads}
+  cthreads, {$ENDIF} {$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms, LResources, main, cli_caller, parameditor, com_setup, fileselector,
-  hexeditor, inputdialog;
+  Forms,
+  LResources,
+  main,
+  cli_caller,
+  parameditor,
+  com_setup,
+  fileselector,
+  hexeditor,
+  inputdialog;
 
 {$IFDEF WINDOWS}{$R vsgui.rc}{$ENDIF}
 
