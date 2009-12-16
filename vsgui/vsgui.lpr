@@ -13,7 +13,8 @@ uses {$IFDEF UNIX} {$IFDEF UseCThreads}
   com_setup,
   fileselector,
   hexeditor,
-  inputdialog;
+  inputdialog,
+  findreplace;
 
 {$IFDEF WINDOWS}{$R vsgui.rc}{$ENDIF}
 
@@ -26,6 +27,7 @@ begin
   Application.CreateForm(TFormFileSelector, FormFileSelector);
   Application.CreateForm(TFormHexEditor, FormHexEditor);
   Application.CreateForm(TFormInputDialog, FormInputDialog);
+  Application.CreateForm(TFormFindReplace, FormFindReplace);
   Application.Run;
 end.
 

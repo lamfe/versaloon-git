@@ -296,11 +296,6 @@ begin
       ParaEdtValueArr[i].Destroy;
     end;
   end;
-
-  SetLength(ParaEdtNameArr, 0);
-  SetLength(ParaComboArr, 0);
-  SetLength(ParaCheckArr, 0);
-  SetLength(ParaEdtValueArr, 0);
 end;
 
 procedure TFormParaEditor.UpdateTitle();
