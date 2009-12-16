@@ -65,7 +65,6 @@ begin
       FileNameLabelArr[i].Destroy;
     end;
   end;
-  SetLength(FileNameLabelArr, 0);
 
   for i := low(FileNameEdtArr) to high(FileNameEdtArr) do
   begin
@@ -74,7 +73,6 @@ begin
       FileNameEdtArr[i].Destroy;
     end;
   end;
-  SetLength(FileNameEdtArr, 0);
 end;
 
 procedure TFormFileSelector.AddFileSetting(target, filename: string);

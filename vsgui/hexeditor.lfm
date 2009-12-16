@@ -1,7 +1,7 @@
 object FormHexEditor: TFormHexEditor
-  Left = 448
+  Left = 449
   Height = 541
-  Top = 270
+  Top = 155
   Width = 626
   HorzScrollBar.Page = 589
   VertScrollBar.Page = 409
@@ -49,7 +49,6 @@ object FormHexEditor: TFormHexEditor
       Top = 21
       Width = 75
       Caption = '&Exit'
-      Default = True
       ModalResult = 1
       OnClick = btnExitClick
       TabOrder = 1
@@ -90,10 +89,10 @@ object FormHexEditor: TFormHexEditor
       OnTopLeftChanged = sgDataTopLeftChanged
     end
   end
-  object timerInitSize: TTimer
+  object tInit: TTimer
     Enabled = False
     Interval = 10
-    OnTimer = timerInitSizeTimer
+    OnTimer = tInitTimer
     left = 352
     top = 488
   end
@@ -104,5 +103,49 @@ object FormHexEditor: TFormHexEditor
       OnExecute = actGotoExecute
       ShortCut = 16455
     end
+    object actSearch: TAction
+      OnExecute = actSearchExecute
+      ShortCut = 16454
+    end
+    object actReplace: TAction
+      OnExecute = actReplaceExecute
+      ShortCut = 16466
+    end
+    object actNext: TAction
+      OnExecute = actNextExecute
+      ShortCut = 16462
+    end
+    object actSave: TAction
+      OnExecute = actSaveExecute
+      ShortCut = 16467
+    end
+  end
+  object tSearch: TTimer
+    Enabled = False
+    Interval = 10
+    OnTimer = tSearchTimer
+    left = 80
+    top = 488
+  end
+  object tGoto: TTimer
+    Enabled = False
+    Interval = 10
+    OnTimer = tGotoTimer
+    left = 32
+    top = 488
+  end
+  object tNext: TTimer
+    Enabled = False
+    Interval = 100
+    OnTimer = tNextTimer
+    left = 208
+    top = 488
+  end
+  object tReplace: TTimer
+    Enabled = False
+    Interval = 10
+    OnTimer = tReplaceTimer
+    left = 248
+    top = 488
   end
 end
