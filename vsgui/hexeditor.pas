@@ -455,6 +455,8 @@ begin
 
         ChangeList.MemInfoItems[i].ByteSize :=
           ChangeList.MemInfoItems[i].ByteSize - cur_write_len;
+        ChangeList.MemInfoItems[i].StartAddr :=
+          ChangeList.MemInfoItems[i].StartAddr + cur_write_len;
       end
       else
       begin
