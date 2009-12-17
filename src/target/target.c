@@ -78,7 +78,7 @@ target_info_t targets_info[] =
 	// psoc
 	{
 		PSOC1_STRING,						// name
-		APPLICATION | LOCK | CHECKSUM,		// areas
+		APPLICATION | LOCK,					// areas
 		psoc1_program_area_map,				// program_area_map
 		PSOC1_PROGRAM_MODE_STR,				// program_mode_str
 		psoc1_parse_argument,				// parse_argument
@@ -590,11 +590,6 @@ static RESULT target_check_single_defined(uint32_t opt)
 	else if (opt & USER_SIG)
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "USER_SIG area");
-		return ERROR_FAIL;
-	}
-	else if (opt & CHECKSUM)
-	{
-		LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "CHECKSUM area");
 		return ERROR_FAIL;
 	}
 	else if (opt & CALIBRATION)

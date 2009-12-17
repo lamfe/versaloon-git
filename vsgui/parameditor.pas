@@ -75,13 +75,12 @@ type
     procedure UpdateTitle();
     procedure SetParameter(init, bytelen, Value: integer; title: string;
       warnEnabled: boolean);
-    procedure ParseLine(line: string);
+    function ParseLine(line: string): boolean;
     procedure FreeRecord();
   end;
 
 function GetIntegerParameter(line, para_name: string; var Value: integer): boolean;
 function GetStringParameter(line, para_name: string; var Value: string): boolean;
-function WipeTailEnter(var line: string): string;
 
 var
   FormParaEditor: TFormParaEditor;
@@ -102,26 +101,11 @@ const
 
 implementation
 
-function WipeTailEnter(var line: string): string;
-begin
-  if Pos(#13 + '', line) > 0 then
-  begin
-    SetLength(line, Length(line) - 1);
-  end;
-  if Pos(#10 + '', line) > 0 then
-  begin
-    SetLength(line, Length(line) - 1);
-  end;
-  Result := line;
-end;
-
 function GetStringParameter(line, para_name: string; var Value: string): boolean;
 var
   pos_start, pos_end: integer;
   str_tmp: string;
 begin
-  WipeTailEnter(line);
-
   pos_start := Pos(para_name + EQUAL_STR, line);
   if pos_start > 0 then
   begin
@@ -296,6 +280,12 @@ begin
       ParaEdtValueArr[i].Destroy;
     end;
   end;
+  SetLength(ParaEdtNameArr, 0);
+  SetLength(ParaComboArr, 0);
+  SetLength(ParaCheckArr, 0);
+  SetLength(ParaEdtValueArr, 0);
+
+  CloseAction := caHide;
 end;
 
 procedure TFormParaEditor.UpdateTitle();
@@ -556,10 +546,11 @@ begin
   SetLength(Param_Record.settings, 0);
 end;
 
-procedure TFormParaEditor.ParseLine(line: string);
+function TFormParaEditor.ParseLine(line: string): boolean;
 var
   i, j, num, dis: integer;
 begin
+  result := True;
   if Pos('warning: ', line) = 1 then
   begin
     i := Length(Param_Record.warnings) + 1;

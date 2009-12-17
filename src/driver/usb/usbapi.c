@@ -30,7 +30,7 @@
 #include "usbapi.h"
 
 uint32_t print_usb_devices(uint16_t VID, uint16_t PID, uint8_t stringindex, 
-					   char *serialstring)
+					   char *serialstring, char *prefix)
 {
 	usb_dev_handle *usb = NULL;
 	struct usb_bus *busses;
@@ -63,7 +63,7 @@ uint32_t print_usb_devices(uint16_t VID, uint16_t PID, uint8_t stringindex,
 				config_value = usb_get_string_simple(usb, stringindex, 
 													 (char *)buf, 256);
 				if ((config_value < 0) 
-					|| (config_value != (int)strlen(serialstring)) - 1)
+					|| (config_value != (int)strlen((const char*)buf)))
 				{
 					usb_close(usb);
 					usb = NULL;
@@ -91,15 +91,15 @@ uint32_t print_usb_devices(uint16_t VID, uint16_t PID, uint8_t stringindex,
 					// print current device
 					if (config_value > 0)
 					{
-						LOG_INFO(
-							_GETTEXT("%d: 0x%04X:0x%04X:%s on %s.\n"), 
-							c, VID, PID, buf, dev->filename);
+						printf(
+							_GETTEXT("%s%d: 0x%04X:0x%04X:%s on %s.\n"), 
+							prefix, c, VID, PID, buf, dev->filename);
 					}
 					else
 					{
-						LOG_INFO(
-							_GETTEXT("%d: 0x%04X:0x%04X on %s.\n"), 
-							c, VID, PID, dev->filename);
+						printf(
+							_GETTEXT("%s%d: 0x%04X:0x%04X on %s.\n"), 
+							prefix, c, VID, PID, dev->filename);
 					}
 					c++;
 					

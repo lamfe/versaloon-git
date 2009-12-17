@@ -22,7 +22,7 @@
 #include "usb.h"
 
 uint32_t print_usb_devices(uint16_t VID, uint16_t PID, uint8_t stringindex, 
-					   char *serialstring);
+					   char *serialstring, char *prefix);
 usb_dev_handle* find_usb_device(uint16_t VID, uint16_t PID, uint8_t interface, 
 								uint8_t stringindex, char *serialstring);
 

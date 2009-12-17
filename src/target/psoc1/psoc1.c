@@ -309,7 +309,7 @@ RESULT psoc1_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr
 			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_RANGE), "checksum memory");
 			return ERRCODE_INVALID;
 		}
-		cur_target_defined |= CHECKSUM;
+		cur_target_defined |= USER_TARGET(0);
 		pi->app_checksum_value = (data[0] << 8) + data[1];
 		break;
 	default:
@@ -946,7 +946,8 @@ RESULT psoc1_program(operation_t operations, program_info_t *pi,
 		
 		
 		// checksum
-		if (operations.verify_operations & APPLICATION)
+		if ((cur_target_defined & USER_TARGET(0)) 
+			&& (operations.verify_operations & APPLICATION))
 		{
 			LOG_INFO(_GETTEXT(INFOMSG_VERIFYING), "checksum");
 		}
@@ -980,7 +981,8 @@ RESULT psoc1_program(operation_t operations, program_info_t *pi,
 			LOG_DEBUG(_GETTEXT(INFOMSG_CHECKSUM_BANK), bank, tmp16);
 		}
 		
-		if (operations.verify_operations & APPLICATION)
+		if ((cur_target_defined & USER_TARGET(0)) 
+			&& (operations.verify_operations & APPLICATION))
 		{
 			// verify
 			if (pi->app_checksum_value == checksum)
