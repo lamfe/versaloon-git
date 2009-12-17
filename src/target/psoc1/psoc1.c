@@ -51,7 +51,6 @@ const program_area_map_t psoc1_program_area_map[] =
 {
 	{APPLICATION, APPLICATION_CHAR, 1, 0, 0, PSOC1_FLASH_CHAR},
 	{LOCK, LOCK_CHAR, 1, 0, 0x00100000, PSOC1_SECURE_CHAR},
-	{CHECKSUM, CHECKSUM_CHAR, 1, 0, 0x00200000, PSOC1_CHECKSUM_CHAR},
 	{0, 0, 0, 0, 0, 0}
 };
 
@@ -861,8 +860,7 @@ RESULT psoc1_program(operation_t operations, program_info_t *pi,
 					PROGRESS_STEP, '=');
 		
 		checksum = 0;
-		for (bank = 0; bank < cur_chip_param.param[PSOC1_PARAM_BANK_NUM]; 
-			 bank++)
+		for (bank = 0; bank < cur_chip_param.param[PSOC1_PARAM_BANK_NUM]; bank++)
 		{
 			if (cur_chip_param.param[PSOC1_PARAM_BANK_NUM] > 1)
 			{
@@ -945,6 +943,61 @@ RESULT psoc1_program(operation_t operations, program_info_t *pi,
 		{
 			LOG_INFO(_GETTEXT(INFOMSG_READ), "flash");
 		}
+		
+		
+		// checksum
+		if (operations.verify_operations & APPLICATION)
+		{
+			LOG_INFO(_GETTEXT(INFOMSG_VERIFYING), "checksum");
+		}
+		else
+		{
+			LOG_INFO(_GETTEXT(INFOMSG_READING), "checksum");
+		}
+		
+		checksum = 0;
+		for (bank = 0; bank < cur_chip_param.param[PSOC1_PARAM_BANK_NUM]; bank++)
+		{
+			if (cur_chip_param.param[PSOC1_PARAM_BANK_NUM] > 1)
+			{
+				issp_sel_reg_bank(1);
+				issp_set_flash_bank(bank);
+				issp_sel_reg_bank(0);
+			}
+			
+			ret = issp_call_ssc(PSOC1_SSC_CMD_CheckSum, 
+								(uint8_t)(cur_chip_param.app_page_num), 
+								1, (uint8_t*)&tmp16, 2);
+			if (ret != ERROR_OK)
+			{
+				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+						  "read checksum");
+				ret = ERRCODE_FAILURE_OPERATION;
+				goto leave_program_mode;
+			}
+			
+			checksum += tmp16;
+			LOG_DEBUG(_GETTEXT(INFOMSG_CHECKSUM_BANK), bank, tmp16);
+		}
+		
+		if (operations.verify_operations & APPLICATION)
+		{
+			// verify
+			if (pi->app_checksum_value == checksum)
+			{
+				LOG_INFO(_GETTEXT(INFOMSG_VERIFIED), "checksum");
+			}
+			else
+			{
+				LOG_INFO(_GETTEXT(ERRMSG_FAILURE_VERIFY_TARGET_04X), 
+						 "checksum", checksum, pi->app_checksum_value);
+			}
+		}
+		else
+		{
+			// read
+			LOG_INFO(_GETTEXT(INFOMSG_READ_VALUE), "checksum", checksum);
+		}
 	}
 	
 	if (operations.write_operations & LOCK)
@@ -990,62 +1043,6 @@ RESULT psoc1_program(operation_t operations, program_info_t *pi,
 		
 		pgbar_fini();
 		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMED), "secure");
-	}
-	
-	if (operations.read_operations & CHECKSUM)
-	{
-		if (operations.verify_operations & CHECKSUM)
-		{
-			LOG_INFO(_GETTEXT(INFOMSG_VERIFYING), "checksum");
-		}
-		else
-		{
-			LOG_INFO(_GETTEXT(INFOMSG_READING), "checksum");
-		}
-		
-		checksum = 0;
-		for (bank = 0; bank < cur_chip_param.param[PSOC1_PARAM_BANK_NUM]; bank++)
-		{
-			if (cur_chip_param.param[PSOC1_PARAM_BANK_NUM] > 1)
-			{
-				issp_sel_reg_bank(1);
-				issp_set_flash_bank(bank);
-				issp_sel_reg_bank(0);
-			}
-			
-			ret = issp_call_ssc(PSOC1_SSC_CMD_CheckSum, 
-								(uint8_t)(cur_chip_param.app_page_num), 
-								1, (uint8_t*)&tmp16, 2);
-			if (ret != ERROR_OK)
-			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-						  "read checksum");
-				ret = ERRCODE_FAILURE_OPERATION;
-				goto leave_program_mode;
-			}
-			
-			checksum += tmp16;
-			LOG_DEBUG(_GETTEXT(INFOMSG_CHECKSUM_BANK), bank, tmp16);
-		}
-		
-		if (operations.verify_operations & CHECKSUM)
-		{
-			// verify
-			if (pi->app_checksum_value == checksum)
-			{
-				LOG_INFO(_GETTEXT(INFOMSG_VERIFIED), "checksum");
-			}
-			else
-			{
-				LOG_INFO(_GETTEXT(ERRMSG_FAILURE_VERIFY_TARGET_04X), 
-						 "checksum", checksum, pi->app_checksum_value);
-			}
-		}
-		else
-		{
-			// read
-			LOG_INFO(_GETTEXT(INFOMSG_READ_VALUE), "checksum", checksum);
-		}
 	}
 	
 leave_program_mode:
