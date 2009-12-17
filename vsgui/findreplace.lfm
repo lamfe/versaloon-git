@@ -9,7 +9,6 @@ object FormFindReplace: TFormFindReplace
   ClientHeight = 156
   ClientWidth = 310
   KeyPreview = True
-  OnCreate = FormCreate
   OnKeyPress = FormKeyPress
   OnShow = FormShow
   Position = poMainFormCenter
@@ -49,6 +48,7 @@ object FormFindReplace: TFormFindReplace
       'Text-string'
       'Hex-values'
     )
+    OnChange = cbboxDataTypeChange
     Style = csDropDownList
     TabOrder = 2
     Text = 'Text-string'

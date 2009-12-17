@@ -14,7 +14,8 @@ uses {$IFDEF UNIX} {$IFDEF UseCThreads}
   fileselector,
   hexeditor,
   inputdialog,
-  findreplace;
+  findreplace,
+  vsprogparser;
 
 {$IFDEF WINDOWS}{$R vsgui.rc}{$ENDIF}
 

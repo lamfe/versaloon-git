@@ -39,7 +39,7 @@ type
     lblReplace: TLabel;
     lblSearch:  TLabel;
     procedure btnOKClick(Sender: TObject);
-    procedure FormCreate(Sender: TObject);
+    procedure cbboxDataTypeChange(Sender: TObject);
     procedure FormKeyPress(Sender: TObject; var Key: char);
     procedure FormShow(Sender: TObject);
   private
@@ -97,6 +97,12 @@ var
   tmp_unicode: WideString;
   PSrc: PByte;
 begin
+  if cbboxSearch.Text = '' then
+  begin
+    Beep();
+    MessageDlg('Error', 'Search for what?', mtError, [mbOK], 0);
+    exit;
+  end;
   if (cbboxSearch.Items.IndexOf(cbboxSearch.Text) < 0) then
   begin
     cbboxSearch.Items.Add(cbboxSearch.Text);
@@ -167,9 +173,16 @@ begin
   Close;
 end;
 
-procedure TFormFindReplace.FormCreate(Sender: TObject);
+procedure TFormFindReplace.cbboxDataTypeChange(Sender: TObject);
 begin
-
+  if (Sender as TComboBox).Text = 'Text-string' then
+  begin
+    chkboxUnicode.Enabled := True;
+  end
+  else if (Sender as TComboBox).Text = 'Hex-values' then
+  begin
+    chkboxUnicode.Enabled := False;
+  end;
 end;
 
 procedure TFormFindReplace.FormKeyPress(Sender: TObject; var Key: char);
@@ -196,6 +209,7 @@ begin
   end;
   cbboxReplace.ItemIndex := -1;
   cbboxSearch.ItemIndex  := -1;
+  ActiveControl := cbboxSearch;
 end;
 
 initialization

@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs, ComCtrls,
   StdCtrls, EditBtn, ExtCtrls, cli_caller, parameditor, Menus, Buttons, Spin,
-  Synaser, com_setup, fileselector, hexeditor, XMLCfg;
+  Synaser, com_setup, fileselector, hexeditor, XMLCfg, vsprogparser;
 
 type
 
@@ -16,9 +16,9 @@ type
     TT_CORTEXM3);
 
   TTargetSetting = record
-    extra:  string;
-    target: string;
-    mode:   string;
+    extra:     string;
+    target:    string;
+    mode:      string;
     fuse_bytelen: integer;
     fuse_default: integer;
     lock_bytelen: integer;
@@ -27,6 +27,10 @@ type
     cali_default: integer;
     usrsig_bytelen: integer;
     usrsig_default: integer;
+    flash_start_addr: integer;
+    flash_seg: integer;
+    eeprom_start_addr: integer;
+    eeprom_seg: integer;
   end;
 
   TTargetFileSetting = record
@@ -45,6 +49,19 @@ type
     byte_size:    integer;
   end;
 
+  { TPollThread }
+
+  TPollThread = class(TThread)
+  private
+    TargetVoltage: integer;
+    ConnectOK:     boolean;
+    procedure Update;
+  protected
+    procedure Execute; override;
+  public
+    constructor Create();
+  end;
+
   { TFormMain }
 
   TFormMain = class(TForm)
@@ -58,7 +75,6 @@ type
     btnEditCali: TButton;
     btnOpenFile: TButton;
     btnSetPower: TButton;
-    btnGetPower: TButton;
     cbboxOpenOCDInterface: TComboBox;
     cbboxOpenOCDScript: TComboBox;
     cbboxOpenOCDTarget: TComboBox;
@@ -123,7 +139,7 @@ type
     pmTray:    TPopupMenu;
     sbMain:    TStatusBar;
     sedtPower: TSpinEdit;
-    tbPower:   TTrackBar;
+    tPollProgrammer: TTimer;
     tsCortexM3: TTabSheet;
     tsLPCICP:  TTabSheet;
     tDelay:    TTimer;
@@ -146,7 +162,6 @@ type
     procedure btnEditLockClick(Sender: TObject);
     procedure btnEditUsrSigClick(Sender: TObject);
     procedure btnEraseClick(Sender: TObject);
-    procedure btnGetPowerClick(Sender: TObject);
     procedure btnOpenFileClick(Sender: TObject);
     procedure btnOpenOCDRunClick(Sender: TObject);
     procedure btnOpenOCDStopClick(Sender: TObject);
@@ -170,44 +185,37 @@ type
     procedure miExitClick(Sender: TObject);
     procedure pcMainChanging(Sender: TObject; var AllowChange: boolean);
     procedure pcMainPageChanged(Sender: TObject);
-    procedure AdjustComponentColor(Sender: TObject);
-    procedure sedtPowerChange(Sender: TObject);
-    procedure ShowDebugLog();
-    procedure HideDebugLog();
     procedure tbPowerChange(Sender: TObject);
-    procedure ToggleIF(Sender: TObject);
-
-    procedure ComboBoxSetText(var combo: TComboBox; aText: string);
-    procedure UpdateTitle();
-    procedure UpdateTargetFile();
-    procedure LogInfo(info: string);
-    procedure EnableLogOutput();
-    procedure DisableLogOutput();
-
-    function CheckFatalError(line: string): boolean;
-    function PrepareToRunOpenOCD(): boolean;
-    function PrepareToRunCLI(): boolean;
-    function GetTargetDefineParameters(): string;
-    procedure PrepareBaseParameters();
-    procedure PrepareCommonParameters();
+    procedure tPollProgrammerTimer(Sender: TObject);
     procedure tDelayTimer(Sender: TObject);
     procedure tiMainClick(Sender: TObject);
+
+    procedure AdjustComponentColor(Sender: TObject);
+    procedure ShowDebugLog();
+    procedure HideDebugLog();
+    procedure ComboBoxSetText(var combo: TComboBox; aText: string);
+    procedure UpdateTitle();
+    procedure LogInfo(info: string);
+
     { VSProg common declarations }
-    function VSProg_CommonCallback(line: string): boolean;
-    function VSProg_CommonParseVersionCallback(line: string): boolean;
-    function VSProg_CommonParseSettingParaCallback(line: string): boolean;
-    function VSProg_CommonParseMemoryParaCallback(line: string): boolean;
-    function VSProg_CommonParseReadTargetCallback(line, target: string;
-      var result_str: string): boolean;
-    function VSProg_CommonParseReadFuseCallback(line: string): boolean;
-    function VSProg_CommonParseReadLockCallback(line: string): boolean;
-    function VSProg_CommonParseReadCaliCallback(line: string): boolean;
-    function VSProg_CommonParseTargetVoltageCallback(line: string): boolean;
+
+    function VSProg_RunAlgorithm(var caller: TCLI_Caller; parser: TParserFunc;
+      result_num: integer): boolean;
+    function VSProg_MemoryTargetParserCallback(line: string): boolean;
+    function VSProg_SettingTargetParserCallback(line: string): boolean;
+    function VSProg_SupportParserCallback(line: string): boolean;
+    function VSProg_LogProcess(ProgressInfo: TProgressInfoType; info: string): boolean;
+    procedure VSProg_LogOutput(line: string);
+    procedure VSProg_LogProgress(ProgressInfo: TProgressInfoType; info: string);
+
+    procedure UpdateTargetFile();
     procedure VSProg_TargetSettingInit(var setting: TTargetSetting);
     procedure VSProg_AddTargetSetting(setting: TTargetSetting);
-    function VSProg_CommonParseSupportCallback(line: string): boolean;
-    function VSProg_CommonParseAboutCallback(line: string): boolean;
-    function VSProg_CommonParseChipIDCallback(line: string): boolean;
+    function GetTargetDefineParameters(): string;
+    procedure PrepareBaseParameters(var caller: TCLI_Caller);
+    procedure PrepareOperationParameters(var caller: TCLI_Caller);
+    function PrepareToRunCLI: boolean;
+    function PrepareToRunOpenOCD: boolean;
     procedure VSProg_CommonTargetInit(para: string);
     procedure VSProg_CommonInit(para: string);
     procedure VSProg_CommonUpdateSetting(Value, bytelen: integer; edt: TLabeledEdit);
@@ -224,7 +232,6 @@ type
     function PSoC1_Init(): boolean;
     function PSoC1_Init_Para(line: string; var setting: TTargetSetting): boolean;
     procedure PSoC1_Update_Chip(setting: TTargetSetting);
-    function PSoC1_AddVerifyParameters(var para: string): boolean;
     { C8051F declarations }
     function C8051F_Init(): boolean;
     function C8051F_Init_Para(line: string; var setting: TTargetSetting): boolean;
@@ -263,7 +270,6 @@ type
     procedure CortexM3_Update_Mode(m_str: string);
   private
     { private declarations }
-    bFatalError:    boolean;
     TargetType:     TTargetType;
     TargetSetting:  array of TTargetSetting;
     bPageLock:      boolean;
@@ -272,18 +278,21 @@ type
     JTAGPage_Init:  boolean;
     TargetPage_Init: boolean;
     AboutPage_Init: boolean;
+    TargetVoltage:  integer;
+    ShowCallerError: boolean;
   public
     { public declarations }
   end;
 
 var
   FormMain:    TFormMain;
-  caller:      TCLI_Caller;
-  OpenOCD_Caller: TCLI_Caller;
+  PollThread:  TPollThread;
+  VSProg_Caller: TCLI_Caller;
+  VSProg_Parser: TVSprog_Parser;
+  VSProg_Taken_By_Polling: boolean;
   ComMode:     TComMode;
   ComModeInit: TComMode;
   TargetFile:  array of TTargetFileSetting;
-  LogOutput:   boolean;
   VSProg_Version: string;
   MemoryInfo:  TMemoryInfo;
   VSProg_Exists: boolean;
@@ -311,8 +320,6 @@ const
   FREQ_HINT: string    = 'Set operation frequency';
   EXECUTE_ADDR_STR: string = 'execute:';
   EXECUTE_ADDR_HINT: string = 'Set address to execute after operation';
-  ST_PROG_STR: string  = '-U "0x0483 0x5740 0x82 0x03 1"';
-  ATMEL_PROG_STR: string = '-U "0x03eb 0x2103 0x82 0x02 0"';
   LOGMEMO_WIDTH: integer = 400;
 
   FLASH_CHAR: string  = 'f';
@@ -392,17 +399,49 @@ begin
   end;
 end;
 
+{ TPollThread }
+
+procedure TPollThread.Update;
+begin
+{
+  if bFatalError then
+  begin
+    // programmer not available
+  end
+  else
+  begin
+    // programmer available
+    // update target volage
+    sedtPower.Value := TargetVoltage;
+  end;
+}
+end;
+
+procedure TPollThread.Execute;
+begin
+  if not VSProg_Caller.Take() then
+  begin
+    // not available now
+    exit;
+  end;
+  VSProg_Taken_By_Polling := True;
+
+  VSProg_Caller.Application := Application.Location + VSPROG_STR;
+  VSProg_Caller.RemoveAllParameters();
+  VSProg_Caller.AddParameter('V"voltage"');
+  //VSProg_Caller.Run(, False, True);
+
+  Synchronize(@Update);
+  VSProg_Taken_By_Polling := False;
+end;
+
+constructor TPollThread.Create();
+begin
+  FreeOnTerminate := False;
+  inherited Create(True);
+end;
+
 { TFormMain }
-
-procedure TFormMain.EnableLogOutput();
-begin
-  LogOutput := True;
-end;
-
-procedure TFormMain.DisableLogOutput();
-begin
-  LogOutput := False;
-end;
 
 procedure TFormMain.ComboBoxSetText(var combo: TComboBox; aText: string);
 var
@@ -415,6 +454,14 @@ begin
       combo.ItemIndex := i;
       break;
     end;
+  end;
+end;
+
+procedure TFormMain.tPollProgrammerTimer(Sender: TObject);
+begin
+  if (Sender as TTimer).Enabled and (PollThread <> nil) and PollThread.Suspended then
+  begin
+    //    PollThread.Resume;
   end;
 end;
 
@@ -432,6 +479,54 @@ begin
   end;
   Caption := APP_STR + VERSION_STR + '-' + pcMain.ActivePage.Caption +
     enable_str + ' (' + VSProg_Version + ')';
+end;
+
+function TFormMain.VSProg_RunAlgorithm(var caller: TCLI_Caller;
+  parser: TParserFunc; result_num: integer): boolean;
+begin
+  Result := False;
+  VSProg_Parser.Prepare();
+  VSProg_Parser.ParserFunc := parser;
+  caller.Run(@VSProg_Parser.CommonParser, False, True);
+  VSProg_Parser.CallbackFunc    := nil;
+  VSProg_Parser.LogOutputEnable := True;
+
+  if VSProg_Parser.HasError then
+  begin
+    Beep();
+    MessageDlg('Error', VSProg_Parser.ErrorStr, mtError, [mbOK], 0);
+  end
+  else if VSProg_Parser.ResultStrings.Count >= result_num then
+  begin
+    Result := True;
+  end;
+end;
+
+procedure TFormMain.VSProg_LogOutput(line: string);
+begin
+  memoLog.Lines.Add(line);
+end;
+
+procedure TFormMain.VSProg_LogProgress(ProgressInfo: TProgressInfoType; info: string);
+begin
+  case ProgressInfo of
+    liStartSection:
+    begin
+      LogInfo(info);
+      sbMain.Panels.Items[1].Text := '';
+      pgbarMain.Position := 0;
+    end;
+    liStep:
+    begin
+      sbMain.Panels.Items[1].Text := sbMain.Panels.Items[1].Text + info;
+      pgbarMain.StepIt;
+    end;
+    liEndSection:
+    begin
+      memoInfo.Lines.Strings[memoInfo.Lines.Count - 1] :=
+        memoInfo.Lines.Strings[memoInfo.Lines.Count - 1] + info;
+    end;
+  end;
 end;
 
 procedure TFormMain.UpdateTargetFile();
@@ -475,22 +570,31 @@ begin
     AboutPage_Init  := True;
   end;
 
-  VSProg_Exists  := True;
-  bOpenFileOK    := False;
+  VSProg_Taken_By_Polling := False;
+  ShowCallerError := True;
+  VSProg_Exists := True;
+  bOpenFileOK := False;
   bReadOperation := False;
-  bPageLock      := False;
-  EnableLogOutput();
+  bPageLock := False;
 
   HideDebugLog();
 
   // caller init
-  caller := TCLI_Caller.Create();
-  caller.SetApplication(Application.Location + VSPROG_STR);
-  caller.SetDelimiter('-');
+  VSProg_Caller := TCLI_Caller.Create();
+  VSProg_Caller.Delimiter := '-';
 
-  OpenOCD_Caller := TCLI_Caller.Create();
-  OpenOCD_Caller.SetApplication(Application.Location + OPENOCD_APP_STR);
-  OpenOCD_Caller.SetDelimiter('-');
+  // parser init
+  VSProg_Parser := TVSProg_Parser.Create;
+  VSProg_Parser.LogProgressFunc := @VSProg_LogProgress;
+  VSProg_Parser.LogOutputFunc := @VSProg_LogOutput;
+  VSProg_Parser.CallbackFunc := nil;
+
+  // poll thread init
+  PollThread := TPollThread.Create;
+  if Assigned(PollThread.FatalException) then
+  begin
+    raise PollThread.FatalException;
+  end;
 
   lblTarget.Top    := cbboxTarget.Top + (cbboxTarget.Height - lblTarget.Height) div 2;
   btnTargetDetect.Top := cbboxTarget.Top + (cbboxTarget.Height -
@@ -511,18 +615,19 @@ begin
 
   // get VSProg_Version
   VSProg_Version := '';
-  DisableLogOutput();
-  if not PrepareToRunCLI() then
+  if not PrepareToRunCLI then
   begin
-    EnableLogOutput();
     VSProg_Version := 'No Exists';
     UpdateTitle();
   end
   else
   begin
-    caller.AddParametersString('--version');
-    caller.Run(@VSProg_CommonParseVersionCallback, False, True);
-    EnableLogOutput();
+    VSProg_Caller.AddParametersString('--version');
+    VSProg_Parser.LogOutputEnable := False;
+    if VSProg_RunAlgorithm(VSProg_Caller, @VSProg_Parser.VersionParser, 1) then
+    begin
+      VSProg_Version := VSProg_Parser.ResultStrings.Strings[0];
+    end;
     UpdateTitle();
   end;
 
@@ -540,8 +645,14 @@ end;
 
 procedure TFormMain.FormDestroy(Sender: TObject);
 begin
-  caller.Destroy();
-  OpenOCD_Caller.Destroy();
+  VSProg_Caller.Destroy;
+  VSProg_Parser.Destroy;
+
+  if PollThread <> nil then
+  begin
+    PollThread.Terminate;
+    PollThread.Free;
+  end;
 end;
 
 procedure TFormMain.FormResize(Sender: TObject);
@@ -556,6 +667,11 @@ procedure TFormMain.FormShow(Sender: TObject);
 begin
   FormResize(Sender);
   UpdateShowing;
+  pcMainPageChanged(pcMain);
+  if VSProg_Exists and (PollThread <> nil) then
+  begin
+    //    tPollProgrammer.Enabled := True;
+  end;
 end;
 
 procedure TFormMain.lbledtExtraParaKeyPress(Sender: TObject; var Key: char);
@@ -608,39 +724,12 @@ begin
   (Sender as TTrackBar).Hint := sedtPower.Hint;
 end;
 
-procedure TFormMain.ToggleIF(Sender: TObject);
-begin
-  if (Sender is TEdit) then
-  begin
-    if ((Sender as TEdit).Text = ST_PROG_STR) or ((Sender as TEdit).Text = '') then
-    begin
-      (Sender as TEdit).Text := ATMEL_PROG_STR;
-    end
-    else if (Sender as TEdit).Text = ATMEL_PROG_STR then
-    begin
-      (Sender as TEdit).Text := ST_PROG_STR;
-    end;
-  end
-  else if (Sender is TLabeledEdit) then
-  begin
-    if ((Sender as TLabeledEdit).Text = ST_PROG_STR) or
-      ((Sender as TLabeledEdit).Text = '') then
-    begin
-      (Sender as TLabeledEdit).Text := ATMEL_PROG_STR;
-    end
-    else if (Sender as TLabeledEdit).Text = ATMEL_PROG_STR then
-    begin
-      (Sender as TLabeledEdit).Text := ST_PROG_STR;
-    end;
-  end;
-end;
-
 procedure TFormMain.pcMainChanging(Sender: TObject; var AllowChange: boolean);
 begin
-  if (caller <> nil) and (OpenOCD_Caller <> nil) then
+  if (VSProg_Caller <> nil) then
   begin
-    AllowChange := (not caller.IsRunning()) and (not OpenOCD_Caller.IsRunning()) and
-      (not tDelay.Enabled) and (not bPageLock);
+    AllowChange := (not VSProg_Caller.IsRunning()) and (not tDelay.Enabled) and
+      (not bPageLock);
     if Allowchange then
     begin
       bPageLock := True;
@@ -652,10 +741,10 @@ procedure TFormMain.pcMainPageChanged(Sender: TObject);
 var
   index: integer;
   ser:   TBlockSerial;
+  Fails: integer;
 begin
   if not pcMain.ActivePage.Enabled then
   begin
-    HideDebugLog();
     UpdateTitle();
     bPageLock := False;
     exit;
@@ -700,9 +789,13 @@ begin
       cbboxCOM.ItemIndex := 0;
     end;
 
-    if not PrepareToRunCli() then
+    if not PrepareToRunCli then
     begin
       pcMain.ActivePage.Enabled := False;
+    end
+    else
+    begin
+      VSProg_Caller.UnTake();
     end;
 
     // update settings
@@ -724,19 +817,30 @@ begin
     memoLog.Clear;
     ShowDebugLog();
 
-    if (not PrepareToRunCli()) and (not PrepareToRunOpenOCD()) then
+    Fails := 0;
+    if not PrepareToRunOpenOCD then
+    begin
+      Inc(Fails);
+      gbOpenOCD.Enabled := False;
+    end
+    else
+    begin
+      VSProg_Caller.UnTake();
+    end;
+    if not PrepareToRunCli then
+    begin
+      Inc(Fails);
+      gbSVFPlayer.Enabled := False;
+      gbPower.Enabled     := False;
+    end
+    else
+    begin
+      VSProg_Caller.UnTake();
+    end;
+    if Fails = 2 then
     begin
       TargetType := TT_NONE;
       pcMain.ActivePage.Enabled := False;
-    end
-    else if not PrepareToRunOpenOCD() then
-    begin
-      gbOpenOCD.Enabled := False;
-    end
-    else if not PrepareToRunCli() then
-    begin
-      gbSVFPlayer.Enabled := False;
-      gbPower.Enabled     := False;
     end;
 
     // update settings
@@ -751,7 +855,6 @@ begin
       fneditSVFFile.FileName := xmlcfgMain.GetValue('svf/filename', '');
       edtSVFOption.Text := xmlcfgMain.GetValue('svf/option', '');
       sedtPower.Value := xmlcfgMain.GetValue('power/voltage', 0);
-      sedtPowerChange(sedtPower);
     end;
 
     UpdateTitle();
@@ -762,6 +865,13 @@ begin
   begin
     SetLength(TargetFile, 0);
     HideDebugLog();
+
+    if not PrepareToRunCli then
+    begin
+      pcMain.ActivePage.Enabled := False;
+      bPageLock := False;
+      exit;
+    end;
 
     if pcMain.ActivePage = tsPSoC1 then
     begin
@@ -805,20 +915,17 @@ begin
     end
     else
     begin
-      // what page? does it exists?
       TargetType := TT_NONE;
+      VSProg_Caller.UnTake();
+      exit;
     end;
+
     tDelay.Enabled := True;
   end;
 end;
 
 procedure TFormMain.btnTargetDetectClick(Sender: TObject);
 begin
-  if OpenOCD_Caller.IsRunning() or caller.IsRunning() then
-  begin
-    exit;
-  end;
-
   if btnTargetDetect.Caption = COMSETUP_STR then
   begin
     FormComSetup.ShowModal;
@@ -826,78 +933,62 @@ begin
   end
   else if btnTargetDetect.Caption = AUTODETECT_STR then
   begin
-    caller.Take;
-    if not PrepareToRunCLI() then
+    if not PrepareToRunCli then
     begin
-      caller.UnTake;
       exit;
     end;
 
-    caller.AddParameter('s' + cbboxTarget.Items.Strings[0]);
+    VSProg_Caller.AddParameter('s' + cbboxTarget.Items.Strings[0]);
     if cbboxMode.Enabled and (cbboxMode.Text <> '') then
     begin
-      caller.AddParameter('m' + cbboxMode.Text[1]);
+      VSProg_Caller.AddParameter('m' + cbboxMode.Text[1]);
     end;
     if lbledtFreq.Enabled and (lbledtFreq.Text <> '') then
     begin
-      caller.AddParameter('F' + lbledtFreq.Text);
+      VSProg_Caller.AddParameter('F' + lbledtFreq.Text);
     end;
     if lbledtExtraPara.Text <> '' then
     begin
-      caller.AddParametersString(lbledtExtraPara.Text);
+      VSProg_Caller.AddParametersString(lbledtExtraPara.Text);
     end;
 
     LogInfo('Running...');
-    caller.Run(@VSProg_CommonParseChipIDCallback, False, True);
+    if VSProg_RunAlgorithm(VSProg_Caller, @VSProg_Parser.AutoDetectParser, 1) then
+    begin
+      ComboBoxSetText(cbboxTarget, VSProg_Parser.ResultStrings.Strings[0]);
+      cbboxTargetChange(cbboxTarget);
+    end;
     LogInfo('Idle');
   end;
 end;
 
 procedure TFormMain.btnUpdateClick(Sender: TObject);
-var
-  caller_tmp: TCLI_Caller;
-const
-  update_lock: boolean = False;
 begin
-  if update_lock then
-  begin
-    exit;
-  end;
-  update_lock := True;
   if cbboxCOM.Text = '' then
   begin
     Beep();
     MessageDlg('Error, no comm port found?', '......', mtError, [mbOK], 0);
     exit;
   end;
-
-  if fnFW.FileName <> '' then
-  begin
-    caller_tmp := TCLI_Caller.Create;
-    caller_tmp.SetApplication(Application.Location + VSPROG_STR);
-    caller.SetDelimiter('-');
-    caller_tmp.AddParametersString('-G -Z -ccomisp_stm32 -C' +
-      cbboxCOM.Text + ' ' + ' -x0x08002000 -oe -owf -I"' + fnFW.FileName + '"');
-
-    memoLog.Clear;
-    memoInfo.Clear;
-    bFatalError := False;
-    LogInfo('Running...');
-    caller_tmp.Run(@VSProg_CommonCallback, False, True);
-    LogInfo('Idle');
-    if not bFatalError then
-    begin
-      MessageDlg('OK', 'FW Updated OK.', mtInformation, [mbOK], 0);
-    end;
-
-    caller_tmp.Free;
-  end
-  else
+  if fnFW.FileName = '' then
   begin
     Beep();
     MessageDlg('Error', 'Please sellect FW Hex file.', mtError, [mbOK], 0);
   end;
-  update_lock := False;
+
+  if not PrepareToRunCli then
+  begin
+    exit;
+  end;
+
+  VSProg_Caller.AddParametersString('-G -Z -ccomisp_stm32 -C' +
+    cbboxCOM.Text + ' ' + ' -x0x08002000 -oe -owf -I"' + fnFW.FileName + '"');
+  LogInfo('Running...');
+  if VSProg_RunAlgorithm(VSProg_Caller, @VSProg_Parser.OperationParser, 0) then
+  begin
+    MessageDlg('OK', 'FW Updated OK.', mtInformation, [mbOK], 0);
+  end;
+  LogInfo('Idle');
 end;
 
 function TFormMain.VSProg_CommonGetEnabledOperationString(): string;
@@ -931,7 +1022,7 @@ end;
 
 function TFormMain.VSProg_CommonAddEraseOperation(): boolean;
 begin
-  caller.AddParameter('oe');
+  VSProg_Caller.AddParameter('oe');
   Result := True;
 end;
 
@@ -947,13 +1038,10 @@ begin
   else
   begin
     Result := True;
-    case TargetType of
-      TT_PSOC1:
-    end;
-    para := 'ow' + para;
+    para   := 'ow' + para;
     if Result then
     begin
-      caller.AddParameter(para);
+      VSProg_Caller.AddParameter(para);
     end;
   end;
 end;
@@ -970,14 +1058,10 @@ begin
   else
   begin
     Result := True;
-    case TargetType of
-      TT_PSOC1:
-        Result := PSoC1_AddVerifyParameters(para);
-    end;
-    para := 'ov' + para;
+    para   := 'ov' + para;
     if Result then
     begin
-      caller.AddParameter(para);
+      VSProg_Caller.AddParameter(para);
     end;
   end;
 end;
@@ -994,85 +1078,54 @@ begin
   else
   begin
     Result := True;
-    case TargetType of
-      TT_PSOC1:
-    end;
-    para := 'or' + para;
+    para   := 'or' + para;
     if Result then
     begin
-      caller.AddParameter(para);
+      VSProg_Caller.AddParameter(para);
     end;
   end;
 end;
 
 procedure TFormMain.btnVerifyClick(Sender: TObject);
 begin
-  if OpenOCD_Caller.IsRunning() or caller.IsRunning() then
+  if not PrepareToRunCli then
   begin
     exit;
   end;
-  caller.Take;
-  if not PrepareToRunCLI() then
-  begin
-    caller.UnTake;
-    exit;
-  end;
 
-  PrepareCommonParameters();
-
+  PrepareOperationParameters(VSProg_Caller);
   if not VSProg_CommonAddVerifyOperation() then
   begin
     Beep();
     MessageDlg('Error', 'Fail to add verify operation', mtError, [mbOK], 0);
-    caller.UnTake;
+    VSProg_Caller.UnTake;
     exit;
   end;
 
   LogInfo('Running...');
-  caller.Run(@VSProg_CommonCallback, False, True);
+  VSProg_RunAlgorithm(VSProg_Caller, @VSProg_Parser.OperationParser, 0);
   LogInfo('Idle');
 end;
 
 procedure TFormMain.btnEraseClick(Sender: TObject);
 begin
-  if OpenOCD_Caller.IsRunning() or caller.IsRunning() then
+  if not PrepareToRunCli then
   begin
-    exit;
-  end;
-  caller.Take;
-  if not PrepareToRunCLI() then
-  begin
-    caller.UnTake;
     exit;
   end;
 
-  PrepareCommonParameters();
-  caller.AddParameter('oe');
+  PrepareOperationParameters(VSProg_Caller);
+  if not VSProg_CommonAddEraseOperation() then
+  begin
+    Beep();
+    MessageDlg('Error', 'Fail to add erase operation', mtError, [mbOK], 0);
+    VSProg_Caller.UnTake;
+    exit;
+  end;
 
   LogInfo('Running...');
-  caller.Run(@VSProg_CommonCallback, False, True);
+  VSProg_RunAlgorithm(VSProg_Caller, @VSProg_Parser.OperationParser, 0);
   LogInfo('Idle');
-end;
-
-procedure TFormMain.btnGetPowerClick(Sender: TObject);
-begin
-  if OpenOCD_Caller.IsRunning() or caller.IsRunning() then
-  begin
-    exit;
-  end;
-
-  caller.Take;
-  if not PrepareToRunCLI() then
-  begin
-    caller.UnTake;
-    exit;
-  end;
-
-  caller.AddParameter('V"voltage"');
-  LogInfo('Running...');
-  caller.Run(@VSProg_CommonParseTargetVoltageCallback, False, True);
-  LogInfo('Idle');
-  bFatalError := False;
 end;
 
 procedure TFormMain.btnOpenFileClick(Sender: TObject);
@@ -1117,49 +1170,39 @@ end;
 
 procedure TFormMain.btnOpenOCDRunClick(Sender: TObject);
 begin
-  if OpenOCD_Caller.IsRunning() or caller.IsRunning() then
+  if not PrepareToRunOpenOCD then
   begin
-    exit;
-  end;
-
-  OpenOCD_Caller.Take;
-  if not PrepareToRunOpenOCD() then
-  begin
-    OpenOCD_Caller.UnTake;
     exit;
   end;
 
   if edtOpenOCDOption.Text <> '' then
   begin
-    OpenOCD_Caller.AddParametersString(edtOpenOCDOption.Text);
+    VSProg_Caller.AddParametersString(edtOpenOCDOption.Text);
   end;
   if cbboxOpenOCDInterface.Text <> '' then
   begin
-    OpenOCD_Caller.AddParameter('f "' + AnsiToUtf8(Application.Location) +
+    VSProg_Caller.AddParameter('f "' + AnsiToUtf8(Application.Location) +
       cbboxOpenOCDInterface.Text + '"');
   end;
   if cbboxOpenOCDTarget.Text <> '' then
   begin
-    OpenOCD_Caller.AddParameter('f "' + AnsiToUtf8(Application.Location) +
+    VSProg_Caller.AddParameter('f "' + AnsiToUtf8(Application.Location) +
       cbboxOpenOCDTarget.Text + '"');
   end;
   if cbboxOpenOCDScript.Text <> '' then
   begin
-    OpenOCD_Caller.AddParameter('f "' + AnsiToUtf8(Application.Location) +
+    VSProg_Caller.AddParameter('f "' + AnsiToUtf8(Application.Location) +
       cbboxOpenOCDScript.Text + '"');
   end;
 
-  memoInfo.Clear;
-  memoLog.Clear;
   LogInfo('Running...');
-  OpenOCD_Caller.Run(@VSProg_CommonCallback, False, False);
+  VSProg_RunAlgorithm(VSProg_Caller, @VSProg_Parser.OperationParser, 0);
   LogInfo('Idle');
-  bFatalError := False;
 end;
 
 procedure TFormMain.btnOpenOCDStopClick(Sender: TObject);
 begin
-  OpenOCD_Caller.Stop();
+  VSProg_Caller.Stop();
 end;
 
 procedure TFormMain.btnEditAppClick(Sender: TObject);
@@ -1176,7 +1219,7 @@ begin
   end;
 
   index := GetTargetFileIndex('Flash');
-  if (index < 0) then
+  if (index < 0) or (TargetFile[index].filename = '') then
   begin
     index := GetTargetFileIndex('ALL');
     if (index < 0) or (TargetFile[index].filename = '') then
@@ -1193,25 +1236,18 @@ begin
     exit;
   end;
 
-  if caller.IsRunning() then
-  begin
-    exit;
-  end;
-  caller.Take;
   // call 'vsprog -Ppara' to extract para settings
-  DisableLogOutput();
-  if not PrepareToRunCLI() then
+  if not PrepareToRunCli then
   begin
-    EnableLogOutput();
-    caller.UnTake;
     exit;
   end;
-  PrepareBaseParameters();
-  caller.AddParameter('Pflash');
+  PrepareBaseParameters(VSProg_Caller);
+  VSProg_Caller.AddParameter('Pflash');
   FormParaEditor.FreeRecord();
-  caller.Run(@VSProg_CommonParseMemoryParaCallback, False, True);
-  EnableLogOutput();
-  if bFatalError then
+  VSProg_Parser.CallbackFunc    := @VSProg_MemoryTargetParserCallback;
+  VSProg_Parser.LogOutputEnable := False;
+  if not VSProg_RunAlgorithm(VSProg_Caller,
+    @VSProg_Parser.MemoryTargetInfoParser, 0) then
   begin
     exit;
   end;
@@ -1247,43 +1283,36 @@ begin
     exit;
   end;
 
-  if caller.IsRunning() then
-  begin
-    exit;
-  end;
-  caller.Take;
-
   if not chkboxNoconnect.Checked then
   begin
     // call 'vsprog -orc' to read calibration settings from target
-    if not PrepareToRunCLI() then
-    begin
-      caller.UnTake;
-      exit;
-    end;
-    PrepareBaseParameters();
-    caller.AddParameter('orc');
-    caller.Run(@VSProg_CommonParseReadCaliCallback, False, True);
-    if bFatalError then
+    if not PrepareToRunCli then
     begin
       exit;
     end;
+    PrepareBaseParameters(VSProg_Caller);
+    VSProg_Caller.AddParameter('orc');
+    if not VSProg_RunAlgorithm(VSProg_Caller, @VSProg_Parser.CaliDataParser, 1) then
+    begin
+      exit;
+    end;
+    VSProg_CommonUpdateCali(StrToInt(VSProg_Parser.ResultStrings.Strings[0]) and
+      TargetSetting[cbboxTarget.ItemIndex].cali_default,
+      TargetSetting[cbboxTarget.ItemIndex].cali_bytelen);
   end;
 
   // call 'vsprog -Ppara' to extract para settings
-  DisableLogOutput();
-  if not PrepareToRunCLI() then
+  if not PrepareToRunCli then
   begin
-    EnableLogOutput();
-    caller.UnTake;
     exit;
   end;
-  PrepareBaseParameters();
-  caller.AddParameter('Pcalibration');
+  PrepareBaseParameters(VSProg_Caller);
+  VSProg_Caller.AddParameter('Pcalibration');
   FormParaEditor.FreeRecord();
-  caller.Run(@VSProg_CommonParseSettingParaCallback, False, True);
-  EnableLogOutput();
-  if bFatalError then
+  VSProg_Parser.LogOutputEnable := False;
+  VSProg_Parser.CallbackFunc    := @VSProg_SettingTargetParserCallback;
+  if not VSProg_RunAlgorithm(VSProg_Caller,
+    @VSProg_Parser.SettingTargetInfoParser, 0) then
   begin
     exit;
   end;
@@ -1313,7 +1342,7 @@ begin
   end;
 
   index := GetTargetFileIndex('EEPROM');
-  if (index < 0) then
+  if (index < 0) or (TargetFile[index].filename = '') then
   begin
     index := GetTargetFileIndex('ALL');
     if (index < 0) or (TargetFile[index].filename = '') then
@@ -1330,25 +1359,18 @@ begin
     exit;
   end;
 
-  if caller.IsRunning() then
-  begin
-    exit;
-  end;
-  caller.Take;
   // call 'vsprog -Ppara' to extract para settings
-  DisableLogOutput();
-  if not PrepareToRunCLI() then
+  if not PrepareToRunCli then
   begin
-    EnableLogOutput();
-    caller.UnTake;
     exit;
   end;
-  PrepareBaseParameters();
-  caller.AddParameter('Peeprom');
+  PrepareBaseParameters(VSProg_Caller);
+  VSProg_Caller.AddParameter('Peeprom');
   FormParaEditor.FreeRecord();
-  caller.Run(@VSProg_CommonParseMemoryParaCallback, False, True);
-  EnableLogOutput();
-  if bFatalError then
+  VSProg_Parser.CallbackFunc    := @VSProg_MemoryTargetParserCallback;
+  VSProg_Parser.LogOutputEnable := False;
+  if not VSProg_RunAlgorithm(VSProg_Caller,
+    @VSProg_Parser.MemoryTargetInfoParser, 0) then
   begin
     exit;
   end;
@@ -1384,43 +1406,36 @@ begin
     exit;
   end;
 
-  if caller.IsRunning() then
-  begin
-    exit;
-  end;
-  caller.Take;
-
   if not chkboxNoconnect.Checked then
   begin
     // call 'vsprog -oru' to read fuse settings from target
-    if not PrepareToRunCLI() then
-    begin
-      caller.UnTake;
-      exit;
-    end;
-    PrepareBaseParameters();
-    caller.AddParameter('oru');
-    caller.Run(@VSProg_CommonParseReadFuseCallback, False, True);
-    if bFatalError then
+    if not PrepareToRunCli then
     begin
       exit;
     end;
+    PrepareBaseParameters(VSProg_Caller);
+    VSProg_Caller.AddParameter('oru');
+    if not VSProg_RunAlgorithm(VSProg_Caller, @VSProg_Parser.FuseDataParser, 1) then
+    begin
+      exit;
+    end;
+    VSProg_CommonUpdateFuse(StrToInt(VSProg_Parser.ResultStrings.Strings[0]) and
+      TargetSetting[cbboxTarget.ItemIndex].fuse_default,
+      TargetSetting[cbboxTarget.ItemIndex].fuse_bytelen);
   end;
 
   // call 'vsprog -Ppara' to extract para settings
-  DisableLogOutput();
-  if not PrepareToRunCLI() then
+  if not PrepareToRunCli then
   begin
-    EnableLogOutput();
-    caller.UnTake;
     exit;
   end;
-  PrepareBaseParameters();
-  caller.AddParameter('Pfuse');
+  PrepareBaseParameters(VSProg_Caller);
+  VSProg_Caller.AddParameter('Pfuse');
   FormParaEditor.FreeRecord();
-  caller.Run(@VSProg_CommonParseSettingParaCallback, False, True);
-  EnableLogOutput();
-  if bFatalError then
+  VSProg_Parser.CallbackFunc    := @VSProg_SettingTargetParserCallback;
+  VSProg_Parser.LogOutputEnable := False;
+  if not VSProg_RunAlgorithm(VSProg_Caller,
+    @VSProg_Parser.SettingTargetInfoParser, 0) then
   begin
     exit;
   end;
@@ -1449,43 +1464,36 @@ begin
     exit;
   end;
 
-  if caller.IsRunning() then
-  begin
-    exit;
-  end;
-  caller.Take;
-
   if not chkboxNoconnect.Checked then
   begin
     // call 'vsprog -orl' to read lock settings from target
-    if not PrepareToRunCLI() then
-    begin
-      caller.UnTake;
-      exit;
-    end;
-    PrepareBaseParameters();
-    caller.AddParameter('orl');
-    caller.Run(@VSProg_CommonParseReadLockCallback, False, True);
-    if bFatalError then
+    if not PrepareToRunCli then
     begin
       exit;
     end;
+    PrepareBaseParameters(VSProg_Caller);
+    VSProg_Caller.AddParameter('orl');
+    if not VSProg_RunAlgorithm(VSProg_Caller, @VSProg_Parser.LockDataParser, 1) then
+    begin
+      exit;
+    end;
+    VSProg_CommonUpdateLock(StrToInt(VSProg_Parser.ResultStrings.Strings[0]) and
+      TargetSetting[cbboxTarget.ItemIndex].lock_default,
+      TargetSetting[cbboxTarget.ItemIndex].lock_bytelen);
   end;
 
   // call 'vsprog -Ppara' to extract para settings
-  DisableLogOutput();
-  if not PrepareToRunCLI() then
+  if not PrepareToRunCli then
   begin
-    EnableLogOutput();
-    caller.UnTake;
     exit;
   end;
-  PrepareBaseParameters();
-  caller.AddParameter('Plock');
+  PrepareBaseParameters(VSProg_Caller);
+  VSProg_Caller.AddParameter('Plock');
   FormParaEditor.FreeRecord();
-  caller.Run(@VSProg_CommonParseSettingParaCallback, False, True);
-  EnableLogOutput();
-  if bFatalError then
+  VSProg_Parser.CallbackFunc    := @VSProg_SettingTargetParserCallback;
+  VSProg_Parser.LogOutputEnable := False;
+  if not VSProg_RunAlgorithm(VSProg_Caller,
+    @VSProg_Parser.SettingTargetInfoParser, 0) then
   begin
     exit;
   end;
@@ -1509,117 +1517,87 @@ end;
 
 procedure TFormMain.btnReadClick(Sender: TObject);
 begin
-  if OpenOCD_Caller.IsRunning() or caller.IsRunning() then
-  begin
-    exit;
-  end;
-  caller.Take;
-  if not PrepareToRunCLI() then
-  begin
-    caller.UnTake;
-    exit;
-  end;
-
   // select output file
-  bReadOperation := True;
   btnOpenFile.Click;
   if not bOpenFileOK then
   begin
-    bReadOperation := False;
     exit;
   end;
-  PrepareCommonParameters();
 
+  if not PrepareToRunCli then
+  begin
+    exit;
+  end;
+  bReadOperation := True;
+  PrepareOperationParameters(VSProg_Caller);
   if not VSProg_CommonAddReadOperation() then
   begin
     Beep();
     MessageDlg('Error', 'Fail to add read operation', mtError, [mbOK], 0);
-    caller.UnTake;
+    VSProg_Caller.UnTake;
     bReadOperation := False;
     exit;
   end;
 
   LogInfo('Running...');
-  caller.Run(@VSProg_CommonCallback, False, True);
+  VSProg_RunAlgorithm(VSProg_Caller, @VSProg_Parser.OperationParser, 0);
   LogInfo('Idle');
   bReadOperation := False;
 end;
 
 procedure TFormMain.btnSetPowerClick(Sender: TObject);
 begin
-  if OpenOCD_Caller.IsRunning() or caller.IsRunning() then
+  if not PrepareToRunCli then
   begin
     exit;
   end;
 
-  caller.Take;
-  if not PrepareToRunCLI() then
-  begin
-    caller.UnTake;
-    exit;
-  end;
-
-  caller.AddParameter('V"powerout ' + IntToStr(sedtPower.Value) + '"');
+  VSProg_Caller.AddParameter('V"powerout ' + IntToStr(sedtPower.Value) + '"');
   LogInfo('Running...');
-  caller.Run(@CheckFatalError, False, True);
+  VSProg_RunAlgorithm(VSProg_Caller, nil, 0);
   LogInfo('Idle');
-  bFatalError := False;
 end;
 
 procedure TFormMain.btnSVFPlayerRunClick(Sender: TObject);
 begin
-  if OpenOCD_Caller.IsRunning() or caller.IsRunning() then
-  begin
-    exit;
-  end;
-
-  caller.Take;
   if fneditSVFFile.FileName <> '' then
   begin
-    if not PrepareToRunCLI() then
+    if not PrepareToRunCli then
     begin
-      caller.UnTake;
       exit;
     end;
-    caller.AddParametersString('-G -ssvf_player -I"' + fneditSVFFile.FileName + '"');
+    VSProg_Caller.AddParametersString('-G -ssvf_player -I"' +
+      fneditSVFFile.FileName + '"');
     if edtSVFOption.Text <> '' then
     begin
-      caller.AddParametersString(edtSVFOption.Text);
+      VSProg_Caller.AddParametersString(edtSVFOption.Text);
     end;
 
     LogInfo('Running...');
-    caller.Run(@VSProg_CommonCallback, False, True);
+    VSProg_RunAlgorithm(VSProg_Caller, @VSProg_Parser.OperationParser, 0);
     LogInfo('Idle');
-    bFatalError := False;
   end
   else
   begin
     Beep();
     MessageDlg('Error', 'Please input SVF file.', mtError, [mbOK], 0);
-    caller.UnTake;
   end;
 end;
 
 procedure TFormMain.btnWriteClick(Sender: TObject);
 begin
-  if OpenOCD_Caller.IsRunning() or caller.IsRunning() then
+  if not PrepareToRunCli then
   begin
-    exit;
-  end;
-  caller.Take;
-  if not PrepareToRunCLI() then
-  begin
-    caller.UnTake;
     exit;
   end;
 
-  PrepareCommonParameters();
+  PrepareOperationParameters(VSProg_Caller);
 
   if chkboxEraseBeforeWrite.Checked and not VSProg_CommonAddEraseOperation() then
   begin
     Beep();
     MessageDlg('Error', 'Fail to add erase operation', mtError, [mbOK], 0);
-    caller.UnTake;
+    VSProg_Caller.UnTake;
     exit;
   end;
 
@@ -1627,7 +1605,7 @@ begin
   begin
     Beep();
     MessageDlg('Error', 'Fail to add write operation', mtError, [mbOK], 0);
-    caller.UnTake;
+    VSProg_Caller.UnTake;
     exit;
   end;
 
@@ -1635,12 +1613,12 @@ begin
   begin
     Beep();
     MessageDlg('Error', 'Fail to add verify operation', mtError, [mbOK], 0);
-    caller.UnTake;
+    VSProg_Caller.UnTake;
     exit;
   end;
 
   LogInfo('Running...');
-  caller.Run(@VSProg_CommonCallback, False, True);
+  VSProg_RunAlgorithm(VSProg_Caller, @VSProg_Parser.OperationParser, 0);
   LogInfo('Idle');
 end;
 
@@ -1786,8 +1764,7 @@ procedure TFormMain.FormClose(Sender: TObject; var CloseAction: TCloseAction);
 var
   i: integer;
 begin
-  caller.Stop();
-  OpenOCD_Caller.Stop();
+  VSProg_Caller.Stop();
 
   // save settings to config file
   xmlcfgMain.SetValue('activepage', pcMain.ActivePage.Caption);
@@ -1864,13 +1841,6 @@ begin
   end;
 end;
 
-procedure TFormMain.sedtPowerChange(Sender: TObject);
-begin
-  tbPower.Position := (Sender as TSpinEdit).Value;
-  tbPower.Hint     := IntToStr(tbPower.Position) + 'mV';
-  (Sender as TSpinEdit).Hint := tbPower.Hint;
-end;
-
 procedure TFormMain.LogInfo(info: string);
 begin
   memoInfo.Lines.Add(info);
@@ -1883,69 +1853,88 @@ begin
   end;
 end;
 
-
-
-
-function TFormMain.CheckFatalError(line: string): boolean;
+function TFormMain.PrepareToRunOpenOCD: boolean;
+var
+  strTmp: string;
 begin
-  if LogOutput then
+  Result := False;
+  strTmp := Application.Location + OPENOCD_APP_STR;
+  if not FileExists(strTmp) then
   begin
-    memoLog.Lines.Add(line);
+    exit;
   end;
 
-  if ((Pos('Error:', line) > 0) or (Pos('fail', line) <> 0)) and not bFatalError then
+  // take it first
+  if not VSProg_Caller.Take() then
   begin
-    Beep();
-    MessageDlg('Error', line, mtError, [mbOK], 0);
-    bFatalError := True;
-  end;
-  if (Pos('/****Bug****/:', line) = 1) and not bFatalError then
-  begin
-    Beep();
-    MessageDlg('Bug', line, mtError, [mbOK], 0);
-    bFatalError := True;
+    if VSProg_Taken_By_Polling then
+    begin
+      // occupied by polling thread, wait it
+//      PollThread.WaitFor;
+      if not VSProg_Caller.Take() then
+      begin
+        // give up ......
+        exit;
+      end;
+    end
+    else
+    begin
+      // other operation is on the way
+      exit;
+    end;
   end;
 
-  Result := bFatalError;
+  VSProg_Caller.Application := strTmp;
+  VSProg_Caller.RemoveAllParameters();
+  Result := True;
+  memoLog.Clear;
+  memoInfo.Clear;
 end;
 
-function TFormMain.PrepareToRunOpenOCD(): boolean;
+function TFormMain.PrepareToRunCLI: boolean;
+var
+  strTmp: string;
 begin
-  if not FileExists(OpenOCD_Caller.GetApplication()) then
-  begin
-    Result := False;
-  end
-  else
-  begin
-    OpenOCD_Caller.RemoveAllParameters();
-    Result := True;
-  end;
-end;
-
-function TFormMain.PrepareToRunCLI(): boolean;
-begin
-  if not FileExists(caller.GetApplication()) then
+  Result := False;
+  strTmp := Application.Location + VSPROG_STR;
+  if not FileExists(strTmp) then
   begin
     if VSProg_Exists then
     begin
+      // For Once
       Beep();
       MessageDlg('Error, missing vsprog',
         'Opps, Where is my vsprog? I cannot work without her.', mtError, [mbOK], 0);
     end;
     VSProg_Exists := False;
-    Result := False;
-  end
-  else
-  begin
-    bFatalError := False;
-    caller.RemoveAllParameters();
-    Result := True;
+    exit;
   end;
-  if LogOutput then
+
+  // take it first
+  if not VSProg_Caller.Take() then
   begin
-    memoLog.Clear;
-    memoInfo.Clear;
+    if VSProg_Taken_By_Polling then
+    begin
+      // occupied by polling thread, wait it
+//      PollThread.WaitFor;
+      if not VSProg_Caller.Take() then
+      begin
+        // give up ......
+        exit;
+      end;
+    end
+    else
+    begin
+      // other operation is on the way
+      exit;
+    end;
   end;
+
+  VSProg_Caller.Application := strTmp;
+  VSProg_Caller.RemoveAllParameters();
+  Result := True;
+  memoLog.Clear;
+  memoInfo.Clear;
 end;
 
 function TFormMain.GetTargetDefineParameters(): string;
@@ -1962,7 +1951,7 @@ begin
   end;
 end;
 
-procedure TFormMain.PrepareBaseParameters();
+procedure TFormMain.PrepareBaseParameters(var caller: TCLI_Caller);
 var
   i: integer;
   io_file_opt, str: string;
@@ -2071,11 +2060,11 @@ begin
   end;
 end;
 
-procedure TFormMain.PrepareCommonParameters();
+procedure TFormMain.PrepareOperationParameters(var caller: TCLI_Caller);
 begin
   // enable GUI mode
   caller.AddParameter('G');
-  PrepareBaseParameters();
+  PrepareBaseParameters(caller);
 
   // Fuse
   if lbledtFuse.Enabled and chkboxFuse.Enabled and chkboxFuse.Checked and
@@ -2138,9 +2127,7 @@ begin
     TT_CORTEXM3:
       success := CortexM3_Init();
     else
-      UpdateTitle();
-      bPageLock := False;
-      exit;
+    // BUG IN SOFTWARE IF RUN HERE
   end;
 
   if success and (cbboxTarget.ItemIndex >= 0) then
@@ -2241,180 +2228,37 @@ begin
   Show;
 end;
 
-function TFormMain.VSProg_CommonCallback(line: string): boolean;
-var
-  i: integer;
-const
-  operating: boolean = False;
+function TFormMain.VSProg_LogProcess(ProgressInfo: TProgressInfoType;
+  info: string): boolean;
 begin
-  if CheckFatalError(line) then
-  begin
-    Result := False;
-    exit;
-  end;
   Result := True;
 
-  if ((Pos('writing', line) = 1) or (Pos('reading', line) = 1) or
-    (Pos('verifying', line) = 1) or (Pos('erasing', line) = 1) or
-    (Pos('checking', line) = 1) or (Pos('executing', line) = 1)) and
-    (Length(line) > 9) then
-  begin
-    operating := True;
-    LogInfo(Copy(line, 1, Length(line) - 8) + '...');
-    sbMain.Panels.Items[1].Text := '';
-    pgbarMain.Position := 0;
-  end;
-
-  i := Pos('| ', line);
-  if operating and (i > 0) then
-  begin
-    memoInfo.Lines.Strings[memoInfo.Lines.Count - 1] :=
-      memoInfo.Lines.Strings[memoInfo.Lines.Count - 1] +
-      Copy(line, i + 1, Length(line) - i - 1);
-    operating := False;
-  end;
-
-  if Pos('=', line) = 1 then
-  begin
-    i := 1;
-    while line[i] = PChar('=') do
+  case ProgressInfo of
+    liStartSection:
     begin
-      sbMain.Panels.Items[1].Text := sbMain.Panels.Items[1].Text + '=';
+      LogInfo(info + '...');
+      sbMain.Panels.Items[1].Text := '';
+      pgbarMain.Position := 0;
+    end;
+    liStep:
+    begin
+      sbMain.Panels.Items[1].Text := sbMain.Panels.Items[1].Text + info;
       pgbarMain.StepIt;
-      Inc(i);
+    end;
+    liEndSection:
+    begin
+      memoInfo.Lines.Strings[memoInfo.Lines.Count - 1] :=
+        memoInfo.Lines.Strings[memoInfo.Lines.Count - 1] + info;
     end;
   end;
 end;
 
-function TFormMain.VSProg_CommonParseVersionCallback(line: string): boolean;
-begin
-  if CheckFatalError(line) then
-  begin
-    Result := False;
-    exit;
-  end;
-  Result := True;
-
-  if Pos('vsprog', LowerCase(line)) = 1 then
-  begin
-    VSProg_Version := WipeTailEnter(line);
-  end;
-end;
-
-function TFormMain.VSProg_CommonParseReadTargetCallback(line, target: string;
-  var result_str: string): boolean;
-var
-  pos_start: integer;
-begin
-  if CheckFatalError(line) then
-  begin
-    Result := False;
-    exit;
-  end;
-  Result := True;
-
-  result_str := '';
-  pos_start  := Pos(target + ' read is ', line);
-  if pos_start > 0 then
-  begin
-    result_str := Copy(line, pos_start + Length(target + ' read is '),
-      Length(line) - pos_start);
-    WipeTailEnter(result_str);
-  end;
-end;
-
-function TFormMain.VSProg_CommonParseReadFuseCallback(line: string): boolean;
-var
-  fuse_str: string;
-begin
-  Result   := True;
-  fuse_str := '';
-  if not VSProg_CommonParseReadTargetCallback(line, 'fuse', fuse_str) then
-  begin
-    Result := False;
-  end;
-
-  if fuse_str <> '' then
-  begin
-    VSProg_CommonUpdateFuse(StrToInt(fuse_str) and
-      TargetSetting[cbboxTarget.ItemIndex].fuse_default,
-      TargetSetting[cbboxTarget.ItemIndex].fuse_bytelen);
-  end;
-end;
-
-function TFormMain.VSProg_CommonParseReadCaliCallback(line: string): boolean;
-var
-  cali_str: string;
-begin
-  Result   := True;
-  cali_str := '';
-  if not VSProg_CommonParseReadTargetCallback(line, 'calibration', cali_str) then
-  begin
-    Result := False;
-  end;
-
-  if cali_str <> '' then
-  begin
-    VSProg_CommonUpdateCali(StrToInt(cali_str) and
-      TargetSetting[cbboxTarget.ItemIndex].cali_default,
-      TargetSetting[cbboxTarget.ItemIndex].cali_bytelen);
-  end;
-end;
-
-function TFormMain.VSProg_CommonParseTargetVoltageCallback(line: string): boolean;
-var
-  voltage:   integer;
-  pos_start: integer;
-begin
-  if CheckFatalError(line) then
-  begin
-    Result := False;
-    exit;
-  end;
-  Result := True;
-
-  pos_start := Pos('Target runs at ', line);
-  if pos_start > 0 then
-  begin
-    Inc(pos_start, Length('Target runs at '));
-    voltage := Trunc(StrToFloat(Copy(line, pos_start, Length(line) -
-      pos_start - 1)) * 1000);
-    sedtPower.Value := voltage;
-    sedtPowerChange(sedtPower);
-  end;
-end;
-
-function TFormMain.VSProg_CommonParseReadLockCallback(line: string): boolean;
-var
-  lock_str: string;
-begin
-  Result   := True;
-  lock_str := '';
-  if not VSProg_CommonParseReadTargetCallback(line, 'lock', lock_str) then
-  begin
-    Result := False;
-  end;
-
-  if lock_str <> '' then
-  begin
-    VSProg_CommonUpdateLock(StrToInt(lock_str) and
-      TargetSetting[cbboxTarget.ItemIndex].lock_default,
-      TargetSetting[cbboxTarget.ItemIndex].lock_bytelen);
-  end;
-end;
-
-function TFormMain.VSProg_CommonParseMemoryParaCallback(line: string): boolean;
+function TFormMain.VSProg_MemoryTargetParserCallback(line: string): boolean;
 var
   seg_addr, start_addr, byte_size, default_byte: integer;
   parse_result: boolean;
 begin
-  if CheckFatalError(line) then
-  begin
-    Result := False;
-    exit;
-  end;
   Result := True;
-
   parse_result := GetIntegerParameter(line, 'seg_addr', seg_addr);
   parse_result := parse_result and GetIntegerParameter(line, 'start_addr', start_addr);
   parse_result := parse_result and GetIntegerParameter(line, 'default_byte',
@@ -2429,17 +2273,11 @@ begin
   end;
 end;
 
-function TFormMain.VSProg_CommonParseSettingParaCallback(line: string): boolean;
+function TFormMain.VSProg_SettingTargetParserCallback(line: string): boolean;
 var
   dis: string;
 begin
-  if CheckFatalError(line) then
-  begin
-    Result := False;
-    exit;
-  end;
   Result := True;
-
   if Pos('setting: ', line) = 1 then
   begin
     // check disable
@@ -2448,7 +2286,6 @@ begin
     if (dis = '*') or (Pos(cbboxMode.Text[1], dis) > 0) then
     begin
       // current setting is disabled in current mode
-      WipeTailEnter(line);
       line := line + ', disabled = 1';
     end;
   end;
@@ -2480,17 +2317,11 @@ begin
   setting.usrsig_default := 0;
 end;
 
-function TFormMain.VSProg_CommonParseSupportCallback(line: string): boolean;
+function TFormMain.VSProg_SupportParserCallback(line: string): boolean;
 var
   chip_name, chip_module_header: string;
   setting: TTargetSetting;
 begin
-  if CheckFatalError(line) then
-  begin
-    Result := False;
-    exit;
-  end;
-
   // parse chip name
   case TargetType of
     TT_NONE:
@@ -2560,52 +2391,6 @@ begin
   end;
 
   Result := True;
-end;
-
-function TFormMain.VSProg_CommonParseAboutCallback(line: string): boolean;
-begin
-  if CheckFatalError(line) then
-  begin
-    Result := False;
-    exit;
-  end;
-
-  memoAbout.Lines.Add(line);
-  Result := True;
-end;
-
-function TFormMain.VSProg_CommonParseChipIDCallback(line: string): boolean;
-var
-  chip_name: string;
-  chip_name_pos, i: integer;
-begin
-  if CheckFatalError(line) then
-  begin
-    Result := False;
-    exit;
-  end;
-
-  chip_name_pos := Pos(' found', line);
-  if chip_name_pos >= 8 then
-  begin
-    // chip found
-    chip_name := Copy(line, 9, chip_name_pos - 9);
-    for i := 0 to cbboxTarget.Items.Count - 1 do
-    begin
-      if cbboxTarget.Items.Strings[i] = chip_name then
-      begin
-        cbboxTarget.ItemIndex := i;
-        cbboxTargetChange(cbboxTarget);
-        break;
-      end;
-    end;
-    Result := True;
-  end
-  else
-  begin
-    // chip not found
-    Result := False;
-  end;
 end;
 
 procedure TFormMain.VSProg_CommonUpdateSetting(Value, bytelen: integer;
@@ -2819,18 +2604,6 @@ begin
 end;
 
 { PSoC1 implementation }
-function TFormMain.PSoC1_AddVerifyParameters(var para: string): boolean;
-begin
-  if not chkboxApp.Checked then
-  begin
-    Result := False;
-  end
-  else
-  begin
-    para   := 'fk';
-    Result := True;
-  end;
-end;
 
 procedure TFormMain.PSoC1_Update_Chip(setting: TTargetSetting);
 var
@@ -2882,28 +2655,18 @@ begin
   AddTargetFile('ALL', False, 0, 0, 0);
 
   // call 'vsprog -Spsoc1' to extract supported psoc1 targets
-  DisableLogOutput();
-  if not PrepareToRunCLI() then
+  VSProg_Caller.AddParameter('Spsoc1');
+  VSProg_Parser.CallbackFunc    := @VSProg_SupportParserCallback;
+  VSProg_Parser.LogOutputEnable := False;
+  if VSProg_RunAlgorithm(VSProg_Caller, @VSProg_Parser.SupportParser, 0) then
   begin
-    EnableLogOutput();
-    Result := False;
-    exit;
-  end;
-  caller.AddParameter('Spsoc1');
-  LogInfo('Running...');
-  caller.Run(@VSProg_CommonParseSupportCallback, False, True);
-  LogInfo('Idle');
-  EnableLogOutput();
-
-  if bFatalError then
+    cbboxTarget.ItemIndex := 0;
+  end
+  else
   begin
     tsPSoC1.Enabled := False;
     Result := False;
     exit;
-  end
-  else
-  begin
-    cbboxTarget.ItemIndex := 0;
   end;
 
   // Autodetect
@@ -2927,28 +2690,18 @@ begin
   AddTargetFile('ALL', False, 0, 0, 0);
 
   // call 'vsprog -Sc8051f' to check support
-  DisableLogOutput();
-  if not PrepareToRunCLI() then
+  VSProg_Caller.AddParameter('Sc8051f');
+  VSProg_Parser.CallbackFunc    := @VSProg_SupportParserCallback;
+  VSProg_Parser.LogOutputEnable := False;
+  if VSProg_RunAlgorithm(VSProg_Caller, @VSProg_Parser.SupportParser, 0) then
   begin
-    EnableLogOutput();
-    Result := False;
-    exit;
-  end;
-  caller.AddParameter('Sc8051f');
-  LogInfo('Running...');
-  caller.Run(@VSProg_CommonParseSupportCallback, False, True);
-  LogInfo('Idle');
-  EnableLogOutput();
-
-  if bFatalError then
-  begin
-    tsAT89S5X.Enabled := False;
-    Result := False;
-    exit;
+    cbboxTarget.ItemIndex := 0;
   end
   else
   begin
-    cbboxTarget.ItemIndex := 0;
+    tsC8051F.Enabled := False;
+    Result := False;
+    exit;
   end;
 
   // Autodetect
@@ -3035,28 +2788,18 @@ begin
   AddTargetFile('ALL', False, 0, 0, 0);
 
   // call 'vsprog -Sat89s5x' to extract supported at89s5x targets
-  DisableLogOutput();
-  if not PrepareToRunCLI() then
+  VSProg_Caller.AddParameter('Sat89s5x');
+  VSProg_Parser.CallbackFunc    := @VSProg_SupportParserCallback;
+  VSProg_Parser.LogOutputEnable := False;
+  if VSProg_RunAlgorithm(VSProg_Caller, @VSProg_Parser.SupportParser, 0) then
   begin
-    EnableLogOutput();
-    Result := False;
-    exit;
-  end;
-  caller.AddParameter('Sat89s5x');
-  LogInfo('Running...');
-  caller.Run(@VSProg_CommonParseSupportCallback, False, True);
-  LogInfo('Idle');
-  EnableLogOutput();
-
-  if bFatalError then
+    cbboxTarget.ItemIndex := 0;
+  end
+  else
   begin
     tsAT89S5X.Enabled := False;
     Result := False;
     exit;
-  end
-  else
-  begin
-    cbboxTarget.ItemIndex := 0;
   end;
 
   // Frequency, Autodetect
@@ -3087,28 +2830,18 @@ begin
   AddTargetFile('ALL', False, 0, 0, 0);
 
   // call 'vsprog -Smsp430' to extract supported at89s5x targets
-  DisableLogOutput();
-  if not PrepareToRunCLI() then
+  VSProg_Caller.AddParameter('Smsp430');
+  VSProg_Parser.CallbackFunc    := @VSProg_SupportParserCallback;
+  VSProg_Parser.LogOutputEnable := False;
+  if VSProg_RunAlgorithm(VSProg_Caller, @VSProg_Parser.SupportParser, 0) then
   begin
-    EnableLogOutput();
-    Result := False;
-    exit;
-  end;
-  caller.AddParameter('Smsp430');
-  LogInfo('Running...');
-  caller.Run(@VSProg_CommonParseSupportCallback, False, True);
-  LogInfo('Idle');
-  EnableLogOutput();
-
-  if bFatalError then
+    cbboxTarget.ItemIndex := 0;
+  end
+  else
   begin
     tsMSP430.Enabled := False;
     Result := False;
     exit;
-  end
-  else
-  begin
-    cbboxTarget.ItemIndex := 0;
   end;
 
   // flash, Autodetect
@@ -3162,28 +2895,18 @@ begin
   AddTargetFile('ALL', False, 0, 0, 0);
 
   // call 'vsprog -Sstm8' to extract supported at89s5x targets
-  DisableLogOutput();
-  if not PrepareToRunCLI() then
+  VSProg_Caller.AddParameter('Sstm8');
+  VSProg_Parser.CallbackFunc    := @VSProg_SupportParserCallback;
+  VSProg_Parser.LogOutputEnable := False;
+  if VSProg_RunAlgorithm(VSProg_Caller, @VSProg_Parser.SupportParser, 0) then
   begin
-    EnableLogOutput();
-    Result := False;
-    exit;
-  end;
-  caller.AddParameter('Sstm8');
-  LogInfo('Running...');
-  caller.Run(@VSProg_CommonParseSupportCallback, False, True);
-  LogInfo('Idle');
-  EnableLogOutput();
-
-  if bFatalError then
+    cbboxTarget.ItemIndex := 0;
+  end
+  else
   begin
     tsSTM8.Enabled := False;
     Result := False;
     exit;
-  end
-  else
-  begin
-    cbboxTarget.ItemIndex := 0;
   end;
 
   // Autodetect
@@ -3324,28 +3047,18 @@ begin
   AddTargetFile('EEPROM', True, 2, 0, 0);
 
   // call 'vsprog -Savr8' to extract supported avr8 targets
-  DisableLogOutput();
-  if not PrepareToRunCLI() then
+  VSProg_Caller.AddParameter('Savr8');
+  VSProg_Parser.CallbackFunc    := @VSProg_SupportParserCallback;
+  VSProg_Parser.LogOutputEnable := False;
+  if VSProg_RunAlgorithm(VSProg_Caller, @VSProg_Parser.SupportParser, 0) then
   begin
-    EnableLogOutput();
-    Result := False;
-    exit;
-  end;
-  caller.AddParameter('Savr8');
-  LogInfo('Running...');
-  caller.Run(@VSProg_CommonParseSupportCallback, False, True);
-  LogInfo('Idle');
-  EnableLogOutput();
-
-  if bFatalError then
+    cbboxTarget.ItemIndex := 0;
+  end
+  else
   begin
     tsAVR8.Enabled := False;
     Result := False;
     exit;
-  end
-  else
-  begin
-    cbboxTarget.ItemIndex := 0;
   end;
 
   // Autodetect, Frequency
@@ -3450,28 +3163,18 @@ begin
   cbboxTarget.Clear;
 
   // call 'vsprog -Scomisp' to extract supported comisp targets
-  DisableLogOutput();
-  if not PrepareToRunCLI() then
+  VSProg_Caller.AddParameter('Scomisp');
+  VSProg_Parser.CallbackFunc    := @VSProg_SupportParserCallback;
+  VSProg_Parser.LogOutputEnable := False;
+  if VSProg_RunAlgorithm(VSProg_Caller, @VSProg_Parser.SupportParser, 0) then
   begin
-    EnableLogOutput();
-    Result := False;
-    exit;
-  end;
-  caller.AddParameter('Scomisp');
-  LogInfo('Running...');
-  caller.Run(@VSProg_CommonParseSupportCallback, False, True);
-  LogInfo('Idle');
-  EnableLogOutput();
-
-  if bFatalError then
+    cbboxTarget.ItemIndex := 0;
+  end
+  else
   begin
     tsCOMISP.Enabled := False;
     Result := False;
     exit;
-  end
-  else
-  begin
-    cbboxTarget.ItemIndex := 0;
   end;
 
   VSProg_CommonInit('CX');
@@ -3544,28 +3247,18 @@ begin
   AddTargetFile('ALL', False, 0, 0, 0);
 
   // call 'vsprog -Scomisp' to extract supported comisp targets
-  DisableLogOutput();
-  if not PrepareToRunCLI() then
+  VSProg_Caller.AddParameter('Slpc900');
+  VSProg_Parser.CallbackFunc    := @VSProg_SupportParserCallback;
+  VSProg_Parser.LogOutputEnable := False;
+  if VSProg_RunAlgorithm(VSProg_Caller, @VSProg_Parser.SupportParser, 0) then
   begin
-    EnableLogOutput();
-    Result := False;
-    exit;
-  end;
-  caller.AddParameter('Slpc900');
-  LogInfo('Running...');
-  caller.Run(@VSProg_CommonParseSupportCallback, False, True);
-  LogInfo('Idle');
-  EnableLogOutput();
-
-  if bFatalError then
+    cbboxTarget.ItemIndex := 0;
+  end
+  else
   begin
     tsLPCICP.Enabled := False;
     Result := False;
     exit;
-  end
-  else
-  begin
-    cbboxTarget.ItemIndex := 0;
   end;
 
   // Autodetect
@@ -3593,28 +3286,18 @@ begin
   cbboxTarget.Clear;
 
   // call 'vsprog -Scm3' to extract supported comisp targets
-  DisableLogOutput();
-  if not PrepareToRunCLI() then
+  VSProg_Caller.AddParameter('Scm3');
+  VSProg_Parser.CallbackFunc    := @VSProg_SupportParserCallback;
+  VSProg_Parser.LogOutputEnable := False;
+  if VSProg_RunAlgorithm(VSProg_Caller, @VSProg_Parser.SupportParser, 0) then
   begin
-    EnableLogOutput();
-    Result := False;
-    exit;
-  end;
-  caller.AddParameter('Scm3');
-  LogInfo('Running...');
-  caller.Run(@VSProg_CommonParseSupportCallback, False, True);
-  LogInfo('Idle');
-  EnableLogOutput();
-
-  if bFatalError then
-  begin
-    tsCOMISP.Enabled := False;
-    Result := False;
-    exit;
+    cbboxTarget.ItemIndex := 0;
   end
   else
   begin
-    cbboxTarget.ItemIndex := 0;
+    tsCortexM3.Enabled := False;
+    Result := False;
+    exit;
   end;
 
   VSProg_CommonInit('F');

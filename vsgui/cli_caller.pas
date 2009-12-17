@@ -5,17 +5,14 @@ unit cli_caller;
 interface
 
 uses
-  Classes, SysUtils, process, Forms;
+  Classes, SysUtils, process, Forms, SyncObjs;
 
 type
   TCLI_Callback = function(line: string): boolean of object;
 
   TCLI_Caller = class(TObject)
-    procedure Take();
+    function Take(): boolean;
     procedure UnTake();
-    procedure SetApplication(app: string);
-    function GetApplication(): string;
-    procedure SetDelimiter(deli: char);
     procedure AddParameter(para: string);
     procedure AddParametersString(para: string);
     procedure RemoveAllParameters();
@@ -24,14 +21,19 @@ type
     function IsRunning(): boolean;
   private
     { private declarations }
-    application: string;
-    parameter: string;
-    delimiter: char;
-    P:     TProcess;
-    running: boolean;
-    taken: boolean;
+    FApplication: string;
+    FParameter: string;
+    FDelimiter: string;
+    FP:     TProcess;
+    FRunning: boolean;
+    FTaken: boolean;
+    FCriticalSection: TCriticalSection;
   public
     { public declarations }
+    constructor Create;
+    destructor Destroy;
+    property Application: string Read FApplication Write FApplication;
+    property Delimiter: string Read FDelimiter Write FDelimiter;
   end;
 
 const
@@ -39,49 +41,56 @@ const
 
 implementation
 
-procedure TCLI_Caller.SetApplication(app: string);
+constructor TCLI_Caller.Create;
 begin
-  application := app;
+  inherited Create;
+  FCriticalSection := TCriticalSection.Create;
 end;
 
-function TCLI_Caller.GetApplication(): string;
+destructor TCLI_Caller.Destroy;
 begin
-  Result := application;
-end;
-
-procedure TCLI_Caller.SetDelimiter(deli: char);
-begin
-  delimiter := deli;
+  inherited Destroy;
+  FCriticalSection.Destroy;
 end;
 
 procedure TCLI_Caller.AddParameter(para: string);
 begin
-  parameter := parameter + ' ' + delimiter + para;
+  FParameter := FParameter + ' ' + FDelimiter + para;
 end;
 
 procedure TCLI_Caller.AddParametersString(para: string);
 begin
-  parameter := parameter + ' ' + para;
+  FParameter := FParameter + ' ' + para;
 end;
 
 procedure TCLI_Caller.RemoveAllParameters();
 begin
-  parameter := '';
+  FParameter := '';
 end;
 
-procedure TCLI_Caller.Take;
+function TCLI_Caller.Take: boolean;
 begin
-  taken := True;
+  FCriticalSection.Enter;
+  try
+    Result := False;
+    if not IsRunning then
+    begin
+      FTaken := True;
+      Result := True;
+    end;
+  finally
+    FCriticalSection.Leave;
+  end;
 end;
 
 procedure TCLI_Caller.UnTake;
 begin
-  taken := False;
+  FTaken := False;
 end;
 
 function TCLI_Caller.IsRunning(): boolean;
 begin
-  if (P <> nil) and ((running and P.Running) or taken) then
+  if (FP <> nil) or (FRunning and FP.Running) or FTaken then
   begin
     Result := True;
   end
@@ -93,9 +102,9 @@ end;
 
 procedure TCLI_Caller.Stop();
 begin
-  if (P <> nil) and P.Running then
+  if (FP <> nil) and FP.Running then
   begin
-    P.Terminate(0);
+    FP.Terminate(0);
   end;
 end;
 
@@ -110,41 +119,41 @@ begin
   dly  := 0;
 
   BytesRead := 0;
-  P := TProcess.Create(nil);
+  FP := TProcess.Create(nil);
 {$ifdef MSWINDOWS}
-  P.CommandLine := '"' + application + '"' + Utf8ToAnsi(parameter);
+  FP.CommandLine := '"' + FApplication + '"' + Utf8ToAnsi(FParameter);
 {$else}
-  P.CommandLine := application + parameter;
+  FP.CommandLine := FApplication + FParameter;
 {$endif}
   if callback <> nil then
   begin
 {$ifdef MSWINDOWS}
-    callback(AnsiToUtf8(P.CommandLine));
+    callback(AnsiToUtf8(FP.CommandLine));
 {$else}
-    callback(P.CommandLine);
+    callback(FP.CommandLine);
 {$endif}
   end;
 
   if not bView then
   begin
-    P.ShowWindow := swoHIDE;
+    FP.ShowWindow := swoHIDE;
   end;
-  P.Options := P.Options + [poUsePipes, poStderrToOutPut] - [poWaitOnExit];
+  FP.Options := FP.Options + [poUsePipes, poStderrToOutPut] - [poWaitOnExit];
 
   try
-    running := True;
-    P.Execute;
+    FRunning := True;
+    FP.Execute;
 
-    while P.Running do
+    while FP.Running do
     begin
       // make sure we have room
       SetLength(buff, BytesRead + BUF_INC);
 
       // try reading it
-      if P.Output.NumBytesAvailable > 0 then
+      if FP.Output.NumBytesAvailable > 0 then
       begin
         dly := 0;
-        n   := P.Output.Read(buff[BytesRead + 1], BUF_INC);
+        n   := FP.Output.Read(buff[BytesRead + 1], BUF_INC);
         if n > 0 then
         begin
           Inc(BytesRead, n);
@@ -156,15 +165,20 @@ begin
             i := 0;
             while (BytesRead > 0) and (i <= BytesRead) do
             begin
-              if buff[i] = #10 then
+              if (buff[1 + i] = #10) or (buff[1 + i] = #13) then
               begin
 {$ifdef MSWINDOWS}
-                callback(AnsiToUtf8(Copy(buff, 1, i - 1)));
+                callback(AnsiToUtf8(Copy(buff, 1, i)));
 {$else}
-                callback(Copy(buff, 1, i - 1));
+                callback(Copy(buff, 1, i));
 {$endif}
-                Delete(buff, 1, i);
-                Dec(BytesRead, i);
+                if ((buff[2 + i] = #10) or (buff[2 + i] = #13)) and
+                  (buff[2 + i] <> buff[1 + i]) then
+                begin
+                  Inc(i);
+                end;
+                Delete(buff, 1, i + 1);
+                Dec(BytesRead, i + 1);
                 i := 0;
               end
               else
@@ -195,7 +209,7 @@ begin
       SetLength(buff, BytesRead + BUF_INC);
 
       // try reading it
-      n := P.Output.Read(buff[BytesRead + 1], BUF_INC);
+      n := FP.Output.Read(buff[BytesRead + 1], BUF_INC);
       if n > 0 then
       begin
         Inc(BytesRead, n);
@@ -207,15 +221,20 @@ begin
           i := 0;
           while (BytesRead > 0) and (i <= BytesRead) do
           begin
-            if buff[i] = #10 then
+            if (buff[1 + i] = #10) or (buff[1 + i] = #13) then
             begin
 {$ifdef MSWINDOWS}
-              callback(AnsiToUtf8(Copy(buff, 1, i - 1)));
+              callback(AnsiToUtf8(Copy(buff, 1, i)));
 {$else}
-              callback(Copy(buff, 1, i - 1));
+              callback(Copy(buff, 1, i));
 {$endif}
-              Delete(buff, 1, i);
-              Dec(BytesRead, i);
+              if ((buff[2 + i] = #10) or (buff[2 + i] = #13)) and
+                (buff[2 + i] <> buff[1 + i]) then
+              begin
+                Inc(i);
+              end;
+              Delete(buff, 1, i + 1);
+              Dec(BytesRead, i + 1);
               i := 0;
             end
             else
@@ -227,10 +246,10 @@ begin
       end;
     until n <= 0;
   finally
-    FreeAndNil(P);
+    FreeAndNil(FP);
   end;
-  running := False;
-  taken   := False;
+  FRunning := False;
+  FTaken   := False;
 end;
 
 end.

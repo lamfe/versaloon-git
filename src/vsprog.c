@@ -428,7 +428,7 @@ int main(int argc, char* argv[])
 			}
 			free_all_and_exit(EXIT_SUCCESS);
 		case 'P':
-			// --parameter [fuse/lock/flash/eeprom]
+			// --parameter [fuse/lock/calibration/flash/eeprom]
 			if ((NULL == program_info.chip_name) 
 				|| (NULL == program_info.chip_type) 
 				|| (NULL == cur_target))

@@ -1288,9 +1288,9 @@ RESULT versaloon_init_capability(void *p)
 
 uint32_t versaloon_display_programmer(void)
 {
-	LOG_INFO(_GETTEXT("\nSupported Programmer by Versaloon driver:\n"));
+	printf(_GETTEXT("Supported Programmer by Versaloon driver:\n"));
 	return print_usb_devices(versaloon_vid, versaloon_pid, 
 							 VERSALOON_SERIALSTRING_INDEX, 
-							 versaloon_serialstring);
+							 versaloon_serialstring, VERSALOON_STRING);
 }
 
