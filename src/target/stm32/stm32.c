@@ -77,6 +77,9 @@ RESULT stm32_parse_argument(char cmd, const char *argu)
 	case 'h':
 		stm32_usage();
 		break;
+	case 'E':
+		comisp_print_comm_info(COMISP_STM32);
+		break;
 	case 'C':
 	case 'x':
 		return comisp_parse_argument(cmd, argu);

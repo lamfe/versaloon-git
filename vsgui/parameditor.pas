@@ -56,6 +56,7 @@ type
     procedure SettingChange(Sender: TObject);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormShow(Sender: TObject);
+    procedure CenterControl(ctl: TControl; ref: TControl);
   private
     { private declarations }
     Param_Record:    TParam_Record;
@@ -106,6 +107,11 @@ begin
   end;
 
   Result := bytelen * BYTELEN_ACCORDING_TO_RADIX[radix];
+end;
+
+procedure TFormParaEditor.CenterControl(ctl: TControl; ref: TControl);
+begin
+  ctl.Top := ref.Top + (ref.Height - ctl.Height) div 2;
 end;
 
 procedure TFormParaEditor.SettingChange(Sender: TObject);
@@ -422,6 +428,7 @@ begin
       ParaEdtValueArr[i].Tag  := i;
       ParaEdtValueArr[i].ShowHint := True;
       ParaEdtValueArr[i].Enabled := Param_Record.settings[i].Enabled;
+      CenterControl(ParaEdtValueArr[i], ParaEdtNameArr[i]);
     end
     else if Param_Record.settings[i].use_checkbox then
     begin
@@ -436,6 +443,7 @@ begin
       ParaCheckArr[i].Enabled := Param_Record.settings[i].Enabled;
       ParaCheckArr[i].Caption := '';
       ParaCheckArr[i].Checked := False;
+      CenterControl(ParaCheckArr[i], ParaEdtNameArr[i]);
     end
     else
     begin
@@ -457,6 +465,7 @@ begin
       begin
         ParaComboArr[i].Items.Add(Param_Record.settings[i].choices[j].Text);
       end;
+      CenterControl(ParaComboArr[i], ParaEdtNameArr[i]);
     end;
   end;
 

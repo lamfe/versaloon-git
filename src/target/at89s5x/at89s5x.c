@@ -79,6 +79,8 @@ RESULT s5x_parse_argument(char cmd, const char *argu)
 	case 'h':
 		s5x_usage();
 		break;
+	case 'E':
+		break;
 	case 'w':
 		// set Wait time
 		if (NULL == argu)

@@ -479,6 +479,14 @@ object FormMain: TFormMain
             Caption = 'Mode:'
             ParentColor = False
           end
+          object lblKHz: TLabel
+            Left = 329
+            Height = 17
+            Top = 40
+            Width = 26
+            Caption = 'KHz'
+            ParentColor = False
+          end
           object chkboxApp: TCheckBox
             Left = 14
             Height = 20
@@ -586,7 +594,7 @@ object FormMain: TFormMain
             Height = 24
             Hint = 'Select Mode'
             Top = 37
-            Width = 118
+            Width = 81
             ItemHeight = 16
             OnChange = cbboxModeChange
             ParentShowHint = False
@@ -617,21 +625,22 @@ object FormMain: TFormMain
             TabOrder = 9
             OnKeyPress = lbledtExtraParaKeyPress
           end
-          object lbledtFreq: TLabeledEdit
-            Left = 252
+          object lbledtAddr: TLabeledEdit
+            Left = 180
             Height = 24
+            Hint = 'Set address to execute after operation'
             Top = 37
-            Width = 100
-            EditLabel.AnchorSideLeft.Control = lbledtFreq
-            EditLabel.AnchorSideTop.Control = lbledtFreq
+            Width = 80
+            EditLabel.AnchorSideLeft.Control = lbledtAddr
+            EditLabel.AnchorSideTop.Control = lbledtAddr
             EditLabel.AnchorSideTop.Side = asrCenter
-            EditLabel.AnchorSideRight.Control = lbledtFreq
-            EditLabel.AnchorSideBottom.Control = lbledtFreq
-            EditLabel.Left = 185
+            EditLabel.AnchorSideRight.Control = lbledtAddr
+            EditLabel.AnchorSideBottom.Control = lbledtAddr
+            EditLabel.Left = 145
             EditLabel.Height = 17
             EditLabel.Top = 41
-            EditLabel.Width = 64
-            EditLabel.Caption = 'Freq(KHz):'
+            EditLabel.Width = 32
+            EditLabel.Caption = 'Addr:'
             EditLabel.ParentColor = False
             LabelPosition = lpLeft
             ParentShowHint = False
@@ -652,16 +661,28 @@ object FormMain: TFormMain
             TabOrder = 11
           end
           object btnModeSetup: TButton
-            Left = 233
+            Left = 265
             Height = 25
             Hint = 'Mode Setup'
             Top = 36
-            Width = 75
-            Caption = '&Setup'
+            Width = 79
+            Caption = '&Comm'
             OnClick = btnModeSetupClick
             ParentShowHint = False
             ShowHint = True
             TabOrder = 12
+          end
+          object sedtFreq: TSpinEdit
+            Left = 265
+            Height = 24
+            Hint = 'Set operation frequency'
+            Top = 37
+            Width = 64
+            Increment = 100
+            MaxValue = 18000
+            ParentShowHint = False
+            ShowHint = True
+            TabOrder = 13
           end
         end
         object gbInputFile: TGroupBox

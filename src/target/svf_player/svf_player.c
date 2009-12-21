@@ -72,6 +72,8 @@ RESULT svfp_parse_argument(char cmd, const char *argu)
 	case 'h':
 		svfp_usage();
 		break;
+	case 'E':
+		break;
 	default:
 		return ERROR_FAIL;
 		break;

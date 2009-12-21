@@ -38,6 +38,7 @@ type
     lblDataType: TLabel;
     lblReplace: TLabel;
     lblSearch:  TLabel;
+    procedure CenterControl(ctl: TControl; ref: TControl);
     procedure btnOKClick(Sender: TObject);
     procedure cbboxDataTypeChange(Sender: TObject);
     procedure FormKeyPress(Sender: TObject; var Key: char);
@@ -90,6 +91,11 @@ begin
 end;
 
 { TFormFindReplace }
+
+procedure TFormFindReplace.CenterControl(ctl: TControl; ref: TControl);
+begin
+  ctl.Top := ref.Top + (ref.Height - ctl.Height) div 2;
+end;
 
 procedure TFormFindReplace.btnOKClick(Sender: TObject);
 var
@@ -210,6 +216,10 @@ begin
   cbboxReplace.ItemIndex := -1;
   cbboxSearch.ItemIndex  := -1;
   ActiveControl := cbboxSearch;
+
+  CenterControl(lblSearch, cbboxSearch);
+  CenterControl(lblReplace, cbboxReplace);
+  CenterControl(lblDataType, cbboxDataType);
 end;
 
 initialization

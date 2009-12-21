@@ -73,6 +73,8 @@ RESULT msp430_parse_argument(char cmd, const char *argu)
 	case 'h':
 		msp430_usage();
 		break;
+	case 'E':
+		break;
 	default:
 		return ERROR_FAIL;
 		break;

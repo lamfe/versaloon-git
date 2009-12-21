@@ -54,6 +54,7 @@ type
     property Areas: string Read FAreas;
     property ModeCount: integer Read GetModeCount;
     property AreaCount: integer Read GetCount;
+    property ExtraStr: string Read FExtraStr;
   end;
 
   { TFakeArea }

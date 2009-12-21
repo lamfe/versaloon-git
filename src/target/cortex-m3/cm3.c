@@ -78,20 +78,9 @@ static void cm3_usage(void)
 	printf("\
 Usage of %s:\n\
   -m,  --mode <MODE>                        set mode<j|s>\n\
+  -x,  --execute <ADDRESS>                  execute program\n\
   -F,  --frequency <FREQUENCY>              set JTAG frequency, in KHz\n\n",
 			CUR_TARGET_STRING);
-}
-
-static void cm3_support(void)
-{
-	uint32_t i;
-	
-	for (i = 0; i < dimof(cur_chips_param); i++)
-	{
-		printf("%s: \n",
-				cur_chips_param[i].chip_name);
-	}
-	printf("\n");
 }
 
 RESULT cm3_parse_argument(char cmd, const char *argu)
@@ -101,8 +90,7 @@ RESULT cm3_parse_argument(char cmd, const char *argu)
 	case 'h':
 		cm3_usage();
 		break;
-	case 'S':
-		cm3_support();
+	case 'E':
 		break;
 	case 'b':
 		// set buffer size
@@ -113,6 +101,16 @@ RESULT cm3_parse_argument(char cmd, const char *argu)
 		}
 		
 		cur_buffer_size = (uint16_t)strtoul(argu, NULL, 0);
+		break;
+	case 'x':
+		if (NULL == argu)
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), cmd);
+			return ERRCODE_INVALID_OPTION;
+		}
+		
+		cm3_execute_addr = (uint32_t)strtoul(argu, NULL, 0);
+		cm3_execute_flag = 1;
 		break;
 	default:
 		return ERROR_FAIL;
@@ -355,6 +353,7 @@ RESULT cm3_program(struct operation_t operations, struct program_info_t *pi,
 	cm3_reset();
 leave_program_mode:
 	cm3_dp_fini();
+	cm3_execute_flag = 0;
 	return ret;
 }
 

@@ -53,6 +53,7 @@ extern struct com_mode_t com_mode;
 extern uint8_t comisp_execute_flag;
 extern uint32_t comisp_execute_addr;
 extern const struct comisp_param_t comisp_chips_param[];
+void comisp_print_comm_info(uint8_t i);
 
 #endif /* __COMISP_INTERNAL_H_INCLUDED__ */
 
