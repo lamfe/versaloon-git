@@ -21,19 +21,18 @@
 
 #define SVFP_STRING					"svf_player"
 
-extern const program_area_map_t svfp_program_area_map[];
+extern const struct program_area_map_t svfp_program_area_map[];
 
 RESULT svfp_parse_argument(char cmd, const char *argu);
 RESULT svfp_probe_chip(char *chip_name);
-RESULT svfp_prepare_buffer(program_info_t *pi);
-RESULT svfp_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr, 
-											uint8_t* data, uint32_t length, 
-											void* buffer);
-RESULT svfp_init(program_info_t *pi, programmer_info_t *prog);
-RESULT svfp_fini(program_info_t *pi, programmer_info_t *prog);
+RESULT svfp_prepare_buffer(struct program_info_t *pi);
+RESULT svfp_write_buffer_from_file_callback(uint32_t address, 
+			uint32_t seg_addr, uint8_t* data, uint32_t length, void* buffer);
+RESULT svfp_init(struct program_info_t *pi, struct programmer_info_t *prog);
+RESULT svfp_fini(struct program_info_t *pi, struct programmer_info_t *prog);
 uint32_t svfp_interface_needed(void);
-RESULT svfp_program(operation_t operations, program_info_t *pi, 
-					programmer_info_t *prog);
+RESULT svfp_program(struct operation_t operations, struct program_info_t *pi, 
+					struct programmer_info_t *prog);
 
 #endif /* __SVF_PLAYER_H_INCLUDED__ */
 

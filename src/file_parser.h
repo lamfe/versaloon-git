@@ -25,23 +25,25 @@
 typedef RESULT (*WRITE_MEMORY_CALLBACK)(uint32_t, uint32_t, uint8_t*, 
 										uint32_t, void *);
 
-typedef struct
+struct file_parser_t
 {
 	char ext[4];
 	RESULT (*parse_file)(FILE *file, WRITE_MEMORY_CALLBACK callback, 
-						 void *buffer, uint32_t seg_offset, uint32_t addr_offset);
+							void *buffer, uint32_t seg_offset, 
+							uint32_t addr_offset);
 	RESULT (*save_target_to_file)(FILE *file, uint32_t file_addr, 
 									uint8_t *buff, uint32_t buff_size, 
 									uint32_t seg_addr, uint32_t start_addr);
 	RESULT (*end_file)(FILE *file);
-} file_parser_t;
+};
 
 RESULT parse_file(char *file_name, FILE *file, void *para, 
-				  WRITE_MEMORY_CALLBACK callback, 
-				  uint32_t seg_offset, uint32_t addr_offset);
-RESULT save_target_to_file(filelist *fl, uint8_t *buff, uint32_t buff_size, 
-							uint32_t seg_addr, uint32_t start_addr);
-RESULT end_file(filelist *fl);
+					WRITE_MEMORY_CALLBACK callback, 
+					uint32_t seg_offset, uint32_t addr_offset);
+RESULT save_target_to_file(struct filelist *fl, uint8_t *buff, 
+							uint32_t buff_size, uint32_t seg_addr, 
+							uint32_t start_addr);
+RESULT end_file(struct filelist *fl);
 
 #endif //__FILE_PARSER_H_INCLUDED__
 

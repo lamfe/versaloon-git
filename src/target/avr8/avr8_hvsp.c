@@ -42,11 +42,11 @@
 
 #define CUR_TARGET_STRING		AVR8_STRING
 #define cur_chip_param			avr8_chip_param
-#define cur_frequency			avr8_isp_frequency
 
-static programmer_info_t *p = NULL;
+static struct programmer_info_t *p = NULL;
 
-RESULT avr8_hvsp_program(operation_t operations, program_info_t *pi, programmer_info_t *prog)
+RESULT avr8_hvsp_program(struct operation_t operations, 
+					struct program_info_t *pi, struct programmer_info_t *prog)
 {
 	operations = operations;
 	pi = pi;

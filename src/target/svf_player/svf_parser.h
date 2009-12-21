@@ -21,11 +21,12 @@
 
 #define SVF_PARSER_DATA_BUFFER_SIZE		(10 * 1024)
 
-void svf_parser_free_xxr_para(svf_xxr_para_t *para);
+void svf_parser_free_xxr_para(struct svf_xxr_para_t *para);
 void svf_parser_init(void);
 void svf_parser_fini(void);
 
-uint32_t svf_parser_get_command(FILE *file, char **cmd_buffer, uint32_t *cmd_len);
+uint32_t svf_parser_get_command(FILE *file, char **cmd_buffer, 
+									uint32_t *cmd_len);
 RESULT svf_parser_run_command(char *cmd_str);
 RESULT svf_parser_check_tdo(void);
 

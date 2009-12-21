@@ -160,15 +160,14 @@ RESULT usbtoxxx_execute_command(void)
 		if (versaloon_pending[i].callback != NULL)
 		{
 			versaloon_pending[i].callback(&versaloon_pending[i], 
-										versaloon_buf + usbtoxxx_buffer_index, 
-										&processed);
+						versaloon_buf + usbtoxxx_buffer_index, &processed);
 		}
 		if (!processed && (versaloon_pending[i].want_data_size > 0) 
 			&& (versaloon_pending[i].data_buffer != NULL))
 		{
 			memcpy(versaloon_pending[i].data_buffer, 
 				   versaloon_buf + usbtoxxx_buffer_index 
-								 + versaloon_pending[i].want_data_pos, 
+						+ versaloon_pending[i].want_data_pos, 
 				   versaloon_pending[i].want_data_size);
 		}
 		usbtoxxx_buffer_index += versaloon_pending[i].actual_data_size;
@@ -316,8 +315,7 @@ RESULT usbtopoll_end(void)
 	}
 	if (!poll_nesting)
 	{
-		LOG_BUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-				"check poll nesting");
+		LOG_BUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), "check poll nesting");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	poll_nesting--;

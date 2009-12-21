@@ -22,25 +22,24 @@
 #define AVR8_STRING						"avr8"
 #define AVR8_PROGRAM_MODE_STR			"ijps"
 
-extern const program_area_map_t avr8_program_area_map[];
+extern const struct program_area_map_t avr8_program_area_map[];
 
 RESULT avr8_parse_argument(char cmd, const char *argu);
-RESULT avr8_prepare_buffer(program_info_t *pi);
+RESULT avr8_prepare_buffer(struct program_info_t *pi);
 
-RESULT avr8_init(program_info_t *pi, programmer_info_t *prog);
-RESULT avr8_fini(program_info_t *pi, programmer_info_t *prog);
+RESULT avr8_init(struct program_info_t *pi, struct programmer_info_t *prog);
+RESULT avr8_fini(struct program_info_t *pi, struct programmer_info_t *prog);
 uint32_t avr8_interface_needed(void);
-RESULT avr8_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr, 
-											uint8_t* data, uint32_t length, 
-											void* buffer);
+RESULT avr8_write_buffer_from_file_callback(uint32_t address, 
+			uint32_t seg_addr, uint8_t* data, uint32_t length, void* buffer);
 
-RESULT avr8_program(operation_t operations, program_info_t *pi, 
-					programmer_info_t *prog);
+RESULT avr8_program(struct operation_t operations, struct program_info_t *pi, 
+					struct programmer_info_t *prog);
 
-RESULT avr8_get_mass_product_data_size(operation_t operations, 
-									   program_info_t pi, uint32_t *size);
-RESULT avr8_prepare_mass_product_data(operation_t operations, 
-									  program_info_t pi, uint8_t *buff);
+RESULT avr8_get_mass_product_data_size(struct operation_t operations, 
+									struct program_info_t pi, uint32_t *size);
+RESULT avr8_prepare_mass_product_data(struct operation_t operations, 
+									struct program_info_t pi, uint8_t *buff);
 
 #endif /* __AVR8_H_INCLUDED__ */
 

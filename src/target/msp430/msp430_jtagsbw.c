@@ -43,8 +43,8 @@
 
 #define cur_chip_param				target_chip_param
 
-RESULT msp430_jtag_program(operation_t operations, program_info_t *pi, 
-						   programmer_info_t *prog)
+RESULT msp430_jtag_program(struct operation_t operations, 
+					struct program_info_t *pi, struct programmer_info_t *prog)
 {
 	uint16_t chip_id;
 	uint8_t tmp8;
@@ -57,8 +57,10 @@ RESULT msp430_jtag_program(operation_t operations, program_info_t *pi,
 	word page_size, addr_start;
 	RESULT ret = ERROR_OK;
 	word CRC_check, CRC_calc;
-	memlist *ml_tmp;
+	struct memlist *ml_tmp;
 	uint32_t target_size;
+	uint8_t *tbuff;
+	struct memlist **ml;
 	
 #ifdef PARAM_CHECK
 	if (NULL == prog)
@@ -67,10 +69,10 @@ RESULT msp430_jtag_program(operation_t operations, program_info_t *pi,
 		return ERRCODE_INVALID_PARAMETER;
 	}
 	if ((   (operations.read_operations & APPLICATION) 
-			&& (NULL == pi->app)) 
+			&& (NULL == pi->program_areas[APPLICATION_IDX].buff)) 
 		|| ((   (operations.write_operations & APPLICATION) 
 				|| (operations.verify_operations & APPLICATION)) 
-			&& (NULL == pi->app)))
+			&& (NULL == pi->program_areas[APPLICATION_IDX].buff)))
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_BUFFER), "for flash");
 		return ERRCODE_INVALID_BUFFER;
@@ -167,7 +169,7 @@ RESULT msp430_jtag_program(operation_t operations, program_info_t *pi,
 	}
 	pi->chip_id = ((chip_id << 8) + (chip_id >> 8)) & 0x0000FFFF;
 	LOG_INFO(_GETTEXT(INFOMSG_TARGET_CHIP_ID), pi->chip_id);
-	if (!(operations.read_operations & CHIP_ID))
+	if (!(operations.read_operations & CHIPID))
 	{
 		if (pi->chip_id != cur_chip_param.chip_id)
 		{
@@ -182,7 +184,7 @@ RESULT msp430_jtag_program(operation_t operations, program_info_t *pi,
 		goto leave_program_mode;
 	}
 	
-	page_size = (word)cur_chip_param.app_page_size;
+	page_size = (word)cur_chip_param.chip_areas[APPLICATION_IDX].page_size;
 	addr_start = Device_MainStart();
 	
 	if (operations.erase_operations > 0)
@@ -222,10 +224,12 @@ RESULT msp430_jtag_program(operation_t operations, program_info_t *pi,
 		// check blank
 		LOG_INFO(_GETTEXT(INFOMSG_CHECKING), "blank");
 		pgbar_init("checking blank |", "|", 0, 
-					cur_chip_param.app_page_num, 
+					cur_chip_param.chip_areas[APPLICATION_IDX].page_num, 
 					PROGRESS_STEP, '=');
 		
-		for (i = 0; i < (int32_t)cur_chip_param.app_page_num; i++)
+		for (i = 0; 
+			i < (int32_t)cur_chip_param.chip_areas[APPLICATION_IDX].page_num; 
+			i++)
 		{
 			CRC_calc = CRC_check = 0;
 			CRC_calc = EraseCheck((word)(addr_start + i * page_size), 
@@ -234,8 +238,7 @@ RESULT msp430_jtag_program(operation_t operations, program_info_t *pi,
 			if (ERROR_OK != commit())
 			{
 				pgbar_fini();
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-						  "read crc check");
+				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read crc check");
 				ret = ERRCODE_FAILURE_OPERATION;
 				goto leave_program_mode;
 			}
@@ -243,7 +246,7 @@ RESULT msp430_jtag_program(operation_t operations, program_info_t *pi,
 			{
 				pgbar_fini();
 				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ADDR), 
-						  "check blank", addr_start + i * page_size);
+							"check blank", addr_start + i * page_size);
 				ret = ERRCODE_FAILURE_OPERATION_ADDR;
 				goto leave_program_mode;
 			}
@@ -256,14 +259,16 @@ RESULT msp430_jtag_program(operation_t operations, program_info_t *pi,
 		LOG_INFO("blank checked\n");
 	}
 	
-	target_size = MEMLIST_CalcAllSize(pi->app_memlist);
+	ml = &pi->program_areas[APPLICATION_IDX].memlist;
+	target_size = MEMLIST_CalcAllSize(*ml);
+	tbuff = pi->program_areas[APPLICATION_IDX].buff;
 	if (operations.write_operations & APPLICATION)
 	{
 		// program flash
 		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMING), "flash");
 		pgbar_init("writing flash |", "|", 0, target_size, PROGRESS_STEP, '=');
 		
-		ml_tmp = pi->app_memlist;
+		ml_tmp = *ml;
 		while (ml_tmp != NULL)
 		{
 			if ((ml_tmp->addr + ml_tmp->len) 
@@ -278,11 +283,12 @@ RESULT msp430_jtag_program(operation_t operations, program_info_t *pi,
 			
 			len_current_list = ml_tmp->len;
 			for (i = -(int32_t)(ml_tmp->addr % page_size); 
-				 i < ((int32_t)ml_tmp->len - (int32_t)(ml_tmp->addr % page_size)); 
+				 i < ((int32_t)ml_tmp->len 
+						- (int32_t)(ml_tmp->addr % page_size)); 
 				 i += page_size)
 			{
 				WriteFLASH((word)(ml_tmp->addr + i), page_size / 2, 
-						   (word*)(pi->app + ml_tmp->addr + i - addr_start));
+						   (word*)(tbuff + ml_tmp->addr + i - addr_start));
 				if (ERROR_OK != commit())
 				{
 					pgbar_fini();
@@ -311,7 +317,8 @@ RESULT msp430_jtag_program(operation_t operations, program_info_t *pi,
 		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMED_SIZE), "flash", target_size);
 	}
 	
-	if (operations.read_operations & APPLICATION)
+	if ((operations.read_operations & APPLICATION) 
+		|| (operations.verify_operations & APPLICATION))
 	{
 		if (operations.verify_operations & APPLICATION)
 		{
@@ -325,7 +332,7 @@ RESULT msp430_jtag_program(operation_t operations, program_info_t *pi,
 		}
 		pgbar_init("reading flash |", "|", 0, target_size, PROGRESS_STEP, '=');
 		
-		ml_tmp = pi->app_memlist;
+		ml_tmp = *ml;
 		while (ml_tmp != NULL)
 		{
 			if ((ml_tmp->addr + ml_tmp->len) 
@@ -340,19 +347,18 @@ RESULT msp430_jtag_program(operation_t operations, program_info_t *pi,
 			
 			len_current_list = ml_tmp->len;
 			for (i = -(int32_t)(ml_tmp->addr % page_size); 
-				 i < ((int32_t)ml_tmp->len - (int32_t)(ml_tmp->addr % page_size)); 
+				 i < ((int32_t)ml_tmp->len 
+						- (int32_t)(ml_tmp->addr % page_size)); 
 				 i += page_size)
 			{
 				CRC_calc = CRC_check = 0;
 				CRC_calc = VerifyMem((word)(ml_tmp->addr + i), page_size / 2, 
-									 (word*)(pi->app + ml_tmp->addr 
-											 + i - addr_start), 
-									 &CRC_check);
+					(word*)(tbuff + ml_tmp->addr + i - addr_start), &CRC_check);
 				if (ERROR_OK != commit())
 				{
 					pgbar_fini();
 					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-							  "read crc check");
+								"read crc check");
 					ret = ERRCODE_FAILURE_OPERATION;
 					goto leave_program_mode;
 				}

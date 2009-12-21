@@ -64,8 +64,7 @@ RESULT usbtoi2c_set_speed(uint8_t interface_index, uint16_t kHz)
 }
 
 RESULT usbtoi2c_read(uint8_t interface_index, uint16_t chip_addr, 
-					 uint8_t chip_addr_len, uint8_t *data, uint16_t data_len, 
-					 uint8_t stop)
+		uint8_t chip_addr_len, uint8_t *data, uint16_t data_len, uint8_t stop)
 {
 #if PARAM_CHECK
 	if (interface_index > 7)
@@ -99,8 +98,7 @@ RESULT usbtoi2c_read(uint8_t interface_index, uint16_t chip_addr,
 }
 
 RESULT usbtoi2c_write(uint8_t interface_index, uint16_t chip_addr, 
-					  uint8_t chip_addr_len, uint8_t *data, 
-					  uint16_t data_len, uint8_t stop)
+		uint8_t chip_addr_len, uint8_t *data, uint16_t data_len, uint8_t stop)
 {
 #if PARAM_CHECK
 	if (interface_index > 7)

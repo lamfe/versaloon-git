@@ -19,160 +19,109 @@
 #ifndef __TARGET_H_INCLUDED__
 #define __TARGET_H_INCLUDED__
 
-typedef struct
+struct program_area_t
+{
+	uint8_t *buff;
+	uint32_t value;
+	uint32_t size;
+	struct memlist *memlist;
+	uint8_t *checksum_buff;
+	uint32_t checksum_value;
+	uint32_t checksum_size;
+	struct memlist *checksum_memlist;
+};
+
+struct program_info_t
 {
 	char *chip_type;
 	char *chip_name;
 	uint32_t chip_id;
 	
-	uint8_t *boot;
-	uint32_t boot_size;
-	uint8_t *boot_checksum;
-	uint32_t boot_checksum_value;
-	uint32_t boot_checksum_size;
-	memlist *boot_memlist;
-	
-	uint8_t *app;
-	uint32_t app_size;
-	memlist *app_memlist;
-	uint8_t *app_checksum;
-	uint32_t app_checksum_value;
-	uint32_t app_checksum_size;
-	
-	uint8_t *eeprom;
-	uint32_t eeprom_size;
-	memlist *eeprom_memlist;
-	uint8_t *eeprom_checksum;
-	uint32_t eeprom_checksum_value;
-	uint32_t eeprom_checksum_size;
-	
-	uint8_t *otp_rom;
-	uint32_t otp_rom_size;
-	memlist *opt_rom_memlist;
-	uint8_t *otp_rom_checksum;
-	uint32_t otp_rom_checksum_value;
-	uint32_t otp_rom_checksum_size;
-	
-	uint8_t *fuse;
-	uint32_t fuse_value;
-	uint32_t fuse_size;
-	memlist *fuse_memlist;
-	uint8_t *fuse_checksum;
-	uint32_t fuse_checksum_value;
-	uint32_t fuse_checksum_size;
-	
-	uint8_t *lock;
-	uint32_t lock_value;
-	uint32_t lock_size;
-	memlist *lock_memlist;
-	uint8_t *lock_checksum;
-	uint32_t lock_checksum_value;
-	uint32_t lock_checksum_size;
-	
-	uint8_t *user_area;
-	uint32_t user_area_value;
-	uint32_t user_area_size;
-	memlist *user_area_memlist;
-	uint8_t *user_area_checksum;
-	uint32_t user_area_checksum_value;
-	uint32_t user_area_checksum_size;
+	struct program_area_t program_areas[dimof(target_area_name)];
 	
 	uint8_t *mass_product_data;
 	uint32_t mass_product_data_size;
-}program_info_t;
+};
 
-typedef struct
+struct program_area_map_t
 {
-	uint32_t area_mask;
-	char area_char;
+	char name;
 	uint8_t data_pos;
-	uint32_t area_seg_addr;
-	uint32_t area_start_addr;
-	uint8_t area_default_data;
-}program_area_map_t;
+	uint32_t seg_addr;
+	uint32_t start_addr;
+	uint32_t fseg_addr;
+	uint32_t fstart_addr;
+};
 
-typedef struct
+struct target_info_t
 {
 	const char *name;
-	const uint32_t areas;
-	const program_area_map_t *program_area_map;
+	struct target_info_t *sub_target;
+	const char *feature;
+	const struct program_area_map_t *program_area_map;
 	const char *program_mode_str;
 	RESULT (*parse_argument)(char cmd, const char *argu);
 	
 	RESULT (*probe_chip)(char *chip_name);
-	RESULT (*init)(program_info_t *pi, programmer_info_t *prog);
-	RESULT (*fini)(program_info_t *pi, programmer_info_t *prog);
+	RESULT (*init)(struct program_info_t *pi, struct programmer_info_t *prog);
+	RESULT (*fini)(struct program_info_t *pi, struct programmer_info_t *prog);
 	uint32_t (*interface_needed)(void);
-	RESULT (*prepare_buffer)(program_info_t *pi);
-	RESULT (*write_buffer_from_file_callback)(
-									uint32_t address, uint32_t seg_addr, 
-									uint8_t* data, uint32_t length, void* buffer);
+	RESULT (*prepare_buffer)(struct program_info_t *pi);
+	RESULT (*write_buffer_from_file_callback)(uint32_t address, 
+		uint32_t seg_addr, uint8_t* data, uint32_t length, void* buffer);
 	RESULT (*write_file_from_buffer_callback)(void);
-	RESULT (*program)(operation_t operations, program_info_t *pi, 
-					  programmer_info_t *prog);
+	RESULT (*program)(struct operation_t operations, 
+		struct program_info_t *pi, struct programmer_info_t *prog);
 	
-	RESULT (*get_mass_product_data_size)(operation_t operations, 
-										 program_info_t *pi, uint32_t *size);
-	RESULT (*prepare_mass_product_data)(operation_t operations, 
-										program_info_t *pi, uint8_t *buff);
-}target_info_t;
+	RESULT (*get_mass_product_data_size)(struct operation_t operations, 
+						struct program_info_t *pi, uint32_t *size);
+	RESULT (*prepare_mass_product_data)(struct operation_t operations, 
+						struct program_info_t *pi, uint8_t *buff);
+};
 
 #define TARGET_CONF_FILE_EXT			".xml"
 #define TARGET_MAX_CHIP_NAME_LEN		32
-typedef struct
+struct chip_area_info_t
+{
+	uint32_t seg;
+	uint32_t addr;
+	uint32_t page_size;
+	uint32_t page_num;
+	uint32_t default_value;
+	uint32_t size;
+};
+
+struct chip_param_t
 {
 	char chip_name[TARGET_MAX_CHIP_NAME_LEN];
 	uint32_t chip_id;
 	char *program_mode_str;
 	uint32_t program_mode;
-	uint32_t boot_page_size;
-	uint32_t boot_page_num;
-	uint32_t app_page_size;
-	uint32_t app_page_num;
-	uint32_t ee_page_size;
-	uint32_t ee_page_num;
-	uint32_t optrom_page_size;
-	uint32_t optrom_page_num;
-	uint32_t usrsig_page_size;
-	uint32_t usrsig_page_num;
-	uint32_t lock_page_size;
-	uint32_t lock_page_num;
-	uint32_t fuse_page_size;
-	uint32_t fuse_page_num;
-	uint32_t fuse_size;
-	uint32_t fuse_default_value;
-	uint32_t lock_size;
-	uint32_t lock_default_value;
-	uint32_t cali_size;
-	uint32_t cali_default_value;
-	uint32_t boot_size;
-	uint32_t app_size;
-	uint32_t ee_size;
-	uint32_t optrom_size;
-	uint32_t usrsig_size;
+	
+	struct chip_area_info_t chip_areas[dimof(target_area_name)];
 	uint32_t param[32];
-}chip_param_t;
+};
 
-typedef struct
+struct chip_series_t
 {
 	uint32_t num_of_chips;
-	chip_param_t *chips_param;
-}chip_series_t;
+	struct chip_param_t *chips_param;
+};
 
-typedef struct
+struct chip_fl_warning_t
 {
 	uint32_t mask;
 	uint32_t value;
 	char *msg;
-}chip_fl_warning_t;
+};
 
-typedef struct
+struct chip_fl_choice_t
 {
 	uint32_t value;
 	char *text;
-}chip_fl_choice_t;
+};
 
-typedef struct
+struct chip_fl_setting_t
 {
 	char *name;
 	char *info;
@@ -186,45 +135,51 @@ typedef struct
 	uint32_t unchecked;
 	uint8_t bytelen;
 	uint16_t num_of_choices;
-	chip_fl_choice_t *choices;
-}chip_fl_setting_t;
+	struct chip_fl_choice_t *choices;
+};
 
-typedef struct
+struct chip_fl_t
 {
 	uint32_t init_value;
 	uint16_t num_of_fl_warnings;
-	chip_fl_warning_t *warnings;
+	struct chip_fl_warning_t *warnings;
 	uint16_t num_of_fl_settings;
-	chip_fl_setting_t *settings;
-}chip_fl_t;
+	struct chip_fl_setting_t *settings;
+};
 
-extern target_info_t *cur_target;
-extern target_info_t targets_info[];
-extern program_info_t program_info;
-extern chip_series_t target_chips;
-extern chip_param_t target_chip_param;
+extern struct target_info_t *cur_target;
+extern struct target_info_t targets_info[];
+extern struct program_info_t program_info;
+extern struct chip_series_t target_chips;
+extern struct chip_param_t target_chip_param;
 extern uint32_t target_defined;
 
 RESULT target_build_chip_series(const char *chip_name, 
-								const char *program_mode, 
-								chip_series_t *s);
-RESULT target_release_chip_series(chip_series_t *s);
+						const char *program_mode, struct chip_series_t *s);
+RESULT target_release_chip_series(struct chip_series_t *s);
 
 RESULT target_build_chip_fl(const char *chip_series, const char *chip_module, 
-							char *type, chip_fl_t *fl);
-RESULT target_release_chip_fl(chip_fl_t *fl);
+							char *type, struct chip_fl_t *fl);
+RESULT target_release_chip_fl(struct chip_fl_t *fl);
 
-void target_printf_fe(char *type);
-void target_print_fl(char *type);
-void target_print_target(uint32_t i);
+uint32_t target_area_mask(char area_name);
+char* target_area_fullname(char area_name);
+int8_t target_area_idx_by_char(char area_name);
+char target_area_char_by_fullname(char *fullname);
+
+void target_print_memory(char type);
+void target_print_setting(char type);
+void target_print_target(uint32_t index);
 void target_print_list(void);
 void target_print_help(void);
 uint32_t target_get_number(void);
-void target_get_target_by_mask(uint32_t mask, uint8_t **buff, uint32_t *size);
-RESULT target_init(program_info_t *pi);
+void target_get_target_area(char area, uint8_t **buff, uint32_t *size);
+RESULT target_init(struct program_info_t *pi);
 RESULT target_alloc_data_buffer(void);
 void target_free_data_buffer(void);
-RESULT target_check_defined(operation_t operations);
+RESULT target_check_defined(struct operation_t operations);
+RESULT target_prepare_operations(struct operation_t *operations, 
+							uint32_t *readfile, uint32_t *writefile);
 
 #endif /* __TARGET_H_INCLUDED__ */
 

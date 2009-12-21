@@ -46,21 +46,8 @@
 #include "svf_parser.h"
 
 #define CUR_TARGET_STRING			SVFP_STRING
-#define cur_chips_param				svfp_chips_param
 
-typedef struct
-{
-	char *chip_name;
-	char *info;
-}svfp_param_t;
-
-svfp_param_t svfp_chips_param[] = 
-{
-//	name			info
-	{"epm240",		"CPLD from Altera"},
-};
-
-const program_area_map_t svfp_program_area_map[] = 
+const struct program_area_map_t svfp_program_area_map[] = 
 {
 	{0, 0, 0, 0, 0, 0}
 };
@@ -76,45 +63,14 @@ Usage of %s:\n\
 		   CUR_TARGET_STRING);
 }
 
-static void svfp_support(void)
-{
-	uint32_t i;
-	
-	printf("Support list of %s:\n", CUR_TARGET_STRING);
-	for (i = 0; i < dimof(cur_chips_param); i++)
-	{
-		printf("%s: %s\n", 
-				cur_chips_param[i].chip_name, 
-				cur_chips_param[i].info);
-	}
-	printf("\n");
-}
-
 RESULT svfp_parse_argument(char cmd, const char *argu)
 {
-	uint16_t jtag_initial_speed;
+	argu = argu;
 	
 	switch (cmd)
 	{
 	case 'h':
 		svfp_usage();
-		break;
-	case 'S':
-		svfp_support();
-		break;
-	case 'F':
-		// set JTAG initial frequency
-		if (NULL == argu)
-		{
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), cmd);
-			return ERRCODE_INVALID_OPTION;
-		}
-		
-		jtag_initial_speed = (uint16_t)strtoul(argu, NULL, 0);
-		first_command = (char*)malloc(strlen(SVF_SET_FREQ_CMD) + 20);
-		sprintf(first_command, SVF_SET_FREQ_CMD, 
-				(float)jtag_initial_speed * 1000);
-		
 		break;
 	default:
 		return ERROR_FAIL;
@@ -130,15 +86,14 @@ RESULT svfp_probe_chip(char *chip_name)
 	return ERROR_FAIL;
 }
 
-RESULT svfp_prepare_buffer(program_info_t *pi)
+RESULT svfp_prepare_buffer(struct program_info_t *pi)
 {
 	pi = pi;
 	return ERROR_OK;
 }
 
-RESULT svfp_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr, 
-											uint8_t* data, uint32_t length, 
-											void* buffer)
+RESULT svfp_write_buffer_from_file_callback(uint32_t address, 
+			uint32_t seg_addr, uint8_t* data, uint32_t length, void* buffer)
 {
 	address = address;
 	seg_addr = seg_addr;
@@ -150,7 +105,7 @@ RESULT svfp_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr,
 	return ERRCODE_NOT_SUPPORT;
 }
 
-RESULT svfp_fini(program_info_t *pi, programmer_info_t *prog)
+RESULT svfp_fini(struct program_info_t *pi, struct programmer_info_t *prog)
 {
 	pi = pi;
 	prog = prog;
@@ -164,7 +119,7 @@ RESULT svfp_fini(program_info_t *pi, programmer_info_t *prog)
 	return ERROR_OK;
 }
 
-RESULT svfp_init(program_info_t *pi, programmer_info_t *prog)
+RESULT svfp_init(struct program_info_t *pi, struct programmer_info_t *prog)
 {
 	pi = pi;
 	prog = prog;
@@ -177,11 +132,11 @@ uint32_t svfp_interface_needed(void)
 	return JTAG_LL;
 }
 
-programmer_info_t *p = NULL;
-extern filelist *fl_in;
+struct programmer_info_t *p = NULL;
+extern struct filelist *fl_in;
 #define get_target_voltage(v)					prog->get_target_voltage(v)
-RESULT svfp_program(operation_t operations, program_info_t *pi, 
-					programmer_info_t *prog)
+RESULT svfp_program(struct operation_t operations, struct program_info_t *pi, 
+					struct programmer_info_t *prog)
 {
 	FILE *svf_file = NULL;
 	uint32_t svf_file_size = 0, command_num = 0;
@@ -211,6 +166,13 @@ RESULT svfp_program(operation_t operations, program_info_t *pi,
 	if (voltage < 2700)
 	{
 		LOG_WARNING(_GETTEXT(INFOMSG_TARGET_LOW_POWER));
+	}
+	
+	if (program_frequency)
+	{
+		first_command = (char*)malloc(strlen(SVF_SET_FREQ_CMD) + 20);
+		sprintf(first_command, SVF_SET_FREQ_CMD, 
+					(float)program_frequency * 1000);
 	}
 	
 	if ((NULL == fl_in) || (NULL == fl_in->path) || (NULL == fl_in->file) 

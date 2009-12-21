@@ -1,5 +1,22 @@
 <?xml version="1.0"?>
 <series name="avr8">
+  <chip name="avr8">
+    <program_mode>i:ISP(F)|j:JTAG(F)</program_mode>
+    <chip_id>0x001E0000</chip_id>
+    <app_page_size>256</app_page_size>
+    <app_page_num>1024</app_page_num>
+    <app_default>0xFF</app_default>
+    <app_addr>0</app_addr>
+    <app_seg>0</app_seg>
+    <ee_page_size>8</ee_page_size>
+    <ee_page_num>512</ee_page_num>
+    <ee_default>0xFF</ee_default>
+    <ee_addr>0</ee_addr>
+    <ee_seg>0</ee_seg>
+    <fuse init="0xFFFFFF" bytesize="3"></fuse>
+    <lock init="0xFF" bytesize="1"></lock>
+    <calibration init="0xFFFFFFFF" bytesize="4"></calibration>
+  </chip>
   <chip name="attiny11">
     <program_mode>s</program_mode>
     <chip_id>0x001E9004</chip_id>

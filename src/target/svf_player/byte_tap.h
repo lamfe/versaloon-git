@@ -21,7 +21,7 @@
 #ifndef __BYTE_TAP_H_INCLUDED__
 #define __BYTE_TAP_H_INCLUDED__
 
-extern programmer_info_t *p;
+extern struct programmer_info_t *p;
 
 #define jtag_init()				p->jtag_ll_init()
 #define jtag_fini()				p->jtag_ll_fini()
@@ -44,7 +44,7 @@ extern programmer_info_t *p;
 #define TAP_NUM_OF_STATE		16
 
 // TAP state
-typedef enum
+enum tap_state_t
 {
 	RESET,
 	IDLE,
@@ -62,18 +62,18 @@ typedef enum
 	IREXTI1,
 	IREXIT2,
 	IRUPDATE,
-}tap_state_t;
+};
 
 extern const char *tap_state_name[TAP_NUM_OF_STATE];
 
 RESULT tap_init(void);
 RESULT tap_fini(void);
-uint8_t tap_state_is_stable(tap_state_t state);
-uint8_t tap_state_is_valid(tap_state_t state);
+uint8_t tap_state_is_stable(enum tap_state_t state);
+uint8_t tap_state_is_valid(enum tap_state_t state);
 RESULT tap_state_move(void);
-RESULT tap_end_state(tap_state_t state);
-RESULT tap_path_move(uint32_t num_states, tap_state_t *path);
-RESULT tap_runtest(tap_state_t run_state, tap_state_t end_state, 
+RESULT tap_end_state(enum tap_state_t state);
+RESULT tap_path_move(uint32_t num_states, enum tap_state_t *path);
+RESULT tap_runtest(enum tap_state_t run_state, enum tap_state_t end_state, 
 				   uint32_t num_cycles);
 RESULT tap_scan_ir(uint8_t *buffer, uint32_t bit_size);
 RESULT tap_scan_dr(uint8_t *buffer, uint32_t bit_size);

@@ -1,5 +1,14 @@
 <?xml version="1.0"?>
 <series name="psoc1">
+  <chip name="psoc1">
+    <chip_id>0x0000</chip_id>
+    <program_mode>p:POWERON|r:RESET</program_mode>
+    <app_page_size>64</app_page_size>
+    <app_page_num>256</app_page_num>
+    <app_default>0</app_default>
+    <app_addr>0</app_addr>
+    <app_seg>0</app_seg>
+  </chip>
   <chip name="cy8c21123">
     <chip_id>0x1700</chip_id>
     <program_mode>p</program_mode>

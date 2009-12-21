@@ -19,18 +19,18 @@
 #ifndef __CM3_INTERNAL_H_INCLUDED__
 #define __CM3_INTERNAL_H_INCLUDED__
 
-typedef struct
+struct cm3_param_t
 {
 	const char *chip_name;
 	uint8_t default_char;
 	uint32_t flash_start_addr;
 	uint32_t flash_max_size;
 	uint16_t jtag_khz;
-	jtag_pos_t pos;
+	struct jtag_pos_t pos;
 	uint8_t swj_trn;
-}cm3_param_t;
+};
 
-extern cm3_param_t cm3_chip_param;
+extern struct cm3_param_t cm3_chip_param;
 extern uint16_t cm3_buffer_size;
 
 #endif /* __CM3_INTERNAL_H_INCLUDED__ */

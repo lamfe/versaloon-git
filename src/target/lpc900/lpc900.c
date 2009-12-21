@@ -47,10 +47,11 @@
 #define cur_chips_num				target_chips.num_of_chips
 #define cur_flash_offset			lpc900_flash_offset
 #define cur_target_defined			target_defined
+#define cur_program_area_map		lpc900_program_area_map
 
-const program_area_map_t lpc900_program_area_map[] = 
+const struct program_area_map_t lpc900_program_area_map[] = 
 {
-	{APPLICATION, APPLICATION_CHAR, 1, 0, 0, LPC900_FLASH_CHAR},
+	{APPLICATION_CHAR, 1, 0, 0, 0, 0},
 	{0, 0, 0, 0, 0, 0}
 };
 
@@ -62,21 +63,6 @@ void lpc900_usage(void)
 Usage of %s:\n\n", CUR_TARGET_STRING);
 }
 
-void lpc900_support(void)
-{
-	uint32_t i;
-
-	printf("Support list of %s:\n", CUR_TARGET_STRING);
-	for (i = 0; i < cur_chips_num; i++)
-	{
-		printf("\
-%s: id = 0x%04x\n", 
-				cur_chips_param[i].chip_name, 
-				cur_chips_param[i].chip_id);
-	}
-	printf("\n");
-}
-
 RESULT lpc900_parse_argument(char cmd, const char *argu)
 {
 	argu = argu;
@@ -86,9 +72,6 @@ RESULT lpc900_parse_argument(char cmd, const char *argu)
 	case 'h':
 		lpc900_usage();
 		break;
-	case 'S':
-		lpc900_support();
-		break;
 	default:
 		return ERROR_FAIL;
 		break;
@@ -97,11 +80,12 @@ RESULT lpc900_parse_argument(char cmd, const char *argu)
 	return ERROR_OK;
 }
 
-RESULT lpc900_prepare_buffer(program_info_t *pi)
+RESULT lpc900_prepare_buffer(struct program_info_t *pi)
 {
-	if (pi->app != NULL)
+	if (pi->program_areas[APPLICATION_IDX].buff != NULL)
 	{
-		memset(pi->app, LPC900_FLASH_CHAR, pi->app_size);
+		memset(pi->program_areas[APPLICATION_IDX].buff, LPC900_FLASH_CHAR, 
+				pi->program_areas[APPLICATION_IDX].size);
 	}
 	else
 	{
@@ -111,7 +95,7 @@ RESULT lpc900_prepare_buffer(program_info_t *pi)
 	return ERROR_OK;
 }
 
-RESULT lpc900_fini(program_info_t *pi, programmer_info_t *prog)
+RESULT lpc900_fini(struct program_info_t *pi, struct programmer_info_t *prog)
 {
 	pi = pi;
 	prog = prog;
@@ -119,10 +103,10 @@ RESULT lpc900_fini(program_info_t *pi, programmer_info_t *prog)
 	return ERROR_OK;
 }
 
-RESULT lpc900_init(program_info_t *pi, programmer_info_t *prog)
+RESULT lpc900_init(struct program_info_t *pi, struct programmer_info_t *prog)
 {
 	uint8_t i;
-	operation_t opt_tmp;
+	struct operation_t opt_tmp;
 	
 	memset(&opt_tmp, 0, sizeof(opt_tmp));
 	
@@ -137,7 +121,7 @@ RESULT lpc900_init(program_info_t *pi, programmer_info_t *prog)
 	{
 		// auto detect
 		LOG_INFO(_GETTEXT(INFOMSG_TRY_AUTODETECT));
-		opt_tmp.read_operations = CHIP_ID;
+		opt_tmp.read_operations = CHIPID;
 		
 		if (ERROR_OK != lpc900_program(opt_tmp, pi, prog))
 		{
@@ -150,16 +134,10 @@ RESULT lpc900_init(program_info_t *pi, programmer_info_t *prog)
 		{
 			if (pi->chip_id == cur_chips_param[i].chip_id)
 			{
-				memcpy(&cur_chip_param, cur_chips_param + i, 
-					   sizeof(cur_chip_param));
+				pi->chip_name = (char *)cur_chips_param[i].chip_name;
+				LOG_INFO(_GETTEXT(INFOMSG_CHIP_FOUND), pi->chip_name);
 				
-				pi->app_size = cur_chip_param.app_size;
-				
-				LOG_INFO(_GETTEXT(INFOMSG_CHIP_FOUND), 
-						 cur_chip_param.chip_name);
-				pi->chip_name = (char *)cur_chip_param.chip_name;
-				
-				return ERROR_OK;
+				goto Post_Init;
 			}
 		}
 		
@@ -172,17 +150,20 @@ RESULT lpc900_init(program_info_t *pi, programmer_info_t *prog)
 		{
 			if (!strcmp(cur_chips_param[i].chip_name, pi->chip_name))
 			{
-				memcpy(&cur_chip_param, cur_chips_param + i, 
-					   sizeof(cur_chip_param));
-				
-				pi->app_size = cur_chip_param.app_size;
-				
-				return ERROR_OK;
+				goto Post_Init;
 			}
 		}
 		
 		return ERROR_FAIL;
 	}
+Post_Init:
+	memcpy(&cur_chip_param, cur_chips_param + i, 
+			sizeof(cur_chip_param));
+	
+	pi->program_areas[APPLICATION_IDX].size = 
+				cur_chip_param.chip_areas[APPLICATION_IDX].size;
+	
+	return ERROR_OK;
 }
 
 uint32_t lpc900_interface_needed(void)
@@ -190,13 +171,16 @@ uint32_t lpc900_interface_needed(void)
 	return LPC900_INTERFACE_NEEDED;
 }
 
-RESULT lpc900_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr, 
-											  uint8_t* data, uint32_t length, 
-											  void* buffer)
+RESULT lpc900_write_buffer_from_file_callback(uint32_t address, 
+			uint32_t seg_addr, uint8_t* data, uint32_t length, void* buffer)
 {
-	program_info_t *pi = (program_info_t *)buffer;
+	struct program_info_t *pi = (struct program_info_t *)buffer;
 	uint32_t mem_addr = address & 0x0000FFFF;
 	RESULT ret;
+	uint8_t *tbuff;
+	struct chip_area_info_t *areas;
+	
+	tbuff = pi->program_areas[APPLICATION_IDX].buff;
 	
 #ifdef PARAM_CHECK
 	if ((length > 0) && (NULL == data))
@@ -213,11 +197,12 @@ RESULT lpc900_write_buffer_from_file_callback(uint32_t address, uint32_t seg_add
 		return ERRCODE_NOT_SUPPORT;
 	}
 	
+	areas = cur_chip_param.chip_areas;
 	// flash from 0x00000000
 	switch (address >> 16)
 	{
 	case 0x0000:
-		if (NULL == pi->app)
+		if (NULL == tbuff)
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_BUFFER), "pi->app");
 			return ERRCODE_INVALID_BUFFER;
@@ -232,18 +217,18 @@ RESULT lpc900_write_buffer_from_file_callback(uint32_t address, uint32_t seg_add
 		}
 */		
 		mem_addr += cur_flash_offset;
-		if ((mem_addr >= cur_chip_param.app_size)
- 			|| (length > cur_chip_param.app_size)
- 			|| ((mem_addr + length) > cur_chip_param.app_size))
+		if ((mem_addr >= areas[APPLICATION_IDX].size)
+ 			|| (length > areas[APPLICATION_IDX].size)
+ 			|| ((mem_addr + length) > areas[APPLICATION_IDX].size))
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_RANGE), "flash memory");
 			return ERRCODE_INVALID;
 		}
 		cur_target_defined |= APPLICATION;
 		
-		memcpy(pi->app + mem_addr, data, length);
-		ret = MEMLIST_Add(&pi->app_memlist, mem_addr, length, 
-						  cur_chip_param.app_page_size);
+		memcpy(tbuff + mem_addr, data, length);
+		ret = MEMLIST_Add(&pi->program_areas[APPLICATION_IDX].memlist, 
+							mem_addr, length, areas[APPLICATION_IDX].page_size);
 		if (ret != ERROR_OK)
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "add memory list");
@@ -265,7 +250,7 @@ RESULT lpc900_write_buffer_from_file_callback(uint32_t address, uint32_t seg_add
 
 
 
-static programmer_info_t *p = NULL;
+static struct programmer_info_t *p = NULL;
 
 #define get_target_voltage(v)				p->get_target_voltage(v)
 
@@ -276,11 +261,8 @@ static programmer_info_t *p = NULL;
 #define icp_commit()						p->lpcicp_commit()
 #define icp_in(buf, len)					p->lpcicp_in((buf), (len))
 #define icp_out(buf, len)					p->lpcicp_out((buf), (len))
-#define icp_poll(dat, ptr, set, clear, cnt)	p->lpcicp_poll_ready((dat), \
-																 (ptr), \
-																 (set), \
-																 (clear), \
-																 (cnt))
+#define icp_poll(dat, ptr, set, clear, cnt)	\
+					p->lpcicp_poll_ready((dat), (ptr), (set), (clear), (cnt))
 
 #define LPCICP_POLL_ON_SET					0
 #define LPCICP_POLL_ON_CLEAR				1
@@ -323,20 +305,22 @@ static programmer_info_t *p = NULL;
 #define ICP_CFG_ID1							0x11
 #define ICP_CFG_ID2							0x12
 
-RESULT lpc900_program(operation_t operations, program_info_t *pi, 
-					  programmer_info_t *prog)
+RESULT lpc900_program(struct operation_t operations, struct program_info_t *pi, 
+					  struct programmer_info_t *prog)
 {
 	uint16_t voltage;
 	uint8_t page_buf[LPC900_PAGE_SIZE + 20];
+	uint8_t *tbuff;
 	uint32_t device_id;
 	int32_t i;
 	uint32_t j, k, len_current_list;
 	uint32_t crc_in_file, crc_in_chip;
 	uint16_t page_size;
 	RESULT ret = ERROR_OK;
-	memlist *ml_tmp;
+	struct memlist *ml_tmp;
 	uint8_t retry = 0;
 	uint32_t target_size;
+	struct memlist **ml;
 	
 	p = prog;
 	
@@ -372,8 +356,7 @@ ProgramStart:
 	// enter program mode
 	if (ERROR_OK != icp_enter_program_mode())
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-				  "enter program mode");
+		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "enter program mode");
 		ret = ERRCODE_FAILURE_OPERATION;
 		goto leave_program_mode;
 	}
@@ -417,8 +400,7 @@ ProgramStart:
 		icp_fini();
 		if (ERROR_OK != icp_commit())
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATE_DEVICE), 
-					  "target chip");
+			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATE_DEVICE), "target chip");
 			return ERRCODE_FAILURE_OPERATION;
 		}
 		if (++retry < 10)
@@ -432,7 +414,7 @@ ProgramStart:
 	}
 	pi->chip_id = device_id;
 	LOG_INFO(_GETTEXT(INFOMSG_TARGET_CHIP_ID), pi->chip_id);
-	if (!(operations.read_operations & CHIP_ID))
+	if (!(operations.read_operations & CHIPID))
 	{
 		if (pi->chip_id != cur_chip_param.chip_id)
 		{
@@ -470,17 +452,19 @@ ProgramStart:
 		LOG_INFO(_GETTEXT(INFOMSG_ERASED), "chip");
 	}
 	
-	page_size = (uint16_t)cur_chip_param.app_page_size;
+	page_size = (uint16_t)cur_chip_param.chip_areas[APPLICATION_IDX].page_size;
 	
 	// write flash
-	target_size = MEMLIST_CalcAllSize(pi->app_memlist);
+	ml = &pi->program_areas[APPLICATION_IDX].memlist;
+	target_size = MEMLIST_CalcAllSize(*ml);
+	tbuff = pi->program_areas[APPLICATION_IDX].buff;
 	if (operations.write_operations & APPLICATION)
 	{
 		// program flash
 		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMING), "flash");
 		pgbar_init("writing flash |", "|", 0, target_size, PROGRESS_STEP, '=');
 		
-		ml_tmp = pi->app_memlist;
+		ml_tmp = *ml;
 		while (ml_tmp != NULL)
 		{
 			if ((ml_tmp->addr + ml_tmp->len) 
@@ -495,7 +479,8 @@ ProgramStart:
 			
 			len_current_list = (uint32_t)ml_tmp->len;
 			for (i = -(int32_t)(ml_tmp->addr % page_size); 
-				 i < ((int32_t)ml_tmp->len - (int32_t)(ml_tmp->addr % page_size)); 
+				 i < ((int32_t)ml_tmp->len 
+						- (int32_t)(ml_tmp->addr % page_size)); 
 				 i += page_size)
 			{
 				page_buf[0] = ICP_CMD_WRITE | ICP_CMD_FMCON;
@@ -506,7 +491,7 @@ ProgramStart:
 				
 				for (j = 0; j < page_size; j++)
 				{
-					page_buf[5 + j] = pi->app[ml_tmp->addr + i + j];
+					page_buf[5 + j] = tbuff[ml_tmp->addr + i + j];
 				}
 				
 				page_buf[5 + page_size + 0] = ICP_CMD_WRITE | ICP_CMD_FMADRL;
@@ -517,12 +502,14 @@ ProgramStart:
 				page_buf[5 + page_size + 5] = ICP_FMCMD_PROG;
 				
 				icp_out(page_buf, 11 + page_size);
-				icp_poll(ICP_CMD_READ | ICP_CMD_FMCON, page_buf, 0x0F, 0x80, 10000);
+				icp_poll(ICP_CMD_READ | ICP_CMD_FMCON, page_buf, 
+							0x0F, 0x80, 10000);
 				if ((ERROR_OK != icp_commit()) 
 					|| (page_buf[0] != LPCICP_POLL_ON_CLEAR))
 				{
 					pgbar_fini();
-					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "program flash");
+					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+								"program flash");
 					ret = ERRCODE_FAILURE_OPERATION;
 					goto leave_program_mode;
 				}
@@ -547,7 +534,8 @@ ProgramStart:
 	}
 	
 	// verify
-	if (operations.read_operations & APPLICATION)
+	if ((operations.read_operations & APPLICATION) 
+		|| (operations.verify_operations & APPLICATION))
 	{
 		if (operations.verify_operations & APPLICATION)
 		{
@@ -608,9 +596,11 @@ ProgramStart:
 			uint32_t loop;
 			
 			crc_in_file = 0;
-			for (loop = 0; loop < cur_chip_param.app_size; loop++)
+			for (loop = 0; 
+				loop < cur_chip_param.chip_areas[APPLICATION_IDX].size; 
+				loop++)
 			{
-				uint8_t byte = pi->app[loop];
+				uint8_t byte = tbuff[loop];
 				
 				crc_tmp = 0;
 				if (byte & (1 << 0))
@@ -671,8 +661,7 @@ leave_program_mode:
 	icp_fini();
 	if (ERROR_OK != icp_commit())
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATE_DEVICE), 
-				  "target chip");
+		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATE_DEVICE), "target chip");
 		ret = ERRCODE_FAILURE_OPERATION;
 	}
 	

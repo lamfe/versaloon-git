@@ -6,11 +6,11 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, LResources, Forms, Controls, Graphics, Dialogs,
-  ExtCtrls, StdCtrls, EditBtn;
+  ExtCtrls, StdCtrls, EditBtn, vsprogtarget;
 
 type
   TTargetFile = record
-    target:   string;
+    target:   char;
     filename: string;
   end;
 
@@ -21,23 +21,29 @@ type
     btnCancel: TButton;
     pnlMain:   TPanel;
     pnlButton: TPanel;
+    procedure btnOKClick(Sender: TObject);
     procedure FileNameEditChange(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormKeyPress(Sender: TObject; var Key: char);
     procedure FormShow(Sender: TObject);
+    procedure CenterControl(ctl: TControl; ref: TControl);
   private
     { private declarations }
     FileNameLabelArr: array of TLabel;
     FileNameEdtArr:   array of TFileNameEdit;
+    procedure AddFileSetting(target: char; filename: string);
   public
     { public declarations }
     procedure Reset();
-    function GetFileNameByTargetName(target: string): string;
-    procedure AddFileSetting(target, filename: string);
   end;
+
+  procedure RemoveTargetFile(TargetName: char);
+  procedure AddTargetFile(TargetName: char);
+  function GetTargetFileIdx(TargetName: char): integer;
 
 var
   FormFileSelector: TFormFileSelector;
+  TargetFile:  array of TTargetFile;
 
 const
   LEFT_MARGIN: integer   = 10;
@@ -52,7 +58,75 @@ const
 
 implementation
 
+procedure RemoveTargetFile(TargetName: char);
+var
+  i, j:  integer;
+  found: boolean;
+begin
+  found := False;
+  for i := low(TargetFile) to high(TargetFile) do
+  begin
+    if TargetFile[i].target = TargetName then
+    begin
+      found := True;
+    end;
+  end;
+  if found then
+  begin
+    for j := i to high(TargetFile) - 1 do
+    begin
+      TargetFile[j] := TargetFile[j + 1];
+    end;
+    SetLength(TargetFile, Length(TargetFile) - 1);
+  end;
+end;
+
+procedure AddTargetFile(TargetName: char);
+var
+  i:     integer;
+  found: boolean;
+begin
+  found := False;
+  for i := low(TargetFile) to high(TargetFile) do
+  begin
+    if TargetFile[i].target = TargetName then
+    begin
+      found := True;
+    end;
+  end;
+  if not found then
+  begin
+    SetLength(TargetFile, Length(TargetFile) + 1);
+    i := Length(TargetFile) - 1;
+    TargetFile[i].target := TargetName;
+    TargetFile[i].filename := '';
+  end;
+end;
+
+function GetTargetFileIdx(TargetName: char): integer;
+var
+  i: integer;
+begin
+  Result := -1;
+  if Length(TargetFile) > 0 then
+  begin
+    for i := low(TargetFile) to high(TargetFile) do
+    begin
+      if TargetFile[i].target = TargetName then
+      begin
+        Result := i;
+        exit;
+      end;
+    end;
+  end;
+end;
+
 { TFormFileSelector }
+
+procedure TFormFileSelector.CenterControl(ctl: TControl; ref: TControl);
+begin
+  ctl.Top := ref.Top + (ref.Height - ctl.Height) div 2;
+end;
 
 procedure TFormFileSelector.Reset();
 var
@@ -65,6 +139,7 @@ begin
       FileNameLabelArr[i].Destroy;
     end;
   end;
+  SetLength(FileNameLabelArr, 0);
 
   for i := low(FileNameEdtArr) to high(FileNameEdtArr) do
   begin
@@ -73,9 +148,10 @@ begin
       FileNameEdtArr[i].Destroy;
     end;
   end;
+  SetLength(FileNameEdtArr, 0);
 end;
 
-procedure TFormFileSelector.AddFileSetting(target, filename: string);
+procedure TFormFileSelector.AddFileSetting(target: char; filename: string);
 var
   i:     integer;
   found: boolean;
@@ -102,7 +178,7 @@ begin
 
     FileNameLabelArr[i]      := TLabel.Create(Self);
     FileNameLabelArr[i].Parent := pnlMain;
-    FileNameLabelArr[i].Caption := target;
+    FileNameLabelArr[i].Caption := GetAreaFullName(target);
     FileNameLabelArr[i].Top  := TOP_MARGIN + i * (Y_MARGIN + ITEM_HEIGHT);
     FileNameLabelArr[i].Left := LEFT_MARGIN;
     FileNameLabelArr[i].Width := FILELABEL_WIDTH;
@@ -119,9 +195,13 @@ begin
     FileNameEdtArr[i].Height := ITEM_HEIGHT;
     FileNameEdtArr[i].Filter := 'HEX File|*.hex|BIN File|*.bin';
     FileNameEdtArr[i].Hint := filename;
+    FileNameEdtArr[i].Flat := True;
     FileNameEdtArr[i].ShowHint := True;
     FileNameEdtArr[i].OnChange := @FileNameEditChange;
     FileNameEdtArr[i].OnEditingDone := @FileNameEditChange;
+
+    // Center Control
+    CenterControl(FileNameLabelArr[i], FileNameEdtArr[i]);
 
     str := LowerCase(ExtractFileExt(filename));
     if (str = '.hex') or (str = '') then
@@ -131,21 +211,6 @@ begin
     else if str = '.bin' then
     begin
       FileNameEdtArr[i].FilterIndex := 2;
-    end;
-  end;
-end;
-
-function TFormFileSelector.GetFileNameByTargetName(target: string): string;
-var
-  i: integer;
-begin
-  Result := '';
-
-  for i := low(FileNameLabelArr) to high(FileNameLabelArr) do
-  begin
-    if FileNameLabelArr[i].Caption = target then
-    begin
-      Result := FileNameEdtArr[i].FileName;
     end;
   end;
 end;
@@ -172,6 +237,17 @@ begin
   end;
 end;
 
+procedure TFormFileSelector.btnOKClick(Sender: TObject);
+var
+  i: integer;
+begin
+  // Update TargetFile
+  for i := low(TargetFile) to high(TargetFile) do
+  begin
+    TargetFile[i].filename := FileNameEdtArr[i].FileName;
+  end;
+end;
+
 procedure TFormFileSelector.FormKeyPress(Sender: TObject; var Key: char);
 begin
   if Key = #27 then
@@ -182,15 +258,20 @@ end;
 
 procedure TFormFileSelector.FormShow(Sender: TObject);
 var
-  int_tmp: integer;
+  intTmp: integer;
 begin
-  int_tmp      := LEFT_MARGIN + RIGHT_MARGIN + FILELABEL_WIDTH +
+  for intTmp := low(TargetFile) to high(TargetFile) do
+  begin
+    AddFileSetting(TargetFile[intTmp].target, TargetFile[intTmp].filename);
+  end;
+
+  intTmp       := LEFT_MARGIN + RIGHT_MARGIN + FILELABEL_WIDTH +
     X_MARGIN + FILEEDIT_WIDTH;
-  ClientWidth  := int_tmp;
+  ClientWidth  := intTmp;
   ClientHeight := TOP_MARGIN + BOTTOM_MARGIN + Length(FileNameLabelArr) *
     (Y_MARGIN + ITEM_HEIGHT) + pnlButton.Height;
-  pnlMain.Width := int_tmp;
-  pnlButton.Width := int_tmp;
+  pnlMain.Width := intTmp;
+  pnlButton.Width := intTmp;
   // center buttons
   btnOK.Left   := (pnlButton.Width div 2 - btnOK.Width) div 2;
   btnCancel.Left := pnlButton.Width div 2 + (pnlButton.Width div 2 - btnOK.Width) div 2;

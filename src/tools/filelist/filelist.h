@@ -21,23 +21,23 @@
 
 #include "list.h"
 
-typedef struct FILELIST
+struct filelist
 {
 	char *path;
 	FILE *file;
 	uint32_t seg_offset;
 	uint32_t addr_offset;
 	uint32_t access;
-	struct SLLIST list;
-}filelist;
+	struct sllist list;
+};
 
 #define FILELIST_GetNext(fl)						\
-						sllist_get_container(fl->list.next, filelist, list)
+					sllist_get_container(fl->list.next, struct filelist, list)
 
-RESULT FILELIST_Add(filelist **fl, char *path, uint32_t seg_offset, 
+RESULT FILELIST_Add(struct filelist **fl, char *path, uint32_t seg_offset, 
 					uint32_t addr_offset);
-RESULT FILELIST_Open(filelist *fl, char *attr);
-void FILELIST_Free(filelist **fl);
+RESULT FILELIST_Open(struct filelist *fl, char *attr);
+void FILELIST_Free(struct filelist **fl);
 
 #endif /* __FILELIST_H_INCLUDED__ */
 

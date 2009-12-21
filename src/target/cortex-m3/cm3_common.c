@@ -53,7 +53,7 @@ RESULT cm3_dp_fini(void)
 	return adi_fini();
 }
 
-RESULT cm3_dp_init(programmer_info_t *prog, adi_dp_if_t *dp)
+RESULT cm3_dp_init(struct programmer_info_t *prog, adi_dp_if_t *dp)
 {
 	uint32_t cpuid;
 	
@@ -63,7 +63,7 @@ RESULT cm3_dp_init(programmer_info_t *prog, adi_dp_if_t *dp)
 	if (ERROR_OK != adi_init(prog, cm3_dp_if))
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-				  "initialize cm3 interface");
+					"initialize cm3 interface");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	

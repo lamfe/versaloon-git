@@ -105,8 +105,7 @@ RESULT usbtomsp430sbw_dr(uint8_t interface_index, uint32_t *dr, uint8_t len,
 	if (want_ret)
 	{
 		return usbtoxxx_inout_command(USB_TO_SBW, interface_index, buff, 
-									  byte_len + 1, byte_len, (uint8_t*)dr, 
-									  0, byte_len, 1);
+						byte_len + 1, byte_len, (uint8_t*)dr, 0, byte_len, 1);
 	}
 	else
 	{
@@ -156,8 +155,7 @@ RESULT usbtomsp430sbw_reset(uint8_t interface_index)
 }
 
 RESULT usbtomsp430sbw_poll(uint8_t interface_index, uint32_t dr, uint32_t mask, 
-						   uint32_t value, uint8_t len, uint16_t poll_cnt, 
-						   uint8_t toggle_tclk)
+			uint32_t value, uint8_t len, uint16_t poll_cnt, uint8_t toggle_tclk)
 {
 	uint8_t buff[15];
 	
@@ -179,6 +177,7 @@ RESULT usbtomsp430sbw_poll(uint8_t interface_index, uint32_t dr, uint32_t mask,
 	memcpy(buff + 7, (uint8_t*)&mask, 4);
 	memcpy(buff + 11, (uint8_t*)&value, 4);
 	
-	return usbtoxxx_poll_command(USB_TO_SBW, interface_index, buff, 15, NULL, 0);
+	return usbtoxxx_poll_command(USB_TO_SBW, interface_index, buff, 15, 
+									NULL, 0);
 }
 

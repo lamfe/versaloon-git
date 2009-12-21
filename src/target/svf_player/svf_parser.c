@@ -68,13 +68,13 @@ const char *svf_command_name[14] =
 	"TRST"
 };
 
-typedef struct
+struct svf_parser_check_tdo_para_t
 {
 	uint32_t line_num;
 	uint8_t enabled;
 	uint32_t buffer_offset;
 	uint32_t bit_len;
-}svf_parser_check_tdo_para_t;
+};
 
 uint32_t svf_file_index = 0;
 uint32_t svf_line_number = 0;
@@ -84,13 +84,13 @@ static uint8_t svf_parser_mask_buffer[SVF_PARSER_DATA_BUFFER_SIZE];
 static uint32_t svf_parser_buffer_index = 0;
 
 static uint8_t svf_parser_tdi_buffer[SVF_PARSER_DATA_BUFFER_SIZE];
-static svf_parser_check_tdo_para_t 
+static struct svf_parser_check_tdo_para_t 
 						svf_parser_check[SVF_PARSER_DATA_BUFFER_SIZE];
 static uint32_t svf_parser_check_index = 0;
 
-static svf_para_t svf_parser_para;
+static struct svf_para_t svf_parser_para;
 
-void svf_parser_free_xxd_para(svf_xxr_para_t *para)
+void svf_parser_free_xxd_para(struct svf_xxr_para_t *para)
 {
 	if (para->tdi != NULL)
 	{
@@ -140,8 +140,8 @@ void svf_parser_fini(void)
 	jtag_fini();
 }
 
-static RESULT svf_parser_adjust_array_length(uint8_t **arr, uint32_t orig_bit_len, 
-											 uint32_t new_bit_len)
+static RESULT svf_parser_adjust_array_length(uint8_t **arr, 
+								uint32_t orig_bit_len, uint32_t new_bit_len)
 {
 	uint32_t new_byte_len = (new_bit_len + 7) >> 3;
 	
@@ -220,8 +220,8 @@ static uint8_t svf_parser_find_string_in_array(char *str, char **strs,
 	return 0xFF;
 }
 
-static RESULT svf_parser_parse_cmd_string(char *str, uint32_t len, char **argus, 
-										  uint32_t *num_of_argu)
+static RESULT svf_parser_parse_cmd_string(char *str, uint32_t len, 
+										char **argus, uint32_t *num_of_argu)
 {
 	uint32_t pos = 0, num = 0;
 	uint8_t space_found = 1;
@@ -257,8 +257,7 @@ static RESULT svf_parser_parse_cmd_string(char *str, uint32_t len, char **argus,
 }
 
 static RESULT svf_parser_copy_hexstring_to_binary(char *str, uint8_t **bin, 
-												  uint32_t orig_bit_len, 
-												  uint32_t bit_len)
+									uint32_t orig_bit_len, uint32_t bit_len)
 {
 	uint32_t i, str_len = strlen(str), str_hbyte_len = (bit_len + 3) >> 2;
 	uint8_t ch = 0;
@@ -327,7 +326,8 @@ static RESULT svf_parser_copy_hexstring_to_binary(char *str, uint8_t **bin,
 }
 
 #define SVFP_CMD_INC_CNT			1024
-uint32_t svf_parser_get_command(FILE *file, char **cmd_buffer, uint32_t *cmd_len)
+uint32_t svf_parser_get_command(FILE *file, char **cmd_buffer, 
+									uint32_t *cmd_len)
 {
 	char *tmp_buffer = NULL;
 	uint32_t cmd_pos = 0;
@@ -486,11 +486,11 @@ RESULT svf_parser_run_command(char *cmd_str)
 	float min_time, max_time;
 	
 	// for XXR
-	svf_xxr_para_t *xxr_para_tmp;
+	struct svf_xxr_para_t *xxr_para_tmp;
 	uint8_t **pbuffer_tmp;
 	
 	// for STATE
-	tap_state_t *path = NULL;
+	enum tap_state_t *path = NULL;
 	
 	LOG_DEBUG("%s\n", cmd_str);
 	
@@ -501,9 +501,8 @@ RESULT svf_parser_run_command(char *cmd_str)
 		return ERROR_FAIL;
 	}
 	
-	command = svf_parser_find_string_in_array(
-										argus[0], (char **)svf_command_name, 
-										dimof(svf_command_name));
+	command = svf_parser_find_string_in_array(argus[0], 
+						(char **)svf_command_name, dimof(svf_command_name));
 	
 	switch (command)
 	{
@@ -515,9 +514,8 @@ RESULT svf_parser_run_command(char *cmd_str)
 			return ERRCODE_INVALID_PARAMETER;
 		}
 		
-		i_tmp = svf_parser_find_string_in_array(
-											argus[1], (char **)tap_state_name, 
-											dimof(tap_state_name));
+		i_tmp = svf_parser_find_string_in_array(argus[1], 
+							(char **)tap_state_name, dimof(tap_state_name));
 		if (!tap_state_is_stable(i_tmp))
 		{
 			LOG_ERROR(_GETTEXT("state defined is not stable state\n"));
@@ -642,9 +640,8 @@ XXR_common:
 				return ERROR_FAIL;
 			}
 			
-			ret = svf_parser_copy_hexstring_to_binary(
-										&argus[i + 1][1], pbuffer_tmp, i_tmp, 
-										xxr_para_tmp->len);
+			ret = svf_parser_copy_hexstring_to_binary(&argus[i + 1][1], 
+									pbuffer_tmp, i_tmp, xxr_para_tmp->len);
 			if (ret != ERROR_OK)
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
@@ -832,9 +829,8 @@ XXR_common:
 		i = 1;
 		
 		// run_state
-		i_tmp = svf_parser_find_string_in_array(
-											argus[i], (char **)tap_state_name, 
-											dimof(tap_state_name));
+		i_tmp = svf_parser_find_string_in_array(argus[i], 
+							(char **)tap_state_name, dimof(tap_state_name));
 		if (tap_state_is_valid(i_tmp))
 		{
 			if (tap_state_is_stable(i_tmp))
@@ -891,9 +887,8 @@ XXR_common:
 		// ENDSTATE end_state
 		if (((i + 2) <= num_of_argu) && !strcmp(argus[i], "ENDSTATE"))
 		{
-			i_tmp = svf_parser_find_string_in_array(
-										argus[i + 1], (char **)tap_state_name, 
-										dimof(tap_state_name));
+			i_tmp = svf_parser_find_string_in_array(argus[i + 1], 
+							(char **)tap_state_name, dimof(tap_state_name));
 			if (tap_state_is_stable(i_tmp))
 			{
 				svf_parser_para.runtest_end_state = i_tmp;
@@ -920,8 +915,7 @@ XXR_common:
 			{
 				// TODO: do runtest
 				ret = tap_runtest(svf_parser_para.runtest_run_state, 
-								  svf_parser_para.runtest_end_state, 
-								  run_count);
+								svf_parser_para.runtest_end_state, run_count);
 				if (ret != ERROR_OK)
 				{
 					return ERROR_FAIL;
@@ -945,12 +939,11 @@ XXR_common:
 		if (num_of_argu > 2)
 		{
 			// STATE pathstate1 ... stable_state
-			path = malloc((num_of_argu - 1) * sizeof(tap_state_t));
+			path = malloc((num_of_argu - 1) * sizeof(enum tap_state_t));
 			for (i = 1; i < num_of_argu; i++)
 			{
-				path[i - 1] = svf_parser_find_string_in_array(
-											argus[i], (char **)tap_state_name, 
-											dimof(tap_state_name));
+				path[i - 1] = svf_parser_find_string_in_array(argus[i], 
+							(char **)tap_state_name, dimof(tap_state_name));
 				if (!tap_state_is_valid(path[i - 1]))
 				{
 					LOG_ERROR(_GETTEXT(ERRMSG_INVALID), 
@@ -981,15 +974,15 @@ XXR_common:
 		else
 		{
 			// STATE stable_state
-			i_tmp = svf_parser_find_string_in_array(
-											argus[1], (char **)tap_state_name, 
-											dimof(tap_state_name));
+			i_tmp = svf_parser_find_string_in_array(argus[1], 
+							(char **)tap_state_name, dimof(tap_state_name));
 			if (tap_state_is_stable(i_tmp))
 			{
 				// TODO: call state_move
 				tap_end_state(i_tmp);
 				tap_state_move();
-				LOG_DEBUG("\tmove to %s by state_move\n", tap_state_name[i_tmp]);
+				LOG_DEBUG("\tmove to %s by state_move\n", 
+							tap_state_name[i_tmp]);
 			}
 			else
 			{
@@ -1020,9 +1013,8 @@ XXR_common:
 				return ERRCODE_FAILURE_OPERATION;
 			}
 			
-			i_tmp = svf_parser_find_string_in_array(
-										argus[1], (char **)svf_trst_mode_name, 
-										dimof(svf_trst_mode_name));
+			i_tmp = svf_parser_find_string_in_array(argus[1], 
+					(char **)svf_trst_mode_name, dimof(svf_trst_mode_name));
 			switch (i_tmp)
 			{
 			case TRST_ON:
@@ -1098,8 +1090,7 @@ XXR_common:
 			case SDR:
 				memcpy(&read_value, svf_parser_tdi_buffer, sizeof(read_value));
 				LOG_DEBUG("\tTDO read = 0x%X\n", 
-							read_value 
-							& ((1 << svf_parser_check[0].bit_len) - 1));
+						read_value & ((1 << svf_parser_check[0].bit_len) - 1));
 				break;
 			default:
 				break;

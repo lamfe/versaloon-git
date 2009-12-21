@@ -32,13 +32,13 @@
 
 #include "hex.h"
 
-typedef enum 
+enum  HEX_TYPE
 {
 	HEX_TYPE_DATA		= 0x00,
 	HEX_TYPE_EOF		= 0x01,
 	HEX_TYPE_SEG_ADDR	= 0x02,
 	HEX_TYPE_EXT_ADDR	= 0x04
-} HEX_TYPE;
+};
 
 RESULT read_hex_file(FILE *hex_file, WRITE_MEMORY_CALLBACK callback, 
 					 void *buffer, uint32_t seg_offset, uint32_t addr_offset)
@@ -89,7 +89,7 @@ RESULT read_hex_file(FILE *hex_file, WRITE_MEMORY_CALLBACK callback,
 		{
 			tmp_buff[0] = line_buf[i];
 			tmp_buff[1] = line_buf[i + 1];
-			line_buf[i >> 1] = (uint8_t)strtoul((const char *)tmp_buff, &ptr, 16);
+			line_buf[i>>1] = (uint8_t)strtoul((const char *)tmp_buff, &ptr, 16);
 			if (ptr != &tmp_buff[2])
 			{
 				return ERROR_FAIL;
@@ -156,8 +156,7 @@ RESULT read_hex_file(FILE *hex_file, WRITE_MEMORY_CALLBACK callback,
 }
 
 static RESULT write_hex_line(FILE *hex_file, uint8_t data_len, 
-								uint16_t data_addr, uint8_t type, 
-								uint8_t *data)
+								uint16_t data_addr, uint8_t type, uint8_t *data)
 {
 	uint8_t line_buf[10 + 0xFF * 2 + 2], checksum = 0, pos = 0;
 	uint32_t i;
@@ -275,8 +274,7 @@ RESULT write_hex_file(FILE *hex_file, uint32_t file_addr,
 		
 		// write
 		ret = write_hex_line(hex_file, (uint8_t)tmp, 
-								(uint16_t)(start_addr & 0xFFFF), 
-								HEX_TYPE_DATA, buff);
+						(uint16_t)(start_addr & 0xFFFF), HEX_TYPE_DATA, buff);
 		if (ret != ERROR_OK)
 		{
 			return ret;

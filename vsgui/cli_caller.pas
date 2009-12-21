@@ -51,6 +51,7 @@ destructor TCLI_Caller.Destroy;
 begin
   inherited Destroy;
   FCriticalSection.Destroy;
+  FP := nil;
 end;
 
 procedure TCLI_Caller.AddParameter(para: string);
@@ -85,12 +86,22 @@ end;
 
 procedure TCLI_Caller.UnTake;
 begin
+  if ((FP = nil) or (not FP.Running)) and FRunning then
+  begin
+    FRunning := False;
+  end;
   FTaken := False;
 end;
 
 function TCLI_Caller.IsRunning(): boolean;
 begin
-  if (FP <> nil) or (FRunning and FP.Running) or FTaken then
+  if ((FP = nil) or (not FP.Running)) and FRunning then
+  begin
+    // Process crashed, recover
+    UnTake;
+  end;
+
+  if ((FP <> nil) and FP.Running) or FRunning or FTaken then
   begin
     Result := True;
   end

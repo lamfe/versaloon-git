@@ -93,7 +93,8 @@ RESULT usbtoc2_writeaddr(uint8_t interface_index, uint8_t addr)
 	return usbtoxxx_out_command(USB_TO_C2, interface_index, &addr, 1, 0);
 }
 
-RESULT usbtoc2_data(uint8_t interface_index, uint8_t r, uint8_t len, uint8_t *buf)
+RESULT usbtoc2_data(uint8_t interface_index, uint8_t r, uint8_t len, 
+						uint8_t *buf)
 {
 	uint8_t cmdbuf[5];
 	

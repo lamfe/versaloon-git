@@ -45,13 +45,17 @@
 #define AVR8_HVSP_INTERFACE_NEEDED		(GPIO | POWER)
 
 extern uint16_t avr8_isp_frequency;
-RESULT avr8_isp_program(operation_t operations, program_info_t *pi, 
-						programmer_info_t *prog);
-RESULT avr8_jtag_program(operation_t operations, program_info_t *pi, 
-						 programmer_info_t *prog);
-RESULT avr8_hvpp_program(operation_t operations, program_info_t *pi, 
-						 programmer_info_t *prog);
-RESULT avr8_hvsp_program(operation_t operations, program_info_t *pi, 
-						 programmer_info_t *prog);
+RESULT avr8_isp_program(struct operation_t operations, 
+						struct program_info_t *pi, 
+						struct programmer_info_t *prog);
+RESULT avr8_jtag_program(struct operation_t operations, 
+						struct program_info_t *pi, 
+						struct programmer_info_t *prog);
+RESULT avr8_hvpp_program(struct operation_t operations, 
+						struct program_info_t *pi, 
+						struct programmer_info_t *prog);
+RESULT avr8_hvsp_program(struct operation_t operations, 
+						struct program_info_t *pi, 
+						struct programmer_info_t *prog);
 #endif /* __AVR8_INTERNAL_H_INCLUDED__ */
 

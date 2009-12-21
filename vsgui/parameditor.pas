@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, LResources, Forms, Controls, Graphics, Dialogs,
-  StdCtrls, ExtCtrls, inputdialog;
+  StdCtrls, ExtCtrls, inputdialog, vsprogparser;
 
 type
   TParam_Warning = record
@@ -79,15 +79,11 @@ type
     procedure FreeRecord();
   end;
 
-function GetIntegerParameter(line, para_name: string; var Value: integer): boolean;
-function GetStringParameter(line, para_name: string; var Value: string): boolean;
-
 var
   FormParaEditor: TFormParaEditor;
   bCancel: boolean;
 
 const
-  EQUAL_STR: string      = ' = ';
   LEFT_MARGIN: integer   = 10;
   RIGHT_MARGIN: integer  = 10;
   TOP_MARGIN: integer    = 10;
@@ -100,65 +96,6 @@ const
   SECTION_DIV_HEIGHT: integer = 20;
 
 implementation
-
-function GetStringParameter(line, para_name: string; var Value: string): boolean;
-var
-  pos_start, pos_end: integer;
-  str_tmp: string;
-begin
-  pos_start := Pos(para_name + EQUAL_STR, line);
-  if pos_start > 0 then
-  begin
-    str_tmp := Copy(line, pos_start + Length(para_name + EQUAL_STR),
-      Length(line) - pos_start);
-
-    pos_end := Pos(',', str_tmp);
-    if pos_end > 1 then
-    begin
-      str_tmp := Copy(str_tmp, 1, pos_end - 1);
-    end;
-
-    Value  := str_tmp;
-    Result := True;
-  end
-  else
-  begin
-    Value  := '';
-    Result := False;
-  end;
-end;
-
-function GetIntegerParameter(line, para_name: string; var Value: integer): boolean;
-var
-  pos_start, pos_end: integer;
-  str_tmp: string;
-begin
-  if Pos(#13 + '', line) > 0 then
-  begin
-    SetLength(line, Length(line) - 1);
-  end;
-
-  pos_start := Pos(para_name + EQUAL_STR, line);
-  if pos_start > 0 then
-  begin
-    str_tmp := Copy(line, pos_start + Length(para_name + EQUAL_STR),
-      Length(line) - pos_start);
-
-    pos_end := Pos(',', str_tmp);
-    if pos_end > 1 then
-    begin
-      str_tmp := Copy(str_tmp, 1, pos_end - 1);
-    end;
-
-    Value  := StrToInt(str_tmp);
-    Result := True;
-  end
-  else
-  begin
-    Value  := 0;
-    Result := False;
-  end;
-end;
 
 function GetStringLen_To_ByteLen(bytelen, radix: integer): integer;
 begin
@@ -555,40 +492,40 @@ begin
   begin
     i := Length(Param_Record.warnings) + 1;
     SetLength(Param_Record.warnings, i);
-    GetIntegerParameter(line, 'mask', Param_Record.warnings[i - 1].mask);
-    GetIntegerParameter(line, 'value', Param_Record.warnings[i - 1].Value);
-    GetStringParameter(line, 'msg', Param_Record.warnings[i - 1].msg);
+    GetNumericParameter(line, 'mask', Param_Record.warnings[i - 1].mask);
+    GetNumericParameter(line, 'value', Param_Record.warnings[i - 1].Value);
+    GetLiteralParameter(line, 'msg', Param_Record.warnings[i - 1].msg);
   end
   else if Pos('setting: ', line) = 1 then
   begin
     i := Length(Param_Record.settings) + 1;
     SetLength(Param_Record.settings, i);
     SetLength(Param_Record.settings[i - 1].choices, 0);
-    GetStringParameter(line, 'name', Param_Record.settings[i - 1].Name);
-    GetIntegerParameter(line, 'mask', Param_Record.settings[i - 1].mask);
+    GetLiteralParameter(line, 'name', Param_Record.settings[i - 1].Name);
+    GetNumericParameter(line, 'mask', Param_Record.settings[i - 1].mask);
     Param_Record.settings[i - 1].bytelen := 0;
-    GetIntegerParameter(line, 'bytelen', Param_Record.settings[i - 1].bytelen);
+    GetNumericParameter(line, 'bytelen', Param_Record.settings[i - 1].bytelen);
     Param_Record.settings[i - 1].radix := 0;
-    GetIntegerParameter(line, 'radix', Param_Record.settings[i - 1].radix);
+    GetNumericParameter(line, 'radix', Param_Record.settings[i - 1].radix);
     if (Param_Record.settings[i - 1].radix < 2) or
       (Param_Record.settings[i - 1].radix > 16) then
     begin
       Param_Record.settings[i - 1].radix := 10;
     end;
-    GetIntegerParameter(line, 'shift', Param_Record.settings[i - 1].shift);
-    GetStringParameter(line, 'info', Param_Record.settings[i - 1].info);
+    GetNumericParameter(line, 'shift', Param_Record.settings[i - 1].shift);
+    GetLiteralParameter(line, 'info', Param_Record.settings[i - 1].info);
     Param_Record.settings[i - 1].use_checkbox := False;
-    if GetIntegerParameter(line, 'checked', Param_Record.settings[i - 1].Checked) then
+    if GetNumericParameter(line, 'checked', Param_Record.settings[i - 1].Checked) then
     begin
       Param_Record.settings[i - 1].use_checkbox := True;
     end;
-    if GetIntegerParameter(line, 'unchecked', Param_Record.settings[i -
+    if GetNumericParameter(line, 'unchecked', Param_Record.settings[i -
       1].unchecked) then
     begin
       Param_Record.settings[i - 1].use_checkbox := True;
     end;
     dis := 0;
-    GetIntegerParameter(line, 'disabled', dis);
+    GetNumericParameter(line, 'disabled', dis);
     if dis > 0 then
     begin
       Param_Record.settings[i - 1].Enabled := False;
@@ -598,7 +535,7 @@ begin
       Param_Record.settings[i - 1].Enabled := True;
     end;
     num := 0;
-    GetIntegerParameter(line, 'num_of_choices', num);
+    GetNumericParameter(line, 'num_of_choices', num);
     if not Param_Record.settings[i - 1].use_checkbox and (num = 0) then
     begin
       Param_Record.settings[i - 1].use_edit := True;
@@ -613,9 +550,9 @@ begin
     i := Length(Param_Record.settings);
     j := Length(Param_Record.settings[i - 1].choices) + 1;
     SetLength(Param_Record.settings[i - 1].choices, j);
-    GetIntegerParameter(line, 'value', Param_Record.settings[i -
+    GetNumericParameter(line, 'value', Param_Record.settings[i -
       1].choices[j - 1].Value);
-    GetStringParameter(line, 'text', Param_Record.settings[i - 1].choices[j - 1].Text);
+    GetLiteralParameter(line, 'text', Param_Record.settings[i - 1].choices[j - 1].Text);
   end;
 end;
 

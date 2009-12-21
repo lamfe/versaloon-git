@@ -100,8 +100,8 @@ RESULT usbtolpcicp_out(uint8_t interface_index, uint8_t *buff, uint16_t len)
 	return usbtoxxx_out_command(USB_TO_LPCICP, interface_index, buff, len, 0);
 }
 
-RESULT usbtolpcicp_poll_ready(uint8_t interface_index, uint8_t *ret, uint8_t data, 
-							  uint8_t setmask, uint8_t clearmask, uint16_t pollcnt)
+RESULT usbtolpcicp_poll_ready(uint8_t interface_index, uint8_t *ret, 
+			uint8_t data, uint8_t setmask, uint8_t clearmask, uint16_t pollcnt)
 {
 	uint8_t cmdbuf[5];
 	

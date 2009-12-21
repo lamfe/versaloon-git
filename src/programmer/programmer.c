@@ -33,7 +33,7 @@
 
 #define PROGRAMMER_DEFAULT				0
 
-programmer_info_t programmers_info[] = 
+struct programmer_info_t programmers_info[] = 
 {
 	// versaloon
 	PROGRAMMER_DEFINE(VERSALOON_STRING, 			// name
@@ -44,7 +44,7 @@ programmer_info_t programmers_info[] =
 	PROGRAMMER_DEFINE(NULL, NULL, NULL, NULL, NULL)
 };
 
-programmer_info_t *cur_programmer = NULL;
+struct programmer_info_t *cur_programmer = NULL;
 
 RESULT programmer_init(const char *programmer)
 {

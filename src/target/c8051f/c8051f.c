@@ -48,9 +48,9 @@
 #define cur_prog_mode				program_mode
 #define cur_target_defined			target_defined
 
-const program_area_map_t c8051f_program_area_map[] = 
+const struct program_area_map_t c8051f_program_area_map[] = 
 {
-	{APPLICATION, APPLICATION_CHAR, 1, 0, 0, C8051F_FLASH_CHAR},
+	{APPLICATION_CHAR, 1, 0, 0, 0, 0},
 	{0, 0, 0, 0, 0, 0}
 };
 
@@ -60,22 +60,8 @@ static void c8051f_usage(void)
 {
 	printf("\
 Usage of %s:\n\
-  -m,  --mode <MODE>                        set mode<j|c>\n\n", CUR_TARGET_STRING);
-}
-
-static void c8051f_support(void)
-{
-	uint32_t i;
-	
-	printf("Support list of %s:\n", CUR_TARGET_STRING);
-	for (i = 0; i < cur_chips_num; i++)
-	{
-		printf("%s: id = 0x%02x, prog_mode = %s\n", 
-				cur_chips_param[i].chip_name, 
-				cur_chips_param[i].chip_id,
-				cur_chips_param[i].program_mode_str);
-	}
-	printf("\n");
+  -m,  --mode <MODE>                        set mode<j|c>\n\n", 
+			CUR_TARGET_STRING);
 }
 
 RESULT c8051f_parse_argument(char cmd, const char *argu)
@@ -87,9 +73,6 @@ RESULT c8051f_parse_argument(char cmd, const char *argu)
 	case 'h':
 		c8051f_usage();
 		break;
-	case 'S':
-		c8051f_support();
-		break;
 	default:
 		return ERROR_FAIL;
 		break;
@@ -98,11 +81,12 @@ RESULT c8051f_parse_argument(char cmd, const char *argu)
 	return ERROR_OK;
 }
 
-RESULT c8051f_prepare_buffer(program_info_t *pi)
+RESULT c8051f_prepare_buffer(struct program_info_t *pi)
 {
-	if (pi->app != NULL)
+	if (pi->program_areas[APPLICATION_IDX].buff != NULL)
 	{
-		memset(pi->app, C8051F_FLASH_CHAR, pi->app_size);
+		memset(pi->program_areas[APPLICATION_IDX].buff, C8051F_FLASH_CHAR, 
+				pi->program_areas[APPLICATION_IDX].size);
 	}
 	else
 	{
@@ -112,13 +96,14 @@ RESULT c8051f_prepare_buffer(program_info_t *pi)
 	return ERROR_OK;
 }
 
-RESULT c8051f_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr, 
-											  uint8_t* data, uint32_t length, 
-											  void* buffer)
+RESULT c8051f_write_buffer_from_file_callback(uint32_t address, 
+			uint32_t seg_addr, uint8_t* data, uint32_t length, void* buffer)
 {
-	program_info_t *pi = (program_info_t *)buffer;
+	struct program_info_t *pi = (struct program_info_t *)buffer;
 	uint32_t mem_addr = address & 0x0000FFFF;
 	RESULT ret;
+	uint8_t *tbuff;
+	struct chip_area_info_t *areas;
 	
 #ifdef PARAM_CHECK
 	if ((length > 0) && (NULL == data))
@@ -135,11 +120,13 @@ RESULT c8051f_write_buffer_from_file_callback(uint32_t address, uint32_t seg_add
 		return ERRCODE_NOT_SUPPORT;
 	}
 	
+	areas = cur_chip_param.chip_areas;
 	// flash from 0x00000000
 	switch (address >> 16)
 	{
 	case 0x0000:
-		if (NULL == pi->app)
+		tbuff = pi->program_areas[APPLICATION_IDX].buff;
+		if (NULL == tbuff)
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_BUFFER), "pi->app");
 			return ERRCODE_INVALID_BUFFER;
@@ -154,18 +141,19 @@ RESULT c8051f_write_buffer_from_file_callback(uint32_t address, uint32_t seg_add
 		}
 */		
 		mem_addr += cur_flash_offset;
-		if ((mem_addr >= cur_chip_param.app_size) 
-			|| (length > cur_chip_param.app_size) 
-			|| ((mem_addr + length) > cur_chip_param.app_size))
+		if ((mem_addr >= areas[APPLICATION_IDX].size) 
+			|| (length > areas[APPLICATION_IDX].size) 
+			|| ((mem_addr + length) > areas[APPLICATION_IDX].size))
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_RANGE), "flash memory");
 			return ERRCODE_INVALID;
 		}
 		cur_target_defined |= APPLICATION;
 		
-		memcpy(pi->app + mem_addr, data, length);
+		memcpy(tbuff + mem_addr, data, length);
 		
-		ret = MEMLIST_Add(&pi->app_memlist, mem_addr, length, C8051F_BLOCK_SIZE);
+		ret = MEMLIST_Add(&pi->program_areas[APPLICATION_IDX].memlist, mem_addr, 
+							length, C8051F_BLOCK_SIZE);
 		if (ret != ERROR_OK)
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "add memory list");
@@ -182,7 +170,7 @@ RESULT c8051f_write_buffer_from_file_callback(uint32_t address, uint32_t seg_add
 	return ERROR_OK;
 }
 
-RESULT c8051f_fini(program_info_t *pi, programmer_info_t *prog)
+RESULT c8051f_fini(struct program_info_t *pi, struct programmer_info_t *prog)
 {
 	pi = pi;
 	prog = prog;
@@ -190,10 +178,10 @@ RESULT c8051f_fini(program_info_t *pi, programmer_info_t *prog)
 	return ERROR_OK;
 }
 
-RESULT c8051f_init(program_info_t *pi, programmer_info_t *prog)
+RESULT c8051f_init(struct program_info_t *pi, struct programmer_info_t *prog)
 {
 	uint32_t i;
-	operation_t opt_tmp;
+	struct operation_t opt_tmp;
 	
 	memset(&opt_tmp, 0, sizeof(opt_tmp));
 	
@@ -208,7 +196,7 @@ RESULT c8051f_init(program_info_t *pi, programmer_info_t *prog)
 	{
 		// auto detect
 		LOG_INFO(_GETTEXT(INFOMSG_TRY_AUTODETECT));
-		opt_tmp.read_operations = CHIP_ID;
+		opt_tmp.read_operations = CHIPID;
 		
 		cur_chip_param.program_mode = cur_prog_mode;
 		if (ERROR_OK != c8051f_program(opt_tmp, pi, prog))
@@ -222,15 +210,10 @@ RESULT c8051f_init(program_info_t *pi, programmer_info_t *prog)
 		{
 			if (pi->chip_id == cur_chips_param[i].chip_id)
 			{
-				memcpy(&cur_chip_param, cur_chips_param + i, 
-					   sizeof(cur_chip_param));
-				pi->app_size = cur_chip_param.app_size;
+				pi->chip_name = (char *)cur_chips_param[i].chip_name;
+				LOG_INFO(_GETTEXT(INFOMSG_CHIP_FOUND), pi->chip_name);
 				
-				LOG_INFO(_GETTEXT(INFOMSG_CHIP_FOUND), 
-						 cur_chip_param.chip_name);
-				pi->chip_name = (char *)cur_chip_param.chip_name;
-				
-				return ERROR_OK;
+				goto Post_Init;
 			}
 		}
 		
@@ -243,16 +226,20 @@ RESULT c8051f_init(program_info_t *pi, programmer_info_t *prog)
 		{
 			if (!strcmp(cur_chips_param[i].chip_name, pi->chip_name))
 			{
-				memcpy(&cur_chip_param, cur_chips_param + i, 
-					   sizeof(cur_chip_param));
-				pi->app_size = cur_chip_param.app_size;
-				
-				return ERROR_OK;
+				goto Post_Init;
 			}
 		}
 		
 		return ERROR_FAIL;
 	}
+Post_Init:
+	memcpy(&cur_chip_param, cur_chips_param + i, 
+					   sizeof(cur_chip_param));
+				pi->program_areas[APPLICATION_IDX].size = 
+							cur_chip_param.chip_areas[APPLICATION_IDX].size;
+				
+				
+				return ERROR_OK;
 }
 
 uint32_t c8051f_interface_needed(void)
@@ -276,8 +263,8 @@ uint32_t c8051f_interface_needed(void)
 
 
 #define get_target_voltage(v)					prog->get_target_voltage(v)
-RESULT c8051f_program(operation_t operations, program_info_t *pi, 
-					  programmer_info_t *prog)
+RESULT c8051f_program(struct operation_t operations, struct program_info_t *pi, 
+					  struct programmer_info_t *prog)
 {
 	uint16_t voltage;
 
@@ -289,7 +276,7 @@ RESULT c8051f_program(operation_t operations, program_info_t *pi,
 	}
 	if ((   (operations.write_operations & APPLICATION) 
 			|| (operations.verify_operations & APPLICATION)) 
-		&& (NULL == pi->app))
+		&& (NULL == pi->program_areas[APPLICATION_IDX].buff))
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_BUFFER), "for flash");
 		return ERRCODE_INVALID_BUFFER;

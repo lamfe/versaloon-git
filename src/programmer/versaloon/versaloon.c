@@ -50,7 +50,7 @@ uint8_t *versaloon_buf = NULL;
 uint8_t *versaloon_cmd_buf = NULL;
 uint16_t versaloon_buf_size = 256;
 
-versaloon_pending_t versaloon_pending[VERSALOON_MAX_PENDING_NUMBER];
+struct versaloon_pending_t versaloon_pending[VERSALOON_MAX_PENDING_NUMBER];
 uint16_t versaloon_pending_idx = 0;
 
 static usb_dev_handle *versaloon_device_handle = NULL;
@@ -64,7 +64,7 @@ static uint32_t versaloon_to = VERSALOON_TIMEOUT;
 
 RESULT versaloon_cmd_get_voltage(uint8_t argc, const char *argv[]);
 RESULT versaloon_cmd_power_out(uint8_t argc, const char *argv[]);
-misc_cmd_t versaloon_cmd[] = 
+struct misc_cmd_t versaloon_cmd[] = 
 {
 	// voltage
 	{
@@ -265,8 +265,7 @@ void versaloon_set_callback(versaloon_callback_t callback)
 }
 
 RESULT versaloon_add_pending(uint8_t type, uint8_t cmd, uint16_t actual_szie, 
-							 uint16_t want_pos, uint16_t want_size, 
-							 uint8_t *buffer, uint8_t collect)
+	uint16_t want_pos, uint16_t want_size, uint8_t *buffer, uint8_t collect)
 {
 #if PARAM_CHECK
 	if (versaloon_pending_idx >= VERSALOON_MAX_PENDING_NUMBER)
@@ -322,8 +321,7 @@ RESULT versaloon_send_command(uint16_t out_len, uint16_t *inlen)
 	if (inlen != NULL)
 	{
 		ret = usb_bulk_read(versaloon_device_handle, versaloon_epin, 
-							(char *)versaloon_buf, versaloon_buf_size, 
-							versaloon_to);
+					(char *)versaloon_buf, versaloon_buf_size, versaloon_to);
 		if (ret > 0)
 		{
 			*inlen = (uint16_t)ret;
@@ -351,9 +349,8 @@ RESULT versaloon_init(void)
 	uint32_t timeout_tmp;
 	
 	versaloon_device_handle = find_usb_device(versaloon_vid, versaloon_pid, 
-											  versaloon_interface, 
-											  VERSALOON_SERIALSTRING_INDEX, 
-											  versaloon_serialstring);
+							versaloon_interface, VERSALOON_SERIALSTRING_INDEX, 
+							versaloon_serialstring);
 	if (NULL == versaloon_device_handle)
 	{
 		if (versaloon_serialstring != NULL)
@@ -727,14 +724,14 @@ RESULT versaloon_download_mass_product_data(const char *name, uint8_t *buffer,
 		if ((ERROR_OK != versaloon_send_command(263, &inlen)) || (inlen != 1))
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-				  "communicate with versaloon");
+						  "communicate with versaloon");
 			pgbar_fini();
 			return ERRCODE_FAILURE_OPERATION;
 		}
 		if (versaloon_buf[0] != MP_OK)
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-				  "write mass product data");
+						  "write mass product data");
 			pgbar_fini();
 			return ERRCODE_FAILURE_OPERATION;
 		}
@@ -868,7 +865,8 @@ RESULT versaloon_issp_wait_and_poll(void)
 {
 	return usbtoissp_wait_and_poll(VERSALOON_ISSP_PORT);
 }
-RESULT versaloon_issp_vector(uint8_t operate, uint8_t addr, uint8_t data, uint8_t *buf)
+RESULT versaloon_issp_vector(uint8_t operate, uint8_t addr, 
+								uint8_t data, uint8_t *buf)
 {
 	return usbtoissp_vector(VERSALOON_ISSP_PORT, operate, addr, data, buf);
 }
@@ -957,8 +955,9 @@ RESULT versaloon_jtagll_tms_clocks(uint32_t bytelen, uint8_t tms)
 {
 	return usbtojtagll_tms_clocks(VERSALOON_JTAGLL_PORT, bytelen, tms);
 }
-RESULT versaloon_jtagll_scan(uint8_t* r, uint16_t bitlen, uint8_t tms_before_valid, 
-							 uint8_t tms_before, uint8_t tms_after0, uint8_t tms_after1)
+RESULT versaloon_jtagll_scan(uint8_t* r, uint16_t bitlen, 
+				uint8_t tms_before_valid, uint8_t tms_before, 
+				uint8_t tms_after0, uint8_t tms_after1)
 {
 	return usbtojtagll_scan(VERSALOON_JTAGLL_PORT, r, bitlen, tms_before_valid, 
 							tms_before, tms_after0, tms_after1);
@@ -989,11 +988,13 @@ RESULT versaloon_jtaghl_runtest(uint32_t cycles)
 {
 	return usbtojtaghl_runtest(VERSALOON_JTAGHL_PORT, cycles);
 }
-RESULT versaloon_jtaghl_ir(uint8_t *ir, uint8_t len, uint8_t idle, uint8_t want_ret)
+RESULT versaloon_jtaghl_ir(uint8_t *ir, uint8_t len, uint8_t idle, 
+							uint8_t want_ret)
 {
 	return usbtojtaghl_ir(VERSALOON_JTAGHL_PORT, ir, len, idle, want_ret);
 }
-RESULT versaloon_jtaghl_dr(uint8_t *dr, uint16_t len, uint8_t idle, uint8_t want_ret)
+RESULT versaloon_jtaghl_dr(uint8_t *dr, uint16_t len, uint8_t idle, 
+							uint8_t want_ret)
 {
 	return usbtojtaghl_dr(VERSALOON_JTAGHL_PORT, dr, len, idle, want_ret);
 }
@@ -1027,7 +1028,7 @@ RESULT versaloon_msp430jtag_reset(void)
 	return usbtomsp430jtag_reset(VERSALOON_MSP430_JTAG_PORT);
 }
 RESULT versaloon_msp430jtag_poll(uint32_t dr, uint32_t mask, uint32_t value, 
-								 uint8_t len, uint16_t poll_cnt, uint8_t toggle_tclk)
+						uint8_t len, uint16_t poll_cnt, uint8_t toggle_tclk)
 {
 	return usbtomsp430jtag_poll(VERSALOON_MSP430_JTAG_PORT, dr, mask, value, 
 								len, poll_cnt, toggle_tclk);
@@ -1073,7 +1074,7 @@ RESULT versaloon_msp430sbw_reset(void)
 	return usbtomsp430sbw_reset(VERSALOON_MSP430_JTAG_PORT);
 }
 RESULT versaloon_msp430sbw_poll(uint32_t dr, uint32_t mask, uint32_t value, 
-								uint8_t len, uint16_t poll_cnt, uint8_t toggle_tclk)
+						uint8_t len, uint16_t poll_cnt, uint8_t toggle_tclk)
 {
 	return usbtomsp430sbw_poll(VERSALOON_MSP430_JTAG_PORT, dr, mask, value, 
 							   len, poll_cnt, toggle_tclk);
@@ -1125,14 +1126,14 @@ RESULT versaloon_i2c_set_speed(uint16_t kHz)
 {
 	return usbtoi2c_set_speed(VERSALOON_I2C_PORT, kHz);
 }
-RESULT versaloon_i2c_read(uint16_t chip_addr, uint8_t chip_addr_len, uint8_t *data, 
-						  uint16_t data_len, uint8_t stop)
+RESULT versaloon_i2c_read(uint16_t chip_addr, uint8_t chip_addr_len, 
+							uint8_t *data, uint16_t data_len, uint8_t stop)
 {
 	return usbtoi2c_read(VERSALOON_I2C_PORT, chip_addr, chip_addr_len, data, 
 						 data_len, stop);
 }
-RESULT versaloon_i2c_write(uint16_t chip_addr, uint8_t chip_addr_len, uint8_t *data, 
-						   uint16_t data_len, uint8_t stop)
+RESULT versaloon_i2c_write(uint16_t chip_addr, uint8_t chip_addr_len, 
+							uint8_t *data, uint16_t data_len, uint8_t stop)
 {
 	return usbtoi2c_write(VERSALOON_I2C_PORT, chip_addr, chip_addr_len, data, 
 						  data_len, stop);
@@ -1147,141 +1148,131 @@ RESULT versaloon_peripheral_commit(void)
 
 RESULT versaloon_init_capability(void *p)
 {
-	((programmer_info_t *)p)->init = versaloon_init;
-	((programmer_info_t *)p)->fini = versaloon_fini;
+	struct programmer_info_t *t = (struct programmer_info_t *)p;
 	
-	((programmer_info_t *)p)->interfaces = (SPI | GPIO | ISSP | JTAG_LL 
-											 | JTAG_HL | C2 | MSP430_JTAG 
-											 | MSP430_SBW | LPC_ICP | SWJ);
+	t->init = versaloon_init;
+	t->fini = versaloon_fini;
+	
+	t->interfaces = (SPI | GPIO | ISSP | JTAG_LL | JTAG_HL 
+						| C2 | MSP430_JTAG | MSP430_SBW | LPC_ICP | SWJ);
 	
 	// SPI
-	((programmer_info_t *)p)->spi_init = versaloon_spi_init;
-	((programmer_info_t *)p)->spi_fini = versaloon_spi_fini;
-	((programmer_info_t *)p)->spi_config = versaloon_spi_config;
-	((programmer_info_t *)p)->spi_io = versaloon_spi_io;
+	t->spi_init = versaloon_spi_init;
+	t->spi_fini = versaloon_spi_fini;
+	t->spi_config = versaloon_spi_config;
+	t->spi_io = versaloon_spi_io;
 	
 	// GPIO
-	((programmer_info_t *)p)->gpio_init = versaloon_gpio_init;
-	((programmer_info_t *)p)->gpio_fini = versaloon_gpio_fini;
-	((programmer_info_t *)p)->gpio_config = versaloon_gpio_config;
-	((programmer_info_t *)p)->gpio_in = versaloon_gpio_in;
-	((programmer_info_t *)p)->gpio_out = versaloon_gpio_out;
+	t->gpio_init = versaloon_gpio_init;
+	t->gpio_fini = versaloon_gpio_fini;
+	t->gpio_config = versaloon_gpio_config;
+	t->gpio_in = versaloon_gpio_in;
+	t->gpio_out = versaloon_gpio_out;
 	
 	// Delay
-	((programmer_info_t *)p)->delayms = versaloon_delay_ms;
-	((programmer_info_t *)p)->delayus = versaloon_delay_us;
+	t->delayms = versaloon_delay_ms;
+	t->delayus = versaloon_delay_us;
 	
-	((programmer_info_t *)p)->peripheral_commit= versaloon_peripheral_commit;
+	t->peripheral_commit= versaloon_peripheral_commit;
 	
 	// ISSP
-	((programmer_info_t *)p)->issp_init = versaloon_issp_init;
-	((programmer_info_t *)p)->issp_fini = versaloon_issp_fini;
-	((programmer_info_t *)p)->issp_enter_program_mode = 
-											versaloon_issp_enter_program_mode;
-	((programmer_info_t *)p)->issp_leave_program_mode = 
-											versaloon_issp_leave_program_mode;
-	((programmer_info_t *)p)->issp_wait_and_poll = 
-											versaloon_issp_wait_and_poll;
-	((programmer_info_t *)p)->issp_vector = versaloon_issp_vector;
-	((programmer_info_t *)p)->issp_commit = versaloon_peripheral_commit;
+	t->issp_init = versaloon_issp_init;
+	t->issp_fini = versaloon_issp_fini;
+	t->issp_enter_program_mode = versaloon_issp_enter_program_mode;
+	t->issp_leave_program_mode = versaloon_issp_leave_program_mode;
+	t->issp_wait_and_poll = versaloon_issp_wait_and_poll;
+	t->issp_vector = versaloon_issp_vector;
+	t->issp_commit = versaloon_peripheral_commit;
 	
 	// LPCICP
-	((programmer_info_t *)p)->lpcicp_init = versaloon_lpcicp_init;
-	((programmer_info_t *)p)->lpcicp_fini = versaloon_lpcicp_fini;
-	((programmer_info_t *)p)->lpcicp_enter_program_mode = versaloon_lpcicp_enter_program_mode;
-	((programmer_info_t *)p)->lpcicp_in = versaloon_lpcicp_in;
-	((programmer_info_t *)p)->lpcicp_out = versaloon_lpcicp_out;
-	((programmer_info_t *)p)->lpcicp_poll_ready = versaloon_lpcicp_poll_ready;
-	((programmer_info_t *)p)->lpcicp_commit = versaloon_peripheral_commit;
+	t->lpcicp_init = versaloon_lpcicp_init;
+	t->lpcicp_fini = versaloon_lpcicp_fini;
+	t->lpcicp_enter_program_mode = versaloon_lpcicp_enter_program_mode;
+	t->lpcicp_in = versaloon_lpcicp_in;
+	t->lpcicp_out = versaloon_lpcicp_out;
+	t->lpcicp_poll_ready = versaloon_lpcicp_poll_ready;
+	t->lpcicp_commit = versaloon_peripheral_commit;
 	
 	// Target voltage
-	((programmer_info_t *)p)->get_target_voltage = 
-											versaloon_get_target_voltage;
+	t->get_target_voltage = versaloon_get_target_voltage;
 	
 	// JTAG_HL & SWJ
-	((programmer_info_t *)p)->swj_init = versaloon_swj_init;
-	((programmer_info_t *)p)->swj_fini = versaloon_swj_fini;
-	((programmer_info_t *)p)->swj_seqout = versaloon_swj_seqout;
-	((programmer_info_t *)p)->swj_seqin = versaloon_swj_seqin;
-	((programmer_info_t *)p)->swj_transact = versaloon_swj_transact;
-	((programmer_info_t *)p)->swj_setpara = versaloon_swj_setpara;
-	((programmer_info_t *)p)->swj_commit = versaloon_swj_commit;
+	t->swj_init = versaloon_swj_init;
+	t->swj_fini = versaloon_swj_fini;
+	t->swj_seqout = versaloon_swj_seqout;
+	t->swj_seqin = versaloon_swj_seqin;
+	t->swj_transact = versaloon_swj_transact;
+	t->swj_setpara = versaloon_swj_setpara;
+	t->swj_commit = versaloon_swj_commit;
 
-	((programmer_info_t *)p)->jtag_hl_init = versaloon_jtaghl_init;
-	((programmer_info_t *)p)->jtag_hl_fini = versaloon_jtaghl_fini;
-	((programmer_info_t *)p)->jtag_hl_config= versaloon_jtaghl_config;
-	((programmer_info_t *)p)->jtag_hl_tms = versaloon_jtaghl_tms;
-	((programmer_info_t *)p)->jtag_hl_runtest = versaloon_jtaghl_runtest;
-	((programmer_info_t *)p)->jtag_hl_ir = versaloon_jtaghl_ir;
-	((programmer_info_t *)p)->jtag_hl_dr = versaloon_jtaghl_dr;
-	((programmer_info_t *)p)->jtag_hl_commit = versaloon_peripheral_commit;
-	((programmer_info_t *)p)->jtag_hl_register_callback = 
-											versaloon_jtaghl_register_callback;
+	t->jtag_hl_init = versaloon_jtaghl_init;
+	t->jtag_hl_fini = versaloon_jtaghl_fini;
+	t->jtag_hl_config= versaloon_jtaghl_config;
+	t->jtag_hl_tms = versaloon_jtaghl_tms;
+	t->jtag_hl_runtest = versaloon_jtaghl_runtest;
+	t->jtag_hl_ir = versaloon_jtaghl_ir;
+	t->jtag_hl_dr = versaloon_jtaghl_dr;
+	t->jtag_hl_commit = versaloon_peripheral_commit;
+	t->jtag_hl_register_callback = versaloon_jtaghl_register_callback;
 	
 	// JTAG_LL
-	((programmer_info_t *)p)->jtag_ll_init = versaloon_jtagll_connect;
-	((programmer_info_t *)p)->jtag_ll_fini = versaloon_jtagll_disconnect;
-	((programmer_info_t *)p)->jtag_ll_set_frequency = 
-											versaloon_jtagll_set_frequency;
-	((programmer_info_t *)p)->jtag_ll_tms = versaloon_jtagll_tms;
-	((programmer_info_t *)p)->jtag_ll_tms_clocks = versaloon_jtagll_tms_clocks;
-	((programmer_info_t *)p)->jtag_ll_scan = versaloon_jtagll_scan;
-	((programmer_info_t *)p)->jtag_ll_commit = versaloon_peripheral_commit;
+	t->jtag_ll_init = versaloon_jtagll_connect;
+	t->jtag_ll_fini = versaloon_jtagll_disconnect;
+	t->jtag_ll_set_frequency = versaloon_jtagll_set_frequency;
+	t->jtag_ll_tms = versaloon_jtagll_tms;
+	t->jtag_ll_tms_clocks = versaloon_jtagll_tms_clocks;
+	t->jtag_ll_scan = versaloon_jtagll_scan;
+	t->jtag_ll_commit = versaloon_peripheral_commit;
 	
 	// MSP430_JTAG
-	((programmer_info_t *)p)->msp430jtag_init = versaloon_msp430jtag_init;
-	((programmer_info_t *)p)->msp430jtag_fini = versaloon_msp430jtag_fini;
-	((programmer_info_t *)p)->msp430jtag_config = versaloon_msp430jtag_config;
-	((programmer_info_t *)p)->msp430jtag_ir = versaloon_msp430jtag_ir;
-	((programmer_info_t *)p)->msp430jtag_dr = versaloon_msp430jtag_dr;
-	((programmer_info_t *)p)->msp430jtag_tclk = versaloon_msp430jtag_tclk;
-	((programmer_info_t *)p)->msp430jtag_tclk_strobe = 
-											versaloon_msp430jtag_tclk_strobe;
-	((programmer_info_t *)p)->msp430jtag_reset = versaloon_msp430jtag_reset;
-	((programmer_info_t *)p)->msp430jtag_poll = versaloon_msp430jtag_poll;
+	t->msp430jtag_init = versaloon_msp430jtag_init;
+	t->msp430jtag_fini = versaloon_msp430jtag_fini;
+	t->msp430jtag_config = versaloon_msp430jtag_config;
+	t->msp430jtag_ir = versaloon_msp430jtag_ir;
+	t->msp430jtag_dr = versaloon_msp430jtag_dr;
+	t->msp430jtag_tclk = versaloon_msp430jtag_tclk;
+	t->msp430jtag_tclk_strobe = versaloon_msp430jtag_tclk_strobe;
+	t->msp430jtag_reset = versaloon_msp430jtag_reset;
+	t->msp430jtag_poll = versaloon_msp430jtag_poll;
 	
 	// MSP430_SBW
-	((programmer_info_t *)p)->msp430sbw_init = versaloon_msp430sbw_init;
-	((programmer_info_t *)p)->msp430sbw_fini = versaloon_msp430sbw_fini;
-	((programmer_info_t *)p)->msp430sbw_config = versaloon_msp430sbw_config;
-	((programmer_info_t *)p)->msp430sbw_ir = versaloon_msp430sbw_ir;
-	((programmer_info_t *)p)->msp430sbw_dr = versaloon_msp430sbw_dr;
-	((programmer_info_t *)p)->msp430sbw_tclk = versaloon_msp430sbw_tclk;
-	((programmer_info_t *)p)->msp430sbw_tclk_strobe = 
-											versaloon_msp430sbw_tclk_strobe;
-	((programmer_info_t *)p)->msp430sbw_reset = versaloon_msp430sbw_reset;
-	((programmer_info_t *)p)->msp430sbw_poll = versaloon_msp430sbw_poll;
+	t->msp430sbw_init = versaloon_msp430sbw_init;
+	t->msp430sbw_fini = versaloon_msp430sbw_fini;
+	t->msp430sbw_config = versaloon_msp430sbw_config;
+	t->msp430sbw_ir = versaloon_msp430sbw_ir;
+	t->msp430sbw_dr = versaloon_msp430sbw_dr;
+	t->msp430sbw_tclk = versaloon_msp430sbw_tclk;
+	t->msp430sbw_tclk_strobe = versaloon_msp430sbw_tclk_strobe;
+	t->msp430sbw_reset = versaloon_msp430sbw_reset;
+	t->msp430sbw_poll = versaloon_msp430sbw_poll;
 	
 	// C2
-	((programmer_info_t *)p)->c2_init = versaloon_c2_init;
-	((programmer_info_t *)p)->c2_fini = versaloon_c2_fini;
-	((programmer_info_t *)p)->c2_addr_write = versaloon_c2_addr_write;
-	((programmer_info_t *)p)->c2_addr_read = versaloon_c2_addr_read;
-	((programmer_info_t *)p)->c2_data_write = versaloon_c2_data_write;
-	((programmer_info_t *)p)->c2_data_read = versaloon_c2_data_read;
-	((programmer_info_t *)p)->c2_commit = versaloon_peripheral_commit;
+	t->c2_init = versaloon_c2_init;
+	t->c2_fini = versaloon_c2_fini;
+	t->c2_addr_write = versaloon_c2_addr_write;
+	t->c2_addr_read = versaloon_c2_addr_read;
+	t->c2_data_write = versaloon_c2_data_write;
+	t->c2_data_read = versaloon_c2_data_read;
+	t->c2_commit = versaloon_peripheral_commit;
 	
 	// I2C
-	((programmer_info_t *)p)->i2c_init = versaloon_i2c_init;
-	((programmer_info_t *)p)->i2c_fini = versaloon_i2c_fini;
-	((programmer_info_t *)p)->i2c_set_speed = versaloon_i2c_set_speed;
-	((programmer_info_t *)p)->i2c_read = versaloon_i2c_read;
-	((programmer_info_t *)p)->i2c_write = versaloon_i2c_write;
+	t->i2c_init = versaloon_i2c_init;
+	t->i2c_fini = versaloon_i2c_fini;
+	t->i2c_set_speed = versaloon_i2c_set_speed;
+	t->i2c_read = versaloon_i2c_read;
+	t->i2c_write = versaloon_i2c_write;
 	
 	// POLL
-	((programmer_info_t *)p)->poll_start = versaloon_poll_start;
-	((programmer_info_t *)p)->poll_end = versaloon_poll_end;
-	((programmer_info_t *)p)->poll_checkbyte = versaloon_poll_checkbyte;
+	t->poll_start = versaloon_poll_start;
+	t->poll_end = versaloon_poll_end;
+	t->poll_checkbyte = versaloon_poll_checkbyte;
 	
 	// Mass-product
-	((programmer_info_t *)p)->download_mass_product_data = 
-										versaloon_download_mass_product_data;
-	((programmer_info_t *)p)->query_mass_product_data_size = 
-										versaloon_query_mass_product_data_size;
+	t->download_mass_product_data = versaloon_download_mass_product_data;
+	t->query_mass_product_data_size = versaloon_query_mass_product_data_size;
 	
 	// firmware update
-	((programmer_info_t *)p)->enter_firmware_update_mode = 
-										versaloon_enter_firmware_update_mode;
+	t->enter_firmware_update_mode = versaloon_enter_firmware_update_mode;
 	
 	return ERROR_OK;
 }
@@ -1290,7 +1281,6 @@ uint32_t versaloon_display_programmer(void)
 {
 	printf(_GETTEXT("Supported Programmer by Versaloon driver:\n"));
 	return print_usb_devices(versaloon_vid, versaloon_pid, 
-							 VERSALOON_SERIALSTRING_INDEX, 
-							 versaloon_serialstring, VERSALOON_STRING);
+		VERSALOON_SERIALSTRING_INDEX, versaloon_serialstring, VERSALOON_STRING);
 }
 

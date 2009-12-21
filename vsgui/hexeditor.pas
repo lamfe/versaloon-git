@@ -35,8 +35,8 @@ type
     function Add(aStartAddr, aByteSize: cardinal): integer;
     function Add(aMemInfo: TMemInfo): integer;
     function GetIndexByAddr(aAddr: cardinal): integer;
-    property MemInfoItems[Index: integer]: TMemInfo
-      Read GetMemInfoItem Write SetMemInfoItem; default;
+    property Items[Index: integer]: TMemInfo Read GetMemInfoItem Write SetMemInfoItem;
+      default;
   end;
 
   { TFileParser }
@@ -125,7 +125,7 @@ type
     { public declarations }
     FileName:    string;
     Target:      string;
-    SegOffset:   int64;
+    SegAddr:     int64;
     AddressOffset: int64;
     StartAddress: cardinal;
     DataByteSize: cardinal;
@@ -198,20 +198,20 @@ begin
 
   for i := 0 to ChangeList.Count - 1 do
   begin
-    if (addr_offset + ChangeList.MemInfoItems[i].StartAddr + 1) > hFile.Size then
+    if (addr_offset + ChangeList.Items[i].StartAddr + 1) > hFile.Size then
     begin
       continue;
     end
-    else if (addr_offset + ChangeList.MemInfoItems[i].StartAddr +
-      ChangeList.MemInfoItems[i].ByteSize) > hFile.Size then
+    else if (addr_offset + ChangeList.Items[i].StartAddr +
+      ChangeList.Items[i].ByteSize) > hFile.Size then
     begin
-      ChangeList.MemInfoItems[i].ByteSize :=
-        hFile.Size - addr_offset - ChangeList.MemInfoItems[i].StartAddr;
+      ChangeList.Items[i].ByteSize :=
+        hFile.Size - addr_offset - ChangeList.Items[i].StartAddr;
     end;
 
-    hFile.Position := addr_offset + ChangeList.MemInfoItems[i].StartAddr;
-    hFile.Write((P + ChangeList.MemInfoItems[i].StartAddr)^,
-      ChangeList.MemInfoItems[i].ByteSize);
+    hFile.Position := addr_offset + ChangeList.Items[i].StartAddr;
+    hFile.Write((P + ChangeList.Items[i].StartAddr)^,
+      ChangeList.Items[i].ByteSize);
   end;
   Result := True;
 end;
@@ -462,15 +462,15 @@ begin
   P := @buffer;
   for i := 0 to ChangeList.Count - 1 do
   begin
-    while ChangeList.MemInfoItems[i].ByteSize > 0 do
+    while ChangeList.Items[i].ByteSize > 0 do
     begin
       FileLinePos := ReadHexFileLineByAddr(hFile, buff, start_addr +
-        addr_offset + ChangeList.MemInfoItems[i].StartAddr, seg_offset, LineInfo);
+        addr_offset + ChangeList.Items[i].StartAddr, seg_offset, LineInfo);
 
       if FileLinePos >= 0 then
       begin
         // found
-        cur_write_len := Min(LineInfo.ByteSize, ChangeList.MemInfoItems[i].ByteSize);
+        cur_write_len := Min(LineInfo.ByteSize, ChangeList.Items[i].ByteSize);
         Move((P + LineInfo.Addr - start_addr)^, buff[LineInfo.DataOffset],
           cur_write_len);
 
@@ -492,15 +492,15 @@ begin
           LineInfo.ByteSize);
         hFile.Write(str_tmp[1], 2);
 
-        ChangeList.MemInfoItems[i].ByteSize  :=
-          ChangeList.MemInfoItems[i].ByteSize - cur_write_len;
-        ChangeList.MemInfoItems[i].StartAddr :=
-          ChangeList.MemInfoItems[i].StartAddr + cur_write_len;
+        ChangeList.Items[i].ByteSize  :=
+          ChangeList.Items[i].ByteSize - cur_write_len;
+        ChangeList.Items[i].StartAddr :=
+          ChangeList.Items[i].StartAddr + cur_write_len;
       end
       else
       begin
         // no expanding hex file
-        ChangeList.MemInfoItems[i].ByteSize := 0;
+        ChangeList.Items[i].ByteSize := 0;
       end;
     end;
   end;
@@ -548,8 +548,8 @@ begin
   Result := -1;
   for i := 0 to Count - 1 do
   begin
-    if (MemInfoItems[i].StartAddr <= aAddr) and
-      ((MemInfoItems[i].StartAddr + MemInfoItems[i].ByteSize) > aAddr) then
+    if (Items[i].StartAddr <= aAddr) and
+      ((Items[i].StartAddr + Items[i].ByteSize) > aAddr) then
     begin
       Result := i;
       break;
@@ -574,7 +574,7 @@ begin
   found := False;
   for i := 0 to Count - 1 do
   begin
-    if aStartAddr <= (MemInfoItems[i].Tail + 1) then
+    if aStartAddr <= (Items[i].Tail + 1) then
     begin
       found := True;
       break;
@@ -588,7 +588,7 @@ begin
   end;
   Result := i;
   // merge or insert
-  if ((aTail + 1) < MemInfoItems[Result].Head) then
+  if ((aTail + 1) < Items[Result].Head) then
   begin
     // insert before
     Insert(i, TmemInfo.Create(aStartAddr, aByteSize));
@@ -596,24 +596,24 @@ begin
   else
   begin
     // merge
-    bTail := MemInfoItems[Result].Tail;
-    MemInfoItems[Result].StartAddr := Min(MemInfoItems[Result].StartAddr, aStartAddr);
-    MemInfoItems[Result].ByteSize :=
-      1 + Max(bTail, aTail) - MemInfoItems[Result].StartAddr;
+    bTail := Items[Result].Tail;
+    Items[Result].StartAddr := Min(Items[Result].StartAddr, aStartAddr);
+    Items[Result].ByteSize :=
+      1 + Max(bTail, aTail) - Items[Result].StartAddr;
 
     // try merge the descendant
     i := i + 1;
     while i < Count do
     begin
-      if (MemInfoItems[Result].Tail + 1) < MemInfoItems[i].Head then
+      if (Items[Result].Tail + 1) < Items[i].Head then
       begin
         break;
       end;
 
       // merge current
-      MemInfoItems[Result].ByteSize :=
-        1 + Max(MemInfoItems[Result].Tail, MemInfoItems[i].Tail) -
-        MemInfoItems[Result].StartAddr;
+      Items[Result].ByteSize :=
+        1 + Max(Items[Result].Tail, Items[i].Tail) -
+        Items[Result].StartAddr;
       Delete(i);
 
       Inc(i);
@@ -688,7 +688,7 @@ begin
   if (FileParser[CurFileParserIndex].ValidateFile <> nil) and
     (not FileParser[CurFileParserIndex].ValidateFile(hFile, DataBuff[1],
     DataBuffChangeList, DefaultData, DataByteSize, StartAddress,
-    SegOffset, AddressOffset)) then
+    SegAddr, AddressOffset)) then
   begin
     Beep();
     MessageDlg('Error', 'fail to write ' + FileName + '.', mtError, [mbOK], 0);
@@ -698,8 +698,8 @@ begin
   // Dirty corresponding lines
   for i := 0 to DataBuffChangeList.Count - 1 do
   begin
-    DirtyRowsByAddr(DataBuffChangeList.MemInfoItems[i].Head,
-      DataBuffChangeList.MemInfoItems[i].Tail);
+    DirtyRowsByAddr(DataBuffChangeList.Items[i].Head,
+      DataBuffChangeList.Items[i].Tail);
   end;
   DataBuffChangeList.Clear;
   // update dirty color
@@ -883,7 +883,7 @@ begin
       if FileParser[CurFileParserIndex].ReadFile <> nil then
       begin
         if not FileParser[CurFileParserIndex].ReadFile(hFile,
-          DataBuff[1], DataByteSize, StartAddress, SegOffset,
+          DataBuff[1], DataByteSize, StartAddress, SegAddr,
           AddressOffset) then
         begin
           success := False;

@@ -24,7 +24,7 @@
 #define COMM_AUXPIN_DISABLE				'N'
 #define COMM_AUXPIN_ENABLE				'A'
 
-typedef struct
+struct com_mode_t
 {
 	char comport[21];
 	int32_t baudrate;
@@ -33,19 +33,19 @@ typedef struct
 	char stopbit;
 	char handshake;
 	char auxpin;
-}com_mode_t;
+};
 
-typedef struct
+struct comisp_param_t
 {
 	const char *chip_name;
-	com_mode_t com_mode;
+	struct com_mode_t com_mode;
 	uint8_t default_char;
 	uint32_t flash_start_addr;
 	uint32_t flash_max_size;
-}comisp_param_t;
+};
 
-extern comisp_param_t comisp_chip_param;
-extern com_mode_t com_mode;
+extern struct comisp_param_t comisp_chip_param;
+extern struct com_mode_t com_mode;
 extern uint8_t comisp_execute_flag;
 extern uint32_t comisp_execute_addr;
 

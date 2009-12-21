@@ -50,9 +50,9 @@
 #define cur_target_defined			target_defined
 #define cur_program_area_map		msp430_program_area_map
 
-program_area_map_t msp430_program_area_map[] = 
+struct program_area_map_t msp430_program_area_map[] = 
 {
-	{APPLICATION, APPLICATION_CHAR, 1, 0, 0, MSP430_FLASH_CHAR},
+	{APPLICATION_CHAR, 1, 0, 0, 0, 0},
 	{0, 0, 0, 0, 0, 0}
 };
 
@@ -60,21 +60,8 @@ void msp430_usage(void)
 {
 	printf("\
 Usage of %s:\n\
-  -m,  --mode <MODE>                        set mode<j|s|b>\n\n", CUR_TARGET_STRING);
-}
-
-void msp430_support(void)
-{
-	uint32_t i;
-	
-	printf("Support list of %s:\n", CUR_TARGET_STRING);
-	for (i = 0; i < cur_chips_num; i++)
-	{
-		printf("%s: id = 0x%04x, prog_mode = %s\n", 
-			   cur_chips_param[i].chip_name, cur_chips_param[i].chip_id,
-			   cur_chips_param[i].program_mode_str);
-	}
-	printf("\n");
+  -m,  --mode <MODE>                        set mode<j|s|b>\n\n", 
+			CUR_TARGET_STRING);
 }
 
 RESULT msp430_parse_argument(char cmd, const char *argu)
@@ -86,9 +73,6 @@ RESULT msp430_parse_argument(char cmd, const char *argu)
 	case 'h':
 		msp430_usage();
 		break;
-	case 'S':
-		msp430_support();
-		break;
 	default:
 		return ERROR_FAIL;
 		break;
@@ -97,11 +81,12 @@ RESULT msp430_parse_argument(char cmd, const char *argu)
 	return ERROR_OK;
 }
 
-RESULT msp430_prepare_buffer(program_info_t *pi)
+RESULT msp430_prepare_buffer(struct program_info_t *pi)
 {
-	if (pi->app != NULL)
+	if (pi->program_areas[APPLICATION_IDX].buff != NULL)
 	{
-		memset(pi->app, MSP430_FLASH_CHAR, pi->app_size);
+		memset(pi->program_areas[APPLICATION_IDX].buff, MSP430_FLASH_CHAR, 
+				pi->program_areas[APPLICATION_IDX].size);
 	}
 	else
 	{
@@ -111,13 +96,14 @@ RESULT msp430_prepare_buffer(program_info_t *pi)
 	return ERROR_OK;
 }
 
-RESULT msp430_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr, 
-											  uint8_t* data, uint32_t length, 
-											  void* buffer)
+RESULT msp430_write_buffer_from_file_callback(uint32_t address, 
+			uint32_t seg_addr, uint8_t* data, uint32_t length, void* buffer)
 {
-	program_info_t *pi = (program_info_t *)buffer;
+	struct program_info_t *pi = (struct program_info_t *)buffer;
 	uint32_t mem_addr = address & 0x0000FFFF;
 	RESULT ret;
+	uint8_t *tbuff;
+	struct chip_area_info_t *areas;
 	
 #ifdef PARAM_CHECK
 	if ((length > 0) && (NULL == data))
@@ -134,12 +120,14 @@ RESULT msp430_write_buffer_from_file_callback(uint32_t address, uint32_t seg_add
 		return ERRCODE_NOT_SUPPORT;
 	}
 	
+	areas = cur_chip_param.chip_areas;
 	switch (address >> 16)
 	{
 	case 0x0000:
 		if (mem_addr >= Device_MainStart())
 		{
-			if (NULL == pi->app)
+			tbuff = pi->program_areas[APPLICATION_IDX].buff;
+			if (NULL == tbuff)
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_INVALID_BUFFER), 
 						  TO_STR(c8051f_flash_buffer));
@@ -147,20 +135,22 @@ RESULT msp430_write_buffer_from_file_callback(uint32_t address, uint32_t seg_add
 			}
 			
 			if ((mem_addr > 
-					(uint32_t)(Device_MainStart() + cur_chip_param.app_size)) 
-				|| (length > cur_chip_param.app_size) 
+					(uint32_t)(Device_MainStart() 
+						+ areas[APPLICATION_IDX].size)) 
+				|| (length > areas[APPLICATION_IDX].size) 
 				|| ((mem_addr + length) 
-					> (uint32_t)(Device_MainStart() + cur_chip_param.app_size)))
+					> (uint32_t)(Device_MainStart() 
+						+ areas[APPLICATION_IDX].size)))
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_INVALID_RANGE), "flash memory");
 				return ERRCODE_INVALID;
 			}
 			cur_target_defined |= APPLICATION;
 			
-			memcpy(pi->app + mem_addr - Device_MainStart(), data, length);
+			memcpy(tbuff + mem_addr - Device_MainStart(), data, length);
 			
-			ret = MEMLIST_Add(&pi->app_memlist, mem_addr, length, 
-							  cur_chip_param.app_page_size);
+			ret = MEMLIST_Add(&pi->program_areas[APPLICATION_IDX].memlist, 
+						mem_addr, length, areas[APPLICATION_IDX].page_size);
 			if (ret != ERROR_OK)
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
@@ -176,8 +166,7 @@ RESULT msp430_write_buffer_from_file_callback(uint32_t address, uint32_t seg_add
 		}
 		break;
 	default:
-		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_ADDRESS), address, 
-				  CUR_TARGET_STRING);
+		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_ADDRESS), address, CUR_TARGET_STRING);
 		return ERRCODE_INVALID;
 		break;
 	}
@@ -185,7 +174,7 @@ RESULT msp430_write_buffer_from_file_callback(uint32_t address, uint32_t seg_add
 	return ERROR_OK;
 }
 
-RESULT msp430_fini(program_info_t *pi, programmer_info_t *prog)
+RESULT msp430_fini(struct program_info_t *pi, struct programmer_info_t *prog)
 {
 	pi = pi;
 	prog = prog;
@@ -193,10 +182,10 @@ RESULT msp430_fini(program_info_t *pi, programmer_info_t *prog)
 	return ERROR_OK;
 }
 
-RESULT msp430_init(program_info_t *pi, programmer_info_t *prog)
+RESULT msp430_init(struct program_info_t *pi, struct programmer_info_t *prog)
 {
 	uint8_t i;
-	operation_t opt_tmp;
+	struct operation_t opt_tmp;
 	
 	memset(&opt_tmp, 0, sizeof(opt_tmp));
 	
@@ -211,7 +200,7 @@ RESULT msp430_init(program_info_t *pi, programmer_info_t *prog)
 	{
 		// auto detect
 		LOG_INFO(_GETTEXT(INFOMSG_TRY_AUTODETECT));
-		opt_tmp.read_operations = CHIP_ID;
+		opt_tmp.read_operations = CHIPID;
 		cur_chip_param.program_mode = MSP430_PROG_MODE_MASK;
 
 		if (ERROR_OK != msp430_program(opt_tmp, pi, prog))
@@ -225,18 +214,10 @@ RESULT msp430_init(program_info_t *pi, programmer_info_t *prog)
 		{
 			if (pi->chip_id == cur_chips_param[i].chip_id)
 			{
-				memcpy(&cur_chip_param, cur_chips_param + i, 
-					   sizeof(cur_chip_param));
+				pi->chip_name = (char *)cur_chips_param[i].chip_name;
+				LOG_INFO(_GETTEXT(INFOMSG_CHIP_FOUND), pi->chip_name);
 				
-				pi->app_size = cur_chip_param.app_size;
-				
-				LOG_INFO(_GETTEXT(INFOMSG_CHIP_FOUND), 
-						 cur_chip_param.chip_name);
-				pi->chip_name = (char *)cur_chip_param.chip_name;
-				
-				cur_program_area_map[0].area_start_addr = Device_MainStart();
-
-				return ERROR_OK;
+				goto Post_Init;
 			}
 		}
 		
@@ -249,17 +230,22 @@ RESULT msp430_init(program_info_t *pi, programmer_info_t *prog)
 		{
 			if (!strcmp(cur_chips_param[i].chip_name, pi->chip_name))
 			{
-				memcpy(&cur_chip_param, cur_chips_param + i, 
-					   sizeof(cur_chip_param));
-				
-				pi->app_size = cur_chip_param.app_size;
-				
-				return ERROR_OK;
+				goto Post_Init;
 			}
 		}
 		
 		return ERROR_FAIL;
 	}
+Post_Init:
+	memcpy(&cur_chip_param, cur_chips_param + i, 
+			sizeof(cur_chip_param));
+	
+	pi->program_areas[APPLICATION_IDX].size = 
+				cur_chip_param.chip_areas[APPLICATION_IDX].size;
+	
+	cur_program_area_map[0].start_addr = Device_MainStart();
+	
+	return ERROR_OK;
 }
 
 uint32_t msp430_interface_needed(void)
@@ -288,13 +274,13 @@ RESULT (*msp430jtagsbw_dr)(uint32_t *dr, uint8_t len, uint8_t want_ret);
 RESULT (*msp430jtagsbw_tclk)(uint8_t value);
 RESULT (*msp430jtagsbw_tclk_strobe)(uint16_t cnt);
 RESULT (*msp430jtagsbw_reset)(void);
-RESULT (*msp430jtagsbw_poll)(uint32_t dr, uint32_t mask, uint32_t value, uint8_t len, 
-							 uint16_t poll_cnt, uint8_t toggle_tclk);
+RESULT (*msp430jtagsbw_poll)(uint32_t dr, uint32_t mask, uint32_t value, 
+						uint8_t len, uint16_t poll_cnt, uint8_t toggle_tclk);
 
 
 #define get_target_voltage(v)					prog->get_target_voltage(v)
-RESULT msp430_program(operation_t operations, program_info_t *pi, 
-					  programmer_info_t *prog)
+RESULT msp430_program(struct operation_t operations, struct program_info_t *pi, 
+					  struct programmer_info_t *prog)
 {
 	uint16_t voltage;
 	
@@ -305,10 +291,10 @@ RESULT msp430_program(operation_t operations, program_info_t *pi,
 		return ERRCODE_INVALID_PARAMETER;
 	}
 	if ((   (operations.read_operations & APPLICATION) 
-			&& (NULL == pi->app)) 
+			&& (NULL == pi->program_areas[APPLICATION_IDX].buff)) 
 		|| ((   (operations.write_operations & APPLICATION) 
 				|| (operations.verify_operations & APPLICATION)) 
-			&& (NULL == pi->app)))
+			&& (NULL == pi->program_areas[APPLICATION_IDX].buff)))
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_BUFFER), "for flash");
 		return ERRCODE_INVALID_BUFFER;

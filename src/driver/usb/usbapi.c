@@ -30,7 +30,7 @@
 #include "usbapi.h"
 
 uint32_t print_usb_devices(uint16_t VID, uint16_t PID, uint8_t stringindex, 
-					   char *serialstring, char *prefix)
+							char *serialstring, char *prefix)
 {
 	usb_dev_handle *usb = NULL;
 	struct usb_bus *busses;
@@ -91,15 +91,13 @@ uint32_t print_usb_devices(uint16_t VID, uint16_t PID, uint8_t stringindex,
 					// print current device
 					if (config_value > 0)
 					{
-						printf(
-							_GETTEXT("%s%d: 0x%04X:0x%04X:%s on %s.\n"), 
-							prefix, c, VID, PID, buf, dev->filename);
+						printf(_GETTEXT("%s%d: 0x%04X:0x%04X:%s on %s.\n"), 
+								prefix, c, VID, PID, buf, dev->filename);
 					}
 					else
 					{
-						printf(
-							_GETTEXT("%s%d: 0x%04X:0x%04X on %s.\n"), 
-							prefix, c, VID, PID, dev->filename);
+						printf(_GETTEXT("%s%d: 0x%04X:0x%04X on %s.\n"), 
+								prefix, c, VID, PID, dev->filename);
 					}
 					c++;
 					
@@ -154,8 +152,7 @@ usb_dev_handle* find_usb_device(uint16_t VID, uint16_t PID, uint8_t interface,
 					uint8_t buf[256];
 					
 					config_value = usb_get_string_simple(usb, stringindex, 
-														 (char *)buf, 
-														 sizeof(buf));
+													(char *)buf, sizeof(buf));
 					if ((config_value < 0) 
 						|| (config_value != ((int)strlen(serialstring) + 1)))
 					{
@@ -184,8 +181,7 @@ usb_dev_handle* find_usb_device(uint16_t VID, uint16_t PID, uint8_t interface,
 				if (usb_set_configuration(usb, config_value) != 0)
 				{
 					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_MESSAGE), 
-							  "set configuration", 
-							  usb_strerror());
+								"set configuration", usb_strerror());
 					usb_close(usb);
 					usb = NULL;
 					continue;
@@ -193,8 +189,7 @@ usb_dev_handle* find_usb_device(uint16_t VID, uint16_t PID, uint8_t interface,
 				if (usb_claim_interface(usb, interface) != 0)
 				{
 					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_MESSAGE), 
-							  "claim interface", 
-							  usb_strerror());
+								"claim interface", usb_strerror());
 					usb_close(usb);
 					usb = NULL;
 					continue;

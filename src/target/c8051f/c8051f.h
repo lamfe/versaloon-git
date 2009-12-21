@@ -22,18 +22,17 @@
 #define C8051F_STRING					"c8051f"
 #define C8051F_PROGRAM_MODE_STR			"jc"
 
-extern const program_area_map_t c8051f_program_area_map[];
+extern const struct program_area_map_t c8051f_program_area_map[];
 
 RESULT c8051f_parse_argument(char cmd, const char *argu);
-RESULT c8051f_prepare_buffer(program_info_t *pi);
-RESULT c8051f_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr, 
-											  uint8_t* data, uint32_t length, 
-											  void* buffer);
-RESULT c8051f_init(program_info_t *pi, programmer_info_t *prog);
-RESULT c8051f_fini(program_info_t *pi, programmer_info_t *prog);
+RESULT c8051f_prepare_buffer(struct program_info_t *pi);
+RESULT c8051f_write_buffer_from_file_callback(uint32_t address, 
+			uint32_t seg_addr, uint8_t* data, uint32_t length, void* buffer);
+RESULT c8051f_init(struct program_info_t *pi, struct programmer_info_t *prog);
+RESULT c8051f_fini(struct program_info_t *pi, struct programmer_info_t *prog);
 uint32_t c8051f_interface_needed(void);
-RESULT c8051f_program(operation_t operations, program_info_t *pi, 
-					  programmer_info_t *prog);
+RESULT c8051f_program(struct operation_t operations, struct program_info_t *pi, 
+					  struct programmer_info_t *prog);
 
 #endif /* __C8051F_H_INCLUDED__ */
 

@@ -17,7 +17,8 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 #define VSPROG_VERSION		"VSProg " VERSION " " RELSTR PKGBLDREV
-#define VSPROG_COPYRIGHT	"CopyRight(c) 2008-2010 by SimonQian <SimonQian@SimonQian.com>"
+#define VSPROG_COPYRIGHT	\
+				"CopyRight(c) 2008-2010 by SimonQian <SimonQian@SimonQian.com>"
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -49,19 +50,20 @@
 #include "target.h"
 #include "hex.h"
 
-#define OPTSTR			"hvS:P:s:c:Mp:U:Dd:Go:l:f:F:m:x:C:I:O:J:Zb:V:"
+#define OPTSTR			"hvS:P:s:c:Mp:U:D:Ld:Go:l:f:F:m:x:C:I:O:J:Zb:V:"
 static const struct option long_opts[] =
 {
 	{"help", no_argument, NULL, 'h'},
 	{"version", no_argument, NULL, 'v'},
 	{"support", required_argument, NULL, 'S'},
 	{"parameter", required_argument, NULL, 'P'},
+	{"memory-detail", required_argument, NULL, 'D'},
 	{"target-series", required_argument, NULL, 's'},
 	{"target-module", required_argument, NULL, 'c'},
 	{"mass-product", no_argument, NULL, 'M'},
 	{"programmer", required_argument, NULL, 'p'},
 	{"usb", required_argument, NULL, 'U'},
-	{"display-programmer", no_argument, NULL, 'D'},
+	{"list-programmer", no_argument, NULL, 'L'},
 	{"debug", required_argument, NULL, 'd'},
 	{"gui-mode", no_argument, NULL, 'G'},
 	{"operation", required_argument, NULL, 'o'},
@@ -81,7 +83,7 @@ static const struct option long_opts[] =
 };
 
 int verbosity = LOG_DEFAULT_LEVEL;
-operation_t operations;
+struct operation_t operations;
 
 static char *program_name = NULL;
 static char *program_dir = NULL;
@@ -94,12 +96,26 @@ const char *config_dirs[] =
 	"./config/"
 };
 
-uint8_t program_mode = 0;
+const struct target_area_name_t target_area_name[9] = 
+{
+	{CHIPID_CHAR,		CHIPID,			"chipid"},
+	{BOOTLOADER_CHAR,	BOOTLOADER,		"bootloader"},
+	{APPLICATION_CHAR,	APPLICATION,	"flash"},
+	{EEPROM_CHAR,		EEPROM,			"eeprom"},
+	{OTPROM_CHAR,		OTPROM,			"otprom"},
+	{FUSE_CHAR,			FUSE,			"fuse"},
+	{LOCK_CHAR,			LOCK,			"lock"},
+	{USRSIG_CHAR,		USRSIG,			"usrsig"},
+	{CALIBRATION_CHAR,	CALIBRATION,	"calibration"}
+};
 
-filelist *fl_in = NULL, *fl_out = NULL;
+uint8_t program_mode = 0;
+uint16_t program_frequency = 0;
+
+struct filelist *fl_in = NULL, *fl_out = NULL;
 
 // for JTAT
-jtag_pos_t target_jtag_pos;
+struct jtag_pos_t target_jtag_pos;
 
 static void free_all(void)
 {
@@ -145,11 +161,11 @@ static void free_all_and_exit(int exit_code)
 	exit(exit_code);
 }
 
-static RESULT parse_operation(uint32_t *operation, uint32_t *require_input_num, 
+static RESULT parse_operation(uint32_t *operation, 
 							  const char *opt, uint32_t optlen)
 {
-	uint32_t mask = 0;
-	uint32_t i, j;
+	uint32_t mask = 0, tmp;
+	uint32_t i;
 	
 #if PARAM_CHECK
 	if ((NULL == operation) || (NULL == opt))
@@ -159,73 +175,16 @@ static RESULT parse_operation(uint32_t *operation, uint32_t *require_input_num,
 	}
 #endif
 	
-	if (require_input_num != NULL)
-	{
-		*require_input_num = 0;
-	}
-	
 	for (i = 0; i < optlen; i++)
 	{
-		j = 0;
-		if (cur_target != NULL)
+		tmp = target_area_mask(opt[i]);
+		if (tmp == 0)
 		{
-			while (cur_target->program_area_map[j].area_mask > 0)
-			{
-				if (cur_target->program_area_map[j].area_char == opt[i])
-				{
-					mask |= cur_target->program_area_map[j].area_mask;
-					if ((require_input_num != NULL) 
-						&& (cur_target->program_area_map[j].data_pos))
-					{
-						(*require_input_num)++;
-					}
-					break;
-				}
-				j++;
-			}
-			if (cur_target->program_area_map[j].area_mask > 0)
-			{
-				continue;
-			}
-			else
-			{
-				LOG_ERROR(_GETTEXT(ERRMSG_INVALID_CHARACTER), 
-						  opt[i], "current target");
-				return ERRCODE_INVALID;
-			}
+			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_CHARACTER), 
+						opt[i], "target area");
+			return ERROR_FAIL;
 		}
-		else
-		{
-			switch (opt[i])
-			{
-			case 'b':
-				mask |= BOOTLOADER;
-				break;
-			case 'a':
-				mask |= APPLICATION;
-				break;
-			case 'e':
-				mask |= EEPROM;
-				break;
-			case 'o':
-				mask |= OTP_ROM;
-				break;
-			case 'f':
-				mask |= FUSE;
-				break;
-			case 'l':
-				mask |= LOCK;
-				break;
-			case 'u':
-				mask |= USER_SIG;
-				break;
-			default:
-				LOG_ERROR(_GETTEXT(ERRMSG_INVALID_CHARACTER), 
-						  opt[i], "current target");
-				return ERRCODE_INVALID;
-				break;
-			}
-		}
+		mask |= tmp;
 	}
 	
 	*operation = mask;
@@ -248,6 +207,7 @@ Usage: %s [OPTION]...\n\
   -S,  --support <TARGET>                   display support information\n\
   -V,  --misc-cmd \"<CMD PARA>\"              run programmer defined command\n\
   -P,  --parameter <AREA>                   display parameter for target area\n\
+  -D,  --memory-detail <AREA>               display memory info for target area\n\
   -J,  --jtag-dc <UB UA BB BA>              set JTAG Daisy Chain\n\
   -d,  --debug <LEVEL>                      set debug level <0-2>\n\
   -s,  --target-series <SERIES>             set target series\n\
@@ -289,9 +249,11 @@ int main(int argc, char* argv[])
 	uint32_t require_hex_file_for_write = 0;
 	uint32_t seg_offset, addr_offset;
 	char *cur_pointer, *end_pointer;
-	char *arg[8], *cmd = NULL;
-	uint8_t arg_num;
+	char *Varg[8], *cmd = NULL;
+	uint8_t Varg_num;
 	RESULT ret;
+	uint32_t *popt_tmp;
+	struct filelist **fl_tmp;
 	
 	// get directory of the application
 	program_dir = (char *)malloc(strlen(argv[0]) + 1);
@@ -362,6 +324,7 @@ int main(int argc, char* argv[])
 	
 	// initialize varibles
 	memset(&program_info, 0, sizeof(program_info));
+	memset(&target_chip_param, 0, sizeof(target_chip_param));
 	
 	// if no argument, print help
 	if (1 == argc)
@@ -415,7 +378,7 @@ int main(int argc, char* argv[])
 			
 			verbosity = optarg[0] - '0';
 			break;
-		case 'D':
+		case 'L':
 			// --display-programmer
 			j = 0;
 			for (i = 0; programmers_info[i].name != NULL; i++)
@@ -427,6 +390,54 @@ int main(int argc, char* argv[])
 				LOG_INFO(_GETTEXT("no programmer supported found.\n"));
 			}
 			free_all_and_exit(EXIT_SUCCESS);
+		case 'D':
+			// --memory-detail
+			if (((NULL == program_info.chip_name) || (NULL == cur_target))
+				&& (NULL == program_info.chip_type))
+			{
+				LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "Target");
+				free_all_and_exit(EXIT_FAILURE);
+			}
+			if (((NULL == program_info.chip_name) || (NULL == cur_target))
+				&& (NULL != program_info.chip_type))
+			{
+				program_info.chip_name = program_info.chip_type;
+				target_init(&program_info);
+				if (NULL == cur_target)
+				{
+					LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "Target");
+					free_all_and_exit(EXIT_FAILURE);
+				}
+			}
+			if (strlen(optarg) > 1)
+			{
+				if (!strcmp(optarg, "all"))
+				{
+					optarg[0] = 0;
+				}
+				else
+				{
+					optarg[0] = target_area_char_by_fullname(optarg);
+					if (0 == optarg[0])
+					{
+						LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), (char)optc);
+						LOG_ERROR(_GETTEXT(ERRMSG_TRY_HELP));
+						free_all_and_exit(EXIT_FAILURE);
+					}
+				}
+			}
+			
+			ret = cur_target->init(&program_info, cur_programmer);
+			if (ret != ERROR_OK)
+			{
+				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+							"initialize target");
+				free_all_and_exit(EXIT_FAILURE);
+			}
+			
+			target_print_memory(optarg[0]);
+			free_all_and_exit(EXIT_SUCCESS);
+			break;
 		case 'P':
 			// --parameter [fuse/lock/calibration/flash/eeprom]
 			if ((NULL == program_info.chip_name) 
@@ -436,28 +447,27 @@ int main(int argc, char* argv[])
 				LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "Target");
 				free_all_and_exit(EXIT_FAILURE);
 			}
+			if (strlen(optarg) > 1)
+			{
+				optarg[0] = target_area_char_by_fullname(optarg);
+				optarg[1] = '\0';
+				if (0 == optarg[0])
+				{
+					LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), (char)optc);
+					LOG_ERROR(_GETTEXT(ERRMSG_TRY_HELP));
+					free_all_and_exit(EXIT_FAILURE);
+				}
+			}
 			
 			ret = cur_target->init(&program_info, cur_programmer);
 			if (ret != ERROR_OK)
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "initialize target");
+				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+							"initialize target");
 				free_all_and_exit(EXIT_FAILURE);
 			}
 			
-			if (!strcmp(optarg, "fuse") || !strcmp(optarg, "lock") 
-				|| !strcmp(optarg, "calibration"))
-			{
-				target_print_fl(optarg);
-			}
-			else if (!strcmp(optarg, "flash") || !strcmp(optarg, "eeprom"))
-			{
-				target_printf_fe(optarg);
-			}
-			else
-			{
-				LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT), optarg);
-				free_all_and_exit(EXIT_FAILURE);
-			}
+			target_print_setting(optarg[0]);
 			free_all_and_exit(EXIT_SUCCESS);
 		case 'S':
 			// --support [target/programmer/system]
@@ -555,140 +565,48 @@ int main(int argc, char* argv[])
 				LOG_ERROR(_GETTEXT(ERRMSG_TRY_SUPPORT));
 				free_all_and_exit(EXIT_FAILURE);
 			}
+			if (NULL == cur_target)
+			{
+				LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "target");
+				free_all_and_exit(EXIT_FAILURE);
+			}
 			
 			switch (optarg[0])
 			{
 			case 'e':
 				// Erase
-				if (operations.erase_operations != 0)
-				{
-					LOG_ERROR(_GETTEXT(ERRMSG_MUTIPLE_DEFINED), 
-							  "erase operation");
-					free_all_and_exit(EXIT_FAILURE);
-				}
-				if (0 == argu_num)
-				{
-					operations.erase_operations |= ALL;
-				}
-				else
-				{
-					ret = parse_operation(&operations.erase_operations, NULL, 
-										  optarg + 1, argu_num);
-					if (ret != ERROR_OK)
-					{
-						LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-								  "parse erase operation");
-						free_all_and_exit(EXIT_FAILURE);
-					}
-				}
-				break;
+				popt_tmp = &operations.erase_operations;
+				goto Parse_Operation;
 			case 'r':
 				// Read
-				if ((operations.read_operations 
-						& ~operations.verify_operations) 
-					!= 0)
-				{
-					LOG_ERROR(_GETTEXT(ERRMSG_MUTIPLE_DEFINED), 
-							  "read operation");
-					free_all_and_exit(EXIT_FAILURE);
-				}
-				if (0 == argu_num)
-				{
-					for (j = 0; 
-						 cur_target->program_area_map[j].area_mask > 0; j++)
-					{
-						operations.read_operations |= 
-									cur_target->program_area_map[j].area_mask;
-						require_hex_file_for_write += 
-									cur_target->program_area_map[j].data_pos;
-					}
-				}
-				else
-				{
-					uint32_t require_input_num;
-					uint32_t tmp_value;
-					ret = parse_operation(&tmp_value, &require_input_num, 
-										  optarg + 1, argu_num);
-					if (ret != ERROR_OK)
-					{
-						LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-								  "parse read operation");
-						free_all_and_exit(EXIT_FAILURE);
-					}
-					operations.read_operations |= tmp_value;
-					require_hex_file_for_write += require_input_num;
-				}
-				break;
+				popt_tmp = &operations.read_operations;
+				goto Parse_Operation;
 			case 'v':
 				// Verify
-				if (operations.verify_operations != 0)
-				{
-					LOG_ERROR(_GETTEXT(ERRMSG_MUTIPLE_DEFINED), 
-							  "verify operation");
-					free_all_and_exit(EXIT_FAILURE);
-				}
-				if (0 == argu_num)
-				{
-					for (j = 0; 
-						 cur_target->program_area_map[j].area_mask > 0; j++)
-					{
-						operations.verify_operations |= 
-									cur_target->program_area_map[j].area_mask;
-						require_hex_file_for_read += 
-									cur_target->program_area_map[j].data_pos;
-					}
-				}
-				else
-				{
-					uint32_t require_input_num;
-					
-					ret = parse_operation(&operations.verify_operations, 
-										  &require_input_num, optarg + 1, 
-										  argu_num);
-					if (ret != ERROR_OK)
-					{
-						LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-								  "parse verify operation");
-						free_all_and_exit(EXIT_FAILURE);
-					}
-					require_hex_file_for_read += require_input_num;
-				}
-				
-				operations.read_operations |= operations.verify_operations;
-				break;
+				popt_tmp = &operations.verify_operations;
+				goto Parse_Operation;
 			case 'w':
 				// Write
-				if (operations.write_operations != 0)
+				popt_tmp = &operations.write_operations;
+Parse_Operation:
+				if (*popt_tmp != 0)
 				{
-					LOG_ERROR(_GETTEXT(ERRMSG_MUTIPLE_DEFINED), 
-							  "write operation");
+					LOG_ERROR(_GETTEXT(ERRMSG_MUTIPLE_DEFINED), "operation");
 					free_all_and_exit(EXIT_FAILURE);
 				}
 				if (0 == argu_num)
 				{
-					for (j = 0; 
-						 cur_target->program_area_map[j].area_mask > 0; j++)
-					{
-						operations.write_operations |= 
-									cur_target->program_area_map[j].area_mask;
-						require_hex_file_for_read += 
-									cur_target->program_area_map[j].data_pos;
-					}
+					*popt_tmp = ALL;
 				}
 				else
 				{
-					uint32_t require_input_num;
-					
-					ret = parse_operation(&operations.write_operations, 
-										  &require_input_num, optarg + 1, 
-										  argu_num);
+					ret = parse_operation(popt_tmp, optarg + 1, argu_num);
 					if (ret != ERROR_OK)
 					{
 						LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
 								  "parse write operation");
 						free_all_and_exit(EXIT_FAILURE);
 					}
-					require_hex_file_for_read += require_input_num;
 				}
 				break;
 			default:
@@ -700,6 +618,12 @@ int main(int argc, char* argv[])
 			break;
 		case 'I':
 			// --input-file
+			fl_tmp = &fl_in;
+			goto Parse_File;
+		case 'O':
+			// --output-file
+			fl_tmp = &fl_out;
+Parse_File:
 			if ((('"' == optarg[0]) && ('"' == optarg[strlen(optarg) - 1])) 
 			|| (('\'' == optarg[0]) && ('\'' == optarg[strlen(optarg) - 1])))
 			{
@@ -732,7 +656,8 @@ int main(int argc, char* argv[])
 				if (*end_pointer != '\0')
 				{
 					cur_pointer = end_pointer + 1;
-					addr_offset = (uint32_t)strtoul(cur_pointer, &end_pointer, 0);
+					addr_offset = \
+							(uint32_t)strtoul(cur_pointer, &end_pointer, 0);
 					if ((cur_pointer == end_pointer) || (*end_pointer != '\0'))
 					{
 						LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), (char)optc);
@@ -743,64 +668,16 @@ int main(int argc, char* argv[])
 			}
 			
 			if (ERROR_OK != 
-					FILELIST_Add(&fl_in, optarg, seg_offset, addr_offset))
+					FILELIST_Add(fl_tmp, optarg, seg_offset, addr_offset))
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_HANDLE_DEVICE), 
 							"add file", optarg);
 				free_all_and_exit(EXIT_FAILURE);
 			}
 			break;
-		case 'O':
-			// --output-file
-			if ((('"' == optarg[0]) && ('"' == optarg[strlen(optarg) - 1])) 
-			|| (('\'' == optarg[0]) && ('\'' == optarg[strlen(optarg) - 1])))
-			{
-				((char *)optarg)[strlen(optarg) - 1] = '\0';
-				strcpy((char *)optarg, optarg + 1);
-			}
-			
-			for (i = strlen(optarg) - 1; i > 0; i--)
-			{
-				if ('@' == optarg[i])
-				{
-					break;
-				}
-			}
-			seg_offset = addr_offset = 0;
-			if (i > 0)
-			{
-				optarg[i] = '\0';
-				cur_pointer = &optarg[i + 1];
-				seg_offset = (uint32_t)strtoul(cur_pointer, &end_pointer, 0);
-				if ((cur_pointer == end_pointer) 
-					|| ((*end_pointer != '\0') 
-						&& ((*end_pointer != ',') 
-							|| (*(end_pointer + 1) == '\0'))))
-				{
-					LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), (char)optc);
-					LOG_ERROR(_GETTEXT(ERRMSG_TRY_HELP));
-					free_all_and_exit(EXIT_FAILURE);
-				}
-				if (*end_pointer != '\0')
-				{
-					cur_pointer = end_pointer + 1;
-					addr_offset = (uint32_t)strtoul(cur_pointer, &end_pointer, 0);
-					if ((cur_pointer == end_pointer) || (*end_pointer != '\0'))
-					{
-						LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), (char)optc);
-						LOG_ERROR(_GETTEXT(ERRMSG_TRY_HELP));
-						free_all_and_exit(EXIT_FAILURE);
-					}
-				}
-			}
-			
-			if (ERROR_OK != 
-					FILELIST_Add(&fl_out, optarg, seg_offset, addr_offset))
-			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_HANDLE_DEVICE), 
-							"add file", optarg);
-				free_all_and_exit(EXIT_FAILURE);
-			}
+		case 'F':
+			// --frequency
+			program_frequency = (uint16_t)strtoul(optarg, NULL, 0);
 			break;
 		case 'J':
 			// --jtag-dc
@@ -862,7 +739,7 @@ int main(int argc, char* argv[])
 			
 			program_mode = 
 				1 << (strchr(cur_target->program_mode_str, optarg[0]) 
-											- cur_target->program_mode_str);
+						- cur_target->program_mode_str);
 			break;
 		case 'M':
 			// --mass-product
@@ -913,14 +790,14 @@ int main(int argc, char* argv[])
 			cmd = optarg;
 			
 			// parse arg
-			memset(arg, 0, sizeof(arg));
-			arg_num = 0;
+			memset(Varg, 0, sizeof(Varg));
+			Varg_num = 0;
 			for (i = 0; i < strlen(optarg); i++)
 			{
 				if ((' ' == optarg[i]) && (optarg[i + 1] != '\0'))
 				{
 					optarg[i]= '\0';
-					arg[arg_num++] = &optarg[i + 1];
+					Varg[Varg_num++] = &optarg[i + 1];
 				}
 			}
 			
@@ -952,7 +829,8 @@ int main(int argc, char* argv[])
 						  cur_programmer->name);
 				free_all_and_exit(EXIT_FAILURE);
 			}
-			cur_programmer->misc_cmd[i].processor(arg_num, (const char **)&arg);
+			cur_programmer->misc_cmd[i].processor(Varg_num, 
+											(const char **)&Varg);
 			cur_programmer->fini();
 			free_all_and_exit(EXIT_SUCCESS);
 			break;
@@ -995,11 +873,11 @@ int main(int argc, char* argv[])
 	// check filelist and open file
 	// error if output file is meanwhile input file
 	{
-		filelist *fl_out_tmp = fl_out;
+		struct filelist *fl_out_tmp = fl_out;
 		
 		while (fl_out_tmp != NULL)
 		{
-			filelist *fl_in_tmp = fl_in;
+			struct filelist *fl_in_tmp = fl_in;
 			
 			while (fl_in_tmp != NULL)
 			{
@@ -1041,6 +919,8 @@ int main(int argc, char* argv[])
 	}
 	
 	// check file
+	target_prepare_operations(&operations, 
+					&require_hex_file_for_read, &require_hex_file_for_write);
 	if ((require_hex_file_for_read > 0) 
 		&& ((NULL == fl_in) || (NULL == fl_in->path) || (NULL == fl_in->file)))
 	{
@@ -1110,7 +990,7 @@ int main(int argc, char* argv[])
 	cur_target->prepare_buffer(&program_info);
 	if (require_hex_file_for_read > 0)
 	{
-		filelist *fl = fl_in;
+		struct filelist *fl = fl_in;
 		
 		if (NULL == cur_target->write_buffer_from_file_callback)
 		{
@@ -1198,8 +1078,7 @@ int main(int argc, char* argv[])
 			
 			// get mass-product data
 			ret = cur_target->prepare_mass_product_data(operations, 
-														&program_info, 
-														data_buf + 1);
+										&program_info, data_buf + 1);
 			if (ret != ERROR_OK)
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
@@ -1208,14 +1087,13 @@ int main(int argc, char* argv[])
 			}
 			
 			// set target index
-			data_buf[0] = 
-				(uint8_t)abs((int)((uint8_t*)cur_target - (uint8_t*)&targets_info)) 
-				/ sizeof(targets_info[0]);
+			data_buf[0] = (uint8_t)
+				(abs((int)((uint8_t*)cur_target - (uint8_t*)&targets_info)) 
+					/ sizeof(targets_info[0]));
 			
 			// download mass-product data to programmer
 			ret = cur_programmer->download_mass_product_data(cur_target->name, 
-															 data_buf, 
-															 target_size);
+														data_buf, target_size);
 			if (ret != ERROR_OK)
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
@@ -1238,11 +1116,10 @@ int main(int argc, char* argv[])
 			|| operations.write_operations))
 		{
 			// no operation defined, read chip id
-			operations.read_operations = CHIP_ID;
+			operations.read_operations = CHIPID;
 		}
 		
-		ret = cur_target->program(operations, &program_info, 
-								  cur_programmer);
+		ret = cur_target->program(operations, &program_info, cur_programmer);
 		if (ret != ERROR_OK)
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATE_DEVICE), cur_target->name);
@@ -1252,24 +1129,23 @@ int main(int argc, char* argv[])
 		// save contect to file for read operation
 		if (cur_target != NULL)
 		{
-			program_area_map_t *p_map = 
-					(program_area_map_t *)cur_target->program_area_map;
+			struct program_area_map_t *p_map = 
+					(struct program_area_map_t *)cur_target->program_area_map;
 			
-			while (p_map->area_mask != 0)
+			while (p_map->name != 0)
 			{
 				if ((p_map->data_pos) 
-					&& (operations.read_operations & p_map->area_mask) 
-					&& !(operations.verify_operations & p_map->area_mask))
+					&& (operations.read_operations 
+						& target_area_mask(p_map->name)))
 				{
 					uint8_t *buff = NULL;
 					uint32_t size = 0;
 					
-					target_get_target_by_mask(p_map->area_mask, &buff, &size);
+					target_get_target_area(p_map->name, &buff, &size);
 					if ((buff != NULL) && (size > 0) && (fl_out != NULL))
 					{
 						if (ERROR_OK != save_target_to_file(fl_out, buff, size, 
-															p_map->area_seg_addr, 
-															p_map->area_start_addr))
+											p_map->seg_addr, p_map->start_addr))
 						{
 							LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
 										"write data to file");

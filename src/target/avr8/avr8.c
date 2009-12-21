@@ -47,16 +47,16 @@
 #define cur_flash_offset			avr8_flash_offset
 #define cur_eeprom_offset			avr8_eeprom_offset
 #define cur_prog_mode				program_mode
-#define cur_frequency				avr8_isp_frequency
 #define cur_target_defined			target_defined
+#define cur_program_area_map		avr8_program_area_map
 
-const program_area_map_t avr8_program_area_map[] = 
+const struct program_area_map_t avr8_program_area_map[] = 
 {
-	{APPLICATION, APPLICATION_CHAR, 1, 0, 0, AVR8_FLASH_CHAR},
-	{EEPROM, EEPROM_CHAR, 1, 2, 0, AVR8_EEPROM_CHAR},
-	{FUSE, FUSE_CHAR, 0, 0, 0, AVR8_FUSE_CHAR},
-	{LOCK, LOCK_CHAR, 0, 0, 0, AVR8_LOCK_CHAR},
-	{CALIBRATION, CALIBRATION_CHAR, 0, 0, 0, 0},
+	{APPLICATION_CHAR, 1, 0, 0, 0, 0},
+	{EEPROM_CHAR, 1, 0, 0, 2, 0},
+	{FUSE_CHAR, 0, 0, 0, 0, 0},
+	{LOCK_CHAR, 0, 0, 0, 0, 0},
+	{CALIBRATION_CHAR, 0, 0, 0, 0, 0},
 	{0, 0, 0, 0, 0, 0}
 };
 
@@ -66,8 +66,6 @@ static uint32_t avr8_eeprom_offset = 0;
 static uint8_t avr8_lock = AVR8_LOCK_CHAR;
 static uint32_t avr8_fuse = AVR8_FUSE_CHAR;
 
-uint16_t avr8_isp_frequency = 560;
-
 
 static void avr8_usage(void)
 {
@@ -76,33 +74,8 @@ Usage of %s:\n\
   -F,  --frequency <FREQUENCY>              set ISP frequency, in KHz\n\
   -l,  --lock <LOCK>                        set lock\n\
   -f,  --fuse <FUSE>                        set fuse\n\
-  -m,  --mode <MODE>                        set mode<b|p>\n\n", CUR_TARGET_STRING);
-}
-
-static void avr8_support(void)
-{
-	uint32_t i;
-	
-	printf("Support list of %s:\n", CUR_TARGET_STRING);
-	for (i = 0; i < cur_chips_num; i++)
-	{
-		printf("%s: signature = 0x%06x, prog_mode = %s, \
-eeprom_size = %d, \
-fuse_default = 0x%06X, fuse_bytelen = %d, \
-lock_default = 0x%02X, lock_bytelen = %d, \
-cali_default = 0x%08X, cali_bytelen = %d\n", 
-				cur_chips_param[i].chip_name, 
-				cur_chips_param[i].chip_id, 
-				cur_chips_param[i].program_mode_str, 
-				cur_chips_param[i].ee_size, 
-				cur_chips_param[i].fuse_default_value, 
-				cur_chips_param[i].fuse_size, 
-				cur_chips_param[i].lock_default_value, 
-				cur_chips_param[i].lock_size, 
-				cur_chips_param[i].cali_default_value, 
-				cur_chips_param[i].cali_size);
-	}
-	printf("\n");
+  -m,  --mode <MODE>                        set mode<b|p>\n\n", 
+			CUR_TARGET_STRING);
 }
 
 RESULT avr8_parse_argument(char cmd, const char *argu)
@@ -111,20 +84,6 @@ RESULT avr8_parse_argument(char cmd, const char *argu)
 	{
 	case 'h':
 		avr8_usage();
-		break;
-	case 'S':
-		avr8_support();
-		break;
-	case 'F':
-		// set Frequency
-		if (NULL == argu)
-		{
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), cmd);
-			return ERRCODE_INVALID_OPTION;
-		}
-		
-		cur_frequency = (uint16_t)strtoul(argu, NULL, 0);
-		
 		break;
 	case 'l':
 		// define Lock
@@ -158,39 +117,42 @@ RESULT avr8_parse_argument(char cmd, const char *argu)
 	return ERROR_OK;
 }
 
-RESULT avr8_prepare_buffer(program_info_t *pi)
+RESULT avr8_prepare_buffer(struct program_info_t *pi)
 {
-	if (pi->app != NULL)
+	if (pi->program_areas[APPLICATION_IDX].buff != NULL)
 	{
-		memset(pi->app, AVR8_FLASH_CHAR, pi->app_size);
+		memset(pi->program_areas[APPLICATION_IDX].buff, AVR8_FLASH_CHAR, 
+				pi->program_areas[APPLICATION_IDX].size);
 	}
 	else
 	{
 		return ERROR_FAIL;
 	}
 	
-	if (pi->eeprom != NULL)
+	if (pi->program_areas[EEPROM_IDX].buff != NULL)
 	{
-		memset(pi->eeprom, AVR8_EEPROM_CHAR, pi->eeprom_size);
+		memset(pi->program_areas[EEPROM_IDX].buff, AVR8_EEPROM_CHAR, 
+				pi->program_areas[EEPROM_IDX].size);
 	}
 	else
 	{
 		return ERROR_FAIL;
 	}
 	
-	pi->lock_value = avr8_lock;
-	pi->fuse_value = avr8_fuse;
+	pi->program_areas[LOCK_IDX].value = avr8_lock;
+	pi->program_areas[FUSE_IDX].value = avr8_fuse;
 	
 	return ERROR_OK;
 }
 
-RESULT avr8_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr, 
-											uint8_t* data, uint32_t length, 
-											void* buffer)
+RESULT avr8_write_buffer_from_file_callback(uint32_t address, 
+			uint32_t seg_addr, uint8_t* data, uint32_t length, void* buffer)
 {
-	program_info_t *pi = (program_info_t *)buffer;
+	struct program_info_t *pi = (struct program_info_t *)buffer;
 	uint32_t mem_addr = address & 0x0001FFFF, page_size;
 	RESULT ret;
+	uint8_t *tbuff;
+	struct chip_area_info_t *areas;
 
 #ifdef PARAM_CHECK
 	if ((length > 0) && (NULL == data))
@@ -200,20 +162,22 @@ RESULT avr8_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr,
 	}
 #endif
 	
+	areas = cur_chip_param.chip_areas;
 	switch (seg_addr)
 	{
 	case 0x0010:
 		mem_addr += 0x00010000;
 	case 0x0000:
 		// Flash
-		if (NULL == pi->app)
+		tbuff = pi->program_areas[APPLICATION_IDX].buff;
+		if (NULL == tbuff)
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_BUFFER), "pi->app");
 			return ERRCODE_INVALID_BUFFER;
 		}
 		
-		if ((0 == cur_chip_param.app_page_num) 
-			|| (0 == cur_chip_param.app_page_size))
+		if ((0 == areas[APPLICATION_IDX].page_num) 
+			|| (0 == areas[APPLICATION_IDX].page_size))
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_INVALID), "Flash", 
 					  cur_chip_param.chip_name);
@@ -221,27 +185,28 @@ RESULT avr8_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr,
 		}
 		
 		mem_addr += cur_flash_offset;
-		if ((mem_addr >= cur_chip_param.app_size) 
-			|| (length > cur_chip_param.app_size) 
-			|| ((mem_addr + length) > cur_chip_param.app_size))
+		if ((mem_addr >= areas[APPLICATION_IDX].size) 
+			|| (length > areas[APPLICATION_IDX].size) 
+			|| ((mem_addr + length) > areas[APPLICATION_IDX].size))
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_RANGE), "flash memory");
 			return ERRCODE_INVALID;
 		}
 		cur_target_defined |= APPLICATION;
 		
-		memcpy(pi->app + mem_addr, data, length);
+		memcpy(tbuff + mem_addr, data, length);
 		
-		if (cur_chip_param.app_page_num > 1)
+		if (areas[APPLICATION_IDX].page_num > 1)
 		{
-			page_size = cur_chip_param.app_page_size;
+			page_size = areas[APPLICATION_IDX].page_size;
 		}
 		else
 		{
 			page_size = 256;
 		}
 		
-		ret = MEMLIST_Add(&pi->app_memlist, mem_addr, length, page_size);
+		ret = MEMLIST_Add(&pi->program_areas[APPLICATION_IDX].memlist, 
+								mem_addr, length, page_size);
 		if (ret != ERROR_OK)
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "add memory list");
@@ -250,15 +215,16 @@ RESULT avr8_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr,
 		break;
 	case 0x0002:
 		// EEPROM
-		if (NULL == pi->eeprom)
+		tbuff = pi->program_areas[EEPROM_IDX].buff;
+		if (NULL == tbuff)
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_BUFFER), 
 					  "eeprom");
 			return ERRCODE_INVALID_BUFFER;
 		}
 		
-		if ((0 == cur_chip_param.ee_page_num) 
-			|| (0 == cur_chip_param.ee_page_size))
+		if ((0 == areas[EEPROM_IDX].page_num) 
+			|| (0 == areas[EEPROM_IDX].page_size))
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_INVALID), "Eeprom", 
 					  cur_chip_param.chip_name);
@@ -266,27 +232,28 @@ RESULT avr8_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr,
 		}
 		
 		mem_addr += cur_eeprom_offset;
-		if ((mem_addr >= cur_chip_param.ee_size) || 
-			(length > cur_chip_param.ee_size) || 
-			((mem_addr + length) > cur_chip_param.ee_size))
+		if ((mem_addr >= areas[EEPROM_IDX].size) || 
+			(length > areas[EEPROM_IDX].size) || 
+			((mem_addr + length) > areas[EEPROM_IDX].size))
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_RANGE), "eeprom memory");
 			return ERRCODE_INVALID;
 		}
 		cur_target_defined |= EEPROM;
 		
-		memcpy(pi->eeprom + mem_addr, data, length);
+		memcpy(tbuff + mem_addr, data, length);
 		
-		if (cur_chip_param.ee_page_num > 1)
+		if (areas[EEPROM_IDX].page_num > 1)
 		{
-			page_size = cur_chip_param.ee_page_size;
+			page_size = areas[EEPROM_IDX].page_size;
 		}
 		else
 		{
 			page_size = 256;
 		}
 		
-		ret = MEMLIST_Add(&pi->eeprom_memlist, mem_addr, length, page_size);
+		ret = MEMLIST_Add(&pi->program_areas[EEPROM_IDX].memlist, mem_addr, 
+							length, page_size);
 		if (ret != ERROR_OK)
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "add memory list");
@@ -303,7 +270,7 @@ RESULT avr8_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr,
 	return ERROR_OK;
 }
 
-RESULT avr8_fini(program_info_t *pi, programmer_info_t *prog)
+RESULT avr8_fini(struct program_info_t *pi, struct programmer_info_t *prog)
 {
 	pi = pi;
 	prog = prog;
@@ -311,10 +278,10 @@ RESULT avr8_fini(program_info_t *pi, programmer_info_t *prog)
 	return ERROR_OK;
 }
 
-RESULT avr8_init(program_info_t *pi, programmer_info_t *prog)
+RESULT avr8_init(struct program_info_t *pi, struct programmer_info_t *prog)
 {
 	uint8_t i;
-	operation_t opt_tmp;
+	struct operation_t opt_tmp;
 	
 	memset(&opt_tmp, 0, sizeof(opt_tmp));
 	
@@ -331,7 +298,7 @@ RESULT avr8_init(program_info_t *pi, programmer_info_t *prog)
 	{
 		// auto detect
 		LOG_INFO(_GETTEXT(INFOMSG_TRY_AUTODETECT));
-		opt_tmp.read_operations = CHIP_ID;
+		opt_tmp.read_operations = CHIPID;
 		cur_chip_param.program_mode = AVR8_PROG_MODE_MASK;
 		
 		if (ERROR_OK != avr8_program(opt_tmp, pi, prog))
@@ -345,17 +312,10 @@ RESULT avr8_init(program_info_t *pi, programmer_info_t *prog)
 		{
 			if (pi->chip_id == cur_chips_param[i].chip_id)
 			{
-				memcpy(&cur_chip_param, cur_chips_param + i, 
-					   sizeof(cur_chip_param));
+				pi->chip_name = (char *)cur_chips_param[i].chip_name;
+				LOG_INFO(_GETTEXT(INFOMSG_CHIP_FOUND), pi->chip_name);
 				
-				pi->app_size = cur_chip_param.app_size;
-				pi->eeprom_size = cur_chip_param.ee_size;
-				
-				LOG_INFO(_GETTEXT(INFOMSG_CHIP_FOUND), 
-						 cur_chip_param.chip_name);
-				pi->chip_name = (char *)cur_chip_param.chip_name;
-				
-				return ERROR_OK;
+				goto Post_Init;
 			}
 		}
 		
@@ -368,18 +328,22 @@ RESULT avr8_init(program_info_t *pi, programmer_info_t *prog)
 		{
 			if (!strcmp(cur_chips_param[i].chip_name, pi->chip_name))
 			{
-				memcpy(&cur_chip_param, cur_chips_param + i, 
-					   sizeof(cur_chip_param));
-				
-				pi->app_size = cur_chip_param.app_size;
-				pi->eeprom_size = cur_chip_param.ee_size;
-				
-				return ERROR_OK;
+				goto Post_Init;
 			}
 		}
 		
 		return ERROR_FAIL;
 	}
+Post_Init:
+	memcpy(&cur_chip_param, cur_chips_param + i, 
+		   sizeof(cur_chip_param));
+	
+	pi->program_areas[APPLICATION_IDX].size = 
+				cur_chip_param.chip_areas[APPLICATION_IDX].size;
+	pi->program_areas[EEPROM_IDX].size = 
+				cur_chip_param.chip_areas[EEPROM_IDX].size;
+	
+	return ERROR_OK;
 }
 
 uint32_t avr8_interface_needed(void)
@@ -408,8 +372,8 @@ uint32_t avr8_interface_needed(void)
 
 
 #define get_target_voltage(v)					prog->get_target_voltage(v)
-RESULT avr8_program(operation_t operations, program_info_t *pi, 
-					programmer_info_t *prog)
+RESULT avr8_program(struct operation_t operations, struct program_info_t *pi, 
+					struct programmer_info_t *prog)
 {
 	uint16_t voltage;
 	
@@ -420,19 +384,19 @@ RESULT avr8_program(operation_t operations, program_info_t *pi,
 		return ERRCODE_INVALID_PARAMETER;
 	}
 	if ((   (operations.read_operations & APPLICATION) 
-			&& (NULL == pi->app)) 
+			&& (NULL == pi->program_areas[APPLICATION_IDX].buff)) 
 		|| ((   (operations.write_operations & APPLICATION) 
 				|| (operations.verify_operations & APPLICATION)) 
-			&& (NULL == pi->app)))
+			&& (NULL == pi->program_areas[APPLICATION_IDX].buff)))
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_BUFFER), "for flash");
 		return ERRCODE_INVALID_BUFFER;
 	}
 	if ((   (operations.read_operations & EEPROM) 
-			&& (NULL == pi->eeprom)) 
+			&& (NULL == pi->program_areas[EEPROM_IDX].buff)) 
 		|| ((   (operations.write_operations & EEPROM) 
 				|| (operations.verify_operations & EEPROM)) 
-			&& (NULL == pi->eeprom)))
+			&& (NULL == pi->program_areas[EEPROM_IDX].buff)))
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_BUFFER), "for eeprom");
 		return ERRCODE_INVALID_BUFFER;
