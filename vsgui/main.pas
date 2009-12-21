@@ -217,6 +217,7 @@ var
   CurTargetChip: TTargetChip;
   CurTargetSeries: TTargetSeries;
   ComMode: TComMode;
+  CurProgrmmerInfo: string;
 
 const
   DEBUG_LOG_SHOW: boolean = False;
@@ -243,9 +244,13 @@ procedure TPollThread.Update;
 begin
   if FConnectOK then
   begin
-    // how to display?
-    //FormMain.Caption := IntToStr(FTargetVoltage);
+    CurProgrmmerInfo := FormatFloat('0.0', FTargetVoltage / 1000) + 'V';
+  end
+  else
+  begin
+    CurProgrmmerInfo := 'N.C.';
   end;
+  FormMain.UpdateTitle();
 end;
 
 procedure TPollThread.Execute;
@@ -343,7 +348,7 @@ begin
     enable_str := '(*)';
   end;
   Caption := APP_STR + VERSION_STR + '-' + pcMain.ActivePage.Caption +
-    enable_str + ' (' + VSProg_Version + ')';
+    enable_str + ' (' + VSProg_Version + ') ' + CurProgrmmerInfo;
 end;
 
 function TFormMain.VSProg_RunAlgorithm(var caller: TCLI_Caller;
@@ -709,6 +714,7 @@ var
 begin
   xmlcfgMain.FileName := GetUserDir + 'vsgui.xml';
 
+  CurProgrmmerInfo := 'N.C.';
   JTAGPage_Init   := True;
   TargetPage_Init := True;
   AboutPage_Init  := True;
