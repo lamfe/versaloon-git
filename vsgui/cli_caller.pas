@@ -31,7 +31,7 @@ type
   public
     { public declarations }
     constructor Create;
-    destructor Destroy;
+    destructor Destroy; override;
     property Application: string Read FApplication Write FApplication;
     property Delimiter: string Read FDelimiter Write FDelimiter;
   end;

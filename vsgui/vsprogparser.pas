@@ -56,7 +56,7 @@ type
     function ParseTargetData(var line: string; target: string; var result_str: string): boolean;
   public
     constructor Create;
-    destructor Destroy;
+    destructor Destroy; override;
     property ParserFunc: TParserFunc Read FParserFunc Write FParserFunc;
     property LogOutputEnable: boolean Read FLogOutputEnable Write FLogOutputEnable;
     property LogOutputFunc: TLogOutputFunc Read FLogOutputFunc Write SetLogOutputFunc;
