@@ -17,6 +17,7 @@ type
     lbProgrammer: TListBox;
     pnlButton: TPanel;
     procedure btnOKClick(Sender: TObject);
+    procedure lbProgrammerDblClick(Sender: TObject);
   private
     { private declarations }
     FSerialNumber: string;
@@ -63,6 +64,14 @@ begin
   end;
 
   Close;
+end;
+
+procedure TVSProg_Programmer.lbProgrammerDblClick(Sender: TObject);
+begin
+  if lbProgrammer.SelCount = 1 then
+  begin
+    btnOK.Click;
+  end;
 end;
 
 function TVSProg_Programmer.GetProgrammerCount: integer;

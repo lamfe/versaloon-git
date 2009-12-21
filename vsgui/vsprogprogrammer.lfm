@@ -16,6 +16,7 @@ object VSProg_Programmer: TVSProg_Programmer
     Width = 400
     Align = alClient
     ItemHeight = 0
+    OnDblClick = lbProgrammerDblClick
     TabOrder = 0
   end
   object pnlButton: TPanel
