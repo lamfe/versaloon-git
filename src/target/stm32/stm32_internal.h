@@ -16,28 +16,17 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#ifndef __CM3_INTERNAL_H_INCLUDED__
-#define __CM3_INTERNAL_H_INCLUDED__
 
-#define CM3_STM32		0
-#define CM3_LPC1700		1
-#define CM3_LM3S		2
-#define CM3_SAM3		3
+#ifndef __STM32_INTERNAL_H_INCLUDED__
+#define __STM32_INTERNAL_H_INCLUDED__
 
-struct cm3_param_t
-{
-	const char *chip_name;
-	uint8_t default_char;
-	uint32_t flash_start_addr;
-	uint32_t flash_max_size;
-	uint16_t jtag_khz;
-	struct jtag_pos_t pos;
-	uint8_t swj_trn;
-};
+#define STM32_PAGE_SIZE				128
+#define STM32_FLASH_ADDR			0x08000000
+#define STM32_FLASH_DEFAULT			0xFF
 
-extern struct cm3_param_t cm3_chip_param;
-extern uint16_t cm3_buffer_size;
-extern const struct cm3_param_t cm3_chips_param[];
+#define STM32_JTAG					(1 << 0)
+#define STM32_SWJ					(1 << 1)
+#define STM32_ISP					(1 << 2)
 
-#endif /* __CM3_INTERNAL_H_INCLUDED__ */
+#endif /* __STM32_INTERNAL_H_INCLUDED__ */
 

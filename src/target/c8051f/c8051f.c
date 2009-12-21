@@ -233,13 +233,11 @@ RESULT c8051f_init(struct program_info_t *pi, struct programmer_info_t *prog)
 		return ERROR_FAIL;
 	}
 Post_Init:
-	memcpy(&cur_chip_param, cur_chips_param + i, 
-					   sizeof(cur_chip_param));
-				pi->program_areas[APPLICATION_IDX].size = 
-							cur_chip_param.chip_areas[APPLICATION_IDX].size;
-				
-				
-				return ERROR_OK;
+	memcpy(&cur_chip_param, cur_chips_param + i, sizeof(cur_chip_param));
+	pi->program_areas[APPLICATION_IDX].size = 
+				cur_chip_param.chip_areas[APPLICATION_IDX].size;
+	
+	return ERROR_OK;
 }
 
 uint32_t c8051f_interface_needed(void)

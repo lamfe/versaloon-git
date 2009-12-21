@@ -16,28 +16,24 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#ifndef __CM3_INTERNAL_H_INCLUDED__
-#define __CM3_INTERNAL_H_INCLUDED__
+#ifndef __STM32_H_INCLUDED__
+#define __STM32_H_INCLUDED__
 
-#define CM3_STM32		0
-#define CM3_LPC1700		1
-#define CM3_LM3S		2
-#define CM3_SAM3		3
+#define STM32_STRING					"stm32"
+#define STM32_PROGRAM_MODE_STR			"jsi"
 
-struct cm3_param_t
-{
-	const char *chip_name;
-	uint8_t default_char;
-	uint32_t flash_start_addr;
-	uint32_t flash_max_size;
-	uint16_t jtag_khz;
-	struct jtag_pos_t pos;
-	uint8_t swj_trn;
-};
+extern const struct program_area_map_t stm32_program_area_map[];
 
-extern struct cm3_param_t cm3_chip_param;
-extern uint16_t cm3_buffer_size;
-extern const struct cm3_param_t cm3_chips_param[];
+RESULT stm32_parse_argument(char cmd, const char *argu);
+RESULT stm32_probe_chip(char *chip_name);
+RESULT stm32_prepare_buffer(struct program_info_t *pi);
+RESULT stm32_write_buffer_from_file_callback(uint32_t address, 
+			uint32_t seg_addr, uint8_t* data, uint32_t length, void* buffer);
+RESULT stm32_init(struct program_info_t *pi, struct programmer_info_t *prog);
+RESULT stm32_fini(struct program_info_t *pi, struct programmer_info_t *prog);
+uint32_t stm32_interface_needed(void);
+RESULT stm32_program(struct operation_t operations, 
+				struct program_info_t *pi, struct programmer_info_t *prog);
 
-#endif /* __CM3_INTERNAL_H_INCLUDED__ */
+#endif /* __STM32_H_INCLUDED__ */
 

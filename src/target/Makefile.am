@@ -9,7 +9,9 @@ INCLUDES = \
     -I$(top_srcdir)/src/driver \
     -I$(top_srcdir)/src/driver/comport \
     -I$(top_srcdir)/src/driver/timer \
-    -I$(top_srcdir)/src/target/core/arm_adi 
+    -I$(top_srcdir)/src/target/core/arm_adi \
+    -I$(top_srcdir)/src/target/comisp \
+    -I$(top_srcdir)/src/target/cortex-m3
 
 METASOURCES = AUTO
 noinst_LIBRARIES = libtgt.a
@@ -41,7 +43,8 @@ libtgt_a_SOURCES = \
     stm8/stm8.c \
     svf_player/svf_player.c \
     svf_player/byte_tap.c \
-    svf_player/svf_parser.c
+    svf_player/svf_parser.c \
+    stm32/stm32.c
 
 #noinst_HEADERS = \
 #    target.h \

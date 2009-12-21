@@ -61,9 +61,6 @@ struct program_area_map_t comisp_program_area_map[] =
 	{0, 0, 0, 0, 0, 0}
 };
 
-#define COMISP_STM32		0
-#define COMISP_LPCARM		1
-#define COMISP_TEST			2
 const struct comisp_param_t comisp_chips_param[] = {
 //	chip_name,			com_mode,																												default_char,		flash_start_addr,	flash_max_size
 //						{comport,	baudrate,	datalength,	paritybit,			stopbit,		handshake,				aux_pin}	

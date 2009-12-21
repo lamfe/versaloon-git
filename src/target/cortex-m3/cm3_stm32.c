@@ -104,8 +104,8 @@ RESULT stm32_mass_erase(void)
 	}
 }
 
-RESULT stm32_program(struct operation_t operations, struct program_info_t *pi, 
-					 struct adi_dp_info_t *dp_info)
+RESULT stm32jtagswj_program(struct operation_t operations, 
+					struct program_info_t *pi, struct adi_dp_info_t *dp_info)
 {
 	RESULT ret = ERROR_OK;
 	struct memlist *ml_tmp;
