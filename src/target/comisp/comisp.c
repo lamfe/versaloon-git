@@ -50,7 +50,6 @@
 #define CUR_TARGET_STRING			COMISP_STRING
 #define cur_chip_param				comisp_chip_param
 #define cur_chips_param				comisp_chips_param
-#define cur_flash_offset			comisp_flash_offset
 #define cur_target_defined			target_defined
 #define cur_program_area_map		comisp_program_area_map
 
@@ -78,7 +77,6 @@ struct com_mode_t com_mode =
 {"", 115200, 8, COMM_PARITYBIT_NONE, COMM_STOPBIT_1, 
 COMM_HANDSHAKE_NONE, COMM_AUXPIN_DISABLE};
 
-static uint32_t comisp_flash_offset = 0;
 static uint32_t comisp_test_buffsize = 0;
 
 static void comisp_usage(void)
@@ -284,7 +282,6 @@ RESULT comisp_write_buffer_from_file_callback(uint32_t address,
 	}
 #endif
 	
-	mem_addr += cur_flash_offset;
 	if (((mem_addr - cur_chip_param.flash_start_addr) 
 			>= cur_chip_param.flash_max_size) 
 		|| (length > cur_chip_param.flash_max_size) 

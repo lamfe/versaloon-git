@@ -44,7 +44,6 @@
 #define cur_chip_param				target_chip_param
 #define cur_chips_param				target_chips.chips_param
 #define cur_chips_num				target_chips.num_of_chips
-#define cur_flash_offset			avr8_flash_offset
 #define cur_eeprom_offset			avr8_eeprom_offset
 #define cur_prog_mode				program_mode
 #define cur_target_defined			target_defined
@@ -60,7 +59,6 @@ const struct program_area_map_t avr8_program_area_map[] =
 	{0, 0, 0, 0, 0, 0}
 };
 
-static uint32_t avr8_flash_offset = 0;
 static uint32_t avr8_eeprom_offset = 0;
 
 static uint8_t avr8_lock = AVR8_LOCK_CHAR;
@@ -184,7 +182,6 @@ RESULT avr8_write_buffer_from_file_callback(uint32_t address,
 			return ERRCODE_INVALID;
 		}
 		
-		mem_addr += cur_flash_offset;
 		if ((mem_addr >= areas[APPLICATION_IDX].size) 
 			|| (length > areas[APPLICATION_IDX].size) 
 			|| ((mem_addr + length) > areas[APPLICATION_IDX].size))

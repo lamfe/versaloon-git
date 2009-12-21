@@ -45,7 +45,6 @@
 #define cur_chip_param				target_chip_param
 #define cur_chips_param				target_chips.chips_param
 #define cur_chips_num				target_chips.num_of_chips
-#define cur_flash_offset			lpc900_flash_offset
 #define cur_target_defined			target_defined
 #define cur_program_area_map		lpc900_program_area_map
 
@@ -55,7 +54,6 @@ const struct program_area_map_t lpc900_program_area_map[] =
 	{0, 0, 0, 0, 0, 0}
 };
 
-static uint32_t lpc900_flash_offset = 0;
 
 void lpc900_usage(void)
 {
@@ -215,7 +213,6 @@ RESULT lpc900_write_buffer_from_file_callback(uint32_t address,
 			return ERRCODE_INVALID;
 		}
 */		
-		mem_addr += cur_flash_offset;
 		if ((mem_addr >= areas[APPLICATION_IDX].size)
  			|| (length > areas[APPLICATION_IDX].size)
  			|| ((mem_addr + length) > areas[APPLICATION_IDX].size))
