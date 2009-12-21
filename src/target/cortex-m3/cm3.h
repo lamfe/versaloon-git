@@ -22,18 +22,17 @@
 #define CM3_STRING						"cm3"
 #define CM3_PROGRAM_MODE_STR			"js"
 
-extern program_area_map_t cm3_program_area_map[];
+extern struct program_area_map_t cm3_program_area_map[];
 RESULT cm3_parse_argument(char cmd, const char *argu);
 RESULT cm3_probe_chip(char *chip_name);
-RESULT cm3_prepare_buffer(program_info_t *pi);
+RESULT cm3_prepare_buffer(struct program_info_t *pi);
 uint32_t cm3_interface_needed(void);
 RESULT cm3_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr, 
-										   uint8_t* data, uint32_t length, 
-										   void* buffer);
-RESULT cm3_init(program_info_t *pi, programmer_info_t *prog);
-RESULT cm3_fini(program_info_t *pi, programmer_info_t *prog);
-RESULT cm3_program(operation_t operations, program_info_t *pi, 
-				   programmer_info_t *prog);
+								uint8_t* data, uint32_t length, void* buffer);
+RESULT cm3_init(struct program_info_t *pi, struct programmer_info_t *prog);
+RESULT cm3_fini(struct program_info_t *pi, struct programmer_info_t *prog);
+RESULT cm3_program(struct operation_t operations, struct program_info_t *pi, 
+				   struct programmer_info_t *prog);
 
 #endif /* __CM3_H_INCLUDED__ */
 

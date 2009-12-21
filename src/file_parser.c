@@ -35,12 +35,11 @@
 #include "hex.h"
 
 RESULT read_bin_file(FILE *bin_file, WRITE_MEMORY_CALLBACK callback, 
-					 void *buffer, uint32_t seg_offset, uint32_t addr_offset);
-RESULT write_bin_file(FILE *bin_file, uint32_t file_addr, 
-						uint8_t *buff, uint32_t buff_size, 
-						uint32_t seg_addr, uint32_t start_addr);
+					void *buffer, uint32_t seg_offset, uint32_t addr_offset);
+RESULT write_bin_file(FILE *bin_file, uint32_t file_addr, uint8_t *buff, 
+					uint32_t buff_size, uint32_t seg_addr, uint32_t start_addr);
 
-static file_parser_t file_parser[] = 
+static struct file_parser_t file_parser[] = 
 {
 	{"HEX", read_hex_file, write_hex_file, write_hex_file_end}, 
 	{"BIN", read_bin_file, write_bin_file, NULL}
@@ -111,7 +110,7 @@ RESULT parse_file(char *file_name, FILE *file, void *para,
 										seg_offset, addr_offset);
 }
 
-RESULT end_file(filelist *fl)
+RESULT end_file(struct filelist *fl)
 {
 	if (NULL == fl)
 	{
@@ -141,11 +140,11 @@ RESULT end_file(filelist *fl)
 	return ERROR_OK;
 }
 
-RESULT save_target_to_file(filelist *fl, uint8_t *buff, uint32_t buff_size, 
-							uint32_t seg_addr, uint32_t start_addr)
+RESULT save_target_to_file(struct filelist *fl, uint8_t *buff, 
+					uint32_t buff_size, uint32_t seg_addr, uint32_t start_addr)
 {
 	uint8_t i;
-	filelist *target_file = fl;
+	struct filelist *target_file = fl;
 	
 	if (NULL == fl)
 	{
@@ -154,8 +153,7 @@ RESULT save_target_to_file(filelist *fl, uint8_t *buff, uint32_t buff_size,
 	
 	// find a most suitable file to write
 	do {
-		if ((seg_addr == fl->seg_offset) 
-			&& (start_addr >= fl->addr_offset))
+		if ((seg_addr == fl->seg_offset) && (start_addr >= fl->addr_offset))
 		{
 			target_file = fl;
 			// if start_addr is match, that's it
@@ -192,10 +190,8 @@ RESULT save_target_to_file(filelist *fl, uint8_t *buff, uint32_t buff_size,
 	
 	target_file->access = 1;
 	return file_parser[i].save_target_to_file(target_file->file, 
-												target_file->addr_offset, 
-												buff, buff_size, 
-												seg_addr - target_file->seg_offset, 
-												start_addr);
+							target_file->addr_offset, buff, buff_size, 
+							seg_addr - target_file->seg_offset, start_addr);
 }
 
 RESULT read_bin_file(FILE *bin_file, WRITE_MEMORY_CALLBACK callback, 

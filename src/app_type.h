@@ -22,7 +22,7 @@
 
 #include <stdint.h>
 
-typedef enum
+typedef enum result_s
 {
 	ERROR_OK = 0,
 	ERROR_FAIL = 1

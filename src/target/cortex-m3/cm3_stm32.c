@@ -104,11 +104,11 @@ RESULT stm32_mass_erase(void)
 	}
 }
 
-RESULT stm32_program(operation_t operations, program_info_t *pi, 
-					 adi_dp_info_t *dp_info)
+RESULT stm32_program(struct operation_t operations, struct program_info_t *pi, 
+					 struct adi_dp_info_t *dp_info)
 {
 	RESULT ret = ERROR_OK;
-	memlist *ml_tmp;
+	struct memlist *ml_tmp;
 	uint32_t i;
 	uint32_t reg;
 	uint32_t cur_block_size, block_size, block_size_tmp, cur_address;
@@ -117,6 +117,8 @@ RESULT stm32_program(operation_t operations, program_info_t *pi,
 	char rev;
 	uint32_t target_size;
 	uint32_t start_time, run_time;
+	uint8_t *tbuff;
+	struct memlist **ml;
 	
 #define FL_PARA_ADDR_BASE			\
 					(STM32_SRAM_START_ADDRESS + sizeof(stm32_fl_code) - 4 * 4)
@@ -257,7 +259,7 @@ RESULT stm32_program(operation_t operations, program_info_t *pi,
 	}
 	if ((mcu_id & 0xFFFF) <= 1024)
 	{
-		pi->app_size = (mcu_id & 0xFFFF) * 1024;
+		pi->program_areas[APPLICATION_IDX].size = (mcu_id & 0xFFFF) * 1024;
 		LOG_INFO(_GETTEXT("STM32 flash_size: %dK Bytes\n"), mcu_id & 0xFFFF);
 	}
 	else
@@ -313,7 +315,9 @@ RESULT stm32_program(operation_t operations, program_info_t *pi,
 		LOG_INFO(_GETTEXT(INFOMSG_ERASED), "chip");
 	}
 	
-	target_size = MEMLIST_CalcAllSize(pi->app_memlist);
+	ml = &pi->program_areas[APPLICATION_IDX].memlist;
+	target_size = MEMLIST_CalcAllSize(*ml);
+	tbuff = pi->program_areas[APPLICATION_IDX].buff;
 	if (operations.write_operations & APPLICATION)
 	{
 		// halt target first
@@ -356,7 +360,7 @@ RESULT stm32_program(operation_t operations, program_info_t *pi,
 										   page_buf, block_size))
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-					  "read flash_loader for verify");
+						"read flash_loader for verify");
 			ret = ERRCODE_FAILURE_OPERATION;
 			goto leave_program_mode;
 		}
@@ -365,7 +369,7 @@ RESULT stm32_program(operation_t operations, program_info_t *pi,
 			if (stm32_fl_code[i] != page_buf[i])
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-						  "verify flash_loader");
+							"verify flash_loader");
 				ret = ERRCODE_FAILURE_OPERATION;
 				goto leave_program_mode;
 			}
@@ -404,7 +408,7 @@ RESULT stm32_program(operation_t operations, program_info_t *pi,
 		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMING), "flash");
 		pgbar_init("writing flash |", "|", 0, target_size, PROGRESS_STEP, '=');
 		
-		ml_tmp = pi->app_memlist;
+		ml_tmp = *ml;
 		while (ml_tmp != NULL)
 		{
 			block_size = ml_tmp->len;
@@ -424,8 +428,8 @@ RESULT stm32_program(operation_t operations, program_info_t *pi,
 				}
 				
 				// write flash content to FL_PARA_ADDR_DATA
-				if (ERROR_OK != adi_memap_write_buf(FL_ADDR_DATA + cur_run_size, 
-						&pi->app[cur_address - STM32_FLASH_START_ADDRESS], 
+				if (ERROR_OK != adi_memap_write_buf(FL_ADDR_DATA + cur_run_size,
+						&tbuff[cur_address - STM32_FLASH_START_ADDRESS], 
 						cur_block_size))
 				{
 					pgbar_fini();
@@ -451,8 +455,8 @@ RESULT stm32_program(operation_t operations, program_info_t *pi,
 					// or the length by 0x8000 to indicate reload addresses
 					reg |= 0x8000;
 				}
-				if (ERROR_OK != adi_memap_write_reg(FL_ADDR_WORD_LENGTH, 
-													&reg, 1))
+				if (ERROR_OK != 
+						adi_memap_write_reg(FL_ADDR_WORD_LENGTH, &reg, 1))
 				{
 					pgbar_fini();
 					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
@@ -468,8 +472,8 @@ RESULT stm32_program(operation_t operations, program_info_t *pi,
 				{
 					reg = 0;
 					do{
-						if (ERROR_OK != adi_memap_read_reg(FL_ADDR_RESULT, 
-															&reg, 1))
+						if (ERROR_OK != 
+								adi_memap_read_reg(FL_ADDR_RESULT, &reg, 1))
 						{
 							pgbar_fini();
 							LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
@@ -504,7 +508,8 @@ RESULT stm32_program(operation_t operations, program_info_t *pi,
 		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMED_SIZE), "flash", target_size);
 	}
 	
-	if (operations.read_operations & APPLICATION)
+	if ((operations.read_operations & APPLICATION) 
+		|| (operations.verify_operations & APPLICATION))
 	{
 		if (operations.verify_operations & APPLICATION)
 		{
@@ -512,19 +517,19 @@ RESULT stm32_program(operation_t operations, program_info_t *pi,
 		}
 		else
 		{
-			ret = MEMLIST_Add(&pi->app_memlist, cur_chip_param.flash_start_addr, 
-								pi->app_size, cur_buffer_size);
+			ret = MEMLIST_Add(ml, cur_chip_param.flash_start_addr, 
+					pi->program_areas[APPLICATION_IDX].size, cur_buffer_size);
 			if (ret != ERROR_OK)
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "add memory list");
 				return ERRCODE_FAILURE_OPERATION;
 			}
-			target_size = MEMLIST_CalcAllSize(pi->app_memlist);
+			target_size = MEMLIST_CalcAllSize(*ml);
 			LOG_INFO(_GETTEXT(INFOMSG_READING), "flash");
 		}
 		pgbar_init("reading flash |", "|", 0, target_size, PROGRESS_STEP, '=');
 		
-		ml_tmp = pi->app_memlist;
+		ml_tmp = *ml;
 		while (ml_tmp != NULL)
 		{
 			block_size = ml_tmp->len;
@@ -556,15 +561,14 @@ RESULT stm32_program(operation_t operations, program_info_t *pi,
 					// verify
 					for (i = 0; i < cur_block_size; i++)
 					{
-						if (page_buf[i] != pi->app[cur_address + i 
+						if (page_buf[i] != tbuff[cur_address + i 
 													- STM32_FLASH_START_ADDRESS])
 						{
 							pgbar_fini();
 							LOG_ERROR(
 								_GETTEXT(ERRMSG_FAILURE_VERIFY_TARGET_AT_02X), 
 								"flash", cur_address + i, page_buf[i], 
-								pi->app[cur_address + i 
-										- STM32_FLASH_START_ADDRESS]);
+								tbuff[cur_address + i - STM32_FLASH_START_ADDRESS]);
 							ret = ERRCODE_FAILURE_VERIFY_TARGET;
 							goto leave_program_mode;
 						}
@@ -573,7 +577,7 @@ RESULT stm32_program(operation_t operations, program_info_t *pi,
 				else
 				{
 					// read
-					memcpy(&pi->app[cur_address - STM32_FLASH_START_ADDRESS], 
+					memcpy(&tbuff[cur_address - STM32_FLASH_START_ADDRESS], 
 							page_buf, cur_block_size);
 				}
 				

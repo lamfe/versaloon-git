@@ -62,7 +62,7 @@
 
 #define commit()				p->c2_commit()
 
-static programmer_info_t *p = NULL;
+static struct programmer_info_t *p = NULL;
 
 RESULT c8051f_c2_addr_poll(uint8_t mask, uint8_t value, uint16_t poll_cnt)
 {
@@ -76,16 +76,18 @@ RESULT c8051f_c2_addr_poll(uint8_t mask, uint8_t value, uint16_t poll_cnt)
 	return ERROR_OK;
 }
 
-RESULT c8051f_c2_program(operation_t operations, program_info_t *pi, 
-						 programmer_info_t *prog)
+RESULT c8051f_c2_program(struct operation_t operations, 
+					struct program_info_t *pi, struct programmer_info_t *prog)
 {
 	uint8_t dr;
 	uint16_t i;
 	uint16_t j, k, page_size, len_current_list;
 	RESULT ret = ERROR_OK;
 	uint8_t page_buf[C8051F_BLOCK_SIZE];
-	memlist *ml_tmp;
+	uint8_t *tbuff;
+	struct memlist *ml_tmp;
 	uint32_t target_size;
+	struct memlist **ml;
 	
 	p = prog;
 	
@@ -101,7 +103,7 @@ RESULT c8051f_c2_program(operation_t operations, program_info_t *pi,
 	}
 	pi->chip_id = dr;
 	LOG_INFO(_GETTEXT(INFOMSG_TARGET_CHIP_ID), pi->chip_id);
-	if (!(operations.read_operations & CHIP_ID))
+	if (!(operations.read_operations & CHIPID))
 	{
 		if (pi->chip_id != cur_chip_param.chip_id)
 		{
@@ -170,14 +172,16 @@ RESULT c8051f_c2_program(operation_t operations, program_info_t *pi,
 	}
 	
 	page_size = C8051F_BLOCK_SIZE;
-	target_size = MEMLIST_CalcAllSize(pi->app_memlist);
+	tbuff = pi->program_areas[APPLICATION_IDX].buff;
+	ml = &pi->program_areas[APPLICATION_IDX].memlist;
+	target_size = MEMLIST_CalcAllSize(*ml);
 	if (operations.write_operations & APPLICATION)
 	{
 		// program
 		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMING), "flash");
 		pgbar_init("writing flash |", "|", 0, target_size, PROGRESS_STEP, '=');
 		
-		ml_tmp = pi->app_memlist;
+		ml_tmp = *ml;
 		while (ml_tmp != NULL)
 		{
 			if ((ml_tmp->addr + ml_tmp->len) 
@@ -192,7 +196,8 @@ RESULT c8051f_c2_program(operation_t operations, program_info_t *pi,
 			
 			len_current_list = (uint16_t)ml_tmp->len;
 			for (i = -(int32_t)(ml_tmp->addr % page_size); 
-				 i < ((int32_t)ml_tmp->len - (int32_t)(ml_tmp->addr % page_size)); 
+				 i < ((int32_t)ml_tmp->len 
+							- (int32_t)(ml_tmp->addr % page_size)); 
 				 i += page_size)
 			{
 				c2_write_ir(
@@ -239,7 +244,7 @@ RESULT c8051f_c2_program(operation_t operations, program_info_t *pi,
 				
 				for (j = 0; j < page_size; j++)
 				{
-					c2_write_dr(pi->app[ml_tmp->addr + i + j]);
+					c2_write_dr(tbuff[ml_tmp->addr + i + j]);
 					c2_poll_in_busy();
 				}
 				
@@ -272,7 +277,8 @@ RESULT c8051f_c2_program(operation_t operations, program_info_t *pi,
 		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMED_SIZE), "flash", target_size);
 	}
 	
-	if (operations.read_operations & APPLICATION)
+	if ((operations.read_operations & APPLICATION) 
+		|| (operations.verify_operations & APPLICATION))
 	{
 		if (operations.verify_operations & APPLICATION)
 		{
@@ -280,18 +286,20 @@ RESULT c8051f_c2_program(operation_t operations, program_info_t *pi,
 		}
 		else
 		{
-			ret = MEMLIST_Add(&pi->app_memlist, 0, pi->app_size, page_size);
+			ret = MEMLIST_Add(ml, 0, pi->program_areas[APPLICATION_IDX].size, 
+								page_size);
 			if (ret != ERROR_OK)
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "add memory list");
+				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+							"add memory list");
 				return ERRCODE_FAILURE_OPERATION;
 			}
-			target_size = MEMLIST_CalcAllSize(pi->app_memlist);
+			target_size = MEMLIST_CalcAllSize(*ml);
 			LOG_INFO(_GETTEXT(INFOMSG_READING), "flash");
 		}
 		pgbar_init("reading flash |", "|", 0, target_size, PROGRESS_STEP, '=');
 		
-		ml_tmp = pi->app_memlist;
+		ml_tmp = *ml;
 		while (ml_tmp != NULL)
 		{
 			if ((ml_tmp->addr + ml_tmp->len) 
@@ -306,7 +314,8 @@ RESULT c8051f_c2_program(operation_t operations, program_info_t *pi,
 			
 			len_current_list = (uint16_t)ml_tmp->len;
 			for (i = -(int32_t)(ml_tmp->addr % page_size); 
-				 i < ((int32_t)ml_tmp->len - (int32_t)(ml_tmp->addr % page_size)); 
+				 i < ((int32_t)ml_tmp->len 
+							- (int32_t)(ml_tmp->addr % page_size)); 
 				 i += page_size)
 			{
 				c2_write_ir(
@@ -343,12 +352,16 @@ RESULT c8051f_c2_program(operation_t operations, program_info_t *pi,
 				c2_read_dr(&dr);
 				if ((ERROR_OK != commit()) || (dr != C8051F_C2_REP_COMMAND_OK))
 				{
-					if (((ml_tmp->addr + i + 512) == pi->app_size) 
-						|| ((ml_tmp->addr + i + 1024) == pi->app_size))
+					if (((ml_tmp->addr + i + 512) 
+							== pi->program_areas[APPLICATION_IDX].size) 
+						|| ((ml_tmp->addr + i + 1024) 
+							== pi->program_areas[APPLICATION_IDX].size))
 					{
 						// protect flash of ISP, not available
-						pgbar_update(pi->app_size - ml_tmp->addr - i);
-						pi->app_size = ml_tmp->addr + i;
+						pgbar_update(pi->program_areas[APPLICATION_IDX].size 
+										- ml_tmp->addr - i);
+						pi->program_areas[APPLICATION_IDX].size = 
+															ml_tmp->addr + i;
 						goto fake_read_ok;
 					}
 					else
@@ -381,14 +394,13 @@ RESULT c8051f_c2_program(operation_t operations, program_info_t *pi,
 					// verify
 					for (j = 0; j < page_size; j++)
 					{
-						if (pi->app[ml_tmp->addr + i + j] != page_buf[j])
+						if (tbuff[ml_tmp->addr + i + j] != page_buf[j])
 						{
 							pgbar_fini();
 							LOG_ERROR(
 								_GETTEXT(ERRMSG_FAILURE_VERIFY_TARGET_AT_02X), 
-								"flash", 
-								ml_tmp->addr + i + j, page_buf[j], 
-								pi->app[ml_tmp->addr + i + j]);
+								"flash", ml_tmp->addr + i + j, page_buf[j], 
+								tbuff[ml_tmp->addr + i + j]);
 							ret = ERRCODE_FAILURE_VERIFY_TARGET;
 							goto leave_program_mode;
 						}
@@ -397,7 +409,7 @@ RESULT c8051f_c2_program(operation_t operations, program_info_t *pi,
 				else
 				{
 					// read
-					memcpy(&pi->app[ml_tmp->addr + i], page_buf, page_size);
+					memcpy(&tbuff[ml_tmp->addr + i], page_buf, page_size);
 				}
 				
 				pgbar_update(k);

@@ -41,9 +41,10 @@
 #include "c8051f_internal.h"
 
 #define CUR_TARGET_STRING		C8051F_STRING
+#define CUR_DEFAULT_FREQ		4500
 #define cur_chip_param			target_chip_param
 
-static programmer_info_t *p = NULL;
+static struct programmer_info_t *p = NULL;
 
 
 #define jtag_init()					p->jtag_hl_init()
@@ -149,8 +150,8 @@ RESULT c8051f_jtag_poll_flbusy(uint16_t poll_cnt, uint16_t interval)
 	return ERROR_OK;
 }
 
-RESULT c8051f_jtag_program(operation_t operations, program_info_t *pi, 
-						   programmer_info_t *prog)
+RESULT c8051f_jtag_program(struct operation_t operations, 
+					struct program_info_t *pi, struct programmer_info_t *prog)
 {
 	uint16_t ir;
 	uint32_t dr;
@@ -158,14 +159,21 @@ RESULT c8051f_jtag_program(operation_t operations, program_info_t *pi,
 	int32_t i;
 	uint32_t j, k, len_current_list, page_size;
 	uint32_t page_buf[C8051F_JTAG_BLOCK_SIZE];
+	uint8_t *tbuff;
 	RESULT ret = ERROR_OK;
-	memlist *ml_tmp;
+	struct memlist *ml_tmp;
 	uint32_t target_size;
+	struct memlist **ml;
 	
 	p = prog;
 	
+	if (!program_frequency)
+	{
+		program_frequency = CUR_DEFAULT_FREQ;
+	}
+	
 	jtag_init();
-	jtag_config(4500, target_jtag_pos.ub, target_jtag_pos.ua, 
+	jtag_config(program_frequency, target_jtag_pos.ub, target_jtag_pos.ua, 
 				target_jtag_pos.bb, target_jtag_pos.ba);
 	
 	ir = C8051F_IR_STATECNTL_RESET | C8051F_IR_BYPASS;
@@ -182,7 +190,7 @@ RESULT c8051f_jtag_program(operation_t operations, program_info_t *pi,
 	}
 	pi->chip_id = dr & C8051F_JTAG_ID_MASK;
 	LOG_INFO(_GETTEXT(INFOMSG_TARGET_CHIP_ID), pi->chip_id);
-	if (!(operations.read_operations & CHIP_ID))
+	if (!(operations.read_operations & CHIPID))
 	{
 		if (pi->chip_id != cur_chip_param.chip_id)
 		{
@@ -201,7 +209,8 @@ RESULT c8051f_jtag_program(operation_t operations, program_info_t *pi,
 	dr = 0x86;
 	c8051f_jtag_ind_write(C8051F_IR_FLASHSCL, &dr, C8051F_DR_FLASHSCL_LEN);
 	
-	target_size = MEMLIST_CalcAllSize(pi->app_memlist);
+	ml = &pi->program_areas[APPLICATION_IDX].memlist;
+	target_size = MEMLIST_CalcAllSize(*ml);
 	if ((operations.erase_operations & ALL) && (0 == target_size))
 	{
 		// erase all flash
@@ -210,20 +219,16 @@ RESULT c8051f_jtag_program(operation_t operations, program_info_t *pi,
 		
 		// set FLASHADR to erase_addr
 		dr = cur_chip_param.param[C8051F_PARAM_ERASE_ADDR];
-		c8051f_jtag_ind_write(C8051F_IR_FLASHADR, &dr, 
-							  C8051F_DR_FLASHADR_LEN);
+		c8051f_jtag_ind_write(C8051F_IR_FLASHADR, &dr, C8051F_DR_FLASHADR_LEN);
 		// set FLASHCON for flash erase operation(0x20)
 		dr = 0x20;
-		c8051f_jtag_ind_write(C8051F_IR_FLASHCON, &dr, 
-							  C8051F_DR_FLASHCON_LEN);
+		c8051f_jtag_ind_write(C8051F_IR_FLASHCON, &dr, C8051F_DR_FLASHCON_LEN);
 		// set FLASHDAT to 0xA5
 		dr = 0xA5;
-		c8051f_jtag_ind_write(C8051F_IR_FLASHDAT, &dr, 
-							  C8051F_DR_FLASHDAT_WLEN);
+		c8051f_jtag_ind_write(C8051F_IR_FLASHDAT, &dr, C8051F_DR_FLASHDAT_WLEN);
 		// set FLASHCON for poll operation
 		dr = 0;
-		c8051f_jtag_ind_write(C8051F_IR_FLASHCON, &dr, 
-							  C8051F_DR_FLASHCON_LEN);
+		c8051f_jtag_ind_write(C8051F_IR_FLASHCON, &dr, C8051F_DR_FLASHCON_LEN);
 		c8051f_jtag_poll_flbusy(1500, 1000);
 		if (ERROR_OK != jtag_commit())
 		{
@@ -257,7 +262,7 @@ RESULT c8051f_jtag_program(operation_t operations, program_info_t *pi,
 		jtag_delay_ms(500);
 		for (i = 0; 
 			 i < (int32_t)target_size; 
-			 i += cur_chip_param.app_page_size)
+			 i += cur_chip_param.chip_areas[APPLICATION_IDX].page_size)
 		{
 			// set FLASHADR to erase_addr
 			dr = i;
@@ -288,7 +293,7 @@ RESULT c8051f_jtag_program(operation_t operations, program_info_t *pi,
 				goto leave_program_mode;
 			}
 			
-			pgbar_update(cur_chip_param.app_page_size);
+			pgbar_update(cur_chip_param.chip_areas[APPLICATION_IDX].page_size);
 		}
 		
 		pgbar_fini();
@@ -296,14 +301,14 @@ RESULT c8051f_jtag_program(operation_t operations, program_info_t *pi,
 	}
 	
 	page_size = C8051F_JTAG_BLOCK_SIZE;
-	
+	tbuff = pi->program_areas[APPLICATION_IDX].buff;
 	if (operations.write_operations & APPLICATION)
 	{
 		// program flash
 		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMING), "flash");
 		pgbar_init("writing flash |", "|", 0, target_size, PROGRESS_STEP, '=');
 		
-		ml_tmp = pi->app_memlist;
+		ml_tmp = *ml;
 		while (ml_tmp != NULL)
 		{
 			if ((ml_tmp->addr + ml_tmp->len) 
@@ -318,7 +323,8 @@ RESULT c8051f_jtag_program(operation_t operations, program_info_t *pi,
 			
 			len_current_list = (uint16_t)ml_tmp->len;
 			for (i = -(int32_t)(ml_tmp->addr % page_size); 
-				 i < ((int32_t)ml_tmp->len - (int32_t)(ml_tmp->addr % page_size)); 
+				 i < ((int32_t)ml_tmp->len 
+							- (int32_t)(ml_tmp->addr % page_size)); 
 				 i += page_size)
 			{
 				// set FLASHADR to address to write to
@@ -333,7 +339,7 @@ RESULT c8051f_jtag_program(operation_t operations, program_info_t *pi,
 					c8051f_jtag_ind_write(C8051F_IR_FLASHCON, &dr, 
 										  C8051F_DR_FLASHCON_LEN);
 					// initiate the write operation
-					dr = pi->app[ml_tmp->addr + i + j];
+					dr = tbuff[ml_tmp->addr + i + j];
 					c8051f_jtag_ind_write(C8051F_IR_FLASHDAT, &dr, 
 										  C8051F_DR_FLASHDAT_WLEN);
 					// set FLASHCON for poll operation
@@ -386,7 +392,8 @@ RESULT c8051f_jtag_program(operation_t operations, program_info_t *pi,
 		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMED_SIZE), "flash", target_size);
 	}
 	
-	if (operations.read_operations & APPLICATION)
+	if ((operations.read_operations & APPLICATION) 
+		|| (operations.verify_operations & APPLICATION))
 	{
 		if (operations.verify_operations & APPLICATION)
 		{
@@ -394,18 +401,19 @@ RESULT c8051f_jtag_program(operation_t operations, program_info_t *pi,
 		}
 		else
 		{
-			ret = MEMLIST_Add(&pi->app_memlist, 0, pi->app_size, page_size);
+			ret = MEMLIST_Add(ml, 0, pi->program_areas[APPLICATION_IDX].size, 
+								page_size);
 			if (ret != ERROR_OK)
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "add memory list");
 				return ERRCODE_FAILURE_OPERATION;
 			}
-			target_size = MEMLIST_CalcAllSize(pi->app_memlist);
+			target_size = MEMLIST_CalcAllSize(*ml);
 			LOG_INFO(_GETTEXT(INFOMSG_READING), "flash");
 		}
 		pgbar_init("reading flash |", "|", 0, target_size, PROGRESS_STEP, '=');
 		
-		ml_tmp = pi->app_memlist;
+		ml_tmp = *ml;
 		while (ml_tmp != NULL)
 		{
 			if ((ml_tmp->addr + ml_tmp->len) 
@@ -420,7 +428,8 @@ RESULT c8051f_jtag_program(operation_t operations, program_info_t *pi,
 			
 			len_current_list = (uint16_t)ml_tmp->len;
 			for (i = -(int32_t)(ml_tmp->addr % page_size); 
-				 i < ((int32_t)ml_tmp->len - (int32_t)(ml_tmp->addr % page_size)); 
+				 i < ((int32_t)ml_tmp->len 
+							- (int32_t)(ml_tmp->addr % page_size)); 
 				 i += page_size)
 			{
 				// set FLASHADR to address to read from
@@ -445,8 +454,7 @@ RESULT c8051f_jtag_program(operation_t operations, program_info_t *pi,
 					// poll for FLBusy
 					jtag_poll_flbusy(0, 0);
 					c8051f_jtag_ind_read(C8051F_IR_FLASHDAT, 
-										 ((uint32_t*)page_buf + j), 
-										 C8051F_DR_FLASHDAT_RLEN);
+						((uint32_t*)page_buf + j), C8051F_DR_FLASHDAT_RLEN);
 				}
 				
 				if (ERROR_OK != jtag_commit())
@@ -462,12 +470,16 @@ RESULT c8051f_jtag_program(operation_t operations, program_info_t *pi,
 				{
 					if ((*((uint32_t*)page_buf + j) & 0x06) != 0)
 					{
-						if (((ml_tmp->addr + i + 512) == pi->app_size) 
-							|| ((ml_tmp->addr + i + 1024) == pi->app_size))
+						if (((ml_tmp->addr + i + 512) 
+								== pi->program_areas[APPLICATION_IDX].size) 
+							|| ((ml_tmp->addr + i + 1024) 
+								== pi->program_areas[APPLICATION_IDX].size))
 						{
 							// protect flash of ISP, not available
-							pgbar_update(pi->app_size - ml_tmp->addr - i);
-							pi->app_size = ml_tmp->addr + i;
+							pgbar_update(pi->program_areas[APPLICATION_IDX].size 
+											- ml_tmp->addr - i);
+							pi->program_areas[APPLICATION_IDX].size = 
+															ml_tmp->addr + i;
 							goto fake_read_ok;
 						}
 						else
@@ -483,21 +495,21 @@ RESULT c8051f_jtag_program(operation_t operations, program_info_t *pi,
 					if (operations.verify_operations & APPLICATION)
 					{
 						if (((*((uint32_t*)page_buf + j) >> 3) & 0xFF) 
-							!= pi->app[ml_tmp->addr + i + j])
+							!= tbuff[ml_tmp->addr + i + j])
 						{
 							pgbar_fini();
 							LOG_ERROR(
 								_GETTEXT(ERRMSG_FAILURE_VERIFY_TARGET_AT_02X), 
 								"flash", ml_tmp->addr + i + j, 
 								(*((uint32_t*)page_buf + j) >> 3) & 0xFF, 
-								pi->app[ml_tmp->addr + i + j]);
+								tbuff[ml_tmp->addr + i + j]);
 							ret = ERRCODE_FAILURE_VERIFY_TARGET;
 							goto leave_program_mode;
 						}
 					}
 					else
 					{
-						pi->app[ml_tmp->addr + i + j] = 
+						tbuff[ml_tmp->addr + i + j] = 
 									(*((uint32_t*)page_buf + j) >> 3) & 0xFF;
 					}
 				}

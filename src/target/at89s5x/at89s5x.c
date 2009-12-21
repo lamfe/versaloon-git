@@ -41,18 +41,19 @@
 #include "at89s5x_internal.h"
 
 #define CUR_TARGET_STRING			S5X_STRING
+#define CUR_DEFAULT_FREQ			S5X_DEFAULT_FREQ
 #define cur_chip_param				target_chip_param
 #define cur_chips_param				target_chips.chips_param
 #define cur_chips_num				target_chips.num_of_chips
 #define cur_flash_offset			s5x_flash_offset
 #define cur_prog_mode				program_mode
-#define cur_frequency				s5x_isp_frequency
 #define cur_target_defined			target_defined
+#define cur_program_area_map		s5x_program_area_map
 
-const program_area_map_t s5x_program_area_map[] = 
+const struct program_area_map_t s5x_program_area_map[] = 
 {
-	{APPLICATION, APPLICATION_CHAR, 1, 0, 0, S5X_FLASH_CHAR},
-	{LOCK, LOCK_CHAR, 0, 0, 0, 1},
+	{APPLICATION_CHAR, 1, 0, 0, 0, 0},
+	{LOCK_CHAR, 0, 0, 0, 0, 0},
 	{0, 0, 0, 0, 0, 0}
 };
 
@@ -62,7 +63,6 @@ static uint8_t s5x_fuse = 0;
 static uint16_t s5x_flash_offset = 0;
 
 static uint16_t s5x_byte_delay_us = 500;
-static uint16_t s5x_isp_frequency = 560;
 
 void s5x_usage(void)
 {
@@ -75,44 +75,12 @@ Usage of %s:\n\
 			CUR_TARGET_STRING);
 }
 
-void s5x_support(void)
-{
-	uint32_t i;
-
-	printf("Support list of %s:\n", CUR_TARGET_STRING);
-	for (i = 0; i < cur_chips_num; i++)
-	{
-		printf("\
-%s: id = 0x%06x, flash_size = %d, fuse_size = %d, usrsig_size = %d\n", 
-			   cur_chips_param[i].chip_name, cur_chips_param[i].chip_id, 
-			   cur_chips_param[i].app_page_size 
-					* cur_chips_param[i].app_page_num, 
-			   cur_chips_param[i].fuse_size, 
-			   cur_chips_param[i].usrsig_page_size);
-	}
-	printf("\n");
-}
-
 RESULT s5x_parse_argument(char cmd, const char *argu)
 {
 	switch(cmd)
 	{
 	case 'h':
 		s5x_usage();
-		break;
-	case 'S':
-		s5x_support();
-		break;
-	case 'F':
-		// set Frequency
-		if (NULL == argu)
-		{
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), cmd);
-			return ERRCODE_INVALID_OPTION;
-		}
-		
-		cur_frequency = (uint16_t)strtoul(argu, NULL, 0);
-		
 		break;
 	case 'w':
 		// set Wait time
@@ -174,30 +142,32 @@ RESULT s5x_parse_argument(char cmd, const char *argu)
 	return ERROR_OK;
 }
 
-RESULT s5x_prepare_buffer(program_info_t *pi)
+RESULT s5x_prepare_buffer(struct program_info_t *pi)
 {
-	if (pi->app != NULL)
+	if (pi->program_areas[APPLICATION_IDX].buff != NULL)
 	{
-		memset(pi->app, S5X_FLASH_CHAR, pi->app_size);
+		memset(pi->program_areas[APPLICATION_IDX].buff, S5X_FLASH_CHAR, 
+				pi->program_areas[APPLICATION_IDX].size);
 	}
 	else
 	{
 		return ERROR_FAIL;
 	}
 	
-	pi->lock_value = s5x_lock;
-	pi->fuse_value = s5x_fuse;
+	pi->program_areas[LOCK_IDX].value = s5x_lock;
+	pi->program_areas[FUSE_IDX].value = s5x_fuse;
 	
 	return ERROR_OK;
 }
 
 RESULT s5x_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr, 
-										   uint8_t* data, uint32_t length, 
-										   void* buffer)
+								uint8_t* data, uint32_t length, void* buffer)
 {
-	program_info_t *pi = (program_info_t *)buffer;
+	struct program_info_t *pi = (struct program_info_t *)buffer;
 	uint32_t mem_addr = address & 0x0000FFFF, page_size;
 	RESULT ret;
+	uint8_t *tbuff;
+	struct chip_area_info_t *areas;
 	
 #ifdef PARAM_CHECK
 	if ((length > 0) && (NULL == data))
@@ -214,18 +184,20 @@ RESULT s5x_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr,
 		return ERRCODE_NOT_SUPPORT;
 	}
 	
+	areas = cur_chip_param.chip_areas;
 	// flash from 0x00000000
 	switch (address >> 16)
 	{
 	case 0x0000:
-		if (NULL == pi->app)
+		tbuff = pi->program_areas[APPLICATION_IDX].buff;
+		if (NULL == tbuff)
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_BUFFER), "pi->app");
 			return ERRCODE_INVALID_BUFFER;
 		}
 		
-		if ((0 == cur_chip_param.app_page_num) 
-			|| (0 == cur_chip_param.app_page_size))
+		if ((0 == areas[APPLICATION_IDX].page_num) 
+			|| (0 == areas[APPLICATION_IDX].page_size))
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_INVALID), "Flash", 
 					  cur_chip_param.chip_name);
@@ -233,20 +205,20 @@ RESULT s5x_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr,
 		}
 		
 		mem_addr += cur_flash_offset;
-		if ((mem_addr >= cur_chip_param.app_size) 
-			|| (length > cur_chip_param.app_size) 
-			|| ((mem_addr + length) > cur_chip_param.app_size))
+		if ((mem_addr >= areas[APPLICATION_IDX].size) 
+			|| (length > areas[APPLICATION_IDX].size) 
+			|| ((mem_addr + length) > areas[APPLICATION_IDX].size))
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_RANGE), "flash memory");
 			return ERRCODE_INVALID;
 		}
 		cur_target_defined |= APPLICATION;
 		
-		memcpy(pi->app + mem_addr, data, length);
+		memcpy(tbuff + mem_addr, data, length);
 		
 		if (cur_prog_mode & S5X_PAGE_MODE)
 		{
-			page_size = cur_chip_param.app_page_size;
+			page_size = areas[APPLICATION_IDX].page_size;
 		}
 		else
 		{
@@ -254,8 +226,8 @@ RESULT s5x_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr,
 			page_size = 256;
 		}
 		
-		ret = MEMLIST_Add(&pi->app_memlist, mem_addr, 
-						  length, page_size);
+		ret = MEMLIST_Add(&pi->program_areas[APPLICATION_IDX].memlist, 
+								mem_addr, length, page_size);
 		if (ret != ERROR_OK)
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "add memory list");
@@ -263,8 +235,7 @@ RESULT s5x_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr,
 		}
 		break;
 	default:
-		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_ADDRESS), address, 
-				  CUR_TARGET_STRING);
+		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_ADDRESS), address, CUR_TARGET_STRING);
 		return ERRCODE_INVALID;
 		break;
 	}
@@ -272,7 +243,7 @@ RESULT s5x_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr,
 	return ERROR_OK;
 }
 
-RESULT s5x_fini(program_info_t *pi, programmer_info_t *prog)
+RESULT s5x_fini(struct program_info_t *pi, struct programmer_info_t *prog)
 {
 	pi = pi;
 	prog = prog;
@@ -280,10 +251,10 @@ RESULT s5x_fini(program_info_t *pi, programmer_info_t *prog)
 	return ERROR_OK;
 }
 
-RESULT s5x_init(program_info_t *pi, programmer_info_t *prog)
+RESULT s5x_init(struct program_info_t *pi, struct programmer_info_t *prog)
 {
 	uint8_t i;
-	operation_t opt_tmp;
+	struct operation_t opt_tmp;
 	
 	memset(&opt_tmp, 0, sizeof(opt_tmp));
 	
@@ -298,7 +269,7 @@ RESULT s5x_init(program_info_t *pi, programmer_info_t *prog)
 	{
 		// auto detect
 		LOG_INFO(_GETTEXT(INFOMSG_TRY_AUTODETECT));
-		opt_tmp.read_operations = CHIP_ID;
+		opt_tmp.read_operations = CHIPID;
 		cur_chip_param.param[S5X_PARAM_PE_OUT] = 0x69;
 		
 		if (ERROR_OK != s5x_program(opt_tmp, pi, prog))
@@ -312,16 +283,10 @@ RESULT s5x_init(program_info_t *pi, programmer_info_t *prog)
 		{
 			if (pi->chip_id == cur_chips_param[i].chip_id)
 			{
-				memcpy(&cur_chip_param, cur_chips_param + i, 
-					   sizeof(cur_chip_param));
+				pi->chip_name = (char *)cur_chips_param[i].chip_name;
+				LOG_INFO(_GETTEXT(INFOMSG_CHIP_FOUND), pi->chip_name);
 				
-				pi->app_size = cur_chip_param.app_size;
-				
-				LOG_INFO(_GETTEXT(INFOMSG_CHIP_FOUND), 
-						 cur_chip_param.chip_name);
-				pi->chip_name = (char *)cur_chip_param.chip_name;
-				
-				return ERROR_OK;
+				goto Post_Init;
 			}
 		}
 		
@@ -334,17 +299,20 @@ RESULT s5x_init(program_info_t *pi, programmer_info_t *prog)
 		{
 			if (!strcmp(cur_chips_param[i].chip_name, pi->chip_name))
 			{
-				memcpy(&cur_chip_param, cur_chips_param + i, 
-					   sizeof(cur_chip_param));
-				
-				pi->app_size = cur_chip_param.app_size;
-				
-				return ERROR_OK;
+				goto Post_Init;
 			}
 		}
 		
 		return ERROR_FAIL;
 	}
+Post_Init:
+	memcpy(&cur_chip_param, cur_chips_param + i, 
+		   sizeof(cur_chip_param));
+	
+	pi->program_areas[APPLICATION_IDX].size = 
+				cur_chip_param.chip_areas[APPLICATION_IDX].size;
+	
+	return ERROR_OK;
 }
 
 uint32_t s5x_interface_needed(void)
@@ -352,8 +320,8 @@ uint32_t s5x_interface_needed(void)
 	return S5X_INTERFACE_NEEDED;
 }
 
-RESULT s5x_get_mass_product_data_size(operation_t operations, 
-									  program_info_t pi, uint32_t *size)
+RESULT s5x_get_mass_product_data_size(struct operation_t operations, 
+									  struct program_info_t pi, uint32_t *size)
 {
 	operations = operations;
 	pi = pi;
@@ -362,8 +330,8 @@ RESULT s5x_get_mass_product_data_size(operation_t operations,
 	return ERRCODE_NOT_SUPPORT;
 }
 
-RESULT s5x_prepare_mass_product_data(operation_t operations, 
-									 program_info_t pi, uint8_t *buff)
+RESULT s5x_prepare_mass_product_data(struct operation_t operations, 
+									 struct program_info_t pi, uint8_t *buff)
 {
 	operations = operations;
 	pi = pi;
@@ -379,8 +347,8 @@ RESULT s5x_prepare_mass_product_data(operation_t operations,
 
 
 
-RESULT s5x_program(operation_t operations, program_info_t *pi, 
-				   programmer_info_t *prog)
+RESULT s5x_program(struct operation_t operations, struct program_info_t *pi, 
+				   struct programmer_info_t *prog)
 {
 #define get_target_voltage(v)	prog->get_target_voltage(v)
 
@@ -411,10 +379,17 @@ RESULT s5x_program(operation_t operations, program_info_t *pi,
 	uint32_t j, k, len_current_list, page_size;
 	uint8_t page_buf[256];
 	RESULT ret = ERROR_OK;
-	memlist *ml_tmp;
+	struct memlist *ml_tmp;
 	uint32_t target_size;
+	uint8_t *tbuff;
+	struct memlist **ml;
 
 	pi = pi;
+	
+	if (!program_frequency)
+	{
+		program_frequency = CUR_DEFAULT_FREQ;
+	}
 
 #ifdef PARAM_CHECK
 	if (NULL == prog)
@@ -423,20 +398,20 @@ RESULT s5x_program(operation_t operations, program_info_t *pi,
 		return ERRCODE_INVALID_PARAMETER;
 	}
 	if ((   (operations.read_operations & APPLICATION) 
-			&& (NULL == pi->app)) 
+			&& (NULL == pi->program_areas[APPLICATION_IDX].buff)) 
 		|| ((   (operations.write_operations & APPLICATION) 
 				|| (operations.verify_operations & APPLICATION)) 
-			&& (NULL == pi->app)))
+			&& (NULL == pi->program_areas[APPLICATION_IDX].buff)))
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_BUFFER), "for flash");
 		return ERRCODE_INVALID_BUFFER;
 	}
 	if ((   (operations.write_operations & LOCK) 
 			|| (operations.verify_operations & LOCK)) 
-		&& (pi->lock_value > 3))
+		&& (pi->program_areas[LOCK_IDX].value > 3))
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_VALUE), pi->lock_value, 
-				  "lock_value");
+		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_VALUE), 
+					pi->program_areas[LOCK_IDX].value, "lock_value");
 		return ERRCODE_INVALID;
 	}
 #endif
@@ -493,10 +468,10 @@ RESULT s5x_program(operation_t operations, program_info_t *pi,
 	reset_init();
 	
 	// enter program mode
-	if (cur_frequency > 0)
+	if (program_frequency > 0)
 	{
-		// use cur_frequency
-		spi_conf(cur_frequency);
+		// use program_frequency
+		spi_conf(program_frequency);
 		
 		// toggle reset
 		reset_set();
@@ -529,7 +504,7 @@ RESULT s5x_program(operation_t operations, program_info_t *pi,
 	{
 		// TODO: auto check frequency
 		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_VALUE), 
-				  cur_frequency, "ISP frequency");
+				  program_frequency, "ISP frequency");
 		ret = ERRCODE_INVALID;
 		goto leave_program_mode;
 	}
@@ -559,7 +534,7 @@ RESULT s5x_program(operation_t operations, program_info_t *pi,
 	pi->chip_id = ((page_buf[2] & 0xFF) << 0) | ((page_buf[1] & 0xFF) << 8) 
 				   | ((page_buf[0] & 0xFF) << 16);
 	LOG_INFO(_GETTEXT(INFOMSG_TARGET_CHIP_ID), pi->chip_id);
-	if (!(operations.read_operations & CHIP_ID))
+	if (!(operations.read_operations & CHIPID))
 	{
 		if (pi->chip_id != cur_chip_param.chip_id)
 		{
@@ -598,21 +573,23 @@ RESULT s5x_program(operation_t operations, program_info_t *pi,
 	
 	if (cur_prog_mode & S5X_PAGE_MODE)
 	{
-		page_size = cur_chip_param.app_page_size;
+		page_size = cur_chip_param.chip_areas[APPLICATION_IDX].page_size;
 	}
 	else
 	{
 		page_size = 256;
 	}
 	
-	target_size = MEMLIST_CalcAllSize(pi->app_memlist);
+	ml = &pi->program_areas[APPLICATION_IDX].memlist;
+	target_size = MEMLIST_CalcAllSize(*ml);
+	tbuff = pi->program_areas[APPLICATION_IDX].buff;
 	if (operations.write_operations & APPLICATION)
 	{
 		// program
 		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMING), "flash");
 		pgbar_init("writing flash |", "|", 0, target_size, PROGRESS_STEP, '=');
 		
-		ml_tmp = pi->app_memlist;
+		ml_tmp = *ml;
 		while (ml_tmp != NULL)
 		{
 			if ((ml_tmp->addr + ml_tmp->len) 
@@ -627,7 +604,8 @@ RESULT s5x_program(operation_t operations, program_info_t *pi,
 			
 			len_current_list = (uint32_t)ml_tmp->len;
 			for (i = -(int32_t)(ml_tmp->addr % page_size); 
-				 i < ((int32_t)ml_tmp->len - (int32_t)(ml_tmp->addr % page_size)); 
+				 i < ((int32_t)ml_tmp->len 
+						- (int32_t)(ml_tmp->addr % page_size)); 
 				 i += page_size)
 			{
 				if (cur_prog_mode & S5X_PAGE_MODE)
@@ -647,7 +625,7 @@ RESULT s5x_program(operation_t operations, program_info_t *pi,
 					
 					for (j = 0; j < page_size; j++)
 					{
-						spi_io(&pi->app[ml_tmp->addr + i + j], 1, NULL, 0, 0);
+						spi_io(&tbuff[ml_tmp->addr + i + j], 1, NULL, 0, 0);
 						delay_us(s5x_byte_delay_us);
 					}
 					
@@ -655,8 +633,7 @@ RESULT s5x_program(operation_t operations, program_info_t *pi,
 					{
 						pgbar_fini();
 						LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ADDR), 
-								  "program flash in page mode", 
-								  ml_tmp->addr + i);
+								"program flash in page mode", ml_tmp->addr + i);
 						ret = ERRCODE_FAILURE_OPERATION;
 						goto leave_program_mode;
 					}
@@ -669,7 +646,7 @@ RESULT s5x_program(operation_t operations, program_info_t *pi,
 						cmd_buf[0] = 0x40;
 						cmd_buf[1] = (uint8_t)((ml_tmp->addr + i + j) >> 8);
 						cmd_buf[2] = (uint8_t)((ml_tmp->addr + i + j) >> 0);
-						cmd_buf[3] = pi->app[ml_tmp->addr + i + j];
+						cmd_buf[3] = tbuff[ml_tmp->addr + i + j];
 						spi_io(cmd_buf, 4, NULL, 0, 0);
 						delay_us(s5x_byte_delay_us);
 					}
@@ -678,8 +655,7 @@ RESULT s5x_program(operation_t operations, program_info_t *pi,
 					{
 						pgbar_fini();
 						LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ADDR), 
-								  "program flash in byte mode", 
-								  ml_tmp->addr + i);
+								"program flash in byte mode", ml_tmp->addr + i);
 						ret = ERRCODE_FAILURE_OPERATION;
 						goto leave_program_mode;
 					}
@@ -704,7 +680,8 @@ RESULT s5x_program(operation_t operations, program_info_t *pi,
 		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMED_SIZE), "flash", target_size);
 	}
 	
-	if (operations.read_operations & APPLICATION)
+	if ((operations.read_operations & APPLICATION) 
+		|| (operations.verify_operations & APPLICATION))
 	{
 		if (operations.verify_operations & APPLICATION)
 		{
@@ -712,18 +689,19 @@ RESULT s5x_program(operation_t operations, program_info_t *pi,
 		}
 		else
 		{
-			ret = MEMLIST_Add(&pi->app_memlist, 0, pi->app_size, page_size);
+			ret = MEMLIST_Add(ml, 0, pi->program_areas[APPLICATION_IDX].size, 
+								page_size);
 			if (ret != ERROR_OK)
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "add memory list");
 				return ERRCODE_FAILURE_OPERATION;
 			}
-			target_size = MEMLIST_CalcAllSize(pi->app_memlist);
+			target_size = MEMLIST_CalcAllSize(*ml);
 			LOG_INFO(_GETTEXT(INFOMSG_READING), "flash");
 		}
 		pgbar_init("reading flash |", "|", 0, target_size, PROGRESS_STEP, '=');
 		
-		ml_tmp = pi->app_memlist;
+		ml_tmp = *ml;
 		while (ml_tmp != NULL)
 		{
 			if ((ml_tmp->addr + ml_tmp->len) 
@@ -738,7 +716,8 @@ RESULT s5x_program(operation_t operations, program_info_t *pi,
 			
 			len_current_list = (uint32_t)ml_tmp->len;
 			for (i = -(int32_t)(ml_tmp->addr % page_size); 
-				 i < ((int32_t)ml_tmp->len - (int32_t)(ml_tmp->addr % page_size)); 
+				 i < ((int32_t)ml_tmp->len 
+						- (int32_t)(ml_tmp->addr % page_size)); 
 				 i += page_size)
 			{
 				if (cur_prog_mode & S5X_PAGE_MODE)
@@ -795,14 +774,13 @@ RESULT s5x_program(operation_t operations, program_info_t *pi,
 				{
 					for (j = 0; j < page_size; j++)
 					{
-						if (page_buf[j] != pi->app[ml_tmp->addr + i + j])
+						if (page_buf[j] != tbuff[ml_tmp->addr + i + j])
 						{
 							pgbar_fini();
 							LOG_ERROR(
 								_GETTEXT(ERRMSG_FAILURE_VERIFY_TARGET_AT_02X), 
-								"flash", 
-								ml_tmp->addr + i + j, page_buf[j], 
-								pi->app[ml_tmp->addr + i + j]);
+								"flash", ml_tmp->addr + i + j, page_buf[j], 
+								tbuff[ml_tmp->addr + i + j]);
 							ret = ERROR_FAIL;
 							goto leave_program_mode;
 						}
@@ -810,7 +788,7 @@ RESULT s5x_program(operation_t operations, program_info_t *pi,
 				}
 				else
 				{
-					memcpy(&pi->app[ml_tmp->addr + i], page_buf, page_size);
+					memcpy(&tbuff[ml_tmp->addr + i], page_buf, page_size);
 				}
 				
 				pgbar_update(k);
@@ -841,7 +819,7 @@ RESULT s5x_program(operation_t operations, program_info_t *pi,
 	
 	if (operations.write_operations & FUSE)
 	{
-		if (0 == cur_chip_param.fuse_size)
+		if (0 == cur_chip_param.chip_areas[FUSE_IDX].size)
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "Fuse", 
 					  cur_chip_param.chip_name);
@@ -853,7 +831,7 @@ RESULT s5x_program(operation_t operations, program_info_t *pi,
 		pgbar_init("writing fuse |", "|", 0, 1, PROGRESS_STEP, '=');
 		
 		cmd_buf[0] = 0xAC;
-		cmd_buf[1] = 0x10 + (pi->fuse_value & 0x0F);
+		cmd_buf[1] = 0x10 + (pi->program_areas[FUSE_IDX].value & 0x0F);
 		cmd_buf[2] = 0x00;
 		cmd_buf[3] = 0x00;
 		spi_io(cmd_buf, 4, NULL, 0, 0);
@@ -871,9 +849,10 @@ RESULT s5x_program(operation_t operations, program_info_t *pi,
 		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMED), "fuse");
 	}
 	
-	if (operations.read_operations & FUSE)
+	if ((operations.read_operations & FUSE) 
+		|| (operations.verify_operations & FUSE))
 	{
-		if (0 == cur_chip_param.fuse_size)
+		if (0 == cur_chip_param.chip_areas[FUSE_IDX].size)
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "Fusebit", 
 					  cur_chip_param.chip_name);
@@ -910,14 +889,14 @@ RESULT s5x_program(operation_t operations, program_info_t *pi,
 		tmp8 &= 0x0F;
 		if (operations.verify_operations & FUSE)
 		{
-			if (tmp8 == pi->fuse_value)
+			if (tmp8 == pi->program_areas[FUSE_IDX].value)
 			{
 				LOG_INFO(_GETTEXT(INFOMSG_VERIFIED), "fuse");
 			}
 			else
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_VERIFY_TARGET_02X), 
-						  "fuse", tmp8, pi->fuse_value);
+						  "fuse", tmp8, pi->program_areas[FUSE_IDX].value);
 				ret = ERROR_FAIL;
 				goto leave_program_mode;
 			}
@@ -933,11 +912,11 @@ RESULT s5x_program(operation_t operations, program_info_t *pi,
 		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMING), "lock");
 		pgbar_init("writing lock |", "|", 0, 1, PROGRESS_STEP, '=');
 		
-		if (pi->lock_value > 0)
+		if (pi->program_areas[LOCK_IDX].value > 0)
 		{
 			for (i = 1; i < 4; i++)
 			{
-				if (pi->lock_value >= (uint32_t)i)
+				if (pi->program_areas[LOCK_IDX].value >= (uint32_t)i)
 				{
 					cmd_buf[0] = 0xAC;
 					cmd_buf[1] = 0xE0 + (uint8_t)i;
@@ -962,7 +941,8 @@ RESULT s5x_program(operation_t operations, program_info_t *pi,
 		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMED), "lock");
 	}
 	
-	if (operations.read_operations & LOCK)
+	if ((operations.read_operations & LOCK) 
+		|| (operations.verify_operations & LOCK))
 	{
 		uint8_t lock;
 		
@@ -1003,14 +983,14 @@ RESULT s5x_program(operation_t operations, program_info_t *pi,
 		
 		if (operations.verify_operations & LOCK)
 		{
-			if (lock == pi->lock_value)
+			if (lock == pi->program_areas[LOCK_IDX].value)
 			{
 				LOG_INFO(_GETTEXT(INFOMSG_VERIFIED), "lock");
 			}
 			else
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_VERIFY_TARGET_D), 
-						  "lock", lock + 1, pi->lock_value + 1);
+					"lock", lock + 1, pi->program_areas[LOCK_IDX].value + 1);
 				ret = ERROR_FAIL;
 				goto leave_program_mode;
 			}

@@ -49,15 +49,14 @@ extern RESULT (*msp430jtagsbw_tclk)(uint8_t value);
 extern RESULT (*msp430jtagsbw_tclk_strobe)(uint16_t cnt);
 extern RESULT (*msp430jtagsbw_reset)(void);
 extern RESULT (*msp430jtagsbw_poll)(uint32_t dr, uint32_t mask, uint32_t value, 
-									uint8_t len, uint16_t poll_cnt, 
-									uint8_t toggle_tclk);
+						uint8_t len, uint16_t poll_cnt, uint8_t toggle_tclk);
 
-RESULT msp430_sbw_program(operation_t operations, program_info_t *pi, 
-						  programmer_info_t *prog);
-RESULT msp430_jtag_program(operation_t operations, program_info_t *pi, 
-						   programmer_info_t *prog);
-RESULT msp430_bsl_program(operation_t operations, program_info_t *pi, 
-						  programmer_info_t *prog);
+RESULT msp430_sbw_program(struct operation_t operations, 
+				struct program_info_t *pi, struct programmer_info_t *prog);
+RESULT msp430_jtag_program(struct operation_t operations, 
+				struct program_info_t *pi, struct programmer_info_t *prog);
+RESULT msp430_bsl_program(struct operation_t operations, 
+				struct program_info_t *pi, struct programmer_info_t *prog);
 
 // JTAG and SBW
 #define MSP430_IR_LEN			8

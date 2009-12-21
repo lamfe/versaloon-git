@@ -7,59 +7,25 @@ interface
 uses
   Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs, ComCtrls,
   StdCtrls, EditBtn, ExtCtrls, cli_caller, parameditor, Menus, Buttons, Spin,
-  Synaser, com_setup, fileselector, hexeditor, XMLCfg, vsprogparser;
+  Synaser, com_setup, fileselector, hexeditor, XMLCfg, vsprogparser, vsprogtarget;
 
 type
-
-  TTargetType = (TT_NONE, TT_PSOC1, TT_AT89S5X, TT_C8051F, TT_MSP430, TT_STM8,
-    TT_EEPROM, TT_JTAG, TT_AVR8, TT_PIC8, TT_COMISP, TT_LPCICP,
-    TT_CORTEXM3);
-
-  TTargetSetting = record
-    extra:     string;
-    target:    string;
-    mode:      string;
-    fuse_bytelen: integer;
-    fuse_default: integer;
-    lock_bytelen: integer;
-    lock_default: integer;
-    cali_bytelen: integer;
-    cali_default: integer;
-    usrsig_bytelen: integer;
-    usrsig_default: integer;
-    flash_start_addr: integer;
-    flash_seg: integer;
-    eeprom_start_addr: integer;
-    eeprom_seg: integer;
-  end;
-
-  TTargetFileSetting = record
-    target:      string;
-    filename:    string;
-    seg_offset:  integer;
-    addr_offset: integer;
-    def_start_addr: integer;
-    offset_is_fake: boolean;
-  end;
-
-  TMemoryInfo = record
-    start_addr:   integer;
-    seg_addr:     integer;
-    default_byte: byte;
-    byte_size:    integer;
-  end;
 
   { TPollThread }
 
   TPollThread = class(TThread)
   private
-    TargetVoltage: integer;
-    ConnectOK:     boolean;
+    FTargetVoltage: integer;
+    FConnectOK: boolean;
+    FAppPath: string;
     procedure Update;
   protected
     procedure Execute; override;
   public
     constructor Create();
+    property ConnectOK: boolean Read FConnectOK;
+    property AppPath: string Read FAppPath Write FAppPath;
+    property TargetVoltage: integer Read FTargetVoltage;
   end;
 
   { TFormMain }
@@ -71,10 +37,11 @@ type
     btnOpenOCDRun: TButton;
     btnOpenOCDStop: TButton;
     btnUpdate: TButton;
-    btnSVFPlayerRun: TButton;
+    btnSVFRun: TButton;
     btnEditCali: TButton;
     btnOpenFile: TButton;
     btnSetPower: TButton;
+    btnModeSetup: TButton;
     cbboxOpenOCDInterface: TComboBox;
     cbboxOpenOCDScript: TComboBox;
     cbboxOpenOCDTarget: TComboBox;
@@ -88,6 +55,8 @@ type
     cbboxMode: TComboBox;
     cbboxCOM:  TComboBox;
     cbboxInputFile: TComboBox;
+    dedtOpenOCD: TDirectoryEdit;
+    dedtVSprog: TDirectoryEdit;
     edtSVFOption: TEdit;
     edtOpenOCDOption: TEdit;
     fneditSVFFile: TFileNameEdit;
@@ -112,11 +81,14 @@ type
     gbOpenOCD: TGroupBox;
     gbSVFPlayer: TGroupBox;
     gbPower:   TGroupBox;
+    gbSetting: TGroupBox;
+    lblOpenOCDDir: TLabel;
+    lblVSProgDir: TLabel;
     lblPowerUnit: TLabel;
     lbledtCali: TLabeledEdit;
     lbledtUsrSig: TLabeledEdit;
     lblSVFOption: TLabel;
-    lblSVFPlayerSelectFile: TLabel;
+    lblSVFFile: TLabel;
     lblOpenOCDOption: TLabel;
     lblOpenOCDInterface: TLabel;
     lblOpenOCDTarget: TLabel;
@@ -133,6 +105,7 @@ type
     memoLog:   TMemo;
     miExit:    TMenuItem;
     odInputFile: TOpenDialog;
+    pnlAbout:  TPanel;
     pgbarMain: TProgressBar;
     pnlMain:   TPanel;
     pcMain:    TPageControl;
@@ -140,20 +113,10 @@ type
     sbMain:    TStatusBar;
     sedtPower: TSpinEdit;
     tPollProgrammer: TTimer;
-    tsCortexM3: TTabSheet;
-    tsLPCICP:  TTabSheet;
-    tDelay:    TTimer;
-    tsCOMISP:  TTabSheet;
+    tsVsprog:  TTabSheet;
     tsJTAG:    TTabSheet;
-    tsAVR8:    TTabSheet;
-    tsEEPROM:  TTabSheet;
     tiMain:    TTrayIcon;
-    tsSTM8:    TTabSheet;
-    tsMSP430:  TTabSheet;
     tsAbout:   TTabSheet;
-    tsAT89S5X: TTabSheet;
-    tsC8051F:  TTabSheet;
-    tsPSoC1:   TTabSheet;
     xmlcfgMain: TXMLConfig;
     procedure btnEditAppClick(Sender: TObject);
     procedure btnEditCaliClick(Sender: TObject);
@@ -162,12 +125,13 @@ type
     procedure btnEditLockClick(Sender: TObject);
     procedure btnEditUsrSigClick(Sender: TObject);
     procedure btnEraseClick(Sender: TObject);
+    procedure btnModeSetupClick(Sender: TObject);
     procedure btnOpenFileClick(Sender: TObject);
     procedure btnOpenOCDRunClick(Sender: TObject);
     procedure btnOpenOCDStopClick(Sender: TObject);
     procedure btnReadClick(Sender: TObject);
     procedure btnSetPowerClick(Sender: TObject);
-    procedure btnSVFPlayerRunClick(Sender: TObject);
+    procedure btnSVFRunClick(Sender: TObject);
     procedure btnTargetDetectClick(Sender: TObject);
     procedure btnUpdateClick(Sender: TObject);
     procedure btnVerifyClick(Sender: TObject);
@@ -175,6 +139,7 @@ type
     procedure cbboxInputFileChange(Sender: TObject);
     procedure cbboxModeChange(Sender: TObject);
     procedure cbboxTargetChange(Sender: TObject);
+    procedure dedtPathChange(Sender: TObject);
     procedure FormActivate(Sender: TObject);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormCreate(Sender: TObject);
@@ -185,117 +150,75 @@ type
     procedure miExitClick(Sender: TObject);
     procedure pcMainChanging(Sender: TObject; var AllowChange: boolean);
     procedure pcMainPageChanged(Sender: TObject);
-    procedure tbPowerChange(Sender: TObject);
-    procedure tPollProgrammerTimer(Sender: TObject);
-    procedure tDelayTimer(Sender: TObject);
     procedure tiMainClick(Sender: TObject);
+    procedure tPollProgrammerTimer(Sender: TObject);
 
-    procedure AdjustComponentColor(Sender: TObject);
+    procedure CenterControl(ctl: TControl; ref: TControl);
+    procedure AdjustComponentColor(Sender: TControl);
     procedure ShowDebugLog();
     procedure HideDebugLog();
     procedure ComboBoxSetText(var combo: TComboBox; aText: string);
+    function ComboBoxGetIdx(combo: TComboBox; aText: string): integer;
     procedure UpdateTitle();
     procedure LogInfo(info: string);
+    procedure UpdateComboTargetFile();
 
-    { VSProg common declarations }
+    { VSProg declarations }
 
+    procedure VSProg_GUIUpdateULCS(Value, bytelen: integer; var edt: TLabeledEdit);
+    procedure VSProg_GUIUpdateFuse(fuse, bytelen: integer);
+    procedure VSProg_GUIUpdateLock(lock, bytelen: integer);
+    procedure VSProg_GUIUpdateUsrSig(sig, bytelen: integer);
+    procedure VSProg_GUIUpdateCali(cali, bytelen: integer);
+    procedure ShowTargetArea(AreaName: char; var Sender: TObject; parser: TParserFunc);
+    function VSProg_PrepareToRun(aApplicationName: string): boolean;
+    function VSProg_PrepareToRunCLI: boolean;
+    function VSProg_PrepareToRunOpenOCD: boolean;
     function VSProg_RunAlgorithm(var caller: TCLI_Caller; parser: TParserFunc;
-      result_num: integer): boolean;
-    function VSProg_MemoryTargetParserCallback(line: string): boolean;
-    function VSProg_SettingTargetParserCallback(line: string): boolean;
-    function VSProg_SupportParserCallback(line: string): boolean;
-    function VSProg_LogProcess(ProgressInfo: TProgressInfoType; info: string): boolean;
-    procedure VSProg_LogOutput(line: string);
+      result_num: integer; silent: boolean): boolean;
+    function VSProg_SettingTargetParserCallback(var line: string): boolean;
+    procedure VSProg_LogOutput(var line: string);
     procedure VSProg_LogProgress(ProgressInfo: TProgressInfoType; info: string);
-
-    procedure UpdateTargetFile();
-    procedure VSProg_TargetSettingInit(var setting: TTargetSetting);
-    procedure VSProg_AddTargetSetting(setting: TTargetSetting);
-    function GetTargetDefineParameters(): string;
-    procedure PrepareBaseParameters(var caller: TCLI_Caller);
-    procedure PrepareOperationParameters(var caller: TCLI_Caller);
-    function PrepareToRunCLI: boolean;
-    function PrepareToRunOpenOCD: boolean;
-    procedure VSProg_CommonTargetInit(para: string);
-    procedure VSProg_CommonInit(para: string);
-    procedure VSProg_CommonUpdateSetting(Value, bytelen: integer; edt: TLabeledEdit);
-    procedure VSProg_CommonUpdateFuse(fuse, bytelen: integer);
-    procedure VSProg_CommonUpdateLock(lock, bytelen: integer);
-    procedure VSProg_CommonUpdateUsrSig(sig, bytelen: integer);
-    procedure VSProg_CommonUpdateCali(cali, bytelen: integer);
-    function VSProg_CommonGetEnabledOperationString(): string;
-    function VSProg_CommonAddEraseOperation(): boolean;
-    function VSProg_CommonAddWriteOperation(): boolean;
-    function VSProg_CommonAddVerifyOperation(): boolean;
-    function VSProg_CommonAddReadOperation(): boolean;
-    { PSoC1 declarations }
-    function PSoC1_Init(): boolean;
-    function PSoC1_Init_Para(line: string; var setting: TTargetSetting): boolean;
-    procedure PSoC1_Update_Chip(setting: TTargetSetting);
-    { C8051F declarations }
-    function C8051F_Init(): boolean;
-    function C8051F_Init_Para(line: string; var setting: TTargetSetting): boolean;
-    procedure C8051F_Update_Chip(setting: TTargetSetting);
-    { AT89S5X declarations }
-    function AT89S5X_Init(): boolean;
-    function AT89S5X_Init_Para(line: string; var setting: TTargetSetting): boolean;
-    procedure AT89S5X_Update_Chip(setting: TTargetSetting);
-    { MSP430 declarations }
-    function MSP430_Init(): boolean;
-    function MSP430_Init_Para(line: string; var setting: TTargetSetting): boolean;
-    procedure MSP430_Update_Chip(setting: TTargetSetting);
-    { STM8 declarations }
-    function STM8_Init(): boolean;
-    { EEPROM declarations }
-    function EEPROM_Init(): boolean;
-    { ARM declarations }
-    function ARM_Init(): boolean;
-    { AVR8 declarations }
-    function AVR8_Init(): boolean;
-    function AVR8_Init_Para(line: string; var setting: TTargetSetting): boolean;
-    procedure AVR8_Update_Chip(setting: TTargetSetting);
-    procedure AVR8_Update_Mode(m_str: string);
-    { COMISP declarations }
-    function COMISP_Init(): boolean;
-    function COMISP_Init_Para(line: string; var setting: TTargetSetting): boolean;
-    procedure COMISP_Update_Chip(setting: TTargetSetting);
-    { LPCICP declarations }
-    function LPCICP_Init(): boolean;
-    function LPCICP_Init_Para(line: string; var setting: TTargetSetting): boolean;
-    procedure LPCICP_Update_Chip(setting: TTargetSetting);
-    { CortexM3 declarations }
-    function CortexM3_Init(): boolean;
-    function CortexM3_Init_Para(line: string; var setting: TTargetSetting): boolean;
-    procedure CortexM3_Update_Chip(setting: TTargetSetting);
-    procedure CortexM3_Update_Mode(m_str: string);
+    function VSProg_GUITargetSeriesPageInit(index: integer): boolean;
+    procedure VSProg_GUITargetAreaInit;
+    procedure VSProg_GUIModeInit;
+    procedure VSProg_GUIFeatureInit(para: string; append: boolean);
+    function VSProg_GetEnabledOperationString(): string;
+    function VSProg_GetTargetDefineParameters(): string;
+    function VSProg_AddEraseOperation(): boolean;
+    function VSProg_AddWriteOperation(): boolean;
+    function VSProg_AddVerifyOperation(): boolean;
+    function VSProg_AddReadOperation(): boolean;
+    procedure VSProg_PrepareMiscParameters(var caller: TCLI_Caller);
+    procedure VSProg_PrepareBaseParameters(var caller: TCLI_Caller);
+    procedure VSProg_PrepareOperationParameters(var caller: TCLI_Caller);
+    { OpenOCD declarations }
+    function OpenOCD_Init(): boolean;
   private
     { private declarations }
-    TargetType:     TTargetType;
-    TargetSetting:  array of TTargetSetting;
-    bPageLock:      boolean;
     bReadOperation: boolean;
-    bOpenFileOK:    boolean;
-    JTAGPage_Init:  boolean;
+    bOpenFileOK: boolean;
+    JTAGPage_Init: boolean;
     TargetPage_Init: boolean;
     AboutPage_Init: boolean;
-    TargetVoltage:  integer;
-    ShowCallerError: boolean;
+    Page_Init: boolean;
   public
     { public declarations }
   end;
 
 var
-  FormMain:    TFormMain;
-  PollThread:  TPollThread;
+  FormMain: TFormMain;
+  PollThread: TPollThread;
+  VSProg_Taken_By_Polling: boolean;
+  VSProg_Version: string;
   VSProg_Caller: TCLI_Caller;
   VSProg_Parser: TVSprog_Parser;
-  VSProg_Taken_By_Polling: boolean;
-  ComMode:     TComMode;
-  ComModeInit: TComMode;
-  TargetFile:  array of TTargetFileSetting;
-  VSProg_Version: string;
-  MemoryInfo:  TMemoryInfo;
+  VSProg_Targets: TVSProg_Targets;
   VSProg_Exists: boolean;
+  OpenOCD_Exists: boolean;
+  CurTargetChip: TTargetChip;
+  CurTargetSeries: TTargetSeries;
+  ComMode: TComMode;
 
 const
   DEBUG_LOG_SHOW: boolean = False;
@@ -308,128 +231,59 @@ const
   VSPROG_STR: string   = 'vsprog.exe';
   {$ENDIF}
   {$IFDEF UNIX}
-  OPENOCD_APP_STR: string = 'openocd';
+  OPENOCD_STR: string  = 'openocd';
   {$ELSE}
-  OPENOCD_APP_STR: string = 'openocd.exe';
+  OPENOCD_STR: string  = 'openocd.exe';
   {$ENDIF}
-  COMSETUP_STR: string = '&COM Setup';
-  COMSETUP_HINT: string = 'Setup COM Port';
-  AUTODETECT_STR: string = '&AutoDetect';
-  AUTODETECT_HINT: string = 'Detect Target Module';
   FREQ_STR: string     = 'Freq(KHz):';
   FREQ_HINT: string    = 'Set operation frequency';
   EXECUTE_ADDR_STR: string = 'execute:';
   EXECUTE_ADDR_HINT: string = 'Set address to execute after operation';
   LOGMEMO_WIDTH: integer = 400;
 
-  FLASH_CHAR: string  = 'f';
-  EEPROM_CHAR: string = 'e';
-  FUSE_CHAR: string   = 'u';
-  LOCK_CHAR: string   = 'l';
-  CALI_CHAR: string   = 'c';
-  USRSIG_CHAR: string = 's';
-
 implementation
-
-procedure RemoveTargetFile(Name: string);
-var
-  i, j:  integer;
-  found: boolean;
-begin
-  found := False;
-  for i := low(TargetFile) to high(TargetFile) do
-  begin
-    if TargetFile[i].target = Name then
-    begin
-      found := True;
-    end;
-  end;
-  if found then
-  begin
-    for j := i to high(TargetFile) - 1 do
-    begin
-      TargetFile[j] := TargetFile[j + 1];
-    end;
-    SetLength(TargetFile, Length(TargetFile) - 1);
-  end;
-end;
-
-procedure AddTargetFile(Name: string; offset_is_fake: boolean;
-  seg_offset, addr_offset, def_start_addr: integer);
-var
-  i:     integer;
-  found: boolean;
-begin
-  found := False;
-  for i := low(TargetFile) to high(TargetFile) do
-  begin
-    if TargetFile[i].target = Name then
-    begin
-      found := True;
-    end;
-  end;
-  if not found then
-  begin
-    SetLength(TargetFile, Length(TargetFile) + 1);
-    i := Length(TargetFile) - 1;
-    TargetFile[i].target := Name;
-    TargetFile[i].filename := '';
-    TargetFile[i].seg_offset := seg_offset;
-    TargetFile[i].addr_offset := addr_offset;
-    TargetFile[i].offset_is_fake := offset_is_fake;
-    TargetFile[i].def_start_addr := def_start_addr;
-  end;
-end;
-
-function GetTargetFileIndex(target_str: string): integer;
-var
-  i: integer;
-begin
-  Result := -1;
-  if Length(TargetFile) > 0 then
-  begin
-    for i := low(TargetFile) to high(TargetFile) do
-    begin
-      if TargetFile[i].target = target_str then
-      begin
-        Result := i;
-        exit;
-      end;
-    end;
-  end;
-end;
 
 { TPollThread }
 
 procedure TPollThread.Update;
 begin
-{
-  if bFatalError then
+  if FConnectOK then
   begin
-    // programmer not available
+    FormMain.lblPowerUnit.Caption := IntToStr(FTargetVoltage);
   end
   else
   begin
-    // programmer available
-    // update target volage
-    sedtPower.Value := TargetVoltage;
+    FormMain.lblPowerUnit.Caption := IntToStr(-1);
   end;
-}
 end;
 
 procedure TPollThread.Execute;
 begin
-  if not VSProg_Caller.Take() then
+  if (not VSProg_Exists) or (not VSProg_Caller.Take()) then
   begin
     // not available now
     exit;
   end;
   VSProg_Taken_By_Polling := True;
 
-  VSProg_Caller.Application := Application.Location + VSPROG_STR;
+  FTargetVoltage := 0;
+  VSProg_Caller.Application := FAppPath;
   VSProg_Caller.RemoveAllParameters();
   VSProg_Caller.AddParameter('V"voltage"');
-  //VSProg_Caller.Run(, False, True);
+  VSProg_Parser.ParserFunc      := @VSProg_Parser.TargetVoltageParser;
+  VSProg_Parser.LogOutputEnable := False;
+  VSProg_Caller.Run(@VSProg_Parser.CommonParser, False, True);
+  VSProg_Parser.LogOutputEnable := True;
+  if (not VSProg_Parser.HasError) and (VSProg_Parser.ResultStrings.Count > 0) then
+  begin
+    FConnectOK     := True;
+    FTargetVoltage := StrToInt(VSProg_Parser.ResultStrings.Strings[0]);
+  end
+  else
+  begin
+    FConnectOK     := False;
+    FTargetVoltage := 0;
+  end;
 
   Synchronize(@Update);
   VSProg_Taken_By_Polling := False;
@@ -443,25 +297,28 @@ end;
 
 { TFormMain }
 
-procedure TFormMain.ComboBoxSetText(var combo: TComboBox; aText: string);
+function TFormMain.ComboBoxGetIdx(combo: TComboBox; aText: string): integer;
 var
   i: integer;
 begin
+  Result := -1;
   for i := 0 to combo.Items.Count - 1 do
   begin
     if combo.Items.Strings[i] = aText then
     begin
-      combo.ItemIndex := i;
-      break;
+      Result := i;
     end;
   end;
 end;
 
-procedure TFormMain.tPollProgrammerTimer(Sender: TObject);
+procedure TFormMain.ComboBoxSetText(var combo: TComboBox; aText: string);
+var
+  i: integer;
 begin
-  if (Sender as TTimer).Enabled and (PollThread <> nil) and PollThread.Suspended then
+  i := ComboBoxGetIdx(combo, aText);
+  if i >= 0 then
   begin
-    //    PollThread.Resume;
+    combo.ItemIndex := i;
   end;
 end;
 
@@ -482,7 +339,7 @@ begin
 end;
 
 function TFormMain.VSProg_RunAlgorithm(var caller: TCLI_Caller;
-  parser: TParserFunc; result_num: integer): boolean;
+  parser: TParserFunc; result_num: integer; silent: boolean): boolean;
 begin
   Result := False;
   VSProg_Parser.Prepare();
@@ -490,8 +347,9 @@ begin
   caller.Run(@VSProg_Parser.CommonParser, False, True);
   VSProg_Parser.CallbackFunc    := nil;
   VSProg_Parser.LogOutputEnable := True;
+  VSProg_Caller.Application     := '';
 
-  if VSProg_Parser.HasError then
+  if (VSProg_Parser.HasError) and (not silent) then
   begin
     Beep();
     MessageDlg('Error', VSProg_Parser.ErrorStr, mtError, [mbOK], 0);
@@ -502,7 +360,7 @@ begin
   end;
 end;
 
-procedure TFormMain.VSProg_LogOutput(line: string);
+procedure TFormMain.VSProg_LogOutput(var line: string);
 begin
   memoLog.Lines.Add(line);
 end;
@@ -529,7 +387,286 @@ begin
   end;
 end;
 
-procedure TFormMain.UpdateTargetFile();
+procedure TFormMain.VSProg_GUIUpdateULCS(Value, bytelen: integer;
+  var edt: TLabeledEdit);
+begin
+  if bytelen > 0 then
+  begin
+    edt.Text := '0x' + IntToHex(Value, bytelen * 2);
+  end
+  else
+  begin
+    edt.Text := '';
+  end;
+end;
+
+procedure TFormMain.VSProg_GUIUpdateUsrSig(sig, bytelen: integer);
+begin
+  VSProg_GUIUpdateULCS(sig, bytelen, lbledtUsrSig);
+end;
+
+procedure TFormMain.VSProg_GUIUpdateCali(cali, bytelen: integer);
+begin
+  VSProg_GUIUpdateULCS(cali, bytelen, lbledtCali);
+end;
+
+procedure TFormMain.VSProg_GUIUpdateLock(lock, bytelen: integer);
+begin
+  VSProg_GUIUpdateULCS(lock, bytelen, lbledtLock);
+end;
+
+procedure TFormMain.VSProg_GUIUpdateFuse(fuse, bytelen: integer);
+begin
+  VSProg_GUIUpdateULCS(fuse, bytelen, lbledtFuse);
+end;
+
+ // Update Series Features
+ // C: Commport, X: eXecute, F, Frequency
+procedure TFormMain.VSProg_GUIFeatureInit(para: string; append: boolean);
+var
+  strTmp: string;
+begin
+  chkboxMP.Checked := False;
+  chkboxMP.Enabled := (Pos('M', para) > 0);
+
+  strTmp := lbledtFreq.EditLabel.Caption;
+  if (Pos('F', para) > 0) or (Pos('X', para) > 0) then
+  begin
+    btnModeSetup.Visible := False;
+    lbledtFreq.Visible := True;
+    if Pos('F', para) > 0 then
+    begin
+      lbledtFreq.EditLabel.Caption := FREQ_STR;
+      lbledtFreq.Hint := FREQ_HINT;
+    end
+    else
+    begin
+      lbledtFreq.EditLabel.Caption := EXECUTE_ADDR_STR;
+      lbledtFreq.Hint := EXECUTE_ADDR_HINT;
+    end;
+    if lbledtFreq.EditLabel.Caption <> strTmp then
+    begin
+      lbledtFreq.Text := '';
+    end;
+    lbledtFreq.Enabled := True;
+  end
+  else
+  begin
+    lbledtFreq.Visible := False;
+    if not append then
+    begin
+      lbledtFreq.Text    := '';
+      lbledtFreq.Hint    := '';
+      lbledtFreq.Enabled := False;
+    end;
+  end;
+
+  if Pos('C', para) > 0 then
+  begin
+    lbledtFreq.Visible := False;
+    btnModeSetup.Visible := True;
+  end
+  else
+  begin
+    btnModeSetup.Visible := False;
+  end;
+
+  if Pos('A', para) > 0 then
+  begin
+    btnTargetDetect.Enabled := True;
+  end
+  else if not append then
+  begin
+    btnTargetDetect.Enabled := False
+  end;
+end;
+
+// Update Mode and correspong features
+procedure TFormMain.VSProg_GUIModeInit;
+var
+  OrigMode: string;
+  i: integer;
+begin
+  OrigMode := cbboxMode.Text;
+  cbboxMode.Clear;
+
+  for i := 1 to Length(CurTargetChip.Mode) do
+  begin
+    cbboxMode.Items.Add(CurTargetSeries.GetModeStrByModeChar(CurTargetChip.Mode[i]));
+  end;
+
+  if cbboxMode.Items.Count > 0 then
+  begin
+    i := ComboBoxGetIdx(cbboxMode, OrigMode);
+    if i >= 0 then
+    begin
+      cbboxMode.ItemIndex := i;
+    end
+    else
+    begin
+      cbboxMode.ItemIndex := 0;
+    end;
+    cbboxMode.Enabled := True;
+    cbboxModeChange(cbboxMode);
+  end
+  else
+  begin
+    cbboxMode.Enabled := False;
+  end;
+end;
+
+// f: Flash, e: EEprom, l: Lock, u: Fuse, s: User Signature, c: Calibration Value
+procedure TFormMain.VSProg_GUITargetAreaInit;
+var
+  index: integer;
+  para:  string;
+begin
+  para := CurTargetChip.Areas;
+
+  if Pos(FLASH_CHAR, para) > 0 then
+  begin
+    btnEditApp.Enabled := True;
+    chkboxApp.Enabled  := True;
+    //chkboxApp.Checked  := True;
+  end
+  else
+  begin
+    btnEditApp.Enabled := False;
+    chkboxApp.Enabled  := False;
+    chkboxApp.Checked  := False;
+  end;
+
+  if Pos(EE_CHAR, para) > 0 then
+  begin
+    btnEditEE.Enabled := True;
+    chkboxEE.Enabled  := True;
+    //chkboxEE.Checked  := True;
+  end
+  else
+  begin
+    btnEditEE.Enabled := False;
+    chkboxEE.Enabled  := False;
+    chkboxEE.Checked  := False;
+  end;
+
+  lbledtLock.Text    := '';
+  lbledtLock.Enabled := False;
+  if Pos(LOCK_CHAR, para) > 0 then
+  begin
+    btnEditLock.Enabled := True;
+    chkboxLock.Enabled := True;
+    //chkboxLock.Checked := True;
+    index := CurTargetChip.GetAreaIdx(LOCK_CHAR);
+    if (index >= 0) and (not CurTargetChip.TargetAreas[index].InFile) and
+      (CurTargetChip.TargetAreas[index].ByteLen <= 4) then
+    begin
+      lbledtLock.Enabled := True;
+      VSProg_GUIUpdateLock(CurTargetChip.TargetAreas[index].DefaultValue,
+        CurTargetChip.TargetAreas[index].ByteLen);
+    end;
+  end
+  else
+  begin
+    btnEditLock.Enabled := False;
+    chkboxLock.Enabled  := False;
+    chkboxLock.Checked  := False;
+  end;
+
+  lbledtFuse.Text    := '';
+  lbledtFuse.Enabled := False;
+  if Pos(FUSE_CHAR, para) > 0 then
+  begin
+    btnEditFuse.Enabled := True;
+    chkboxFuse.Enabled := True;
+    //chkboxFuse.Checked := True;
+    index := CurTargetChip.GetAreaIdx(FUSE_CHAR);
+    if (index >= 0) and (not CurTargetChip.TargetAreas[index].InFile) and
+      (CurTargetChip.TargetAreas[index].ByteLen <= 4) then
+    begin
+      lbledtFuse.Enabled := True;
+      VSProg_GUIUpdateFuse(CurTargetChip.TargetAreas[index].DefaultValue,
+        CurTargetChip.TargetAreas[index].ByteLen);
+    end;
+  end
+  else
+  begin
+    btnEditFuse.Enabled := False;
+    chkboxFuse.Enabled  := False;
+    chkboxFuse.Checked  := False;
+  end;
+
+  lbledtUsrSig.Text    := '';
+  lbledtUsrSig.Enabled := False;
+  if Pos(USRSIG_CHAR, para) > 0 then
+  begin
+    btnEditUsrSig.Enabled := True;
+    chkboxUsrSig.Enabled := True;
+    //chkboxUsrSig.Checked := True;
+    index := CurTargetChip.GetAreaIdx(USRSIG_CHAR);
+    if (index >= 0) and (not CurTargetChip.TargetAreas[index].InFile) and
+      (CurTargetChip.TargetAreas[index].ByteLen <= 4) then
+    begin
+      lbledtUsrSig.Enabled := True;
+      VSProg_GUIUpdateUsrSig(CurTargetChip.TargetAreas[index].DefaultValue,
+        CurTargetChip.TargetAreas[index].ByteLen);
+    end;
+  end
+  else
+  begin
+    btnEditUsrSig.Enabled := False;
+    chkboxUsrSig.Enabled  := False;
+    chkboxUsrSig.Checked  := False;
+  end;
+
+  lbledtCali.Text    := '';
+  lbledtCali.Enabled := False;
+  if Pos(CALI_CHAR, para) > 0 then
+  begin
+    btnEditCali.Enabled := True;
+    chkboxCali.Enabled := True;
+    //chkboxCali.Checked := True;
+    index := CurTargetChip.GetAreaIdx(CALI_CHAR);
+    if (index >= 0) and (not CurTargetChip.TargetAreas[index].InFile) and
+      (CurTargetChip.TargetAreas[index].ByteLen <= 4) then
+    begin
+      lbledtCali.Enabled := True;
+      VSProg_GUIUpdateCali(CurTargetChip.TargetAreas[index].DefaultValue,
+        CurTargetChip.TargetAreas[index].ByteLen);
+    end;
+  end
+  else
+  begin
+    btnEditCali.Enabled := False;
+    chkboxCali.Enabled  := False;
+    chkboxCali.Checked  := False;
+  end;
+end;
+
+function TFormMain.VSProg_GUITargetSeriesPageInit(index: integer): boolean;
+var
+  i: integer;
+begin
+  Result := True;
+
+  VSProg_GUIFeatureInit(VSProg_Targets.TargetSeries[pcMain.ActivePage.Tag].Feature,
+    False);
+
+  cbboxTarget.Clear;
+  for i := 0 to VSProg_Targets.TargetSeries[index].ChipCount - 1 do
+  begin
+    cbboxTarget.Items.Add(VSProg_Targets.TargetSeries[index].TargetChips[i].Name);
+  end;
+  cbboxTarget.ItemIndex := 0;
+
+  gbChipName.Parent  := pcMain.ActivePage;
+  gbInputFile.Parent := pcMain.ActivePage;
+  gbOption.Parent    := pcMain.ActivePage;
+  gbOperation.Parent := pcMain.ActivePage;
+
+  cbboxTargetChange(cbboxTarget);
+end;
+
+procedure TFormMain.UpdateComboTargetFile();
 var
   valid_file_num, i: integer;
 begin
@@ -553,31 +690,21 @@ end;
 
 procedure TFormMain.FormCreate(Sender: TObject);
 var
-  i: integer;
+  i, j: integer;
   str_tmp: string;
+  T:   TTabSheet;
+  ser: TBlockSerial;
 begin
   xmlcfgMain.FileName := GetUserDir + 'vsgui.xml';
-  if FileExists(xmlcfgMain.FileName) then
-  begin
-    JTAGPage_Init   := False;
-    TargetPage_Init := False;
-    AboutPage_Init  := False;
-  end
-  else
-  begin
-    JTAGPage_Init   := True;
-    TargetPage_Init := True;
-    AboutPage_Init  := True;
-  end;
+
+  JTAGPage_Init   := True;
+  TargetPage_Init := True;
+  AboutPage_Init  := True;
 
   VSProg_Taken_By_Polling := False;
-  ShowCallerError := True;
-  VSProg_Exists := True;
-  bOpenFileOK := False;
+  bOpenFileOK    := False;
   bReadOperation := False;
-  bPageLock := False;
-
-  HideDebugLog();
+  Page_Init      := False;
 
   // caller init
   VSProg_Caller := TCLI_Caller.Create();
@@ -589,6 +716,9 @@ begin
   VSProg_Parser.LogOutputFunc := @VSProg_LogOutput;
   VSProg_Parser.CallbackFunc := nil;
 
+  // target init
+  VSProg_Targets := TVSProg_Targets.Create;
+
   // poll thread init
   PollThread := TPollThread.Create;
   if Assigned(PollThread.FatalException) then
@@ -596,39 +726,95 @@ begin
     raise PollThread.FatalException;
   end;
 
-  lblTarget.Top    := cbboxTarget.Top + (cbboxTarget.Height - lblTarget.Height) div 2;
-  btnTargetDetect.Top := cbboxTarget.Top + (cbboxTarget.Height -
-    btnTargetDetect.Height) div 2;
-  lblInputFile.Top := cbboxInputFile.Top + (cbboxInputFile.Height -
-    lblInputFile.Height) div 2;
-  lblMode.Top      := cbboxMode.Top + (cbboxMode.Height - lblMode.Height) div 2;
-
-  FormMain.Width := pnlMain.Width + LOGMEMO_WIDTH + 2;
-  memoLog.Width  := LOGMEMO_WIDTH;
-
+  // TrayIcon
   tiMain.Icon      := Application.Icon;
   tiMain.PopUpMenu := pmTray;
   tiMain.Show;
 
-  tsSTM8.TabVisible   := False;
-  tsEEPROM.TabVisible := False;
+  // locate executables(vsprog and openocd)
+  dedtVSProg.Directory  := xmlcfgMain.GetValue('vsprog_dir', Application.Location);
+  dedtOpenOCD.Directory := xmlcfgMain.GetValue('openocd_dir', Application.Location);
+  dedtPathChange(dedtVSProg);
+  dedtPathChange(dedtOpenOCD);
+  if not VSProg_Exists then
+  begin
+    Beep();
+    MessageDlg('Error, missing vsprog',
+      'Opps, Where is my vsprog? I cannot work without her.', mtError, [mbOK], 0);
+  end;
 
   // get VSProg_Version
   VSProg_Version := '';
-  if not PrepareToRunCLI then
+  if not VSProg_PrepareToRunCLI then
   begin
     VSProg_Version := 'No Exists';
-    UpdateTitle();
   end
   else
   begin
     VSProg_Caller.AddParametersString('--version');
     VSProg_Parser.LogOutputEnable := False;
-    if VSProg_RunAlgorithm(VSProg_Caller, @VSProg_Parser.VersionParser, 1) then
+    if VSProg_RunAlgorithm(VSProg_Caller, @VSProg_Parser.VersionParser, 1, False) then
     begin
       VSProg_Version := VSProg_Parser.ResultStrings.Strings[0];
     end;
-    UpdateTitle();
+  end;
+  UpdateTitle();
+
+  // get VSProg_Targets
+  if VSProg_PrepareToRunCLI then
+  begin
+    VSProg_Caller.AddParameter('Starget');
+    VSProg_Parser.LogOutputEnable := False;
+    VSProg_Parser.CallbackFunc    := @VSProg_Targets.TargetParser;
+    VSProg_RunAlgorithm(VSProg_Caller, @VSProg_Parser.TargetParser, 0, True);
+  end;
+  // Create Pages
+  j := 1;
+  for i := 0 to VSProg_Targets.SeriesCount - 1 do
+  begin
+    if Pos('svf', VSProg_Targets.TargetSeries[i].Name) = 0 then
+    begin
+      T := TTabSheet.Create(pcMain);
+      with T do
+      begin
+        T.Tag     := i;
+        T.Caption := UpperCase(VSProg_Targets.TargetSeries[i].Name);
+        T.Visible := True;
+        T.TabVisible := True;
+        T.PageControl := pcMain;
+        pcMain.PageList.Move(j + 1, j);
+        T.PageIndex := j;
+        Inc(j);
+      end;
+    end;
+  end;
+  Page_Init := True;
+
+  // Init COM
+  cbboxCOM.Clear;
+  for i := low(COMPORTS) to high(COMPORTS) do
+  begin
+    if DISPLAY_ALL_COMPORT_WHEN_UPDATE then
+    begin
+      cbboxCOM.Items.Add(COMPORTS[i]);
+    end
+    else
+    begin
+      ser := TBlockSerial.Create;
+      try
+        ser.Connect(COMPORTS[i]);
+        if ser.LastError = 0 then
+        begin
+          cbboxCOM.Items.Add(COMPORTS[i]);
+        end;
+      finally
+        ser.Free;
+      end;
+    end;
+  end;
+  if cbboxCOM.Items.Count > 0 then
+  begin
+    cbboxCOM.ItemIndex := 0;
   end;
 
   // load last settings
@@ -637,7 +823,7 @@ begin
   begin
     if pcMain.Page[i].Caption = str_tmp then
     begin
-      pcMain.ActivePage := (pcMain.Page[i] as TTabSheet);
+      pcMain.ActivePageIndex := i;
       break;
     end;
   end;
@@ -645,14 +831,15 @@ end;
 
 procedure TFormMain.FormDestroy(Sender: TObject);
 begin
-  VSProg_Caller.Destroy;
-  VSProg_Parser.Destroy;
-
   if PollThread <> nil then
   begin
     PollThread.Terminate;
     PollThread.Free;
   end;
+
+  VSProg_Caller.Destroy;
+  VSProg_Parser.Destroy;
+  VSProg_Targets.Destroy;
 end;
 
 procedure TFormMain.FormResize(Sender: TObject);
@@ -664,27 +851,65 @@ begin
 end;
 
 procedure TFormMain.FormShow(Sender: TObject);
+var
+  ControlLeft: integer;
 begin
   FormResize(Sender);
   UpdateShowing;
-  pcMainPageChanged(pcMain);
+
+  // adjust size and position
+  CenterControl(lblTarget, cbboxTarget);
+  CenterControl(btnTargetDetect, cbboxTarget);
+  CenterControl(lblInputFile, cbboxInputFile);
+  CenterControl(btnOpenFile, cbboxInputFile);
+  CenterControl(lblMode, cbboxMode);
+  CenterControl(btnModeSetup, cbboxMode);
+  CenterControl(chkboxNoconnect, lbledtFuse);
+  CenterControl(chkboxNowarning, lbledtCali);
+  CenterControl(lblOpenOCDInterface, cbboxOpenOCDInterface);
+  CenterControl(lblOpenOCDTarget, cbboxOpenOCDTarget);
+  CenterControl(lblOpenOCDScript, cbboxOpenOCDScript);
+  CenterControl(lblOpenOCDOption, edtOpenOCDOption);
+  CenterControl(lblSVFFile, fneditSVFFile);
+  CenterControl(lblSVFOption, edtSVFOption);
+  CenterControl(btnSVFRun, edtSVFOption);
+  CenterControl(btnSetPower, sedtPower);
+  CenterControl(fnFW, cbboxCOM);
+  CenterControl(btnUpdate, cbboxCOM);
+  CenterControl(lblVSProgDir, dedtVSProg);
+  CenterControl(lblOpenOCDDir, dedtOpenOCD);
+
+  FormMain.Width := pnlMain.Width + LOGMEMO_WIDTH + 2;
+  memoLog.Width  := LOGMEMO_WIDTH;
+
+  ControlLeft := (tsJTAG.Width - gbOpenOCD.Width) div 2;
+  gbOpenOCD.Left := ControlLeft;
+  gbSVFPlayer.Left := ControlLeft;
+  gbPower.Left := ControlLeft;
+  gbChipName.Left := ControlLeft;
+  gbInputFile.Left := ControlLeft;
+  gbOption.Left := ControlLeft;
+  gbOperation.Left := ControlLeft;
+  UpdateShowing;
+
   if VSProg_Exists and (PollThread <> nil) then
   begin
-    //    tPollProgrammer.Enabled := True;
+    PollThread.AppPath := dedtVSProg.Directory + VSPROG_STR;
+    tPollProgrammer.Enabled := True;
   end;
+
+  // Load Setting
+  JTAGPage_Init   := False;
+  TargetPage_Init := False;
+  AboutPage_Init  := False;
+  pcMainPageChanged(pcMain);
 end;
 
 procedure TFormMain.lbledtExtraParaKeyPress(Sender: TObject; var Key: char);
 begin
   if Key = #13 then
   begin
-    if Pos('show all support', lbledtExtraPara.Text) = 1 then
-    begin
-      tsSTM8.TabVisible    := True;
-      tsEEPROM.TabVisible  := True;
-      lbledtExtraPara.Text := '';
-    end
-    else if Pos('show debug log', lbledtExtraPara.Text) = 1 then
+    if Pos('show debug log', lbledtExtraPara.Text) = 1 then
     begin
       ShowDebugLog();
       lbledtExtraPara.Text := '';
@@ -703,6 +928,12 @@ begin
   Close;
 end;
 
+procedure TFormMain.pcMainChanging(Sender: TObject; var AllowChange: boolean);
+begin
+  AllowChange := (VSProg_Caller <> nil) and ((not VSProg_Caller.IsRunning) or
+    VSProg_Taken_By_Polling);
+end;
+
 procedure TFormMain.ShowDebugLog();
 begin
   Width := pnlMain.Width + LOGMEMO_WIDTH + 2;
@@ -717,86 +948,33 @@ begin
   end;
 end;
 
-procedure TFormMain.tbPowerChange(Sender: TObject);
-begin
-  sedtPower.Value := (Sender as TTrackBar).Position;
-  sedtPower.Hint  := IntToStr(sedtPower.Value) + 'mV';
-  (Sender as TTrackBar).Hint := sedtPower.Hint;
-end;
-
-procedure TFormMain.pcMainChanging(Sender: TObject; var AllowChange: boolean);
-begin
-  if (VSProg_Caller <> nil) then
-  begin
-    AllowChange := (not VSProg_Caller.IsRunning()) and (not tDelay.Enabled) and
-      (not bPageLock);
-    if Allowchange then
-    begin
-      bPageLock := True;
-    end;
-  end;
-end;
-
 procedure TFormMain.pcMainPageChanged(Sender: TObject);
 var
-  index: integer;
-  ser:   TBlockSerial;
-  Fails: integer;
+  strTmp:  string;
+  intTmp:  integer;
+  success: boolean;
+  i, j:    integer;
 begin
-  if not pcMain.ActivePage.Enabled then
+  if not Page_Init then
+  begin
+    exit;
+  end;
+  if (not pcMain.ActivePage.Enabled) or (VSProg_Caller.IsRunning and
+    (not VSProg_Taken_By_Polling)) then
   begin
     UpdateTitle();
-    bPageLock := False;
     exit;
   end;
 
-  SetLength(TargetSetting, 0);
-  cbboxInputFile.Clear;
   memoInfo.Clear;
+  memoLog.Clear;
 
   // initialize GUI
   if pcMain.ActivePage = tsAbout then
   begin
     HideDebugLog();
-    TargetType := TT_NONE;
 
-    // Init serial port combobox
-    cbboxCOM.Clear;
-
-    for index := low(COMPORTS) to high(COMPORTS) do
-    begin
-      if DISPLAY_ALL_COMPORT_WHEN_UPDATE then
-      begin
-        cbboxCOM.Items.Add(COMPORTS[index]);
-      end
-      else
-      begin
-        ser := TBlockSerial.Create;
-        try
-          ser.Connect(COMPORTS[index]);
-          if ser.LastError = 0 then
-          begin
-            cbboxCOM.Items.Add(COMPORTS[index]);
-          end;
-        finally
-          ser.Free;
-        end;
-      end;
-    end;
-
-    if cbboxCOM.Items.Count > 0 then
-    begin
-      cbboxCOM.ItemIndex := 0;
-    end;
-
-    if not PrepareToRunCli then
-    begin
-      pcMain.ActivePage.Enabled := False;
-    end
-    else
-    begin
-      VSProg_Caller.UnTake();
-    end;
+    gbUpdate.Enabled := VSProg_Exists;
 
     // update settings
     if not AboutPage_Init then
@@ -805,43 +983,15 @@ begin
       fnFW.FileName  := xmlcfgMain.GetValue('fw/filename', '');
       ComboBoxSetText(cbboxCOM, xmlcfgMain.GetValue('fw/comm', ''));
     end;
-    UpdateTitle();
-    bPageLock := False;
-    exit;
   end
   else if pcMain.ActivePage = tsJTAG then
   begin
-    TargetType := TT_JTAG;
-    ARM_Init();
-
-    memoLog.Clear;
     ShowDebugLog();
+    OpenOCD_Init();
 
-    Fails := 0;
-    if not PrepareToRunOpenOCD then
-    begin
-      Inc(Fails);
-      gbOpenOCD.Enabled := False;
-    end
-    else
-    begin
-      VSProg_Caller.UnTake();
-    end;
-    if not PrepareToRunCli then
-    begin
-      Inc(Fails);
-      gbSVFPlayer.Enabled := False;
-      gbPower.Enabled     := False;
-    end
-    else
-    begin
-      VSProg_Caller.UnTake();
-    end;
-    if Fails = 2 then
-    begin
-      TargetType := TT_NONE;
-      pcMain.ActivePage.Enabled := False;
-    end;
+    gbSVFPlayer.Enabled := VSprog_Exists;
+    gbPower.Enabled     := VSprog_Exists;
+    gbOpenOCD.Enabled   := OpenOCD_Exists;
 
     // update settings
     if not JTAGPage_Init then
@@ -856,110 +1006,113 @@ begin
       edtSVFOption.Text := xmlcfgMain.GetValue('svf/option', '');
       sedtPower.Value := xmlcfgMain.GetValue('power/voltage', 0);
     end;
-
-    UpdateTitle();
-    bPageLock := False;
-    exit;
   end
   else
   begin
     SetLength(TargetFile, 0);
+    cbboxInputFile.Clear;
     HideDebugLog();
 
-    if not PrepareToRunCli then
+    CurTargetSeries := VSProg_Targets.TargetSeries[pcMain.ActivePage.Tag];
+    if VSProg_GUITargetSeriesPageInit(pcMain.ActivePage.Tag) and
+      (cbboxTarget.ItemIndex >= 0) then
     begin
-      pcMain.ActivePage.Enabled := False;
-      bPageLock := False;
-      exit;
-    end;
-
-    if pcMain.ActivePage = tsPSoC1 then
-    begin
-      TargetType := TT_PSOC1;
-    end
-    else if pcMain.ActivePage = tsC8051F then
-    begin
-      TargetType := TT_C8051F;
-    end
-    else if pcMain.ActivePage = tsAT89S5X then
-    begin
-      TargetType := TT_AT89S5X;
-    end
-    else if pcMain.ActivePage = tsMSP430 then
-    begin
-      TargetType := TT_MSP430;
-    end
-    else if pcMain.ActivePage = tsSTM8 then
-    begin
-      TargetType := TT_STM8;
-    end
-    else if pcMain.ActivePage = tsEEPROM then
-    begin
-      TargetType := TT_EEPROM;
-    end
-    else if pcMain.ActivePage = tsAVR8 then
-    begin
-      TargetType := TT_AVR8;
-    end
-    else if pcMain.ActivePage = tsCOMISP then
-    begin
-      TargetType := TT_COMISP;
-    end
-    else if pcMain.ActivePage = tsLPCICP then
-    begin
-      TargetType := TT_LPCICP;
-    end
-    else if pcMain.ActivePage = tsCortexM3 then
-    begin
-      TargetType := TT_CORTEXM3;
+      // update settings
+      if not TargetPage_Init then
+      begin
+        TargetPage_Init := True;
+        strTmp  := xmlcfgMain.GetValue('target/chip', '');
+        success := False;
+        for i := 0 to cbboxTarget.Items.Count - 1 do
+        begin
+          if strTmp = cbboxTarget.Items.Strings[i] then
+          begin
+            success := True;
+            break;
+          end;
+        end;
+        if success then
+        begin
+          ComboBoxSetText(cbboxTarget, xmlcfgMain.GetValue('target/chip', ''));
+          cbboxTargetChange(cbboxTarget);
+          if cbboxMode.Items.Count > 0 then
+          begin
+            ComboBoxSetText(cbboxMode, xmlcfgMain.GetValue('target/mode', ''));
+            cbboxModeChange(cbboxMode);
+          end;
+          lbledtFreq.Text := xmlcfgMain.GetValue('target/freq', '');
+          intTmp := xmlcfgMain.GetValue('target/files/number', 0);
+          if Length(TargetFile) < intTmp then
+          begin
+            // Error here, try to recovery
+            xmlcfgMain.DeletePath('target/files');
+            xmlcfgMain.SetValue('target/files/number', 0);
+            intTmp := 0;
+          end;
+          if intTmp > 0 then
+          begin
+            for i := 0 to intTmp - 1 do
+            begin
+              j := GetTargetFileIdx(xmlcfgMain.GetValue('target/files/' +
+                IntToStr(i) + '/target', '')[1]);
+              if j < 0 then
+              begin
+                // Error here, try to recovery
+                xmlcfgMain.DeletePath('target/files');
+                xmlcfgMain.SetValue('target/files/number', 0);
+                intTmp := 0;
+                break;
+              end;
+              TargetFile[j].filename :=
+                xmlcfgMain.GetValue('target/files/' + IntToStr(i) + '/filename', '');
+            end;
+          end;
+          UpdateComboTargetFile();
+          ComboBoxSetText(cbboxInputFile, xmlcfgMain.GetValue('target/filename', ''));
+          lbledtFuse.Text      := xmlcfgMain.GetValue('target/fuse', '');
+          lbledtLock.Text      := xmlcfgMain.GetValue('target/lock', '');
+          lbledtCali.Text      := xmlcfgMain.GetValue('target/cali', '');
+          lbledtUsrSig.Text    := xmlcfgMain.GetValue('target/usrsig', '');
+          chkboxNoconnect.Checked := xmlcfgMain.GetValue('target/nc', False);
+          chkboxNowarning.Checked := xmlcfgMain.GetValue('target/nw', False);
+          chkboxApp.Checked    := xmlcfgMain.GetValue('target/flashen', False);
+          chkboxEE.Checked     := xmlcfgMain.GetValue('target/eepromen', False);
+          chkboxFuse.Checked   := xmlcfgMain.GetValue('target/fuseen', False);
+          chkboxLock.Checked   := xmlcfgMain.GetValue('target/locken', False);
+          chkboxUsrSig.Checked := xmlcfgMain.GetValue('target/usrsigen', False);
+          chkboxCali.Checked   := xmlcfgMain.GetValue('target/calien', False);
+          chkboxEraseBeforeWrite.Checked := xmlcfgMain.GetValue('target/ebw', False);
+          chkboxVerifyAfterWrite.Checked := xmlcfgMain.GetValue('target/vaw', False);
+          chkboxMP.Checked     := xmlcfgMain.GetValue('target/mass', False);
+          lbledtExtraPara.Text := xmlcfgMain.GetValue('target/extraparam', '');
+        end;
+      end;
     end
     else
     begin
-      TargetType := TT_NONE;
-      VSProg_Caller.UnTake();
-      exit;
+      pcMain.ActivePage.Enabled := False;
     end;
-
-    tDelay.Enabled := True;
   end;
+  UpdateTitle();
 end;
 
 procedure TFormMain.btnTargetDetectClick(Sender: TObject);
 begin
-  if btnTargetDetect.Caption = COMSETUP_STR then
+  if not VSProg_PrepareToRunCLI then
   begin
-    FormComSetup.ShowModal;
-    FormComSetup.GetComMode(ComMode);
-  end
-  else if btnTargetDetect.Caption = AUTODETECT_STR then
-  begin
-    if not PrepareToRunCli then
-    begin
-      exit;
-    end;
-
-    VSProg_Caller.AddParameter('s' + cbboxTarget.Items.Strings[0]);
-    if cbboxMode.Enabled and (cbboxMode.Text <> '') then
-    begin
-      VSProg_Caller.AddParameter('m' + cbboxMode.Text[1]);
-    end;
-    if lbledtFreq.Enabled and (lbledtFreq.Text <> '') then
-    begin
-      VSProg_Caller.AddParameter('F' + lbledtFreq.Text);
-    end;
-    if lbledtExtraPara.Text <> '' then
-    begin
-      VSProg_Caller.AddParametersString(lbledtExtraPara.Text);
-    end;
-
-    LogInfo('Running...');
-    if VSProg_RunAlgorithm(VSProg_Caller, @VSProg_Parser.AutoDetectParser, 1) then
-    begin
-      ComboBoxSetText(cbboxTarget, VSProg_Parser.ResultStrings.Strings[0]);
-      cbboxTargetChange(cbboxTarget);
-    end;
-    LogInfo('Idle');
+    exit;
   end;
+
+  VSProg_Caller.AddParameter('s' + cbboxTarget.Items.Strings[0]);
+  VSProg_PrepareMiscParameters(VSProg_Caller);
+
+  LogInfo('Running...');
+  if VSProg_RunAlgorithm(VSProg_Caller, @VSProg_Parser.AutoDetectParser, 1, False) then
+  begin
+    ComboBoxSetText(cbboxTarget, VSProg_Parser.ResultStrings.Strings[0]);
+    cbboxTargetChange(cbboxTarget);
+  end;
+  LogInfo('Idle');
 end;
 
 procedure TFormMain.btnUpdateClick(Sender: TObject);
@@ -976,7 +1129,7 @@ begin
     MessageDlg('Error', 'Please sellect FW Hex file.', mtError, [mbOK], 0);
   end;
 
-  if not PrepareToRunCli then
+  if not VSProg_PrepareToRunCLI then
   begin
     exit;
   end;
@@ -984,14 +1137,27 @@ begin
   VSProg_Caller.AddParametersString('-G -Z -ccomisp_stm32 -C' +
     cbboxCOM.Text + ' ' + ' -x0x08002000 -oe -owf -I"' + fnFW.FileName + '"');
   LogInfo('Running...');
-  if VSProg_RunAlgorithm(VSProg_Caller, @VSProg_Parser.OperationParser, 0) then
+  if VSProg_RunAlgorithm(VSProg_Caller, @VSProg_Parser.OperationParser, 0, False) then
   begin
     MessageDlg('OK', 'FW Updated OK.', mtInformation, [mbOK], 0);
   end;
   LogInfo('Idle');
 end;
 
-function TFormMain.VSProg_CommonGetEnabledOperationString(): string;
+function TFormMain.VSProg_GetTargetDefineParameters(): string;
+begin
+  if CurTargetSeries.AutoDetect and (cbboxTarget.ItemIndex = 0) then
+  begin
+    Result := 's';
+  end
+  else
+  begin
+    Result := 'c';
+  end;
+  Result := Result + CurTargetChip.Name;
+end;
+
+function TFormMain.VSProg_GetEnabledOperationString(): string;
 begin
   Result := '';
   if chkboxApp.Enabled and chkboxApp.Checked then
@@ -1000,7 +1166,7 @@ begin
   end;
   if chkboxEE.Enabled and chkboxEE.Checked then
   begin
-    Result := Result + EEPROM_CHAR;
+    Result := Result + EE_CHAR;
   end;
   if chkboxFuse.Enabled and chkboxFuse.Checked then
   begin
@@ -1020,22 +1186,19 @@ begin
   end;
 end;
 
-function TFormMain.VSProg_CommonAddEraseOperation(): boolean;
+function TFormMain.VSProg_AddEraseOperation(): boolean;
 begin
   VSProg_Caller.AddParameter('oe');
   Result := True;
 end;
 
-function TFormMain.VSProg_CommonAddWriteOperation(): boolean;
+function TFormMain.VSProg_AddWriteOperation(): boolean;
 var
   para: string;
 begin
-  para := VSProg_CommonGetEnabledOperationString();
-  if para = '' then
-  begin
-    Result := False;
-  end
-  else
+  Result := False;
+  para   := VSProg_GetEnabledOperationString();
+  if para <> '' then
   begin
     Result := True;
     para   := 'ow' + para;
@@ -1046,16 +1209,13 @@ begin
   end;
 end;
 
-function TFormMain.VSProg_CommonAddVerifyOperation(): boolean;
+function TFormMain.VSProg_AddVerifyOperation(): boolean;
 var
   para: string;
 begin
-  para := VSProg_CommonGetEnabledOperationString();
-  if para = '' then
-  begin
-    Result := False;
-  end
-  else
+  Result := True;
+  para   := VSProg_GetEnabledOperationString();
+  if para <> '' then
   begin
     Result := True;
     para   := 'ov' + para;
@@ -1066,16 +1226,13 @@ begin
   end;
 end;
 
-function TFormMain.VSProg_CommonAddReadOperation(): boolean;
+function TFormMain.VSProg_AddReadOperation(): boolean;
 var
   para: string;
 begin
-  para := VSProg_CommonGetEnabledOperationString();
-  if para = '' then
-  begin
-    Result := False;
-  end
-  else
+  Result := True;
+  para   := VSProg_GetEnabledOperationString();
+  if para <> '' then
   begin
     Result := True;
     para   := 'or' + para;
@@ -1088,13 +1245,13 @@ end;
 
 procedure TFormMain.btnVerifyClick(Sender: TObject);
 begin
-  if not PrepareToRunCli then
+  if not VSProg_PrepareToRunCLI then
   begin
     exit;
   end;
 
-  PrepareOperationParameters(VSProg_Caller);
-  if not VSProg_CommonAddVerifyOperation() then
+  VSProg_PrepareOperationParameters(VSProg_Caller);
+  if not VSProg_AddVerifyOperation() then
   begin
     Beep();
     MessageDlg('Error', 'Fail to add verify operation', mtError, [mbOK], 0);
@@ -1103,19 +1260,19 @@ begin
   end;
 
   LogInfo('Running...');
-  VSProg_RunAlgorithm(VSProg_Caller, @VSProg_Parser.OperationParser, 0);
+  VSProg_RunAlgorithm(VSProg_Caller, @VSProg_Parser.OperationParser, 0, False);
   LogInfo('Idle');
 end;
 
 procedure TFormMain.btnEraseClick(Sender: TObject);
 begin
-  if not PrepareToRunCli then
+  if not VSProg_PrepareToRunCLI then
   begin
     exit;
   end;
 
-  PrepareOperationParameters(VSProg_Caller);
-  if not VSProg_CommonAddEraseOperation() then
+  VSProg_PrepareOperationParameters(VSProg_Caller);
+  if not VSProg_AddEraseOperation() then
   begin
     Beep();
     MessageDlg('Error', 'Fail to add erase operation', mtError, [mbOK], 0);
@@ -1124,13 +1281,19 @@ begin
   end;
 
   LogInfo('Running...');
-  VSProg_RunAlgorithm(VSProg_Caller, @VSProg_Parser.OperationParser, 0);
+  VSProg_RunAlgorithm(VSProg_Caller, @VSProg_Parser.OperationParser, 0, False);
   LogInfo('Idle');
+end;
+
+procedure TFormMain.btnModeSetupClick(Sender: TObject);
+begin
+  FormComSetup.ShowModal;
+  FormComSetup.GetComMode(ComMode);
 end;
 
 procedure TFormMain.btnOpenFileClick(Sender: TObject);
 var
-  i, file_num: integer;
+  file_num: integer;
 begin
   bOpenFileOK := False;
   file_num    := Length(TargetFile);
@@ -1141,18 +1304,9 @@ begin
   else if file_num > 1 then
   begin
     FormFileSelector.Reset;
-    for i := 0 to file_num - 1 do
-    begin
-      FormFileSelector.AddFileSetting(TargetFile[i].target, TargetFile[i].filename);
-    end;
     if mrOk = FormFileSelector.ShowModal then
     begin
-      for i := 0 to file_num - 1 do
-      begin
-        TargetFile[i].filename :=
-          FormFileSelector.GetFileNameByTargetName(TargetFile[i].target);
-      end;
-      UpdateTargetFile();
+      UpdateComboTargetFile();
       bOpenFileOK := True;
     end;
   end
@@ -1162,7 +1316,7 @@ begin
     if odInputFile.Execute then
     begin
       TargetFile[0].filename := odInputFile.FileName;
-      UpdateTargetFile();
+      UpdateComboTargetFile();
       bOpenFileOK := True;
     end;
   end;
@@ -1170,7 +1324,7 @@ end;
 
 procedure TFormMain.btnOpenOCDRunClick(Sender: TObject);
 begin
-  if not PrepareToRunOpenOCD then
+  if not VSProg_PrepareToRunOpenOCD then
   begin
     exit;
   end;
@@ -1196,323 +1350,148 @@ begin
   end;
 
   LogInfo('Running...');
-  VSProg_RunAlgorithm(VSProg_Caller, @VSProg_Parser.OperationParser, 0);
+  VSProg_RunAlgorithm(VSProg_Caller, @VSProg_Parser.OperationParser, 0, False);
   LogInfo('Idle');
 end;
 
 procedure TFormMain.btnOpenOCDStopClick(Sender: TObject);
 begin
-  VSProg_Caller.Stop();
+  if (VSProg_Caller <> nil) and (VSProg_Caller.Application =
+    dedtOpenOCD.Directory + OPENOCD_STR) then
+  begin
+    VSProg_Caller.Stop();
+  end;
+end;
+
+procedure TFormMain.ShowTargetArea(AreaName: char; var Sender: TObject;
+  parser: TParserFunc);
+var
+  areaidx, fileidx: integer;
+  bytelen, default: integer;
+  targetdefined:    string;
+begin
+  areaidx := CurTargetChip.GetAreaIdx(AreaName);
+  if areaidx < 0 then
+  begin
+    exit;
+  end;
+
+  if CurTargetChip.TargetAreas[areaidx].InFile then
+  begin
+    fileidx := GetTargetFileIdx(AreaName);
+    if (fileidx < 0) or (TargetFile[fileidx].filename = '') then
+    begin
+      Beep();
+      MessageDlg('Error', 'No File Defined.', mtError, [mbOK], 0);
+      exit;
+    end;
+    if not FileExists(TargetFile[fileidx].filename) then
+    begin
+      Beep();
+      MessageDlg('Error', TargetFile[fileidx].filename + 'not exists.',
+        mtError, [mbOK], 0);
+      exit;
+    end;
+
+    FormHexEditor.FileName := TargetFile[fileidx].filename;
+    FormHexEditor.StartAddress := CurTargetChip.GetArea(AreaName).StartAddr;
+    FormHexEditor.DataByteSize := CurTargetChip.GetArea(AreaName).ByteLen;
+    FormHexEditor.DefaultData := CurTargetChip.GetArea(AreaName).DefaultValue;
+    FormHexEditor.SegAddr := CurTargetChip.GetArea(AreaName).SegAddr;
+    FormHexEditor.AddressOffset := 0;
+    FormHexEditor.Target := GetAreaFullName(AreaName);
+
+    FormHexEditor.ShowModal;
+  end
+  else
+  begin
+    if not (Sender is TLabeledEdit) then
+    begin
+      exit;
+    end;
+    targetdefined := VSProg_GetTargetDefineParameters();
+    if targetdefined[1] = 's' then
+    begin
+      Beep();
+      MessageDlg('Error', 'Please select a target chip.', mtError, [mbOK], 0);
+      exit;
+    end;
+
+    bytelen := CurTargetChip.TargetAreas[areaidx].ByteLen;
+    default := CurTargetChip.TargetAreas[areaidx].DefaultValue;
+
+    if not chkboxNoconnect.Checked then
+    begin
+      // call 'vsprog -or' to read settings from target
+      if not VSProg_PrepareToRunCLI then
+      begin
+        exit;
+      end;
+      VSProg_PrepareBaseParameters(VSProg_Caller);
+      VSProg_Caller.AddParameter('or' + AreaName);
+      if not VSProg_RunAlgorithm(VSProg_Caller, parser, 1, False) then
+      begin
+        exit;
+      end;
+      VSProg_GUIUpdateULCS(StrToInt(VSProg_Parser.ResultStrings.Strings[0]) and
+        default, bytelen, TLabeledEdit(Sender));
+    end;
+
+    // call 'vsprog -Ppara' to extract para settings
+    if not VSProg_PrepareToRunCLI then
+    begin
+      exit;
+    end;
+    VSProg_PrepareBaseParameters(VSProg_Caller);
+    VSProg_Caller.AddParameter('P' + AreaName);
+    FormParaEditor.FreeRecord();
+    VSProg_Parser.LogOutputEnable := False;
+    VSProg_Parser.CallbackFunc    := @VSProg_SettingTargetParserCallback;
+    if not VSProg_RunAlgorithm(VSProg_Caller, @VSProg_Parser.SettingTargetInfoParser,
+      0, False) then
+    begin
+      exit;
+    end;
+
+    FormParaEditor.SetParameter(default, bytelen, StrToInt(
+      (Sender as TLabeledEdit).Text),
+      GetAreaFullName(AreaName), not chkboxNowarning.Checked);
+    if mrOk = FormParaEditor.ShowModal then
+    begin
+      // OK clicked, get value
+      VSProg_GUIUpdateULCS(FormParaEditor.GetResult(), bytelen, TLabeledEdit(Sender));
+    end;
+  end;
 end;
 
 procedure TFormMain.btnEditAppClick(Sender: TObject);
-var
-  index: integer;
-  targetdefine: string;
 begin
-  targetdefine := GetTargetDefineParameters();
-  if targetdefine[1] = 's' then
-  begin
-    Beep();
-    MessageDlg('Error', 'Please select a target chip.', mtError, [mbOK], 0);
-    exit;
-  end;
-
-  index := GetTargetFileIndex('Flash');
-  if (index < 0) or (TargetFile[index].filename = '') then
-  begin
-    index := GetTargetFileIndex('ALL');
-    if (index < 0) or (TargetFile[index].filename = '') then
-    begin
-      Beep();
-      MessageDlg('Error', 'No File Defined.', mtError, [mbOK], 0);
-      exit;
-    end;
-  end;
-  if not FileExists(TargetFile[index].filename) then
-  begin
-    Beep();
-    MessageDlg('Error', TargetFile[index].filename + 'not exists.', mtError, [mbOK], 0);
-    exit;
-  end;
-
-  // call 'vsprog -Ppara' to extract para settings
-  if not PrepareToRunCli then
-  begin
-    exit;
-  end;
-  PrepareBaseParameters(VSProg_Caller);
-  VSProg_Caller.AddParameter('Pflash');
-  FormParaEditor.FreeRecord();
-  VSProg_Parser.CallbackFunc    := @VSProg_MemoryTargetParserCallback;
-  VSProg_Parser.LogOutputEnable := False;
-  if not VSProg_RunAlgorithm(VSProg_Caller,
-    @VSProg_Parser.MemoryTargetInfoParser, 0) then
-  begin
-    exit;
-  end;
-
-  FormHexEditor.FileName := TargetFile[index].filename;
-  FormHexEditor.StartAddress := MemoryInfo.start_addr;
-  FormHexEditor.DataByteSize := MemoryInfo.byte_size;
-  FormHexEditor.DefaultData := MemoryInfo.default_byte;
-  FormHexEditor.Target := (Sender as TButton).Caption;
-  if not TargetFile[index].offset_is_fake then
-  begin
-    FormHexEditor.SegOffset     := TargetFile[index].seg_offset;
-    FormHexEditor.AddressOffset := TargetFile[index].addr_offset;
-  end
-  else
-  begin
-    FormHexEditor.SegOffset     := 0;
-    FormHexEditor.AddressOffset := 0;
-  end;
-  FormHexEditor.ShowModal;
+  ShowTargetArea(FLASH_CHAR, Sender, nil);
 end;
 
 procedure TFormMain.btnEditCaliClick(Sender: TObject);
-var
-  targetdefine:  string;
-  init, bytelen: integer;
 begin
-  targetdefine := GetTargetDefineParameters();
-  if targetdefine[1] = 's' then
-  begin
-    Beep();
-    MessageDlg('Error', 'Please select a target chip.', mtError, [mbOK], 0);
-    exit;
-  end;
-
-  if not chkboxNoconnect.Checked then
-  begin
-    // call 'vsprog -orc' to read calibration settings from target
-    if not PrepareToRunCli then
-    begin
-      exit;
-    end;
-    PrepareBaseParameters(VSProg_Caller);
-    VSProg_Caller.AddParameter('orc');
-    if not VSProg_RunAlgorithm(VSProg_Caller, @VSProg_Parser.CaliDataParser, 1) then
-    begin
-      exit;
-    end;
-    VSProg_CommonUpdateCali(StrToInt(VSProg_Parser.ResultStrings.Strings[0]) and
-      TargetSetting[cbboxTarget.ItemIndex].cali_default,
-      TargetSetting[cbboxTarget.ItemIndex].cali_bytelen);
-  end;
-
-  // call 'vsprog -Ppara' to extract para settings
-  if not PrepareToRunCli then
-  begin
-    exit;
-  end;
-  PrepareBaseParameters(VSProg_Caller);
-  VSProg_Caller.AddParameter('Pcalibration');
-  FormParaEditor.FreeRecord();
-  VSProg_Parser.LogOutputEnable := False;
-  VSProg_Parser.CallbackFunc    := @VSProg_SettingTargetParserCallback;
-  if not VSProg_RunAlgorithm(VSProg_Caller,
-    @VSProg_Parser.SettingTargetInfoParser, 0) then
-  begin
-    exit;
-  end;
-
-  init    := TargetSetting[cbboxTarget.ItemIndex].cali_default;
-  bytelen := TargetSetting[cbboxTarget.ItemIndex].cali_bytelen;
-  FormParaEditor.SetParameter(init, bytelen, StrToInt(lbledtCali.Text),
-    'Calibration', not chkboxNowarning.Checked);
-  if mrOk = FormParaEditor.ShowModal then
-  begin
-    // OK clicked, get value
-    VSProg_CommonUpdateCali(FormParaEditor.GetResult(), bytelen);
-  end;
+  ShowTargetArea(CALI_CHAR, lbledtCali, @VSProg_Parser.CaliDataParser);
 end;
 
 procedure TFormMain.btnEditEEClick(Sender: TObject);
-var
-  index: integer;
-  targetdefine: string;
 begin
-  targetdefine := GetTargetDefineParameters();
-  if targetdefine[1] = 's' then
-  begin
-    Beep();
-    MessageDlg('Error', 'Please select a target chip.', mtError, [mbOK], 0);
-    exit;
-  end;
-
-  index := GetTargetFileIndex('EEPROM');
-  if (index < 0) or (TargetFile[index].filename = '') then
-  begin
-    index := GetTargetFileIndex('ALL');
-    if (index < 0) or (TargetFile[index].filename = '') then
-    begin
-      Beep();
-      MessageDlg('Error', 'No File Defined.', mtError, [mbOK], 0);
-      exit;
-    end;
-  end;
-  if not FileExists(TargetFile[index].filename) then
-  begin
-    Beep();
-    MessageDlg('Error', TargetFile[index].filename + 'not exists.', mtError, [mbOK], 0);
-    exit;
-  end;
-
-  // call 'vsprog -Ppara' to extract para settings
-  if not PrepareToRunCli then
-  begin
-    exit;
-  end;
-  PrepareBaseParameters(VSProg_Caller);
-  VSProg_Caller.AddParameter('Peeprom');
-  FormParaEditor.FreeRecord();
-  VSProg_Parser.CallbackFunc    := @VSProg_MemoryTargetParserCallback;
-  VSProg_Parser.LogOutputEnable := False;
-  if not VSProg_RunAlgorithm(VSProg_Caller,
-    @VSProg_Parser.MemoryTargetInfoParser, 0) then
-  begin
-    exit;
-  end;
-
-  FormHexEditor.FileName := TargetFile[index].filename;
-  FormHexEditor.StartAddress := MemoryInfo.start_addr;
-  FormHexEditor.DataByteSize := MemoryInfo.byte_size;
-  FormHexEditor.DefaultData := MemoryInfo.default_byte;
-  FormHexEditor.Target := (Sender as TButton).Caption;
-  if not TargetFile[index].offset_is_fake then
-  begin
-    FormHexEditor.SegOffset     := TargetFile[index].seg_offset;
-    FormHexEditor.AddressOffset := TargetFile[index].addr_offset;
-  end
-  else
-  begin
-    FormHexEditor.SegOffset     := 0;
-    FormHexEditor.AddressOffset := 0;
-  end;
-  FormHexEditor.ShowModal;
+  ShowTargetArea(EE_CHAR, Sender, nil);
 end;
 
 procedure TFormMain.btnEditFuseClick(Sender: TObject);
-var
-  targetdefine:  string;
-  init, bytelen: integer;
 begin
-  targetdefine := GetTargetDefineParameters();
-  if targetdefine[1] = 's' then
-  begin
-    Beep();
-    MessageDlg('Error', 'Please select a target chip.', mtError, [mbOK], 0);
-    exit;
-  end;
-
-  if not chkboxNoconnect.Checked then
-  begin
-    // call 'vsprog -oru' to read fuse settings from target
-    if not PrepareToRunCli then
-    begin
-      exit;
-    end;
-    PrepareBaseParameters(VSProg_Caller);
-    VSProg_Caller.AddParameter('oru');
-    if not VSProg_RunAlgorithm(VSProg_Caller, @VSProg_Parser.FuseDataParser, 1) then
-    begin
-      exit;
-    end;
-    VSProg_CommonUpdateFuse(StrToInt(VSProg_Parser.ResultStrings.Strings[0]) and
-      TargetSetting[cbboxTarget.ItemIndex].fuse_default,
-      TargetSetting[cbboxTarget.ItemIndex].fuse_bytelen);
-  end;
-
-  // call 'vsprog -Ppara' to extract para settings
-  if not PrepareToRunCli then
-  begin
-    exit;
-  end;
-  PrepareBaseParameters(VSProg_Caller);
-  VSProg_Caller.AddParameter('Pfuse');
-  FormParaEditor.FreeRecord();
-  VSProg_Parser.CallbackFunc    := @VSProg_SettingTargetParserCallback;
-  VSProg_Parser.LogOutputEnable := False;
-  if not VSProg_RunAlgorithm(VSProg_Caller,
-    @VSProg_Parser.SettingTargetInfoParser, 0) then
-  begin
-    exit;
-  end;
-
-  init    := TargetSetting[cbboxTarget.ItemIndex].fuse_default;
-  bytelen := TargetSetting[cbboxTarget.ItemIndex].fuse_bytelen;
-  FormParaEditor.SetParameter(init, bytelen, StrToInt(lbledtFuse.Text),
-    'Fuse', not chkboxNowarning.Checked);
-  if mrOk = FormParaEditor.ShowModal then
-  begin
-    // OK clicked, get value
-    VSProg_CommonUpdateFuse(FormParaEditor.GetResult(), bytelen);
-  end;
+  ShowTargetArea(FUSE_CHAR, lbledtFuse, @VSProg_Parser.FuseDataParser);
 end;
 
 procedure TFormMain.btnEditLockClick(Sender: TObject);
-var
-  targetdefine:  string;
-  init, bytelen: integer;
 begin
-  targetdefine := GetTargetDefineParameters();
-  if targetdefine[1] = 's' then
-  begin
-    Beep();
-    MessageDlg('Error', 'Please select a target chip.', mtError, [mbOK], 0);
-    exit;
-  end;
-
-  if not chkboxNoconnect.Checked then
-  begin
-    // call 'vsprog -orl' to read lock settings from target
-    if not PrepareToRunCli then
-    begin
-      exit;
-    end;
-    PrepareBaseParameters(VSProg_Caller);
-    VSProg_Caller.AddParameter('orl');
-    if not VSProg_RunAlgorithm(VSProg_Caller, @VSProg_Parser.LockDataParser, 1) then
-    begin
-      exit;
-    end;
-    VSProg_CommonUpdateLock(StrToInt(VSProg_Parser.ResultStrings.Strings[0]) and
-      TargetSetting[cbboxTarget.ItemIndex].lock_default,
-      TargetSetting[cbboxTarget.ItemIndex].lock_bytelen);
-  end;
-
-  // call 'vsprog -Ppara' to extract para settings
-  if not PrepareToRunCli then
-  begin
-    exit;
-  end;
-  PrepareBaseParameters(VSProg_Caller);
-  VSProg_Caller.AddParameter('Plock');
-  FormParaEditor.FreeRecord();
-  VSProg_Parser.CallbackFunc    := @VSProg_SettingTargetParserCallback;
-  VSProg_Parser.LogOutputEnable := False;
-  if not VSProg_RunAlgorithm(VSProg_Caller,
-    @VSProg_Parser.SettingTargetInfoParser, 0) then
-  begin
-    exit;
-  end;
-
-  init    := TargetSetting[cbboxTarget.ItemIndex].lock_default;
-  bytelen := TargetSetting[cbboxTarget.ItemIndex].lock_bytelen;
-  FormParaEditor.SetParameter(init, bytelen, StrToInt(lbledtLock.Text),
-    'Lock', not chkboxNowarning.Checked);
-  if mrOk = FormParaEditor.ShowModal then
-  begin
-    // OK clicked, get value
-    VSProg_CommonUpdateLock(FormParaEditor.GetResult(), bytelen);
-  end;
+  ShowTargetArea(LOCK_CHAR, lbledtLock, @VSProg_Parser.LockDataParser);
 end;
 
 procedure TFormMain.btnEditUsrSigClick(Sender: TObject);
 begin
-  //  FormHexEditor.Caption := (Sender as TButton).Caption;
-  //  FormHexEditor.ShowModal;
+  ShowTargetArea(USRSIG_CHAR, lbledtUsrsig, @VSProg_Parser.UsrsigDataParser);
 end;
 
 procedure TFormMain.btnReadClick(Sender: TObject);
@@ -1524,13 +1503,13 @@ begin
     exit;
   end;
 
-  if not PrepareToRunCli then
+  if not VSProg_PrepareToRunCLI then
   begin
     exit;
   end;
   bReadOperation := True;
-  PrepareOperationParameters(VSProg_Caller);
-  if not VSProg_CommonAddReadOperation() then
+  VSProg_PrepareOperationParameters(VSProg_Caller);
+  if not VSProg_AddReadOperation() then
   begin
     Beep();
     MessageDlg('Error', 'Fail to add read operation', mtError, [mbOK], 0);
@@ -1540,29 +1519,29 @@ begin
   end;
 
   LogInfo('Running...');
-  VSProg_RunAlgorithm(VSProg_Caller, @VSProg_Parser.OperationParser, 0);
+  VSProg_RunAlgorithm(VSProg_Caller, @VSProg_Parser.OperationParser, 0, False);
   LogInfo('Idle');
   bReadOperation := False;
 end;
 
 procedure TFormMain.btnSetPowerClick(Sender: TObject);
 begin
-  if not PrepareToRunCli then
+  if not VSProg_PrepareToRunCLI then
   begin
     exit;
   end;
 
   VSProg_Caller.AddParameter('V"powerout ' + IntToStr(sedtPower.Value) + '"');
   LogInfo('Running...');
-  VSProg_RunAlgorithm(VSProg_Caller, nil, 0);
+  VSProg_RunAlgorithm(VSProg_Caller, nil, 0, False);
   LogInfo('Idle');
 end;
 
-procedure TFormMain.btnSVFPlayerRunClick(Sender: TObject);
+procedure TFormMain.btnSVFRunClick(Sender: TObject);
 begin
   if fneditSVFFile.FileName <> '' then
   begin
-    if not PrepareToRunCli then
+    if not VSProg_PrepareToRunCLI then
     begin
       exit;
     end;
@@ -1574,7 +1553,7 @@ begin
     end;
 
     LogInfo('Running...');
-    VSProg_RunAlgorithm(VSProg_Caller, @VSProg_Parser.OperationParser, 0);
+    VSProg_RunAlgorithm(VSProg_Caller, @VSProg_Parser.OperationParser, 0, False);
     LogInfo('Idle');
   end
   else
@@ -1586,14 +1565,14 @@ end;
 
 procedure TFormMain.btnWriteClick(Sender: TObject);
 begin
-  if not PrepareToRunCli then
+  if not VSProg_PrepareToRunCLI then
   begin
     exit;
   end;
 
-  PrepareOperationParameters(VSProg_Caller);
+  VSProg_PrepareOperationParameters(VSProg_Caller);
 
-  if chkboxEraseBeforeWrite.Checked and not VSProg_CommonAddEraseOperation() then
+  if chkboxEraseBeforeWrite.Checked and not VSProg_AddEraseOperation() then
   begin
     Beep();
     MessageDlg('Error', 'Fail to add erase operation', mtError, [mbOK], 0);
@@ -1601,7 +1580,7 @@ begin
     exit;
   end;
 
-  if not VSProg_CommonAddWriteOperation() then
+  if not VSProg_AddWriteOperation() then
   begin
     Beep();
     MessageDlg('Error', 'Fail to add write operation', mtError, [mbOK], 0);
@@ -1609,7 +1588,7 @@ begin
     exit;
   end;
 
-  if chkboxVerifyAfterWrite.Checked and not VSProg_CommonAddVerifyOperation() then
+  if chkboxVerifyAfterWrite.Checked and not VSProg_AddVerifyOperation() then
   begin
     Beep();
     MessageDlg('Error', 'Fail to add verify operation', mtError, [mbOK], 0);
@@ -1618,7 +1597,7 @@ begin
   end;
 
   LogInfo('Running...');
-  VSProg_RunAlgorithm(VSProg_Caller, @VSProg_Parser.OperationParser, 0);
+  VSProg_RunAlgorithm(VSProg_Caller, @VSProg_Parser.OperationParser, 0, False);
   LogInfo('Idle');
 end;
 
@@ -1628,25 +1607,52 @@ begin
 end;
 
 procedure TFormMain.cbboxModeChange(Sender: TObject);
-var
-  str_tmp: string;
 begin
-  // to do: change the GUI according to different mode
-  str_tmp := cbboxMode.Text;
-  case TargetType of
-    TT_NONE:
-      exit;
-    TT_PSOC1:
-      exit;
-    TT_AT89S5X:
-      exit;
-    TT_C8051F:
-      exit;
-    TT_AVR8:
-      AVR8_Update_Mode(str_tmp);
-    TT_CortexM3:
-      CortexM3_Update_Mode(str_tmp);
+  if cbboxMode.Items.Count > 0 then
+  begin
+    VSProg_GUIFeatureInit(CurTargetSeries.Feature +
+      CurTargetSeries.GetModeFeatureByModeChar(CurTargetChip.Mode[1 +
+      cbboxMode.ItemIndex]), False);
+
+    AdjustComponentColor(cbboxMode);
+    AdjustComponentColor(lbledtFuse);
+    AdjustComponentColor(lbledtLock);
+    AdjustComponentColor(lbledtCali);
+    AdjustComponentColor(lbledtUsrSig);
+    AdjustComponentColor(lbledtFreq);
   end;
+end;
+
+procedure TFormMain.cbboxTargetChange(Sender: TObject);
+var
+  i: integer;
+begin
+  CurTargetChip := CurTargetSeries.TargetChips[cbboxTarget.ItemIndex];
+
+  if CurTargetChip.AreaCount = 0 then
+  begin
+    // Parse Memory Info using '-D' option
+    if not VSProg_PrepareToRunCli then
+    begin
+      exit;
+    end;
+    VSProg_Caller.AddParameter(VSProg_GetTargetDefineParameters);
+    VSProg_Caller.AddParameter('Dall');
+    VSProg_Parser.LogOutputEnable := False;
+    VSProg_Parser.CallbackFunc    := @CurTargetChip.TargetAreaParser;
+    VSProg_RunAlgorithm(VSProg_Caller, @VSProg_Parser.MemoryTargetInfoParser, 0, True);
+  end;
+
+  for i := 0 to CurTargetChip.AreaCount - 1 do
+  begin
+    if CurTargetChip.TargetAreas[i].InFile then
+    begin
+      AddTargetFile(CurTargetChip.TargetAreas[i].Name);
+    end;
+  end;
+
+  VSProg_GUITargetAreaInit;
+  VSProg_GUIModeInit;
 
   AdjustComponentColor(cbboxMode);
   AdjustComponentColor(lbledtFuse);
@@ -1656,103 +1662,18 @@ begin
   AdjustComponentColor(lbledtFreq);
 end;
 
-procedure TFormMain.cbboxTargetChange(Sender: TObject);
-var
-  index: integer;
+procedure TFormMain.dedtPathChange(Sender: TObject);
 begin
-  index := cbboxTarget.ItemIndex;
-
-  VSProg_CommonTargetInit(TargetSetting[index].target);
-
-  if TargetSetting[index].fuse_bytelen > 0 then
+  if (Sender as TDirectoryEdit).Directory[Length(
+    (Sender as TDirectoryEdit).Directory)] <>
+    System.DirectorySeparator then
   begin
-    lbledtFuse.Enabled  := True;
-    btnEditFuse.Enabled := True;
-  end
-  else
-  begin
-    lbledtFuse.Enabled  := False;
-    btnEditFuse.Enabled := False;
-  end;
-  VSProg_CommonUpdateFuse(TargetSetting[index].fuse_default,
-    TargetSetting[index].fuse_bytelen);
-
-  if TargetSetting[index].lock_bytelen > 0 then
-  begin
-    lbledtLock.Enabled  := True;
-    btnEditLock.Enabled := True;
-  end
-  else
-  begin
-    lbledtLock.Enabled  := False;
-    btnEditLock.Enabled := False;
-  end;
-  VSProg_CommonUpdateLock(TargetSetting[index].lock_default,
-    TargetSetting[index].lock_bytelen);
-
-  if TargetSetting[index].cali_bytelen > 0 then
-  begin
-    lbledtCali.Enabled  := True;
-    btnEditCali.Enabled := True;
-  end
-  else
-  begin
-    lbledtCali.Enabled  := False;
-    btnEditCali.Enabled := False;
-  end;
-  VSProg_CommonUpdateCali(TargetSetting[index].cali_default,
-    TargetSetting[index].cali_bytelen);
-
-  if TargetSetting[index].usrsig_bytelen > 0 then
-  begin
-    lbledtUsrSig.Enabled  := True;
-    btnEditUsrSig.Enabled := True;
-  end
-  else
-  begin
-    lbledtUsrSig.Enabled  := False;
-    btnEditUsrSig.Enabled := False;
-  end;
-  VSProg_CommonUpdateUsrSig(TargetSetting[index].usrsig_default,
-    TargetSetting[index].usrsig_bytelen);
-
-  if TargetSetting[index].mode = '' then
-  begin
-    cbboxMode.Clear;
-    cbboxMode.Enabled := False;
-  end
-  else
-  begin
-    cbboxMode.Enabled := True;
+    (Sender as TDirectoryEdit).Directory :=
+      (Sender as TDirectoryEdit).Directory + System.DirectorySeparator;
   end;
 
-  case TargetType of
-    TT_NONE:
-      exit;
-    TT_PSOC1:
-      PSoC1_Update_Chip(TargetSetting[index]);
-    TT_AT89S5X:
-      AT89S5X_Update_Chip(TargetSetting[index]);
-    TT_C8051F:
-      C8051F_Update_Chip(TargetSetting[index]);
-    TT_AVR8:
-      AVR8_Update_Chip(TargetSetting[index]);
-    TT_MSP430:
-      MSP430_Update_Chip(TargetSetting[index]);
-    TT_COMISP:
-      COMISP_Update_Chip(TargetSetting[index]);
-    TT_LPCICP:
-      LPCICP_Update_chip(TargetSetting[index]);
-    TT_CORTEXM3:
-      CortexM3_Update_chip(TargetSetting[index]);
-  end;
-
-  AdjustComponentColor(cbboxMode);
-  AdjustComponentColor(lbledtFuse);
-  AdjustComponentColor(lbledtLock);
-  AdjustComponentColor(lbledtCali);
-  AdjustComponentColor(lbledtUsrSig);
-  AdjustComponentColor(lbledtFreq);
+  VSProg_Exists  := FileExists(dedtVSProg.Directory + VSPROG_STR);
+  OpenOCD_Exists := FileExists(dedtOpenOCD.Directory + OPENOCD_STR);
 end;
 
 procedure TFormMain.FormActivate(Sender: TObject);
@@ -1767,6 +1688,8 @@ begin
   VSProg_Caller.Stop();
 
   // save settings to config file
+  xmlcfgMain.SetValue('vsprog_dir', dedtVSProg.Directory);
+  xmlcfgMain.SetValue('openocd_dir', dedtOpenOCD.Directory);
   xmlcfgMain.SetValue('activepage', pcMain.ActivePage.Caption);
   xmlcfgMain.SetValue('openocd/interface', cbboxOpenOCDInterface.Text);
   xmlcfgMain.SetValue('openocd/target', cbboxOpenOCDTarget.Text);
@@ -1814,30 +1737,20 @@ begin
   CloseAction := caFree;
 end;
 
-procedure TFormMain.AdjustComponentColor(Sender: TObject);
+procedure TFormMain.CenterControl(ctl: TControl; ref: TControl);
 begin
-  if Sender is TLabeledEdit then
-  begin
-    if (Sender as TLabeledEdit).Enabled then
-    begin
-      (Sender as TLabeledEdit).Color := clWindow;
-    end
-    else
-    begin
-      (Sender as TLabeledEdit).Color := clBtnFace;
-    end;
-  end;
+  ctl.Top := ref.Top + (ref.Height - ctl.Height) div 2;
+end;
 
-  if Sender is TComboBox then
+procedure TFormMain.AdjustComponentColor(Sender: TControl);
+begin
+  if Sender.Enabled then
   begin
-    if (Sender as TComboBox).Enabled then
-    begin
-      (Sender as TComboBox).Color := clWindow;
-    end
-    else
-    begin
-      (Sender as TComboBox).Color := clBtnFace;
-    end;
+    Sender.Color := clWindow;
+  end
+  else
+  begin
+    Sender.Color := clBtnFace;
   end;
 end;
 
@@ -1853,13 +1766,10 @@ begin
   end;
 end;
 
-function TFormMain.PrepareToRunOpenOCD: boolean;
-var
-  strTmp: string;
+function TFormMain.VSProg_PrepareToRun(aApplicationName: string): boolean;
 begin
   Result := False;
-  strTmp := Application.Location + OPENOCD_APP_STR;
-  if not FileExists(strTmp) then
+  if not FileExists(aApplicationName) then
   begin
     exit;
   end;
@@ -1870,7 +1780,15 @@ begin
     if VSProg_Taken_By_Polling then
     begin
       // occupied by polling thread, wait it
-//      PollThread.WaitFor;
+      if PollThread.Suspended then
+      begin
+        // PollThread crashes
+        VSProg_Taken_By_Polling := False;
+      end
+      else
+      begin
+        PollThread.WaitFor;
+      end;
       if not VSProg_Caller.Take() then
       begin
         // give up ......
@@ -1884,82 +1802,34 @@ begin
     end;
   end;
 
-  VSProg_Caller.Application := strTmp;
+  VSProg_Caller.Application := aApplicationName;
   VSProg_Caller.RemoveAllParameters();
   Result := True;
   memoLog.Clear;
   memoInfo.Clear;
 end;
 
-function TFormMain.PrepareToRunCLI: boolean;
-var
-  strTmp: string;
+function TFormMain.VSProg_PrepareToRunOpenOCD: boolean;
 begin
-  Result := False;
-  strTmp := Application.Location + VSPROG_STR;
-  if not FileExists(strTmp) then
-  begin
-    if VSProg_Exists then
-    begin
-      // For Once
-      Beep();
-      MessageDlg('Error, missing vsprog',
-        'Opps, Where is my vsprog? I cannot work without her.', mtError, [mbOK], 0);
-    end;
-    VSProg_Exists := False;
-    exit;
-  end;
-
-  // take it first
-  if not VSProg_Caller.Take() then
-  begin
-    if VSProg_Taken_By_Polling then
-    begin
-      // occupied by polling thread, wait it
-//      PollThread.WaitFor;
-      if not VSProg_Caller.Take() then
-      begin
-        // give up ......
-        exit;
-      end;
-    end
-    else
-    begin
-      // other operation is on the way
-      exit;
-    end;
-  end;
-
-  VSProg_Caller.Application := strTmp;
-  VSProg_Caller.RemoveAllParameters();
-  Result := True;
-  memoLog.Clear;
-  memoInfo.Clear;
+  Result := VSProg_PrepareToRun(dedtOpenOCD.Directory + OPENOCD_STR);
 end;
 
-function TFormMain.GetTargetDefineParameters(): string;
+function TFormMain.VSProg_PrepareToRunCLI: boolean;
 begin
-  // target series_name or chip_name
-  if ((TargetType <> TT_COMISP) and (TargetType <> TT_CORTEXM3)) and
-    (cbboxTarget.ItemIndex = 0) then
-  begin
-    Result := 's' + cbboxTarget.Items.Strings[cbboxTarget.ItemIndex];
-  end
-  else
-  begin
-    Result := 'c' + cbboxTarget.Items.Strings[cbboxTarget.ItemIndex];
-  end;
+  Result := VSProg_PrepareToRun(dedtVSProg.Directory + VSPROG_STR);
 end;
 
-procedure TFormMain.PrepareBaseParameters(var caller: TCLI_Caller);
+procedure TFormMain.VSProg_PrepareMiscParameters(var caller: TCLI_Caller);
 var
   i: integer;
-  io_file_opt, str: string;
+  io_file_opt, strTmp, strExt: string;
+  areaTmp: TTargetArea;
+  FakeArea: TFakeArea;
+  addr, seg: cardinal;
+  faddr, fseg: cardinal;
 begin
-  caller.AddParameter(GetTargetDefineParameters());
-
   // COM Mode
-  if btnTargetDetect.Caption = COMSETUP_STR then
+  if btnModeSetup.Visible then
   begin
     if ComMode.comstr = '' then
     begin
@@ -1979,38 +1849,49 @@ begin
   begin
     io_file_opt := 'I';
   end;
-  if Length(TargetFile) = 0 then
+
+  if cbboxInputFile.Text = '' then
   begin
-    if cbboxInputFile.Text <> '' then
-    begin
-      caller.AddParameter(io_file_opt + '"' + cbboxInputFile.Text + '@0,0"');
-    end;
+
   end
   else if cbboxInputFile.Text <> 'ALL' then
   begin
     // enable selected input file
-    for i := low(TargetFile) to high(TargetFile) do
+    i := Pos(':', cbboxInputFile.Text);
+    areaTmp := CurTargetChip.GetArea(GetAreaShortName(
+      Copy(cbboxInputFile.Text, 1, i - 1)));
+    if areaTmp <> nil then
     begin
-      str := Copy(cbboxInputFile.Text, 1, Pos(':', cbboxInputFile.Text) - 1);
-      if TargetFile[i].target = str then
+      addr     := areaTmp.StartAddr;
+      seg      := areaTmp.SegAddr;
+      faddr    := 0;
+      fseg     := 0;
+      FakeArea := CurTargetSeries.GetFakeArea(areaTmp.Name);
+      if FakeArea <> nil then
       begin
-        if TargetFile[i].filename <> '' then
+        if FakeArea.FakeAddrEn then
         begin
-          str := LowerCase(ExtractFileExt(TargetFile[i].filename));
-          if str = '.hex' then
-          begin
-            caller.AddParameter(io_file_opt + '"' + TargetFile[i].filename +
-              '@' + IntToStr(TargetFile[i].seg_offset) + ',' +
-              IntToStr(TargetFile[i].addr_offset) + '"');
-          end
-          else if str = '.bin' then
-          begin
-            caller.AddParameter(io_file_opt + '"' + TargetFile[i].filename +
-              '@' + IntToStr(TargetFile[i].seg_offset) + ',' +
-              IntToStr(TargetFile[i].addr_offset + TargetFile[i].def_start_addr) + '"');
-          end;
+          faddr := FakeArea.FakeAddr;
+          Inc(addr, faddr);
         end;
-        break;
+        if FakeArea.FakeSegEn then
+        begin
+          fseg := FakeArea.FakeSeg;
+          Inc(seg, fseg);
+        end;
+      end;
+
+      strTmp := Copy(cbboxInputFile.Text, i + 1, Length(cbboxInputFile.Text) - i - 1);
+      strExt := LowerCase(ExtractFileExt(strTmp));
+      if strExt = '.hex' then
+      begin
+        caller.AddParameter(io_file_opt + '"' + strTmp + '@' +
+          IntToStr(fseg) + ',' + IntToStr(faddr) + '"');
+      end
+      else if strExt = '.bin' then
+      begin
+        caller.AddParameter(io_file_opt + '"' + strTmp + '@' +
+          IntToStr(seg) + ',' + IntToStr(addr) + '"');
       end;
     end;
   end
@@ -2021,18 +1902,39 @@ begin
     begin
       if TargetFile[i].filename <> '' then
       begin
-        str := LowerCase(ExtractFileExt(TargetFile[i].filename));
-        if str = '.hex' then
+        areaTmp := CurTargetChip.GetArea(GetAreaShortName(TargetFile[i].target));
+        if areaTmp <> nil then
         begin
-          caller.AddParameter(io_file_opt + '"' + TargetFile[i].filename +
-            '@' + IntToStr(TargetFile[i].seg_offset) + ',' +
-            IntToStr(TargetFile[i].addr_offset) + '"');
-        end
-        else if str = '.bin' then
-        begin
-          caller.AddParameter(io_file_opt + '"' + TargetFile[i].filename +
-            '@' + IntToStr(TargetFile[i].seg_offset) + ',' +
-            IntToStr(TargetFile[i].addr_offset + TargetFile[i].def_start_addr) + '"');
+          addr     := areaTmp.StartAddr;
+          seg      := areaTmp.SegAddr;
+          faddr    := 0;
+          fseg     := 0;
+          FakeArea := CurTargetSeries.GetFakeArea(areaTmp.Name);
+          if FakeArea <> nil then
+          begin
+            if FakeArea.FakeAddrEn then
+            begin
+              faddr := FakeArea.FakeAddr;
+              Inc(addr, faddr);
+            end;
+            if FakeArea.FakeSegEn then
+            begin
+              fseg := FakeArea.FakeSeg;
+              Inc(seg, fseg);
+            end;
+          end;
+
+          strExt := LowerCase(ExtractFileExt(TargetFile[i].filename));
+          if strExt = '.hex' then
+          begin
+            caller.AddParameter(io_file_opt + '"' + TargetFile[i].filename +
+              '@' + IntToStr(fseg) + ',' + IntToStr(faddr) + '"');
+          end
+          else if strExt = '.bin' then
+          begin
+            caller.AddParameter(io_file_opt + '"' + TargetFile[i].filename +
+              '@' + IntToStr(seg) + ',' + IntToStr(addr) + '"');
+          end;
         end;
       end;
     end;
@@ -2051,7 +1953,7 @@ begin
   end;
 
   // Frequency
-  if lbledtFreq.Enabled and (lbledtFreq.Text <> '') then
+  if lbledtFreq.Visible and lbledtFreq.Enabled and (lbledtFreq.Text <> '') then
   begin
     if lbledtFreq.EditLabel.Caption <> EXECUTE_ADDR_STR then
     begin
@@ -2060,11 +1962,18 @@ begin
   end;
 end;
 
-procedure TFormMain.PrepareOperationParameters(var caller: TCLI_Caller);
+procedure TFormMain.VSProg_PrepareBaseParameters(var caller: TCLI_Caller);
+begin
+  caller.AddParameter(VSProg_GetTargetDefineParameters());
+
+  VSProg_PrepareMiscParameters(caller);
+end;
+
+procedure TFormMain.VSProg_PrepareOperationParameters(var caller: TCLI_Caller);
 begin
   // enable GUI mode
   caller.AddParameter('G');
-  PrepareBaseParameters(caller);
+  VSProg_PrepareBaseParameters(caller);
 
   // Fuse
   if lbledtFuse.Enabled and chkboxFuse.Enabled and chkboxFuse.Checked and
@@ -2081,7 +1990,7 @@ begin
   end;
 
   // Execute
-  if lbledtFreq.Enabled and (lbledtFreq.Text <> '') then
+  if lbledtFreq.Visible and lbledtFreq.Enabled and (lbledtFreq.Text <> '') then
   begin
     if lbledtFreq.EditLabel.Caption = EXECUTE_ADDR_STR then
     begin
@@ -2096,130 +2005,12 @@ begin
   end;
 end;
 
-procedure TFormMain.tDelayTimer(Sender: TObject);
-var
-  success: boolean;
-  i, j:    integer;
-  str_tmp: string;
-  int_tmp: integer;
+procedure TFormMain.tPollProgrammerTimer(Sender: TObject);
 begin
-  tDelay.Enabled := False;
-
-  case TargetType of
-    TT_PSOC1:
-      success := PSoC1_Init();
-    TT_C8051F:
-      success := C8051F_Init();
-    TT_AT89S5X:
-      success := AT89S5X_Init();
-    TT_MSP430:
-      success := MSP430_Init();
-    TT_STM8:
-      success := STM8_Init();
-    TT_EEPROM:
-      success := EEPROM_Init();
-    TT_AVR8:
-      success := AVR8_Init();
-    TT_COMISP:
-      success := COMISP_Init();
-    TT_LPCICP:
-      success := LPCICP_Init();
-    TT_CORTEXM3:
-      success := CortexM3_Init();
-    else
-    // BUG IN SOFTWARE IF RUN HERE
-  end;
-
-  if success and (cbboxTarget.ItemIndex >= 0) then
+  if (Sender as TTimer).Enabled and (PollThread <> nil) and PollThread.Suspended then
   begin
-    gbChipName.Parent  := pcMain.ActivePage;
-    gbInputFile.Parent := pcMain.ActivePage;
-    gbOption.Parent    := pcMain.ActivePage;
-    gbOperation.Parent := pcMain.ActivePage;
-
-    cbboxTargetChange(cbboxTarget);
-
-    AdjustComponentColor(cbboxMode);
-    AdjustComponentColor(lbledtFuse);
-    AdjustComponentColor(lbledtLock);
-    AdjustComponentColor(lbledtCali);
-    AdjustComponentColor(lbledtUsrSig);
-    AdjustComponentColor(lbledtFreq);
-
-    if not TargetPage_Init then
-    begin
-      TargetPage_Init := True;
-      str_tmp := xmlcfgMain.GetValue('target/chip', '');
-      success := False;
-      for i := 0 to cbboxTarget.Items.Count - 1 do
-      begin
-        if str_tmp = cbboxTarget.Items.Strings[i] then
-        begin
-          success := True;
-          break;
-        end;
-      end;
-      if success then
-      begin
-        ComboBoxSetText(cbboxTarget, xmlcfgMain.GetValue('target/chip', ''));
-        cbboxTargetChange(cbboxTarget);
-        ComboBoxSetText(cbboxMode, xmlcfgMain.GetValue('target/mode', ''));
-        cbboxModeChange(cbboxMode);
-        lbledtFreq.Text := xmlcfgMain.GetValue('target/freq', '');
-        int_tmp := xmlcfgMain.GetValue('target/files/number', 0);
-        if Length(TargetFile) < int_tmp then
-        begin
-          // Error here, try to recovery
-          xmlcfgMain.DeletePath('target/files');
-          xmlcfgMain.SetValue('target/files/number', 0);
-          int_tmp := 0;
-        end;
-        if int_tmp > 0 then
-        begin
-          for i := 0 to int_tmp - 1 do
-          begin
-            j := GetTargetFileIndex(xmlcfgMain.GetValue('target/files/' +
-              IntToStr(i) + '/target', ''));
-            if j < 0 then
-            begin
-              // Error here, try to recovery
-              xmlcfgMain.DeletePath('target/files');
-              xmlcfgMain.SetValue('target/files/number', 0);
-              int_tmp := 0;
-              break;
-            end;
-            TargetFile[j].filename :=
-              xmlcfgMain.GetValue('target/files/' + IntToStr(i) + '/filename', '');
-          end;
-        end;
-        UpdateTargetFile();
-        ComboBoxSetText(cbboxInputFile, xmlcfgMain.GetValue('target/filename', ''));
-        lbledtFuse.Text      := xmlcfgMain.GetValue('target/fuse', '');
-        lbledtLock.Text      := xmlcfgMain.GetValue('target/lock', '');
-        lbledtCali.Text      := xmlcfgMain.GetValue('target/cali', '');
-        lbledtUsrSig.Text    := xmlcfgMain.GetValue('target/usrsig', '');
-        chkboxNoconnect.Checked := xmlcfgMain.GetValue('target/nc', False);
-        chkboxNowarning.Checked := xmlcfgMain.GetValue('target/nw', False);
-        chkboxApp.Checked    := xmlcfgMain.GetValue('target/flashen', False);
-        chkboxEE.Checked     := xmlcfgMain.GetValue('target/eepromen', False);
-        chkboxFuse.Checked   := xmlcfgMain.GetValue('target/fuseen', False);
-        chkboxLock.Checked   := xmlcfgMain.GetValue('target/locken', False);
-        chkboxUsrSig.Checked := xmlcfgMain.GetValue('target/usrsigen', False);
-        chkboxCali.Checked   := xmlcfgMain.GetValue('target/calien', False);
-        chkboxEraseBeforeWrite.Checked := xmlcfgMain.GetValue('target/ebw', False);
-        chkboxVerifyAfterWrite.Checked := xmlcfgMain.GetValue('target/vaw', False);
-        chkboxMP.Checked     := xmlcfgMain.GetValue('target/mass', False);
-        lbledtExtraPara.Text := xmlcfgMain.GetValue('target/extraparam', '');
-      end;
-    end;
-  end
-  else
-  begin
-    TargetType := TT_NONE;
-    pcMain.ActivePage.Enabled := False;
+    //PollThread.Resume;
   end;
-  UpdateTitle();
-  bPageLock := False;
 end;
 
 procedure TFormMain.tiMainClick(Sender: TObject);
@@ -2228,52 +2019,7 @@ begin
   Show;
 end;
 
-function TFormMain.VSProg_LogProcess(ProgressInfo: TProgressInfoType;
-  info: string): boolean;
-begin
-  Result := True;
-
-  case ProgressInfo of
-    liStartSection:
-    begin
-      LogInfo(info + '...');
-      sbMain.Panels.Items[1].Text := '';
-      pgbarMain.Position := 0;
-    end;
-    liStep:
-    begin
-      sbMain.Panels.Items[1].Text := sbMain.Panels.Items[1].Text + info;
-      pgbarMain.StepIt;
-    end;
-    liEndSection:
-    begin
-      memoInfo.Lines.Strings[memoInfo.Lines.Count - 1] :=
-        memoInfo.Lines.Strings[memoInfo.Lines.Count - 1] + info;
-    end;
-  end;
-end;
-
-function TFormMain.VSProg_MemoryTargetParserCallback(line: string): boolean;
-var
-  seg_addr, start_addr, byte_size, default_byte: integer;
-  parse_result: boolean;
-begin
-  Result := True;
-  parse_result := GetIntegerParameter(line, 'seg_addr', seg_addr);
-  parse_result := parse_result and GetIntegerParameter(line, 'start_addr', start_addr);
-  parse_result := parse_result and GetIntegerParameter(line, 'default_byte',
-    default_byte);
-  parse_result := parse_result and GetIntegerParameter(line, 'byte_size', byte_size);
-  if parse_result then
-  begin
-    MemoryInfo.seg_addr     := seg_addr;
-    MemoryInfo.start_addr   := start_addr;
-    MemoryInfo.default_byte := byte(default_byte);
-    MemoryInfo.byte_size    := byte_size;
-  end;
-end;
-
-function TFormMain.VSProg_SettingTargetParserCallback(line: string): boolean;
+function TFormMain.VSProg_SettingTargetParserCallback(var line: string): boolean;
 var
   dis: string;
 begin
@@ -2282,7 +2028,7 @@ begin
   begin
     // check disable
     dis := '';
-    GetStringParameter(line, 'ban', dis);
+    GetLiteralParameter(line, 'ban', dis);
     if (dis = '*') or (Pos(cbboxMode.Text[1], dis) > 0) then
     begin
       // current setting is disabled in current mode
@@ -2293,636 +2039,8 @@ begin
   FormParaEditor.ParseLine(line);
 end;
 
-procedure TFormMain.VSProg_AddTargetSetting(setting: TTargetSetting);
-var
-  index: integer;
-begin
-  index := Length(TargetSetting);
-  SetLength(TargetSetting, index + 1);
-
-  TargetSetting[index] := setting;
-end;
-
-procedure TFormMain.VSProg_TargetSettingInit(var setting: TTargetSetting);
-begin
-  setting.mode   := '';
-  setting.target := '';
-  setting.fuse_bytelen := 0;
-  setting.fuse_default := 0;
-  setting.lock_bytelen := 0;
-  setting.lock_default := 0;
-  setting.cali_bytelen := 0;
-  setting.cali_default := 0;
-  setting.usrsig_bytelen := 0;
-  setting.usrsig_default := 0;
-end;
-
-function TFormMain.VSProg_SupportParserCallback(line: string): boolean;
-var
-  chip_name, chip_module_header: string;
-  setting: TTargetSetting;
-begin
-  // parse chip name
-  case TargetType of
-    TT_NONE:
-      exit;
-    TT_PSOC1:
-      chip_module_header := 'cy8c2';
-    TT_AT89S5X:
-      chip_module_header := 'at89s';
-    TT_C8051F:
-      chip_module_header := 'c8051f';
-    TT_AVR8:
-      chip_module_header := 'at';
-    TT_PIC8:
-      exit;
-    TT_MSP430:
-      chip_module_header := 'msp430';
-    TT_COMISP:
-      chip_module_header := 'comisp_';
-    TT_LPCICP:
-      chip_module_header := 'p89lpc';
-    TT_CORTEXM3:
-      chip_module_header := 'cm3_';
-  end;
-
-  if Pos(chip_module_header, line) = 1 then
-  begin
-    chip_name := Copy(line, 1, Pos(':', line) - 1);
-  end;
-
-  if chip_name <> '' then
-  begin
-    // Add special parameter
-    VSProg_TargetSettingInit(setting);
-
-    case TargetType of
-      TT_NONE:
-        exit;
-      TT_PSOC1:
-        PSoC1_Init_Para(line, setting);
-      TT_AT89S5X:
-        AT89S5X_Init_Para(line, setting);
-      TT_C8051F:
-        C8051F_Init_Para(line, setting);
-      TT_AVR8:
-        AVR8_Init_Para(line, setting);
-      TT_MSP430:
-        MSP430_Init_Para(line, setting);
-      TT_COMISP:
-        COMISP_Init_Para(line, setting);
-      TT_LPCICP:
-        LPCICP_Init_Para(line, setting);
-      TT_CORTEXM3:
-        CortexM3_Init_Para(line, setting);
-    end;
-
-    GetIntegerParameter(line, 'fuse_bytelen', setting.fuse_bytelen);
-    GetIntegerParameter(line, 'fuse_default', setting.fuse_default);
-    GetIntegerParameter(line, 'lock_bytelen', setting.lock_bytelen);
-    GetIntegerParameter(line, 'lock_default', setting.lock_default);
-    GetIntegerParameter(line, 'cali_bytelen', setting.cali_bytelen);
-    GetIntegerParameter(line, 'cali_default', setting.cali_default);
-    GetIntegerParameter(line, 'usrsig_bytelen', setting.usrsig_bytelen);
-    GetIntegerParameter(line, 'usrsig_default', setting.usrsig_default);
-
-    cbboxTarget.Items.Add(chip_name);
-    VSProg_AddTargetSetting(setting);
-  end;
-
-  Result := True;
-end;
-
-procedure TFormMain.VSProg_CommonUpdateSetting(Value, bytelen: integer;
-  edt: TLabeledEdit);
-begin
-  if bytelen > 0 then
-  begin
-    edt.Text := '0x' + IntToHex(Value, bytelen * 2);
-  end
-  else
-  begin
-    edt.Text := '';
-  end;
-end;
-
-procedure TFormMain.VSProg_CommonUpdateUsrSig(sig, bytelen: integer);
-begin
-  VSProg_CommonUpdateSetting(sig, bytelen, lbledtUsrSig);
-end;
-
-procedure TFormMain.VSProg_CommonUpdateCali(cali, bytelen: integer);
-begin
-  VSProg_CommonUpdateSetting(cali, bytelen, lbledtCali);
-end;
-
-procedure TFormMain.VSProg_CommonUpdateLock(lock, bytelen: integer);
-begin
-  VSProg_CommonUpdateSetting(lock, bytelen, lbledtLock);
-end;
-
-procedure TFormMain.VSProg_CommonUpdateFuse(fuse, bytelen: integer);
-begin
-  VSProg_CommonUpdateSetting(fuse, bytelen, lbledtFuse);
-end;
-
- // f: Flash, e: EEprom, l: Lock, u: Fuse, s: User Signature, c: Calibration Value
- // M: Mass-Product, F: Frequency, X: Execute, A: AutoDetect, C: COM Port Setting
-procedure TFormMain.VSProg_CommonTargetInit(para: string);
-begin
-  btnEditApp.Caption := 'Flash';
-  chkboxApp.Caption  := 'Flash';
-  if Pos(FLASH_CHAR, para) > 0 then
-  begin
-    btnEditApp.Enabled := True;
-    chkboxApp.Enabled  := True;
-    chkboxApp.Checked  := True;
-  end
-  else
-  begin
-    btnEditApp.Enabled := False;
-    chkboxApp.Enabled  := False;
-    chkboxApp.Checked  := False;
-  end;
-
-  btnEditEE.Caption := 'EE';
-  chkboxEE.Caption  := 'EE';
-  if Pos(EEPROM_CHAR, para) > 0 then
-  begin
-    btnEditEE.Enabled := True;
-    chkboxEE.Enabled  := True;
-    chkboxEE.Checked  := True;
-  end
-  else
-  begin
-    btnEditEE.Enabled := False;
-    chkboxEE.Enabled  := False;
-    chkboxEE.Checked  := False;
-  end;
-
-  btnEditLock.Caption := 'Lock';
-  chkboxLock.Caption  := 'Lock';
-  lbledtLock.Text     := '';
-  if Pos(LOCK_CHAR, para) > 0 then
-  begin
-    btnEditLock.Enabled := True;
-    lbledtLock.Enabled  := True;
-    chkboxLock.Enabled  := True;
-    chkboxLock.Checked  := True;
-  end
-  else
-  begin
-    btnEditLock.Enabled := False;
-    lbledtLock.Enabled  := False;
-    chkboxLock.Enabled  := False;
-    chkboxLock.Checked  := False;
-  end;
-
-  btnEditFuse.Caption := 'Fuse';
-  chkboxFuse.Caption  := 'Fuse';
-  lbledtFuse.Text     := '';
-  if Pos(FUSE_CHAR, para) > 0 then
-  begin
-    btnEditFuse.Enabled := True;
-    lbledtFuse.Enabled  := True;
-    chkboxFuse.Enabled  := True;
-    chkboxFuse.Checked  := True;
-  end
-  else
-  begin
-    btnEditFuse.Enabled := False;
-    lbledtFuse.Enabled  := False;
-    chkboxFuse.Enabled  := False;
-    chkboxFuse.Checked  := False;
-  end;
-
-  btnEditUsrSig.Caption := 'UsrSig';
-  chkboxUsrSig.Caption  := 'UsrSig';
-  if Pos(USRSIG_CHAR, para) > 0 then
-  begin
-    btnEditUsrSig.Enabled := True;
-    lbledtUsrSig.Enabled  := True;
-    chkboxUsrSig.Enabled  := True;
-    chkboxUsrSig.Checked  := True;
-  end
-  else
-  begin
-    btnEditUsrSig.Enabled := False;
-    lbledtUsrSig.Enabled  := False;
-    chkboxUsrSig.Enabled  := False;
-    chkboxUsrSig.Checked  := False;
-  end;
-
-  btnEditCali.Caption := 'Cali.';
-  chkboxCali.Caption  := 'Cali.';
-  if Pos(CALI_CHAR, para) > 0 then
-  begin
-    btnEditCali.Enabled := True;
-    lbledtCali.Enabled  := True;
-    chkboxCali.Enabled  := True;
-    chkboxCali.Checked  := True;
-  end
-  else
-  begin
-    btnEditCali.Enabled := False;
-    lbledtCali.Enabled  := False;
-    chkboxCali.Enabled  := False;
-    chkboxCali.Checked  := False;
-  end;
-end;
-
-procedure TFormMain.VSProg_CommonInit(para: string);
-var
-  str_tmp: string;
-begin
-  VSProg_CommonTargetInit(para);
-
-  chkboxMP.Checked := False;
-  if Pos('M', para) > 0 then
-  begin
-    chkboxMP.Enabled := True;
-  end
-  else
-  begin
-    chkboxMP.Enabled := False;
-  end;
-
-  str_tmp := lbledtFreq.EditLabel.Caption;
-  if (Pos('F', para) > 0) or (Pos('X', para) > 0) then
-  begin
-    if Pos('F', para) > 0 then
-    begin
-      lbledtFreq.EditLabel.Caption := FREQ_STR;
-      lbledtFreq.Hint := FREQ_HINT;
-    end
-    else
-    begin
-      lbledtFreq.EditLabel.Caption := EXECUTE_ADDR_STR;
-      lbledtFreq.Hint := EXECUTE_ADDR_HINT;
-    end;
-    if lbledtFreq.EditLabel.Caption <> str_tmp then
-    begin
-      lbledtFreq.Text := '';
-    end;
-    lbledtFreq.Enabled := True;
-  end
-  else
-  begin
-    lbledtFreq.Text    := '';
-    lbledtFreq.Hint    := '';
-    lbledtFreq.Enabled := False;
-  end;
-
-  if (Pos('A', para) > 0) or (Pos('C', para) > 0) then
-  begin
-    if Pos('C', para) > 0 then
-    begin
-      btnTargetDetect.Caption := COMSETUP_STR;
-      btnTargetDetect.Hint    := COMSETUP_HINT;
-    end
-    else
-    begin
-      btnTargetDetect.Caption := AUTODETECT_STR;
-      btnTargetDetect.Hint    := AUTODETECT_HINT;
-    end;
-    btnTargetDetect.Enabled := True;
-  end
-  else
-  begin
-    btnTargetDetect.Caption := 'No use';
-    btnTargetDetect.Hint    := 'No use';
-    btnTargetDetect.Enabled := False;
-  end;
-
-  chkboxEraseBeforeWrite.Caption := 'Erase before write';
-  chkboxEraseBeforeWrite.Enabled := True;
-  chkboxVerifyAfterWrite.Caption := 'Verify after write';
-  chkboxVerifyAfterWrite.Enabled := True;
-
-  cbboxMode.Clear;
-  cbboxMode.Enabled := False;
-end;
-
-{ PSoC1 implementation }
-
-procedure TFormMain.PSoC1_Update_Chip(setting: TTargetSetting);
-var
-  str_tmp:  string;
-  mode_str: string;
-begin
-  mode_str := setting.mode;
-  str_tmp  := cbboxMode.Text;
-  cbboxMode.Clear;
-  if Pos('r', mode_str) > 0 then
-  begin
-    cbboxMode.Items.Add('r:Reset');
-  end;
-  if Pos('p', mode_str) > 0 then
-  begin
-    cbboxMode.Items.Add('p:Power-On');
-  end;
-
-  if cbboxMode.Items.IndexOf(str_tmp) >= 0 then
-  begin
-    cbboxMode.ItemIndex := cbboxMode.Items.IndexOf(str_tmp);
-  end
-  else
-  begin
-    cbboxMode.ItemIndex := 0;
-  end;
-end;
-
-function TFormMain.PSoC1_Init_Para(line: string; var setting: TTargetSetting): boolean;
-begin
-  GetStringParameter(line, 'init_mode', setting.mode);
-  setting.target := FLASH_CHAR + LOCK_CHAR;
-  Result := True;
-end;
-
-function TFormMain.PSoC1_Init(): boolean;
-var
-  setting: TTargetSetting;
-begin
-  Result := True;
-
-  cbboxTarget.Clear;
-  cbboxTarget.Items.Add('psoc1');
-
-  VSProg_TargetSettingInit(setting);
-  setting.mode   := 'rp';
-  setting.target := FLASH_CHAR + LOCK_CHAR;
-  VSProg_AddTargetSetting(setting);
-  AddTargetFile('ALL', False, 0, 0, 0);
-
-  // call 'vsprog -Spsoc1' to extract supported psoc1 targets
-  VSProg_Caller.AddParameter('Spsoc1');
-  VSProg_Parser.CallbackFunc    := @VSProg_SupportParserCallback;
-  VSProg_Parser.LogOutputEnable := False;
-  if VSProg_RunAlgorithm(VSProg_Caller, @VSProg_Parser.SupportParser, 0) then
-  begin
-    cbboxTarget.ItemIndex := 0;
-  end
-  else
-  begin
-    tsPSoC1.Enabled := False;
-    Result := False;
-    exit;
-  end;
-
-  // Autodetect
-  VSProg_CommonInit('A');
-end;
-
-{ C8051F implementations }
-function TFormMain.C8051F_Init(): boolean;
-var
-  setting: TTargetSetting;
-begin
-  Result := True;
-
-  cbboxTarget.Clear;
-  cbboxTarget.Items.Add('c8051f');
-
-  VSProg_TargetSettingInit(setting);
-  setting.mode   := 'jc';
-  setting.target := FLASH_CHAR;
-  VSProg_AddTargetSetting(setting);
-  AddTargetFile('ALL', False, 0, 0, 0);
-
-  // call 'vsprog -Sc8051f' to check support
-  VSProg_Caller.AddParameter('Sc8051f');
-  VSProg_Parser.CallbackFunc    := @VSProg_SupportParserCallback;
-  VSProg_Parser.LogOutputEnable := False;
-  if VSProg_RunAlgorithm(VSProg_Caller, @VSProg_Parser.SupportParser, 0) then
-  begin
-    cbboxTarget.ItemIndex := 0;
-  end
-  else
-  begin
-    tsC8051F.Enabled := False;
-    Result := False;
-    exit;
-  end;
-
-  // Autodetect
-  VSProg_CommonInit('A');
-end;
-
-procedure TFormMain.C8051F_Update_Chip(setting: TTargetSetting);
-var
-  mode_str: string;
-begin
-  mode_str := setting.mode;
-  cbboxMode.Items.Clear;
-  if Pos('j', mode_str) > 0 then
-  begin
-    cbboxMode.Items.Add('j:JTAG');
-  end;
-  if Pos('c', mode_str) > 0 then
-  begin
-    cbboxMode.Items.Add('c:C2');
-  end;
-  cbboxMode.ItemIndex := 0;
-end;
-
-function TFormMain.C8051F_Init_Para(line: string; var setting: TTargetSetting): boolean;
-begin
-  GetStringParameter(line, 'prog_mode', setting.mode);
-  setting.target := FLASH_CHAR;
-  Result := True;
-end;
-
-{ AT89S5X implementations }
-procedure TFormMain.AT89S5X_Update_Chip(setting: TTargetSetting);
-var
-  mode_str, str_tmp: string;
-begin
-  mode_str := setting.mode;
-  str_tmp  := cbboxMode.Text;
-  cbboxMode.Clear;
-  if Pos('p', mode_str) > 0 then
-  begin
-    cbboxMode.Items.Add('p:Page');
-  end;
-  if Pos('b', mode_str) > 0 then
-  begin
-    cbboxMode.Items.Add('b:Byte');
-  end;
-
-  if cbboxMode.Items.IndexOf(str_tmp) >= 0 then
-  begin
-    cbboxMode.ItemIndex := cbboxMode.Items.IndexOf(str_tmp);
-  end
-  else
-  begin
-    cbboxMode.ItemIndex := 0;
-  end;
-end;
-
-function TFormMain.AT89S5X_Init_Para(line: string; var setting: TTargetSetting): boolean;
-begin
-  line := line;
-
-  setting.mode := 'pb';
-  setting.target := FLASH_CHAR + LOCK_CHAR;
-  setting.lock_bytelen := 1;
-  setting.lock_default := 1;
-  Result := True;
-end;
-
-function TFormMain.AT89S5X_Init(): boolean;
-var
-  setting: TTargetSetting;
-begin
-  Result := True;
-
-  cbboxTarget.Clear;
-  cbboxTarget.Items.Add('at89s5x');
-
-  VSProg_TargetSettingInit(setting);
-  setting.mode   := 'pb';
-  setting.target := FLASH_CHAR + LOCK_CHAR;
-  setting.lock_bytelen := 1;
-  setting.lock_default := 1;
-  VSProg_AddTargetSetting(setting);
-  AddTargetFile('ALL', False, 0, 0, 0);
-
-  // call 'vsprog -Sat89s5x' to extract supported at89s5x targets
-  VSProg_Caller.AddParameter('Sat89s5x');
-  VSProg_Parser.CallbackFunc    := @VSProg_SupportParserCallback;
-  VSProg_Parser.LogOutputEnable := False;
-  if VSProg_RunAlgorithm(VSProg_Caller, @VSProg_Parser.SupportParser, 0) then
-  begin
-    cbboxTarget.ItemIndex := 0;
-  end
-  else
-  begin
-    tsAT89S5X.Enabled := False;
-    Result := False;
-    exit;
-  end;
-
-  // Frequency, Autodetect
-  VSProg_CommonInit('FA');
-end;
-
-{ MSP430 implementations }
-function TFormMain.MSP430_Init_Para(line: string; var setting: TTargetSetting): boolean;
-begin
-  GetStringParameter(line, 'prog_mode', setting.mode);
-  setting.target := FLASH_CHAR;
-  Result := True;
-end;
-
-function TFormMain.MSP430_Init(): boolean;
-var
-  setting: TTargetSetting;
-begin
-  Result := True;
-
-  cbboxTarget.Clear;
-  cbboxTarget.Items.Add('msp430');
-
-  VSProg_TargetSettingInit(setting);
-  setting.mode   := 'jsb';
-  setting.target := FLASH_CHAR;
-  VSProg_AddTargetSetting(setting);
-  AddTargetFile('ALL', False, 0, 0, 0);
-
-  // call 'vsprog -Smsp430' to extract supported at89s5x targets
-  VSProg_Caller.AddParameter('Smsp430');
-  VSProg_Parser.CallbackFunc    := @VSProg_SupportParserCallback;
-  VSProg_Parser.LogOutputEnable := False;
-  if VSProg_RunAlgorithm(VSProg_Caller, @VSProg_Parser.SupportParser, 0) then
-  begin
-    cbboxTarget.ItemIndex := 0;
-  end
-  else
-  begin
-    tsMSP430.Enabled := False;
-    Result := False;
-    exit;
-  end;
-
-  // flash, Autodetect
-  VSProg_CommonInit('A');
-end;
-
-procedure TFormMain.MSP430_Update_Chip(setting: TTargetSetting);
-var
-  str_tmp:  string;
-  mode_str: string;
-begin
-  mode_str := setting.mode;
-  str_tmp  := cbboxMode.Text;
-  cbboxMode.Clear;
-  if Pos('j', mode_str) > 0 then
-  begin
-    cbboxMode.Items.Add('j:JTAG');
-  end;
-  if Pos('s', mode_str) > 0 then
-  begin
-    cbboxMode.Items.Add('s:SBW');
-  end;
-  if Pos('b', mode_str) > 0 then
-  begin
-    cbboxMode.Items.Add('b:BSL');
-  end;
-
-  if cbboxMode.Items.IndexOf(str_tmp) >= 0 then
-  begin
-    cbboxMode.ItemIndex := cbboxMode.Items.IndexOf(str_tmp);
-  end
-  else
-  begin
-    cbboxMode.ItemIndex := 0;
-  end;
-end;
-
-{ STM8 implementations }
-function TFormMain.STM8_Init(): boolean;
-var
-  setting: TTargetSetting;
-begin
-  Result := True;
-
-  cbboxTarget.Clear;
-  cbboxTarget.Items.Add('stm8');
-
-  VSProg_TargetSettingInit(setting);
-  setting.target := FLASH_CHAR;
-  VSProg_AddTargetSetting(setting);
-  AddTargetFile('ALL', False, 0, 0, 0);
-
-  // call 'vsprog -Sstm8' to extract supported at89s5x targets
-  VSProg_Caller.AddParameter('Sstm8');
-  VSProg_Parser.CallbackFunc    := @VSProg_SupportParserCallback;
-  VSProg_Parser.LogOutputEnable := False;
-  if VSProg_RunAlgorithm(VSProg_Caller, @VSProg_Parser.SupportParser, 0) then
-  begin
-    cbboxTarget.ItemIndex := 0;
-  end
-  else
-  begin
-    tsSTM8.Enabled := False;
-    Result := False;
-    exit;
-  end;
-
-  // Autodetect
-  VSProg_CommonInit('A');
-end;
-
-{ EEPROM implementations }
-function TFormMain.EEPROM_Init(): boolean;
-begin
-  Result := True;
-
-  cbboxTarget.Clear;
-end;
-
-{ ARM functions }
-function TFormMain.ARM_Init(): boolean;
+{ OpenOCD functions }
+function TFormMain.OpenOCD_Init(): boolean;
 var
   SearchResult: TSearchRec;
   index: integer;
@@ -3021,354 +2139,6 @@ begin
   end;
 
   Result := True;
-end;
-
-{ AVR8 implementations }
-function TFormMain.AVR8_Init(): boolean;
-var
-  setting: TTargetSetting;
-begin
-  Result := True;
-
-  cbboxTarget.Clear;
-  cbboxTarget.Items.Add('avr8');
-
-  VSProg_TargetSettingInit(setting);
-  setting.mode   := 'ijps';
-  setting.target := FLASH_CHAR + FUSE_CHAR + LOCK_CHAR + CALI_CHAR + EEPROM_CHAR;
-  setting.fuse_bytelen := 3;
-  setting.fuse_default := $FFFFFF;
-  setting.lock_bytelen := 1;
-  setting.lock_default := $FF;
-  setting.cali_bytelen := 4;
-  setting.cali_default := $FFFFFFFF;
-  VSProg_AddTargetSetting(setting);
-  AddTargetFile('Flash', False, 0, 0, 0);
-  AddTargetFile('EEPROM', True, 2, 0, 0);
-
-  // call 'vsprog -Savr8' to extract supported avr8 targets
-  VSProg_Caller.AddParameter('Savr8');
-  VSProg_Parser.CallbackFunc    := @VSProg_SupportParserCallback;
-  VSProg_Parser.LogOutputEnable := False;
-  if VSProg_RunAlgorithm(VSProg_Caller, @VSProg_Parser.SupportParser, 0) then
-  begin
-    cbboxTarget.ItemIndex := 0;
-  end
-  else
-  begin
-    tsAVR8.Enabled := False;
-    Result := False;
-    exit;
-  end;
-
-  // Autodetect, Frequency
-  VSProg_CommonInit('AF');
-end;
-
-function TFormMain.AVR8_Init_Para(line: string; var setting: TTargetSetting): boolean;
-var
-  size: integer;
-begin
-  GetStringParameter(line, 'prog_mode', setting.mode);
-  size := 0;
-  GetIntegerParameter(line, 'eeprom_size', size);
-  if size > 0 then
-  begin
-    setting.target := FLASH_CHAR + FUSE_CHAR + LOCK_CHAR + CALI_CHAR + EEPROM_CHAR;
-  end
-  else
-  begin
-    setting.target := FLASH_CHAR + FUSE_CHAR + LOCK_CHAR + CALI_CHAR;
-  end;
-  Result := True;
-end;
-
-procedure TFormMain.AVR8_Update_Chip(setting: TTargetSetting);
-var
-  str_tmp, mode_str: string;
-begin
-  mode_str := setting.mode;
-  str_tmp  := cbboxMode.Text;
-  cbboxMode.Clear;
-  if Pos('i', mode_str) > 0 then
-  begin
-    cbboxMode.Items.Add('i:ISP');
-  end;
-  if Pos('j', mode_str) > 0 then
-  begin
-    cbboxMode.Items.Add('j:JTAG');
-  end;
-  if Pos('p', mode_str) > 0 then
-  begin
-    cbboxMode.Items.Add('p:HVPP');
-  end;
-  if Pos('s', mode_str) > 0 then
-  begin
-    cbboxMode.Items.Add('s:HVSP');
-  end;
-
-  if cbboxMode.Items.IndexOf(str_tmp) >= 0 then
-  begin
-    cbboxMode.ItemIndex := cbboxMode.Items.IndexOf(str_tmp);
-  end
-  else
-  begin
-    cbboxMode.ItemIndex := 0;
-    AVR8_Update_Mode(cbboxMode.Text);
-  end;
-
-  str_tmp := setting.target;
-  if Pos(FLASH_CHAR, str_tmp) > 0 then
-  begin
-    AddTargetFile('Flash', False, 0, 0, 0);
-  end
-  else
-  begin
-    RemoveTargetFile('Flash');
-  end;
-  if Pos(EEPROM_CHAR, str_tmp) > 0 then
-  begin
-    AddTargetFile('EEPROM', True, 2, 0, 0);
-  end
-  else
-  begin
-    RemoveTargetFile('EEPROM');
-  end;
-
-  // Fuse, Lock and Cali are not enabled by default
-  chkboxEE.Checked   := False;
-  chkboxFuse.Checked := False;
-  chkboxLock.Checked := False;
-  chkboxCali.Checked := False;
-end;
-
-procedure TFormMain.AVR8_Update_Mode(m_str: string);
-begin
-  if m_str = 'i:ISP' then
-  begin
-    lbledtFreq.Hint    := FREQ_HINT;
-    lbledtFreq.Enabled := True;
-  end
-  else
-  begin
-    lbledtFreq.Enabled := False;
-  end;
-end;
-
-{ COMISP declarations }
-function TFormMain.COMISP_Init(): boolean;
-begin
-  Result := True;
-
-  cbboxTarget.Clear;
-
-  // call 'vsprog -Scomisp' to extract supported comisp targets
-  VSProg_Caller.AddParameter('Scomisp');
-  VSProg_Parser.CallbackFunc    := @VSProg_SupportParserCallback;
-  VSProg_Parser.LogOutputEnable := False;
-  if VSProg_RunAlgorithm(VSProg_Caller, @VSProg_Parser.SupportParser, 0) then
-  begin
-    cbboxTarget.ItemIndex := 0;
-  end
-  else
-  begin
-    tsCOMISP.Enabled := False;
-    Result := False;
-    exit;
-  end;
-
-  VSProg_CommonInit('CX');
-end;
-
-function TFormMain.COMISP_Init_Para(line: string; var setting: TTargetSetting): boolean;
-begin
-  setting.extra  := line;
-  setting.target := FLASH_CHAR;
-
-  Result := True;
-end;
-
-procedure TFormMain.COMISP_Update_Chip(setting: TTargetSetting);
-var
-  str_tmp:     string;
-  setting_str: string;
-begin
-  str_tmp := '';
-
-  if cbboxTarget.Text = 'comisp_stm32' then
-  begin
-    // STM32
-    AddTargetFile('Flash', False, 0, 0, $08000000);
-  end
-  else
-  begin
-    AddTargetFile('Flash', False, 0, 0, 0);
-  end;
-
-  setting_str := setting.extra;
-  GetIntegerParameter(setting_str, 'baudrate', ComModeInit.baudrate);
-  GetIntegerParameter(setting_str, 'datalength', ComModeInit.datalength);
-  GetStringParameter(setting_str, 'paritybit', str_tmp);
-  if str_tmp <> '' then
-  begin
-    ComModeInit.paritybit := str_tmp[1];
-  end;
-  GetStringParameter(setting_str, 'stopbit', str_tmp);
-  if str_tmp <> '' then
-  begin
-    ComModeInit.stopbit := str_tmp[1];
-  end;
-  GetStringParameter(setting_str, 'handshake', str_tmp);
-  if str_tmp <> '' then
-  begin
-    ComModeInit.handshake := str_tmp[1];
-  end;
-  GetStringParameter(setting_str, 'auxpin', str_tmp);
-  if str_tmp <> '' then
-  begin
-    ComModeInit.auxpin := str_tmp[1];
-  end;
-  FormComSetup.ComInitPara(ComModeInit);
-end;
-
-{ LPCICP implementations }
-function TFormMain.LPCICP_Init(): boolean;
-var
-  setting: TTargetSetting;
-begin
-  Result := True;
-
-  cbboxTarget.Clear;
-  cbboxTarget.Items.Add('lpc900');
-
-  VSProg_TargetSettingInit(setting);
-  setting.target := FLASH_CHAR;
-  VSProg_AddTargetSetting(setting);
-  AddTargetFile('ALL', False, 0, 0, 0);
-
-  // call 'vsprog -Scomisp' to extract supported comisp targets
-  VSProg_Caller.AddParameter('Slpc900');
-  VSProg_Parser.CallbackFunc    := @VSProg_SupportParserCallback;
-  VSProg_Parser.LogOutputEnable := False;
-  if VSProg_RunAlgorithm(VSProg_Caller, @VSProg_Parser.SupportParser, 0) then
-  begin
-    cbboxTarget.ItemIndex := 0;
-  end
-  else
-  begin
-    tsLPCICP.Enabled := False;
-    Result := False;
-    exit;
-  end;
-
-  // Autodetect
-  VSProg_CommonInit('A');
-end;
-
-function TFormMain.LPCICP_Init_Para(line: string; var setting: TTargetSetting): boolean;
-begin
-  line := line;
-
-  setting.target := FLASH_CHAR;
-  Result := True;
-end;
-
-procedure TFormMain.LPCICP_Update_Chip(setting: TTargetSetting);
-begin
-  setting := setting;
-end;
-
-{ CortexM3 implementations }
-function TFormMain.CortexM3_Init(): boolean;
-begin
-  Result := True;
-
-  cbboxTarget.Clear;
-
-  // call 'vsprog -Scm3' to extract supported comisp targets
-  VSProg_Caller.AddParameter('Scm3');
-  VSProg_Parser.CallbackFunc    := @VSProg_SupportParserCallback;
-  VSProg_Parser.LogOutputEnable := False;
-  if VSProg_RunAlgorithm(VSProg_Caller, @VSProg_Parser.SupportParser, 0) then
-  begin
-    cbboxTarget.ItemIndex := 0;
-  end
-  else
-  begin
-    tsCortexM3.Enabled := False;
-    Result := False;
-    exit;
-  end;
-
-  VSProg_CommonInit('F');
-end;
-
-function TFormMain.CortexM3_Init_Para(line: string;
-  var setting: TTargetSetting): boolean;
-begin
-  line := line;
-
-  setting.mode := 'js';
-  setting.target := FLASH_CHAR;
-  Result := True;
-end;
-
-procedure TFormMain.CortexM3_Update_Chip(setting: TTargetSetting);
-var
-  str_tmp: string;
-begin
-  str_tmp := cbboxMode.Text;
-  cbboxMode.Clear;
-
-  if cbboxTarget.Text = 'cm3_stm32' then
-  begin
-    // STM32
-    AddTargetFile('Flash', False, 0, 0, $08000000);
-  end
-  else
-  begin
-    AddTargetFile('Flash', False, 0, 0, 0);
-  end;
-
-  if setting.mode = '' then
-  begin
-    cbboxMode.Items.Add('j:JTAG');
-    cbboxMode.Items.Add('s:SWJ');
-  end
-  else
-  begin
-    if Pos('j', setting.mode) > 0 then
-    begin
-      cbboxMode.Items.Add('j:JTAG');
-    end;
-    if Pos('s', setting.mode) > 0 then
-    begin
-      cbboxMode.Items.Add('s:SWJ');
-    end;
-  end;
-
-  if cbboxMode.Items.IndexOf(str_tmp) >= 0 then
-  begin
-    cbboxMode.ItemIndex := cbboxMode.Items.IndexOf(str_tmp);
-  end
-  else
-  begin
-    cbboxMode.ItemIndex := 0;
-    CortexM3_Update_Mode(cbboxMode.Text);
-  end;
-end;
-
-procedure TFormMain.CortexM3_Update_Mode(m_str: string);
-begin
-  if m_str = 'j:JTAG' then
-  begin
-    lbledtFreq.Hint    := FREQ_HINT;
-    lbledtFreq.Enabled := True;
-  end
-  else
-  begin
-    lbledtFreq.Enabled := False;
-  end;
 end;
 
 initialization

@@ -26,7 +26,7 @@ RESULT versaloon_init_capability(void *p);
 uint32_t versaloon_display_programmer(void);
 
 #include "vsprog.h"
-extern misc_cmd_t versaloon_cmd[];
+extern struct misc_cmd_t versaloon_cmd[];
 
 #endif /* __VERSALOON_H_INCLUDED__ */
 

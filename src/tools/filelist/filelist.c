@@ -30,7 +30,7 @@
 
 #include "filelist.h"
 
-static void FILELIST_InsertLast(filelist *fl, filelist *newitem)
+static void FILELIST_InsertLast(struct filelist *fl, struct filelist *newitem)
 {
 	if (NULL == fl)
 	{
@@ -45,7 +45,7 @@ static void FILELIST_InsertLast(filelist *fl, filelist *newitem)
 	sllint_insert(fl->list, newitem->list);
 }
 
-RESULT FILELIST_Open(filelist *fl, char *attr)
+RESULT FILELIST_Open(struct filelist *fl, char *attr)
 {
 	if (NULL == fl)
 	{
@@ -67,17 +67,17 @@ RESULT FILELIST_Open(filelist *fl, char *attr)
 	return ERROR_OK;
 }
 
-RESULT FILELIST_Add(filelist **fl, char *path, uint32_t seg_offset, 
+RESULT FILELIST_Add(struct filelist **fl, char *path, uint32_t seg_offset, 
 					uint32_t addr_offset)
 {
-	filelist *newitem = NULL;
+	struct filelist *newitem = NULL;
 	
 	if (NULL == fl)
 	{
 		return ERROR_FAIL;
 	}
 	
-	newitem = (filelist*)malloc(sizeof(filelist));
+	newitem = (struct filelist*)malloc(sizeof(struct filelist));
 	if (NULL == newitem)
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
@@ -111,9 +111,9 @@ RESULT FILELIST_Add(filelist **fl, char *path, uint32_t seg_offset,
 	return ERROR_OK;
 }
 
-void FILELIST_Free(filelist **fl)
+void FILELIST_Free(struct filelist **fl)
 {
-	filelist *tmp1, *tmp2;
+	struct filelist *tmp1, *tmp2;
 	
 	if (NULL == fl)
 	{

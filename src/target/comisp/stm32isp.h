@@ -53,7 +53,8 @@
 #define STM32ISP_PAGE_SIZE_RX			256
 #define STM32ISP_PAGE_SIZE				256
 
-RESULT stm32isp_program(operation_t operations, program_info_t *pi);
+RESULT stm32isp_program(struct operation_t operations, 
+						struct program_info_t *pi);
 
 #endif /* __STM32ISP_H_INCLUDED__ */
 

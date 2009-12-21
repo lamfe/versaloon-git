@@ -52,15 +52,14 @@
 #define cur_chips_param				cm3_chips_param
 #define cur_flash_offset			cm3_flash_offset
 #define cur_prog_mode				program_mode
-#define cur_frequency				cm3_frequency
 #define cur_buffer_size				cm3_buffer_size
 #define cur_target_defined			target_defined
 #define cur_program_area_map		cm3_program_area_map
 
-program_area_map_t cm3_program_area_map[] = 
+struct program_area_map_t cm3_program_area_map[] = 
 {
-	{APPLICATION, APPLICATION_CHAR, 1, 0, 0, 0xFF},
-//	{LOCK, LOCK_CHAR, 0, 0, 0, 0},
+	{APPLICATION_CHAR, 1, 0, 0, 0, 0},
+//	{LOCK_CHAR, 0, 0, 0, 0, 0},
 	{0, 0, 0, 0, 0, 0}
 };
 
@@ -68,16 +67,15 @@ program_area_map_t cm3_program_area_map[] =
 #define CM3_LPC1700		1
 #define CM3_LM3S		2
 #define CM3_SAM3		3
-const cm3_param_t cm3_chips_param[] = {
+const struct cm3_param_t cm3_chips_param[] = {
 //	chip_name,		default_char,		flash_start_addr,	flash_max_size,	jtag_khz,		pos			swj_trn
 	{"cm3_stm32",	STM32_FLASH_CHAR,	0x08000000,			512 * 1024,		STM32_JTAG_KHZ,	{0,1,0,5},	2},
 };
 static uint8_t cm3_chip_index = 0;
-cm3_param_t cm3_chip_param;
+struct cm3_param_t cm3_chip_param;
 
 uint8_t cm3_execute_flag = 0;
 uint32_t cm3_execute_addr = 0;
-uint16_t cm3_frequency = 0;
 uint16_t cm3_buffer_size = 0;
 
 static uint32_t cm3_flash_offset = 0;
@@ -87,19 +85,17 @@ static void cm3_usage(void)
 	printf("\
 Usage of %s:\n\
   -m,  --mode <MODE>                        set mode<j|s>\n\
-  -F,  --frequency <FREQUENCY>              set JTAG/SWJ frequency, in KHz\n\n", 
+  -F,  --frequency <FREQUENCY>              set JTAG/SWJ frequency, in KHz\n\n",
 		   CUR_TARGET_STRING);
 }
 
 static void cm3_support(void)
 {
 	uint32_t i;
-
-	printf("Support list of %s:\n", CUR_TARGET_STRING);
+	
 	for (i = 0; i < dimof(cur_chips_param); i++)
 	{
-		printf("\
-%s: \n",
+		printf("%s: \n",
 				cur_chips_param[i].chip_name);
 	}
 	printf("\n");
@@ -125,17 +121,6 @@ RESULT cm3_parse_argument(char cmd, const char *argu)
 		
 		cur_buffer_size = (uint16_t)strtoul(argu, NULL, 0);
 		break;
-	case 'F':
-		// set Frequency
-		if (NULL == argu)
-		{
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), cmd);
-			return ERRCODE_INVALID_OPTION;
-		}
-		
-		cur_frequency = (uint16_t)strtoul(argu, NULL, 0);
-		
-		break;
 	default:
 		return ERROR_FAIL;
 		break;
@@ -159,11 +144,13 @@ RESULT cm3_probe_chip(char *chip_name)
 	return ERROR_FAIL;
 }
 
-RESULT cm3_prepare_buffer(program_info_t *pi)
+RESULT cm3_prepare_buffer(struct program_info_t *pi)
 {
-	if (pi->app != NULL)
+	if (pi->program_areas[APPLICATION_IDX].buff != NULL)
 	{
-		memset(pi->app, cur_chip_param.default_char, pi->app_size);
+		memset(pi->program_areas[APPLICATION_IDX].buff, 
+				cur_chip_param.default_char, 
+				pi->program_areas[APPLICATION_IDX].size);
 	}
 	else
 	{
@@ -174,14 +161,15 @@ RESULT cm3_prepare_buffer(program_info_t *pi)
 }
 
 RESULT cm3_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr, 
-										   uint8_t* data, uint32_t length, 
-										   void* buffer)
+								uint8_t* data, uint32_t length, void* buffer)
 {
-	program_info_t *pi = (program_info_t *)buffer;
+	struct program_info_t *pi = (struct program_info_t *)buffer;
 	uint32_t mem_addr = address, page_size;
 	RESULT ret;
+	uint8_t *tbuff;
 	
 	seg_addr = seg_addr;
+	tbuff = pi->program_areas[APPLICATION_IDX].buff;
 	
 #ifdef PARAM_CHECK
 	if ((length > 0) && (NULL == data))
@@ -189,7 +177,7 @@ RESULT cm3_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr,
 		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_PARAMETER), __FUNCTION__);
 		return ERRCODE_INVALID_PARAMETER;
 	}
-	if (NULL == pi->app)
+	if (NULL == tbuff)
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_BUFFER), 
 				  "pi->app");
@@ -209,7 +197,7 @@ RESULT cm3_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr,
 	}
 	cur_target_defined |= APPLICATION;
 	
-	memcpy(pi->app + mem_addr - cur_chip_param.flash_start_addr, 
+	memcpy(tbuff + mem_addr - cur_chip_param.flash_start_addr, 
 		   data, length);
 	
 	switch (cm3_chip_index)
@@ -224,7 +212,8 @@ RESULT cm3_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr,
 		return ERRCODE_INVALID;
 	}
 	
-	ret = MEMLIST_Add(&pi->app_memlist, mem_addr, length, page_size);
+	ret = MEMLIST_Add(&pi->program_areas[APPLICATION_IDX].memlist, mem_addr, 
+						length, page_size);
 	if (ret != ERROR_OK)
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "add memory list");
@@ -234,7 +223,7 @@ RESULT cm3_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr,
 	return ERROR_OK;
 }
 
-RESULT cm3_fini(program_info_t *pi, programmer_info_t *prog)
+RESULT cm3_fini(struct program_info_t *pi, struct programmer_info_t *prog)
 {
 	pi = pi;
 	prog = prog;
@@ -242,7 +231,7 @@ RESULT cm3_fini(program_info_t *pi, programmer_info_t *prog)
 	return ERROR_OK;
 }
 
-RESULT cm3_init(program_info_t *pi, programmer_info_t *prog)
+RESULT cm3_init(struct program_info_t *pi, struct programmer_info_t *prog)
 {
 	uint8_t i;
 	
@@ -272,9 +261,10 @@ RESULT cm3_init(program_info_t *pi, programmer_info_t *prog)
 				memcpy(&cur_chip_param, cur_chips_param + cm3_chip_index, 
 					   sizeof(cur_chip_param));
 				
-				pi->app_size = cur_chip_param.flash_max_size;
+				pi->program_areas[APPLICATION_IDX].size = 
+										cur_chip_param.flash_max_size;
 				
-				cur_program_area_map[0].area_start_addr = 
+				cur_program_area_map[0].start_addr = 
 										cur_chips_param[i].flash_start_addr;
 				
 				return ERROR_OK;
@@ -299,8 +289,8 @@ uint32_t cm3_interface_needed(void)
 
 
 #define get_target_voltage(v)					prog->get_target_voltage(v)
-RESULT cm3_program(operation_t operations, program_info_t *pi, 
-					  programmer_info_t *prog)
+RESULT cm3_program(struct operation_t operations, struct program_info_t *pi, 
+					  struct programmer_info_t *prog)
 {
 	RESULT ret = ERROR_OK;
 	adi_dp_if_t dp;
@@ -329,9 +319,9 @@ RESULT cm3_program(operation_t operations, program_info_t *pi,
 	switch(cur_prog_mode)
 	{
 	case ADI_DP_JTAG:
-		if (cm3_frequency)
+		if (program_frequency)
 		{
-			dp.adi_dp_if_info.adi_dp_jtag.jtag_khz = cm3_frequency;
+			dp.adi_dp_if_info.adi_dp_jtag.jtag_khz = program_frequency;
 		}
 		else
 		{

@@ -54,14 +54,14 @@
 #define SWJ_PARITY_ERROR		0x04
 
 // JTAG
-typedef struct
+struct jtag_pos_t
 {
 	uint8_t ub;		// units before
 	uint8_t ua;		// bits before
 	uint16_t bb;		// units after
 	uint16_t ba;		// bits after
-}jtag_pos_t;
-extern jtag_pos_t target_jtag_pos;
+};
+extern struct jtag_pos_t target_jtag_pos;
 
 #define JTAG_SRST				(1 << 0)
 #define JTAG_TRST				(1 << 1)

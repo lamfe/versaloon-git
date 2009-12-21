@@ -54,17 +54,17 @@
 #define cur_target_defined			target_defined
 #define cur_program_area_map		comisp_program_area_map
 
-program_area_map_t comisp_program_area_map[] = 
+struct program_area_map_t comisp_program_area_map[] = 
 {
-	{APPLICATION, APPLICATION_CHAR, 1, 0, 0, 0xFF},
-//	{LOCK, LOCK_CHAR, 0, 0, 0, 0},
+	{APPLICATION_CHAR, 1, 0, 0, 0, 0},
+//	{LOCK_CHAR, 0, 0, 0, 0, 0},
 	{0, 0, 0, 0, 0, 0}
 };
 
 #define COMISP_STM32		0
 #define COMISP_LPCARM		1
 #define COMISP_TEST			2
-const comisp_param_t comisp_chips_param[] = {
+const struct comisp_param_t comisp_chips_param[] = {
 //	chip_name,			com_mode,																												default_char,		flash_start_addr,	flash_max_size
 //						{comport,	baudrate,	datalength,	paritybit,			stopbit,		handshake,				aux_pin}	
 	{"comisp_stm32",	{"",		-1,			8,			COMM_PARITYBIT_EVEN,COMM_STOPBIT_1,	COMM_PARAMETER_UNSURE,	COMM_PARAMETER_UNSURE},	STM32_FLASH_CHAR,	0x08000000,			512 * 1024},
@@ -72,12 +72,12 @@ const comisp_param_t comisp_chips_param[] = {
 	{"comisp_test",		{"",		-1,			8,			COMM_PARITYBIT_NONE,COMM_STOPBIT_1,	COMM_PARAMETER_UNSURE,	COMM_PARAMETER_UNSURE},	0x00,				0x00000000,			512 * 1024},
 };
 static uint8_t comisp_chip_index = 0;
-comisp_param_t comisp_chip_param;
+struct comisp_param_t comisp_chip_param;
 
 uint8_t comisp_execute_flag = 0;
 uint32_t comisp_execute_addr = 0;
 
-com_mode_t com_mode = 
+struct com_mode_t com_mode = 
 {"", 115200, 8, COMM_PARITYBIT_NONE, COMM_STOPBIT_1, 
 COMM_HANDSHAKE_NONE, COMM_AUXPIN_DISABLE};
 
@@ -96,8 +96,7 @@ Usage of %s:\n\
 static void comisp_support(void)
 {
 	uint32_t i;
-
-	printf("Support list of %s:\n", CUR_TARGET_STRING);
+	
 	for (i = 0; i < dimof(cur_chips_param); i++)
 	{
 		printf("\
@@ -247,11 +246,13 @@ RESULT comisp_probe_chip(char *chip_name)
 	return ERROR_FAIL;
 }
 
-RESULT comisp_prepare_buffer(program_info_t *pi)
+RESULT comisp_prepare_buffer(struct program_info_t *pi)
 {
-	if (pi->app != NULL)
+	if (pi->program_areas[APPLICATION_IDX].buff != NULL)
 	{
-		memset(pi->app, cur_chip_param.default_char, pi->app_size);
+		memset(pi->program_areas[APPLICATION_IDX].buff, 
+				cur_chip_param.default_char, 
+				pi->program_areas[APPLICATION_IDX].size);
 	}
 	else
 	{
@@ -261,15 +262,16 @@ RESULT comisp_prepare_buffer(program_info_t *pi)
 	return ERROR_OK;
 }
 
-RESULT comisp_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr, 
-											  uint8_t* data, uint32_t length, 
-											  void* buffer)
+RESULT comisp_write_buffer_from_file_callback(uint32_t address, 
+			uint32_t seg_addr, uint8_t* data, uint32_t length, void* buffer)
 {
-	program_info_t *pi = (program_info_t *)buffer;
+	struct program_info_t *pi = (struct program_info_t *)buffer;
 	uint32_t mem_addr = address, page_size;
 	RESULT ret;
+	uint8_t *tbuff;
 	
 	seg_addr = seg_addr;
+	tbuff = pi->program_areas[APPLICATION_IDX].buff;
 	
 #ifdef PARAM_CHECK
 	if ((length > 0) && (NULL == data))
@@ -277,7 +279,7 @@ RESULT comisp_write_buffer_from_file_callback(uint32_t address, uint32_t seg_add
 		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_PARAMETER), __FUNCTION__);
 		return ERRCODE_INVALID_PARAMETER;
 	}
-	if (NULL == pi->app)
+	if (NULL == tbuff)
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_BUFFER), 
 				  "pi->app");
@@ -297,8 +299,7 @@ RESULT comisp_write_buffer_from_file_callback(uint32_t address, uint32_t seg_add
 	}
 	cur_target_defined |= APPLICATION;
 	
-	memcpy(pi->app + mem_addr - cur_chip_param.flash_start_addr, 
-		   data, length);
+	memcpy(tbuff + mem_addr - cur_chip_param.flash_start_addr, data, length);
 	
 	switch (comisp_chip_index)
 	{
@@ -315,7 +316,8 @@ RESULT comisp_write_buffer_from_file_callback(uint32_t address, uint32_t seg_add
 		return ERRCODE_INVALID;
 	}
 	
-	ret = MEMLIST_Add(&pi->app_memlist, mem_addr, length, page_size);
+	ret = MEMLIST_Add(&pi->program_areas[APPLICATION_IDX].memlist, mem_addr, 
+						length, page_size);
 	if (ret != ERROR_OK)
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "add memory list");
@@ -325,7 +327,7 @@ RESULT comisp_write_buffer_from_file_callback(uint32_t address, uint32_t seg_add
 	return ERROR_OK;
 }
 
-RESULT comisp_fini(program_info_t *pi, programmer_info_t *prog)
+RESULT comisp_fini(struct program_info_t *pi, struct programmer_info_t *prog)
 {
 	pi = pi;
 	prog = prog;
@@ -338,7 +340,7 @@ RESULT comisp_fini(program_info_t *pi, programmer_info_t *prog)
 	return ERROR_OK;
 }
 
-RESULT comisp_init(program_info_t *pi, programmer_info_t *prog)
+RESULT comisp_init(struct program_info_t *pi, struct programmer_info_t *prog)
 {
 	uint8_t i;
 	
@@ -368,9 +370,10 @@ RESULT comisp_init(program_info_t *pi, programmer_info_t *prog)
 				memcpy(&cur_chip_param, cur_chips_param + comisp_chip_index, 
 					   sizeof(cur_chip_param));
 				
-				pi->app_size = cur_chip_param.flash_max_size;
+				pi->program_areas[APPLICATION_IDX].size = 
+										cur_chip_param.flash_max_size;
 				
-				cur_program_area_map[0].area_start_addr = 
+				cur_program_area_map[0].start_addr = 
 										cur_chips_param[i].flash_start_addr;
 				
 				return ERROR_OK;
@@ -387,8 +390,8 @@ uint32_t comisp_interface_needed(void)
 	return 0;
 }
 
-RESULT comisp_program(operation_t operations, program_info_t *pi, 
-					  programmer_info_t *prog)
+RESULT comisp_program(struct operation_t operations, struct program_info_t *pi, 
+					  struct programmer_info_t *prog)
 {
 	RESULT ret = ERROR_OK;
 	uint32_t retry;
@@ -401,8 +404,7 @@ RESULT comisp_program(operation_t operations, program_info_t *pi,
 	if (!strlen(com_mode.comport))
 	{
 		strncpy(com_mode.comport, DEFAULT_COMPORT, sizeof(com_mode.comport));
-		LOG_WARNING(_GETTEXT(INFOMSG_USE_DEFAULT), "Com port", 
-					DEFAULT_COMPORT);
+		LOG_WARNING(_GETTEXT(INFOMSG_USE_DEFAULT), "Com port", DEFAULT_COMPORT);
 	}
 	
 	switch(comisp_chip_index)
@@ -471,8 +473,7 @@ RESULT comisp_program(operation_t operations, program_info_t *pi,
 			if (comm_ret != (int32_t)comisp_test_buffsize)
 			{
 				LOG_ERROR("Fail to send %d bytes, %d bytes sent.\n", 
-						  comisp_test_buffsize, 
-						  comm_ret);
+							comisp_test_buffsize, comm_ret);
 				ret = ERROR_FAIL;
 				goto comtest_end;
 			}
@@ -482,15 +483,14 @@ RESULT comisp_program(operation_t operations, program_info_t *pi,
 			if (comm_ret < 0)
 			{
 				LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_HANDLE_DEVICE), 
-						  "read", com_mode.comport);
+							"read", com_mode.comport);
 				ret = ERRCODE_FAILURE_OPERATION;
 				goto comtest_end;
 			}
 			if (comm_ret != (int32_t)comisp_test_buffsize)
 			{
 				LOG_ERROR("Fail to receive %d bytes, %d bytes received.\n", 
-						  comisp_test_buffsize, 
-						  comm_ret);
+							comisp_test_buffsize, comm_ret);
 				ret = ERROR_FAIL;
 			}
 			// check

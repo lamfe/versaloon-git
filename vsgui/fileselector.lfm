@@ -31,6 +31,7 @@ object FormFileSelector: TFormFileSelector
       Caption = '&OK'
       Default = True
       ModalResult = 1
+      OnClick = btnOKClick
       TabOrder = 0
     end
     object btnCancel: TButton

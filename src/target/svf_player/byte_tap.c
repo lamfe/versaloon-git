@@ -66,22 +66,22 @@ const uint8_t tap_move[6][6] =
 	{0xff,	0x60,	0x38,	0x5c,	0x40,	0x5e}	// IRPAUSE
 };
 
-tap_state_t end_state = IDLE;
-tap_state_t cur_state = IDLE;
+enum tap_state_t end_state = IDLE;
+enum tap_state_t cur_state = IDLE;
 uint8_t tap_tms_remain = 0;
 
-uint8_t tap_state_is_stable(tap_state_t state)
+uint8_t tap_state_is_stable(enum tap_state_t state)
 {
 	return ((RESET == state) || (IDLE == state) 
 			|| (DRPAUSE == state) || (IRPAUSE == state));
 }
 
-uint8_t tap_state_is_valid(tap_state_t state)
+uint8_t tap_state_is_valid(enum tap_state_t state)
 {
 	return (state < TAP_NUM_OF_STATE);
 }
 
-RESULT tap_end_state(tap_state_t state)
+RESULT tap_end_state(enum tap_state_t state)
 {
 	if (tap_state_is_valid(state))
 	{
@@ -139,7 +139,7 @@ RESULT tap_state_move(void)
 	return ERROR_OK;
 }
 
-RESULT tap_path_move(uint32_t num_states, tap_state_t *path)
+RESULT tap_path_move(uint32_t num_states, enum tap_state_t *path)
 {
 	if ((2 == num_states) && (RESET == path[0]) && (IDLE == path[1]))
 	{
@@ -169,7 +169,7 @@ RESULT tap_path_move(uint32_t num_states, tap_state_t *path)
 	}
 }
 
-RESULT tap_runtest(tap_state_t run_state, tap_state_t end_state, 
+RESULT tap_runtest(enum tap_state_t run_state, enum tap_state_t end_state, 
 				   uint32_t num_cycles)
 {
 	uint8_t buffer0, tms;
@@ -275,7 +275,7 @@ RESULT tap_runtest(tap_state_t run_state, tap_state_t end_state,
 
 RESULT tap_scan_ir(uint8_t *buffer, uint32_t bit_size)
 {
-	tap_state_t last_end_state = end_state;
+	enum tap_state_t last_end_state = end_state;
 	RESULT ret;
 	
 	if (tap_tms_remain > 0)
@@ -306,8 +306,7 @@ RESULT tap_scan_ir(uint8_t *buffer, uint32_t bit_size)
 	if (end_state != IRPAUSE)
 	{
 		ret = jtag_xr(buffer, (uint16_t)bit_size, 0, 0, 
-					  1 << ((bit_size - 1) % 8), 
-					  tap_move[IRPAUSE][end_state]);
+					1 << ((bit_size - 1) % 8), tap_move[IRPAUSE][end_state]);
 		if (ret != ERROR_OK)
 		{
 			return ERROR_FAIL;
@@ -329,7 +328,7 @@ RESULT tap_scan_ir(uint8_t *buffer, uint32_t bit_size)
 
 RESULT tap_scan_dr(uint8_t *buffer, uint32_t bit_size)
 {
-	tap_state_t last_end_state = end_state;
+	enum tap_state_t last_end_state = end_state;
 	RESULT ret;
 	
 	if (tap_tms_remain > 0)
@@ -360,8 +359,7 @@ RESULT tap_scan_dr(uint8_t *buffer, uint32_t bit_size)
 	if (end_state != DRPAUSE)
 	{
 		ret = jtag_xr(buffer, (uint16_t)bit_size, 0, 0, 
-					  1 << ((bit_size - 1) % 8), 
-					  tap_move[DRPAUSE][end_state]);
+					1 << ((bit_size - 1) % 8), tap_move[DRPAUSE][end_state]);
 		if (ret != ERROR_OK)
 		{
 			return ERROR_FAIL;

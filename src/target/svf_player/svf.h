@@ -20,7 +20,7 @@
 #define __SVF_H_INCLUDED__
 
 // SVF command
-typedef enum
+enum svf_command_t
 {
 	ENDDR,
 	ENDIR,
@@ -36,7 +36,7 @@ typedef enum
 	TDR,
 	TIR,
 	TRST,
-}svf_command_t;
+};
 
 extern const char *svf_command_name[14];
 
@@ -44,7 +44,7 @@ extern const char *svf_command_name[14];
 #define XXR_TDO				(1 << 1)
 #define XXR_MASK			(1 << 2)
 #define XXR_SMASK			(1 << 3)
-typedef struct
+struct svf_xxr_para_t
 {
 	uint32_t len;
 	uint32_t data_mask;
@@ -52,41 +52,41 @@ typedef struct
 	uint8_t *tdo;
 	uint8_t *mask;
 	uint8_t *smask;
-}svf_xxr_para_t;
+};
 
-typedef enum
+enum trst_mode_t
 {
 	TRST_ON,
 	TRST_OFF,
 	TRST_Z,
 	TRST_ABSENT
-}trst_mode_t;
+};
 
 extern const char *svf_trst_mode_name[4];
 
 
 
 
-typedef struct
+struct svf_para_t
 {
-	svf_xxr_para_t hir_para;
-	svf_xxr_para_t hdr_para;
-	svf_xxr_para_t tir_para;
-	svf_xxr_para_t tdr_para;
+	struct svf_xxr_para_t hir_para;
+	struct svf_xxr_para_t hdr_para;
+	struct svf_xxr_para_t tir_para;
+	struct svf_xxr_para_t tdr_para;
 
-	svf_xxr_para_t sir_para;
-	svf_xxr_para_t sdr_para;
+	struct svf_xxr_para_t sir_para;
+	struct svf_xxr_para_t sdr_para;
 
-	tap_state_t ir_end_state;
-	tap_state_t dr_end_state;
+	enum tap_state_t ir_end_state;
+	enum tap_state_t dr_end_state;
 
-	tap_state_t runtest_run_state;
-	tap_state_t runtest_end_state;
+	enum tap_state_t runtest_run_state;
+	enum tap_state_t runtest_end_state;
 
-	trst_mode_t trst_mode;
+	enum trst_mode_t trst_mode;
 
 	float frequency;
-}svf_para_t;
+};
 
 #endif /* __SVF_H_INCLUDED__ */
 

@@ -44,7 +44,8 @@
 
 #include "comport.h"
 
-RESULT lpcarmisp_program(operation_t operations, program_info_t *pi)
+RESULT lpcarmisp_program(struct operation_t operations, 
+							struct program_info_t *pi)
 {
 	operations = operations;
 	pi = pi;

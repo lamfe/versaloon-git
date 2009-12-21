@@ -49,16 +49,17 @@
 #include "svf_player/svf_player.h"
 #include "cortex-m3/cm3.h"
 
-chip_series_t target_chips = {0, NULL};
-chip_param_t target_chip_param;
+struct chip_series_t target_chips = {0, NULL};
+struct chip_param_t target_chip_param;
 uint32_t target_defined = 0;
 
-target_info_t targets_info[] = 
+struct target_info_t targets_info[] = 
 {
 	// at89s5x
 	{
 		S5X_STRING,							// name
-		APPLICATION | LOCK,					// areas
+		NULL,								// sub_target
+		AUTO_DETECT,						// feature
 		s5x_program_area_map,				// program_area_map
 		S5X_PROGRAM_MODE_STR,				// program_mode_str
 		s5x_parse_argument,					// parse_argument
@@ -78,7 +79,8 @@ target_info_t targets_info[] =
 	// psoc
 	{
 		PSOC1_STRING,						// name
-		APPLICATION | LOCK,					// areas
+		NULL,								// sub_target
+		AUTO_DETECT,						// feature
 		psoc1_program_area_map,				// program_area_map
 		PSOC1_PROGRAM_MODE_STR,				// program_mode_str
 		psoc1_parse_argument,				// parse_argument
@@ -98,7 +100,8 @@ target_info_t targets_info[] =
 	// msp430
 	{
 		MSP430_STRING,						// name
-		APPLICATION,						// areas
+		NULL,								// sub_target
+		AUTO_DETECT,						// feature
 		msp430_program_area_map,			// program_area_map
 		MSP430_PROGRAM_MODE_STR,			// program_mode_str
 		msp430_parse_argument,				// parse_argument
@@ -118,7 +121,8 @@ target_info_t targets_info[] =
 	// c8051f
 	{
 		C8051F_STRING,						// name
-		APPLICATION,						// areas
+		NULL,								// sub_target
+		AUTO_DETECT,						// feature
 		c8051f_program_area_map,			// program_area_map
 		C8051F_PROGRAM_MODE_STR,			// program_mode_str
 		c8051f_parse_argument,				// parse_argument
@@ -138,7 +142,8 @@ target_info_t targets_info[] =
 	// avr8
 	{
 		AVR8_STRING,						// name
-		APPLICATION | EEPROM | LOCK | FUSE,	// areas
+		NULL,								// sub_target
+		AUTO_DETECT,						// feature
 		avr8_program_area_map,				// program_area_map
 		AVR8_PROGRAM_MODE_STR,				// program_mode_str
 		avr8_parse_argument,				// parse_argument
@@ -158,7 +163,8 @@ target_info_t targets_info[] =
 	// comisp
 	{
 		COMISP_STRING,						// name
-		APPLICATION | EEPROM | LOCK | FUSE,	// areas
+		NULL,								// sub_target
+		CAN_EXECUTE USE_COMM,				// feature
 		comisp_program_area_map,			// program_area_map
 		"",									// program_mode_str
 		comisp_parse_argument,				// parse_argument
@@ -178,7 +184,8 @@ target_info_t targets_info[] =
 	// svf_player
 	{
 		SVFP_STRING,						// name
-		0,									// areas
+		NULL,								// sub_target
+		"",									// feature
 		svfp_program_area_map,				// program_area_map
 		"",									// program_mode_str
 		svfp_parse_argument,				// parse_argument
@@ -198,7 +205,8 @@ target_info_t targets_info[] =
 	// lpc900
 	{
 		LPC900_STRING,						// name
-		APPLICATION,						// areas
+		NULL,								// sub_target
+		AUTO_DETECT,						// feature
 		lpc900_program_area_map,			// program_area_map
 		LPC900_PROGRAM_MODE_STR,			// program_mode_str
 		lpc900_parse_argument,				// parse_argument
@@ -218,7 +226,8 @@ target_info_t targets_info[] =
 	// cortex-m3
 	{
 		CM3_STRING,							// name
-		APPLICATION,						// areas
+		NULL,								// sub_target
+		CAN_EXECUTE,						// feature
 		cm3_program_area_map,				// program_area_map
 		CM3_PROGRAM_MODE_STR,				// program_mode_str
 		cm3_parse_argument,					// parse_argument
@@ -237,6 +246,7 @@ target_info_t targets_info[] =
 	},
 	{
 		NULL,								// name
+		NULL,								// sub_target
 		0,									// areas
 		NULL,								// program_area_map
 		NULL,								// program_mode_str
@@ -254,131 +264,34 @@ target_info_t targets_info[] =
 		NULL,								// prepare_mass_product_data
 	}
 };
-target_info_t *cur_target = NULL;
-program_info_t program_info;
+struct target_info_t *cur_target = NULL;
+struct program_info_t program_info;
 
 RESULT target_alloc_data_buffer(void)
 {
-	if ((NULL == program_info.boot) && (program_info.boot_size > 0))
+	uint8_t i;
+	
+	for (i = 0; i < dimof(program_info.program_areas); i++)
 	{
-		program_info.boot = malloc(program_info.boot_size);
-		if (NULL == program_info.boot)
+		if ((NULL == program_info.program_areas[i].buff) 
+			&& (program_info.program_areas[i].size > 0))
 		{
-			return ERRCODE_NOT_ENOUGH_MEMORY;
+			program_info.program_areas[i].buff = 
+				(uint8_t *)malloc(program_info.program_areas[i].size);
+			if (NULL == program_info.program_areas[i].buff)
+			{
+				return ERRCODE_NOT_ENOUGH_MEMORY;
+			}
 		}
-	}
-	if ((NULL == program_info.boot_checksum) 
-	   && (program_info.boot_checksum_size > 0))
-	{
-		program_info.boot_checksum = malloc(program_info.boot_checksum_size);
-		if (NULL == program_info.boot_checksum)
+		if ((NULL == program_info.program_areas[i].checksum_buff) 
+			&& (program_info.program_areas[i].checksum_size > 0))
 		{
-			return ERRCODE_NOT_ENOUGH_MEMORY;
-		}
-	}
-	if ((NULL == program_info.app) && (program_info.app_size > 0))
-	{
-		program_info.app = malloc(program_info.app_size);
-		if (NULL == program_info.app)
-		{
-			return ERRCODE_NOT_ENOUGH_MEMORY;
-		}
-	}
-	if ((NULL == program_info.app_checksum) 
-	   && (program_info.app_checksum_size > 0))
-	{
-		program_info.app_checksum = malloc(program_info.app_checksum_size);
-		if (NULL == program_info.app_checksum)
-		{
-			return ERRCODE_NOT_ENOUGH_MEMORY;
-		}
-	}
-	if ((NULL == program_info.eeprom) && (program_info.eeprom_size > 0))
-	{
-		program_info.eeprom = malloc(program_info.eeprom_size);
-		if (NULL == program_info.eeprom)
-		{
-			return ERRCODE_NOT_ENOUGH_MEMORY;
-		}
-	}
-	if ((NULL == program_info.eeprom_checksum) 
-	   && (program_info.eeprom_checksum_size > 0))
-	{
-		program_info.eeprom_checksum = \
-									malloc(program_info.eeprom_checksum_size);
-		if (NULL == program_info.eeprom_checksum)
-		{
-			return ERRCODE_NOT_ENOUGH_MEMORY;
-		}
-	}
-	if ((NULL == program_info.otp_rom) && (program_info.otp_rom_size > 0))
-	{
-		program_info.otp_rom = malloc(program_info.otp_rom_size);
-		if (NULL == program_info.otp_rom)
-		{
-			return ERRCODE_NOT_ENOUGH_MEMORY;
-		}
-	}
-	if ((NULL == program_info.otp_rom_checksum) 
-	   && (program_info.otp_rom_checksum_size > 0))
-	{
-		program_info.otp_rom_checksum = \
-									malloc(program_info.otp_rom_checksum_size);
-		if (NULL == program_info.otp_rom_checksum)
-		{
-			return ERRCODE_NOT_ENOUGH_MEMORY;
-		}
-	}
-	if ((NULL == program_info.fuse) && (program_info.fuse_size > 0))
-	{
-		program_info.fuse = malloc(program_info.fuse_size);
-		if (NULL == program_info.fuse)
-		{
-			return ERRCODE_NOT_ENOUGH_MEMORY;
-		}
-	}
-	if ((NULL == program_info.fuse_checksum) 
-	   && (program_info.fuse_checksum_size > 0))
-	{
-		program_info.fuse_checksum = malloc(program_info.fuse_checksum_size);
-		if (NULL == program_info.fuse_checksum)
-		{
-			return ERRCODE_NOT_ENOUGH_MEMORY;
-		}
-	}
-	if ((NULL == program_info.lock) && (program_info.lock_size > 0))
-	{
-		program_info.lock = malloc(program_info.lock_size);
-		if (NULL == program_info.lock)
-		{
-			return ERRCODE_NOT_ENOUGH_MEMORY;
-		}
-	}
-	if ((NULL == program_info.lock_checksum) 
-	   && (program_info.lock_checksum_size > 0))
-	{
-		program_info.lock_checksum = malloc(program_info.lock_checksum_size);
-		if (NULL == program_info.lock_checksum)
-		{
-			return ERRCODE_NOT_ENOUGH_MEMORY;
-		}
-	}
-	if ((NULL == program_info.user_area) && (program_info.user_area_size > 0))
-	{
-		program_info.user_area = malloc(program_info.user_area_size);
-		if (NULL == program_info.user_area)
-		{
-			return ERRCODE_NOT_ENOUGH_MEMORY;
-		}
-	}
-	if ((NULL == program_info.user_area_checksum) 
-	   && (program_info.user_area_checksum_size > 0))
-	{
-		program_info.user_area_checksum = \
-								malloc(program_info.user_area_checksum_size);
-		if (NULL == program_info.user_area_checksum)
-		{
-			return ERRCODE_NOT_ENOUGH_MEMORY;
+			program_info.program_areas[i].checksum_buff = 
+				(uint8_t *)malloc(program_info.program_areas[i].checksum_size);
+			if (NULL == program_info.program_areas[i].checksum_buff)
+			{
+				return ERRCODE_NOT_ENOUGH_MEMORY;
+			}
 		}
 	}
 	
@@ -387,170 +300,110 @@ RESULT target_alloc_data_buffer(void)
 
 void target_free_data_buffer(void)
 {
+	uint8_t i;
+	struct program_area_t *area;
+	
 	target_release_chip_series(&target_chips);
 	
-	if (program_info.boot != NULL)
+	for (i = 0; i < dimof(program_info.program_areas); i++)
 	{
-		free(program_info.boot);
-		program_info.boot = NULL;
-		program_info.boot_size = 0;
-	}
-	if (program_info.boot_checksum != NULL)
-	{
-		free(program_info.boot_checksum);
-		program_info.boot_checksum = NULL;
-		program_info.boot_checksum_size = 0;
-	}
-	if (program_info.boot_memlist != NULL)
-	{
-		MEMLIST_Free(&program_info.boot_memlist);
-	}
-	
-	if (program_info.app != NULL)
-	{
-		free(program_info.app);
-		program_info.app = NULL;
-		program_info.app_size = 0;
-	}
-	if (program_info.app_checksum != NULL)
-	{
-		free(program_info.app_checksum);
-		program_info.app_checksum = NULL;
-		program_info.app_checksum_size = 0;
-	}
-	if (program_info.app_memlist != NULL)
-	{
-		MEMLIST_Free(&program_info.app_memlist);
-	}
-	
-	if (program_info.otp_rom != NULL)
-	{
-		free(program_info.otp_rom);
-		program_info.otp_rom = NULL;
-		program_info.otp_rom_size = 0;
-	}
-	if (program_info.otp_rom_checksum != NULL)
-	{
-		free(program_info.otp_rom_checksum);
-		program_info.otp_rom_checksum = NULL;
-		program_info.otp_rom_checksum_size = 0;
-	}
-	if (program_info.opt_rom_memlist != NULL)
-	{
-		MEMLIST_Free(&program_info.opt_rom_memlist);
-	}
-	
-	if (program_info.eeprom != NULL)
-	{
-		free(program_info.eeprom);
-		program_info.eeprom = NULL;
-		program_info.eeprom_size = 0;
-	}
-	if (program_info.eeprom_checksum != NULL)
-	{
-		free(program_info.eeprom_checksum);
-		program_info.eeprom_checksum = NULL;
-		program_info.eeprom_checksum_size = 0;
-	}
-	if (program_info.eeprom_memlist != NULL)
-	{
-		MEMLIST_Free(&program_info.eeprom_memlist);
-	}
-	
-	if (program_info.fuse != NULL)
-	{
-		free(program_info.fuse);
-		program_info.fuse = NULL;
-		program_info.fuse_size = 0;
-	}
-	if (program_info.fuse_checksum != NULL)
-	{
-		free(program_info.fuse_checksum);
-		program_info.fuse_checksum = NULL;
-		program_info.fuse_checksum_size = 0;
-	}
-	if (program_info.fuse_memlist != NULL)
-	{
-		MEMLIST_Free(&program_info.fuse_memlist);
-	}
-	
-	if (program_info.lock != NULL)
-	{
-		free(program_info.lock);
-		program_info.lock = NULL;
-		program_info.lock_size = 0;
-	}
-	if (program_info.lock_checksum != NULL)
-	{
-		free(program_info.lock_checksum);
-		program_info.lock_checksum = NULL;
-		program_info.lock_checksum_size = 0;
-	}
-	if (program_info.lock_memlist != NULL)
-	{
-		MEMLIST_Free(&program_info.lock_memlist);
-	}
-	
-	if (program_info.user_area != NULL)
-	{
-		free(program_info.user_area);
-		program_info.user_area = NULL;
-		program_info.user_area_size = 0;
-	}
-	if (program_info.user_area_checksum != NULL)
-	{
-		free(program_info.user_area_checksum);
-		program_info.user_area_checksum = NULL;
-		program_info.user_area_checksum_size = 0;
-	}
-	if (program_info.user_area_memlist != NULL)
-	{
-		MEMLIST_Free(&program_info.user_area_memlist);
+		area = &program_info.program_areas[i];
+		if (area->buff != NULL)
+		{
+			free(area->buff);
+			area->buff = NULL;
+			area->size = 0;
+			area->value = 0;
+		}
+		if (area->memlist != NULL)
+		{
+			MEMLIST_Free(&area->memlist);
+		}
+		if (area->checksum_buff != NULL)
+		{
+			free(area->checksum_buff);
+			area->checksum_buff = NULL;
+			area->checksum_size = 0;
+			area->checksum_value = 0;
+		}
+		if (area->checksum_memlist != NULL)
+		{
+			MEMLIST_Free(&area->checksum_memlist);
+		}
 	}
 }
 
-void target_get_target_by_mask(uint32_t mask, uint8_t **buff, uint32_t *size)
+void target_get_target_area(char area, uint8_t **buff, uint32_t *size)
 {
-	if (mask & BOOTLOADER)
+	int8_t i;
+	
+	i = target_area_idx_by_char(area);
+	if (i >= 0)
 	{
-		*buff = program_info.boot;
-		*size = program_info.boot_size;
-	}
-	else if (mask & APPLICATION)
-	{
-		*buff = program_info.app;
-		*size = program_info.app_size;
-	}
-	else if (mask & EEPROM)
-	{
-		*buff = program_info.eeprom;
-		*size = program_info.eeprom_size;
-	}
-	else if (mask & OTP_ROM)
-	{
-		*buff = program_info.otp_rom;
-		*size = program_info.otp_rom_size;
-	}
-	else if (mask & FUSE)
-	{
-		*buff = program_info.fuse;
-		*size = program_info.fuse_size;
-	}
-	else if (mask & LOCK)
-	{
-		*buff = program_info.lock;
-		*size = program_info.lock_size;
-	}
-	else if (mask & USER_SIG)
-	{
-		*buff = program_info.user_area;
-		*size = program_info.user_area_size;
+		*buff = program_info.program_areas[i].buff;
+		*size = program_info.program_areas[i].size;
 	}
 	else
 	{
 		*buff = NULL;
 		*size = 0;
 	}
+}
+
+int8_t target_area_idx_by_char(char area_name)
+{
+	uint32_t i;
+	
+	for (i = 0; i < dimof(target_area_name); i++)
+	{
+		if (target_area_name[i].name == area_name)
+		{
+			return (uint8_t)i;
+		}
+	}
+	return -1;
+}
+
+char target_area_char_by_fullname(char *fullname)
+{
+	uint32_t i;
+	
+	for (i = 0; i < dimof(target_area_name); i++)
+	{
+		if (!strcmp(target_area_name[i].full_name, fullname))
+		{
+			return target_area_name[i].name;
+		}
+	}
+	return '\0';
+}
+
+char* target_area_fullname(char area_name)
+{
+	uint32_t i;
+	
+	for (i = 0; i < dimof(target_area_name); i++)
+	{
+		if (target_area_name[i].name == area_name)
+		{
+			return (char *)target_area_name[i].full_name;
+		}
+	}
+	return NULL;
+}
+
+uint32_t target_area_mask(char area_name)
+{
+	uint32_t i;
+	
+	for (i = 0; i < dimof(target_area_name); i++)
+	{
+		if (target_area_name[i].name == area_name)
+		{
+			return target_area_name[i].mask;
+		}
+	}
+	return 0;
 }
 
 static RESULT target_check_single_defined(uint32_t opt)
@@ -572,7 +425,7 @@ static RESULT target_check_single_defined(uint32_t opt)
 		LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "EEPROM area");
 		return ERROR_FAIL;
 	}
-	else if (opt & OTP_ROM)
+	else if (opt & OTPROM)
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "OTP_ROM area");
 		return ERROR_FAIL;
@@ -587,7 +440,7 @@ static RESULT target_check_single_defined(uint32_t opt)
 		LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "LOCK area");
 		return ERROR_FAIL;
 	}
-	else if (opt & USER_SIG)
+	else if (opt & USRSIG)
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "USER_SIG area");
 		return ERROR_FAIL;
@@ -600,10 +453,11 @@ static RESULT target_check_single_defined(uint32_t opt)
 	return ERROR_OK;
 }
 
-RESULT target_check_defined(operation_t operations)
+RESULT target_check_defined(struct operation_t operations)
 {
 	if (ERROR_OK != target_check_single_defined(operations.verify_operations) 
-		|| (ERROR_OK != target_check_single_defined(operations.write_operations)))
+		|| (ERROR_OK 
+			!= target_check_single_defined(operations.write_operations)))
 	{
 		return ERROR_FAIL;
 	}
@@ -613,74 +467,151 @@ RESULT target_check_defined(operation_t operations)
 	}
 }
 
-void target_printf_fe(char *type)
+static uint32_t target_prepare_operation(uint32_t *operation)
 {
-	uint32_t i, size = 0;
-	char target_char = 0;
+	uint32_t i;
+	uint32_t ret;
+	struct program_area_map_t *a;
 	
-	if (strcmp(type, "flash") && strcmp(type, "eeprom"))
+	a = (struct program_area_map_t *)cur_target->program_area_map;
+	if (*operation & ALL)
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), type, 
-				  program_info.chip_name);
+		i = 0;
+		while (a[i].name != 0)
+		{
+			*operation |= target_area_mask(a[i].name);
+			i++;
+		}
+	}
+	
+	ret = 0;
+	i = 0;
+	while (a[i].name != 0)
+	{
+		if (*operation & target_area_mask(a[i].name))
+		{
+			ret += a[i].data_pos;
+		}
+		i++;
+	}
+	return ret;
+}
+
+RESULT target_prepare_operations(struct operation_t *operations, 
+									uint32_t *readfile, uint32_t *writefile)
+{
+	if ((NULL == cur_target) || (NULL == cur_target->program_area_map) 
+		|| (NULL == operations))
+	{
+		return ERROR_FAIL;
+	}
+	
+	*readfile = *writefile = 0;
+	target_prepare_operation(&operations->erase_operations);
+	*readfile += target_prepare_operation(&operations->write_operations);
+	*readfile += target_prepare_operation(&operations->verify_operations);
+	*writefile += target_prepare_operation(&operations->read_operations);
+	
+	return ERROR_OK;
+}
+
+static void target_print_single_memory(char type)
+{
+	uint32_t mapidx;
+	int8_t paramidx;
+	char *full_type = target_area_fullname(type);
+	struct program_area_map_t *p_map;
+	
+	p_map = (struct program_area_map_t *)cur_target->program_area_map;
+	mapidx = 0;
+	while ((p_map[mapidx].name != 0) && (p_map[mapidx].name != type))
+	{
+		mapidx++;
+	}
+	if (0 == p_map[mapidx].name)
+	{
+		LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), full_type, 
+					program_info.chip_name);
 		return;
 	}
+	
+	paramidx = target_area_idx_by_char(type);
+	if (paramidx < 0 )
+	{
+		LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), full_type, 
+					program_info.chip_name);
+		return;
+	}
+	
+	printf("%s of %s:\n", full_type, program_info.chip_name);
+	if (p_map[mapidx].data_pos)
+	{
+		printf("%c_seg = 0x%08X, ", type, p_map[mapidx].seg_addr);
+		printf("%c_addr = 0x%08X, ", type, p_map[mapidx].start_addr);
+	}
+	printf("%c_default = 0x%02X, ", type, 
+				target_chip_param.chip_areas[paramidx].default_value);
+	printf("%c_bytelen = %d\n", type, 
+				target_chip_param.chip_areas[paramidx].size);
+}
+
+void target_print_memory(char type)
+{
+	uint8_t i;
+	
 	if (NULL == cur_target)
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "Target");
 		return;
 	}
 	
-	if (!strcmp(type, "flash"))
+	if (type > 0)
 	{
-		size = program_info.app_size;
-		target_char = APPLICATION_CHAR;
+		target_print_single_memory(type);
 	}
-	else if (!strcmp(type, "eeprom"))
+	else
 	{
-		size = program_info.eeprom_size;
-		target_char = EEPROM_CHAR;
+		i = 0;
+		while (cur_target->program_area_map[i].name != 0)
+		{
+			target_print_single_memory(cur_target->program_area_map[i].name);
+			i++;
+		}
+	}
+}
+
+void target_print_setting(char type)
+{
+	struct chip_fl_t fl;
+	uint32_t i, j;
+	char *full_type = target_area_fullname(type);
+	struct program_area_map_t *p_map;
+	
+	if (NULL == full_type)
+	{
+		LOG_BUG(_GETTEXT("%c passed to %s\n"), type, __FUNCTION__);
+		return;
 	}
 	
+	p_map = (struct program_area_map_t *)cur_target->program_area_map;
 	i = 0;
-	while ((cur_target->program_area_map[i].area_mask != 0) 
-		&& (cur_target->program_area_map[i].area_char != target_char))
+	while ((p_map[i].name != 0) && (p_map[i].name != type))
 	{
 		i++;
 	}
-	if (0 == cur_target->program_area_map[i].area_mask)
+	if (0 == p_map[i].name)
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), type, 
-				  program_info.chip_name);
+		LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), full_type, 
+					program_info.chip_name);
 		return;
 	}
 	
-	printf("%s of %s:\n", type, program_info.chip_name);
-	printf("seg_addr = 0x%08X, start_addr = 0x%08X, default_byte = 0x%02X, ", 
-			cur_target->program_area_map[i].area_seg_addr, 
-			cur_target->program_area_map[i].area_start_addr, 
-			cur_target->program_area_map[i].area_default_data);
-	printf("byte_size = %d\n", size);
-}
-
-void target_print_fl(char *type)
-{
-	chip_fl_t fl;
-	uint32_t i, j;
-	
-	if (strcmp(type, "fuse") && strcmp(type, "lock") 
-		&& strcmp(type, "calibration"))
-	{
-		LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), type, 
-				  program_info.chip_name);
-		return;
-	}
-	
-	memset(&fl, 0, sizeof(chip_fl_t));
+	memset(&fl, 0, sizeof(struct chip_fl_t));
 	target_build_chip_fl(program_info.chip_type, program_info.chip_name, 
-						 type, &fl);
+						 full_type, &fl);
 	
 	// print fl
-	printf("%s of %s:\n", type, program_info.chip_name);
+	printf("%s of %s:\n", full_type, program_info.chip_name);
 	printf("init = 0x%08X, num_of_warnings = %d, num_of_settings = %d\n", 
 		fl.init_value, fl.num_of_fl_warnings, fl.num_of_fl_settings);
 	for (i = 0; i < fl.num_of_fl_warnings; i++)
@@ -691,8 +622,8 @@ void target_print_fl(char *type)
 	for (i = 0; i < fl.num_of_fl_settings; i++)
 	{
 		printf("setting: name = %s, mask = 0x%08X, num_of_choices = %d", 
-			fl.settings[i].name, fl.settings[i].mask, 
-			fl.settings[i].num_of_choices);
+						fl.settings[i].name, fl.settings[i].mask, 
+						fl.settings[i].num_of_choices);
 		if (fl.settings[i].ban != NULL)
 		{
 			printf(", ban = %s", fl.settings[i].ban);
@@ -704,31 +635,111 @@ void target_print_fl(char *type)
 		if (fl.settings[i].use_checkbox)
 		{
 			printf(", checked = 0x%08X, unchecked = 0x%08X", 
-				fl.settings[i].checked, fl.settings[i].unchecked);
+						fl.settings[i].checked, fl.settings[i].unchecked);
 		}
 		else if (fl.settings[i].use_edit)
 		{
 			printf(", radix = %d, shift = %d, bytelen = %d", 
-				fl.settings[i].radix, fl.settings[i].shift, 
-				fl.settings[i].bytelen);
+						fl.settings[i].radix, fl.settings[i].shift, 
+						fl.settings[i].bytelen);
 		}
 		printf("\n");
 		for (j = 0; j < fl.settings[i].num_of_choices; j++)
 		{
 			printf("choice: value = 0x%08X, text = %s\n", 
-				fl.settings[i].choices[j].value, fl.settings[i].choices[j].text);
+						fl.settings[i].choices[j].value, 
+						fl.settings[i].choices[j].text);
 		}
 	}
 	
 	target_release_chip_fl(&fl);
 }
 
-void target_print_target(uint32_t i)
+void target_print_target(uint32_t index)
 {
-	target_build_chip_series(targets_info[i].name, 
-							 targets_info[i].program_mode_str, 
-							 &target_chips);
-	targets_info[i].parse_argument('S', NULL);
+	uint32_t i, j;
+	struct chip_param_t *p_param;
+	struct program_area_map_t *p_map;
+	char area[3];
+	
+	target_build_chip_series(targets_info[index].name, 
+						targets_info[index].program_mode_str, &target_chips);
+	
+	if (0 == target_chips.num_of_chips)
+	{
+		if (targets_info[index].sub_target != NULL)
+		{
+			// parse sub_target
+		}
+		else
+		{
+			// no target
+			return;
+		}
+	}
+	
+	if (strlen(targets_info[index].feature) > 0)
+	{
+		printf("Support list of %s(%s):", targets_info[index].name, 
+				targets_info[index].feature);
+	}
+	else
+	{
+		printf("Support list of %s:", targets_info[index].name);
+	}
+	// fake
+	p_map = (struct program_area_map_t *)targets_info[index].program_area_map;
+	i = 0;
+	while (p_map[i].name != 0)
+	{
+		if (p_map[i].fseg_addr)
+		{
+			printf(" %c_fseg = 0x%X,", p_map[i].name, p_map[i].fseg_addr);
+		}
+		if (p_map[i].fstart_addr)
+		{
+			printf(" %c_faddr = 0x%X,", p_map[i].name, p_map[i].fstart_addr);
+		}
+		i++;
+	}
+	printf("\n");
+	
+	// Targets based on ComPort outputs there special COM settings
+	if (strchr(targets_info[index].feature, 'C') != NULL)
+	{
+		targets_info[index].parse_argument('S', NULL);
+	}
+	else
+	{
+		for (i = 0; i < target_chips.num_of_chips; i++)
+		{
+			p_param = &target_chips.chips_param[i];
+			
+			// name
+			printf("%s:", p_param->chip_name);
+			// id
+			printf(" id = 0x%X,", p_param->chip_id);
+			// mode
+			if (p_param->program_mode_str != NULL)
+			{
+				printf(" mode = %s,", p_param->program_mode_str);
+			}
+			// area
+			printf(" area = ");
+			area[2] = 0;
+			j = 0;
+			while (p_map[j].name != 0)
+			{
+				area[0] = p_map[j].name;
+				area[1] = p_map[j].data_pos + '0';
+				printf("%s", area);
+				j++;
+			}
+			printf("\n");
+		}
+		printf("\n");
+	}
+	
 	target_release_chip_series(&target_chips);
 }
 
@@ -783,7 +794,7 @@ static RESULT target_probe_chip(char *chip_name)
 	return ERROR_FAIL;
 }
 
-RESULT target_init(program_info_t *pi)
+RESULT target_init(struct program_info_t *pi)
 {
 	uint32_t i;
 	RESULT (*probe_chip)(char *chip_name);
@@ -804,8 +815,7 @@ RESULT target_init(program_info_t *pi)
 		for (i = 0; targets_info[i].name != NULL; i++)
 		{
 			if (ERROR_OK == target_build_chip_series(targets_info[i].name, 
-										targets_info[i].program_mode_str, 
-										&target_chips))
+						targets_info[i].program_mode_str, &target_chips))
 			{
 				// configuration file exists, use default probe function
 				probe_chip = target_probe_chip;
@@ -843,8 +853,7 @@ RESULT target_init(program_info_t *pi)
 			if (!strcmp(targets_info[i].name, pi->chip_type))
 			{
 				if (ERROR_OK == target_build_chip_series(targets_info[i].name, 
-											targets_info[i].program_mode_str, 
-											&target_chips))
+							targets_info[i].program_mode_str, &target_chips))
 				{
 					// configuration file exists, use default probe function
 					probe_chip = target_probe_chip;
@@ -887,7 +896,8 @@ RESULT target_init(program_info_t *pi)
 	return ERRCODE_NOT_SUPPORT;
 }
 
-static uint32_t target_xml_get_child_number(xmlNodePtr parentNode, char * child_name)
+static uint32_t target_xml_get_child_number(xmlNodePtr parentNode, 
+												char * child_name)
 {
 	uint32_t result = 0;
 	
@@ -908,7 +918,7 @@ static uint32_t target_xml_get_child_number(xmlNodePtr parentNode, char * child_
 }
 
 RESULT target_build_chip_fl(const char *chip_series, const char *chip_module, 
-							char *type, chip_fl_t *fl)
+							char *type, struct chip_fl_t *fl)
 {
 	xmlDocPtr doc = NULL;
 	xmlNodePtr curNode = NULL;
@@ -937,8 +947,7 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 	target_release_chip_fl(fl);
 	
 	filename = (char *)malloc(strlen(config_dir)
-							  + strlen(chip_series) 
-							  + strlen(TARGET_CONF_FILE_EXT) + 1);
+					+ strlen(chip_series) + strlen(TARGET_CONF_FILE_EXT) + 1);
 	if (NULL == filename)
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
@@ -1043,8 +1052,7 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 	// valid check
 	if (!xmlHasProp(paramNode, BAD_CAST "init"))
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-				  "read config file");
+		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read config file");
 		ret = ERRCODE_FAILURE_OPERATION;
 		goto free_and_exit;
 	}
@@ -1064,8 +1072,8 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 		strtoul((const char *)xmlGetProp(paramNode, BAD_CAST "init"), NULL, 0);
 	
 	// alloc memory for settings
-	fl->settings = (chip_fl_setting_t*)malloc(
-		fl->num_of_fl_settings * sizeof(chip_fl_setting_t));
+	fl->settings = (struct chip_fl_setting_t*)malloc(
+		fl->num_of_fl_settings * sizeof(struct chip_fl_setting_t));
 	if (NULL == fl->settings)
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
@@ -1073,7 +1081,7 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 		goto free_and_exit;
 	}
 	memset(fl->settings, 0, 
-		   fl->num_of_fl_settings * sizeof(chip_fl_setting_t));
+		   fl->num_of_fl_settings * sizeof(struct chip_fl_setting_t));
 	
 	settingNode = paramNode->children->next;
 	// has warning?
@@ -1089,8 +1097,8 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 			(uint16_t)target_xml_get_child_number(warningNode, "w");
 		if (fl->num_of_fl_warnings != 0)
 		{
-			fl->warnings = (chip_fl_warning_t*)malloc(
-				fl->num_of_fl_warnings * sizeof(chip_fl_warning_t));
+			fl->warnings = (struct chip_fl_warning_t*)malloc(
+				fl->num_of_fl_warnings * sizeof(struct chip_fl_warning_t));
 			if (NULL == fl->warnings)
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
@@ -1098,7 +1106,7 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 				goto free_and_exit;
 			}
 			memset(fl->warnings, 0, 
-				   fl->num_of_fl_warnings * sizeof(chip_fl_warning_t));
+				   fl->num_of_fl_warnings * sizeof(struct chip_fl_warning_t));
 			
 			wNode = warningNode->children->next;
 			for (i = 0; i < fl->num_of_fl_warnings; i++)
@@ -1238,7 +1246,7 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 			if (!checked_exists)
 			{
 				fl->settings[i].checked = 
-				fl->settings[i].unchecked ^ fl->settings[i].mask;
+						fl->settings[i].unchecked ^ fl->settings[i].mask;
 			}
 			fl->settings[i].use_checkbox = 1;
 		}
@@ -1262,8 +1270,8 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 		}
 		
 		// malloc memory for choices
-		fl->settings[i].choices = (chip_fl_choice_t*)malloc(
-			fl->settings[i].num_of_choices * sizeof(chip_fl_choice_t));
+		fl->settings[i].choices = (struct chip_fl_choice_t*)malloc(
+			fl->settings[i].num_of_choices * sizeof(struct chip_fl_choice_t));
 		if (NULL == fl->settings[i].choices)
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
@@ -1271,7 +1279,7 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 			goto free_and_exit;
 		}
 		memset(fl->settings[i].choices, 0, 
-			   fl->settings[i].num_of_choices * sizeof(chip_fl_choice_t));
+			fl->settings[i].num_of_choices * sizeof(struct chip_fl_choice_t));
 		
 		choiceNode = settingNode->children->next;
 		// parse choices
@@ -1323,7 +1331,7 @@ free_and_exit:
 	return ret;
 }
 
-RESULT target_release_chip_fl(chip_fl_t *fl)
+RESULT target_release_chip_fl(struct chip_fl_t *fl)
 {
 	uint32_t i, j;
 	
@@ -1380,17 +1388,18 @@ RESULT target_release_chip_fl(chip_fl_t *fl)
 		free(fl->settings);
 		fl->settings = NULL;
 	}
-	memset(fl, 0, sizeof(chip_fl_t));
+	memset(fl, 0, sizeof(struct chip_fl_t));
 	
 	return ERROR_OK;
 }
 
 RESULT target_build_chip_series(const char *chip_series, 
-								const char *program_mode, chip_series_t *s)
+							const char *program_mode, struct chip_series_t *s)
 {
 	xmlDocPtr doc = NULL;
 	xmlNodePtr curNode = NULL;
 	char *filename = NULL;
+	struct chip_param_t *p_param;
 	uint32_t i, j, target_para_size_defined;
 	RESULT ret = ERROR_OK;
 	FILE *fp;
@@ -1411,9 +1420,8 @@ RESULT target_build_chip_series(const char *chip_series,
 	// release first if necessary
 	target_release_chip_series(s);
 	
-	filename = (char *)malloc(strlen(config_dir)
-							  + strlen(chip_series) 
-							  + strlen(TARGET_CONF_FILE_EXT) + 1);
+	filename = (char *)malloc(strlen(config_dir)+ strlen(chip_series) 
+								+ strlen(TARGET_CONF_FILE_EXT) + 1);
 	if (NULL == filename)
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
@@ -1468,7 +1476,7 @@ RESULT target_build_chip_series(const char *chip_series,
 		ret = ERRCODE_NOT_SUPPORT;
 		goto free_and_exit;
 	}
-	s->chips_param = (chip_param_t *)malloc(sizeof(chip_param_t) 
+	s->chips_param = (struct chip_param_t *)malloc(sizeof(struct chip_param_t) 
 											* s->num_of_chips);
 	if (NULL == s->chips_param)
 	{
@@ -1476,13 +1484,15 @@ RESULT target_build_chip_series(const char *chip_series,
 		ret = ERRCODE_NOT_ENOUGH_MEMORY;
 		goto free_and_exit;
 	}
-	memset(s->chips_param, 0, sizeof(chip_param_t) * s->num_of_chips);
+	memset(s->chips_param, 0, sizeof(struct chip_param_t) * s->num_of_chips);
 	
 	// read data
 	curNode = curNode->children->next;
 	for (i = 0; i < s->num_of_chips; i++)
 	{
 		xmlNodePtr paramNode;
+		
+		p_param = &(s->chips_param[i]);
 		
 		// check
 		if ((NULL == curNode) 
@@ -1495,9 +1505,9 @@ RESULT target_build_chip_series(const char *chip_series,
 		}
 		
 		// read name
-		strncpy(s->chips_param[i].chip_name, 
+		strncpy(p_param->chip_name, 
 				(const char *)xmlGetProp(curNode, BAD_CAST "name"), 
-				sizeof(s->chips_param[i].chip_name));
+				sizeof(p_param->chip_name));
 		
 		// read parameters
 		target_para_size_defined = 0;
@@ -1506,203 +1516,316 @@ RESULT target_build_chip_series(const char *chip_series,
 		{
 			if (!xmlStrcmp(paramNode->name, BAD_CAST "chip_id"))
 			{
-				s->chips_param[i].chip_id = (uint32_t)strtoul(
-								(const char *)xmlNodeGetContent(paramNode), 
-								NULL, 0);
+				p_param->chip_id = (uint32_t)strtoul(
+						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "program_mode"))
 			{
 				char *mode_tmp = (char *)xmlNodeGetContent(paramNode);
 				char *first;
 				
-				s->chips_param[i].program_mode_str = 
+				p_param->program_mode_str = 
 										(char *)malloc(strlen(mode_tmp) + 1);
-				if (NULL == s->chips_param[i].program_mode_str)
+				if (NULL == p_param->program_mode_str)
 				{
 					LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
 					ret = ERRCODE_NOT_ENOUGH_MEMORY;
 					goto free_and_exit;
 				}
-				strcpy(s->chips_param[i].program_mode_str, mode_tmp);
-				s->chips_param[i].program_mode = 0;
-				for (j = 0; j < strlen(mode_tmp); j++)
+				strcpy(p_param->program_mode_str, mode_tmp);
+				p_param->program_mode = 0;
+				if ((0 != i) 
+					|| (strcmp(chip_series, p_param->chip_name)))
 				{
-					first = strchr(program_mode, mode_tmp[j]);
-					if (first != NULL)
+					for (j = 0; j < strlen(mode_tmp); j++)
 					{
-						s->chips_param[i].program_mode |= 
-												1 << (first - program_mode);
-					}
-					else
-					{
-						LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), mode_tmp, 
-								  "program_mode of current target");
-						ret = ERRCODE_NOT_SUPPORT;
-						goto free_and_exit;
+						first = strchr(program_mode, mode_tmp[j]);
+						if (first != NULL)
+						{
+							p_param->program_mode |= \
+											1 << (first - program_mode);
+						}
+						else
+						{
+							LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), 
+								mode_tmp, "program_mode of current target");
+							ret = ERRCODE_NOT_SUPPORT;
+							goto free_and_exit;
+						}
 					}
 				}
 			}
+			else if (!xmlStrcmp(paramNode->name, BAD_CAST "boot_addr"))
+			{
+				p_param->chip_areas[BOOTLOADER_IDX].addr = 
+					(uint32_t)strtoul(
+						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
+			}
+			else if (!xmlStrcmp(paramNode->name, BAD_CAST "boot_seg"))
+			{
+				p_param->chip_areas[BOOTLOADER_IDX].seg = 
+					(uint32_t)strtoul(
+						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
+			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "boot_page_size"))
 			{
-				s->chips_param[i].boot_page_size = (uint32_t)strtoul(
-								(const char *)xmlNodeGetContent(paramNode), 
-								NULL, 0);
+				p_param->chip_areas[BOOTLOADER_IDX].page_size = 
+					(uint32_t)strtoul(
+						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "boot_page_num"))
 			{
-				s->chips_param[i].boot_page_num = (uint32_t)strtoul(
-								(const char *)xmlNodeGetContent(paramNode), 
-								NULL, 0);
+				p_param->chip_areas[BOOTLOADER_IDX].page_num = 
+					(uint32_t)strtoul(
+						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
+			}
+			else if (!xmlStrcmp(paramNode->name, BAD_CAST "boot_default"))
+			{
+				p_param->chip_areas[BOOTLOADER_IDX].default_value = 
+					(uint32_t)strtoul(
+						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
+			}
+			else if (!xmlStrcmp(paramNode->name, BAD_CAST "app_addr"))
+			{
+				p_param->chip_areas[APPLICATION_IDX].addr = 
+					(uint32_t)strtoul(
+						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
+			}
+			else if (!xmlStrcmp(paramNode->name, BAD_CAST "app_seg"))
+			{
+				p_param->chip_areas[APPLICATION_IDX].seg = 
+					(uint32_t)strtoul(
+						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "app_page_size"))
 			{
-				s->chips_param[i].app_page_size = (uint32_t)strtoul(
-								(const char *)xmlNodeGetContent(paramNode), 
-								NULL, 0);
+				p_param->chip_areas[APPLICATION_IDX].page_size = 
+					(uint32_t)strtoul(
+						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "app_page_num"))
 			{
-				s->chips_param[i].app_page_num = (uint32_t)strtoul(
-								(const char *)xmlNodeGetContent(paramNode), 
-								NULL, 0);
+				p_param->chip_areas[APPLICATION_IDX].page_num = 
+					(uint32_t)strtoul(
+						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
+			}
+			else if (!xmlStrcmp(paramNode->name, BAD_CAST "app_default"))
+			{
+				p_param->chip_areas[APPLICATION_IDX].default_value = 
+					(uint32_t)strtoul(
+						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
+			}
+			else if (!xmlStrcmp(paramNode->name, BAD_CAST "ee_addr"))
+			{
+				p_param->chip_areas[EEPROM_IDX].addr = 
+					(uint32_t)strtoul(
+						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
+			}
+			else if (!xmlStrcmp(paramNode->name, BAD_CAST "ee_seg"))
+			{
+				p_param->chip_areas[EEPROM_IDX].seg = 
+					(uint32_t)strtoul(
+						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "ee_page_size"))
 			{
-				s->chips_param[i].ee_page_size = (uint32_t)strtoul(
-								(const char *)xmlNodeGetContent(paramNode), 
-								NULL, 0);
+				p_param->chip_areas[EEPROM_IDX].page_size = (uint32_t)strtoul(
+						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "ee_page_num"))
 			{
-				s->chips_param[i].ee_page_num = (uint32_t)strtoul(
-								(const char *)xmlNodeGetContent(paramNode), 
-								NULL, 0);
+				p_param->chip_areas[EEPROM_IDX].page_num = (uint32_t)strtoul(
+						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
 			}
-			else if (!xmlStrcmp(paramNode->name, BAD_CAST "optrom_page_size"))
+			else if (!xmlStrcmp(paramNode->name, BAD_CAST "ee_default"))
 			{
-				s->chips_param[i].optrom_page_size = (uint32_t)strtoul(
-								(const char *)xmlNodeGetContent(paramNode), 
-								NULL, 0);
+				p_param->chip_areas[EEPROM_IDX].default_value = 
+					(uint32_t)strtoul(
+						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
 			}
-			else if (!xmlStrcmp(paramNode->name, BAD_CAST "optrom_page_num"))
+			else if (!xmlStrcmp(paramNode->name, BAD_CAST "otprom_addr"))
 			{
-				s->chips_param[i].optrom_page_num = (uint32_t)strtoul(
-								(const char *)xmlNodeGetContent(paramNode), 
-								NULL, 0);
+				p_param->chip_areas[OTPROM_IDX].addr = 
+					(uint32_t)strtoul(
+						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
+			}
+			else if (!xmlStrcmp(paramNode->name, BAD_CAST "otprom_seg"))
+			{
+				p_param->chip_areas[OTPROM_IDX].seg = 
+					(uint32_t)strtoul(
+						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
+			}
+			else if (!xmlStrcmp(paramNode->name, BAD_CAST "otprom_page_size"))
+			{
+				p_param->chip_areas[OTPROM_IDX].page_size = (uint32_t)strtoul(
+						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
+			}
+			else if (!xmlStrcmp(paramNode->name, BAD_CAST "otprom_page_num"))
+			{
+				p_param->chip_areas[OTPROM_IDX].page_num = (uint32_t)strtoul(
+						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
+			}
+			else if (!xmlStrcmp(paramNode->name, BAD_CAST "otprom_default"))
+			{
+				p_param->chip_areas[OTPROM_IDX].default_value = 
+					(uint32_t)strtoul(
+						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
+			}
+			else if (!xmlStrcmp(paramNode->name, BAD_CAST "usrsig_addr"))
+			{
+				p_param->chip_areas[USRSIG_IDX].addr = 
+					(uint32_t)strtoul(
+						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
+			}
+			else if (!xmlStrcmp(paramNode->name, BAD_CAST "usrsig_seg"))
+			{
+				p_param->chip_areas[USRSIG_IDX].seg = 
+					(uint32_t)strtoul(
+						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "usrsig_page_size"))
 			{
-				s->chips_param[i].usrsig_page_size = (uint32_t)strtoul(
-								(const char *)xmlNodeGetContent(paramNode), 
-								NULL, 0);
+				p_param->chip_areas[USRSIG_IDX].page_size = (uint32_t)strtoul(
+						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "usrsig_page_num"))
 			{
-				s->chips_param[i].usrsig_page_num = (uint32_t)strtoul(
-								(const char *)xmlNodeGetContent(paramNode), 
-								NULL, 0);
+				p_param->chip_areas[USRSIG_IDX].page_num = (uint32_t)strtoul(
+						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
+			}
+			else if (!xmlStrcmp(paramNode->name, BAD_CAST "usrsig_default"))
+			{
+				p_param->chip_areas[USRSIG_IDX].default_value = 
+					(uint32_t)strtoul(
+						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
+			}
+			else if (!xmlStrcmp(paramNode->name, BAD_CAST "fuse_addr"))
+			{
+				p_param->chip_areas[FUSE_IDX].addr = 
+					(uint32_t)strtoul(
+						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
+			}
+			else if (!xmlStrcmp(paramNode->name, BAD_CAST "fuse_seg"))
+			{
+				p_param->chip_areas[FUSE_IDX].seg = 
+					(uint32_t)strtoul(
+						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "fuse_page_num"))
 			{
-				s->chips_param[i].fuse_page_num = (uint32_t)strtoul(
-								(const char *)xmlNodeGetContent(paramNode), 
-								NULL, 0);
+				p_param->chip_areas[FUSE_IDX].page_num = (uint32_t)strtoul(
+						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "fuse_page_size"))
 			{
-				s->chips_param[i].fuse_page_size = (uint32_t)strtoul(
-								(const char *)xmlNodeGetContent(paramNode), 
-								NULL, 0);
+				p_param->chip_areas[FUSE_IDX].page_size = (uint32_t)strtoul(
+						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
+			}
+			else if (!xmlStrcmp(paramNode->name, BAD_CAST "fuse_default"))
+			{
+				p_param->chip_areas[FUSE_IDX].default_value = 
+					(uint32_t)strtoul(
+						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
+			}
+			else if (!xmlStrcmp(paramNode->name, BAD_CAST "lock_addr"))
+			{
+				p_param->chip_areas[LOCK_IDX].addr = 
+					(uint32_t)strtoul(
+						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
+			}
+			else if (!xmlStrcmp(paramNode->name, BAD_CAST "lock_seg"))
+			{
+				p_param->chip_areas[LOCK_IDX].seg = 
+					(uint32_t)strtoul(
+						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "lock_page_num"))
 			{
-				s->chips_param[i].lock_page_num = (uint32_t)strtoul(
-								(const char *)xmlNodeGetContent(paramNode), 
-								NULL, 0);
+				p_param->chip_areas[LOCK_IDX].page_num = (uint32_t)strtoul(
+						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "lock_page_size"))
 			{
-				s->chips_param[i].lock_page_size = (uint32_t)strtoul(
-								(const char *)xmlNodeGetContent(paramNode), 
-								NULL, 0);
+				p_param->chip_areas[LOCK_IDX].page_size = (uint32_t)strtoul(
+						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
+			}
+			else if (!xmlStrcmp(paramNode->name, BAD_CAST "lock_default"))
+			{
+				p_param->chip_areas[LOCK_IDX].default_value = 
+					(uint32_t)strtoul(
+						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "fuse_size"))
 			{
 				target_para_size_defined |= FUSE;
-				s->chips_param[i].fuse_size = (uint32_t)strtoul(
-								(const char *)xmlNodeGetContent(paramNode), 
-								NULL, 0);
+				p_param->chip_areas[FUSE_IDX].size = (uint32_t)strtoul(
+						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "lock_size"))
 			{
 				target_para_size_defined |= LOCK;
-				s->chips_param[i].lock_size = (uint32_t)strtoul(
-								(const char *)xmlNodeGetContent(paramNode), 
-								NULL, 0);
+				p_param->chip_areas[LOCK_IDX].size = (uint32_t)strtoul(
+						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "boot_size"))
 			{
 				target_para_size_defined |= BOOTLOADER;
-				s->chips_param[i].boot_size = (uint32_t)strtoul(
-								(const char *)xmlNodeGetContent(paramNode), 
-								NULL, 0);
+				p_param->chip_areas[BOOTLOADER_IDX].size = (uint32_t)strtoul(
+						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "app_size"))
 			{
 				target_para_size_defined |= APPLICATION;
-				s->chips_param[i].app_size = (uint32_t)strtoul(
-								(const char *)xmlNodeGetContent(paramNode), 
-								NULL, 0);
+				p_param->chip_areas[APPLICATION].size = (uint32_t)strtoul(
+						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "ee_size"))
 			{
 				target_para_size_defined |= EEPROM;
-				s->chips_param[i].ee_size = (uint32_t)strtoul(
-								(const char *)xmlNodeGetContent(paramNode), 
-								NULL, 0);
+				p_param->chip_areas[EEPROM_IDX].size = (uint32_t)strtoul(
+						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
 			}
-			else if (!xmlStrcmp(paramNode->name, BAD_CAST "optrom_size"))
+			else if (!xmlStrcmp(paramNode->name, BAD_CAST "otprom_size"))
 			{
-				target_para_size_defined |= OTP_ROM;
-				s->chips_param[i].optrom_size = (uint32_t)strtoul(
-								(const char *)xmlNodeGetContent(paramNode), 
-								NULL, 0);
+				target_para_size_defined |= OTPROM;
+				p_param->chip_areas[OTPROM_IDX].size = (uint32_t)strtoul(
+						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "usrsig_size"))
 			{
-				target_para_size_defined |= USER_SIG;
-				s->chips_param[i].usrsig_size = (uint32_t)strtoul(
-								(const char *)xmlNodeGetContent(paramNode), 
-								NULL, 0);
+				target_para_size_defined |= USRSIG;
+				p_param->chip_areas[USRSIG_IDX].size = (uint32_t)strtoul(
+						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "fuse"))
 			{
 				target_para_size_defined |= FUSE;
-				s->chips_param[i].fuse_size = (uint32_t)strtoul(
+				p_param->chip_areas[FUSE_IDX].size = (uint32_t)strtoul(
 					(const char *)xmlGetProp(paramNode, BAD_CAST "bytesize"), 
 					NULL, 0);
-				s->chips_param[i].fuse_default_value = (uint32_t)strtoul(
+				p_param->chip_areas[FUSE_IDX].default_value = (uint32_t)strtoul(
 					(const char *)xmlGetProp(paramNode, BAD_CAST "init"), 
 					NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "lock"))
 			{
 				target_para_size_defined |= LOCK;
-				s->chips_param[i].lock_size = (uint32_t)strtoul(
+				p_param->chip_areas[LOCK_IDX].size = (uint32_t)strtoul(
 					(const char *)xmlGetProp(paramNode, BAD_CAST "bytesize"), 
 					NULL, 0);
-				s->chips_param[i].lock_default_value = (uint32_t)strtoul(
+				p_param->chip_areas[LOCK_IDX].default_value = (uint32_t)strtoul(
 					(const char *)xmlGetProp(paramNode, BAD_CAST "init"), 
 					NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "calibration"))
 			{
-				s->chips_param[i].cali_size = (uint32_t)strtoul(
-					(const char *)xmlGetProp(paramNode, BAD_CAST "bytesize"), 
+				p_param->chip_areas[CALIBRATION_IDX].size = (uint32_t)strtoul(
+					(const char *)xmlGetProp(paramNode,BAD_CAST "bytesize"),
 					NULL, 0);
-				s->chips_param[i].cali_default_value = (uint32_t)strtoul(
-					(const char *)xmlGetProp(paramNode, BAD_CAST "init"), 
-					NULL, 0);
+				p_param->chip_areas[CALIBRATION_IDX].default_value = 
+					(uint32_t)strtoul(
+						(const char *)xmlGetProp(paramNode, BAD_CAST "init"), 
+						NULL, 0);
 			}
 			else
 			{
@@ -1717,16 +1840,15 @@ RESULT target_build_chip_series(const char *chip_series,
 				{
 					// parameters
 					j = strtoul(&str_tmp[5], NULL, 0);
-					s->chips_param[i].param[j] = (uint32_t)strtoul(
-								(const char *)xmlNodeGetContent(paramNode), 
-								NULL, 0);
+					p_param->param[j] = (uint32_t)strtoul(
+						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
 				}
 				else
 				{
 					// wrong parameter
 					LOG_ERROR(_GETTEXT(ERRMSG_INVALID), 
-							  (const char *)xmlNodeGetContent(paramNode), 
-							  chip_series);
+								(const char *)xmlNodeGetContent(paramNode), 
+								chip_series);
 					ret = ERRCODE_INVALID;
 					goto free_and_exit;
 				}
@@ -1737,38 +1859,55 @@ RESULT target_build_chip_series(const char *chip_series,
 		
 		if (!(target_para_size_defined & APPLICATION))
 		{
-			s->chips_param[i].app_size = s->chips_param[i].app_page_size 
-											* s->chips_param[i].app_page_num;
+			p_param->chip_areas[APPLICATION_IDX].size = 
+				p_param->chip_areas[APPLICATION_IDX].page_size 
+				* p_param->chip_areas[APPLICATION_IDX].page_num;
 		}
 		if (!(target_para_size_defined & EEPROM))
 		{
-			s->chips_param[i].ee_size = s->chips_param[i].ee_page_size 
-											* s->chips_param[i].ee_page_num;
+			p_param->chip_areas[EEPROM_IDX].size = 
+				p_param->chip_areas[EEPROM_IDX].page_size 
+				* p_param->chip_areas[EEPROM_IDX].page_num;
 		}
 		if (!(target_para_size_defined & BOOTLOADER))
 		{
-			s->chips_param[i].boot_size = s->chips_param[i].boot_page_size 
-											* s->chips_param[i].boot_page_num;
+			p_param->chip_areas[BOOTLOADER_IDX].size = 
+				p_param->chip_areas[BOOTLOADER_IDX].page_size 
+				* p_param->chip_areas[BOOTLOADER_IDX].page_num;
 		}
 		if (!(target_para_size_defined & FUSE))
 		{
-			s->chips_param[i].fuse_size = s->chips_param[i].fuse_page_size 
-											* s->chips_param[i].fuse_page_num;
+			p_param->chip_areas[FUSE_IDX].size = 
+				p_param->chip_areas[FUSE_IDX].page_size 
+				* p_param->chip_areas[FUSE_IDX].page_num;
 		}
 		if (!(target_para_size_defined & LOCK))
 		{
-			s->chips_param[i].lock_size = s->chips_param[i].lock_page_size 
-											* s->chips_param[i].lock_page_num;
+			p_param->chip_areas[LOCK_IDX].size = 
+				p_param->chip_areas[LOCK_IDX].page_size 
+				* p_param->chip_areas[LOCK_IDX].page_num;
 		}
-		if (!(target_para_size_defined & OTP_ROM))
+		if (!(target_para_size_defined & OTPROM))
 		{
-			s->chips_param[i].optrom_size = s->chips_param[i].optrom_page_size 
-											* s->chips_param[i].optrom_page_num;
+			p_param->chip_areas[OTPROM_IDX].size = 
+				p_param->chip_areas[OTPROM_IDX].page_size 
+				* p_param->chip_areas[OTPROM_IDX].page_num;
 		}
-		if (!(target_para_size_defined & USER_SIG))
+		if (!(target_para_size_defined & USRSIG))
 		{
-			s->chips_param[i].usrsig_size = s->chips_param[i].usrsig_page_size 
-											* s->chips_param[i].usrsig_page_num;
+			p_param->chip_areas[USRSIG_IDX].size = 
+				p_param->chip_areas[USRSIG_IDX].page_size 
+				* p_param->chip_areas[USRSIG_IDX].page_num;
+		}
+		
+		if (0 == i)
+		{
+			// first chip is used to setting every chip
+			for (j = 1; j < s->num_of_chips; j++)
+			{
+				memcpy(&s->chips_param[i], &s->chips_param[0], 
+							sizeof(struct chip_param_t));
+			}
 		}
 		
 		curNode = curNode->next->next;
@@ -1789,7 +1928,7 @@ free_and_exit:
 	return ret;
 }
 
-RESULT target_release_chip_series(chip_series_t *s)
+RESULT target_release_chip_series(struct chip_series_t *s)
 {
 	uint32_t i;
 	
@@ -1807,7 +1946,7 @@ RESULT target_release_chip_series(chip_series_t *s)
 		s->chips_param = NULL;
 		s->num_of_chips = 0;
 	}
-	memset(s, 0, sizeof(chip_series_t));
+	memset(s, 0, sizeof(struct chip_series_t));
 	
 	return ERROR_OK;
 }

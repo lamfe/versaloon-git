@@ -21,19 +21,20 @@
 
 #include "list.h"
 
-typedef struct MEMLIST
+struct memlist
 {
 	uint32_t addr;
 	uint32_t len;
-	struct SLLIST list;
-}memlist;
+	struct sllist list;
+};
 
 #define MEMLIST_GetNext(ml)						\
-						sllist_get_container(ml->list.next, memlist, list)
+					sllist_get_container(ml->list.next, struct memlist, list)
 
-uint32_t MEMLIST_CalcAllSize(memlist *ml);
-RESULT MEMLIST_Add(memlist **ml, uint32_t addr, uint32_t len, uint32_t page_size);
-void MEMLIST_Free(memlist **ml);
+uint32_t MEMLIST_CalcAllSize(struct memlist *ml);
+RESULT MEMLIST_Add(struct memlist **ml, uint32_t addr, uint32_t len, 
+					uint32_t page_size);
+void MEMLIST_Free(struct memlist **ml);
 
 #endif /* __MEMLIST_H_INCLUDED__ */
 

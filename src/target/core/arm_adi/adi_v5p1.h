@@ -20,15 +20,15 @@
 #ifndef __ADI_V5P1_H_INCLUDED__
 #define __ADI_V5P1_H_INCLUDED__
 
-typedef enum
+enum adi_dp_if_type_t
 {
 	ADI_DP_JTAG = 1, 
 	ADI_DP_SWJ = 2
-} adi_dp_if_type_t;
+};
 
 typedef struct
 {
-	adi_dp_if_type_t type;
+	enum adi_dp_if_type_t type;
 	union
 	{
 		struct
@@ -50,7 +50,7 @@ typedef struct
 	uint32_t tar_autoincr_block;
 }adi_dp_if_t;
 
-typedef struct
+struct adi_dp_t
 {
 	uint8_t cur_ir;
 	uint8_t ack;
@@ -59,17 +59,17 @@ typedef struct
 	uint32_t dp_sel_value;
 	uint32_t ap_csw_value;
 	uint32_t ap_tar_value;
-}adi_dp_t;
+};
 
-typedef struct
+struct adi_dp_info_t
 {
-	adi_dp_if_type_t type;
+	enum adi_dp_if_type_t type;
 	uint32_t if_id;
 	uint32_t config;			// MEM-AP register: CFG
 	uint32_t rom_address;		// MEM-AP register: BASE
-	uint32_t ahb_ap_id;		// MEM-AP register: IDR
-	adi_dp_t dp_state;
-}adi_dp_info_t;
+	uint32_t ahb_ap_id;			// MEM-AP register: IDR
+	struct adi_dp_t dp_state;
+};
 
 #define ADI_DP_IR_DPACC						0
 #define ADI_DP_IR_APACC						1
@@ -143,18 +143,20 @@ typedef struct
 #define ADI_AP_REG_CSW_MASTER_DEBUG			(1 << 29)
 #define ADI_AP_REG_CSW_DBGSWENABLE			(1 << 31)
 
-RESULT adi_init(programmer_info_t *prog, adi_dp_if_t *interf);
+RESULT adi_init(struct programmer_info_t *prog, adi_dp_if_t *interf);
 RESULT adi_fini(void);
 
 uint32_t adi_memap_get_max_tar_block_size(uint32_t tar_autoincr_block, 
 										uint32_t address);
 
-RESULT adi_memap_read_reg(uint32_t address, uint32_t *reg, uint8_t check_result);
-RESULT adi_memap_write_reg(uint32_t address, uint32_t *reg, uint8_t check_result);
+RESULT adi_memap_read_reg(uint32_t address, uint32_t *reg, 
+							uint8_t check_result);
+RESULT adi_memap_write_reg(uint32_t address, uint32_t *reg, 
+							uint8_t check_result);
 RESULT adi_memap_read_buf(uint32_t address, uint8_t *buffer, uint32_t len);
 RESULT adi_memap_write_buf(uint32_t address, uint8_t *buffer, uint32_t len);
 
-extern adi_dp_info_t adi_dp_info;
+extern struct adi_dp_info_t adi_dp_info;
 
 #endif		// __ADI_V5P1_H_INCLUDED__
 

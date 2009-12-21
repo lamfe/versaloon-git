@@ -38,8 +38,7 @@ uint8_t usbtojtagll_num_of_interface = 0;
 
 RESULT usbtojtagll_init(void)
 {
-	return usbtoxxx_init_command(USB_TO_JTAG_LL, 
-								 &usbtojtagll_num_of_interface);
+	return usbtoxxx_init_command(USB_TO_JTAG_LL, &usbtojtagll_num_of_interface);
 }
 
 RESULT usbtojtagll_fini(void)
@@ -74,10 +73,12 @@ RESULT usbtojtagll_tms(uint8_t interface_index, uint8_t *tms, uint8_t bytelen)
 		return ERROR_FAIL;
 	}
 #endif
-	return usbtoxxx_out_command(USB_TO_JTAG_LL, interface_index, tms, bytelen, 1);
+	return usbtoxxx_out_command(USB_TO_JTAG_LL, interface_index, tms, 
+									bytelen, 1);
 }
 
-RESULT usbtojtagll_tms_clocks(uint8_t interface_index, uint32_t bytelen, uint8_t tms)
+RESULT usbtojtagll_tms_clocks(uint8_t interface_index, uint32_t bytelen, 
+								uint8_t tms)
 {
 	uint8_t buff[5];
 	
@@ -102,7 +103,8 @@ RESULT usbtojtagll_tms_clocks(uint8_t interface_index, uint32_t bytelen, uint8_t
 	buff[3] = (bytelen >> 16) & 0xFF;
 	buff[4] = (bytelen >> 24) & 0xFF;
 	
-	return usbtoxxx_poll_command(USB_TO_JTAG_LL, interface_index, buff, 5, NULL, 0);
+	return usbtoxxx_poll_command(USB_TO_JTAG_LL, interface_index, buff, 
+									5, NULL, 0);
 }
 
 RESULT usbtojtagll_scan(uint8_t interface_index, uint8_t* r, uint16_t bitlen, 
@@ -136,7 +138,7 @@ RESULT usbtojtagll_scan(uint8_t interface_index, uint8_t* r, uint16_t bitlen,
 	versaloon_cmd_buf[2 + tms_before_valid + bytelen + 1] = tms_after1;
 	
 	return usbtoxxx_inout_command(USB_TO_JTAG_LL, interface_index, 
-									versaloon_cmd_buf, bytelen + tms_before_valid + 4, 
-									bytelen, r, 0, bytelen, 0);
+							versaloon_cmd_buf, bytelen + tms_before_valid + 4, 
+							bytelen, r, 0, bytelen, 0);
 }
 

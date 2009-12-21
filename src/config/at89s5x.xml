@@ -1,5 +1,22 @@
 <?xml version="1.0"?>
 <series name="at89s5x">
+  <chip name="at89s5x">
+    <program_mode>p:PAGE(F)|b:BYTE(F)</program_mode>
+    <chip_id>0x001E0000</chip_id>
+    <app_page_size>256</app_page_size>
+    <app_page_num>32</app_page_num>
+    <app_default>0xFF</app_default>
+    <app_addr>0</app_addr>
+    <app_seg>0</app_seg>
+    <ee_page_size>0</ee_page_size>
+    <ee_page_num>0</ee_page_num>
+    <ee_default>0xFF</ee_default>
+    <usrsig_page_size>0</usrsig_page_size>
+	<usrsig_page_num>0</usrsig_page_num>
+	<fuse_size>0</fuse_size>
+    <lock_default>1</lock_default>
+    <lock_size>1</lock_size>
+  </chip>
   <chip name="at89s51">
     <program_mode>bp</program_mode>
     <chip_id>0x001E5106</chip_id>

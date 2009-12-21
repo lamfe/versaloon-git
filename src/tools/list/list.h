@@ -20,10 +20,10 @@
 #ifndef __LIST_H_INCLUDED__
 #define __LIST_H_INCLUDED__
 
-typedef struct SLLIST
+struct sllist
 {
-	struct SLLIST *next;
-} sllist;
+	struct sllist *next;
+};
 
 #define sllist_init_node(node)		((node).next = NULL)
 #define sllint_insert(node, new)	((node).next = &(new))

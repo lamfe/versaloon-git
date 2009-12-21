@@ -1,7 +1,7 @@
 object FormMain: TFormMain
-  Left = 428
+  Left = 84
   Height = 579
-  Top = 186
+  Top = 294
   Width = 841
   HorzScrollBar.Page = 840
   HorzScrollBar.Range = 400
@@ -44,7 +44,7 @@ object FormMain: TFormMain
       Height = 462
       Top = 1
       Width = 437
-      ActivePage = tsCOMISP
+      ActivePage = tsVsprog
       Align = alTop
       Font.CharSet = ANSI_CHARSET
       Font.Color = clBlack
@@ -52,16 +52,17 @@ object FormMain: TFormMain
       Font.Name = 'Arial'
       Font.Pitch = fpVariable
       ParentFont = False
-      TabIndex = 1
+      TabIndex = 2
       TabOrder = 0
       TabPosition = tpLeft
       OnChange = pcMainPageChanged
       OnChanging = pcMainChanging
       OnPageChanged = pcMainPageChanged
       object tsJTAG: TTabSheet
+        Tag = -1
         Caption = 'JTAG'
         ClientHeight = 454
-        ClientWidth = 389
+        ClientWidth = 409
         object gbOpenOCD: TGroupBox
           Left = 10
           Height = 197
@@ -183,7 +184,7 @@ object FormMain: TFormMain
           ClientHeight = 86
           ClientWidth = 365
           TabOrder = 1
-          object lblSVFPlayerSelectFile: TLabel
+          object lblSVFFile: TLabel
             Left = 16
             Height = 17
             Top = 16
@@ -199,14 +200,14 @@ object FormMain: TFormMain
             Caption = 'Option:'
             ParentColor = False
           end
-          object btnSVFPlayerRun: TButton
+          object btnSVFRun: TButton
             Left = 275
             Height = 25
             Hint = 'Run SVF_Player'
             Top = 46
             Width = 75
             Caption = '&Run'
-            OnClick = btnSVFPlayerRunClick
+            OnClick = btnSVFRunClick
             ParentShowHint = False
             ShowHint = True
             TabOrder = 0
@@ -223,6 +224,7 @@ object FormMain: TFormMain
             HideDirectories = False
             ButtonWidth = 23
             NumGlyphs = 0
+            Flat = True
             ParentShowHint = False
             ShowHint = True
             TabOrder = 1
@@ -279,10 +281,141 @@ object FormMain: TFormMain
           end
         end
       end
-      object tsCOMISP: TTabSheet
-        Caption = 'COMISP'
+      object tsAbout: TTabSheet
+        Tag = -1
+        Caption = 'About'
         ClientHeight = 454
-        ClientWidth = 389
+        ClientWidth = 409
+        object memoAbout: TMemo
+          Left = 0
+          Height = 294
+          Top = 0
+          Width = 409
+          Align = alClient
+          Lines.Strings = (
+            'About of vsgui:'
+            'vsgui is GUI front-end of vsprog.'
+            'Find more info here: '
+            'http:\\www.SimonQian.com\en\Versaloon'
+            ''
+            'Author:'
+            'SimonQian(http:\\www.SimonQian.com)'
+            ''
+            'Contributors:'
+          )
+          ReadOnly = True
+          ScrollBars = ssAutoBoth
+          TabOrder = 0
+        end
+        object pnlAbout: TPanel
+          Left = 0
+          Height = 160
+          Top = 294
+          Width = 409
+          Align = alBottom
+          ClientHeight = 160
+          ClientWidth = 409
+          TabOrder = 1
+          object gbUpdate: TGroupBox
+            Left = 1
+            Height = 59
+            Top = 100
+            Width = 407
+            Align = alBottom
+            Caption = 'FW Update'
+            ClientHeight = 41
+            ClientWidth = 403
+            TabOrder = 0
+            object btnUpdate: TButton
+              Left = 296
+              Height = 25
+              Top = 6
+              Width = 75
+              Caption = '&Update'
+              OnClick = btnUpdateClick
+              TabOrder = 0
+            end
+            object fnFW: TFileNameEdit
+              Left = 16
+              Height = 24
+              Top = 7
+              Width = 128
+              DialogTitle = 'Select Firmware'
+              DialogOptions = []
+              Filter = 'HEX File|*.hex'
+              FilterIndex = 0
+              HideDirectories = False
+              ButtonWidth = 23
+              NumGlyphs = 0
+              TabOrder = 1
+            end
+            object cbboxCOM: TComboBox
+              Left = 184
+              Height = 24
+              Top = 7
+              Width = 100
+              ItemHeight = 16
+              Style = csDropDownList
+              TabOrder = 2
+            end
+          end
+          object gbSetting: TGroupBox
+            Left = 1
+            Height = 99
+            Top = 1
+            Width = 407
+            Align = alClient
+            Caption = 'Settings'
+            ClientHeight = 81
+            ClientWidth = 403
+            TabOrder = 1
+            object lblVSProgDir: TLabel
+              Left = 19
+              Height = 17
+              Top = 14
+              Width = 50
+              Caption = 'VSProg:'
+              ParentColor = False
+            end
+            object lblOpenOCDDir: TLabel
+              Left = 19
+              Height = 17
+              Top = 48
+              Width = 64
+              Caption = 'OpenOCD:'
+              ParentColor = False
+            end
+            object dedtOpenOCD: TDirectoryEdit
+              Left = 91
+              Height = 24
+              Top = 48
+              Width = 259
+              ShowHidden = False
+              ButtonWidth = 23
+              NumGlyphs = 0
+              Flat = True
+              TabOrder = 0
+              OnChange = dedtPathChange
+            end
+            object dedtVSprog: TDirectoryEdit
+              Left = 91
+              Height = 24
+              Top = 8
+              Width = 259
+              ShowHidden = False
+              ButtonWidth = 23
+              NumGlyphs = 0
+              Flat = True
+              TabOrder = 1
+              OnChange = dedtPathChange
+            end
+          end
+        end
+      end
+      object tsVsprog: TTabSheet
+        ClientHeight = 454
+        ClientWidth = 409
+        TabVisible = False
         object gbChipName: TGroupBox
           Left = 11
           Height = 55
@@ -330,7 +463,7 @@ object FormMain: TFormMain
           end
         end
         object gbOption: TGroupBox
-          Left = 10
+          Left = 11
           Height = 137
           Top = 242
           Width = 369
@@ -518,6 +651,18 @@ object FormMain: TFormMain
             State = cbChecked
             TabOrder = 11
           end
+          object btnModeSetup: TButton
+            Left = 233
+            Height = 25
+            Hint = 'Mode Setup'
+            Top = 36
+            Width = 75
+            Caption = '&Setup'
+            OnClick = btnModeSetupClick
+            ParentShowHint = False
+            ShowHint = True
+            TabOrder = 12
+          end
         end
         object gbInputFile: TGroupBox
           Left = 11
@@ -659,7 +804,7 @@ object FormMain: TFormMain
             Hint = 'Display Calibration Value'
             Top = 109
             Width = 45
-            Caption = 'Cali.'
+            Caption = 'Cali'
             OnClick = btnEditCaliClick
             ParentShowHint = False
             ShowHint = True
@@ -806,102 +951,6 @@ object FormMain: TFormMain
           end
         end
       end
-      object tsAVR8: TTabSheet
-        Caption = 'AVR8'
-      end
-      object tsAT89S5X: TTabSheet
-        Caption = 'AT89S5X'
-      end
-      object tsMSP430: TTabSheet
-        Caption = 'MSP430'
-      end
-      object tsC8051F: TTabSheet
-        Caption = 'C8051F'
-      end
-      object tsPSoC1: TTabSheet
-        Caption = 'PSoC1'
-      end
-      object tsLPCICP: TTabSheet
-        Caption = 'LPCICP'
-      end
-      object tsCortexM3: TTabSheet
-        Caption = 'CortexM3'
-      end
-      object tsAbout: TTabSheet
-        Caption = 'About'
-        ClientHeight = 454
-        ClientWidth = 389
-        object memoAbout: TMemo
-          Left = 0
-          Height = 395
-          Top = 0
-          Width = 389
-          Align = alClient
-          Lines.Strings = (
-            'About of vsgui:'
-            'vsgui is GUI front-end of vsprog.'
-            'Find more info here: '
-            'http:\\www.SimonQian.com\en\Versaloon'
-            ''
-            'Author:'
-            'SimonQian(http:\\www.SimonQian.com)'
-            ''
-            'Contributors:'
-          )
-          ReadOnly = True
-          ScrollBars = ssAutoBoth
-          TabOrder = 0
-        end
-        object gbUpdate: TGroupBox
-          Left = 0
-          Height = 59
-          Top = 395
-          Width = 389
-          Align = alBottom
-          Caption = 'FW Update'
-          ClientHeight = 41
-          ClientWidth = 385
-          TabOrder = 1
-          object btnUpdate: TButton
-            Left = 296
-            Height = 25
-            Top = 6
-            Width = 75
-            Caption = '&Update'
-            OnClick = btnUpdateClick
-            TabOrder = 0
-          end
-          object fnFW: TFileNameEdit
-            Left = 16
-            Height = 24
-            Top = 7
-            Width = 128
-            DialogTitle = 'Select Firmware'
-            DialogOptions = []
-            Filter = 'HEX File|*.hex'
-            FilterIndex = 0
-            HideDirectories = False
-            ButtonWidth = 23
-            NumGlyphs = 0
-            TabOrder = 1
-          end
-          object cbboxCOM: TComboBox
-            Left = 184
-            Height = 24
-            Top = 7
-            Width = 100
-            ItemHeight = 16
-            Style = csDropDownList
-            TabOrder = 2
-          end
-        end
-      end
-      object tsSTM8: TTabSheet
-        Caption = 'STM8'
-      end
-      object tsEEPROM: TTabSheet
-        Caption = 'EEPROM'
-      end
     end
     object memoInfo: TMemo
       Left = 1
@@ -976,13 +1025,6 @@ object FormMain: TFormMain
       OnClick = miExitClick
     end
   end
-  object tDelay: TTimer
-    Enabled = False
-    Interval = 10
-    OnTimer = tDelayTimer
-    left = 608
-    top = 488
-  end
   object odInputFile: TOpenDialog
     DefaultExt = '.hex'
     Filter = 'HEX File|*.hex|BIN File|*.bin'
@@ -1000,7 +1042,7 @@ object FormMain: TFormMain
     Enabled = False
     Interval = 500
     OnTimer = tPollProgrammerTimer
-    left = 503
+    left = 608
     top = 488
   end
 end

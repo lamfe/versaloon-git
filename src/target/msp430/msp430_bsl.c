@@ -40,9 +40,10 @@
 #include "msp430.h"
 #include "msp430_internal.h"
 
-static programmer_info_t *p = NULL;
+static struct programmer_info_t *p = NULL;
 
-RESULT msp430_bsl_program(operation_t operations, program_info_t *pi, programmer_info_t *prog)
+RESULT msp430_bsl_program(struct operation_t operations, 
+					struct program_info_t *pi, struct programmer_info_t *prog)
 {
 	pi = pi;
 	operations = operations;

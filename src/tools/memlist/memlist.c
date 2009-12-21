@@ -34,10 +34,10 @@
 #define MEMLIST_AdjustLen(len, page_size)		\
 						(((len) + (page_size) - 1) / (page_size) * (page_size))
 
-static RESULT MEMLIST_Merge(memlist *ml, uint32_t addr, uint32_t len, 
+static RESULT MEMLIST_Merge(struct memlist *ml, uint32_t addr, uint32_t len, 
 							uint32_t page_size)
 {
-	memlist *ml_tmp = ml;
+	struct memlist *ml_tmp = ml;
 	uint32_t head = 0, cur_head = 0, tail = 0, cur_tail = 0;
 	
 	if (NULL == ml_tmp)
@@ -76,7 +76,7 @@ static RESULT MEMLIST_Merge(memlist *ml, uint32_t addr, uint32_t len,
 		ml = MEMLIST_GetNext(ml_tmp);
 		while (ml != NULL)
 		{
-			memlist *ml_swap;
+			struct memlist *ml_swap;
 			
 			cur_head = ml->addr;
 			cur_tail = ml->addr + ml->len;
@@ -87,7 +87,8 @@ static RESULT MEMLIST_Merge(memlist *ml, uint32_t addr, uint32_t len,
 			}
 			
 			// merge this ml
-			ml_tmp->len = MEMLIST_AdjustLen(max(tail, cur_tail) - head, page_size);
+			ml_tmp->len = MEMLIST_AdjustLen(max(tail, cur_tail) - head, 
+												page_size);
 			// save next ml in the list
 			ml_swap = MEMLIST_GetNext(ml);
 			// fix the list
@@ -111,11 +112,12 @@ static RESULT MEMLIST_Merge(memlist *ml, uint32_t addr, uint32_t len,
 	return ERROR_FAIL;
 }
 
-static void MEMLIST_Insert(memlist **ml, memlist **newitem)
+static void MEMLIST_Insert(struct memlist **ml, struct memlist **newitem)
 {
-	memlist *ml_tmp, ml_virtual_head;
+	struct memlist *ml_tmp, ml_virtual_head;
 	
-	if ((NULL == ml) || (NULL == *ml) || (NULL == newitem) || (NULL == *newitem))
+	if ((NULL == ml) || (NULL == *ml) || (NULL == newitem) 
+		|| (NULL == *newitem))
 	{
 		return;
 	}
@@ -135,7 +137,7 @@ static void MEMLIST_Insert(memlist **ml, memlist **newitem)
 	sllint_insert(ml_tmp->list, (*newitem)->list);
 }
 
-uint32_t MEMLIST_CalcAllSize(memlist *ml)
+uint32_t MEMLIST_CalcAllSize(struct memlist *ml)
 {
 	uint32_t size = 0;
 	
@@ -148,9 +150,10 @@ uint32_t MEMLIST_CalcAllSize(memlist *ml)
 	return size;
 }
 
-RESULT MEMLIST_Add(memlist **ml, uint32_t addr, uint32_t len, uint32_t page_size)
+RESULT MEMLIST_Add(struct memlist **ml, uint32_t addr, uint32_t len, 
+					uint32_t page_size)
 {
-	memlist *newitem = NULL;
+	struct memlist *newitem = NULL;
 	
 	if (NULL == ml)
 	{
@@ -159,7 +162,7 @@ RESULT MEMLIST_Add(memlist **ml, uint32_t addr, uint32_t len, uint32_t page_size
 	
 	if (NULL == *ml)
 	{
-		*ml = (memlist*)malloc(sizeof(memlist));
+		*ml = (struct memlist*)malloc(sizeof(struct memlist));
 		if (NULL == *ml)
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
@@ -174,7 +177,7 @@ RESULT MEMLIST_Add(memlist **ml, uint32_t addr, uint32_t len, uint32_t page_size
 	{
 		if (ERROR_OK != MEMLIST_Merge(*ml, addr, len, page_size))
 		{
-			newitem = (memlist*)malloc(sizeof(memlist));
+			newitem = (struct memlist*)malloc(sizeof(struct memlist));
 			if (NULL == newitem)
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
@@ -191,9 +194,9 @@ RESULT MEMLIST_Add(memlist **ml, uint32_t addr, uint32_t len, uint32_t page_size
 	return ERROR_OK;
 }
 
-void MEMLIST_Free(memlist **ml)
+void MEMLIST_Free(struct memlist **ml)
 {
-	memlist *tmp1, *tmp2;
+	struct memlist *tmp1, *tmp2;
 	
 	if (NULL == ml)
 	{

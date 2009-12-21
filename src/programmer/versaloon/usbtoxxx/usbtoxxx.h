@@ -67,8 +67,8 @@ RESULT usbtolpcicp_config(uint8_t interface_index);
 RESULT usbtolpcicp_enter_program_mode(uint8_t interface_index);
 RESULT usbtolpcicp_in(uint8_t interface_index, uint8_t *buff, uint16_t len);
 RESULT usbtolpcicp_out(uint8_t interface_index, uint8_t *buff, uint16_t len);
-RESULT usbtolpcicp_poll_ready(uint8_t interface_index, uint8_t *ret, uint8_t data, 
-							  uint8_t setmask, uint8_t clearmask, uint16_t pollcnt);
+RESULT usbtolpcicp_poll_ready(uint8_t interface_index, uint8_t *ret, 
+		uint8_t data, uint8_t setmask, uint8_t clearmask, uint16_t pollcnt);
 
 
 
@@ -77,7 +77,8 @@ RESULT usbtojtagll_init(void);
 RESULT usbtojtagll_fini(void);
 RESULT usbtojtagll_config(uint8_t interface_index, uint16_t kHz);
 RESULT usbtojtagll_tms(uint8_t interface_index, uint8_t *tms, uint8_t bytelen);
-RESULT usbtojtagll_tms_clocks(uint8_t interface_index, uint32_t bytelen, uint8_t tms);
+RESULT usbtojtagll_tms_clocks(uint8_t interface_index, uint32_t bytelen, 
+								uint8_t tms);
 RESULT usbtojtagll_scan(uint8_t interface_index, uint8_t* r, uint16_t bitlen, 
 						uint8_t tms_before_valid, uint8_t tms_before, 
 						uint8_t tms_after0, uint8_t tms_after1);
@@ -106,7 +107,8 @@ RESULT usbtoc2_fini(void);
 RESULT usbtoc2_config(uint8_t interface_index);
 RESULT usbtoc2_writeaddr(uint8_t interface_index, uint8_t addr);
 RESULT usbtoc2_readaddr(uint8_t interface_index, uint8_t *data);
-RESULT usbtoc2_data(uint8_t interface_index, uint8_t r, uint8_t len, uint8_t *buf);
+RESULT usbtoc2_data(uint8_t interface_index, uint8_t r, uint8_t len, 
+					uint8_t *buf);
 
 
 
@@ -115,11 +117,9 @@ RESULT usbtoi2c_init(void);
 RESULT usbtoi2c_fini(void);
 RESULT usbtoi2c_set_speed(uint8_t interface_index, uint16_t kHz);
 RESULT usbtoi2c_read(uint8_t interface_index, uint16_t chip_addr, 
-					 uint8_t chip_addr_len, uint8_t *data, uint16_t data_len, 
-					 uint8_t stop);
+		uint8_t chip_addr_len, uint8_t *data, uint16_t data_len, uint8_t stop);
 RESULT usbtoi2c_write(uint8_t interface_index, uint16_t chip_addr, 
-					  uint8_t chip_addr_len, uint8_t *data, uint16_t data_len, 
-					  uint8_t stop);
+		uint8_t chip_addr_len, uint8_t *data, uint16_t data_len, uint8_t stop);
 
 
 
@@ -127,15 +127,16 @@ RESULT usbtoi2c_write(uint8_t interface_index, uint16_t chip_addr,
 RESULT usbtomsp430jtag_init(void);
 RESULT usbtomsp430jtag_fini(void);
 RESULT usbtomsp430jtag_config(uint8_t interface_index, uint8_t has_test);
-RESULT usbtomsp430jtag_ir(uint8_t interface_index, uint8_t *ir, uint8_t want_ret);
+RESULT usbtomsp430jtag_ir(uint8_t interface_index, uint8_t *ir, 
+							uint8_t want_ret);
 RESULT usbtomsp430jtag_dr(uint8_t interface_index, uint32_t *dr, uint8_t len, 
 						  uint8_t want_ret);
 RESULT usbtomsp430jtag_tclk(uint8_t interface_index, uint8_t value);
 RESULT usbtomsp430jtag_tclk_strobe(uint8_t interface_index, uint16_t cnt);
 RESULT usbtomsp430jtag_reset(uint8_t interface_index);
-RESULT usbtomsp430jtag_poll(uint8_t interface_index, uint32_t dr, uint32_t mask, 
-							uint32_t value, uint8_t len, uint16_t poll_cnt, 
-							uint8_t toggle_tclk);
+RESULT usbtomsp430jtag_poll(uint8_t interface_index, uint32_t dr, 
+							uint32_t mask, uint32_t value, uint8_t len, 
+							uint16_t poll_cnt, uint8_t toggle_tclk);
 
 
 
@@ -143,7 +144,8 @@ RESULT usbtomsp430jtag_poll(uint8_t interface_index, uint32_t dr, uint32_t mask,
 RESULT usbtomsp430sbw_init(void);
 RESULT usbtomsp430sbw_fini(void);
 RESULT usbtomsp430sbw_config(uint8_t interface_index);
-RESULT usbtomsp430sbw_ir(uint8_t interface_index, uint8_t *ir, uint8_t want_ret);
+RESULT usbtomsp430sbw_ir(uint8_t interface_index, uint8_t *ir, 
+							uint8_t want_ret);
 RESULT usbtomsp430sbw_dr(uint8_t interface_index, uint32_t *dr, uint8_t len, 
 						 uint8_t want_ret);
 RESULT usbtomsp430sbw_tclk(uint8_t interface_index, uint8_t value);
@@ -177,7 +179,8 @@ RESULT usbtoswj_config(uint8_t interface_index, uint8_t trn, uint16_t retry,
 					   uint16_t dly);
 RESULT usbtoswj_seqout(uint8_t interface_index, uint8_t *data, uint16_t bitlen);
 RESULT usbtoswj_seqin(uint8_t interface_index, uint8_t *data, uint16_t bitlen);
-RESULT usbtoswj_transact(uint8_t interface_index, uint8_t request, uint32_t *data);
+RESULT usbtoswj_transact(uint8_t interface_index, uint8_t request, 
+							uint32_t *data);
 uint8_t usbtoswj_get_last_ack(void);
 
 

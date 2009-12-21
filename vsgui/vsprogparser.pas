@@ -5,14 +5,14 @@ unit vsprogparser;
 interface
 
 uses
-  Classes, SysUtils, parameditor;
+  Classes, SysUtils;
 
 type
 
-  TLogOutputFunc    = procedure(line: string) of object;
+  TLogOutputFunc    = procedure(var line: string) of object;
   TProgressInfoType = (liStartSection, liStep, liEndSection);
   TLogProgressFunc  = procedure(ProgressInfo: TProgressInfoType; info: string) of object;
-  TParserFunc = function(line: string): boolean of object;
+  TParserFunc = function(var line: string): boolean of object;
 
   TVSProg_Info = record
     TargetVoltage: integer;
@@ -27,19 +27,21 @@ type
     procedure SetCallbackFunc(func: TParserFunc);
 
     function CommonParser(line: string): boolean;
-    function ErrorParser(line: string): boolean;
-    function VersionParser(line: string): boolean;
-    function TargetVoltageParser(line: string): boolean;
-    function OperationParser(line: string): boolean;
+    function ErrorParser(var line: string): boolean;
+    function VersionParser(var line: string): boolean;
+    function TargetVoltageParser(var line: string): boolean;
+    function OperationParser(var line: string): boolean;
     // used for parsing fuse/lock/calibration settings
-    function SettingTargetInfoParser(line: string): boolean;
+    function SettingTargetInfoParser(var line: string): boolean;
     // used for parsing flash/eeprom information
-    function MemoryTargetInfoParser(line: string): boolean;
-    function FuseDataParser(line: string): boolean;
-    function LockDataParser(line: string): boolean;
-    function CaliDataParser(line: string): boolean;
-    function SupportParser(line: string): boolean;
-    function AutoDetectParser(line: string): boolean;
+    function MemoryTargetInfoParser(var line: string): boolean;
+    function FuseDataParser(var line: string): boolean;
+    function LockDataParser(var line: string): boolean;
+    function CaliDataParser(var line: string): boolean;
+    function UsrsigDataParser(var line: string): boolean;
+    function SupportParser(var line: string): boolean;
+    function AutoDetectParser(var line: string): boolean;
+    function TargetParser(var line: string): boolean;
   private
     FLogOutputEnable: boolean;
     FLogOutputFunc: TLogOutputFunc;
@@ -51,7 +53,7 @@ type
     FFatalError:    boolean;
     FErrorStr:      string;
     FResultStrings: TStringList;
-    function ParseTargetData(line, target: string; var result_str: string): boolean;
+    function ParseTargetData(var line: string; target: string; var result_str: string): boolean;
   public
     constructor Create;
     destructor Destroy;
@@ -68,7 +70,95 @@ type
     property ResultStrings: TStringList Read FResultStrings;
   end;
 
+  function GetNumericParameter(line, para_name: string; var Value: integer): boolean;
+  function GetNumericParameter(line, para_name: string; var Value: cardinal): boolean;
+  function GetLiteralParameter(line, para_name: string; var Value: string): boolean;
+
+const
+  EQUAL_STR: string      = ' = ';
+
 implementation
+
+function GetLiteralParameter(line, para_name: string; var Value: string): boolean;
+var
+  pos_start, pos_end: integer;
+  str_tmp: string;
+begin
+  pos_start := Pos(para_name + EQUAL_STR, line);
+  if pos_start > 0 then
+  begin
+    str_tmp := Copy(line, pos_start + Length(para_name + EQUAL_STR),
+      Length(line) - pos_start);
+
+    pos_end := Pos(',', str_tmp);
+    if pos_end > 1 then
+    begin
+      str_tmp := Copy(str_tmp, 1, pos_end - 1);
+    end;
+
+    Value  := str_tmp;
+    Result := True;
+  end
+  else
+  begin
+    Value  := '';
+    Result := False;
+  end;
+end;
+
+function GetNumericParameter(line, para_name: string; var Value: cardinal): boolean;
+var
+  pos_start, pos_end: integer;
+  str_tmp: string;
+begin
+  pos_start := Pos(para_name + EQUAL_STR, line);
+  if pos_start > 0 then
+  begin
+    str_tmp := Copy(line, pos_start + Length(para_name + EQUAL_STR),
+      Length(line) - pos_start);
+
+    pos_end := Pos(',', str_tmp);
+    if pos_end > 1 then
+    begin
+      str_tmp := Copy(str_tmp, 1, pos_end - 1);
+    end;
+
+    Value  := StrToInt(str_tmp);
+    Result := True;
+  end
+  else
+  begin
+    Value  := 0;
+    Result := False;
+  end;
+end;
+
+function GetNumericParameter(line, para_name: string; var Value: integer): boolean;
+var
+  pos_start, pos_end: integer;
+  str_tmp: string;
+begin
+  pos_start := Pos(para_name + EQUAL_STR, line);
+  if pos_start > 0 then
+  begin
+    str_tmp := Copy(line, pos_start + Length(para_name + EQUAL_STR),
+      Length(line) - pos_start);
+
+    pos_end := Pos(',', str_tmp);
+    if pos_end > 1 then
+    begin
+      str_tmp := Copy(str_tmp, 1, pos_end - 1);
+    end;
+
+    Value  := StrToInt(str_tmp);
+    Result := True;
+  end
+  else
+  begin
+    Value  := 0;
+    Result := False;
+  end;
+end;
 
 { TVSProg_Parser }
 
@@ -105,7 +195,7 @@ begin
   FCallbackEnable := func <> nil;
 end;
 
-function TVSProg_Parser.ParseTargetData(line, target: string;
+function TVSProg_Parser.ParseTargetData(var line: string; target: string;
   var result_str: string): boolean;
 var
   pos_start: integer;
@@ -153,19 +243,22 @@ begin
   end;
 end;
 
-function TVSProg_Parser.ErrorParser(line: string): boolean;
+function TVSProg_Parser.ErrorParser(var line: string): boolean;
 begin
   Result := True;
   if ((Pos('Error:', line) = 1) or (Pos('/****Bug****/:', line) = 1) or
-    (Pos('fail', line) <> 0)) and not FFatalError then
+    (Pos('fail', line) <> 0)) then
   begin
-    FFatalError := True;
-    FErrorStr   := line;
+    if not FFatalError then
+    begin
+      FFatalError := True;
+      FErrorStr   := line;
+    end;
     Result      := False;
   end;
 end;
 
-function TVSProg_Parser.VersionParser(line: string): boolean;
+function TVSProg_Parser.VersionParser(var line: string): boolean;
 begin
   Result := True;
   if Pos('vsprog', LowerCase(line)) = 1 then
@@ -174,21 +267,23 @@ begin
   end;
 end;
 
-function TVSProg_Parser.TargetVoltageParser(line: string): boolean;
+function TVSProg_Parser.TargetVoltageParser(var line: string): boolean;
 var
   pos_start: integer;
+  strTmp: string;
 begin
   Result    := True;
   pos_start := Pos('Target runs at ', line);
   if pos_start > 0 then
   begin
     Inc(pos_start, Length('Target runs at '));
-    FResultStrings.Add(IntToStr(
-      Trunc(StrToFloat(Copy(line, pos_start, Length(line) - pos_start - 1)) * 1000)));
+    strTmp := Copy(line, pos_start, Length(line) - pos_start);
+    pos_start := Trunc(StrToFloat(strTmp) * 1000);
+    FResultStrings.Add(IntToStr(pos_start));
   end;
 end;
 
-function TVSProg_Parser.OperationParser(line: string): boolean;
+function TVSProg_Parser.OperationParser(var line: string): boolean;
 var
   i: integer;
 const
@@ -232,7 +327,7 @@ begin
   end;
 end;
 
-function TVSProg_Parser.SettingTargetInfoParser(line: string): boolean;
+function TVSProg_Parser.SettingTargetInfoParser(var line: string): boolean;
 begin
   Result := True;
   if (Pos('setting: ', line) = 1) or (Pos('warning: ', line) = 1) or
@@ -242,13 +337,13 @@ begin
   end;
 end;
 
-function TVSProg_Parser.MemoryTargetInfoParser(line: string): boolean;
+function TVSProg_Parser.MemoryTargetInfoParser(var line: string): boolean;
 begin
   line   := line;
   Result := True;
 end;
 
-function TVSProg_Parser.FuseDataParser(line: string): boolean;
+function TVSProg_Parser.FuseDataParser(var line: string): boolean;
 var
   tmpStr: string;
 begin
@@ -259,7 +354,7 @@ begin
   end;
 end;
 
-function TVSProg_Parser.LockDataParser(line: string): boolean;
+function TVSProg_Parser.LockDataParser(var line: string): boolean;
 var
   tmpStr: string;
 begin
@@ -270,7 +365,18 @@ begin
   end;
 end;
 
-function TVSProg_Parser.CaliDataParser(line: string): boolean;
+function TVSProg_Parser.UsrsigDataParser(var line: string): boolean;
+var
+  tmpStr: string;
+begin
+  Result := True;
+  if ParseTargetData(line, 'usrsig', tmpStr) then
+  begin
+    FResultStrings.Add(tmpStr);
+  end;
+end;
+
+function TVSProg_Parser.CaliDataParser(var line: string): boolean;
 var
   tmpStr: string;
 begin
@@ -281,13 +387,13 @@ begin
   end;
 end;
 
-function TVSProg_Parser.SupportParser(line: string): boolean;
+function TVSProg_Parser.SupportParser(var line: string): boolean;
 begin
   line   := line;
   Result := True;
 end;
 
-function TVSProg_Parser.AutoDetectParser(line: string): boolean;
+function TVSProg_Parser.AutoDetectParser(var line: string): boolean;
 var
   pos_start: integer;
 begin
@@ -298,6 +404,12 @@ begin
     // chip found
     FResultStrings.Add(Copy(line, 9, pos_start - 9));
   end;
+end;
+
+function TVSProg_Parser.TargetParser(var line: string): boolean;
+begin
+  line := line;
+  Result := True;
 end;
 
 end.
