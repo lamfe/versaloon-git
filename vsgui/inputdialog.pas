@@ -20,6 +20,7 @@ type
     btnCancel: TButton;
     edtInput:  TEdit;
     lblPrefix: TLabel;
+    procedure CenterControl(ctl: TControl; ref: TControl);
     procedure edtInputKeyPress(Sender: TObject; var Key: char);
     procedure FormKeyPress(Sender: TObject; var Key: char);
     procedure FormShow(Sender: TObject);
@@ -101,6 +102,13 @@ begin
   end;
 end;
 
+{ TFormInputDialog }
+
+procedure TFormInputDialog.CenterControl(ctl: TControl; ref: TControl);
+begin
+  ctl.Top := ref.Top + (ref.Height - ctl.Height) div 2;
+end;
+
 procedure TFormInputDialog.edtInputKeyPress(Sender: TObject; var Key: char);
 var
   Value, radix: integer;
@@ -160,6 +168,9 @@ begin
   lblPrefix.Caption  := CommonPrefix;
   edtInput.MaxLength := CommonMaxLength;
   edtInput.Text      := '';
+
+  CenterControl(lblPrefix, edtInput);
+  UpdateShowing;
 end;
 
 function TFormInputDialog.GetString: string;

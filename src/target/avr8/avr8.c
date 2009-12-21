@@ -83,6 +83,8 @@ RESULT avr8_parse_argument(char cmd, const char *argu)
 	case 'h':
 		avr8_usage();
 		break;
+	case 'E':
+		break;
 	case 'l':
 		// define Lock
 		if (NULL == argu)

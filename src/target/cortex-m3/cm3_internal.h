@@ -36,6 +36,8 @@ struct cm3_param_t
 };
 
 extern struct cm3_param_t cm3_chip_param;
+extern uint8_t cm3_execute_flag;
+extern uint32_t cm3_execute_addr;
 extern uint16_t cm3_buffer_size;
 extern const struct cm3_param_t cm3_chips_param[];
 

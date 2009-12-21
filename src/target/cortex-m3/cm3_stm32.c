@@ -600,6 +600,37 @@ RESULT stm32jtagswj_program(struct operation_t operations,
 		}
 	}
 	
+	if (cm3_execute_flag && (operations.write_operations & APPLICATION))
+	{
+		if (ERROR_OK != cm3_dp_halt())
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "halt stm32");
+			ret = ERRCODE_FAILURE_OPERATION;
+			goto leave_program_mode;
+		}
+		if (ERROR_OK != 
+				cm3_write_core_register(CM3_COREREG_PC, &cm3_execute_addr))
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "write PC");
+			ret = ERRCODE_FAILURE_OPERATION;
+			goto leave_program_mode;
+		}
+		reg = 0;
+		if ((ERROR_OK != cm3_read_core_register(CM3_COREREG_PC, &reg)) 
+			|| (reg != cm3_execute_addr))
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "verify written PC");
+			ret = ERRCODE_FAILURE_OPERATION;
+			goto leave_program_mode;
+		}
+		if (ERROR_OK != cm3_dp_run())
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "run code");
+			ret = ERRCODE_FAILURE_OPERATION;
+			goto leave_program_mode;
+		}
+	}
+	
 leave_program_mode:
 	// lock flash
 	reg = STM32_FLASH_CR_LOCK;

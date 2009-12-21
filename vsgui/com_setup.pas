@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, LResources, Forms, Controls, Graphics, Dialogs,
-  StdCtrls, Synaser;
+  StdCtrls, Synaser, vsprogparser;
 
 type
   TComMode = record
@@ -46,6 +46,7 @@ type
   public
     { public declarations }
     procedure ComInitPara(ComInitMode: TComMode);
+    procedure ComInitPara(CommStr: string);
     procedure GetComMode(var ComMode: TComMode);
   end; 
 
@@ -122,6 +123,36 @@ procedure TFormComSetup.FormShow(Sender: TObject);
 begin
   CheckComPort;
   ActiveControl := cbboxCom;
+end;
+
+procedure TFormComSetup.ComInitPara(CommStr: string);
+var
+  tmpComm: TComMode;
+  str_tmp: string;
+begin
+  GetNumericParameter(CommStr, 'baudrate', tmpComm.baudrate);
+  GetNumericParameter(CommStr, 'datalength', tmpComm.datalength);
+  GetLiteralParameter(CommStr, 'paritybit', str_tmp);
+  if str_tmp <> '' then
+  begin
+    tmpComm.paritybit := str_tmp[1];
+  end;
+  GetLiteralParameter(CommStr, 'stopbit', str_tmp);
+  if str_tmp <> '' then
+  begin
+    tmpComm.stopbit := str_tmp[1];
+  end;
+  GetLiteralParameter(CommStr, 'handshake', str_tmp);
+  if str_tmp <> '' then
+  begin
+    tmpComm.handshake := str_tmp[1];
+  end;
+  GetLiteralParameter(CommStr, 'auxpin', str_tmp);
+  if str_tmp <> '' then
+  begin
+    tmpComm.auxpin := str_tmp[1];
+  end;
+  ComInitPara(tmpComm);
 end;
 
 procedure TFormComSetup.ComInitPara(ComInitMode: TComMode);

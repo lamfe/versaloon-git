@@ -88,28 +88,22 @@ Usage of %s:\n\
 		   CUR_TARGET_STRING);
 }
 
-static void comisp_support(void)
+void comisp_print_comm_info(uint8_t i)
 {
-	uint32_t i;
-	
-	for (i = 0; i < dimof(cur_chips_param); i++)
-	{
-		printf("\
-%s: baudrate = %d, datalength = %d, paritybit = %c, stopbit = %c, \
-handshake = %c, auxpin = %c\n",
-				cur_chips_param[i].chip_name, 
-				cur_chips_param[i].com_mode.baudrate,
-				cur_chips_param[i].com_mode.datalength,
-				cur_chips_param[i].com_mode.paritybit,
-				cur_chips_param[i].com_mode.stopbit,
-				cur_chips_param[i].com_mode.handshake,
-				cur_chips_param[i].com_mode.auxpin);
-	}
-	printf("\n");
+	printf("\
+baudrate = %d, datalength = %d, paritybit = %c, stopbit = %c, \
+handshake = %c, auxpin = %c",
+			cur_chips_param[i].com_mode.baudrate,
+			cur_chips_param[i].com_mode.datalength,
+			cur_chips_param[i].com_mode.paritybit,
+			cur_chips_param[i].com_mode.stopbit,
+			cur_chips_param[i].com_mode.handshake,
+			cur_chips_param[i].com_mode.auxpin);
 }
 
 RESULT comisp_parse_argument(char cmd, const char *argu)
 {
+	uint8_t i;
 	char *end_pointer, *cur_pointer;
 	
 	switch (cmd)
@@ -117,8 +111,12 @@ RESULT comisp_parse_argument(char cmd, const char *argu)
 	case 'h':
 		comisp_usage();
 		break;
-	case 'S':
-		comisp_support();
+	case 'E':
+		if (argu != NULL)
+		{
+			i = (uint8_t)strtoul(argu, NULL, 0);
+			comisp_print_comm_info(i);
+		}
 		break;
 	case 'b':
 		if ((NULL == argu) || (strlen(argu) == 0))
@@ -531,14 +529,16 @@ comtest_end:
 		}
 		return ret;
 	case COMISP_STM32:
-		return stm32isp_program(operations, pi);
+		ret = stm32isp_program(operations, pi);
 	case COMISP_LPCARM:
-		return lpcarmisp_program(operations, pi);
+		ret = lpcarmisp_program(operations, pi);
 	default:
 		// invalid target
 		LOG_BUG(_GETTEXT(ERRMSG_INVALID), TO_STR(comisp_chip_index), 
 				CUR_TARGET_STRING);
-		return ERRCODE_INVALID;
+		ret = ERRCODE_INVALID;
 	}
+	comisp_execute_flag = 0;
+	return ret;
 }
 

@@ -70,6 +70,8 @@ RESULT lpc900_parse_argument(char cmd, const char *argu)
 	case 'h':
 		lpc900_usage();
 		break;
+	case 'E':
+		break;
 	default:
 		return ERROR_FAIL;
 		break;

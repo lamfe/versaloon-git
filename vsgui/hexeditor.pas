@@ -612,8 +612,7 @@ begin
 
       // merge current
       Items[Result].ByteSize :=
-        1 + Max(Items[Result].Tail, Items[i].Tail) -
-        Items[Result].StartAddr;
+        1 + Max(Items[Result].Tail, Items[i].Tail) - Items[Result].StartAddr;
       Delete(i);
 
       Inc(i);
@@ -883,8 +882,7 @@ begin
       if FileParser[CurFileParserIndex].ReadFile <> nil then
       begin
         if not FileParser[CurFileParserIndex].ReadFile(hFile,
-          DataBuff[1], DataByteSize, StartAddress, SegAddr,
-          AddressOffset) then
+          DataBuff[1], DataByteSize, StartAddress, SegAddr, AddressOffset) then
         begin
           success := False;
           Beep();
@@ -1112,6 +1110,7 @@ begin
     begin
       Dec(goto_addr, StartAddress);
       sgDataGoToAddr(goto_addr, True);
+      Beep;
     end;
   end;
 end;
@@ -1169,6 +1168,7 @@ begin
         SearchInfo.UpSearch);
     end;
   end;
+  Beep;
   if DiffPos <> 0 then
   begin
     // found
@@ -1178,7 +1178,6 @@ begin
   else
   begin
     // not found in the first search, show message
-    Beep();
     MessageDlg('Error', SearchInfo.ForDataStr + ' not found.', mtError, [mbOK], 0);
   end;
 end;
@@ -1245,6 +1244,7 @@ begin
         SearchInfo.UpSearch);
     end;
   end;
+  Beep;
   if DiffPos <> 0 then
   begin
     // found
@@ -1295,7 +1295,6 @@ begin
   else if FirstSearch or (not SearchInfo.PromptDis) then
   begin
     // not found in the first search, show message
-    Beep();
     MessageDlg('Error', SearchInfo.ForDataStr + ' not found.', mtError, [mbOK], 0);
   end;
 end;

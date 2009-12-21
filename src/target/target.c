@@ -60,7 +60,7 @@ struct target_info_t targets_info[] =
 	{
 		STM32_STRING,						// name
 		NULL,								// sub_target
-		AUTO_DETECT,						// feature
+		AUTO_DETECT CAN_EXECUTE,			// feature
 		stm32_program_area_map,				// program_area_map
 		STM32_PROGRAM_MODE_STR,				// program_mode_str
 		stm32_parse_argument,				// parse_argument
@@ -724,6 +724,8 @@ void target_print_target(uint32_t index)
 		}
 		i++;
 	}
+	// extra info from target
+	targets_info[index].parse_argument('E', NULL);
 	printf("\n");
 	
 	// Targets based on ComPort outputs there special COM settings
@@ -1927,7 +1929,7 @@ RESULT target_build_chip_series(const char *chip_series,
 			// first chip is used to setting every chip
 			for (j = 1; j < s->num_of_chips; j++)
 			{
-				memcpy(&s->chips_param[i], &s->chips_param[0], 
+				memcpy(&s->chips_param[j], &s->chips_param[0], 
 							sizeof(struct chip_param_t));
 			}
 		}

@@ -75,6 +75,8 @@ RESULT psoc1_parse_argument(char cmd, const char *argu)
 	case 'h':
 		psoc1_usage();
 		break;
+	case 'E':
+		break;
 	default:
 		return ERROR_FAIL;
 		break;

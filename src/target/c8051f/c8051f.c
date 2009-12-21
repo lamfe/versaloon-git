@@ -70,6 +70,8 @@ RESULT c8051f_parse_argument(char cmd, const char *argu)
 	case 'h':
 		c8051f_usage();
 		break;
+	case 'E':
+		break;
 	default:
 		return ERROR_FAIL;
 		break;

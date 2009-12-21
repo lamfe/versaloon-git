@@ -82,6 +82,7 @@ type
     gbSVFPlayer: TGroupBox;
     gbPower:   TGroupBox;
     gbSetting: TGroupBox;
+    lblKHz: TLabel;
     lblOpenOCDDir: TLabel;
     lblVSProgDir: TLabel;
     lblPowerUnit: TLabel;
@@ -93,7 +94,7 @@ type
     lblOpenOCDInterface: TLabel;
     lblOpenOCDTarget: TLabel;
     lblOpenOCDScript: TLabel;
-    lbledtFreq: TLabeledEdit;
+    lbledtAddr: TLabeledEdit;
     lbledtExtraPara: TLabeledEdit;
     lbledtLock: TLabeledEdit;
     lbledtFuse: TLabeledEdit;
@@ -112,6 +113,7 @@ type
     pmTray:    TPopupMenu;
     sbMain:    TStatusBar;
     sedtPower: TSpinEdit;
+    sedtFreq: TSpinEdit;
     tPollProgrammer: TTimer;
     tsVsprog:  TTabSheet;
     tsJTAG:    TTabSheet;
@@ -235,10 +237,6 @@ const
   {$ELSE}
   OPENOCD_STR: string  = 'openocd.exe';
   {$ENDIF}
-  FREQ_STR: string     = 'Freq(KHz):';
-  FREQ_HINT: string    = 'Set operation frequency';
-  EXECUTE_ADDR_STR: string = 'execute:';
-  EXECUTE_ADDR_HINT: string = 'Set address to execute after operation';
   LOGMEMO_WIDTH: integer = 400;
 
 implementation
@@ -420,8 +418,8 @@ begin
   VSProg_GUIUpdateULCS(fuse, bytelen, lbledtFuse);
 end;
 
- // Update Series Features
- // C: Commport, X: eXecute, F, Frequency
+// Update Series Features
+// C: Commport, X: eXecute, F, Frequency
 procedure TFormMain.VSProg_GUIFeatureInit(para: string; append: boolean);
 var
   strTmp: string;
@@ -429,46 +427,50 @@ begin
   chkboxMP.Checked := False;
   chkboxMP.Enabled := (Pos('M', para) > 0);
 
-  strTmp := lbledtFreq.EditLabel.Caption;
-  if (Pos('F', para) > 0) or (Pos('X', para) > 0) then
+  if Pos('F', para) > 0 then
   begin
+    sedtFreq.Visible := True;
     btnModeSetup.Visible := False;
-    lbledtFreq.Visible := True;
-    if Pos('F', para) > 0 then
-    begin
-      lbledtFreq.EditLabel.Caption := FREQ_STR;
-      lbledtFreq.Hint := FREQ_HINT;
-    end
-    else
-    begin
-      lbledtFreq.EditLabel.Caption := EXECUTE_ADDR_STR;
-      lbledtFreq.Hint := EXECUTE_ADDR_HINT;
-    end;
-    if lbledtFreq.EditLabel.Caption <> strTmp then
-    begin
-      lbledtFreq.Text := '';
-    end;
-    lbledtFreq.Enabled := True;
   end
   else
   begin
-    lbledtFreq.Visible := False;
-    if not append then
-    begin
-      lbledtFreq.Text    := '';
-      lbledtFreq.Hint    := '';
-      lbledtFreq.Enabled := False;
-    end;
+    sedtFreq.Visible := False;
   end;
 
   if Pos('C', para) > 0 then
   begin
-    lbledtFreq.Visible := False;
+    sedtFreq.Visible := False;
     btnModeSetup.Visible := True;
+
+    // Set COMM Settings
+    strTmp := CurTargetChip.ExtraStr;
+    if strTmp <> '' then
+    begin
+      FormComSetup.ComInitPara(strTmp);
+    end
+    else
+    begin
+      strTmp := CurTargetSeries.SeriesInfo;
+      if strTmp <> '' then
+      begin
+        FormComSetup.ComInitPara(strTmp);
+      end;
+    end;
   end
   else
   begin
     btnModeSetup.Visible := False;
+  end;
+
+  lblKHz.Visible := sedtFreq.Visible;
+
+  if Pos('X', para) > 0 then
+  begin
+    lbledtAddr.Enabled := True;
+  end
+  else if not append then
+  begin
+    lbledtAddr.Enabled := False;
   end;
 
   if Pos('A', para) > 0 then
@@ -864,6 +866,7 @@ begin
   CenterControl(btnOpenFile, cbboxInputFile);
   CenterControl(lblMode, cbboxMode);
   CenterControl(btnModeSetup, cbboxMode);
+  CenterControl(sedtFreq, cbboxMode);
   CenterControl(chkboxNoconnect, lbledtFuse);
   CenterControl(chkboxNowarning, lbledtCali);
   CenterControl(lblOpenOCDInterface, cbboxOpenOCDInterface);
@@ -1040,7 +1043,8 @@ begin
             ComboBoxSetText(cbboxMode, xmlcfgMain.GetValue('target/mode', ''));
             cbboxModeChange(cbboxMode);
           end;
-          lbledtFreq.Text := xmlcfgMain.GetValue('target/freq', '');
+          sedtFreq.Value := xmlcfgMain.GetValue('target/freq', 1000);
+          lbledtAddr.Text := xmlcfgMain.GetValue('target/exe_addr', '');
           intTmp := xmlcfgMain.GetValue('target/files/number', 0);
           if Length(TargetFile) < intTmp then
           begin
@@ -1619,7 +1623,8 @@ begin
     AdjustComponentColor(lbledtLock);
     AdjustComponentColor(lbledtCali);
     AdjustComponentColor(lbledtUsrSig);
-    AdjustComponentColor(lbledtFreq);
+    AdjustComponentColor(lbledtAddr);
+    AdjustComponentColor(sedtFreq);
   end;
 end;
 
@@ -1659,7 +1664,8 @@ begin
   AdjustComponentColor(lbledtLock);
   AdjustComponentColor(lbledtCali);
   AdjustComponentColor(lbledtUsrSig);
-  AdjustComponentColor(lbledtFreq);
+  AdjustComponentColor(lbledtAddr);
+  AdjustComponentColor(sedtFreq);
 end;
 
 procedure TFormMain.dedtPathChange(Sender: TObject);
@@ -1703,7 +1709,8 @@ begin
   xmlcfgMain.SetValue('target/chip', cbboxTarget.Text);
   xmlcfgMain.SetValue('target/mode', cbboxMode.Text);
   xmlcfgMain.SetValue('target/filename', cbboxInputFile.Text);
-  xmlcfgMain.SetValue('target/freq', lbledtFreq.Text);
+  xmlcfgMain.SetValue('target/freq', sedtFreq.Value);
+  xmlcfgMain.SetValue('target/exe_addr', lbledtAddr.Text);
   if Length(TargetFile) > 0 then
   begin
     xmlcfgMain.SetValue('target/files/number', Length(TargetFile));
@@ -1953,12 +1960,9 @@ begin
   end;
 
   // Frequency
-  if lbledtFreq.Visible and lbledtFreq.Enabled and (lbledtFreq.Text <> '') then
+  if sedtFreq.Visible and sedtFreq.Enabled then
   begin
-    if lbledtFreq.EditLabel.Caption <> EXECUTE_ADDR_STR then
-    begin
-      caller.AddParameter('F' + lbledtFreq.Text);
-    end;
+    caller.AddParameter('F' + IntToStr(sedtFreq.Value));
   end;
 end;
 
@@ -1990,12 +1994,9 @@ begin
   end;
 
   // Execute
-  if lbledtFreq.Visible and lbledtFreq.Enabled and (lbledtFreq.Text <> '') then
+  if lbledtAddr.Visible and lbledtAddr.Enabled and (lbledtAddr.Text <> '') then
   begin
-    if lbledtFreq.EditLabel.Caption = EXECUTE_ADDR_STR then
-    begin
-      caller.AddParameter('x' + lbledtFreq.Text);
-    end;
+    caller.AddParameter('x' + lbledtAddr.Text);
   end;
 
   // Mass-product support
