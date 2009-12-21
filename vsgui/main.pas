@@ -23,9 +23,7 @@ type
     procedure Execute; override;
   public
     constructor Create();
-    property ConnectOK: boolean Read FConnectOK;
     property AppPath: string Read FAppPath Write FAppPath;
-    property TargetVoltage: integer Read FTargetVoltage;
   end;
 
   { TFormMain }
@@ -114,7 +112,6 @@ type
     sbMain:    TStatusBar;
     sedtPower: TSpinEdit;
     sedtFreq: TSpinEdit;
-    tPollProgrammer: TTimer;
     tsVsprog:  TTabSheet;
     tsJTAG:    TTabSheet;
     tiMain:    TTrayIcon;
@@ -153,7 +150,6 @@ type
     procedure pcMainChanging(Sender: TObject; var AllowChange: boolean);
     procedure pcMainPageChanged(Sender: TObject);
     procedure tiMainClick(Sender: TObject);
-    procedure tPollProgrammerTimer(Sender: TObject);
 
     procedure CenterControl(ctl: TControl; ref: TControl);
     procedure AdjustComponentColor(Sender: TControl);
@@ -247,50 +243,64 @@ procedure TPollThread.Update;
 begin
   if FConnectOK then
   begin
-    FormMain.lblPowerUnit.Caption := IntToStr(FTargetVoltage);
-  end
-  else
-  begin
-    FormMain.lblPowerUnit.Caption := IntToStr(-1);
+    // how to display?
+    //FormMain.Caption := IntToStr(FTargetVoltage);
   end;
 end;
 
 procedure TPollThread.Execute;
+var
+  i: integer;
 begin
-  if (not VSProg_Exists) or (not VSProg_Caller.Take()) then
+  i := 0;
+  while not Terminated do
   begin
-    // not available now
-    exit;
-  end;
-  VSProg_Taken_By_Polling := True;
+    Sleep(50);
+    Inc(i);
+    if i < 20 then
+    begin
+      continue;
+    end;
+    i := 0;
 
-  FTargetVoltage := 0;
-  VSProg_Caller.Application := FAppPath;
-  VSProg_Caller.RemoveAllParameters();
-  VSProg_Caller.AddParameter('V"voltage"');
-  VSProg_Parser.ParserFunc      := @VSProg_Parser.TargetVoltageParser;
-  VSProg_Parser.LogOutputEnable := False;
-  VSProg_Caller.Run(@VSProg_Parser.CommonParser, False, True);
-  VSProg_Parser.LogOutputEnable := True;
-  if (not VSProg_Parser.HasError) and (VSProg_Parser.ResultStrings.Count > 0) then
-  begin
-    FConnectOK     := True;
-    FTargetVoltage := StrToInt(VSProg_Parser.ResultStrings.Strings[0]);
-  end
-  else
-  begin
-    FConnectOK     := False;
+    if not VSProg_Caller.Take() then
+    begin
+      // not available now
+      continue;
+    end;
+    VSProg_Taken_By_Polling := True;
+
     FTargetVoltage := 0;
-  end;
+    VSProg_Caller.Application := FAppPath;
+    VSProg_Caller.RemoveAllParameters();
+    VSProg_Caller.AddParameter('V"voltage"');
+    VSProg_Parser.Prepare();
+    VSProg_Parser.ParserFunc      := @VSProg_Parser.TargetVoltageParser;
+    VSProg_Parser.LogOutputEnable := False;
+    VSProg_Caller.bProcessMessage := False;
+    VSProg_Caller.Run(@VSProg_Parser.CommonParser, False, True);
+    VSProg_Caller.bProcessMessage := True;
+    VSProg_Parser.LogOutputEnable := True;
+    if (not VSProg_Parser.HasError) and (VSProg_Parser.ResultStrings.Count > 0) then
+    begin
+      FConnectOK     := True;
+      FTargetVoltage := StrToInt(VSProg_Parser.ResultStrings.Strings[0]);
+    end
+    else
+    begin
+      FConnectOK     := False;
+      FTargetVoltage := 0;
+    end;
 
-  Synchronize(@Update);
-  VSProg_Taken_By_Polling := False;
+    Synchronize(@Update);
+    VSProg_Taken_By_Polling := False;
+  end;
 end;
 
 constructor TPollThread.Create();
 begin
   inherited Create(True);
-  FreeOnTerminate := False;
+  FreeOnTerminate := True;
 end;
 
 { TFormMain }
@@ -835,10 +845,10 @@ procedure TFormMain.FormDestroy(Sender: TObject);
 begin
   if PollThread <> nil then
   begin
-    PollThread.Terminate;
     PollThread.Free;
   end;
 
+  VSProg_Caller.Stop();
   VSProg_Caller.Destroy;
   VSProg_Parser.Destroy;
   VSProg_Targets.Destroy;
@@ -898,7 +908,7 @@ begin
   if VSProg_Exists and (PollThread <> nil) then
   begin
     PollThread.AppPath := dedtVSProg.Directory + VSPROG_STR;
-    tPollProgrammer.Enabled := True;
+    PollThread.Resume;
   end;
 
   // Load Setting
@@ -1131,10 +1141,13 @@ begin
   begin
     Beep();
     MessageDlg('Error', 'Please sellect FW Hex file.', mtError, [mbOK], 0);
+    exit;
   end;
 
   if not VSProg_PrepareToRunCLI then
   begin
+    Beep;
+    MessageDlg('Error', 'Fail to run.', mtError, [mbOK], 0);
     exit;
   end;
 
@@ -1691,7 +1704,11 @@ procedure TFormMain.FormClose(Sender: TObject; var CloseAction: TCloseAction);
 var
   i: integer;
 begin
-  VSProg_Caller.Stop();
+  if PollThread <> nil then
+  begin
+    PollThread.Terminate;
+    Sleep(100);
+  end;
 
   // save settings to config file
   xmlcfgMain.SetValue('vsprog_dir', dedtVSProg.Directory);
@@ -1786,16 +1803,8 @@ begin
   begin
     if VSProg_Taken_By_Polling then
     begin
-      // occupied by polling thread, wait it
-      if PollThread.Suspended then
-      begin
-        // PollThread crashes
-        VSProg_Taken_By_Polling := False;
-      end
-      else
-      begin
-        PollThread.WaitFor;
-      end;
+      // occupied by polling thread, wait a while
+      Sleep(100);
       if not VSProg_Caller.Take() then
       begin
         // give up ......
@@ -1960,7 +1969,7 @@ begin
   end;
 
   // Frequency
-  if sedtFreq.Visible and sedtFreq.Enabled then
+  if sedtFreq.Visible and sedtFreq.Enabled and (sedtFreq.Value > 0) then
   begin
     caller.AddParameter('F' + IntToStr(sedtFreq.Value));
   end;
@@ -2003,14 +2012,6 @@ begin
   if chkboxMP.Enabled and chkboxMP.Checked then
   begin
     caller.AddParameter('M');
-  end;
-end;
-
-procedure TFormMain.tPollProgrammerTimer(Sender: TObject);
-begin
-  if (Sender as TTimer).Enabled and (PollThread <> nil) and PollThread.Suspended then
-  begin
-    //PollThread.Resume;
   end;
 end;
 
