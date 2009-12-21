@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <series name="avr8">
   <chip name="avr8">
-    <program_mode>i:ISP(F)|j:JTAG(F)</program_mode>
+    <program_mode>i:ISP(F)|j:JTAG(F)|p:HVPP|s:HVSP</program_mode>
     <chip_id>0x001E0000</chip_id>
     <app_page_size>256</app_page_size>
     <app_page_num>1024</app_page_num>
