@@ -44,7 +44,6 @@
 #define cur_chip_param				target_chip_param
 #define cur_chips_param				target_chips.chips_param
 #define cur_chips_num				target_chips.num_of_chips
-#define cur_flash_offset			c8051f_flash_offset
 #define cur_prog_mode				program_mode
 #define cur_target_defined			target_defined
 
@@ -53,8 +52,6 @@ const struct program_area_map_t c8051f_program_area_map[] =
 	{APPLICATION_CHAR, 1, 0, 0, 0, 0},
 	{0, 0, 0, 0, 0, 0}
 };
-
-static uint32_t c8051f_flash_offset = 0;
 
 static void c8051f_usage(void)
 {
@@ -140,7 +137,6 @@ RESULT c8051f_write_buffer_from_file_callback(uint32_t address,
 			return ERRCODE_INVALID;
 		}
 */		
-		mem_addr += cur_flash_offset;
 		if ((mem_addr >= areas[APPLICATION_IDX].size) 
 			|| (length > areas[APPLICATION_IDX].size) 
 			|| ((mem_addr + length) > areas[APPLICATION_IDX].size))

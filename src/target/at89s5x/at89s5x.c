@@ -45,7 +45,6 @@
 #define cur_chip_param				target_chip_param
 #define cur_chips_param				target_chips.chips_param
 #define cur_chips_num				target_chips.num_of_chips
-#define cur_flash_offset			s5x_flash_offset
 #define cur_prog_mode				program_mode
 #define cur_target_defined			target_defined
 #define cur_program_area_map		s5x_program_area_map
@@ -59,8 +58,6 @@ const struct program_area_map_t s5x_program_area_map[] =
 
 static uint8_t s5x_lock = 0;
 static uint8_t s5x_fuse = 0;
-
-static uint16_t s5x_flash_offset = 0;
 
 static uint16_t s5x_byte_delay_us = 500;
 
@@ -204,7 +201,6 @@ RESULT s5x_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr,
 			return ERRCODE_INVALID;
 		}
 		
-		mem_addr += cur_flash_offset;
 		if ((mem_addr >= areas[APPLICATION_IDX].size) 
 			|| (length > areas[APPLICATION_IDX].size) 
 			|| ((mem_addr + length) > areas[APPLICATION_IDX].size))
