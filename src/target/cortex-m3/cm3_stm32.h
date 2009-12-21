@@ -82,8 +82,8 @@
 #define STM32_FLASH_UNLOCK_KEY1		0x45670123
 #define STM32_FLASH_UNLOCK_KEY2		0xCDEF89AB
 
-RESULT stm32_program(struct operation_t operations, struct program_info_t *pi, 
-					 struct adi_dp_info_t *dp_info);
+RESULT stm32jtagswj_program(struct operation_t operations, 
+					struct program_info_t *pi, struct adi_dp_info_t *dp_info);
 
 #endif /* __CM3_STM32_H_INCLUDED__ */
 

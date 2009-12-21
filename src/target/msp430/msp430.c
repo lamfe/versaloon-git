@@ -237,8 +237,7 @@ RESULT msp430_init(struct program_info_t *pi, struct programmer_info_t *prog)
 		return ERROR_FAIL;
 	}
 Post_Init:
-	memcpy(&cur_chip_param, cur_chips_param + i, 
-			sizeof(cur_chip_param));
+	memcpy(&cur_chip_param, cur_chips_param + i, sizeof(cur_chip_param));
 	
 	pi->program_areas[APPLICATION_IDX].size = 
 				cur_chip_param.chip_areas[APPLICATION_IDX].size;

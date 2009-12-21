@@ -48,6 +48,7 @@
 #include "comisp/comisp.h"
 #include "svf_player/svf_player.h"
 #include "cortex-m3/cm3.h"
+#include "stm32/stm32.h"
 
 struct chip_series_t target_chips = {0, NULL};
 struct chip_param_t target_chip_param;
@@ -55,6 +56,27 @@ uint32_t target_defined = 0;
 
 struct target_info_t targets_info[] = 
 {
+	// stm32
+	{
+		STM32_STRING,						// name
+		NULL,								// sub_target
+		AUTO_DETECT,						// feature
+		stm32_program_area_map,				// program_area_map
+		STM32_PROGRAM_MODE_STR,				// program_mode_str
+		stm32_parse_argument,				// parse_argument
+		NULL,								// probe_chip
+		stm32_init,							// init
+		stm32_fini,							// fini
+		stm32_interface_needed,				// interfaces_needed
+		stm32_prepare_buffer,				// prepare_buffer
+		stm32_write_buffer_from_file_callback,
+											// write_buffer_from_file_callback
+		NULL,								// write_file_from_buffer_callback
+		stm32_program,						// program
+		
+		NULL,								// get_mass_product_data_size
+		NULL,								// prepare_mass_product_data
+	},
 	// at89s5x
 	{
 		S5X_STRING,							// name

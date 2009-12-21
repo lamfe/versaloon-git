@@ -676,7 +676,7 @@ begin
   begin
     if TargetFile[i].filename <> '' then
     begin
-      cbboxInputFile.Items.Add(TargetFile[i].target + ':' + TargetFile[i].filename);
+      cbboxInputFile.Items.Add(GetAreaFullName(TargetFile[i].target) + ':' + TargetFile[i].filename);
       Inc(valid_file_num);
     end;
   end;
@@ -1881,7 +1881,7 @@ begin
         end;
       end;
 
-      strTmp := Copy(cbboxInputFile.Text, i + 1, Length(cbboxInputFile.Text) - i - 1);
+      strTmp := Copy(cbboxInputFile.Text, i + 1, Length(cbboxInputFile.Text) - i);
       strExt := LowerCase(ExtractFileExt(strTmp));
       if strExt = '.hex' then
       begin

@@ -172,18 +172,14 @@ RESULT psoc1_init(struct program_info_t *pi, struct programmer_info_t *prog)
 		return ERROR_FAIL;
 	}
 Post_Init:
-	memcpy(&cur_chip_param, cur_chips_param + i, 
-		   sizeof(cur_chip_param));
+	memcpy(&cur_chip_param, cur_chips_param + i, sizeof(cur_chip_param));
 	
 	page_num = cur_chip_param.chip_areas[APPLICATION_IDX].page_num;
 	cur_chip_param.chip_areas[LOCK_IDX].size = 
-		cur_chip_param.param[PSOC1_PARAM_BANK_NUM] 
-			* (page_num >> 2);
-	if (cur_chip_param.chip_areas[LOCK_IDX].size 
-			< PSOC1_MIN_SECURE_SIZE)
+		cur_chip_param.param[PSOC1_PARAM_BANK_NUM] * (page_num >> 2);
+	if (cur_chip_param.chip_areas[LOCK_IDX].size < PSOC1_MIN_SECURE_SIZE)
 	{
-		cur_chip_param.chip_areas[LOCK_IDX].size = 
-			PSOC1_MIN_SECURE_SIZE;
+		cur_chip_param.chip_areas[LOCK_IDX].size = PSOC1_MIN_SECURE_SIZE;
 	}
 	cur_chip_param.chip_areas[APPLICATION_IDX].size = 
 		cur_chip_param.param[PSOC1_PARAM_BANK_NUM] * page_num 

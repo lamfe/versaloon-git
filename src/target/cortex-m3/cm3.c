@@ -50,7 +50,6 @@
 #define CUR_TARGET_STRING			CM3_STRING
 #define cur_chip_param				cm3_chip_param
 #define cur_chips_param				cm3_chips_param
-#define cur_flash_offset			cm3_flash_offset
 #define cur_prog_mode				program_mode
 #define cur_buffer_size				cm3_buffer_size
 #define cur_target_defined			target_defined
@@ -63,10 +62,6 @@ struct program_area_map_t cm3_program_area_map[] =
 	{0, 0, 0, 0, 0, 0}
 };
 
-#define CM3_STM32		0
-#define CM3_LPC1700		1
-#define CM3_LM3S		2
-#define CM3_SAM3		3
 const struct cm3_param_t cm3_chips_param[] = {
 //	chip_name,		default_char,		flash_start_addr,	flash_max_size,	jtag_khz,		pos			swj_trn
 	{"cm3_stm32",	STM32_FLASH_CHAR,	0x08000000,			512 * 1024,		STM32_JTAG_KHZ,	{0,1,0,5},	2},
@@ -78,15 +73,13 @@ uint8_t cm3_execute_flag = 0;
 uint32_t cm3_execute_addr = 0;
 uint16_t cm3_buffer_size = 0;
 
-static uint32_t cm3_flash_offset = 0;
-
 static void cm3_usage(void)
 {
 	printf("\
 Usage of %s:\n\
   -m,  --mode <MODE>                        set mode<j|s>\n\
-  -F,  --frequency <FREQUENCY>              set JTAG/SWJ frequency, in KHz\n\n",
-		   CUR_TARGET_STRING);
+  -F,  --frequency <FREQUENCY>              set JTAG frequency, in KHz\n\n",
+			CUR_TARGET_STRING);
 }
 
 static void cm3_support(void)
@@ -185,7 +178,6 @@ RESULT cm3_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr,
 	}
 #endif
 	
-	mem_addr += cur_flash_offset;
 	if (((mem_addr - cur_chip_param.flash_start_addr) 
 			>= cur_chip_param.flash_max_size) 
 		|| (length > cur_chip_param.flash_max_size) 
@@ -351,7 +343,7 @@ RESULT cm3_program(struct operation_t operations, struct program_info_t *pi,
 	switch (cm3_chip_index)
 	{
 	case CM3_STM32:
-		ret = stm32_program(operations, pi, &adi_dp_info);
+		ret = stm32jtagswj_program(operations, pi, &adi_dp_info);
 		break;
 	default:
 		// invalid target
