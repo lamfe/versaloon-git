@@ -497,6 +497,10 @@ begin
     if posStart > 0 then
     begin
       Result := Copy(Result, posStart + 1, Length(Result) - posStart - 1);
+    end
+    else
+    begin
+      Result := '';
     end;
   end;
 end;

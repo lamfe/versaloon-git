@@ -1800,7 +1800,7 @@ RESULT target_build_chip_series(const char *chip_series,
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "app_size"))
 			{
 				target_para_size_defined |= APPLICATION;
-				p_param->chip_areas[APPLICATION].size = (uint32_t)strtoul(
+				p_param->chip_areas[APPLICATION_IDX].size = (uint32_t)strtoul(
 						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "ee_size"))
