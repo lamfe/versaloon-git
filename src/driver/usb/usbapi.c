@@ -124,7 +124,7 @@ usb_dev_handle* find_usb_device(uint16_t VID, uint16_t PID, uint8_t interface,
 	struct usb_bus *busses;
 	struct usb_bus *bus;
 	struct usb_device *dev;
-	int config_value, i;
+	int config_value;
 
 	usb_init();
 	usb_find_busses();
@@ -154,23 +154,15 @@ usb_dev_handle* find_usb_device(uint16_t VID, uint16_t PID, uint8_t interface,
 					config_value = usb_get_string_simple(usb, stringindex, 
 													(char *)buf, sizeof(buf));
 					if ((config_value < 0) 
-						|| (config_value != ((int)strlen(serialstring) + 1)))
+						|| (config_value != ((int)strlen(serialstring))))
 					{
 						usb_close(usb);
 						usb = NULL;
 						continue;
 					}
 					
-					for (i = 0; i < (config_value - 1); i++)
-					{
-						if (buf[i] != serialstring[i])
-						{
-							usb_close(usb);
-							usb = NULL;
-							break;
-						}
-					}
-					if (i != (config_value - 1))
+					buf[config_value] = '\0';
+					if (strcmp((const char *)buf, serialstring))
 					{
 						continue;
 					}

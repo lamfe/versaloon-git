@@ -98,12 +98,6 @@ end;
 
 function TCLI_Caller.IsRunning(): boolean;
 begin
-  if ((FP = nil) or (not FP.Running)) and FRunning then
-  begin
-    // Process crashed, recover
-    UnTake;
-  end;
-
   if ((FP <> nil) and FP.Running) or FRunning or FTaken then
   begin
     Result := True;

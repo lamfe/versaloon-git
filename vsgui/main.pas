@@ -7,7 +7,8 @@ interface
 uses
   Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs, ComCtrls,
   StdCtrls, EditBtn, ExtCtrls, cli_caller, parameditor, Menus, Buttons, Spin,
-  Synaser, com_setup, fileselector, hexeditor, XMLCfg, vsprogparser, vsprogtarget;
+  Synaser, com_setup, fileselector, hexeditor, XMLCfg, vsprogparser, vsprogtarget,
+  vsprogprogrammer;
 
 type
 
@@ -80,7 +81,7 @@ type
     gbSVFPlayer: TGroupBox;
     gbPower:   TGroupBox;
     gbSetting: TGroupBox;
-    lblKHz: TLabel;
+    lblKHz:    TLabel;
     lblOpenOCDDir: TLabel;
     lblVSProgDir: TLabel;
     lblPowerUnit: TLabel;
@@ -111,7 +112,7 @@ type
     pmTray:    TPopupMenu;
     sbMain:    TStatusBar;
     sedtPower: TSpinEdit;
-    sedtFreq: TSpinEdit;
+    sedtFreq:  TSpinEdit;
     tsVsprog:  TTabSheet;
     tsJTAG:    TTabSheet;
     tiMain:    TTrayIcon;
@@ -217,22 +218,23 @@ var
   CurTargetChip: TTargetChip;
   CurTargetSeries: TTargetSeries;
   ComMode: TComMode;
-  CurProgrmmerInfo: string;
+  CurProgrammerInfo: string;
+  ProgrammerParameter: string;
 
 const
   DEBUG_LOG_SHOW: boolean = False;
   DISPLAY_ALL_COMPORT_WHEN_UPDATE = True;
-  APP_STR: string      = 'Vsgui';
-  VERSION_STR: string  = 'RC1';
+  APP_STR: string     = 'Vsgui';
+  VERSION_STR: string = 'RC1';
   {$IFDEF UNIX}
-  VSPROG_STR: string   = 'vsprog';
+  VSPROG_STR: string  = 'vsprog';
   {$ELSE}
-  VSPROG_STR: string   = 'vsprog.exe';
+  VSPROG_STR: string  = 'vsprog.exe';
   {$ENDIF}
   {$IFDEF UNIX}
-  OPENOCD_STR: string  = 'openocd';
+  OPENOCD_STR: string = 'openocd';
   {$ELSE}
-  OPENOCD_STR: string  = 'openocd.exe';
+  OPENOCD_STR: string = 'openocd.exe';
   {$ENDIF}
   LOGMEMO_WIDTH: integer = 400;
 
@@ -244,11 +246,11 @@ procedure TPollThread.Update;
 begin
   if FConnectOK then
   begin
-    CurProgrmmerInfo := FormatFloat('0.0', FTargetVoltage / 1000) + 'V';
+    CurProgrammerInfo := FormatFloat('0.0', FTargetVoltage / 1000) + 'V';
   end
   else
   begin
-    CurProgrmmerInfo := 'N.C.';
+    CurProgrammerInfo := 'N.C.';
   end;
   FormMain.UpdateTitle();
 end;
@@ -278,6 +280,10 @@ begin
     FTargetVoltage := 0;
     VSProg_Caller.Application := FAppPath;
     VSProg_Caller.RemoveAllParameters();
+    if ProgrammerParameter <> '' then
+    begin
+      VSProg_Caller.AddParameter('U' + ProgrammerParameter);
+    end;
     VSProg_Caller.AddParameter('V"voltage"');
     VSProg_Parser.Prepare();
     VSProg_Parser.ParserFunc      := @VSProg_Parser.TargetVoltageParser;
@@ -295,6 +301,27 @@ begin
     begin
       FConnectOK     := False;
       FTargetVoltage := 0;
+    end;
+
+    if FConnectOK and (ProgrammerParameter = '') then
+    begin
+      if not VSProg_Caller.Take() then
+      begin
+        // not available now
+        continue;
+      end;
+      VSProg_Caller.Application := FAppPath;
+      VSProg_Caller.RemoveAllParameters();
+      VSProg_Caller.AddParameter('L');
+      VSProg_Parser.Prepare();
+      VSProg_Parser.ParserFunc := @VSProg_Programmer.ProgrammerParser;
+      VSProg_Parser.LogOutputEnable := False;
+      VSProg_Caller.bProcessMessage := False;
+      VSProg_Caller.Run(@VSProg_Parser.CommonParser, False, True);
+      if not VSProg_Parser.HasError then
+      begin
+        ProgrammerParameter := VSProg_Programmer.SerialNumber;
+      end;
     end;
 
     Synchronize(@Update);
@@ -348,7 +375,7 @@ begin
     enable_str := '(*)';
   end;
   Caption := APP_STR + VERSION_STR + '-' + pcMain.ActivePage.Caption +
-    enable_str + ' (' + VSProg_Version + ') ' + CurProgrmmerInfo;
+    enable_str + ' (' + VSProg_Version + ') ' + CurProgrammerInfo;
 end;
 
 function TFormMain.VSProg_RunAlgorithm(var caller: TCLI_Caller;
@@ -433,8 +460,8 @@ begin
   VSProg_GUIUpdateULCS(fuse, bytelen, lbledtFuse);
 end;
 
-// Update Series Features
-// C: Commport, X: eXecute, F, Frequency
+ // Update Series Features
+ // C: Commport, X: eXecute, F, Frequency
 procedure TFormMain.VSProg_GUIFeatureInit(para: string; append: boolean);
 var
   strTmp: string;
@@ -444,7 +471,7 @@ begin
 
   if Pos('F', para) > 0 then
   begin
-    sedtFreq.Visible := True;
+    sedtFreq.Visible     := True;
     btnModeSetup.Visible := False;
   end
   else
@@ -454,7 +481,7 @@ begin
 
   if Pos('C', para) > 0 then
   begin
-    sedtFreq.Visible := False;
+    sedtFreq.Visible     := False;
     btnModeSetup.Visible := True;
 
     // Set COMM Settings
@@ -494,7 +521,7 @@ begin
   end
   else if not append then
   begin
-    btnTargetDetect.Enabled := False
+    btnTargetDetect.Enabled := False;
   end;
 end;
 
@@ -693,7 +720,8 @@ begin
   begin
     if TargetFile[i].filename <> '' then
     begin
-      cbboxInputFile.Items.Add(GetAreaFullName(TargetFile[i].target) + ':' + TargetFile[i].filename);
+      cbboxInputFile.Items.Add(GetAreaFullName(TargetFile[i].target) +
+        ':' + TargetFile[i].filename);
       Inc(valid_file_num);
     end;
   end;
@@ -714,7 +742,8 @@ var
 begin
   xmlcfgMain.FileName := GetUserDir + 'vsgui.xml';
 
-  CurProgrmmerInfo := 'N.C.';
+  ProgrammerParameter := '';
+  CurProgrammerInfo := 'N.C.';
   JTAGPage_Init   := True;
   TargetPage_Init := True;
   AboutPage_Init  := True;
@@ -849,11 +878,6 @@ end;
 
 procedure TFormMain.FormDestroy(Sender: TObject);
 begin
-  if PollThread <> nil then
-  begin
-    PollThread.Free;
-  end;
-
   VSProg_Caller.Stop();
   VSProg_Caller.Destroy;
   VSProg_Parser.Destroy;
@@ -901,15 +925,28 @@ begin
   FormMain.Width := pnlMain.Width + LOGMEMO_WIDTH + 2;
   memoLog.Width  := LOGMEMO_WIDTH;
 
-  ControlLeft := (tsJTAG.Width - gbOpenOCD.Width) div 2;
-  gbOpenOCD.Left := ControlLeft;
+  ControlLeft      := (tsJTAG.Width - gbOpenOCD.Width) div 2;
+  gbOpenOCD.Left   := ControlLeft;
   gbSVFPlayer.Left := ControlLeft;
-  gbPower.Left := ControlLeft;
-  gbChipName.Left := ControlLeft;
+  gbPower.Left     := ControlLeft;
+  gbChipName.Left  := ControlLeft;
   gbInputFile.Left := ControlLeft;
-  gbOption.Left := ControlLeft;
+  gbOption.Left    := ControlLeft;
   gbOperation.Left := ControlLeft;
   UpdateShowing;
+
+  // get existing programmer
+  if VSProg_PrepareToRunCLI then
+  begin
+    VSProg_Caller.AddParameter('L');
+    VSProg_Parser.LogOutputEnable := False;
+    VSProg_RunAlgorithm(VSProg_Caller, @VSProg_Programmer.ProgrammerParser, 0, True);
+  end;
+  if VSProg_Programmer.ProgrammerCount > 1 then
+  begin
+    VSProg_Programmer.ShowModal;
+  end;
+  ProgrammerParameter := VSProg_Programmer.SerialNumber;
 
   if VSProg_Exists and (PollThread <> nil) then
   begin
@@ -1690,8 +1727,7 @@ end;
 procedure TFormMain.dedtPathChange(Sender: TObject);
 begin
   if (Sender as TDirectoryEdit).Directory[Length(
-    (Sender as TDirectoryEdit).Directory)] <>
-    System.DirectorySeparator then
+    (Sender as TDirectoryEdit).Directory)] <> System.DirectorySeparator then
   begin
     (Sender as TDirectoryEdit).Directory :=
       (Sender as TDirectoryEdit).Directory + System.DirectorySeparator;
@@ -1978,6 +2014,12 @@ begin
   if sedtFreq.Visible and sedtFreq.Enabled and (sedtFreq.Value > 0) then
   begin
     caller.AddParameter('F' + IntToStr(sedtFreq.Value));
+  end;
+
+  // ProgrammerParameter
+  if ProgrammerParameter <> '' then
+  begin
+    caller.AddParameter('U' + ProgrammerParameter);
   end;
 end;
 
