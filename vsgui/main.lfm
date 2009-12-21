@@ -1059,11 +1059,4 @@ object FormMain: TFormMain
     left = 744
     top = 488
   end
-  object tPollProgrammer: TTimer
-    Enabled = False
-    Interval = 500
-    OnTimer = tPollProgrammerTimer
-    left = 608
-    top = 488
-  end
 end

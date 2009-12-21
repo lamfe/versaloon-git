@@ -24,6 +24,7 @@ type
     FApplication: string;
     FParameter: string;
     FDelimiter: string;
+    FProcessMessage: boolean;
     FP:     TProcess;
     FRunning: boolean;
     FTaken: boolean;
@@ -34,6 +35,7 @@ type
     destructor Destroy; override;
     property Application: string Read FApplication Write FApplication;
     property Delimiter: string Read FDelimiter Write FDelimiter;
+    property bProcessMessage: boolean Read FProcessMessage Write FProcessMessage;
   end;
 
 const
@@ -45,6 +47,7 @@ constructor TCLI_Caller.Create;
 begin
   inherited Create;
   FCriticalSection := TCriticalSection.Create;
+  FProcessMessage := True;
 end;
 
 destructor TCLI_Caller.Destroy;
@@ -211,7 +214,10 @@ begin
         //      end;
         Sleep(10);
       end;
-      Forms.Application.ProcessMessages;
+      if FProcessMessage then
+      begin
+        Forms.Application.ProcessMessages;
+      end;
     end;
 
     // read last part, process finished
