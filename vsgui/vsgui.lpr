@@ -16,7 +16,9 @@ uses {$IFDEF UNIX}
   hexeditor,
   inputdialog,
   findreplace,
-  vsprogparser, vsprogtarget;
+  vsprogparser,
+  vsprogtarget,
+  vsprogprogrammer;
 
 {$IFDEF WINDOWS}{$R vsgui.rc}{$ENDIF}
 
@@ -30,6 +32,7 @@ begin
   Application.CreateForm(TFormHexEditor, FormHexEditor);
   Application.CreateForm(TFormInputDialog, FormInputDialog);
   Application.CreateForm(TFormFindReplace, FormFindReplace);
+  Application.CreateForm(TVSProg_Programmer, VSProg_Programmer);
   Application.Run;
 end.
 

@@ -121,7 +121,23 @@ RESULT versaloon_check_argument(char cmd, const char *argu)
 		}
 		
 		cur_pointer = (char *)argu;
+		// Format: SERIALSTRING
+		while (*cur_pointer != 0)
+		{
+			if ((' ' == *cur_pointer) || ('_' == *cur_pointer) 
+				|| ('-' == *cur_pointer))
+			{
+				break;
+			}
+			cur_pointer++;
+		}
+		if ((cur_pointer - argu) == (int32_t)strlen(argu))
+		{
+			versaloon_serialstring = (char *)argu;
+			goto print_usb_device;
+		}
 		
+		cur_pointer = (char *)argu;
 		// Format: VID_PID_EPIN_EPOUT_INTERFACE_SERIALSTRING
 		versaloon_vid = (uint16_t)strtoul(cur_pointer, &end_pointer, 0);
 		if ((end_pointer == cur_pointer) 
