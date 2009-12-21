@@ -291,8 +291,8 @@ end;
 
 constructor TPollThread.Create();
 begin
-  FreeOnTerminate := False;
   inherited Create(True);
+  FreeOnTerminate := False;
 end;
 
 { TFormMain }

@@ -105,7 +105,7 @@ type
     function GetFakeAreas(Index: integer): TFakeArea;
   public
     constructor Create(aName: string; aFeature: string; aInfo: string);
-    destructor Destroy;
+    destructor Destroy; override;
     function GetModeStrByModeChar(aModeChar: Char): string;
     function GetModeFeatureByModeChar(aModeChar: Char): string;
     property TargetChips[Index: integer]: TTargetChip Read GetTargetChips; default;
@@ -126,6 +126,8 @@ type
 
   TVSProg_Targets = class(TObjectList)
   private
+    FCurTarget: string;
+    FCurFeature: string;
     function GetTargetSeries(Index: integer): TTargetSeries;
   public
     constructor Create;
@@ -538,6 +540,8 @@ end;
 constructor TVSProg_Targets.Create;
 begin
   inherited Create(True);
+  FCurTarget := '';
+  FCurFeature := '';
 end;
 
 function TVSProg_Targets.GetTargetSeries(Index: integer): TTargetSeries;
@@ -546,9 +550,6 @@ begin
 end;
 
 function TVSProg_Targets.TargetParser(var line: string): boolean;
-const
-  CurTarget: string  = '';
-  CurFeature: string = '';
 var
   strTmp: string;
   start_pos: integer;
@@ -568,23 +569,23 @@ begin
     if end_pos > 0 then
     begin
       // Format 'Name(Feature):SeriesInfo'
-      CurTarget  := Copy(line, start_pos + 1, end_pos - start_pos - 1);
-      CurFeature := Copy(line, end_pos + 1, Pos(')', line) - end_pos - 1);
+      FCurTarget  := Copy(line, start_pos + 1, end_pos - start_pos - 1);
+      FCurFeature := Copy(line, end_pos + 1, Pos(')', line) - end_pos - 1);
       strTmp     := Copy(line, Pos(':', line) + 1, Length(line));
     end
     else
     begin
       // Format 'Name:'
       end_pos    := Pos(':', line);
-      CurTarget  := Copy(line, start_pos + 1, end_pos - start_pos - 1);
-      CurFeature := '';
+      FCurTarget  := Copy(line, start_pos + 1, end_pos - start_pos - 1);
+      FCurFeature := '';
       strTmp     := Copy(line, Pos(':', line) + 1, Length(line));
     end;
 
-    Add(TTargetSeries.Create(CurTarget, CurFeature, strTmp));
+    Add(TTargetSeries.Create(FCurTarget, FCurFeature, strTmp));
     TargetSeries[SeriesCount - 1].FFakeAreas.ParseFake(strTmp);
   end
-  else if CurTarget <> '' then
+  else if FCurTarget <> '' then
   begin
     // Parse TargetChip
     with TargetSeries[SeriesCount - 1] do
@@ -613,7 +614,7 @@ begin
         GetLiteralParameter(line, 'mode', FMode);
         // Areas
         GetLiteralParameter(line, 'area', FAreas);
-        if Pos('C', CurFeature) > 0 then
+        if Pos('C', FCurFeature) > 0 then
         begin
           // ExtraStr as COM Setting
           FExtraStr := line;
