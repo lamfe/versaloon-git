@@ -527,16 +527,19 @@ comtest_end:
 			free(buff_r);
 			buff_r = NULL;
 		}
-		return ret;
+		break;
 	case COMISP_STM32:
 		ret = stm32isp_program(operations, pi);
+		break;
 	case COMISP_LPCARM:
 		ret = lpcarmisp_program(operations, pi);
+		break;
 	default:
 		// invalid target
 		LOG_BUG(_GETTEXT(ERRMSG_INVALID), TO_STR(comisp_chip_index), 
 				CUR_TARGET_STRING);
 		ret = ERRCODE_INVALID;
+		break;
 	}
 	comisp_execute_flag = 0;
 	return ret;
