@@ -199,7 +199,16 @@ RESULT stm32_init(struct program_info_t *pi, struct programmer_info_t *prog)
 
 uint32_t stm32_interface_needed(void)
 {
-	return cm3_interface_needed() | comisp_interface_needed();
+	switch (cur_prog_mode)
+	{
+	case STM32_JTAG:
+	case STM32_SWJ:
+		return cm3_interface_needed();
+	case STM32_ISP:
+		return comisp_interface_needed();
+	default:
+		return 0;
+	}
 }
 
 RESULT stm32_program(struct operation_t operations, 
@@ -241,6 +250,7 @@ exit_stm32jtagswj:
 		break;
 	case STM32_ISP:
 		pi->chip_name = (char *)comisp_chips_param[COMISP_STM32].chip_name;
+		pi->chip_type = "comisp";
 		ret = comisp_init(pi, prog);
 		if (ERROR_OK != ret)
 		{
