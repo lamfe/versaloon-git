@@ -150,6 +150,7 @@ type
     procedure miExitClick(Sender: TObject);
     procedure pcMainChanging(Sender: TObject; var AllowChange: boolean);
     procedure pcMainPageChanged(Sender: TObject);
+    procedure sedtFreqEditingDone(Sender: TObject);
     procedure tiMainClick(Sender: TObject);
 
     procedure CenterControl(ctl: TControl; ref: TControl);
@@ -1151,6 +1152,14 @@ begin
     end;
   end;
   UpdateTitle();
+end;
+
+procedure TFormMain.sedtFreqEditingDone(Sender: TObject);
+begin
+  if sedtFreq.Text = '' then
+  begin
+    sedtFreq.Value := 0;
+  end;
 end;
 
 procedure TFormMain.btnTargetDetectClick(Sender: TObject);

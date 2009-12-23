@@ -680,6 +680,7 @@ object FormMain: TFormMain
             Width = 64
             Increment = 100
             MaxValue = 18000
+            OnEditingDone = sedtFreqEditingDone
             ParentShowHint = False
             ShowHint = True
             TabOrder = 13
