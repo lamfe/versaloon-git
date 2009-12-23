@@ -1960,7 +1960,7 @@ begin
     begin
       if TargetFile[i].filename <> '' then
       begin
-        areaTmp := CurTargetChip.GetArea(GetAreaShortName(TargetFile[i].target));
+        areaTmp := CurTargetChip.GetArea(TargetFile[i].target);
         if areaTmp <> nil then
         begin
           addr     := areaTmp.StartAddr;
