@@ -37,14 +37,23 @@
 #define MSP430_JTAG				(1 << 21)
 #define LPC_ICP					(1 << 22)
 #define SWJ						(1 << 23)
+#define SWIM					(1 << 24)
 #define INVALID_INTERFACE		(1 << 30)
 #define INTERFACES_MASK			(USART | SPI | I2C | GPIO | CAN | CLOCK | ADC \
 								 | DAC | POWER | ISSP | JTAG | MSP430_JTAG \
-								 | LPC_ICP | MSP430_SBW | SWJ)
+								 | LPC_ICP | MSP430_SBW | SWJ | SWIM)
 
 
 // GPIO pins
 #define GPIO_SRST				(1 << 0)
+#define GPIO_TRST				(1 << 1)
+#define GPIO_USR1				(1 << 2)
+#define GPIO_USR2				(1 << 3)
+#define GPIO_TCK				(1 << 4)
+#define GPIO_TDO				(1 << 5)
+#define GPIO_TDI				(1 << 6)
+#define GPIO_RTCK				(1 << 7)
+#define GPIO_TMS				(1 << 8)
 
 // SWJ
 #define SWJ_SUCCESS				0x00
@@ -63,10 +72,14 @@ struct jtag_pos_t
 };
 extern struct jtag_pos_t target_jtag_pos;
 
-#define JTAG_SRST				(1 << 0)
-#define JTAG_TRST				(1 << 1)
-#define JTAG_USR1				(1 << 2)
-#define JTAG_USR2				(1 << 3)
+#define JTAG_SRST				GPIO_SRST
+#define JTAG_TRST				GPIO_TRST
+#define JTAG_USR1				GPIO_USR1
+#define JTAG_USR2				GPIO_USR2
+
+// SWIM
+#define SWIM_PIN				GPIO_TMS
+#define SWIM_RST_PIN			GPIO_SRST
 
 // SPI
 #define SPI_CPOL_HIGH			0x20

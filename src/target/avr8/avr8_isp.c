@@ -54,7 +54,7 @@
 
 #define reset_init()			p->gpio_init()
 #define reset_fini()			p->gpio_fini()
-#define reset_output()			p->gpio_config(GPIO_SRST, 1, 0)
+#define reset_output()			p->gpio_config(GPIO_SRST, GPIO_SRST, 0)
 #define reset_input()			p->gpio_config(GPIO_SRST, 0, GPIO_SRST)
 #define reset_set()				reset_input()
 #define reset_clr()				p->gpio_out(GPIO_SRST, 0)
