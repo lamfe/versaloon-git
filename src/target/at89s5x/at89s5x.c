@@ -359,7 +359,7 @@ RESULT s5x_program(struct operation_t operations, struct program_info_t *pi,
 
 #define reset_init()			prog->gpio_init()
 #define reset_fini()			prog->gpio_fini()
-#define reset_output()			prog->gpio_config(GPIO_SRST, 1, 0)
+#define reset_output()			prog->gpio_config(GPIO_SRST, GPIO_SRST, 0)
 #define reset_input()			prog->gpio_config(GPIO_SRST, 0, GPIO_SRST)
 #define reset_set()				prog->gpio_out(GPIO_SRST, GPIO_SRST)
 #define reset_clr()				reset_input()

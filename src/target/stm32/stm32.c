@@ -55,7 +55,7 @@
 
 const struct program_area_map_t stm32_program_area_map[] = 
 {
-	{APPLICATION_CHAR, 1, 0, 0x08000000, 0, 0},
+	{APPLICATION_CHAR, 1, 0, STM32_FLASH_ADDR, 0, 0},
 	{0, 0, 0, 0, 0, 0}
 };
 
