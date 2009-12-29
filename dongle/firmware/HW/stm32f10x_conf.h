@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    Project/Template/stm32f10x_conf.h 
   * @author  MCD Application Team
-  * @version V3.1.0
-  * @date    06/19/2009
+  * @version V3.1.2
+  * @date    09/28/2009
   * @brief   Library configuration file.
   ******************************************************************************
   * @copy
@@ -42,7 +42,7 @@
 /* #include "stm32f10x_rtc.h" */
 /* #include "stm32f10x_sdio.h" */
 #include "stm32f10x_spi.h"
-/* #include "stm32f10x_tim.h" */
+#include "stm32f10x_tim.h"
 #include "stm32f10x_usart.h"
 /* #include "stm32f10x_wwdg.h" */
 #include "misc.h" /* High level functions for NVIC and SysTick (add-on to CMSIS functions) */

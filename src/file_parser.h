@@ -41,8 +41,8 @@ RESULT parse_file(char *file_name, FILE *file, void *para,
 					WRITE_MEMORY_CALLBACK callback, 
 					uint32_t seg_offset, uint32_t addr_offset);
 RESULT save_target_to_file(struct filelist *fl, uint8_t *buff, 
-							uint32_t buff_size, uint32_t seg_addr, 
-							uint32_t start_addr);
+				uint32_t buff_size, uint32_t seg_addr, uint32_t start_addr, 
+				int32_t fseg, int32_t faddr);
 RESULT end_file(struct filelist *fl);
 
 #endif //__FILE_PARSER_H_INCLUDED__

@@ -46,7 +46,6 @@
 #include "comport.h"
 
 #define CUR_TARGET_STRING			COMISP_STRING
-#define cur_chip_param				comisp_chip_param
 
 #define STM32ISP_MAX_ERROR_CNT		10
 
@@ -857,7 +856,7 @@ RESULT stm32isp_program(struct operation_t operations,
 				 i < ((int32_t)ml_tmp->len - (int32_t)(ml_tmp->addr % 1024)); 
 				 i += page_size)
 			{
-				uint32_t start_addr = cur_chip_param.flash_start_addr;
+				uint32_t start_addr = comisp_chip_param->flash_start_addr;
 				uint32_t page_addr = start_addr + i;
 				
 				ret = stm32isp_write_memory(ml_tmp->addr + i, 
@@ -930,7 +929,7 @@ RESULT stm32isp_program(struct operation_t operations,
 		}
 		else
 		{
-			ret = MEMLIST_Add(ml, cur_chip_param.flash_start_addr, 
+			ret = MEMLIST_Add(ml, comisp_chip_param->flash_start_addr, 
 						pi->program_areas[APPLICATION_IDX].size, page_size);
 			if (ret != ERROR_OK)
 			{
@@ -963,7 +962,7 @@ RESULT stm32isp_program(struct operation_t operations,
 				 i < ((int32_t)ml_tmp->len - (int32_t)(ml_tmp->addr % 1024)); 
 				 i += page_size)
 			{
-				uint32_t start_addr = cur_chip_param.flash_start_addr;
+				uint32_t start_addr = comisp_chip_param->flash_start_addr;
 				uint32_t page_addr = start_addr + i;
 				
 				page_size_tmp = page_size;

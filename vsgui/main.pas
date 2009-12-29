@@ -514,6 +514,7 @@ begin
   else if not append then
   begin
     lbledtAddr.Enabled := False;
+    lbledtAddr.Text := '';
   end;
 
   if Pos('A', para) > 0 then
@@ -1098,7 +1099,10 @@ begin
             cbboxModeChange(cbboxMode);
           end;
           sedtFreq.Value := xmlcfgMain.GetValue('target/freq', 1000);
-          lbledtAddr.Text := xmlcfgMain.GetValue('target/exe_addr', '');
+          if lbledtAddr.Enabled then
+          begin
+            lbledtAddr.Text := xmlcfgMain.GetValue('target/exe_addr', '');
+          end;
           intTmp := xmlcfgMain.GetValue('target/files/number', 0);
           if Length(TargetFile) < intTmp then
           begin
@@ -1127,21 +1131,60 @@ begin
           end;
           UpdateComboTargetFile();
           ComboBoxSetText(cbboxInputFile, xmlcfgMain.GetValue('target/filename', ''));
-          lbledtFuse.Text      := xmlcfgMain.GetValue('target/fuse', '');
-          lbledtLock.Text      := xmlcfgMain.GetValue('target/lock', '');
-          lbledtCali.Text      := xmlcfgMain.GetValue('target/cali', '');
-          lbledtUsrSig.Text    := xmlcfgMain.GetValue('target/usrsig', '');
-          chkboxNoconnect.Checked := xmlcfgMain.GetValue('target/nc', False);
-          chkboxNowarning.Checked := xmlcfgMain.GetValue('target/nw', False);
-          chkboxApp.Checked    := xmlcfgMain.GetValue('target/flashen', False);
-          chkboxEE.Checked     := xmlcfgMain.GetValue('target/eepromen', False);
-          chkboxFuse.Checked   := xmlcfgMain.GetValue('target/fuseen', False);
-          chkboxLock.Checked   := xmlcfgMain.GetValue('target/locken', False);
-          chkboxUsrSig.Checked := xmlcfgMain.GetValue('target/usrsigen', False);
-          chkboxCali.Checked   := xmlcfgMain.GetValue('target/calien', False);
+          if lbledtFuse.Enabled then
+          begin
+            lbledtFuse.Text      := xmlcfgMain.GetValue('target/fuse', '');
+          end;
+          if lbledtLock.Enabled then
+          begin
+            lbledtLock.Text      := xmlcfgMain.GetValue('target/lock', '');
+          end;
+          if lbledtCali.Enabled then
+          begin
+            lbledtCali.Text      := xmlcfgMain.GetValue('target/cali', '');
+          end;
+          if lbledtUsrSig.Enabled then
+          begin
+            lbledtUsrSig.Text    := xmlcfgMain.GetValue('target/usrsig', '');
+          end;
+          if chkboxNoconnect.Enabled then
+          begin
+            chkboxNoconnect.Checked := xmlcfgMain.GetValue('target/nc', False);
+          end;
+          if chkboxNowarning.Enabled then
+          begin
+            chkboxNowarning.Checked := xmlcfgMain.GetValue('target/nw', False);
+          end;
+          if chkboxApp.Enabled then
+          begin
+            chkboxApp.Checked    := xmlcfgMain.GetValue('target/flashen', False);
+          end;
+          if chkboxEE.Enabled then
+          begin
+            chkboxEE.Checked     := xmlcfgMain.GetValue('target/eepromen', False);
+          end;
+          if chkboxFuse.Enabled then
+          begin
+            chkboxFuse.Checked   := xmlcfgMain.GetValue('target/fuseen', False);
+          end;
+          if chkboxLock.Enabled then
+          begin
+            chkboxLock.Checked   := xmlcfgMain.GetValue('target/locken', False);
+          end;
+          if chkboxUsrSig.Enabled then
+          begin
+            chkboxUsrSig.Checked := xmlcfgMain.GetValue('target/usrsigen', False);
+          end;
+          if chkboxCali.Enabled then
+          begin
+            chkboxCali.Checked   := xmlcfgMain.GetValue('target/calien', False);
+          end;
+          if chkboxMP.Enabled then
+          begin
+            chkboxMP.Checked     := xmlcfgMain.GetValue('target/mass', False);
+          end;
           chkboxEraseBeforeWrite.Checked := xmlcfgMain.GetValue('target/ebw', False);
           chkboxVerifyAfterWrite.Checked := xmlcfgMain.GetValue('target/vaw', False);
-          chkboxMP.Checked     := xmlcfgMain.GetValue('target/mass', False);
           lbledtExtraPara.Text := xmlcfgMain.GetValue('target/extraparam', '');
         end;
       end;
@@ -1778,7 +1821,10 @@ begin
   xmlcfgMain.SetValue('target/mode', cbboxMode.Text);
   xmlcfgMain.SetValue('target/filename', cbboxInputFile.Text);
   xmlcfgMain.SetValue('target/freq', sedtFreq.Value);
-  xmlcfgMain.SetValue('target/exe_addr', lbledtAddr.Text);
+  if lbledtAddr.Enabled then
+  begin
+    xmlcfgMain.SetValue('target/exe_addr', lbledtAddr.Text);
+  end;
   if Length(TargetFile) > 0 then
   begin
     xmlcfgMain.SetValue('target/files/number', Length(TargetFile));
@@ -1790,21 +1836,60 @@ begin
         TargetFile[i].filename);
     end;
   end;
-  xmlcfgMain.SetValue('target/fuse', lbledtFuse.Text);
-  xmlcfgMain.SetValue('target/lock', lbledtLock.Text);
-  xmlcfgMain.SetValue('target/cali', lbledtCali.Text);
-  xmlcfgMain.SetValue('target/usrsig', lbledtUsrSig.Text);
-  xmlcfgMain.SetValue('target/nc', chkboxNoconnect.Checked);
-  xmlcfgMain.SetValue('target/nw', chkboxNowarning.Checked);
-  xmlcfgMain.SetValue('target/flashen', chkboxApp.Checked);
-  xmlcfgMain.SetValue('target/eepromen', chkboxEE.Checked);
-  xmlcfgMain.SetValue('target/fuseen', chkboxFuse.Checked);
-  xmlcfgMain.SetValue('target/locken', chkboxLock.Checked);
-  xmlcfgMain.SetValue('target/usrsigen', chkboxUsrSig.Checked);
-  xmlcfgMain.SetValue('target/calien', chkboxCali.Checked);
+  if lbledtFuse.Enabled then
+  begin
+    xmlcfgMain.SetValue('target/fuse', lbledtFuse.Text);
+  end;
+  if lbledtLock.Enabled then
+  begin
+    xmlcfgMain.SetValue('target/lock', lbledtLock.Text);
+  end;
+  if lbledtCali.Enabled then
+  begin
+    xmlcfgMain.SetValue('target/cali', lbledtCali.Text);
+  end;
+  if lbledtUsrSig.Enabled then
+  begin
+    xmlcfgMain.SetValue('target/usrsig', lbledtUsrSig.Text);
+  end;
+  if chkboxNoconnect.Enabled then
+  begin
+    xmlcfgMain.SetValue('target/nc', chkboxNoconnect.Checked);
+  end;
+  if chkboxNowarning.Enabled then
+  begin
+    xmlcfgMain.SetValue('target/nw', chkboxNowarning.Checked);
+  end;
+  if chkboxApp.Enabled then
+  begin
+    xmlcfgMain.SetValue('target/flashen', chkboxApp.Checked);
+  end;
+  if chkboxEE.Enabled then
+  begin
+    xmlcfgMain.SetValue('target/eepromen', chkboxEE.Checked);
+  end;
+  if chkboxFuse.Enabled then
+  begin
+    xmlcfgMain.SetValue('target/fuseen', chkboxFuse.Checked);
+  end;
+  if chkboxLock.Enabled then
+  begin
+    xmlcfgMain.SetValue('target/locken', chkboxLock.Checked);
+  end;
+  if chkboxUsrSig.Enabled then
+  begin
+    xmlcfgMain.SetValue('target/usrsigen', chkboxUsrSig.Checked);
+  end;
+  if chkboxCali.Enabled then
+  begin
+    xmlcfgMain.SetValue('target/calien', chkboxCali.Checked);
+  end;
+  if  chkboxMP.Enabled then
+  begin
+    xmlcfgMain.SetValue('target/mass', chkboxMP.Checked);
+  end;
   xmlcfgMain.SetValue('target/ebw', chkboxEraseBeforeWrite.Checked);
   xmlcfgMain.SetValue('target/vaw', chkboxVerifyAfterWrite.Checked);
-  xmlcfgMain.SetValue('target/mass', chkboxMP.Checked);
   xmlcfgMain.SetValue('target/extraparam', lbledtExtraPara.Text);
   xmlcfgMain.Flush;
 
@@ -2049,14 +2134,14 @@ begin
   if lbledtFuse.Enabled and chkboxFuse.Enabled and chkboxFuse.Checked and
     (lbledtFuse.Text <> '') then
   begin
-    caller.AddParameter('f' + lbledtFuse.Text);
+    caller.AddParameter('tu' + lbledtFuse.Text);
   end;
 
   // Lock
   if lbledtLock.Enabled and chkboxLock.Enabled and chkboxLock.Checked and
     (lbledtLock.Text <> '') then
   begin
-    caller.AddParameter('l' + lbledtLock.Text);
+    caller.AddParameter('tl' + lbledtLock.Text);
   end;
 
   // Execute

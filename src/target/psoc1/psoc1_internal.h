@@ -19,8 +19,6 @@
 #ifndef __PSOC1_INTERNAL_H_INCLUDED__
 #define __PSOC1_INTERNAL_H_INCLUDED__
 
-#define PSOC1_INTERFACE_NEEDED			(ISSP)
-
 #define PSOC1_MAX_FLASH_SIZE			(32 * 1024)
 #define PSOC1_MAX_SECURE_SIZE			(4 * 32)
 #define PSOC1_MIN_SECURE_SIZE			64
@@ -37,9 +35,8 @@
 #define PSOC1_PARAM_BANK_NUM			0
 
 // parameters
-#define PSOC1_RESET_MODE				(1 << 0)
-#define PSOC1_POWERON_MODE				(1 << 1)
-#define PSOC1_MODE_MASK					(PSOC1_RESET_MODE | PSOC1_POWERON_MODE)
+#define PSOC1_RESET_MODE				0
+#define PSOC1_POWERON_MODE				1
 
 #endif /* __PSOC1_INTERNAL_H_INCLUDED__ */
 

@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <ctype.h>
 
 #include "app_cfg.h"
 #include "app_type.h"
@@ -49,6 +50,7 @@
 #include "svf_player/svf_player.h"
 #include "cortex-m3/cm3.h"
 #include "stm32/stm32.h"
+#include "stm8/stm8.h"
 
 struct chip_series_t target_chips = {0, NULL};
 struct chip_param_t target_chip_param;
@@ -59,20 +61,23 @@ struct target_info_t targets_info[] =
 	// stm32
 	{
 		STM32_STRING,						// name
-		NULL,								// sub_target
 		AUTO_DETECT CAN_EXECUTE,			// feature
 		stm32_program_area_map,				// program_area_map
-		STM32_PROGRAM_MODE_STR,				// program_mode_str
+		stm32_program_mode,					// program_mode
 		stm32_parse_argument,				// parse_argument
-		NULL,								// probe_chip
-		stm32_init,							// init
-		stm32_fini,							// fini
-		stm32_interface_needed,				// interfaces_needed
-		stm32_prepare_buffer,				// prepare_buffer
-		stm32_write_buffer_from_file_callback,
-											// write_buffer_from_file_callback
-		NULL,								// write_file_from_buffer_callback
 		stm32_program,						// program
+		
+		NULL,								// get_mass_product_data_size
+		NULL,								// prepare_mass_product_data
+	},
+	// stm8
+	{
+		STM8_STRING,						// name
+		AUTO_DETECT CAN_EXECUTE,			// feature
+		stm8_program_area_map,				// program_area_map
+		stm8_program_mode,					// program_mode
+		stm8_parse_argument,				// parse_argument
+		stm8_program,						// program
 		
 		NULL,								// get_mass_product_data_size
 		NULL,								// prepare_mass_product_data
@@ -80,19 +85,10 @@ struct target_info_t targets_info[] =
 	// at89s5x
 	{
 		S5X_STRING,							// name
-		NULL,								// sub_target
 		AUTO_DETECT,						// feature
 		s5x_program_area_map,				// program_area_map
-		S5X_PROGRAM_MODE_STR,				// program_mode_str
+		s5x_program_mode,					// program_mode
 		s5x_parse_argument,					// parse_argument
-		NULL,								// probe_chip
-		s5x_init,							// init
-		s5x_fini,							// fini
-		s5x_interface_needed,				// interfaces_needed
-		s5x_prepare_buffer,					// prepare_buffer
-		s5x_write_buffer_from_file_callback,
-											// write_buffer_from_file_callback
-		NULL,								// write_file_from_buffer_callback
 		s5x_program,						// program
 		
 		NULL,								// get_mass_product_data_size
@@ -101,40 +97,22 @@ struct target_info_t targets_info[] =
 	// psoc
 	{
 		PSOC1_STRING,						// name
-		NULL,								// sub_target
 		AUTO_DETECT,						// feature
 		psoc1_program_area_map,				// program_area_map
-		PSOC1_PROGRAM_MODE_STR,				// program_mode_str
+		psoc1_program_mode,					// program_mode
 		psoc1_parse_argument,				// parse_argument
-		NULL,								// probe_chip
-		psoc1_init,							// init
-		psoc1_fini,							// fini
-		psoc1_interface_needed,				// interfaces_needed
-		psoc1_prepare_buffer,				// prepare_buffer
-		psoc1_write_buffer_from_file_callback,
-											// write_buffer_from_file_callback
-		NULL,								// write_file_from_buffer_callback
 		psoc1_program,						// program
 		
-		psoc1_get_mass_product_data_size,	// get_mass_product_data_size
-		psoc1_prepare_mass_product_data,		// prepare_mass_product_data
+		NULL,								// get_mass_product_data_size
+		NULL,								// prepare_mass_product_data
 	},
 	// msp430
 	{
 		MSP430_STRING,						// name
-		NULL,								// sub_target
 		AUTO_DETECT,						// feature
 		msp430_program_area_map,			// program_area_map
-		MSP430_PROGRAM_MODE_STR,			// program_mode_str
+		msp430_program_mode,				// program_mode
 		msp430_parse_argument,				// parse_argument
-		NULL,								// probe_chip
-		msp430_init,						// init
-		msp430_fini,						// fini
-		msp430_interface_needed,			// interfaces_needed
-		msp430_prepare_buffer,				// prepare_buffer
-		msp430_write_buffer_from_file_callback,
-											// write_buffer_from_file_callback
-		NULL,								// write_file_from_buffer_callback
 		msp430_program,						// program
 		
 		NULL,								// get_mass_product_data_size
@@ -143,19 +121,10 @@ struct target_info_t targets_info[] =
 	// c8051f
 	{
 		C8051F_STRING,						// name
-		NULL,								// sub_target
 		AUTO_DETECT,						// feature
 		c8051f_program_area_map,			// program_area_map
-		C8051F_PROGRAM_MODE_STR,			// program_mode_str
+		c8051f_program_mode,				// program_mode
 		c8051f_parse_argument,				// parse_argument
-		NULL,								// probe_chip
-		c8051f_init,						// init
-		c8051f_fini,						// fini
-		c8051f_interface_needed,			// interfaces_needed
-		c8051f_prepare_buffer,				// prepare_buffer
-		c8051f_write_buffer_from_file_callback,
-											// write_buffer_from_file_callback
-		NULL,								// write_file_from_buffer_callback
 		c8051f_program,						// program
 		
 		NULL,								// get_mass_product_data_size
@@ -164,41 +133,11 @@ struct target_info_t targets_info[] =
 	// avr8
 	{
 		AVR8_STRING,						// name
-		NULL,								// sub_target
 		AUTO_DETECT,						// feature
 		avr8_program_area_map,				// program_area_map
-		AVR8_PROGRAM_MODE_STR,				// program_mode_str
+		avr8_program_mode,					// program_mode
 		avr8_parse_argument,				// parse_argument
-		NULL,								// probe_chip
-		avr8_init,							// init
-		avr8_fini,							// fini
-		avr8_interface_needed,				// interfaces_needed
-		avr8_prepare_buffer,				// prepare_buffer
-		avr8_write_buffer_from_file_callback,
-											// write_buffer_from_file_callback
-		NULL,								// write_file_from_buffer_callback
 		avr8_program,						// program
-		
-		NULL,								// get_mass_product_data_size
-		NULL,								// prepare_mass_product_data
-	},
-	// comisp
-	{
-		COMISP_STRING,						// name
-		NULL,								// sub_target
-		CAN_EXECUTE USE_COMM,				// feature
-		comisp_program_area_map,			// program_area_map
-		"",									// program_mode_str
-		comisp_parse_argument,				// parse_argument
-		comisp_probe_chip,					// probe_chip
-		comisp_init,						// init
-		comisp_fini,						// fini
-		comisp_interface_needed,			// interfaces_needed
-		comisp_prepare_buffer,				// prepare_buffer
-		comisp_write_buffer_from_file_callback,
-											// write_buffer_from_file_callback
-		NULL,								// write_file_from_buffer_callback
-		comisp_program,						// program
 		
 		NULL,								// get_mass_product_data_size
 		NULL,								// prepare_mass_product_data
@@ -206,19 +145,10 @@ struct target_info_t targets_info[] =
 	// svf_player
 	{
 		SVFP_STRING,						// name
-		NULL,								// sub_target
 		"",									// feature
 		svfp_program_area_map,				// program_area_map
-		"",									// program_mode_str
+		svfp_program_mode,					// program_mode
 		svfp_parse_argument,				// parse_argument
-		svfp_probe_chip,					// probe_chip
-		svfp_init,							// init
-		svfp_fini,							// fini
-		svfp_interface_needed,				// interfaces_needed
-		svfp_prepare_buffer,				// prepare_buffer
-		svfp_write_buffer_from_file_callback,
-											// write_buffer_from_file_callback
-		NULL,								// write_file_from_buffer_callback
 		svfp_program,						// program
 		
 		NULL,								// get_mass_product_data_size
@@ -227,59 +157,21 @@ struct target_info_t targets_info[] =
 	// lpc900
 	{
 		LPC900_STRING,						// name
-		NULL,								// sub_target
 		AUTO_DETECT,						// feature
 		lpc900_program_area_map,			// program_area_map
-		LPC900_PROGRAM_MODE_STR,			// program_mode_str
+		lpc900_program_mode,				// program_mode
 		lpc900_parse_argument,				// parse_argument
-		NULL,								// probe_chip
-		lpc900_init,						// init
-		lpc900_fini,						// fini
-		lpc900_interface_needed,			// interfaces_needed
-		lpc900_prepare_buffer,				// prepare_buffer
-		lpc900_write_buffer_from_file_callback,
-											// write_buffer_from_file_callback
-		NULL,								// write_file_from_buffer_callback
 		lpc900_program,						// program
-		
-		NULL,								// get_mass_product_data_size
-		NULL,								// prepare_mass_product_data
-	},
-	// cortex-m3
-	{
-		CM3_STRING,							// name
-		NULL,								// sub_target
-		CAN_EXECUTE,						// feature
-		cm3_program_area_map,				// program_area_map
-		CM3_PROGRAM_MODE_STR,				// program_mode_str
-		cm3_parse_argument,					// parse_argument
-		cm3_probe_chip,						// probe_chip
-		cm3_init,							// init
-		cm3_fini,							// fini
-		cm3_interface_needed,				// interfaces_needed
-		cm3_prepare_buffer,					// prepare_buffer
-		cm3_write_buffer_from_file_callback,
-											// write_buffer_from_file_callback
-		NULL,								// write_file_from_buffer_callback
-		cm3_program,						// program
 		
 		NULL,								// get_mass_product_data_size
 		NULL,								// prepare_mass_product_data
 	},
 	{
 		NULL,								// name
-		NULL,								// sub_target
 		0,									// areas
 		NULL,								// program_area_map
-		NULL,								// program_mode_str
+		NULL,								// program_mode
 		NULL,								// parse_argument
-		NULL,								// probe_chip
-		NULL,								// init
-		NULL,								// fini
-		NULL,								// interfaces_needed
-		NULL,								// prepare_buffer
-		NULL,								// write_buffer_from_file_callback
-		NULL,								// write_file_from_buffer_callback
 		NULL,								// program
 		
 		NULL,								// get_mass_product_data_size
@@ -303,6 +195,12 @@ RESULT target_alloc_data_buffer(void)
 			if (NULL == program_info.program_areas[i].buff)
 			{
 				return ERRCODE_NOT_ENOUGH_MEMORY;
+			}
+			if (strlen(target_chip_param.chip_name) > 0)
+			{
+				memset(program_info.program_areas[i].buff, 
+						target_chip_param.chip_areas[i].default_value, 
+						program_info.program_areas[i].size);
 			}
 		}
 		if ((NULL == program_info.program_areas[i].checksum_buff) 
@@ -359,7 +257,7 @@ void target_get_target_area(char area, uint8_t **buff, uint32_t *size)
 {
 	int8_t i;
 	
-	i = target_area_idx_by_char(area);
+	i = target_area_idx(area);
 	if (i >= 0)
 	{
 		*buff = program_info.program_areas[i].buff;
@@ -370,20 +268,6 @@ void target_get_target_area(char area, uint8_t **buff, uint32_t *size)
 		*buff = NULL;
 		*size = 0;
 	}
-}
-
-int8_t target_area_idx_by_char(char area_name)
-{
-	uint32_t i;
-	
-	for (i = 0; i < dimof(target_area_name); i++)
-	{
-		if (target_area_name[i].name == area_name)
-		{
-			return (uint8_t)i;
-		}
-	}
-	return -1;
 }
 
 char target_area_char_by_fullname(char *fullname)
@@ -398,6 +282,34 @@ char target_area_char_by_fullname(char *fullname)
 		}
 	}
 	return '\0';
+}
+
+char* target_area_fullname_by_mask(uint32_t mask)
+{
+	uint32_t i;
+	
+	for (i = 0; i < dimof(target_area_name); i++)
+	{
+		if (target_area_name[i].mask == mask)
+		{
+			return (char *)target_area_name[i].full_name;
+		}
+	}
+	return NULL;
+}
+
+int8_t target_area_idx(char area_name)
+{
+	uint32_t i;
+	
+	for (i = 0; i < dimof(target_area_name); i++)
+	{
+		if (target_area_name[i].name == area_name)
+		{
+			return (uint8_t)i;
+		}
+	}
+	return -1;
 }
 
 char* target_area_fullname(char area_name)
@@ -430,49 +342,41 @@ uint32_t target_area_mask(char area_name)
 
 static RESULT target_check_single_defined(uint32_t opt)
 {
+	uint8_t i;
+	
 	opt = (target_defined ^ opt) & opt;
 	
-	if (opt & BOOTLOADER)
+	for (i = 0; i < 32; i++)
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "BOOTLOADER area");
-		return ERROR_FAIL;
-	}
-	else if (opt & APPLICATION)
-	{
-		LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "APPLICATION area");
-		return ERROR_FAIL;
-	}
-	else if (opt & EEPROM)
-	{
-		LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "EEPROM area");
-		return ERROR_FAIL;
-	}
-	else if (opt & OTPROM)
-	{
-		LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "OTP_ROM area");
-		return ERROR_FAIL;
-	}
-	else if (opt & FUSE)
-	{
-		LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "FUSE area");
-		return ERROR_FAIL;
-	}
-	else if (opt & LOCK)
-	{
-		LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "LOCK area");
-		return ERROR_FAIL;
-	}
-	else if (opt & USRSIG)
-	{
-		LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "USER_SIG area");
-		return ERROR_FAIL;
-	}
-	else if (opt & CALIBRATION)
-	{
-		LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "CALIBRATION area");
-		return ERROR_FAIL;
+		if (opt & (1 << i))
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), 
+						target_area_fullname_by_mask(1 << i));
+			return ERROR_FAIL;
+		}
 	}
 	return ERROR_OK;
+}
+
+int8_t target_mode_get_idx(const struct program_mode_t *mode, char mode_name)
+{
+	int8_t i;
+	
+	if (NULL == mode)
+	{
+		return -1;
+	}
+	
+	i = 0;
+	while (mode[i].name != 0)
+	{
+		if (mode[i].name == mode_name)
+		{
+			return i;
+		}
+		i++;
+	}
+	return -1;
 }
 
 RESULT target_check_defined(struct operation_t operations)
@@ -487,6 +391,172 @@ RESULT target_check_defined(struct operation_t operations)
 	{
 		return ERROR_OK;
 	}
+}
+
+RESULT target_write_buffer_from_file_callback(uint32_t address, 
+			uint32_t seg_addr, uint8_t* data, uint32_t length, void* buffer)
+{
+	uint32_t i, j;
+	int8_t area_idx;
+	char area_name;
+	uint8_t *area_buff;
+	struct memlist **area_memlist;
+	uint32_t area_seg, area_addr, area_size, area_page_size;
+	uint64_t *area_value;
+	struct program_info_t *pi = (struct program_info_t *)buffer;
+	uint32_t mem_addr;
+	RESULT ret;
+	
+	if ((NULL == cur_target) || (0 == strlen(target_chip_param.chip_name)))
+	{
+		LOG_BUG("target should be initialized first.\n");
+		return ERROR_FAIL;
+	}
+	
+	// find a right target to fill the memory
+	i = 0;
+	while (cur_target->program_area_map[i].name != 0)
+	{
+		area_name = cur_target->program_area_map[i].name;
+		area_idx = target_area_idx(area_name);
+		if (area_idx < 0)
+		{
+			i++;
+			continue;
+		}
+		area_seg = target_chip_param.chip_areas[area_idx].seg 
+						+ cur_target->program_area_map[i].fseg_addr;
+		area_addr = target_chip_param.chip_areas[area_idx].addr 
+						+ cur_target->program_area_map[i].fstart_addr;
+		area_size = target_chip_param.chip_areas[area_idx].size;
+		area_page_size = target_chip_param.chip_areas[area_idx].page_size;
+		if (islower(area_name))
+		{
+			area_buff = pi->program_areas[area_idx].buff;
+			area_value = &(pi->program_areas[area_idx].value);
+			area_memlist = &(pi->program_areas[area_idx].memlist);
+		}
+		else
+		{
+			area_buff = pi->program_areas[area_idx].checksum_buff;
+			area_value = &(pi->program_areas[area_idx].checksum_value);
+			area_memlist = &(pi->program_areas[area_idx].checksum_memlist);
+		}
+		
+		if ((area_seg != seg_addr) || (area_addr > address) 
+			|| ((area_addr + area_size) < (address + length)))
+		{
+			// not this area
+			i++;
+			continue;
+		}
+		
+		// found
+		if (0 == area_page_size)
+		{
+			// default page size is 256 bytes
+			area_page_size = 256;
+		}
+		target_defined |= target_area_mask(area_name);
+		mem_addr = address - area_addr;
+		if (area_buff != NULL)
+		{
+			// put in area_buff
+			memcpy(area_buff + mem_addr, data, length);
+			ret = MEMLIST_Add(area_memlist, address, length, area_page_size);
+			if (ret != ERROR_OK)
+			{
+				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+							"add memory list");
+				return ERRCODE_FAILURE_OPERATION;
+			}
+		}
+		else if (area_size <= 8)
+		{
+			// put in area_value
+			*area_value = 0;
+			for (j = 0; j < length; j++)
+			{
+				*area_value += data[j] << (j * 8);
+			}
+		}
+		
+		return ERROR_OK;
+	}
+	
+	// not found
+	return ERROR_FAIL;
+}
+
+RESULT target_init(struct program_info_t *pi, struct programmer_info_t *prog)
+{
+	uint16_t i;
+	uint8_t area_idx;
+	struct operation_t opt_tmp;
+	
+	memset(&opt_tmp, 0, sizeof(opt_tmp));
+	
+	if (NULL == pi->chip_name)
+	{
+		if (NULL == strchr(cur_target->feature, AUTO_DETECT[0]))
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "Auto-detect", 
+						cur_target->name);
+			return ERRCODE_NOT_SUPPORT;
+		}
+		// auto detect
+		memcpy(&target_chip_param, &target_chips.chips_param[0], 
+					sizeof(target_chip_param));
+		LOG_INFO(_GETTEXT(INFOMSG_TRY_AUTODETECT));
+		opt_tmp.read_operations = CHIPID;
+		
+		if (ERROR_OK != cur_target->program(opt_tmp, pi, prog))
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_AUTODETECT_FAIL), pi->chip_type);
+			return ERRCODE_AUTODETECT_FAIL;
+		}
+		
+		LOG_INFO(_GETTEXT(INFOMSG_AUTODETECT_SIGNATURE), pi->chip_id);
+		for (i = 0; i < target_chips.num_of_chips; i++)
+		{
+			if (pi->chip_id == target_chips.chips_param[i].chip_id)
+			{
+				pi->chip_name = (char *)target_chips.chips_param[i].chip_name;
+				LOG_INFO(_GETTEXT(INFOMSG_CHIP_FOUND), pi->chip_name);
+				
+				goto Post_Init;
+			}
+		}
+		
+		LOG_ERROR(_GETTEXT(ERRMSG_AUTODETECT_FAIL), pi->chip_type);
+		return ERRCODE_AUTODETECT_FAIL;
+	}
+	else
+	{
+		for (i = 0; i < target_chips.num_of_chips; i++)
+		{
+			if (!strcmp(target_chips.chips_param[i].chip_name, pi->chip_name))
+			{
+				goto Post_Init;
+			}
+		}
+		
+		return ERROR_FAIL;
+	}
+Post_Init:
+	memcpy(&target_chip_param, &target_chips.chips_param[i], 
+			sizeof(target_chip_param));
+	
+	i = 0;
+	while (cur_target->program_area_map[i].name != 0)
+	{
+		area_idx = target_area_idx(cur_target->program_area_map[i].name);
+		pi->program_areas[area_idx].size = 
+								target_chip_param.chip_areas[area_idx].size;
+		i++;
+	}
+	
+	return ERROR_OK;
 }
 
 static uint32_t target_prepare_operation(uint32_t *operation)
@@ -557,7 +627,7 @@ static void target_print_single_memory(char type)
 		return;
 	}
 	
-	paramidx = target_area_idx_by_char(type);
+	paramidx = target_area_idx(type);
 	if (paramidx < 0 )
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), full_type, 
@@ -568,8 +638,10 @@ static void target_print_single_memory(char type)
 	printf("%s of %s:\n", full_type, program_info.chip_name);
 	if (p_map[mapidx].data_pos)
 	{
-		printf("%c_seg = 0x%08X, ", type, p_map[mapidx].seg_addr);
-		printf("%c_addr = 0x%08X, ", type, p_map[mapidx].start_addr);
+		printf("%c_seg = 0x%08X, ", type, 
+				target_chip_param.chip_areas[paramidx].seg);
+		printf("%c_addr = 0x%08X, ", type, 
+				target_chip_param.chip_areas[paramidx].addr);
 	}
 	printf("%c_default = 0x%02X, ", type, 
 				target_chip_param.chip_areas[paramidx].default_value);
@@ -685,19 +757,11 @@ void target_print_target(uint32_t index)
 	char area[3];
 	
 	target_build_chip_series(targets_info[index].name, 
-						targets_info[index].program_mode_str, &target_chips);
+						targets_info[index].program_mode, &target_chips);
 	
 	if (0 == target_chips.num_of_chips)
 	{
-		if (targets_info[index].sub_target != NULL)
-		{
-			// parse sub_target
-		}
-		else
-		{
-			// no target
-			return;
-		}
+		return;
 	}
 	
 	if (strlen(targets_info[index].feature) > 0)
@@ -818,7 +882,7 @@ static RESULT target_probe_chip(char *chip_name)
 	return ERROR_FAIL;
 }
 
-RESULT target_init(struct program_info_t *pi)
+RESULT target_info_init(struct program_info_t *pi)
 {
 	uint32_t i;
 	RESULT (*probe_chip)(char *chip_name);
@@ -839,7 +903,7 @@ RESULT target_init(struct program_info_t *pi)
 		for (i = 0; targets_info[i].name != NULL; i++)
 		{
 			if (ERROR_OK == target_build_chip_series(targets_info[i].name, 
-						targets_info[i].program_mode_str, &target_chips))
+								targets_info[i].program_mode, &target_chips))
 			{
 				// configuration file exists, use default probe function
 				probe_chip = target_probe_chip;
@@ -847,12 +911,7 @@ RESULT target_init(struct program_info_t *pi)
 			else
 			{
 				// use probe function defined by target chip
-				if (NULL == targets_info[i].probe_chip)
-				{
-					continue;
-				}
-				
-				probe_chip = targets_info[i].probe_chip;
+				continue;
 			}
 			
 			if (probe_chip(pi->chip_name) == ERROR_OK)
@@ -877,22 +936,16 @@ RESULT target_init(struct program_info_t *pi)
 			if (!strcmp(targets_info[i].name, pi->chip_type))
 			{
 				if (ERROR_OK == target_build_chip_series(targets_info[i].name, 
-							targets_info[i].program_mode_str, &target_chips))
+								targets_info[i].program_mode, &target_chips))
 				{
 					// configuration file exists, use default probe function
 					probe_chip = target_probe_chip;
 				}
 				else
 				{
-					// use probe function defined by target chip
-					if (NULL == targets_info[i].probe_chip)
-					{
-						LOG_BUG(_GETTEXT("probe_chip not defined by %s\n"), 
-								targets_info[i].name);
-						return ERROR_FAIL;
-					}
-					
-					probe_chip = targets_info[i].probe_chip;
+					LOG_BUG(_GETTEXT("probe_chip not defined by %s\n"), 
+							targets_info[i].name);
+					return ERROR_FAIL;
 				}
 				
 				if ((pi->chip_name != NULL) 
@@ -1418,7 +1471,7 @@ RESULT target_release_chip_fl(struct chip_fl_t *fl)
 }
 
 RESULT target_build_chip_series(const char *chip_series, 
-							const char *program_mode, struct chip_series_t *s)
+		const struct program_mode_t *program_mode, struct chip_series_t *s)
 {
 	xmlDocPtr doc = NULL;
 	xmlNodePtr curNode = NULL;
@@ -1546,7 +1599,7 @@ RESULT target_build_chip_series(const char *chip_series,
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "program_mode"))
 			{
 				char *mode_tmp = (char *)xmlNodeGetContent(paramNode);
-				char *first;
+				int8_t mode_idx;
 				
 				p_param->program_mode_str = 
 										(char *)malloc(strlen(mode_tmp) + 1);
@@ -1563,11 +1616,11 @@ RESULT target_build_chip_series(const char *chip_series,
 				{
 					for (j = 0; j < strlen(mode_tmp); j++)
 					{
-						first = strchr(program_mode, mode_tmp[j]);
-						if (first != NULL)
+						mode_idx = 
+								target_mode_get_idx(program_mode, mode_tmp[j]);
+						if (mode_idx >= 0)
 						{
-							p_param->program_mode |= \
-											1 << (first - program_mode);
+							p_param->program_mode |= 1 << mode_idx;
 						}
 						else
 						{
@@ -1576,6 +1629,15 @@ RESULT target_build_chip_series(const char *chip_series,
 							ret = ERRCODE_NOT_SUPPORT;
 							goto free_and_exit;
 						}
+					}
+				}
+				else
+				{
+					j = 0;
+					while (program_mode[j].name != 0)
+					{
+						p_param->program_mode |= 1 << j;
+						j++;
 					}
 				}
 			}

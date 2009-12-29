@@ -42,7 +42,6 @@
 
 #define CUR_TARGET_STRING		C8051F_STRING
 #define CUR_DEFAULT_FREQ		4500
-#define cur_chip_param			target_chip_param
 
 static struct programmer_info_t *p = NULL;
 
@@ -192,10 +191,10 @@ RESULT c8051f_jtag_program(struct operation_t operations,
 	LOG_INFO(_GETTEXT(INFOMSG_TARGET_CHIP_ID), pi->chip_id);
 	if (!(operations.read_operations & CHIPID))
 	{
-		if (pi->chip_id != cur_chip_param.chip_id)
+		if (pi->chip_id != target_chip_param.chip_id)
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_CHIP_ID), pi->chip_id, 
-						cur_chip_param.chip_id);
+						target_chip_param.chip_id);
 			ret = ERRCODE_INVALID_CHIP_ID;
 			goto leave_program_mode;
 		}
@@ -218,7 +217,7 @@ RESULT c8051f_jtag_program(struct operation_t operations,
 		pgbar_init("erasing flash |", "|", 0, 1, PROGRESS_STEP, '=');
 		
 		// set FLASHADR to erase_addr
-		dr = cur_chip_param.param[C8051F_PARAM_ERASE_ADDR];
+		dr = target_chip_param.param[C8051F_PARAM_ERASE_ADDR];
 		c8051f_jtag_ind_write(C8051F_IR_FLASHADR, &dr, C8051F_DR_FLASHADR_LEN);
 		// set FLASHCON for flash erase operation(0x20)
 		dr = 0x20;
@@ -262,7 +261,7 @@ RESULT c8051f_jtag_program(struct operation_t operations,
 		jtag_delay_ms(500);
 		for (i = 0; 
 			 i < (int32_t)target_size; 
-			 i += cur_chip_param.chip_areas[APPLICATION_IDX].page_size)
+			 i += target_chip_param.chip_areas[APPLICATION_IDX].page_size)
 		{
 			// set FLASHADR to erase_addr
 			dr = i;
@@ -293,7 +292,7 @@ RESULT c8051f_jtag_program(struct operation_t operations,
 				goto leave_program_mode;
 			}
 			
-			pgbar_update(cur_chip_param.chip_areas[APPLICATION_IDX].page_size);
+			pgbar_update(target_chip_param.chip_areas[APPLICATION_IDX].page_size);
 		}
 		
 		pgbar_fini();

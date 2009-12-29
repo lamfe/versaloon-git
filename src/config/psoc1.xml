@@ -8,6 +8,7 @@
     <app_default>0</app_default>
     <app_addr>0</app_addr>
     <app_seg>0</app_seg>
+    <lock_default>0</lock_default>
   </chip>
   <chip name="cy8c21123">
     <chip_id>0x1700</chip_id>

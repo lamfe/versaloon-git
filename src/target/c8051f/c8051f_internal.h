@@ -20,8 +20,8 @@
 #define __C8051F_INTERNAL_H_INCLUDED__
 
 #define C8051F_FLASH_CHAR				0xFF
-#define C8051F_JTAG						(1 << 0)
-#define C8051F_C2						(1 << 1)
+#define C8051F_JTAG						0
+#define C8051F_C2						1
 
 #define C8051F_BLOCK_SIZE				256
 
@@ -30,8 +30,6 @@
 #define C8051F_PARAM_FPDAT_ADDR			2
 
 // JTAG
-#define C8051F_JTAG_INTERFACE_NEEDED	(JTAG_HL)
-
 #define C8051F_JTAG_MAX_POLL_COUNT		10
 
 #define C8051F_JTAG_ID_MASK				0x00FFFFFF
@@ -70,8 +68,6 @@ RESULT c8051f_jtag_program(struct operation_t operations,
 
 
 // C2
-#define C8051F_C2_INTERFACE_NEEDED		(C2 | GPIO)
-
 #define C8051F_C2_DEVICEID				0x00
 #define C8051F_C2_REVID					0x01
 

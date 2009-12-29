@@ -61,7 +61,6 @@
 uint16 Vtarget = 0;
 
 uint8 asyn_rx_buf[ASYN_DATA_BUFF_SIZE];		// used as temporary buff in In-System-Programming
-uint16 asyn_rx_idx, asyn_tx_idx;
 
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/

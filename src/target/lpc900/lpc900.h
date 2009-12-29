@@ -20,19 +20,11 @@
 #define __LPC900_H_INCLUDED__
 
 #define LPC900_STRING					"lpc900"
-#define LPC900_PROGRAM_MODE_STR			""
 
 extern const struct program_area_map_t lpc900_program_area_map[];
+extern const struct program_mode_t lpc900_program_mode[];
 
 RESULT lpc900_parse_argument(char cmd, const char *argu);
-RESULT lpc900_prepare_buffer(struct program_info_t *pi);
-
-RESULT lpc900_init(struct program_info_t *pi, struct programmer_info_t *prog);
-RESULT lpc900_fini(struct program_info_t *pi, struct programmer_info_t *prog);
-uint32_t lpc900_interface_needed(void);
-RESULT lpc900_write_buffer_from_file_callback(uint32_t address, 
-			uint32_t seg_addr, uint8_t* data, uint32_t length, void* buffer);
-
 RESULT lpc900_program(struct operation_t operations, struct program_info_t *pi, 
 					  struct programmer_info_t *prog);
 

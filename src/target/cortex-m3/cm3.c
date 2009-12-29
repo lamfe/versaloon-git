@@ -48,50 +48,22 @@
 #include "cm3_common.h"
 
 #define CUR_TARGET_STRING			CM3_STRING
-#define cur_chip_param				cm3_chip_param
-#define cur_chips_param				cm3_chips_param
-#define cur_prog_mode				program_mode
-#define cur_buffer_size				cm3_buffer_size
-#define cur_target_defined			target_defined
-#define cur_program_area_map		cm3_program_area_map
-
-struct program_area_map_t cm3_program_area_map[] = 
-{
-	{APPLICATION_CHAR, 1, 0, 0, 0, 0},
-//	{LOCK_CHAR, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0}
-};
 
 const struct cm3_param_t cm3_chips_param[] = {
 //	chip_name,		default_char,		flash_start_addr,	flash_max_size,	jtag_khz,		pos			swj_trn
 	{"cm3_stm32",	STM32_FLASH_CHAR,	0x08000000,			512 * 1024,		STM32_JTAG_KHZ,	{0,1,0,5},	2},
 };
-static uint8_t cm3_chip_index = 0;
-struct cm3_param_t cm3_chip_param;
+static int8_t cm3_chip_index = 0;
+struct cm3_param_t *cm3_chip_param = NULL;
 
 uint8_t cm3_execute_flag = 0;
 uint32_t cm3_execute_addr = 0;
 uint16_t cm3_buffer_size = 0;
 
-static void cm3_usage(void)
-{
-	printf("\
-Usage of %s:\n\
-  -m,  --mode <MODE>                        set mode<j|s>\n\
-  -x,  --execute <ADDRESS>                  execute program\n\
-  -F,  --frequency <FREQUENCY>              set JTAG frequency, in KHz\n\n",
-			CUR_TARGET_STRING);
-}
-
 RESULT cm3_parse_argument(char cmd, const char *argu)
 {
 	switch (cmd)
 	{
-	case 'h':
-		cm3_usage();
-		break;
-	case 'E':
-		break;
 	case 'b':
 		// set buffer size
 		if (NULL == argu)
@@ -100,7 +72,7 @@ RESULT cm3_parse_argument(char cmd, const char *argu)
 			return ERRCODE_INVALID_OPTION;
 		}
 		
-		cur_buffer_size = (uint16_t)strtoul(argu, NULL, 0);
+		cm3_buffer_size = (uint16_t)strtoul(argu, NULL, 0);
 		break;
 	case 'x':
 		if (NULL == argu)
@@ -120,159 +92,6 @@ RESULT cm3_parse_argument(char cmd, const char *argu)
 	return ERROR_OK;
 }
 
-RESULT cm3_probe_chip(char *chip_name)
-{
-	uint32_t i;
-	
-	for (i = 0; i < dimof(cur_chips_param); i++)
-	{
-		if (!strcmp(cur_chips_param[i].chip_name, chip_name))
-		{
-			return ERROR_OK;
-		}
-	}
-	
-	return ERROR_FAIL;
-}
-
-RESULT cm3_prepare_buffer(struct program_info_t *pi)
-{
-	if (pi->program_areas[APPLICATION_IDX].buff != NULL)
-	{
-		memset(pi->program_areas[APPLICATION_IDX].buff, 
-				cur_chip_param.default_char, 
-				pi->program_areas[APPLICATION_IDX].size);
-	}
-	else
-	{
-		return ERROR_FAIL;
-	}
-	
-	return ERROR_OK;
-}
-
-RESULT cm3_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr, 
-								uint8_t* data, uint32_t length, void* buffer)
-{
-	struct program_info_t *pi = (struct program_info_t *)buffer;
-	uint32_t mem_addr = address, page_size;
-	RESULT ret;
-	uint8_t *tbuff;
-	
-	seg_addr = seg_addr;
-	tbuff = pi->program_areas[APPLICATION_IDX].buff;
-	
-#ifdef PARAM_CHECK
-	if ((length > 0) && (NULL == data))
-	{
-		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_PARAMETER), __FUNCTION__);
-		return ERRCODE_INVALID_PARAMETER;
-	}
-	if (NULL == tbuff)
-	{
-		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_BUFFER), 
-				  "pi->app");
-		return ERRCODE_INVALID_BUFFER;
-	}
-#endif
-	
-	if (((mem_addr - cur_chip_param.flash_start_addr) 
-			>= cur_chip_param.flash_max_size) 
-		|| (length > cur_chip_param.flash_max_size) 
-		|| ((mem_addr - cur_chip_param.flash_start_addr + length) 
-			> cur_chip_param.flash_max_size))
-	{
-		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_RANGE), "flash memory");
-		return ERRCODE_INVALID;
-	}
-	cur_target_defined |= APPLICATION;
-	
-	memcpy(tbuff + mem_addr - cur_chip_param.flash_start_addr, 
-		   data, length);
-	
-	switch (cm3_chip_index)
-	{
-	case CM3_STM32:
-		page_size = STM32_PAGE_SIZE;
-		break;
-	default:
-		// invalid target
-		LOG_BUG(_GETTEXT(ERRMSG_INVALID), TO_STR(cm3_chip_index), 
-				CUR_TARGET_STRING);
-		return ERRCODE_INVALID;
-	}
-	
-	ret = MEMLIST_Add(&pi->program_areas[APPLICATION_IDX].memlist, mem_addr, 
-						length, page_size);
-	if (ret != ERROR_OK)
-	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "add memory list");
-		return ERRCODE_FAILURE_OPERATION;
-	}
-	
-	return ERROR_OK;
-}
-
-RESULT cm3_fini(struct program_info_t *pi, struct programmer_info_t *prog)
-{
-	pi = pi;
-	prog = prog;
-	
-	return ERROR_OK;
-}
-
-RESULT cm3_init(struct program_info_t *pi, struct programmer_info_t *prog)
-{
-	uint8_t i;
-	
-	prog = prog;
-	
-	if (strcmp(pi->chip_type, CUR_TARGET_STRING))
-	{
-		LOG_BUG(_GETTEXT(ERRMSG_INVALID_HANDLER), CUR_TARGET_STRING, 
-				pi->chip_type);
-		return ERRCODE_INVALID_HANDLER;
-	}
-	
-	if (NULL == pi->chip_name)
-	{
-		// auto detect
-		LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "Auto-detect", 
-				  CUR_TARGET_STRING);
-		return ERRCODE_NOT_SUPPORT;
-	}
-	else
-	{
-		for (i = 0; i < dimof(cur_chips_param); i++)
-		{
-			if (!strcmp(cur_chips_param[i].chip_name, pi->chip_name))
-			{
-				cm3_chip_index = i;
-				memcpy(&cur_chip_param, cur_chips_param + cm3_chip_index, 
-					   sizeof(cur_chip_param));
-				
-				pi->program_areas[APPLICATION_IDX].size = 
-										cur_chip_param.flash_max_size;
-				
-				cur_program_area_map[0].start_addr = 
-										cur_chips_param[i].flash_start_addr;
-				
-				return ERROR_OK;
-			}
-		}
-		
-		return ERROR_FAIL;
-	}
-}
-
-uint32_t cm3_interface_needed(void)
-{
-	return JTAG_HL | SWJ;
-}
-
-
-
-
 
 
 
@@ -285,8 +104,25 @@ RESULT cm3_program(struct operation_t operations, struct program_info_t *pi,
 	RESULT ret = ERROR_OK;
 	adi_dp_if_t dp;
 	uint16_t voltage;
+	uint8_t i;
 	
 	pi = pi;
+	
+	cm3_chip_index = -1;
+	cm3_chip_param = NULL;
+	for (i = 0; i < dimof(cm3_chips_param); i++)
+	{
+		if (!strcmp(cm3_chips_param[i].chip_name, pi->chip_name))
+		{
+			cm3_chip_index = i;
+			cm3_chip_param = (struct cm3_param_t *)&cm3_chips_param[i];
+			break;
+		}
+	}
+	if ((cm3_chip_index < 0) || (NULL == cm3_chip_param))
+	{
+		return ERROR_FAIL;
+	}
 	
 	// get target voltage
 	if (ERROR_OK != get_target_voltage(&voltage))
@@ -299,14 +135,14 @@ RESULT cm3_program(struct operation_t operations, struct program_info_t *pi,
 		LOG_WARNING(_GETTEXT(INFOMSG_TARGET_LOW_POWER));
 	}
 	
-	if ((cur_prog_mode != ADI_DP_JTAG) && (cur_prog_mode != ADI_DP_SWJ))
+	if ((program_mode != ADI_DP_JTAG) && (program_mode != ADI_DP_SWJ))
 	{
 		LOG_WARNING(_GETTEXT("debug port not defined, use JTAG by default.\n"));
-		cur_prog_mode = ADI_DP_JTAG;
+		program_mode = ADI_DP_JTAG;
 	}
 	
-	dp.type = cur_prog_mode;
-	switch(cur_prog_mode)
+	dp.type = program_mode;
+	switch(program_mode)
 	{
 	case ADI_DP_JTAG:
 		if (program_frequency)
@@ -315,16 +151,16 @@ RESULT cm3_program(struct operation_t operations, struct program_info_t *pi,
 		}
 		else
 		{
-			dp.adi_dp_if_info.adi_dp_jtag.jtag_khz = cur_chip_param.jtag_khz;
+			dp.adi_dp_if_info.adi_dp_jtag.jtag_khz = cm3_chip_param->jtag_khz;
 		}
-		dp.adi_dp_if_info.adi_dp_jtag.ub = cur_chip_param.pos.ub;
-		dp.adi_dp_if_info.adi_dp_jtag.ua = cur_chip_param.pos.ua;
-		dp.adi_dp_if_info.adi_dp_jtag.bb = cur_chip_param.pos.bb;
-		dp.adi_dp_if_info.adi_dp_jtag.ba = cur_chip_param.pos.ba;
+		dp.adi_dp_if_info.adi_dp_jtag.ub = cm3_chip_param->pos.ub;
+		dp.adi_dp_if_info.adi_dp_jtag.ua = cm3_chip_param->pos.ua;
+		dp.adi_dp_if_info.adi_dp_jtag.bb = cm3_chip_param->pos.bb;
+		dp.adi_dp_if_info.adi_dp_jtag.ba = cm3_chip_param->pos.ba;
 		
 		break;
 	case ADI_DP_SWJ:
-		dp.adi_dp_if_info.adi_dp_swj.swj_trn = cur_chip_param.swj_trn;
+		dp.adi_dp_if_info.adi_dp_swj.swj_trn = cm3_chip_param->swj_trn;
 		dp.adi_dp_if_info.adi_dp_swj.swj_dly = 0;
 		dp.adi_dp_if_info.adi_dp_swj.swj_retry = 0;
 		

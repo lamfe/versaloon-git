@@ -48,27 +48,15 @@
 #include "comport.h"
 
 #define CUR_TARGET_STRING			COMISP_STRING
-#define cur_chip_param				comisp_chip_param
-#define cur_chips_param				comisp_chips_param
-#define cur_target_defined			target_defined
-#define cur_program_area_map		comisp_program_area_map
-
-struct program_area_map_t comisp_program_area_map[] = 
-{
-	{APPLICATION_CHAR, 1, 0, 0, 0, 0},
-//	{LOCK_CHAR, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0}
-};
 
 const struct comisp_param_t comisp_chips_param[] = {
 //	chip_name,			com_mode,																												default_char,		flash_start_addr,	flash_max_size
 //						{comport,	baudrate,	datalength,	paritybit,			stopbit,		handshake,				aux_pin}	
 	{"comisp_stm32",	{"",		-1,			8,			COMM_PARITYBIT_EVEN,COMM_STOPBIT_1,	COMM_PARAMETER_UNSURE,	COMM_PARAMETER_UNSURE},	STM32_FLASH_CHAR,	0x08000000,			512 * 1024},
 	{"comisp_lpcarm",	{"",		-1,			8,			COMM_PARITYBIT_NONE,COMM_STOPBIT_1,	COMM_PARAMETER_UNSURE,	COMM_PARAMETER_UNSURE},	LPCARM_FLASH_CHAR,	0x00000000,			512 * 1024},
-	{"comisp_test",		{"",		-1,			8,			COMM_PARITYBIT_NONE,COMM_STOPBIT_1,	COMM_PARAMETER_UNSURE,	COMM_PARAMETER_UNSURE},	0x00,				0x00000000,			512 * 1024},
 };
-static uint8_t comisp_chip_index = 0;
-struct comisp_param_t comisp_chip_param;
+static int8_t comisp_chip_index = 0;
+struct comisp_param_t *comisp_chip_param = NULL;
 
 uint8_t comisp_execute_flag = 0;
 uint32_t comisp_execute_addr = 0;
@@ -77,28 +65,18 @@ struct com_mode_t com_mode =
 {"", 115200, 8, COMM_PARITYBIT_NONE, COMM_STOPBIT_1, 
 COMM_HANDSHAKE_NONE, COMM_AUXPIN_DISABLE};
 
-static uint32_t comisp_test_buffsize = 0;
-
-static void comisp_usage(void)
-{
-	printf("\
-Usage of %s:\n\
-  -C,  --comport <COMM_ATTRIBUTE>           set com port\n\
-  -x,  --execute <ADDRESS>                  execute program\n\n", 
-		   CUR_TARGET_STRING);
-}
 
 void comisp_print_comm_info(uint8_t i)
 {
 	printf("\
 baudrate = %d, datalength = %d, paritybit = %c, stopbit = %c, \
 handshake = %c, auxpin = %c",
-			cur_chips_param[i].com_mode.baudrate,
-			cur_chips_param[i].com_mode.datalength,
-			cur_chips_param[i].com_mode.paritybit,
-			cur_chips_param[i].com_mode.stopbit,
-			cur_chips_param[i].com_mode.handshake,
-			cur_chips_param[i].com_mode.auxpin);
+			comisp_chips_param[i].com_mode.baudrate,
+			comisp_chips_param[i].com_mode.datalength,
+			comisp_chips_param[i].com_mode.paritybit,
+			comisp_chips_param[i].com_mode.stopbit,
+			comisp_chips_param[i].com_mode.handshake,
+			comisp_chips_param[i].com_mode.auxpin);
 }
 
 RESULT comisp_parse_argument(char cmd, const char *argu)
@@ -108,24 +86,12 @@ RESULT comisp_parse_argument(char cmd, const char *argu)
 	
 	switch (cmd)
 	{
-	case 'h':
-		comisp_usage();
-		break;
 	case 'E':
 		if (argu != NULL)
 		{
 			i = (uint8_t)strtoul(argu, NULL, 0);
 			comisp_print_comm_info(i);
 		}
-		break;
-	case 'b':
-		if ((NULL == argu) || (strlen(argu) == 0))
-		{
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), cmd);
-			return ERRCODE_INVALID_OPTION;
-		}
-		
-		comisp_test_buffsize = (uint32_t)strtoul(argu, NULL, 0);
 		break;
 	case 'C':
 		// COM Mode
@@ -224,174 +190,29 @@ RESULT comisp_parse_argument(char cmd, const char *argu)
 	return ERROR_OK;
 }
 
-RESULT comisp_probe_chip(char *chip_name)
-{
-	uint32_t i;
-	
-	for (i = 0; i < dimof(cur_chips_param); i++)
-	{
-		if (!strcmp(cur_chips_param[i].chip_name, chip_name))
-		{
-			return ERROR_OK;
-		}
-	}
-	
-	return ERROR_FAIL;
-}
-
-RESULT comisp_prepare_buffer(struct program_info_t *pi)
-{
-	if (pi->program_areas[APPLICATION_IDX].buff != NULL)
-	{
-		memset(pi->program_areas[APPLICATION_IDX].buff, 
-				cur_chip_param.default_char, 
-				pi->program_areas[APPLICATION_IDX].size);
-	}
-	else
-	{
-		return ERROR_FAIL;
-	}
-	
-	return ERROR_OK;
-}
-
-RESULT comisp_write_buffer_from_file_callback(uint32_t address, 
-			uint32_t seg_addr, uint8_t* data, uint32_t length, void* buffer)
-{
-	struct program_info_t *pi = (struct program_info_t *)buffer;
-	uint32_t mem_addr = address, page_size;
-	RESULT ret;
-	uint8_t *tbuff;
-	
-	seg_addr = seg_addr;
-	tbuff = pi->program_areas[APPLICATION_IDX].buff;
-	
-#ifdef PARAM_CHECK
-	if ((length > 0) && (NULL == data))
-	{
-		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_PARAMETER), __FUNCTION__);
-		return ERRCODE_INVALID_PARAMETER;
-	}
-	if (NULL == tbuff)
-	{
-		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_BUFFER), 
-				  "pi->app");
-		return ERRCODE_INVALID_BUFFER;
-	}
-#endif
-	
-	if (((mem_addr - cur_chip_param.flash_start_addr) 
-			>= cur_chip_param.flash_max_size) 
-		|| (length > cur_chip_param.flash_max_size) 
-		|| ((mem_addr - cur_chip_param.flash_start_addr + length) 
-			> cur_chip_param.flash_max_size))
-	{
-		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_RANGE), "flash memory");
-		return ERRCODE_INVALID;
-	}
-	cur_target_defined |= APPLICATION;
-	
-	memcpy(tbuff + mem_addr - cur_chip_param.flash_start_addr, data, length);
-	
-	switch (comisp_chip_index)
-	{
-	case COMISP_STM32:
-		page_size = STM32ISP_PAGE_SIZE;
-		break;
-	case COMISP_LPCARM:
-		page_size = LPCARMISP_PAGE_SIZE;
-		break;
-	default:
-		// invalid target
-		LOG_BUG(_GETTEXT(ERRMSG_INVALID), TO_STR(comisp_chip_index), 
-				CUR_TARGET_STRING);
-		return ERRCODE_INVALID;
-	}
-	
-	ret = MEMLIST_Add(&pi->program_areas[APPLICATION_IDX].memlist, mem_addr, 
-						length, page_size);
-	if (ret != ERROR_OK)
-	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "add memory list");
-		return ERRCODE_FAILURE_OPERATION;
-	}
-	
-	return ERROR_OK;
-}
-
-RESULT comisp_fini(struct program_info_t *pi, struct programmer_info_t *prog)
-{
-	pi = pi;
-	prog = prog;
-	
-	if (strlen(com_mode.comport) > 0)
-	{
-		strcpy(com_mode.comport, "");
-	}
-	
-	return ERROR_OK;
-}
-
-RESULT comisp_init(struct program_info_t *pi, struct programmer_info_t *prog)
-{
-	uint8_t i;
-	
-	prog = prog;
-	
-	if (strcmp(pi->chip_type, CUR_TARGET_STRING))
-	{
-		LOG_BUG(_GETTEXT(ERRMSG_INVALID_HANDLER), CUR_TARGET_STRING, 
-				pi->chip_type);
-		return ERRCODE_INVALID_HANDLER;
-	}
-	
-	if (NULL == pi->chip_name)
-	{
-		// auto detect
-		LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "Auto-detect", 
-				  CUR_TARGET_STRING);
-		return ERRCODE_NOT_SUPPORT;
-	}
-	else
-	{
-		for (i = 0; i < dimof(cur_chips_param); i++)
-		{
-			if (!strcmp(cur_chips_param[i].chip_name, pi->chip_name))
-			{
-				comisp_chip_index = i;
-				memcpy(&cur_chip_param, cur_chips_param + comisp_chip_index, 
-					   sizeof(cur_chip_param));
-				
-				pi->program_areas[APPLICATION_IDX].size = 
-										cur_chip_param.flash_max_size;
-				
-				cur_program_area_map[0].start_addr = 
-										cur_chips_param[i].flash_start_addr;
-				
-				return ERROR_OK;
-			}
-		}
-		
-		return ERROR_FAIL;
-	}
-}
-
-uint32_t comisp_interface_needed(void)
-{
-	// comisp uses COM ports only
-	return 0;
-}
-
 RESULT comisp_program(struct operation_t operations, struct program_info_t *pi, 
 					  struct programmer_info_t *prog)
 {
 	RESULT ret = ERROR_OK;
-	uint32_t retry;
-	uint8_t *buff_w = NULL, *buff_r = NULL;
-	int32_t comm_ret;
+	uint8_t i;
 	
 	pi = pi;
 	prog = prog;
+	
+	comisp_chip_index = -1;
+	comisp_chip_param = NULL;
+	for (i = 0; i < dimof(comisp_chips_param); i++)
+	{
+		if (!strcmp(comisp_chips_param[i].chip_name, pi->chip_name))
+		{
+			comisp_chip_index = i;
+			comisp_chip_param = (struct comisp_param_t *)&comisp_chips_param[i];
+		}
+	}
+	if ((comisp_chip_index < 0) || (NULL == comisp_chip_param))
+	{
+		return ERROR_FAIL;
+	}
 	
 	if (!strlen(com_mode.comport))
 	{
@@ -401,133 +222,6 @@ RESULT comisp_program(struct operation_t operations, struct program_info_t *pi,
 	
 	switch(comisp_chip_index)
 	{
-	case COMISP_TEST:
-		if (0 == comisp_test_buffsize)
-		{
-			LOG_INFO(_GETTEXT("buffsize not defined, use 64 for default.\n"));
-			comisp_test_buffsize = 64;
-		}
-		buff_w = (uint8_t*)malloc(comisp_test_buffsize);
-		buff_r = (uint8_t*)malloc(comisp_test_buffsize);
-		if ((NULL == buff_r) || (NULL == buff_w))
-		{
-			LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
-			ret = ERRCODE_NOT_ENOUGH_MEMORY;
-			goto comtest_end;
-		}
-		
-		ret = comm_open(com_mode.comport, com_mode.baudrate, 8, 
-					COMM_PARITYBIT_EVEN, COMM_STOPBIT_1, COMM_HANDSHAKE_NONE);
-		if (ret != ERROR_OK)
-		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPEN), com_mode.comport);
-			ret = ERROR_FAIL;
-			goto comtest_end;
-		}
-		
-		while(1)
-		{
-			comm_ret = comm_read(buff_r, 1);
-			if (comm_ret < 0)
-			{
-				LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_HANDLE_DEVICE), 
-						  "read", com_mode.comport);
-				ret = ERRCODE_FAILURE_OPERATION;
-				goto comtest_end;
-			}
-			else if (comm_ret == 0)
-			{
-				break;
-			}
-		}
-		
-		LOG_INFO(_GETTEXT("start to run com test for buffsize = %d.\n"), 
-				 comisp_test_buffsize);
-		retry = 0;
-		while(1)
-		{
-			uint32_t i;
-			
-			for (i = 0; i < comisp_test_buffsize; i++)
-			{
-				buff_w[i] = (uint8_t)(i/* ^ retry*/);
-			}
-			
-			// send
-			comm_ret = comm_write(buff_w, comisp_test_buffsize);
-			if (comm_ret < 0)
-			{
-				LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_HANDLE_DEVICE), 
-						  "write", com_mode.comport);
-				ret = ERRCODE_FAILURE_OPERATION;
-				goto comtest_end;
-			}
-			if (comm_ret != (int32_t)comisp_test_buffsize)
-			{
-				LOG_ERROR("Fail to send %d bytes, %d bytes sent.\n", 
-							comisp_test_buffsize, comm_ret);
-				ret = ERROR_FAIL;
-				goto comtest_end;
-			}
-			// read
-			memset(buff_r, 0, comisp_test_buffsize);
-			comm_ret = comm_read(buff_r, comisp_test_buffsize);
-			if (comm_ret < 0)
-			{
-				LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_HANDLE_DEVICE), 
-							"read", com_mode.comport);
-				ret = ERRCODE_FAILURE_OPERATION;
-				goto comtest_end;
-			}
-			if (comm_ret != (int32_t)comisp_test_buffsize)
-			{
-				LOG_ERROR("Fail to receive %d bytes, %d bytes received.\n", 
-							comisp_test_buffsize, comm_ret);
-				ret = ERROR_FAIL;
-			}
-			// check
-			for (i = 0; i < comisp_test_buffsize; i++)
-			{
-				if (buff_w[i] != buff_r[i])
-				{
-					LOG_ERROR("Data error at %d.\n", i);
-					goto comtest_end;
-//					break;
-				}
-			}
-			retry++;
-			
-			comm_ret = comm_read(buff_r, 1);
-			if (comm_ret < 0)
-			{
-				LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_HANDLE_DEVICE), 
-						  "write", com_mode.comport);
-				ret = ERRCODE_FAILURE_OPERATION;
-				goto comtest_end;
-			}
-			else if (comm_ret > 0)
-			{
-				LOG_ERROR("Too many data received.\n");
-				goto comtest_end;
-			}
-			
-			LOG_INFO(_GETTEXT("round %d OK.\n"), retry);
-		}
-		
-comtest_end:
-		comm_close();
-		comisp_test_buffsize = 0;
-		if (buff_w != NULL)
-		{
-			free(buff_w);
-			buff_w = NULL;
-		}
-		if (buff_r != NULL)
-		{
-			free(buff_r);
-			buff_r = NULL;
-		}
-		break;
 	case COMISP_STM32:
 		ret = stm32isp_program(operations, pi);
 		break;

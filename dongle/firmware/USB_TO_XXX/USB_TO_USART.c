@@ -55,10 +55,6 @@ void USB_TO_USART_ProcessCmd(uint8* dat, uint16 len)
 			break;
 		case USB_TO_XXX_STATUS:
 			buffer_reply[rep_len++] = USB_TO_XXX_OK;
-			buffer_reply[rep_len++] = (uint8)(asyn_tx_idx >> 0);
-			buffer_reply[rep_len++] = (uint8)(asyn_tx_idx >> 8);
-			buffer_reply[rep_len++] = (uint8)(asyn_rx_idx >> 0);
-			buffer_reply[rep_len++] = (uint8)(asyn_rx_idx >> 8);
 
 			break;
 		case USB_TO_XXX_IN:

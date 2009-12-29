@@ -141,7 +141,8 @@ RESULT end_file(struct filelist *fl)
 }
 
 RESULT save_target_to_file(struct filelist *fl, uint8_t *buff, 
-					uint32_t buff_size, uint32_t seg_addr, uint32_t start_addr)
+					uint32_t buff_size, uint32_t seg_addr, uint32_t start_addr, 
+					int32_t fseg, int32_t faddr)
 {
 	uint8_t i;
 	struct filelist *target_file = fl;
@@ -153,7 +154,8 @@ RESULT save_target_to_file(struct filelist *fl, uint8_t *buff,
 	
 	// find a most suitable file to write
 	do {
-		if ((seg_addr == fl->seg_offset) && (start_addr >= fl->addr_offset))
+		if (((seg_addr + fseg) == fl->seg_offset) 
+			&& ((start_addr + faddr) >= fl->addr_offset))
 		{
 			target_file = fl;
 			// if start_addr is match, that's it
@@ -190,8 +192,7 @@ RESULT save_target_to_file(struct filelist *fl, uint8_t *buff,
 	
 	target_file->access = 1;
 	return file_parser[i].save_target_to_file(target_file->file, 
-							target_file->addr_offset, buff, buff_size, 
-							seg_addr - target_file->seg_offset, start_addr);
+						start_addr, buff, buff_size, seg_addr, start_addr);
 }
 
 RESULT read_bin_file(FILE *bin_file, WRITE_MEMORY_CALLBACK callback, 

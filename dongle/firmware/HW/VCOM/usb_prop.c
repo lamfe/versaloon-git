@@ -24,6 +24,9 @@
 #include "usb_pwr.h"
 #include "hw_config.h"
 
+#include "fifo.h"
+#include "usb_cdc.h"
+
 #if USB_WITH_MASSSTORAGE
 #	include "usb_bot.h"
 #endif
@@ -539,6 +542,8 @@ uint8_t *Virtual_Com_Port_SetLineCoding(uint16_t Length)
   CDC_enable = 1;
   LED_RED_OFF();
   linecoding.datatype = 8;
+  FIFO_Reset(&CDC_OUT_fifo);
+  FIFO_Reset(&CDC_IN_fifo);
   CDC_IF_Setup(linecoding.bitrate, linecoding.datatype, linecoding.paritytype, linecoding.stopbittype);
   return(uint8_t *)&linecoding;
 }

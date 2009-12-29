@@ -41,8 +41,6 @@
 #include "JTAGfunc.h"
 #include "msp430_internal.h"
 
-#define cur_chip_param				target_chip_param
-
 RESULT msp430_jtag_program(struct operation_t operations, 
 					struct program_info_t *pi, struct programmer_info_t *prog)
 {
@@ -171,10 +169,10 @@ RESULT msp430_jtag_program(struct operation_t operations,
 	LOG_INFO(_GETTEXT(INFOMSG_TARGET_CHIP_ID), pi->chip_id);
 	if (!(operations.read_operations & CHIPID))
 	{
-		if (pi->chip_id != cur_chip_param.chip_id)
+		if (pi->chip_id != target_chip_param.chip_id)
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_CHIP_ID), pi->chip_id, 
-						cur_chip_param.chip_id);
+						target_chip_param.chip_id);
 			ret = ERROR_FAIL;
 			goto leave_program_mode;
 		}
@@ -184,7 +182,7 @@ RESULT msp430_jtag_program(struct operation_t operations,
 		goto leave_program_mode;
 	}
 	
-	page_size = (word)cur_chip_param.chip_areas[APPLICATION_IDX].page_size;
+	page_size = (word)target_chip_param.chip_areas[APPLICATION_IDX].page_size;
 	addr_start = Device_MainStart();
 	
 	if (operations.erase_operations > 0)
@@ -224,11 +222,11 @@ RESULT msp430_jtag_program(struct operation_t operations,
 		// check blank
 		LOG_INFO(_GETTEXT(INFOMSG_CHECKING), "blank");
 		pgbar_init("checking blank |", "|", 0, 
-					cur_chip_param.chip_areas[APPLICATION_IDX].page_num, 
+					target_chip_param.chip_areas[APPLICATION_IDX].page_num, 
 					PROGRESS_STEP, '=');
 		
 		for (i = 0; 
-			i < (int32_t)cur_chip_param.chip_areas[APPLICATION_IDX].page_num; 
+			i < (int32_t)target_chip_param.chip_areas[APPLICATION_IDX].page_num; 
 			i++)
 		{
 			CRC_calc = CRC_check = 0;

@@ -20,17 +20,11 @@
 #define __MSP430_H_INCLUDED__
 
 #define MSP430_STRING					"msp430"
-#define MSP430_PROGRAM_MODE_STR			"jsb"
 
 extern struct program_area_map_t msp430_program_area_map[];
+extern const struct program_mode_t msp430_program_mode[];
 
 RESULT msp430_parse_argument(char cmd, const char *argu);
-RESULT msp430_prepare_buffer(struct program_info_t *pi);
-RESULT msp430_write_buffer_from_file_callback(uint32_t address, 
-			uint32_t seg_addr, uint8_t* data, uint32_t length, void* buffer);
-RESULT msp430_init(struct program_info_t *pi, struct programmer_info_t *prog);
-RESULT msp430_fini(struct program_info_t *pi, struct programmer_info_t *prog);
-uint32_t msp430_interface_needed(void);
 RESULT msp430_program(struct operation_t operations, struct program_info_t *pi, 
 					  struct programmer_info_t *prog);
 
