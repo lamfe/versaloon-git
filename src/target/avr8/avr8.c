@@ -61,8 +61,6 @@ const struct program_mode_t avr8_program_mode[] =
 	{0, NULL, 0}
 };
 
-static uint32_t avr8_eeprom_offset = 0;
-
 
 static void avr8_usage(void)
 {

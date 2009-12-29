@@ -668,8 +668,8 @@ RESULT psoc1_program(struct operation_t operations, struct program_info_t *pi,
 			else
 			{
 				LOG_INFO(_GETTEXT(ERRMSG_FAILURE_VERIFY_TARGET_04X), 
-						 "checksum", checksum, 
-						 pi->program_areas[APPLICATION_IDX].checksum_value);
+					"checksum", checksum, 
+					(uint16_t)pi->program_areas[APPLICATION_IDX].checksum_value);
 			}
 		}
 		else

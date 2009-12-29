@@ -171,7 +171,7 @@ RESULT s5x_program(struct operation_t operations, struct program_info_t *pi,
 			|| (pi->program_areas[LOCK_IDX].value > 4)))
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_VALUE), 
-					pi->program_areas[LOCK_IDX].value, "lock_value(1..4)");
+			(uint32_t)pi->program_areas[LOCK_IDX].value, "lock_value(1..4)");
 		return ERRCODE_INVALID;
 	}
 #endif
@@ -652,7 +652,7 @@ RESULT s5x_program(struct operation_t operations, struct program_info_t *pi,
 			else
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_VERIFY_TARGET_02X), 
-						  "fuse", tmp8, pi->program_areas[FUSE_IDX].value);
+					"fuse", tmp8, (uint32_t)pi->program_areas[FUSE_IDX].value);
 				ret = ERROR_FAIL;
 				goto leave_program_mode;
 			}
@@ -747,7 +747,8 @@ RESULT s5x_program(struct operation_t operations, struct program_info_t *pi,
 			else
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_VERIFY_TARGET_D), 
-					"lock", lock + 1, pi->program_areas[LOCK_IDX].value + 1);
+					"lock", lock + 1, 
+					(uint32_t)pi->program_areas[LOCK_IDX].value + 1);
 				ret = ERROR_FAIL;
 				goto leave_program_mode;
 			}
