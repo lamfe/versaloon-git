@@ -165,7 +165,9 @@ static RESULT stm8_swim_program(struct operation_t operations,
 	uint8_t page_buf[STM8_FLASH_PAGESIZE];
 	uint32_t i;
 	RESULT ret;
-	
+
+	operations = operations;
+	pi = pi;
 	p = prog;
 	
 	reset_init();
