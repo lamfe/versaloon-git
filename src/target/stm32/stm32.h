@@ -20,18 +20,11 @@
 #define __STM32_H_INCLUDED__
 
 #define STM32_STRING					"stm32"
-#define STM32_PROGRAM_MODE_STR			"jsi"
 
 extern const struct program_area_map_t stm32_program_area_map[];
+extern const struct program_mode_t stm32_program_mode[];
 
 RESULT stm32_parse_argument(char cmd, const char *argu);
-RESULT stm32_probe_chip(char *chip_name);
-RESULT stm32_prepare_buffer(struct program_info_t *pi);
-RESULT stm32_write_buffer_from_file_callback(uint32_t address, 
-			uint32_t seg_addr, uint8_t* data, uint32_t length, void* buffer);
-RESULT stm32_init(struct program_info_t *pi, struct programmer_info_t *prog);
-RESULT stm32_fini(struct program_info_t *pi, struct programmer_info_t *prog);
-uint32_t stm32_interface_needed(void);
 RESULT stm32_program(struct operation_t operations, 
 				struct program_info_t *pi, struct programmer_info_t *prog);
 

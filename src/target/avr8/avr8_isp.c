@@ -41,7 +41,6 @@
 #include "avr8_internal.h"
 
 #define CUR_TARGET_STRING		AVR8_STRING
-#define cur_chip_param			target_chip_param
 
 
 
@@ -193,10 +192,10 @@ try_frequency:
 	LOG_INFO(_GETTEXT(INFOMSG_TARGET_CHIP_ID), pi->chip_id);
 	if (!(operations.read_operations & CHIPID))
 	{
-		if (pi->chip_id != cur_chip_param.chip_id)
+		if (pi->chip_id != target_chip_param.chip_id)
 		{
 			LOG_WARNING(_GETTEXT(ERRMSG_INVALID_CHIP_ID), pi->chip_id, 
-						cur_chip_param.chip_id);
+						target_chip_param.chip_id);
 		}
 	}
 	else
@@ -215,7 +214,7 @@ try_frequency:
 		cmd_buf[3] = 0x00;
 		spi_io(cmd_buf, 4, NULL, 0, 0);
 		
-		if (cur_chip_param.param[AVR8_PARAM_ISP_POLL])
+		if (target_chip_param.param[AVR8_PARAM_ISP_POLL])
 		{
 			avr8_isp_pollready();
 		}
@@ -238,9 +237,9 @@ try_frequency:
 	}
 	
 	// set page size for flash
-	if (cur_chip_param.chip_areas[APPLICATION_IDX].page_num > 1)
+	if (target_chip_param.chip_areas[APPLICATION_IDX].page_num > 1)
 	{
-		page_size = cur_chip_param.chip_areas[APPLICATION_IDX].page_size;
+		page_size = target_chip_param.chip_areas[APPLICATION_IDX].page_size;
 	}
 	else
 	{
@@ -275,7 +274,7 @@ try_frequency:
 							- (int32_t)(ml_tmp->addr % page_size)); 
 				 i += page_size)
 			{
-				if (cur_chip_param.chip_areas[APPLICATION_IDX].page_num > 1)
+				if (target_chip_param.chip_areas[APPLICATION_IDX].page_num > 1)
 				{
 					// Page mode
 					for (j = 0; j < page_size; j++)
@@ -303,7 +302,7 @@ try_frequency:
 					cmd_buf[3] = 0x00;
 					spi_io(cmd_buf, 4, NULL, 0, 0);
 					
-					if (cur_chip_param.param[AVR8_PARAM_ISP_POLL])
+					if (target_chip_param.param[AVR8_PARAM_ISP_POLL])
 					{
 						avr8_isp_pollready();
 					}
@@ -340,7 +339,7 @@ try_frequency:
 						cmd_buf[3] = tbuff[ml_tmp->addr + i + j];
 						spi_io(cmd_buf, 4, NULL, 0, 0);
 						
-						if (cur_chip_param.param[AVR8_PARAM_ISP_POLL])
+						if (target_chip_param.param[AVR8_PARAM_ISP_POLL])
 						{
 							avr8_isp_pollready();
 						}
@@ -495,9 +494,9 @@ try_frequency:
 	}
 	
 	// set page size for eeprom
-	if (cur_chip_param.chip_areas[EEPROM_IDX].page_num > 1)
+	if (target_chip_param.chip_areas[EEPROM_IDX].page_num > 1)
 	{
-		page_size = cur_chip_param.chip_areas[EEPROM_IDX].page_size;
+		page_size = target_chip_param.chip_areas[EEPROM_IDX].page_size;
 	}
 	else
 	{
@@ -532,8 +531,8 @@ try_frequency:
 							- (int32_t)(ml_tmp->addr % page_size)); 
 				 i += page_size)
 			{
-				if ((cur_chip_param.chip_areas[EEPROM_IDX].page_num > 1) 
-					&& (cur_chip_param.param[AVR8_PARAM_ISP_EERPOM_PAGE_EN]))
+				if ((target_chip_param.chip_areas[EEPROM_IDX].page_num > 1) 
+					&& (target_chip_param.param[AVR8_PARAM_ISP_EERPOM_PAGE_EN]))
 				{
 					// Page mode
 					for (j = 0; j < page_size; j++)
@@ -552,7 +551,7 @@ try_frequency:
 					cmd_buf[3] = 0x00;
 					spi_io(cmd_buf, 4, NULL, 0, 0);
 					
-					if (cur_chip_param.param[AVR8_PARAM_ISP_POLL])
+					if (target_chip_param.param[AVR8_PARAM_ISP_POLL])
 					{
 						avr8_isp_pollready();
 					}
@@ -581,7 +580,7 @@ try_frequency:
 						cmd_buf[3] = tbuff[ml_tmp->addr + i + j];
 						spi_io(cmd_buf, 4, NULL, 0, 0);
 						
-						if (cur_chip_param.param[AVR8_PARAM_ISP_POLL])
+						if (target_chip_param.param[AVR8_PARAM_ISP_POLL])
 						{
 							avr8_isp_pollready();
 						}
@@ -734,7 +733,7 @@ try_frequency:
 		
 		// write fuse
 		// low bits
-		if (cur_chip_param.chip_areas[FUSE_IDX].size > 0)
+		if (target_chip_param.chip_areas[FUSE_IDX].size > 0)
 		{
 			cmd_buf[0] = 0xAC;
 			cmd_buf[1] = 0xA0;
@@ -742,7 +741,7 @@ try_frequency:
 			cmd_buf[3] = (pi->program_areas[FUSE_IDX].value >> 0) & 0xFF;
 			spi_io(cmd_buf, 4, NULL, 0, 0);
 			
-			if (cur_chip_param.param[AVR8_PARAM_ISP_POLL])
+			if (target_chip_param.param[AVR8_PARAM_ISP_POLL])
 			{
 				avr8_isp_pollready();
 			}
@@ -752,7 +751,7 @@ try_frequency:
 			}
 		}
 		// high bits
-		if (cur_chip_param.chip_areas[FUSE_IDX].size > 1)
+		if (target_chip_param.chip_areas[FUSE_IDX].size > 1)
 		{
 			cmd_buf[0] = 0xAC;
 			cmd_buf[1] = 0xA8;
@@ -760,7 +759,7 @@ try_frequency:
 			cmd_buf[3] = (pi->program_areas[FUSE_IDX].value >> 8) & 0xFF;
 			spi_io(cmd_buf, 4, NULL, 0, 0);
 			
-			if (cur_chip_param.param[AVR8_PARAM_ISP_POLL])
+			if (target_chip_param.param[AVR8_PARAM_ISP_POLL])
 			{
 				avr8_isp_pollready();
 			}
@@ -770,7 +769,7 @@ try_frequency:
 			}
 		}
 		// extended bits
-		if (cur_chip_param.chip_areas[FUSE_IDX].size > 2)
+		if (target_chip_param.chip_areas[FUSE_IDX].size > 2)
 		{
 			cmd_buf[0] = 0xAC;
 			cmd_buf[1] = 0xA4;
@@ -778,7 +777,7 @@ try_frequency:
 			cmd_buf[3] = (pi->program_areas[FUSE_IDX].value >> 16) & 0xFF;
 			spi_io(cmd_buf, 4, NULL, 0, 0);
 			
-			if (cur_chip_param.param[AVR8_PARAM_ISP_POLL])
+			if (target_chip_param.param[AVR8_PARAM_ISP_POLL])
 			{
 				avr8_isp_pollready();
 			}
@@ -787,7 +786,7 @@ try_frequency:
 				delay_ms(5);
 			}
 		}
-		if (cur_chip_param.chip_areas[FUSE_IDX].size > 0)
+		if (target_chip_param.chip_areas[FUSE_IDX].size > 0)
 		{
 			if (ERROR_OK != commit())
 			{
@@ -801,7 +800,7 @@ try_frequency:
 		{
 			pgbar_fini();
 			LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "fuse", 
-						cur_chip_param.chip_name);
+						target_chip_param.chip_name);
 			ret = ERRCODE_NOT_SUPPORT;
 			goto leave_program_mode;
 		}
@@ -827,7 +826,7 @@ try_frequency:
 		memset(page_buf, 0, 3);
 		// read fuse
 		// low bits
-		if (cur_chip_param.chip_areas[FUSE_IDX].size > 0)
+		if (target_chip_param.chip_areas[FUSE_IDX].size > 0)
 		{
 			cmd_buf[0] = 0x50;
 			cmd_buf[1] = 0x00;
@@ -836,7 +835,7 @@ try_frequency:
 			spi_io(cmd_buf, 4, &page_buf[0], 3, 1);
 		}
 		// high bits
-		if (cur_chip_param.chip_areas[FUSE_IDX].size > 1)
+		if (target_chip_param.chip_areas[FUSE_IDX].size > 1)
 		{
 			cmd_buf[0] = 0x58;
 			cmd_buf[1] = 0x08;
@@ -845,7 +844,7 @@ try_frequency:
 			spi_io(cmd_buf, 4, &page_buf[1], 3, 1);
 		}
 		// extended bits
-		if (cur_chip_param.chip_areas[FUSE_IDX].size > 2)
+		if (target_chip_param.chip_areas[FUSE_IDX].size > 2)
 		{
 			cmd_buf[0] = 0x50;
 			cmd_buf[1] = 0x08;
@@ -853,7 +852,7 @@ try_frequency:
 			cmd_buf[3] = 0x00;
 			spi_io(cmd_buf, 4, &page_buf[2], 3, 1);
 		}
-		if (cur_chip_param.chip_areas[FUSE_IDX].size > 0)
+		if (target_chip_param.chip_areas[FUSE_IDX].size > 0)
 		{
 			if (ERROR_OK != commit())
 			{
@@ -867,7 +866,7 @@ try_frequency:
 		{
 			pgbar_fini();
 			LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "fuse", 
-						cur_chip_param.chip_name);
+						target_chip_param.chip_name);
 			ret = ERRCODE_NOT_SUPPORT;
 			goto leave_program_mode;
 		}
@@ -883,17 +882,17 @@ try_frequency:
 			}
 			else
 			{
-				if (cur_chip_param.chip_areas[FUSE_IDX].size > 2)
+				if (target_chip_param.chip_areas[FUSE_IDX].size > 2)
 				{
 					LOG_INFO(_GETTEXT(ERRMSG_FAILURE_VERIFY_TARGET_06X), 
 							 "fuse", i, pi->program_areas[FUSE_IDX].value);
 				}
-				else if (cur_chip_param.chip_areas[FUSE_IDX].size > 1)
+				else if (target_chip_param.chip_areas[FUSE_IDX].size > 1)
 				{
 					LOG_INFO(_GETTEXT(ERRMSG_FAILURE_VERIFY_TARGET_04X), 
 							 "fuse", i, pi->program_areas[FUSE_IDX].value);
 				}
-				else if (cur_chip_param.chip_areas[FUSE_IDX].size > 0)
+				else if (target_chip_param.chip_areas[FUSE_IDX].size > 0)
 				{
 					LOG_INFO(_GETTEXT(ERRMSG_FAILURE_VERIFY_TARGET_02X), 
 							 "fuse", i, pi->program_areas[FUSE_IDX].value);
@@ -902,15 +901,15 @@ try_frequency:
 		}
 		else
 		{
-			if (cur_chip_param.chip_areas[FUSE_IDX].size > 2)
+			if (target_chip_param.chip_areas[FUSE_IDX].size > 2)
 			{
 				LOG_INFO(_GETTEXT(INFOMSG_READ_VALUE_06X), "fuse", i);
 			}
-			else if (cur_chip_param.chip_areas[FUSE_IDX].size > 1)
+			else if (target_chip_param.chip_areas[FUSE_IDX].size > 1)
 			{
 				LOG_INFO(_GETTEXT(INFOMSG_READ_VALUE_04X), "fuse", i);
 			}
-			else if (cur_chip_param.chip_areas[FUSE_IDX].size > 0)
+			else if (target_chip_param.chip_areas[FUSE_IDX].size > 0)
 			{
 				LOG_INFO(_GETTEXT(INFOMSG_READ_VALUE_02X), "fuse", i);
 			}
@@ -923,7 +922,7 @@ try_frequency:
 		pgbar_init("writing lock |", "|", 0, 1, PROGRESS_STEP, '=');
 		
 		// write lock
-		if (cur_chip_param.chip_areas[LOCK_IDX].size > 0)
+		if (target_chip_param.chip_areas[LOCK_IDX].size > 0)
 		{
 			cmd_buf[0] = 0xAC;
 			cmd_buf[1] = 0xE0;
@@ -931,7 +930,7 @@ try_frequency:
 			cmd_buf[3] = (pi->program_areas[LOCK_IDX].value >> 0) & 0xFF;
 			spi_io(cmd_buf, 4, NULL, 0, 0);
 			
-			if (cur_chip_param.param[AVR8_PARAM_ISP_POLL])
+			if (target_chip_param.param[AVR8_PARAM_ISP_POLL])
 			{
 				avr8_isp_pollready();
 			}
@@ -952,7 +951,7 @@ try_frequency:
 		{
 			pgbar_fini();
 			LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "lock", 
-						cur_chip_param.chip_name);
+						target_chip_param.chip_name);
 			ret = ERRCODE_NOT_SUPPORT;
 			goto leave_program_mode;
 		}
@@ -977,7 +976,7 @@ try_frequency:
 		
 		memset(page_buf, 0, 1);
 		// read lock
-		if (cur_chip_param.chip_areas[LOCK_IDX].size > 0)
+		if (target_chip_param.chip_areas[LOCK_IDX].size > 0)
 		{
 			cmd_buf[0] = 0x58;
 			cmd_buf[1] = 0x00;
@@ -996,7 +995,7 @@ try_frequency:
 		{
 			pgbar_fini();
 			LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "lock", 
-						cur_chip_param.chip_name);
+						target_chip_param.chip_name);
 			ret = ERRCODE_NOT_SUPPORT;
 			goto leave_program_mode;
 		}
@@ -1028,7 +1027,7 @@ try_frequency:
 		
 		memset(page_buf, 0, 4);
 		// read calibration
-		if (cur_chip_param.chip_areas[CALIBRATION_IDX].size > 0)
+		if (target_chip_param.chip_areas[CALIBRATION_IDX].size > 0)
 		{
 			cmd_buf[0] = 0x38;
 			cmd_buf[1] = 0x00;
@@ -1036,7 +1035,7 @@ try_frequency:
 			cmd_buf[3] = 0x00;
 			spi_io(cmd_buf, 4, &page_buf[0], 3, 1);
 		}
-		if (cur_chip_param.chip_areas[CALIBRATION_IDX].size > 1)
+		if (target_chip_param.chip_areas[CALIBRATION_IDX].size > 1)
 		{
 			cmd_buf[0] = 0x38;
 			cmd_buf[1] = 0x00;
@@ -1044,7 +1043,7 @@ try_frequency:
 			cmd_buf[3] = 0x00;
 			spi_io(cmd_buf, 4, &page_buf[1], 3, 1);
 		}
-		if (cur_chip_param.chip_areas[CALIBRATION_IDX].size > 2)
+		if (target_chip_param.chip_areas[CALIBRATION_IDX].size > 2)
 		{
 			cmd_buf[0] = 0x38;
 			cmd_buf[1] = 0x00;
@@ -1052,7 +1051,7 @@ try_frequency:
 			cmd_buf[3] = 0x00;
 			spi_io(cmd_buf, 4, &page_buf[2], 3, 1);
 		}
-		if (cur_chip_param.chip_areas[CALIBRATION_IDX].size > 3)
+		if (target_chip_param.chip_areas[CALIBRATION_IDX].size > 3)
 		{
 			cmd_buf[0] = 0x38;
 			cmd_buf[1] = 0x00;
@@ -1060,7 +1059,7 @@ try_frequency:
 			cmd_buf[3] = 0x00;
 			spi_io(cmd_buf, 4, &page_buf[3], 3, 1);
 		}
-		if (cur_chip_param.chip_areas[CALIBRATION_IDX].size > 0)
+		if (target_chip_param.chip_areas[CALIBRATION_IDX].size > 0)
 		{
 			if (ERROR_OK != commit())
 			{
@@ -1075,7 +1074,7 @@ try_frequency:
 		{
 			pgbar_fini();
 			LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "calibration", 
-						cur_chip_param.chip_name);
+						target_chip_param.chip_name);
 			ret = ERRCODE_NOT_SUPPORT;
 			goto leave_program_mode;
 		}
@@ -1084,19 +1083,19 @@ try_frequency:
 		pgbar_fini();
 		i = (uint32_t)(page_buf[0] + (page_buf[1] << 8) 
 					+ (page_buf[2] << 16) + (page_buf[3] << 24));
-		if (cur_chip_param.chip_areas[CALIBRATION_IDX].size > 3)
+		if (target_chip_param.chip_areas[CALIBRATION_IDX].size > 3)
 		{
 			LOG_INFO(_GETTEXT(INFOMSG_READ_VALUE_08X), "calibration", i);
 		}
-		else if (cur_chip_param.chip_areas[CALIBRATION_IDX].size > 2)
+		else if (target_chip_param.chip_areas[CALIBRATION_IDX].size > 2)
 		{
 			LOG_INFO(_GETTEXT(INFOMSG_READ_VALUE_06X), "calibration", i);
 		}
-		else if (cur_chip_param.chip_areas[CALIBRATION_IDX].size > 1)
+		else if (target_chip_param.chip_areas[CALIBRATION_IDX].size > 1)
 		{
 			LOG_INFO(_GETTEXT(INFOMSG_READ_VALUE_04X), "calibration", i);
 		}
-		else if (cur_chip_param.chip_areas[CALIBRATION_IDX].size > 0)
+		else if (target_chip_param.chip_areas[CALIBRATION_IDX].size > 0)
 		{
 			LOG_INFO(_GETTEXT(INFOMSG_READ_VALUE_02X), "calibration", i);
 		}

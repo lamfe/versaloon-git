@@ -42,22 +42,20 @@
 
 #define CUR_TARGET_STRING			S5X_STRING
 #define CUR_DEFAULT_FREQ			S5X_DEFAULT_FREQ
-#define cur_chip_param				target_chip_param
-#define cur_chips_param				target_chips.chips_param
-#define cur_chips_num				target_chips.num_of_chips
-#define cur_prog_mode				program_mode
-#define cur_target_defined			target_defined
-#define cur_program_area_map		s5x_program_area_map
 
 const struct program_area_map_t s5x_program_area_map[] = 
 {
-	{APPLICATION_CHAR, 1, 0, 0, 0, 0},
-	{LOCK_CHAR, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0}
+	{APPLICATION_CHAR, 1, 0, 0},
+	{LOCK_CHAR, 0, 0, 0},
+	{0, 0, 0, 0}
 };
 
-static uint8_t s5x_lock = 0;
-static uint8_t s5x_fuse = 0;
+const struct program_mode_t s5x_program_mode[] = 
+{
+	{'b', SET_FREQUENCY, SPI | GPIO},
+	{'p', SET_FREQUENCY, SPI | GPIO},
+	{0, NULL, 0}
+};
 
 static uint16_t s5x_byte_delay_us = 500;
 
@@ -66,8 +64,6 @@ void s5x_usage(void)
 	printf("\
 Usage of %s:\n\
   -F,  --frequency <FREQUENCY>              set ISP frequency, in KHz\n\
-  -l,  --lock <LOCK>                        set lock(1..4)\n\
-  -f,  --fuse <FUSE>                        set fuse\n\
   -m,  --mode <MODE>                        set program mode<b|p>\n\n", 
 			CUR_TARGET_STRING);
 }
@@ -78,8 +74,6 @@ RESULT s5x_parse_argument(char cmd, const char *argu)
 	{
 	case 'h':
 		s5x_usage();
-		break;
-	case 'E':
 		break;
 	case 'w':
 		// set Wait time
@@ -97,244 +91,12 @@ RESULT s5x_parse_argument(char cmd, const char *argu)
 		}
 		
 		break;
-	case 'l':
-		// define Lock
-		if (NULL == argu)
-		{
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), cmd);
-			return ERRCODE_INVALID_OPTION;
-		}
-		
-		s5x_lock = (uint8_t)strtoul(argu, NULL, 0);
-		if ((s5x_lock < 1) || (s5x_lock > 4))
-		{
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), cmd);
-			return ERRCODE_INVALID_OPTION;
-		}
-		s5x_lock--;
-		cur_target_defined |= LOCK;
-		
-		break;
-	case 'f':
-		// define Fuse
-		if (NULL == argu)
-		{
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), cmd);
-			return ERRCODE_INVALID_OPTION;
-		}
-		
-		s5x_fuse = (uint8_t)strtoul(argu, NULL, 0);
-		if (s5x_fuse > 0x0F)
-		{
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_HEX_MESSAGE), s5x_fuse, 
-					  "s5x fuse", "MUST be <= 0x0F!!");
-			return ERROR_FAIL;
-		}
-		cur_target_defined |= FUSE;
-		
-		break;
 	default:
 		return ERROR_FAIL;
 		break;
 	}
 
 	return ERROR_OK;
-}
-
-RESULT s5x_prepare_buffer(struct program_info_t *pi)
-{
-	if (pi->program_areas[APPLICATION_IDX].buff != NULL)
-	{
-		memset(pi->program_areas[APPLICATION_IDX].buff, S5X_FLASH_CHAR, 
-				pi->program_areas[APPLICATION_IDX].size);
-	}
-	else
-	{
-		return ERROR_FAIL;
-	}
-	
-	pi->program_areas[LOCK_IDX].value = s5x_lock;
-	pi->program_areas[FUSE_IDX].value = s5x_fuse;
-	
-	return ERROR_OK;
-}
-
-RESULT s5x_write_buffer_from_file_callback(uint32_t address, uint32_t seg_addr, 
-								uint8_t* data, uint32_t length, void* buffer)
-{
-	struct program_info_t *pi = (struct program_info_t *)buffer;
-	uint32_t mem_addr = address & 0x0000FFFF, page_size;
-	RESULT ret;
-	uint8_t *tbuff;
-	struct chip_area_info_t *areas;
-	
-#ifdef PARAM_CHECK
-	if ((length > 0) && (NULL == data))
-	{
-		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_PARAMETER), __FUNCTION__);
-		return ERRCODE_INVALID_PARAMETER;
-	}
-#endif
-	
-	if (seg_addr != 0)
-	{
-		LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), 
-				  "segment address", CUR_TARGET_STRING);
-		return ERRCODE_NOT_SUPPORT;
-	}
-	
-	areas = cur_chip_param.chip_areas;
-	// flash from 0x00000000
-	switch (address >> 16)
-	{
-	case 0x0000:
-		tbuff = pi->program_areas[APPLICATION_IDX].buff;
-		if (NULL == tbuff)
-		{
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_BUFFER), "pi->app");
-			return ERRCODE_INVALID_BUFFER;
-		}
-		
-		if ((0 == areas[APPLICATION_IDX].page_num) 
-			|| (0 == areas[APPLICATION_IDX].page_size))
-		{
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID), "Flash", 
-					  cur_chip_param.chip_name);
-			return ERRCODE_INVALID;
-		}
-		
-		if ((mem_addr >= areas[APPLICATION_IDX].size) 
-			|| (length > areas[APPLICATION_IDX].size) 
-			|| ((mem_addr + length) > areas[APPLICATION_IDX].size))
-		{
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_RANGE), "flash memory");
-			return ERRCODE_INVALID;
-		}
-		cur_target_defined |= APPLICATION;
-		
-		memcpy(tbuff + mem_addr, data, length);
-		
-		if (cur_prog_mode & S5X_PAGE_MODE)
-		{
-			page_size = areas[APPLICATION_IDX].page_size;
-		}
-		else
-		{
-			// use 256 bytes buffer for byte mode
-			page_size = 256;
-		}
-		
-		ret = MEMLIST_Add(&pi->program_areas[APPLICATION_IDX].memlist, 
-								mem_addr, length, page_size);
-		if (ret != ERROR_OK)
-		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "add memory list");
-			return ERRCODE_FAILURE_OPERATION;
-		}
-		break;
-	default:
-		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_ADDRESS), address, CUR_TARGET_STRING);
-		return ERRCODE_INVALID;
-		break;
-	}
-	
-	return ERROR_OK;
-}
-
-RESULT s5x_fini(struct program_info_t *pi, struct programmer_info_t *prog)
-{
-	pi = pi;
-	prog = prog;
-	
-	return ERROR_OK;
-}
-
-RESULT s5x_init(struct program_info_t *pi, struct programmer_info_t *prog)
-{
-	uint8_t i;
-	struct operation_t opt_tmp;
-	
-	memset(&opt_tmp, 0, sizeof(opt_tmp));
-	
-	if (strcmp(pi->chip_type, CUR_TARGET_STRING))
-	{
-		LOG_BUG(_GETTEXT(ERRMSG_INVALID_HANDLER), CUR_TARGET_STRING, 
-				pi->chip_type);
-		return ERRCODE_INVALID_HANDLER;
-	}
-	
-	if (NULL == pi->chip_name)
-	{
-		// auto detect
-		LOG_INFO(_GETTEXT(INFOMSG_TRY_AUTODETECT));
-		opt_tmp.read_operations = CHIPID;
-		cur_chip_param.param[S5X_PARAM_PE_OUT] = 0x69;
-		
-		if (ERROR_OK != s5x_program(opt_tmp, pi, prog))
-		{
-			LOG_ERROR(_GETTEXT(ERRMSG_AUTODETECT_FAIL), pi->chip_type);
-			return ERRCODE_AUTODETECT_FAIL;
-		}
-		
-		LOG_INFO(_GETTEXT(INFOMSG_AUTODETECT_SIGNATURE), pi->chip_id);
-		for (i = 0; i < cur_chips_num; i++)
-		{
-			if (pi->chip_id == cur_chips_param[i].chip_id)
-			{
-				pi->chip_name = (char *)cur_chips_param[i].chip_name;
-				LOG_INFO(_GETTEXT(INFOMSG_CHIP_FOUND), pi->chip_name);
-				
-				goto Post_Init;
-			}
-		}
-		
-		LOG_ERROR(_GETTEXT(ERRMSG_AUTODETECT_FAIL), pi->chip_type);
-		return ERRCODE_AUTODETECT_FAIL;
-	}
-	else
-	{
-		for (i = 0; i < cur_chips_num; i++)
-		{
-			if (!strcmp(cur_chips_param[i].chip_name, pi->chip_name))
-			{
-				goto Post_Init;
-			}
-		}
-		
-		return ERROR_FAIL;
-	}
-Post_Init:
-	memcpy(&cur_chip_param, cur_chips_param + i, sizeof(cur_chip_param));
-	
-	pi->program_areas[APPLICATION_IDX].size = 
-				cur_chip_param.chip_areas[APPLICATION_IDX].size;
-	
-	return ERROR_OK;
-}
-
-uint32_t s5x_interface_needed(void)
-{
-	return S5X_INTERFACE_NEEDED;
-}
-
-RESULT s5x_get_mass_product_data_size(struct operation_t operations, 
-									  struct program_info_t pi, uint32_t *size)
-{
-	operations = operations;
-	pi = pi;
-	size = size;
-	
-	return ERRCODE_NOT_SUPPORT;
-}
-
-RESULT s5x_prepare_mass_product_data(struct operation_t operations, 
-									 struct program_info_t pi, uint8_t *buff)
-{
-	operations = operations;
-	pi = pi;
-	buff = buff;
-	
-	return ERRCODE_NOT_SUPPORT;
 }
 
 
@@ -405,10 +167,11 @@ RESULT s5x_program(struct operation_t operations, struct program_info_t *pi,
 	}
 	if ((   (operations.write_operations & LOCK) 
 			|| (operations.verify_operations & LOCK)) 
-		&& (pi->program_areas[LOCK_IDX].value > 3))
+		&& ((pi->program_areas[LOCK_IDX].value < 1) 
+			|| (pi->program_areas[LOCK_IDX].value > 4)))
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_VALUE), 
-					pi->program_areas[LOCK_IDX].value, "lock_value");
+					pi->program_areas[LOCK_IDX].value, "lock_value(1..4)");
 		return ERRCODE_INVALID;
 	}
 #endif
@@ -429,30 +192,26 @@ RESULT s5x_program(struct operation_t operations, struct program_info_t *pi,
 		|| (operations.verify_operations & APPLICATION) 
 		|| (operations.read_operations & APPLICATION))
 	{
-		switch (cur_prog_mode & S5X_MODE_MASK)
+		switch (program_mode)
 		{
-		case 0:
-			LOG_WARNING(_GETTEXT(INFOMSG_USE_DEFAULT), "Program mode", 
-						"page mode");
-			cur_prog_mode = S5X_PAGE_MODE;
 		case S5X_PAGE_MODE:
-			if (!(cur_chip_param.program_mode & S5X_PAGE_MODE))
+			if (!(target_chip_param.program_mode & (1 << S5X_PAGE_MODE)))
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "page mode", 
-					  cur_chip_param.chip_name);
+					  target_chip_param.chip_name);
 				return ERRCODE_NOT_SUPPORT;
 			}
 			break;
 		case S5X_BYTE_MODE:
-			if (!(cur_chip_param.program_mode & S5X_BYTE_MODE))
+			if (!(target_chip_param.program_mode & (1 << S5X_BYTE_MODE)))
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "byte mode", 
-					  cur_chip_param.chip_name);
+					  target_chip_param.chip_name);
 				return ERRCODE_NOT_SUPPORT;
 			}
 			break;
 		default:
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_PROG_MODE), cur_prog_mode, 
+			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_PROG_MODE), program_mode, 
 					  CUR_TARGET_STRING);
 			return ERRCODE_INVALID_PROG_MODE;
 			break;
@@ -489,8 +248,8 @@ RESULT s5x_program(struct operation_t operations, struct program_info_t *pi,
 		// ret[3] should be 0x69
 		spi_io(cmd_buf, 4, &poll_value, 3, 1);
 		if ((ERROR_OK != commit()) 
-			|| ((cur_chip_param.param[S5X_PARAM_PE_OUT] != 0xFF) 
-				&& (cur_chip_param.param[S5X_PARAM_PE_OUT] != poll_value)))
+			|| ((target_chip_param.param[S5X_PARAM_PE_OUT] != 0xFF) 
+				&& (target_chip_param.param[S5X_PARAM_PE_OUT] != poll_value)))
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_ENTER_PROG_MODE));
 			ret = ERRCODE_FAILURE_ENTER_PROG_MODE;
@@ -533,10 +292,10 @@ RESULT s5x_program(struct operation_t operations, struct program_info_t *pi,
 	LOG_INFO(_GETTEXT(INFOMSG_TARGET_CHIP_ID), pi->chip_id);
 	if (!(operations.read_operations & CHIPID))
 	{
-		if (pi->chip_id != cur_chip_param.chip_id)
+		if (pi->chip_id != target_chip_param.chip_id)
 		{
 			LOG_WARNING(_GETTEXT(ERRMSG_INVALID_CHIP_ID), pi->chip_id, 
-						cur_chip_param.chip_id);
+						target_chip_param.chip_id);
 		}
 	}
 	else
@@ -568,9 +327,9 @@ RESULT s5x_program(struct operation_t operations, struct program_info_t *pi,
 		LOG_INFO(_GETTEXT(INFOMSG_ERASED), "chip");
 	}
 	
-	if (cur_prog_mode & S5X_PAGE_MODE)
+	if (program_mode & (1 << S5X_PAGE_MODE))
 	{
-		page_size = cur_chip_param.chip_areas[APPLICATION_IDX].page_size;
+		page_size = target_chip_param.chip_areas[APPLICATION_IDX].page_size;
 	}
 	else
 	{
@@ -605,7 +364,7 @@ RESULT s5x_program(struct operation_t operations, struct program_info_t *pi,
 						- (int32_t)(ml_tmp->addr % page_size)); 
 				 i += page_size)
 			{
-				if (cur_prog_mode & S5X_PAGE_MODE)
+				if (program_mode & (1 << S5X_PAGE_MODE))
 				{
 					// Page Mode
 					cmd_buf[0] = 0x50;
@@ -717,7 +476,7 @@ RESULT s5x_program(struct operation_t operations, struct program_info_t *pi,
 						- (int32_t)(ml_tmp->addr % page_size)); 
 				 i += page_size)
 			{
-				if (cur_prog_mode & S5X_PAGE_MODE)
+				if (program_mode & (1 << S5X_PAGE_MODE))
 				{
 					// Page Mode
 					cmd_buf[0] = 0x30;
@@ -816,10 +575,10 @@ RESULT s5x_program(struct operation_t operations, struct program_info_t *pi,
 	
 	if (operations.write_operations & FUSE)
 	{
-		if (0 == cur_chip_param.chip_areas[FUSE_IDX].size)
+		if (0 == target_chip_param.chip_areas[FUSE_IDX].size)
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "Fuse", 
-					  cur_chip_param.chip_name);
+					  target_chip_param.chip_name);
 			ret = ERRCODE_NOT_SUPPORT;
 			goto leave_program_mode;
 		}
@@ -849,10 +608,10 @@ RESULT s5x_program(struct operation_t operations, struct program_info_t *pi,
 	if ((operations.read_operations & FUSE) 
 		|| (operations.verify_operations & FUSE))
 	{
-		if (0 == cur_chip_param.chip_areas[FUSE_IDX].size)
+		if (0 == target_chip_param.chip_areas[FUSE_IDX].size)
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "Fusebit", 
-					  cur_chip_param.chip_name);
+					  target_chip_param.chip_name);
 			ret = ERRCODE_NOT_SUPPORT;
 			goto leave_program_mode;
 		}
@@ -909,6 +668,7 @@ RESULT s5x_program(struct operation_t operations, struct program_info_t *pi,
 		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMING), "lock");
 		pgbar_init("writing lock |", "|", 0, 1, PROGRESS_STEP, '=');
 		
+		pi->program_areas[LOCK_IDX].value--;
 		if (pi->program_areas[LOCK_IDX].value > 0)
 		{
 			for (i = 1; i < 4; i++)

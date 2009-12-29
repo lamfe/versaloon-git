@@ -20,26 +20,13 @@
 #define __PSOC1_H_INCLUDED__
 
 #define PSOC1_STRING					"psoc1"
-#define PSOC1_PROGRAM_MODE_STR			"rp"
 
 extern const struct program_area_map_t psoc1_program_area_map[];
+extern const struct program_mode_t psoc1_program_mode[];
 
 RESULT psoc1_parse_argument(char cmd, const char *argu);
-RESULT psoc1_prepare_buffer(struct program_info_t *pi);
-
-RESULT psoc1_init(struct program_info_t *pi, struct programmer_info_t *prog);
-RESULT psoc1_fini(struct program_info_t *pi, struct programmer_info_t *prog);
-uint32_t psoc1_interface_needed(void);
-RESULT psoc1_write_buffer_from_file_callback(uint32_t address, 
-			uint32_t seg_addr, uint8_t* data, uint32_t length, void* buffer);
-
 RESULT psoc1_program(struct operation_t operations, struct program_info_t *pi, 
 					 struct programmer_info_t *prog);
-
-RESULT psoc1_get_mass_product_data_size(struct operation_t operations, 
-										struct program_info_t *pi, uint32_t *size);
-RESULT psoc1_prepare_mass_product_data(struct operation_t operations, 
-									   struct program_info_t *pi, uint8_t *buff);
 
 #endif /* __PSOC1_H_INCLUDED__ */
 

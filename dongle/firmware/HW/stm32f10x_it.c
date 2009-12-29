@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    Project/Template/stm32f10x_it.c 
   * @author  MCD Application Team
-  * @version V3.1.0
-  * @date    06/19/2009
+  * @version V3.1.2
+  * @date    09/28/2009
   * @brief   Main Interrupt Service Routines.
   *          This file provides template for all exceptions handler and 
   *          peripherals interrupt service routine.
@@ -52,7 +52,7 @@
   * @param  None
   * @retval None
   */
-ROOTFUNC void NMI_Handler(void)
+void NMI_Handler(void)
 {
 }
 
@@ -61,7 +61,7 @@ ROOTFUNC void NMI_Handler(void)
   * @param  None
   * @retval None
   */
-ROOTFUNC void HardFault_Handler(void)
+void HardFault_Handler(void)
 {
   /* Go to infinite loop when Hard Fault exception occurs */
   while (1)
@@ -74,7 +74,7 @@ ROOTFUNC void HardFault_Handler(void)
   * @param  None
   * @retval None
   */
-ROOTFUNC void MemManage_Handler(void)
+void MemManage_Handler(void)
 {
   /* Go to infinite loop when Memory Manage exception occurs */
   while (1)
@@ -87,7 +87,7 @@ ROOTFUNC void MemManage_Handler(void)
   * @param  None
   * @retval None
   */
-ROOTFUNC void BusFault_Handler(void)
+void BusFault_Handler(void)
 {
   /* Go to infinite loop when Bus Fault exception occurs */
   while (1)
@@ -100,7 +100,7 @@ ROOTFUNC void BusFault_Handler(void)
   * @param  None
   * @retval None
   */
-ROOTFUNC void UsageFault_Handler(void)
+void UsageFault_Handler(void)
 {
   /* Go to infinite loop when Usage Fault exception occurs */
   while (1)
@@ -113,7 +113,7 @@ ROOTFUNC void UsageFault_Handler(void)
   * @param  None
   * @retval None
   */
-ROOTFUNC void SVC_Handler(void)
+void SVC_Handler(void)
 {
 }
 
@@ -122,7 +122,7 @@ ROOTFUNC void SVC_Handler(void)
   * @param  None
   * @retval None
   */
-ROOTFUNC void DebugMon_Handler(void)
+void DebugMon_Handler(void)
 {
 }
 
@@ -131,7 +131,7 @@ ROOTFUNC void DebugMon_Handler(void)
   * @param  None
   * @retval None
   */
-ROOTFUNC void PendSV_Handler(void)
+void PendSV_Handler(void)
 {
 }
 
@@ -140,7 +140,7 @@ ROOTFUNC void PendSV_Handler(void)
   * @param  None
   * @retval None
   */
-ROOTFUNC void SysTick_Handler(void)
+void SysTick_Handler(void)
 {
 }
 
@@ -156,7 +156,7 @@ ROOTFUNC void SysTick_Handler(void)
   * @param  None
   * @retval None
   */
-/*ROOTFUNC void PPP_IRQHandler(void)
+/*void PPP_IRQHandler(void)
 {
 }*/
 

@@ -22,11 +22,9 @@
 #define	MSP430_FLASH_CHAR				0xFF
 
 // program mode
-#define MSP430_MODE_JTAG				(1 << 0)
-#define MSP430_MODE_SBW					(1 << 1)
-#define MSP430_MODE_BSL					(1 << 2)
-#define MSP430_PROG_MODE_MASK			(MSP430_MODE_JTAG | MSP430_MODE_SBW \
-										 | MSP430_MODE_BSL)
+#define MSP430_MODE_JTAG				0
+#define MSP430_MODE_SBW					1
+#define MSP430_MODE_BSL					2
 
 #define MSP430_CUR_PROG_MODE			(msp430_program_mode \
 										 & MSP430_PROG_MODE_MASK)
@@ -72,21 +70,21 @@ RESULT msp430_bsl_program(struct operation_t operations,
 #define ERASE_MAIN				0xA504 // main        of SELECTED mem arrays
 #define ERASE_SGMT				0xA502 // SELECTED segment
 
-#define DeviceHas_TestPin()		cur_chip_param.param[MSP430_PARAM_TEST]
-#define DeviceHas_CpuX()		cur_chip_param.param[MSP430_PARAM_CPUX]
-#define DeviceHas_DataQuick()	cur_chip_param.param[MSP430_PARAM_DATAQUICK]
-#define DeviceHas_FastFlash()	cur_chip_param.param[MSP430_PARAM_FASTFLASH]
-#define DeviceHas_EnhVerify()	cur_chip_param.param[MSP430_PARAM_ENHVERIFY]
+#define DeviceHas_TestPin()		target_chip_param.param[MSP430_PARAM_TEST]
+#define DeviceHas_CpuX()		target_chip_param.param[MSP430_PARAM_CPUX]
+#define DeviceHas_DataQuick()	target_chip_param.param[MSP430_PARAM_DATAQUICK]
+#define DeviceHas_FastFlash()	target_chip_param.param[MSP430_PARAM_FASTFLASH]
+#define DeviceHas_EnhVerify()	target_chip_param.param[MSP430_PARAM_ENHVERIFY]
 #define DeviceHas_JTAG()		\
-							(cur_chip_param.program_mode & MSP430_MODE_JTAG)
+							(target_chip_param.program_mode & MSP430_MODE_JTAG)
 #define DeviceHas_SpyBiWire()	\
-							(cur_chip_param.program_mode & MSP430_MODE_SPW)
+							(target_chip_param.program_mode & MSP430_MODE_SPW)
 #define Device_RamStart()		\
-						(word)(cur_chip_param.param[MSP430_PARAM_RAMSTART])
+						(word)(target_chip_param.param[MSP430_PARAM_RAMSTART])
 #define Device_RamEnd()			\
-						(word)(cur_chip_param.param[MSP430_PARAM_RAMEND])
+						(word)(target_chip_param.param[MSP430_PARAM_RAMEND])
 #define Device_MainStart()		\
-						(word)(cur_chip_param.param[MSP430_PARAM_MAINSTART])
+						(word)(target_chip_param.param[MSP430_PARAM_MAINSTART])
 
 #endif /* __MSP430_INTERNAL_H_INCLUDED__ */
 

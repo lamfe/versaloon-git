@@ -24,9 +24,9 @@
 #define STM32_FLASH_ADDR			0x08000000
 #define STM32_FLASH_DEFAULT			0xFF
 
-#define STM32_JTAG					(1 << 0)
-#define STM32_SWJ					(1 << 1)
-#define STM32_ISP					(1 << 2)
+#define STM32_JTAG					0
+#define STM32_SWJ					1
+#define STM32_ISP					2
 
 #endif /* __STM32_INTERNAL_H_INCLUDED__ */
 

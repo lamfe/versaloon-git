@@ -133,7 +133,6 @@ extern __IO uint32_t count_out, usb_ovf;
 extern __IO uint32_t usb_in_data_remain, usb_in_numofpackage;
 
 extern uint8 asyn_rx_buf[ASYN_DATA_BUFF_SIZE];
-extern uint16 asyn_rx_idx, asyn_tx_idx;
 extern uint16 Vtarget;
 
 extern void System_Idle_Loop(void);

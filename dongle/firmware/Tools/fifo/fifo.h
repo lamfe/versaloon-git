@@ -26,6 +26,7 @@ typedef struct
 
 #define FIFO_Init(buff)			{(buff), sizeof(buff), 0, 0}
 
+void FIFO_Reset(FIFO *fifo);
 uint32 FIFO_Add_Buffer(FIFO *fifo, uint8 *src_buff, uint32 len);
 uint32 FIFO_Get_Buffer(FIFO *fifo, uint8 *dest_buff, uint32 len);
 uint32 FIFO_Get_Length(FIFO *fifo);

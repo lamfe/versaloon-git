@@ -42,18 +42,18 @@
 #include "lpc900_internal.h"
 
 #define CUR_TARGET_STRING			LPC900_STRING
-#define cur_chip_param				target_chip_param
-#define cur_chips_param				target_chips.chips_param
-#define cur_chips_num				target_chips.num_of_chips
-#define cur_target_defined			target_defined
-#define cur_program_area_map		lpc900_program_area_map
 
 const struct program_area_map_t lpc900_program_area_map[] = 
 {
-	{APPLICATION_CHAR, 1, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0}
+	{APPLICATION_CHAR, 1, 0, 0},
+	{0, 0, 0, 0}
 };
 
+const struct program_mode_t lpc900_program_mode[] = 
+{
+	{'*', "", LPC_ICP},
+	{0, NULL, 0}
+};
 
 void lpc900_usage(void)
 {
@@ -70,173 +70,8 @@ RESULT lpc900_parse_argument(char cmd, const char *argu)
 	case 'h':
 		lpc900_usage();
 		break;
-	case 'E':
-		break;
 	default:
 		return ERROR_FAIL;
-		break;
-	}
-	
-	return ERROR_OK;
-}
-
-RESULT lpc900_prepare_buffer(struct program_info_t *pi)
-{
-	if (pi->program_areas[APPLICATION_IDX].buff != NULL)
-	{
-		memset(pi->program_areas[APPLICATION_IDX].buff, LPC900_FLASH_CHAR, 
-				pi->program_areas[APPLICATION_IDX].size);
-	}
-	else
-	{
-		return ERROR_FAIL;
-	}
-	
-	return ERROR_OK;
-}
-
-RESULT lpc900_fini(struct program_info_t *pi, struct programmer_info_t *prog)
-{
-	pi = pi;
-	prog = prog;
-	
-	return ERROR_OK;
-}
-
-RESULT lpc900_init(struct program_info_t *pi, struct programmer_info_t *prog)
-{
-	uint8_t i;
-	struct operation_t opt_tmp;
-	
-	memset(&opt_tmp, 0, sizeof(opt_tmp));
-	
-	if (strcmp(pi->chip_type, CUR_TARGET_STRING))
-	{
-		LOG_BUG(_GETTEXT(ERRMSG_INVALID_HANDLER), CUR_TARGET_STRING, 
-				pi->chip_type);
-		return ERRCODE_INVALID_HANDLER;
-	}
-	
-	if (NULL == pi->chip_name)
-	{
-		// auto detect
-		LOG_INFO(_GETTEXT(INFOMSG_TRY_AUTODETECT));
-		opt_tmp.read_operations = CHIPID;
-		
-		if (ERROR_OK != lpc900_program(opt_tmp, pi, prog))
-		{
-			LOG_ERROR(_GETTEXT(ERRMSG_AUTODETECT_FAIL), pi->chip_type);
-			return ERRCODE_AUTODETECT_FAIL;
-		}
-		
-		LOG_INFO(_GETTEXT(INFOMSG_AUTODETECT_SIGNATURE), pi->chip_id);
-		for (i = 0; i < cur_chips_num; i++)
-		{
-			if (pi->chip_id == cur_chips_param[i].chip_id)
-			{
-				pi->chip_name = (char *)cur_chips_param[i].chip_name;
-				LOG_INFO(_GETTEXT(INFOMSG_CHIP_FOUND), pi->chip_name);
-				
-				goto Post_Init;
-			}
-		}
-		
-		LOG_ERROR(_GETTEXT(ERRMSG_AUTODETECT_FAIL), pi->chip_type);
-		return ERRCODE_AUTODETECT_FAIL;
-	}
-	else
-	{
-		for (i = 0; i < cur_chips_num; i++)
-		{
-			if (!strcmp(cur_chips_param[i].chip_name, pi->chip_name))
-			{
-				goto Post_Init;
-			}
-		}
-		
-		return ERROR_FAIL;
-	}
-Post_Init:
-	memcpy(&cur_chip_param, cur_chips_param + i, sizeof(cur_chip_param));
-	
-	pi->program_areas[APPLICATION_IDX].size = 
-				cur_chip_param.chip_areas[APPLICATION_IDX].size;
-	
-	return ERROR_OK;
-}
-
-uint32_t lpc900_interface_needed(void)
-{
-	return LPC900_INTERFACE_NEEDED;
-}
-
-RESULT lpc900_write_buffer_from_file_callback(uint32_t address, 
-			uint32_t seg_addr, uint8_t* data, uint32_t length, void* buffer)
-{
-	struct program_info_t *pi = (struct program_info_t *)buffer;
-	uint32_t mem_addr = address & 0x0000FFFF;
-	RESULT ret;
-	uint8_t *tbuff;
-	struct chip_area_info_t *areas;
-	
-	tbuff = pi->program_areas[APPLICATION_IDX].buff;
-	
-#ifdef PARAM_CHECK
-	if ((length > 0) && (NULL == data))
-	{
-		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_PARAMETER), __FUNCTION__);
-		return ERRCODE_INVALID_PARAMETER;
-	}
-#endif
-	
-	if (seg_addr != 0)
-	{
-		LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), 
-				  "segment address", CUR_TARGET_STRING);
-		return ERRCODE_NOT_SUPPORT;
-	}
-	
-	areas = cur_chip_param.chip_areas;
-	// flash from 0x00000000
-	switch (address >> 16)
-	{
-	case 0x0000:
-		if (NULL == tbuff)
-		{
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_BUFFER), "pi->app");
-			return ERRCODE_INVALID_BUFFER;
-		}
-		
-/*		if ((0 == cur_chip_param.flash_page_num) 
-			|| (0 == cur_chip_param.flash_page_size))
-		{
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID), "Flash", 
-					  cur_chip_param.chip_name);
-			return ERRCODE_INVALID;
-		}
-*/		
-		if ((mem_addr >= areas[APPLICATION_IDX].size)
- 			|| (length > areas[APPLICATION_IDX].size)
- 			|| ((mem_addr + length) > areas[APPLICATION_IDX].size))
-		{
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_RANGE), "flash memory");
-			return ERRCODE_INVALID;
-		}
-		cur_target_defined |= APPLICATION;
-		
-		memcpy(tbuff + mem_addr, data, length);
-		ret = MEMLIST_Add(&pi->program_areas[APPLICATION_IDX].memlist, 
-							mem_addr, length, areas[APPLICATION_IDX].page_size);
-		if (ret != ERROR_OK)
-		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "add memory list");
-			return ERRCODE_FAILURE_OPERATION;
-		}
-		break;
-	default:
-		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_ADDRESS), address, 
-				  CUR_TARGET_STRING);
-		return ERRCODE_INVALID;
 		break;
 	}
 	
@@ -414,10 +249,10 @@ ProgramStart:
 	LOG_INFO(_GETTEXT(INFOMSG_TARGET_CHIP_ID), pi->chip_id);
 	if (!(operations.read_operations & CHIPID))
 	{
-		if (pi->chip_id != cur_chip_param.chip_id)
+		if (pi->chip_id != target_chip_param.chip_id)
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_CHIP_ID), pi->chip_id, 
-					  cur_chip_param.chip_id);
+					  target_chip_param.chip_id);
 			ret = ERRCODE_INVALID_CHIP_ID;
 			goto leave_program_mode;
 		}
@@ -450,7 +285,7 @@ ProgramStart:
 		LOG_INFO(_GETTEXT(INFOMSG_ERASED), "chip");
 	}
 	
-	page_size = (uint16_t)cur_chip_param.chip_areas[APPLICATION_IDX].page_size;
+	page_size = (uint16_t)target_chip_param.chip_areas[APPLICATION_IDX].page_size;
 	
 	// write flash
 	ml = &pi->program_areas[APPLICATION_IDX].memlist;
@@ -595,7 +430,7 @@ ProgramStart:
 			
 			crc_in_file = 0;
 			for (loop = 0; 
-				loop < cur_chip_param.chip_areas[APPLICATION_IDX].size; 
+				loop < target_chip_param.chip_areas[APPLICATION_IDX].size; 
 				loop++)
 			{
 				uint8_t byte = tbuff[loop];

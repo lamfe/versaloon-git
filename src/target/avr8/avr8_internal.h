@@ -28,21 +28,14 @@
 #define AVR8_LOCK_CHAR					0xFF
 #define AVR8_FUSE_CHAR					0xFF
 
-#define AVR8_ISP						(1 << 0)
-#define AVR8_JTAG						(1 << 1)
-#define AVR8_HVPP						(1 << 2)
-#define AVR8_HVSP						(1 << 3)
-#define AVR8_PROG_MODE_MASK				(AVR8_ISP | AVR8_JTAG \
-										 | AVR8_HVPP | AVR8_HVSP)
+#define AVR8_ISP						0
+#define AVR8_JTAG						1
+#define AVR8_HVPP						2
+#define AVR8_HVSP						3
 
 #define AVR8_PARAM_JTAG_FULL_BITSTREAM	0
 #define AVR8_PARAM_ISP_EERPOM_PAGE_EN	1
 #define AVR8_PARAM_ISP_POLL				2
-
-#define AVR8_ISP_INTERFACE_NEEDED		(SPI | GPIO)
-#define AVR8_JTAG_INTERFACE_NEEDED		(JTAG_HL)
-#define AVR8_HVPP_INTERFACE_NEEDED		(GPIO | POWER)
-#define AVR8_HVSP_INTERFACE_NEEDED		(GPIO | POWER)
 
 extern uint16_t avr8_isp_frequency;
 RESULT avr8_isp_program(struct operation_t operations, 

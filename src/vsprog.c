@@ -50,7 +50,7 @@
 #include "target.h"
 #include "hex.h"
 
-#define OPTSTR			"hvS:P:s:c:Mp:U:D:Ld:Go:l:f:F:m:x:C:I:O:J:Zb:V:"
+#define OPTSTR			"hvS:P:s:c:Mp:U:D:Ld:Go:F:m:x:C:I:O:J:Zb:V:t:"
 static const struct option long_opts[] =
 {
 	{"help", no_argument, NULL, 'h'},
@@ -67,8 +67,7 @@ static const struct option long_opts[] =
 	{"debug", required_argument, NULL, 'd'},
 	{"gui-mode", no_argument, NULL, 'G'},
 	{"operation", required_argument, NULL, 'o'},
-	{"lock", required_argument, NULL, 'l'},
-	{"fuse", required_argument, NULL, 'f'},
+	{"target", required_argument, NULL, 't'},
 	{"frequency", required_argument, NULL, 'F'},
 	{"mode", required_argument, NULL, 'm'},
 	{"execute", required_argument, NULL, 'x'},
@@ -96,17 +95,26 @@ const char *config_dirs[] =
 	"./config/"
 };
 
-const struct target_area_name_t target_area_name[9] = 
+const struct target_area_name_t target_area_name[NUM_OF_TARGET_AREA] = 
 {
-	{CHIPID_CHAR,		CHIPID,			"chipid"},
-	{BOOTLOADER_CHAR,	BOOTLOADER,		"bootloader"},
-	{APPLICATION_CHAR,	APPLICATION,	"flash"},
-	{EEPROM_CHAR,		EEPROM,			"eeprom"},
-	{OTPROM_CHAR,		OTPROM,			"otprom"},
-	{FUSE_CHAR,			FUSE,			"fuse"},
-	{LOCK_CHAR,			LOCK,			"lock"},
-	{USRSIG_CHAR,		USRSIG,			"usrsig"},
-	{CALIBRATION_CHAR,	CALIBRATION,	"calibration"}
+	{CHIPID_CHAR,				CHIPID,				"chipid"},
+	{CHIPID_CHKSUM_CHAR,		CHIPID_CHKSUM,		"chipid_checksum"},
+	{BOOTLOADER_CHAR,			BOOTLOADER,			"bootloader"},
+	{BOOTLOADER_CHKSUM_CHAR,	BOOTLOADER_CHKSUM,	"bootloader_checksum"},
+	{APPLICATION_CHAR,			APPLICATION,		"flash"},
+	{APPLICATION_CHKSUM_CHAR,	APPLICATION_CHKSUM,	"flash_checksum"},
+	{EEPROM_CHAR,				EEPROM,				"eeprom"},
+	{EEPROM_CHKSUM_CHAR,		EEPROM_CHKSUM,		"eeprom_checksum"},
+	{OTPROM_CHAR,				OTPROM,				"otprom"},
+	{OTPROM_CHKSUM_CHAR,		OTPROM_CHKSUM,		"otprom_checksum"},
+	{FUSE_CHAR,					FUSE,				"fuse"},
+	{FUSE_CHKSUM_CHAR,			FUSE_CHKSUM,		"fuse_checksum"},
+	{LOCK_CHAR,					LOCK,				"lock"},
+	{LOCK_CHKSUM_CHAR,			LOCK_CHKSUM,		"lock_checksum"},
+	{USRSIG_CHAR,				USRSIG,				"usrsig"},
+	{USRSIG_CHKSUM_CHAR,		USRSIG_CHKSUM,		"usrsig_checksum"},
+	{CALIBRATION_CHAR,			CALIBRATION,		"calibration"},
+	{CALIBRATION_CHKSUM_CHAR,	CALIBRATION_CHKSUM	,"calibration_checksum"}
 };
 
 uint8_t program_mode = 0;
@@ -138,10 +146,8 @@ static void free_all(void)
 		config_dir = NULL;
 	}
 	
-	if ((cur_target != NULL) && (cur_programmer != NULL) 
-		&& (cur_target->fini != NULL))
+	if (cur_target != NULL)
 	{
-		cur_target->fini(&program_info, cur_programmer);
 		memset(cur_target, 0, sizeof(cur_target));
 	}
 	
@@ -402,7 +408,7 @@ int main(int argc, char* argv[])
 				&& (NULL != program_info.chip_type))
 			{
 				program_info.chip_name = program_info.chip_type;
-				target_init(&program_info);
+				target_info_init(&program_info);
 				if (NULL == cur_target)
 				{
 					LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "Target");
@@ -427,7 +433,7 @@ int main(int argc, char* argv[])
 				}
 			}
 			
-			ret = cur_target->init(&program_info, cur_programmer);
+			ret = target_init(&program_info, cur_programmer);
 			if (ret != ERROR_OK)
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
@@ -459,7 +465,7 @@ int main(int argc, char* argv[])
 				}
 			}
 			
-			ret = cur_target->init(&program_info, cur_programmer);
+			ret = target_init(&program_info, cur_programmer);
 			if (ret != ERROR_OK)
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
@@ -525,7 +531,7 @@ int main(int argc, char* argv[])
 		case 's':
 			// --target-series
 			program_info.chip_type = optarg;
-			ret = target_init(&program_info);
+			ret = target_info_init(&program_info);
 			if (ret != ERROR_OK)
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
@@ -537,7 +543,7 @@ int main(int argc, char* argv[])
 		case 'c':
 			// --target-module
 			program_info.chip_name = optarg;
-			ret = target_init(&program_info);
+			ret = target_info_init(&program_info);
 			if (ret != ERROR_OK)
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
@@ -615,6 +621,26 @@ Parse_Operation:
 				free_all_and_exit(EXIT_FAILURE);
 				break;
 			}
+			break;
+		case 't':
+			// --target
+			if (strlen(optarg) < 2)
+			{
+				LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), (char)optc);
+				LOG_ERROR(_GETTEXT(ERRMSG_TRY_SUPPORT));
+				free_all_and_exit(EXIT_FAILURE);
+			}
+			optc = (int)target_area_idx(optarg[0]);
+			if (optc < 0)
+			{
+				LOG_ERROR(_GETTEXT(ERRMSG_INVALID_CHARACTER), (char)optc, 
+							"target");
+				LOG_ERROR(_GETTEXT(ERRMSG_TRY_SUPPORT));
+				free_all_and_exit(EXIT_FAILURE);
+			}
+			program_info.program_areas[optc].value = 
+										(uint64_t)strtoul(&optarg[1], NULL, 0);
+			target_defined |= target_area_mask(optarg[0]);
 			break;
 		case 'I':
 			// --input-file
@@ -713,7 +739,8 @@ Parse_File:
 			}
 			
 			cur_pointer = end_pointer + 1;
-			target_jtag_pos.ba = (uint16_t)strtoul(cur_pointer, &end_pointer, 0);
+			target_jtag_pos.ba = 
+							(uint16_t)strtoul(cur_pointer, &end_pointer, 0);
 			if (cur_pointer == end_pointer)
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), (char)optc);
@@ -729,17 +756,15 @@ Parse_File:
 				LOG_ERROR(_GETTEXT(ERRMSG_TRY_HELP));
 				free_all_and_exit(EXIT_FAILURE);
 			}
-			if ((NULL == cur_target->program_mode_str) 
-				|| (NULL == strchr(cur_target->program_mode_str, optarg[0])))
+			optc = target_mode_get_idx(cur_target->program_mode, optarg[0]);
+			if (optc < 0)
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), optarg, 
 						  cur_target->name);
-				return ERRCODE_NOT_SUPPORT;
+				free_all_and_exit(EXIT_FAILURE);
 			}
 			
-			program_mode = 
-				1 << (strchr(cur_target->program_mode_str, optarg[0]) 
-						- cur_target->program_mode_str);
+			program_mode = (uint8_t)optc;
 			break;
 		case 'M':
 			// --mass-product
@@ -910,8 +935,8 @@ Parse_File:
 		free_all_and_exit(EXIT_FAILURE);
 	}
 	// init and check programmer's ability
-	if ((cur_programmer->interfaces & cur_target->interface_needed()) 
-		!= cur_target->interface_needed())
+	i = cur_target->program_mode[program_mode].interface_needed;
+	if ((cur_programmer->interfaces & i) != i)
 	{
 		LOG_ERROR(_GETTEXT("%s can not support %s in the mode defined.\n"), 
 				  cur_programmer->name, cur_target->name);
@@ -961,7 +986,7 @@ Parse_File:
 			sleep_ms(3000);
 		}
 	}
-	else if (cur_target->interface_needed())
+	else if (cur_target->program_mode[program_mode].interface_needed)
 	{
 		ret = cur_programmer->init();
 		if (ret != ERROR_OK)
@@ -973,7 +998,7 @@ Parse_File:
 	}
 	
 	// init target
-	ret = cur_target->init(&program_info, cur_programmer);
+	ret = target_init(&program_info, cur_programmer);
 	if (ret != ERROR_OK)
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "initialize target");
@@ -987,22 +1012,16 @@ Parse_File:
 		LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
 		free_all_and_exit(EXIT_FAILURE);
 	}
-	cur_target->prepare_buffer(&program_info);
+	// read file
 	if (require_hex_file_for_read > 0)
 	{
 		struct filelist *fl = fl_in;
-		
-		if (NULL == cur_target->write_buffer_from_file_callback)
-		{
-			LOG_BUG(_GETTEXT("Invalid target struct.\n"));
-			free_all_and_exit(EXIT_FAILURE);
-		}
 		
 		while ((fl != NULL) && (fl->path != NULL) && (fl->file != NULL) 
 			&& (strlen(fl->path) > 4))
 		{
 			ret = parse_file(fl->path, fl->file, (void *)&program_info, 
-								cur_target->write_buffer_from_file_callback, 
+								&target_write_buffer_from_file_callback, 
 								fl->seg_offset, fl->addr_offset);
 			if (ret != ERROR_OK)
 			{
@@ -1140,12 +1159,22 @@ Parse_File:
 				{
 					uint8_t *buff = NULL;
 					uint32_t size = 0;
+					struct chip_area_info_t *area;
+					int8_t area_idx;
 					
+					area_idx = target_area_idx(p_map->name);
+					if (area_idx < 0)
+					{
+						p_map++;
+						continue;
+					}
+					area = &target_chip_param.chip_areas[area_idx];
 					target_get_target_area(p_map->name, &buff, &size);
 					if ((buff != NULL) && (size > 0) && (fl_out != NULL))
 					{
-						if (ERROR_OK != save_target_to_file(fl_out, buff, size, 
-											p_map->seg_addr, p_map->start_addr))
+						if (ERROR_OK != save_target_to_file(fl_out, buff, 
+								size, area->seg, area->addr, p_map->fseg_addr, 
+								p_map->fstart_addr))
 						{
 							LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
 										"write data to file");

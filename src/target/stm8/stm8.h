@@ -19,7 +19,14 @@
 #ifndef __STM8_H_INCLUDED__
 #define __STM8_H_INCLUDED__
 
+#define STM8_STRING						"stm8"
 
+extern const struct program_area_map_t stm8_program_area_map[];
+extern const struct program_mode_t stm8_program_mode[];
+
+RESULT stm8_parse_argument(char cmd, const char *argu);
+RESULT stm8_program(struct operation_t operations, 
+				struct program_info_t *pi, struct programmer_info_t *prog);
 
 #endif /* __STM8_H_INCLUDED__ */
 

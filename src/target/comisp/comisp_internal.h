@@ -26,7 +26,6 @@
 
 #define COMISP_STM32					0
 #define COMISP_LPCARM					1
-#define COMISP_TEST						2
 
 struct com_mode_t
 {
@@ -48,7 +47,7 @@ struct comisp_param_t
 	uint32_t flash_max_size;
 };
 
-extern struct comisp_param_t comisp_chip_param;
+extern struct comisp_param_t *comisp_chip_param;
 extern struct com_mode_t com_mode;
 extern uint8_t comisp_execute_flag;
 extern uint32_t comisp_execute_addr;

@@ -41,7 +41,6 @@
 #include "c8051f_internal.h"
 
 #define CUR_TARGET_STRING		C8051F_STRING
-#define cur_chip_param			target_chip_param
 
 
 #define delay_ms(ms)			p->delayms((ms) | 0x8000)
@@ -105,10 +104,10 @@ RESULT c8051f_c2_program(struct operation_t operations,
 	LOG_INFO(_GETTEXT(INFOMSG_TARGET_CHIP_ID), pi->chip_id);
 	if (!(operations.read_operations & CHIPID))
 	{
-		if (pi->chip_id != cur_chip_param.chip_id)
+		if (pi->chip_id != target_chip_param.chip_id)
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_CHIP_ID), pi->chip_id, 
-						cur_chip_param.chip_id);
+						target_chip_param.chip_id);
 			ret = ERRCODE_INVALID_CHIP_ID;
 			goto leave_program_mode;
 		}
@@ -119,7 +118,7 @@ RESULT c8051f_c2_program(struct operation_t operations,
 	}
 	
 	// enable flash programming
-	c2_write_ir((uint8_t)cur_chip_param.param[C8051F_PARAM_FPCTL_ADDR]);
+	c2_write_ir((uint8_t)target_chip_param.param[C8051F_PARAM_FPCTL_ADDR]);
 	dr = 0x02;
 	c2_write_dr(dr);
 	dr = 0x01;
@@ -132,7 +131,7 @@ RESULT c8051f_c2_program(struct operation_t operations,
 		LOG_INFO(_GETTEXT(INFOMSG_ERASING), "flash");
 		pgbar_init("erasing flash |", "|", 0, 1, PROGRESS_STEP, '=');
 		
-		c2_write_ir((uint8_t)cur_chip_param.param[C8051F_PARAM_FPDAT_ADDR]);
+		c2_write_ir((uint8_t)target_chip_param.param[C8051F_PARAM_FPDAT_ADDR]);
 		dr = C8051F_C2_CMD_DEVICE_ERASE;
 		c2_write_dr(dr);
 		c2_poll_in_busy();
@@ -201,7 +200,7 @@ RESULT c8051f_c2_program(struct operation_t operations,
 				 i += page_size)
 			{
 				c2_write_ir(
-					(uint8_t)cur_chip_param.param[C8051F_PARAM_FPDAT_ADDR]);
+					(uint8_t)target_chip_param.param[C8051F_PARAM_FPDAT_ADDR]);
 				
 				dr = C8051F_C2_CMD_BLOCK_WRITE;
 				c2_write_dr(dr);
@@ -319,7 +318,7 @@ RESULT c8051f_c2_program(struct operation_t operations,
 				 i += page_size)
 			{
 				c2_write_ir(
-					(uint8_t)cur_chip_param.param[C8051F_PARAM_FPDAT_ADDR]);
+					(uint8_t)target_chip_param.param[C8051F_PARAM_FPDAT_ADDR]);
 				
 				dr = C8051F_C2_CMD_BLOCK_READ;
 				c2_write_dr(dr);

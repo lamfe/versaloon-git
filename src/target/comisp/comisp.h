@@ -21,15 +21,7 @@
 
 #define COMISP_STRING					"comisp"
 
-extern struct program_area_map_t comisp_program_area_map[];
 RESULT comisp_parse_argument(char cmd, const char *argu);
-RESULT comisp_probe_chip(char *chip_name);
-RESULT comisp_prepare_buffer(struct program_info_t *pi);
-uint32_t comisp_interface_needed(void);
-RESULT comisp_write_buffer_from_file_callback(uint32_t address, 
-			uint32_t seg_addr, uint8_t* data, uint32_t length, void* buffer);
-RESULT comisp_init(struct program_info_t *pi, struct programmer_info_t *prog);
-RESULT comisp_fini(struct program_info_t *pi, struct programmer_info_t *prog);
 RESULT comisp_program(struct operation_t operations, struct program_info_t *pi, 
 					  struct programmer_info_t *prog);
 

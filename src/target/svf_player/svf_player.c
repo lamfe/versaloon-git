@@ -49,7 +49,13 @@
 
 const struct program_area_map_t svfp_program_area_map[] = 
 {
-	{0, 0, 0, 0, 0, 0}
+	{0, 0, 0, 0}
+};
+
+const struct program_mode_t svfp_program_mode[] = 
+{
+	{'*', SET_FREQUENCY, JTAG_LL},
+	{0, NULL, 0}
 };
 
 #define SVF_SET_FREQ_CMD			"FREQUENCY %.02f HZ"
@@ -72,8 +78,6 @@ RESULT svfp_parse_argument(char cmd, const char *argu)
 	case 'h':
 		svfp_usage();
 		break;
-	case 'E':
-		break;
 	default:
 		return ERROR_FAIL;
 		break;
@@ -82,57 +86,7 @@ RESULT svfp_parse_argument(char cmd, const char *argu)
 	return ERROR_OK;
 }
 
-RESULT svfp_probe_chip(char *chip_name)
-{
-	chip_name = chip_name;
-	return ERROR_FAIL;
-}
 
-RESULT svfp_prepare_buffer(struct program_info_t *pi)
-{
-	pi = pi;
-	return ERROR_OK;
-}
-
-RESULT svfp_write_buffer_from_file_callback(uint32_t address, 
-			uint32_t seg_addr, uint8_t* data, uint32_t length, void* buffer)
-{
-	address = address;
-	seg_addr = seg_addr;
-	data = data;
-	length = length;
-	buffer = buffer;
-	
-	LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "Hex file", CUR_TARGET_STRING);
-	return ERRCODE_NOT_SUPPORT;
-}
-
-RESULT svfp_fini(struct program_info_t *pi, struct programmer_info_t *prog)
-{
-	pi = pi;
-	prog = prog;
-	
-	if (first_command != NULL)
-	{
-		free(first_command);
-		first_command = NULL;
-	}
-	
-	return ERROR_OK;
-}
-
-RESULT svfp_init(struct program_info_t *pi, struct programmer_info_t *prog)
-{
-	pi = pi;
-	prog = prog;
-	
-	return ERROR_OK;
-}
-
-uint32_t svfp_interface_needed(void)
-{
-	return JTAG_LL;
-}
 
 struct programmer_info_t *p = NULL;
 extern struct filelist *fl_in;
@@ -267,6 +221,11 @@ RESULT svfp_program(struct operation_t operations, struct program_info_t *pi,
 	
 leave_program_mode:
 	// free all
+	if (first_command != NULL)
+	{
+		free(first_command);
+		first_command = NULL;
+	}
 	tap_fini();
 	tap_commit();
 	svf_parser_fini();

@@ -49,8 +49,6 @@
 #include "timer.h"
 
 #define CUR_TARGET_STRING			CM3_STRING
-#define cur_chip_param				cm3_chip_param
-#define cur_buffer_size				cm3_buffer_size
 
 RESULT stm32_wait_status_busy(uint32_t *status, uint32_t timeout)
 {
@@ -185,22 +183,22 @@ RESULT stm32jtagswj_program(struct operation_t operations,
 	dp_info = dp_info;
 	
 	// check buffer size
-	if (0 == cur_buffer_size)
+	if (0 == cm3_buffer_size)
 	{
 		// use default
-		cur_buffer_size = 512;
+		cm3_buffer_size = 512;
 	}
-	if (cur_buffer_size & 0x03)
+	if (cm3_buffer_size & 0x03)
 	{
 		LOG_ERROR(_GETTEXT("STM32 buffer_size can only be aligned to 4.\n"));
 		ret = ERRCODE_INVALID_OPTION;
 		goto leave_program_mode;
 	}
-	if (cur_buffer_size > STM32_PAGE_SIZE_RW)
+	if (cm3_buffer_size > STM32_PAGE_SIZE_RW)
 	{
 		LOG_WARNING(_GETTEXT("Max buffer_size for STM32 is %d\n"), 
 					STM32_PAGE_SIZE_RW);
-		cur_buffer_size = STM32_PAGE_SIZE_RW;
+		cm3_buffer_size = STM32_PAGE_SIZE_RW;
 	}
 	
 	// read MCU ID at STM32_REG_MCU_ID
@@ -418,9 +416,9 @@ RESULT stm32jtagswj_program(struct operation_t operations,
 			i = 0;
 			while (block_size)
 			{
-				if (block_size > cur_buffer_size)
+				if (block_size > cm3_buffer_size)
 				{
-					cur_block_size = cur_buffer_size;
+					cur_block_size = cm3_buffer_size;
 				}
 				else
 				{
@@ -468,7 +466,7 @@ RESULT stm32jtagswj_program(struct operation_t operations,
 				// wait ready
 				start_time = get_time_in_ms();
 				if ((cur_run_size >=  STM32_PAGE_SIZE_RW) 
-					|| (block_size <= cur_buffer_size))
+					|| (block_size <= cm3_buffer_size))
 				{
 					reg = 0;
 					do{
@@ -517,8 +515,8 @@ RESULT stm32jtagswj_program(struct operation_t operations,
 		}
 		else
 		{
-			ret = MEMLIST_Add(ml, cur_chip_param.flash_start_addr, 
-					pi->program_areas[APPLICATION_IDX].size, cur_buffer_size);
+			ret = MEMLIST_Add(ml, cm3_chip_param->flash_start_addr, 
+					pi->program_areas[APPLICATION_IDX].size, cm3_buffer_size);
 			if (ret != ERROR_OK)
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "add memory list");

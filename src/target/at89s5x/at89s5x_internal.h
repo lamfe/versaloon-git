@@ -22,8 +22,6 @@
 #define S5X_PARAM_PE_OUT			0
 #define S5X_DEFAULT_FREQ			560
 
-#define S5X_INTERFACE_NEEDED		(SPI | GPIO)
-
 #define S5X_MAX_FLASH_SIZE			(8 * 1024)
 #define S5X_MAX_PAGE_SIZE			256
 #define S5X_MAX_PAGE_NUM		
@@ -31,9 +29,8 @@
 #define S5X_FLASH_CHAR				0xFF
 
 // flash mode
-#define S5X_PAGE_MODE				(1 << 0)
-#define S5X_BYTE_MODE				(1 << 1)
-#define S5X_MODE_MASK				(S5X_PAGE_MODE | S5X_BYTE_MODE)
+#define S5X_PAGE_MODE				0
+#define S5X_BYTE_MODE				1
 
 #endif /* __AT89S5X_INTERNAL_H_INCLUDED__ */
 

@@ -355,8 +355,8 @@ begin
               LineInfo.ByteSize := bytesize - data_addr;
             end;
           end;
+          Move(buff[4], (P + data_addr - addr_offset)^, LineInfo.ByteSize);
         end;
-        Move(buff[4], (P + data_addr - addr_offset)^, LineInfo.ByteSize);
       end;
       1://htEOF
       begin

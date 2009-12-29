@@ -166,3 +166,8 @@ uint32 FIFO_Release_Consequent_Buffer(FIFO *fifo, uint32 size)
 
 	return actual_size;
 }
+
+void FIFO_Reset(FIFO *fifo)
+{
+	fifo->header = fifo->tail = 0;
+}

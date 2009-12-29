@@ -41,7 +41,6 @@
 #include "avr8_internal.h"
 
 #define CUR_TARGET_STRING							AVR8_STRING
-#define cur_chip_param								target_chip_param
 
 #define AVR_JTAG_INS_LEN							4
 // Public Instructions:
@@ -236,10 +235,10 @@ RESULT avr8_jtag_program(struct operation_t operations,
 	LOG_INFO(_GETTEXT(INFOMSG_TARGET_CHIP_ID), pi->chip_id);
 	if (!(operations.read_operations & CHIPID))
 	{
-		if (pi->chip_id != cur_chip_param.chip_id)
+		if (pi->chip_id != target_chip_param.chip_id)
 		{
 			LOG_WARNING(_GETTEXT(ERRMSG_INVALID_CHIP_ID), pi->chip_id, 
-						cur_chip_param.chip_id);
+						target_chip_param.chip_id);
 		}
 	}
 	else
@@ -269,9 +268,9 @@ RESULT avr8_jtag_program(struct operation_t operations,
 	}
 	
 	// set page size for flash
-	if (cur_chip_param.chip_areas[APPLICATION_IDX].page_num > 1)
+	if (target_chip_param.chip_areas[APPLICATION_IDX].page_num > 1)
 	{
-		page_size = cur_chip_param.chip_areas[APPLICATION_IDX].page_size;
+		page_size = target_chip_param.chip_areas[APPLICATION_IDX].page_size;
 	}
 	else
 	{
@@ -315,7 +314,7 @@ RESULT avr8_jtag_program(struct operation_t operations,
 				AVR_JTAG_PROG_LoadAddrLowByte((ml_tmp->addr + i) >> 1);
 				AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_PAGELOAD);
 				
-				if (cur_chip_param.param[AVR8_PARAM_JTAG_FULL_BITSTREAM])
+				if (target_chip_param.param[AVR8_PARAM_JTAG_FULL_BITSTREAM])
 				{
 					jtag_dr_write(tbuff + ml_tmp->addr + i, 
 									(uint16_t)(page_size * 8));
@@ -406,7 +405,7 @@ RESULT avr8_jtag_program(struct operation_t operations,
 				AVR_JTAG_PROG_LoadAddrLowByte((ml_tmp->addr + i) >> 1);
 				AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_PAGEREAD);
 				
-				if (cur_chip_param.param[AVR8_PARAM_JTAG_FULL_BITSTREAM])
+				if (target_chip_param.param[AVR8_PARAM_JTAG_FULL_BITSTREAM])
 				{
 					dr = 0;
 					jtag_dr_write(&dr, 8);
@@ -477,9 +476,9 @@ RESULT avr8_jtag_program(struct operation_t operations,
 	}
 	
 	// set page size for eeprom
-	if (cur_chip_param.chip_areas[EEPROM_IDX].page_num > 1)
+	if (target_chip_param.chip_areas[EEPROM_IDX].page_num > 1)
 	{
-		page_size = cur_chip_param.chip_areas[EEPROM_IDX].page_size;
+		page_size = target_chip_param.chip_areas[EEPROM_IDX].page_size;
 	}
 	else
 	{
@@ -514,7 +513,7 @@ RESULT avr8_jtag_program(struct operation_t operations,
 							- (int32_t)(ml_tmp->addr % page_size)); 
 				 i += page_size)
 			{
-				if (cur_chip_param.chip_areas[EEPROM_IDX].page_num > 1)
+				if (target_chip_param.chip_areas[EEPROM_IDX].page_num > 1)
 				{
 					// Page mode
 					AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
@@ -683,7 +682,7 @@ RESULT avr8_jtag_program(struct operation_t operations,
 		
 		// write fuse
 		// low bits
-		if (cur_chip_param.chip_areas[FUSE_IDX].size > 0)
+		if (target_chip_param.chip_areas[FUSE_IDX].size > 0)
 		{
 			AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
 			AVR_JTAG_PROG_EnterFuseWrite();
@@ -693,7 +692,7 @@ RESULT avr8_jtag_program(struct operation_t operations,
 			AVR_JTAG_WaitComplete(AVR_JTAG_PROG_WriteFuseLowByteComplete_CMD);
 		}
 		// high bits
-		if (cur_chip_param.chip_areas[FUSE_IDX].size > 1)
+		if (target_chip_param.chip_areas[FUSE_IDX].size > 1)
 		{
 			AVR_JTAG_PROG_LoadDataLowByte(
 							(pi->program_areas[FUSE_IDX].value >> 8) & 0xFF);
@@ -701,14 +700,14 @@ RESULT avr8_jtag_program(struct operation_t operations,
 			AVR_JTAG_WaitComplete(AVR_JTAG_PROG_WriteFuseHighByteComplete_CMD);
 		}
 		// extended bits
-		if (cur_chip_param.chip_areas[FUSE_IDX].size > 2)
+		if (target_chip_param.chip_areas[FUSE_IDX].size > 2)
 		{
 			AVR_JTAG_PROG_LoadDataLowByte(
 							(pi->program_areas[FUSE_IDX].value >> 16) & 0xFF);
 			AVR_JTAG_PROG_WriteFuseExtByte();
 			AVR_JTAG_WaitComplete(AVR_JTAG_PROG_WriteFuseExtByteComplete_CMD);
 		}
-		if (cur_chip_param.chip_areas[FUSE_IDX].size > 0)
+		if (target_chip_param.chip_areas[FUSE_IDX].size > 0)
 		{
 			if (ERROR_OK != jtag_commit())
 			{
@@ -722,7 +721,7 @@ RESULT avr8_jtag_program(struct operation_t operations,
 		{
 			pgbar_fini();
 			LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "fuse", 
-						cur_chip_param.chip_name);
+						target_chip_param.chip_name);
 			ret = ERRCODE_NOT_SUPPORT;
 			goto leave_program_mode;
 		}
@@ -748,23 +747,23 @@ RESULT avr8_jtag_program(struct operation_t operations,
 		memset(page_buf, 0, 3);
 		// read fuse
 		// low bits
-		if (cur_chip_param.chip_areas[FUSE_IDX].size > 0)
+		if (target_chip_param.chip_areas[FUSE_IDX].size > 0)
 		{
 			AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
 			AVR_JTAG_PROG_EnterFuseLockbitRead();
 			AVR_JTAG_PROG_ReadFuseLowByte(page_buf[0]);
 		}
 		// high bits
-		if (cur_chip_param.chip_areas[FUSE_IDX].size > 1)
+		if (target_chip_param.chip_areas[FUSE_IDX].size > 1)
 		{
 			AVR_JTAG_PROG_ReadFuseHighByte(page_buf[1]);
 		}
 		// extended bits
-		if (cur_chip_param.chip_areas[FUSE_IDX].size > 2)
+		if (target_chip_param.chip_areas[FUSE_IDX].size > 2)
 		{
 			AVR_JTAG_PROG_ReadExtFuseByte(page_buf[2]);
 		}
-		if (cur_chip_param.chip_areas[FUSE_IDX].size > 0)
+		if (target_chip_param.chip_areas[FUSE_IDX].size > 0)
 		{
 			if (ERROR_OK != jtag_commit())
 			{
@@ -778,7 +777,7 @@ RESULT avr8_jtag_program(struct operation_t operations,
 		{
 			pgbar_fini();
 			LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "fuse", 
-						cur_chip_param.chip_name);
+						target_chip_param.chip_name);
 			ret = ERRCODE_NOT_SUPPORT;
 			goto leave_program_mode;
 		}
@@ -794,17 +793,17 @@ RESULT avr8_jtag_program(struct operation_t operations,
 			}
 			else
 			{
-				if (cur_chip_param.chip_areas[FUSE_IDX].size > 2)
+				if (target_chip_param.chip_areas[FUSE_IDX].size > 2)
 				{
 					LOG_INFO(_GETTEXT(ERRMSG_FAILURE_VERIFY_TARGET_06X), 
 							 "fuse", i, pi->program_areas[FUSE_IDX].value);
 				}
-				else if (cur_chip_param.chip_areas[FUSE_IDX].size > 1)
+				else if (target_chip_param.chip_areas[FUSE_IDX].size > 1)
 				{
 					LOG_INFO(_GETTEXT(ERRMSG_FAILURE_VERIFY_TARGET_04X), 
 							 "fuse", i, pi->program_areas[FUSE_IDX].value);
 				}
-				else if (cur_chip_param.chip_areas[FUSE_IDX].size > 0)
+				else if (target_chip_param.chip_areas[FUSE_IDX].size > 0)
 				{
 					LOG_INFO(_GETTEXT(ERRMSG_FAILURE_VERIFY_TARGET_02X), 
 							 "fuse", i, pi->program_areas[FUSE_IDX].value);
@@ -813,15 +812,15 @@ RESULT avr8_jtag_program(struct operation_t operations,
 		}
 		else
 		{
-			if (cur_chip_param.chip_areas[FUSE_IDX].size > 2)
+			if (target_chip_param.chip_areas[FUSE_IDX].size > 2)
 			{
 				LOG_INFO(_GETTEXT(INFOMSG_READ_VALUE_06X), "fuse", i);
 			}
-			else if (cur_chip_param.chip_areas[FUSE_IDX].size > 1)
+			else if (target_chip_param.chip_areas[FUSE_IDX].size > 1)
 			{
 				LOG_INFO(_GETTEXT(INFOMSG_READ_VALUE_04X), "fuse", i);
 			}
-			else if (cur_chip_param.chip_areas[FUSE_IDX].size > 0)
+			else if (target_chip_param.chip_areas[FUSE_IDX].size > 0)
 			{
 				LOG_INFO(_GETTEXT(INFOMSG_READ_VALUE_02X), "fuse", i);
 			}
@@ -834,7 +833,7 @@ RESULT avr8_jtag_program(struct operation_t operations,
 		pgbar_init("writing lock |", "|", 0, 1, PROGRESS_STEP, '=');
 		
 		// write lock
-		if (cur_chip_param.chip_areas[LOCK_IDX].size > 0)
+		if (target_chip_param.chip_areas[LOCK_IDX].size > 0)
 		{
 			AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
 			AVR_JTAG_PROG_EnterLockbitWrite();
@@ -853,7 +852,7 @@ RESULT avr8_jtag_program(struct operation_t operations,
 		{
 			pgbar_fini();
 			LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "locks", 
-						cur_chip_param.chip_name);
+						target_chip_param.chip_name);
 			ret = ERRCODE_NOT_SUPPORT;
 			goto leave_program_mode;
 		}
@@ -878,7 +877,7 @@ RESULT avr8_jtag_program(struct operation_t operations,
 		
 		memset(page_buf, 0, 1);
 		// read lock
-		if (cur_chip_param.chip_areas[LOCK_IDX].size > 0)
+		if (target_chip_param.chip_areas[LOCK_IDX].size > 0)
 		{
 			AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
 			AVR_JTAG_PROG_EnterFuseLockbitRead();
@@ -895,7 +894,7 @@ RESULT avr8_jtag_program(struct operation_t operations,
 		{
 			pgbar_fini();
 			LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "locks", 
-						cur_chip_param.chip_name);
+						target_chip_param.chip_name);
 			ret = ERRCODE_NOT_SUPPORT;
 			goto leave_program_mode;
 		}
@@ -927,29 +926,29 @@ RESULT avr8_jtag_program(struct operation_t operations,
 		
 		memset(page_buf, 0, 4);
 		// read calibration
-		if (cur_chip_param.chip_areas[CALIBRATION_IDX].size > 0)
+		if (target_chip_param.chip_areas[CALIBRATION_IDX].size > 0)
 		{
 			AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
 			AVR_JTAG_PROG_EnterCaliByteRead();
 			AVR_JTAG_PROG_LoadAddrByte(0);
 			AVR_JTAG_PROG_ReadCaliByte(page_buf[0]);
 		}
-		if (cur_chip_param.chip_areas[CALIBRATION_IDX].size > 1)
+		if (target_chip_param.chip_areas[CALIBRATION_IDX].size > 1)
 		{
 			AVR_JTAG_PROG_LoadAddrByte(1);
 			AVR_JTAG_PROG_ReadCaliByte(page_buf[1]);
 		}
-		if (cur_chip_param.chip_areas[CALIBRATION_IDX].size > 2)
+		if (target_chip_param.chip_areas[CALIBRATION_IDX].size > 2)
 		{
 			AVR_JTAG_PROG_LoadAddrByte(2);
 			AVR_JTAG_PROG_ReadCaliByte(page_buf[2]);
 		}
-		if (cur_chip_param.chip_areas[CALIBRATION_IDX].size > 3)
+		if (target_chip_param.chip_areas[CALIBRATION_IDX].size > 3)
 		{
 			AVR_JTAG_PROG_LoadAddrByte(3);
 			AVR_JTAG_PROG_ReadCaliByte(page_buf[3]);
 		}
-		if (cur_chip_param.chip_areas[CALIBRATION_IDX].size > 0)
+		if (target_chip_param.chip_areas[CALIBRATION_IDX].size > 0)
 		{
 			if (ERROR_OK != jtag_commit())
 			{
@@ -964,7 +963,7 @@ RESULT avr8_jtag_program(struct operation_t operations,
 		{
 			pgbar_fini();
 			LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "calibration", 
-						cur_chip_param.chip_name);
+						target_chip_param.chip_name);
 			ret = ERRCODE_NOT_SUPPORT;
 			goto leave_program_mode;
 		}
@@ -973,19 +972,19 @@ RESULT avr8_jtag_program(struct operation_t operations,
 		pgbar_fini();
 		i = (uint32_t)(page_buf[0] + (page_buf[1] << 8) 
 					+ (page_buf[2] << 16) + (page_buf[3] << 24));
-		if (cur_chip_param.chip_areas[CALIBRATION_IDX].size > 3)
+		if (target_chip_param.chip_areas[CALIBRATION_IDX].size > 3)
 		{
 			LOG_INFO(_GETTEXT(INFOMSG_READ_VALUE_08X), "calibration", i);
 		}
-		else if (cur_chip_param.chip_areas[CALIBRATION_IDX].size > 2)
+		else if (target_chip_param.chip_areas[CALIBRATION_IDX].size > 2)
 		{
 			LOG_INFO(_GETTEXT(INFOMSG_READ_VALUE_06X), "calibration", i);
 		}
-		else if (cur_chip_param.chip_areas[CALIBRATION_IDX].size > 1)
+		else if (target_chip_param.chip_areas[CALIBRATION_IDX].size > 1)
 		{
 			LOG_INFO(_GETTEXT(INFOMSG_READ_VALUE_04X), "calibration", i);
 		}
-		else if (cur_chip_param.chip_areas[CALIBRATION_IDX].size > 0)
+		else if (target_chip_param.chip_areas[CALIBRATION_IDX].size > 0)
 		{
 			LOG_INFO(_GETTEXT(INFOMSG_READ_VALUE_02X), "calibration", i);
 		}

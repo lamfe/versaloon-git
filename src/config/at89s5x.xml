@@ -16,6 +16,7 @@
 	<fuse_size>0</fuse_size>
     <lock_default>1</lock_default>
     <lock_size>1</lock_size>
+    <param0>0x69</param0>
   </chip>
   <chip name="at89s51">
     <program_mode>bp</program_mode>

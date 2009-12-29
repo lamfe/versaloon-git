@@ -41,7 +41,6 @@
 #include "avr8_internal.h"
 
 #define CUR_TARGET_STRING		AVR8_STRING
-#define cur_chip_param			avr8_chip_param
 
 static struct programmer_info_t *p = NULL;
 
