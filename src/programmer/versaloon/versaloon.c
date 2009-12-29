@@ -1154,6 +1154,27 @@ RESULT versaloon_i2c_write(uint16_t chip_addr, uint8_t chip_addr_len,
 	return usbtoi2c_write(VERSALOON_I2C_PORT, chip_addr, chip_addr_len, data, 
 						  data_len, stop);
 }
+// SWIM
+RESULT versaloon_swim_init(void)
+{
+	return usbtoswim_init();
+}
+RESULT versaloon_swim_fini(void)
+{
+	return usbtoswim_fini();
+}
+RESULT versaloon_swim_set_param(uint8_t mHz, uint8_t cnt0, uint8_t cnt1)
+{
+	return usbtoswim_set_param(VERSALOON_SWIM_PORT, mHz, cnt0, cnt1);
+}
+RESULT versaloon_swim_out(uint8_t data, uint8_t bitlen)
+{
+	return usbtoswim_out(VERSALOON_SWIM_PORT, data, bitlen);
+}
+RESULT versaloon_swim_in(uint8_t *data, uint8_t bitlen)
+{
+	return usbtoswim_in(VERSALOON_SWIM_PORT, data, bitlen);
+}
 // Commit
 RESULT versaloon_peripheral_commit(void)
 {
@@ -1169,7 +1190,7 @@ RESULT versaloon_init_capability(void *p)
 	t->init = versaloon_init;
 	t->fini = versaloon_fini;
 	
-	t->interfaces = (SPI | GPIO | ISSP | JTAG_LL | JTAG_HL 
+	t->interfaces = (SPI | GPIO | ISSP | JTAG_LL | JTAG_HL | SWIM 
 						| C2 | MSP430_JTAG | MSP430_SBW | LPC_ICP | SWJ);
 	
 	// SPI
@@ -1277,6 +1298,13 @@ RESULT versaloon_init_capability(void *p)
 	t->i2c_set_speed = versaloon_i2c_set_speed;
 	t->i2c_read = versaloon_i2c_read;
 	t->i2c_write = versaloon_i2c_write;
+	
+	// SWIM
+	t->swim_init = versaloon_swim_init;
+	t->swim_fini = versaloon_swim_fini;
+	t->swim_set_param = versaloon_swim_set_param;
+	t->swim_out = versaloon_swim_out;
+	t->swim_in = versaloon_swim_in;
 	
 	// POLL
 	t->poll_start = versaloon_poll_start;
