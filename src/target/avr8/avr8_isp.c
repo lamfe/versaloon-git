@@ -885,17 +885,17 @@ try_frequency:
 				if (target_chip_param.chip_areas[FUSE_IDX].size > 2)
 				{
 					LOG_INFO(_GETTEXT(ERRMSG_FAILURE_VERIFY_TARGET_06X), 
-							 "fuse", i, pi->program_areas[FUSE_IDX].value);
+						"fuse", i, (uint32_t)pi->program_areas[FUSE_IDX].value);
 				}
 				else if (target_chip_param.chip_areas[FUSE_IDX].size > 1)
 				{
 					LOG_INFO(_GETTEXT(ERRMSG_FAILURE_VERIFY_TARGET_04X), 
-							 "fuse", i, pi->program_areas[FUSE_IDX].value);
+						"fuse", i, (uint32_t)pi->program_areas[FUSE_IDX].value);
 				}
 				else if (target_chip_param.chip_areas[FUSE_IDX].size > 0)
 				{
 					LOG_INFO(_GETTEXT(ERRMSG_FAILURE_VERIFY_TARGET_02X), 
-							 "fuse", i, pi->program_areas[FUSE_IDX].value);
+						"fuse", i, (uint32_t)pi->program_areas[FUSE_IDX].value);
 				}
 			}
 		}
@@ -1011,7 +1011,8 @@ try_frequency:
 			else
 			{
 				LOG_INFO(_GETTEXT(ERRMSG_FAILURE_VERIFY_TARGET_02X), 
-					"lock", page_buf[0], pi->program_areas[LOCK_IDX].value);
+					"lock", page_buf[0], 
+					(uint32_t)pi->program_areas[LOCK_IDX].value);
 			}
 		}
 		else
