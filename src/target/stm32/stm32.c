@@ -102,6 +102,76 @@ RESULT stm32_parse_argument(char cmd, const char *argu)
 	return ERROR_OK;
 }
 
+void stm32_print_device(uint32_t mcuid)
+{
+	char rev_char = 0;
+	uint16_t den, rev;
+	
+	den = mcuid & STM32_DEN_MSK;
+	rev = (mcuid & STM32_REV_MSK) >> 16;
+	switch (den)
+	{
+	case STM32_DEN_LOW:
+		LOG_INFO(_GETTEXT("STM32 type: low-density device\n"));
+		switch (rev)
+		{
+		case 0x1000:
+			rev_char = 'A';
+			break;
+		}
+		break;
+	case STM32_DEN_MEDIUM:
+		LOG_INFO(_GETTEXT("STM32 type: medium-density device\n"));
+		switch (rev)
+		{
+		case 0x0000:
+			rev_char = 'A';
+			break;
+		case 0x2000:
+			rev_char = 'B';
+			break;
+		case 0x2001:
+			rev_char = 'Z';
+			break;
+		case 0x2003:
+			rev_char = 'Y';
+			break;
+		}
+		break;
+	case STM32_DEN_HIGH:
+		LOG_INFO(_GETTEXT("STM32 type: high-density device\n"));
+		switch (rev)
+		{
+		case 0x1000:
+			rev_char = 'A';
+			break;
+		case 0x1001:
+			rev_char = 'Z';
+			break;
+		}
+		break;
+	case STM32_DEN_CONNECTIVITY:
+		LOG_INFO(_GETTEXT("STM32 type: connectivity device\n"));
+		switch (rev)
+		{
+		case 0x1000:
+			rev_char = 'A';
+			break;
+		case 0x1001:
+			rev_char = 'Z';
+			break;
+		}
+		break;
+	default:
+		LOG_INFO(_GETTEXT("STM32 type: unknown device\n"));
+		break;
+	}
+	if (rev_char != 0)
+	{
+		LOG_INFO(_GETTEXT("STM32 revision: %c\n"), rev_char);
+	}
+}
+
 RESULT stm32_program(struct operation_t operations, 
 					struct program_info_t *pi, struct programmer_info_t *prog)
 {

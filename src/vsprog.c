@@ -1039,7 +1039,6 @@ Parse_File:
 					"check target defined content");
 		free_all_and_exit(EXIT_FAILURE);
 	}
-	sleep_ms(100);	// delay 100ms
 	
 	// do programming
 	if (mass_product_flag)
@@ -1134,8 +1133,8 @@ Parse_File:
 			|| operations.read_operations || operations.verify_operations 
 			|| operations.write_operations))
 		{
-			// no operation defined, read chip id
-			operations.read_operations = CHIPID;
+			// no operation defined, exit
+			free_all_and_exit(EXIT_SUCCESS);
 		}
 		
 		ret = cur_target->program(operations, &program_info, cur_programmer);

@@ -50,8 +50,8 @@
 #define CUR_TARGET_STRING			CM3_STRING
 
 const struct cm3_param_t cm3_chips_param[] = {
-//	chip_name,		default_char,		flash_start_addr,	flash_max_size,	jtag_khz,		pos			swj_trn
-	{"cm3_stm32",	STM32_FLASH_CHAR,	0x08000000,			512 * 1024,		STM32_JTAG_KHZ,	{0,1,0,5},	2},
+//	chip_name,		jtag_khz,		pos			swj_trn
+	{"cm3_stm32",	STM32_JTAG_KHZ,	{0,1,0,5},	2},
 };
 static int8_t cm3_chip_index = 0;
 struct cm3_param_t *cm3_chip_param = NULL;

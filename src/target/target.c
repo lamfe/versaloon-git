@@ -510,22 +510,30 @@ RESULT target_init(struct program_info_t *pi, struct programmer_info_t *prog)
 		LOG_INFO(_GETTEXT(INFOMSG_TRY_AUTODETECT));
 		opt_tmp.read_operations = CHIPID;
 		
-		if (ERROR_OK != cur_target->program(opt_tmp, pi, prog))
+		if (target_chips.num_of_chips > 1)
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_AUTODETECT_FAIL), pi->chip_type);
-			return ERRCODE_AUTODETECT_FAIL;
-		}
-		
-		LOG_INFO(_GETTEXT(INFOMSG_AUTODETECT_SIGNATURE), pi->chip_id);
-		for (i = 0; i < target_chips.num_of_chips; i++)
-		{
-			if (pi->chip_id == target_chips.chips_param[i].chip_id)
+			if (ERROR_OK != cur_target->program(opt_tmp, pi, prog))
 			{
-				pi->chip_name = (char *)target_chips.chips_param[i].chip_name;
-				LOG_INFO(_GETTEXT(INFOMSG_CHIP_FOUND), pi->chip_name);
-				
-				goto Post_Init;
+				LOG_ERROR(_GETTEXT(ERRMSG_AUTODETECT_FAIL), pi->chip_type);
+				return ERRCODE_AUTODETECT_FAIL;
 			}
+			
+			LOG_INFO(_GETTEXT(INFOMSG_AUTODETECT_SIGNATURE), pi->chip_id);
+			for (i = 0; i < target_chips.num_of_chips; i++)
+			{
+				if (pi->chip_id == target_chips.chips_param[i].chip_id)
+				{
+					pi->chip_name = target_chips.chips_param[i].chip_name;
+					LOG_INFO(_GETTEXT(INFOMSG_CHIP_FOUND), pi->chip_name);
+					
+					goto Post_Init;
+				}
+			}
+		}
+		else
+		{
+			i = 0;
+			goto Post_Init;
 		}
 		
 		LOG_ERROR(_GETTEXT(ERRMSG_AUTODETECT_FAIL), pi->chip_type);
