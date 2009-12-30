@@ -50,10 +50,10 @@
 #define CUR_TARGET_STRING			COMISP_STRING
 
 const struct comisp_param_t comisp_chips_param[] = {
-//	chip_name,			com_mode,																												default_char,		flash_start_addr,	flash_max_size
+//	chip_name,			com_mode,																											
 //						{comport,	baudrate,	datalength,	paritybit,			stopbit,		handshake,				aux_pin}	
-	{"comisp_stm32",	{"",		-1,			8,			COMM_PARITYBIT_EVEN,COMM_STOPBIT_1,	COMM_PARAMETER_UNSURE,	COMM_PARAMETER_UNSURE},	STM32_FLASH_CHAR,	0x08000000,			512 * 1024},
-	{"comisp_lpcarm",	{"",		-1,			8,			COMM_PARITYBIT_NONE,COMM_STOPBIT_1,	COMM_PARAMETER_UNSURE,	COMM_PARAMETER_UNSURE},	LPCARM_FLASH_CHAR,	0x00000000,			512 * 1024},
+	{"comisp_stm32",	{"",		-1,			8,			COMM_PARITYBIT_EVEN,COMM_STOPBIT_1,	COMM_PARAMETER_UNSURE,	COMM_PARAMETER_UNSURE}},
+	{"comisp_lpcarm",	{"",		-1,			8,			COMM_PARITYBIT_NONE,COMM_STOPBIT_1,	COMM_PARAMETER_UNSURE,	COMM_PARAMETER_UNSURE}},
 };
 static int8_t comisp_chip_index = 0;
 struct comisp_param_t *comisp_chip_param = NULL;

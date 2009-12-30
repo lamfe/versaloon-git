@@ -27,9 +27,6 @@
 struct cm3_param_t
 {
 	const char *chip_name;
-	uint8_t default_char;
-	uint32_t flash_start_addr;
-	uint32_t flash_max_size;
 	uint16_t jtag_khz;
 	struct jtag_pos_t pos;
 	uint8_t swj_trn;

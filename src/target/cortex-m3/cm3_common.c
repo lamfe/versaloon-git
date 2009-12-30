@@ -67,7 +67,8 @@ RESULT cm3_dp_init(struct programmer_info_t *prog, adi_dp_if_t *dp)
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
-	if (ERROR_OK != adi_memap_read_reg(CM3_CPUID, &cpuid, 1))
+	if ((ERROR_OK != cm3_dp_halt()) 
+		|| (ERROR_OK != adi_memap_read_reg(CM3_CPUID, &cpuid, 1)))
 	{
 		return ERROR_FAIL;
 	}

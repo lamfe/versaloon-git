@@ -42,6 +42,7 @@
 #include "cm3_stm32.h"
 
 #include "cm3_internal.h"
+#include "stm32_internal.h"
 
 #include "adi_v5p1.h"
 #include "cm3_common.h"
@@ -112,19 +113,18 @@ RESULT stm32jtagswj_program(struct operation_t operations,
 	uint32_t cur_block_size, block_size, block_size_tmp, cur_address;
 	uint32_t cur_run_size;
 	uint32_t mcu_id;
-	char rev;
 	uint32_t target_size;
 	uint32_t start_time, run_time;
 	uint8_t *tbuff;
 	struct memlist **ml;
 	
 #define FL_PARA_ADDR_BASE			\
-					(STM32_SRAM_START_ADDRESS + sizeof(stm32_fl_code) - 4 * 4)
+					(STM32_SRAM_ADDR + sizeof(stm32_fl_code) - 4 * 4)
 #define FL_ADDR_RAM_SRC				(FL_PARA_ADDR_BASE + 0)
 #define FL_ADDR_FLASH_DEST			(FL_PARA_ADDR_BASE + 4)
 #define FL_ADDR_WORD_LENGTH			(FL_PARA_ADDR_BASE + 8)
 #define FL_ADDR_RESULT				(FL_PARA_ADDR_BASE + 12)
-#define FL_ADDR_DATA				(STM32_SRAM_START_ADDRESS + 1024)
+#define FL_ADDR_DATA				(STM32_SRAM_ADDR + 1024)
 	uint8_t stm32_fl_code[] = {
 									/* init: */
 		0x16, 0x4C,					/* ldr.n	r4, STM32_FLASH_CR */
@@ -208,44 +208,10 @@ RESULT stm32jtagswj_program(struct operation_t operations,
 		ret = ERRCODE_FAILURE_OPERATION;
 		goto leave_program_mode;
 	}
-	LOG_INFO(_GETTEXT("STM32 MCU_ID: 0x%08X\n"), mcu_id);
-	switch (mcu_id & STM32_REV_MSK)
-	{
-	case STM32_REV_A:
-		rev = 'A';
-		break;
-	case STM32_REV_B:
-		rev = 'B';
-		break;
-	case STM32_REV_Z:
-		rev = 'Z';
-		break;
-	case STM32_REV_Y:
-		rev = 'Y';
-		break;
-	default :
-		rev = '?';
-		break;
-	}
-	LOG_INFO(_GETTEXT("STM32 revision: %c\n"), rev);
-	switch (mcu_id & STM32_DEN_MSK)
-	{
-	case STM32_DEN_LOW:
-		LOG_INFO(_GETTEXT("STM32 type: low-density device\n"));
-		break;
-	case STM32_DEN_MEDIUM:
-		LOG_INFO(_GETTEXT("STM32 type: medium-density device\n"));
-		break;
-	case STM32_DEN_HIGH:
-		LOG_INFO(_GETTEXT("STM32 type: high-density device\n"));
-		break;
-	case STM32_DEN_CONNECTIVITY:
-		LOG_INFO(_GETTEXT("STM32 type: connectivity device\n"));
-		break;
-	default:
-		LOG_INFO(_GETTEXT("STM32 type: unknown device\n"));
-		break;
-	}
+	pi->chip_id = mcu_id;
+	stm32_print_device(pi->chip_id);
+	pi->chip_id &= STM32_DEN_MSK;
+	LOG_INFO(_GETTEXT(INFOMSG_TARGET_CHIP_ID), pi->chip_id);
 	
 	// read flash and ram size
 	if (ERROR_OK != adi_memap_read_reg(STM32_REG_FLASH_RAM_SIZE, &mcu_id, 1))
@@ -255,7 +221,7 @@ RESULT stm32jtagswj_program(struct operation_t operations,
 		ret = ERRCODE_FAILURE_OPERATION;
 		goto leave_program_mode;
 	}
-	if ((mcu_id & 0xFFFF) <= 1024)
+	if ((mcu_id & 0xFFFF) <= 512)
 	{
 		pi->program_areas[APPLICATION_IDX].size = (mcu_id & 0xFFFF) * 1024;
 		LOG_INFO(_GETTEXT("STM32 flash_size: %dK Bytes\n"), mcu_id & 0xFFFF);
@@ -269,6 +235,19 @@ RESULT stm32jtagswj_program(struct operation_t operations,
 	if ((mcu_id >> 16) != 0xFFFF)
 	{
 		LOG_INFO(_GETTEXT("STM32 sram_size: %dK Bytes\n"), mcu_id >> 16);
+	}
+	
+	if (!(operations.read_operations & CHIPID))
+	{
+		if (pi->chip_id != target_chip_param.chip_id)
+		{
+			LOG_WARNING(_GETTEXT(ERRMSG_INVALID_CHIP_ID), pi->chip_id, 
+						target_chip_param.chip_id);
+		}
+	}
+	else
+	{
+		goto leave_program_mode;
 	}
 	
 	// unlock flash registers
@@ -336,8 +315,8 @@ RESULT stm32jtagswj_program(struct operation_t operations,
 		*(uint32_t *)(stm32_fl_code + block_size - 4 * 5) = FL_ADDR_RESULT;
 		
 		// write code to target SRAM
-		if (ERROR_OK != adi_memap_write_buf(STM32_SRAM_START_ADDRESS, 
-											stm32_fl_code, block_size))
+		if (ERROR_OK != adi_memap_write_buf(STM32_SRAM_ADDR, stm32_fl_code, 
+												block_size))
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
 					  "load flash_loader to SRAM");
@@ -354,8 +333,8 @@ RESULT stm32jtagswj_program(struct operation_t operations,
 		
 		// read back for verify
 		memset(page_buf, 0, block_size);
-		if (ERROR_OK != adi_memap_read_buf(STM32_SRAM_START_ADDRESS, 
-										   page_buf, block_size))
+		if (ERROR_OK != adi_memap_read_buf(STM32_SRAM_ADDR, page_buf, 
+												block_size))
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
 						"read flash_loader for verify");
@@ -377,7 +356,7 @@ RESULT stm32jtagswj_program(struct operation_t operations,
 		pgbar_fini();
 		LOG_INFO(_GETTEXT(INFOMSG_VERIFIED_SIZE), "flash_loader", block_size);
 		
-		reg = STM32_SRAM_START_ADDRESS;
+		reg = STM32_SRAM_ADDR;
 		if (ERROR_OK != cm3_write_core_register(CM3_COREREG_PC, &reg))
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "write PC");
@@ -386,7 +365,7 @@ RESULT stm32jtagswj_program(struct operation_t operations,
 		}
 		reg = 0;
 		if ((ERROR_OK != cm3_read_core_register(CM3_COREREG_PC, &reg)) 
-			|| (reg != STM32_SRAM_START_ADDRESS))
+			|| (reg != STM32_SRAM_ADDR))
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "verify written PC");
 			ret = ERRCODE_FAILURE_OPERATION;
@@ -427,8 +406,7 @@ RESULT stm32jtagswj_program(struct operation_t operations,
 				
 				// write flash content to FL_PARA_ADDR_DATA
 				if (ERROR_OK != adi_memap_write_buf(FL_ADDR_DATA + cur_run_size,
-						&tbuff[cur_address - STM32_FLASH_START_ADDRESS], 
-						cur_block_size))
+						&tbuff[cur_address - STM32_FLASH_ADDR], cur_block_size))
 				{
 					pgbar_fini();
 					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
@@ -515,7 +493,7 @@ RESULT stm32jtagswj_program(struct operation_t operations,
 		}
 		else
 		{
-			ret = MEMLIST_Add(ml, cm3_chip_param->flash_start_addr, 
+			ret = MEMLIST_Add(ml, STM32_FLASH_ADDR, 
 					pi->program_areas[APPLICATION_IDX].size, cm3_buffer_size);
 			if (ret != ERROR_OK)
 			{
@@ -559,14 +537,14 @@ RESULT stm32jtagswj_program(struct operation_t operations,
 					// verify
 					for (i = 0; i < cur_block_size; i++)
 					{
-						if (page_buf[i] != tbuff[cur_address + i 
-													- STM32_FLASH_START_ADDRESS])
+						if (page_buf[i] 
+							!= tbuff[cur_address + i - STM32_FLASH_ADDR])
 						{
 							pgbar_fini();
 							LOG_ERROR(
 								_GETTEXT(ERRMSG_FAILURE_VERIFY_TARGET_AT_02X), 
 								"flash", cur_address + i, page_buf[i], 
-								tbuff[cur_address + i - STM32_FLASH_START_ADDRESS]);
+								tbuff[cur_address + i - STM32_FLASH_ADDR]);
 							ret = ERRCODE_FAILURE_VERIFY_TARGET;
 							goto leave_program_mode;
 						}
@@ -575,7 +553,7 @@ RESULT stm32jtagswj_program(struct operation_t operations,
 				else
 				{
 					// read
-					memcpy(&tbuff[cur_address - STM32_FLASH_START_ADDRESS], 
+					memcpy(&tbuff[cur_address - STM32_FLASH_ADDR], 
 							page_buf, cur_block_size);
 				}
 				

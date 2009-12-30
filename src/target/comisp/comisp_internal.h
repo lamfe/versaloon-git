@@ -42,9 +42,6 @@ struct comisp_param_t
 {
 	const char *chip_name;
 	struct com_mode_t com_mode;
-	uint8_t default_char;
-	uint32_t flash_start_addr;
-	uint32_t flash_max_size;
 };
 
 extern struct comisp_param_t *comisp_chip_param;
