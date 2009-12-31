@@ -11,7 +11,8 @@ INCLUDES = \
     -I$(top_srcdir)/src/driver/timer \
     -I$(top_srcdir)/src/target/core/arm_adi \
     -I$(top_srcdir)/src/target/comisp \
-    -I$(top_srcdir)/src/target/cortex-m3
+    -I$(top_srcdir)/src/target/cortex-m3 \
+    -I$(top_srcdir)/src/target/stm32
 
 METASOURCES = AUTO
 noinst_LIBRARIES = libtgt.a
