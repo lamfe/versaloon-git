@@ -17,6 +17,7 @@
 
 #define STM32_PRO_RC1					0x21
 #define _HARDWARE_VER					STM32_PRO_RC1
+#define HSE_Value 						((uint32_t)12000000)
 
 /****************************** Power ******************************/
 #define PWREXT_EN_PORT					GPIOB
@@ -135,6 +136,26 @@
 #define SYNCSW_CLR()					GPIO_ClrPins(SYNCSW_OUT_PORT, GPIO_PIN_GetMask(SYNCSW_OUT_PIN))
 #define SYNCSW_GET()					GPIO_GetInPins(SYNCSW_IN_PORT, GPIO_PIN_GetMask(SYNCSW_IN_PIN))
 
+/***************************** STM8_SWIM ******************************/
+#define SWIM_PORT_INIT_GPIO()			do{\
+											GPIO_Dir(SYNCSW_IN_PORT, GPIO_MODE_IPD, SYNCSW_IN_PIN);\
+											GPIO_SetPins(SYNCSW_OUT_PORT, GPIO_PIN_GetMask(SYNCSW_OUT_PIN));\
+											GPIO_Dir(SYNCSW_OUT_PORT, GPIO_MODE_OUT_OD, SYNCSW_OUT_PIN);\
+											SWIM_SETINPUT();\
+											GPIO_Dir(SYNCSW_DIR_PORT, GPIO_MODE_OUT_PP, SYNCSW_DIR_PIN);\
+										}while(0)
+#define SWIM_SETINPUT()					GPIO_ClrPins(SYNCSW_DIR_PORT, GPIO_PIN_GetMask(SYNCSW_DIR_PIN))
+#define SWIM_SETOUTPUT()				do{\
+											GPIO_SetPins(SYNCSW_DIR_PORT, GPIO_PIN_GetMask(SYNCSW_DIR_PIN));\
+											GPIO_ClrPins(SYNCSW_OUT_PORT, GPIO_PIN_GetMask(SYNCSW_OUT_PIN));\
+											GPIO_SetPins(SYNCSW_OUT_PORT, GPIO_PIN_GetMask(SYNCSW_OUT_PIN));\
+										}while(0)
+#define SWIM_SET()						SWIM_SETINPUT()
+#define SWIM_CLR()						SWIM_SETOUTPUT()
+#define SWIM_GET()						GPIO_GetInPins(SYNCSW_IN_PORT, GPIO_PIN_GetMask(SYNCSW_IN_PIN))
+
+#define SWIM_PORT_INIT_PWM()			
+
 /***************************** SWJ ******************************/
 #define SWJ_SWDIO_SETOUTPUT()			JTAG_TAP_TMS_SETOUTPUT()
 #define SWJ_SWDIO_SETINPUT()			JTAG_TAP_TMS_SETINPUT()
@@ -241,6 +262,9 @@
 #define JTAG_TAP_TMS_PIN				GPIO_PIN_4
 
 #define JTAG_TAP_HS_PortInit()			do{\
+											RCC_APB2PeriphClockCmd(RCC_APB2Periph_SPI1, ENABLE);\
+											RCC_APB1PeriphClockCmd(RCC_APB1Periph_SPI2, ENABLE);\
+											GPIO_PinRemapConfig(GPIO_Remap_SPI1, ENABLE);\
 											GPIO_Dir(JTAG_TAP_HS_MPORT, GPIO_MODE_AF_PP, JTAG_TAP_TCK_PIN);\
 											GPIO_Dir(JTAG_TAP_HS_MPORT, GPIO_MODE_AF_PP, JTAG_TAP_TDO_PIN);\
 											GPIO_Dir(JTAG_TAP_HS_MPORT, GPIO_MODE_AF_PP, JTAG_TAP_TDI_PIN);\
@@ -255,6 +279,9 @@
 											GPIO_Dir(JTAG_TAP_HS_MPORT, GPIO_MODE_IN_FLOATING, JTAG_TAP_TDI_PIN);\
 											GPIO_Dir(JTAG_TAP_HS_SPORT, GPIO_MODE_IN_FLOATING, JTAG_TAP_TCK1_PIN);\
 											GPIO_Dir(JTAG_TAP_HS_SPORT, GPIO_MODE_IN_FLOATING, JTAG_TAP_TMS_PIN);\
+											RCC_APB2PeriphClockCmd(RCC_APB2Periph_SPI1, DISABLE);\
+											RCC_APB1PeriphClockCmd(RCC_APB1Periph_SPI2, DISABLE);\
+											GPIO_PinRemapConfig(GPIO_Remap_SPI1, DISABLE);\
 										}while(0)
 
 #define JTAG_TAP_HS_SetSpeed(div)		SPI_Configuration(JTAG_TAP_HS_SPI_M,SPI_Mode_Master,(div),\
@@ -305,6 +332,7 @@
 											SPI_SCK_SETINPUT();\
 											SPI_MISO_SETINPUT();\
 											SPI_MOSI_SETINPUT();\
+											RCC_APB1PeriphClockCmd(RCC_APB1Periph_SPI2, DISABLE);\
 										}while(0)
 #define SPI_AllSPIIO()					do{\
 											SPI_SCK_SETOUTPUT();\
@@ -312,6 +340,7 @@
 											SPI_MISO_SETINPUT_PU();\
 										}while(0)
 #define SPI_AllSPIHW()					do{\
+											RCC_APB1PeriphClockCmd(RCC_APB1Periph_SPI2, ENABLE);\
 											GPIO_Dir(JTAG_TAP_PORT, GPIO_MODE_AF_PP, JTAG_TAP_TCK_PIN);\
 											GPIO_Dir(JTAG_TAP_PORT, GPIO_MODE_AF_PP, JTAG_TAP_TDO_PIN);\
 											GPIO_Dir(JTAG_TAP_PORT, GPIO_MODE_AF_PP, JTAG_TAP_TDI_PIN);\
@@ -439,8 +468,16 @@
 											GPIO_Dir(USART_AUX_PORT, GPIO_MODE_OUT_PP, USART_RTS_PIN);\
 										}while(0)
 #define USART_Port_Init()				do{\
+											RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE);\
 											GPIO_Dir(USART_PORT, GPIO_MODE_AF_PP, USART_TXD_PIN);\
 											GPIO_Dir(USART_PORT, GPIO_MODE_IN_FLOATING, USART_RXD_PIN);\
+										}while(0)
+#define USART_Port_Fini()				do{\
+											RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, DISABLE);\
+											GPIO_Dir(USART_PORT, GPIO_MODE_IN_FLOATING, USART_TXD_PIN);\
+											GPIO_Dir(USART_PORT, GPIO_MODE_IN_FLOATING, USART_RXD_PIN);\
+											GPIO_Dir(USART_AUX_PORT, GPIO_MODE_IN_FLOATING, USART_DTR_PIN);\
+											GPIO_Dir(USART_AUX_PORT, GPIO_MODE_IN_FLOATING, USART_RTS_PIN);\
 										}while(0)
 
 /****************************** ADC ******************************/

@@ -55,10 +55,9 @@ RESULT msp430_jtag_program(struct operation_t operations,
 	word page_size, addr_start;
 	RESULT ret = ERROR_OK;
 	word CRC_check, CRC_calc;
-	struct memlist *ml_tmp;
 	uint32_t target_size;
 	uint8_t *tbuff;
-	struct memlist **ml;
+	struct memlist **ml, *ml_tmp;
 	
 #ifdef PARAM_CHECK
 	if (NULL == prog)

@@ -73,7 +73,7 @@ struct target_info_t targets_info[] =
 	// stm8
 	{
 		STM8_STRING,						// name
-		AUTO_DETECT CAN_EXECUTE,			// feature
+		AUTO_DETECT,						// feature
 		stm8_program_area_map,				// program_area_map
 		stm8_program_mode,					// program_mode
 		stm8_parse_argument,				// parse_argument

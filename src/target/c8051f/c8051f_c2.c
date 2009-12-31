@@ -84,9 +84,8 @@ RESULT c8051f_c2_program(struct operation_t operations,
 	RESULT ret = ERROR_OK;
 	uint8_t page_buf[C8051F_BLOCK_SIZE];
 	uint8_t *tbuff;
-	struct memlist *ml_tmp;
 	uint32_t target_size;
-	struct memlist **ml;
+	struct memlist **ml, *ml_tmp;
 	
 	p = prog;
 	

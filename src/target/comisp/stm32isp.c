@@ -720,9 +720,8 @@ RESULT stm32isp_program(struct operation_t operations,
 	uint32_t flash_kb, sram_kb;
 	uint8_t error_cnt, tmp8;
 	RESULT ret = ERROR_OK;
-	struct memlist *ml_tmp;
 	uint32_t target_size;
-	struct memlist **ml;
+	struct memlist **ml, *ml_tmp;
 
 	// comm init
 	ret = comm_open(com_mode.comport, com_mode.baudrate, 8, 

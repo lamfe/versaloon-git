@@ -1765,10 +1765,6 @@
       </file>
       <file>
         <name>$PROJ_DIR$\..\..\..\HW\lib\src\stm32f10x_tim.c</name>
-        <excluded>
-          <configuration>Debug</configuration>
-          <configuration>Release</configuration>
-        </excluded>
       </file>
       <file>
         <name>$PROJ_DIR$\..\..\..\HW\lib\src\stm32f10x_usart.c</name>
@@ -1984,6 +1980,9 @@
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB_TO_SPI.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB_TO_SWIM.c</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB_TO_SWJ.c</name>

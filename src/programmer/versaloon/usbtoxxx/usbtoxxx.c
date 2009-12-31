@@ -142,7 +142,8 @@ RESULT usbtoxxx_execute_command(void)
 				LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), 
 						  usbtoxxx_get_type_name(versaloon_pending[i].type), 
 						  "current dongle");
-				return ERROR_FAIL;
+				result = ERROR_FAIL;
+				break;
 			}
 			else if (USB_TO_XXX_OK != versaloon_buf[usbtoxxx_buffer_index])
 			{
@@ -151,6 +152,7 @@ RESULT usbtoxxx_execute_command(void)
 					versaloon_pending[i].cmd, 
 					versaloon_buf[usbtoxxx_buffer_index]);
 				result = ERROR_FAIL;
+				break;
 			}
 			usbtoxxx_buffer_index++;
 		}
@@ -177,6 +179,7 @@ RESULT usbtoxxx_execute_command(void)
 					usbtoxxx_get_type_name(versaloon_pending[i].type), 
 					versaloon_pending[i].cmd);
 			result = ERROR_FAIL;
+			break;
 		}
 	}
 	
@@ -184,7 +187,7 @@ RESULT usbtoxxx_execute_command(void)
 	if (inlen != usbtoxxx_buffer_index)
 	{
 		LOG_ERROR(_GETTEXT("length of return data invalid\n"));
-		return ERROR_FAIL;
+		result = ERROR_FAIL;
 	}
 	
 	if (versaloon_pending_idx > 0)

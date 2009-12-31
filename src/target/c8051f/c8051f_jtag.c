@@ -160,9 +160,8 @@ RESULT c8051f_jtag_program(struct operation_t operations,
 	uint32_t page_buf[C8051F_JTAG_BLOCK_SIZE];
 	uint8_t *tbuff;
 	RESULT ret = ERROR_OK;
-	struct memlist *ml_tmp;
 	uint32_t target_size;
-	struct memlist **ml;
+	struct memlist **ml, *ml_tmp;
 	
 	p = prog;
 	

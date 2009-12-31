@@ -92,10 +92,9 @@ RESULT avr8_isp_program(struct operation_t operations,
 	uint32_t j, k, page_size, len_current_list;
 	uint8_t page_buf[256];
 	RESULT ret = ERROR_OK;
-	struct memlist *ml_tmp;
 	uint32_t target_size;
 	uint8_t *tbuff;
-	struct memlist **ml;
+	struct memlist **ml, *ml_tmp;
 	
 	p = prog;
 	

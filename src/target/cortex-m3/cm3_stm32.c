@@ -107,7 +107,6 @@ RESULT stm32jtagswj_program(struct operation_t operations,
 					struct program_info_t *pi, struct adi_dp_info_t *dp_info)
 {
 	RESULT ret = ERROR_OK;
-	struct memlist *ml_tmp;
 	uint32_t i;
 	uint32_t reg;
 	uint32_t cur_block_size, block_size, block_size_tmp, cur_address;
@@ -116,7 +115,7 @@ RESULT stm32jtagswj_program(struct operation_t operations,
 	uint32_t target_size;
 	uint32_t start_time, run_time;
 	uint8_t *tbuff;
-	struct memlist **ml;
+	struct memlist **ml, *ml_tmp;
 	
 #define FL_PARA_ADDR_BASE			\
 					(STM32_SRAM_ADDR + sizeof(stm32_fl_code) - 4 * 4)

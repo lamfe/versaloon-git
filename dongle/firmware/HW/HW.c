@@ -78,9 +78,6 @@ void Sys_Init(void)
 	/* Configure the ADC ports */
 	ADC_Configuration();
 
-	/* Configure external power */
-	PWREXT_INIT();
-
 #if (	((USB_PROTOCOL == USB_AT_JTAGICE_MKII) || (USB_PROTOCOL == USB_AT_DRAGON))	\
 		&& (USB_WITH_CDC == USB_WITH_IAD_CDC) && USB_WITH_MASSSTORAGE)				\
 	|| ((USB_PROTOCOL == USB_ST_VCOM) && USB_WITH_MASSSTORAGE)
@@ -152,13 +149,9 @@ void RCC_Configuration(void)
 #	error _SYS_FREQUENCY not supported
 #endif
 
-	// DMA Clock
-	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, ENABLE);
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA | RCC_APB2Periph_GPIOB | RCC_APB2Periph_AFIO, ENABLE);
 
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA | RCC_APB2Periph_GPIOB | RCC_APB2Periph_GPIOC |
-						   RCC_APB2Periph_SPI1 | RCC_APB2Periph_USART1 | RCC_APB2Periph_AFIO | RCC_APB2Periph_ADC1, ENABLE);
-
-	RCC_APB1PeriphClockCmd(RCC_APB1Periph_SPI2 | RCC_APB1Periph_USB, ENABLE);
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_USB, ENABLE);
 }
 
 /*******************************************************************************
@@ -182,6 +175,9 @@ void GPIO_Configuration(void)
 	SW_RST_DIR_INIT();
 	SYNCSW_DIR_INIT();
 
+	// powerext
+	PWREXT_INIT();
+
 #if MP_EN
 	// Key Init
 	BKP_TamperPinCmd(DISABLE);
@@ -201,9 +197,6 @@ void GPIO_Configuration(void)
 	// VSample Init
 	GPIO_Dir(TVCC_PORT, GPIO_MODE_AIN, TVCC_PIN);
 #endif
-
-	// Remap for SPI1
-	GPIO_PinRemapConfig(GPIO_Remap_SPI1, ENABLE);
 }
 
 /*******************************************************************************
@@ -283,12 +276,15 @@ void JTAG_DMA_Fini(void)
 	DMA_DeInit(JTAG_TAP_HS_SPI_M_RX_DMA);
 	DMA_DeInit(JTAG_TAP_HS_SPI_M_TX_DMA);
 	DMA_DeInit(JTAG_TAP_HS_SPI_S_TX_DMA);
+	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, DISABLE);
 }
 
 void JTAG_DMA_Init(void)
 {
 	DMA_InitTypeDef  DMA_InitStructure;
 
+	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, ENABLE);
+	
 	DMA_InitStructure.DMA_PeripheralBaseAddr = (u32)&JTAG_TAP_HS_SPI_M->DR;
 	DMA_InitStructure.DMA_MemoryBaseAddr = (uint32)0;
 	DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralSRC;
@@ -321,6 +317,8 @@ void ADC_Configuration(void)
 {
 #if POWER_SAMPLE_EN
 	ADC_InitTypeDef ADC_InitStructure;
+
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC1, ENABLE);
 
 	ADC_DeInit(ADC1);
 
