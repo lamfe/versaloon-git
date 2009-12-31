@@ -156,6 +156,63 @@ static RESULT stm8_swim_wotf_reg(uint32_t addr, uint8_t value)
 	return stm8_swim_wotf(addr, &value, 1);
 }
 
+static void stm8_unlock_eeprom_option(void)
+{
+	stm8_swim_wotf_reg(STM8_REG_FLASH_DUKR, 0xAE);
+	stm8_swim_wotf_reg(STM8_REG_FLASH_DUKR, 0x56);
+}
+
+static void stm8_unlock_flash(void)
+{
+	stm8_swim_wotf_reg(STM8_REG_FLASH_PUKR, 0x56);
+	stm8_swim_wotf_reg(STM8_REG_FLASH_PUKR, 0xAE);
+}
+
+static RESULT stm8_erase_block(uint32_t block_addr)
+{
+	uint8_t buff[4];
+	
+	stm8_swim_wotf_reg(STM8_REG_FLASH_CR2, STM8_FLASH_CR2_ERASE);
+	stm8_swim_wotf_reg(STM8_REG_FLASH_NCR2, (uint8_t)~STM8_FLASH_CR2_ERASE);
+	memset(buff, 0, 4);
+	stm8_swim_wotf(block_addr, buff, 4);
+	delay_ms(3);
+	stm8_swim_rotf(STM8_REG_FLASH_IAPSR, buff, 1);
+	if (ERROR_OK != commit())
+	{
+		LOG_ERROR(_GETTEXT("Fail to erase block at 0x%06X\n"), block_addr);
+		return ERRCODE_FAILURE_OPERATION;
+	}
+	if (buff[0] & STM8_FLASH_IAPSR_WRPGDIS)
+	{
+		LOG_ERROR(_GETTEXT("current block at 0x%06X is RO\n"), block_addr);
+		return ERRCODE_FAILURE_OPERATION;
+	}
+	return ERROR_OK;
+}
+
+static RESULT stm8_program_block(uint32_t block_addr, uint8_t *block_buff)
+{
+	uint8_t buff[1];
+	
+	stm8_swim_wotf_reg(STM8_REG_FLASH_CR2, STM8_FLASH_CR2_FPRG);
+	stm8_swim_wotf_reg(STM8_REG_FLASH_NCR2, (uint8_t)~STM8_FLASH_CR2_FPRG);
+	stm8_swim_wotf(block_addr, block_buff, STM8_FLASH_PAGESIZE);
+	delay_ms(3);
+	stm8_swim_rotf(STM8_REG_FLASH_IAPSR, buff, 1);
+	if (ERROR_OK != commit())
+	{
+		LOG_ERROR(_GETTEXT("Fail to program block at 0x%06X\n"), block_addr);
+		return ERRCODE_FAILURE_OPERATION;
+	}
+	if (buff[0] & STM8_FLASH_IAPSR_WRPGDIS)
+	{
+		LOG_ERROR(_GETTEXT("current block at 0x%06X is RO\n"), block_addr);
+		return ERRCODE_FAILURE_OPERATION;
+	}
+	return ERROR_OK;
+}
+
 static RESULT stm8_swim_program(struct operation_t operations, 
 					struct program_info_t *pi, struct programmer_info_t *prog)
 {
@@ -165,8 +222,9 @@ static RESULT stm8_swim_program(struct operation_t operations,
 	uint32_t j, k, len_current_list;
 	RESULT ret;
 	uint32_t target_size;
-	uint8_t *tbuff, page_size;
+	uint8_t *tbuff, page_size, retry;
 	struct memlist **ml, *ml_tmp;
+	int verbosity_tmp;
 
 	operations = operations;
 	pi = pi;
@@ -183,6 +241,10 @@ static RESULT stm8_swim_program(struct operation_t operations,
 		LOG_WARNING(_GETTEXT(INFOMSG_TARGET_LOW_POWER));
 	}
 	
+	retry = 3;
+	verbosity_tmp = verbosity;
+	verbosity = -1;
+enter_program_mode:
 	reset_init();
 	reset_set();
 	swim_set();
@@ -240,9 +302,20 @@ static RESULT stm8_swim_program(struct operation_t operations,
 	stm8_swim_rotf(0x0067F0, page_buf, 6);
 	if (ERROR_OK != commit())
 	{
+		if (retry--)
+		{
+			swim_fini();
+			reset_input();
+			swim_input();
+			reset_fini();
+			commit();
+			goto enter_program_mode;
+		}
+		verbosity = verbosity_tmp;
 		ret = ERROR_FAIL;
 		goto leave_program_mode;
 	}
+	verbosity = verbosity_tmp;
 	page_buf[6] = '\0';
 	LOG_INFO(_GETTEXT("is this chip UID: %s\n"), page_buf);
 	
@@ -258,30 +331,37 @@ static RESULT stm8_swim_program(struct operation_t operations,
 		goto leave_program_mode;
 	}
 	
-	if (operations.erase_operations > 0)
-	{
-		LOG_INFO(_GETTEXT(INFOMSG_ERASING), "chip");
-		pgbar_init("erasing chip |", "|", 0, 1, PROGRESS_STEP, '=');
-		
-		
-		
-		if (ERROR_OK != commit())
-		{
-			pgbar_fini();
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "erase chip");
-			ret = ERRCODE_FAILURE_OPERATION;
-			goto leave_program_mode;
-		}
-		
-		pgbar_update(1);
-		pgbar_fini();
-		LOG_INFO(_GETTEXT(INFOMSG_ERASED), "chip");
-	}
-	
 	page_size = STM8_FLASH_PAGESIZE;
 	ml = &pi->program_areas[APPLICATION_IDX].memlist;
 	target_size = MEMLIST_CalcAllSize(*ml);
 	tbuff = pi->program_areas[APPLICATION_IDX].buff;
+	
+	stm8_unlock_flash();
+	if (operations.erase_operations > 0)
+	{
+		LOG_INFO(_GETTEXT(INFOMSG_ERASING), "chip");
+		pgbar_init("erasing chip |", "|", 0, 
+					target_chip_param.chip_areas[APPLICATION_IDX].page_num, 
+					PROGRESS_STEP, '=');
+		
+		for (j = 0; 
+			j < target_chip_param.chip_areas[APPLICATION_IDX].size; 
+			j += target_chip_param.chip_areas[APPLICATION_IDX].page_size)
+		{
+			if (ERROR_OK != stm8_erase_block(STM8_FLASH_ADDR + j))
+			{
+				pgbar_fini();
+				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "erase chip");
+				ret = ERRCODE_FAILURE_OPERATION;
+				goto leave_program_mode;
+			}
+			pgbar_update(1);
+		}
+		
+		pgbar_fini();
+		LOG_INFO(_GETTEXT(INFOMSG_ERASED), "chip");
+	}
+	
 	if (operations.write_operations & APPLICATION)
 	{
 		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMING), "flash");
@@ -307,7 +387,8 @@ static RESULT stm8_swim_program(struct operation_t operations,
 				 i += page_size)
 			{
 				
-				if (ERROR_OK != commit())
+				if (ERROR_OK != stm8_program_block(ml_tmp->addr + i, 
+								&tbuff[ml_tmp->addr - STM8_FLASH_ADDR + i]))
 				{
 					pgbar_fini();
 					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ADDR), 
@@ -439,6 +520,7 @@ static RESULT stm8_swim_program(struct operation_t operations,
 	ml = &pi->program_areas[EEPROM_IDX].memlist;
 	target_size = MEMLIST_CalcAllSize(*ml);
 	tbuff = pi->program_areas[EEPROM_IDX].buff;
+	stm8_unlock_eeprom_option();
 	if ((operations.read_operations & EEPROM) 
 		|| (operations.verify_operations & EEPROM))
 	{
