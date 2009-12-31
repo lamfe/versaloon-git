@@ -299,7 +299,7 @@ begin
     operating := True;
     if FLogProgressEnable and Assigned(FLogProgressFunc) then
     begin
-      FLogProgressFunc(liStartSection, Copy(line, 1, Length(line) - 8));
+      FLogProgressFunc(liStartSection, Copy(line, 1, Length(line) - 5));
     end;
   end;
 

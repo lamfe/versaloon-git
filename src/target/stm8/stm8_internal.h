@@ -35,6 +35,8 @@
 #define STM8_REG_SWIM_CSR			0x007F80
 #define STM8_SWIM_CSR_SAFT_MASK		0x80
 #define STM8_SWIM_CSR_SWIM_DM		0x20
+#define STM8_SWIM_CSR_HS			0x10
+#define STM8_SWIM_CSR_RST			0x04
 
 #define STM8_SWIM					0
 #define STM8_ISP					1

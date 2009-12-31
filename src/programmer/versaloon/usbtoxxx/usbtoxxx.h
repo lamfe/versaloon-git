@@ -191,7 +191,7 @@ RESULT usbtoswim_fini(void);
 RESULT usbtoswim_set_param(uint8_t interface_index, uint8_t mHz, 
 							uint8_t cnt0, uint8_t cnt1);
 RESULT usbtoswim_out(uint8_t interface_index, uint8_t data, uint8_t bitlen);
-RESULT usbtoswim_in(uint8_t interface_index, uint8_t *data, uint8_t bitlen);
+RESULT usbtoswim_in(uint8_t interface_index, uint8_t *data, uint8_t bytelen);
 
 
 #endif /* __USBTOXXX_H_INCLUDED__ */

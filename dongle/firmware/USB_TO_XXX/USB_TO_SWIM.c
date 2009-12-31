@@ -25,8 +25,8 @@
 
 void USB_TO_SWIM_ProcessCmd(uint8* dat, uint16 len)
 {
-	uint16 index, device_num, length;
-	uint8 command;
+	uint16 index, device_num, length, len_tmp, rep_pos;
+	uint8 command, data;
 
 	index = 0;
 	while(index < len)
@@ -65,7 +65,17 @@ void USB_TO_SWIM_ProcessCmd(uint8* dat, uint16 len)
 
 			break;
 		case USB_TO_XXX_OUT:
-			if (SWIM_Out(dat[index + 1], dat[index + 0]))
+			len_tmp = 0;
+			while(len_tmp < length)
+			{
+				command = SWIM_Out(dat[index + len_tmp + 1], dat[index + len_tmp + 0]);
+				len_tmp += 2;
+				if (command)
+				{
+					break;
+				}
+			}
+			if (command)
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
@@ -76,14 +86,29 @@ void USB_TO_SWIM_ProcessCmd(uint8* dat, uint16 len)
 
 			break;
 		case USB_TO_XXX_IN:
-			if (SWIM_In(&command, 8))
+			len_tmp = dat[index];
+			rep_pos = rep_len;
+			rep_len++;
+			while(len_tmp > 0)
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+				command = SWIM_In(&data, 8);
+				len_tmp--;
+				if (command)
+				{
+					break;
+				}
+				else
+				{
+					buffer_reply[rep_len++] = data;
+				}
+			}
+			if (command)
+			{
+				buffer_reply[rep_pos] = USB_TO_XXX_FAILED;
 			}
 			else
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_OK;
-				buffer_reply[rep_len++] = command;
+				buffer_reply[rep_pos] = USB_TO_XXX_OK;
 			}
 
 			break;

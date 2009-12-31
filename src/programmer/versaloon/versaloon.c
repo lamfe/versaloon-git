@@ -1171,9 +1171,9 @@ RESULT versaloon_swim_out(uint8_t data, uint8_t bitlen)
 {
 	return usbtoswim_out(VERSALOON_SWIM_PORT, data, bitlen);
 }
-RESULT versaloon_swim_in(uint8_t *data, uint8_t bitlen)
+RESULT versaloon_swim_in(uint8_t *data, uint8_t bytelen)
 {
-	return usbtoswim_in(VERSALOON_SWIM_PORT, data, bitlen);
+	return usbtoswim_in(VERSALOON_SWIM_PORT, data, bytelen);
 }
 // Commit
 RESULT versaloon_peripheral_commit(void)

@@ -51,23 +51,9 @@ void pgbar_set_gui_mode(uint8_t gui_mode)
 void pgbar_update(int32_t step)
 {
 	int32_t noc;
+	uint32_t pos_pre;
 	
-	// erase previous characters
-	if (100 == pgbar_get_char_num(position) * 100 / max_num_of_chars)
-	{
-		noc = 4;	// "%100"
-	}
-	else
-	{
-		noc = 3;	// "%xx"
-	}
-	while (noc-- > 0)
-	{
-		if (!gui_mode_flag)
-		{
-			printf("\b \b");
-		}
-	}
+	pos_pre = position;
 	noc = pgbar_get_char_num(position);
 	
 	// adjust new position
@@ -83,30 +69,52 @@ void pgbar_update(int32_t step)
 	
 	// output new characters
 	noc = pgbar_get_char_num(position) - noc;
-	while (noc != 0)
+	if (noc != 0)
 	{
-		if (noc > 0)
+		uint8_t erase = 0;
+		// update
+		// erase previous characters
+		if (100 == pgbar_get_char_num(pos_pre) * 100 / max_num_of_chars)
 		{
-			printf("%c", disp_char);
-			noc--;
+			erase = 4;	// "%100"
 		}
 		else
 		{
-			printf("\b \b");
-			noc++;
+			erase = 3;	// "%xx"
 		}
+		while (erase-- > 0)
+		{
+			if (!gui_mode_flag)
+			{
+				printf("\b \b");
+			}
+		}
+		
+		while (noc != 0)
+		{
+			if (noc > 0)
+			{
+				printf("%c", disp_char);
+				noc--;
+			}
+			else
+			{
+				printf("\b \b");
+				noc++;
+			}
+		}
+		
+		// output percentage
+		printf("%%%02d", pgbar_get_char_num(position) * 100 / max_num_of_chars);
+		
+		if (gui_mode_flag)
+		{
+			printf("\n");
+		}
+		
+		// flush output
+		fflush(stdout);
 	}
-	
-	// output percentage
-	printf("%%%02d", pgbar_get_char_num(position) * 100 / max_num_of_chars);
-	
-	if (gui_mode_flag)
-	{
-		printf("\n");
-	}
-	
-	// flush output
-	fflush(stdout);
 }
 
 RESULT pgbar_init(char *s, char *e, uint32_t min, uint32_t max, 
@@ -135,8 +143,10 @@ RESULT pgbar_init(char *s, char *e, uint32_t min, uint32_t max,
 	}
 	// print initial percentage
 	printf("%%00");
-	
-	pgbar_update(0);
+	if (gui_mode_flag)
+	{
+		printf("\n");
+	}
 	
 	// get start time
 	start_time = get_time_in_ms();
