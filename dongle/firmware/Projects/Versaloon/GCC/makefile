@@ -46,6 +46,10 @@ USR_INCS+= -I $(SRCDIR)/Interfaces/JTAG
 USR_SRCS+= $(SRCDIR)/Interfaces/SWJ/SWJ.c
 USR_INCS+= -I $(SRCDIR)/Interfaces/SWJ
 
+# SWIM
+USR_SRCS+= $(SRCDIR)/Interfaces/SWIM/SWIM.c
+USR_INCS+= -I $(SRCDIR)/Interfaces/SWIM
+
 # PowerExt
 USR_SRCS+= $(SRCDIR)/Interfaces/PowerExt/PowerExt.c
 USR_INCS+= -I $(SRCDIR)/Interfaces/PowerExt
@@ -83,6 +87,7 @@ USR_SRCS+= $(SRCDIR)/USB_TO_XXX/USB_TO_POWER.c $(SRCDIR)/USB_TO_XXX/USB_TO_C2.c
 USR_SRCS+= $(SRCDIR)/USB_TO_XXX/USB_TO_ISSP.c $(SRCDIR)/USB_TO_XXX/USB_TO_LPCICP.c
 USR_SRCS+= $(SRCDIR)/USB_TO_XXX/USB_TO_MSP430_JTAG.c $(SRCDIR)/USB_TO_XXX/USB_TO_JTAG_HL.c
 USR_SRCS+= $(SRCDIR)/USB_TO_XXX/USB_TO_SWJ.c $(SRCDIR)/USB_TO_XXX/USB_TO_JTAG_LL.c
+USR_SRCS+= $(SRCDIR)/USB_TO_XXX/USB_TO_SWIM.c
 USR_INCS+= -I $(SRCDIR)/USB_TO_XXX
 
 
@@ -98,6 +103,7 @@ LIBSTM32_SRCS = \
  $(SRCDIR)/HW/lib/src/stm32f10x_rcc.c \
  $(SRCDIR)/HW/lib/src/stm32f10x_spi.c \
  $(SRCDIR)/HW/lib/src/stm32f10x_usart.c \
+ $(SRCDIR)/HW/lib/src/stm32f10x_tim.c \
  $(SRCDIR)/HW/lib/src/usb_core.c \
  $(SRCDIR)/HW/lib/src/usb_init.c \
  $(SRCDIR)/HW/lib/src/usb_int.c \

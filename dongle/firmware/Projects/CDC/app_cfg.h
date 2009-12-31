@@ -12,27 +12,25 @@
  *  Change Log:                                                           *
  *      YYYY-MM-DD:     What(by Who)                                      *
  *      2008-11-07:     created(by SimonQian)                             *
- *      2008-11-22:     rewrite GPIO_Dir(by SimonQian)                    *
  **************************************************************************/
-
-/*************************** Includes Library ***************************/
-#include "stm32f10x_conf.h"
-#include "stm32f10x.h"
-#include "app_type.h"
-#include "port.h"
-#include "myString.h"
-#include "delay.h"
 
 /************************ What do U have ************************/
 // enable ONLY one below according to your hardware
 //#include "hw_cfg_NanoRC1.h"
 //#include "hw_cfg_MiniRC2.h"
 //#include "hw_cfg_MiniRC3.h"
-//#include "hw_cfg_MiniRC4.h"
-#include "hw_cfg_ProRC1.h"
+#include "hw_cfg_MiniRC4.h"
+//#include "hw_cfg_ProRC1.h"
 
 #define _SYS_FREQUENCY					72		// in MHz
 #define _SYS_FLASH_VECTOR_TABLE_SHIFT	0x2000	// application will locate at 0x08002000
+
+/*************************** Includes Library ***************************/
+#include "stm32f10x_conf.h"
+#include "app_type.h"
+#include "port.h"
+#include "myString.h"
+#include "delay.h"
 
 /************************ What do U want ************************/
 #define USB_AT_JTAGICE_MKII				0x00
@@ -98,6 +96,7 @@
 #	define USB_TO_SBW_EN				0
 #	define USB_TO_LPCICP_EN				0
 #	define USB_TO_SWJ_EN				0
+#	define USB_TO_SWIM_EN				0
 // page 2
 #	define USB_TO_POWER_EN				1
 #endif

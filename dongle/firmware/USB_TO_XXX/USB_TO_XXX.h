@@ -27,6 +27,7 @@
 #define USB_TO_ADC					(VERSALOON_USB_TO_XXX_CMD_START + 0x06)
 #define USB_TO_DAC					(VERSALOON_USB_TO_XXX_CMD_START + 0x07)
 #define USB_TO_MICROWIRE			(VERSALOON_USB_TO_XXX_CMD_START + 0x08)
+#define USB_TO_SWIM					(VERSALOON_USB_TO_XXX_CMD_START + 0x09)
 // Page1
 #define USB_TO_JTAG_LL				(VERSALOON_USB_TO_XXX_CMD_START + 0x20)
 #define USB_TO_JTAG_HL				(VERSALOON_USB_TO_XXX_CMD_START + 0x21)
@@ -55,6 +56,7 @@ void USB_TO_PWM_ProcessCmd(uint8* dat, uint16 len);
 void USB_TO_ADC_ProcessCmd(uint8* dat, uint16 len);
 void USB_TO_DAC_ProcessCmd(uint8* dat, uint16 len);
 void USB_TO_MICROWIRE_ProcessCmd(uint8* dat, uint16 len);
+void USB_TO_SWIM_ProcessCmd(uint8* dat, uint16 len);
 // Page1
 void USB_TO_JTAG_LL_ProcessCmd(uint8* dat, uint16 len);
 void USB_TO_JTAG_HL_ProcessCmd(uint8* dat, uint16 len);
@@ -171,7 +173,7 @@ extern int8 USB_TO_POLL_Index;
 #define USB_TO_GPIO_RTCK			(1 << 7)
 #define USB_TO_GPIO_TMS				(1 << 8)
 #define USB_TO_GPIO_OUT_MSK			(USB_TO_GPIO_SRST | USB_TO_GPIO_TRST | USB_TO_GPIO_USR1 | USB_TO_GPIO_TCK | USB_TO_GPIO_TDI | USB_TO_GPIO_TMS)
-#define USB_TO_GPIO_IN_MSK			(USB_TO_GPIO_SRST | USB_TO_GPIO_TRST | USB_TO_GPIO_USR2 | USB_TO_GPIO_TDO | USB_TO_GPIO_RTCK)
+#define USB_TO_GPIO_IN_MSK			(USB_TO_GPIO_SRST | USB_TO_GPIO_TRST | USB_TO_GPIO_USR2 | USB_TO_GPIO_TDO | USB_TO_GPIO_RTCK | USB_TO_GPIO_TMS)
 #define USB_TO_GPIO_MSK				(USB_TO_GPIO_OUT_MSK | USB_TO_GPIO_IN_MSK)
 
 
@@ -202,3 +204,4 @@ extern int8 USB_TO_POLL_Index;
 #define USB_TO_SBW_NUM				1
 #define USB_TO_POWER_NUM			1
 #define USB_TO_POLL_NUM				3
+#define USB_TO_SWIM_NUM				1

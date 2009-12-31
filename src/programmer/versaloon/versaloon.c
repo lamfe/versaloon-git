@@ -440,7 +440,7 @@ RESULT versaloon_init(void)
 		return ERRCODE_NOT_ENOUGH_MEMORY;
 	}
 	
-	return ERROR_OK;
+	return versaloon_get_target_voltage(&ret);
 }
 
 RESULT versaloon_fini(void)

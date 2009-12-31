@@ -111,6 +111,8 @@ RESULT stm8_parse_argument(char cmd, const char *argu)
 #define delay_ms(ms)			p->delayms((ms) | 0x8000)
 #define delay_us(us)			p->delayus((us) & 0x7FFF)
 
+#define get_target_voltage(v)	prog->get_target_voltage(v)
+
 #define commit()				p->peripheral_commit()
 
 static struct programmer_info_t *p;
@@ -162,13 +164,29 @@ static RESULT stm8_swim_wotf_reg(uint32_t addr, uint8_t value)
 static RESULT stm8_swim_program(struct operation_t operations, 
 					struct program_info_t *pi, struct programmer_info_t *prog)
 {
+	uint16_t voltage;
 	uint8_t page_buf[STM8_FLASH_PAGESIZE];
-	uint32_t i;
+	int32_t i;
+	uint32_t j, k, len_current_list;
 	RESULT ret;
+	uint32_t target_size;
+	uint8_t *tbuff, page_size;
+	struct memlist **ml, *ml_tmp;
 
 	operations = operations;
 	pi = pi;
 	p = prog;
+	
+	// get target voltage
+	if (ERROR_OK != get_target_voltage(&voltage))
+	{
+		return ERROR_FAIL;
+	}
+	LOG_DEBUG(_GETTEXT(INFOMSG_TARGET_VOLTAGE), voltage / 1000.0);
+	if (voltage < 2700)
+	{
+		LOG_WARNING(_GETTEXT(INFOMSG_TARGET_LOW_POWER));
+	}
 	
 	reset_init();
 	reset_set();
@@ -212,17 +230,303 @@ static RESULT stm8_swim_program(struct operation_t operations,
 	swim_init();
 	swim_set_param(10, 20, 2);
 	delay_ms(15);
+	commit();
 	stm8_swim_srst();
+	commit();
 	delay_ms(10);
 	stm8_swim_wotf_reg(STM8_REG_SWIM_CSR, 
 						STM8_SWIM_CSR_SAFT_MASK | STM8_SWIM_CSR_SWIM_DM);
 	delay_ms(10);
 	reset_set();
+	commit();
 	stm8_swim_rotf(0x0067F0, page_buf, 6);
 	if (ERROR_OK != commit())
 	{
 		ret = ERROR_FAIL;
 		goto leave_program_mode;
+	}
+	page_buf[6] = '\0';
+	LOG_INFO(_GETTEXT("is this chip UID: %s\n"), page_buf);
+	
+	if (operations.erase_operations > 0)
+	{
+		LOG_INFO(_GETTEXT(INFOMSG_ERASING), "chip");
+		pgbar_init("erasing chip |", "|", 0, 1, PROGRESS_STEP, '=');
+		
+		
+		
+		if (ERROR_OK != commit())
+		{
+			pgbar_fini();
+			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "erase chip");
+			ret = ERRCODE_FAILURE_OPERATION;
+			goto leave_program_mode;
+		}
+		
+		pgbar_update(1);
+		pgbar_fini();
+		LOG_INFO(_GETTEXT(INFOMSG_ERASED), "chip");
+	}
+	
+	page_size = STM8_FLASH_PAGESIZE;
+	ml = &pi->program_areas[APPLICATION_IDX].memlist;
+	target_size = MEMLIST_CalcAllSize(*ml);
+	tbuff = pi->program_areas[APPLICATION_IDX].buff;
+	if (operations.write_operations & APPLICATION)
+	{
+		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMING), "flash");
+		pgbar_init("writing flash |", "|", 0, target_size, PROGRESS_STEP, '=');
+		
+		ml_tmp = *ml;
+		while (ml_tmp != NULL)
+		{
+			if ((ml_tmp->addr + ml_tmp->len)
+				<= (ml_tmp->addr - (ml_tmp->addr % page_size) + page_size))
+			{
+				k = ml_tmp->len;
+			}
+			else
+			{
+				k = page_size - (ml_tmp->addr % page_size);
+			}
+			
+			len_current_list = (uint32_t)ml_tmp->len;
+			for (i = -(int32_t)(ml_tmp->addr % page_size); 
+				 i < ((int32_t)ml_tmp->len 
+							- (int32_t)(ml_tmp->addr % page_size)); 
+				 i += page_size)
+			{
+				
+				if (ERROR_OK != commit())
+				{
+					pgbar_fini();
+					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ADDR), 
+								  "write flash", ml_tmp->addr + i);
+						ret = ERRCODE_FAILURE_OPERATION;
+					goto leave_program_mode;
+				}
+				
+				pgbar_update(k);
+				len_current_list -= k;
+				if (len_current_list >= page_size)
+				{
+					k = page_size;
+				}
+				else
+				{
+					k = len_current_list;
+				}
+			}
+			
+			ml_tmp = MEMLIST_GetNext(ml_tmp);
+		}
+		
+		pgbar_fini();
+		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMED_SIZE), "flash", target_size);
+	}
+	
+	if ((operations.read_operations & APPLICATION) 
+		|| (operations.verify_operations & APPLICATION))
+	{
+		if (operations.verify_operations & APPLICATION)
+		{
+			LOG_INFO(_GETTEXT(INFOMSG_VERIFYING), "flash");
+		}
+		else
+		{
+			ret = MEMLIST_Add(ml, STM8_FLASH_ADDR, 
+						pi->program_areas[APPLICATION_IDX].size, page_size);
+			if (ret != ERROR_OK)
+			{
+				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+							"add memory list");
+				return ERRCODE_FAILURE_OPERATION;
+			}
+			target_size = MEMLIST_CalcAllSize(*ml);
+			LOG_INFO(_GETTEXT(INFOMSG_READING), "flash");
+		}
+		pgbar_init("reading flash |", "|", 0, target_size, PROGRESS_STEP, '=');
+		
+		ml_tmp = *ml;
+		while (ml_tmp != NULL)
+		{
+			if ((ml_tmp->addr + ml_tmp->len)
+				<= (ml_tmp->addr - (ml_tmp->addr % page_size) + page_size))
+			{
+				k = ml_tmp->len;
+			}
+			else
+			{
+				k = page_size - (ml_tmp->addr % page_size);
+			}
+			
+			len_current_list = (uint32_t)ml_tmp->len;
+			for (i = -(int32_t)(ml_tmp->addr % page_size); 
+				 i < ((int32_t)ml_tmp->len 
+							- (int32_t)(ml_tmp->addr % page_size)); 
+				 i += page_size)
+			{
+				stm8_swim_rotf(ml_tmp->addr + i, page_buf, page_size);
+				if (ERROR_OK != commit())
+				{
+					pgbar_fini();
+					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ADDR), 
+								  "read flash", ml_tmp->addr + i);
+						ret = ERRCODE_FAILURE_OPERATION;
+					goto leave_program_mode;
+				}
+				
+				if (operations.verify_operations & APPLICATION)
+				{
+					for (j = 0; j < page_size; j++)
+					{
+						if (page_buf[j] 
+							!= tbuff[ml_tmp->addr - STM8_FLASH_ADDR + i + j])
+						{
+							pgbar_fini();
+							LOG_ERROR(
+								_GETTEXT(ERRMSG_FAILURE_VERIFY_TARGET_AT_02X), 
+								"flash", ml_tmp->addr + i + j, page_buf[j], 
+								tbuff[ml_tmp->addr - STM8_FLASH_ADDR + i + j]);
+							ret = ERRCODE_FAILURE_VERIFY_TARGET;
+							goto leave_program_mode;
+						}
+					}
+				}
+				else
+				{
+					memcpy(&tbuff[ml_tmp->addr - STM8_FLASH_ADDR + i], 
+								page_buf, page_size);
+				}
+				
+				pgbar_update(k);
+				len_current_list -= k;
+				if (len_current_list >= page_size)
+				{
+					k = page_size;
+				}
+				else
+				{
+					k = len_current_list;
+				}
+			}
+			
+			ml_tmp = MEMLIST_GetNext(ml_tmp);
+		}
+		
+		pgbar_fini();
+		if (operations.verify_operations & APPLICATION)
+		{
+			LOG_INFO(_GETTEXT(INFOMSG_VERIFIED_SIZE), "flash", target_size);
+		}
+		else
+		{
+			LOG_INFO(_GETTEXT(INFOMSG_READ), "flash");
+		}
+	}
+	
+	page_size = STM8_EE_PAGESIZE;
+	ml = &pi->program_areas[EEPROM_IDX].memlist;
+	target_size = MEMLIST_CalcAllSize(*ml);
+	tbuff = pi->program_areas[EEPROM_IDX].buff;
+	if ((operations.read_operations & EEPROM) 
+		|| (operations.verify_operations & EEPROM))
+	{
+		if (operations.verify_operations & EEPROM)
+		{
+			LOG_INFO(_GETTEXT(INFOMSG_VERIFYING), "eeprom");
+		}
+		else
+		{
+			ret = MEMLIST_Add(ml, STM8_EE_ADDR, 
+							pi->program_areas[EEPROM_IDX].size, page_size);
+			if (ret != ERROR_OK)
+			{
+				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+							"add memory list");
+				return ERRCODE_FAILURE_OPERATION;
+			}
+			target_size = MEMLIST_CalcAllSize(*ml);
+			LOG_INFO(_GETTEXT(INFOMSG_READING), "eeprom");
+		}
+		pgbar_init("reading eeprom |", "|", 0, target_size, PROGRESS_STEP, '=');
+		
+		ml_tmp = *ml;
+		while (ml_tmp != NULL)
+		{
+			if ((ml_tmp->addr + ml_tmp->len)
+				<= (ml_tmp->addr - (ml_tmp->addr % page_size) + page_size))
+			{
+				k = ml_tmp->len;
+			}
+			else
+			{
+				k = page_size - (ml_tmp->addr % page_size);
+			}
+			
+			len_current_list = (uint32_t)ml_tmp->len;
+			for (i = -(int32_t)(ml_tmp->addr % page_size); 
+				 i < ((int32_t)ml_tmp->len 
+							- (int32_t)(ml_tmp->addr % page_size)); 
+				 i += page_size)
+			{
+				stm8_swim_rotf(ml_tmp->addr + i, page_buf, page_size);
+				if (ERROR_OK != commit())
+				{
+					pgbar_fini();
+					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ADDR), 
+								  "read eeprom", ml_tmp->addr + i);
+						ret = ERRCODE_FAILURE_OPERATION;
+					goto leave_program_mode;
+				}
+				
+				if (operations.verify_operations & EEPROM)
+				{
+					for (j = 0; j < page_size; j++)
+					{
+						if (page_buf[j] 
+							!= tbuff[ml_tmp->addr - STM8_EE_ADDR + i + j])
+						{
+							pgbar_fini();
+							LOG_ERROR(
+								_GETTEXT(ERRMSG_FAILURE_VERIFY_TARGET_AT_02X), 
+								"eeprom", ml_tmp->addr + i + j, page_buf[j], 
+								tbuff[ml_tmp->addr - STM8_EE_ADDR + i + j]);
+							ret = ERRCODE_FAILURE_VERIFY_TARGET;
+							goto leave_program_mode;
+						}
+					}
+				}
+				else
+				{
+					memcpy(&tbuff[ml_tmp->addr - STM8_EE_ADDR + i], page_buf, 
+								page_size);
+				}
+				
+				pgbar_update(k);
+				len_current_list -= k;
+				if (len_current_list >= page_size)
+				{
+					k = page_size;
+				}
+				else
+				{
+					k = len_current_list;
+				}
+			}
+			
+			ml_tmp = MEMLIST_GetNext(ml_tmp);
+		}
+		
+		pgbar_fini();
+		if (operations.verify_operations & EEPROM)
+		{
+			LOG_INFO(_GETTEXT(INFOMSG_VERIFIED_SIZE), "eeprom", target_size);
+		}
+		else
+		{
+			LOG_INFO(_GETTEXT(INFOMSG_READ), "eeprom");
+		}
 	}
 	
 leave_program_mode:

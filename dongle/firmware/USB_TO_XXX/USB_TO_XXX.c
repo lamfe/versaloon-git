@@ -114,6 +114,11 @@ void USB_TO_XXX_ProcessCmd(uint8* dat, uint16 len)
 			USB_TO_MICROWIRE_ProcessCmd(dat + USB_TO_XXX_CmdIdx + 3, USB_TO_XXX_CmdLen_tmp);
 			break;
 #endif
+#if USB_TO_SWIM_EN
+		case USB_TO_SWIM:
+			USB_TO_SWIM_ProcessCmd(dat + USB_TO_XXX_CmdIdx + 3, USB_TO_XXX_CmdLen_tmp);
+			break;
+#endif
 
 /****************************** Page1 ******************************/
 #if USB_TO_JTAG_LL_EN

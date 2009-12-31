@@ -138,10 +138,9 @@ RESULT s5x_program(struct operation_t operations, struct program_info_t *pi,
 	uint32_t j, k, len_current_list, page_size;
 	uint8_t page_buf[256];
 	RESULT ret = ERROR_OK;
-	struct memlist *ml_tmp;
 	uint32_t target_size;
 	uint8_t *tbuff;
-	struct memlist **ml;
+	struct memlist **ml, *ml_tmp;
 
 	pi = pi;
 	

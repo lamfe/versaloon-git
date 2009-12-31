@@ -150,10 +150,9 @@ RESULT lpc900_program(struct operation_t operations, struct program_info_t *pi,
 	uint32_t crc_in_file, crc_in_chip;
 	uint16_t page_size;
 	RESULT ret = ERROR_OK;
-	struct memlist *ml_tmp;
 	uint8_t retry = 0;
 	uint32_t target_size;
-	struct memlist **ml;
+	struct memlist **ml, *ml_tmp;
 	
 	p = prog;
 	
