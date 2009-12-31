@@ -22,6 +22,7 @@
 #	include "PowerExt.h"
 #endif
 
+static uint8 SWIM_Inited = 0;
 static uint16 SWIM_PULSE_0;
 static uint16 SWIM_PULSE_1;
 static uint16 SWIM_PULSE_Threshold;
@@ -38,7 +39,7 @@ static void SWIM_SetClockParamInit(void)
 	TIM_TimeBaseStructInit(&TIM_TimeBaseStructure);
 	TIM_TimeBaseStructure.TIM_Prescaler = 0;
 	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
-	TIM_TimeBaseStructure.TIM_Period = 1;
+	TIM_TimeBaseStructure.TIM_Period = 0;
 	TIM_TimeBaseStructure.TIM_ClockDivision = 0;
 	TIM_TimeBaseStructure.TIM_RepetitionCounter = 0;
 	TIM_TimeBaseInit(SWIM_OUT_TIMER, &TIM_TimeBaseStructure);
@@ -73,10 +74,14 @@ static void SWIM_SetClockParamInit(void)
 
 void SWIM_Init()
 {
-	SWIM_OUT_TIMER_INIT();
-	SWIM_IN_TIMER_INIT();
-	SWIM_SetClockParamInit();
-	SWIM_PORT_INIT();
+	if (!SWIM_Inited)
+	{
+		SWIM_Inited = 1;
+		SWIM_OUT_TIMER_INIT();
+		SWIM_IN_TIMER_INIT();
+		SWIM_SetClockParamInit();
+		SWIM_PORT_INIT();
+	}
 }
 
 void SWIM_Fini()
@@ -84,6 +89,7 @@ void SWIM_Fini()
 	SWIM_PORT_FINI();
 	SWIM_OUT_TIMER_FINI();
 	SWIM_IN_TIMER_FINI();
+	SWIM_Inited = 0;
 }
 
 void SWIM_SetClockParam(uint8 mHz, uint8 cnt0, uint8 cnt1)
@@ -95,13 +101,14 @@ void SWIM_SetClockParam(uint8 mHz, uint8 cnt0, uint8 cnt1)
 	{
 		clock_div++;
 	}
-	SWIM_PULSE_0 = (cnt0 + 3) * clock_div;
-	SWIM_PULSE_1 = (cnt1 + 1) * clock_div;
-	SWIM_PULSE_Threshold = (SWIM_PULSE_0 + SWIM_PULSE_1) >> 1;
+	SWIM_PULSE_0 = cnt0 * clock_div;
+	SWIM_PULSE_1 = cnt1 * clock_div;
+	SWIM_PULSE_Threshold = SWIM_PULSE_0 + SWIM_PULSE_1;
 
-	TIM_SetAutoreload(SWIM_OUT_TIMER, SWIM_PULSE_0 + SWIM_PULSE_1);
-	TIM_ClearFlag(SWIM_OUT_TIMER, TIM_FLAG_Update);
-	SWIM_WaitOutBitReady();
+	SWIM_OUT_TIMER->ARR = SWIM_PULSE_Threshold;
+	SWIM_OUT_TIMER->EGR = TIM_PSCReloadMode_Immediate;
+
+	SWIM_PULSE_Threshold >>= 1;
 }
 
 uint8 SWIM_Out(uint8 cmd, uint8 bitlen)
@@ -111,43 +118,43 @@ uint8 SWIM_Out(uint8 cmd, uint8 bitlen)
 
 	SWIM_IN_TIMER_DMA_INIT(bitlen + 3, SWIM_DMA_Buffer);
 
-	TIM_UpdateDisableConfig(SWIM_OUT_TIMER, ENABLE);
-	TIM_ClearFlag(SWIM_OUT_TIMER, TIM_FLAG_Update);
+	SWIM_OUT_TIMER->CR1 |= ((uint16_t)0x0002);
+	SWIM_OUT_TIMER->SR = (uint16_t)~TIM_FLAG_Update;
 	// first bit MUST be '0' for output data
-	TIM_SetCompare1(SWIM_OUT_TIMER, SWIM_PULSE_0);
-	TIM_UpdateDisableConfig(SWIM_OUT_TIMER, DISABLE);
+	SWIM_OUT_TIMER->CCR1 = SWIM_PULSE_0;
+	SWIM_OUT_TIMER->CR1 &= ((uint16_t)0x03FD);
 	SWIM_WaitOutBitReady();
-	TIM_ClearFlag(SWIM_OUT_TIMER, TIM_FLAG_Update);
+	SWIM_OUT_TIMER->SR = (uint16_t)~TIM_FLAG_Update;
 
 	p = 0;
 	for (i = bitlen - 1; i >= 0; i--)
 	{
 		if ((cmd >> i) & 1)
 		{
-			TIM_SetCompare1(SWIM_OUT_TIMER, SWIM_PULSE_1);
+			SWIM_OUT_TIMER->CCR1 = SWIM_PULSE_1;
 			p++;
 		}
 		else
 		{
-			TIM_SetCompare1(SWIM_OUT_TIMER, SWIM_PULSE_0);
+			SWIM_OUT_TIMER->CCR1 = SWIM_PULSE_0;
 		}
 		// wait for previous waveform
 		SWIM_WaitOutBitReady();
-		TIM_ClearFlag(SWIM_OUT_TIMER, TIM_FLAG_Update);
+		SWIM_OUT_TIMER->SR = (uint16_t)~TIM_FLAG_Update;
 	}
 	// parity bit
 	if (p & 1)
 	{
-		TIM_SetCompare1(SWIM_OUT_TIMER, SWIM_PULSE_1);
+		SWIM_OUT_TIMER->CCR1 = SWIM_PULSE_1;
 	}
 	else
 	{
-		TIM_SetCompare1(SWIM_OUT_TIMER, SWIM_PULSE_0);
+		SWIM_OUT_TIMER->CCR1 = SWIM_PULSE_0;
 	}
 	// wait for last waveform -- parity bit
 	SWIM_WaitOutBitReady();
-	TIM_ClearFlag(SWIM_OUT_TIMER, TIM_FLAG_Update);
-	TIM_SetCompare1(SWIM_OUT_TIMER, 0);
+	SWIM_OUT_TIMER->SR = (uint16_t)~TIM_FLAG_Update;
+	SWIM_OUT_TIMER->CCR1 = 0;
 	SWIM_WaitOutBitReady();
 
 	dly = 0xFFFF;
@@ -171,7 +178,6 @@ uint8 SWIM_In(uint8* data, uint8 bitlen)
 
 	dly = 0xFFFFF;
 	SWIM_IN_TIMER_DMA_WAIT(dly);
-//	DelayUS(100);
 	*data = 0;
 	if (dly && (SWIM_DMA_Buffer[1] < SWIM_PULSE_Threshold))
 	{
@@ -184,13 +190,13 @@ uint8 SWIM_In(uint8* data, uint8 bitlen)
 		}
 		SWIM_IN_TIMER_DMA_INIT(11, SWIM_DMA_Buffer);
 
-		TIM_UpdateDisableConfig(SWIM_OUT_TIMER, ENABLE);
-		TIM_ClearFlag(SWIM_OUT_TIMER, TIM_FLAG_Update);
-		TIM_SetCompare1(SWIM_OUT_TIMER, SWIM_PULSE_1);
-		TIM_UpdateDisableConfig(SWIM_OUT_TIMER, DISABLE);
+		SWIM_OUT_TIMER->CR1 |= ((uint16_t)0x0002);
+		SWIM_OUT_TIMER->SR = (uint16_t)~TIM_FLAG_Update;
+		SWIM_OUT_TIMER->CCR1 = SWIM_PULSE_1;
+		SWIM_OUT_TIMER->CR1 &= ((uint16_t)0x03FD);
 		SWIM_WaitOutBitReady();
-		TIM_ClearFlag(SWIM_OUT_TIMER, TIM_FLAG_Update);
-		TIM_SetCompare1(SWIM_OUT_TIMER, 0);
+		SWIM_OUT_TIMER->SR = (uint16_t)~TIM_FLAG_Update;
+		SWIM_OUT_TIMER->CCR1 = 0;
 		SWIM_WaitOutBitReady();
 	}
 	else

@@ -235,7 +235,10 @@ RESULT comisp_program(struct operation_t operations, struct program_info_t *pi,
 		ret = ERRCODE_INVALID;
 		break;
 	}
-	comisp_execute_flag = 0;
+	if (!(operations.read_operations & CHIPID))
+	{
+		comisp_execute_flag = 0;
+	}
 	return ret;
 }
 

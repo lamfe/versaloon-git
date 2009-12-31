@@ -189,7 +189,10 @@ RESULT cm3_program(struct operation_t operations, struct program_info_t *pi,
 	cm3_reset();
 leave_program_mode:
 	cm3_dp_fini();
-	cm3_execute_flag = 0;
+	if (!(operations.read_operations & CHIPID))
+	{
+		cm3_execute_flag = 0;
+	}
 	return ret;
 }
 

@@ -87,10 +87,10 @@ RESULT usbtoswim_out(uint8_t interface_index, uint8_t data, uint8_t bitlen)
 	buff[0] = bitlen;
 	buff[1] = data;
 	
-	return usbtoxxx_out_command(USB_TO_SWIM, interface_index, buff, 2, 0);
+	return usbtoxxx_out_command(USB_TO_SWIM, interface_index, buff, 2, 1);
 }
 
-RESULT usbtoswim_in(uint8_t interface_index, uint8_t *data, uint8_t bitlen)
+RESULT usbtoswim_in(uint8_t interface_index, uint8_t *data, uint8_t bytelen)
 {
 #if PARAM_CHECK
 	if (interface_index > 7)
@@ -100,13 +100,10 @@ RESULT usbtoswim_in(uint8_t interface_index, uint8_t *data, uint8_t bitlen)
 	}
 #endif
 	
-	if (bitlen > 8)
-	{
-		LOG_BUG(_GETTEXT("max length of a single data is 8 bit\n"));
-		return ERROR_FAIL;
-	}
+	versaloon_cmd_buf[0] = bytelen;
+	memset(&versaloon_cmd_buf[1], 0, bytelen);
 	
-	return usbtoxxx_in_command(USB_TO_SWIM, interface_index, &bitlen, 1, 1, 
-								data, 0, 1, 0);
+	return usbtoxxx_in_command(USB_TO_SWIM, interface_index, 
+				versaloon_cmd_buf, 1 + bytelen, bytelen, data, 0, bytelen, 0);
 }
 

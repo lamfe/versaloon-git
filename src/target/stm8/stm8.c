@@ -106,7 +106,7 @@ RESULT stm8_parse_argument(char cmd, const char *argu)
 #define swim_fini()				p->swim_fini()
 #define swim_set_param(m,c0,c1)	p->swim_set_param((m), (c0), (c1))
 #define swim_out(d, l)			p->swim_out((d), (l))
-#define swim_in(d, l)			p->swim_in((d), (l))
+#define swim_in(d, L)			p->swim_in((d), (L))
 
 #define delay_ms(ms)			p->delayms((ms) | 0x8000)
 #define delay_us(us)			p->delayus((us) & 0x7FFF)
@@ -124,18 +124,13 @@ static RESULT stm8_swim_srst(void)
 
 static RESULT stm8_swim_rotf(uint32_t addr, uint8_t *buff, uint8_t bytelen)
 {
-	uint8_t i;
-	
 	swim_out(STM8_SWIM_CMD_ROTF, STM8_SWIM_CMD_BITLEN);
 	swim_out(bytelen, 8);
 	swim_out((addr >> 16) & 0xFF, 8);
 	swim_out((addr >> 8) & 0xFF, 8);
 	swim_out((addr >> 0) & 0xFF, 8);
 	
-	for (i = 0; i < bytelen; i++)
-	{
-		swim_in(&buff[i], 8);
-	}
+	swim_in(buff, bytelen);
 	return ERROR_OK;
 }
 
@@ -228,11 +223,14 @@ static RESULT stm8_swim_program(struct operation_t operations,
 	
 	// SWIM mode
 	swim_init();
-	swim_set_param(10, 20, 2);
-	delay_ms(15);
-	commit();
+	swim_set_param(10, 20 + 2, 2 + 1);
+	delay_ms(10);
+	if (ERROR_OK != commit())
+	{
+		ret = ERROR_FAIL;
+		goto leave_program_mode;
+	}
 	stm8_swim_srst();
-	commit();
 	delay_ms(10);
 	stm8_swim_wotf_reg(STM8_REG_SWIM_CSR, 
 						STM8_SWIM_CSR_SAFT_MASK | STM8_SWIM_CSR_SWIM_DM);
@@ -247,6 +245,18 @@ static RESULT stm8_swim_program(struct operation_t operations,
 	}
 	page_buf[6] = '\0';
 	LOG_INFO(_GETTEXT("is this chip UID: %s\n"), page_buf);
+	
+	// enable high speed mode
+	stm8_swim_wotf_reg(STM8_REG_SWIM_CSR, 
+							STM8_SWIM_CSR_SAFT_MASK | STM8_SWIM_CSR_SWIM_DM 
+							| STM8_SWIM_CSR_HS | STM8_SWIM_CSR_RST);
+	swim_set_param(10, 8, 2 + 1);
+	delay_ms(10);
+	if (ERROR_OK != commit())
+	{
+		ret = ERROR_FAIL;
+		goto leave_program_mode;
+	}
 	
 	if (operations.erase_operations > 0)
 	{
