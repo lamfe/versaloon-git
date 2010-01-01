@@ -49,15 +49,18 @@
 
 #define CUR_TARGET_STRING			COMISP_STRING
 
+RESULT comisp_enter_program_mode(struct program_context_t *context);
+struct program_functions_t comisp_program_functions;
+
 const struct comisp_param_t comisp_chips_param[] = {
 //	chip_name,			com_mode,																											
-//						{comport,	baudrate,	datalength,	paritybit,			stopbit,		handshake,				aux_pin}	
-	{"comisp_stm32",	{"",		-1,			8,			COMM_PARITYBIT_EVEN,COMM_STOPBIT_1,	COMM_PARAMETER_UNSURE,	COMM_PARAMETER_UNSURE}},
-	{"comisp_lpcarm",	{"",		-1,			8,			COMM_PARITYBIT_NONE,COMM_STOPBIT_1,	COMM_PARAMETER_UNSURE,	COMM_PARAMETER_UNSURE}},
+//						{comport,	baudrate,	datalength,	paritybit,			stopbit,		handshake,				aux_pin},				program_functions
+	{"comisp_stm32",	{"",		-1,			8,			COMM_PARITYBIT_EVEN,COMM_STOPBIT_1,	COMM_PARAMETER_UNSURE,	COMM_PARAMETER_UNSURE}, &stm32isp_program_functions},
+	{"comisp_lpcarm",	{"",		-1,			8,			COMM_PARITYBIT_NONE,COMM_STOPBIT_1,	COMM_PARAMETER_UNSURE,	COMM_PARAMETER_UNSURE}, NULL},
 };
-static int8_t comisp_chip_index = 0;
-struct comisp_param_t *comisp_chip_param = NULL;
+static uint8_t comisp_chip_index = 0;
 
+uint8_t comisp_mode_offset = 0;
 uint8_t comisp_execute_flag = 0;
 uint32_t comisp_execute_addr = 0;
 
@@ -86,6 +89,26 @@ RESULT comisp_parse_argument(char cmd, const char *argu)
 	
 	switch (cmd)
 	{
+	case 'c':
+		if (NULL == argu)
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), cmd);
+			return ERRCODE_INVALID_OPTION;
+		}
+		
+		for (i = 0; i < dimof(comisp_chips_param); i++)
+		{
+			if (!strcmp(comisp_chips_param[i].chip_name, argu))
+			{
+				comisp_chip_index = i;
+				break;
+			}
+		}
+		memcpy(&comisp_program_functions, 
+				comisp_chips_param[i].program_functions, 
+				sizeof(comisp_program_functions));
+		comisp_program_functions.enter_program_mode = comisp_enter_program_mode;
+		break;
 	case 'E':
 		if (argu != NULL)
 		{
@@ -190,55 +213,15 @@ RESULT comisp_parse_argument(char cmd, const char *argu)
 	return ERROR_OK;
 }
 
-RESULT comisp_program(struct operation_t operations, struct program_info_t *pi, 
-					  struct programmer_info_t *prog)
+RESULT comisp_enter_program_mode(struct program_context_t *context)
 {
-	RESULT ret = ERROR_OK;
-	uint8_t i;
+	struct program_functions_t *pf = 
+					comisp_chips_param[comisp_chip_index].program_functions;
 	
-	pi = pi;
-	prog = prog;
-	
-	comisp_chip_index = -1;
-	comisp_chip_param = NULL;
-	for (i = 0; i < dimof(comisp_chips_param); i++)
+	context->pi->mode -= comisp_mode_offset;
+	if (pf->enter_program_mode != NULL)
 	{
-		if (!strcmp(comisp_chips_param[i].chip_name, pi->chip_name))
-		{
-			comisp_chip_index = i;
-			comisp_chip_param = (struct comisp_param_t *)&comisp_chips_param[i];
-		}
+		return pf->enter_program_mode(context);
 	}
-	if ((comisp_chip_index < 0) || (NULL == comisp_chip_param))
-	{
-		return ERROR_FAIL;
-	}
-	
-	if (!strlen(com_mode.comport))
-	{
-		strncpy(com_mode.comport, DEFAULT_COMPORT, sizeof(com_mode.comport));
-		LOG_WARNING(_GETTEXT(INFOMSG_USE_DEFAULT), "Com port", DEFAULT_COMPORT);
-	}
-	
-	switch(comisp_chip_index)
-	{
-	case COMISP_STM32:
-		ret = stm32isp_program(operations, pi);
-		break;
-	case COMISP_LPCARM:
-		ret = lpcarmisp_program(operations, pi);
-		break;
-	default:
-		// invalid target
-		LOG_BUG(_GETTEXT(ERRMSG_INVALID), TO_STR(comisp_chip_index), 
-				CUR_TARGET_STRING);
-		ret = ERRCODE_INVALID;
-		break;
-	}
-	if (!(operations.read_operations & CHIPID))
-	{
-		comisp_execute_flag = 0;
-	}
-	return ret;
+	return ERROR_OK;
 }
-

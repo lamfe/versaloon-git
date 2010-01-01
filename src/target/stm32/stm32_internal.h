@@ -20,13 +20,13 @@
 #ifndef __STM32_INTERNAL_H_INCLUDED__
 #define __STM32_INTERNAL_H_INCLUDED__
 
-#define STM32_PAGE_SIZE				128
+#define STM32_FLASH_PAGESIZE		128
 #define STM32_FLASH_ADDR			0x08000000
 #define STM32_SRAM_ADDR				0x20000000
 #define STM32_FLASH_DEFAULT			0xFF
 
 #define STM32_JTAG					0
-#define STM32_SWJ					1
+#define STM32_SWD					1
 #define STM32_ISP					2
 
 #define STM32_REV_MSK				0xFFFF0000

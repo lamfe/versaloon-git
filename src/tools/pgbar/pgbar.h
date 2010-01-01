@@ -21,6 +21,7 @@
 #define __PGBAR_H_INCLUDED__
 
 #define PROGRESS_STEP			40
+#define PROGRESS_CHAR			'='
 
 RESULT pgbar_init(char *s, char *e, uint32_t min, uint32_t max, 
 					uint32_t max_chars, char c);

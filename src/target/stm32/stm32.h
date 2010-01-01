@@ -21,12 +21,11 @@
 
 #define STM32_STRING					"stm32"
 
-extern const struct program_area_map_t stm32_program_area_map[];
+extern struct program_area_map_t stm32_program_area_map[];
 extern const struct program_mode_t stm32_program_mode[];
+extern struct program_functions_t stm32_program_functions;
 
 RESULT stm32_parse_argument(char cmd, const char *argu);
-RESULT stm32_program(struct operation_t operations, 
-				struct program_info_t *pi, struct programmer_info_t *prog);
 
 #endif /* __STM32_H_INCLUDED__ */
 

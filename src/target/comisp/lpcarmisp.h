@@ -19,12 +19,5 @@
 #ifndef __LPCARMISP_H_INCLUDED__
 #define __LPCARMISP_H_INCLUDED__
 
-#define LPCARM_FLASH_CHAR			0xFF
-
-#define LPCARMISP_PAGE_SIZE			256
-
-RESULT lpcarmisp_program(struct operation_t operations, 
-							struct program_info_t *pi);
-
 #endif /* __LPCARMISP_H_INCLUDED__ */
 

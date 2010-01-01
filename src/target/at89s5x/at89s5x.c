@@ -45,9 +45,9 @@
 
 const struct program_area_map_t s5x_program_area_map[] = 
 {
-	{APPLICATION_CHAR, 1, 0, 0},
-	{LOCK_CHAR, 0, 0, 0},
-	{0, 0, 0, 0}
+	{APPLICATION_CHAR, 1, 0, 0, AREA_ATTR_EWR},
+	{LOCK_CHAR, 0, 0, 0, AREA_ATTR_WR},
+	{0, 0, 0, 0, 0}
 };
 
 const struct program_mode_t s5x_program_mode[] = 

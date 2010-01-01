@@ -23,7 +23,7 @@
 enum adi_dp_if_type_t
 {
 	ADI_DP_JTAG = 0, 
-	ADI_DP_SWJ = 1
+	ADI_DP_SWD = 1
 };
 
 typedef struct

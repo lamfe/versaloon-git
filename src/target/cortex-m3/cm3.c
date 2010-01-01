@@ -49,30 +49,57 @@
 
 #define CUR_TARGET_STRING			CM3_STRING
 
-const struct cm3_param_t cm3_chips_param[] = {
-//	chip_name,		jtag_khz,		pos			swj_trn
-	{"cm3_stm32",	STM32_JTAG_KHZ,	{0,1,0,5},	2},
+RESULT cm3_enter_program_mode(struct program_context_t *context);
+RESULT cm3_leave_program_mode(struct program_context_t *context, 
+									uint8_t success);
+struct program_functions_t cm3_program_functions = 
+{
+	NULL,			// execute
+	cm3_enter_program_mode, 
+	cm3_leave_program_mode, 
+	NULL, 
+	NULL, 
+	NULL
 };
-static int8_t cm3_chip_index = 0;
-struct cm3_param_t *cm3_chip_param = NULL;
 
+const struct cm3_param_t cm3_chips_param[] = {
+//	chip_name,		jtag_khz,		pos			swj_trn,	program_functions
+	{"cm3_stm32",	STM32_JTAG_KHZ,	{0,1,0,5},	2,			&stm32swj_program_functions},
+};
+static uint8_t cm3_chip_index = 0;
+
+uint8_t cm3_mode_offset = 0;
 uint8_t cm3_execute_flag = 0;
 uint32_t cm3_execute_addr = 0;
-uint16_t cm3_buffer_size = 0;
 
 RESULT cm3_parse_argument(char cmd, const char *argu)
 {
+	uint8_t i;
+	
 	switch (cmd)
 	{
-	case 'b':
-		// set buffer size
+	case 'c':
 		if (NULL == argu)
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), cmd);
 			return ERRCODE_INVALID_OPTION;
 		}
 		
-		cm3_buffer_size = (uint16_t)strtoul(argu, NULL, 0);
+		for (i = 0; i < dimof(cm3_chips_param); i++)
+		{
+			if (!strcmp(cm3_chips_param[i].chip_name, argu))
+			{
+				cm3_chip_index = i;
+				memcpy(&cm3_program_functions, 
+						cm3_chips_param[i].program_functions, 
+						sizeof(cm3_program_functions));
+				cm3_program_functions.enter_program_mode = 
+					cm3_enter_program_mode;
+				cm3_program_functions.leave_program_mode = 
+					cm3_leave_program_mode;
+				break;
+			}
+		}
 		break;
 	case 'x':
 		if (NULL == argu)
@@ -92,104 +119,95 @@ RESULT cm3_parse_argument(char cmd, const char *argu)
 	return ERROR_OK;
 }
 
-
-
-
-
-
-#define get_target_voltage(v)					prog->get_target_voltage(v)
-RESULT cm3_program(struct operation_t operations, struct program_info_t *pi, 
-					  struct programmer_info_t *prog)
+RESULT cm3_enter_program_mode(struct program_context_t *context)
 {
-	RESULT ret = ERROR_OK;
 	adi_dp_if_t dp;
-	uint16_t voltage;
-	uint8_t i;
+	const struct program_functions_t *pf = 
+		cm3_chips_param[cm3_chip_index].program_functions;
 	
-	pi = pi;
-	
-	cm3_chip_index = -1;
-	cm3_chip_param = NULL;
-	for (i = 0; i < dimof(cm3_chips_param); i++)
-	{
-		if (!strcmp(cm3_chips_param[i].chip_name, pi->chip_name))
-		{
-			cm3_chip_index = i;
-			cm3_chip_param = (struct cm3_param_t *)&cm3_chips_param[i];
-			break;
-		}
-	}
-	if ((cm3_chip_index < 0) || (NULL == cm3_chip_param))
+	if (cm3_chip_index >= dimof(cm3_chips_param))
 	{
 		return ERROR_FAIL;
 	}
 	
-	// get target voltage
-	if (ERROR_OK != get_target_voltage(&voltage))
-	{
-		return ERROR_FAIL;
-	}
-	LOG_DEBUG(_GETTEXT(INFOMSG_TARGET_VOLTAGE), voltage / 1000.0);
-	if (voltage < 2700)
-	{
-		LOG_WARNING(_GETTEXT(INFOMSG_TARGET_LOW_POWER));
-	}
-	
-	if ((program_mode != ADI_DP_JTAG) && (program_mode != ADI_DP_SWJ))
+	// jtag/swj init
+	context->pi->mode -= cm3_mode_offset;
+	if ((context->pi->mode != ADI_DP_JTAG) 
+		&& (context->pi->mode != ADI_DP_SWD))
 	{
 		LOG_WARNING(_GETTEXT("debug port not defined, use JTAG by default.\n"));
-		program_mode = ADI_DP_JTAG;
+		context->pi->mode = ADI_DP_JTAG;
 	}
+	dp.type = context->pi->mode;
 	
-	dp.type = program_mode;
-	switch(program_mode)
+	switch(context->pi->mode)
 	{
 	case ADI_DP_JTAG:
-		if (program_frequency)
+		if (context->pi->frequency)
 		{
-			dp.adi_dp_if_info.adi_dp_jtag.jtag_khz = program_frequency;
+			dp.adi_dp_if_info.adi_dp_jtag.jtag_khz = context->pi->frequency;
 		}
 		else
 		{
-			dp.adi_dp_if_info.adi_dp_jtag.jtag_khz = cm3_chip_param->jtag_khz;
+			dp.adi_dp_if_info.adi_dp_jtag.jtag_khz = 
+				cm3_chips_param[cm3_chip_index].jtag_khz;
 		}
-		dp.adi_dp_if_info.adi_dp_jtag.ub = cm3_chip_param->pos.ub;
-		dp.adi_dp_if_info.adi_dp_jtag.ua = cm3_chip_param->pos.ua;
-		dp.adi_dp_if_info.adi_dp_jtag.bb = cm3_chip_param->pos.bb;
-		dp.adi_dp_if_info.adi_dp_jtag.ba = cm3_chip_param->pos.ba;
+		dp.adi_dp_if_info.adi_dp_jtag.ub = 
+				cm3_chips_param[cm3_chip_index].pos.ub;
+		dp.adi_dp_if_info.adi_dp_jtag.ua = 
+				cm3_chips_param[cm3_chip_index].pos.ua;
+		dp.adi_dp_if_info.adi_dp_jtag.bb = 
+				cm3_chips_param[cm3_chip_index].pos.bb;
+		dp.adi_dp_if_info.adi_dp_jtag.ba = 
+				cm3_chips_param[cm3_chip_index].pos.ba;
 		
 		break;
-	case ADI_DP_SWJ:
-		dp.adi_dp_if_info.adi_dp_swj.swj_trn = cm3_chip_param->swj_trn;
+	case ADI_DP_SWD:
+		dp.adi_dp_if_info.adi_dp_swj.swj_trn = 
+				cm3_chips_param[cm3_chip_index].swj_trn;
 		dp.adi_dp_if_info.adi_dp_swj.swj_dly = 0;
 		dp.adi_dp_if_info.adi_dp_swj.swj_retry = 0;
 		
 		break;
 	}
 	
-	if (ERROR_OK != cm3_dp_init(prog, &dp))
+	// mode independent
+	if (ERROR_OK != cm3_dp_init(context->prog, &dp))
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "initialize cm3");
-		ret = ERRCODE_FAILURE_OPERATION;
-		goto leave_program_mode;
+		cm3_leave_program_mode(context, 0);
+		return ERRCODE_FAILURE_OPERATION;
 	}
 	
-	switch (cm3_chip_index)
+	if ((pf->enter_program_mode != NULL) 
+		&& (ERROR_OK != pf->enter_program_mode(context)))
 	{
-	case CM3_STM32:
-		ret = stm32jtagswj_program(operations, pi, &adi_dp_info);
-		break;
-	default:
-		// invalid target
-		LOG_BUG(_GETTEXT(ERRMSG_INVALID), TO_STR(cm3_chip_index), 
-				CUR_TARGET_STRING);
-		return ERRCODE_INVALID;
+		return ERROR_FAIL;
+	}
+	return ERROR_OK;
+}
+
+RESULT cm3_leave_program_mode(struct program_context_t *context, 
+									uint8_t success)
+{
+	const struct program_functions_t *pf = 
+		cm3_chips_param[cm3_chip_index].program_functions;
+	RESULT ret = ERROR_OK;
+	
+	if (cm3_chip_index >= dimof(cm3_chips_param))
+	{
+		return ERROR_FAIL;
 	}
 	
+	if (pf->leave_program_mode != NULL)
+	{
+		ret = pf->leave_program_mode(context, success);
+	}
+	
+	// jtag/swj fini
 	cm3_reset();
-leave_program_mode:
 	cm3_dp_fini();
-	if (!(operations.read_operations & CHIPID))
+	if (!(context->op->read_operations & CHIPID))
 	{
 		cm3_execute_flag = 0;
 	}

@@ -42,17 +42,15 @@
 #include "stm32.h"
 #include "stm32_internal.h"
 #include "comisp.h"
-#include "comisp_internal.h"
 #include "cm3.h"
-#include "cm3_internal.h"
 #include "adi_v5p1.h"
 
 #define CUR_TARGET_STRING			STM32_STRING
 
-const struct program_area_map_t stm32_program_area_map[] = 
+struct program_area_map_t stm32_program_area_map[] = 
 {
-	{APPLICATION_CHAR, 1, 0, 0},
-	{0, 0, 0, 0}
+	{APPLICATION_CHAR, 1, 0, 0, AREA_ATTR_EWR},
+	{0, 0, 0, 0, 0}
 };
 
 const struct program_mode_t stm32_program_mode[] = 
@@ -62,6 +60,8 @@ const struct program_mode_t stm32_program_mode[] =
 	{'i', USE_COMM, 0},
 	{0, NULL, 0}
 };
+
+struct program_functions_t stm32_program_functions;
 
 static void stm32_usage(void)
 {
@@ -76,10 +76,38 @@ Usage of %s:\n\
 
 RESULT stm32_parse_argument(char cmd, const char *argu)
 {
+	uint8_t mode;
+	
 	switch (cmd)
 	{
 	case 'h':
 		stm32_usage();
+		break;
+	case 'm':
+		if (NULL == argu)
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), cmd);
+			return ERRCODE_INVALID_OPTION;
+		}
+		mode = (uint8_t)strtoul(argu, NULL,0);
+		switch (mode)
+		{
+		case STM32_JTAG:
+		case STM32_SWD:
+			stm32_program_area_map[0].attr |= AREA_ATTR_NP;
+			cm3_mode_offset = 0;
+			cm3_parse_argument('c', "cm3_stm32");
+			memcpy(&stm32_program_functions, &cm3_program_functions, 
+					sizeof(stm32_program_functions));
+			break;
+		case STM32_ISP:
+			stm32_program_area_map[0].attr &= ~AREA_ATTR_NP;
+			comisp_mode_offset = STM32_ISP;
+			comisp_parse_argument('c', "comisp_stm32");
+			memcpy(&stm32_program_functions, &comisp_program_functions, 
+					sizeof(stm32_program_functions));
+			break;
+		}
 		break;
 	case 'E':
 		comisp_print_comm_info(COMISP_STM32);
@@ -170,44 +198,5 @@ void stm32_print_device(uint32_t mcuid)
 	{
 		LOG_INFO(_GETTEXT("STM32 revision: %c\n"), rev_char);
 	}
-}
-
-RESULT stm32_program(struct operation_t operations, 
-					struct program_info_t *pi, struct programmer_info_t *prog)
-{
-	RESULT ret = ERROR_OK;
-	
-#ifdef PARAM_CHECK
-	if (NULL == prog)
-	{
-		LOG_BUG(_GETTEXT(ERRMSG_INVALID_PARAMETER), __FUNCTION__);
-		return ERRCODE_INVALID_PARAMETER;
-	}
-#endif
-	
-	operations = operations;
-	pi = pi;
-	prog = prog;
-	
-	switch (program_mode)
-	{
-	case STM32_JTAG:
-		program_mode = ADI_DP_JTAG;
-		goto stm32jtagswj_program;
-	case STM32_SWJ:
-		program_mode = ADI_DP_SWJ;
-stm32jtagswj_program:
-		pi->chip_name = (char *)cm3_chips_param[CM3_STM32].chip_name;
-		pi->chip_type = "cm3";
-		ret = cm3_program(operations, pi, prog);
-		break;
-	case STM32_ISP:
-		pi->chip_name = (char *)comisp_chips_param[COMISP_STM32].chip_name;
-		pi->chip_type = "comisp";
-		ret = comisp_program(operations, pi, prog);
-		break;
-	}
-	
-	return ret;
 }
 

@@ -37,7 +37,7 @@
 #include "adi_v5p1.h"
 #include "cm3_common.h"
 
-adi_dp_if_t *cm3_dp_if = NULL;
+adi_dp_if_t cm3_dp_if;
 
 RESULT cm3_dp_parameter_init(adi_dp_if_t *dp)
 {
@@ -49,7 +49,6 @@ RESULT cm3_dp_parameter_init(adi_dp_if_t *dp)
 
 RESULT cm3_dp_fini(void)
 {
-	cm3_dp_if = NULL;
 	return adi_fini();
 }
 
@@ -57,10 +56,10 @@ RESULT cm3_dp_init(struct programmer_info_t *prog, adi_dp_if_t *dp)
 {
 	uint32_t cpuid;
 	
-	cm3_dp_if = dp;
+	memcpy(&cm3_dp_if, dp, sizeof(cm3_dp_if));
 	
-	cm3_dp_parameter_init(cm3_dp_if);
-	if (ERROR_OK != adi_init(prog, cm3_dp_if))
+	cm3_dp_parameter_init(&cm3_dp_if);
+	if (ERROR_OK != adi_init(prog, &cm3_dp_if))
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
 					"initialize cm3 interface");
@@ -119,7 +118,7 @@ RESULT cm3_read_core_register(uint8_t reg_idx, uint32_t *value)
 
 uint32_t cm3_get_max_block_size(uint32_t address)
 {
-	return adi_memap_get_max_tar_block_size(cm3_dp_if->tar_autoincr_block, 
+	return adi_memap_get_max_tar_block_size(cm3_dp_if.tar_autoincr_block, 
 											address);
 }
 
@@ -176,15 +175,12 @@ RESULT cm3_dp_run(void)
 		sleep_ms(10);
 	}
 	
-	LOG_DEBUG(_GETTEXT("dhcsr: 0x%08X\n"), dcb_dhcsr);
 	if (dcb_dhcsr & CM3_DCB_DHCSR_S_HALT)
 	{
-		LOG_ERROR(_GETTEXT("Fail to run target.\n"));
 		return ERROR_FAIL;
 	}
 	else
 	{
-		LOG_INFO(_GETTEXT("Target running.\n"));
 		return ERROR_OK;
 	}
 }
@@ -235,15 +231,12 @@ RESULT cm3_dp_halt(void)
 		sleep_ms(10);
 	}
 	
-	LOG_DEBUG(_GETTEXT("dhcsr: 0x%08X\n"), dcb_dhcsr);
 	if (dcb_dhcsr & CM3_DCB_DHCSR_S_HALT)
 	{
-		LOG_INFO(_GETTEXT("Target halted.\n"));
 		return ERROR_OK;
 	}
 	else
 	{
-		LOG_ERROR(_GETTEXT("Fail to halt target.\n"));
 		return ERROR_FAIL;
 	}
 }
