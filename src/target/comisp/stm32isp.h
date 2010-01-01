@@ -19,8 +19,6 @@
 #ifndef __STM32ISP_H_INCLUDED__
 #define __STM32ISP_H_INCLUDED__
 
-#define STM32_FLASH_CHAR				0xFF
-
 #define STM32ISP_SYNC					0x7F
 #define STM32ISP_ACK					0x79
 #define STM32ISP_NACK					0x1F
@@ -48,13 +46,7 @@
 // disable readout protect
 #define STM32ISP_CMD_READOUT_UNPROTECT	0x92
 
-// STM32ISP
-#define STM32ISP_PAGE_SIZE_TX			256
-#define STM32ISP_PAGE_SIZE_RX			256
-#define STM32ISP_PAGE_SIZE				256
-
-RESULT stm32isp_program(struct operation_t operations, 
-						struct program_info_t *pi);
+extern struct program_functions_t stm32isp_program_functions;
 
 #endif /* __STM32ISP_H_INCLUDED__ */
 

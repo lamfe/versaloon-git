@@ -44,14 +44,3 @@
 
 #include "comport.h"
 
-RESULT lpcarmisp_program(struct operation_t operations, 
-							struct program_info_t *pi)
-{
-	operations = operations;
-	pi = pi;
-	
-	LOG_ERROR("comisp_lpcarm not supported\n");
-	
-	return ERROR_FAIL;
-}
-

@@ -49,7 +49,26 @@
 
 #include "timer.h"
 
-#define CUR_TARGET_STRING			CM3_STRING
+#define STM32SWJ_BUFFER_SIZE		512
+
+RESULT stm32swj_enter_program_mode(struct program_context_t *context);
+RESULT stm32swj_leave_program_mode(struct program_context_t *context, 
+									uint8_t success);
+RESULT stm32swj_erase_target(struct program_context_t *context, char area, 
+								uint32_t addr, uint32_t size);
+RESULT stm32swj_write_target(struct program_context_t *context, char area, 
+								uint32_t addr, uint8_t *buff, uint32_t size);
+RESULT stm32swj_read_target(struct program_context_t *context, char area, 
+								uint32_t addr, uint8_t *buff, uint32_t size);
+const struct program_functions_t stm32swj_program_functions = 
+{
+	NULL, 
+	stm32swj_enter_program_mode, 
+	stm32swj_leave_program_mode, 
+	stm32swj_erase_target, 
+	stm32swj_write_target, 
+	stm32swj_read_target
+};
 
 RESULT stm32_wait_status_busy(uint32_t *status, uint32_t timeout)
 {
@@ -103,20 +122,100 @@ RESULT stm32_mass_erase(void)
 	}
 }
 
-RESULT stm32jtagswj_program(struct operation_t operations, 
-					struct program_info_t *pi, struct adi_dp_info_t *dp_info)
+RESULT stm32swj_enter_program_mode(struct program_context_t *context)
 {
-	RESULT ret = ERROR_OK;
-	uint32_t i;
 	uint32_t reg;
-	uint32_t cur_block_size, block_size, block_size_tmp, cur_address;
-	uint32_t cur_run_size;
-	uint32_t mcu_id;
-	uint32_t target_size;
-	uint32_t start_time, run_time;
-	uint8_t *tbuff;
-	struct memlist **ml, *ml_tmp;
+	struct operation_t *op = context->op;
 	
+	if ((op->erase_operations & APPLICATION) 
+		|| (op->write_operations & APPLICATION))
+	{
+		reg = STM32_FLASH_UNLOCK_KEY1;
+		adi_memap_write_reg(STM32_FLASH_KEYR, &reg, 0);
+		reg = STM32_FLASH_UNLOCK_KEY2;
+		if (ERROR_OK != adi_memap_write_reg(STM32_FLASH_KEYR, &reg, 1))
+		{
+			return ERROR_FAIL;
+		}
+	}
+	return ERROR_OK;
+}
+
+RESULT stm32swj_leave_program_mode(struct program_context_t *context, 
+									uint8_t success)
+{
+	uint32_t reg;
+	
+	if (cm3_execute_flag && success 
+		&& (context->op->write_operations & APPLICATION))
+	{
+		if (ERROR_OK != cm3_dp_halt())
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "halt stm32");
+			return ERRCODE_FAILURE_OPERATION;
+		}
+		if (ERROR_OK != 
+				cm3_write_core_register(CM3_COREREG_PC, &cm3_execute_addr))
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "write PC");
+			return ERRCODE_FAILURE_OPERATION;
+		}
+		reg = 0;
+		if ((ERROR_OK != cm3_read_core_register(CM3_COREREG_PC, &reg)) 
+			|| (reg != cm3_execute_addr))
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "verify written PC");
+			return ERRCODE_FAILURE_OPERATION;
+		}
+		if (ERROR_OK != cm3_dp_run())
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "run code");
+			return ERRCODE_FAILURE_OPERATION;
+		}
+	}
+	return ERROR_OK;
+}
+
+RESULT stm32swj_erase_target(struct program_context_t *context, char area, 
+								uint32_t addr, uint32_t size)
+{
+	RESULT ret= ERROR_OK;
+	REFERENCE_PARAMETER(size);
+	REFERENCE_PARAMETER(addr);
+	REFERENCE_PARAMETER(context);
+	
+	switch (area)
+	{
+	case APPLICATION_CHAR:
+		// halt target first
+		if (ERROR_OK != cm3_dp_halt())
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "halt stm32");
+			ret = ERRCODE_FAILURE_OPERATION;
+			break;
+		}
+		// erase all flash
+		if (ERROR_OK != stm32_mass_erase())
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "erase chip");
+			ret = ERRCODE_FAILURE_OPERATION;
+			break;
+		}
+		break;
+	default:
+		ret = ERROR_FAIL;
+		break;
+	}
+	return ret;
+}
+
+RESULT stm32swj_write_target(struct program_context_t *context, char area, 
+								uint32_t addr, uint8_t *buff, uint32_t size)
+{
+	uint32_t reg, block_size;
+	uint32_t cur_run_size, cur_block_size;
+	uint32_t start_time, run_time;
+	uint8_t update_setting;
 #define FL_PARA_ADDR_BASE			\
 					(STM32_SRAM_ADDR + sizeof(stm32_fl_code) - 4 * 4)
 #define FL_ADDR_RAM_SRC				(FL_PARA_ADDR_BASE + 0)
@@ -176,137 +275,12 @@ RESULT stm32jtagswj_program(struct operation_t operations,
 		0x00, 0x00, 0x00, 0x00,		/* number_of_words(2-byte), set to 0 */
 		0x00, 0x00, 0x00, 0x00		/* result, set to 0 */
 	};
-	uint8_t page_buf[STM32_PAGE_SIZE_RW];
+	RESULT ret = ERROR_OK;
+	REFERENCE_PARAMETER(context);
 	
-	pi = pi;
-	dp_info = dp_info;
-	
-	// check buffer size
-	if (0 == cm3_buffer_size)
+	switch (area)
 	{
-		// use default
-		cm3_buffer_size = 512;
-	}
-	if (cm3_buffer_size & 0x03)
-	{
-		LOG_ERROR(_GETTEXT("STM32 buffer_size can only be aligned to 4.\n"));
-		ret = ERRCODE_INVALID_OPTION;
-		goto leave_program_mode;
-	}
-	if (cm3_buffer_size > STM32_PAGE_SIZE_RW)
-	{
-		LOG_WARNING(_GETTEXT("Max buffer_size for STM32 is %d\n"), 
-					STM32_PAGE_SIZE_RW);
-		cm3_buffer_size = STM32_PAGE_SIZE_RW;
-	}
-	
-	// read MCU ID at STM32_REG_MCU_ID
-	if (ERROR_OK != adi_memap_read_reg(STM32_REG_MCU_ID, &mcu_id, 1))
-	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read stm32 MCU_ID");
-		ret = ERRCODE_FAILURE_OPERATION;
-		goto leave_program_mode;
-	}
-	pi->chip_id = mcu_id;
-	stm32_print_device(pi->chip_id);
-	pi->chip_id &= STM32_DEN_MSK;
-	LOG_INFO(_GETTEXT(INFOMSG_TARGET_CHIP_ID), pi->chip_id);
-	
-	// read flash and ram size
-	if (ERROR_OK != adi_memap_read_reg(STM32_REG_FLASH_RAM_SIZE, &mcu_id, 1))
-	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-				  "read stm32 flash_ram size");
-		ret = ERRCODE_FAILURE_OPERATION;
-		goto leave_program_mode;
-	}
-	if ((mcu_id & 0xFFFF) <= 512)
-	{
-		pi->program_areas[APPLICATION_IDX].size = (mcu_id & 0xFFFF) * 1024;
-		LOG_INFO(_GETTEXT("STM32 flash_size: %dK Bytes\n"), mcu_id & 0xFFFF);
-	}
-	else
-	{
-		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_VALUE), mcu_id & 0xFFFF, 
-					"stm32 flash size");
-		return ERRCODE_INVALID;
-	}
-	if ((mcu_id >> 16) != 0xFFFF)
-	{
-		LOG_INFO(_GETTEXT("STM32 sram_size: %dK Bytes\n"), mcu_id >> 16);
-	}
-	
-	if (!(operations.read_operations & CHIPID))
-	{
-		if (pi->chip_id != target_chip_param.chip_id)
-		{
-			LOG_WARNING(_GETTEXT(ERRMSG_INVALID_CHIP_ID), pi->chip_id, 
-						target_chip_param.chip_id);
-		}
-	}
-	else
-	{
-		goto leave_program_mode;
-	}
-	
-	// unlock flash registers
-	reg = STM32_FLASH_UNLOCK_KEY1;
-	adi_memap_write_reg(STM32_FLASH_KEYR, &reg, 0);
-	reg = STM32_FLASH_UNLOCK_KEY2;
-	adi_memap_write_reg(STM32_FLASH_KEYR, &reg, 0);
-	
-	// erase
-	if (operations.erase_operations > 0)
-	{
-		// halt target first
-		if (ERROR_OK != cm3_dp_halt())
-		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "halt stm32");
-			ret = ERRCODE_FAILURE_OPERATION;
-			goto leave_program_mode;
-		}
-		
-		LOG_INFO(_GETTEXT(INFOMSG_ERASING), "chip");
-		pgbar_init("erasing chip |", "|", 0, 1, PROGRESS_STEP, '=');
-		
-/*		if (pi->app_size_valid > 0)
-		{
-			// erase flash according to data
-		}
-		else
-*/
-		{
-			// erase all flash
-			if (ERROR_OK != stm32_mass_erase())
-			{
-				pgbar_fini();
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "erase chip");
-				ret = ERRCODE_FAILURE_OPERATION;
-				goto leave_program_mode;
-			}
-		}
-		
-		pgbar_update(1);
-		pgbar_fini();
-		LOG_INFO(_GETTEXT(INFOMSG_ERASED), "chip");
-	}
-	
-	ml = &pi->program_areas[APPLICATION_IDX].memlist;
-	target_size = MEMLIST_CalcAllSize(*ml);
-	tbuff = pi->program_areas[APPLICATION_IDX].buff;
-	if (operations.write_operations & APPLICATION)
-	{
-		// halt target first
-		if (ERROR_OK != cm3_dp_halt())
-		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "halt stm32");
-			ret = ERRCODE_FAILURE_OPERATION;
-			goto leave_program_mode;
-		}
-		
-		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMING), "flash_loader");
-		pgbar_init("writing flash_loader |", "|", 0, 1, PROGRESS_STEP, '=');
-		
+	case APPLICATION_CHAR:
 		block_size = sizeof(stm32_fl_code);
 		// last_but_three dword is RAM address for data, set to 1K at SRAM
 		*(uint32_t *)(stm32_fl_code + block_size - 4 * 4) = FL_ADDR_DATA;
@@ -320,296 +294,193 @@ RESULT stm32jtagswj_program(struct operation_t operations,
 			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
 					  "load flash_loader to SRAM");
 			ret = ERRCODE_FAILURE_OPERATION;
-			goto leave_program_mode;
+			break;
 		}
-		
-		pgbar_update(1);
-		pgbar_fini();
-		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMED_SIZE), "flash_loader", block_size);
-		
-		LOG_INFO(_GETTEXT(INFOMSG_VERIFYING), "flash_loader");
-		pgbar_init("reading flash_loader |", "|", 0, 1, PROGRESS_STEP, '=');
-		
-		// read back for verify
-		memset(page_buf, 0, block_size);
-		if (ERROR_OK != adi_memap_read_buf(STM32_SRAM_ADDR, page_buf, 
-												block_size))
-		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-						"read flash_loader for verify");
-			ret = ERRCODE_FAILURE_OPERATION;
-			goto leave_program_mode;
-		}
-		for (i = 0; i < block_size; i++)
-		{
-			if (stm32_fl_code[i] != page_buf[i])
-			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-							"verify flash_loader");
-				ret = ERRCODE_FAILURE_OPERATION;
-				goto leave_program_mode;
-			}
-		}
-		
-		pgbar_update(1);
-		pgbar_fini();
-		LOG_INFO(_GETTEXT(INFOMSG_VERIFIED_SIZE), "flash_loader", block_size);
-		
 		reg = STM32_SRAM_ADDR;
 		if (ERROR_OK != cm3_write_core_register(CM3_COREREG_PC, &reg))
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "write PC");
 			ret = ERRCODE_FAILURE_OPERATION;
-			goto leave_program_mode;
+			break;
 		}
-		reg = 0;
-		if ((ERROR_OK != cm3_read_core_register(CM3_COREREG_PC, &reg)) 
-			|| (reg != STM32_SRAM_ADDR))
-		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "verify written PC");
-			ret = ERRCODE_FAILURE_OPERATION;
-			goto leave_program_mode;
-		}
-		LOG_DEBUG(_GETTEXT("PC is set to run flash_loader.\n"));
-		
-		// run target
 		if (ERROR_OK != cm3_dp_run())
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "run flash_loader");
 			ret = ERRCODE_FAILURE_OPERATION;
-			goto leave_program_mode;
+			break;
 		}
-		LOG_DEBUG(_GETTEXT("flash_loader is running.\n"));
 		
-		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMING), "flash");
-		pgbar_init("writing flash |", "|", 0, target_size, PROGRESS_STEP, '=');
-		
-		ml_tmp = *ml;
-		while (ml_tmp != NULL)
+		cur_run_size = 0;
+		update_setting = 0;
+		while (size)
 		{
-			block_size = ml_tmp->len;
-			cur_address = ml_tmp->addr;
-			block_size_tmp = 0;
-			cur_run_size = 0;
-			i = 0;
-			while (block_size)
+			if (size > STM32SWJ_BUFFER_SIZE)
 			{
-				if (block_size > cm3_buffer_size)
-				{
-					cur_block_size = cm3_buffer_size;
-				}
-				else
-				{
-					cur_block_size = block_size;
-				}
-				
-				// write flash content to FL_PARA_ADDR_DATA
-				if (ERROR_OK != adi_memap_write_buf(FL_ADDR_DATA + cur_run_size,
-						&tbuff[cur_address - STM32_FLASH_ADDR], cur_block_size))
-				{
-					pgbar_fini();
-					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-							  "download flash data");
-					ret = ERRCODE_FAILURE_OPERATION;
-					goto leave_program_mode;
-				}
-				
-				// write flash address
-				if (0 == cur_run_size)
-				{
-					// first run, update flash address
-					adi_memap_write_reg(FL_ADDR_FLASH_DEST, &cur_address, 0);
-				}
-				// write word length
-				cur_run_size += cur_block_size;
-				reg = cur_run_size / 2;
-				if (i)
-				{
-					i = 0;
-					// not the first run
-					// or the length by 0x8000 to indicate reload addresses
-					reg |= 0x8000;
-				}
-				if (ERROR_OK != 
+				cur_block_size = STM32SWJ_BUFFER_SIZE;
+			}
+			else
+			{
+				cur_block_size = size;
+			}
+			
+			// write flash content to FL_PARA_ADDR_DATA
+			if (ERROR_OK != adi_memap_write_buf(FL_ADDR_DATA + cur_run_size,
+														buff, cur_block_size))
+			{
+				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+						  "download flash data");
+				ret = ERRCODE_FAILURE_OPERATION;
+				break;
+			}
+			
+			// write flash address
+			if (0 == cur_run_size)
+			{
+				// first run, update flash address
+				adi_memap_write_reg(FL_ADDR_FLASH_DEST, &addr, 0);
+			}
+			// write word length
+			cur_run_size += cur_block_size;
+			reg = cur_run_size / 2;
+			if (update_setting)
+			{
+				update_setting = 0;
+				// not the first run
+				// or the length by 0x8000 to indicate reload addresses
+				reg |= 0x8000;
+			}
+			if (ERROR_OK != 
 						adi_memap_write_reg(FL_ADDR_WORD_LENGTH, &reg, 1))
-				{
-					pgbar_fini();
-					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+			{
+				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
 							  "download parameters to flash_loader");
-					ret = ERRCODE_FAILURE_OPERATION;
-					goto leave_program_mode;
-				}
-				
-				// wait ready
+				ret = ERRCODE_FAILURE_OPERATION;
+				break;
+			}
+			
+			// wait ready
+			if ((cur_run_size >=  STM32_PAGE_SIZE_RW) 
+				|| (size <= STM32SWJ_BUFFER_SIZE))
+			{
 				start_time = get_time_in_ms();
-				if ((cur_run_size >=  STM32_PAGE_SIZE_RW) 
-					|| (block_size <= cm3_buffer_size))
-				{
-					reg = 0;
-					do{
-						if (ERROR_OK != 
+				reg = 0;
+				do{
+					if (ERROR_OK != 
 								adi_memap_read_reg(FL_ADDR_RESULT, &reg, 1))
-						{
-							pgbar_fini();
-							LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-									  "read result from flash_loader");
-							ret = ERRCODE_FAILURE_OPERATION;
-							goto leave_program_mode;
-						}
-						
-						run_time = get_time_in_ms();
-						if ((run_time - start_time) > 1000)
-						{
-							pgbar_fini();
-							LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-									  "wait OK from flash_loader");
-							ret = ERRCODE_FAILURE_OPERATION;
-							goto leave_program_mode;
-						}
-					} while(reg != cur_run_size / 2);
-					cur_run_size = 0;
-					i = 1;		// need to update settings
-				}
-				
-				block_size -= cur_block_size;
-				cur_address += cur_block_size;
-				pgbar_update(cur_block_size);
-			}
-			
-			ml_tmp = MEMLIST_GetNext(ml_tmp);
-		}
-		
-		pgbar_fini();
-		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMED_SIZE), "flash", target_size);
-	}
-	
-	if ((operations.read_operations & APPLICATION) 
-		|| (operations.verify_operations & APPLICATION))
-	{
-		if (operations.verify_operations & APPLICATION)
-		{
-			LOG_INFO(_GETTEXT(INFOMSG_VERIFYING), "flash");
-		}
-		else
-		{
-			ret = MEMLIST_Add(ml, STM32_FLASH_ADDR, 
-					pi->program_areas[APPLICATION_IDX].size, cm3_buffer_size);
-			if (ret != ERROR_OK)
-			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "add memory list");
-				return ERRCODE_FAILURE_OPERATION;
-			}
-			target_size = MEMLIST_CalcAllSize(*ml);
-			LOG_INFO(_GETTEXT(INFOMSG_READING), "flash");
-		}
-		pgbar_init("reading flash |", "|", 0, target_size, PROGRESS_STEP, '=');
-		
-		ml_tmp = *ml;
-		while (ml_tmp != NULL)
-		{
-			block_size = ml_tmp->len;
-			cur_address = ml_tmp->addr;
-			while (block_size)
-			{
-				// cm3_get_max_block_size return size in dword(4-byte)
-				cur_block_size = cm3_get_max_block_size(cur_address);
-				if (cur_block_size > (block_size >> 2))
-				{
-					cur_block_size = block_size;
-				}
-				else
-				{
-					cur_block_size <<= 2;
-				}
-				block_size_tmp = (cur_block_size + 3) & 0xFFFFFFFC;
-				if (ERROR_OK != adi_memap_read_buf(cur_address, page_buf, 
-												   cur_block_size))
-				{
-					pgbar_fini();
-					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ADDR), 
-							  "write flash block", ml_tmp->addr);
-					ret = ERRCODE_FAILURE_OPERATION_ADDR;
-					goto leave_program_mode;
-				}
-				if (operations.verify_operations & APPLICATION)
-				{
-					// verify
-					for (i = 0; i < cur_block_size; i++)
 					{
-						if (page_buf[i] 
-							!= tbuff[cur_address + i - STM32_FLASH_ADDR])
-						{
-							pgbar_fini();
-							LOG_ERROR(
-								_GETTEXT(ERRMSG_FAILURE_VERIFY_TARGET_AT_02X), 
-								"flash", cur_address + i, page_buf[i], 
-								tbuff[cur_address + i - STM32_FLASH_ADDR]);
-							ret = ERRCODE_FAILURE_VERIFY_TARGET;
-							goto leave_program_mode;
-						}
+						LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+									"read result from flash_loader");
+						ret = ERRCODE_FAILURE_OPERATION;
+						break;
 					}
-				}
-				else
-				{
-					// read
-					memcpy(&tbuff[cur_address - STM32_FLASH_ADDR], 
-							page_buf, cur_block_size);
-				}
-				
-				block_size -= cur_block_size;
-				cur_address += cur_block_size;
-				pgbar_update(cur_block_size);
+					
+					run_time = get_time_in_ms();
+					if ((run_time - start_time) > 1000)
+					{
+						LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+									"wait OK from flash_loader");
+						ret = ERRCODE_FAILURE_OPERATION;
+						break;
+					}
+				} while(reg != cur_run_size / 2);
+				cur_run_size = 0;
+				update_setting = 1;		// need to update settings
 			}
 			
-			ml_tmp = MEMLIST_GetNext(ml_tmp);
+			size -= cur_block_size;
+			addr += cur_block_size;
+			buff += cur_block_size;
+			pgbar_update(cur_block_size);
 		}
-		
-		pgbar_fini();
-		if (operations.verify_operations & APPLICATION)
+		break;
+	default:
+		ret = ERROR_FAIL;
+		break;
+	}
+	
+	return ret;
+}
+
+RESULT stm32swj_read_target(struct program_context_t *context, char area, 
+								uint32_t addr, uint8_t *buff, uint32_t size)
+{
+	struct program_info_t *pi = context->pi;
+	uint32_t mcu_id = 0;
+	uint32_t cur_block_size;
+	RESULT ret = ERROR_OK;
+	
+	switch (area)
+	{
+	case CHIPID_CHAR:
+		// read MCU ID at STM32_REG_MCU_ID
+		if (ERROR_OK != adi_memap_read_reg(STM32_REG_MCU_ID, &mcu_id, 1))
 		{
-			LOG_INFO(_GETTEXT(INFOMSG_VERIFIED_SIZE), "flash", target_size);
+			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read stm32 MCU_ID");
+			ret = ERRCODE_FAILURE_OPERATION;
+			break;
+		}
+		pi->chip_id = mcu_id;
+		stm32_print_device(pi->chip_id);
+		pi->chip_id &= STM32_DEN_MSK;
+		LOG_INFO(_GETTEXT(INFOMSG_TARGET_CHIP_ID), pi->chip_id);
+		
+		// read flash and ram size
+		if (ERROR_OK != adi_memap_read_reg(STM32_REG_FLASH_RAM_SIZE, &mcu_id, 1))
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+					  "read stm32 flash_ram size");
+			ret = ERRCODE_FAILURE_OPERATION;
+			break;
+		}
+		if ((mcu_id & 0xFFFF) <= 512)
+		{
+			pi->program_areas[APPLICATION_IDX].size = (mcu_id & 0xFFFF) * 1024;
+			LOG_INFO(_GETTEXT("Flash memory size: %i KB\n"), mcu_id & 0xFFFF);
 		}
 		else
 		{
-			LOG_INFO(_GETTEXT(INFOMSG_READ), "flash");
+			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_VALUE), mcu_id & 0xFFFF, 
+						"stm32 flash size");
+			ret = ERRCODE_INVALID;
+			break;
 		}
+		if ((mcu_id >> 16) != 0xFFFF)
+		{
+			LOG_INFO(_GETTEXT("SRAM memory size: %i KB\n"), mcu_id >> 16);
+		}
+		break;
+	case APPLICATION_CHAR:
+		while (size)
+		{
+			// cm3_get_max_block_size return size in dword(4-byte)
+			cur_block_size = cm3_get_max_block_size(addr);
+			if (cur_block_size > (size >> 2))
+			{
+				cur_block_size = size;
+			}
+			else
+			{
+				cur_block_size <<= 2;
+			}
+			if (ERROR_OK != adi_memap_read_buf(addr, buff, 
+												   cur_block_size))
+			{
+				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ADDR), 
+						  "write flash block", addr);
+				ret = ERRCODE_FAILURE_OPERATION_ADDR;
+				break;
+			}
+			
+			size -= cur_block_size;
+			addr += cur_block_size;
+			buff += cur_block_size;
+			pgbar_update(cur_block_size);
+		}
+		break;
+	default:
+		ret = ERROR_OK;
+		break;
 	}
-	
-	if (cm3_execute_flag && (operations.write_operations & APPLICATION))
-	{
-		if (ERROR_OK != cm3_dp_halt())
-		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "halt stm32");
-			ret = ERRCODE_FAILURE_OPERATION;
-			goto leave_program_mode;
-		}
-		if (ERROR_OK != 
-				cm3_write_core_register(CM3_COREREG_PC, &cm3_execute_addr))
-		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "write PC");
-			ret = ERRCODE_FAILURE_OPERATION;
-			goto leave_program_mode;
-		}
-		reg = 0;
-		if ((ERROR_OK != cm3_read_core_register(CM3_COREREG_PC, &reg)) 
-			|| (reg != cm3_execute_addr))
-		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "verify written PC");
-			ret = ERRCODE_FAILURE_OPERATION;
-			goto leave_program_mode;
-		}
-		if (ERROR_OK != cm3_dp_run())
-		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "run code");
-			ret = ERRCODE_FAILURE_OPERATION;
-			goto leave_program_mode;
-		}
-	}
-	
-leave_program_mode:
-	// lock flash
-	reg = STM32_FLASH_CR_LOCK;
-	adi_memap_write_reg(STM32_FLASH_CR, &reg, 1);
 	return ret;
 }
 

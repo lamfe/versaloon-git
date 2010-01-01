@@ -52,9 +52,30 @@
 #include "stm32/stm32.h"
 #include "stm8/stm8.h"
 
+const struct target_area_name_t target_area_name[NUM_OF_TARGET_AREA] = 
+{
+	{CHIPID_CHAR,				CHIPID,				"chipid"},
+	{CHIPID_CHKSUM_CHAR,		CHIPID_CHKSUM,		"chipid_checksum"},
+	{BOOTLOADER_CHAR,			BOOTLOADER,			"bootloader"},
+	{BOOTLOADER_CHKSUM_CHAR,	BOOTLOADER_CHKSUM,	"bootloader_checksum"},
+	{APPLICATION_CHAR,			APPLICATION,		"flash"},
+	{APPLICATION_CHKSUM_CHAR,	APPLICATION_CHKSUM,	"flash_checksum"},
+	{EEPROM_CHAR,				EEPROM,				"eeprom"},
+	{EEPROM_CHKSUM_CHAR,		EEPROM_CHKSUM,		"eeprom_checksum"},
+	{OTPROM_CHAR,				OTPROM,				"otprom"},
+	{OTPROM_CHKSUM_CHAR,		OTPROM_CHKSUM,		"otprom_checksum"},
+	{FUSE_CHAR,					FUSE,				"fuse"},
+	{FUSE_CHKSUM_CHAR,			FUSE_CHKSUM,		"fuse_checksum"},
+	{LOCK_CHAR,					LOCK,				"lock"},
+	{LOCK_CHKSUM_CHAR,			LOCK_CHKSUM,		"lock_checksum"},
+	{USRSIG_CHAR,				USRSIG,				"usrsig"},
+	{USRSIG_CHKSUM_CHAR,		USRSIG_CHKSUM,		"usrsig_checksum"},
+	{CALIBRATION_CHAR,			CALIBRATION,		"calibration"},
+	{CALIBRATION_CHKSUM_CHAR,	CALIBRATION_CHKSUM	,"calibration_checksum"}
+};
+
 struct chip_series_t target_chips = {0, NULL};
 struct chip_param_t target_chip_param;
-uint32_t target_defined = 0;
 
 struct target_info_t targets_info[] = 
 {
@@ -64,8 +85,8 @@ struct target_info_t targets_info[] =
 		AUTO_DETECT CAN_EXECUTE,			// feature
 		stm32_program_area_map,				// program_area_map
 		stm32_program_mode,					// program_mode
+		&stm32_program_functions,			// program_functions
 		stm32_parse_argument,				// parse_argument
-		stm32_program,						// program
 		
 		NULL,								// get_mass_product_data_size
 		NULL,								// prepare_mass_product_data
@@ -76,8 +97,8 @@ struct target_info_t targets_info[] =
 		"",									// feature
 		stm8_program_area_map,				// program_area_map
 		stm8_program_mode,					// program_mode
+		&stm8_program_functions,			// program_functions
 		stm8_parse_argument,				// parse_argument
-		stm8_program,						// program
 		
 		NULL,								// get_mass_product_data_size
 		NULL,								// prepare_mass_product_data
@@ -88,8 +109,8 @@ struct target_info_t targets_info[] =
 		AUTO_DETECT,						// feature
 		s5x_program_area_map,				// program_area_map
 		s5x_program_mode,					// program_mode
+		NULL,								// program_functions
 		s5x_parse_argument,					// parse_argument
-		s5x_program,						// program
 		
 		NULL,								// get_mass_product_data_size
 		NULL,								// prepare_mass_product_data
@@ -100,8 +121,8 @@ struct target_info_t targets_info[] =
 		AUTO_DETECT,						// feature
 		psoc1_program_area_map,				// program_area_map
 		psoc1_program_mode,					// program_mode
+		NULL,								// program_functions
 		psoc1_parse_argument,				// parse_argument
-		psoc1_program,						// program
 		
 		NULL,								// get_mass_product_data_size
 		NULL,								// prepare_mass_product_data
@@ -112,8 +133,8 @@ struct target_info_t targets_info[] =
 		AUTO_DETECT,						// feature
 		msp430_program_area_map,			// program_area_map
 		msp430_program_mode,				// program_mode
+		NULL,								// program_functions
 		msp430_parse_argument,				// parse_argument
-		msp430_program,						// program
 		
 		NULL,								// get_mass_product_data_size
 		NULL,								// prepare_mass_product_data
@@ -124,8 +145,8 @@ struct target_info_t targets_info[] =
 		AUTO_DETECT,						// feature
 		c8051f_program_area_map,			// program_area_map
 		c8051f_program_mode,				// program_mode
+		NULL,								// program_functions
 		c8051f_parse_argument,				// parse_argument
-		c8051f_program,						// program
 		
 		NULL,								// get_mass_product_data_size
 		NULL,								// prepare_mass_product_data
@@ -136,8 +157,8 @@ struct target_info_t targets_info[] =
 		AUTO_DETECT,						// feature
 		avr8_program_area_map,				// program_area_map
 		avr8_program_mode,					// program_mode
+		NULL,								// program_functions
 		avr8_parse_argument,				// parse_argument
-		avr8_program,						// program
 		
 		NULL,								// get_mass_product_data_size
 		NULL,								// prepare_mass_product_data
@@ -148,8 +169,8 @@ struct target_info_t targets_info[] =
 		"",									// feature
 		svfp_program_area_map,				// program_area_map
 		svfp_program_mode,					// program_mode
+		NULL,								// program_functions
 		svfp_parse_argument,				// parse_argument
-		svfp_program,						// program
 		
 		NULL,								// get_mass_product_data_size
 		NULL,								// prepare_mass_product_data
@@ -160,8 +181,8 @@ struct target_info_t targets_info[] =
 		AUTO_DETECT,						// feature
 		lpc900_program_area_map,			// program_area_map
 		lpc900_program_mode,				// program_mode
+		NULL,								// program_functions
 		lpc900_parse_argument,				// parse_argument
-		lpc900_program,						// program
 		
 		NULL,								// get_mass_product_data_size
 		NULL,								// prepare_mass_product_data
@@ -171,8 +192,8 @@ struct target_info_t targets_info[] =
 		0,									// areas
 		NULL,								// program_area_map
 		NULL,								// program_mode
+		NULL,								// program_functions
 		NULL,								// parse_argument
-		NULL,								// program
 		
 		NULL,								// get_mass_product_data_size
 		NULL,								// prepare_mass_product_data
@@ -284,6 +305,20 @@ char target_area_char_by_fullname(char *fullname)
 	return '\0';
 }
 
+int8_t target_area_idx_by_mask(uint32_t mask)
+{
+	int8_t i;
+	
+	for (i = 0; i < (int8_t)dimof(target_area_name); i++)
+	{
+		if (target_area_name[i].mask == mask)
+		{
+			return i;
+		}
+	}
+	return -1;
+}
+
 char* target_area_fullname_by_mask(uint32_t mask)
 {
 	uint32_t i;
@@ -300,13 +335,13 @@ char* target_area_fullname_by_mask(uint32_t mask)
 
 int8_t target_area_idx(char area_name)
 {
-	uint32_t i;
+	int8_t i;
 	
-	for (i = 0; i < dimof(target_area_name); i++)
+	for (i = 0; i < (int8_t)dimof(target_area_name); i++)
 	{
 		if (target_area_name[i].name == area_name)
 		{
-			return (uint8_t)i;
+			return i;
 		}
 	}
 	return -1;
@@ -314,37 +349,39 @@ int8_t target_area_idx(char area_name)
 
 char* target_area_fullname(char area_name)
 {
-	uint32_t i;
+	int8_t i;
 	
-	for (i = 0; i < dimof(target_area_name); i++)
+	i = target_area_idx(area_name);
+	if (i < 0)
 	{
-		if (target_area_name[i].name == area_name)
-		{
-			return (char *)target_area_name[i].full_name;
-		}
+		return NULL;
 	}
-	return NULL;
+	else
+	{
+		return (char *)target_area_name[i].full_name;
+	}
 }
 
 uint32_t target_area_mask(char area_name)
 {
-	uint32_t i;
+	int8_t i;
 	
-	for (i = 0; i < dimof(target_area_name); i++)
+	i = target_area_idx(area_name);
+	if (i < 0)
 	{
-		if (target_area_name[i].name == area_name)
-		{
-			return target_area_name[i].mask;
-		}
+		return 0;
 	}
-	return 0;
+	else
+	{
+		return target_area_name[i].mask;
+	}
 }
 
 static RESULT target_check_single_defined(uint32_t opt)
 {
 	uint8_t i;
 	
-	opt = (target_defined ^ opt) & opt;
+	opt = (program_info.areas_defined ^ opt) & opt;
 	
 	for (i = 0; i < 32; i++)
 	{
@@ -402,7 +439,7 @@ RESULT target_write_buffer_from_file_callback(uint32_t address,
 	uint8_t *area_buff;
 	struct memlist **area_memlist;
 	uint32_t area_seg, area_addr, area_size, area_page_size;
-	uint64_t *area_value;
+	uint32_t *area_value;
 	struct program_info_t *pi = (struct program_info_t *)buffer;
 	uint32_t mem_addr;
 	RESULT ret;
@@ -457,7 +494,7 @@ RESULT target_write_buffer_from_file_callback(uint32_t address,
 			// default page size is 256 bytes
 			area_page_size = 256;
 		}
-		target_defined |= target_area_mask(area_name);
+		pi->areas_defined |= target_area_mask(area_name);
 		mem_addr = address - area_addr;
 		if (area_buff != NULL)
 		{
@@ -488,13 +525,468 @@ RESULT target_write_buffer_from_file_callback(uint32_t address,
 	return ERROR_FAIL;
 }
 
+RESULT target_program(struct program_context_t *context)
+{
+	const struct program_functions_t *pf = cur_target->program_functions;
+	const struct program_area_map_t *p_map = cur_target->program_area_map;
+	struct program_info_t *pi = context->pi;
+	struct operation_t *op = context->op;
+	struct chip_param_t *param = context->param;
+	
+	struct chip_area_info_t *area_info;
+	struct program_area_t *prog_area;
+	RESULT ret = ERROR_OK;
+	uint32_t i, j;
+	int8_t area_idx;
+	char area_char;
+	uint32_t area_mask;
+	enum area_attr_t area_attr;
+	uint32_t target_size, page_size, start_addr;
+	uint8_t *tbuff;
+	char *fullname, str_tmp[32];
+	struct memlist **ml, *ml_tmp;
+	
+	if ((pf->enter_program_mode != NULL) 
+		&&(pf->enter_program_mode(context) != ERROR_OK))
+	{
+		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "enter program mode");
+		ret = ERRCODE_FAILURE_ENTER_PROG_MODE;
+		goto leave_program_mode;
+	}
+	
+	if (pf->execute != NULL)
+	{
+		ret = pf->execute(context);
+		goto leave_program_mode;
+	}
+	
+	// read chip id
+	if (ERROR_OK != pf->read_target(context, CHIPID_CHAR, 0, 
+									(uint8_t *)&pi->chip_id, 0))
+	{
+		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read chip id");
+		ret = ERRCODE_FAILURE_OPERATION;
+		goto leave_program_mode;
+	}
+	LOG_INFO(_GETTEXT(INFOMSG_TARGET_CHIP_ID), pi->chip_id);
+	if (!(op->read_operations & CHIPID))
+	{
+		if (pi->chip_id != param->chip_id)
+		{
+			LOG_WARNING(_GETTEXT(ERRMSG_INVALID_CHIP_ID), pi->chip_id, 
+						param->chip_id);
+		}
+	}
+	else
+	{
+		goto leave_program_mode;
+	}
+	
+	// erase operation
+	LOG_INFO(_GETTEXT(INFOMSG_ERASING), "chip");
+	if ((op->erase_operations & ALL) && (param->chip_erase))
+	{
+		// erase ALL using chip erase
+		pgbar_init("erasing chip |", "|", 0, 1, PROGRESS_STEP, PROGRESS_CHAR);
+		
+		if (ERROR_OK != pf->erase_target(context, '*', 0, 0))
+		{
+			pgbar_fini();
+			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "erase chip");
+			ret = ERRCODE_FAILURE_OPERATION;
+			goto leave_program_mode;
+		}
+		
+		pgbar_update(1);
+		pgbar_fini();
+	}
+	else
+	{
+		// erase target defined
+		i = 0;
+		while (p_map[i].name != 0)
+		{
+			area_char = p_map[i].name;
+			area_attr = p_map[i].attr;
+			area_idx = target_area_idx(area_char);
+			area_mask = target_area_mask(area_char);
+			fullname = target_area_fullname(area_char);
+			
+			// area is defined to be erased and is erasable and is valid
+			if ((op->erase_operations & area_mask) && (area_attr & AREA_ATTR_E)
+				&& (area_idx >= 0))
+			{
+				area_info = &(param->chip_areas[area_idx]);
+				page_size = area_info->page_size;
+				start_addr = area_info->addr;
+				
+				strcpy(str_tmp, "erasing ");
+				strcat(str_tmp, fullname);
+				strcat(str_tmp, " |");
+				pgbar_init(str_tmp, "|", 0, area_info->page_num, 
+							PROGRESS_STEP, PROGRESS_CHAR);
+				
+				if (area_attr & AREA_ATTR_EP)
+				{
+					// erase every page
+					for (j = 0; j < area_info->page_num; j++)
+					{
+						if (ERROR_OK != pf->erase_target(context, area_char, 
+										start_addr + j * page_size, page_size))
+						{
+							pgbar_fini();
+							LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_ERASE), fullname);
+							ret = ERRCODE_FAILURE_OPERATION;
+							goto leave_program_mode;
+						}
+						pgbar_update(1);
+					}
+				}
+				else
+				{
+					// erase all in one run
+					if (ERROR_OK != pf->erase_target(context, area_char, 
+													start_addr, 0))
+					{
+						pgbar_fini();
+						LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_ERASE), fullname);
+						ret = ERRCODE_FAILURE_OPERATION;
+						goto leave_program_mode;
+					}
+					pgbar_update(area_info->page_num);
+				}
+				pgbar_fini();
+			}
+			
+			i++;
+		}
+	}
+	LOG_INFO(_GETTEXT(INFOMSG_ERASED), "chip");
+	
+	// program operation
+	i = 0;
+	while ((p_map[i].name != 0) && (op->write_operations != 0))
+	{
+		area_char = p_map[i].name;
+		area_attr = p_map[i].attr;
+		area_idx = target_area_idx(area_char);
+		area_mask = target_area_mask(area_char);
+		fullname = target_area_fullname(area_char);
+		
+		if ((op->write_operations & area_mask) && (area_attr & AREA_ATTR_W)
+				&& (area_idx >= 0) && (param->chip_areas[area_idx].size > 0))
+		{
+			area_info = &(param->chip_areas[area_idx]);
+			page_size = area_info->page_size;
+			start_addr = area_info->addr;
+			
+			prog_area = &(pi->program_areas[area_idx]);
+			ml = &(prog_area->memlist);
+			target_size = MEMLIST_CalcAllSize(*ml);
+			tbuff = prog_area->buff;
+			
+			LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMING), fullname);
+			strcpy(str_tmp, "writing ");
+			strcat(str_tmp, fullname);
+			strcat(str_tmp, " |");
+			
+			if ((tbuff != NULL) && (ml != NULL))
+			{
+				pgbar_init(str_tmp, "|", 0, target_size, PROGRESS_STEP, '=');
+				ml_tmp = *ml;
+				while(ml_tmp != NULL)
+				{
+					if (area_attr & AREA_ATTR_WNP)
+					{
+						int32_t tmp_addr = ml_tmp->addr;
+						uint8_t *tmp_buf = &(tbuff[tmp_addr - start_addr]);
+						
+						if (ERROR_OK != pf->write_target(context, area_char, 
+								tmp_addr, tmp_buf, target_size))
+						{
+							pgbar_fini();
+							LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_PROGRAM), 
+										fullname);
+							ret = ERRCODE_FAILURE_OPERATION;
+							goto leave_program_mode;
+						}
+								
+					}
+					else
+					{
+						for (j = 0; j < ml_tmp->len; j += page_size)
+						{
+							uint32_t tmp_addr = ml_tmp->addr + j;
+							uint8_t *tmp_buf = &(tbuff[tmp_addr - start_addr]);
+							
+							if (ERROR_OK != pf->write_target(context, 
+									area_char, tmp_addr, tmp_buf, page_size))
+							{
+								pgbar_fini();
+								LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_PROGRAM), 
+											fullname);
+								ret = ERRCODE_FAILURE_OPERATION;
+								goto leave_program_mode;
+							}
+							pgbar_update(page_size);
+						}
+					}
+					ml_tmp = MEMLIST_GetNext(ml_tmp);
+				}
+				pgbar_fini();
+			}
+			else
+			{
+				pgbar_init(str_tmp, "|", 0, 1, PROGRESS_STEP, '=');
+				if (ERROR_OK != pf->write_target(context, area_char, 
+											start_addr, NULL, area_info->size))
+				{
+					pgbar_fini();
+					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_PROGRAM), fullname);
+					ret = ERRCODE_FAILURE_OPERATION;
+					goto leave_program_mode;
+				}
+				pgbar_update(1);
+				pgbar_fini();
+			}
+			LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMED), fullname);
+		}
+		i++;
+	}
+	
+	// read/verify operation
+	i = 0;
+	while ((p_map[i].name != 0) 
+			&& ((op->read_operations != 0) || (op->verify_operations != 0)))
+	{
+		area_char = p_map[i].name;
+		area_attr = p_map[i].attr;
+		area_idx = target_area_idx(area_char);
+		area_mask = target_area_mask(area_char);
+		fullname = target_area_fullname(area_char);
+		
+		if (((op->read_operations & area_mask) 
+				|| (op->verify_operations & area_mask)) 
+			&& (area_idx >= 0) && (area_attr & AREA_ATTR_R))
+		{
+			area_info = &(param->chip_areas[area_idx]);
+			page_size = area_info->page_size;
+			start_addr = area_info->addr;
+			
+			prog_area = &(pi->program_areas[area_idx]);
+			ml = &(prog_area->memlist);
+			target_size = MEMLIST_CalcAllSize(*ml);
+			tbuff = prog_area->buff;
+			
+			if (op->verify_operations & area_mask)
+			{
+				LOG_INFO(_GETTEXT(INFOMSG_VERIFYING), fullname);
+			}
+			else
+			{
+				if (ERROR_OK != MEMLIST_Add(ml, area_info->addr, 
+											area_info->size, page_size))
+				{
+					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+								"add memory list");
+					return ERRCODE_FAILURE_OPERATION;
+				}
+				target_size = MEMLIST_CalcAllSize(*ml);
+				LOG_INFO(_GETTEXT(INFOMSG_READING), fullname);
+			}
+			strcpy(str_tmp, "reading ");
+			strcat(str_tmp, fullname);
+			strcat(str_tmp, " |");
+			
+			if ((tbuff != NULL) && (ml != NULL))
+			{
+				pgbar_init(str_tmp, "|", 0, target_size, PROGRESS_STEP, '=');
+				ml_tmp = *ml;
+				while(ml_tmp != NULL)
+				{
+					uint32_t read_offset = ml_tmp->addr - start_addr;
+					uint8_t *read_buf = (uint8_t*)malloc(ml_tmp->len);
+					if (NULL == read_buf)
+					{
+						LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+						ret = ERRCODE_NOT_ENOUGH_MEMORY;
+						goto leave_program_mode;
+					}
+					
+					if (area_attr & AREA_ATTR_RNP)
+					{
+						if (ERROR_OK != pf->read_target(context, area_char, 
+								ml_tmp->addr, read_buf, target_size))
+						{
+							free(read_buf);
+							read_buf = NULL;
+							pgbar_fini();
+							LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_READ), fullname);
+							ret = ERRCODE_FAILURE_OPERATION;
+							goto leave_program_mode;
+						}
+					}
+					else
+					{
+						for (j = 0; j < ml_tmp->len; j += page_size)
+						{
+							if (ERROR_OK != pf->read_target(context, 
+									area_char, ml_tmp->addr + j, 
+									read_buf + j, page_size))
+							{
+								free(read_buf);
+								read_buf = NULL;
+								pgbar_fini();
+								LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_READ), 
+											fullname);
+								ret = ERRCODE_FAILURE_OPERATION;
+								goto leave_program_mode;
+							}
+							
+							pgbar_update(page_size);
+						}
+					}
+					
+					if (op->verify_operations & area_mask)
+					{
+						if (0 != memcmp(read_buf, &tbuff[read_offset], 
+											ml_tmp->len))
+						{
+							free(read_buf);
+							read_buf = NULL;
+							pgbar_fini();
+							LOG_ERROR(
+								_GETTEXT(ERRMSG_FAILURE_VERIFY_PAGE), 
+								fullname, ml_tmp->addr);
+							ret = ERRCODE_FAILURE_VERIFY_TARGET;
+							goto leave_program_mode;
+						}
+					}
+					else
+					{
+						memcpy(&tbuff[read_offset], read_buf, ml_tmp->len);
+					}
+					free(read_buf);
+					read_buf = NULL;
+					
+					ml_tmp = MEMLIST_GetNext(ml_tmp);
+				}
+				pgbar_fini();
+			}
+			else
+			{
+				uint32_t value;
+				
+				pgbar_init(str_tmp, "|", 0, 1, PROGRESS_STEP, '=');
+				if (ERROR_OK != pf->read_target(context, area_char, 
+							start_addr, (uint8_t *)&value, area_info->size))
+				{
+					pgbar_fini();
+					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_READ), fullname);
+					ret = ERRCODE_FAILURE_OPERATION;
+					goto leave_program_mode;
+				}
+				pgbar_update(1);
+				pgbar_fini();
+				
+				if (op->verify_operations & area_mask)
+				{
+					if (value == prog_area->value)
+					{
+						LOG_INFO(_GETTEXT(INFOMSG_VERIFIED), fullname);
+					}
+					else
+					{
+						if (area_info->size > 3)
+						{
+							LOG_INFO(_GETTEXT(ERRMSG_FAILURE_VERIFY_08X), 
+										fullname, value, 
+										(uint32_t)prog_area->value);
+						}
+						else if (area_info->size > 2)
+						{
+							LOG_INFO(_GETTEXT(ERRMSG_FAILURE_VERIFY_06X), 
+										fullname, value, 
+										(uint32_t)prog_area->value);
+						}
+						else if (area_info->size > 1)
+						{
+							LOG_INFO(_GETTEXT(ERRMSG_FAILURE_VERIFY_04X), 
+										fullname, value, 
+										(uint32_t)prog_area->value);
+						}
+						else
+						{
+							LOG_INFO(_GETTEXT(ERRMSG_FAILURE_VERIFY_02X), 
+										fullname, value, 
+										(uint32_t)prog_area->value);
+						}
+					}
+				}
+				else
+				{
+					if (area_info->size > 3)
+					{
+						LOG_INFO(_GETTEXT(INFOMSG_READ_VALUE_08X), 
+									fullname, value);
+					}
+					else if (area_info->size > 2)
+					{
+						LOG_INFO(_GETTEXT(INFOMSG_READ_VALUE_06X), 
+									fullname, value);
+					}
+					else if (area_info->size > 1)
+					{
+						LOG_INFO(_GETTEXT(INFOMSG_READ_VALUE_04X), 
+									fullname, value);
+					}
+					else
+					{
+						LOG_INFO(_GETTEXT(INFOMSG_READ_VALUE_02X), 
+									fullname, value);
+					}
+				}
+			}
+			
+			if (op->verify_operations & area_mask)
+			{
+				LOG_INFO(_GETTEXT(INFOMSG_VERIFIED_SIZE), fullname, 
+							target_size);
+			}
+			else
+			{
+				LOG_INFO(_GETTEXT(INFOMSG_READ_SIZE), fullname, 
+							target_size);
+			}
+		}
+		i++;
+	}
+	
+leave_program_mode:
+	if (pf->leave_program_mode != NULL)
+	{
+		if (ret != ERROR_OK)
+		{
+			pf->leave_program_mode(context, 0);
+		}
+		else if (ERROR_OK != pf->leave_program_mode(context, 1))
+		{
+			ret = ERROR_FAIL;
+		}
+	}
+	return ret;
+}
+
 RESULT target_init(struct program_info_t *pi, struct programmer_info_t *prog)
 {
 	uint16_t i;
 	uint8_t area_idx;
-	struct operation_t opt_tmp;
+	char mode_buff[4];
 	
-	memset(&opt_tmp, 0, sizeof(opt_tmp));
+	LOG_PUSH();
+	LOG_MUTE();
+	cur_target->parse_argument('m', itoa(pi->mode, mode_buff, 10));
+	LOG_POP();
 	
 	if (NULL == pi->chip_name)
 	{
@@ -508,11 +1000,19 @@ RESULT target_init(struct program_info_t *pi, struct programmer_info_t *prog)
 		memcpy(&target_chip_param, &target_chips.chips_param[0], 
 					sizeof(target_chip_param));
 		LOG_INFO(_GETTEXT(INFOMSG_TRY_AUTODETECT));
-		opt_tmp.read_operations = CHIPID;
 		
 		if (target_chips.num_of_chips > 1)
 		{
-			if (ERROR_OK != cur_target->program(opt_tmp, pi, prog))
+			struct program_context_t context;
+			struct operation_t opt_tmp;
+			
+			memset(&opt_tmp, 0, sizeof(opt_tmp));
+			opt_tmp.read_operations = CHIPID;
+			context.op = &opt_tmp;
+			context.param = &target_chip_param;
+			context.pi = pi;
+			context.prog = prog;
+			if (ERROR_OK != target_program(&context))
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_AUTODETECT_FAIL), pi->chip_type);
 				return ERRCODE_AUTODETECT_FAIL;
@@ -1602,6 +2102,11 @@ RESULT target_build_chip_series(const char *chip_series,
 			if (!xmlStrcmp(paramNode->name, BAD_CAST "chip_id"))
 			{
 				p_param->chip_id = (uint32_t)strtoul(
+						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
+			}
+			else if (!xmlStrcmp(paramNode->name, BAD_CAST "chip_erase"))
+			{
+				p_param->chip_erase = (uint8_t)strtoul(
 						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "program_mode"))

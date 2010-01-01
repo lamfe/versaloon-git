@@ -20,10 +20,14 @@
 #define __COMISP_H_INCLUDED__
 
 #define COMISP_STRING					"comisp"
+#define COMISP_STM32					0
+#define COMISP_LPCARM					1
+
+extern struct program_functions_t comisp_program_functions;
 
 RESULT comisp_parse_argument(char cmd, const char *argu);
-RESULT comisp_program(struct operation_t operations, struct program_info_t *pi, 
-					  struct programmer_info_t *prog);
+void comisp_print_comm_info(uint8_t i);
+extern uint8_t comisp_mode_offset;
 
 #endif /* __COMISP_H_INCLUDED__ */
 

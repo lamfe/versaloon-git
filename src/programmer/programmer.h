@@ -28,7 +28,14 @@ typedef RESULT (*jtag_callback_t)(enum jtag_irdr_t cmd, uint32_t ir,
 								  uint8_t *dest_buffer, uint8_t *src_buffer, 
 								  uint16_t buffer_len, uint16_t *processed);
 
-#include "vsprog.h"
+// msic_cmd
+struct misc_cmd_t
+{
+	const char *help_str;
+	const char *cmd_name;
+	RESULT (*processor)(uint8_t argc, const char *argv[]);
+};
+
 struct programmer_info_t
 {
 	// the 3 element listed below MUST be define valid

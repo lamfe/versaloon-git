@@ -21,9 +21,9 @@
 
 #include "adi_v5p1.h"
 
-#define STM32_JTAG_KHZ				570
+#define STM32_PAGE_SIZE_RW			5120
 
-#define STM32_PAGE_SIZE_RW			4096
+#define STM32_JTAG_KHZ				570
 
 /* stm32 flash register locations */
 #define STM32_FLASH_ACR				0x40022000
@@ -64,8 +64,7 @@
 #define STM32_FLASH_UNLOCK_KEY1		0x45670123
 #define STM32_FLASH_UNLOCK_KEY2		0xCDEF89AB
 
-RESULT stm32jtagswj_program(struct operation_t operations, 
-					struct program_info_t *pi, struct adi_dp_info_t *dp_info);
+extern const struct program_functions_t stm32swj_program_functions;
 
 #endif /* __CM3_STM32_H_INCLUDED__ */
 

@@ -49,7 +49,7 @@
 
 const struct program_area_map_t svfp_program_area_map[] = 
 {
-	{0, 0, 0, 0}
+	{0, 0, 0, 0, 0}
 };
 
 const struct program_mode_t svfp_program_mode[] = 

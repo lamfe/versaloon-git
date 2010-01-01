@@ -186,7 +186,7 @@ RESULT adi_dp_commit(void)
 	case ADI_DP_JTAG:
 		return jtag_commit();
 		break;
-	case ADI_DP_SWJ:
+	case ADI_DP_SWD:
 		return swj_commit(&adi_dp.ack);
 		break;
 	default:
@@ -218,7 +218,7 @@ static RESULT adi_dpif_fini(void)
 		adi_dp_commit();
 		adi_dp_if = NULL;
 		break;
-	case ADI_DP_SWJ:
+	case ADI_DP_SWD:
 		adi_dp_commit();
 		swj_fini();
 		adi_dp_commit();
@@ -234,7 +234,7 @@ static RESULT adi_dpif_fini(void)
 static RESULT adi_dpif_init(struct programmer_info_t *prog, adi_dp_if_t *interf)
 {
 	if ((NULL == prog) || (NULL == interf) 
-		|| ((interf->type != ADI_DP_JTAG) && (interf->type != ADI_DP_SWJ)))
+		|| ((interf->type != ADI_DP_JTAG) && (interf->type != ADI_DP_SWD)))
 	{
 		LOG_BUG(_GETTEXT(ERRMSG_INVALID_PARAMETER), __FUNCTION__);
 		return ERROR_FAIL;
@@ -270,7 +270,7 @@ static RESULT adi_dpif_init(struct programmer_info_t *prog, adi_dp_if_t *interf)
 			return ERROR_FAIL;
 		}
 		break;
-	case ADI_DP_SWJ:
+	case ADI_DP_SWD:
 		ack_value = ADI_SWJDP_ACK_OK;
 		swj_init();
 		swj_setpara(adi_dp_if->adi_dp_if_info.adi_dp_swj.swj_trn, 
@@ -335,7 +335,7 @@ RESULT adi_dp_scan(uint8_t instr, uint8_t reg_addr, uint8_t RnW,
 			jtag_dr_w(value, ADI_JTAGDP_IR_APDPACC_LEN);
 		}
 		break;
-	case ADI_DP_SWJ:
+	case ADI_DP_SWD:
 		if (instr > 1)
 		{
 			LOG_BUG(_GETTEXT("Invalid instruction\n"));
@@ -374,7 +374,7 @@ RESULT adi_dpif_read_id(uint32_t *id)
 		}
 		LOG_INFO(_GETTEXT("JTAG_ID: 0x%X.\n"), *id);
 		break;
-	case ADI_DP_SWJ:
+	case ADI_DP_SWD:
 		adi_dp_read_reg(ADI_SWJDP_REG_DPIDR, id, 0);
 		
 		if (ERROR_OK != adi_dp_commit())

@@ -46,9 +46,26 @@
 
 #include "comport.h"
 
-#define CUR_TARGET_STRING			COMISP_STRING
-
 #define STM32ISP_MAX_ERROR_CNT		10
+
+RESULT stm32isp_enter_program_mode(struct program_context_t *context);
+RESULT stm32isp_leave_program_mode(struct program_context_t *context, 
+									uint8_t success);
+RESULT stm32isp_erase_target(struct program_context_t *context, char area, 
+							uint32_t addr, uint32_t page_size);
+RESULT stm32isp_write_target(struct program_context_t *context, char area, 
+							uint32_t addr, uint8_t *buff, uint32_t page_size);
+RESULT stm32isp_read_target(struct program_context_t *context, char area, 
+							uint32_t addr, uint8_t *buff, uint32_t page_size);
+struct program_functions_t stm32isp_program_functions = 
+{
+	NULL,			// execute
+	stm32isp_enter_program_mode, 
+	stm32isp_leave_program_mode, 
+	stm32isp_erase_target, 
+	stm32isp_write_target, 
+	stm32isp_read_target
+};
 
 RESULT stm32isp_sycn(void)
 {
@@ -664,10 +681,10 @@ RESULT stm32isp_erase_sector(uint8_t num_of_sector, uint8_t *sector_num)
 		}
 	}
 	// delay
-	dly_cnt = 60;
+	dly_cnt = 255;
 	while (ERROR_OK != stm32isp_get_ack(0, buffer, 1))
 	{
-		sleep_ms(50);
+		sleep_ms(10);
 		if (!--dly_cnt)
 		{
 			LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
@@ -708,25 +725,14 @@ RESULT stm32isp_execute_code(uint32_t addr)
 	return stm32isp_get_ack(0, buffer, 0);
 }
 
-RESULT stm32isp_program(struct operation_t operations, 
-							struct program_info_t *pi)
+RESULT stm32isp_enter_program_mode(struct program_context_t *context)
 {
-	uint8_t page_buf[STM32ISP_PAGE_SIZE];
-	uint8_t *tbuff;
-	uint16_t page_size, page_size_tmp;
 	uint8_t bootloader_version = 0;
-	int32_t i, j, k, len_current_list;
-	uint32_t mcu_id = 0;
-	uint32_t flash_kb, sram_kb;
-	uint8_t error_cnt, tmp8;
-	RESULT ret = ERROR_OK;
-	uint32_t target_size;
-	struct memlist **ml, *ml_tmp;
-
+	REFERENCE_PARAMETER(context);
+	
 	// comm init
-	ret = comm_open(com_mode.comport, com_mode.baudrate, 8, 
-					COMM_PARITYBIT_EVEN, COMM_STOPBIT_1, COMM_HANDSHAKE_NONE);
-	if (ret != ERROR_OK)
+	if (ERROR_OK != comm_open(com_mode.comport, com_mode.baudrate, 8, 
+			COMM_PARITYBIT_EVEN, COMM_STOPBIT_1, COMM_HANDSHAKE_NONE))
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPEN), com_mode.comport);
 		return ERRCODE_FAILURE_OPEN;
@@ -738,8 +744,7 @@ RESULT stm32isp_program(struct operation_t operations,
 		// try again
 		if (ERROR_OK != stm32isp_sycn())
 		{
-			ret = ERROR_FAIL;
-			goto leave_program_mode;
+			return ERROR_FAIL;
 		}
 	}
 	// read bootloader version
@@ -747,336 +752,133 @@ RESULT stm32isp_program(struct operation_t operations,
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
 				"read bootloader version");
-		ret = ERRCODE_FAILURE_OPERATION;
-		goto leave_program_mode;
+		return ERRCODE_FAILURE_OPERATION;
 	}
 	LOG_INFO(_GETTEXT("Bootloader version %1X.%1X detected\n"), 
 			 (bootloader_version & 0xF0) >> 4, bootloader_version & 0x0F);
-	// Get ID command returns chip ID (same as JTAG ID)
-	if (ERROR_OK != stm32isp_read_product_id(&mcu_id))
-	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-				"read product id");
-		ret = ERRCODE_FAILURE_OPERATION;
-		goto leave_program_mode;
-	}
-	pi->chip_id = 0xFFFF0000 | ((mcu_id >> 20) & STM32_DEN_MSK);
-	stm32_print_device(pi->chip_id);
-	pi->chip_id &= STM32_DEN_MSK;
-	LOG_INFO(_GETTEXT(INFOMSG_TARGET_CHIP_ID), pi->chip_id);
-	
-	// read memory size
-	page_size = 4;
-	if (ERROR_OK != stm32isp_read_memory(STM32_REG_FLASH_RAM_SIZE, 
-											page_buf, &page_size))
-	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-				  "read memroy size");
-		ret = ERRCODE_FAILURE_OPERATION;
-		goto leave_program_mode;
-	}
-	flash_kb = (page_buf[1] << 8) + page_buf[0];
-	if (flash_kb <= 512)
-	{
-		pi->program_areas[APPLICATION_IDX].size = flash_kb * 1024;
-	}
-	else
-	{
-		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_VALUE), flash_kb, "stm32 flash size");
-		return ERRCODE_INVALID;
-	}
-	sram_kb = (page_buf[3] << 8) + page_buf[2];
-	if (sram_kb != 0xFFFF)
-	{
-		LOG_INFO(
-			_GETTEXT("Flash memory size: %i KB, SRAM memory size:  %i KB\n"), 
-				flash_kb, sram_kb);
-	}
-	else
-	{
-		LOG_INFO(_GETTEXT("Flash memory size: %i KB\n"), flash_kb);
-	}
-	
-	if (!(operations.read_operations & CHIPID))
-	{
-		if (pi->chip_id != target_chip_param.chip_id)
-		{
-			LOG_WARNING(_GETTEXT(ERRMSG_INVALID_CHIP_ID), pi->chip_id, 
-						target_chip_param.chip_id);
-		}
-	}
-	else
-	{
-		goto leave_program_mode;
-	}
-	
-	// erase
-	ml = &pi->program_areas[APPLICATION_IDX].memlist;
-	target_size = MEMLIST_CalcAllSize(*ml);
-	if (operations.erase_operations > 0)
-	{
-		LOG_INFO(_GETTEXT(INFOMSG_ERASING), "chip");
-		pgbar_init("erasing chip |", "|", 0, 1, PROGRESS_STEP, '=');
-		
-/*		if (target_size > 0)
-		{
-			// erase flash according to data
-		}
-		else
-*/
-		{
-			// erase all flash
-			if (ERROR_OK != stm32isp_erase_sector(0xFF, NULL))
-			{
-				pgbar_fini();
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "erase chip");
-				ret = ERRCODE_FAILURE_OPERATION;
-				goto leave_program_mode;
-			}
-		}
-		
-		pgbar_update(1);
-		pgbar_fini();
-		LOG_INFO(_GETTEXT(INFOMSG_ERASED), "chip");
-	}
-	
-	page_size = STM32ISP_PAGE_SIZE_TX;
-	tbuff = pi->program_areas[APPLICATION_IDX].buff;
-	if (operations.write_operations & APPLICATION)
-	{
-		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMING), "flash");
-		pgbar_init("writing flash |", "|", 0, target_size, PROGRESS_STEP, '=');
-		
-		page_size = STM32ISP_PAGE_SIZE_TX;
-		ml_tmp = *ml;
-		while (ml_tmp != NULL)
-		{
-			error_cnt = 0;
-			if ((ml_tmp->addr + ml_tmp->len) 
-				<= (ml_tmp->addr - (ml_tmp->addr % page_size) + page_size))
-			{
-				k = ml_tmp->len;
-			}
-			else
-			{
-				k = page_size - (ml_tmp->addr % page_size);
-			}
-			
-			len_current_list = ml_tmp->len;
-			for (i = -(int32_t)(ml_tmp->addr % 1024); 
-				 i < ((int32_t)ml_tmp->len - (int32_t)(ml_tmp->addr % 1024)); 
-				 i += page_size)
-			{
-				uint32_t page_addr = STM32_FLASH_ADDR + i;
-				
-				ret = stm32isp_write_memory(ml_tmp->addr + i, 
-							&tbuff[ml_tmp->addr - STM32_FLASH_ADDR + i], 
-							page_size);
-				if (ret != ERROR_OK)
-				{
-					uint32_t tmp32;
-					
-					if (++error_cnt > STM32ISP_MAX_ERROR_CNT)
-					{
-						pgbar_fini();
-						LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ADDR), 
-								  "write flash page", page_addr);
-						ret = ERRCODE_FAILURE_OPERATION_ADDR;
-						goto leave_program_mode;
-					}
-					tmp32 = ml_tmp->addr - STM32_FLASH_ADDR + i;
-					tmp8 = (uint8_t)(tmp32 / 1024);
-					if (ERROR_OK != stm32isp_erase_sector(1, &tmp8))
-					{
-						pgbar_fini();
-						LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ADDR), 
-								  "write flash page", page_addr);
-						ret = ERRCODE_FAILURE_OPERATION_ADDR;
-						goto leave_program_mode;
-					}
-					tmp32 -= tmp8 * 1024;
-					len_current_list += tmp32;
-					pgbar_update(-(int32_t)tmp32);
-					
-					if (i > 1024)
-					{
-						i = tmp8 * 1024 - (ml_tmp->addr - STM32_FLASH_ADDR);
-					}
-					else
-					{
-						i = -(int32_t)(ml_tmp->addr % 1024);
-					}
-					i -= page_size;
-					continue;
-				}
-				
-				pgbar_update(k);
-				len_current_list -= k;
-				if (len_current_list >= page_size)
-				{
-					k = page_size;
-				}
-				else
-				{
-					k = len_current_list;
-				}
-			}
-			
-			ml_tmp = MEMLIST_GetNext(ml_tmp);
-		}
-		
-		pgbar_fini();
-		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMED_SIZE), "flash", target_size);
-	}
+	return ERROR_OK;
+}
 
-	page_size = STM32ISP_PAGE_SIZE_RX;
+RESULT stm32isp_leave_program_mode(struct program_context_t *context, 
+									uint8_t success)
+{
+	RESULT ret = ERROR_OK;
 	
-	if ((operations.read_operations & APPLICATION) 
-		|| (operations.verify_operations & APPLICATION))
-	{
-		if (operations.verify_operations & APPLICATION)
-		{
-			LOG_INFO(_GETTEXT(INFOMSG_VERIFYING), "flash");
-		}
-		else
-		{
-			ret = MEMLIST_Add(ml, STM32_FLASH_ADDR, 
-						pi->program_areas[APPLICATION_IDX].size, page_size);
-			if (ret != ERROR_OK)
-			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-							"add memory list");
-				return ERRCODE_FAILURE_OPERATION;
-			}
-			target_size = 
-				MEMLIST_CalcAllSize(*ml);
-			LOG_INFO(_GETTEXT(INFOMSG_READING), "flash");
-		}
-		pgbar_init("reading flash |", "|", 0, target_size, PROGRESS_STEP, '=');
-		
-		ml_tmp = *ml;
-		while (ml_tmp != NULL)
-		{
-			error_cnt = 0;
-			if ((ml_tmp->addr + ml_tmp->len) 
-				<= (ml_tmp->addr - (ml_tmp->addr % page_size) + page_size))
-			{
-				k = ml_tmp->len;
-			}
-			else
-			{
-				k = page_size - (ml_tmp->addr % page_size);
-			}
-			
-			len_current_list = ml_tmp->len;
-			for (i = -(int32_t)(ml_tmp->addr % 1024); 
-				 i < ((int32_t)ml_tmp->len - (int32_t)(ml_tmp->addr % 1024)); 
-				 i += page_size)
-			{
-				uint32_t page_addr = STM32_FLASH_ADDR + i;
-				
-				page_size_tmp = page_size;
-				ret = stm32isp_read_memory(ml_tmp->addr + i, page_buf, 
-										   &page_size_tmp);
-				if ((ret != ERROR_OK) || (page_size_tmp != page_size))
-				{
-					if (++error_cnt > STM32ISP_MAX_ERROR_CNT)
-					{
-						pgbar_fini();
-						LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ADDR), 
-								  "read flash page", page_addr);
-						ret = ERRCODE_FAILURE_OPERATION_ADDR;
-						goto leave_program_mode;
-					}
-					
-					page_size = page_size_tmp;
-					i -= page_size;
-					continue;
-				}
-				else
-				{
-					// read success, clear error
-					error_cnt = 0;
-				}
-				if (operations.verify_operations & APPLICATION)
-				{
-					for (j = 0; j < page_size; j++)
-					{
-						if (page_buf[j] 
-							!= tbuff[ml_tmp->addr + i + j - STM32_FLASH_ADDR])
-						{
-							pgbar_fini();
-							LOG_ERROR(
-								_GETTEXT(ERRMSG_FAILURE_VERIFY_TARGET_AT_02X), 
-								"flash", ml_tmp->addr + i + j, page_buf[j], 
-								tbuff[ml_tmp->addr + i + j - STM32_FLASH_ADDR]);
-							ret = ERRCODE_FAILURE_VERIFY_TARGET;
-							goto leave_program_mode;
-						}
-					}
-				}
-				else
-				{
-					memcpy(&tbuff[ml_tmp->addr + i - STM32_FLASH_ADDR], 
-							page_buf, page_size);
-				}
-				
-				pgbar_update(k);
-				len_current_list -= k;
-				if (len_current_list >= page_size)
-				{
-					k = page_size;
-				}
-				else
-				{
-					k = len_current_list;
-				}
-			}
-			
-			ml_tmp = MEMLIST_GetNext(ml_tmp);
-		}
-		
-		pgbar_fini();
-		if (operations.verify_operations & APPLICATION)
-		{
-			LOG_INFO(_GETTEXT(INFOMSG_VERIFIED_SIZE), "flash", target_size);
-		}
-		else
-		{
-			LOG_INFO(_GETTEXT(INFOMSG_READ), "flash");
-		}
-	}
-	
-	if (operations.write_operations & LOCK)
-	{
-		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMING), "lock");
-		pgbar_init("writing lock |", "|", 0, 1, PROGRESS_STEP, '=');
-		
-		if (ERROR_OK != stm32isp_readout_protect())
-		{
-			pgbar_fini();
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "protect readout");
-			ret = ERRCODE_FAILURE_OPERATION;
-			goto leave_program_mode;
-		}
-		
-		pgbar_update(1);
-		pgbar_fini();
-		LOG_INFO("lock programmed\n");
-	}
-	
-	if (comisp_execute_flag && (operations.write_operations & APPLICATION))
+	if (comisp_execute_flag && success 
+		&& (context->op->write_operations & APPLICATION))
 	{
 		if (ERROR_OK != stm32isp_execute_code(comisp_execute_addr))
 		{
-			LOG_ERROR("fail to execute code at 0x%04X\n", comisp_execute_addr);
+			LOG_ERROR("fail to execute code at 0x%08X\n", comisp_execute_addr);
 			ret = ERROR_FAIL;
-			goto leave_program_mode;
 		}
 	}
 	
-leave_program_mode:
 	comm_close();
+	return ret;
+}
+
+RESULT stm32isp_erase_target(struct program_context_t *context, char area, 
+								uint32_t addr, uint32_t page_size)
+{
+	RESULT ret = ERROR_OK;
+	REFERENCE_PARAMETER(page_size);
+	REFERENCE_PARAMETER(addr);
+	REFERENCE_PARAMETER(context);
+	
+	switch (area)
+	{
+	case APPLICATION_CHAR:
+		ret = stm32isp_erase_sector(0xFF, NULL);
+		break;
+	default:
+		ret = ERROR_FAIL;
+		break;
+	}
+	return ret;
+}
+
+RESULT stm32isp_write_target(struct program_context_t *context, char area, 
+							uint32_t addr, uint8_t *buff, uint32_t page_size)
+{
+	RESULT ret;
+	REFERENCE_PARAMETER(context);
+	
+	switch (area)
+	{
+	case APPLICATION_CHAR:
+		ret = stm32isp_write_memory(addr, buff, (uint16_t)page_size);
+		break;
+	default:
+		ret = ERROR_FAIL;
+		break;
+	}
+	return ret;
+}
+
+RESULT stm32isp_read_target(struct program_context_t *context, char area, 
+							uint32_t addr, uint8_t *buff, uint32_t page_size)
+{
+	struct program_info_t *pi = context->pi;
+	uint32_t mcu_id = 0;
+	uint16_t len;
+	uint8_t tmpbuff[4];
+	uint16_t flash_kb, sram_kb, page_size_tmp;
+	RESULT ret = ERROR_OK;
+	
+	switch (area)
+	{
+	case CHIPID_CHAR:
+		// Get ID command returns chip ID (same as JTAG ID)
+		if (ERROR_OK != stm32isp_read_product_id(&mcu_id))
+		{
+			ret = ERRCODE_FAILURE_OPERATION;
+			break;
+		}
+		pi->chip_id = 0xFFFF0000 | ((mcu_id >> 20) & STM32_DEN_MSK);
+		stm32_print_device(pi->chip_id);
+		pi->chip_id &= STM32_DEN_MSK;
+		
+		// read memory size
+		len = 4;
+		if (ERROR_OK != stm32isp_read_memory(STM32_REG_FLASH_RAM_SIZE, 
+												tmpbuff, &len))
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+					  "read memroy size");
+			ret = ERRCODE_FAILURE_OPERATION;
+			break;
+		}
+		flash_kb = (tmpbuff[1] << 8) + tmpbuff[0];
+		if (flash_kb <= 512)
+		{
+			pi->program_areas[APPLICATION_IDX].size = flash_kb * 1024;
+		}
+		else
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_VALUE), flash_kb, 
+						"stm32 flash size");
+			return ERRCODE_INVALID;
+		}
+		LOG_INFO(_GETTEXT("Flash memory size: %i KB\n"), flash_kb);
+		sram_kb = (tmpbuff[3] << 8) + tmpbuff[2];
+		if (sram_kb != 0xFFFF)
+		{
+			LOG_INFO(_GETTEXT("SRAM memory size: %i KB\n"), sram_kb);
+		}
+		break;
+	case APPLICATION_CHAR:
+		page_size_tmp = (uint16_t)page_size;
+		ret = stm32isp_read_memory(addr, buff, &page_size_tmp);
+		if ((ret != ERROR_OK) || (page_size_tmp != page_size))
+		{
+			ret = ERROR_FAIL;
+		}
+		break;
+	default:
+		ret = ERROR_FAIL;
+		break;
+	}
 	return ret;
 }
 

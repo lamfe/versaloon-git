@@ -29,6 +29,11 @@
 #define _GETTEXT(str)		(str)
 
 extern int verbosity;
+extern int verbosity_stack[1];
+
+#define LOG_MUTE()			verbosity = -1
+#define LOG_PUSH()			verbosity_stack[0] = verbosity
+#define LOG_POP()			verbosity = verbosity_stack[0]
 
 #if 1
 #	define LOG_ERROR(...)	do{\

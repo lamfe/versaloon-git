@@ -44,10 +44,10 @@
 
 const struct program_area_map_t psoc1_program_area_map[] = 
 {
-	{APPLICATION_CHAR, 1, 0, 0},
-	{APPLICATION_CHKSUM_CHAR, 1, 0, 0},
-	{LOCK_CHAR, 1, 0, 0},
-	{0, 0, 0, 0}
+	{APPLICATION_CHAR, 1, 0, 0, AREA_ATTR_EW},
+	{APPLICATION_CHKSUM_CHAR, 1, 0, 0, AREA_ATTR_R},
+	{LOCK_CHAR, 1, 0, 0, AREA_ATTR_W},
+	{0, 0, 0, 0, 0}
 };
 
 const struct program_mode_t psoc1_program_mode[] = 
@@ -621,7 +621,7 @@ RESULT psoc1_program(struct operation_t operations, struct program_info_t *pi,
 		
 		
 		// checksum
-		if ((target_defined & APPLICATION_CHKSUM) 
+		if ((pi->areas_defined & APPLICATION_CHKSUM) 
 			&& (operations.verify_operations & APPLICATION))
 		{
 			LOG_INFO(_GETTEXT(INFOMSG_VERIFYING), "checksum");
@@ -657,7 +657,7 @@ RESULT psoc1_program(struct operation_t operations, struct program_info_t *pi,
 			LOG_DEBUG(_GETTEXT(INFOMSG_CHECKSUM_BANK), bank, tmp16);
 		}
 		
-		if ((target_defined & APPLICATION_CHKSUM) 
+		if ((pi->areas_defined & APPLICATION_CHKSUM) 
 			&& (operations.verify_operations & APPLICATION))
 		{
 			// verify

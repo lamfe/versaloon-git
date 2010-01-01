@@ -21,9 +21,10 @@
 
 #define CM3_STRING						"cm3"
 
+extern struct program_functions_t cm3_program_functions;
+
 RESULT cm3_parse_argument(char cmd, const char *argu);
-RESULT cm3_program(struct operation_t operations, struct program_info_t *pi, 
-				   struct programmer_info_t *prog);
+extern uint8_t cm3_mode_offset;
 
 #endif /* __CM3_H_INCLUDED__ */
 

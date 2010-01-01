@@ -361,7 +361,6 @@ RESULT versaloon_init(void)
 {
 	uint16_t ret = 0;
 	uint8_t retry;
-	int verbosity_tmp;
 	uint32_t timeout_tmp;
 	
 	versaloon_device_handle = find_usb_device(versaloon_vid, versaloon_pid, 
@@ -393,10 +392,10 @@ RESULT versaloon_init(void)
 	}
 	
 	// connect to versaloon
-	verbosity_tmp = verbosity;
+	LOG_PUSH();
+	LOG_MUTE();
 	timeout_tmp = versaloon_to;
 	// not output error message when connectting
-	verbosity = -1;
 	// 500ms delay when connect
 	versaloon_to = 100;
 	for (retry = 0; retry < VERSALOON_RETRY_CNT; retry++)
@@ -407,7 +406,7 @@ RESULT versaloon_init(void)
 			break;
 		}
 	}
-	verbosity = verbosity_tmp;
+	LOG_POP();
 	versaloon_to = timeout_tmp;
 	if (VERSALOON_RETRY_CNT == retry)
 	{

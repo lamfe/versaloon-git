@@ -82,6 +82,7 @@ static const struct option long_opts[] =
 };
 
 int verbosity = LOG_DEFAULT_LEVEL;
+int verbosity_stack[1];
 struct operation_t operations;
 
 static char *program_name = NULL;
@@ -95,35 +96,12 @@ const char *config_dirs[] =
 	"./config/"
 };
 
-const struct target_area_name_t target_area_name[NUM_OF_TARGET_AREA] = 
-{
-	{CHIPID_CHAR,				CHIPID,				"chipid"},
-	{CHIPID_CHKSUM_CHAR,		CHIPID_CHKSUM,		"chipid_checksum"},
-	{BOOTLOADER_CHAR,			BOOTLOADER,			"bootloader"},
-	{BOOTLOADER_CHKSUM_CHAR,	BOOTLOADER_CHKSUM,	"bootloader_checksum"},
-	{APPLICATION_CHAR,			APPLICATION,		"flash"},
-	{APPLICATION_CHKSUM_CHAR,	APPLICATION_CHKSUM,	"flash_checksum"},
-	{EEPROM_CHAR,				EEPROM,				"eeprom"},
-	{EEPROM_CHKSUM_CHAR,		EEPROM_CHKSUM,		"eeprom_checksum"},
-	{OTPROM_CHAR,				OTPROM,				"otprom"},
-	{OTPROM_CHKSUM_CHAR,		OTPROM_CHKSUM,		"otprom_checksum"},
-	{FUSE_CHAR,					FUSE,				"fuse"},
-	{FUSE_CHKSUM_CHAR,			FUSE_CHKSUM,		"fuse_checksum"},
-	{LOCK_CHAR,					LOCK,				"lock"},
-	{LOCK_CHKSUM_CHAR,			LOCK_CHKSUM,		"lock_checksum"},
-	{USRSIG_CHAR,				USRSIG,				"usrsig"},
-	{USRSIG_CHKSUM_CHAR,		USRSIG_CHKSUM,		"usrsig_checksum"},
-	{CALIBRATION_CHAR,			CALIBRATION,		"calibration"},
-	{CALIBRATION_CHKSUM_CHAR,	CALIBRATION_CHKSUM	,"calibration_checksum"}
-};
-
 uint8_t program_mode = 0;
 uint16_t program_frequency = 0;
-
-struct filelist *fl_in = NULL, *fl_out = NULL;
-
 // for JTAT
 struct jtag_pos_t target_jtag_pos;
+
+struct filelist *fl_in = NULL, *fl_out = NULL;
 
 static void free_all(void)
 {
@@ -639,8 +617,8 @@ Parse_Operation:
 				free_all_and_exit(EXIT_FAILURE);
 			}
 			program_info.program_areas[optc].value = 
-												strtoull(&optarg[1], NULL, 0);
-			target_defined |= target_area_mask(optarg[0]);
+												strtoul(&optarg[1], NULL, 0);
+			program_info.areas_defined |= target_area_mask(optarg[0]);
 			break;
 		case 'I':
 			// --input-file
@@ -703,13 +681,14 @@ Parse_File:
 			break;
 		case 'F':
 			// --frequency
-			program_frequency = (uint16_t)strtoul(optarg, NULL, 0);
+			program_info.frequency = (uint16_t)strtoul(optarg, NULL, 0);
 			break;
 		case 'J':
 			// --jtag-dc
 			cur_pointer = optarg;
 			
-			target_jtag_pos.ub = (uint8_t)strtoul(cur_pointer, &end_pointer, 0);
+			program_info.jtag_pos.ub 
+							= (uint8_t)strtoul(cur_pointer, &end_pointer, 0);
 			if ((cur_pointer == end_pointer) || ('\0' == end_pointer[0]) 
 				|| ('\0' == end_pointer[1]))
 			{
@@ -719,7 +698,8 @@ Parse_File:
 			}
 			
 			cur_pointer = end_pointer + 1;
-			target_jtag_pos.ua = (uint8_t)strtoul(cur_pointer, &end_pointer, 0);
+			program_info.jtag_pos.ua 
+							= (uint8_t)strtoul(cur_pointer, &end_pointer, 0);
 			if ((cur_pointer == end_pointer) || ('\0' == end_pointer[0]) 
 				|| ('\0' == end_pointer[1]))
 			{
@@ -729,7 +709,8 @@ Parse_File:
 			}
 			
 			cur_pointer = end_pointer + 1;
-			target_jtag_pos.bb = (uint16_t)strtoul(cur_pointer, &end_pointer, 0);
+			program_info.jtag_pos.bb 
+							= (uint16_t)strtoul(cur_pointer, &end_pointer, 0);
 			if ((cur_pointer == end_pointer) || ('\0' == end_pointer[0]) 
 				|| ('\0' == end_pointer[1]))
 			{
@@ -739,8 +720,8 @@ Parse_File:
 			}
 			
 			cur_pointer = end_pointer + 1;
-			target_jtag_pos.ba = 
-							(uint16_t)strtoul(cur_pointer, &end_pointer, 0);
+			program_info.jtag_pos.ba 
+							= (uint16_t)strtoul(cur_pointer, &end_pointer, 0);
 			if (cur_pointer == end_pointer)
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), (char)optc);
@@ -764,7 +745,7 @@ Parse_File:
 				free_all_and_exit(EXIT_FAILURE);
 			}
 			
-			program_mode = (uint8_t)optc;
+			program_info.mode = (uint8_t)optc;
 			break;
 		case 'M':
 			// --mass-product
@@ -935,7 +916,7 @@ Parse_File:
 		free_all_and_exit(EXIT_FAILURE);
 	}
 	// init and check programmer's ability
-	i = cur_target->program_mode[program_mode].interface_needed;
+	i = cur_target->program_mode[program_info.mode].interface_needed;
 	if ((cur_programmer->interfaces & i) != i)
 	{
 		LOG_ERROR(_GETTEXT("%s can not support %s in the mode defined.\n"), 
@@ -986,7 +967,7 @@ Parse_File:
 			sleep_ms(3000);
 		}
 	}
-	else if (cur_target->program_mode[program_mode].interface_needed)
+	else if (cur_target->program_mode[program_info.mode].interface_needed)
 	{
 		ret = cur_programmer->init();
 		if (ret != ERROR_OK)
@@ -1128,6 +1109,8 @@ Parse_File:
 	}
 	else
 	{
+		struct program_context_t context;
+		
 		// in system programmer
 		if (!(operations.checksum_operations || operations.erase_operations 
 			|| operations.read_operations || operations.verify_operations 
@@ -1137,7 +1120,11 @@ Parse_File:
 			free_all_and_exit(EXIT_SUCCESS);
 		}
 		
-		ret = cur_target->program(operations, &program_info, cur_programmer);
+		context.op = &operations;
+		context.param = &target_chip_param;
+		context.pi = &program_info;
+		context.prog = cur_programmer;
+		ret = target_program(&context);
 		if (ret != ERROR_OK)
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATE_DEVICE), cur_target->name);

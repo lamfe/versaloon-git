@@ -36,6 +36,7 @@ typedef enum result_s
 #	define max(a,b)				(((a) > (b)) ? (a) : (b))
 #endif
 #define TO_STR(name)			#name
+#define REFERENCE_PARAMETER(a)	(a) = (a)
 
 #endif /* __APP_TYPE_H_INCLUDED__ */
 

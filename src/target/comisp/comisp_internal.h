@@ -24,9 +24,6 @@
 #define COMM_AUXPIN_DISABLE				'N'
 #define COMM_AUXPIN_ENABLE				'A'
 
-#define COMISP_STM32					0
-#define COMISP_LPCARM					1
-
 struct com_mode_t
 {
 	char comport[21];
@@ -42,14 +39,12 @@ struct comisp_param_t
 {
 	const char *chip_name;
 	struct com_mode_t com_mode;
+	struct program_functions_t *program_functions;
 };
 
-extern struct comisp_param_t *comisp_chip_param;
 extern struct com_mode_t com_mode;
 extern uint8_t comisp_execute_flag;
 extern uint32_t comisp_execute_addr;
-extern const struct comisp_param_t comisp_chips_param[];
-void comisp_print_comm_info(uint8_t i);
 
 #endif /* __COMISP_INTERNAL_H_INCLUDED__ */
 
