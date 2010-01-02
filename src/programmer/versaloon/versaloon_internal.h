@@ -31,6 +31,7 @@
 #define VERSALOON_NANO					3
 
 #define VERSALOON_TIMEOUT				5000
+#define VERSALOON_TIMEOUT_LONG			60000
 
 // USB Commands
 // Common Commands

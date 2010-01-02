@@ -42,6 +42,25 @@
 
 #define CUR_TARGET_STRING		C8051F_STRING
 
+RESULT c8051fc2_enter_program_mode(struct program_context_t *context);
+RESULT c8051fc2_leave_program_mode(struct program_context_t *context, 
+								uint8_t success);
+RESULT c8051fc2_erase_target(struct program_context_t *context, char area, 
+							uint32_t addr, uint32_t page_size);
+RESULT c8051fc2_write_target(struct program_context_t *context, char area, 
+							uint32_t addr, uint8_t *buff, uint32_t page_size);
+RESULT c8051fc2_read_target(struct program_context_t *context, char area, 
+							uint32_t addr, uint8_t *buff, uint32_t page_size);
+struct program_functions_t c8051fc2_program_functions = 
+{
+	NULL,			// execute
+	c8051fc2_enter_program_mode, 
+	c8051fc2_leave_program_mode, 
+	c8051fc2_erase_target, 
+	c8051fc2_write_target, 
+	c8051fc2_read_target
+};
+
 
 #define delay_ms(ms)			p->delayms((ms) | 0x8000)
 #define delay_us(us)			p->delayus((us) & 0x7FFF)
@@ -75,62 +94,47 @@ RESULT c8051f_c2_addr_poll(uint8_t mask, uint8_t value, uint16_t poll_cnt)
 	return ERROR_OK;
 }
 
-RESULT c8051f_c2_program(struct operation_t operations, 
-					struct program_info_t *pi, struct programmer_info_t *prog)
+RESULT c8051fc2_enter_program_mode(struct program_context_t *context)
 {
+	struct chip_param_t *param = context->param;
 	uint8_t dr;
-	uint16_t i;
-	uint16_t j, k, page_size, len_current_list;
-	RESULT ret = ERROR_OK;
-	uint8_t page_buf[C8051F_BLOCK_SIZE];
-	uint8_t *tbuff;
-	uint32_t target_size;
-	struct memlist **ml, *ml_tmp;
 	
-	p = prog;
-	
+	p = context->prog;
 	c2_init();
-	
-	c2_write_ir(C8051F_C2_DEVICEID);
-	c2_read_dr(&dr);
-	if (ERROR_OK != commit())
-	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read chip id");
-		ret = ERRCODE_FAILURE_OPERATION;
-		goto leave_program_mode;
-	}
-	pi->chip_id = dr;
-	LOG_INFO(_GETTEXT(INFOMSG_TARGET_CHIP_ID), pi->chip_id);
-	if (!(operations.read_operations & CHIPID))
-	{
-		if (pi->chip_id != target_chip_param.chip_id)
-		{
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_CHIP_ID), pi->chip_id, 
-						target_chip_param.chip_id);
-			ret = ERRCODE_INVALID_CHIP_ID;
-			goto leave_program_mode;
-		}
-	}
-	else
-	{
-		goto leave_program_mode;
-	}
-	
 	// enable flash programming
-	c2_write_ir((uint8_t)target_chip_param.param[C8051F_PARAM_FPCTL_ADDR]);
+	c2_write_ir((uint8_t)param->param[C8051F_PARAM_FPCTL_ADDR]);
 	dr = 0x02;
 	c2_write_dr(dr);
 	dr = 0x01;
 	c2_write_dr(dr);
 	delay_ms(30);
+	return commit();
+}
+
+RESULT c8051fc2_leave_program_mode(struct program_context_t *context, 
+								uint8_t success)
+{
+	REFERENCE_PARAMETER(context);
+	REFERENCE_PARAMETER(success);
 	
-	if (operations.erase_operations > 0)
+	c2_fini();
+	return commit();
+}
+
+RESULT c8051fc2_erase_target(struct program_context_t *context, char area, 
+							uint32_t addr, uint32_t page_size)
+{
+	struct chip_param_t *param = context->param;
+	uint8_t dr;
+	RESULT ret = ERROR_OK;
+	
+	REFERENCE_PARAMETER(addr);
+	REFERENCE_PARAMETER(page_size);
+	
+	switch (area)
 	{
-		// erase
-		LOG_INFO(_GETTEXT(INFOMSG_ERASING), "flash");
-		pgbar_init("erasing flash |", "|", 0, 1, PROGRESS_STEP, '=');
-		
-		c2_write_ir((uint8_t)target_chip_param.param[C8051F_PARAM_FPDAT_ADDR]);
+	case APPLICATION_CHAR:
+		c2_write_ir((uint8_t)param->param[C8051F_PARAM_FPDAT_ADDR]);
 		dr = C8051F_C2_CMD_DEVICE_ERASE;
 		c2_write_dr(dr);
 		c2_poll_in_busy();
@@ -139,10 +143,8 @@ RESULT c8051f_c2_program(struct operation_t operations,
 		c2_read_dr(&dr);
 		if ((ERROR_OK != commit()) || (dr != C8051F_C2_REP_COMMAND_OK))
 		{
-			pgbar_fini();
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "erase flash");
 			ret = ERRCODE_FAILURE_OPERATION;
-			goto leave_program_mode;
+			break;
 		}
 		
 		dr = 0xDE;
@@ -158,293 +160,163 @@ RESULT c8051f_c2_program(struct operation_t operations,
 		c2_poll_out_ready();
 		if (ERROR_OK != commit())
 		{
-			pgbar_fini();
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "erase flash");
 			ret = ERRCODE_FAILURE_OPERATION;
-			goto leave_program_mode;
+			break;
 		}
-		
-		pgbar_update(1);
-		pgbar_fini();
-		LOG_INFO(_GETTEXT(INFOMSG_ERASED), "flash");
+		break;
+	default:
+		ret = ERROR_FAIL;
+		break;
 	}
+	return ret;
+}
+
+RESULT c8051fc2_write_target(struct program_context_t *context, char area, 
+							uint32_t addr, uint8_t *buff, uint32_t page_size)
+{
+	struct chip_param_t *param = context->param;
+	uint8_t dr;
+	uint32_t i;
+	RESULT ret = ERROR_OK;
 	
-	page_size = C8051F_BLOCK_SIZE;
-	tbuff = pi->program_areas[APPLICATION_IDX].buff;
-	ml = &pi->program_areas[APPLICATION_IDX].memlist;
-	target_size = MEMLIST_CalcAllSize(*ml);
-	if (operations.write_operations & APPLICATION)
+	switch (area)
 	{
-		// program
-		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMING), "flash");
-		pgbar_init("writing flash |", "|", 0, target_size, PROGRESS_STEP, '=');
+	case APPLICATION_CHAR:
+		c2_write_ir((uint8_t)param->param[C8051F_PARAM_FPDAT_ADDR]);
 		
-		ml_tmp = *ml;
-		while (ml_tmp != NULL)
+		dr = C8051F_C2_CMD_BLOCK_WRITE;
+		c2_write_dr(dr);
+		c2_poll_in_busy();
+		
+		c2_poll_out_ready();
+		c2_read_dr(&dr);
+		if ((ERROR_OK != commit()) || (dr != C8051F_C2_REP_COMMAND_OK))
 		{
-			if ((ml_tmp->addr + ml_tmp->len) 
-				<= (ml_tmp->addr - (ml_tmp->addr % page_size) + page_size))
-			{
-				k = (uint16_t)ml_tmp->len;
-			}
-			else
-			{
-				k = page_size - (uint16_t)(ml_tmp->addr % page_size);
-			}
-			
-			len_current_list = (uint16_t)ml_tmp->len;
-			for (i = -(int32_t)(ml_tmp->addr % page_size); 
-				 i < ((int32_t)ml_tmp->len 
-							- (int32_t)(ml_tmp->addr % page_size)); 
-				 i += page_size)
-			{
-				c2_write_ir(
-					(uint8_t)target_chip_param.param[C8051F_PARAM_FPDAT_ADDR]);
-				
-				dr = C8051F_C2_CMD_BLOCK_WRITE;
-				c2_write_dr(dr);
-				c2_poll_in_busy();
-				
-				c2_poll_out_ready();
-				c2_read_dr(&dr);
-				if ((ERROR_OK != commit()) || (dr != C8051F_C2_REP_COMMAND_OK))
-				{
-					pgbar_fini();
-					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ADDR), 
-							  "program flash", ml_tmp->addr + i);
-					ret = ERRCODE_FAILURE_OPERATION;
-					goto leave_program_mode;
-				}
-				
-				// write address high byte
-				dr = (uint8_t)((ml_tmp->addr + i) >> 8);
-				c2_write_dr(dr);
-				c2_poll_in_busy();
-				
-				// write address low byte
-				dr = (uint8_t)((ml_tmp->addr + i) & 0xFF);
-				c2_write_dr(dr);
-				c2_poll_in_busy();
-				dr = 0;
-				c2_write_dr(dr);
-				c2_poll_in_busy();
-				
-				c2_poll_out_ready();
-				c2_read_dr(&dr);
-				if ((ERROR_OK != commit()) || (dr != C8051F_C2_REP_COMMAND_OK))
-				{
-					pgbar_fini();
-					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ADDR), 
-							  "program flash", ml_tmp->addr + i);
-					ret = ERRCODE_FAILURE_OPERATION;
-					goto leave_program_mode;
-				}
-				
-				for (j = 0; j < page_size; j++)
-				{
-					c2_write_dr(tbuff[ml_tmp->addr + i + j]);
-					c2_poll_in_busy();
-				}
-				
-				c2_poll_out_ready();
-				if (ERROR_OK != commit())
-				{
-					pgbar_fini();
-					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ADDR), 
-							  "program flash", ml_tmp->addr + i);
-					ret = ERRCODE_FAILURE_OPERATION;
-					goto leave_program_mode;
-				}
-				
-				pgbar_update(k);
-				len_current_list -= k;
-				if (len_current_list >= page_size)
-				{
-					k = page_size;
-				}
-				else
-				{
-					k = len_current_list;
-				}
-			}
-			
-			ml_tmp = MEMLIST_GetNext(ml_tmp);
+			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ADDR), 
+					  "program flash", addr);
+			ret = ERRCODE_FAILURE_OPERATION;
+			break;
 		}
 		
-		pgbar_fini();
-		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMED_SIZE), "flash", target_size);
+		// write address high byte
+		dr = (uint8_t)(addr >> 8);
+		c2_write_dr(dr);
+		c2_poll_in_busy();
+		
+		// write address low byte
+		dr = (uint8_t)(addr & 0xFF);
+		c2_write_dr(dr);
+		c2_poll_in_busy();
+		dr = 0;
+		c2_write_dr(dr);
+		c2_poll_in_busy();
+		
+		c2_poll_out_ready();
+		c2_read_dr(&dr);
+		if ((ERROR_OK != commit()) || (dr != C8051F_C2_REP_COMMAND_OK))
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ADDR), 
+					  "program flash", addr);
+			ret = ERRCODE_FAILURE_OPERATION;
+			break;
+		}
+		
+		for (i = 0; i < page_size; i++)
+		{
+			c2_write_dr(buff[i]);
+			c2_poll_in_busy();
+		}
+		
+		c2_poll_out_ready();
+		if (ERROR_OK != commit())
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ADDR), 
+					  "program flash", addr);
+			ret = ERRCODE_FAILURE_OPERATION;
+			break;
+		}
+		break;
+	default:
+		ret = ERROR_FAIL;
+		break;
 	}
+	return ret;
+}
+
+RESULT c8051fc2_read_target(struct program_context_t *context, char area, 
+							uint32_t addr, uint8_t *buff, uint32_t page_size)
+{
+	struct chip_param_t *param = context->param;
+	struct program_info_t *pi = context->pi;
+	uint8_t dr;
+	uint32_t i;
+	RESULT ret = ERROR_OK;
 	
-	if ((operations.read_operations & APPLICATION) 
-		|| (operations.verify_operations & APPLICATION))
+	switch (area)
 	{
-		if (operations.verify_operations & APPLICATION)
+	case CHIPID_CHAR:
+		c2_write_ir(C8051F_C2_DEVICEID);
+		c2_read_dr(&dr);
+		if (ERROR_OK != commit())
 		{
-			LOG_INFO(_GETTEXT(INFOMSG_VERIFYING), "flash");
+			ret = ERRCODE_FAILURE_OPERATION;
+			break;
 		}
-		else
-		{
-			ret = MEMLIST_Add(ml, 0, pi->program_areas[APPLICATION_IDX].size, 
-								page_size);
-			if (ret != ERROR_OK)
-			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-							"add memory list");
-				return ERRCODE_FAILURE_OPERATION;
-			}
-			target_size = MEMLIST_CalcAllSize(*ml);
-			LOG_INFO(_GETTEXT(INFOMSG_READING), "flash");
-		}
-		pgbar_init("reading flash |", "|", 0, target_size, PROGRESS_STEP, '=');
+		pi->chip_id = dr;
+		break;
+	case APPLICATION_CHAR:
+		c2_write_ir((uint8_t)param->param[C8051F_PARAM_FPDAT_ADDR]);
 		
-		ml_tmp = *ml;
-		while (ml_tmp != NULL)
+		dr = C8051F_C2_CMD_BLOCK_READ;
+		c2_write_dr(dr);
+		c2_poll_in_busy();
+		
+		c2_poll_out_ready();
+		c2_read_dr(&dr);
+		if ((ERROR_OK != commit()) || (dr != C8051F_C2_REP_COMMAND_OK))
 		{
-			if ((ml_tmp->addr + ml_tmp->len) 
-				<= (ml_tmp->addr - (ml_tmp->addr % page_size) + page_size))
-			{
-				k = (uint16_t)ml_tmp->len;
-			}
-			else
-			{
-				k = page_size - (uint16_t)(ml_tmp->addr % page_size);
-			}
-			
-			len_current_list = (uint16_t)ml_tmp->len;
-			for (i = -(int32_t)(ml_tmp->addr % page_size); 
-				 i < ((int32_t)ml_tmp->len 
-							- (int32_t)(ml_tmp->addr % page_size)); 
-				 i += page_size)
-			{
-				c2_write_ir(
-					(uint8_t)target_chip_param.param[C8051F_PARAM_FPDAT_ADDR]);
-				
-				dr = C8051F_C2_CMD_BLOCK_READ;
-				c2_write_dr(dr);
-				c2_poll_in_busy();
-				
-				c2_poll_out_ready();
-				c2_read_dr(&dr);
-				if ((ERROR_OK != commit()) || (dr != C8051F_C2_REP_COMMAND_OK))
-				{
-					pgbar_fini();
-					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ADDR), 
-							  "read flash", ml_tmp->addr + i);
-					ret = ERRCODE_FAILURE_OPERATION;
-					goto leave_program_mode;
-				}
-				
-				// write address high byte
-				dr = (uint8_t)((ml_tmp->addr + i) >> 8);
-				c2_write_dr(dr);
-				c2_poll_in_busy();
-				// write address low byte
-				dr = (uint8_t)((ml_tmp->addr + i) & 0xFF);
-				c2_write_dr(dr);
-				c2_poll_in_busy();
-				dr = 0;
-				c2_write_dr(dr);
-				c2_poll_in_busy();
-				
-				c2_poll_out_ready();
-				c2_read_dr(&dr);
-				if ((ERROR_OK != commit()) || (dr != C8051F_C2_REP_COMMAND_OK))
-				{
-					if (((ml_tmp->addr + i + 512) 
-							== pi->program_areas[APPLICATION_IDX].size) 
-						|| ((ml_tmp->addr + i + 1024) 
-							== pi->program_areas[APPLICATION_IDX].size))
-					{
-						// protect flash of ISP, not available
-						pgbar_update(pi->program_areas[APPLICATION_IDX].size 
-										- ml_tmp->addr - i);
-						pi->program_areas[APPLICATION_IDX].size = 
-															ml_tmp->addr + i;
-						goto fake_read_ok;
-					}
-					else
-					{
-						pgbar_fini();
-						LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ADDR), 
-								  "read flash", ml_tmp->addr + i);
-						ret = ERRCODE_FAILURE_OPERATION;
-						goto leave_program_mode;
-					}
-				}
-				
-				for (j = 0; j < page_size; j++)
-				{
-//					c2_poll_out_ready();
-					c2_read_dr(&page_buf[j]);
-				}
-				
-				if (ERROR_OK != commit())
-				{
-					pgbar_fini();
-					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ADDR), 
-							  "read flash", ml_tmp->addr + i);
-					ret = ERRCODE_FAILURE_OPERATION;
-					goto leave_program_mode;
-				}
-				
-				if (operations.verify_operations & APPLICATION)
-				{
-					// verify
-					for (j = 0; j < page_size; j++)
-					{
-						if (tbuff[ml_tmp->addr + i + j] != page_buf[j])
-						{
-							pgbar_fini();
-							LOG_ERROR(
-								_GETTEXT(ERRMSG_FAILURE_VERIFY_TARGET_AT_02X), 
-								"flash", ml_tmp->addr + i + j, page_buf[j], 
-								tbuff[ml_tmp->addr + i + j]);
-							ret = ERRCODE_FAILURE_VERIFY_TARGET;
-							goto leave_program_mode;
-						}
-					}
-				}
-				else
-				{
-					// read
-					memcpy(&tbuff[ml_tmp->addr + i], page_buf, page_size);
-				}
-				
-				pgbar_update(k);
-				len_current_list -= k;
-				if (len_current_list >= page_size)
-				{
-					k = page_size;
-				}
-				else
-				{
-					k = len_current_list;
-				}
-			}
-fake_read_ok:
-			ml_tmp = MEMLIST_GetNext(ml_tmp);
+			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ADDR), 
+					  "read flash", addr);
+			ret = ERRCODE_FAILURE_OPERATION;
+			break;
 		}
 		
-		pgbar_fini();
-		if (operations.verify_operations & APPLICATION)
+		// write address high byte
+		dr = (uint8_t)(addr >> 8);
+		c2_write_dr(dr);
+		c2_poll_in_busy();
+		// write address low byte
+		dr = (uint8_t)(addr & 0xFF);
+		c2_write_dr(dr);
+		c2_poll_in_busy();
+		dr = 0;
+		c2_write_dr(dr);
+		c2_poll_in_busy();
+		
+		c2_poll_out_ready();
+		c2_read_dr(&dr);
+		if ((ERROR_OK != commit()) || (dr != C8051F_C2_REP_COMMAND_OK))
 		{
-			LOG_INFO(_GETTEXT(INFOMSG_VERIFIED_SIZE), "flash", target_size);
+			ret = ERRCODE_FAILURE_OPERATION;
+			break;
 		}
-		else
+		
+		for (i = 0; i < page_size; i++)
 		{
-			LOG_INFO(_GETTEXT(INFOMSG_READ), "flash");
+//			c2_poll_out_ready();
+			c2_read_dr(&buff[i]);
 		}
+		
+		if (ERROR_OK != commit())
+		{
+			ret = ERRCODE_FAILURE_OPERATION;
+			break;
+		}
+		break;
+	default:
+		ret = ERROR_FAIL;
+		break;
 	}
-	
-leave_program_mode:
-	c2_fini();
-	if (ERROR_OK != commit())
-	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-				  "exit program mode");
-		ret = ERRCODE_FAILURE_OPERATION;
-	}
-	
 	return ret;
 }
 

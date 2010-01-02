@@ -23,8 +23,6 @@
 #define C8051F_JTAG						0
 #define C8051F_C2						1
 
-#define C8051F_BLOCK_SIZE				256
-
 #define C8051F_PARAM_ERASE_ADDR			0
 #define C8051F_PARAM_FPCTL_ADDR			1
 #define C8051F_PARAM_FPDAT_ADDR			2
@@ -63,8 +61,7 @@
 #define C8051F_INDOPTCODE_READ			0x02
 #define C8051F_INDOPTCODE_WRITE			0x03
 
-RESULT c8051f_jtag_program(struct operation_t operations, 
-			struct program_info_t *pi, struct programmer_info_t *prog);
+struct program_functions_t c8051fjtag_program_functions;
 
 
 // C2
@@ -80,8 +77,7 @@ RESULT c8051f_jtag_program(struct operation_t operations,
 #define C8051F_C2_REP_COMMAND_FAILED	0x02
 #define C8051F_C2_REP_COMMAND_OK		0x0D
 
-RESULT c8051f_c2_program(struct operation_t operations, 
-			struct program_info_t *pi, struct programmer_info_t *prog);
+struct program_functions_t c8051fc2_program_functions;
 
 #endif /* __C8051F_INTERNAL_H_INCLUDED__ */
 
