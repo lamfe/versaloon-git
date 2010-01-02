@@ -225,3 +225,4 @@ RESULT comisp_enter_program_mode(struct program_context_t *context)
 	}
 	return ERROR_OK;
 }
+

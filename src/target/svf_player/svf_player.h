@@ -23,10 +23,9 @@
 
 extern const struct program_area_map_t svfp_program_area_map[];
 extern const struct program_mode_t svfp_program_mode[];
+extern const struct program_functions_t svfp_program_functions;
 
 RESULT svfp_parse_argument(char cmd, const char *argu);
-RESULT svfp_program(struct operation_t operations, struct program_info_t *pi, 
-					struct programmer_info_t *prog);
 
 #endif /* __SVF_PLAYER_H_INCLUDED__ */
 

@@ -1112,11 +1112,13 @@ Parse_File:
 		struct program_context_t context;
 		
 		// in system programmer
-		if (!(operations.checksum_operations || operations.erase_operations 
-			|| operations.read_operations || operations.verify_operations 
-			|| operations.write_operations))
+		if ((!(operations.checksum_operations || operations.erase_operations 
+				|| operations.read_operations || operations.verify_operations 
+				|| operations.write_operations)) 
+			&& (NULL == strchr(cur_target->feature, NO_TARGET[0])))
 		{
-			// no operation defined, exit
+			// no operation defined
+			// and not no_target operation
 			free_all_and_exit(EXIT_SUCCESS);
 		}
 		
