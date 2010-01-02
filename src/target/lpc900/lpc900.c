@@ -45,7 +45,7 @@
 
 const struct program_area_map_t lpc900_program_area_map[] = 
 {
-	{APPLICATION_CHAR, 1, 0, 0, AREA_ATTR_EW | AREA_ATTR_V},
+	{APPLICATION_CHAR, 1, 0, 0, AREA_ATTR_EW | AREA_ATTR_V | AREA_ATTR_RNP},
 	{0, 0, 0, 0, 0}
 };
 
@@ -175,7 +175,6 @@ ProgramStart:
 	// enter program mode
 	if (ERROR_OK != icp_enter_program_mode())
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "enter program mode");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
@@ -242,7 +241,6 @@ RESULT lpc900_leave_program_mode(struct program_context_t *context,
 	icp_fini();
 	if (ERROR_OK != icp_commit())
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATE_DEVICE), "target chip");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	return ERROR_OK;
@@ -264,7 +262,6 @@ RESULT lpc900_erase_target(struct program_context_t *context, char area,
 	icp_poll(ICP_CMD_READ | ICP_CMD_FMDATA_I, tmpbuf, 0x80, 0x00, 10000);
 	if (ERROR_OK != icp_commit())
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "erase chip");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	return ERROR_OK;
@@ -300,8 +297,7 @@ RESULT lpc900_write_target(struct program_context_t *context, char area,
 		if ((ERROR_OK != icp_commit()) 
 			|| (tmpbuf[0] != LPCICP_POLL_ON_CLEAR))
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-						"program flash");
+			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATE_DEVICE), "target chip");
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
@@ -344,7 +340,6 @@ RESULT lpc900_read_target(struct program_context_t *context, char area,
 			if ((ERROR_OK != icp_commit()) 
 				|| (tmpbuff[0] != LPCICP_POLL_ON_CLEAR))
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "verify flash");
 				ret = ERRCODE_FAILURE_OPERATION;
 				break;
 			}
@@ -363,7 +358,6 @@ RESULT lpc900_read_target(struct program_context_t *context, char area,
 			icp_in((uint8_t*)&crc_in_chip + 3, 1);
 			if (ERROR_OK != icp_commit())
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "verify flash");
 				ret = ERRCODE_FAILURE_OPERATION;
 				break;
 			}
