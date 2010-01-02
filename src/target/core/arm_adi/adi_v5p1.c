@@ -31,6 +31,7 @@
 #include "prog_interface.h"
 
 #include "vsprog.h"
+#include "target.h"
 #include "programmer.h"
 
 #include "adi_v5p1.h"
@@ -231,16 +232,18 @@ static RESULT adi_dpif_fini(void)
 	return ret;
 }
 
-static RESULT adi_dpif_init(struct programmer_info_t *prog, adi_dp_if_t *interf)
+static RESULT adi_dpif_init(struct program_context_t *context, adi_dp_if_t *interf)
 {
-	if ((NULL == prog) || (NULL == interf) 
+	struct program_info_t *pi = context->pi;
+	
+	if ((NULL == context) || (NULL == interf) 
 		|| ((interf->type != ADI_DP_JTAG) && (interf->type != ADI_DP_SWD)))
 	{
 		LOG_BUG(_GETTEXT(ERRMSG_INVALID_PARAMETER), __FUNCTION__);
 		return ERROR_FAIL;
 	}
 	
-	adi_prog = prog;
+	adi_prog = context->prog;
 	adi_dp_if = interf;
 	
 	reset_init();
@@ -253,10 +256,10 @@ static RESULT adi_dpif_init(struct programmer_info_t *prog, adi_dp_if_t *interf)
 		ack_value = ADI_JTAGDP_ACK_OK_FAIL;
 		jtag_init();
 		jtag_config(adi_dp_if->adi_dp_if_info.adi_dp_jtag.jtag_khz, 
-				adi_dp_if->adi_dp_if_info.adi_dp_jtag.ub + target_jtag_pos.ub, 
-				adi_dp_if->adi_dp_if_info.adi_dp_jtag.ua + target_jtag_pos.ua, 
-				adi_dp_if->adi_dp_if_info.adi_dp_jtag.bb + target_jtag_pos.bb, 
-				adi_dp_if->adi_dp_if_info.adi_dp_jtag.ba + target_jtag_pos.ba);
+					adi_dp_if->adi_dp_if_info.adi_dp_jtag.ub + pi->jtag_pos.ub, 
+					adi_dp_if->adi_dp_if_info.adi_dp_jtag.ua + pi->jtag_pos.ua, 
+					adi_dp_if->adi_dp_if_info.adi_dp_jtag.bb + pi->jtag_pos.bb, 
+					adi_dp_if->adi_dp_if_info.adi_dp_jtag.ba + pi->jtag_pos.ba);
 		jtag_tms((uint8_t*)adi_swj_to_jtag_seq, 
 					sizeof(adi_swj_to_jtag_seq) * 8);
 		if (ERROR_OK == adi_dp_commit())
@@ -645,14 +648,14 @@ RESULT adi_fini(void)
 	return adi_dpif_fini();
 }
 
-RESULT adi_init(struct programmer_info_t *prog, adi_dp_if_t *interf)
+RESULT adi_init(struct program_context_t *context, adi_dp_if_t *interf)
 {
 	uint32_t tmp;
 	uint8_t cnt, retry = 3;
 	
 init:
 	// initialize interface
-	if (ERROR_OK != adi_dpif_init(prog, interf))
+	if (ERROR_OK != adi_dpif_init(context, interf))
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
 				  "initialize adi debugport interface");

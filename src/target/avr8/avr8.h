@@ -23,15 +23,9 @@
 
 extern const struct program_area_map_t avr8_program_area_map[];
 extern const struct program_mode_t avr8_program_mode[];
+extern struct program_functions_t avr8_program_functions;
 
 RESULT avr8_parse_argument(char cmd, const char *argu);
-RESULT avr8_program(struct operation_t operations, struct program_info_t *pi, 
-					struct programmer_info_t *prog);
-
-RESULT avr8_get_mass_product_data_size(struct operation_t operations, 
-									struct program_info_t pi, uint32_t *size);
-RESULT avr8_prepare_mass_product_data(struct operation_t operations, 
-									struct program_info_t pi, uint8_t *buff);
 
 #endif /* __AVR8_H_INCLUDED__ */
 

@@ -3,6 +3,7 @@
   <chip name="at89s5x">
     <program_mode>p:PAGE(F)|b:BYTE(F)</program_mode>
     <chip_id>0x001E0000</chip_id>
+    <chip_erase>1</chip_erase>
     <app_page_size>256</app_page_size>
     <app_page_num>32</app_page_num>
     <app_default>0xFF</app_default>

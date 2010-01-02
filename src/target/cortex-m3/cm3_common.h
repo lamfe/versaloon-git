@@ -66,7 +66,7 @@
 
 RESULT cm3_dp_parameter_init(adi_dp_if_t *dp);
 RESULT cm3_dp_fini(void);
-RESULT cm3_dp_init(struct programmer_info_t *prog, adi_dp_if_t *interf);
+RESULT cm3_dp_init(struct program_context_t *context, adi_dp_if_t *interf);
 
 RESULT cm3_dp_halt(void);
 RESULT cm3_dp_run(void);

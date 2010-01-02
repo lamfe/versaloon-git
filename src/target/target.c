@@ -109,7 +109,7 @@ struct target_info_t targets_info[] =
 		AUTO_DETECT,						// feature
 		s5x_program_area_map,				// program_area_map
 		s5x_program_mode,					// program_mode
-		NULL,								// program_functions
+		&s5x_program_functions,				// program_functions
 		s5x_parse_argument,					// parse_argument
 		
 		NULL,								// get_mass_product_data_size
@@ -157,7 +157,7 @@ struct target_info_t targets_info[] =
 		AUTO_DETECT,						// feature
 		avr8_program_area_map,				// program_area_map
 		avr8_program_mode,					// program_mode
-		NULL,								// program_functions
+		&avr8_program_functions,			// program_functions
 		avr8_parse_argument,				// parse_argument
 		
 		NULL,								// get_mass_product_data_size

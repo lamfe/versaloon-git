@@ -32,6 +32,7 @@
 #include "app_log.h"
 #include "prog_interface.h"
 
+#include "target.h"
 #include "programmer.h"
 
 #include "adi_v5p1.h"
@@ -52,14 +53,14 @@ RESULT cm3_dp_fini(void)
 	return adi_fini();
 }
 
-RESULT cm3_dp_init(struct programmer_info_t *prog, adi_dp_if_t *dp)
+RESULT cm3_dp_init(struct program_context_t *context, adi_dp_if_t *dp)
 {
 	uint32_t cpuid;
 	
 	memcpy(&cm3_dp_if, dp, sizeof(cm3_dp_if));
 	
 	cm3_dp_parameter_init(&cm3_dp_if);
-	if (ERROR_OK != adi_init(prog, &cm3_dp_if))
+	if (ERROR_OK != adi_init(context, &cm3_dp_if))
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
 					"initialize cm3 interface");

@@ -172,7 +172,7 @@ RESULT cm3_enter_program_mode(struct program_context_t *context)
 	}
 	
 	// mode independent
-	if (ERROR_OK != cm3_dp_init(context->prog, &dp))
+	if (ERROR_OK != cm3_dp_init(context, &dp))
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "initialize cm3");
 		cm3_leave_program_mode(context, 0);
