@@ -145,7 +145,7 @@ struct target_info_t targets_info[] =
 		AUTO_DETECT,						// feature
 		c8051f_program_area_map,			// program_area_map
 		c8051f_program_mode,				// program_mode
-		NULL,								// program_functions
+		&c8051f_program_functions,			// program_functions
 		c8051f_parse_argument,				// parse_argument
 		
 		NULL,								// get_mass_product_data_size
@@ -545,6 +545,16 @@ RESULT target_program(struct program_context_t *context)
 	uint8_t *tbuff;
 	char *fullname, str_tmp[32];
 	struct memlist **ml, *ml_tmp;
+	
+	// check mode
+	if ((target_chips.num_of_chips > 0) 
+		&& (target_chips.chips_param[0].program_mode != 0) 
+		&& !(param->program_mode & (1 << pi->mode)))
+	{
+		LOG_ERROR(_GETTEXT("current mode is not supported by %s"), 
+					pi->chip_name);
+		return ERROR_FAIL;
+	}
 	
 	if ((pf->enter_program_mode != NULL) 
 		&&(pf->enter_program_mode(context) != ERROR_OK))

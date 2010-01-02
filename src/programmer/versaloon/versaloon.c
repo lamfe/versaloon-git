@@ -338,6 +338,7 @@ RESULT versaloon_send_command(uint16_t out_len, uint16_t *inlen)
 	{
 		ret = usb_bulk_read(versaloon_device_handle, versaloon_epin, 
 					(char *)versaloon_buf, versaloon_buf_size, versaloon_to);
+		versaloon_to = VERSALOON_TIMEOUT;
 		if (ret > 0)
 		{
 			*inlen = (uint16_t)ret;
@@ -352,6 +353,7 @@ RESULT versaloon_send_command(uint16_t out_len, uint16_t *inlen)
 	}
 	else
 	{
+		versaloon_to = VERSALOON_TIMEOUT;
 		return ERROR_OK;
 	}
 }
@@ -438,7 +440,6 @@ RESULT versaloon_init(void)
 		LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
 		return ERRCODE_NOT_ENOUGH_MEMORY;
 	}
-	
 	return versaloon_get_target_voltage(&ret);
 }
 
@@ -844,6 +845,7 @@ RESULT versaloon_delay_us(uint16_t us)
 // POLL
 RESULT versaloon_poll_start(uint16_t retry, uint16_t interval_us)
 {
+	versaloon_to = VERSALOON_TIMEOUT_LONG;
 	return usbtopoll_start(retry, interval_us);
 }
 RESULT versaloon_poll_end(void)

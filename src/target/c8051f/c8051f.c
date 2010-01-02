@@ -55,6 +55,8 @@ const struct program_mode_t c8051f_program_mode[] =
 	{0, NULL, 0}
 };
 
+struct program_functions_t c8051f_program_functions;
+
 static void c8051f_usage(void)
 {
 	printf("\
@@ -65,12 +67,31 @@ Usage of %s:\n\
 
 RESULT c8051f_parse_argument(char cmd, const char *argu)
 {
-	argu = argu;
+	uint8_t mode;
 	
 	switch (cmd)
 	{
 	case 'h':
 		c8051f_usage();
+		break;
+	case 'm':
+		if (NULL == argu)
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), cmd);
+			return ERRCODE_INVALID_OPTION;
+		}
+		mode = (uint8_t)strtoul(argu, NULL,0);
+		switch (mode)
+		{
+		case C8051F_JTAG:
+			memcpy(&c8051f_program_functions, &c8051fjtag_program_functions, 
+					sizeof(c8051f_program_functions));
+			break;
+		case C8051F_C2:
+			memcpy(&c8051f_program_functions, &c8051fc2_program_functions, 
+					sizeof(c8051f_program_functions));
+			break;
+		}
 		break;
 	default:
 		return ERROR_FAIL;
@@ -78,73 +99,5 @@ RESULT c8051f_parse_argument(char cmd, const char *argu)
 	}
 	
 	return ERROR_OK;
-}
-
-
-
-
-
-#define get_target_voltage(v)					prog->get_target_voltage(v)
-RESULT c8051f_program(struct operation_t operations, struct program_info_t *pi, 
-					  struct programmer_info_t *prog)
-{
-	uint16_t voltage;
-
-#ifdef PARAM_CHECK
-	if (NULL == prog)
-	{
-		LOG_BUG(_GETTEXT(ERRMSG_INVALID_PARAMETER), __FUNCTION__);
-		return ERRCODE_INVALID_PARAMETER;
-	}
-	if ((   (operations.write_operations & APPLICATION) 
-			|| (operations.verify_operations & APPLICATION)) 
-		&& (NULL == pi->program_areas[APPLICATION_IDX].buff))
-	{
-		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_BUFFER), "for flash");
-		return ERRCODE_INVALID_BUFFER;
-	}
-#endif
-	
-	// get target voltage
-	if (ERROR_OK != get_target_voltage(&voltage))
-	{
-		return ERROR_FAIL;
-	}
-	LOG_DEBUG(_GETTEXT(INFOMSG_TARGET_VOLTAGE), voltage / 1000.0);
-	if (voltage < 2700)
-	{
-		LOG_WARNING(_GETTEXT(INFOMSG_TARGET_LOW_POWER));
-	}
-	
-	switch (program_mode)
-	{
-	case C8051F_C2:
-		if (target_chip_param.program_mode & (1 << C8051F_C2))
-		{
-			return c8051f_c2_program(operations, pi, prog);
-		}
-		else
-		{
-			LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "C2", 
-					  target_chip_param.chip_name);
-			return ERRCODE_NOT_SUPPORT;
-		}
-	case C8051F_JTAG:
-		if (target_chip_param.program_mode & (1 << C8051F_JTAG))
-		{
-			return c8051f_jtag_program(operations, pi, prog);
-		}
-		else
-		{
-			LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "JTAG", 
-					  target_chip_param.chip_name);
-			return ERRCODE_NOT_SUPPORT;
-		}
-	default:
-		// invalid mode
-		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_PROG_MODE), program_mode, 
-				  CUR_TARGET_STRING);
-		return ERRCODE_INVALID_PROG_MODE;
-	}
 }
 

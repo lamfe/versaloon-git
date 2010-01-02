@@ -43,6 +43,25 @@
 #define CUR_TARGET_STRING		C8051F_STRING
 #define CUR_DEFAULT_FREQ		4500
 
+RESULT c8051fjtag_enter_program_mode(struct program_context_t *context);
+RESULT c8051fjtag_leave_program_mode(struct program_context_t *context, 
+								uint8_t success);
+RESULT c8051fjtag_erase_target(struct program_context_t *context, char area, 
+							uint32_t addr, uint32_t page_size);
+RESULT c8051fjtag_write_target(struct program_context_t *context, char area, 
+							uint32_t addr, uint8_t *buff, uint32_t page_size);
+RESULT c8051fjtag_read_target(struct program_context_t *context, char area, 
+							uint32_t addr, uint8_t *buff, uint32_t page_size);
+struct program_functions_t c8051fjtag_program_functions = 
+{
+	NULL,			// execute
+	c8051fjtag_enter_program_mode, 
+	c8051fjtag_leave_program_mode, 
+	c8051fjtag_erase_target, 
+	c8051fjtag_write_target, 
+	c8051fjtag_read_target
+};
+
 static struct programmer_info_t *p = NULL;
 
 
@@ -55,11 +74,9 @@ static struct programmer_info_t *p = NULL;
 #define jtag_dr_read(dr, len)		p->jtag_hl_dr((uint8_t*)(dr), (len), 1, 1)
 
 #if 0
-#define C8051F_JTAG_BLOCK_SIZE		47
 #define jtag_poll_busy()			c8051f_jtag_poll_busy()
 #define jtag_poll_flbusy(dly, int)	c8051f_jtag_poll_flbusy((dly), (int))
 #else
-#define C8051F_JTAG_BLOCK_SIZE		128
 #define jtag_poll_busy()			p->delayus(20)
 #define jtag_poll_flbusy(dly, int)	jtag_delay_us((dly) * ((int) + 1))
 #endif
@@ -149,74 +166,54 @@ RESULT c8051f_jtag_poll_flbusy(uint16_t poll_cnt, uint16_t interval)
 	return ERROR_OK;
 }
 
-RESULT c8051f_jtag_program(struct operation_t operations, 
-					struct program_info_t *pi, struct programmer_info_t *prog)
+RESULT c8051fjtag_enter_program_mode(struct program_context_t *context)
 {
-	uint16_t ir;
+	struct program_info_t *pi = context->pi;
 	uint32_t dr;
 	
-	int32_t i;
-	uint32_t j, k, len_current_list, page_size;
-	uint32_t page_buf[C8051F_JTAG_BLOCK_SIZE];
-	uint8_t *tbuff;
-	RESULT ret = ERROR_OK;
-	uint32_t target_size;
-	struct memlist **ml, *ml_tmp;
-	
-	p = prog;
-	
-	if (!program_frequency)
+	if (!pi->frequency)
 	{
-		program_frequency = CUR_DEFAULT_FREQ;
+		context->pi->frequency = CUR_DEFAULT_FREQ;
 	}
+	p = context->prog;
 	
 	jtag_init();
-	jtag_config(program_frequency, target_jtag_pos.ub, target_jtag_pos.ua, 
+	jtag_config(pi->frequency, target_jtag_pos.ub, target_jtag_pos.ua, 
 				target_jtag_pos.bb, target_jtag_pos.ba);
-	
-	ir = C8051F_IR_STATECNTL_RESET | C8051F_IR_BYPASS;
-	jtag_ir_write(&ir, C8051F_IR_LEN);
-	ir = C8051F_IR_STATECNTL_HALT | C8051F_IR_IDCODE;
-	jtag_ir_write(&ir, C8051F_IR_LEN);
-	dr = 0;
-	jtag_dr_read(&dr, C8051F_DR_IDCODE_LEN);
-	if (ERROR_OK != jtag_commit())
-	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read chip id");
-		ret = ERRCODE_FAILURE_OPERATION;
-		goto leave_program_mode;
-	}
-	pi->chip_id = dr & C8051F_JTAG_ID_MASK;
-	LOG_INFO(_GETTEXT(INFOMSG_TARGET_CHIP_ID), pi->chip_id);
-	if (!(operations.read_operations & CHIPID))
-	{
-		if (pi->chip_id != target_chip_param.chip_id)
-		{
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_CHIP_ID), pi->chip_id, 
-						target_chip_param.chip_id);
-			ret = ERRCODE_INVALID_CHIP_ID;
-			goto leave_program_mode;
-		}
-	}
-	else
-	{
-		goto leave_program_mode;
-	}
 	
 	// set FLASHSCL based on SYSCLK (2MHx = 0x86)
 	dr = 0x86;
 	c8051f_jtag_ind_write(C8051F_IR_FLASHSCL, &dr, C8051F_DR_FLASHSCL_LEN);
 	
-	ml = &pi->program_areas[APPLICATION_IDX].memlist;
-	target_size = MEMLIST_CalcAllSize(*ml);
-	if ((operations.erase_operations & ALL) && (0 == target_size))
+	return jtag_commit();
+}
+
+RESULT c8051fjtag_leave_program_mode(struct program_context_t *context, 
+								uint8_t success)
+{
+	REFERENCE_PARAMETER(context);
+	REFERENCE_PARAMETER(success);
+	
+	jtag_fini();
+	return jtag_commit();
+}
+
+RESULT c8051fjtag_erase_target(struct program_context_t *context, char area, 
+							uint32_t addr, uint32_t page_size)
+{
+	struct chip_param_t *param = context->param;
+	uint32_t dr;
+	RESULT ret = ERROR_OK;
+	
+	REFERENCE_PARAMETER(context);
+	REFERENCE_PARAMETER(page_size);
+	REFERENCE_PARAMETER(addr);
+	
+	switch (area)
 	{
-		// erase all flash
-		LOG_INFO(_GETTEXT(INFOMSG_ERASING), "flash");
-		pgbar_init("erasing flash |", "|", 0, 1, PROGRESS_STEP, '=');
-		
+	case APPLICATION_CHAR:
 		// set FLASHADR to erase_addr
-		dr = target_chip_param.param[C8051F_PARAM_ERASE_ADDR];
+		dr = param->param[C8051F_PARAM_ERASE_ADDR];
 		c8051f_jtag_ind_write(C8051F_IR_FLASHADR, &dr, C8051F_DR_FLASHADR_LEN);
 		// set FLASHCON for flash erase operation(0x20)
 		dr = 0x20;
@@ -230,10 +227,8 @@ RESULT c8051f_jtag_program(struct operation_t operations,
 		c8051f_jtag_poll_flbusy(1500, 1000);
 		if (ERROR_OK != jtag_commit())
 		{
-			pgbar_fini();
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "erase flash");
 			ret = ERRCODE_FAILURE_OPERATION;
-			goto leave_program_mode;
+			break;
 		}
 		
 		// read FLBusy and FLFail
@@ -241,312 +236,150 @@ RESULT c8051f_jtag_program(struct operation_t operations,
 		
 		if ((ERROR_OK != jtag_commit()) || (dr & 0x02))
 		{
-			pgbar_fini();
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "erase flash");
 			ret = ERRCODE_FAILURE_OPERATION;
-			goto leave_program_mode;
+			break;
 		}
-		
-		pgbar_update(1);
-		pgbar_fini();
-		LOG_INFO(_GETTEXT(INFOMSG_ERASED), "flash");
+		break;
+	default:
+		ret = ERROR_FAIL;
+		break;
 	}
-	else if (operations.erase_operations & APPLICATION)
+	return ret;
+}
+
+RESULT c8051fjtag_write_target(struct program_context_t *context, char area, 
+							uint32_t addr, uint8_t *buff, uint32_t page_size)
+{
+	uint32_t dr, read_buf[512];
+	uint32_t i;
+	RESULT ret = ERROR_OK;
+	
+	REFERENCE_PARAMETER(context);
+	
+	switch (area)
 	{
-		// erase according to flash size
-		LOG_INFO(_GETTEXT(INFOMSG_ERASING), "flash");
-		pgbar_init("erasing flash |", "|", 0, target_size, PROGRESS_STEP, '=');
+	case APPLICATION_CHAR:
+		// set FLASHADR to address to write to
+		dr = addr;
+		c8051f_jtag_ind_write(C8051F_IR_FLASHADR, &dr, 
+								C8051F_DR_FLASHADR_LEN);
 		
-		jtag_delay_ms(500);
-		for (i = 0; 
-			 i < (int32_t)target_size; 
-			 i += target_chip_param.chip_areas[APPLICATION_IDX].page_size)
+		for (i = 0; i < page_size; i++)
 		{
-			// set FLASHADR to erase_addr
-			dr = i;
-			c8051f_jtag_ind_write(C8051F_IR_FLASHADR, &dr, 
-								  C8051F_DR_FLASHADR_LEN);
-			// set FLASHCON for flash erase operation(0x20)
-			dr = 0x20;
+			// set FLASHCON for flash write operation(0x10)
+			dr = 0x10;
 			c8051f_jtag_ind_write(C8051F_IR_FLASHCON, &dr, 
-								  C8051F_DR_FLASHCON_LEN);
-			// set FLASHDAT to 0xA5
-			dr = 0xA5;
+									C8051F_DR_FLASHCON_LEN);
+			// initiate the write operation
+			dr = buff[i];
 			c8051f_jtag_ind_write(C8051F_IR_FLASHDAT, &dr, 
-								  C8051F_DR_FLASHDAT_WLEN);
+									C8051F_DR_FLASHDAT_WLEN);
 			// set FLASHCON for poll operation
 			dr = 0;
 			c8051f_jtag_ind_write(C8051F_IR_FLASHCON, &dr, 
-								  C8051F_DR_FLASHCON_LEN);
+									C8051F_DR_FLASHCON_LEN);
 			// poll for FLBusy
-			c8051f_jtag_poll_flbusy(2000, 1000);
-			// read FLBusy and FLFail
-			c8051f_jtag_ind_read(C8051F_IR_FLASHDAT, &dr, 2);
-			
-			if ((ERROR_OK != jtag_commit()) || (dr & 0x06))
+			jtag_poll_flbusy(60, 0);
+			c8051f_jtag_ind_read(C8051F_IR_FLASHDAT, read_buf + i, 2);
+		}
+		
+		if (ERROR_OK != jtag_commit())
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ADDR), 
+						"program flash", addr);
+			ret = ERRCODE_FAILURE_OPERATION_ADDR;
+			break;
+		}
+		for (i = 0; i < page_size; i++)
+		{
+			if ((read_buf[i] & 0x06) != 0)
 			{
-				pgbar_fini();
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "erase flash");
+				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ADDR), 
+							"program flash", addr + i);
 				ret = ERRCODE_FAILURE_OPERATION;
-				goto leave_program_mode;
+				break;
 			}
-			
-			pgbar_update(target_chip_param.chip_areas[APPLICATION_IDX].page_size);
 		}
-		
-		pgbar_fini();
-		LOG_INFO(_GETTEXT(INFOMSG_ERASED), "flash");
+		break;
+	default:
+		ret = ERROR_FAIL;
+		break;
 	}
+	return ret;
+}
+
+RESULT c8051fjtag_read_target(struct program_context_t *context, char area, 
+							uint32_t addr, uint8_t *buff, uint32_t page_size)
+{
+	struct program_info_t *pi = context->pi;
+	uint16_t ir;
+	uint32_t dr, read_buf[512];
+	uint32_t i;
+	RESULT ret = ERROR_OK;
 	
-	page_size = C8051F_JTAG_BLOCK_SIZE;
-	tbuff = pi->program_areas[APPLICATION_IDX].buff;
-	if (operations.write_operations & APPLICATION)
+	switch (area)
 	{
-		// program flash
-		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMING), "flash");
-		pgbar_init("writing flash |", "|", 0, target_size, PROGRESS_STEP, '=');
-		
-		ml_tmp = *ml;
-		while (ml_tmp != NULL)
+	case CHIPID_CHAR:
+		ir = C8051F_IR_STATECNTL_RESET | C8051F_IR_BYPASS;
+		jtag_ir_write(&ir, C8051F_IR_LEN);
+		ir = C8051F_IR_STATECNTL_HALT | C8051F_IR_IDCODE;
+		jtag_ir_write(&ir, C8051F_IR_LEN);
+		dr = 0;
+		jtag_dr_read(&dr, C8051F_DR_IDCODE_LEN);
+		if (ERROR_OK != jtag_commit())
 		{
-			if ((ml_tmp->addr + ml_tmp->len) 
-				<= (ml_tmp->addr - (ml_tmp->addr % page_size) + page_size))
-			{
-				k = (uint16_t)ml_tmp->len;
-			}
-			else
-			{
-				k = page_size - (uint16_t)(ml_tmp->addr % page_size);
-			}
-			
-			len_current_list = (uint16_t)ml_tmp->len;
-			for (i = -(int32_t)(ml_tmp->addr % page_size); 
-				 i < ((int32_t)ml_tmp->len 
-							- (int32_t)(ml_tmp->addr % page_size)); 
-				 i += page_size)
-			{
-				// set FLASHADR to address to write to
-				dr = ml_tmp->addr + i;
-				c8051f_jtag_ind_write(C8051F_IR_FLASHADR, &dr, 
-									  C8051F_DR_FLASHADR_LEN);
-				
-				for (j = 0; j < page_size; j++)
-				{
-					// set FLASHCON for flash write operation(0x10)
-					dr = 0x10;
-					c8051f_jtag_ind_write(C8051F_IR_FLASHCON, &dr, 
-										  C8051F_DR_FLASHCON_LEN);
-					// initiate the write operation
-					dr = tbuff[ml_tmp->addr + i + j];
-					c8051f_jtag_ind_write(C8051F_IR_FLASHDAT, &dr, 
-										  C8051F_DR_FLASHDAT_WLEN);
-					// set FLASHCON for poll operation
-					dr = 0;
-					c8051f_jtag_ind_write(C8051F_IR_FLASHCON, &dr, 
-										  C8051F_DR_FLASHCON_LEN);
-					// poll for FLBusy
-					jtag_poll_flbusy(60, 0);
-					c8051f_jtag_ind_read(C8051F_IR_FLASHDAT, 
-										 ((uint32_t*)page_buf + j), 2);
-				}
-				
-				if (ERROR_OK != jtag_commit())
-				{
-					pgbar_fini();
-					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ADDR), 
-							  "program flash", ml_tmp->addr + i);
-					ret = ERRCODE_FAILURE_OPERATION_ADDR;
-					goto leave_program_mode;
-				}
-				
-				for (j = 0; j < page_size; j++)
-				{
-					if ((*((uint32_t*)page_buf + j) & 0x06) != 0)
-					{
-						pgbar_fini();
-						LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ADDR), 
-								  "program flash", ml_tmp->addr + i + j);
-						ret = ERRCODE_FAILURE_OPERATION;
-						goto leave_program_mode;
-					}
-				}
-				
-				pgbar_update(k);
-				len_current_list -= k;
-				if (len_current_list >= page_size)
-				{
-					k = page_size;
-				}
-				else
-				{
-					k = len_current_list;
-				}
-			}
-			
-			ml_tmp = MEMLIST_GetNext(ml_tmp);
+			ret = ERRCODE_FAILURE_OPERATION;
+			break;
+		}
+		pi->chip_id = dr & C8051F_JTAG_ID_MASK;
+		break;
+	case APPLICATION_CHAR:
+		// set FLASHADR to address to read from
+		dr = addr;
+		c8051f_jtag_ind_write(C8051F_IR_FLASHADR, &dr, 
+								C8051F_DR_FLASHADR_LEN);
+		
+		for (i = 0; i < page_size; i++)
+		{
+			// set FLASHCON for flash read operation(0x02)
+			dr = 0x02;
+			c8051f_jtag_ind_write(C8051F_IR_FLASHCON, &dr, 
+									C8051F_DR_FLASHCON_LEN);
+			// initiate the read operation
+			dr = 0;
+			c8051f_jtag_ind_read(C8051F_IR_FLASHDAT, &dr, 
+									C8051F_DR_FLASHDAT_RLEN);
+			// set FLASHCON for poll operation
+			dr = 0;
+			c8051f_jtag_ind_write(C8051F_IR_FLASHCON, &dr, 
+									C8051F_DR_FLASHCON_LEN);
+			// poll for FLBusy
+			jtag_poll_flbusy(0, 0);
+			c8051f_jtag_ind_read(C8051F_IR_FLASHDAT, read_buf + i, 
+									C8051F_DR_FLASHDAT_RLEN);
 		}
 		
-		pgbar_fini();
-		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMED_SIZE), "flash", target_size);
+		if (ERROR_OK != jtag_commit())
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ADDR), 
+						"read flash", addr);
+			ret = ERRCODE_FAILURE_OPERATION_ADDR;
+			break;
+		}
+		for (i = 0; i < page_size; i++)
+		{
+			if ((read_buf[i] & 0x06) != 0)
+			{
+				ret = ERRCODE_FAILURE_OPERATION;
+				break;
+			}
+			buff[i] = (read_buf[i] >> 3) & 0xFF;
+		}
+		break;
+	default:
+		ret = ERROR_FAIL;
+		break;
 	}
-	
-	if ((operations.read_operations & APPLICATION) 
-		|| (operations.verify_operations & APPLICATION))
-	{
-		if (operations.verify_operations & APPLICATION)
-		{
-			LOG_INFO(_GETTEXT(INFOMSG_VERIFYING), "flash");
-		}
-		else
-		{
-			ret = MEMLIST_Add(ml, 0, pi->program_areas[APPLICATION_IDX].size, 
-								page_size);
-			if (ret != ERROR_OK)
-			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "add memory list");
-				return ERRCODE_FAILURE_OPERATION;
-			}
-			target_size = MEMLIST_CalcAllSize(*ml);
-			LOG_INFO(_GETTEXT(INFOMSG_READING), "flash");
-		}
-		pgbar_init("reading flash |", "|", 0, target_size, PROGRESS_STEP, '=');
-		
-		ml_tmp = *ml;
-		while (ml_tmp != NULL)
-		{
-			if ((ml_tmp->addr + ml_tmp->len) 
-				<= (ml_tmp->addr - (ml_tmp->addr % page_size) + page_size))
-			{
-				k = (uint16_t)ml_tmp->len;
-			}
-			else
-			{
-				k = page_size - (uint16_t)(ml_tmp->addr % page_size);
-			}
-			
-			len_current_list = (uint16_t)ml_tmp->len;
-			for (i = -(int32_t)(ml_tmp->addr % page_size); 
-				 i < ((int32_t)ml_tmp->len 
-							- (int32_t)(ml_tmp->addr % page_size)); 
-				 i += page_size)
-			{
-				// set FLASHADR to address to read from
-				dr = ml_tmp->addr + i;
-				c8051f_jtag_ind_write(C8051F_IR_FLASHADR, &dr, 
-									  C8051F_DR_FLASHADR_LEN);
-				
-				for (j = 0; j < page_size; j++)
-				{
-					// set FLASHCON for flash read operation(0x02)
-					dr = 0x02;
-					c8051f_jtag_ind_write(C8051F_IR_FLASHCON, &dr, 
-										  C8051F_DR_FLASHCON_LEN);
-					// initiate the read operation
-					dr = 0;
-					c8051f_jtag_ind_read(C8051F_IR_FLASHDAT, &dr, 
-										 C8051F_DR_FLASHDAT_RLEN);
-					// set FLASHCON for poll operation
-					dr = 0;
-					c8051f_jtag_ind_write(C8051F_IR_FLASHCON, &dr, 
-										  C8051F_DR_FLASHCON_LEN);
-					// poll for FLBusy
-					jtag_poll_flbusy(0, 0);
-					c8051f_jtag_ind_read(C8051F_IR_FLASHDAT, 
-						((uint32_t*)page_buf + j), C8051F_DR_FLASHDAT_RLEN);
-				}
-				
-				if (ERROR_OK != jtag_commit())
-				{
-					pgbar_fini();
-					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ADDR), 
-							  "read flash", ml_tmp->addr + i);
-					ret = ERRCODE_FAILURE_OPERATION_ADDR;
-					goto leave_program_mode;
-				}
-				
-				for (j = 0; j < page_size; j++)
-				{
-					if ((*((uint32_t*)page_buf + j) & 0x06) != 0)
-					{
-						if (((ml_tmp->addr + i + 512) 
-								== pi->program_areas[APPLICATION_IDX].size) 
-							|| ((ml_tmp->addr + i + 1024) 
-								== pi->program_areas[APPLICATION_IDX].size))
-						{
-							// protect flash of ISP, not available
-							pgbar_update(pi->program_areas[APPLICATION_IDX].size 
-											- ml_tmp->addr - i);
-							pi->program_areas[APPLICATION_IDX].size = 
-															ml_tmp->addr + i;
-							goto fake_read_ok;
-						}
-						else
-						{
-							pgbar_fini();
-							LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-									  "read flash");
-							ret = ERRCODE_FAILURE_OPERATION;
-							goto leave_program_mode;
-						}
-					}
-					
-					if (operations.verify_operations & APPLICATION)
-					{
-						if (((*((uint32_t*)page_buf + j) >> 3) & 0xFF) 
-							!= tbuff[ml_tmp->addr + i + j])
-						{
-							pgbar_fini();
-							LOG_ERROR(
-								_GETTEXT(ERRMSG_FAILURE_VERIFY_TARGET_AT_02X), 
-								"flash", ml_tmp->addr + i + j, 
-								(*((uint32_t*)page_buf + j) >> 3) & 0xFF, 
-								tbuff[ml_tmp->addr + i + j]);
-							ret = ERRCODE_FAILURE_VERIFY_TARGET;
-							goto leave_program_mode;
-						}
-					}
-					else
-					{
-						tbuff[ml_tmp->addr + i + j] = 
-									(*((uint32_t*)page_buf + j) >> 3) & 0xFF;
-					}
-				}
-				
-				pgbar_update(k);
-				len_current_list -= k;
-				if (len_current_list >= page_size)
-				{
-					k = page_size;
-				}
-				else
-				{
-					k = len_current_list;
-				}
-			}
-fake_read_ok:
-			ml_tmp = MEMLIST_GetNext(ml_tmp);
-		}
-		
-		pgbar_fini();
-		if (operations.verify_operations & APPLICATION)
-		{
-			LOG_INFO(_GETTEXT(INFOMSG_VERIFIED_SIZE), "flash", target_size);
-		}
-		else
-		{
-			LOG_INFO(_GETTEXT(INFOMSG_READ), "flash");
-		}
-	}
-	
-leave_program_mode:
-	jtag_fini();
-	if (ERROR_OK != jtag_commit())
-	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-				  "exit program mode");
-		ret = ERRCODE_FAILURE_OPERATION;
-	}
-	
 	return ret;
 }
 
