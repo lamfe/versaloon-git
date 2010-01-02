@@ -166,10 +166,10 @@ struct target_info_t targets_info[] =
 	// svf_player
 	{
 		SVFP_STRING,						// name
-		"",									// feature
+		NO_TARGET,							// feature
 		svfp_program_area_map,				// program_area_map
 		svfp_program_mode,					// program_mode
-		NULL,								// program_functions
+		&svfp_program_functions,			// program_functions
 		svfp_parse_argument,				// parse_argument
 		
 		NULL,								// get_mass_product_data_size
@@ -181,7 +181,7 @@ struct target_info_t targets_info[] =
 		AUTO_DETECT,						// feature
 		lpc900_program_area_map,			// program_area_map
 		lpc900_program_mode,				// program_mode
-		NULL,								// program_functions
+		&lpc900_program_functions,			// program_functions
 		lpc900_parse_argument,				// parse_argument
 		
 		NULL,								// get_mass_product_data_size
@@ -765,7 +765,32 @@ RESULT target_program(struct program_context_t *context)
 		area_mask = target_area_mask(area_char);
 		fullname = target_area_fullname(area_char);
 		
-		if (((op->read_operations & area_mask) 
+		if ((op->verify_operations & area_mask) 
+			&& (area_attr & AREA_ATTR_V))
+		{
+			prog_area = &(pi->program_areas[area_idx]);
+			target_size = prog_area->size;
+			tbuff = prog_area->buff;
+			
+			LOG_INFO(_GETTEXT(INFOMSG_VERIFYING), fullname);
+			strcpy(str_tmp, "verifying ");
+			strcat(str_tmp, fullname);
+			strcat(str_tmp, " |");
+			pgbar_init(str_tmp, "|", 0, 1, PROGRESS_STEP, '=');
+			
+			if (ERROR_OK != pf->read_target(context, area_char, 0, 
+														tbuff, target_size))
+			{
+				pgbar_fini();
+				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_VERIFY), fullname);
+				ret = ERRCODE_FAILURE_OPERATION;
+				goto leave_program_mode;
+			}
+			
+			pgbar_update(1);
+			pgbar_fini();
+		}
+		else if (((op->read_operations & area_mask) 
 				|| (op->verify_operations & area_mask)) 
 			&& (area_idx >= 0) && (area_attr & AREA_ATTR_R))
 		{
@@ -849,17 +874,20 @@ RESULT target_program(struct program_context_t *context)
 					
 					if (op->verify_operations & area_mask)
 					{
-						if (0 != memcmp(read_buf, &tbuff[read_offset], 
-											ml_tmp->len))
+						for (j = 0; j < ml_tmp->len; j++)
 						{
-							free(read_buf);
-							read_buf = NULL;
-							pgbar_fini();
-							LOG_ERROR(
-								_GETTEXT(ERRMSG_FAILURE_VERIFY_PAGE), 
-								fullname, ml_tmp->addr);
-							ret = ERRCODE_FAILURE_VERIFY_TARGET;
-							goto leave_program_mode;
+							if (tbuff[read_offset + j] != read_buf[j])
+							{
+								pgbar_fini();
+								LOG_ERROR(
+									_GETTEXT(ERRMSG_FAILURE_VERIFY_AT_02X), 
+									fullname, ml_tmp->addr, read_buf[j], 
+									tbuff[read_offset + j]);
+								free(read_buf);
+								read_buf = NULL;
+								ret = ERRCODE_FAILURE_VERIFY_TARGET;
+								goto leave_program_mode;
+							}
 						}
 					}
 					else
@@ -990,7 +1018,11 @@ RESULT target_init(struct program_info_t *pi, struct programmer_info_t *prog)
 	
 	if (NULL == pi->chip_name)
 	{
-		if (NULL == strchr(cur_target->feature, AUTO_DETECT[0]))
+		if (strchr(cur_target->feature, NO_TARGET[0]) != NULL)
+		{
+			return ERROR_OK;
+		}
+		else if (NULL == strchr(cur_target->feature, AUTO_DETECT[0]))
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "Auto-detect", 
 						cur_target->name);
@@ -1448,6 +1480,11 @@ RESULT target_info_init(struct program_info_t *pi)
 				{
 					// configuration file exists, use default probe function
 					probe_chip = target_probe_chip;
+				}
+				else if (strchr(targets_info[i].feature, NO_TARGET[0]) != NULL)
+				{
+					cur_target = &targets_info[i];
+					return ERROR_OK;
 				}
 				else
 				{

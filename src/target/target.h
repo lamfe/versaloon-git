@@ -24,6 +24,7 @@
 #define USE_COMM					"C"
 #define CAN_EXECUTE					"X"
 #define SET_FREQUENCY				"F"
+#define NO_TARGET					"N"
 
 // Target Area
 #define CHIPID_IDX					0
@@ -77,6 +78,7 @@ enum area_attr_t
 	AREA_ATTR_EP	= (1 << 3), // Erase in PageMode
 	AREA_ATTR_WNP	= (1 << 4), // Non-Paged Mode when write
 	AREA_ATTR_RNP	= (1 << 5), // Non-Paged Mode when read
+	AREA_ATTR_V		= (1 << 6), // Simple verify
 	AREA_ATTR_WR	= AREA_ATTR_R | AREA_ATTR_W, 
 	AREA_ATTR_ER	= AREA_ATTR_R | AREA_ATTR_E, 
 	AREA_ATTR_EW	= AREA_ATTR_E | AREA_ATTR_W, 

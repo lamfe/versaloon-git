@@ -58,6 +58,14 @@ const struct program_mode_t svfp_program_mode[] =
 	{0, NULL, 0}
 };
 
+RESULT svfp_execute(struct program_context_t *context);
+const struct program_functions_t svfp_program_functions =
+{
+	svfp_execute,			// execute
+	NULL, NULL, NULL, NULL, NULL
+};
+
+
 #define SVF_SET_FREQ_CMD			"FREQUENCY %.02f HZ"
 static char *first_command = NULL;
 
@@ -90,39 +98,16 @@ RESULT svfp_parse_argument(char cmd, const char *argu)
 
 struct programmer_info_t *p = NULL;
 extern struct filelist *fl_in;
-#define get_target_voltage(v)					prog->get_target_voltage(v)
-RESULT svfp_program(struct operation_t operations, struct program_info_t *pi, 
-					struct programmer_info_t *prog)
+
+RESULT svfp_execute(struct program_context_t *context)
 {
 	FILE *svf_file = NULL;
 	uint32_t svf_file_size = 0, command_num = 0;
 	char *svfp_command_buffer = NULL;
 	uint32_t svfp_command_buffer_len = 0;
 	RESULT ret = ERROR_OK;
-	uint16_t voltage;
 	
-#ifdef PARAM_CHECK
-	if (NULL == prog)
-	{
-		LOG_BUG(_GETTEXT(ERRMSG_INVALID_PARAMETER), __FUNCTION__);
-		return ERRCODE_INVALID_PARAMETER;
-	}
-#endif
-	
-	operations = operations;
-	pi = pi;
-	p = prog;
-	
-	// get target voltage
-	if (ERROR_OK != get_target_voltage(&voltage))
-	{
-		return ERROR_FAIL;
-	}
-	LOG_DEBUG(_GETTEXT(INFOMSG_TARGET_VOLTAGE), voltage / 1000.0);
-	if (voltage < 2700)
-	{
-		LOG_WARNING(_GETTEXT(INFOMSG_TARGET_LOW_POWER));
-	}
+	p = context->prog;
 	
 	if (program_frequency)
 	{

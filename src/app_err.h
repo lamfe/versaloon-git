@@ -62,6 +62,7 @@
 #define ERRMSG_FAILURE_ERASE				"Fail to erase %s.\n"
 #define ERRMSG_FAILURE_PROGRAM				"Fail to program %s.\n"
 #define ERRMSG_FAILURE_READ					"Fail to read %s.\n"
+#define ERRMSG_FAILURE_VERIFY				"Fail to verify %s.\n"
 #define ERRMSG_FAILURE_OPERATION_ERRCODE	"Fail to %s, error code is %d.\n"
 #define ERRMSG_FAILURE_OPERATION_ERRCODE16	"Fail to %s, error code is 0x%X.\n"
 #define ERRMSG_FAILURE_OPERATION_ERRSTRING	"Fail to %s, error string is %s.\n"
@@ -90,13 +91,12 @@
 #define ERRMSG_INVALID_CHIP_ID				"Chip-id unmatch, read=0x%X, want=0x%X\n"
 #define ERRCODE_INVALID_CHIP_ID				ERROR_FAIL
 
-//#define ERRMSG_FAILURE_VERIFY				"%s verify failed at 0x%08X, read=0x%02X, want=0x%02X.\n"
-#define ERRMSG_FAILURE_VERIFY_PAGE			"%s verify failed at page 0x%08X\n"
-#define ERRMSG_FAILURE_VERIFY_02X			"%s verify failed, read=0x%02X, want=0x%02X.\n"
 #define ERRMSG_FAILURE_VERIFY_AT_02X		"%s verify failed at 0x%X, read=0x%02X, want=0x%02X.\n"
+#define ERRMSG_FAILURE_VERIFY_02X			"%s verify failed, read=0x%02X, want=0x%02X.\n"
 #define ERRMSG_FAILURE_VERIFY_04X			"%s verify failed, read=0x%04X, want=0x%04X.\n"
 #define ERRMSG_FAILURE_VERIFY_06X			"%s verify failed, read=0x%06X, want=0x%06X.\n"
 #define ERRMSG_FAILURE_VERIFY_08X			"%s verify failed, read=0x%06X, want=0x%08X.\n"
+#define ERRMSG_FAILURE_VERIFY_D				"%s verify failed, read=%d, want=%d.\n"
 
 #define ERRMSG_FAILURE_VERIFY_TARGET_02X	"%s verify failed, read=0x%02X, want=0x%02X.\n"
 #define ERRMSG_FAILURE_VERIFY_TARGET_AT_02X	"%s verify failed at 0x%X, read=0x%02X, want=0x%02X.\n"

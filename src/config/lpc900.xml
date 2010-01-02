@@ -7,6 +7,7 @@
     <app_default>0</app_default>
     <app_addr>0</app_addr>
     <app_seg>0</app_seg>
+    <chip_erase>1</chip_erase>
   </chip>
   <chip name="p89lpc901">
     <chip_id>0x0015DD0D</chip_id>
