@@ -44,9 +44,9 @@
 
 const struct program_area_map_t psoc1_program_area_map[] = 
 {
-	{APPLICATION_CHAR, 1, 0, 0, AREA_ATTR_EW},
+	{APPLICATION_CHAR, 1, 0, 0, AREA_ATTR_EW | AREA_ATTR_NP},
 	{APPLICATION_CHKSUM_CHAR, 1, 0, 0, AREA_ATTR_R},
-	{LOCK_CHAR, 1, 0, 0, AREA_ATTR_W},
+	{LOCK_CHAR, 1, 0, 0, AREA_ATTR_W | AREA_ATTR_NP},
 	{0, 0, 0, 0, 0}
 };
 
@@ -56,6 +56,26 @@ const struct program_mode_t psoc1_program_mode[] =
 	{'p', "", ISSP},
 	{0, NULL, 0}
 };
+
+RESULT psoc1_enter_program_mode(struct program_context_t *context);
+RESULT psoc1_leave_program_mode(struct program_context_t *context, 
+								uint8_t success);
+RESULT psoc1_erase_target(struct program_context_t *context, char area, 
+							uint32_t addr, uint32_t page_size);
+RESULT psoc1_write_target(struct program_context_t *context, char area, 
+							uint32_t addr, uint8_t *buff, uint32_t size);
+RESULT psoc1_read_target(struct program_context_t *context, char area, 
+							uint32_t addr, uint8_t *buff, uint32_t size);
+const struct program_functions_t psoc1_program_functions = 
+{
+	NULL,			// execute
+	psoc1_enter_program_mode, 
+	psoc1_leave_program_mode, 
+	psoc1_erase_target, 
+	psoc1_write_target, 
+	psoc1_read_target
+};
+
 
 #define VECTORS_NUM				17
 #define VECTORS_TABLE_SIZE		128
@@ -229,101 +249,18 @@ RESULT issp_call_ssc(uint8_t cmd, uint8_t id, uint8_t poll_ready, uint8_t * buf,
 	}
 }
 
-RESULT psoc1_program(struct operation_t operations, struct program_info_t *pi, 
-					 struct programmer_info_t *prog)
+RESULT psoc1_enter_program_mode(struct program_context_t *context)
 {
+	struct program_info_t *pi = context->pi;
 	uint16_t voltage;
-	uint8_t bank, addr, page_buf[64];
-	RESULT ret = ERROR_OK;
-	uint8_t tmp8;
-	uint16_t tmp16;
-	uint16_t block;
-	uint16_t checksum = 0;
-	uint32_t target_size, page_size, page_num;
-	uint8_t *tbuff;
-	struct memlist **ml;
 	
-	p = prog;
+	p = context->prog;
 	
-#ifdef PARAM_CHECK
-	if (NULL == prog)
-	{
-		LOG_BUG(_GETTEXT(ERRMSG_INVALID_PARAMETER), __FUNCTION__);
-		return ERRCODE_INVALID_PARAMETER;
-	}
-	if ((   (operations.read_operations & APPLICATION) 
-			&& (NULL == pi->program_areas[APPLICATION_IDX].buff)) 
-		|| ((   (operations.write_operations & APPLICATION) 
-				|| (operations.verify_operations & APPLICATION)) 
-			&& (NULL == pi->program_areas[APPLICATION_IDX].buff)))
-	{
-		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_BUFFER), "for flash");
-		return ERRCODE_INVALID_BUFFER;
-	}
-	if ((   (operations.read_operations & LOCK) 
-			&& (NULL == pi->program_areas[LOCK_IDX].buff)) 
-		|| ((   (operations.write_operations & LOCK) 
-				|| (operations.verify_operations & LOCK)) 
-			&& (NULL == pi->program_areas[LOCK_IDX].buff)))
-	{
-		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_BUFFER), "for secure");
-		return ERRCODE_INVALID_BUFFER;
-	}
-#endif
-	
-	ml = &pi->program_areas[APPLICATION_IDX].memlist;
-	target_size = MEMLIST_CalcAllSize(*ml);
-	if ((operations.read_operations & APPLICATION) 
-		|| (operations.write_operations & APPLICATION))
-	{
-		if (target_size != (uint32_t)(
-						target_chip_param.param[PSOC1_PARAM_BANK_NUM] 
-						* target_chip_param.chip_areas[APPLICATION_IDX].page_num
-						* target_chip_param.chip_areas[APPLICATION_IDX].page_size))
-		{
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID), "flash size", "target chip");
-			return ERRCODE_INVALID;
-		}
-	}
-	
-	// check mode
-	switch (program_mode)
-	{
-	case PSOC1_RESET_MODE:
-		if (!(target_chip_param.program_mode & (1 << PSOC1_RESET_MODE)))
-		{
-			LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "RESET", 
-					  target_chip_param.chip_name);
-			return ERRCODE_NOT_SUPPORT;
-		}
-		break;
-	case PSOC1_POWERON_MODE:
-		if (!(target_chip_param.program_mode & (1 << PSOC1_POWERON_MODE)))
-		{
-			LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "POWERON", 
-					  target_chip_param.chip_name);
-			return ERRCODE_NOT_SUPPORT;
-		}
-		break;
-	default:
-		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_PROG_MODE), program_mode, 
-				  CUR_TARGET_STRING);
-		return ERRCODE_INVALID_PROG_MODE;
-		break;
-	}
-	
-	// get target voltage
 	if (ERROR_OK != get_target_voltage(&voltage))
 	{
 		return ERROR_FAIL;
 	}
-	LOG_DEBUG(_GETTEXT(INFOMSG_TARGET_VOLTAGE), voltage / 1000.0);
-	if (voltage < 2700)
-	{
-		LOG_WARNING(_GETTEXT(INFOMSG_TARGET_LOW_POWER));
-	}
 	
-	// here we go
 	// ISSP Init
 	if (ERROR_OK != issp_init())
 	{
@@ -332,81 +269,44 @@ RESULT psoc1_program(struct operation_t operations, struct program_info_t *pi,
 	}
 	
 	// enter program mode
-	if (program_mode & (1 << PSOC1_RESET_MODE))
+	switch (pi->mode)
 	{
-		// Reset Mode
-		// enter prog mode
+	case PSOC1_RESET_MODE:
 		if (ERROR_OK != issp_enter_program_mode(ISSP_PM_RESET))
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-					  "enter program mode");
-			ret = ERRCODE_FAILURE_OPERATION;
-			goto leave_program_mode;
+			return ERRCODE_FAILURE_OPERATION;
 		}
-	}
-	else
-	{
+		break;
+	case PSOC1_POWERON_MODE:
 		if (voltage > 2000)
 		{
 			LOG_ERROR(_GETTEXT("Target should power off in power-on mode\n"));
-			ret = ERROR_FAIL;
-			goto leave_program_mode;
+			return ERROR_FAIL;
 		}
-		
 		if (ERROR_OK != issp_enter_program_mode(ISSP_PM_POWER_ON))
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-					  "enter program mode");
-			ret = ERRCODE_FAILURE_OPERATION;
-			goto leave_program_mode;
+			return ERRCODE_FAILURE_OPERATION;
 		}
+		break;
+	default:
+		return ERROR_FAIL;
+		break;
 	}
 	
-	// read chip_id
-	// call table_read no.0 and read 2 bytes from 0xF8 in sram
-	pi->chip_id = 0;
-	ret = issp_call_ssc(PSOC1_SSC_CMD_TableRead, 0, 1, (uint8_t*)&pi->chip_id, 2);
-	if (ret != ERROR_OK)
-	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read chip id");
-		ret = ERRCODE_FAILURE_OPERATION;
-		goto leave_program_mode;
-	}
-	LOG_INFO(_GETTEXT(INFOMSG_TARGET_CHIP_ID), pi->chip_id);
-	if (!(operations.read_operations & CHIPID))
-	{
-		if (pi->chip_id != target_chip_param.chip_id)
-		{
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_CHIP_ID), pi->chip_id, 
-					  target_chip_param.chip_id);
-			ret = ERRCODE_INVALID_CHIP_ID;
-			goto leave_program_mode;
-		}
-	}
-	else
-	{
-		goto leave_program_mode;
-	}
-	
-	// init
 	// init1 call_calibrate
 	// call calibrate1
-	ret = issp_call_ssc(PSOC1_SSC_CMD_Calibrate1, 0, 1, NULL, 0);
-	if (ret != ERROR_OK)
+	if (ERROR_OK != issp_call_ssc(PSOC1_SSC_CMD_Calibrate1, 0, 1, NULL, 0))
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-				  "call calibrate1");
-		ret = ERRCODE_FAILURE_OPERATION;
-		goto leave_program_mode;
+					"call calibrate1");
+		return ERRCODE_FAILURE_OPERATION;
 	}
 	// init2 read table no.1
-	ret = issp_call_ssc(PSOC1_SSC_CMD_TableRead, 1, 1, NULL, 0);
-	if (ret != ERROR_OK)
+	if (ERROR_OK != issp_call_ssc(PSOC1_SSC_CMD_TableRead, 1, 1, NULL, 0))
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-				  "read table no.1");
-		ret = ERRCODE_FAILURE_OPERATION;
-		goto leave_program_mode;
+					"read table no.1");
+		return ERRCODE_FAILURE_OPERATION;
 	}
 	// init3 do the hell
 	if (voltage < 4000)
@@ -425,66 +325,98 @@ RESULT psoc1_program(struct operation_t operations, struct program_info_t *pi,
 	// init sys_clock
 	issp_sel_reg_bank(1);
 	issp_write_reg(0xE0, 0x02);
+	return issp_commit();
+}
+RESULT psoc1_leave_program_mode(struct program_context_t *context, 
+								uint8_t success)
+{
+	struct program_info_t *pi = context->pi;
 	
-	if (operations.erase_operations > 0)
+	REFERENCE_PARAMETER(success);
+	
+	switch (pi->mode)
 	{
-		LOG_INFO(_GETTEXT(INFOMSG_ERASING), "chip");
-		pgbar_init("erasing chip |", "|", 0, 1, PROGRESS_STEP, '=');
-		
-		issp_ssc_set_clock(PSOC1_ISSP_SSC_DEFAULT_CLOCK_ERASE);
-		issp_ssc_set_delay(PSOC1_ISSP_SSC_DEFAULT_DELAY);
-		
-		ret = issp_call_ssc(PSOC1_SSC_CMD_EraseAll, 0, 1, &tmp8, 1);
-		if ((ret != ERROR_OK) || (tmp8 != PSOC1_ISSP_SSC_RETURN_OK))
+	case PSOC1_RESET_MODE:
+		if (ERROR_OK != issp_leave_program_mode(ISSP_PM_RESET))
 		{
-			pgbar_fini();
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "call erase_all");
-			ret = ERRCODE_FAILURE_OPERATION;
-			goto leave_program_mode;
+			return ERRCODE_FAILURE_OPERATION;
 		}
-		
-		pgbar_update(1);
-		pgbar_fini();
-		LOG_INFO(_GETTEXT(INFOMSG_ERASED), "chip");
+		break;
+	case PSOC1_POWERON_MODE:
+		if (ERROR_OK != issp_leave_program_mode(ISSP_PM_POWER_ON))
+		{
+			return ERRCODE_FAILURE_OPERATION;
+		}
+		break;
+	default:
+		return ERROR_FAIL;
+		break;
 	}
+	issp_fini();
+	return issp_commit();
+}
+
+RESULT psoc1_erase_target(struct program_context_t *context, char area, 
+							uint32_t addr, uint32_t page_size)
+{
+	uint8_t tmp8;
+	RESULT ret;
 	
-	page_size = target_chip_param.chip_areas[APPLICATION_IDX].page_size;
-	page_num = target_chip_param.chip_areas[APPLICATION_IDX].page_num;
-	tbuff = pi->program_areas[APPLICATION_IDX].buff;
-	if (operations.write_operations & APPLICATION)
+	REFERENCE_PARAMETER(context);
+	REFERENCE_PARAMETER(area);
+	REFERENCE_PARAMETER(addr);
+	REFERENCE_PARAMETER(page_size);
+	
+	issp_ssc_set_clock(PSOC1_ISSP_SSC_DEFAULT_CLOCK_ERASE);
+	issp_ssc_set_delay(PSOC1_ISSP_SSC_DEFAULT_DELAY);
+	
+	ret = issp_call_ssc(PSOC1_SSC_CMD_EraseAll, 0, 1, &tmp8, 1);
+	if ((ret != ERROR_OK) || (tmp8 != PSOC1_ISSP_SSC_RETURN_OK))
 	{
-		// program flash
-		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMING), "flash");
-		pgbar_init("writing flash |", "|", 0, 
-					(target_size + page_size - 1) / page_size, 
-					PROGRESS_STEP, '=');
-		
-		checksum = 0;
-		for (bank = 0; 
-			bank < target_chip_param.param[PSOC1_PARAM_BANK_NUM]; 
-			bank++)
+		return ERRCODE_FAILURE_OPERATION;
+	}
+	return ERROR_OK;
+}
+RESULT psoc1_write_target(struct program_context_t *context, char area, 
+							uint32_t addr, uint8_t *buff, uint32_t size)
+{
+	struct chip_param_t *param = context->param;
+	uint8_t bank, bank_num;
+	uint16_t block;
+	uint32_t page_num, page_size;
+	uint32_t i;
+	uint8_t tmp8;
+	RESULT ret = ERROR_OK;
+	
+	REFERENCE_PARAMETER(size);
+	REFERENCE_PARAMETER(addr);
+	
+	page_size = param->chip_areas[APPLICATION_IDX].page_size;
+	page_num = param->chip_areas[APPLICATION_IDX].page_num;
+	bank_num = (uint8_t)param->param[PSOC1_PARAM_BANK_NUM];
+	switch (area)
+	{
+	case APPLICATION_CHAR:
+		for (bank = 0; bank < bank_num; bank++)
 		{
 			// select bank by write xio in fls_pr1(in reg_bank 1)
-			if (target_chip_param.param[PSOC1_PARAM_BANK_NUM] > 1)
+			if (param->param[PSOC1_PARAM_BANK_NUM] > 1)
 			{
 				issp_sel_reg_bank(1);
 				issp_set_flash_bank(bank);
 				issp_sel_reg_bank(0);
 			}
 			
-			for (block = 0; 
-				block < target_chip_param.chip_areas[APPLICATION_IDX].page_num; 
-				block++)
+			for (block = 0; block < page_num; block++)
 			{
 				uint32_t block_num = bank * page_num + block;
 				uint32_t block_addr = block_num * page_size;
 				
 				// write data into sram
-				for (addr = 0; addr < page_size; addr++)
+				for (i = 0; i < page_size; i++)
 				{
-					checksum += tbuff[block_addr + addr];
-					issp_write_sram(PSOC1_ISSP_SSC_DEFAULT_POINTER + addr, 
-									tbuff[block_addr + addr]);
+					issp_write_sram(PSOC1_ISSP_SSC_DEFAULT_POINTER + i, 
+									buff[block_addr + i]);
 				}
 				issp_ssc_set_clock(PSOC1_ISSP_SSC_DEFAULT_CLOCK_FLASH);
 				issp_ssc_set_delay(PSOC1_ISSP_SSC_DEFAULT_DELAY);
@@ -493,53 +425,84 @@ RESULT psoc1_program(struct operation_t operations, struct program_info_t *pi,
 									(uint8_t)(block & 0xFF), 1, &tmp8, 1);
 				if ((ret != ERROR_OK) || (tmp8 != PSOC1_ISSP_SSC_RETURN_OK))
 				{
-					pgbar_fini();
-					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_MESSAGE), 
-							  "write flash", "block secured?");
 					ret = ERRCODE_FAILURE_OPERATION;
-					goto leave_program_mode;
+					break;
 				}
-				pgbar_update(1);
+				pgbar_update(page_size);
 			}
-		}
-		
-		pgbar_fini();
-		if (pi->program_areas[APPLICATION_IDX].checksum_value != checksum)
-		{
-			LOG_DEBUG(_GETTEXT(INFOMSG_CHECKSUM), checksum);
-		}
-		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMED_SIZE), "flash", target_size);
-	}
-	
-	if ((operations.read_operations & APPLICATION) 
-		|| (operations.verify_operations & APPLICATION))
-	{
-		if (operations.verify_operations & APPLICATION)
-		{
-			LOG_INFO(_GETTEXT(INFOMSG_VERIFYING), "flash");
-		}
-		else
-		{
-			ret = MEMLIST_Add(ml, 0, pi->program_areas[APPLICATION_IDX].size, 
-								page_size);
 			if (ret != ERROR_OK)
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "add memory list");
-				return ERRCODE_FAILURE_OPERATION;
+				break;
 			}
-			target_size = MEMLIST_CalcAllSize(*ml);
-			LOG_INFO(_GETTEXT(INFOMSG_READING), "flash");
 		}
-		pgbar_init("reading flash |", "|", 0, 
-					(target_size + page_size - 1) / page_size, 
-					PROGRESS_STEP, '=');
-		
-		checksum = 0;
-		for (bank = 0; 
-			bank < target_chip_param.param[PSOC1_PARAM_BANK_NUM]; 
-			bank++)
+		break;
+	case LOCK_CHAR:
+		for (bank = 0; bank < bank_num; bank++)
 		{
-			if (target_chip_param.param[PSOC1_PARAM_BANK_NUM] > 1)
+			uint32_t lock_bank_addr = bank * (page_num >> 2);
+			
+			if (bank_num > 1)
+			{
+				issp_sel_reg_bank(1);
+				issp_set_flash_bank(bank);
+				issp_sel_reg_bank(0);
+			}
+			for (i = 0; i < (page_num >> 2); i++)
+			{
+				issp_write_sram(PSOC1_ISSP_SSC_DEFAULT_POINTER + i, 
+								buff[lock_bank_addr + i]);
+			}
+			issp_ssc_set_clock(PSOC1_ISSP_SSC_DEFAULT_CLOCK_FLASH);
+			issp_ssc_set_delay(PSOC1_ISSP_SSC_DEFAULT_DELAY);
+			
+			ret = issp_call_ssc(PSOC1_SSC_CMD_ProtectBlock, 0, 1, &tmp8, 1);
+			if ((ret != ERROR_OK) || (tmp8 != PSOC1_ISSP_SSC_RETURN_OK))
+			{
+				ret = ERRCODE_FAILURE_OPERATION;
+				break;
+			}
+			
+			pgbar_update(1);
+		}
+		break;
+	}
+	return ret;
+}
+
+RESULT psoc1_read_target(struct program_context_t *context, char area, 
+							uint32_t addr, uint8_t *buff, uint32_t size)
+{
+	struct chip_param_t *param = context->param;
+	struct program_info_t *pi = context->pi;
+	uint8_t bank, bank_num;
+	uint16_t block;
+	uint32_t page_num, page_size;
+	uint32_t i;
+	uint8_t tmp8;
+	RESULT ret = ERROR_OK;
+	
+	REFERENCE_PARAMETER(size);
+	REFERENCE_PARAMETER(addr);
+	
+	page_size = param->chip_areas[APPLICATION_IDX].page_size;
+	page_num = param->chip_areas[APPLICATION_IDX].page_num;
+	bank_num = (uint8_t)param->param[PSOC1_PARAM_BANK_NUM];
+	switch (area)
+	{
+	case CHIPID_CHAR:
+		// call table_read no.0 and read 2 bytes from 0xF8 in sram
+		pi->chip_id = 0;
+		ret = issp_call_ssc(PSOC1_SSC_CMD_TableRead, 0, 1, (uint8_t*)&pi->chip_id, 2);
+		if (ret != ERROR_OK)
+		{
+			ret = ERRCODE_FAILURE_OPERATION;
+			break;
+		}
+		break;
+	case APPLICATION_CHAR:
+		for (bank = 0; bank < bank_num; bank++)
+		{
+			if (bank_num > 1)
 			{
 				issp_sel_reg_bank(1);
 				issp_set_flash_bank(bank);
@@ -555,198 +518,32 @@ RESULT psoc1_program(struct operation_t operations, struct program_info_t *pi,
 									(uint8_t)(block & 0xFF), 1, &tmp8, 1);
 				if ((ret != ERROR_OK) || (tmp8 != PSOC1_ISSP_SSC_RETURN_OK))
 				{
-					pgbar_fini();
-					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_MESSAGE), 
-								"call read_block", "block secured?");
 					ret = ERRCODE_FAILURE_OPERATION;
-					goto leave_program_mode;
+					break;
 				}
 				
-				for (addr = 0; addr < page_size; addr++)
+				for (i = 0; i < page_size; i++)
 				{
-					issp_read_sram(PSOC1_ISSP_SSC_DEFAULT_POINTER + addr, 
-								   page_buf + addr);
+					issp_read_sram(PSOC1_ISSP_SSC_DEFAULT_POINTER + i, 
+									buff + block_addr + i);
 				}
 				
 				// commit
 				if (ERROR_OK != issp_commit())
 				{
-					pgbar_fini();
 					ret = ERROR_FAIL;
-					goto leave_program_mode;
+					break;
 				}
 				
-				// read or verify
-				for (addr = 0; addr < page_size; addr++)
-				{
-					checksum += page_buf[addr];
-					if (operations.verify_operations & APPLICATION)
-					{
-						// verify
-						if (page_buf[addr] != tbuff[block_addr + addr])
-						{
-							pgbar_fini();
-							LOG_ERROR(
-								_GETTEXT(ERRMSG_FAILURE_VERIFY_TARGET_AT_02X), 
-								"flash", addr, page_buf[addr], 
-								tbuff[block_addr + addr]);
-							ret = ERRCODE_FAILURE_VERIFY_TARGET;
-							goto leave_program_mode;
-						}
-					}
-					else
-					{
-						// read
-						tbuff[block_addr + addr] = page_buf[addr];
-					}
-				}
-				
-				pgbar_update(1);
+				pgbar_update(page_size);
 			}
-		}
-		
-		pgbar_fini();
-		if (pi->program_areas[APPLICATION_IDX].checksum_value != checksum)
-		{
-			LOG_DEBUG(_GETTEXT(INFOMSG_CHECKSUM), checksum);
-		}
-		if (operations.verify_operations & APPLICATION)
-		{
-			LOG_INFO(_GETTEXT(INFOMSG_VERIFIED_SIZE), "flash", target_size);
-		}
-		else
-		{
-			LOG_INFO(_GETTEXT(INFOMSG_READ), "flash");
-		}
-		
-		
-		// checksum
-		if ((pi->areas_defined & APPLICATION_CHKSUM) 
-			&& (operations.verify_operations & APPLICATION))
-		{
-			LOG_INFO(_GETTEXT(INFOMSG_VERIFYING), "checksum");
-		}
-		else
-		{
-			LOG_INFO(_GETTEXT(INFOMSG_READING), "checksum");
-		}
-		
-		checksum = 0;
-		for (bank = 0; 
-			bank < target_chip_param.param[PSOC1_PARAM_BANK_NUM]; 
-			bank++)
-		{
-			if (target_chip_param.param[PSOC1_PARAM_BANK_NUM] > 1)
-			{
-				issp_sel_reg_bank(1);
-				issp_set_flash_bank(bank);
-				issp_sel_reg_bank(0);
-			}
-			
-			ret = issp_call_ssc(PSOC1_SSC_CMD_CheckSum, (uint8_t)page_num, 1, 
-								(uint8_t*)&tmp16, 2);
 			if (ret != ERROR_OK)
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-						  "read checksum");
-				ret = ERRCODE_FAILURE_OPERATION;
-				goto leave_program_mode;
-			}
-			
-			checksum += tmp16;
-			LOG_DEBUG(_GETTEXT(INFOMSG_CHECKSUM_BANK), bank, tmp16);
-		}
-		
-		if ((pi->areas_defined & APPLICATION_CHKSUM) 
-			&& (operations.verify_operations & APPLICATION))
-		{
-			// verify
-			if (pi->program_areas[APPLICATION_IDX].checksum_value == checksum)
-			{
-				LOG_INFO(_GETTEXT(INFOMSG_VERIFIED), "checksum");
-			}
-			else
-			{
-				LOG_INFO(_GETTEXT(ERRMSG_FAILURE_VERIFY_TARGET_04X), 
-					"checksum", checksum, 
-					(uint16_t)pi->program_areas[APPLICATION_IDX].checksum_value);
+				break;
 			}
 		}
-		else
-		{
-			// read
-			LOG_INFO(_GETTEXT(INFOMSG_READ_VALUE), "checksum", checksum);
-		}
+		break;
 	}
-	
-	tbuff = pi->program_areas[LOCK_IDX].buff;
-	if (operations.write_operations & LOCK)
-	{
-		// program secure
-		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMING), "secure");
-		pgbar_init("writing secure |", "|", 0, 
-			target_chip_param.param[PSOC1_PARAM_BANK_NUM], PROGRESS_STEP, '=');
-		
-		for (bank = 0; 
-			bank < target_chip_param.param[PSOC1_PARAM_BANK_NUM]; 
-			bank++)
-		{
-			uint32_t lock_bank_addr = bank * (page_num >> 2);
-			
-			if (target_chip_param.param[PSOC1_PARAM_BANK_NUM] > 1)
-			{
-				issp_sel_reg_bank(1);
-				issp_set_flash_bank(bank);
-				issp_sel_reg_bank(0);
-			}
-			for (addr = 0; addr < (page_num >> 2); addr++)
-			{
-				issp_write_sram(PSOC1_ISSP_SSC_DEFAULT_POINTER + addr, 
-								tbuff[lock_bank_addr + addr]);
-			}
-			issp_ssc_set_clock(PSOC1_ISSP_SSC_DEFAULT_CLOCK_FLASH);
-			issp_ssc_set_delay(PSOC1_ISSP_SSC_DEFAULT_DELAY);
-			
-			ret = issp_call_ssc(PSOC1_SSC_CMD_ProtectBlock, 0, 1, &tmp8, 1);
-			if ((ret != ERROR_OK) || (tmp8 != PSOC1_ISSP_SSC_RETURN_OK))
-			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "write secure");
-				ret = ERRCODE_FAILURE_OPERATION;
-				goto leave_program_mode;
-			}
-			
-			pgbar_update(1);
-		}
-		
-		pgbar_fini();
-		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMED), "secure");
-	}
-	
-leave_program_mode:
-	// leave program mode
-	if (program_mode & (1 << PSOC1_RESET_MODE))
-	{
-		if (ERROR_OK != issp_leave_program_mode(ISSP_PM_RESET))
-		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "leave program mode");
-			ret = ERRCODE_FAILURE_OPERATION;
-		}
-	}
-	else
-	{
-		if (ERROR_OK != issp_leave_program_mode(ISSP_PM_POWER_ON))
-		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "leave program mode");
-			ret = ERRCODE_FAILURE_OPERATION;
-		}
-	}
-	issp_fini();
-	if (ERROR_OK != issp_commit())
-	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATE_DEVICE), "target chip");
-		ret = ERRCODE_FAILURE_OPERATION;
-	}
-	
 	return ret;
 }
 

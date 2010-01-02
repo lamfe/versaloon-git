@@ -406,7 +406,7 @@ RESULT avr8jtag_read_target(struct program_context_t *context, char area,
 	uint8_t ir;
 	uint32_t dr;
 	uint32_t i;
-	uint8_t tmpbuf[4];
+	uint8_t tmpbuf[4], page_buf[256 + 1];
 	RESULT ret = ERROR_OK;
 	
 	switch (area)
@@ -440,13 +440,13 @@ RESULT avr8jtag_read_target(struct program_context_t *context, char area,
 		{
 			dr = 0;
 			jtag_dr_write(&dr, 8);
-			jtag_dr_read(buff, (uint16_t)(page_size * 8));
+			jtag_dr_read(page_buf, (uint16_t)(page_size * 8));
 		}
 		else
 		{
 			for (i = 0; i < page_size; i++)
 			{
-				jtag_dr_read(buff + i, 8);
+				jtag_dr_read(page_buf + i, 8);
 			}
 		}
 		
@@ -455,6 +455,7 @@ RESULT avr8jtag_read_target(struct program_context_t *context, char area,
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
+		memcpy(buff, page_buf, page_size);
 		break;
 	case EEPROM_CHAR:
 		AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);

@@ -101,6 +101,7 @@ extern struct filelist *fl_in;
 
 RESULT svfp_execute(struct program_context_t *context)
 {
+	struct program_info_t *pi = context->pi;
 	FILE *svf_file = NULL;
 	uint32_t svf_file_size = 0, command_num = 0;
 	char *svfp_command_buffer = NULL;
@@ -109,11 +110,10 @@ RESULT svfp_execute(struct program_context_t *context)
 	
 	p = context->prog;
 	
-	if (program_frequency)
+	if (pi->frequency)
 	{
 		first_command = (char*)malloc(strlen(SVF_SET_FREQ_CMD) + 20);
-		sprintf(first_command, SVF_SET_FREQ_CMD, 
-					(float)program_frequency * 1000);
+		sprintf(first_command, SVF_SET_FREQ_CMD, (float)pi->frequency * 1000);
 	}
 	
 	if ((NULL == fl_in) || (NULL == fl_in->path) || (NULL == fl_in->file) 

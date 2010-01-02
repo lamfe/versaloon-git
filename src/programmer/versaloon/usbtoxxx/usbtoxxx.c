@@ -265,6 +265,7 @@ RESULT usbtoxxx_ensure_buffer_size(uint16_t cmdlen)
 		struct usbtoxxx_context_t context_tmp;
 		uint8_t poll_nesting_tmp = 0;
 		
+		memset(&context_tmp, 0, sizeof(context_tmp));
 		if (poll_nesting)
 		{
 			if (0 == poll_context.type_pre)

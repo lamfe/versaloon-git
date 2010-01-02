@@ -23,10 +23,9 @@
 
 extern const struct program_area_map_t psoc1_program_area_map[];
 extern const struct program_mode_t psoc1_program_mode[];
+extern const struct program_functions_t psoc1_program_functions;
 
 RESULT psoc1_parse_argument(char cmd, const char *argu);
-RESULT psoc1_program(struct operation_t operations, struct program_info_t *pi, 
-					 struct programmer_info_t *prog);
 
 #endif /* __PSOC1_H_INCLUDED__ */
 

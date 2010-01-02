@@ -143,6 +143,7 @@ RESULT s5x_enter_program_mode(struct program_context_t *context)
 	uint8_t cmd_buf[4];
 	uint8_t poll_value;
 	
+	struct program_info_t *pi = context->pi;
 	struct chip_param_t *param = context->param;
 	struct programmer_info_t *prog = context->prog;
 	if (!context->pi->frequency)
@@ -155,7 +156,7 @@ RESULT s5x_enter_program_mode(struct program_context_t *context)
 	reset_init();
 	
 	// enter program mode
-	spi_conf(program_frequency);
+	spi_conf(pi->frequency);
 	
 	// toggle reset
 	reset_set();

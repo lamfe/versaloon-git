@@ -28,9 +28,7 @@ struct operation_t
 	uint32_t checksum_operations;
 };
 
-extern uint16_t program_frequency;
 extern uint8_t gui_mode;
-extern uint8_t program_mode;
 extern char *config_dir;
 
 #endif /* __VSPROG_H_INCLUDED__ */

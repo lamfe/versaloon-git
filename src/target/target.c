@@ -121,7 +121,7 @@ struct target_info_t targets_info[] =
 		AUTO_DETECT,						// feature
 		psoc1_program_area_map,				// program_area_map
 		psoc1_program_mode,					// program_mode
-		NULL,								// program_functions
+		&psoc1_program_functions,			// program_functions
 		psoc1_parse_argument,				// parse_argument
 		
 		NULL,								// get_mass_product_data_size
