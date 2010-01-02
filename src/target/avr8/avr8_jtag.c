@@ -42,6 +42,25 @@
 
 #define CUR_TARGET_STRING							AVR8_STRING
 
+RESULT avr8jtag_enter_program_mode(struct program_context_t *context);
+RESULT avr8jtag_leave_program_mode(struct program_context_t *context, 
+								uint8_t success);
+RESULT avr8jtag_erase_target(struct program_context_t *context, char area, 
+							uint32_t addr, uint32_t page_size);
+RESULT avr8jtag_write_target(struct program_context_t *context, char area, 
+							uint32_t addr, uint8_t *buff, uint32_t page_size);
+RESULT avr8jtag_read_target(struct program_context_t *context, char area, 
+							uint32_t addr, uint8_t *buff, uint32_t page_size);
+struct program_functions_t avr8jtag_program_functions = 
+{
+	NULL,			// execute
+	avr8jtag_enter_program_mode, 
+	avr8jtag_leave_program_mode, 
+	avr8jtag_erase_target, 
+	avr8jtag_write_target, 
+	avr8jtag_read_target
+};
+
 #define AVR_JTAG_INS_LEN							4
 // Public Instructions:
 #define AVR_JTAG_INS_EXTEST							0x00
@@ -183,506 +202,133 @@ void AVR_JTAG_WaitComplete(uint16_t cmd)
 	poll_end();
 }
 
-RESULT avr8_jtag_program(struct operation_t operations, 
-					struct program_info_t *pi, struct programmer_info_t *prog)
+RESULT avr8jtag_enter_program_mode(struct program_context_t *context)
 {
+	struct program_info_t *pi = context->pi;
 	uint8_t ir;
 	uint32_t dr;
 	
-	int32_t i;
-	uint32_t j, k, page_size, len_current_list;
-	uint8_t page_buf[256 + 1]; // one more byte for dummy 16bit read
-	uint8_t *tbuff;
-	RESULT ret = ERROR_OK;
-	struct memlist *ml_tmp, **ml;
-	uint32_t target_size;
-
-	p = prog;
+	p = context->prog;
 	
-	if (!program_frequency)
+	if (!pi->frequency)
 	{
-		program_frequency = 4500;
+		pi->frequency = 4500;
 	}
 	
-	// here we go
 	// init
 	jtag_init();
-	jtag_config(program_frequency, target_jtag_pos.ub, target_jtag_pos.ua, 
-				target_jtag_pos.bb, target_jtag_pos.ba);
+	jtag_config(pi->frequency, pi->jtag_pos.ub, pi->jtag_pos.ua, 
+					pi->jtag_pos.bb, pi->jtag_pos.ba);
 	
 	// enter program mode
 	AVR_JTAG_Reset(1);
 	AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_ENABLE);
 	AVR_JTAG_SendDat(0xA370, AVR_JTAG_REG_ProgrammingEnable_Len);
-	
-	// read chip_id
-	AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
-	AVR_JTAG_PROG_EnterSignByteRead();
-	
-	AVR_JTAG_PROG_LoadAddrByte(0);
-	AVR_JTAG_PROG_ReadSignByte(page_buf[0]);
-	AVR_JTAG_PROG_LoadAddrByte(1);
-	AVR_JTAG_PROG_ReadSignByte(page_buf[1]);
-	AVR_JTAG_PROG_LoadAddrByte(2);
-	AVR_JTAG_PROG_ReadSignByte(page_buf[2]);
-	if (ERROR_OK != jtag_commit())
-	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read signature");
-		ret = ERRCODE_FAILURE_OPERATION;
-		goto leave_program_mode;
-	}
-	pi->chip_id = page_buf[2] | (page_buf[1] << 8) | (page_buf[0] << 16);
-	LOG_INFO(_GETTEXT(INFOMSG_TARGET_CHIP_ID), pi->chip_id);
-	if (!(operations.read_operations & CHIPID))
-	{
-		if (pi->chip_id != target_chip_param.chip_id)
-		{
-			LOG_WARNING(_GETTEXT(ERRMSG_INVALID_CHIP_ID), pi->chip_id, 
-						target_chip_param.chip_id);
-		}
-	}
-	else
-	{
-		goto leave_program_mode;
-	}
-	
-	if (operations.erase_operations > 0)
-	{
-		LOG_INFO(_GETTEXT(INFOMSG_ERASING), "chip");
-		pgbar_init("erasing chip |", "|", 0, 1, PROGRESS_STEP, '=');
+	return jtag_commit();
+}
 
+RESULT avr8jtag_leave_program_mode(struct program_context_t *context, 
+								uint8_t success)
+{
+	uint8_t ir;
+	uint32_t dr;
+	
+	REFERENCE_PARAMETER(context);
+	REFERENCE_PARAMETER(success);
+	
+	AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
+	AVR_JTAG_PROG_LoadNoOperationCommand();
+	
+	AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_ENABLE);
+	AVR_JTAG_SendDat(0, AVR_JTAG_REG_ProgrammingEnable_Len);
+	
+	AVR_JTAG_Reset(0);
+	jtag_fini();
+	return jtag_commit();
+}
+
+RESULT avr8jtag_erase_target(struct program_context_t *context, char area, 
+							uint32_t addr, uint32_t page_size)
+{
+	uint8_t ir;
+	uint32_t dr;
+	
+	REFERENCE_PARAMETER(context);
+	REFERENCE_PARAMETER(area);
+	REFERENCE_PARAMETER(addr);
+	REFERENCE_PARAMETER(page_size);
+	
+	AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
+	AVR_JTAG_PROG_ChipErase();
+	AVR_JTAG_WaitComplete(AVR_JTAG_PROG_ChipEraseComplete_CMD);
+	return jtag_commit();
+}
+
+RESULT avr8jtag_write_target(struct program_context_t *context, char area, 
+							uint32_t addr, uint8_t *buff, uint32_t page_size)
+{
+	struct chip_param_t *param = context->param;
+	struct program_info_t *pi = context->pi;
+	uint8_t ir;
+	uint32_t dr;
+	uint32_t i;
+	RESULT ret = ERROR_OK;
+	
+	switch (area)
+	{
+	case APPLICATION_CHAR:
 		AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
-		AVR_JTAG_PROG_ChipErase();
-		AVR_JTAG_WaitComplete(AVR_JTAG_PROG_ChipEraseComplete_CMD);
+		AVR_JTAG_PROG_EnterFlashWrite();
+		
+		AVR_JTAG_PROG_LoadAddrHighByte(addr >> 9);
+		AVR_JTAG_PROG_LoadAddrLowByte(addr >> 1);
+		AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_PAGELOAD);
+		
+		if (param->param[AVR8_PARAM_JTAG_FULL_BITSTREAM])
+		{
+			jtag_dr_write(buff, (uint16_t)(page_size * 8));
+		}
+		else
+		{
+			for (i = 0; i < page_size; i++)
+			{
+				jtag_dr_write(buff + i, 8);
+			}
+		}
+		AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
+		AVR_JTAG_PROG_WriteFlashPage();
+		AVR_JTAG_WaitComplete(AVR_JTAG_PROG_WriteFlashPageComplete_CMD);
 		if (ERROR_OK != jtag_commit())
 		{
-			pgbar_fini();
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "erase chip");
 			ret = ERRCODE_FAILURE_OPERATION;
-			goto leave_program_mode;
+			break;
+		}
+		break;
+	case EEPROM_CHAR:
+		AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
+		AVR_JTAG_PROG_EnterEEPROMWrite();
+		AVR_JTAG_PROG_LoadAddrHighByte(addr >> 8);
+		
+		for (i = 0; i < page_size; i++)
+		{
+			AVR_JTAG_PROG_LoadAddrLowByte(addr + i);
+			AVR_JTAG_PROG_LoadDataByte(buff[addr + i]);
+			AVR_JTAG_PROG_LatchData();
 		}
 		
-		pgbar_update(1);
-		pgbar_fini();
-		LOG_INFO(_GETTEXT(INFOMSG_ERASED), "chip");
-	}
-	
-	// set page size for flash
-	if (target_chip_param.chip_areas[APPLICATION_IDX].page_num > 1)
-	{
-		page_size = target_chip_param.chip_areas[APPLICATION_IDX].page_size;
-	}
-	else
-	{
-		LOG_BUG(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "byte mode", "JTAG");
-		ret = ERRCODE_NOT_SUPPORT;
-		goto leave_program_mode;
-	}
-	
-	ml = &pi->program_areas[APPLICATION_IDX].memlist;
-	target_size = MEMLIST_CalcAllSize(*ml);
-	tbuff = pi->program_areas[APPLICATION_IDX].buff;
-	if (operations.write_operations & APPLICATION)
-	{
-		// program
-		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMING), "flash");
-		pgbar_init("writing flash |", "|", 0, target_size, PROGRESS_STEP, '=');
+		// write page
+		AVR_JTAG_PROG_WriteEEPROMPage();
+		AVR_JTAG_WaitComplete(AVR_JTAG_PROG_WriteEEPROMPageComplete_CMD);
 		
-		ml_tmp = *ml;
-		while (ml_tmp != NULL)
+		if (ERROR_OK != jtag_commit())
 		{
-			if ((ml_tmp->addr + ml_tmp->len) 
-				<= (ml_tmp->addr - (ml_tmp->addr % page_size) + page_size))
-			{
-				k = ml_tmp->len;
-			}
-			else
-			{
-				k = page_size - (ml_tmp->addr % page_size);
-			}
-			
-			len_current_list = (uint32_t)ml_tmp->len;
-			for (i = -(int32_t)(ml_tmp->addr % page_size); 
-				 i < ((int32_t)ml_tmp->len 
-							- (int32_t)(ml_tmp->addr % page_size)); 
-				 i += page_size)
-			{
-				AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
-				AVR_JTAG_PROG_EnterFlashWrite();
-				
-				AVR_JTAG_PROG_LoadAddrHighByte((ml_tmp->addr + i) >> 9);
-				AVR_JTAG_PROG_LoadAddrLowByte((ml_tmp->addr + i) >> 1);
-				AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_PAGELOAD);
-				
-				if (target_chip_param.param[AVR8_PARAM_JTAG_FULL_BITSTREAM])
-				{
-					jtag_dr_write(tbuff + ml_tmp->addr + i, 
-									(uint16_t)(page_size * 8));
-				}
-				else
-				{
-					for (j = 0; j < page_size; j++)
-					{
-						jtag_dr_write(tbuff + ml_tmp->addr + i + j, 8);
-					}
-				}
-				AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
-				AVR_JTAG_PROG_WriteFlashPage();
-				AVR_JTAG_WaitComplete(AVR_JTAG_PROG_WriteFlashPageComplete_CMD);
-				if (ERROR_OK != jtag_commit())
-				{
-					pgbar_fini();
-					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ADDR), 
-							  "program flash in page mode", ml_tmp->addr + i);
-					ret = ERRCODE_FAILURE_OPERATION;
-					goto leave_program_mode;
-				}
-				
-				pgbar_update(k);
-				len_current_list -= k;
-				if (len_current_list >= page_size)
-				{
-					k = page_size;
-				}
-				else
-				{
-					k = len_current_list;
-				}
-			}
-			
-			ml_tmp = MEMLIST_GetNext(ml_tmp);
+			ret = ERRCODE_FAILURE_OPERATION;
+			break;
 		}
-		
-		pgbar_fini();
-		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMED_SIZE), "flash", target_size);
-	}
-	
-	if ((operations.read_operations & APPLICATION) 
-		|| (operations.verify_operations & APPLICATION))
-	{
-		if (operations.verify_operations & APPLICATION)
-		{
-			LOG_INFO(_GETTEXT(INFOMSG_VERIFYING), "flash");
-		}
-		else
-		{
-			ret = MEMLIST_Add(ml, 0, pi->program_areas[APPLICATION_IDX].size, 
-								page_size);
-			if (ret != ERROR_OK)
-			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-							"add memory list");
-				return ERRCODE_FAILURE_OPERATION;
-			}
-			target_size = MEMLIST_CalcAllSize(*ml);
-			LOG_INFO(_GETTEXT(INFOMSG_READING), "flash");
-		}
-		pgbar_init("reading flash |", "|", 0, target_size, PROGRESS_STEP, '=');
-
-		ml_tmp = *ml;
-		while (ml_tmp != NULL)
-		{
-			if ((ml_tmp->addr + ml_tmp->len)
-				<= (ml_tmp->addr - (ml_tmp->addr % page_size) + page_size))
-			{
-				k = ml_tmp->len;
-			}
-			else
-			{
-				k = page_size - (ml_tmp->addr % page_size);
-			}
-			
-			len_current_list = (uint32_t)ml_tmp->len;
-			for (i = -(int32_t)(ml_tmp->addr % page_size); 
-				 i < ((int32_t)ml_tmp->len 
-							- (int32_t)(ml_tmp->addr % page_size)); 
-				 i += page_size)
-			{
-				AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
-				AVR_JTAG_PROG_EnterFlashRead();
-				
-				AVR_JTAG_PROG_LoadAddrHighByte((ml_tmp->addr + i) >> 9);
-				AVR_JTAG_PROG_LoadAddrLowByte((ml_tmp->addr + i) >> 1);
-				AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_PAGEREAD);
-				
-				if (target_chip_param.param[AVR8_PARAM_JTAG_FULL_BITSTREAM])
-				{
-					dr = 0;
-					jtag_dr_write(&dr, 8);
-					jtag_dr_read(page_buf, (uint16_t)(page_size * 8));
-				}
-				else
-				{
-					for (j = 0; j < page_size; j++)
-					{
-						jtag_dr_read(page_buf + j, 8);
-					}
-				}
-				
-				if (ERROR_OK != jtag_commit())
-				{
-					pgbar_fini();
-					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ADDR), 
-								  "read flash in page mode", ml_tmp->addr + i);
-					ret = ERRCODE_FAILURE_OPERATION;
-					goto leave_program_mode;
-				}
-				
-				if (operations.verify_operations & APPLICATION)
-				{
-					for (j = 0; j < page_size; j++)
-					{
-						if (page_buf[j] != tbuff[ml_tmp->addr + i + j])
-						{
-							pgbar_fini();
-							LOG_ERROR(
-								_GETTEXT(ERRMSG_FAILURE_VERIFY_TARGET_AT_02X), 
-								"flash", ml_tmp->addr + i + j, page_buf[j], 
-								tbuff[ml_tmp->addr + i + j]);
-							ret = ERROR_FAIL;
-							goto leave_program_mode;
-						}
-					}
-				}
-				else
-				{
-					memcpy(&tbuff[ml_tmp->addr + i], page_buf, page_size);
-				}
-				
-				pgbar_update(k);
-				len_current_list -= k;
-				if (len_current_list >= page_size)
-				{
-					k = page_size;
-				}
-				else
-				{
-					k = len_current_list;
-				}
-			}
-			
-			ml_tmp = MEMLIST_GetNext(ml_tmp);
-		}
-		
-		pgbar_fini();
-		if (operations.verify_operations & APPLICATION)
-		{
-			LOG_INFO(_GETTEXT(INFOMSG_VERIFIED_SIZE), "flash", target_size);
-		}
-		else
-		{
-			LOG_INFO(_GETTEXT(INFOMSG_READ), "flash");
-		}
-	}
-	
-	// set page size for eeprom
-	if (target_chip_param.chip_areas[EEPROM_IDX].page_num > 1)
-	{
-		page_size = target_chip_param.chip_areas[EEPROM_IDX].page_size;
-	}
-	else
-	{
-		page_size = 256;
-	}
-	
-	ml = &pi->program_areas[EEPROM_IDX].memlist;
-	target_size = MEMLIST_CalcAllSize(*ml);
-	tbuff = pi->program_areas[EEPROM_IDX].buff;
-	if (operations.write_operations & EEPROM)
-	{
-		// program eeprom
-		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMING), "eeprom");
-		pgbar_init("writing eeprom |", "|", 0, target_size, PROGRESS_STEP, '=');
-		
-		ml_tmp = *ml;
-		while(ml_tmp != NULL)
-		{
-			if ((ml_tmp->addr + ml_tmp->len) 
-				<= (ml_tmp->addr - (ml_tmp->addr % page_size) + page_size))
-			{
-				k = ml_tmp->len;
-			}
-			else
-			{
-				k = page_size - (ml_tmp->addr % page_size);
-			}
-			
-			len_current_list = (uint32_t)ml_tmp->len;
-			for (i = -(int32_t)(ml_tmp->addr % page_size); 
-				 i < ((int32_t)ml_tmp->len 
-							- (int32_t)(ml_tmp->addr % page_size)); 
-				 i += page_size)
-			{
-				if (target_chip_param.chip_areas[EEPROM_IDX].page_num > 1)
-				{
-					// Page mode
-					AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
-					AVR_JTAG_PROG_EnterEEPROMWrite();
-					AVR_JTAG_PROG_LoadAddrHighByte((ml_tmp->addr + i) >> 8);
-					
-					for (j = 0; j < page_size; j++)
-					{
-						AVR_JTAG_PROG_LoadAddrLowByte(ml_tmp->addr + i + j);
-						AVR_JTAG_PROG_LoadDataByte(tbuff[ml_tmp->addr + i + j]);
-						AVR_JTAG_PROG_LatchData();
-					}
-					
-					// write page
-					AVR_JTAG_PROG_WriteEEPROMPage();
-					AVR_JTAG_WaitComplete(
-									AVR_JTAG_PROG_WriteEEPROMPageComplete_CMD);
-					
-					if (ERROR_OK != jtag_commit())
-					{
-						pgbar_fini();
-						LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ADDR), 
-							"program eeprom in page mode", ml_tmp->addr + i);
-						ret = ERRCODE_FAILURE_OPERATION;
-						goto leave_program_mode;
-					}
-				}
-				else
-				{
-					// Byte mode
-					LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), 
-								"eeprom byte mode", "avr8 jtag");
-				}
-				
-				pgbar_update(k);
-				len_current_list -= k;
-				if (len_current_list >= page_size)
-				{
-					k = page_size;
-				}
-				else
-				{
-					k = len_current_list;
-				}
-			}
-			
-			ml_tmp = MEMLIST_GetNext(ml_tmp);
-		}
-		
-		pgbar_fini();
-		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMED_SIZE), "eeprom", target_size);
-	}
-	
-	if ((operations.read_operations & EEPROM) 
-		|| (operations.verify_operations & EEPROM))
-	{
-		if (operations.verify_operations & EEPROM)
-		{
-			LOG_INFO(_GETTEXT(INFOMSG_VERIFYING), "eeprom");
-		}
-		else
-		{
-			ret = MEMLIST_Add(ml, 0, pi->program_areas[EEPROM_IDX].size, 
-								page_size);
-			if (ret != ERROR_OK)
-			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-							"add memory list");
-				return ERRCODE_FAILURE_OPERATION;
-			}
-			target_size = MEMLIST_CalcAllSize(*ml);
-			LOG_INFO(_GETTEXT(INFOMSG_READING), "eeprom");
-		}
-		pgbar_init("reading eeprom |", "|", 0, target_size, PROGRESS_STEP, '=');
-		
-		ml_tmp = *ml;
-		page_size = 256;
-		while (ml_tmp != NULL)
-		{
-			if ((ml_tmp->addr + ml_tmp->len)
-				<= (ml_tmp->addr - (ml_tmp->addr % page_size) + page_size))
-			{
-				k = ml_tmp->len;
-			}
-			else
-			{
-				k = page_size - (ml_tmp->addr % page_size);
-			}
-			
-			len_current_list = (uint32_t)ml_tmp->len;
-			for (i = -(int32_t)(ml_tmp->addr % page_size); 
-				 i < ((int32_t)ml_tmp->len 
-							- (int32_t)(ml_tmp->addr % page_size)); 
-				 i += page_size)
-			{
-				AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
-				AVR_JTAG_PROG_EnterEEPROMRead();
-				
-				for (j = 0; j < page_size; j++)
-				{
-					AVR_JTAG_PROG_LoadAddrHighByte((ml_tmp->addr + i) >> 8);
-					AVR_JTAG_PROG_LoadAddrLowByte(ml_tmp->addr + i + j);
-					AVR_JTAG_PROG_ReadEEPROM(ml_tmp->addr + i + j, page_buf[j]);
-				}
-				
-				if (ERROR_OK != jtag_commit())
-				{
-					pgbar_fini();
-					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ADDR), 
-								  "read eeprom in byte mode", ml_tmp->addr + i);
-						ret = ERRCODE_FAILURE_OPERATION;
-					goto leave_program_mode;
-				}
-				
-				if (operations.verify_operations & EEPROM)
-				{
-					for (j = 0; j < page_size; j++)
-					{
-						if (page_buf[j] != tbuff[ml_tmp->addr + i + j])
-						{
-							pgbar_fini();
-							LOG_ERROR(
-								_GETTEXT(ERRMSG_FAILURE_VERIFY_TARGET_AT_02X), 
-								"eeprom", ml_tmp->addr + i + j, page_buf[j], 
-								tbuff[ml_tmp->addr + i + j]);
-							ret = ERRCODE_FAILURE_VERIFY_TARGET;
-							goto leave_program_mode;
-						}
-					}
-				}
-				else
-				{
-					memcpy(&tbuff[ml_tmp->addr + i], page_buf, page_size);
-				}
-				
-				pgbar_update(k);
-				len_current_list -= k;
-				if (len_current_list >= page_size)
-				{
-					k = page_size;
-				}
-				else
-				{
-					k = len_current_list;
-				}
-			}
-			
-			ml_tmp = MEMLIST_GetNext(ml_tmp);
-		}
-		
-		pgbar_fini();
-		if (operations.verify_operations & EEPROM)
-		{
-			LOG_INFO(_GETTEXT(INFOMSG_VERIFIED_SIZE), "eeprom", target_size);
-		}
-		else
-		{
-			LOG_INFO(_GETTEXT(INFOMSG_READ), "eeprom");
-		}
-	}
-	
-	if (operations.write_operations & FUSE)
-	{
-		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMING), "fuse");
-		pgbar_init("writing fuse |", "|", 0, 1, PROGRESS_STEP, '=');
-		
-		// write fuse
+		break;
+	case FUSE_CHAR:
 		// low bits
-		if (target_chip_param.chip_areas[FUSE_IDX].size > 0)
+		if (param->chip_areas[FUSE_IDX].size > 0)
 		{
 			AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
 			AVR_JTAG_PROG_EnterFuseWrite();
@@ -692,7 +338,7 @@ RESULT avr8_jtag_program(struct operation_t operations,
 			AVR_JTAG_WaitComplete(AVR_JTAG_PROG_WriteFuseLowByteComplete_CMD);
 		}
 		// high bits
-		if (target_chip_param.chip_areas[FUSE_IDX].size > 1)
+		if (param->chip_areas[FUSE_IDX].size > 1)
 		{
 			AVR_JTAG_PROG_LoadDataLowByte(
 							(pi->program_areas[FUSE_IDX].value >> 8) & 0xFF);
@@ -700,140 +346,31 @@ RESULT avr8_jtag_program(struct operation_t operations,
 			AVR_JTAG_WaitComplete(AVR_JTAG_PROG_WriteFuseHighByteComplete_CMD);
 		}
 		// extended bits
-		if (target_chip_param.chip_areas[FUSE_IDX].size > 2)
+		if (param->chip_areas[FUSE_IDX].size > 2)
 		{
 			AVR_JTAG_PROG_LoadDataLowByte(
 							(pi->program_areas[FUSE_IDX].value >> 16) & 0xFF);
 			AVR_JTAG_PROG_WriteFuseExtByte();
 			AVR_JTAG_WaitComplete(AVR_JTAG_PROG_WriteFuseExtByteComplete_CMD);
 		}
-		if (target_chip_param.chip_areas[FUSE_IDX].size > 0)
+		if (param->chip_areas[FUSE_IDX].size > 0)
 		{
 			if (ERROR_OK != jtag_commit())
 			{
-				pgbar_fini();
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "write fuse");
 				ret = ERRCODE_FAILURE_OPERATION;
-				goto leave_program_mode;
+				break;
 			}
 		}
 		else
 		{
-			pgbar_fini();
 			LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "fuse", 
-						target_chip_param.chip_name);
+						param->chip_name);
 			ret = ERRCODE_NOT_SUPPORT;
-			goto leave_program_mode;
+			break;
 		}
-		pgbar_update(1);
-		
-		pgbar_fini();
-		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMED), "fuse");
-	}
-	
-	if ((operations.read_operations & FUSE) 
-		|| (operations.verify_operations & FUSE))
-	{
-		if (operations.verify_operations & FUSE)
-		{
-			LOG_INFO(_GETTEXT(INFOMSG_VERIFYING), "fuse");
-		}
-		else
-		{
-			LOG_INFO(_GETTEXT(INFOMSG_READING), "fuse");
-		}
-		pgbar_init("reading fuse |", "|", 0, 1, PROGRESS_STEP, '=');
-		
-		memset(page_buf, 0, 3);
-		// read fuse
-		// low bits
-		if (target_chip_param.chip_areas[FUSE_IDX].size > 0)
-		{
-			AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
-			AVR_JTAG_PROG_EnterFuseLockbitRead();
-			AVR_JTAG_PROG_ReadFuseLowByte(page_buf[0]);
-		}
-		// high bits
-		if (target_chip_param.chip_areas[FUSE_IDX].size > 1)
-		{
-			AVR_JTAG_PROG_ReadFuseHighByte(page_buf[1]);
-		}
-		// extended bits
-		if (target_chip_param.chip_areas[FUSE_IDX].size > 2)
-		{
-			AVR_JTAG_PROG_ReadExtFuseByte(page_buf[2]);
-		}
-		if (target_chip_param.chip_areas[FUSE_IDX].size > 0)
-		{
-			if (ERROR_OK != jtag_commit())
-			{
-				pgbar_fini();
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read fuse");
-				ret = ERRCODE_FAILURE_OPERATION;
-				goto leave_program_mode;
-			}
-		}
-		else
-		{
-			pgbar_fini();
-			LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "fuse", 
-						target_chip_param.chip_name);
-			ret = ERRCODE_NOT_SUPPORT;
-			goto leave_program_mode;
-		}
-		pgbar_update(1);
-		
-		pgbar_fini();
-		i = (uint32_t)(page_buf[0] + (page_buf[1] << 8) + (page_buf[2] << 16));
-		if (operations.verify_operations & FUSE)
-		{
-			if ((uint32_t)i == pi->program_areas[FUSE_IDX].value)
-			{
-				LOG_INFO(_GETTEXT(INFOMSG_VERIFIED), "fuse");
-			}
-			else
-			{
-				if (target_chip_param.chip_areas[FUSE_IDX].size > 2)
-				{
-					LOG_INFO(_GETTEXT(ERRMSG_FAILURE_VERIFY_TARGET_06X), 
-						"fuse", i, (uint32_t)pi->program_areas[FUSE_IDX].value);
-				}
-				else if (target_chip_param.chip_areas[FUSE_IDX].size > 1)
-				{
-					LOG_INFO(_GETTEXT(ERRMSG_FAILURE_VERIFY_TARGET_04X), 
-						"fuse", i, (uint32_t)pi->program_areas[FUSE_IDX].value);
-				}
-				else if (target_chip_param.chip_areas[FUSE_IDX].size > 0)
-				{
-					LOG_INFO(_GETTEXT(ERRMSG_FAILURE_VERIFY_TARGET_02X), 
-						"fuse", i, (uint32_t)pi->program_areas[FUSE_IDX].value);
-				}
-			}
-		}
-		else
-		{
-			if (target_chip_param.chip_areas[FUSE_IDX].size > 2)
-			{
-				LOG_INFO(_GETTEXT(INFOMSG_READ_VALUE_06X), "fuse", i);
-			}
-			else if (target_chip_param.chip_areas[FUSE_IDX].size > 1)
-			{
-				LOG_INFO(_GETTEXT(INFOMSG_READ_VALUE_04X), "fuse", i);
-			}
-			else if (target_chip_param.chip_areas[FUSE_IDX].size > 0)
-			{
-				LOG_INFO(_GETTEXT(INFOMSG_READ_VALUE_02X), "fuse", i);
-			}
-		}
-	}
-	
-	if (operations.write_operations & LOCK)
-	{
-		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMING), "lock");
-		pgbar_init("writing lock |", "|", 0, 1, PROGRESS_STEP, '=');
-		
-		// write lock
-		if (target_chip_param.chip_areas[LOCK_IDX].size > 0)
+		break;
+	case LOCK_CHAR:
+		if (param->chip_areas[LOCK_IDX].size > 0)
 		{
 			AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
 			AVR_JTAG_PROG_EnterLockbitWrite();
@@ -842,171 +379,201 @@ RESULT avr8_jtag_program(struct operation_t operations,
 			AVR_JTAG_WaitComplete(AVR_JTAG_PROG_WriteLockbitComplete_CMD);
 			if (ERROR_OK != jtag_commit())
 			{
-				pgbar_fini();
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "write lock");
 				ret = ERRCODE_FAILURE_OPERATION;
-				goto leave_program_mode;
+				break;
 			}
 		}
 		else
 		{
-			pgbar_fini();
 			LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "locks", 
-						target_chip_param.chip_name);
+						param->chip_name);
 			ret = ERRCODE_NOT_SUPPORT;
-			goto leave_program_mode;
+			break;
 		}
-		pgbar_update(1);
-		
-		pgbar_fini();
-		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMED), "lock");
+		break;
+	default:
+		ret = ERROR_FAIL;
+		break;
 	}
+	return ret;
+}
+
+RESULT avr8jtag_read_target(struct program_context_t *context, char area, 
+							uint32_t addr, uint8_t *buff, uint32_t page_size)
+{
+	struct chip_param_t *param = context->param;
+	struct program_info_t *pi = context->pi;
+	uint8_t ir;
+	uint32_t dr;
+	uint32_t i;
+	uint8_t tmpbuf[4];
+	RESULT ret = ERROR_OK;
 	
-	if ((operations.read_operations & LOCK) 
-		|| (operations.verify_operations & LOCK))
+	switch (area)
 	{
-		if (operations.verify_operations & LOCK)
+	case CHIPID_CHAR:
+		AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
+		AVR_JTAG_PROG_EnterSignByteRead();
+		
+		AVR_JTAG_PROG_LoadAddrByte(0);
+		AVR_JTAG_PROG_ReadSignByte(tmpbuf[0]);
+		AVR_JTAG_PROG_LoadAddrByte(1);
+		AVR_JTAG_PROG_ReadSignByte(tmpbuf[1]);
+		AVR_JTAG_PROG_LoadAddrByte(2);
+		AVR_JTAG_PROG_ReadSignByte(tmpbuf[2]);
+		if (ERROR_OK != jtag_commit())
 		{
-			LOG_INFO(_GETTEXT(INFOMSG_VERIFYING), "lock");
+			ret = ERRCODE_FAILURE_OPERATION;
+			break;
+		}
+		pi->chip_id = tmpbuf[2] | (tmpbuf[1] << 8) | (tmpbuf[0] << 16);
+		break;
+	case APPLICATION_CHAR:
+		AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
+		AVR_JTAG_PROG_EnterFlashRead();
+		
+		AVR_JTAG_PROG_LoadAddrHighByte(addr >> 9);
+		AVR_JTAG_PROG_LoadAddrLowByte(addr >> 1);
+		AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_PAGEREAD);
+		
+		if (param->param[AVR8_PARAM_JTAG_FULL_BITSTREAM])
+		{
+			dr = 0;
+			jtag_dr_write(&dr, 8);
+			jtag_dr_read(buff, (uint16_t)(page_size * 8));
 		}
 		else
 		{
-			LOG_INFO(_GETTEXT(INFOMSG_READING), "lock");
+			for (i = 0; i < page_size; i++)
+			{
+				jtag_dr_read(buff + i, 8);
+			}
 		}
-		pgbar_init("reading lock |", "|", 0, 1, PROGRESS_STEP, '=');
 		
-		memset(page_buf, 0, 1);
-		// read lock
-		if (target_chip_param.chip_areas[LOCK_IDX].size > 0)
+		if (ERROR_OK != jtag_commit())
+		{
+			ret = ERRCODE_FAILURE_OPERATION;
+			break;
+		}
+		break;
+	case EEPROM_CHAR:
+		AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
+		AVR_JTAG_PROG_EnterEEPROMRead();
+		
+		for (i = 0; i < page_size; i++)
+		{
+			AVR_JTAG_PROG_LoadAddrHighByte(addr >> 8);
+			AVR_JTAG_PROG_LoadAddrLowByte(addr + i);
+			AVR_JTAG_PROG_ReadEEPROM(addr + i, buff[i]);
+		}
+		
+		if (ERROR_OK != jtag_commit())
+		{
+			ret = ERRCODE_FAILURE_OPERATION;
+			break;
+		}
+		break;
+	case FUSE_CHAR:
+		// low bits
+		if (param->chip_areas[FUSE_IDX].size > 0)
 		{
 			AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
 			AVR_JTAG_PROG_EnterFuseLockbitRead();
-			AVR_JTAG_PROG_ReadLockbit(page_buf[0]);
+			AVR_JTAG_PROG_ReadFuseLowByte(tmpbuf[0]);
+		}
+		// high bits
+		if (param->chip_areas[FUSE_IDX].size > 1)
+		{
+			AVR_JTAG_PROG_ReadFuseHighByte(tmpbuf[1]);
+		}
+		// extended bits
+		if (param->chip_areas[FUSE_IDX].size > 2)
+		{
+			AVR_JTAG_PROG_ReadExtFuseByte(tmpbuf[2]);
+		}
+		if (param->chip_areas[FUSE_IDX].size > 0)
+		{
 			if (ERROR_OK != jtag_commit())
 			{
-				pgbar_fini();
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read lock");
 				ret = ERRCODE_FAILURE_OPERATION;
-				goto leave_program_mode;
+				break;
 			}
 		}
 		else
 		{
-			pgbar_fini();
-			LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "locks", 
-						target_chip_param.chip_name);
+			LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "fuse", 
+						param->chip_name);
 			ret = ERRCODE_NOT_SUPPORT;
-			goto leave_program_mode;
+			break;
 		}
-		pgbar_update(1);
-		
-		pgbar_fini();
-		if (operations.verify_operations & LOCK)
+		pi->program_areas[FUSE_IDX].value = 
+			(uint32_t)(tmpbuf[0] + (tmpbuf[1] << 8) + (tmpbuf[2] << 16));
+		break;
+	case LOCK_CHAR:
+		if (param->chip_areas[LOCK_IDX].size > 0)
 		{
-			if (page_buf[0] == (uint8_t)pi->program_areas[LOCK_IDX].value)
+			AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
+			AVR_JTAG_PROG_EnterFuseLockbitRead();
+			AVR_JTAG_PROG_ReadLockbit(tmpbuf[0]);
+			if (ERROR_OK != jtag_commit())
 			{
-				LOG_INFO(_GETTEXT(INFOMSG_VERIFIED), "lock");
-			}
-			else
-			{
-				LOG_INFO(_GETTEXT(ERRMSG_FAILURE_VERIFY_TARGET_02X), "lock", 
-					page_buf[0], (uint32_t)pi->program_areas[LOCK_IDX].value);
+				ret = ERRCODE_FAILURE_OPERATION;
+				break;
 			}
 		}
 		else
 		{
-			LOG_INFO(_GETTEXT(INFOMSG_READ_VALUE_02X), "lock", page_buf[0]);
+			LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "locks", 
+						param->chip_name);
+			ret = ERRCODE_NOT_SUPPORT;
+			break;
 		}
-	}
-	
-	if (operations.read_operations & CALIBRATION)
-	{
-		LOG_INFO(_GETTEXT(INFOMSG_READING), "calibration");
-		pgbar_init("reading calibration |", "|", 0, 1, PROGRESS_STEP, '=');
-		
-		memset(page_buf, 0, 4);
-		// read calibration
-		if (target_chip_param.chip_areas[CALIBRATION_IDX].size > 0)
+		break;
+	case CALIBRATION_CHAR:
+		if (param->chip_areas[CALIBRATION_IDX].size > 0)
 		{
 			AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
 			AVR_JTAG_PROG_EnterCaliByteRead();
 			AVR_JTAG_PROG_LoadAddrByte(0);
-			AVR_JTAG_PROG_ReadCaliByte(page_buf[0]);
+			AVR_JTAG_PROG_ReadCaliByte(tmpbuf[0]);
 		}
-		if (target_chip_param.chip_areas[CALIBRATION_IDX].size > 1)
+		if (param->chip_areas[CALIBRATION_IDX].size > 1)
 		{
 			AVR_JTAG_PROG_LoadAddrByte(1);
-			AVR_JTAG_PROG_ReadCaliByte(page_buf[1]);
+			AVR_JTAG_PROG_ReadCaliByte(tmpbuf[1]);
 		}
-		if (target_chip_param.chip_areas[CALIBRATION_IDX].size > 2)
+		if (param->chip_areas[CALIBRATION_IDX].size > 2)
 		{
 			AVR_JTAG_PROG_LoadAddrByte(2);
-			AVR_JTAG_PROG_ReadCaliByte(page_buf[2]);
+			AVR_JTAG_PROG_ReadCaliByte(tmpbuf[2]);
 		}
-		if (target_chip_param.chip_areas[CALIBRATION_IDX].size > 3)
+		if (param->chip_areas[CALIBRATION_IDX].size > 3)
 		{
 			AVR_JTAG_PROG_LoadAddrByte(3);
-			AVR_JTAG_PROG_ReadCaliByte(page_buf[3]);
+			AVR_JTAG_PROG_ReadCaliByte(tmpbuf[3]);
 		}
-		if (target_chip_param.chip_areas[CALIBRATION_IDX].size > 0)
+		if (param->chip_areas[CALIBRATION_IDX].size > 0)
 		{
 			if (ERROR_OK != jtag_commit())
 			{
-				pgbar_fini();
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-							"read calibration");
 				ret = ERRCODE_FAILURE_OPERATION;
-				goto leave_program_mode;
+				break;
 			}
 		}
 		else
 		{
-			pgbar_fini();
 			LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "calibration", 
-						target_chip_param.chip_name);
+						param->chip_name);
 			ret = ERRCODE_NOT_SUPPORT;
-			goto leave_program_mode;
+			break;
 		}
-		pgbar_update(1);
-		
-		pgbar_fini();
-		i = (uint32_t)(page_buf[0] + (page_buf[1] << 8) 
-					+ (page_buf[2] << 16) + (page_buf[3] << 24));
-		if (target_chip_param.chip_areas[CALIBRATION_IDX].size > 3)
-		{
-			LOG_INFO(_GETTEXT(INFOMSG_READ_VALUE_08X), "calibration", i);
-		}
-		else if (target_chip_param.chip_areas[CALIBRATION_IDX].size > 2)
-		{
-			LOG_INFO(_GETTEXT(INFOMSG_READ_VALUE_06X), "calibration", i);
-		}
-		else if (target_chip_param.chip_areas[CALIBRATION_IDX].size > 1)
-		{
-			LOG_INFO(_GETTEXT(INFOMSG_READ_VALUE_04X), "calibration", i);
-		}
-		else if (target_chip_param.chip_areas[CALIBRATION_IDX].size > 0)
-		{
-			LOG_INFO(_GETTEXT(INFOMSG_READ_VALUE_02X), "calibration", i);
-		}
+		pi->program_areas[CALIBRATION_IDX].value = (uint32_t)(tmpbuf[0] 
+				+ (tmpbuf[1] << 8) + (tmpbuf[2] << 16) + (tmpbuf[3] << 24));
+		break;
+	default:
+		ret = ERROR_FAIL;
+		break;
 	}
-	
-leave_program_mode:
-	// leave program mode
-	AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
-	AVR_JTAG_PROG_LoadNoOperationCommand();
-	
-	AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_ENABLE);
-	AVR_JTAG_SendDat(0, AVR_JTAG_REG_ProgrammingEnable_Len);
-	
-	AVR_JTAG_Reset(0);
-	jtag_fini();
-	if (ERROR_OK != jtag_commit())
-	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-				  "exit program mode");
-		ret = ERRCODE_FAILURE_OPERATION;
-	}
-	
 	return ret;
 }
 

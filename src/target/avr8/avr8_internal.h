@@ -20,14 +20,6 @@
 #ifndef __AVR8_INTERNAL_H_INCLUDED__
 #define __AVR8_INTERNAL_H_INCLUDED__
 
-#define AVR8_MAX_FLASH_SIZE				(256 * 1024)
-#define AVR8_MAX_EEPROM_SIZE			(4 * 1024)
-
-#define AVR8_FLASH_CHAR					0xFF
-#define AVR8_EEPROM_CHAR				0xFF
-#define AVR8_LOCK_CHAR					0xFF
-#define AVR8_FUSE_CHAR					0xFF
-
 #define AVR8_ISP						0
 #define AVR8_JTAG						1
 #define AVR8_HVPP						2
@@ -37,18 +29,8 @@
 #define AVR8_PARAM_ISP_EERPOM_PAGE_EN	1
 #define AVR8_PARAM_ISP_POLL				2
 
-extern uint16_t avr8_isp_frequency;
-RESULT avr8_isp_program(struct operation_t operations, 
-						struct program_info_t *pi, 
-						struct programmer_info_t *prog);
-RESULT avr8_jtag_program(struct operation_t operations, 
-						struct program_info_t *pi, 
-						struct programmer_info_t *prog);
-RESULT avr8_hvpp_program(struct operation_t operations, 
-						struct program_info_t *pi, 
-						struct programmer_info_t *prog);
-RESULT avr8_hvsp_program(struct operation_t operations, 
-						struct program_info_t *pi, 
-						struct programmer_info_t *prog);
+extern struct program_functions_t avr8isp_program_functions;
+extern struct program_functions_t avr8jtag_program_functions;
+
 #endif /* __AVR8_INTERNAL_H_INCLUDED__ */
 

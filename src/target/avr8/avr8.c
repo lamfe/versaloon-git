@@ -61,6 +61,7 @@ const struct program_mode_t avr8_program_mode[] =
 	{0, NULL, 0}
 };
 
+struct program_functions_t avr8_program_functions;
 
 static void avr8_usage(void)
 {
@@ -73,12 +74,35 @@ Usage of %s:\n\
 
 RESULT avr8_parse_argument(char cmd, const char *argu)
 {
-	argu = argu;
+	uint8_t mode;
 	
 	switch (cmd)
 	{
 	case 'h':
 		avr8_usage();
+		break;
+	case 'm':
+		if (NULL == argu)
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), cmd);
+			return ERRCODE_INVALID_OPTION;
+		}
+		mode = (uint8_t)strtoul(argu, NULL,0);
+		switch (mode)
+		{
+		case AVR8_ISP:
+			memcpy(&avr8_program_functions, &avr8isp_program_functions, 
+					sizeof(avr8_program_functions));
+			break;
+		case AVR8_JTAG:
+			memcpy(&avr8_program_functions, &avr8jtag_program_functions, 
+					sizeof(avr8_program_functions));
+			break;
+		case AVR8_HVPP:
+		case AVR8_HVSP:
+			return ERROR_FAIL;
+			break;
+		}
 		break;
 	default:
 		return ERROR_FAIL;
@@ -86,106 +110,5 @@ RESULT avr8_parse_argument(char cmd, const char *argu)
 	}
 	
 	return ERROR_OK;
-}
-
-
-
-
-
-#define get_target_voltage(v)					prog->get_target_voltage(v)
-RESULT avr8_program(struct operation_t operations, struct program_info_t *pi, 
-					struct programmer_info_t *prog)
-{
-	uint16_t voltage;
-	
-#ifdef PARAM_CHECK
-	if (NULL == prog)
-	{
-		LOG_BUG(_GETTEXT(ERRMSG_INVALID_PARAMETER), __FUNCTION__);
-		return ERRCODE_INVALID_PARAMETER;
-	}
-	if ((   (operations.read_operations & APPLICATION) 
-			&& (NULL == pi->program_areas[APPLICATION_IDX].buff)) 
-		|| ((   (operations.write_operations & APPLICATION) 
-				|| (operations.verify_operations & APPLICATION)) 
-			&& (NULL == pi->program_areas[APPLICATION_IDX].buff)))
-	{
-		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_BUFFER), "for flash");
-		return ERRCODE_INVALID_BUFFER;
-	}
-	if ((   (operations.read_operations & EEPROM) 
-			&& (NULL == pi->program_areas[EEPROM_IDX].buff)) 
-		|| ((   (operations.write_operations & EEPROM) 
-				|| (operations.verify_operations & EEPROM)) 
-			&& (NULL == pi->program_areas[EEPROM_IDX].buff)))
-	{
-		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_BUFFER), "for eeprom");
-		return ERRCODE_INVALID_BUFFER;
-	}
-#endif
-	
-	// get target voltage
-	if (ERROR_OK != get_target_voltage(&voltage))
-	{
-		return ERROR_FAIL;
-	}
-	LOG_DEBUG(_GETTEXT(INFOMSG_TARGET_VOLTAGE), voltage / 1000.0);
-	if (voltage < 2700)
-	{
-		LOG_WARNING(_GETTEXT(INFOMSG_TARGET_LOW_POWER));
-	}
-	
-	switch (program_mode)
-	{
-	case AVR8_ISP:
-		if (target_chip_param.program_mode & (1 << AVR8_ISP))
-		{
-			return avr8_isp_program(operations, pi, prog);
-		}
-		else
-		{
-			LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "ISP", 
-					  target_chip_param.chip_name);
-			return ERRCODE_NOT_SUPPORT;
-		}
-	case AVR8_JTAG:
-		if (target_chip_param.program_mode & (1 << AVR8_JTAG))
-		{
-			return avr8_jtag_program(operations, pi, prog);
-		}
-		else
-		{
-			LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "JTAG", 
-					  target_chip_param.chip_name);
-			return ERRCODE_NOT_SUPPORT;
-		}
-	case AVR8_HVPP:
-		if (target_chip_param.program_mode & (1 << AVR8_HVPP))
-		{
-			return avr8_hvpp_program(operations, pi, prog);
-		}
-		else
-		{
-			LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "HVPP", 
-					  target_chip_param.chip_name);
-			return ERRCODE_NOT_SUPPORT;
-		}
-	case AVR8_HVSP:
-		if (target_chip_param.program_mode & (1 << AVR8_HVSP))
-		{
-			return avr8_hvsp_program(operations, pi, prog);
-		}
-		else
-		{
-			LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "HVSP", 
-					  target_chip_param.chip_name);
-			return ERRCODE_NOT_SUPPORT;
-		}
-	default:
-		// invalid mode
-		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_PROG_MODE), program_mode, 
-				  CUR_TARGET_STRING);
-		return ERRCODE_INVALID_PROG_MODE;
-	}
 }
 

@@ -178,8 +178,8 @@ RESULT c8051fjtag_enter_program_mode(struct program_context_t *context)
 	p = context->prog;
 	
 	jtag_init();
-	jtag_config(pi->frequency, target_jtag_pos.ub, target_jtag_pos.ua, 
-				target_jtag_pos.bb, target_jtag_pos.ba);
+	jtag_config(pi->frequency, pi->jtag_pos.ub, pi->jtag_pos.ua, 
+					pi->jtag_pos.bb, pi->jtag_pos.ba);
 	
 	// set FLASHSCL based on SYSCLK (2MHx = 0x86)
 	dr = 0x86;

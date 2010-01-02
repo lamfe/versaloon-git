@@ -143,7 +143,7 @@ struct adi_dp_info_t
 #define ADI_AP_REG_CSW_MASTER_DEBUG			(1 << 29)
 #define ADI_AP_REG_CSW_DBGSWENABLE			(1 << 31)
 
-RESULT adi_init(struct programmer_info_t *prog, adi_dp_if_t *interf);
+RESULT adi_init(struct program_context_t *context, adi_dp_if_t *interf);
 RESULT adi_fini(void);
 
 uint32_t adi_memap_get_max_tar_block_size(uint32_t tar_autoincr_block, 
