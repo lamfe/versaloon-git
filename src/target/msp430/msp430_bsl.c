@@ -40,15 +40,3 @@
 #include "msp430.h"
 #include "msp430_internal.h"
 
-static struct programmer_info_t *p = NULL;
-
-RESULT msp430_bsl_program(struct operation_t operations, 
-					struct program_info_t *pi, struct programmer_info_t *prog)
-{
-	pi = pi;
-	operations = operations;
-	p = prog;
-
-	return ERROR_FAIL;
-}
-

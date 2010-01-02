@@ -1020,6 +1020,7 @@ Parse_File:
 					"check target defined content");
 		free_all_and_exit(EXIT_FAILURE);
 	}
+	sleep_ms(100);
 	
 	// do programming
 	if (mass_product_flag)

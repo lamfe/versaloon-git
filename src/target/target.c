@@ -133,7 +133,7 @@ struct target_info_t targets_info[] =
 		AUTO_DETECT,						// feature
 		msp430_program_area_map,			// program_area_map
 		msp430_program_mode,				// program_mode
-		NULL,								// program_functions
+		&msp430_program_functions,			// program_functions
 		msp430_parse_argument,				// parse_argument
 		
 		NULL,								// get_mass_product_data_size
@@ -583,85 +583,91 @@ RESULT target_program(struct program_context_t *context)
 	}
 	
 	// erase operation
-	LOG_INFO(_GETTEXT(INFOMSG_ERASING), "chip");
-	if ((op->erase_operations & ALL) && (param->chip_erase))
+	if (op->erase_operations)
 	{
-		// erase ALL using chip erase
-		pgbar_init("erasing chip |", "|", 0, 1, PROGRESS_STEP, PROGRESS_CHAR);
-		
-		if (ERROR_OK != pf->erase_target(context, '*', 0, 0))
+		LOG_INFO(_GETTEXT(INFOMSG_ERASING), "chip");
+		if ((op->erase_operations & ALL) && (param->chip_erase))
 		{
-			pgbar_fini();
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "erase chip");
-			ret = ERRCODE_FAILURE_OPERATION;
-			goto leave_program_mode;
-		}
-		
-		pgbar_update(1);
-		pgbar_fini();
-	}
-	else
-	{
-		// erase target defined
-		i = 0;
-		while (p_map[i].name != 0)
-		{
-			area_char = p_map[i].name;
-			area_attr = p_map[i].attr;
-			area_idx = target_area_idx(area_char);
-			area_mask = target_area_mask(area_char);
-			fullname = target_area_fullname(area_char);
+			// erase ALL using chip erase
+			pgbar_init("erasing chip |", "|", 0, 1, PROGRESS_STEP, 
+						PROGRESS_CHAR);
 			
-			// area is defined to be erased and is erasable and is valid
-			if ((op->erase_operations & area_mask) && (area_attr & AREA_ATTR_E)
-				&& (area_idx >= 0))
+			if (ERROR_OK != pf->erase_target(context, '*', 0, 0))
 			{
-				area_info = &(param->chip_areas[area_idx]);
-				page_size = area_info->page_size;
-				start_addr = area_info->addr;
+				pgbar_fini();
+				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "erase chip");
+				ret = ERRCODE_FAILURE_OPERATION;
+				goto leave_program_mode;
+			}
+			
+			pgbar_update(1);
+			pgbar_fini();
+		}
+		else
+		{
+			// erase target defined
+			i = 0;
+			while (p_map[i].name != 0)
+			{
+				area_char = p_map[i].name;
+				area_attr = p_map[i].attr;
+				area_idx = target_area_idx(area_char);
+				area_mask = target_area_mask(area_char);
+				fullname = target_area_fullname(area_char);
 				
-				strcpy(str_tmp, "erasing ");
-				strcat(str_tmp, fullname);
-				strcat(str_tmp, " |");
-				pgbar_init(str_tmp, "|", 0, area_info->page_num, 
-							PROGRESS_STEP, PROGRESS_CHAR);
-				
-				if (area_attr & AREA_ATTR_EP)
+				// area is defined to be erased and is erasable and is valid
+				if ((op->erase_operations & area_mask) 
+					&& (area_attr & AREA_ATTR_E) && (area_idx >= 0))
 				{
-					// erase every page
-					for (j = 0; j < area_info->page_num; j++)
+					area_info = &(param->chip_areas[area_idx]);
+					page_size = area_info->page_size;
+					start_addr = area_info->addr;
+					
+					strcpy(str_tmp, "erasing ");
+					strcat(str_tmp, fullname);
+					strcat(str_tmp, " |");
+					pgbar_init(str_tmp, "|", 0, area_info->page_num, 
+								PROGRESS_STEP, PROGRESS_CHAR);
+					
+					if (area_attr & AREA_ATTR_EP)
 					{
+						// erase every page
+						for (j = 0; j < area_info->page_num; j++)
+						{
+							if (ERROR_OK != pf->erase_target(context, 
+									area_char, start_addr + j * page_size, 
+									page_size))
+							{
+								pgbar_fini();
+								LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_ERASE), 
+											fullname);
+								ret = ERRCODE_FAILURE_OPERATION;
+								goto leave_program_mode;
+							}
+							pgbar_update(1);
+						}
+					}
+					else
+					{
+						// erase all in one run
 						if (ERROR_OK != pf->erase_target(context, area_char, 
-										start_addr + j * page_size, page_size))
+														start_addr, 0))
 						{
 							pgbar_fini();
 							LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_ERASE), fullname);
 							ret = ERRCODE_FAILURE_OPERATION;
 							goto leave_program_mode;
 						}
-						pgbar_update(1);
+						pgbar_update(area_info->page_num);
 					}
+					pgbar_fini();
 				}
-				else
-				{
-					// erase all in one run
-					if (ERROR_OK != pf->erase_target(context, area_char, 
-													start_addr, 0))
-					{
-						pgbar_fini();
-						LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_ERASE), fullname);
-						ret = ERRCODE_FAILURE_OPERATION;
-						goto leave_program_mode;
-					}
-					pgbar_update(area_info->page_num);
-				}
-				pgbar_fini();
+				
+				i++;
 			}
-			
-			i++;
 		}
+		LOG_INFO(_GETTEXT(INFOMSG_ERASED), "chip");
 	}
-	LOG_INFO(_GETTEXT(INFOMSG_ERASED), "chip");
 	
 	// program operation
 	i = 0;
@@ -673,9 +679,15 @@ RESULT target_program(struct program_context_t *context)
 		area_mask = target_area_mask(area_char);
 		fullname = target_area_fullname(area_char);
 		
-		if ((op->write_operations & area_mask) && (area_attr & AREA_ATTR_W)
-				&& (area_idx >= 0) && (param->chip_areas[area_idx].size > 0))
+		if (op->write_operations & area_mask)
 		{
+			if ((area_idx < 0) || !(area_attr & AREA_ATTR_W))
+			{
+				LOG_ERROR(_GETTEXT("Invalid setting or non-writable memory.\n"));
+				ret = ERROR_FAIL;
+				goto leave_program_mode;
+			}
+			
 			area_info = &(param->chip_areas[area_idx]);
 			page_size = area_info->page_size;
 			start_addr = area_info->addr;
@@ -768,32 +780,77 @@ RESULT target_program(struct program_context_t *context)
 		if ((op->verify_operations & area_mask) 
 			&& (area_attr & AREA_ATTR_V))
 		{
+			area_info = &(param->chip_areas[area_idx]);
+			page_size = area_info->page_size;
+			start_addr = area_info->addr;
+			
 			prog_area = &(pi->program_areas[area_idx]);
-			target_size = prog_area->size;
+			ml = &(prog_area->memlist);
 			tbuff = prog_area->buff;
 			
 			LOG_INFO(_GETTEXT(INFOMSG_VERIFYING), fullname);
 			strcpy(str_tmp, "verifying ");
 			strcat(str_tmp, fullname);
 			strcat(str_tmp, " |");
-			pgbar_init(str_tmp, "|", 0, 1, PROGRESS_STEP, '=');
 			
-			if (ERROR_OK != pf->read_target(context, area_char, 0, 
-														tbuff, target_size))
+			if ((page_size == 0) || (area_attr & AREA_ATTR_RNP))
 			{
-				pgbar_fini();
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_VERIFY), fullname);
-				ret = ERRCODE_FAILURE_OPERATION;
+				target_size = prog_area->size;
+				
+				pgbar_init(str_tmp, "|", 0, 1, PROGRESS_STEP, '=');
+				
+				if (ERROR_OK != pf->read_target(context, area_char, start_addr, 
+													tbuff, target_size))
+				{
+					pgbar_fini();
+					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_VERIFY), fullname);
+					ret = ERRCODE_FAILURE_OPERATION;
+					goto leave_program_mode;
+				}
+				
+				pgbar_update(1);
+			}
+			else
+			{
+				target_size = MEMLIST_CalcAllSize(*ml);
+				
+				if ((tbuff != NULL) && (ml != NULL))
+				{
+					pgbar_init(str_tmp, "|", 0, target_size, PROGRESS_STEP, '=');
+					ml_tmp = *ml;
+					while(ml_tmp != NULL)
+					{
+						for (j = 0; j < ml_tmp->len; j += page_size)
+						{
+							uint32_t tmp_addr = ml_tmp->addr + j;
+							uint8_t *tmp_buf = &(tbuff[tmp_addr - start_addr]);
+							
+							if (ERROR_OK != pf->read_target(context, area_char, 
+									tmp_addr, tmp_buf, page_size))
+							{
+								pgbar_fini();
+								LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_READ), fullname);
+								ret = ERRCODE_FAILURE_OPERATION;
+								goto leave_program_mode;
+							}
+							pgbar_update(page_size);
+						}
+						ml_tmp = MEMLIST_GetNext(ml_tmp);
+					}
+				}
+			}
+			pgbar_fini();
+		}
+		else if ((op->read_operations & area_mask) 
+				|| (op->verify_operations & area_mask))
+		{
+			if ((area_idx < 0) || !(area_attr & AREA_ATTR_R))
+			{
+				LOG_ERROR(_GETTEXT("Invalid setting or non-readable memory.\n"));
+				ret = ERROR_FAIL;
 				goto leave_program_mode;
 			}
 			
-			pgbar_update(1);
-			pgbar_fini();
-		}
-		else if (((op->read_operations & area_mask) 
-				|| (op->verify_operations & area_mask)) 
-			&& (area_idx >= 0) && (area_attr & AREA_ATTR_R))
-		{
 			area_info = &(param->chip_areas[area_idx]);
 			page_size = area_info->page_size;
 			start_addr = area_info->addr;

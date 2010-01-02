@@ -197,7 +197,6 @@ RESULT stm32swj_erase_target(struct program_context_t *context, char area,
 		// erase all flash
 		if (ERROR_OK != stm32_mass_erase())
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "erase chip");
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
@@ -328,7 +327,7 @@ RESULT stm32swj_write_target(struct program_context_t *context, char area,
 														buff, cur_block_size))
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-						  "download flash data");
+							"download flash data");
 				ret = ERRCODE_FAILURE_OPERATION;
 				break;
 			}
@@ -415,7 +414,6 @@ RESULT stm32swj_read_target(struct program_context_t *context, char area,
 		// read MCU ID at STM32_REG_MCU_ID
 		if (ERROR_OK != adi_memap_read_reg(STM32_REG_MCU_ID, &mcu_id, 1))
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read stm32 MCU_ID");
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
 		}

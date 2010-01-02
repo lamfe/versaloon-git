@@ -46,7 +46,7 @@
 
 struct program_area_map_t msp430_program_area_map[] = 
 {
-	{APPLICATION_CHAR, 1, 0, 0, AREA_ATTR_EWR},
+	{APPLICATION_CHAR, 1, 0, 0, AREA_ATTR_EW | AREA_ATTR_V},
 	{0, 0, 0, 0, 0}
 };
 
@@ -58,6 +58,8 @@ const struct program_mode_t msp430_program_mode[] =
 	{0, NULL, 0}
 };
 
+struct program_functions_t msp430_program_functions;
+
 void msp430_usage(void)
 {
 	printf("\
@@ -65,26 +67,6 @@ Usage of %s:\n\
   -m,  --mode <MODE>                        set mode<j|s|b>\n\n", 
 			CUR_TARGET_STRING);
 }
-
-RESULT msp430_parse_argument(char cmd, const char *argu)
-{
-	argu = argu;
-	
-	switch (cmd)
-	{
-	case 'h':
-		msp430_usage();
-		break;
-	default:
-		return ERROR_FAIL;
-		break;
-	}
-	
-	return ERROR_OK;
-}
-
-
-
 
 RESULT (*msp430jtagsbw_init)(void);
 RESULT (*msp430jtagsbw_fini)(void);
@@ -97,107 +79,62 @@ RESULT (*msp430jtagsbw_reset)(void);
 RESULT (*msp430jtagsbw_poll)(uint32_t dr, uint32_t mask, uint32_t value, 
 						uint8_t len, uint16_t poll_cnt, uint8_t toggle_tclk);
 
-
-#define get_target_voltage(v)					prog->get_target_voltage(v)
-RESULT msp430_program(struct operation_t operations, struct program_info_t *pi, 
-					  struct programmer_info_t *prog)
+RESULT msp430_parse_argument(char cmd, const char *argu)
 {
-	uint16_t voltage;
+	uint8_t mode;
 	
-#ifdef PARAM_CHECK
-	if (NULL == prog)
+	switch (cmd)
 	{
-		LOG_BUG(_GETTEXT(ERRMSG_INVALID_PARAMETER), __FUNCTION__);
-		return ERRCODE_INVALID_PARAMETER;
-	}
-	if ((   (operations.read_operations & APPLICATION) 
-			&& (NULL == pi->program_areas[APPLICATION_IDX].buff)) 
-		|| ((   (operations.write_operations & APPLICATION) 
-				|| (operations.verify_operations & APPLICATION)) 
-			&& (NULL == pi->program_areas[APPLICATION_IDX].buff)))
-	{
-		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_BUFFER), "for flash");
-		return ERRCODE_INVALID_BUFFER;
-	}
-#endif
-
-	// get target voltage
-	if (ERROR_OK != get_target_voltage(&voltage))
-	{
-		return ERROR_FAIL;
-	}
-	LOG_DEBUG(_GETTEXT(INFOMSG_TARGET_VOLTAGE), voltage / 1000.0);
-	if (voltage < 2700)
-	{
-		LOG_WARNING(_GETTEXT(INFOMSG_TARGET_LOW_POWER));
-	}
-	
-	switch(program_mode)
-	{
-	case MSP430_MODE_JTAG:
-		if (target_chip_param.program_mode & (1 << MSP430_MODE_JTAG))
-		{
-			msp430jtagsbw_init = prog->msp430jtag_init;
-			msp430jtagsbw_fini = prog->msp430jtag_fini;
-			msp430jtagsbw_config = prog->msp430jtag_config;
-			msp430jtagsbw_ir = prog->msp430jtag_ir;
-			msp430jtagsbw_dr = prog->msp430jtag_dr;
-			msp430jtagsbw_tclk = prog->msp430jtag_tclk;
-			msp430jtagsbw_tclk_strobe = prog->msp430jtag_tclk_strobe;
-			msp430jtagsbw_reset = prog->msp430jtag_reset;
-			msp430jtagsbw_poll = prog->msp430jtag_poll;
-			
-			return msp430_jtag_program(operations, pi, prog);
-		}
-		else
-		{
-			LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "JTAG", 
-					  target_chip_param.chip_name);
-			return ERRCODE_NOT_SUPPORT;
-		}
+	case 'h':
+		msp430_usage();
 		break;
-	case MSP430_MODE_SBW:
-		if (target_chip_param.program_mode & (1 << MSP430_MODE_SBW))
+	case 'm':
+		if (NULL == argu)
 		{
-			msp430jtagsbw_init = prog->msp430sbw_init;
-			msp430jtagsbw_fini = prog->msp430sbw_fini;
-			msp430jtagsbw_config = prog->msp430sbw_config;
-			msp430jtagsbw_ir = prog->msp430sbw_ir;
-			msp430jtagsbw_dr = prog->msp430sbw_dr;
-			msp430jtagsbw_tclk = prog->msp430sbw_tclk;
-			msp430jtagsbw_tclk_strobe = prog->msp430sbw_tclk_strobe;
-			msp430jtagsbw_reset = prog->msp430sbw_reset;
-			msp430jtagsbw_poll = prog->msp430sbw_poll;
+			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), cmd);
+			return ERRCODE_INVALID_OPTION;
+		}
+		mode = (uint8_t)strtoul(argu, NULL,0);
+		switch (mode)
+		{
+		case MSP430_MODE_JTAG:
+			msp430jtagsbw_init = cur_programmer->msp430jtag_init;
+			msp430jtagsbw_fini = cur_programmer->msp430jtag_fini;
+			msp430jtagsbw_config = cur_programmer->msp430jtag_config;
+			msp430jtagsbw_ir = cur_programmer->msp430jtag_ir;
+			msp430jtagsbw_dr = cur_programmer->msp430jtag_dr;
+			msp430jtagsbw_tclk = cur_programmer->msp430jtag_tclk;
+			msp430jtagsbw_tclk_strobe = cur_programmer->msp430jtag_tclk_strobe;
+			msp430jtagsbw_reset = cur_programmer->msp430jtag_reset;
+			msp430jtagsbw_poll = cur_programmer->msp430jtag_poll;
 			
-			return msp430_jtag_program(operations, pi, prog);
+			memcpy(&msp430_program_functions, &msp430jtagsbw_program_functions, 
+					sizeof(msp430_program_functions));
+			break;
+		case MSP430_MODE_SBW:
+			msp430jtagsbw_init = cur_programmer->msp430sbw_init;
+			msp430jtagsbw_fini = cur_programmer->msp430sbw_fini;
+			msp430jtagsbw_config = cur_programmer->msp430sbw_config;
+			msp430jtagsbw_ir = cur_programmer->msp430sbw_ir;
+			msp430jtagsbw_dr = cur_programmer->msp430sbw_dr;
+			msp430jtagsbw_tclk = cur_programmer->msp430sbw_tclk;
+			msp430jtagsbw_tclk_strobe = cur_programmer->msp430sbw_tclk_strobe;
+			msp430jtagsbw_reset = cur_programmer->msp430sbw_reset;
+			msp430jtagsbw_poll = cur_programmer->msp430sbw_poll;
+			
+			memcpy(&msp430_program_functions, &msp430jtagsbw_program_functions, 
+					sizeof(msp430_program_functions));
+			break;
+		case MSP430_MODE_BSL:
+			return ERROR_FAIL;
+			break;
 		}
-		else
-		{
-			LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "SBW", 
-					  target_chip_param.chip_name);
-			return ERRCODE_NOT_SUPPORT;
-		}
-		
-		break;
-	case MSP430_MODE_BSL:
-		if (target_chip_param.program_mode & (1 << MSP430_MODE_BSL))
-		{
-			return msp430_bsl_program(operations, pi, prog);
-		}
-		else
-		{
-			LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "BSL", 
-					  target_chip_param.chip_name);
-			return ERRCODE_NOT_SUPPORT;
-		}
-		
 		break;
 	default:
-		// invalid mode
-		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_PROG_MODE), program_mode, 
-				  CUR_TARGET_STRING);
-		return ERRCODE_INVALID_PROG_MODE;
+		return ERROR_FAIL;
 		break;
 	}
+	
+	return ERROR_OK;
 }
 

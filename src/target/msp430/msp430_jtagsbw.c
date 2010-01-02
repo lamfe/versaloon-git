@@ -41,42 +41,32 @@
 #include "JTAGfunc.h"
 #include "msp430_internal.h"
 
-RESULT msp430_jtag_program(struct operation_t operations, 
-					struct program_info_t *pi, struct programmer_info_t *prog)
+RESULT msp430jtagsbw_enter_program_mode(struct program_context_t *context);
+RESULT msp430jtagsbw_leave_program_mode(struct program_context_t *context, 
+								uint8_t success);
+RESULT msp430jtagsbw_erase_target(struct program_context_t *context, char area, 
+							uint32_t addr, uint32_t page_size);
+RESULT msp430jtagsbw_write_target(struct program_context_t *context, char area, 
+							uint32_t addr, uint8_t *buff, uint32_t page_size);
+RESULT msp430jtagsbw_read_target(struct program_context_t *context, char area, 
+							uint32_t addr, uint8_t *buff, uint32_t page_size);
+const struct program_functions_t msp430jtagsbw_program_functions = 
 {
-	uint16_t chip_id;
-	uint8_t tmp8;
-	
-	uint8_t erased = 0;
+	NULL,			// execute
+	msp430jtagsbw_enter_program_mode, 
+	msp430jtagsbw_leave_program_mode, 
+	msp430jtagsbw_erase_target, 
+	msp430jtagsbw_write_target, 
+	msp430jtagsbw_read_target
+};
+
+RESULT msp430jtagsbw_enter_program_mode(struct program_context_t *context)
+{
+	struct programmer_info_t *prog = context->prog;
+	uint8_t tmp8, i;
 	uint8_t ir;
 	uint32_t dr;
-	int32_t i;
-	uint32_t k, len_current_list;
-	word page_size, addr_start;
-	RESULT ret = ERROR_OK;
-	word CRC_check, CRC_calc;
-	uint32_t target_size;
-	uint8_t *tbuff;
-	struct memlist **ml, *ml_tmp;
 	
-#ifdef PARAM_CHECK
-	if (NULL == prog)
-	{
-		LOG_BUG(_GETTEXT(ERRMSG_INVALID_PARAMETER), __FUNCTION__);
-		return ERRCODE_INVALID_PARAMETER;
-	}
-	if ((   (operations.read_operations & APPLICATION) 
-			&& (NULL == pi->program_areas[APPLICATION_IDX].buff)) 
-		|| ((   (operations.write_operations & APPLICATION) 
-				|| (operations.verify_operations & APPLICATION)) 
-			&& (NULL == pi->program_areas[APPLICATION_IDX].buff)))
-	{
-		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_BUFFER), "for flash");
-		return ERRCODE_INVALID_BUFFER;
-	}
-#endif
-	
-	// here we go
 	msp430_jtag_init();
 	if (DeviceHas_TestPin())
 	{
@@ -97,8 +87,7 @@ RESULT msp430_jtag_program(struct operation_t operations,
 		if (ERROR_OK != commit())
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "init chip");
-			ret = ERRCODE_FAILURE_OPERATION;
-			goto leave_program_mode;
+			return ERRCODE_FAILURE_OPERATION;
 		}
 		if (MSP430_JTAG_ID == tmp8)
 		{
@@ -124,8 +113,7 @@ RESULT msp430_jtag_program(struct operation_t operations,
 	if (0 == i)
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "detect target chip");
-		ret = ERROR_FAIL;
-		goto leave_program_mode;
+		return ERROR_FAIL;
 	}
 	
 	ResetTAP();
@@ -137,60 +125,47 @@ RESULT msp430_jtag_program(struct operation_t operations,
 		if (ERROR_OK != commit())
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "init programming");
-			ret = ERRCODE_FAILURE_OPERATION;
-			goto leave_program_mode;
+			return ERRCODE_FAILURE_OPERATION;
 		}
 		if (0x5555 == dr)
 		{
 			LOG_ERROR(_GETTEXT("fuse of current chip is blown\n"));
-			ret = ERROR_FAIL;
-			goto leave_program_mode;
+			return ERROR_FAIL;
 		}
 	}
+	return ERROR_OK;
+}
+
+RESULT msp430jtagsbw_leave_program_mode(struct program_context_t *context, 
+								uint8_t success)
+{
+	struct programmer_info_t *prog = context->prog;
 	
-	// read chip_id
-	IR_Shift(IR_CNTRL_SIG_16BIT);
-	DR_Shift16(0x2401);
-	IR_Shift(IR_CNTRL_SIG_CAPTURE);
-	// wait until CPU is synchronized
-	msp430_jtag_dr16_poll(0x0000, 0x0200, 0x0200, 50, 0);
-	// read chip_id in 0x0FF0
-	ReadMem(F_WORD, 0x0FF0, &chip_id);
-	// perform PUC, includes target watchdog disable
-	ExecutePOR();
+	REFERENCE_PARAMETER(success);
+	
+	ReleaseDevice(V_RESET);
+	msp430_jtag_fini();
 	if (ERROR_OK != commit())
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read chip id");
-		ret = ERRCODE_FAILURE_OPERATION;
-		goto leave_program_mode;
+		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+				  "exit program mode");
+		return ERRCODE_FAILURE_OPERATION;
 	}
-	pi->chip_id = ((chip_id << 8) + (chip_id >> 8)) & 0x0000FFFF;
-	LOG_INFO(_GETTEXT(INFOMSG_TARGET_CHIP_ID), pi->chip_id);
-	if (!(operations.read_operations & CHIPID))
-	{
-		if (pi->chip_id != target_chip_param.chip_id)
-		{
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_CHIP_ID), pi->chip_id, 
-						target_chip_param.chip_id);
-			ret = ERROR_FAIL;
-			goto leave_program_mode;
-		}
-	}
-	else
-	{
-		goto leave_program_mode;
-	}
+	return ERROR_OK;
+}
+
+RESULT msp430jtagsbw_erase_target(struct program_context_t *context, char area, 
+							uint32_t addr, uint32_t page_size)
+{
+	struct programmer_info_t *prog = context->prog;
+	RESULT ret = ERROR_OK;
 	
-	page_size = (word)target_chip_param.chip_areas[APPLICATION_IDX].page_size;
-	addr_start = Device_MainStart();
+	REFERENCE_PARAMETER(page_size);
+	REFERENCE_PARAMETER(addr);
 	
-	if (operations.erase_operations > 0)
+	switch (area)
 	{
-		// chip erase
-		LOG_INFO(_GETTEXT(INFOMSG_ERASING), "chip");
-		pgbar_init("erasing chip |", "|", 0, 1, PROGRESS_STEP, '=');
-		
-		// erase
+	case APPLICATION_CHAR:
 		if (DeviceHas_CpuX())
 		{
 			// Global-Erase Flash
@@ -208,203 +183,102 @@ RESULT msp430_jtag_program(struct operation_t operations,
 		
 		if (ERROR_OK != commit())
 		{
-			pgbar_fini();
 			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "erase chip");
 			ret = ERRCODE_FAILURE_OPERATION;
-			goto leave_program_mode;
+			break;
 		}
-		
-		pgbar_update(1);
-		pgbar_fini();
-		LOG_INFO(_GETTEXT(INFOMSG_ERASED), "chip");
-		
-		// check blank
-		LOG_INFO(_GETTEXT(INFOMSG_CHECKING), "blank");
-		pgbar_init("checking blank |", "|", 0, 
-					target_chip_param.chip_areas[APPLICATION_IDX].page_num, 
-					PROGRESS_STEP, '=');
-		
-		for (i = 0; 
-			i < (int32_t)target_chip_param.chip_areas[APPLICATION_IDX].page_num; 
-			i++)
+		break;
+	default:
+		ret = ERROR_FAIL;
+		break;
+	}
+	return ret;
+}
+
+RESULT msp430jtagsbw_write_target(struct program_context_t *context, char area, 
+							uint32_t addr, uint8_t *buff, uint32_t page_size)
+{
+	struct programmer_info_t *prog = context->prog;
+	RESULT ret = ERROR_OK;
+	
+	switch (area)
+	{
+	case APPLICATION_CHAR:
+		WriteFLASH((word)addr, (word)(page_size / 2), (word*)buff);
+		if (ERROR_OK != commit())
 		{
-			CRC_calc = CRC_check = 0;
-			CRC_calc = EraseCheck((word)(addr_start + i * page_size), 
-								  page_size / 2, &CRC_check);
+			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ADDR), 
+						"write flash", addr);
+			ret = ERRCODE_FAILURE_OPERATION_ADDR;
+			break;
+		}
+		break;
+	default:
+		ret = ERROR_FAIL;
+		break;
+	}
+	return ret;
+}
+
+RESULT msp430jtagsbw_read_target(struct program_context_t *context, char area, 
+							uint32_t addr, uint8_t *buff, uint32_t page_size)
+{
+	struct program_info_t *pi = context->pi;
+	struct programmer_info_t *prog = context->prog;
+	struct operation_t *op = context->op;
+	
+	uint16_t chip_id;
+	uint8_t ir;
+	uint32_t dr;
+	RESULT ret = ERROR_OK;
+	
+	switch (area)
+	{
+	case CHIPID_CHAR:
+		IR_Shift(IR_CNTRL_SIG_16BIT);
+		DR_Shift16(0x2401);
+		IR_Shift(IR_CNTRL_SIG_CAPTURE);
+		// wait until CPU is synchronized
+		msp430_jtag_dr16_poll(0x0000, 0x0200, 0x0200, 50, 0);
+		// read chip_id in 0x0FF0
+		ReadMem(F_WORD, 0x0FF0, &chip_id);
+		// perform PUC, includes target watchdog disable
+		ExecutePOR();
+		if (ERROR_OK != commit())
+		{
+			ret = ERRCODE_FAILURE_OPERATION;
+			break;
+		}
+		pi->chip_id = ((chip_id << 8) + (chip_id >> 8)) & 0x0000FFFF;
+		break;
+	case APPLICATION_CHAR:
+		if (op->verify_operations & APPLICATION)
+		{
+			word CRC_check, CRC_calc;
 			
+			CRC_calc = CRC_check = 0;
+			CRC_calc = VerifyMem((word)addr, (word)(page_size / 2), 
+									(word*)buff, &CRC_check);
 			if (ERROR_OK != commit())
 			{
-				pgbar_fini();
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read crc check");
+				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+							"read crc check");
 				ret = ERRCODE_FAILURE_OPERATION;
-				goto leave_program_mode;
+				break;
 			}
 			if (CRC_calc != CRC_check)
 			{
-				pgbar_fini();
 				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ADDR), 
-							"check blank", addr_start + i * page_size);
+							"verify flash", addr);
 				ret = ERRCODE_FAILURE_OPERATION_ADDR;
-				goto leave_program_mode;
+				break;
 			}
-			
-			pgbar_update(1);
 		}
-		
-		erased = 1;
-		pgbar_fini();
-		LOG_INFO("blank checked\n");
+		break;
+	default:
+		ret = ERROR_FAIL;
+		break;
 	}
-	
-	ml = &pi->program_areas[APPLICATION_IDX].memlist;
-	target_size = MEMLIST_CalcAllSize(*ml);
-	tbuff = pi->program_areas[APPLICATION_IDX].buff;
-	if (operations.write_operations & APPLICATION)
-	{
-		// program flash
-		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMING), "flash");
-		pgbar_init("writing flash |", "|", 0, target_size, PROGRESS_STEP, '=');
-		
-		ml_tmp = *ml;
-		while (ml_tmp != NULL)
-		{
-			if ((ml_tmp->addr + ml_tmp->len) 
-				<= (ml_tmp->addr - (ml_tmp->addr % page_size) + page_size))
-			{
-				k = ml_tmp->len;
-			}
-			else
-			{
-				k = page_size - (ml_tmp->addr % page_size);
-			}
-			
-			len_current_list = ml_tmp->len;
-			for (i = -(int32_t)(ml_tmp->addr % page_size); 
-				 i < ((int32_t)ml_tmp->len 
-						- (int32_t)(ml_tmp->addr % page_size)); 
-				 i += page_size)
-			{
-				WriteFLASH((word)(ml_tmp->addr + i), page_size / 2, 
-						   (word*)(tbuff + ml_tmp->addr + i - addr_start));
-				if (ERROR_OK != commit())
-				{
-					pgbar_fini();
-					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ADDR), 
-							 "write flash", ml_tmp->addr + i);
-					ret = ERRCODE_FAILURE_OPERATION_ADDR;
-					goto leave_program_mode;
-				}
-				
-				pgbar_update(k);
-				len_current_list -= k;
-				if (len_current_list >= page_size)
-				{
-					k = page_size;
-				}
-				else
-				{
-					k = len_current_list;
-				}
-			}
-			
-			ml_tmp = MEMLIST_GetNext(ml_tmp);
-		}
-		
-		pgbar_fini();
-		LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMED_SIZE), "flash", target_size);
-	}
-	
-	if ((operations.read_operations & APPLICATION) 
-		|| (operations.verify_operations & APPLICATION))
-	{
-		if (operations.verify_operations & APPLICATION)
-		{
-			LOG_INFO(_GETTEXT(INFOMSG_VERIFYING), "flash");
-		}
-		else
-		{
-			LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT), "read msp430 flash");
-			ret = ERRCODE_FAILURE_OPERATION;
-			goto leave_program_mode;
-		}
-		pgbar_init("reading flash |", "|", 0, target_size, PROGRESS_STEP, '=');
-		
-		ml_tmp = *ml;
-		while (ml_tmp != NULL)
-		{
-			if ((ml_tmp->addr + ml_tmp->len) 
-				<= (ml_tmp->addr - (ml_tmp->addr % page_size) + page_size))
-			{
-				k = ml_tmp->len;
-			}
-			else
-			{
-				k = page_size - (ml_tmp->addr % page_size);
-			}
-			
-			len_current_list = ml_tmp->len;
-			for (i = -(int32_t)(ml_tmp->addr % page_size); 
-				 i < ((int32_t)ml_tmp->len 
-						- (int32_t)(ml_tmp->addr % page_size)); 
-				 i += page_size)
-			{
-				CRC_calc = CRC_check = 0;
-				CRC_calc = VerifyMem((word)(ml_tmp->addr + i), page_size / 2, 
-					(word*)(tbuff + ml_tmp->addr + i - addr_start), &CRC_check);
-				if (ERROR_OK != commit())
-				{
-					pgbar_fini();
-					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-								"read crc check");
-					ret = ERRCODE_FAILURE_OPERATION;
-					goto leave_program_mode;
-				}
-				if (CRC_calc != CRC_check)
-				{
-					pgbar_fini();
-					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ADDR), 
-							 "verify flash", ml_tmp->addr + i);
-					ret = ERRCODE_FAILURE_OPERATION_ADDR;
-					goto leave_program_mode;
-				}
-				
-				pgbar_update(k);
-				len_current_list -= k;
-				if (len_current_list >= page_size)
-				{
-					k = page_size;
-				}
-				else
-				{
-					k = len_current_list;
-				}
-			}
-			
-			ml_tmp = MEMLIST_GetNext(ml_tmp);
-		}
-		
-		pgbar_fini();
-		if (operations.verify_operations & APPLICATION)
-		{
-			LOG_INFO(_GETTEXT(INFOMSG_VERIFIED_SIZE), "flash", target_size);
-		}
-		else
-		{
-			LOG_INFO(_GETTEXT(INFOMSG_READ), "flash");
-		}
-	}
-	
-leave_program_mode:
-	// leave program mode
-	ReleaseDevice(V_RESET);
-	msp430_jtag_fini();
-	if (ERROR_OK != commit())
-	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-				  "exit program mode");
-		ret = ERRCODE_FAILURE_OPERATION;
-	}
-	
 	return ret;
 }
 
