@@ -70,7 +70,6 @@ struct jtag_pos_t
 	uint16_t bb;		// units after
 	uint16_t ba;		// bits after
 };
-extern struct jtag_pos_t target_jtag_pos;
 
 #define JTAG_SRST				GPIO_SRST
 #define JTAG_TRST				GPIO_TRST

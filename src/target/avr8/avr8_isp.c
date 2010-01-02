@@ -121,7 +121,7 @@ RESULT avr8isp_enter_program_mode(struct program_context_t *context)
 	
 try_frequency:
 	// use avr8_isp_frequency
-	spi_conf(program_frequency);
+	spi_conf(pi->frequency);
 	
 	// toggle reset
 	reset_clr();

@@ -19,22 +19,8 @@
 #ifndef __PSOC1_INTERNAL_H_INCLUDED__
 #define __PSOC1_INTERNAL_H_INCLUDED__
 
-#define PSOC1_MAX_FLASH_SIZE			(32 * 1024)
-#define PSOC1_MAX_SECURE_SIZE			(4 * 32)
-#define PSOC1_MIN_SECURE_SIZE			64
-#define PSOC1_MAX_CHECKSUM_SIZE			(4 * 2)
-#define PSOC1_MAX_BANK_NUM				4
-#define PSOC1_MIN_BLOCK_NUM_IN_BANK		32
-#define PSOC1_MAX_BLOCK_SIZE			64
-
-#define PSOC1_FLASH_CHAR				0x00
-#define PSOC1_SECURE_CHAR				0x00
-#define PSOC1_CHECKSUM_CHAR				0x00
-#define PSOC1_ID_MASK					0xFFFF
-
 #define PSOC1_PARAM_BANK_NUM			0
 
-// parameters
 #define PSOC1_RESET_MODE				0
 #define PSOC1_POWERON_MODE				1
 

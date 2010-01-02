@@ -32,8 +32,9 @@
 #include "app_log.h"
 #include "prog_interface.h"
 
-#include "target.h"
+#include "vsprog.h"
 #include "programmer.h"
+#include "target.h"
 
 #include "adi_v5p1.h"
 #include "cm3_common.h"

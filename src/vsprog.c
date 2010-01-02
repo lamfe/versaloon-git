@@ -96,11 +96,6 @@ const char *config_dirs[] =
 	"./config/"
 };
 
-uint8_t program_mode = 0;
-uint16_t program_frequency = 0;
-// for JTAT
-struct jtag_pos_t target_jtag_pos;
-
 struct filelist *fl_in = NULL, *fl_out = NULL;
 
 static void free_all(void)
