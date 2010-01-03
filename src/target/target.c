@@ -1080,7 +1080,8 @@ RESULT target_init(struct program_info_t *pi, struct programmer_info_t *prog)
 	
 	LOG_PUSH();
 	LOG_MUTE();
-	cur_target->parse_argument('m', itoa(pi->mode, mode_buff, 10));
+	sprintf(mode_buff, "%d", pi->mode);
+	cur_target->parse_argument('m', mode_buff);
 	LOG_POP();
 	
 	if (NULL == pi->chip_name)

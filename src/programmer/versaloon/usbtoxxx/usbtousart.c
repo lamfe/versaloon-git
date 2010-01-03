@@ -29,6 +29,7 @@
 #include "app_log.h"
 #include "prog_interface.h"
 
+#include "programmer.h"
 #include "../versaloon.h"
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
