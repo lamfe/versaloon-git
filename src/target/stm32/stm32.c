@@ -49,8 +49,8 @@
 
 struct program_area_map_t stm32_program_area_map[] = 
 {
-	{APPLICATION_CHAR, 1, 0, 0, AREA_ATTR_EWR},
-	{0, 0, 0, 0, 0}
+	{APPLICATION_CHAR, 1, 0, 0, 0, AREA_ATTR_EWR},
+	{0, 0, 0, 0, 0, 0}
 };
 
 const struct program_mode_t stm32_program_mode[] = 

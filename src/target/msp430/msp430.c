@@ -46,8 +46,8 @@
 
 struct program_area_map_t msp430_program_area_map[] = 
 {
-	{APPLICATION_CHAR, 1, 0, 0, AREA_ATTR_EW | AREA_ATTR_V},
-	{0, 0, 0, 0, 0}
+	{APPLICATION_CHAR, 1, 0, 0, 0, AREA_ATTR_EW | AREA_ATTR_V},
+	{0, 0, 0, 0, 0, 0}
 };
 
 const struct program_mode_t msp430_program_mode[] = 

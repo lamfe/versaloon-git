@@ -210,6 +210,7 @@ RESULT avr8isp_write_target(struct program_context_t *context, char area,
 	struct chip_param_t *param = context->param;
 	uint8_t cmd_buf[4];
 	uint32_t i;
+	uint32_t ee_page_size;
 	RESULT ret = ERROR_OK;
 	
 	switch (area)
@@ -232,7 +233,7 @@ RESULT avr8isp_write_target(struct program_context_t *context, char area,
 				}
 				cmd_buf[1] = (uint8_t)(i >> 9);
 				cmd_buf[2] = (uint8_t)(i >> 1);
-				cmd_buf[3] = buff[addr + i];
+				cmd_buf[3] = buff[i];
 				spi_io(cmd_buf, 4, NULL, 0, 0);
 			}
 			
@@ -274,7 +275,7 @@ RESULT avr8isp_write_target(struct program_context_t *context, char area,
 				}
 				cmd_buf[1] = (uint8_t)((addr + i) >> 9);
 				cmd_buf[2] = (uint8_t)((addr + i) >> 1);
-				cmd_buf[3] = buff[addr + i];
+				cmd_buf[3] = buff[i];
 				spi_io(cmd_buf, 4, NULL, 0, 0);
 				
 				if (param->param[AVR8_PARAM_ISP_POLL])
@@ -295,33 +296,40 @@ RESULT avr8isp_write_target(struct program_context_t *context, char area,
 		}
 		break;
 	case EEPROM_CHAR:
+		ee_page_size = param->chip_areas[EEPROM_IDX].page_size;
 		if ((param->chip_areas[EEPROM_IDX].page_num > 1) 
 			&& (param->param[AVR8_PARAM_ISP_EERPOM_PAGE_EN]))
 		{
-			// Page mode
-			for (i = 0; i < page_size; i++)
+			while (page_size > 0)
 			{
-				cmd_buf[0] = 0xC1;
-				cmd_buf[1] = 0x00;
-				cmd_buf[2] = (uint8_t)i;
-				cmd_buf[3] = buff[addr + i];
+				// Page mode
+				for (i = 0; i < ee_page_size; i++)
+				{
+					cmd_buf[0] = 0xC1;
+					cmd_buf[1] = 0x00;
+					cmd_buf[2] = (uint8_t)i;
+					cmd_buf[3] = buff[i];
+					spi_io(cmd_buf, 4, NULL, 0, 0);
+				}
+				
+				// write page
+				cmd_buf[0] = 0xC2;
+				cmd_buf[1] = (uint8_t)(addr >> 8);
+				cmd_buf[2] = (uint8_t)(addr >> 0);
+				cmd_buf[3] = 0x00;
 				spi_io(cmd_buf, 4, NULL, 0, 0);
-			}
-			
-			// write page
-			cmd_buf[0] = 0xC2;
-			cmd_buf[1] = (uint8_t)(addr >> 8);
-			cmd_buf[2] = (uint8_t)(addr >> 0);
-			cmd_buf[3] = 0x00;
-			spi_io(cmd_buf, 4, NULL, 0, 0);
-			
-			if (param->param[AVR8_PARAM_ISP_POLL])
-			{
-				avr8_isp_pollready();
-			}
-			else
-			{
-				delay_ms(5);
+				
+				if (param->param[AVR8_PARAM_ISP_POLL])
+				{
+					avr8_isp_pollready();
+				}
+				else
+				{
+					delay_ms(5);
+				}
+				page_size -= ee_page_size;
+				addr += ee_page_size;
+				buff += ee_page_size;
 			}
 			
 			if (ERROR_OK != commit())
@@ -332,23 +340,29 @@ RESULT avr8isp_write_target(struct program_context_t *context, char area,
 		}
 		else
 		{
-			// Byte mode
-			for (i = 0; i < page_size; i++)
+			while (page_size > 0)
 			{
-				cmd_buf[0] = 0xC0;
-				cmd_buf[1] = (uint8_t)((addr + i) >> 8);
-				cmd_buf[2] = (uint8_t)((addr + i) >> 0);
-				cmd_buf[3] = buff[addr + i];
-				spi_io(cmd_buf, 4, NULL, 0, 0);
-				
-				if (param->param[AVR8_PARAM_ISP_POLL])
+				// Byte mode
+				for (i = 0; i < ee_page_size; i++)
 				{
-					avr8_isp_pollready();
+					cmd_buf[0] = 0xC0;
+					cmd_buf[1] = (uint8_t)((addr + i) >> 8);
+					cmd_buf[2] = (uint8_t)((addr + i) >> 0);
+					cmd_buf[3] = buff[i];
+					spi_io(cmd_buf, 4, NULL, 0, 0);
+					
+					if (param->param[AVR8_PARAM_ISP_POLL])
+					{
+						avr8_isp_pollready();
+					}
+					else
+					{
+						delay_ms(10);
+					}
 				}
-				else
-				{
-					delay_ms(10);
-				}
+				page_size -= ee_page_size;
+				addr += ee_page_size;
+				buff += ee_page_size;
 			}
 			
 			if (ERROR_OK != commit())
@@ -474,6 +488,7 @@ RESULT avr8isp_read_target(struct program_context_t *context, char area,
 	struct chip_param_t *param = context->param;
 	uint8_t cmd_buf[4], tmpbuf[4];
 	uint32_t i;
+	uint32_t ee_page_size;
 	RESULT ret = ERROR_OK;
 	
 	switch (area)
@@ -527,13 +542,20 @@ RESULT avr8isp_read_target(struct program_context_t *context, char area,
 		}
 		break;
 	case EEPROM_CHAR:
-		for (i = 0; i < page_size; i++)
+		ee_page_size = param->chip_areas[EEPROM_IDX].page_size;
+		while (page_size > 0)
 		{
-			cmd_buf[0] = 0xA0;
-			cmd_buf[1] = (uint8_t)((addr + i) >> 8);
-			cmd_buf[2] = (uint8_t)((addr + i) >> 0);
-			cmd_buf[3] = 0;
-			spi_io(cmd_buf, 4, buff + i, 3, 1);
+			for (i = 0; i < ee_page_size; i++)
+			{
+				cmd_buf[0] = 0xA0;
+				cmd_buf[1] = (uint8_t)((addr + i) >> 8);
+				cmd_buf[2] = (uint8_t)((addr + i) >> 0);
+				cmd_buf[3] = 0;
+				spi_io(cmd_buf, 4, buff + i, 3, 1);
+			}
+			page_size -= ee_page_size;
+			addr += ee_page_size;
+			buff += ee_page_size;
 		}
 		
 		if (ERROR_OK != commit())

@@ -149,6 +149,7 @@ struct program_area_map_t
 	uint8_t data_pos;
 	int32_t fseg_addr;
 	int32_t fstart_addr;
+	uint16_t fpage_size;
 	enum area_attr_t attr;
 };
 

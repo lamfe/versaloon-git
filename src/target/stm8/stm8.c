@@ -44,8 +44,8 @@
 
 const struct program_area_map_t stm8_program_area_map[] = 
 {
-	{APPLICATION_CHAR, 1, 0, 0, AREA_ATTR_EWR | AREA_ATTR_EP},
-	{0, 0, 0, 0, 0}
+	{APPLICATION_CHAR, 1, 0, 0, 0, AREA_ATTR_EWR | AREA_ATTR_EP},
+	{0, 0, 0, 0, 0, 0}
 };
 
 const struct program_mode_t stm8_program_mode[] = 
@@ -345,6 +345,7 @@ RESULT stm8_leave_program_mode(struct program_context_t *context,
 	switch (context->pi->mode)
 	{
 	case STM8_SWIM:
+		stm8_swim_srst();
 		swim_fini();
 		reset_input();
 		swim_input();

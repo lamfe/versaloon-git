@@ -44,10 +44,10 @@
 
 const struct program_area_map_t psoc1_program_area_map[] = 
 {
-	{APPLICATION_CHAR, 1, 0, 0, AREA_ATTR_EW | AREA_ATTR_NP},
-	{APPLICATION_CHKSUM_CHAR, 1, 0, 0, AREA_ATTR_R},
-	{LOCK_CHAR, 1, 0, 0, AREA_ATTR_W | AREA_ATTR_NP},
-	{0, 0, 0, 0, 0}
+	{APPLICATION_CHAR, 1, 0, 0, 0, AREA_ATTR_EW | AREA_ATTR_NP},
+	{APPLICATION_CHKSUM_CHAR, 1, 0, 0, 0, AREA_ATTR_R},
+	{LOCK_CHAR, 1, 0, 0, 0, AREA_ATTR_W | AREA_ATTR_NP},
+	{0, 0, 0, 0, 0, 0}
 };
 
 const struct program_mode_t psoc1_program_mode[] = 
