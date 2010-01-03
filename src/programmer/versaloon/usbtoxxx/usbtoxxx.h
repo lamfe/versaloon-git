@@ -19,8 +19,6 @@
 #ifndef __USBTOXXX_H_INCLUDED__
 #define __USBTOXXX_H_INCLUDED__
 
-#include "programmer.h"
-
 RESULT usbtoxxx_execute_command(void);
 
 // USB_TO_DELAY

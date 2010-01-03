@@ -472,7 +472,7 @@ RESULT avr8isp_read_target(struct program_context_t *context, char area,
 {
 	struct program_info_t *pi = context->pi;
 	struct chip_param_t *param = context->param;
-	uint8_t cmd_buf[4], tmpbuf[3];
+	uint8_t cmd_buf[4], tmpbuf[4];
 	uint32_t i;
 	RESULT ret = ERROR_OK;
 	
