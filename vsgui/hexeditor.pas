@@ -708,8 +708,6 @@ end;
 
 procedure TFormHexEditor.btnExitClick(Sender: TObject);
 begin
-  FormFindReplace.IsReplace := True;
-  FormFindReplace.ShowModal;
   if DataBuffChangeList.Count > 0 then
   begin
     if mrYes = MessageDlg('Query', 'Data changed, Save?', mtConfirmation,
