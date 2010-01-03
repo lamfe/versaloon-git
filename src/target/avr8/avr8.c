@@ -44,12 +44,12 @@
 
 const struct program_area_map_t avr8_program_area_map[] = 
 {
-	{APPLICATION_CHAR, 1, 0, 0, AREA_ATTR_EWR},
-	{EEPROM_CHAR, 1, 2, 0, AREA_ATTR_EWR},
-	{FUSE_CHAR, 0, 0, 0, AREA_ATTR_WR},
-	{LOCK_CHAR, 0, 0, 0, AREA_ATTR_WR},
-	{CALIBRATION_CHAR, 0, 0, 0, AREA_ATTR_R},
-	{0, 0, 0, 0, 0}
+	{APPLICATION_CHAR, 1, 0, 0, 0, AREA_ATTR_EWR},
+	{EEPROM_CHAR, 1, 2, 0, 256, AREA_ATTR_EWR},
+	{FUSE_CHAR, 0, 0, 0, 0, AREA_ATTR_WR},
+	{LOCK_CHAR, 0, 0, 0, 0, AREA_ATTR_WR},
+	{CALIBRATION_CHAR, 0, 0, 0, 0, AREA_ATTR_R},
+	{0, 0, 0, 0, 0, 0}
 };
 
 const struct program_mode_t avr8_program_mode[] = 

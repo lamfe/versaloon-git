@@ -221,6 +221,7 @@ var
   ComMode: TComMode;
   CurProgrammerInfo: string;
   ProgrammerParameter: string;
+  PreviousPage: string;
 
 const
   DEBUG_LOG_SHOW: boolean = False;
@@ -1067,8 +1068,12 @@ begin
   end
   else
   begin
-    SetLength(TargetFile, 0);
-    cbboxInputFile.Clear;
+    if PreviousPage <> pcMain.ActivePage.Caption then
+    begin
+      SetLength(TargetFile, 0);
+      cbboxInputFile.Clear;
+    end;
+    PreviousPage := pcMain.ActivePage.Caption;
     HideDebugLog();
 
     CurTargetSeries := VSProg_Targets.TargetSeries[pcMain.ActivePage.Tag];
@@ -1246,7 +1251,7 @@ begin
     exit;
   end;
 
-  VSProg_Caller.AddParametersString('-G -Z -ccomisp_stm32 -C' +
+  VSProg_Caller.AddParametersString('-G -Z -sstm32 -mi -C' +
     cbboxCOM.Text + ' ' + ' -x0x08002000 -oe -owf -I"' + fnFW.FileName + '"');
   LogInfo('Running...');
   if VSProg_RunAlgorithm(VSProg_Caller, @VSProg_Parser.OperationParser, 0, False) then

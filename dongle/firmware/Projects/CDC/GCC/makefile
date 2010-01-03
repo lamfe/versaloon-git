@@ -184,7 +184,7 @@ size: $(MAIN_OUT_ELF)
 
 flash: $(MAIN_OUT_PROG)
 	@echo $(STR_DIV)
-	vsprog -ccomisp_stm32 -Z -C "COM3" -I $(MAIN_OUT_HEX) -x0x08002000 -oe -owf
+	vsprog -sstm32 -mi -Z -C "COM3" -I $(MAIN_OUT_HEX) -x0x08002000 -oe -owf
 
 $(ASM_OBJS): $(ASM_SRCS)
 	$(CC) -c $(CFLAGS) $^

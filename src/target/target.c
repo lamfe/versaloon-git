@@ -701,6 +701,11 @@ RESULT target_program(struct program_context_t *context)
 			area_info = &(param->chip_areas[area_idx]);
 			page_size = area_info->page_size;
 			start_addr = area_info->addr;
+			if ((p_map[i].fpage_size > page_size) 
+				&& ((p_map[i].fpage_size % page_size) == 0))
+			{
+				page_size = p_map[i].fpage_size;
+			}
 			
 			prog_area = &(pi->program_areas[area_idx]);
 			ml = &(prog_area->memlist);
@@ -864,6 +869,11 @@ RESULT target_program(struct program_context_t *context)
 			area_info = &(param->chip_areas[area_idx]);
 			page_size = area_info->page_size;
 			start_addr = area_info->addr;
+			if ((p_map[i].fpage_size > page_size) 
+				&& ((p_map[i].fpage_size % page_size) == 0))
+			{
+				page_size = p_map[i].fpage_size;
+			}
 			
 			prog_area = &(pi->program_areas[area_idx]);
 			ml = &(prog_area->memlist);

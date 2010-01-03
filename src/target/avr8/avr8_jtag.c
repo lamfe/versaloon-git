@@ -272,6 +272,7 @@ RESULT avr8jtag_write_target(struct program_context_t *context, char area,
 	uint8_t ir;
 	uint32_t dr;
 	uint32_t i;
+	uint32_t ee_page_size;
 	RESULT ret = ERROR_OK;
 	
 	switch (area)
@@ -305,20 +306,28 @@ RESULT avr8jtag_write_target(struct program_context_t *context, char area,
 		}
 		break;
 	case EEPROM_CHAR:
+		ee_page_size = param->chip_areas[EEPROM_IDX].page_size;
 		AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
 		AVR_JTAG_PROG_EnterEEPROMWrite();
-		AVR_JTAG_PROG_LoadAddrHighByte(addr >> 8);
 		
-		for (i = 0; i < page_size; i++)
+		while (page_size > 0)
 		{
-			AVR_JTAG_PROG_LoadAddrLowByte(addr + i);
-			AVR_JTAG_PROG_LoadDataByte(buff[addr + i]);
-			AVR_JTAG_PROG_LatchData();
+			AVR_JTAG_PROG_LoadAddrHighByte(addr >> 8);
+			for (i = 0; i < ee_page_size; i++)
+			{
+				AVR_JTAG_PROG_LoadAddrLowByte(addr + i);
+				AVR_JTAG_PROG_LoadDataByte(buff[i]);
+				AVR_JTAG_PROG_LatchData();
+			}
+			
+			// write page
+			AVR_JTAG_PROG_WriteEEPROMPage();
+			AVR_JTAG_WaitComplete(AVR_JTAG_PROG_WriteEEPROMPageComplete_CMD);
+			
+			page_size -= ee_page_size;
+			buff += ee_page_size;
+			addr += ee_page_size;
 		}
-		
-		// write page
-		AVR_JTAG_PROG_WriteEEPROMPage();
-		AVR_JTAG_WaitComplete(AVR_JTAG_PROG_WriteEEPROMPageComplete_CMD);
 		
 		if (ERROR_OK != jtag_commit())
 		{
@@ -405,7 +414,8 @@ RESULT avr8jtag_read_target(struct program_context_t *context, char area,
 	struct program_info_t *pi = context->pi;
 	uint8_t ir;
 	uint32_t dr;
-	uint32_t i;
+	uint32_t i, j, k;
+	uint32_t ee_page_size;
 	uint8_t tmpbuf[4], page_buf[256 + 1];
 	RESULT ret = ERROR_OK;
 	
@@ -458,14 +468,23 @@ RESULT avr8jtag_read_target(struct program_context_t *context, char area,
 		memcpy(buff, page_buf, page_size);
 		break;
 	case EEPROM_CHAR:
+		ee_page_size = param->chip_areas[EEPROM_IDX].page_size;
 		AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
 		AVR_JTAG_PROG_EnterEEPROMRead();
 		
-		for (i = 0; i < page_size; i++)
+		j = 0;
+		k = page_size;
+		while (k > 0)
 		{
-			AVR_JTAG_PROG_LoadAddrHighByte(addr >> 8);
-			AVR_JTAG_PROG_LoadAddrLowByte(addr + i);
-			AVR_JTAG_PROG_ReadEEPROM(addr + i, buff[i]);
+			for (i = 0; i < ee_page_size; i++)
+			{
+				AVR_JTAG_PROG_LoadAddrHighByte(addr >> 8);
+				AVR_JTAG_PROG_LoadAddrLowByte(addr + i);
+				AVR_JTAG_PROG_ReadEEPROM(addr + i, page_buf[j + i]);
+			}
+			k -= ee_page_size;
+			addr += ee_page_size;
+			j += ee_page_size;
 		}
 		
 		if (ERROR_OK != jtag_commit())
@@ -473,6 +492,7 @@ RESULT avr8jtag_read_target(struct program_context_t *context, char area,
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
+		memcpy(buff, page_buf, page_size);
 		break;
 	case FUSE_CHAR:
 		// low bits

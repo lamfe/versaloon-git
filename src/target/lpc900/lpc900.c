@@ -45,8 +45,8 @@
 
 const struct program_area_map_t lpc900_program_area_map[] = 
 {
-	{APPLICATION_CHAR, 1, 0, 0, AREA_ATTR_EW | AREA_ATTR_V | AREA_ATTR_RNP},
-	{0, 0, 0, 0, 0}
+	{APPLICATION_CHAR, 1, 0, 0, 0, AREA_ATTR_EW | AREA_ATTR_V | AREA_ATTR_RNP},
+	{0, 0, 0, 0, 0, 0}
 };
 
 const struct program_mode_t lpc900_program_mode[] = 
