@@ -71,15 +71,12 @@ COMM_HANDSHAKE_NONE, COMM_AUXPIN_DISABLE};
 
 void comisp_print_comm_info(uint8_t i)
 {
-	printf("\
-baudrate = %d, datalength = %d, paritybit = %c, stopbit = %c, \
-handshake = %c, auxpin = %c",
-			comisp_chips_param[i].com_mode.baudrate,
-			comisp_chips_param[i].com_mode.datalength,
-			comisp_chips_param[i].com_mode.paritybit,
-			comisp_chips_param[i].com_mode.stopbit,
-			comisp_chips_param[i].com_mode.handshake,
-			comisp_chips_param[i].com_mode.auxpin);
+	printf("baudrate = %d, ", comisp_chips_param[i].com_mode.baudrate);
+	printf("datalength = %d, ", comisp_chips_param[i].com_mode.datalength);
+	printf("paritybit = %c, ", comisp_chips_param[i].com_mode.paritybit);
+	printf("stopbit = %c, ", comisp_chips_param[i].com_mode.stopbit);
+	printf("handshake = %c, ", comisp_chips_param[i].com_mode.handshake);
+	printf("auxpin = %c",comisp_chips_param[i].com_mode.auxpin);
 }
 
 RESULT comisp_parse_argument(char cmd, const char *argu)
