@@ -113,6 +113,7 @@ type
     sbMain:    TStatusBar;
     sedtPower: TSpinEdit;
     sedtFreq:  TSpinEdit;
+    tInit: TTimer;
     tsVsprog:  TTabSheet;
     tsJTAG:    TTabSheet;
     tiMain:    TTrayIcon;
@@ -152,6 +153,7 @@ type
     procedure pcMainPageChanged(Sender: TObject);
     procedure sedtFreqEditingDone(Sender: TObject);
     procedure tiMainClick(Sender: TObject);
+    procedure tInitTimer(Sender: TObject);
 
     procedure CenterControl(ctl: TControl; ref: TControl);
     procedure AdjustComponentColor(Sender: TControl);
@@ -362,6 +364,21 @@ begin
   begin
     combo.ItemIndex := i;
   end;
+end;
+
+procedure TFormMain.tInitTimer(Sender: TObject);
+var
+  ControlLeft: integer;
+begin
+  tInit.Enabled := False;
+  ControlLeft      := (pcMain.ActivePage.Width - gbOpenOCD.Width) div 2;
+  gbOpenOCD.Left   := ControlLeft;
+  gbSVFPlayer.Left := ControlLeft;
+  gbPower.Left     := ControlLeft;
+  gbChipName.Left  := ControlLeft;
+  gbInputFile.Left := ControlLeft;
+  gbOption.Left    := ControlLeft;
+  gbOperation.Left := ControlLeft;
 end;
 
 procedure TFormMain.UpdateTitle();
@@ -896,8 +913,6 @@ begin
 end;
 
 procedure TFormMain.FormShow(Sender: TObject);
-var
-  ControlLeft: integer;
 begin
   FormResize(Sender);
   UpdateShowing;
@@ -927,15 +942,6 @@ begin
 
   FormMain.Width := pnlMain.Width + LOGMEMO_WIDTH + 2;
   memoLog.Width  := LOGMEMO_WIDTH;
-
-  ControlLeft      := (tsJTAG.Width - gbOpenOCD.Width) div 2;
-  gbOpenOCD.Left   := ControlLeft;
-  gbSVFPlayer.Left := ControlLeft;
-  gbPower.Left     := ControlLeft;
-  gbChipName.Left  := ControlLeft;
-  gbInputFile.Left := ControlLeft;
-  gbOption.Left    := ControlLeft;
-  gbOperation.Left := ControlLeft;
   UpdateShowing;
 
   // get existing programmer

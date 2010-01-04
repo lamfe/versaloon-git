@@ -1060,4 +1060,11 @@ object FormMain: TFormMain
     left = 744
     top = 488
   end
+  object tInit: TTimer
+    Enabled = False
+    Interval = 10
+    OnTimer = tInitTimer
+    left = 600
+    top = 488
+  end
 end
