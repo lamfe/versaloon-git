@@ -397,9 +397,6 @@ begin
   CenterControl(lblVSProgDir, dedtVSProg);
   CenterControl(lblOpenOCDDir, dedtOpenOCD);
 
-  FormMain.Width := pnlMain.Width + LOGMEMO_WIDTH + 2;
-  memoLog.Width  := LOGMEMO_WIDTH;
-
   ControlLeft      := (pcMain.ActivePage.Width - gbOpenOCD.Width) div 2;
   gbOpenOCD.Left   := ControlLeft;
   gbSVFPlayer.Left := ControlLeft;
@@ -943,9 +940,6 @@ end;
 
 procedure TFormMain.FormShow(Sender: TObject);
 begin
-  FormResize(Sender);
-  UpdateShowing;
-
   // get existing programmer
   if VSProg_PrepareToRunCLI then
   begin
@@ -965,11 +959,16 @@ begin
     PollThread.Resume;
   end;
 
+  FormResize(Sender);
+  FormMain.Width := pnlMain.Width + LOGMEMO_WIDTH + 2;
+  memoLog.Width  := LOGMEMO_WIDTH;
+
   // Load Setting
   JTAGPage_Init   := False;
   TargetPage_Init := False;
   AboutPage_Init  := False;
   pcMainPageChanged(pcMain);
+  UpdateShowing;
 
   tInit.Enabled := True;
 end;
