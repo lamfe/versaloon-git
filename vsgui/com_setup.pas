@@ -130,24 +130,24 @@ var
   tmpComm: TComMode;
   str_tmp: string;
 begin
-  GetNumericParameter(CommStr, 'baudrate', tmpComm.baudrate);
-  GetNumericParameter(CommStr, 'datalength', tmpComm.datalength);
-  GetLiteralParameter(CommStr, 'paritybit', str_tmp);
+  GetParameter(CommStr, 'baudrate', tmpComm.baudrate);
+  GetParameter(CommStr, 'datalength', tmpComm.datalength);
+  GetParameter(CommStr, 'paritybit', str_tmp);
   if str_tmp <> '' then
   begin
     tmpComm.paritybit := str_tmp[1];
   end;
-  GetLiteralParameter(CommStr, 'stopbit', str_tmp);
+  GetParameter(CommStr, 'stopbit', str_tmp);
   if str_tmp <> '' then
   begin
     tmpComm.stopbit := str_tmp[1];
   end;
-  GetLiteralParameter(CommStr, 'handshake', str_tmp);
+  GetParameter(CommStr, 'handshake', str_tmp);
   if str_tmp <> '' then
   begin
     tmpComm.handshake := str_tmp[1];
   end;
-  GetLiteralParameter(CommStr, 'auxpin', str_tmp);
+  GetParameter(CommStr, 'auxpin', str_tmp);
   if str_tmp <> '' then
   begin
     tmpComm.auxpin := str_tmp[1];

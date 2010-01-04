@@ -19,13 +19,8 @@
 #ifndef __STM8_INTERNAL_H_INCLUDED__
 #define __STM8_INTERNAL_H_INCLUDED__
 
-#define STM8_FLASH_PAGESIZE			128
-#define STM8_FLASH_ADDR				0x008000
-#define STM8_FLASH_DEFAULT			0x00
-
-#define STM8_EE_PAGESIZE			128
-#define STM8_EE_ADDR				0x004000
-#define STM8_EE_DEFAULT				0x00
+// Fuse need complemented value
+#define STM8_PARAM_FUSE_IMP			0
 
 #define STM8_SWIM_CMD_BITLEN		3
 #define STM8_SWIM_CMD_SRST			0x00

@@ -41,7 +41,8 @@ type
   end;
 
 function StrToIntRadix(sData: string; radix: integer): integer;
-function IntToStrRadix(aData, radix: integer): string;
+function IntToStrRadix(aData, radix, minlen: integer): string;
+function IntToStrRadix(aData: QWord; radix, minlen: integer): string;
 
 var
   FormInputDialog: TFormInputDialog;
@@ -53,7 +54,34 @@ const
 
 implementation
 
-function IntToStrRadix(aData, radix: integer): string;
+function IntToStrRadix(aData: QWord; radix, minlen: integer): string;
+var
+  t: integer;
+  r: QWord;
+begin
+  Result := '';
+  if (radix = 0) or (radix > 16) then
+  begin
+    exit;
+  end;
+
+  r := radix;
+  repeat
+    t := aData mod r;
+    if t < 10 then
+      Result := IntToStr(t) + Result
+    else
+      Result := InttoHex(t, 1) + Result;
+    aData := aData div r;
+  until (aData = 0);
+
+  while Length(Result) < minlen do
+  begin
+    Result := '0' + Result;
+  end;
+end;
+
+function IntToStrRadix(aData, radix, minlen: integer): string;
 var
   t: integer;
 begin
@@ -71,6 +99,11 @@ begin
       Result := InttoHex(t, 1) + Result;
     aData := aData div radix;
   until (aData = 0);
+
+  while Length(Result) < minlen do
+  begin
+    Result := '0' + Result;
+  end;
 end;
 
 function StrToIntRadix(sData: string; radix: integer): integer;

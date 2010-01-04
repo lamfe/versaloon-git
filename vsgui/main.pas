@@ -165,11 +165,11 @@ type
 
     { VSProg declarations }
 
-    procedure VSProg_GUIUpdateULCS(Value, bytelen: integer; var edt: TLabeledEdit);
-    procedure VSProg_GUIUpdateFuse(fuse, bytelen: integer);
-    procedure VSProg_GUIUpdateLock(lock, bytelen: integer);
-    procedure VSProg_GUIUpdateUsrSig(sig, bytelen: integer);
-    procedure VSProg_GUIUpdateCali(cali, bytelen: integer);
+    procedure VSProg_GUIUpdateULCS(Value: QWord; bytelen: integer; var edt: TLabeledEdit);
+    procedure VSProg_GUIUpdateFuse(fuse: QWord; bytelen: integer);
+    procedure VSProg_GUIUpdateLock(lock: QWord; bytelen: integer);
+    procedure VSProg_GUIUpdateUsrSig(sig: QWord; bytelen: integer);
+    procedure VSProg_GUIUpdateCali(cali: QWord; bytelen: integer);
     procedure ShowTargetArea(AreaName: char; var Sender: TObject; parser: TParserFunc);
     function VSProg_PrepareToRun(aApplicationName: string): boolean;
     function VSProg_PrepareToRunCLI: boolean;
@@ -429,7 +429,7 @@ begin
   end;
 end;
 
-procedure TFormMain.VSProg_GUIUpdateULCS(Value, bytelen: integer;
+procedure TFormMain.VSProg_GUIUpdateULCS(Value: QWord; bytelen: integer;
   var edt: TLabeledEdit);
 begin
   if bytelen > 0 then
@@ -442,22 +442,22 @@ begin
   end;
 end;
 
-procedure TFormMain.VSProg_GUIUpdateUsrSig(sig, bytelen: integer);
+procedure TFormMain.VSProg_GUIUpdateUsrSig(sig: QWord; bytelen: integer);
 begin
   VSProg_GUIUpdateULCS(sig, bytelen, lbledtUsrSig);
 end;
 
-procedure TFormMain.VSProg_GUIUpdateCali(cali, bytelen: integer);
+procedure TFormMain.VSProg_GUIUpdateCali(cali: QWord; bytelen: integer);
 begin
   VSProg_GUIUpdateULCS(cali, bytelen, lbledtCali);
 end;
 
-procedure TFormMain.VSProg_GUIUpdateLock(lock, bytelen: integer);
+procedure TFormMain.VSProg_GUIUpdateLock(lock: QWord; bytelen: integer);
 begin
   VSProg_GUIUpdateULCS(lock, bytelen, lbledtLock);
 end;
 
-procedure TFormMain.VSProg_GUIUpdateFuse(fuse, bytelen: integer);
+procedure TFormMain.VSProg_GUIUpdateFuse(fuse: QWord; bytelen: integer);
 begin
   VSProg_GUIUpdateULCS(fuse, bytelen, lbledtFuse);
 end;
@@ -628,7 +628,7 @@ begin
     //chkboxFuse.Checked := True;
     index := CurTargetChip.GetAreaIdx(FUSE_CHAR);
     if (index >= 0) and (not CurTargetChip.TargetAreas[index].InFile) and
-      (CurTargetChip.TargetAreas[index].ByteLen <= 4) then
+      (CurTargetChip.TargetAreas[index].ByteLen <= 8) then
     begin
       lbledtFuse.Enabled := True;
       VSProg_GUIUpdateFuse(CurTargetChip.TargetAreas[index].DefaultValue,
@@ -651,7 +651,7 @@ begin
     //chkboxUsrSig.Checked := True;
     index := CurTargetChip.GetAreaIdx(USRSIG_CHAR);
     if (index >= 0) and (not CurTargetChip.TargetAreas[index].InFile) and
-      (CurTargetChip.TargetAreas[index].ByteLen <= 4) then
+      (CurTargetChip.TargetAreas[index].ByteLen <= 8) then
     begin
       lbledtUsrSig.Enabled := True;
       VSProg_GUIUpdateUsrSig(CurTargetChip.TargetAreas[index].DefaultValue,
@@ -1263,7 +1263,7 @@ end;
 
 function TFormMain.VSProg_GetTargetDefineParameters(): string;
 begin
-  if CurTargetSeries.AutoDetect and (cbboxTarget.ItemIndex = 0) then
+  if cbboxTarget.ItemIndex = 0 then
   begin
     Result := 's';
   end
@@ -1484,7 +1484,8 @@ procedure TFormMain.ShowTargetArea(AreaName: char; var Sender: TObject;
   parser: TParserFunc);
 var
   areaidx, fileidx: integer;
-  bytelen, default: integer;
+  bytelen: integer;
+  default: QWord;
   targetdefined:    string;
 begin
   areaidx := CurTargetChip.GetAreaIdx(AreaName);
@@ -2177,7 +2178,7 @@ begin
   begin
     // check disable
     dis := '';
-    GetLiteralParameter(line, 'ban', dis);
+    GetParameter(line, 'ban', dis);
     if (dis = '*') or (Pos(cbboxMode.Text[1], dis) > 0) then
     begin
       // current setting is disabled in current mode
