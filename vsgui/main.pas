@@ -371,6 +371,35 @@ var
   ControlLeft: integer;
 begin
   tInit.Enabled := False;
+
+  // adjust size and position
+  CenterControl(lblTarget, cbboxTarget);
+  CenterControl(btnTargetDetect, cbboxTarget);
+  CenterControl(lblInputFile, cbboxInputFile);
+  CenterControl(btnOpenFile, cbboxInputFile);
+  CenterControl(lblMode, cbboxMode);
+  CenterControl(lbledtAddr, cbboxMode);
+  CenterControl(btnModeSetup, cbboxMode);
+  CenterControl(sedtFreq, cbboxMode);
+  CenterControl(lblKHz, cbboxMode);
+  CenterControl(chkboxNoconnect, lbledtFuse);
+  CenterControl(chkboxNowarning, lbledtCali);
+  CenterControl(lblOpenOCDInterface, cbboxOpenOCDInterface);
+  CenterControl(lblOpenOCDTarget, cbboxOpenOCDTarget);
+  CenterControl(lblOpenOCDScript, cbboxOpenOCDScript);
+  CenterControl(lblOpenOCDOption, edtOpenOCDOption);
+  CenterControl(lblSVFFile, fneditSVFFile);
+  CenterControl(lblSVFOption, edtSVFOption);
+  CenterControl(btnSVFRun, edtSVFOption);
+  CenterControl(btnSetPower, sedtPower);
+  CenterControl(fnFW, cbboxCOM);
+  CenterControl(btnUpdate, cbboxCOM);
+  CenterControl(lblVSProgDir, dedtVSProg);
+  CenterControl(lblOpenOCDDir, dedtOpenOCD);
+
+  FormMain.Width := pnlMain.Width + LOGMEMO_WIDTH + 2;
+  memoLog.Width  := LOGMEMO_WIDTH;
+
   ControlLeft      := (pcMain.ActivePage.Width - gbOpenOCD.Width) div 2;
   gbOpenOCD.Left   := ControlLeft;
   gbSVFPlayer.Left := ControlLeft;
@@ -915,33 +944,6 @@ end;
 procedure TFormMain.FormShow(Sender: TObject);
 begin
   FormResize(Sender);
-  UpdateShowing;
-
-  // adjust size and position
-  CenterControl(lblTarget, cbboxTarget);
-  CenterControl(btnTargetDetect, cbboxTarget);
-  CenterControl(lblInputFile, cbboxInputFile);
-  CenterControl(btnOpenFile, cbboxInputFile);
-  CenterControl(lblMode, cbboxMode);
-  CenterControl(btnModeSetup, cbboxMode);
-  CenterControl(sedtFreq, cbboxMode);
-  CenterControl(chkboxNoconnect, lbledtFuse);
-  CenterControl(chkboxNowarning, lbledtCali);
-  CenterControl(lblOpenOCDInterface, cbboxOpenOCDInterface);
-  CenterControl(lblOpenOCDTarget, cbboxOpenOCDTarget);
-  CenterControl(lblOpenOCDScript, cbboxOpenOCDScript);
-  CenterControl(lblOpenOCDOption, edtOpenOCDOption);
-  CenterControl(lblSVFFile, fneditSVFFile);
-  CenterControl(lblSVFOption, edtSVFOption);
-  CenterControl(btnSVFRun, edtSVFOption);
-  CenterControl(btnSetPower, sedtPower);
-  CenterControl(fnFW, cbboxCOM);
-  CenterControl(btnUpdate, cbboxCOM);
-  CenterControl(lblVSProgDir, dedtVSProg);
-  CenterControl(lblOpenOCDDir, dedtOpenOCD);
-
-  FormMain.Width := pnlMain.Width + LOGMEMO_WIDTH + 2;
-  memoLog.Width  := LOGMEMO_WIDTH;
   UpdateShowing;
 
   // get existing programmer
