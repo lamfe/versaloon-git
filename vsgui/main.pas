@@ -968,6 +968,8 @@ begin
   TargetPage_Init := False;
   AboutPage_Init  := False;
   pcMainPageChanged(pcMain);
+
+  tInit.Enabled := True;
 end;
 
 procedure TFormMain.lbledtExtraParaKeyPress(Sender: TObject; var Key: char);
