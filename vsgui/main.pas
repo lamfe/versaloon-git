@@ -868,7 +868,7 @@ begin
   end;
 
   // load last settings
-  str_tmp := xmlcfgMain.GetValue('activepage', 'JTAG');
+  str_tmp := xmlcfgMain.GetValue('activepage', 'About');
   for i := 0 to pcMain.PageCount - 1 do
   begin
     if pcMain.Page[i].Caption = str_tmp then

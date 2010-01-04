@@ -2,9 +2,10 @@ program vsgui;
 
 {$mode objfpc}{$H+}
 
-uses {$IFDEF UNIX}
+uses
+  {$IFDEF UNIX}
   cthreads,
-  cmems, {$ENDIF}
+  {$ENDIF}
   Interfaces, // this includes the LCL widgetset
   Forms,
   LResources,
