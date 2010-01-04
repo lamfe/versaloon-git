@@ -45,6 +45,8 @@
 const struct program_area_map_t stm8_program_area_map[] = 
 {
 	{APPLICATION_CHAR, 1, 0, 0, 0, AREA_ATTR_EWR | AREA_ATTR_EP},
+	{EEPROM_CHAR, 1, 0, 0, 0, AREA_ATTR_EWR | AREA_ATTR_EP},
+	{FUSE_CHAR, 0, 0, 0, 0, AREA_ATTR_WR},
 	{0, 0, 0, 0, 0, 0}
 };
 
@@ -210,13 +212,13 @@ static RESULT stm8_erase_block(uint32_t block_addr)
 	return ERROR_OK;
 }
 
-static RESULT stm8_program_block(uint32_t block_addr, uint8_t *block_buff)
+static RESULT stm8_program_block(uint32_t block_addr, uint8_t *block_buff, uint8_t block_size)
 {
 	uint8_t buff[1];
 	
 	stm8_swim_wotf_reg(STM8_REG_FLASH_CR2, STM8_FLASH_CR2_FPRG);
 	stm8_swim_wotf_reg(STM8_REG_FLASH_NCR2, (uint8_t)~STM8_FLASH_CR2_FPRG);
-	stm8_swim_wotf(block_addr, block_buff, STM8_FLASH_PAGESIZE);
+	stm8_swim_wotf(block_addr, block_buff, block_size);
 	delay_ms(3);
 	stm8_swim_rotf(STM8_REG_FLASH_IAPSR, buff, 1);
 	if (ERROR_OK != commit())
@@ -374,6 +376,7 @@ RESULT stm8_erase_target(struct program_context_t *context, char area,
 		switch (area)
 		{
 		case APPLICATION_CHAR:
+		case EEPROM_CHAR:
 			ret = stm8_erase_block(addr);
 			break;
 		default:
@@ -402,7 +405,8 @@ RESULT stm8_write_target(struct program_context_t *context, char area,
 		switch (area)
 		{
 		case APPLICATION_CHAR:
-			ret = stm8_program_block(addr, buff);
+		case EEPROM_CHAR:
+			ret = stm8_program_block(addr, buff, (uint8_t)page_size);
 			break;
 		default:
 			ret = ERROR_FAIL;
@@ -432,6 +436,7 @@ RESULT stm8_read_target(struct program_context_t *context, char area,
 			context->pi->chip_id = 0;
 			break;
 		case APPLICATION_CHAR:
+		case EEPROM_CHAR:
 			stm8_swim_rotf(addr, buff, (uint8_t)page_size);
 			ret = commit();
 			break;

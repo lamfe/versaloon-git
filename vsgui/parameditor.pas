@@ -10,33 +10,33 @@ uses
 
 type
   TParam_Warning = record
-    mask:  integer;
+    mask:  QWord;
     Value: integer;
     msg:   string;
   end;
 
   TParam_Choice = record
-    Value: integer;
+    Value: QWord;
     Text:  string;
   end;
 
   TParam_Setting = record
     Name:      string;
     info:      string;
-    mask:      integer;
+    mask:      QWord;
     use_checkbox: boolean;
     use_edit:  boolean;
     radix:     integer;
     shift:     integer;
-    Checked:   integer;
-    unchecked: integer;
+    Checked:   QWord;
+    unchecked: QWord;
     Enabled:   boolean;
     bytelen:   integer;
     choices:   array of TParam_Choice;
   end;
 
   TParam_Record = record
-    init_value: integer;
+    init_value: QWord;
     warnings:   array of TParam_Warning;
     settings:   array of TParam_Setting;
   end;
@@ -65,16 +65,17 @@ type
     ParaCheckArr:    array of TCheckBox;
     ParaEdtValueArr: array of TEdit;
     Param_name:      string;
-    Init_Value, Param_Value, Value_ByteLen: integer;
+    Init_Value, Param_Value: QWord;
+    Value_ByteLen:   integer;
     EnableWarning:   boolean;
     SettingParameter: boolean;
   public
     { public declarations }
     function GetResult(): integer;
-    function ParseSettingMaskValue(Sender: TObject; var mask, Value: integer): boolean;
+    function ParseSettingMaskValue(Sender: TObject; var mask, Value: QWord): boolean;
     procedure ValueToSetting();
     procedure UpdateTitle();
-    procedure SetParameter(init, bytelen, Value: integer; title: string;
+    procedure SetParameter(init: QWord; bytelen: integer; Value: QWord; title: string;
       warnEnabled: boolean);
     function ParseLine(line: string): boolean;
     procedure FreeRecord();
@@ -116,7 +117,7 @@ end;
 
 procedure TFormParaEditor.SettingChange(Sender: TObject);
 var
-  mask, Value: integer;
+  mask, Value: QWord;
 begin
   if SettingParameter then
   begin
@@ -241,7 +242,7 @@ begin
   Result := Param_Value;
 end;
 
-procedure TFormParaEditor.SetParameter(init, bytelen, Value: integer;
+procedure TFormParaEditor.SetParameter(init: QWord; bytelen: integer; Value: QWord;
   title: string; warnEnabled: boolean);
 begin
   Init_Value    := init;
@@ -252,7 +253,7 @@ begin
 end;
 
 function TFormParaEditor.ParseSettingMaskValue(Sender: TObject;
-  var mask, Value: integer): boolean;
+  var mask, Value: QWord): boolean;
 var
   i: integer;
   str_tmp: string;
@@ -311,7 +312,7 @@ end;
 procedure TFormParaEditor.ValueToSetting();
 var
   i, j:  integer;
-  Value: integer;
+  Value: QWord;
   found: boolean;
 begin
   SettingParameter := True;
@@ -321,7 +322,8 @@ begin
     if Param_Record.settings[i].use_edit then
     begin
       Value := Value shr Param_Record.settings[i].shift;
-      ParaEdtValueArr[i].Text := IntToStrRadix(Value, Param_Record.settings[i].radix);
+      ParaEdtValueArr[i].Text :=
+        IntToStrRadix(Value, Param_Record.settings[i].radix, 0);
       while Length(ParaEdtValueArr[i].Text) <
         GetStringLen_To_ByteLen(Param_Record.settings[i].bytelen,
           Param_Record.settings[i].radix) do
@@ -374,7 +376,8 @@ end;
 procedure TFormParaEditor.FormShow(Sender: TObject);
 var
   i, j: integer;
-  settings_num, choices_num, section_num, mask: integer;
+  settings_num, choices_num, section_num: integer;
+  mask: QWord;
 begin
   bCancel := True;
 
@@ -496,45 +499,44 @@ function TFormParaEditor.ParseLine(line: string): boolean;
 var
   i, j, num, dis: integer;
 begin
-  result := True;
+  Result := True;
   if Pos('warning: ', line) = 1 then
   begin
     i := Length(Param_Record.warnings) + 1;
     SetLength(Param_Record.warnings, i);
-    GetNumericParameter(line, 'mask', Param_Record.warnings[i - 1].mask);
-    GetNumericParameter(line, 'value', Param_Record.warnings[i - 1].Value);
-    GetLiteralParameter(line, 'msg', Param_Record.warnings[i - 1].msg);
+    GetParameter(line, 'mask', Param_Record.warnings[i - 1].mask);
+    GetParameter(line, 'value', Param_Record.warnings[i - 1].Value);
+    GetParameter(line, 'msg', Param_Record.warnings[i - 1].msg);
   end
   else if Pos('setting: ', line) = 1 then
   begin
     i := Length(Param_Record.settings) + 1;
     SetLength(Param_Record.settings, i);
     SetLength(Param_Record.settings[i - 1].choices, 0);
-    GetLiteralParameter(line, 'name', Param_Record.settings[i - 1].Name);
-    GetNumericParameter(line, 'mask', Param_Record.settings[i - 1].mask);
+    GetParameter(line, 'name', Param_Record.settings[i - 1].Name);
+    GetParameter(line, 'mask', Param_Record.settings[i - 1].mask);
     Param_Record.settings[i - 1].bytelen := 0;
-    GetNumericParameter(line, 'bytelen', Param_Record.settings[i - 1].bytelen);
+    GetParameter(line, 'bytelen', Param_Record.settings[i - 1].bytelen);
     Param_Record.settings[i - 1].radix := 0;
-    GetNumericParameter(line, 'radix', Param_Record.settings[i - 1].radix);
+    GetParameter(line, 'radix', Param_Record.settings[i - 1].radix);
     if (Param_Record.settings[i - 1].radix < 2) or
       (Param_Record.settings[i - 1].radix > 16) then
     begin
       Param_Record.settings[i - 1].radix := 10;
     end;
-    GetNumericParameter(line, 'shift', Param_Record.settings[i - 1].shift);
-    GetLiteralParameter(line, 'info', Param_Record.settings[i - 1].info);
+    GetParameter(line, 'shift', Param_Record.settings[i - 1].shift);
+    GetParameter(line, 'info', Param_Record.settings[i - 1].info);
     Param_Record.settings[i - 1].use_checkbox := False;
-    if GetNumericParameter(line, 'checked', Param_Record.settings[i - 1].Checked) then
+    if GetParameter(line, 'checked', Param_Record.settings[i - 1].Checked) then
     begin
       Param_Record.settings[i - 1].use_checkbox := True;
     end;
-    if GetNumericParameter(line, 'unchecked', Param_Record.settings[i -
-      1].unchecked) then
+    if GetParameter(line, 'unchecked', Param_Record.settings[i - 1].unchecked) then
     begin
       Param_Record.settings[i - 1].use_checkbox := True;
     end;
     dis := 0;
-    GetNumericParameter(line, 'disabled', dis);
+    GetParameter(line, 'disabled', dis);
     if dis > 0 then
     begin
       Param_Record.settings[i - 1].Enabled := False;
@@ -544,7 +546,7 @@ begin
       Param_Record.settings[i - 1].Enabled := True;
     end;
     num := 0;
-    GetNumericParameter(line, 'num_of_choices', num);
+    GetParameter(line, 'num_of_choices', num);
     if not Param_Record.settings[i - 1].use_checkbox and (num = 0) then
     begin
       Param_Record.settings[i - 1].use_edit := True;
@@ -559,9 +561,8 @@ begin
     i := Length(Param_Record.settings);
     j := Length(Param_Record.settings[i - 1].choices) + 1;
     SetLength(Param_Record.settings[i - 1].choices, j);
-    GetNumericParameter(line, 'value', Param_Record.settings[i -
-      1].choices[j - 1].Value);
-    GetLiteralParameter(line, 'text', Param_Record.settings[i - 1].choices[j - 1].Text);
+    GetParameter(line, 'value', Param_Record.settings[i - 1].choices[j - 1].Value);
+    GetParameter(line, 'text', Param_Record.settings[i - 1].choices[j - 1].Text);
   end;
 end;
 

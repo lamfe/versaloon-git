@@ -117,11 +117,11 @@ extern const struct target_area_name_t target_area_name[NUM_OF_TARGET_AREA];
 struct program_area_t
 {
 	uint8_t *buff;
-	uint32_t value;
+	uint64_t value;
 	uint32_t size;
 	struct memlist *memlist;
 	uint8_t *checksum_buff;
-	uint32_t checksum_value;
+	uint64_t checksum_value;
 	uint32_t checksum_size;
 	struct memlist *checksum_memlist;
 };
@@ -169,7 +169,7 @@ struct chip_area_info_t
 	uint32_t addr;
 	uint32_t page_size;
 	uint32_t page_num;
-	uint32_t default_value;
+	uint64_t default_value;
 	uint32_t size;
 };
 
@@ -233,14 +233,14 @@ struct chip_series_t
 
 struct chip_fl_warning_t
 {
-	uint32_t mask;
-	uint32_t value;
+	uint64_t mask;
+	uint64_t value;
 	char *msg;
 };
 
 struct chip_fl_choice_t
 {
-	uint32_t value;
+	uint64_t value;
 	char *text;
 };
 
@@ -248,14 +248,14 @@ struct chip_fl_setting_t
 {
 	char *name;
 	char *info;
-	uint32_t mask;
+	uint64_t mask;
 	char *ban;
 	uint8_t use_checkbox;
 	uint8_t use_edit;
 	uint8_t shift;
 	uint8_t radix;
-	uint32_t checked;
-	uint32_t unchecked;
+	uint64_t checked;
+	uint64_t unchecked;
 	uint8_t bytelen;
 	uint16_t num_of_choices;
 	struct chip_fl_choice_t *choices;
@@ -263,7 +263,7 @@ struct chip_fl_setting_t
 
 struct chip_fl_t
 {
-	uint32_t init_value;
+	uint64_t init_value;
 	uint16_t num_of_fl_warnings;
 	struct chip_fl_warning_t *warnings;
 	uint16_t num_of_fl_settings;

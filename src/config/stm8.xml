@@ -8,9 +8,44 @@
     <app_default>0x00</app_default>
     <app_addr>0x008000</app_addr>
     <app_seg>0</app_seg>
+    <ee_page_size>128</ee_page_size>
+    <ee_page_num>16</ee_page_num>
+    <ee_default>0x00</ee_default>
+    <ee_addr>0x004000</ee_addr>
+    <ee_seg>0</ee_seg>
+    <fuse init="0x0000000000000000" bytesize="8" />
   </chip>
   <chip name="stm8s207sbt6">
     <program_mode>si</program_mode>
     <app_page_num>1024</app_page_num>
+    <ee_page_num>16</ee_page_num>
+    <fuse init="0x0000000000000000" bytesize="8">
+      <setting name="ROP" mask="0x00000000000000FF" info="Read-out protection" checked="0xAA" unchecked="0" />
+      <setting name="UBC" mask="0x000000000000FF00" info="User boot code" radix="16" shift="8" bytelen="1"/>
+      <setting name="AFR" mask="0x0000000000FF0000" info="Alternate function remapping" radix="16" shift="16" bytelen="1"/>
+      <setting name="WWDG_HALT" mask="0x0000000001000000" info="Window watchdog reset on halt" unchecked="0" />
+      <setting name="WWDG_HW" mask="0x0000000002000000" info="Window watchdog activation" unchecked="0" />
+      <setting name="IWDG_HW" mask="0x0000000004000000" info="Independent watchdog" unchecked="0" />
+      <setting name="LIS_EN" mask="0x0000000008000000" info="Low speed internal clock enable" unchecked="0" />
+      <setting name="PRSC" mask="0x0000000300000000" info="AWU clock prescaler">
+        <choice value="0x0000000300000000" text="4 Mhz to 128 kHz prescaler" />
+        <choice value="0x0000000200000000" text="8 Mhz to 128 kHz prescaler" />
+        <choice value="0x0000000100000000" text="16 Mhz to 128 kHz prescaler" />
+        <choice value="0x0000000000000000" text="24 Mhz to 128 kHz prescaler" />
+      </setting>
+      <setting name="CKAWUSEL" mask="0x0000000400000000" info="Auto wakeup unit/clock">
+        <choice value="0x0000000400000000" text="HSE clock with prescaler selected as clock source for AWU" />
+        <choice value="0x0000000000000000" text="LSI clock source selected for AWU" />
+      </setting>
+      <setting name="EXTCLK" mask="0x0000000800000000" info="External clock selection">
+        <choice value="0x0000000800000000" text="External clock signal on OSCIN" />
+        <choice value="0x0000000000000000" text="External crystal connected to OSCIN/OSCOUT" />
+      </setting>
+      <setting name="HSECNT" mask="0x0000FF0000000000" info="HSE crystal oscillator stabilization time" radix="16" shift="40" bytelen="1" />
+      <setting name="WAITSTATE" mask="0x0001000000000000" info="Wait state configuration" unchecked="0" />
+      <setting name="BL" mask="0xFF00000000000000" info="Bootloader option byte" radix="16" shift="56" bytelen="1"/>
+      <setting name="ALL" mask="0xFFFFFFFFFFFFFFFF" info="Option bytes" radix="16" shift="0" bytelen="8" />
+    </fuse>
   </chip>
+  <param0>1</param0>
 </series>

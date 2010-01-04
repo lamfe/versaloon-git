@@ -17,7 +17,7 @@ type
     FSegAddr:   cardinal;
     FStartAddr: cardinal;
     FByteLen:   integer;
-    FDefaultValue: cardinal;
+    FDefaultValue: QWord;
     FInFile:    boolean;
   public
     constructor Create(aName: char);
@@ -26,7 +26,7 @@ type
     property SegAddr: cardinal Read FSegAddr;
     property StartAddr: cardinal Read FStartAddr;
     property ByteLen: integer Read FByteLen;
-    property DefaultValue: cardinal Read FDefaultValue;
+    property DefaultValue: QWord Read FDefaultValue;
   end;
 
   { TTargetChip }
@@ -232,16 +232,16 @@ begin
 
     if FAreas[2 + i * 2] = '1' then
     begin
-      CurValid := GetNumericParameter(line, AreaChar + '_addr', CurArea.FStartAddr) or CurValid;
-      CurValid := GetNumericParameter(line, AreaChar + '_seg', CurArea.FSegAddr) or CurValid;
+      CurValid := GetParameter(line, AreaChar + '_addr', CurArea.FStartAddr) or CurValid;
+      CurValid := GetParameter(line, AreaChar + '_seg', CurArea.FSegAddr) or CurValid;
       CurArea.FInFile := True;
     end
     else
     begin
       CurArea.FInFile := False;
     end;
-    CurValid := GetNumericParameter(line, AreaChar + '_bytelen', CurArea.FByteLen) or CurValid;
-    CurValid := GetNumericParameter(line, AreaChar + '_default', CurArea.FDefaultValue) or CurValid;
+    CurValid := GetParameter(line, AreaChar + '_bytelen', CurArea.FByteLen) or CurValid;
+    CurValid := GetParameter(line, AreaChar + '_default', CurArea.FDefaultValue) or CurValid;
     if CurValid then
     begin
       tmpArea := GetArea(AreaChar);
@@ -401,13 +401,13 @@ begin
     CurFakeArea.FFakeSeg := 0;
     CurFakeArea.FFakeSegEn := False;
 
-    tmpBool  := GetNumericParameter(line, AreaChar + '_faddr', CurFakeArea.FFakeAddr);
+    tmpBool  := GetParameter(line, AreaChar + '_faddr', CurFakeArea.FFakeAddr);
     if tmpBool then
     begin
       CurFakeArea.FFakeAddrEn := True;
       CurValid := True;
     end;
-    tmpBool  := GetNumericParameter(line, AreaChar + '_fseg', CurFakeArea.FFakeSeg);
+    tmpBool  := GetParameter(line, AreaChar + '_fseg', CurFakeArea.FFakeSeg);
     if tmpBool then
     begin
       CurFakeArea.FFakeSegEn := True;
@@ -614,11 +614,11 @@ begin
         FAreas := '';
         FExtraStr := '';
         // ID
-        GetNumericParameter(line, 'id', FID);
+        GetParameter(line, 'id', FID);
         // Mode
-        GetLiteralParameter(line, 'mode', FMode);
+        GetParameter(line, 'mode', FMode);
         // Areas
-        GetLiteralParameter(line, 'area', FAreas);
+        GetParameter(line, 'area', FAreas);
         if Pos('C', FCurFeature) > 0 then
         begin
           // ExtraStr as COM Setting

@@ -612,7 +612,7 @@ Parse_Operation:
 				free_all_and_exit(EXIT_FAILURE);
 			}
 			program_info.program_areas[optc].value = 
-												strtoul(&optarg[1], NULL, 0);
+												strtoull(&optarg[1], NULL, 0);
 			program_info.areas_defined |= target_area_mask(optarg[0]);
 			break;
 		case 'I':
