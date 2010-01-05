@@ -759,16 +759,14 @@ RESULT versaloon_download_mass_product_data(const char *name, uint8_t *buffer,
 	// verify checksum
 	if (ERROR_OK != versaloon_checksum_mass_product_data(&inlen, (uint16_t)len))
 	{
-		LOG_WARNING(_GETTEXT(ERRMSG_FAILURE_OPERATION_MESSAGE), 
-				  "get checksum of mass product data", "verify omitted!!");
+		LOG_WARNING(_GETTEXT(ERRMSG_FAILURE_READ), "checksum");
 	}
 	else
 	{
 		if (checksum != inlen)
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_VERIFY_TARGET_04X), 
-						  "checksum", inlen, checksum);
-			return ERRCODE_FAILURE_VERIFY_TARGET;
+			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_VERIFY), "checksum");
+			return ERRCODE_FAILURE_VERIFY;
 		}
 		else
 		{

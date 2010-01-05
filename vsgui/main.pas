@@ -113,7 +113,7 @@ type
     sbMain:    TStatusBar;
     sedtPower: TSpinEdit;
     sedtFreq:  TSpinEdit;
-    tInit: TTimer;
+    tInit:     TTimer;
     tsVsprog:  TTabSheet;
     tsJTAG:    TTabSheet;
     tiMain:    TTrayIcon;
@@ -167,7 +167,8 @@ type
 
     { VSProg declarations }
 
-    procedure VSProg_GUIUpdateULCS(Value: QWord; bytelen: integer; var edt: TLabeledEdit);
+    procedure VSProg_GUIUpdateULCS(Value: QWord; bytelen: integer;
+      var edt: TLabeledEdit);
     procedure VSProg_GUIUpdateFuse(fuse: QWord; bytelen: integer);
     procedure VSProg_GUIUpdateLock(lock: QWord; bytelen: integer);
     procedure VSProg_GUIUpdateUsrSig(sig: QWord; bytelen: integer);
@@ -209,8 +210,8 @@ type
   end;
 
 var
-  FormMain: TFormMain;
-  PollThread: TPollThread;
+  FormMain:     TFormMain;
+  PollThread:   TPollThread;
   VSProg_Taken_By_Polling: boolean;
   VSProg_Version: string;
   VSProg_Caller: TCLI_Caller;
@@ -220,7 +221,7 @@ var
   OpenOCD_Exists: boolean;
   CurTargetChip: TTargetChip;
   CurTargetSeries: TTargetSeries;
-  ComMode: TComMode;
+  ComMode:      TComMode;
   CurProgrammerInfo: string;
   ProgrammerParameter: string;
   PreviousPage: string;
@@ -318,7 +319,7 @@ begin
       VSProg_Caller.RemoveAllParameters();
       VSProg_Caller.AddParameter('L');
       VSProg_Parser.Prepare();
-      VSProg_Parser.ParserFunc := @VSProg_Programmer.ProgrammerParser;
+      VSProg_Parser.ParserFunc      := @VSProg_Programmer.ProgrammerParser;
       VSProg_Parser.LogOutputEnable := False;
       VSProg_Caller.bProcessMessage := False;
       VSProg_Caller.Run(@VSProg_Parser.CommonParser, False, True);
@@ -558,7 +559,7 @@ begin
   else if not append then
   begin
     lbledtAddr.Enabled := False;
-    lbledtAddr.Text := '';
+    lbledtAddr.Text    := '';
   end;
 
   if Pos('A', para) > 0 then
@@ -1147,19 +1148,19 @@ begin
           ComboBoxSetText(cbboxInputFile, xmlcfgMain.GetValue('target/filename', ''));
           if lbledtFuse.Enabled then
           begin
-            lbledtFuse.Text      := xmlcfgMain.GetValue('target/fuse', '');
+            lbledtFuse.Text := xmlcfgMain.GetValue('target/fuse', '');
           end;
           if lbledtLock.Enabled then
           begin
-            lbledtLock.Text      := xmlcfgMain.GetValue('target/lock', '');
+            lbledtLock.Text := xmlcfgMain.GetValue('target/lock', '');
           end;
           if lbledtCali.Enabled then
           begin
-            lbledtCali.Text      := xmlcfgMain.GetValue('target/cali', '');
+            lbledtCali.Text := xmlcfgMain.GetValue('target/cali', '');
           end;
           if lbledtUsrSig.Enabled then
           begin
-            lbledtUsrSig.Text    := xmlcfgMain.GetValue('target/usrsig', '');
+            lbledtUsrSig.Text := xmlcfgMain.GetValue('target/usrsig', '');
           end;
           if chkboxNoconnect.Enabled then
           begin
@@ -1171,19 +1172,19 @@ begin
           end;
           if chkboxApp.Enabled then
           begin
-            chkboxApp.Checked    := xmlcfgMain.GetValue('target/flashen', False);
+            chkboxApp.Checked := xmlcfgMain.GetValue('target/flashen', False);
           end;
           if chkboxEE.Enabled then
           begin
-            chkboxEE.Checked     := xmlcfgMain.GetValue('target/eepromen', False);
+            chkboxEE.Checked := xmlcfgMain.GetValue('target/eepromen', False);
           end;
           if chkboxFuse.Enabled then
           begin
-            chkboxFuse.Checked   := xmlcfgMain.GetValue('target/fuseen', False);
+            chkboxFuse.Checked := xmlcfgMain.GetValue('target/fuseen', False);
           end;
           if chkboxLock.Enabled then
           begin
-            chkboxLock.Checked   := xmlcfgMain.GetValue('target/locken', False);
+            chkboxLock.Checked := xmlcfgMain.GetValue('target/locken', False);
           end;
           if chkboxUsrSig.Enabled then
           begin
@@ -1191,11 +1192,11 @@ begin
           end;
           if chkboxCali.Enabled then
           begin
-            chkboxCali.Checked   := xmlcfgMain.GetValue('target/calien', False);
+            chkboxCali.Checked := xmlcfgMain.GetValue('target/calien', False);
           end;
           if chkboxMP.Enabled then
           begin
-            chkboxMP.Checked     := xmlcfgMain.GetValue('target/mass', False);
+            chkboxMP.Checked := xmlcfgMain.GetValue('target/mass', False);
           end;
           chkboxEraseBeforeWrite.Checked := xmlcfgMain.GetValue('target/ebw', False);
           chkboxVerifyAfterWrite.Checked := xmlcfgMain.GetValue('target/vaw', False);
@@ -1495,7 +1496,7 @@ var
   areaidx, fileidx: integer;
   bytelen: integer;
   default: QWord;
-  targetdefined:    string;
+  targetdefined: string;
 begin
   areaidx := CurTargetChip.GetAreaIdx(AreaName);
   if areaidx < 0 then
@@ -1560,8 +1561,8 @@ begin
       begin
         exit;
       end;
-      VSProg_GUIUpdateULCS(StrToInt(VSProg_Parser.ResultStrings.Strings[0]) and
-        default, bytelen, TLabeledEdit(Sender));
+      VSProg_GUIUpdateULCS(StrToIntRadix(VSProg_Parser.ResultStrings.Strings[0], 16),
+        bytelen, TLabeledEdit(Sender));
     end;
 
     // call 'vsprog -Ppara' to extract para settings
@@ -1899,7 +1900,7 @@ begin
   begin
     xmlcfgMain.SetValue('target/calien', chkboxCali.Checked);
   end;
-  if  chkboxMP.Enabled then
+  if chkboxMP.Enabled then
   begin
     xmlcfgMain.SetValue('target/mass', chkboxMP.Checked);
   end;

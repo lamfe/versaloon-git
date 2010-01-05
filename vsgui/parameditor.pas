@@ -13,6 +13,7 @@ type
     mask:  QWord;
     Value: integer;
     msg:   string;
+    ban:   boolean;
   end;
 
   TParam_Choice = record
@@ -48,7 +49,7 @@ type
     btnCancel: TButton;
     pnlSettings: TPanel;
     pnlButton: TPanel;
-    tInit: TTimer;
+    tInit:     TTimer;
     procedure btnOKClick(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: boolean);
     procedure FormKeyPress(Sender: TObject; var Key: char);
@@ -78,8 +79,8 @@ type
     function ParseSettingMaskValue(Sender: TObject; var mask, Value: QWord): boolean;
     procedure ValueToSetting();
     procedure UpdateTitle();
-    procedure SetParameter(init: QWord; bytelen: integer; Value: QWord; title: string;
-      warnEnabled: boolean);
+    procedure SetParameter(init: QWord; bytelen: integer; Value: QWord;
+      title: string; warnEnabled: boolean);
     function ParseLine(line: string): boolean;
     procedure FreeRecord();
   end;
@@ -148,34 +149,34 @@ begin
     end;
     mask := mask or Param_Record.settings[i].mask;
 
-    ParaEdtNameArr[i].Top  := TOP_MARGIN + i * (Y_MARGIN + ITEM_HEIGHT) +
+    ParaEdtNameArr[i].Top    := TOP_MARGIN + i * (Y_MARGIN + ITEM_HEIGHT) +
       section_num * SECTION_DIV_HEIGHT;
-    ParaEdtNameArr[i].Left := LEFT_MARGIN;
-    ParaEdtNameArr[i].Width := EDT_WIDTH;
+    ParaEdtNameArr[i].Left   := LEFT_MARGIN;
+    ParaEdtNameArr[i].Width  := EDT_WIDTH;
     ParaEdtNameArr[i].Height := ITEM_HEIGHT;
     if Param_Record.settings[i].use_edit then
     begin
-      ParaEdtValueArr[i].Top  :=
+      ParaEdtValueArr[i].Top    :=
         TOP_MARGIN + i * (Y_MARGIN + ITEM_HEIGHT) + section_num * SECTION_DIV_HEIGHT;
-      ParaEdtValueArr[i].Width := COMBO_WIDTH;
-      ParaEdtValueArr[i].Left := LEFT_MARGIN + EDT_WIDTH + X_MARGIN;
+      ParaEdtValueArr[i].Width  := COMBO_WIDTH;
+      ParaEdtValueArr[i].Left   := LEFT_MARGIN + EDT_WIDTH + X_MARGIN;
       ParaEdtValueArr[i].Height := ITEM_HEIGHT;
       CenterControl(ParaEdtValueArr[i], ParaEdtNameArr[i]);
     end
     else if Param_Record.settings[i].use_checkbox then
     begin
-      ParaCheckArr[i].Top  := TOP_MARGIN + i * (Y_MARGIN + ITEM_HEIGHT) +
+      ParaCheckArr[i].Top    := TOP_MARGIN + i * (Y_MARGIN + ITEM_HEIGHT) +
         section_num * SECTION_DIV_HEIGHT;
-      ParaCheckArr[i].Left := LEFT_MARGIN + EDT_WIDTH + X_MARGIN;
+      ParaCheckArr[i].Left   := LEFT_MARGIN + EDT_WIDTH + X_MARGIN;
       ParaCheckArr[i].Height := ITEM_HEIGHT;
       CenterControl(ParaCheckArr[i], ParaEdtNameArr[i]);
     end
     else
     begin
-      ParaComboArr[i].Top  := TOP_MARGIN + i * (Y_MARGIN + ITEM_HEIGHT) +
+      ParaComboArr[i].Top    := TOP_MARGIN + i * (Y_MARGIN + ITEM_HEIGHT) +
         section_num * SECTION_DIV_HEIGHT;
-      ParaComboArr[i].Left := LEFT_MARGIN + EDT_WIDTH + X_MARGIN;
-      ParaComboArr[i].Width := COMBO_WIDTH;
+      ParaComboArr[i].Left   := LEFT_MARGIN + EDT_WIDTH + X_MARGIN;
+      ParaComboArr[i].Width  := COMBO_WIDTH;
       ParaComboArr[i].Height := ITEM_HEIGHT;
       CenterControl(ParaComboArr[i], ParaEdtNameArr[i]);
     end;
@@ -238,19 +239,25 @@ begin
 
   CanClose := True;
 
-  if not bCancel and EnableWarning then
+  if not bCancel then
   begin
     for i := low(Param_Record.warnings) to high(Param_Record.warnings) do
     begin
       if (Param_Value and Param_Record.warnings[i].mask) =
         Param_Record.warnings[i].Value then
       begin
-        if mrNo = MessageDlg(Param_Record.warnings[i].msg, mtWarning,
-          [mbYes, mbNo], 0) then
+        if Param_Record.warnings[i].ban then
+        begin
+          CanClose := False;
+          MessageDlg(Param_Record.warnings[i].msg, mtError, [mbOK], 0);
+          break;
+        end
+        else if EnableWarning and (mrNo = MessageDlg(Param_Record.warnings[i].msg,
+          mtWarning, [mbYes, mbNo], 0)) then
         begin
           bCancel  := True;
           CanClose := False;
-          exit;
+          break;
         end;
       end;
     end;
@@ -309,8 +316,8 @@ begin
   Result := Param_Value;
 end;
 
-procedure TFormParaEditor.SetParameter(init: QWord; bytelen: integer; Value: QWord;
-  title: string; warnEnabled: boolean);
+procedure TFormParaEditor.SetParameter(init: QWord; bytelen: integer;
+  Value: QWord; title: string; warnEnabled: boolean);
 begin
   Init_Value    := init;
   Value_ByteLen := bytelen;
@@ -482,31 +489,31 @@ begin
     ParaEdtNameArr[i].ReadOnly := True;
     if Param_Record.settings[i].use_edit then
     begin
-      ParaEdtValueArr[i]      := TEdit.Create(Self);
+      ParaEdtValueArr[i]     := TEdit.Create(Self);
       ParaEdtValueArr[i].Parent := pnlSettings;
       ParaEdtValueArr[i].OnExit := @SettingChange;
-      ParaEdtValueArr[i].Tag  := i;
+      ParaEdtValueArr[i].Tag := i;
       ParaEdtValueArr[i].ShowHint := True;
       ParaEdtValueArr[i].Enabled := Param_Record.settings[i].Enabled;
       AdjustComponentColor(ParaEdtValueArr[i]);
     end
     else if Param_Record.settings[i].use_checkbox then
     begin
-      ParaCheckArr[i]      := TCheckBox.Create(Self);
+      ParaCheckArr[i]     := TCheckBox.Create(Self);
       ParaCheckArr[i].Parent := pnlSettings;
       ParaCheckArr[i].OnChange := @SettingChange;
-      ParaCheckArr[i].Tag  := i;
+      ParaCheckArr[i].Tag := i;
       ParaCheckArr[i].Enabled := Param_Record.settings[i].Enabled;
       ParaCheckArr[i].Caption := '';
       ParaCheckArr[i].Checked := False;
     end
     else
     begin
-      ParaComboArr[i]      := TComboBox.Create(Self);
+      ParaComboArr[i]     := TComboBox.Create(Self);
       ParaComboArr[i].Parent := pnlSettings;
       ParaComboArr[i].OnChange := @SettingChange;
       ParaComboArr[i].Style := csDropDownList;
-      ParaComboArr[i].Tag  := i;
+      ParaComboArr[i].Tag := i;
       ParaComboArr[i].ShowHint := True;
       ParaComboArr[i].Enabled := Param_Record.settings[i].Enabled;
       AdjustComponentColor(ParaComboArr[i]);
@@ -556,6 +563,8 @@ begin
     GetParameter(line, 'mask', Param_Record.warnings[i - 1].mask);
     GetParameter(line, 'value', Param_Record.warnings[i - 1].Value);
     GetParameter(line, 'msg', Param_Record.warnings[i - 1].msg);
+    GetParameter(line, 'ban', num);
+    Param_Record.warnings[i - 1].ban := num > 0;
   end
   else if Pos('setting: ', line) = 1 then
   begin
