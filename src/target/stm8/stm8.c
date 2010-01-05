@@ -197,40 +197,16 @@ static RESULT stm8_erase_block(uint32_t block_addr)
 	stm8_swim_wotf_reg(STM8_REG_FLASH_NCR2, (uint8_t)~STM8_FLASH_CR2_ERASE);
 	memset(buff, 0, 4);
 	stm8_swim_wotf(block_addr, buff, 4);
-	delay_ms(3);
-	stm8_swim_rotf(STM8_REG_FLASH_IAPSR, buff, 1);
-	if (ERROR_OK != commit())
-	{
-		LOG_ERROR(_GETTEXT("Fail to erase block at 0x%06X\n"), block_addr);
-		return ERRCODE_FAILURE_OPERATION;
-	}
-	if (buff[0] & STM8_FLASH_IAPSR_WRPGDIS)
-	{
-		LOG_ERROR(_GETTEXT("current block at 0x%06X is RO\n"), block_addr);
-		return ERRCODE_FAILURE_OPERATION;
-	}
+	delay_us(3300);
 	return ERROR_OK;
 }
 
 static RESULT stm8_program_block(uint32_t block_addr, uint8_t *block_buff, uint8_t block_size)
 {
-	uint8_t buff[1];
-	
 	stm8_swim_wotf_reg(STM8_REG_FLASH_CR2, STM8_FLASH_CR2_FPRG);
 	stm8_swim_wotf_reg(STM8_REG_FLASH_NCR2, (uint8_t)~STM8_FLASH_CR2_FPRG);
 	stm8_swim_wotf(block_addr, block_buff, block_size);
-	delay_ms(3);
-	stm8_swim_rotf(STM8_REG_FLASH_IAPSR, buff, 1);
-	if (ERROR_OK != commit())
-	{
-		LOG_ERROR(_GETTEXT("Fail to program block at 0x%06X\n"), block_addr);
-		return ERRCODE_FAILURE_OPERATION;
-	}
-	if (buff[0] & STM8_FLASH_IAPSR_WRPGDIS)
-	{
-		LOG_ERROR(_GETTEXT("current block at 0x%06X is RO\n"), block_addr);
-		return ERRCODE_FAILURE_OPERATION;
-	}
+	delay_us(3300);
 	return ERROR_OK;
 }
 
