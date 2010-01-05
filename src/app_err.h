@@ -91,7 +91,7 @@
 #define ERRMSG_INVALID_CHIP_ID				"Chip-id unmatch, read=0x%X, want=0x%X\n"
 #define ERRCODE_INVALID_CHIP_ID				ERROR_FAIL
 
-#define ERRMSG_FAILURE_VERIFY_AT_02X		"%s verify failed at 0x%X, read=0x%02llX, want=0x%02llX.\n"
+#define ERRMSG_FAILURE_VERIFY_AT_02X		"%s verify failed at 0x%X, read=0x%02"PRIX64", want=0x%02"PRIX64".\n"
 #define ERRCODE_FAILURE_VERIFY				ERROR_FAIL
 
 #define ERRMSG_FAILURE_OPERATION_ADDR		"Fail to %s at 0x%X.\n"
