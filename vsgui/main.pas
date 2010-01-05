@@ -370,8 +370,14 @@ end;
 procedure TFormMain.tInitTimer(Sender: TObject);
 var
   ControlLeft: integer;
+const
+  poll_cnt: integer = 0;
 begin
-  (Sender as TTimer).Enabled := False;
+  Inc(poll_cnt);
+  if poll_cnt > 3 then
+  begin
+    (Sender as TTimer).Enabled := False;
+  end;
 
   // adjust size and position
   CenterControl(lblTarget, cbboxTarget);
@@ -957,7 +963,7 @@ begin
   if VSProg_Exists and (PollThread <> nil) then
   begin
     PollThread.AppPath := dedtVSProg.Directory + VSPROG_STR;
-    PollThread.Resume;
+//    PollThread.Resume;
   end;
 
   FormResize(Sender);
