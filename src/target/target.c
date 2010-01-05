@@ -24,6 +24,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <inttypes.h>
 
 #include "app_cfg.h"
 #include "app_type.h"
@@ -1165,7 +1166,7 @@ static void target_print_single_memory(char type)
 		printf("%c_addr = 0x%08X, ", type, 
 				target_chip_param.chip_areas[paramidx].addr);
 	}
-	printf("%c_default = 0x%llX, ", type, 
+	printf("%c_default = 0x%"PRIX64", ", type, 
 				target_chip_param.chip_areas[paramidx].default_value);
 	printf("%c_bytelen = %d\n", type, 
 				target_chip_param.chip_areas[paramidx].size);
@@ -1228,19 +1229,19 @@ void target_print_setting(char type)
 	
 	// print fl
 	printf("%s of %s:\n", full_type, program_info.chip_name);
-	printf("init = 0x%llX, ", fl.init_value);
+	printf("init = 0x%"PRIX64", ", fl.init_value);
 	printf("num_of_warnings = %d, ", fl.num_of_fl_warnings);
 	printf("num_of_settings = %d\n", fl.num_of_fl_settings);
 	for (i = 0; i < fl.num_of_fl_warnings; i++)
 	{
-		printf("warning: mask = 0x%llX, ", fl.warnings[i].mask);
-		printf("value = 0x%llX, ", fl.warnings[i].value);
+		printf("warning: mask = 0x%"PRIX64", ", fl.warnings[i].mask);
+		printf("value = 0x%"PRIX64", ", fl.warnings[i].value);
 		printf("msg = %s\n", fl.warnings[i].msg);
 	}
 	for (i = 0; i < fl.num_of_fl_settings; i++)
 	{
 		printf("setting: name = %s, ", fl.settings[i].name);
-		printf("mask = 0x%llX, ", fl.settings[i].mask);
+		printf("mask = 0x%"PRIX64", ", fl.settings[i].mask);
 		printf("num_of_choices = %d", fl.settings[i].num_of_choices);
 		if (fl.settings[i].ban != NULL)
 		{
@@ -1252,8 +1253,8 @@ void target_print_setting(char type)
 		}
 		if (fl.settings[i].use_checkbox)
 		{
-			printf(", checked = 0x%llX", fl.settings[i].checked);
-			printf(", unchecked = 0x%llX", fl.settings[i].unchecked);
+			printf(", checked = 0x%"PRIX64, fl.settings[i].checked);
+			printf(", unchecked = 0x%"PRIX64, fl.settings[i].unchecked);
 		}
 		else if (fl.settings[i].use_edit)
 		{
@@ -1264,7 +1265,7 @@ void target_print_setting(char type)
 		printf("\n");
 		for (j = 0; j < fl.settings[i].num_of_choices; j++)
 		{
-			printf("choice: value = 0x%llX, ", fl.settings[i].choices[j].value);
+			printf("choice: value = 0x%"PRIX64", ", fl.settings[i].choices[j].value);
 			printf("text = %s\n", fl.settings[i].choices[j].text);
 		}
 	}
