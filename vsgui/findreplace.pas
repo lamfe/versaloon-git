@@ -38,11 +38,14 @@ type
     lblDataType: TLabel;
     lblReplace: TLabel;
     lblSearch:  TLabel;
+    tInit: TTimer;
     procedure CenterControl(ctl: TControl; ref: TControl);
+    procedure AdjustComponentColor(Sender: TControl);
     procedure btnOKClick(Sender: TObject);
     procedure cbboxDataTypeChange(Sender: TObject);
     procedure FormKeyPress(Sender: TObject; var Key: char);
     procedure FormShow(Sender: TObject);
+    procedure tInitTimer(Sender: TObject);
   private
     { private declarations }
   public
@@ -95,6 +98,18 @@ end;
 procedure TFormFindReplace.CenterControl(ctl: TControl; ref: TControl);
 begin
   ctl.Top := ref.Top + (ref.Height - ctl.Height) div 2;
+end;
+
+procedure TFormFindReplace.AdjustComponentColor(Sender: TControl);
+begin
+  if Sender.Enabled then
+  begin
+    Sender.Color := clWindow;
+  end
+  else
+  begin
+    Sender.Color := clBtnFace;
+  end;
 end;
 
 procedure TFormFindReplace.btnOKClick(Sender: TObject);
@@ -213,9 +228,17 @@ begin
     chkboxReplaceAll.Enabled := False;
     cbboxReplace.Enabled     := False;
   end;
+  AdjustComponentColor(cbboxReplace);
   cbboxReplace.ItemIndex := -1;
   cbboxSearch.ItemIndex  := -1;
   ActiveControl := cbboxSearch;
+
+  tInit.Enabled := True;
+end;
+
+procedure TFormFindReplace.tInitTimer(Sender: TObject);
+begin
+  (Sender as TTimer).Enabled := False;
 
   CenterControl(lblSearch, cbboxSearch);
   CenterControl(lblReplace, cbboxReplace);

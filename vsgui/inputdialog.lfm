@@ -48,4 +48,11 @@ object FormInputDialog: TFormInputDialog
     ModalResult = 2
     TabOrder = 2
   end
+  object tInit: TTimer
+    Enabled = False
+    Interval = 10
+    OnTimer = tInitTimer
+    left = 27
+    top = 58
+  end
 end
