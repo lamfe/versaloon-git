@@ -260,8 +260,9 @@ void usbtoxxx_fini(void)
 RESULT usbtoxxx_ensure_buffer_size(uint16_t cmdlen)
 {
 	// check free space, commit if not enough
-	if ((usbtoxxx_buffer_index + usbtoxxx_current_cmd_index + cmdlen) 
-		>= versaloon_buf_size)
+	if (((usbtoxxx_buffer_index + usbtoxxx_current_cmd_index + cmdlen) 
+			>= versaloon_buf_size)
+		|| (versaloon_pending_idx >= VERSALOON_MAX_PENDING_NUMBER))
 	{
 		struct usbtoxxx_context_t context_tmp;
 		uint8_t poll_nesting_tmp = 0;
