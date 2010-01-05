@@ -952,8 +952,7 @@ RESULT target_program(struct program_context_t *context)
 				}
 				else
 				{
-					sprintf(str_tmp, "%%s read is 0x%%0%dllX\n",
-							target_size * 2, target_size * 2);
+					sprintf(str_tmp, "%%s read is 0x%%0%dllX\n", target_size * 2);
 					LOG_INFO(str_tmp, fullname, value);
 				}
 			}
