@@ -55,4 +55,11 @@ object FormParaEditor: TFormParaEditor
       TabOrder = 1
     end
   end
+  object tInit: TTimer
+    Enabled = False
+    Interval = 10
+    OnTimer = tInitTimer
+    left = 144
+    top = 144
+  end
 end

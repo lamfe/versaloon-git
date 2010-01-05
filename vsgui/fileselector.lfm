@@ -52,4 +52,11 @@ object FormFileSelector: TFormFileSelector
     Align = alClient
     TabOrder = 1
   end
+  object tInit: TTimer
+    Enabled = False
+    Interval = 10
+    OnTimer = tInitTimer
+    left = 176
+    top = 248
+  end
 end

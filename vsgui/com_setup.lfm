@@ -211,4 +211,11 @@ object FormComSetup: TFormComSetup
     OnClick = btnOKClick
     TabOrder = 7
   end
+  object tInit: TTimer
+    Enabled = False
+    Interval = 10
+    OnTimer = tInitTimer
+    left = 16
+    top = 184
+  end
 end

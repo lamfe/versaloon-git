@@ -112,4 +112,11 @@ object FormFindReplace: TFormFindReplace
     Caption = 'UniCode'
     TabOrder = 4
   end
+  object tInit: TTimer
+    Enabled = False
+    Interval = 10
+    OnTimer = tInitTimer
+    left = 24
+    top = 120
+  end
 end

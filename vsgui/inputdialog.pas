@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, LResources, Forms, Controls, Graphics, Dialogs,
-  StdCtrls;
+  StdCtrls, ExtCtrls;
 
 type
   TInputType = (itNumeric, itLiteral);
@@ -20,10 +20,12 @@ type
     btnCancel: TButton;
     edtInput:  TEdit;
     lblPrefix: TLabel;
+    tInit: TTimer;
     procedure CenterControl(ctl: TControl; ref: TControl);
     procedure edtInputKeyPress(Sender: TObject; var Key: char);
     procedure FormKeyPress(Sender: TObject; var Key: char);
     procedure FormShow(Sender: TObject);
+    procedure tInitTimer(Sender: TObject);
   private
     { private declarations }
   public
@@ -40,7 +42,7 @@ type
     NumRadix: TNumRadix;
   end;
 
-function StrToIntRadix(sData: string; radix: integer): integer;
+function StrToIntRadix(sData: string; radix: integer): QWord;
 function IntToStrRadix(aData, radix, minlen: integer): string;
 function IntToStrRadix(aData: QWord; radix, minlen: integer): string;
 
@@ -106,14 +108,22 @@ begin
   end;
 end;
 
-function StrToIntRadix(sData: string; radix: integer): integer;
+function StrToIntRadix(sData: string; radix: integer): QWord;
 var
-  i, r: integer;
+  i: integer;
+  r: QWord;
+  strFirst2: string;
 begin
   Result := 0;
   sData  := UpperCase(sData);
+  strFirst2 := Copy(sData, 1, 2);
+  if strFirst2 = '0X' then
+  begin
+    radix := 16;
+    sData := Copy(sData, 3, Length(sData) - 2);
+  end;
   if (radix < 2) or (radix > 16) or (Length(sData) >
-    (BYTELEN_ACCORDING_TO_RADIX[radix] * 4)) then
+    (BYTELEN_ACCORDING_TO_RADIX[radix] * 8)) then
   begin
     exit;
   end;
@@ -202,8 +212,16 @@ begin
   edtInput.MaxLength := CommonMaxLength;
   edtInput.Text      := '';
 
-  CenterControl(lblPrefix, edtInput);
   UpdateShowing;
+
+  tInit.Enabled := True;
+end;
+
+procedure TFormInputDialog.tInitTimer(Sender: TObject);
+begin
+  (Sender as TTimer).Enabled := False;
+
+  CenterControl(lblPrefix, edtInput);
 end;
 
 function TFormInputDialog.GetString: string;

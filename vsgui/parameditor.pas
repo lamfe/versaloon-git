@@ -48,6 +48,7 @@ type
     btnCancel: TButton;
     pnlSettings: TPanel;
     pnlButton: TPanel;
+    tInit: TTimer;
     procedure btnOKClick(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: boolean);
     procedure FormKeyPress(Sender: TObject; var Key: char);
@@ -57,6 +58,8 @@ type
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormShow(Sender: TObject);
     procedure CenterControl(ctl: TControl; ref: TControl);
+    procedure AdjustComponentColor(Sender: TControl);
+    procedure tInitTimer(Sender: TObject);
   private
     { private declarations }
     Param_Record:    TParam_Record;
@@ -71,7 +74,7 @@ type
     SettingParameter: boolean;
   public
     { public declarations }
-    function GetResult(): integer;
+    function GetResult(): QWord;
     function ParseSettingMaskValue(Sender: TObject; var mask, Value: QWord): boolean;
     procedure ValueToSetting();
     procedure UpdateTitle();
@@ -113,6 +116,70 @@ end;
 procedure TFormParaEditor.CenterControl(ctl: TControl; ref: TControl);
 begin
   ctl.Top := ref.Top + (ref.Height - ctl.Height) div 2;
+end;
+
+procedure TFormParaEditor.AdjustComponentColor(Sender: TControl);
+begin
+  if Sender.Enabled then
+  begin
+    Sender.Color := clWindow;
+  end
+  else
+  begin
+    Sender.Color := clBtnFace;
+  end;
+end;
+
+procedure TFormParaEditor.tInitTimer(Sender: TObject);
+var
+  i, section_num: integer;
+  mask: QWord;
+begin
+  (Sender as TTimer).Enabled := False;
+
+  section_num := 0;
+  mask := 0;
+  for i := 0 to Length(Param_Record.settings) - 1 do
+  begin
+    if (Param_Record.settings[i].mask and mask) > 0 then
+    begin
+      Inc(section_num);
+      mask := 0;
+    end;
+    mask := mask or Param_Record.settings[i].mask;
+
+    ParaEdtNameArr[i].Top  := TOP_MARGIN + i * (Y_MARGIN + ITEM_HEIGHT) +
+      section_num * SECTION_DIV_HEIGHT;
+    ParaEdtNameArr[i].Left := LEFT_MARGIN;
+    ParaEdtNameArr[i].Width := EDT_WIDTH;
+    ParaEdtNameArr[i].Height := ITEM_HEIGHT;
+    if Param_Record.settings[i].use_edit then
+    begin
+      ParaEdtValueArr[i].Top  :=
+        TOP_MARGIN + i * (Y_MARGIN + ITEM_HEIGHT) + section_num * SECTION_DIV_HEIGHT;
+      ParaEdtValueArr[i].Width := COMBO_WIDTH;
+      ParaEdtValueArr[i].Left := LEFT_MARGIN + EDT_WIDTH + X_MARGIN;
+      ParaEdtValueArr[i].Height := ITEM_HEIGHT;
+      CenterControl(ParaEdtValueArr[i], ParaEdtNameArr[i]);
+    end
+    else if Param_Record.settings[i].use_checkbox then
+    begin
+      ParaCheckArr[i].Top  := TOP_MARGIN + i * (Y_MARGIN + ITEM_HEIGHT) +
+        section_num * SECTION_DIV_HEIGHT;
+      ParaCheckArr[i].Left := LEFT_MARGIN + EDT_WIDTH + X_MARGIN;
+      ParaCheckArr[i].Height := ITEM_HEIGHT;
+      CenterControl(ParaCheckArr[i], ParaEdtNameArr[i]);
+    end
+    else
+    begin
+      ParaComboArr[i].Top  := TOP_MARGIN + i * (Y_MARGIN + ITEM_HEIGHT) +
+        section_num * SECTION_DIV_HEIGHT;
+      ParaComboArr[i].Left := LEFT_MARGIN + EDT_WIDTH + X_MARGIN;
+      ParaComboArr[i].Width := COMBO_WIDTH;
+      ParaComboArr[i].Height := ITEM_HEIGHT;
+      CenterControl(ParaComboArr[i], ParaEdtNameArr[i]);
+    end;
+  end;
 end;
 
 procedure TFormParaEditor.SettingChange(Sender: TObject);
@@ -237,7 +304,7 @@ begin
   Caption := Param_Name + ': 0x' + IntToHex(Param_Value, Value_ByteLen * 2);
 end;
 
-function TFormParaEditor.GetResult(): integer;
+function TFormParaEditor.GetResult(): QWord;
 begin
   Result := Param_Value;
 end;
@@ -403,11 +470,6 @@ begin
 
     ParaEdtNameArr[i]      := TEdit.Create(Self);
     ParaEdtNameArr[i].Parent := pnlSettings;
-    ParaEdtNameArr[i].Top  := TOP_MARGIN + i * (Y_MARGIN + ITEM_HEIGHT) +
-      section_num * SECTION_DIV_HEIGHT;
-    ParaEdtNameArr[i].Left := LEFT_MARGIN;
-    ParaEdtNameArr[i].Width := EDT_WIDTH;
-    ParaEdtNameArr[i].Height := ITEM_HEIGHT;
     ParaEdtNameArr[i].Text := Param_Record.settings[i].Name;
     if Param_Record.settings[i].use_edit then
     begin
@@ -422,53 +484,38 @@ begin
     begin
       ParaEdtValueArr[i]      := TEdit.Create(Self);
       ParaEdtValueArr[i].Parent := pnlSettings;
-      ParaEdtValueArr[i].Top  :=
-        TOP_MARGIN + i * (Y_MARGIN + ITEM_HEIGHT) + section_num * SECTION_DIV_HEIGHT;
-      ParaEdtValueArr[i].Width := COMBO_WIDTH;
-      ParaEdtValueArr[i].Left := LEFT_MARGIN + EDT_WIDTH + X_MARGIN;
-      ParaEdtValueArr[i].Height := ITEM_HEIGHT;
       ParaEdtValueArr[i].OnExit := @SettingChange;
       ParaEdtValueArr[i].Tag  := i;
       ParaEdtValueArr[i].ShowHint := True;
       ParaEdtValueArr[i].Enabled := Param_Record.settings[i].Enabled;
-      CenterControl(ParaEdtValueArr[i], ParaEdtNameArr[i]);
+      AdjustComponentColor(ParaEdtValueArr[i]);
     end
     else if Param_Record.settings[i].use_checkbox then
     begin
       ParaCheckArr[i]      := TCheckBox.Create(Self);
       ParaCheckArr[i].Parent := pnlSettings;
-      ParaCheckArr[i].Top  := TOP_MARGIN + i * (Y_MARGIN + ITEM_HEIGHT) +
-        section_num * SECTION_DIV_HEIGHT;
-      ParaCheckArr[i].Left := LEFT_MARGIN + EDT_WIDTH + X_MARGIN;
-      ParaCheckArr[i].Height := ITEM_HEIGHT;
       ParaCheckArr[i].OnChange := @SettingChange;
       ParaCheckArr[i].Tag  := i;
       ParaCheckArr[i].Enabled := Param_Record.settings[i].Enabled;
       ParaCheckArr[i].Caption := '';
       ParaCheckArr[i].Checked := False;
-      CenterControl(ParaCheckArr[i], ParaEdtNameArr[i]);
     end
     else
     begin
       ParaComboArr[i]      := TComboBox.Create(Self);
       ParaComboArr[i].Parent := pnlSettings;
-      ParaComboArr[i].Top  := TOP_MARGIN + i * (Y_MARGIN + ITEM_HEIGHT) +
-        section_num * SECTION_DIV_HEIGHT;
-      ParaComboArr[i].Left := LEFT_MARGIN + EDT_WIDTH + X_MARGIN;
-      ParaComboArr[i].Width := COMBO_WIDTH;
-      ParaComboArr[i].Height := ITEM_HEIGHT;
       ParaComboArr[i].OnChange := @SettingChange;
       ParaComboArr[i].Style := csDropDownList;
       ParaComboArr[i].Tag  := i;
       ParaComboArr[i].ShowHint := True;
       ParaComboArr[i].Enabled := Param_Record.settings[i].Enabled;
+      AdjustComponentColor(ParaComboArr[i]);
       ParaComboArr[i].Clear;
       choices_num := Length(Param_Record.settings[i].choices);
       for j := 0 to choices_num - 1 do
       begin
         ParaComboArr[i].Items.Add(Param_Record.settings[i].choices[j].Text);
       end;
-      CenterControl(ParaComboArr[i], ParaEdtNameArr[i]);
     end;
   end;
 
@@ -487,6 +534,8 @@ begin
 
   ValueToSetting();
   UpdateShowing;
+
+  tInit.Enabled := True;
 end;
 
 procedure TFormParaEditor.FreeRecord();

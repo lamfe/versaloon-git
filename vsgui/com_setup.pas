@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, LResources, Forms, Controls, Graphics, Dialogs,
-  StdCtrls, Synaser, vsprogparser;
+  StdCtrls, ExtCtrls, Synaser, vsprogparser;
 
 type
   TComMode = record
@@ -37,10 +37,14 @@ type
     lblParitybit: TLabel;
     lblStopbit: TLabel;
     lblHandshake: TLabel;
+    tInit: TTimer;
+    procedure CenterControl(ctl: TControl; ref: TControl);
+    procedure AdjustComponentColor(Sender: TControl);
     procedure btnOKClick(Sender: TObject);
     procedure FormKeyPress(Sender: TObject; var Key: char);
     procedure FormShow(Sender: TObject);
     procedure CheckComPort();
+    procedure tInitTimer(Sender: TObject);
   private
     { private declarations }
   public
@@ -72,6 +76,23 @@ const
   {$ENDIF}{$ENDIF}
 
 implementation
+
+procedure TFormComSetup.CenterControl(ctl: TControl; ref: TControl);
+begin
+  ctl.Top := ref.Top + (ref.Height - ctl.Height) div 2;
+end;
+
+procedure TFormComSetup.AdjustComponentColor(Sender: TControl);
+begin
+  if Sender.Enabled then
+  begin
+    Sender.Color := clWindow;
+  end
+  else
+  begin
+    Sender.Color := clBtnFace;
+  end;
+end;
 
 procedure TFormComSetup.btnOKClick(Sender: TObject);
 begin
@@ -119,10 +140,25 @@ begin
   end;
 end;
 
+procedure TFormComSetup.tInitTimer(Sender: TObject);
+begin
+  (Sender as TTimer).Enabled := False;
+
+  CenterControl(lblCom, cbboxCom);
+  CenterControl(lblBaudrate, cbboxBaudrate);
+  CenterControl(lblDataLength, cbboxDataLength);
+  CenterControl(lblParitybit, cbboxParitybit);
+  CenterControl(lblStopbit, cbboxStopbit);
+  CenterControl(lblHandshake, cbboxHandshake);
+  CenterControl(lblAuxPin, cbboxAuxPin);
+end;
+
 procedure TFormComSetup.FormShow(Sender: TObject);
 begin
   CheckComPort;
   ActiveControl := cbboxCom;
+
+  tInit.Enabled := True;
 end;
 
 procedure TFormComSetup.ComInitPara(CommStr: string);
@@ -168,6 +204,7 @@ begin
   begin
     cbboxBaudrate.Text := IntToStr(DEFAULT_BAUDRATE);
   end;
+  AdjustComponentColor(cbboxBaudrate);
 
   if ComInitMode.datalength >= 0 then
   begin
@@ -178,6 +215,7 @@ begin
   begin
     cbboxDataLength.Text := IntToStr(DEFAULT_DATALENGTH);
   end;
+  AdjustComponentColor(cbboxDataLength);
 
   if ComInitMode.paritybit = Char('N') then
   begin
@@ -198,6 +236,7 @@ begin
   begin
     cbboxParitybit.ItemIndex := DEFAULT_PARITYBIT;
   end;
+  AdjustComponentColor(cbboxParitybit);
 
   if ComInitMode.stopbit = Char('1') then
   begin
@@ -218,6 +257,7 @@ begin
   begin
     cbboxStopbit.ItemIndex := DEFAULT_STOPBIT;
   end;
+  AdjustComponentColor(cbboxStopbit);
 
   if ComInitMode.handshake = Char('N') then
   begin
@@ -238,6 +278,7 @@ begin
   begin
     cbboxHandshake.ItemIndex := DEFAULT_HANDSHAKE;
   end;
+  AdjustComponentColor(cbboxHandshake);
 
   if ComInitMode.auxpin = Char('N') then
   begin
@@ -253,6 +294,7 @@ begin
   begin
     cbboxAuxPin.ItemIndex := DEFAULT_AUXPIN;
   end;
+  AdjustComponentColor(cbboxAuxPin);
 end;
 
 procedure TFormComSetup.GetComMode(var ComMode: TComMode);

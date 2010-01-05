@@ -21,12 +21,14 @@ type
     btnCancel: TButton;
     pnlMain:   TPanel;
     pnlButton: TPanel;
+    tInit: TTimer;
     procedure btnOKClick(Sender: TObject);
     procedure FileNameEditChange(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormKeyPress(Sender: TObject; var Key: char);
     procedure FormShow(Sender: TObject);
     procedure CenterControl(ctl: TControl; ref: TControl);
+    procedure tInitTimer(Sender: TObject);
   private
     { private declarations }
     FileNameLabelArr: array of TLabel;
@@ -128,6 +130,31 @@ begin
   ctl.Top := ref.Top + (ref.Height - ctl.Height) div 2;
 end;
 
+procedure TFormFileSelector.tInitTimer(Sender: TObject);
+var
+  i: integer;
+begin
+  (Sender as TTimer).Enabled := False;
+
+  // center buttons
+  btnOK.Left   := (pnlButton.Width div 2 - btnOK.Width) div 2;
+  btnCancel.Left := pnlButton.Width div 2 + (pnlButton.Width div 2 - btnOK.Width) div 2;
+
+  for i := low(TargetFile) to high(TargetFile) do
+  begin
+    FileNameLabelArr[i].Top  := TOP_MARGIN + i * (Y_MARGIN + ITEM_HEIGHT);
+    FileNameLabelArr[i].Left := LEFT_MARGIN;
+    FileNameLabelArr[i].Width := FILELABEL_WIDTH;
+    FileNameLabelArr[i].Height := ITEM_HEIGHT;
+
+    FileNameEdtArr[i].Top  := TOP_MARGIN + i * (Y_MARGIN + ITEM_HEIGHT);
+    FileNameEdtArr[i].Left := LEFT_MARGIN + X_MARGIN + FILELABEL_WIDTH;
+    FileNameEdtArr[i].Width := FILEEDIT_WIDTH - FileNameEdtArr[i].ButtonWidth;
+    FileNameEdtArr[i].Height := ITEM_HEIGHT;
+    CenterControl(FileNameLabelArr[i], FileNameEdtArr[i]);
+  end;
+end;
+
 procedure TFormFileSelector.Reset();
 var
   i: integer;
@@ -179,29 +206,18 @@ begin
     FileNameLabelArr[i]      := TLabel.Create(Self);
     FileNameLabelArr[i].Parent := pnlMain;
     FileNameLabelArr[i].Caption := GetAreaFullName(target);
-    FileNameLabelArr[i].Top  := TOP_MARGIN + i * (Y_MARGIN + ITEM_HEIGHT);
-    FileNameLabelArr[i].Left := LEFT_MARGIN;
-    FileNameLabelArr[i].Width := FILELABEL_WIDTH;
-    FileNameLabelArr[i].Height := ITEM_HEIGHT;
     FileNameLabelArr[i].Hint := target;
     FileNameLabelArr[i].ShowHint := True;
 
     FileNameEdtArr[i]      := TFileNameEdit.Create(Self);
     FileNameEdtArr[i].Parent := pnlMain;
     FileNameEdtArr[i].FileName := filename;
-    FileNameEdtArr[i].Top  := TOP_MARGIN + i * (Y_MARGIN + ITEM_HEIGHT);
-    FileNameEdtArr[i].Left := LEFT_MARGIN + X_MARGIN + FILELABEL_WIDTH;
-    FileNameEdtArr[i].Width := FILEEDIT_WIDTH - FileNameEdtArr[i].ButtonWidth;
-    FileNameEdtArr[i].Height := ITEM_HEIGHT;
     FileNameEdtArr[i].Filter := 'HEX File|*.hex|BIN File|*.bin';
     FileNameEdtArr[i].Hint := filename;
     FileNameEdtArr[i].Flat := True;
     FileNameEdtArr[i].ShowHint := True;
     FileNameEdtArr[i].OnChange := @FileNameEditChange;
     FileNameEdtArr[i].OnEditingDone := @FileNameEditChange;
-
-    // Center Control
-    CenterControl(FileNameLabelArr[i], FileNameEdtArr[i]);
 
     str := LowerCase(ExtractFileExt(filename));
     if (str = '.hex') or (str = '') then
@@ -272,11 +288,10 @@ begin
     (Y_MARGIN + ITEM_HEIGHT) + pnlButton.Height;
   pnlMain.Width := intTmp;
   pnlButton.Width := intTmp;
-  // center buttons
-  btnOK.Left   := (pnlButton.Width div 2 - btnOK.Width) div 2;
-  btnCancel.Left := pnlButton.Width div 2 + (pnlButton.Width div 2 - btnOK.Width) div 2;
 
   UpdateShowing;
+
+  tInit.Enabled := True;
 end;
 
 initialization

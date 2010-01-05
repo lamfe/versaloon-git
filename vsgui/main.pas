@@ -8,7 +8,7 @@ uses
   Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs, ComCtrls,
   StdCtrls, EditBtn, ExtCtrls, cli_caller, parameditor, Menus, Buttons, Spin,
   Synaser, com_setup, fileselector, hexeditor, XMLCfg, vsprogparser, vsprogtarget,
-  vsprogprogrammer;
+  vsprogprogrammer, inputdialog;
 
 type
 
@@ -370,7 +370,7 @@ procedure TFormMain.tInitTimer(Sender: TObject);
 var
   ControlLeft: integer;
 begin
-  tInit.Enabled := False;
+  (Sender as TTimer).Enabled := False;
 
   // adjust size and position
   CenterControl(lblTarget, cbboxTarget);
@@ -1580,8 +1580,8 @@ begin
       exit;
     end;
 
-    FormParaEditor.SetParameter(default, bytelen, StrToInt(
-      (Sender as TLabeledEdit).Text),
+    FormParaEditor.SetParameter(default, bytelen, StrToIntRadix(
+      (Sender as TLabeledEdit).Text, 16),
       GetAreaFullName(AreaName), not chkboxNowarning.Checked);
     if mrOk = FormParaEditor.ShowModal then
     begin
