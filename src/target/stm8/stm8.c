@@ -425,6 +425,7 @@ RESULT stm8_write_target(struct program_context_t *context, char area,
 RESULT stm8_read_target(struct program_context_t *context, char area, 
 							uint32_t addr, uint8_t *buff, uint32_t page_size)
 {
+	uint8_t fuse_page[128];
 	RESULT ret = ERROR_OK;
 	
 	switch (context->pi->mode)
@@ -439,6 +440,22 @@ RESULT stm8_read_target(struct program_context_t *context, char area,
 		case EEPROM_CHAR:
 			stm8_swim_rotf(addr, buff, (uint8_t)page_size);
 			ret = commit();
+			break;
+		case FUSE_CHAR:
+			stm8_swim_rotf(0x004800, fuse_page, sizeof(fuse_page));
+			ret = commit();
+			if (ret != ERROR_OK)
+			{
+				break;
+			}
+			buff[0] = fuse_page[0];
+			buff[1] = fuse_page[1];
+			buff[2] = fuse_page[3];
+			buff[3] = fuse_page[5];
+			buff[4] = fuse_page[7];
+			buff[5] = fuse_page[9];
+			buff[6] = fuse_page[13];
+			buff[7] = fuse_page[126];
 			break;
 		default:
 			ret = ERROR_FAIL;

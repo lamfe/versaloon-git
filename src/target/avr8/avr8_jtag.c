@@ -411,12 +411,11 @@ RESULT avr8jtag_read_target(struct program_context_t *context, char area,
 							uint32_t addr, uint8_t *buff, uint32_t page_size)
 {
 	struct chip_param_t *param = context->param;
-	struct program_info_t *pi = context->pi;
 	uint8_t ir;
 	uint32_t dr;
 	uint32_t i, j, k;
 	uint32_t ee_page_size;
-	uint8_t tmpbuf[4], page_buf[256 + 1];
+	uint8_t page_buf[256 + 1];
 	RESULT ret = ERROR_OK;
 	
 	switch (area)
@@ -426,17 +425,16 @@ RESULT avr8jtag_read_target(struct program_context_t *context, char area,
 		AVR_JTAG_PROG_EnterSignByteRead();
 		
 		AVR_JTAG_PROG_LoadAddrByte(0);
-		AVR_JTAG_PROG_ReadSignByte(tmpbuf[0]);
+		AVR_JTAG_PROG_ReadSignByte(buff[2]);
 		AVR_JTAG_PROG_LoadAddrByte(1);
-		AVR_JTAG_PROG_ReadSignByte(tmpbuf[1]);
+		AVR_JTAG_PROG_ReadSignByte(buff[1]);
 		AVR_JTAG_PROG_LoadAddrByte(2);
-		AVR_JTAG_PROG_ReadSignByte(tmpbuf[2]);
+		AVR_JTAG_PROG_ReadSignByte(buff[0]);
 		if (ERROR_OK != jtag_commit())
 		{
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
-		pi->chip_id = tmpbuf[2] | (tmpbuf[1] << 8) | (tmpbuf[0] << 16);
 		break;
 	case APPLICATION_CHAR:
 		AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
@@ -500,17 +498,17 @@ RESULT avr8jtag_read_target(struct program_context_t *context, char area,
 		{
 			AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
 			AVR_JTAG_PROG_EnterFuseLockbitRead();
-			AVR_JTAG_PROG_ReadFuseLowByte(tmpbuf[0]);
+			AVR_JTAG_PROG_ReadFuseLowByte(buff[0]);
 		}
 		// high bits
 		if (param->chip_areas[FUSE_IDX].size > 1)
 		{
-			AVR_JTAG_PROG_ReadFuseHighByte(tmpbuf[1]);
+			AVR_JTAG_PROG_ReadFuseHighByte(buff[1]);
 		}
 		// extended bits
 		if (param->chip_areas[FUSE_IDX].size > 2)
 		{
-			AVR_JTAG_PROG_ReadExtFuseByte(tmpbuf[2]);
+			AVR_JTAG_PROG_ReadExtFuseByte(buff[2]);
 		}
 		if (param->chip_areas[FUSE_IDX].size > 0)
 		{
@@ -527,15 +525,13 @@ RESULT avr8jtag_read_target(struct program_context_t *context, char area,
 			ret = ERRCODE_NOT_SUPPORT;
 			break;
 		}
-		pi->program_areas[FUSE_IDX].value = 
-			(uint32_t)(tmpbuf[0] + (tmpbuf[1] << 8) + (tmpbuf[2] << 16));
 		break;
 	case LOCK_CHAR:
 		if (param->chip_areas[LOCK_IDX].size > 0)
 		{
 			AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
 			AVR_JTAG_PROG_EnterFuseLockbitRead();
-			AVR_JTAG_PROG_ReadLockbit(tmpbuf[0]);
+			AVR_JTAG_PROG_ReadLockbit(buff[0]);
 			if (ERROR_OK != jtag_commit())
 			{
 				ret = ERRCODE_FAILURE_OPERATION;
@@ -556,22 +552,22 @@ RESULT avr8jtag_read_target(struct program_context_t *context, char area,
 			AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
 			AVR_JTAG_PROG_EnterCaliByteRead();
 			AVR_JTAG_PROG_LoadAddrByte(0);
-			AVR_JTAG_PROG_ReadCaliByte(tmpbuf[0]);
+			AVR_JTAG_PROG_ReadCaliByte(buff[0]);
 		}
 		if (param->chip_areas[CALIBRATION_IDX].size > 1)
 		{
 			AVR_JTAG_PROG_LoadAddrByte(1);
-			AVR_JTAG_PROG_ReadCaliByte(tmpbuf[1]);
+			AVR_JTAG_PROG_ReadCaliByte(buff[1]);
 		}
 		if (param->chip_areas[CALIBRATION_IDX].size > 2)
 		{
 			AVR_JTAG_PROG_LoadAddrByte(2);
-			AVR_JTAG_PROG_ReadCaliByte(tmpbuf[2]);
+			AVR_JTAG_PROG_ReadCaliByte(buff[2]);
 		}
 		if (param->chip_areas[CALIBRATION_IDX].size > 3)
 		{
 			AVR_JTAG_PROG_LoadAddrByte(3);
-			AVR_JTAG_PROG_ReadCaliByte(tmpbuf[3]);
+			AVR_JTAG_PROG_ReadCaliByte(buff[3]);
 		}
 		if (param->chip_areas[CALIBRATION_IDX].size > 0)
 		{
@@ -588,8 +584,6 @@ RESULT avr8jtag_read_target(struct program_context_t *context, char area,
 			ret = ERRCODE_NOT_SUPPORT;
 			break;
 		}
-		pi->program_areas[CALIBRATION_IDX].value = (uint32_t)(tmpbuf[0] 
-				+ (tmpbuf[1] << 8) + (tmpbuf[2] << 16) + (tmpbuf[3] << 24));
 		break;
 	default:
 		ret = ERROR_FAIL;

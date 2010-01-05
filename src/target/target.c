@@ -543,8 +543,9 @@ RESULT target_program(struct program_context_t *context)
 	enum area_attr_t area_attr;
 	uint32_t target_size, page_size, start_addr;
 	uint8_t *tbuff;
-	char *fullname, str_tmp[32];
+	char *fullname, str_tmp[256];
 	struct memlist **ml, *ml_tmp;
+	uint64_t value;
 	
 	// check mode
 	if ((target_chips.num_of_chips > 0) 
@@ -592,134 +593,121 @@ RESULT target_program(struct program_context_t *context)
 		goto leave_program_mode;
 	}
 	
-	// erase operation
-	if (op->erase_operations)
+	// chip erase
+	if (op->erase_operations && param->chip_erase)
 	{
 		LOG_INFO(_GETTEXT(INFOMSG_ERASING), "chip");
-		if ((op->erase_operations & ALL) && (param->chip_erase))
-		{
-			// erase ALL using chip erase
-			pgbar_init("erasing chip |", "|", 0, 1, PROGRESS_STEP, 
+		pgbar_init("erasing chip |", "|", 0, 1, PROGRESS_STEP, 
 						PROGRESS_CHAR);
-			
-			if (ERROR_OK != pf->erase_target(context, '*', 0, 0))
-			{
-				pgbar_fini();
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "erase chip");
-				ret = ERRCODE_FAILURE_OPERATION;
-				goto leave_program_mode;
-			}
-			
-			pgbar_update(1);
-			pgbar_fini();
-		}
-		else
+		
+		if (ERROR_OK != pf->erase_target(context, '*', 0, 0))
 		{
-			// erase target defined
-			i = 0;
-			while (p_map[i].name != 0)
-			{
-				area_char = p_map[i].name;
-				area_attr = p_map[i].attr;
-				area_idx = target_area_idx(area_char);
-				area_mask = target_area_mask(area_char);
-				fullname = target_area_fullname(area_char);
-				
-				// area is defined to be erased and is erasable and is valid
-				if ((op->erase_operations & area_mask) 
-					&& (area_attr & AREA_ATTR_E) && (area_idx >= 0))
-				{
-					area_info = &(param->chip_areas[area_idx]);
-					page_size = area_info->page_size;
-					start_addr = area_info->addr;
-					
-					strcpy(str_tmp, "erasing ");
-					strcat(str_tmp, fullname);
-					strcat(str_tmp, " |");
-					pgbar_init(str_tmp, "|", 0, area_info->page_num, 
-								PROGRESS_STEP, PROGRESS_CHAR);
-					
-					if (area_attr & AREA_ATTR_EP)
-					{
-						// erase every page
-						for (j = 0; j < area_info->page_num; j++)
-						{
-							if (ERROR_OK != pf->erase_target(context, 
-									area_char, start_addr + j * page_size, 
-									page_size))
-							{
-								pgbar_fini();
-								LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_ERASE), 
-											fullname);
-								ret = ERRCODE_FAILURE_OPERATION;
-								goto leave_program_mode;
-							}
-							pgbar_update(1);
-						}
-					}
-					else
-					{
-						// erase all in one run
-						if (ERROR_OK != pf->erase_target(context, area_char, 
-														start_addr, 0))
-						{
-							pgbar_fini();
-							LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_ERASE), fullname);
-							ret = ERRCODE_FAILURE_OPERATION;
-							goto leave_program_mode;
-						}
-						pgbar_update(area_info->page_num);
-					}
-					pgbar_fini();
-				}
-				
-				i++;
-			}
+			pgbar_fini();
+			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "erase chip");
+			ret = ERRCODE_FAILURE_OPERATION;
+			goto leave_program_mode;
 		}
+		
+		pgbar_update(1);
+		pgbar_fini();
 		LOG_INFO(_GETTEXT(INFOMSG_ERASED), "chip");
 	}
 	
-	// program operation
+	// erase, program, verify/read cycle
 	i = 0;
-	while ((p_map[i].name != 0) && (op->write_operations != 0))
+	while (p_map[i].name != 0)
 	{
 		area_char = p_map[i].name;
 		area_attr = p_map[i].attr;
 		area_idx = target_area_idx(area_char);
 		area_mask = target_area_mask(area_char);
 		fullname = target_area_fullname(area_char);
-		
-		if (op->write_operations & area_mask)
+		if (area_idx < 0)
 		{
-			if ((area_idx < 0) || !(area_attr & AREA_ATTR_W))
-			{
-				LOG_ERROR(_GETTEXT("Invalid setting or non-writable memory.\n"));
-				ret = ERROR_FAIL;
-				goto leave_program_mode;
-			}
-			
-			area_info = &(param->chip_areas[area_idx]);
-			page_size = area_info->page_size;
-			start_addr = area_info->addr;
-			if ((p_map[i].fpage_size > page_size) 
-				&& ((p_map[i].fpage_size % page_size) == 0))
-			{
-				page_size = p_map[i].fpage_size;
-			}
-			
-			prog_area = &(pi->program_areas[area_idx]);
+			// invalid area
+			continue;
+		}
+		
+		area_info = &(param->chip_areas[area_idx]);
+		page_size = area_info->page_size;
+		start_addr = area_info->addr;
+		if ((p_map[i].fpage_size > page_size) 
+			&& ((p_map[i].fpage_size % page_size) == 0))
+		{
+			page_size = p_map[i].fpage_size;
+		}
+		
+		prog_area = &(pi->program_areas[area_idx]);
+		if (p_map[i].data_pos)
+		{
 			ml = &(prog_area->memlist);
 			target_size = MEMLIST_CalcAllSize(*ml);
 			tbuff = prog_area->buff;
+		}
+		else
+		{
+			ml = NULL;
+			tbuff = NULL;
+			target_size = area_info->size;
+		}
+		
+		// not chip_erase, required to be erased, erasable 
+		if (!param->chip_erase && (op->erase_operations & area_mask) 
+			&& (area_attr & AREA_ATTR_E))
+		{
+			// target erase
+			LOG_INFO(_GETTEXT(INFOMSG_ERASING), fullname);
+			strcpy(str_tmp, "erasing ");
+			strcat(str_tmp, fullname);
+			strcat(str_tmp, " |");
+			pgbar_init(str_tmp, "|", 0, area_info->page_num, PROGRESS_STEP, 
+							PROGRESS_CHAR);
 			
+			if (area_attr & AREA_ATTR_EP)
+			{
+				// erase every page
+				for (j = 0; j < area_info->page_num; j++)
+				{
+					if (ERROR_OK != pf->erase_target(context, area_char, 
+							start_addr + j * page_size, page_size))
+					{
+						pgbar_fini();
+						LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_ERASE), fullname);
+						ret = ERRCODE_FAILURE_OPERATION;
+						goto leave_program_mode;
+					}
+					pgbar_update(1);
+				}
+			}
+			else
+			{
+				// erase all in one run
+				if (ERROR_OK != pf->erase_target(context, area_char, 
+													start_addr, 0))
+				{
+					pgbar_fini();
+					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_ERASE), fullname);
+					ret = ERRCODE_FAILURE_OPERATION;
+					goto leave_program_mode;
+				}
+				pgbar_update(area_info->page_num);
+			}
+			
+			pgbar_fini();
+			LOG_INFO(_GETTEXT(INFOMSG_ERASED), fullname);
+		}
+		
+		// required to program, writable
+		if ((op->write_operations & area_mask) && (area_attr & AREA_ATTR_W))
+		{
 			LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMING), fullname);
 			strcpy(str_tmp, "writing ");
 			strcat(str_tmp, fullname);
 			strcat(str_tmp, " |");
+			pgbar_init(str_tmp, "|", 0, target_size, PROGRESS_STEP, '=');
 			
 			if ((tbuff != NULL) && (ml != NULL))
 			{
-				pgbar_init(str_tmp, "|", 0, target_size, PROGRESS_STEP, '=');
 				ml_tmp = *ml;
 				while(ml_tmp != NULL)
 				{
@@ -760,60 +748,37 @@ RESULT target_program(struct program_context_t *context)
 					}
 					ml_tmp = MEMLIST_GetNext(ml_tmp);
 				}
-				pgbar_fini();
 			}
 			else
 			{
-				pgbar_init(str_tmp, "|", 0, 1, PROGRESS_STEP, '=');
 				if (ERROR_OK != pf->write_target(context, area_char, 
-											start_addr, NULL, area_info->size))
+											start_addr, NULL, target_size))
 				{
 					pgbar_fini();
 					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_PROGRAM), fullname);
 					ret = ERRCODE_FAILURE_OPERATION;
 					goto leave_program_mode;
 				}
-				pgbar_update(1);
-				pgbar_fini();
+				pgbar_update(target_size);
 			}
+			
+			pgbar_fini();
 			LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMED), fullname);
 		}
-		i++;
-	}
-	
-	// read/verify operation
-	i = 0;
-	while ((p_map[i].name != 0) 
-			&& ((op->read_operations != 0) || (op->verify_operations != 0)))
-	{
-		area_char = p_map[i].name;
-		area_attr = p_map[i].attr;
-		area_idx = target_area_idx(area_char);
-		area_mask = target_area_mask(area_char);
-		fullname = target_area_fullname(area_char);
 		
 		if ((op->verify_operations & area_mask) 
 			&& (area_attr & AREA_ATTR_V))
 		{
-			area_info = &(param->chip_areas[area_idx]);
-			page_size = area_info->page_size;
-			start_addr = area_info->addr;
-			
-			prog_area = &(pi->program_areas[area_idx]);
-			ml = &(prog_area->memlist);
-			tbuff = prog_area->buff;
-			
+			// specific verify defined by target
 			LOG_INFO(_GETTEXT(INFOMSG_VERIFYING), fullname);
 			strcpy(str_tmp, "verifying ");
 			strcat(str_tmp, fullname);
 			strcat(str_tmp, " |");
+			pgbar_init(str_tmp, "|", 0, target_size, PROGRESS_STEP, '=');
 			
 			if ((page_size == 0) || (area_attr & AREA_ATTR_RNP))
 			{
-				target_size = prog_area->size;
-				
-				pgbar_init(str_tmp, "|", 0, 1, PROGRESS_STEP, '=');
-				
+				// verify whole target area
 				if (ERROR_OK != pf->read_target(context, area_char, start_addr, 
 													tbuff, target_size))
 				{
@@ -823,68 +788,40 @@ RESULT target_program(struct program_context_t *context)
 					goto leave_program_mode;
 				}
 				
-				pgbar_update(1);
+				pgbar_update(target_size);
 			}
-			else
+			else if ((tbuff != NULL) && (ml != NULL))
 			{
-				target_size = MEMLIST_CalcAllSize(*ml);
-				
-				if ((tbuff != NULL) && (ml != NULL))
+				// verify target area page by page
+				ml_tmp = *ml;
+				while(ml_tmp != NULL)
 				{
-					pgbar_init(str_tmp, "|", 0, target_size, PROGRESS_STEP, '=');
-					ml_tmp = *ml;
-					while(ml_tmp != NULL)
+					for (j = 0; j < ml_tmp->len; j += page_size)
 					{
-						for (j = 0; j < ml_tmp->len; j += page_size)
+						uint32_t tmp_addr = ml_tmp->addr + j;
+						uint8_t *tmp_buf = &(tbuff[tmp_addr - start_addr]);
+						
+						if (ERROR_OK != pf->read_target(context, area_char, 
+								tmp_addr, tmp_buf, page_size))
 						{
-							uint32_t tmp_addr = ml_tmp->addr + j;
-							uint8_t *tmp_buf = &(tbuff[tmp_addr - start_addr]);
-							
-							if (ERROR_OK != pf->read_target(context, area_char, 
-									tmp_addr, tmp_buf, page_size))
-							{
-								pgbar_fini();
-								LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_READ), fullname);
-								ret = ERRCODE_FAILURE_OPERATION;
-								goto leave_program_mode;
-							}
-							pgbar_update(page_size);
+							pgbar_fini();
+							LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_READ), fullname);
+							ret = ERRCODE_FAILURE_OPERATION;
+							goto leave_program_mode;
 						}
-						ml_tmp = MEMLIST_GetNext(ml_tmp);
+						pgbar_update(page_size);
 					}
+					ml_tmp = MEMLIST_GetNext(ml_tmp);
 				}
 			}
+			
 			pgbar_fini();
 		}
-		else if ((op->read_operations & area_mask) 
-				|| (op->verify_operations & area_mask))
+		else if (((op->read_operations & area_mask) 
+					|| (op->verify_operations & area_mask))
+				&& (area_attr && AREA_ATTR_R))
 		{
-			if ((area_idx < 0) || !(area_attr & AREA_ATTR_R))
-			{
-				LOG_ERROR(_GETTEXT("Invalid setting or non-readable memory.\n"));
-				ret = ERROR_FAIL;
-				goto leave_program_mode;
-			}
-			
-			area_info = &(param->chip_areas[area_idx]);
-			page_size = area_info->page_size;
-			start_addr = area_info->addr;
-			if ((p_map[i].fpage_size > page_size) 
-				&& ((p_map[i].fpage_size % page_size) == 0))
-			{
-				page_size = p_map[i].fpage_size;
-			}
-			
-			prog_area = &(pi->program_areas[area_idx]);
-			ml = &(prog_area->memlist);
-			target_size = MEMLIST_CalcAllSize(*ml);
-			tbuff = prog_area->buff;
-			
-			if (op->verify_operations & area_mask)
-			{
-				LOG_INFO(_GETTEXT(INFOMSG_VERIFYING), fullname);
-			}
-			else
+			if ((p_map[i].data_pos) && (op->read_operations & area_mask))
 			{
 				if (ERROR_OK != MEMLIST_Add(ml, area_info->addr, 
 											area_info->size, page_size))
@@ -894,15 +831,23 @@ RESULT target_program(struct program_context_t *context)
 					return ERRCODE_FAILURE_OPERATION;
 				}
 				target_size = MEMLIST_CalcAllSize(*ml);
+			}
+			
+			if (op->verify_operations & area_mask)
+			{
+				LOG_INFO(_GETTEXT(INFOMSG_VERIFYING), fullname);
+			}
+			else
+			{
 				LOG_INFO(_GETTEXT(INFOMSG_READING), fullname);
 			}
 			strcpy(str_tmp, "reading ");
 			strcat(str_tmp, fullname);
 			strcat(str_tmp, " |");
+			pgbar_init(str_tmp, "|", 0, target_size, PROGRESS_STEP, '=');
 			
 			if ((tbuff != NULL) && (ml != NULL))
 			{
-				pgbar_init(str_tmp, "|", 0, target_size, PROGRESS_STEP, '=');
 				ml_tmp = *ml;
 				while(ml_tmp != NULL)
 				{
@@ -948,6 +893,7 @@ RESULT target_program(struct program_context_t *context)
 							pgbar_update(page_size);
 						}
 					}
+					pgbar_fini();
 					
 					if (op->verify_operations & area_mask)
 					{
@@ -958,11 +904,11 @@ RESULT target_program(struct program_context_t *context)
 								pgbar_fini();
 								LOG_ERROR(
 									_GETTEXT(ERRMSG_FAILURE_VERIFY_AT_02X), 
-									fullname, ml_tmp->addr, read_buf[j], 
-									tbuff[read_offset + j]);
+									fullname, ml_tmp->addr, (uint64_t)read_buf[j], 
+									(uint64_t)tbuff[read_offset + j]);
 								free(read_buf);
 								read_buf = NULL;
-								ret = ERRCODE_FAILURE_VERIFY_TARGET;
+								ret = ERRCODE_FAILURE_VERIFY;
 								goto leave_program_mode;
 							}
 						}
@@ -976,22 +922,18 @@ RESULT target_program(struct program_context_t *context)
 					
 					ml_tmp = MEMLIST_GetNext(ml_tmp);
 				}
-				pgbar_fini();
 			}
 			else
 			{
-				uint32_t value;
-				
-				pgbar_init(str_tmp, "|", 0, 1, PROGRESS_STEP, '=');
 				if (ERROR_OK != pf->read_target(context, area_char, 
-							start_addr, (uint8_t *)&value, area_info->size))
+							start_addr, (uint8_t *)&value, target_size))
 				{
 					pgbar_fini();
 					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_READ), fullname);
 					ret = ERRCODE_FAILURE_OPERATION;
 					goto leave_program_mode;
 				}
-				pgbar_update(1);
+				pgbar_update(target_size);
 				pgbar_fini();
 				
 				if (op->verify_operations & area_mask)
@@ -1002,54 +944,17 @@ RESULT target_program(struct program_context_t *context)
 					}
 					else
 					{
-						if (area_info->size > 3)
-						{
-							LOG_INFO(_GETTEXT(ERRMSG_FAILURE_VERIFY_08X), 
-										fullname, value, 
-										(uint32_t)prog_area->value);
-						}
-						else if (area_info->size > 2)
-						{
-							LOG_INFO(_GETTEXT(ERRMSG_FAILURE_VERIFY_06X), 
-										fullname, value, 
-										(uint32_t)prog_area->value);
-						}
-						else if (area_info->size > 1)
-						{
-							LOG_INFO(_GETTEXT(ERRMSG_FAILURE_VERIFY_04X), 
-										fullname, value, 
-										(uint32_t)prog_area->value);
-						}
-						else
-						{
-							LOG_INFO(_GETTEXT(ERRMSG_FAILURE_VERIFY_02X), 
-										fullname, value, 
-										(uint32_t)prog_area->value);
-						}
+						sprintf(str_tmp, 
+							"%%s verify failed, read=0x%%0%dllX, want=0x%%0%dllX.\n",
+							target_size * 2, target_size * 2);
+						LOG_ERROR(str_tmp, fullname, value, prog_area->value);
 					}
 				}
 				else
 				{
-					if (area_info->size > 3)
-					{
-						LOG_INFO(_GETTEXT(INFOMSG_READ_VALUE_08X), 
-									fullname, value);
-					}
-					else if (area_info->size > 2)
-					{
-						LOG_INFO(_GETTEXT(INFOMSG_READ_VALUE_06X), 
-									fullname, value);
-					}
-					else if (area_info->size > 1)
-					{
-						LOG_INFO(_GETTEXT(INFOMSG_READ_VALUE_04X), 
-									fullname, value);
-					}
-					else
-					{
-						LOG_INFO(_GETTEXT(INFOMSG_READ_VALUE_02X), 
-									fullname, value);
-					}
+					sprintf(str_tmp, "%%s read is 0x%%0%dllX\n",
+							target_size * 2, target_size * 2);
+					LOG_INFO(str_tmp, fullname, value);
 				}
 			}
 			

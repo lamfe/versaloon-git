@@ -70,7 +70,6 @@ type
     property ResultStrings: TStringList Read FResultStrings;
   end;
 
-  function GetParameter(line, para_name: string; var Value: Int64): boolean;
   function GetParameter(line, para_name: string; var Value: QWord): boolean;
   function GetParameter(line, para_name: string; var Value: integer): boolean;
   function GetParameter(line, para_name: string; var Value: cardinal): boolean;
@@ -99,33 +98,6 @@ begin
     end;
 
     Value  := StrToQWord(str_tmp);
-    Result := True;
-  end
-  else
-  begin
-    Value  := 0;
-    Result := False;
-  end;
-end;
-
-function GetParameter(line, para_name: string; var Value: Int64): boolean;
-var
-  pos_start, pos_end: integer;
-  str_tmp: string;
-begin
-  pos_start := Pos(para_name + EQUAL_STR, line);
-  if pos_start > 0 then
-  begin
-    str_tmp := Copy(line, pos_start + Length(para_name + EQUAL_STR),
-      Length(line) - pos_start);
-
-    pos_end := Pos(',', str_tmp);
-    if pos_end > 1 then
-    begin
-      str_tmp := Copy(str_tmp, 1, pos_end - 1);
-    end;
-
-    Value  := StrToInt64(str_tmp);
     Result := True;
   end
   else

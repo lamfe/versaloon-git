@@ -484,9 +484,8 @@ RESULT avr8isp_write_target(struct program_context_t *context, char area,
 RESULT avr8isp_read_target(struct program_context_t *context, char area, 
 							uint32_t addr, uint8_t *buff, uint32_t page_size)
 {
-	struct program_info_t *pi = context->pi;
 	struct chip_param_t *param = context->param;
-	uint8_t cmd_buf[4], tmpbuf[4];
+	uint8_t cmd_buf[4];
 	uint32_t i;
 	uint32_t ee_page_size;
 	RESULT ret = ERROR_OK;
@@ -498,23 +497,22 @@ RESULT avr8isp_read_target(struct program_context_t *context, char area,
 		cmd_buf[1] = 0x00;
 		cmd_buf[2] = 0x00;
 		cmd_buf[3] = 0x00;
-		spi_io(cmd_buf, 4, &tmpbuf[2], 3, 1);
+		spi_io(cmd_buf, 4, &buff[2], 3, 1);
 		cmd_buf[0] = 0x30;
 		cmd_buf[1] = 0x00;
 		cmd_buf[2] = 0x01;
 		cmd_buf[3] = 0x00;
-		spi_io(cmd_buf, 4, &tmpbuf[1], 3, 1);
+		spi_io(cmd_buf, 4, &buff[1], 3, 1);
 		cmd_buf[0] = 0x30;
 		cmd_buf[1] = 0x00;
 		cmd_buf[2] = 0x02;
 		cmd_buf[3] = 0x00;
-		spi_io(cmd_buf, 4, &tmpbuf[0], 3, 1);
+		spi_io(cmd_buf, 4, &buff[0], 3, 1);
 		if (ERROR_OK != commit())
 		{
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
-		pi->chip_id = (tmpbuf[2] << 16) | (tmpbuf[1] << 8) | tmpbuf[0];
 		break;
 	case APPLICATION_CHAR:
 		for (i = 0; i < page_size; i++)
@@ -572,7 +570,7 @@ RESULT avr8isp_read_target(struct program_context_t *context, char area,
 			cmd_buf[1] = 0x00;
 			cmd_buf[2] = 0x00;
 			cmd_buf[3] = 0x00;
-			spi_io(cmd_buf, 4, &tmpbuf[0], 3, 1);
+			spi_io(cmd_buf, 4, &buff[0], 3, 1);
 		}
 		// high bits
 		if (param->chip_areas[FUSE_IDX].size > 1)
@@ -581,7 +579,7 @@ RESULT avr8isp_read_target(struct program_context_t *context, char area,
 			cmd_buf[1] = 0x08;
 			cmd_buf[2] = 0x00;
 			cmd_buf[3] = 0x00;
-			spi_io(cmd_buf, 4, &tmpbuf[1], 3, 1);
+			spi_io(cmd_buf, 4, &buff[1], 3, 1);
 		}
 		// extended bits
 		if (param->chip_areas[FUSE_IDX].size > 2)
@@ -590,7 +588,7 @@ RESULT avr8isp_read_target(struct program_context_t *context, char area,
 			cmd_buf[1] = 0x08;
 			cmd_buf[2] = 0x00;
 			cmd_buf[3] = 0x00;
-			spi_io(cmd_buf, 4, &tmpbuf[2], 3, 1);
+			spi_io(cmd_buf, 4, &buff[2], 3, 1);
 		}
 		if (param->chip_areas[FUSE_IDX].size > 0)
 		{
@@ -607,8 +605,6 @@ RESULT avr8isp_read_target(struct program_context_t *context, char area,
 			ret = ERRCODE_NOT_SUPPORT;
 			break;
 		}
-		pi->program_areas[FUSE_IDX].value = 
-			(uint32_t)(tmpbuf[0] + (tmpbuf[1] << 8) + (tmpbuf[2] << 16));
 		break;
 	case LOCK_CHAR:
 		if (param->chip_areas[LOCK_IDX].size > 0)
@@ -617,7 +613,7 @@ RESULT avr8isp_read_target(struct program_context_t *context, char area,
 			cmd_buf[1] = 0x00;
 			cmd_buf[2] = 0x00;
 			cmd_buf[3] = 0x00;
-			spi_io(cmd_buf, 4, &tmpbuf[0], 3, 1);
+			spi_io(cmd_buf, 4, &buff[0], 3, 1);
 			if (ERROR_OK != commit())
 			{
 				ret = ERRCODE_FAILURE_OPERATION;
@@ -631,7 +627,6 @@ RESULT avr8isp_read_target(struct program_context_t *context, char area,
 			ret = ERRCODE_NOT_SUPPORT;
 			break;
 		}
-		pi->program_areas[LOCK_IDX].value = tmpbuf[0];
 		break;
 	case CALIBRATION_CHAR:
 		if (param->chip_areas[CALIBRATION_IDX].size > 0)
@@ -640,7 +635,7 @@ RESULT avr8isp_read_target(struct program_context_t *context, char area,
 			cmd_buf[1] = 0x00;
 			cmd_buf[2] = 0x00;
 			cmd_buf[3] = 0x00;
-			spi_io(cmd_buf, 4, &tmpbuf[0], 3, 1);
+			spi_io(cmd_buf, 4, &buff[0], 3, 1);
 		}
 		if (param->chip_areas[CALIBRATION_IDX].size > 1)
 		{
@@ -648,7 +643,7 @@ RESULT avr8isp_read_target(struct program_context_t *context, char area,
 			cmd_buf[1] = 0x00;
 			cmd_buf[2] = 0x01;
 			cmd_buf[3] = 0x00;
-			spi_io(cmd_buf, 4, &tmpbuf[1], 3, 1);
+			spi_io(cmd_buf, 4, &buff[1], 3, 1);
 		}
 		if (param->chip_areas[CALIBRATION_IDX].size > 2)
 		{
@@ -656,7 +651,7 @@ RESULT avr8isp_read_target(struct program_context_t *context, char area,
 			cmd_buf[1] = 0x00;
 			cmd_buf[2] = 0x02;
 			cmd_buf[3] = 0x00;
-			spi_io(cmd_buf, 4, &tmpbuf[2], 3, 1);
+			spi_io(cmd_buf, 4, &buff[2], 3, 1);
 		}
 		if (param->chip_areas[CALIBRATION_IDX].size > 3)
 		{
@@ -664,7 +659,7 @@ RESULT avr8isp_read_target(struct program_context_t *context, char area,
 			cmd_buf[1] = 0x00;
 			cmd_buf[2] = 0x03;
 			cmd_buf[3] = 0x00;
-			spi_io(cmd_buf, 4, &tmpbuf[3], 3, 1);
+			spi_io(cmd_buf, 4, &buff[3], 3, 1);
 		}
 		if (param->chip_areas[CALIBRATION_IDX].size > 0)
 		{
@@ -681,9 +676,6 @@ RESULT avr8isp_read_target(struct program_context_t *context, char area,
 			ret = ERRCODE_NOT_SUPPORT;
 			break;
 		}
-		pi->program_areas[CALIBRATION_IDX].value = 
-					(uint32_t)(tmpbuf[0] + (tmpbuf[1] << 8) 
-							+ (tmpbuf[2] << 16) + (tmpbuf[3] << 24));
 		break;
 	default:
 		break;
