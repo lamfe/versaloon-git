@@ -905,7 +905,7 @@ RESULT target_program(struct program_context_t *context)
 								pgbar_fini();
 								LOG_ERROR(
 									_GETTEXT(ERRMSG_FAILURE_VERIFY_AT_02X), 
-									fullname, ml_tmp->addr, (uint64_t)read_buf[j], 
+									fullname, ml_tmp->addr + j, (uint64_t)read_buf[j], 
 									(uint64_t)tbuff[read_offset + j]);
 								free(read_buf);
 								read_buf = NULL;

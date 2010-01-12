@@ -1861,6 +1861,9 @@
       <name>$PROJ_DIR$\..\..\hw_cfg_MiniRC4.h</name>
     </file>
     <file>
+      <name>$PROJ_DIR$\..\..\hw_cfg_MiniRelease1.h</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\..\..\hw_cfg_NanoRC1.h</name>
     </file>
     <file>

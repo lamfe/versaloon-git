@@ -424,17 +424,18 @@ RESULT avr8jtag_read_target(struct program_context_t *context, char area,
 		AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
 		AVR_JTAG_PROG_EnterSignByteRead();
 		
-		AVR_JTAG_PROG_LoadAddrByte(0);
-		AVR_JTAG_PROG_ReadSignByte(buff[2]);
-		AVR_JTAG_PROG_LoadAddrByte(1);
-		AVR_JTAG_PROG_ReadSignByte(buff[1]);
 		AVR_JTAG_PROG_LoadAddrByte(2);
 		AVR_JTAG_PROG_ReadSignByte(buff[0]);
+		AVR_JTAG_PROG_LoadAddrByte(1);
+		AVR_JTAG_PROG_ReadSignByte(buff[1]);
+		AVR_JTAG_PROG_LoadAddrByte(0);
+		AVR_JTAG_PROG_ReadSignByte(buff[2]);
 		if (ERROR_OK != jtag_commit())
 		{
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
+		buff[3] = 0;
 		break;
 	case APPLICATION_CHAR:
 		AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);

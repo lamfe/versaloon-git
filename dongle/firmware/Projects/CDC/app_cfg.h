@@ -19,7 +19,8 @@
 //#include "hw_cfg_NanoRC1.h"
 //#include "hw_cfg_MiniRC2.h"
 //#include "hw_cfg_MiniRC3.h"
-#include "hw_cfg_MiniRC4.h"
+//#include "hw_cfg_MiniRC4.h"
+#include "hw_cfg_MiniRelease1.h"
 //#include "hw_cfg_ProRC1.h"
 
 #define _SYS_FREQUENCY					72		// in MHz
