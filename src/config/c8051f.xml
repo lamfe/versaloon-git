@@ -114,7 +114,7 @@
     <param1>0x02</param1>
     <param2>0xB4</param2>
   </chip>
-  <chip name="c8051f00x/01x_0">
+  <chip name="c8051f00x/01x">
     <program_mode>j</program_mode>
     <chip_id>0x00000243</chip_id>
     <app_page_num>63</app_page_num>
@@ -130,13 +130,13 @@
     <program_mode>j</program_mode>
     <chip_id>0x00002243</chip_id>
     <app_page_num>31</app_page_num>
-    <param0>0x7DFF</param0>
+    <param0>0x3DFF</param0>
   </chip>
   <chip name="c8051f02x">
     <program_mode>j</program_mode>
     <chip_id>0x00003243</chip_id>
     <app_page_num>127</app_page_num>
-    <param0>0x7DFE</param0>
+    <param0>0xFDFF</param0>
   </chip>
   <chip name="c8051f04x">
     <program_mode>j</program_mode>
@@ -148,6 +148,6 @@
     <program_mode>j</program_mode>
     <chip_id>0x00006243</chip_id>
     <app_page_num>127</app_page_num>
-    <param0>0x7BFF</param0>
+    <param0>0xFBFF</param0>
   </chip>
 </series>
