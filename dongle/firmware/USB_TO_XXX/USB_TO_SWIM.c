@@ -75,6 +75,7 @@ void USB_TO_SWIM_ProcessCmd(uint8* dat, uint16 len)
 					break;
 				}
 			}
+
 			if (command)
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
