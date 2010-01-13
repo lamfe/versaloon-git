@@ -41,7 +41,7 @@
 #define SW_RST_PORT						GPIOB
 #define SW_RST_PIN						GPIO_PIN_10
 #define SYNCSW_IN_PORT					GPIOB
-#define SYNCSW_IN_PIN					GPIO_PIN_5
+#define SYNCSW_IN_PIN					GPIO_PIN_6
 #define SYNCSW_OUT_PORT					GPIOB
 #define SYNCSW_OUT_PIN					GPIO_PIN_4
 
@@ -74,15 +74,15 @@
 #define SYNCSW_GET()					GPIO_GetInPins(SYNCSW_IN_PORT, GPIO_PIN_GetMask(SYNCSW_IN_PIN))
 
 /***************************** STM8_SWIM ******************************/
-#define SWIM_OUT_TIMER					TIM1
-#define SWIM_IN_TIMER					TIM3
-#define SWIM_IN_TIMER_DMA				DMA1_Channel6
+#define SWIM_OUT_TIMER					TIM3
+#define SWIM_IN_TIMER					TIM4
+#define SWIM_IN_TIMER_DMA				DMA1_Channel1
 
 #define SWIM_IN_TIMER_INIT()			do{\
 											DMA_InitTypeDef DMA_InitStructure;\
 											\
 											RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, ENABLE);\
-											RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, ENABLE);\
+											RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4, ENABLE);\
 											\
 											DMA_DeInit(SWIM_IN_TIMER_DMA);\
 											DMA_StructInit(&DMA_InitStructure);\
@@ -100,7 +100,7 @@
 										}while(0)
 #define SWIM_IN_TIMER_FINI()			do{\
 											TIM_DeInit(SWIM_IN_TIMER);\
-											RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, DISABLE);\
+											RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4, DISABLE);\
 											DMA_DeInit(SWIM_IN_TIMER_DMA);\
 											RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, DISABLE);\
 										}while(0)
@@ -110,24 +110,24 @@
 											SWIM_IN_TIMER_DMA->CMAR = (uint32_t)(a);\
 											SWIM_IN_TIMER_DMA->CCR |= 1;\
 										}while(0)
-#define SWIM_IN_TIMER_DMA_WAIT(dly)		do{while((!(DMA1->ISR & DMA1_FLAG_TC6)) && --dly); DMA1->IFCR = DMA1_FLAG_TC6;}while(0)
+#define SWIM_IN_TIMER_DMA_WAIT(dly)		do{while((!(DMA1->ISR & DMA1_FLAG_TC1)) && --dly); DMA1->IFCR = DMA1_FLAG_TC1;}while(0)
 //#define SWIM_IN_TIMER_DMA_WAIT(dly)		while(!(SWIM_IN_TIMER->SR & 2))
 #define SWIM_OUT_TIMER_INIT()			do{\
-											RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM1, ENABLE);\
+											RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, ENABLE);\
 										}while(0)
 #define SWIM_OUT_TIMER_FINI()			do{\
 											TIM_DeInit(SWIM_OUT_TIMER);\
-											RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM1, DISABLE);\
+											RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, DISABLE);\
 										}while(0)
-#define SWIM_OUT_TIMER_PWMEN()			TIM_CtrlPWMOutputs(SWIM_OUT_TIMER, ENABLE)
+#define SWIM_OUT_TIMER_PWMEN()			//TIM_CtrlPWMOutputs(SWIM_OUT_TIMER, ENABLE)
 #define SWIM_PORT_INIT()				do{\
 											GPIO_PinRemapConfig(GPIO_PartialRemap_TIM3, ENABLE);\
 											GPIO_SetPins(JTAG_TAP_RTCK_PORT, GPIO_PIN_GetMask(JTAG_TAP_RTCK_PIN));\
-											GPIO_Dir(JTAG_TAP_RTCK_PORT, GPIO_MODE_AF_OD, JTAG_TAP_RTCK_PIN);\
-											GPIO_Dir(SYNCSW_OUT_PORT, GPIO_MODE_IN_FLOATING, SYNCSW_OUT_PIN);\
+											GPIO_Dir(SYNCSW_OUT_PORT, GPIO_MODE_AF_OD, SYNCSW_OUT_PIN);\
+											GPIO_Dir(SYNCSW_IN_PORT, GPIO_MODE_IN_FLOATING, SYNCSW_IN_PIN);\
 										}while(0)
 #define SWIM_PORT_FINI()				do{\
-											GPIO_Dir(JTAG_TAP_RTCK_PORT, GPIO_MODE_IN_FLOATING, JTAG_TAP_RTCK_PIN);\
+											GPIO_Dir(SYNCSW_OUT_PORT, GPIO_MODE_IN_FLOATING, SYNCSW_OUT_PIN);\
 											GPIO_PinRemapConfig(GPIO_PartialRemap_TIM3, DISABLE);\
 										}while(0)
 #define SWIM_WaitOutBitReady()			while(!(SWIM_OUT_TIMER->SR & TIM_FLAG_Update))
@@ -464,26 +464,27 @@
 #define TVCC_SAMPLE_MAXVAL				4096
 
 /****************************** LED ******************************/
-#define LED_PORT						GPIOB
-#define LED_RED_PIN						GPIO_PIN_6
-#define LED_GREEN_PIN					GPIO_PIN_7
-#define LED_RED_ON()					GPIO_ClrPins(LED_PORT, GPIO_PIN_GetMask(LED_RED_PIN))
-#define LED_RED_OFF()					GPIO_SetPins(LED_PORT, GPIO_PIN_GetMask(LED_RED_PIN))
-#define LED_GREEN_ON()					GPIO_ClrPins(LED_PORT, GPIO_PIN_GetMask(LED_GREEN_PIN))
-#define LED_GREEN_OFF()					GPIO_SetPins(LED_PORT, GPIO_PIN_GetMask(LED_GREEN_PIN))
+#define LED_RED_PORT					GPIOA
+#define LED_RED_PIN						GPIO_PIN_15
+#define LED_GREEN_PORT					GPIOB
+#define LED_GREEN_PIN					GPIO_PIN_5
+#define LED_RED_ON()					GPIO_ClrPins(LED_RED_PORT, GPIO_PIN_GetMask(LED_RED_PIN))
+#define LED_RED_OFF()					GPIO_SetPins(LED_RED_PORT, GPIO_PIN_GetMask(LED_RED_PIN))
+#define LED_GREEN_ON()					GPIO_ClrPins(LED_GREEN_PORT, GPIO_PIN_GetMask(LED_GREEN_PIN))
+#define LED_GREEN_OFF()					GPIO_SetPins(LED_GREEN_PORT, GPIO_PIN_GetMask(LED_GREEN_PIN))
 
 #define LED_Init()						do{\
-											GPIO_Dir(LED_PORT, GPIO_MODE_OUT_PP, LED_RED_PIN);\
-											GPIO_Dir(LED_PORT, GPIO_MODE_OUT_PP, LED_GREEN_PIN);\
+											GPIO_Dir(LED_RED_PORT, GPIO_MODE_OUT_PP, LED_RED_PIN);\
+											GPIO_Dir(LED_GREEN_PORT, GPIO_MODE_OUT_PP, LED_GREEN_PIN);\
 										}while(0)
 #define LED_Fini()						do{\
-											GPIO_Dir(LED_PORT, GPIO_MODE_IN_FLOATING, LED_RED_PIN);\
-											GPIO_Dir(LED_PORT, GPIO_MODE_IN_FLOATING, LED_GREEN_PIN);\
+											GPIO_Dir(LED_RED_PORT, GPIO_MODE_IN_FLOATING, LED_RED_PIN);\
+											GPIO_Dir(LED_GREEN_PORT, GPIO_MODE_IN_FLOATING, LED_GREEN_PIN);\
 										}while(0)
 
 // LED_RW
 #define LED_RW_PORT						GPIOA
-#define LED_RW_PIN						GPIO_PIN_3
+#define LED_RW_PIN						GPIO_PIN_14
 #define Led_RW_Init()					do{\
 											GPIO_Dir(LED_RW_PORT, GPIO_MODE_OUT_PP, LED_RW_PIN);\
 										}while(0)
