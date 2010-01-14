@@ -29,8 +29,8 @@
         </option>
         <option>
           <name>Variant</name>
-          <version>11</version>
-          <state>35</state>
+          <version>13</version>
+          <state>36</state>
         </option>
         <option>
           <name>GEndianMode</name>
@@ -91,7 +91,7 @@
         </option>
         <option>
           <name>OGLastSavedByProductVersion</name>
-          <state>5.40.0.51529</state>
+          <state>5.41.0.51757</state>
         </option>
         <option>
           <name>GeneralEnableMisra</name>
@@ -320,7 +320,7 @@
         <option>
           <name>CCOptStrategy</name>
           <version>0</version>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>CCOptLevelSlave</name>
@@ -829,8 +829,8 @@
         </option>
         <option>
           <name>Variant</name>
-          <version>11</version>
-          <state>35</state>
+          <version>13</version>
+          <state>36</state>
         </option>
         <option>
           <name>GEndianMode</name>
@@ -1603,10 +1603,10 @@
       <data/>
     </settings>
   </configuration>
-  <mfc>
+  <mfc_discard>
     <configuration>Debug</configuration>
     <configuration>Release</configuration>
-  </mfc>
+  </mfc_discard>
   <group>
     <name>HW</name>
     <group>
