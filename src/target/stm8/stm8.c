@@ -212,17 +212,14 @@ static RESULT stm8_program_block(uint32_t block_addr, uint8_t *block_buff, uint8
 
 RESULT stm8_enter_program_mode(struct program_context_t *context)
 {
-	uint8_t retry = 3, i, test_buf0[7], test_buf1[6];
+	uint8_t i, test_buf0[7], test_buf1[6];
 	RESULT ret = ERROR_OK;
 	
 	p = context->prog;
-	LOG_PUSH();
-	LOG_MUTE();
 	
 	switch (context->pi->mode)
 	{
 	case STM8_SWIM:
-enter_swim_program_mode:
 		reset_init();
 		reset_set();
 		swim_set();
@@ -265,11 +262,6 @@ enter_swim_program_mode:
 		swim_init();
 		swim_set_param(10, 20 + 2, 2 + 1);
 		delay_ms(10);
-		if (ERROR_OK != commit())
-		{
-			ret = ERROR_FAIL;
-			break;
-		}
 		stm8_swim_srst();
 		delay_ms(10);
 		stm8_swim_wotf_reg(STM8_REG_SWIM_CSR, 
@@ -288,17 +280,10 @@ enter_swim_program_mode:
 		stm8_unlock_flash();
 		if ((ERROR_OK != commit()) || memcmp(test_buf0, test_buf1, 6))
 		{
-			if (retry--)
-			{
-				stm8_leave_program_mode(context, 0);
-				goto enter_swim_program_mode;
-			}
-			LOG_POP();
 			ret = ERROR_FAIL;
 		}
 		else
 		{
-			LOG_POP();
 			test_buf0[6] = '\0';
 			LOG_INFO(_GETTEXT("is this chip ID: %s\n"), test_buf0);
 		}
