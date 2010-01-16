@@ -76,7 +76,7 @@
 /***************************** STM8_SWIM ******************************/
 #define SWIM_OUT_TIMER					TIM3
 #define SWIM_IN_TIMER					TIM4
-#define SWIM_IN_TIMER_DMA				DMA1_Channel1
+#define SWIM_IN_TIMER_DMA				DMA1_Channel4
 
 #define SWIM_IN_TIMER_INIT()			do{\
 											DMA_InitTypeDef DMA_InitStructure;\
@@ -86,7 +86,7 @@
 											\
 											DMA_DeInit(SWIM_IN_TIMER_DMA);\
 											DMA_StructInit(&DMA_InitStructure);\
-											DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)&(SWIM_IN_TIMER->CCR1);\
+											DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)&(SWIM_IN_TIMER->CCR2);\
 											DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralSRC;\
 											DMA_InitStructure.DMA_BufferSize = 0;\
 											DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;\
@@ -110,7 +110,7 @@
 											SWIM_IN_TIMER_DMA->CMAR = (uint32_t)(a);\
 											SWIM_IN_TIMER_DMA->CCR |= 1;\
 										}while(0)
-#define SWIM_IN_TIMER_DMA_WAIT(dly)		do{while((!(DMA1->ISR & DMA1_FLAG_TC1)) && --dly); DMA1->IFCR = DMA1_FLAG_TC1;}while(0)
+#define SWIM_IN_TIMER_DMA_WAIT(dly)		do{while((!(DMA1->ISR & DMA1_FLAG_TC4)) && --dly); DMA1->IFCR = DMA1_FLAG_TC4;}while(0)
 //#define SWIM_IN_TIMER_DMA_WAIT(dly)		while(!(SWIM_IN_TIMER->SR & 2))
 #define SWIM_OUT_TIMER_INIT()			do{\
 											RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, ENABLE);\
@@ -124,7 +124,6 @@
 											GPIO_PinRemapConfig(GPIO_PartialRemap_TIM3, ENABLE);\
 											GPIO_SetPins(JTAG_TAP_RTCK_PORT, GPIO_PIN_GetMask(JTAG_TAP_RTCK_PIN));\
 											GPIO_Dir(SYNCSW_OUT_PORT, GPIO_MODE_AF_OD, SYNCSW_OUT_PIN);\
-											GPIO_Dir(SYNCSW_IN_PORT, GPIO_MODE_IN_FLOATING, SYNCSW_IN_PIN);\
 										}while(0)
 #define SWIM_PORT_FINI()				do{\
 											GPIO_Dir(SYNCSW_OUT_PORT, GPIO_MODE_IN_FLOATING, SYNCSW_OUT_PIN);\

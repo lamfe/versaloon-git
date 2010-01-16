@@ -58,17 +58,17 @@ static void SWIM_SetClockParamInit(void)
 
 	/* SWIM_TIMER_IN */
 	TIM_ICStructInit(&TIM_ICInitStructure);
-	TIM_ICInitStructure.TIM_Channel = TIM_Channel_1;
+	TIM_ICInitStructure.TIM_Channel = TIM_Channel_2;
 	TIM_ICInitStructure.TIM_ICPolarity = TIM_ICPolarity_Rising;
-	TIM_ICInitStructure.TIM_ICSelection = TIM_ICSelection_DirectTI;
+	TIM_ICInitStructure.TIM_ICSelection = TIM_ICSelection_IndirectTI;
 	TIM_ICInitStructure.TIM_ICPrescaler = TIM_ICPSC_DIV1;
 	TIM_ICInitStructure.TIM_ICFilter = 0;
 	TIM_PWMIConfig(SWIM_IN_TIMER, &TIM_ICInitStructure);
 
-	TIM_SelectInputTrigger(SWIM_IN_TIMER, TIM_TS_TI2FP2);
+	TIM_SelectInputTrigger(SWIM_IN_TIMER, TIM_TS_TI1FP1);
 	TIM_SelectSlaveMode(SWIM_IN_TIMER, TIM_SlaveMode_Reset);
 	TIM_SelectMasterSlaveMode(SWIM_IN_TIMER, TIM_MasterSlaveMode_Enable);
-	TIM_DMACmd(SWIM_IN_TIMER, TIM_DMA_CC1, ENABLE);
+	TIM_DMACmd(SWIM_IN_TIMER, TIM_DMA_CC2, ENABLE);
 	TIM_Cmd(SWIM_IN_TIMER, ENABLE);
 }
 
