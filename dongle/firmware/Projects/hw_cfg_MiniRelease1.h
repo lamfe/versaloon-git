@@ -122,7 +122,7 @@
 #define SWIM_OUT_TIMER_PWMEN()			//TIM_CtrlPWMOutputs(SWIM_OUT_TIMER, ENABLE)
 #define SWIM_PORT_INIT()				do{\
 											GPIO_PinRemapConfig(GPIO_PartialRemap_TIM3, ENABLE);\
-											GPIO_SetPins(JTAG_TAP_RTCK_PORT, GPIO_PIN_GetMask(JTAG_TAP_RTCK_PIN));\
+											GPIO_SetPins(SYNCSW_OUT_PORT, GPIO_PIN_GetMask(SYNCSW_OUT_PIN));\
 											GPIO_Dir(SYNCSW_OUT_PORT, GPIO_MODE_AF_OD, SYNCSW_OUT_PIN);\
 										}while(0)
 #define SWIM_PORT_FINI()				do{\

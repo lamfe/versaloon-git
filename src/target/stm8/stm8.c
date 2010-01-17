@@ -212,7 +212,7 @@ static RESULT stm8_program_block(uint32_t block_addr, uint8_t *block_buff, uint8
 
 RESULT stm8_enter_program_mode(struct program_context_t *context)
 {
-	uint8_t i, test_buf0[7], test_buf1[6];
+	uint8_t i, test_buf0[7], test_buf1[6], retry = 5;
 	RESULT ret = ERROR_OK;
 	
 	p = context->prog;
@@ -220,14 +220,11 @@ RESULT stm8_enter_program_mode(struct program_context_t *context)
 	switch (context->pi->mode)
 	{
 	case STM8_SWIM:
+retry_enter_program_mode:
 		reset_init();
 		reset_set();
 		swim_set();
-		if (ERROR_OK != commit())
-		{
-			ret = ERROR_FAIL;
-			break;
-		}
+		delay_ms(20);
 		
 		reset_clr();
 		delay_ms(20);
@@ -259,11 +256,29 @@ RESULT stm8_enter_program_mode(struct program_context_t *context)
 		}
 		
 		// SWIM mode
+		LOG_PUSH();
+		LOG_MUTE();
 		swim_init();
 		swim_set_param(10, 20 + 2, 2 + 1);
 		delay_ms(10);
 		stm8_swim_srst();
-		delay_ms(10);
+		if (ERROR_OK != commit())
+		{
+			if (retry--)
+			{
+				stm8_swim_srst();
+				swim_fini();
+				reset_input();
+				swim_input();
+				reset_fini();
+				commit();
+				LOG_POP();
+				goto retry_enter_program_mode;
+			}
+			LOG_POP();
+			return ERROR_FAIL;
+		}
+		LOG_POP();
 		stm8_swim_wotf_reg(STM8_REG_SWIM_CSR, 
 							STM8_SWIM_CSR_SAFT_MASK | STM8_SWIM_CSR_SWIM_DM);
 		delay_ms(10);
