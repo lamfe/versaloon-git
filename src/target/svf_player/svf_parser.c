@@ -369,7 +369,7 @@ uint32_t svf_parser_get_command(FILE *file, char **cmd_buffer,
 		default:
 			if (!comment)
 			{
-				if (cmd_pos >= *cmd_len)
+				if ((cmd_pos + 1) >= *cmd_len)
 				{
 					// 1 more byte for '\0'
 					tmp_buffer = (char*)malloc(*cmd_len 
@@ -390,6 +390,10 @@ uint32_t svf_parser_get_command(FILE *file, char **cmd_buffer,
 					*cmd_buffer = tmp_buffer;
 					*cmd_len += SVFP_CMD_INC_CNT;
 					tmp_buffer = NULL;
+				}
+				if ('(' == ch)
+				{
+					(*cmd_buffer)[cmd_pos++] = ' ';
 				}
 				(*cmd_buffer)[cmd_pos++] = (char)toupper(ch);
 			}
