@@ -194,6 +194,11 @@ Usage: %s [OPTION]...\n\
   -p,  --programmer <PROGRAMMER>            set programmer\n\
   -o,  --operation <OPERATIONS>             set programming operation\n\
   -I,  --input-file \"<FILE>[ seg addr]\"     set input file\n\
+  -O,  --output-file \"<FILE>[ seg addr]\"    set output file\n\
+  -F,  --frequency <FREQUENCY_IN_KHz>       set programming frequency\n\
+  -m,  --mode <MODE>                        set programming mode\n\
+  -t,  --target <TARGET VALUE>              set target value, eg(fuse): -tu0x02\n\
+  -L,  --list-programmer                    list programmers available\n\
   -M,  --mass-product                       set mass_product mode\n\
   -G,  --gui-mode                           set gui_mode\n\
   -Z,  --firmware-update                    enter into firmware update mode\n\n"), 
