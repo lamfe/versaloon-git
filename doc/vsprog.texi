@@ -14,8 +14,8 @@
 @copying
 
 @itemize @bullet
-@item Copyright @copyright{} 2008-2009 Versaloon Project
-@item Copyright @copyright{} 2008-2009 SimonQian @email{SimonQian@@SimonQian.com}
+@item Copyright @copyright{} 2008-2010 Versaloon Project
+@item Copyright @copyright{} 2008-2010 SimonQian @email{SimonQian@@SimonQian.com}
 @end itemize
 
 @quotation
@@ -62,16 +62,16 @@ This manual documents edition @value{EDITION} of the Versaloon Programmer
 @unnumbered About
 @cindex about
 
-The Versaloon Programmer (VSProg) aims to provide in-system programming 
-for multiple embeded target devices.
+The Versaloon Programmer (VSProg) aims to provide in-system programming for 
+multiple embeded target devices including MCU, Flash, Eeprom, CPLD/FPGA and etc.
 
-@b{Hardware:} VSProg uses Versaloon as hardware with different types of 
-interfaces to different embeded target devices. 
+@b{Hardware:} VSProg uses Versaloon as hardware which has many different interfaces.
 See @uref{www.SimonQian.com/en/Versaloon}.
 
 @b{target devices:} VSProg can now support S51_ISP, AVR_ISP/JTAG, 
 C8051F_JTAG/C2, STM32_ISP/JTAG/SWD(Com port), MSP430_JTAG(without TEST pin), 
-PSOC1_ISSP, CPLD/FPGA_JTAG(by SVF_Player), LPC900_ICP.
+PSOC1_ISSP, CPLD/FPGA_JTAG(by SVF_Player), LPC900_ICP. 
+More supports are to b@cindex Target Arease added.
 
 @node Developers
 @chapter Developers
@@ -95,11 +95,10 @@ You can find compiled binaries in Versaloon Project web site.
 
 @section Building From Source
 
-You can download the current released source code form Versaloon Project web site:
-@uref{www.SimonQian.com/en/Versaloon}. And you can also download source 
-code of VSGui, which is the GUI front-end of VSProg, compiled by Lazarus.
+You can download the current released source code form Google SVN, including firmware, 
+VSProg CLI program, VSGUI front-end GUI program.
 
-Building VSProg requires a recent version of the GNU autotools and libusb.
+Building VSProg requires a recent version of the GNU autotools, libusb and libxml2.
 
 To build VSProg (on both Linux and Cygwin), use the following commands:
 @example
@@ -119,7 +118,7 @@ Make builds VSProg, and places the final executable in ./src/, the last step,
 
 @node Running
 @chapter Running
-@cindex running VSProg
+@cindex Target Areas
 @cindex Base options
 @cindex Versaloon options
 @cindex AT89S5X options
@@ -127,9 +126,9 @@ Make builds VSProg, and places the final executable in ./src/, the last step,
 @cindex MSP430 options
 @cindex C8051F options
 @cindex AVR8 options
-@cindex COMISP options
 @cindex SVF_Player options
-@cindex Cortex-M3 options
+@cindex STM32 options
+@cindex STM8 options
 @cindex LPC900 options
 
 The @option{--help} option shows:
@@ -141,6 +140,7 @@ Usage: vsprog [OPTION]...
   -S,  --support <TARGET>                   display support information
   -V,  --misc-cmd "<CMD PARA>"              run programmer defined command
   -P,  --parameter <AREA>                   display parameter for target area
+  -D,  --memory-detail <AREA>               display memory info for target area
   -J,  --jtag-dc <UB UA BB BA>              set JTAG Daisy Chain
   -d,  --debug <LEVEL>                      set debug level <0-2>
   -s,  --target-series <SERIES>             set target series
@@ -148,6 +148,11 @@ Usage: vsprog [OPTION]...
   -p,  --programmer <PROGRAMMER>            set programmer
   -o,  --operation <OPERATIONS>             set programming operation
   -I,  --input-file "<FILE>[ seg addr]"     set input file
+  -O,  --output-file "<FILE>[ seg addr]"    set output file
+  -F,  --frequency <FREQUENCY_IN_KHz>       set programming frequency
+  -m,  --mode <MODE>                        set programming mode
+  -t,  --target <TARGET VALUE>              set target value, eg(fuse): -tu0x02
+  -L,  --list-programmer                    list programmers available
   -M,  --mass-product                       set mass_product mode
   -G,  --gui-mode                           set gui_mode
   -Z,  --firmware-update                    enter into firmware update mode
@@ -155,10 +160,17 @@ Usage: vsprog [OPTION]...
 Usage of versaloon:
   -U,  --usb <PID_VID_EPIN_EPOUT>           set usb VID, PID, EPIN, EPOUT
 
+Usage of stm32:
+  -C,  --comport <COMM_ATTRIBUTE>           set com port
+  -m,  --mode <MODE>                        set mode<j|s|i>
+  -x,  --execute <ADDRESS>                  execute program
+  -F,  --frequency <FREQUENCY>              set JTAG frequency, in KHz
+
+Usage of stm8:
+  -m,  --mode <MODE>                        set mode<s|i>
+
 Usage of at89s5x:
   -F,  --frequency <FREQUENCY>              set ISP frequency, in KHz
-  -l,  --lock <LOCK>                        set lock(1..4)
-  -f,  --fuse <FUSE>                        set fuse
   -m,  --mode <MODE>                        set program mode<b|p>
 
 Usage of psoc1:
@@ -172,24 +184,32 @@ Usage of c8051f:
 
 Usage of avr8:
   -F,  --frequency <FREQUENCY>              set ISP frequency, in KHz
-  -l,  --lock <LOCK>                        set lock
-  -f,  --fuse <FUSE>                        set fuse
   -m,  --mode <MODE>                        set mode<b|p>
-
-Usage of comisp:
-  -C,  --comport <COMM_ATTRIBUTE>           set com port
-  -x,  --execute <ADDRESS>                  execute program
 
 Usage of svf_player:
   -F,  --frequency <FREQUENCY>              set JTAG frequency, in KHz
 
 Usage of lpc900:
 
-Usage of cm3:
-  -m,  --mode <MODE>                        set mode<j|s>
-  -F,  --frequency <FREQUENCY>              set JTAG/SWJ frequency, in KHz
-
 @end verbatim
+
+@section Target Areas
+
+Target Area is a memory section available in the target chip. In @option{-P} 
+and @option{-D}, you can use both fullname and shortname of a target area. 
+In other options, you can @b{ONLY} use shortname.
+
+@sp 1
+
+Supported target areas:
+
+@itemize @bullet
+@item @b{flash} or @b{f}: Lock bytes.
+@item @b{eeprom} or @b{e}: Lock bytes.
+@item @b{lock} or @b{l}: Lock bytes.
+@item @b{fuse} or @b{u}: Fuse bytes.
+@item @b{calibration} or @b{c}: Calibration bytes.
+@end itemize
 
 @section Base options
 
@@ -201,18 +221,22 @@ This option is used to print help information of VSProg.
 
 @subsection @option{-v} or @option{--version} option
 
-This options is used to print version information of VSProg.
+This option is used to print version information of VSProg.
 
 @subsection @option{-S} or @option{--support} option
 
 This option is used to print support information of VSProg. It has 
 one parameter, which defines the object to printf the support messages.
 
+@sp 1
+
 You can use:
 
 @itemize @bullet
 @item @b{all}
 @* Print support messages for all objects.
+@item @b{system}
+@* Print system information.
 @item @b{programmer}
 @* Print support messages for all programmers.
 @item @b{target}
@@ -225,7 +249,9 @@ You can use:
 
 @subsection @option{-V} or @option{--misc_cmd} option
 
-This options is used to run special command of programmer.
+This option is used to run special command of programmer.
+
+@sp 1
 
 Supported command of Versaloon programmer:
 
@@ -238,19 +264,20 @@ Supported command of Versaloon programmer:
 
 @subsection @option{-P} or @option{--parameter} option
 
-This options is used to display parameter of target area.
+This option is used to display parameter of target area. It's used to 
+display the bitmap of the fuse/lock/calibration areas, so VSGUI can parse 
+these information to generate the GUI automatically.
 
-Supported area:
+@subsection @option{-D} or @option{--memory-detail} option
 
-@itemize @bullet
-@item @b{lock} Lock bytes.
-@item @b{fuse} Fuse bytes.
-@item @b{calibration} Calibration bytes.
-@end itemize
+This option is used to display detailed information of target area. It's 
+used to display the default_value/fake_address/size of all the target areas.
 
 @subsection @option{-J} or @option{--jtag-dc} option
 
-This options is used to define the JTAG daisy chain.
+This option is used to define the JTAG daisy chain.
+
+@sp 1
 
 Parameter:
 
@@ -265,10 +292,14 @@ Parameter:
 
 This option is used to set the debug level, which is from 0 to 2.
 
+@sp 1
+
 According to different debug level, different debug messages will 
 be printed. The larger the debug level is, the more messages will 
 be printed. VSProg will use debug level 1 as default, which print 
 information messages.
+
+@sp 1
 
 @itemize @bullet
 @item @b{debug level 0}
@@ -285,13 +316,13 @@ messages in debug level 0.
 
 This option is used to define the target series. If only target series 
 if defined, VSProg will try to auto-detect the module of the target 
-device if the target supports.You can use @option{-s target} or 
+device if the target supports.You can use @option{-S target} or 
 @option{--support target} to print the target modules and target series.
 
 @subsection @option{-c} or @option{--target-module} option
 
 This option is used to define the target module. Target module should be 
-in lower cases. You can use @option{-s target} or @option{--support target} 
+in lower cases. You can use @option{-S target} or @option{--support target} 
 to print the target modules and target series.
 
 @subsection @option{-p} or @option{--programmer} option
@@ -305,7 +336,13 @@ by defaul if this option is not used.
 This option is used to define the input files. You can use multiple -I 
 options to define multiple input files. You can aslo define segment offset 
 and address offset of a input file, eg: -I "input.hex 2 0", which means 
-segment offset is 2 while address offset is 0.
+segment offset is 2 while address offset is 0. 
+Both .hex and .bin are supported.
+
+@subsection @option{-O} or @option{--output-file} option
+
+Same as -I option, but @option{-O} is used to define output file for read 
+operations.
 
 @subsection @option{-o} or @option{--operation} option
 
@@ -314,6 +351,8 @@ the target areas on which you want to operform the operation. The first
 character of the parameter of this option defines the operation. Each 
 operation can be defined in one option, that is if you want to perform 
 more operations, you will have to define more options.
+
+@sp 1
 
 For operation, you can use:
 
@@ -324,7 +363,23 @@ For operation, you can use:
 @item @b{v} for verify operation
 @end itemize
 
-For target areas, reference to sections of different target series.
+For supported target areas, reference to sections of different target series.
+
+@subsection @option{-F} or @option{--frequency} option
+
+This option is used to set the programming frequency in KHz. This will be 
+ignored if current target and programming mode has no frequency setting.
+
+@subsection @option{-m} or @option{--mode} option
+
+This option is used to set the programming mode specified by the target series.
+
+For supported modes, reference to sections of different target series.
+
+@subsection @option{-t} or @option{--target} option
+
+This option is used to set the value of target which is not in input file 
+passing by @option{-I} option. Eg, to set the fuse value to 0x010203: -tu0x010203.
 
 @subsection @option{-M} or @option{--mass-product} option
 
@@ -355,6 +410,8 @@ It also deifnes the endpoints which can accept commands. Parameter format is:
 "VID PID EPIN EPOUT". Versaloon hardware is based on ST's STM32 VCOM demo, so 
 default setting is the same in STM32's VCOM demo code.
 
+@sp 1
+
 @example
   vsprog -U "0x0483 0x5740 0x82 0x03" ......
   vsprog -U 0x0483-0x5740-0x82-0x03 ......
@@ -370,37 +427,30 @@ Series name of AT89S5S is "at89s5x".
 Supported Target Area(s):
 
 @itemize @bullet
-@item @b{f} for flash defined in hex file
-@item @b{l} for lockbit defined by "-l" option
+@item @b{f} for flash defined in input file
+@item @b{l} for lockbit defined by "-tl" option
+@end itemize
+
+@sp 1
+
+Supported Mode(s):
+
+@itemize @bullet
+@item @b{b} for Byte Mode
+@item @b{p} for Page Mode(faster), default
 @end itemize
 
 @subsection @option{-F} or @option{--frequency} option
 
-This option is used to define the ISP frequency of S5X targets. Parameter of 
-this option is the frequency in KHz. Default value is 560.
-
-@subsection @option{-l} or @option{--lock} option
-
-This option is used to define the lockbit of S5X targets. Parameter of this 
-option should be from "1" to "4", according to different lock level.
-
-@subsection @option{-f} or @option{--fuse} option
-
-This option is used to define the fuse of S5X targets. Fuse is NOT current 
-supported because a error-typed value will kill the S5X targets.
-
-@subsection @option{-m} or @option{--mode} option
-
-This option is used to define the programming mode of S5X targets. S5X can be 
-programmed in both byte mode and page mode. Use "-mb" for byte mode, "-mp" for 
-page mode. Default mode is page mode, which is faster.
+This option is used to define the ISP frequency in KHz.
+Default value is 560 KHz.
 
 @sp 1
 
 For example:
 
 @example
-  vsprog -sat89s5x -F 2000 -mb -l 4 -oe -owfl -ovfl -I flash.hex
+  vsprog -sat89s5x -F 2000 -mb -t l4 -oe -owfl -ovfl -I flash.hex
 @end example
 
 @section PSOC1 options
@@ -412,17 +462,19 @@ Series name of PSOC1 is "psoc1".
 Supported Target Area(s):
 
 @itemize @bullet
-@item @b{f} for flash defined in hex file
+@item @b{f} for flash defined in input file
 @item @b{l} for secure data defined in hex file
-@item @b{k} for checksum defined in hex file
+@item @b{k} for checksum defined in input file
 @end itemize
 
-@subsection @option{-m} or @option{--mode} option
+@sp 1
 
-This option is used to define the programming mode of PSOC1 targets. PSOC1 can be 
-programmed in different modes according to whether PSOC1 target has reset pin. If 
-target has reset pin, reset mode can be used, or power-on mode MUST be used. Use 
-"-mp" for power-on mode, "-mr" for reset mode. Default mode is reset mode.
+Supported Mode(s):
+
+@itemize @bullet
+@item @b{p} for Power-ON Mode
+@item @b{r} for Reset Mode, default
+@end itemize
 
 @sp 1
 
@@ -441,15 +493,16 @@ Series name of MSP430 is "msp430".
 Supported Target Area(s):
 
 @itemize @bullet
-@item @b{f} for flash defined in hex file
+@item @b{f} for flash defined in input file
 @end itemize
 
-@subsection @option{-m} or @option{--mode} option
+@sp 1
 
-This option is used to define the programming interface. MSP430 can be programmed 
-through JTAG/SBW/BSL interfaces. VSProg can only support JTAG interface on MSP430 
-targets without TEST pin. Use "-mj" for JTAG interface. Default interface is JTAG 
-interface.
+Supported Mode(s):
+
+@itemize @bullet
+@item @b{j} for JTAG, default
+@end itemize
 
 @sp 1
 
@@ -466,14 +519,22 @@ Series name of C8051F is ``c8051f''.
 Supported Target Area(s):
 
 @itemize @bullet
-@item @b{f} for flash defined in hex file
+@item @b{f} for flash defined in input file
 @end itemize
 
-@subsection @option{-m} or @option{--mode} option
+@sp 1
 
-This option is used to define the programming interface. C8051F can be programmed 
-through JTAG/C2 interfaces. Use "-mj" for JTAG interface, "-mc" for C2 interface. 
-Default interface is C2 interface.
+Supported Mode(s):
+
+@itemize @bullet
+@item @b{j} for JTAG
+@item @b{c} for C2, default 
+@end itemize
+
+@subsection @option{-F} or @option{--frequency} option
+
+This option is used to define the JTAG frequency in KHz.
+Default value is 4500 KHz.
 
 @sp 1
 
@@ -490,33 +551,26 @@ Series name of AVR8 is ``avr8''.
 Supported Target Area(s):
 
 @itemize @bullet
-@item @b{f} for flash defined in hex file
-@item @b{l} for lockbit defined by "-l" option
-@item @b{u} for fusebit defined by "-f" option
+@item @b{f} for flash defined in input file
+@item @b{e} for eeprom defined in input file
+@item @b{l} for lockbit defined by "-tl" option
+@item @b{u} for fusebit defined by "-tu" option
 @item @b{c} for OSCCAL calibration bytes
+@end itemize
+
+@sp 1
+
+Supported Mode(s):
+
+@itemize @bullet
+@item @b{j} for JTAG
+@item @b{i} for ISP, default 
 @end itemize
 
 @subsection @option{-F} or @option{--frequency} option
 
-This option is used to define the ISP frequency of AVR8 targets. Parameter of 
-this option is the frequency in KHz. Default value is 560.
-
-@subsection @option{-l} or @option{--lock} option
-
-This option is used to define the lockbit of AVR8 targets. Lockbit is NOT 
-currently support by VSProg.
-
-@subsection @option{-f} or @option{--fuse} option
-
-This option is used to define the fuse of AVR8 targets. Fuse is NOT current 
-supported because a error-typed value will kill the AVR8 targets.
-
-@subsection @option{-m} or @option{--mode} option
-
-This option is used to define the programming interfaces of AVR8 targets. 
-AVR8 can be programmed through ISP/JTAG/HVPP/HVSP interfaces. Current Versaloon 
-has on High-Voltage control, so HVPP and HVSP can NOT be supported. Use "-mi" 
-for ISP interface, "-mj" for JTAG interface. Default interface is ISP interface.
+This option is used to define the ISP/JTAG frequency.
+Default value for ISP is 560. Default value for JTAG is 4500.
 
 @sp 1
 
@@ -526,58 +580,10 @@ For example:
   vsprog -savr8 -F 2250 -mi -oe -owf -ovf -I flash.hex
 @end example
 
-@section COMISP options
-
-Series name of COMISP is not used, target name should be exactly defined. 
-It's used to support ISP protocol on Com port. 
-COMISP can not support auto-detect of target module.
-
-@sp 1
-
-Supported Target Area(s):
-
-@itemize @bullet
-@item @b{f} for flash defined in hex file
-@end itemize
-
-@subsection @option{-C} or @option{--commport} option
-
-This option is used to define the Com port. Parameter should be as: 
-COMPORTNAME:BAUDRATE_ATTRIBUTE_EXTRA. ATTRIBUTE is 3 characters, the first is 
-datalength, the second is parity bit, the third is stopbit. Datalength can be from 
-"5" to "9". Parity bit can be "N" for no parity, "E" for even parity, "O" for odd 
-parity. Stopbit can be "1" for 1 stopbit, "P" for 1.5 stopbits, "2" for 2 stopbits.
-EXTRA is 2 characters, the first is handshake, the second is auxtra pin. Handshake 
-can only support "N" for no handshake. There are 2 auxtra pin, one is DTR for reset 
-control, the other is RTS for mode control. Auxtra pin can be "A" to enable these 
-control, "N" to disable. You can define only partial of the parameters, default 
-BAUDRATE is 115200, defaul ATTRIBUTE is "8N1", default EXTRA is "NN". Defaul Com 
-port is COM1 for Windows, ttyS0 for Linux. For example:
-
-@example
-  -C COM3
-  -C ttyACM0:9600_8E1
-  -C COM1:115200_8N1_NA
-  -C COM1:115200-8N1-NA
-  -C "COM1:115200 8N1 NA"
-@end example
-
-@subsection @option{-x} or @option{--execute} option
-
-This option is used to define the address to execute after programming.
-
-@sp 1
-
-For example:
-
-@example
-  vsprog -cstm32isp -C "ttyS1:9600_8E1_NA" -oe -owf -ovf -I flash.hex
-@end example
-
 @section SVF_Player options
 
 Series name of SVF_Player is "svf_player". SVF_Player can not support auto-detect 
-of target module. No target area is supported by SVR_Player.
+of target module. No target area is supported by SVF_Player and ONLY JTAG is supported.
 
 @subsection @option{-F} or @option{--frequency} option
 
@@ -591,9 +597,9 @@ For example:
   vsprog -ssvf_player -F 18000 -I program.svf
 @end example
 
-@section Cortex-M3 options
+@section STM32 options
 
-Series name of Cortex-M3 is not used, target name should be exactly defined.
+Series name of STM32 is ``stm32''.
 
 @sp 1
 
@@ -603,21 +609,75 @@ Supported Target Area(s):
 @item @b{f} for flash defined in hex file
 @end itemize
 
-@subsection @option{-m} or @option{--mode} option
+@sp 1
 
-This option is used to define the programming interface. Cortex-M3 chips can support 
-both JTAG and SWD interface. Use "-mj" for JTAG interface, "-ms" for SWD interface. 
-Default interface is JTAG interface.
+Supported Mode(s):
+
+@itemize @bullet
+@item @b{j} for JTAG, default
+@item @b{s} for SWD
+@item @b{i} for ISP on UART
+@end itemize
 
 @subsection @option{-F} or @option{--frequency} option
 
 This option is used to define the JTAG frequency in kHz.
+Default value is 560.
+
+@subsection @option{-C} or @option{--commport} option
+
+This option is used to define the Com port for ISP mode. Parameter should be as: 
+COMPORTNAME:BAUDRATE_ATTRIBUTE_EXTRA. ATTRIBUTE is 3 characters, the first is 
+datalength, the second is parity bit, the third is stopbit. Datalength can be from 
+"5" to "9". Parity bit can be "N" for no parity, "E" for even parity, "O" for odd 
+parity. Stopbit can be "1" for 1 stopbit, "P" for 1.5 stopbits, "2" for 2 stopbits.
+EXTRA is 2 characters, the first is handshake, the second is auxtra pin. Handshake 
+can only support "N" for no handshake. There are 2 auxtra pin, one is DTR for reset 
+control, the other is RTS for mode control. Auxtra pin can be "A" to enable these 
+control, "N" to disable. You can define only partial of the parameters, default 
+BAUDRATE is 115200, defaul ATTRIBUTE is "8N1", default EXTRA is "NN". Defaul Com 
+port is COM1 for Windows, ttyS0 for Linux. For example:
+
+@example
+  -C COM3
+  -C COM3:115200
+  -C ttyACM0:9600_8E1
+  -C COM1:115200_8N1_NA
+  -C COM1:115200-8N1-NA
+  -C "COM1:115200 8N1 NA"
+@end example
+
+@subsection @option{-x} or @option{--execute} option
+
+This option is used to define the address to execute after programming.
 
 @sp 1
 
 @example
-  vsprog -ccm3_stm32 -F9000 -oe -owf -ovf -I flash.hex
-  vsprog -ccm3_stm32 -ms -oe -owf -ovf -I flash.hex
+  vsprog -sstm32 -F9000 -oe -owf -ovf -I flash.hex
+  vsprog -sstm32 -ms -oe -owf -ovf -I flash.hex
+  vsprog -sstm32 -mi -CCOM3:115200 -oe -owf -ovf -I flash.hex
+@end example
+
+@section STM8 options
+
+Series name of STM8 is ``stm8''. Auto-Detect is no supported on STM8, you MUST 
+specify the chip name.
+
+@sp 1
+
+Supported Target Area(s):
+
+@itemize @bullet
+@item @b{f} for flash defined in input file
+@item @b{e} for eeprom defined in input file, not supported currently
+@item @b{u} for fuse defined by "-tu" option
+@end itemize
+
+@sp 1
+
+@example
+  vsprog -cstm8s207sbt6 -oe -owf -ovf -oru -I flash.hex
 @end example
 
 @section LPC900 options
@@ -652,7 +712,6 @@ More supports are planed to be added into VSProg. Below is the list:
 @item @b{MSP430_BSL}
 @item @b{Renesas_ISP}
 @item @b{CPLD/FPGA_JTAG test for more devices}
-@item @b{STM8_ISSP}
 @item @b{AVR32_JTAG}
 @item @b{AVRX_JTAG/PDI}
 @end itemize
