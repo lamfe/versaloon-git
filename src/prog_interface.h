@@ -38,10 +38,11 @@
 #define LPC_ICP					(1 << 22)
 #define SWJ						(1 << 23)
 #define SWIM					(1 << 24)
+#define HV						(1 << 25)
 #define INVALID_INTERFACE		(1 << 30)
 #define INTERFACES_MASK			(USART | SPI | I2C | GPIO | CAN | CLOCK | ADC \
 								 | DAC | POWER | ISSP | JTAG | MSP430_JTAG \
-								 | LPC_ICP | MSP430_SBW | SWJ | SWIM)
+								 | LPC_ICP | MSP430_SBW | SWJ | SWIM | HV)
 
 
 // GPIO pins

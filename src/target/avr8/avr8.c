@@ -56,8 +56,8 @@ const struct program_mode_t avr8_program_mode[] =
 {
 	{'i', SET_FREQUENCY, SPI | GPIO},
 	{'j', SET_FREQUENCY, JTAG_HL},
-	{'p', "", 0},
-	{'s', "", 0},
+	{'p', "", HV},
+	{'s', "", HV},
 	{0, NULL, 0}
 };
 
