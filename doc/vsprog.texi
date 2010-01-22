@@ -71,7 +71,7 @@ See @uref{www.SimonQian.com/en/Versaloon}.
 @b{target devices:} VSProg can now support S51_ISP, AVR_ISP/JTAG, 
 C8051F_JTAG/C2, STM32_ISP/JTAG/SWD(Com port), MSP430_JTAG(without TEST pin), 
 PSOC1_ISSP, CPLD/FPGA_JTAG(by SVF_Player), LPC900_ICP. 
-More supports are to b@cindex Target Arease added.
+More supports are to be added.
 
 @node Developers
 @chapter Developers
@@ -118,6 +118,7 @@ Make builds VSProg, and places the final executable in ./src/, the last step,
 
 @node Running
 @chapter Running
+@cindex Running VSProg
 @cindex Target Areas
 @cindex Base options
 @cindex Versaloon options

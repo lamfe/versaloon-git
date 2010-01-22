@@ -1000,6 +1000,7 @@ begin
   if (aFont <> nil) and (aFont <> lastFont) then
   begin
     sgData.Canvas.Font := aFont;
+    lastFont := aFont;
   end;
 end;
 

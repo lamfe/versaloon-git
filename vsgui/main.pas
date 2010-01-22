@@ -225,6 +225,7 @@ var
   CurProgrammerInfo: string;
   ProgrammerParameter: string;
   PreviousPage: string;
+  PreviousTargetIndex: integer;
 
 const
   DEBUG_LOG_SHOW: boolean = False;
@@ -753,7 +754,15 @@ begin
   begin
     cbboxTarget.Items.Add(VSProg_Targets.TargetSeries[index].TargetChips[i].Name);
   end;
-  cbboxTarget.ItemIndex := 0;
+
+  if (PreviousTargetIndex >= 0) and (PreviousTargetIndex < cbboxTarget.Items.Count) then
+  begin
+    cbboxTarget.ItemIndex := PreviousTargetIndex;
+  end
+  else
+  begin
+    cbboxTarget.ItemIndex := 0;
+  end;
 
   gbChipName.Parent  := pcMain.ActivePage;
   gbInputFile.Parent := pcMain.ActivePage;
@@ -1088,6 +1097,7 @@ begin
     begin
       SetLength(TargetFile, 0);
       cbboxInputFile.Clear;
+      PreviousTargetIndex := 0;
     end;
     PreviousPage := pcMain.ActivePage.Caption;
     HideDebugLog();
@@ -1786,6 +1796,7 @@ begin
     end;
   end;
 
+  PreviousTargetIndex := cbboxTarget.ItemIndex;
   VSProg_GUITargetAreaInit;
   VSProg_GUIModeInit;
 
