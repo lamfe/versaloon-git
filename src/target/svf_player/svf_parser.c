@@ -396,6 +396,10 @@ uint32_t svf_parser_get_command(FILE *file, char **cmd_buffer,
 					(*cmd_buffer)[cmd_pos++] = ' ';
 				}
 				(*cmd_buffer)[cmd_pos++] = (char)toupper(ch);
+				if (')' == ch)
+				{
+					(*cmd_buffer)[cmd_pos++] = ' ';
+				}
 			}
 			break;
 		}
@@ -601,6 +605,11 @@ XXR_common:
 		
 		i_tmp = xxr_para_tmp->len;
 		xxr_para_tmp->len = atoi(argus[1]);
+		if (xxr_para_tmp->len > SVF_PARSER_DATA_BUFFER_SIZE / 2 * 8)
+		{
+			LOG_ERROR("%d is toooo long for one scan.\n", xxr_para_tmp->len);
+			return ERROR_FAIL;
+		}
 		LOG_DEBUG("\tlength = %d\n", xxr_para_tmp->len);
 		xxr_para_tmp->data_mask = 0;
 		for (i = 2; i < num_of_argu; i += 2)
@@ -658,6 +667,23 @@ XXR_common:
 						& ((1 << (xxr_para_tmp->len)) - 1));
 		}
 		
+		// for TIR, TDR, HIR, HDR only:
+		// malloc TDO buffer if TDO is not defined
+		// because they will be referenced in SIR/SDR command
+		if (!(xxr_para_tmp->data_mask & XXR_TDO) && (xxr_para_tmp->len > 0) 
+			&& ((TIR == command) || (TDR == command) 
+				|| (HIR == command) || (HDR == command)))
+		{
+			ret = svf_parser_adjust_array_length(&xxr_para_tmp->tdo, i_tmp, 
+													xxr_para_tmp->len);
+			if (ret != ERROR_OK)
+			{
+				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+						  "adjust length of array");
+				return ERRCODE_FAILURE_OPERATION;
+			}
+		}
+		
 		// If a command changes the length of the last scan of the same type 
 		// and the MASK parameter is absent, the mask pattern used is all cares
 		if (!(xxr_para_tmp->data_mask & XXR_MASK) 
@@ -665,14 +691,18 @@ XXR_common:
 		{
 			// MASK not defined and length changed
 			ret = svf_parser_adjust_array_length(&xxr_para_tmp->mask, i_tmp, 
-												 xxr_para_tmp->len);
+													xxr_para_tmp->len);
 			if (ret != ERROR_OK)
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
 						  "adjust length of array");
 				return ERRCODE_FAILURE_OPERATION;
 			}
-			svf_parser_append_1s(xxr_para_tmp->mask, 0, xxr_para_tmp->len);
+			// If no TDO parameter is present, the MASK will not be used.
+			if (xxr_para_tmp->data_mask & XXR_TDO)
+			{
+				svf_parser_append_1s(xxr_para_tmp->mask, 0, xxr_para_tmp->len);
+			}
 		}
 		
 		// do scan if necessary
