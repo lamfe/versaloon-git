@@ -221,10 +221,10 @@ static uint8_t svf_parser_find_string_in_array(char *str, char **strs,
 }
 
 static RESULT svf_parser_parse_cmd_string(char *str, uint32_t len, 
-										char **argus, uint32_t *num_of_argu)
+											char **argus, uint32_t *num_of_argu)
 {
 	uint32_t pos = 0, num = 0;
-	uint8_t space_found = 1;
+	uint8_t space_found = 1, in_bracket = 0;
 	
 	while (pos < len)
 	{
@@ -238,10 +238,24 @@ static RESULT svf_parser_parse_cmd_string(char *str, uint32_t len,
 			return ERROR_FAIL;
 			break;
 		case ' ':
-			space_found = 1;
-			str[pos] = '\0';
+			if (!in_bracket)
+			{
+				space_found = 1;
+				str[pos] = '\0';
+			}
+			else
+			{
+				goto parse_char;
+			}
 			break;
+		case '(':
+			in_bracket = 1;
+			goto parse_char;
+		case ')':
+			in_bracket = 0;
+			goto parse_char;
 		default:
+parse_char:
 			if (space_found)
 			{
 				argus[num++] = &str[pos];
@@ -311,8 +325,8 @@ static RESULT svf_parser_copy_hexstring_to_binary(char *str, uint8_t **bin,
 		}
 	}
 
-	// consume optional leading '0' characters
-	while (str_len > 0 && str[str_len - 1] == '0')
+	// consume optional leading '0' or space characters
+	while ((str_len > 0) && ((str[str_len - 1] == '0') || (str[str_len - 1] == ' ')))
 		str_len--;
 
 	// check valid
@@ -698,11 +712,30 @@ XXR_common:
 						  "adjust length of array");
 				return ERRCODE_FAILURE_OPERATION;
 			}
-			// If no TDO parameter is present, the MASK will not be used.
-			if (xxr_para_tmp->data_mask & XXR_TDO)
+			svf_parser_append_1s(xxr_para_tmp->mask, 0, xxr_para_tmp->len);
+		}
+		// If TDO is absent, no comparison is needed, set the mask to 0
+		if (!(xxr_para_tmp->data_mask & XXR_TDO))
+		{
+			if (NULL == xxr_para_tmp->tdo)
 			{
-				svf_parser_append_1s(xxr_para_tmp->mask, 0, xxr_para_tmp->len);
+				if (ERROR_OK != svf_parser_adjust_array_length(&xxr_para_tmp->tdo, i_tmp, 
+																xxr_para_tmp->len))
+				{
+					LOG_ERROR("fail to adjust length of array");
+					return ERROR_FAIL;
+				}
 			}
+			if (NULL == xxr_para_tmp->mask)
+			{
+				if (ERROR_OK != svf_parser_adjust_array_length(&xxr_para_tmp->mask, i_tmp, 
+																xxr_para_tmp->len))
+				{
+					LOG_ERROR("fail to adjust length of array");
+					return ERROR_FAIL;
+				}
+			}
+			memset(xxr_para_tmp->mask, 0, (xxr_para_tmp->len + 7) >> 3);
 		}
 		
 		// do scan if necessary

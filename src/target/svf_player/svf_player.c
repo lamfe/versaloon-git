@@ -188,13 +188,15 @@ RESULT svfp_execute(struct program_context_t *context)
 	if (ERROR_OK != tap_commit())
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "do jtag");
-		return ERRCODE_FAILURE_OPERATION;
+		ret = ERROR_FAIL;
+		goto leave_program_mode;
 	}
 	else if (ERROR_OK != svf_parser_check_tdo())
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
 				  "check tdo data");
-		return ERRCODE_FAILURE_OPERATION;
+		ret = ERROR_FAIL;
+		goto leave_program_mode;
 	}
 	
 	if (verbosity < DEBUG_LEVEL)
