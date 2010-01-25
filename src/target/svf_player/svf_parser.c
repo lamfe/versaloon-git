@@ -230,23 +230,10 @@ static RESULT svf_parser_parse_cmd_string(char *str, uint32_t len,
 	{
 		switch (str[pos])
 		{
-		case '\n':
-		case '\r':
 		case '!':
 		case '/':
 			LOG_BUG("error when parsing svf command\n");
 			return ERROR_FAIL;
-			break;
-		case ' ':
-			if (!in_bracket)
-			{
-				space_found = 1;
-				str[pos] = '\0';
-			}
-			else
-			{
-				goto parse_char;
-			}
 			break;
 		case '(':
 			in_bracket = 1;
@@ -256,7 +243,12 @@ static RESULT svf_parser_parse_cmd_string(char *str, uint32_t len,
 			goto parse_char;
 		default:
 parse_char:
-			if (space_found)
+			if (!in_bracket && isspace(str[pos]))
+			{
+				space_found = 1;
+				str[pos] = '\0';
+			}
+			else if (space_found)
 			{
 				argus[num++] = &str[pos];
 				space_found = 0;
@@ -289,7 +281,7 @@ static RESULT svf_parser_copy_hexstring_to_binary(char *str, uint8_t **bin,
 		{
 			ch = str[--str_len];
 
-			if (ch != ' ')
+			if (!isspace(ch))
 			{
 				if ((ch >= '0') && (ch <= '9'))
 				{
@@ -326,8 +318,11 @@ static RESULT svf_parser_copy_hexstring_to_binary(char *str, uint8_t **bin,
 	}
 
 	// consume optional leading '0' or space characters
-	while ((str_len > 0) && ((str[str_len - 1] == '0') || (str[str_len - 1] == ' ')))
+	while ((str_len > 0) && 
+			((str[str_len - 1] == '0') || isspace(str[str_len - 1])))
+	{
 		str_len--;
+	}
 
 	// check valid
 	if (str_len > 0 || (ch & ~((2 << ((bit_len - 1) % 4)) - 1)) != 0)
@@ -379,7 +374,11 @@ uint32_t svf_parser_get_command(FILE *file, char **cmd_buffer,
 		case '\r':
 			slash = 0;
 			comment = 0;
-			break;
+			// Don't save '\r' and '\n' if no data is parsed
+			if (!cmd_pos)
+			{
+				break;
+			}
 		default:
 			if (!comment)
 			{
