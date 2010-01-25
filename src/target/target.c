@@ -553,7 +553,7 @@ RESULT target_program(struct program_context_t *context)
 		&& (target_chips.chips_param[0].program_mode != 0) 
 		&& !(param->program_mode & (1 << pi->mode)))
 	{
-		LOG_ERROR(_GETTEXT("current mode is not supported by %s"), 
+		LOG_ERROR(_GETTEXT("current mode is not supported by %s\n"), 
 					pi->chip_name);
 		return ERROR_FAIL;
 	}
