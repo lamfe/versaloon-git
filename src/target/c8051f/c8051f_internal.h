@@ -61,7 +61,7 @@
 #define C8051F_INDOPTCODE_READ			0x02
 #define C8051F_INDOPTCODE_WRITE			0x03
 
-struct program_functions_t c8051fjtag_program_functions;
+extern struct program_functions_t c8051fjtag_program_functions;
 
 
 // C2
@@ -77,7 +77,7 @@ struct program_functions_t c8051fjtag_program_functions;
 #define C8051F_C2_REP_COMMAND_FAILED	0x02
 #define C8051F_C2_REP_COMMAND_OK		0x0D
 
-struct program_functions_t c8051fc2_program_functions;
+extern struct program_functions_t c8051fc2_program_functions;
 
 #endif /* __C8051F_INTERNAL_H_INCLUDED__ */
 
