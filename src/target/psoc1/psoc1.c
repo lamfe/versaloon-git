@@ -130,7 +130,7 @@ static struct programmer_info_t *p = NULL;
 #define issp_enter_program_mode(mode)		p->issp_enter_program_mode(mode)
 #define issp_leave_program_mode(mode)		p->issp_leave_program_mode(mode)
 #define issp_wait_and_poll()				p->issp_wait_and_poll()
-#define issp_commit()						p->issp_commit()
+#define issp_commit()						p->peripheral_commit()
 
 #define issp_0s()							\
 							p->issp_vector(ISSP_VECTOR_0S, 0x00, 0x00, NULL)

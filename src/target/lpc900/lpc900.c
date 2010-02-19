@@ -110,7 +110,7 @@ static struct programmer_info_t *p = NULL;
 #define icp_fini()							p->lpcicp_fini()
 #define icp_enter_program_mode()			p->lpcicp_enter_program_mode()
 #define icp_leave_program_mode()			p->lpcicp_leave_program_mode()
-#define icp_commit()						p->lpcicp_commit()
+#define icp_commit()						p->peripheral_commit()
 #define icp_in(buf, len)					p->lpcicp_in((buf), (len))
 #define icp_out(buf, len)					p->lpcicp_out((buf), (len))
 #define icp_poll(dat, ptr, set, clear, cnt)	\

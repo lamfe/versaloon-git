@@ -88,7 +88,7 @@ static struct programmer_info_t *p = NULL;
 #define poll_end()					p->poll_end()
 #define poll_check(o, m, v)			p->poll_checkbyte((o), (m), (v))
 
-#define jtag_commit()				p->jtag_hl_commit()
+#define jtag_commit()				p->peripheral_commit()
 
 uint32_t dummy;
 

@@ -87,7 +87,6 @@ struct programmer_info_t
 	RESULT (*issp_wait_and_poll)(void);
 	RESULT (*issp_vector)(uint8_t operate, uint8_t addr, uint8_t data, 
 							uint8_t *buf);
-	RESULT (*issp_commit)(void);
 	
 	// swj
 	RESULT (*swj_init)(void);
@@ -96,7 +95,7 @@ struct programmer_info_t
 	RESULT (*swj_seqin)(uint8_t *data, uint16_t bitlen);
 	RESULT (*swj_transact)(uint8_t request, uint32_t *data);
 	RESULT (*swj_setpara)(uint8_t trn, uint16_t retry, uint16_t dly);
-	RESULT (*swj_commit)(uint8_t *result);
+	RESULT (*swj_get_last_ack)(uint8_t *result);
 	
 	// jtag_hl
 	RESULT (*jtag_hl_init)(void);
@@ -111,7 +110,6 @@ struct programmer_info_t
 							uint8_t want_ret);
 	RESULT (*jtag_hl_register_callback)(jtag_callback_t send_callback, 
 										jtag_callback_t receive_callback);
-	RESULT (*jtag_hl_commit)(void);
 	
 	// jtag_ll
 	RESULT (*jtag_ll_init)(void);
@@ -122,7 +120,6 @@ struct programmer_info_t
 	RESULT (*jtag_ll_scan)(uint8_t* r, uint16_t bitlen, 
 							uint8_t tms_before_valid, uint8_t tms_before, 
 							uint8_t tms_after0, uint8_t tms_after1);
-	RESULT (*jtag_ll_commit)(void);
 	
 	// msp430_jtag
 	RESULT (*msp430jtag_init)(void);
@@ -155,7 +152,6 @@ struct programmer_info_t
 	RESULT (*c2_addr_read)(uint8_t *data);
 	RESULT (*c2_data_read)(uint8_t *data, uint8_t len);
 	RESULT (*c2_data_write)(uint8_t *data, uint8_t len);
-	RESULT (*c2_commit)(void);
 	
 	// i2c
 	RESULT (*i2c_init)(void);
@@ -165,7 +161,6 @@ struct programmer_info_t
 						uint8_t *data, uint16_t data_len, uint8_t stop);
 	RESULT (*i2c_write)(uint16_t chip_addr, uint8_t chip_addr_len, 
 						uint8_t *data, uint16_t data_len, uint8_t stop);
-	RESULT (*i2c_commit)(void);
 	
 	// lpcicp
 	RESULT (*lpcicp_init)(void);
@@ -175,7 +170,6 @@ struct programmer_info_t
 	RESULT (*lpcicp_out)(uint8_t *buff, uint16_t len);
 	RESULT (*lpcicp_poll_ready)(uint8_t data, uint8_t *ret, uint8_t setmask, 
 								uint8_t clearmask, uint16_t pollcnt);
-	RESULT (*lpcicp_commit)(void);
 	
 	// swim
 	RESULT (*swim_init)(void);
@@ -207,7 +201,7 @@ struct programmer_info_t
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0\
+		0, 0, 0, 0, 0, 0, 0, 0, 0\
 	}
 
 extern struct programmer_info_t *cur_programmer;

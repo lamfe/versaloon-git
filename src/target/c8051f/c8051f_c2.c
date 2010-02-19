@@ -78,7 +78,7 @@ struct program_functions_t c8051fc2_program_functions =
 #define poll_end()				p->poll_end()
 #define poll_check(o, m, v)		p->poll_checkbyte((o), (m), (v))
 
-#define commit()				p->c2_commit()
+#define commit()				p->peripheral_commit()
 
 static struct programmer_info_t *p = NULL;
 
