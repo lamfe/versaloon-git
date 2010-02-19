@@ -179,7 +179,7 @@ struct program_functions_t avr8jtag_program_functions =
 
 #define jtag_delay_us(us)			p->jtag_hl_delay_us((us))
 #define jtag_delay_ms(ms)			p->jtag_hl_delay_ms((ms))
-#define jtag_commit()				p->jtag_hl_commit()
+#define jtag_commit()				p->peripheral_commit()
 
 static struct programmer_info_t *p = NULL;
 

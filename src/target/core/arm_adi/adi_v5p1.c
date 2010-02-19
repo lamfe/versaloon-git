@@ -68,7 +68,7 @@ struct adi_dp_info_t adi_dp_info;
 
 #define jtag_register_callback(s,r)	\
 							adi_prog->jtag_hl_register_callback((s), (r))
-#define jtag_commit()			adi_prog->jtag_hl_commit()
+#define jtag_commit()			adi_prog->peripheral_commit()
 
 // SWJ
 #define swj_init()				adi_prog->swj_init()
@@ -77,7 +77,8 @@ struct adi_dp_info_t adi_dp_info;
 #define swj_seqin(b, l)			adi_prog->swj_seqin((b), (l))
 #define swj_transact(r, v)		adi_prog->swj_transact((r), (v))
 #define swj_setpara(t, r, d)	adi_prog->swj_setpara((t), (r), (d))
-#define swj_commit(ack)			adi_prog->swj_commit(ack)
+#define swj_commit()			adi_prog->peripheral_commit()
+#define swj_get_last_ack(ack)	adi_prog->swj_get_last_ack(ack)
 
 RESULT adi_dp_read_reg(uint8_t reg_addr, uint32_t *value, uint8_t check_result);
 RESULT adi_dp_write_reg(uint8_t reg_addr, uint32_t *value, 
@@ -188,7 +189,11 @@ RESULT adi_dp_commit(void)
 		return jtag_commit();
 		break;
 	case ADI_DP_SWD:
-		return swj_commit(&adi_dp.ack);
+		if (ERROR_OK != swj_commit())
+		{
+			return ERROR_FAIL;
+		}
+		return swj_get_last_ack(&adi_dp.ack);
 		break;
 	default:
 		return ERROR_FAIL;

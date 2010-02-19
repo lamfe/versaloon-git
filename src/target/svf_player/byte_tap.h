@@ -31,7 +31,7 @@ extern struct programmer_info_t *p;
 								p->jtag_ll_tms_clocks(len, tms)
 #define jtag_xr(d, l, v, b, a0, a1)	\
 								p->jtag_ll_scan((d), (l), (v), (v), (a0), (a1))
-#define jtag_commit()			p->jtag_ll_commit()
+#define jtag_commit()			p->peripheral_commit()
 
 #define jtag_trst_init()		p->gpio_init()
 #define jtag_trst_fini()		p->gpio_fini()

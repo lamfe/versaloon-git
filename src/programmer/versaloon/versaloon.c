@@ -790,6 +790,11 @@ RESULT versaloon_null(void)
 {
 	return ERROR_OK;
 }
+// Commit
+RESULT versaloon_peripheral_commit(void)
+{
+	return usbtoxxx_execute_command();
+}
 // SPI
 RESULT versaloon_spi_init(void)
 {
@@ -913,17 +918,13 @@ RESULT versaloon_lpcicp_poll_ready(uint8_t data, uint8_t *ret, uint8_t setmask,
 								  clearmask, pollcnt);
 }
 // SWJ
-RESULT versaloon_swj_commit(uint8_t *result)
+RESULT versaloon_swj_get_last_ack(uint8_t *result)
 {
-	RESULT ret;
-	
-	ret = usbtoxxx_execute_command();
 	if (result != NULL)
 	{
 		*result = usbtoswj_get_last_ack();
 	}
-	
-	return ret;
+	return ERROR_OK;
 }
 RESULT versaloon_swj_init(void)
 {
@@ -1174,11 +1175,6 @@ RESULT versaloon_swim_in(uint8_t *data, uint8_t bytelen)
 {
 	return usbtoswim_in(VERSALOON_SWIM_PORT, data, bytelen);
 }
-// Commit
-RESULT versaloon_peripheral_commit(void)
-{
-	return usbtoxxx_execute_command();
-}
 
 
 
@@ -1218,7 +1214,6 @@ RESULT versaloon_init_capability(void *p)
 	t->issp_leave_program_mode = versaloon_issp_leave_program_mode;
 	t->issp_wait_and_poll = versaloon_issp_wait_and_poll;
 	t->issp_vector = versaloon_issp_vector;
-	t->issp_commit = versaloon_peripheral_commit;
 	
 	// LPCICP
 	t->lpcicp_init = versaloon_lpcicp_init;
@@ -1227,7 +1222,6 @@ RESULT versaloon_init_capability(void *p)
 	t->lpcicp_in = versaloon_lpcicp_in;
 	t->lpcicp_out = versaloon_lpcicp_out;
 	t->lpcicp_poll_ready = versaloon_lpcicp_poll_ready;
-	t->lpcicp_commit = versaloon_peripheral_commit;
 	
 	// Target voltage
 	t->get_target_voltage = versaloon_get_target_voltage;
@@ -1239,7 +1233,7 @@ RESULT versaloon_init_capability(void *p)
 	t->swj_seqin = versaloon_swj_seqin;
 	t->swj_transact = versaloon_swj_transact;
 	t->swj_setpara = versaloon_swj_setpara;
-	t->swj_commit = versaloon_swj_commit;
+	t->swj_get_last_ack = versaloon_swj_get_last_ack;
 
 	t->jtag_hl_init = versaloon_jtaghl_init;
 	t->jtag_hl_fini = versaloon_jtaghl_fini;
@@ -1248,7 +1242,6 @@ RESULT versaloon_init_capability(void *p)
 	t->jtag_hl_runtest = versaloon_jtaghl_runtest;
 	t->jtag_hl_ir = versaloon_jtaghl_ir;
 	t->jtag_hl_dr = versaloon_jtaghl_dr;
-	t->jtag_hl_commit = versaloon_peripheral_commit;
 	t->jtag_hl_register_callback = versaloon_jtaghl_register_callback;
 	
 	// JTAG_LL
@@ -1258,7 +1251,6 @@ RESULT versaloon_init_capability(void *p)
 	t->jtag_ll_tms = versaloon_jtagll_tms;
 	t->jtag_ll_tms_clocks = versaloon_jtagll_tms_clocks;
 	t->jtag_ll_scan = versaloon_jtagll_scan;
-	t->jtag_ll_commit = versaloon_peripheral_commit;
 	
 	// MSP430_JTAG
 	t->msp430jtag_init = versaloon_msp430jtag_init;
@@ -1289,7 +1281,6 @@ RESULT versaloon_init_capability(void *p)
 	t->c2_addr_read = versaloon_c2_addr_read;
 	t->c2_data_write = versaloon_c2_data_write;
 	t->c2_data_read = versaloon_c2_data_read;
-	t->c2_commit = versaloon_peripheral_commit;
 	
 	// I2C
 	t->i2c_init = versaloon_i2c_init;
