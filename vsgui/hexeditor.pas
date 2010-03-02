@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs,
   StdCtrls, ExtCtrls, Grids, ActnList, parameditor, inputdialog,
-  Contnrs, Math, findreplace;
+  Contnrs, Math, findreplace, FileUtil;
 
 type
 
@@ -863,7 +863,7 @@ begin
   FillChar(DataBuff[1], DataByteSize, DefaultData);
 
   // open file and read
-  if FileExists(FileName) then
+  if FileExistsUtf8(FileName) then
   begin
     ext := LowerCase(ExtractFileExt(FileName));
     CurFileParserIndex := 0;
@@ -876,7 +876,7 @@ begin
     end;
     success := True;
     try
-      hFile := TFileStream.Create(FileName, fmOpenReadWrite);
+      hFile := TFileStream.Create(Utf8ToAnsi(FileName), fmOpenReadWrite);
       if FileParser[CurFileParserIndex].ReadFile <> nil then
       begin
         if not FileParser[CurFileParserIndex].ReadFile(hFile,
