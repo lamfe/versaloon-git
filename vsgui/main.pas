@@ -8,7 +8,7 @@ uses
   Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs, ComCtrls,
   StdCtrls, EditBtn, ExtCtrls, cli_caller, parameditor, Menus, Buttons, Spin,
   Synaser, com_setup, fileselector, hexeditor, XMLCfg, vsprogparser, vsprogtarget,
-  vsprogprogrammer, inputdialog;
+  vsprogprogrammer, inputdialog, FileUtil;
 
 type
 
@@ -1529,10 +1529,10 @@ begin
       MessageDlg('Error', 'No File Defined.', mtError, [mbOK], 0);
       exit;
     end;
-    if not FileExists(TargetFile[fileidx].filename) then
+    if not FileExistsUtf8(TargetFile[fileidx].filename) then
     begin
       Beep();
-      MessageDlg('Error', TargetFile[fileidx].filename + 'not exists.',
+      MessageDlg('Error', '"' + TargetFile[fileidx].filename + '" not exists.',
         mtError, [mbOK], 0);
       exit;
     end;
@@ -1818,8 +1818,8 @@ begin
       (Sender as TDirectoryEdit).Directory + System.DirectorySeparator;
   end;
 
-  VSProg_Exists  := FileExists(dedtVSProg.Directory + VSPROG_STR);
-  OpenOCD_Exists := FileExists(dedtOpenOCD.Directory + OPENOCD_STR);
+  VSProg_Exists  := FileExistsUtf8(dedtVSProg.Directory + VSPROG_STR);
+  OpenOCD_Exists := FileExistsUtf8(dedtOpenOCD.Directory + OPENOCD_STR);
 end;
 
 procedure TFormMain.FormActivate(Sender: TObject);
@@ -1962,7 +1962,7 @@ end;
 function TFormMain.VSProg_PrepareToRun(aApplicationName: string): boolean;
 begin
   Result := False;
-  if not FileExists(aApplicationName) then
+  if not FileExistsUtf8(aApplicationName) then
   begin
     exit;
   end;
@@ -1987,7 +1987,7 @@ begin
     end;
   end;
 
-  VSProg_Caller.Application := aApplicationName;
+  VSProg_Caller.Application := Utf8ToAnsi(aApplicationName);
   VSProg_Caller.RemoveAllParameters();
   Result := True;
   memoLog.Clear;
