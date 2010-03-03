@@ -34,10 +34,11 @@
 
 enum  HEX_TYPE
 {
-	HEX_TYPE_DATA		= 0x00,
-	HEX_TYPE_EOF		= 0x01,
-	HEX_TYPE_SEG_ADDR	= 0x02,
-	HEX_TYPE_EXT_ADDR	= 0x04
+	HEX_TYPE_DATA			= 0x00,
+	HEX_TYPE_EOF			= 0x01,
+	HEX_TYPE_LINEAR_ADDR	= 0x02,
+	HEX_TYPE_SEG_ADDR		= 0x03,
+	HEX_TYPE_EXT_ADDR		= 0x04
 };
 
 RESULT read_hex_file(FILE *hex_file, WRITE_MEMORY_CALLBACK callback, 
@@ -45,7 +46,8 @@ RESULT read_hex_file(FILE *hex_file, WRITE_MEMORY_CALLBACK callback,
 {
 	uint8_t line_buf[10 + 0xFF * 2 + 2], checksum;
 	char ch, *ptr, tmp_buff[3];
-	uint32_t ext_addr = 0, seg_addr = 0, length, i;
+	uint32_t length, i, ext_addr0 = 0, ext_addr1 = 0, addr = 0;
+	uint16_t seg_addr = 0;
 	
 #ifdef PARAM_CHECK
 	if ((NULL == hex_file) || (NULL == callback))
@@ -113,13 +115,14 @@ RESULT read_hex_file(FILE *hex_file, WRITE_MEMORY_CALLBACK callback,
 			return ERROR_FAIL;
 		}
 		
-		// process data according data type
+		// process data according to data type
+		addr = (line_buf[1] << 8) + line_buf[2];
 		switch (line_buf[3])
 		{
 		case HEX_TYPE_DATA:
 			// data record
 			if (ERROR_OK != callback(
-					ext_addr + addr_offset + (line_buf[1] << 8) + line_buf[2], 
+					ext_addr0 + ext_addr1 + addr_offset + addr, 
 					seg_addr + seg_offset, &line_buf[4], length, buffer))
 			{
 				return ERROR_FAIL;
@@ -129,21 +132,28 @@ RESULT read_hex_file(FILE *hex_file, WRITE_MEMORY_CALLBACK callback,
 			// end of file
 			return ERROR_OK;
 			break;
+		case HEX_TYPE_LINEAR_ADDR:
+			// bit 4-19 of address
+			if ((length != 2) || (addr != 0))
+			{
+				return ERROR_FAIL;
+			}
+			ext_addr0 = (line_buf[4] << 12) | (line_buf[5] << 4);
 		case HEX_TYPE_SEG_ADDR:
 			// segment address
-			if (length != 2)
+			if ((length != 2) || (addr != 0))
 			{
 				return ERROR_FAIL;
 			}
 			seg_addr = (line_buf[4] << 8) | line_buf[5];
 			break;
 		case HEX_TYPE_EXT_ADDR:
-			// extended address
-			if (length != 2)
+			// high 16 bit of address
+			if ((length != 2) || (addr != 0))
 			{
 				return ERROR_FAIL;
 			}
-			ext_addr = (line_buf[4] << 24) | (line_buf[5] << 16);
+			ext_addr1 = (line_buf[4] << 24) | (line_buf[5] << 16);
 			break;
 		default:
 			LOG_WARNING(_GETTEXT(ERRMSG_INVALID_VALUE_MESSAGE), line_buf[3], 
