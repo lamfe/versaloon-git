@@ -313,13 +313,14 @@ function ReadHexFile(hFile: TFileStream; var buffer; bytesize, start_addr: cardi
   seg_offset, addr_offset: int64): boolean;
 var
   buff: array[0 .. 260] of byte;
-  seg_addr, ext_addr, data_addr: cardinal;
+  seg_addr, ext_addr0, ext_addr1, data_addr: cardinal;
   LineInfo: THexFileLineInfo;
   P: PByte;
 begin
   p      := @buffer;
   seg_addr := 0;
-  ext_addr := 0;
+  ext_addr0 := 0;
+  ext_addr1 := 0;
   hFile.Position := 0;
   Result := False;
 
@@ -339,7 +340,7 @@ begin
     case LineInfo.DataType of
       0://htData
       begin
-        data_addr := ext_addr + LineInfo.Addr;
+        data_addr := ext_addr0 + ext_addr1 + LineInfo.Addr;
         if not ((seg_addr <> seg_offset) or (data_addr < start_addr) or
           (data_addr < (addr_offset + start_addr))) then
         begin
@@ -363,9 +364,17 @@ begin
         Result := True;
         exit;
       end;
-      2://htSegAddr
+      2://htLinearAddr
       begin
-        if LineInfo.ByteSize <> 2 then
+        if (LineInfo.ByteSize <> 2) or (LineInfo.Addr <> 0) then
+        begin
+          exit;
+        end;
+        ext_addr0 := (buff[4] shl 12) + (buff[5] shl 4);
+      end;
+      3://htSegAddr
+      begin
+        if (LineInfo.ByteSize <> 2) or (LineInfo.Addr <> 0) then
         begin
           exit;
         end;
@@ -373,11 +382,11 @@ begin
       end;
       4://htExtAddr
       begin
-        if LineInfo.ByteSize <> 2 then
+        if (LineInfo.ByteSize <> 2) or (LineInfo.Addr <> 0) then
         begin
           exit;
         end;
-        ext_addr := (buff[4] shl 24) + (buff[5] shl 16);
+        ext_addr1 := (buff[4] shl 24) + (buff[5] shl 16);
       end;
     end;
   end;
