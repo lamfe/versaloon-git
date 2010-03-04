@@ -139,6 +139,7 @@ RESULT read_hex_file(FILE *hex_file, WRITE_MEMORY_CALLBACK callback,
 				return ERROR_FAIL;
 			}
 			ext_addr0 = (line_buf[4] << 12) | (line_buf[5] << 4);
+			break;
 		case HEX_TYPE_SEG_ADDR:
 			// segment address
 			if ((length != 2) || (addr != 0))
