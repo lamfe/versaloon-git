@@ -46,11 +46,14 @@ type
   TValidateFileFunc = function(hFile: TFileStream; var buffer;
     ChangeList: TMemList; default_byte: byte; bytesize, start_addr: cardinal;
     seg_offset, addr_offset: int64): boolean;
+  TPrepareFileFunc = function(hFile: TFileStream; default_byte: byte;
+    bytesize, start_addr: cardinal; seg_offset, addr_offset: int64): boolean;
 
   TFileParser = record
     ext:      string;
     ReadFile: TReadFileFunc;
     ValidateFile: TValidateFileFunc;
+    PrepareFile: TPrepareFileFunc;
   end;
 
   { TFormHexEditor }
@@ -64,9 +67,11 @@ type
     alHotKey:   TActionList;
     btnSave:    TButton;
     btnExit:    TButton;
+    btnSaveAs: TButton;
     lblMeasureSize: TLabel;
     pnlData:    TPanel;
     pnlButton:  TPanel;
+    sdSaveAs: TSaveDialog;
     sgData:     TStringGrid;
     tGoto:      TTimer;
     tReplace:   TTimer;
@@ -79,6 +84,7 @@ type
     procedure actSaveExecute(Sender: TObject);
     procedure actSearchExecute(Sender: TObject);
     procedure btnExitClick(Sender: TObject);
+    procedure btnSaveAsClick(Sender: TObject);
     procedure btnSaveClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormCreate(Sender: TObject);
@@ -146,11 +152,15 @@ function ReadBinFile(hFile: TFileStream; var buffer; bytesize, start_addr: cardi
 function ValidateBinFile(hFile: TFileStream; var buffer; ChangeList: TMemList;
   default_byte: byte; bytesize, start_addr: cardinal;
   seg_offset, addr_offset: int64): boolean;
+function PrepareBinFile(hFile: TFileStream; default_byte: byte;
+    bytesize, start_addr: cardinal; seg_offset, addr_offset: int64): boolean;
 function ReadHexFile(hFile: TFileStream; var buffer; bytesize, start_addr: cardinal;
   seg_offset, addr_offset: int64): boolean;
 function ValidateHexFile(hFile: TFileStream; var buffer; ChangeList: TMemList;
   default_byte: byte; bytesize, start_addr: cardinal;
   seg_offset, addr_offset: int64): boolean;
+function PrepareHexFile(hFile: TFileStream; default_byte: byte;
+    bytesize, start_addr: cardinal; seg_offset, addr_offset: int64): boolean;
 
 var
   FormHexEditor: TFormHexEditor;
@@ -158,8 +168,8 @@ var
 const
   FileParser: array[0..1] of TFileParser =
     (
-    (ext: '.bin'; ReadFile: @ReadBinFile; ValidateFile: @ValidateBinFile; ),
-    (ext: '.hex'; ReadFile: @ReadHexFile; ValidateFile: @ValidateHexFile; )
+    (ext: '.bin'; ReadFile: @ReadBinFile; ValidateFile: @ValidateBinFile; PrepareFile: @PrepareBinFile),
+    (ext: '.hex'; ReadFile: @ReadHexFile; ValidateFile: @ValidateHexFile; PrepareFile: @PrepareHexFile)
     );
   BYTES_IN_ROW: integer  = 16;
   DIVIDER_WIDTH: integer = 20;
@@ -193,26 +203,46 @@ begin
   seg_offset := seg_offset;
   default_byte := default_byte;
   bytesize := bytesize;
-  start_addr := start_addr;
   Result := False;
 
   for i := 0 to ChangeList.Count - 1 do
   begin
-    if (addr_offset + ChangeList.Items[i].StartAddr + 1) > hFile.Size then
+    if (addr_offset + ChangeList.Items[i].StartAddr + 1 - start_addr) > hFile.Size then
     begin
       continue;
     end
     else if (addr_offset + ChangeList.Items[i].StartAddr +
-      ChangeList.Items[i].ByteSize) > hFile.Size then
+      ChangeList.Items[i].ByteSize - start_addr) > hFile.Size then
     begin
       ChangeList.Items[i].ByteSize :=
         hFile.Size - addr_offset - ChangeList.Items[i].StartAddr;
     end;
 
-    hFile.Position := addr_offset + ChangeList.Items[i].StartAddr;
-    hFile.Write((P + ChangeList.Items[i].StartAddr)^,
+    hFile.Position := addr_offset + ChangeList.Items[i].StartAddr - start_addr;
+    hFile.Write((P + ChangeList.Items[i].StartAddr - start_addr)^,
       ChangeList.Items[i].ByteSize);
   end;
+  Result := True;
+end;
+
+function PrepareBinFile(hFile: TFileStream; default_byte: byte;
+    bytesize, start_addr: cardinal; seg_offset, addr_offset: int64): boolean;
+var
+  buf_tmp: AnsiString;
+  i: integer;
+begin
+  SetLength(buf_tmp, bytesize);
+  for i := 0 to bytesize - 1 do
+  begin
+    buf_tmp[1 + i] := Char(default_byte);
+  end;
+
+  if hFile.Size <> bytesize then
+  begin
+    hFile.Size := bytesize;
+  end;
+  hFile.Position := 0;
+  hFile.Write(buf_tmp[1], bytesize);
   Result := True;
 end;
 
@@ -516,6 +546,13 @@ begin
   Result := True;
 end;
 
+function PrepareHexFile(hFile: TFileStream; default_byte: byte;
+    bytesize, start_addr: cardinal; seg_offset, addr_offset: int64): boolean;
+begin
+
+  Result := True;
+end;
+
 { TMemInfo }
 
 constructor TMemInfo.Create(aStartAddr, aByteSize: cardinal);
@@ -727,6 +764,79 @@ begin
   end;
 end;
 
+procedure TFormHexEditor.btnSaveAsClick(Sender: TObject);
+var
+  SaveAsFileName, SaveAsFileExt: String;
+  SaveAsFileParserIndex, i: integer;
+  hSaveAsFile: TFileStream;
+  MemListTmp: TMemList;
+  HandleTmp: THandle;
+begin
+  if sdSaveAs.Execute then
+  begin
+    SaveAsFileName := sdSaveAs.FileName;
+    SaveAsFileExt := LowerCase(ExtractFileExt(SaveAsFileName));
+    SaveAsFileParserIndex := 0;
+    for i := low(FileParser) to high(FileParser) do
+    begin
+      if SaveAsFileExt = FileParser[i].ext then
+      begin
+        SaveAsFileParserIndex := i;
+        break;
+      end;
+    end;
+
+    try
+      if not FileExistsUtf8(SaveAsFileName) then
+      begin
+        HandleTmp := FileCreate(Utf8ToAnsi(SaveAsFileName));
+        if HandleTmp = NULL then
+        begin
+          Beep;
+          MessageDlg('Error', 'fail to create ' + SaveAsFileName + '.', mtError, [mbOK], 0);
+          Exit;
+        end;
+        FileClose(HandleTmp);
+      end;
+
+      MemListTmp := TMemList.Create;
+      MemListTmp.Clear;
+      MemListTmp.Add(StartAddress, DataByteSize);
+      hSaveAsFile := TFileStream.Create(Utf8ToAnsi(SaveAsFileName), fmOpenReadWrite);
+
+      if (FileParser[SaveAsFileParserIndex].PrepareFile <> nil) and
+         (FileParser[SaveAsFileParserIndex].ValidateFile <> nil) then
+      begin
+        if (not FileParser[SaveAsFileParserIndex].PrepareFile(hSaveAsFile,
+             DefaultData, DataByteSize, StartAddress, SegAddr, AddressOffset)) or
+           (not FileParser[SaveAsFileParserIndex].ValidateFile(hSaveAsFile,
+             DataBuff[1], MemListTmp, DefaultData, DataByteSize, StartAddress,
+             SegAddr, AddressOffset)) then
+        begin
+          Beep();
+          MessageDlg('Error', 'fail to write ' + SaveAsFileName + '.', mtError, [mbOK], 0);
+        end;
+        Beep();
+        MessageDlg('Error', 'save to ' + SaveAsFileName + ' successes.', mtError, [mbOK], 0);
+      end
+      else
+      begin
+        Beep();
+        MessageDlg('Error', 'Sellected file type not supported.', mtError, [mbOK], 0);
+      end;
+    finally
+      if Assigned(hSaveAsFile) then
+      begin
+        hSaveAsFile.Free;
+      end;
+      if Assigned(MemListTmp) then
+      begin
+        MemListTmp.Destroy;
+      end;
+    end;
+  end;
+end;
+
 procedure TFormHexEditor.actGotoExecute(Sender: TObject);
 begin
   tGoto.Enabled := True;
@@ -881,6 +991,7 @@ begin
       if ext = FileParser[i].ext then
       begin
         CurFileParserIndex := i;
+        break;
       end;
     end;
     success := True;
