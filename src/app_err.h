@@ -113,13 +113,13 @@
 #define INFOMSG_ERASING						"erasing %s\n"
 #define INFOMSG_ERASED						"%s erased\n"
 #define INFOMSG_PROGRAMMING					"programming %s\n"
-#define INFOMSG_PROGRAMMED_SIZE				"%s programmed for %dbytes\n"
+#define INFOMSG_PROGRAMMED_SIZE				"%s programmed for %dbytes(%.2fKB/s)\n"
 #define INFOMSG_PROGRAMMED					"%s programmed\n"
 #define INFOMSG_VERIFYING					"verifying %s\n"
-#define INFOMSG_VERIFIED_SIZE				"%s verified for %dbytes\n"
+#define INFOMSG_VERIFIED_SIZE				"%s verified for %dbytes(%.2fKB/s)\n"
 #define INFOMSG_VERIFIED					"%s verified\n"
 #define INFOMSG_READING						"reading %s\n"
-#define INFOMSG_READ_SIZE					"%s read for %dbytes\n"
+#define INFOMSG_READ_SIZE					"%s read for %dbytes(%.2fKB/s)\n"
 #define INFOMSG_READ						"%s read\n"
 
 #endif /* __APP_ERR_H_INCLUDED__ */
