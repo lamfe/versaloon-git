@@ -156,7 +156,7 @@ RESULT pgbar_init(char *s, char *e, uint32_t min, uint32_t max,
 	return ERROR_OK;
 }
 
-void pgbar_fini(void)
+uint32_t pgbar_fini(void)
 {
 	// print final string
 	if (end_str != NULL)
@@ -173,5 +173,7 @@ void pgbar_fini(void)
 	
 	// flush output
 	fflush(stdout);
+	
+	return end_time - start_time;
 }
 

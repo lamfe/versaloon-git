@@ -547,6 +547,7 @@ RESULT target_program(struct program_context_t *context)
 	char *fullname, str_tmp[256];
 	struct memlist **ml, *ml_tmp;
 	uint64_t value;
+	uint32_t time_in_ms = 1000;
 	
 	// check mode
 	if ((target_chips.num_of_chips > 0) 
@@ -763,8 +764,9 @@ RESULT target_program(struct program_context_t *context)
 				pgbar_update(target_size);
 			}
 			
-			pgbar_fini();
-			LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMED), fullname);
+			time_in_ms = pgbar_fini();
+			LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMED_SIZE), fullname, target_size, 
+						(target_size / 1024.0) / (time_in_ms / 1000.0));
 		}
 		
 		if ((op->verify_operations & area_mask) 
@@ -780,8 +782,8 @@ RESULT target_program(struct program_context_t *context)
 			if ((page_size == 0) || (area_attr & AREA_ATTR_RNP))
 			{
 				// verify whole target area
-				if (ERROR_OK != pf->read_target(context, area_char, start_addr, 
-													tbuff, target_size))
+				if (ERROR_OK != pf->read_target(context, area_char, 
+										start_addr, tbuff, target_size))
 				{
 					pgbar_fini();
 					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_VERIFY), fullname);
@@ -894,7 +896,7 @@ RESULT target_program(struct program_context_t *context)
 							pgbar_update(page_size);
 						}
 					}
-					pgbar_fini();
+					time_in_ms = pgbar_fini();
 					
 					if (op->verify_operations & area_mask)
 					{
@@ -905,7 +907,8 @@ RESULT target_program(struct program_context_t *context)
 								pgbar_fini();
 								LOG_ERROR(
 									_GETTEXT(ERRMSG_FAILURE_VERIFY_AT_02X), 
-									fullname, ml_tmp->addr + j, (uint64_t)read_buf[j], 
+									fullname, ml_tmp->addr + j, 
+									(uint64_t)read_buf[j], 
 									(uint64_t)tbuff[read_offset + j]);
 								free(read_buf);
 								read_buf = NULL;
@@ -935,7 +938,7 @@ RESULT target_program(struct program_context_t *context)
 					goto leave_program_mode;
 				}
 				pgbar_update(target_size);
-				pgbar_fini();
+				time_in_ms = pgbar_fini();
 				
 				if (op->verify_operations & area_mask)
 				{
@@ -946,14 +949,16 @@ RESULT target_program(struct program_context_t *context)
 					else
 					{
 						sprintf(str_tmp, 
-							"%%s verify failed, read=0x%%0%dllX, want=0x%%0%dllX.\n",
+							"%%s verify failed, read=0x%%0%dllX, "
+							"want=0x%%0%dllX.\n",
 							target_size * 2, target_size * 2);
 						LOG_ERROR(str_tmp, fullname, value, prog_area->value);
 					}
 				}
 				else
 				{
-					sprintf(str_tmp, "%%s read is 0x%%0%dllX\n", target_size * 2);
+					sprintf(str_tmp, "%%s read is 0x%%0%dllX\n", 
+							target_size * 2);
 					LOG_INFO(str_tmp, fullname, value);
 				}
 			}
@@ -961,12 +966,14 @@ RESULT target_program(struct program_context_t *context)
 			if (op->verify_operations & area_mask)
 			{
 				LOG_INFO(_GETTEXT(INFOMSG_VERIFIED_SIZE), fullname, 
-							target_size);
+							target_size, 
+							(target_size / 1024.0) / (time_in_ms / 1000.0));
 			}
 			else
 			{
 				LOG_INFO(_GETTEXT(INFOMSG_READ_SIZE), fullname, 
-							target_size);
+							target_size, 
+							(target_size / 1024.0) / (time_in_ms / 1000.0));
 			}
 		}
 		i++;
