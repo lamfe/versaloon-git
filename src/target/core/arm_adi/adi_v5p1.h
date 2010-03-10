@@ -56,7 +56,7 @@ struct adi_dp_t
 	uint8_t ack;
 	uint32_t dp_ctrl_stat;
 	uint32_t ap_sel_value;
-	uint32_t dp_sel_value;
+	uint32_t ap_bank_value;
 	uint32_t ap_csw_value;
 	uint32_t ap_tar_value;
 };

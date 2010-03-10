@@ -175,6 +175,8 @@ RESULT cm3_enter_program_mode(struct program_context_t *context)
 	if (ERROR_OK != cm3_dp_init(context, &dp))
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "initialize cm3");
+		LOG_ERROR(_GETTEXT("Maybe your last firmware disable the JTAG/SWD port"
+							", try using OpenOCD to erase the firmware.\n"));
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	

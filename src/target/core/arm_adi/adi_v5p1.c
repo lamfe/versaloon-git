@@ -321,15 +321,6 @@ RESULT adi_dp_scan(uint8_t instr, uint8_t reg_addr, uint8_t RnW,
 			jtag_ir_w(&instr, ADI_JTAGDP_IRLEN);
 		}
 		
-		// memory access tck clocks
-		if ((ADI_JTAGDP_IR_APACC == instr) 
-			&& ((reg_addr == ADI_AP_REG_DRW) 
-				|| ((reg_addr & 0xF0) == ADI_AP_REG_BD0)) 
-			&& (adi_dp_if->memaccess_tck != 0))
-		{
-			jtag_runtest(adi_dp_if->memaccess_tck);
-		}
-		
 		// scan dr
 		adi_dp_first3bits = ((reg_addr >> 1) & 0x06) | (RnW & 1);
 		if (RnW)
@@ -341,6 +332,15 @@ RESULT adi_dp_scan(uint8_t instr, uint8_t reg_addr, uint8_t RnW,
 		{
 			// write
 			jtag_dr_w(value, ADI_JTAGDP_IR_APDPACC_LEN);
+		}
+		
+		// memory access tck clocks
+		if ((ADI_JTAGDP_IR_APACC == instr) 
+			&& ((reg_addr == ADI_AP_REG_DRW) 
+				|| ((reg_addr & 0xF0) == ADI_AP_REG_BD0)) 
+			&& (adi_dp_if->memaccess_tck != 0))
+		{
+			jtag_runtest(adi_dp_if->memaccess_tck);
 		}
 		break;
 	case ADI_DP_SWD:
@@ -480,15 +480,28 @@ RESULT adi_dp_transaction_endcheck(void)
 	return ERROR_OK;
 }
 
-RESULT adi_dp_bankselect(uint8_t ap_reg)
+void adi_ap_select(uint8_t apsel)
+{
+	uint32_t select = (apsel << 24) & 0xFF000000;
+	
+	if (select != adi_dp.ap_sel_value)
+	{
+		adi_dp.ap_sel_value = select;
+		adi_dp.ap_bank_value = 0xFFFFFFFF;
+		adi_dp.ap_csw_value = 0xFFFFFFFF;
+		adi_dp.ap_tar_value = 0xFFFFFFFF;
+	}
+}
+
+RESULT adi_ap_bankselect(uint8_t ap_reg)
 {
 	uint32_t select = ap_reg & 0x000000F0;
 	
-	if (select != adi_dp.dp_sel_value)
+	if (select != adi_dp.ap_bank_value)
 	{
+		adi_dp.ap_bank_value = select;
 		select |= adi_dp.ap_sel_value;
 		adi_dp_write_reg(ADI_DP_REG_SELECT, &select, 0);
-		adi_dp.dp_sel_value = select;
 	}
 	
 	return ERROR_OK;
@@ -496,14 +509,14 @@ RESULT adi_dp_bankselect(uint8_t ap_reg)
 
 RESULT adi_ap_read_reg(uint8_t reg_addr, uint32_t *value, uint8_t check_result)
 {
-	adi_dp_bankselect(reg_addr);
+	adi_ap_bankselect(reg_addr);
 	return adi_dp_rw(ADI_DP_IR_APACC, reg_addr, ADI_DAP_READ, value, 
 					 check_result);
 }
 
 RESULT adi_ap_write_reg(uint8_t reg_addr, uint32_t *value, uint8_t check_result)
 {
-	adi_dp_bankselect(reg_addr);
+	adi_ap_bankselect(reg_addr);
 	return adi_dp_rw(ADI_DP_IR_APACC, reg_addr, ADI_DAP_WRITE, value, 
 					 check_result);
 }
@@ -692,9 +705,8 @@ init:
 	}
 	
 	// initialize debugport
-	adi_dp.ap_sel_value = 0x00000000;
-	adi_dp.dp_sel_value = 0xFFFFFFFF;
-	adi_dp.ap_csw_value = 0xFFFFFFFF;
+	adi_dp.ap_sel_value = !0;
+	adi_ap_select(0);
 	adi_dp.cur_ir = 0xFF;
 	
 	tmp = 0;
