@@ -50,6 +50,10 @@ struct adi_dp_info_t adi_dp_info;
 #define reset_input()			adi_prog->gpio_config(JTAG_SRST, 0, JTAG_SRST)
 #define reset_set()				reset_input()
 #define reset_clr()				adi_prog->gpio_out(JTAG_SRST, 0)
+#define trst_output()			adi_prog->gpio_config(JTAG_TRST, JTAG_TRST, 0)
+#define trst_input()			adi_prog->gpio_config(JTAG_TRST, 0, JTAG_TRST)
+#define trst_set()				trst_input()
+#define trst_clr()				adi_prog->gpio_out(JTAG_TRST, 0)
 #define reset_commit()			adi_prog->peripheral_commit()
 
 // JTAG
@@ -211,6 +215,8 @@ static RESULT adi_dpif_fini(void)
 		return ERROR_FAIL;
 	}
 	
+	trst_input();
+	reset_input();
 	reset_fini();
 	reset_commit();
 	
@@ -253,6 +259,7 @@ static RESULT adi_dpif_init(struct program_context_t *context, adi_dp_if_t *inte
 	
 	reset_init();
 	reset_input();
+	trst_input();
 	reset_commit();
 	
 	switch(adi_dp_if->type)
