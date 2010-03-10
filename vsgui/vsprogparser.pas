@@ -277,10 +277,10 @@ begin
   if ((Pos('Error:', line) = 1) or (Pos('/****Bug****/:', line) = 1) or
     (Pos('fail', line) <> 0)) then
   begin
-    if not FFatalError then
+//    if not FFatalError then
     begin
       FFatalError := True;
-      FErrorStr   := line;
+      FErrorStr   := FErrorStr + line + Char(10);
     end;
     Result      := False;
   end;
