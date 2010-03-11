@@ -79,6 +79,7 @@ enum area_attr_t
 	AREA_ATTR_WNP	= (1 << 4), // Non-Paged Mode when write
 	AREA_ATTR_RNP	= (1 << 5), // Non-Paged Mode when read
 	AREA_ATTR_V		= (1 << 6), // Simple verify
+	AREA_ATTR_RAE	= (1 << 7), // Reset After Erase
 	AREA_ATTR_WR	= AREA_ATTR_R | AREA_ATTR_W, 
 	AREA_ATTR_ER	= AREA_ATTR_R | AREA_ATTR_E, 
 	AREA_ATTR_EW	= AREA_ATTR_E | AREA_ATTR_W, 
