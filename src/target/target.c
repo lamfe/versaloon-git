@@ -26,6 +26,7 @@
 #include <ctype.h>
 #include <inttypes.h>
 
+#include "port.h"
 #include "app_cfg.h"
 #include "app_type.h"
 #include "app_err.h"
@@ -706,6 +707,7 @@ RESULT target_program(struct program_context_t *context)
 				{
 					return ERRCODE_FAILURE_OPERATION;
 				}
+				sleep_ms(100);
 				if ((pf->enter_program_mode != NULL) 
 					&& (ERROR_OK != pf->enter_program_mode(context)))
 				{
