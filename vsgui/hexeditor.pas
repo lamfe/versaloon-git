@@ -817,7 +817,7 @@ begin
           MessageDlg('Error', 'fail to write ' + SaveAsFileName + '.', mtError, [mbOK], 0);
         end;
         Beep();
-        MessageDlg('Error', 'save to ' + SaveAsFileName + ' successes.', mtError, [mbOK], 0);
+        MessageDlg('OK', 'save to ' + SaveAsFileName + ' successes.', mtInformation, [mbOK], 0);
       end
       else
       begin
