@@ -49,7 +49,7 @@
 
 struct program_area_map_t stm32_program_area_map[] = 
 {
-	{APPLICATION_CHAR, 1, 0, 0, 0, AREA_ATTR_EWR},
+	{APPLICATION_CHAR, 1, 0, 0, 0, AREA_ATTR_EWR | AREA_ATTR_RAE},
 	{0, 0, 0, 0, 0, 0}
 };
 
