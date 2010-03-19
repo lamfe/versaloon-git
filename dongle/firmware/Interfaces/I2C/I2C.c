@@ -21,7 +21,32 @@
 #include "EMIIC_MOD.h"
 #include "I2C.h"
 
-DEFINE_EMIIC_MOD(USBTOXXX, I2C_SCL_CLR, I2C_SCL_SET, I2C_SCL_GET, I2C_SDA_CLR, I2C_SDA_SET, I2C_SDA_GET, DelayUS, uint16)
+uint16_t dead_cnt = 0;
+
+#define I2C_SCL_SET_HOOK()			do{\
+										if (dead_cnt)\
+										{\
+											dead_cnt--;\
+										}\
+										if (!dead_cnt)\
+										{\
+											return IIC_MOD_NACK;\
+										}\
+										I2C_SCL_SET();\
+									}while(0)
+#define I2C_SCL_CLR_HOOK()			do{\
+										if (dead_cnt)\
+										{\
+											dead_cnt--;\
+										}\
+										if (!dead_cnt)\
+										{\
+											return IIC_MOD_NACK;\
+										}\
+										I2C_SCL_CLR();\
+									}while(0)
+
+DEFINE_EMIIC_MOD(USBTOXXX, I2C_SCL_CLR_HOOK, I2C_SCL_SET_HOOK, I2C_SCL_GET, I2C_SDA_CLR, I2C_SDA_SET, I2C_SDA_GET, DelayUS, uint16)
 
 uint16 I2C_Delay;
 
@@ -39,7 +64,8 @@ void I2C_Fini(void)
 
 uint8 I2C_SetParameter(uint16 kHz)
 {
-	EMIIC_USBTOXXX_SetParameter(0, 0, 0, 0, 0);
+	uint16 dly = 500 / kHz;
+	EMIIC_USBTOXXX_SetParameter(dly, dly, 2048, dly, 0);
 	return 0;
 }
 

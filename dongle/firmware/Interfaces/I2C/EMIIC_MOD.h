@@ -56,7 +56,8 @@
         {\
             DLY_FUNC(s_EMIIC_##MOD_NAME##_D_DlyStep);\
             dly += s_EMIIC_##MOD_NAME##_D_DlyStep;\
-            if (dly >= s_EMIIC_##MOD_NAME##_D_MaxDly)\
+            if ((s_EMIIC_##MOD_NAME##_D_MaxDly > 0) \
+                && (dly >= s_EMIIC_##MOD_NAME##_D_MaxDly))\
             {\
                 return IIC_MOD_TO;\
             }\
@@ -66,19 +67,9 @@
     \
     static IIC_MOD_RESULT_t EMIIC_##MOD_NAME##_Start(void)\
     {\
-        SDA_D();\
-        DLY_FUNC(s_EMIIC_##MOD_NAME##_R_Len);\
-        DLY_FUNC(s_EMIIC_##MOD_NAME##_Int_Dly);\
-        SCL_D();\
-        DLY_FUNC(s_EMIIC_##MOD_NAME##_D_Len);\
-        DLY_FUNC(s_EMIIC_##MOD_NAME##_Int_Dly);\
-        return IIC_MOD_ACK;\
-    }\
-    \
-    static IIC_MOD_RESULT_t EMIIC_##MOD_NAME##_Stop(void)\
-    {\
-        SDA_D();\
-        DLY_FUNC(s_EMIIC_##MOD_NAME##_D_Len);\
+        uint8 retry = 0;\
+        \
+        SDA_R();\
         DLY_FUNC(s_EMIIC_##MOD_NAME##_Int_Dly);\
         SCL_R();\
         if (IIC_MOD_ACK != EMIIC_##MOD_NAME##_WaitSCL())\
@@ -86,7 +77,40 @@
             return IIC_MOD_TO;\
         }\
         DLY_FUNC(s_EMIIC_##MOD_NAME##_R_Len);\
+        while (!(SDA_G() && SCL_G()))\
+        {\
+            if (retry++ > 9)\
+            {\
+                return IIC_MOD_TO;\
+            }\
+            SCL_D();\
+            DLY_FUNC(s_EMIIC_##MOD_NAME##_D_Len);\
+            SCL_R();\
+            if (IIC_MOD_ACK != EMIIC_##MOD_NAME##_WaitSCL())\
+            {\
+                return IIC_MOD_TO;\
+            }\
+            DLY_FUNC(s_EMIIC_##MOD_NAME##_R_Len);\
+        }\
+        SDA_D();\
+        DLY_FUNC(s_EMIIC_##MOD_NAME##_R_Len);\
+        SCL_D();\
+        DLY_FUNC(s_EMIIC_##MOD_NAME##_D_Len);\
+        return IIC_MOD_ACK;\
+    }\
+    \
+    static IIC_MOD_RESULT_t EMIIC_##MOD_NAME##_Stop(void)\
+    {\
+        SCL_D();\
         DLY_FUNC(s_EMIIC_##MOD_NAME##_Int_Dly);\
+        SDA_D();\
+        DLY_FUNC(s_EMIIC_##MOD_NAME##_D_Len);\
+        SCL_R();\
+        if (IIC_MOD_ACK != EMIIC_##MOD_NAME##_WaitSCL())\
+        {\
+            return IIC_MOD_TO;\
+        }\
+        DLY_FUNC(s_EMIIC_##MOD_NAME##_R_Len);\
         SDA_R();\
         return IIC_MOD_ACK;\
     }\
@@ -116,7 +140,6 @@
             DLY_FUNC(s_EMIIC_##MOD_NAME##_R_Len);\
             SCL_D();\
             DLY_FUNC(s_EMIIC_##MOD_NAME##_D_Len);\
-            DLY_FUNC(s_EMIIC_##MOD_NAME##_Int_Dly);\
         }\
         SDA_R();\
         DLY_FUNC(s_EMIIC_##MOD_NAME##_Int_Dly);\
@@ -129,11 +152,13 @@
         if (SDA_G())\
         {\
             SCL_D();\
+            DLY_FUNC(s_EMIIC_##MOD_NAME##_D_Len);\
             return IIC_MOD_NACK;\
         }\
         else\
         {\
             SCL_D();\
+            DLY_FUNC(s_EMIIC_##MOD_NAME##_D_Len);\
             return IIC_MOD_ACK;\
         }\
     }\
@@ -160,7 +185,6 @@
             }\
             SCL_D();\
             DLY_FUNC(s_EMIIC_##MOD_NAME##_D_Len);\
-            DLY_FUNC(s_EMIIC_##MOD_NAME##_Int_Dly);\
         }\
         if (last)\
         {\
@@ -187,8 +211,9 @@
         \
         *actual_len = 0;\
         addr &= ~1;\
-        EMIIC_##MOD_NAME##_Start();\
-        if (IIC_MOD_ACK != EMIIC_##MOD_NAME##_SendByte(addr))\
+        \
+        if ((IIC_MOD_ACK != EMIIC_##MOD_NAME##_Start()) \
+            || (IIC_MOD_ACK != EMIIC_##MOD_NAME##_SendByte(addr)))\
         {\
             EMIIC_##MOD_NAME##_Stop();\
             return IIC_MOD_ADDR_NO_RESPONSE;\
@@ -230,8 +255,9 @@
         \
         *actual_len = 0;\
         addr |= 1;\
-        EMIIC_##MOD_NAME##_Start();\
-        if (IIC_MOD_ACK != EMIIC_##MOD_NAME##_SendByte(addr))\
+        \
+        if ((IIC_MOD_ACK != EMIIC_##MOD_NAME##_Start()) \
+            || (IIC_MOD_ACK != EMIIC_##MOD_NAME##_SendByte(addr)))\
         {\
             EMIIC_##MOD_NAME##_Stop();\
             return IIC_MOD_ADDR_NO_RESPONSE;\

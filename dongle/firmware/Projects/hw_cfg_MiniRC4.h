@@ -400,17 +400,23 @@
 /****************************** I2C ******************************/
 #define I2C_PULL_INIT()					
 
-#define I2C_SCL_SETOUTPUT()				SW_RST_SETOUTPUT()
-#define I2C_SCL_SETINPUT()				SW_RST_SETINPUT_PU()
+#define I2C_SCL_SETOUTPUT()				JTAG_TAP_TCK_SETOUTPUT()
+#define I2C_SCL_SETINPUT()				JTAG_TAP_TCK_SETINPUT()
 #define I2C_SCL_SET()					I2C_SCL_SETINPUT()
-#define I2C_SCL_CLR()					SW_RST_CLR()
-#define I2C_SCL_GET()					SW_RST_GET()
+#define I2C_SCL_CLR()					do{\
+											JTAG_TAP_TCK_CLR();\
+											I2C_SCL_SETOUTPUT();\
+										}while(0)
+#define I2C_SCL_GET()					GPIO_GetInPins(JTAG_TAP_PORT, GPIO_PIN_GetMask(JTAG_TAP_TCK_PIN))
 
-#define I2C_SDA_SETOUTPUT()				SW_SETOUTPUT()
-#define I2C_SDA_SETINPUT()				SW_SETINPUT_PU()
+#define I2C_SDA_SETOUTPUT()				JTAG_TAP_TDI_SETOUTPUT()
+#define I2C_SDA_SETINPUT()				JTAG_TAP_TDI_SETINPUT()
 #define I2C_SDA_SET()					I2C_SDA_SETINPUT()
-#define I2C_SDA_CLR()					SW_CLR()
-#define I2C_SDA_GET()					SW_GET()
+#define I2C_SDA_CLR()					do{\
+											JTAG_TAP_TDI_CLR();\
+											I2C_SDA_SETOUTPUT();\
+										}while(0)
+#define I2C_SDA_GET()					GPIO_GetInPins(JTAG_TAP_PORT, GPIO_PIN_GetMask(JTAG_TAP_TDI_PIN))
 
 /****************************** USART ******************************/
 // to change USART port below, modify the interrupt handler
@@ -498,7 +504,7 @@
 /****************************** KEY ******************************/
 #define KEY_PORT						GPIOB
 #define KEY_PIN							GPIO_PIN_9
-#define KEY_IsDown()					(!GPIO_GetInPins(KEY_PORT, GPIO_PIN_GetMask(KEY_PIN)) == 0)
+#define KEY_IsDown()					!GPIO_GetInPins(KEY_PORT, GPIO_PIN_GetMask(KEY_PIN))
 #define KEY_Init()						GPIO_Dir(KEY_PORT, GPIO_MODE_IPU, KEY_PIN)
 #define KEY_Fini()						GPIO_Dir(KEY_PORT, GPIO_MODE_IN_FLOATING, KEY_PIN)
 

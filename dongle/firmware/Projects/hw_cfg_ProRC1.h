@@ -527,7 +527,7 @@
 /****************************** KEY ******************************/
 #define KEY_PORT						GPIOB
 #define KEY_PIN							GPIO_PIN_9
-#define KEY_IsDown()					(!GPIO_GetInPins(KEY_PORT, GPIO_PIN_GetMask(KEY_PIN)) == 0)
+#define KEY_IsDown()					!GPIO_GetInPins(KEY_PORT, GPIO_PIN_GetMask(KEY_PIN))
 #define KEY_Init()						GPIO_Dir(KEY_PORT, GPIO_MODE_IPU, KEY_PIN)
 #define KEY_Fini()						GPIO_Dir(KEY_PORT, GPIO_MODE_IN_FLOATING, KEY_PIN)
 
