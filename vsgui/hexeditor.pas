@@ -550,7 +550,7 @@ function PrepareHexFile(hFile: TFileStream; default_byte: byte;
     bytesize, start_addr: cardinal; seg_offset, addr_offset: int64): boolean;
 begin
 
-  Result := True;
+  Result := False;
 end;
 
 { TMemInfo }
@@ -815,9 +815,12 @@ begin
         begin
           Beep();
           MessageDlg('Error', 'fail to write ' + SaveAsFileName + '.', mtError, [mbOK], 0);
+        end
+        else
+        begin
+          Beep();
+          MessageDlg('OK', 'save to ' + SaveAsFileName + ' successes.', mtInformation, [mbOK], 0);
         end;
-        Beep();
-        MessageDlg('OK', 'save to ' + SaveAsFileName + ' successes.', mtInformation, [mbOK], 0);
       end
       else
       begin
