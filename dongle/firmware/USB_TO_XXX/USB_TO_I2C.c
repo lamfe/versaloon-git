@@ -23,6 +23,8 @@
 #	include "PowerExt.h"
 #endif
 
+extern uint16_t dead_cnt;
+
 void USB_TO_I2C_ProcessCmd(uint8* dat, uint16 len)
 {
 	uint16 index, device_num, length;
@@ -49,11 +51,13 @@ void USB_TO_I2C_ProcessCmd(uint8* dat, uint16 len)
 			buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			buffer_reply[rep_len++] = USB_TO_I2C_NUM;
 
+			GLOBAL_OUTPUT_Acquire();
 			PWREXT_Acquire();
 			DelayMS(1);
 
 			break;
 		case USB_TO_XXX_CONFIG:
+			dead_cnt = dat[index + 2] + (dat[index + 3] << 8);
 			if(I2C_Init(dat[index + 0] + (dat[index + 1] << 8)) == 0)
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
@@ -66,7 +70,11 @@ void USB_TO_I2C_ProcessCmd(uint8* dat, uint16 len)
 			break;
 		case USB_TO_XXX_FINI:
 			buffer_reply[rep_len++] = USB_TO_XXX_OK;
+
 			I2C_Fini();
+
+			PWREXT_Release();
+			GLOBAL_OUTPUT_Release();
 
 			break;
 		case USB_TO_I2C_Read:

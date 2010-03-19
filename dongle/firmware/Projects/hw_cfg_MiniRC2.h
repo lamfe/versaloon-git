@@ -426,7 +426,7 @@
 /****************************** KEY ******************************/
 #define KEY_PORT						GPIOC
 #define KEY_PIN							GPIO_PIN_13
-#define KEY_IsDown()					(!GPIO_GetInPins(KEY_PORT, GPIO_PIN_GetMask(KEY_PIN)) == 0)
+#define KEY_IsDown()					!GPIO_GetInPins(KEY_PORT, GPIO_PIN_GetMask(KEY_PIN))
 #define KEY_Init()						do{ BKP_TamperPinCmd(DISABLE); GPIO_Dir(KEY_PORT, GPIO_MODE_IPU, KEY_PIN); }while(0)
 #define KEY_Fini()						do{ GPIO_Dir(KEY_PORT, GPIO_MODE_IN_FLOATING, KEY_PIN); BKP_TamperPinCmd(ENABLE); }while(0)
 
