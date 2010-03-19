@@ -47,7 +47,8 @@ RESULT usbtoi2c_fini(void)
 	return usbtoxxx_fini_command(USB_TO_I2C);
 }
 
-RESULT usbtoi2c_set_speed(uint8_t interface_index, uint16_t kHz)
+RESULT usbtoi2c_set_speed(uint8_t interface_index, uint16_t kHz, 
+							uint16_t dead_cnt)
 {
 #if PARAM_CHECK
 	if (interface_index > 7)
@@ -59,13 +60,15 @@ RESULT usbtoi2c_set_speed(uint8_t interface_index, uint16_t kHz)
 	
 	versaloon_cmd_buf[0] = (kHz >> 0) & 0xFF;
 	versaloon_cmd_buf[1] = (kHz >> 8) & 0xFF;
+	versaloon_cmd_buf[2] = (dead_cnt >> 0) & 0xFF;
+	versaloon_cmd_buf[3] = (dead_cnt >> 8) & 0xFF;
 	
 	return usbtoxxx_conf_command(USB_TO_I2C, interface_index, 
-								 versaloon_cmd_buf, 2);
+								 versaloon_cmd_buf, 4);
 }
 
 RESULT usbtoi2c_read(uint8_t interface_index, uint16_t chip_addr, 
-		uint8_t chip_addr_len, uint8_t *data, uint16_t data_len, uint8_t stop)
+						uint8_t *data, uint16_t data_len, uint8_t stop)
 {
 #if PARAM_CHECK
 	if (interface_index > 7)
@@ -80,26 +83,19 @@ RESULT usbtoi2c_read(uint8_t interface_index, uint16_t chip_addr,
 		LOG_BUG(_GETTEXT("too many data to transfer on I2C\n"));
 		return ERROR_FAIL;
 	}
-	if ((chip_addr_len > 2) || (chip_addr_len < 1))
-	{
-		LOG_BUG(_GETTEXT("chip_addr_len can only be 1 or 2\n"));
-		return ERROR_FAIL;
-	}
 	
 	versaloon_cmd_buf[0] = (chip_addr >> 0) & 0xFF;
-	versaloon_cmd_buf[1] = (chip_addr >> 8) & 0xFF;
-	versaloon_cmd_buf[2] = chip_addr_len;
-	versaloon_cmd_buf[3] = (data_len >> 0) & 0xFF;
-	versaloon_cmd_buf[4] = (data_len >> 8) & 0xFF;
-	versaloon_cmd_buf[5] = stop;
-	memset(&versaloon_cmd_buf[6], 0, data_len);
+	versaloon_cmd_buf[1] = (data_len >> 0) & 0xFF;
+	versaloon_cmd_buf[2] = (data_len >> 8) & 0xFF;
+	versaloon_cmd_buf[3] = stop;
+	memset(&versaloon_cmd_buf[4], 0, data_len);
 	
 	return usbtoxxx_in_command(USB_TO_I2C, interface_index, versaloon_cmd_buf, 
-							   data_len + 6, data_len, data, 0, data_len, 0);
+							   data_len + 4, data_len, data, 0, data_len, 0);
 }
 
 RESULT usbtoi2c_write(uint8_t interface_index, uint16_t chip_addr, 
-		uint8_t chip_addr_len, uint8_t *data, uint16_t data_len, uint8_t stop)
+						uint8_t *data, uint16_t data_len, uint8_t stop)
 {
 #if PARAM_CHECK
 	if (interface_index > 7)
@@ -114,21 +110,14 @@ RESULT usbtoi2c_write(uint8_t interface_index, uint16_t chip_addr,
 		LOG_BUG(_GETTEXT("too many data to transfer on I2C\n"));
 		return ERROR_FAIL;
 	}
-	if ((chip_addr_len > 2) || (chip_addr_len < 1))
-	{
-		LOG_BUG(_GETTEXT("chip_addr_len can only be 1 or 2\n"));
-		return ERROR_FAIL;
-	}
 	
 	versaloon_cmd_buf[0] = (chip_addr >> 0) & 0xFF;
-	versaloon_cmd_buf[1] = (chip_addr >> 8) & 0xFF;
-	versaloon_cmd_buf[2] = chip_addr_len;
-	versaloon_cmd_buf[3] = (data_len >> 0) & 0xFF;
-	versaloon_cmd_buf[4] = (data_len >> 8) & 0xFF;
-	versaloon_cmd_buf[5] = stop;
-	memcpy(&versaloon_cmd_buf[6], data, data_len);
+	versaloon_cmd_buf[1] = (data_len >> 0) & 0xFF;
+	versaloon_cmd_buf[2] = (data_len >> 8) & 0xFF;
+	versaloon_cmd_buf[3] = stop;
+	memcpy(&versaloon_cmd_buf[4], data, data_len);
 	
 	return usbtoxxx_out_command(USB_TO_I2C, interface_index, versaloon_cmd_buf, 
-								data_len + 6, 0);
+								data_len + 4, 0);
 }
 

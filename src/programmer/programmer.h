@@ -156,11 +156,11 @@ struct programmer_info_t
 	// i2c
 	RESULT (*i2c_init)(void);
 	RESULT (*i2c_fini)(void);
-	RESULT (*i2c_set_speed)(uint16_t kHz);
-	RESULT (*i2c_read)(uint16_t chip_addr, uint8_t chip_addr_len, 
-						uint8_t *data, uint16_t data_len, uint8_t stop);
-	RESULT (*i2c_write)(uint16_t chip_addr, uint8_t chip_addr_len, 
-						uint8_t *data, uint16_t data_len, uint8_t stop);
+	RESULT (*i2c_set_speed)(uint16_t kHz, uint16_t dead_cnt);
+	RESULT (*i2c_read)(uint16_t chip_addr, uint8_t *data, uint16_t data_len, 
+						uint8_t stop);
+	RESULT (*i2c_write)(uint16_t chip_addr, uint8_t *data, uint16_t data_len, 
+						uint8_t stop);
 	
 	// lpcicp
 	RESULT (*lpcicp_init)(void);
