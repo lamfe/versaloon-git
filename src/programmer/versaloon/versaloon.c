@@ -64,6 +64,7 @@ static uint32_t versaloon_to = VERSALOON_TIMEOUT;
 
 RESULT versaloon_cmd_get_voltage(uint8_t argc, const char *argv[]);
 RESULT versaloon_cmd_power_out(uint8_t argc, const char *argv[]);
+RESULT versaloon_cmd_test(uint8_t argc, const char *argv[]);
 struct misc_cmd_t versaloon_cmd[] = 
 {
 	// voltage
@@ -78,6 +79,12 @@ struct misc_cmd_t versaloon_cmd[] =
 		"powerout", 
 		versaloon_cmd_power_out
 	}, 
+	// test
+	{
+		"test function",
+		"test",
+		versaloon_cmd_test
+	},
 	// null
 	{
 		NULL, 
@@ -263,6 +270,109 @@ RESULT versaloon_cmd_power_out(uint8_t argc, const char *argv[])
 	usbtopwr_output(VERSALOON_POWER_PORT, voltage);
 	usbtopwr_fini();
 	return usbtoxxx_execute_command();
+}
+RESULT versaloon_cmd_test(uint8_t argc, const char *argv[])
+{
+#define IIC_CHIP_ADDR			(0x7F << 1)
+#define IIC_SCK_KHZ				10
+#define RETRY_CNT				10
+	uint8_t buff[2];
+	uint16_t dead_cnt = 100, retry_cnt;
+	RESULT ret = ERROR_OK;
+	
+	REFERENCE_PARAMETER(argc);
+	REFERENCE_PARAMETER(argv);
+	
+	usbtoi2c_init();
+	usbtogpio_init();
+	// reset input pullup
+	usbtogpio_config(0, GPIO_SRST, 0, GPIO_SRST);
+	// delay 100 ms
+	usbtodelay_delay(100 | 0x8000);
+	if (ERROR_OK != usbtoxxx_execute_command())
+	{
+		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "to open IIC");
+		return ERROR_FAIL;
+	}
+	
+	do
+	{
+		// generate error
+		dead_cnt = 20;
+		usbtoi2c_set_speed(0, IIC_SCK_KHZ, dead_cnt);
+		
+		LOG_PUSH();
+		LOG_MUTE();
+		
+		buff[0] = 0xF3;
+		usbtoi2c_write(0, IIC_CHIP_ADDR, buff, 1, 1);
+		if (ERROR_OK != usbtoxxx_execute_command())
+		{
+			goto test_recovery;
+		}
+		
+		usbtoi2c_read(0, IIC_CHIP_ADDR, buff, 1, 1);
+		if (ERROR_OK != usbtoxxx_execute_command())
+		{
+			goto test_recovery;
+		}
+		
+test_recovery:
+		LOG_POP();
+		// delay 10 ms
+		//usbtodelay_delay(10 | 0x8000);
+		
+		retry_cnt = RETRY_CNT;
+		
+		while (retry_cnt--)
+		{
+			// test whether the target can recover from the error
+			dead_cnt = 1000;
+			usbtoi2c_set_speed(0, IIC_SCK_KHZ, dead_cnt);
+			
+			buff[0] = 0xF3;
+			usbtoi2c_write(0, IIC_CHIP_ADDR, buff, 1, 0);
+			if (ERROR_OK != usbtoxxx_execute_command())
+			{
+				if (retry_cnt)
+				{
+					continue;
+				}
+				else
+				{
+					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "to write IIC");
+					ret = ERROR_FAIL;
+					goto finialize;
+				}
+			}
+			
+			usbtoi2c_read(0, IIC_CHIP_ADDR, buff, 1, 1);
+			if (ERROR_OK != usbtoxxx_execute_command())
+			{
+				if (retry_cnt)
+				{
+					continue;
+				}
+				else
+				{
+					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "to write IIC");
+					ret = ERROR_FAIL;
+					goto finialize;
+				}
+			}
+		}
+	}while(0);
+		
+finialize:
+	usbtoi2c_fini();
+	usbtogpio_fini();
+	if (ERROR_OK != usbtoxxx_execute_command())
+	{
+		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "to close IIC");
+		return ERROR_FAIL;
+	}
+	
+	return ret;
 }
 
 
@@ -1138,21 +1248,19 @@ RESULT versaloon_i2c_fini(void)
 {
 	return usbtoi2c_fini();
 }
-RESULT versaloon_i2c_set_speed(uint16_t kHz)
+RESULT versaloon_i2c_set_speed(uint16_t kHz, uint16_t dead_cnt)
 {
-	return usbtoi2c_set_speed(VERSALOON_I2C_PORT, kHz);
+	return usbtoi2c_set_speed(VERSALOON_I2C_PORT, kHz, dead_cnt);
 }
-RESULT versaloon_i2c_read(uint16_t chip_addr, uint8_t chip_addr_len, 
-							uint8_t *data, uint16_t data_len, uint8_t stop)
+RESULT versaloon_i2c_read(uint16_t chip_addr, uint8_t *data, 
+							uint16_t data_len, uint8_t stop)
 {
-	return usbtoi2c_read(VERSALOON_I2C_PORT, chip_addr, chip_addr_len, data, 
-						 data_len, stop);
+	return usbtoi2c_read(VERSALOON_I2C_PORT, chip_addr, data, data_len, stop);
 }
-RESULT versaloon_i2c_write(uint16_t chip_addr, uint8_t chip_addr_len, 
-							uint8_t *data, uint16_t data_len, uint8_t stop)
+RESULT versaloon_i2c_write(uint16_t chip_addr, uint8_t *data, 
+							uint16_t data_len, uint8_t stop)
 {
-	return usbtoi2c_write(VERSALOON_I2C_PORT, chip_addr, chip_addr_len, data, 
-						  data_len, stop);
+	return usbtoi2c_write(VERSALOON_I2C_PORT, chip_addr, data, data_len, stop);
 }
 // SWIM
 RESULT versaloon_swim_init(void)

@@ -142,7 +142,7 @@ RESULT read_hex_file(FILE *hex_file, WRITE_MEMORY_CALLBACK callback,
 			break;
 		case HEX_TYPE_SEG_ADDR:
 			// segment address
-			if ((length != 2) || (addr != 0))
+			if (addr != 0)
 			{
 				return ERROR_FAIL;
 			}
