@@ -44,6 +44,7 @@ begin
 
   memoText.Lines.Clear;
   memoText.Lines.LoadFromFile(TextFileName);
+  Caption := 'TextEditor: ' + TextFileName;
 end;
 
 procedure TFormTextEditor.btnSaveClick(Sender: TObject);

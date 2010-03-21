@@ -1636,7 +1636,7 @@ end;
 
 procedure TFormMain.btnEditInterfaceClick(Sender: TObject);
 begin
-  TextFileName := cbboxOpenOCDInterface.Caption;
+  TextFileName := AnsiToUtf8(Application.Location) + cbboxOpenOCDInterface.Text;
   FormTextEditor.ShowModal;
 end;
 
@@ -1647,13 +1647,13 @@ end;
 
 procedure TFormMain.btnEditScriptClick(Sender: TObject);
 begin
-  TextFileName := cbboxOpenOCDScript.Caption;
+  TextFileName := AnsiToUtf8(Application.Location) + cbboxOpenOCDScript.Text;
   FormTextEditor.ShowModal;
 end;
 
 procedure TFormMain.btnEditTargetClick(Sender: TObject);
 begin
-  TextFileName := cbboxOpenOCDTarget.Caption;
+  TextFileName := AnsiToUtf8(Application.Location) + cbboxOpenOCDTarget.Text;
   FormTextEditor.ShowModal;
 end;
 
