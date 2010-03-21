@@ -44,7 +44,7 @@ object FormMain: TFormMain
       Height = 462
       Top = 1
       Width = 437
-      ActivePage = tsVsprog
+      ActivePage = tsJTAG
       Align = alTop
       Font.CharSet = ANSI_CHARSET
       Font.Color = clBlack
@@ -52,7 +52,7 @@ object FormMain: TFormMain
       Font.Name = 'Arial'
       Font.Pitch = fpVariable
       ParentFont = False
-      TabIndex = 2
+      TabIndex = 0
       TabOrder = 0
       TabPosition = tpLeft
       OnChange = pcMainPageChanged
@@ -109,7 +109,7 @@ object FormMain: TFormMain
             Height = 24
             Hint = 'Select Interface configuration file'
             Top = 8
-            Width = 272
+            Width = 228
             ItemHeight = 16
             ParentShowHint = False
             ShowHint = True
@@ -121,7 +121,7 @@ object FormMain: TFormMain
             Height = 24
             Hint = 'Select Target configuration file'
             Top = 40
-            Width = 272
+            Width = 228
             ItemHeight = 16
             ParentShowHint = False
             ShowHint = True
@@ -133,7 +133,7 @@ object FormMain: TFormMain
             Height = 24
             Hint = 'Select Script configuration file'
             Top = 72
-            Width = 272
+            Width = 228
             ItemHeight = 16
             ParentShowHint = False
             ShowHint = True
@@ -173,6 +173,33 @@ object FormMain: TFormMain
             ParentShowHint = False
             ShowHint = True
             TabOrder = 5
+          end
+          object btnEditInterface: TButton
+            Left = 314
+            Height = 25
+            Top = 7
+            Width = 35
+            Caption = 'Edit'
+            OnClick = btnEditInterfaceClick
+            TabOrder = 6
+          end
+          object btnEditTarget: TButton
+            Left = 314
+            Height = 25
+            Top = 39
+            Width = 35
+            Caption = 'Edit'
+            OnClick = btnEditTargetClick
+            TabOrder = 7
+          end
+          object btnEditScript: TButton
+            Left = 314
+            Height = 25
+            Top = 71
+            Width = 35
+            Caption = 'Edit'
+            OnClick = btnEditScriptClick
+            TabOrder = 8
           end
         end
         object gbSVFPlayer: TGroupBox

@@ -10,7 +10,7 @@
       <MainUnit Value="0"/>
       <TargetFileExt Value=".exe"/>
       <Icon Value="0"/>
-      <ActiveEditorIndexAtStart Value="0"/>
+      <ActiveEditorIndexAtStart Value="2"/>
     </General>
     <VersionInfo>
       <ProjectVersion Value=""/>
@@ -41,12 +41,12 @@
         <MinVersion Major="1" Valid="True"/>
       </Item3>
     </RequiredPackages>
-    <Units Count="63">
+    <Units Count="65">
       <Unit0>
         <Filename Value="vsgui.lpr"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="vsgui"/>
-        <CursorPos X="65" Y="26"/>
+        <CursorPos X="27" Y="7"/>
         <TopLine Value="1"/>
         <UsageCount Value="200"/>
       </Unit0>
@@ -56,7 +56,7 @@
         <ComponentName Value="FormMain"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="main"/>
-        <CursorPos X="19" Y="11"/>
+        <CursorPos X="43" Y="10"/>
         <TopLine Value="1"/>
         <EditorIndex Value="0"/>
         <UsageCount Value="200"/>
@@ -66,8 +66,8 @@
         <Filename Value="cli_caller.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="cli_caller"/>
-        <CursorPos X="1" Y="267"/>
-        <TopLine Value="228"/>
+        <CursorPos X="1" Y="1"/>
+        <TopLine Value="1"/>
         <UsageCount Value="203"/>
       </Unit2>
       <Unit3>
@@ -123,9 +123,11 @@
         <ComponentName Value="FormHexEditor"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="hexeditor"/>
-        <CursorPos X="76" Y="173"/>
-        <TopLine Value="65"/>
+        <CursorPos X="19" Y="64"/>
+        <TopLine Value="56"/>
+        <EditorIndex Value="1"/>
         <UsageCount Value="200"/>
+        <Loaded Value="True"/>
       </Unit10>
       <Unit11>
         <Filename Value="checkeditor.pas"/>
@@ -491,8 +493,92 @@
         <TopLine Value="51"/>
         <UsageCount Value="27"/>
       </Unit62>
+      <Unit63>
+        <Filename Value="texteditor.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="FormTextEditor"/>
+        <ResourceBaseClass Value="Form"/>
+        <UnitName Value="texteditor"/>
+        <CursorPos X="41" Y="46"/>
+        <TopLine Value="16"/>
+        <EditorIndex Value="2"/>
+        <UsageCount Value="20"/>
+        <Loaded Value="True"/>
+      </Unit63>
+      <Unit64>
+        <Filename Value="D:\ProfessionalTools\lazarus\lcl\fileutil.pas"/>
+        <UnitName Value="FileUtil"/>
+        <CursorPos X="10" Y="191"/>
+        <TopLine Value="170"/>
+        <UsageCount Value="10"/>
+      </Unit64>
     </Units>
-    <JumpHistory Count="0" HistoryIndex="-1"/>
+    <JumpHistory Count="16" HistoryIndex="15">
+      <Position1>
+        <Filename Value="main.pas"/>
+        <Caret Line="9" Column="27" TopLine="1"/>
+      </Position1>
+      <Position2>
+        <Filename Value="main.pas"/>
+        <Caret Line="1638" Column="3" TopLine="1626"/>
+      </Position2>
+      <Position3>
+        <Filename Value="main.pas"/>
+        <Caret Line="1655" Column="37" TopLine="1647"/>
+      </Position3>
+      <Position4>
+        <Filename Value="texteditor.pas"/>
+        <Caret Line="11" Column="53" TopLine="1"/>
+      </Position4>
+      <Position5>
+        <Filename Value="texteditor.pas"/>
+        <Caret Line="29" Column="66" TopLine="1"/>
+      </Position5>
+      <Position6>
+        <Filename Value="texteditor.pas"/>
+        <Caret Line="28" Column="4" TopLine="1"/>
+      </Position6>
+      <Position7>
+        <Filename Value="texteditor.pas"/>
+        <Caret Line="8" Column="69" TopLine="1"/>
+      </Position7>
+      <Position8>
+        <Filename Value="main.pas"/>
+        <Caret Line="10" Column="43" TopLine="1"/>
+      </Position8>
+      <Position9>
+        <Filename Value="hexeditor.pas"/>
+        <Caret Line="1" Column="1" TopLine="1"/>
+      </Position9>
+      <Position10>
+        <Filename Value="texteditor.pas"/>
+        <Caret Line="33" Column="19" TopLine="6"/>
+      </Position10>
+      <Position11>
+        <Filename Value="texteditor.pas"/>
+        <Caret Line="15" Column="21" TopLine="6"/>
+      </Position11>
+      <Position12>
+        <Filename Value="texteditor.pas"/>
+        <Caret Line="43" Column="5" TopLine="7"/>
+      </Position12>
+      <Position13>
+        <Filename Value="texteditor.pas"/>
+        <Caret Line="40" Column="7" TopLine="5"/>
+      </Position13>
+      <Position14>
+        <Filename Value="texteditor.pas"/>
+        <Caret Line="54" Column="37" TopLine="12"/>
+      </Position14>
+      <Position15>
+        <Filename Value="texteditor.pas"/>
+        <Caret Line="52" Column="41" TopLine="16"/>
+      </Position15>
+      <Position16>
+        <Filename Value="texteditor.pas"/>
+        <Caret Line="53" Column="5" TopLine="17"/>
+      </Position16>
+    </JumpHistory>
   </ProjectOptions>
   <CompilerOptions>
     <Version Value="8"/>
@@ -511,13 +597,12 @@
       <SmartLinkUnit Value="True"/>
       <SmallerCode Value="True"/>
       <Optimizations>
-        <OptimizationLevel Value="3"/>
+        <OptimizationLevel Value="0"/>
       </Optimizations>
     </CodeGeneration>
     <Linking>
       <Debugging>
-        <UseLineInfoUnit Value="False"/>
-        <StripSymbols Value="True"/>
+        <GenerateDebugInfo Value="True"/>
       </Debugging>
       <LinkSmart Value="True"/>
       <Options>
@@ -531,6 +616,12 @@
     </Other>
   </CompilerOptions>
   <Debugging>
+    <BreakPoints Count="1">
+      <Item1>
+        <Source Value="hexeditor.pas"/>
+        <Line Value="795"/>
+      </Item1>
+    </BreakPoints>
     <Watches Count="3">
       <Item1>
         <Expression Value="t"/>

@@ -8,7 +8,7 @@ uses
   Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs, ComCtrls,
   StdCtrls, EditBtn, ExtCtrls, cli_caller, parameditor, Menus, Buttons, Spin,
   Synaser, com_setup, fileselector, hexeditor, XMLCfg, vsprogparser, vsprogtarget,
-  vsprogprogrammer, inputdialog, FileUtil;
+  vsprogprogrammer, inputdialog, FileUtil, texteditor;
 
 type
 
@@ -41,6 +41,9 @@ type
     btnOpenFile: TButton;
     btnSetPower: TButton;
     btnModeSetup: TButton;
+    btnEditInterface: TButton;
+    btnEditTarget: TButton;
+    btnEditScript: TButton;
     cbboxOpenOCDInterface: TComboBox;
     cbboxOpenOCDScript: TComboBox;
     cbboxOpenOCDTarget: TComboBox;
@@ -123,7 +126,10 @@ type
     procedure btnEditCaliClick(Sender: TObject);
     procedure btnEditEEClick(Sender: TObject);
     procedure btnEditFuseClick(Sender: TObject);
+    procedure btnEditInterfaceClick(Sender: TObject);
     procedure btnEditLockClick(Sender: TObject);
+    procedure btnEditScriptClick(Sender: TObject);
+    procedure btnEditTargetClick(Sender: TObject);
     procedure btnEditUsrSigClick(Sender: TObject);
     procedure btnEraseClick(Sender: TObject);
     procedure btnModeSetupClick(Sender: TObject);
@@ -1628,9 +1634,27 @@ begin
   ShowTargetArea(FUSE_CHAR, lbledtFuse, @VSProg_Parser.FuseDataParser);
 end;
 
+procedure TFormMain.btnEditInterfaceClick(Sender: TObject);
+begin
+  TextFileName := cbboxOpenOCDInterface.Caption;
+  FormTextEditor.ShowModal;
+end;
+
 procedure TFormMain.btnEditLockClick(Sender: TObject);
 begin
   ShowTargetArea(LOCK_CHAR, lbledtLock, @VSProg_Parser.LockDataParser);
+end;
+
+procedure TFormMain.btnEditScriptClick(Sender: TObject);
+begin
+  TextFileName := cbboxOpenOCDScript.Caption;
+  FormTextEditor.ShowModal;
+end;
+
+procedure TFormMain.btnEditTargetClick(Sender: TObject);
+begin
+  TextFileName := cbboxOpenOCDTarget.Caption;
+  FormTextEditor.ShowModal;
 end;
 
 procedure TFormMain.btnEditUsrSigClick(Sender: TObject);
