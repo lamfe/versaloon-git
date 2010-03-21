@@ -24,6 +24,7 @@ object FormTextEditor: TFormTextEditor
     ScrollBars = ssAutoBoth
     ShowHint = True
     TabOrder = 0
+    WordWrap = False
   end
   object btnSave: TButton
     Left = 112
