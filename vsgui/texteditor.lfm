@@ -8,6 +8,8 @@ object FormTextEditor: TFormTextEditor
   Caption = 'TextEditor'
   ClientHeight = 578
   ClientWidth = 506
+  KeyPreview = True
+  OnKeyPress = FormKeyPress
   OnShow = FormShow
   Position = poMainFormCenter
   LCLVersion = '0.9.28.2'

@@ -17,6 +17,7 @@ type
     btnSave: TButton;
     btnClose: TButton;
     procedure btnSaveClick(Sender: TObject);
+    procedure FormKeyPress(Sender: TObject; var Key: char);
     procedure FormShow(Sender: TObject);
   private
     { private declarations }
@@ -63,6 +64,14 @@ end;
 procedure TFormTextEditor.btnSaveClick(Sender: TObject);
 begin
   memoText.Lines.SaveToFile(TextFileName);
+end;
+
+procedure TFormTextEditor.FormKeyPress(Sender: TObject; var Key: char);
+begin
+  if Key = Char(27) then
+  begin
+    close;
+  end;
 end;
 
 initialization
