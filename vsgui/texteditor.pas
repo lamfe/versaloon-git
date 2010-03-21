@@ -33,6 +33,9 @@ implementation
 { TFormTextEditor }
 
 procedure TFormTextEditor.FormShow(Sender: TObject);
+var
+  tmpStrList: TStringList;
+  i: integer;
 begin
   if not FileExistsUtf8(TextFileName) then
   begin
@@ -42,10 +45,19 @@ begin
     Exit;
   end;
 
-  memoText.Lines.Clear;
-  memoText.Lines.LoadFromFile(TextFileName);
-  memoText.Hint := TextFileName;
   Caption := 'TextEditor: ' + TextFileName;
+  memoText.Hint := TextFileName;
+
+  tmpStrList := TStringList.Create;
+  tmpStrList.LoadFromFile(TextFileName);
+
+  memoText.Lines.Clear;
+  for i := 0 to tmpStrList.Count - 1 do
+  begin
+    memoText.Lines.Add(tmpStrList.Strings[i]);
+  end;
+
+  tmpStrList.Destroy;
 end;
 
 procedure TFormTextEditor.btnSaveClick(Sender: TObject);
