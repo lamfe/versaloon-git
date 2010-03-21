@@ -19,6 +19,8 @@ type
     procedure btnSaveClick(Sender: TObject);
     procedure FormKeyPress(Sender: TObject; var Key: char);
     procedure FormShow(Sender: TObject);
+    procedure memoTextKeyPress(Sender: TObject; var Key: char);
+    procedure UpdateTitle;
   private
     { private declarations }
   public
@@ -28,10 +30,23 @@ type
 var
   FormTextEditor: TFormTextEditor;
   TextFileName: String;
+  TextContentChanged: boolean;
 
 implementation
 
 { TFormTextEditor }
+
+procedure TFormTextEditor.UpdateTitle;
+begin
+  if TextContentChanged then
+  begin
+    Caption := 'TextEditor*: ' + TextFileName;
+  end
+  else
+  begin
+    Caption := 'TextEditor: ' + TextFileName;
+  end;
+end;
 
 procedure TFormTextEditor.FormShow(Sender: TObject);
 var
@@ -46,7 +61,8 @@ begin
     Exit;
   end;
 
-  Caption := 'TextEditor: ' + TextFileName;
+  TextContentChanged := False;
+  UpdateTitle;
   memoText.Hint := TextFileName;
 
   tmpStrList := TStringList.Create;
@@ -61,9 +77,22 @@ begin
   tmpStrList.Destroy;
 end;
 
+procedure TFormTextEditor.memoTextKeyPress(Sender: TObject; var Key: char);
+begin
+  TextContentChanged := True;
+  UpdateTitle;
+end;
+
 procedure TFormTextEditor.btnSaveClick(Sender: TObject);
 begin
-  memoText.Lines.SaveToFile(TextFileName);
+  if TextContentChanged then
+  begin
+    memoText.Lines.SaveToFile(TextFileName);
+    TextContentChanged := False;
+    UpdateTitle;
+    Beep();
+    MessageDlg('OK', 'save to ' + TextFileName + ' successes.', mtInformation, [mbOK], 0);
+  end;
 end;
 
 procedure TFormTextEditor.FormKeyPress(Sender: TObject; var Key: char);
