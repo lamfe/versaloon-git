@@ -44,6 +44,7 @@ begin
 
   memoText.Lines.Clear;
   memoText.Lines.LoadFromFile(TextFileName);
+  memoText.Hint := TextFileName;
   Caption := 'TextEditor: ' + TextFileName;
 end;
 

@@ -1484,17 +1484,17 @@ begin
   end;
   if cbboxOpenOCDInterface.Text <> '' then
   begin
-    VSProg_Caller.AddParameter('f "' + AnsiToUtf8(Application.Location) +
+    VSProg_Caller.AddParameter('f "' + dedtOpenOCD.Directory +
       cbboxOpenOCDInterface.Text + '"');
   end;
   if cbboxOpenOCDTarget.Text <> '' then
   begin
-    VSProg_Caller.AddParameter('f "' + AnsiToUtf8(Application.Location) +
+    VSProg_Caller.AddParameter('f "' + dedtOpenOCD.Directory +
       cbboxOpenOCDTarget.Text + '"');
   end;
   if cbboxOpenOCDScript.Text <> '' then
   begin
-    VSProg_Caller.AddParameter('f "' + AnsiToUtf8(Application.Location) +
+    VSProg_Caller.AddParameter('f "' + dedtOpenOCD.Directory +
       cbboxOpenOCDScript.Text + '"');
   end;
 
@@ -1636,7 +1636,7 @@ end;
 
 procedure TFormMain.btnEditInterfaceClick(Sender: TObject);
 begin
-  TextFileName := AnsiToUtf8(Application.Location) + cbboxOpenOCDInterface.Text;
+  TextFileName := dedtOpenOCD.Directory + cbboxOpenOCDInterface.Text;
   FormTextEditor.ShowModal;
 end;
 
@@ -1647,13 +1647,13 @@ end;
 
 procedure TFormMain.btnEditScriptClick(Sender: TObject);
 begin
-  TextFileName := AnsiToUtf8(Application.Location) + cbboxOpenOCDScript.Text;
+  TextFileName := dedtOpenOCD.Directory + cbboxOpenOCDScript.Text;
   FormTextEditor.ShowModal;
 end;
 
 procedure TFormMain.btnEditTargetClick(Sender: TObject);
 begin
-  TextFileName := AnsiToUtf8(Application.Location) + cbboxOpenOCDTarget.Text;
+  TextFileName := dedtOpenOCD.Directory + cbboxOpenOCDTarget.Text;
   FormTextEditor.ShowModal;
 end;
 
@@ -2247,9 +2247,9 @@ var
   index: integer;
 begin
   if (cbboxOpenOCDInterface.Items.Count = 0) and
-    DirectoryExists(Application.Location + 'interface') then
+    DirectoryExists(dedtOpenOCD.Directory + 'interface') then
   begin
-    if FindFirst(Application.Location + 'interface' + System.DirectorySeparator +
+    if FindFirst(dedtOpenOCD.Directory + 'interface' + System.DirectorySeparator +
       '*', (faAnyFile and not faDirectory), SearchResult) = 0 then
     begin
       if LowerCase(ExtractFileExt(SearchResult.Name)) = '.cfg' then
@@ -2284,9 +2284,9 @@ begin
   end;
 
   if (cbboxOpenOCDTarget.Items.Count = 0) and
-    DirectoryExists(Application.Location + 'target') then
+    DirectoryExists(dedtOpenOCD.Directory + 'target') then
   begin
-    if FindFirst(Application.Location + 'target' + System.DirectorySeparator +
+    if FindFirst(dedtOpenOCD.Directory + 'target' + System.DirectorySeparator +
       '*', (faAnyFile and not faDirectory), SearchResult) = 0 then
     begin
       if LowerCase(ExtractFileExt(SearchResult.Name)) = '.cfg' then
@@ -2312,9 +2312,9 @@ begin
   end;
 
   if (cbboxOpenOCDScript.Items.Count = 0) and
-    DirectoryExists(Application.Location + 'script') then
+    DirectoryExists(dedtOpenOCD.Directory + 'script') then
   begin
-    if FindFirst(Application.Location + 'script' + System.DirectorySeparator +
+    if FindFirst(dedtOpenOCD.Directory + 'script' + System.DirectorySeparator +
       '*', (faAnyFile and not faDirectory), SearchResult) = 0 then
     begin
       if LowerCase(ExtractFileExt(SearchResult.Name)) = '.cfg' then
