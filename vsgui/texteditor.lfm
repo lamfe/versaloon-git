@@ -21,6 +21,7 @@ object FormTextEditor: TFormTextEditor
     Align = alTop
     Color = 15400959
     Font.Color = 12937777
+    OnKeyPress = memoTextKeyPress
     ParentFont = False
     ParentShowHint = False
     ScrollBars = ssAutoBoth
