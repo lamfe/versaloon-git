@@ -601,15 +601,16 @@ s32 USB_Out_PollReady(void)
 	retry = 0;
 	while(!USB_Out_IsReady())
 	{
-		if(retry++ > 0xFFFFF)
+		if((retry++ > 0xFFFFF) || (usb_ovf))
 		{
-			// timeout
-			return -1;
-		}
-		if(usb_ovf)
-		{
+			// time out or
 			// over flow(new command received, but old reply not sent)
 			usb_ovf = 0;
+			usb_in_numofpackage = 0;
+			usb_in_data_remain = 0;
+#if USB_TX_DOUBLEBUFFER_EN
+			ToggleDTOG_RX(ENDP2);
+#endif
 			SetEPTxStatus(ENDP2, EP_TX_NAK);
 			return -1;
 		}
