@@ -19,7 +19,7 @@ uses
   findreplace,
   vsprogparser,
   vsprogtarget,
-  vsprogprogrammer;
+  vsprogprogrammer, texteditor;
 
 {$IFDEF WINDOWS}{$R vsgui.rc}{$ENDIF}
 
@@ -34,6 +34,7 @@ begin
   Application.CreateForm(TFormInputDialog, FormInputDialog);
   Application.CreateForm(TFormFindReplace, FormFindReplace);
   Application.CreateForm(TVSProg_Programmer, VSProg_Programmer);
+  Application.CreateForm(TFormTextEditor, FormTextEditor);
   Application.Run;
 end.
 
