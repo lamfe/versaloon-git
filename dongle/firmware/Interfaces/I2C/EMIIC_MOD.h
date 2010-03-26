@@ -36,18 +36,6 @@
         return IIC_MOD_ACK;\
     }\
     \
-    IIC_MOD_RESULT_t EMIIC_##MOD_NAME##_Init(void)\
-    {\
-        SCL_R();\
-        SDA_R();\
-        return IIC_MOD_ACK;\
-    }\
-    \
-    IIC_MOD_RESULT_t EMIIC_##MOD_NAME##_DeInit(void)\
-    {\
-        return EMIIC_##MOD_NAME##_Init();\
-    }\
-    \
     static IIC_MOD_RESULT_t EMIIC_##MOD_NAME##_WaitSCL(void)\
     {\
         DLY_TYPE dly = 0;\
@@ -64,7 +52,7 @@
         }\
         return IIC_MOD_ACK;\
     }\
-    static IIC_MOD_RESULT_t EMIIC_##MOD_NAME##_WaitNACK(void)\
+    static IIC_MOD_RESULT_t EMIIC_##MOD_NAME##_WaitSDA_R(void)\
     {\
         DLY_TYPE dly = 0;\
         \
@@ -128,6 +116,10 @@
         }\
         DLY_FUNC(s_EMIIC_##MOD_NAME##_R_Len);\
         SDA_R();\
+        if (IIC_MOD_ACK != EMIIC_##MOD_NAME##_WaitSDA_R())\
+        {\
+            return IIC_MOD_TO;\
+        }\
         return IIC_MOD_ACK;\
     }\
     \
@@ -140,6 +132,10 @@
             if (byte & 0x80)\
             {\
                 SDA_R();\
+                if (IIC_MOD_ACK != EMIIC_##MOD_NAME##_WaitSDA_R())\
+                {\
+                    return IIC_MOD_TO;\
+                }\
             }\
             else\
             {\
@@ -205,7 +201,7 @@
         if (last)\
         {\
             SDA_R();\
-            if (IIC_MOD_ACK != EMIIC_##MOD_NAME##_WaitNACK())\
+            if (IIC_MOD_ACK != EMIIC_##MOD_NAME##_WaitSDA_R())\
             {\
                 return IIC_MOD_TO;\
             }\
@@ -311,6 +307,22 @@
         {\
             return IIC_MOD_ACK;\
         }\
+    }\
+    IIC_MOD_RESULT_t EMIIC_##MOD_NAME##_Init(void)\
+    {\
+        SCL_R();\
+        SDA_R();\
+        if ((IIC_MOD_ACK != EMIIC_##MOD_NAME##_WaitSCL()) \
+            || (IIC_MOD_ACK != EMIIC_##MOD_NAME##_WaitSDA_R()))\
+        {\
+            return IIC_MOD_NACK;\
+        }\
+        return IIC_MOD_ACK;\
+    }\
+    \
+    IIC_MOD_RESULT_t EMIIC_##MOD_NAME##_DeInit(void)\
+    {\
+        return EMIIC_##MOD_NAME##_Init();\
     }
 
 #endif  // __EMIIC_MOD_INCLUDED__
