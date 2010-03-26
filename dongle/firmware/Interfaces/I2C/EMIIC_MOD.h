@@ -64,6 +64,22 @@
         }\
         return IIC_MOD_ACK;\
     }\
+    static IIC_MOD_RESULT_t EMIIC_##MOD_NAME##_WaitNACK(void)\
+    {\
+        DLY_TYPE dly = 0;\
+        \
+        while(!SDA_G())\
+        {\
+            DLY_FUNC(s_EMIIC_##MOD_NAME##_D_DlyStep);\
+            dly += s_EMIIC_##MOD_NAME##_D_DlyStep;\
+            if ((s_EMIIC_##MOD_NAME##_D_MaxDly > 0) \
+                && (dly >= s_EMIIC_##MOD_NAME##_D_MaxDly))\
+            {\
+                return IIC_MOD_TO;\
+            }\
+        }\
+        return IIC_MOD_ACK;\
+    }\
     \
     static IIC_MOD_RESULT_t EMIIC_##MOD_NAME##_Start(void)\
     {\
@@ -189,6 +205,10 @@
         if (last)\
         {\
             SDA_R();\
+            if (IIC_MOD_ACK != EMIIC_##MOD_NAME##_WaitNACK())\
+            {\
+                return IIC_MOD_TO;\
+            }\
         }\
         else\
         {\
