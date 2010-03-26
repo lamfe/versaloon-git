@@ -527,6 +527,17 @@ RESULT target_write_buffer_from_file_callback(uint32_t address,
 	return ERROR_FAIL;
 }
 
+static const uint64_t byte_mask[9] = {
+	0x0000000000000000,
+	0x00000000000000FF,
+	0x000000000000FFFF,
+	0x0000000000FFFFFF,
+	0x00000000FFFFFFFF,
+	0x000000FFFFFFFFFF,
+	0x0000FFFFFFFFFFFF,
+	0x00FFFFFFFFFFFFFF,
+	0xFFFFFFFFFFFFFFFF,
+};
 RESULT target_program(struct program_context_t *context)
 {
 	const struct program_functions_t *pf = cur_target->program_functions;
@@ -958,6 +969,8 @@ RESULT target_program(struct program_context_t *context)
 				pgbar_update(target_size);
 				time_in_ms = pgbar_fini();
 				
+				value &= byte_mask[target_size];
+				
 				if (op->verify_operations & area_mask)
 				{
 					if (value == prog_area->value)
@@ -967,15 +980,15 @@ RESULT target_program(struct program_context_t *context)
 					else
 					{
 						sprintf(str_tmp, 
-							"%%s verify failed, read=0x%%0%dllX, "
-							"want=0x%%0%dllX.\n",
+							"%%s verify failed, read=0x%%0%d"PRIX64", "
+							"want=0x%%0%d"PRIX64".\n",
 							target_size * 2, target_size * 2);
 						LOG_ERROR(str_tmp, fullname, value, prog_area->value);
 					}
 				}
 				else
 				{
-					sprintf(str_tmp, "%%s read is 0x%%0%dllX\n", 
+					sprintf(str_tmp, "%%s read is 0x%%0%d"PRIX64"\n", 
 							target_size * 2);
 					LOG_INFO(str_tmp, fullname, value);
 				}
