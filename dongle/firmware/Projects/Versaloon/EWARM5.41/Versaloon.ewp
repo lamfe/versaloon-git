@@ -1631,6 +1631,7 @@
   </configuration>
   <mfc_discard>
     <configuration>Debug</configuration>
+    <configuration>Release</configuration>
   </mfc_discard>
   <group>
     <name>HW</name>
