@@ -17,7 +17,7 @@
 
 #define STM32_MINI_RC4					0x14
 #define _HARDWARE_VER					STM32_MINI_RC4
-#define HSE_Value 						((uint32_t)12000000)
+#define HSE_VALUE 						((uint32_t)12000000)
 
 /****************************** Power ******************************/
 #define PWREXT_EN_PORT					GPIOB
@@ -397,26 +397,26 @@
 #define LPCICP_XRES_SETOUTPUT()			SW_RST_SETOUTPUT()
 #define LPCICP_XRES_SETINPUT()			SW_RST_SETINPUT_PU()
 
-/****************************** I2C ******************************/
-#define I2C_PULL_INIT()					
+/****************************** IIC ******************************/
+#define IIC_PULL_INIT()					
 
-#define I2C_SCL_SETOUTPUT()				JTAG_TAP_TCK_SETOUTPUT()
-#define I2C_SCL_SETINPUT()				JTAG_TAP_TCK_SETINPUT()
-#define I2C_SCL_SET()					I2C_SCL_SETINPUT()
-#define I2C_SCL_CLR()					do{\
+#define IIC_SCL_SETOUTPUT()				JTAG_TAP_TCK_SETOUTPUT()
+#define IIC_SCL_SETINPUT()				JTAG_TAP_TCK_SETINPUT()
+#define IIC_SCL_SET()					IIC_SCL_SETINPUT()
+#define IIC_SCL_CLR()					do{\
 											JTAG_TAP_TCK_CLR();\
-											I2C_SCL_SETOUTPUT();\
+											IIC_SCL_SETOUTPUT();\
 										}while(0)
-#define I2C_SCL_GET()					GPIO_GetInPins(JTAG_TAP_PORT, GPIO_PIN_GetMask(JTAG_TAP_TCK_PIN))
+#define IIC_SCL_GET()					GPIO_GetInPins(JTAG_TAP_PORT, GPIO_PIN_GetMask(JTAG_TAP_TCK_PIN))
 
-#define I2C_SDA_SETOUTPUT()				JTAG_TAP_TDI_SETOUTPUT()
-#define I2C_SDA_SETINPUT()				JTAG_TAP_TDI_SETINPUT()
-#define I2C_SDA_SET()					I2C_SDA_SETINPUT()
-#define I2C_SDA_CLR()					do{\
+#define IIC_SDA_SETOUTPUT()				JTAG_TAP_TDI_SETOUTPUT()
+#define IIC_SDA_SETINPUT()				JTAG_TAP_TDI_SETINPUT()
+#define IIC_SDA_SET()					IIC_SDA_SETINPUT()
+#define IIC_SDA_CLR()					do{\
 											JTAG_TAP_TDI_CLR();\
-											I2C_SDA_SETOUTPUT();\
+											IIC_SDA_SETOUTPUT();\
 										}while(0)
-#define I2C_SDA_GET()					GPIO_GetInPins(JTAG_TAP_PORT, GPIO_PIN_GetMask(JTAG_TAP_TDI_PIN))
+#define IIC_SDA_GET()					GPIO_GetInPins(JTAG_TAP_PORT, GPIO_PIN_GetMask(JTAG_TAP_TDI_PIN))
 
 /****************************** USART ******************************/
 // to change USART port below, modify the interrupt handler
