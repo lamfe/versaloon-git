@@ -80,7 +80,7 @@
 // page 0
 #	define USB_TO_USART_EN				0
 #	define USB_TO_SPI_EN				1
-#	define USB_TO_I2C_EN				1
+#	define USB_TO_IIC_EN				1
 #	define USB_TO_GPIO_EN				1
 #	define USB_TO_CAN_EN				0
 #	define USB_TO_PWM_EN				0
@@ -175,7 +175,7 @@ extern void GLOBAL_OUTPUT_Release(void);
 #if USB_TO_XXX_EN == 0
 #	define USB_TO_USART_EN				0
 #	define USB_TO_SPI_EN				0
-#	define USB_TO_I2C_EN				0
+#	define USB_TO_IIC_EN				0
 #	define USB_TO_GPIO_EN				0
 #	define USB_TO_CAN_EN				0
 #	define USB_TO_PWM_EN				0
@@ -193,7 +193,7 @@ extern void GLOBAL_OUTPUT_Release(void);
 #endif
 
 #define INTERFACE_C2_EN					((USB_TO_XXX_EN && USB_TO_C2_EN) || (MP_EN && MP_C8051F_C2_EN))
-#define INTERFACE_I2C_EN				(USB_TO_XXX_EN && USB_TO_I2C_EN)
+#define INTERFACE_IIC_EN				(USB_TO_XXX_EN && USB_TO_IIC_EN)
 #define INTERFACE_ISSP_EN				((USB_TO_XXX_EN && USB_TO_ISSP_EN) || (MP_EN && MP_PSOC1_EN))
 #define INTERFACE_LPC_ICP_EN			((USB_TO_XXX_EN && USB_TO_LPCICP_EN) || (MP_EN && MP_LPCICP_EN))
 #define INTERFACE_JTAG_EN				((USB_TO_XXX_EN && (USB_TO_JTAG_HL_EN || USB_TO_JTAG_LL_EN)) || AVR_JTAG_EN || AVR32_JTAG_EN || AVRX_JTAG_EN || VSLLINK_EN || (MP_EN && MP_C8051F_JTAG_EN))

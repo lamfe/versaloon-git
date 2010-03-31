@@ -121,7 +121,7 @@ void RCC_Configuration(void)
 		RCC_PCLK1Config(RCC_HCLK_Div2);
 
 		/* PLLCLK */
-		RCC_PLLConfig(RCC_PLLSource_HSE_Div1, (_SYS_FREQUENCY * 1000000 / HSE_Value - 2) << 18);
+		RCC_PLLConfig(RCC_PLLSource_HSE_Div1, (_SYS_FREQUENCY * 1000000 / HSE_VALUE - 2) << 18);
 
 		/* Enable PLL */ 
 		RCC_PLLCmd(ENABLE);

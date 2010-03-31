@@ -1,16 +1,28 @@
+# options and settings
+PROJECT	= Versaloon
+# available OPT:
+# 0 - 3: low optimization - high optimization
+# s: size optimization
 OPT	= s
-TARGET	= Versaloon
-PRJDIR	= ..
-SRCDIR  = ../../..
-OBJ_DIR = .
+# Available target:
+# LowDensity
+# LowDensityValueLine
+# MediumDensity
+# MediumDensityValueLine
+# HighDensity
+# ConnectivityLine
+TARGET_STM32 = MediumDensity
+# set to yes to include USB library
+INCLUDE_USB_LIB = yes
 
-# ASM
-ASM_SRCS+= $(SRCDIR)/HW/lib/CMSIS/Core/CM3/startup/gcc/startup_stm32f10x_md.s
-
-# HW
-USR_SRCS+= $(SRCDIR)/HW/HW.c
+# User source files/includes/macros
+# add .c source files to USR_SRCS
+# add .h header files to USR_INCS
+# add pre-defines to USR_DEFS
 USR_SRCS+= $(SRCDIR)/main.c $(SRCDIR)/HW/stm32f10x_it.c
-USR_INCS+= -I $(SRCDIR)/HW -I $(SRCDIR)/HW/lib/CMSIS/Core/CM3
+USR_SRCS+= $(SRCDIR)/HW/HW.c
+USR_INCS+= -I $(SRCDIR)/HW -I $(PRJDIR)/..
+#USR_DEFS+= -DADD_USER_DEFINES_HERE
 
 # myString
 USR_SRCS+= $(SRCDIR)/HW/Port/GCC/myString.c
@@ -54,9 +66,9 @@ USR_INCS+= -I $(SRCDIR)/Interfaces/SWIM
 USR_SRCS+= $(SRCDIR)/Interfaces/PowerExt/PowerExt.c
 USR_INCS+= -I $(SRCDIR)/Interfaces/PowerExt
 
-# I2C
-USR_SRCS+= $(SRCDIR)/Interfaces/I2C/I2C.c
-USR_INCS+= -I $(SRCDIR)/Interfaces/I2C
+# IIC
+USR_SRCS+= $(SRCDIR)/Interfaces/IIC/IIC.c
+USR_INCS+= -I $(SRCDIR)/Interfaces/IIC
 
 #C2
 USR_SRCS+= $(SRCDIR)/Interfaces/C2/C2.c
@@ -91,38 +103,113 @@ USR_SRCS+= $(SRCDIR)/USB_TO_XXX/USB_TO_SWIM.c
 USR_INCS+= -I $(SRCDIR)/USB_TO_XXX
 
 
+# directory define
+PRJDIR	= ..
+SRCDIR  = ../../..
+OBJ_DIR = .
+STM32_LIB_DIR = $(SRCDIR)/HW/STM32F10x_Lib
 
+
+# LIBSTM32_LIB
+ifeq ($(TARGET_STM32),LowDensity)
+  LIBSTM32_ASM_SRCS = \
+    $(STM32_LIB_DIR)/Libraries/CMSIS/CM3/DeviceSupport/ST/STM32F10x/startup/gcc_ride7/startup_stm32f10x_ld.s
+  LIBSTM32_DEFS = -DUSE_STDPERIPH_DRIVER -DSTM32F10X_LD
+else
+  ifeq ($(TARGET_STM32),LowDensityValueLine)
+    LIBSTM32_ASM_SRCS = \
+      $(STM32_LIB_DIR)/Libraries/CMSIS/CM3/DeviceSupport/ST/STM32F10x/startup/gcc_ride7/startup_stm32f10x_ld_vl.s
+    LIBSTM32_DEFS = -DUSE_STDPERIPH_DRIVER -DSTM32F10X_LD_VL
+  else
+    ifeq ($(TARGET_STM32),MediumDensity)
+	  LIBSTM32_ASM_SRCS = \
+        $(STM32_LIB_DIR)/Libraries/CMSIS/CM3/DeviceSupport/ST/STM32F10x/startup/gcc_ride7/startup_stm32f10x_md.s
+      LIBSTM32_DEFS = -DUSE_STDPERIPH_DRIVER -DSTM32F10X_MD
+	else
+	  ifeq ($(TARGET_STM32),MediumDensityValueLine)
+	    LIBSTM32_ASM_SRCS = \
+          $(STM32_LIB_DIR)/Libraries/CMSIS/CM3/DeviceSupport/ST/STM32F10x/startup/gcc_ride7/startup_stm32f10x_md_vl.s
+        LIBSTM32_DEFS = -DUSE_STDPERIPH_DRIVER -DSTM32F10X_MD_VL
+	  else
+	    ifeq ($(TARGET_STM32),HighDensity)
+		  LIBSTM32_ASM_SRCS = \
+            $(STM32_LIB_DIR)/Libraries/CMSIS/CM3/DeviceSupport/ST/STM32F10x/startup/gcc_ride7/startup_stm32f10x_hd.s
+          LIBSTM32_DEFS = -DUSE_STDPERIPH_DRIVER -DSTM32F10X_HD
+		else
+		  ifeq ($(TARGET_STM32),ConnectivityLine)
+		    LIBSTM32_ASM_SRCS = \
+              $(STM32_LIB_DIR)/Libraries/CMSIS/CM3/DeviceSupport/ST/STM32F10x/startup/gcc_ride7/startup_stm32f10x_cl.s
+            LIBSTM32_DEFS = -DUSE_STDPERIPH_DRIVER -DSTM32F10X_CL
+		  else
+		    Invalid STM32 Target
+		  endif
+		endif
+	  endif
+	endif
+  endif
+endif
 LIBSTM32_SRCS = \
- $(SRCDIR)/HW/lib/src/misc.c \
- $(SRCDIR)/HW/lib/src/stm32f10x_adc.c \
- $(SRCDIR)/HW/lib/src/stm32f10x_bkp.c \
- $(SRCDIR)/HW/lib/src/stm32f10x_dma.c \
- $(SRCDIR)/HW/lib/src/stm32f10x_flash.c \
- $(SRCDIR)/HW/lib/src/stm32f10x_gpio.c \
- $(SRCDIR)/HW/lib/src/stm32f10x_pwr.c \
- $(SRCDIR)/HW/lib/src/stm32f10x_rcc.c \
- $(SRCDIR)/HW/lib/src/stm32f10x_spi.c \
- $(SRCDIR)/HW/lib/src/stm32f10x_usart.c \
- $(SRCDIR)/HW/lib/src/stm32f10x_tim.c \
- $(SRCDIR)/HW/lib/src/usb_core.c \
- $(SRCDIR)/HW/lib/src/usb_init.c \
- $(SRCDIR)/HW/lib/src/usb_int.c \
- $(SRCDIR)/HW/lib/src/usb_mem.c \
- $(SRCDIR)/HW/lib/src/usb_regs.c
-LIBSTM32_INCS = $(SRCDIR)/HW/lib/inc
+  $(STM32_LIB_DIR)/Libraries/CMSIS/CM3/CoreSupport/core_cm3.c \
+  $(STM32_LIB_DIR)/Libraries/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c \
+  $(STM32_LIB_DIR)/Libraries/STM32F10x_StdPeriph_Driver/src/misc.c \
+  $(STM32_LIB_DIR)/Libraries/STM32F10x_StdPeriph_Driver/src/stm32f10x_adc.c \
+  $(STM32_LIB_DIR)/Libraries/STM32F10x_StdPeriph_Driver/src/stm32f10x_bkp.c \
+  $(STM32_LIB_DIR)/Libraries/STM32F10x_StdPeriph_Driver/src/stm32f10x_can.c \
+  $(STM32_LIB_DIR)/Libraries/STM32F10x_StdPeriph_Driver/src/stm32f10x_cec.c \
+  $(STM32_LIB_DIR)/Libraries/STM32F10x_StdPeriph_Driver/src/stm32f10x_crc.c \
+  $(STM32_LIB_DIR)/Libraries/STM32F10x_StdPeriph_Driver/src/stm32f10x_dac.c \
+  $(STM32_LIB_DIR)/Libraries/STM32F10x_StdPeriph_Driver/src/stm32f10x_dbgmcu.c \
+  $(STM32_LIB_DIR)/Libraries/STM32F10x_StdPeriph_Driver/src/stm32f10x_dma.c \
+  $(STM32_LIB_DIR)/Libraries/STM32F10x_StdPeriph_Driver/src/stm32f10x_exti.c \
+  $(STM32_LIB_DIR)/Libraries/STM32F10x_StdPeriph_Driver/src/stm32f10x_flash.c \
+  $(STM32_LIB_DIR)/Libraries/STM32F10x_StdPeriph_Driver/src/stm32f10x_fsmc.c \
+  $(STM32_LIB_DIR)/Libraries/STM32F10x_StdPeriph_Driver/src/stm32f10x_gpio.c \
+  $(STM32_LIB_DIR)/Libraries/STM32F10x_StdPeriph_Driver/src/stm32f10x_i2c.c \
+  $(STM32_LIB_DIR)/Libraries/STM32F10x_StdPeriph_Driver/src/stm32f10x_iwdg.c \
+  $(STM32_LIB_DIR)/Libraries/STM32F10x_StdPeriph_Driver/src/stm32f10x_pwr.c \
+  $(STM32_LIB_DIR)/Libraries/STM32F10x_StdPeriph_Driver/src/stm32f10x_rcc.c \
+  $(STM32_LIB_DIR)/Libraries/STM32F10x_StdPeriph_Driver/src/stm32f10x_rtc.c \
+  $(STM32_LIB_DIR)/Libraries/STM32F10x_StdPeriph_Driver/src/stm32f10x_sdio.c \
+  $(STM32_LIB_DIR)/Libraries/STM32F10x_StdPeriph_Driver/src/stm32f10x_spi.c \
+  $(STM32_LIB_DIR)/Libraries/STM32F10x_StdPeriph_Driver/src/stm32f10x_tim.c \
+  $(STM32_LIB_DIR)/Libraries/STM32F10x_StdPeriph_Driver/src/stm32f10x_usart.c \
+  $(STM32_LIB_DIR)/Libraries/STM32F10x_StdPeriph_Driver/src/stm32f10x_wwdg.c
+LIBSTM32_INCS = \
+  -I $(STM32_LIB_DIR)/Libraries/STM32F10x_StdPeriph_Driver/inc \
+  -I $(STM32_LIB_DIR)/Libraries/CMSIS/CM3/DeviceSupport/ST/STM32F10x \
+  -I $(STM32_LIB_DIR)/Libraries/CMSIS/CM3/CoreSupport
+
+# LIBSTM32_USB_LIB
+ifeq (${INCLUDE_USB_LIB},yes)
+  LIBSTM32_SRCS+= \
+    $(STM32_LIB_DIR)/Libraries/STM32_USB-FS-Device_Driver/src/usb_core.c \
+	$(STM32_LIB_DIR)/Libraries/STM32_USB-FS-Device_Driver/src/usb_init.c \
+	$(STM32_LIB_DIR)/Libraries/STM32_USB-FS-Device_Driver/src/usb_int.c \
+	$(STM32_LIB_DIR)/Libraries/STM32_USB-FS-Device_Driver/src/usb_mem.c \
+	$(STM32_LIB_DIR)/Libraries/STM32_USB-FS-Device_Driver/src/usb_regs.c \
+	$(STM32_LIB_DIR)/Libraries/STM32_USB-FS-Device_Driver/src/usb_sil.c \
+	$(STM32_LIB_DIR)/Libraries/STM32_USB-FS-Device_Driver/src/otgd_fs_cal.c \
+	$(STM32_LIB_DIR)/Libraries/STM32_USB-FS-Device_Driver/src/otgd_fs_dev.c \
+	$(STM32_LIB_DIR)/Libraries/STM32_USB-FS-Device_Driver/src/otgd_fs_int.c \
+	$(STM32_LIB_DIR)/Libraries/STM32_USB-FS-Device_Driver/src/otgd_fs_pcd.c
+  LIBSTM32_INCS+= \
+    -I $(STM32_LIB_DIR)/Libraries/STM32_USB-FS-Device_Driver/inc
+endif
+
 
 LIBSTM32_OBJS = $(addprefix $(OBJ_DIR)/, $(notdir $(LIBSTM32_SRCS:.c=.o)))
 USR_OBJS = $(addprefix $(OBJ_DIR)/, $(notdir $(USR_SRCS:.c=.o)))
-ASM_OBJS = $(addprefix $(OBJ_DIR)/, $(notdir $(ASM_SRCS:.s=.o)))
+ASM_SRCS = $(LIBSTM32_ASM_SRCS)
+ASM_OBJS = $(addprefix $(OBJ_DIR)/, $(notdir $(LIBSTM32_ASM_SRCS:.s=.o)))
 
 
 TCHAIN = arm-none-eabi
 
-INCLUDE_DIRS = -I $(PRJDIR) -I $(PRJDIR)/../ -I $(SRCDIR) -I $(LIBSTM32_INCS) $(USR_INCS)
-COMPILE_OPTS = -mcpu=cortex-m3 -mthumb -mfpu=vfp -nostartfiles -fno-common -fomit-frame-pointer -ffunction-sections -Wall -g -O$(OPT)
-#-mabi=apcs-gnu 
+INCLUDE_DIRS = -I $(PRJDIR) -I $(SRCDIR) $(LIBSTM32_INCS) $(USR_INCS)
+COMPILE_OPTS = -mcpu=cortex-m3 -mthumb -mfpu=vfp 
+COMPILE_OPTS+= -nostartfiles -fno-common -fomit-frame-pointer -ffunction-sections -Wall -g -O$(OPT)
 LIBRARY_DIRS = 
-PREDEFINES   = -DUSE_STDPERIPH_DRIVER -DSTM32F10X_MD -DNDEBUG
+PREDEFINES   = $(LIBSTM32_DEFS) $(USR_DEFS)
 
 CC = $(TCHAIN)-gcc
 CFLAGS = $(COMPILE_OPTS) $(INCLUDE_DIRS) $(PREDEFINES)
@@ -134,14 +221,14 @@ AS = $(TCHAIN)-gcc
 ASFLAGS = $(COMPILE_OPTS) -c
 
 LD = $(TCHAIN)-gcc
-LDFLAGS = -Wl,--gc-sections,-Map=$(TARGET).map,-cref,-u,Reset_Handler $(INCLUDE_DIRS) $(LIBRARY_DIRS) -T ./stm32.ld
+LDFLAGS = -Wl,--gc-sections,-Map=$(PROJECT).map,-cref,-u,Reset_Handler $(INCLUDE_DIRS) $(LIBRARY_DIRS) -T ./stm32.ld
 
 OBJCP = $(TCHAIN)-objcopy
 
 AR = $(TCHAIN)-ar
 ARFLAGS = cr
 
-MAIN_OUT = $(TARGET)_GCC
+MAIN_OUT = $(PROJECT)_GCC
 MAIN_OUT_ELF = $(MAIN_OUT).elf
 MAIN_OUT_BIN = $(MAIN_OUT).bin
 MAIN_OUT_HEX = $(MAIN_OUT).hex
@@ -157,7 +244,7 @@ all: start gcc-info $(MAIN_OUT_ELF) $(MAIN_OUT_PROG) size flash end
 # misc
 
 start:
-	@echo Start Compiling Target $(TARGET)
+	@echo Start Compiling Project $(PROJECT)
 	@echo User Files:
 	@echo $(USR_OBJS)
 	@echo STM32 Library Files:
@@ -189,8 +276,8 @@ size: $(MAIN_OUT_ELF)
 	size $(MAIN_OUT_ELF)
 
 flash: $(MAIN_OUT_PROG)
-	@echo $(STR_DIV)
-	vsprog -sstm32 -mi -Z -C "COM3" -I $(MAIN_OUT_HEX) -x0x08002000 -oe -owf
+#	@echo $(STR_DIV)
+#	vsprog -sstm32 -G -mj -I $(MAIN_OUT_HEX) -oe -owf -ovf
 
 $(ASM_OBJS): $(ASM_SRCS)
 	$(CC) -c $(CFLAGS) $^
@@ -202,4 +289,4 @@ $(USR_OBJS): $(USR_SRCS)
 	$(CC) -c $(CFLAGS) $^
 
 clean:
-	-rm $(USR_OBJS) $(TARGET).map $(ASM_OBJS) $(LIBSTM32_OBJS) $(MAIN_OUT_ELF) $(MAIN_OUT_PROG)
+	-rm $(USR_OBJS) $(PROJECT).map $(ASM_OBJS) $(LIBSTM32_OBJS) $(MAIN_OUT_ELF) $(MAIN_OUT_PROG)

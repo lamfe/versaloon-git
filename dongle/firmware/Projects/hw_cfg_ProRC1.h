@@ -17,7 +17,7 @@
 
 #define STM32_PRO_RC1					0x21
 #define _HARDWARE_VER					STM32_PRO_RC1
-#define HSE_Value 						((uint32_t)12000000)
+#define HSE_VALUE 						((uint32_t)12000000)
 
 /****************************** Power ******************************/
 #define PWREXT_EN_PORT					GPIOB
@@ -423,23 +423,23 @@
 #define LPCICP_XRES_SETOUTPUT()			SW_RST_SETOUTPUT()
 #define LPCICP_XRES_SETINPUT()			SW_RST_SETINPUT_PU()
 
-/****************************** I2C ******************************/
-#define I2C_PULL_INIT()					do{\
+/****************************** IIC ******************************/
+#define IIC_PULL_INIT()					do{\
 											SW_PULL_SET();\
 											SW_RST_PULL_SET();\
 										} while(0)
 
-#define I2C_SCL_SETOUTPUT()				SW_RST_SETOUTPUT()
-#define I2C_SCL_SETINPUT()				SW_RST_SETINPUT_PU()
-#define I2C_SCL_SET()					I2C_SCL_SETINPUT()
-#define I2C_SCL_CLR()					SW_RST_CLR()
-#define I2C_SCL_GET()					SW_RST_GET()
+#define IIC_SCL_SETOUTPUT()				SW_RST_SETOUTPUT()
+#define IIC_SCL_SETINPUT()				SW_RST_SETINPUT_PU()
+#define IIC_SCL_SET()					IIC_SCL_SETINPUT()
+#define IIC_SCL_CLR()					SW_RST_CLR()
+#define IIC_SCL_GET()					SW_RST_GET()
 
-#define I2C_SDA_SETOUTPUT()				SW_SETOUTPUT()
-#define I2C_SDA_SETINPUT()				SW_SETINPUT_PU()
-#define I2C_SDA_SET()					I2C_SDA_SETINPUT()
-#define I2C_SDA_CLR()					SW_CLR()
-#define I2C_SDA_GET()					SW_GET()
+#define IIC_SDA_SETOUTPUT()				SW_SETOUTPUT()
+#define IIC_SDA_SETINPUT()				SW_SETINPUT_PU()
+#define IIC_SDA_SET()					IIC_SDA_SETINPUT()
+#define IIC_SDA_CLR()					SW_CLR()
+#define IIC_SDA_GET()					SW_GET()
 
 /****************************** USART ******************************/
 // to change USART port below, modify the interrupt handler
