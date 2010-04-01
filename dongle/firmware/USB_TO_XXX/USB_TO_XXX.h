@@ -20,7 +20,7 @@
 // Page0
 #define USB_TO_USART				(VERSALOON_USB_TO_XXX_CMD_START + 0x00)
 #define USB_TO_SPI					(VERSALOON_USB_TO_XXX_CMD_START + 0x01)
-#define USB_TO_I2C					(VERSALOON_USB_TO_XXX_CMD_START + 0x02)
+#define USB_TO_IIC					(VERSALOON_USB_TO_XXX_CMD_START + 0x02)
 #define USB_TO_GPIO					(VERSALOON_USB_TO_XXX_CMD_START + 0x03)
 #define USB_TO_CAN					(VERSALOON_USB_TO_XXX_CMD_START + 0x04)
 #define USB_TO_PWM					(VERSALOON_USB_TO_XXX_CMD_START + 0x05)
@@ -49,7 +49,7 @@ void USB_TO_XXX_ProcessCmd(uint8* dat, uint16 len);
 // Page0
 void USB_TO_USART_ProcessCmd(uint8* dat, uint16 len);
 void USB_TO_SPI_ProcessCmd(uint8* dat, uint16 len);
-void USB_TO_I2C_ProcessCmd(uint8* dat, uint16 len);
+void USB_TO_IIC_ProcessCmd(uint8* dat, uint16 len);
 void USB_TO_GPIO_ProcessCmd(uint8* dat, uint16 len);
 void USB_TO_CAN_ProcessCmd(uint8* dat, uint16 len);
 void USB_TO_PWM_ProcessCmd(uint8* dat, uint16 len);
@@ -108,9 +108,9 @@ extern int8 USB_TO_POLL_Index;
 #define USB_TO_SWJ_SEQOUT			USB_TO_XXX_OUT
 #define USB_TO_SWJ_SEQIN			USB_TO_XXX_IN
 #define USB_TO_SWJ_Transact			USB_TO_XXX_IN_OUT
-// USB_TO_I2C
-#define USB_TO_I2C_Read				USB_TO_XXX_IN
-#define USB_TO_I2C_Write			USB_TO_XXX_OUT
+// USB_TO_IIC
+#define USB_TO_IIC_Read				USB_TO_XXX_IN
+#define USB_TO_IIC_Write			USB_TO_XXX_OUT
 // USB_TO_C2
 #define USB_TO_C2_Data				USB_TO_XXX_IN_OUT
 #define USB_TO_C2_WriteAddr			USB_TO_XXX_OUT
@@ -187,7 +187,7 @@ extern int8 USB_TO_POLL_Index;
 // Number of Interfaces
 #define USB_TO_USART_NUM			1
 #define USB_TO_SPI_NUM				1
-#define USB_TO_I2C_NUM				1
+#define USB_TO_IIC_NUM				1
 #define USB_TO_GPIO_NUM				1
 #define USB_TO_CAN_NUM				1
 #define USB_TO_PWM_NUM				1
