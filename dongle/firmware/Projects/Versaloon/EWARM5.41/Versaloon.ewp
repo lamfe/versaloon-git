@@ -1112,7 +1112,7 @@
           <state>$PROJ_DIR$\..\..\..\Interfaces\SWIM\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\SPI\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\PowerExt\</state>
-          <state>$PROJ_DIR$\..\..\..\Interfaces\I2C\</state>
+          <state>$PROJ_DIR$\..\..\..\Interfaces\IIC\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\C2\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\ISSP\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\LPC_ICP\</state>
@@ -1978,7 +1978,7 @@
       <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB_TO_GPIO.c</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB_TO_I2C.c</name>
+      <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB_TO_IIC.c</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB_TO_ISSP.c</name>
