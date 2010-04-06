@@ -58,7 +58,7 @@ void USB_TO_IIC_ProcessCmd(uint8* dat, uint16 len)
 			break;
 		case USB_TO_XXX_CONFIG:
 			dead_cnt = dat[index + 2] + (dat[index + 3] << 8);
-			if(IIC_Init(dat[index + 0] + (dat[index + 1] << 8)) == 0)
+			if(IIC_Init(dat[index + 0] + (dat[index + 1] << 8), dat[index + 4] + (dat[index + 5] << 8)) == 0)
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}

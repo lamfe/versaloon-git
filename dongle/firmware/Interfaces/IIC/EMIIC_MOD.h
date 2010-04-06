@@ -4,7 +4,7 @@
 #define __EMIIC_MOD_INCLUDED__
 
 #define DECLARE_EMIIC_MOD(MOD_NAME, DLY_TYPE)      \
-    extern IIC_MOD_RESULT_t EMIIC_##MOD_NAME##_SetParameter(DLY_TYPE R_Len, DLY_TYPE D_Len, DLY_TYPE D_MaxDly, DLY_TYPE D_DlyStep, DLY_TYPE Int_Dly);\
+    extern IIC_MOD_RESULT_t EMIIC_##MOD_NAME##_SetParameter(DLY_TYPE ClockCycle, DLY_TYPE D_MaxDly, DLY_TYPE D_DlyStep, DLY_TYPE ByteInterval);\
     extern IIC_MOD_RESULT_t EMIIC_##MOD_NAME##_Init(void);\
     extern IIC_MOD_RESULT_t EMIIC_##MOD_NAME##_DeInit(void);\
     extern IIC_MOD_RESULT_t EMIIC_##MOD_NAME##_Send(uint8_t addr, uint8_t *buff, uint16_t len, IIC_STOP_t stop, uint16_t *actual_len);\
@@ -20,23 +20,32 @@
 // DLY_FUNC:function to generate delay,             void DLY_FUNC(DLY_TYPE dly);
 // DLY_TYPE:type of delay variable
 #define DEFINE_EMIIC_MOD(MOD_NAME, SCL_D, SCL_R, SCL_G, SDA_D, SDA_R, SDA_G, DLY_FUNC, DLY_TYPE)    \
-    static DLY_TYPE s_EMIIC_##MOD_NAME##_R_Len = 0;\
-    static DLY_TYPE s_EMIIC_##MOD_NAME##_D_Len = 0;\
+    static DLY_TYPE s_EMIIC_##MOD_NAME##_QuarterCycle_Len = 0;\
     static DLY_TYPE s_EMIIC_##MOD_NAME##_D_MaxDly = 0;\
     static DLY_TYPE s_EMIIC_##MOD_NAME##_D_DlyStep = 0;\
-    static DLY_TYPE s_EMIIC_##MOD_NAME##_Int_Dly = 0;\
+    static DLY_TYPE s_EMIIC_##MOD_NAME##_ByteInterval = 0;\
     \
-    IIC_MOD_RESULT_t EMIIC_##MOD_NAME##_SetParameter(DLY_TYPE R_Len, DLY_TYPE D_Len, DLY_TYPE D_MaxDly, DLY_TYPE D_DlyStep, DLY_TYPE Int_Dly)\
+    IIC_MOD_RESULT_t EMIIC_##MOD_NAME##_SetParameter(DLY_TYPE ClockCycle, DLY_TYPE D_MaxDly, DLY_TYPE D_DlyStep, DLY_TYPE ByteInterval)\
     {\
-        s_EMIIC_##MOD_NAME##_R_Len = R_Len;\
-        s_EMIIC_##MOD_NAME##_D_Len = D_Len;\
-        s_EMIIC_##MOD_NAME##_D_MaxDly = D_MaxDly;\
+        s_EMIIC_##MOD_NAME##_QuarterCycle_Len = ClockCycle / 4;\
+        if (!s_EMIIC_##MOD_NAME##_QuarterCycle_Len && ClockCycle)\
+        {\
+            s_EMIIC_##MOD_NAME##_QuarterCycle_Len = 1;\
+        }\
+        if (D_MaxDly)\
+        {\
+            s_EMIIC_##MOD_NAME##_D_MaxDly = D_MaxDly;\
+        }\
+        else\
+        {\
+            s_EMIIC_##MOD_NAME##_D_MaxDly = 1;\
+        }\
         s_EMIIC_##MOD_NAME##_D_DlyStep = D_DlyStep;\
-        s_EMIIC_##MOD_NAME##_Int_Dly = Int_Dly;\
+        s_EMIIC_##MOD_NAME##_ByteInterval = ByteInterval;\
         return IIC_MOD_ACK;\
     }\
     \
-    static IIC_MOD_RESULT_t EMIIC_##MOD_NAME##_WaitSCL(void)\
+    static IIC_MOD_RESULT_t EMIIC_##MOD_NAME##_WaitSCL_R(void)\
     {\
         DLY_TYPE dly = 0;\
         \
@@ -74,47 +83,43 @@
         uint8 retry = 0;\
         \
         SDA_R();\
-        DLY_FUNC(s_EMIIC_##MOD_NAME##_Int_Dly);\
+        DLY_FUNC(s_EMIIC_##MOD_NAME##_QuarterCycle_Len);\
         SCL_R();\
-        if (IIC_MOD_ACK != EMIIC_##MOD_NAME##_WaitSCL())\
+        if (IIC_MOD_ACK != EMIIC_##MOD_NAME##_WaitSCL_R())\
         {\
             return IIC_MOD_TO;\
         }\
-        DLY_FUNC(s_EMIIC_##MOD_NAME##_R_Len);\
-        while (!(SDA_G() && SCL_G()))\
+        while (!SDA_G())\
         {\
-            if (retry++ > 9)\
-            {\
-                return IIC_MOD_TO;\
-            }\
+            DLY_FUNC(s_EMIIC_##MOD_NAME##_QuarterCycle_Len * 2);\
             SCL_D();\
-            DLY_FUNC(s_EMIIC_##MOD_NAME##_D_Len);\
+            DLY_FUNC(s_EMIIC_##MOD_NAME##_QuarterCycle_Len * 2);\
             SCL_R();\
-            if (IIC_MOD_ACK != EMIIC_##MOD_NAME##_WaitSCL())\
+            if ((IIC_MOD_ACK != EMIIC_##MOD_NAME##_WaitSCL_R()) \
+                || (retry++ > 9))\
             {\
                 return IIC_MOD_TO;\
             }\
-            DLY_FUNC(s_EMIIC_##MOD_NAME##_R_Len);\
         }\
+        DLY_FUNC(s_EMIIC_##MOD_NAME##_QuarterCycle_Len * 2);\
         SDA_D();\
-        DLY_FUNC(s_EMIIC_##MOD_NAME##_R_Len);\
+        DLY_FUNC(s_EMIIC_##MOD_NAME##_QuarterCycle_Len * 2);\
         SCL_D();\
-        DLY_FUNC(s_EMIIC_##MOD_NAME##_D_Len);\
         return IIC_MOD_ACK;\
     }\
     \
     static IIC_MOD_RESULT_t EMIIC_##MOD_NAME##_Stop(void)\
     {\
         SCL_D();\
-        DLY_FUNC(s_EMIIC_##MOD_NAME##_Int_Dly);\
+        DLY_FUNC(s_EMIIC_##MOD_NAME##_QuarterCycle_Len);\
         SDA_D();\
-        DLY_FUNC(s_EMIIC_##MOD_NAME##_D_Len);\
+        DLY_FUNC(s_EMIIC_##MOD_NAME##_QuarterCycle_Len);\
         SCL_R();\
-        if (IIC_MOD_ACK != EMIIC_##MOD_NAME##_WaitSCL())\
+        if (IIC_MOD_ACK != EMIIC_##MOD_NAME##_WaitSCL_R())\
         {\
             return IIC_MOD_TO;\
         }\
-        DLY_FUNC(s_EMIIC_##MOD_NAME##_R_Len);\
+        DLY_FUNC(s_EMIIC_##MOD_NAME##_QuarterCycle_Len * 2);\
         SDA_R();\
         if (IIC_MOD_ACK != EMIIC_##MOD_NAME##_WaitSDA_R())\
         {\
@@ -129,6 +134,7 @@
         \
         for (i = 0; i < 8; i++)\
         {\
+            DLY_FUNC(s_EMIIC_##MOD_NAME##_QuarterCycle_Len);\
             if (byte & 0x80)\
             {\
                 SDA_R();\
@@ -143,34 +149,34 @@
             }\
             byte <<= 1;\
             \
-            DLY_FUNC(s_EMIIC_##MOD_NAME##_Int_Dly);\
+            DLY_FUNC(s_EMIIC_##MOD_NAME##_QuarterCycle_Len);\
             SCL_R();\
-            if (IIC_MOD_ACK != EMIIC_##MOD_NAME##_WaitSCL())\
+            if (IIC_MOD_ACK != EMIIC_##MOD_NAME##_WaitSCL_R())\
             {\
                 return IIC_MOD_TO;\
             }\
-            DLY_FUNC(s_EMIIC_##MOD_NAME##_R_Len);\
+            DLY_FUNC(s_EMIIC_##MOD_NAME##_QuarterCycle_Len * 2);\
             SCL_D();\
-            DLY_FUNC(s_EMIIC_##MOD_NAME##_D_Len);\
         }\
+        DLY_FUNC(s_EMIIC_##MOD_NAME##_QuarterCycle_Len);\
         SDA_R();\
-        DLY_FUNC(s_EMIIC_##MOD_NAME##_Int_Dly);\
+        DLY_FUNC(s_EMIIC_##MOD_NAME##_QuarterCycle_Len);\
         SCL_R();\
-        if (IIC_MOD_ACK != EMIIC_##MOD_NAME##_WaitSCL())\
+        if (IIC_MOD_ACK != EMIIC_##MOD_NAME##_WaitSCL_R())\
         {\
             return IIC_MOD_TO;\
         }\
-        DLY_FUNC(s_EMIIC_##MOD_NAME##_R_Len);\
+        DLY_FUNC(s_EMIIC_##MOD_NAME##_QuarterCycle_Len * 2);\
         if (SDA_G())\
         {\
             SCL_D();\
-            DLY_FUNC(s_EMIIC_##MOD_NAME##_D_Len);\
+            DLY_FUNC(s_EMIIC_##MOD_NAME##_ByteInterval);\
             return IIC_MOD_NACK;\
         }\
         else\
         {\
             SCL_D();\
-            DLY_FUNC(s_EMIIC_##MOD_NAME##_D_Len);\
+            DLY_FUNC(s_EMIIC_##MOD_NAME##_ByteInterval);\
             return IIC_MOD_ACK;\
         }\
     }\
@@ -183,21 +189,21 @@
         SDA_R();\
         for (i = 0; i < 8; i++)\
         {\
-            DLY_FUNC(s_EMIIC_##MOD_NAME##_Int_Dly);\
+            DLY_FUNC(s_EMIIC_##MOD_NAME##_QuarterCycle_Len * 2);\
             SCL_R();\
-            if (IIC_MOD_ACK != EMIIC_##MOD_NAME##_WaitSCL())\
+            if (IIC_MOD_ACK != EMIIC_##MOD_NAME##_WaitSCL_R())\
             {\
                 return IIC_MOD_TO;\
             }\
-            DLY_FUNC(s_EMIIC_##MOD_NAME##_R_Len);\
+            DLY_FUNC(s_EMIIC_##MOD_NAME##_QuarterCycle_Len * 2);\
             (*byte) <<= 1;\
             if (SDA_G())\
             {\
                 *byte |= 1;\
             }\
             SCL_D();\
-            DLY_FUNC(s_EMIIC_##MOD_NAME##_D_Len);\
         }\
+        DLY_FUNC(s_EMIIC_##MOD_NAME##_QuarterCycle_Len);\
         if (last)\
         {\
             SDA_R();\
@@ -210,14 +216,15 @@
         {\
             SDA_D();\
         }\
-        DLY_FUNC(s_EMIIC_##MOD_NAME##_Int_Dly);\
+        DLY_FUNC(s_EMIIC_##MOD_NAME##_QuarterCycle_Len);\
         SCL_R();\
-        if (IIC_MOD_ACK != EMIIC_##MOD_NAME##_WaitSCL())\
+        if (IIC_MOD_ACK != EMIIC_##MOD_NAME##_WaitSCL_R())\
         {\
             return IIC_MOD_TO;\
         }\
-        DLY_FUNC(s_EMIIC_##MOD_NAME##_R_Len);\
+        DLY_FUNC(s_EMIIC_##MOD_NAME##_QuarterCycle_Len * 2);\
         SCL_D();\
+        DLY_FUNC(s_EMIIC_##MOD_NAME##_ByteInterval);\
         return IIC_MOD_ACK;\
     }\
     \
@@ -312,7 +319,7 @@
     {\
         SCL_R();\
         SDA_R();\
-        if ((IIC_MOD_ACK != EMIIC_##MOD_NAME##_WaitSCL()) \
+        if ((IIC_MOD_ACK != EMIIC_##MOD_NAME##_WaitSCL_R()) \
             || (IIC_MOD_ACK != EMIIC_##MOD_NAME##_WaitSDA_R()))\
         {\
             return IIC_MOD_NACK;\
