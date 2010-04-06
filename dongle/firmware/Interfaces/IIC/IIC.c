@@ -21,7 +21,7 @@
 #include "EMIIC_MOD.h"
 #include "IIC.h"
 
-uint16_t dead_cnt = 0;
+uint16 dead_cnt = 0;
 
 #define IIC_SCL_SET_HOOK()			do{\
 										if (dead_cnt)\
@@ -50,11 +50,11 @@ DEFINE_EMIIC_MOD(USBTOXXX, IIC_SCL_CLR_HOOK, IIC_SCL_SET_HOOK, IIC_SCL_GET, IIC_
 
 uint16 IIC_Delay;
 
-uint8 IIC_Init(uint16 kHz)
+uint8 IIC_Init(uint16 kHz, uint16 ByteInterval)
 {
 	IIC_PULL_INIT();
 	EMIIC_USBTOXXX_Init();
-	return IIC_SetParameter(kHz);
+	return IIC_SetParameter(kHz, ByteInterval);
 }
 
 void IIC_Fini(void)
@@ -62,10 +62,10 @@ void IIC_Fini(void)
 	EMIIC_USBTOXXX_DeInit();
 }
 
-uint8 IIC_SetParameter(uint16 kHz)
+uint8 IIC_SetParameter(uint16 kHz, uint16 ByteInterval)
 {
-	uint16 dly = 500 / kHz;
-	EMIIC_USBTOXXX_SetParameter(dly, dly, 2048, dly, 0);
+	uint16 clock_cycle = 1000 / kHz;
+	EMIIC_USBTOXXX_SetParameter(clock_cycle, clock_cycle * 100, 1, ByteInterval);
 	return 0;
 }
 
