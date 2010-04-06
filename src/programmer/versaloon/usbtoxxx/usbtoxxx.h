@@ -114,7 +114,7 @@ RESULT usbtoc2_data(uint8_t interface_index, uint8_t r, uint8_t len,
 RESULT usbtoi2c_init(void);
 RESULT usbtoi2c_fini(void);
 RESULT usbtoi2c_set_speed(uint8_t interface_index, uint16_t kHz, 
-							uint16_t dead_cnt);
+							uint16_t dead_cnt, uint16_t byte_interval);
 RESULT usbtoi2c_read(uint8_t interface_index, uint16_t chip_addr, 
 						uint8_t *data, uint16_t data_len, uint8_t stop);
 RESULT usbtoi2c_write(uint8_t interface_index, uint16_t chip_addr, 

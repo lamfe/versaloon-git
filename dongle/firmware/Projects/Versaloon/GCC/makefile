@@ -207,7 +207,7 @@ TCHAIN = arm-none-eabi
 
 INCLUDE_DIRS = -I $(PRJDIR) -I $(SRCDIR) $(LIBSTM32_INCS) $(USR_INCS)
 COMPILE_OPTS = -mcpu=cortex-m3 -mthumb -mfpu=vfp 
-COMPILE_OPTS+= -nostartfiles -fno-common -fomit-frame-pointer -ffunction-sections -Wall -g -O$(OPT)
+COMPILE_OPTS+= -nostartfiles -fno-common -fomit-frame-pointer -Wall -g -O$(OPT)
 LIBRARY_DIRS = 
 PREDEFINES   = $(LIBSTM32_DEFS) $(USR_DEFS)
 
