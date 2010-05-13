@@ -74,6 +74,7 @@ RESULT programmer_iic_init(uint8_t argc, const char *argv[]);
 RESULT programmer_iic_fini(uint8_t argc, const char *argv[]);
 RESULT programmer_iic_read(uint8_t argc, const char *argv[]);
 RESULT programmer_iic_write(uint8_t argc, const char *argv[]);
+RESULT programmer_test(uint8_t argc, const char *argv[]);
 
 struct misc_cmd_t programmer_cmd[] = 
 {
@@ -145,6 +146,12 @@ struct misc_cmd_t programmer_cmd[] =
 		"iic_write",
 		"write data to iic, format: iic_write CLOCK_KHZ SLAVE_ADDR DATA_SIZE DATA",
 		NULL
+	},
+	// test
+	{
+		"test",
+		"run user defined code, format: test",
+		programmer_test
 	},
 	{
 		NULL,
@@ -573,4 +580,12 @@ RESULT programmer_iic_read(uint8_t argc, const char *argv[])
 		buff = NULL;
 	}
 	return ret;
+}
+
+RESULT programmer_test(uint8_t argc, const char *argv[])
+{
+	REFERENCE_PARAMETER(argc);
+	REFERENCE_PARAMETER(argv);
+	
+	return ERROR_OK;
 }
