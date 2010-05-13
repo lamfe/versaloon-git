@@ -226,7 +226,11 @@ static RESULT programmer_run_file(FILE *f, char *head)
 		{
 			printf("%s>>>", head);
 		}
+		
+		// get a line
+		rewind(f);
 		fgets(cmd_line, sizeof(cmd_line), f);
+		
 		programmer_run_script(cmd_line);
 		printf("\n");
 		if (programmer_script_exit_mark != 0)
@@ -267,6 +271,11 @@ static RESULT programmer_run_cmd(uint8_t argc, const char *argv[])
 		}
 		
 		i++;
+	}
+	if (NULL == programmer_cmd[i].cmd_name)
+	{
+		LOG_ERROR("command %s is not exists.\n", argv[0]);
+		ret = ERROR_FAIL;
 	}
 	
 	return ret;
@@ -378,6 +387,7 @@ RESULT programmer_script_shell(uint8_t argc, const char *argv[])
 	LOG_INFO("enter shell mode.\n\n");
 	
 	programmer_run_file(stdin, cur_programmer->name);
+	
 	return ERROR_OK;
 }
 
@@ -400,7 +410,7 @@ RESULT programmer_script_run(uint8_t argc, const char *argv[])
 	}
 	else
 	{
-		programmer_run_file(f, cur_programmer->name);
+		programmer_run_file(f, NULL);
 		
 		fclose(f);
 	}
@@ -418,6 +428,7 @@ RESULT programmer_script_exit(uint8_t argc, const char *argv[])
 	}
 	
 	programmer_script_exit_mark = 1;
+	
 	return ERROR_OK;
 }
 
