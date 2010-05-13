@@ -70,6 +70,10 @@ RESULT programmer_script_exit(uint8_t argc, const char *argv[]);
 RESULT programmer_script_close(uint8_t argc, const char *argv[]);
 RESULT programmer_get_target_voltage(uint8_t argc, const char *argv[]);
 RESULT programmer_set_target_voltage(uint8_t argc, const char *argv[]);
+RESULT programmer_iic_init(uint8_t argc, const char *argv[]);
+RESULT programmer_iic_fini(uint8_t argc, const char *argv[]);
+RESULT programmer_iic_read(uint8_t argc, const char *argv[]);
+RESULT programmer_iic_write(uint8_t argc, const char *argv[]);
 
 struct misc_cmd_t programmer_cmd[] = 
 {
@@ -120,6 +124,27 @@ struct misc_cmd_t programmer_cmd[] =
 		"set_tvcc",
 		"output power to target, format: set_tvcc VOLTAGE_IN_MV",
 		programmer_set_target_voltage
+	},
+	// iic
+	{
+		"iic_init",
+		"initialize iic, format: iic_init",
+		programmer_iic_init
+	},
+	{
+		"iic_fini",
+		"finalize iic, format: iic_fini",
+		programmer_iic_fini
+	},
+	{
+		"iic_read",
+		"read data from iic, format: iic_read CLOCK_KHZ SLAVE_ADDR DATA_SIZE",
+		programmer_iic_read
+	},
+	{
+		"iic_write",
+		"write data to iic, format: iic_write CLOCK_KHZ SLAVE_ADDR DATA_SIZE DATA",
+		NULL
 	},
 	{
 		NULL,
@@ -264,7 +289,7 @@ static RESULT programmer_run_cmd(uint8_t argc, const char *argv[])
 			}
 			else if (ERROR_OK != programmer_cmd[i].processor(argc, argv))
 			{
-				LOG_ERROR("fail to run %s", argv[0]);
+				LOG_ERROR("fail to run %s\n", argv[0]);
 				ret = ERROR_FAIL;
 			}
 			break;
@@ -446,6 +471,7 @@ RESULT programmer_script_close(uint8_t argc, const char *argv[])
 	return ERROR_OK;
 }
 
+// tvcc
 RESULT programmer_get_target_voltage(uint8_t argc, const char *argv[])
 {
 	uint16_t voltage = 0;
@@ -481,4 +507,70 @@ RESULT programmer_set_target_voltage(uint8_t argc, const char *argv[])
 	
 	voltage = (uint16_t)strtoul(argv[1], NULL, 0);
 	return cur_programmer->set_target_voltage(voltage);
+}
+
+// iic
+RESULT programmer_iic_init(uint8_t argc, const char *argv[])
+{
+	REFERENCE_PARAMETER(argv);
+	if (argc != 1)
+	{
+		programmer_print_current_help();
+		return ERROR_FAIL;
+	}
+	
+	cur_programmer->i2c_init();
+	return cur_programmer->peripheral_commit();
+}
+
+RESULT programmer_iic_fini(uint8_t argc, const char *argv[])
+{
+	REFERENCE_PARAMETER(argv);
+	if (argc != 1)
+	{
+		programmer_print_current_help();
+		return ERROR_FAIL;
+	}
+	
+	cur_programmer->i2c_fini();
+	return cur_programmer->peripheral_commit();
+}
+
+RESULT programmer_iic_read(uint8_t argc, const char *argv[])
+{
+	uint16_t speed_khz = 0;
+	uint8_t data_size = 0;
+	uint8_t addr = 0;
+	uint8_t *buff = NULL;
+	RESULT ret = ERROR_OK;
+	
+	if (argc != 4)
+	{
+		programmer_print_current_help();
+		return ERROR_FAIL;
+	}
+	
+	speed_khz = (uint16_t)strtoul(argv[1], NULL, 0);
+	addr = (uint8_t)strtoul(argv[2], NULL, 0);
+	data_size = (uint8_t)strtoul(argv[3], NULL, 0);
+	buff = (uint8_t*)malloc(data_size);
+	if (NULL == buff)
+	{
+		return ERROR_FAIL;
+	}
+	
+	cur_programmer->i2c_set_speed(speed_khz, 0xFFFF, 0);
+	cur_programmer->i2c_read(addr, buff, data_size, 1);
+	ret = cur_programmer->peripheral_commit();
+	if (ERROR_OK == ret)
+	{
+		LOG_BYTE_BUF(buff, data_size, LOG_INFO, "%02X", 16);
+	}
+	
+	if (buff != NULL)
+	{
+		free(buff);
+		buff = NULL;
+	}
+	return ret;
 }
