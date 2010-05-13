@@ -35,6 +35,22 @@ extern int verbosity_stack[1];
 #define LOG_PUSH()			verbosity_stack[0] = verbosity
 #define LOG_POP()			verbosity = verbosity_stack[0]
 
+#define LOG_BYTE_BUF(buff, len, func, format, n)	\
+	do{\
+		char line[256], s[4];\
+		int __i, __j;\
+		for (__i = 0; __i < (len); __i += (n))\
+		{\
+			snprintf(line, 5, "%04X", __i);\
+			for (__j = __i; __j < __i + (n) && __j < (len); __j++)\
+			{\
+				snprintf(s, 4, " " format, (buff)[__j]);\
+				strncat(line, s, sizeof(line));\
+			}\
+			func("%s\n", line);\
+		}\
+	}while(0)
+
 #if 1
 #	define LOG_ERROR(...)	do{\
 								if (verbosity >= ERROR_LEVEL)\
@@ -48,6 +64,7 @@ extern int verbosity_stack[1];
 								{\
 									fprintf(stdout, "Warning:");\
 									fprintf(stdout, __VA_ARGS__);\
+									fflush(stdout);\
 								}\
 							}while(0)
 #	define LOG_INFO(...)	do{\
@@ -55,6 +72,7 @@ extern int verbosity_stack[1];
 								{\
 									fprintf(stdout, "Info:   ");\
 									fprintf(stdout, __VA_ARGS__);\
+									fflush(stdout);\
 								}\
 							}while(0)
 #	define LOG_DEBUG(...)	do{\
@@ -62,6 +80,7 @@ extern int verbosity_stack[1];
 								{\
 									fprintf(stdout, "Debug:  ");\
 									fprintf(stdout, __VA_ARGS__);\
+									fflush(stdout);\
 								}\
 							}while(0)
 #	define LOG_BUG(...)		do{\
@@ -83,6 +102,7 @@ extern int verbosity_stack[1];
 									fprintf(stdout, "Warning:%s:%d %s: ", \
 											__FILE__, __LINE__, __FUNCTION__);\
 									fprintf(stdout, __VA_ARGS__);\
+									fflush(stdout);\
 								}\
 							}while(0)
 #	define LOG_INFO(...)	do{\
@@ -91,6 +111,7 @@ extern int verbosity_stack[1];
 									fprintf(stdout, "Info:   %s:%d %s: ", \
 											__FILE__, __LINE__, __FUNCTION__);\
 									fprintf(stdout, __VA_ARGS__);\
+									fflush(stdout);\
 								}\
 							}while(0)
 #	define LOG_DEBUG(...)	do{\
@@ -99,6 +120,7 @@ extern int verbosity_stack[1];
 									fprintf(stdout, "Debug:  %s:%d %s: ", \
 											__FILE__, __LINE__, __FUNCTION__);\
 									fprintf(stdout, __VA_ARGS__);\
+									fflush(stdout);\
 								}\
 							}while(0)
 #	define LOG_BUG(...)		do{\
