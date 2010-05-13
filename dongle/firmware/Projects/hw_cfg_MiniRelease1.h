@@ -15,8 +15,8 @@
  *      2008-11-22:     rewrite GPIO_Dir(by SimonQian)                    *
  **************************************************************************/
 
-#define STM32_MINI_RC4					0x14
-#define _HARDWARE_VER					STM32_MINI_RC4
+#define STM32_MINI_Release1					0x15
+#define _HARDWARE_VER					STM32_MINI_Release1
 #define HSE_VALUE 						((uint32_t)12000000)
 
 /****************************** Power ******************************/
