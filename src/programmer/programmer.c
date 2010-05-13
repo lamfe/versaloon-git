@@ -261,7 +261,10 @@ static RESULT programmer_run_file(FILE *f, char *head)
 		
 		// get a line
 		rewind(f);
-		fgets(cmd_line, sizeof(cmd_line), f);
+		if (NULL == fgets(cmd_line, sizeof(cmd_line), f))
+		{
+			return ERROR_FAIL;
+		}
 		
 		programmer_run_script(cmd_line);
 		printf("\n");
@@ -589,3 +592,4 @@ RESULT programmer_test(uint8_t argc, const char *argv[])
 	
 	return ERROR_OK;
 }
+
