@@ -296,14 +296,20 @@ object FormMain: TFormMain
             ShowHint = True
             TabOrder = 0
           end
-          object sedtPower: TSpinEdit
-            Left = 70
+          object cbboxPower: TComboBox
+            Left = 58
             Height = 24
             Top = 7
-            Width = 88
-            MaxValue = 6600
-            ParentShowHint = False
-            ShowHint = True
+            Width = 100
+            ItemHeight = 16
+            Items.Strings = (
+              '0'
+              '1800'
+              '2700'
+              '3300'
+              '5000'
+            )
+            Style = csDropDownList
             TabOrder = 1
           end
         end

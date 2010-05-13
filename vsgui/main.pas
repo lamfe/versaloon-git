@@ -57,6 +57,7 @@ type
     cbboxMode: TComboBox;
     cbboxCOM:  TComboBox;
     cbboxInputFile: TComboBox;
+    cbboxPower: TComboBox;
     dedtOpenOCD: TDirectoryEdit;
     dedtVSprog: TDirectoryEdit;
     edtSVFOption: TEdit;
@@ -114,7 +115,6 @@ type
     pcMain:    TPageControl;
     pmTray:    TPopupMenu;
     sbMain:    TStatusBar;
-    sedtPower: TSpinEdit;
     sedtFreq:  TSpinEdit;
     tInit:     TTimer;
     tsVsprog:  TTabSheet;
@@ -296,7 +296,7 @@ begin
     begin
       VSProg_Caller.AddParameter('U' + ProgrammerParameter);
     end;
-    VSProg_Caller.AddParameter('V"voltage"');
+    VSProg_Caller.AddParameter('V"get_tvcc"');
     VSProg_Parser.Prepare();
     VSProg_Parser.ParserFunc      := @VSProg_Parser.TargetVoltageParser;
     VSProg_Parser.LogOutputEnable := False;
@@ -405,7 +405,7 @@ begin
   CenterControl(lblSVFFile, fneditSVFFile);
   CenterControl(lblSVFOption, edtSVFOption);
   CenterControl(btnSVFRun, edtSVFOption);
-  CenterControl(btnSetPower, sedtPower);
+  CenterControl(btnSetPower, cbboxPower);
   CenterControl(fnFW, cbboxCOM);
   CenterControl(btnUpdate, cbboxCOM);
   CenterControl(lblVSProgDir, dedtVSProg);
@@ -1094,7 +1094,7 @@ begin
       edtOpenOCDOption.Text := xmlcfgMain.GetValue('openocd/option', '');
       fneditSVFFile.FileName := xmlcfgMain.GetValue('svf/filename', '');
       edtSVFOption.Text := xmlcfgMain.GetValue('svf/option', '');
-      sedtPower.Value := xmlcfgMain.GetValue('power/voltage', 0);
+      ComboBoxSetText(cbboxPower, xmlcfgMain.GetValue('power/voltage', '0'));
     end;
   end
   else
@@ -1699,7 +1699,7 @@ begin
     exit;
   end;
 
-  VSProg_Caller.AddParameter('V"powerout ' + IntToStr(sedtPower.Value) + '"');
+  VSProg_Caller.AddParameter('V"set_tvcc ' + cbboxPower.Text + '"');
   LogInfo('Running...');
   VSProg_RunAlgorithm(VSProg_Caller, nil, 0, False);
   LogInfo('Idle');
@@ -1871,7 +1871,7 @@ begin
   xmlcfgMain.SetValue('openocd/option', edtOpenOCDOption.Text);
   xmlcfgMain.SetValue('svf/filename', fneditSVFFile.FileName);
   xmlcfgMain.SetValue('svf/option', edtSVFOption.Text);
-  xmlcfgMain.SetValue('power/voltage', sedtPower.Value);
+  xmlcfgMain.SetValue('power/voltage', cbboxPower.Text);
   xmlcfgMain.SetValue('fw/filename', fnFW.FileName);
   xmlcfgMain.SetValue('fw/comm', cbboxCOM.Text);
   xmlcfgMain.SetValue('target/chip', cbboxTarget.Text);
