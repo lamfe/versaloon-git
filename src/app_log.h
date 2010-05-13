@@ -45,7 +45,7 @@ extern int verbosity_stack[1];
 			for (__j = __i; __j < __i + (n) && __j < (len); __j++)\
 			{\
 				snprintf(s, 4, " " format, (buff)[__j]);\
-				strncat(line, s, sizeof(line));\
+				strncat(line, s, sizeof(s));\
 			}\
 			func("%s\n", line);\
 		}\
