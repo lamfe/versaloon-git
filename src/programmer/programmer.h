@@ -31,9 +31,15 @@ typedef RESULT (*jtag_callback_t)(enum jtag_irdr_t cmd, uint32_t ir,
 // msic_cmd
 struct misc_cmd_t
 {
-	const char *help_str;
 	const char *cmd_name;
+	const char *help_str;
 	RESULT (*processor)(uint8_t argc, const char *argv[]);
+};
+struct misc_param_t
+{
+	const char *param_name;
+	const char *help_str;
+	uint32_t value;
 };
 
 struct programmer_info_t
@@ -44,7 +50,6 @@ struct programmer_info_t
 	RESULT (*parse_argument)(char cmd, const char *argu);
 	RESULT (*init_capability)(void *p);
 	uint32_t (*display_programmer)(void);
-	struct misc_cmd_t *misc_cmd;
 	
 	// init and fini
 	RESULT (*init)(void);
@@ -78,6 +83,7 @@ struct programmer_info_t
 	
 	// target
 	RESULT (*get_target_voltage)(uint16_t *voltage);
+	RESULT (*set_target_voltage)(uint16_t voltage);
 	
 	// issp for PSoC
 	RESULT (*issp_init)(void);
@@ -194,15 +200,14 @@ struct programmer_info_t
 };
 
 #define PROGRAMMER_DEFINE(name, parse_argument, init_capability, 	\
-						  display_programmer, misc_cmd)				\
+						  display_programmer)						\
 	{\
 		name, parse_argument, init_capability, display_programmer, 	\
-		misc_cmd, \
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
-		0, 0, 0, 0, 0, 0, 0, 0, 0\
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0\
 	}
 
 extern struct programmer_info_t *cur_programmer;
@@ -211,6 +216,7 @@ extern struct programmer_info_t programmers_info[];
 void programmer_print_list(void);
 void programmer_print_help(void);
 RESULT programmer_init(const char *programmer);
+RESULT programmer_run_script(char *cmd);
 
 #endif /* __PROGRAMMER_H_INCLUDED__ */
 

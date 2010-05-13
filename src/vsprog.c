@@ -31,7 +31,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
 
 #include "port.h"
 #include "app_cfg.h"
@@ -233,8 +232,6 @@ int main(int argc, char* argv[])
 	uint32_t require_hex_file_for_write = 0;
 	uint32_t seg_offset, addr_offset;
 	char *cur_pointer, *end_pointer;
-	char *Varg[8], *cmd = NULL;
-	uint8_t Varg_num;
 	RESULT ret;
 	uint32_t *popt_tmp;
 	struct filelist **fl_tmp;
@@ -767,65 +764,6 @@ Parse_File:
 				free_all_and_exit(EXIT_FAILURE);
 			}
 			
-			if ((('"' == optarg[0]) && ('"' == optarg[strlen(optarg) - 1])) 
-			|| (('\'' == optarg[0]) && ('\'' == optarg[strlen(optarg) - 1])))
-			{
-				((char *)optarg)[strlen(optarg) - 1] = '\0';
-				strcpy((char *)optarg, optarg + 1);
-			}
-			
-			// process if help cmd
-			if (!strcmp((const char *)optarg, "help"))
-			{
-				printf("misc_cmd list of current programmer:\n");
-				i = 0;
-				while (cur_programmer->misc_cmd[i].cmd_name != NULL)
-				{
-					printf("\t%s: %s\n", cur_programmer->misc_cmd[i].cmd_name, 
-										cur_programmer->misc_cmd[i].help_str);
-					i++;
-				}
-				free_all_and_exit(EXIT_SUCCESS);
-			}
-			
-			// parse cmd
-			while (' ' == optarg[0])
-			{
-				strcpy((char *)optarg, optarg + 1);
-			}
-			cmd = optarg;
-			
-			// parse arg
-			memset(Varg, 0, sizeof(Varg));
-			Varg_num = 0;
-			for (i = 0; i < strlen(optarg); i++)
-			{
-				if ((' ' == optarg[i]) && (optarg[i + 1] != '\0'))
-				{
-					optarg[i]= '\0';
-					Varg[Varg_num++] = &optarg[i + 1];
-				}
-			}
-			
-			// find processor
-			i = 0;
-			while (cur_programmer->misc_cmd[i].cmd_name != NULL)
-			{
-				if (!strcmp((const char *)cur_programmer->misc_cmd[i].cmd_name, 
-							(const char *)cmd))
-				{
-					break;
-				}
-				i++;
-			}
-			
-			if (NULL == cur_programmer->misc_cmd[i].cmd_name)
-			{
-				LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), cmd, 
-							cur_programmer->name);
-				free_all_and_exit(EXIT_FAILURE);
-			}
-			
 			// prepare and call processor
 			cur_programmer->init_capability(cur_programmer);
 			ret = cur_programmer->init();
@@ -835,8 +773,9 @@ Parse_File:
 						  cur_programmer->name);
 				free_all_and_exit(EXIT_FAILURE);
 			}
-			cur_programmer->misc_cmd[i].processor(Varg_num, 
-											(const char **)&Varg);
+			
+			programmer_run_script(optarg);
+			
 			cur_programmer->fini();
 			free_all_and_exit(EXIT_SUCCESS);
 			break;
@@ -1006,8 +945,8 @@ Parse_File:
 								fl->seg_offset, fl->addr_offset);
 			if (ret != ERROR_OK)
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-							"parse input file");
+				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_HANDLE_DEVICE), 
+							"parse input file", fl->path);
 				free_all_and_exit(EXIT_FAILURE);
 			}
 			

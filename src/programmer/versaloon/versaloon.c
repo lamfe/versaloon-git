@@ -63,37 +63,6 @@ static uint8_t versaloon_epin = VERSALOON_INP;
 static uint8_t versaloon_interface = 1;
 static uint32_t versaloon_to = VERSALOON_TIMEOUT;
 
-RESULT versaloon_cmd_get_voltage(uint8_t argc, const char *argv[]);
-RESULT versaloon_cmd_power_out(uint8_t argc, const char *argv[]);
-RESULT versaloon_cmd_test(uint8_t argc, const char *argv[]);
-struct misc_cmd_t versaloon_cmd[] = 
-{
-	// voltage
-	{
-		"get target voltage, format: voltage", 
-		"voltage", 
-		versaloon_cmd_get_voltage
-	}, 
-	// powerout
-	{
-		"output power, format: powerout VOLTAGE_IN_MV", 
-		"powerout", 
-		versaloon_cmd_power_out
-	}, 
-	// test
-	{
-		"test function",
-		"test",
-		versaloon_cmd_test
-	},
-	// null
-	{
-		NULL, 
-		NULL, 
-		NULL
-	}
-};
-
 void versaloon_usage(void)
 {
 	printf("\
@@ -224,225 +193,6 @@ print_usb_device:
 	}
 	
 	return ERROR_OK;
-}
-
-
-
-// versaloon_cmd
-RESULT versaloon_cmd_get_voltage(uint8_t argc, const char *argv[])
-{
-	uint16_t voltage;
-	const uint8_t cmd_index = 0;
-	argv = argv;
-	
-	if (argc != 0)
-	{
-		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_CMD), 
-					versaloon_cmd[cmd_index].cmd_name);
-		LOG_INFO("%s\n", versaloon_cmd[cmd_index].help_str);
-		return ERROR_FAIL;
-	}
-	
-	if (ERROR_OK != versaloon_get_target_voltage(&voltage))
-	{
-		return ERROR_FAIL;
-	}
-	LOG_INFO(_GETTEXT(INFOMSG_TARGET_VOLTAGE), voltage / 1000.0);
-	
-	return ERROR_OK;
-}
-RESULT versaloon_cmd_power_out(uint8_t argc, const char *argv[])
-{
-	uint16_t voltage = 0;
-	const uint8_t cmd_index = 1;
-	
-	if (argc != 1)
-	{
-		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_CMD), 
-					versaloon_cmd[cmd_index].cmd_name);
-		LOG_INFO("%s\n", versaloon_cmd[cmd_index].help_str);
-		return ERROR_FAIL;
-	}
-	
-	voltage = (uint16_t)strtoul(argv[0], NULL, 0);
-	
-	usbtopwr_init();
-	usbtopwr_config(VERSALOON_POWER_PORT);
-	usbtopwr_output(VERSALOON_POWER_PORT, voltage);
-	usbtopwr_fini();
-	return usbtoxxx_execute_command();
-}
-RESULT versaloon_cmd_test(uint8_t argc, const char *argv[])
-{
-	uint8_t buff[20], chksum, addr = 0xFF;
-	uint16_t dead_cnt = 100, retry_cnt, i, len;
-	uint16_t clock = 10, interval = 0;
-	char *cur_pointer, *end_pointer;
-	RESULT ret = ERROR_OK;
-	
-	if (argc != 1)
-	{
-		LOG_ERROR("wrong command\n");
-		LOG_INFO("test addr clock(KHz) byte_interval(us)\n");
-		return ERROR_FAIL;
-	}
-	
-	// parse parameters
-	cur_pointer = (char *)argv[0];
-	addr = (uint8_t)strtoul(cur_pointer, &end_pointer, 0);
-	if ((cur_pointer == end_pointer) || (end_pointer[0] != ' ') || (end_pointer[1] == 0))
-	{
-		LOG_ERROR("wrong command\n");
-		LOG_INFO("test addr clock(KHz) byte_interval(us)\n");
-		return ERROR_FAIL;
-	}
-	cur_pointer = end_pointer + 1;
-	clock = (uint16_t)strtoul(cur_pointer, &end_pointer, 0);
-	if ((cur_pointer == end_pointer) || (end_pointer[0] != ' ') || (end_pointer[1] == 0))
-	{
-		LOG_ERROR("wrong command\n");
-		LOG_INFO("test addr clock(KHz) byte_interval(us)\n");
-		return ERROR_FAIL;
-	}
-	cur_pointer = end_pointer + 1;
-	interval = (uint16_t)strtoul(cur_pointer, &end_pointer, 0);
-	if ((cur_pointer == end_pointer) || (end_pointer[0] != 0))
-	{
-		LOG_ERROR("wrong command\n");
-		LOG_INFO("test addr clock(KHz) byte_interval(us)\n");
-		return ERROR_FAIL;
-	}
-	LOG_INFO("running at %dKhz to target address 0x%02X\n", clock, addr);
-	
-	memset(buff, 0, sizeof(buff));
-	
-	usbtoi2c_init();
-	usbtogpio_init();
-	// reset input pullup
-	usbtogpio_config(0, GPIO_SRST, 0, GPIO_SRST);
-	// delay 100 ms
-	usbtodelay_delay(100 | 0x8000);
-	if (ERROR_OK != usbtoxxx_execute_command())
-	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "to open IIC");
-		return ERROR_FAIL;
-	}
-	
-	do
-	{
-		// generate error
-/*		dead_cnt = 9000;
-		usbtoi2c_set_speed(0, clock, dead_cnt);
-		
-		LOG_PUSH();
-		LOG_MUTE();
-		
-		buff[0] = 0xF3;
-		usbtoi2c_write(0, addr, buff, 4, 1);
-		if (ERROR_OK != usbtoxxx_execute_command())
-		{
-			goto test_recovery;
-		}
-		
-		usbtoi2c_read(0, addr, buff, 1, 1);
-		if (ERROR_OK != usbtoxxx_execute_command())
-		{
-			goto test_recovery;
-		}
-		
-test_recovery:
-		LOG_POP();
-*/		// delay 10 ms
-		//usbtodelay_delay(10 | 0x8000);
-		
-		retry_cnt = 0;
-		
-//		while (retry_cnt--)
-		while (1)
-		{
-			LOG_INFO("round %d\n", retry_cnt++);
-			// test whether the target can recover from the error
-			dead_cnt = 5000;
-			usbtoi2c_set_speed(0, clock, dead_cnt, interval);
-			
-			buff[0] = 0x02;
-			buff[1] = 0;
-			buff[2] = 0;
-			buff[3] = 0x02;
-			usbtoi2c_write(0, addr, buff, 4, 1);
-			usbtodelay_delay(1 | 0x8000);
-			if (ERROR_OK != usbtoxxx_execute_command())
-			{
-/*				if (retry_cnt)
-				{
-					continue;
-				}
-				else
-*/				{
-					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "to send command");
-//					continue;
-					ret = ERROR_FAIL;
-					goto finialize;
-				}
-			}
-			
-			usbtoi2c_read(0, addr, buff, 5, 1);
-			usbtodelay_delay(1 | 0x8000);
-			if (ERROR_OK != usbtoxxx_execute_command())
-			{
-/*				if (retry_cnt)
-				{
-					continue;
-				}
-				else
-*/				{
-					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "to read reply");
-//					continue;
-					ret = ERROR_FAIL;
-					goto finialize;
-				}
-			}
-			LOG_INFO("%02X, %02X, %02X, %02X, %02X\n", buff[0], buff[1], buff[2], buff[3], buff[4]);
-			len = buff[0];
-			if (len > 0)
-			{
-				chksum = 0;
-				for (i = 0; i < len + 1; i++)
-				{
-					chksum ^= buff[i];
-				}
-				if (chksum == buff[len + 1])
-				{
-					LOG_INFO("********************************\n");
-				}
-				else
-				{
-					LOG_ERROR("wrong chksum\n");
-//					continue;
-					ret = ERROR_FAIL;
-					goto finialize;
-				}
-			}
-			else
-			{
-				LOG_ERROR("no reply\n");
-//				continue;
-				ret = ERROR_FAIL;
-				goto finialize;
-			}
-		}
-	}while(0);
-	
-finialize:
-	usbtoi2c_fini();
-	usbtogpio_fini();
-	if (ERROR_OK != usbtoxxx_execute_command())
-	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "to close IIC");
-		return ERROR_FAIL;
-	}
-	
-	return ret;
 }
 
 
@@ -716,6 +466,16 @@ RESULT versaloon_get_hardware(uint8_t *hardware)
 				  versaloon_get_hardware_name(*hardware));
 		return ERROR_OK;
 	}
+}
+
+RESULT versaloon_set_target_voltage(uint16_t voltage)
+{
+	usbtopwr_init();
+	usbtopwr_config(VERSALOON_POWER_PORT);
+	usbtopwr_output(VERSALOON_POWER_PORT, voltage);
+	usbtopwr_fini();
+	
+	return usbtoxxx_execute_command();
 }
 
 RESULT versaloon_get_target_voltage(uint16_t *voltage)
@@ -1404,6 +1164,7 @@ RESULT versaloon_init_capability(void *p)
 	
 	// Target voltage
 	t->get_target_voltage = versaloon_get_target_voltage;
+	t->set_target_voltage = versaloon_set_target_voltage;
 	
 	// JTAG_HL & SWJ
 	t->swj_init = versaloon_swj_init;
