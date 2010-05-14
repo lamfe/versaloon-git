@@ -268,7 +268,6 @@ RESULT versaloon_send_command(uint16_t out_len, uint16_t *inlen)
 	{
 		ret = usb_bulk_read(versaloon_device_handle, versaloon_epin, 
 					(char *)versaloon_buf, versaloon_buf_size, versaloon_to);
-		versaloon_to = VERSALOON_TIMEOUT;
 		if (ret > 0)
 		{
 			*inlen = (uint16_t)ret;
@@ -283,7 +282,6 @@ RESULT versaloon_send_command(uint16_t out_len, uint16_t *inlen)
 	}
 	else
 	{
-		versaloon_to = VERSALOON_TIMEOUT;
 		return ERROR_OK;
 	}
 }
