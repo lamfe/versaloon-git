@@ -30,8 +30,6 @@ type
     { private declarations }
   public
     { public declarations }
-    function GetString: string;
-    function GetNumber: integer;
     InputType: TInputType;
 
     CommonMaxLength: integer;
@@ -40,6 +38,9 @@ type
     NumMin:   int64;
     NumMax:   int64;
     NumRadix: TNumRadix;
+
+    function GetString: string;
+    function GetNumber: integer;
   end;
 
 function StrToIntRadix(sData: string; radix: integer): QWord;
