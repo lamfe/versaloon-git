@@ -731,7 +731,9 @@ RESULT versaloon_null(void)
 // Commit
 RESULT versaloon_peripheral_commit(void)
 {
-	return usbtoxxx_execute_command();
+	RESULT ret = usbtoxxx_execute_command();
+	versaloon_to = VERSALOON_TIMEOUT;
+	return ret;
 }
 // SPI
 RESULT versaloon_spi_init(void)
