@@ -247,7 +247,6 @@ RESULT c8051fc2_read_target(struct program_context_t *context, char area,
 							uint32_t addr, uint8_t *buff, uint32_t page_size)
 {
 	struct chip_param_t *param = context->param;
-	struct program_info_t *pi = context->pi;
 	uint8_t dr;
 	uint32_t i;
 	RESULT ret = ERROR_OK;
@@ -262,7 +261,7 @@ RESULT c8051fc2_read_target(struct program_context_t *context, char area,
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
-		pi->chip_id = dr;
+		*(uint8_t *)buff = dr;
 		break;
 	case APPLICATION_CHAR:
 		c2_write_ir((uint8_t)param->param[C8051F_PARAM_FPDAT_ADDR]);

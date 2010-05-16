@@ -835,9 +835,9 @@ RESULT stm32isp_read_target(struct program_context_t *context, char area,
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
-		pi->chip_id = 0xFFFF0000 | ((mcu_id >> 20) & STM32_DEN_MSK);
-		stm32_print_device(pi->chip_id);
-		pi->chip_id &= STM32_DEN_MSK;
+		mcu_id = 0xFFFF0000 | ((mcu_id >> 20) & STM32_DEN_MSK);
+		stm32_print_device(mcu_id);
+		*(uint32_t *)buff = mcu_id & STM32_DEN_MSK;
 		
 		// read memory size
 		len = 4;

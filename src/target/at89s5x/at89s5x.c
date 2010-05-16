@@ -374,7 +374,7 @@ RESULT s5x_read_target(struct program_context_t *context, char area,
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
-		pi->chip_id = ((chip_id[2] & 0xFF) << 0) | ((chip_id[1] & 0xFF) << 8) 
+		*(uint32_t*)buff = ((chip_id[2] & 0xFF) << 0) | ((chip_id[1] & 0xFF) << 8) 
 					   | ((chip_id[0] & 0xFF) << 16);
 		break;
 	case APPLICATION_CHAR:

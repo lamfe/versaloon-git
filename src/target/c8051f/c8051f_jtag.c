@@ -311,7 +311,6 @@ RESULT c8051fjtag_write_target(struct program_context_t *context, char area,
 RESULT c8051fjtag_read_target(struct program_context_t *context, char area, 
 							uint32_t addr, uint8_t *buff, uint32_t page_size)
 {
-	struct program_info_t *pi = context->pi;
 	uint16_t ir;
 	uint32_t dr, read_buf[512];
 	uint32_t i;
@@ -331,7 +330,7 @@ RESULT c8051fjtag_read_target(struct program_context_t *context, char area,
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
-		pi->chip_id = dr & C8051F_JTAG_ID_MASK;
+		*(uint32_t*)buff = dr & C8051F_JTAG_ID_MASK;
 		break;
 	case APPLICATION_CHAR:
 		// set FLASHADR to address to read from

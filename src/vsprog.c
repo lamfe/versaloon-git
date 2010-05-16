@@ -629,7 +629,7 @@ Parse_File:
 			|| (('\'' == optarg[0]) && ('\'' == optarg[strlen(optarg) - 1])))
 			{
 				((char *)optarg)[strlen(optarg) - 1] = '\0';
-				strcpy((char *)optarg, optarg + 1);
+				optarg++;
 			}
 			
 			for (i = strlen(optarg) - 1; i > 0; i--)
