@@ -473,7 +473,6 @@ RESULT psoc1_read_target(struct program_context_t *context, char area,
 							uint32_t addr, uint8_t *buff, uint32_t size)
 {
 	struct chip_param_t *param = context->param;
-	struct program_info_t *pi = context->pi;
 	uint8_t bank, bank_num;
 	uint16_t block;
 	uint32_t page_num, page_size;
@@ -491,8 +490,8 @@ RESULT psoc1_read_target(struct program_context_t *context, char area,
 	{
 	case CHIPID_CHAR:
 		// call table_read no.0 and read 2 bytes from 0xF8 in sram
-		pi->chip_id = 0;
-		ret = issp_call_ssc(PSOC1_SSC_CMD_TableRead, 0, 1, (uint8_t*)&pi->chip_id, 2);
+		memset(buff, 0, 2);
+		ret = issp_call_ssc(PSOC1_SSC_CMD_TableRead, 0, 1, buff, 2);
 		if (ret != ERROR_OK)
 		{
 			ret = ERRCODE_FAILURE_OPERATION;

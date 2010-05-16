@@ -586,6 +586,7 @@ RESULT target_program(struct program_context_t *context)
 	}
 	
 	// read chip id
+	pi->chip_id = 0;
 	if (ERROR_OK != pf->read_target(context, CHIPID_CHAR, 0, 
 									(uint8_t *)&pi->chip_id, 0))
 	{

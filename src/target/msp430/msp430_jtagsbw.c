@@ -223,7 +223,6 @@ RESULT msp430jtagsbw_write_target(struct program_context_t *context, char area,
 RESULT msp430jtagsbw_read_target(struct program_context_t *context, char area, 
 							uint32_t addr, uint8_t *buff, uint32_t page_size)
 {
-	struct program_info_t *pi = context->pi;
 	struct programmer_info_t *prog = context->prog;
 	struct operation_t *op = context->op;
 	
@@ -249,7 +248,7 @@ RESULT msp430jtagsbw_read_target(struct program_context_t *context, char area,
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
-		pi->chip_id = ((chip_id << 8) + (chip_id >> 8)) & 0x0000FFFF;
+		*(uint16_t *)buff = ((chip_id << 8) + (chip_id >> 8)) & 0x0000FFFF;
 		break;
 	case APPLICATION_CHAR:
 		if (op->verify_operations & APPLICATION)

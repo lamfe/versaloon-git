@@ -417,10 +417,10 @@ RESULT stm32swj_read_target(struct program_context_t *context, char area,
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
-		pi->chip_id = mcu_id;
-		stm32_print_device(pi->chip_id);
-		pi->chip_id &= STM32_DEN_MSK;
-		LOG_INFO(_GETTEXT(INFOMSG_TARGET_CHIP_ID), pi->chip_id);
+		stm32_print_device(mcu_id);
+		mcu_id &= STM32_DEN_MSK;
+		*(uint32_t *)buff = mcu_id;
+		LOG_INFO(_GETTEXT(INFOMSG_TARGET_CHIP_ID), mcu_id);
 		
 		// read flash and ram size
 		if (ERROR_OK != adi_memap_read_reg(STM32_REG_FLASH_RAM_SIZE, &mcu_id, 1))

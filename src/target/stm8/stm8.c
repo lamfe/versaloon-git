@@ -410,7 +410,8 @@ RESULT stm8_read_target(struct program_context_t *context, char area,
 		switch (area)
 		{
 		case CHIPID_CHAR:
-			context->pi->chip_id = 0;
+			// stm8 has no chip id
+			memset(buff, 0, 2);
 			break;
 		case APPLICATION_CHAR:
 		case EEPROM_CHAR:
