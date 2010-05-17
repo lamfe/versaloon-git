@@ -67,7 +67,7 @@ struct program_functions_t stm32isp_program_functions =
 	stm32isp_read_target
 };
 
-RESULT stm32isp_sycn(void)
+RESULT stm32isp_sync(void)
 {
 	uint8_t buffer[1], retry = 10;
 	int32_t comm_ret;
@@ -445,7 +445,7 @@ RESULT stm32isp_read_memory(uint32_t addr, uint8_t *data, uint16_t *data_len)
 			}
 			
 			// resync
-			if (ERROR_OK != stm32isp_sycn())
+			if (ERROR_OK != stm32isp_sync())
 			{
 				LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
 						  "resync to stm32 chip");
@@ -543,7 +543,7 @@ RESULT stm32isp_write_memory(uint32_t addr, uint8_t *data, uint16_t data_len)
 			}
 			
 			// resync
-			if (ERROR_OK != stm32isp_sycn())
+			if (ERROR_OK != stm32isp_sync())
 			{
 				LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
 						  "resync to stm32 chip");
@@ -730,6 +730,12 @@ RESULT stm32isp_enter_program_mode(struct program_context_t *context)
 	uint8_t bootloader_version = 0;
 	REFERENCE_PARAMETER(context);
 	
+	if ((NULL == com_mode.comport) || (0 == strlen(com_mode.comport)))
+	{
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "comport");
+		return ERROR_FAIL;
+	}
+	
 	// comm init
 	if (ERROR_OK != comm_open(com_mode.comport, com_mode.baudrate, 8, 
 			COMM_PARITYBIT_EVEN, COMM_STOPBIT_1, COMM_HANDSHAKE_NONE))
@@ -739,10 +745,10 @@ RESULT stm32isp_enter_program_mode(struct program_context_t *context)
 	}
 	
 	// sync first
-	if (ERROR_OK != stm32isp_sycn())
+	if (ERROR_OK != stm32isp_sync())
 	{
 		// try again
-		if (ERROR_OK != stm32isp_sycn())
+		if (ERROR_OK != stm32isp_sync())
 		{
 			return ERROR_FAIL;
 		}
