@@ -234,6 +234,21 @@
     <param6>0</param6>
     <param7>0</param7>
   </chip>
+  <chip name="msp430f4270">
+    <chip_id>0xF427</chip_id>
+    <program_mode>jb</program_mode>
+    <app_page_size>256</app_page_size>
+    <app_page_num>129</app_page_num>
+    <app_addr>0x8000</app_addr>
+    <param0>0x8000</param0>
+    <param1>0x0200</param1>
+    <param2>0x02FF</param2>
+    <param3>0</param3>
+    <param4>0</param4>
+    <param5>1</param5>
+    <param6>0</param6>
+    <param7>0</param7>
+  </chip>
   <chip name="msp430f437">
     <chip_id>0xF437</chip_id>
     <program_mode>jb</program_mode>
