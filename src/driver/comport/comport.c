@@ -387,7 +387,7 @@ RESULT comm_open(char *comport, uint32_t baudrate, uint8_t datalength,
 	tcflush(hComm, TCIFLUSH);
 	
 	// set timeout
-	opt.c_cc[VTIME] = 5;
+	opt.c_cc[VTIME] = 1;		// 100ms delay
 	opt.c_cc[VMIN] = 0;
 	if (tcsetattr(hComm, TCSANOW, &opt)!= 0)
 	{
@@ -401,7 +401,25 @@ RESULT comm_open(char *comport, uint32_t baudrate, uint8_t datalength,
 
 int32_t comm_read(uint8_t *buffer, uint32_t num_of_bytes)
 {
-	return read(hComm, buffer, num_of_bytes);
+	uint32_t current_length = 0;
+	int32_t tmp;
+	
+	while (current_length < num_of_bytes)
+	{
+		tmp = read(hComm, buffer + current_length, num_of_bytes - current_length);
+		if (tmp < 0)
+		{
+			// failure
+			return tmp;
+		}
+		if (0 == tmp)
+		{
+			return current_length;
+		}
+		current_length += tmp;
+	}
+	
+	return current_length;
 }
 
 int32_t comm_write(uint8_t *buffer, uint32_t num_of_bytes)
