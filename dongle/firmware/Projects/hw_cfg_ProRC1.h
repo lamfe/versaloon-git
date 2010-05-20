@@ -17,6 +17,9 @@
 
 #define STM32_PRO_RC1					0x21
 #define _HARDWARE_VER					STM32_PRO_RC1
+#ifdef HSE_VALUE
+#undef HSE_VALUE
+#endif
 #define HSE_VALUE 						((uint32_t)12000000)
 
 /****************************** Power ******************************/

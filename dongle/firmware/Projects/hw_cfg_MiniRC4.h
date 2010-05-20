@@ -17,6 +17,9 @@
 
 #define STM32_MINI_RC4					0x14
 #define _HARDWARE_VER					STM32_MINI_RC4
+#ifdef HSE_VALUE
+#undef HSE_VALUE
+#endif
 #define HSE_VALUE 						((uint32_t)12000000)
 
 /****************************** Power ******************************/
