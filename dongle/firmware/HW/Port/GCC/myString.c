@@ -10,22 +10,4 @@ void* memcpy(void *m0, const void *m1, u32 len)
 
   return ret;
 }
-
-u8 strcmp(const char *s0,const char *s1)
-{
-  for (;*s0 == *s1;++s0,++s1)
-    if (*s0 == '\0')
-      return 0;
-
-  return (*(unsigned char *)s0 < *(unsigned char *)s1 ? -1 : +1);
-}
-
-u32 strlen(const char *s)
-{
-  const char *orig;
-
-  for(orig = s;*orig;++orig);
-
-  return (orig - s);
-}
 #endif
