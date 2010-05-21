@@ -316,6 +316,8 @@ RESULT c8051fjtag_read_target(struct program_context_t *context, char area,
 	uint32_t i;
 	RESULT ret = ERROR_OK;
 	
+	REFERENCE_PARAMETER(context);
+	
 	switch (area)
 	{
 	case CHIPID_CHAR:
