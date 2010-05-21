@@ -94,14 +94,14 @@ RESULT lpc1000_parse_argument(char cmd, const char *argu)
 		{
 		case LPC1000_JTAG:
 		case LPC1000_SWD:
-			lpc1000_program_area_map[0].attr |= AREA_ATTR_NP;
+			lpc1000_program_area_map[0].attr |= AREA_ATTR_RNP;
 			cm3_mode_offset = 0;
 			cm3_parse_argument('c', "cm3_lpc1000");
 			memcpy(&lpc1000_program_functions, &cm3_program_functions, 
 					sizeof(lpc1000_program_functions));
 			break;
 		case LPC1000_ISP:
-			lpc1000_program_area_map[0].attr &= ~AREA_ATTR_NP;
+			lpc1000_program_area_map[0].attr &= ~AREA_ATTR_RNP;
 			comisp_mode_offset = LPC1000_ISP;
 			comisp_parse_argument('c', "comisp_lpc1000");
 			memcpy(&lpc1000_program_functions, &comisp_program_functions, 
@@ -130,3 +130,21 @@ RESULT lpc1000_parse_argument(char cmd, const char *argu)
 	return ERROR_OK;
 }
 
+uint32_t lpc1000_get_sector_idx_by_addr(struct program_context_t *context, 
+										uint32_t addr)
+{
+	REFERENCE_PARAMETER(context);
+	
+	if (addr < (4 * 1024 * 16))
+	{
+		return addr / (4 * 1024);
+	}
+	else if (addr < (512 * 1024))
+	{
+		return 16 + (addr - (4 * 1024 * 16)) / (32 * 1024);
+	}
+	else
+	{
+		return 0;
+	}
+}
