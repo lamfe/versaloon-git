@@ -145,6 +145,7 @@ struct adi_dp_info_t
 
 RESULT adi_init(struct program_context_t *context, adi_dp_if_t *interf);
 RESULT adi_fini(void);
+RESULT adi_dp_commit(void);
 
 uint32_t adi_memap_get_max_tar_block_size(uint32_t tar_autoincr_block, 
 										uint32_t address);
