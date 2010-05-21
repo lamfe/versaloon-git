@@ -909,7 +909,7 @@ RESULT target_program(struct program_context_t *context)
 					if (area_attr & AREA_ATTR_RNP)
 					{
 						if (ERROR_OK != pf->read_target(context, area_char, 
-								ml_tmp->addr, read_buf, target_size))
+								ml_tmp->addr, read_buf, ml_tmp->len))
 						{
 							free(read_buf);
 							read_buf = NULL;
@@ -939,7 +939,6 @@ RESULT target_program(struct program_context_t *context)
 							pgbar_update(page_size);
 						}
 					}
-					time_in_ms = pgbar_fini();
 					
 					if (op->verify_operations & area_mask)
 					{
@@ -969,6 +968,7 @@ RESULT target_program(struct program_context_t *context)
 					
 					ml_tmp = MEMLIST_GetNext(ml_tmp);
 				}
+				time_in_ms = pgbar_fini();
 			}
 			else
 			{
