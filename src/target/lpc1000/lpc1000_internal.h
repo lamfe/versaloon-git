@@ -31,5 +31,8 @@
 
 #define LPC1000_IAP_ENTRY			0x1FFF1FF1
 
+uint32_t lpc1000_get_sector_idx_by_addr(struct program_context_t *context, 
+										uint32_t addr);
+
 #endif /* __LPC1000_INTERNAL_H_INCLUDED__ */
 

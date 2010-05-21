@@ -151,7 +151,7 @@ static RESULT lpc1000swj_iap_call(uint32_t cmd, uint32_t param_table[5],
 	}
 	
 	// write sp
-	reg = LPC1000_SRAM_ADDR + 1024;
+	reg = LPC1000_SRAM_ADDR + 256;
 	if (ERROR_OK != cm3_write_core_register(CM3_COREREG_SP, &reg))
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "write SP");
@@ -249,12 +249,14 @@ RESULT lpc1000swj_leave_program_mode(struct program_context_t *context,
 RESULT lpc1000swj_erase_target(struct program_context_t *context, char area, 
 								uint32_t addr, uint32_t size)
 {
+	struct program_info_t *pi = context->pi;
 	RESULT ret= ERROR_OK;
 	uint32_t iap_cmd_param[5], iap_reply[4];
+	uint32_t sector = lpc1000_get_sector_idx_by_addr(context, 
+								pi->program_areas[APPLICATION_IDX].size - 1);
 	
 	REFERENCE_PARAMETER(size);
 	REFERENCE_PARAMETER(addr);
-	REFERENCE_PARAMETER(context);
 	
 	switch (area)
 	{
@@ -262,7 +264,7 @@ RESULT lpc1000swj_erase_target(struct program_context_t *context, char area,
 		memset(iap_cmd_param, 0, sizeof(iap_cmd_param));
 		memset(iap_reply, 0, sizeof(iap_reply));
 		iap_cmd_param[0] = 0;		// Start Sector Number
-		iap_cmd_param[1] = 21;		// End Sector Number
+		iap_cmd_param[1] = sector;	// End Sector Number
 		iap_cmd_param[2] = 4000;	// CPU Clock Frequency(in kHz)
 		if (ERROR_OK != lpc1000swj_iap_call(LPC1000_IAPCMD_PREPARE_SECTOR, 
 												iap_cmd_param, iap_reply))
@@ -275,7 +277,7 @@ RESULT lpc1000swj_erase_target(struct program_context_t *context, char area,
 		memset(iap_cmd_param, 0, sizeof(iap_cmd_param));
 		memset(iap_reply, 0, sizeof(iap_reply));
 		iap_cmd_param[0] = 0;		// Start Sector Number
-		iap_cmd_param[1] = 21;		// End Sector Number
+		iap_cmd_param[1] = sector;	// End Sector Number
 		iap_cmd_param[2] = 4000;	// CPU Clock Frequency(in kHz)
 		if (ERROR_OK != lpc1000swj_iap_call(LPC1000_IAPCMD_ERASE_SECTOR, 
 												iap_cmd_param, iap_reply))
@@ -295,12 +297,63 @@ RESULT lpc1000swj_erase_target(struct program_context_t *context, char area,
 RESULT lpc1000swj_write_target(struct program_context_t *context, char area, 
 								uint32_t addr, uint8_t *buff, uint32_t size)
 {
-	REFERENCE_PARAMETER(context);
-	REFERENCE_PARAMETER(area);
-	REFERENCE_PARAMETER(addr);
-	REFERENCE_PARAMETER(buff);
-	REFERENCE_PARAMETER(size);
-	return ERROR_OK;
+	RESULT ret = ERROR_OK;
+	uint32_t iap_cmd_param[5], iap_reply[4];
+	uint32_t start_sector = lpc1000_get_sector_idx_by_addr(context, addr);
+	uint32_t end_sector = lpc1000_get_sector_idx_by_addr(context, addr + size - 1);
+	
+	switch (area)
+	{
+	case APPLICATION_CHAR:
+		// check
+		if ((addr & 0xFF) 
+			|| ((size != 256) && (size != 512) && (size != 1024) && (size != 4096)))
+		{
+			LOG_BUG("invalid parameter for lpc1000 flash write operation\n");
+			return ERROR_FAIL;
+		}
+		
+		memset(iap_cmd_param, 0, sizeof(iap_cmd_param));
+		memset(iap_reply, 0, sizeof(iap_reply));
+		iap_cmd_param[0] = start_sector;	// Start Sector Number
+		iap_cmd_param[1] = end_sector;		// End Sector Number
+		iap_cmd_param[2] = 4000;			// CPU Clock Frequency(in kHz)
+		if (ERROR_OK != lpc1000swj_iap_call(LPC1000_IAPCMD_PREPARE_SECTOR, 
+												iap_cmd_param, iap_reply))
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "prepare sectors");
+			ret = ERRCODE_FAILURE_OPERATION;
+			break;
+		}
+		
+		// write buff to target SRAM
+		if (ERROR_OK != adi_memap_write_buf(LPC1000_SRAM_ADDR + 1024, 
+												buff, size))
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "load data to SRAM");
+			return ERRCODE_FAILURE_OPERATION;
+		}
+		
+		memset(iap_cmd_param, 0, sizeof(iap_cmd_param));
+		memset(iap_reply, 0, sizeof(iap_reply));
+		iap_cmd_param[0] = addr;			// Destination flash address
+		iap_cmd_param[1] = LPC1000_SRAM_ADDR + 1024;	// Source RAM address
+		iap_cmd_param[2] = size;			// Number of bytes to be written
+		iap_cmd_param[3] = 4000;			// CPU Clock Frequency(in kHz)
+		if (ERROR_OK != lpc1000swj_iap_call(LPC1000_IAPCMD_RAM_TO_FLASH, 
+												iap_cmd_param, iap_reply))
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "erase sectors");
+			ret = ERRCODE_FAILURE_OPERATION;
+			break;
+		}
+		break;
+	default:
+		ret = ERROR_FAIL;
+		break;
+	}
+	
+	return ret;
 }
 
 RESULT lpc1000swj_read_target(struct program_context_t *context, char area, 
