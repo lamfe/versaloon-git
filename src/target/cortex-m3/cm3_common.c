@@ -129,7 +129,11 @@ RESULT cm3_reset(void)
 	uint32_t reg;
 	
 	reg = CM3_REG_NVIC_AIRCR_VECTKEY | CM3_REG_NVIC_AIRCR_SYSRESETREQ;
-	return adi_memap_write_reg(CM3_REG_NVIC_AIRCR, &reg, 1);
+	if (ERROR_OK != adi_memap_write_reg(CM3_REG_NVIC_AIRCR, &reg, 0))
+	{
+		return ERROR_FAIL;
+	}
+	return adi_dp_commit();
 }
 
 RESULT cm3_dp_run(void)
