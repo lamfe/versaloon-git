@@ -12,7 +12,8 @@ INCLUDES = \
     -I$(top_srcdir)/src/target/core/arm_adi \
     -I$(top_srcdir)/src/target/comisp \
     -I$(top_srcdir)/src/target/cortex-m3 \
-    -I$(top_srcdir)/src/target/stm32
+    -I$(top_srcdir)/src/target/stm32 \
+    -I$(top_srcdir)/src/target/lpc1000
 
 METASOURCES = AUTO
 noinst_LIBRARIES = libtgt.a
@@ -22,6 +23,7 @@ libtgt_a_SOURCES = \
     core/arm_adi/adi_v5p1.c \
     cortex-m3/cm3.c \
     cortex-m3/cm3_stm32.c \
+    cortex-m3/cm3_lpc1000.c \
     cortex-m3/cm3_common.c \
     at89s5x/at89s5x.c \
     avr8/avr8.c \
@@ -45,7 +47,8 @@ libtgt_a_SOURCES = \
     svf_player/svf_player.c \
     svf_player/byte_tap.c \
     svf_player/svf_parser.c \
-    stm32/stm32.c
+    stm32/stm32.c \
+    lpc1000/lpc1000.c
 
 #noinst_HEADERS = \
 #    target.h \
@@ -62,6 +65,8 @@ libtgt_a_SOURCES = \
 #    msp430/msp430_const.h \
 #    psoc1/psoc1.h \
 #    stm8/stm8.h \
+#    stm32/stm32.h \
+#    lpc1000/lpc1000.h \
 #    svf_player/byte_tap.h \
 #    svf_player/svf.h \
 #    svf_player/svf_parser.h \

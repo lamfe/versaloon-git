@@ -52,6 +52,7 @@
 #include "svf_player/svf_player.h"
 #include "cortex-m3/cm3.h"
 #include "stm32/stm32.h"
+#include "lpc1000/lpc1000.h"
 #include "stm8/stm8.h"
 
 const struct target_area_name_t target_area_name[NUM_OF_TARGET_AREA] = 
@@ -89,6 +90,18 @@ struct target_info_t targets_info[] =
 		stm32_program_mode,					// program_mode
 		&stm32_program_functions,			// program_functions
 		stm32_parse_argument,				// parse_argument
+		
+		NULL,								// get_mass_product_data_size
+		NULL,								// prepare_mass_product_data
+	},
+	// lpc1000
+	{
+		LPC1000_STRING,						// name
+		AUTO_DETECT CAN_EXECUTE,			// feature
+		lpc1000_program_area_map,			// program_area_map
+		lpc1000_program_mode,				// program_mode
+		&lpc1000_program_functions,			// program_functions
+		lpc1000_parse_argument,				// parse_argument
 		
 		NULL,								// get_mass_product_data_size
 		NULL,								// prepare_mass_product_data
