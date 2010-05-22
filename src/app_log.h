@@ -39,10 +39,10 @@ extern int verbosity_stack[1];
 	do{\
 		char line[256], s[4];\
 		int __i, __j;\
-		for (__i = 0; __i < (len); __i += (n))\
+		for (__i = 0; __i < (int)(len); __i += (n))\
 		{\
 			snprintf(line, 5, "%04X", __i);\
-			for (__j = __i; __j < __i + (n) && __j < (len); __j++)\
+			for (__j = __i; __j < __i + (n) && __j < (int)(len); __j++)\
 			{\
 				snprintf(s, 4, " " format, (buff)[__j]);\
 				strncat(line, s, sizeof(s));\

@@ -31,6 +31,8 @@
 #include "app_log.h"
 #include "prog_interface.h"
 
+#include "timer.h"
+
 #include "memlist.h"
 #include "pgbar.h"
 
@@ -79,74 +81,219 @@ const struct program_functions_t lpc1000swj_program_functions =
 	lpc1000swj_read_target
 };
 
-static RESULT lpc1000swj_iap_call(uint32_t cmd, uint32_t param_table[5], 
-									uint32_t result_table[4])
+#define LPC1000_IAP_BASE				LPC1000_SRAM_ADDR
+#define LPC1000_IAP_COMMAND_OFFSET		64
+#define LPC1000_IAP_COMMAND_ADDR		(LPC1000_IAP_BASE + LPC1000_IAP_COMMAND_OFFSET)
+#define LPC1000_IAP_RESULT_OFFSET		92
+#define LPC1000_IAP_RESULT_ADDR			(LPC1000_IAP_BASE + LPC1000_IAP_RESULT_OFFSET)
+#define LPC1000_IAP_PARAM_OFFSET		32
+#define LPC1000_IAP_SYNC_ADDR			(LPC1000_IAP_BASE + 88)
+static uint8_t iap_code[] = {
+							// wait_start:
+	0x15, 0x48,				// ldr		r0, [PC, #XX]		// load sync
+	0x00, 0x28,				// cmp		r0, #0
+	0xFC, 0xD0,				// beq 		wait_start
+	0x00, 0x00,
+							// init:
+	0x05, 0x4A,				// ldr		r2, [PC, #XX]		// laod address of iap_entry
+	0x06, 0x48,				// ldr		r0, [PC, #XX]		// load address of command
+	0x06, 0x49,				// ldr		r1, [PC, #XX]		// load address of result
+	
+	0x90, 0x47,				// blx		r2
+	0x00, 0x00,
+	0x06, 0x48,				// ldr		r0, [PC, #XX]		// load address of sync
+	0x4F, 0xF0, 0x00, 0x01,	// mov		r1, #0
+	0x01, 0x60,				// str		r1, [r0, #0]
+	0xF1, 0xE7,				// b		wait_start
+	0xFE, 0xE7,				// b		$
+	0, 0,					// fill
+							// parameter
+	0, 0, 0, 0,				// address of iap_entry
+	0, 0, 0, 0,				// address of command
+	0, 0, 0, 0,				// address of result
+	(LPC1000_IAP_SYNC_ADDR >> 0) & 0xFF,	// address of aync
+	(LPC1000_IAP_SYNC_ADDR >> 8) & 0xFF,
+	(LPC1000_IAP_SYNC_ADDR >> 16) & 0xFF,
+	(LPC1000_IAP_SYNC_ADDR >> 24) & 0xFF,
+	0, 0, 0, 0,				// reserved0
+	0, 0, 0, 0,				// reserved1
+	0, 0, 0, 0,				// reserved2
+	0, 0, 0, 0,				// reserved3
+	
+	0, 0, 0, 0,				// command, offset is 2
+	0, 0, 0, 0,				// param[0]
+	0, 0, 0, 0,				// param[1]
+	0, 0, 0, 0,				// param[2]
+	0, 0, 0, 0,				// param[3]
+	0, 0, 0, 0,				// param[4]
+	
+	0, 0, 0, 0,				// sync
+	
+	0, 0, 0, 0,				// result
+	0, 0, 0, 0,				// reply[0]
+	0, 0, 0, 0,				// reply[1]
+	0, 0, 0, 0,				// reply[2]
+	0, 0, 0, 0				// reply[3]
+};
+
+static RESULT lpc1000swj_debug_info(void)
 {
 	uint32_t reg;
-#define LPC1000_IAP_OFFSET				0
-#define LPC1000_IAP_COMMAND_OFFSET		8
-#define LPC1000_IAP_REPLY_OFFSET			32
-	uint8_t iap_code[] = {
-		0x60, 0x47, 0x60, 0x47,	// bx r12
-//		0x00, 0xbe, 0x00, 0xbe,	// bkpt
-		0xFE, 0xE7,				// b $
-		0x00, 0x00,				// fill
-		0, 0, 0, 0,				// command, offset is 2
-		0, 0, 0, 0,				// param[0]
-		0, 0, 0, 0,				// param[1]
-		0, 0, 0, 0,				// param[2]
-		0, 0, 0, 0,				// param[3]
-		0, 0, 0, 0,				// param[4]
-		0, 0, 0, 0,				// result
-		0, 0, 0, 0,				// reply[0]
-		0, 0, 0, 0,				// reply[1]
-		0, 0, 0, 0,				// reply[2]
-		0, 0, 0, 0				// reply[3]
-	};
-	uint32_t reply_tmp[5];
+	uint8_t i;
+	uint8_t *buffer;
+	RESULT ret = ERROR_OK;
 	
-	*(uint32_t*)&iap_code[LPC1000_IAP_COMMAND_OFFSET + 0 * 4] = cmd;
-	*(uint32_t*)&iap_code[LPC1000_IAP_COMMAND_OFFSET + 1 * 4] = param_table[0];
-	*(uint32_t*)&iap_code[LPC1000_IAP_COMMAND_OFFSET + 2 * 4] = param_table[1];
-	*(uint32_t*)&iap_code[LPC1000_IAP_COMMAND_OFFSET + 3 * 4] = param_table[2];
-	*(uint32_t*)&iap_code[LPC1000_IAP_COMMAND_OFFSET + 4 * 4] = param_table[3];
-	*(uint32_t*)&iap_code[LPC1000_IAP_COMMAND_OFFSET + 5 * 4] = param_table[4];
+	buffer = (uint8_t *)malloc(sizeof(iap_code));
+	if (NULL == buffer)
+	{
+		LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+		ret = ERRCODE_NOT_ENOUGH_MEMORY;
+		goto end;
+	}
+	
+	LOG_INFO(_GETTEXT("report to author on this message.\n"));
 	
 	if (ERROR_OK != cm3_dp_halt())
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "halt lpc1000");
+		ret = ERRCODE_FAILURE_OPERATION;
+		goto end;
+	}
+	
+	for (i = 0; i < 13; i++)
+	{
+		reg = 0;
+		if (ERROR_OK != cm3_read_core_register(i, &reg))
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read register");
+			ret = ERRCODE_FAILURE_OPERATION;
+			goto end;
+		}
+		LOG_INFO("r%d: %08X\n", i, reg);
+	}
+	reg = 0;
+	if (ERROR_OK != cm3_read_core_register(CM3_COREREG_SP, &reg))
+	{
+		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read sp");
+		ret = ERRCODE_FAILURE_OPERATION;
+		goto end;
+	}
+	LOG_INFO("sp: %08X\n", reg);
+	reg = 0;
+	if (ERROR_OK != cm3_read_core_register(CM3_COREREG_LR, &reg))
+	{
+		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read lr");
+		ret = ERRCODE_FAILURE_OPERATION;
+		goto end;
+	}
+	LOG_INFO("lr: %08X\n", reg);
+	reg = 0;
+	if (ERROR_OK != cm3_read_core_register(CM3_COREREG_PC, &reg))
+	{
+		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read pc");
+		ret = ERRCODE_FAILURE_OPERATION;
+		goto end;
+	}
+	LOG_INFO("pc: %08X\n", reg);
+	
+	LOG_INFO("SRAM dump at 0x%08X:\n", LPC1000_IAP_BASE);
+	if (ERROR_OK != adi_memap_read_buf(LPC1000_IAP_BASE, buffer, 
+													sizeof(buffer)))
+	{
+		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read sram");
+		ret = ERRCODE_FAILURE_OPERATION;
+		goto end;
+	}
+	LOG_BYTE_BUF(buffer, sizeof(buffer), LOG_INFO, "%02X", 16);
+	
+end:
+	if (buffer != NULL)
+	{
+		free(buffer);
+		buffer = NULL;
+	}
+	
+	return ret;
+}
+
+static RESULT lpc1000swj_iap_call(uint32_t cmd, uint32_t param_table[5], 
+									uint32_t result_table[4])
+{
+	uint32_t buff_tmp[7];
+	uint32_t start, end;
+	
+	memset(buff_tmp, 0, sizeof(buff_tmp));
+	buff_tmp[0] = cmd;				// iap command
+	buff_tmp[1] = param_table[0];	// iap parameters
+	buff_tmp[2] = param_table[1];
+	buff_tmp[3] = param_table[2];
+	buff_tmp[4] = param_table[3];
+	buff_tmp[5] = param_table[4];
+	buff_tmp[6] = 1;				// sync
+	
+	// write iap command with sync to target SRAM
+	// sync is 4-byte AFTER command in sram
+	if (ERROR_OK != adi_memap_write_buf(LPC1000_IAP_COMMAND_ADDR, 
+										(uint8_t*)buff_tmp, sizeof(buff_tmp)))
+	{
+		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "load iap cmd to SRAM");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
-	// write iap_code to target SRAM
-	if (ERROR_OK != adi_memap_write_buf(LPC1000_SRAM_ADDR + LPC1000_IAP_OFFSET, 
-										(uint8_t*)iap_code, sizeof(iap_code)))
+	// read result and sync
+	// sync is 4-byte BEFORE result
+	start = get_time_in_ms();
+	while (1)
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "load iap_code to SRAM");
-		return ERRCODE_FAILURE_OPERATION;
+		if (ERROR_OK != adi_memap_read_buf(LPC1000_IAP_SYNC_ADDR, 
+										(uint8_t *)buff_tmp, 24))
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read iap sync");
+			return ERRCODE_FAILURE_OPERATION;
+		}
+		if (0 == buff_tmp[0])
+		{
+			if (buff_tmp[1] != 0)
+			{
+				lpc1000swj_debug_info();
+				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ERRCODE), 
+						  "call iap", buff_tmp[1]);
+				return ERRCODE_FAILURE_OPERATION;
+			}
+			break;
+		}
+		else
+		{
+			end = get_time_in_ms();
+			// wait 1s at most
+			if ((end - start) > 1000)
+			{
+				lpc1000swj_debug_info();
+				LOG_ERROR(_GETTEXT("Time out when wait for iap ready\n"));
+				return ERRCODE_FAILURE_OPERATION;
+			}
+		}
 	}
 	
-	// write r0 = commmand address
-	reg = LPC1000_SRAM_ADDR + LPC1000_IAP_OFFSET + LPC1000_IAP_COMMAND_OFFSET;
-	if (ERROR_OK != cm3_write_core_register(CM3_COREREG_R0, &reg))
-	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "write R0");
-		return ERRCODE_FAILURE_OPERATION;
-	}
+	memcpy(result_table, &buff_tmp[2], 16);
 	
-	// write r1 = reply address
-	reg = LPC1000_SRAM_ADDR + LPC1000_IAP_OFFSET + LPC1000_IAP_REPLY_OFFSET;
-	if (ERROR_OK != cm3_write_core_register(CM3_COREREG_R1, &reg))
-	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "write R1");
-		return ERRCODE_FAILURE_OPERATION;
-	}
+	return ERROR_OK;
+}
+
+RESULT lpc1000swj_enter_program_mode(struct program_context_t *context)
+{
+	uint32_t *para_ptr = (uint32_t*)&iap_code[LPC1000_IAP_PARAM_OFFSET];
+	uint32_t reg;
 	
-	// write r12 = iap_entry_point
-	reg = LPC1000_IAP_ENTRY;
-	if (ERROR_OK != cm3_write_core_register(CM3_COREREG_R12, &reg))
+	REFERENCE_PARAMETER(context);
+	
+	para_ptr[0] = LPC1000_IAP_ENTRY;
+	para_ptr[1] = LPC1000_IAP_COMMAND_ADDR;
+	para_ptr[2] = LPC1000_IAP_RESULT_ADDR;
+	
+	if (ERROR_OK != cm3_dp_halt())
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "write R12");
+		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "halt lpc1000");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
@@ -158,16 +305,16 @@ static RESULT lpc1000swj_iap_call(uint32_t cmd, uint32_t param_table[5],
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
-	// write lr
-	reg = LPC1000_SRAM_ADDR + LPC1000_IAP_OFFSET + 4 + 1;
-	if (ERROR_OK != cm3_write_core_register(CM3_COREREG_LR, &reg))
+	// write iap_code to target SRAM
+	if (ERROR_OK != adi_memap_write_buf(LPC1000_IAP_BASE, (uint8_t*)iap_code, 
+											sizeof(iap_code)))
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "write LR");
+		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "load iap_code to SRAM");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
 	// write pc
-	reg = LPC1000_SRAM_ADDR + LPC1000_IAP_OFFSET + 1;
+	reg = LPC1000_IAP_BASE + 1;
 	if (ERROR_OK != cm3_write_core_register(CM3_COREREG_PC, &reg))
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "write PC");
@@ -180,34 +327,6 @@ static RESULT lpc1000swj_iap_call(uint32_t cmd, uint32_t param_table[5],
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
-	// write iap result from target SRAM
-	if (ERROR_OK != adi_memap_read_buf(
-			LPC1000_SRAM_ADDR + LPC1000_IAP_OFFSET + LPC1000_IAP_REPLY_OFFSET, 
-			(uint8_t*)reply_tmp, 20))
-	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read iap result");
-		return ERRCODE_FAILURE_OPERATION;
-	}
-	if (reply_tmp[0] != 0)
-	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ERRCODE), 
-				  "call iap", reply_tmp[0]);
-		return ERRCODE_FAILURE_OPERATION;
-	}
-	memcpy(result_table, &reply_tmp[1], 16);
-	
-	if (ERROR_OK != cm3_dp_halt())
-	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "halt lpc1000");
-		return ERRCODE_FAILURE_OPERATION;
-	}
-	
-	return ERROR_OK;
-}
-
-RESULT lpc1000swj_enter_program_mode(struct program_context_t *context)
-{
-	REFERENCE_PARAMETER(context);
 	return ERROR_OK;
 }
 
