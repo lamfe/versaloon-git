@@ -216,11 +216,9 @@ end:
 	return ret;
 }
 
-static RESULT lpc1000swj_iap_call(uint32_t cmd, uint32_t param_table[5], 
-									uint32_t result_table[4])
+static RESULT lpc1000swj_iap_run(uint32_t cmd, uint32_t param_table[5])
 {
 	uint32_t buff_tmp[7];
-	uint32_t start, end;
 	
 	memset(buff_tmp, 0, sizeof(buff_tmp));
 	buff_tmp[0] = cmd;				// iap command
@@ -240,42 +238,80 @@ static RESULT lpc1000swj_iap_call(uint32_t cmd, uint32_t param_table[5],
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
+	return ERROR_OK;
+}
+
+static RESULT lpc1000swj_iap_poll_result(uint32_t result_table[4], uint8_t *fail)
+{
+	uint32_t buff_tmp[6];
+	
+	*fail = 0;
+	if (ERROR_OK != adi_memap_read_buf(LPC1000_IAP_SYNC_ADDR, 
+										(uint8_t *)buff_tmp, 24))
+	{
+		*fail = 1;
+		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read iap sync");
+		return ERRCODE_FAILURE_OPERATION;
+	}
+	if (0 == buff_tmp[0])
+	{
+		if (buff_tmp[1] != 0)
+		{
+			*fail = 1;
+			lpc1000swj_debug_info();
+			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ERRCODE), 
+					  "call iap", buff_tmp[1]);
+			return ERRCODE_FAILURE_OPERATION;
+		}
+		
+		memcpy(result_table, &buff_tmp[2], 16);
+		return ERROR_OK;
+	}
+	
+	return ERROR_FAIL;
+}
+
+static RESULT lpc1000swj_iap_call(uint32_t cmd, uint32_t param_table[5], 
+									uint32_t result_table[4])
+{
+	uint8_t fail = 0;
+	uint32_t start, end;
+	
+	if (ERROR_OK != lpc1000swj_iap_run(cmd, param_table))
+	{
+		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "run iap command");
+		return ERROR_FAIL;
+	}
+	
 	// read result and sync
 	// sync is 4-byte BEFORE result
 	start = get_time_in_ms();
 	while (1)
 	{
-		if (ERROR_OK != adi_memap_read_buf(LPC1000_IAP_SYNC_ADDR, 
-										(uint8_t *)buff_tmp, 24))
+		if (ERROR_OK != lpc1000swj_iap_poll_result(result_table, &fail))
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read iap sync");
-			return ERRCODE_FAILURE_OPERATION;
-		}
-		if (0 == buff_tmp[0])
-		{
-			if (buff_tmp[1] != 0)
+			if (fail)
 			{
-				lpc1000swj_debug_info();
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ERRCODE), 
-						  "call iap", buff_tmp[1]);
-				return ERRCODE_FAILURE_OPERATION;
+				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "pool iap result");
+				return ERROR_FAIL;
 			}
-			break;
+			else
+			{
+				end = get_time_in_ms();
+				// wait 1s at most
+				if ((end - start) > 1000)
+				{
+					lpc1000swj_debug_info();
+					LOG_ERROR(_GETTEXT("Time out when wait for iap ready\n"));
+					return ERRCODE_FAILURE_OPERATION;
+				}
+			}
 		}
 		else
 		{
-			end = get_time_in_ms();
-			// wait 1s at most
-			if ((end - start) > 1000)
-			{
-				lpc1000swj_debug_info();
-				LOG_ERROR(_GETTEXT("Time out when wait for iap ready\n"));
-				return ERRCODE_FAILURE_OPERATION;
-			}
+			break;
 		}
 	}
-	
-	memcpy(result_table, &buff_tmp[2], 16);
 	
 	return ERROR_OK;
 }
