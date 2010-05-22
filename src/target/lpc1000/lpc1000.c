@@ -63,6 +63,8 @@ const struct program_mode_t lpc1000_program_mode[] =
 
 struct program_functions_t lpc1000_program_functions;
 
+uint32_t lpc1000_cclk = 4000;
+
 static void lpc1000_usage(void)
 {
 	printf("\
@@ -94,14 +96,12 @@ RESULT lpc1000_parse_argument(char cmd, const char *argu)
 		{
 		case LPC1000_JTAG:
 		case LPC1000_SWD:
-			lpc1000_program_area_map[0].attr |= AREA_ATTR_RNP;
 			cm3_mode_offset = 0;
 			cm3_parse_argument('c', "cm3_lpc1000");
 			memcpy(&lpc1000_program_functions, &cm3_program_functions, 
 					sizeof(lpc1000_program_functions));
 			break;
 		case LPC1000_ISP:
-			lpc1000_program_area_map[0].attr &= ~AREA_ATTR_RNP;
 			comisp_mode_offset = LPC1000_ISP;
 			comisp_parse_argument('c', "comisp_lpc1000");
 			memcpy(&lpc1000_program_functions, &comisp_program_functions, 
@@ -126,6 +126,50 @@ RESULT lpc1000_parse_argument(char cmd, const char *argu)
 		return ERROR_FAIL;
 		break;
 	}
+	
+	return ERROR_OK;
+}
+
+RESULT lpc1000_adjust_setting(struct chip_param_t *param, uint32_t program_mode)
+{
+	struct chip_area_info_t *flash_info = &param->chip_areas[APPLICATION_IDX];
+	struct chip_area_info_t *sram_info = &param->chip_areas[SRAM_IDX];
+	
+	switch (program_mode)
+	{
+	case LPC1000_JTAG:
+	case LPC1000_SWD:
+		lpc1000_program_area_map[0].attr |= AREA_ATTR_RNP;
+		if (sram_info->size >= 5 * 1024 + 32)
+		{
+			if (sram_info->size >= 9 * 1024 + 32)
+			{
+				lpc1000_program_area_map[0].attr |= AREA_ATTR_WNP;
+			}
+			flash_info->page_size =  4 * 1024;
+		}
+		else if (sram_info->size >= 2 * 1024 + 32)
+		{
+			if (sram_info->size >= 3 * 1024 + 32)
+			{
+				lpc1000_program_area_map[0].attr |= AREA_ATTR_WNP;
+			}
+			flash_info->page_size = 1 * 1024;
+		}
+		else
+		{
+			flash_info->page_size = 512;
+		}
+		break;
+	case LPC1000_ISP:
+		lpc1000_program_area_map[0].attr &= ~AREA_ATTR_NP;
+		if (!flash_info->page_size)
+		{
+			flash_info->page_size = 256;
+		}
+		break;
+	}
+	flash_info->page_num = flash_info->size / flash_info->page_size;
 	
 	return ERROR_OK;
 }

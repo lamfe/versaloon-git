@@ -246,6 +246,9 @@ static RESULT lpc1000swj_iap_poll_result(uint32_t result_table[4], uint8_t *fail
 	uint32_t buff_tmp[6];
 	
 	*fail = 0;
+	
+	// read result and sync
+	// sync is 4-byte BEFORE result
 	if (ERROR_OK != adi_memap_read_buf(LPC1000_IAP_SYNC_ADDR, 
 										(uint8_t *)buff_tmp, 24))
 	{
@@ -271,20 +274,11 @@ static RESULT lpc1000swj_iap_poll_result(uint32_t result_table[4], uint8_t *fail
 	return ERROR_FAIL;
 }
 
-static RESULT lpc1000swj_iap_call(uint32_t cmd, uint32_t param_table[5], 
-									uint32_t result_table[4])
+static RESULT lpc1000swj_iap_wait_ready(uint32_t result_table[4])
 {
 	uint8_t fail = 0;
 	uint32_t start, end;
 	
-	if (ERROR_OK != lpc1000swj_iap_run(cmd, param_table))
-	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "run iap command");
-		return ERROR_FAIL;
-	}
-	
-	// read result and sync
-	// sync is 4-byte BEFORE result
 	start = get_time_in_ms();
 	while (1)
 	{
@@ -316,6 +310,19 @@ static RESULT lpc1000swj_iap_call(uint32_t cmd, uint32_t param_table[5],
 	return ERROR_OK;
 }
 
+static RESULT lpc1000swj_iap_call(uint32_t cmd, uint32_t param_table[5], 
+									uint32_t result_table[4])
+{	
+	if ((ERROR_OK != lpc1000swj_iap_run(cmd, param_table)) 
+		|| (ERROR_OK != lpc1000swj_iap_wait_ready(result_table)))
+	{
+		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "run iap command");
+		return ERROR_FAIL;
+	}
+	
+	return ERROR_OK;
+}
+
 RESULT lpc1000swj_enter_program_mode(struct program_context_t *context)
 {
 	uint32_t *para_ptr = (uint32_t*)&iap_code[LPC1000_IAP_PARAM_OFFSET];
@@ -334,7 +341,7 @@ RESULT lpc1000swj_enter_program_mode(struct program_context_t *context)
 	}
 	
 	// write sp
-	reg = LPC1000_SRAM_ADDR + 256;
+	reg = LPC1000_SRAM_ADDR + 1024;
 	if (ERROR_OK != cm3_write_core_register(CM3_COREREG_SP, &reg))
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "write SP");
@@ -418,9 +425,9 @@ RESULT lpc1000swj_erase_target(struct program_context_t *context, char area,
 	case APPLICATION_CHAR:
 		memset(iap_cmd_param, 0, sizeof(iap_cmd_param));
 		memset(iap_reply, 0, sizeof(iap_reply));
-		iap_cmd_param[0] = 0;		// Start Sector Number
-		iap_cmd_param[1] = sector;	// End Sector Number
-		iap_cmd_param[2] = 4000;	// CPU Clock Frequency(in kHz)
+		iap_cmd_param[0] = 0;				// Start Sector Number
+		iap_cmd_param[1] = sector;			// End Sector Number
+		iap_cmd_param[2] = lpc1000_cclk;	// CPU Clock Frequency(in kHz)
 		if (ERROR_OK != lpc1000swj_iap_call(LPC1000_IAPCMD_PREPARE_SECTOR, 
 												iap_cmd_param, iap_reply))
 		{
@@ -431,9 +438,9 @@ RESULT lpc1000swj_erase_target(struct program_context_t *context, char area,
 		
 		memset(iap_cmd_param, 0, sizeof(iap_cmd_param));
 		memset(iap_reply, 0, sizeof(iap_reply));
-		iap_cmd_param[0] = 0;		// Start Sector Number
-		iap_cmd_param[1] = sector;	// End Sector Number
-		iap_cmd_param[2] = 4000;	// CPU Clock Frequency(in kHz)
+		iap_cmd_param[0] = 0;				// Start Sector Number
+		iap_cmd_param[1] = sector;			// End Sector Number
+		iap_cmd_param[2] = lpc1000_cclk;	// CPU Clock Frequency(in kHz)
 		if (ERROR_OK != lpc1000swj_iap_call(LPC1000_IAPCMD_ERASE_SECTOR, 
 												iap_cmd_param, iap_reply))
 		{
@@ -452,17 +459,64 @@ RESULT lpc1000swj_erase_target(struct program_context_t *context, char area,
 RESULT lpc1000swj_write_target(struct program_context_t *context, char area, 
 								uint32_t addr, uint8_t *buff, uint32_t size)
 {
-	RESULT ret = ERROR_OK;
+	struct chip_param_t *param = context->param;
 	uint32_t iap_cmd_param[5], iap_reply[4];
-	uint32_t start_sector = lpc1000_get_sector_idx_by_addr(context, addr);
-	uint32_t end_sector = lpc1000_get_sector_idx_by_addr(context, addr + size - 1);
+	uint32_t start_sector;
+	uint8_t pingpong = 0;
+	uint16_t page_size = (uint16_t)param->chip_areas[APPLICATION_IDX].page_size;
 	
 	switch (area)
 	{
 	case APPLICATION_CHAR:
+		if (param->chip_areas[SRAM_IDX].size < (uint32_t)(1024 + 2 * page_size))
+		{
+			// pingpong mode is not available
+			
+			// check
+			if ((addr & 0xFF) 
+				|| ((size != 256) && (size != 512) && (size != 1024) && (size != 4096)))
+			{
+				LOG_BUG("invalid parameter for lpc1000 flash write operation\n");
+				return ERROR_FAIL;
+			}
+			
+			memset(iap_cmd_param, 0, sizeof(iap_cmd_param));
+			memset(iap_reply, 0, sizeof(iap_reply));
+			start_sector = lpc1000_get_sector_idx_by_addr(context, addr);
+			iap_cmd_param[0] = start_sector;	// Start Sector Number
+			iap_cmd_param[1] = start_sector;	// End Sector Number
+			iap_cmd_param[2] = lpc1000_cclk;	// CPU Clock Frequency(in kHz)
+			if (ERROR_OK != lpc1000swj_iap_call(LPC1000_IAPCMD_PREPARE_SECTOR, 
+													iap_cmd_param, iap_reply))
+			{
+				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "prepare sectors");
+				return ERRCODE_FAILURE_OPERATION;
+			}
+			
+			// write buff to target SRAM
+			if (ERROR_OK != adi_memap_write_buf(LPC1000_SRAM_ADDR + 1024, buff, size))
+			{
+				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "load data to SRAM");
+				return ERRCODE_FAILURE_OPERATION;
+			}
+			
+			memset(iap_cmd_param, 0, sizeof(iap_cmd_param));
+			memset(iap_reply, 0, sizeof(iap_reply));
+			iap_cmd_param[0] = addr;			// Destination flash address
+			iap_cmd_param[1] = LPC1000_SRAM_ADDR + 1024;	// Source RAM address
+			iap_cmd_param[2] = size;			// Number of bytes to be written
+			iap_cmd_param[3] = lpc1000_cclk;	// CPU Clock Frequency(in kHz)
+			if (ERROR_OK != lpc1000swj_iap_call(LPC1000_IAPCMD_RAM_TO_FLASH, 
+													iap_cmd_param, iap_reply))
+			{
+				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "download flash");
+				return ERRCODE_FAILURE_OPERATION;
+			}
+			break;
+		}
+		
 		// check
-		if ((addr & 0xFF) 
-			|| ((size != 256) && (size != 512) && (size != 1024) && (size != 4096)))
+		if ((addr % page_size) || (size % page_size))
 		{
 			LOG_BUG("invalid parameter for lpc1000 flash write operation\n");
 			return ERROR_FAIL;
@@ -470,45 +524,122 @@ RESULT lpc1000swj_write_target(struct program_context_t *context, char area,
 		
 		memset(iap_cmd_param, 0, sizeof(iap_cmd_param));
 		memset(iap_reply, 0, sizeof(iap_reply));
+		start_sector = lpc1000_get_sector_idx_by_addr(context, addr);
 		iap_cmd_param[0] = start_sector;	// Start Sector Number
-		iap_cmd_param[1] = end_sector;		// End Sector Number
-		iap_cmd_param[2] = 4000;			// CPU Clock Frequency(in kHz)
+		iap_cmd_param[1] = start_sector;	// End Sector Number
+		iap_cmd_param[2] = lpc1000_cclk;	// CPU Clock Frequency(in kHz)
 		if (ERROR_OK != lpc1000swj_iap_call(LPC1000_IAPCMD_PREPARE_SECTOR, 
 												iap_cmd_param, iap_reply))
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "prepare sectors");
-			ret = ERRCODE_FAILURE_OPERATION;
-			break;
+			return ERRCODE_FAILURE_OPERATION;
 		}
 		
-		// write buff to target SRAM
-		if (ERROR_OK != adi_memap_write_buf(LPC1000_SRAM_ADDR + 1024, 
-												buff, size))
+		// write first buff to target SRAM
+		if (ERROR_OK != adi_memap_write_buf(LPC1000_SRAM_ADDR + 1024, buff, page_size))
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "load data to SRAM");
 			return ERRCODE_FAILURE_OPERATION;
 		}
 		
 		memset(iap_cmd_param, 0, sizeof(iap_cmd_param));
-		memset(iap_reply, 0, sizeof(iap_reply));
 		iap_cmd_param[0] = addr;			// Destination flash address
 		iap_cmd_param[1] = LPC1000_SRAM_ADDR + 1024;	// Source RAM address
-		iap_cmd_param[2] = size;			// Number of bytes to be written
-		iap_cmd_param[3] = 4000;			// CPU Clock Frequency(in kHz)
-		if (ERROR_OK != lpc1000swj_iap_call(LPC1000_IAPCMD_RAM_TO_FLASH, 
-												iap_cmd_param, iap_reply))
+		iap_cmd_param[2] = page_size;		// Number of bytes to be written
+		iap_cmd_param[3] = lpc1000_cclk;	// CPU Clock Frequency(in kHz)
+		if (ERROR_OK != lpc1000swj_iap_run(LPC1000_IAPCMD_RAM_TO_FLASH, 
+											iap_cmd_param))
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "erase sectors");
-			ret = ERRCODE_FAILURE_OPERATION;
-			break;
+			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "run iap");
+			return ERRCODE_FAILURE_OPERATION;
 		}
+		size -= page_size;
+		
+		while (size)
+		{
+			buff += page_size;
+			addr += page_size;
+			pingpong++;
+			
+			// write buff to target SRAM
+			if (pingpong & 1)
+			{
+				if (ERROR_OK != adi_memap_write_buf(LPC1000_SRAM_ADDR + 1024 + page_size, 
+														buff, page_size))
+				{
+					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+								"load data to SRAM");
+					return ERRCODE_FAILURE_OPERATION;
+				}
+			}
+			else
+			{
+				if (ERROR_OK != adi_memap_write_buf(LPC1000_SRAM_ADDR + 1024, 
+														buff, page_size))
+				{
+					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+								"load data to SRAM");
+					return ERRCODE_FAILURE_OPERATION;
+				}
+			}
+			
+			// wait ready
+			memset(iap_reply, 0, sizeof(iap_reply));
+			if (ERROR_OK != lpc1000swj_iap_wait_ready(iap_reply))
+			{
+				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "run iap");
+				return ERRCODE_FAILURE_OPERATION;
+			}
+			
+			memset(iap_cmd_param, 0, sizeof(iap_cmd_param));
+			memset(iap_reply, 0, sizeof(iap_reply));
+			start_sector = lpc1000_get_sector_idx_by_addr(context, addr);
+			iap_cmd_param[0] = start_sector;	// Start Sector Number
+			iap_cmd_param[1] = start_sector;	// End Sector Number
+			iap_cmd_param[2] = lpc1000_cclk;	// CPU Clock Frequency(in kHz)
+			if (ERROR_OK != lpc1000swj_iap_call(LPC1000_IAPCMD_PREPARE_SECTOR, 
+													iap_cmd_param, iap_reply))
+			{
+				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "prepare sectors");
+				return ERRCODE_FAILURE_OPERATION;
+			}
+			
+			memset(iap_cmd_param, 0, sizeof(iap_cmd_param));
+			iap_cmd_param[0] = addr;			// Destination flash address
+			if (pingpong & 1)
+			{
+				iap_cmd_param[1] = LPC1000_SRAM_ADDR + 1024 + page_size;	// Source RAM address
+			}
+			else
+			{
+				iap_cmd_param[1] = LPC1000_SRAM_ADDR + 1024;	// Source RAM address
+			}
+			iap_cmd_param[2] = page_size;		// Number of bytes to be written
+			iap_cmd_param[3] = lpc1000_cclk;	// CPU Clock Frequency(in kHz)
+			if (ERROR_OK != lpc1000swj_iap_run(LPC1000_IAPCMD_RAM_TO_FLASH, 
+													iap_cmd_param))
+			{
+				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "run iap");
+				return ERRCODE_FAILURE_OPERATION;
+			}
+			
+			size -= page_size;
+			pgbar_update(page_size);
+		}
+		// wait ready
+		memset(iap_reply, 0, sizeof(iap_reply));
+		if (ERROR_OK != lpc1000swj_iap_wait_ready(iap_reply))
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "run iap");
+			return ERRCODE_FAILURE_OPERATION;
+		}
+		pgbar_update(page_size);
 		break;
 	default:
-		ret = ERROR_FAIL;
-		break;
+		return ERROR_FAIL;
 	}
 	
-	return ret;
+	return ERROR_OK;
 }
 
 RESULT lpc1000swj_read_target(struct program_context_t *context, char area, 

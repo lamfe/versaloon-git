@@ -90,6 +90,7 @@ struct target_info_t targets_info[] =
 		stm32_program_mode,					// program_mode
 		&stm32_program_functions,			// program_functions
 		stm32_parse_argument,				// parse_argument
+		NULL,								// adjust_setting
 		
 		NULL,								// get_mass_product_data_size
 		NULL,								// prepare_mass_product_data
@@ -102,6 +103,7 @@ struct target_info_t targets_info[] =
 		lpc1000_program_mode,				// program_mode
 		&lpc1000_program_functions,			// program_functions
 		lpc1000_parse_argument,				// parse_argument
+		lpc1000_adjust_setting,				// adjust_setting
 		
 		NULL,								// get_mass_product_data_size
 		NULL,								// prepare_mass_product_data
@@ -114,6 +116,7 @@ struct target_info_t targets_info[] =
 		stm8_program_mode,					// program_mode
 		&stm8_program_functions,			// program_functions
 		stm8_parse_argument,				// parse_argument
+		NULL,								// adjust_setting
 		
 		NULL,								// get_mass_product_data_size
 		NULL,								// prepare_mass_product_data
@@ -126,6 +129,7 @@ struct target_info_t targets_info[] =
 		s5x_program_mode,					// program_mode
 		&s5x_program_functions,				// program_functions
 		s5x_parse_argument,					// parse_argument
+		NULL,								// adjust_setting
 		
 		NULL,								// get_mass_product_data_size
 		NULL,								// prepare_mass_product_data
@@ -138,6 +142,7 @@ struct target_info_t targets_info[] =
 		psoc1_program_mode,					// program_mode
 		&psoc1_program_functions,			// program_functions
 		psoc1_parse_argument,				// parse_argument
+		NULL,								// adjust_setting
 		
 		NULL,								// get_mass_product_data_size
 		NULL,								// prepare_mass_product_data
@@ -150,6 +155,7 @@ struct target_info_t targets_info[] =
 		msp430_program_mode,				// program_mode
 		&msp430_program_functions,			// program_functions
 		msp430_parse_argument,				// parse_argument
+		NULL,								// adjust_setting
 		
 		NULL,								// get_mass_product_data_size
 		NULL,								// prepare_mass_product_data
@@ -162,6 +168,7 @@ struct target_info_t targets_info[] =
 		c8051f_program_mode,				// program_mode
 		&c8051f_program_functions,			// program_functions
 		c8051f_parse_argument,				// parse_argument
+		NULL,								// adjust_setting
 		
 		NULL,								// get_mass_product_data_size
 		NULL,								// prepare_mass_product_data
@@ -174,6 +181,7 @@ struct target_info_t targets_info[] =
 		avr8_program_mode,					// program_mode
 		&avr8_program_functions,			// program_functions
 		avr8_parse_argument,				// parse_argument
+		NULL,								// adjust_setting
 		
 		NULL,								// get_mass_product_data_size
 		NULL,								// prepare_mass_product_data
@@ -186,6 +194,7 @@ struct target_info_t targets_info[] =
 		svfp_program_mode,					// program_mode
 		&svfp_program_functions,			// program_functions
 		svfp_parse_argument,				// parse_argument
+		NULL,								// adjust_setting
 		
 		NULL,								// get_mass_product_data_size
 		NULL,								// prepare_mass_product_data
@@ -198,6 +207,7 @@ struct target_info_t targets_info[] =
 		lpc900_program_mode,				// program_mode
 		&lpc900_program_functions,			// program_functions
 		lpc900_parse_argument,				// parse_argument
+		NULL,								// adjust_setting
 		
 		NULL,								// get_mass_product_data_size
 		NULL,								// prepare_mass_product_data
@@ -209,6 +219,7 @@ struct target_info_t targets_info[] =
 		NULL,								// program_mode
 		NULL,								// program_functions
 		NULL,								// parse_argument
+		NULL,								// adjust_setting
 		
 		NULL,								// get_mass_product_data_size
 		NULL,								// prepare_mass_product_data
@@ -1119,6 +1130,12 @@ RESULT target_init(struct program_info_t *pi, struct programmer_info_t *prog)
 		return ERROR_FAIL;
 	}
 Post_Init:
+	if ((cur_target->adjust_setting != NULL) 
+		&&(ERROR_OK != cur_target->adjust_setting(&target_chips.chips_param[i], 
+													program_info.mode)))
+	{
+		return ERROR_FAIL;
+	}
 	memcpy(&target_chip_param, &target_chips.chips_param[i], 
 			sizeof(target_chip_param));
 	
@@ -2257,6 +2274,18 @@ RESULT target_build_chip_series(const char *chip_series,
 					(uint32_t)strtoull(
 						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
 			}
+			else if (!xmlStrcmp(paramNode->name, BAD_CAST "sram_page_size"))
+			{
+				p_param->chip_areas[SRAM_IDX].page_size = 
+					(uint32_t)strtoul(
+						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
+			}
+			else if (!xmlStrcmp(paramNode->name, BAD_CAST "sram_page_num"))
+			{
+				p_param->chip_areas[SRAM_IDX].page_num = 
+					(uint32_t)strtoul(
+						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
+			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "app_addr"))
 			{
 				p_param->chip_areas[APPLICATION_IDX].addr = 
@@ -2445,6 +2474,12 @@ RESULT target_build_chip_series(const char *chip_series,
 				p_param->chip_areas[BOOTLOADER_IDX].size = (uint32_t)strtoul(
 						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
 			}
+			else if (!xmlStrcmp(paramNode->name, BAD_CAST "sram_size"))
+			{
+				target_para_size_defined |= SRAM;
+				p_param->chip_areas[SRAM_IDX].size = (uint32_t)strtoul(
+						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
+			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "app_size"))
 			{
 				target_para_size_defined |= APPLICATION;
@@ -2528,6 +2563,12 @@ RESULT target_build_chip_series(const char *chip_series,
 			paramNode = paramNode->next->next;
 		}
 		
+		if (!(target_para_size_defined & SRAM))
+		{
+			p_param->chip_areas[SRAM_IDX].size = 
+				p_param->chip_areas[SRAM_IDX].page_size 
+				* p_param->chip_areas[SRAM_IDX].page_num;
+		}
 		if (!(target_para_size_defined & APPLICATION))
 		{
 			p_param->chip_areas[APPLICATION_IDX].size = 

@@ -45,6 +45,7 @@
 #define USRSIG_CHKSUM_IDX			(1 + USRSIG_IDX)
 #define CALIBRATION_IDX				16
 #define CALIBRATION_CHKSUM_IDX		(1 + CALIBRATION_IDX)
+#define SRAM_IDX					18
 
 #define CHIPID						(1 << CHIPID_IDX)
 #define CHIPID_CHKSUM				(1 << CHIPID_CHKSUM_IDX)
@@ -64,11 +65,12 @@
 #define USRSIG_CHKSUM				(1 << USRSIG_CHKSUM_IDX)
 #define CALIBRATION					(1 << CALIBRATION_IDX)
 #define CALIBRATION_CHKSUM			(1 << CALIBRATION_CHKSUM_IDX)
+#define SRAM						(1 << SRAM_IDX)
 #define ALL							0x80000000UL
 #define TARGET_AREA_MASK			(BOOTLOADER | APPLICATION | EEPROM \
 									 | OTP_ROM | FUSE | LOCK | USER_SIG \
 									 | CHECKSUM | ALL)
-#define NUM_OF_TARGET_AREA			18
+#define NUM_OF_TARGET_AREA			19
 
 enum area_attr_t
 {
@@ -219,6 +221,7 @@ struct target_info_t
 	const struct program_mode_t *program_mode;
 	const struct program_functions_t *program_functions;
 	RESULT (*parse_argument)(char cmd, const char *argu);
+	RESULT (*adjust_setting)(struct chip_param_t *param, uint32_t program_mode);
 	
 	RESULT (*get_mass_product_data_size)(struct operation_t operations, 
 						struct program_info_t *pi, uint32_t *size);
