@@ -23,6 +23,7 @@
 
 #define CM3_COREREG_R0						0
 #define CM3_COREREG_R1						1
+#define CM3_COREREG_R2						2
 #define CM3_COREREG_R12						12
 #define CM3_COREREG_SP						13
 #define CM3_COREREG_LR						14
