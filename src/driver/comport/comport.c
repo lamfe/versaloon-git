@@ -21,6 +21,7 @@
 #endif
 
 #include <stdio.h>
+#include <string.h>
 
 #include "app_type.h"
 #include "app_log.h"
