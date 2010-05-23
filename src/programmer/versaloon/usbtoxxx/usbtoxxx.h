@@ -26,6 +26,14 @@ RESULT usbtodelay_delay(uint16_t dly);
 
 
 
+// USB_TO_USART
+RESULT usbtousart_init(void);
+RESULT usbtousart_fini(void);
+RESULT usbtousart_config(uint8_t interface_index, uint32_t baudrate, 
+			uint8_t datalength, char paritybit, char stopbit, char handshake);
+RESULT usbtousart_send(uint8_t interface_index, uint8_t *buf, uint16_t len);
+RESULT usbtousart_receive(uint8_t interface_index, uint8_t *buf, uint16_t len);
+
 // USB_TO_SPI
 RESULT usbtospi_init(void);
 RESULT usbtospi_fini(void);

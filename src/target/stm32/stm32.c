@@ -191,7 +191,7 @@ void stm32_print_device(uint32_t mcuid)
 		}
 		break;
 	default:
-		LOG_INFO(_GETTEXT("STM32 type: unknown device\n"));
+		LOG_INFO(_GETTEXT("STM32 type: unknown device(%08X)\n"), mcuid);
 		break;
 	}
 	if (rev_char != 0)

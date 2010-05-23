@@ -70,6 +70,7 @@
 
 
 // interfaces
+#define VERSALOON_USART_PORT			0
 #define VERSALOON_SPI_PORT				0
 #define VERSALOON_GPIO_PORT				0
 #define VERSALOON_ISSP_PORT				0

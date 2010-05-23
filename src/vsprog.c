@@ -321,7 +321,7 @@ int main(int argc, char* argv[])
 	firmware_update_flag = 0;
 	// non gui mode by default
 	pgbar_set_gui_mode(0);
-	// set to NULL programmer
+	// set to default programmer
 	programmer_init(NULL);
 	
 	// parse options

@@ -59,6 +59,14 @@ struct programmer_info_t
 	uint32_t interfaces;
 	
 	// peripheral
+	// usart
+	RESULT (*usart_init)(void);
+	RESULT (*usart_fini)(void);
+	RESULT (*usart_config)(uint32_t baudrate, uint8_t datalength, 
+								char paritybit, char stopbit, char handshake);
+	RESULT (*usart_send)(uint8_t *buf, uint16_t len);
+	RESULT (*usart_receive)(uint8_t *buf, uint16_t len);
+	
 	// spi
 	RESULT (*spi_init)(void);
 	RESULT (*spi_fini)(void);
@@ -207,7 +215,7 @@ struct programmer_info_t
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0\
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0\
 	}
 
 extern struct programmer_info_t *cur_programmer;

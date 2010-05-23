@@ -735,6 +735,29 @@ RESULT versaloon_peripheral_commit(void)
 	versaloon_to = VERSALOON_TIMEOUT;
 	return ret;
 }
+// USART
+RESULT versaloon_usart_init(void)
+{
+	return usbtousart_init();
+}
+RESULT versaloon_usart_fini(void)
+{
+	return usbtousart_fini();
+}
+RESULT versaloon_usart_config(uint32_t baudrate, uint8_t datalength, 
+								char paritybit, char stopbit, char handshake)
+{
+	return usbtousart_config(VERSALOON_USART_PORT, baudrate, datalength, 
+								paritybit, stopbit, handshake);
+}
+RESULT versaloon_usart_send(uint8_t *buf, uint16_t len)
+{
+	return usbtousart_send(VERSALOON_USART_PORT, buf, len);
+}
+RESULT versaloon_usart_receive(uint8_t *buf, uint16_t len)
+{
+	return usbtousart_receive(VERSALOON_USART_PORT, buf, len);
+}
 // SPI
 RESULT versaloon_spi_init(void)
 {
@@ -1126,6 +1149,13 @@ RESULT versaloon_init_capability(void *p)
 	
 	t->interfaces = (SPI | GPIO | ISSP | JTAG_LL | JTAG_HL | SWIM 
 						| C2 | MSP430_JTAG | MSP430_SBW | LPC_ICP | SWJ);
+	
+	// USART
+	t->usart_init = versaloon_usart_init;
+	t->usart_fini = versaloon_usart_fini;
+	t->usart_config = versaloon_usart_config;
+	t->usart_send = versaloon_usart_send;
+	t->usart_receive = versaloon_usart_receive;
 	
 	// SPI
 	t->spi_init = versaloon_spi_init;
