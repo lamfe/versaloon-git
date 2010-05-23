@@ -69,10 +69,10 @@ RESULT usbtousart_config(uint8_t interface_index, uint32_t baudrate,
 	conf[6] = stopbit;
 	conf[7] = handshake;
 	
-	return usbtoxxx_conf_command(USB_TO_GPIO, interface_index, conf, 8);
+	return usbtoxxx_conf_command(USB_TO_USART, interface_index, conf, 8);
 }
 
-RESULT usbtousart_send(uint8_t interface_index, uint8_t *buf, uint16_t len)
+RESULT usbtousart_receive(uint8_t interface_index, uint8_t *buf, uint16_t len)
 {
 #if PARAM_CHECK
 	if ((interface_index > 7) || (0 == len) || (NULL == buf))
@@ -89,7 +89,7 @@ RESULT usbtousart_send(uint8_t interface_index, uint8_t *buf, uint16_t len)
 				versaloon_cmd_buf, 2 + len, len, buf, 0, len, 1);
 }
 
-RESULT usbtousart_receive(uint8_t interface_index, uint8_t *buf, uint16_t len)
+RESULT usbtousart_send(uint8_t interface_index, uint8_t *buf, uint16_t len)
 {
 #if PARAM_CHECK
 	if ((interface_index > 7) || (0 == len) || (NULL == buf))

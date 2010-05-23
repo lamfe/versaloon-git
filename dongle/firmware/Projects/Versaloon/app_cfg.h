@@ -78,7 +78,7 @@
 
 #if USB_TO_XXX_EN
 // page 0
-#	define USB_TO_USART_EN				0
+#	define USB_TO_USART_EN				1
 #	define USB_TO_SPI_EN				1
 #	define USB_TO_IIC_EN				1
 #	define USB_TO_GPIO_EN				1

@@ -335,12 +335,18 @@ int main(void)
 /**
 	called when system is idle, process mass-product operation
 */
+extern uint8 USBTOUSART_En;
 void System_Idle_Loop(void)
 {
 #if MP_EN
 	static uint32 key_down_count = 0;
 	uint8 ret;
 #endif
+
+	if (USBTOUSART_En)
+	{
+		CDC_Process();
+	}
 
 #if MP_EN
 	if(KEY_IsDown())						// Check key for Mass-Production operation

@@ -470,6 +470,10 @@
 											GPIO_Dir(USART_AUX_PORT, GPIO_MODE_OUT_PP, USART_DTR_PIN);\
 											GPIO_Dir(USART_AUX_PORT, GPIO_MODE_OUT_PP, USART_RTS_PIN);\
 										}while(0)
+#define USART_AUX_Port_Fini()			do{\
+											GPIO_Dir(USART_AUX_PORT, GPIO_MODE_IN_FLOATING, USART_DTR_PIN);\
+											GPIO_Dir(USART_AUX_PORT, GPIO_MODE_IN_FLOATING, USART_RTS_PIN);\
+										}while(0)
 #define USART_Port_Init()				do{\
 											RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE);\
 											GPIO_Dir(USART_PORT, GPIO_MODE_AF_PP, USART_TXD_PIN);\

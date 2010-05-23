@@ -15,15 +15,24 @@
  **************************************************************************/
 
 #include "app_cfg.h"
+#include "fifo.h"
 
 #include "USB_TO_XXX.h"
 
 #if USB_TO_USART_EN
 
+extern FIFO CDC_OUT_fifo;
+extern FIFO CDC_IN_fifo;
+
+uint8 USBTOUSART_En = 0;
+
 void USB_TO_USART_ProcessCmd(uint8* dat, uint16 len)
 {
 	uint16 index, device_num, length;
 	uint8 command;
+	uint32 data_len;
+	uint32 baudrate;
+	uint8 datalength, parity, stopbit;
 
 	index = 0;
 	while(index < len)
@@ -41,6 +50,7 @@ void USB_TO_USART_ProcessCmd(uint8* dat, uint16 len)
 		switch(command)
 		{
 		case USB_TO_XXX_INIT:
+			USBTOUSART_En = 1;
 			buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			buffer_reply[rep_len++] = USB_TO_USART_NUM;
 
@@ -48,21 +58,67 @@ void USB_TO_USART_ProcessCmd(uint8* dat, uint16 len)
 		case USB_TO_XXX_CONFIG:
 			buffer_reply[rep_len++] = USB_TO_XXX_OK;
 
+			baudrate =	(	(uint32)dat[index + 0] << 0) + 
+						(	(uint32)dat[index + 1] << 8) + 
+						(	(uint32)dat[index + 2] << 16) + 
+						(	(uint32)dat[index + 3] << 24);
+			datalength = dat[index + 4];
+			parity = dat[index + 5];
+			stopbit = dat[index + 6];
+
+			FIFO_Reset(&CDC_OUT_fifo);
+			FIFO_Reset(&CDC_IN_fifo);
+			CDC_IF_Setup(baudrate, datalength, parity, stopbit);
+
 			break;
 		case USB_TO_XXX_FINI:
 			buffer_reply[rep_len++] = USB_TO_XXX_OK;
-
-			break;
-		case USB_TO_XXX_STATUS:
-			buffer_reply[rep_len++] = USB_TO_XXX_OK;
+			
+			CDC_IF_Fini();
+			USBTOUSART_En = 0;
 
 			break;
 		case USB_TO_XXX_IN:
-			buffer_reply[rep_len++] = USB_TO_XXX_OK;
+			data_len = dat[index + 0] + (dat[index + 1] << 8);
+
+			if (FIFO_Get_Length(&CDC_IN_fifo) >= data_len)
+			{
+				if (data_len == FIFO_Get_Buffer(&CDC_IN_fifo, &buffer_reply[rep_len + 1], data_len))
+				{
+					buffer_reply[rep_len++] = USB_TO_XXX_OK;
+					rep_len += data_len;
+				}
+				else
+				{
+					buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+				}
+			}
+			else
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+			}
 
 			break;
 		case USB_TO_XXX_OUT:
-			buffer_reply[rep_len++] = USB_TO_XXX_OK;
+			data_len = dat[index + 0] + (dat[index + 1] << 8);
+			
+			// check memory available
+			if (FIFO_Get_AvailableLength(&CDC_OUT_fifo) >= data_len)
+			{
+				// copy to fifo
+				if (data_len == FIFO_Add_Buffer(&CDC_OUT_fifo, &dat[index + 2], data_len))
+				{
+					buffer_reply[rep_len++] = USB_TO_XXX_OK;
+				}
+				else
+				{
+					buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+				}
+			}
+			else
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+			}
 
 			break;
 		default:

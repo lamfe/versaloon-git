@@ -28,6 +28,7 @@
 
 #include "port.h"
 #include "comport.h"
+#include "timer.h"
 
 #include "programmer.h"
 
@@ -476,17 +477,25 @@ int32_t comm_ctrl_hw(uint8_t dtr, uint8_t rts)
 
 #endif
 
+static uint8_t usbtocomm_open = 0;
 void comm_close_usbtocomm(void)
 {
+	if (!usbtocomm_open)
+	{
+		return;
+	}
+	
 	if (cur_programmer != NULL)
 	{
 		cur_programmer->usart_fini();
+		cur_programmer->peripheral_commit();
 		
 		if (cur_programmer->fini != NULL)
 		{
 			cur_programmer->fini();
 		}
 	}
+	usbtocomm_open = 0;
 }
 
 RESULT comm_open_usbtocomm(char *comport, uint32_t baudrate, 
@@ -505,44 +514,106 @@ RESULT comm_open_usbtocomm(char *comport, uint32_t baudrate,
 		return ERROR_FAIL;
 	}
 	
+	// paritybit
+	switch (paritybit)
+	{
+	case COMM_PARITYBIT_NONE:
+		paritybit = 0;
+		
+		break;
+	case COMM_PARITYBIT_ODD:
+		paritybit = 1;
+		
+		break;
+	case COMM_PARITYBIT_EVEN:
+		paritybit = 2;
+		
+		break;
+	default:
+		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_VALUE), paritybit, "comm parity");
+		return ERRCODE_INVALID;
+		
+		break;
+	}
+	
+	// stopbit
+	switch (stopbit)
+	{
+	case COMM_STOPBIT_1:
+		stopbit = 0;
+		
+		break;
+	case COMM_STOPBIT_1P5:
+		stopbit = 1;
+		
+		break;
+	case COMM_STOPBIT_2:
+		stopbit = 2;
+		
+		break;
+	default:
+		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_VALUE), stopbit, "comm stopbit");
+		return ERRCODE_INVALID;
+		
+		break;
+	}
+	
+	// handshake
+	handshake = 0;
+	
 	// initialize usbtocomm
 	if ((ERROR_OK != cur_programmer->usart_init())
 		|| (ERROR_OK != cur_programmer->usart_config(baudrate, datalength, 
-												paritybit, stopbit, handshake)))
+												paritybit, stopbit, handshake)) 
+		|| (ERROR_OK != cur_programmer->peripheral_commit()))
 	{
 		return ERROR_FAIL;
 	}
 	
+	usbtocomm_open = 1;
 	return ERROR_OK;
 }
 
 int32_t comm_read_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 {
-	if (NULL == cur_programmer)
+	uint32_t start;
+	
+	if ((NULL == cur_programmer) || (!usbtocomm_open))
 	{
 		return ERROR_FAIL;
 	}
 	
-	if (ERROR_OK != cur_programmer->usart_receive(buffer, (uint16_t)num_of_bytes))
+	start = get_time_in_ms();
+	while ((get_time_in_ms() - start) < 50 * num_of_bytes)
 	{
-		return -1;
+		LOG_PUSH();
+		LOG_MUTE();
+		if ((ERROR_OK != cur_programmer->usart_receive(buffer, (uint16_t)num_of_bytes)) 
+			|| (ERROR_OK != cur_programmer->peripheral_commit()))
+		{
+			LOG_POP();
+		}
+		else
+		{
+			LOG_POP();
+			start = get_time_in_ms();
+			return (int32_t)num_of_bytes;
+		}
 	}
-	else
-	{
-		return (int32_t)num_of_bytes;
-	}
+	return 0;
 }
 
 int32_t comm_write_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 {
-	if (NULL == cur_programmer)
+	if ((NULL == cur_programmer) || !usbtocomm_open)
 	{
 		return ERROR_FAIL;
 	}
 	
-	if (ERROR_OK != cur_programmer->usart_send(buffer, (uint16_t)num_of_bytes))
+	if ((ERROR_OK != cur_programmer->usart_send(buffer, (uint16_t)num_of_bytes)) 
+		|| (ERROR_OK != cur_programmer->peripheral_commit()))
 	{
-		return -1;
+		return 0;
 	}
 	else
 	{
@@ -555,7 +626,7 @@ int32_t comm_ctrl_usbtocomm(uint8_t dtr, uint8_t rts)
 	REFERENCE_PARAMETER(dtr);
 	REFERENCE_PARAMETER(rts);
 	
-	if (NULL == cur_programmer)
+	if ((NULL == cur_programmer) || !usbtocomm_open)
 	{
 		return ERROR_FAIL;
 	}
