@@ -29,10 +29,49 @@
 #include "port.h"
 #include "comport.h"
 
+#include "programmer.h"
+
+void comm_close_hw(void);
+RESULT comm_open_hw(char *comport, uint32_t baudrate, uint8_t datalength, 
+				 char paritybit, char stopbit, char handshake);
+int32_t comm_read_hw(uint8_t *buffer, uint32_t num_of_bytes);
+int32_t comm_write_hw(uint8_t *buffer, uint32_t num_of_bytes);
+int32_t comm_ctrl_hw(uint8_t dtr, uint8_t rts);
+
+void comm_close_usbtocomm(void);
+RESULT comm_open_usbtocomm(char *comport, uint32_t baudrate, 
+			uint8_t datalength, char paritybit, char stopbit, char handshake);
+int32_t comm_read_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes);
+int32_t comm_write_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes);
+int32_t comm_ctrl_usbtocomm(uint8_t dtr, uint8_t rts);
+
+#define COMM_HW					0
+#define COMM_USBTOCOMM			1
+
+struct comm_func_t comm_func[] = 
+{
+	{
+		comm_open_hw,
+		comm_close_hw,
+		comm_read_hw,
+		comm_write_hw,
+		comm_ctrl_hw,
+	},
+	{
+		comm_open_usbtocomm,
+		comm_close_usbtocomm,
+		comm_read_usbtocomm,
+		comm_write_usbtocomm,
+		comm_ctrl_usbtocomm,
+	}
+};
+
+uint32_t comm_idx = 0;
+
 #if IS_WIN32
 static HANDLE hComm = INVALID_HANDLE_VALUE;
 
-void comm_close(void)
+void comm_close_hw(void)
 {
 	if (hComm != INVALID_HANDLE_VALUE)
 	{
@@ -41,8 +80,8 @@ void comm_close(void)
 	}
 }
 
-RESULT comm_open(char *comport, uint32_t baudrate, uint8_t datalength, 
-				 char paritybit, char stopbit, char handshake)
+RESULT comm_open_hw(char *comport, uint32_t baudrate, uint8_t datalength, 
+						char paritybit, char stopbit, char handshake)
 {
 	DCB dcb; // device control block for serial port
 	COMMTIMEOUTS timeouts; // serial port timeout values
@@ -200,7 +239,7 @@ RESULT comm_open(char *comport, uint32_t baudrate, uint8_t datalength,
 	return ERROR_OK;
 }
 
-int32_t comm_read(uint8_t *buffer, uint32_t num_of_bytes)
+int32_t comm_read_hw(uint8_t *buffer, uint32_t num_of_bytes)
 {
 	DWORD number;
 	
@@ -214,7 +253,7 @@ int32_t comm_read(uint8_t *buffer, uint32_t num_of_bytes)
 	}
 }
 
-int32_t comm_write(uint8_t *buffer, uint32_t num_of_bytes)
+int32_t comm_write_hw(uint8_t *buffer, uint32_t num_of_bytes)
 {
 	DWORD number;
 	
@@ -228,7 +267,7 @@ int32_t comm_write(uint8_t *buffer, uint32_t num_of_bytes)
 	}
 }
 
-int32_t comm_ctrl(uint8_t dtr, uint8_t rts)
+int32_t comm_ctrl_hw(uint8_t dtr, uint8_t rts)
 {
 	if (dtr)
 	{
@@ -265,7 +304,7 @@ const uint32_t name_arr[] = {	50, 75, 110, 134, 150, 200, 300, 600, 1200, 1800,
 							1152000, 1500000, 2000000, 2500000, 3000000, 
 							3500000, 4000000};
 
-void comm_close(void)
+void comm_close_hw(void)
 {
 	if (hComm != -1)
 	{
@@ -274,7 +313,7 @@ void comm_close(void)
 	}
 }
 
-RESULT comm_open(char *comport, uint32_t baudrate, uint8_t datalength, 
+RESULT comm_open_hw(char *comport, uint32_t baudrate, uint8_t datalength, 
 				 char paritybit, char stopbit, char handshake)
 {
 	struct termios opt;
@@ -399,7 +438,7 @@ RESULT comm_open(char *comport, uint32_t baudrate, uint8_t datalength,
 	return ERROR_OK;
 }
 
-int32_t comm_read(uint8_t *buffer, uint32_t num_of_bytes)
+int32_t comm_read_hw(uint8_t *buffer, uint32_t num_of_bytes)
 {
 	uint32_t current_length = 0;
 	int32_t tmp;
@@ -422,15 +461,140 @@ int32_t comm_read(uint8_t *buffer, uint32_t num_of_bytes)
 	return current_length;
 }
 
-int32_t comm_write(uint8_t *buffer, uint32_t num_of_bytes)
+int32_t comm_write_hw(uint8_t *buffer, uint32_t num_of_bytes)
 {
 	return write(hComm, buffer, num_of_bytes);
 }
 
-int32_t comm_ctrl(uint8_t dtr, uint8_t rts)
+int32_t comm_ctrl_hw(uint8_t dtr, uint8_t rts)
 {
+	REFERENCE_PARAMETER(dtr);
+	REFERENCE_PARAMETER(rts);
+	
 	return 0;
 }
 
 #endif
 
+void comm_close_usbtocomm(void)
+{
+	if (cur_programmer != NULL)
+	{
+		cur_programmer->usart_fini();
+		
+		if (cur_programmer->fini != NULL)
+		{
+			cur_programmer->fini();
+		}
+	}
+}
+
+RESULT comm_open_usbtocomm(char *comport, uint32_t baudrate, 
+			uint8_t datalength, char paritybit, char stopbit, char handshake)
+{
+	REFERENCE_PARAMETER(comport);
+	
+	if (NULL == cur_programmer)
+	{
+		return ERROR_FAIL;
+	}
+	
+	if ((cur_programmer->init != NULL) 
+		&& (ERROR_OK != cur_programmer->init()))
+	{
+		return ERROR_FAIL;
+	}
+	
+	// initialize usbtocomm
+	if ((ERROR_OK != cur_programmer->usart_init())
+		|| (ERROR_OK != cur_programmer->usart_config(baudrate, datalength, 
+												paritybit, stopbit, handshake)))
+	{
+		return ERROR_FAIL;
+	}
+	
+	return ERROR_OK;
+}
+
+int32_t comm_read_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
+{
+	if (NULL == cur_programmer)
+	{
+		return ERROR_FAIL;
+	}
+	
+	if (ERROR_OK != cur_programmer->usart_receive(buffer, (uint16_t)num_of_bytes))
+	{
+		return -1;
+	}
+	else
+	{
+		return (int32_t)num_of_bytes;
+	}
+}
+
+int32_t comm_write_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
+{
+	if (NULL == cur_programmer)
+	{
+		return ERROR_FAIL;
+	}
+	
+	if (ERROR_OK != cur_programmer->usart_send(buffer, (uint16_t)num_of_bytes))
+	{
+		return -1;
+	}
+	else
+	{
+		return (int32_t)num_of_bytes;
+	}
+}
+
+int32_t comm_ctrl_usbtocomm(uint8_t dtr, uint8_t rts)
+{
+	REFERENCE_PARAMETER(dtr);
+	REFERENCE_PARAMETER(rts);
+	
+	if (NULL == cur_programmer)
+	{
+		return ERROR_FAIL;
+	}
+	
+	return 0;
+}
+
+void comm_close(void)
+{
+	comm_func[comm_idx].comm_close();
+}
+
+RESULT comm_open(char *comport, uint32_t baudrate, uint8_t datalength, 
+				 char paritybit, char stopbit, char handshake)
+{
+	if (!strcmp(comport, "usbtocomm"))
+	{
+		comm_idx = COMM_USBTOCOMM;
+	}
+	else
+	{
+		comm_idx = COMM_HW;
+	}
+	
+	return comm_func[comm_idx].comm_open(comport, baudrate, datalength, paritybit, 
+											stopbit, handshake);
+}
+
+int32_t comm_read(uint8_t *buffer, uint32_t num_of_bytes)
+{
+	return comm_func[comm_idx].comm_read(buffer, num_of_bytes);
+}
+
+int32_t comm_write(uint8_t *buffer, uint32_t num_of_bytes)
+{
+	return comm_func[comm_idx].comm_write(buffer, num_of_bytes);
+}
+
+int32_t comm_ctrl(uint8_t dtr, uint8_t rts)
+{
+	return comm_func[comm_idx].comm_ctrl(dtr, rts);
+}
