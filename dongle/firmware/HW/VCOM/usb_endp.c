@@ -47,9 +47,9 @@ __IO uint32_t rep_len = 0;
 // OUT means PC OUT, Device input
 // IN means PC IN, Device output
 #define CDC_OUT_buff			asyn_rx_buf
-#define CDC_IN_buff				buffer_out
+#define CDC_IN_buff				(asyn_rx_buf + 1024)
 
-FIFO CDC_OUT_fifo = {CDC_OUT_buff, 8 * VIRTUAL_COM_PORT_DATA_SIZE, 0, 0};
+FIFO CDC_OUT_fifo = {CDC_OUT_buff, 1024/*8 * VIRTUAL_COM_PORT_DATA_SIZE*/, 0, 0};
 FIFO CDC_IN_fifo = {CDC_IN_buff, 1024, 0, 0};
 
 __IO uint8_t CDC_USART_IsBusy = 0;

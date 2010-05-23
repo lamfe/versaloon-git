@@ -54,6 +54,7 @@ void ADC_Configuration(void);
 
 void USB_Init_SerialString(uint8 *strSerial, uint16 len);
 void CDC_IF_Setup(uint32 baudrate, uint8 datatype, uint8 paritytype, uint8 stopbittype);
+void CDC_IF_Fini(void);
 void CDC_Process(void);
 void CDC_IF_Enable_Int(void);
 void CDC_IF_Disable_Int(void);

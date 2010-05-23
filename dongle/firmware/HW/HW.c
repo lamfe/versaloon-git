@@ -395,9 +395,31 @@ void USB_Init_SerialString(uint8 *strSerial, uint16 len)
 	}
 }
 
+static uint8 __if_inited = 0;
+void CDC_IF_Fini(void)
+{
+	NVIC_InitTypeDef NVIC_InitStructure;
+
+	/* Disable the USART1 Interrupt */
+	NVIC_InitStructure.NVIC_IRQChannel = USART_IRQ;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+	NVIC_InitStructure.NVIC_IRQChannelCmd = DISABLE;
+	NVIC_Init(&NVIC_InitStructure);
+
+	USART_DeInit(USART_DEF_PORT);
+#if USART_AUX_PORT_EN
+	USART_AUX_Port_Fini();
+#endif
+	USART_Port_Fini();
+
+	PWREXT_Release();
+	GLOBAL_OUTPUT_Release();
+	__if_inited = 0;
+}
+
 void CDC_IF_Setup(uint32 baudrate, uint8 datatype, uint8 paritytype, uint8 stopbittype)
 {
-	static uint8 __if_inited = 0;
 	USART_InitTypeDef USART_InitStructure;
 	NVIC_InitTypeDef NVIC_InitStructure;
 
@@ -468,6 +490,7 @@ void CDC_IF_Setup(uint32 baudrate, uint8 datatype, uint8 paritytype, uint8 stopb
 }
 
 extern __IO uint8 CDC_Out_En;
+extern uint8 USBTOUSART_En;
 void CDC_Process(void)
 {
 #if USB_CDC_BY_POLLING
@@ -482,7 +505,7 @@ void CDC_Process(void)
 		if (len > 0)
 		{
 			USART_SendData(USART_DEF_PORT, FIFO_Get_Byte(&CDC_OUT_fifo));
-			if (!CDC_Out_En && (FIFO_Get_AvailableLength(&CDC_OUT_fifo) >= 6 * USB_DATA_SIZE))
+			if (!USBTOUSART_En && !CDC_Out_En && (FIFO_Get_AvailableLength(&CDC_OUT_fifo) >= 6 * USB_DATA_SIZE))
 			{
 				CDC_Out_En = 1;
 #if USB_RX_DOUBLEBUFFER_EN
@@ -492,16 +515,22 @@ void CDC_Process(void)
 #endif
 			}
 			usart_out_buff_len = 1;
-			Led_RW_ON();
+			if (!USBTOUSART_En)
+			{
+				Led_RW_ON();
+			}
 		}
 		else if(usart_out_buff_len)
 		{
 			usart_out_buff_len = 0;
-			Led_RW_OFF();
+			if (!USBTOUSART_En)
+			{
+				Led_RW_OFF();
+			}
 		}
 	}
 
-	if (USB_Out_IsReady())
+	if (!USBTOUSART_En && USB_Out_IsReady())
 	{
 		if (usb_out_buff_len > 0)
 		{
