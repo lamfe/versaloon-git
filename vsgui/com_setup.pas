@@ -129,6 +129,7 @@ begin
       ser.Free;
     end;
   end;
+  cbboxCOM.Items.Add('usbtocomm');
 
   if cbboxCOM.Items.IndexOf(cur_comport) > 0 then
   begin
