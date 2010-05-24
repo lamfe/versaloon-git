@@ -578,6 +578,7 @@ RESULT comm_open_usbtocomm(char *comport, uint32_t baudrate,
 int32_t comm_read_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 {
 	uint32_t start;
+	uint32_t buffer_len[2];
 	
 	if ((NULL == cur_programmer) || (!usbtocomm_open))
 	{
@@ -585,7 +586,7 @@ int32_t comm_read_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 	}
 	
 	start = get_time_in_ms();
-	while ((get_time_in_ms() - start) < 50 * num_of_bytes)
+	while ((get_time_in_ms() - start) < 10 * num_of_bytes)
 	{
 		LOG_PUSH();
 		LOG_MUTE();
@@ -597,10 +598,34 @@ int32_t comm_read_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 		else
 		{
 			LOG_POP();
-			start = get_time_in_ms();
 			return (int32_t)num_of_bytes;
 		}
 	}
+	
+	if (cur_programmer->usart_status != NULL)
+	{
+		memset(buffer_len, 0, sizeof(buffer_len));
+		if ((ERROR_OK != cur_programmer->usart_status(buffer_len)) 
+			|| (ERROR_OK != cur_programmer->peripheral_commit()))
+		{
+			// error
+			LOG_POP();
+			return -1;
+		}
+		else if ((buffer_len[1] != 0) 
+			&& ((ERROR_OK != cur_programmer->usart_receive(buffer, (uint16_t)buffer_len[1])) 
+				|| (ERROR_OK != cur_programmer->peripheral_commit())))
+		{
+			LOG_POP();
+			return (int32_t)buffer_len[1];
+		}
+		else
+		{
+			LOG_POP();
+			return 0;
+		}
+	}
+	
 	return 0;
 }
 

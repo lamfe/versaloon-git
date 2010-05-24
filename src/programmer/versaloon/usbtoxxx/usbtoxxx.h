@@ -33,6 +33,7 @@ RESULT usbtousart_config(uint8_t interface_index, uint32_t baudrate,
 			uint8_t datalength, char paritybit, char stopbit, char handshake);
 RESULT usbtousart_send(uint8_t interface_index, uint8_t *buf, uint16_t len);
 RESULT usbtousart_receive(uint8_t interface_index, uint8_t *buf, uint16_t len);
+RESULT usbtousart_status(uint8_t interface_index, uint32_t buffer_len[2]);
 
 // USB_TO_SPI
 RESULT usbtospi_init(void);

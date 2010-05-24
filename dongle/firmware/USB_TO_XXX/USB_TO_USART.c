@@ -121,6 +121,22 @@ void USB_TO_USART_ProcessCmd(uint8* dat, uint16 len)
 			}
 
 			break;
+		case USB_TO_XXX_STATUS:
+			buffer_reply[rep_len++] = USB_TO_XXX_OK;
+
+			data_len = FIFO_Get_Length(&CDC_OUT_fifo);
+			buffer_reply[rep_len++] = (data_len >> 0) & 0xFF;
+			buffer_reply[rep_len++] = (data_len >> 8) & 0xFF;
+			buffer_reply[rep_len++] = (data_len >> 16) & 0xFF;
+			buffer_reply[rep_len++] = (data_len >> 24) & 0xFF;
+
+			data_len = FIFO_Get_Length(&CDC_IN_fifo);
+			buffer_reply[rep_len++] = (data_len >> 0) & 0xFF;
+			buffer_reply[rep_len++] = (data_len >> 8) & 0xFF;
+			buffer_reply[rep_len++] = (data_len >> 16) & 0xFF;
+			buffer_reply[rep_len++] = (data_len >> 24) & 0xFF;
+
+			break;
 		default:
 			buffer_reply[rep_len++] = USB_TO_XXX_CMD_NOT_SUPPORT;
 

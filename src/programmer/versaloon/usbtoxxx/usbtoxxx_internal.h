@@ -121,6 +121,10 @@ RESULT usbtoxxx_add_command(uint8_t type, uint8_t cmd, uint8_t *cmdbuf,
 #define usbtoxxx_poll_command(type, port, cmdbuf, cmdlen, retbuf, retlen)	\
 			usbtoxxx_add_command((type), (USB_TO_XXX_POLL | (port)), (cmdbuf),\
 								 (cmdlen), (retlen), (retbuf), 0, (retlen), 0)
+#define usbtoxxx_status_command(type, port, retlen, wantbuf, wantpos, wantlen, c)\
+			usbtoxxx_add_command((type), (USB_TO_XXX_STATUS | (port)), \
+								 NULL, 0, (retlen), (wantbuf), (wantpos), \
+								 (wantlen), (c))
 #define usbtoxxx_special_command(type, port, cmdbuf, cmdlen, retlen, wantbuf, \
 								 wantpos, wantlen, c)						\
 			usbtoxxx_add_command((type), (USB_TO_XXX_SPECIAL | (port)), \

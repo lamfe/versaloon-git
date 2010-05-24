@@ -66,6 +66,7 @@ struct programmer_info_t
 								char paritybit, char stopbit, char handshake);
 	RESULT (*usart_send)(uint8_t *buf, uint16_t len);
 	RESULT (*usart_receive)(uint8_t *buf, uint16_t len);
+	RESULT (*usart_status)(uint32_t buffer_size[2]);
 	
 	// spi
 	RESULT (*spi_init)(void);
@@ -215,7 +216,7 @@ struct programmer_info_t
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0\
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0\
 	}
 
 extern struct programmer_info_t *cur_programmer;
