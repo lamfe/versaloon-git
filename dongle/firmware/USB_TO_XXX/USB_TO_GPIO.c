@@ -199,6 +199,13 @@ void USB_TO_GPIO_ProcessCmd(uint8* dat, uint16 len)
 				}
 			}
 #if JTAG_HAS_USER_PIN
+			if(mask_data & USB_TO_GPIO_USR1)
+			{
+				if(JTAG_TAP_USR1_GET())
+				{
+					port_data |= USB_TO_GPIO_USR1;
+				}
+			}
 			if(mask_data & USB_TO_GPIO_USR2)
 			{
 				if(JTAG_TAP_USR2_GET())
@@ -281,6 +288,17 @@ void USB_TO_GPIO_ProcessCmd(uint8* dat, uint16 len)
 				else
 				{
 					JTAG_TAP_USR1_CLR();
+				}
+			}
+			if(mask_data & USB_TO_GPIO_USR2)
+			{
+				if(port_data & USB_TO_GPIO_USR2)
+				{
+					JTAG_TAP_USR2_SET();
+				}
+				else
+				{
+					JTAG_TAP_USR2_CLR();
 				}
 			}
 #endif
