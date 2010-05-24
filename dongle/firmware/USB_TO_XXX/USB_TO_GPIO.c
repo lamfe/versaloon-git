@@ -119,11 +119,25 @@ void USB_TO_GPIO_ProcessCmd(uint8* dat, uint16 len)
 #if JTAG_HAS_USER_PIN
 			if (mask_data & USB_TO_GPIO_USR1)
 			{
-				JTAG_TAP_USR1_SETOUTPUT();
+				if (io_data & USB_TO_GPIO_USR1)
+				{
+					JTAG_TAP_USR1_SETOUTPUT();
+				}
+				else
+				{
+					JTAG_TAP_USR1_SETINPUT();
+				}
 			}
 			if (mask_data & USB_TO_GPIO_USR2)
 			{
-				JTAG_TAP_USR2_SETINPUT();
+				if (io_data & USB_TO_GPIO_USR2)
+				{
+					JTAG_TAP_USR2_SETOUTPUT();
+				}
+				else
+				{
+					JTAG_TAP_USR2_SETINPUT();
+				}
 			}
 #endif
 
