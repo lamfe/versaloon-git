@@ -736,7 +736,11 @@ RESULT target_program(struct program_context_t *context)
 			LOG_INFO(_GETTEXT(INFOMSG_ERASED), fullname);
 			
 			// Reset After Erase
-			if (area_attr & AREA_ATTR_RAE)
+			if ((area_attr & AREA_ATTR_RAE) 
+				&& ((op->checksum_operations != 0) 
+					|| (op->read_operations != 0) 
+					|| (op->verify_operations != 0) 
+					|| (op->write_operations != 0)))
 			{
 				if ((pf->leave_program_mode != NULL) 
 					&& (ERROR_OK != pf->leave_program_mode(context, 0)))
