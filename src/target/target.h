@@ -140,6 +140,7 @@ struct program_info_t
 	
 	uint8_t mode;
 	uint16_t frequency;
+	uint32_t kernel_khz;
 	struct jtag_pos_t jtag_pos;
 	
 	uint8_t *mass_product_data;
