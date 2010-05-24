@@ -107,3 +107,16 @@ RESULT usbtousart_send(uint8_t interface_index, uint8_t *buf, uint16_t len)
 										versaloon_cmd_buf, 2 + len, 1);
 }
 
+RESULT usbtousart_status(uint8_t interface_index, uint32_t buffer_len[2])
+{
+#if PARAM_CHECK
+	if ((interface_index > 7) || (NULL == buffer_len))
+	{
+		LOG_BUG(_GETTEXT("invalid inteface_index %d.\n"), interface_index);
+		return ERROR_FAIL;
+	}
+#endif
+	
+	return usbtoxxx_status_command(USB_TO_USART, interface_index, 8, 
+									(uint8_t *)buffer_len, 0, 8, 0);
+}
