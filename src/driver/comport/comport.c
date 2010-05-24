@@ -586,7 +586,7 @@ int32_t comm_read_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 	}
 	
 	start = get_time_in_ms();
-	while ((get_time_in_ms() - start) < 50 * num_of_bytes)
+	while ((get_time_in_ms() - start) < (50 + 5 * num_of_bytes))
 	{
 		LOG_PUSH();
 		LOG_MUTE();
