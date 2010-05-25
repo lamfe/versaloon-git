@@ -14,7 +14,8 @@ INCLUDES = \
     -I$(top_srcdir)/src/target/cortex-m3 \
     -I$(top_srcdir)/src/target/stm32 \
     -I$(top_srcdir)/src/target/lpc1000 \
-    -I$(top_srcdir)/src/target/at91sam3
+    -I$(top_srcdir)/src/target/at91sam3 \
+	-I$(top_srcdir)/src/target/avr32
 
 METASOURCES = AUTO
 noinst_LIBRARIES = libtgt.a
@@ -51,6 +52,7 @@ libtgt_a_SOURCES = \
     svf_player/svf_parser.c \
     stm32/stm32.c \
     lpc1000/lpc1000.c \
-    at91sam3/at91sam3.c
+    at91sam3/at91sam3.c \
+    avr32/avr32.c
 
 MAINTAINERCLEANFILES = Makefile.in

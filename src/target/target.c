@@ -55,6 +55,7 @@
 #include "lpc1000/lpc1000.h"
 #include "stm8/stm8.h"
 #include "at91sam3/at91sam3.h"
+#include "avr32/avr32.h"
 
 const struct target_area_name_t target_area_name[NUM_OF_TARGET_AREA] = 
 {
@@ -117,6 +118,19 @@ struct target_info_t targets_info[] =
 		at91sam3_program_mode,				// program_mode
 		&at91sam3_program_functions,		// program_functions
 		at91sam3_parse_argument,			// parse_argument
+		NULL,								// adjust_setting
+		
+		NULL,								// get_mass_product_data_size
+		NULL,								// prepare_mass_product_data
+	},
+	// avr32
+	{
+		AVR32_STRING,						// name
+		AUTO_DETECT CAN_EXECUTE,			// feature
+		avr32_program_area_map,				// program_area_map
+		avr32_program_mode,					// program_mode
+		&avr32_program_functions,			// program_functions
+		avr32_parse_argument,				// parse_argument
 		NULL,								// adjust_setting
 		
 		NULL,								// get_mass_product_data_size
