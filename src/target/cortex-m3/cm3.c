@@ -65,8 +65,8 @@ struct program_functions_t cm3_program_functions =
 
 const struct cm3_param_t cm3_chips_param[] = {
 //	chip_name,		jtag_khz,		pos			swj_trn,	program_functions
-	{"cm3_stm32",	STM32_JTAG_KHZ,	{0,1,0,5},	2,			&stm32swj_program_functions},
-	{"cm3_lpc1000",	LPC1000_JTAG_KHZ,{0,0,0,0},	2,			&lpc1000swj_program_functions}
+	{"cm3_stm32",	STM32_IRC_KHZ / 6,	{0,1,0,5},	2,			&stm32swj_program_functions},
+	{"cm3_lpc1000",	LPC1000_IRC_KHZ / 6,{0,0,0,0},	2,			&lpc1000swj_program_functions}
 };
 static uint8_t cm3_chip_index = 0;
 

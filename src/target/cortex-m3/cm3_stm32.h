@@ -23,7 +23,7 @@
 
 #define STM32_PAGE_SIZE_RW			5120
 
-#define STM32_JTAG_KHZ				570
+#define STM32_IRC_KHZ				8000
 
 /* stm32 flash register locations */
 #define STM32_FLASH_ACR				0x40022000
