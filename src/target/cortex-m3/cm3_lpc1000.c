@@ -650,8 +650,6 @@ RESULT lpc1000swj_read_target(struct program_context_t *context, char area,
 	uint32_t iap_cmd_param[5], iap_reply[4];
 	
 	REFERENCE_PARAMETER(context);
-	REFERENCE_PARAMETER(size);
-	REFERENCE_PARAMETER(addr);
 	
 	switch (area)
 	{

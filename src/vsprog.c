@@ -49,7 +49,7 @@
 #include "target.h"
 #include "hex.h"
 
-#define OPTSTR			"hvS:P:s:c:Mp:U:D:Ld:Go:F:m:x:C:I:O:J:Zb:V:t:K:"
+#define OPTSTR			"hvS:P:s:c:Mp:U:D:Ld:Go:F:m:x:C:I:O:J:Zb:V:t:K:W:"
 static const struct option long_opts[] =
 {
 	{"help", no_argument, NULL, 'h'},
@@ -75,6 +75,7 @@ static const struct option long_opts[] =
 	{"output-file", required_argument, NULL, 'O'},
 	{"jtag-dc", required_argument, NULL, 'J'},
 	{"kernel-khz", required_argument, NULL, 'K'},
+	{"wait-state", required_argument, NULL, 'W'},
 	{"firmware-update", no_argument, NULL, 'Z'},
 	{"buffsize", required_argument, NULL, 'b'},
 	{"misc-cmd", required_argument, NULL, 'V'},
@@ -684,6 +685,10 @@ Parse_File:
 		case 'K':
 			// --kernel-khz
 			program_info.kernel_khz = (uint32_t)strtoul(optarg, NULL, 0);
+			break;
+		case 'W':
+			// --wait-state
+			program_info.wait_state = (uint8_t)strtoul(optarg, NULL, 0);
 			break;
 		case 'J':
 			// --jtag-dc
