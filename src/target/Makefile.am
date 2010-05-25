@@ -13,7 +13,8 @@ INCLUDES = \
     -I$(top_srcdir)/src/target/comisp \
     -I$(top_srcdir)/src/target/cortex-m3 \
     -I$(top_srcdir)/src/target/stm32 \
-    -I$(top_srcdir)/src/target/lpc1000
+    -I$(top_srcdir)/src/target/lpc1000 \
+    -I$(top_srcdir)/src/target/at91sam3
 
 METASOURCES = AUTO
 noinst_LIBRARIES = libtgt.a
@@ -24,6 +25,7 @@ libtgt_a_SOURCES = \
     cortex-m3/cm3.c \
     cortex-m3/cm3_stm32.c \
     cortex-m3/cm3_lpc1000.c \
+    cortex-m3/cm3_at91sam3.c \
     cortex-m3/cm3_common.c \
     at89s5x/at89s5x.c \
     avr8/avr8.c \
@@ -48,28 +50,7 @@ libtgt_a_SOURCES = \
     svf_player/byte_tap.c \
     svf_player/svf_parser.c \
     stm32/stm32.c \
-    lpc1000/lpc1000.c
-
-#noinst_HEADERS = \
-#    target.h \
-#    at89s5x/at89s5x.h \
-#    avr8/avr8.h \
-#    lpc900/lpc900.h \
-#    c8051f/c8051f_c2.h \
-#    c8051f/c8051f_jtag.h \
-#    comisp/comisp.h 
-#    comisp/lpcarmisp.h \
-#    comisp/stm32isp.h \
-#    msp430/JTAGfunc.h \
-#    msp430/msp430.h \
-#    msp430/msp430_const.h \
-#    psoc1/psoc1.h \
-#    stm8/stm8.h \
-#    stm32/stm32.h \
-#    lpc1000/lpc1000.h \
-#    svf_player/byte_tap.h \
-#    svf_player/svf.h \
-#    svf_player/svf_parser.h \
-#    svf_player/svf_player.h
+    lpc1000/lpc1000.c \
+    at91sam3/at91sam3.c
 
 MAINTAINERCLEANFILES = Makefile.in
