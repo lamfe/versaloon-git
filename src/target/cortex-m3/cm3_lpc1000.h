@@ -21,7 +21,7 @@
 
 #include "adi_v5p1.h"
 
-#define LPC1000_JTAG_KHZ				570
+#define LPC1000_IRC_KHZ				4000
 
 extern const struct program_functions_t lpc1000swj_program_functions;
 
