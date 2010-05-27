@@ -96,6 +96,7 @@ RESULT at91sam3_parse_argument(char cmd, const char *argu)
 		{
 		case AT91SAM3_JTAG:
 		case AT91SAM3_SWD:
+			at91sam3_program_area_map[0].attr |= AREA_ATTR_RNP;
 			cm3_mode_offset = 0;
 			cm3_parse_argument('c', "cm3_at91sam3");
 			memcpy(&at91sam3_program_functions, &cm3_program_functions, 
@@ -125,6 +126,43 @@ RESULT at91sam3_parse_argument(char cmd, const char *argu)
 	default:
 		return ERROR_FAIL;
 		break;
+	}
+	
+	return ERROR_OK;
+}
+
+RESULT at91sam3_get_iap_entry_ptr(uint32_t id, uint32_t *addr)
+{
+	switch (AT91SAM3_GET_ARCH(id))
+	{
+	case AT91SAM3_ARCH_ATSAM3UxC:
+	case AT91SAM3_ARCH_ATSAM3UxE:
+		*addr = AT91SAM3U_IAP_ENTRY_PTR;
+		break;
+	default:
+		return ERROR_FAIL;
+		break;
+	}
+	
+	return ERROR_OK;
+}
+
+RESULT at91sam3_print_memory_info(uint32_t *flash_descriptor)
+{
+	uint32_t i, j;
+	
+	LOG_INFO(_GETTEXT("FL_ID(Flash Interface Description): 0x%08X\n"), flash_descriptor[0]);
+	LOG_INFO(_GETTEXT("FL_SIZE(Flash size in bytes): %dKB\n"), flash_descriptor[1] / 1024);
+	LOG_INFO(_GETTEXT("FL_PAGE_SIZE(Page size in bytes): %d\n"), flash_descriptor[2]);
+	LOG_INFO(_GETTEXT("FL_NB_PLANE(Number of planes): %d\n"), flash_descriptor[3]);
+	for (i = 0; i < flash_descriptor[3]; i++)
+	{
+		LOG_INFO(_GETTEXT("FL_PLANE[%d](Number of bytes in the plane): %dKB\n"), i, flash_descriptor[4 + i] / 1024);
+	}
+	LOG_INFO(_GETTEXT("FL_NB_LOCK(Number of lockbits): %d\n"), flash_descriptor[4 + i]);
+	for (j = 0; j < flash_descriptor[4 + i]; j++)
+	{
+		LOG_INFO(_GETTEXT("FL_LOCK[%d](Number of bytes in the lock region): %dKB\n"), j, flash_descriptor[5 + i + j] / 1024);
 	}
 	
 	return ERROR_OK;
