@@ -274,7 +274,6 @@ static RESULT at91sam3swj_iap_run(struct at91sam3swj_iap_command_t *cmd)
 		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "load iap cmd to SRAM");
 		return ERRCODE_FAILURE_OPERATION;
 	}
-//	at91sam3swj_debug_info();
 	
 	return ERROR_OK;
 }
@@ -282,15 +281,10 @@ static RESULT at91sam3swj_iap_run(struct at91sam3swj_iap_command_t *cmd)
 static RESULT at91sam3swj_iap_poll_result(struct at91sam3swj_iap_reply_t *reply, 
 											uint8_t *fail)
 {
-	uint32_t *buff_tmp = NULL;
+	uint32_t buff_tmp[256 + 4];
 	uint32_t data_size;
 	
 	data_size = (1 + reply->data_num) * sizeof(uint32_t);
-	buff_tmp = (uint32_t *)malloc(data_size);
-	if (NULL == buff_tmp)
-	{
-		return ERROR_FAIL;
-	}
 	
 	*fail = 0;
 	
@@ -334,7 +328,7 @@ static RESULT at91sam3swj_iap_wait_ready(struct at91sam3swj_iap_reply_t *reply)
 		{
 			if (fail)
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "pool iap result");
+				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "poll iap result");
 				return ERROR_FAIL;
 			}
 			else
@@ -358,6 +352,7 @@ static RESULT at91sam3swj_iap_wait_ready(struct at91sam3swj_iap_reply_t *reply)
 	return ERROR_OK;
 }
 
+#if 0
 static RESULT at91sam3swj_iap_call(struct at91sam3swj_iap_command_t *cmd, 
 							struct at91sam3swj_iap_reply_t *reply)
 {	
@@ -370,6 +365,64 @@ static RESULT at91sam3swj_iap_call(struct at91sam3swj_iap_command_t *cmd,
 	
 	return ERROR_OK;
 }
+#else
+static RESULT at91sam3swj_iap_call(struct at91sam3swj_iap_command_t *cmd, 
+							struct at91sam3swj_iap_reply_t *reply)
+{
+	uint32_t reg;
+	uint32_t start;
+	uint32_t i;
+	
+	reg = 0;
+	if (ERROR_OK != adi_memap_read_reg(0x400E0808, &reg, 1))
+	{
+		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read fsr");
+		return ERRCODE_FAILURE_OPERATION;
+	}
+	if (!(reg & 1))
+	{
+		LOG_ERROR(_GETTEXT("eefc not ready.\n"));
+		return ERROR_FAIL;
+	}
+	
+	reg = cmd->iap_command | AT91SAM3_EEFC_FKEY;
+	if (ERROR_OK != adi_memap_write_reg(0x400E0804, &reg, 1))
+	{
+		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "write fcr");
+		return ERRCODE_FAILURE_OPERATION;
+	}
+	
+	start = get_time_in_ms();
+	do
+	{
+		reg = 0;
+		if (ERROR_OK != adi_memap_read_reg(0x400E0808, &reg, 1))
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read fsr");
+			return ERRCODE_FAILURE_OPERATION;
+		}
+	} while (!(reg & 1) && ((get_time_in_ms() - start) < 500));
+	
+	if (!(reg & 1) || (reg & 0x60))
+	{
+		return ERROR_FAIL;
+	}
+	
+	if ((reply->data != NULL) && (reply->data_num > 0))
+	{
+		for (i = 0; i < reply->data_num; i++)
+		{
+			if (ERROR_OK != adi_memap_read_reg(0x400E080C, &reply->data[i], 1))
+			{
+				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read frr");
+				return ERRCODE_FAILURE_OPERATION;
+			}
+		}
+	}
+	
+	return ERROR_OK;
+}
+#endif
 
 RESULT at91sam3swj_enter_program_mode(struct program_context_t *context)
 {
@@ -377,7 +430,7 @@ RESULT at91sam3swj_enter_program_mode(struct program_context_t *context)
 	uint32_t reg, chip_id;
 	struct at91sam3swj_iap_command_t command;
 	struct at91sam3swj_iap_reply_t reply;
-	uint32_t flash_descriptor[128];
+	uint32_t flash_descriptor[64];
 	
 	REFERENCE_PARAMETER(context);
 	
@@ -456,33 +509,6 @@ RESULT at91sam3swj_enter_program_mode(struct program_context_t *context)
 	}
 	at91sam3_print_memory_info(flash_descriptor);
 	
-	{
-		uint8_t buff[256];
-		memset(buff, 0, sizeof(buff));
-		if (ERROR_OK != adi_memap_write_buf(AT91SAM3_IAP_DATA_ADDR, buff, sizeof(buff)))
-		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "load flash to SRAM");
-			return ERRCODE_FAILURE_OPERATION;
-		}
-//		at91sam3swj_debug_info();
-#if 1
-		command.flash_plane = 0;
-		command.iap_command = AT91SAM3_EEFC_CMD_EWP;
-		command.result_num = 0;
-		command.address_of_frr = 0x400E080C;
-		command.data_num = 256;
-		command.target_addr = 0x00080000;
-		command.address_of_data = AT91SAM3_IAP_DATA_ADDR;
-		reply.data = NULL;
-		reply.data_num = 0;
-		if (ERROR_OK != at91sam3swj_iap_call(&command, &reply))
-		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read flash descriptor");
-			return ERRCODE_FAILURE_OPERATION;
-		}
-#endif
-	}
-	
 	return ERROR_OK;
 }
 
@@ -552,6 +578,10 @@ RESULT at91sam3swj_erase_target(struct program_context_t *context, char area,
 				return ERRCODE_FAILURE_OPERATION;
 			}
 		}
+		else
+		{
+			// auto-erase
+		}
 		break;
 	default:
 		ret = ERROR_FAIL;
@@ -563,14 +593,44 @@ RESULT at91sam3swj_erase_target(struct program_context_t *context, char area,
 RESULT at91sam3swj_write_target(struct program_context_t *context, char area, 
 								uint32_t addr, uint8_t *buff, uint32_t size)
 {
-	REFERENCE_PARAMETER(context);
-	REFERENCE_PARAMETER(addr);
-	REFERENCE_PARAMETER(buff);
-	REFERENCE_PARAMETER(size);
+	struct at91sam3swj_iap_command_t command;
+	struct at91sam3swj_iap_reply_t reply;
 	
 	switch (area)
 	{
 	case APPLICATION_CHAR:
+		if (size != 256)
+		{
+			LOG_ERROR(_GETTEXT("invalid flash page size: %d.\n"), size);
+			return ERROR_FAIL;
+		}
+		if (addr & 0xFF)
+		{
+			LOG_ERROR(_GETTEXT("invalid flash address: 0x%08X.\n"), addr);
+			return ERROR_FAIL;
+		}
+		
+		if (ERROR_OK != adi_memap_write_buf(addr, buff, size))
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "write flash buffer");
+			return ERRCODE_FAILURE_OPERATION;
+		}
+		
+		command.flash_plane = 0;
+		command.iap_command = AT91SAM3_EEFC_CMD_EWP 
+				| AT91SAM3_EEFC_FARG(at91sam3_get_page_num(context, addr));
+		command.result_num = 0;
+		command.address_of_frr = 0x400E080C;
+		command.data_num = 0;
+		command.target_addr = addr;
+		command.address_of_data = AT91SAM3_IAP_DATA_ADDR;
+		reply.data = NULL;
+		reply.data_num = 0;
+		if (ERROR_OK != at91sam3swj_iap_call(&command, &reply))
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read flash descriptor");
+			return ERRCODE_FAILURE_OPERATION;
+		}
 		break;
 	default:
 		return ERROR_FAIL;

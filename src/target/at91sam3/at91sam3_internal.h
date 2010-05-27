@@ -67,6 +67,7 @@
 extern uint8_t at91sam3_wait_state;
 RESULT at91sam3_get_iap_entry_ptr(uint32_t id, uint32_t *addr);
 RESULT at91sam3_print_memory_info(uint32_t *flash_descriptor);
+uint16_t at91sam3_get_page_num(struct program_context_t *context, uint32_t addr);
 
 #endif /* __AT91SAM3_INTERNAL_H_INCLUDED__ */
 
