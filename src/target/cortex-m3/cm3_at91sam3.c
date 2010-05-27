@@ -155,6 +155,23 @@ static uint8_t iap_code[] = {
 	0, 0, 0, 0,				// data from here
 };
 
+struct at91sam3swj_iap_command_t
+{
+	uint32_t flash_plane;
+	uint32_t iap_command;
+	uint32_t result_num;
+	uint32_t address_of_frr;
+	uint32_t data_num;
+	uint32_t target_addr;
+	uint32_t address_of_data;
+};
+struct at91sam3swj_iap_reply_t
+{
+	uint32_t *data;
+	uint32_t data_num;
+};
+
+#if 0
 static RESULT at91sam3swj_debug_info(void)
 {
 	uint32_t reg;
@@ -234,22 +251,6 @@ end:
 	
 	return ret;
 }
-
-struct at91sam3swj_iap_command_t
-{
-	uint32_t flash_plane;
-	uint32_t iap_command;
-	uint32_t result_num;
-	uint32_t address_of_frr;
-	uint32_t data_num;
-	uint32_t target_addr;
-	uint32_t address_of_data;
-};
-struct at91sam3swj_iap_reply_t
-{
-	uint32_t *data;
-	uint32_t data_num;
-};
 
 static RESULT at91sam3swj_iap_run(struct at91sam3swj_iap_command_t *cmd)
 {
@@ -352,7 +353,6 @@ static RESULT at91sam3swj_iap_wait_ready(struct at91sam3swj_iap_reply_t *reply)
 	return ERROR_OK;
 }
 
-#if 0
 static RESULT at91sam3swj_iap_call(struct at91sam3swj_iap_command_t *cmd, 
 							struct at91sam3swj_iap_reply_t *reply)
 {	

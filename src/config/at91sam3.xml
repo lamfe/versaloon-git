@@ -7,7 +7,17 @@
     <app_page_size>1024</app_page_size>
     <app_page_num>512</app_page_num>
     <app_default>0xFF</app_default>
-    <app_addr>0x00000000</app_addr>
+    <app_addr>0x00080000</app_addr>
+    <app_seg>0</app_seg>
+  </chip>
+  <chip name="at91sam3u4e">
+    <chip_id>0x28100960</chip_id>
+    <program_mode>jsi</program_mode>
+    <sram_size>2048</sram_size>
+    <app_page_size>256</app_page_size>
+    <app_page_num>512</app_page_num>
+    <app_default>0xFF</app_default>
+    <app_addr>0x00080000</app_addr>
     <app_seg>0</app_seg>
   </chip>
 </series>
