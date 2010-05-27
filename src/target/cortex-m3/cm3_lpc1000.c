@@ -198,13 +198,13 @@ static RESULT lpc1000swj_debug_info(void)
 	
 	LOG_INFO("SRAM dump at 0x%08X:\n", LPC1000_IAP_BASE);
 	if (ERROR_OK != adi_memap_read_buf(LPC1000_IAP_BASE, buffer, 
-													sizeof(buffer)))
+													sizeof(iap_code)))
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read sram");
 		ret = ERRCODE_FAILURE_OPERATION;
 		goto end;
 	}
-	LOG_BYTE_BUF(buffer, sizeof(buffer), LOG_INFO, "%02X", 16);
+	LOG_BYTE_BUF(buffer, sizeof(iap_code), LOG_INFO, "%02X", 16);
 	
 end:
 	if (buffer != NULL)
