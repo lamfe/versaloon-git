@@ -286,7 +286,7 @@ static RESULT lpc1000swj_iap_wait_ready(uint32_t result_table[4])
 		{
 			if (fail)
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "pool iap result");
+				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "poll iap result");
 				return ERROR_FAIL;
 			}
 			else

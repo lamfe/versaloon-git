@@ -167,3 +167,11 @@ RESULT at91sam3_print_memory_info(uint32_t *flash_descriptor)
 	
 	return ERROR_OK;
 }
+
+uint16_t at91sam3_get_page_num(struct program_context_t *context, uint32_t addr)
+{
+	struct chip_param_t *param = context->param;
+	struct chip_area_info_t *flash_info = &param->chip_areas[APPLICATION_IDX];
+	
+	return (uint16_t)((addr - flash_info->addr) / flash_info->page_size);
+}
