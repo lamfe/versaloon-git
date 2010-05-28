@@ -328,7 +328,7 @@ RESULT lpc1000swj_enter_program_mode(struct program_context_t *context)
 	uint32_t *para_ptr = (uint32_t*)&iap_code[LPC1000_IAP_PARAM_OFFSET];
 	uint32_t reg;
 	
-	lpc1000_cclk = context->pi->kernel_khz;
+	REFERENCE_PARAMETER(context);
 	
 	para_ptr[0] = LPC1000_IAP_ENTRY;
 	para_ptr[1] = LPC1000_IAP_COMMAND_ADDR;
