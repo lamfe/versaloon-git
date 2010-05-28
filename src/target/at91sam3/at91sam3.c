@@ -64,15 +64,16 @@ const struct program_mode_t at91sam3_program_mode[] =
 struct program_functions_t at91sam3_program_functions;
 
 uint8_t at91sam3_wait_state = 0;
+uint8_t at91sam3_plane_idx = 0;
 
 static void at91sam3_usage(void)
 {
 	printf("\
 Usage of %s:\n\
-  -C,  --comport <COMM_ATTRIBUTE>           set com port\n\
-  -m,  --mode <MODE>                        set mode<j|s|i>\n\
+  -m,  --mode <MODE>                        set mode<j|s>\n\
   -x,  --execute <ADDRESS>                  execute program\n\
-  -F,  --frequency <FREQUENCY>              set JTAG frequency, in KHz\n\n",
+  -F,  --frequency <FREQUENCY>              set JTAG frequency, in KHz\n\
+  -B,  --block-idx <0|1>                    define plane index\n\n",
 			CUR_TARGET_STRING);
 }
 
@@ -102,12 +103,6 @@ RESULT at91sam3_parse_argument(char cmd, const char *argu)
 			memcpy(&at91sam3_program_functions, &cm3_program_functions, 
 					sizeof(at91sam3_program_functions));
 			break;
-		case AT91SAM3_ISP:
-			comisp_mode_offset = AT91SAM3_ISP;
-			comisp_parse_argument('c', "comisp_at91sam3");
-			memcpy(&at91sam3_program_functions, &comisp_program_functions, 
-					sizeof(at91sam3_program_functions));
-			break;
 		}
 		break;
 	case 'E':
@@ -131,47 +126,50 @@ RESULT at91sam3_parse_argument(char cmd, const char *argu)
 	return ERROR_OK;
 }
 
-RESULT at91sam3_get_iap_entry_ptr(uint32_t id, uint32_t *addr)
+RESULT at91sam3_get_flash_page_info(struct program_context_t *context, 
+					uint32_t addr, uint32_t *controller, uint16_t *page_num)
 {
-	switch (AT91SAM3_GET_ARCH(id))
-	{
-	case AT91SAM3_ARCH_ATSAM3UxC:
-	case AT91SAM3_ARCH_ATSAM3UxE:
-		*addr = AT91SAM3U_IAP_ENTRY_PTR;
-		break;
-	default:
-		return ERROR_FAIL;
-		break;
-	}
-	
-	return ERROR_OK;
-}
-
-RESULT at91sam3_print_memory_info(uint32_t *flash_descriptor)
-{
-	uint32_t i, j;
-	
-	LOG_INFO(_GETTEXT("FL_ID(Flash Interface Description): 0x%08X\n"), flash_descriptor[0]);
-	LOG_INFO(_GETTEXT("FL_SIZE(Flash size in bytes): %dKB\n"), flash_descriptor[1] / 1024);
-	LOG_INFO(_GETTEXT("FL_PAGE_SIZE(Page size in bytes): %d\n"), flash_descriptor[2]);
-	LOG_INFO(_GETTEXT("FL_NB_PLANE(Number of planes): %d\n"), flash_descriptor[3]);
-	for (i = 0; i < flash_descriptor[3]; i++)
-	{
-		LOG_INFO(_GETTEXT("FL_PLANE[%d](Number of bytes in the plane): %dKB\n"), i, flash_descriptor[4 + i] / 1024);
-	}
-	LOG_INFO(_GETTEXT("FL_NB_LOCK(Number of lockbits): %d\n"), flash_descriptor[4 + i]);
-	for (j = 0; j < flash_descriptor[4 + i]; j++)
-	{
-		LOG_INFO(_GETTEXT("FL_LOCK[%d](Number of bytes in the lock region): %dKB\n"), j, flash_descriptor[5 + i + j] / 1024);
-	}
-	
-	return ERROR_OK;
-}
-
-uint16_t at91sam3_get_page_num(struct program_context_t *context, uint32_t addr)
-{
+	uint32_t i;
+	uint32_t base, size;
 	struct chip_param_t *param = context->param;
 	struct chip_area_info_t *flash_info = &param->chip_areas[APPLICATION_IDX];
 	
-	return (uint16_t)((addr - flash_info->addr) / flash_info->page_size);
+	base = param->param[8];
+	for (i = 0; i < param->param[AT91SAM3_PARAM_PLANE_NUMBER]; i++)
+	{
+		size = param->param[9 + i * 2];
+		if ((addr >= base) && (addr < (base + size)))
+		{
+			*controller = param->param[1 + i];
+			*page_num = (uint16_t)((addr - base) / flash_info->page_size);
+			return ERROR_OK;
+		}
+		base += size;
+	}
+	
+	return ERROR_FAIL;
+}
+
+RESULT at91sam3_adjust_setting(struct program_info_t *pi, 
+							struct chip_param_t *param, uint32_t program_mode)
+{
+	uint32_t base, size, page_size;
+	
+	REFERENCE_PARAMETER(program_mode);
+	
+	at91sam3_plane_idx = (uint8_t)pi->block_idx;
+	if (at91sam3_plane_idx >= param->param[AT91SAM3_PARAM_PLANE_NUMBER])
+	{
+		LOG_ERROR(_GETTEXT("flash plane%d is not supported by current target"), 
+					at91sam3_plane_idx);
+		return ERROR_FAIL;
+	}
+	base = param->param[8 + at91sam3_plane_idx * 2];
+	size = param->param[9 + at91sam3_plane_idx * 2];
+	page_size = param->chip_areas[APPLICATION_IDX].page_size;
+	param->chip_areas[APPLICATION_IDX].addr = base;
+	param->chip_areas[APPLICATION_IDX].size = size;
+	param->chip_areas[APPLICATION_IDX].page_num = size / page_size;
+	
+	return ERROR_OK;
 }

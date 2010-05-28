@@ -142,6 +142,7 @@ struct program_info_t
 	uint16_t frequency;
 	uint32_t kernel_khz;
 	uint8_t wait_state;
+	uint32_t block_idx;
 	struct jtag_pos_t jtag_pos;
 	
 	uint8_t *mass_product_data;
@@ -223,7 +224,8 @@ struct target_info_t
 	const struct program_mode_t *program_mode;
 	const struct program_functions_t *program_functions;
 	RESULT (*parse_argument)(char cmd, const char *argu);
-	RESULT (*adjust_setting)(struct chip_param_t *param, uint32_t program_mode);
+	RESULT (*adjust_setting)(struct program_info_t *pi, 
+							struct chip_param_t *param, uint32_t program_mode);
 	
 	RESULT (*get_mass_product_data_size)(struct operation_t operations, 
 						struct program_info_t *pi, uint32_t *size);
