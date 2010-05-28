@@ -136,7 +136,10 @@ RESULT lpc1000_adjust_setting(struct program_info_t *pi,
 	struct chip_area_info_t *flash_info = &param->chip_areas[APPLICATION_IDX];
 	struct chip_area_info_t *sram_info = &param->chip_areas[SRAM_IDX];
 	
-	REFERENCE_PARAMETER(pi);
+	if (pi->kernel_khz != 0)
+	{
+		lpc1000_cclk = pi->kernel_khz;
+	}
 	
 	switch (program_mode)
 	{
