@@ -26,7 +26,8 @@ extern const struct program_mode_t lpc1000_program_mode[];
 extern struct program_functions_t lpc1000_program_functions;
 
 RESULT lpc1000_parse_argument(char cmd, const char *argu);
-RESULT lpc1000_adjust_setting(struct chip_param_t *param, uint32_t program_mode);
+RESULT lpc1000_adjust_setting(struct program_info_t *pi, 
+							struct chip_param_t *param, uint32_t program_mode);
 
 #endif /* __LPC1000_H_INCLUDED__ */
 

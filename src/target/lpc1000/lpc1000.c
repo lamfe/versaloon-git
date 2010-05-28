@@ -130,10 +130,13 @@ RESULT lpc1000_parse_argument(char cmd, const char *argu)
 	return ERROR_OK;
 }
 
-RESULT lpc1000_adjust_setting(struct chip_param_t *param, uint32_t program_mode)
+RESULT lpc1000_adjust_setting(struct program_info_t *pi, 
+							struct chip_param_t *param, uint32_t program_mode)
 {
 	struct chip_area_info_t *flash_info = &param->chip_areas[APPLICATION_IDX];
 	struct chip_area_info_t *sram_info = &param->chip_areas[SRAM_IDX];
+	
+	REFERENCE_PARAMETER(pi);
 	
 	switch (program_mode)
 	{

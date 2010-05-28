@@ -118,7 +118,7 @@ struct target_info_t targets_info[] =
 		at91sam3_program_mode,				// program_mode
 		&at91sam3_program_functions,		// program_functions
 		at91sam3_parse_argument,			// parse_argument
-		NULL,								// adjust_setting
+		at91sam3_adjust_setting,			// adjust_setting
 		
 		NULL,								// get_mass_product_data_size
 		NULL,								// prepare_mass_product_data
@@ -1163,8 +1163,8 @@ RESULT target_init(struct program_info_t *pi, struct programmer_info_t *prog)
 	}
 Post_Init:
 	if ((cur_target->adjust_setting != NULL) 
-		&&(ERROR_OK != cur_target->adjust_setting(&target_chips.chips_param[i], 
-													program_info.mode)))
+		&&(ERROR_OK != cur_target->adjust_setting(&program_info, 
+							&target_chips.chips_param[i], program_info.mode)))
 	{
 		return ERROR_FAIL;
 	}

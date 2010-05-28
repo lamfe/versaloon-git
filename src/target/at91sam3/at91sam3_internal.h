@@ -40,6 +40,10 @@
 #define AT91SAM3_EEFC_FKEY					0x5A000000
 #define AT91SAM3_EEFC_FARG(arg)				((arg) << 8)
 
+#define AT91SAM3_EEFC_FCR_OFFSET			0x04
+#define AT91SAM3_EEFC_FSR_OFFSET			0x08
+#define AT91SAM3_EEFC_FRR_OFFSET			0x0C
+
 #define AT91SAM3_EEFC_CMD_GETD				0x0
 #define AT91SAM3_EEFC_CMD_WP				0x1
 #define AT91SAM3_EEFC_CMD_WPL				0x2
@@ -58,16 +62,21 @@
 
 #define AT91SAM3_EEFC_CMD_GETD				0x0
 
-#define AT91SAM3U_IAP_ENTRY_PTR				0x00180008
-
 #define AT91SAM3_JTAG						0
 #define AT91SAM3_SWD						1
-#define AT91SAM3_ISP						2
+
+#define AT91SAM3_PARAM_PLANE_NUMBER			0
+#define AT91SAM3_PARAM_PLANE0_CONTROL		1
+#define AT91SAM3_PARAM_PLANE1_CONTROL		2
+#define AT91SAM3_PARAM_PLANE0_BASE			8
+#define AT91SAM3_PARAM_PLANE0_SIZE			9
+#define AT91SAM3_PARAM_PLANE2_BASE			10
+#define AT91SAM3_PARAM_PLANE2_SIZE			11
 
 extern uint8_t at91sam3_wait_state;
-RESULT at91sam3_get_iap_entry_ptr(uint32_t id, uint32_t *addr);
-RESULT at91sam3_print_memory_info(uint32_t *flash_descriptor);
-uint16_t at91sam3_get_page_num(struct program_context_t *context, uint32_t addr);
+extern uint8_t at91sam3_plane_idx;
+RESULT at91sam3_get_flash_page_info(struct program_context_t *context, 
+					uint32_t addr, uint32_t *controller, uint16_t *page_num);
 
 #endif /* __AT91SAM3_INTERNAL_H_INCLUDED__ */
 
