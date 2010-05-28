@@ -448,6 +448,8 @@ static RESULT at91sam3swj_iap_call(struct at91sam3swj_iap_command_t *cmd,
 RESULT at91sam3swj_enter_program_mode(struct program_context_t *context)
 {
 	struct chip_param_t *param = context->param;
+	uint32_t i;
+	struct at91sam3swj_iap_command_t command;
 	uint32_t *para_ptr = (uint32_t*)&iap_code[AT91SAM3_IAP_PARAM_OFFSET];
 	uint32_t reg;
 	
@@ -487,6 +489,47 @@ RESULT at91sam3swj_enter_program_mode(struct program_context_t *context)
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "run iap");
 		return ERRCODE_FAILURE_OPERATION;
+	}
+	
+	for (i = 0; i < param->param[AT91SAM3_PARAM_PLANE_NUMBER]; i++)
+	{
+		memset(&command, 0, sizeof(command));
+		command.eefc_base = param->param[i + 1];
+		
+		LOG_PUSH();
+		LOG_MUTE();
+		reg = 0;
+		if (ERROR_OK != adi_memap_read_reg(
+						command.eefc_base + AT91SAM3_EEFC_FSR_OFFSET, &reg, 1))
+		{
+			LOG_POP();
+			reg = 0;
+		}
+		LOG_POP();
+		if (!(reg & 1))
+		{
+			// issue stop command
+			command.iap_command = AT91SAM3_EEFC_CMD_SPUI;
+			if (ERROR_OK != at91sam3swj_iap_call(&command, NULL))
+			{
+				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "stop eefc");
+				return ERRCODE_FAILURE_OPERATION;
+			}
+			
+			// try again
+			reg = 0;
+			if (ERROR_OK != adi_memap_read_reg(
+						command.eefc_base + AT91SAM3_EEFC_FSR_OFFSET, &reg, 1))
+			{
+				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read fsr");
+				return ERRCODE_FAILURE_OPERATION;
+			}
+			if (!(reg & 1))
+			{
+				LOG_ERROR(_GETTEXT("eefc is busy"));
+				return ERROR_FAIL;
+			}
+		}
 	}
 	
 	return ERROR_OK;
