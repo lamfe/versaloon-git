@@ -58,6 +58,7 @@ type
     cbboxCOM:  TComboBox;
     cbboxInputFile: TComboBox;
     cbboxPower: TComboBox;
+    cbboxTargetType: TComboBox;
     dedtOpenOCD: TDirectoryEdit;
     dedtVSprog: TDirectoryEdit;
     edtSVFOption: TEdit;
@@ -103,7 +104,6 @@ type
     lbledtFuse: TLabeledEdit;
     lblMode:   TLabel;
     lblInputFile: TLabel;
-    lblTarget: TLabel;
     memoAbout: TMemo;
     memoInfo:  TMemo;
     memoLog:   TMemo;
@@ -146,6 +146,7 @@ type
     procedure cbboxInputFileChange(Sender: TObject);
     procedure cbboxModeChange(Sender: TObject);
     procedure cbboxTargetChange(Sender: TObject);
+    procedure cbboxTargetTypeChange(Sender: TObject);
     procedure dedtPathChange(Sender: TObject);
     procedure FormActivate(Sender: TObject);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
@@ -228,9 +229,9 @@ var
   CurTargetChip: TTargetChip;
   CurTargetSeries: TTargetSeries;
   ComMode:      TComMode;
+  PreviousTarget: string;
   CurProgrammerInfo: string;
   ProgrammerParameter: string;
-  PreviousPage: string;
   PreviousTargetIndex: integer;
 
 const
@@ -387,7 +388,6 @@ begin
   end;
 
   // adjust size and position
-  CenterControl(lblTarget, cbboxTarget);
   CenterControl(btnTargetDetect, cbboxTarget);
   CenterControl(lblInputFile, cbboxInputFile);
   CenterControl(btnOpenFile, cbboxInputFile);
@@ -803,9 +803,8 @@ end;
 
 procedure TFormMain.FormCreate(Sender: TObject);
 var
-  i, j: integer;
+  i: integer;
   str_tmp: string;
-  T:   TTabSheet;
   ser: TBlockSerial;
 begin
   xmlcfgMain.FileName := GetUserDir + 'vsgui.xml';
@@ -883,24 +882,13 @@ begin
     VSProg_Parser.CallbackFunc    := @VSProg_Targets.TargetParser;
     VSProg_RunAlgorithm(VSProg_Caller, @VSProg_Parser.TargetParser, 0, True);
   end;
-  // Create Pages
-  j := 1;
+  // Create Items in cbboxTargetType
+  cbboxTargetType.Items.Clear;
   for i := 0 to VSProg_Targets.SeriesCount - 1 do
   begin
     if Pos('svf', VSProg_Targets.TargetSeries[i].Name) = 0 then
     begin
-      T := TTabSheet.Create(pcMain);
-      with T do
-      begin
-        T.Tag     := i;
-        T.Caption := UpperCase(VSProg_Targets.TargetSeries[i].Name);
-        T.Visible := True;
-        T.TabVisible := True;
-        T.PageControl := pcMain;
-        pcMain.PageList.Move(j + 1, j);
-        T.PageIndex := j;
-        Inc(j);
-      end;
+      cbboxTargetType.Items.Add(UpperCase(VSProg_Targets.TargetSeries[i].Name));
     end;
   end;
   Page_Init := True;
@@ -1097,25 +1085,17 @@ begin
       ComboBoxSetText(cbboxPower, xmlcfgMain.GetValue('power/voltage', '0'));
     end;
   end
-  else
+  else if pcMain.ActivePage = tsVSProg then
   begin
-    if PreviousPage <> pcMain.ActivePage.Caption then
-    begin
-      SetLength(TargetFile, 0);
-      cbboxInputFile.Clear;
-      PreviousTargetIndex := 0;
-    end;
-    PreviousPage := pcMain.ActivePage.Caption;
     HideDebugLog();
-
-    CurTargetSeries := VSProg_Targets.TargetSeries[pcMain.ActivePage.Tag];
-    if VSProg_GUITargetSeriesPageInit(pcMain.ActivePage.Tag) and
-      (cbboxTarget.ItemIndex >= 0) then
+    if cbboxTargetType.Items.Count > 0 then
     begin
-      // update settings
       if not TargetPage_Init then
       begin
         TargetPage_Init := True;
+        strTmp  := xmlcfgMain.GetValue('target/series', '');
+        ComboBoxSetText(cbBoxTargetType, UpperCase(strTmp));
+        cbboxTargetTypeChange(cbboxTargetType);
         strTmp  := xmlcfgMain.GetValue('target/chip', '');
         success := False;
         for i := 0 to cbboxTarget.Items.Count - 1 do
@@ -1225,6 +1205,12 @@ begin
           lbledtExtraPara.Text := xmlcfgMain.GetValue('target/extraparam', '');
         end;
       end;
+
+      if cbboxTargetType.ItemIndex < 0 then
+      begin
+        cbboxTargetType.ItemIndex := 0;
+      end;
+      cbboxTargetTypeChange(cbboxTargetType);
     end
     else
     begin
@@ -1833,6 +1819,38 @@ begin
   AdjustComponentColor(sedtFreq);
 end;
 
+procedure TFormMain.cbboxTargetTypeChange(Sender: TObject);
+var
+  target_idx: integer;
+begin
+  if PreviousTarget <> (Sender as TComboBox).Caption then
+  begin
+    SetLength(TargetFile, 0);
+    cbboxInputFile.Clear;
+    PreviousTargetIndex := 0;
+  end;
+  PreviousTarget := (Sender as TComboBox).Caption;
+
+  target_idx := (Sender as TComboBox).ItemIndex;
+  if target_idx < 0 then
+  begin
+    exit;
+  end;
+
+  CurTargetSeries := VSProg_Targets.TargetSeries[target_idx];
+  if VSProg_GUITargetSeriesPageInit(target_idx) and
+    (cbboxTarget.ItemIndex >= 0) then
+  begin
+    //
+  end
+  else
+  begin
+    gbInputFile.Enabled := False;
+    gbOption.Enabled := False;
+    gbOperation.Enabled := False;
+  end;
+end;
+
 procedure TFormMain.dedtPathChange(Sender: TObject);
 begin
   if (Sender as TDirectoryEdit).Directory[Length(
@@ -1875,6 +1893,7 @@ begin
   xmlcfgMain.SetValue('fw/filename', fnFW.FileName);
   xmlcfgMain.SetValue('fw/comm', cbboxCOM.Text);
   xmlcfgMain.SetValue('target/chip', cbboxTarget.Text);
+  xmlcfgMain.SetValue('target/series', cbboxTargetType.Text);
   xmlcfgMain.SetValue('target/mode', cbboxMode.Text);
   xmlcfgMain.SetValue('target/filename', cbboxInputFile.Text);
   xmlcfgMain.SetValue('target/freq', sedtFreq.Value);
