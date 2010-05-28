@@ -1,8 +1,8 @@
 object FormMain: TFormMain
-  Left = 84
+  Left = 83
   Height = 579
-  Top = 294
-  Width = 841
+  Top = 257
+  Width = 797
   HorzScrollBar.Page = 840
   HorzScrollBar.Range = 400
   VertScrollBar.Page = 526
@@ -11,7 +11,7 @@ object FormMain: TFormMain
   BorderStyle = bsSingle
   Caption = 'FormMain'
   ClientHeight = 579
-  ClientWidth = 841
+  ClientWidth = 797
   Font.CharSet = ANSI_CHARSET
   Font.Color = clBlack
   Font.Height = -11
@@ -29,21 +29,21 @@ object FormMain: TFormMain
     Left = 1
     Height = 555
     Top = 1
-    Width = 439
+    Width = 399
     Align = alLeft
     BorderSpacing.Around = 1
     Caption = 'pnlMain'
     ClientHeight = 555
-    ClientWidth = 439
+    ClientWidth = 399
     Font.Height = -17
     Font.Name = 'Sans'
     ParentFont = False
     TabOrder = 0
     object pcMain: TPageControl
       Left = 1
-      Height = 462
+      Height = 486
       Top = 1
-      Width = 437
+      Width = 397
       ActivePage = tsJTAG
       Align = alTop
       Font.CharSet = ANSI_CHARSET
@@ -54,15 +54,14 @@ object FormMain: TFormMain
       ParentFont = False
       TabIndex = 0
       TabOrder = 0
-      TabPosition = tpLeft
       OnChange = pcMainPageChanged
       OnChanging = pcMainChanging
       OnPageChanged = pcMainPageChanged
       object tsJTAG: TTabSheet
         Tag = -1
         Caption = 'JTAG'
-        ClientHeight = 454
-        ClientWidth = 409
+        ClientHeight = 457
+        ClientWidth = 389
         object gbOpenOCD: TGroupBox
           Left = 10
           Height = 197
@@ -314,141 +313,10 @@ object FormMain: TFormMain
           end
         end
       end
-      object tsAbout: TTabSheet
-        Tag = -1
-        Caption = 'About'
-        ClientHeight = 454
-        ClientWidth = 409
-        object memoAbout: TMemo
-          Left = 0
-          Height = 294
-          Top = 0
-          Width = 409
-          Align = alClient
-          Lines.Strings = (
-            'About of vsgui:'
-            'vsgui is GUI front-end of vsprog.'
-            'Find more info here: '
-            'http:\\www.SimonQian.com\en\Versaloon'
-            ''
-            'Author:'
-            'SimonQian(http:\\www.SimonQian.com)'
-            ''
-            'Contributors:'
-          )
-          ReadOnly = True
-          ScrollBars = ssAutoBoth
-          TabOrder = 0
-        end
-        object pnlAbout: TPanel
-          Left = 0
-          Height = 160
-          Top = 294
-          Width = 409
-          Align = alBottom
-          ClientHeight = 160
-          ClientWidth = 409
-          TabOrder = 1
-          object gbUpdate: TGroupBox
-            Left = 1
-            Height = 59
-            Top = 100
-            Width = 407
-            Align = alBottom
-            Caption = 'FW Update'
-            ClientHeight = 41
-            ClientWidth = 403
-            TabOrder = 0
-            object btnUpdate: TButton
-              Left = 296
-              Height = 25
-              Top = 6
-              Width = 75
-              Caption = '&Update'
-              OnClick = btnUpdateClick
-              TabOrder = 0
-            end
-            object fnFW: TFileNameEdit
-              Left = 16
-              Height = 24
-              Top = 7
-              Width = 128
-              DialogTitle = 'Select Firmware'
-              DialogOptions = []
-              Filter = 'HEX File|*.hex'
-              FilterIndex = 0
-              HideDirectories = False
-              ButtonWidth = 23
-              NumGlyphs = 0
-              TabOrder = 1
-            end
-            object cbboxCOM: TComboBox
-              Left = 184
-              Height = 24
-              Top = 7
-              Width = 100
-              ItemHeight = 16
-              Style = csDropDownList
-              TabOrder = 2
-            end
-          end
-          object gbSetting: TGroupBox
-            Left = 1
-            Height = 99
-            Top = 1
-            Width = 407
-            Align = alClient
-            Caption = 'Settings'
-            ClientHeight = 81
-            ClientWidth = 403
-            TabOrder = 1
-            object lblVSProgDir: TLabel
-              Left = 19
-              Height = 17
-              Top = 14
-              Width = 50
-              Caption = 'VSProg:'
-              ParentColor = False
-            end
-            object lblOpenOCDDir: TLabel
-              Left = 19
-              Height = 17
-              Top = 48
-              Width = 64
-              Caption = 'OpenOCD:'
-              ParentColor = False
-            end
-            object dedtOpenOCD: TDirectoryEdit
-              Left = 91
-              Height = 24
-              Top = 48
-              Width = 259
-              ShowHidden = False
-              ButtonWidth = 23
-              NumGlyphs = 0
-              Flat = True
-              TabOrder = 0
-              OnChange = dedtPathChange
-            end
-            object dedtVSprog: TDirectoryEdit
-              Left = 91
-              Height = 24
-              Top = 8
-              Width = 259
-              ShowHidden = False
-              ButtonWidth = 23
-              NumGlyphs = 0
-              Flat = True
-              TabOrder = 1
-              OnChange = dedtPathChange
-            end
-          end
-        end
-      end
       object tsVsprog: TTabSheet
-        ClientHeight = 454
-        ClientWidth = 409
-        TabVisible = False
+        Caption = 'VSProg'
+        ClientHeight = 457
+        ClientWidth = 389
         object gbChipName: TGroupBox
           Left = 11
           Height = 55
@@ -458,20 +326,12 @@ object FormMain: TFormMain
           ClientHeight = 37
           ClientWidth = 365
           TabOrder = 0
-          object lblTarget: TLabel
-            Left = 22
-            Height = 17
-            Top = 8
-            Width = 69
-            Caption = 'Target chip:'
-            ParentColor = False
-          end
           object cbboxTarget: TComboBox
-            Left = 108
+            Left = 141
             Height = 24
             Hint = 'Select Target'
             Top = 5
-            Width = 128
+            Width = 107
             CharCase = ecLowerCase
             DropDownCount = 32
             ItemHeight = 16
@@ -483,16 +343,26 @@ object FormMain: TFormMain
             TabOrder = 0
           end
           object btnTargetDetect: TButton
-            Left = 252
+            Left = 261
             Height = 25
             Hint = 'Detect Target Module'
             Top = 4
-            Width = 96
+            Width = 87
             Caption = '&AutoDetect'
             OnClick = btnTargetDetectClick
             ParentShowHint = False
             ShowHint = True
             TabOrder = 1
+          end
+          object cbboxTargetType: TComboBox
+            Left = 21
+            Height = 24
+            Top = 5
+            Width = 104
+            ItemHeight = 16
+            OnChange = cbboxTargetTypeChange
+            Style = csDropDownList
+            TabOrder = 2
           end
         end
         object gbOption: TGroupBox
@@ -1006,12 +876,143 @@ object FormMain: TFormMain
           end
         end
       end
+      object tsAbout: TTabSheet
+        Tag = -1
+        Caption = 'About'
+        ClientHeight = 433
+        ClientWidth = 429
+        object memoAbout: TMemo
+          Left = 0
+          Height = 273
+          Top = 0
+          Width = 429
+          Align = alClient
+          Lines.Strings = (
+            'About of vsgui:'
+            'vsgui is GUI front-end of vsprog.'
+            'Find more info here: '
+            'http:\\www.SimonQian.com\en\Versaloon'
+            ''
+            'Author:'
+            'SimonQian(http:\\www.SimonQian.com)'
+            ''
+            'Contributors:'
+          )
+          ReadOnly = True
+          ScrollBars = ssAutoBoth
+          TabOrder = 0
+        end
+        object pnlAbout: TPanel
+          Left = 0
+          Height = 160
+          Top = 273
+          Width = 429
+          Align = alBottom
+          ClientHeight = 160
+          ClientWidth = 429
+          TabOrder = 1
+          object gbUpdate: TGroupBox
+            Left = 1
+            Height = 59
+            Top = 100
+            Width = 427
+            Align = alBottom
+            Caption = 'FW Update'
+            ClientHeight = 41
+            ClientWidth = 423
+            TabOrder = 0
+            object btnUpdate: TButton
+              Left = 296
+              Height = 25
+              Top = 6
+              Width = 75
+              Caption = '&Update'
+              OnClick = btnUpdateClick
+              TabOrder = 0
+            end
+            object fnFW: TFileNameEdit
+              Left = 16
+              Height = 24
+              Top = 7
+              Width = 128
+              DialogTitle = 'Select Firmware'
+              DialogOptions = []
+              Filter = 'HEX File|*.hex'
+              FilterIndex = 0
+              HideDirectories = False
+              ButtonWidth = 23
+              NumGlyphs = 0
+              TabOrder = 1
+            end
+            object cbboxCOM: TComboBox
+              Left = 184
+              Height = 24
+              Top = 7
+              Width = 100
+              ItemHeight = 16
+              Style = csDropDownList
+              TabOrder = 2
+            end
+          end
+          object gbSetting: TGroupBox
+            Left = 1
+            Height = 99
+            Top = 1
+            Width = 427
+            Align = alClient
+            Caption = 'Settings'
+            ClientHeight = 81
+            ClientWidth = 423
+            TabOrder = 1
+            object lblVSProgDir: TLabel
+              Left = 19
+              Height = 17
+              Top = 14
+              Width = 50
+              Caption = 'VSProg:'
+              ParentColor = False
+            end
+            object lblOpenOCDDir: TLabel
+              Left = 19
+              Height = 17
+              Top = 48
+              Width = 64
+              Caption = 'OpenOCD:'
+              ParentColor = False
+            end
+            object dedtOpenOCD: TDirectoryEdit
+              Left = 91
+              Height = 24
+              Top = 48
+              Width = 259
+              ShowHidden = False
+              ButtonWidth = 23
+              NumGlyphs = 0
+              Flat = True
+              TabOrder = 0
+              OnChange = dedtPathChange
+            end
+            object dedtVSprog: TDirectoryEdit
+              Left = 91
+              Height = 24
+              Top = 8
+              Width = 259
+              ShowHidden = False
+              ButtonWidth = 23
+              NumGlyphs = 0
+              Flat = True
+              TabOrder = 1
+              OnChange = dedtPathChange
+            end
+          end
+        end
+      end
     end
     object memoInfo: TMemo
       Left = 1
-      Height = 91
-      Top = 463
-      Width = 437
+      Height = 67
+      Top = 487
+      Width = 397
       Align = alClient
       Font.CharSet = ANSI_CHARSET
       Font.Color = clBlack
@@ -1028,7 +1029,7 @@ object FormMain: TFormMain
     Left = 0
     Height = 22
     Top = 557
-    Width = 841
+    Width = 797
     Panels = <    
       item
         Text = 'State'
@@ -1051,10 +1052,10 @@ object FormMain: TFormMain
     TabOrder = 2
   end
   object memoLog: TMemo
-    Left = 441
+    Left = 401
     Height = 557
     Top = 0
-    Width = 400
+    Width = 396
     Align = alClient
     Font.CharSet = ANSI_CHARSET
     Font.Color = clBlack
