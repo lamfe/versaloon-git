@@ -460,6 +460,35 @@ RESULT usbtopoll_checkbyte(uint8_t offset, uint8_t mask, uint8_t value)
 	return ERROR_OK;
 }
 
+RESULT usbtopoll_checkfail(uint8_t offset, uint8_t mask, uint8_t value)
+{
+	if (!poll_nesting)
+	{
+		LOG_BUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), "check poll nesting");
+		return ERRCODE_FAILURE_OPERATION;
+	}
+	if (ERROR_OK != usbtoxxx_ensure_buffer_size(3 + 4))
+	{
+		return ERROR_FAIL;
+	}
+	
+	if (ERROR_OK != usbtoxxx_validate_current_command_type())
+	{
+		LOG_BUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+				"validate previous commands");
+		return ERRCODE_FAILURE_OPERATION;
+	}
+	
+	type_pre = USB_TO_POLL;
+	
+	usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = USB_TO_POLL_CHECKFAIL;
+	usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = offset;
+	usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = mask;
+	usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = value;
+	
+	return ERROR_OK;
+}
+
 
 
 
