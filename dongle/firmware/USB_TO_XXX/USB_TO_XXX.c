@@ -32,12 +32,9 @@ USB_TO_POLL_Context_t USB_TO_POLL_Context[USB_TO_POLL_NUM];
 static const uint8 *USB_TO_POLL_buffer_reply[USB_TO_POLL_NUM] = 
 {
 #if USB_TO_POLL_NUM >= 1
-	asyn_rx_buf + 1024 * 1
+	asyn_rx_buf + 1024 * 2
 #endif
 #if USB_TO_POLL_NUM >= 2
-	,asyn_rx_buf + 1024 * 2
-#endif
-#if USB_TO_POLL_NUM >= 3
 	,asyn_rx_buf + 1024 * 3
 #endif
 };
