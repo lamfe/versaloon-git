@@ -620,6 +620,9 @@ RESULT at91sam3swj_write_target(struct program_context_t *context, char area,
 	struct at91sam3swj_iap_command_t command;
 	uint16_t page_num;
 	uint32_t eefc_base;
+	uint32_t eefc_command;
+	struct operation_t *op = context->op;
+	struct program_info_t *pi = context->pi;
 //	struct chip_param_t *param = context->param;
 //	uint16_t page_size = (uint16_t)param->chip_areas[APPLICATION_IDX].page_size;
 //	uint8_t pingpong = 0;
@@ -627,6 +630,14 @@ RESULT at91sam3swj_write_target(struct program_context_t *context, char area,
 	switch (area)
 	{
 	case APPLICATION_CHAR:
+		if ((op->write_operations & LOCK) && pi->program_areas[LOCK_IDX].value)
+		{
+			eefc_command = AT91SAM3_EEFC_CMD_EWPL;
+		}
+		else
+		{
+			eefc_command = AT91SAM3_EEFC_CMD_EWP;
+		}
 #if 1
 		if (size != 256)
 		{
@@ -648,8 +659,7 @@ RESULT at91sam3swj_write_target(struct program_context_t *context, char area,
 		}
 		
 		command.eefc_base = eefc_base;
-		command.iap_command = AT91SAM3_EEFC_CMD_EWP 
-							| AT91SAM3_EEFC_FARG(page_num);
+		command.iap_command = eefc_command | AT91SAM3_EEFC_FARG(page_num);
 		command.result_num = 0;
 		command.data_num = 0;
 		command.target_addr = addr;
@@ -684,8 +694,7 @@ RESULT at91sam3swj_write_target(struct program_context_t *context, char area,
 		
 		memset(&command, 0, sizeof(command));
 		command.eefc_base = eefc_base;
-		command.iap_command = AT91SAM3_EEFC_CMD_EWP 
-							| AT91SAM3_EEFC_FARG(page_num);
+		command.iap_command = eefc_command | AT91SAM3_EEFC_FARG(page_num);
 		command.result_num = 0;
 		command.data_num = page_size;
 		command.target_addr = addr;
@@ -741,8 +750,7 @@ RESULT at91sam3swj_write_target(struct program_context_t *context, char area,
 			
 			memset(&command, 0, sizeof(command));
 			command.eefc_base = eefc_base;
-			command.iap_command = AT91SAM3_EEFC_CMD_EWP 
-								| AT91SAM3_EEFC_FARG(page_num);
+			command.iap_command = eefc_command | AT91SAM3_EEFC_FARG(page_num);
 			command.result_num = 0;
 			command.data_num = page_size;
 			command.target_addr = addr;
@@ -771,6 +779,8 @@ RESULT at91sam3swj_write_target(struct program_context_t *context, char area,
 		}
 		pgbar_update(page_size);
 #endif
+		break;
+	case LOCK_CHAR:
 		break;
 	default:
 		return ERROR_FAIL;
@@ -823,6 +833,10 @@ RESULT at91sam3swj_read_target(struct program_context_t *context, char area,
 			buff += cur_block_size;
 			pgbar_update(cur_block_size);
 		}
+		break;
+	case LOCK_CHAR:
+		LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT), "lock-reading");
+		ret = ERROR_FAIL;
 		break;
 	default:
 		ret = ERROR_OK;
