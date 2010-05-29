@@ -203,5 +203,5 @@ extern int8 USB_TO_POLL_Index;
 #define USB_TO_MSP430_JTAG_NUM		1
 #define USB_TO_SBW_NUM				1
 #define USB_TO_POWER_NUM			1
-#define USB_TO_POLL_NUM				3
+#define USB_TO_POLL_NUM				2
 #define USB_TO_SWIM_NUM				1
