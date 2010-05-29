@@ -203,6 +203,7 @@ struct programmer_info_t
 	RESULT (*poll_start)(uint16_t retry, uint16_t interval_us);
 	RESULT (*poll_end)(void);
 	RESULT (*poll_checkbyte)(uint8_t offset, uint8_t mask, uint8_t value);
+	RESULT (*poll_checkfail)(uint8_t offset, uint8_t mask, uint8_t value);
 	
 	// firmware update support
 	RESULT (*enter_firmware_update_mode)(void);
@@ -216,7 +217,7 @@ struct programmer_info_t
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0\
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0\
 	}
 
 extern struct programmer_info_t *cur_programmer;

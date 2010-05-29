@@ -258,6 +258,17 @@ void USB_TO_XXX_ProcessCmd(uint8* dat, uint16 len)
 					}
 				}
 				break;
+			case USB_TO_POLL_CHECKFAIL:
+				if (USB_TO_POLL_Index < USB_TO_POLL_NUM)
+				{
+					if ((buffer_reply[rep_len - 1 - dat[USB_TO_XXX_CmdIdx + 4]] 
+						 	& dat[USB_TO_XXX_CmdIdx + 5]) == dat[USB_TO_XXX_CmdIdx + 6])
+					{
+						USB_TO_POLL_Context[USB_TO_POLL_Index].poll_result = 0;
+						USB_TO_POLL_Context[USB_TO_POLL_Index].poll_retry = 0;
+					}
+				}
+				break;
 			default:
 				break;
 			}

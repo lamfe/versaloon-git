@@ -69,6 +69,7 @@
 #define USB_TO_POLL_START			0x00
 #define USB_TO_POLL_END				0x01
 #define USB_TO_POLL_CHECKBYTE		0x02
+#define USB_TO_POLL_CHECKFAIL		0x03
 
 
 

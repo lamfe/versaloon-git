@@ -826,6 +826,10 @@ RESULT versaloon_poll_checkbyte(uint8_t offset, uint8_t mask, uint8_t value)
 {
 	return usbtopoll_checkbyte(offset, mask, value);
 }
+RESULT versaloon_poll_checkfail(uint8_t offset, uint8_t mask, uint8_t value)
+{
+	return usbtopoll_checkfail(offset, mask, value);
+}
 // ISSP
 RESULT versaloon_issp_init(void)
 {
@@ -1275,6 +1279,7 @@ RESULT versaloon_init_capability(void *p)
 	t->poll_start = versaloon_poll_start;
 	t->poll_end = versaloon_poll_end;
 	t->poll_checkbyte = versaloon_poll_checkbyte;
+	t->poll_checkfail = versaloon_poll_checkfail;
 	
 	// Mass-product
 	t->download_mass_product_data = versaloon_download_mass_product_data;
