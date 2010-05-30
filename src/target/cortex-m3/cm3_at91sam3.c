@@ -577,29 +577,38 @@ RESULT at91sam3swj_erase_target(struct program_context_t *context, char area,
 	struct operation_t *op = context->op;
 	RESULT ret = ERROR_OK;
 	struct at91sam3swj_iap_command_t command;
-	uint32_t i;
+	uint32_t eefc_base;
+	uint32_t area_mask;
 	
 	REFERENCE_PARAMETER(size);
 	REFERENCE_PARAMETER(addr);
 	
+	area_mask = target_area_mask(area);
+	if (!area_mask)
+	{
+		return ERROR_FAIL;
+	}
+	
 	switch (area)
 	{
+	case EEPROM_CHAR:
+		eefc_base = param->param[AT91SAM3_PARAM_PLANE1_CONTROL];
+		goto do_erase;
 	case APPLICATION_CHAR:
-		if (0 == (op->write_operations & APPLICATION))
+		eefc_base = param->param[AT91SAM3_PARAM_PLANE0_CONTROL];
+do_erase:
+		if (0 == (op->write_operations & area_mask))
 		{
-			for (i = 0; i < param->param[AT91SAM3_PARAM_PLANE_NUMBER]; i++)
+			command.eefc_base = eefc_base;
+			command.iap_command = AT91SAM3_EEFC_CMD_EA;
+			command.result_num = 0;
+			command.data_num = 0;
+			command.target_addr = 0;
+			command.address_of_data = AT91SAM3_IAP_DATA_ADDR;
+			if (ERROR_OK != at91sam3swj_iap_call(&command, NULL))
 			{
-				command.eefc_base = param->param[i + 1];
-				command.iap_command = AT91SAM3_EEFC_CMD_EA;
-				command.result_num = 0;
-				command.data_num = 0;
-				command.target_addr = 0;
-				command.address_of_data = AT91SAM3_IAP_DATA_ADDR;
-				if (ERROR_OK != at91sam3swj_iap_call(&command, NULL))
-				{
-					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "erase chip");
-					return ERRCODE_FAILURE_OPERATION;
-				}
+				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "erase target");
+				return ERRCODE_FAILURE_OPERATION;
 			}
 		}
 		else
@@ -618,18 +627,28 @@ RESULT at91sam3swj_write_target(struct program_context_t *context, char area,
 								uint32_t addr, uint8_t *buff, uint32_t size)
 {
 	struct at91sam3swj_iap_command_t command;
-	uint16_t page_num;
 	uint32_t eefc_base;
 	uint32_t eefc_command;
 	struct operation_t *op = context->op;
 	struct program_info_t *pi = context->pi;
-//	struct chip_param_t *param = context->param;
-//	uint16_t page_size = (uint16_t)param->chip_areas[APPLICATION_IDX].page_size;
+	struct chip_param_t *param = context->param;
+	uint16_t page_size;
+	uint32_t target_addr;
+	uint16_t page_num;
 //	uint8_t pingpong = 0;
 	
 	switch (area)
 	{
+	case EEPROM_CHAR:
+		page_size = (uint16_t)param->chip_areas[EEPROM_IDX].page_size;
+		target_addr = param->chip_areas[EEPROM_IDX].addr;
+		eefc_base = param->param[AT91SAM3_PARAM_PLANE1_CONTROL];
+		goto do_write;
 	case APPLICATION_CHAR:
+		page_size = (uint16_t)param->chip_areas[APPLICATION_IDX].page_size;
+		target_addr = param->chip_areas[APPLICATION_IDX].addr;
+		eefc_base = param->param[AT91SAM3_PARAM_PLANE0_CONTROL];
+do_write:
 		if ((op->write_operations & LOCK) && pi->program_areas[LOCK_IDX].value)
 		{
 			eefc_command = AT91SAM3_EEFC_CMD_EWPL;
@@ -644,9 +663,7 @@ RESULT at91sam3swj_write_target(struct program_context_t *context, char area,
 			LOG_ERROR(_GETTEXT("invalid flash page size: %d.\n"), size);
 			return ERROR_FAIL;
 		}
-		if ((addr & 0xFF) 
-			|| (ERROR_OK != at91sam3_get_flash_page_info(context, addr, 
-													&eefc_base, &page_num)))
+		if (addr & 0xFF)
 		{
 			LOG_ERROR(_GETTEXT("invalid flash address: 0x%08X.\n"), addr);
 			return ERROR_FAIL;
@@ -658,6 +675,7 @@ RESULT at91sam3swj_write_target(struct program_context_t *context, char area,
 			return ERRCODE_FAILURE_OPERATION;
 		}
 		
+		page_num = (uint16_t)((addr - target_addr) / page_size);
 		command.eefc_base = eefc_base;
 		command.iap_command = eefc_command | AT91SAM3_EEFC_FARG(page_num);
 		command.result_num = 0;
@@ -685,13 +703,7 @@ RESULT at91sam3swj_write_target(struct program_context_t *context, char area,
 			return ERRCODE_FAILURE_OPERATION;
 		}
 		
-		if (ERROR_OK != at91sam3_get_flash_page_info(context, addr, 
-														&eefc_base, &page_num))
-		{
-			LOG_ERROR(_GETTEXT("invalid flash address: 0x%08X.\n"), addr);
-			return ERROR_FAIL;
-		}
-		
+		page_num = (uint16_t)((addr - target_addr) / page_size);
 		memset(&command, 0, sizeof(command));
 		command.eefc_base = eefc_base;
 		command.iap_command = eefc_command | AT91SAM3_EEFC_FARG(page_num);
@@ -741,13 +753,7 @@ RESULT at91sam3swj_write_target(struct program_context_t *context, char area,
 				return ERRCODE_FAILURE_OPERATION;
 			}
 			
-			if (ERROR_OK != at91sam3_get_flash_page_info(context, addr, 
-														&eefc_base, &page_num))
-			{
-				LOG_ERROR(_GETTEXT("invalid flash address: 0x%08X.\n"), addr);
-				return ERROR_FAIL;
-			}
-			
+			page_num = (uint16_t)((addr - target_addr) / page_size);
 			memset(&command, 0, sizeof(command));
 			command.eefc_base = eefc_base;
 			command.iap_command = eefc_command | AT91SAM3_EEFC_FARG(page_num);
@@ -806,6 +812,7 @@ RESULT at91sam3swj_read_target(struct program_context_t *context, char area,
 			return ERRCODE_FAILURE_OPERATION;
 		}
 		break;
+	case EEPROM_CHAR:
 	case APPLICATION_CHAR:
 		while (size)
 		{

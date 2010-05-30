@@ -142,7 +142,6 @@ struct program_info_t
 	uint16_t frequency;
 	uint32_t kernel_khz;
 	uint8_t wait_state;
-	uint32_t block_idx;
 	struct jtag_pos_t jtag_pos;
 	
 	uint8_t *mass_product_data;

@@ -26,8 +26,6 @@ extern const struct program_mode_t at91sam3_program_mode[];
 extern struct program_functions_t at91sam3_program_functions;
 
 RESULT at91sam3_parse_argument(char cmd, const char *argu);
-RESULT at91sam3_adjust_setting(struct program_info_t *pi, 
-							struct chip_param_t *param, uint32_t program_mode);
 
 #endif /* __AT91SAM3_H_INCLUDED__ */
 
