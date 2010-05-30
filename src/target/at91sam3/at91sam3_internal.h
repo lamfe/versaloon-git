@@ -68,15 +68,8 @@
 #define AT91SAM3_PARAM_PLANE_NUMBER			0
 #define AT91SAM3_PARAM_PLANE0_CONTROL		1
 #define AT91SAM3_PARAM_PLANE1_CONTROL		2
-#define AT91SAM3_PARAM_PLANE0_BASE			8
-#define AT91SAM3_PARAM_PLANE0_SIZE			9
-#define AT91SAM3_PARAM_PLANE2_BASE			10
-#define AT91SAM3_PARAM_PLANE2_SIZE			11
 
 extern uint8_t at91sam3_wait_state;
-extern uint8_t at91sam3_plane_idx;
-RESULT at91sam3_get_flash_page_info(struct program_context_t *context, 
-					uint32_t addr, uint32_t *controller, uint16_t *page_num);
 
 #endif /* __AT91SAM3_INTERNAL_H_INCLUDED__ */
 

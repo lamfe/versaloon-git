@@ -49,7 +49,10 @@
 
 struct program_area_map_t at91sam3_program_area_map[] = 
 {
+	// flash plane0
 	{APPLICATION_CHAR, 1, 0, 0, 0, AREA_ATTR_EWR/* | AREA_ATTR_RAE*/},
+	// eeprom is used to emulate flash plane1
+	{EEPROM_CHAR, 1, 0, 0, 0, AREA_ATTR_EWR/* | AREA_ATTR_RAE*/},
 	{LOCK_CHAR, 0, 0, 0, 0, 0},
 	{0, 0, 0, 0, 0, 0}
 };
@@ -65,7 +68,6 @@ const struct program_mode_t at91sam3_program_mode[] =
 struct program_functions_t at91sam3_program_functions;
 
 uint8_t at91sam3_wait_state = 0;
-uint8_t at91sam3_plane_idx = 0;
 
 static void at91sam3_usage(void)
 {
@@ -123,54 +125,6 @@ RESULT at91sam3_parse_argument(char cmd, const char *argu)
 		return ERROR_FAIL;
 		break;
 	}
-	
-	return ERROR_OK;
-}
-
-RESULT at91sam3_get_flash_page_info(struct program_context_t *context, 
-					uint32_t addr, uint32_t *controller, uint16_t *page_num)
-{
-	uint32_t i;
-	uint32_t base, size;
-	struct chip_param_t *param = context->param;
-	struct chip_area_info_t *flash_info = &param->chip_areas[APPLICATION_IDX];
-	
-	base = param->param[8];
-	for (i = 0; i < param->param[AT91SAM3_PARAM_PLANE_NUMBER]; i++)
-	{
-		size = param->param[9 + i * 2];
-		if ((addr >= base) && (addr < (base + size)))
-		{
-			*controller = param->param[1 + i];
-			*page_num = (uint16_t)((addr - base) / flash_info->page_size);
-			return ERROR_OK;
-		}
-		base += size;
-	}
-	
-	return ERROR_FAIL;
-}
-
-RESULT at91sam3_adjust_setting(struct program_info_t *pi, 
-							struct chip_param_t *param, uint32_t program_mode)
-{
-	uint32_t base, size, page_size;
-	
-	REFERENCE_PARAMETER(program_mode);
-	
-	at91sam3_plane_idx = (uint8_t)pi->block_idx;
-	if (at91sam3_plane_idx >= param->param[AT91SAM3_PARAM_PLANE_NUMBER])
-	{
-		LOG_ERROR(_GETTEXT("flash plane%d is not supported by current target"), 
-					at91sam3_plane_idx);
-		return ERROR_FAIL;
-	}
-	base = param->param[8 + at91sam3_plane_idx * 2];
-	size = param->param[9 + at91sam3_plane_idx * 2];
-	page_size = param->chip_areas[APPLICATION_IDX].page_size;
-	param->chip_areas[APPLICATION_IDX].addr = base;
-	param->chip_areas[APPLICATION_IDX].size = size;
-	param->chip_areas[APPLICATION_IDX].page_num = size / page_size;
 	
 	return ERROR_OK;
 }

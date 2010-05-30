@@ -118,7 +118,7 @@ struct target_info_t targets_info[] =
 		at91sam3_program_mode,				// program_mode
 		&at91sam3_program_functions,		// program_functions
 		at91sam3_parse_argument,			// parse_argument
-		at91sam3_adjust_setting,			// adjust_setting
+		NULL,								// adjust_setting
 		
 		NULL,								// get_mass_product_data_size
 		NULL,								// prepare_mass_product_data
