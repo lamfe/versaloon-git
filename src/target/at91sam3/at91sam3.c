@@ -61,7 +61,6 @@ const struct program_mode_t at91sam3_program_mode[] =
 {
 	{'j', SET_FREQUENCY, JTAG_HL},
 	{'s', "", SWJ},
-	{'i', USE_COMM, 0},
 	{0, NULL, 0}
 };
 
