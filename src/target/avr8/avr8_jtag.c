@@ -177,8 +177,8 @@ struct program_functions_t avr8jtag_program_functions =
 #define poll_end()					p->poll_end()
 #define poll_check(o, m, v)			p->poll_checkbyte((o), (m), (v))
 
-#define jtag_delay_us(us)			p->jtag_hl_delay_us((us))
-#define jtag_delay_ms(ms)			p->jtag_hl_delay_ms((ms))
+#define delay_ms(ms)				p->delayms((ms) | 0x8000)
+#define delay_us(us)				p->delayus((us) & 0x7FFF)
 #define jtag_commit()				p->peripheral_commit()
 
 static struct programmer_info_t *p = NULL;

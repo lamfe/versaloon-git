@@ -427,7 +427,7 @@ RESULT lpc1000swj_erase_target(struct program_context_t *context, char area,
 		memset(iap_reply, 0, sizeof(iap_reply));
 		iap_cmd_param[0] = 0;				// Start Sector Number
 		iap_cmd_param[1] = sector;			// End Sector Number
-		iap_cmd_param[2] = lpc1000_cclk;	// CPU Clock Frequency(in kHz)
+		iap_cmd_param[2] = pi->kernel_khz;	// CPU Clock Frequency(in kHz)
 		if (ERROR_OK != lpc1000swj_iap_call(LPC1000_IAPCMD_PREPARE_SECTOR, 
 												iap_cmd_param, iap_reply))
 		{
@@ -440,7 +440,7 @@ RESULT lpc1000swj_erase_target(struct program_context_t *context, char area,
 		memset(iap_reply, 0, sizeof(iap_reply));
 		iap_cmd_param[0] = 0;				// Start Sector Number
 		iap_cmd_param[1] = sector;			// End Sector Number
-		iap_cmd_param[2] = lpc1000_cclk;	// CPU Clock Frequency(in kHz)
+		iap_cmd_param[2] = pi->kernel_khz;	// CPU Clock Frequency(in kHz)
 		if (ERROR_OK != lpc1000swj_iap_call(LPC1000_IAPCMD_ERASE_SECTOR, 
 												iap_cmd_param, iap_reply))
 		{
@@ -459,6 +459,7 @@ RESULT lpc1000swj_erase_target(struct program_context_t *context, char area,
 RESULT lpc1000swj_write_target(struct program_context_t *context, char area, 
 								uint32_t addr, uint8_t *buff, uint32_t size)
 {
+	struct program_info_t *pi = context->pi;
 	struct chip_param_t *param = context->param;
 	uint32_t iap_cmd_param[5], iap_reply[4];
 	uint32_t start_sector;
@@ -485,7 +486,7 @@ RESULT lpc1000swj_write_target(struct program_context_t *context, char area,
 			start_sector = lpc1000_get_sector_idx_by_addr(context, addr);
 			iap_cmd_param[0] = start_sector;	// Start Sector Number
 			iap_cmd_param[1] = start_sector;	// End Sector Number
-			iap_cmd_param[2] = lpc1000_cclk;	// CPU Clock Frequency(in kHz)
+			iap_cmd_param[2] = pi->kernel_khz;	// CPU Clock Frequency(in kHz)
 			if (ERROR_OK != lpc1000swj_iap_call(LPC1000_IAPCMD_PREPARE_SECTOR, 
 													iap_cmd_param, iap_reply))
 			{
@@ -505,7 +506,7 @@ RESULT lpc1000swj_write_target(struct program_context_t *context, char area,
 			iap_cmd_param[0] = addr;			// Destination flash address
 			iap_cmd_param[1] = LPC1000_SRAM_ADDR + 1024;	// Source RAM address
 			iap_cmd_param[2] = size;			// Number of bytes to be written
-			iap_cmd_param[3] = lpc1000_cclk;	// CPU Clock Frequency(in kHz)
+			iap_cmd_param[3] = pi->kernel_khz;	// CPU Clock Frequency(in kHz)
 			if (ERROR_OK != lpc1000swj_iap_call(LPC1000_IAPCMD_RAM_TO_FLASH, 
 													iap_cmd_param, iap_reply))
 			{
@@ -527,7 +528,7 @@ RESULT lpc1000swj_write_target(struct program_context_t *context, char area,
 		start_sector = lpc1000_get_sector_idx_by_addr(context, addr);
 		iap_cmd_param[0] = start_sector;	// Start Sector Number
 		iap_cmd_param[1] = start_sector;	// End Sector Number
-		iap_cmd_param[2] = lpc1000_cclk;	// CPU Clock Frequency(in kHz)
+		iap_cmd_param[2] = pi->kernel_khz;	// CPU Clock Frequency(in kHz)
 		if (ERROR_OK != lpc1000swj_iap_call(LPC1000_IAPCMD_PREPARE_SECTOR, 
 												iap_cmd_param, iap_reply))
 		{
@@ -546,7 +547,7 @@ RESULT lpc1000swj_write_target(struct program_context_t *context, char area,
 		iap_cmd_param[0] = addr;			// Destination flash address
 		iap_cmd_param[1] = LPC1000_SRAM_ADDR + 1024;	// Source RAM address
 		iap_cmd_param[2] = page_size;		// Number of bytes to be written
-		iap_cmd_param[3] = lpc1000_cclk;	// CPU Clock Frequency(in kHz)
+		iap_cmd_param[3] = pi->kernel_khz;	// CPU Clock Frequency(in kHz)
 		if (ERROR_OK != lpc1000swj_iap_run(LPC1000_IAPCMD_RAM_TO_FLASH, 
 											iap_cmd_param))
 		{
@@ -596,7 +597,7 @@ RESULT lpc1000swj_write_target(struct program_context_t *context, char area,
 			start_sector = lpc1000_get_sector_idx_by_addr(context, addr);
 			iap_cmd_param[0] = start_sector;	// Start Sector Number
 			iap_cmd_param[1] = start_sector;	// End Sector Number
-			iap_cmd_param[2] = lpc1000_cclk;	// CPU Clock Frequency(in kHz)
+			iap_cmd_param[2] = pi->kernel_khz;	// CPU Clock Frequency(in kHz)
 			if (ERROR_OK != lpc1000swj_iap_call(LPC1000_IAPCMD_PREPARE_SECTOR, 
 													iap_cmd_param, iap_reply))
 			{
@@ -615,7 +616,7 @@ RESULT lpc1000swj_write_target(struct program_context_t *context, char area,
 				iap_cmd_param[1] = LPC1000_SRAM_ADDR + 1024;	// Source RAM address
 			}
 			iap_cmd_param[2] = page_size;		// Number of bytes to be written
-			iap_cmd_param[3] = lpc1000_cclk;	// CPU Clock Frequency(in kHz)
+			iap_cmd_param[3] = pi->kernel_khz;	// CPU Clock Frequency(in kHz)
 			if (ERROR_OK != lpc1000swj_iap_run(LPC1000_IAPCMD_RAM_TO_FLASH, 
 													iap_cmd_param))
 			{
