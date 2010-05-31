@@ -89,6 +89,7 @@ enum area_attr_t
 	AREA_ATTR_NP	= AREA_ATTR_WNP | AREA_ATTR_RNP
 };
 
+#define ALL_CHAR					'*'
 #define CHIPID_CHAR					'i'
 #define CHIPID_CHKSUM_CHAR			'I'
 #define BOOTLOADER_CHAR				'b'
