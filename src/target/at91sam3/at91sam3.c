@@ -41,7 +41,6 @@
 
 #include "at91sam3.h"
 #include "at91sam3_internal.h"
-#include "comisp.h"
 #include "cm3.h"
 #include "adi_v5p1.h"
 
@@ -107,18 +106,11 @@ RESULT at91sam3_parse_argument(char cmd, const char *argu)
 			break;
 		}
 		break;
-	case 'E':
-		comisp_print_comm_info(COMISP_LPCARM);
-		break;
 	case 'b':
 		cm3_parse_argument(cmd, argu);
 		break;
-	case 'C':
-		comisp_parse_argument(cmd, argu);
-		break;
 	case 'x':
 		cm3_parse_argument(cmd, argu);
-		comisp_parse_argument(cmd, argu);
 		break;
 	default:
 		return ERROR_FAIL;

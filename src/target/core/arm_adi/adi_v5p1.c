@@ -117,7 +117,7 @@ const uint8_t adi_swj_to_jtag_seq[] =
 
 RESULT adi_dpif_receive_callback(enum jtag_irdr_t cmd, uint32_t ir, 
 									uint8_t *dest_buffer, uint8_t *src_buffer, 
-									uint16_t buffer_len, uint16_t *processed)
+									uint16_t bytelen, uint16_t *processed)
 {
 	if (NULL == src_buffer)
 	{
@@ -130,7 +130,7 @@ RESULT adi_dpif_receive_callback(enum jtag_irdr_t cmd, uint32_t ir,
 		return ERROR_OK;
 		break;
 	case JTAG_SCANTYPE_DR:
-		if ((5 == buffer_len) 
+		if ((5 == bytelen) 
 			&& ((ADI_JTAGDP_IR_DPACC == ir) || (ADI_JTAGDP_IR_APACC == ir)))
 		{
 			*processed = 1;
@@ -153,7 +153,7 @@ RESULT adi_dpif_receive_callback(enum jtag_irdr_t cmd, uint32_t ir,
 static uint8_t adi_dp_first3bits;
 RESULT adi_dpif_send_callback(enum jtag_irdr_t cmd, uint32_t ir, 
 								uint8_t *dest_buffer, uint8_t *src_buffer,
-								uint16_t buffer_len, uint16_t *processed_len)
+								uint16_t bytelen, uint16_t *processed_len)
 {
 	if ((NULL == src_buffer) || (NULL == dest_buffer))
 	{
@@ -166,7 +166,7 @@ RESULT adi_dpif_send_callback(enum jtag_irdr_t cmd, uint32_t ir,
 		return ERROR_OK;
 		break;
 	case JTAG_SCANTYPE_DR:
-		if ((5 == buffer_len) 
+		if ((5 == bytelen) 
 			&& ((ADI_JTAGDP_IR_DPACC == ir) || (ADI_JTAGDP_IR_APACC == ir)))
 		{
 			*processed_len = 5;

@@ -577,7 +577,7 @@ RESULT comm_open_usbtocomm(char *comport, uint32_t baudrate,
 
 int32_t comm_read_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 {
-	uint32_t start;
+	uint32_t start, end;
 	uint32_t buffer_len[2];
 	
 	if ((NULL == cur_programmer) || (!usbtocomm_open))
@@ -586,7 +586,7 @@ int32_t comm_read_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 	}
 	
 	start = get_time_in_ms();
-	while ((get_time_in_ms() - start) < (50 + 5 * num_of_bytes))
+	do
 	{
 		LOG_PUSH();
 		LOG_MUTE();
@@ -600,7 +600,8 @@ int32_t comm_read_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 			LOG_POP();
 			return (int32_t)num_of_bytes;
 		}
-	}
+		end = get_time_in_ms();
+	} while ((end - start) < (50 + 5 * num_of_bytes));
 	
 	// fail to receive data
 	// if usart_status is available
@@ -638,7 +639,7 @@ int32_t comm_read_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 
 int32_t comm_write_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 {
-	uint32_t start;
+	uint32_t start, end;
 	uint32_t buffer_len[2];
 	
 	if ((NULL == cur_programmer) || !usbtocomm_open)
@@ -697,7 +698,8 @@ int32_t comm_write_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 			LOG_POP();
 			return (int32_t)num_of_bytes;
 		}
-	} while ((get_time_in_ms() - start) < 50 + 5 * (num_of_bytes - buffer_len[0]));
+		end = get_time_in_ms();
+	} while ((end - start) < 50 + 5 * (num_of_bytes - buffer_len[0]));
 	
 	// time out
 	return 0;

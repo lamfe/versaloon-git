@@ -33,7 +33,6 @@
 
 uint32_t lpc1000_get_sector_idx_by_addr(struct program_context_t *context, 
 										uint32_t addr);
-extern uint32_t lpc1000_cclk;
 
 #endif /* __LPC1000_INTERNAL_H_INCLUDED__ */
 

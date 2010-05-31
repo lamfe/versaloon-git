@@ -63,8 +63,6 @@ const struct program_mode_t lpc1000_program_mode[] =
 
 struct program_functions_t lpc1000_program_functions;
 
-uint32_t lpc1000_cclk = 4000;
-
 static void lpc1000_usage(void)
 {
 	printf("\
@@ -136,9 +134,9 @@ RESULT lpc1000_adjust_setting(struct program_info_t *pi,
 	struct chip_area_info_t *flash_info = &param->chip_areas[APPLICATION_IDX];
 	struct chip_area_info_t *sram_info = &param->chip_areas[SRAM_IDX];
 	
-	if (pi->kernel_khz != 0)
+	if (!pi->kernel_khz)
 	{
-		lpc1000_cclk = pi->kernel_khz;
+		pi->kernel_khz = 4000;
 	}
 	
 	switch (program_mode)

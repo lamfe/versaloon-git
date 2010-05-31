@@ -400,7 +400,7 @@ static RESULT at91sam3swj_iap_call(struct at91sam3swj_iap_command_t *cmd,
 							struct at91sam3swj_iap_reply_t *reply)
 {
 	uint32_t reg;
-	uint32_t start;
+	uint32_t start, end;
 	uint32_t i;
 	
 	reg = cmd->iap_command | AT91SAM3_EEFC_FKEY;
@@ -421,7 +421,8 @@ static RESULT at91sam3swj_iap_call(struct at91sam3swj_iap_command_t *cmd,
 			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read fsr");
 			return ERRCODE_FAILURE_OPERATION;
 		}
-	} while (!(reg & 1) && ((get_time_in_ms() - start) < 500));
+		end = get_time_in_ms();
+	} while (!(reg & 1) && ((end - start) < 500));
 	
 	if (!(reg & 1) || (reg & 0x60))
 	{
