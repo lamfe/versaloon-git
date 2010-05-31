@@ -124,7 +124,7 @@ struct target_info_t targets_info[] =
 		NULL,								// prepare_mass_product_data
 	},
 	// avr32
-	{
+/*	{
 		AVR32_STRING,						// name
 		AUTO_DETECT CAN_EXECUTE,			// feature
 		avr32_program_area_map,				// program_area_map
@@ -136,7 +136,7 @@ struct target_info_t targets_info[] =
 		NULL,								// get_mass_product_data_size
 		NULL,								// prepare_mass_product_data
 	},
-	// stm8
+*/	// stm8
 	{
 		STM8_STRING,						// name
 		"",									// feature
@@ -667,7 +667,7 @@ RESULT target_program(struct program_context_t *context)
 		pgbar_init("erasing chip |", "|", 0, 1, PROGRESS_STEP, 
 						PROGRESS_CHAR);
 		
-		if (ERROR_OK != pf->erase_target(context, '*', 0, 0))
+		if (ERROR_OK != pf->erase_target(context, ALL_CHAR, 0, 0))
 		{
 			pgbar_fini();
 			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "erase chip");
