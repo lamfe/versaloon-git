@@ -694,7 +694,10 @@ init:
 		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read cm3 id");
 		return ERROR_FAIL;
 	}
-	if ((adi_dp_info.if_id & 0x0FFFEFFF) != 0x0BA00477)
+	// 0x0BA00477 is for CortexM3
+	// 0x0BB10477 is for CortexM0
+	if (((adi_dp_info.if_id & 0x0FFFEFFF) != 0x0BA00477) 
+		&& ((adi_dp_info.if_id & 0x0FFFEFFF) != 0x0BB10477))
 	{
 		if (retry-- > 0)
 		{

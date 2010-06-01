@@ -73,9 +73,15 @@ RESULT cm3_dp_init(struct program_context_t *context, adi_dp_if_t *dp)
 	{
 		return ERROR_FAIL;
 	}
+	// 0xC23 is for CortexM3
+	// 0xC20 is for CortexM0
 	if (((cpuid >> 4) & 0xC3F) == 0xC23)
 	{
 		LOG_INFO(_GETTEXT("CORTEX-M3 processor detected\n"));
+	}
+	else if (((cpuid >> 4) & 0xC3F) == 0xC20)
+	{
+		LOG_INFO(_GETTEXT("CORTEX-M0 processor detected\n"));
 	}
 	else
 	{
