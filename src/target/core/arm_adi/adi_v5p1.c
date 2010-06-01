@@ -696,8 +696,15 @@ init:
 	}
 	// 0x0BA00477 is for CortexM3
 	// 0x0BB10477 is for CortexM0
-	if (((adi_dp_info.if_id & 0x0FFFEFFF) != 0x0BA00477) 
-		&& ((adi_dp_info.if_id & 0x0FFFEFFF) != 0x0BB10477))
+	if (0x0BA00477 == (adi_dp_info.if_id & 0x0FFFEFFF))
+	{
+		adi_dp_if->core = ADI_DP_CM3;
+	}
+	else if (0x0BB10477 == (adi_dp_info.if_id & 0x0FFFEFFF))
+	{
+		adi_dp_if->core = ADI_DP_CM0;
+	}
+	else
 	{
 		if (retry-- > 0)
 		{

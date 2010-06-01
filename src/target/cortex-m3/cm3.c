@@ -143,6 +143,7 @@ RESULT cm3_enter_program_mode(struct program_context_t *context)
 		context->pi->mode = ADI_DP_JTAG;
 	}
 	dp.type = context->pi->mode;
+	dp.core = ADI_DP_INVALID;
 	
 	switch(context->pi->mode)
 	{

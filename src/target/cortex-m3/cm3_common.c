@@ -44,7 +44,19 @@ adi_dp_if_t cm3_dp_if;
 RESULT cm3_dp_parameter_init(adi_dp_if_t *dp)
 {
 	dp->memaccess_tck = 8;
-	dp->tar_autoincr_block = (1 << 12);
+	switch (dp->core)
+	{
+	case ADI_DP_CM3:
+		dp->tar_autoincr_block = (1 << 12);
+		break;
+	case ADI_DP_CM0:
+		dp->tar_autoincr_block = (1 << 10);
+		break;
+	default:
+		LOG_ERROR(_GETTEXT("unknown core: %d\n"), dp->core);
+		return ERROR_FAIL;
+		break;
+	}
 	
 	return ERROR_OK;
 }
@@ -60,8 +72,12 @@ RESULT cm3_dp_init(struct program_context_t *context, adi_dp_if_t *dp)
 	
 	memcpy(&cm3_dp_if, dp, sizeof(cm3_dp_if));
 	
-	cm3_dp_parameter_init(&cm3_dp_if);
-	if (ERROR_OK != adi_init(context, &cm3_dp_if))
+	// note: cm3_dp_if->tar_autoincr_block and cm3_dp_if->memaccess_tck 
+	// CANNOT be used in adi_init
+	// adi_init will initialize the core type and then 
+	// cm3_dp_parameter_init will initialize these 2 parts
+	if ((ERROR_OK != adi_init(context, &cm3_dp_if)) 
+		|| (ERROR_OK != cm3_dp_parameter_init(&cm3_dp_if)))
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
 					"initialize cm3 interface");
@@ -75,11 +91,11 @@ RESULT cm3_dp_init(struct program_context_t *context, adi_dp_if_t *dp)
 	}
 	// 0xC23 is for CortexM3
 	// 0xC20 is for CortexM0
-	if (((cpuid >> 4) & 0xC3F) == 0xC23)
+	if ((((cpuid >> 4) & 0xC3F) == 0xC23) && (ADI_DP_CM3 == cm3_dp_if.core))
 	{
 		LOG_INFO(_GETTEXT("CORTEX-M3 processor detected\n"));
 	}
-	else if (((cpuid >> 4) & 0xC3F) == 0xC20)
+	else if ((((cpuid >> 4) & 0xC3F) == 0xC20) && (ADI_DP_CM0 == cm3_dp_if.core))
 	{
 		LOG_INFO(_GETTEXT("CORTEX-M0 processor detected\n"));
 	}
