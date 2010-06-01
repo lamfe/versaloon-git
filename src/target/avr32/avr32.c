@@ -484,7 +484,6 @@ RESULT avr32jtag_write_target(struct program_context_t *context, char area,
 		{
 			return ERROR_FAIL;
 		}
-		return ERROR_FAIL;
 		break;
 	default:
 		return ERROR_FAIL;
