@@ -26,9 +26,17 @@ enum adi_dp_if_type_t
 	ADI_DP_SWD = 1
 };
 
+enum adi_dp_target_core_t
+{
+	ADI_DP_INVALID,
+	ADI_DP_CM0,
+	ADI_DP_CM3
+};
+
 typedef struct
 {
 	enum adi_dp_if_type_t type;
+	enum adi_dp_target_core_t core;
 	union
 	{
 		struct

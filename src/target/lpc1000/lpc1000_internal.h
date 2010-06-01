@@ -31,6 +31,8 @@
 
 #define LPC1000_IAP_ENTRY			0x1FFF1FF1
 
+#define LPC1000_PARAM_IRC_KHZ		0
+
 uint32_t lpc1000_get_sector_idx_by_addr(struct program_context_t *context, 
 										uint32_t addr);
 

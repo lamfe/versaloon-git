@@ -136,7 +136,7 @@ RESULT lpc1000_adjust_setting(struct program_info_t *pi,
 	
 	if (!pi->kernel_khz)
 	{
-		pi->kernel_khz = 4000;
+		pi->kernel_khz = param->param[LPC1000_PARAM_IRC_KHZ];
 	}
 	
 	switch (program_mode)
