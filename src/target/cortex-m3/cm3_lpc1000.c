@@ -52,16 +52,6 @@
 
 #include "timer.h"
 
-#define LPC1000_IAPCMD_PREPARE_SECTOR	50
-#define LPC1000_IAPCMD_RAM_TO_FLASH		51
-#define LPC1000_IAPCMD_ERASE_SECTOR		52
-#define LPC1000_IAPCMD_BLANK_CHECK		53
-#define LPC1000_IAPCMD_READ_ID			54
-#define LPC1000_IAPCMD_READ_BOOTVER		55
-#define LPC1000_IAPCMD_COMPARE			56
-#define LPC1000_IAPCMD_REINVOKE			57
-#define LPC1000_IAPCMD_READ_SERIAL		58
-
 RESULT lpc1000swj_enter_program_mode(struct program_context_t *context);
 RESULT lpc1000swj_leave_program_mode(struct program_context_t *context, 
 									uint8_t success);
