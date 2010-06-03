@@ -941,7 +941,19 @@ RESULT target_program(struct program_context_t *context)
 				while(ml_tmp != NULL)
 				{
 					uint32_t read_offset = ml_tmp->addr - start_addr;
-					uint8_t *read_buf = (uint8_t*)malloc(ml_tmp->len);
+					uint8_t *read_buf = NULL;
+					uint32_t buf_size;
+					
+					if (!(area_attr & AREA_ATTR_RNP) 
+						&& (ml_tmp->len % page_size))
+					{
+						buf_size = ((ml_tmp->len / page_size) + 1) * page_size;
+					}
+					else
+					{
+						buf_size = ml_tmp->len;
+					}
+					read_buf = (uint8_t*)malloc(buf_size);
 					if (NULL == read_buf)
 					{
 						LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
