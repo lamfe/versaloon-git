@@ -190,6 +190,18 @@ void stm32_print_device(uint32_t mcuid)
 			break;
 		}
 		break;
+	case STM32_DEN_VALUELINE:
+		LOG_INFO(_GETTEXT("STM32 type: value-line device\n"));
+		switch (rev)
+		{
+		case 0x1000:
+			rev_char = 'A';
+			break;
+		case 0x1001:
+			rev_char = 'Z';
+			break;
+		}
+		break;
 	default:
 		LOG_INFO(_GETTEXT("STM32 type: unknown device(%08X)\n"), mcuid);
 		break;
