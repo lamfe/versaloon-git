@@ -853,6 +853,26 @@ RESULT target_program(struct program_context_t *context)
 			time_in_ms = pgbar_fini();
 			LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMED_SIZE), fullname, target_size, 
 						(target_size / 1024.0) / (time_in_ms / 1000.0));
+			
+			// Reset After Write
+			if ((area_attr & AREA_ATTR_RAW) 
+				&& ((op->checksum_operations != 0) 
+					|| (op->read_operations != 0) 
+					|| (op->verify_operations != 0)))
+			{
+				if ((pf->leave_program_mode != NULL) 
+					&& (ERROR_OK != pf->leave_program_mode(context, 0)))
+				{
+					return ERRCODE_FAILURE_OPERATION;
+				}
+				sleep_ms(100);
+				if ((pf->enter_program_mode != NULL) 
+					&& (ERROR_OK != pf->enter_program_mode(context)))
+				{
+					ret = ERRCODE_FAILURE_OPERATION;
+					goto leave_program_mode;
+				}
+			}
 		}
 		
 		if ((op->verify_operations & area_mask) 
