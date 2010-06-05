@@ -13,70 +13,70 @@
   </chip>
   <chip name="lpc1111fhn33/101">
     <chip_id>0x041E502B</chip_id>
-    <program_mode>jsi</program_mode>
+    <program_mode>si</program_mode>
     <sram_size>2048</sram_size>
     <app_page_num>8</app_page_num>
     <param0>12000</param0>
   </chip>
   <chip name="lpc1111fhn33/201">
     <chip_id>0x0416502B</chip_id>
-    <program_mode>jsi</program_mode>
+    <program_mode>si</program_mode>
     <sram_size>4096</sram_size>
     <app_page_num>8</app_page_num>
     <param0>12000</param0>
   </chip>
   <chip name="lpc1112fhn33/101">
     <chip_id>0x042D502B</chip_id>
-    <program_mode>jsi</program_mode>
+    <program_mode>si</program_mode>
     <sram_size>2048</sram_size>
     <app_page_num>32</app_page_num>
     <param0>12000</param0>
   </chip>
   <chip name="lpc1112fhn33/201">
     <chip_id>0x0425502B</chip_id>
-    <program_mode>jsi</program_mode>
+    <program_mode>si</program_mode>
     <sram_size>4096</sram_size>
     <app_page_num>16</app_page_num>
     <param0>12000</param0>
   </chip>
   <chip name="lpc1113fhn33/201">
     <chip_id>0x0434502B</chip_id>
-    <program_mode>jsi</program_mode>
+    <program_mode>si</program_mode>
     <sram_size>4096</sram_size>
     <app_page_num>24</app_page_num>
     <param0>12000</param0>
   </chip>
   <chip name="lpc1113fhn33/301">
     <chip_id>0x0434102B</chip_id>
-    <program_mode>jsi</program_mode>
+    <program_mode>si</program_mode>
     <sram_size>8192</sram_size>
     <app_page_num>24</app_page_num>
     <param0>12000</param0>
   </chip>
   <chip name="lpc1114fhn33/201">
     <chip_id>0x0444502B</chip_id>
-    <program_mode>jsi</program_mode>
+    <program_mode>si</program_mode>
     <sram_size>4096</sram_size>
     <app_page_num>32</app_page_num>
     <param0>12000</param0>
   </chip>
   <chip name="lpc1114fhn33/301">
     <chip_id>0x0444102B</chip_id>
-    <program_mode>jsi</program_mode>
+    <program_mode>si</program_mode>
     <sram_size>8192</sram_size>
     <app_page_num>32</app_page_num>
     <param0>12000</param0>
   </chip>
   <chip name="lpc11c12fbd48/301">
     <chip_id>0x1421102B</chip_id>
-    <program_mode>jsi</program_mode>
+    <program_mode>si</program_mode>
     <sram_size>8192</sram_size>
     <app_page_num>16</app_page_num>
     <param0>12000</param0>
   </chip>
   <chip name="lpc11c14fbd48/301">
     <chip_id>0x1440102B</chip_id>
-    <program_mode>jsi</program_mode>
+    <program_mode>si</program_mode>
     <sram_size>8192</sram_size>
     <app_page_num>32</app_page_num>
     <param0>12000</param0>
