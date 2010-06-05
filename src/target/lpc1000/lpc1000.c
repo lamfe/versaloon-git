@@ -61,6 +61,8 @@ const struct program_mode_t lpc1000_program_mode[] =
 	{0, NULL, 0}
 };
 
+RESULT (*lpc1000_enter_program_mode_save)(struct program_context_t *context);
+static RESULT lpc1000_enter_program_mode(struct program_context_t *context);
 struct program_functions_t lpc1000_program_functions;
 
 static void lpc1000_usage(void)
@@ -70,7 +72,8 @@ Usage of %s:\n\
   -C,  --comport <COMM_ATTRIBUTE>           set com port\n\
   -m,  --mode <MODE>                        set mode<j|s|i>\n\
   -x,  --execute <ADDRESS>                  execute program\n\
-  -F,  --frequency <FREQUENCY>              set JTAG frequency, in KHz\n\n",
+  -F,  --frequency <FREQUENCY>              set JTAG frequency, in KHz\n\
+  -A,  --auto-adjust                        add checksum for first 7 vectors\n\n",
 			CUR_TARGET_STRING);
 }
 
@@ -98,14 +101,20 @@ RESULT lpc1000_parse_argument(char cmd, const char *argu)
 			cm3_parse_argument('c', "cm3_lpc1000");
 			memcpy(&lpc1000_program_functions, &cm3_program_functions, 
 					sizeof(lpc1000_program_functions));
+			lpc1000_enter_program_mode_save = 
+									cm3_program_functions.enter_program_mode;
 			break;
 		case LPC1000_ISP:
 			comisp_mode_offset = LPC1000_ISP;
 			comisp_parse_argument('c', "comisp_lpc1000");
 			memcpy(&lpc1000_program_functions, &comisp_program_functions, 
 					sizeof(lpc1000_program_functions));
+			lpc1000_enter_program_mode_save = 
+									comisp_program_functions.enter_program_mode;
 			break;
 		}
+		lpc1000_program_functions.enter_program_mode = 
+									lpc1000_enter_program_mode;
 		break;
 	case 'E':
 		comisp_print_comm_info(COMISP_LPCARM);
@@ -195,4 +204,31 @@ uint32_t lpc1000_get_sector_idx_by_addr(struct program_context_t *context,
 	{
 		return 0;
 	}
+}
+
+static RESULT lpc1000_enter_program_mode(struct program_context_t *context)
+{
+	struct program_info_t *pi = context->pi;
+	struct program_area_t *flash_area = &pi->program_areas[APPLICATION_IDX];
+	uint32_t checksum;
+	uint8_t i;
+	
+	if (NULL == lpc1000_enter_program_mode)
+	{
+		LOG_BUG(_GETTEXT("lpc1000 init error.\n"));
+		return ERROR_FAIL;
+	}
+	
+	if ((pi->auto_adjust) 
+		&& (flash_area->buff != NULL) && (flash_area->size > 32))
+	{
+		checksum = 0;
+		for (i = 0; i < 7; i++)
+		{
+			checksum += ((uint32_t*)flash_area->buff)[i];
+		}
+		((uint32_t*)flash_area->buff)[i] = (checksum ^ 0xFFFFFFFF) + 1;
+	}
+	
+	return lpc1000_enter_program_mode_save(context);
 }
