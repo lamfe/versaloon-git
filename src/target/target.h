@@ -140,6 +140,7 @@ struct program_info_t
 	uint32_t areas_defined;
 	
 	uint8_t mode;
+	uint8_t auto_adjust;
 	uint16_t frequency;
 	uint32_t kernel_khz;
 	uint8_t wait_state;
