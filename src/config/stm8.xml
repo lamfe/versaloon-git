@@ -41,9 +41,17 @@
         <choice value="0x0000000800000000" text="External clock signal on OSCIN" />
         <choice value="0x0000000000000000" text="External crystal connected to OSCIN/OSCOUT" />
       </setting>
-      <setting name="HSECNT" mask="0x0000FF0000000000" info="HSE crystal oscillator stabilization time" radix="16" shift="40" bytelen="1" />
-      <setting name="WAITSTATE" mask="0x0001000000000000" info="Wait state configuration" unchecked="0" />
-      <setting name="BL" mask="0xFF00000000000000" info="Bootloader option byte" radix="16" shift="56" bytelen="1"/>
+      <setting name="HSECNT" mask="0x0000FF0000000000" info="HSE crystal oscillator stabilization time">
+        <choice value="0x0000000000000000" text="2048 HSE cycles" />
+        <choice value="0x0000B40000000000" text="128 HSE cycles" />
+        <choice value="0x0000D20000000000" text="8 HSE cycles" />
+        <choice value="0x0000E10000000000" text="0.5 HSE cycles" />
+      </setting>
+      <setting name="WAITSTATE" mask="0x0001000000000000" info="Wait state configuration">
+        <choice value="0x0000000000000000" text="No wait state" />
+        <choice value="0x0001000000000000" text="1 wait state" />
+      </setting>
+      <setting name="BL" mask="0xFF00000000000000" info="Bootloader option byte" checked="0xAA00000000000000" unchecked="0"/>
       <setting name="ALL" mask="0xFFFFFFFFFFFFFFFF" info="Option bytes" radix="16" shift="0" bytelen="8" />
     </fuse>
   </chip>
