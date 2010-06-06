@@ -27,14 +27,13 @@ void SPI_Delay(uint8 dly)
 	DelayUS(dly);
 }
 
-// freq is in Hz
-void SPI_SetClk(uint32 freq)
+void SPI_Config(uint32 freq_hz, uint32 firstbit, uint32 cpol, uint32 cpha)
 {
-	if(freq < SPI_MIN_SPEED * 1000)
+	if(freq_hz < SPI_MIN_SPEED * 1000)
 	{
 		SPI_Emu = 1;
 
-		SPI_Dly = 250000 / freq;
+		SPI_Dly = 250000 / freq_hz;
 
 		SPI_Disable();
 
@@ -45,48 +44,47 @@ void SPI_SetClk(uint32 freq)
 	{
 		SPI_Emu = 0;
 		SPI_AllSPIHW();
-		SPI_Conf(SPI_GetSCKDiv(freq / 1000));
+		SPI_Conf(SPI_GetSCKDiv(freq_hz / 1000), firstbit, cpol, cpha);
 	}
 }
 
-// freq is in KHz
-uint8 SPI_GetSCKDiv(uint16 freq)
+uint8 SPI_GetSCKDiv(uint16 freq_khz)
 {
 	// Set Speed
-	if(freq >= _SYS_FREQUENCY * 500 / 2)
+	if(freq_khz >= _SYS_FREQUENCY * 500 / 2)
 	{
-		freq = 0;
+		freq_khz = 0;
 	}
-	else if(freq >= _SYS_FREQUENCY * 500 / 4)
+	else if(freq_khz >= _SYS_FREQUENCY * 500 / 4)
 	{
-		freq = 1;
+		freq_khz = 1;
 	}
-	else if(freq >= _SYS_FREQUENCY * 500 / 8)
+	else if(freq_khz >= _SYS_FREQUENCY * 500 / 8)
 	{
-		freq = 2;
+		freq_khz = 2;
 	}
-	else if(freq >= _SYS_FREQUENCY * 500 / 16)
+	else if(freq_khz >= _SYS_FREQUENCY * 500 / 16)
 	{
-		freq = 3;
+		freq_khz = 3;
 	}
-	else if(freq >= _SYS_FREQUENCY * 500 / 32)
+	else if(freq_khz >= _SYS_FREQUENCY * 500 / 32)
 	{
-		freq = 4;
+		freq_khz = 4;
 	}
-	else if(freq > _SYS_FREQUENCY * 500 / 64)
+	else if(freq_khz > _SYS_FREQUENCY * 500 / 64)
 	{
-		freq = 5;
+		freq_khz = 5;
 	}
-	else if(freq > _SYS_FREQUENCY * 500 / 128)
+	else if(freq_khz > _SYS_FREQUENCY * 500 / 128)
 	{
-		freq = 6;
+		freq_khz = 6;
 	}
 	else
 	{
-		freq = 7;
+		freq_khz = 7;
 	}
 
-	return (uint8)(freq << 3);
+	return (uint8)(freq_khz << 3);
 }
 
 /// spi Read and Write emulated by IO

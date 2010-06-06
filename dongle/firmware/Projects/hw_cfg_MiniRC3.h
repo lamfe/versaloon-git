@@ -211,11 +211,8 @@
 /****************************** SPI ******************************/
 #define SPI_Interface					SPI2
 
-#define SPI_Conf(br)					SPI_Configuration(SPI_Interface,SPI_Mode_Master,\
-														(br),SPI_FirstBit_MSB,\
-														SPI_CPOL_Low,SPI_CPHA_1Edge)
-#define SPI_SetClkHw(br)				do{SPI_InitStructure.SPI_BaudRatePrescaler = (br);\
-										SPI_Init(SPI_Interface, &SPI_InitStructure);}while(0)
+#define SPI_Conf(br, fb, cpol, cpha)	SPI_Configuration(SPI_Interface,SPI_Mode_Master,\
+															(br),(fb),(cpol),(cpha))
 
 #define SPI_MOSI_SET()					JTAG_TAP_TDI_SET()
 #define SPI_MOSI_CLR()					JTAG_TAP_TDI_CLR()
