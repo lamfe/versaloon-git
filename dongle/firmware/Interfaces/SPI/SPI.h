@@ -24,8 +24,8 @@
 
 uint8 SPI_RW_Emu(uint8 data);
 uint8 SPI_RW_HW(uint8 data);
-void SPI_SetClk(uint32 freq);		// freq is in Hz
-uint8 SPI_GetSCKDiv(uint16 freq);	// freq is in KHz
+void SPI_Config(uint32 freq_hz, uint32 firstbit, uint32 cpol, uint32 cpha);
+uint8 SPI_GetSCKDiv(uint16 freq_khz);
 uint8 SPI_RW(uint8 data);
 
 extern uint8 SPI_Emu;

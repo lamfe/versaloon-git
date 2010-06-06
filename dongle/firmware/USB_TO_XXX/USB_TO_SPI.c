@@ -24,8 +24,6 @@
 #endif
 
 #define USB_TO_SPI_GetSPI(index)			SPI_Interface
-#define USB_TO_SPI_HW_Enable(index)			SPI_AllSPIHW()
-#define USB_TO_SPI_GPIO_Enable(index)		SPI_AllSPIIO()
 
 void USB_TO_SPI_ProcessCmd(uint8* dat, uint16 len)
 {
@@ -93,19 +91,7 @@ void USB_TO_SPI_ProcessCmd(uint8* dat, uint16 len)
 				firstbit = SPI_FirstBit_LSB;
 			}
 
-			if(frequency >= SPI_MIN_SPEED)
-			{
-				// SPI Mode
-				USB_TO_SPI_HW_Enable(index);
-				SPI_Configuration(USB_TO_SPI_GetSPI(index), SPI_Mode_Master, SPI_GetSCKDiv(frequency), firstbit, cpol, cpha);
-				SPI_SetClk(frequency * 1000);
-			}
-			else
-			{
-				// GPIO Mode
-				USB_TO_SPI_GPIO_Enable();
-				SPI_SetClk(frequency * 1000);
-			}
+			SPI_Config(frequency * 1000, firstbit, cpol, cpha);
 
 			buffer_reply[rep_len++] = USB_TO_XXX_OK;
 
