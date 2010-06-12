@@ -80,7 +80,7 @@
     \
     static IIC_MOD_RESULT_t EMIIC_##MOD_NAME##_Start(void)\
     {\
-        uint8 retry = 0;\
+        uint8_t retry = 0;\
         \
         SDA_R();\
         DLY_FUNC(s_EMIIC_##MOD_NAME##_QuarterCycle_Len);\
