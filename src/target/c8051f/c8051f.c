@@ -65,7 +65,7 @@ Usage of %s:\n\
 			CUR_TARGET_STRING);
 }
 
-RESULT c8051f_parse_argument(char cmd, const char *argu)
+PARSE_ARGUMENT_HANDLER(c8051f)
 {
 	uint8_t mode;
 	

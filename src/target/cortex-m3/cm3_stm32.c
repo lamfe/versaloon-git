@@ -51,23 +51,19 @@
 
 #define STM32SWJ_BUFFER_SIZE		512
 
-RESULT stm32swj_enter_program_mode(struct program_context_t *context);
-RESULT stm32swj_leave_program_mode(struct program_context_t *context, 
-									uint8_t success);
-RESULT stm32swj_erase_target(struct program_context_t *context, char area, 
-								uint32_t addr, uint32_t size);
-RESULT stm32swj_write_target(struct program_context_t *context, char area, 
-								uint32_t addr, uint8_t *buff, uint32_t size);
-RESULT stm32swj_read_target(struct program_context_t *context, char area, 
-								uint32_t addr, uint8_t *buff, uint32_t size);
+ENTER_PROGRAM_MODE_HANDLER(stm32swj);
+LEAVE_PROGRAM_MODE_HANDLER(stm32swj);
+ERASE_TARGET_HANDLER(stm32swj);
+WRITE_TARGET_HANDLER(stm32swj);
+READ_TARGET_HANDLER(stm32swj);
 const struct program_functions_t stm32swj_program_functions = 
 {
 	NULL, 
-	stm32swj_enter_program_mode, 
-	stm32swj_leave_program_mode, 
-	stm32swj_erase_target, 
-	stm32swj_write_target, 
-	stm32swj_read_target
+	ENTER_PROGRAM_MODE_FUNCNAME(stm32swj), 
+	LEAVE_PROGRAM_MODE_FUNCNAME(stm32swj), 
+	ERASE_TARGET_FUNCNAME(stm32swj), 
+	WRITE_TARGET_FUNCNAME(stm32swj), 
+	READ_TARGET_FUNCNAME(stm32swj)
 };
 
 RESULT stm32_wait_status_busy(uint32_t *status, uint32_t timeout)
@@ -122,7 +118,7 @@ RESULT stm32_mass_erase(void)
 	}
 }
 
-RESULT stm32swj_enter_program_mode(struct program_context_t *context)
+ENTER_PROGRAM_MODE_HANDLER(stm32swj)
 {
 	uint32_t reg;
 	struct operation_t *op = context->op;
@@ -141,8 +137,7 @@ RESULT stm32swj_enter_program_mode(struct program_context_t *context)
 	return ERROR_OK;
 }
 
-RESULT stm32swj_leave_program_mode(struct program_context_t *context, 
-									uint8_t success)
+LEAVE_PROGRAM_MODE_HANDLER(stm32swj)
 {
 	uint32_t reg;
 	
@@ -176,8 +171,7 @@ RESULT stm32swj_leave_program_mode(struct program_context_t *context,
 	return ERROR_OK;
 }
 
-RESULT stm32swj_erase_target(struct program_context_t *context, char area, 
-								uint32_t addr, uint32_t size)
+ERASE_TARGET_HANDLER(stm32swj)
 {
 	RESULT ret= ERROR_OK;
 	REFERENCE_PARAMETER(size);
@@ -208,8 +202,7 @@ RESULT stm32swj_erase_target(struct program_context_t *context, char area,
 	return ret;
 }
 
-RESULT stm32swj_write_target(struct program_context_t *context, char area, 
-								uint32_t addr, uint8_t *buff, uint32_t size)
+WRITE_TARGET_HANDLER(stm32swj)
 {
 	uint32_t reg, block_size;
 	uint32_t cur_run_size, cur_block_size;
@@ -400,8 +393,7 @@ RESULT stm32swj_write_target(struct program_context_t *context, char area,
 	return ret;
 }
 
-RESULT stm32swj_read_target(struct program_context_t *context, char area, 
-								uint32_t addr, uint8_t *buff, uint32_t size)
+READ_TARGET_HANDLER(stm32swj)
 {
 	struct program_info_t *pi = context->pi;
 	uint32_t mcu_id = 0;

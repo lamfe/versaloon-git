@@ -57,23 +57,19 @@ const struct program_mode_t stm8_program_mode[] =
 	{0, NULL, 0}
 };
 
-RESULT stm8_enter_program_mode(struct program_context_t *context);
-RESULT stm8_leave_program_mode(struct program_context_t *context, 
-								uint8_t success);
-RESULT stm8_erase_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint32_t page_size);
-RESULT stm8_write_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint8_t *buff, uint32_t page_size);
-RESULT stm8_read_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint8_t *buff, uint32_t page_size);
+ENTER_PROGRAM_MODE_HANDLER(stm8swim);
+LEAVE_PROGRAM_MODE_HANDLER(stm8swim);
+ERASE_TARGET_HANDLER(stm8swim);
+WRITE_TARGET_HANDLER(stm8swim);
+READ_TARGET_HANDLER(stm8swim);
 const struct program_functions_t stm8_program_functions = 
 {
 	NULL,			// execute
-	stm8_enter_program_mode, 
-	stm8_leave_program_mode, 
-	stm8_erase_target, 
-	stm8_write_target, 
-	stm8_read_target
+	ENTER_PROGRAM_MODE_FUNCNAME(stm8swim), 
+	LEAVE_PROGRAM_MODE_FUNCNAME(stm8swim), 
+	ERASE_TARGET_FUNCNAME(stm8swim), 
+	WRITE_TARGET_FUNCNAME(stm8swim), 
+	READ_TARGET_FUNCNAME(stm8swim)
 };
 
 static void stm8_usage(void)
@@ -84,7 +80,7 @@ Usage of %s:\n\
 			CUR_TARGET_STRING);
 }
 
-RESULT stm8_parse_argument(char cmd, const char *argu)
+PARSE_ARGUMENT_HANDLER(stm8)
 {
 	argu = argu;
 	
@@ -210,7 +206,7 @@ static RESULT stm8_program_block(uint32_t block_addr, uint8_t *block_buff, uint8
 	return ERROR_OK;
 }
 
-RESULT stm8_enter_program_mode(struct program_context_t *context)
+ENTER_PROGRAM_MODE_HANDLER(stm8swim)
 {
 	uint8_t i, test_buf0[7], test_buf1[6], retry = 5;
 	RESULT ret = ERROR_OK;
@@ -313,8 +309,7 @@ retry_enter_program_mode:
 	return ret;
 }
 
-RESULT stm8_leave_program_mode(struct program_context_t *context, 
-								uint8_t success)
+LEAVE_PROGRAM_MODE_HANDLER(stm8swim)
 {
 	RESULT ret = ERROR_OK;
 	REFERENCE_PARAMETER(success);
@@ -340,11 +335,10 @@ RESULT stm8_leave_program_mode(struct program_context_t *context,
 	return ret;
 }
 
-RESULT stm8_erase_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint32_t page_size)
+ERASE_TARGET_HANDLER(stm8swim)
 {
 	RESULT ret = ERROR_OK;
-	REFERENCE_PARAMETER(page_size);
+	REFERENCE_PARAMETER(size);
 	
 	switch (context->pi->mode)
 	{
@@ -369,11 +363,10 @@ RESULT stm8_erase_target(struct program_context_t *context, char area,
 	}
 	return ret;
 }
-RESULT stm8_write_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint8_t *buff, uint32_t page_size)
+
+WRITE_TARGET_HANDLER(stm8swim)
 {
 	RESULT ret = ERROR_OK;
-	REFERENCE_PARAMETER(page_size);
 	
 	switch (context->pi->mode)
 	{
@@ -382,7 +375,7 @@ RESULT stm8_write_target(struct program_context_t *context, char area,
 		{
 		case APPLICATION_CHAR:
 		case EEPROM_CHAR:
-			ret = stm8_program_block(addr, buff, (uint8_t)page_size);
+			ret = stm8_program_block(addr, buff, (uint8_t)size);
 			break;
 		default:
 			ret = ERROR_FAIL;
@@ -398,8 +391,8 @@ RESULT stm8_write_target(struct program_context_t *context, char area,
 	}
 	return ret;
 }
-RESULT stm8_read_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint8_t *buff, uint32_t page_size)
+
+READ_TARGET_HANDLER(stm8swim)
 {
 	uint8_t fuse_page[128];
 	RESULT ret = ERROR_OK;
@@ -415,7 +408,7 @@ RESULT stm8_read_target(struct program_context_t *context, char area,
 			break;
 		case APPLICATION_CHAR:
 		case EEPROM_CHAR:
-			stm8_swim_rotf(addr, buff, (uint8_t)page_size);
+			stm8_swim_rotf(addr, buff, (uint8_t)size);
 			ret = commit();
 			break;
 		case FUSE_CHAR:

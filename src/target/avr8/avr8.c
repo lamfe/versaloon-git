@@ -72,7 +72,7 @@ Usage of %s:\n\
 			CUR_TARGET_STRING);
 }
 
-RESULT avr8_parse_argument(char cmd, const char *argu)
+PARSE_ARGUMENT_HANDLER(avr8)
 {
 	uint8_t mode;
 	

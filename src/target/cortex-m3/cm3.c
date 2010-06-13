@@ -51,14 +51,13 @@
 
 #define CUR_TARGET_STRING			CM3_STRING
 
-RESULT cm3_enter_program_mode(struct program_context_t *context);
-RESULT cm3_leave_program_mode(struct program_context_t *context, 
-									uint8_t success);
+ENTER_PROGRAM_MODE_HANDLER(cm3);
+LEAVE_PROGRAM_MODE_HANDLER(cm3);
 struct program_functions_t cm3_program_functions = 
 {
 	NULL,			// execute
-	cm3_enter_program_mode, 
-	cm3_leave_program_mode, 
+	ENTER_PROGRAM_MODE_FUNCNAME(cm3), 
+	LEAVE_PROGRAM_MODE_FUNCNAME(cm3), 
 	NULL, 
 	NULL, 
 	NULL
@@ -76,7 +75,7 @@ uint8_t cm3_mode_offset = 0;
 uint8_t cm3_execute_flag = 0;
 uint32_t cm3_execute_addr = 0;
 
-RESULT cm3_parse_argument(char cmd, const char *argu)
+PARSE_ARGUMENT_HANDLER(cm3)
 {
 	uint8_t i;
 	
@@ -98,9 +97,9 @@ RESULT cm3_parse_argument(char cmd, const char *argu)
 						cm3_chips_param[i].program_functions, 
 						sizeof(cm3_program_functions));
 				cm3_program_functions.enter_program_mode = 
-					cm3_enter_program_mode;
+					ENTER_PROGRAM_MODE_FUNCNAME(cm3);
 				cm3_program_functions.leave_program_mode = 
-					cm3_leave_program_mode;
+					LEAVE_PROGRAM_MODE_FUNCNAME(cm3);
 				break;
 			}
 		}
@@ -123,7 +122,7 @@ RESULT cm3_parse_argument(char cmd, const char *argu)
 	return ERROR_OK;
 }
 
-RESULT cm3_enter_program_mode(struct program_context_t *context)
+ENTER_PROGRAM_MODE_HANDLER(cm3)
 {
 	adi_dp_if_t dp;
 	const struct program_functions_t *pf = 
@@ -193,8 +192,7 @@ RESULT cm3_enter_program_mode(struct program_context_t *context)
 	return ERROR_OK;
 }
 
-RESULT cm3_leave_program_mode(struct program_context_t *context, 
-									uint8_t success)
+LEAVE_PROGRAM_MODE_HANDLER(cm3)
 {
 	const struct program_functions_t *pf = 
 		cm3_chips_param[cm3_chip_index].program_functions;

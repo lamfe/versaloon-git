@@ -78,7 +78,7 @@ Usage of %s:\n\
 			CUR_TARGET_STRING);
 }
 
-RESULT at91sam3_parse_argument(char cmd, const char *argu)
+PARSE_ARGUMENT_HANDLER(at91sam3)
 {
 	uint8_t mode;
 	

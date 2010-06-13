@@ -25,7 +25,7 @@ extern struct program_area_map_t msp430_program_area_map[];
 extern const struct program_mode_t msp430_program_mode[];
 extern struct program_functions_t msp430_program_functions;
 
-RESULT msp430_parse_argument(char cmd, const char *argu);
+PARSE_ARGUMENT_HANDLER(msp430);
 
 #endif /* __MSP430_H_INCLUDED__ */
 

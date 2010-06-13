@@ -57,23 +57,19 @@ const struct program_mode_t s5x_program_mode[] =
 	{0, NULL, 0}
 };
 
-RESULT s5x_enter_program_mode(struct program_context_t *context);
-RESULT s5x_leave_program_mode(struct program_context_t *context, 
-								uint8_t success);
-RESULT s5x_erase_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint32_t page_size);
-RESULT s5x_write_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint8_t *buff, uint32_t page_size);
-RESULT s5x_read_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint8_t *buff, uint32_t page_size);
+ENTER_PROGRAM_MODE_HANDLER(s5x);
+LEAVE_PROGRAM_MODE_HANDLER(s5x);
+ERASE_TARGET_HANDLER(s5x);
+WRITE_TARGET_HANDLER(s5x);
+READ_TARGET_HANDLER(s5x);
 const struct program_functions_t s5x_program_functions = 
 {
 	NULL,			// execute
-	s5x_enter_program_mode, 
-	s5x_leave_program_mode, 
-	s5x_erase_target, 
-	s5x_write_target, 
-	s5x_read_target
+	ENTER_PROGRAM_MODE_FUNCNAME(s5x), 
+	LEAVE_PROGRAM_MODE_FUNCNAME(s5x), 
+	ERASE_TARGET_FUNCNAME(s5x), 
+	WRITE_TARGET_FUNCNAME(s5x), 
+	READ_TARGET_FUNCNAME(s5x)
 };
 
 static uint16_t s5x_byte_delay_us = 500;
@@ -87,7 +83,7 @@ Usage of %s:\n\
 			CUR_TARGET_STRING);
 }
 
-RESULT s5x_parse_argument(char cmd, const char *argu)
+PARSE_ARGUMENT_HANDLER(s5x)
 {
 	switch(cmd)
 	{
@@ -138,7 +134,7 @@ RESULT s5x_parse_argument(char cmd, const char *argu)
 
 #define commit()				prog->peripheral_commit()
 
-RESULT s5x_enter_program_mode(struct program_context_t *context)
+ENTER_PROGRAM_MODE_HANDLER(s5x)
 {
 	uint8_t cmd_buf[4];
 	uint8_t poll_value;
@@ -187,8 +183,7 @@ RESULT s5x_enter_program_mode(struct program_context_t *context)
 	return ERROR_OK;
 }
 
-RESULT s5x_leave_program_mode(struct program_context_t *context, 
-								uint8_t success)
+LEAVE_PROGRAM_MODE_HANDLER(s5x)
 {
 	struct programmer_info_t *prog = context->prog;
 	
@@ -204,15 +199,14 @@ RESULT s5x_leave_program_mode(struct program_context_t *context,
 	return ERROR_OK;
 }
 
-RESULT s5x_erase_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint32_t page_size)
+ERASE_TARGET_HANDLER(s5x)
 {
 	struct programmer_info_t *prog = context->prog;
 	uint8_t cmd_buf[4];
 	
 	REFERENCE_PARAMETER(area);
 	REFERENCE_PARAMETER(addr);
-	REFERENCE_PARAMETER(page_size);
+	REFERENCE_PARAMETER(size);
 	
 	cmd_buf[0] = 0xAC;
 	cmd_buf[1] = 0x80;
@@ -227,8 +221,7 @@ RESULT s5x_erase_target(struct program_context_t *context, char area,
 	return ERROR_OK;
 }
 
-RESULT s5x_write_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint8_t *buff, uint32_t page_size)
+WRITE_TARGET_HANDLER(s5x)
 {
 	struct programmer_info_t *prog = context->prog;
 	struct program_info_t *pi = context->pi;
@@ -244,7 +237,7 @@ RESULT s5x_write_target(struct program_context_t *context, char area,
 		case S5X_PAGE_MODE:
 			cmd_buf[0] = 0x50;
 			cmd_buf[1] = (addr >> 8) & 0xFF;
-			if (page_size == 256)
+			if (size == 256)
 			{
 				spi_io(cmd_buf, 2, NULL, 0, 0);
 			}
@@ -254,7 +247,7 @@ RESULT s5x_write_target(struct program_context_t *context, char area,
 				spi_io(cmd_buf, 3, NULL, 0, 0);
 			}
 			
-			for (i = 0; i < page_size; i++)
+			for (i = 0; i < size; i++)
 			{
 				spi_io(&buff[addr + i], 1, NULL, 0, 0);
 				delay_us(s5x_byte_delay_us);
@@ -267,7 +260,7 @@ RESULT s5x_write_target(struct program_context_t *context, char area,
 			}
 			break;
 		case S5X_BYTE_MODE:
-			for (i = 0; i < page_size; i++)
+			for (i = 0; i < size; i++)
 			{
 				cmd_buf[0] = 0x40;
 				cmd_buf[1] = (uint8_t)((addr + i) >> 8);
@@ -342,8 +335,7 @@ RESULT s5x_write_target(struct program_context_t *context, char area,
 	return ret;
 }
 
-RESULT s5x_read_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint8_t *buff, uint32_t page_size)
+READ_TARGET_HANDLER(s5x)
 {
 	struct programmer_info_t *prog = context->prog;
 	struct program_info_t *pi = context->pi;
@@ -383,7 +375,7 @@ RESULT s5x_read_target(struct program_context_t *context, char area,
 		case S5X_PAGE_MODE:
 			cmd_buf[0] = 0x30;
 			cmd_buf[1] = (addr >> 8) & 0xFF;
-			if (page_size == 256)
+			if (size == 256)
 			{
 				spi_io(cmd_buf, 2, NULL, 0, 0);
 			}
@@ -393,8 +385,7 @@ RESULT s5x_read_target(struct program_context_t *context, char area,
 				spi_io(cmd_buf, 3, NULL, 0, 0);
 			}
 			
-			spi_io(buff, (uint16_t)page_size, buff, 0, 
-				   (uint16_t)page_size);
+			spi_io(buff, (uint16_t)size, buff, 0, (uint16_t)size);
 			
 			if (ERROR_OK != commit())
 			{
@@ -403,7 +394,7 @@ RESULT s5x_read_target(struct program_context_t *context, char area,
 			}
 			break;
 		case S5X_BYTE_MODE:
-			for (i = 0; i < page_size; i++)
+			for (i = 0; i < size; i++)
 			{
 				cmd_buf[0] = 0x20;
 				cmd_buf[1] = (uint8_t)((addr + i) >> 8);

@@ -48,23 +48,19 @@
 
 #define STM32ISP_MAX_ERROR_CNT		10
 
-RESULT stm32isp_enter_program_mode(struct program_context_t *context);
-RESULT stm32isp_leave_program_mode(struct program_context_t *context, 
-									uint8_t success);
-RESULT stm32isp_erase_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint32_t page_size);
-RESULT stm32isp_write_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint8_t *buff, uint32_t page_size);
-RESULT stm32isp_read_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint8_t *buff, uint32_t page_size);
+ENTER_PROGRAM_MODE_HANDLER(stm32isp);
+LEAVE_PROGRAM_MODE_HANDLER(stm32isp);
+ERASE_TARGET_HANDLER(stm32isp);
+WRITE_TARGET_HANDLER(stm32isp);
+READ_TARGET_HANDLER(stm32isp);
 struct program_functions_t stm32isp_program_functions = 
 {
 	NULL,			// execute
-	stm32isp_enter_program_mode, 
-	stm32isp_leave_program_mode, 
-	stm32isp_erase_target, 
-	stm32isp_write_target, 
-	stm32isp_read_target
+	ENTER_PROGRAM_MODE_FUNCNAME(stm32isp), 
+	LEAVE_PROGRAM_MODE_FUNCNAME(stm32isp), 
+	ERASE_TARGET_FUNCNAME(stm32isp), 
+	WRITE_TARGET_FUNCNAME(stm32isp), 
+	READ_TARGET_FUNCNAME(stm32isp)
 };
 
 RESULT stm32isp_sync(void)
@@ -725,7 +721,7 @@ RESULT stm32isp_execute_code(uint32_t addr)
 	return stm32isp_get_ack(0, buffer, 0);
 }
 
-RESULT stm32isp_enter_program_mode(struct program_context_t *context)
+ENTER_PROGRAM_MODE_HANDLER(stm32isp)
 {
 	uint8_t bootloader_version = 0;
 	REFERENCE_PARAMETER(context);
@@ -765,8 +761,7 @@ RESULT stm32isp_enter_program_mode(struct program_context_t *context)
 	return ERROR_OK;
 }
 
-RESULT stm32isp_leave_program_mode(struct program_context_t *context, 
-									uint8_t success)
+LEAVE_PROGRAM_MODE_HANDLER(stm32isp)
 {
 	RESULT ret = ERROR_OK;
 	
@@ -784,11 +779,10 @@ RESULT stm32isp_leave_program_mode(struct program_context_t *context,
 	return ret;
 }
 
-RESULT stm32isp_erase_target(struct program_context_t *context, char area, 
-								uint32_t addr, uint32_t page_size)
+ERASE_TARGET_HANDLER(stm32isp)
 {
 	RESULT ret = ERROR_OK;
-	REFERENCE_PARAMETER(page_size);
+	REFERENCE_PARAMETER(size);
 	REFERENCE_PARAMETER(addr);
 	REFERENCE_PARAMETER(context);
 	
@@ -804,8 +798,7 @@ RESULT stm32isp_erase_target(struct program_context_t *context, char area,
 	return ret;
 }
 
-RESULT stm32isp_write_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint8_t *buff, uint32_t page_size)
+WRITE_TARGET_HANDLER(stm32isp)
 {
 	RESULT ret;
 	REFERENCE_PARAMETER(context);
@@ -813,7 +806,7 @@ RESULT stm32isp_write_target(struct program_context_t *context, char area,
 	switch (area)
 	{
 	case APPLICATION_CHAR:
-		ret = stm32isp_write_memory(addr, buff, (uint16_t)page_size);
+		ret = stm32isp_write_memory(addr, buff, (uint16_t)size);
 		break;
 	default:
 		ret = ERROR_FAIL;
@@ -822,8 +815,7 @@ RESULT stm32isp_write_target(struct program_context_t *context, char area,
 	return ret;
 }
 
-RESULT stm32isp_read_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint8_t *buff, uint32_t page_size)
+READ_TARGET_HANDLER(stm32isp)
 {
 	struct program_info_t *pi = context->pi;
 	uint32_t mcu_id = 0;
@@ -874,9 +866,9 @@ RESULT stm32isp_read_target(struct program_context_t *context, char area,
 		}
 		break;
 	case APPLICATION_CHAR:
-		page_size_tmp = (uint16_t)page_size;
+		page_size_tmp = (uint16_t)size;
 		ret = stm32isp_read_memory(addr, buff, &page_size_tmp);
-		if ((ret != ERROR_OK) || (page_size_tmp != page_size))
+		if ((ret != ERROR_OK) || (page_size_tmp != size))
 		{
 			ret = ERROR_FAIL;
 		}

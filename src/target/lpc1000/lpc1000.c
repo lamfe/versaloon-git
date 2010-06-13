@@ -62,7 +62,7 @@ const struct program_mode_t lpc1000_program_mode[] =
 };
 
 RESULT (*lpc1000_enter_program_mode_save)(struct program_context_t *context);
-static RESULT lpc1000_enter_program_mode(struct program_context_t *context);
+ENTER_PROGRAM_MODE_HANDLER(lpc1000);
 struct program_functions_t lpc1000_program_functions;
 
 static void lpc1000_usage(void)
@@ -77,7 +77,7 @@ Usage of %s:\n\
 			CUR_TARGET_STRING);
 }
 
-RESULT lpc1000_parse_argument(char cmd, const char *argu)
+PARSE_ARGUMENT_HANDLER(lpc1000)
 {
 	uint8_t mode;
 	
@@ -114,7 +114,7 @@ RESULT lpc1000_parse_argument(char cmd, const char *argu)
 			break;
 		}
 		lpc1000_program_functions.enter_program_mode = 
-									lpc1000_enter_program_mode;
+									ENTER_PROGRAM_MODE_FUNCNAME(lpc1000);
 		break;
 	case 'E':
 		comisp_print_comm_info(COMISP_LPCARM);
@@ -137,8 +137,7 @@ RESULT lpc1000_parse_argument(char cmd, const char *argu)
 	return ERROR_OK;
 }
 
-RESULT lpc1000_adjust_setting(struct program_info_t *pi, 
-							struct chip_param_t *param, uint32_t program_mode)
+ADJUST_SETTING_HANDLER(lpc1000)
 {
 	struct chip_area_info_t *flash_info = &param->chip_areas[APPLICATION_IDX];
 	struct chip_area_info_t *sram_info = &param->chip_areas[SRAM_IDX];
@@ -206,7 +205,7 @@ uint32_t lpc1000_get_sector_idx_by_addr(struct program_context_t *context,
 	}
 }
 
-static RESULT lpc1000_enter_program_mode(struct program_context_t *context)
+ENTER_PROGRAM_MODE_HANDLER(lpc1000)
 {
 	struct program_info_t *pi = context->pi;
 	struct program_area_t *flash_area = &pi->program_areas[APPLICATION_IDX];

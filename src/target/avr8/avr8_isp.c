@@ -42,23 +42,19 @@
 
 #define CUR_TARGET_STRING		AVR8_STRING
 
-RESULT avr8isp_enter_program_mode(struct program_context_t *context);
-RESULT avr8isp_leave_program_mode(struct program_context_t *context, 
-								uint8_t success);
-RESULT avr8isp_erase_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint32_t page_size);
-RESULT avr8isp_write_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint8_t *buff, uint32_t page_size);
-RESULT avr8isp_read_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint8_t *buff, uint32_t page_size);
+ENTER_PROGRAM_MODE_HANDLER(avr8isp);
+LEAVE_PROGRAM_MODE_HANDLER(avr8isp);
+ERASE_TARGET_HANDLER(avr8isp);
+WRITE_TARGET_HANDLER(avr8isp);
+READ_TARGET_HANDLER(avr8isp);
 struct program_functions_t avr8isp_program_functions = 
 {
 	NULL,			// execute
-	avr8isp_enter_program_mode, 
-	avr8isp_leave_program_mode, 
-	avr8isp_erase_target, 
-	avr8isp_write_target, 
-	avr8isp_read_target
+	ENTER_PROGRAM_MODE_FUNCNAME(avr8isp), 
+	LEAVE_PROGRAM_MODE_FUNCNAME(avr8isp), 
+	ERASE_TARGET_FUNCNAME(avr8isp), 
+	WRITE_TARGET_FUNCNAME(avr8isp), 
+	READ_TARGET_FUNCNAME(avr8isp)
 };
 
 
@@ -102,7 +98,7 @@ static void avr8_isp_pollready(void)
 	poll_end();
 }
 
-RESULT avr8isp_enter_program_mode(struct program_context_t *context)
+ENTER_PROGRAM_MODE_HANDLER(avr8isp)
 {
 	struct program_info_t *pi = context->pi;
 	uint8_t cmd_buf[4];
@@ -163,8 +159,7 @@ try_frequency:
 	return ERROR_OK;
 }
 
-RESULT avr8isp_leave_program_mode(struct program_context_t *context, 
-								uint8_t success)
+LEAVE_PROGRAM_MODE_HANDLER(avr8isp)
 {
 	REFERENCE_PARAMETER(context);
 	REFERENCE_PARAMETER(success);
@@ -175,15 +170,14 @@ RESULT avr8isp_leave_program_mode(struct program_context_t *context,
 	return commit();
 }
 
-RESULT avr8isp_erase_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint32_t page_size)
+ERASE_TARGET_HANDLER(avr8isp)
 {
 	struct chip_param_t *param = context->param;
 	uint8_t cmd_buf[4];
 	
 	REFERENCE_PARAMETER(area);
 	REFERENCE_PARAMETER(addr);
-	REFERENCE_PARAMETER(page_size);
+	REFERENCE_PARAMETER(size);
 	
 	cmd_buf[0] = 0xAC;
 	cmd_buf[1] = 0x80;
@@ -203,8 +197,7 @@ RESULT avr8isp_erase_target(struct program_context_t *context, char area,
 	return commit();
 }
 
-RESULT avr8isp_write_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint8_t *buff, uint32_t page_size)
+WRITE_TARGET_HANDLER(avr8isp)
 {
 	struct program_info_t *pi = context->pi;
 	struct chip_param_t *param = context->param;
@@ -219,7 +212,7 @@ RESULT avr8isp_write_target(struct program_context_t *context, char area,
 		if (param->chip_areas[APPLICATION_IDX].page_num > 1)
 		{
 			// page mode
-			for (i = 0; i < page_size; i++)
+			for (i = 0; i < size; i++)
 			{
 				if (i & 1)
 				{
@@ -262,7 +255,7 @@ RESULT avr8isp_write_target(struct program_context_t *context, char area,
 		else
 		{
 			// byte mode
-			for (i = 0; i < page_size; i++)
+			for (i = 0; i < size; i++)
 			{
 				if (i & 1)
 				{
@@ -300,7 +293,7 @@ RESULT avr8isp_write_target(struct program_context_t *context, char area,
 		if ((param->chip_areas[EEPROM_IDX].page_num > 1) 
 			&& (param->param[AVR8_PARAM_ISP_EERPOM_PAGE_EN]))
 		{
-			while (page_size > 0)
+			while (size > 0)
 			{
 				// Page mode
 				for (i = 0; i < ee_page_size; i++)
@@ -327,7 +320,7 @@ RESULT avr8isp_write_target(struct program_context_t *context, char area,
 				{
 					delay_ms(5);
 				}
-				page_size -= ee_page_size;
+				size -= ee_page_size;
 				addr += ee_page_size;
 				buff += ee_page_size;
 			}
@@ -340,7 +333,7 @@ RESULT avr8isp_write_target(struct program_context_t *context, char area,
 		}
 		else
 		{
-			while (page_size > 0)
+			while (size > 0)
 			{
 				// Byte mode
 				for (i = 0; i < ee_page_size; i++)
@@ -360,7 +353,7 @@ RESULT avr8isp_write_target(struct program_context_t *context, char area,
 						delay_ms(10);
 					}
 				}
-				page_size -= ee_page_size;
+				size -= ee_page_size;
 				addr += ee_page_size;
 				buff += ee_page_size;
 			}
@@ -481,8 +474,7 @@ RESULT avr8isp_write_target(struct program_context_t *context, char area,
 	return ret;
 }
 
-RESULT avr8isp_read_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint8_t *buff, uint32_t page_size)
+READ_TARGET_HANDLER(avr8isp)
 {
 	struct chip_param_t *param = context->param;
 	uint8_t cmd_buf[4];
@@ -515,7 +507,7 @@ RESULT avr8isp_read_target(struct program_context_t *context, char area,
 		}
 		break;
 	case APPLICATION_CHAR:
-		for (i = 0; i < page_size; i++)
+		for (i = 0; i < size; i++)
 		{
 			if (i & 1)
 			{
@@ -541,7 +533,7 @@ RESULT avr8isp_read_target(struct program_context_t *context, char area,
 		break;
 	case EEPROM_CHAR:
 		ee_page_size = param->chip_areas[EEPROM_IDX].page_size;
-		while (page_size > 0)
+		while (size > 0)
 		{
 			for (i = 0; i < ee_page_size; i++)
 			{
@@ -551,7 +543,7 @@ RESULT avr8isp_read_target(struct program_context_t *context, char area,
 				cmd_buf[3] = 0;
 				spi_io(cmd_buf, 4, buff + i, 3, 1);
 			}
-			page_size -= ee_page_size;
+			size -= ee_page_size;
 			addr += ee_page_size;
 			buff += ee_page_size;
 		}

@@ -79,7 +79,7 @@ RESULT (*msp430jtagsbw_reset)(void);
 RESULT (*msp430jtagsbw_poll)(uint32_t dr, uint32_t mask, uint32_t value, 
 						uint8_t len, uint16_t poll_cnt, uint8_t toggle_tclk);
 
-RESULT msp430_parse_argument(char cmd, const char *argu)
+PARSE_ARGUMENT_HANDLER(msp430)
 {
 	uint8_t mode;
 	

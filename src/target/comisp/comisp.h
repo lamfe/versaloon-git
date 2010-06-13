@@ -25,7 +25,8 @@
 
 extern struct program_functions_t comisp_program_functions;
 
-RESULT comisp_parse_argument(char cmd, const char *argu);
+PARSE_ARGUMENT_HANDLER(comisp);
+
 void comisp_print_comm_info(uint8_t i);
 extern uint8_t comisp_mode_offset;
 

@@ -41,16 +41,3 @@
 #include "avr8_internal.h"
 
 #define CUR_TARGET_STRING		AVR8_STRING
-
-static struct programmer_info_t *p = NULL;
-
-RESULT avr8_hvpp_program(struct operation_t operations, 
-					struct program_info_t *pi, struct programmer_info_t *prog)
-{
-	operations = operations;
-	pi = pi;
-	p = prog;
-
-	return ERROR_FAIL;
-}
-

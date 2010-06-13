@@ -42,23 +42,19 @@
 
 #define CUR_TARGET_STRING		C8051F_STRING
 
-RESULT c8051fc2_enter_program_mode(struct program_context_t *context);
-RESULT c8051fc2_leave_program_mode(struct program_context_t *context, 
-								uint8_t success);
-RESULT c8051fc2_erase_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint32_t page_size);
-RESULT c8051fc2_write_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint8_t *buff, uint32_t page_size);
-RESULT c8051fc2_read_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint8_t *buff, uint32_t page_size);
+ENTER_PROGRAM_MODE_HANDLER(c8051fc2);
+LEAVE_PROGRAM_MODE_HANDLER(c8051fc2);
+ERASE_TARGET_HANDLER(c8051fc2);
+WRITE_TARGET_HANDLER(c8051fc2);
+READ_TARGET_HANDLER(c8051fc2);
 struct program_functions_t c8051fc2_program_functions = 
 {
 	NULL,			// execute
-	c8051fc2_enter_program_mode, 
-	c8051fc2_leave_program_mode, 
-	c8051fc2_erase_target, 
-	c8051fc2_write_target, 
-	c8051fc2_read_target
+	ENTER_PROGRAM_MODE_FUNCNAME(c8051fc2), 
+	LEAVE_PROGRAM_MODE_FUNCNAME(c8051fc2), 
+	ERASE_TARGET_FUNCNAME(c8051fc2), 
+	WRITE_TARGET_FUNCNAME(c8051fc2), 
+	READ_TARGET_FUNCNAME(c8051fc2)
 };
 
 
@@ -94,7 +90,7 @@ RESULT c8051f_c2_addr_poll(uint8_t mask, uint8_t value, uint16_t poll_cnt)
 	return ERROR_OK;
 }
 
-RESULT c8051fc2_enter_program_mode(struct program_context_t *context)
+ENTER_PROGRAM_MODE_HANDLER(c8051fc2)
 {
 	struct chip_param_t *param = context->param;
 	uint8_t dr;
@@ -111,8 +107,7 @@ RESULT c8051fc2_enter_program_mode(struct program_context_t *context)
 	return commit();
 }
 
-RESULT c8051fc2_leave_program_mode(struct program_context_t *context, 
-								uint8_t success)
+LEAVE_PROGRAM_MODE_HANDLER(c8051fc2)
 {
 	REFERENCE_PARAMETER(context);
 	REFERENCE_PARAMETER(success);
@@ -121,15 +116,14 @@ RESULT c8051fc2_leave_program_mode(struct program_context_t *context,
 	return commit();
 }
 
-RESULT c8051fc2_erase_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint32_t page_size)
+ERASE_TARGET_HANDLER(c8051fc2)
 {
 	struct chip_param_t *param = context->param;
 	uint8_t dr;
 	RESULT ret = ERROR_OK;
 	
 	REFERENCE_PARAMETER(addr);
-	REFERENCE_PARAMETER(page_size);
+	REFERENCE_PARAMETER(size);
 	
 	switch (area)
 	{
@@ -171,8 +165,7 @@ RESULT c8051fc2_erase_target(struct program_context_t *context, char area,
 	return ret;
 }
 
-RESULT c8051fc2_write_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint8_t *buff, uint32_t page_size)
+WRITE_TARGET_HANDLER(c8051fc2)
 {
 	struct chip_param_t *param = context->param;
 	uint8_t dr;
@@ -221,7 +214,7 @@ RESULT c8051fc2_write_target(struct program_context_t *context, char area,
 			break;
 		}
 		
-		for (i = 0; i < page_size; i++)
+		for (i = 0; i < size; i++)
 		{
 			c2_write_dr(buff[i]);
 			c2_poll_in_busy();
@@ -243,8 +236,7 @@ RESULT c8051fc2_write_target(struct program_context_t *context, char area,
 	return ret;
 }
 
-RESULT c8051fc2_read_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint8_t *buff, uint32_t page_size)
+READ_TARGET_HANDLER(c8051fc2)
 {
 	struct chip_param_t *param = context->param;
 	uint8_t dr;
@@ -300,7 +292,7 @@ RESULT c8051fc2_read_target(struct program_context_t *context, char area,
 			break;
 		}
 		
-		for (i = 0; i < page_size; i++)
+		for (i = 0; i < size; i++)
 		{
 //			c2_poll_out_ready();
 			c2_read_dr(&buff[i]);

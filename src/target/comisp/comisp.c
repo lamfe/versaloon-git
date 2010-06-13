@@ -49,7 +49,7 @@
 
 #define CUR_TARGET_STRING			COMISP_STRING
 
-RESULT comisp_enter_program_mode(struct program_context_t *context);
+ENTER_PROGRAM_MODE_HANDLER(comisp);
 struct program_functions_t comisp_program_functions;
 
 const struct comisp_param_t comisp_chips_param[] = {
@@ -79,7 +79,7 @@ void comisp_print_comm_info(uint8_t i)
 	printf("auxpin = %c",comisp_chips_param[i].com_mode.auxpin);
 }
 
-RESULT comisp_parse_argument(char cmd, const char *argu)
+PARSE_ARGUMENT_HANDLER(comisp)
 {
 	uint8_t i;
 	char *end_pointer, *cur_pointer;
@@ -104,7 +104,8 @@ RESULT comisp_parse_argument(char cmd, const char *argu)
 		memcpy(&comisp_program_functions, 
 				comisp_chips_param[i].program_functions, 
 				sizeof(comisp_program_functions));
-		comisp_program_functions.enter_program_mode = comisp_enter_program_mode;
+		comisp_program_functions.enter_program_mode = \
+				ENTER_PROGRAM_MODE_FUNCNAME(comisp);
 		break;
 	case 'E':
 		if (argu != NULL)
@@ -210,7 +211,7 @@ RESULT comisp_parse_argument(char cmd, const char *argu)
 	return ERROR_OK;
 }
 
-RESULT comisp_enter_program_mode(struct program_context_t *context)
+ENTER_PROGRAM_MODE_HANDLER(comisp)
 {
 	struct program_functions_t *pf = 
 					comisp_chips_param[comisp_chip_index].program_functions;

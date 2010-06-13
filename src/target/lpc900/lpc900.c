@@ -55,23 +55,19 @@ const struct program_mode_t lpc900_program_mode[] =
 	{0, NULL, 0}
 };
 
-RESULT lpc900_enter_program_mode(struct program_context_t *context);
-RESULT lpc900_leave_program_mode(struct program_context_t *context, 
-								uint8_t success);
-RESULT lpc900_erase_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint32_t page_size);
-RESULT lpc900_write_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint8_t *buff, uint32_t page_size);
-RESULT lpc900_read_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint8_t *buff, uint32_t size);
+ENTER_PROGRAM_MODE_HANDLER(lpc900icp);
+LEAVE_PROGRAM_MODE_HANDLER(lpc900icp);
+ERASE_TARGET_HANDLER(lpc900icp);
+WRITE_TARGET_HANDLER(lpc900icp);
+READ_TARGET_HANDLER(lpc900icp);
 const struct program_functions_t lpc900_program_functions = 
 {
 	NULL,			// execute
-	lpc900_enter_program_mode, 
-	lpc900_leave_program_mode, 
-	lpc900_erase_target, 
-	lpc900_write_target, 
-	lpc900_read_target
+	ENTER_PROGRAM_MODE_FUNCNAME(lpc900icp), 
+	LEAVE_PROGRAM_MODE_FUNCNAME(lpc900icp), 
+	ERASE_TARGET_FUNCNAME(lpc900icp), 
+	WRITE_TARGET_FUNCNAME(lpc900icp), 
+	READ_TARGET_FUNCNAME(lpc900icp)
 };
 
 void lpc900_usage(void)
@@ -80,7 +76,7 @@ void lpc900_usage(void)
 Usage of %s:\n\n", CUR_TARGET_STRING);
 }
 
-RESULT lpc900_parse_argument(char cmd, const char *argu)
+PARSE_ARGUMENT_HANDLER(lpc900)
 {
 	argu = argu;
 	
@@ -157,7 +153,7 @@ static struct programmer_info_t *p = NULL;
 #define ICP_CFG_ID1							0x11
 #define ICP_CFG_ID2							0x12
 
-RESULT lpc900_enter_program_mode(struct program_context_t *context)
+ENTER_PROGRAM_MODE_HANDLER(lpc900icp)
 {
 	struct program_info_t *pi = context->pi;
 	uint32_t device_id;	
@@ -232,8 +228,7 @@ ProgramStart:
 	return ERROR_OK;
 }
 
-RESULT lpc900_leave_program_mode(struct program_context_t *context, 
-								uint8_t success)
+LEAVE_PROGRAM_MODE_HANDLER(lpc900icp)
 {
 	REFERENCE_PARAMETER(context);
 	REFERENCE_PARAMETER(success);
@@ -246,15 +241,14 @@ RESULT lpc900_leave_program_mode(struct program_context_t *context,
 	return ERROR_OK;
 }
 
-RESULT lpc900_erase_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint32_t page_size)
+ERASE_TARGET_HANDLER(lpc900icp)
 {
 	uint8_t tmpbuf[2];
 	
 	REFERENCE_PARAMETER(context);
 	REFERENCE_PARAMETER(area);
 	REFERENCE_PARAMETER(addr);
-	REFERENCE_PARAMETER(page_size);
+	REFERENCE_PARAMETER(size);
 	
 	tmpbuf[0] = ICP_CMD_WRITE | ICP_CMD_FMCON;
 	tmpbuf[1] = ICP_FMCMD_ERS_G;
@@ -267,8 +261,7 @@ RESULT lpc900_erase_target(struct program_context_t *context, char area,
 	return ERROR_OK;
 }
 
-RESULT lpc900_write_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint8_t *buff, uint32_t page_size)
+WRITE_TARGET_HANDLER(lpc900icp)
 {
 	uint8_t tmpbuf[256 + 11];
 	RESULT ret = ERROR_OK;
@@ -283,15 +276,15 @@ RESULT lpc900_write_target(struct program_context_t *context, char area,
 		tmpbuf[2] = ICP_CMD_WRITE | ICP_CMD_FMADRL;
 		tmpbuf[3] = 0;
 		tmpbuf[4] = ICP_CMD_WRITE | ICP_CMD_FMDATA_PG;
-		memcpy(tmpbuf + 5, buff, page_size);
-		tmpbuf[5 + page_size + 0] = ICP_CMD_WRITE | ICP_CMD_FMADRL;
-		tmpbuf[5 + page_size + 1] = (addr >> 0) & 0xFF;
-		tmpbuf[5 + page_size + 2] = ICP_CMD_WRITE | ICP_CMD_FMADRH;
-		tmpbuf[5 + page_size + 3] = (addr >> 8) & 0xFF;
-		tmpbuf[5 + page_size + 4] = ICP_CMD_WRITE | ICP_CMD_FMCON;
-		tmpbuf[5 + page_size + 5] = ICP_FMCMD_PROG;
+		memcpy(tmpbuf + 5, buff, size);
+		tmpbuf[5 + size + 0] = ICP_CMD_WRITE | ICP_CMD_FMADRL;
+		tmpbuf[5 + size + 1] = (addr >> 0) & 0xFF;
+		tmpbuf[5 + size + 2] = ICP_CMD_WRITE | ICP_CMD_FMADRH;
+		tmpbuf[5 + size + 3] = (addr >> 8) & 0xFF;
+		tmpbuf[5 + size + 4] = ICP_CMD_WRITE | ICP_CMD_FMCON;
+		tmpbuf[5 + size + 5] = ICP_FMCMD_PROG;
 		
-		icp_out(tmpbuf, (uint16_t)(11 + page_size));
+		icp_out(tmpbuf, (uint16_t)(11 + size));
 		icp_poll(ICP_CMD_READ | ICP_CMD_FMCON, tmpbuf, 
 					0x0F, 0x80, 10000);
 		if ((ERROR_OK != icp_commit()) 
@@ -309,8 +302,7 @@ RESULT lpc900_write_target(struct program_context_t *context, char area,
 	return ret;
 }
 
-RESULT lpc900_read_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint8_t *buff, uint32_t size)
+READ_TARGET_HANDLER(lpc900icp)
 {
 	uint8_t tmpbuff[2];
 	RESULT ret = ERROR_OK;

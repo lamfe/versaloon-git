@@ -25,7 +25,7 @@ extern const struct program_area_map_t avr8_program_area_map[];
 extern const struct program_mode_t avr8_program_mode[];
 extern struct program_functions_t avr8_program_functions;
 
-RESULT avr8_parse_argument(char cmd, const char *argu);
+PARSE_ARGUMENT_HANDLER(avr8);
 
 #endif /* __AVR8_H_INCLUDED__ */
 

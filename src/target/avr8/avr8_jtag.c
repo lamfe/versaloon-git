@@ -42,23 +42,19 @@
 
 #define CUR_TARGET_STRING							AVR8_STRING
 
-RESULT avr8jtag_enter_program_mode(struct program_context_t *context);
-RESULT avr8jtag_leave_program_mode(struct program_context_t *context, 
-								uint8_t success);
-RESULT avr8jtag_erase_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint32_t page_size);
-RESULT avr8jtag_write_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint8_t *buff, uint32_t page_size);
-RESULT avr8jtag_read_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint8_t *buff, uint32_t page_size);
+ENTER_PROGRAM_MODE_HANDLER(avr8jtag);
+LEAVE_PROGRAM_MODE_HANDLER(avr8jtag);
+ERASE_TARGET_HANDLER(avr8jtag);
+WRITE_TARGET_HANDLER(avr8jtag);
+READ_TARGET_HANDLER(avr8jtag);
 struct program_functions_t avr8jtag_program_functions = 
 {
 	NULL,			// execute
-	avr8jtag_enter_program_mode, 
-	avr8jtag_leave_program_mode, 
-	avr8jtag_erase_target, 
-	avr8jtag_write_target, 
-	avr8jtag_read_target
+	ENTER_PROGRAM_MODE_FUNCNAME(avr8jtag), 
+	LEAVE_PROGRAM_MODE_FUNCNAME(avr8jtag), 
+	ERASE_TARGET_FUNCNAME(avr8jtag), 
+	WRITE_TARGET_FUNCNAME(avr8jtag), 
+	READ_TARGET_FUNCNAME(avr8jtag)
 };
 
 #define AVR_JTAG_INS_LEN							4
@@ -202,7 +198,7 @@ void AVR_JTAG_WaitComplete(uint16_t cmd)
 	poll_end();
 }
 
-RESULT avr8jtag_enter_program_mode(struct program_context_t *context)
+ENTER_PROGRAM_MODE_HANDLER(avr8jtag)
 {
 	struct program_info_t *pi = context->pi;
 	uint8_t ir;
@@ -227,8 +223,7 @@ RESULT avr8jtag_enter_program_mode(struct program_context_t *context)
 	return jtag_commit();
 }
 
-RESULT avr8jtag_leave_program_mode(struct program_context_t *context, 
-								uint8_t success)
+LEAVE_PROGRAM_MODE_HANDLER(avr8jtag)
 {
 	uint8_t ir;
 	uint32_t dr;
@@ -247,8 +242,7 @@ RESULT avr8jtag_leave_program_mode(struct program_context_t *context,
 	return jtag_commit();
 }
 
-RESULT avr8jtag_erase_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint32_t page_size)
+ERASE_TARGET_HANDLER(avr8jtag)
 {
 	uint8_t ir;
 	uint32_t dr;
@@ -256,7 +250,7 @@ RESULT avr8jtag_erase_target(struct program_context_t *context, char area,
 	REFERENCE_PARAMETER(context);
 	REFERENCE_PARAMETER(area);
 	REFERENCE_PARAMETER(addr);
-	REFERENCE_PARAMETER(page_size);
+	REFERENCE_PARAMETER(size);
 	
 	AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
 	AVR_JTAG_PROG_ChipErase();
@@ -264,8 +258,7 @@ RESULT avr8jtag_erase_target(struct program_context_t *context, char area,
 	return jtag_commit();
 }
 
-RESULT avr8jtag_write_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint8_t *buff, uint32_t page_size)
+WRITE_TARGET_HANDLER(avr8jtag)
 {
 	struct chip_param_t *param = context->param;
 	struct program_info_t *pi = context->pi;
@@ -287,11 +280,11 @@ RESULT avr8jtag_write_target(struct program_context_t *context, char area,
 		
 		if (param->param[AVR8_PARAM_JTAG_FULL_BITSTREAM])
 		{
-			jtag_dr_write(buff, (uint16_t)(page_size * 8));
+			jtag_dr_write(buff, (uint16_t)(size * 8));
 		}
 		else
 		{
-			for (i = 0; i < page_size; i++)
+			for (i = 0; i < size; i++)
 			{
 				jtag_dr_write(buff + i, 8);
 			}
@@ -310,7 +303,7 @@ RESULT avr8jtag_write_target(struct program_context_t *context, char area,
 		AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
 		AVR_JTAG_PROG_EnterEEPROMWrite();
 		
-		while (page_size > 0)
+		while (size > 0)
 		{
 			AVR_JTAG_PROG_LoadAddrHighByte(addr >> 8);
 			for (i = 0; i < ee_page_size; i++)
@@ -324,7 +317,7 @@ RESULT avr8jtag_write_target(struct program_context_t *context, char area,
 			AVR_JTAG_PROG_WriteEEPROMPage();
 			AVR_JTAG_WaitComplete(AVR_JTAG_PROG_WriteEEPROMPageComplete_CMD);
 			
-			page_size -= ee_page_size;
+			size -= ee_page_size;
 			buff += ee_page_size;
 			addr += ee_page_size;
 		}
@@ -407,8 +400,7 @@ RESULT avr8jtag_write_target(struct program_context_t *context, char area,
 	return ret;
 }
 
-RESULT avr8jtag_read_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint8_t *buff, uint32_t page_size)
+READ_TARGET_HANDLER(avr8jtag)
 {
 	struct chip_param_t *param = context->param;
 	uint8_t ir;
@@ -449,11 +441,11 @@ RESULT avr8jtag_read_target(struct program_context_t *context, char area,
 		{
 			dr = 0;
 			jtag_dr_write(&dr, 8);
-			jtag_dr_read(page_buf, (uint16_t)(page_size * 8));
+			jtag_dr_read(page_buf, (uint16_t)(size * 8));
 		}
 		else
 		{
-			for (i = 0; i < page_size; i++)
+			for (i = 0; i < size; i++)
 			{
 				jtag_dr_read(page_buf + i, 8);
 			}
@@ -464,7 +456,7 @@ RESULT avr8jtag_read_target(struct program_context_t *context, char area,
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
-		memcpy(buff, page_buf, page_size);
+		memcpy(buff, page_buf, size);
 		break;
 	case EEPROM_CHAR:
 		ee_page_size = param->chip_areas[EEPROM_IDX].page_size;
@@ -472,7 +464,7 @@ RESULT avr8jtag_read_target(struct program_context_t *context, char area,
 		AVR_JTAG_PROG_EnterEEPROMRead();
 		
 		j = 0;
-		k = page_size;
+		k = size;
 		while (k > 0)
 		{
 			for (i = 0; i < ee_page_size; i++)
@@ -491,7 +483,7 @@ RESULT avr8jtag_read_target(struct program_context_t *context, char area,
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
-		memcpy(buff, page_buf, page_size);
+		memcpy(buff, page_buf, size);
 		break;
 	case FUSE_CHAR:
 		// low bits
