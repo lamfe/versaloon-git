@@ -52,23 +52,19 @@
 
 #include "timer.h"
 
-RESULT lpc1000swj_enter_program_mode(struct program_context_t *context);
-RESULT lpc1000swj_leave_program_mode(struct program_context_t *context, 
-									uint8_t success);
-RESULT lpc1000swj_erase_target(struct program_context_t *context, char area, 
-								uint32_t addr, uint32_t size);
-RESULT lpc1000swj_write_target(struct program_context_t *context, char area, 
-								uint32_t addr, uint8_t *buff, uint32_t size);
-RESULT lpc1000swj_read_target(struct program_context_t *context, char area, 
-								uint32_t addr, uint8_t *buff, uint32_t size);
+ENTER_PROGRAM_MODE_HANDLER(lpc1000swj);
+LEAVE_PROGRAM_MODE_HANDLER(lpc1000swj);
+ERASE_TARGET_HANDLER(lpc1000swj);
+WRITE_TARGET_HANDLER(lpc1000swj);
+READ_TARGET_HANDLER(lpc1000swj);
 const struct program_functions_t lpc1000swj_program_functions = 
 {
 	NULL, 
-	lpc1000swj_enter_program_mode, 
-	lpc1000swj_leave_program_mode, 
-	lpc1000swj_erase_target, 
-	lpc1000swj_write_target, 
-	lpc1000swj_read_target
+	ENTER_PROGRAM_MODE_FUNCNAME(lpc1000swj), 
+	LEAVE_PROGRAM_MODE_FUNCNAME(lpc1000swj), 
+	ERASE_TARGET_FUNCNAME(lpc1000swj), 
+	WRITE_TARGET_FUNCNAME(lpc1000swj), 
+	READ_TARGET_FUNCNAME(lpc1000swj)
 };
 
 #define LPC1000_IAP_BASE				LPC1000_SRAM_ADDR
@@ -314,7 +310,7 @@ static RESULT lpc1000swj_iap_call(uint32_t cmd, uint32_t param_table[5],
 	return ERROR_OK;
 }
 
-RESULT lpc1000swj_enter_program_mode(struct program_context_t *context)
+ENTER_PROGRAM_MODE_HANDLER(lpc1000swj)
 {
 	uint32_t *para_ptr = (uint32_t*)&iap_code[LPC1000_IAP_PARAM_OFFSET];
 	uint32_t reg;
@@ -364,8 +360,7 @@ RESULT lpc1000swj_enter_program_mode(struct program_context_t *context)
 	return ERROR_OK;
 }
 
-RESULT lpc1000swj_leave_program_mode(struct program_context_t *context, 
-									uint8_t success)
+LEAVE_PROGRAM_MODE_HANDLER(lpc1000swj)
 {
 	uint32_t reg;
 	
@@ -399,8 +394,7 @@ RESULT lpc1000swj_leave_program_mode(struct program_context_t *context,
 	return ERROR_OK;
 }
 
-RESULT lpc1000swj_erase_target(struct program_context_t *context, char area, 
-								uint32_t addr, uint32_t size)
+ERASE_TARGET_HANDLER(lpc1000swj)
 {
 	struct program_info_t *pi = context->pi;
 	RESULT ret= ERROR_OK;
@@ -447,8 +441,7 @@ RESULT lpc1000swj_erase_target(struct program_context_t *context, char area,
 	return ret;
 }
 
-RESULT lpc1000swj_write_target(struct program_context_t *context, char area, 
-								uint32_t addr, uint8_t *buff, uint32_t size)
+WRITE_TARGET_HANDLER(lpc1000swj)
 {
 	struct program_info_t *pi = context->pi;
 	struct chip_param_t *param = context->param;
@@ -634,8 +627,7 @@ RESULT lpc1000swj_write_target(struct program_context_t *context, char area,
 	return ERROR_OK;
 }
 
-RESULT lpc1000swj_read_target(struct program_context_t *context, char area, 
-								uint32_t addr, uint8_t *buff, uint32_t size)
+READ_TARGET_HANDLER(lpc1000swj)
 {
 	RESULT ret = ERROR_OK;
 	uint32_t cur_block_size;

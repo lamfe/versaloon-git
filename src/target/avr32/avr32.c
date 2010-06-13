@@ -58,23 +58,19 @@ const struct program_mode_t avr32_program_mode[] =
 	{0, NULL, 0}
 };
 
-RESULT avr32jtag_enter_program_mode(struct program_context_t *context);
-RESULT avr32jtag_leave_program_mode(struct program_context_t *context, 
-								uint8_t success);
-RESULT avr32jtag_erase_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint32_t page_size);
-RESULT avr32jtag_write_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint8_t *buff, uint32_t page_size);
-RESULT avr32jtag_read_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint8_t *buff, uint32_t size);
+ENTER_PROGRAM_MODE_HANDLER(avr32jtag);
+LEAVE_PROGRAM_MODE_HANDLER(avr32jtag);
+ERASE_TARGET_HANDLER(avr32jtag);
+WRITE_TARGET_HANDLER(avr32jtag);
+READ_TARGET_HANDLER(avr32jtag);
 struct program_functions_t avr32_program_functions = 
 {
 	NULL,			// execute
-	avr32jtag_enter_program_mode, 
-	avr32jtag_leave_program_mode, 
-	avr32jtag_erase_target, 
-	avr32jtag_write_target, 
-	avr32jtag_read_target
+	ENTER_PROGRAM_MODE_FUNCNAME(avr32jtag), 
+	LEAVE_PROGRAM_MODE_FUNCNAME(avr32jtag), 
+	ERASE_TARGET_FUNCNAME(avr32jtag), 
+	WRITE_TARGET_FUNCNAME(avr32jtag), 
+	READ_TARGET_FUNCNAME(avr32jtag)
 };
 
 static void avr32_usage(void)
@@ -86,7 +82,7 @@ Usage of %s:\n\
 			CUR_TARGET_STRING);
 }
 
-RESULT avr32_parse_argument(char cmd, const char *argu)
+PARSE_ARGUMENT_HANDLER(avr32)
 {
 	uint8_t mode;
 	
@@ -352,7 +348,7 @@ static RESULT avr32jtag_fcmd_call(uint8_t command, uint16_t pagen)
 	return ERROR_OK;
 }
 
-RESULT avr32jtag_enter_program_mode(struct program_context_t *context)
+ENTER_PROGRAM_MODE_HANDLER(avr32jtag)
 {
 	struct program_info_t *pi = context->pi;
 	
@@ -378,8 +374,7 @@ RESULT avr32jtag_enter_program_mode(struct program_context_t *context)
 	return jtag_commit();
 }
 
-RESULT avr32jtag_leave_program_mode(struct program_context_t *context, 
-								uint8_t success)
+LEAVE_PROGRAM_MODE_HANDLER(avr32jtag)
 {
 	REFERENCE_PARAMETER(context);
 	REFERENCE_PARAMETER(success);
@@ -388,8 +383,7 @@ RESULT avr32jtag_leave_program_mode(struct program_context_t *context,
 	return jtag_commit();
 }
 
-RESULT avr32jtag_erase_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint32_t page_size)
+ERASE_TARGET_HANDLER(avr32jtag)
 {
 	struct chip_param_t *param = context->param;
 	RESULT ret = ERROR_OK;
@@ -399,7 +393,7 @@ RESULT avr32jtag_erase_target(struct program_context_t *context, char area,
 	
 	REFERENCE_PARAMETER(context);
 	REFERENCE_PARAMETER(addr);
-	REFERENCE_PARAMETER(page_size);
+	REFERENCE_PARAMETER(size);
 	
 	switch (area)
 	{
@@ -461,8 +455,7 @@ RESULT avr32jtag_erase_target(struct program_context_t *context, char area,
 	}
 }
 
-RESULT avr32jtag_write_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint8_t *buff, uint32_t page_size)
+WRITE_TARGET_HANDLER(avr32jtag)
 {
 	struct chip_param_t *param = context->param;
 	struct chip_area_info_t *flash_info = &param->chip_areas[APPLICATION_IDX];
@@ -470,7 +463,6 @@ RESULT avr32jtag_write_target(struct program_context_t *context, char area,
 	
 	REFERENCE_PARAMETER(addr);
 	REFERENCE_PARAMETER(buff);
-	REFERENCE_PARAMETER(page_size);
 	
 	switch (area)
 	{
@@ -478,7 +470,7 @@ RESULT avr32jtag_write_target(struct program_context_t *context, char area,
 		pagen = (uint16_t)((addr - flash_info->addr) / flash_info->page_size);
 		avr32jtag_fcmd_call(AVR32_FLASHC_FCMD_CPB, 0);
 		avr32jtag_sab_access(AVR32_SAB_SLAVE_HSB, addr, 
-								buff, AVR32_JTAG_WRITE, page_size / 4);
+								buff, AVR32_JTAG_WRITE, size / 4);
 		jtag_commit();
 		if (ERROR_OK != avr32jtag_fcmd_call(AVR32_FLASHC_FCMD_WP, pagen))
 		{
@@ -493,8 +485,7 @@ RESULT avr32jtag_write_target(struct program_context_t *context, char area,
 	return ERROR_OK;
 }
 
-RESULT avr32jtag_read_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint8_t *buff, uint32_t size)
+READ_TARGET_HANDLER(avr32jtag)
 {
 	struct chip_param_t *param = context->param;
 	uint32_t page_size;

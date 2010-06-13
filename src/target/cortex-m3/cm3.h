@@ -23,7 +23,8 @@
 
 extern struct program_functions_t cm3_program_functions;
 
-RESULT cm3_parse_argument(char cmd, const char *argu);
+PARSE_ARGUMENT_HANDLER(cm3);
+
 extern uint8_t cm3_mode_offset;
 
 #endif /* __CM3_H_INCLUDED__ */

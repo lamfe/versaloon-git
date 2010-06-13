@@ -19,6 +19,8 @@
 #ifndef __TARGET_H_INCLUDED__
 #define __TARGET_H_INCLUDED__
 
+#define ASSEMBLE_FUNCNAME(mod, name)		mod ## name
+
 // Target Feature
 #define AUTO_DETECT					"A"
 #define USE_COMM					"C"
@@ -168,8 +170,8 @@ struct program_mode_t
 	uint32_t interface_needed;
 };
 
-#define TARGET_CONF_FILE_EXT			".xml"
-#define TARGET_MAX_CHIP_NAME_LEN		32
+#define TARGET_CONF_FILE_EXT		".xml"
+#define TARGET_MAX_CHIP_NAME_LEN	32
 
 struct chip_area_info_t
 {
@@ -201,6 +203,35 @@ struct program_context_t
 	struct programmer_info_t *prog;
 };
 
+#define	EXECUTE_FUNCNAME(mod)				ASSEMBLE_FUNCNAME(mod, _execute)
+#define ENTER_PROGRAM_MODE_FUNCNAME(mod)	ASSEMBLE_FUNCNAME(mod, _enter_program_mode)
+#define LEAVE_PROGRAM_MODE_FUNCNAME(mod)	ASSEMBLE_FUNCNAME(mod, _leave_program_mode)
+#define ERASE_TARGET_FUNCNAME(mod)			ASSEMBLE_FUNCNAME(mod, _erase_target)
+#define WRITE_TARGET_FUNCNAME(mod)			ASSEMBLE_FUNCNAME(mod, _write_target)
+#define READ_TARGET_FUNCNAME(mod)			ASSEMBLE_FUNCNAME(mod, _read_target)
+
+#define EXECUTE_HANDLER(mod)				\
+			static RESULT EXECUTE_FUNCNAME(mod)\
+						(struct program_context_t *context)
+#define ENTER_PROGRAM_MODE_HANDLER(mod)		\
+			static RESULT ENTER_PROGRAM_MODE_FUNCNAME(mod)\
+						(struct program_context_t *context)
+#define LEAVE_PROGRAM_MODE_HANDLER(mod)		\
+			static RESULT LEAVE_PROGRAM_MODE_FUNCNAME(mod)\
+						(struct program_context_t *context, uint8_t success)
+#define ERASE_TARGET_HANDLER(mod)			\
+			static RESULT ERASE_TARGET_FUNCNAME(mod)\
+						(struct program_context_t *context, char area, \
+							uint32_t addr, uint32_t size)
+#define WRITE_TARGET_HANDLER(mod)			\
+			static RESULT WRITE_TARGET_FUNCNAME(mod)\
+						(struct program_context_t *context, char area, \
+							uint32_t addr, uint8_t *buff, uint32_t size)
+#define READ_TARGET_HANDLER(mod)			\
+			static RESULT READ_TARGET_FUNCNAME(mod)\
+						(struct program_context_t *context, char area, \
+							uint32_t addr, uint8_t *buff, uint32_t size)
+
 struct program_functions_t
 {
 	RESULT (*execute)(struct program_context_t *context);
@@ -217,6 +248,18 @@ struct program_functions_t
 	RESULT (*read_target)(struct program_context_t *context, char area, 
 							uint32_t addr, uint8_t *buff, uint32_t size);
 };
+
+#define	PARSE_ARGUMENT_FUNCNAME(mod)		ASSEMBLE_FUNCNAME(mod, _parse_argument)
+#define ADJUST_SETTING_FUNCNAME(mod)		ASSEMBLE_FUNCNAME(mod, _adjust_setting)
+
+#define PARSE_ARGUMENT_HANDLER(mod)			\
+			RESULT PARSE_ARGUMENT_FUNCNAME(mod)\
+						(char cmd, const char *argu)
+#define ADJUST_SETTING_HANDLER(mod)			\
+			RESULT ADJUST_SETTING_FUNCNAME(mod)\
+						(struct program_info_t *pi, \
+							struct chip_param_t *param, \
+							uint32_t program_mode)
 
 struct target_info_t
 {

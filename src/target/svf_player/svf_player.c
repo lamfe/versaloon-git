@@ -58,10 +58,10 @@ const struct program_mode_t svfp_program_mode[] =
 	{0, NULL, 0}
 };
 
-RESULT svfp_execute(struct program_context_t *context);
+EXECUTE_HANDLER(svfp);
 const struct program_functions_t svfp_program_functions =
 {
-	svfp_execute,			// execute
+	EXECUTE_FUNCNAME(svfp),			// execute
 	NULL, NULL, NULL, NULL, NULL
 };
 
@@ -77,7 +77,7 @@ Usage of %s:\n\
 		   CUR_TARGET_STRING);
 }
 
-RESULT svfp_parse_argument(char cmd, const char *argu)
+PARSE_ARGUMENT_HANDLER(svfp)
 {
 	argu = argu;
 	
@@ -99,7 +99,7 @@ RESULT svfp_parse_argument(char cmd, const char *argu)
 struct programmer_info_t *p = NULL;
 extern struct filelist *fl_in;
 
-RESULT svfp_execute(struct program_context_t *context)
+EXECUTE_HANDLER(svfp)
 {
 	struct program_info_t *pi = context->pi;
 	FILE *svf_file = NULL;

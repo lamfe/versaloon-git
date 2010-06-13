@@ -25,7 +25,7 @@ extern struct program_area_map_t avr32_program_area_map[];
 extern const struct program_mode_t avr32_program_mode[];
 extern struct program_functions_t avr32_program_functions;
 
-RESULT avr32_parse_argument(char cmd, const char *argu);
+PARSE_ARGUMENT_HANDLER(avr32);
 
 #endif /* __AVR32_H_INCLUDED__ */
 

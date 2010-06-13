@@ -43,23 +43,19 @@
 #define CUR_TARGET_STRING		C8051F_STRING
 #define CUR_DEFAULT_FREQ		4500
 
-RESULT c8051fjtag_enter_program_mode(struct program_context_t *context);
-RESULT c8051fjtag_leave_program_mode(struct program_context_t *context, 
-								uint8_t success);
-RESULT c8051fjtag_erase_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint32_t page_size);
-RESULT c8051fjtag_write_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint8_t *buff, uint32_t page_size);
-RESULT c8051fjtag_read_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint8_t *buff, uint32_t page_size);
+ENTER_PROGRAM_MODE_HANDLER(c8051fjtag);
+LEAVE_PROGRAM_MODE_HANDLER(c8051fjtag);
+ERASE_TARGET_HANDLER(c8051fjtag);
+WRITE_TARGET_HANDLER(c8051fjtag);
+READ_TARGET_HANDLER(c8051fjtag);
 struct program_functions_t c8051fjtag_program_functions = 
 {
 	NULL,			// execute
-	c8051fjtag_enter_program_mode, 
-	c8051fjtag_leave_program_mode, 
-	c8051fjtag_erase_target, 
-	c8051fjtag_write_target, 
-	c8051fjtag_read_target
+	ENTER_PROGRAM_MODE_FUNCNAME(c8051fjtag), 
+	LEAVE_PROGRAM_MODE_FUNCNAME(c8051fjtag), 
+	ERASE_TARGET_FUNCNAME(c8051fjtag), 
+	WRITE_TARGET_FUNCNAME(c8051fjtag), 
+	READ_TARGET_FUNCNAME(c8051fjtag)
 };
 
 static struct programmer_info_t *p = NULL;
@@ -166,7 +162,7 @@ RESULT c8051f_jtag_poll_flbusy(uint16_t poll_cnt, uint16_t interval)
 	return ERROR_OK;
 }
 
-RESULT c8051fjtag_enter_program_mode(struct program_context_t *context)
+ENTER_PROGRAM_MODE_HANDLER(c8051fjtag)
 {
 	struct program_info_t *pi = context->pi;
 	uint32_t dr;
@@ -188,8 +184,7 @@ RESULT c8051fjtag_enter_program_mode(struct program_context_t *context)
 	return jtag_commit();
 }
 
-RESULT c8051fjtag_leave_program_mode(struct program_context_t *context, 
-								uint8_t success)
+LEAVE_PROGRAM_MODE_HANDLER(c8051fjtag)
 {
 	REFERENCE_PARAMETER(context);
 	REFERENCE_PARAMETER(success);
@@ -198,15 +193,14 @@ RESULT c8051fjtag_leave_program_mode(struct program_context_t *context,
 	return jtag_commit();
 }
 
-RESULT c8051fjtag_erase_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint32_t page_size)
+ERASE_TARGET_HANDLER(c8051fjtag)
 {
 	struct chip_param_t *param = context->param;
 	uint32_t dr;
 	RESULT ret = ERROR_OK;
 	
 	REFERENCE_PARAMETER(context);
-	REFERENCE_PARAMETER(page_size);
+	REFERENCE_PARAMETER(size);
 	REFERENCE_PARAMETER(addr);
 	
 	switch (area)
@@ -247,8 +241,7 @@ RESULT c8051fjtag_erase_target(struct program_context_t *context, char area,
 	return ret;
 }
 
-RESULT c8051fjtag_write_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint8_t *buff, uint32_t page_size)
+WRITE_TARGET_HANDLER(c8051fjtag)
 {
 	uint32_t dr, read_buf[512];
 	uint32_t i;
@@ -264,7 +257,7 @@ RESULT c8051fjtag_write_target(struct program_context_t *context, char area,
 		c8051f_jtag_ind_write(C8051F_IR_FLASHADR, &dr, 
 								C8051F_DR_FLASHADR_LEN);
 		
-		for (i = 0; i < page_size; i++)
+		for (i = 0; i < size; i++)
 		{
 			// set FLASHCON for flash write operation(0x10)
 			dr = 0x10;
@@ -290,7 +283,7 @@ RESULT c8051fjtag_write_target(struct program_context_t *context, char area,
 			ret = ERRCODE_FAILURE_OPERATION_ADDR;
 			break;
 		}
-		for (i = 0; i < page_size; i++)
+		for (i = 0; i < size; i++)
 		{
 			if ((read_buf[i] & 0x06) != 0)
 			{
@@ -308,8 +301,7 @@ RESULT c8051fjtag_write_target(struct program_context_t *context, char area,
 	return ret;
 }
 
-RESULT c8051fjtag_read_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint8_t *buff, uint32_t page_size)
+READ_TARGET_HANDLER(c8051fjtag)
 {
 	uint16_t ir;
 	uint32_t dr, read_buf[512];
@@ -340,7 +332,7 @@ RESULT c8051fjtag_read_target(struct program_context_t *context, char area,
 		c8051f_jtag_ind_write(C8051F_IR_FLASHADR, &dr, 
 								C8051F_DR_FLASHADR_LEN);
 		
-		for (i = 0; i < page_size; i++)
+		for (i = 0; i < size; i++)
 		{
 			// set FLASHCON for flash read operation(0x02)
 			dr = 0x02;
@@ -367,7 +359,7 @@ RESULT c8051fjtag_read_target(struct program_context_t *context, char area,
 			ret = ERRCODE_FAILURE_OPERATION_ADDR;
 			break;
 		}
-		for (i = 0; i < page_size; i++)
+		for (i = 0; i < size; i++)
 		{
 			if ((read_buf[i] & 0x06) != 0)
 			{

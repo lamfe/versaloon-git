@@ -74,7 +74,7 @@ Usage of %s:\n\
 			CUR_TARGET_STRING);
 }
 
-RESULT stm32_parse_argument(char cmd, const char *argu)
+PARSE_ARGUMENT_HANDLER(stm32)
 {
 	uint8_t mode;
 	

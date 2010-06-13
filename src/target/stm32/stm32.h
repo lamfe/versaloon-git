@@ -25,7 +25,7 @@ extern struct program_area_map_t stm32_program_area_map[];
 extern const struct program_mode_t stm32_program_mode[];
 extern struct program_functions_t stm32_program_functions;
 
-RESULT stm32_parse_argument(char cmd, const char *argu);
+PARSE_ARGUMENT_HANDLER(stm32);
 
 #endif /* __STM32_H_INCLUDED__ */
 

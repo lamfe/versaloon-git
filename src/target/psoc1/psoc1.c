@@ -57,23 +57,19 @@ const struct program_mode_t psoc1_program_mode[] =
 	{0, NULL, 0}
 };
 
-RESULT psoc1_enter_program_mode(struct program_context_t *context);
-RESULT psoc1_leave_program_mode(struct program_context_t *context, 
-								uint8_t success);
-RESULT psoc1_erase_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint32_t page_size);
-RESULT psoc1_write_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint8_t *buff, uint32_t size);
-RESULT psoc1_read_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint8_t *buff, uint32_t size);
+ENTER_PROGRAM_MODE_HANDLER(psoc1);
+LEAVE_PROGRAM_MODE_HANDLER(psoc1);
+ERASE_TARGET_HANDLER(psoc1);
+WRITE_TARGET_HANDLER(psoc1);
+READ_TARGET_HANDLER(psoc1);
 const struct program_functions_t psoc1_program_functions = 
 {
 	NULL,			// execute
-	psoc1_enter_program_mode, 
-	psoc1_leave_program_mode, 
-	psoc1_erase_target, 
-	psoc1_write_target, 
-	psoc1_read_target
+	ENTER_PROGRAM_MODE_FUNCNAME(psoc1), 
+	LEAVE_PROGRAM_MODE_FUNCNAME(psoc1), 
+	ERASE_TARGET_FUNCNAME(psoc1), 
+	WRITE_TARGET_FUNCNAME(psoc1), 
+	READ_TARGET_FUNCNAME(psoc1)
 };
 
 
@@ -88,7 +84,7 @@ Usage of %s:\n\
 			CUR_TARGET_STRING);
 }
 
-RESULT psoc1_parse_argument(char cmd, const char *argu)
+PARSE_ARGUMENT_HANDLER(psoc1)
 {
 	argu = argu;
 	
@@ -249,7 +245,7 @@ RESULT issp_call_ssc(uint8_t cmd, uint8_t id, uint8_t poll_ready, uint8_t * buf,
 	}
 }
 
-RESULT psoc1_enter_program_mode(struct program_context_t *context)
+ENTER_PROGRAM_MODE_HANDLER(psoc1)
 {
 	struct program_info_t *pi = context->pi;
 	uint16_t voltage;
@@ -327,8 +323,8 @@ RESULT psoc1_enter_program_mode(struct program_context_t *context)
 	issp_write_reg(0xE0, 0x02);
 	return issp_commit();
 }
-RESULT psoc1_leave_program_mode(struct program_context_t *context, 
-								uint8_t success)
+
+LEAVE_PROGRAM_MODE_HANDLER(psoc1)
 {
 	struct program_info_t *pi = context->pi;
 	
@@ -356,8 +352,7 @@ RESULT psoc1_leave_program_mode(struct program_context_t *context,
 	return issp_commit();
 }
 
-RESULT psoc1_erase_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint32_t page_size)
+ERASE_TARGET_HANDLER(psoc1)
 {
 	uint8_t tmp8;
 	RESULT ret;
@@ -365,7 +360,7 @@ RESULT psoc1_erase_target(struct program_context_t *context, char area,
 	REFERENCE_PARAMETER(context);
 	REFERENCE_PARAMETER(area);
 	REFERENCE_PARAMETER(addr);
-	REFERENCE_PARAMETER(page_size);
+	REFERENCE_PARAMETER(size);
 	
 	issp_ssc_set_clock(PSOC1_ISSP_SSC_DEFAULT_CLOCK_ERASE);
 	issp_ssc_set_delay(PSOC1_ISSP_SSC_DEFAULT_DELAY);
@@ -377,8 +372,8 @@ RESULT psoc1_erase_target(struct program_context_t *context, char area,
 	}
 	return ERROR_OK;
 }
-RESULT psoc1_write_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint8_t *buff, uint32_t size)
+
+WRITE_TARGET_HANDLER(psoc1)
 {
 	struct chip_param_t *param = context->param;
 	uint8_t bank, bank_num;
@@ -469,8 +464,7 @@ RESULT psoc1_write_target(struct program_context_t *context, char area,
 	return ret;
 }
 
-RESULT psoc1_read_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint8_t *buff, uint32_t size)
+READ_TARGET_HANDLER(psoc1)
 {
 	struct chip_param_t *param = context->param;
 	uint8_t bank, bank_num;

@@ -52,23 +52,19 @@
 
 #include "timer.h"
 
-RESULT at91sam3swj_enter_program_mode(struct program_context_t *context);
-RESULT at91sam3swj_leave_program_mode(struct program_context_t *context, 
-									uint8_t success);
-RESULT at91sam3swj_erase_target(struct program_context_t *context, char area, 
-								uint32_t addr, uint32_t size);
-RESULT at91sam3swj_write_target(struct program_context_t *context, char area, 
-								uint32_t addr, uint8_t *buff, uint32_t size);
-RESULT at91sam3swj_read_target(struct program_context_t *context, char area, 
-								uint32_t addr, uint8_t *buff, uint32_t size);
+ENTER_PROGRAM_MODE_HANDLER(at91sam3swj);
+LEAVE_PROGRAM_MODE_HANDLER(at91sam3swj);
+ERASE_TARGET_HANDLER(at91sam3swj);
+WRITE_TARGET_HANDLER(at91sam3swj);
+READ_TARGET_HANDLER(at91sam3swj);
 const struct program_functions_t at91sam3swj_program_functions = 
 {
 	NULL, 
-	at91sam3swj_enter_program_mode, 
-	at91sam3swj_leave_program_mode, 
-	at91sam3swj_erase_target, 
-	at91sam3swj_write_target, 
-	at91sam3swj_read_target
+	ENTER_PROGRAM_MODE_FUNCNAME(at91sam3swj), 
+	LEAVE_PROGRAM_MODE_FUNCNAME(at91sam3swj), 
+	ERASE_TARGET_FUNCNAME(at91sam3swj), 
+	WRITE_TARGET_FUNCNAME(at91sam3swj), 
+	READ_TARGET_FUNCNAME(at91sam3swj)
 };
 
 #define AT91SAM3_IAP_BASE				AT91SAM3_SRAM_ADDR
@@ -446,7 +442,7 @@ static RESULT at91sam3swj_iap_call(struct at91sam3swj_iap_command_t *cmd,
 }
 #endif
 
-RESULT at91sam3swj_enter_program_mode(struct program_context_t *context)
+ENTER_PROGRAM_MODE_HANDLER(at91sam3swj)
 {
 	struct chip_param_t *param = context->param;
 	uint32_t i;
@@ -536,8 +532,7 @@ RESULT at91sam3swj_enter_program_mode(struct program_context_t *context)
 	return ERROR_OK;
 }
 
-RESULT at91sam3swj_leave_program_mode(struct program_context_t *context, 
-									uint8_t success)
+LEAVE_PROGRAM_MODE_HANDLER(at91sam3swj)
 {
 	uint32_t reg;
 	
@@ -571,8 +566,7 @@ RESULT at91sam3swj_leave_program_mode(struct program_context_t *context,
 	return ERROR_OK;
 }
 
-RESULT at91sam3swj_erase_target(struct program_context_t *context, char area, 
-								uint32_t addr, uint32_t size)
+ERASE_TARGET_HANDLER(at91sam3swj)
 {
 	struct chip_param_t *param = context->param;
 	struct operation_t *op = context->op;
@@ -624,8 +618,7 @@ do_erase:
 	return ret;
 }
 
-RESULT at91sam3swj_write_target(struct program_context_t *context, char area, 
-								uint32_t addr, uint8_t *buff, uint32_t size)
+WRITE_TARGET_HANDLER(at91sam3swj)
 {
 	struct at91sam3swj_iap_command_t command;
 	uint32_t eefc_base;
@@ -796,8 +789,7 @@ do_write:
 	return ERROR_OK;
 }
 
-RESULT at91sam3swj_read_target(struct program_context_t *context, char area, 
-								uint32_t addr, uint8_t *buff, uint32_t size)
+READ_TARGET_HANDLER(at91sam3swj)
 {
 	RESULT ret = ERROR_OK;
 	uint32_t cur_block_size;

@@ -41,26 +41,22 @@
 #include "JTAGfunc.h"
 #include "msp430_internal.h"
 
-RESULT msp430jtagsbw_enter_program_mode(struct program_context_t *context);
-RESULT msp430jtagsbw_leave_program_mode(struct program_context_t *context, 
-								uint8_t success);
-RESULT msp430jtagsbw_erase_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint32_t page_size);
-RESULT msp430jtagsbw_write_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint8_t *buff, uint32_t page_size);
-RESULT msp430jtagsbw_read_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint8_t *buff, uint32_t page_size);
+ENTER_PROGRAM_MODE_HANDLER(msp430jtagsbw);
+LEAVE_PROGRAM_MODE_HANDLER(msp430jtagsbw);
+ERASE_TARGET_HANDLER(msp430jtagsbw);
+WRITE_TARGET_HANDLER(msp430jtagsbw);
+READ_TARGET_HANDLER(msp430jtagsbw);
 const struct program_functions_t msp430jtagsbw_program_functions = 
 {
 	NULL,			// execute
-	msp430jtagsbw_enter_program_mode, 
-	msp430jtagsbw_leave_program_mode, 
-	msp430jtagsbw_erase_target, 
-	msp430jtagsbw_write_target, 
-	msp430jtagsbw_read_target
+	ENTER_PROGRAM_MODE_FUNCNAME(msp430jtagsbw), 
+	LEAVE_PROGRAM_MODE_FUNCNAME(msp430jtagsbw), 
+	ERASE_TARGET_FUNCNAME(msp430jtagsbw), 
+	WRITE_TARGET_FUNCNAME(msp430jtagsbw), 
+	READ_TARGET_FUNCNAME(msp430jtagsbw)
 };
 
-RESULT msp430jtagsbw_enter_program_mode(struct program_context_t *context)
+ENTER_PROGRAM_MODE_HANDLER(msp430jtagsbw)
 {
 	struct programmer_info_t *prog = context->prog;
 	uint8_t tmp8, i;
@@ -136,8 +132,7 @@ RESULT msp430jtagsbw_enter_program_mode(struct program_context_t *context)
 	return ERROR_OK;
 }
 
-RESULT msp430jtagsbw_leave_program_mode(struct program_context_t *context, 
-								uint8_t success)
+LEAVE_PROGRAM_MODE_HANDLER(msp430jtagsbw)
 {
 	struct programmer_info_t *prog = context->prog;
 	
@@ -154,13 +149,12 @@ RESULT msp430jtagsbw_leave_program_mode(struct program_context_t *context,
 	return ERROR_OK;
 }
 
-RESULT msp430jtagsbw_erase_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint32_t page_size)
+ERASE_TARGET_HANDLER(msp430jtagsbw)
 {
 	struct programmer_info_t *prog = context->prog;
 	RESULT ret = ERROR_OK;
 	
-	REFERENCE_PARAMETER(page_size);
+	REFERENCE_PARAMETER(size);
 	REFERENCE_PARAMETER(addr);
 	
 	switch (area)
@@ -195,8 +189,7 @@ RESULT msp430jtagsbw_erase_target(struct program_context_t *context, char area,
 	return ret;
 }
 
-RESULT msp430jtagsbw_write_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint8_t *buff, uint32_t page_size)
+WRITE_TARGET_HANDLER(msp430jtagsbw)
 {
 	struct programmer_info_t *prog = context->prog;
 	RESULT ret = ERROR_OK;
@@ -204,7 +197,7 @@ RESULT msp430jtagsbw_write_target(struct program_context_t *context, char area,
 	switch (area)
 	{
 	case APPLICATION_CHAR:
-		WriteFLASH((word)addr, (word)(page_size / 2), (word*)buff);
+		WriteFLASH((word)addr, (word)(size / 2), (word*)buff);
 		if (ERROR_OK != commit())
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ADDR), 
@@ -220,8 +213,7 @@ RESULT msp430jtagsbw_write_target(struct program_context_t *context, char area,
 	return ret;
 }
 
-RESULT msp430jtagsbw_read_target(struct program_context_t *context, char area, 
-							uint32_t addr, uint8_t *buff, uint32_t page_size)
+READ_TARGET_HANDLER(msp430jtagsbw)
 {
 	struct programmer_info_t *prog = context->prog;
 	struct operation_t *op = context->op;
@@ -256,7 +248,7 @@ RESULT msp430jtagsbw_read_target(struct program_context_t *context, char area,
 			word CRC_check, CRC_calc;
 			
 			CRC_calc = CRC_check = 0;
-			CRC_calc = VerifyMem((word)addr, (word)(page_size / 2), 
+			CRC_calc = VerifyMem((word)addr, (word)(size / 2), 
 									(word*)buff, &CRC_check);
 			if (ERROR_OK != commit())
 			{
