@@ -16,7 +16,7 @@
 
 /************************ What do U have ************************/
 // enable ONLY one below according to your hardware
-//#include "hw_cfg_NanoRC1.h"
+//#include "hw_cfg_NanoRelease1.h"
 //#include "hw_cfg_MiniRC2.h"
 //#include "hw_cfg_MiniRC3.h"
 //#include "hw_cfg_MiniRC4.h"

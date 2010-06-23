@@ -3,10 +3,10 @@
  *  SimonQian@SimonQian.com                                               *
  *                                                                        *
  *  Project:    Versaloon                                                 *
- *  File:       hw_cfg_MiniRC4.h                                          *
+ *  File:       hw_cfg_NanoRelease1.h                                     *
  *  Author:     SimonQian                                                 *
  *  Versaion:   See changelog                                             *
- *  Purpose:    hardware configuration file for Mini Version RC4          *
+ *  Purpose:    hardware configuration file for Nano Version Release1     *
  *  License:    See license                                               *
  *------------------------------------------------------------------------*
  *  Change Log:                                                           *
@@ -15,8 +15,8 @@
  *      2008-11-22:     rewrite GPIO_Dir(by SimonQian)                    *
  **************************************************************************/
 
-#define STM32_MINI_RC4					0x14
-#define _HARDWARE_VER					STM32_MINI_RC4
+#define STM32_NANO_Release1				0x01
+#define _HARDWARE_VER					STM32_NANO_Release1
 #ifdef HSE_VALUE
 #undef HSE_VALUE
 #endif
@@ -39,12 +39,12 @@
 #define GLOBAL_OUTPUT_DISABLE()			
 
 /****************************** SW ******************************/
-#define SW_PORT							GPIOB
-#define SW_PIN							GPIO_PIN_11
-#define SW_RST_PORT						GPIOB
-#define SW_RST_PIN						GPIO_PIN_10
+#define SW_PORT							GPIOA
+#define SW_PIN							GPIO_PIN_10
+#define SW_RST_PORT						GPIOA
+#define SW_RST_PIN						GPIO_PIN_9
 #define SYNCSW_IN_PORT					GPIOB
-#define SYNCSW_IN_PIN					GPIO_PIN_5
+#define SYNCSW_IN_PIN					GPIO_PIN_6
 #define SYNCSW_OUT_PORT					GPIOB
 #define SYNCSW_OUT_PIN					GPIO_PIN_4
 
@@ -77,19 +77,19 @@
 #define SYNCSW_GET()					GPIO_GetInPins(SYNCSW_IN_PORT, GPIO_PIN_GetMask(SYNCSW_IN_PIN))
 
 /***************************** STM8_SWIM ******************************/
-#define SWIM_OUT_TIMER					TIM1
-#define SWIM_IN_TIMER					TIM3
-#define SWIM_IN_TIMER_DMA				DMA1_Channel6
+#define SWIM_OUT_TIMER					TIM3
+#define SWIM_IN_TIMER					TIM4
+#define SWIM_IN_TIMER_DMA				DMA1_Channel4
 
 #define SWIM_IN_TIMER_INIT()			do{\
 											DMA_InitTypeDef DMA_InitStructure;\
 											\
 											RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, ENABLE);\
-											RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, ENABLE);\
+											RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4, ENABLE);\
 											\
 											DMA_DeInit(SWIM_IN_TIMER_DMA);\
 											DMA_StructInit(&DMA_InitStructure);\
-											DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)&(SWIM_IN_TIMER->CCR1);\
+											DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)&(SWIM_IN_TIMER->CCR2);\
 											DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralSRC;\
 											DMA_InitStructure.DMA_BufferSize = 0;\
 											DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;\
@@ -103,7 +103,7 @@
 										}while(0)
 #define SWIM_IN_TIMER_FINI()			do{\
 											TIM_DeInit(SWIM_IN_TIMER);\
-											RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, DISABLE);\
+											RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4, DISABLE);\
 											DMA_DeInit(SWIM_IN_TIMER_DMA);\
 											RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, DISABLE);\
 										}while(0)
@@ -113,24 +113,23 @@
 											SWIM_IN_TIMER_DMA->CMAR = (uint32_t)(a);\
 											SWIM_IN_TIMER_DMA->CCR |= 1;\
 										}while(0)
-#define SWIM_IN_TIMER_DMA_WAIT(dly)		do{while((!(DMA1->ISR & DMA1_FLAG_TC6)) && --dly); DMA1->IFCR = DMA1_FLAG_TC6;}while(0)
+#define SWIM_IN_TIMER_DMA_WAIT(dly)		do{while((!(DMA1->ISR & DMA1_FLAG_TC4)) && --dly); DMA1->IFCR = DMA1_FLAG_TC4;}while(0)
 //#define SWIM_IN_TIMER_DMA_WAIT(dly)		while(!(SWIM_IN_TIMER->SR & 2))
 #define SWIM_OUT_TIMER_INIT()			do{\
-											RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM1, ENABLE);\
+											RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, ENABLE);\
 										}while(0)
 #define SWIM_OUT_TIMER_FINI()			do{\
 											TIM_DeInit(SWIM_OUT_TIMER);\
-											RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM1, DISABLE);\
+											RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, DISABLE);\
 										}while(0)
-#define SWIM_OUT_TIMER_PWMEN()			TIM_CtrlPWMOutputs(SWIM_OUT_TIMER, ENABLE)
+#define SWIM_OUT_TIMER_PWMEN()			//TIM_CtrlPWMOutputs(SWIM_OUT_TIMER, ENABLE)
 #define SWIM_PORT_INIT()				do{\
 											GPIO_PinRemapConfig(GPIO_PartialRemap_TIM3, ENABLE);\
-											GPIO_SetPins(JTAG_TAP_RTCK_PORT, GPIO_PIN_GetMask(JTAG_TAP_RTCK_PIN));\
-											GPIO_Dir(JTAG_TAP_RTCK_PORT, GPIO_MODE_AF_OD, JTAG_TAP_RTCK_PIN);\
-											GPIO_Dir(SYNCSW_OUT_PORT, GPIO_MODE_IN_FLOATING, SYNCSW_OUT_PIN);\
+											GPIO_SetPins(SYNCSW_OUT_PORT, GPIO_PIN_GetMask(SYNCSW_OUT_PIN));\
+											GPIO_Dir(SYNCSW_OUT_PORT, GPIO_MODE_AF_OD, SYNCSW_OUT_PIN);\
 										}while(0)
 #define SWIM_PORT_FINI()				do{\
-											GPIO_Dir(JTAG_TAP_RTCK_PORT, GPIO_MODE_IN_FLOATING, JTAG_TAP_RTCK_PIN);\
+											GPIO_Dir(SYNCSW_OUT_PORT, GPIO_MODE_IN_FLOATING, SYNCSW_OUT_PIN);\
 											GPIO_PinRemapConfig(GPIO_PartialRemap_TIM3, DISABLE);\
 										}while(0)
 #define SWIM_WaitOutBitReady()			while(!(SWIM_OUT_TIMER->SR & TIM_FLAG_Update))
@@ -155,23 +154,7 @@
 #define JTAG_TAP_RTCK_PORT				GPIOA
 #define JTAG_TAP_RTCK_PIN				GPIO_PIN_8
 
-#define JTAG_HAS_USER_PIN				1
-
-#define JTAG_TAP_USR_PORT				GPIOA
-#define JTAG_TAP_USR1_PIN				GPIO_PIN_9
-#define JTAG_TAP_USR2_PIN				GPIO_PIN_10
-
-#define JTAG_TAP_USR1_SETOUTPUT()		GPIO_Dir(JTAG_TAP_USR_PORT, GPIO_MODE_OUT_PP, JTAG_TAP_USR1_PIN)
-#define JTAG_TAP_USR1_SETINPUT()		GPIO_Dir(JTAG_TAP_USR_PORT, GPIO_MODE_IN_FLOATING, JTAG_TAP_USR1_PIN)
-#define JTAG_TAP_USR1_SET()				GPIO_SetPins(JTAG_TAP_USR_PORT, GPIO_PIN_GetMask(JTAG_TAP_USR1_PIN))
-#define JTAG_TAP_USR1_CLR()				GPIO_ClrPins(JTAG_TAP_USR_PORT, GPIO_PIN_GetMask(JTAG_TAP_USR1_PIN))
-#define JTAG_TAP_USR1_GET()				GPIO_GetInPins(JTAG_TAP_USR_PORT, GPIO_PIN_GetMask(JTAG_TAP_USR1_PIN))
-
-#define JTAG_TAP_USR2_SETOUTPUT()		GPIO_Dir(JTAG_TAP_USR_PORT, GPIO_MODE_OUT_PP, JTAG_TAP_USR2_PIN)
-#define JTAG_TAP_USR2_SETINPUT()		GPIO_Dir(JTAG_TAP_USR_PORT, GPIO_MODE_IN_FLOATING, JTAG_TAP_USR2_PIN)
-#define JTAG_TAP_USR2_SET()				GPIO_SetPins(JTAG_TAP_USR_PORT, GPIO_PIN_GetMask(JTAG_TAP_USR2_PIN))
-#define JTAG_TAP_USR2_CLR()				GPIO_ClrPins(JTAG_TAP_USR_PORT, GPIO_PIN_GetMask(JTAG_TAP_USR2_PIN))
-#define JTAG_TAP_USR2_GET()				GPIO_GetInPins(JTAG_TAP_USR_PORT, GPIO_PIN_GetMask(JTAG_TAP_USR2_PIN))
+#define JTAG_HAS_USER_PIN				0
 
 #define JTAG_TAP_TMS_SETOUTPUT()		SYNCSW_SETOUTPUT()
 #define JTAG_TAP_TMS_SETINPUT()			SYNCSW_SETINPUT()
@@ -404,7 +387,7 @@
 #define IIC_PULL_INIT()					
 
 #define IIC_SCL_SETOUTPUT()				JTAG_TAP_TCK_SETOUTPUT()
-#define IIC_SCL_SETINPUT()				JTAG_TAP_TCK_SETINPUT()
+#define IIC_SCL_SETINPUT()				GPIO_Dir(JTAG_TAP_PORT, GPIO_MODE_IPU, JTAG_TAP_TCK_PIN)
 #define IIC_SCL_SET()					IIC_SCL_SETINPUT()
 #define IIC_SCL_CLR()					do{\
 											JTAG_TAP_TCK_CLR();\
@@ -413,7 +396,7 @@
 #define IIC_SCL_GET()					GPIO_GetInPins(JTAG_TAP_PORT, GPIO_PIN_GetMask(JTAG_TAP_TCK_PIN))
 
 #define IIC_SDA_SETOUTPUT()				JTAG_TAP_TDI_SETOUTPUT()
-#define IIC_SDA_SETINPUT()				JTAG_TAP_TDI_SETINPUT()
+#define IIC_SDA_SETINPUT()				GPIO_Dir(JTAG_TAP_PORT, GPIO_MODE_IPU, JTAG_TAP_TDI_PIN)
 #define IIC_SDA_SET()					IIC_SDA_SETINPUT()
 #define IIC_SDA_CLR()					do{\
 											JTAG_TAP_TDI_CLR();\
@@ -477,21 +460,22 @@
 #define TVCC_SAMPLE_MAXVAL				4096
 
 /****************************** LED ******************************/
-#define LED_PORT						GPIOB
-#define LED_RED_PIN						GPIO_PIN_6
-#define LED_GREEN_PIN					GPIO_PIN_7
-#define LED_RED_ON()					GPIO_ClrPins(LED_PORT, GPIO_PIN_GetMask(LED_RED_PIN))
-#define LED_RED_OFF()					GPIO_SetPins(LED_PORT, GPIO_PIN_GetMask(LED_RED_PIN))
-#define LED_GREEN_ON()					GPIO_ClrPins(LED_PORT, GPIO_PIN_GetMask(LED_GREEN_PIN))
-#define LED_GREEN_OFF()					GPIO_SetPins(LED_PORT, GPIO_PIN_GetMask(LED_GREEN_PIN))
+#define LED_RED_PORT					GPIOA
+#define LED_RED_PIN						GPIO_PIN_15
+#define LED_GREEN_PORT					GPIOB
+#define LED_GREEN_PIN					GPIO_PIN_5
+#define LED_RED_ON()					GPIO_ClrPins(LED_RED_PORT, GPIO_PIN_GetMask(LED_RED_PIN))
+#define LED_RED_OFF()					GPIO_SetPins(LED_RED_PORT, GPIO_PIN_GetMask(LED_RED_PIN))
+#define LED_GREEN_ON()					GPIO_ClrPins(LED_GREEN_PORT, GPIO_PIN_GetMask(LED_GREEN_PIN))
+#define LED_GREEN_OFF()					GPIO_SetPins(LED_GREEN_PORT, GPIO_PIN_GetMask(LED_GREEN_PIN))
 
 #define LED_Init()						do{\
-											GPIO_Dir(LED_PORT, GPIO_MODE_OUT_PP, LED_RED_PIN);\
-											GPIO_Dir(LED_PORT, GPIO_MODE_OUT_PP, LED_GREEN_PIN);\
+											GPIO_Dir(LED_RED_PORT, GPIO_MODE_OUT_PP, LED_RED_PIN);\
+											GPIO_Dir(LED_GREEN_PORT, GPIO_MODE_OUT_PP, LED_GREEN_PIN);\
 										}while(0)
 #define LED_Fini()						do{\
-											GPIO_Dir(LED_PORT, GPIO_MODE_IN_FLOATING, LED_RED_PIN);\
-											GPIO_Dir(LED_PORT, GPIO_MODE_IN_FLOATING, LED_GREEN_PIN);\
+											GPIO_Dir(LED_RED_PORT, GPIO_MODE_IN_FLOATING, LED_RED_PIN);\
+											GPIO_Dir(LED_GREEN_PORT, GPIO_MODE_IN_FLOATING, LED_GREEN_PIN);\
 										}while(0)
 
 // LED_RW
@@ -511,8 +495,8 @@
 /****************************** KEY ******************************/
 #define KEY_PORT						GPIOB
 #define KEY_PIN							GPIO_PIN_9
-#define KEY_IsDown()					!GPIO_GetInPins(KEY_PORT, GPIO_PIN_GetMask(KEY_PIN))
-#define KEY_Init()						GPIO_Dir(KEY_PORT, GPIO_MODE_IPU, KEY_PIN)
+#define KEY_IsDown()					GPIO_GetInPins(KEY_PORT, GPIO_PIN_GetMask(KEY_PIN))
+#define KEY_Init()						GPIO_Dir(KEY_PORT, GPIO_MODE_IPD, KEY_PIN)
 #define KEY_Fini()						GPIO_Dir(KEY_PORT, GPIO_MODE_IN_FLOATING, KEY_PIN)
 
 /****************************** USB *****************************/

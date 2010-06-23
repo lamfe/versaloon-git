@@ -3,10 +3,10 @@
  *  SimonQian@SimonQian.com                                               *
  *                                                                        *
  *  Project:    Versaloon                                                 *
- *  File:       hw_cfg_ProRC1.h                                           *
+ *  File:       hw_cfg_MiniRelease1.h                                     *
  *  Author:     SimonQian                                                 *
  *  Versaion:   See changelog                                             *
- *  Purpose:    hardware configuration file for Pro Version RC1           *
+ *  Purpose:    hardware configuration file for Mini Version Release1     *
  *  License:    See license                                               *
  *------------------------------------------------------------------------*
  *  Change Log:                                                           *
@@ -15,7 +15,7 @@
  *      2008-11-22:     rewrite GPIO_Dir(by SimonQian)                    *
  **************************************************************************/
 
-#define STM32_MINI_Release1					0x15
+#define STM32_MINI_Release1				0x15
 #define _HARDWARE_VER					STM32_MINI_Release1
 #ifdef HSE_VALUE
 #undef HSE_VALUE
