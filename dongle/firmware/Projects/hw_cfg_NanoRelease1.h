@@ -3,10 +3,10 @@
  *  SimonQian@SimonQian.com                                               *
  *                                                                        *
  *  Project:    Versaloon                                                 *
- *  File:       hw_cfg_MiniRelease1.h                                     *
+ *  File:       hw_cfg_NanoRelease1.h                                     *
  *  Author:     SimonQian                                                 *
  *  Versaion:   See changelog                                             *
- *  Purpose:    hardware configuration file for Mini Version Release1     *
+ *  Purpose:    hardware configuration file for Nano Version Release1     *
  *  License:    See license                                               *
  *------------------------------------------------------------------------*
  *  Change Log:                                                           *
@@ -15,8 +15,8 @@
  *      2008-11-22:     rewrite GPIO_Dir(by SimonQian)                    *
  **************************************************************************/
 
-#define STM32_MINI_Release1				0x15
-#define _HARDWARE_VER					STM32_MINI_Release1
+#define STM32_NANO_Release1				0x01
+#define _HARDWARE_VER					STM32_NANO_Release1
 #ifdef HSE_VALUE
 #undef HSE_VALUE
 #endif
@@ -39,10 +39,10 @@
 #define GLOBAL_OUTPUT_DISABLE()			
 
 /****************************** SW ******************************/
-#define SW_PORT							GPIOB
-#define SW_PIN							GPIO_PIN_11
-#define SW_RST_PORT						GPIOB
-#define SW_RST_PIN						GPIO_PIN_10
+#define SW_PORT							GPIOA
+#define SW_PIN							GPIO_PIN_10
+#define SW_RST_PORT						GPIOA
+#define SW_RST_PIN						GPIO_PIN_9
 #define SYNCSW_IN_PORT					GPIOB
 #define SYNCSW_IN_PIN					GPIO_PIN_6
 #define SYNCSW_OUT_PORT					GPIOB
@@ -154,23 +154,7 @@
 #define JTAG_TAP_RTCK_PORT				GPIOA
 #define JTAG_TAP_RTCK_PIN				GPIO_PIN_8
 
-#define JTAG_HAS_USER_PIN				1
-
-#define JTAG_TAP_USR_PORT				GPIOA
-#define JTAG_TAP_USR1_PIN				GPIO_PIN_9
-#define JTAG_TAP_USR2_PIN				GPIO_PIN_10
-
-#define JTAG_TAP_USR1_SETOUTPUT()		GPIO_Dir(JTAG_TAP_USR_PORT, GPIO_MODE_OUT_PP, JTAG_TAP_USR1_PIN)
-#define JTAG_TAP_USR1_SETINPUT()		GPIO_Dir(JTAG_TAP_USR_PORT, GPIO_MODE_IN_FLOATING, JTAG_TAP_USR1_PIN)
-#define JTAG_TAP_USR1_SET()				GPIO_SetPins(JTAG_TAP_USR_PORT, GPIO_PIN_GetMask(JTAG_TAP_USR1_PIN))
-#define JTAG_TAP_USR1_CLR()				GPIO_ClrPins(JTAG_TAP_USR_PORT, GPIO_PIN_GetMask(JTAG_TAP_USR1_PIN))
-#define JTAG_TAP_USR1_GET()				GPIO_GetInPins(JTAG_TAP_USR_PORT, GPIO_PIN_GetMask(JTAG_TAP_USR1_PIN))
-
-#define JTAG_TAP_USR2_SETOUTPUT()		GPIO_Dir(JTAG_TAP_USR_PORT, GPIO_MODE_OUT_PP, JTAG_TAP_USR2_PIN)
-#define JTAG_TAP_USR2_SETINPUT()		GPIO_Dir(JTAG_TAP_USR_PORT, GPIO_MODE_IN_FLOATING, JTAG_TAP_USR2_PIN)
-#define JTAG_TAP_USR2_SET()				GPIO_SetPins(JTAG_TAP_USR_PORT, GPIO_PIN_GetMask(JTAG_TAP_USR2_PIN))
-#define JTAG_TAP_USR2_CLR()				GPIO_ClrPins(JTAG_TAP_USR_PORT, GPIO_PIN_GetMask(JTAG_TAP_USR2_PIN))
-#define JTAG_TAP_USR2_GET()				GPIO_GetInPins(JTAG_TAP_USR_PORT, GPIO_PIN_GetMask(JTAG_TAP_USR2_PIN))
+#define JTAG_HAS_USER_PIN				0
 
 #define JTAG_TAP_TMS_SETOUTPUT()		SYNCSW_SETOUTPUT()
 #define JTAG_TAP_TMS_SETINPUT()			SYNCSW_SETINPUT()
@@ -496,7 +480,7 @@
 
 // LED_RW
 #define LED_RW_PORT						GPIOA
-#define LED_RW_PIN						GPIO_PIN_14
+#define LED_RW_PIN						GPIO_PIN_3
 #define Led_RW_Init()					do{\
 											GPIO_Dir(LED_RW_PORT, GPIO_MODE_OUT_PP, LED_RW_PIN);\
 										}while(0)
@@ -511,8 +495,8 @@
 /****************************** KEY ******************************/
 #define KEY_PORT						GPIOB
 #define KEY_PIN							GPIO_PIN_9
-#define KEY_IsDown()					!GPIO_GetInPins(KEY_PORT, GPIO_PIN_GetMask(KEY_PIN))
-#define KEY_Init()						GPIO_Dir(KEY_PORT, GPIO_MODE_IPU, KEY_PIN)
+#define KEY_IsDown()					GPIO_GetInPins(KEY_PORT, GPIO_PIN_GetMask(KEY_PIN))
+#define KEY_Init()						GPIO_Dir(KEY_PORT, GPIO_MODE_IPD, KEY_PIN)
 #define KEY_Fini()						GPIO_Dir(KEY_PORT, GPIO_MODE_IN_FLOATING, KEY_PIN)
 
 /****************************** USB *****************************/

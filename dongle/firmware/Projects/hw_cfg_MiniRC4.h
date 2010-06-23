@@ -3,10 +3,10 @@
  *  SimonQian@SimonQian.com                                               *
  *                                                                        *
  *  Project:    Versaloon                                                 *
- *  File:       hw_cfg_ProRC1.h                                           *
+ *  File:       hw_cfg_MiniRC4.h                                          *
  *  Author:     SimonQian                                                 *
  *  Versaion:   See changelog                                             *
- *  Purpose:    hardware configuration file for Pro Version RC1           *
+ *  Purpose:    hardware configuration file for Mini Version RC4          *
  *  License:    See license                                               *
  *------------------------------------------------------------------------*
  *  Change Log:                                                           *

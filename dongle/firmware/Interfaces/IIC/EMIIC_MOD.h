@@ -89,18 +89,21 @@
         {\
             return IIC_MOD_TO;\
         }\
-        while (!SDA_G())\
-        {\
-            DLY_FUNC(s_EMIIC_##MOD_NAME##_QuarterCycle_Len * 2);\
-            SCL_D();\
-            DLY_FUNC(s_EMIIC_##MOD_NAME##_QuarterCycle_Len * 2);\
-            SCL_R();\
-            if ((IIC_MOD_ACK != EMIIC_##MOD_NAME##_WaitSCL_R()) \
-                || (retry++ > 9))\
-            {\
-                return IIC_MOD_TO;\
-            }\
-        }\
+		if (IIC_MOD_ACK != EMIIC_##MOD_NAME##_WaitSDA_R())\
+		{\
+        	while (!SDA_G())\
+        	{\
+        	    DLY_FUNC(s_EMIIC_##MOD_NAME##_QuarterCycle_Len * 2);\
+        	    SCL_D();\
+        	    DLY_FUNC(s_EMIIC_##MOD_NAME##_QuarterCycle_Len * 2);\
+        	    SCL_R();\
+        	    if ((IIC_MOD_ACK != EMIIC_##MOD_NAME##_WaitSCL_R()) \
+        	        || (retry++ > 9))\
+        	    {\
+        	        return IIC_MOD_TO;\
+        	    }\
+        	}\
+		}\
         DLY_FUNC(s_EMIIC_##MOD_NAME##_QuarterCycle_Len * 2);\
         SDA_D();\
         DLY_FUNC(s_EMIIC_##MOD_NAME##_QuarterCycle_Len * 2);\
