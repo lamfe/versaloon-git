@@ -108,3 +108,25 @@ RESULT usbtoswim_in(uint8_t interface_index, uint8_t *data, uint8_t bytelen)
 				versaloon_cmd_buf, 1 + bytelen, bytelen, data, 0, bytelen, 0);
 }
 
+RESULT usbtoswim_sync(uint8_t interface_index, uint8_t mHz)
+{
+	uint8_t buff[1];
+	
+#if PARAM_CHECK
+	if (interface_index > 7)
+	{
+		LOG_BUG(_GETTEXT("invalid inteface_index %d.\n"), interface_index);
+		return ERROR_FAIL;
+	}
+#endif
+	
+	buff[0] = mHz;
+	
+	return usbtoxxx_sync_command(USB_TO_SWIM, interface_index, buff, 1);
+}
+
+RESULT usbtoswim_enable(uint8_t interface_index)
+{
+	return usbtoxxx_enable_command(USB_TO_SWIM, interface_index, NULL, 0);
+}
+

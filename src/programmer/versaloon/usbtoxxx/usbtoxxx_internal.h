@@ -65,6 +65,9 @@
 #define USB_TO_XXX_POLL				(0x08 << USB_TO_XXX_CMDSHIFT)
 #define USB_TO_XXX_SPECIAL			(0x09 << USB_TO_XXX_CMDSHIFT)
 #define USB_TO_XXX_RESET			(0x0A << USB_TO_XXX_CMDSHIFT)
+#define USB_TO_XXX_SYNC				(0x0B << USB_TO_XXX_CMDSHIFT)
+#define USB_TO_XXX_ENABLE			(0x0C << USB_TO_XXX_CMDSHIFT)
+#define USB_TO_XXX_DISABLE			(0x0D << USB_TO_XXX_CMDSHIFT)
 // USB_TO_POLL
 #define USB_TO_POLL_START			0x00
 #define USB_TO_POLL_END				0x01
@@ -133,6 +136,15 @@ RESULT usbtoxxx_add_command(uint8_t type, uint8_t cmd, uint8_t *cmdbuf,
 								 wantpos, wantlen, (c))
 #define usbtoxxx_reset_command(type, port, cmdbuf, cmdlen)					\
 			usbtoxxx_add_command((type), (USB_TO_XXX_RESET | (port)), \
+								 (cmdbuf), (cmdlen), 0, NULL, 0, 0, 0)
+#define usbtoxxx_sync_command(type, port, cmdbuf, cmdlen)					\
+			usbtoxxx_add_command((type), (USB_TO_XXX_SYNC | (port)), \
+								 (cmdbuf), (cmdlen), 0, NULL, 0, 0, 0)
+#define usbtoxxx_enable_command(type, port, cmdbuf, cmdlen)					\
+			usbtoxxx_add_command((type), (USB_TO_XXX_ENABLE | (port)), \
+								 (cmdbuf), (cmdlen), 0, NULL, 0, 0, 0)
+#define usbtoxxx_disable_command(type, port, cmdbuf, cmdlen)				\
+			usbtoxxx_add_command((type), (USB_TO_XXX_DISABLE | (port)), \
 								 (cmdbuf), (cmdlen), 0, NULL, 0, 0, 0)
 
 // USB_TO_SPI

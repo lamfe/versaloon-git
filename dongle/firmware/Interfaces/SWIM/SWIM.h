@@ -16,6 +16,8 @@
 
 void SWIM_Init();
 void SWIM_Fini();
-void SWIM_SetClockParam(uint8 mHz, uint8 cnt0, uint8 cnt1);
+uint8 SWIM_Sync(uint8 mHz);
+uint8 SWIM_SetClockParam(uint8 mHz, uint8 cnt0, uint8 cnt1);
 uint8 SWIM_Out(uint8 cmd, uint8 bitlen);
 uint8 SWIM_In(uint8* data, uint8 bytelen);
+uint8 SWIM_Enable(void);

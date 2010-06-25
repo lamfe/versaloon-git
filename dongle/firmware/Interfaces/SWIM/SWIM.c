@@ -28,12 +28,14 @@ static uint16 SWIM_PULSE_1;
 static uint16 SWIM_PULSE_Threshold;
 // max length is 1(header)+8(data)+1(parity)+1(ack from target)+1(empty)
 static uint16 SWIM_DMA_Buffer[12];
+static uint16 SWIM_clock_div = 0;
+
+#define SWIM_MAX_DLY					0xFFFFF
 
 static void SWIM_SetClockParamInit(void)
 {
 	TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
 	TIM_OCInitTypeDef TIM_OCInitStructure;
-	TIM_ICInitTypeDef TIM_ICInitStructure;
 
 	/* SWIM_TIMER_OUT */
 	TIM_TimeBaseStructInit(&TIM_TimeBaseStructure);
@@ -55,6 +57,35 @@ static void SWIM_SetClockParamInit(void)
 	TIM_ARRPreloadConfig(SWIM_OUT_TIMER, ENABLE);
 	TIM_Cmd(SWIM_OUT_TIMER, ENABLE);
 	SWIM_OUT_TIMER_PWMEN();
+}
+
+void SWIM_Init()
+{
+	if (!SWIM_Inited)
+	{
+		SWIM_Inited = 1;
+		SWIM_OUT_TIMER_INIT();
+		SWIM_SetClockParamInit();
+		SWIM_PORT_INIT();
+	}
+}
+
+void SWIM_Fini()
+{
+	SWIM_PORT_FINI();
+	SWIM_OUT_TIMER_FINI();
+	SWIM_IN_TIMER_FINI();
+	SWIM_Inited = 0;
+}
+
+uint8 SWIM_Enable(void)
+{
+	uint8 i;
+	uint32 dly;
+	TIM_ICInitTypeDef TIM_ICInitStructure;
+
+	SWIM_clock_div = 0;
+	SWIM_IN_TIMER_INIT();
 
 	/* SWIM_TIMER_IN */
 	TIM_ICStructInit(&TIM_ICInitStructure);
@@ -70,37 +101,98 @@ static void SWIM_SetClockParamInit(void)
 	TIM_SelectMasterSlaveMode(SWIM_IN_TIMER, TIM_MasterSlaveMode_Enable);
 	TIM_DMACmd(SWIM_IN_TIMER, TIM_DMA_CC2, ENABLE);
 	TIM_Cmd(SWIM_IN_TIMER, ENABLE);
-}
 
-void SWIM_Init()
-{
-	if (!SWIM_Inited)
+	SWIM_IN_TIMER_DMA_INIT(10, SWIM_DMA_Buffer);
+
+	SWIM_CLR();
+	DelayUS(1000);
+
+	for (i = 0; i < 4; i++)
 	{
-		SWIM_Inited = 1;
-		SWIM_OUT_TIMER_INIT();
-		SWIM_IN_TIMER_INIT();
-		SWIM_SetClockParamInit();
-		SWIM_PORT_INIT();
+		SWIM_SET();
+		DelayUS(500);
+		SWIM_CLR();
+		DelayUS(500);
+	}
+	for (i = 0; i < 4; i++)
+	{
+		SWIM_SET();
+		DelayUS(256);
+		SWIM_CLR();
+		DelayUS(256);
+	}
+	SWIM_SET();
+
+	dly = SWIM_MAX_DLY;
+	SWIM_IN_TIMER_DMA_WAIT(dly);
+	if (!dly)
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
 	}
 }
 
-void SWIM_Fini()
+uint8 SWIM_Sync(uint8 mHz)
 {
-	SWIM_PORT_FINI();
-	SWIM_OUT_TIMER_FINI();
-	SWIM_IN_TIMER_FINI();
-	SWIM_Inited = 0;
-}
-
-void SWIM_SetClockParam(uint8 mHz, uint8 cnt0, uint8 cnt1)
-{
-	uint8_t clock_div;
+	uint32 dly;
+	uint16 clock_div;
+	uint16 arr_save;
 	
 	clock_div = _SYS_FREQUENCY / mHz;
 	if ((_SYS_FREQUENCY % mHz) > (mHz / 2))
 	{
 		clock_div++;
 	}
+	
+	SWIM_IN_TIMER_DMA_INIT(2, SWIM_DMA_Buffer);
+	
+	arr_save = SWIM_OUT_TIMER->ARR;
+	SWIM_OUT_TIMER->ARR = 128 * clock_div + 1;
+	SWIM_OUT_TIMER->EGR = TIM_PSCReloadMode_Immediate;
+	SWIM_OUT_TIMER->CR1 |= ((uint16_t)0x0002);
+	SWIM_OUT_TIMER->SR = (uint16_t)~TIM_FLAG_Update;
+	SWIM_OUT_TIMER->CCR1 = 128 * clock_div;
+	SWIM_OUT_TIMER->CR1 &= ((uint16_t)0x03FD);
+	SWIM_WaitOutBitReady();
+	SWIM_OUT_TIMER->SR = (uint16_t)~TIM_FLAG_Update;
+	SWIM_OUT_TIMER->CCR1 = 0;
+	SWIM_WaitOutBitReady();
+	
+	dly = SWIM_MAX_DLY;
+	SWIM_IN_TIMER_DMA_WAIT(dly);
+	SWIM_OUT_TIMER->ARR = arr_save;
+	SWIM_OUT_TIMER->EGR = TIM_PSCReloadMode_Immediate;
+	if (!dly)
+	{
+		return 1;
+	}
+	else
+	{
+		SWIM_clock_div = SWIM_DMA_Buffer[1] / 128;
+		return 0;
+	}
+}
+
+uint8 SWIM_SetClockParam(uint8 mHz, uint8 cnt0, uint8 cnt1)
+{
+	uint16 clock_div;
+	
+	if (SWIM_clock_div)
+	{
+		clock_div = SWIM_clock_div;
+	}
+	else
+	{
+		clock_div = _SYS_FREQUENCY / mHz;
+		if ((_SYS_FREQUENCY % mHz) > (mHz / 2))
+		{
+			clock_div++;
+		}
+	}
+
 	SWIM_PULSE_0 = cnt0 * clock_div;
 	SWIM_PULSE_1 = cnt1 * clock_div;
 	SWIM_PULSE_Threshold = SWIM_PULSE_0 + SWIM_PULSE_1;
@@ -109,6 +201,7 @@ void SWIM_SetClockParam(uint8 mHz, uint8 cnt0, uint8 cnt1)
 	SWIM_OUT_TIMER->EGR = TIM_PSCReloadMode_Immediate;
 
 	SWIM_PULSE_Threshold >>= 1;
+	return 0;
 }
 
 uint8 SWIM_Out(uint8 cmd, uint8 bitlen)
@@ -157,7 +250,7 @@ uint8 SWIM_Out(uint8 cmd, uint8 bitlen)
 	SWIM_OUT_TIMER->CCR1 = 0;
 	SWIM_WaitOutBitReady();
 
-	dly = 0xFFFF;
+	dly = SWIM_MAX_DLY;
 	SWIM_IN_TIMER_DMA_WAIT(dly);
 	SWIM_IN_TIMER_DMA_INIT(10, SWIM_DMA_Buffer + 1);
 
@@ -176,7 +269,7 @@ uint8 SWIM_In(uint8* data, uint8 bitlen)
 	uint8 ret = 0;
 	uint32 dly;
 
-	dly = 0xFFFFF;
+	dly = SWIM_MAX_DLY;
 	SWIM_IN_TIMER_DMA_WAIT(dly);
 	*data = 0;
 	if (dly && (SWIM_DMA_Buffer[1] < SWIM_PULSE_Threshold))
