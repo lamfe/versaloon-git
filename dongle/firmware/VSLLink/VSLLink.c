@@ -19,7 +19,7 @@
 #include "VSLLink.h"
 
 #include "JTAG_TAP.h"
-#include "SWJ.h"
+#include "SWD.h"
 
 #if POWER_OUT_EN
 #	include "PowerExt.h"
@@ -185,10 +185,10 @@ void VSLLink_ProcessCmd(uint8* dat, uint16 len)
 
 		if (dat[1] & 0x80)
 		{
-			// SWJ
-			SWJ_SetRetryCount(0);
-			SWJ_SetTurnaround(1);
-			SWJ_Init();
+			// SWD
+			SWD_SetRetryCount(0);
+			SWD_SetTurnaround(1);
+			SWD_Init();
 		}
 		else
 		{
@@ -203,7 +203,7 @@ void VSLLink_ProcessCmd(uint8* dat, uint16 len)
 		rep_len = sizeof(VSLLink_Ver) + 2;
 		break;
 	case VSLLINK_CMD_DISCONN:
-		SWJ_Fini();
+		SWD_Fini();
 		JTAG_TAP_HS_Fini();
 		VSLLink_SetPortDir(0xFF, 0x00);
 
@@ -348,7 +348,7 @@ void VSLLink_ProcessCmd(uint8* dat, uint16 len)
 		JTAG_TAP_HS_Operate_DMA(cur_dat_len, &dat[3], &dat[3 + cur_dat_len], &dat[rep_len]);
 		rep_len += cur_dat_len;
 		break;
-	case VSLLINK_CMD_HW_SWJCMD:
+	case VSLLINK_CMD_HW_SWDCMD:
 		cur_cmd_pos = 3;
 
 		while(cur_cmd_pos < len)
@@ -356,38 +356,38 @@ void VSLLink_ProcessCmd(uint8* dat, uint16 len)
 			cur_cmd = dat[cur_cmd_pos];
 			cur_cmd_pos += 1;
 
-			switch(cur_cmd & VSLLINK_CMDSWJ_CMDMSK)
+			switch(cur_cmd & VSLLINK_CMDSWD_CMDMSK)
 			{
-			case VSLLINK_CMDSWJ_SEQOUT:
+			case VSLLINK_CMDSWD_SEQOUT:
 				cur_dat_len = dat[cur_cmd_pos] + ((uint16)dat[cur_cmd_pos + 1] << 8);
 				cur_cmd_pos += 2;
 
-				SWJ_SWDIO_SET();
-				SWJ_SWDIO_SETOUTPUT();
-				SWJ_SeqOut(dat + cur_cmd_pos, cur_dat_len);
-				SWJ_SWDIO_SETINPUT();
+				SWD_SWDIO_SET();
+				SWD_SWDIO_SETOUTPUT();
+				SWD_SeqOut(dat + cur_cmd_pos, cur_dat_len);
+				SWD_SWDIO_SETINPUT();
 
 				dat[rep_len++] = 0x00;
 				cur_cmd_pos += (cur_dat_len + 7) / 8;
 				break;
-			case VSLLINK_CMDSWJ_SEQIN:
+			case VSLLINK_CMDSWD_SEQIN:
 				cur_dat_len = dat[cur_cmd_pos] + ((uint16)dat[cur_cmd_pos + 1] << 8);
 				cur_cmd_pos += 2;
 
-				SWJ_SeqIn(dat + rep_len, cur_dat_len);
+				SWD_SeqIn(dat + rep_len, cur_dat_len);
 				cur_cmd_pos += (cur_dat_len + 7) / 8;
 				rep_len += (cur_dat_len + 7) / 8;
 				break;
-			case VSLLINK_CMDSWJ_TRANS:
-				dat[rep_len] = SWJ_Transaction(dat[cur_cmd_pos], (uint32*)(dat + cur_cmd_pos + 1));
+			case VSLLINK_CMDSWD_TRANS:
+				dat[rep_len] = SWD_Transaction(dat[cur_cmd_pos], (uint32*)(dat + cur_cmd_pos + 1));
 				memcpy(dat + rep_len + 1, dat + cur_cmd_pos + 1, 4);
 				cur_cmd_pos += 5;
 				rep_len += 5;
 				break;
-			case VSLLINK_CMDSWJ_PARA:
-				SWJ_SetTurnaround(dat[cur_cmd_pos + 0]);
-				SWJ_SetRetryCount(dat[cur_cmd_pos + 1] + (dat[cur_cmd_pos + 2] << 8));
-				SWJ_SetDelay(dat[cur_cmd_pos + 3] + (dat[cur_cmd_pos + 4] << 8));
+			case VSLLINK_CMDSWD_PARA:
+				SWD_SetTurnaround(dat[cur_cmd_pos + 0]);
+				SWD_SetRetryCount(dat[cur_cmd_pos + 1] + (dat[cur_cmd_pos + 2] << 8));
+				SWD_SetDelay(dat[cur_cmd_pos + 3] + (dat[cur_cmd_pos + 4] << 8));
 				cur_cmd_pos += 5;
 				break;
 			}

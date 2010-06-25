@@ -56,7 +56,7 @@ struct program_area_map_t lpc1000_program_area_map[] =
 const struct program_mode_t lpc1000_program_mode[] = 
 {
 	{'j', SET_FREQUENCY, JTAG_HL},
-	{'s', "", SWJ},
+	{'s', "", SWD},
 	{'i', USE_COMM, 0},
 	{0, NULL, 0}
 };

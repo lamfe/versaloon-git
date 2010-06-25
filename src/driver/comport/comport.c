@@ -481,6 +481,7 @@ int32_t comm_ctrl_hw(uint8_t dtr, uint8_t rts)
 static uint8_t usbtocomm_open = 0;
 void comm_close_usbtocomm(void)
 {
+	struct interfaces_info_t *interfaces = &(cur_programmer->interfaces);
 	if (!usbtocomm_open)
 	{
 		return;
@@ -488,8 +489,8 @@ void comm_close_usbtocomm(void)
 	
 	if (cur_programmer != NULL)
 	{
-		cur_programmer->usart_fini();
-		cur_programmer->peripheral_commit();
+		interfaces->usart.usart_fini();
+		interfaces->peripheral_commit();
 		
 		if (cur_programmer->fini != NULL)
 		{
@@ -502,12 +503,14 @@ void comm_close_usbtocomm(void)
 RESULT comm_open_usbtocomm(char *comport, uint32_t baudrate, 
 			uint8_t datalength, char paritybit, char stopbit, char handshake)
 {
+	struct interfaces_info_t *interfaces = NULL;
 	REFERENCE_PARAMETER(comport);
 	
 	if (NULL == cur_programmer)
 	{
 		return ERROR_FAIL;
 	}
+	interfaces = &(cur_programmer->interfaces);
 	
 	if ((cur_programmer->init != NULL) 
 		&& (ERROR_OK != cur_programmer->init()))
@@ -563,10 +566,10 @@ RESULT comm_open_usbtocomm(char *comport, uint32_t baudrate,
 	handshake = 0;
 	
 	// initialize usbtocomm
-	if ((ERROR_OK != cur_programmer->usart_init())
-		|| (ERROR_OK != cur_programmer->usart_config(baudrate, datalength, 
+	if ((ERROR_OK != interfaces->usart.usart_init())
+		|| (ERROR_OK != interfaces->usart.usart_config(baudrate, datalength, 
 												paritybit, stopbit, handshake)) 
-		|| (ERROR_OK != cur_programmer->peripheral_commit()))
+		|| (ERROR_OK != interfaces->peripheral_commit()))
 	{
 		return ERROR_FAIL;
 	}
@@ -577,10 +580,11 @@ RESULT comm_open_usbtocomm(char *comport, uint32_t baudrate,
 
 int32_t comm_read_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 {
+	struct interfaces_info_t *interfaces = &(cur_programmer->interfaces);
 	uint32_t start, end;
 	uint32_t buffer_len[2];
 	
-	if ((NULL == cur_programmer) || (!usbtocomm_open))
+	if (!usbtocomm_open)
 	{
 		return ERROR_FAIL;
 	}
@@ -590,8 +594,8 @@ int32_t comm_read_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 	{
 		LOG_PUSH();
 		LOG_MUTE();
-		if ((ERROR_OK != cur_programmer->usart_receive(buffer, (uint16_t)num_of_bytes)) 
-			|| (ERROR_OK != cur_programmer->peripheral_commit()))
+		if ((ERROR_OK != interfaces->usart.usart_receive(buffer, (uint16_t)num_of_bytes)) 
+			|| (ERROR_OK != interfaces->peripheral_commit()))
 		{
 			LOG_POP();
 		}
@@ -608,7 +612,7 @@ int32_t comm_read_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 	//   try send data according to buffer_size available
 	// else
 	//    return 0
-	if (NULL == cur_programmer->usart_status)
+	if (NULL == interfaces->usart.usart_status)
 	{
 		return 0;
 	}
@@ -616,16 +620,16 @@ int32_t comm_read_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 	memset(buffer_len, 0, sizeof(buffer_len));
 	LOG_PUSH();
 	LOG_MUTE();
-	if ((ERROR_OK != cur_programmer->usart_status(buffer_len)) 
-		|| (ERROR_OK != cur_programmer->peripheral_commit()))
+	if ((ERROR_OK != interfaces->usart.usart_status(buffer_len)) 
+		|| (ERROR_OK != interfaces->peripheral_commit()))
 	{
 		// error
 		LOG_POP();
 		return -1;
 	}
 	else if ((buffer_len[1] != 0) 
-		&& ((ERROR_OK != cur_programmer->usart_receive(buffer, (uint16_t)buffer_len[1])) 
-			|| (ERROR_OK != cur_programmer->peripheral_commit())))
+		&& ((ERROR_OK != interfaces->usart.usart_receive(buffer, (uint16_t)buffer_len[1])) 
+			|| (ERROR_OK != interfaces->peripheral_commit())))
 	{
 		LOG_POP();
 		return (int32_t)buffer_len[1];
@@ -639,18 +643,19 @@ int32_t comm_read_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 
 int32_t comm_write_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 {
+	struct interfaces_info_t *interfaces = &(cur_programmer->interfaces);
 	uint32_t start, end;
 	uint32_t buffer_len[2];
 	
-	if ((NULL == cur_programmer) || !usbtocomm_open)
+	if (!usbtocomm_open)
 	{
 		return ERROR_FAIL;
 	}
 	
 	LOG_PUSH();
 	LOG_MUTE();
-	if ((ERROR_OK != cur_programmer->usart_send(buffer, (uint16_t)num_of_bytes)) 
-		|| (ERROR_OK != cur_programmer->peripheral_commit()))
+	if ((ERROR_OK != interfaces->usart.usart_send(buffer, (uint16_t)num_of_bytes)) 
+		|| (ERROR_OK != interfaces->peripheral_commit()))
 	{
 		LOG_POP();
 	}
@@ -665,7 +670,7 @@ int32_t comm_write_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 	//   try wait for buffer_size is available and send again
 	// else
 	//    return 0
-	if (NULL == cur_programmer->usart_status)
+	if (NULL == interfaces->usart.usart_status)
 	{
 		return 0;
 	}
@@ -676,8 +681,8 @@ int32_t comm_write_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 	memset(buffer_len, 0, sizeof(buffer_len));
 	LOG_PUSH();
 	LOG_MUTE();
-	if ((ERROR_OK != cur_programmer->usart_status(buffer_len)) 
-		|| (ERROR_OK != cur_programmer->peripheral_commit()))
+	if ((ERROR_OK != interfaces->usart.usart_status(buffer_len)) 
+		|| (ERROR_OK != interfaces->peripheral_commit()))
 	{
 		// error
 		LOG_POP();
@@ -688,8 +693,8 @@ int32_t comm_write_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 	{
 		LOG_PUSH();
 		LOG_MUTE();
-		if ((ERROR_OK != cur_programmer->usart_send(buffer, (uint16_t)num_of_bytes)) 
-			|| (ERROR_OK != cur_programmer->peripheral_commit()))
+		if ((ERROR_OK != interfaces->usart.usart_send(buffer, (uint16_t)num_of_bytes)) 
+			|| (ERROR_OK != interfaces->peripheral_commit()))
 		{
 			LOG_POP();
 		}

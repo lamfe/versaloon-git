@@ -37,65 +37,69 @@
 #include "adi_v5p1.h"
 
 
-static struct programmer_info_t *adi_prog = NULL;
+static struct interfaces_info_t *adi_prog = NULL;
 static adi_dp_if_t *adi_dp_if;
 static struct adi_dp_t adi_dp;
 static uint8_t ack_value;
 struct adi_dp_info_t adi_dp_info;
 
 // Reset
-#define reset_init()			adi_prog->gpio_init()
-#define reset_fini()			adi_prog->gpio_fini()
-#define reset_output()			adi_prog->gpio_config(JTAG_SRST, JTAG_SRST, 0)
-#define reset_input()			adi_prog->gpio_config(JTAG_SRST, 0, JTAG_SRST)
+#define reset_init()			adi_prog->gpio.gpio_init()
+#define reset_fini()			adi_prog->gpio.gpio_fini()
+#define reset_output()			\
+	adi_prog->gpio.gpio_config(JTAG_SRST, JTAG_SRST, 0)
+#define reset_input()			\
+	adi_prog->gpio.gpio_config(JTAG_SRST, 0, JTAG_SRST)
 #define reset_set()				reset_input()
-#define reset_clr()				adi_prog->gpio_out(JTAG_SRST, 0)
-#define trst_output()			adi_prog->gpio_config(JTAG_TRST, JTAG_TRST, 0)
-#define trst_input()			adi_prog->gpio_config(JTAG_TRST, 0, JTAG_TRST)
+#define reset_clr()				adi_prog->gpio.gpio_out(JTAG_SRST, 0)
+#define trst_output()			\
+	adi_prog->gpio.gpio_config(JTAG_TRST, JTAG_TRST, 0)
+#define trst_input()			\
+	adi_prog->gpio.gpio_config(JTAG_TRST, 0, JTAG_TRST)
 #define trst_set()				trst_input()
-#define trst_clr()				adi_prog->gpio_out(JTAG_TRST, 0)
+#define trst_clr()				adi_prog->gpio.gpio_out(JTAG_TRST, 0)
 #define reset_commit()			adi_prog->peripheral_commit()
 
 // JTAG
-#define jtag_init()				adi_prog->jtag_hl_init()
-#define jtag_fini()				adi_prog->jtag_hl_fini()
+#define jtag_init()				adi_prog->jtag_hl.jtag_hl_init()
+#define jtag_fini()				adi_prog->jtag_hl.jtag_hl_fini()
 #define jtag_config(kHz,a,b,c,d)	\
-							adi_prog->jtag_hl_config((kHz), (a), (b), (c), (d))
-#define jtag_tms(tms, len)		adi_prog->jtag_hl_tms((tms), (len))
-#define jtag_runtest(len)		adi_prog->jtag_hl_runtest(len)
+	adi_prog->jtag_hl.jtag_hl_config((kHz), (a), (b), (c), (d))
+#define jtag_tms(tms, len)		adi_prog->jtag_hl.jtag_hl_tms((tms), (len))
+#define jtag_runtest(len)		adi_prog->jtag_hl.jtag_hl_runtest(len)
 #define jtag_ir_w(ir, len)		\
-							adi_prog->jtag_hl_ir((uint8_t*)(ir), (len), 1, 0)
+	adi_prog->jtag_hl.jtag_hl_ir((uint8_t*)(ir), (len), 1, 0)
 #define jtag_dr_w(dr, len)		\
-							adi_prog->jtag_hl_dr((uint8_t*)(dr), (len), 1, 0)
+	adi_prog->jtag_hl.jtag_hl_dr((uint8_t*)(dr), (len), 1, 0)
 #define jtag_dr_rw(dr, len)		\
-							adi_prog->jtag_hl_dr((uint8_t*)(dr), (len), 1, 1)
+	adi_prog->jtag_hl.jtag_hl_dr((uint8_t*)(dr), (len), 1, 1)
 
 #define jtag_register_callback(s,r)	\
-							adi_prog->jtag_hl_register_callback((s), (r))
+	adi_prog->jtag_hl.jtag_hl_register_callback((s), (r))
 #define jtag_commit()			adi_prog->peripheral_commit()
 
-// SWJ
-#define swj_init()				adi_prog->swj_init()
-#define swj_fini()				adi_prog->swj_fini()
-#define swj_seqout(b, l)		adi_prog->swj_seqout((b), (l))
-#define swj_seqin(b, l)			adi_prog->swj_seqin((b), (l))
-#define swj_transact(r, v)		adi_prog->swj_transact((r), (v))
-#define swj_setpara(t, r, d)	adi_prog->swj_setpara((t), (r), (d))
-#define swj_commit()			adi_prog->peripheral_commit()
-#define swj_get_last_ack(ack)	adi_prog->swj_get_last_ack(ack)
+// SWD
+#define swd_init()				adi_prog->swd.swd_init()
+#define swd_fini()				adi_prog->swd.swd_fini()
+#define swd_seqout(b, l)		adi_prog->swd.swd_seqout((b), (l))
+#define swd_seqin(b, l)			adi_prog->swd.swd_seqin((b), (l))
+#define swd_transact(r, v)		adi_prog->swd.swd_transact((r), (v))
+#define swd_setpara(t, r, d)	adi_prog->swd.swd_setpara((t), (r), (d))
+#define swd_commit()			adi_prog->peripheral_commit()
+#define swd_get_last_ack(ack)	adi_prog->swd.swd_get_last_ack(ack)
 
 RESULT adi_dp_read_reg(uint8_t reg_addr, uint32_t *value, uint8_t check_result);
 RESULT adi_dp_write_reg(uint8_t reg_addr, uint32_t *value, 
 							uint8_t check_result);
 RESULT adi_dp_transaction_endcheck(void);
 
-const uint8_t adi_swj_reset_seq[] = 
+const uint8_t adi_swd_reset_seq[] = 
 {
 	// at least 50-bit '1'
 	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
 };
 
-const uint8_t adi_jtag_to_swj_seq[] = 
+const uint8_t adi_jtag_to_swd_seq[] = 
 {
 	// at least 50-bit '1'
 	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 
@@ -105,7 +109,7 @@ const uint8_t adi_jtag_to_swj_seq[] =
 	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x0F
 };
 
-const uint8_t adi_swj_to_jtag_seq[] = 
+const uint8_t adi_swd_to_jtag_seq[] = 
 {
 	// at least 50-bit '1'
 	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 
@@ -193,11 +197,11 @@ RESULT adi_dp_commit(void)
 		return jtag_commit();
 		break;
 	case ADI_DP_SWD:
-		if (ERROR_OK != swj_commit())
+		if (ERROR_OK != swd_commit())
 		{
 			return ERROR_FAIL;
 		}
-		return swj_get_last_ack(&adi_dp.ack);
+		return swd_get_last_ack(&adi_dp.ack);
 		break;
 	default:
 		return ERROR_FAIL;
@@ -232,7 +236,7 @@ static RESULT adi_dpif_fini(void)
 		break;
 	case ADI_DP_SWD:
 		adi_dp_commit();
-		swj_fini();
+		swd_fini();
 		adi_dp_commit();
 		adi_dp_if = NULL;
 		break;
@@ -254,7 +258,7 @@ static RESULT adi_dpif_init(struct program_context_t *context, adi_dp_if_t *inte
 		return ERROR_FAIL;
 	}
 	
-	adi_prog = context->prog;
+	adi_prog = &(context->prog->interfaces);
 	adi_dp_if = interf;
 	
 	reset_init();
@@ -272,8 +276,8 @@ static RESULT adi_dpif_init(struct program_context_t *context, adi_dp_if_t *inte
 					adi_dp_if->adi_dp_if_info.adi_dp_jtag.ua + pi->jtag_pos.ua, 
 					adi_dp_if->adi_dp_if_info.adi_dp_jtag.bb + pi->jtag_pos.bb, 
 					adi_dp_if->adi_dp_if_info.adi_dp_jtag.ba + pi->jtag_pos.ba);
-		jtag_tms((uint8_t*)adi_swj_to_jtag_seq, 
-					sizeof(adi_swj_to_jtag_seq) * 8);
+		jtag_tms((uint8_t*)adi_swd_to_jtag_seq, 
+					sizeof(adi_swd_to_jtag_seq) * 8);
 		if (ERROR_OK == adi_dp_commit())
 		{
 			jtag_register_callback(adi_dpif_send_callback, 
@@ -286,13 +290,13 @@ static RESULT adi_dpif_init(struct program_context_t *context, adi_dp_if_t *inte
 		}
 		break;
 	case ADI_DP_SWD:
-		ack_value = ADI_SWJDP_ACK_OK;
-		swj_init();
-		swj_setpara(adi_dp_if->adi_dp_if_info.adi_dp_swj.swj_trn, 
-					adi_dp_if->adi_dp_if_info.adi_dp_swj.swj_retry, 
-					adi_dp_if->adi_dp_if_info.adi_dp_swj.swj_dly);
-		swj_seqout((uint8_t*)adi_jtag_to_swj_seq, 
-				   sizeof(adi_jtag_to_swj_seq) * 8);
+		ack_value = ADI_SWDDP_ACK_OK;
+		swd_init();
+		swd_setpara(adi_dp_if->adi_dp_if_info.adi_dp_swd.swd_trn, 
+					adi_dp_if->adi_dp_if_info.adi_dp_swd.swd_retry, 
+					adi_dp_if->adi_dp_if_info.adi_dp_swd.swd_dly);
+		swd_seqout((uint8_t*)adi_jtag_to_swd_seq, 
+				   sizeof(adi_jtag_to_swd_seq) * 8);
 		return adi_dp_commit();
 		break;
 	default:
@@ -358,7 +362,7 @@ RESULT adi_dp_scan(uint8_t instr, uint8_t reg_addr, uint8_t RnW,
 		}
 		// switch reg_addr
 		reg_addr = (reg_addr << 1) & 0x18;
-		swj_transact(reg_addr | ((RnW & 1) << 2) | ((instr & 1) << 1), value);
+		swd_transact(reg_addr | ((RnW & 1) << 2) | ((instr & 1) << 1), value);
 		break;
 	}
 	
@@ -390,14 +394,14 @@ RESULT adi_dpif_read_id(uint32_t *id)
 		LOG_INFO(_GETTEXT("JTAG_ID: 0x%X.\n"), *id);
 		break;
 	case ADI_DP_SWD:
-		adi_dp_read_reg(ADI_SWJDP_REG_DPIDR, id, 0);
+		adi_dp_read_reg(ADI_SWDDP_REG_DPIDR, id, 0);
 		
 		if (ERROR_OK != adi_dp_commit())
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read SWJ_ID");
+			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read SWD_ID");
 			return ERRCODE_FAILURE_OPERATION;
 		}
-		LOG_INFO(_GETTEXT("SWJ_ID read is 0x%X.\n"), *id);
+		LOG_INFO(_GETTEXT("SWD_ID read is 0x%X.\n"), *id);
 		break;
 	default:
 		return ERROR_FAIL;
@@ -413,7 +417,7 @@ RESULT adi_dp_rw(uint8_t instr, uint8_t reg_addr, uint8_t RnW, uint32_t *value,
 {
 	adi_dp_scan(instr, reg_addr, RnW, value);
 	
-	// read result, DP registers of SWJ are not posted
+	// read result, DP registers of SWD are not posted
 	if ((ADI_DAP_READ == RnW) 
 		&& ((adi_dp_if->type == ADI_DP_JTAG) || (instr == ADI_DP_IR_APACC)))
 	{
@@ -736,11 +740,11 @@ init:
 	}
 	else
 	{
-		tmp = ADI_SWJDP_REG_ABORT_STKERRCLR 
-				| ADI_SWJDP_REG_ABORT_WDERRCLR 
-				| ADI_SWJDP_REG_ABORT_ORUNERRCLR 
-				| ADI_SWJDP_REG_ABORT_DAPABORT;
-		adi_dp_write_reg(ADI_SWJDP_REG_ABORT, &tmp, 0);
+		tmp = ADI_SWDDP_REG_ABORT_STKERRCLR 
+				| ADI_SWDDP_REG_ABORT_WDERRCLR 
+				| ADI_SWDDP_REG_ABORT_ORUNERRCLR 
+				| ADI_SWDDP_REG_ABORT_DAPABORT;
+		adi_dp_write_reg(ADI_SWDDP_REG_ABORT, &tmp, 0);
 	}
 	
 	tmp = 0;

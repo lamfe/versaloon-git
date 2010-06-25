@@ -143,9 +143,9 @@ void USB_TO_XXX_ProcessCmd(uint8* dat, uint16 len)
 			USB_TO_LPCICP_ProcessCmd(dat + USB_TO_XXX_CmdIdx + 3, USB_TO_XXX_CmdLen_tmp);
 			break;
 #endif
-#if USB_TO_SWJ_EN
-		case USB_TO_SWJ:
-			USB_TO_SWJ_ProcessCmd(dat + USB_TO_XXX_CmdIdx + 3, USB_TO_XXX_CmdLen_tmp);
+#if USB_TO_SWD_EN
+		case USB_TO_SWD:
+			USB_TO_SWD_ProcessCmd(dat + USB_TO_XXX_CmdIdx + 3, USB_TO_XXX_CmdLen_tmp);
 			break;
 #endif
 #if USB_TO_MSP430_JTAG_EN

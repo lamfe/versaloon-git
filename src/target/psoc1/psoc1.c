@@ -106,7 +106,7 @@ PARSE_ARGUMENT_HANDLER(psoc1)
 
 
 
-static struct programmer_info_t *p = NULL;
+static struct interfaces_info_t *interfaces = NULL;
 
 #define PSOC1_SSC_CMD_SWBootReset			0x00
 #define PSOC1_SSC_CMD_ReadBlock				0x01
@@ -119,23 +119,23 @@ static struct programmer_info_t *p = NULL;
 #define PSOC1_SSC_CMD_Calibrate0			0x08
 #define PSOC1_SSC_CMD_Calibrate1			0x09
 
-#define get_target_voltage(v)				p->get_target_voltage(v)
+#define get_target_voltage(v)				interfaces->target_voltage.get_target_voltage(v)
 
-#define issp_init()							p->issp_init()
-#define issp_fini()							p->issp_fini()
-#define issp_enter_program_mode(mode)		p->issp_enter_program_mode(mode)
-#define issp_leave_program_mode(mode)		p->issp_leave_program_mode(mode)
-#define issp_wait_and_poll()				p->issp_wait_and_poll()
-#define issp_commit()						p->peripheral_commit()
+#define issp_init()							interfaces->issp.issp_init()
+#define issp_fini()							interfaces->issp.issp_fini()
+#define issp_enter_program_mode(mode)		interfaces->issp.issp_enter_program_mode(mode)
+#define issp_leave_program_mode(mode)		interfaces->issp.issp_leave_program_mode(mode)
+#define issp_wait_and_poll()				interfaces->issp.issp_wait_and_poll()
+#define issp_commit()						interfaces->peripheral_commit()
 
 #define issp_0s()							\
-							p->issp_vector(ISSP_VECTOR_0S, 0x00, 0x00, NULL)
+							interfaces->issp.issp_vector(ISSP_VECTOR_0S, 0x00, 0x00, NULL)
 #define issp_read_sram(addr, buf)			\
-			p->issp_vector(ISSP_VECTOR_READ_SRAM, (uint8_t)(addr), 0x00, (buf))
+	interfaces->issp.issp_vector(ISSP_VECTOR_READ_SRAM, (uint8_t)(addr), 0x00, (buf))
 #define issp_write_sram(addr, data)			\
-	p->issp_vector(ISSP_VECTOR_WRITE_SRAM,(uint8_t)(addr),(uint8_t)(data),NULL)
+	interfaces->issp.issp_vector(ISSP_VECTOR_WRITE_SRAM,(uint8_t)(addr),(uint8_t)(data),NULL)
 #define issp_write_reg(addr, data)			\
-	p->issp_vector(ISSP_VECTOR_WRITE_REG, (uint8_t)(addr), (uint8_t)(data),NULL)
+	interfaces->issp.issp_vector(ISSP_VECTOR_WRITE_REG, (uint8_t)(addr), (uint8_t)(data),NULL)
 
 #define issp_set_cup_a(cmd)					issp_write_reg(0xF0, (cmd))
 #define issp_set_cup_sp(sp)					issp_write_reg(0xF6, (sp))
@@ -250,7 +250,7 @@ ENTER_PROGRAM_MODE_HANDLER(psoc1)
 	struct program_info_t *pi = context->pi;
 	uint16_t voltage;
 	
-	p = context->prog;
+	interfaces = &(context->prog->interfaces);
 	
 	if (ERROR_OK != get_target_voltage(&voltage))
 	{

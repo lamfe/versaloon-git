@@ -82,6 +82,7 @@ RESULT (*msp430jtagsbw_poll)(uint32_t dr, uint32_t mask, uint32_t value,
 PARSE_ARGUMENT_HANDLER(msp430)
 {
 	uint8_t mode;
+	struct interfaces_info_t *interfaces = &(cur_programmer->interfaces);
 	
 	switch (cmd)
 	{
@@ -98,29 +99,31 @@ PARSE_ARGUMENT_HANDLER(msp430)
 		switch (mode)
 		{
 		case MSP430_MODE_JTAG:
-			msp430jtagsbw_init = cur_programmer->msp430jtag_init;
-			msp430jtagsbw_fini = cur_programmer->msp430jtag_fini;
-			msp430jtagsbw_config = cur_programmer->msp430jtag_config;
-			msp430jtagsbw_ir = cur_programmer->msp430jtag_ir;
-			msp430jtagsbw_dr = cur_programmer->msp430jtag_dr;
-			msp430jtagsbw_tclk = cur_programmer->msp430jtag_tclk;
-			msp430jtagsbw_tclk_strobe = cur_programmer->msp430jtag_tclk_strobe;
-			msp430jtagsbw_reset = cur_programmer->msp430jtag_reset;
-			msp430jtagsbw_poll = cur_programmer->msp430jtag_poll;
+			msp430jtagsbw_init = interfaces->msp430jtag.msp430jtag_init;
+			msp430jtagsbw_fini = interfaces->msp430jtag.msp430jtag_fini;
+			msp430jtagsbw_config = interfaces->msp430jtag.msp430jtag_config;
+			msp430jtagsbw_ir = interfaces->msp430jtag.msp430jtag_ir;
+			msp430jtagsbw_dr = interfaces->msp430jtag.msp430jtag_dr;
+			msp430jtagsbw_tclk = interfaces->msp430jtag.msp430jtag_tclk;
+			msp430jtagsbw_tclk_strobe = \
+								interfaces->msp430jtag.msp430jtag_tclk_strobe;
+			msp430jtagsbw_reset = interfaces->msp430jtag.msp430jtag_reset;
+			msp430jtagsbw_poll = interfaces->msp430jtag.msp430jtag_poll;
 			
 			memcpy(&msp430_program_functions, &msp430jtagsbw_program_functions, 
 					sizeof(msp430_program_functions));
 			break;
 		case MSP430_MODE_SBW:
-			msp430jtagsbw_init = cur_programmer->msp430sbw_init;
-			msp430jtagsbw_fini = cur_programmer->msp430sbw_fini;
-			msp430jtagsbw_config = cur_programmer->msp430sbw_config;
-			msp430jtagsbw_ir = cur_programmer->msp430sbw_ir;
-			msp430jtagsbw_dr = cur_programmer->msp430sbw_dr;
-			msp430jtagsbw_tclk = cur_programmer->msp430sbw_tclk;
-			msp430jtagsbw_tclk_strobe = cur_programmer->msp430sbw_tclk_strobe;
-			msp430jtagsbw_reset = cur_programmer->msp430sbw_reset;
-			msp430jtagsbw_poll = cur_programmer->msp430sbw_poll;
+			msp430jtagsbw_init = interfaces->msp430sbw.msp430sbw_init;
+			msp430jtagsbw_fini = interfaces->msp430sbw.msp430sbw_fini;
+			msp430jtagsbw_config = interfaces->msp430sbw.msp430sbw_config;
+			msp430jtagsbw_ir = interfaces->msp430sbw.msp430sbw_ir;
+			msp430jtagsbw_dr = interfaces->msp430sbw.msp430sbw_dr;
+			msp430jtagsbw_tclk = interfaces->msp430sbw.msp430sbw_tclk;
+			msp430jtagsbw_tclk_strobe = \
+								interfaces->msp430sbw.msp430sbw_tclk_strobe;
+			msp430jtagsbw_reset = interfaces->msp430sbw.msp430sbw_reset;
+			msp430jtagsbw_poll = interfaces->msp430sbw.msp430sbw_poll;
 			
 			memcpy(&msp430_program_functions, &msp430jtagsbw_program_functions, 
 					sizeof(msp430_program_functions));

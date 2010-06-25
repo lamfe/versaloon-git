@@ -114,25 +114,28 @@ PARSE_ARGUMENT_HANDLER(s5x)
 	return ERROR_OK;
 }
 
-#define spi_init()				prog->spi_init()
-#define spi_fini()				prog->spi_fini()
-#define spi_conf(speed)			prog->spi_config((speed), SPI_CPOL_LOW, \
-												 SPI_CPHA_1EDGE, SPI_MSB_FIRST)
+#define spi_init()				prog->interfaces.spi.spi_init()
+#define spi_fini()				prog->interfaces.spi.spi_fini()
+#define spi_conf(speed)			prog->interfaces.spi.spi_config((speed), \
+									SPI_CPOL_LOW, SPI_CPHA_1EDGE, SPI_MSB_FIRST)
 #define spi_io(out, outlen, in, inpos, inlen)	\
-								prog->spi_io((out), (in), (outlen), \
-											 (inpos), (inlen))
+								prog->interfaces.spi.spi_io((out), (in), \
+									(outlen), (inpos), (inlen))
 
-#define reset_init()			prog->gpio_init()
-#define reset_fini()			prog->gpio_fini()
-#define reset_output()			prog->gpio_config(GPIO_SRST, GPIO_SRST, 0)
-#define reset_input()			prog->gpio_config(GPIO_SRST, 0, GPIO_SRST)
-#define reset_set()				prog->gpio_out(GPIO_SRST, GPIO_SRST)
+#define reset_init()			prog->interfaces.gpio.gpio_init()
+#define reset_fini()			prog->interfaces.gpio.gpio_fini()
+#define reset_output()			prog->interfaces.gpio.gpio_config(GPIO_SRST, \
+									GPIO_SRST, 0)
+#define reset_input()			prog->interfaces.gpio.gpio_config(GPIO_SRST, \
+									0, GPIO_SRST)
+#define reset_set()				prog->interfaces.gpio.gpio_out(GPIO_SRST, \
+									GPIO_SRST)
 #define reset_clr()				reset_input()
 
-#define delay_ms(ms)			prog->delayms((ms) | 0x8000)
-#define delay_us(us)			prog->delayus((us) & 0x7FFF)
+#define delay_ms(ms)			prog->interfaces.delay.delayms((ms) | 0x8000)
+#define delay_us(us)			prog->interfaces.delay.delayus((us) & 0x7FFF)
 
-#define commit()				prog->peripheral_commit()
+#define commit()				prog->interfaces.peripheral_commit()
 
 ENTER_PROGRAM_MODE_HANDLER(s5x)
 {

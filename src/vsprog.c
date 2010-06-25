@@ -871,7 +871,7 @@ Parse_File:
 	}
 	// init and check programmer's ability
 	i = cur_target->program_mode[program_info.mode].interface_needed;
-	if ((cur_programmer->interfaces & i) != i)
+	if ((cur_programmer->interfaces_mask & i) != i)
 	{
 		LOG_ERROR(_GETTEXT("%s can not support %s in the mode defined.\n"), 
 				  cur_programmer->name, cur_target->name);

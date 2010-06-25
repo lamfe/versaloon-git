@@ -199,7 +199,7 @@ void EP3_OUT_Callback(void)
 			if((buffer_out[0] == VSLLINK_CMD_HW_JTAGSEQCMD) 
 				|| (buffer_out[0] == VSLLINK_CMD_HW_JTAGHLCMD) 
 				|| (buffer_out[0] == VSLLINK_CMD_HW_JTAGRAWCMD) 
-				|| (buffer_out[0] == VSLLINK_CMD_HW_SWJCMD))
+				|| (buffer_out[0] == VSLLINK_CMD_HW_SWDCMD))
 			{
 				cmd_len = buffer_out[1] + ((u16)buffer_out[2] << 8);
 			}

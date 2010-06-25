@@ -59,30 +59,31 @@ struct program_functions_t avr8isp_program_functions =
 
 
 
-#define spi_init()				p->spi_init()
-#define spi_fini()				p->spi_fini()
+#define spi_init()				interfaces->spi.spi_init()
+#define spi_fini()				interfaces->spi.spi_fini()
 #define spi_conf(speed)			\
-			p->spi_config((speed), SPI_CPOL_LOW, SPI_CPHA_1EDGE, SPI_MSB_FIRST)
+	interfaces->spi.spi_config((speed), SPI_CPOL_LOW, SPI_CPHA_1EDGE, \
+		SPI_MSB_FIRST)
 #define spi_io(out, outlen, in, inpos, inlen)	\
-							p->spi_io((out), (in), (outlen), (inpos), (inlen))
+	interfaces->spi.spi_io((out), (in), (outlen), (inpos), (inlen))
 
-#define reset_init()			p->gpio_init()
-#define reset_fini()			p->gpio_fini()
-#define reset_output()			p->gpio_config(GPIO_SRST, GPIO_SRST, 0)
-#define reset_input()			p->gpio_config(GPIO_SRST, 0, GPIO_SRST)
+#define reset_init()			interfaces->gpio.gpio_init()
+#define reset_fini()			interfaces->gpio.gpio_fini()
+#define reset_output()			interfaces->gpio.gpio_config(GPIO_SRST, GPIO_SRST, 0)
+#define reset_input()			interfaces->gpio.gpio_config(GPIO_SRST, 0, GPIO_SRST)
 #define reset_set()				reset_input()
-#define reset_clr()				p->gpio_out(GPIO_SRST, 0)
+#define reset_clr()				interfaces->gpio.gpio_out(GPIO_SRST, 0)
 
-#define poll_start()			p->poll_start(20, 500)
-#define poll_end()				p->poll_end()
-#define poll_check(o, m, v)		p->poll_checkbyte((o), (m), (v))
+#define poll_start()			interfaces->poll.poll_start(20, 500)
+#define poll_end()				interfaces->poll.poll_end()
+#define poll_check(o, m, v)		interfaces->poll.poll_checkbyte((o), (m), (v))
 
-#define delay_ms(ms)			p->delayms((ms) | 0x8000)
-#define delay_us(us)			p->delayus((us) & 0x7FFF)
+#define delay_ms(ms)			interfaces->delay.delayms((ms) | 0x8000)
+#define delay_us(us)			interfaces->delay.delayus((us) & 0x7FFF)
 
-#define commit()				p->peripheral_commit()
+#define commit()				interfaces->peripheral_commit()
 
-static struct programmer_info_t *p = NULL;
+static struct interfaces_info_t *interfaces = NULL;
 
 static void avr8_isp_pollready(void)
 {
@@ -104,7 +105,7 @@ ENTER_PROGRAM_MODE_HANDLER(avr8isp)
 	uint8_t cmd_buf[4];
 	uint8_t poll_byte;
 	
-	p = context->prog;
+	interfaces = &(context->prog->interfaces);
 	
 	if (!pi->frequency)
 	{

@@ -49,10 +49,10 @@ typedef struct
 		}adi_dp_jtag;
 		struct
 		{
-			uint8_t swj_trn;
-			uint16_t swj_retry;
-			uint16_t swj_dly;
-		}adi_dp_swj;
+			uint8_t swd_trn;
+			uint16_t swd_retry;
+			uint16_t swd_dly;
+		}adi_dp_swd;
 	}adi_dp_if_info;
 	uint8_t memaccess_tck;
 	uint32_t tar_autoincr_block;
@@ -82,16 +82,16 @@ struct adi_dp_info_t
 #define ADI_DP_IR_DPACC						0
 #define ADI_DP_IR_APACC						1
 
-#define ADI_SWJDP_REG_DPIDR					0x00
-#define ADI_SWJDP_REG_ABORT					0x00
-#define ADI_SWJDP_REG_DLCR					0x04
-#define ADI_SWJDP_REG_RESEND				0x08
+#define ADI_SWDDP_REG_DPIDR					0x00
+#define ADI_SWDDP_REG_ABORT					0x00
+#define ADI_SWDDP_REG_DLCR					0x04
+#define ADI_SWDDP_REG_RESEND				0x08
 
-#define ADI_SWJDP_REG_ABORT_DAPABORT		(1<<0)
-#define ADI_SWJDP_REG_ABORT_STKCMPCLR		(1<<1)
-#define ADI_SWJDP_REG_ABORT_STKERRCLR		(1<<2)
-#define ADI_SWJDP_REG_ABORT_WDERRCLR		(1<<3)
-#define ADI_SWJDP_REG_ABORT_ORUNERRCLR		(1<<4)
+#define ADI_SWDDP_REG_ABORT_DAPABORT		(1<<0)
+#define ADI_SWDDP_REG_ABORT_STKCMPCLR		(1<<1)
+#define ADI_SWDDP_REG_ABORT_STKERRCLR		(1<<2)
+#define ADI_SWDDP_REG_ABORT_WDERRCLR		(1<<3)
+#define ADI_SWDDP_REG_ABORT_ORUNERRCLR		(1<<4)
 
 #define ADI_JTAGDP_IRLEN					4
 #define ADI_JTAGDP_IR_ABORT					0x04
@@ -106,9 +106,9 @@ struct adi_dp_info_t
 #define ADI_DAP_READ						1
 #define ADI_DAP_WRITE						0
 
-#define ADI_SWJDP_ACK_OK					0x01
-#define ADI_SWJDP_ACK_WAIT					0x02
-#define ADI_SWJDP_ACK_FAIL					0x04
+#define ADI_SWDDP_ACK_OK					0x01
+#define ADI_SWDDP_ACK_WAIT					0x02
+#define ADI_SWDDP_ACK_FAIL					0x04
 
 #define ADI_JTAGDP_ACK_WAIT					0x01
 #define ADI_JTAGDP_ACK_OK_FAIL				0x02
