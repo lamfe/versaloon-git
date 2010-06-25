@@ -58,25 +58,25 @@ struct program_functions_t c8051fc2_program_functions =
 };
 
 
-#define delay_ms(ms)			p->delayms((ms) | 0x8000)
-#define delay_us(us)			p->delayus((us) & 0x7FFF)
+#define delay_ms(ms)			interfaces->delay.delayms((ms) | 0x8000)
+#define delay_us(us)			interfaces->delay.delayus((us) & 0x7FFF)
 
-#define c2_init()				p->c2_init()
-#define c2_fini()				p->c2_fini()
-#define c2_write_ir(ir)			p->c2_addr_write(ir)
-#define c2_read_ir(ir)			p->c2_addr_read(ir);
-#define c2_write_dr(dr)			p->c2_data_write(&dr, 1)
-#define c2_read_dr(dr)			p->c2_data_read(dr, 1)
+#define c2_init()				interfaces->c2.c2_init()
+#define c2_fini()				interfaces->c2.c2_fini()
+#define c2_write_ir(ir)			interfaces->c2.c2_addr_write(ir)
+#define c2_read_ir(ir)			interfaces->c2.c2_addr_read(ir);
+#define c2_write_dr(dr)			interfaces->c2.c2_data_write(&dr, 1)
+#define c2_read_dr(dr)			interfaces->c2.c2_data_read(dr, 1)
 #define c2_poll_out_ready()		c8051f_c2_addr_poll(0x01, 0x01, 500)
 #define c2_poll_in_busy()		c8051f_c2_addr_poll(0x02, 0x00, 500)
 
-#define poll_start(cnt)			p->poll_start((cnt), 100)
-#define poll_end()				p->poll_end()
-#define poll_check(o, m, v)		p->poll_checkbyte((o), (m), (v))
+#define poll_start(cnt)			interfaces->poll.poll_start((cnt), 100)
+#define poll_end()				interfaces->poll.poll_end()
+#define poll_check(o, m, v)		interfaces->poll.poll_checkbyte((o), (m), (v))
 
-#define commit()				p->peripheral_commit()
+#define commit()				interfaces->peripheral_commit()
 
-static struct programmer_info_t *p = NULL;
+static struct interfaces_info_t *interfaces = NULL;
 
 RESULT c8051f_c2_addr_poll(uint8_t mask, uint8_t value, uint16_t poll_cnt)
 {
@@ -95,7 +95,7 @@ ENTER_PROGRAM_MODE_HANDLER(c8051fc2)
 	struct chip_param_t *param = context->param;
 	uint8_t dr;
 	
-	p = context->prog;
+	interfaces = &(context->prog->interfaces);
 	c2_init();
 	// enable flash programming
 	c2_write_ir((uint8_t)param->param[C8051F_PARAM_FPCTL_ADDR]);

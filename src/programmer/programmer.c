@@ -488,6 +488,8 @@ RESULT programmer_script_close(uint8_t argc, const char *argv[])
 // tvcc
 RESULT programmer_get_target_voltage(uint8_t argc, const char *argv[])
 {
+	struct interface_target_voltage_t *tv = 
+						&(cur_programmer->interfaces.target_voltage);
 	uint16_t voltage = 0;
 	RESULT ret = ERROR_OK;
 	
@@ -498,7 +500,7 @@ RESULT programmer_get_target_voltage(uint8_t argc, const char *argv[])
 		return ERROR_FAIL;
 	}
 	
-	if (ERROR_OK != cur_programmer->get_target_voltage(&voltage))
+	if (ERROR_OK != tv->get_target_voltage(&voltage))
 	{
 		ret = ERROR_FAIL;
 	}
@@ -511,6 +513,8 @@ RESULT programmer_get_target_voltage(uint8_t argc, const char *argv[])
 
 RESULT programmer_set_target_voltage(uint8_t argc, const char *argv[])
 {
+	struct interface_target_voltage_t *tv = 
+						&(cur_programmer->interfaces.target_voltage);
 	uint16_t voltage = 0;
 	
 	if (argc != 2)
@@ -520,12 +524,13 @@ RESULT programmer_set_target_voltage(uint8_t argc, const char *argv[])
 	}
 	
 	voltage = (uint16_t)strtoul(argv[1], NULL, 0);
-	return cur_programmer->set_target_voltage(voltage);
+	return tv->set_target_voltage(voltage);
 }
 
 // iic
 RESULT programmer_iic_init(uint8_t argc, const char *argv[])
 {
+	struct interface_i2c_t *i2c = &(cur_programmer->interfaces.i2c);
 	REFERENCE_PARAMETER(argv);
 	if (argc != 1)
 	{
@@ -533,12 +538,13 @@ RESULT programmer_iic_init(uint8_t argc, const char *argv[])
 		return ERROR_FAIL;
 	}
 	
-	cur_programmer->i2c_init();
-	return cur_programmer->peripheral_commit();
+	i2c->i2c_init();
+	return cur_programmer->interfaces.peripheral_commit();
 }
 
 RESULT programmer_iic_fini(uint8_t argc, const char *argv[])
 {
+	struct interface_i2c_t *i2c = &(cur_programmer->interfaces.i2c);
 	REFERENCE_PARAMETER(argv);
 	if (argc != 1)
 	{
@@ -546,12 +552,13 @@ RESULT programmer_iic_fini(uint8_t argc, const char *argv[])
 		return ERROR_FAIL;
 	}
 	
-	cur_programmer->i2c_fini();
-	return cur_programmer->peripheral_commit();
+	i2c->i2c_fini();
+	return cur_programmer->interfaces.peripheral_commit();
 }
 
 RESULT programmer_iic_read(uint8_t argc, const char *argv[])
 {
+	struct interface_i2c_t *i2c = &(cur_programmer->interfaces.i2c);
 	uint16_t speed_khz = 0;
 	uint8_t data_size = 0;
 	uint8_t addr = 0;
@@ -573,9 +580,9 @@ RESULT programmer_iic_read(uint8_t argc, const char *argv[])
 		return ERROR_FAIL;
 	}
 	
-	cur_programmer->i2c_set_speed(speed_khz, 0xFFFF, 0);
-	cur_programmer->i2c_read(addr, buff, data_size, 1);
-	ret = cur_programmer->peripheral_commit();
+	i2c->i2c_set_speed(speed_khz, 0xFFFF, 0);
+	i2c->i2c_read(addr, buff, data_size, 1);
+	ret = cur_programmer->interfaces.peripheral_commit();
 	if (ERROR_OK == ret)
 	{
 		LOG_BYTE_BUF(buff, data_size, LOG_INFO, "%02X", 16);

@@ -294,7 +294,7 @@
           <state>$PROJ_DIR$\..\..\..\HW\VCOM\</state>
           <state>$PROJ_DIR$\..\..\..\HW\Mass\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\JTAG\</state>
-          <state>$PROJ_DIR$\..\..\..\Interfaces\SWJ\</state>
+          <state>$PROJ_DIR$\..\..\..\Interfaces\SWD\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\SWIM\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\SPI\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\PowerExt\</state>
@@ -1132,7 +1132,7 @@
           <state>$PROJ_DIR$\..\..\..\HW\VCOM\</state>
           <state>$PROJ_DIR$\..\..\..\HW\Mass\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\JTAG\</state>
-          <state>$PROJ_DIR$\..\..\..\Interfaces\SWJ\</state>
+          <state>$PROJ_DIR$\..\..\..\Interfaces\SWD\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\SWIM\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\SPI\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\PowerExt\</state>
@@ -1996,9 +1996,9 @@
       </file>
     </group>
     <group>
-      <name>SWJ</name>
+      <name>SWD</name>
       <file>
-        <name>$PROJ_DIR$\..\..\..\Interfaces\SWJ\SWJ.c</name>
+        <name>$PROJ_DIR$\..\..\..\Interfaces\SWD\SWD.c</name>
       </file>
     </group>
   </group>
@@ -2059,7 +2059,7 @@
       <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB_TO_SWIM.c</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB_TO_SWJ.c</name>
+      <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB_TO_SWD.c</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB_TO_USART.c</name>

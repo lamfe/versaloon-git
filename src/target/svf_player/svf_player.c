@@ -96,7 +96,7 @@ PARSE_ARGUMENT_HANDLER(svfp)
 
 
 
-struct programmer_info_t *p = NULL;
+struct interfaces_info_t *interfaces = NULL;
 extern struct filelist *fl_in;
 
 EXECUTE_HANDLER(svfp)
@@ -108,7 +108,7 @@ EXECUTE_HANDLER(svfp)
 	uint32_t svfp_command_buffer_len = 0;
 	RESULT ret = ERROR_OK;
 	
-	p = context->prog;
+	interfaces = &(context->prog->interfaces);
 	
 	if (pi->frequency)
 	{

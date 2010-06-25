@@ -161,23 +161,28 @@ struct program_functions_t avr8jtag_program_functions =
 
 
 
-#define jtag_init()					p->jtag_hl_init()
-#define jtag_fini()					p->jtag_hl_fini()
-#define jtag_config(kHz,a,b,c,d)	p->jtag_hl_config((kHz), (a), (b), (c), (d))
-#define jtag_runtest(len)			p->jtag_hl_runtest(len)
-#define jtag_ir_write(ir, len)		p->jtag_hl_ir((uint8_t*)(ir), (len), 1, 0)
-#define jtag_dr_write(dr, len)		p->jtag_hl_dr((uint8_t*)(dr), (len), 1, 0)
-#define jtag_dr_read(dr, len)		p->jtag_hl_dr((uint8_t*)(dr), (len), 1, 1)
+#define jtag_init()					interfaces->jtag_hl.jtag_hl_init()
+#define jtag_fini()					interfaces->jtag_hl.jtag_hl_fini()
+#define jtag_config(kHz,a,b,c,d)	\
+	interfaces->jtag_hl.jtag_hl_config((kHz), (a), (b), (c), (d))
+#define jtag_runtest(len)			interfaces->jtag_hl.jtag_hl_runtest(len)
+#define jtag_ir_write(ir, len)		\
+	interfaces->jtag_hl.jtag_hl_ir((uint8_t*)(ir), (len), 1, 0)
+#define jtag_dr_write(dr, len)		\
+	interfaces->jtag_hl.jtag_hl_dr((uint8_t*)(dr), (len), 1, 0)
+#define jtag_dr_read(dr, len)		\
+	interfaces->jtag_hl.jtag_hl_dr((uint8_t*)(dr), (len), 1, 1)
 
-#define poll_start()				p->poll_start(20, 500)
-#define poll_end()					p->poll_end()
-#define poll_check(o, m, v)			p->poll_checkbyte((o), (m), (v))
+#define poll_start()				interfaces->poll.poll_start(20, 500)
+#define poll_end()					interfaces->poll.poll_end()
+#define poll_check(o, m, v)			\
+	interfaces->poll.poll_checkbyte((o), (m), (v))
 
-#define delay_ms(ms)				p->delayms((ms) | 0x8000)
-#define delay_us(us)				p->delayus((us) & 0x7FFF)
-#define jtag_commit()				p->peripheral_commit()
+#define delay_ms(ms)				interfaces->delay.delayms((ms) | 0x8000)
+#define delay_us(us)				interfaces->delay.delayus((us) & 0x7FFF)
+#define jtag_commit()				interfaces->peripheral_commit()
 
-static struct programmer_info_t *p = NULL;
+static struct interfaces_info_t *interfaces = NULL;
 
 #define AVR_JTAG_SendIns(i)			(ir = (i), \
 									 jtag_ir_write(&ir, AVR_JTAG_INS_LEN))
@@ -204,7 +209,7 @@ ENTER_PROGRAM_MODE_HANDLER(avr8jtag)
 	uint8_t ir;
 	uint32_t dr;
 	
-	p = context->prog;
+	interfaces = &(context->prog->interfaces);
 	
 	if (!pi->frequency)
 	{

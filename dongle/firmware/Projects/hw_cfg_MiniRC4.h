@@ -135,17 +135,17 @@
 										}while(0)
 #define SWIM_WaitOutBitReady()			while(!(SWIM_OUT_TIMER->SR & TIM_FLAG_Update))
 
-/***************************** SWJ ******************************/
-#define SWJ_SWDIO_SETOUTPUT()			JTAG_TAP_TMS_SETOUTPUT()
-#define SWJ_SWDIO_SETINPUT()			JTAG_TAP_TMS_SETINPUT()
-#define SWJ_SWDIO_SET()					JTAG_TAP_TMS_SET()
-#define SWJ_SWDIO_CLR()					JTAG_TAP_TMS_CLR()
-#define SWJ_SWDIO_GET()					JTAG_TAP_TMS_GET()
+/***************************** SWD ******************************/
+#define SWD_SWDIO_SETOUTPUT()			JTAG_TAP_TMS_SETOUTPUT()
+#define SWD_SWDIO_SETINPUT()			JTAG_TAP_TMS_SETINPUT()
+#define SWD_SWDIO_SET()					JTAG_TAP_TMS_SET()
+#define SWD_SWDIO_CLR()					JTAG_TAP_TMS_CLR()
+#define SWD_SWDIO_GET()					JTAG_TAP_TMS_GET()
 
-#define SWJ_SWCLK_SETOUTPUT()			JTAG_TAP_TCK_SETOUTPUT()
-#define SWJ_SWCLK_SETINPUT()			JTAG_TAP_TCK_SETINPUT()
-#define SWJ_SWCLK_SET()					JTAG_TAP_TCK_SET()
-#define SWJ_SWCLK_CLR()					JTAG_TAP_TCK_CLR()
+#define SWD_SWCLK_SETOUTPUT()			JTAG_TAP_TCK_SETOUTPUT()
+#define SWD_SWCLK_SETINPUT()			JTAG_TAP_TCK_SETINPUT()
+#define SWD_SWCLK_SET()					JTAG_TAP_TCK_SET()
+#define SWD_SWCLK_CLR()					JTAG_TAP_TCK_CLR()
 
 /***************************** JTAG ******************************/
 #define JTAG_TAP_PORT					GPIOB

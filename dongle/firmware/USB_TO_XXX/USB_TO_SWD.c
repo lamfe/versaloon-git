@@ -3,10 +3,10 @@
  *  SimonQian@SimonQian.com                                               *
  *                                                                        *
  *  Project:    Versaloon                                                 *
- *  File:       USB_TO_SWJ.c                                              *
+ *  File:       USB_TO_SWD.c                                              *
  *  Author:     SimonQian                                                 *
  *  Versaion:   See changelog                                             *
- *  Purpose:    implementation file for USB_TO_SWJ                        *
+ *  Purpose:    implementation file for USB_TO_SWD                        *
  *  License:    See license                                               *
  *------------------------------------------------------------------------*
  *  Change Log:                                                           *
@@ -15,15 +15,15 @@
  **************************************************************************/
 
 #include "app_cfg.h"
-#if USB_TO_SWJ_EN
+#if USB_TO_SWD_EN
 
 #include "USB_TO_XXX.h"
-#include "SWJ.h"
+#include "SWD.h"
 #if POWER_OUT_EN
 #	include "PowerExt.h"
 #endif
 
-void USB_TO_SWJ_ProcessCmd(uint8* dat, uint16 len)
+void USB_TO_SWD_ProcessCmd(uint8* dat, uint16 len)
 {
 	uint16 index, device_num, length;
 	uint8 command;
@@ -35,7 +35,7 @@ void USB_TO_SWJ_ProcessCmd(uint8* dat, uint16 len)
 	{
 		command = dat[index] & USB_TO_XXX_CMDMASK;
 		device_num = dat[index] & USB_TO_XXX_IDXMASK;
-		if(device_num >= USB_TO_SWJ_NUM)
+		if(device_num >= USB_TO_SWD_NUM)
 		{
 			buffer_reply[rep_len++] = USB_TO_XXX_INVALID_INDEX;
 			return;
@@ -47,7 +47,7 @@ void USB_TO_SWJ_ProcessCmd(uint8* dat, uint16 len)
 		{
 		case USB_TO_XXX_INIT:
 			buffer_reply[rep_len++] = USB_TO_XXX_OK;
-			buffer_reply[rep_len++] = USB_TO_SWJ_NUM;
+			buffer_reply[rep_len++] = USB_TO_SWD_NUM;
 
 			GLOBAL_OUTPUT_Acquire();
 			PWREXT_Acquire();
@@ -55,16 +55,16 @@ void USB_TO_SWJ_ProcessCmd(uint8* dat, uint16 len)
 
 			break;
 		case USB_TO_XXX_CONFIG:
-			SWJ_SetTurnaround(dat[index + 0]);
-			SWJ_SetRetryCount(dat[index + 1] + (dat[index + 2] << 8));
-			SWJ_SetDelay(dat[index + 3] + (dat[index + 4] << 8));
-			SWJ_Init();
+			SWD_SetTurnaround(dat[index + 0]);
+			SWD_SetRetryCount(dat[index + 1] + (dat[index + 2] << 8));
+			SWD_SetDelay(dat[index + 3] + (dat[index + 4] << 8));
+			SWD_Init();
 
 			buffer_reply[rep_len++] = USB_TO_XXX_OK;
 
 			break;
 		case USB_TO_XXX_FINI:
-			SWJ_Fini();
+			SWD_Fini();
 
 			PWREXT_Release();
 			GLOBAL_OUTPUT_Release();
@@ -72,28 +72,28 @@ void USB_TO_SWJ_ProcessCmd(uint8* dat, uint16 len)
 			buffer_reply[rep_len++] = USB_TO_XXX_OK;
 
 			break;
-		case USB_TO_SWJ_SEQOUT:
+		case USB_TO_SWD_SEQOUT:
 			buffer_reply[rep_len++] = USB_TO_XXX_OK;
 
 			cur_dat_len = dat[index] + (dat[index + 1] << 8);
-			SWJ_SWDIO_SET();
-			SWJ_SWDIO_SETOUTPUT();
-			SWJ_SeqOut(&dat[index + 2], cur_dat_len);
-			SWJ_SWDIO_SETINPUT();
+			SWD_SWDIO_SET();
+			SWD_SWDIO_SETOUTPUT();
+			SWD_SeqOut(&dat[index + 2], cur_dat_len);
+			SWD_SWDIO_SETINPUT();
 
 			break;
-		case USB_TO_SWJ_SEQIN:
+		case USB_TO_SWD_SEQIN:
 			buffer_reply[rep_len++] = USB_TO_XXX_OK;
 
 			cur_dat_len = dat[index] + (dat[index + 1] << 8);
-			SWJ_SeqIn(&buffer_reply[rep_len], cur_dat_len);
+			SWD_SeqIn(&buffer_reply[rep_len], cur_dat_len);
 			rep_len += (cur_dat_len + 7) >> 3;
 
 			break;
-		case USB_TO_SWJ_Transact:
+		case USB_TO_SWD_Transact:
 			buffer_reply[rep_len++] = USB_TO_XXX_OK;
 
-			buffer_reply[rep_len] = SWJ_Transaction(dat[index], (uint32*)(dat + index + 1));
+			buffer_reply[rep_len] = SWD_Transaction(dat[index], (uint32*)(dat + index + 1));
 			memcpy(buffer_reply + rep_len + 1, dat + index + 1, 4);
 			rep_len += 5;
 

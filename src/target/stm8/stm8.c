@@ -101,32 +101,30 @@ PARSE_ARGUMENT_HANDLER(stm8)
 
 
 
-#define reset_init()			p->gpio_init()
-#define reset_fini()			p->gpio_fini()
-#define reset_output()			p->gpio_config(SWIM_RST_PIN, SWIM_RST_PIN, 0)
-#define reset_input()			p->gpio_config(SWIM_RST_PIN, 0, SWIM_RST_PIN)
+#define reset_init()			interfaces->gpio.gpio_init()
+#define reset_fini()			interfaces->gpio.gpio_fini()
+#define reset_output()			interfaces->gpio.gpio_config(SWIM_RST_PIN, SWIM_RST_PIN, 0)
+#define reset_input()			interfaces->gpio.gpio_config(SWIM_RST_PIN, 0, SWIM_RST_PIN)
 #define reset_set()				reset_input()
 #define reset_clr()				do{\
-									p->gpio_out(SWIM_RST_PIN, 0);\
+									interfaces->gpio.gpio_out(SWIM_RST_PIN, 0);\
 									reset_output();\
 								}while(0)
 
-#define swim_init()				p->swim_init()
-#define swim_fini()				p->swim_fini()
-#define swim_set_param(m,c0,c1)	p->swim_set_param((m), (c0), (c1))
-#define swim_out(d, l)			p->swim_out((d), (l))
-#define swim_in(d, L)			p->swim_in((d), (L))
-#define swim_sync(m)			p->swim_sync(m)
-#define swim_enable()			p->swim_enable()
+#define swim_init()				interfaces->swim.swim_init()
+#define swim_fini()				interfaces->swim.swim_fini()
+#define swim_set_param(m,c0,c1)	interfaces->swim.swim_set_param((m), (c0), (c1))
+#define swim_out(d, l)			interfaces->swim.swim_out((d), (l))
+#define swim_in(d, L)			interfaces->swim.swim_in((d), (L))
+#define swim_sync(m)			interfaces->swim.swim_sync(m)
+#define swim_enable()			interfaces->swim.swim_enable()
 
-#define delay_ms(ms)			p->delayms((ms) | 0x8000)
-#define delay_us(us)			p->delayus((us) & 0x7FFF)
+#define delay_ms(ms)			interfaces->delay.delayms((ms) | 0x8000)
+#define delay_us(us)			interfaces->delay.delayus((us) & 0x7FFF)
 
-#define get_target_voltage(v)	prog->get_target_voltage(v)
+#define commit()				interfaces->peripheral_commit()
 
-#define commit()				p->peripheral_commit()
-
-static struct programmer_info_t *p;
+static struct interfaces_info_t *interfaces = NULL;
 
 static RESULT stm8_swim_srst(void)
 {
@@ -216,7 +214,7 @@ ENTER_PROGRAM_MODE_HANDLER(stm8swim)
 	RESULT ret = ERROR_OK;
 	struct chip_param_t *param = context->param;
 	
-	p = context->prog;
+	interfaces = &(context->prog->interfaces);
 	
 	switch (context->pi->mode)
 	{
@@ -292,7 +290,7 @@ LEAVE_PROGRAM_MODE_HANDLER(stm8swim)
 {
 	RESULT ret = ERROR_OK;
 	REFERENCE_PARAMETER(success);
-	p = context->prog;
+	interfaces = &(context->prog->interfaces);
 	
 	switch (context->pi->mode)
 	{

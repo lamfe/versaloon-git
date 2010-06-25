@@ -98,60 +98,60 @@ PARSE_ARGUMENT_HANDLER(lpc900)
 
 
 
-static struct programmer_info_t *p = NULL;
+static struct interfaces_info_t *interfaces = NULL;
 
-#define get_target_voltage(v)				p->get_target_voltage(v)
-
-#define icp_init()							p->lpcicp_init()
-#define icp_fini()							p->lpcicp_fini()
-#define icp_enter_program_mode()			p->lpcicp_enter_program_mode()
-#define icp_leave_program_mode()			p->lpcicp_leave_program_mode()
-#define icp_commit()						p->peripheral_commit()
-#define icp_in(buf, len)					p->lpcicp_in((buf), (len))
-#define icp_out(buf, len)					p->lpcicp_out((buf), (len))
+#define icp_init()					interfaces->lpcicp.lpcicp_init()
+#define icp_fini()					interfaces->lpcicp.lpcicp_fini()
+#define icp_enter_program_mode()	\
+	interfaces->lpcicp.lpcicp_enter_program_mode()
+#define icp_leave_program_mode()	\
+	interfaces->lpcicp.lpcicp_leave_program_mode()
+#define icp_commit()				interfaces->peripheral_commit()
+#define icp_in(buf, len)			interfaces->lpcicp.lpcicp_in((buf), (len))
+#define icp_out(buf, len)			interfaces->lpcicp.lpcicp_out((buf), (len))
 #define icp_poll(dat, ptr, set, clear, cnt)	\
-					p->lpcicp_poll_ready((dat), (ptr), (set), (clear), (cnt))
+	interfaces->lpcicp.lpcicp_poll_ready((dat), (ptr), (set), (clear), (cnt))
 
-#define LPCICP_POLL_ON_SET					0
-#define LPCICP_POLL_ON_CLEAR				1
-#define LPCICP_POLL_TIME_OUT				2
+#define LPCICP_POLL_ON_SET			0
+#define LPCICP_POLL_ON_CLEAR		1
+#define LPCICP_POLL_TIME_OUT		2
 
-#define ICP_CMD_READ						0x01
-#define ICP_CMD_WRITE						0x00
+#define ICP_CMD_READ				0x01
+#define ICP_CMD_WRITE				0x00
 
-#define ICP_CMD_NOP							0x00
-#define	ICP_CMD_FMDATA_I					0x04
-#define ICP_CMD_FMADRL						0x08
-#define ICP_CMD_FMADRH						0x0A
-#define ICP_CMD_FMDATA						0x0C
-#define ICP_CMD_FMCON						0x0E
-#define ICP_CMD_FMDATA_PG					0x14
+#define ICP_CMD_NOP					0x00
+#define	ICP_CMD_FMDATA_I			0x04
+#define ICP_CMD_FMADRL				0x08
+#define ICP_CMD_FMADRH				0x0A
+#define ICP_CMD_FMDATA				0x0C
+#define ICP_CMD_FMCON				0x0E
+#define ICP_CMD_FMDATA_PG			0x14
 
-#define ICP_FMCMD_LOAD						0x00
-#define ICP_FMCMD_PROG						0x48
-#define ICP_FMCMD_ERS_G						0x72
-#define ICP_FMCMD_ERS_S						0x71
-#define ICP_FMCMD_ERS_P						0x70
-#define ICP_FMCMD_CONF						0x6C
-#define ICP_FMCMD_CRC_G						0x1A
-#define ICP_FMCMD_CRC_S						0x19
-#define ICP_FMCMD_CCP						0x67
+#define ICP_FMCMD_LOAD				0x00
+#define ICP_FMCMD_PROG				0x48
+#define ICP_FMCMD_ERS_G				0x72
+#define ICP_FMCMD_ERS_S				0x71
+#define ICP_FMCMD_ERS_P				0x70
+#define ICP_FMCMD_CONF				0x6C
+#define ICP_FMCMD_CRC_G				0x1A
+#define ICP_FMCMD_CRC_S				0x19
+#define ICP_FMCMD_CCP				0x67
 
-#define ICP_CFG_UCFG1						0x00
-#define ICP_CFG_UCFG2						0x01
-#define ICP_CFG_BOOTVECTOR					0x02
-#define ICP_CFG_STATUSBYTE					0x03
-#define ICP_CFG_SEC0						0x08
-#define ICP_CFG_SEC1						0x09
-#define ICP_CFG_SEC2						0x0A
-#define ICP_CFG_SEC3						0x0B
-#define ICP_CFG_SEC4						0x0C
-#define ICP_CFG_SEC5						0x0D
-#define ICP_CFG_SEC6						0x0E
-#define ICP_CFG_SEC7						0x0F
-#define ICP_CFG_MFGID						0x10
-#define ICP_CFG_ID1							0x11
-#define ICP_CFG_ID2							0x12
+#define ICP_CFG_UCFG1				0x00
+#define ICP_CFG_UCFG2				0x01
+#define ICP_CFG_BOOTVECTOR			0x02
+#define ICP_CFG_STATUSBYTE			0x03
+#define ICP_CFG_SEC0				0x08
+#define ICP_CFG_SEC1				0x09
+#define ICP_CFG_SEC2				0x0A
+#define ICP_CFG_SEC3				0x0B
+#define ICP_CFG_SEC4				0x0C
+#define ICP_CFG_SEC5				0x0D
+#define ICP_CFG_SEC6				0x0E
+#define ICP_CFG_SEC7				0x0F
+#define ICP_CFG_MFGID				0x10
+#define ICP_CFG_ID1					0x11
+#define ICP_CFG_ID2					0x12
 
 ENTER_PROGRAM_MODE_HANDLER(lpc900icp)
 {
@@ -159,7 +159,7 @@ ENTER_PROGRAM_MODE_HANDLER(lpc900icp)
 	uint32_t device_id;	
 	uint8_t tmpbuf[5], retry = 0;
 	
-	p = context->prog;
+	interfaces = &(context->prog->interfaces);
 	// ICP Init
 ProgramStart:
 	if (ERROR_OK != icp_init())

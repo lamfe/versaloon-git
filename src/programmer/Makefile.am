@@ -26,7 +26,7 @@ libprog_a_SOURCES = \
     versaloon/usbtoxxx/usbtopwr.c \
     versaloon/usbtoxxx/usbtojtaghl.c \
     versaloon/usbtoxxx/usbtojtagll.c \
-    versaloon/usbtoxxx/usbtoswj.c \
+    versaloon/usbtoxxx/usbtoswd.c \
     versaloon/usbtoxxx/usbtoswim.c
 
 #noinst_HEADERS = \

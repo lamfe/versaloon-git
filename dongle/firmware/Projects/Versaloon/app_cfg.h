@@ -96,7 +96,7 @@
 #	define USB_TO_MSP430_SBW_EN			0
 #	define USB_TO_SBW_EN				0
 #	define USB_TO_LPCICP_EN				1
-#	define USB_TO_SWJ_EN				1
+#	define USB_TO_SWD_EN				1
 #	define USB_TO_SWIM_EN				1
 // page 2
 #	define USB_TO_POWER_EN				1
@@ -202,6 +202,7 @@ extern void GLOBAL_OUTPUT_Release(void);
 #define INTERFACE_SPI_EN				((USB_TO_XXX_EN && USB_TO_SPI_EN) || AVR_ISP_EN || (MP_EN && MP_S5X_EN))
 #define INTERFACE_SWIM_EN				((USB_TO_XXX_EN && USB_TO_SWIM_EN) || (MP_EN && MP_STM8_EN))
 #define INTERFACE_USART_EN				(USB_TO_XXX_EN && USB_TO_USART_EN)
+#define INTERFACE_SWD_EN				((USB_TO_XXX_EN && USB_TO_SWD_EN) || VSLLINK_EN)
 
 /*************************** Includes Application ***************************/
 #include "HW.h"
