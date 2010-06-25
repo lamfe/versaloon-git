@@ -111,19 +111,13 @@ PARSE_ARGUMENT_HANDLER(stm8)
 									reset_output();\
 								}while(0)
 
-#define swim_input()			p->gpio_config(SWIM_PIN, 0, SWIM_PIN)
-#define swim_output()			p->gpio_config(SWIM_PIN, SWIM_PIN, 0)
-#define swim_set()				swim_input()
-#define swim_clr()				do{\
-									p->gpio_out(SWIM_PIN, 0);\
-									swim_output();\
-								}while(0)
-
 #define swim_init()				p->swim_init()
 #define swim_fini()				p->swim_fini()
 #define swim_set_param(m,c0,c1)	p->swim_set_param((m), (c0), (c1))
 #define swim_out(d, l)			p->swim_out((d), (l))
 #define swim_in(d, L)			p->swim_in((d), (L))
+#define swim_sync(m)			p->swim_sync(m)
+#define swim_enable()			p->swim_enable()
 
 #define delay_ms(ms)			p->delayms((ms) | 0x8000)
 #define delay_us(us)			p->delayus((us) & 0x7FFF)
@@ -173,53 +167,63 @@ static RESULT stm8_swim_wotf_reg(uint32_t addr, uint8_t value)
 	return stm8_swim_wotf(addr, &value, 1);
 }
 
-static void stm8_unlock_eeprom_option(void)
+static void stm8_unlock_eeprom_option(uint32_t dukr)
 {
-	stm8_swim_wotf_reg(STM8_REG_FLASH_DUKR, 0xAE);
-	stm8_swim_wotf_reg(STM8_REG_FLASH_DUKR, 0x56);
+	stm8_swim_wotf_reg(dukr, 0xAE);
+	stm8_swim_wotf_reg(dukr, 0x56);
 }
 
-static void stm8_unlock_flash(void)
+static void stm8_unlock_flash(uint32_t pukr)
 {
-	stm8_swim_wotf_reg(STM8_REG_FLASH_PUKR, 0x56);
-	stm8_swim_wotf_reg(STM8_REG_FLASH_PUKR, 0xAE);
+	stm8_swim_wotf_reg(pukr, 0x56);
+	stm8_swim_wotf_reg(pukr, 0xAE);
 }
 
-static RESULT stm8_erase_block(uint32_t block_addr)
+static RESULT stm8_erase_block(uint32_t cr2, uint32_t ncr2, 
+				uint32_t block_addr)
 {
 	uint8_t buff[4];
 	
-	stm8_swim_wotf_reg(STM8_REG_FLASH_CR2, STM8_FLASH_CR2_ERASE);
-	stm8_swim_wotf_reg(STM8_REG_FLASH_NCR2, (uint8_t)~STM8_FLASH_CR2_ERASE);
+	stm8_swim_wotf_reg(cr2, STM8_FLASH_CR2_ERASE);
+	if (ncr2)
+	{
+		stm8_swim_wotf_reg(ncr2, (uint8_t)~STM8_FLASH_CR2_ERASE);
+	}
 	memset(buff, 0, 4);
 	stm8_swim_wotf(block_addr, buff, 4);
 	delay_us(3300);
 	return ERROR_OK;
 }
 
-static RESULT stm8_program_block(uint32_t block_addr, uint8_t *block_buff, uint8_t block_size)
+static RESULT stm8_program_block(uint32_t cr2, uint32_t ncr2, 
+				uint32_t block_addr, uint8_t *block_buff, uint8_t block_size)
 {
-	stm8_swim_wotf_reg(STM8_REG_FLASH_CR2, STM8_FLASH_CR2_FPRG);
-	stm8_swim_wotf_reg(STM8_REG_FLASH_NCR2, (uint8_t)~STM8_FLASH_CR2_FPRG);
+	stm8_swim_wotf_reg(cr2, STM8_FLASH_CR2_FPRG);
+	if (ncr2)
+	{
+		stm8_swim_wotf_reg(ncr2, (uint8_t)~STM8_FLASH_CR2_FPRG);
+	}
 	stm8_swim_wotf(block_addr, block_buff, block_size);
 	delay_us(3300);
 	return ERROR_OK;
 }
 
+static uint8_t stm8_swim_enabled = 0;
+
 ENTER_PROGRAM_MODE_HANDLER(stm8swim)
 {
-	uint8_t i, test_buf0[7], test_buf1[6], retry = 5;
+	uint8_t test_buf0[7], test_buf1[6];
 	RESULT ret = ERROR_OK;
+	struct chip_param_t *param = context->param;
 	
 	p = context->prog;
 	
 	switch (context->pi->mode)
 	{
 	case STM8_SWIM:
-retry_enter_program_mode:
+		stm8_swim_enabled = 0;
 		reset_init();
 		reset_set();
-		swim_set();
 		delay_ms(20);
 		
 		reset_clr();
@@ -228,67 +232,42 @@ retry_enter_program_mode:
 		delay_ms(20);
 		reset_clr();
 		delay_ms(10);
-		swim_clr();
-		delay_ms(1);
-		for (i = 0; i < 4; i++)
-		{
-			swim_set();
-			delay_us(500);
-			swim_clr();
-			delay_us(500);
-		}
-		for (i = 0; i < 4; i++)
-		{
-			swim_set();
-			delay_us(250);
-			swim_clr();
-			delay_us(250);
-		}
-		swim_set();
+		swim_enable();
 		if (ERROR_OK != commit())
 		{
-			ret = ERROR_FAIL;
-			break;
+			reset_input();
+			reset_fini();
+			commit();
+			LOG_ERROR(_GETTEXT("No response on SWIM! Is target connected?\n"));
+			return ERROR_FAIL;
 		}
 		
+		stm8_swim_enabled = 1;
 		// SWIM mode
-		LOG_PUSH();
-		LOG_MUTE();
 		swim_init();
-		swim_set_param(10, 20 + 2, 2 + 1);
+		swim_set_param((uint8_t)param->param[STM8_PARAM_IRC], 20, 2);
 		delay_ms(10);
 		stm8_swim_srst();
 		if (ERROR_OK != commit())
 		{
-			if (retry--)
-			{
-				stm8_swim_srst();
-				swim_fini();
-				reset_input();
-				swim_input();
-				reset_fini();
-				commit();
-				LOG_POP();
-				goto retry_enter_program_mode;
-			}
-			LOG_POP();
 			return ERROR_FAIL;
 		}
-		LOG_POP();
 		stm8_swim_wotf_reg(STM8_REG_SWIM_CSR, 
 							STM8_SWIM_CSR_SAFT_MASK | STM8_SWIM_CSR_SWIM_DM);
 		delay_ms(10);
 		reset_set();
+		delay_ms(10);
+		swim_sync((uint8_t)param->param[STM8_PARAM_IRC]);
 		stm8_swim_rotf(0x0067F0, test_buf0, 6);
 		// enable high speed
 		stm8_swim_wotf_reg(STM8_REG_SWIM_CSR, 
 							STM8_SWIM_CSR_SAFT_MASK | STM8_SWIM_CSR_SWIM_DM 
 							| STM8_SWIM_CSR_HS | STM8_SWIM_CSR_RST);
-		swim_set_param(10, 8, 2 + 1);
 		delay_ms(10);
+		swim_set_param((uint8_t)param->param[STM8_PARAM_IRC], 8, 2);
 		stm8_swim_rotf(0x0067F0, test_buf1, 6);
-		stm8_unlock_eeprom_option();
-		stm8_unlock_flash();
+		stm8_unlock_eeprom_option(param->param[STM8_PARAM_DUKR]);
+		stm8_unlock_flash(param->param[STM8_PARAM_PUKR]);
 		if ((ERROR_OK != commit()) || memcmp(test_buf0, test_buf1, 6))
 		{
 			ret = ERROR_FAIL;
@@ -318,12 +297,14 @@ LEAVE_PROGRAM_MODE_HANDLER(stm8swim)
 	switch (context->pi->mode)
 	{
 	case STM8_SWIM:
-		stm8_swim_srst();
-		swim_fini();
-		reset_input();
-		swim_input();
-		reset_fini();
-		ret = commit();
+		if (stm8_swim_enabled)
+		{
+			stm8_swim_srst();
+			swim_fini();
+			reset_input();
+			reset_fini();
+			ret = commit();
+		}
 		break;
 	case STM8_ISP:
 		ret = ERRCODE_NOT_SUPPORT;
@@ -338,6 +319,7 @@ LEAVE_PROGRAM_MODE_HANDLER(stm8swim)
 ERASE_TARGET_HANDLER(stm8swim)
 {
 	RESULT ret = ERROR_OK;
+	struct chip_param_t *param = context->param;
 	REFERENCE_PARAMETER(size);
 	
 	switch (context->pi->mode)
@@ -347,7 +329,8 @@ ERASE_TARGET_HANDLER(stm8swim)
 		{
 		case APPLICATION_CHAR:
 		case EEPROM_CHAR:
-			ret = stm8_erase_block(addr);
+			ret = stm8_erase_block(param->param[STM8_PARAM_CR2], 
+										param->param[STM8_PARAM_NCR2], addr);
 			break;
 		default:
 			ret = ERROR_FAIL;
@@ -367,6 +350,7 @@ ERASE_TARGET_HANDLER(stm8swim)
 WRITE_TARGET_HANDLER(stm8swim)
 {
 	RESULT ret = ERROR_OK;
+	struct chip_param_t *param = context->param;
 	
 	switch (context->pi->mode)
 	{
@@ -375,7 +359,8 @@ WRITE_TARGET_HANDLER(stm8swim)
 		{
 		case APPLICATION_CHAR:
 		case EEPROM_CHAR:
-			ret = stm8_program_block(addr, buff, (uint8_t)size);
+			ret = stm8_program_block(param->param[STM8_PARAM_CR2], 
+					param->param[STM8_PARAM_NCR2], addr, buff, (uint8_t)size);
 			break;
 		default:
 			ret = ERROR_FAIL;

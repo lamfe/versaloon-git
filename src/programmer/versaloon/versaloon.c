@@ -1145,6 +1145,14 @@ RESULT versaloon_swim_in(uint8_t *data, uint8_t bytelen)
 {
 	return usbtoswim_in(VERSALOON_SWIM_PORT, data, bytelen);
 }
+RESULT versaloon_swim_sync(uint8_t mHz)
+{
+	return usbtoswim_sync(VERSALOON_SWIM_PORT, mHz);
+}
+RESULT versaloon_swim_enable(void)
+{
+	return usbtoswim_enable(VERSALOON_SWIM_PORT);
+}
 
 
 
@@ -1274,6 +1282,8 @@ RESULT versaloon_init_capability(void *p)
 	t->swim_set_param = versaloon_swim_set_param;
 	t->swim_out = versaloon_swim_out;
 	t->swim_in = versaloon_swim_in;
+	t->swim_sync = versaloon_swim_sync;
+	t->swim_enable = versaloon_swim_enable;
 	
 	// POLL
 	t->poll_start = versaloon_poll_start;

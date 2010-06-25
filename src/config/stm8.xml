@@ -54,6 +54,11 @@
       <setting name="BL" mask="0xFF00000000000000" info="Bootloader option byte" checked="0xAA00000000000000" unchecked="0"/>
       <setting name="ALL" mask="0xFFFFFFFFFFFFFFFF" info="Option bytes" radix="16" shift="0" bytelen="8" />
     </fuse>
+    <param0>8</param0>
+    <param1>0x005064</param1>
+    <param2>0x005062</param2>
+    <param3>0x00505F</param3>
+    <param4>0x00505B</param4>
+    <param5>0x00505C</param5>
   </chip>
-  <param0>1</param0>
 </series>

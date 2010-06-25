@@ -53,8 +53,14 @@ void USB_TO_SWIM_ProcessCmd(uint8* dat, uint16 len)
 			break;
 		case USB_TO_XXX_CONFIG:
 			SWIM_Init();
-			SWIM_SetClockParam(dat[index + 0], dat[index + 1], dat[index + 2]);
-			buffer_reply[rep_len++] = USB_TO_XXX_OK;
+			if (SWIM_SetClockParam(dat[index + 0], dat[index + 1], dat[index + 2]))
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+			}
+			else
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+			}
 
 			break;
 		case USB_TO_XXX_FINI:
@@ -112,6 +118,26 @@ void USB_TO_SWIM_ProcessCmd(uint8* dat, uint16 len)
 				buffer_reply[rep_pos] = USB_TO_XXX_OK;
 			}
 
+			break;
+		case USB_TO_XXX_SYNC:
+			if (SWIM_Sync(dat[index + 0]))
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+			}
+			else
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+			}
+			break;
+		case USB_TO_XXX_ENABLE:
+			if (SWIM_Enable())
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+			}
+			else
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+			}
 			break;
 		default:
 			buffer_reply[rep_len++] = USB_TO_XXX_CMD_NOT_SUPPORT;
