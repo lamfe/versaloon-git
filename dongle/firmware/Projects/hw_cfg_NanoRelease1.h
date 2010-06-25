@@ -77,12 +77,13 @@
 #define SYNCSW_GET()					GPIO_GetInPins(SYNCSW_IN_PORT, GPIO_PIN_GetMask(SYNCSW_IN_PIN))
 
 /***************************** STM8_SWIM ******************************/
-#define SWIM_SET()						do{\
-											SYNCSW_SETINPUT();\
-										} while (0)
+#define SWIM_GPIO_PORT					GPIOB
+#define SWIM_GPIO_PIN					GPIO_PIN_6
+
+#define SWIM_SET()						GPIO_Dir(SWIM_GPIO_PORT, GPIO_MODE_IPU, SWIM_GPIO_PIN)
 #define SWIM_CLR()						do{\
-											SYNCSW_CLR();\
-											SYNCSW_SETOUTPUT();\
+											GPIO_ClrPins(SWIM_GPIO_PORT, GPIO_PIN_GetMask(SWIM_GPIO_PIN));\
+											GPIO_Dir(SWIM_GPIO_PORT, GPIO_MODE_OUT_PP, SWIM_GPIO_PIN);\
 										} while (0)
 
 #define SWIM_OUT_TIMER					TIM3
