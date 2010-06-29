@@ -20,9 +20,43 @@
     <app_page_num>1024</app_page_num>
     <ee_page_num>16</ee_page_num>
     <fuse init="0x0000000000000000" bytesize="8">
+      <warning>
+        <w mask="0x000000000000FF00" value="0x000000000000FF00" msg="0xFF is reserved value for UBC!" />
+      </warning>
       <setting name="ROP" mask="0x00000000000000FF" info="Read-out protection" checked="0xAA" unchecked="0" />
       <setting name="UBC" mask="0x000000000000FF00" info="User boot code" radix="16" shift="8" bytelen="1"/>
-      <setting name="AFR" mask="0x0000000000FF0000" info="Alternate function remapping" radix="16" shift="16" bytelen="1"/>
+      <setting name="AFR0" mask="0x0000000000010000" info="Alternate function remapping option 0">
+        <choice value="0x0000000000000000" text="Port D3 alternate function = TIM2_CH2" />
+        <choice value="0x0000000000010000" text="Port D3 alternate function = ADC_ETR" />
+      </setting>
+      <setting name="AFR1" mask="0x0000000000020000" info="Alternate function remapping option 1">
+        <choice value="0x0000000000000000" text="Port A3 alternate function = TIM2_CH3. Port D2 alternate function TIM3_CH1" />
+        <choice value="0x0000000000020000" text="Port A3 alternate function = TIM3_CH1. Port D2 alternate function TIM2_CH3" />
+      </setting>
+      <setting name="AFR2" mask="0x0000000000040000" info="Alternate function remapping option 2. AFR2 option has priority over AFR3 if both are activated">
+        <choice value="0x0000000000000000" text="Port D0 alternate function = TIM3_CH2" />
+        <choice value="0x0000000000040000" text="Port D0 alternate function = CLK_CCO" />
+      </setting>
+      <setting name="AFR3" mask="0x0000000000080000" info="Alternate function remapping option 3">
+        <choice value="0x0000000000000000" text="Port D0 alternate function = TIM3_CH2" />
+        <choice value="0x0000000000080000" text="Port D0 alternate function = TIM1_BKIN" />
+      </setting>
+      <setting name="AFR4" mask="0x0000000000100000" info="Alternate function remapping option 4">
+        <choice value="0x0000000000000000" text="Port D7 alternate function = TLI" />
+        <choice value="0x0000000000100000" text="Port D7 alternate function = TIM1_CH4" />
+      </setting>
+      <setting name="AFR5" mask="0x0000000000200000" info="Alternate function remapping option 5">
+        <choice value="0x0000000000000000" text="Port B3 alternate function = AIN3. Port B2 alternate function = AIN2. Port B1 alternate function = AIN1. Port B0 alternate function = AIN0" />
+        <choice value="0x0000000000200000" text="Port B3 alternate function = TIM1_ETR. Port B2 alternate function = TIM1_CH3N. Port B1 alternate function = TIM1_CH2N. Port B0 alternate function = TIM1_CH1N" />
+      </setting>
+      <setting name="AFR6" mask="0x0000000000400000" info="Alternate function remapping option 6">
+        <choice value="0x0000000000000000" text="Port B5 alternate function = AIN5. Port B4 alternate function = AIN4" />
+        <choice value="0x0000000000400000" text="Port B5 alternate function = I2C_SDA. Port B4 alternate function = I2C_SCL" />
+      </setting>
+      <setting name="AFR7" mask="0x0000000000800000" info="Alternate function remapping option 7">
+        <choice value="0x0000000000000000" text="Port D4 alternate function = TIM2_CH1" />
+        <choice value="0x0000000000800000" text="Port D4 alternate function = BEEP" />
+      </setting>
       <setting name="WWDG_HALT" mask="0x0000000001000000" info="Window watchdog reset on halt" unchecked="0" />
       <setting name="WWDG_HW" mask="0x0000000002000000" info="Window watchdog activation" unchecked="0" />
       <setting name="IWDG_HW" mask="0x0000000004000000" info="Independent watchdog" unchecked="0" />
