@@ -19,7 +19,9 @@
   <chip name="stm8s207sbt6">
     <program_mode>si</program_mode>
     <sram_size>4096</sram_size>
+    <app_page_size>128</app_page_size>
     <app_page_num>1024</app_page_num>
+    <ee_page_size>128</ee_page_size>
     <ee_page_num>16</ee_page_num>
     <fuse init="0x0000000000000000" bytesize="8">
       <warning>
@@ -90,11 +92,13 @@
       <setting name="BL" mask="0xFF00000000000000" info="Bootloader option byte" checked="0xAA00000000000000" unchecked="0"/>
       <setting name="ALL" mask="0xFFFFFFFFFFFFFFFF" info="Option bytes" radix="16" shift="0" bytelen="8" />
     </fuse>
-    <param0>8</param0>
+    <param0>16</param0>
     <param1>0x005064</param1>
     <param2>0x005062</param2>
     <param3>0x00505F</param3>
     <param4>0x00505B</param4>
     <param5>0x00505C</param5>
+    <param6>0x0050C6</param6>
+    <param7>0x0050CD</param7>
   </chip>
 </series>
