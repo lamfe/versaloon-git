@@ -375,7 +375,7 @@ RESULT usbtoxxx_add_command(uint8_t type, uint8_t cmd, uint8_t *cmdbuf,
 
 
 
-RESULT usbtopoll_start(uint16_t retry, uint16_t interval_us)
+RESULT usbtopoll_start(uint16_t retry_cnt, uint16_t interval_us)
 {
 	if (ERROR_OK != usbtoxxx_ensure_buffer_size(3 + 5))
 	{
@@ -396,8 +396,8 @@ RESULT usbtopoll_start(uint16_t retry, uint16_t interval_us)
 	type_pre = USB_TO_POLL;
 	
 	usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = USB_TO_POLL_START;
-	usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = (retry >> 0) & 0xFF;
-	usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = (retry >> 8) & 0xFF;
+	usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = (retry_cnt >> 0) & 0xFF;
+	usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = (retry_cnt >> 8) & 0xFF;
 	usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = (interval_us >> 0) & 0xFF;
 	usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = (interval_us >> 8) & 0xFF;
 	
