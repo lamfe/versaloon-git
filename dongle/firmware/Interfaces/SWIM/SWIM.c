@@ -37,6 +37,8 @@ static uint16 SWIM_clock_div = 0;
 #define SWIM_CMD_ROTF					0x01
 #define SWIM_CMD_WOTF					0x02
 
+#define SWIM_SYNC_CYCLES				128
+
 static void SWIM_SetClockParamInit(void)
 {
 	TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
@@ -155,11 +157,11 @@ uint8 SWIM_Sync(uint8 mHz)
 	SWIM_IN_TIMER_DMA_INIT(2, SWIM_DMA_Buffer);
 	
 	arr_save = SWIM_OUT_TIMER->ARR;
-	SWIM_OUT_TIMER->ARR = 128 * clock_div + 1;
+	SWIM_OUT_TIMER->ARR = SWIM_SYNC_CYCLES * clock_div + 1;
 	SWIM_OUT_TIMER->EGR = TIM_PSCReloadMode_Immediate;
 	SWIM_OUT_TIMER->CR1 |= ((uint16_t)0x0002);
 	SWIM_OUT_TIMER->SR = (uint16_t)~TIM_FLAG_Update;
-	SWIM_OUT_TIMER->CCR1 = 128 * clock_div;
+	SWIM_OUT_TIMER->CCR1 = SWIM_SYNC_CYCLES * clock_div;
 	SWIM_OUT_TIMER->CR1 &= ((uint16_t)0x03FD);
 	SWIM_WaitOutBitReady();
 	SWIM_OUT_TIMER->SR = (uint16_t)~TIM_FLAG_Update;
@@ -176,7 +178,7 @@ uint8 SWIM_Sync(uint8 mHz)
 	}
 	else
 	{
-		SWIM_clock_div = SWIM_DMA_Buffer[1] / 128;
+		SWIM_clock_div = SWIM_DMA_Buffer[1];
 		return 0;
 	}
 }
@@ -192,14 +194,23 @@ uint8 SWIM_SetClockParam(uint8 mHz, uint8 cnt0, uint8 cnt1)
 	else
 	{
 		clock_div = _SYS_FREQUENCY / mHz;
-		if ((_SYS_FREQUENCY % mHz) > (mHz / 2))
+		if ((_SYS_FREQUENCY % mHz) >= (mHz / 2))
 		{
 			clock_div++;
 		}
+		clock_div *= SWIM_SYNC_CYCLES;
 	}
 
-	SWIM_PULSE_0 = cnt0 * clock_div;
-	SWIM_PULSE_1 = cnt1 * clock_div;
+	SWIM_PULSE_0 = cnt0 * clock_div / SWIM_SYNC_CYCLES;
+	if ((cnt0 * clock_div % SWIM_SYNC_CYCLES) >= SWIM_SYNC_CYCLES / 2)
+	{
+		SWIM_PULSE_0++;
+	}
+	SWIM_PULSE_1 = cnt1 * clock_div / SWIM_SYNC_CYCLES;
+	if ((cnt1 * clock_div % SWIM_SYNC_CYCLES) >= SWIM_SYNC_CYCLES / 2)
+	{
+		SWIM_PULSE_1++;
+	}
 	SWIM_PULSE_Threshold = SWIM_PULSE_0 + SWIM_PULSE_1;
 
 	SWIM_OUT_TIMER->ARR = SWIM_PULSE_Threshold;
