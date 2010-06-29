@@ -32,6 +32,11 @@ static uint16 SWIM_clock_div = 0;
 
 #define SWIM_MAX_DLY					0xFFFFF
 
+#define SWIM_CMD_BITLEN					3
+#define SWIM_CMD_SRST					0x00
+#define SWIM_CMD_ROTF					0x01
+#define SWIM_CMD_WOTF					0x02
+
 static void SWIM_SetClockParamInit(void)
 {
 	TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
@@ -204,7 +209,7 @@ uint8 SWIM_SetClockParam(uint8 mHz, uint8 cnt0, uint8 cnt1)
 	return 0;
 }
 
-uint8 SWIM_Out(uint8 cmd, uint8 bitlen)
+uint8 SWIM_HW_Out(uint8 cmd, uint8 bitlen)
 {
 	int8 i, p;
 	uint32 dly;
@@ -264,7 +269,7 @@ uint8 SWIM_Out(uint8 cmd, uint8 bitlen)
 	}
 }
 
-uint8 SWIM_In(uint8* data, uint8 bitlen)
+uint8 SWIM_HW_In(uint8* data, uint8 bitlen)
 {
 	uint8 ret = 0;
 	uint32 dly;
@@ -298,6 +303,129 @@ uint8 SWIM_In(uint8* data, uint8 bitlen)
 	}
 
 	return ret;
+}
+
+uint8 SWIM_SRST(void)
+{
+	return SWIM_HW_Out(SWIM_CMD_SRST, SWIM_CMD_BITLEN);
+}
+
+uint8 SWIM_WOTF(uint32 addr, uint16 len, uint8 *data)
+{
+	uint16 processed_len;
+	uint8 cur_len, i;
+	uint32 cur_addr;
+
+	if ((0 == len) || ((uint8*)0 == data))
+	{
+		return 1;
+	}
+
+	processed_len = 0;
+	cur_addr = addr;
+	while (processed_len < len)
+	{
+		if ((len - processed_len) > 255)
+		{
+			cur_len = 255;
+		}
+		else
+		{
+			cur_len = len - processed_len;
+		}
+
+		if (SWIM_HW_Out(SWIM_CMD_WOTF, SWIM_CMD_BITLEN))
+		{
+			return 1;
+		}
+		if (SWIM_HW_Out(cur_len, 8))
+		{
+			return 1;
+		}
+		if (SWIM_HW_Out((cur_addr >> 16) & 0xFF, 8))
+		{
+			return 1;
+		}
+		if (SWIM_HW_Out((cur_addr >> 8) & 0xFF, 8))
+		{
+			return 1;
+		}
+		if (SWIM_HW_Out((cur_addr >> 0) & 0xFF, 8))
+		{
+			return 1;
+		}
+		for (i = 0; i < cur_len; i++)
+		{
+			if (SWIM_HW_Out(data[processed_len + i], 8))
+			{
+				return 1;
+			}
+		}
+
+		cur_addr += cur_len;
+		processed_len += cur_len;
+	}
+
+	return 0;
+}
+
+uint8 SWIM_ROTF(uint32 addr, uint16 len, uint8 *data)
+{
+	uint16 processed_len;
+	uint8 cur_len, i;
+	uint32 cur_addr;
+
+	if ((0 == len) || ((uint8*)0 == data))
+	{
+		return 1;
+	}
+
+	processed_len = 0;
+	cur_addr = addr;
+	while (processed_len < len)
+	{
+		if ((len - processed_len) > 255)
+		{
+			cur_len = 255;
+		}
+		else
+		{
+			cur_len = len - processed_len;
+		}
+
+		if (SWIM_HW_Out(SWIM_CMD_ROTF, SWIM_CMD_BITLEN))
+		{
+			return 1;
+		}
+		if (SWIM_HW_Out(cur_len, 8))
+		{
+			return 1;
+		}
+		if (SWIM_HW_Out((cur_addr >> 16) & 0xFF, 8))
+		{
+			return 1;
+		}
+		if (SWIM_HW_Out((cur_addr >> 8) & 0xFF, 8))
+		{
+			return 1;
+		}
+		if (SWIM_HW_Out((cur_addr >> 0) & 0xFF, 8))
+		{
+			return 1;
+		}
+		for (i = 0; i < cur_len; i++)
+		{
+			if (SWIM_HW_In(&data[processed_len + i], 8))
+			{
+				return 1;
+			}
+		}
+
+		cur_addr += cur_len;
+		processed_len += cur_len;
+	}
+
+	return 0;
 }
 
 #endif		// #if STM8_SWIM_EN

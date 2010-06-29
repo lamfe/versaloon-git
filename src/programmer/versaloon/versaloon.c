@@ -1137,13 +1137,17 @@ RESULT versaloon_swim_set_param(uint8_t mHz, uint8_t cnt0, uint8_t cnt1)
 {
 	return usbtoswim_set_param(VERSALOON_SWIM_PORT, mHz, cnt0, cnt1);
 }
-RESULT versaloon_swim_out(uint8_t data, uint8_t bitlen)
+RESULT versaloon_swim_srst(void)
 {
-	return usbtoswim_out(VERSALOON_SWIM_PORT, data, bitlen);
+	return usbtoswim_srst(VERSALOON_SWIM_PORT);
 }
-RESULT versaloon_swim_in(uint8_t *data, uint8_t bytelen)
+RESULT versaloon_swim_wotf(uint8_t *data, uint16_t bitlen, uint32_t addr)
 {
-	return usbtoswim_in(VERSALOON_SWIM_PORT, data, bytelen);
+	return usbtoswim_wotf(VERSALOON_SWIM_PORT, data, bitlen, addr);
+}
+RESULT versaloon_swim_rotf(uint8_t *data, uint16_t bytelen, uint32_t addr)
+{
+	return usbtoswim_rotf(VERSALOON_SWIM_PORT, data, bytelen, addr);
 }
 RESULT versaloon_swim_sync(uint8_t mHz)
 {
@@ -1279,8 +1283,9 @@ RESULT versaloon_init_capability(void *p)
 	i->swim.swim_init = versaloon_swim_init;
 	i->swim.swim_fini = versaloon_swim_fini;
 	i->swim.swim_set_param = versaloon_swim_set_param;
-	i->swim.swim_out = versaloon_swim_out;
-	i->swim.swim_in = versaloon_swim_in;
+	i->swim.swim_srst = versaloon_swim_srst;
+	i->swim.swim_wotf = versaloon_swim_wotf;
+	i->swim.swim_rotf = versaloon_swim_rotf;
 	i->swim.swim_sync = versaloon_swim_sync;
 	i->swim.swim_enable = versaloon_swim_enable;
 	

@@ -21,7 +21,7 @@
 
 #define STM8_STRING						"stm8"
 
-extern const struct program_area_map_t stm8_program_area_map[];
+extern struct program_area_map_t stm8_program_area_map[];
 extern const struct program_mode_t stm8_program_mode[];
 extern const struct program_functions_t stm8_program_functions;
 

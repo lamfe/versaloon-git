@@ -19,14 +19,6 @@
 #ifndef __STM8_INTERNAL_H_INCLUDED__
 #define __STM8_INTERNAL_H_INCLUDED__
 
-// Fuse need complemented value
-#define STM8_PARAM_FUSE_IMP			0
-
-#define STM8_SWIM_CMD_BITLEN		3
-#define STM8_SWIM_CMD_SRST			0x00
-#define STM8_SWIM_CMD_ROTF			0x01
-#define STM8_SWIM_CMD_WOTF			0x02
-
 #define	STM8_REG_DM_CSR2			0x007F99
 
 #define STM8_REG_SWIM_CSR			0x007F80
@@ -48,6 +40,8 @@
 #define STM8_FLASH_IAPSR_EOP		0x04
 #define STM8_FLASH_IAPSR_WRPGDIS	0x01
 
+#define STM8_FLASH_CR2_OPT			0x80
+#define STM8_FLASH_CR2_WPRG			0x40
 #define STM8_FLASH_CR2_ERASE		0x20
 #define STM8_FLASH_CR2_FPRG			0x10
 #define STM8_FLASH_CR2_PRG			0x01

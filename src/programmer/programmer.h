@@ -195,8 +195,9 @@ struct interface_swim_t
 	RESULT (*swim_init)(void);
 	RESULT (*swim_fini)(void);
 	RESULT (*swim_set_param)(uint8_t mHz, uint8_t cnt0, uint8_t cnt1);
-	RESULT (*swim_out)(uint8_t data, uint8_t bitlen);
-	RESULT (*swim_in)(uint8_t *data, uint8_t bytelen);
+	RESULT (*swim_srst)(void);
+	RESULT (*swim_wotf)(uint8_t *data, uint16_t bytelen, uint32_t addr);
+	RESULT (*swim_rotf)(uint8_t *data, uint16_t bytelen, uint32_t addr);
 	RESULT (*swim_sync)(uint8_t mHz);
 	RESULT (*swim_enable)(void);
 };
@@ -284,7 +285,7 @@ struct programmer_info_t
 			{0, 0, 0, 0, 0, 0},\
 			{0, 0, 0, 0, 0},\
 			{0, 0, 0, 0, 0, 0},\
-			{0, 0, 0, 0, 0, 0, 0},\
+			{0, 0, 0, 0, 0, 0, 0, 0},\
 			{0, 0, 0, 0},\
 			0\
 		},\

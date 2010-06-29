@@ -67,10 +67,8 @@ RESULT usbtoswim_set_param(uint8_t interface_index, uint8_t mHz,
 	return usbtoxxx_conf_command(USB_TO_SWIM, interface_index, buff, 3);
 }
 
-RESULT usbtoswim_out(uint8_t interface_index, uint8_t data, uint8_t bitlen)
+RESULT usbtoswim_srst(uint8_t interface_index)
 {
-	uint8_t buff[2];
-	
 #if PARAM_CHECK
 	if (interface_index > 7)
 	{
@@ -79,19 +77,11 @@ RESULT usbtoswim_out(uint8_t interface_index, uint8_t data, uint8_t bitlen)
 	}
 #endif
 	
-	if (bitlen > 8)
-	{
-		LOG_BUG(_GETTEXT("max length of a single data is 8 bit\n"));
-		return ERROR_FAIL;
-	}
-	
-	buff[0] = bitlen;
-	buff[1] = data;
-	
-	return usbtoxxx_out_command(USB_TO_SWIM, interface_index, buff, 2, 1);
+	return usbtoxxx_reset_command(USB_TO_SWIM, interface_index, NULL, 0);
 }
 
-RESULT usbtoswim_in(uint8_t interface_index, uint8_t *data, uint8_t bytelen)
+RESULT usbtoswim_wotf(uint8_t interface_index, uint8_t *data, uint16_t bytelen, 
+						uint32_t addr)
 {
 #if PARAM_CHECK
 	if (interface_index > 7)
@@ -101,11 +91,37 @@ RESULT usbtoswim_in(uint8_t interface_index, uint8_t *data, uint8_t bytelen)
 	}
 #endif
 	
-	versaloon_cmd_buf[0] = bytelen;
-	memset(&versaloon_cmd_buf[1], 0, bytelen);
+	versaloon_cmd_buf[0] = (bytelen >> 0) & 0xFF;
+	versaloon_cmd_buf[1] = (bytelen >> 8) & 0xFF;
+	versaloon_cmd_buf[2] = (addr >> 0) & 0xFF;
+	versaloon_cmd_buf[3] = (addr >> 8) & 0xFF;
+	versaloon_cmd_buf[4] = (addr >> 16) & 0xFF;
+	memcpy(&versaloon_cmd_buf[5], data, bytelen);
+	
+	return usbtoxxx_out_command(USB_TO_SWIM, interface_index, 
+									versaloon_cmd_buf, bytelen + 5, 0);
+}
+
+RESULT usbtoswim_rotf(uint8_t interface_index, uint8_t *data, uint16_t bytelen, 
+						uint32_t addr)
+{
+#if PARAM_CHECK
+	if (interface_index > 7)
+	{
+		LOG_BUG(_GETTEXT("invalid inteface_index %d.\n"), interface_index);
+		return ERROR_FAIL;
+	}
+#endif
+	
+	versaloon_cmd_buf[0] = (bytelen >> 0) & 0xFF;
+	versaloon_cmd_buf[1] = (bytelen >> 8) & 0xFF;
+	versaloon_cmd_buf[2] = (addr >> 0) & 0xFF;
+	versaloon_cmd_buf[3] = (addr >> 8) & 0xFF;
+	versaloon_cmd_buf[4] = (addr >> 16) & 0xFF;
+	memset(&versaloon_cmd_buf[5], 0, bytelen);
 	
 	return usbtoxxx_in_command(USB_TO_SWIM, interface_index, 
-				versaloon_cmd_buf, 1 + bytelen, bytelen, data, 0, bytelen, 0);
+				versaloon_cmd_buf, bytelen + 5, bytelen, data, 0, bytelen, 0);
 }
 
 RESULT usbtoswim_sync(uint8_t interface_index, uint8_t mHz)

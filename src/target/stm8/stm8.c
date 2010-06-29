@@ -42,7 +42,7 @@
 
 #define CUR_TARGET_STRING			STM8_STRING
 
-const struct program_area_map_t stm8_program_area_map[] = 
+struct program_area_map_t stm8_program_area_map[] = 
 {
 	{APPLICATION_CHAR, 1, 0, 0, 0, AREA_ATTR_EWR | AREA_ATTR_EP},
 	{EEPROM_CHAR, 1, 0, 0, 0, AREA_ATTR_EWR | AREA_ATTR_EP},
@@ -82,12 +82,29 @@ Usage of %s:\n\
 
 PARSE_ARGUMENT_HANDLER(stm8)
 {
-	argu = argu;
+	uint8_t mode;
 	
 	switch (cmd)
 	{
 	case 'h':
 		stm8_usage();
+		break;
+	case 'm':
+		if (NULL == argu)
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), cmd);
+			return ERRCODE_INVALID_OPTION;
+		}
+		mode = (uint8_t)strtoul(argu, NULL,0);
+		switch (mode)
+		{
+		case STM8_SWIM:
+			stm8_program_area_map[0].attr |= AREA_ATTR_RNP;
+			break;
+		case STM8_ISP:
+			stm8_program_area_map[0].attr &= ~AREA_ATTR_RNP;
+			break;
+		}
 		break;
 	default:
 		return ERROR_FAIL;
@@ -114,8 +131,9 @@ PARSE_ARGUMENT_HANDLER(stm8)
 #define swim_init()				interfaces->swim.swim_init()
 #define swim_fini()				interfaces->swim.swim_fini()
 #define swim_set_param(m,c0,c1)	interfaces->swim.swim_set_param((m), (c0), (c1))
-#define swim_out(d, l)			interfaces->swim.swim_out((d), (l))
-#define swim_in(d, L)			interfaces->swim.swim_in((d), (L))
+#define swim_srst()				interfaces->swim.swim_srst()
+#define swim_wotf(a, b, l)		interfaces->swim.swim_wotf((b), (l), (a))
+#define swim_rotf(a, b, l)		interfaces->swim.swim_rotf((b), (l), (a))
 #define swim_sync(m)			interfaces->swim.swim_sync(m)
 #define swim_enable()			interfaces->swim.swim_enable()
 
@@ -126,43 +144,9 @@ PARSE_ARGUMENT_HANDLER(stm8)
 
 static struct interfaces_info_t *interfaces = NULL;
 
-static RESULT stm8_swim_srst(void)
-{
-	return swim_out(STM8_SWIM_CMD_SRST, STM8_SWIM_CMD_BITLEN);
-}
-
-static RESULT stm8_swim_rotf(uint32_t addr, uint8_t *buff, uint8_t bytelen)
-{
-	swim_out(STM8_SWIM_CMD_ROTF, STM8_SWIM_CMD_BITLEN);
-	swim_out(bytelen, 8);
-	swim_out((addr >> 16) & 0xFF, 8);
-	swim_out((addr >> 8) & 0xFF, 8);
-	swim_out((addr >> 0) & 0xFF, 8);
-	
-	swim_in(buff, bytelen);
-	return ERROR_OK;
-}
-
-static RESULT stm8_swim_wotf(uint32_t addr, uint8_t *buff, uint8_t bytelen)
-{
-	uint8_t i;
-	
-	swim_out(STM8_SWIM_CMD_WOTF, STM8_SWIM_CMD_BITLEN);
-	swim_out(bytelen, 8);
-	swim_out((addr >> 16) & 0xFF, 8);
-	swim_out((addr >> 8) & 0xFF, 8);
-	swim_out((addr >> 0) & 0xFF, 8);
-	
-	for (i = 0; i < bytelen; i++)
-	{
-		swim_out(buff[i], 8);
-	}
-	return ERROR_OK;
-}
-
 static RESULT stm8_swim_wotf_reg(uint32_t addr, uint8_t value)
 {
-	return stm8_swim_wotf(addr, &value, 1);
+	return swim_wotf(addr, &value, 1);
 }
 
 static void stm8_unlock_eeprom_option(uint32_t dukr)
@@ -188,7 +172,7 @@ static RESULT stm8_erase_block(uint32_t cr2, uint32_t ncr2,
 		stm8_swim_wotf_reg(ncr2, (uint8_t)~STM8_FLASH_CR2_ERASE);
 	}
 	memset(buff, 0, 4);
-	stm8_swim_wotf(block_addr, buff, 4);
+	swim_wotf(block_addr, buff, 4);
 	delay_us(3300);
 	return ERROR_OK;
 }
@@ -201,7 +185,7 @@ static RESULT stm8_program_block(uint32_t cr2, uint32_t ncr2,
 	{
 		stm8_swim_wotf_reg(ncr2, (uint8_t)~STM8_FLASH_CR2_FPRG);
 	}
-	stm8_swim_wotf(block_addr, block_buff, block_size);
+	swim_wotf(block_addr, block_buff, block_size);
 	delay_us(3300);
 	return ERROR_OK;
 }
@@ -245,7 +229,7 @@ ENTER_PROGRAM_MODE_HANDLER(stm8swim)
 		swim_init();
 		swim_set_param((uint8_t)param->param[STM8_PARAM_IRC], 20, 2);
 		delay_ms(10);
-		stm8_swim_srst();
+		swim_srst();
 		if (ERROR_OK != commit())
 		{
 			return ERROR_FAIL;
@@ -256,14 +240,14 @@ ENTER_PROGRAM_MODE_HANDLER(stm8swim)
 		reset_set();
 		delay_ms(10);
 		swim_sync((uint8_t)param->param[STM8_PARAM_IRC]);
-		stm8_swim_rotf(0x0067F0, test_buf0, 6);
+		swim_rotf(0x0067F0, test_buf0, 6);
 		// enable high speed
 		stm8_swim_wotf_reg(STM8_REG_SWIM_CSR, 
 							STM8_SWIM_CSR_SAFT_MASK | STM8_SWIM_CSR_SWIM_DM 
 							| STM8_SWIM_CSR_HS | STM8_SWIM_CSR_RST);
 		delay_ms(10);
 		swim_set_param((uint8_t)param->param[STM8_PARAM_IRC], 8, 2);
-		stm8_swim_rotf(0x0067F0, test_buf1, 6);
+		swim_rotf(0x0067F0, test_buf1, 6);
 		stm8_unlock_eeprom_option(param->param[STM8_PARAM_DUKR]);
 		stm8_unlock_flash(param->param[STM8_PARAM_PUKR]);
 		if ((ERROR_OK != commit()) || memcmp(test_buf0, test_buf1, 6))
@@ -297,7 +281,7 @@ LEAVE_PROGRAM_MODE_HANDLER(stm8swim)
 	case STM8_SWIM:
 		if (stm8_swim_enabled)
 		{
-			stm8_swim_srst();
+			swim_srst();
 			swim_fini();
 			reset_input();
 			reset_fini();
@@ -378,6 +362,7 @@ WRITE_TARGET_HANDLER(stm8swim)
 READ_TARGET_HANDLER(stm8swim)
 {
 	uint8_t fuse_page[128];
+	uint16_t cur_size;
 	RESULT ret = ERROR_OK;
 	
 	switch (context->pi->mode)
@@ -391,11 +376,32 @@ READ_TARGET_HANDLER(stm8swim)
 			break;
 		case APPLICATION_CHAR:
 		case EEPROM_CHAR:
-			stm8_swim_rotf(addr, buff, (uint8_t)size);
+			cur_size = 0;
+			while (size > 0)
+			{
+				if (size > 0xFF)
+				{
+					cur_size = 0xFF;
+				}
+				else
+				{
+					cur_size = (uint16_t)size;
+				}
+				
+				if (ERROR_OK != swim_rotf(addr, buff, cur_size))
+				{
+					return ERROR_FAIL;
+				}
+				
+				buff += cur_size;
+				addr += cur_size;
+				size -= cur_size;
+				pgbar_update(cur_size);
+			}
 			ret = commit();
 			break;
 		case FUSE_CHAR:
-			stm8_swim_rotf(0x004800, fuse_page, sizeof(fuse_page));
+			swim_rotf(0x004800, fuse_page, sizeof(fuse_page));
 			ret = commit();
 			if (ret != ERROR_OK)
 			{
