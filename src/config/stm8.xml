@@ -3,6 +3,7 @@
   <chip name="stm8">
     <chip_id>0x0000</chip_id>
     <program_mode>s:SWIM|i:ISP(C)</program_mode>
+    <sram_size>1024</sram_size>
     <app_page_size>128</app_page_size>
     <app_page_num>1024</app_page_num>
     <app_default>0x00</app_default>
@@ -17,6 +18,7 @@
   </chip>
   <chip name="stm8s207sbt6">
     <program_mode>si</program_mode>
+    <sram_size>4096</sram_size>
     <app_page_num>1024</app_page_num>
     <ee_page_num>16</ee_page_num>
     <fuse init="0x0000000000000000" bytesize="8">
