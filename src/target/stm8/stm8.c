@@ -140,6 +140,11 @@ PARSE_ARGUMENT_HANDLER(stm8)
 #define delay_ms(ms)			interfaces->delay.delayms((ms) | 0x8000)
 #define delay_us(us)			interfaces->delay.delayus((us) & 0x7FFF)
 
+#define poll_start()			interfaces->poll.poll_start(50, 100)
+#define poll_end()				interfaces->poll.poll_end()
+#define poll_check(o, m, v)		interfaces->poll.poll_checkbyte((o), (m), (v))
+#define poll_fail(o, m, v)		interfaces->poll.poll_checkfail((o), (m), (v))
+
 #define commit()				interfaces->peripheral_commit()
 
 static struct interfaces_info_t *interfaces = NULL;
@@ -161,6 +166,18 @@ static void stm8_unlock_flash(uint32_t pukr)
 	stm8_swim_wotf_reg(pukr, 0xAE);
 }
 
+static RESULT stm8_poll_ready(uint32_t iapsr)
+{
+	static uint8_t data;
+	
+	poll_start();
+	swim_rotf(iapsr, &data, 1);
+	poll_fail(0, STM8_FLASH_IAPSR_WRPGDIS, STM8_FLASH_IAPSR_WRPGDIS);
+	poll_check(0, STM8_FLASH_IAPSR_EOP, STM8_FLASH_IAPSR_EOP);
+	poll_end();
+	return ERROR_OK;
+}
+
 static RESULT stm8_erase_block(uint32_t cr2, uint32_t ncr2, 
 				uint32_t block_addr)
 {
@@ -173,7 +190,6 @@ static RESULT stm8_erase_block(uint32_t cr2, uint32_t ncr2,
 	}
 	memset(buff, 0, 4);
 	swim_wotf(block_addr, buff, 4);
-	delay_us(3300);
 	return ERROR_OK;
 }
 
@@ -186,7 +202,6 @@ static RESULT stm8_program_block(uint32_t cr2, uint32_t ncr2,
 		stm8_swim_wotf_reg(ncr2, (uint8_t)~STM8_FLASH_CR2_FPRG);
 	}
 	swim_wotf(block_addr, block_buff, block_size);
-	delay_us(3300);
 	return ERROR_OK;
 }
 
@@ -328,6 +343,11 @@ ERASE_TARGET_HANDLER(stm8swim)
 		case EEPROM_CHAR:
 			ret = stm8_erase_block(param->param[STM8_PARAM_FLASH_CR2], 
 									param->param[STM8_PARAM_FLASH_NCR2], addr);
+			if (ret != ERROR_OK)
+			{
+				break;
+			}
+			ret = stm8_poll_ready(param->param[STM8_PARAM_FLASH_IAPSR]);
 			break;
 		default:
 			ret = ERROR_FAIL;
@@ -358,6 +378,11 @@ WRITE_TARGET_HANDLER(stm8swim)
 		case EEPROM_CHAR:
 			ret = stm8_program_block(param->param[STM8_PARAM_FLASH_CR2], 
 				param->param[STM8_PARAM_FLASH_NCR2], addr, buff, (uint8_t)size);
+			if (ret != ERROR_OK)
+			{
+				break;
+			}
+			ret = stm8_poll_ready(param->param[STM8_PARAM_FLASH_IAPSR]);
 			break;
 		default:
 			ret = ERROR_FAIL;

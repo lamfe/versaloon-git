@@ -813,10 +813,10 @@ RESULT versaloon_delay_us(uint16_t us)
 	return usbtodelay_delay(us & 0x7FFF);
 }
 // POLL
-RESULT versaloon_poll_start(uint16_t retry, uint16_t interval_us)
+RESULT versaloon_poll_start(uint16_t retry_cnt, uint16_t interval_us)
 {
 	versaloon_to = VERSALOON_TIMEOUT_LONG;
-	return usbtopoll_start(retry, interval_us);
+	return usbtopoll_start(retry_cnt, interval_us);
 }
 RESULT versaloon_poll_end(void)
 {
