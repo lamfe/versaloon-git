@@ -99,10 +99,10 @@ PARSE_ARGUMENT_HANDLER(stm8)
 		switch (mode)
 		{
 		case STM8_SWIM:
-			stm8_program_area_map[0].attr |= AREA_ATTR_RNP;
+			stm8_program_area_map[0].attr |= AREA_ATTR_RNP | AREA_ATTR_EWW;
 			break;
 		case STM8_ISP:
-			stm8_program_area_map[0].attr &= ~AREA_ATTR_RNP;
+			stm8_program_area_map[0].attr &= ~(AREA_ATTR_RNP | AREA_ATTR_EWW);
 			break;
 		}
 		break;
@@ -206,13 +206,13 @@ static RESULT stm8_erase_block(uint32_t cr2, uint32_t ncr2,
 	return ERROR_OK;
 }
 
-static RESULT stm8_program_block(uint32_t cr2, uint32_t ncr2, 
+static RESULT stm8_program_block(uint32_t cr2, uint32_t ncr2, uint8_t cmd, 
 				uint32_t block_addr, uint8_t *block_buff, uint8_t block_size)
 {
-	stm8_swim_wotf_reg(cr2, STM8_FLASH_CR2_FPRG);
+	stm8_swim_wotf_reg(cr2, cmd);
 	if (ncr2)
 	{
-		stm8_swim_wotf_reg(ncr2, (uint8_t)~STM8_FLASH_CR2_FPRG);
+		stm8_swim_wotf_reg(ncr2, ~cmd);
 	}
 	swim_wotf(block_addr, block_buff, block_size);
 	return ERROR_OK;
@@ -311,11 +311,13 @@ ENTER_PROGRAM_MODE_HANDLER(stm8swim)
 		}
 		
 		// stall core
-//		stm8_swim_wotf_reg(STM8_REG_DM_CSR2, STM8_DM_CSR2_STALL | STM8_DM_CSR2_FLUSH);
+//		stm8_swim_wotf_reg(STM8_REG_DM_CSR2, 
+//							STM8_DM_CSR2_STALL | STM8_DM_CSR2_FLUSH);
 		// download flashloader
 		
 		// flush decode and restart core
 //		stm8_swim_wotf_reg(STM8_REG_DM_CSR2, STM8_DM_CSR2_FLUSH);
+//		ret = commit();
 		break;
 	case STM8_ISP:
 		ret = ERRCODE_NOT_SUPPORT;
@@ -359,6 +361,8 @@ ERASE_TARGET_HANDLER(stm8swim)
 {
 	RESULT ret = ERROR_OK;
 	struct chip_param_t *param = context->param;
+	struct operation_t *op = context->op;
+	
 	REFERENCE_PARAMETER(size);
 	
 	switch (context->pi->mode)
@@ -367,7 +371,17 @@ ERASE_TARGET_HANDLER(stm8swim)
 		switch (area)
 		{
 		case APPLICATION_CHAR:
+			if (op->write_operations & APPLICATION)
+			{
+				break;
+			}
+			goto do_erase;
 		case EEPROM_CHAR:
+			if (op->write_operations & EEPROM)
+			{
+				break;
+			}
+do_erase:
 			ret = stm8_erase_block(param->param[STM8_PARAM_FLASH_CR2], 
 									param->param[STM8_PARAM_FLASH_NCR2], addr);
 			if (ret != ERROR_OK)
@@ -395,6 +409,8 @@ WRITE_TARGET_HANDLER(stm8swim)
 {
 	RESULT ret = ERROR_OK;
 	struct chip_param_t *param = context->param;
+	struct operation_t *op = context->op;
+	uint8_t cmd;
 	
 	switch (context->pi->mode)
 	{
@@ -402,9 +418,28 @@ WRITE_TARGET_HANDLER(stm8swim)
 		switch (area)
 		{
 		case APPLICATION_CHAR:
+			if (op->erase_operations & APPLICATION)
+			{
+				cmd = STM8_FLASH_CR2_PRG;
+			}
+			else
+			{
+				cmd = STM8_FLASH_CR2_FPRG;
+			}
+			goto do_program;
 		case EEPROM_CHAR:
+			if (op->erase_operations & EEPROM)
+			{
+				cmd = STM8_FLASH_CR2_PRG;
+			}
+			else
+			{
+				cmd = STM8_FLASH_CR2_FPRG;
+			}
+do_program:
 			ret = stm8_program_block(param->param[STM8_PARAM_FLASH_CR2], 
-				param->param[STM8_PARAM_FLASH_NCR2], addr, buff, (uint8_t)size);
+										param->param[STM8_PARAM_FLASH_NCR2], 
+										cmd, addr, buff, (uint8_t)size);
 			if (ret != ERROR_OK)
 			{
 				break;
@@ -443,6 +478,8 @@ READ_TARGET_HANDLER(stm8swim)
 			break;
 		case APPLICATION_CHAR:
 		case EEPROM_CHAR:
+			stm8_swim_wotf_reg(STM8_REG_DM_CSR2, 
+								STM8_DM_CSR2_STALL | STM8_DM_CSR2_FLUSH);
 			cur_size = 0;
 			while (size > 0)
 			{
