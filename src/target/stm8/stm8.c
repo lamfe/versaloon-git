@@ -168,14 +168,27 @@ static void stm8_unlock_flash(uint32_t pukr)
 
 static RESULT stm8_poll_ready(uint32_t iapsr)
 {
+	RESULT ret;
 	static uint8_t data;
 	
-	poll_start();
-	swim_rotf(iapsr, &data, 1);
-	poll_fail(0, STM8_FLASH_IAPSR_WRPGDIS, STM8_FLASH_IAPSR_WRPGDIS);
-	poll_check(0, STM8_FLASH_IAPSR_EOP, STM8_FLASH_IAPSR_EOP);
-	poll_end();
-	return ERROR_OK;
+	ret = poll_start();
+	if (ret != ERROR_FAIL)
+	{
+		ret = swim_rotf(iapsr, &data, 1);
+	}
+	if (ret != ERROR_FAIL)
+	{
+		ret = poll_fail(0, STM8_FLASH_IAPSR_WRPGDIS, STM8_FLASH_IAPSR_WRPGDIS);
+	}
+	if (ret != ERROR_FAIL)
+	{
+		ret = poll_check(0, STM8_FLASH_IAPSR_EOP, STM8_FLASH_IAPSR_EOP);
+	}
+	if (ret != ERROR_FAIL)
+	{
+		ret = poll_end();
+	}
+	return ret;
 }
 
 static RESULT stm8_erase_block(uint32_t cr2, uint32_t ncr2, 
@@ -253,8 +266,8 @@ ENTER_PROGRAM_MODE_HANDLER(stm8swim)
 		}
 		delay_ms(10);
 		swim_srst();
-		stm8_swim_wotf_reg(STM8_REG_SWIM_CSR, 
-							STM8_SWIM_CSR_SAFT_MASK | STM8_SWIM_CSR_SWIM_DM);
+		stm8_swim_wotf_reg(STM8_REG_SWIM_CSR, STM8_SWIM_CSR_SAFT_MASK | 
+									STM8_SWIM_CSR_SWIM_DM | STM8_SWIM_CSR_RST);
 		delay_ms(10);
 		reset_set();
 		delay_ms(10);
@@ -271,24 +284,38 @@ ENTER_PROGRAM_MODE_HANDLER(stm8swim)
 		}
 		swim_sync(target_mhz);
 		swim_rotf(0x0067F0, test_buf0, 6);
-		// enable high speed
-		stm8_swim_wotf_reg(STM8_REG_SWIM_CSR, 
-							STM8_SWIM_CSR_SAFT_MASK | STM8_SWIM_CSR_SWIM_DM 
-							| STM8_SWIM_CSR_HS | STM8_SWIM_CSR_RST);
-		delay_ms(10);
-		swim_set_param(target_mhz, 8, 2);
+		// enable high speed mode if available
+		swim_rotf(STM8_REG_SWIM_CSR, test_buf1, 1);
+		if (ERROR_OK != commit())
+		{
+			return ERROR_FAIL;
+		}
+		if (test_buf1[0] & STM8_SWIM_CSR_HSIT)
+		{
+			stm8_swim_wotf_reg(STM8_REG_SWIM_CSR, STM8_SWIM_CSR_SAFT_MASK 
+				| STM8_SWIM_CSR_SWIM_DM | STM8_SWIM_CSR_HS | STM8_SWIM_CSR_RST);
+			delay_ms(10);
+			swim_set_param(target_mhz, 8, 2);
+		}
 		swim_rotf(0x0067F0, test_buf1, 6);
 		stm8_unlock_eeprom_option(param->param[STM8_PARAM_FLASH_DUKR]);
 		stm8_unlock_flash(param->param[STM8_PARAM_FLASH_PUKR]);
 		if ((ERROR_OK != commit()) || memcmp(test_buf0, test_buf1, 6))
 		{
-			ret = ERROR_FAIL;
+			return ERROR_FAIL;
 		}
 		else
 		{
 			test_buf0[6] = '\0';
 			LOG_INFO(_GETTEXT("is this chip ID: %s\n"), test_buf0);
 		}
+		
+		// stall core
+//		stm8_swim_wotf_reg(STM8_REG_DM_CSR2, STM8_DM_CSR2_STALL | STM8_DM_CSR2_FLUSH);
+		// download flashloader
+		
+		// flush decode and restart core
+//		stm8_swim_wotf_reg(STM8_REG_DM_CSR2, STM8_DM_CSR2_FLUSH);
 		break;
 	case STM8_ISP:
 		ret = ERRCODE_NOT_SUPPORT;
