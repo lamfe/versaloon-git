@@ -718,9 +718,12 @@ RESULT target_program(struct program_context_t *context)
 			target_size = area_info->size;
 		}
 		
-		// not chip_erase, required to be erased, erasable 
+		// not chip_erase, required to be erased, erasable
+		// erase while write feature and write operation defined
 		if (!param->chip_erase && (op->erase_operations & area_mask) 
-			&& (area_attr & AREA_ATTR_E))
+			&& (area_attr & AREA_ATTR_E) 
+			&& (!(area_attr & AREA_ATTR_EWW) 
+				|| !(op->write_operations & area_mask)))
 		{
 			// target erase
 			LOG_INFO(_GETTEXT(INFOMSG_ERASING), fullname);
