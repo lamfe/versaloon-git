@@ -928,7 +928,7 @@
         </option>
         <option>
           <name>OGLastSavedByProductVersion</name>
-          <state>5.41.0.51757</state>
+          <state>5.50.0.51907</state>
         </option>
         <option>
           <name>GeneralEnableMisra</name>
@@ -1171,7 +1171,7 @@
         <option>
           <name>CCOptStrategy</name>
           <version>0</version>
-          <state>1</state>
+          <state>0</state>
         </option>
         <option>
           <name>CCOptLevelSlave</name>
@@ -1990,15 +1990,15 @@
       </file>
     </group>
     <group>
-      <name>SWIM</name>
-      <file>
-        <name>$PROJ_DIR$\..\..\..\Interfaces\SWIM\SWIM.c</name>
-      </file>
-    </group>
-    <group>
       <name>SWD</name>
       <file>
         <name>$PROJ_DIR$\..\..\..\Interfaces\SWD\SWD.c</name>
+      </file>
+    </group>
+    <group>
+      <name>SWIM</name>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\Interfaces\SWIM\SWIM.c</name>
       </file>
     </group>
   </group>
@@ -2056,10 +2056,10 @@
       <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB_TO_SPI.c</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB_TO_SWIM.c</name>
+      <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB_TO_SWD.c</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB_TO_SWD.c</name>
+      <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB_TO_SWIM.c</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB_TO_USART.c</name>
