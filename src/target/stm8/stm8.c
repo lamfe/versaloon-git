@@ -140,7 +140,7 @@ PARSE_ARGUMENT_HANDLER(stm8)
 #define delay_ms(ms)			interfaces->delay.delayms((ms) | 0x8000)
 #define delay_us(us)			interfaces->delay.delayus((us) & 0x7FFF)
 
-#define poll_start()			interfaces->poll.poll_start(50, 100)
+#define poll_start()			interfaces->poll.poll_start(100, 100)
 #define poll_end()				interfaces->poll.poll_end()
 #define poll_check(o, m, v)		interfaces->poll.poll_checkbyte((o), (m), (v))
 #define poll_fail(o, m, v)		interfaces->poll.poll_checkfail((o), (m), (v))
@@ -149,21 +149,135 @@ PARSE_ARGUMENT_HANDLER(stm8)
 
 static struct interfaces_info_t *interfaces = NULL;
 
-static RESULT stm8_swim_wotf_reg(uint32_t addr, uint8_t value)
+// 0x0000 ---- 0x007F: flash loader code
+// 0x0080 ---- 0x00BF: param_bk + loopcnt
+// 0x00C0 ---- 0x00FF: param + sync + err
+// 0x0100 ---- 0x017F: buffer0
+// 0x0180 ---- 0x01FF: buffer1
+#define STM8_USE_FLASHLOADER
+#define STM8_FL_ADDR				0x000000
+#define STM8_FL_SYNC_ADDR			(STM8_FL_PARAM_ADDR + STM8_FL_PARAM_SIZE + 0)
+#define STM8_FL_ERR_ADDR			(STM8_FL_PARAM_ADDR + STM8_FL_PARAM_SIZE + 1)
+#define STM8_FL_PARAM_SIZE			12
+#define STM8_FL_LOOPCNT_ADDR		0xBF
+
+#define STM8_FL_IAPSR_OFFSET		0
+#define STM8_FL_CR2_OFFSET			2
+#define STM8_FL_NCR2_OFFSET			4
+#define STM8_FL_BLOCKSIZE_OFFSET	6
+#define STM8_FL_DATAADDR_OFFSET		7
+#define STM8_FL_TARGETADDR_OFFSET	9
+#define STM8_FL_CMD_OFFSET			11
+
+#define STM8_FL_PARAM_ADDR			0xC0
+#define STM8_FL_IAPSR_ADDR			(STM8_FL_PARAM_ADDR + STM8_FL_IAPSR_OFFSET)
+#define STM8_FL_CR2_ADDR			(STM8_FL_PARAM_ADDR + STM8_FL_CR2_OFFSET)
+#define STM8_FL_NCR2_ADDR			(STM8_FL_PARAM_ADDR + STM8_FL_NCR2_OFFSET)
+#define STM8_FL_BLOCKSIZE_ADDR		(STM8_FL_PARAM_ADDR + STM8_FL_BLOCKSIZE_OFFSET)
+#define STM8_FL_DATA_ADDR			(STM8_FL_PARAM_ADDR + STM8_FL_DATAADDR_OFFSET)
+#define STM8_FL_TARGET_ADDR			(STM8_FL_PARAM_ADDR + STM8_FL_TARGETADDR_OFFSET)
+#define STM8_FL_CMD_ADDR			(STM8_FL_PARAM_ADDR + STM8_FL_CMD_OFFSET)
+
+#define STM8_FL_PARAM_BKADDR		0x80
+#define STM8_FL_IAPSR_BKADDR		(STM8_FL_PARAM_BKADDR + STM8_FL_IAPSR_OFFSET)
+#define STM8_FL_CR2_BKADDR			(STM8_FL_PARAM_BKADDR + STM8_FL_CR2_OFFSET)
+#define STM8_FL_NCR2_BKADDR			(STM8_FL_PARAM_BKADDR + STM8_FL_NCR2_OFFSET)
+#define STM8_FL_BLOCKSIZE_BKADDR	(STM8_FL_PARAM_BKADDR + STM8_FL_BLOCKSIZE_OFFSET)
+#define STM8_FL_DATA_BKADDR			(STM8_FL_PARAM_BKADDR + STM8_FL_DATAADDR_OFFSET)
+#define STM8_FL_TARGET_BKADDR		(STM8_FL_PARAM_BKADDR + STM8_FL_TARGETADDR_OFFSET)
+#define STM8_FL_CMD_BKADDR			(STM8_FL_PARAM_BKADDR + STM8_FL_CMD_OFFSET)
+
+#ifdef STM8_USE_FLASHLOADER
+static uint8_t stm8_flashloader[] =
 {
-	return swim_wotf(addr, &value, 1);
+0x20, 0xFE,								// JRA	$
+											// wait_sync:
+	0x3D, STM8_FL_SYNC_ADDR,				// TNZ	sync
+	0x27, 0xFC,								// JREQ	wait_sync
+	0x9D,									// NOP
+0x20, 0xFE,								// JRA	$
+											// read_operation_param:
+	0x45, STM8_FL_PARAM_SIZE, STM8_FL_LOOPCNT_ADDR,	// MOV	loopcnt, #param_size
+	0xAE, 0x00, STM8_FL_PARAM_ADDR,			// LDW	X, #param_addr
+	0x90, 0xAE, 0x00, STM8_FL_PARAM_BKADDR,	// LDW	Y, #param_bkaddr
+											// do_read_param:
+	0x3D, STM8_FL_LOOPCNT_ADDR,				// TNZ	loopcnt
+	0x27, 0x10,								// JREQ	end_read_param
+	0x9D,									// NOP
+	0xF6,									// LD	A, (X)
+	0x90, 0xF7,								// LD	(Y), A
+	0x5C,									// INCW	X
+	0x90, 0x5C,								// INCW Y
+	0xB6, STM8_FL_LOOPCNT_ADDR,				// LD	A, loopcnt
+	0xA0, 0x01,								// SUB	A, #1
+	0xB7, STM8_FL_LOOPCNT_ADDR,				// LD	loopcnt, A
+	0x20, 0xED,								// JRA	do_read_param
+	0x9D,									// NOP
+											// end_read_param:
+	0x3F, STM8_FL_SYNC_ADDR,				// CLR	sync
+											// do_operation:
+	0xBE, STM8_FL_CR2_BKADDR,				// LDW	X, cr2
+	0xB6, STM8_FL_CMD_BKADDR,				// LD	A, cmd
+	0xF7,									// LD	(X), A
+	0xBE, STM8_FL_NCR2_BKADDR,				// LDW	X, ncr2
+	0x5D,									// TNZW	X
+	0x27, 0x04,								// JREQ	write_data
+	0x9D,									// NOP
+	0xA8, 0xFF,								// XOR	A, #0xFF
+	0xF7,									// LD	(X), A
+											// write_data:
+	0xBE, STM8_FL_DATA_BKADDR,				// LDW	X, data
+	0x90, 0xBE, STM8_FL_TARGET_BKADDR,		// LDW	Y, target
+	0x45, STM8_FL_BLOCKSIZE_BKADDR, STM8_FL_LOOPCNT_ADDR,	// MOV	loopcnt, blocksize
+											// do_write_data:
+	0x3D, STM8_FL_LOOPCNT_ADDR,				// TNZ	loopcnt
+	0x27, 0x10,								// JREQ	end_write_data
+	0x9D,									// NOP
+	0xF6,									// LD	A, (X)
+	0x90, 0xF7,								// LD	(Y), A
+	0x5C,									// INCW	X
+	0x90, 0x5C,								// INCW Y
+	0xB6, STM8_FL_LOOPCNT_ADDR,				// LD	A, loopcnt
+	0xA0, 0x01,								// SUB	A, #1
+	0xB7, STM8_FL_LOOPCNT_ADDR,				// LD	loopcnt, A
+	0x20, 0xED,								// JRA	do_write_data
+	0x9D,									// NOP
+											// end_write_data:
+											// wait_ready:
+	0xBE, STM8_FL_IAPSR_BKADDR,				// LDW	X, iapsr
+	0xF6,									// LD	A, (X)
+	0xA5, 0x01,								// BCP	A, STM8_FLASH_IAPSR_WRPGDIS
+	0x26, 0x09,								// JRNE	return_error
+	0x9D,									// NOP
+	0xA5, 0x04,								// BCP	A, STM8_FLASH_IAPSR_EOP
+	0x26, 0x08,								// JRNE	return_ok
+	0x9D,									// NOP
+	0x20, 0xF1,								// JRA	wait_ready
+	0x9D,									// NOP
+											// return_error:
+	0x35, 0x01, 0x00, STM8_FL_ERR_ADDR,		// MOV	err, #1
+											// return_ok:
+	0x20, 0x9B,								// JRA	wait_sync
+	0x9D,									// NOP
+	0x20, 0xFE								// JRA	$
+};
+#endif
+
+static RESULT swim_wotf_reg(uint32_t addr, uint32_t value, uint8_t size)
+{
+	return swim_wotf(addr, (uint8_t*)&value, size);
 }
 
 static void stm8_unlock_eeprom_option(uint32_t dukr)
 {
-	stm8_swim_wotf_reg(dukr, 0xAE);
-	stm8_swim_wotf_reg(dukr, 0x56);
+	swim_wotf_reg(dukr, 0xAE, 1);
+	swim_wotf_reg(dukr, 0x56, 1);
 }
 
 static void stm8_unlock_flash(uint32_t pukr)
 {
-	stm8_swim_wotf_reg(pukr, 0x56);
-	stm8_swim_wotf_reg(pukr, 0xAE);
+	swim_wotf_reg(pukr, 0x56, 1);
+	swim_wotf_reg(pukr, 0xAE, 1);
 }
 
 static RESULT stm8_poll_ready(uint32_t iapsr)
@@ -194,29 +308,71 @@ static RESULT stm8_poll_ready(uint32_t iapsr)
 static RESULT stm8_erase_block(uint32_t cr2, uint32_t ncr2, 
 				uint32_t block_addr)
 {
-	uint8_t buff[4];
-	
-	stm8_swim_wotf_reg(cr2, STM8_FLASH_CR2_ERASE);
+	swim_wotf_reg(cr2, STM8_FLASH_CR2_ERASE, 1);
 	if (ncr2)
 	{
-		stm8_swim_wotf_reg(ncr2, (uint8_t)~STM8_FLASH_CR2_ERASE);
+		swim_wotf_reg(ncr2, (uint8_t)~STM8_FLASH_CR2_ERASE, 1);
 	}
-	memset(buff, 0, 4);
-	swim_wotf(block_addr, buff, 4);
+	swim_wotf_reg(block_addr, 0, 4);
 	return ERROR_OK;
 }
 
 static RESULT stm8_program_block(uint32_t cr2, uint32_t ncr2, uint8_t cmd, 
 				uint32_t block_addr, uint8_t *block_buff, uint8_t block_size)
 {
-	stm8_swim_wotf_reg(cr2, cmd);
+	swim_wotf_reg(cr2, cmd, 1);
 	if (ncr2)
 	{
-		stm8_swim_wotf_reg(ncr2, ~cmd);
+		swim_wotf_reg(ncr2, ~cmd, 1);
 	}
 	swim_wotf(block_addr, block_buff, block_size);
 	return ERROR_OK;
 }
+
+#ifdef STM8_USE_FLASHLOADER
+static RESULT stm8_print_kernel_reg(void)
+{
+	struct
+	{
+		uint8_t A;
+		uint32_t PC;
+		uint16_t X;
+		uint16_t Y;
+		uint16_t SP;
+		uint8_t CCR;
+	}kernel_reg;
+	uint8_t buff[256];
+	
+	swim_wotf_reg(STM8_REG_DM_CSR2, STM8_DM_CSR2_STALL | STM8_DM_CSR2_FLUSH, 1);
+	swim_rotf(0x007F00, buff, 11);
+	if (ERROR_OK != commit())
+	{
+		return ERROR_FAIL;
+	}
+	kernel_reg.A = buff[0];
+	kernel_reg.PC = (buff[1] << 16) + (buff[2] << 8) + (buff[3] << 0);
+	kernel_reg.X = (buff[4] << 8) + (buff[5] << 0);
+	kernel_reg.Y = (buff[6] << 8) + (buff[7] << 0);
+	kernel_reg.SP = (buff[8] << 8) + (buff[9] << 0);
+	kernel_reg.CCR = buff[10];
+	
+	LOG_INFO(_GETTEXT("A = 0x%02X(%d)\n"), kernel_reg.A, kernel_reg.A);
+	LOG_INFO(_GETTEXT("PC = 0x%06X\n"), kernel_reg.PC);
+	LOG_INFO(_GETTEXT("X = 0x%04X\n"), kernel_reg.X);
+	LOG_INFO(_GETTEXT("Y = 0x%04X\n"), kernel_reg.Y);
+	LOG_INFO(_GETTEXT("SP = 0x%04X\n"), kernel_reg.SP);
+	LOG_INFO(_GETTEXT("CCR = 0x%02X\n"), kernel_reg.CCR);
+	
+	swim_rotf(0x000000, buff, sizeof(buff));
+	if (ERROR_OK != commit())
+	{
+		return ERROR_FAIL;
+	}
+	LOG_BYTE_BUF(buff, sizeof(buff), LOG_INFO, "%02X", 16);
+	
+	return ERROR_OK;
+}
+#endif
 
 static uint8_t stm8_swim_enabled = 0;
 
@@ -225,6 +381,9 @@ ENTER_PROGRAM_MODE_HANDLER(stm8swim)
 	uint8_t test_buf0[7], test_buf1[6];
 	RESULT ret = ERROR_OK;
 	struct chip_param_t *param = context->param;
+#ifdef STM8_USE_FLASHLOADER
+	struct operation_t *op = context->op;
+#endif
 	uint8_t target_mhz = (uint8_t)param->param[STM8_PARAM_IRC];
 	
 	interfaces = &(context->prog->interfaces);
@@ -266,16 +425,17 @@ ENTER_PROGRAM_MODE_HANDLER(stm8swim)
 		}
 		delay_ms(10);
 		swim_srst();
-		stm8_swim_wotf_reg(STM8_REG_SWIM_CSR, STM8_SWIM_CSR_SAFT_MASK | 
-									STM8_SWIM_CSR_SWIM_DM | STM8_SWIM_CSR_RST);
+		delay_ms(10);
+		swim_wotf_reg(STM8_REG_SWIM_CSR, STM8_SWIM_CSR_SAFT_MASK | 
+								STM8_SWIM_CSR_SWIM_DM | STM8_SWIM_CSR_RST, 1);
 		delay_ms(10);
 		reset_set();
 		delay_ms(10);
 		// enable double speed if supported
-		stm8_swim_wotf_reg(param->param[STM8_PARAM_CLK_CKDIVR], 0x00);
+		swim_wotf_reg(param->param[STM8_PARAM_CLK_CKDIVR], 0x00, 1);
 		if (param->param[STM8_PARAM_CLK_SWIMCCR] != 0)
 		{
-			stm8_swim_wotf_reg(param->param[STM8_PARAM_CLK_SWIMCCR], 0x01);
+			swim_wotf_reg(param->param[STM8_PARAM_CLK_SWIMCCR], 0x01, 1);
 			swim_set_param(target_mhz, 20, 2);
 		}
 		else
@@ -292,8 +452,9 @@ ENTER_PROGRAM_MODE_HANDLER(stm8swim)
 		}
 		if (test_buf1[0] & STM8_SWIM_CSR_HSIT)
 		{
-			stm8_swim_wotf_reg(STM8_REG_SWIM_CSR, STM8_SWIM_CSR_SAFT_MASK 
-				| STM8_SWIM_CSR_SWIM_DM | STM8_SWIM_CSR_HS | STM8_SWIM_CSR_RST);
+			swim_wotf_reg(STM8_REG_SWIM_CSR, STM8_SWIM_CSR_SAFT_MASK 
+				| STM8_SWIM_CSR_SWIM_DM | STM8_SWIM_CSR_HS | STM8_SWIM_CSR_RST, 
+				1);
 			delay_ms(10);
 			swim_set_param(target_mhz, 8, 2);
 		}
@@ -311,13 +472,63 @@ ENTER_PROGRAM_MODE_HANDLER(stm8swim)
 		}
 		
 		// stall core
-//		stm8_swim_wotf_reg(STM8_REG_DM_CSR2, 
-//							STM8_DM_CSR2_STALL | STM8_DM_CSR2_FLUSH);
-		// download flashloader
-		
-		// flush decode and restart core
-//		stm8_swim_wotf_reg(STM8_REG_DM_CSR2, STM8_DM_CSR2_FLUSH);
-//		ret = commit();
+		swim_wotf_reg(STM8_REG_DM_CSR2, 
+							STM8_DM_CSR2_STALL | STM8_DM_CSR2_FLUSH, 1);
+// flashloader is not usable currently
+#ifdef STM8_USE_FLASHLOADER
+		if (op->erase_operations || op->write_operations)
+		{
+			// download flashloader
+			swim_wotf(STM8_FL_ADDR, stm8_flashloader, sizeof(stm8_flashloader));
+			// clear sync and err
+			swim_wotf_reg(STM8_FL_SYNC_ADDR, 0, 2);
+			swim_wotf_reg(0x007F01, 0x000000, 3);
+			// flush decode and restart core
+			swim_wotf_reg(STM8_REG_DM_CSR2, STM8_DM_CSR2_FLUSH, 1);
+		}
+		ret = commit();
+		stm8_print_kernel_reg();
+// write cmd
+if(1)
+{
+	uint8_t buff[STM8_FL_PARAM_SIZE + 1];
+	
+	memset(buff, 0, sizeof(buff));
+	buff[0] = 0;
+	buff[1] = 1;
+	buff[2] = 2;
+	buff[3] = 3;
+	swim_wotf(0x001000, buff, 4);
+	if (ERROR_OK != commit())
+	{
+		stm8_print_kernel_reg();
+		return ERROR_FAIL;
+	}
+	buff[STM8_FL_IAPSR_OFFSET] = (param->param[STM8_PARAM_FLASH_IAPSR] >> 8) & 0xFF;
+	buff[STM8_FL_IAPSR_OFFSET + 1] = (param->param[STM8_PARAM_FLASH_IAPSR] >> 0) & 0xFF;
+	buff[STM8_FL_CR2_OFFSET] = (param->param[STM8_PARAM_FLASH_CR2] >> 8) & 0xFF;
+	buff[STM8_FL_CR2_OFFSET + 1] = (param->param[STM8_PARAM_FLASH_CR2] >> 0) & 0xFF;
+	buff[STM8_FL_NCR2_OFFSET] = (param->param[STM8_PARAM_FLASH_NCR2] >> 8) & 0xFF;
+	buff[STM8_FL_NCR2_OFFSET + 1] = (param->param[STM8_PARAM_FLASH_NCR2] >> 0) & 0xFF;
+	buff[STM8_FL_BLOCKSIZE_OFFSET] = 4;
+	buff[STM8_FL_DATAADDR_OFFSET] = 0x01;
+	buff[STM8_FL_DATAADDR_OFFSET + 1] = 0x00;
+	buff[STM8_FL_TARGETADDR_OFFSET] = 0x80;
+	buff[STM8_FL_TARGETADDR_OFFSET + 1] = 0x00;
+	buff[STM8_FL_CMD_OFFSET] = STM8_FLASH_CR2_ERASE;
+	buff[STM8_FL_CMD_OFFSET + 1] = 1;
+	swim_wotf(STM8_FL_PARAM_ADDR, buff, sizeof(buff));
+	delay_ms(5);
+	if (ERROR_OK != commit())
+	{
+		stm8_print_kernel_reg();
+		return ERROR_FAIL;
+	}
+}
+// stall core
+stm8_print_kernel_reg();
+//return ERROR_FAIL;
+#endif
 		break;
 	case STM8_ISP:
 		ret = ERRCODE_NOT_SUPPORT;
@@ -478,8 +689,9 @@ READ_TARGET_HANDLER(stm8swim)
 			break;
 		case APPLICATION_CHAR:
 		case EEPROM_CHAR:
-			stm8_swim_wotf_reg(STM8_REG_DM_CSR2, 
-								STM8_DM_CSR2_STALL | STM8_DM_CSR2_FLUSH);
+			// it will be faster if core is stalled
+//			swim_wotf_reg(STM8_REG_DM_CSR2, 
+//								STM8_DM_CSR2_STALL | STM8_DM_CSR2_FLUSH, 1);
 			cur_size = 0;
 			while (size > 0)
 			{
