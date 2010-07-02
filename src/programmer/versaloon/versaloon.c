@@ -1141,9 +1141,9 @@ RESULT versaloon_swim_srst(void)
 {
 	return usbtoswim_srst(VERSALOON_SWIM_PORT);
 }
-RESULT versaloon_swim_wotf(uint8_t *data, uint16_t bitlen, uint32_t addr)
+RESULT versaloon_swim_wotf(uint8_t *data, uint16_t bytelen, uint32_t addr)
 {
-	return usbtoswim_wotf(VERSALOON_SWIM_PORT, data, bitlen, addr);
+	return usbtoswim_wotf(VERSALOON_SWIM_PORT, data, bytelen, addr);
 }
 RESULT versaloon_swim_rotf(uint8_t *data, uint16_t bytelen, uint32_t addr)
 {
