@@ -29,6 +29,7 @@
 #define STM8_SWIM_CSR_HS			0x10
 #define STM8_SWIM_CSR_RST			0x04
 #define STM8_SWIM_CSR_HSIT			0x02
+#define STM8_SWIM_CSR_PRI			0x01
 
 #define STM8_PARAM_IRC				0
 #define STM8_PARAM_FLASH_DUKR		1

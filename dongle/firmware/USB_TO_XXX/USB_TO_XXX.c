@@ -173,6 +173,7 @@ void USB_TO_XXX_ProcessCmd(uint8* dat, uint16 len)
 				if ((USB_TO_POLL_Index >= USB_TO_POLL_NUM) || (USB_TO_POLL_Index < 0))
 				{
 					buffer_reply[rep_len++] = USB_TO_XXX_INVALID_INDEX;
+					return;
 				}
 				else
 				{
@@ -193,11 +194,13 @@ void USB_TO_XXX_ProcessCmd(uint8* dat, uint16 len)
 				if (USB_TO_POLL_Index < 0)
 				{
 					buffer_reply[rep_len++] = USB_TO_XXX_INVALID_CMD;
+					return;
 				}
 				else if (USB_TO_POLL_Index >= USB_TO_POLL_NUM)
 				{
 					buffer_reply[rep_len++] = USB_TO_XXX_INVALID_INDEX;
 					USB_TO_POLL_Index--;
+					return;
 				}
 				else
 				{
@@ -229,6 +232,7 @@ void USB_TO_XXX_ProcessCmd(uint8* dat, uint16 len)
 
 							buffer_reply[rep_len++] = USB_TO_XXX_TIME_OUT;
 							USB_TO_POLL_Index--;
+							return;
 						}
 						else
 						{
