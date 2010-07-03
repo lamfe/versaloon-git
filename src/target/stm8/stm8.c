@@ -327,28 +327,51 @@ static RESULT stm8_poll_ready(uint32_t iapsr)
 	return ret;
 }
 
-static RESULT stm8_erase_block(uint32_t cr2, uint32_t ncr2, 
-				uint32_t block_addr)
+static RESULT stm8_program_reg(uint32_t cr2, uint32_t ncr2, uint32_t iapsr, 
+	uint8_t cmd, uint32_t reg_addr, uint32_t reg_val, uint8_t reg_size)
 {
-	swim_wotf_reg(cr2, STM8_FLASH_CR2_ERASE, 1);
-	if (ncr2)
+	RESULT ret = ERROR_OK;
+	
+	if (reg_size > 4)
 	{
-		swim_wotf_reg(ncr2, (uint8_t)~STM8_FLASH_CR2_ERASE, 1);
+		return ERROR_FAIL;
 	}
-	swim_wotf_reg(block_addr, 0, 4);
-	return ERROR_OK;
+	
+	ret = swim_wotf_reg(cr2, cmd, 1);
+	if ((ERROR_OK == ret) && (ncr2))
+	{
+		ret = swim_wotf_reg(ncr2, ~cmd, 1);
+	}
+	if (ERROR_OK == ret)
+	{
+		ret = swim_wotf_reg(reg_addr, reg_val, reg_size);
+	}
+	if (ERROR_OK == ret)
+	{
+		ret = stm8_poll_ready(iapsr);
+	}
+	return ret;
 }
 
-static RESULT stm8_program_block(uint32_t cr2, uint32_t ncr2, uint8_t cmd, 
-				uint32_t block_addr, uint8_t *block_buff, uint8_t block_size)
+static RESULT stm8_program_block(uint32_t cr2, uint32_t ncr2, uint32_t iapsr, 
+	uint8_t cmd, uint32_t block_addr, uint8_t *block_buff, uint8_t block_size)
 {
-	swim_wotf_reg(cr2, cmd, 1);
-	if (ncr2)
+	RESULT ret = ERROR_OK;
+	
+	ret = swim_wotf_reg(cr2, cmd, 1);
+	if ((ERROR_OK == ret) && (ncr2))
 	{
-		swim_wotf_reg(ncr2, ~cmd, 1);
+		ret = swim_wotf_reg(ncr2, ~cmd, 1);
 	}
-	swim_wotf(block_addr, block_buff, block_size);
-	return ERROR_OK;
+	if (ERROR_OK == ret)
+	{
+		ret = swim_wotf(block_addr, block_buff, block_size);
+	}
+	if (ERROR_OK == ret)
+	{
+		ret = stm8_poll_ready(iapsr);
+	}
+	return ret;
 }
 #else
 static RESULT stm8_fl_print_context(void)
@@ -679,13 +702,10 @@ do_erase:
 				return ERROR_FAIL;
 			}
 #else
-			ret = stm8_erase_block(param->param[STM8_PARAM_FLASH_CR2], 
-									param->param[STM8_PARAM_FLASH_NCR2], addr);
-			if (ret != ERROR_OK)
-			{
-				break;
-			}
-			ret = stm8_poll_ready(param->param[STM8_PARAM_FLASH_IAPSR]);
+			ret = stm8_program_reg(param->param[STM8_PARAM_FLASH_CR2], 
+					param->param[STM8_PARAM_FLASH_NCR2], 
+					param->param[STM8_PARAM_FLASH_IAPSR], 
+					STM8_FLASH_CR2_ERASE, addr, 0, 4);
 #endif
 			break;
 		default:
@@ -706,9 +726,11 @@ do_erase:
 WRITE_TARGET_HANDLER(stm8swim)
 {
 	RESULT ret = ERROR_OK;
+	struct program_info_t *pi = context->pi;
 	struct chip_param_t *param = context->param;
 	struct operation_t *op = context->op;
 	uint8_t cmd;
+	uint8_t fuse_page[128];
 #ifdef STM8_USE_FLASHLOADER
 	struct stm8_fl_param_t fl_param;
 	uint16_t ram_addr;
@@ -789,14 +811,132 @@ do_program:
 			}
 #else
 			ret = stm8_program_block(param->param[STM8_PARAM_FLASH_CR2], 
-										param->param[STM8_PARAM_FLASH_NCR2], 
-										cmd, addr, buff, (uint8_t)size);
+					param->param[STM8_PARAM_FLASH_NCR2], 
+					param->param[STM8_PARAM_FLASH_IAPSR], 
+					cmd, addr, buff, (uint8_t)size);
+#endif
+			break;
+		case FUSE_CHAR:
+			swim_rotf(STM8_FUSEPAGE_ADDR, fuse_page, sizeof(fuse_page));
+			ret = commit();
 			if (ret != ERROR_OK)
 			{
 				break;
 			}
-			ret = stm8_poll_ready(param->param[STM8_PARAM_FLASH_IAPSR]);
-#endif
+			cmd = STM8_FLASH_CR2_OPT;
+			if (NULL == buff)
+			{
+				buff = (uint8_t*)&pi->program_areas[FUSE_IDX].value;
+			}
+			if ((ERROR_OK == ret) && (buff[0] != fuse_page[0]))
+			{
+				ret = stm8_program_reg(param->param[STM8_PARAM_FLASH_CR2], 
+						param->param[STM8_PARAM_FLASH_NCR2], 
+						param->param[STM8_PARAM_FLASH_IAPSR], cmd, 
+						STM8_FUSEPAGE_ADDR + 0, buff[0], 1);
+			}
+			if ((ERROR_OK == ret) && (buff[1] != fuse_page[1]))
+			{
+				ret = stm8_program_reg(param->param[STM8_PARAM_FLASH_CR2], 
+						param->param[STM8_PARAM_FLASH_NCR2], 
+						param->param[STM8_PARAM_FLASH_IAPSR], cmd, 
+						STM8_FUSEPAGE_ADDR + 1, buff[1], 1);
+				if (ERROR_OK == ret)
+				{
+					ret = stm8_program_reg(param->param[STM8_PARAM_FLASH_CR2], 
+							param->param[STM8_PARAM_FLASH_NCR2], 
+							param->param[STM8_PARAM_FLASH_IAPSR], cmd, 
+							STM8_FUSEPAGE_ADDR + 2, ~buff[1], 1);
+				}
+			}
+			if ((ERROR_OK == ret) && (buff[2] != fuse_page[3]))
+			{
+				ret = stm8_program_reg(param->param[STM8_PARAM_FLASH_CR2], 
+						param->param[STM8_PARAM_FLASH_NCR2], 
+						param->param[STM8_PARAM_FLASH_IAPSR], cmd, 
+						STM8_FUSEPAGE_ADDR + 3, buff[2], 1);
+				if (ERROR_OK == ret)
+				{
+					ret = stm8_program_reg(param->param[STM8_PARAM_FLASH_CR2], 
+							param->param[STM8_PARAM_FLASH_NCR2], 
+							param->param[STM8_PARAM_FLASH_IAPSR], cmd, 
+							STM8_FUSEPAGE_ADDR + 4, ~buff[2], 1);
+				}
+			}
+			if ((ERROR_OK == ret) && (buff[3] != fuse_page[5]))
+			{
+				ret = stm8_program_reg(param->param[STM8_PARAM_FLASH_CR2], 
+						param->param[STM8_PARAM_FLASH_NCR2], 
+						param->param[STM8_PARAM_FLASH_IAPSR], cmd, 
+						STM8_FUSEPAGE_ADDR + 5, buff[3], 1);
+				if (ERROR_OK == ret)
+				{
+					ret = stm8_program_reg(param->param[STM8_PARAM_FLASH_CR2], 
+							param->param[STM8_PARAM_FLASH_NCR2], 
+							param->param[STM8_PARAM_FLASH_IAPSR], cmd, 
+							STM8_FUSEPAGE_ADDR + 6, ~buff[3], 1);
+				}
+			}
+			if ((ERROR_OK == ret) && (buff[4] != fuse_page[7]))
+			{
+				ret = stm8_program_reg(param->param[STM8_PARAM_FLASH_CR2], 
+						param->param[STM8_PARAM_FLASH_NCR2], 
+						param->param[STM8_PARAM_FLASH_IAPSR], cmd, 
+						STM8_FUSEPAGE_ADDR + 7, buff[4], 1);
+				if (ERROR_OK == ret)
+				{
+					ret = stm8_program_reg(param->param[STM8_PARAM_FLASH_CR2], 
+							param->param[STM8_PARAM_FLASH_NCR2], 
+							param->param[STM8_PARAM_FLASH_IAPSR], cmd, 
+							STM8_FUSEPAGE_ADDR + 8, ~buff[4], 1);
+				}
+			}
+			if ((ERROR_OK == ret) && (buff[5] != fuse_page[9]))
+			{
+				ret = stm8_program_reg(param->param[STM8_PARAM_FLASH_CR2], 
+						param->param[STM8_PARAM_FLASH_NCR2], 
+						param->param[STM8_PARAM_FLASH_IAPSR], cmd, 
+						STM8_FUSEPAGE_ADDR + 9, buff[5], 1);
+				if (ERROR_OK == ret)
+				{
+					ret = stm8_program_reg(param->param[STM8_PARAM_FLASH_CR2], 
+							param->param[STM8_PARAM_FLASH_NCR2], 
+							param->param[STM8_PARAM_FLASH_IAPSR], cmd, 
+							STM8_FUSEPAGE_ADDR + 10, ~buff[5], 1);
+				}
+			}
+			if ((ERROR_OK == ret) && (buff[6] != fuse_page[13]))
+			{
+				ret = stm8_program_reg(param->param[STM8_PARAM_FLASH_CR2], 
+						param->param[STM8_PARAM_FLASH_NCR2], 
+						param->param[STM8_PARAM_FLASH_IAPSR], cmd, 
+						STM8_FUSEPAGE_ADDR + 13, buff[6], 1);
+				if (ERROR_OK == ret)
+				{
+					ret = stm8_program_reg(param->param[STM8_PARAM_FLASH_CR2], 
+							param->param[STM8_PARAM_FLASH_NCR2], 
+							param->param[STM8_PARAM_FLASH_IAPSR], cmd, 
+							STM8_FUSEPAGE_ADDR + 14, ~buff[6], 1);
+				}
+			}
+			if ((ERROR_OK == ret) && (buff[7] != fuse_page[126]))
+			{
+				ret = stm8_program_reg(param->param[STM8_PARAM_FLASH_CR2], 
+						param->param[STM8_PARAM_FLASH_NCR2], 
+						param->param[STM8_PARAM_FLASH_IAPSR], cmd, 
+						STM8_FUSEPAGE_ADDR + 126, buff[7], 1);
+				if (ERROR_OK == ret)
+				{
+					ret = stm8_program_reg(param->param[STM8_PARAM_FLASH_CR2], 
+							param->param[STM8_PARAM_FLASH_NCR2], 
+							param->param[STM8_PARAM_FLASH_IAPSR], cmd, 
+							STM8_FUSEPAGE_ADDR + 127, ~buff[7], 1);
+				}
+			}
+			if (ERROR_OK == ret)
+			{
+				ret = commit();
+			}
 			break;
 		default:
 			ret = ERROR_FAIL;
@@ -855,7 +995,7 @@ READ_TARGET_HANDLER(stm8swim)
 			ret = commit();
 			break;
 		case FUSE_CHAR:
-			swim_rotf(0x004800, fuse_page, sizeof(fuse_page));
+			swim_rotf(STM8_FUSEPAGE_ADDR, fuse_page, sizeof(fuse_page));
 			ret = commit();
 			if (ret != ERROR_OK)
 			{
