@@ -44,7 +44,7 @@ type
     btnEditInterface: TButton;
     btnEditTarget: TButton;
     btnEditScript: TButton;
-    btnSpecialStr: TButton;
+    btnEditSpecialStr: TButton;
     cbboxOpenOCDInterface: TComboBox;
     cbboxOpenOCDScript: TComboBox;
     cbboxOpenOCDTarget: TComboBox;
@@ -141,7 +141,7 @@ type
     procedure btnOpenOCDStopClick(Sender: TObject);
     procedure btnReadClick(Sender: TObject);
     procedure btnSetPowerClick(Sender: TObject);
-    procedure btnSpecialStrClick(Sender: TObject);
+    procedure btnEditSpecialStrClick(Sender: TObject);
     procedure btnSVFRunClick(Sender: TObject);
     procedure btnTargetDetectClick(Sender: TObject);
     procedure btnUpdateClick(Sender: TObject);
@@ -759,6 +759,7 @@ begin
   lbledtSpecialStr.Enabled := False;
   if Pos(SPECIALSTR_CHAR, para) > 0 then
   begin
+    btnEditSpecialStr.Enabled := True;
     chkboxSpecialStr.Enabled := True;
     //chkboxSpecialStr.Checked := True;
     index := CurTargetChip.GetAreaIdx(SPECIALSTR_CHAR);
@@ -770,6 +771,7 @@ begin
   end
   else
   begin
+    btnEditSpecialStr.Enabled := False;
     chkboxSpecialStr.Enabled := False;
     chkboxSpecialStr.Checked := False;
   end;
@@ -1228,6 +1230,10 @@ begin
           if chkboxCali.Enabled then
           begin
             chkboxCali.Checked := xmlcfgMain.GetValue('target/calien', False);
+          end;
+          if chkboxSpecialStr.Enabled then
+          begin
+            chkboxSpecialStr.Checked := xmlcfgMain.GetValue('target/special_stren', False);
           end;
           if chkboxMP.Enabled then
           begin
@@ -1742,7 +1748,7 @@ begin
   LogInfo('Idle');
 end;
 
-procedure TFormMain.btnSpecialStrClick(Sender: TObject);
+procedure TFormMain.btnEditSpecialStrClick(Sender: TObject);
 begin
   ShowTargetArea(SPECIALSTR_CHAR, lbledtSpecialStr, @VSProg_Parser.SpecialStrParser);
 end;
@@ -2021,6 +2027,10 @@ begin
   if chkboxCali.Enabled then
   begin
     xmlcfgMain.SetValue('target/calien', chkboxCali.Checked);
+  end;
+  if chkboxSpecialStr.Enabled then
+  begin
+    xmlcfgMain.SetValue('target/special_stren', chkboxSpecialStr.Checked);
   end;
   if chkboxMP.Enabled then
   begin
