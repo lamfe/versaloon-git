@@ -843,13 +843,13 @@ object FormMain: TFormMain
             LabelPosition = lpLeft
             TabOrder = 14
           end
-          object btnSpecialStr: TButton
+          object btnEditSpecialStr: TButton
             Left = 301
             Height = 25
             Top = 136
             Width = 45
             Caption = 'Str'
-            OnClick = btnSpecialStrClick
+            OnClick = btnEditSpecialStrClick
             TabOrder = 15
           end
         end
