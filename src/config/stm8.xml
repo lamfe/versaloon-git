@@ -3791,4 +3791,1049 @@
     <param7>0x000000</param7>
     <param8>1</param8>
   </chip>
+  <chip name="stm8af/h51aat">
+    <program_mode>si</program_mode>
+    <sram_size>6144</sram_size>
+    <app_page_size>128</app_page_size>
+    <app_page_num>1024</app_page_num>
+    <ee_page_size>128</ee_page_size>
+    <ee_page_num>16</ee_page_num>
+    <fuse init="0x0000000000000000" bytesize="8">
+      <setting name="ROP" mask="0x00000000000000FF" info="Read-out protection" checked="0xAA" unchecked="0" />
+      <setting name="UBC" mask="0x000000000000FF00" info="User boot code" radix="16" shift="8" bytelen="1"/>
+      <setting name="AFR0" mask="0x0000000000010000" info="Alternate function remapping option 0">
+        <choice value="0x0000000000000000" text="PD3: TIM2_CH2" />
+        <choice value="0x0000000000010000" text="PD3: ADC_ETR" />
+      </setting>
+      <setting name="AFR1" mask="0x0000000000020000" info="Alternate function remapping option 1">
+        <choice value="0x0000000000000000" text="PA3: TIM2_CH3. PD2: TIM3_CH1" />
+        <choice value="0x0000000000020000" text="PA3: TIM3_CH1. PD2: TIM2_CH3" />
+      </setting>
+      <setting name="AFR2" mask="0x0000000000040000" info="Alternate function remapping option 2. AFR2 option has priority over AFR3 if both are activated">
+        <choice value="0x0000000000000000" text="PD0: TIM3_CH2" />
+        <choice value="0x0000000000040000" text="PD0: CLK_CCO" />
+      </setting>
+      <setting name="AFR3" mask="0x0000000000080000" info="Alternate function remapping option 3">
+        <choice value="0x0000000000000000" text="PD0: TIM3_CH2" />
+        <choice value="0x0000000000080000" text="PD0: TIM1_BKIN" />
+      </setting>
+      <setting name="AFR4" mask="0x0000000000100000" info="Alternate function remapping option 4">
+        <choice value="0x0000000000000000" text="PD7: TLI" />
+        <choice value="0x0000000000100000" text="PD7: TIM1_CH4" />
+      </setting>
+      <setting name="AFR5" mask="0x0000000000200000" info="Alternate function remapping option 5">
+        <choice value="0x0000000000000000" text="PB3: AIN3. PB2: AIN2. PB1: AIN1. PB0: AIN0" />
+        <choice value="0x0000000000200000" text="PB3: TIM1_ETR. PB2: TIM1_CH3N. PB1: TIM1_CH2N. PB0: TIM1_CH1N" />
+      </setting>
+      <setting name="AFR6" mask="0x0000000000400000" info="Alternate function remapping option 6">
+        <choice value="0x0000000000000000" text="PB5: AIN5. PB4: AIN4" />
+        <choice value="0x0000000000400000" text="PB5: I2C_SDA. PB4: I2C_SCL" />
+      </setting>
+      <setting name="AFR7" mask="0x0000000000800000" info="Alternate function remapping option 7">
+        <choice value="0x0000000000000000" text="PD4: TIM2_CH1" />
+        <choice value="0x0000000000800000" text="PD4: BEEP" />
+      </setting>
+      <setting name="WWDG_HALT" mask="0x0000000001000000" info="Window watchdog reset on halt">
+        <choice value="0x0000000001000000" text="Reset generated on halt if WWDG active" />
+        <choice value="0x0000000000000000" text="No reset generated on halt if WWDG active" />
+      </setting>
+      <setting name="WWDG_HW" mask="0x0000000002000000" info="Window watchdog activation">
+        <choice value="0x0000000002000000" text="WWDG window watchdog activated by hardware" />
+        <choice value="0x0000000000000000" text="WWDG window watchdog activated by software" />
+      </setting>
+      <setting name="IWDG_HW" mask="0x0000000004000000" info="Independent watchdog">
+        <choice value="0x0000000004000000" text="IWDG Independent watchdog activated by hardware" />
+        <choice value="0x0000000000000000" text="IWDG Independent watchdog activated by software" />
+      </setting>
+      <setting name="LIS_EN" mask="0x0000000008000000" info="Low speed internal clock enable">
+        <choice value="0x0000000008000000" text="LSI clock is available as CPU clock source" />
+        <choice value="0x0000000000000000" text="LSI clock is not available as CPU clock source" />
+      </setting>
+      <setting name="PRSC" mask="0x0000000300000000" info="AWU clock prescaler">
+        <choice value="0x0000000300000000" text="4 Mhz to 128 kHz prescaler" />
+        <choice value="0x0000000200000000" text="8 Mhz to 128 kHz prescaler" />
+        <choice value="0x0000000100000000" text="16 Mhz to 128 kHz prescaler" />
+        <choice value="0x0000000000000000" text="24 Mhz to 128 kHz prescaler" />
+      </setting>
+      <setting name="CKAWUSEL" mask="0x0000000400000000" info="Auto wakeup unit/clock">
+        <choice value="0x0000000400000000" text="HSE clock with prescaler selected as clock source for AWU" />
+        <choice value="0x0000000000000000" text="LSI clock source selected for AWU" />
+      </setting>
+      <setting name="EXTCLK" mask="0x0000000800000000" info="External clock selection">
+        <choice value="0x0000000800000000" text="External clock signal on OSCIN" />
+        <choice value="0x0000000000000000" text="External crystal connected to OSCIN/OSCOUT" />
+      </setting>
+      <setting name="HSECNT" mask="0x0000FF0000000000" info="HSE crystal oscillator stabilization time">
+        <choice value="0x0000000000000000" text="2048 HSE cycles" />
+        <choice value="0x0000B40000000000" text="128 HSE cycles" />
+        <choice value="0x0000D20000000000" text="8 HSE cycles" />
+        <choice value="0x0000E10000000000" text="0.5 HSE cycles" />
+      </setting>
+      <setting name="WAITSTATE" mask="0x0001000000000000" info="Wait state configuration">
+        <choice value="0x0000000000000000" text="No wait state" />
+        <choice value="0x0001000000000000" text="1 wait state" />
+      </setting>
+      <setting name="BL" mask="0xFF00000000000000" info="Bootloader option byte" checked="0xAA00000000000000" unchecked="0"/>
+      <setting name="ALL" mask="0xFFFFFFFFFFFFFFFF" info="Option bytes" radix="16" shift="0" bytelen="8" />
+    </fuse>
+    <param0>16</param0>
+    <param1>0x005064</param1>
+    <param2>0x005062</param2>
+    <param3>0x00505F</param3>
+    <param4>0x00505B</param4>
+    <param5>0x00505C</param5>
+    <param6>0x0050C6</param6>
+    <param7>0x0050CD</param7>
+    <param8>2</param8>
+  </chip>
+  <chip name="stm8af/h519at">
+    <program_mode>si</program_mode>
+    <sram_size>6144</sram_size>
+    <app_page_size>128</app_page_size>
+    <app_page_num>768</app_page_num>
+    <ee_page_size>128</ee_page_size>
+    <ee_page_num>16</ee_page_num>
+    <fuse init="0x0000000000000000" bytesize="8">
+      <setting name="ROP" mask="0x00000000000000FF" info="Read-out protection" checked="0xAA" unchecked="0" />
+      <setting name="UBC" mask="0x000000000000FF00" info="User boot code" radix="16" shift="8" bytelen="1"/>
+      <setting name="AFR0" mask="0x0000000000010000" info="Alternate function remapping option 0">
+        <choice value="0x0000000000000000" text="PD3: TIM2_CH2" />
+        <choice value="0x0000000000010000" text="PD3: ADC_ETR" />
+      </setting>
+      <setting name="AFR1" mask="0x0000000000020000" info="Alternate function remapping option 1">
+        <choice value="0x0000000000000000" text="PA3: TIM2_CH3. PD2: TIM3_CH1" />
+        <choice value="0x0000000000020000" text="PA3: TIM3_CH1. PD2: TIM2_CH3" />
+      </setting>
+      <setting name="AFR2" mask="0x0000000000040000" info="Alternate function remapping option 2. AFR2 option has priority over AFR3 if both are activated">
+        <choice value="0x0000000000000000" text="PD0: TIM3_CH2" />
+        <choice value="0x0000000000040000" text="PD0: CLK_CCO" />
+      </setting>
+      <setting name="AFR3" mask="0x0000000000080000" info="Alternate function remapping option 3">
+        <choice value="0x0000000000000000" text="PD0: TIM3_CH2" />
+        <choice value="0x0000000000080000" text="PD0: TIM1_BKIN" />
+      </setting>
+      <setting name="AFR4" mask="0x0000000000100000" info="Alternate function remapping option 4">
+        <choice value="0x0000000000000000" text="PD7: TLI" />
+        <choice value="0x0000000000100000" text="PD7: TIM1_CH4" />
+      </setting>
+      <setting name="AFR5" mask="0x0000000000200000" info="Alternate function remapping option 5">
+        <choice value="0x0000000000000000" text="PB3: AIN3. PB2: AIN2. PB1: AIN1. PB0: AIN0" />
+        <choice value="0x0000000000200000" text="PB3: TIM1_ETR. PB2: TIM1_CH3N. PB1: TIM1_CH2N. PB0: TIM1_CH1N" />
+      </setting>
+      <setting name="AFR6" mask="0x0000000000400000" info="Alternate function remapping option 6">
+        <choice value="0x0000000000000000" text="PB5: AIN5. PB4: AIN4" />
+        <choice value="0x0000000000400000" text="PB5: I2C_SDA. PB4: I2C_SCL" />
+      </setting>
+      <setting name="AFR7" mask="0x0000000000800000" info="Alternate function remapping option 7">
+        <choice value="0x0000000000000000" text="PD4: TIM2_CH1" />
+        <choice value="0x0000000000800000" text="PD4: BEEP" />
+      </setting>
+      <setting name="WWDG_HALT" mask="0x0000000001000000" info="Window watchdog reset on halt">
+        <choice value="0x0000000001000000" text="Reset generated on halt if WWDG active" />
+        <choice value="0x0000000000000000" text="No reset generated on halt if WWDG active" />
+      </setting>
+      <setting name="WWDG_HW" mask="0x0000000002000000" info="Window watchdog activation">
+        <choice value="0x0000000002000000" text="WWDG window watchdog activated by hardware" />
+        <choice value="0x0000000000000000" text="WWDG window watchdog activated by software" />
+      </setting>
+      <setting name="IWDG_HW" mask="0x0000000004000000" info="Independent watchdog">
+        <choice value="0x0000000004000000" text="IWDG Independent watchdog activated by hardware" />
+        <choice value="0x0000000000000000" text="IWDG Independent watchdog activated by software" />
+      </setting>
+      <setting name="LIS_EN" mask="0x0000000008000000" info="Low speed internal clock enable">
+        <choice value="0x0000000008000000" text="LSI clock is available as CPU clock source" />
+        <choice value="0x0000000000000000" text="LSI clock is not available as CPU clock source" />
+      </setting>
+      <setting name="PRSC" mask="0x0000000300000000" info="AWU clock prescaler">
+        <choice value="0x0000000300000000" text="4 Mhz to 128 kHz prescaler" />
+        <choice value="0x0000000200000000" text="8 Mhz to 128 kHz prescaler" />
+        <choice value="0x0000000100000000" text="16 Mhz to 128 kHz prescaler" />
+        <choice value="0x0000000000000000" text="24 Mhz to 128 kHz prescaler" />
+      </setting>
+      <setting name="CKAWUSEL" mask="0x0000000400000000" info="Auto wakeup unit/clock">
+        <choice value="0x0000000400000000" text="HSE clock with prescaler selected as clock source for AWU" />
+        <choice value="0x0000000000000000" text="LSI clock source selected for AWU" />
+      </setting>
+      <setting name="EXTCLK" mask="0x0000000800000000" info="External clock selection">
+        <choice value="0x0000000800000000" text="External clock signal on OSCIN" />
+        <choice value="0x0000000000000000" text="External crystal connected to OSCIN/OSCOUT" />
+      </setting>
+      <setting name="HSECNT" mask="0x0000FF0000000000" info="HSE crystal oscillator stabilization time">
+        <choice value="0x0000000000000000" text="2048 HSE cycles" />
+        <choice value="0x0000B40000000000" text="128 HSE cycles" />
+        <choice value="0x0000D20000000000" text="8 HSE cycles" />
+        <choice value="0x0000E10000000000" text="0.5 HSE cycles" />
+      </setting>
+      <setting name="WAITSTATE" mask="0x0001000000000000" info="Wait state configuration">
+        <choice value="0x0000000000000000" text="No wait state" />
+        <choice value="0x0001000000000000" text="1 wait state" />
+      </setting>
+      <setting name="BL" mask="0xFF00000000000000" info="Bootloader option byte" checked="0xAA00000000000000" unchecked="0"/>
+      <setting name="ALL" mask="0xFFFFFFFFFFFFFFFF" info="Option bytes" radix="16" shift="0" bytelen="8" />
+    </fuse>
+    <param0>16</param0>
+    <param1>0x005064</param1>
+    <param2>0x005062</param2>
+    <param3>0x00505F</param3>
+    <param4>0x00505B</param4>
+    <param5>0x00505C</param5>
+    <param6>0x0050C6</param6>
+    <param7>0x0050CD</param7>
+    <param8>2</param8>
+  </chip>
+  <chip name="stm8af/h51a9t">
+    <program_mode>si</program_mode>
+    <sram_size>6144</sram_size>
+    <app_page_size>128</app_page_size>
+    <app_page_num>1024</app_page_num>
+    <ee_page_size>128</ee_page_size>
+    <ee_page_num>16</ee_page_num>
+    <fuse init="0x0000000000000000" bytesize="8">
+      <setting name="ROP" mask="0x00000000000000FF" info="Read-out protection" checked="0xAA" unchecked="0" />
+      <setting name="UBC" mask="0x000000000000FF00" info="User boot code" radix="16" shift="8" bytelen="1"/>
+      <setting name="AFR0" mask="0x0000000000010000" info="Alternate function remapping option 0">
+        <choice value="0x0000000000000000" text="PD3: TIM2_CH2" />
+        <choice value="0x0000000000010000" text="PD3: ADC_ETR" />
+      </setting>
+      <setting name="AFR1" mask="0x0000000000020000" info="Alternate function remapping option 1">
+        <choice value="0x0000000000000000" text="PA3: TIM2_CH3. PD2: TIM3_CH1" />
+        <choice value="0x0000000000020000" text="PA3: TIM3_CH1. PD2: TIM2_CH3" />
+      </setting>
+      <setting name="AFR2" mask="0x0000000000040000" info="Alternate function remapping option 2. AFR2 option has priority over AFR3 if both are activated">
+        <choice value="0x0000000000000000" text="PD0: TIM3_CH2" />
+        <choice value="0x0000000000040000" text="PD0: CLK_CCO" />
+      </setting>
+      <setting name="AFR3" mask="0x0000000000080000" info="Alternate function remapping option 3">
+        <choice value="0x0000000000000000" text="PD0: TIM3_CH2" />
+        <choice value="0x0000000000080000" text="PD0: TIM1_BKIN" />
+      </setting>
+      <setting name="AFR4" mask="0x0000000000100000" info="Alternate function remapping option 4">
+        <choice value="0x0000000000000000" text="PD7: TLI" />
+        <choice value="0x0000000000100000" text="PD7: TIM1_CH4" />
+      </setting>
+      <setting name="AFR5" mask="0x0000000000200000" info="Alternate function remapping option 5">
+        <choice value="0x0000000000000000" text="PB3: AIN3. PB2: AIN2. PB1: AIN1. PB0: AIN0" />
+        <choice value="0x0000000000200000" text="PB3: TIM1_ETR. PB2: TIM1_CH3N. PB1: TIM1_CH2N. PB0: TIM1_CH1N" />
+      </setting>
+      <setting name="AFR6" mask="0x0000000000400000" info="Alternate function remapping option 6">
+        <choice value="0x0000000000000000" text="PB5: AIN5. PB4: AIN4" />
+        <choice value="0x0000000000400000" text="PB5: I2C_SDA. PB4: I2C_SCL" />
+      </setting>
+      <setting name="AFR7" mask="0x0000000000800000" info="Alternate function remapping option 7">
+        <choice value="0x0000000000000000" text="PD4: TIM2_CH1" />
+        <choice value="0x0000000000800000" text="PD4: BEEP" />
+      </setting>
+      <setting name="WWDG_HALT" mask="0x0000000001000000" info="Window watchdog reset on halt">
+        <choice value="0x0000000001000000" text="Reset generated on halt if WWDG active" />
+        <choice value="0x0000000000000000" text="No reset generated on halt if WWDG active" />
+      </setting>
+      <setting name="WWDG_HW" mask="0x0000000002000000" info="Window watchdog activation">
+        <choice value="0x0000000002000000" text="WWDG window watchdog activated by hardware" />
+        <choice value="0x0000000000000000" text="WWDG window watchdog activated by software" />
+      </setting>
+      <setting name="IWDG_HW" mask="0x0000000004000000" info="Independent watchdog">
+        <choice value="0x0000000004000000" text="IWDG Independent watchdog activated by hardware" />
+        <choice value="0x0000000000000000" text="IWDG Independent watchdog activated by software" />
+      </setting>
+      <setting name="LIS_EN" mask="0x0000000008000000" info="Low speed internal clock enable">
+        <choice value="0x0000000008000000" text="LSI clock is available as CPU clock source" />
+        <choice value="0x0000000000000000" text="LSI clock is not available as CPU clock source" />
+      </setting>
+      <setting name="PRSC" mask="0x0000000300000000" info="AWU clock prescaler">
+        <choice value="0x0000000300000000" text="4 Mhz to 128 kHz prescaler" />
+        <choice value="0x0000000200000000" text="8 Mhz to 128 kHz prescaler" />
+        <choice value="0x0000000100000000" text="16 Mhz to 128 kHz prescaler" />
+        <choice value="0x0000000000000000" text="24 Mhz to 128 kHz prescaler" />
+      </setting>
+      <setting name="CKAWUSEL" mask="0x0000000400000000" info="Auto wakeup unit/clock">
+        <choice value="0x0000000400000000" text="HSE clock with prescaler selected as clock source for AWU" />
+        <choice value="0x0000000000000000" text="LSI clock source selected for AWU" />
+      </setting>
+      <setting name="EXTCLK" mask="0x0000000800000000" info="External clock selection">
+        <choice value="0x0000000800000000" text="External clock signal on OSCIN" />
+        <choice value="0x0000000000000000" text="External crystal connected to OSCIN/OSCOUT" />
+      </setting>
+      <setting name="HSECNT" mask="0x0000FF0000000000" info="HSE crystal oscillator stabilization time">
+        <choice value="0x0000000000000000" text="2048 HSE cycles" />
+        <choice value="0x0000B40000000000" text="128 HSE cycles" />
+        <choice value="0x0000D20000000000" text="8 HSE cycles" />
+        <choice value="0x0000E10000000000" text="0.5 HSE cycles" />
+      </setting>
+      <setting name="WAITSTATE" mask="0x0001000000000000" info="Wait state configuration">
+        <choice value="0x0000000000000000" text="No wait state" />
+        <choice value="0x0001000000000000" text="1 wait state" />
+      </setting>
+      <setting name="BL" mask="0xFF00000000000000" info="Bootloader option byte" checked="0xAA00000000000000" unchecked="0"/>
+      <setting name="ALL" mask="0xFFFFFFFFFFFFFFFF" info="Option bytes" radix="16" shift="0" bytelen="8" />
+    </fuse>
+    <param0>16</param0>
+    <param1>0x005064</param1>
+    <param2>0x005062</param2>
+    <param3>0x00505F</param3>
+    <param4>0x00505B</param4>
+    <param5>0x00505C</param5>
+    <param6>0x0050C6</param6>
+    <param7>0x0050CD</param7>
+    <param8>2</param8>
+  </chip>
+  <chip name="stm8af/h5199t">
+    <program_mode>si</program_mode>
+    <sram_size>6144</sram_size>
+    <app_page_size>128</app_page_size>
+    <app_page_num>768</app_page_num>
+    <ee_page_size>128</ee_page_size>
+    <ee_page_num>16</ee_page_num>
+    <fuse init="0x0000000000000000" bytesize="8">
+      <setting name="ROP" mask="0x00000000000000FF" info="Read-out protection" checked="0xAA" unchecked="0" />
+      <setting name="UBC" mask="0x000000000000FF00" info="User boot code" radix="16" shift="8" bytelen="1"/>
+      <setting name="AFR0" mask="0x0000000000010000" info="Alternate function remapping option 0">
+        <choice value="0x0000000000000000" text="PD3: TIM2_CH2" />
+        <choice value="0x0000000000010000" text="PD3: ADC_ETR" />
+      </setting>
+      <setting name="AFR1" mask="0x0000000000020000" info="Alternate function remapping option 1">
+        <choice value="0x0000000000000000" text="PA3: TIM2_CH3. PD2: TIM3_CH1" />
+        <choice value="0x0000000000020000" text="PA3: TIM3_CH1. PD2: TIM2_CH3" />
+      </setting>
+      <setting name="AFR2" mask="0x0000000000040000" info="Alternate function remapping option 2. AFR2 option has priority over AFR3 if both are activated">
+        <choice value="0x0000000000000000" text="PD0: TIM3_CH2" />
+        <choice value="0x0000000000040000" text="PD0: CLK_CCO" />
+      </setting>
+      <setting name="AFR3" mask="0x0000000000080000" info="Alternate function remapping option 3">
+        <choice value="0x0000000000000000" text="PD0: TIM3_CH2" />
+        <choice value="0x0000000000080000" text="PD0: TIM1_BKIN" />
+      </setting>
+      <setting name="AFR4" mask="0x0000000000100000" info="Alternate function remapping option 4">
+        <choice value="0x0000000000000000" text="PD7: TLI" />
+        <choice value="0x0000000000100000" text="PD7: TIM1_CH4" />
+      </setting>
+      <setting name="AFR5" mask="0x0000000000200000" info="Alternate function remapping option 5">
+        <choice value="0x0000000000000000" text="PB3: AIN3. PB2: AIN2. PB1: AIN1. PB0: AIN0" />
+        <choice value="0x0000000000200000" text="PB3: TIM1_ETR. PB2: TIM1_CH3N. PB1: TIM1_CH2N. PB0: TIM1_CH1N" />
+      </setting>
+      <setting name="AFR6" mask="0x0000000000400000" info="Alternate function remapping option 6">
+        <choice value="0x0000000000000000" text="PB5: AIN5. PB4: AIN4" />
+        <choice value="0x0000000000400000" text="PB5: I2C_SDA. PB4: I2C_SCL" />
+      </setting>
+      <setting name="AFR7" mask="0x0000000000800000" info="Alternate function remapping option 7">
+        <choice value="0x0000000000000000" text="PD4: TIM2_CH1" />
+        <choice value="0x0000000000800000" text="PD4: BEEP" />
+      </setting>
+      <setting name="WWDG_HALT" mask="0x0000000001000000" info="Window watchdog reset on halt">
+        <choice value="0x0000000001000000" text="Reset generated on halt if WWDG active" />
+        <choice value="0x0000000000000000" text="No reset generated on halt if WWDG active" />
+      </setting>
+      <setting name="WWDG_HW" mask="0x0000000002000000" info="Window watchdog activation">
+        <choice value="0x0000000002000000" text="WWDG window watchdog activated by hardware" />
+        <choice value="0x0000000000000000" text="WWDG window watchdog activated by software" />
+      </setting>
+      <setting name="IWDG_HW" mask="0x0000000004000000" info="Independent watchdog">
+        <choice value="0x0000000004000000" text="IWDG Independent watchdog activated by hardware" />
+        <choice value="0x0000000000000000" text="IWDG Independent watchdog activated by software" />
+      </setting>
+      <setting name="LIS_EN" mask="0x0000000008000000" info="Low speed internal clock enable">
+        <choice value="0x0000000008000000" text="LSI clock is available as CPU clock source" />
+        <choice value="0x0000000000000000" text="LSI clock is not available as CPU clock source" />
+      </setting>
+      <setting name="PRSC" mask="0x0000000300000000" info="AWU clock prescaler">
+        <choice value="0x0000000300000000" text="4 Mhz to 128 kHz prescaler" />
+        <choice value="0x0000000200000000" text="8 Mhz to 128 kHz prescaler" />
+        <choice value="0x0000000100000000" text="16 Mhz to 128 kHz prescaler" />
+        <choice value="0x0000000000000000" text="24 Mhz to 128 kHz prescaler" />
+      </setting>
+      <setting name="CKAWUSEL" mask="0x0000000400000000" info="Auto wakeup unit/clock">
+        <choice value="0x0000000400000000" text="HSE clock with prescaler selected as clock source for AWU" />
+        <choice value="0x0000000000000000" text="LSI clock source selected for AWU" />
+      </setting>
+      <setting name="EXTCLK" mask="0x0000000800000000" info="External clock selection">
+        <choice value="0x0000000800000000" text="External clock signal on OSCIN" />
+        <choice value="0x0000000000000000" text="External crystal connected to OSCIN/OSCOUT" />
+      </setting>
+      <setting name="HSECNT" mask="0x0000FF0000000000" info="HSE crystal oscillator stabilization time">
+        <choice value="0x0000000000000000" text="2048 HSE cycles" />
+        <choice value="0x0000B40000000000" text="128 HSE cycles" />
+        <choice value="0x0000D20000000000" text="8 HSE cycles" />
+        <choice value="0x0000E10000000000" text="0.5 HSE cycles" />
+      </setting>
+      <setting name="WAITSTATE" mask="0x0001000000000000" info="Wait state configuration">
+        <choice value="0x0000000000000000" text="No wait state" />
+        <choice value="0x0001000000000000" text="1 wait state" />
+      </setting>
+      <setting name="BL" mask="0xFF00000000000000" info="Bootloader option byte" checked="0xAA00000000000000" unchecked="0"/>
+      <setting name="ALL" mask="0xFFFFFFFFFFFFFFFF" info="Option bytes" radix="16" shift="0" bytelen="8" />
+    </fuse>
+    <param0>16</param0>
+    <param1>0x005064</param1>
+    <param2>0x005062</param2>
+    <param3>0x00505F</param3>
+    <param4>0x00505B</param4>
+    <param5>0x00505C</param5>
+    <param6>0x0050C6</param6>
+    <param7>0x0050CD</param7>
+    <param8>2</param8>
+  </chip>
+  <chip name="stm8af/h5189t">
+    <program_mode>si</program_mode>
+    <sram_size>4096</sram_size>
+    <app_page_size>128</app_page_size>
+    <app_page_num>512</app_page_num>
+    <ee_page_size>128</ee_page_size>
+    <ee_page_num>12</ee_page_num>
+    <fuse init="0x0000000000000000" bytesize="8">
+      <setting name="ROP" mask="0x00000000000000FF" info="Read-out protection" checked="0xAA" unchecked="0" />
+      <setting name="UBC" mask="0x000000000000FF00" info="User boot code" radix="16" shift="8" bytelen="1"/>
+      <setting name="AFR0" mask="0x0000000000010000" info="Alternate function remapping option 0">
+        <choice value="0x0000000000000000" text="PD3: TIM2_CH2" />
+        <choice value="0x0000000000010000" text="PD3: ADC_ETR" />
+      </setting>
+      <setting name="AFR1" mask="0x0000000000020000" info="Alternate function remapping option 1">
+        <choice value="0x0000000000000000" text="PA3: TIM2_CH3. PD2: TIM3_CH1" />
+        <choice value="0x0000000000020000" text="PA3: TIM3_CH1. PD2: TIM2_CH3" />
+      </setting>
+      <setting name="AFR2" mask="0x0000000000040000" info="Alternate function remapping option 2. AFR2 option has priority over AFR3 if both are activated">
+        <choice value="0x0000000000000000" text="PD0: TIM3_CH2" />
+        <choice value="0x0000000000040000" text="PD0: CLK_CCO" />
+      </setting>
+      <setting name="AFR3" mask="0x0000000000080000" info="Alternate function remapping option 3">
+        <choice value="0x0000000000000000" text="PD0: TIM3_CH2" />
+        <choice value="0x0000000000080000" text="PD0: TIM1_BKIN" />
+      </setting>
+      <setting name="AFR4" mask="0x0000000000100000" info="Alternate function remapping option 4">
+        <choice value="0x0000000000000000" text="PD7: TLI" />
+        <choice value="0x0000000000100000" text="PD7: TIM1_CH4" />
+      </setting>
+      <setting name="AFR5" mask="0x0000000000200000" info="Alternate function remapping option 5">
+        <choice value="0x0000000000000000" text="PB3: AIN3. PB2: AIN2. PB1: AIN1. PB0: AIN0" />
+        <choice value="0x0000000000200000" text="PB3: TIM1_ETR. PB2: TIM1_CH3N. PB1: TIM1_CH2N. PB0: TIM1_CH1N" />
+      </setting>
+      <setting name="AFR6" mask="0x0000000000400000" info="Alternate function remapping option 6">
+        <choice value="0x0000000000000000" text="PB5: AIN5. PB4: AIN4" />
+        <choice value="0x0000000000400000" text="PB5: I2C_SDA. PB4: I2C_SCL" />
+      </setting>
+      <setting name="AFR7" mask="0x0000000000800000" info="Alternate function remapping option 7">
+        <choice value="0x0000000000000000" text="PD4: TIM2_CH1" />
+        <choice value="0x0000000000800000" text="PD4: BEEP" />
+      </setting>
+      <setting name="WWDG_HALT" mask="0x0000000001000000" info="Window watchdog reset on halt">
+        <choice value="0x0000000001000000" text="Reset generated on halt if WWDG active" />
+        <choice value="0x0000000000000000" text="No reset generated on halt if WWDG active" />
+      </setting>
+      <setting name="WWDG_HW" mask="0x0000000002000000" info="Window watchdog activation">
+        <choice value="0x0000000002000000" text="WWDG window watchdog activated by hardware" />
+        <choice value="0x0000000000000000" text="WWDG window watchdog activated by software" />
+      </setting>
+      <setting name="IWDG_HW" mask="0x0000000004000000" info="Independent watchdog">
+        <choice value="0x0000000004000000" text="IWDG Independent watchdog activated by hardware" />
+        <choice value="0x0000000000000000" text="IWDG Independent watchdog activated by software" />
+      </setting>
+      <setting name="LIS_EN" mask="0x0000000008000000" info="Low speed internal clock enable">
+        <choice value="0x0000000008000000" text="LSI clock is available as CPU clock source" />
+        <choice value="0x0000000000000000" text="LSI clock is not available as CPU clock source" />
+      </setting>
+      <setting name="PRSC" mask="0x0000000300000000" info="AWU clock prescaler">
+        <choice value="0x0000000300000000" text="4 Mhz to 128 kHz prescaler" />
+        <choice value="0x0000000200000000" text="8 Mhz to 128 kHz prescaler" />
+        <choice value="0x0000000100000000" text="16 Mhz to 128 kHz prescaler" />
+        <choice value="0x0000000000000000" text="24 Mhz to 128 kHz prescaler" />
+      </setting>
+      <setting name="CKAWUSEL" mask="0x0000000400000000" info="Auto wakeup unit/clock">
+        <choice value="0x0000000400000000" text="HSE clock with prescaler selected as clock source for AWU" />
+        <choice value="0x0000000000000000" text="LSI clock source selected for AWU" />
+      </setting>
+      <setting name="EXTCLK" mask="0x0000000800000000" info="External clock selection">
+        <choice value="0x0000000800000000" text="External clock signal on OSCIN" />
+        <choice value="0x0000000000000000" text="External crystal connected to OSCIN/OSCOUT" />
+      </setting>
+      <setting name="HSECNT" mask="0x0000FF0000000000" info="HSE crystal oscillator stabilization time">
+        <choice value="0x0000000000000000" text="2048 HSE cycles" />
+        <choice value="0x0000B40000000000" text="128 HSE cycles" />
+        <choice value="0x0000D20000000000" text="8 HSE cycles" />
+        <choice value="0x0000E10000000000" text="0.5 HSE cycles" />
+      </setting>
+      <setting name="WAITSTATE" mask="0x0001000000000000" info="Wait state configuration">
+        <choice value="0x0000000000000000" text="No wait state" />
+        <choice value="0x0001000000000000" text="1 wait state" />
+      </setting>
+      <setting name="BL" mask="0xFF00000000000000" info="Bootloader option byte" checked="0xAA00000000000000" unchecked="0"/>
+      <setting name="ALL" mask="0xFFFFFFFFFFFFFFFF" info="Option bytes" radix="16" shift="0" bytelen="8" />
+    </fuse>
+    <param0>16</param0>
+    <param1>0x005064</param1>
+    <param2>0x005062</param2>
+    <param3>0x00505F</param3>
+    <param4>0x00505B</param4>
+    <param5>0x00505C</param5>
+    <param6>0x0050C6</param6>
+    <param7>0x0050CD</param7>
+    <param8>2</param8>
+  </chip>
+  <chip name="stm8af/h5179t">
+    <program_mode>si</program_mode>
+    <sram_size>3072</sram_size>
+    <app_page_size>128</app_page_size>
+    <app_page_num>384</app_page_num>
+    <ee_page_size>128</ee_page_size>
+    <ee_page_num>12</ee_page_num>
+    <fuse init="0x0000000000000000" bytesize="8">
+      <setting name="ROP" mask="0x00000000000000FF" info="Read-out protection" checked="0xAA" unchecked="0" />
+      <setting name="UBC" mask="0x000000000000FF00" info="User boot code" radix="16" shift="8" bytelen="1"/>
+      <setting name="AFR0" mask="0x0000000000010000" info="Alternate function remapping option 0">
+        <choice value="0x0000000000000000" text="PD3: TIM2_CH2" />
+        <choice value="0x0000000000010000" text="PD3: ADC_ETR" />
+      </setting>
+      <setting name="AFR1" mask="0x0000000000020000" info="Alternate function remapping option 1">
+        <choice value="0x0000000000000000" text="PA3: TIM2_CH3. PD2: TIM3_CH1" />
+        <choice value="0x0000000000020000" text="PA3: TIM3_CH1. PD2: TIM2_CH3" />
+      </setting>
+      <setting name="AFR2" mask="0x0000000000040000" info="Alternate function remapping option 2. AFR2 option has priority over AFR3 if both are activated">
+        <choice value="0x0000000000000000" text="PD0: TIM3_CH2" />
+        <choice value="0x0000000000040000" text="PD0: CLK_CCO" />
+      </setting>
+      <setting name="AFR3" mask="0x0000000000080000" info="Alternate function remapping option 3">
+        <choice value="0x0000000000000000" text="PD0: TIM3_CH2" />
+        <choice value="0x0000000000080000" text="PD0: TIM1_BKIN" />
+      </setting>
+      <setting name="AFR4" mask="0x0000000000100000" info="Alternate function remapping option 4">
+        <choice value="0x0000000000000000" text="PD7: TLI" />
+        <choice value="0x0000000000100000" text="PD7: TIM1_CH4" />
+      </setting>
+      <setting name="AFR5" mask="0x0000000000200000" info="Alternate function remapping option 5">
+        <choice value="0x0000000000000000" text="PB3: AIN3. PB2: AIN2. PB1: AIN1. PB0: AIN0" />
+        <choice value="0x0000000000200000" text="PB3: TIM1_ETR. PB2: TIM1_CH3N. PB1: TIM1_CH2N. PB0: TIM1_CH1N" />
+      </setting>
+      <setting name="AFR6" mask="0x0000000000400000" info="Alternate function remapping option 6">
+        <choice value="0x0000000000000000" text="PB5: AIN5. PB4: AIN4" />
+        <choice value="0x0000000000400000" text="PB5: I2C_SDA. PB4: I2C_SCL" />
+      </setting>
+      <setting name="AFR7" mask="0x0000000000800000" info="Alternate function remapping option 7">
+        <choice value="0x0000000000000000" text="PD4: TIM2_CH1" />
+        <choice value="0x0000000000800000" text="PD4: BEEP" />
+      </setting>
+      <setting name="WWDG_HALT" mask="0x0000000001000000" info="Window watchdog reset on halt">
+        <choice value="0x0000000001000000" text="Reset generated on halt if WWDG active" />
+        <choice value="0x0000000000000000" text="No reset generated on halt if WWDG active" />
+      </setting>
+      <setting name="WWDG_HW" mask="0x0000000002000000" info="Window watchdog activation">
+        <choice value="0x0000000002000000" text="WWDG window watchdog activated by hardware" />
+        <choice value="0x0000000000000000" text="WWDG window watchdog activated by software" />
+      </setting>
+      <setting name="IWDG_HW" mask="0x0000000004000000" info="Independent watchdog">
+        <choice value="0x0000000004000000" text="IWDG Independent watchdog activated by hardware" />
+        <choice value="0x0000000000000000" text="IWDG Independent watchdog activated by software" />
+      </setting>
+      <setting name="LIS_EN" mask="0x0000000008000000" info="Low speed internal clock enable">
+        <choice value="0x0000000008000000" text="LSI clock is available as CPU clock source" />
+        <choice value="0x0000000000000000" text="LSI clock is not available as CPU clock source" />
+      </setting>
+      <setting name="PRSC" mask="0x0000000300000000" info="AWU clock prescaler">
+        <choice value="0x0000000300000000" text="4 Mhz to 128 kHz prescaler" />
+        <choice value="0x0000000200000000" text="8 Mhz to 128 kHz prescaler" />
+        <choice value="0x0000000100000000" text="16 Mhz to 128 kHz prescaler" />
+        <choice value="0x0000000000000000" text="24 Mhz to 128 kHz prescaler" />
+      </setting>
+      <setting name="CKAWUSEL" mask="0x0000000400000000" info="Auto wakeup unit/clock">
+        <choice value="0x0000000400000000" text="HSE clock with prescaler selected as clock source for AWU" />
+        <choice value="0x0000000000000000" text="LSI clock source selected for AWU" />
+      </setting>
+      <setting name="EXTCLK" mask="0x0000000800000000" info="External clock selection">
+        <choice value="0x0000000800000000" text="External clock signal on OSCIN" />
+        <choice value="0x0000000000000000" text="External crystal connected to OSCIN/OSCOUT" />
+      </setting>
+      <setting name="HSECNT" mask="0x0000FF0000000000" info="HSE crystal oscillator stabilization time">
+        <choice value="0x0000000000000000" text="2048 HSE cycles" />
+        <choice value="0x0000B40000000000" text="128 HSE cycles" />
+        <choice value="0x0000D20000000000" text="8 HSE cycles" />
+        <choice value="0x0000E10000000000" text="0.5 HSE cycles" />
+      </setting>
+      <setting name="WAITSTATE" mask="0x0001000000000000" info="Wait state configuration">
+        <choice value="0x0000000000000000" text="No wait state" />
+        <choice value="0x0001000000000000" text="1 wait state" />
+      </setting>
+      <setting name="BL" mask="0xFF00000000000000" info="Bootloader option byte" checked="0xAA00000000000000" unchecked="0"/>
+      <setting name="ALL" mask="0xFFFFFFFFFFFFFFFF" info="Option bytes" radix="16" shift="0" bytelen="8" />
+    </fuse>
+    <param0>16</param0>
+    <param1>0x005064</param1>
+    <param2>0x005062</param2>
+    <param3>0x00505F</param3>
+    <param4>0x00505B</param4>
+    <param5>0x00505C</param5>
+    <param6>0x0050C6</param6>
+    <param7>0x0050CD</param7>
+    <param8>2</param8>
+  </chip>
+  <chip name="stm8af/h5169t">
+    <program_mode>si</program_mode>
+    <sram_size>2048</sram_size>
+    <app_page_size>128</app_page_size>
+    <app_page_num>256</app_page_num>
+    <ee_page_size>128</ee_page_size>
+    <ee_page_num>8</ee_page_num>
+    <fuse init="0x0000000000000000" bytesize="8">
+      <setting name="ROP" mask="0x00000000000000FF" info="Read-out protection" checked="0xAA" unchecked="0" />
+      <setting name="UBC" mask="0x000000000000FF00" info="User boot code" radix="16" shift="8" bytelen="1"/>
+      <setting name="AFR0" mask="0x0000000000010000" info="Alternate function remapping option 0">
+        <choice value="0x0000000000000000" text="PD3: TIM2_CH2" />
+        <choice value="0x0000000000010000" text="PD3: ADC_ETR" />
+      </setting>
+      <setting name="AFR1" mask="0x0000000000020000" info="Alternate function remapping option 1">
+        <choice value="0x0000000000000000" text="PA3: TIM2_CH3. PD2: TIM3_CH1" />
+        <choice value="0x0000000000020000" text="PA3: TIM3_CH1. PD2: TIM2_CH3" />
+      </setting>
+      <setting name="AFR2" mask="0x0000000000040000" info="Alternate function remapping option 2. AFR2 option has priority over AFR3 if both are activated">
+        <choice value="0x0000000000000000" text="PD0: TIM3_CH2" />
+        <choice value="0x0000000000040000" text="PD0: CLK_CCO" />
+      </setting>
+      <setting name="AFR3" mask="0x0000000000080000" info="Alternate function remapping option 3">
+        <choice value="0x0000000000000000" text="PD0: TIM3_CH2" />
+        <choice value="0x0000000000080000" text="PD0: TIM1_BKIN" />
+      </setting>
+      <setting name="AFR4" mask="0x0000000000100000" info="Alternate function remapping option 4">
+        <choice value="0x0000000000000000" text="PD7: TLI" />
+        <choice value="0x0000000000100000" text="PD7: TIM1_CH4" />
+      </setting>
+      <setting name="AFR5" mask="0x0000000000200000" info="Alternate function remapping option 5">
+        <choice value="0x0000000000000000" text="PB3: AIN3. PB2: AIN2. PB1: AIN1. PB0: AIN0" />
+        <choice value="0x0000000000200000" text="PB3: TIM1_ETR. PB2: TIM1_CH3N. PB1: TIM1_CH2N. PB0: TIM1_CH1N" />
+      </setting>
+      <setting name="AFR6" mask="0x0000000000400000" info="Alternate function remapping option 6">
+        <choice value="0x0000000000000000" text="PB5: AIN5. PB4: AIN4" />
+        <choice value="0x0000000000400000" text="PB5: I2C_SDA. PB4: I2C_SCL" />
+      </setting>
+      <setting name="AFR7" mask="0x0000000000800000" info="Alternate function remapping option 7">
+        <choice value="0x0000000000000000" text="PD4: TIM2_CH1" />
+        <choice value="0x0000000000800000" text="PD4: BEEP" />
+      </setting>
+      <setting name="WWDG_HALT" mask="0x0000000001000000" info="Window watchdog reset on halt">
+        <choice value="0x0000000001000000" text="Reset generated on halt if WWDG active" />
+        <choice value="0x0000000000000000" text="No reset generated on halt if WWDG active" />
+      </setting>
+      <setting name="WWDG_HW" mask="0x0000000002000000" info="Window watchdog activation">
+        <choice value="0x0000000002000000" text="WWDG window watchdog activated by hardware" />
+        <choice value="0x0000000000000000" text="WWDG window watchdog activated by software" />
+      </setting>
+      <setting name="IWDG_HW" mask="0x0000000004000000" info="Independent watchdog">
+        <choice value="0x0000000004000000" text="IWDG Independent watchdog activated by hardware" />
+        <choice value="0x0000000000000000" text="IWDG Independent watchdog activated by software" />
+      </setting>
+      <setting name="LIS_EN" mask="0x0000000008000000" info="Low speed internal clock enable">
+        <choice value="0x0000000008000000" text="LSI clock is available as CPU clock source" />
+        <choice value="0x0000000000000000" text="LSI clock is not available as CPU clock source" />
+      </setting>
+      <setting name="PRSC" mask="0x0000000300000000" info="AWU clock prescaler">
+        <choice value="0x0000000300000000" text="4 Mhz to 128 kHz prescaler" />
+        <choice value="0x0000000200000000" text="8 Mhz to 128 kHz prescaler" />
+        <choice value="0x0000000100000000" text="16 Mhz to 128 kHz prescaler" />
+        <choice value="0x0000000000000000" text="24 Mhz to 128 kHz prescaler" />
+      </setting>
+      <setting name="CKAWUSEL" mask="0x0000000400000000" info="Auto wakeup unit/clock">
+        <choice value="0x0000000400000000" text="HSE clock with prescaler selected as clock source for AWU" />
+        <choice value="0x0000000000000000" text="LSI clock source selected for AWU" />
+      </setting>
+      <setting name="EXTCLK" mask="0x0000000800000000" info="External clock selection">
+        <choice value="0x0000000800000000" text="External clock signal on OSCIN" />
+        <choice value="0x0000000000000000" text="External crystal connected to OSCIN/OSCOUT" />
+      </setting>
+      <setting name="HSECNT" mask="0x0000FF0000000000" info="HSE crystal oscillator stabilization time">
+        <choice value="0x0000000000000000" text="2048 HSE cycles" />
+        <choice value="0x0000B40000000000" text="128 HSE cycles" />
+        <choice value="0x0000D20000000000" text="8 HSE cycles" />
+        <choice value="0x0000E10000000000" text="0.5 HSE cycles" />
+      </setting>
+      <setting name="WAITSTATE" mask="0x0001000000000000" info="Wait state configuration">
+        <choice value="0x0000000000000000" text="No wait state" />
+        <choice value="0x0001000000000000" text="1 wait state" />
+      </setting>
+      <setting name="BL" mask="0xFF00000000000000" info="Bootloader option byte" checked="0xAA00000000000000" unchecked="0"/>
+      <setting name="ALL" mask="0xFFFFFFFFFFFFFFFF" info="Option bytes" radix="16" shift="0" bytelen="8" />
+    </fuse>
+    <param0>16</param0>
+    <param1>0x005064</param1>
+    <param2>0x005062</param2>
+    <param3>0x00505F</param3>
+    <param4>0x00505B</param4>
+    <param5>0x00505C</param5>
+    <param6>0x0050C6</param6>
+    <param7>0x0050CD</param7>
+    <param8>2</param8>
+  </chip>
+  <chip name="stm8af/h51a8t">
+    <program_mode>si</program_mode>
+    <sram_size>6144</sram_size>
+    <app_page_size>128</app_page_size>
+    <app_page_num>1024</app_page_num>
+    <ee_page_size>128</ee_page_size>
+    <ee_page_num>16</ee_page_num>
+    <fuse init="0x0000000000000000" bytesize="8">
+      <setting name="ROP" mask="0x00000000000000FF" info="Read-out protection" checked="0xAA" unchecked="0" />
+      <setting name="UBC" mask="0x000000000000FF00" info="User boot code" radix="16" shift="8" bytelen="1"/>
+      <setting name="AFR0" mask="0x0000000000010000" info="Alternate function remapping option 0">
+        <choice value="0x0000000000000000" text="PD3: TIM2_CH2" />
+        <choice value="0x0000000000010000" text="PD3: ADC_ETR" />
+      </setting>
+      <setting name="AFR1" mask="0x0000000000020000" info="Alternate function remapping option 1">
+        <choice value="0x0000000000000000" text="PA3: TIM2_CH3. PD2: TIM3_CH1" />
+        <choice value="0x0000000000020000" text="PA3: TIM3_CH1. PD2: TIM2_CH3" />
+      </setting>
+      <setting name="AFR2" mask="0x0000000000040000" info="Alternate function remapping option 2. AFR2 option has priority over AFR3 if both are activated">
+        <choice value="0x0000000000000000" text="PD0: TIM3_CH2" />
+        <choice value="0x0000000000040000" text="PD0: CLK_CCO" />
+      </setting>
+      <setting name="AFR3" mask="0x0000000000080000" info="Alternate function remapping option 3">
+        <choice value="0x0000000000000000" text="PD0: TIM3_CH2" />
+        <choice value="0x0000000000080000" text="PD0: TIM1_BKIN" />
+      </setting>
+      <setting name="AFR4" mask="0x0000000000100000" info="Alternate function remapping option 4">
+        <choice value="0x0000000000000000" text="PD7: TLI" />
+        <choice value="0x0000000000100000" text="PD7: TIM1_CH4" />
+      </setting>
+      <setting name="AFR5" mask="0x0000000000200000" info="Alternate function remapping option 5">
+        <choice value="0x0000000000000000" text="PB3: AIN3. PB2: AIN2. PB1: AIN1. PB0: AIN0" />
+        <choice value="0x0000000000200000" text="PB3: TIM1_ETR. PB2: TIM1_CH3N. PB1: TIM1_CH2N. PB0: TIM1_CH1N" />
+      </setting>
+      <setting name="AFR6" mask="0x0000000000400000" info="Alternate function remapping option 6">
+        <choice value="0x0000000000000000" text="PB5: AIN5. PB4: AIN4" />
+        <choice value="0x0000000000400000" text="PB5: I2C_SDA. PB4: I2C_SCL" />
+      </setting>
+      <setting name="AFR7" mask="0x0000000000800000" info="Alternate function remapping option 7">
+        <choice value="0x0000000000000000" text="PD4: TIM2_CH1" />
+        <choice value="0x0000000000800000" text="PD4: BEEP" />
+      </setting>
+      <setting name="WWDG_HALT" mask="0x0000000001000000" info="Window watchdog reset on halt">
+        <choice value="0x0000000001000000" text="Reset generated on halt if WWDG active" />
+        <choice value="0x0000000000000000" text="No reset generated on halt if WWDG active" />
+      </setting>
+      <setting name="WWDG_HW" mask="0x0000000002000000" info="Window watchdog activation">
+        <choice value="0x0000000002000000" text="WWDG window watchdog activated by hardware" />
+        <choice value="0x0000000000000000" text="WWDG window watchdog activated by software" />
+      </setting>
+      <setting name="IWDG_HW" mask="0x0000000004000000" info="Independent watchdog">
+        <choice value="0x0000000004000000" text="IWDG Independent watchdog activated by hardware" />
+        <choice value="0x0000000000000000" text="IWDG Independent watchdog activated by software" />
+      </setting>
+      <setting name="LIS_EN" mask="0x0000000008000000" info="Low speed internal clock enable">
+        <choice value="0x0000000008000000" text="LSI clock is available as CPU clock source" />
+        <choice value="0x0000000000000000" text="LSI clock is not available as CPU clock source" />
+      </setting>
+      <setting name="PRSC" mask="0x0000000300000000" info="AWU clock prescaler">
+        <choice value="0x0000000300000000" text="4 Mhz to 128 kHz prescaler" />
+        <choice value="0x0000000200000000" text="8 Mhz to 128 kHz prescaler" />
+        <choice value="0x0000000100000000" text="16 Mhz to 128 kHz prescaler" />
+        <choice value="0x0000000000000000" text="24 Mhz to 128 kHz prescaler" />
+      </setting>
+      <setting name="CKAWUSEL" mask="0x0000000400000000" info="Auto wakeup unit/clock">
+        <choice value="0x0000000400000000" text="HSE clock with prescaler selected as clock source for AWU" />
+        <choice value="0x0000000000000000" text="LSI clock source selected for AWU" />
+      </setting>
+      <setting name="EXTCLK" mask="0x0000000800000000" info="External clock selection">
+        <choice value="0x0000000800000000" text="External clock signal on OSCIN" />
+        <choice value="0x0000000000000000" text="External crystal connected to OSCIN/OSCOUT" />
+      </setting>
+      <setting name="HSECNT" mask="0x0000FF0000000000" info="HSE crystal oscillator stabilization time">
+        <choice value="0x0000000000000000" text="2048 HSE cycles" />
+        <choice value="0x0000B40000000000" text="128 HSE cycles" />
+        <choice value="0x0000D20000000000" text="8 HSE cycles" />
+        <choice value="0x0000E10000000000" text="0.5 HSE cycles" />
+      </setting>
+      <setting name="WAITSTATE" mask="0x0001000000000000" info="Wait state configuration">
+        <choice value="0x0000000000000000" text="No wait state" />
+        <choice value="0x0001000000000000" text="1 wait state" />
+      </setting>
+      <setting name="BL" mask="0xFF00000000000000" info="Bootloader option byte" checked="0xAA00000000000000" unchecked="0"/>
+      <setting name="ALL" mask="0xFFFFFFFFFFFFFFFF" info="Option bytes" radix="16" shift="0" bytelen="8" />
+    </fuse>
+    <param0>16</param0>
+    <param1>0x005064</param1>
+    <param2>0x005062</param2>
+    <param3>0x00505F</param3>
+    <param4>0x00505B</param4>
+    <param5>0x00505C</param5>
+    <param6>0x0050C6</param6>
+    <param7>0x0050CD</param7>
+    <param8>2</param8>
+  </chip>
+  <chip name="stm8af/h5198t">
+    <program_mode>si</program_mode>
+    <sram_size>6144</sram_size>
+    <app_page_size>128</app_page_size>
+    <app_page_num>768</app_page_num>
+    <ee_page_size>128</ee_page_size>
+    <ee_page_num>16</ee_page_num>
+    <fuse init="0x0000000000000000" bytesize="8">
+      <setting name="ROP" mask="0x00000000000000FF" info="Read-out protection" checked="0xAA" unchecked="0" />
+      <setting name="UBC" mask="0x000000000000FF00" info="User boot code" radix="16" shift="8" bytelen="1"/>
+      <setting name="AFR0" mask="0x0000000000010000" info="Alternate function remapping option 0">
+        <choice value="0x0000000000000000" text="PD3: TIM2_CH2" />
+        <choice value="0x0000000000010000" text="PD3: ADC_ETR" />
+      </setting>
+      <setting name="AFR1" mask="0x0000000000020000" info="Alternate function remapping option 1">
+        <choice value="0x0000000000000000" text="PA3: TIM2_CH3. PD2: TIM3_CH1" />
+        <choice value="0x0000000000020000" text="PA3: TIM3_CH1. PD2: TIM2_CH3" />
+      </setting>
+      <setting name="AFR2" mask="0x0000000000040000" info="Alternate function remapping option 2. AFR2 option has priority over AFR3 if both are activated">
+        <choice value="0x0000000000000000" text="PD0: TIM3_CH2" />
+        <choice value="0x0000000000040000" text="PD0: CLK_CCO" />
+      </setting>
+      <setting name="AFR3" mask="0x0000000000080000" info="Alternate function remapping option 3">
+        <choice value="0x0000000000000000" text="PD0: TIM3_CH2" />
+        <choice value="0x0000000000080000" text="PD0: TIM1_BKIN" />
+      </setting>
+      <setting name="AFR4" mask="0x0000000000100000" info="Alternate function remapping option 4">
+        <choice value="0x0000000000000000" text="PD7: TLI" />
+        <choice value="0x0000000000100000" text="PD7: TIM1_CH4" />
+      </setting>
+      <setting name="AFR5" mask="0x0000000000200000" info="Alternate function remapping option 5">
+        <choice value="0x0000000000000000" text="PB3: AIN3. PB2: AIN2. PB1: AIN1. PB0: AIN0" />
+        <choice value="0x0000000000200000" text="PB3: TIM1_ETR. PB2: TIM1_CH3N. PB1: TIM1_CH2N. PB0: TIM1_CH1N" />
+      </setting>
+      <setting name="AFR6" mask="0x0000000000400000" info="Alternate function remapping option 6">
+        <choice value="0x0000000000000000" text="PB5: AIN5. PB4: AIN4" />
+        <choice value="0x0000000000400000" text="PB5: I2C_SDA. PB4: I2C_SCL" />
+      </setting>
+      <setting name="AFR7" mask="0x0000000000800000" info="Alternate function remapping option 7">
+        <choice value="0x0000000000000000" text="PD4: TIM2_CH1" />
+        <choice value="0x0000000000800000" text="PD4: BEEP" />
+      </setting>
+      <setting name="WWDG_HALT" mask="0x0000000001000000" info="Window watchdog reset on halt">
+        <choice value="0x0000000001000000" text="Reset generated on halt if WWDG active" />
+        <choice value="0x0000000000000000" text="No reset generated on halt if WWDG active" />
+      </setting>
+      <setting name="WWDG_HW" mask="0x0000000002000000" info="Window watchdog activation">
+        <choice value="0x0000000002000000" text="WWDG window watchdog activated by hardware" />
+        <choice value="0x0000000000000000" text="WWDG window watchdog activated by software" />
+      </setting>
+      <setting name="IWDG_HW" mask="0x0000000004000000" info="Independent watchdog">
+        <choice value="0x0000000004000000" text="IWDG Independent watchdog activated by hardware" />
+        <choice value="0x0000000000000000" text="IWDG Independent watchdog activated by software" />
+      </setting>
+      <setting name="LIS_EN" mask="0x0000000008000000" info="Low speed internal clock enable">
+        <choice value="0x0000000008000000" text="LSI clock is available as CPU clock source" />
+        <choice value="0x0000000000000000" text="LSI clock is not available as CPU clock source" />
+      </setting>
+      <setting name="PRSC" mask="0x0000000300000000" info="AWU clock prescaler">
+        <choice value="0x0000000300000000" text="4 Mhz to 128 kHz prescaler" />
+        <choice value="0x0000000200000000" text="8 Mhz to 128 kHz prescaler" />
+        <choice value="0x0000000100000000" text="16 Mhz to 128 kHz prescaler" />
+        <choice value="0x0000000000000000" text="24 Mhz to 128 kHz prescaler" />
+      </setting>
+      <setting name="CKAWUSEL" mask="0x0000000400000000" info="Auto wakeup unit/clock">
+        <choice value="0x0000000400000000" text="HSE clock with prescaler selected as clock source for AWU" />
+        <choice value="0x0000000000000000" text="LSI clock source selected for AWU" />
+      </setting>
+      <setting name="EXTCLK" mask="0x0000000800000000" info="External clock selection">
+        <choice value="0x0000000800000000" text="External clock signal on OSCIN" />
+        <choice value="0x0000000000000000" text="External crystal connected to OSCIN/OSCOUT" />
+      </setting>
+      <setting name="HSECNT" mask="0x0000FF0000000000" info="HSE crystal oscillator stabilization time">
+        <choice value="0x0000000000000000" text="2048 HSE cycles" />
+        <choice value="0x0000B40000000000" text="128 HSE cycles" />
+        <choice value="0x0000D20000000000" text="8 HSE cycles" />
+        <choice value="0x0000E10000000000" text="0.5 HSE cycles" />
+      </setting>
+      <setting name="WAITSTATE" mask="0x0001000000000000" info="Wait state configuration">
+        <choice value="0x0000000000000000" text="No wait state" />
+        <choice value="0x0001000000000000" text="1 wait state" />
+      </setting>
+      <setting name="BL" mask="0xFF00000000000000" info="Bootloader option byte" checked="0xAA00000000000000" unchecked="0"/>
+      <setting name="ALL" mask="0xFFFFFFFFFFFFFFFF" info="Option bytes" radix="16" shift="0" bytelen="8" />
+    </fuse>
+    <param0>16</param0>
+    <param1>0x005064</param1>
+    <param2>0x005062</param2>
+    <param3>0x00505F</param3>
+    <param4>0x00505B</param4>
+    <param5>0x00505C</param5>
+    <param6>0x0050C6</param6>
+    <param7>0x0050CD</param7>
+    <param8>2</param8>
+  </chip>
+  <chip name="stm8af/h5188t">
+    <program_mode>si</program_mode>
+    <sram_size>4096</sram_size>
+    <app_page_size>128</app_page_size>
+    <app_page_num>512</app_page_num>
+    <ee_page_size>128</ee_page_size>
+    <ee_page_num>12</ee_page_num>
+    <fuse init="0x0000000000000000" bytesize="8">
+      <setting name="ROP" mask="0x00000000000000FF" info="Read-out protection" checked="0xAA" unchecked="0" />
+      <setting name="UBC" mask="0x000000000000FF00" info="User boot code" radix="16" shift="8" bytelen="1"/>
+      <setting name="AFR0" mask="0x0000000000010000" info="Alternate function remapping option 0">
+        <choice value="0x0000000000000000" text="PD3: TIM2_CH2" />
+        <choice value="0x0000000000010000" text="PD3: ADC_ETR" />
+      </setting>
+      <setting name="AFR1" mask="0x0000000000020000" info="Alternate function remapping option 1">
+        <choice value="0x0000000000000000" text="PA3: TIM2_CH3. PD2: TIM3_CH1" />
+        <choice value="0x0000000000020000" text="PA3: TIM3_CH1. PD2: TIM2_CH3" />
+      </setting>
+      <setting name="AFR2" mask="0x0000000000040000" info="Alternate function remapping option 2. AFR2 option has priority over AFR3 if both are activated">
+        <choice value="0x0000000000000000" text="PD0: TIM3_CH2" />
+        <choice value="0x0000000000040000" text="PD0: CLK_CCO" />
+      </setting>
+      <setting name="AFR3" mask="0x0000000000080000" info="Alternate function remapping option 3">
+        <choice value="0x0000000000000000" text="PD0: TIM3_CH2" />
+        <choice value="0x0000000000080000" text="PD0: TIM1_BKIN" />
+      </setting>
+      <setting name="AFR4" mask="0x0000000000100000" info="Alternate function remapping option 4">
+        <choice value="0x0000000000000000" text="PD7: TLI" />
+        <choice value="0x0000000000100000" text="PD7: TIM1_CH4" />
+      </setting>
+      <setting name="AFR5" mask="0x0000000000200000" info="Alternate function remapping option 5">
+        <choice value="0x0000000000000000" text="PB3: AIN3. PB2: AIN2. PB1: AIN1. PB0: AIN0" />
+        <choice value="0x0000000000200000" text="PB3: TIM1_ETR. PB2: TIM1_CH3N. PB1: TIM1_CH2N. PB0: TIM1_CH1N" />
+      </setting>
+      <setting name="AFR6" mask="0x0000000000400000" info="Alternate function remapping option 6">
+        <choice value="0x0000000000000000" text="PB5: AIN5. PB4: AIN4" />
+        <choice value="0x0000000000400000" text="PB5: I2C_SDA. PB4: I2C_SCL" />
+      </setting>
+      <setting name="AFR7" mask="0x0000000000800000" info="Alternate function remapping option 7">
+        <choice value="0x0000000000000000" text="PD4: TIM2_CH1" />
+        <choice value="0x0000000000800000" text="PD4: BEEP" />
+      </setting>
+      <setting name="WWDG_HALT" mask="0x0000000001000000" info="Window watchdog reset on halt">
+        <choice value="0x0000000001000000" text="Reset generated on halt if WWDG active" />
+        <choice value="0x0000000000000000" text="No reset generated on halt if WWDG active" />
+      </setting>
+      <setting name="WWDG_HW" mask="0x0000000002000000" info="Window watchdog activation">
+        <choice value="0x0000000002000000" text="WWDG window watchdog activated by hardware" />
+        <choice value="0x0000000000000000" text="WWDG window watchdog activated by software" />
+      </setting>
+      <setting name="IWDG_HW" mask="0x0000000004000000" info="Independent watchdog">
+        <choice value="0x0000000004000000" text="IWDG Independent watchdog activated by hardware" />
+        <choice value="0x0000000000000000" text="IWDG Independent watchdog activated by software" />
+      </setting>
+      <setting name="LIS_EN" mask="0x0000000008000000" info="Low speed internal clock enable">
+        <choice value="0x0000000008000000" text="LSI clock is available as CPU clock source" />
+        <choice value="0x0000000000000000" text="LSI clock is not available as CPU clock source" />
+      </setting>
+      <setting name="PRSC" mask="0x0000000300000000" info="AWU clock prescaler">
+        <choice value="0x0000000300000000" text="4 Mhz to 128 kHz prescaler" />
+        <choice value="0x0000000200000000" text="8 Mhz to 128 kHz prescaler" />
+        <choice value="0x0000000100000000" text="16 Mhz to 128 kHz prescaler" />
+        <choice value="0x0000000000000000" text="24 Mhz to 128 kHz prescaler" />
+      </setting>
+      <setting name="CKAWUSEL" mask="0x0000000400000000" info="Auto wakeup unit/clock">
+        <choice value="0x0000000400000000" text="HSE clock with prescaler selected as clock source for AWU" />
+        <choice value="0x0000000000000000" text="LSI clock source selected for AWU" />
+      </setting>
+      <setting name="EXTCLK" mask="0x0000000800000000" info="External clock selection">
+        <choice value="0x0000000800000000" text="External clock signal on OSCIN" />
+        <choice value="0x0000000000000000" text="External crystal connected to OSCIN/OSCOUT" />
+      </setting>
+      <setting name="HSECNT" mask="0x0000FF0000000000" info="HSE crystal oscillator stabilization time">
+        <choice value="0x0000000000000000" text="2048 HSE cycles" />
+        <choice value="0x0000B40000000000" text="128 HSE cycles" />
+        <choice value="0x0000D20000000000" text="8 HSE cycles" />
+        <choice value="0x0000E10000000000" text="0.5 HSE cycles" />
+      </setting>
+      <setting name="WAITSTATE" mask="0x0001000000000000" info="Wait state configuration">
+        <choice value="0x0000000000000000" text="No wait state" />
+        <choice value="0x0001000000000000" text="1 wait state" />
+      </setting>
+      <setting name="BL" mask="0xFF00000000000000" info="Bootloader option byte" checked="0xAA00000000000000" unchecked="0"/>
+      <setting name="ALL" mask="0xFFFFFFFFFFFFFFFF" info="Option bytes" radix="16" shift="0" bytelen="8" />
+    </fuse>
+    <param0>16</param0>
+    <param1>0x005064</param1>
+    <param2>0x005062</param2>
+    <param3>0x00505F</param3>
+    <param4>0x00505B</param4>
+    <param5>0x00505C</param5>
+    <param6>0x0050C6</param6>
+    <param7>0x0050CD</param7>
+    <param8>2</param8>
+  </chip>
+  <chip name="stm8af/h5178t">
+    <program_mode>si</program_mode>
+    <sram_size>3072</sram_size>
+    <app_page_size>128</app_page_size>
+    <app_page_num>384</app_page_num>
+    <ee_page_size>128</ee_page_size>
+    <ee_page_num>12</ee_page_num>
+    <fuse init="0x0000000000000000" bytesize="8">
+      <setting name="ROP" mask="0x00000000000000FF" info="Read-out protection" checked="0xAA" unchecked="0" />
+      <setting name="UBC" mask="0x000000000000FF00" info="User boot code" radix="16" shift="8" bytelen="1"/>
+      <setting name="AFR0" mask="0x0000000000010000" info="Alternate function remapping option 0">
+        <choice value="0x0000000000000000" text="PD3: TIM2_CH2" />
+        <choice value="0x0000000000010000" text="PD3: ADC_ETR" />
+      </setting>
+      <setting name="AFR1" mask="0x0000000000020000" info="Alternate function remapping option 1">
+        <choice value="0x0000000000000000" text="PA3: TIM2_CH3. PD2: TIM3_CH1" />
+        <choice value="0x0000000000020000" text="PA3: TIM3_CH1. PD2: TIM2_CH3" />
+      </setting>
+      <setting name="AFR2" mask="0x0000000000040000" info="Alternate function remapping option 2. AFR2 option has priority over AFR3 if both are activated">
+        <choice value="0x0000000000000000" text="PD0: TIM3_CH2" />
+        <choice value="0x0000000000040000" text="PD0: CLK_CCO" />
+      </setting>
+      <setting name="AFR3" mask="0x0000000000080000" info="Alternate function remapping option 3">
+        <choice value="0x0000000000000000" text="PD0: TIM3_CH2" />
+        <choice value="0x0000000000080000" text="PD0: TIM1_BKIN" />
+      </setting>
+      <setting name="AFR4" mask="0x0000000000100000" info="Alternate function remapping option 4">
+        <choice value="0x0000000000000000" text="PD7: TLI" />
+        <choice value="0x0000000000100000" text="PD7: TIM1_CH4" />
+      </setting>
+      <setting name="AFR5" mask="0x0000000000200000" info="Alternate function remapping option 5">
+        <choice value="0x0000000000000000" text="PB3: AIN3. PB2: AIN2. PB1: AIN1. PB0: AIN0" />
+        <choice value="0x0000000000200000" text="PB3: TIM1_ETR. PB2: TIM1_CH3N. PB1: TIM1_CH2N. PB0: TIM1_CH1N" />
+      </setting>
+      <setting name="AFR6" mask="0x0000000000400000" info="Alternate function remapping option 6">
+        <choice value="0x0000000000000000" text="PB5: AIN5. PB4: AIN4" />
+        <choice value="0x0000000000400000" text="PB5: I2C_SDA. PB4: I2C_SCL" />
+      </setting>
+      <setting name="AFR7" mask="0x0000000000800000" info="Alternate function remapping option 7">
+        <choice value="0x0000000000000000" text="PD4: TIM2_CH1" />
+        <choice value="0x0000000000800000" text="PD4: BEEP" />
+      </setting>
+      <setting name="WWDG_HALT" mask="0x0000000001000000" info="Window watchdog reset on halt">
+        <choice value="0x0000000001000000" text="Reset generated on halt if WWDG active" />
+        <choice value="0x0000000000000000" text="No reset generated on halt if WWDG active" />
+      </setting>
+      <setting name="WWDG_HW" mask="0x0000000002000000" info="Window watchdog activation">
+        <choice value="0x0000000002000000" text="WWDG window watchdog activated by hardware" />
+        <choice value="0x0000000000000000" text="WWDG window watchdog activated by software" />
+      </setting>
+      <setting name="IWDG_HW" mask="0x0000000004000000" info="Independent watchdog">
+        <choice value="0x0000000004000000" text="IWDG Independent watchdog activated by hardware" />
+        <choice value="0x0000000000000000" text="IWDG Independent watchdog activated by software" />
+      </setting>
+      <setting name="LIS_EN" mask="0x0000000008000000" info="Low speed internal clock enable">
+        <choice value="0x0000000008000000" text="LSI clock is available as CPU clock source" />
+        <choice value="0x0000000000000000" text="LSI clock is not available as CPU clock source" />
+      </setting>
+      <setting name="PRSC" mask="0x0000000300000000" info="AWU clock prescaler">
+        <choice value="0x0000000300000000" text="4 Mhz to 128 kHz prescaler" />
+        <choice value="0x0000000200000000" text="8 Mhz to 128 kHz prescaler" />
+        <choice value="0x0000000100000000" text="16 Mhz to 128 kHz prescaler" />
+        <choice value="0x0000000000000000" text="24 Mhz to 128 kHz prescaler" />
+      </setting>
+      <setting name="CKAWUSEL" mask="0x0000000400000000" info="Auto wakeup unit/clock">
+        <choice value="0x0000000400000000" text="HSE clock with prescaler selected as clock source for AWU" />
+        <choice value="0x0000000000000000" text="LSI clock source selected for AWU" />
+      </setting>
+      <setting name="EXTCLK" mask="0x0000000800000000" info="External clock selection">
+        <choice value="0x0000000800000000" text="External clock signal on OSCIN" />
+        <choice value="0x0000000000000000" text="External crystal connected to OSCIN/OSCOUT" />
+      </setting>
+      <setting name="HSECNT" mask="0x0000FF0000000000" info="HSE crystal oscillator stabilization time">
+        <choice value="0x0000000000000000" text="2048 HSE cycles" />
+        <choice value="0x0000B40000000000" text="128 HSE cycles" />
+        <choice value="0x0000D20000000000" text="8 HSE cycles" />
+        <choice value="0x0000E10000000000" text="0.5 HSE cycles" />
+      </setting>
+      <setting name="WAITSTATE" mask="0x0001000000000000" info="Wait state configuration">
+        <choice value="0x0000000000000000" text="No wait state" />
+        <choice value="0x0001000000000000" text="1 wait state" />
+      </setting>
+      <setting name="BL" mask="0xFF00000000000000" info="Bootloader option byte" checked="0xAA00000000000000" unchecked="0"/>
+      <setting name="ALL" mask="0xFFFFFFFFFFFFFFFF" info="Option bytes" radix="16" shift="0" bytelen="8" />
+    </fuse>
+    <param0>16</param0>
+    <param1>0x005064</param1>
+    <param2>0x005062</param2>
+    <param3>0x00505F</param3>
+    <param4>0x00505B</param4>
+    <param5>0x00505C</param5>
+    <param6>0x0050C6</param6>
+    <param7>0x0050CD</param7>
+    <param8>2</param8>
+  </chip>
 </series>
