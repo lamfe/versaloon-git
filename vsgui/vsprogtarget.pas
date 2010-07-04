@@ -163,6 +163,7 @@ const
   LOCK_CHAR: char   = 'l';
   CALI_CHAR: char   = 'c';
   USRSIG_CHAR: char = 's';
+  SPECIALSTR_CHAR: char = 't';
 
 implementation
 

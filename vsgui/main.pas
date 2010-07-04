@@ -44,9 +44,11 @@ type
     btnEditInterface: TButton;
     btnEditTarget: TButton;
     btnEditScript: TButton;
+    btnSpecialStr: TButton;
     cbboxOpenOCDInterface: TComboBox;
     cbboxOpenOCDScript: TComboBox;
     cbboxOpenOCDTarget: TComboBox;
+    chkboxSpecialStr: TCheckBox;
     chkboxNowarning: TCheckBox;
     chkboxCali: TCheckBox;
     chkboxNoconnect: TCheckBox;
@@ -86,6 +88,7 @@ type
     gbSVFPlayer: TGroupBox;
     gbPower:   TGroupBox;
     gbSetting: TGroupBox;
+    lbledtSpecialStr: TLabeledEdit;
     lblKHz:    TLabel;
     lblOpenOCDDir: TLabel;
     lblVSProgDir: TLabel;
@@ -138,6 +141,7 @@ type
     procedure btnOpenOCDStopClick(Sender: TObject);
     procedure btnReadClick(Sender: TObject);
     procedure btnSetPowerClick(Sender: TObject);
+    procedure btnSpecialStrClick(Sender: TObject);
     procedure btnSVFRunClick(Sender: TObject);
     procedure btnTargetDetectClick(Sender: TObject);
     procedure btnUpdateClick(Sender: TObject);
@@ -176,6 +180,7 @@ type
 
     procedure VSProg_GUIUpdateULCS(Value: QWord; bytelen: integer;
       var edt: TLabeledEdit);
+    procedure VSProg_GUIUpdateStr(Str: String; var edt: TLabeledEdit);
     procedure VSProg_GUIUpdateFuse(fuse: QWord; bytelen: integer);
     procedure VSProg_GUIUpdateLock(lock: QWord; bytelen: integer);
     procedure VSProg_GUIUpdateUsrSig(sig: QWord; bytelen: integer);
@@ -486,6 +491,11 @@ begin
   end;
 end;
 
+procedure TFormMain.VSProg_GUIUpdateStr(Str: String; var edt: TLabeledEdit);
+begin
+  edt.Text := Str;
+end;
+
 procedure TFormMain.VSProg_GUIUpdateULCS(Value: QWord; bytelen: integer;
   var edt: TLabeledEdit);
 begin
@@ -662,7 +672,7 @@ begin
     //chkboxLock.Checked := True;
     index := CurTargetChip.GetAreaIdx(LOCK_CHAR);
     if (index >= 0) and (not CurTargetChip.TargetAreas[index].InFile) and
-      (CurTargetChip.TargetAreas[index].ByteLen <= 4) then
+      (CurTargetChip.TargetAreas[index].ByteLen <= 8) then
     begin
       lbledtLock.Enabled := True;
       VSProg_GUIUpdateLock(CurTargetChip.TargetAreas[index].DefaultValue,
@@ -731,7 +741,7 @@ begin
     //chkboxCali.Checked := True;
     index := CurTargetChip.GetAreaIdx(CALI_CHAR);
     if (index >= 0) and (not CurTargetChip.TargetAreas[index].InFile) and
-      (CurTargetChip.TargetAreas[index].ByteLen <= 4) then
+      (CurTargetChip.TargetAreas[index].ByteLen <= 8) then
     begin
       lbledtCali.Enabled := True;
       VSProg_GUIUpdateCali(CurTargetChip.TargetAreas[index].DefaultValue,
@@ -743,6 +753,25 @@ begin
     btnEditCali.Enabled := False;
     chkboxCali.Enabled  := False;
     chkboxCali.Checked  := False;
+  end;
+
+  lbledtSpecialStr.Text := '';
+  lbledtSpecialStr.Enabled := False;
+  if Pos(SPECIALSTR_CHAR, para) > 0 then
+  begin
+    chkboxSpecialStr.Enabled := True;
+    //chkboxSpecialStr.Checked := True;
+    index := CurTargetChip.GetAreaIdx(SPECIALSTR_CHAR);
+    if (index >= 0) and (not CurTargetChip.TargetAreas[index].InFile) and
+      (CurTargetChip.TargetAreas[index].ByteLen <= 8) then
+    begin
+      lbledtSpecialStr.Enabled := True;
+    end;
+  end
+  else
+  begin
+    chkboxSpecialStr.Enabled := False;
+    chkboxSpecialStr.Checked := False;
   end;
 end;
 
@@ -1319,6 +1348,10 @@ begin
   begin
     Result := Result + CALI_CHAR;
   end;
+  if chkboxSpecialStr.Enabled and chkboxSpecialStr.Checked then
+  begin
+    Result := Result + SPECIALSTR_CHAR;
+  end;
 end;
 
 function TFormMain.VSProg_AddEraseOperation(): boolean;
@@ -1569,8 +1602,22 @@ begin
       begin
         exit;
       end;
-      VSProg_GUIUpdateULCS(StrToIntRadix(VSProg_Parser.ResultStrings.Strings[0], 16),
-        bytelen, TLabeledEdit(Sender));
+      if AreaName = SPECIALSTR_CHAR then
+      begin
+        VSProg_GUIUpdateStr(VSProg_Parser.ResultStrings.Strings[0],TLabeledEdit(Sender));
+      end
+      else
+      begin
+        VSProg_GUIUpdateULCS(StrToIntRadix(VSProg_Parser.ResultStrings.Strings[0], 16),
+          bytelen, TLabeledEdit(Sender));
+      end;
+    end;
+
+    // Special_String is shown in the FormMain
+    // No need to call FormParaEditor
+    if AreaName = SPECIALSTR_CHAR then
+    begin
+      exit;
     end;
 
     // call 'vsprog -Ppara' to extract para settings
@@ -1689,6 +1736,11 @@ begin
   LogInfo('Running...');
   VSProg_RunAlgorithm(VSProg_Caller, nil, 0, False);
   LogInfo('Idle');
+end;
+
+procedure TFormMain.btnSpecialStrClick(Sender: TObject);
+begin
+  ShowTargetArea(SPECIALSTR_CHAR, lbledtSpecialStr, @VSProg_Parser.SpecialStrParser);
 end;
 
 procedure TFormMain.btnSVFRunClick(Sender: TObject);
@@ -2218,6 +2270,13 @@ begin
     (lbledtLock.Text <> '') then
   begin
     caller.AddParameter('tl' + lbledtLock.Text);
+  end;
+
+  // SpecialStr
+  if lbledtSpecialStr.Enabled and chkboxSpecialStr.Enabled and chkboxSpecialStr.Checked and
+    (lbledtSpecialStr.Text <> '') then
+  begin
+    caller.AddParameter('tt' + lbledtSpecialStr.Text);
   end;
 
   // Execute

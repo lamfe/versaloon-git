@@ -39,6 +39,7 @@ type
     function LockDataParser(var line: string): boolean;
     function CaliDataParser(var line: string): boolean;
     function UsrsigDataParser(var line: string): boolean;
+    function SpecialStrParser(var line: string): boolean;
     function SupportParser(var line: string): boolean;
     function AutoDetectParser(var line: string): boolean;
     function TargetParser(var line: string): boolean;
@@ -369,6 +370,17 @@ function TVSProg_Parser.MemoryTargetInfoParser(var line: string): boolean;
 begin
   line   := line;
   Result := True;
+end;
+
+function TVSProg_Parser.SpecialStrParser(var line: string):boolean;
+var
+  tmpStr: string;
+begin
+  Result := True;
+  if ParseTargetData(line, 'special_str', tmpStr) then
+  begin
+    FResultStrings.Add(tmpStr);
+  end;
 end;
 
 function TVSProg_Parser.FuseDataParser(var line: string): boolean;

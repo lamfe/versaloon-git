@@ -1,7 +1,7 @@
 object FormMain: TFormMain
-  Left = 83
-  Height = 579
-  Top = 257
+  Left = 611
+  Height = 620
+  Top = 221
   Width = 797
   HorzScrollBar.Page = 840
   HorzScrollBar.Range = 400
@@ -10,7 +10,7 @@ object FormMain: TFormMain
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'FormMain'
-  ClientHeight = 579
+  ClientHeight = 620
   ClientWidth = 797
   Font.CharSet = ANSI_CHARSET
   Font.Color = clBlack
@@ -27,13 +27,13 @@ object FormMain: TFormMain
   LCLVersion = '0.9.28.2'
   object pnlMain: TPanel
     Left = 1
-    Height = 555
+    Height = 596
     Top = 1
     Width = 399
     Align = alLeft
     BorderSpacing.Around = 1
     Caption = 'pnlMain'
-    ClientHeight = 555
+    ClientHeight = 596
     ClientWidth = 399
     Font.Height = -17
     Font.Name = 'Sans'
@@ -41,7 +41,7 @@ object FormMain: TFormMain
     TabOrder = 0
     object pcMain: TPageControl
       Left = 1
-      Height = 486
+      Height = 510
       Top = 1
       Width = 397
       ActivePage = tsJTAG
@@ -60,7 +60,7 @@ object FormMain: TFormMain
       object tsJTAG: TTabSheet
         Tag = -1
         Caption = 'JTAG'
-        ClientHeight = 457
+        ClientHeight = 481
         ClientWidth = 389
         object gbOpenOCD: TGroupBox
           Left = 10
@@ -315,7 +315,7 @@ object FormMain: TFormMain
       end
       object tsVsprog: TTabSheet
         Caption = 'VSProg'
-        ClientHeight = 457
+        ClientHeight = 481
         ClientWidth = 389
         object gbChipName: TGroupBox
           Left = 11
@@ -368,7 +368,7 @@ object FormMain: TFormMain
         object gbOption: TGroupBox
           Left = 11
           Height = 137
-          Top = 242
+          Top = 269
           Width = 369
           Caption = 'Option'
           ClientHeight = 119
@@ -485,7 +485,7 @@ object FormMain: TFormMain
             Left = 294
             Height = 20
             Hint = 'Enable Mass Product Mode'
-            Top = 64
+            Top = 88
             Width = 50
             Caption = 'Mass'
             ParentShowHint = False
@@ -506,21 +506,21 @@ object FormMain: TFormMain
             TabOrder = 8
           end
           object lbledtExtraPara: TLabeledEdit
-            Left = 125
+            Left = 93
             Height = 24
             Hint = 'Setting External Command Line Parameters'
             Top = 87
-            Width = 228
+            Width = 184
             EditLabel.AnchorSideLeft.Control = lbledtExtraPara
             EditLabel.AnchorSideTop.Control = lbledtExtraPara
             EditLabel.AnchorSideTop.Side = asrCenter
             EditLabel.AnchorSideRight.Control = lbledtExtraPara
             EditLabel.AnchorSideBottom.Control = lbledtExtraPara
-            EditLabel.Left = 19
+            EditLabel.Left = 16
             EditLabel.Height = 17
             EditLabel.Top = 91
-            EditLabel.Width = 103
-            EditLabel.Caption = 'ExtraParameters:'
+            EditLabel.Width = 74
+            EditLabel.Caption = 'ExtraParam:'
             EditLabel.ParentColor = False
             LabelPosition = lpLeft
             ParentShowHint = False
@@ -588,14 +588,22 @@ object FormMain: TFormMain
             ShowHint = True
             TabOrder = 13
           end
+          object chkboxSpecialStr: TCheckBox
+            Left = 278
+            Height = 20
+            Top = 64
+            Width = 75
+            Caption = 'SpecalStr'
+            TabOrder = 14
+          end
         end
         object gbInputFile: TGroupBox
           Left = 11
-          Height = 165
+          Height = 192
           Top = 69
           Width = 369
           Caption = 'File'
-          ClientHeight = 147
+          ClientHeight = 174
           ClientWidth = 365
           TabOrder = 2
           object lblInputFile: TLabel
@@ -610,7 +618,7 @@ object FormMain: TFormMain
             Left = 13
             Height = 25
             Hint = 'Display Flash Content'
-            Top = 109
+            Top = 136
             Width = 45
             Caption = 'Flash'
             OnClick = btnEditAppClick
@@ -619,10 +627,10 @@ object FormMain: TFormMain
             TabOrder = 0
           end
           object btnEditLock: TButton
-            Left = 187
+            Left = 157
             Height = 25
             Hint = 'Display Lock Settings'
-            Top = 109
+            Top = 136
             Width = 45
             Caption = 'Lock'
             OnClick = btnEditLockClick
@@ -631,10 +639,10 @@ object FormMain: TFormMain
             TabOrder = 1
           end
           object btnEditFuse: TButton
-            Left = 129
+            Left = 109
             Height = 25
             Hint = 'Display Fuse Settings'
-            Top = 109
+            Top = 136
             Width = 45
             Caption = 'Fuse'
             OnClick = btnEditFuseClick
@@ -643,10 +651,10 @@ object FormMain: TFormMain
             TabOrder = 2
           end
           object btnEditEE: TButton
-            Left = 71
+            Left = 61
             Height = 25
             Hint = 'Display EEprom Content'
-            Top = 109
+            Top = 136
             Width = 45
             Caption = 'EE'
             OnClick = btnEditEEClick
@@ -655,10 +663,10 @@ object FormMain: TFormMain
             TabOrder = 3
           end
           object btnEditUsrSig: TButton
-            Left = 245
+            Left = 205
             Height = 25
             Hint = 'Display User Signature'
-            Top = 109
+            Top = 136
             Width = 45
             Caption = 'UsrSig'
             OnClick = btnEditUsrSigClick
@@ -724,10 +732,10 @@ object FormMain: TFormMain
             TabOrder = 7
           end
           object btnEditCali: TButton
-            Left = 303
+            Left = 253
             Height = 25
             Hint = 'Display Calibration Value'
-            Top = 109
+            Top = 136
             Width = 45
             Caption = 'Cali'
             OnClick = btnEditCaliClick
@@ -816,11 +824,39 @@ object FormMain: TFormMain
             ShowHint = True
             TabOrder = 13
           end
+          object lbledtSpecialStr: TLabeledEdit
+            Left = 93
+            Height = 24
+            Top = 104
+            Width = 255
+            EditLabel.AnchorSideLeft.Control = lbledtSpecialStr
+            EditLabel.AnchorSideTop.Control = lbledtSpecialStr
+            EditLabel.AnchorSideTop.Side = asrCenter
+            EditLabel.AnchorSideRight.Control = lbledtSpecialStr
+            EditLabel.AnchorSideBottom.Control = lbledtSpecialStr
+            EditLabel.Left = 22
+            EditLabel.Height = 17
+            EditLabel.Top = 108
+            EditLabel.Width = 68
+            EditLabel.Caption = 'special_str:'
+            EditLabel.ParentColor = False
+            LabelPosition = lpLeft
+            TabOrder = 14
+          end
+          object btnSpecialStr: TButton
+            Left = 301
+            Height = 25
+            Top = 136
+            Width = 45
+            Caption = 'Str'
+            OnClick = btnSpecialStrClick
+            TabOrder = 15
+          end
         end
         object gbOperation: TGroupBox
           Left = 11
           Height = 57
-          Top = 386
+          Top = 413
           Width = 369
           Caption = 'Operation'
           ClientHeight = 39
@@ -879,13 +915,13 @@ object FormMain: TFormMain
       object tsAbout: TTabSheet
         Tag = -1
         Caption = 'About'
-        ClientHeight = 433
-        ClientWidth = 429
+        ClientHeight = 457
+        ClientWidth = 389
         object memoAbout: TMemo
           Left = 0
-          Height = 273
+          Height = 297
           Top = 0
-          Width = 429
+          Width = 389
           Align = alClient
           Lines.Strings = (
             'About of vsgui:'
@@ -905,21 +941,21 @@ object FormMain: TFormMain
         object pnlAbout: TPanel
           Left = 0
           Height = 160
-          Top = 273
-          Width = 429
+          Top = 297
+          Width = 389
           Align = alBottom
           ClientHeight = 160
-          ClientWidth = 429
+          ClientWidth = 389
           TabOrder = 1
           object gbUpdate: TGroupBox
             Left = 1
             Height = 59
             Top = 100
-            Width = 427
+            Width = 387
             Align = alBottom
             Caption = 'FW Update'
             ClientHeight = 41
-            ClientWidth = 423
+            ClientWidth = 383
             TabOrder = 0
             object btnUpdate: TButton
               Left = 296
@@ -958,11 +994,11 @@ object FormMain: TFormMain
             Left = 1
             Height = 99
             Top = 1
-            Width = 427
+            Width = 387
             Align = alClient
             Caption = 'Settings'
             ClientHeight = 81
-            ClientWidth = 423
+            ClientWidth = 383
             TabOrder = 1
             object lblVSProgDir: TLabel
               Left = 19
@@ -1010,8 +1046,8 @@ object FormMain: TFormMain
     end
     object memoInfo: TMemo
       Left = 1
-      Height = 67
-      Top = 487
+      Height = 84
+      Top = 511
       Width = 397
       Align = alClient
       Font.CharSet = ANSI_CHARSET
@@ -1028,7 +1064,7 @@ object FormMain: TFormMain
   object sbMain: TStatusBar
     Left = 0
     Height = 22
-    Top = 557
+    Top = 598
     Width = 797
     Panels = <    
       item
@@ -1045,7 +1081,7 @@ object FormMain: TFormMain
   object pgbarMain: TProgressBar
     Left = 104
     Height = 18
-    Top = 560
+    Top = 600
     Width = 336
     Max = 40
     Step = 1
@@ -1053,7 +1089,7 @@ object FormMain: TFormMain
   end
   object memoLog: TMemo
     Left = 401
-    Height = 557
+    Height = 598
     Top = 0
     Width = 396
     Align = alClient
