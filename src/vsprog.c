@@ -616,8 +616,15 @@ Parse_Operation:
 				LOG_ERROR(_GETTEXT(ERRMSG_TRY_SUPPORT));
 				free_all_and_exit(EXIT_FAILURE);
 			}
-			program_info.program_areas[optc].value = 
+			if (SPECIAL_STRING_CHAR == optarg[0])
+			{
+				program_info.program_areas[optc].buff = (uint8_t*)&optarg[1];
+			}
+			else
+			{
+				program_info.program_areas[optc].value = 
 												strtoull(&optarg[1], NULL, 0);
+			}
 			program_info.areas_defined |= target_area_mask(optarg[0]);
 			break;
 		case 'I':

@@ -48,6 +48,7 @@
 #define CALIBRATION_IDX				16
 #define CALIBRATION_CHKSUM_IDX		(1 + CALIBRATION_IDX)
 #define SRAM_IDX					18
+#define SPECIAL_STRING_IDX			19
 
 #define CHIPID						(1 << CHIPID_IDX)
 #define CHIPID_CHKSUM				(1 << CHIPID_CHKSUM_IDX)
@@ -68,11 +69,12 @@
 #define CALIBRATION					(1 << CALIBRATION_IDX)
 #define CALIBRATION_CHKSUM			(1 << CALIBRATION_CHKSUM_IDX)
 #define SRAM						(1 << SRAM_IDX)
+#define SPECIAL_STRING				(1 << SPECIAL_STRING_IDX)
 #define ALL							0x80000000UL
 #define TARGET_AREA_MASK			(BOOTLOADER | APPLICATION | EEPROM \
 									 | OTP_ROM | FUSE | LOCK | USER_SIG \
 									 | CHECKSUM | ALL)
-#define NUM_OF_TARGET_AREA			19
+#define NUM_OF_TARGET_AREA			20
 
 enum area_attr_t
 {
@@ -82,7 +84,7 @@ enum area_attr_t
 	AREA_ATTR_EP	= (1 << 3), // Erase in PageMode
 	AREA_ATTR_WNP	= (1 << 4), // Non-Paged Mode when write
 	AREA_ATTR_RNP	= (1 << 5), // Non-Paged Mode when read
-	AREA_ATTR_V		= (1 << 6), // Simple verify
+	AREA_ATTR_V		= (1 << 6), // Simple verify, eg: checksum
 	AREA_ATTR_RAE	= (1 << 7), // Reset After Erase
 	AREA_ATTR_RAW	= (1 << 8), // Reset After Write
 	AREA_ATTR_EWW	= (1 << 9), // Erase While Write
@@ -112,6 +114,8 @@ enum area_attr_t
 #define USRSIG_CHKSUM_CHAR			'S'
 #define CALIBRATION_CHAR			'c'
 #define CALIBRATION_CHKSUM_CHAR		'C'
+#define SRAM_CHAR					'r'
+#define SPECIAL_STRING_CHAR			't'
 
 struct target_area_name_t
 {

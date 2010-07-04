@@ -62,5 +62,11 @@
 #define STM8_SWIM					0
 #define STM8_ISP					1
 
+#define STM8A_OPT_TMUEN_OFF			13
+#define STM8A_OPT_TMUEN_MASK		0x0F
+#define STM8A_OPT_TMUEN_ENVAL		0x05
+#define STM8A_OPT_TMUKEY_OFF		16
+#define STM8A_OPT_TMUMAXATT_OFF		24
+
 #endif /* __STM8_INTERNAL_H_INCLUDED__ */
 

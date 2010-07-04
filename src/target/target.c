@@ -76,7 +76,9 @@ const struct target_area_name_t target_area_name[NUM_OF_TARGET_AREA] =
 	{USRSIG_CHAR,				USRSIG,				"usrsig"},
 	{USRSIG_CHKSUM_CHAR,		USRSIG_CHKSUM,		"usrsig_checksum"},
 	{CALIBRATION_CHAR,			CALIBRATION,		"calibration"},
-	{CALIBRATION_CHKSUM_CHAR,	CALIBRATION_CHKSUM	,"calibration_checksum"}
+	{CALIBRATION_CHKSUM_CHAR,	CALIBRATION_CHKSUM,	"calibration_checksum"},
+	{SRAM_CHAR,					SRAM,				"sram"},
+	{SPECIAL_STRING_CHAR,		SPECIAL_STRING,		"special_str"}
 };
 
 struct chip_series_t target_chips = {0, NULL};
@@ -302,6 +304,11 @@ void target_free_data_buffer(void)
 	
 	for (i = 0; i < dimof(program_info.program_areas); i++)
 	{
+		// special_string cannot be freed
+		if (SPECIAL_STRING_CHAR == target_area_name[i].name)
+		{
+			continue;
+		}
 		area = &program_info.program_areas[i];
 		if (area->buff != NULL)
 		{
@@ -612,6 +619,7 @@ RESULT target_program(struct program_context_t *context)
 	struct memlist **ml, *ml_tmp;
 	uint64_t value;
 	uint32_t time_in_ms = 1000;
+	uint8_t special_string[256];
 	
 	// check mode
 	if ((target_chips.num_of_chips > 0) 
@@ -716,6 +724,10 @@ RESULT target_program(struct program_context_t *context)
 			ml = NULL;
 			tbuff = NULL;
 			target_size = area_info->size;
+			if ((0 == target_size) && (SPECIAL_STRING_CHAR == area_char))
+			{
+				target_size = 1;
+			}
 		}
 		
 		// not chip_erase, required to be erased, erasable
@@ -842,8 +854,25 @@ RESULT target_program(struct program_context_t *context)
 			}
 			else
 			{
+				uint8_t *buff_tmp;
+				if (SPECIAL_STRING_CHAR == area_char)
+				{
+					if (NULL == prog_area->buff)
+					{
+						pgbar_fini();
+						LOG_BUG("prog_area->buff SHOULD"
+								" NOT be NULL for special_str");
+						ret = ERROR_FAIL;
+						goto leave_program_mode;
+					}
+					buff_tmp = prog_area->buff;
+				}
+				else
+				{
+					buff_tmp = (uint8_t*)&prog_area->value;
+				}
 				if (ERROR_OK != pf->write_target(context, area_char, 
-											start_addr, NULL, target_size))
+											start_addr, buff_tmp, target_size))
 				{
 					pgbar_fini();
 					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_PROGRAM), fullname);
@@ -1050,8 +1079,17 @@ RESULT target_program(struct program_context_t *context)
 			}
 			else
 			{
+				uint8_t *buff_tmp;
+				if (SPECIAL_STRING_CHAR == area_char)
+				{
+					buff_tmp = special_string;
+				}
+				else
+				{
+					buff_tmp = (uint8_t*)&value;
+				}
 				if (ERROR_OK != pf->read_target(context, area_char, 
-							start_addr, (uint8_t *)&value, target_size))
+							start_addr, buff_tmp, target_size))
 				{
 					pgbar_fini();
 					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_READ), fullname);
@@ -1061,28 +1099,59 @@ RESULT target_program(struct program_context_t *context)
 				pgbar_update(target_size);
 				time_in_ms = pgbar_fini();
 				
-				value &= byte_mask[target_size];
+				if (SPECIAL_STRING_CHAR != area_char)
+				{
+					value &= byte_mask[target_size];
+				}
 				
 				if (op->verify_operations & area_mask)
 				{
-					if (value == prog_area->value)
+					if (SPECIAL_STRING_CHAR == area_char)
 					{
-						LOG_INFO(_GETTEXT(INFOMSG_VERIFIED), fullname);
+						if (!strcmp((const char*)prog_area->buff, 
+									(const char*)special_string))
+						{
+							LOG_INFO(_GETTEXT(INFOMSG_VERIFIED), fullname);
+						}
+						else
+						{
+							LOG_ERROR("%s verify failed, read=%s, want=%s\n", 
+									fullname, special_string, prog_area->buff);
+							ret = ERRCODE_FAILURE_VERIFY;
+							goto leave_program_mode;
+						}
 					}
 					else
 					{
-						sprintf(str_tmp, 
-							"%%s verify failed, read=0x%%0%d"PRIX64", "
-							"want=0x%%0%d"PRIX64".\n",
-							target_size * 2, target_size * 2);
-						LOG_ERROR(str_tmp, fullname, value, prog_area->value);
+						if (value == prog_area->value)
+						{
+							LOG_INFO(_GETTEXT(INFOMSG_VERIFIED), fullname);
+						}
+						else
+						{
+							sprintf(str_tmp, 
+								"%%s verify failed, read=0x%%0%d"PRIX64", "
+								"want=0x%%0%d"PRIX64".\n",
+								target_size * 2, target_size * 2);
+							LOG_ERROR(str_tmp, fullname, value, 
+										prog_area->value);
+							ret = ERRCODE_FAILURE_VERIFY;
+							goto leave_program_mode;
+						}
 					}
 				}
 				else
 				{
-					sprintf(str_tmp, "%%s read is 0x%%0%d"PRIX64"\n", 
-							target_size * 2);
-					LOG_INFO(str_tmp, fullname, value);
+					if (SPECIAL_STRING_CHAR == area_char)
+					{
+						LOG_INFO("%s read is %s\n", fullname, special_string);
+					}
+					else
+					{
+						sprintf(str_tmp, "%%s read is 0x%%0%d"PRIX64"\n", 
+								target_size * 2);
+						LOG_INFO(str_tmp, fullname, value);
+					}
 				}
 			}
 			
