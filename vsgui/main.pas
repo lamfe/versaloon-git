@@ -1193,6 +1193,10 @@ begin
           begin
             lbledtUsrSig.Text := xmlcfgMain.GetValue('target/usrsig', '');
           end;
+          if lbledtSpecialStr.Enabled then
+          begin
+            lbledtSpecialStr.Text := xmlcfgMain.GetValue('target/special_str', '')
+          end;
           if chkboxNoconnect.Enabled then
           begin
             chkboxNoconnect.Checked := xmlcfgMain.GetValue('target/nc', False);
@@ -1825,6 +1829,7 @@ begin
     AdjustComponentColor(lbledtLock);
     AdjustComponentColor(lbledtCali);
     AdjustComponentColor(lbledtUsrSig);
+    AdjustComponentColor(lbledtSpecialStr);
     AdjustComponentColor(lbledtAddr);
     AdjustComponentColor(sedtFreq);
   end;
@@ -1867,6 +1872,7 @@ begin
   AdjustComponentColor(lbledtLock);
   AdjustComponentColor(lbledtCali);
   AdjustComponentColor(lbledtUsrSig);
+  AdjustComponentColor(lbledtSpecialStr);
   AdjustComponentColor(lbledtAddr);
   AdjustComponentColor(sedtFreq);
 end;
@@ -1979,6 +1985,10 @@ begin
   if lbledtUsrSig.Enabled then
   begin
     xmlcfgMain.SetValue('target/usrsig', lbledtUsrSig.Text);
+  end;
+  if lbledtSpecialStr.Enabled then
+  begin
+    xmlcfgMain.SetValue('target/special_str', lbledtSpecialStr.Text);
   end;
   if chkboxNoconnect.Enabled then
   begin
