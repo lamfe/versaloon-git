@@ -21,14 +21,15 @@ m4_defun([_LT_AC_LANG_GCJ_CONFIG], [:])
 
 AC_CANONICAL_HOST
 
+AM_PATH_XML2(2.4.0,,
+  AC_MSG_ERROR([Libxml2 is required to build vsprog]))
+
 AC_CHECK_HEADERS(malloc.h)
 AC_CHECK_HEADERS(sys/time.h)
 AC_CHECK_HEADERS(strings.h)
 AC_CHECK_HEADERS(unistd.h)
 AC_CHECK_HEADERS([usb.h],[],
-  [AC_MSG_ERROR([usb.h is required to build Versaloon])])
-AC_CHECK_HEADERS([libxml/parser.h],[],
-  [AC_MSG_ERROR([libxml/parser.h is required to build Versaloon])])
+  [AC_MSG_ERROR([usb.h is required to build vsprog])])
 
 AC_HEADER_ASSERT
 AC_HEADER_STDBOOL
@@ -97,7 +98,7 @@ GCC_WARNINGS="${GCC_WARNINGS} -Wextra -Wno-unused-parameter"
 GCC_WARNINGS="${GCC_WARNINGS} -Wbad-function-cast"
 GCC_WARNINGS="${GCC_WARNINGS} -Wcast-align"
 GCC_WARNINGS="${GCC_WARNINGS} -Wredundant-decls"
-CFLAGS="$CFLAGS $GCC_WARNINGS"
+CFLAGS="$CFLAGS $GCC_WARNINGS $XML_CPPFLAGS"
 
 AC_MSG_CHECKING([for suffix of executable build tools])
 if test $cross_compiling = yes; then
