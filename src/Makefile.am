@@ -26,13 +26,13 @@ else
   vsprog_CPPFLAGS += -DRELSTR=\"svn:\" -DPKGBLDREV=\"`$(top_srcdir)/guess-rev.sh $(top_srcdir)`\"
 endif
 
-vsprog_LDFLAGS = $(all_libraries) $(XML_LIBS)
+vsprog_LDFLAGS = $(all_libraries)
 
 vsprog_LDADD = \
     $(top_builddir)/src/programmer/libprog.a \
     $(top_builddir)/src/target/libtgt.a \
     $(top_builddir)/src/tools/libtool.a \
     $(top_builddir)/src/driver/libdrv.a \
-    $(MINGWLDADD) -lusb
+    $(MINGWLDADD) -lusb $(XML_LIBS)
 
 MAINTAINERCLEANFILES = Makefile.in
