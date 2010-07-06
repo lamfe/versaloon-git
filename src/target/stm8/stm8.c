@@ -155,7 +155,7 @@ static struct interfaces_info_t *interfaces = NULL;
 // 0x00C0 ---- 0x00FF: param + sync + err
 // 0x0100 ---- 0x017F: buffer0
 // 0x0180 ---- 0x01FF: buffer1
-//#define STM8_USE_FLASHLOADER
+#define STM8_USE_FLASHLOADER
 #define STM8_FL_ADDR				0x000000
 #define STM8_FL_SYNC_ADDR			(STM8_FL_PARAM_ADDR + STM8_FL_PARAM_SIZE + 0)
 #define STM8_FL_ERR_ADDR			(STM8_FL_PARAM_ADDR + STM8_FL_PARAM_SIZE + 1)
@@ -302,7 +302,6 @@ static void stm8_unlock_flash(uint32_t pukr)
 	swim_wotf_reg(pukr, 0xAE, 1);
 }
 
-#ifndef STM8_USE_FLASHLOADER
 static RESULT stm8_poll_ready(uint32_t iapsr)
 {
 	RESULT ret;
@@ -354,6 +353,7 @@ static RESULT stm8_program_reg(uint32_t cr2, uint32_t ncr2, uint32_t iapsr,
 	return ret;
 }
 
+#ifndef STM8_USE_FLASHLOADER
 static RESULT stm8_program_block(uint32_t cr2, uint32_t ncr2, uint32_t iapsr, 
 	uint8_t cmd, uint32_t block_addr, uint8_t *block_buff, uint8_t block_size)
 {
@@ -691,6 +691,35 @@ do_erase:
 	return ret;
 }
 
+struct stm8_optionbyte_info_t
+{
+	uint8_t addr;
+	uint8_t offset;
+};
+static const struct stm8_optionbyte_info_t stm8_optionbyte_info_stm8sa[] = 
+{
+	{1, 1},
+	{3, 2},
+	{5, 3},
+	{7, 4},
+	{9, 5},
+	{13, 6},
+	{126, 7},
+};
+static const uint8_t stm8_optionbyte_num_stm8sa 
+	= dimof(stm8_optionbyte_info_stm8sa);
+static const struct stm8_optionbyte_info_t stm8_optionbyte_info_stm8l[] = 
+{
+	{2, 1},
+	{3, 2},
+	{8, 3},
+	{9, 5},
+	{10, 6},
+	{11, 7},
+};
+static const uint8_t stm8_optionbyte_num_stm8l 
+	= dimof(stm8_optionbyte_info_stm8l);
+
 WRITE_TARGET_HANDLER(stm8swim)
 {
 	RESULT ret = ERROR_OK;
@@ -699,6 +728,9 @@ WRITE_TARGET_HANDLER(stm8swim)
 	struct operation_t *op = context->op;
 	uint8_t cmd;
 	uint8_t fuse_page[128];
+	uint8_t i;
+	struct stm8_optionbyte_info_t *optionbyte_info;
+	uint8_t optionbyte_num;
 #ifdef STM8_USE_FLASHLOADER
 	struct stm8_fl_param_t fl_param;
 	uint16_t ram_addr;
@@ -715,7 +747,7 @@ WRITE_TARGET_HANDLER(stm8swim)
 		{
 			cmd = STM8_FLASH_CR2_FPRG;
 		}
-		goto do_program;
+		goto do_write_flashee;
 	case EEPROM_CHAR:
 		if (op->erase_operations & EEPROM)
 		{
@@ -725,13 +757,13 @@ WRITE_TARGET_HANDLER(stm8swim)
 		{
 			cmd = STM8_FLASH_CR2_FPRG;
 		}
-do_program:
-#ifdef STM8_USE_FLASHLOADER
+do_write_flashee:
 		if ((size != 64) && (size != 128))
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_VALUE), size, "page_size");
 			return ERROR_FAIL;
 		}
+#ifdef STM8_USE_FLASHLOADER
 		if (stm8_fl_ticktock & 1)
 		{
 			ram_addr = 0x0100;
@@ -797,161 +829,45 @@ do_program:
 		{
 		case STM8_TYPE_STM8A:
 		case STM8_TYPE_STM8S:
-			if ((ERROR_OK == ret) && (buff[0] != fuse_page[0]))
-			{
-				ret = stm8_program_reg(param->param[STM8_PARAM_FLASH_CR2], 
-									param->param[STM8_PARAM_FLASH_NCR2], 
-									param->param[STM8_PARAM_FLASH_IAPSR], cmd, 
-									STM8_FUSEPAGE_ADDR + 0, buff[0], 1);
-			}
-			if ((ERROR_OK == ret) && (buff[1] != fuse_page[1]))
-			{
-				ret = stm8_program_reg(param->param[STM8_PARAM_FLASH_CR2], 
-									param->param[STM8_PARAM_FLASH_NCR2], 
-									param->param[STM8_PARAM_FLASH_IAPSR], cmd, 
-									STM8_FUSEPAGE_ADDR + 1, buff[1], 1);
-				if (ERROR_OK == ret)
-				{
-					ret = stm8_program_reg(param->param[STM8_PARAM_FLASH_CR2], 
-									param->param[STM8_PARAM_FLASH_NCR2], 
-									param->param[STM8_PARAM_FLASH_IAPSR], cmd, 
-									STM8_FUSEPAGE_ADDR + 2, ~buff[1], 1);
-				}
-			}
-			if ((ERROR_OK == ret) && (buff[2] != fuse_page[3]))
-			{
-				ret = stm8_program_reg(param->param[STM8_PARAM_FLASH_CR2], 
-									param->param[STM8_PARAM_FLASH_NCR2], 
-									param->param[STM8_PARAM_FLASH_IAPSR], cmd, 
-									STM8_FUSEPAGE_ADDR + 3, buff[2], 1);
-				if (ERROR_OK == ret)
-				{
-					ret = stm8_program_reg(param->param[STM8_PARAM_FLASH_CR2], 
-									param->param[STM8_PARAM_FLASH_NCR2], 
-									param->param[STM8_PARAM_FLASH_IAPSR], cmd, 
-									STM8_FUSEPAGE_ADDR + 4, ~buff[2], 1);
-				}
-			}
-			if ((ERROR_OK == ret) && (buff[3] != fuse_page[5]))
-			{
-				ret = stm8_program_reg(param->param[STM8_PARAM_FLASH_CR2], 
-									param->param[STM8_PARAM_FLASH_NCR2], 
-									param->param[STM8_PARAM_FLASH_IAPSR], cmd, 
-									STM8_FUSEPAGE_ADDR + 5, buff[3], 1);
-				if (ERROR_OK == ret)
-				{
-					ret = stm8_program_reg(param->param[STM8_PARAM_FLASH_CR2], 
-									param->param[STM8_PARAM_FLASH_NCR2], 
-									param->param[STM8_PARAM_FLASH_IAPSR], cmd, 
-									STM8_FUSEPAGE_ADDR + 6, ~buff[3], 1);
-				}
-			}
-			if ((ERROR_OK == ret) && (buff[4] != fuse_page[7]))
-			{
-				ret = stm8_program_reg(param->param[STM8_PARAM_FLASH_CR2], 
-									param->param[STM8_PARAM_FLASH_NCR2], 
-									param->param[STM8_PARAM_FLASH_IAPSR], cmd, 
-									STM8_FUSEPAGE_ADDR + 7, buff[4], 1);
-				if (ERROR_OK == ret)
-				{
-					ret = stm8_program_reg(param->param[STM8_PARAM_FLASH_CR2], 
-									param->param[STM8_PARAM_FLASH_NCR2], 
-									param->param[STM8_PARAM_FLASH_IAPSR], cmd, 
-									STM8_FUSEPAGE_ADDR + 8, ~buff[4], 1);
-				}
-			}
-			if ((ERROR_OK == ret) && (buff[5] != fuse_page[9]))
-			{
-				ret = stm8_program_reg(param->param[STM8_PARAM_FLASH_CR2], 
-									param->param[STM8_PARAM_FLASH_NCR2], 
-									param->param[STM8_PARAM_FLASH_IAPSR], cmd, 
-									STM8_FUSEPAGE_ADDR + 9, buff[5], 1);
-				if (ERROR_OK == ret)
-				{
-					ret = stm8_program_reg(param->param[STM8_PARAM_FLASH_CR2], 
-									param->param[STM8_PARAM_FLASH_NCR2], 
-									param->param[STM8_PARAM_FLASH_IAPSR], cmd, 
-									STM8_FUSEPAGE_ADDR + 10, ~buff[5], 1);
-				}
-			}
-			if ((ERROR_OK == ret) && (buff[6] != fuse_page[13]))
-			{
-				ret = stm8_program_reg(param->param[STM8_PARAM_FLASH_CR2], 
-									param->param[STM8_PARAM_FLASH_NCR2], 
-									param->param[STM8_PARAM_FLASH_IAPSR], cmd, 
-									STM8_FUSEPAGE_ADDR + 13, buff[6], 1);
-				if (ERROR_OK == ret)
-				{
-					ret = stm8_program_reg(param->param[STM8_PARAM_FLASH_CR2], 
-									param->param[STM8_PARAM_FLASH_NCR2], 
-									param->param[STM8_PARAM_FLASH_IAPSR], cmd, 
-									STM8_FUSEPAGE_ADDR + 14, ~buff[6], 1);
-				}
-			}
-			if ((ERROR_OK == ret) && (buff[7] != fuse_page[126]))
-			{
-				ret = stm8_program_reg(param->param[STM8_PARAM_FLASH_CR2], 
-									param->param[STM8_PARAM_FLASH_NCR2], 
-									param->param[STM8_PARAM_FLASH_IAPSR], cmd, 
-									STM8_FUSEPAGE_ADDR + 126, buff[7], 1);
-				if (ERROR_OK == ret)
-				{
-					ret = stm8_program_reg(param->param[STM8_PARAM_FLASH_CR2], 
-									param->param[STM8_PARAM_FLASH_NCR2], 
-									param->param[STM8_PARAM_FLASH_IAPSR], cmd, 
-									STM8_FUSEPAGE_ADDR + 127, ~buff[7], 1);
-				}
-			}
-			break;
+			optionbyte_info = 
+				(struct stm8_optionbyte_info_t *)&stm8_optionbyte_info_stm8sa;
+			optionbyte_num = stm8_optionbyte_num_stm8sa;
+			goto do_write_fuse;
 		case STM8_TYPE_STM8L:
+			optionbyte_info = 
+				(struct stm8_optionbyte_info_t *)&stm8_optionbyte_info_stm8l;
+			optionbyte_num = stm8_optionbyte_num_stm8l;
+do_write_fuse:
 			if ((ERROR_OK == ret) && (buff[0] != fuse_page[0]))
 			{
 				ret = stm8_program_reg(param->param[STM8_PARAM_FLASH_CR2], 
-									param->param[STM8_PARAM_FLASH_NCR2], 
-									param->param[STM8_PARAM_FLASH_IAPSR], cmd, 
-									STM8_FUSEPAGE_ADDR + 0, buff[0], 1);
+							param->param[STM8_PARAM_FLASH_NCR2], 
+							param->param[STM8_PARAM_FLASH_IAPSR], cmd, 
+							STM8_FUSEPAGE_ADDR + 0, buff[0], 1);
 			}
-			if ((ERROR_OK == ret) && (buff[1] != fuse_page[2]))
+			for (i = 0; i < optionbyte_num; i++)
 			{
-				ret = stm8_program_reg(param->param[STM8_PARAM_FLASH_CR2], 
-									param->param[STM8_PARAM_FLASH_NCR2], 
-									param->param[STM8_PARAM_FLASH_IAPSR], cmd, 
-									STM8_FUSEPAGE_ADDR + 2, buff[1], 1);
-			}
-			if ((ERROR_OK == ret) && (buff[2] != fuse_page[3]))
-			{
-				ret = stm8_program_reg(param->param[STM8_PARAM_FLASH_CR2], 
-									param->param[STM8_PARAM_FLASH_NCR2], 
-									param->param[STM8_PARAM_FLASH_IAPSR], cmd, 
-									STM8_FUSEPAGE_ADDR + 3, buff[2], 1);
-			}
-			if ((ERROR_OK == ret) && (buff[3] != fuse_page[8]))
-			{
-				ret = stm8_program_reg(param->param[STM8_PARAM_FLASH_CR2], 
-									param->param[STM8_PARAM_FLASH_NCR2], 
-									param->param[STM8_PARAM_FLASH_IAPSR], cmd, 
-									STM8_FUSEPAGE_ADDR + 8, buff[3], 1);
-			}
-			if ((ERROR_OK == ret) && (buff[5] != fuse_page[9]))
-			{
-				ret = stm8_program_reg(param->param[STM8_PARAM_FLASH_CR2], 
-									param->param[STM8_PARAM_FLASH_NCR2], 
-									param->param[STM8_PARAM_FLASH_IAPSR], cmd, 
-									STM8_FUSEPAGE_ADDR + 9, buff[5], 1);
-			}
-			if ((ERROR_OK == ret) && (buff[6] != fuse_page[10]))
-			{
-				ret = stm8_program_reg(param->param[STM8_PARAM_FLASH_CR2], 
-									param->param[STM8_PARAM_FLASH_NCR2], 
-									param->param[STM8_PARAM_FLASH_IAPSR], cmd, 
-									STM8_FUSEPAGE_ADDR + 10, buff[6], 1);
-			}
-			if ((ERROR_OK == ret) && (buff[7] != fuse_page[11]))
-			{
-				ret = stm8_program_reg(param->param[STM8_PARAM_FLASH_CR2], 
-									param->param[STM8_PARAM_FLASH_NCR2], 
-									param->param[STM8_PARAM_FLASH_IAPSR], cmd, 
-									STM8_FUSEPAGE_ADDR + 11, buff[7], 1);
+				if ((ERROR_OK == ret) 
+					&& (buff[optionbyte_info[i].offset] 
+						!= fuse_page[optionbyte_info[i].addr]))
+				{
+					ret = stm8_program_reg(
+							param->param[STM8_PARAM_FLASH_CR2], 
+							param->param[STM8_PARAM_FLASH_NCR2], 
+							param->param[STM8_PARAM_FLASH_IAPSR], cmd, 
+							STM8_FUSEPAGE_ADDR + optionbyte_info[i].addr, 
+							buff[optionbyte_info[i].offset], 1);
+					if ((ERROR_OK == ret) 
+						&& (param->param[STM8_PARAM_TYPE] != STM8_TYPE_STM8L))
+					{
+						ret = stm8_program_reg(
+							param->param[STM8_PARAM_FLASH_CR2], 
+							param->param[STM8_PARAM_FLASH_NCR2], 
+							param->param[STM8_PARAM_FLASH_IAPSR], cmd, 
+							STM8_FUSEPAGE_ADDR + optionbyte_info[i].addr + 1, 
+							~buff[optionbyte_info[i].offset], 1);
+					}
+				}
 			}
 			break;
 		default:
@@ -1015,17 +931,17 @@ do_program:
 			if ((ERROR_OK == ret) && (tmu_en != fuse_page[STM8A_OPT_TMUEN_OFF]))
 			{
 				ret = stm8_program_reg(param->param[STM8_PARAM_FLASH_CR2], 
-								param->param[STM8_PARAM_FLASH_NCR2], 
-								param->param[STM8_PARAM_FLASH_IAPSR], cmd, 
-								STM8_FUSEPAGE_ADDR + STM8A_OPT_TMUEN_OFF + 0, 
-								tmu_en, 1);
+							param->param[STM8_PARAM_FLASH_NCR2], 
+							param->param[STM8_PARAM_FLASH_IAPSR], cmd, 
+							STM8_FUSEPAGE_ADDR + STM8A_OPT_TMUEN_OFF + 0, 
+							tmu_en, 1);
 				if (ERROR_OK == ret)
 				{
 					ret = stm8_program_reg(param->param[STM8_PARAM_FLASH_CR2], 
-								param->param[STM8_PARAM_FLASH_NCR2], 
-								param->param[STM8_PARAM_FLASH_IAPSR], cmd, 
-								STM8_FUSEPAGE_ADDR + STM8A_OPT_TMUEN_OFF + 1, 
-								~tmu_en, 1);
+							param->param[STM8_PARAM_FLASH_NCR2], 
+							param->param[STM8_PARAM_FLASH_IAPSR], cmd, 
+							STM8_FUSEPAGE_ADDR + STM8A_OPT_TMUEN_OFF + 1, 
+							~tmu_en, 1);
 				}
 			}
 			if (STM8A_OPT_TMUEN_ENVAL == tmu_en)
@@ -1039,21 +955,21 @@ do_program:
 						&& (buff_tmp[i] != fuse_page[STM8A_OPT_TMUKEY_OFF + i]))
 					{
 						ret = stm8_program_reg(
-								param->param[STM8_PARAM_FLASH_CR2], 
-								param->param[STM8_PARAM_FLASH_NCR2], 
-								param->param[STM8_PARAM_FLASH_IAPSR], cmd, 
-								STM8_FUSEPAGE_ADDR + STM8A_OPT_TMUKEY_OFF + i, 
-								buff_tmp[i], 1);
+							param->param[STM8_PARAM_FLASH_CR2], 
+							param->param[STM8_PARAM_FLASH_NCR2], 
+							param->param[STM8_PARAM_FLASH_IAPSR], cmd, 
+							STM8_FUSEPAGE_ADDR + STM8A_OPT_TMUKEY_OFF + i, 
+							buff_tmp[i], 1);
 					}
 				}
 				if ((ERROR_OK == ret) 
 					&& (tmu_maxtrr != fuse_page[STM8A_OPT_TMUMAXATT_OFF]))
 				{
 					ret = stm8_program_reg(param->param[STM8_PARAM_FLASH_CR2], 
-								param->param[STM8_PARAM_FLASH_NCR2], 
-								param->param[STM8_PARAM_FLASH_IAPSR], cmd, 
-								STM8_FUSEPAGE_ADDR + STM8A_OPT_TMUMAXATT_OFF, 
-								tmu_maxtrr, 1);
+							param->param[STM8_PARAM_FLASH_NCR2], 
+							param->param[STM8_PARAM_FLASH_IAPSR], cmd, 
+							STM8_FUSEPAGE_ADDR + STM8A_OPT_TMUMAXATT_OFF, 
+							tmu_maxtrr, 1);
 				}
 			}
 		}
@@ -1071,6 +987,9 @@ READ_TARGET_HANDLER(stm8swim)
 	uint8_t fuse_page[128];
 	uint16_t cur_size;
 	RESULT ret = ERROR_OK;
+	uint8_t i;
+	struct stm8_optionbyte_info_t *optionbyte_info;
+	uint8_t optionbyte_num;
 	
 	switch (area)
 	{
@@ -1116,24 +1035,21 @@ READ_TARGET_HANDLER(stm8swim)
 		{
 		case STM8_TYPE_STM8A:
 		case STM8_TYPE_STM8S:
-			buff[0] = fuse_page[0];
-			buff[1] = fuse_page[1];
-			buff[2] = fuse_page[3];
-			buff[3] = fuse_page[5];
-			buff[4] = fuse_page[7];
-			buff[5] = fuse_page[9];
-			buff[6] = fuse_page[13];
-			buff[7] = fuse_page[126];
-			break;
+			optionbyte_info = 
+				(struct stm8_optionbyte_info_t *)&stm8_optionbyte_info_stm8sa;
+			optionbyte_num = stm8_optionbyte_num_stm8sa;
+			goto do_read_fuse;
 		case STM8_TYPE_STM8L:
+			optionbyte_info = 
+				(struct stm8_optionbyte_info_t *)&stm8_optionbyte_info_stm8l;
+			optionbyte_num = stm8_optionbyte_num_stm8l;
+do_read_fuse:
 			buff[0] = fuse_page[0];
-			buff[1] = fuse_page[2];
-			buff[2] = fuse_page[3];
-			buff[3] = fuse_page[8];
-			buff[4] = 0;
-			buff[5] = fuse_page[9];
-			buff[6] = fuse_page[10];
-			buff[7] = fuse_page[11];
+			for (i = 0; i < optionbyte_num; i++)
+			{
+				buff[optionbyte_info[i].offset] = 
+					fuse_page[optionbyte_info[i].addr];
+			}
 			break;
 		default:
 			ret = ERROR_FAIL;
