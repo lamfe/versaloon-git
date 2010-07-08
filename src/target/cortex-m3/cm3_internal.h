@@ -25,6 +25,7 @@ struct cm3_param_t
 	uint16_t jtag_khz;
 	struct jtag_pos_t pos;
 	uint8_t swd_trn;
+	uint16_t swd_delay;
 	const struct program_functions_t *program_functions;
 };
 

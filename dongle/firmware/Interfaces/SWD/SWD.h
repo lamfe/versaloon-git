@@ -26,8 +26,8 @@
 
 #define SWD_TRANS_RnW			(1 << 2)
 
-uint8 SWD_SeqIn(uint8 *seq, uint16 num_of_bits);
-uint8 SWD_SeqOut(uint8 *seq, uint16 num_of_bits);
+extern uint8 (*SWD_SeqIn)(uint8 *seq, uint16 num_of_bits);
+extern uint8 (*SWD_SeqOut)(uint8 *seq, uint16 num_of_bits);
 void SWD_StopClock(void);
 uint8 SWD_Transaction(uint8 request, uint32 *buff);
 
