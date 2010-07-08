@@ -14,7 +14,7 @@
     <ee_default>0x00</ee_default>
     <ee_addr>0x004000</ee_addr>
     <ee_seg>0</ee_seg>
-    <fuse init="0x0000000000000000" bytesize="8" />
+    <fuse init="0x0000000000000000" bytesize="8" mask="0xFFFFFFFFFFFFFFFF"/>
   </chip>
   <chip name="stm8s207mb">
     <program_mode>si</program_mode>
@@ -23,7 +23,7 @@
     <app_page_num>1024</app_page_num>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>16</ee_page_num>
-    <fuse init="0x0000000000000000" bytesize="8">
+    <fuse init="0x0000000000000000" bytesize="8" mask="0xFFFFFFFFFFFFFFFF">
       <warning>
         <w mask="0x000000000000FF00" value="0x000000000000FF00" msg="0xFF is reserved value for UBC!" />
       </warning>
@@ -121,7 +121,7 @@
     <app_page_num>512</app_page_num>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>16</ee_page_num>
-    <fuse init="0x0000000000000000" bytesize="8">
+    <fuse init="0x0000000000000000" bytesize="8" mask="0xFFFFFFFFFFFFFFFF">
       <warning>
         <w mask="0x000000000000FF00" value="0x000000000000FF00" msg="0xFF is reserved value for UBC!" />
       </warning>
@@ -219,7 +219,7 @@
     <app_page_num>1024</app_page_num>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>16</ee_page_num>
-    <fuse init="0x0000000000000000" bytesize="8">
+    <fuse init="0x0000000000000000" bytesize="8" mask="0xFFFFFFFFFFFFFFFF">
       <warning>
         <w mask="0x000000000000FF00" value="0x000000000000FF00" msg="0xFF is reserved value for UBC!" />
       </warning>
@@ -317,7 +317,7 @@
     <app_page_num>512</app_page_num>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>12</ee_page_num>
-    <fuse init="0x0000000000000000" bytesize="8">
+    <fuse init="0x0000000000000000" bytesize="8" mask="0xFFFFFFFFFFFFFFFF">
       <warning>
         <w mask="0x000000000000FF00" value="0x000000000000FF00" msg="0xFF is reserved value for UBC!" />
       </warning>
@@ -415,7 +415,7 @@
     <app_page_num>256</app_page_num>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>8</ee_page_num>
-    <fuse init="0x0000000000000000" bytesize="8">
+    <fuse init="0x0000000000000000" bytesize="8" mask="0xFFFFFFFFFFFFFFFF">
       <warning>
         <w mask="0x000000000000FF00" value="0x000000000000FF00" msg="0xFF is reserved value for UBC!" />
       </warning>
@@ -513,7 +513,7 @@
     <app_page_num>1024</app_page_num>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>16</ee_page_num>
-    <fuse init="0x0000000000000000" bytesize="8">
+    <fuse init="0x0000000000000000" bytesize="8" mask="0xFFFFFFFFFFFFFFFF">
       <warning>
         <w mask="0x000000000000FF00" value="0x000000000000FF00" msg="0xFF is reserved value for UBC!" />
       </warning>
@@ -611,7 +611,7 @@
     <app_page_num>512</app_page_num>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>12</ee_page_num>
-    <fuse init="0x0000000000000000" bytesize="8">
+    <fuse init="0x0000000000000000" bytesize="8" mask="0xFFFFFFFFFFFFFFFF">
       <warning>
         <w mask="0x000000000000FF00" value="0x000000000000FF00" msg="0xFF is reserved value for UBC!" />
       </warning>
@@ -709,7 +709,7 @@
     <app_page_num>256</app_page_num>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>8</ee_page_num>
-    <fuse init="0x0000000000000000" bytesize="8">
+    <fuse init="0x0000000000000000" bytesize="8" mask="0xFFFFFFFFFFFFFFFF">
       <warning>
         <w mask="0x000000000000FF00" value="0x000000000000FF00" msg="0xFF is reserved value for UBC!" />
       </warning>
@@ -807,7 +807,7 @@
     <app_page_num>1024</app_page_num>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>12</ee_page_num>
-    <fuse init="0x0000000000000000" bytesize="8">
+    <fuse init="0x0000000000000000" bytesize="8" mask="0xFFFFFFFFFFFFFFFF">
       <warning>
         <w mask="0x000000000000FF00" value="0x000000000000FF00" msg="0xFF is reserved value for UBC!" />
       </warning>
@@ -905,7 +905,7 @@
     <app_page_num>512</app_page_num>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>12</ee_page_num>
-    <fuse init="0x0000000000000000" bytesize="8">
+    <fuse init="0x0000000000000000" bytesize="8" mask="0xFFFFFFFFFFFFFFFF">
       <warning>
         <w mask="0x000000000000FF00" value="0x000000000000FF00" msg="0xFF is reserved value for UBC!" />
       </warning>
@@ -1003,7 +1003,7 @@
     <app_page_num>256</app_page_num>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>8</ee_page_num>
-    <fuse init="0x0000000000000000" bytesize="8">
+    <fuse init="0x0000000000000000" bytesize="8" mask="0xFFFFFFFFFFFFFFFF">
       <warning>
         <w mask="0x000000000000FF00" value="0x000000000000FF00" msg="0xFF is reserved value for UBC!" />
       </warning>
@@ -1101,7 +1101,7 @@
     <app_page_num>256</app_page_num>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>8</ee_page_num>
-    <fuse init="0x0000000000000000" bytesize="8">
+    <fuse init="0x0000000000000000" bytesize="8" mask="0xFFFFFFFFFFFFFFFF">
       <warning>
         <w mask="0x000000000000FF00" value="0x000000000000FF00" msg="0xFF is reserved value for UBC!" />
       </warning>
@@ -1199,7 +1199,7 @@
     <app_page_num>1024</app_page_num>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>16</ee_page_num>
-    <fuse init="0x0000000000000000" bytesize="8">
+    <fuse init="0x0000000000000000" bytesize="8" mask="0xFFFFFFFFFFFFFFFF">
       <warning>
         <w mask="0x000000000000FF00" value="0x000000000000FF00" msg="0xFF is reserved value for UBC!" />
       </warning>
@@ -1297,7 +1297,7 @@
     <app_page_num>1024</app_page_num>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>16</ee_page_num>
-    <fuse init="0x0000000000000000" bytesize="8">
+    <fuse init="0x0000000000000000" bytesize="8" mask="0xFFFFFFFFFFFFFFFF">
       <warning>
         <w mask="0x000000000000FF00" value="0x000000000000FF00" msg="0xFF is reserved value for UBC!" />
       </warning>
@@ -1395,7 +1395,7 @@
     <app_page_num>512</app_page_num>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>16</ee_page_num>
-    <fuse init="0x0000000000000000" bytesize="8">
+    <fuse init="0x0000000000000000" bytesize="8" mask="0xFFFFFFFFFFFFFFFF">
       <warning>
         <w mask="0x000000000000FF00" value="0x000000000000FF00" msg="0xFF is reserved value for UBC!" />
       </warning>
@@ -1493,7 +1493,7 @@
     <app_page_num>256</app_page_num>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>16</ee_page_num>
-    <fuse init="0x0000000000000000" bytesize="8">
+    <fuse init="0x0000000000000000" bytesize="8" mask="0xFFFFFFFFFFFFFFFF">
       <warning>
         <w mask="0x000000000000FF00" value="0x000000000000FF00" msg="0xFF is reserved value for UBC!" />
       </warning>
@@ -1591,7 +1591,7 @@
     <app_page_num>1024</app_page_num>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>16</ee_page_num>
-    <fuse init="0x0000000000000000" bytesize="8">
+    <fuse init="0x0000000000000000" bytesize="8" mask="0xFFFFFFFFFFFFFFFF">
       <warning>
         <w mask="0x000000000000FF00" value="0x000000000000FF00" msg="0xFF is reserved value for UBC!" />
       </warning>
@@ -1689,7 +1689,7 @@
     <app_page_num>512</app_page_num>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>16</ee_page_num>
-    <fuse init="0x0000000000000000" bytesize="8">
+    <fuse init="0x0000000000000000" bytesize="8" mask="0xFFFFFFFFFFFFFFFF">
       <warning>
         <w mask="0x000000000000FF00" value="0x000000000000FF00" msg="0xFF is reserved value for UBC!" />
       </warning>
@@ -1787,7 +1787,7 @@
     <app_page_num>256</app_page_num>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>16</ee_page_num>
-    <fuse init="0x0000000000000000" bytesize="8">
+    <fuse init="0x0000000000000000" bytesize="8" mask="0xFFFFFFFFFFFFFFFF">
       <warning>
         <w mask="0x000000000000FF00" value="0x000000000000FF00" msg="0xFF is reserved value for UBC!" />
       </warning>
@@ -1885,7 +1885,7 @@
     <app_page_num>1024</app_page_num>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>12</ee_page_num>
-    <fuse init="0x0000000000000000" bytesize="8">
+    <fuse init="0x0000000000000000" bytesize="8" mask="0xFFFFFFFFFFFFFFFF">
       <warning>
         <w mask="0x000000000000FF00" value="0x000000000000FF00" msg="0xFF is reserved value for UBC!" />
       </warning>
@@ -1983,7 +1983,7 @@
     <app_page_num>512</app_page_num>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>12</ee_page_num>
-    <fuse init="0x0000000000000000" bytesize="8">
+    <fuse init="0x0000000000000000" bytesize="8" mask="0xFFFFFFFFFFFFFFFF">
       <warning>
         <w mask="0x000000000000FF00" value="0x000000000000FF00" msg="0xFF is reserved value for UBC!" />
       </warning>
@@ -2081,7 +2081,7 @@
     <app_page_num>256</app_page_num>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>12</ee_page_num>
-    <fuse init="0x0000000000000000" bytesize="8">
+    <fuse init="0x0000000000000000" bytesize="8" mask="0xFFFFFFFFFFFFFFFF">
       <warning>
         <w mask="0x000000000000FF00" value="0x000000000000FF00" msg="0xFF is reserved value for UBC!" />
       </warning>
@@ -2179,7 +2179,7 @@
     <app_page_num>16</app_page_num>
     <ee_page_size>64</ee_page_size>
     <ee_page_num>10</ee_page_num>
-    <fuse init="0x0000000000000000" bytesize="8">
+    <fuse init="0x0000000000000000" bytesize="8" mask="0x0000FFFFFFFFFFFF">
       <setting name="ROP" mask="0x00000000000000FF" info="Read-out protection" checked="0xAA" unchecked="0" />
       <setting name="UBC" mask="0x000000000000FF00" info="User boot code" radix="16" shift="8" bytelen="1"/>
       <setting name="AFR0/1" mask="0x0000000000030000" info="Alternate function remapping option 0 and 1">
@@ -2270,7 +2270,7 @@
     <app_page_num>256</app_page_num>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>8</ee_page_num>
-    <fuse init="0x0000000000000000" bytesize="8">
+    <fuse init="0x0000000000000000" bytesize="8" mask="0xFF00FFFFFFFFFFFF">
       <setting name="ROP" mask="0x00000000000000FF" info="Read-out protection" checked="0xAA" unchecked="0" />
       <setting name="UBC" mask="0x000000000000FF00" info="User boot code" radix="16" shift="8" bytelen="1"/>
       <setting name="AFR0" mask="0x0000000000010000" info="Alternate function remapping option 0">
@@ -2364,7 +2364,7 @@
     <app_page_num>128</app_page_num>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>8</ee_page_num>
-    <fuse init="0x0000000000000000" bytesize="8">
+    <fuse init="0x0000000000000000" bytesize="8" mask="0xFF00FFFFFFFFFFFF">
       <setting name="ROP" mask="0x00000000000000FF" info="Read-out protection" checked="0xAA" unchecked="0" />
       <setting name="UBC" mask="0x000000000000FF00" info="User boot code" radix="16" shift="8" bytelen="1"/>
       <setting name="AFR0" mask="0x0000000000010000" info="Alternate function remapping option 0">
@@ -2458,7 +2458,7 @@
     <app_page_num>256</app_page_num>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>8</ee_page_num>
-    <fuse init="0x0000000000000000" bytesize="8">
+    <fuse init="0x0000000000000000" bytesize="8" mask="0xFF00FFFFFFFFFFFF">
       <setting name="ROP" mask="0x00000000000000FF" info="Read-out protection" checked="0xAA" unchecked="0" />
       <setting name="UBC" mask="0x000000000000FF00" info="User boot code" radix="16" shift="8" bytelen="1"/>
       <setting name="AFR0" mask="0x0000000000010000" info="Alternate function remapping option 0">
@@ -2552,7 +2552,7 @@
     <app_page_num>128</app_page_num>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>8</ee_page_num>
-    <fuse init="0x0000000000000000" bytesize="8">
+    <fuse init="0x0000000000000000" bytesize="8" mask="0xFF00FFFFFFFFFFFF">
       <setting name="ROP" mask="0x00000000000000FF" info="Read-out protection" checked="0xAA" unchecked="0" />
       <setting name="UBC" mask="0x000000000000FF00" info="User boot code" radix="16" shift="8" bytelen="1"/>
       <setting name="AFR0" mask="0x0000000000010000" info="Alternate function remapping option 0">
@@ -2646,7 +2646,7 @@
     <app_page_num>256</app_page_num>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>8</ee_page_num>
-    <fuse init="0x0000000000000000" bytesize="8">
+    <fuse init="0x0000000000000000" bytesize="8" mask="0xFF00FFFFFFFFFFFF">
       <setting name="ROP" mask="0x00000000000000FF" info="Read-out protection" checked="0xAA" unchecked="0" />
       <setting name="UBC" mask="0x000000000000FF00" info="User boot code" radix="16" shift="8" bytelen="1"/>
       <setting name="AFR0" mask="0x0000000000010000" info="Alternate function remapping option 0">
@@ -2740,7 +2740,7 @@
     <app_page_num>128</app_page_num>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>8</ee_page_num>
-    <fuse init="0x0000000000000000" bytesize="8">
+    <fuse init="0x0000000000000000" bytesize="8" mask="0xFF00FFFFFFFFFFFF">
       <setting name="ROP" mask="0x00000000000000FF" info="Read-out protection" checked="0xAA" unchecked="0" />
       <setting name="UBC" mask="0x000000000000FF00" info="User boot code" radix="16" shift="8" bytelen="1"/>
       <setting name="AFR0" mask="0x0000000000010000" info="Alternate function remapping option 0">
@@ -2834,7 +2834,7 @@
     <app_page_num>128</app_page_num>
     <ee_page_size>64</ee_page_size>
     <ee_page_num>10</ee_page_num>
-    <fuse init="0x0000000000000000" bytesize="8">
+    <fuse init="0x0000000000000000" bytesize="8" mask="0x0000FFFFFFFFFFFF">
       <setting name="ROP" mask="0x00000000000000FF" info="Read-out protection" checked="0xAA" unchecked="0" />
       <setting name="UBC" mask="0x000000000000FF00" info="User boot code" radix="16" shift="8" bytelen="1"/>
       <setting name="AFR1" mask="0x0000000000020000" info="Alternate function remapping option 1">
@@ -2907,7 +2907,7 @@
     <app_page_num>128</app_page_num>
     <ee_page_size>64</ee_page_size>
     <ee_page_num>10</ee_page_num>
-    <fuse init="0x0000000000000000" bytesize="8">
+    <fuse init="0x0000000000000000" bytesize="8" mask="0x0000FFFFFFFFFFFF">
       <setting name="ROP" mask="0x00000000000000FF" info="Read-out protection" checked="0xAA" unchecked="0" />
       <setting name="UBC" mask="0x000000000000FF00" info="User boot code" radix="16" shift="8" bytelen="1"/>
       <setting name="AFR1" mask="0x0000000000020000" info="Alternate function remapping option 1">
@@ -2980,7 +2980,7 @@
     <app_page_num>64</app_page_num>
     <ee_page_size>64</ee_page_size>
     <ee_page_num>10</ee_page_num>
-    <fuse init="0x0000000000000000" bytesize="8">
+    <fuse init="0x0000000000000000" bytesize="8" mask="0x0000FFFFFFFFFFFF">
       <setting name="ROP" mask="0x00000000000000FF" info="Read-out protection" checked="0xAA" unchecked="0" />
       <setting name="UBC" mask="0x000000000000FF00" info="User boot code" radix="16" shift="8" bytelen="1"/>
       <setting name="AFR1" mask="0x0000000000020000" info="Alternate function remapping option 1">
@@ -3053,7 +3053,7 @@
     <app_page_num>128</app_page_num>
     <ee_page_size>64</ee_page_size>
     <ee_page_num>0</ee_page_num>
-    <fuse init="0x0000000000000000" bytesize="8">
+    <fuse init="0x0000000000000000" bytesize="8" mask="0x00000000FFFFFFFF">
       <setting name="ROP" mask="0x00000000000000FF" info="Read-out protection" checked="0xAA" unchecked="0" />
       <setting name="UBC" mask="0x000000000000FF00" info="User boot code" radix="16" shift="8" bytelen="1"/>
       <setting name="DATASIZE" mask="0x0000000000FF0000" info="Size of the data EEPROM area" radix="10" shift="16" bytelen="1"/>
@@ -3084,7 +3084,7 @@
     <app_page_num>128</app_page_num>
     <ee_page_size>64</ee_page_size>
     <ee_page_num>0</ee_page_num>
-    <fuse init="0x0000000000000000" bytesize="8">
+    <fuse init="0x0000000000000000" bytesize="8" mask="0x00000000FFFFFFFF">
       <setting name="ROP" mask="0x00000000000000FF" info="Read-out protection" checked="0xAA" unchecked="0" />
       <setting name="UBC" mask="0x000000000000FF00" info="User boot code" radix="16" shift="8" bytelen="1"/>
       <setting name="DATASIZE" mask="0x0000000000FF0000" info="Size of the data EEPROM area" radix="10" shift="16" bytelen="1"/>
@@ -3115,7 +3115,7 @@
     <app_page_num>64</app_page_num>
     <ee_page_size>64</ee_page_size>
     <ee_page_num>0</ee_page_num>
-    <fuse init="0x0000000000000000" bytesize="8">
+    <fuse init="0x0000000000000000" bytesize="8" mask="0x00000000FFFFFFFF">
       <setting name="ROP" mask="0x00000000000000FF" info="Read-out protection" checked="0xAA" unchecked="0" />
       <setting name="UBC" mask="0x000000000000FF00" info="User boot code" radix="16" shift="8" bytelen="1"/>
       <setting name="DATASIZE" mask="0x0000000000FF0000" info="Size of the data EEPROM area" radix="10" shift="16" bytelen="1"/>
@@ -3146,7 +3146,7 @@
     <app_page_num>128</app_page_num>
     <ee_page_size>64</ee_page_size>
     <ee_page_num>0</ee_page_num>
-    <fuse init="0x0000000000000000" bytesize="8">
+    <fuse init="0x0000000000000000" bytesize="8" mask="0x00000000FFFFFFFF">
       <setting name="ROP" mask="0x00000000000000FF" info="Read-out protection" checked="0xAA" unchecked="0" />
       <setting name="UBC" mask="0x000000000000FF00" info="User boot code" radix="16" shift="8" bytelen="1"/>
       <setting name="DATASIZE" mask="0x0000000000FF0000" info="Size of the data EEPROM area" radix="10" shift="16" bytelen="1"/>
@@ -3177,7 +3177,7 @@
     <app_page_num>64</app_page_num>
     <ee_page_size>64</ee_page_size>
     <ee_page_num>0</ee_page_num>
-    <fuse init="0x0000000000000000" bytesize="8">
+    <fuse init="0x0000000000000000" bytesize="8" mask="0x00000000FFFFFFFF">
       <setting name="ROP" mask="0x00000000000000FF" info="Read-out protection" checked="0xAA" unchecked="0" />
       <setting name="UBC" mask="0x000000000000FF00" info="User boot code" radix="16" shift="8" bytelen="1"/>
       <setting name="DATASIZE" mask="0x0000000000FF0000" info="Size of the data EEPROM area" radix="10" shift="16" bytelen="1"/>
@@ -3208,7 +3208,7 @@
     <app_page_num>256</app_page_num>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>8</ee_page_num>
-    <fuse init="0x0000000000000000" bytesize="8">
+    <fuse init="0x0000000000000000" bytesize="8" mask="0xFFFFFF00FF00FFFF">
       <setting name="ROP" mask="0x00000000000000FF" info="Read-out protection" checked="0xAA" unchecked="0" />
       <setting name="UBC" mask="0x000000000000FF00" info="User boot code" radix="16" shift="8" bytelen="1"/>
       <setting name="IWDG_HW" mask="0x0000000001000000" info="Independent watchdog">
@@ -3267,7 +3267,7 @@
     <app_page_num>128</app_page_num>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>8</ee_page_num>
-    <fuse init="0x0000000000000000" bytesize="8">
+    <fuse init="0x0000000000000000" bytesize="8" mask="0xFFFFFF00FF00FFFF">
       <setting name="ROP" mask="0x00000000000000FF" info="Read-out protection" checked="0xAA" unchecked="0" />
       <setting name="UBC" mask="0x000000000000FF00" info="User boot code" radix="16" shift="8" bytelen="1"/>
       <setting name="IWDG_HW" mask="0x0000000001000000" info="Independent watchdog">
@@ -3326,7 +3326,7 @@
     <app_page_num>256</app_page_num>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>8</ee_page_num>
-    <fuse init="0x0000000000000000" bytesize="8">
+    <fuse init="0x0000000000000000" bytesize="8" mask="0xFFFFFF00FF00FFFF">
       <setting name="ROP" mask="0x00000000000000FF" info="Read-out protection" checked="0xAA" unchecked="0" />
       <setting name="UBC" mask="0x000000000000FF00" info="User boot code" radix="16" shift="8" bytelen="1"/>
       <setting name="IWDG_HW" mask="0x0000000001000000" info="Independent watchdog">
@@ -3385,7 +3385,7 @@
     <app_page_num>128</app_page_num>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>8</ee_page_num>
-    <fuse init="0x0000000000000000" bytesize="8">
+    <fuse init="0x0000000000000000" bytesize="8" mask="0xFFFFFF00FF00FFFF">
       <setting name="ROP" mask="0x00000000000000FF" info="Read-out protection" checked="0xAA" unchecked="0" />
       <setting name="UBC" mask="0x000000000000FF00" info="User boot code" radix="16" shift="8" bytelen="1"/>
       <setting name="IWDG_HW" mask="0x0000000001000000" info="Independent watchdog">
@@ -3444,7 +3444,7 @@
     <app_page_num>256</app_page_num>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>8</ee_page_num>
-    <fuse init="0x0000000000000000" bytesize="8">
+    <fuse init="0x0000000000000000" bytesize="8" mask="0xFFFFFF00FF00FFFF">
       <setting name="ROP" mask="0x00000000000000FF" info="Read-out protection" checked="0xAA" unchecked="0" />
       <setting name="UBC" mask="0x000000000000FF00" info="User boot code" radix="16" shift="8" bytelen="1"/>
       <setting name="IWDG_HW" mask="0x0000000001000000" info="Independent watchdog">
@@ -3503,7 +3503,7 @@
     <app_page_num>128</app_page_num>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>8</ee_page_num>
-    <fuse init="0x0000000000000000" bytesize="8">
+    <fuse init="0x0000000000000000" bytesize="8" mask="0xFFFFFF00FF00FFFF">
       <setting name="ROP" mask="0x00000000000000FF" info="Read-out protection" checked="0xAA" unchecked="0" />
       <setting name="UBC" mask="0x000000000000FF00" info="User boot code" radix="16" shift="8" bytelen="1"/>
       <setting name="IWDG_HW" mask="0x0000000001000000" info="Independent watchdog">
@@ -3562,7 +3562,7 @@
     <app_page_num>256</app_page_num>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>8</ee_page_num>
-    <fuse init="0x0000000000000000" bytesize="8">
+    <fuse init="0x0000000000000000" bytesize="8" mask="0xFFFFFF00FF00FFFF">
       <setting name="ROP" mask="0x00000000000000FF" info="Read-out protection" checked="0xAA" unchecked="0" />
       <setting name="UBC" mask="0x000000000000FF00" info="User boot code" radix="16" shift="8" bytelen="1"/>
       <setting name="IWDG_HW" mask="0x0000000001000000" info="Independent watchdog">
@@ -3621,7 +3621,7 @@
     <app_page_num>128</app_page_num>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>8</ee_page_num>
-    <fuse init="0x0000000000000000" bytesize="8">
+    <fuse init="0x0000000000000000" bytesize="8" mask="0xFFFFFF00FF00FFFF">
       <setting name="ROP" mask="0x00000000000000FF" info="Read-out protection" checked="0xAA" unchecked="0" />
       <setting name="UBC" mask="0x000000000000FF00" info="User boot code" radix="16" shift="8" bytelen="1"/>
       <setting name="IWDG_HW" mask="0x0000000001000000" info="Independent watchdog">
@@ -3680,7 +3680,7 @@
     <app_page_num>256</app_page_num>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>8</ee_page_num>
-    <fuse init="0x0000000000000000" bytesize="8">
+    <fuse init="0x0000000000000000" bytesize="8" mask="0xFFFFFF00FF00FFFF">
       <setting name="ROP" mask="0x00000000000000FF" info="Read-out protection" checked="0xAA" unchecked="0" />
       <setting name="UBC" mask="0x000000000000FF00" info="User boot code" radix="16" shift="8" bytelen="1"/>
       <setting name="IWDG_HW" mask="0x0000000001000000" info="Independent watchdog">
@@ -3739,7 +3739,7 @@
     <app_page_num>128</app_page_num>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>8</ee_page_num>
-    <fuse init="0x0000000000000000" bytesize="8">
+    <fuse init="0x0000000000000000" bytesize="8" mask="0xFFFFFF00FF00FFFF">
       <setting name="ROP" mask="0x00000000000000FF" info="Read-out protection" checked="0xAA" unchecked="0" />
       <setting name="UBC" mask="0x000000000000FF00" info="User boot code" radix="16" shift="8" bytelen="1"/>
       <setting name="IWDG_HW" mask="0x0000000001000000" info="Independent watchdog">
@@ -3798,7 +3798,7 @@
     <app_page_num>1024</app_page_num>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>16</ee_page_num>
-    <fuse init="0x0000000000000000" bytesize="8">
+    <fuse init="0x0000000000000000" bytesize="8" mask="0xFFFFFFFFFFFFFFFF">
       <setting name="ROP" mask="0x00000000000000FF" info="Read-out protection" checked="0xAA" unchecked="0" />
       <setting name="UBC" mask="0x000000000000FF00" info="User boot code" radix="16" shift="8" bytelen="1"/>
       <setting name="AFR0" mask="0x0000000000010000" info="Alternate function remapping option 0">
@@ -3893,7 +3893,7 @@
     <app_page_num>768</app_page_num>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>16</ee_page_num>
-    <fuse init="0x0000000000000000" bytesize="8">
+    <fuse init="0x0000000000000000" bytesize="8" mask="0xFFFFFFFFFFFFFFFF">
       <setting name="ROP" mask="0x00000000000000FF" info="Read-out protection" checked="0xAA" unchecked="0" />
       <setting name="UBC" mask="0x000000000000FF00" info="User boot code" radix="16" shift="8" bytelen="1"/>
       <setting name="AFR0" mask="0x0000000000010000" info="Alternate function remapping option 0">
@@ -3988,7 +3988,7 @@
     <app_page_num>1024</app_page_num>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>16</ee_page_num>
-    <fuse init="0x0000000000000000" bytesize="8">
+    <fuse init="0x0000000000000000" bytesize="8" mask="0xFFFFFFFFFFFFFFFF">
       <setting name="ROP" mask="0x00000000000000FF" info="Read-out protection" checked="0xAA" unchecked="0" />
       <setting name="UBC" mask="0x000000000000FF00" info="User boot code" radix="16" shift="8" bytelen="1"/>
       <setting name="AFR0" mask="0x0000000000010000" info="Alternate function remapping option 0">
@@ -4083,7 +4083,7 @@
     <app_page_num>768</app_page_num>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>16</ee_page_num>
-    <fuse init="0x0000000000000000" bytesize="8">
+    <fuse init="0x0000000000000000" bytesize="8" mask="0xFFFFFFFFFFFFFFFF">
       <setting name="ROP" mask="0x00000000000000FF" info="Read-out protection" checked="0xAA" unchecked="0" />
       <setting name="UBC" mask="0x000000000000FF00" info="User boot code" radix="16" shift="8" bytelen="1"/>
       <setting name="AFR0" mask="0x0000000000010000" info="Alternate function remapping option 0">
@@ -4178,7 +4178,7 @@
     <app_page_num>512</app_page_num>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>12</ee_page_num>
-    <fuse init="0x0000000000000000" bytesize="8">
+    <fuse init="0x0000000000000000" bytesize="8" mask="0xFFFFFFFFFFFFFFFF">
       <setting name="ROP" mask="0x00000000000000FF" info="Read-out protection" checked="0xAA" unchecked="0" />
       <setting name="UBC" mask="0x000000000000FF00" info="User boot code" radix="16" shift="8" bytelen="1"/>
       <setting name="AFR0" mask="0x0000000000010000" info="Alternate function remapping option 0">
@@ -4273,7 +4273,7 @@
     <app_page_num>384</app_page_num>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>12</ee_page_num>
-    <fuse init="0x0000000000000000" bytesize="8">
+    <fuse init="0x0000000000000000" bytesize="8" mask="0xFFFFFFFFFFFFFFFF">
       <setting name="ROP" mask="0x00000000000000FF" info="Read-out protection" checked="0xAA" unchecked="0" />
       <setting name="UBC" mask="0x000000000000FF00" info="User boot code" radix="16" shift="8" bytelen="1"/>
       <setting name="AFR0" mask="0x0000000000010000" info="Alternate function remapping option 0">
@@ -4368,7 +4368,7 @@
     <app_page_num>256</app_page_num>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>8</ee_page_num>
-    <fuse init="0x0000000000000000" bytesize="8">
+    <fuse init="0x0000000000000000" bytesize="8" mask="0xFFFFFFFFFFFFFFFF">
       <setting name="ROP" mask="0x00000000000000FF" info="Read-out protection" checked="0xAA" unchecked="0" />
       <setting name="UBC" mask="0x000000000000FF00" info="User boot code" radix="16" shift="8" bytelen="1"/>
       <setting name="AFR0" mask="0x0000000000010000" info="Alternate function remapping option 0">
@@ -4463,7 +4463,7 @@
     <app_page_num>1024</app_page_num>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>16</ee_page_num>
-    <fuse init="0x0000000000000000" bytesize="8">
+    <fuse init="0x0000000000000000" bytesize="8" mask="0xFFFFFFFFFFFFFFFF">
       <setting name="ROP" mask="0x00000000000000FF" info="Read-out protection" checked="0xAA" unchecked="0" />
       <setting name="UBC" mask="0x000000000000FF00" info="User boot code" radix="16" shift="8" bytelen="1"/>
       <setting name="AFR0" mask="0x0000000000010000" info="Alternate function remapping option 0">
@@ -4558,7 +4558,7 @@
     <app_page_num>768</app_page_num>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>16</ee_page_num>
-    <fuse init="0x0000000000000000" bytesize="8">
+    <fuse init="0x0000000000000000" bytesize="8" mask="0xFFFFFFFFFFFFFFFF">
       <setting name="ROP" mask="0x00000000000000FF" info="Read-out protection" checked="0xAA" unchecked="0" />
       <setting name="UBC" mask="0x000000000000FF00" info="User boot code" radix="16" shift="8" bytelen="1"/>
       <setting name="AFR0" mask="0x0000000000010000" info="Alternate function remapping option 0">
@@ -4653,7 +4653,7 @@
     <app_page_num>512</app_page_num>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>12</ee_page_num>
-    <fuse init="0x0000000000000000" bytesize="8">
+    <fuse init="0x0000000000000000" bytesize="8" mask="0xFFFFFFFFFFFFFFFF">
       <setting name="ROP" mask="0x00000000000000FF" info="Read-out protection" checked="0xAA" unchecked="0" />
       <setting name="UBC" mask="0x000000000000FF00" info="User boot code" radix="16" shift="8" bytelen="1"/>
       <setting name="AFR0" mask="0x0000000000010000" info="Alternate function remapping option 0">
@@ -4748,7 +4748,7 @@
     <app_page_num>384</app_page_num>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>12</ee_page_num>
-    <fuse init="0x0000000000000000" bytesize="8">
+    <fuse init="0x0000000000000000" bytesize="8" mask="0xFFFFFFFFFFFFFFFF">
       <setting name="ROP" mask="0x00000000000000FF" info="Read-out protection" checked="0xAA" unchecked="0" />
       <setting name="UBC" mask="0x000000000000FF00" info="User boot code" radix="16" shift="8" bytelen="1"/>
       <setting name="AFR0" mask="0x0000000000010000" info="Alternate function remapping option 0">

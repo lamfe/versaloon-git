@@ -2649,6 +2649,12 @@ RESULT target_build_chip_series(const char *chip_series,
 				p_param->chip_areas[FUSE_IDX].default_value = strtoull(
 					(const char *)xmlGetProp(paramNode, BAD_CAST "init"), 
 					NULL, 0);
+				if (xmlGetProp(paramNode, BAD_CAST "mask") != NULL)
+				{
+					p_param->chip_areas[FUSE_IDX].mask = strtoull(
+						(const char *)xmlGetProp(paramNode, BAD_CAST "mask"), 
+						NULL, 0);
+				}
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "lock"))
 			{
@@ -2659,15 +2665,28 @@ RESULT target_build_chip_series(const char *chip_series,
 				p_param->chip_areas[LOCK_IDX].default_value = strtoull(
 					(const char *)xmlGetProp(paramNode, BAD_CAST "init"), 
 					NULL, 0);
+				if (xmlGetProp(paramNode, BAD_CAST "mask") != NULL)
+				{
+					p_param->chip_areas[LOCK_IDX].mask = strtoull(
+						(const char *)xmlGetProp(paramNode, BAD_CAST "mask"), 
+						NULL, 0);
+				}
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "calibration"))
 			{
+				target_para_size_defined |= CALIBRATION;
 				p_param->chip_areas[CALIBRATION_IDX].size = (uint32_t)strtoul(
 					(const char *)xmlGetProp(paramNode,BAD_CAST "bytesize"),
 					NULL, 0);
 				p_param->chip_areas[CALIBRATION_IDX].default_value = strtoull(
 						(const char *)xmlGetProp(paramNode, BAD_CAST "init"), 
 						NULL, 0);
+				if (xmlGetProp(paramNode, BAD_CAST "mask") != NULL)
+				{
+					p_param->chip_areas[CALIBRATION_IDX].mask = strtoull(
+						(const char *)xmlGetProp(paramNode, BAD_CAST "mask"), 
+						NULL, 0);
+				}
 			}
 			else
 			{

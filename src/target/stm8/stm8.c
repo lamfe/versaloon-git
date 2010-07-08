@@ -849,7 +849,9 @@ do_write_fuse:
 			{
 				if ((ERROR_OK == ret) 
 					&& (buff[optionbyte_info[i].offset] 
-						!= fuse_page[optionbyte_info[i].addr]))
+						!= fuse_page[optionbyte_info[i].addr]) 
+					&& (param->chip_areas[FUSE_IDX].mask 
+						& ((uint64_t)0xFF << (optionbyte_info[i].offset * 8))))
 				{
 					ret = stm8_program_reg(
 							param->param[STM8_PARAM_FLASH_CR2], 
@@ -1047,8 +1049,12 @@ do_read_fuse:
 			buff[0] = fuse_page[0];
 			for (i = 0; i < optionbyte_num; i++)
 			{
-				buff[optionbyte_info[i].offset] = 
-					fuse_page[optionbyte_info[i].addr];
+				if (param->chip_areas[FUSE_IDX].mask 
+					& ((uint64_t)0xFF << (optionbyte_info[i].offset * 8)))
+				{
+					buff[optionbyte_info[i].offset] = 
+						fuse_page[optionbyte_info[i].addr];
+				}
 			}
 			break;
 		default:
