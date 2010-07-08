@@ -185,6 +185,7 @@ struct chip_area_info_t
 	uint32_t page_size;
 	uint32_t page_num;
 	uint64_t default_value;
+	uint64_t mask;
 	uint32_t size;
 };
 
