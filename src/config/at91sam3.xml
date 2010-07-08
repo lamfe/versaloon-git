@@ -2,7 +2,7 @@
 <series name="at91sam3">
   <chip name="at91sam3">
     <chip_id>0x0000</chip_id>
-    <program_mode>j:JTAG(F)|s:SWJ</program_mode>
+    <program_mode>j:JTAG(F)|s:SWD</program_mode>
     <app_page_size>256</app_page_size>
     <app_page_num>1024</app_page_num>
     <app_default>0xFF</app_default>

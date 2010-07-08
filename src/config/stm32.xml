@@ -2,7 +2,7 @@
 <series name="stm32">
   <chip name="stm32">
     <chip_id>0x0000</chip_id>
-    <program_mode>j:JTAG(F)|s:SWJ|i:ISP(C)</program_mode>
+    <program_mode>j:JTAG(F)|s:SWD|i:ISP(C)</program_mode>
     <app_page_size>128</app_page_size>
     <app_page_num>2048</app_page_num>
     <app_default>0xFF</app_default>
