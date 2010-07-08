@@ -88,13 +88,22 @@ function TVSProg_Programmer.ProgrammerParser(var line: string): boolean;
 var
   strTmp: string;
   len: integer;
+  i: integer;
 begin
   Result := True;
   if (Pos('versaloon', line) = 1) and (Pos(' on ', line) > 0) then
   begin
     // found
-    strTmp := Copy(line, 1, Pos(' on ', line) - 1);
+    strTmp := Copy(line, Pos(': ', line) + 2, Pos(' on ', line) - Pos(': ', line) - 2);
     len := Length(strTmp);
+
+    for i := 0 to lbProgrammer.Items.Count - 1 do
+    begin
+      if lbProgrammer.Items.Strings[i] = strTmp then
+      begin
+        Exit;
+      end;
+    end;
     FSerialNumber := Copy(strTmp, len - 23, 24);
     lbProgrammer.Items.Add(strTmp);
   end;
