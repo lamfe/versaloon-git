@@ -1086,6 +1086,7 @@ RESULT target_program(struct program_context_t *context)
 				}
 				else
 				{
+					value = 0;
 					buff_tmp = (uint8_t*)&value;
 				}
 				if (ERROR_OK != pf->read_target(context, area_char, 
