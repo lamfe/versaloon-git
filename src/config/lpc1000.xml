@@ -2,7 +2,7 @@
 <series name="lpc1000">
   <chip name="lpc1000">
     <chip_id>0x0000</chip_id>
-    <program_mode>j:JTAG(F)|s:SWJ|i:ISP(C)</program_mode>
+    <program_mode>j:JTAG(F)|s:SWD|i:ISP(C)</program_mode>
     <sram_size>2048</sram_size>
     <app_page_size>1024</app_page_size>
     <app_page_num>512</app_page_num>
