@@ -25,7 +25,55 @@ uint16 SWD_Delay = 0;
 
 #define SWD_Delay()		DelayUS(SWD_Delay)
 
-uint8 SWD_SeqIn(uint8 *seq, uint16 num_of_bits)
+uint8 (*SWD_SeqIn)(uint8 *seq, uint16 num_of_bits);
+uint8 (*SWD_SeqOut)(uint8 *seq, uint16 num_of_bits);
+
+uint8 SWD_SeqIn_NoDelay(uint8 *seq, uint16 num_of_bits)
+{
+	uint16 i;
+	uint8 parity = 0;
+
+	for (i = 0; i < num_of_bits; i++)
+	{
+		SWD_SWCLK_SET();
+		SWD_SWCLK_CLR();
+		if (SWD_SWDIO_GET())
+		{
+			seq[i / 8] |= 1 << (i % 8);
+			parity++;
+		}
+		else
+		{
+			seq[i / 8] &= ~(1 << (i % 8));
+		}
+	}
+	return parity & 1;
+}
+
+uint8 SWD_SeqOut_NoDelay(uint8 *seq, uint16 num_of_bits)
+{
+	uint16 i;
+	uint8 parity = 0;
+
+	for (i = 0; i < num_of_bits; i++)
+	{
+		if (seq[i / 8] & (1 << (i % 8)))
+		{
+			SWD_SWDIO_SET();
+			parity++;
+		}
+		else
+		{
+			SWD_SWDIO_CLR();
+		}
+		SWD_SWCLK_SET();
+		SWD_SWCLK_CLR();
+	}
+
+	return parity & 1;
+}
+
+uint8 SWD_SeqIn_Delay(uint8 *seq, uint16 num_of_bits)
 {
 	uint16 i;
 	uint8 parity = 0;
@@ -49,7 +97,7 @@ uint8 SWD_SeqIn(uint8 *seq, uint16 num_of_bits)
 	return parity & 1;
 }
 
-uint8 SWD_SeqOut(uint8 *seq, uint16 num_of_bits)
+uint8 SWD_SeqOut_Delay(uint8 *seq, uint16 num_of_bits)
 {
 	uint16 i;
 	uint8 parity = 0;
@@ -173,7 +221,17 @@ void SWD_Fini(void)
 
 void SWD_SetDelay(uint16 dly)
 {
-	SWD_Delay = dly;
+	if (!dly)
+	{
+		SWD_SeqIn = SWD_SeqIn_NoDelay;
+		SWD_SeqOut = SWD_SeqOut_NoDelay;
+	}
+	else
+	{
+		SWD_SeqIn = SWD_SeqIn_Delay;
+		SWD_SeqOut = SWD_SeqOut_Delay;
+		SWD_Delay = dly - 1;
+	}
 }
 
 void SWD_SetTurnaround(uint8 cycles)

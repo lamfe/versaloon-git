@@ -64,10 +64,10 @@ struct program_functions_t cm3_program_functions =
 };
 
 const struct cm3_param_t cm3_chips_param[] = {
-//	chip_name,		jtag_khz,				pos			swd_trn,	program_functions
-	{"cm3_stm32",	STM32_IRC_KHZ / 6,		{0,1,0,5},	2,			&stm32swj_program_functions},
-	{"cm3_lpc1000",	LPC1000_IRC_KHZ / 6,	{0,0,0,0},	2,			&lpc1000swj_program_functions},
-	{"cm3_at91sam3",AT91SAM3_IRC_KHZ / 6,	{0,0,0,0},	2,			&at91sam3swj_program_functions}
+//	chip_name,		jtag_khz,				pos			swd_trn,swd_delay,	program_functions
+	{"cm3_stm32",	STM32_IRC_KHZ / 6,		{0,1,0,5},	2,		0,			&stm32swj_program_functions},
+	{"cm3_lpc1000",	LPC1000_IRC_KHZ / 6,	{0,0,0,0},	2,		1,			&lpc1000swj_program_functions},
+	{"cm3_at91sam3",AT91SAM3_IRC_KHZ / 6,	{0,0,0,0},	2,		0,			&at91sam3swj_program_functions}
 };
 static uint8_t cm3_chip_index = 0;
 
@@ -169,7 +169,15 @@ ENTER_PROGRAM_MODE_HANDLER(cm3)
 	case ADI_DP_SWD:
 		dp.adi_dp_if_info.adi_dp_swd.swd_trn = 
 				cm3_chips_param[cm3_chip_index].swd_trn;
-		dp.adi_dp_if_info.adi_dp_swd.swd_dly = 0;
+		if (context->pi->wait_state)
+		{
+			dp.adi_dp_if_info.adi_dp_swd.swd_dly = context->pi->wait_state;
+		}
+		else
+		{
+			dp.adi_dp_if_info.adi_dp_swd.swd_dly = 
+				cm3_chips_param[cm3_chip_index].swd_delay;
+		}
 		dp.adi_dp_if_info.adi_dp_swd.swd_retry = 0;
 		
 		break;
