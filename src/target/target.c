@@ -56,6 +56,7 @@
 #include "stm8/stm8.h"
 #include "at91sam3/at91sam3.h"
 #include "avr32/avr32.h"
+#include "avrxmega/avrxmega.h"
 
 const struct target_area_name_t target_area_name[NUM_OF_TARGET_AREA] = 
 {
@@ -138,7 +139,20 @@ struct target_info_t targets_info[] =
 		NULL,								// get_mass_product_data_size
 		NULL,								// prepare_mass_product_data
 	},
-*/	// stm8
+*/	// avrxmega
+	{
+		AVRXMEGA_STRING,					// name
+		AUTO_DETECT,						// feature
+		avrxmega_program_area_map,			// program_area_map
+		avrxmega_program_mode,				// program_mode
+		&avrxmega_program_functions,		// program_functions
+		avrxmega_parse_argument,			// parse_argument
+		NULL,								// adjust_setting
+		
+		NULL,								// get_mass_product_data_size
+		NULL,								// prepare_mass_product_data
+	},
+	// stm8
 	{
 		STM8_STRING,						// name
 		"",									// feature

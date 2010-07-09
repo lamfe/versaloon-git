@@ -39,6 +39,7 @@
 #define SWD						(1 << 23)
 #define SWIM					(1 << 24)
 #define HV						(1 << 25)
+#define PDI						(1 << 26)
 #define INVALID_INTERFACE		(1 << 30)
 #define INTERFACES_MASK			(USART | SPI | I2C | GPIO | CAN | CLOCK | ADC \
 								 | DAC | POWER | ISSP | JTAG | MSP430_JTAG \
