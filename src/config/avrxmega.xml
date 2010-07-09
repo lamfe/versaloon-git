@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<series name="avrxmega">
+  <chip name="avrxmega">
+    <chip_id>0x001E0000</chip_id>
+    <program_mode>j:JTAG(F)|p:PDI</program_mode>
+    <app_page_size>512</app_page_size>
+    <app_page_num>1024</app_page_num>
+    <app_default>0xFF</app_default>
+    <app_addr>0x00000000</app_addr>
+    <app_seg>0</app_seg>
+  </chip>
+  <chip name="atxmega64a3">
+    <chip_id>0x001E9642</chip_id>
+    <program_mode>jp</program_mode>
+    <app_page_num>1024</app_page_num>
+  </chip>
+</series>

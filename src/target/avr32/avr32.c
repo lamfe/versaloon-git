@@ -373,7 +373,7 @@ ENTER_PROGRAM_MODE_HANDLER(avr32jtag)
 					pi->jtag_pos.bb, pi->jtag_pos.ba);
 	if (ERROR_OK != jtag_commit())
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read id");
+		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "init jtag");
 		return ERROR_FAIL;
 	}
 	jtag_register_callback(avr32jtag_send_callback, 
