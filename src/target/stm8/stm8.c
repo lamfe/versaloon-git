@@ -487,12 +487,19 @@ ENTER_PROGRAM_MODE_HANDLER(stm8swim)
 	uint8_t test_buf0[7], test_buf1[6];
 	RESULT ret = ERROR_OK;
 	struct chip_param_t *param = context->param;
+	struct program_info_t *pi = context->pi;
 #ifdef STM8_USE_FLASHLOADER
 	struct operation_t *op = context->op;
 #endif
 	uint8_t target_mhz = (uint8_t)param->param[STM8_PARAM_IRC];
 	
 	interfaces = &(context->prog->interfaces);
+	
+	if ((pi->wait_state) && (param->param[STM8_PARAM_CLK_SWIMCCR] != 0))
+	{
+		param->param[STM8_PARAM_CLK_SWIMCCR] = 0;
+		target_mhz /= 2;
+	}
 	
 	stm8_swim_enabled = 0;
 	reset_init();
