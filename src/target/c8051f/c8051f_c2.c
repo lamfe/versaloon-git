@@ -72,7 +72,8 @@ struct program_functions_t c8051fc2_program_functions =
 
 #define poll_start(cnt)			interfaces->poll.poll_start((cnt), 100)
 #define poll_end()				interfaces->poll.poll_end()
-#define poll_check(o, m, v)		interfaces->poll.poll_checkbyte((o), (m), (v))
+#define poll_ok(o, m, v)		\
+	interfaces->poll.poll_checkok(POLL_CHECK_EQU, (o), 1, (m), (v))
 
 #define commit()				interfaces->peripheral_commit()
 
@@ -83,7 +84,7 @@ RESULT c8051f_c2_addr_poll(uint8_t mask, uint8_t value, uint16_t poll_cnt)
 	poll_start(poll_cnt * 10);
 	
 	c2_read_ir(NULL);
-	poll_check(0, mask, value);
+	poll_ok(0, mask, value);
 	
 	poll_end();
 	

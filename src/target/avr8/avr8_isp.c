@@ -69,14 +69,17 @@ struct program_functions_t avr8isp_program_functions =
 
 #define reset_init()			interfaces->gpio.gpio_init()
 #define reset_fini()			interfaces->gpio.gpio_fini()
-#define reset_output()			interfaces->gpio.gpio_config(GPIO_SRST, GPIO_SRST, 0)
-#define reset_input()			interfaces->gpio.gpio_config(GPIO_SRST, 0, GPIO_SRST)
+#define reset_output()			\
+	interfaces->gpio.gpio_config(GPIO_SRST, GPIO_SRST, 0)
+#define reset_input()			\
+	interfaces->gpio.gpio_config(GPIO_SRST, 0, GPIO_SRST)
 #define reset_set()				reset_input()
 #define reset_clr()				interfaces->gpio.gpio_out(GPIO_SRST, 0)
 
 #define poll_start()			interfaces->poll.poll_start(20, 500)
 #define poll_end()				interfaces->poll.poll_end()
-#define poll_check(o, m, v)		interfaces->poll.poll_checkbyte((o), (m), (v))
+#define poll_ok(o, m, v)		\
+	interfaces->poll.poll_checkok(POLL_CHECK_EQU, (o), 1, (m), (v))
 
 #define delay_ms(ms)			interfaces->delay.delayms((ms) | 0x8000)
 #define delay_us(us)			interfaces->delay.delayus((us) & 0x7FFF)
@@ -95,7 +98,7 @@ static void avr8_isp_pollready(void)
 	cmd_buf[2] = 0x00;
 	cmd_buf[3] = 0x00;
 	spi_io(cmd_buf, 4, NULL, 0, 0);
-	poll_check(0, 0x01, 0x00);
+	poll_ok(0, 0x01, 0x00);
 	poll_end();
 }
 

@@ -822,13 +822,31 @@ RESULT versaloon_poll_end(void)
 {
 	return usbtopoll_end();
 }
-RESULT versaloon_poll_checkbyte(uint8_t offset, uint8_t mask, uint8_t value)
+RESULT versaloon_poll_checkok(enum poll_check_type_t type, uint16_t offset, 
+								uint8_t size, uint32_t mask, uint32_t value)
 {
-	return usbtopoll_checkbyte(offset, mask, value);
+	uint8_t equ = 0;
+	
+	if (POLL_CHECK_EQU == type)
+	{
+		equ = 1;
+	}
+	return usbtopoll_checkok(equ, offset, size, mask, value);
 }
-RESULT versaloon_poll_checkfail(uint8_t offset, uint8_t mask, uint8_t value)
+RESULT versaloon_poll_checkfail(enum poll_check_type_t type, uint16_t offset, 
+								uint8_t size, uint32_t mask, uint32_t value)
 {
-	return usbtopoll_checkfail(offset, mask, value);
+	uint8_t equ = 0;
+	
+	if (POLL_CHECK_EQU == type)
+	{
+		equ = 1;
+	}
+	return usbtopoll_checkfail(equ, offset, size, mask, value);
+}
+RESULT versaloon_poll_verifybuff(uint16_t offset, uint16_t size, uint8_t *buff)
+{
+	return usbtopoll_verifybuff(offset, size, buff);
 }
 // ISSP
 RESULT versaloon_issp_init(void)
@@ -1292,8 +1310,9 @@ RESULT versaloon_init_capability(void *p)
 	// POLL
 	i->poll.poll_start = versaloon_poll_start;
 	i->poll.poll_end = versaloon_poll_end;
-	i->poll.poll_checkbyte = versaloon_poll_checkbyte;
+	i->poll.poll_checkok = versaloon_poll_checkok;
 	i->poll.poll_checkfail = versaloon_poll_checkfail;
+	i->poll.poll_verifybuff = versaloon_poll_verifybuff;
 	
 	i->peripheral_commit= versaloon_peripheral_commit;
 	

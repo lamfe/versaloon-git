@@ -175,8 +175,8 @@ struct program_functions_t avr8jtag_program_functions =
 
 #define poll_start()				interfaces->poll.poll_start(20, 500)
 #define poll_end()					interfaces->poll.poll_end()
-#define poll_check(o, m, v)			\
-	interfaces->poll.poll_checkbyte((o), (m), (v))
+#define poll_ok(o, m, v)			\
+	interfaces->poll.poll_checkok(POLL_CHECK_EQU, (o), 1, (m), (v))
 
 #define delay_ms(ms)				interfaces->delay.delayms((ms) | 0x8000)
 #define delay_us(us)				interfaces->delay.delayus((us) & 0x7FFF)
@@ -199,7 +199,7 @@ void AVR_JTAG_WaitComplete(uint16_t cmd)
 	
 	poll_start();
 	AVR_JTAG_PROG_INS(cmd);
-	poll_check(0, 0x02, 0x02);
+	poll_ok(0, 0x02, 0x02);
 	poll_end();
 }
 

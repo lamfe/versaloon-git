@@ -82,7 +82,8 @@ static struct interfaces_info_t *interfaces = NULL;
 
 #define poll_start(cnt, int)		interfaces->poll.poll_start((cnt), (int))
 #define poll_end()					interfaces->poll.poll_end()
-#define poll_check(o, m, v)			interfaces->poll.poll_checkbyte((o), (m), (v))
+#define poll_ok(o, m, v)			\
+	interfaces->poll.poll_checkok(POLL_CHECK_EQU, (o), 1, (m), (v))
 
 #define jtag_commit()				interfaces->peripheral_commit()
 
@@ -93,7 +94,7 @@ RESULT c8051f_jtag_poll_busy(void)
 	poll_start(C8051F_JTAG_MAX_POLL_COUNT, 0);
 	
 	jtag_dr_read(&dummy, 1);
-	poll_check(0, 0x01, 0x00);
+	poll_ok(0, 0x01, 0x00);
 	
 	poll_end();
 	
@@ -155,7 +156,7 @@ RESULT c8051f_jtag_poll_flbusy(uint16_t poll_cnt, uint16_t interval)
 	poll_start(poll_cnt, interval);
 	
 	c8051f_jtag_ind_read(C8051F_IR_FLASHDAT, &dummy, 1);
-	poll_check(0, 0x02, 0x00);
+	poll_ok(0, 0x02, 0x00);
 	
 	poll_end();
 	

@@ -252,11 +252,35 @@ void USB_TO_XXX_ProcessCmd(uint8* dat, uint16 len)
 					}
 				}
 				break;
-			case USB_TO_POLL_CHECKBYTE:
+			case USB_TO_POLL_CHECKOK:
 				if (USB_TO_POLL_Index < USB_TO_POLL_NUM)
 				{
-					if (!((buffer_reply[rep_len - 1 - dat[USB_TO_XXX_CmdIdx + 4]] 
-						 	& dat[USB_TO_XXX_CmdIdx + 5]) == dat[USB_TO_XXX_CmdIdx + 6]))
+					uint8_t equ;
+					uint8_t size, i;
+					uint16_t offset;
+					uint32_t mask, value, data;
+
+					offset = dat[USB_TO_XXX_CmdIdx + 4] + (dat[USB_TO_XXX_CmdIdx + 5] << 8);
+					size = dat[USB_TO_XXX_CmdIdx + 6];
+					if (size > 4)
+					{
+						size = 4;
+					}
+					equ = dat[USB_TO_XXX_CmdIdx + 7];
+					mask = 0;
+					value = 0;
+					for (i = 0; i < size; i++)
+					{
+						mask += dat[USB_TO_XXX_CmdIdx + 8 + i] << (8 * i);
+						value += dat[USB_TO_XXX_CmdIdx + 8 + size + i] << (8 * i);
+					}
+					data = 0;
+					for (i = 0; i < size; i++)
+					{
+						data += buffer_reply[rep_len - 1 - offset + i] << (8 * i);
+					}
+					if ((equ && !((data & mask) == value)) 
+						|| (!equ && ((data & mask) == value)))
 					{
 						USB_TO_POLL_Context[USB_TO_POLL_Index].poll_result = 0;
 					}
@@ -265,11 +289,48 @@ void USB_TO_XXX_ProcessCmd(uint8* dat, uint16 len)
 			case USB_TO_POLL_CHECKFAIL:
 				if (USB_TO_POLL_Index < USB_TO_POLL_NUM)
 				{
-					if ((buffer_reply[rep_len - 1 - dat[USB_TO_XXX_CmdIdx + 4]] 
-						 	& dat[USB_TO_XXX_CmdIdx + 5]) == dat[USB_TO_XXX_CmdIdx + 6])
+					uint8_t equ;
+					uint8_t size, i;
+					uint16_t offset;
+					uint32_t mask, value, data;
+
+					offset = dat[USB_TO_XXX_CmdIdx + 4] + (dat[USB_TO_XXX_CmdIdx + 5] << 8);
+					size = dat[USB_TO_XXX_CmdIdx + 6];
+					if (size > 4)
+					{
+						size = 4;
+					}
+					equ = dat[USB_TO_XXX_CmdIdx + 7];
+					mask = 0;
+					value = 0;
+					for (i = 0; i < size; i++)
+					{
+						mask += dat[USB_TO_XXX_CmdIdx + 8 + i] << (8 * i);
+						value += dat[USB_TO_XXX_CmdIdx + 8 + size + i] << (8 * i);
+					}
+					data = 0;
+					for (i = 0; i < size; i++)
+					{
+						data += buffer_reply[rep_len - 1 - offset + i] << (8 * i);
+					}
+					if ((equ && ((data & mask) == value)) 
+						|| (!equ && !((data & mask) == value)))
 					{
 						USB_TO_POLL_Context[USB_TO_POLL_Index].poll_result = 0;
 						USB_TO_POLL_Context[USB_TO_POLL_Index].poll_retry = 0;
+					}
+				}
+				break;
+			case USB_TO_POLL_VERIFYBUFF:
+				if (USB_TO_POLL_Index < USB_TO_POLL_NUM)
+				{
+					uint16_t size, offset;
+
+					offset = dat[USB_TO_XXX_CmdIdx + 4] + (dat[USB_TO_XXX_CmdIdx + 5] << 8);
+					size = dat[USB_TO_XXX_CmdIdx + 6] + (dat[USB_TO_XXX_CmdIdx + 7] << 8);
+					if (memcmp(&buffer_reply[rep_len - 1 - offset], &dat[USB_TO_XXX_CmdIdx + 8], size))
+					{
+						USB_TO_POLL_Context[USB_TO_POLL_Index].poll_result = 0;
 					}
 				}
 				break;
