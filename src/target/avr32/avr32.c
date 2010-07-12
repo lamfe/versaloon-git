@@ -129,10 +129,10 @@ PARSE_ARGUMENT_HANDLER(avr32)
 // retry 1000 times with 0 interval
 #define poll_start()				interfaces->poll.poll_start(1000, 0)
 #define poll_end()					interfaces->poll.poll_end()
-#define poll_check(o, m, v)			\
-	interfaces->poll.poll_checkbyte((o), (m), (v))
-#define poll_checkfail(o, m, v)		\
-	interfaces->poll.poll_checkfail((o), (m), (v))
+#define poll_ok(o, m, v)			\
+	interfaces->poll.poll_checkok(POLL_CHECK_EQU, (o), 1, (m), (v))
+#define poll_fail(o, m, v)		\
+	interfaces->poll.poll_checkfail(POLL_CHECK_EQU, (o), 1, (m), (v))
 
 #define delay_ms(ms)				interfaces->delay.delayms((ms) | 0x8000)
 #define delay_us(us)				interfaces->delay.delayus((us) & 0x7FFF)
@@ -234,9 +234,9 @@ static RESULT avr32jtag_sab_word_access(uint8_t slave_addr, uint32_t addr,
 	poll_start();
 	ir = AVR32_JTAG_INS_MEMORY_WORD_ACCESS;
 	avr32jtag_Instr(&ir);
-	poll_checkfail(0, AVR32_JTAG_IRRET_PROTECT, AVR32_JTAG_IRRET_PROTECT);
-	poll_checkfail(0, AVR32_JTAG_IRRET_ERROR, AVR32_JTAG_IRRET_ERROR);
-	poll_check(0, AVR32_JTAG_IRRET_BUSY, 0);
+	poll_fail(0, AVR32_JTAG_IRRET_PROTECT, AVR32_JTAG_IRRET_PROTECT);
+	poll_fail(0, AVR32_JTAG_IRRET_ERROR, AVR32_JTAG_IRRET_ERROR);
+	poll_ok(0, AVR32_JTAG_IRRET_BUSY, 0);
 	poll_end();
 	
 	// Phase 2: Write Address
@@ -249,8 +249,8 @@ static RESULT avr32jtag_sab_word_access(uint8_t slave_addr, uint32_t addr,
 		poll_start();
 		pending_4bytes = 1;
 		avr32jtag_DataR(data, 34);
-		poll_checkfail(0, AVR32_JTAG_DRRET_ERROR, AVR32_JTAG_DRRET_ERROR);
-		poll_check(0, AVR32_JTAG_DRRET_BUSY, 0);
+		poll_fail(0, AVR32_JTAG_DRRET_ERROR, AVR32_JTAG_DRRET_ERROR);
+		poll_ok(0, AVR32_JTAG_DRRET_BUSY, 0);
 		poll_end();
 	}
 	else
@@ -258,18 +258,18 @@ static RESULT avr32jtag_sab_word_access(uint8_t slave_addr, uint32_t addr,
 		// no error will occur here
 		poll_start();
 		avr32jtag_DataW(data, 32);
-		poll_checkfail(3, AVR32_JTAG_IRRET_PROTECT, AVR32_JTAG_IRRET_PROTECT);
-		poll_checkfail(3, AVR32_JTAG_IRRET_ERROR, AVR32_JTAG_IRRET_ERROR);
-		poll_check(3, AVR32_JTAG_DRRET_BUSY, 0);
+		poll_fail(3, AVR32_JTAG_IRRET_PROTECT, AVR32_JTAG_IRRET_PROTECT);
+		poll_fail(3, AVR32_JTAG_IRRET_ERROR, AVR32_JTAG_IRRET_ERROR);
+		poll_ok(3, AVR32_JTAG_DRRET_BUSY, 0);
 		poll_end();
 		
 		// Phase 4: Wait Ready
 		poll_start();
 		ir = AVR32_JTAG_INS_MEMORY_WORD_ACCESS;
 		avr32jtag_Instr(&ir);
-		poll_checkfail(0, AVR32_JTAG_IRRET_PROTECT, AVR32_JTAG_IRRET_PROTECT);
-		poll_checkfail(0, AVR32_JTAG_IRRET_ERROR, AVR32_JTAG_IRRET_ERROR);
-		poll_check(0, AVR32_JTAG_IRRET_BUSY, 0);
+		poll_fail(0, AVR32_JTAG_IRRET_PROTECT, AVR32_JTAG_IRRET_PROTECT);
+		poll_fail(0, AVR32_JTAG_IRRET_ERROR, AVR32_JTAG_IRRET_ERROR);
+		poll_ok(0, AVR32_JTAG_IRRET_BUSY, 0);
 		poll_end();
 	}
 	
@@ -306,17 +306,17 @@ static RESULT avr32jtag_sab_access(uint8_t slave_addr, uint32_t addr,
 			poll_start();
 			pending_4bytes = 1;
 			avr32jtag_DataR(data + 4 * i, 34);
-			poll_checkfail(0, AVR32_JTAG_DRRET_ERROR, AVR32_JTAG_DRRET_ERROR);
-			poll_check(0, AVR32_JTAG_DRRET_BUSY, 0);
+			poll_fail(0, AVR32_JTAG_DRRET_ERROR, AVR32_JTAG_DRRET_ERROR);
+			poll_ok(0, AVR32_JTAG_DRRET_BUSY, 0);
 			poll_end();
 		}
 		else
 		{
 			poll_start();
 			avr32jtag_DataW(data + 4 * i, 32);
-			poll_checkfail(3, AVR32_JTAG_IRRET_PROTECT, AVR32_JTAG_IRRET_PROTECT);
-			poll_checkfail(3, AVR32_JTAG_IRRET_ERROR, AVR32_JTAG_IRRET_ERROR);
-			poll_check(3, AVR32_JTAG_IRRET_BUSY, 0);
+			poll_fail(3, AVR32_JTAG_IRRET_PROTECT, AVR32_JTAG_IRRET_PROTECT);
+			poll_fail(3, AVR32_JTAG_IRRET_ERROR, AVR32_JTAG_IRRET_ERROR);
+			poll_ok(3, AVR32_JTAG_IRRET_BUSY, 0);
 			poll_end();
 		}
 	}
@@ -384,11 +384,15 @@ ENTER_PROGRAM_MODE_HANDLER(avr32jtag)
 
 LEAVE_PROGRAM_MODE_HANDLER(avr32jtag)
 {
+	RESULT ret;
+	
 	REFERENCE_PARAMETER(context);
 	REFERENCE_PARAMETER(success);
 	
 	jtag_fini();
-	return jtag_commit();
+	ret = jtag_commit();
+	jtag_register_callback(NULL, NULL);
+	return ret;
 }
 
 ERASE_TARGET_HANDLER(avr32jtag)

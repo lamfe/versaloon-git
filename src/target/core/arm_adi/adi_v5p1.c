@@ -228,8 +228,8 @@ static RESULT adi_dpif_fini(void)
 	switch(dp_type)
 	{
 	case ADI_DP_JTAG:
-		jtag_register_callback(NULL, NULL);
 		adi_dp_commit();
+		jtag_register_callback(NULL, NULL);
 		jtag_fini();
 		adi_dp_commit();
 		adi_dp_if = NULL;

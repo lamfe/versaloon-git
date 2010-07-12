@@ -208,12 +208,20 @@ struct interface_target_voltage_t
 	RESULT (*set_target_voltage)(uint16_t voltage);
 };
 
+enum poll_check_type_t
+{
+	POLL_CHECK_EQU,
+	POLL_CHECK_UNEQU
+};
 struct interface_poll_t
 {
 	RESULT (*poll_start)(uint16_t retry, uint16_t interval_us);
 	RESULT (*poll_end)(void);
-	RESULT (*poll_checkbyte)(uint8_t offset, uint8_t mask, uint8_t value);
-	RESULT (*poll_checkfail)(uint8_t offset, uint8_t mask, uint8_t value);
+	RESULT (*poll_checkok)(enum poll_check_type_t type, uint16_t offset, 
+								uint8_t size, uint32_t mask, uint32_t value);
+	RESULT (*poll_checkfail)(enum poll_check_type_t type, uint16_t offset, 
+								uint8_t size, uint32_t mask, uint32_t value);
+	RESULT (*poll_verifybuff)(uint16_t offset, uint16_t size, uint8_t *buff);
 };
 
 struct interfaces_info_t
@@ -286,7 +294,7 @@ struct programmer_info_t
 			{0, 0, 0, 0, 0},\
 			{0, 0, 0, 0, 0, 0},\
 			{0, 0, 0, 0, 0, 0, 0, 0},\
-			{0, 0, 0, 0},\
+			{0, 0, 0, 0, 0},\
 			0\
 		},\
 		0, 0, 0\

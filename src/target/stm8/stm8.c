@@ -143,8 +143,10 @@ PARSE_ARGUMENT_HANDLER(stm8)
 
 #define poll_start()			interfaces->poll.poll_start(100, 100)
 #define poll_end()				interfaces->poll.poll_end()
-#define poll_check(o, m, v)		interfaces->poll.poll_checkbyte((o), (m), (v))
-#define poll_fail(o, m, v)		interfaces->poll.poll_checkfail((o), (m), (v))
+#define poll_ok(o, m, v)		\
+	interfaces->poll.poll_checkok(POLL_CHECK_EQU, (o), 1, (m), (v))
+#define poll_fail(o, m, v)		\
+	interfaces->poll.poll_checkfail(POLL_CHECK_EQU, (o), 1, (m), (v))
 
 #define commit()				interfaces->peripheral_commit()
 
@@ -318,7 +320,7 @@ static RESULT stm8_poll_ready(uint32_t iapsr)
 	}
 	if (ret != ERROR_FAIL)
 	{
-		ret = poll_check(0, STM8_FLASH_IAPSR_EOP, STM8_FLASH_IAPSR_EOP);
+		ret = poll_ok(0, STM8_FLASH_IAPSR_EOP, STM8_FLASH_IAPSR_EOP);
 	}
 	if (ret != ERROR_FAIL)
 	{
@@ -452,7 +454,7 @@ static RESULT stm8_fl_run(struct stm8_fl_param_t *param)
 	}
 	if (ret != ERROR_FAIL)
 	{
-		ret = poll_check(1, 0xFF, 0x00);
+		ret = poll_ok(1, 0xFF, 0x00);
 	}
 	if (ret != ERROR_FAIL)
 	{

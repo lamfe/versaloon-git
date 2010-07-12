@@ -133,8 +133,9 @@ extern int8 USB_TO_POLL_Index;
 // USB_TO_POLL
 #define USB_TO_POLL_START			0x00
 #define USB_TO_POLL_END				0x01
-#define USB_TO_POLL_CHECKBYTE		0x02
+#define USB_TO_POLL_CHECKOK			0x02
 #define USB_TO_POLL_CHECKFAIL		0x03
+#define USB_TO_POLL_VERIFYBUFF		0x04
 
 // USB_TO_XXX Replys
 #define USB_TO_XXX_OK				0x00

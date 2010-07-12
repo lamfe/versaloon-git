@@ -431,14 +431,22 @@ RESULT usbtopoll_end(void)
 	return versaloon_add_pending(USB_TO_POLL, 0, 0, 0, 0, NULL, 0);
 }
 
-RESULT usbtopoll_checkbyte(uint8_t offset, uint8_t mask, uint8_t value)
+RESULT usbtopoll_checkok(uint8_t equ, uint16_t offset, uint8_t size, 
+							uint32_t mask, uint32_t value)
 {
+	uint8_t i;
+	
+	if (size > 4)
+	{
+		LOG_BUG(_GETTEXT(ERRMSG_INVALID_PARAMETER), __FUNCTION__);
+		return ERRCODE_INVALID_PARAMETER;
+	}
 	if (!poll_nesting)
 	{
 		LOG_BUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), "check poll nesting");
 		return ERRCODE_FAILURE_OPERATION;
 	}
-	if (ERROR_OK != usbtoxxx_ensure_buffer_size(3 + 4))
+	if (ERROR_OK != usbtoxxx_ensure_buffer_size(3 + 4 + 2 * size))
 	{
 		return ERROR_FAIL;
 	}
@@ -452,22 +460,39 @@ RESULT usbtopoll_checkbyte(uint8_t offset, uint8_t mask, uint8_t value)
 	
 	type_pre = USB_TO_POLL;
 	
-	usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = USB_TO_POLL_CHECKBYTE;
-	usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = offset;
-	usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = mask;
-	usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = value;
+	usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = USB_TO_POLL_CHECKOK;
+	usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = (offset >> 0) & 0xFF;
+	usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = (offset >> 8) & 0xFF;
+	usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = size;
+	usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = equ;
+	for (i =0; i < size; i++)
+	{
+		usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = (mask >> (8 * i)) & 0xFF;
+	}
+	for (i =0; i < size; i++)
+	{
+		usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = (value >> (8 * i)) & 0xFF;
+	}
 	
 	return ERROR_OK;
 }
 
-RESULT usbtopoll_checkfail(uint8_t offset, uint8_t mask, uint8_t value)
+RESULT usbtopoll_checkfail(uint8_t equ, uint16_t offset, uint8_t size, 
+							uint32_t mask, uint32_t value)
 {
+	uint8_t i;
+	
+	if (size > 4)
+	{
+		LOG_BUG(_GETTEXT(ERRMSG_INVALID_PARAMETER), __FUNCTION__);
+		return ERRCODE_INVALID_PARAMETER;
+	}
 	if (!poll_nesting)
 	{
 		LOG_BUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), "check poll nesting");
 		return ERRCODE_FAILURE_OPERATION;
 	}
-	if (ERROR_OK != usbtoxxx_ensure_buffer_size(3 + 4))
+	if (ERROR_OK != usbtoxxx_ensure_buffer_size(3 + 4 + 2 * size))
 	{
 		return ERROR_FAIL;
 	}
@@ -482,9 +507,50 @@ RESULT usbtopoll_checkfail(uint8_t offset, uint8_t mask, uint8_t value)
 	type_pre = USB_TO_POLL;
 	
 	usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = USB_TO_POLL_CHECKFAIL;
-	usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = offset;
-	usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = mask;
-	usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = value;
+	usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = (offset >> 0) & 0xFF;
+	usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = (offset >> 8) & 0xFF;
+	usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = size;
+	usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = equ;
+	for (i =0; i < size; i++)
+	{
+		usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = (mask >> (8 * i)) & 0xFF;
+	}
+	for (i =0; i < size; i++)
+	{
+		usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = (value >> (8 * i)) & 0xFF;
+	}
+	
+	return ERROR_OK;
+}
+
+RESULT usbtopoll_verifybuff(uint16_t offset, uint16_t size, uint8_t *buff)
+{
+	if (!poll_nesting)
+	{
+		LOG_BUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), "check poll nesting");
+		return ERRCODE_FAILURE_OPERATION;
+	}
+	if (ERROR_OK != usbtoxxx_ensure_buffer_size(3 + 5 + size))
+	{
+		return ERROR_FAIL;
+	}
+	
+	if (ERROR_OK != usbtoxxx_validate_current_command_type())
+	{
+		LOG_BUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+				"validate previous commands");
+		return ERRCODE_FAILURE_OPERATION;
+	}
+	
+	type_pre = USB_TO_POLL;
+	
+	usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = USB_TO_POLL_VERIFYBUFF;
+	usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = (offset >> 0) & 0xFF;
+	usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = (offset >> 8) & 0xFF;
+	usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = (size >> 0) & 0xFF;
+	usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = (size >> 8) & 0xFF;
+	memcpy(&usbtoxxx_buffer[usbtoxxx_current_cmd_index], buff, size);
+	usbtoxxx_current_cmd_index += size;
 	
 	return ERROR_OK;
 }
