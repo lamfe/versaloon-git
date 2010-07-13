@@ -38,7 +38,7 @@
 #include "app_log.h"
 #include "app_err.h"
 #include "prog_interface.h"
-#include "file_parser.h"
+#include "fileparser.h"
 
 #include "memlist.h"
 #include "filelist.h"
