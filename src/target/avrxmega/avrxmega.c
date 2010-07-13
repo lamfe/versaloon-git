@@ -617,6 +617,7 @@ static RESULT avrxmega_nvm_writepage(uint8_t write_buff_cmd,
 //	return ERROR_OK;
 }
 
+#if 0
 static RESULT avrxmega_nvm_writebyte(uint8_t cmd, uint32_t addr, uint8_t data)
 {
 	avrxmega_nvm_pollready();
@@ -635,6 +636,7 @@ static RESULT avrxmega_nvm_writebyte(uint8_t cmd, uint32_t addr, uint8_t data)
 	
 	return ERROR_OK;
 }
+#endif
 
 static RESULT avrxmega_nvm_chip_erase(uint8_t cmd)
 {

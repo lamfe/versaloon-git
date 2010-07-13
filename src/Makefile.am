@@ -3,7 +3,7 @@ SUBDIRS = driver programmer target tools
 bin_PROGRAMS = vsprog
 
 MAINFILE = vsprog.c
-vsprog_SOURCES = $(MAINFILE) file_parser.c
+vsprog_SOURCES = $(MAINFILE)
 
 INCLUDES = \
     $(all_includes) \
@@ -13,6 +13,7 @@ INCLUDES = \
     -I$(top_srcdir)/src/tools/list \
     -I$(top_srcdir)/src/tools/memlist \
     -I$(top_srcdir)/src/tools/filelist \
+    -I$(top_srcdir)/src/tools/fileparser \
     -I$(top_srcdir)/src/target \
     -I$(top_srcdir)/src/driver \
     -I$(top_srcdir)/src/programmer
