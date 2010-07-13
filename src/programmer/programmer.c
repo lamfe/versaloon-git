@@ -218,11 +218,16 @@ static RESULT programmer_parse_cmd_line(char *cmd, uint8_t *argc, char **argv)
 	uint32_t i, cmd_len;
 	uint8_t argu_num = 0;
 	
-	while ((('"' == cmd[0]) && ('"' == cmd[strlen(cmd) - 1])) 
-		|| (('\'' == cmd[0]) && ('\'' == cmd[strlen(cmd) - 1])))
+	while (('"' == cmd[0]) || ('\'' == cmd[0]))
 	{
-		((char *)cmd)[strlen(cmd) - 1] = '\0';
-		strcpy((char *)cmd, cmd + 1);
+		char ch = cmd[0];
+		
+		if (cmd[strlen(cmd) - 1] != ch)
+		{
+			return ERROR_FAIL;
+		}
+		cmd[strlen(cmd) - 1] = '\0';
+		strcpy(cmd, cmd + 1);
 	}
 	
 	// parse arg
