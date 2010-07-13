@@ -43,6 +43,7 @@
 #include "memlist.h"
 #include "filelist.h"
 #include "pgbar.h"
+#include "strparser.h"
 
 #include "vsprog.h"
 #include "programmer.h"
@@ -330,6 +331,23 @@ int main(int argc, char* argv[])
 	// parse options
 	while ((optc = getopt_long(argc, argv, OPTSTR, long_opts, NULL)) != -1)
 	{
+		// remove " and '
+		if (optarg != NULL)
+		{
+			while (('"' == optarg[0]) || ('\'' == optarg[0]))
+			{
+				char ch = optarg[0];
+				
+				if (optarg[strlen(optarg) - 1] != ch)
+				{
+					LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), (char)optc);
+					free_all_and_exit(EXIT_FAILURE);
+				}
+				optarg[strlen(optarg) - 1] = '\0';
+				optarg++;
+			}
+		}
+		
 		switch (optc)
 		{
 		case ':':
@@ -635,12 +653,6 @@ Parse_Operation:
 			// --output-file
 			fl_tmp = &fl_out;
 Parse_File:
-			if ((('"' == optarg[0]) && ('"' == optarg[strlen(optarg) - 1])) 
-			|| (('\'' == optarg[0]) && ('\'' == optarg[strlen(optarg) - 1])))
-			{
-				((char *)optarg)[strlen(optarg) - 1] = '\0';
-				optarg++;
-			}
 			
 			for (i = strlen(optarg) - 1; i > 0; i--)
 			{

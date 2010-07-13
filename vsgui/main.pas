@@ -2261,7 +2261,7 @@ begin
   // ProgrammerParameter
   if ProgrammerParameter <> '' then
   begin
-    caller.AddParameter('U' + ProgrammerParameter);
+    caller.AddParameter('U"' + ProgrammerParameter + '"');
   end;
 end;
 

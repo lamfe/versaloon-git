@@ -29,14 +29,58 @@
 
 #include "usbapi.h"
 
-uint32_t print_usb_devices(uint16_t VID, uint16_t PID, uint8_t stringindex, 
-							char *serialstring, char *prefix)
+static uint8_t usb_check_string(usb_dev_handle *usb, uint8_t stringidx, 
+								char * string, char * buff, uint16_t buf_size)
+{
+	int len;
+	uint8_t alloced = 0;
+	uint8_t ret = 1;
+	
+	if (NULL == buff)
+	{
+		buf_size = 256;
+		buff = (char*)malloc(buf_size);
+		if (NULL == buff)
+		{
+			ret = 0;
+			goto free_and_return;
+		}
+		alloced = 1;
+	}
+	
+	strcpy(buff, "");
+	len = usb_get_string_simple(usb, stringidx, (char *)buff, buf_size);
+	if ((len < 0) || (len != ((int)strlen((const char *)buff))))
+	{
+		ret = 0;
+		goto free_and_return;
+	}
+	
+	buff[len] = '\0';
+	if ((string != NULL) && strcmp((const char *)buff, string))
+	{
+		ret = 0;
+		goto free_and_return;
+	}
+	
+free_and_return:
+	if (alloced && (buff != NULL))
+	{
+		free(buff);
+		buff = NULL;
+	}
+	return ret;
+}
+
+uint32_t print_usb_devices(uint16_t VID, uint16_t PID, uint8_t serialindex, 
+							char *serialstring, uint8_t productindex, 
+							char *productstring)
 {
 	usb_dev_handle *usb = NULL;
 	struct usb_bus *busses;
 	struct usb_bus *bus;
 	struct usb_device *dev;
-	int config_value, i, c = 0;
+	int c = 0;
 	uint8_t buf[256];
 
 	usb_init();
@@ -59,45 +103,28 @@ uint32_t print_usb_devices(uint16_t VID, uint16_t PID, uint8_t stringindex,
 					continue;
 				}
 				
-				// check serialstring
-				config_value = usb_get_string_simple(usb, stringindex, 
-													 (char *)buf, 256);
-				if ((config_value < 0) 
-					|| (config_value != (int)strlen((const char*)buf)))
+				// check description string
+				if (((productstring != NULL) 
+						&& !usb_check_string(usb, productindex, productstring, NULL, 0))
+					|| !usb_check_string(usb, serialindex, serialstring, (char*)buf, sizeof(buf)))
 				{
 					usb_close(usb);
 					usb = NULL;
 					continue;
 				}
-				if (serialstring != NULL)
-				{
-					for (i = 0; i < (config_value - 1); i++)
-					{
-						if (buf[i] != serialstring[i])
-						{
-							usb_close(usb);
-							usb = NULL;
-							break;
-						}
-					}
-					if (i != (config_value - 1))
-					{
-						continue;
-					}
-				}
 				
 				if (usb != NULL)
 				{
 					// print current device
-					if (config_value > 0)
+					if (strlen((char *)buf) > 0)
 					{
 						printf(_GETTEXT("%s%d: 0x%04X:0x%04X:%s on %s.\n"), 
-								prefix, c, VID, PID, buf, dev->filename);
+								productstring, c, VID, PID, buf, dev->filename);
 					}
 					else
 					{
 						printf(_GETTEXT("%s%d: 0x%04X:0x%04X on %s.\n"), 
-								prefix, c, VID, PID, dev->filename);
+								productstring, c, VID, PID, dev->filename);
 					}
 					c++;
 					
@@ -118,7 +145,8 @@ uint32_t print_usb_devices(uint16_t VID, uint16_t PID, uint8_t stringindex,
 }
 
 usb_dev_handle* find_usb_device(uint16_t VID, uint16_t PID, uint8_t interface, 
-								uint8_t stringindex, char *serialstring)
+								uint8_t serialindex, char *serialstring, 
+								uint8_t productindex, char *productstring)
 {
 	usb_dev_handle *usb = NULL;
 	struct usb_bus *busses;
@@ -146,26 +174,15 @@ usb_dev_handle* find_usb_device(uint16_t VID, uint16_t PID, uint8_t interface,
 					continue;
 				}
 				
-				// check serialstring
-				if (serialstring != NULL)
+				// check description string
+				if (((productstring != NULL) 
+						&& !usb_check_string(usb, productindex, productstring, NULL, 0))
+					|| ((serialstring != NULL) 
+						&& !usb_check_string(usb, serialindex, serialstring, NULL, 0)))
 				{
-					uint8_t buf[256];
-					
-					config_value = usb_get_string_simple(usb, stringindex, 
-													(char *)buf, sizeof(buf));
-					if ((config_value < 0) 
-						|| (config_value != ((int)strlen(serialstring))))
-					{
-						usb_close(usb);
-						usb = NULL;
-						continue;
-					}
-					
-					buf[config_value] = '\0';
-					if (strcmp((const char *)buf, serialstring))
-					{
-						continue;
-					}
+					usb_close(usb);
+					usb = NULL;
+					continue;
 				}
 				
 				// usb_set_configuration required under win32

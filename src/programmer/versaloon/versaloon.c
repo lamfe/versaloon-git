@@ -294,8 +294,9 @@ RESULT versaloon_init(void)
 	uint32_t timeout_tmp;
 	
 	versaloon_device_handle = find_usb_device(versaloon_vid, versaloon_pid, 
-							versaloon_interface, VERSALOON_SERIALSTRING_INDEX, 
-							versaloon_serialstring);
+						versaloon_interface, VERSALOON_SERIALSTRING_INDEX, 
+						versaloon_serialstring, VERSALOON_PRODUCTSTRING_INDEX, 
+						VERSALOON_PRODUCTSTRING);
 	if (NULL == versaloon_device_handle)
 	{
 		if (versaloon_serialstring != NULL)
@@ -1330,6 +1331,7 @@ uint32_t versaloon_display_programmer(void)
 {
 	printf(_GETTEXT("Supported Programmer by Versaloon driver:\n"));
 	return print_usb_devices(versaloon_vid, versaloon_pid, 
-		VERSALOON_SERIALSTRING_INDEX, versaloon_serialstring, VERSALOON_STRING);
+		VERSALOON_SERIALSTRING_INDEX, versaloon_serialstring, 
+		VERSALOON_PRODUCTSTRING_INDEX, VERSALOON_PRODUCTSTRING);
 }
 
