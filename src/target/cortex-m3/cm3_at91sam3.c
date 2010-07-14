@@ -643,7 +643,8 @@ WRITE_TARGET_HANDLER(at91sam3swj)
 		target_addr = param->chip_areas[APPLICATION_IDX].addr;
 		eefc_base = param->param[AT91SAM3_PARAM_PLANE0_CONTROL];
 do_write:
-		if ((op->write_operations & LOCK) && pi->program_areas[LOCK_IDX].value)
+		if ((op->write_operations & LOCK) 
+			&& pi->program_areas[LOCK_IDX].buff[0])
 		{
 			eefc_command = AT91SAM3_EEFC_CMD_EWPL;
 		}

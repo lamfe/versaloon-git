@@ -16,11 +16,57 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 
-#define STRPARSER_DIV_CHARS						"|_:; "
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
 
-RESULT strparser_check(char * str, char * format);
-RESULT strparser_parse(char * str, char * format, uint8_t * buff, 
-							uint32_t size);
-char * strparser_solve(char *format, uint8_t *buff, uint32_t size);
+#include "app_type.h"
+#include "app_log.h"
+#include "app_err.h"
+
+#include "bufffunc.h"
+
+uint64_t bufffunc_get_u64(uint8_t *buff, uint32_t size)
+{
+	uint8_t i;
+	uint64_t ret;
+	
+	if (NULL == buff)
+	{
+		return 0;
+	}
+	
+	if (size > 8)
+	{
+		size = 8;
+	}
+	
+	ret = 0;
+	for (i = 0; i < size; i++)
+	{
+		ret += buff[i] << (i * 8);
+	}
+	return ret;
+}
+
+char* bufffunc_malloc_and_copy_str(char** dest, char* src)
+{
+	if (NULL == src)
+	{
+		return NULL;
+	}
+	
+	*dest = (char*)malloc(strlen(src) + 1);
+	if (NULL == *dest)
+	{
+		return NULL;
+	}
+	strcpy(*dest, src);
+	return *dest;
+}
 

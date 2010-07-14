@@ -19,7 +19,7 @@
 #ifndef __TARGET_H_INCLUDED__
 #define __TARGET_H_INCLUDED__
 
-#define ASSEMBLE_FUNCNAME(mod, name)		mod ## name
+#define ASSEMBLE_FUNCNAME(mod, name)	mod ## name
 
 // Target Feature
 #define AUTO_DETECT					"A"
@@ -128,14 +128,10 @@ extern const struct target_area_name_t target_area_name[NUM_OF_TARGET_AREA];
 
 struct program_area_t
 {
+	char *cli_str;
 	uint8_t *buff;
-	uint64_t value;
 	uint32_t size;
 	struct memlist *memlist;
-	uint8_t *checksum_buff;
-	uint64_t checksum_value;
-	uint32_t checksum_size;
-	struct memlist *checksum_memlist;
 };
 
 struct program_info_t
@@ -185,8 +181,9 @@ struct chip_area_info_t
 	uint32_t page_size;
 	uint32_t page_num;
 	uint64_t default_value;
-	uint64_t mask;
 	uint32_t size;
+	uint8_t *mask;
+	char *cli_format;
 };
 
 struct chip_param_t
@@ -292,14 +289,14 @@ struct chip_series_t
 
 struct chip_fl_warning_t
 {
-	uint64_t mask;
-	uint64_t value;
+	char *mask;
+	char *value;
 	char *msg;
 };
 
 struct chip_fl_choice_t
 {
-	uint64_t value;
+	char *value;
 	char *text;
 };
 
@@ -307,14 +304,14 @@ struct chip_fl_setting_t
 {
 	char *name;
 	char *info;
-	uint64_t mask;
+	char *mask;
 	char *ban;
 	uint8_t use_checkbox;
 	uint8_t use_edit;
 	uint8_t shift;
 	uint8_t radix;
-	uint64_t checked;
-	uint64_t unchecked;
+	char *checked;
+	char *unchecked;
 	uint8_t bytelen;
 	uint16_t num_of_choices;
 	struct chip_fl_choice_t *choices;
@@ -322,7 +319,7 @@ struct chip_fl_setting_t
 
 struct chip_fl_t
 {
-	uint64_t init_value;
+	char * init_value;
 	uint16_t num_of_fl_warnings;
 	struct chip_fl_warning_t *warnings;
 	uint16_t num_of_fl_settings;
@@ -363,6 +360,7 @@ RESULT target_info_init(struct program_info_t *pi);
 RESULT target_write_buffer_from_file_callback(uint32_t address, 
 			uint32_t seg_addr, uint8_t* data, uint32_t length, void* buffer);
 RESULT target_alloc_data_buffer(void);
+RESULT target_parse_cli_string(void);
 void target_free_data_buffer(void);
 RESULT target_check_defined(struct operation_t operations);
 RESULT target_prepare_operations(struct operation_t *operations, 

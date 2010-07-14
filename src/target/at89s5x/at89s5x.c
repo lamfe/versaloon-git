@@ -286,7 +286,7 @@ WRITE_TARGET_HANDLER(s5x)
 		break;
 	case FUSE_CHAR:
 		cmd_buf[0] = 0xAC;
-		cmd_buf[1] = 0x10 + (pi->program_areas[FUSE_IDX].value & 0x0F);
+		cmd_buf[1] = 0x10 + (buff[0] & 0x0F);
 		cmd_buf[2] = 0x00;
 		cmd_buf[3] = 0x00;
 		spi_io(cmd_buf, 4, NULL, 0, 0);
@@ -298,22 +298,20 @@ WRITE_TARGET_HANDLER(s5x)
 		}
 		break;
 	case LOCK_CHAR:
-		if ((pi->program_areas[LOCK_IDX].value < 1) 
-			|| (pi->program_areas[LOCK_IDX].value > 4))
+		if ((buff[0] < 1) || (buff[0] > 4))
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_VALUE), 
-								(uint32_t)pi->program_areas[LOCK_IDX].value, 
-								"lock_value(1..4)");
+			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_VALUE), buff[0], 
+						"lock_value(1..4)");
 			ret = ERRCODE_INVALID;
 			break;
 		}
 		
-		pi->program_areas[LOCK_IDX].value--;
-		if (pi->program_areas[LOCK_IDX].value > 0)
+		buff[0]--;
+		if (buff[0] > 0)
 		{
 			for (i = 1; i < 4; i++)
 			{
-				if (pi->program_areas[LOCK_IDX].value >= (uint32_t)i)
+				if (buff[0] >= (uint32_t)i)
 				{
 					cmd_buf[0] = 0xAC;
 					cmd_buf[1] = 0xE0 + (uint8_t)i;
@@ -449,7 +447,7 @@ READ_TARGET_HANDLER(s5x)
 				lock += 1;
 			}
 		}
-		pi->program_areas[LOCK_IDX].value = lock;
+		buff[0] = lock;
 		break;
 	default:
 		ret = ERROR_FAIL;

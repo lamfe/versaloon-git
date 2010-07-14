@@ -6,6 +6,8 @@ INCLUDES = \
     -I$(top_srcdir)/src/tools/memlist \
     -I$(top_srcdir)/src/tools/filelist \
     -I$(top_srcdir)/src/tools/pgbar \
+    -I$(top_srcdir)/src/tools/strparser \
+    -I$(top_srcdir)/src/tools/bufffunc \
     -I$(top_srcdir)/src/driver \
     -I$(top_srcdir)/src/driver/comport \
     -I$(top_srcdir)/src/driver/timer \

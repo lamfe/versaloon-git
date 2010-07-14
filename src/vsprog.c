@@ -634,15 +634,7 @@ Parse_Operation:
 				LOG_ERROR(_GETTEXT(ERRMSG_TRY_SUPPORT));
 				free_all_and_exit(EXIT_FAILURE);
 			}
-			if (SPECIAL_STRING_CHAR == optarg[0])
-			{
-				program_info.program_areas[optc].buff = (uint8_t*)&optarg[1];
-			}
-			else
-			{
-				program_info.program_areas[optc].value = 
-												strtoull(&optarg[1], NULL, 0);
-			}
+			program_info.program_areas[optc].cli_str = &optarg[1];
 			program_info.areas_defined |= target_area_mask(optarg[0]);
 			break;
 		case 'I':
@@ -964,6 +956,12 @@ Parse_File:
 	if (ret != ERROR_OK)
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+		free_all_and_exit(EXIT_FAILURE);
+	}
+	ret = target_parse_cli_string();
+	if (ret != ERROR_OK)
+	{
+		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "parse cli_string");
 		free_all_and_exit(EXIT_FAILURE);
 	}
 	// read file

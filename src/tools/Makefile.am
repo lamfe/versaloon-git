@@ -6,7 +6,8 @@ INCLUDES = \
     -I$(top_srcdir)/src/tools/list \
     -I$(top_srcdir)/src/tools/filelist \
     -I$(top_srcdir)/src/tools/hex \
-    -I$(top_srcdir)/src/tools/fileparser
+    -I$(top_srcdir)/src/tools/fileparser \
+    -I$(top_srcdir)/src/tools/bufffunc
 
 METASOURCES = AUTO
 noinst_LIBRARIES = libtool.a
@@ -17,7 +18,8 @@ libtool_a_SOURCES = \
     pgbar/pgbar.c \
     filelist/filelist.c \
     fileparser/fileparser.c \
-    strparser/strparser.c
+    strparser/strparser.c \
+    bufffunc/bufffunc.c
 
 #noinst_HEADERS = \
 #    hex/hex.h \

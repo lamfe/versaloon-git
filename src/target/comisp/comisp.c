@@ -34,6 +34,7 @@
 
 #include "memlist.h"
 #include "pgbar.h"
+#include "strparser.h"
 
 #include "vsprog.h"
 #include "programmer.h"
@@ -82,7 +83,6 @@ void comisp_print_comm_info(uint8_t i)
 PARSE_ARGUMENT_HANDLER(comisp)
 {
 	uint8_t i;
-	char *end_pointer, *cur_pointer;
 	
 	switch (cmd)
 	{
@@ -122,73 +122,68 @@ PARSE_ARGUMENT_HANDLER(comisp)
 			return ERRCODE_INVALID_OPTION;
 		}
 		
-		// Format: port:baudrate_attribute_extra
-		// Eg: COM1:115200_8N1_HA
-		// parse "port:*"
-		cur_pointer = strrchr(argu, ':');
-		if (NULL == cur_pointer)
 		{
-			strncpy(com_mode.comport, argu, sizeof(com_mode.comport));
-			return ERROR_OK;
-		}
-		else
-		{
-			*cur_pointer = '\0';
-			strncpy(com_mode.comport, argu, sizeof(com_mode.comport));
-		}
-		
-		cur_pointer++;
-		if (*cur_pointer != '\0')
-		{
-			// parse "baudrate*"
-			com_mode.baudrate = (uint32_t)strtoul(cur_pointer, &end_pointer, 0);
+			// port: 256 bytes
+			// baudrate: 4 bytes
+			// datalength, paritybit, stopbit: 3 bytes
+			// handle, extra: 2 bytes
+			uint8_t comm_setting[256 + 4 + 3 + 2], *ptr;
+			RESULT success;
+			uint8_t i;
+			char* formats[] = 
+			{
+				// port(s):baudrate(4d):datalength(1d):parity(c):stop(1d)
+				// :handshake(1d):extra(1d)
+				// Eg: COM1:115200_8N1_HA
+				"%s%4d%1d%c%1d%c%c",
+				// port(s):baudrate(4d):datalength(1d):parity(c):stop(1d)
+				// Eg: COM1:115200_8N1
+				"%s%4d%1d%c%1d",
+				// port(s):baudrate(4d)
+				// Eg: COM1:115200
+				"%s%4d",
+				// port(s)
+				// Eg: COM1
+				"%s"
+			};
 			
-			if (cur_pointer == end_pointer)
+			success = ERROR_FAIL;
+			for (i = 0; i < dimof(formats); i++)
+			{
+				memset(comm_setting, 0, sizeof(comm_setting));
+				success = strparser_parse((char*)argu, formats[i], 
+										comm_setting, sizeof(comm_setting));
+				if (ERROR_OK == success)
+				{
+					break;
+				}
+			}
+			
+			if (success != ERROR_OK)
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), cmd);
 				return ERRCODE_INVALID_OPTION;
 			}
 			
-			cur_pointer = end_pointer;
-			if ((*cur_pointer != '\0'))
+			ptr = comm_setting;
+			strncpy(com_mode.comport, (char*)ptr, sizeof(com_mode.comport));
+			ptr += strlen(com_mode.comport) + 1;
+			if (i < 3)
 			{
-				// parse "_attribute*"
-				if ((strlen(cur_pointer) < 4) 
-					|| ((cur_pointer[0] != ' ') && (cur_pointer[0] != '-') 
-						&& (cur_pointer[0] != '_')) 
-					|| (cur_pointer[1] < '5') || (cur_pointer[1] > '9') 
-					|| ((toupper(cur_pointer[2]) != 'N') 
-						&& (toupper(cur_pointer[2]) != 'E') 
-						&& (toupper(cur_pointer[2]) != 'O')) 
-					|| ((cur_pointer[3] != '1') 
-						&& (cur_pointer[3] != '0')))
+				com_mode.baudrate = *(uint32_t*)ptr;
+				ptr += 4;
+				if (i < 2)
 				{
-					LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), cmd);
-					return ERRCODE_INVALID_OPTION;
-				}
-				
-				com_mode.datalength = cur_pointer[1] - '0';
-				com_mode.paritybit = cur_pointer[2];
-				com_mode.stopbit = cur_pointer[3] - '0';
-				
-				cur_pointer += 4;
-				if (*cur_pointer != '\0')
-				{
-					// parse "_extra"
-					if ((strlen(cur_pointer) != 3) 
-						|| ((cur_pointer[0] != ' ') && (cur_pointer[0] != '-') 
-							&&(cur_pointer[0] != '_')) 
-						|| ((toupper(cur_pointer[1]) != 'H') 
-							&& (toupper(cur_pointer[1]) != 'N')) 
-						|| ((toupper(cur_pointer[2]) != 'A') 
-							&& (toupper(cur_pointer[2]) != 'N')))
+					com_mode.datalength = ptr[0];
+					com_mode.paritybit = ptr[1];
+					com_mode.stopbit = ptr[2];
+					ptr += 3;
+					if (i < 1)
 					{
-						LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), cmd);
-						return ERRCODE_INVALID_OPTION;
+						com_mode.handshake = ptr[0];
+						com_mode.auxpin = ptr[1];
+						ptr += 2;
 					}
-					
-					com_mode.handshake = cur_pointer[1];
-					com_mode.auxpin = cur_pointer[2];
 				}
 			}
 		}
