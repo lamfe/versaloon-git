@@ -203,7 +203,6 @@ ERASE_TARGET_HANDLER(avr8isp)
 
 WRITE_TARGET_HANDLER(avr8isp)
 {
-	struct program_info_t *pi = context->pi;
 	struct chip_param_t *param = context->param;
 	uint8_t cmd_buf[4];
 	uint32_t i;
@@ -376,7 +375,7 @@ WRITE_TARGET_HANDLER(avr8isp)
 			cmd_buf[0] = 0xAC;
 			cmd_buf[1] = 0xA0;
 			cmd_buf[2] = 0x00;
-			cmd_buf[3] = (pi->program_areas[FUSE_IDX].value >> 0) & 0xFF;
+			cmd_buf[3] = buff[0];
 			spi_io(cmd_buf, 4, NULL, 0, 0);
 			
 			if (param->param[AVR8_PARAM_ISP_POLL])
@@ -394,7 +393,7 @@ WRITE_TARGET_HANDLER(avr8isp)
 			cmd_buf[0] = 0xAC;
 			cmd_buf[1] = 0xA8;
 			cmd_buf[2] = 0x00;
-			cmd_buf[3] = (pi->program_areas[FUSE_IDX].value >> 8) & 0xFF;
+			cmd_buf[3] = buff[1];
 			spi_io(cmd_buf, 4, NULL, 0, 0);
 			
 			if (param->param[AVR8_PARAM_ISP_POLL])
@@ -412,7 +411,7 @@ WRITE_TARGET_HANDLER(avr8isp)
 			cmd_buf[0] = 0xAC;
 			cmd_buf[1] = 0xA4;
 			cmd_buf[2] = 0x00;
-			cmd_buf[3] = (pi->program_areas[FUSE_IDX].value >> 16) & 0xFF;
+			cmd_buf[3] = buff[2];
 			spi_io(cmd_buf, 4, NULL, 0, 0);
 			
 			if (param->param[AVR8_PARAM_ISP_POLL])
@@ -446,7 +445,7 @@ WRITE_TARGET_HANDLER(avr8isp)
 			cmd_buf[0] = 0xAC;
 			cmd_buf[1] = 0xE0;
 			cmd_buf[2] = 0x00;
-			cmd_buf[3] = (pi->program_areas[LOCK_IDX].value >> 0) & 0xFF;
+			cmd_buf[3] = buff[0];
 			spi_io(cmd_buf, 4, NULL, 0, 0);
 			
 			if (param->param[AVR8_PARAM_ISP_POLL])

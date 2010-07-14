@@ -35,6 +35,8 @@
 
 #include "memlist.h"
 #include "pgbar.h"
+#include "strparser.h"
+#include "bufffunc.h"
 #include <libxml/parser.h>
 
 #include "vsprog.h"
@@ -272,6 +274,41 @@ struct target_info_t targets_info[] =
 struct target_info_t *cur_target = NULL;
 struct program_info_t program_info;
 
+RESULT target_parse_cli_string(void)
+{
+	uint8_t i;
+	RESULT ret;
+	char *format;
+	
+	for (i = 0; i < dimof(program_info.program_areas); i++)
+	{
+		if (program_info.program_areas[i].cli_str != NULL)
+		{
+			if (target_chip_param.chip_areas[i].cli_format != NULL)
+			{
+				format = target_chip_param.chip_areas[i].cli_format;
+			}
+			else
+			{
+				// cli_format not defined
+				// simply use %8x as format, which is simple integer input
+				format = "%8x";
+			}
+			ret = strparser_parse(program_info.program_areas[i].cli_str, 
+						format, program_info.program_areas[i].buff, 
+						program_info.program_areas[i].size);
+			if (ret != ERROR_OK)
+			{
+				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_HANDLE_DEVICE), "parse", 
+							target_area_name[i].full_name);
+				return ERROR_FAIL;
+			}
+		}
+	}
+	
+	return ERROR_OK;
+}
+
 RESULT target_alloc_data_buffer(void)
 {
 	uint8_t i;
@@ -292,16 +329,6 @@ RESULT target_alloc_data_buffer(void)
 				memset(program_info.program_areas[i].buff, 
 						(uint8_t)target_chip_param.chip_areas[i].default_value, 
 						program_info.program_areas[i].size);
-			}
-		}
-		if ((NULL == program_info.program_areas[i].checksum_buff) 
-			&& (program_info.program_areas[i].checksum_size > 0))
-		{
-			program_info.program_areas[i].checksum_buff = 
-				(uint8_t *)malloc(program_info.program_areas[i].checksum_size);
-			if (NULL == program_info.program_areas[i].checksum_buff)
-			{
-				return ERRCODE_NOT_ENOUGH_MEMORY;
 			}
 		}
 	}
@@ -328,23 +355,11 @@ void target_free_data_buffer(void)
 		{
 			free(area->buff);
 			area->buff = NULL;
-			area->size = 0;
-			area->value = 0;
 		}
+		area->size = 0;
 		if (area->memlist != NULL)
 		{
 			MEMLIST_Free(&area->memlist);
-		}
-		if (area->checksum_buff != NULL)
-		{
-			free(area->checksum_buff);
-			area->checksum_buff = NULL;
-			area->checksum_size = 0;
-			area->checksum_value = 0;
-		}
-		if (area->checksum_memlist != NULL)
-		{
-			MEMLIST_Free(&area->checksum_memlist);
 		}
 	}
 }
@@ -508,13 +523,12 @@ RESULT target_check_defined(struct operation_t operations)
 RESULT target_write_buffer_from_file_callback(uint32_t address, 
 			uint32_t seg_addr, uint8_t* data, uint32_t length, void* buffer)
 {
-	uint32_t i, j;
+	uint32_t i;
 	int8_t area_idx;
 	char area_name;
 	uint8_t *area_buff;
 	struct memlist **area_memlist;
 	uint32_t area_seg, area_addr, area_size, area_page_size;
-	uint64_t *area_value;
 	struct program_info_t *pi = (struct program_info_t *)buffer;
 	uint32_t mem_addr;
 	RESULT ret;
@@ -542,18 +556,9 @@ RESULT target_write_buffer_from_file_callback(uint32_t address,
 						+ cur_target->program_area_map[i].fstart_addr;
 		area_size = target_chip_param.chip_areas[area_idx].size;
 		area_page_size = target_chip_param.chip_areas[area_idx].page_size;
-		if (islower(area_name))
-		{
-			area_buff = pi->program_areas[area_idx].buff;
-			area_value = &(pi->program_areas[area_idx].value);
-			area_memlist = &(pi->program_areas[area_idx].memlist);
-		}
-		else
-		{
-			area_buff = pi->program_areas[area_idx].checksum_buff;
-			area_value = &(pi->program_areas[area_idx].checksum_value);
-			area_memlist = &(pi->program_areas[area_idx].checksum_memlist);
-		}
+		
+		area_buff = pi->program_areas[area_idx].buff;
+		area_memlist = &(pi->program_areas[area_idx].memlist);
 		
 		if ((area_seg != seg_addr) || (area_addr > address) 
 			|| ((area_addr + area_size) < (address + length)))
@@ -583,14 +588,10 @@ RESULT target_write_buffer_from_file_callback(uint32_t address,
 				return ERRCODE_FAILURE_OPERATION;
 			}
 		}
-		else if (area_size <= 8)
+		else
 		{
-			// put in area_value
-			*area_value = 0;
-			for (j = 0; j < length; j++)
-			{
-				*area_value += data[j] << (j * 8);
-			}
+			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_BUFFER), "area_buff");
+			return ERROR_FAIL;
 		}
 		
 		return ERROR_OK;
@@ -600,6 +601,7 @@ RESULT target_write_buffer_from_file_callback(uint32_t address,
 	return ERROR_FAIL;
 }
 
+#if 0
 static const uint64_t byte_mask[9] = {
 	0x0000000000000000,
 	0x00000000000000FF,
@@ -611,6 +613,7 @@ static const uint64_t byte_mask[9] = {
 	0x00FFFFFFFFFFFFFF,
 	0xFFFFFFFFFFFFFFFF,
 };
+#endif
 RESULT target_program(struct program_context_t *context)
 {
 	const struct program_functions_t *pf = cur_target->program_functions;
@@ -628,10 +631,10 @@ RESULT target_program(struct program_context_t *context)
 	uint32_t area_mask;
 	enum area_attr_t area_attr;
 	uint32_t target_size, page_size, start_addr;
+	char *format = NULL;
 	uint8_t *tbuff;
 	char *fullname, str_tmp[256];
 	struct memlist **ml, *ml_tmp;
-	uint64_t value;
 	uint32_t time_in_ms = 1000;
 	uint8_t special_string[256];
 	
@@ -714,6 +717,7 @@ RESULT target_program(struct program_context_t *context)
 		if (area_idx < 0)
 		{
 			// invalid area
+			i++;
 			continue;
 		}
 		
@@ -727,21 +731,31 @@ RESULT target_program(struct program_context_t *context)
 		}
 		
 		prog_area = &(pi->program_areas[area_idx]);
+		tbuff = prog_area->buff;
 		if (p_map[i].data_pos)
 		{
 			ml = &(prog_area->memlist);
 			target_size = MEMLIST_CalcAllSize(*ml);
-			tbuff = prog_area->buff;
 		}
 		else
 		{
 			ml = NULL;
-			tbuff = NULL;
 			target_size = area_info->size;
+			format = area_info->cli_format;
+			if (NULL == format)
+			{
+				// default type is hex value with 16-bit length
+				format = "%8x";
+			}
 			if ((0 == target_size) && (SPECIAL_STRING_CHAR == area_char))
 			{
 				target_size = 1;
 			}
+		}
+		if ((area_char != SPECIAL_STRING_CHAR) && !area_info->size)
+		{
+			i++;
+			continue;
 		}
 		
 		// not chip_erase, required to be erased, erasable
@@ -871,19 +885,26 @@ RESULT target_program(struct program_context_t *context)
 				uint8_t *buff_tmp;
 				if (SPECIAL_STRING_CHAR == area_char)
 				{
-					if (NULL == prog_area->buff)
+					if (NULL == prog_area->cli_str)
 					{
 						pgbar_fini();
-						LOG_BUG("prog_area->buff SHOULD"
+						LOG_BUG("prog_area->cli_str SHOULD"
 								" NOT be NULL for special_str");
 						ret = ERROR_FAIL;
 						goto leave_program_mode;
 					}
-					buff_tmp = prog_area->buff;
+					buff_tmp = (uint8_t *)prog_area->cli_str;
+				}
+				else if (tbuff != NULL)
+				{
+					buff_tmp = tbuff;
 				}
 				else
 				{
-					buff_tmp = (uint8_t*)&prog_area->value;
+					LOG_ERROR(_GETTEXT(ERRMSG_INVALID_BUFFER), 
+								"tbuff(prog_area->buff)");
+					ret = ERROR_FAIL;
+					goto leave_program_mode;
 				}
 				if (ERROR_OK != pf->write_target(context, area_char, 
 											start_addr, buff_tmp, target_size))
@@ -1094,14 +1115,23 @@ RESULT target_program(struct program_context_t *context)
 			else
 			{
 				uint8_t *buff_tmp;
+				uint8_t alloced = 0;
+				
 				if (SPECIAL_STRING_CHAR == area_char)
 				{
 					buff_tmp = special_string;
 				}
 				else
 				{
-					value = 0;
-					buff_tmp = (uint8_t*)&value;
+					buff_tmp = (uint8_t*)malloc(target_size);
+					if (NULL == buff_tmp)
+					{
+						LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+						ret = ERRCODE_NOT_ENOUGH_MEMORY;
+						goto leave_program_mode;
+					}
+					memset(buff_tmp, 0, target_size);
+					alloced = 1;
 				}
 				if (ERROR_OK != pf->read_target(context, area_char, 
 							start_addr, buff_tmp, target_size))
@@ -1114,16 +1144,11 @@ RESULT target_program(struct program_context_t *context)
 				pgbar_update(target_size);
 				time_in_ms = pgbar_fini();
 				
-				if (SPECIAL_STRING_CHAR != area_char)
-				{
-					value &= byte_mask[target_size];
-				}
-				
 				if (op->verify_operations & area_mask)
 				{
 					if (SPECIAL_STRING_CHAR == area_char)
 					{
-						if (!strcmp((const char*)prog_area->buff, 
+						if (!strcmp((const char*)prog_area->cli_str, 
 									(const char*)special_string))
 						{
 							LOG_INFO(_GETTEXT(INFOMSG_VERIFIED), fullname);
@@ -1131,25 +1156,50 @@ RESULT target_program(struct program_context_t *context)
 						else
 						{
 							LOG_ERROR("%s verify failed, read=%s, want=%s\n", 
-									fullname, special_string, prog_area->buff);
+									fullname, special_string, prog_area->cli_str);
 							ret = ERRCODE_FAILURE_VERIFY;
 							goto leave_program_mode;
 						}
 					}
 					else
 					{
-						if (value == prog_area->value)
+						if (!memcmp(buff_tmp, tbuff, target_size))
 						{
 							LOG_INFO(_GETTEXT(INFOMSG_VERIFIED), fullname);
 						}
 						else
 						{
-							sprintf(str_tmp, 
-								"%%s verify failed, read=0x%%0%d"PRIX64", "
-								"want=0x%%0%d"PRIX64".\n",
-								target_size * 2, target_size * 2);
-							LOG_ERROR(str_tmp, fullname, value, 
-										prog_area->value);
+							char *read_str, *want_str;
+							if (NULL == format)
+							{
+								LOG_BUG("format SHOULD be assigned\n");
+								ret = ERROR_FAIL;
+								goto leave_program_mode;
+							}
+							read_str = strparser_solve(format, buff_tmp, 0);
+							if (NULL == read_str)
+							{
+								LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+											"solve value");
+								ret = ERRCODE_FAILURE_OPERATION;
+								goto leave_program_mode;
+							}
+							want_str = strparser_solve(format, tbuff, 0);
+							if (NULL == want_str)
+							{
+								free(read_str);
+								read_str = NULL;
+								LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+											"solve value");
+								ret = ERRCODE_FAILURE_OPERATION;
+								goto leave_program_mode;
+							}
+							LOG_ERROR("%s verify failed, read=%s, want=%s.\n", 
+										fullname, read_str, want_str);
+							free(read_str);
+							read_str = NULL;
+							free(want_str);
+							want_str = NULL;
 							ret = ERRCODE_FAILURE_VERIFY;
 							goto leave_program_mode;
 						}
@@ -1163,10 +1213,30 @@ RESULT target_program(struct program_context_t *context)
 					}
 					else
 					{
-						sprintf(str_tmp, "%%s read is 0x%%0%d"PRIX64"\n", 
-								target_size * 2);
-						LOG_INFO(str_tmp, fullname, value);
+						char *read_str;
+						if (NULL == format)
+						{
+							LOG_BUG("format SHOULD be assigned\n");
+							ret = ERROR_FAIL;
+							goto leave_program_mode;
+						}
+						read_str = strparser_solve(format, buff_tmp, 0);
+						if (NULL == read_str)
+						{
+							LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+										"solve value");
+							ret = ERRCODE_FAILURE_OPERATION;
+							goto leave_program_mode;
+						}
+						LOG_INFO("%s read is %s\n", fullname, read_str);
+						free(read_str);
+						read_str = NULL;
 					}
+				}
+				if (alloced && (buff_tmp != NULL))
+				{
+					free(buff_tmp);
+					buff_tmp = NULL;
 				}
 			}
 			
@@ -1386,6 +1456,11 @@ static void target_print_single_memory(char type)
 		printf("%c_addr = 0x%08X, ", type, 
 				target_chip_param.chip_areas[paramidx].addr);
 	}
+	else if (target_chip_param.chip_areas[paramidx].cli_format != NULL)
+	{
+		printf("%c_format = %s, ", type, 
+				target_chip_param.chip_areas[paramidx].cli_format);
+	}
 	printf("%c_default = 0x%"PRIX64", ", type, 
 				target_chip_param.chip_areas[paramidx].default_value);
 	printf("%c_bytelen = %d\n", type, 
@@ -1449,19 +1524,19 @@ void target_print_setting(char type)
 	
 	// print fl
 	printf("%s of %s:\n", full_type, program_info.chip_name);
-	printf("init = 0x%"PRIX64", ", fl.init_value);
+	printf("init = %s, ", fl.init_value);
 	printf("num_of_warnings = %d, ", fl.num_of_fl_warnings);
 	printf("num_of_settings = %d\n", fl.num_of_fl_settings);
 	for (i = 0; i < fl.num_of_fl_warnings; i++)
 	{
-		printf("warning: mask = 0x%"PRIX64", ", fl.warnings[i].mask);
-		printf("value = 0x%"PRIX64", ", fl.warnings[i].value);
+		printf("warning: mask = %s, ", fl.warnings[i].mask);
+		printf("value = %s, ", fl.warnings[i].value);
 		printf("msg = %s\n", fl.warnings[i].msg);
 	}
 	for (i = 0; i < fl.num_of_fl_settings; i++)
 	{
 		printf("setting: name = %s, ", fl.settings[i].name);
-		printf("mask = 0x%"PRIX64", ", fl.settings[i].mask);
+		printf("mask = %s, ", fl.settings[i].mask);
 		printf("num_of_choices = %d", fl.settings[i].num_of_choices);
 		if (fl.settings[i].ban != NULL)
 		{
@@ -1473,8 +1548,8 @@ void target_print_setting(char type)
 		}
 		if (fl.settings[i].use_checkbox)
 		{
-			printf(", checked = 0x%"PRIX64, fl.settings[i].checked);
-			printf(", unchecked = 0x%"PRIX64, fl.settings[i].unchecked);
+			printf(", checked = %s", fl.settings[i].checked);
+			printf(", unchecked = %s", fl.settings[i].unchecked);
 		}
 		else if (fl.settings[i].use_edit)
 		{
@@ -1485,7 +1560,7 @@ void target_print_setting(char type)
 		printf("\n");
 		for (j = 0; j < fl.settings[i].num_of_choices; j++)
 		{
-			printf("choice: value = 0x%"PRIX64", ", fl.settings[i].choices[j].value);
+			printf("choice: value = %s, ", fl.settings[i].choices[j].value);
 			printf("text = %s\n", fl.settings[i].choices[j].text);
 		}
 	}
@@ -1753,8 +1828,8 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 	uint32_t i, j, num_of_chips;
 	RESULT ret = ERROR_OK;
 	FILE *fp;
-	uint32_t str_len;
-	char *m;
+	char *format;
+	uint8_t size;
 	
 #if PARAM_CHECK
 	if ((NULL == chip_series) || (NULL == chip_module) || (NULL == fl))
@@ -1876,11 +1951,18 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 	
 	// we found the parameter
 	// valid check
-	if (!xmlHasProp(paramNode, BAD_CAST "init"))
+	if (!xmlHasProp(paramNode, BAD_CAST "init") 
+		|| !xmlHasProp(paramNode, BAD_CAST "bytesize"))
 	{
 		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read config file");
 		ret = ERRCODE_FAILURE_OPERATION;
 		goto free_and_exit;
+	}
+	size = (uint8_t)strtoul((char*)xmlGetProp(paramNode, BAD_CAST "bytesize"), NULL, 0);
+	format = (char *)xmlGetProp(paramNode, BAD_CAST "format");
+	if (NULL == format)
+	{
+		format = "%8x";
 	}
 	
 	// read fl number
@@ -1894,8 +1976,20 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 	}
 	
 	// read fl init value
-	fl->init_value = 
-		strtoull((const char *)xmlGetProp(paramNode, BAD_CAST "init"), NULL, 0);
+	if (NULL == bufffunc_malloc_and_copy_str(&fl->init_value, 
+							(char *)xmlGetProp(paramNode, BAD_CAST "init")))
+	{
+		LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+		ret = ERRCODE_NOT_ENOUGH_MEMORY;
+		goto free_and_exit;
+	}
+	if (ERROR_OK != strparser_check(fl->init_value, format))
+	{
+		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+							"parse init node");
+		ret = ERRCODE_FAILURE_OPERATION;
+		goto free_and_exit;
+	}
 	
 	// alloc memory for settings
 	fl->settings = (struct chip_fl_setting_t*)malloc(
@@ -1946,22 +2040,46 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 					goto free_and_exit;
 				}
 				
-				fl->warnings[i].mask = strtoull(
-					(const char *)xmlGetProp(wNode, BAD_CAST "mask"), 
-					NULL, 0);
-				fl->warnings[i].value = strtoull(
-					(const char *)xmlGetProp(wNode, BAD_CAST "value"), 
-					NULL, 0);
-				m = (char *)xmlGetProp(wNode, BAD_CAST "msg");
-				str_len = strlen(m);
-				fl->warnings[i].msg = (char *)malloc(str_len + 1);
-				if (NULL == fl->warnings[i].msg)
+				if (NULL == bufffunc_malloc_and_copy_str(
+						&fl->warnings[i].mask, 
+						(char *)xmlGetProp(wNode, BAD_CAST "mask")))
 				{
 					LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
 					ret = ERRCODE_NOT_ENOUGH_MEMORY;
 					goto free_and_exit;
 				}
-				strcpy(fl->warnings[i].msg, (const char *)m);
+				if (ERROR_OK != strparser_check(fl->warnings[i].mask, format))
+				{
+					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+										"parse mask node");
+					ret = ERRCODE_FAILURE_OPERATION;
+					goto free_and_exit;
+				}
+				
+				if (NULL == bufffunc_malloc_and_copy_str(
+						&fl->warnings[i].value, 
+						(char *)xmlGetProp(wNode, BAD_CAST "value")))
+				{
+					LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+					ret = ERRCODE_NOT_ENOUGH_MEMORY;
+					goto free_and_exit;
+				}
+				if (ERROR_OK != strparser_check(fl->warnings[i].value, format))
+				{
+					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+										"parse value node");
+					ret = ERRCODE_FAILURE_OPERATION;
+					goto free_and_exit;
+				}
+				
+				if (NULL == bufffunc_malloc_and_copy_str(
+						&fl->warnings[i].msg, 
+						(char *)xmlGetProp(wNode, BAD_CAST "msg")))
+				{
+					LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+					ret = ERRCODE_NOT_ENOUGH_MEMORY;
+					goto free_and_exit;
+				}
 				
 				wNode = wNode->next->next;
 			}
@@ -1972,7 +2090,6 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 	for (i = 0; i < fl->num_of_fl_settings; i++)
 	{
 		xmlNodePtr choiceNode;
-		uint8_t checked_exists;
 		
 		fl->settings[i].num_of_choices = 
 			(uint16_t)target_xml_get_child_number(settingNode, "choice");
@@ -1987,45 +2104,54 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 			goto free_and_exit;
 		}
 		
-		m = (char *)xmlGetProp(settingNode, BAD_CAST "name");
-		str_len = strlen(m);
-		fl->settings[i].name = (char *)malloc(str_len + 1);
-		if (NULL == fl->settings[i].name)
+		if (NULL == bufffunc_malloc_and_copy_str(
+						&fl->settings[i].name, 
+						(char *)xmlGetProp(settingNode, BAD_CAST "name")))
 		{
 			LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
 			ret = ERRCODE_NOT_ENOUGH_MEMORY;
 			goto free_and_exit;
 		}
-		strcpy(fl->settings[i].name, m);
-		fl->settings[i].mask = strtoull(
-			(const char *)xmlGetProp(settingNode, BAD_CAST "mask"), NULL, 0);
+		
+		if (NULL == bufffunc_malloc_and_copy_str(
+						&fl->settings[i].mask, 
+						(char *)xmlGetProp(settingNode, BAD_CAST "mask")))
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+			ret = ERRCODE_NOT_ENOUGH_MEMORY;
+			goto free_and_exit;
+		}
+		if (ERROR_OK != strparser_check(fl->settings[i].mask, format))
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+								"parse mask node");
+			ret = ERRCODE_FAILURE_OPERATION;
+			goto free_and_exit;
+		}
+		
 		if (xmlHasProp(settingNode, BAD_CAST "ban"))
 		{
-			m = (char *)xmlGetProp(settingNode, BAD_CAST "ban");
-			str_len = strlen(m);
-			fl->settings[i].ban = (char *)malloc(str_len + 1);
-			if (NULL == fl->settings[i].ban)
+			if (NULL == bufffunc_malloc_and_copy_str(
+						&fl->settings[i].ban, 
+						(char *)xmlGetProp(settingNode, BAD_CAST "ban")))
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
 				ret = ERRCODE_NOT_ENOUGH_MEMORY;
 				goto free_and_exit;
 			}
-			strcpy(fl->settings[i].ban, m);
 		}
 		
 		// parse info if exists
 		if (xmlHasProp(settingNode, BAD_CAST "info"))
 		{
-			m = (char *)xmlGetProp(settingNode, BAD_CAST "info");
-			str_len = strlen(m);
-			fl->settings[i].info = (char *)malloc(str_len + 1);
-			if (NULL == fl->settings[i].info)
+			if (NULL == bufffunc_malloc_and_copy_str(
+						&fl->settings[i].info, 
+						(char *)xmlGetProp(settingNode, BAD_CAST "info")))
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
 				ret = ERRCODE_NOT_ENOUGH_MEMORY;
 				goto free_and_exit;
 			}
-			strcpy(fl->settings[i].info, m);
 		}
 		
 		// parse bytelen if exists
@@ -2053,26 +2179,119 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 		}
 		
 		// parse checked or unchecked
-		checked_exists = 0;
 		if (xmlHasProp(settingNode, BAD_CAST "checked"))
 		{
-			checked_exists = 1;
-			fl->settings[i].checked = strtoull(
-				(const char *)xmlGetProp(settingNode, BAD_CAST "checked"), 
-				NULL, 0);
-			fl->settings[i].unchecked = 
-				fl->settings[i].checked ^ fl->settings[i].mask;
+			if (NULL == bufffunc_malloc_and_copy_str(
+						&fl->settings[i].checked, 
+						(char *)xmlGetProp(settingNode, BAD_CAST "checked")))
+			{
+				LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+				ret = ERRCODE_NOT_ENOUGH_MEMORY;
+				goto free_and_exit;
+			}
+			if (ERROR_OK != strparser_check(fl->settings[i].checked, format))
+			{
+				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+									"parse checked node");
+				ret = ERRCODE_FAILURE_OPERATION;
+				goto free_and_exit;
+			}
+			if (!xmlHasProp(settingNode, BAD_CAST "unchecked"))
+			{
+				uint64_t val_tmp, mask_tmp;
+				
+				if (size > 8)
+				{
+					LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "unchecked node");
+					ret = ERROR_FAIL;
+					goto free_and_exit;
+				}
+				val_tmp = 0;
+				if (ERROR_OK != strparser_parse(fl->settings[i].checked, 
+							format, (uint8_t*)&val_tmp, sizeof(val_tmp)))
+				{
+					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+										"parse checked node");
+					ret = ERRCODE_FAILURE_OPERATION;
+					goto free_and_exit;
+				}
+				mask_tmp = 0;
+				if (ERROR_OK != strparser_parse(fl->settings[i].mask, 
+							format, (uint8_t*)&mask_tmp, sizeof(mask_tmp)))
+				{
+					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+										"parse mask node");
+					ret = ERRCODE_FAILURE_OPERATION;
+					goto free_and_exit;
+				}
+				val_tmp ^= mask_tmp;
+				fl->settings[i].unchecked = 
+					strparser_solve(format, (uint8_t*)&val_tmp, sizeof(val_tmp));
+				if (NULL == fl->settings[i].unchecked)
+				{
+					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+										"solve unchecked value");
+					ret = ERRCODE_FAILURE_OPERATION;
+					goto free_and_exit;
+				}
+			}
 			fl->settings[i].use_checkbox = 1;
 		}
 		if (xmlHasProp(settingNode, BAD_CAST "unchecked"))
 		{
-			fl->settings[i].unchecked = strtoull(
-				(const char *)xmlGetProp(settingNode, BAD_CAST "unchecked"), 
-				NULL, 0);
-			if (!checked_exists)
+			if (NULL == bufffunc_malloc_and_copy_str(
+						&fl->settings[i].unchecked, 
+						(char *)xmlGetProp(settingNode, BAD_CAST "unchecked")))
 			{
+				LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+				ret = ERRCODE_NOT_ENOUGH_MEMORY;
+				goto free_and_exit;
+			}
+			if (ERROR_OK != strparser_check(fl->settings[i].unchecked, format))
+			{
+				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+									"parse unchecked node");
+				ret = ERRCODE_FAILURE_OPERATION;
+				goto free_and_exit;
+			}
+			if (!xmlHasProp(settingNode, BAD_CAST "checked"))
+			{
+				uint64_t val_tmp, mask_tmp;
+				
+				if (size > 8)
+				{
+					LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "checked node");
+					ret = ERROR_FAIL;
+					goto free_and_exit;
+				}
+				val_tmp = 0;
+				if (ERROR_OK != strparser_parse(fl->settings[i].unchecked, 
+							format, (uint8_t*)&val_tmp, sizeof(val_tmp)))
+				{
+					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+										"parse unchecked node");
+					ret = ERRCODE_FAILURE_OPERATION;
+					goto free_and_exit;
+				}
+				mask_tmp = 0;
+				if (ERROR_OK != strparser_parse(fl->settings[i].mask, 
+							format, (uint8_t*)&mask_tmp, sizeof(mask_tmp)))
+				{
+					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+										"parse mask node");
+					ret = ERRCODE_FAILURE_OPERATION;
+					goto free_and_exit;
+				}
+				val_tmp ^= mask_tmp;
 				fl->settings[i].checked = 
-						fl->settings[i].unchecked ^ fl->settings[i].mask;
+					strparser_solve(format, (uint8_t*)&val_tmp, sizeof(val_tmp));
+				if (NULL == fl->settings[i].checked)
+				{
+					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+										"solve checked value");
+					ret = ERRCODE_FAILURE_OPERATION;
+					goto free_and_exit;
+				}
 			}
 			fl->settings[i].use_checkbox = 1;
 		}
@@ -2123,19 +2342,31 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 			}
 			
 			// parse
-			fl->settings[i].choices[j].value = strtoull(
-				(const char *)xmlGetProp(choiceNode, BAD_CAST "value"), 
-				NULL, 0);
-			m = (char *)xmlGetProp(choiceNode, BAD_CAST "text");
-			str_len = strlen(m);
-			fl->settings[i].choices[j].text = (char *)malloc(str_len + 1);
-			if (NULL == fl->settings[i].choices[j].text)
+			if (NULL == bufffunc_malloc_and_copy_str(
+						&fl->settings[i].choices[j].value, 
+						(char *)xmlGetProp(choiceNode, BAD_CAST "value")))
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
 				ret = ERRCODE_NOT_ENOUGH_MEMORY;
 				goto free_and_exit;
 			}
-			strcpy(fl->settings[i].choices[j].text, m);
+			if (ERROR_OK != strparser_check(fl->settings[i].choices[j].value, 
+												format))
+			{
+				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+									"parse value node");
+				ret = ERRCODE_FAILURE_OPERATION;
+				goto free_and_exit;
+			}
+			
+			if (NULL == bufffunc_malloc_and_copy_str(
+						&fl->settings[i].choices[j].text, 
+						(char *)xmlGetProp(choiceNode, BAD_CAST "text")))
+			{
+				LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+				ret = ERRCODE_NOT_ENOUGH_MEMORY;
+				goto free_and_exit;
+			}
 			
 			choiceNode = choiceNode->next->next;
 		}
@@ -2167,11 +2398,27 @@ RESULT target_release_chip_fl(struct chip_fl_t *fl)
 		return ERRCODE_INVALID_PARAMETER;
 	}
 	
+	if (fl->init_value != NULL)
+	{
+		free(fl->init_value);
+		fl->init_value = NULL;
+	}
+	
 	// free warnings
 	if (fl->warnings != NULL)
 	{
 		for (i = 0; i < fl->num_of_fl_warnings; i++)
 		{
+			if (fl->warnings[i].mask != NULL)
+			{
+				free(fl->warnings[i].mask);
+				fl->warnings[i].mask = NULL;
+			}
+			if (fl->warnings[i].value != NULL)
+			{
+				free(fl->warnings[i].value);
+				fl->warnings[i].value = NULL;
+			}
 			if (fl->warnings[i].msg != NULL)
 			{
 				free(fl->warnings[i].msg);
@@ -2197,10 +2444,35 @@ RESULT target_release_chip_fl(struct chip_fl_t *fl)
 				free(fl->settings[i].ban);
 				fl->settings[i].ban = NULL;
 			}
+			if (fl->settings[i].info != NULL)
+			{
+				free(fl->settings[i].info);
+				fl->settings[i].info = NULL;
+			}
+			if (fl->settings[i].mask != NULL)
+			{
+				free(fl->settings[i].mask);
+				fl->settings[i].mask = NULL;
+			}
+			if (fl->settings[i].checked != NULL)
+			{
+				free(fl->settings[i].checked);
+				fl->settings[i].checked = NULL;
+			}
+			if (fl->settings[i].unchecked != NULL)
+			{
+				free(fl->settings[i].unchecked);
+				fl->settings[i].unchecked = NULL;
+			}
 			if (fl->settings[i].choices != NULL)
 			{
 				for (j = 0; j < fl->settings[i].num_of_choices; j++)
 				{
+					if (fl->settings[i].choices[j].value != NULL)
+					{
+						free(fl->settings[i].choices[j].value);
+						fl->settings[i].choices[j].value = NULL;
+					}
 					if (fl->settings[i].choices[j].text != NULL)
 					{
 						free(fl->settings[i].choices[j].text);
@@ -2317,6 +2589,9 @@ RESULT target_build_chip_series(const char *chip_series,
 	for (i = 0; i < s->num_of_chips; i++)
 	{
 		xmlNodePtr paramNode;
+		uint32_t size;
+		char *format, *str;
+		uint8_t *buff;
 		
 		p_param = &(s->chips_param[i]);
 		
@@ -2661,14 +2936,48 @@ RESULT target_build_chip_series(const char *chip_series,
 				p_param->chip_areas[FUSE_IDX].size = (uint32_t)strtoul(
 					(const char *)xmlGetProp(paramNode, BAD_CAST "bytesize"), 
 					NULL, 0);
+				size = p_param->chip_areas[FUSE_IDX].size;
 				p_param->chip_areas[FUSE_IDX].default_value = strtoull(
 					(const char *)xmlGetProp(paramNode, BAD_CAST "init"), 
 					NULL, 0);
-				if (xmlGetProp(paramNode, BAD_CAST "mask") != NULL)
+				p_param->chip_areas[FUSE_IDX].cli_format = NULL;
+				p_param->chip_areas[FUSE_IDX].mask = NULL;
+				str = (char *)xmlGetProp(paramNode, BAD_CAST "format");
+				if (str != NULL)
 				{
-					p_param->chip_areas[FUSE_IDX].mask = strtoull(
-						(const char *)xmlGetProp(paramNode, BAD_CAST "mask"), 
-						NULL, 0);
+					if (NULL == bufffunc_malloc_and_copy_str(
+						&p_param->chip_areas[FUSE_IDX].cli_format, str))
+					{
+						LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+						ret = ERRCODE_NOT_ENOUGH_MEMORY;
+						goto free_and_exit;
+					}
+					format = p_param->chip_areas[FUSE_IDX].cli_format;
+				}
+				else
+				{
+					format = "%8x";
+				}
+				str = (char *)xmlGetProp(paramNode, BAD_CAST "mask");
+				if (str != NULL)
+				{
+					p_param->chip_areas[FUSE_IDX].mask = 
+						(uint8_t *)malloc(size);
+					if (NULL == p_param->chip_areas[FUSE_IDX].mask)
+					{
+						LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+						ret = ERRCODE_NOT_ENOUGH_MEMORY;
+						goto free_and_exit;
+					}
+					buff = p_param->chip_areas[FUSE_IDX].mask;
+					if (ERROR_OK != 
+							strparser_parse(str, format, buff, size))
+					{
+						LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+									"parse mask node");
+						ret = ERRCODE_FAILURE_OPERATION;
+						goto free_and_exit;
+					}
 				}
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "lock"))
@@ -2677,14 +2986,48 @@ RESULT target_build_chip_series(const char *chip_series,
 				p_param->chip_areas[LOCK_IDX].size = (uint32_t)strtoul(
 					(const char *)xmlGetProp(paramNode, BAD_CAST "bytesize"), 
 					NULL, 0);
+				size = p_param->chip_areas[LOCK_IDX].size;
 				p_param->chip_areas[LOCK_IDX].default_value = strtoull(
 					(const char *)xmlGetProp(paramNode, BAD_CAST "init"), 
 					NULL, 0);
-				if (xmlGetProp(paramNode, BAD_CAST "mask") != NULL)
+				p_param->chip_areas[LOCK_IDX].cli_format = NULL;
+				p_param->chip_areas[LOCK_IDX].mask = NULL;
+				str = (char *)xmlGetProp(paramNode, BAD_CAST "format");
+				if (str != NULL)
 				{
-					p_param->chip_areas[LOCK_IDX].mask = strtoull(
-						(const char *)xmlGetProp(paramNode, BAD_CAST "mask"), 
-						NULL, 0);
+					if (NULL == bufffunc_malloc_and_copy_str(
+						&p_param->chip_areas[LOCK_IDX].cli_format, str))
+					{
+						LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+						ret = ERRCODE_NOT_ENOUGH_MEMORY;
+						goto free_and_exit;
+					}
+					format = p_param->chip_areas[LOCK_IDX].cli_format;
+				}
+				else
+				{
+					format = "%8x";
+				}
+				str = (char *)xmlGetProp(paramNode, BAD_CAST "mask");
+				if (str != NULL)
+				{
+					p_param->chip_areas[LOCK_IDX].mask = 
+						(uint8_t *)malloc(size);
+					if (NULL == p_param->chip_areas[LOCK_IDX].mask)
+					{
+						LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+						ret = ERRCODE_NOT_ENOUGH_MEMORY;
+						goto free_and_exit;
+					}
+					buff = p_param->chip_areas[LOCK_IDX].mask;
+					if (ERROR_OK != 
+							strparser_parse(str, format, buff, size))
+					{
+						LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+									"parse mask node");
+						ret = ERRCODE_FAILURE_OPERATION;
+						goto free_and_exit;
+					}
 				}
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "calibration"))
@@ -2693,14 +3036,48 @@ RESULT target_build_chip_series(const char *chip_series,
 				p_param->chip_areas[CALIBRATION_IDX].size = (uint32_t)strtoul(
 					(const char *)xmlGetProp(paramNode,BAD_CAST "bytesize"),
 					NULL, 0);
+				size = p_param->chip_areas[CALIBRATION_IDX].size;
 				p_param->chip_areas[CALIBRATION_IDX].default_value = strtoull(
 						(const char *)xmlGetProp(paramNode, BAD_CAST "init"), 
 						NULL, 0);
-				if (xmlGetProp(paramNode, BAD_CAST "mask") != NULL)
+				p_param->chip_areas[CALIBRATION_IDX].cli_format = NULL;
+				p_param->chip_areas[CALIBRATION_IDX].mask = NULL;
+				str = (char *)xmlGetProp(paramNode, BAD_CAST "format");
+				if (str != NULL)
 				{
-					p_param->chip_areas[CALIBRATION_IDX].mask = strtoull(
-						(const char *)xmlGetProp(paramNode, BAD_CAST "mask"), 
-						NULL, 0);
+					if (NULL == bufffunc_malloc_and_copy_str(
+						&p_param->chip_areas[CALIBRATION_IDX].cli_format, str))
+					{
+						LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+						ret = ERRCODE_NOT_ENOUGH_MEMORY;
+						goto free_and_exit;
+					}
+					format = p_param->chip_areas[CALIBRATION_IDX].cli_format;
+				}
+				else
+				{
+					format = "%8x";
+				}
+				str = (char *)xmlGetProp(paramNode, BAD_CAST "mask");
+				if (str != NULL)
+				{
+					p_param->chip_areas[CALIBRATION_IDX].mask = 
+						(uint8_t *)malloc(size);
+					if (NULL == p_param->chip_areas[CALIBRATION_IDX].mask)
+					{
+						LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+						ret = ERRCODE_NOT_ENOUGH_MEMORY;
+						goto free_and_exit;
+					}
+					buff = p_param->chip_areas[CALIBRATION_IDX].mask;
+					if (ERROR_OK != 
+							strparser_parse(str, format, buff, size))
+					{
+						LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+									"parse mask node");
+						ret = ERRCODE_FAILURE_OPERATION;
+						goto free_and_exit;
+					}
 				}
 			}
 			else
@@ -2812,7 +3189,7 @@ free_and_exit:
 
 RESULT target_release_chip_series(struct chip_series_t *s)
 {
-	uint32_t i;
+	uint32_t i, j;
 	
 	if ((s != NULL) && ((s->num_of_chips > 0) || (s->chips_param != NULL)))
 	{
@@ -2822,6 +3199,19 @@ RESULT target_release_chip_series(struct chip_series_t *s)
 			{
 				free(s->chips_param[i].program_mode_str);
 				s->chips_param[i].program_mode_str = NULL;
+			}
+			for (j = 0; j < dimof(s->chips_param[i].chip_areas); j++)
+			{
+				if (s->chips_param[i].chip_areas[j].mask != NULL)
+				{
+					free(s->chips_param[i].chip_areas[j].mask);
+					s->chips_param[i].chip_areas[j].mask = NULL;
+				}
+				if (s->chips_param[i].chip_areas[j].cli_format != NULL)
+				{
+					free(s->chips_param[i].chip_areas[j].cli_format);
+					s->chips_param[i].chip_areas[j].cli_format = NULL;
+				}
 			}
 		}
 		free(s->chips_param);

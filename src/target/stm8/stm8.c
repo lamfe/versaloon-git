@@ -732,7 +732,6 @@ static const uint8_t stm8_optionbyte_num_stm8l
 WRITE_TARGET_HANDLER(stm8swim)
 {
 	RESULT ret = ERROR_OK;
-	struct program_info_t *pi = context->pi;
 	struct chip_param_t *param = context->param;
 	struct operation_t *op = context->op;
 	uint8_t cmd;
@@ -740,6 +739,7 @@ WRITE_TARGET_HANDLER(stm8swim)
 	uint8_t i;
 	struct stm8_optionbyte_info_t *optionbyte_info;
 	uint8_t optionbyte_num;
+	uint8_t fuse_offset, fuse_addr;
 #ifdef STM8_USE_FLASHLOADER
 	struct stm8_fl_param_t fl_param;
 	uint16_t ram_addr;
@@ -830,10 +830,6 @@ do_write_flashee:
 			break;
 		}
 		cmd = STM8_FLASH_CR2_OPT;
-		if (NULL == buff)
-		{
-			buff = (uint8_t*)&pi->program_areas[FUSE_IDX].value;
-		}
 		switch (param->param[STM8_PARAM_TYPE])
 		{
 		case STM8_TYPE_STM8A:
@@ -856,18 +852,19 @@ do_write_fuse:
 			}
 			for (i = 0; i < optionbyte_num; i++)
 			{
+				fuse_offset = optionbyte_info[i].offset;
+				fuse_addr = optionbyte_info[i].addr;
+				
 				if ((ERROR_OK == ret) 
-					&& (buff[optionbyte_info[i].offset] 
-						!= fuse_page[optionbyte_info[i].addr]) 
-					&& (param->chip_areas[FUSE_IDX].mask 
-						& ((uint64_t)0xFF << (optionbyte_info[i].offset * 8))))
+					&& (buff[fuse_offset] != fuse_page[fuse_addr]) 
+					&& param->chip_areas[FUSE_IDX].mask[fuse_offset])
 				{
 					ret = stm8_program_reg(
 							param->param[STM8_PARAM_FLASH_CR2], 
 							param->param[STM8_PARAM_FLASH_NCR2], 
 							param->param[STM8_PARAM_FLASH_IAPSR], cmd, 
-							STM8_FUSEPAGE_ADDR + optionbyte_info[i].addr, 
-							buff[optionbyte_info[i].offset], 1);
+							STM8_FUSEPAGE_ADDR + fuse_addr, 
+							buff[fuse_offset], 1);
 					if ((ERROR_OK == ret) 
 						&& (param->param[STM8_PARAM_TYPE] != STM8_TYPE_STM8L))
 					{
@@ -875,8 +872,8 @@ do_write_fuse:
 							param->param[STM8_PARAM_FLASH_CR2], 
 							param->param[STM8_PARAM_FLASH_NCR2], 
 							param->param[STM8_PARAM_FLASH_IAPSR], cmd, 
-							STM8_FUSEPAGE_ADDR + optionbyte_info[i].addr + 1, 
-							~buff[optionbyte_info[i].offset], 1);
+							STM8_FUSEPAGE_ADDR + fuse_addr + 1, 
+							~buff[fuse_offset], 1);
 					}
 				}
 			}
@@ -1001,6 +998,7 @@ READ_TARGET_HANDLER(stm8swim)
 	uint8_t i;
 	struct stm8_optionbyte_info_t *optionbyte_info;
 	uint8_t optionbyte_num;
+	uint8_t fuse_offset, fuse_addr;
 	
 	switch (area)
 	{
@@ -1058,11 +1056,12 @@ do_read_fuse:
 			buff[0] = fuse_page[0];
 			for (i = 0; i < optionbyte_num; i++)
 			{
-				if (param->chip_areas[FUSE_IDX].mask 
-					& ((uint64_t)0xFF << (optionbyte_info[i].offset * 8)))
+				fuse_offset = optionbyte_info[i].offset;
+				fuse_addr = optionbyte_info[i].addr;
+				
+				if (param->chip_areas[FUSE_IDX].mask[fuse_offset])
 				{
-					buff[optionbyte_info[i].offset] = 
-						fuse_page[optionbyte_info[i].addr];
+					buff[fuse_offset] = fuse_page[fuse_addr];
 				}
 			}
 			break;

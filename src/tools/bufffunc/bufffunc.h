@@ -17,10 +17,6 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#define STRPARSER_DIV_CHARS						"|_:; "
-
-RESULT strparser_check(char * str, char * format);
-RESULT strparser_parse(char * str, char * format, uint8_t * buff, 
-							uint32_t size);
-char * strparser_solve(char *format, uint8_t *buff, uint32_t size);
+uint64_t bufffunc_get_u64(uint8_t *buff, uint32_t size);
+char* bufffunc_malloc_and_copy_str(char** dest, char* src);
 

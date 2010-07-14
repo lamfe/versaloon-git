@@ -266,7 +266,6 @@ ERASE_TARGET_HANDLER(avr8jtag)
 WRITE_TARGET_HANDLER(avr8jtag)
 {
 	struct chip_param_t *param = context->param;
-	struct program_info_t *pi = context->pi;
 	uint8_t ir;
 	uint32_t dr;
 	uint32_t i;
@@ -339,24 +338,21 @@ WRITE_TARGET_HANDLER(avr8jtag)
 		{
 			AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
 			AVR_JTAG_PROG_EnterFuseWrite();
-			AVR_JTAG_PROG_LoadDataLowByte(
-							(pi->program_areas[FUSE_IDX].value >> 0) & 0xFF);
+			AVR_JTAG_PROG_LoadDataLowByte(buff[0]);
 			AVR_JTAG_PROG_WriteFuseLowByte();
 			AVR_JTAG_WaitComplete(AVR_JTAG_PROG_WriteFuseLowByteComplete_CMD);
 		}
 		// high bits
 		if (param->chip_areas[FUSE_IDX].size > 1)
 		{
-			AVR_JTAG_PROG_LoadDataLowByte(
-							(pi->program_areas[FUSE_IDX].value >> 8) & 0xFF);
+			AVR_JTAG_PROG_LoadDataLowByte(buff[1]);
 			AVR_JTAG_PROG_WriteFuseHighByte();
 			AVR_JTAG_WaitComplete(AVR_JTAG_PROG_WriteFuseHighByteComplete_CMD);
 		}
 		// extended bits
 		if (param->chip_areas[FUSE_IDX].size > 2)
 		{
-			AVR_JTAG_PROG_LoadDataLowByte(
-							(pi->program_areas[FUSE_IDX].value >> 16) & 0xFF);
+			AVR_JTAG_PROG_LoadDataLowByte(buff[2]);
 			AVR_JTAG_PROG_WriteFuseExtByte();
 			AVR_JTAG_WaitComplete(AVR_JTAG_PROG_WriteFuseExtByteComplete_CMD);
 		}
@@ -381,7 +377,7 @@ WRITE_TARGET_HANDLER(avr8jtag)
 		{
 			AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
 			AVR_JTAG_PROG_EnterLockbitWrite();
-			AVR_JTAG_PROG_LoadDataByte(pi->program_areas[LOCK_IDX].value);
+			AVR_JTAG_PROG_LoadDataByte(buff[0]);
 			AVR_JTAG_PROG_WriteLockbit();
 			AVR_JTAG_WaitComplete(AVR_JTAG_PROG_WriteLockbitComplete_CMD);
 			if (ERROR_OK != jtag_commit())
