@@ -107,6 +107,7 @@ void MSP430_JTAG_TCLK_STROKE(uint16 cnt)
 	while(cnt--)
 	{
 		MSP430_JTAG_TCLK(1);
+		MSP430_JTAG_DELAY();
 		MSP430_JTAG_TCLK(0);
 	}
 }
