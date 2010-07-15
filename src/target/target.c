@@ -188,7 +188,7 @@ struct target_info_t targets_info[] =
 		psoc1_program_mode,					// program_mode
 		&psoc1_program_functions,			// program_functions
 		psoc1_parse_argument,				// parse_argument
-		NULL,								// adjust_setting
+		psoc1_adjust_setting,				// adjust_setting
 		
 		NULL,								// get_mass_product_data_size
 		NULL,								// prepare_mass_product_data
@@ -2705,12 +2705,14 @@ RESULT target_build_chip_series(const char *chip_series,
 				p_param->chip_areas[BOOTLOADER_IDX].page_size = 
 					(uint32_t)strtoul(
 						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
+				p_param->chip_areas[BOOTLOADER_IDX].size = 0;
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "boot_page_num"))
 			{
 				p_param->chip_areas[BOOTLOADER_IDX].page_num = 
 					(uint32_t)strtoul(
 						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
+				p_param->chip_areas[BOOTLOADER_IDX].size = 0;
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "boot_default"))
 			{
@@ -2723,12 +2725,14 @@ RESULT target_build_chip_series(const char *chip_series,
 				p_param->chip_areas[SRAM_IDX].page_size = 
 					(uint32_t)strtoul(
 						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
+				p_param->chip_areas[SRAM_IDX].size = 0;
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "sram_page_num"))
 			{
 				p_param->chip_areas[SRAM_IDX].page_num = 
 					(uint32_t)strtoul(
 						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
+				p_param->chip_areas[SRAM_IDX].size = 0;
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "app_addr"))
 			{
@@ -2747,12 +2751,14 @@ RESULT target_build_chip_series(const char *chip_series,
 				p_param->chip_areas[APPLICATION_IDX].page_size = 
 					(uint32_t)strtoul(
 						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
+				p_param->chip_areas[APPLICATION_IDX].size = 0;
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "app_page_num"))
 			{
 				p_param->chip_areas[APPLICATION_IDX].page_num = 
 					(uint32_t)strtoul(
 						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
+				p_param->chip_areas[APPLICATION_IDX].size = 0;
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "app_default"))
 			{
@@ -2776,11 +2782,13 @@ RESULT target_build_chip_series(const char *chip_series,
 			{
 				p_param->chip_areas[EEPROM_IDX].page_size = (uint32_t)strtoul(
 						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
+				p_param->chip_areas[EEPROM_IDX].size = 0;
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "ee_page_num"))
 			{
 				p_param->chip_areas[EEPROM_IDX].page_num = (uint32_t)strtoul(
 						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
+				p_param->chip_areas[EEPROM_IDX].size = 0;
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "ee_default"))
 			{
@@ -2804,11 +2812,13 @@ RESULT target_build_chip_series(const char *chip_series,
 			{
 				p_param->chip_areas[OTPROM_IDX].page_size = (uint32_t)strtoul(
 						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
+				p_param->chip_areas[OTPROM_IDX].size = 0;
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "otprom_page_num"))
 			{
 				p_param->chip_areas[OTPROM_IDX].page_num = (uint32_t)strtoul(
 						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
+				p_param->chip_areas[OTPROM_IDX].size = 0;
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "otprom_default"))
 			{
@@ -2832,11 +2842,13 @@ RESULT target_build_chip_series(const char *chip_series,
 			{
 				p_param->chip_areas[USRSIG_IDX].page_size = (uint32_t)strtoul(
 						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
+				p_param->chip_areas[USRSIG_IDX].size = 0;
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "usrsig_page_num"))
 			{
 				p_param->chip_areas[USRSIG_IDX].page_num = (uint32_t)strtoul(
 						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
+				p_param->chip_areas[USRSIG_IDX].size = 0;
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "usrsig_default"))
 			{
@@ -2860,11 +2872,13 @@ RESULT target_build_chip_series(const char *chip_series,
 			{
 				p_param->chip_areas[FUSE_IDX].page_num = (uint32_t)strtoul(
 						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
+				p_param->chip_areas[FUSE_IDX].size = 0;
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "fuse_page_size"))
 			{
 				p_param->chip_areas[FUSE_IDX].page_size = (uint32_t)strtoul(
 						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
+				p_param->chip_areas[FUSE_IDX].size = 0;
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "fuse_default"))
 			{
@@ -2888,11 +2902,13 @@ RESULT target_build_chip_series(const char *chip_series,
 			{
 				p_param->chip_areas[LOCK_IDX].page_num = (uint32_t)strtoul(
 						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
+				p_param->chip_areas[LOCK_IDX].size = 0;
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "lock_page_size"))
 			{
 				p_param->chip_areas[LOCK_IDX].page_size = (uint32_t)strtoul(
 						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
+				p_param->chip_areas[LOCK_IDX].size = 0;
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "lock_default"))
 			{
@@ -3149,49 +3165,57 @@ RESULT target_build_chip_series(const char *chip_series,
 			paramNode = paramNode->next->next;
 		}
 		
-		if (!(target_para_size_defined & SRAM))
+		if (!(target_para_size_defined & SRAM) 
+			&& !p_param->chip_areas[SRAM_IDX].size)
 		{
 			p_param->chip_areas[SRAM_IDX].size = 
 				p_param->chip_areas[SRAM_IDX].page_size 
 				* p_param->chip_areas[SRAM_IDX].page_num;
 		}
-		if (!(target_para_size_defined & APPLICATION))
+		if (!(target_para_size_defined & APPLICATION) 
+			&& !p_param->chip_areas[APPLICATION_IDX].size)
 		{
 			p_param->chip_areas[APPLICATION_IDX].size = 
 				p_param->chip_areas[APPLICATION_IDX].page_size 
 				* p_param->chip_areas[APPLICATION_IDX].page_num;
 		}
-		if (!(target_para_size_defined & EEPROM))
+		if (!(target_para_size_defined & EEPROM) 
+			&& !p_param->chip_areas[EEPROM_IDX].size)
 		{
 			p_param->chip_areas[EEPROM_IDX].size = 
 				p_param->chip_areas[EEPROM_IDX].page_size 
 				* p_param->chip_areas[EEPROM_IDX].page_num;
 		}
-		if (!(target_para_size_defined & BOOTLOADER))
+		if (!(target_para_size_defined & BOOTLOADER) 
+			&& !p_param->chip_areas[BOOTLOADER_IDX].size)
 		{
 			p_param->chip_areas[BOOTLOADER_IDX].size = 
 				p_param->chip_areas[BOOTLOADER_IDX].page_size 
 				* p_param->chip_areas[BOOTLOADER_IDX].page_num;
 		}
-		if (!(target_para_size_defined & FUSE))
+		if (!(target_para_size_defined & FUSE) 
+			&& !p_param->chip_areas[FUSE_IDX].size)
 		{
 			p_param->chip_areas[FUSE_IDX].size = 
 				p_param->chip_areas[FUSE_IDX].page_size 
 				* p_param->chip_areas[FUSE_IDX].page_num;
 		}
-		if (!(target_para_size_defined & LOCK))
+		if (!(target_para_size_defined & LOCK) 
+			&& !p_param->chip_areas[LOCK_IDX].size)
 		{
 			p_param->chip_areas[LOCK_IDX].size = 
 				p_param->chip_areas[LOCK_IDX].page_size 
 				* p_param->chip_areas[LOCK_IDX].page_num;
 		}
-		if (!(target_para_size_defined & OTPROM))
+		if (!(target_para_size_defined & OTPROM) 
+			&& !p_param->chip_areas[OTPROM_IDX].size)
 		{
 			p_param->chip_areas[OTPROM_IDX].size = 
 				p_param->chip_areas[OTPROM_IDX].page_size 
 				* p_param->chip_areas[OTPROM_IDX].page_num;
 		}
-		if (!(target_para_size_defined & USRSIG))
+		if (!(target_para_size_defined & USRSIG) 
+			&& !p_param->chip_areas[USRSIG_IDX].size)
 		{
 			p_param->chip_areas[USRSIG_IDX].size = 
 				p_param->chip_areas[USRSIG_IDX].page_size 

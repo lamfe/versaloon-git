@@ -26,6 +26,7 @@ extern const struct program_mode_t psoc1_program_mode[];
 extern const struct program_functions_t psoc1_program_functions;
 
 PARSE_ARGUMENT_HANDLER(psoc1);
+ADJUST_SETTING_HANDLER(psoc1);
 
 #endif /* __PSOC1_H_INCLUDED__ */
 
