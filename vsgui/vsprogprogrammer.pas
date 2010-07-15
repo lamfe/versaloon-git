@@ -91,7 +91,7 @@ var
   i: integer;
 begin
   Result := True;
-  if (Pos('versaloon', line) = 1) and (Pos(' on ', line) > 0) then
+  if (Pos('Versaloon', line) = 1) and (Pos(' on ', line) > 0) then
   begin
     // found
     strTmp := Copy(line, Pos(': ', line) + 2, Pos(' on ', line) - Pos(': ', line) - 2);
