@@ -24,8 +24,6 @@
 #include "msp430_internal.h"
 #include "JTAGfunc.h"
 
-#define cur_chip_param				target_chip_param
-
 static uint8_t ir;
 static uint32_t dr;
 
