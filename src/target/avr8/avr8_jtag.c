@@ -492,25 +492,7 @@ READ_TARGET_HANDLER(avr8jtag)
 		{
 			AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
 			AVR_JTAG_PROG_EnterFuseLockbitRead();
-			AVR_JTAG_PROG_ReadFuseLowByte(buff[0]);
-		}
-		// high bits
-		if (param->chip_areas[FUSE_IDX].size > 1)
-		{
-			AVR_JTAG_PROG_ReadFuseHighByte(buff[1]);
-		}
-		// extended bits
-		if (param->chip_areas[FUSE_IDX].size > 2)
-		{
-			AVR_JTAG_PROG_ReadExtFuseByte(buff[2]);
-		}
-		if (param->chip_areas[FUSE_IDX].size > 0)
-		{
-			if (ERROR_OK != jtag_commit())
-			{
-				ret = ERRCODE_FAILURE_OPERATION;
-				break;
-			}
+			AVR_JTAG_PROG_ReadFuseLowByte(page_buf[0]);
 		}
 		else
 		{
@@ -519,6 +501,25 @@ READ_TARGET_HANDLER(avr8jtag)
 			ret = ERRCODE_NOT_SUPPORT;
 			break;
 		}
+		// high bits
+		if (param->chip_areas[FUSE_IDX].size > 1)
+		{
+			AVR_JTAG_PROG_ReadFuseHighByte(page_buf[1]);
+		}
+		// extended bits
+		if (param->chip_areas[FUSE_IDX].size > 2)
+		{
+			AVR_JTAG_PROG_ReadExtFuseByte(page_buf[2]);
+		}
+		
+		if (ERROR_OK != jtag_commit())
+		{
+			ret = ERRCODE_FAILURE_OPERATION;
+			break;
+		}
+		buff[0] = page_buf[0];
+		buff[1] = page_buf[1];
+		buff[2] = page_buf[2];
 		break;
 	case LOCK_CHAR:
 		if (param->chip_areas[LOCK_IDX].size > 0)

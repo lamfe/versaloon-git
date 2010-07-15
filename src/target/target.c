@@ -279,6 +279,7 @@ RESULT target_parse_cli_string(void)
 	uint8_t i;
 	RESULT ret;
 	char *format;
+	char format_tmp[32];
 	
 	for (i = 0; i < dimof(program_info.program_areas); i++)
 	{
@@ -288,12 +289,20 @@ RESULT target_parse_cli_string(void)
 			{
 				format = target_chip_param.chip_areas[i].cli_format;
 			}
-			else
+			else if (target_chip_param.chip_areas[i].size <= 8)
 			{
 				// cli_format not defined
 				// simply use %8x as format, which is simple integer input
-				format = "%8x";
+				snprintf(format_tmp, sizeof(format_tmp), "%%%dx", 
+							target_chip_param.chip_areas[i].size);
+				format = format_tmp;
 			}
+			else
+			{
+				LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "cli_format");
+				return ERROR_FAIL;
+			}
+			
 			ret = strparser_parse(program_info.program_areas[i].cli_str, 
 						format, program_info.program_areas[i].buff, 
 						program_info.program_areas[i].size);
@@ -601,19 +610,6 @@ RESULT target_write_buffer_from_file_callback(uint32_t address,
 	return ERROR_FAIL;
 }
 
-#if 0
-static const uint64_t byte_mask[9] = {
-	0x0000000000000000,
-	0x00000000000000FF,
-	0x000000000000FFFF,
-	0x0000000000FFFFFF,
-	0x00000000FFFFFFFF,
-	0x000000FFFFFFFFFF,
-	0x0000FFFFFFFFFFFF,
-	0x00FFFFFFFFFFFFFF,
-	0xFFFFFFFFFFFFFFFF,
-};
-#endif
 RESULT target_program(struct program_context_t *context)
 {
 	const struct program_functions_t *pf = cur_target->program_functions;
@@ -632,6 +628,7 @@ RESULT target_program(struct program_context_t *context)
 	enum area_attr_t area_attr;
 	uint32_t target_size, page_size, start_addr;
 	char *format = NULL;
+	char format_tmp[32];
 	uint8_t *tbuff;
 	char *fullname, str_tmp[256];
 	struct memlist **ml, *ml_tmp;
@@ -744,8 +741,15 @@ RESULT target_program(struct program_context_t *context)
 			format = area_info->cli_format;
 			if (NULL == format)
 			{
+				if (target_size > 8)
+				{
+					LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "cli_format");
+					ret = ERROR_FAIL;
+					goto leave_program_mode;
+				}
 				// default type is hex value with 16-bit length
-				format = "%8x";
+				snprintf(format_tmp, sizeof(format_tmp), "%%%dx", target_size);
+				format = format_tmp;
 			}
 			if ((0 == target_size) && (SPECIAL_STRING_CHAR == area_char))
 			{
@@ -816,6 +820,8 @@ RESULT target_program(struct program_context_t *context)
 				if ((pf->leave_program_mode != NULL) 
 					&& (ERROR_OK != pf->leave_program_mode(context, 0)))
 				{
+					// no need to goto leave_program_mode here
+					// operation failed IS leave_program_mode
 					return ERRCODE_FAILURE_OPERATION;
 				}
 				sleep_ms(100);
@@ -930,6 +936,8 @@ RESULT target_program(struct program_context_t *context)
 				if ((pf->leave_program_mode != NULL) 
 					&& (ERROR_OK != pf->leave_program_mode(context, 0)))
 				{
+					// no need to goto leave_program_mode here
+					// operation failed IS leave_program_mode
 					return ERRCODE_FAILURE_OPERATION;
 				}
 				sleep_ms(100);
@@ -1004,7 +1012,8 @@ RESULT target_program(struct program_context_t *context)
 				{
 					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
 								"add memory list");
-					return ERRCODE_FAILURE_OPERATION;
+					ret = ERRCODE_FAILURE_OPERATION;
+					goto leave_program_mode;
 				}
 				target_size = MEMLIST_CalcAllSize(*ml);
 			}
@@ -1829,6 +1838,7 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 	RESULT ret = ERROR_OK;
 	FILE *fp;
 	char *format;
+	char format_tmp[32];
 	uint8_t size;
 	
 #if PARAM_CHECK
@@ -1962,7 +1972,14 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 	format = (char *)xmlGetProp(paramNode, BAD_CAST "format");
 	if (NULL == format)
 	{
-		format = "%8x";
+		if (size > 8)
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "format node");
+			ret = ERROR_FAIL;
+			goto free_and_exit;
+		}
+		snprintf(format_tmp, sizeof(format_tmp), "%%%dx", size);
+		format = format_tmp;
 	}
 	
 	// read fl number
@@ -2591,6 +2608,7 @@ RESULT target_build_chip_series(const char *chip_series,
 		xmlNodePtr paramNode;
 		uint32_t size;
 		char *format, *str;
+		char format_tmp[32];
 		uint8_t *buff;
 		
 		p_param = &(s->chips_param[i]);
@@ -2956,7 +2974,14 @@ RESULT target_build_chip_series(const char *chip_series,
 				}
 				else
 				{
-					format = "%8x";
+					if (size > 8)
+					{
+						LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "format node");
+						ret = ERROR_FAIL;
+						goto free_and_exit;
+					}
+					snprintf(format_tmp, sizeof(format_tmp), "%%%dx", size);
+					format = format_tmp;
 				}
 				str = (char *)xmlGetProp(paramNode, BAD_CAST "mask");
 				if (str != NULL)
@@ -3006,7 +3031,14 @@ RESULT target_build_chip_series(const char *chip_series,
 				}
 				else
 				{
-					format = "%8x";
+					if (size > 8)
+					{
+						LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "format node");
+						ret = ERROR_FAIL;
+						goto free_and_exit;
+					}
+					snprintf(format_tmp, sizeof(format_tmp), "%%%dx", size);
+					format = format_tmp;
 				}
 				str = (char *)xmlGetProp(paramNode, BAD_CAST "mask");
 				if (str != NULL)
@@ -3056,7 +3088,14 @@ RESULT target_build_chip_series(const char *chip_series,
 				}
 				else
 				{
-					format = "%8x";
+					if (size > 8)
+					{
+						LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "format node");
+						ret = ERROR_FAIL;
+						goto free_and_exit;
+					}
+					snprintf(format_tmp, sizeof(format_tmp), "%%%dx", size);
+					format = format_tmp;
 				}
 				str = (char *)xmlGetProp(paramNode, BAD_CAST "mask");
 				if (str != NULL)
