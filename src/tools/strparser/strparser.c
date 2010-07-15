@@ -233,6 +233,8 @@ char * strparser_solve(char *format, uint8_t *buff, uint32_t size)
 	char *ret = NULL;
 	uint8_t radix;
 	
+	REFERENCE_PARAMETER(size);
+	
 	if ((NULL == format) || (NULL == buff))
 	{
 		return NULL;
@@ -299,7 +301,7 @@ solve_integer:
 				value = bufffunc_get_u64(buff, (uint32_t)param);
 				if (10 == radix)
 				{
-					if (param < 4)
+					if (param <= 4)
 					{
 						sprintf(tmp_format, "%%d");
 						sprintf(tmp_str, tmp_format, (uint32_t)value);
