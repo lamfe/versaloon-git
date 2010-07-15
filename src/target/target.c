@@ -1003,7 +1003,7 @@ RESULT target_program(struct program_context_t *context)
 		}
 		else if (((op->read_operations & area_mask) 
 					|| (op->verify_operations & area_mask))
-				&& (area_attr && AREA_ATTR_R))
+				&& (area_attr & AREA_ATTR_R))
 		{
 			if ((p_map[i].data_pos) && (op->read_operations & area_mask))
 			{

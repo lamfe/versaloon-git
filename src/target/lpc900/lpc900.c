@@ -304,7 +304,8 @@ WRITE_TARGET_HANDLER(lpc900icp)
 
 READ_TARGET_HANDLER(lpc900icp)
 {
-	uint8_t tmpbuff[2];
+	struct chip_param_t *param = context->param;
+	uint8_t tmpbuf[5];
 	RESULT ret = ERROR_OK;
 	
 	REFERENCE_PARAMETER(context);
@@ -313,7 +314,35 @@ READ_TARGET_HANDLER(lpc900icp)
 	switch (area)
 	{
 	case CHIPID_CHAR:
-		// already read when enter program mode
+		tmpbuf[0] = ICP_CMD_WRITE | ICP_CMD_FMCON;
+		tmpbuf[1] = ICP_FMCMD_CONF;
+		tmpbuf[2] = ICP_CMD_WRITE | ICP_CMD_FMADRL;
+		tmpbuf[3] = ICP_CFG_MFGID;
+		tmpbuf[4] = ICP_CMD_READ | ICP_CMD_FMDATA;
+		icp_out(tmpbuf, 5);
+		icp_in(&buff[2], 1);
+		
+		tmpbuf[0] = ICP_CMD_WRITE | ICP_CMD_FMCON;
+		tmpbuf[1] = ICP_FMCMD_CONF;
+		tmpbuf[2] = ICP_CMD_WRITE | ICP_CMD_FMADRL;
+		tmpbuf[3] = ICP_CFG_ID1;
+		tmpbuf[4] = ICP_CMD_READ | ICP_CMD_FMDATA;
+		icp_out(tmpbuf, 5);
+		icp_in(&buff[1], 1);
+		
+		tmpbuf[0] = ICP_CMD_WRITE | ICP_CMD_FMCON;
+		tmpbuf[1] = ICP_FMCMD_CONF;
+		tmpbuf[2] = ICP_CMD_WRITE | ICP_CMD_FMADRL;
+		tmpbuf[3] = ICP_CFG_ID2;
+		tmpbuf[4] = ICP_CMD_READ | ICP_CMD_FMDATA;
+		icp_out(tmpbuf, 5);
+		icp_in(&buff[0], 1);
+		
+		if (ERROR_OK != icp_commit())
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read chip id");
+			return ERRCODE_FAILURE_OPERATION;
+		}
 		break;
 	case APPLICATION_CHAR:
 		if (context->op->verify_operations & APPLICATION)
@@ -325,28 +354,28 @@ READ_TARGET_HANDLER(lpc900icp)
 			uint32_t loop;
 			
 			// CRC verify
-			tmpbuff[0] = ICP_CMD_WRITE | ICP_CMD_FMCON;
-			tmpbuff[1] = ICP_FMCMD_CRC_G;
-			icp_out(tmpbuff, 2);
-			icp_poll(ICP_CMD_READ | ICP_CMD_FMCON, tmpbuff, 0x0F, 0x80, 10000);
+			tmpbuf[0] = ICP_CMD_WRITE | ICP_CMD_FMCON;
+			tmpbuf[1] = ICP_FMCMD_CRC_G;
+			icp_out(tmpbuf, 2);
+			icp_poll(ICP_CMD_READ | ICP_CMD_FMCON, tmpbuf, 0x0F, 0x80, 10000);
 			if ((ERROR_OK != icp_commit()) 
-				|| (tmpbuff[0] != LPCICP_POLL_ON_CLEAR))
+				|| (tmpbuf[0] != LPCICP_POLL_ON_CLEAR))
 			{
 				ret = ERRCODE_FAILURE_OPERATION;
 				break;
 			}
 			
-			tmpbuff[0] = ICP_CMD_READ | ICP_CMD_FMDATA_I;
-			icp_out(tmpbuff, 1);
+			tmpbuf[0] = ICP_CMD_READ | ICP_CMD_FMDATA_I;
+			icp_out(tmpbuf, 1);
 			icp_in((uint8_t*)&crc_in_chip, 1);
-			tmpbuff[0] = ICP_CMD_READ | ICP_CMD_FMDATA_I;
-			icp_out(tmpbuff, 1);
+			tmpbuf[0] = ICP_CMD_READ | ICP_CMD_FMDATA_I;
+			icp_out(tmpbuf, 1);
 			icp_in((uint8_t*)&crc_in_chip + 1, 1);
-			tmpbuff[0] = ICP_CMD_READ | ICP_CMD_FMDATA_I;
-			icp_out(tmpbuff, 1);
+			tmpbuf[0] = ICP_CMD_READ | ICP_CMD_FMDATA_I;
+			icp_out(tmpbuf, 1);
 			icp_in((uint8_t*)&crc_in_chip + 2, 1);
-			tmpbuff[0] = ICP_CMD_READ | ICP_CMD_FMDATA_I;
-			icp_out(tmpbuff, 1);
+			tmpbuf[0] = ICP_CMD_READ | ICP_CMD_FMDATA_I;
+			icp_out(tmpbuf, 1);
 			icp_in((uint8_t*)&crc_in_chip + 3, 1);
 			if (ERROR_OK != icp_commit())
 			{
@@ -356,6 +385,7 @@ READ_TARGET_HANDLER(lpc900icp)
 			
 			// calculate crc in file
 			crc_in_file = 0;
+			size = param->chip_areas[APPLICATION_IDX].size;
 			for (loop = 0; loop < size; loop++)
 			{
 				uint8_t byte = buff[loop];
