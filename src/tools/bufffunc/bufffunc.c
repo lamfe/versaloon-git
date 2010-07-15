@@ -49,7 +49,7 @@ uint64_t bufffunc_get_u64(uint8_t *buff, uint32_t size)
 	ret = 0;
 	for (i = 0; i < size; i++)
 	{
-		ret += buff[i] << (i * 8);
+		ret += (uint64_t)buff[i] << (i * 8);
 	}
 	return ret;
 }

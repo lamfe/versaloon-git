@@ -488,6 +488,14 @@ READ_TARGET_HANDLER(avr8jtag)
 		break;
 	case FUSE_CHAR:
 		// low bits
+		memset(page_buf, 0, 3);
+		if (param->chip_areas[FUSE_IDX].size > 3)
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_VALUE), 
+				param->chip_areas[FUSE_IDX].size, "avr8 fuse size");
+			ret = ERRCODE_INVALID;
+			break;
+		}
 		if (param->chip_areas[FUSE_IDX].size > 0)
 		{
 			AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
@@ -517,21 +525,20 @@ READ_TARGET_HANDLER(avr8jtag)
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
-		buff[0] = page_buf[0];
-		buff[1] = page_buf[1];
-		buff[2] = page_buf[2];
+		memcpy(buff, page_buf, param->chip_areas[FUSE_IDX].size);
 		break;
 	case LOCK_CHAR:
 		if (param->chip_areas[LOCK_IDX].size > 0)
 		{
 			AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
 			AVR_JTAG_PROG_EnterFuseLockbitRead();
-			AVR_JTAG_PROG_ReadLockbit(buff[0]);
+			AVR_JTAG_PROG_ReadLockbit(page_buf[0]);
 			if (ERROR_OK != jtag_commit())
 			{
 				ret = ERRCODE_FAILURE_OPERATION;
 				break;
 			}
+			buff[0] = page_buf[0];
 		}
 		else
 		{
@@ -542,35 +549,20 @@ READ_TARGET_HANDLER(avr8jtag)
 		}
 		break;
 	case CALIBRATION_CHAR:
+		memset(page_buf, 0, 4);
+		if (param->chip_areas[CALIBRATION_IDX].size > 4)
+		{
+			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_VALUE), 
+				param->chip_areas[CALIBRATION_IDX].size, "avr8 cali size");
+			ret = ERRCODE_INVALID;
+			break;
+		}
 		if (param->chip_areas[CALIBRATION_IDX].size > 0)
 		{
 			AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
 			AVR_JTAG_PROG_EnterCaliByteRead();
 			AVR_JTAG_PROG_LoadAddrByte(0);
-			AVR_JTAG_PROG_ReadCaliByte(buff[0]);
-		}
-		if (param->chip_areas[CALIBRATION_IDX].size > 1)
-		{
-			AVR_JTAG_PROG_LoadAddrByte(1);
-			AVR_JTAG_PROG_ReadCaliByte(buff[1]);
-		}
-		if (param->chip_areas[CALIBRATION_IDX].size > 2)
-		{
-			AVR_JTAG_PROG_LoadAddrByte(2);
-			AVR_JTAG_PROG_ReadCaliByte(buff[2]);
-		}
-		if (param->chip_areas[CALIBRATION_IDX].size > 3)
-		{
-			AVR_JTAG_PROG_LoadAddrByte(3);
-			AVR_JTAG_PROG_ReadCaliByte(buff[3]);
-		}
-		if (param->chip_areas[CALIBRATION_IDX].size > 0)
-		{
-			if (ERROR_OK != jtag_commit())
-			{
-				ret = ERRCODE_FAILURE_OPERATION;
-				break;
-			}
+			AVR_JTAG_PROG_ReadCaliByte(page_buf[0]);
 		}
 		else
 		{
@@ -579,6 +571,28 @@ READ_TARGET_HANDLER(avr8jtag)
 			ret = ERRCODE_NOT_SUPPORT;
 			break;
 		}
+		if (param->chip_areas[CALIBRATION_IDX].size > 1)
+		{
+			AVR_JTAG_PROG_LoadAddrByte(1);
+			AVR_JTAG_PROG_ReadCaliByte(page_buf[1]);
+		}
+		if (param->chip_areas[CALIBRATION_IDX].size > 2)
+		{
+			AVR_JTAG_PROG_LoadAddrByte(2);
+			AVR_JTAG_PROG_ReadCaliByte(page_buf[2]);
+		}
+		if (param->chip_areas[CALIBRATION_IDX].size > 3)
+		{
+			AVR_JTAG_PROG_LoadAddrByte(3);
+			AVR_JTAG_PROG_ReadCaliByte(page_buf[3]);
+		}
+		
+		if (ERROR_OK != jtag_commit())
+		{
+			ret = ERRCODE_FAILURE_OPERATION;
+			break;
+		}
+		memcpy(buff, page_buf, param->chip_areas[CALIBRATION_IDX].size);
 		break;
 	default:
 		ret = ERROR_FAIL;
