@@ -410,21 +410,21 @@
 #define C2_C2D_SETINPUT()				SW_SETINPUT_PU()
 
 /****************************** LPCICP ******************************/
-#define LPCICP_SDATA_SET()				SW_SET()
-#define LPCICP_SDATA_CLR()				SW_CLR()
-#define LPCICP_SDATA_GET()				SW_GET()
-#define LPCICP_SDATA_SETOUTPUT()		SW_SETOUTPUT()
-#define LPCICP_SDATA_SETINPUT()			SW_SETINPUT_PU()
+#define LPCICP_PDA_SET()				SW_SET()
+#define LPCICP_PDA_CLR()				SW_CLR()
+#define LPCICP_PDA_GET()				SW_GET()
+#define LPCICP_PDA_SETOUTPUT()			SW_SETOUTPUT()
+#define LPCICP_PDA_SETINPUT()			SW_SETINPUT_PU()
 
-#define LPCICP_SCLK_SET()				JTAG_TAP_TCK_SET()
-#define LPCICP_SCLK_CLR()				JTAG_TAP_TCK_CLR()
-#define LPCICP_SCLK_SETOUTPUT()			JTAG_TAP_TCK_SETOUTPUT()
-#define LPCICP_SCLK_SETINPUT()			JTAG_TAP_TCK_SETINPUT()
+#define LPCICP_PCL_SET()				JTAG_TAP_TCK_SET()
+#define LPCICP_PCL_CLR()				JTAG_TAP_TCK_CLR()
+#define LPCICP_PCL_SETOUTPUT()			JTAG_TAP_TCK_SETOUTPUT()
+#define LPCICP_PCL_SETINPUT()			JTAG_TAP_TCK_SETINPUT()
 
-#define LPCICP_XRES_SET()				SW_RST_SET()
-#define LPCICP_XRES_CLR()				SW_RST_CLR()
-#define LPCICP_XRES_SETOUTPUT()			SW_RST_SETOUTPUT()
-#define LPCICP_XRES_SETINPUT()			SW_RST_SETINPUT_PU()
+#define LPCICP_RST_SET()				SW_RST_SET()
+#define LPCICP_RST_CLR()				SW_RST_CLR()
+#define LPCICP_RST_SETOUTPUT()			SW_RST_SETOUTPUT()
+#define LPCICP_RST_SETINPUT()			SW_RST_SETINPUT_PU()
 
 /****************************** IIC ******************************/
 #define IIC_PULL_INIT()					do{\
