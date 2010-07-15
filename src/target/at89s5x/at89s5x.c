@@ -52,8 +52,8 @@ const struct program_area_map_t s5x_program_area_map[] =
 
 const struct program_mode_t s5x_program_mode[] = 
 {
-	{'b', SET_FREQUENCY, SPI | GPIO},
 	{'p', SET_FREQUENCY, SPI | GPIO},
+	{'b', SET_FREQUENCY, SPI | GPIO},
 	{0, NULL, 0}
 };
 
@@ -252,7 +252,7 @@ WRITE_TARGET_HANDLER(s5x)
 			
 			for (i = 0; i < size; i++)
 			{
-				spi_io(&buff[addr + i], 1, NULL, 0, 0);
+				spi_io(&buff[i], 1, NULL, 0, 0);
 				delay_us(s5x_byte_delay_us);
 			}
 			

@@ -44,7 +44,7 @@
 
 const struct program_area_map_t psoc1_program_area_map[] = 
 {
-	{APPLICATION_CHAR, 1, 0, 0, 0, AREA_ATTR_EW | AREA_ATTR_NP},
+	{APPLICATION_CHAR, 1, 0, 0, 0, AREA_ATTR_EWR | AREA_ATTR_NP},
 	{APPLICATION_CHKSUM_CHAR, 1, 0, 0, 0, AREA_ATTR_R},
 	{LOCK_CHAR, 1, 0, 0, 0, AREA_ATTR_W | AREA_ATTR_NP},
 	{0, 0, 0, 0, 0, 0}
@@ -380,6 +380,7 @@ WRITE_TARGET_HANDLER(psoc1)
 	uint16_t block;
 	uint32_t page_num, page_size;
 	uint32_t i;
+	uint32_t size_written;
 	uint8_t tmp8;
 	RESULT ret = ERROR_OK;
 	
@@ -432,6 +433,7 @@ WRITE_TARGET_HANDLER(psoc1)
 		}
 		break;
 	case LOCK_CHAR:
+		size_written = 0;
 		for (bank = 0; bank < bank_num; bank++)
 		{
 			uint32_t lock_bank_addr = bank * (page_num >> 2);
@@ -457,7 +459,12 @@ WRITE_TARGET_HANDLER(psoc1)
 				break;
 			}
 			
-			pgbar_update(1);
+			pgbar_update(page_num >> 2);
+			size_written += page_num >> 2;
+		}
+		if (size > size_written)
+		{
+			pgbar_update(size - size_written);
 		}
 		break;
 	}
@@ -538,5 +545,22 @@ READ_TARGET_HANDLER(psoc1)
 		break;
 	}
 	return ret;
+}
+
+ADJUST_SETTING_HANDLER(psoc1)
+{
+	struct chip_area_info_t *flash_checksum_info = 
+									&param->chip_areas[APPLICATION_CHKSUM_IDX];
+	
+	REFERENCE_PARAMETER(pi);
+	REFERENCE_PARAMETER(program_mode);
+	
+	// flash checksum of psoc1 is 2 bytes length
+	flash_checksum_info->size = 2;
+	flash_checksum_info->addr = 0x00200000;
+	flash_checksum_info->page_size = 1;
+	flash_checksum_info->page_num = flash_checksum_info->size;
+	
+	return ERROR_OK;
 }
 

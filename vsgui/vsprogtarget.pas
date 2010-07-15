@@ -147,14 +147,20 @@ function GetAreaShortName(aFullName: string): char;
 
 const
   SUPPORT_LIST_INDICATOR: string = 'Support list of ';
-  TARGET_AREA_STRING: array [0 .. 5] of TTargetAreaName =
+  TARGET_AREA_STRING: array [0 .. 11] of TTargetAreaName =
     (
     (ShortName: 'f'; FullName: 'flash'),
+    (ShortName: 'F'; FullName: 'flash_checksum'),
     (ShortName: 'e'; FullName: 'eeprom'),
+    (ShortName: 'E'; FullName: 'eeprom_checksum'),
     (ShortName: 'u'; FullName: 'fuse'),
+    (ShortName: 'U'; FullName: 'fuse_checksum'),
     (ShortName: 'l'; FullName: 'lock'),
+    (ShortName: 'L'; FullName: 'lock_checksum'),
     (ShortName: 'c'; FullName: 'cali'),
-    (ShortName: 's'; FullName: 'usrsig')
+    (ShortName: 'C'; FullName: 'cali_checksum'),
+    (ShortName: 's'; FullName: 'usrsig'),
+    (ShortName: 'S'; FullName: 'usrsig_checksum')
     );
 
   FLASH_CHAR: char  = 'f';
