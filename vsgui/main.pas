@@ -243,7 +243,7 @@ const
   DEBUG_LOG_SHOW: boolean = False;
   DISPLAY_ALL_COMPORT_WHEN_UPDATE = True;
   APP_STR: string     = 'Vsgui';
-  VERSION_STR: string = 'RC1';
+  VERSION_STR: string = '';
   {$IFDEF UNIX}
   VSPROG_STR: string  = 'vsprog';
   {$ELSE}
@@ -401,8 +401,8 @@ begin
   CenterControl(btnModeSetup, cbboxMode);
   CenterControl(sedtFreq, cbboxMode);
   CenterControl(lblKHz, cbboxMode);
-  CenterControl(chkboxNoconnect, lbledtFuse);
-  CenterControl(chkboxNowarning, lbledtCali);
+  CenterControl(chkboxNoconnect, lbledtSpecialStr);
+  CenterControl(chkboxNowarning, lbledtSpecialStr);
   CenterControl(lblOpenOCDInterface, cbboxOpenOCDInterface);
   CenterControl(lblOpenOCDTarget, cbboxOpenOCDTarget);
   CenterControl(lblOpenOCDScript, cbboxOpenOCDScript);
@@ -1121,6 +1121,12 @@ begin
     HideDebugLog();
     if cbboxTargetType.Items.Count > 0 then
     begin
+      if cbboxTargetType.ItemIndex < 0 then
+      begin
+        cbboxTargetType.ItemIndex := 0;
+      end;
+      cbboxTargetTypeChange(cbboxTargetType);
+
       if not TargetPage_Init then
       begin
         TargetPage_Init := True;
@@ -1244,12 +1250,6 @@ begin
           lbledtExtraPara.Text := xmlcfgMain.GetValue('target/extraparam', '');
         end;
       end;
-
-      if cbboxTargetType.ItemIndex < 0 then
-      begin
-        cbboxTargetType.ItemIndex := 0;
-      end;
-      cbboxTargetTypeChange(cbboxTargetType);
     end
     else
     begin
