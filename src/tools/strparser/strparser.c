@@ -102,6 +102,10 @@ RESULT strparser_parse(char * str, char * format, uint8_t * buff,
 				// integer value, parsed by strtoull with radix 0
 				radix = 0;
 				goto parse_integer;
+			case 'b':
+			case 'B':
+				radix = 2;
+				goto parse_integer;
 			case 'x':
 			case 'X':
 				// integer value, parsed by strtoull with radix 16
@@ -275,7 +279,10 @@ char * strparser_solve(char *format, uint8_t *buff, uint32_t size)
 				// integer value, parsed by strtoull with radix 0
 				radix = 10;
 				goto solve_integer;
-				break;
+			case 'b':
+			case 'B':
+				radix = 2;
+				goto solve_integer;
 			case 'x':
 			case 'X':
 				// integer value, parsed by strtoull with radix 16
@@ -312,7 +319,21 @@ solve_integer:
 						sprintf(tmp_str, tmp_format, value);
 					}
 				}
-				else
+				else if (2 == radix)
+				{
+					// FIXME: solve interger in binary form
+					if (param <= 4)
+					{
+						sprintf(tmp_format, "0b%%d");
+						sprintf(tmp_str, tmp_format, (uint32_t)value);
+					}
+					else
+					{
+						sprintf(tmp_format, "0b%%"PRIu64);
+						sprintf(tmp_str, tmp_format, value);
+					}
+				}
+				else// if (16 == radix)
 				{
 					if (param < 4)
 					{
@@ -355,6 +376,13 @@ solve_integer:
 			break;
 		}
 		strcat(ret, tmp_str);
+		if (format[cur_index] != '\0')
+		{
+			// not the last data, insert a DIV_CHAR
+			tmp_str[0] = STRPARSER_DIV_CHAR_DEFAULT;
+			tmp_str[1] = '\0';
+			strcat(ret, tmp_str);
+		}
 	}
 	
 	return ret;

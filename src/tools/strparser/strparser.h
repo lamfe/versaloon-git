@@ -18,6 +18,7 @@
  ***************************************************************************/
 
 #define STRPARSER_DIV_CHARS						"|_:; "
+#define STRPARSER_DIV_CHAR_DEFAULT				':'
 
 RESULT strparser_check(char * str, char * format);
 RESULT strparser_parse(char * str, char * format, uint8_t * buff, 

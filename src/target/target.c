@@ -1528,8 +1528,14 @@ void target_print_setting(char type)
 	}
 	
 	memset(&fl, 0, sizeof(struct chip_fl_t));
-	target_build_chip_fl(program_info.chip_type, program_info.chip_name, 
-						 full_type, &fl);
+	if (ERROR_OK != target_build_chip_fl(program_info.chip_type, 
+									program_info.chip_name, full_type, &fl))
+	{
+		target_release_chip_fl(&fl);
+		LOG_ERROR(_GETTEXT("Invalid setting in config xml file for %s\n"), 
+					program_info.chip_name);
+		return;
+	}
 	
 	// print fl
 	printf("%s of %s:\n", full_type, program_info.chip_name);
@@ -1584,8 +1590,14 @@ void target_print_target(uint32_t index)
 	struct program_area_map_t *p_map;
 	char area[3];
 	
-	target_build_chip_series(targets_info[index].name, 
-						targets_info[index].program_mode, &target_chips);
+	if (ERROR_OK != target_build_chip_series(targets_info[index].name, 
+						targets_info[index].program_mode, &target_chips))
+	{
+		target_release_chip_series(&target_chips);
+		LOG_ERROR(_GETTEXT("Invalid config xml file for %s\n"), 
+					targets_info[index].name);
+		return;
+	}
 	
 	if (0 == target_chips.num_of_chips)
 	{
