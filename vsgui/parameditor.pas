@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, LResources, Forms, Controls, Graphics, Dialogs,
-  StdCtrls, ExtCtrls, inputdialog, vsprogparser;
+  StdCtrls, ExtCtrls, inputdialog, vsprogparser, strparser;
 
 type
   TParam_Warning = record

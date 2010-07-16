@@ -5,7 +5,7 @@ unit vsprogtarget;
 interface
 
 uses
-  Classes, SysUtils, Contnrs, vsprogparser;
+  Classes, SysUtils, Contnrs, vsprogparser, strparser;
 
 type
 

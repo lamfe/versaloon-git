@@ -1,6 +1,6 @@
 object FormMain: TFormMain
   Left = 611
-  Height = 620
+  Height = 598
   Top = 221
   Width = 797
   HorzScrollBar.Page = 840
@@ -10,7 +10,7 @@ object FormMain: TFormMain
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'FormMain'
-  ClientHeight = 620
+  ClientHeight = 598
   ClientWidth = 797
   Font.CharSet = ANSI_CHARSET
   Font.Color = clBlack
@@ -27,13 +27,13 @@ object FormMain: TFormMain
   LCLVersion = '0.9.28.2'
   object pnlMain: TPanel
     Left = 1
-    Height = 596
+    Height = 574
     Top = 1
     Width = 399
     Align = alLeft
     BorderSpacing.Around = 1
     Caption = 'pnlMain'
-    ClientHeight = 596
+    ClientHeight = 574
     ClientWidth = 399
     Font.Height = -17
     Font.Name = 'Sans'
@@ -41,7 +41,7 @@ object FormMain: TFormMain
     TabOrder = 0
     object pcMain: TPageControl
       Left = 1
-      Height = 510
+      Height = 574
       Top = 1
       Width = 397
       ActivePage = tsJTAG
@@ -60,7 +60,7 @@ object FormMain: TFormMain
       object tsJTAG: TTabSheet
         Tag = -1
         Caption = 'JTAG'
-        ClientHeight = 481
+        ClientHeight = 545
         ClientWidth = 389
         object gbOpenOCD: TGroupBox
           Left = 10
@@ -315,7 +315,7 @@ object FormMain: TFormMain
       end
       object tsVsprog: TTabSheet
         Caption = 'VSProg'
-        ClientHeight = 481
+        ClientHeight = 545
         ClientWidth = 389
         object gbChipName: TGroupBox
           Left = 11
@@ -368,7 +368,7 @@ object FormMain: TFormMain
         object gbOption: TGroupBox
           Left = 11
           Height = 137
-          Top = 269
+          Top = 333
           Width = 369
           Caption = 'Option'
           ClientHeight = 119
@@ -599,11 +599,11 @@ object FormMain: TFormMain
         end
         object gbInputFile: TGroupBox
           Left = 11
-          Height = 192
+          Height = 256
           Top = 69
           Width = 369
           Caption = 'File'
-          ClientHeight = 174
+          ClientHeight = 238
           ClientWidth = 365
           TabOrder = 2
           object lblInputFile: TLabel
@@ -618,7 +618,7 @@ object FormMain: TFormMain
             Left = 13
             Height = 25
             Hint = 'Display Flash Content'
-            Top = 136
+            Top = 200
             Width = 45
             Caption = 'Flash'
             OnClick = btnEditAppClick
@@ -630,7 +630,7 @@ object FormMain: TFormMain
             Left = 157
             Height = 25
             Hint = 'Display Lock Settings'
-            Top = 136
+            Top = 200
             Width = 45
             Caption = 'Lock'
             OnClick = btnEditLockClick
@@ -642,7 +642,7 @@ object FormMain: TFormMain
             Left = 109
             Height = 25
             Hint = 'Display Fuse Settings'
-            Top = 136
+            Top = 200
             Width = 45
             Caption = 'Fuse'
             OnClick = btnEditFuseClick
@@ -654,7 +654,7 @@ object FormMain: TFormMain
             Left = 61
             Height = 25
             Hint = 'Display EEprom Content'
-            Top = 136
+            Top = 200
             Width = 45
             Caption = 'EE'
             OnClick = btnEditEEClick
@@ -666,7 +666,7 @@ object FormMain: TFormMain
             Left = 205
             Height = 25
             Hint = 'Display User Signature'
-            Top = 136
+            Top = 200
             Width = 45
             Caption = 'UsrSig'
             OnClick = btnEditUsrSigClick
@@ -675,17 +675,17 @@ object FormMain: TFormMain
             TabOrder = 4
           end
           object lbledtFuse: TLabeledEdit
-            Left = 57
+            Left = 58
             Height = 24
             Hint = 'Fuse Value'
             Top = 40
-            Width = 93
+            Width = 288
             EditLabel.AnchorSideLeft.Control = lbledtFuse
             EditLabel.AnchorSideTop.Control = lbledtFuse
             EditLabel.AnchorSideTop.Side = asrCenter
             EditLabel.AnchorSideRight.Control = lbledtFuse
             EditLabel.AnchorSideBottom.Control = lbledtFuse
-            EditLabel.Left = 20
+            EditLabel.Left = 21
             EditLabel.Height = 17
             EditLabel.Top = 44
             EditLabel.Width = 34
@@ -698,19 +698,19 @@ object FormMain: TFormMain
             TabOrder = 5
           end
           object lbledtLock: TLabeledEdit
-            Left = 197
+            Left = 58
             Height = 24
             Hint = 'Lock Value'
-            Top = 40
-            Width = 93
+            Top = 71
+            Width = 288
             EditLabel.AnchorSideLeft.Control = lbledtLock
             EditLabel.AnchorSideTop.Control = lbledtLock
             EditLabel.AnchorSideTop.Side = asrCenter
             EditLabel.AnchorSideRight.Control = lbledtLock
             EditLabel.AnchorSideBottom.Control = lbledtLock
-            EditLabel.Left = 161
+            EditLabel.Left = 22
             EditLabel.Height = 17
-            EditLabel.Top = 44
+            EditLabel.Top = 75
             EditLabel.Width = 33
             EditLabel.Caption = 'Lock:'
             EditLabel.ParentColor = False
@@ -721,10 +721,10 @@ object FormMain: TFormMain
             TabOrder = 6
           end
           object chkboxNoconnect: TCheckBox
-            Left = 304
+            Left = 302
             Height = 20
             Hint = 'No Connect'
-            Top = 43
+            Top = 168
             Width = 44
             Caption = 'N.C.'
             ParentShowHint = False
@@ -735,7 +735,7 @@ object FormMain: TFormMain
             Left = 253
             Height = 25
             Hint = 'Display Calibration Value'
-            Top = 136
+            Top = 200
             Width = 45
             Caption = 'Cali'
             OnClick = btnEditCaliClick
@@ -744,19 +744,19 @@ object FormMain: TFormMain
             TabOrder = 8
           end
           object lbledtCali: TLabeledEdit
-            Left = 57
+            Left = 58
             Height = 24
             Hint = 'Calibration Value'
-            Top = 72
-            Width = 93
+            Top = 104
+            Width = 288
             EditLabel.AnchorSideLeft.Control = lbledtCali
             EditLabel.AnchorSideTop.Control = lbledtCali
             EditLabel.AnchorSideTop.Side = asrCenter
             EditLabel.AnchorSideRight.Control = lbledtCali
             EditLabel.AnchorSideBottom.Control = lbledtCali
-            EditLabel.Left = 27
+            EditLabel.Left = 28
             EditLabel.Height = 17
-            EditLabel.Top = 76
+            EditLabel.Top = 108
             EditLabel.Width = 27
             EditLabel.Caption = 'Cali.'
             EditLabel.ParentColor = False
@@ -767,19 +767,19 @@ object FormMain: TFormMain
             TabOrder = 9
           end
           object lbledtUsrSig: TLabeledEdit
-            Left = 197
+            Left = 58
             Height = 24
             Hint = 'UsrSig Value'
-            Top = 72
-            Width = 93
+            Top = 136
+            Width = 288
             EditLabel.AnchorSideLeft.Control = lbledtUsrSig
             EditLabel.AnchorSideTop.Control = lbledtUsrSig
             EditLabel.AnchorSideTop.Side = asrCenter
             EditLabel.AnchorSideRight.Control = lbledtUsrSig
             EditLabel.AnchorSideBottom.Control = lbledtUsrSig
-            EditLabel.Left = 154
+            EditLabel.Left = 15
             EditLabel.Height = 17
-            EditLabel.Top = 76
+            EditLabel.Top = 140
             EditLabel.Width = 40
             EditLabel.Caption = 'UsrSig'
             EditLabel.ParentColor = False
@@ -790,10 +790,10 @@ object FormMain: TFormMain
             TabOrder = 10
           end
           object chkboxNowarning: TCheckBox
-            Left = 304
+            Left = 245
             Height = 20
             Hint = 'No Warning'
-            Top = 75
+            Top = 168
             Width = 48
             Caption = 'N.W.'
             ParentShowHint = False
@@ -825,18 +825,18 @@ object FormMain: TFormMain
             TabOrder = 13
           end
           object lbledtSpecialStr: TLabeledEdit
-            Left = 93
+            Left = 85
             Height = 24
-            Top = 104
-            Width = 255
+            Top = 168
+            Width = 149
             EditLabel.AnchorSideLeft.Control = lbledtSpecialStr
             EditLabel.AnchorSideTop.Control = lbledtSpecialStr
             EditLabel.AnchorSideTop.Side = asrCenter
             EditLabel.AnchorSideRight.Control = lbledtSpecialStr
             EditLabel.AnchorSideBottom.Control = lbledtSpecialStr
-            EditLabel.Left = 22
+            EditLabel.Left = 14
             EditLabel.Height = 17
-            EditLabel.Top = 108
+            EditLabel.Top = 172
             EditLabel.Width = 68
             EditLabel.Caption = 'special_str:'
             EditLabel.ParentColor = False
@@ -846,7 +846,7 @@ object FormMain: TFormMain
           object btnEditSpecialStr: TButton
             Left = 301
             Height = 25
-            Top = 136
+            Top = 200
             Width = 45
             Caption = 'Str'
             OnClick = btnEditSpecialStrClick
@@ -856,7 +856,7 @@ object FormMain: TFormMain
         object gbOperation: TGroupBox
           Left = 11
           Height = 57
-          Top = 413
+          Top = 477
           Width = 369
           Caption = 'Operation'
           ClientHeight = 39
@@ -915,11 +915,11 @@ object FormMain: TFormMain
       object tsAbout: TTabSheet
         Tag = -1
         Caption = 'About'
-        ClientHeight = 457
+        ClientHeight = 545
         ClientWidth = 389
         object memoAbout: TMemo
           Left = 0
-          Height = 297
+          Height = 385
           Top = 0
           Width = 389
           Align = alClient
@@ -941,7 +941,7 @@ object FormMain: TFormMain
         object pnlAbout: TPanel
           Left = 0
           Height = 160
-          Top = 297
+          Top = 385
           Width = 389
           Align = alBottom
           ClientHeight = 160
@@ -1046,8 +1046,8 @@ object FormMain: TFormMain
     end
     object memoInfo: TMemo
       Left = 1
-      Height = 84
-      Top = 511
+      Height = 0
+      Top = 573
       Width = 397
       Align = alClient
       Font.CharSet = ANSI_CHARSET
@@ -1064,7 +1064,7 @@ object FormMain: TFormMain
   object sbMain: TStatusBar
     Left = 0
     Height = 22
-    Top = 598
+    Top = 576
     Width = 797
     Panels = <    
       item
@@ -1081,7 +1081,7 @@ object FormMain: TFormMain
   object pgbarMain: TProgressBar
     Left = 104
     Height = 18
-    Top = 600
+    Top = 580
     Width = 336
     Max = 40
     Step = 1
@@ -1089,7 +1089,7 @@ object FormMain: TFormMain
   end
   object memoLog: TMemo
     Left = 401
-    Height = 598
+    Height = 576
     Top = 0
     Width = 396
     Align = alClient

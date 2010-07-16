@@ -19,7 +19,9 @@ uses
   findreplace,
   vsprogparser,
   vsprogtarget,
-  vsprogprogrammer, texteditor;
+  vsprogprogrammer,
+  texteditor,
+  strparser;
 
 {$IFDEF WINDOWS}{$R vsgui.rc}{$ENDIF}
 
