@@ -61,9 +61,13 @@ const
   DEFAULT_BAUDRATE: integer = 115200;
   DEFAULT_DATALENGTH: integer = 8;
   DEFAULT_PARITYBIT: integer = 0;
+  DEFAULT_PARITYBIT_CHAR: char = 'N';
   DEFAULT_STOPBIT: integer = 1;
+  DEFAULT_STOPBIT_CHAR: char = '1';
   DEFAULT_HANDSHAKE: integer = 0;
+  DEFAULT_HANDSHAKE_CHAR: char = 'N';
   DEFAULT_AUXPIN: integer = 0;
+  DEFAULT_AUXPIN_CHAR: char = 'N';
   {$IFDEF UNIX}
   COMPORTS: array[0..19] of string =
     ('/dev/ttyS0', '/dev/ttyS1', '/dev/ttyS2', '/dev/ttyS3', '/dev/ttyS4',
@@ -167,6 +171,14 @@ var
   tmpComm: TComMode;
   str_tmp: string;
 begin
+  tmpComm.baudrate := DEFAULT_BAUDRATE;
+  tmpComm.datalength := DEFAULT_DATALENGTH;
+  tmpComm.paritybit := DEFAULT_PARITYBIT_CHAR;
+  tmpComm.stopbit := DEFAULT_STOPBIT_CHAR;
+  tmpComm.handshake := DEFAULT_HANDSHAKE_CHAR;
+  tmpComm.auxpin := DEFAULT_AUXPIN_CHAR;
+  str_tmp := '';
+
   GetParameter(CommStr, 'baudrate', tmpComm.baudrate);
   GetParameter(CommStr, 'datalength', tmpComm.datalength);
   GetParameter(CommStr, 'paritybit', str_tmp);

@@ -8,7 +8,7 @@ uses
   Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs, ComCtrls,
   StdCtrls, EditBtn, ExtCtrls, cli_caller, parameditor, Menus, Buttons, Spin,
   Synaser, com_setup, fileselector, hexeditor, XMLCfg, vsprogparser, vsprogtarget,
-  vsprogprogrammer, inputdialog, FileUtil, texteditor;
+  vsprogprogrammer, inputdialog, FileUtil, texteditor, strparser;
 
 type
 
@@ -178,14 +178,15 @@ type
 
     { VSProg declarations }
 
-    procedure VSProg_GUIUpdateULCS(Value: QWord; bytelen: integer;
+    procedure VSProg_GUIUpdateULCS(format: String; buff: array of BYTE;
       var edt: TLabeledEdit);
     procedure VSProg_GUIUpdateStr(Str: String; var edt: TLabeledEdit);
-    procedure VSProg_GUIUpdateFuse(fuse: QWord; bytelen: integer);
-    procedure VSProg_GUIUpdateLock(lock: QWord; bytelen: integer);
-    procedure VSProg_GUIUpdateUsrSig(sig: QWord; bytelen: integer);
-    procedure VSProg_GUIUpdateCali(cali: QWord; bytelen: integer);
-    procedure ShowTargetArea(AreaName: char; var Sender: TObject; parser: TParserFunc);
+    procedure VSProg_GUIUpdateFuse(format: String; buff: array of BYTE);
+    procedure VSProg_GUIUpdateLock(format: String; buff: array of BYTE);
+    procedure VSProg_GUIUpdateUsrSig(format: String; buff: array of BYTE);
+    procedure VSProg_GUIUpdateCali(format: String; buff: array of BYTE);
+    procedure ShowTargetArea(AreaName: char; var Sender: TObject;
+      parser: TParserFunc; var buffer: array of BYTE);
     function VSProg_PrepareToRun(aApplicationName: string): boolean;
     function VSProg_PrepareToRunCLI: boolean;
     function VSProg_PrepareToRunOpenOCD: boolean;
@@ -241,6 +242,7 @@ var
 
 const
   DEBUG_LOG_SHOW: boolean = False;
+  POLLTHREAD_EN: boolean = False;
   DISPLAY_ALL_COMPORT_WHEN_UPDATE = True;
   APP_STR: string     = 'Vsgui';
   VERSION_STR: string = '';
@@ -496,12 +498,15 @@ begin
   edt.Text := Str;
 end;
 
-procedure TFormMain.VSProg_GUIUpdateULCS(Value: QWord; bytelen: integer;
+procedure TFormMain.VSProg_GUIUpdateULCS(format: String; buff: array of BYTE;
   var edt: TLabeledEdit);
+var
+  strTmp: String;
 begin
-  if bytelen > 0 then
+  strTmp := '';
+  if (Length(buff) > 0) and strparser_solve(strTmp, format, buff) then
   begin
-    edt.Text := '0x' + IntToHex(Value, bytelen * 2);
+    edt.Text := strTmp;
   end
   else
   begin
@@ -509,24 +514,24 @@ begin
   end;
 end;
 
-procedure TFormMain.VSProg_GUIUpdateUsrSig(sig: QWord; bytelen: integer);
+procedure TFormMain.VSProg_GUIUpdateUsrSig(format: String; buff: array of BYTE);
 begin
-  VSProg_GUIUpdateULCS(sig, bytelen, lbledtUsrSig);
+  VSProg_GUIUpdateULCS(format, buff, lbledtUsrSig);
 end;
 
-procedure TFormMain.VSProg_GUIUpdateCali(cali: QWord; bytelen: integer);
+procedure TFormMain.VSProg_GUIUpdateCali(format: String; buff: array of BYTE);
 begin
-  VSProg_GUIUpdateULCS(cali, bytelen, lbledtCali);
+  VSProg_GUIUpdateULCS(format, buff, lbledtCali);
 end;
 
-procedure TFormMain.VSProg_GUIUpdateLock(lock: QWord; bytelen: integer);
+procedure TFormMain.VSProg_GUIUpdateLock(format: String; buff: array of BYTE);
 begin
-  VSProg_GUIUpdateULCS(lock, bytelen, lbledtLock);
+  VSProg_GUIUpdateULCS(format, buff, lbledtLock);
 end;
 
-procedure TFormMain.VSProg_GUIUpdateFuse(fuse: QWord; bytelen: integer);
+procedure TFormMain.VSProg_GUIUpdateFuse(format: String; buff: array of BYTE);
 begin
-  VSProg_GUIUpdateULCS(fuse, bytelen, lbledtFuse);
+  VSProg_GUIUpdateULCS(format, buff, lbledtFuse);
 end;
 
  // Update Series Features
@@ -642,12 +647,20 @@ begin
     btnEditApp.Enabled := True;
     chkboxApp.Enabled  := True;
     //chkboxApp.Checked  := True;
+    index := CurTargetChip.GetAreaIdx(FLASH_CHAR);
+    if (index > 0) then
+    begin
+      SetLength(TargetAreaData.FlashData, CurTargetChip.TargetAreas[index].ByteLen);
+      FillChar(TargetAreaData.FlashData[0], Length(TargetAreaData.FlashData),
+        CurTargetChip.TargetAreas[index].DefaultValue);
+    end;
   end
   else
   begin
     btnEditApp.Enabled := False;
     chkboxApp.Enabled  := False;
     chkboxApp.Checked  := False;
+    SetLength(TargetAreaData.FlashData, 0);
   end;
 
   if Pos(EE_CHAR, para) > 0 then
@@ -655,12 +668,20 @@ begin
     btnEditEE.Enabled := True;
     chkboxEE.Enabled  := True;
     //chkboxEE.Checked  := True;
+    index := CurTargetChip.GetAreaIdx(EE_CHAR);
+    if (index > 0) then
+    begin
+      SetLength(TargetAreaData.EEData, CurTargetChip.TargetAreas[index].ByteLen);
+      FillChar(TargetAreaData.EEData[0], Length(TargetAreaData.EEData),
+        CurTargetChip.TargetAreas[index].DefaultValue);
+    end;
   end
   else
   begin
     btnEditEE.Enabled := False;
     chkboxEE.Enabled  := False;
     chkboxEE.Checked  := False;
+    SetLength(TargetAreaData.EEData, 0);
   end;
 
   lbledtLock.Text    := '';
@@ -671,12 +692,17 @@ begin
     chkboxLock.Enabled := True;
     //chkboxLock.Checked := True;
     index := CurTargetChip.GetAreaIdx(LOCK_CHAR);
-    if (index >= 0) and (not CurTargetChip.TargetAreas[index].InFile) and
-      (CurTargetChip.TargetAreas[index].ByteLen <= 8) then
+    if index >= 0 then
     begin
-      lbledtLock.Enabled := True;
-      VSProg_GUIUpdateLock(CurTargetChip.TargetAreas[index].DefaultValue,
-        CurTargetChip.TargetAreas[index].ByteLen);
+      SetLength(TargetAreaData.LockData, CurTargetChip.TargetAreas[index].ByteLen);
+      FillChar(TargetAreaData.LockData[0], Length(TargetAreaData.LockData),
+        CurTargetChip.TargetAreas[index].DefaultValue);
+      if not CurTargetChip.TargetAreas[index].InFile then
+      begin
+        lbledtLock.Enabled := True;
+        VSProg_GUIUpdateLock(CurTargetChip.TargetAreas[index].Format,
+          TargetAreaData.LockData);
+      end;
     end;
   end
   else
@@ -684,6 +710,7 @@ begin
     btnEditLock.Enabled := False;
     chkboxLock.Enabled  := False;
     chkboxLock.Checked  := False;
+    SetLength(TargetAreaData.LockData, 0);
   end;
 
   lbledtFuse.Text    := '';
@@ -694,12 +721,17 @@ begin
     chkboxFuse.Enabled := True;
     //chkboxFuse.Checked := True;
     index := CurTargetChip.GetAreaIdx(FUSE_CHAR);
-    if (index >= 0) and (not CurTargetChip.TargetAreas[index].InFile) and
-      (CurTargetChip.TargetAreas[index].ByteLen <= 8) then
+    if index >= 0 then
     begin
-      lbledtFuse.Enabled := True;
-      VSProg_GUIUpdateFuse(CurTargetChip.TargetAreas[index].DefaultValue,
-        CurTargetChip.TargetAreas[index].ByteLen);
+      SetLength(TargetAreaData.FuseData, CurTargetChip.TargetAreas[index].ByteLen);
+      FillChar(TargetAreaData.FuseData[0], Length(TargetAreaData.FuseData),
+        CurTargetChip.TargetAreas[index].DefaultValue);
+      if not CurTargetChip.TargetAreas[index].InFile then
+      begin
+        lbledtFuse.Enabled := True;
+        VSProg_GUIUpdateFuse(CurTargetChip.TargetAreas[index].Format,
+          TargetAreaData.FuseData);
+      end;
     end;
   end
   else
@@ -707,6 +739,7 @@ begin
     btnEditFuse.Enabled := False;
     chkboxFuse.Enabled  := False;
     chkboxFuse.Checked  := False;
+    SetLength(TargetAreaData.FuseData, 0);
   end;
 
   lbledtUsrSig.Text    := '';
@@ -717,12 +750,17 @@ begin
     chkboxUsrSig.Enabled := True;
     //chkboxUsrSig.Checked := True;
     index := CurTargetChip.GetAreaIdx(USRSIG_CHAR);
-    if (index >= 0) and (not CurTargetChip.TargetAreas[index].InFile) and
-      (CurTargetChip.TargetAreas[index].ByteLen <= 8) then
+    if index >= 0 then
     begin
-      lbledtUsrSig.Enabled := True;
-      VSProg_GUIUpdateUsrSig(CurTargetChip.TargetAreas[index].DefaultValue,
-        CurTargetChip.TargetAreas[index].ByteLen);
+      SetLength(TargetAreaData.UsrsigData, CurTargetChip.TargetAreas[index].ByteLen);
+      FillChar(TargetAreaData.UsrsigData[0], Length(TargetAreaData.UsrsigData),
+        CurTargetChip.TargetAreas[index].DefaultValue);
+      if not CurTargetChip.TargetAreas[index].InFile then
+      begin
+        lbledtUsrSig.Enabled := True;
+        VSProg_GUIUpdateUsrSig(CurTargetChip.TargetAreas[index].Format,
+          TargetAreaData.UsrsigData);
+      end;
     end;
   end
   else
@@ -730,6 +768,7 @@ begin
     btnEditUsrSig.Enabled := False;
     chkboxUsrSig.Enabled  := False;
     chkboxUsrSig.Checked  := False;
+    SetLength(TargetAreaData.UsrsigData, 0);
   end;
 
   lbledtCali.Text    := '';
@@ -740,12 +779,17 @@ begin
     chkboxCali.Enabled := True;
     //chkboxCali.Checked := True;
     index := CurTargetChip.GetAreaIdx(CALI_CHAR);
-    if (index >= 0) and (not CurTargetChip.TargetAreas[index].InFile) and
-      (CurTargetChip.TargetAreas[index].ByteLen <= 8) then
+    if index >= 0 then
     begin
-      lbledtCali.Enabled := True;
-      VSProg_GUIUpdateCali(CurTargetChip.TargetAreas[index].DefaultValue,
-        CurTargetChip.TargetAreas[index].ByteLen);
+      SetLength(TargetAreaData.CaliData, CurTargetChip.TargetAreas[index].ByteLen);
+      FillChar(TargetAreaData.CaliData[0], Length(TargetAreaData.CaliData),
+        CurTargetChip.TargetAreas[index].DefaultValue);
+      if not CurTargetChip.TargetAreas[index].InFile then
+      begin
+        lbledtCali.Enabled := True;
+        VSProg_GUIUpdateCali(CurTargetChip.TargetAreas[index].Format,
+          TargetAreaData.CaliData);
+      end;
     end;
   end
   else
@@ -753,8 +797,10 @@ begin
     btnEditCali.Enabled := False;
     chkboxCali.Enabled  := False;
     chkboxCali.Checked  := False;
+    SetLength(TargetAreaData.CaliData, 0);
   end;
 
+  TargetAreaData.StrData:= '';
   lbledtSpecialStr.Text := '';
   lbledtSpecialStr.Enabled := False;
   if Pos(SPECIALSTR_CHAR, para) > 0 then
@@ -763,8 +809,7 @@ begin
     chkboxSpecialStr.Enabled := True;
     //chkboxSpecialStr.Checked := True;
     index := CurTargetChip.GetAreaIdx(SPECIALSTR_CHAR);
-    if (index >= 0) and (not CurTargetChip.TargetAreas[index].InFile) and
-      (CurTargetChip.TargetAreas[index].ByteLen <= 8) then
+    if (index >= 0) and (not CurTargetChip.TargetAreas[index].InFile) then
     begin
       lbledtSpecialStr.Enabled := True;
     end;
@@ -865,10 +910,13 @@ begin
   VSProg_Targets := TVSProg_Targets.Create;
 
   // poll thread init
-  PollThread := TPollThread.Create;
-  if Assigned(PollThread.FatalException) then
+  if POLLTHREAD_EN then
   begin
-    raise PollThread.FatalException;
+    PollThread := TPollThread.Create;
+    if Assigned(PollThread.FatalException) then
+    begin
+      raise PollThread.FatalException;
+    end;
   end;
 
   // TrayIcon
@@ -969,6 +1017,13 @@ begin
   VSProg_Caller.Destroy;
   VSProg_Parser.Destroy;
   VSProg_Targets.Destroy;
+
+  SetLength(TargetAreaData.FlashData, 0);
+  SetLength(TargetAreaData.EEData, 0);
+  SetLength(TargetAreaData.FuseData, 0);
+  SetLength(TargetAreaData.LockData, 0);
+  SetLength(TargetAreaData.CaliData, 0);
+  SetLength(TargetAreaData.UsrsigData, 0);
 end;
 
 procedure TFormMain.FormResize(Sender: TObject);
@@ -994,10 +1049,10 @@ begin
   end;
   ProgrammerParameter := VSProg_Programmer.SerialNumber;
 
-  if VSProg_Exists and (PollThread <> nil) then
+  if POLLTHREAD_EN and VSProg_Exists and (PollThread <> nil) then
   begin
     PollThread.AppPath := dedtVSProg.Directory + VSPROG_STR;
-//    PollThread.Resume;
+    PollThread.Resume;
   end;
 
   FormResize(Sender);
@@ -1542,12 +1597,12 @@ begin
 end;
 
 procedure TFormMain.ShowTargetArea(AreaName: char; var Sender: TObject;
-  parser: TParserFunc);
+  parser: TParserFunc; var buffer: array of BYTE);
 var
   areaidx, fileidx: integer;
-  bytelen: integer;
-  default: QWord;
   targetdefined: string;
+  format: string;
+  strValue: string;
 begin
   areaidx := CurTargetChip.GetAreaIdx(AreaName);
   if areaidx < 0 then
@@ -1596,8 +1651,7 @@ begin
       exit;
     end;
 
-    bytelen := CurTargetChip.TargetAreas[areaidx].ByteLen;
-    default := CurTargetChip.TargetAreas[areaidx].DefaultValue;
+    format  := CurTargetChip.TargetAreas[areaidx].Format;
 
     if not chkboxNoconnect.Checked then
     begin
@@ -1612,14 +1666,24 @@ begin
       begin
         exit;
       end;
+
+      strValue := '';
       if AreaName = SPECIALSTR_CHAR then
       begin
         VSProg_GUIUpdateStr(VSProg_Parser.ResultStrings.Strings[0],TLabeledEdit(Sender));
       end
+      else if strparser_parse(VSProg_Parser.ResultStrings.Strings[0], format,
+        buffer) and strparser_solve(strValue, format, buffer) then
+      begin
+        TLabeledEdit(Sender).Text := strValue;
+      end
       else
       begin
-        VSProg_GUIUpdateULCS(StrToIntRadix(VSProg_Parser.ResultStrings.Strings[0], 16),
-          bytelen, TLabeledEdit(Sender));
+        // invalid data read
+        Beep();
+        MessageDlg('Error', 'Invalid data: ' + VSProg_Parser.ResultStrings.Strings[0],
+          mtError, [mbOK], 0);
+        exit;
       end;
     end;
 
@@ -1629,6 +1693,9 @@ begin
     begin
       exit;
     end;
+
+    FormParaEditor.SetParameter(buffer, format, GetAreaFullName(AreaName),
+      not chkboxNowarning.Checked);
 
     // call 'vsprog -Ppara' to extract para settings
     if not VSProg_PrepareToRunCLI then
@@ -1646,35 +1713,34 @@ begin
       exit;
     end;
 
-    FormParaEditor.SetParameter(default, bytelen, StrToIntRadix(
-      (Sender as TLabeledEdit).Text, 16),
-      GetAreaFullName(AreaName), not chkboxNowarning.Checked);
     if mrOk = FormParaEditor.ShowModal then
     begin
       // OK clicked, get value
-      VSProg_GUIUpdateULCS(FormParaEditor.GetResult(), bytelen, TLabeledEdit(Sender));
+      VSProg_GUIUpdateULCS(format, buffer, TLabeledEdit(Sender));
     end;
   end;
 end;
 
 procedure TFormMain.btnEditAppClick(Sender: TObject);
 begin
-  ShowTargetArea(FLASH_CHAR, Sender, nil);
+  ShowTargetArea(FLASH_CHAR, Sender, nil, TargetAreaData.FlashData);
 end;
 
 procedure TFormMain.btnEditCaliClick(Sender: TObject);
 begin
-  ShowTargetArea(CALI_CHAR, lbledtCali, @VSProg_Parser.CaliDataParser);
+  ShowTargetArea(CALI_CHAR, lbledtCali, @VSProg_Parser.CaliDataParser,
+    TargetAreaData.CaliData);
 end;
 
 procedure TFormMain.btnEditEEClick(Sender: TObject);
 begin
-  ShowTargetArea(EE_CHAR, Sender, nil);
+  ShowTargetArea(EE_CHAR, Sender, nil, TargetAreaData.EEData);
 end;
 
 procedure TFormMain.btnEditFuseClick(Sender: TObject);
 begin
-  ShowTargetArea(FUSE_CHAR, lbledtFuse, @VSProg_Parser.FuseDataParser);
+  ShowTargetArea(FUSE_CHAR, lbledtFuse, @VSProg_Parser.FuseDataParser,
+    TargetAreaData.FuseData);
 end;
 
 procedure TFormMain.btnEditInterfaceClick(Sender: TObject);
@@ -1685,7 +1751,8 @@ end;
 
 procedure TFormMain.btnEditLockClick(Sender: TObject);
 begin
-  ShowTargetArea(LOCK_CHAR, lbledtLock, @VSProg_Parser.LockDataParser);
+  ShowTargetArea(LOCK_CHAR, lbledtLock, @VSProg_Parser.LockDataParser,
+    TargetAreaData.LockData);
 end;
 
 procedure TFormMain.btnEditScriptClick(Sender: TObject);
@@ -1702,7 +1769,8 @@ end;
 
 procedure TFormMain.btnEditUsrSigClick(Sender: TObject);
 begin
-  ShowTargetArea(USRSIG_CHAR, lbledtUsrsig, @VSProg_Parser.UsrsigDataParser);
+  ShowTargetArea(USRSIG_CHAR, lbledtUsrsig, @VSProg_Parser.UsrsigDataParser,
+    TargetAreaData.UsrsigData);
 end;
 
 procedure TFormMain.btnReadClick(Sender: TObject);
@@ -1750,7 +1818,8 @@ end;
 
 procedure TFormMain.btnEditSpecialStrClick(Sender: TObject);
 begin
-  ShowTargetArea(SPECIALSTR_CHAR, lbledtSpecialStr, @VSProg_Parser.SpecialStrParser);
+  ShowTargetArea(SPECIALSTR_CHAR, lbledtSpecialStr,
+    @VSProg_Parser.SpecialStrParser, TargetAreaData.FuseData);
 end;
 
 procedure TFormMain.btnSVFRunClick(Sender: TObject);
@@ -1937,10 +2006,14 @@ procedure TFormMain.FormClose(Sender: TObject; var CloseAction: TCloseAction);
 var
   i: integer;
 begin
-  if PollThread <> nil then
+  if POLLTHREAD_EN and Assigned(PollThread) then
   begin
     PollThread.Terminate;
     Sleep(100);
+    if Assigned(PollThread) then
+    begin
+      PollThread.Free;
+    end;
   end;
 
   // save settings to config file

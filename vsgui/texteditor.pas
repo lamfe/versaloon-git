@@ -79,6 +79,8 @@ end;
 
 procedure TFormTextEditor.memoTextKeyPress(Sender: TObject; var Key: char);
 begin
+  Key := Key;
+
   TextContentChanged := True;
   UpdateTitle;
 end;

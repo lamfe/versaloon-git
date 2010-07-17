@@ -292,6 +292,7 @@ struct chip_fl_warning_t
 	char *mask;
 	char *value;
 	char *msg;
+	uint8_t ban;
 };
 
 struct chip_fl_choice_t
@@ -306,6 +307,7 @@ struct chip_fl_setting_t
 	char *info;
 	char *mask;
 	char *ban;
+	char *format;
 	uint8_t use_checkbox;
 	uint8_t use_edit;
 	uint8_t shift;

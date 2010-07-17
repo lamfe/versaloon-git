@@ -10,28 +10,29 @@ uses
 
 type
   TParam_Warning = record
-    mask:  QWord;
-    Value: integer;
+    mask:  array of BYTE;
+    value: array of BYTE;
     msg:   string;
     ban:   boolean;
   end;
 
   TParam_Choice = record
-    Value: QWord;
-    Text:  string;
+    value: array of BYTE;
+    text:  string;
   end;
 
   TParam_Setting = record
-    Name:      string;
+    name:      string;
     info:      string;
-    mask:      QWord;
+    format:    string;
+    mask:      array of BYTE;
     use_checkbox: boolean;
     use_edit:  boolean;
     radix:     integer;
     shift:     integer;
-    Checked:   QWord;
-    unchecked: QWord;
-    Enabled:   boolean;
+    checked:   array of BYTE;
+    unchecked: array of BYTE;
+    enabled:   boolean;
     bytelen:   integer;
     choices:   array of TParam_Choice;
   end;
@@ -68,18 +69,18 @@ type
     ParaComboArr:    array of TComboBox;
     ParaCheckArr:    array of TCheckBox;
     ParaEdtValueArr: array of TEdit;
-    Param_name:      string;
-    Init_Value, Param_Value: QWord;
-    Value_ByteLen:   integer;
+    Param_Name:      string;
+    Param_Format:    string;
+    Param_Value:     array of BYTE;
+    Param_Bytelen:   integer;
     EnableWarning:   boolean;
     SettingParameter: boolean;
   public
     { public declarations }
-    function GetResult(): QWord;
-    function ParseSettingMaskValue(Sender: TObject; var mask, Value: QWord): boolean;
+    function ParseSettingMaskValue(Sender: TObject; var mask, value: array of BYTE): boolean;
     procedure ValueToSetting();
     procedure UpdateTitle();
-    procedure SetParameter(init: QWord; bytelen: integer; Value: QWord;
+    procedure SetParameter(var buff: array of BYTE; format: string;
       title: string; warnEnabled: boolean);
     function ParseLine(line: string): boolean;
     procedure FreeRecord();
@@ -103,6 +104,165 @@ const
 
 implementation
 
+procedure BufferFunc_And(var src0, src1, dest: array of BYTE);
+var
+  i: integer;
+begin
+  for i := Low(dest) to High(dest) do
+  begin
+    dest[i] := src0[i] and src1[i];
+  end;
+end;
+
+procedure BufferFunc_Or(var src, mask, dest: array of BYTE);
+var
+  i: integer;
+begin
+  for i := Low(dest) to High(dest) do
+  begin
+    dest[i] := src[i] or mask[i];
+  end;
+end;
+
+procedure BufferFunc_Not(var dest: array of BYTE);
+var
+  i: integer;
+begin
+  for i := Low(dest) to High(dest) do
+  begin
+    dest[i] := not dest[i];
+  end;
+end;
+
+procedure BufferFunc_SetValue(var dest: array of BYTE; value: BYTE);
+var
+  i: integer;
+begin
+  for i := Low(dest) to High(dest) do
+  begin
+    dest[i] := value;
+  end;
+end;
+
+procedure BufferFunc_Copy(var src, dest: array of BYTE);
+var
+  i: integer;
+begin
+  for i := Low(dest) to High(dest) do
+  begin
+    dest[i] := src[i];
+  end;
+end;
+
+function BufferFunc_NotZero(var src: array of BYTE): boolean;
+var
+  i: integer;
+begin
+  for i := Low(src) to High(src) do
+  begin
+    if src[i] <> 0 then
+    begin
+      Result := True;
+      Exit;
+    end;
+  end;
+  Result := False;
+end;
+
+function BufferFunc_Equal(var arr0, arr1: array of BYTE): boolean;
+var
+  i: integer;
+begin
+  for i := Low(arr0) to High(arr1) do
+  begin
+    if arr0[i] <> arr1[i] then
+    begin
+      Result := False;
+      Exit;
+    end;
+  end;
+  Result := True;
+end;
+
+procedure BufferFunc_Shr(var arr: array of BYTE; shift: integer);
+var
+  i, cur_byte_idx: integer;
+  cur_byte, next_byte: BYTE;
+begin
+  if shift <= 0 then
+  begin
+    Exit;
+  end;
+
+  cur_byte_idx := Low(arr) + (shift div 8);
+  shift := shift mod 8;
+
+  for i := Low(arr) to High(arr) do
+  begin
+    if cur_byte_idx <= High(arr) then
+    begin
+      cur_byte := arr[cur_byte_idx];
+    end
+    else
+    begin
+      cur_byte := 0;
+    end;
+
+    if (cur_byte_idx + 1) <= High(arr) then
+    begin
+      next_byte := arr[cur_byte_idx + 1];
+    end
+    else
+    begin
+      next_byte := 0;
+    end;
+
+    arr[i] := (cur_byte shr shift) or (next_byte shl (8 - shift));
+    Inc(cur_byte_idx);
+  end;
+end;
+
+procedure BufferFunc_Shl(var arr: array of BYTE; shift: integer);
+var
+  i, cur_byte_idx: integer;
+  cur_byte, next_byte: BYTE;
+begin
+  if shift <= 0 then
+  begin
+    Exit;
+  end;
+
+  cur_byte_idx := High(arr) - (shift div 8);
+  shift := shift mod 8;
+
+  for i := High(arr) downto Low(arr) do
+  begin
+    if cur_byte_idx >= Low(arr) then
+    begin
+      cur_byte := arr[cur_byte_idx];
+    end
+    else
+    begin
+      cur_byte := 0;
+    end;
+
+    if (cur_byte_idx - 1) >= Low(arr) then
+    begin
+      next_byte := arr[cur_byte_idx - 1];
+    end
+    else
+    begin
+      next_byte := 0;
+    end;
+
+    arr[i] := (cur_byte shl shift) or (next_byte shr (8 - shift));
+    Dec(cur_byte_idx);
+  end;
+end;
+
+
+
+
 function GetStringLen_To_ByteLen(bytelen, radix: integer): integer;
 begin
   if (radix < 2) or (radix > 16) or (BYTELEN_ACCORDING_TO_RADIX[radix] = 0) then
@@ -113,6 +273,10 @@ begin
 
   Result := bytelen * BYTELEN_ACCORDING_TO_RADIX[radix];
 end;
+
+
+
+
 
 procedure TFormParaEditor.CenterControl(ctl: TControl; ref: TControl);
 begin
@@ -134,20 +298,26 @@ end;
 procedure TFormParaEditor.tInitTimer(Sender: TObject);
 var
   i, section_num: integer;
-  mask: QWord;
+  mask: array of BYTE;
+  dest: array of BYTE;
 begin
   (Sender as TTimer).Enabled := False;
 
+  SetLength(dest, Param_Bytelen);
+  SetLength(mask, Param_Bytelen);
+  BufferFunc_SetValue(mask, 0);
+
   section_num := 0;
-  mask := 0;
+
   for i := 0 to Length(Param_Record.settings) - 1 do
   begin
-    if (Param_Record.settings[i].mask and mask) > 0 then
+    BufferFunc_And(Param_Record.settings[i].mask, mask, dest);
+    if BufferFunc_NotZero(dest) then
     begin
       Inc(section_num);
-      mask := 0;
+      BufferFunc_SetValue(mask, 0);
     end;
-    mask := mask or Param_Record.settings[i].mask;
+    BufferFunc_Or(mask, Param_Record.settings[i].mask, mask);
 
     ParaEdtNameArr[i].Top    := TOP_MARGIN + i * (Y_MARGIN + ITEM_HEIGHT) +
       section_num * SECTION_DIV_HEIGHT;
@@ -185,21 +355,24 @@ end;
 
 procedure TFormParaEditor.SettingChange(Sender: TObject);
 var
-  mask, Value: QWord;
+  mask, value: array of BYTE;
 begin
   if SettingParameter then
   begin
     exit;
   end;
 
-  mask  := 0;
-  Value := 0;
-  if ParseSettingMaskValue(Sender, mask, Value) = False then
+  SetLength(mask, Param_Bytelen);
+  BufferFunc_SetValue(mask, 0);
+  SetLength(value, Param_Bytelen);
+  BufferFunc_SetValue(value, 0);
+
+  if not ParseSettingMaskValue(Sender, mask, value) = False then
   begin
-    exit;
+    BufferFunc_Not(mask);
+    BufferFunc_And(Param_Value, mask, Param_Value);
+    BufferFunc_Or(Param_Value, value, Param_Value);
   end;
-  Param_Value := Param_Value and not mask;
-  Param_Value := Param_Value or Value;
 
   SettingParameter := True;
   ValueToSetting();
@@ -234,17 +407,20 @@ end;
 procedure TFormParaEditor.FormCloseQuery(Sender: TObject; var CanClose: boolean);
 var
   i: integer;
+  dest: array of BYTE;
 begin
   FormParaEditor.ActiveControl := btnOK;
-
   CanClose := True;
+
+  SetLength(dest, Param_Bytelen);
+  BufferFunc_SetValue(dest, 0);
 
   if not bCancel then
   begin
     for i := low(Param_Record.warnings) to high(Param_Record.warnings) do
     begin
-      if (Param_Value and Param_Record.warnings[i].mask) =
-        Param_Record.warnings[i].Value then
+      BufferFunc_And(Param_Value, Param_Record.warnings[i].mask, dest);
+      if BufferFunc_Equal(dest, Param_Record.warnings[i].Value) then
       begin
         if Param_Record.warnings[i].ban then
         begin
@@ -307,32 +483,40 @@ begin
 end;
 
 procedure TFormParaEditor.UpdateTitle();
+var
+  strTmp: String;
 begin
-  Caption := Param_Name + ': 0x' + IntToHex(Param_Value, Value_ByteLen * 2);
+  strTmp := '';
+  if not strparser_solve(strTmp, Param_Format, Param_Value) then
+  begin
+    strTmp := strparser_ErrMsg;
+  end;
+  Caption := Param_Name + ': ' + strTmp;
 end;
 
-function TFormParaEditor.GetResult(): QWord;
+procedure TFormParaEditor.SetParameter(var buff: array of BYTE; format: string;
+  title: string; warnEnabled: boolean);
 begin
-  Result := Param_Value;
-end;
-
-procedure TFormParaEditor.SetParameter(init: QWord; bytelen: integer;
-  Value: QWord; title: string; warnEnabled: boolean);
-begin
-  Init_Value    := init;
-  Value_ByteLen := bytelen;
-  Param_Value   := Value;
+  Param_Bytelen := Length(buff);
+  SetLength(Param_Value, Param_Bytelen);
+  Move(buff[0], Param_Value[0], Param_Bytelen);
+  Param_Format  := format;
   Param_Name    := title;
   EnableWarning := warnEnabled;
 end;
 
 function TFormParaEditor.ParseSettingMaskValue(Sender: TObject;
-  var mask, Value: QWord): boolean;
+  var mask, value: array of BYTE): boolean;
 var
   i: integer;
-  str_tmp: string;
+  strTmp: string;
+  dest: array of BYTE;
 begin
-  Result := True;
+  Result := False;
+  strTmp := '';
+
+  SetLength(dest, Param_Bytelen);
+  BufferFunc_SetValue(dest, 0);
 
   if Sender is TComboBox then
   begin
@@ -349,70 +533,77 @@ begin
   else
   begin
     // this component is not supported as a setting component
-    Result := False;
     exit;
   end;
 
-  mask := Param_Record.settings[i].mask;
+  BufferFunc_Copy(Param_Record.settings[i].mask, mask);
   if Param_Record.settings[i].use_edit then
   begin
-    str_tmp := Copy(ParaEdtValueArr[i].Text, 1,
-      GetStringLen_To_ByteLen(Param_Record.settings[i].bytelen,
-      Param_Record.settings[i].radix));
-    Value   := StrToIntRadix(str_tmp, Param_Record.settings[i].radix);
-    Value   := Value shl Param_Record.settings[i].shift;
-    if (Value and not mask) > 0 then
+    strTmp := ParaEdtValueArr[i].Text;
+    if not strparser_parse(strTmp, Param_Record.settings[i].format, value) then
     begin
-      Value := Value and mask;
+      Exit;
+    end;
+    BufferFunc_Shl(value, Param_Record.settings[i].shift);
+
+    BufferFunc_Copy(mask, dest);
+    BufferFunc_Not(dest);
+    BufferFunc_And(dest, value, dest);
+    if BufferFunc_NotZero(dest) then
+    begin
+      BufferFunc_And(value, mask, value);
     end;
   end
   else if Param_Record.settings[i].use_checkbox then
   begin
     if ParaCheckArr[i].Checked then
     begin
-      Value := Param_Record.settings[i].Checked;
+      BufferFunc_Copy(Param_Record.settings[i].checked, value);
     end
     else
     begin
-      Value := Param_Record.settings[i].unchecked;
+      BufferFunc_Copy(Param_Record.settings[i].unchecked, value);
     end;
   end
   else
   begin
-    Value := Param_Record.settings[i].choices[ParaComboArr[i].ItemIndex].Value;
+    BufferFunc_Copy(Param_Record.settings[i].choices[ParaComboArr[i].ItemIndex].value, value);
   end;
+
+  Result := True;
 end;
 
 procedure TFormParaEditor.ValueToSetting();
 var
   i, j:  integer;
-  Value: QWord;
+  value: array of BYTE;
+  strTmp: String;
   found: boolean;
 begin
   SettingParameter := True;
+  strTmp := '';
+
+  SetLength(value, Param_Bytelen);
+  BufferFunc_SetValue(value, 0);
+
   for i := low(Param_Record.settings) to high(Param_Record.settings) do
   begin
-    Value := Param_Value and Param_Record.settings[i].mask;
+    BufferFunc_And(Param_Value, Param_Record.settings[i].mask, value);
     if Param_Record.settings[i].use_edit then
     begin
-      Value := Value shr Param_Record.settings[i].shift;
-      ParaEdtValueArr[i].Text :=
-        IntToStrRadix(Value, Param_Record.settings[i].radix, 0);
-      while Length(ParaEdtValueArr[i].Text) <
-        GetStringLen_To_ByteLen(Param_Record.settings[i].bytelen,
-          Param_Record.settings[i].radix) do
-      begin
-        ParaEdtValueArr[i].Text := '0' + ParaEdtValueArr[i].Text;
-      end;
-      ParaEdtValueArr[i].Hint := ParaEdtValueArr[i].Text;
+      BufferFunc_Shr(value, Param_Record.settings[i].shift);
+      strparser_solve(strTmp, Param_Record.settings[i].format,
+        value);
+      ParaEdtValueArr[i].Text := strTmp;
+      ParaEdtValueArr[i].Hint := strTmp;
     end
     else if Param_Record.settings[i].use_checkbox then
     begin
-      if Value = Param_Record.settings[i].Checked then
+      if BufferFunc_Equal(value, Param_Record.settings[i].checked) then
       begin
         ParaCheckArr[i].Checked := True;
       end
-      else if Value = Param_Record.settings[i].unchecked then
+      else if BufferFunc_Equal(value, Param_Record.settings[i].unchecked) then
       begin
         ParaCheckArr[i].Checked := False;
       end
@@ -428,7 +619,7 @@ begin
       for j := low(Param_Record.settings[i].choices)
         to high(Param_Record.settings[i].choices) do
       begin
-        if Value = Param_Record.settings[i].choices[j].Value then
+        if BufferFunc_Equal(value, Param_Record.settings[i].choices[j].Value) then
         begin
           ParaEdtNameArr[i].Color := clWindow;
           ParaComboArr[i].ItemIndex := j;
@@ -451,7 +642,8 @@ procedure TFormParaEditor.FormShow(Sender: TObject);
 var
   i, j: integer;
   settings_num, choices_num, section_num: integer;
-  mask: QWord;
+  mask: array of BYTE;
+  dest: array of BYTE;
 begin
   bCancel := True;
 
@@ -462,18 +654,22 @@ begin
   SetLength(ParaCheckArr, settings_num);
   SetLength(ParaEdtValueArr, settings_num);
 
+  SetLength(dest, Param_Bytelen);
+  SetLength(mask, Param_Bytelen);
+  BufferFunc_SetValue(mask, 0);
+
   section_num := 0;
-  mask := 0;
 
   SettingParameter := False;
   for i := 0 to settings_num - 1 do
   begin
-    if (Param_Record.settings[i].mask and mask) > 0 then
+    BufferFunc_And(Param_Record.settings[i].mask, mask, dest);
+    if BufferFunc_NotZero(dest) then
     begin
       Inc(section_num);
-      mask := 0;
+      BufferFunc_SetValue(mask, 0);
     end;
-    mask := mask or Param_Record.settings[i].mask;
+    BufferFunc_Or(mask, Param_Record.settings[i].mask, mask);
 
     ParaEdtNameArr[i]      := TEdit.Create(Self);
     ParaEdtNameArr[i].Parent := pnlSettings;
@@ -554,15 +750,34 @@ end;
 function TFormParaEditor.ParseLine(line: string): boolean;
 var
   i, j, num, dis: integer;
+  strTmp: string;
 begin
-  Result := True;
+  Result := False;
+  strTmp := '';
+
   if Pos('warning: ', line) = 1 then
   begin
     i := Length(Param_Record.warnings) + 1;
     SetLength(Param_Record.warnings, i);
-    GetParameter(line, 'mask', Param_Record.warnings[i - 1].mask);
-    GetParameter(line, 'value', Param_Record.warnings[i - 1].Value);
+    SetLength(Param_Record.warnings[i - 1].mask, Param_Bytelen);
+    SetLength(Param_Record.warnings[i - 1].value, Param_Bytelen);
+
+    GetParameter(line, 'mask', strTmp);
+    if (strTmp <> '') and
+      not strparser_parse(strTmp, Param_Format, Param_Record.warnings[i - 1].mask) then
+    begin
+      Exit;
+    end;
+
+    GetParameter(line, 'value', strTmp);
+    if (strTmp <> '') and
+      not strparser_parse(strTmp, Param_Format, Param_Record.warnings[i - 1].value) then
+    begin
+      Exit;
+    end;
+
     GetParameter(line, 'msg', Param_Record.warnings[i - 1].msg);
+    num := 0;
     GetParameter(line, 'ban', num);
     Param_Record.warnings[i - 1].ban := num > 0;
   end
@@ -570,9 +785,46 @@ begin
   begin
     i := Length(Param_Record.settings) + 1;
     SetLength(Param_Record.settings, i);
+    SetLength(Param_Record.settings[i - 1].mask, Param_Bytelen);
+    SetLength(Param_Record.settings[i - 1].checked, Param_Bytelen);
+    SetLength(Param_Record.settings[i - 1].unchecked, Param_Bytelen);
     SetLength(Param_Record.settings[i - 1].choices, 0);
+
+    GetParameter(line, 'mask', strTmp);
+    if (strTmp <> '') and
+      not strparser_parse(strTmp, Param_Format, Param_Record.settings[i - 1].mask) then
+    begin
+      Exit;
+    end;
+
+    Param_Record.settings[i - 1].use_checkbox := False;
+    GetParameter(line, 'checked', strTmp);
+    if strTmp <> '' then
+    begin
+      if strparser_parse(strTmp, Param_Format, Param_Record.settings[i - 1].checked) then
+      begin
+        Param_Record.settings[i - 1].use_checkbox := True;
+      end
+      else
+      begin
+        Exit;
+      end;
+    end;
+
+    GetParameter(line, 'unchecked', strTmp);
+    if (strTmp <> '') then
+    begin
+      if strparser_parse(strTmp, Param_Format, Param_Record.settings[i - 1].unchecked) then
+      begin
+        Param_Record.settings[i - 1].use_checkbox := True;
+      end
+      else
+      begin
+        Exit;
+      end;
+    end;
+
     GetParameter(line, 'name', Param_Record.settings[i - 1].Name);
-    GetParameter(line, 'mask', Param_Record.settings[i - 1].mask);
     Param_Record.settings[i - 1].bytelen := 0;
     GetParameter(line, 'bytelen', Param_Record.settings[i - 1].bytelen);
     Param_Record.settings[i - 1].radix := 0;
@@ -584,15 +836,29 @@ begin
     end;
     GetParameter(line, 'shift', Param_Record.settings[i - 1].shift);
     GetParameter(line, 'info', Param_Record.settings[i - 1].info);
-    Param_Record.settings[i - 1].use_checkbox := False;
-    if GetParameter(line, 'checked', Param_Record.settings[i - 1].Checked) then
+
+    GetParameter(line, 'format', Param_Record.settings[i - 1].format);
+    if (Param_Record.settings[i - 1].format = '') and
+      (Param_Record.settings[i - 1].bytelen > 0) then
     begin
-      Param_Record.settings[i - 1].use_checkbox := True;
+      strTmp := '%' + IntToStr(Param_Record.settings[i - 1].bytelen);
+
+      case Param_Record.settings[i - 1].radix of
+      0, 10:
+        strTmp := strTmp + 'd';
+      2:
+        strTmp := strTmp + 'b';
+      16:
+        strTmp := strTmp + 'x';
+      else
+        begin
+          Exit;
+        end;
+      end;
+
+      Param_Record.settings[i - 1].format := strTmp;
     end;
-    if GetParameter(line, 'unchecked', Param_Record.settings[i - 1].unchecked) then
-    begin
-      Param_Record.settings[i - 1].use_checkbox := True;
-    end;
+
     dis := 0;
     GetParameter(line, 'disabled', dis);
     if dis > 0 then
@@ -619,9 +885,19 @@ begin
     i := Length(Param_Record.settings);
     j := Length(Param_Record.settings[i - 1].choices) + 1;
     SetLength(Param_Record.settings[i - 1].choices, j);
-    GetParameter(line, 'value', Param_Record.settings[i - 1].choices[j - 1].Value);
-    GetParameter(line, 'text', Param_Record.settings[i - 1].choices[j - 1].Text);
+    SetLength(Param_Record.settings[i - 1].choices[j - 1].value, Param_Bytelen);
+
+    GetParameter(line, 'value', strTmp);
+    if (strTmp <> '') and
+      not strparser_parse(strTmp, Param_Format, Param_Record.settings[i - 1].choices[j - 1].value) then
+    begin
+      Exit;
+    end;
+
+    GetParameter(line, 'text', Param_Record.settings[i - 1].choices[j - 1].text);
   end;
+
+  Result := True;
 end;
 
 initialization

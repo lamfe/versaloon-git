@@ -231,6 +231,10 @@ var
   buf_tmp: AnsiString;
   i: integer;
 begin
+  start_addr := start_addr;
+  seg_offset := seg_offset;
+  addr_offset := addr_offset;
+
   SetLength(buf_tmp, bytesize);
   for i := 0 to bytesize - 1 do
   begin
@@ -253,6 +257,7 @@ var
 begin
   Result      := 0;
   haslastchar := False;
+  ch          := Char(0);
   repeat
     if hFile.Read(ch, 1) <> 1 then
     begin
@@ -277,6 +282,8 @@ var
 begin
   P      := @buff;
   Result := False;
+  headread := False;
+  ch     := Char(0);
 
   FileLineLength := IgnoreEmptyLine(hFile, ch, headread);
   if (FileLineLength = 0) or (not headread) then
@@ -353,6 +360,15 @@ begin
   ext_addr1 := 0;
   hFile.Position := 0;
   Result := False;
+
+  LineInfo.Addr := 0;
+  LineInfo.ByteSize := 0;
+  LineInfo.DataOffset := 0;
+  LineInfo.DataType := 0;
+  LineInfo.EmptyLeadingByteLength := 0;
+  LineInfo.FileLineLength := 0;
+
+  FillChar(buff[0], Length(buff), 0);
 
   while True do
   begin
@@ -499,6 +515,16 @@ begin
   default_byte := default_byte;
   bytesize := bytesize;
   P := @buffer;
+
+  LineInfo.Addr := 0;
+  LineInfo.ByteSize := 0;
+  LineInfo.DataOffset := 0;
+  LineInfo.DataType := 0;
+  LineInfo.EmptyLeadingByteLength := 0;
+  LineInfo.FileLineLength := 0;
+
+  FillChar(buff[0], Length(buff), 0);
+
   for i := 0 to ChangeList.Count - 1 do
   begin
     while ChangeList.Items[i].ByteSize > 0 do
@@ -549,6 +575,12 @@ end;
 function PrepareHexFile(hFile: TFileStream; default_byte: byte;
     bytesize, start_addr: cardinal; seg_offset, addr_offset: int64): boolean;
 begin
+  hFile := hFile;
+  default_byte := default_byte;
+  bytesize := bytesize;
+  start_addr := start_addr;
+  seg_offset := seg_offset;
+  addr_offset := addr_offset;
 
   Result := False;
 end;

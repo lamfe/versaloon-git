@@ -19,6 +19,7 @@ type
     FByteLen:   integer;
     FDefaultValue: QWord;
     FInFile:    boolean;
+    FFormat:    String;
   public
     constructor Create(aName: char);
     property Name: char Read FName;
@@ -27,6 +28,7 @@ type
     property StartAddr: cardinal Read FStartAddr;
     property ByteLen: integer Read FByteLen;
     property DefaultValue: QWord Read FDefaultValue;
+    property Format: String Read FFormat;
   end;
 
   { TTargetChip }
@@ -142,8 +144,21 @@ type
     FullName:  string;
   end;
 
+  TTargetAreaData = record
+    FlashData: array of BYTE;
+    EEData:    array of BYTE;
+    FuseData:  array of BYTE;
+    LockData:  array of BYTE;
+    CaliData:  array of BYTE;
+    UsrsigData:array of BYTE;
+    StrData:   String;
+  end;
+
 function GetAreaFullName(aShortName: char): string;
 function GetAreaShortName(aFullName: string): char;
+
+var
+  TargetAreaData: TTargetAreaData;
 
 const
   SUPPORT_LIST_INDICATOR: string = 'Support list of ';
@@ -236,6 +251,7 @@ begin
     CurArea.FSegAddr := 0;
     CurArea.FByteLen := 0;
     CurArea.FDefaultValue := 0;
+    CurArea.FFormat := '';
 
     if FAreas[2 + i * 2] = '1' then
     begin
@@ -245,12 +261,18 @@ begin
     end
     else
     begin
+      GetParameter(line, AreaChar + '_format', CurArea.FFormat);
       CurArea.FInFile := False;
     end;
     CurValid := GetParameter(line, AreaChar + '_bytelen', CurArea.FByteLen) or CurValid;
     CurValid := GetParameter(line, AreaChar + '_default', CurArea.FDefaultValue) or CurValid;
     if CurValid then
     begin
+      if (not CurArea.FInFile) and (CurArea.FFormat = '') and (CurArea.FByteLen > 0) then
+      begin
+        // use default FFormat -- %(size)x
+        CurArea.FFormat := '%' + IntToStr(CurArea.FByteLen) + 'x';
+      end;
       tmpArea := GetArea(AreaChar);
       if tmpArea = nil then
       begin
@@ -262,6 +284,7 @@ begin
         tmpArea.FSegAddr   := CurArea.SegAddr;
         tmpArea.FByteLen   := CurArea.ByteLen;
         tmpArea.FDefaultValue := CurArea.DefaultValue;
+        tmpArea.FFormat    := CurArea.FFormat;
         CurArea.Destroy;
       end;
     end

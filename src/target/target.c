@@ -1546,7 +1546,8 @@ void target_print_setting(char type)
 	{
 		printf("warning: mask = %s, ", fl.warnings[i].mask);
 		printf("value = %s, ", fl.warnings[i].value);
-		printf("msg = %s\n", fl.warnings[i].msg);
+		printf("msg = %s, ", fl.warnings[i].msg);
+		printf("ban = %d\n", fl.warnings[i].ban);
 	}
 	for (i = 0; i < fl.num_of_fl_settings; i++)
 	{
@@ -1560,6 +1561,10 @@ void target_print_setting(char type)
 		if (fl.settings[i].info != NULL)
 		{
 			printf(", info = %s", fl.settings[i].info);
+		}
+		if (fl.settings[i].format != NULL)
+		{
+			printf(", format = %s", fl.settings[i].format);
 		}
 		if (fl.settings[i].use_checkbox)
 		{
@@ -2110,6 +2115,14 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 					goto free_and_exit;
 				}
 				
+				fl->warnings[i].ban = 0;
+				if (xmlHasProp(wNode, BAD_CAST "ban"))
+				{
+					fl->warnings[i].ban = (uint8_t)strtoul(
+						(const char *)xmlGetProp(wNode, BAD_CAST "ban"), 
+						NULL, 0);
+				}
+				
 				wNode = wNode->next->next;
 			}
 		}
@@ -2176,6 +2189,19 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 			if (NULL == bufffunc_malloc_and_copy_str(
 						&fl->settings[i].info, 
 						(char *)xmlGetProp(settingNode, BAD_CAST "info")))
+			{
+				LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+				ret = ERRCODE_NOT_ENOUGH_MEMORY;
+				goto free_and_exit;
+			}
+		}
+		
+		// parse format if exists
+		if (xmlHasProp(settingNode, BAD_CAST "format"))
+		{
+			if (NULL == bufffunc_malloc_and_copy_str(
+						&fl->settings[i].format, 
+						(char *)xmlGetProp(settingNode, BAD_CAST "format")))
 			{
 				LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
 				ret = ERRCODE_NOT_ENOUGH_MEMORY;
@@ -2477,6 +2503,11 @@ RESULT target_release_chip_fl(struct chip_fl_t *fl)
 			{
 				free(fl->settings[i].info);
 				fl->settings[i].info = NULL;
+			}
+			if (fl->settings[i].format != NULL)
+			{
+				free(fl->settings[i].format);
+				fl->settings[i].format = NULL;
 			}
 			if (fl->settings[i].mask != NULL)
 			{
