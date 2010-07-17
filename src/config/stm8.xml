@@ -101,7 +101,7 @@
         <choice value="0x0100000000000000:0x00" text="1 wait state" />
       </setting>
       <setting name="BL" mask="0x0000000000000000:0xFF" info="Bootloader option byte" checked="0x0000000000000000:0xAA" unchecked="0x0000000000000000:0x00"/>
-      <setting name="ALL" mask="0xFF00FFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="9" />
+      <setting name="ALL" mask="0xFF00FFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="9" format="%8x%1x"/>
     </fuse>
     <param0>16</param0>
     <param1>0x005064</param1>
@@ -199,7 +199,7 @@
         <choice value="0x0100000000000000:0x00" text="1 wait state" />
       </setting>
       <setting name="BL" mask="0x0000000000000000:0xFF" info="Bootloader option byte" checked="0x0000000000000000:0xAA" unchecked="0x0000000000000000:0x00"/>
-      <setting name="ALL" mask="0xFF00FFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="9" />
+      <setting name="ALL" mask="0xFF00FFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="9" format="%8x%1x"/>
     </fuse>
     <param0>16</param0>
     <param1>0x005064</param1>
@@ -297,7 +297,7 @@
         <choice value="0x0100000000000000:0x00" text="1 wait state" />
       </setting>
       <setting name="BL" mask="0x0000000000000000:0xFF" info="Bootloader option byte" checked="0x0000000000000000:0xAA" unchecked="0x0000000000000000:0x00"/>
-      <setting name="ALL" mask="0xFF00FFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="9" />
+      <setting name="ALL" mask="0xFF00FFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="9" format="%8x%1x"/>
     </fuse>
     <param0>16</param0>
     <param1>0x005064</param1>
@@ -395,7 +395,7 @@
         <choice value="0x0100000000000000:0x00" text="1 wait state" />
       </setting>
       <setting name="BL" mask="0x0000000000000000:0xFF" info="Bootloader option byte" checked="0x0000000000000000:0xAA" unchecked="0x0000000000000000:0x00"/>
-      <setting name="ALL" mask="0xFF00FFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="9" />
+      <setting name="ALL" mask="0xFF00FFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="9" format="%8x%1x"/>
     </fuse>
     <param0>16</param0>
     <param1>0x005064</param1>
@@ -493,7 +493,7 @@
         <choice value="0x0100000000000000:0x00" text="1 wait state" />
       </setting>
       <setting name="BL" mask="0x0000000000000000:0xFF" info="Bootloader option byte" checked="0x0000000000000000:0xAA" unchecked="0x0000000000000000:0x00"/>
-      <setting name="ALL" mask="0xFF00FFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="9" />
+      <setting name="ALL" mask="0xFF00FFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="9" format="%8x%1x"/>
     </fuse>
     <param0>16</param0>
     <param1>0x005064</param1>
@@ -591,7 +591,7 @@
         <choice value="0x0100000000000000:0x00" text="1 wait state" />
       </setting>
       <setting name="BL" mask="0x0000000000000000:0xFF" info="Bootloader option byte" checked="0x0000000000000000:0xAA" unchecked="0x0000000000000000:0x00"/>
-      <setting name="ALL" mask="0xFF00FFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="9" />
+      <setting name="ALL" mask="0xFF00FFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="9" format="%8x%1x"/>
     </fuse>
     <param0>16</param0>
     <param1>0x005064</param1>
@@ -689,7 +689,7 @@
         <choice value="0x0100000000000000:0x00" text="1 wait state" />
       </setting>
       <setting name="BL" mask="0x0000000000000000:0xFF" info="Bootloader option byte" checked="0x0000000000000000:0xAA" unchecked="0x0000000000000000:0x00"/>
-      <setting name="ALL" mask="0xFF00FFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="9" />
+      <setting name="ALL" mask="0xFF00FFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="9" format="%8x%1x"/>
     </fuse>
     <param0>16</param0>
     <param1>0x005064</param1>
@@ -787,7 +787,7 @@
         <choice value="0x0100000000000000:0x00" text="1 wait state" />
       </setting>
       <setting name="BL" mask="0x0000000000000000:0xFF" info="Bootloader option byte" checked="0x0000000000000000:0xAA" unchecked="0x0000000000000000:0x00"/>
-      <setting name="ALL" mask="0xFF00FFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="9" />
+      <setting name="ALL" mask="0xFF00FFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="9" format="%8x%1x"/>
     </fuse>
     <param0>16</param0>
     <param1>0x005064</param1>
@@ -885,7 +885,7 @@
         <choice value="0x0100000000000000:0x00" text="1 wait state" />
       </setting>
       <setting name="BL" mask="0x0000000000000000:0xFF" info="Bootloader option byte" checked="0x0000000000000000:0xAA" unchecked="0x0000000000000000:0x00"/>
-      <setting name="ALL" mask="0xFF00FFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="9" />
+      <setting name="ALL" mask="0xFF00FFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="9" format="%8x%1x"/>
     </fuse>
     <param0>16</param0>
     <param1>0x005064</param1>
@@ -983,7 +983,7 @@
         <choice value="0x0100000000000000:0x00" text="1 wait state" />
       </setting>
       <setting name="BL" mask="0x0000000000000000:0xFF" info="Bootloader option byte" checked="0x0000000000000000:0xAA" unchecked="0x0000000000000000:0x00"/>
-      <setting name="ALL" mask="0xFF00FFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="9" />
+      <setting name="ALL" mask="0xFF00FFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="9" format="%8x%1x"/>
     </fuse>
     <param0>16</param0>
     <param1>0x005064</param1>
@@ -1081,7 +1081,7 @@
         <choice value="0x0100000000000000:0x00" text="1 wait state" />
       </setting>
       <setting name="BL" mask="0x0000000000000000:0xFF" info="Bootloader option byte" checked="0x0000000000000000:0xAA" unchecked="0x0000000000000000:0x00"/>
-      <setting name="ALL" mask="0xFF00FFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="9" />
+      <setting name="ALL" mask="0xFF00FFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="9" format="%8x%1x"/>
     </fuse>
     <param0>16</param0>
     <param1>0x005064</param1>
@@ -1179,7 +1179,7 @@
         <choice value="0x0100000000000000:0x00" text="1 wait state" />
       </setting>
       <setting name="BL" mask="0x0000000000000000:0xFF" info="Bootloader option byte" checked="0x0000000000000000:0xAA" unchecked="0x0000000000000000:0x00"/>
-      <setting name="ALL" mask="0xFF00FFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="9" />
+      <setting name="ALL" mask="0xFF00FFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="9" format="%8x%1x"/>
     </fuse>
     <param0>16</param0>
     <param1>0x005064</param1>
@@ -1277,7 +1277,7 @@
         <choice value="0x0100000000000000:0x00" text="1 wait state" />
       </setting>
       <setting name="BL" mask="0x0000000000000000:0xFF" info="Bootloader option byte" checked="0x0000000000000000:0xAA" unchecked="0x0000000000000000:0x00"/>
-      <setting name="ALL" mask="0xFF00FFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="9" />
+      <setting name="ALL" mask="0xFF00FFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="9" format="%8x%1x"/>
     </fuse>
     <param0>16</param0>
     <param1>0x005064</param1>
@@ -1375,7 +1375,7 @@
         <choice value="0x0100000000000000:0x00" text="1 wait state" />
       </setting>
       <setting name="BL" mask="0x0000000000000000:0xFF" info="Bootloader option byte" checked="0x0000000000000000:0xAA" unchecked="0x0000000000000000:0x00"/>
-      <setting name="ALL" mask="0xFF00FFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="9" />
+      <setting name="ALL" mask="0xFF00FFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="9" format="%8x%1x"/>
     </fuse>
     <param0>16</param0>
     <param1>0x005064</param1>
@@ -1473,7 +1473,7 @@
         <choice value="0x0100000000000000:0x00" text="1 wait state" />
       </setting>
       <setting name="BL" mask="0x0000000000000000:0xFF" info="Bootloader option byte" checked="0x0000000000000000:0xAA" unchecked="0x0000000000000000:0x00"/>
-      <setting name="ALL" mask="0xFF00FFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="9" />
+      <setting name="ALL" mask="0xFF00FFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="9" format="%8x%1x"/>
     </fuse>
     <param0>16</param0>
     <param1>0x005064</param1>
@@ -1571,7 +1571,7 @@
         <choice value="0x0100000000000000:0x00" text="1 wait state" />
       </setting>
       <setting name="BL" mask="0x0000000000000000:0xFF" info="Bootloader option byte" checked="0x0000000000000000:0xAA" unchecked="0x0000000000000000:0x00"/>
-      <setting name="ALL" mask="0xFF00FFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="9" />
+      <setting name="ALL" mask="0xFF00FFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="9" format="%8x%1x"/>
     </fuse>
     <param0>16</param0>
     <param1>0x005064</param1>
@@ -1669,7 +1669,7 @@
         <choice value="0x0100000000000000:0x00" text="1 wait state" />
       </setting>
       <setting name="BL" mask="0x0000000000000000:0xFF" info="Bootloader option byte" checked="0x0000000000000000:0xAA" unchecked="0x0000000000000000:0x00"/>
-      <setting name="ALL" mask="0xFF00FFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="9" />
+      <setting name="ALL" mask="0xFF00FFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="9" format="%8x%1x"/>
     </fuse>
     <param0>16</param0>
     <param1>0x005064</param1>
@@ -1767,7 +1767,7 @@
         <choice value="0x0100000000000000:0x00" text="1 wait state" />
       </setting>
       <setting name="BL" mask="0x0000000000000000:0xFF" info="Bootloader option byte" checked="0x0000000000000000:0xAA" unchecked="0x0000000000000000:0x00"/>
-      <setting name="ALL" mask="0xFF00FFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="9" />
+      <setting name="ALL" mask="0xFF00FFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="9" format="%8x%1x"/>
     </fuse>
     <param0>16</param0>
     <param1>0x005064</param1>
@@ -1865,7 +1865,7 @@
         <choice value="0x0100000000000000:0x00" text="1 wait state" />
       </setting>
       <setting name="BL" mask="0x0000000000000000:0xFF" info="Bootloader option byte" checked="0x0000000000000000:0xAA" unchecked="0x0000000000000000:0x00"/>
-      <setting name="ALL" mask="0xFF00FFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="9" />
+      <setting name="ALL" mask="0xFF00FFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="9" format="%8x%1x"/>
     </fuse>
     <param0>16</param0>
     <param1>0x005064</param1>
@@ -1963,7 +1963,7 @@
         <choice value="0x0100000000000000:0x00" text="1 wait state" />
       </setting>
       <setting name="BL" mask="0x0000000000000000:0xFF" info="Bootloader option byte" checked="0x0000000000000000:0xAA" unchecked="0x0000000000000000:0x00"/>
-      <setting name="ALL" mask="0xFF00FFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="9" />
+      <setting name="ALL" mask="0xFF00FFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="9" format="%8x%1x"/>
     </fuse>
     <param0>16</param0>
     <param1>0x005064</param1>
@@ -2061,7 +2061,7 @@
         <choice value="0x0100000000000000:0x00" text="1 wait state" />
       </setting>
       <setting name="BL" mask="0x0000000000000000:0xFF" info="Bootloader option byte" checked="0x0000000000000000:0xAA" unchecked="0x0000000000000000:0x00"/>
-      <setting name="ALL" mask="0xFF00FFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="9" />
+      <setting name="ALL" mask="0xFF00FFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="9" format="%8x%1x"/>
     </fuse>
     <param0>16</param0>
     <param1>0x005064</param1>
@@ -2159,7 +2159,7 @@
         <choice value="0x0100000000000000:0x00" text="1 wait state" />
       </setting>
       <setting name="BL" mask="0x0000000000000000:0xFF" info="Bootloader option byte" checked="0x0000000000000000:0xAA" unchecked="0x0000000000000000:0x00"/>
-      <setting name="ALL" mask="0xFF00FFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="9" />
+      <setting name="ALL" mask="0xFF00FFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="9" format="%8x%1x"/>
     </fuse>
     <param0>16</param0>
     <param1>0x005064</param1>
@@ -3809,22 +3809,22 @@
     <ee_page_num>16</ee_page_num>
     <fuse init="0x0000000000000000:0x00:0x0000000000000000:0x00" bytesize="18" mask="0xFFFFFFFFFFFFFFFF:0xFF:0xFFFFFFFFFFFFFFFF:0xFF" format="%8x%1x%8x%1x">
       <warning>
-        <w mask="0x0000000000000000:0x00:0x00000000000000FF:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x00000000000000FF:0x00" value="0x0000000000000000:0x00:0x00000000000000FF:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x000000000000FF00:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x000000000000FF00:0x00" value="0x0000000000000000:0x00:0x000000000000FF00:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x0000000000FF0000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x0000000000FF0000:0x00" value="0x0000000000000000:0x00:0x0000000000FF0000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x00000000FF000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x00000000FF000000:0x00" value="0x0000000000000000:0x00:0x00000000FF000000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x000000FF00000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x000000FF00000000:0x00" value="0x0000000000000000:0x00:0x000000FF00000000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x0000FF0000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x0000FF0000000000:0x00" value="0x0000000000000000:0x00:0x0000FF0000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x00FF000000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x00FF000000000000:0x00" value="0x0000000000000000:0x00:0x00FF000000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0xFF00000000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0xFF00000000000000:0x00" value="0x0000000000000000:0x00:0xFF00000000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
+        <w mask="0x0000000000000000:0x00:0x00000000000000FF:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x00000000000000FF:0x00" value="0x0000000000000000:0x00:0x00000000000000FF:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x000000000000FF00:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x000000000000FF00:0x00" value="0x0000000000000000:0x00:0x000000000000FF00:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x0000000000FF0000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x0000000000FF0000:0x00" value="0x0000000000000000:0x00:0x0000000000FF0000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x00000000FF000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x00000000FF000000:0x00" value="0x0000000000000000:0x00:0x00000000FF000000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x000000FF00000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x000000FF00000000:0x00" value="0x0000000000000000:0x00:0x000000FF00000000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x0000FF0000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x0000FF0000000000:0x00" value="0x0000000000000000:0x00:0x0000FF0000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x00FF000000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x00FF000000000000:0x00" value="0x0000000000000000:0x00:0x00FF000000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0xFF00000000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0xFF00000000000000:0x00" value="0x0000000000000000:0x00:0xFF00000000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
       </warning>
       <setting name="ROP" mask="0x00000000000000FF:0x00:0x0000000000000000:0x00" info="Read-out protection" checked="0x00000000000000AA:0x00:0x0000000000000000:0x00" unchecked="0x0000000000000000:0x00:0x0000000000000000:0x00" />
       <setting name="UBC" mask="0x000000000000FF00:0x00:0x0000000000000000:0x00" info="User boot code" radix="16" shift="8" bytelen="1"/>
@@ -3914,7 +3914,7 @@
       <setting name="TMU_KEY7" mask="0x0000000000000000:0x00:0x00FF000000000000:0x00" info="Temporary unprotection key 6" radix="16" shift="15" bytelen="1" />
       <setting name="TMU_KEY8" mask="0x0000000000000000:0x00:0xFF00000000000000:0x00" info="Temporary unprotection key 7" radix="16" shift="16" bytelen="1" />
       <setting name="TMU_MAXATT" mask="0x0000000000000000:0x00:0x0000000000000000:0xFF" info="TMU access failure counter" radix="16" shift="17" bytelen="1" />
-      <setting name="ALL" mask="0xFFFFFFFFFFFFFFFF:0xFF:0xFFFFFFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="18" />
+      <setting name="ALL" mask="0xFFFFFFFFFFFFFFFF:0xFF:0xFFFFFFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="18" format="%8x%1x%8x%1x"/>
     </fuse>
     <param0>16</param0>
     <param1>0x005064</param1>
@@ -3935,22 +3935,22 @@
     <ee_page_num>16</ee_page_num>
     <fuse init="0x0000000000000000:0x00:0x0000000000000000:0x00" bytesize="18" mask="0xFFFFFFFFFFFFFFFF:0xFF:0xFFFFFFFFFFFFFFFF:0xFF" format="%8x%1x%8x%1x">
       <warning>
-        <w mask="0x0000000000000000:0x00:0x00000000000000FF:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x00000000000000FF:0x00" value="0x0000000000000000:0x00:0x00000000000000FF:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x000000000000FF00:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x000000000000FF00:0x00" value="0x0000000000000000:0x00:0x000000000000FF00:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x0000000000FF0000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x0000000000FF0000:0x00" value="0x0000000000000000:0x00:0x0000000000FF0000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x00000000FF000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x00000000FF000000:0x00" value="0x0000000000000000:0x00:0x00000000FF000000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x000000FF00000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x000000FF00000000:0x00" value="0x0000000000000000:0x00:0x000000FF00000000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x0000FF0000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x0000FF0000000000:0x00" value="0x0000000000000000:0x00:0x0000FF0000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x00FF000000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x00FF000000000000:0x00" value="0x0000000000000000:0x00:0x00FF000000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0xFF00000000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0xFF00000000000000:0x00" value="0x0000000000000000:0x00:0xFF00000000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
+        <w mask="0x0000000000000000:0x00:0x00000000000000FF:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x00000000000000FF:0x00" value="0x0000000000000000:0x00:0x00000000000000FF:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x000000000000FF00:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x000000000000FF00:0x00" value="0x0000000000000000:0x00:0x000000000000FF00:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x0000000000FF0000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x0000000000FF0000:0x00" value="0x0000000000000000:0x00:0x0000000000FF0000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x00000000FF000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x00000000FF000000:0x00" value="0x0000000000000000:0x00:0x00000000FF000000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x000000FF00000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x000000FF00000000:0x00" value="0x0000000000000000:0x00:0x000000FF00000000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x0000FF0000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x0000FF0000000000:0x00" value="0x0000000000000000:0x00:0x0000FF0000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x00FF000000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x00FF000000000000:0x00" value="0x0000000000000000:0x00:0x00FF000000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0xFF00000000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0xFF00000000000000:0x00" value="0x0000000000000000:0x00:0xFF00000000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
       </warning>
       <setting name="ROP" mask="0x00000000000000FF:0x00:0x0000000000000000:0x00" info="Read-out protection" checked="0x00000000000000AA:0x00:0x0000000000000000:0x00" unchecked="0x0000000000000000:0x00:0x0000000000000000:0x00" />
       <setting name="UBC" mask="0x000000000000FF00:0x00:0x0000000000000000:0x00" info="User boot code" radix="16" shift="8" bytelen="1"/>
@@ -4040,7 +4040,7 @@
       <setting name="TMU_KEY7" mask="0x0000000000000000:0x00:0x00FF000000000000:0x00" info="Temporary unprotection key 6" radix="16" shift="15" bytelen="1" />
       <setting name="TMU_KEY8" mask="0x0000000000000000:0x00:0xFF00000000000000:0x00" info="Temporary unprotection key 7" radix="16" shift="16" bytelen="1" />
       <setting name="TMU_MAXATT" mask="0x0000000000000000:0x00:0x0000000000000000:0xFF" info="TMU access failure counter" radix="16" shift="17" bytelen="1" />
-      <setting name="ALL" mask="0xFFFFFFFFFFFFFFFF:0xFF:0xFFFFFFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="18" />
+      <setting name="ALL" mask="0xFFFFFFFFFFFFFFFF:0xFF:0xFFFFFFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="18" format="%8x%1x%8x%1x"/>
     </fuse>
     <param0>16</param0>
     <param1>0x005064</param1>
@@ -4061,22 +4061,22 @@
     <ee_page_num>16</ee_page_num>
     <fuse init="0x0000000000000000:0x00:0x0000000000000000:0x00" bytesize="18" mask="0xFFFFFFFFFFFFFFFF:0xFF:0xFFFFFFFFFFFFFFFF:0xFF" format="%8x%1x%8x%1x">
       <warning>
-        <w mask="0x0000000000000000:0x00:0x00000000000000FF:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x00000000000000FF:0x00" value="0x0000000000000000:0x00:0x00000000000000FF:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x000000000000FF00:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x000000000000FF00:0x00" value="0x0000000000000000:0x00:0x000000000000FF00:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x0000000000FF0000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x0000000000FF0000:0x00" value="0x0000000000000000:0x00:0x0000000000FF0000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x00000000FF000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x00000000FF000000:0x00" value="0x0000000000000000:0x00:0x00000000FF000000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x000000FF00000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x000000FF00000000:0x00" value="0x0000000000000000:0x00:0x000000FF00000000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x0000FF0000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x0000FF0000000000:0x00" value="0x0000000000000000:0x00:0x0000FF0000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x00FF000000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x00FF000000000000:0x00" value="0x0000000000000000:0x00:0x00FF000000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0xFF00000000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0xFF00000000000000:0x00" value="0x0000000000000000:0x00:0xFF00000000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
+        <w mask="0x0000000000000000:0x00:0x00000000000000FF:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x00000000000000FF:0x00" value="0x0000000000000000:0x00:0x00000000000000FF:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x000000000000FF00:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x000000000000FF00:0x00" value="0x0000000000000000:0x00:0x000000000000FF00:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x0000000000FF0000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x0000000000FF0000:0x00" value="0x0000000000000000:0x00:0x0000000000FF0000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x00000000FF000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x00000000FF000000:0x00" value="0x0000000000000000:0x00:0x00000000FF000000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x000000FF00000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x000000FF00000000:0x00" value="0x0000000000000000:0x00:0x000000FF00000000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x0000FF0000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x0000FF0000000000:0x00" value="0x0000000000000000:0x00:0x0000FF0000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x00FF000000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x00FF000000000000:0x00" value="0x0000000000000000:0x00:0x00FF000000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0xFF00000000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0xFF00000000000000:0x00" value="0x0000000000000000:0x00:0xFF00000000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
       </warning>
       <setting name="ROP" mask="0x00000000000000FF:0x00:0x0000000000000000:0x00" info="Read-out protection" checked="0x00000000000000AA:0x00:0x0000000000000000:0x00" unchecked="0x0000000000000000:0x00:0x0000000000000000:0x00" />
       <setting name="UBC" mask="0x000000000000FF00:0x00:0x0000000000000000:0x00" info="User boot code" radix="16" shift="8" bytelen="1"/>
@@ -4166,7 +4166,7 @@
       <setting name="TMU_KEY7" mask="0x0000000000000000:0x00:0x00FF000000000000:0x00" info="Temporary unprotection key 6" radix="16" shift="15" bytelen="1" />
       <setting name="TMU_KEY8" mask="0x0000000000000000:0x00:0xFF00000000000000:0x00" info="Temporary unprotection key 7" radix="16" shift="16" bytelen="1" />
       <setting name="TMU_MAXATT" mask="0x0000000000000000:0x00:0x0000000000000000:0xFF" info="TMU access failure counter" radix="16" shift="17" bytelen="1" />
-      <setting name="ALL" mask="0xFFFFFFFFFFFFFFFF:0xFF:0xFFFFFFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="18" />
+      <setting name="ALL" mask="0xFFFFFFFFFFFFFFFF:0xFF:0xFFFFFFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="18" format="%8x%1x%8x%1x"/>
     </fuse>
     <param0>16</param0>
     <param1>0x005064</param1>
@@ -4187,22 +4187,22 @@
     <ee_page_num>16</ee_page_num>
     <fuse init="0x0000000000000000:0x00:0x0000000000000000:0x00" bytesize="18" mask="0xFFFFFFFFFFFFFFFF:0xFF:0xFFFFFFFFFFFFFFFF:0xFF" format="%8x%1x%8x%1x">
       <warning>
-        <w mask="0x0000000000000000:0x00:0x00000000000000FF:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x00000000000000FF:0x00" value="0x0000000000000000:0x00:0x00000000000000FF:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x000000000000FF00:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x000000000000FF00:0x00" value="0x0000000000000000:0x00:0x000000000000FF00:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x0000000000FF0000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x0000000000FF0000:0x00" value="0x0000000000000000:0x00:0x0000000000FF0000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x00000000FF000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x00000000FF000000:0x00" value="0x0000000000000000:0x00:0x00000000FF000000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x000000FF00000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x000000FF00000000:0x00" value="0x0000000000000000:0x00:0x000000FF00000000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x0000FF0000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x0000FF0000000000:0x00" value="0x0000000000000000:0x00:0x0000FF0000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x00FF000000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x00FF000000000000:0x00" value="0x0000000000000000:0x00:0x00FF000000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0xFF00000000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0xFF00000000000000:0x00" value="0x0000000000000000:0x00:0xFF00000000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
+        <w mask="0x0000000000000000:0x00:0x00000000000000FF:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x00000000000000FF:0x00" value="0x0000000000000000:0x00:0x00000000000000FF:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x000000000000FF00:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x000000000000FF00:0x00" value="0x0000000000000000:0x00:0x000000000000FF00:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x0000000000FF0000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x0000000000FF0000:0x00" value="0x0000000000000000:0x00:0x0000000000FF0000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x00000000FF000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x00000000FF000000:0x00" value="0x0000000000000000:0x00:0x00000000FF000000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x000000FF00000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x000000FF00000000:0x00" value="0x0000000000000000:0x00:0x000000FF00000000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x0000FF0000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x0000FF0000000000:0x00" value="0x0000000000000000:0x00:0x0000FF0000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x00FF000000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x00FF000000000000:0x00" value="0x0000000000000000:0x00:0x00FF000000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0xFF00000000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0xFF00000000000000:0x00" value="0x0000000000000000:0x00:0xFF00000000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
       </warning>
       <setting name="ROP" mask="0x00000000000000FF:0x00:0x0000000000000000:0x00" info="Read-out protection" checked="0x00000000000000AA:0x00:0x0000000000000000:0x00" unchecked="0x0000000000000000:0x00:0x0000000000000000:0x00" />
       <setting name="UBC" mask="0x000000000000FF00:0x00:0x0000000000000000:0x00" info="User boot code" radix="16" shift="8" bytelen="1"/>
@@ -4292,7 +4292,7 @@
       <setting name="TMU_KEY7" mask="0x0000000000000000:0x00:0x00FF000000000000:0x00" info="Temporary unprotection key 6" radix="16" shift="15" bytelen="1" />
       <setting name="TMU_KEY8" mask="0x0000000000000000:0x00:0xFF00000000000000:0x00" info="Temporary unprotection key 7" radix="16" shift="16" bytelen="1" />
       <setting name="TMU_MAXATT" mask="0x0000000000000000:0x00:0x0000000000000000:0xFF" info="TMU access failure counter" radix="16" shift="17" bytelen="1" />
-      <setting name="ALL" mask="0xFFFFFFFFFFFFFFFF:0xFF:0xFFFFFFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="18" />
+      <setting name="ALL" mask="0xFFFFFFFFFFFFFFFF:0xFF:0xFFFFFFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="18" format="%8x%1x%8x%1x"/>
     </fuse>
     <param0>16</param0>
     <param1>0x005064</param1>
@@ -4313,22 +4313,22 @@
     <ee_page_num>12</ee_page_num>
     <fuse init="0x0000000000000000:0x00:0x0000000000000000:0x00" bytesize="18" mask="0xFFFFFFFFFFFFFFFF:0xFF:0xFFFFFFFFFFFFFFFF:0xFF" format="%8x%1x%8x%1x">
       <warning>
-        <w mask="0x0000000000000000:0x00:0x00000000000000FF:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x00000000000000FF:0x00" value="0x0000000000000000:0x00:0x00000000000000FF:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x000000000000FF00:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x000000000000FF00:0x00" value="0x0000000000000000:0x00:0x000000000000FF00:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x0000000000FF0000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x0000000000FF0000:0x00" value="0x0000000000000000:0x00:0x0000000000FF0000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x00000000FF000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x00000000FF000000:0x00" value="0x0000000000000000:0x00:0x00000000FF000000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x000000FF00000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x000000FF00000000:0x00" value="0x0000000000000000:0x00:0x000000FF00000000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x0000FF0000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x0000FF0000000000:0x00" value="0x0000000000000000:0x00:0x0000FF0000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x00FF000000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x00FF000000000000:0x00" value="0x0000000000000000:0x00:0x00FF000000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0xFF00000000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0xFF00000000000000:0x00" value="0x0000000000000000:0x00:0xFF00000000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
+        <w mask="0x0000000000000000:0x00:0x00000000000000FF:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x00000000000000FF:0x00" value="0x0000000000000000:0x00:0x00000000000000FF:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x000000000000FF00:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x000000000000FF00:0x00" value="0x0000000000000000:0x00:0x000000000000FF00:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x0000000000FF0000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x0000000000FF0000:0x00" value="0x0000000000000000:0x00:0x0000000000FF0000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x00000000FF000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x00000000FF000000:0x00" value="0x0000000000000000:0x00:0x00000000FF000000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x000000FF00000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x000000FF00000000:0x00" value="0x0000000000000000:0x00:0x000000FF00000000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x0000FF0000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x0000FF0000000000:0x00" value="0x0000000000000000:0x00:0x0000FF0000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x00FF000000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x00FF000000000000:0x00" value="0x0000000000000000:0x00:0x00FF000000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0xFF00000000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0xFF00000000000000:0x00" value="0x0000000000000000:0x00:0xFF00000000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
       </warning>
       <setting name="ROP" mask="0x00000000000000FF:0x00:0x0000000000000000:0x00" info="Read-out protection" checked="0x00000000000000AA:0x00:0x0000000000000000:0x00" unchecked="0x0000000000000000:0x00:0x0000000000000000:0x00" />
       <setting name="UBC" mask="0x000000000000FF00:0x00:0x0000000000000000:0x00" info="User boot code" radix="16" shift="8" bytelen="1"/>
@@ -4418,7 +4418,7 @@
       <setting name="TMU_KEY7" mask="0x0000000000000000:0x00:0x00FF000000000000:0x00" info="Temporary unprotection key 6" radix="16" shift="15" bytelen="1" />
       <setting name="TMU_KEY8" mask="0x0000000000000000:0x00:0xFF00000000000000:0x00" info="Temporary unprotection key 7" radix="16" shift="16" bytelen="1" />
       <setting name="TMU_MAXATT" mask="0x0000000000000000:0x00:0x0000000000000000:0xFF" info="TMU access failure counter" radix="16" shift="17" bytelen="1" />
-      <setting name="ALL" mask="0xFFFFFFFFFFFFFFFF:0xFF:0xFFFFFFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="18" />
+      <setting name="ALL" mask="0xFFFFFFFFFFFFFFFF:0xFF:0xFFFFFFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="18" format="%8x%1x%8x%1x"/>
     </fuse>
     <param0>16</param0>
     <param1>0x005064</param1>
@@ -4439,22 +4439,22 @@
     <ee_page_num>12</ee_page_num>
     <fuse init="0x0000000000000000:0x00:0x0000000000000000:0x00" bytesize="18" mask="0xFFFFFFFFFFFFFFFF:0xFF:0xFFFFFFFFFFFFFFFF:0xFF" format="%8x%1x%8x%1x">
       <warning>
-        <w mask="0x0000000000000000:0x00:0x00000000000000FF:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x00000000000000FF:0x00" value="0x0000000000000000:0x00:0x00000000000000FF:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x000000000000FF00:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x000000000000FF00:0x00" value="0x0000000000000000:0x00:0x000000000000FF00:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x0000000000FF0000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x0000000000FF0000:0x00" value="0x0000000000000000:0x00:0x0000000000FF0000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x00000000FF000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x00000000FF000000:0x00" value="0x0000000000000000:0x00:0x00000000FF000000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x000000FF00000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x000000FF00000000:0x00" value="0x0000000000000000:0x00:0x000000FF00000000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x0000FF0000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x0000FF0000000000:0x00" value="0x0000000000000000:0x00:0x0000FF0000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x00FF000000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x00FF000000000000:0x00" value="0x0000000000000000:0x00:0x00FF000000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0xFF00000000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0xFF00000000000000:0x00" value="0x0000000000000000:0x00:0xFF00000000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
+        <w mask="0x0000000000000000:0x00:0x00000000000000FF:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x00000000000000FF:0x00" value="0x0000000000000000:0x00:0x00000000000000FF:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x000000000000FF00:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x000000000000FF00:0x00" value="0x0000000000000000:0x00:0x000000000000FF00:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x0000000000FF0000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x0000000000FF0000:0x00" value="0x0000000000000000:0x00:0x0000000000FF0000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x00000000FF000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x00000000FF000000:0x00" value="0x0000000000000000:0x00:0x00000000FF000000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x000000FF00000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x000000FF00000000:0x00" value="0x0000000000000000:0x00:0x000000FF00000000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x0000FF0000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x0000FF0000000000:0x00" value="0x0000000000000000:0x00:0x0000FF0000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x00FF000000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x00FF000000000000:0x00" value="0x0000000000000000:0x00:0x00FF000000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0xFF00000000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0xFF00000000000000:0x00" value="0x0000000000000000:0x00:0xFF00000000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
       </warning>
       <setting name="ROP" mask="0x00000000000000FF:0x00:0x0000000000000000:0x00" info="Read-out protection" checked="0x00000000000000AA:0x00:0x0000000000000000:0x00" unchecked="0x0000000000000000:0x00:0x0000000000000000:0x00" />
       <setting name="UBC" mask="0x000000000000FF00:0x00:0x0000000000000000:0x00" info="User boot code" radix="16" shift="8" bytelen="1"/>
@@ -4544,7 +4544,7 @@
       <setting name="TMU_KEY7" mask="0x0000000000000000:0x00:0x00FF000000000000:0x00" info="Temporary unprotection key 6" radix="16" shift="15" bytelen="1" />
       <setting name="TMU_KEY8" mask="0x0000000000000000:0x00:0xFF00000000000000:0x00" info="Temporary unprotection key 7" radix="16" shift="16" bytelen="1" />
       <setting name="TMU_MAXATT" mask="0x0000000000000000:0x00:0x0000000000000000:0xFF" info="TMU access failure counter" radix="16" shift="17" bytelen="1" />
-      <setting name="ALL" mask="0xFFFFFFFFFFFFFFFF:0xFF:0xFFFFFFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="18" />
+      <setting name="ALL" mask="0xFFFFFFFFFFFFFFFF:0xFF:0xFFFFFFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="18" format="%8x%1x%8x%1x"/>
     </fuse>
     <param0>16</param0>
     <param1>0x005064</param1>
@@ -4565,22 +4565,22 @@
     <ee_page_num>8</ee_page_num>
     <fuse init="0x0000000000000000:0x00:0x0000000000000000:0x00" bytesize="18" mask="0xFFFFFFFFFFFFFFFF:0xFF:0xFFFFFFFFFFFFFFFF:0xFF" format="%8x%1x%8x%1x">
       <warning>
-        <w mask="0x0000000000000000:0x00:0x00000000000000FF:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x00000000000000FF:0x00" value="0x0000000000000000:0x00:0x00000000000000FF:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x000000000000FF00:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x000000000000FF00:0x00" value="0x0000000000000000:0x00:0x000000000000FF00:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x0000000000FF0000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x0000000000FF0000:0x00" value="0x0000000000000000:0x00:0x0000000000FF0000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x00000000FF000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x00000000FF000000:0x00" value="0x0000000000000000:0x00:0x00000000FF000000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x000000FF00000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x000000FF00000000:0x00" value="0x0000000000000000:0x00:0x000000FF00000000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x0000FF0000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x0000FF0000000000:0x00" value="0x0000000000000000:0x00:0x0000FF0000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x00FF000000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x00FF000000000000:0x00" value="0x0000000000000000:0x00:0x00FF000000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0xFF00000000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0xFF00000000000000:0x00" value="0x0000000000000000:0x00:0xFF00000000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
+        <w mask="0x0000000000000000:0x00:0x00000000000000FF:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x00000000000000FF:0x00" value="0x0000000000000000:0x00:0x00000000000000FF:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x000000000000FF00:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x000000000000FF00:0x00" value="0x0000000000000000:0x00:0x000000000000FF00:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x0000000000FF0000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x0000000000FF0000:0x00" value="0x0000000000000000:0x00:0x0000000000FF0000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x00000000FF000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x00000000FF000000:0x00" value="0x0000000000000000:0x00:0x00000000FF000000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x000000FF00000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x000000FF00000000:0x00" value="0x0000000000000000:0x00:0x000000FF00000000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x0000FF0000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x0000FF0000000000:0x00" value="0x0000000000000000:0x00:0x0000FF0000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x00FF000000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x00FF000000000000:0x00" value="0x0000000000000000:0x00:0x00FF000000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0xFF00000000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0xFF00000000000000:0x00" value="0x0000000000000000:0x00:0xFF00000000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
       </warning>
       <setting name="ROP" mask="0x00000000000000FF:0x00:0x0000000000000000:0x00" info="Read-out protection" checked="0x00000000000000AA:0x00:0x0000000000000000:0x00" unchecked="0x0000000000000000:0x00:0x0000000000000000:0x00" />
       <setting name="UBC" mask="0x000000000000FF00:0x00:0x0000000000000000:0x00" info="User boot code" radix="16" shift="8" bytelen="1"/>
@@ -4670,7 +4670,7 @@
       <setting name="TMU_KEY7" mask="0x0000000000000000:0x00:0x00FF000000000000:0x00" info="Temporary unprotection key 6" radix="16" shift="15" bytelen="1" />
       <setting name="TMU_KEY8" mask="0x0000000000000000:0x00:0xFF00000000000000:0x00" info="Temporary unprotection key 7" radix="16" shift="16" bytelen="1" />
       <setting name="TMU_MAXATT" mask="0x0000000000000000:0x00:0x0000000000000000:0xFF" info="TMU access failure counter" radix="16" shift="17" bytelen="1" />
-      <setting name="ALL" mask="0xFFFFFFFFFFFFFFFF:0xFF:0xFFFFFFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="18" />
+      <setting name="ALL" mask="0xFFFFFFFFFFFFFFFF:0xFF:0xFFFFFFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="18" format="%8x%1x%8x%1x"/>
     </fuse>
     <param0>16</param0>
     <param1>0x005064</param1>
@@ -4691,22 +4691,22 @@
     <ee_page_num>16</ee_page_num>
     <fuse init="0x0000000000000000:0x00:0x0000000000000000:0x00" bytesize="18" mask="0xFFFFFFFFFFFFFFFF:0xFF:0xFFFFFFFFFFFFFFFF:0xFF" format="%8x%1x%8x%1x">
       <warning>
-        <w mask="0x0000000000000000:0x00:0x00000000000000FF:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x00000000000000FF:0x00" value="0x0000000000000000:0x00:0x00000000000000FF:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x000000000000FF00:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x000000000000FF00:0x00" value="0x0000000000000000:0x00:0x000000000000FF00:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x0000000000FF0000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x0000000000FF0000:0x00" value="0x0000000000000000:0x00:0x0000000000FF0000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x00000000FF000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x00000000FF000000:0x00" value="0x0000000000000000:0x00:0x00000000FF000000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x000000FF00000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x000000FF00000000:0x00" value="0x0000000000000000:0x00:0x000000FF00000000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x0000FF0000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x0000FF0000000000:0x00" value="0x0000000000000000:0x00:0x0000FF0000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x00FF000000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x00FF000000000000:0x00" value="0x0000000000000000:0x00:0x00FF000000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0xFF00000000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0xFF00000000000000:0x00" value="0x0000000000000000:0x00:0xFF00000000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
+        <w mask="0x0000000000000000:0x00:0x00000000000000FF:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x00000000000000FF:0x00" value="0x0000000000000000:0x00:0x00000000000000FF:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x000000000000FF00:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x000000000000FF00:0x00" value="0x0000000000000000:0x00:0x000000000000FF00:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x0000000000FF0000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x0000000000FF0000:0x00" value="0x0000000000000000:0x00:0x0000000000FF0000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x00000000FF000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x00000000FF000000:0x00" value="0x0000000000000000:0x00:0x00000000FF000000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x000000FF00000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x000000FF00000000:0x00" value="0x0000000000000000:0x00:0x000000FF00000000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x0000FF0000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x0000FF0000000000:0x00" value="0x0000000000000000:0x00:0x0000FF0000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x00FF000000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x00FF000000000000:0x00" value="0x0000000000000000:0x00:0x00FF000000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0xFF00000000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0xFF00000000000000:0x00" value="0x0000000000000000:0x00:0xFF00000000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
       </warning>
       <setting name="ROP" mask="0x00000000000000FF:0x00:0x0000000000000000:0x00" info="Read-out protection" checked="0x00000000000000AA:0x00:0x0000000000000000:0x00" unchecked="0x0000000000000000:0x00:0x0000000000000000:0x00" />
       <setting name="UBC" mask="0x000000000000FF00:0x00:0x0000000000000000:0x00" info="User boot code" radix="16" shift="8" bytelen="1"/>
@@ -4796,7 +4796,7 @@
       <setting name="TMU_KEY7" mask="0x0000000000000000:0x00:0x00FF000000000000:0x00" info="Temporary unprotection key 6" radix="16" shift="15" bytelen="1" />
       <setting name="TMU_KEY8" mask="0x0000000000000000:0x00:0xFF00000000000000:0x00" info="Temporary unprotection key 7" radix="16" shift="16" bytelen="1" />
       <setting name="TMU_MAXATT" mask="0x0000000000000000:0x00:0x0000000000000000:0xFF" info="TMU access failure counter" radix="16" shift="17" bytelen="1" />
-      <setting name="ALL" mask="0xFFFFFFFFFFFFFFFF:0xFF:0xFFFFFFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="18" />
+      <setting name="ALL" mask="0xFFFFFFFFFFFFFFFF:0xFF:0xFFFFFFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="18" format="%8x%1x%8x%1x"/>
     </fuse>
     <param0>16</param0>
     <param1>0x005064</param1>
@@ -4817,22 +4817,22 @@
     <ee_page_num>16</ee_page_num>
     <fuse init="0x0000000000000000:0x00:0x0000000000000000:0x00" bytesize="18" mask="0xFFFFFFFFFFFFFFFF:0xFF:0xFFFFFFFFFFFFFFFF:0xFF" format="%8x%1x%8x%1x">
       <warning>
-        <w mask="0x0000000000000000:0x00:0x00000000000000FF:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x00000000000000FF:0x00" value="0x0000000000000000:0x00:0x00000000000000FF:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x000000000000FF00:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x000000000000FF00:0x00" value="0x0000000000000000:0x00:0x000000000000FF00:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x0000000000FF0000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x0000000000FF0000:0x00" value="0x0000000000000000:0x00:0x0000000000FF0000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x00000000FF000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x00000000FF000000:0x00" value="0x0000000000000000:0x00:0x00000000FF000000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x000000FF00000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x000000FF00000000:0x00" value="0x0000000000000000:0x00:0x000000FF00000000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x0000FF0000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x0000FF0000000000:0x00" value="0x0000000000000000:0x00:0x0000FF0000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x00FF000000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x00FF000000000000:0x00" value="0x0000000000000000:0x00:0x00FF000000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0xFF00000000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0xFF00000000000000:0x00" value="0x0000000000000000:0x00:0xFF00000000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
+        <w mask="0x0000000000000000:0x00:0x00000000000000FF:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x00000000000000FF:0x00" value="0x0000000000000000:0x00:0x00000000000000FF:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x000000000000FF00:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x000000000000FF00:0x00" value="0x0000000000000000:0x00:0x000000000000FF00:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x0000000000FF0000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x0000000000FF0000:0x00" value="0x0000000000000000:0x00:0x0000000000FF0000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x00000000FF000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x00000000FF000000:0x00" value="0x0000000000000000:0x00:0x00000000FF000000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x000000FF00000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x000000FF00000000:0x00" value="0x0000000000000000:0x00:0x000000FF00000000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x0000FF0000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x0000FF0000000000:0x00" value="0x0000000000000000:0x00:0x0000FF0000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x00FF000000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x00FF000000000000:0x00" value="0x0000000000000000:0x00:0x00FF000000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0xFF00000000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0xFF00000000000000:0x00" value="0x0000000000000000:0x00:0xFF00000000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
       </warning>
       <setting name="ROP" mask="0x00000000000000FF:0x00:0x0000000000000000:0x00" info="Read-out protection" checked="0x00000000000000AA:0x00:0x0000000000000000:0x00" unchecked="0x0000000000000000:0x00:0x0000000000000000:0x00" />
       <setting name="UBC" mask="0x000000000000FF00:0x00:0x0000000000000000:0x00" info="User boot code" radix="16" shift="8" bytelen="1"/>
@@ -4922,7 +4922,7 @@
       <setting name="TMU_KEY7" mask="0x0000000000000000:0x00:0x00FF000000000000:0x00" info="Temporary unprotection key 6" radix="16" shift="15" bytelen="1" />
       <setting name="TMU_KEY8" mask="0x0000000000000000:0x00:0xFF00000000000000:0x00" info="Temporary unprotection key 7" radix="16" shift="16" bytelen="1" />
       <setting name="TMU_MAXATT" mask="0x0000000000000000:0x00:0x0000000000000000:0xFF" info="TMU access failure counter" radix="16" shift="17" bytelen="1" />
-      <setting name="ALL" mask="0xFFFFFFFFFFFFFFFF:0xFF:0xFFFFFFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="18" />
+      <setting name="ALL" mask="0xFFFFFFFFFFFFFFFF:0xFF:0xFFFFFFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="18" format="%8x%1x%8x%1x"/>
     </fuse>
     <param0>16</param0>
     <param1>0x005064</param1>
@@ -4943,22 +4943,22 @@
     <ee_page_num>12</ee_page_num>
     <fuse init="0x0000000000000000:0x00:0x0000000000000000:0x00" bytesize="18" mask="0xFFFFFFFFFFFFFFFF:0xFF:0xFFFFFFFFFFFFFFFF:0xFF" format="%8x%1x%8x%1x">
       <warning>
-        <w mask="0x0000000000000000:0x00:0x00000000000000FF:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x00000000000000FF:0x00" value="0x0000000000000000:0x00:0x00000000000000FF:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x000000000000FF00:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x000000000000FF00:0x00" value="0x0000000000000000:0x00:0x000000000000FF00:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x0000000000FF0000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x0000000000FF0000:0x00" value="0x0000000000000000:0x00:0x0000000000FF0000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x00000000FF000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x00000000FF000000:0x00" value="0x0000000000000000:0x00:0x00000000FF000000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x000000FF00000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x000000FF00000000:0x00" value="0x0000000000000000:0x00:0x000000FF00000000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x0000FF0000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x0000FF0000000000:0x00" value="0x0000000000000000:0x00:0x0000FF0000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x00FF000000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x00FF000000000000:0x00" value="0x0000000000000000:0x00:0x00FF000000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0xFF00000000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0xFF00000000000000:0x00" value="0x0000000000000000:0x00:0xFF00000000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
+        <w mask="0x0000000000000000:0x00:0x00000000000000FF:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x00000000000000FF:0x00" value="0x0000000000000000:0x00:0x00000000000000FF:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x000000000000FF00:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x000000000000FF00:0x00" value="0x0000000000000000:0x00:0x000000000000FF00:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x0000000000FF0000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x0000000000FF0000:0x00" value="0x0000000000000000:0x00:0x0000000000FF0000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x00000000FF000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x00000000FF000000:0x00" value="0x0000000000000000:0x00:0x00000000FF000000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x000000FF00000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x000000FF00000000:0x00" value="0x0000000000000000:0x00:0x000000FF00000000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x0000FF0000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x0000FF0000000000:0x00" value="0x0000000000000000:0x00:0x0000FF0000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x00FF000000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x00FF000000000000:0x00" value="0x0000000000000000:0x00:0x00FF000000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0xFF00000000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0xFF00000000000000:0x00" value="0x0000000000000000:0x00:0xFF00000000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
       </warning>
       <setting name="ROP" mask="0x00000000000000FF:0x00:0x0000000000000000:0x00" info="Read-out protection" checked="0x00000000000000AA:0x00:0x0000000000000000:0x00" unchecked="0x0000000000000000:0x00:0x0000000000000000:0x00" />
       <setting name="UBC" mask="0x000000000000FF00:0x00:0x0000000000000000:0x00" info="User boot code" radix="16" shift="8" bytelen="1"/>
@@ -5048,7 +5048,7 @@
       <setting name="TMU_KEY7" mask="0x0000000000000000:0x00:0x00FF000000000000:0x00" info="Temporary unprotection key 6" radix="16" shift="15" bytelen="1" />
       <setting name="TMU_KEY8" mask="0x0000000000000000:0x00:0xFF00000000000000:0x00" info="Temporary unprotection key 7" radix="16" shift="16" bytelen="1" />
       <setting name="TMU_MAXATT" mask="0x0000000000000000:0x00:0x0000000000000000:0xFF" info="TMU access failure counter" radix="16" shift="17" bytelen="1" />
-      <setting name="ALL" mask="0xFFFFFFFFFFFFFFFF:0xFF:0xFFFFFFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="18" />
+      <setting name="ALL" mask="0xFFFFFFFFFFFFFFFF:0xFF:0xFFFFFFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="18" format="%8x%1x%8x%1x"/>
     </fuse>
     <param0>16</param0>
     <param1>0x005064</param1>
@@ -5069,22 +5069,22 @@
     <ee_page_num>12</ee_page_num>
     <fuse init="0x0000000000000000:0x00:0x0000000000000000:0x00" bytesize="18" mask="0xFFFFFFFFFFFFFFFF:0xFF:0xFFFFFFFFFFFFFFFF:0xFF" format="%8x%1x%8x%1x">
       <warning>
-        <w mask="0x0000000000000000:0x00:0x00000000000000FF:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x00000000000000FF:0x00" value="0x0000000000000000:0x00:0x00000000000000FF:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x000000000000FF00:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x000000000000FF00:0x00" value="0x0000000000000000:0x00:0x000000000000FF00:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x0000000000FF0000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x0000000000FF0000:0x00" value="0x0000000000000000:0x00:0x0000000000FF0000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x00000000FF000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x00000000FF000000:0x00" value="0x0000000000000000:0x00:0x00000000FF000000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x000000FF00000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x000000FF00000000:0x00" value="0x0000000000000000:0x00:0x000000FF00000000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x0000FF0000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x0000FF0000000000:0x00" value="0x0000000000000000:0x00:0x0000FF0000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x00FF000000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0x00FF000000000000:0x00" value="0x0000000000000000:0x00:0x00FF000000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0xFF00000000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" />
-        <w mask="0x0000000000000000:0x00:0xFF00000000000000:0x00" value="0x0000000000000000:0x00:0xFF00000000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" />
+        <w mask="0x0000000000000000:0x00:0x00000000000000FF:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x00000000000000FF:0x00" value="0x0000000000000000:0x00:0x00000000000000FF:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x000000000000FF00:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x000000000000FF00:0x00" value="0x0000000000000000:0x00:0x000000000000FF00:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x0000000000FF0000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x0000000000FF0000:0x00" value="0x0000000000000000:0x00:0x0000000000FF0000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x00000000FF000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x00000000FF000000:0x00" value="0x0000000000000000:0x00:0x00000000FF000000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x000000FF00000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x000000FF00000000:0x00" value="0x0000000000000000:0x00:0x000000FF00000000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x0000FF0000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x0000FF0000000000:0x00" value="0x0000000000000000:0x00:0x0000FF0000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x00FF000000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0x00FF000000000000:0x00" value="0x0000000000000000:0x00:0x00FF000000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0xFF00000000000000:0x00" value="0x0000000000000000:0x00:0x0000000000000000:0x00" msg="0x00 is invalid value for TMU_KEY!" ban="1"/>
+        <w mask="0x0000000000000000:0x00:0xFF00000000000000:0x00" value="0x0000000000000000:0x00:0xFF00000000000000:0x00" msg="0xFF is invalid value for TMU_KEY!" ban="1"/>
       </warning>
       <setting name="ROP" mask="0x00000000000000FF:0x00:0x0000000000000000:0x00" info="Read-out protection" checked="0x00000000000000AA:0x00:0x0000000000000000:0x00" unchecked="0x0000000000000000:0x00:0x0000000000000000:0x00" />
       <setting name="UBC" mask="0x000000000000FF00:0x00:0x0000000000000000:0x00" info="User boot code" radix="16" shift="8" bytelen="1"/>
@@ -5174,7 +5174,7 @@
       <setting name="TMU_KEY7" mask="0x0000000000000000:0x00:0x00FF000000000000:0x00" info="Temporary unprotection key 6" radix="16" shift="15" bytelen="1" />
       <setting name="TMU_KEY8" mask="0x0000000000000000:0x00:0xFF00000000000000:0x00" info="Temporary unprotection key 7" radix="16" shift="16" bytelen="1" />
       <setting name="TMU_MAXATT" mask="0x0000000000000000:0x00:0x0000000000000000:0xFF" info="TMU access failure counter" radix="16" shift="17" bytelen="1" />
-      <setting name="ALL" mask="0xFFFFFFFFFFFFFFFF:0xFF:0xFFFFFFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="18" />
+      <setting name="ALL" mask="0xFFFFFFFFFFFFFFFF:0xFF:0xFFFFFFFFFFFFFFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="18" format="%8x%1x%8x%1x"/>
     </fuse>
     <param0>16</param0>
     <param1>0x005064</param1>

@@ -53,6 +53,7 @@ type
     FParserFunc:    TParserFunc;
     FFatalError:    boolean;
     FErrorStr:      string;
+    FErrorNum:      integer;
     FResultStrings: TStringList;
     function ParseTargetData(var line: string; target: string; var result_str: string): boolean;
   public
@@ -78,6 +79,7 @@ type
 
 const
   EQUAL_STR: string      = ' = ';
+  MAX_ERROR_LINES: integer = 10;
 
 implementation
 
@@ -244,6 +246,7 @@ procedure TVSProg_Parser.Prepare;
 begin
   FResultStrings.Clear;
   FFatalError := False;
+  FErrorNum   := 0;
   FErrorStr := '';
 end;
 
@@ -275,13 +278,14 @@ end;
 function TVSProg_Parser.ErrorParser(var line: string): boolean;
 begin
   Result := True;
-  if ((Pos('Error:', line) = 1) or (Pos('/****Bug****/:', line) = 1) or
-    (Pos('fail', line) <> 0)) then
+  if ((Pos('Error:', line) = 1) or (Pos('/****Bug****/:', line) = 1))
+    and (FErrorNum < MAX_ERROR_LINES) then
   begin
 //    if not FFatalError then
     begin
       FFatalError := True;
       FErrorStr   := FErrorStr + line + Char(10);
+      Inc(FErrorNum);
     end;
     Result      := False;
   end;
@@ -377,6 +381,7 @@ var
   tmpStr: string;
 begin
   Result := True;
+  tmpStr := '';
   if ParseTargetData(line, 'special_str', tmpStr) then
   begin
     FResultStrings.Add(tmpStr);
@@ -388,6 +393,7 @@ var
   tmpStr: string;
 begin
   Result := True;
+  tmpStr := '';
   if ParseTargetData(line, 'fuse', tmpStr) then
   begin
     FResultStrings.Add(tmpStr);
@@ -399,6 +405,7 @@ var
   tmpStr: string;
 begin
   Result := True;
+  tmpStr := '';
   if ParseTargetData(line, 'lock', tmpStr) then
   begin
     FResultStrings.Add(tmpStr);
@@ -410,6 +417,7 @@ var
   tmpStr: string;
 begin
   Result := True;
+  tmpStr := '';
   if ParseTargetData(line, 'usrsig', tmpStr) then
   begin
     FResultStrings.Add(tmpStr);
@@ -421,6 +429,7 @@ var
   tmpStr: string;
 begin
   Result := True;
+  tmpStr := '';
   if ParseTargetData(line, 'calibration', tmpStr) then
   begin
     FResultStrings.Add(tmpStr);

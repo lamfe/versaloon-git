@@ -44,6 +44,7 @@ type
   end;
 
 function StrToIntRadix(sData: string; radix: integer): QWord;
+function StrToIntRadix(sData: string; radix: integer; var off: integer): QWord;
 function IntToStrRadix(aData, radix, minlen: integer): string;
 function IntToStrRadix(aData: QWord; radix, minlen: integer): string;
 
@@ -111,37 +112,55 @@ end;
 
 function StrToIntRadix(sData: string; radix: integer): QWord;
 var
+  off: integer;
+begin
+  off := 0;
+  Result := StrToIntRadix(sData, radix, off);
+end;
+
+function StrToIntRadix(sData: string; radix: integer; var off: integer): QWord;
+var
   i: integer;
-  r: QWord;
+  r, v: QWord;
   strFirst2: string;
+  strNumOnly: string;
 begin
   Result := 0;
+  off := 0;
   sData  := UpperCase(sData);
   strFirst2 := Copy(sData, 1, 2);
   if strFirst2 = '0X' then
   begin
     radix := 16;
     sData := Copy(sData, 3, Length(sData) - 2);
+    v := Pos(sData[1], HEX_PARSE_STR);
+    if (v >= 1) and (v <= radix) then
+    begin
+      Inc(off, 2);
+    end;
   end;
-  if (radix < 2) or (radix > 16) or (Length(sData) >
-    (BYTELEN_ACCORDING_TO_RADIX[radix] * 8)) then
+  if (radix < 2) or (radix > 16) then
   begin
     exit;
   end;
 
-  for i := 1 to Length(sData) do
+  strNumOnly := '';
+  for i := 1 to Length(sdata) do
   begin
-    r := Pos(sData[i], HEX_PARSE_STR);
-    if (r < 1) or (r > radix) then
+    v := Pos(sData[i], HEX_PARSE_STR);
+    if (v < 1) or (v > radix) then
     begin
-      exit;
+      break;
     end;
+
+    strNumOnly := strNumOnly + sData[i];
+    Inc(off);
   end;
 
   r := 1;
-  for i := Length(sData) downto 1 do
+  for i := Length(strNumOnly) downto 1 do
   begin
-    Inc(Result, r * (Pos(sData[i], HEX_PARSE_STR) - 1));
+    Inc(Result, r * (Pos(strNumOnly[i], HEX_PARSE_STR) - 1));
     r := r * radix;
   end;
 end;

@@ -369,19 +369,20 @@ solve_integer:
 				return ret;
 				break;
 			}
+			strcat(ret, tmp_str);
+			if (format[cur_index] != '\0')
+			{
+				// not the last data, insert a DIV_CHAR
+				tmp_str[0] = STRPARSER_DIV_CHAR_DEFAULT;
+				tmp_str[1] = '\0';
+				strcat(ret, tmp_str);
+			}
 			break;
 		default:
 			tmp_str[0] = cur_ch;
 			tmp_str[1] = '\0';
-			break;
-		}
-		strcat(ret, tmp_str);
-		if (format[cur_index] != '\0')
-		{
-			// not the last data, insert a DIV_CHAR
-			tmp_str[0] = STRPARSER_DIV_CHAR_DEFAULT;
-			tmp_str[1] = '\0';
 			strcat(ret, tmp_str);
+			break;
 		}
 	}
 	

@@ -201,6 +201,7 @@ begin
       begin
         // no data, wait 10 ms
         Inc(dly);
+        bTimeout := bTimeout;
         //      if bTimeout and (dly > 10) then
         //      begin
         // Timeout
