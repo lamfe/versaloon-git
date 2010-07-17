@@ -14,9 +14,9 @@
     <ee_default>0xFF</ee_default>
     <ee_addr>0</ee_addr>
     <ee_seg>0</ee_seg>
-    <fuse init="0xFFFFFF" bytesize="3"></fuse>
-    <lock init="0xFF" bytesize="1"></lock>
-    <calibration init="0xFFFFFFFF" bytesize="4"></calibration>
+    <fuse init="0xFFFFFF" bytesize="3" />
+    <lock init="0xFF" bytesize="1" />
+    <calibration init="0xFFFFFFFF" bytesize="4" />
   </chip>
   <chip name="attiny11">
     <program_mode>s</program_mode>
@@ -96,7 +96,7 @@
       <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" bytelen="1" />
     </lock>
     <calibration init="0xFF" bytesize="1">
-      <setting name="1.2 MHz" mask="0xFF" info="OSCCAL at 1.2 MHz" ban="*" radix="16" shift="0" />
+      <setting name="1.2 MHz" mask="0xFF" info="OSCCAL at 1.2 MHz" ban="*" radix="16" shift="0" bytelen="1"/>
     </calibration>
   </chip>
   <chip name="attiny13">
@@ -152,8 +152,8 @@
       <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" bytelen="1" />
     </lock>
     <calibration init="0xFFFF" bytesize="2">
-      <setting name="9.6 MHz" mask="0x00FF" info="OSCCAL at 9.6 MHz" ban="*" radix="16" shift="0" />
-      <setting name="4.8 MHz" mask="0xFF00" info="OSCCAL at 4.8 MHz" ban="*" radix="16" shift="8" />
+      <setting name="9.6 MHz" mask="0x00FF" info="OSCCAL at 9.6 MHz" ban="*" radix="16" shift="0" bytelen="1"/>
+      <setting name="4.8 MHz" mask="0xFF00" info="OSCCAL at 4.8 MHz" ban="*" radix="16" shift="8" bytelen="1"/>
     </calibration>
   </chip>
   <chip name="attiny15">
@@ -192,7 +192,7 @@
       <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" bytelen="1" />
     </lock>
     <calibration init="0xFF" bytesize="1">
-      <setting name="1.6 MHz" mask="0xFF" info="OSCCAL at 1.6 MHz" ban="*" radix="16" shift="0" />
+      <setting name="1.6 MHz" mask="0xFF" info="OSCCAL at 1.6 MHz" ban="*" radix="16" shift="0" bytelen="1"/>
     </calibration>
   </chip>
   <chip name="attiny24">
@@ -286,7 +286,7 @@
       <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" bytelen="1" />
     </lock>
     <calibration init="0xFF" bytesize="1">
-      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
+      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" bytelen="1"/>
     </calibration>
   </chip>
   <chip name="attiny44">
@@ -380,7 +380,7 @@
       <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" bytelen="1" />
     </lock>
     <calibration init="0xFF" bytesize="1">
-      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
+      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" bytelen="1"/>
     </calibration>
   </chip>
   <chip name="attiny84">
@@ -474,7 +474,7 @@
       <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" bytelen="1" />
     </lock>
     <calibration init="0xFF" bytesize="1">
-      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
+      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" bytelen="1"/>
     </calibration>
   </chip>
   <chip name="attiny25">
@@ -572,8 +572,8 @@
       <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" bytelen="1" />
     </lock>
     <calibration init="0xFFFF" bytesize="2">
-      <setting name="8.0 MHz" mask="0x00FF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
-      <setting name="6.4 MHz" mask="0xFF00" info="OSCCAL at 6.4 MHz" ban="*" radix="16" shift="8" />
+      <setting name="8.0 MHz" mask="0x00FF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" bytelen="1"/>
+      <setting name="6.4 MHz" mask="0xFF00" info="OSCCAL at 6.4 MHz" ban="*" radix="16" shift="8" bytelen="1"/>
     </calibration>
   </chip>
   <chip name="attiny45">
@@ -671,8 +671,8 @@
       <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" bytelen="1" />
     </lock>
     <calibration init="0xFFFF" bytesize="2">
-      <setting name="8.0 MHz" mask="0x00FF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
-      <setting name="6.4 MHz" mask="0xFF00" info="OSCCAL at 6.4 MHz" ban="*" radix="16" shift="8" />
+      <setting name="8.0 MHz" mask="0x00FF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" bytelen="1"/>
+      <setting name="6.4 MHz" mask="0xFF00" info="OSCCAL at 6.4 MHz" ban="*" radix="16" shift="8" bytelen="1"/>
     </calibration>
   </chip>
   <chip name="attiny85">
@@ -770,8 +770,8 @@
       <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" bytelen="1" />
     </lock>
     <calibration init="0xFFFF" bytesize="2">
-      <setting name="8.0 MHz" mask="0x00FF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
-      <setting name="6.4 MHz" mask="0xFF00" info="OSCCAL at 6.4 MHz" ban="*" radix="16" shift="8" />
+      <setting name="8.0 MHz" mask="0x00FF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" bytelen="1"/>
+      <setting name="6.4 MHz" mask="0xFF00" info="OSCCAL at 6.4 MHz" ban="*" radix="16" shift="8" bytelen="1"/>
     </calibration>
   </chip>
   <chip name="attiny26">
@@ -873,10 +873,10 @@
       <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" bytelen="1" />
     </lock>
     <calibration init="0xFFFFFFFF" bytesize="4">
-      <setting name="1.0 MHz" mask="0x000000FF" info="OSCCAL at 1.0 MHz" ban="*" radix="16" shift="0" />
-      <setting name="2.0 MHz" mask="0x0000FF00" info="OSCCAL at 2.0 MHz" ban="*" radix="16" shift="8" />
-      <setting name="4.0 MHz" mask="0x00FF0000" info="OSCCAL at 4.0 MHz" ban="*" radix="16" shift="16" />
-      <setting name="8.0 MHz" mask="0xFF000000" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="24" />
+      <setting name="1.0 MHz" mask="0x000000FF" info="OSCCAL at 1.0 MHz" ban="*" radix="16" shift="0" bytelen="1"/>
+      <setting name="2.0 MHz" mask="0x0000FF00" info="OSCCAL at 2.0 MHz" ban="*" radix="16" shift="8" bytelen="1"/>
+      <setting name="4.0 MHz" mask="0x00FF0000" info="OSCCAL at 4.0 MHz" ban="*" radix="16" shift="16" bytelen="1"/>
+      <setting name="8.0 MHz" mask="0xFF000000" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="24" bytelen="1"/>
     </calibration>
   </chip>
   <chip name="attiny28">
@@ -918,7 +918,7 @@
       <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" bytelen="1" />
     </lock>
     <calibration init="0xFF" bytesize="1">
-      <setting name="1.2 MHz" mask="0xFF" info="OSCCAL at 1.2 MHz" ban="*" radix="16" shift="0" />
+      <setting name="1.2 MHz" mask="0xFF" info="OSCCAL at 1.2 MHz" ban="*" radix="16" shift="0" bytelen="1"/>
     </calibration>
   </chip>
   <chip name="attiny48">
@@ -973,7 +973,7 @@
       <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" bytelen="1" />
     </lock>
     <calibration init="0xFF" bytesize="1">
-      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
+      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" bytelen="1"/>
     </calibration>
   </chip>
   <chip name="attiny88">
@@ -1028,7 +1028,7 @@
       <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" bytelen="1" />
     </lock>
     <calibration init="0xFF" bytesize="1">
-      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
+      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" bytelen="1"/>
     </calibration>
   </chip>
   <chip name="attiny261">
@@ -1126,7 +1126,7 @@
       <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" bytelen="1" />
     </lock>
     <calibration init="0xFF" bytesize="1">
-      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
+      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" bytelen="1"/>
     </calibration>
   </chip>
   <chip name="attiny461">
@@ -1224,7 +1224,7 @@
       <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" bytelen="1" />
     </lock>
     <calibration init="0xFF" bytesize="1">
-      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
+      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" bytelen="1"/>
     </calibration>
   </chip>
   <chip name="attiny861">
@@ -1322,7 +1322,7 @@
       <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" bytelen="1" />
     </lock>
     <calibration init="0xFF" bytesize="1">
-      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
+      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" bytelen="1"/>
     </calibration>
   </chip>
   <chip name="attiny2313">
@@ -1412,8 +1412,8 @@
       <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" bytelen="1" />
     </lock>
     <calibration init="0xFFFF" bytesize="2">
-      <setting name="8.0 MHz" mask="0x00FF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
-      <setting name="4.0 MHz" mask="0xFF00" info="OSCCAL at 4.0 MHz" ban="*" radix="16" shift="8" />
+      <setting name="8.0 MHz" mask="0x00FF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" bytelen="1"/>
+      <setting name="4.0 MHz" mask="0xFF00" info="OSCCAL at 4.0 MHz" ban="*" radix="16" shift="8" bytelen="1"/>
     </calibration>
   </chip>
   <chip name="at90can32">
@@ -1520,7 +1520,7 @@
       <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" bytelen="1" />
     </lock>
     <calibration init="0xFF" bytesize="1">
-      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
+      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" bytelen="1"/>
     </calibration>
   </chip>
   <chip name="at90can64">
@@ -1627,7 +1627,7 @@
       <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" bytelen="1" />
     </lock>
     <calibration init="0xFF" bytesize="1">
-      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
+      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" bytelen="1"/>
     </calibration>
   </chip>
   <chip name="at90can128">
@@ -1734,7 +1734,7 @@
       <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" bytelen="1" />
     </lock>
     <calibration init="0xFF" bytesize="1">
-      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
+      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" bytelen="1"/>
     </calibration>
   </chip>
   <chip name="at90pwm2(3)">
@@ -1848,7 +1848,7 @@
       <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" bytelen="1" />
     </lock>
     <calibration init="0xFF" bytesize="1">
-      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
+      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" bytelen="1"/>
     </calibration>
   </chip>
   <chip name="at90pwm2(3)B">
@@ -1962,7 +1962,7 @@
       <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" bytelen="1" />
     </lock>
     <calibration init="0xFF" bytesize="1">
-      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
+      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" bytelen="1"/>
     </calibration>
   </chip>
   <chip name="atmega8">
@@ -2080,10 +2080,10 @@
       <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" bytelen="1" />
     </lock>
     <calibration init="0xFFFFFFFF" bytesize="4">
-      <setting name="1.0 MHz" mask="0x000000FF" info="OSCCAL at 1.0 MHz" ban="*" radix="16" shift="0" />
-      <setting name="2.0 MHz" mask="0x0000FF00" info="OSCCAL at 2.0 MHz" ban="*" radix="16" shift="8" />
-      <setting name="4.0 MHz" mask="0x00FF0000" info="OSCCAL at 4.0 MHz" ban="*" radix="16" shift="16" />
-      <setting name="8.0 MHz" mask="0xFF000000" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="24" />
+      <setting name="1.0 MHz" mask="0x000000FF" info="OSCCAL at 1.0 MHz" ban="*" radix="16" shift="0" bytelen="1"/>
+      <setting name="2.0 MHz" mask="0x0000FF00" info="OSCCAL at 2.0 MHz" ban="*" radix="16" shift="8" bytelen="1"/>
+      <setting name="4.0 MHz" mask="0x00FF0000" info="OSCCAL at 4.0 MHz" ban="*" radix="16" shift="16" bytelen="1"/>
+      <setting name="8.0 MHz" mask="0xFF000000" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="24" bytelen="1"/>
     </calibration>
   </chip>
   <chip name="atmega16">
@@ -2201,10 +2201,10 @@
       <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" bytelen="1" />
     </lock>
     <calibration init="0xFFFFFFFF" bytesize="4">
-      <setting name="1.0 MHz" mask="0x000000FF" info="OSCCAL at 1.0 MHz" ban="*" radix="16" shift="0" />
-      <setting name="2.0 MHz" mask="0x0000FF00" info="OSCCAL at 2.0 MHz" ban="*" radix="16" shift="8" />
-      <setting name="4.0 MHz" mask="0x00FF0000" info="OSCCAL at 4.0 MHz" ban="*" radix="16" shift="16" />
-      <setting name="8.0 MHz" mask="0xFF000000" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="24" />
+      <setting name="1.0 MHz" mask="0x000000FF" info="OSCCAL at 1.0 MHz" ban="*" radix="16" shift="0" bytelen="1"/>
+      <setting name="2.0 MHz" mask="0x0000FF00" info="OSCCAL at 2.0 MHz" ban="*" radix="16" shift="8" bytelen="1"/>
+      <setting name="4.0 MHz" mask="0x00FF0000" info="OSCCAL at 4.0 MHz" ban="*" radix="16" shift="16" bytelen="1"/>
+      <setting name="8.0 MHz" mask="0xFF000000" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="24" bytelen="1"/>
     </calibration>
   </chip>
   <chip name="atmega32">
@@ -2322,10 +2322,10 @@
       <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" bytelen="1" />
     </lock>
     <calibration init="0xFFFFFFFF" bytesize="4">
-      <setting name="1.0 MHz" mask="0x000000FF" info="OSCCAL at 1.0 MHz" ban="*" radix="16" shift="0" />
-      <setting name="2.0 MHz" mask="0x0000FF00" info="OSCCAL at 2.0 MHz" ban="*" radix="16" shift="8" />
-      <setting name="4.0 MHz" mask="0x00FF0000" info="OSCCAL at 4.0 MHz" ban="*" radix="16" shift="16" />
-      <setting name="8.0 MHz" mask="0xFF000000" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="24" />
+      <setting name="1.0 MHz" mask="0x000000FF" info="OSCCAL at 1.0 MHz" ban="*" radix="16" shift="0" bytelen="1"/>
+      <setting name="2.0 MHz" mask="0x0000FF00" info="OSCCAL at 2.0 MHz" ban="*" radix="16" shift="8" bytelen="1"/>
+      <setting name="4.0 MHz" mask="0x00FF0000" info="OSCCAL at 4.0 MHz" ban="*" radix="16" shift="16" bytelen="1"/>
+      <setting name="8.0 MHz" mask="0xFF000000" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="24" bytelen="1"/>
     </calibration>
   </chip>
   <chip name="atmega48">
@@ -2427,7 +2427,7 @@
       <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" bytelen="1" />
     </lock>
     <calibration init="0xFF" bytesize="1">
-      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
+      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" bytelen="1"/>
     </calibration>
   </chip>
   <chip name="atmega88">
@@ -2546,7 +2546,7 @@
       <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" bytelen="1" />
     </lock>
     <calibration init="0xFF" bytesize="1">
-      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
+      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" bytelen="1"/>
     </calibration>
   </chip>
   <chip name="atmega168">
@@ -2665,7 +2665,7 @@
       <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" bytelen="1" />
     </lock>
     <calibration init="0xFF" bytesize="1">
-      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
+      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" bytelen="1"/>
     </calibration>
   </chip>
   <chip name="atmega162">
@@ -2780,7 +2780,7 @@
       <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" bytelen="1" />
     </lock>
     <calibration init="0xFF" bytesize="1">
-      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
+      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" bytelen="1"/>
     </calibration>
   </chip>
   <chip name="atmega164p">
@@ -2899,7 +2899,7 @@
       <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" bytelen="1" />
     </lock>
     <calibration init="0xFF" bytesize="1">
-      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
+      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" bytelen="1"/>
     </calibration>
   </chip>
   <chip name="atmega324p">
@@ -3018,7 +3018,7 @@
       <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" bytelen="1" />
     </lock>
     <calibration init="0xFF" bytesize="1">
-      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
+      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" bytelen="1"/>
     </calibration>
   </chip>
   <chip name="atmega644p">
@@ -3137,7 +3137,7 @@
       <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" bytelen="1" />
     </lock>
     <calibration init="0xFF" bytesize="1">
-      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
+      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" bytelen="1"/>
     </calibration>
   </chip>
   <chip name="atmega165">
@@ -3247,7 +3247,7 @@
       <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" bytelen="1" />
     </lock>
     <calibration init="0xFF" bytesize="1">
-      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
+      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" bytelen="1"/>
     </calibration>
   </chip>
   <chip name="atmega169">
@@ -3357,7 +3357,7 @@
       <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" bytelen="1" />
     </lock>
     <calibration init="0xFF" bytesize="1">
-      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
+      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" bytelen="1"/>
     </calibration>
   </chip>
   <chip name="atmega325">
@@ -3467,7 +3467,7 @@
       <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" bytelen="1" />
     </lock>
     <calibration init="0xFF" bytesize="1">
-      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
+      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" bytelen="1"/>
     </calibration>
   </chip>
   <chip name="atmega3250">
@@ -3577,7 +3577,7 @@
       <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" bytelen="1" />
     </lock>
     <calibration init="0xFF" bytesize="1">
-      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
+      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" bytelen="1"/>
     </calibration>
   </chip>
   <chip name="atmega64">
@@ -3698,10 +3698,10 @@
       <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" bytelen="1" />
     </lock>
     <calibration init="0xFFFFFFFF" bytesize="4">
-      <setting name="1.0 MHz" mask="0x000000FF" info="OSCCAL at 1.0 MHz" ban="*" radix="16" shift="0" />
-      <setting name="2.0 MHz" mask="0x0000FF00" info="OSCCAL at 2.0 MHz" ban="*" radix="16" shift="8" />
-      <setting name="4.0 MHz" mask="0x00FF0000" info="OSCCAL at 4.0 MHz" ban="*" radix="16" shift="16" />
-      <setting name="8.0 MHz" mask="0xFF000000" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="24" />
+      <setting name="1.0 MHz" mask="0x000000FF" info="OSCCAL at 1.0 MHz" ban="*" radix="16" shift="0" bytelen="1"/>
+      <setting name="2.0 MHz" mask="0x0000FF00" info="OSCCAL at 2.0 MHz" ban="*" radix="16" shift="8" bytelen="1"/>
+      <setting name="4.0 MHz" mask="0x00FF0000" info="OSCCAL at 4.0 MHz" ban="*" radix="16" shift="16" bytelen="1"/>
+      <setting name="8.0 MHz" mask="0xFF000000" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="24" bytelen="1"/>
     </calibration>
   </chip>
   <chip name="atmega645">
@@ -3811,7 +3811,7 @@
       <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" bytelen="1" />
     </lock>
     <calibration init="0xFF" bytesize="1">
-      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
+      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" bytelen="1"/>
     </calibration>
   </chip>
   <chip name="atmega6450">
@@ -3921,7 +3921,7 @@
       <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" bytelen="1" />
     </lock>
     <calibration init="0xFF" bytesize="1">
-      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
+      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" bytelen="1"/>
     </calibration>
   </chip>
   <chip name="atmega329">
@@ -4031,7 +4031,7 @@
       <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" bytelen="1" />
     </lock>
     <calibration init="0xFF" bytesize="1">
-      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
+      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" bytelen="1"/>
     </calibration>
   </chip>
   <chip name="atmega3290">
@@ -4141,7 +4141,7 @@
       <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" bytelen="1" />
     </lock>
     <calibration init="0xFF" bytesize="1">
-      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
+      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" bytelen="1"/>
     </calibration>
   </chip>
   <chip name="atmega649">
@@ -4251,7 +4251,7 @@
       <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" bytelen="1" />
     </lock>
     <calibration init="0xFF" bytesize="1">
-      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
+      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" bytelen="1"/>
     </calibration>
   </chip>
   <chip name="atmega6490">
@@ -4361,7 +4361,7 @@
       <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" bytelen="1" />
     </lock>
     <calibration init="0xFF" bytesize="1">
-      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
+      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" bytelen="1"/>
     </calibration>
   </chip>
   <chip name="atmega640">
@@ -4480,7 +4480,7 @@
       <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" bytelen="1" />
     </lock>
     <calibration init="0xFF" bytesize="1">
-      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
+      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" bytelen="1"/>
     </calibration>
   </chip>
   <chip name="atmega1280">
@@ -4599,7 +4599,7 @@
       <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" bytelen="1" />
     </lock>
     <calibration init="0xFF" bytesize="1">
-      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
+      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" bytelen="1"/>
     </calibration>
   </chip>
   <chip name="atmega1281">
@@ -4718,7 +4718,7 @@
       <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" bytelen="1" />
     </lock>
     <calibration init="0xFF" bytesize="1">
-      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
+      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" bytelen="1"/>
     </calibration>
   </chip>
   <chip name="atmega2560">
@@ -4837,7 +4837,7 @@
       <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" bytelen="1" />
     </lock>
     <calibration init="0xFF" bytesize="1">
-      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
+      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" bytelen="1"/>
     </calibration>
   </chip>
   <chip name="atmega2561">
@@ -4956,7 +4956,7 @@
       <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" bytelen="1" />
     </lock>
     <calibration init="0xFF" bytesize="1">
-      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" />
+      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" bytelen="1"/>
     </calibration>
   </chip>
   <chip name="atmega8515">
@@ -5073,10 +5073,10 @@
       <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" bytelen="1" />
     </lock>
     <calibration init="0xFFFFFFFF" bytesize="4">
-      <setting name="1.0 MHz" mask="0x000000FF" info="OSCCAL at 1.0 MHz" ban="*" radix="16" shift="0" />
-      <setting name="2.0 MHz" mask="0x0000FF00" info="OSCCAL at 2.0 MHz" ban="*" radix="16" shift="8" />
-      <setting name="4.0 MHz" mask="0x00FF0000" info="OSCCAL at 4.0 MHz" ban="*" radix="16" shift="16" />
-      <setting name="8.0 MHz" mask="0xFF000000" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="24" />
+      <setting name="1.0 MHz" mask="0x000000FF" info="OSCCAL at 1.0 MHz" ban="*" radix="16" shift="0" bytelen="1"/>
+      <setting name="2.0 MHz" mask="0x0000FF00" info="OSCCAL at 2.0 MHz" ban="*" radix="16" shift="8" bytelen="1"/>
+      <setting name="4.0 MHz" mask="0x00FF0000" info="OSCCAL at 4.0 MHz" ban="*" radix="16" shift="16" bytelen="1"/>
+      <setting name="8.0 MHz" mask="0xFF000000" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="24" bytelen="1"/>
     </calibration>
   </chip>
   <chip name="atmega8535">
@@ -5193,10 +5193,10 @@
       <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" bytelen="1" />
     </lock>
     <calibration init="0xFFFFFFFF" bytesize="4">
-      <setting name="1.0 MHz" mask="0x000000FF" info="OSCCAL at 1.0 MHz" ban="*" radix="16" shift="0" />
-      <setting name="2.0 MHz" mask="0x0000FF00" info="OSCCAL at 2.0 MHz" ban="*" radix="16" shift="8" />
-      <setting name="4.0 MHz" mask="0x00FF0000" info="OSCCAL at 4.0 MHz" ban="*" radix="16" shift="16" />
-      <setting name="8.0 MHz" mask="0xFF000000" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="24" />
+      <setting name="1.0 MHz" mask="0x000000FF" info="OSCCAL at 1.0 MHz" ban="*" radix="16" shift="0" bytelen="1"/>
+      <setting name="2.0 MHz" mask="0x0000FF00" info="OSCCAL at 2.0 MHz" ban="*" radix="16" shift="8" bytelen="1"/>
+      <setting name="4.0 MHz" mask="0x00FF0000" info="OSCCAL at 4.0 MHz" ban="*" radix="16" shift="16" bytelen="1"/>
+      <setting name="8.0 MHz" mask="0xFF000000" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="24" bytelen="1"/>
     </calibration>
   </chip>
   <chip name="atmega128">
@@ -5317,10 +5317,10 @@
       <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" bytelen="1" />
     </lock>
     <calibration init="0xFFFFFFFF" bytesize="4">
-      <setting name="1.0 MHz" mask="0x000000FF" info="OSCCAL at 1.0 MHz" ban="*" radix="16" shift="0" />
-      <setting name="2.0 MHz" mask="0x0000FF00" info="OSCCAL at 2.0 MHz" ban="*" radix="16" shift="8" />
-      <setting name="4.0 MHz" mask="0x00FF0000" info="OSCCAL at 4.0 MHz" ban="*" radix="16" shift="16" />
-      <setting name="8.0 MHz" mask="0xFF000000" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="24" />
+      <setting name="1.0 MHz" mask="0x000000FF" info="OSCCAL at 1.0 MHz" ban="*" radix="16" shift="0" bytelen="1"/>
+      <setting name="2.0 MHz" mask="0x0000FF00" info="OSCCAL at 2.0 MHz" ban="*" radix="16" shift="8" bytelen="1"/>
+      <setting name="4.0 MHz" mask="0x00FF0000" info="OSCCAL at 4.0 MHz" ban="*" radix="16" shift="16" bytelen="1"/>
+      <setting name="8.0 MHz" mask="0xFF000000" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="24" bytelen="1"/>
     </calibration>
   </chip>
 </series>

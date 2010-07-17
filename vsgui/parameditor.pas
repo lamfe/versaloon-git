@@ -80,6 +80,7 @@ type
     function ParseSettingMaskValue(Sender: TObject; var mask, value: array of BYTE): boolean;
     procedure ValueToSetting();
     procedure UpdateTitle();
+    procedure GetResult(var buff: array of BYTE);
     procedure SetParameter(var buff: array of BYTE; format: string;
       title: string; warnEnabled: boolean);
     function ParseLine(line: string): boolean;
@@ -480,6 +481,11 @@ begin
   SetLength(ParaEdtValueArr, 0);
 
   CloseAction := caHide;
+end;
+
+procedure TFormParaEditor.GetResult(var buff: array of BYTE);
+begin
+  BufferFunc_Copy(Param_Value, buff);
 end;
 
 procedure TFormParaEditor.UpdateTitle();
