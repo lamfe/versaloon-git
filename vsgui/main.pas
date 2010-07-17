@@ -1716,6 +1716,7 @@ begin
     if mrOk = FormParaEditor.ShowModal then
     begin
       // OK clicked, get value
+      FormParaEditor.GetResult(buffer);
       VSProg_GUIUpdateULCS(format, buffer, TLabeledEdit(Sender));
     end;
   end;
