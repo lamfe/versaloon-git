@@ -516,13 +516,9 @@ function TFormParaEditor.ParseSettingMaskValue(Sender: TObject;
 var
   i: integer;
   strTmp: string;
-  dest: array of BYTE;
 begin
   Result := False;
   strTmp := '';
-
-  SetLength(dest, Param_Bytelen);
-  BufferFunc_SetValue(dest, 0);
 
   if Sender is TComboBox then
   begin
@@ -551,14 +547,7 @@ begin
       Exit;
     end;
     BufferFunc_Shl(value, Param_Record.settings[i].shift);
-
-    BufferFunc_Copy(mask, dest);
-    BufferFunc_Not(dest);
-    BufferFunc_And(dest, value, dest);
-    if BufferFunc_NotZero(dest) then
-    begin
-      BufferFunc_And(value, mask, value);
-    end;
+    BufferFunc_And(value, mask, value);
   end
   else if Param_Record.settings[i].use_checkbox then
   begin
