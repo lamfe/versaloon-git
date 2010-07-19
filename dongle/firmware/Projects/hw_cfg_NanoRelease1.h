@@ -393,25 +393,29 @@
 #define LPCICP_RST_SETINPUT()			SW_RST_SETINPUT_PU()
 
 /****************************** IIC ******************************/
+#define IIC_PORT						JTAG_TAP_PORT
+#define IIC_SCL_PIN						JTAG_TAP_TCK_PIN
+#define IIC_SDA_PIN						JTAG_TAP_TDI_PIN
+
 #define IIC_PULL_INIT()					
 
-#define IIC_SCL_SETOUTPUT()				JTAG_TAP_TCK_SETOUTPUT()
-#define IIC_SCL_SETINPUT()				GPIO_Dir(JTAG_TAP_PORT, GPIO_MODE_IPU, JTAG_TAP_TCK_PIN)
+#define IIC_SCL_SETOUTPUT()				GPIO_Dir(IIC_PORT, GPIO_MODE_OUT_PP, IIC_SCL_PIN)
+#define IIC_SCL_SETINPUT()				GPIO_Dir(IIC_PORT, GPIO_MODE_IPU, IIC_SCL_PIN)
 #define IIC_SCL_SET()					IIC_SCL_SETINPUT()
 #define IIC_SCL_CLR()					do{\
-											JTAG_TAP_TCK_CLR();\
+											GPIO_ClrPins(IIC_PORT, GPIO_PIN_GetMask(IIC_SCL_PIN));\
 											IIC_SCL_SETOUTPUT();\
 										}while(0)
-#define IIC_SCL_GET()					GPIO_GetInPins(JTAG_TAP_PORT, GPIO_PIN_GetMask(JTAG_TAP_TCK_PIN))
+#define IIC_SCL_GET()					GPIO_GetInPins(IIC_PORT, GPIO_PIN_GetMask(IIC_SCL_PIN))
 
-#define IIC_SDA_SETOUTPUT()				JTAG_TAP_TDI_SETOUTPUT()
-#define IIC_SDA_SETINPUT()				GPIO_Dir(JTAG_TAP_PORT, GPIO_MODE_IPU, JTAG_TAP_TDI_PIN)
+#define IIC_SDA_SETOUTPUT()				GPIO_Dir(IIC_PORT, GPIO_MODE_OUT_PP, IIC_SDA_PIN)
+#define IIC_SDA_SETINPUT()				GPIO_Dir(IIC_PORT, GPIO_MODE_IPU, IIC_SDA_PIN)
 #define IIC_SDA_SET()					IIC_SDA_SETINPUT()
 #define IIC_SDA_CLR()					do{\
-											JTAG_TAP_TDI_CLR();\
+											GPIO_ClrPins(IIC_PORT, GPIO_PIN_GetMask(IIC_SDA_PIN));\
 											IIC_SDA_SETOUTPUT();\
 										}while(0)
-#define IIC_SDA_GET()					GPIO_GetInPins(JTAG_TAP_PORT, GPIO_PIN_GetMask(JTAG_TAP_TDI_PIN))
+#define IIC_SDA_GET()					GPIO_GetInPins(IIC_PORT, GPIO_PIN_GetMask(IIC_SDA_PIN))
 
 /****************************** USART ******************************/
 // to change USART port below, modify the interrupt handler
