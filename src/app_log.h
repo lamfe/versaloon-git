@@ -58,16 +58,16 @@ extern int verbosity_stack[1];
 		do{\
 			if (verbosity >= ERROR_LEVEL)\
 			{\
-				fprintf(stderr, "Error:  ");\
-				fprintf(stderr, _GETTEXT(format LOG_LINE_END), ##__VA_ARGS__);\
+				fprintf(stderr, _GETTEXT("Error:  " format LOG_LINE_END), \
+						##__VA_ARGS__);\
 			}\
 		}while(0)
 #	define LOG_WARNING(format, ...)	\
 		do{\
 			if (verbosity >= WARNING_LEVEL)\
 			{\
-				fprintf(stdout, "Warning:");\
-				fprintf(stdout, _GETTEXT(format LOG_LINE_END), ##__VA_ARGS__);\
+				fprintf(stdout, _GETTEXT("Warning:" format LOG_LINE_END), \
+						##__VA_ARGS__);\
 				fflush(stdout);\
 			}\
 		}while(0)
@@ -75,8 +75,8 @@ extern int verbosity_stack[1];
 		do{\
 			if (verbosity >= INFO_LEVEL)\
 			{\
-				fprintf(stdout, "Info:   ");\
-				fprintf(stdout, _GETTEXT(format LOG_LINE_END), ##__VA_ARGS__);\
+				fprintf(stdout, _GETTEXT("Info:   " format LOG_LINE_END), \
+						##__VA_ARGS__);\
 				fflush(stdout);\
 			}\
 		}while(0)
@@ -84,15 +84,15 @@ extern int verbosity_stack[1];
 		do{\
 			if (verbosity >= DEBUG_LEVEL)\
 			{\
-				fprintf(stdout, "Debug:  ");\
-				fprintf(stdout, _GETTEXT(format LOG_LINE_END), ##__VA_ARGS__);\
+				fprintf(stdout, _GETTEXT("Debug:  " format LOG_LINE_END), \
+						##__VA_ARGS__);\
 				fflush(stdout);\
 			}\
 		}while(0)
 #	define LOG_BUG(format, ...)		\
 		do{\
-			fprintf(stderr, "Bug:    ");\
-			fprintf(stderr, _GETTEXT(format LOG_LINE_END), ##__VA_ARGS__);\
+			fprintf(stderr, _GETTEXT("Bug:    " format LOG_LINE_END), \
+					##__VA_ARGS__);\
 		}while(0)
 #elif 1
 #	define LOG_ERROR(format, ...)	\
