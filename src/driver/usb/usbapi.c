@@ -187,6 +187,10 @@ usb_dev_handle* find_usb_device(uint16_t VID, uint16_t PID, uint8_t interface,
 					continue;
 				}
 				
+#if !IS_WIN32
+				usb_reset(usb);
+#endif
+				
 				// usb_set_configuration required under win32
 				config_value = dev->config[0].bConfigurationValue;
 				if (usb_set_configuration(usb, config_value) != 0)
