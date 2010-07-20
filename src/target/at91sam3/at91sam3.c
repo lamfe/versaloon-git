@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 by Simon Qian <SimonQian@SimonQian.com>            *
+ *   Copyright (C) 2009 - 2010 by Simon Qian <SimonQian@SimonQian.com>     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -90,7 +90,7 @@ PARSE_ARGUMENT_HANDLER(at91sam3)
 	case 'm':
 		if (NULL == argu)
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), cmd);
+			LOG_ERROR(ERRMSG_INVALID_OPTION, cmd);
 			return ERRCODE_INVALID_OPTION;
 		}
 		mode = (uint8_t)strtoul(argu, NULL,0);

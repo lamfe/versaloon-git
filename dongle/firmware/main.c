@@ -1,12 +1,12 @@
 /**************************************************************************
- *  Copyright (C) 2008 by Simon Qian                                      *
+ *  Copyright (C) 2008 - 2010 by Simon Qian                               *
  *  SimonQian@SimonQian.com                                               *
  *                                                                        *
  *  Project:    Versaloon                                                 *
  *  File:       main.c                                                    *
  *  Author:     SimonQian                                                 *
  *  Versaion:   See changelog                                             *
- *  Purpose:    main .c file                                              *
+ *  Purpose:    main.c file                                               *
  *  License:    See license                                               *
  *------------------------------------------------------------------------*
  *  Change Log:                                                           *

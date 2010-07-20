@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 by Simon Qian <SimonQian@SimonQian.com>            *
+ *   Copyright (C) 2009 - 2010 by Simon Qian <SimonQian@SimonQian.com>     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -188,16 +188,16 @@ static RESULT at91sam3swj_debug_info(void)
 	buffer = (uint8_t *)malloc(sizeof(iap_code) + 256);
 	if (NULL == buffer)
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 		ret = ERRCODE_NOT_ENOUGH_MEMORY;
 		goto end;
 	}
 	
-	LOG_INFO(_GETTEXT("report to author on this message.\n"));
+	LOG_INFO("report to author on this message.");
 	
 	if (ERROR_OK != cm3_dp_halt())
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "halt at91sam3");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "halt at91sam3");
 		ret = ERRCODE_FAILURE_OPERATION;
 		goto end;
 	}
@@ -207,42 +207,42 @@ static RESULT at91sam3swj_debug_info(void)
 		reg = 0;
 		if (ERROR_OK != cm3_read_core_register(i, &reg))
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read register");
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read register");
 			ret = ERRCODE_FAILURE_OPERATION;
 			goto end;
 		}
-		LOG_INFO("r%d: %08X\n", i, reg);
+		LOG_INFO("r%d: %08X", i, reg);
 	}
 	reg = 0;
 	if (ERROR_OK != cm3_read_core_register(CM3_COREREG_SP, &reg))
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read sp");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read sp");
 		ret = ERRCODE_FAILURE_OPERATION;
 		goto end;
 	}
-	LOG_INFO("sp: %08X\n", reg);
+	LOG_INFO(INFOMSG_REG_08X, "sp", reg);
 	reg = 0;
 	if (ERROR_OK != cm3_read_core_register(CM3_COREREG_LR, &reg))
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read lr");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read lr");
 		ret = ERRCODE_FAILURE_OPERATION;
 		goto end;
 	}
-	LOG_INFO("lr: %08X\n", reg);
+	LOG_INFO(INFOMSG_REG_08X, "lr", reg);
 	reg = 0;
 	if (ERROR_OK != cm3_read_core_register(CM3_COREREG_PC, &reg))
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read pc");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read pc");
 		ret = ERRCODE_FAILURE_OPERATION;
 		goto end;
 	}
-	LOG_INFO("pc: %08X\n", reg);
+	LOG_INFO(INFOMSG_REG_08X, "pc", reg);
 	
-	LOG_INFO("SRAM dump at 0x%08X:\n", AT91SAM3_IAP_BASE);
+	LOG_INFO("SRAM dump at 0x%08X:", AT91SAM3_IAP_BASE);
 	if (ERROR_OK != adi_memap_read_buf(AT91SAM3_IAP_BASE, buffer, 
 													sizeof(iap_code) + 256))
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read sram");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read sram");
 		ret = ERRCODE_FAILURE_OPERATION;
 		goto end;
 	}
@@ -278,7 +278,7 @@ static RESULT at91sam3swj_iap_run(struct at91sam3swj_iap_command_t *cmd)
 	if (ERROR_OK != adi_memap_write_buf(AT91SAM3_IAP_COMMAND_ADDR, 
 										(uint8_t*)buff_tmp, sizeof(buff_tmp)))
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "load iap cmd to SRAM");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "load iap cmd to SRAM");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
@@ -293,13 +293,13 @@ static RESULT at91sam3swj_iap_poll_result(struct at91sam3swj_iap_reply_t *reply,
 	
 	if (NULL == fail)
 	{
-		LOG_BUG(_GETTEXT(ERRMSG_INVALID_PARAMETER), __FUNCTION__);
+		LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
 		return ERRCODE_INVALID_PARAMETER;
 	}
 	
 	if ((reply != NULL) && (reply->data_num > (dimof(buff_tmp) - 1)))
 	{
-		LOG_BUG(_GETTEXT("buff size is not enough for this call.\n"));
+		LOG_BUG("buff size is not enough for this call.");
 		return ERROR_FAIL;
 	}
 	
@@ -316,7 +316,7 @@ static RESULT at91sam3swj_iap_poll_result(struct at91sam3swj_iap_reply_t *reply,
 										(uint8_t *)buff_tmp, data_size))
 	{
 		*fail = 1;
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read iap sync");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read iap sync");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	// buff_tmp[0] is sync, which is eefc_frr
@@ -326,8 +326,8 @@ static RESULT at91sam3swj_iap_poll_result(struct at91sam3swj_iap_reply_t *reply,
 		{
 			*fail = 1;
 			at91sam3swj_debug_info();
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ERRCODE), 
-					  "call iap", buff_tmp[1]);
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION_ERRCODE, "call iap", 
+						buff_tmp[1]);
 			return ERRCODE_FAILURE_OPERATION;
 		}
 		
@@ -354,8 +354,7 @@ static RESULT at91sam3swj_iap_wait_ready(struct at91sam3swj_iap_reply_t *reply)
 		{
 			if (fail)
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-							"poll iap result");
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "poll iap result");
 				return ERROR_FAIL;
 			}
 			else
@@ -365,7 +364,7 @@ static RESULT at91sam3swj_iap_wait_ready(struct at91sam3swj_iap_reply_t *reply)
 				if ((end - start) > 1000)
 				{
 					at91sam3swj_debug_info();
-					LOG_ERROR(_GETTEXT("Time out when wait for iap ready\n"));
+					LOG_ERROR(ERRMSG_TIMEOUT, "wait for iap ready");
 					return ERRCODE_FAILURE_OPERATION;
 				}
 			}
@@ -385,7 +384,7 @@ static RESULT at91sam3swj_iap_call(struct at91sam3swj_iap_command_t *cmd,
 	if ((ERROR_OK != at91sam3swj_iap_run(cmd)) 
 		|| (ERROR_OK != at91sam3swj_iap_wait_ready(reply)))
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "run iap command");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "run iap command");
 		return ERROR_FAIL;
 	}
 	
@@ -403,7 +402,7 @@ static RESULT at91sam3swj_iap_call(struct at91sam3swj_iap_command_t *cmd,
 	if (ERROR_OK != adi_memap_write_reg(
 							cmd->eefc_base + AT91SAM3_EEFC_FCR_OFFSET, &reg, 1))
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "write fcr");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "write fcr");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
@@ -414,7 +413,7 @@ static RESULT at91sam3swj_iap_call(struct at91sam3swj_iap_command_t *cmd,
 		if (ERROR_OK != adi_memap_read_reg(
 							cmd->eefc_base + AT91SAM3_EEFC_FSR_OFFSET, &reg, 1))
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read fsr");
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read fsr");
 			return ERRCODE_FAILURE_OPERATION;
 		}
 		end = get_time_in_ms();
@@ -432,7 +431,7 @@ static RESULT at91sam3swj_iap_call(struct at91sam3swj_iap_command_t *cmd,
 			if (ERROR_OK != adi_memap_read_reg(
 				cmd->eefc_base + AT91SAM3_EEFC_FRR_OFFSET, &reply->data[i], 1))
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read frr");
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read frr");
 				return ERRCODE_FAILURE_OPERATION;
 			}
 		}
@@ -452,7 +451,7 @@ ENTER_PROGRAM_MODE_HANDLER(at91sam3swj)
 	
 	if (ERROR_OK != cm3_dp_halt())
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "halt	at91sam3");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "halt at91sam3");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
@@ -462,7 +461,7 @@ ENTER_PROGRAM_MODE_HANDLER(at91sam3swj)
 	reg = AT91SAM3_SRAM_ADDR + 1024;
 	if (ERROR_OK != cm3_write_core_register(CM3_COREREG_SP, &reg))
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "write SP");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "write SP");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
@@ -470,7 +469,7 @@ ENTER_PROGRAM_MODE_HANDLER(at91sam3swj)
 	if (ERROR_OK != adi_memap_write_buf(AT91SAM3_IAP_BASE, (uint8_t*)iap_code, 
 											sizeof(iap_code)))
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "load iap_code to SRAM");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "load iap_code to SRAM");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
@@ -478,13 +477,13 @@ ENTER_PROGRAM_MODE_HANDLER(at91sam3swj)
 	reg = AT91SAM3_IAP_BASE + 1;
 	if (ERROR_OK != cm3_write_core_register(CM3_COREREG_PC, &reg))
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "write PC");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "write PC");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
 	if (ERROR_OK != cm3_dp_run())
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "run iap");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "run iap");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
@@ -499,7 +498,6 @@ ENTER_PROGRAM_MODE_HANDLER(at91sam3swj)
 		if (ERROR_OK != adi_memap_read_reg(
 						command.eefc_base + AT91SAM3_EEFC_FSR_OFFSET, &reg, 1))
 		{
-			LOG_POP();
 			reg = 0;
 		}
 		LOG_POP();
@@ -509,7 +507,7 @@ ENTER_PROGRAM_MODE_HANDLER(at91sam3swj)
 			command.iap_command = AT91SAM3_EEFC_CMD_SPUI;
 			if (ERROR_OK != at91sam3swj_iap_call(&command, NULL))
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "stop eefc");
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "stop eefc");
 				return ERRCODE_FAILURE_OPERATION;
 			}
 			
@@ -518,12 +516,12 @@ ENTER_PROGRAM_MODE_HANDLER(at91sam3swj)
 			if (ERROR_OK != adi_memap_read_reg(
 						command.eefc_base + AT91SAM3_EEFC_FSR_OFFSET, &reg, 1))
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read fsr");
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read fsr");
 				return ERRCODE_FAILURE_OPERATION;
 			}
 			if (!(reg & 1))
 			{
-				LOG_ERROR(_GETTEXT("eefc is busy"));
+				LOG_ERROR("eefc is busy");
 				return ERROR_FAIL;
 			}
 		}
@@ -541,25 +539,25 @@ LEAVE_PROGRAM_MODE_HANDLER(at91sam3swj)
 	{
 		if (ERROR_OK != cm3_dp_halt())
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "halt at91sam3");
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "halt at91sam3");
 			return ERRCODE_FAILURE_OPERATION;
 		}
 		if (ERROR_OK != 
 				cm3_write_core_register(CM3_COREREG_PC, &cm3_execute_addr))
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "write PC");
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "write PC");
 			return ERRCODE_FAILURE_OPERATION;
 		}
 		reg = 0;
 		if ((ERROR_OK != cm3_read_core_register(CM3_COREREG_PC, &reg)) 
 			|| (reg != cm3_execute_addr))
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "verify written PC");
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "verify written PC");
 			return ERRCODE_FAILURE_OPERATION;
 		}
 		if (ERROR_OK != cm3_dp_run())
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "run code");
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "run code");
 			return ERRCODE_FAILURE_OPERATION;
 		}
 	}
@@ -602,7 +600,7 @@ do_erase:
 			command.address_of_data = AT91SAM3_IAP_DATA_ADDR;
 			if (ERROR_OK != at91sam3swj_iap_call(&command, NULL))
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "erase target");
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "erase target");
 				return ERRCODE_FAILURE_OPERATION;
 			}
 		}
@@ -655,18 +653,18 @@ do_write:
 #if 1
 		if (size != 256)
 		{
-			LOG_ERROR(_GETTEXT("invalid flash page size: %d.\n"), size);
+			LOG_ERROR(ERRMSG_INVALID_VALUE, size, "flash_page");
 			return ERROR_FAIL;
 		}
 		if (addr & 0xFF)
 		{
-			LOG_ERROR(_GETTEXT("invalid flash address: 0x%08X.\n"), addr);
+			LOG_ERROR(ERRMSG_INVALID_HEX, addr, "flash_address");
 			return ERROR_FAIL;
 		}
 		
 		if (ERROR_OK != adi_memap_write_buf(addr, buff, size))
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "write flash buffer");
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "write flash buffer");
 			return ERRCODE_FAILURE_OPERATION;
 		}
 		
@@ -679,14 +677,14 @@ do_write:
 		command.address_of_data = AT91SAM3_IAP_DATA_ADDR;
 		if (ERROR_OK != at91sam3swj_iap_call(&command, NULL))
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "run iap");
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "run iap");
 			return ERRCODE_FAILURE_OPERATION;
 		}
 #else
 		// check
 		if ((page_size != 256) || (addr % page_size) || (size % page_size))
 		{
-			LOG_BUG("invalid parameter for lpc1000 flash write operation\n");
+			LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
 			return ERROR_FAIL;
 		}
 		
@@ -694,7 +692,7 @@ do_write:
 		if (ERROR_OK != adi_memap_write_buf(AT91SAM3_IAP_DATA_ADDR, buff, 
 												page_size))
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "load data to SRAM");
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "load data to SRAM");
 			return ERRCODE_FAILURE_OPERATION;
 		}
 		
@@ -708,7 +706,7 @@ do_write:
 		command.address_of_data = AT91SAM3_IAP_DATA_ADDR;
 		if (ERROR_OK != at91sam3swj_iap_run(&command))
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "run iap");
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "run iap");
 			return ERRCODE_FAILURE_OPERATION;
 		}
 		size -= page_size;
@@ -722,11 +720,10 @@ do_write:
 			// write buff to target SRAM
 			if (pingpong & 1)
 			{
-				if (ERROR_OK != adi_memap_write_buf(AT91SAM3_IAP_DATA_ADDR + page_size, 
-														buff, page_size))
+				if (ERROR_OK != adi_memap_write_buf(
+						AT91SAM3_IAP_DATA_ADDR + page_size, buff, page_size))
 				{
-					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-								"load data to SRAM");
+					LOG_ERROR(ERRMSG_FAILURE_OPERATION, "load data to SRAM");
 					return ERRCODE_FAILURE_OPERATION;
 				}
 			}
@@ -735,8 +732,7 @@ do_write:
 				if (ERROR_OK != adi_memap_write_buf(AT91SAM3_IAP_DATA_ADDR, 
 														buff, page_size))
 				{
-					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-								"load data to SRAM");
+					LOG_ERROR(ERRMSG_FAILURE_OPERATION, "load data to SRAM");
 					return ERRCODE_FAILURE_OPERATION;
 				}
 			}
@@ -744,7 +740,7 @@ do_write:
 			// wait ready
 			if (ERROR_OK != at91sam3swj_iap_wait_ready(NULL))
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "run iap");
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "run iap");
 				return ERRCODE_FAILURE_OPERATION;
 			}
 			
@@ -765,7 +761,7 @@ do_write:
 			}
 			if (ERROR_OK != at91sam3swj_iap_run(&command))
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "run iap");
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "run iap");
 				return ERRCODE_FAILURE_OPERATION;
 			}
 			
@@ -775,7 +771,7 @@ do_write:
 		// wait ready
 		if (ERROR_OK != at91sam3swj_iap_wait_ready(NULL))
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "run iap");
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "run iap");
 			return ERRCODE_FAILURE_OPERATION;
 		}
 		pgbar_update(page_size);
@@ -800,9 +796,10 @@ READ_TARGET_HANDLER(at91sam3swj)
 	switch (area)
 	{
 	case CHIPID_CHAR:
-		if (ERROR_OK != adi_memap_read_reg(AT91SAM3_CHIPID_CIDR, (uint32_t*)buff, 1))
+		if (ERROR_OK != adi_memap_read_reg(AT91SAM3_CHIPID_CIDR, 
+												(uint32_t*)buff, 1))
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "address of iap_entry");
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "address of iap_entry");
 			return ERRCODE_FAILURE_OPERATION;
 		}
 		break;
@@ -823,8 +820,8 @@ READ_TARGET_HANDLER(at91sam3swj)
 			if (ERROR_OK != adi_memap_read_buf(addr, buff, 
 												   cur_block_size))
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ADDR), 
-						  "write flash block", addr);
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION_ADDR, "write flash block", 
+							addr);
 				ret = ERRCODE_FAILURE_OPERATION_ADDR;
 				break;
 			}
@@ -836,7 +833,7 @@ READ_TARGET_HANDLER(at91sam3swj)
 		}
 		break;
 	case LOCK_CHAR:
-		LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT), "lock-reading");
+		LOG_ERROR(ERRMSG_NOT_SUPPORT, "lock-reading");
 		ret = ERROR_FAIL;
 		break;
 	default:

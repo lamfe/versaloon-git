@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 by Simon Qian <SimonQian@SimonQian.com>            *
+ *   Copyright (C) 2009 - 2010 by Simon Qian <SimonQian@SimonQian.com>     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -92,13 +92,13 @@ RESULT tap_end_state(enum tap_state_t state)
 		}
 		else
 		{
-			LOG_BUG(_GETTEXT("can not shift to %s\n"), tap_state_name[state]);
+			LOG_BUG("can not shift to %s", tap_state_name[state]);
 			return ERROR_FAIL;
 		}
 	}
 	else
 	{
-		LOG_BUG(_GETTEXT("%d is not a valid state\n"), state);
+		LOG_BUG("%d is not a valid state", state);
 		return ERROR_FAIL;
 	}
 }
@@ -109,8 +109,7 @@ RESULT tap_state_move(void)
 
 	if ((cur_state == DRSHIFT) || (cur_state == IRSHIFT))
 	{
-		LOG_BUG(_GETTEXT("move from %s is invalid\n"), 
-				tap_state_name[cur_state]);
+		LOG_BUG("move from %s is invalid", tap_state_name[cur_state]);
 		return ERROR_FAIL;
 	}
 	
@@ -164,7 +163,7 @@ RESULT tap_path_move(uint32_t num_states, enum tap_state_t *path)
 	}
 	else
 	{
-		LOG_ERROR("path move is not supported\n");
+		LOG_ERROR("path move is not supported");
 		return ERROR_FAIL;
 	}
 }
@@ -187,12 +186,11 @@ RESULT tap_runtest(enum tap_state_t run_state, enum tap_state_t end_state,
 	{
 		if (tap_state_is_valid(run_state))
 		{
-			LOG_ERROR(_GETTEXT("unstable run_state: %s"), 
-					  tap_state_name[run_state]);
+			LOG_ERROR("unstable run_state: %s", tap_state_name[run_state]);
 		}
 		else
 		{
-			LOG_ERROR(_GETTEXT("invalid run_state: %d"), run_state);
+			LOG_ERROR("invalid run_state: %d", run_state);
 		}
 		
 		return ERROR_FAIL;
@@ -201,12 +199,11 @@ RESULT tap_runtest(enum tap_state_t run_state, enum tap_state_t end_state,
 	{
 		if (tap_state_is_valid(end_state))
 		{
-			LOG_ERROR(_GETTEXT("unstable end_state: %s"), 
-					  tap_state_name[end_state]);
+			LOG_ERROR("unstable end_state: %s", tap_state_name[end_state]);
 		}
 		else
 		{
-			LOG_ERROR(_GETTEXT("invalid end_state: %d"), end_state);
+			LOG_ERROR("invalid end_state: %d", end_state);
 		}
 		
 		return ERROR_FAIL;

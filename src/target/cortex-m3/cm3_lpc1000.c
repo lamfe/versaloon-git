@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 by Simon Qian <SimonQian@SimonQian.com>            *
+ *   Copyright (C) 2009 - 2010 by Simon Qian <SimonQian@SimonQian.com>     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -133,16 +133,16 @@ static RESULT lpc1000swj_debug_info(void)
 	buffer = (uint8_t *)malloc(sizeof(iap_code));
 	if (NULL == buffer)
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 		ret = ERRCODE_NOT_ENOUGH_MEMORY;
 		goto end;
 	}
 	
-	LOG_INFO(_GETTEXT("report to author on this message.\n"));
+	LOG_INFO("report to author on this message.");
 	
 	if (ERROR_OK != cm3_dp_halt())
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "halt lpc1000");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "halt lpc1000");
 		ret = ERRCODE_FAILURE_OPERATION;
 		goto end;
 	}
@@ -152,42 +152,42 @@ static RESULT lpc1000swj_debug_info(void)
 		reg = 0;
 		if (ERROR_OK != cm3_read_core_register(i, &reg))
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read register");
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read register");
 			ret = ERRCODE_FAILURE_OPERATION;
 			goto end;
 		}
-		LOG_INFO("r%d: %08X\n", i, reg);
+		LOG_INFO("r%d: %08X", i, reg);
 	}
 	reg = 0;
 	if (ERROR_OK != cm3_read_core_register(CM3_COREREG_SP, &reg))
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read sp");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read sp");
 		ret = ERRCODE_FAILURE_OPERATION;
 		goto end;
 	}
-	LOG_INFO("sp: %08X\n", reg);
+	LOG_INFO(INFOMSG_REG_08X, "sp", reg);
 	reg = 0;
 	if (ERROR_OK != cm3_read_core_register(CM3_COREREG_LR, &reg))
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read lr");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read lr");
 		ret = ERRCODE_FAILURE_OPERATION;
 		goto end;
 	}
-	LOG_INFO("lr: %08X\n", reg);
+	LOG_INFO(INFOMSG_REG_08X, "lr", reg);
 	reg = 0;
 	if (ERROR_OK != cm3_read_core_register(CM3_COREREG_PC, &reg))
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read pc");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read pc");
 		ret = ERRCODE_FAILURE_OPERATION;
 		goto end;
 	}
-	LOG_INFO("pc: %08X\n", reg);
+	LOG_INFO(INFOMSG_REG_08X, "pc", reg);
 	
-	LOG_INFO("SRAM dump at 0x%08X:\n", LPC1000_IAP_BASE);
+	LOG_INFO("SRAM dump at 0x%08X:", LPC1000_IAP_BASE);
 	if (ERROR_OK != adi_memap_read_buf(LPC1000_IAP_BASE, buffer, 
 													sizeof(iap_code)))
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read sram");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read sram");
 		ret = ERRCODE_FAILURE_OPERATION;
 		goto end;
 	}
@@ -221,7 +221,7 @@ static RESULT lpc1000swj_iap_run(uint32_t cmd, uint32_t param_table[5])
 	if (ERROR_OK != adi_memap_write_buf(LPC1000_IAP_COMMAND_ADDR, 
 										(uint8_t*)buff_tmp, sizeof(buff_tmp)))
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "load iap cmd to SRAM");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "load iap cmd to SRAM");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
@@ -240,7 +240,7 @@ static RESULT lpc1000swj_iap_poll_result(uint32_t result_table[4], uint8_t *fail
 										(uint8_t *)buff_tmp, 24))
 	{
 		*fail = 1;
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read iap sync");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read iap sync");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	if (0 == buff_tmp[0])
@@ -249,8 +249,8 @@ static RESULT lpc1000swj_iap_poll_result(uint32_t result_table[4], uint8_t *fail
 		{
 			*fail = 1;
 			lpc1000swj_debug_info();
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ERRCODE), 
-					  "call iap", buff_tmp[1]);
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION_ERRCODE, "call iap", 
+						buff_tmp[1]);
 			return ERRCODE_FAILURE_OPERATION;
 		}
 		
@@ -273,7 +273,7 @@ static RESULT lpc1000swj_iap_wait_ready(uint32_t result_table[4])
 		{
 			if (fail)
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "poll iap result");
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "poll iap result");
 				return ERROR_FAIL;
 			}
 			else
@@ -283,7 +283,7 @@ static RESULT lpc1000swj_iap_wait_ready(uint32_t result_table[4])
 				if ((end - start) > 1000)
 				{
 					lpc1000swj_debug_info();
-					LOG_ERROR(_GETTEXT("Time out when wait for iap ready\n"));
+					LOG_ERROR(ERRMSG_TIMEOUT, "wait for iap ready");
 					return ERRCODE_FAILURE_OPERATION;
 				}
 			}
@@ -303,7 +303,7 @@ static RESULT lpc1000swj_iap_call(uint32_t cmd, uint32_t param_table[5],
 	if ((ERROR_OK != lpc1000swj_iap_run(cmd, param_table)) 
 		|| (ERROR_OK != lpc1000swj_iap_wait_ready(result_table)))
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "run iap command");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "run iap command");
 		return ERROR_FAIL;
 	}
 	
@@ -323,7 +323,7 @@ ENTER_PROGRAM_MODE_HANDLER(lpc1000swj)
 	
 	if (ERROR_OK != cm3_dp_halt())
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "halt lpc1000");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "halt lpc1000");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
@@ -331,7 +331,7 @@ ENTER_PROGRAM_MODE_HANDLER(lpc1000swj)
 	reg = LPC1000_SRAM_ADDR + 1024;
 	if (ERROR_OK != cm3_write_core_register(CM3_COREREG_SP, &reg))
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "write SP");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "write SP");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
@@ -339,7 +339,7 @@ ENTER_PROGRAM_MODE_HANDLER(lpc1000swj)
 	if (ERROR_OK != adi_memap_write_buf(LPC1000_IAP_BASE, (uint8_t*)iap_code, 
 											sizeof(iap_code)))
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "load iap_code to SRAM");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "load iap_code to SRAM");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
@@ -347,13 +347,13 @@ ENTER_PROGRAM_MODE_HANDLER(lpc1000swj)
 	reg = LPC1000_IAP_BASE + 1;
 	if (ERROR_OK != cm3_write_core_register(CM3_COREREG_PC, &reg))
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "write PC");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "write PC");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
 	if (ERROR_OK != cm3_dp_run())
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "run iap");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "run iap");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
@@ -369,25 +369,25 @@ LEAVE_PROGRAM_MODE_HANDLER(lpc1000swj)
 	{
 		if (ERROR_OK != cm3_dp_halt())
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "halt lpc1000");
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "halt lpc1000");
 			return ERRCODE_FAILURE_OPERATION;
 		}
 		if (ERROR_OK != 
 				cm3_write_core_register(CM3_COREREG_PC, &cm3_execute_addr))
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "write PC");
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "write PC");
 			return ERRCODE_FAILURE_OPERATION;
 		}
 		reg = 0;
 		if ((ERROR_OK != cm3_read_core_register(CM3_COREREG_PC, &reg)) 
 			|| (reg != cm3_execute_addr))
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "verify written PC");
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "verify written PC");
 			return ERRCODE_FAILURE_OPERATION;
 		}
 		if (ERROR_OK != cm3_dp_run())
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "run code");
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "run code");
 			return ERRCODE_FAILURE_OPERATION;
 		}
 	}
@@ -416,7 +416,7 @@ ERASE_TARGET_HANDLER(lpc1000swj)
 		if (ERROR_OK != lpc1000swj_iap_call(LPC1000_IAPCMD_PREPARE_SECTOR, 
 												iap_cmd_param, iap_reply))
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "prepare sectors");
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "prepare sectors");
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
@@ -429,7 +429,7 @@ ERASE_TARGET_HANDLER(lpc1000swj)
 		if (ERROR_OK != lpc1000swj_iap_call(LPC1000_IAPCMD_ERASE_SECTOR, 
 												iap_cmd_param, iap_reply))
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "erase sectors");
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "erase sectors");
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
@@ -461,7 +461,7 @@ WRITE_TARGET_HANDLER(lpc1000swj)
 			if ((addr & 0xFF) 
 				|| ((size != 256) && (size != 512) && (size != 1024) && (size != 4096)))
 			{
-				LOG_BUG("invalid parameter for lpc1000 flash write operation\n");
+				LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
 				return ERROR_FAIL;
 			}
 			
@@ -474,14 +474,14 @@ WRITE_TARGET_HANDLER(lpc1000swj)
 			if (ERROR_OK != lpc1000swj_iap_call(LPC1000_IAPCMD_PREPARE_SECTOR, 
 													iap_cmd_param, iap_reply))
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "prepare sectors");
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "prepare sectors");
 				return ERRCODE_FAILURE_OPERATION;
 			}
 			
 			// write buff to target SRAM
 			if (ERROR_OK != adi_memap_write_buf(LPC1000_SRAM_ADDR + 1024, buff, size))
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "load data to SRAM");
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "load data to SRAM");
 				return ERRCODE_FAILURE_OPERATION;
 			}
 			
@@ -494,7 +494,7 @@ WRITE_TARGET_HANDLER(lpc1000swj)
 			if (ERROR_OK != lpc1000swj_iap_call(LPC1000_IAPCMD_RAM_TO_FLASH, 
 													iap_cmd_param, iap_reply))
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "download flash");
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "download flash");
 				return ERRCODE_FAILURE_OPERATION;
 			}
 			break;
@@ -503,7 +503,7 @@ WRITE_TARGET_HANDLER(lpc1000swj)
 		// check
 		if ((addr % page_size) || (size % page_size))
 		{
-			LOG_BUG("invalid parameter for lpc1000 flash write operation\n");
+			LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
 			return ERROR_FAIL;
 		}
 		
@@ -516,14 +516,14 @@ WRITE_TARGET_HANDLER(lpc1000swj)
 		if (ERROR_OK != lpc1000swj_iap_call(LPC1000_IAPCMD_PREPARE_SECTOR, 
 												iap_cmd_param, iap_reply))
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "prepare sectors");
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "prepare sectors");
 			return ERRCODE_FAILURE_OPERATION;
 		}
 		
 		// write first buff to target SRAM
 		if (ERROR_OK != adi_memap_write_buf(LPC1000_SRAM_ADDR + 1024, buff, page_size))
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "load data to SRAM");
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "load data to SRAM");
 			return ERRCODE_FAILURE_OPERATION;
 		}
 		
@@ -535,7 +535,7 @@ WRITE_TARGET_HANDLER(lpc1000swj)
 		if (ERROR_OK != lpc1000swj_iap_run(LPC1000_IAPCMD_RAM_TO_FLASH, 
 											iap_cmd_param))
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "run iap");
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "run iap");
 			return ERRCODE_FAILURE_OPERATION;
 		}
 		size -= page_size;
@@ -549,21 +549,19 @@ WRITE_TARGET_HANDLER(lpc1000swj)
 			// write buff to target SRAM
 			if (pingpong & 1)
 			{
-				if (ERROR_OK != adi_memap_write_buf(LPC1000_SRAM_ADDR + 1024 + page_size, 
-														buff, page_size))
+				if (ERROR_OK != adi_memap_write_buf(
+						LPC1000_SRAM_ADDR + 1024 + page_size, buff, page_size))
 				{
-					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-								"load data to SRAM");
+					LOG_ERROR(ERRMSG_FAILURE_OPERATION, "load data to SRAM");
 					return ERRCODE_FAILURE_OPERATION;
 				}
 			}
 			else
 			{
-				if (ERROR_OK != adi_memap_write_buf(LPC1000_SRAM_ADDR + 1024, 
-														buff, page_size))
+				if (ERROR_OK != adi_memap_write_buf(
+						LPC1000_SRAM_ADDR + 1024, buff, page_size))
 				{
-					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-								"load data to SRAM");
+					LOG_ERROR(ERRMSG_FAILURE_OPERATION, "load data to SRAM");
 					return ERRCODE_FAILURE_OPERATION;
 				}
 			}
@@ -572,7 +570,7 @@ WRITE_TARGET_HANDLER(lpc1000swj)
 			memset(iap_reply, 0, sizeof(iap_reply));
 			if (ERROR_OK != lpc1000swj_iap_wait_ready(iap_reply))
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "run iap");
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "run iap");
 				return ERRCODE_FAILURE_OPERATION;
 			}
 			
@@ -585,7 +583,7 @@ WRITE_TARGET_HANDLER(lpc1000swj)
 			if (ERROR_OK != lpc1000swj_iap_call(LPC1000_IAPCMD_PREPARE_SECTOR, 
 													iap_cmd_param, iap_reply))
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "prepare sectors");
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "prepare sectors");
 				return ERRCODE_FAILURE_OPERATION;
 			}
 			
@@ -604,7 +602,7 @@ WRITE_TARGET_HANDLER(lpc1000swj)
 			if (ERROR_OK != lpc1000swj_iap_run(LPC1000_IAPCMD_RAM_TO_FLASH, 
 													iap_cmd_param))
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "run iap");
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "run iap");
 				return ERRCODE_FAILURE_OPERATION;
 			}
 			
@@ -615,7 +613,7 @@ WRITE_TARGET_HANDLER(lpc1000swj)
 		memset(iap_reply, 0, sizeof(iap_reply));
 		if (ERROR_OK != lpc1000swj_iap_wait_ready(iap_reply))
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "run iap");
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "run iap");
 			return ERRCODE_FAILURE_OPERATION;
 		}
 		pgbar_update(page_size);
@@ -643,12 +641,11 @@ READ_TARGET_HANDLER(lpc1000swj)
 		if (ERROR_OK != lpc1000swj_iap_call(LPC1000_IAPCMD_READ_BOOTVER, 
 												iap_cmd_param, iap_reply))
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read bootver");
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read bootver");
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
-		LOG_INFO(_GETTEXT("Bootloader Version: %d.%d\n"), 
-					(iap_reply[0] >> 8) & 0xFF, 
+		LOG_INFO(INFOMSG_BOOTLOADER_VERSION, (iap_reply[0] >> 8) & 0xFF, 
 					(iap_reply[0] >> 0) & 0xFF);
 		
 		memset(iap_cmd_param, 0, sizeof(iap_cmd_param));
@@ -656,11 +653,11 @@ READ_TARGET_HANDLER(lpc1000swj)
 		if (ERROR_OK != lpc1000swj_iap_call(LPC1000_IAPCMD_READ_SERIAL, 
 												iap_cmd_param, iap_reply))
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read serialnum");
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read serialnum");
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
-		LOG_INFO(_GETTEXT("Serian Number: %08X%08X%08X%08X\n"), 
+		LOG_INFO("Serian Number: %08X%08X%08X%08X", 
 					iap_reply[3], iap_reply[2], iap_reply[1], iap_reply[0]);
 		
 		memset(iap_cmd_param, 0, sizeof(iap_cmd_param));
@@ -668,7 +665,7 @@ READ_TARGET_HANDLER(lpc1000swj)
 		if (ERROR_OK != lpc1000swj_iap_call(LPC1000_IAPCMD_READ_ID, 
 												iap_cmd_param, iap_reply))
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read id");
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read id");
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
@@ -690,8 +687,8 @@ READ_TARGET_HANDLER(lpc1000swj)
 			if (ERROR_OK != adi_memap_read_buf(addr, buff, 
 												   cur_block_size))
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ADDR), 
-						  "write flash block", addr);
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION_ADDR, "write flash block", 
+							addr);
 				ret = ERRCODE_FAILURE_OPERATION_ADDR;
 				break;
 			}

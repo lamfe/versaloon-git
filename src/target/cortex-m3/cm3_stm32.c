@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 by Simon Qian <SimonQian@SimonQian.com>            *
+ *   Copyright (C) 2009 - 2010 by Simon Qian <SimonQian@SimonQian.com>     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -146,25 +146,25 @@ LEAVE_PROGRAM_MODE_HANDLER(stm32swj)
 	{
 		if (ERROR_OK != cm3_dp_halt())
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "halt stm32");
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "halt stm32");
 			return ERRCODE_FAILURE_OPERATION;
 		}
 		if (ERROR_OK != 
 				cm3_write_core_register(CM3_COREREG_PC, &cm3_execute_addr))
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "write PC");
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "write PC");
 			return ERRCODE_FAILURE_OPERATION;
 		}
 		reg = 0;
 		if ((ERROR_OK != cm3_read_core_register(CM3_COREREG_PC, &reg)) 
 			|| (reg != cm3_execute_addr))
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "verify written PC");
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "verify written PC");
 			return ERRCODE_FAILURE_OPERATION;
 		}
 		if (ERROR_OK != cm3_dp_run())
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "run code");
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "run code");
 			return ERRCODE_FAILURE_OPERATION;
 		}
 	}
@@ -184,7 +184,7 @@ ERASE_TARGET_HANDLER(stm32swj)
 		// halt target first
 		if (ERROR_OK != cm3_dp_halt())
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "halt stm32");
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "halt stm32");
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
@@ -283,21 +283,20 @@ WRITE_TARGET_HANDLER(stm32swj)
 		if (ERROR_OK != adi_memap_write_buf(STM32_SRAM_ADDR, stm32_fl_code, 
 												block_size))
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-					  "load flash_loader to SRAM");
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "load flash_loader to SRAM");
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
 		reg = STM32_SRAM_ADDR;
 		if (ERROR_OK != cm3_write_core_register(CM3_COREREG_PC, &reg))
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "write PC");
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "write PC");
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
 		if (ERROR_OK != cm3_dp_run())
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "run flash_loader");
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "run flash_loader");
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
@@ -319,8 +318,7 @@ WRITE_TARGET_HANDLER(stm32swj)
 			if (ERROR_OK != adi_memap_write_buf(FL_ADDR_DATA + cur_run_size,
 														buff, cur_block_size))
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-							"download flash data");
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "download flash data");
 				ret = ERRCODE_FAILURE_OPERATION;
 				break;
 			}
@@ -344,8 +342,8 @@ WRITE_TARGET_HANDLER(stm32swj)
 			if (ERROR_OK != 
 						adi_memap_write_reg(FL_ADDR_WORD_LENGTH, &reg, 1))
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-							  "download parameters to flash_loader");
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION, 
+							"download parameters to flash_loader");
 				ret = ERRCODE_FAILURE_OPERATION;
 				break;
 			}
@@ -360,7 +358,7 @@ WRITE_TARGET_HANDLER(stm32swj)
 					if (ERROR_OK != 
 								adi_memap_read_reg(FL_ADDR_RESULT, &reg, 1))
 					{
-						LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+						LOG_ERROR(ERRMSG_FAILURE_OPERATION, 
 									"read result from flash_loader");
 						ret = ERRCODE_FAILURE_OPERATION;
 						break;
@@ -369,7 +367,7 @@ WRITE_TARGET_HANDLER(stm32swj)
 					run_time = get_time_in_ms();
 					if ((run_time - start_time) > 1000)
 					{
-						LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+						LOG_ERROR(ERRMSG_FAILURE_OPERATION, 
 									"wait OK from flash_loader");
 						ret = ERRCODE_FAILURE_OPERATION;
 						break;
@@ -412,31 +410,29 @@ READ_TARGET_HANDLER(stm32swj)
 		stm32_print_device(mcu_id);
 		mcu_id &= STM32_DEN_MSK;
 		*(uint32_t *)buff = mcu_id;
-		LOG_INFO(_GETTEXT(INFOMSG_TARGET_CHIP_ID), mcu_id);
 		
 		// read flash and ram size
 		if (ERROR_OK != adi_memap_read_reg(STM32_REG_FLASH_RAM_SIZE, &mcu_id, 1))
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-					  "read stm32 flash_ram size");
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read stm32 flash_ram size");
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
 		if ((mcu_id & 0xFFFF) <= 512)
 		{
 			pi->program_areas[APPLICATION_IDX].size = (mcu_id & 0xFFFF) * 1024;
-			LOG_INFO(_GETTEXT("Flash memory size: %i KB\n"), mcu_id & 0xFFFF);
+			LOG_INFO("Flash memory size: %i KB", mcu_id & 0xFFFF);
 		}
 		else
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_VALUE), mcu_id & 0xFFFF, 
+			LOG_ERROR(ERRMSG_INVALID_VALUE, mcu_id & 0xFFFF, 
 						"stm32 flash size");
 			ret = ERRCODE_INVALID;
 			break;
 		}
 		if ((mcu_id >> 16) != 0xFFFF)
 		{
-			LOG_INFO(_GETTEXT("SRAM memory size: %i KB\n"), mcu_id >> 16);
+			LOG_INFO("SRAM memory size: %i KB", mcu_id >> 16);
 		}
 		break;
 	case APPLICATION_CHAR:
@@ -455,8 +451,8 @@ READ_TARGET_HANDLER(stm32swj)
 			if (ERROR_OK != adi_memap_read_buf(addr, buff, 
 												   cur_block_size))
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ADDR), 
-						  "write flash block", addr);
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION_ADDR, "write flash block", 
+							addr);
 				ret = ERRCODE_FAILURE_OPERATION_ADDR;
 				break;
 			}

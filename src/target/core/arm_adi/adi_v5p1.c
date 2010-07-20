@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 by Simon Qian <SimonQian@SimonQian.com>            *
+ *   Copyright (C) 2009 - 2010 by Simon Qian <SimonQian@SimonQian.com>     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -211,7 +211,7 @@ static RESULT adi_dpif_fini(void)
 	
 	if (NULL == adi_dp_if)
 	{
-		LOG_BUG(_GETTEXT("adi dp not initialized\n"));
+		LOG_BUG(ERRMSG_NOT_INITIALIZED, "adi dp", "");
 		return ERROR_FAIL;
 	}
 	
@@ -250,7 +250,7 @@ static RESULT adi_dpif_init(struct program_context_t *context, adi_dp_if_t *inte
 	if ((NULL == context) || (NULL == interf) 
 		|| ((interf->type != ADI_DP_JTAG) && (interf->type != ADI_DP_SWD)))
 	{
-		LOG_BUG(_GETTEXT(ERRMSG_INVALID_PARAMETER), __FUNCTION__);
+		LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
 		return ERROR_FAIL;
 	}
 	
@@ -317,7 +317,7 @@ RESULT adi_dp_scan(uint8_t instr, uint8_t reg_addr, uint8_t RnW,
 			instr = ADI_JTAGDP_IR_APACC;
 			break;
 		default:
-			LOG_BUG(_GETTEXT("Invalid instruction\n"));
+			LOG_BUG(ERRMSG_INVALID_VALUE, instr, "adi_dp instruction");
 			return ERROR_FAIL;
 			break;
 		}
@@ -353,7 +353,7 @@ RESULT adi_dp_scan(uint8_t instr, uint8_t reg_addr, uint8_t RnW,
 	case ADI_DP_SWD:
 		if (instr > 1)
 		{
-			LOG_BUG(_GETTEXT("Invalid instruction\n"));
+			LOG_BUG(ERRMSG_INVALID_VALUE, instr, "adi_dp instruction");
 			return ERROR_FAIL;
 		}
 		// switch reg_addr
@@ -371,7 +371,7 @@ RESULT adi_dpif_read_id(uint32_t *id)
 	
 	if (NULL == adi_dp_if)
 	{
-		LOG_BUG(_GETTEXT("adi dp not initialized\n"));
+		LOG_BUG(ERRMSG_NOT_INITIALIZED, "adi dp", "");
 		return ERROR_FAIL;
 	}
 	
@@ -384,20 +384,20 @@ RESULT adi_dpif_read_id(uint32_t *id)
 		
 		if (ERROR_OK != adi_dp_commit())
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read JTAG_ID");
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read JTAG_ID");
 			return ERRCODE_FAILURE_OPERATION;
 		}
-		LOG_INFO(_GETTEXT("JTAG_ID: 0x%X.\n"), *id);
+		LOG_INFO(INFOMSG_REG_08X, "JTAG_ID", *id);
 		break;
 	case ADI_DP_SWD:
 		adi_dp_read_reg(ADI_SWDDP_REG_DPIDR, id, 0);
 		
 		if (ERROR_OK != adi_dp_commit())
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read SWD_ID");
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read SWD_ID");
 			return ERRCODE_FAILURE_OPERATION;
 		}
-		LOG_INFO(_GETTEXT("SWD_ID read is 0x%X.\n"), *id);
+		LOG_INFO(INFOMSG_REG_08X, "SWDID", *id);
 		break;
 	default:
 		return ERROR_FAIL;
@@ -432,7 +432,7 @@ RESULT adi_dp_read_reg(uint8_t reg_addr, uint32_t *value, uint8_t check_result)
 {
 	if (NULL == adi_dp_if)
 	{
-		LOG_BUG(_GETTEXT("adi dp not initialized\n"));
+		LOG_BUG(ERRMSG_NOT_INITIALIZED, "adi dp", "");
 		return ERROR_FAIL;
 	}
 	
@@ -444,7 +444,7 @@ RESULT adi_dp_write_reg(uint8_t reg_addr, uint32_t *value, uint8_t check_result)
 {
 	if (NULL == adi_dp_if)
 	{
-		LOG_BUG(_GETTEXT("adi dp not initialized\n"));
+		LOG_BUG(ERRMSG_NOT_INITIALIZED, "adi dp", "");
 		return ERROR_FAIL;
 	}
 	
@@ -464,14 +464,14 @@ RESULT adi_dp_transaction_endcheck(void)
 					  ADI_DAP_READ, &ctrl_stat, 0);
 		if (ERROR_OK != adi_dp_commit())
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "access dap");
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "access dap");
 			return ERRCODE_FAILURE_OPERATION;
 		}
 	} while ((adi_dp.ack != ack_value) && (--cnt));
 	
 	if (!cnt)
 	{
-		LOG_ERROR(_GETTEXT("Timeout......\n"));
+		LOG_ERROR(ERRMSG_TIMEOUT, "access dap");
 		return ERROR_FAIL;
 	}
 	
@@ -480,7 +480,7 @@ RESULT adi_dp_transaction_endcheck(void)
 						| ADI_DP_REG_CTRL_STAT_SSTICKYERR 
 						| ADI_DP_REG_CTRL_STAT_WDATAERR))
 	{
-		LOG_ERROR(_GETTEXT("Stiky Error/Overrun.\n"));
+		LOG_ERROR("Stiky Error/Overrun.");
 		return ERROR_FAIL;
 	}
 
@@ -581,7 +581,7 @@ RESULT adi_memap_write_buf(uint32_t address, uint8_t *buffer, uint32_t len)
 	
 	if ((address & 0x03) || (len & 0x03) || (NULL == buffer) || (0 == len))
 	{
-		LOG_BUG(_GETTEXT(ERRMSG_INVALID_PARAMETER), __FUNCTION__);
+		LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
 		return ERRCODE_INVALID_PARAMETER;
 	}
 	
@@ -606,8 +606,8 @@ RESULT adi_memap_write_buf(uint32_t address, uint8_t *buffer, uint32_t len)
 		
 		if (ERROR_OK != adi_dp_transaction_endcheck())
 		{
-			LOG_WARNING(_GETTEXT("Block write error at 0x%08X, %d dwords\n"), 
-						address, block_dword_size);
+			LOG_WARNING("Block write error at 0x%08X, %d dwords", address, 
+							block_dword_size);
 			return ERROR_FAIL;
 		}
 		
@@ -625,7 +625,7 @@ RESULT adi_memap_read_buf(uint32_t address, uint8_t *buffer, uint32_t len)
 	
 	if ((address & 0x03) || (len & 0x03) || (NULL == buffer) || (0 == len))
 	{
-		LOG_BUG(_GETTEXT(ERRMSG_INVALID_PARAMETER), __FUNCTION__);
+		LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
 		return ERRCODE_INVALID_PARAMETER;
 	}
 	
@@ -655,8 +655,8 @@ RESULT adi_memap_read_buf(uint32_t address, uint8_t *buffer, uint32_t len)
 		
 		if (ERROR_OK != adi_dp_transaction_endcheck())
 		{
-			LOG_WARNING(_GETTEXT("Block read error at 0x%08X, %d dwords\n"), 
-						address, block_dword_size);
+			LOG_WARNING("Block read error at 0x%08X, %d dwords", address, 
+							block_dword_size);
 			return ERROR_FAIL;
 		}
 		
@@ -682,8 +682,8 @@ init:
 	// initialize interface
 	if (ERROR_OK != adi_dpif_init(context, interf))
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-				  "initialize adi debugport interface");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, 
+					"initialize adi debugport interface");
 		return ERROR_FAIL;
 	}
 	adi_dp_info.type = adi_dp_if->type;
@@ -691,7 +691,7 @@ init:
 	// read debugport interface id
 	if (ERROR_OK != adi_dpif_read_id(&adi_dp_info.if_id))
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read cm3 id");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read cm3 id");
 		return ERROR_FAIL;
 	}
 	// 0x0BA00477 is for CortexM3
@@ -708,15 +708,15 @@ init:
 	{
 		if (retry-- > 0)
 		{
-			LOG_WARNING(_GETTEXT(ERRMSG_INVALID_HEX_MESSAGE), 
-						adi_dp_info.if_id, "id", "retry...");
+			LOG_WARNING(ERRMSG_INVALID_HEX_MESSAGE, adi_dp_info.if_id, "id", 
+							"retry...");
 			adi_dpif_fini();
 			sleep_ms(100);
 			goto init;
 		}
 		else
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_HEX), adi_dp_info.if_id, "id");
+			LOG_ERROR(ERRMSG_INVALID_HEX, adi_dp_info.if_id, "id");
 			return ERRCODE_INVALID;
 		}
 	}
@@ -759,7 +759,7 @@ init:
 	cnt = 0;
 	while (!(tmp & ADI_DP_REG_CTRL_STAT_CDBGPWRUPACK) && (cnt++ < 10))
 	{
-		LOG_DEBUG(_GETTEXT("wait CDBGPWRUPACK"));
+		LOG_DEBUG("wait CDBGPWRUPACK");
 		if (ERROR_OK != adi_dp_read_reg(ADI_DP_REG_CTRL_STAT, &tmp, 1))
 		{
 			return ERROR_FAIL;
@@ -768,7 +768,7 @@ init:
 	}
 	while (!(tmp & ADI_DP_REG_CTRL_STAT_CSYSPWRUPACK) && (cnt++ < 10))
 	{
-		LOG_DEBUG(_GETTEXT("wait CSYSPWRUPACK"));
+		LOG_DEBUG("wait CSYSPWRUPACK");
 		if (ERROR_OK != adi_dp_read_reg(ADI_DP_REG_CTRL_STAT, &tmp, 1))
 		{
 			return ERROR_FAIL;
@@ -789,14 +789,14 @@ init:
 	{
 		return ERROR_FAIL;
 	}
-	LOG_INFO(_GETTEXT("AHB-AP_ID: 0x%08X\n"), adi_dp_info.ahb_ap_id);
+	LOG_INFO(INFOMSG_REG_08X, "AHB-AP_ID", adi_dp_info.ahb_ap_id);
 	
 	if (ERROR_OK != 
 			adi_ap_read_reg(ADI_AP_REG_DBGROMA, &adi_dp_info.rom_address, 1))
 	{
 		return ERROR_FAIL;
 	}
-	LOG_INFO(_GETTEXT("ROM_ADDRESS: 0x%08X\n"), adi_dp_info.rom_address);
+	LOG_INFO(INFOMSG_REG_08X, "ROM_ADDRESS", adi_dp_info.rom_address);
 	
 	if (ERROR_OK != 
 			adi_ap_read_reg(ADI_AP_REG_CFG, &adi_dp_info.config, 1))
@@ -805,11 +805,12 @@ init:
 	}
 	if (adi_dp_info.config & 1)
 	{
-		LOG_INFO(_GETTEXT("CFG: 0x%08X, Big-endian\n"), adi_dp_info.config);
+		LOG_INFO(INFOMSG_REG_08X_STR, "CFG", adi_dp_info.config, "Big-endian");
 	}
 	else
 	{
-		LOG_INFO(_GETTEXT("CFG: 0x%08X, Small-endian\n"), adi_dp_info.config);
+		LOG_INFO(INFOMSG_REG_08X_STR, "CFG", adi_dp_info.config, 
+					"Little-endian");
 	}
 	
 	return ERROR_OK;

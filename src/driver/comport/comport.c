@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 by Simon Qian <SimonQian@SimonQian.com>            *
+ *   Copyright (C) 2009 - 2010 by Simon Qian <SimonQian@SimonQian.com>     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -98,7 +98,7 @@ RESULT comm_open_hw(char *comport, uint32_t baudrate, uint8_t datalength,
 			&& (handshake != COMM_HANDSHAKE_HARDWARE) 
 			&& (handshake != COMM_HANDSHAKE_SOFTWARE)))
 	{
-		LOG_BUG(_GETTEXT(ERRMSG_INVALID_PARAMETER), __FUNCTION__);
+		LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
 		return ERRCODE_INVALID_PARAMETER;
 	}
 	
@@ -109,15 +109,14 @@ RESULT comm_open_hw(char *comport, uint32_t baudrate, uint8_t datalength,
 		switch (GetLastError())
 		{
 			case ERROR_FILE_NOT_FOUND:
-				LOG_ERROR(_GETTEXT("Serial port %s does not exist.\n"), 
-						  comport);
+				LOG_ERROR("Serial port %s does not exist.", comport);
 				break;
 			case ERROR_ACCESS_DENIED:
-				LOG_ERROR(_GETTEXT("Access denied.\n"));
+				LOG_ERROR("Access denied.");
 				break;
 			default:
-				LOG_ERROR(_GETTEXT("Fail to open comport %s: %i\n"), 
-						  comport, (int)GetLastError());
+				LOG_ERROR("Fail to open comport %s: %i", comport, 
+							(int)GetLastError());
 				break;
 		}
 		return ERROR_FAIL;
@@ -132,16 +131,15 @@ RESULT comm_open_hw(char *comport, uint32_t baudrate, uint8_t datalength,
 	timeouts.WriteTotalTimeoutConstant = 100; // not used
 	if (!SetCommTimeouts(hComm, &timeouts))
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-				  "set new serial port timeouts");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "set new serial port timeouts");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
 	// configure serial port for correct communication parameters
 	if (!GetCommState(hComm, &dcb))
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-				  "get existing communication parameters");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, 
+					"get existing communication parameters");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
@@ -169,7 +167,7 @@ RESULT comm_open_hw(char *comport, uint32_t baudrate, uint8_t datalength,
 		
 		break;
 	default:
-		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_VALUE), paritybit, "comm parity");
+		LOG_ERROR(ERRMSG_INVALID_VALUE, paritybit, "comm parity");
 		return ERRCODE_INVALID;
 		
 		break;
@@ -191,7 +189,7 @@ RESULT comm_open_hw(char *comport, uint32_t baudrate, uint8_t datalength,
 		
 		break;
 	default:
-		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_VALUE), stopbit, "comm stopbit");
+		LOG_ERROR(ERRMSG_INVALID_VALUE, stopbit, "comm stopbit");
 		return ERRCODE_INVALID;
 		
 		break;
@@ -216,16 +214,15 @@ RESULT comm_open_hw(char *comport, uint32_t baudrate, uint8_t datalength,
 	
 	if (!SetCommState(hComm, &dcb))
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-				  "set communication parameters");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "set communication parameters");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
 	// configure serial port for correct communication parameters
 	if (!GetCommState(hComm, &dcb))
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-				  "get existing communication parameters");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, 
+					"get existing communication parameters");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
@@ -233,8 +230,7 @@ RESULT comm_open_hw(char *comport, uint32_t baudrate, uint8_t datalength,
 	if (!PurgeComm(hComm, PURGE_RXABORT | PURGE_RXCLEAR 
 						  | PURGE_TXABORT | PURGE_TXCLEAR))
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-				  "purge comm port");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "purge comm port");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
@@ -331,7 +327,7 @@ RESULT comm_open_hw(char *comport, uint32_t baudrate, uint8_t datalength,
 			&& (handshake != COMM_HANDSHAKE_HARDWARE) 
 			&& (handshake != COMM_HANDSHAKE_SOFTWARE)))
 	{
-		LOG_BUG(_GETTEXT(ERRMSG_INVALID_PARAMETER), __FUNCTION__);
+		LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
 		return ERRCODE_INVALID_PARAMETER;
 	}
 	
@@ -339,15 +335,15 @@ RESULT comm_open_hw(char *comport, uint32_t baudrate, uint8_t datalength,
 	hComm = open(comport, O_RDWR);
 	if (-1 == hComm)
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPEN), comport);
+		LOG_ERROR(ERRMSG_FAILURE_OPEN, comport);
 		return ERRCODE_FAILURE_OPEN;
 	}
 	
 	// get current settings
 	if (tcgetattr(hComm, &opt) != 0)
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-				  "get existing communication parameters");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, 
+					"get existing communication parameters");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
@@ -377,8 +373,7 @@ RESULT comm_open_hw(char *comport, uint32_t baudrate, uint8_t datalength,
 		opt.c_cflag |= CS8;
 		break;
 	default:
-		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_VALUE), datalength, 
-				  "comm datalength");
+		LOG_ERROR(ERRMSG_INVALID_VALUE, datalength, "comm datalength");
 		return ERRCODE_INVALID;
 		break;
 	}
@@ -400,7 +395,7 @@ RESULT comm_open_hw(char *comport, uint32_t baudrate, uint8_t datalength,
 		opt.c_iflag |= INPCK;
 		break;
 	default:
-		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_VALUE), paritybit, "comm parity");
+		LOG_ERROR(ERRMSG_INVALID_VALUE, paritybit, "comm parity");
 		return ERRCODE_INVALID;
 		break;
 	}
@@ -416,7 +411,7 @@ RESULT comm_open_hw(char *comport, uint32_t baudrate, uint8_t datalength,
 		opt.c_cflag |= CSTOPB;
 		break;
 	default:
-		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_VALUE), stopbit, "comm stopbit");
+		LOG_ERROR(ERRMSG_INVALID_VALUE, stopbit, "comm stopbit");
 		return ERRCODE_INVALID;
 		break;
 	}
@@ -432,8 +427,7 @@ RESULT comm_open_hw(char *comport, uint32_t baudrate, uint8_t datalength,
 	opt.c_cc[VMIN] = 0;
 	if (tcsetattr(hComm, TCSANOW, &opt)!= 0)
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-				  "set new serial port timeouts");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "set new serial port timeouts");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
@@ -534,7 +528,7 @@ RESULT comm_open_usbtocomm(char *comport, uint32_t baudrate,
 		
 		break;
 	default:
-		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_VALUE), paritybit, "comm parity");
+		LOG_ERROR(ERRMSG_INVALID_VALUE, paritybit, "comm parity");
 		return ERRCODE_INVALID;
 		
 		break;
@@ -556,7 +550,7 @@ RESULT comm_open_usbtocomm(char *comport, uint32_t baudrate,
 		
 		break;
 	default:
-		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_VALUE), stopbit, "comm stopbit");
+		LOG_ERROR(ERRMSG_INVALID_VALUE, stopbit, "comm stopbit");
 		return ERRCODE_INVALID;
 		
 		break;

@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 by Simon Qian <SimonQian@SimonQian.com>            *
+ *   Copyright (C) 2009 - 2010 by Simon Qian <SimonQian@SimonQian.com>     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -366,8 +366,7 @@ WRITE_TARGET_HANDLER(avr8jtag)
 		}
 		else
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "fuse", 
-						param->chip_name);
+			LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, "fuse", param->chip_name);
 			ret = ERRCODE_NOT_SUPPORT;
 			break;
 		}
@@ -388,8 +387,7 @@ WRITE_TARGET_HANDLER(avr8jtag)
 		}
 		else
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "locks", 
-						param->chip_name);
+			LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, "locks", param->chip_name);
 			ret = ERRCODE_NOT_SUPPORT;
 			break;
 		}
@@ -491,8 +489,8 @@ READ_TARGET_HANDLER(avr8jtag)
 		memset(page_buf, 0, 3);
 		if (param->chip_areas[FUSE_IDX].size > 3)
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_VALUE), 
-				param->chip_areas[FUSE_IDX].size, "avr8 fuse size");
+			LOG_ERROR(ERRMSG_INVALID_VALUE, param->chip_areas[FUSE_IDX].size, 
+						"avr8 fuse size");
 			ret = ERRCODE_INVALID;
 			break;
 		}
@@ -504,8 +502,7 @@ READ_TARGET_HANDLER(avr8jtag)
 		}
 		else
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "fuse", 
-						param->chip_name);
+			LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, "fuse", param->chip_name);
 			ret = ERRCODE_NOT_SUPPORT;
 			break;
 		}
@@ -542,8 +539,7 @@ READ_TARGET_HANDLER(avr8jtag)
 		}
 		else
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "locks", 
-						param->chip_name);
+			LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, "locks", param->chip_name);
 			ret = ERRCODE_NOT_SUPPORT;
 			break;
 		}
@@ -552,7 +548,7 @@ READ_TARGET_HANDLER(avr8jtag)
 		memset(page_buf, 0, 4);
 		if (param->chip_areas[CALIBRATION_IDX].size > 4)
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_VALUE), 
+			LOG_ERROR(ERRMSG_INVALID_VALUE, 
 				param->chip_areas[CALIBRATION_IDX].size, "avr8 cali size");
 			ret = ERRCODE_INVALID;
 			break;
@@ -566,8 +562,7 @@ READ_TARGET_HANDLER(avr8jtag)
 		}
 		else
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "calibration", 
-						param->chip_name);
+			LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, "calibration", param->chip_name);
 			ret = ERRCODE_NOT_SUPPORT;
 			break;
 		}

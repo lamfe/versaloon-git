@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 by Simon Qian <SimonQian@SimonQian.com>            *
+ *   Copyright (C) 2009 - 2010 by Simon Qian <SimonQian@SimonQian.com>     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -71,7 +71,7 @@ RESULT usbtoswd_config(uint8_t interface_index, uint8_t trn, uint16_t retry,
 #if PARAM_CHECK
 	if (interface_index > 7)
 	{
-		LOG_BUG(_GETTEXT("invalid inteface_index %d.\n"), interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
 		return ERROR_FAIL;
 	}
 #endif
@@ -92,7 +92,7 @@ RESULT usbtoswd_seqout(uint8_t interface_index, uint8_t *data, uint16_t bitlen)
 #if PARAM_CHECK
 	if (interface_index > 7)
 	{
-		LOG_BUG(_GETTEXT("invalid inteface_index %d.\n"), interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
 		return ERROR_FAIL;
 	}
 #endif
@@ -113,7 +113,7 @@ RESULT usbtoswd_seqin(uint8_t interface_index, uint8_t *data, uint16_t bitlen)
 #if PARAM_CHECK
 	if (interface_index > 7)
 	{
-		LOG_BUG(_GETTEXT("invalid inteface_index %d.\n"), interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
 		return ERROR_FAIL;
 	}
 #endif
@@ -133,7 +133,7 @@ RESULT usbtoswd_transact(uint8_t interface_index, uint8_t request, uint32_t *dat
 #if PARAM_CHECK
 	if (interface_index > 7)
 	{
-		LOG_BUG(_GETTEXT("invalid inteface_index %d.\n"), interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
 		return ERROR_FAIL;
 	}
 #endif

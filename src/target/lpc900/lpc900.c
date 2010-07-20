@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 by Simon Qian <SimonQian@SimonQian.com>            *
+ *   Copyright (C) 2009 - 2010 by Simon Qian <SimonQian@SimonQian.com>     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -162,7 +162,7 @@ ENTER_PROGRAM_MODE_HANDLER(lpc900icp)
 ProgramStart:
 	if (ERROR_OK != icp_init())
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "initialize icp");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "initialize icp");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
@@ -202,7 +202,7 @@ ProgramStart:
 	
 	if (ERROR_OK != icp_commit())
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read chip id");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read chip id");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	if ((device_id & 0x00FF0000) != 0x00150000)
@@ -210,7 +210,7 @@ ProgramStart:
 		icp_fini();
 		if (ERROR_OK != icp_commit())
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATE_DEVICE), "target chip");
+			LOG_ERROR(ERRMSG_FAILURE_OPERATE_DEVICE, "target chip");
 			return ERRCODE_FAILURE_OPERATION;
 		}
 		if (++retry < 10)
@@ -288,7 +288,7 @@ WRITE_TARGET_HANDLER(lpc900icp)
 		if ((ERROR_OK != icp_commit()) 
 			|| (tmpbuf[0] != LPCICP_POLL_ON_CLEAR))
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATE_DEVICE), "target chip");
+			LOG_ERROR(ERRMSG_FAILURE_OPERATE_DEVICE, "target chip");
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
@@ -338,7 +338,7 @@ READ_TARGET_HANDLER(lpc900icp)
 		
 		if (ERROR_OK != icp_commit())
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read chip id");
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read chip id");
 			return ERRCODE_FAILURE_OPERATION;
 		}
 		break;
@@ -438,7 +438,7 @@ READ_TARGET_HANDLER(lpc900icp)
 		}
 		else
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT), "read lpc900 flash");
+			LOG_ERROR(ERRMSG_NOT_SUPPORT, "read lpc900 flash");
 			ret = ERRCODE_NOT_SUPPORT;
 		}
 		break;

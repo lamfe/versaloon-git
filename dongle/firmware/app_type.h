@@ -1,3 +1,19 @@
+/**************************************************************************
+ *  Copyright (C) 2008 - 2010 by Simon Qian                               *
+ *  SimonQian@SimonQian.com                                               *
+ *                                                                        *
+ *  Project:    Versaloon                                                 *
+ *  File:       app_type.h                                                *
+ *  Author:     SimonQian                                                 *
+ *  Versaion:   See changelog                                             *
+ *  Purpose:    type defines                                              *
+ *  License:    See license                                               *
+ *------------------------------------------------------------------------*
+ *  Change Log:                                                           *
+ *      YYYY-MM-DD:     What(by Who)                                      *
+ *      2008-11-07:     created(by SimonQian)                             *
+ **************************************************************************/
+
 #ifndef __APP_TYPE_H_INCLUDED__
 #define __APP_TYPE_H_INCLUDED__
 

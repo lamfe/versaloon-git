@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 by Simon Qian <SimonQian@SimonQian.com>            *
+ *   Copyright (C) 2009 - 2010 by Simon Qian <SimonQian@SimonQian.com>     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -84,7 +84,7 @@ PARSE_ARGUMENT_HANDLER(cm3)
 	case 'c':
 		if (NULL == argu)
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), cmd);
+			LOG_ERROR(ERRMSG_INVALID_OPTION, cmd);
 			return ERRCODE_INVALID_OPTION;
 		}
 		
@@ -107,7 +107,7 @@ PARSE_ARGUMENT_HANDLER(cm3)
 	case 'x':
 		if (NULL == argu)
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), cmd);
+			LOG_ERROR(ERRMSG_INVALID_OPTION, cmd);
 			return ERRCODE_INVALID_OPTION;
 		}
 		
@@ -138,7 +138,7 @@ ENTER_PROGRAM_MODE_HANDLER(cm3)
 	if ((context->pi->mode != ADI_DP_JTAG) 
 		&& (context->pi->mode != ADI_DP_SWD))
 	{
-		LOG_WARNING(_GETTEXT("debug port not defined, use JTAG by default.\n"));
+		LOG_WARNING("debug port not defined, use JTAG by default.");
 		context->pi->mode = ADI_DP_JTAG;
 	}
 	dp.type = context->pi->mode;
@@ -186,9 +186,9 @@ ENTER_PROGRAM_MODE_HANDLER(cm3)
 	// mode independent
 	if (ERROR_OK != cm3_dp_init(context, &dp))
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "initialize cm3");
-		LOG_ERROR(_GETTEXT("Maybe your last firmware disable the JTAG/SWD port"
-							", try using OpenOCD to erase the firmware.\n"));
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "initialize cm3");
+		LOG_ERROR("Maybe your last firmware disable the JTAG/SWD port"
+							", try using OpenOCD to erase the firmware.");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	

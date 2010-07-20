@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 by Simon Qian <SimonQian@SimonQian.com>            *
+ *   Copyright (C) 2009 - 2010 by Simon Qian <SimonQian@SimonQian.com>     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -299,7 +299,7 @@ RESULT target_parse_cli_string(void)
 			}
 			else
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "cli_format");
+				LOG_ERROR(ERRMSG_NOT_DEFINED, "cli_format");
 				return ERROR_FAIL;
 			}
 			
@@ -308,7 +308,7 @@ RESULT target_parse_cli_string(void)
 						program_info.program_areas[i].size);
 			if (ret != ERROR_OK)
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_HANDLE_DEVICE), "parse", 
+				LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "parse", 
 							target_area_name[i].full_name);
 				return ERROR_FAIL;
 			}
@@ -486,8 +486,7 @@ static RESULT target_check_single_defined(uint32_t opt)
 	{
 		if (opt & (1 << i))
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), 
-						target_area_fullname_by_mask(1 << i));
+			LOG_ERROR(ERRMSG_NOT_DEFINED, target_area_fullname_by_mask(1 << i));
 			return ERROR_FAIL;
 		}
 	}
@@ -544,7 +543,7 @@ RESULT target_write_buffer_from_file_callback(uint32_t address,
 	
 	if ((NULL == cur_target) || (0 == strlen(target_chip_param.chip_name)))
 	{
-		LOG_BUG("target should be initialized first.\n");
+		LOG_BUG(ERRMSG_NOT_INITIALIZED, "target", "");
 		return ERROR_FAIL;
 	}
 	
@@ -592,14 +591,13 @@ RESULT target_write_buffer_from_file_callback(uint32_t address,
 			ret = MEMLIST_Add(area_memlist, address, length, area_page_size);
 			if (ret != ERROR_OK)
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-							"add memory list");
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "add memory list");
 				return ERRCODE_FAILURE_OPERATION;
 			}
 		}
 		else
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_BUFFER), "area_buff");
+			LOG_ERROR(ERRMSG_INVALID_BUFFER, "area_buff");
 			return ERROR_FAIL;
 		}
 		
@@ -640,15 +638,14 @@ RESULT target_program(struct program_context_t *context)
 		&& (target_chips.chips_param[0].program_mode != 0) 
 		&& !(param->program_mode & (1 << pi->mode)))
 	{
-		LOG_ERROR(_GETTEXT("current mode is not supported by %s\n"), 
-					pi->chip_name);
+		LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, "current mode", pi->chip_name);
 		return ERROR_FAIL;
 	}
 	
 	if ((pf->enter_program_mode != NULL) 
 		&&(pf->enter_program_mode(context) != ERROR_OK))
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "enter program mode");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "enter program mode");
 		ret = ERRCODE_FAILURE_ENTER_PROG_MODE;
 		goto leave_program_mode;
 	}
@@ -664,17 +661,16 @@ RESULT target_program(struct program_context_t *context)
 	if (ERROR_OK != pf->read_target(context, CHIPID_CHAR, 0, 
 									(uint8_t *)&pi->chip_id, 0))
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read chip id");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read chip id");
 		ret = ERRCODE_FAILURE_OPERATION;
 		goto leave_program_mode;
 	}
-	LOG_INFO(_GETTEXT(INFOMSG_TARGET_CHIP_ID), pi->chip_id);
+	LOG_INFO(INFOMSG_TARGET_CHIP_ID, pi->chip_id);
 	if (!(op->read_operations & CHIPID))
 	{
 		if (pi->chip_id != param->chip_id)
 		{
-			LOG_WARNING(_GETTEXT(ERRMSG_INVALID_CHIP_ID), pi->chip_id, 
-						param->chip_id);
+			LOG_WARNING(ERRMSG_INVALID_CHIP_ID, pi->chip_id, param->chip_id);
 		}
 	}
 	else
@@ -685,21 +681,21 @@ RESULT target_program(struct program_context_t *context)
 	// chip erase
 	if (op->erase_operations && param->chip_erase)
 	{
-		LOG_INFO(_GETTEXT(INFOMSG_ERASING), "chip");
+		LOG_INFO(INFOMSG_ERASING, "chip");
 		pgbar_init("erasing chip |", "|", 0, 1, PROGRESS_STEP, 
 						PROGRESS_CHAR);
 		
 		if (ERROR_OK != pf->erase_target(context, ALL_CHAR, 0, 0))
 		{
 			pgbar_fini();
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "erase chip");
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "erase chip");
 			ret = ERRCODE_FAILURE_OPERATION;
 			goto leave_program_mode;
 		}
 		
 		pgbar_update(1);
 		pgbar_fini();
-		LOG_INFO(_GETTEXT(INFOMSG_ERASED), "chip");
+		LOG_INFO(INFOMSG_ERASED, "chip");
 	}
 	
 	// erase, program, verify/read cycle
@@ -743,7 +739,7 @@ RESULT target_program(struct program_context_t *context)
 			{
 				if (target_size > 8)
 				{
-					LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "cli_format");
+					LOG_ERROR(ERRMSG_NOT_DEFINED, "cli_format");
 					ret = ERROR_FAIL;
 					goto leave_program_mode;
 				}
@@ -770,7 +766,7 @@ RESULT target_program(struct program_context_t *context)
 				|| !(op->write_operations & area_mask)))
 		{
 			// target erase
-			LOG_INFO(_GETTEXT(INFOMSG_ERASING), fullname);
+			LOG_INFO(INFOMSG_ERASING, fullname);
 			strcpy(str_tmp, "erasing ");
 			strcat(str_tmp, fullname);
 			strcat(str_tmp, " |");
@@ -786,7 +782,7 @@ RESULT target_program(struct program_context_t *context)
 							start_addr + j * page_size, page_size))
 					{
 						pgbar_fini();
-						LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_ERASE), fullname);
+						LOG_ERROR(ERRMSG_FAILURE_ERASE, fullname);
 						ret = ERRCODE_FAILURE_OPERATION;
 						goto leave_program_mode;
 					}
@@ -800,7 +796,7 @@ RESULT target_program(struct program_context_t *context)
 													start_addr, 0))
 				{
 					pgbar_fini();
-					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_ERASE), fullname);
+					LOG_ERROR(ERRMSG_FAILURE_ERASE, fullname);
 					ret = ERRCODE_FAILURE_OPERATION;
 					goto leave_program_mode;
 				}
@@ -808,7 +804,7 @@ RESULT target_program(struct program_context_t *context)
 			}
 			
 			pgbar_fini();
-			LOG_INFO(_GETTEXT(INFOMSG_ERASED), fullname);
+			LOG_INFO(INFOMSG_ERASED, fullname);
 			
 			// Reset After Erase
 			if ((area_attr & AREA_ATTR_RAE) 
@@ -837,7 +833,7 @@ RESULT target_program(struct program_context_t *context)
 		// required to program, writable
 		if ((op->write_operations & area_mask) && (area_attr & AREA_ATTR_W))
 		{
-			LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMING), fullname);
+			LOG_INFO(INFOMSG_PROGRAMMING, fullname);
 			strcpy(str_tmp, "writing ");
 			strcat(str_tmp, fullname);
 			strcat(str_tmp, " |");
@@ -857,8 +853,7 @@ RESULT target_program(struct program_context_t *context)
 								tmp_addr, tmp_buf, target_size))
 						{
 							pgbar_fini();
-							LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_PROGRAM), 
-										fullname);
+							LOG_ERROR(ERRMSG_FAILURE_PROGRAM, fullname);
 							ret = ERRCODE_FAILURE_OPERATION;
 							goto leave_program_mode;
 						}
@@ -875,8 +870,7 @@ RESULT target_program(struct program_context_t *context)
 									area_char, tmp_addr, tmp_buf, page_size))
 							{
 								pgbar_fini();
-								LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_PROGRAM), 
-											fullname);
+								LOG_ERROR(ERRMSG_FAILURE_PROGRAM, fullname);
 								ret = ERRCODE_FAILURE_OPERATION;
 								goto leave_program_mode;
 							}
@@ -894,8 +888,8 @@ RESULT target_program(struct program_context_t *context)
 					if (NULL == prog_area->cli_str)
 					{
 						pgbar_fini();
-						LOG_BUG("prog_area->cli_str SHOULD"
-								" NOT be NULL for special_str");
+						LOG_BUG(ERRMSG_INVALID_BUFFER, 
+								TO_STR(prog_area->cli_str));
 						ret = ERROR_FAIL;
 						goto leave_program_mode;
 					}
@@ -907,8 +901,7 @@ RESULT target_program(struct program_context_t *context)
 				}
 				else
 				{
-					LOG_ERROR(_GETTEXT(ERRMSG_INVALID_BUFFER), 
-								"tbuff(prog_area->buff)");
+					LOG_ERROR(ERRMSG_INVALID_BUFFER, "tbuff(prog_area->buff)");
 					ret = ERROR_FAIL;
 					goto leave_program_mode;
 				}
@@ -916,7 +909,7 @@ RESULT target_program(struct program_context_t *context)
 											start_addr, buff_tmp, target_size))
 				{
 					pgbar_fini();
-					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_PROGRAM), fullname);
+					LOG_ERROR(ERRMSG_FAILURE_PROGRAM, fullname);
 					ret = ERRCODE_FAILURE_OPERATION;
 					goto leave_program_mode;
 				}
@@ -924,7 +917,7 @@ RESULT target_program(struct program_context_t *context)
 			}
 			
 			time_in_ms = pgbar_fini();
-			LOG_INFO(_GETTEXT(INFOMSG_PROGRAMMED_SIZE), fullname, target_size, 
+			LOG_INFO(INFOMSG_PROGRAMMED_SIZE, fullname, target_size, 
 						(target_size / 1024.0) / (time_in_ms / 1000.0));
 			
 			// Reset After Write
@@ -954,7 +947,7 @@ RESULT target_program(struct program_context_t *context)
 			&& (area_attr & AREA_ATTR_V))
 		{
 			// specific verify defined by target
-			LOG_INFO(_GETTEXT(INFOMSG_VERIFYING), fullname);
+			LOG_INFO(INFOMSG_VERIFYING, fullname);
 			strcpy(str_tmp, "verifying ");
 			strcat(str_tmp, fullname);
 			strcat(str_tmp, " |");
@@ -967,7 +960,7 @@ RESULT target_program(struct program_context_t *context)
 										start_addr, tbuff, target_size))
 				{
 					pgbar_fini();
-					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_VERIFY), fullname);
+					LOG_ERROR(ERRMSG_FAILURE_VERIFY, fullname);
 					ret = ERRCODE_FAILURE_OPERATION;
 					goto leave_program_mode;
 				}
@@ -989,7 +982,7 @@ RESULT target_program(struct program_context_t *context)
 								tmp_addr, tmp_buf, page_size))
 						{
 							pgbar_fini();
-							LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_READ), fullname);
+							LOG_ERROR(ERRMSG_FAILURE_READ, fullname);
 							ret = ERRCODE_FAILURE_OPERATION;
 							goto leave_program_mode;
 						}
@@ -1010,8 +1003,7 @@ RESULT target_program(struct program_context_t *context)
 				if (ERROR_OK != MEMLIST_Add(ml, area_info->addr, 
 											area_info->size, page_size))
 				{
-					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-								"add memory list");
+					LOG_ERROR(ERRMSG_FAILURE_OPERATION, "add memory list");
 					ret = ERRCODE_FAILURE_OPERATION;
 					goto leave_program_mode;
 				}
@@ -1020,11 +1012,11 @@ RESULT target_program(struct program_context_t *context)
 			
 			if (op->verify_operations & area_mask)
 			{
-				LOG_INFO(_GETTEXT(INFOMSG_VERIFYING), fullname);
+				LOG_INFO(INFOMSG_VERIFYING, fullname);
 			}
 			else
 			{
-				LOG_INFO(_GETTEXT(INFOMSG_READING), fullname);
+				LOG_INFO(INFOMSG_READING, fullname);
 			}
 			strcpy(str_tmp, "reading ");
 			strcat(str_tmp, fullname);
@@ -1052,7 +1044,7 @@ RESULT target_program(struct program_context_t *context)
 					read_buf = (uint8_t*)malloc(buf_size);
 					if (NULL == read_buf)
 					{
-						LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+						LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 						ret = ERRCODE_NOT_ENOUGH_MEMORY;
 						goto leave_program_mode;
 					}
@@ -1065,7 +1057,7 @@ RESULT target_program(struct program_context_t *context)
 							free(read_buf);
 							read_buf = NULL;
 							pgbar_fini();
-							LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_READ), fullname);
+							LOG_ERROR(ERRMSG_FAILURE_READ, fullname);
 							ret = ERRCODE_FAILURE_OPERATION;
 							goto leave_program_mode;
 						}
@@ -1081,8 +1073,7 @@ RESULT target_program(struct program_context_t *context)
 								free(read_buf);
 								read_buf = NULL;
 								pgbar_fini();
-								LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_READ), 
-											fullname);
+								LOG_ERROR(ERRMSG_FAILURE_READ, fullname);
 								ret = ERRCODE_FAILURE_OPERATION;
 								goto leave_program_mode;
 							}
@@ -1099,10 +1090,9 @@ RESULT target_program(struct program_context_t *context)
 							{
 								pgbar_fini();
 								LOG_ERROR(
-									_GETTEXT(ERRMSG_FAILURE_VERIFY_AT_02X), 
+									ERRMSG_FAILURE_VERIFY_AT_02X, 
 									fullname, ml_tmp->addr + j, 
-									(uint64_t)read_buf[j], 
-									(uint64_t)tbuff[read_offset + j]);
+									read_buf[j], tbuff[read_offset + j]);
 								free(read_buf);
 								read_buf = NULL;
 								ret = ERRCODE_FAILURE_VERIFY;
@@ -1135,7 +1125,7 @@ RESULT target_program(struct program_context_t *context)
 					buff_tmp = (uint8_t*)malloc(target_size);
 					if (NULL == buff_tmp)
 					{
-						LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+						LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 						ret = ERRCODE_NOT_ENOUGH_MEMORY;
 						goto leave_program_mode;
 					}
@@ -1146,7 +1136,7 @@ RESULT target_program(struct program_context_t *context)
 							start_addr, buff_tmp, target_size))
 				{
 					pgbar_fini();
-					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_READ), fullname);
+					LOG_ERROR(ERRMSG_FAILURE_READ, fullname);
 					ret = ERRCODE_FAILURE_OPERATION;
 					goto leave_program_mode;
 				}
@@ -1160,12 +1150,12 @@ RESULT target_program(struct program_context_t *context)
 						if (!strcmp((const char*)prog_area->cli_str, 
 									(const char*)special_string))
 						{
-							LOG_INFO(_GETTEXT(INFOMSG_VERIFIED), fullname);
+							LOG_INFO(INFOMSG_VERIFIED, fullname);
 						}
 						else
 						{
-							LOG_ERROR("%s verify failed, read=%s, want=%s\n", 
-									fullname, special_string, prog_area->cli_str);
+							LOG_ERROR(ERRMSG_FAILURE_VERIFY_STR, 
+								fullname, special_string, prog_area->cli_str);
 							ret = ERRCODE_FAILURE_VERIFY;
 							goto leave_program_mode;
 						}
@@ -1174,21 +1164,21 @@ RESULT target_program(struct program_context_t *context)
 					{
 						if (!memcmp(buff_tmp, tbuff, target_size))
 						{
-							LOG_INFO(_GETTEXT(INFOMSG_VERIFIED), fullname);
+							LOG_INFO(INFOMSG_VERIFIED, fullname);
 						}
 						else
 						{
 							char *read_str, *want_str;
 							if (NULL == format)
 							{
-								LOG_BUG("format SHOULD be assigned\n");
+								LOG_BUG(ERRMSG_INVALID_BUFFER, "format");
 								ret = ERROR_FAIL;
 								goto leave_program_mode;
 							}
 							read_str = strparser_solve(format, buff_tmp, 0);
 							if (NULL == read_str)
 							{
-								LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+								LOG_ERROR(ERRMSG_FAILURE_OPERATION, 
 											"solve value");
 								ret = ERRCODE_FAILURE_OPERATION;
 								goto leave_program_mode;
@@ -1198,13 +1188,13 @@ RESULT target_program(struct program_context_t *context)
 							{
 								free(read_str);
 								read_str = NULL;
-								LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+								LOG_ERROR(ERRMSG_FAILURE_OPERATION, 
 											"solve value");
 								ret = ERRCODE_FAILURE_OPERATION;
 								goto leave_program_mode;
 							}
-							LOG_ERROR("%s verify failed, read=%s, want=%s.\n", 
-										fullname, read_str, want_str);
+							LOG_ERROR(ERRMSG_FAILURE_VERIFY_STR, 
+								fullname, read_str, want_str);
 							free(read_str);
 							read_str = NULL;
 							free(want_str);
@@ -1218,26 +1208,25 @@ RESULT target_program(struct program_context_t *context)
 				{
 					if (SPECIAL_STRING_CHAR == area_char)
 					{
-						LOG_INFO("%s read is %s\n", fullname, special_string);
+						LOG_INFO(INFOMSG_TARGET_READ, fullname, special_string);
 					}
 					else
 					{
 						char *read_str;
 						if (NULL == format)
 						{
-							LOG_BUG("format SHOULD be assigned\n");
+							LOG_BUG(ERRMSG_INVALID_BUFFER, "format");
 							ret = ERROR_FAIL;
 							goto leave_program_mode;
 						}
 						read_str = strparser_solve(format, buff_tmp, 0);
 						if (NULL == read_str)
 						{
-							LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-										"solve value");
+							LOG_ERROR(ERRMSG_FAILURE_OPERATION, "solve value");
 							ret = ERRCODE_FAILURE_OPERATION;
 							goto leave_program_mode;
 						}
-						LOG_INFO("%s read is %s\n", fullname, read_str);
+						LOG_INFO(INFOMSG_TARGET_READ, fullname, read_str);
 						free(read_str);
 						read_str = NULL;
 					}
@@ -1251,14 +1240,12 @@ RESULT target_program(struct program_context_t *context)
 			
 			if (op->verify_operations & area_mask)
 			{
-				LOG_INFO(_GETTEXT(INFOMSG_VERIFIED_SIZE), fullname, 
-							target_size, 
+				LOG_INFO(INFOMSG_VERIFIED_SIZE, fullname, target_size, 
 							(target_size / 1024.0) / (time_in_ms / 1000.0));
 			}
 			else
 			{
-				LOG_INFO(_GETTEXT(INFOMSG_READ_SIZE), fullname, 
-							target_size, 
+				LOG_INFO(INFOMSG_READ_SIZE, fullname, target_size, 
 							(target_size / 1024.0) / (time_in_ms / 1000.0));
 			}
 		}
@@ -1300,14 +1287,14 @@ RESULT target_init(struct program_info_t *pi, struct programmer_info_t *prog)
 		}
 		else if (NULL == strchr(cur_target->feature, AUTO_DETECT[0]))
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "Auto-detect", 
+			LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, "Auto-detect", 
 						cur_target->name);
 			return ERRCODE_NOT_SUPPORT;
 		}
 		// auto detect
 		memcpy(&target_chip_param, &target_chips.chips_param[0], 
 					sizeof(target_chip_param));
-		LOG_INFO(_GETTEXT(INFOMSG_TRY_AUTODETECT));
+		LOG_INFO(INFOMSG_TRY_AUTODETECT);
 		
 		if (target_chips.num_of_chips > 1)
 		{
@@ -1322,17 +1309,17 @@ RESULT target_init(struct program_info_t *pi, struct programmer_info_t *prog)
 			context.prog = prog;
 			if (ERROR_OK != target_program(&context))
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_AUTODETECT_FAIL), pi->chip_type);
+				LOG_ERROR(ERRMSG_AUTODETECT_FAIL, pi->chip_type);
 				return ERRCODE_AUTODETECT_FAIL;
 			}
 			
-			LOG_INFO(_GETTEXT(INFOMSG_AUTODETECT_SIGNATURE), pi->chip_id);
+			LOG_INFO(INFOMSG_AUTODETECT_SIGNATURE, pi->chip_id);
 			for (i = 0; i < target_chips.num_of_chips; i++)
 			{
 				if (pi->chip_id == target_chips.chips_param[i].chip_id)
 				{
 					pi->chip_name = target_chips.chips_param[i].chip_name;
-					LOG_INFO(_GETTEXT(INFOMSG_CHIP_FOUND), pi->chip_name);
+					LOG_INFO(INFOMSG_CHIP_FOUND, pi->chip_name);
 					
 					goto Post_Init;
 				}
@@ -1344,7 +1331,7 @@ RESULT target_init(struct program_info_t *pi, struct programmer_info_t *prog)
 			goto Post_Init;
 		}
 		
-		LOG_ERROR(_GETTEXT(ERRMSG_AUTODETECT_FAIL), pi->chip_type);
+		LOG_ERROR(ERRMSG_AUTODETECT_FAIL, pi->chip_type);
 		return ERRCODE_AUTODETECT_FAIL;
 	}
 	else
@@ -1444,7 +1431,7 @@ static void target_print_single_memory(char type)
 	}
 	if (0 == p_map[mapidx].name)
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), full_type, 
+		LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, full_type, 
 					program_info.chip_name);
 		return;
 	}
@@ -1452,7 +1439,7 @@ static void target_print_single_memory(char type)
 	paramidx = target_area_idx(type);
 	if (paramidx < 0 )
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), full_type, 
+		LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, full_type, 
 					program_info.chip_name);
 		return;
 	}
@@ -1482,7 +1469,7 @@ void target_print_memory(char type)
 	
 	if (NULL == cur_target)
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "Target");
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "Target");
 		return;
 	}
 	
@@ -1510,7 +1497,7 @@ void target_print_setting(char type)
 	
 	if (NULL == full_type)
 	{
-		LOG_BUG(_GETTEXT("%c passed to %s\n"), type, __FUNCTION__);
+		LOG_BUG(ERRMSG_INVALID_TARGET, "target");
 		return;
 	}
 	
@@ -1522,8 +1509,7 @@ void target_print_setting(char type)
 	}
 	if (0 == p_map[i].name)
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), full_type, 
-					program_info.chip_name);
+		LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, full_type, program_info.chip_name);
 		return;
 	}
 	
@@ -1532,8 +1518,7 @@ void target_print_setting(char type)
 									program_info.chip_name, full_type, &fl))
 	{
 		target_release_chip_fl(&fl);
-		LOG_ERROR(_GETTEXT("Invalid setting in config xml file for %s\n"), 
-					program_info.chip_name);
+		LOG_ERROR(ERRMSG_INVALID_XML_SETTING, program_info.chip_name);
 		return;
 	}
 	
@@ -1599,8 +1584,7 @@ void target_print_target(uint32_t index)
 						targets_info[index].program_mode, &target_chips))
 	{
 		target_release_chip_series(&target_chips);
-		LOG_ERROR(_GETTEXT("Invalid config xml file for %s\n"), 
-					targets_info[index].name);
+		LOG_ERROR(ERRMSG_INVALID_XML_SETTING, targets_info[index].name);
 		return;
 	}
 	
@@ -1735,7 +1719,7 @@ RESULT target_info_init(struct program_info_t *pi)
 #if PARAM_CHECK
 	if ((NULL == pi) || ((NULL == pi->chip_name) && (NULL == pi->chip_type)))
 	{
-		LOG_BUG(_GETTEXT(ERRMSG_INVALID_PARAMETER), __FUNCTION__);
+		LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
 		return ERRCODE_INVALID_PARAMETER;
 	}
 #endif
@@ -1763,15 +1747,15 @@ RESULT target_info_init(struct program_info_t *pi)
 			{
 				cur_target = &targets_info[i];
 				pi->chip_type = (char *)targets_info[i].name;
-				LOG_DEBUG(_GETTEXT("%s initialized for %s.\n"), 
-						 cur_target->name, pi->chip_name);
+				LOG_DEBUG("%s initialized for %s.", cur_target->name, 
+							pi->chip_name);
 				
 				return ERROR_OK;
 			}
 			target_release_chip_series(&target_chips);
 		}
 		
-		LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT), pi->chip_name);
+		LOG_ERROR(ERRMSG_NOT_SUPPORT, pi->chip_name);
 	}
 	else
 	{
@@ -1793,7 +1777,7 @@ RESULT target_info_init(struct program_info_t *pi)
 				}
 				else
 				{
-					LOG_BUG(_GETTEXT("probe_chip not defined by %s\n"), 
+					LOG_BUG(ERRMSG_NOT_SUPPORT_BY, "probe_chip", 
 							targets_info[i].name);
 					return ERROR_FAIL;
 				}
@@ -1801,8 +1785,8 @@ RESULT target_info_init(struct program_info_t *pi)
 				if ((pi->chip_name != NULL) 
 				   && (ERROR_OK != probe_chip(pi->chip_name)))
 				{
-					LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), 
-							  pi->chip_name, targets_info[i].name);
+					LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, pi->chip_name, 
+								targets_info[i].name);
 					target_release_chip_series(&target_chips);
 					cur_target = NULL;
 					return ERRCODE_NOT_SUPPORT;
@@ -1810,13 +1794,13 @@ RESULT target_info_init(struct program_info_t *pi)
 				else
 				{
 					cur_target = &targets_info[i];
-					LOG_DEBUG(_GETTEXT("%s initialized.\n"), cur_target->name);
+					LOG_DEBUG("%s initialized.", cur_target->name);
 					return ERROR_OK;
 				}
 			}
 		}
 		
-		LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT), pi->chip_type);
+		LOG_ERROR(ERRMSG_NOT_SUPPORT, pi->chip_type);
 	}
 	
 	cur_target = NULL;
@@ -1861,7 +1845,7 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 #if PARAM_CHECK
 	if ((NULL == chip_series) || (NULL == chip_module) || (NULL == fl))
 	{
-		LOG_BUG(_GETTEXT(ERRMSG_INVALID_PARAMETER), __FUNCTION__);
+		LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
 		return ERRCODE_INVALID_PARAMETER;
 	}
 #endif
@@ -1878,7 +1862,7 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 					+ strlen(chip_series) + strlen(TARGET_CONF_FILE_EXT) + 1);
 	if (NULL == filename)
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 		return ERRCODE_NOT_ENOUGH_MEMORY;
 	}
 	strcpy(filename, config_dir);
@@ -1900,14 +1884,14 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 	doc = xmlReadFile(filename, "", XML_PARSE_RECOVER);
 	if (NULL == doc)
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPEN), filename);
+		LOG_ERROR(ERRMSG_FAILURE_OPEN, filename);
 		ret = ERRCODE_FAILURE_OPEN;
 		goto free_and_exit;
 	}
 	curNode = xmlDocGetRootElement(doc);
 	if (NULL == curNode)
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read config file");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read config file");
 		ret = ERRCODE_FAILURE_OPERATION;
 		goto free_and_exit;
 	}
@@ -1918,7 +1902,7 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 		|| xmlStrcmp(xmlGetProp(curNode, BAD_CAST "name"), 
 					 (const xmlChar *)chip_series))
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read config file");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read config file");
 		ret = ERRCODE_FAILURE_OPERATION;
 		goto free_and_exit;
 	}
@@ -1926,7 +1910,7 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 	num_of_chips = target_xml_get_child_number(curNode, "chip");
 	if (0 == num_of_chips)
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT), chip_series);
+		LOG_ERROR(ERRMSG_NOT_SUPPORT, chip_series);
 		ret = ERRCODE_NOT_SUPPORT;
 		goto free_and_exit;
 	}
@@ -1940,7 +1924,7 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 			|| xmlStrcmp(curNode->name, BAD_CAST "chip")
 			|| !xmlHasProp(curNode, BAD_CAST "name"))
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read config file");
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read config file");
 			ret = ERRCODE_FAILURE_OPERATION;
 			goto free_and_exit;
 		}
@@ -1971,7 +1955,7 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 	}
 	if (NULL == paramNode)
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), type, chip_module);
+		LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, type, chip_module);
 		ret = ERRCODE_NOT_SUPPORT;
 		goto free_and_exit;
 	}
@@ -1981,7 +1965,7 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 	if (!xmlHasProp(paramNode, BAD_CAST "init") 
 		|| !xmlHasProp(paramNode, BAD_CAST "bytesize"))
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read config file");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read config file");
 		ret = ERRCODE_FAILURE_OPERATION;
 		goto free_and_exit;
 	}
@@ -1991,7 +1975,7 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 	{
 		if (size > 8)
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "format node");
+			LOG_ERROR(ERRMSG_NOT_DEFINED, "format node");
 			ret = ERROR_FAIL;
 			goto free_and_exit;
 		}
@@ -2004,7 +1988,7 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 		(uint16_t)target_xml_get_child_number(paramNode, "setting");
 	if (0 == fl->num_of_fl_settings)
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), type, chip_module);
+		LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, type, chip_module);
 		ret = ERRCODE_NOT_SUPPORT;
 		goto free_and_exit;
 	}
@@ -2013,14 +1997,13 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 	if (NULL == bufffunc_malloc_and_copy_str(&fl->init_value, 
 							(char *)xmlGetProp(paramNode, BAD_CAST "init")))
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 		ret = ERRCODE_NOT_ENOUGH_MEMORY;
 		goto free_and_exit;
 	}
 	if (ERROR_OK != strparser_check(fl->init_value, format))
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-							"parse init node");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "parse init node");
 		ret = ERRCODE_FAILURE_OPERATION;
 		goto free_and_exit;
 	}
@@ -2030,7 +2013,7 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 		fl->num_of_fl_settings * sizeof(struct chip_fl_setting_t));
 	if (NULL == fl->settings)
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 		ret = ERRCODE_NOT_ENOUGH_MEMORY;
 		goto free_and_exit;
 	}
@@ -2055,7 +2038,7 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 				fl->num_of_fl_warnings * sizeof(struct chip_fl_warning_t));
 			if (NULL == fl->warnings)
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+				LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 				ret = ERRCODE_NOT_ENOUGH_MEMORY;
 				goto free_and_exit;
 			}
@@ -2068,8 +2051,7 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 				// check
 				if (strcmp((const char *)wNode->name, "w"))
 				{
-					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-							  "read config file");
+					LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read config file");
 					ret = ERRCODE_FAILURE_OPERATION;
 					goto free_and_exit;
 				}
@@ -2078,14 +2060,13 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 						&fl->warnings[i].mask, 
 						(char *)xmlGetProp(wNode, BAD_CAST "mask")))
 				{
-					LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+					LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 					ret = ERRCODE_NOT_ENOUGH_MEMORY;
 					goto free_and_exit;
 				}
 				if (ERROR_OK != strparser_check(fl->warnings[i].mask, format))
 				{
-					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-										"parse mask node");
+					LOG_ERROR(ERRMSG_FAILURE_OPERATION, "parse mask node");
 					ret = ERRCODE_FAILURE_OPERATION;
 					goto free_and_exit;
 				}
@@ -2094,14 +2075,13 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 						&fl->warnings[i].value, 
 						(char *)xmlGetProp(wNode, BAD_CAST "value")))
 				{
-					LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+					LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 					ret = ERRCODE_NOT_ENOUGH_MEMORY;
 					goto free_and_exit;
 				}
 				if (ERROR_OK != strparser_check(fl->warnings[i].value, format))
 				{
-					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-										"parse value node");
+					LOG_ERROR(ERRMSG_FAILURE_OPERATION, "parse value node");
 					ret = ERRCODE_FAILURE_OPERATION;
 					goto free_and_exit;
 				}
@@ -2110,7 +2090,7 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 						&fl->warnings[i].msg, 
 						(char *)xmlGetProp(wNode, BAD_CAST "msg")))
 				{
-					LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+					LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 					ret = ERRCODE_NOT_ENOUGH_MEMORY;
 					goto free_and_exit;
 				}
@@ -2140,8 +2120,7 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 			|| (!xmlHasProp(settingNode, BAD_CAST "name"))
 			|| (!xmlHasProp(settingNode, BAD_CAST "mask")))
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-					  "read config file");
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read config file");
 			ret = ERRCODE_FAILURE_OPERATION;
 			goto free_and_exit;
 		}
@@ -2150,7 +2129,7 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 						&fl->settings[i].name, 
 						(char *)xmlGetProp(settingNode, BAD_CAST "name")))
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+			LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 			ret = ERRCODE_NOT_ENOUGH_MEMORY;
 			goto free_and_exit;
 		}
@@ -2159,14 +2138,13 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 						&fl->settings[i].mask, 
 						(char *)xmlGetProp(settingNode, BAD_CAST "mask")))
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+			LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 			ret = ERRCODE_NOT_ENOUGH_MEMORY;
 			goto free_and_exit;
 		}
 		if (ERROR_OK != strparser_check(fl->settings[i].mask, format))
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-								"parse mask node");
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "parse mask node");
 			ret = ERRCODE_FAILURE_OPERATION;
 			goto free_and_exit;
 		}
@@ -2177,7 +2155,7 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 						&fl->settings[i].ban, 
 						(char *)xmlGetProp(settingNode, BAD_CAST "ban")))
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+				LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 				ret = ERRCODE_NOT_ENOUGH_MEMORY;
 				goto free_and_exit;
 			}
@@ -2190,7 +2168,7 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 						&fl->settings[i].info, 
 						(char *)xmlGetProp(settingNode, BAD_CAST "info")))
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+				LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 				ret = ERRCODE_NOT_ENOUGH_MEMORY;
 				goto free_and_exit;
 			}
@@ -2203,7 +2181,7 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 						&fl->settings[i].format, 
 						(char *)xmlGetProp(settingNode, BAD_CAST "format")))
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+				LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 				ret = ERRCODE_NOT_ENOUGH_MEMORY;
 				goto free_and_exit;
 			}
@@ -2240,14 +2218,13 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 						&fl->settings[i].checked, 
 						(char *)xmlGetProp(settingNode, BAD_CAST "checked")))
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+				LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 				ret = ERRCODE_NOT_ENOUGH_MEMORY;
 				goto free_and_exit;
 			}
 			if (ERROR_OK != strparser_check(fl->settings[i].checked, format))
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-									"parse checked node");
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "parse checked node");
 				ret = ERRCODE_FAILURE_OPERATION;
 				goto free_and_exit;
 			}
@@ -2257,7 +2234,7 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 				
 				if (size > 8)
 				{
-					LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "unchecked node");
+					LOG_ERROR(ERRMSG_NOT_DEFINED, "unchecked node");
 					ret = ERROR_FAIL;
 					goto free_and_exit;
 				}
@@ -2265,8 +2242,7 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 				if (ERROR_OK != strparser_parse(fl->settings[i].checked, 
 							format, (uint8_t*)&val_tmp, sizeof(val_tmp)))
 				{
-					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-										"parse checked node");
+					LOG_ERROR(ERRMSG_FAILURE_OPERATION, "parse checked node");
 					ret = ERRCODE_FAILURE_OPERATION;
 					goto free_and_exit;
 				}
@@ -2274,18 +2250,18 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 				if (ERROR_OK != strparser_parse(fl->settings[i].mask, 
 							format, (uint8_t*)&mask_tmp, sizeof(mask_tmp)))
 				{
-					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-										"parse mask node");
+					LOG_ERROR(ERRMSG_FAILURE_OPERATION, "parse mask node");
 					ret = ERRCODE_FAILURE_OPERATION;
 					goto free_and_exit;
 				}
 				val_tmp ^= mask_tmp;
 				fl->settings[i].unchecked = 
-					strparser_solve(format, (uint8_t*)&val_tmp, sizeof(val_tmp));
+					strparser_solve(format, (uint8_t*)&val_tmp, 
+									sizeof(val_tmp));
 				if (NULL == fl->settings[i].unchecked)
 				{
-					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-										"solve unchecked value");
+					LOG_ERROR(ERRMSG_FAILURE_OPERATION, 
+								"solve unchecked value");
 					ret = ERRCODE_FAILURE_OPERATION;
 					goto free_and_exit;
 				}
@@ -2298,14 +2274,13 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 						&fl->settings[i].unchecked, 
 						(char *)xmlGetProp(settingNode, BAD_CAST "unchecked")))
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+				LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 				ret = ERRCODE_NOT_ENOUGH_MEMORY;
 				goto free_and_exit;
 			}
 			if (ERROR_OK != strparser_check(fl->settings[i].unchecked, format))
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-									"parse unchecked node");
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "parse unchecked node");
 				ret = ERRCODE_FAILURE_OPERATION;
 				goto free_and_exit;
 			}
@@ -2315,7 +2290,7 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 				
 				if (size > 8)
 				{
-					LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "checked node");
+					LOG_ERROR(ERRMSG_NOT_DEFINED, "checked node");
 					ret = ERROR_FAIL;
 					goto free_and_exit;
 				}
@@ -2323,8 +2298,7 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 				if (ERROR_OK != strparser_parse(fl->settings[i].unchecked, 
 							format, (uint8_t*)&val_tmp, sizeof(val_tmp)))
 				{
-					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-										"parse unchecked node");
+					LOG_ERROR(ERRMSG_FAILURE_OPERATION, "parse unchecked node");
 					ret = ERRCODE_FAILURE_OPERATION;
 					goto free_and_exit;
 				}
@@ -2332,18 +2306,17 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 				if (ERROR_OK != strparser_parse(fl->settings[i].mask, 
 							format, (uint8_t*)&mask_tmp, sizeof(mask_tmp)))
 				{
-					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-										"parse mask node");
+					LOG_ERROR(ERRMSG_FAILURE_OPERATION, "parse mask node");
 					ret = ERRCODE_FAILURE_OPERATION;
 					goto free_and_exit;
 				}
 				val_tmp ^= mask_tmp;
 				fl->settings[i].checked = 
-					strparser_solve(format, (uint8_t*)&val_tmp, sizeof(val_tmp));
+					strparser_solve(format, (uint8_t*)&val_tmp, 
+									sizeof(val_tmp));
 				if (NULL == fl->settings[i].checked)
 				{
-					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-										"solve checked value");
+					LOG_ERROR(ERRMSG_FAILURE_OPERATION, "solve checked value");
 					ret = ERRCODE_FAILURE_OPERATION;
 					goto free_and_exit;
 				}
@@ -2374,7 +2347,7 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 			fl->settings[i].num_of_choices * sizeof(struct chip_fl_choice_t));
 		if (NULL == fl->settings[i].choices)
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+			LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 			ret = ERRCODE_NOT_ENOUGH_MEMORY;
 			goto free_and_exit;
 		}
@@ -2390,8 +2363,7 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 				|| !xmlHasProp(choiceNode, BAD_CAST "value") 
 				|| !xmlHasProp(choiceNode, BAD_CAST "text"))
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-						  "read config file");
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read config file");
 				ret = ERRCODE_FAILURE_OPERATION;
 				goto free_and_exit;
 			}
@@ -2401,15 +2373,14 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 						&fl->settings[i].choices[j].value, 
 						(char *)xmlGetProp(choiceNode, BAD_CAST "value")))
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+				LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 				ret = ERRCODE_NOT_ENOUGH_MEMORY;
 				goto free_and_exit;
 			}
 			if (ERROR_OK != strparser_check(fl->settings[i].choices[j].value, 
 												format))
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-									"parse value node");
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "parse value node");
 				ret = ERRCODE_FAILURE_OPERATION;
 				goto free_and_exit;
 			}
@@ -2418,7 +2389,7 @@ RESULT target_build_chip_fl(const char *chip_series, const char *chip_module,
 						&fl->settings[i].choices[j].text, 
 						(char *)xmlGetProp(choiceNode, BAD_CAST "text")))
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+				LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 				ret = ERRCODE_NOT_ENOUGH_MEMORY;
 				goto free_and_exit;
 			}
@@ -2449,7 +2420,7 @@ RESULT target_release_chip_fl(struct chip_fl_t *fl)
 	
 	if (NULL == fl)
 	{
-		LOG_BUG(_GETTEXT(ERRMSG_INVALID_PARAMETER), __FUNCTION__);
+		LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
 		return ERRCODE_INVALID_PARAMETER;
 	}
 	
@@ -2565,7 +2536,7 @@ RESULT target_build_chip_series(const char *chip_series,
 #if PARAM_CHECK
 	if ((NULL == chip_series) || (NULL == s))
 	{
-		LOG_BUG(_GETTEXT(ERRMSG_INVALID_PARAMETER), __FUNCTION__);
+		LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
 		return ERRCODE_INVALID_PARAMETER;
 	}
 #endif
@@ -2582,7 +2553,7 @@ RESULT target_build_chip_series(const char *chip_series,
 								+ strlen(TARGET_CONF_FILE_EXT) + 1);
 	if (NULL == filename)
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 		return ERRCODE_NOT_ENOUGH_MEMORY;
 	}
 	strcpy(filename, config_dir);
@@ -2604,14 +2575,14 @@ RESULT target_build_chip_series(const char *chip_series,
 	doc = xmlReadFile(filename, "", XML_PARSE_RECOVER);
 	if (NULL == doc)
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPEN), filename);
+		LOG_ERROR(ERRMSG_FAILURE_OPEN, filename);
 		ret = ERRCODE_FAILURE_OPEN;
 		goto free_and_exit;
 	}
 	curNode = xmlDocGetRootElement(doc);
 	if (NULL == curNode)
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read config file");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read config file");
 		ret = ERRCODE_FAILURE_OPERATION;
 		goto free_and_exit;
 	}
@@ -2622,7 +2593,7 @@ RESULT target_build_chip_series(const char *chip_series,
 		|| xmlStrcmp(xmlGetProp(curNode, BAD_CAST "name"), 
 					 (const xmlChar *)chip_series))
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read config file");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read config file");
 		ret = ERRCODE_FAILURE_OPERATION;
 		goto free_and_exit;
 	}
@@ -2630,7 +2601,7 @@ RESULT target_build_chip_series(const char *chip_series,
 	s->num_of_chips = target_xml_get_child_number(curNode, "chip");
 	if (0 == s->num_of_chips)
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT), chip_series);
+		LOG_ERROR(ERRMSG_NOT_SUPPORT, chip_series);
 		ret = ERRCODE_NOT_SUPPORT;
 		goto free_and_exit;
 	}
@@ -2638,7 +2609,7 @@ RESULT target_build_chip_series(const char *chip_series,
 											* s->num_of_chips);
 	if (NULL == s->chips_param)
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 		ret = ERRCODE_NOT_ENOUGH_MEMORY;
 		goto free_and_exit;
 	}
@@ -2661,7 +2632,7 @@ RESULT target_build_chip_series(const char *chip_series,
 			|| xmlStrcmp(curNode->name, BAD_CAST "chip")
 			|| !xmlHasProp(curNode, BAD_CAST "name"))
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read config file");
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read config file");
 			ret = ERRCODE_FAILURE_OPERATION;
 			goto free_and_exit;
 		}
@@ -2695,7 +2666,7 @@ RESULT target_build_chip_series(const char *chip_series,
 										(char *)malloc(strlen(mode_tmp) + 1);
 				if (NULL == p_param->program_mode_str)
 				{
-					LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+					LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 					ret = ERRCODE_NOT_ENOUGH_MEMORY;
 					goto free_and_exit;
 				}
@@ -2714,8 +2685,8 @@ RESULT target_build_chip_series(const char *chip_series,
 						}
 						else
 						{
-							LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), 
-								mode_tmp, "program_mode of current target");
+							LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, mode_tmp, 
+										"current target");
 							ret = ERRCODE_NOT_SUPPORT;
 							goto free_and_exit;
 						}
@@ -3025,7 +2996,7 @@ RESULT target_build_chip_series(const char *chip_series,
 					if (NULL == bufffunc_malloc_and_copy_str(
 						&p_param->chip_areas[FUSE_IDX].cli_format, str))
 					{
-						LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+						LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 						ret = ERRCODE_NOT_ENOUGH_MEMORY;
 						goto free_and_exit;
 					}
@@ -3035,7 +3006,7 @@ RESULT target_build_chip_series(const char *chip_series,
 				{
 					if (size > 8)
 					{
-						LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "format node");
+						LOG_ERROR(ERRMSG_NOT_DEFINED, "format node");
 						ret = ERROR_FAIL;
 						goto free_and_exit;
 					}
@@ -3049,7 +3020,7 @@ RESULT target_build_chip_series(const char *chip_series,
 						(uint8_t *)malloc(size);
 					if (NULL == p_param->chip_areas[FUSE_IDX].mask)
 					{
-						LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+						LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 						ret = ERRCODE_NOT_ENOUGH_MEMORY;
 						goto free_and_exit;
 					}
@@ -3057,8 +3028,7 @@ RESULT target_build_chip_series(const char *chip_series,
 					if (ERROR_OK != 
 							strparser_parse(str, format, buff, size))
 					{
-						LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-									"parse mask node");
+						LOG_ERROR(ERRMSG_FAILURE_OPERATION, "parse mask node");
 						ret = ERRCODE_FAILURE_OPERATION;
 						goto free_and_exit;
 					}
@@ -3082,7 +3052,7 @@ RESULT target_build_chip_series(const char *chip_series,
 					if (NULL == bufffunc_malloc_and_copy_str(
 						&p_param->chip_areas[LOCK_IDX].cli_format, str))
 					{
-						LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+						LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 						ret = ERRCODE_NOT_ENOUGH_MEMORY;
 						goto free_and_exit;
 					}
@@ -3092,7 +3062,7 @@ RESULT target_build_chip_series(const char *chip_series,
 				{
 					if (size > 8)
 					{
-						LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "format node");
+						LOG_ERROR(ERRMSG_NOT_DEFINED, "format node");
 						ret = ERROR_FAIL;
 						goto free_and_exit;
 					}
@@ -3106,7 +3076,7 @@ RESULT target_build_chip_series(const char *chip_series,
 						(uint8_t *)malloc(size);
 					if (NULL == p_param->chip_areas[LOCK_IDX].mask)
 					{
-						LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+						LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 						ret = ERRCODE_NOT_ENOUGH_MEMORY;
 						goto free_and_exit;
 					}
@@ -3114,8 +3084,7 @@ RESULT target_build_chip_series(const char *chip_series,
 					if (ERROR_OK != 
 							strparser_parse(str, format, buff, size))
 					{
-						LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-									"parse mask node");
+						LOG_ERROR(ERRMSG_FAILURE_OPERATION, "parse mask node");
 						ret = ERRCODE_FAILURE_OPERATION;
 						goto free_and_exit;
 					}
@@ -3139,7 +3108,7 @@ RESULT target_build_chip_series(const char *chip_series,
 					if (NULL == bufffunc_malloc_and_copy_str(
 						&p_param->chip_areas[CALIBRATION_IDX].cli_format, str))
 					{
-						LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+						LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 						ret = ERRCODE_NOT_ENOUGH_MEMORY;
 						goto free_and_exit;
 					}
@@ -3149,7 +3118,7 @@ RESULT target_build_chip_series(const char *chip_series,
 				{
 					if (size > 8)
 					{
-						LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "format node");
+						LOG_ERROR(ERRMSG_NOT_DEFINED, "format node");
 						ret = ERROR_FAIL;
 						goto free_and_exit;
 					}
@@ -3163,7 +3132,7 @@ RESULT target_build_chip_series(const char *chip_series,
 						(uint8_t *)malloc(size);
 					if (NULL == p_param->chip_areas[CALIBRATION_IDX].mask)
 					{
-						LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+						LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 						ret = ERRCODE_NOT_ENOUGH_MEMORY;
 						goto free_and_exit;
 					}
@@ -3171,8 +3140,7 @@ RESULT target_build_chip_series(const char *chip_series,
 					if (ERROR_OK != 
 							strparser_parse(str, format, buff, size))
 					{
-						LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-									"parse mask node");
+						LOG_ERROR(ERRMSG_FAILURE_OPERATION, "parse mask node");
 						ret = ERRCODE_FAILURE_OPERATION;
 						goto free_and_exit;
 					}
@@ -3197,9 +3165,9 @@ RESULT target_build_chip_series(const char *chip_series,
 				else
 				{
 					// wrong parameter
-					LOG_ERROR(_GETTEXT(ERRMSG_INVALID), 
-								(const char *)xmlNodeGetContent(paramNode), 
-								chip_series);
+					LOG_ERROR(ERRMSG_INVALID, 
+						(const char *)xmlNodeGetContent(paramNode), 
+						chip_series);
 					ret = ERRCODE_INVALID;
 					goto free_and_exit;
 				}

@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 by Simon Qian <SimonQian@SimonQian.com>            *
+ *   Copyright (C) 2009 - 2010 by Simon Qian <SimonQian@SimonQian.com>     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -56,7 +56,7 @@ RESULT usbtomsp430jtag_ir(uint8_t interface_index, uint8_t *ir,
 #if PARAM_CHECK
 	if (interface_index > 7)
 	{
-		LOG_BUG(_GETTEXT("invalid inteface_index %d.\n"), interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
 		return ERROR_FAIL;
 	}
 #endif
@@ -84,7 +84,7 @@ RESULT usbtomsp430jtag_dr(uint8_t interface_index, uint32_t *dr, uint8_t len,
 #if PARAM_CHECK
 	if (interface_index > 7)
 	{
-		LOG_BUG(_GETTEXT("invalid inteface_index %d.\n"), interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
 		return ERROR_FAIL;
 	}
 #endif
@@ -109,7 +109,7 @@ RESULT usbtomsp430jtag_tclk(uint8_t interface_index, uint8_t value)
 #if PARAM_CHECK
 	if (interface_index > 7)
 	{
-		LOG_BUG(_GETTEXT("invalid inteface_index %d.\n"), interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
 		return ERROR_FAIL;
 	}
 #endif
@@ -123,7 +123,7 @@ RESULT usbtomsp430jtag_tclk_strobe(uint8_t interface_index, uint16_t cnt)
 #if PARAM_CHECK
 	if (interface_index > 7)
 	{
-		LOG_BUG(_GETTEXT("invalid inteface_index %d.\n"), interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
 		return ERROR_FAIL;
 	}
 #endif
@@ -137,7 +137,7 @@ RESULT usbtomsp430jtag_reset(uint8_t interface_index)
 #if PARAM_CHECK
 	if (interface_index > 7)
 	{
-		LOG_BUG(_GETTEXT("invalid inteface_index %d.\n"), interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
 		return ERROR_FAIL;
 	}
 #endif
@@ -155,7 +155,7 @@ RESULT usbtomsp430jtag_poll(uint8_t interface_index, uint32_t dr,
 #if PARAM_CHECK
 	if (interface_index > 7)
 	{
-		LOG_BUG(_GETTEXT("invalid inteface_index %d.\n"), interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
 		return ERROR_FAIL;
 	}
 #endif

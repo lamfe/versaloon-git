@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 by Simon Qian <SimonQian@SimonQian.com>            *
+ *   Copyright (C) 2009 - 2010 by Simon Qian <SimonQian@SimonQian.com>     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -113,20 +113,19 @@ RESULT strparser_parse(char * str, char * format, uint8_t * buff,
 parse_integer:
 				if (!has_param)
 				{
-					LOG_DEBUG(_GETTEXT(ERRMSG_NOT_DEFINED), "integer size");
+					LOG_DEBUG(ERRMSG_NOT_DEFINED, "integer size");
 					return ERROR_FAIL;
 				}
 				if (param > 8)
 				{
-					LOG_DEBUG(
-						_GETTEXT("%d is invalid for integer size, max is %d"), 
-						(uint32_t)param, 8);
+					LOG_DEBUG("%d is invalid for integer size, max is %d", 
+								(uint32_t)param, 8);
 					return ERROR_FAIL;
 				}
 				
 				if ('\0' == str[0])
 				{
-					LOG_DEBUG(_GETTEXT("get NULL while parsing value\n"));
+					LOG_DEBUG("get NULL while parsing value");
 					return ERROR_FAIL;
 				}
 				val_tmp = 0;
@@ -134,8 +133,7 @@ parse_integer:
 				if (str == ptr_tmp)
 				{
 					// parse failed
-					LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_HANDLE_DEVICE), 
-								"parse", str);
+					LOG_DEBUG(ERRMSG_FAILURE_HANDLE_DEVICE, "parse", str);
 					return ERROR_FAIL;
 				}
 				str = ptr_tmp;
@@ -146,12 +144,12 @@ parse_integer:
 				
 				if (val_tmp > strparser_maxvalue[param])
 				{
-					LOG_DEBUG(_GETTEXT("value execeed range!!\n"));
+					LOG_DEBUG("value execeed range!!");
 					return ERROR_FAIL;
 				}
 				if (size && (size_avail < param))
 				{
-					LOG_DEBUG(_GETTEXT("buff execeed range!!\n"));
+					LOG_DEBUG(ERRMSG_BUFFER_OVERFLOW, TO_STR(buff));
 					return ERROR_FAIL;
 				}
 				memcpy(buff, &val_tmp, (size_t)param);
@@ -163,7 +161,7 @@ parse_integer:
 				// character value
 				if (size && !size_avail)
 				{
-					LOG_DEBUG(_GETTEXT("buff execeed range!!\n"));
+					LOG_DEBUG(ERRMSG_BUFFER_OVERFLOW, TO_STR(buff));
 					return ERROR_FAIL;
 				}
 				
@@ -183,7 +181,7 @@ parse_integer:
 				{
 					if (size && !size_avail)
 					{
-						LOG_DEBUG(_GETTEXT("buff execeed range!!\n"));
+						LOG_DEBUG(ERRMSG_BUFFER_OVERFLOW, TO_STR(buff));
 						return ERROR_FAIL;
 					}
 					
@@ -196,7 +194,7 @@ parse_integer:
 				}
 				if (size && !size_avail)
 				{
-					LOG_DEBUG(_GETTEXT("buff execeed range!!\n"));
+					LOG_DEBUG(ERRMSG_BUFFER_OVERFLOW, TO_STR(buff));
 					return ERROR_FAIL;
 				}
 				*buff++ = '\0';
@@ -206,7 +204,7 @@ parse_integer:
 				}
 				break;
 			default:
-				LOG_DEBUG(_GETTEXT(ERRMSG_INVALID_OPTION), cur_ch);
+				LOG_DEBUG(ERRMSG_INVALID_OPTION, cur_ch);
 				return ERROR_FAIL;
 				break;
 			}
@@ -214,7 +212,7 @@ parse_integer:
 		default:
 			if (str[0] != cur_ch)
 			{
-				LOG_DEBUG(_GETTEXT("format error: %s\n"), str);
+				LOG_DEBUG("format error: %s", str);
 				return ERROR_FAIL;
 			}
 			break;
@@ -246,7 +244,7 @@ char * strparser_solve(char *format, uint8_t *buff, uint32_t size)
 	ret = (char*)malloc(1024);
 	if (NULL == ret)
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 		return NULL;
 	}
 	memset(ret, 0, 1024);
@@ -290,16 +288,15 @@ char * strparser_solve(char *format, uint8_t *buff, uint32_t size)
 solve_integer:
 				if (!has_param)
 				{
-					LOG_DEBUG(_GETTEXT(ERRMSG_NOT_DEFINED), "integer size");
+					LOG_DEBUG(ERRMSG_NOT_DEFINED, "integer size");
 					free(ret);
 					ret = NULL;
 					return ret;
 				}
 				if (param > 8)
 				{
-					LOG_DEBUG(
-						_GETTEXT("%d is invalid for integer size, max is %d"), 
-						(uint32_t)param, 8);
+					LOG_DEBUG("%d is invalid for integer size, max is %d", 
+								(uint32_t)param, 8);
 					free(ret);
 					ret = NULL;
 					return ret;
@@ -363,7 +360,7 @@ solve_integer:
 				buff += strlen((char*)buff) + 1;
 				break;
 			default:
-				LOG_DEBUG(_GETTEXT(ERRMSG_INVALID_OPTION), cur_ch);
+				LOG_DEBUG(ERRMSG_INVALID_OPTION, cur_ch);
 				free(ret);
 				ret = NULL;
 				return ret;

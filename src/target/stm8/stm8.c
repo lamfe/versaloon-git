@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 by Simon Qian <SimonQian@SimonQian.com>            *
+ *   Copyright (C) 2009 - 2010 by Simon Qian <SimonQian@SimonQian.com>     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -92,7 +92,7 @@ PARSE_ARGUMENT_HANDLER(stm8)
 	case 'm':
 		if (NULL == argu)
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), cmd);
+			LOG_ERROR(ERRMSG_INVALID_OPTION, cmd);
 			return ERRCODE_INVALID_OPTION;
 		}
 		mode = (uint8_t)strtoul(argu, NULL,0);
@@ -396,14 +396,14 @@ static RESULT stm8_fl_print_context(void)
 	{
 		return ERROR_FAIL;
 	}
-	LOG_INFO(_GETTEXT("DM_CSR2 = 0x%02X\n"), buff[0]);
+	LOG_INFO(INFOMSG_REG_02X, "DM_CSR2", buff[0]);
 	if (buff[0] & STM8_DM_CSR2_STALL)
 	{
-		LOG_INFO("CPU stalled\n");
+		LOG_INFO("CPU stalled");
 	}
 	else
 	{
-		LOG_INFO("CPU running\n");
+		LOG_INFO("CPU running");
 	}
 	swim_rotf(0x007F00, buff, 11);
 	if (ERROR_OK != commit())
@@ -417,12 +417,12 @@ static RESULT stm8_fl_print_context(void)
 	kernel_reg.SP = (buff[8] << 8) + (buff[9] << 0);
 	kernel_reg.CCR = buff[10];
 	
-	LOG_INFO(_GETTEXT("A = 0x%02X(%d)\n"), kernel_reg.A, kernel_reg.A);
-	LOG_INFO(_GETTEXT("PC = 0x%06X\n"), kernel_reg.PC);
-	LOG_INFO(_GETTEXT("X = 0x%04X\n"), kernel_reg.X);
-	LOG_INFO(_GETTEXT("Y = 0x%04X\n"), kernel_reg.Y);
-	LOG_INFO(_GETTEXT("SP = 0x%04X\n"), kernel_reg.SP);
-	LOG_INFO(_GETTEXT("CCR = 0x%02X\n"), kernel_reg.CCR);
+	LOG_INFO(INFOMSG_REG_02X, "A", kernel_reg.A);
+	LOG_INFO(INFOMSG_REG_06X, "PC", kernel_reg.PC);
+	LOG_INFO(INFOMSG_REG_04X, "X", kernel_reg.X);
+	LOG_INFO(INFOMSG_REG_04X, "Y", kernel_reg.Y);
+	LOG_INFO(INFOMSG_REG_04X, "SP", kernel_reg.SP);
+	LOG_INFO(INFOMSG_REG_02X, "CCR", kernel_reg.CCR);
 	
 	swim_rotf(0x000000, buff, sizeof(buff));
 	if (ERROR_OK != commit())
@@ -521,7 +521,7 @@ ENTER_PROGRAM_MODE_HANDLER(stm8swim)
 		reset_input();
 		reset_fini();
 		commit();
-		LOG_ERROR(_GETTEXT("No response on SWIM! Is target connected?\n"));
+		LOG_ERROR("No response on SWIM! Is target connected?");
 		return ERROR_FAIL;
 	}
 	
@@ -588,7 +588,7 @@ ENTER_PROGRAM_MODE_HANDLER(stm8swim)
 	else
 	{
 		test_buf0[6] = '\0';
-		LOG_INFO(_GETTEXT("is this chip ID: %s\n"), test_buf0);
+		LOG_INFO("is this chip ID: %s", test_buf0);
 	}
 	
 	// stall core
@@ -784,7 +784,7 @@ WRITE_TARGET_HANDLER(stm8swim)
 do_write_flashee:
 		if ((size != 64) && (size != 128))
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_VALUE), size, "page_size");
+			LOG_ERROR(ERRMSG_INVALID_VALUE, size, "page_size");
 			return ERROR_FAIL;
 		}
 #ifdef STM8_USE_FLASHLOADER
@@ -840,13 +840,13 @@ do_write_flashee:
 	case FUSE_CHAR:
 		if ((!size) || (param->chip_areas[FUSE_IDX].size != size))
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_VALUE), size, "fuse_size");
+			LOG_ERROR(ERRMSG_INVALID_VALUE, size, "fuse_size");
 			return ERROR_FAIL;
 		}
 		mask = param->chip_areas[FUSE_IDX].mask;
 		if (NULL == mask)
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_BUFFER), "fuse_mask");
+			LOG_ERROR(ERRMSG_INVALID_BUFFER, "fuse_mask");
 			ret = ERROR_FAIL;
 			break;
 		}
@@ -891,8 +891,8 @@ do_write_fuse:
 						&& ((0x00 == buff[fuse_offset]) 
 							|| (0xFF == buff[fuse_offset])))
 					{
-						LOG_ERROR(_GETTEXT(ERRMSG_INVALID_HEX), 
-									buff[fuse_offset], "TMU_KEY");
+						LOG_ERROR(ERRMSG_INVALID_HEX, buff[fuse_offset], 
+									"TMU_KEY");
 						ret = ERROR_FAIL;
 						break;
 					}
@@ -984,13 +984,13 @@ READ_TARGET_HANDLER(stm8swim)
 	case FUSE_CHAR:
 		if ((!size) || (param->chip_areas[FUSE_IDX].size != size))
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_VALUE), size, "fuse_size");
+			LOG_ERROR(ERRMSG_INVALID_VALUE, size, "fuse_size");
 			return ERROR_FAIL;
 		}
 		mask = param->chip_areas[FUSE_IDX].mask;
 		if (NULL == mask)
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_BUFFER), "fuse_mask");
+			LOG_ERROR(ERRMSG_INVALID_BUFFER, "fuse_mask");
 			ret = ERROR_FAIL;
 			break;
 		}

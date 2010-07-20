@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 by Simon Qian <SimonQian@SimonQian.com>            *
+ *   Copyright (C) 2009 - 2010 by Simon Qian <SimonQian@SimonQian.com>     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -53,7 +53,7 @@ RESULT cm3_dp_parameter_init(adi_dp_if_t *dp)
 		dp->tar_autoincr_block = (1 << 10);
 		break;
 	default:
-		LOG_ERROR(_GETTEXT("unknown core: %d\n"), dp->core);
+		LOG_ERROR("unknown core: %d", dp->core);
 		return ERROR_FAIL;
 		break;
 	}
@@ -79,8 +79,7 @@ RESULT cm3_dp_init(struct program_context_t *context, adi_dp_if_t *dp)
 	if ((ERROR_OK != adi_init(context, &cm3_dp_if)) 
 		|| (ERROR_OK != cm3_dp_parameter_init(&cm3_dp_if)))
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-					"initialize cm3 interface");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "initialize cm3 interface");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
@@ -93,17 +92,17 @@ RESULT cm3_dp_init(struct program_context_t *context, adi_dp_if_t *dp)
 	// 0xC20 is for CortexM0
 	if ((((cpuid >> 4) & 0xC3F) == 0xC23) && (ADI_DP_CM3 == cm3_dp_if.core))
 	{
-		LOG_INFO(_GETTEXT("CORTEX-M3 processor detected\n"));
+		LOG_INFO("CORTEX-M3 processor detected");
 	}
 	else if ((((cpuid >> 4) & 0xC3F) == 0xC20) && (ADI_DP_CM0 == cm3_dp_if.core))
 	{
-		LOG_INFO(_GETTEXT("CORTEX-M0 processor detected\n"));
+		LOG_INFO("CORTEX-M0 processor detected");
 	}
 	else
 	{
-		LOG_WARNING(_GETTEXT("Is target a CORTEX-M3?\n"));
+		LOG_WARNING("Is target a CORTEX-M3?");
 	}
-	LOG_INFO("CPUID: 0x%08X\n", cpuid);
+	LOG_INFO(INFOMSG_REG_08X, "CPUID", cpuid);
 	
 	return ERROR_OK;
 }

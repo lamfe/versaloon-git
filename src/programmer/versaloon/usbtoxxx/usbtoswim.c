@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 by Simon Qian <SimonQian@SimonQian.com>            *
+ *   Copyright (C) 2009 - 2010 by Simon Qian <SimonQian@SimonQian.com>     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -49,7 +49,7 @@ RESULT usbtoswim_config(uint8_t interface_index, uint8_t mHz, uint8_t cnt0,
 #if PARAM_CHECK
 	if (interface_index > 7)
 	{
-		LOG_BUG(_GETTEXT("invalid inteface_index %d.\n"), interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
 		return ERROR_FAIL;
 	}
 #endif
@@ -66,7 +66,7 @@ RESULT usbtoswim_srst(uint8_t interface_index)
 #if PARAM_CHECK
 	if (interface_index > 7)
 	{
-		LOG_BUG(_GETTEXT("invalid inteface_index %d.\n"), interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
 		return ERROR_FAIL;
 	}
 #endif
@@ -80,7 +80,7 @@ RESULT usbtoswim_wotf(uint8_t interface_index, uint8_t *data, uint16_t bytelen,
 #if PARAM_CHECK
 	if (interface_index > 7)
 	{
-		LOG_BUG(_GETTEXT("invalid inteface_index %d.\n"), interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
 		return ERROR_FAIL;
 	}
 #endif
@@ -102,7 +102,7 @@ RESULT usbtoswim_rotf(uint8_t interface_index, uint8_t *data, uint16_t bytelen,
 #if PARAM_CHECK
 	if (interface_index > 7)
 	{
-		LOG_BUG(_GETTEXT("invalid inteface_index %d.\n"), interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
 		return ERROR_FAIL;
 	}
 #endif
@@ -125,7 +125,7 @@ RESULT usbtoswim_sync(uint8_t interface_index, uint8_t mHz)
 #if PARAM_CHECK
 	if (interface_index > 7)
 	{
-		LOG_BUG(_GETTEXT("invalid inteface_index %d.\n"), interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
 		return ERROR_FAIL;
 	}
 #endif
@@ -137,6 +137,13 @@ RESULT usbtoswim_sync(uint8_t interface_index, uint8_t mHz)
 
 RESULT usbtoswim_enable(uint8_t interface_index)
 {
+#if PARAM_CHECK
+	if (interface_index > 7)
+	{
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
+		return ERROR_FAIL;
+	}
+#endif
 	return usbtoxxx_enable_command(USB_TO_SWIM, interface_index, NULL, 0);
 }
 

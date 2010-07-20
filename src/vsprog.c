@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 by Simon Qian <SimonQian@SimonQian.com>            *
+ *   Copyright (C) 2009 - 2010 by Simon Qian <SimonQian@SimonQian.com>     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -152,7 +152,7 @@ static RESULT parse_operation(uint32_t *operation,
 #if PARAM_CHECK
 	if ((NULL == operation) || (NULL == opt))
 	{
-		LOG_BUG(_GETTEXT(ERRMSG_INVALID_PARAMETER), __FUNCTION__);
+		LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
 		return ERRCODE_INVALID_PARAMETER;
 	}
 #endif
@@ -162,8 +162,7 @@ static RESULT parse_operation(uint32_t *operation,
 		tmp = target_area_mask(opt[i]);
 		if (tmp == 0)
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_CHARACTER), 
-						opt[i], "target area");
+			LOG_ERROR(ERRMSG_INVALID_CHARACTER, opt[i], "target area");
 			return ERROR_FAIL;
 		}
 		mask |= tmp;
@@ -244,13 +243,13 @@ int main(int argc, char* argv[])
 	program_dir = (char *)malloc(strlen(argv[0]) + 1);
 	if (NULL == program_dir)
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 		free_all_and_exit(EXIT_FAILURE);
 	}
 	program_name = (char *)malloc(strlen(argv[0]) + 1);
 	if (NULL == program_name)
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 		free_all_and_exit(EXIT_FAILURE);
 	}
 	strcpy(program_dir, argv[0]);
@@ -278,7 +277,7 @@ int main(int argc, char* argv[])
 		config_dir = (char *)malloc(strlen(program_dir) + strlen("config") + 2);
 		if (NULL == config_dir)
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+			LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 			free_all_and_exit(EXIT_FAILURE);
 		}
 		strcpy(config_dir, "");
@@ -340,7 +339,7 @@ int main(int argc, char* argv[])
 				
 				if (optarg[strlen(optarg) - 1] != ch)
 				{
-					LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), (char)optc);
+					LOG_ERROR(ERRMSG_INVALID_OPTION, (char)optc);
 					free_all_and_exit(EXIT_FAILURE);
 				}
 				optarg[strlen(optarg) - 1] = '\0';
@@ -353,8 +352,8 @@ int main(int argc, char* argv[])
 		case ':':
 			break;
 		case '?':
-			LOG_ERROR(_GETTEXT("unkown option %s.\n"), argv[optind]);
-			LOG_ERROR(_GETTEXT(ERRMSG_TRY_HELP));
+			LOG_ERROR(ERRMSG_INVALID_CMD, argv[optind]);
+			LOG_ERROR(ERRMSG_TRY_HELP);
 			print_help();
 			free_all_and_exit(EXIT_FAILURE);
 			break;
@@ -373,8 +372,8 @@ int main(int argc, char* argv[])
 			if (((strlen(optarg) != 1)) || (optarg[0] > '3') 
 				|| (optarg[0] < '1'))
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), (char)optc);
-				LOG_ERROR(_GETTEXT(ERRMSG_TRY_HELP));
+				LOG_ERROR(ERRMSG_INVALID_OPTION, (char)optc);
+				LOG_ERROR(ERRMSG_TRY_HELP);
 				free_all_and_exit(EXIT_FAILURE);
 			}
 			
@@ -389,7 +388,7 @@ int main(int argc, char* argv[])
 			}
 			if (0 == j)
 			{
-				LOG_INFO(_GETTEXT("no programmer supported found.\n"));
+				LOG_INFO("no programmer found.");
 			}
 			free_all_and_exit(EXIT_SUCCESS);
 		case 'D':
@@ -397,7 +396,7 @@ int main(int argc, char* argv[])
 			if (((NULL == program_info.chip_name) || (NULL == cur_target))
 				&& (NULL == program_info.chip_type))
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "Target");
+				LOG_ERROR(ERRMSG_NOT_DEFINED, "Target");
 				free_all_and_exit(EXIT_FAILURE);
 			}
 			if (((NULL == program_info.chip_name) || (NULL == cur_target))
@@ -407,7 +406,7 @@ int main(int argc, char* argv[])
 				target_info_init(&program_info);
 				if (NULL == cur_target)
 				{
-					LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "Target");
+					LOG_ERROR(ERRMSG_NOT_DEFINED, "Target");
 					free_all_and_exit(EXIT_FAILURE);
 				}
 			}
@@ -422,8 +421,8 @@ int main(int argc, char* argv[])
 					optarg[0] = target_area_char_by_fullname(optarg);
 					if (0 == optarg[0])
 					{
-						LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), (char)optc);
-						LOG_ERROR(_GETTEXT(ERRMSG_TRY_HELP));
+						LOG_ERROR(ERRMSG_INVALID_OPTION, (char)optc);
+						LOG_ERROR(ERRMSG_TRY_HELP);
 						free_all_and_exit(EXIT_FAILURE);
 					}
 				}
@@ -432,8 +431,7 @@ int main(int argc, char* argv[])
 			ret = target_init(&program_info, cur_programmer);
 			if (ret != ERROR_OK)
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-							"initialize target");
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "initialize target");
 				free_all_and_exit(EXIT_FAILURE);
 			}
 			
@@ -446,7 +444,7 @@ int main(int argc, char* argv[])
 				|| (NULL == program_info.chip_type) 
 				|| (NULL == cur_target))
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "Target");
+				LOG_ERROR(ERRMSG_NOT_DEFINED, "Target");
 				free_all_and_exit(EXIT_FAILURE);
 			}
 			if (strlen(optarg) > 1)
@@ -455,8 +453,8 @@ int main(int argc, char* argv[])
 				optarg[1] = '\0';
 				if (0 == optarg[0])
 				{
-					LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), (char)optc);
-					LOG_ERROR(_GETTEXT(ERRMSG_TRY_HELP));
+					LOG_ERROR(ERRMSG_INVALID_OPTION, (char)optc);
+					LOG_ERROR(ERRMSG_TRY_HELP);
 					free_all_and_exit(EXIT_FAILURE);
 				}
 			}
@@ -464,8 +462,7 @@ int main(int argc, char* argv[])
 			ret = target_init(&program_info, cur_programmer);
 			if (ret != ERROR_OK)
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-							"initialize target");
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "initialize target");
 				free_all_and_exit(EXIT_FAILURE);
 			}
 			
@@ -519,8 +516,8 @@ int main(int argc, char* argv[])
 					}
 				}
 				
-				LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT), optarg);
-				LOG_ERROR(_GETTEXT(ERRMSG_TRY_SUPPORT));
+				LOG_ERROR(ERRMSG_NOT_SUPPORT, optarg);
+				LOG_ERROR(ERRMSG_TRY_SUPPORT);
 				free_all_and_exit(EXIT_FAILURE);
 			}
 			free_all_and_exit(EXIT_SUCCESS);
@@ -530,9 +527,8 @@ int main(int argc, char* argv[])
 			ret = target_info_init(&program_info);
 			if (ret != ERROR_OK)
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-						  "initialize target");
-				LOG_ERROR(_GETTEXT(ERRMSG_TRY_HELP));
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "initialize target");
+				LOG_ERROR(ERRMSG_TRY_HELP);
 				free_all_and_exit(EXIT_FAILURE);
 			}
 			break;
@@ -542,9 +538,8 @@ int main(int argc, char* argv[])
 			ret = target_info_init(&program_info);
 			if (ret != ERROR_OK)
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-						  "initialize target");
-				LOG_ERROR(_GETTEXT(ERRMSG_TRY_HELP));
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "initialize target");
+				LOG_ERROR(ERRMSG_TRY_HELP);
 				free_all_and_exit(EXIT_FAILURE);
 			}
 			break;
@@ -553,8 +548,8 @@ int main(int argc, char* argv[])
 			ret = programmer_init(optarg);
 			if (ret != ERROR_OK)
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT), optarg);
-				LOG_ERROR(_GETTEXT(ERRMSG_TRY_SUPPORT));
+				LOG_ERROR(ERRMSG_NOT_SUPPORT, optarg);
+				LOG_ERROR(ERRMSG_TRY_SUPPORT);
 				free_all_and_exit(EXIT_FAILURE);
 			}
 			break;
@@ -563,13 +558,13 @@ int main(int argc, char* argv[])
 			argu_num = (int)strlen(optarg) - 1;
 			if (argu_num > NUM_OF_TARGET_AREA)
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), (char)optc);
-				LOG_ERROR(_GETTEXT(ERRMSG_TRY_SUPPORT));
+				LOG_ERROR(ERRMSG_INVALID_OPTION, (char)optc);
+				LOG_ERROR(ERRMSG_TRY_SUPPORT);
 				free_all_and_exit(EXIT_FAILURE);
 			}
 			if (NULL == cur_target)
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "target");
+				LOG_ERROR(ERRMSG_NOT_DEFINED, "target");
 				free_all_and_exit(EXIT_FAILURE);
 			}
 			
@@ -593,7 +588,7 @@ int main(int argc, char* argv[])
 Parse_Operation:
 				if (*popt_tmp != 0)
 				{
-					LOG_ERROR(_GETTEXT(ERRMSG_MUTIPLE_DEFINED), "operation");
+					LOG_ERROR(ERRMSG_MUTIPLE_DEFINED, "operation");
 					free_all_and_exit(EXIT_FAILURE);
 				}
 				if (0 == argu_num)
@@ -605,15 +600,15 @@ Parse_Operation:
 					ret = parse_operation(popt_tmp, optarg + 1, argu_num);
 					if (ret != ERROR_OK)
 					{
-						LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-								  "parse write operation");
+						LOG_ERROR(ERRMSG_FAILURE_OPERATION, 
+									"parse write operation");
 						free_all_and_exit(EXIT_FAILURE);
 					}
 				}
 				break;
 			default:
-				LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), (char)optc);
-				LOG_ERROR(_GETTEXT(ERRMSG_TRY_HELP));
+				LOG_ERROR(ERRMSG_INVALID_OPTION, (char)optc);
+				LOG_ERROR(ERRMSG_TRY_HELP);
 				free_all_and_exit(EXIT_FAILURE);
 				break;
 			}
@@ -622,16 +617,15 @@ Parse_Operation:
 			// --target
 			if (strlen(optarg) < 2)
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), (char)optc);
-				LOG_ERROR(_GETTEXT(ERRMSG_TRY_SUPPORT));
+				LOG_ERROR(ERRMSG_INVALID_OPTION, (char)optc);
+				LOG_ERROR(ERRMSG_TRY_SUPPORT);
 				free_all_and_exit(EXIT_FAILURE);
 			}
 			optc = (int)target_area_idx(optarg[0]);
 			if (optc < 0)
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_INVALID_CHARACTER), (char)optc, 
-							"target");
-				LOG_ERROR(_GETTEXT(ERRMSG_TRY_SUPPORT));
+				LOG_ERROR(ERRMSG_INVALID_CHARACTER, (char)optc, "target");
+				LOG_ERROR(ERRMSG_TRY_SUPPORT);
 				free_all_and_exit(EXIT_FAILURE);
 			}
 			program_info.program_areas[optc].cli_str = &optarg[1];
@@ -664,8 +658,8 @@ Parse_File:
 						&& ((*end_pointer != ',') 
 							|| (*(end_pointer + 1) == '\0'))))
 				{
-					LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), (char)optc);
-					LOG_ERROR(_GETTEXT(ERRMSG_TRY_HELP));
+					LOG_ERROR(ERRMSG_INVALID_OPTION, (char)optc);
+					LOG_ERROR(ERRMSG_TRY_HELP);
 					free_all_and_exit(EXIT_FAILURE);
 				}
 				if (*end_pointer != '\0')
@@ -675,8 +669,8 @@ Parse_File:
 							(uint32_t)strtoul(cur_pointer, &end_pointer, 0);
 					if ((cur_pointer == end_pointer) || (*end_pointer != '\0'))
 					{
-						LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), (char)optc);
-						LOG_ERROR(_GETTEXT(ERRMSG_TRY_HELP));
+						LOG_ERROR(ERRMSG_INVALID_OPTION, (char)optc);
+						LOG_ERROR(ERRMSG_TRY_HELP);
 						free_all_and_exit(EXIT_FAILURE);
 					}
 				}
@@ -685,8 +679,7 @@ Parse_File:
 			if (ERROR_OK != 
 					FILELIST_Add(fl_tmp, optarg, seg_offset, addr_offset))
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_HANDLE_DEVICE), 
-							"add file", optarg);
+				LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "add file", optarg);
 				free_all_and_exit(EXIT_FAILURE);
 			}
 			break;
@@ -715,8 +708,8 @@ Parse_File:
 			if ((cur_pointer == end_pointer) || ('\0' == end_pointer[0]) 
 				|| ('\0' == end_pointer[1]))
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), (char)optc);
-				LOG_ERROR(_GETTEXT(ERRMSG_TRY_HELP));
+				LOG_ERROR(ERRMSG_INVALID_OPTION, (char)optc);
+				LOG_ERROR(ERRMSG_TRY_HELP);
 				free_all_and_exit(EXIT_FAILURE);
 			}
 			
@@ -726,8 +719,8 @@ Parse_File:
 			if ((cur_pointer == end_pointer) || ('\0' == end_pointer[0]) 
 				|| ('\0' == end_pointer[1]))
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), (char)optc);
-				LOG_ERROR(_GETTEXT(ERRMSG_TRY_HELP));
+				LOG_ERROR(ERRMSG_INVALID_OPTION, (char)optc);
+				LOG_ERROR(ERRMSG_TRY_HELP);
 				free_all_and_exit(EXIT_FAILURE);
 			}
 			
@@ -737,8 +730,8 @@ Parse_File:
 			if ((cur_pointer == end_pointer) || ('\0' == end_pointer[0]) 
 				|| ('\0' == end_pointer[1]))
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), (char)optc);
-				LOG_ERROR(_GETTEXT(ERRMSG_TRY_HELP));
+				LOG_ERROR(ERRMSG_INVALID_OPTION, (char)optc);
+				LOG_ERROR(ERRMSG_TRY_HELP);
 				free_all_and_exit(EXIT_FAILURE);
 			}
 			
@@ -747,8 +740,8 @@ Parse_File:
 							= (uint16_t)strtoul(cur_pointer, &end_pointer, 0);
 			if (cur_pointer == end_pointer)
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), (char)optc);
-				LOG_ERROR(_GETTEXT(ERRMSG_TRY_HELP));
+				LOG_ERROR(ERRMSG_INVALID_OPTION, (char)optc);
+				LOG_ERROR(ERRMSG_TRY_HELP);
 				free_all_and_exit(EXIT_FAILURE);
 			}
 			break;
@@ -756,15 +749,14 @@ Parse_File:
 			// --mode, accept one character
 			if (strlen(optarg) != 1)
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), (char)optc);
-				LOG_ERROR(_GETTEXT(ERRMSG_TRY_HELP));
+				LOG_ERROR(ERRMSG_INVALID_OPTION, (char)optc);
+				LOG_ERROR(ERRMSG_TRY_HELP);
 				free_all_and_exit(EXIT_FAILURE);
 			}
 			optc = target_mode_get_idx(cur_target->program_mode, optarg[0]);
 			if (optc < 0)
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), optarg, 
-						  cur_target->name);
+				LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, optarg, cur_target->name);
 				free_all_and_exit(EXIT_FAILURE);
 			}
 			
@@ -786,7 +778,7 @@ Parse_File:
 			// --misc_cmd
 			if (NULL == cur_programmer)
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "Programmer");
+				LOG_ERROR(ERRMSG_NOT_DEFINED, "Programmer");
 				free_all_and_exit(EXIT_FAILURE);
 			}
 			
@@ -795,8 +787,8 @@ Parse_File:
 			ret = cur_programmer->init();
 			if (ret != ERROR_OK)
 			{
-				LOG_ERROR(_GETTEXT("Programmer %s not initialized.\n"), 
-						  cur_programmer->name);
+				LOG_ERROR(ERRMSG_NOT_INITIALIZED, "Programmer", 
+							cur_programmer->name);
 				free_all_and_exit(EXIT_FAILURE);
 			}
 			
@@ -833,8 +825,8 @@ Parse_File:
 		// print error message and exit
 		if (optind < argc)
 		{
-			LOG_ERROR(_GETTEXT("extra operand: %s.\n"), argv[optind]);
-			LOG_ERROR(_GETTEXT(ERRMSG_TRY_HELP));
+			LOG_ERROR(ERRMSG_INVALID_CMD, argv[optind]);
+			LOG_ERROR(ERRMSG_TRY_HELP);
 			free_all_and_exit(EXIT_FAILURE);
 		}
 	}
@@ -854,9 +846,8 @@ Parse_File:
 			{
 				if (!strcmp(fl_out_tmp->path, fl_in_tmp->path))
 				{
-					LOG_ERROR(
-						_GETTEXT("%s is meanwhile outputfile and inputfile"), 
-						fl_out_tmp->path);
+					LOG_ERROR("%s is meanwhile outputfile and inputfile", 
+								fl_out_tmp->path);
 					free_all_and_exit(EXIT_FAILURE);
 				}
 				
@@ -868,7 +859,7 @@ Parse_File:
 	}
 	if ((fl_in != NULL) && (ERROR_OK != FILELIST_Open(fl_in, "rb")))
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "open input file");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "open input file");
 		free_all_and_exit(EXIT_FAILURE);
 	}
 	
@@ -877,15 +868,15 @@ Parse_File:
 	
 	if (NULL == cur_target)
 	{
-		LOG_ERROR(_GETTEXT("Target chip not defined, use -c and -s.\n"));
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "Target chip");
 		free_all_and_exit(EXIT_FAILURE);
 	}
 	// init and check programmer's ability
 	i = cur_target->program_mode[program_info.mode].interface_needed;
 	if ((cur_programmer->interfaces_mask & i) != i)
 	{
-		LOG_ERROR(_GETTEXT("%s can not support %s in the mode defined.\n"), 
-				  cur_programmer->name, cur_target->name);
+		LOG_ERROR("%s can not support %s in the mode defined.", 
+					cur_programmer->name, cur_target->name);
 		free_all_and_exit(EXIT_FAILURE);
 	}
 	
@@ -895,13 +886,13 @@ Parse_File:
 	if ((require_hex_file_for_read > 0) 
 		&& ((NULL == fl_in) || (NULL == fl_in->path) || (NULL == fl_in->file)))
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "input file");
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "input file");
 		free_all_and_exit(EXIT_FAILURE);
 	}
 	if ((require_hex_file_for_write > 0) 
 		&& ((NULL == fl_out) || (NULL == fl_out->path)))
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "output file");
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "output file");
 		free_all_and_exit(EXIT_FAILURE);
 	}
 	
@@ -920,8 +911,8 @@ Parse_File:
 			{
 				if (ERROR_OK != cur_programmer->enter_firmware_update_mode())
 				{
-					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-							  "enter into firmware update mode");
+					LOG_ERROR(ERRMSG_FAILURE_OPERATION, 
+								"enter into firmware update mode");
 					free_all_and_exit(EXIT_FAILURE);
 				}
 			}
@@ -937,8 +928,8 @@ Parse_File:
 		ret = cur_programmer->init();
 		if (ret != ERROR_OK)
 		{
-			LOG_ERROR(_GETTEXT("Programmer %s not initialized.\n"), 
-					  cur_programmer->name);
+			LOG_ERROR(ERRMSG_NOT_INITIALIZED, "Programmer", 
+						cur_programmer->name);
 			free_all_and_exit(EXIT_FAILURE);
 		}
 	}
@@ -947,7 +938,7 @@ Parse_File:
 	ret = target_init(&program_info, cur_programmer);
 	if (ret != ERROR_OK)
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "initialize target");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "initialize target");
 		free_all_and_exit(EXIT_FAILURE);
 	}
 	
@@ -955,13 +946,13 @@ Parse_File:
 	ret = target_alloc_data_buffer();
 	if (ret != ERROR_OK)
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 		free_all_and_exit(EXIT_FAILURE);
 	}
 	ret = target_parse_cli_string();
 	if (ret != ERROR_OK)
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "parse cli_string");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "parse cli_string");
 		free_all_and_exit(EXIT_FAILURE);
 	}
 	// read file
@@ -977,8 +968,8 @@ Parse_File:
 								fl->seg_offset, fl->addr_offset);
 			if (ret != ERROR_OK)
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_HANDLE_DEVICE), 
-							"parse input file", fl->path);
+				LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "parse input file", 
+							fl->path);
 				free_all_and_exit(EXIT_FAILURE);
 			}
 			
@@ -987,8 +978,7 @@ Parse_File:
 	}
 	if (ERROR_OK != target_check_defined(operations))
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-					"check target defined content");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "check target defined content");
 		free_all_and_exit(EXIT_FAILURE);
 	}
 	// insert a dly between 2 operations
@@ -1004,21 +994,19 @@ Parse_File:
 		if ((operations.read_operations > 0) 
 			&& (operations.read_operations != operations.verify_operations))
 		{
-			LOG_ERROR(_GETTEXT("Cannot read data for mass-product.\n"));
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read data for mass-product.");
 			free_all_and_exit(EXIT_FAILURE);
 		}
 		if ((NULL == cur_target->get_mass_product_data_size) 
 			|| (NULL == cur_target->prepare_mass_product_data))
 		{
-			LOG_ERROR(_GETTEXT("Not support to mass-product %s.\n"), 
-					  cur_target->name);
+			LOG_ERROR("Not support to mass-product %s.", cur_target->name);
 			free_all_and_exit(EXIT_FAILURE);
 		}
 		if ((NULL == cur_programmer->query_mass_product_data_size) 
 			|| (NULL == cur_programmer->download_mass_product_data))
 		{
-			LOG_ERROR(_GETTEXT("%s cannot mass-product.\n"), 
-					  cur_programmer->name);
+			LOG_ERROR("%s cannot mass-product.", cur_programmer->name);
 			free_all_and_exit(EXIT_FAILURE);
 		}
 		
@@ -1026,15 +1014,15 @@ Parse_File:
 													 &target_size);
 		if (ret != ERROR_OK)
 		{
-			LOG_ERROR(_GETTEXT("Fail to get mass-product data size of %s.\n"), 
-					  cur_target->name);
+			LOG_ERROR("Fail to get mass-product data size of %s.", 
+						cur_target->name);
 			free_all_and_exit(EXIT_FAILURE);
 		}
 		ret = cur_programmer->query_mass_product_data_size(&programmer_size);
 		if (ret != ERROR_OK)
 		{
-			LOG_ERROR(_GETTEXT("Fail to get mass-product data size of %s.\n"), 
-					  cur_programmer->name);
+			LOG_ERROR("Fail to get mass-product data size of %s.", 
+						cur_programmer->name);
 			free_all_and_exit(EXIT_FAILURE);
 		}
 		
@@ -1044,7 +1032,7 @@ Parse_File:
 			data_buf = (uint8_t*)malloc(target_size);
 			if (NULL == data_buf)
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+				LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 				free_all_and_exit(EXIT_FAILURE);
 			}
 			
@@ -1053,8 +1041,8 @@ Parse_File:
 										&program_info, data_buf + 1);
 			if (ret != ERROR_OK)
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-						  "prepare mass-product data");
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION, 
+							"prepare mass-product data");
 				free_all_and_exit(EXIT_FAILURE);
 			}
 			
@@ -1068,15 +1056,15 @@ Parse_File:
 														data_buf, target_size);
 			if (ret != ERROR_OK)
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-						  "download mass-product data");
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION, 
+							"download mass-product data");
 				free_all_and_exit(EXIT_FAILURE);
 			}
 		}
 		else
 		{
-			LOG_ERROR(_GETTEXT("Not enough space for mass-product in %s.\n"), 
-					  cur_programmer->name);
+			LOG_ERROR("Not enough space for mass-product in %s.", 
+						cur_programmer->name);
 			free_all_and_exit(EXIT_FAILURE);
 		}
 	}
@@ -1102,7 +1090,7 @@ Parse_File:
 		ret = target_program(&context);
 		if (ret != ERROR_OK)
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATE_DEVICE), cur_target->name);
+			LOG_ERROR(ERRMSG_FAILURE_OPERATE_DEVICE, cur_target->name);
 			free_all_and_exit(EXIT_FAILURE);
 		}
 		
@@ -1137,7 +1125,7 @@ Parse_File:
 								size, area->seg, area->addr, p_map->fseg_addr, 
 								p_map->fstart_addr))
 						{
-							LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+							LOG_ERROR(ERRMSG_FAILURE_OPERATION, 
 										"write data to file");
 							free_all_and_exit(EXIT_FAILURE);
 						}

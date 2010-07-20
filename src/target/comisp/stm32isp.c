@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 by Simon Qian <SimonQian@SimonQian.com>            *
+ *   Copyright (C) 2009 - 2010 by Simon Qian <SimonQian@SimonQian.com>     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -86,8 +86,7 @@ RESULT stm32isp_sync(void)
 		comm_ret = comm_read(buffer, 1);
 		if (comm_ret < 0)
 		{
-			LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATE_DEVICE), 
-						com_mode.comport);
+			LOG_DEBUG(ERRMSG_FAILURE_OPERATE_DEVICE, com_mode.comport);
 			return ERRCODE_FAILURE_OPERATION;
 		}
 		if (comm_ret == 0)
@@ -100,14 +99,13 @@ RESULT stm32isp_sync(void)
 	buffer[0] = STM32ISP_SYNC;
 	if (1 != comm_write(buffer, 1))
 	{
-		LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), "write sync byte");
+		LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "write sync byte");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	comm_ret = comm_read(buffer, 1);
 	if (comm_ret < 0)
 	{
-		LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-				  "read ACK byte from chip");
+		LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "read ACK byte from chip");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	while (((1 == comm_ret) && (0 == buffer[0])) && (--retry > 0))
@@ -115,8 +113,7 @@ RESULT stm32isp_sync(void)
 		comm_ret = comm_read(buffer, 1);
 		if (comm_ret < 0)
 		{
-			LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-				  "read ACK byte from chip");
+			LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "read ACK byte from chip");
 			return ERRCODE_FAILURE_OPERATION;
 		}
 	}
@@ -139,14 +136,14 @@ RESULT stm32isp_sync(void)
 		buffer[0] = 0;
 		if (1 != comm_write(buffer, 1))
 		{
-			LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-					  "send dummy byte to test chip synchronization");
+			LOG_DEBUG(ERRMSG_FAILURE_OPERATION, 
+						"send dummy byte to test chip synchronization");
 			return ERRCODE_FAILURE_OPERATION;
 		}
 		if (1 != comm_read(buffer, 1))
 		{
-			LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-					  "read ACK byte from chip (2nd attempt)");
+			LOG_DEBUG(ERRMSG_FAILURE_OPERATION, 
+						"read ACK byte from chip (2nd attempt)");
 			return ERRCODE_FAILURE_OPERATION;
 		}
 	}
@@ -154,14 +151,13 @@ RESULT stm32isp_sync(void)
 	switch (buffer[0])
 	{
 	case STM32ISP_ACK:
-		LOG_DEBUG(_GETTEXT("Chip synced\n"));
+		LOG_DEBUG("Chip synced");
 		return ERROR_OK;
 	case STM32ISP_NACK:
-		LOG_DEBUG(_GETTEXT("Chip already synced\n"));
+		LOG_DEBUG("Chip already synced");
 		return ERROR_OK;
 	default:
-		LOG_DEBUG(_GETTEXT("Chip is in unknown state (response = 0x%02x)\n"), 
-				  buffer[0]);
+		LOG_DEBUG("Chip is in unknown state (response = 0x%02x)", buffer[0]);
 		return ERROR_FAIL;
 		break;
 	}
@@ -177,8 +173,7 @@ RESULT stm32isp_send_command(uint8_t cmd, const char *cmd_name,
 	buffer[1] = ~buffer[0];
 	if (2 != comm_write(buffer, 2))
 	{
-		LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_HANDLE_DEVICE), 
-				  "send", cmd_name);
+		LOG_DEBUG(ERRMSG_FAILURE_HANDLE_DEVICE, "send", cmd_name);
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	// get the initial ACK to the command
@@ -188,8 +183,7 @@ RESULT stm32isp_send_command(uint8_t cmd, const char *cmd_name,
 		if (test_protect == NULL)
 		{
 			// output message only if not in test protect mode
-			LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-					  "receive initial ACK");
+			LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "receive initial ACK");
 		}
 		else
 		{
@@ -218,7 +212,7 @@ RESULT stm32isp_get_ack(uint8_t accept_0_as_final_ack, uint8_t *ret,
 	{
 		if (!quiet)
 		{
-			LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), "receive ACK");
+			LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "receive ACK");
 		}
 		return ERRCODE_FAILURE_OPERATION;
 	}
@@ -238,7 +232,7 @@ RESULT stm32isp_process_data(uint16_t *data_len, uint8_t data_len_size,
 #if PARAM_CHECK
 	if ((NULL == data_len) || (NULL == data))
 	{
-		LOG_BUG(_GETTEXT(ERRMSG_INVALID_PARAMETER), __FUNCTION__);
+		LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
 		return ERRCODE_INVALID_PARAMETER;
 	}
 #endif
@@ -253,7 +247,7 @@ RESULT stm32isp_process_data(uint16_t *data_len, uint8_t data_len_size,
 			(*data_len)--;
 			if (data_len_size != comm_write((uint8_t*)data_len, data_len_size))
 			{
-				LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), "send data size");
+				LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "send data size");
 				return ERRCODE_FAILURE_OPERATION;
 			}
 			*data_len = actual_len;
@@ -261,7 +255,7 @@ RESULT stm32isp_process_data(uint16_t *data_len, uint8_t data_len_size,
 		// send data
 		if (actual_len != comm_write(data, actual_len))
 		{
-			LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), "send data");
+			LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "send data");
 			return ERRCODE_FAILURE_OPERATION;
 		}
 	}
@@ -276,13 +270,13 @@ RESULT stm32isp_process_data(uint16_t *data_len, uint8_t data_len_size,
 			if (data_len_size 
 				!= comm_read((uint8_t*)&actual_len, data_len_size))
 			{
-				LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read data size");
+				LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "read data size");
 				return ERRCODE_FAILURE_OPERATION;
 			}
 			actual_len++;
 			if (actual_len > *data_len)
 			{
-				LOG_DEBUG(_GETTEXT("Too many data to receive."));
+				LOG_DEBUG("Too many data to receive.");
 				return ERROR_FAIL;
 			}
 			*data_len = actual_len;
@@ -290,7 +284,7 @@ RESULT stm32isp_process_data(uint16_t *data_len, uint8_t data_len_size,
 		// receive data
 		if (actual_len != comm_read(data, actual_len))
 		{
-			LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), "receive data");
+			LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "receive data");
 			return ERRCODE_FAILURE_OPERATION;
 		}
 	}
@@ -308,14 +302,14 @@ RESULT stm32isp_read_bootloader_version(uint8_t *rev)
 	ret = stm32isp_send_command(STM32ISP_CMD_GET_VERSION, "Get Version", NULL);
 	if (ret != ERROR_OK)
 	{
-		LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), "send command");
+		LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "send command");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	// read data
 	ret = stm32isp_process_data(&len, 0, buffer, STM32ISP_RECEIVE);
 	if (ret != ERROR_OK)
 	{
-		LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), "get bootloader data");
+		LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "get bootloader data");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	// process data
@@ -333,14 +327,14 @@ RESULT stm32isp_read_product_id(uint32_t *id)
 	ret = stm32isp_send_command(STM32ISP_CMD_GET_ID, "Get ID", NULL);
 	if (ret != ERROR_OK)
 	{
-		LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), "send command");
+		LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "send command");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	// read data
 	ret = stm32isp_process_data(&len, 1, (uint8_t*)id, STM32ISP_RECEIVE);
 	if (ret != ERROR_OK)
 	{
-		LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), "get product id");
+		LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "get product id");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	return stm32isp_get_ack(0, buffer, 0);
@@ -356,7 +350,7 @@ RESULT stm32isp_readout_protect(void)
 								"Readout Protect", NULL);
 	if (ret != ERROR_OK)
 	{
-		LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), "send command");
+		LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "send command");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
@@ -373,7 +367,7 @@ RESULT stm32isp_readout_unprotect(void)
 								"Readout Unprotect", NULL);
 	if (ret != ERROR_OK)
 	{
-		LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), "send command");
+		LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "send command");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
@@ -390,7 +384,7 @@ RESULT stm32isp_write_protect(void)
 								"Write Protect", NULL);
 	if (ret != ERROR_OK)
 	{
-		LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), "send command");
+		LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "send command");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
@@ -407,7 +401,7 @@ RESULT stm32isp_write_unprotect(void)
 								"Write Unprotect", NULL);
 	if (ret != ERROR_OK)
 	{
-		LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), "send command");
+		LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "send command");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
@@ -429,22 +423,19 @@ RESULT stm32isp_read_memory(uint32_t addr, uint8_t *data, uint16_t *data_len)
 		if (1 == test_protect)
 		{
 			// protected
-			LOG_DEBUG(_GETTEXT(
-					"readout protect enabled, send Read Unprotect command\n"));
+			LOG_DEBUG("readout protect enabled, send Read Unprotect command");
 			
 			// write unprotect
 			if (ERROR_OK != stm32isp_readout_unprotect())
 			{
-				LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-						  "unprotect readout");
+				LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "unprotect readout");
 				return ERRCODE_FAILURE_OPERATION;
 			}
 			
 			// resync
 			if (ERROR_OK != stm32isp_sync())
 			{
-				LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-						  "resync to stm32 chip");
+				LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "resync to stm32 chip");
 				return ERRCODE_FAILURE_OPERATION;
 			}
 			
@@ -452,13 +443,13 @@ RESULT stm32isp_read_memory(uint32_t addr, uint8_t *data, uint16_t *data_len)
 								"Read Memory", NULL);
 			if (ret != ERROR_OK)
 			{
-				LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), "send command");
+				LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "send command");
 				return ERRCODE_FAILURE_OPERATION;
 			}
 		}
 		else
 		{
-			LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), "send command");
+			LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "send command");
 			return ERRCODE_FAILURE_OPERATION;
 		}
 	}
@@ -471,7 +462,7 @@ RESULT stm32isp_read_memory(uint32_t addr, uint8_t *data, uint16_t *data_len)
 	ret = stm32isp_process_data(&len, 0, buffer, STM32ISP_SEND);
 	if (ret != ERROR_OK)
 	{
-		LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), "send address data");
+		LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "send address data");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	// read ack
@@ -486,7 +477,7 @@ RESULT stm32isp_read_memory(uint32_t addr, uint8_t *data, uint16_t *data_len)
 	ret = stm32isp_process_data(&len, 0, buffer, STM32ISP_SEND);
 	if (ret != ERROR_OK)
 	{
-		LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), "send data");
+		LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "send data");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	// read ack
@@ -504,8 +495,8 @@ RESULT stm32isp_read_memory(uint32_t addr, uint8_t *data, uint16_t *data_len)
 		}
 		else
 		{
-			LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-					  "receive data in Read Memroy command");
+			LOG_DEBUG(ERRMSG_FAILURE_OPERATION, 
+						"receive data in Read Memroy command");
 			return ERRCODE_FAILURE_OPERATION;
 		}
 	}
@@ -527,22 +518,19 @@ RESULT stm32isp_write_memory(uint32_t addr, uint8_t *data, uint16_t data_len)
 		if (1 == test_protect)
 		{
 			// protected
-			LOG_DEBUG(_GETTEXT(
-					"write protect enabled, send Write Unprotect command\n"));
+			LOG_DEBUG("write protect enabled, send Write Unprotect command");
 			
 			// write unprotect
 			if (ERROR_OK != stm32isp_write_unprotect())
 			{
-				LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-						  "unprotect write");
+				LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "unprotect write");
 				return ERRCODE_FAILURE_OPERATION;
 			}
 			
 			// resync
 			if (ERROR_OK != stm32isp_sync())
 			{
-				LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-						  "resync to stm32 chip");
+				LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "resync to stm32 chip");
 				return ERRCODE_FAILURE_OPERATION;
 			}
 			
@@ -550,13 +538,13 @@ RESULT stm32isp_write_memory(uint32_t addr, uint8_t *data, uint16_t data_len)
 								"Write Memory", NULL);
 			if (ret != ERROR_OK)
 			{
-				LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), "send command");
+				LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "send command");
 				return ERRCODE_FAILURE_OPERATION;
 			}
 		}
 		else
 		{
-			LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), "send command");
+			LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "send command");
 			return ERRCODE_FAILURE_OPERATION;
 		}
 	}
@@ -569,7 +557,7 @@ RESULT stm32isp_write_memory(uint32_t addr, uint8_t *data, uint16_t data_len)
 	ret = stm32isp_process_data(&len, 0, buffer, STM32ISP_SEND);
 	if (ret != ERROR_OK)
 	{
-		LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), "send address data");
+		LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "send address data");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	// read ack
@@ -582,7 +570,7 @@ RESULT stm32isp_write_memory(uint32_t addr, uint8_t *data, uint16_t data_len)
 	ret = stm32isp_process_data(&len, 1, data, STM32ISP_SEND);
 	if (ret != ERROR_OK)
 	{
-		LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), "send data");
+		LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "send data");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	// send checksum
@@ -595,7 +583,7 @@ RESULT stm32isp_write_memory(uint32_t addr, uint8_t *data, uint16_t data_len)
 	ret = stm32isp_process_data(&len, 0, buffer, STM32ISP_SEND);
 	if (ret != ERROR_OK)
 	{
-		LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), "send checksum");
+		LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "send checksum");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	// get final ack
@@ -617,8 +605,8 @@ RESULT stm32isp_write_memory(uint32_t addr, uint8_t *data, uint16_t data_len)
 	}
 	if (!time_out)
 	{
-		LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-				  "read final ack for Write Memory command");
+		LOG_DEBUG(ERRMSG_FAILURE_OPERATION, 
+					"read final ack for Write Memory command");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
@@ -635,7 +623,7 @@ RESULT stm32isp_erase_sector(uint8_t num_of_sector, uint8_t *sector_num)
 	ret = stm32isp_send_command(STM32ISP_CMD_ERASE, "Erase", NULL);
 	if (ret != ERROR_OK)
 	{
-		LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), "send command");
+		LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "send command");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
@@ -648,7 +636,7 @@ RESULT stm32isp_erase_sector(uint8_t num_of_sector, uint8_t *sector_num)
 		ret = stm32isp_process_data(&len, 0, buffer, STM32ISP_SEND);
 		if (ret != ERROR_OK)
 		{
-			LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), "send sectors");
+			LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "send sectors");
 			return ERRCODE_FAILURE_OPERATION;
 		}
 	}
@@ -658,7 +646,7 @@ RESULT stm32isp_erase_sector(uint8_t num_of_sector, uint8_t *sector_num)
 		ret = stm32isp_process_data(&len, 1, sector_num, STM32ISP_SEND);
 		if (ret != ERROR_OK)
 		{
-			LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), "send sectors");
+			LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "send sectors");
 			return ERRCODE_FAILURE_OPERATION;
 		}
 		// send checksum
@@ -671,8 +659,7 @@ RESULT stm32isp_erase_sector(uint8_t num_of_sector, uint8_t *sector_num)
 		ret = stm32isp_process_data(&len, 0, buffer, STM32ISP_SEND);
 		if (ret != ERROR_OK)
 		{
-			LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-					  "send sector checksum");
+			LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "send sector checksum");
 			return ERRCODE_FAILURE_OPERATION;
 		}
 	}
@@ -683,8 +670,8 @@ RESULT stm32isp_erase_sector(uint8_t num_of_sector, uint8_t *sector_num)
 		sleep_ms(10);
 		if (!--dly_cnt)
 		{
-			LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-					  "receive final ACK in response to Erase command");
+			LOG_DEBUG(ERRMSG_FAILURE_OPERATION, 
+						"receive final ACK in response to Erase command");
 			return ERRCODE_FAILURE_OPERATION;
 		}
 	}
@@ -702,7 +689,7 @@ RESULT stm32isp_execute_code(uint32_t addr)
 	ret = stm32isp_send_command(STM32ISP_CMD_GO, "Go", NULL);
 	if (ret != ERROR_OK)
 	{
-		LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), "send command");
+		LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "send command");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	// send address + checksum
@@ -714,7 +701,7 @@ RESULT stm32isp_execute_code(uint32_t addr)
 	ret = stm32isp_process_data(&len, 0, buffer, STM32ISP_SEND);
 	if (ret != ERROR_OK)
 	{
-		LOG_DEBUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), "send address data");
+		LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "send address data");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
@@ -736,7 +723,7 @@ ENTER_PROGRAM_MODE_HANDLER(stm32isp)
 	if (ERROR_OK != comm_open(com_mode.comport, com_mode.baudrate, 8, 
 			COMM_PARITYBIT_EVEN, COMM_STOPBIT_1, COMM_HANDSHAKE_NONE))
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPEN), com_mode.comport);
+		LOG_ERROR(ERRMSG_FAILURE_OPEN, com_mode.comport);
 		return ERRCODE_FAILURE_OPEN;
 	}
 	
@@ -752,12 +739,11 @@ ENTER_PROGRAM_MODE_HANDLER(stm32isp)
 	// read bootloader version
 	if (ERROR_OK != stm32isp_read_bootloader_version(&bootloader_version))
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-				"read bootloader version");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read bootloader version");
 		return ERRCODE_FAILURE_OPERATION;
 	}
-	LOG_INFO(_GETTEXT("Bootloader version %1X.%1X detected\n"), 
-			 (bootloader_version & 0xF0) >> 4, bootloader_version & 0x0F);
+	LOG_INFO(INFOMSG_BOOTLOADER_VERSION, (bootloader_version & 0xF0) >> 4, 
+				bootloader_version & 0x0F);
 	return ERROR_OK;
 }
 
@@ -770,7 +756,8 @@ LEAVE_PROGRAM_MODE_HANDLER(stm32isp)
 	{
 		if (ERROR_OK != stm32isp_execute_code(comisp_execute_addr))
 		{
-			LOG_ERROR("fail to execute code at 0x%08X\n", comisp_execute_addr);
+			LOG_ERROR(ERRMSG_FAILURE_OPERATE_ADDRESS, "execute code", 
+						comisp_execute_addr);
 			ret = ERROR_FAIL;
 		}
 	}
@@ -842,8 +829,7 @@ READ_TARGET_HANDLER(stm32isp)
 		if (ERROR_OK != stm32isp_read_memory(STM32_REG_FLASH_RAM_SIZE, 
 												tmpbuff, &len))
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-					  "read memroy size");
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read memroy size");
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
@@ -854,15 +840,14 @@ READ_TARGET_HANDLER(stm32isp)
 		}
 		else
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_VALUE), flash_kb, 
-						"stm32 flash size");
+			LOG_ERROR(ERRMSG_INVALID_VALUE, flash_kb, "stm32 flash size");
 			return ERRCODE_INVALID;
 		}
-		LOG_INFO(_GETTEXT("Flash memory size: %i KB\n"), flash_kb);
+		LOG_INFO("Flash memory size: %i KB", flash_kb);
 		sram_kb = (tmpbuff[3] << 8) + tmpbuff[2];
 		if (sram_kb != 0xFFFF)
 		{
-			LOG_INFO(_GETTEXT("SRAM memory size: %i KB\n"), sram_kb);
+			LOG_INFO("SRAM memory size: %i KB", sram_kb);
 		}
 		break;
 	case APPLICATION_CHAR:

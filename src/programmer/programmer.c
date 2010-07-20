@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 by Simon Qian <SimonQian@SimonQian.com>            *
+ *   Copyright (C) 2009 - 2010 by Simon Qian <SimonQian@SimonQian.com>     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -303,12 +303,12 @@ static RESULT programmer_run_cmd(uint8_t argc, const char *argv[])
 			programmer_script_current_cmd_idx = i;
 			if (NULL == programmer_cmd[i].processor)
 			{
-				LOG_ERROR("%s is not implemented.\n", argv[0]);
+				LOG_ERROR(ERRMSG_INVALID_CMD, argv[0]);
 				ret = ERROR_FAIL;
 			}
 			else if (ERROR_OK != programmer_cmd[i].processor(argc, argv))
 			{
-				LOG_ERROR("fail to run %s\n", argv[0]);
+				LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "run", argv[0]);
 				ret = ERROR_FAIL;
 			}
 			break;
@@ -318,7 +318,7 @@ static RESULT programmer_run_cmd(uint8_t argc, const char *argv[])
 	}
 	if (NULL == programmer_cmd[i].cmd_name)
 	{
-		LOG_ERROR("command %s is not exists.\n", argv[0]);
+		LOG_ERROR(ERRMSG_INVALID_CMD, argv[0]);
 		ret = ERROR_FAIL;
 	}
 	
@@ -428,7 +428,7 @@ RESULT programmer_script_shell(uint8_t argc, const char *argv[])
 		return ERROR_FAIL;
 	}
 	
-	LOG_INFO("enter shell mode.\n\n");
+	LOG_INFO("enter shell mode.");
 	
 	programmer_run_file(stdin, cur_programmer->name);
 	
@@ -449,7 +449,7 @@ RESULT programmer_script_run(uint8_t argc, const char *argv[])
 	f = fopen(argv[1], "t");
 	if (NULL == f)
 	{
-		LOG_ERROR("fail to open %s.\n", argv[1]);
+		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "open script file ", argv[1]);
 		return ERROR_FAIL;
 	}
 	else
@@ -511,7 +511,7 @@ RESULT programmer_get_target_voltage(uint8_t argc, const char *argv[])
 	}
 	else
 	{
-		LOG_INFO(_GETTEXT(INFOMSG_TARGET_VOLTAGE), voltage / 1000.0);
+		LOG_INFO(INFOMSG_TARGET_VOLTAGE, voltage / 1000.0);
 	}
 	return ret;
 }
