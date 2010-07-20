@@ -305,12 +305,11 @@ WRITE_TARGET_HANDLER(s5x)
 			break;
 		}
 		
-		buff[0]--;
-		if (buff[0] > 0)
+		if (buff[0] > 1)
 		{
-			for (i = 1; i < 4; i++)
+			for (i = 1; i < buff[0]; i++)
 			{
-				if (buff[0] >= (uint32_t)i)
+				if (buff[0] >= (uint8_t)i)
 				{
 					cmd_buf[0] = 0xAC;
 					cmd_buf[1] = 0xE0 + (uint8_t)i;
@@ -339,7 +338,7 @@ READ_TARGET_HANDLER(s5x)
 {
 	struct programmer_info_t *prog = context->prog;
 	struct program_info_t *pi = context->pi;
-	uint8_t cmd_buf[4], chip_id[3], tmp8, lock;
+	uint8_t cmd_buf[4], tmp8, lock;
 	uint32_t i;
 	RESULT ret = ERROR_OK;
 	
@@ -350,24 +349,22 @@ READ_TARGET_HANDLER(s5x)
 		cmd_buf[1] = 0x00;
 		cmd_buf[2] = 0x00;
 		cmd_buf[3] = 0x00;
-		spi_io(cmd_buf, 4, &chip_id[2], 3, 1);
+		spi_io(cmd_buf, 4, &buff[2], 3, 1);
 		cmd_buf[0] = 0x28;
 		cmd_buf[1] = 0x01;
 		cmd_buf[2] = 0x00;
 		cmd_buf[3] = 0x00;
-		spi_io(cmd_buf, 4, &chip_id[1], 3, 1);
+		spi_io(cmd_buf, 4, &buff[1], 3, 1);
 		cmd_buf[0] = 0x28;
 		cmd_buf[1] = 0x02;
 		cmd_buf[2] = 0x00;
 		cmd_buf[3] = 0x00;
-		spi_io(cmd_buf, 4, &chip_id[0], 3, 1);
+		spi_io(cmd_buf, 4, &buff[0], 3, 1);
 		if (ERROR_OK != commit())
 		{
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
-		*(uint32_t*)buff = ((chip_id[2] & 0xFF) << 0) | ((chip_id[1] & 0xFF) << 8) 
-					   | ((chip_id[0] & 0xFF) << 16);
 		break;
 	case APPLICATION_CHAR:
 		switch (pi->mode)
@@ -446,7 +443,7 @@ READ_TARGET_HANDLER(s5x)
 				lock += 1;
 			}
 		}
-		buff[0] = lock;
+		buff[0] = lock + 1;
 		break;
 	default:
 		ret = ERROR_FAIL;

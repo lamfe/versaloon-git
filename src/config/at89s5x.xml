@@ -29,6 +29,14 @@
     <usrsig_page_size>0</usrsig_page_size>
 	<usrsig_page_num>0</usrsig_page_num>
 	<fuse_size>0</fuse_size>
+    <lock init="0x01" bytesize="1">
+      <setting name="LOCKBIT" mask="0x07" info="Memory Lock">
+        <choice value="0x01" text="Mode 1 -- no lock protection" />
+        <choice value="0x02" text="Mode 2 -- lock bit 1 activated" />
+        <choice value="0x03" text="Mode 3 -- lock bit 2 activated" />
+        <choice value="0x04" text="Mode 4 -- lock bit 3 activated" />
+      </setting>
+    </lock>
     <param0>0x69</param0>
   </chip>
   <chip name="at89s52">
@@ -41,6 +49,14 @@
     <usrsig_page_size>0</usrsig_page_size>
 	<usrsig_page_num>0</usrsig_page_num>
 	<fuse_size>0</fuse_size>
+    <lock init="0x01" bytesize="1">
+      <setting name="LOCKBIT" mask="0x07" info="Memory Lock">
+        <choice value="0x01" text="Mode 1 -- no lock protection" />
+        <choice value="0x02" text="Mode 2 -- lock bit 1 activated" />
+        <choice value="0x03" text="Mode 3 -- lock bit 2 activated" />
+        <choice value="0x04" text="Mode 4 -- lock bit 3 activated" />
+      </setting>
+    </lock>
     <param0>0x69</param0>
   </chip>
   <chip name="at89ls51">
@@ -53,6 +69,14 @@
     <usrsig_page_size>0</usrsig_page_size>
 	<usrsig_page_num>0</usrsig_page_num>
 	<fuse_size>0</fuse_size>
+    <lock init="0x01" bytesize="1">
+      <setting name="LOCKBIT" mask="0x07" info="Memory Lock">
+        <choice value="0x01" text="Mode 1 -- no lock protection" />
+        <choice value="0x02" text="Mode 2 -- lock bit 1 activated" />
+        <choice value="0x03" text="Mode 3 -- lock bit 2 activated" />
+        <choice value="0x04" text="Mode 4 -- lock bit 3 activated" />
+      </setting>
+    </lock>
     <param0>0x69</param0>
   </chip>
   <chip name="at89ls52">
@@ -65,6 +89,14 @@
     <usrsig_page_size>0</usrsig_page_size>
 	<usrsig_page_num>0</usrsig_page_num>
 	<fuse_size>0</fuse_size>
+    <lock init="0x01" bytesize="1">
+      <setting name="LOCKBIT" mask="0x07" info="Memory Lock">
+        <choice value="0x01" text="Mode 1 -- no lock protection" />
+        <choice value="0x02" text="Mode 2 -- lock bit 1 activated" />
+        <choice value="0x03" text="Mode 3 -- lock bit 2 activated" />
+        <choice value="0x04" text="Mode 4 -- lock bit 3 activated" />
+      </setting>
+    </lock>
     <param0>0x69</param0>
   </chip>
   <chip name="at89s2051">
@@ -77,6 +109,14 @@
     <usrsig_page_size>32</usrsig_page_size>
 	<usrsig_page_num>1</usrsig_page_num>
 	<fuse_size>1</fuse_size>
+    <lock init="0x01" bytesize="1">
+      <setting name="LOCKBIT" mask="0x07" info="Memory Lock">
+        <choice value="0x01" text="Mode 1 -- no lock protection" />
+        <choice value="0x02" text="Mode 2 -- lock bit 1 activated" />
+        <choice value="0x03" text="Mode 3 -- lock bit 2 activated" />
+        <choice value="0x04" text="Mode 4 -- lock bit 3 activated" />
+      </setting>
+    </lock>
     <param0>0xFF</param0>
   </chip>
   <chip name="at89s4051">
@@ -89,6 +129,14 @@
     <usrsig_page_size>32</usrsig_page_size>
 	<usrsig_page_num>1</usrsig_page_num>
 	<fuse_size>1</fuse_size>
+    <lock init="0x01" bytesize="1">
+      <setting name="LOCKBIT" mask="0x07" info="Memory Lock">
+        <choice value="0x01" text="Mode 1 -- no lock protection" />
+        <choice value="0x02" text="Mode 2 -- lock bit 1 activated" />
+        <choice value="0x03" text="Mode 3 -- lock bit 2 activated" />
+        <choice value="0x04" text="Mode 4 -- lock bit 3 activated" />
+      </setting>
+    </lock>
     <param0>0xFF</param0>
   </chip>
   <chip name="at89s8253">
@@ -101,6 +149,14 @@
     <usrsig_page_size>64</usrsig_page_size>
 	<usrsig_page_num>1</usrsig_page_num>
 	<fuse_size>1</fuse_size>
+    <lock init="0x01" bytesize="1">
+      <setting name="LOCKBIT" mask="0x07" info="Memory Lock">
+        <choice value="0x01" text="Mode 1 -- no lock protection" />
+        <choice value="0x02" text="Mode 2 -- lock bit 1 activated" />
+        <choice value="0x03" text="Mode 3 -- lock bit 2 activated" />
+        <choice value="0x04" text="Mode 4 -- lock bit 3 activated" />
+      </setting>
+    </lock>
     <param0>0xFF</param0>
   </chip>
 </series>
