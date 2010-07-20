@@ -537,15 +537,12 @@ void JTAG_TAP_HS_SetTCKFreq(uint16 freq)
 {
 	if(freq == 0)
 	{
-		// Detect Speed
-		JTAG_Freq = 0xFFFF;
+		JTAG_Freq = JTAG_TAP_HS_MIN_SPEED;
 	}
-	else
-	{
-		// Set Speed
-		JTAG_Freq = freq;
-		JTAG_TAP_HS_SetSpeed(JTAG_TAP_HS_GetDivFromFreq(freq));
-	}
+
+	// Set Speed
+	JTAG_Freq = freq;
+	JTAG_TAP_HS_SetSpeed(JTAG_TAP_HS_GetDivFromFreq(freq));
 }
 
 static uint8 __jtag_inited = 0;
@@ -557,7 +554,7 @@ void JTAG_TAP_HS_Init(uint16 freq, uint8 mode)
 
 	JTAG_TAP_HS_PortInit();
 
-	SPI_Configuration(JTAG_TAP_HS_SPI_M,SPI_Mode_Master,JTAG_TAP_HS_GetDivFromFreq(freq),SPI_FirstBit_LSB,SPI_CPOL_High,SPI_CPHA_2Edge);
+	JTAG_TAP_HS_SetSpeed(JTAG_TAP_HS_GetDivFromFreq(freq));
 	SPI_Configuration(JTAG_TAP_HS_SPI_S,SPI_Mode_Slave,SPI_BaudRatePrescaler_2,SPI_FirstBit_LSB,SPI_CPOL_High,SPI_CPHA_2Edge);
 
 	if(mode == JTAG_TAP_ASYN)
