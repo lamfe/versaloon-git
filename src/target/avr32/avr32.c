@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 by Simon Qian <SimonQian@SimonQian.com>            *
+ *   Copyright (C) 2009 - 2010 by Simon Qian <SimonQian@SimonQian.com>     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -94,7 +94,7 @@ PARSE_ARGUMENT_HANDLER(avr32)
 	case 'm':
 		if (NULL == argu)
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), cmd);
+			LOG_ERROR(ERRMSG_INVALID_OPTION, cmd);
 			return ERRCODE_INVALID_OPTION;
 		}
 		mode = (uint8_t)strtoul(argu, NULL,0);
@@ -219,13 +219,12 @@ static RESULT avr32jtag_sab_word_access(uint8_t slave_addr, uint32_t addr,
 		&& (slave_addr != AVR32_SAB_SLAVE_HSB)
 		&& (slave_addr != AVR32_SAB_SLAVE_MSU))
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_ADDRESS), slave_addr, 
-					"sab slave address");
+		LOG_ERROR(ERRMSG_INVALID_ADDRESS, slave_addr, "sab slave address");
 		return ERROR_FAIL;
 	}
 	if (addr & 3)
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_INVALID_ADDRESS), addr, "sab word access");
+		LOG_ERROR(ERRMSG_INVALID_ADDRESS, addr, "sab word access");
 		return ERROR_FAIL;
 	}
 	
@@ -341,7 +340,7 @@ static RESULT avr32jtag_fcmd_call(uint8_t command, uint16_t pagen)
 								(uint8_t*)&data, AVR32_JTAG_READ, 1);
 		if (ERROR_OK != jtag_commit())
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read fsr");
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read fsr");
 			return ERRCODE_FAILURE_OPERATION;
 		}
 		end = get_time_in_ms();
@@ -349,7 +348,7 @@ static RESULT avr32jtag_fcmd_call(uint8_t command, uint16_t pagen)
 	
 	if (!(data & 1) || (data & 0x0C))
 	{
-		LOG_DEBUG("FLASHC_FSR is 0x%08X\n", data);
+		LOG_DEBUG(INFOMSG_REG_08X, "FLASHC_FSR", data);
 		return ERROR_FAIL;
 	}
 	
@@ -373,7 +372,7 @@ ENTER_PROGRAM_MODE_HANDLER(avr32jtag)
 					pi->jtag_pos.bb, pi->jtag_pos.ba);
 	if (ERROR_OK != jtag_commit())
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "init jtag");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "init jtag");
 		return ERROR_FAIL;
 	}
 	jtag_register_callback(avr32jtag_send_callback, 
@@ -418,7 +417,7 @@ ERASE_TARGET_HANDLER(avr32jtag)
 		{
 			return ERROR_FAIL;
 		}
-		LOG_DEBUG("FLASHC_FSR is 0x%08X\n", data);
+		LOG_DEBUG(INFOMSG_REG_08X, "FLASHC_FSR", data);
 		for (i = 0; i < 16; i++)
 		{
 			if (data & (1 << (16 + i)))
@@ -428,8 +427,7 @@ ERASE_TARGET_HANDLER(avr32jtag)
 				ret = avr32jtag_fcmd_call(AVR32_FLASHC_FCMD_UP, pagen);
 				if (ret != ERROR_OK)
 				{
-					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-								"unlock flash page");
+					LOG_ERROR(ERRMSG_FAILURE_OPERATION, "unlock flash page");
 					return ERRCODE_FAILURE_OPERATION;
 				}
 			}
@@ -445,19 +443,19 @@ ERASE_TARGET_HANDLER(avr32jtag)
 								(uint8_t*)&data, AVR32_JTAG_READ, 1);
 		if (ERROR_OK != jtag_commit())
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read fsr");
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read fsr");
 			return ERRCODE_FAILURE_OPERATION;
 		}
-		LOG_DEBUG("fusehi = 0x%08X", data);
+		LOG_DEBUG(INFOMSG_REG_08X, "fusehi", data);
 		data = 0;
 		avr32jtag_sab_access(AVR32_SAB_SLAVE_HSB, AVR32_FLASHC_FGPFRLO, 
 								(uint8_t*)&data, AVR32_JTAG_READ, 1);
 		if (ERROR_OK != jtag_commit())
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "read fsr");
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read fsr");
 			return ERRCODE_FAILURE_OPERATION;
 		}
-		LOG_DEBUG("fuselo = 0x%08X", data);
+		LOG_DEBUG(INFOMSG_REG_08X, "fuselo", data);
 		
 		return avr32jtag_fcmd_call(AVR32_FLASHC_FCMD_EA, 0);
 		break;
@@ -518,7 +516,7 @@ READ_TARGET_HANDLER(avr32jtag)
 		{
 			return ERROR_FAIL;
 		}
-		LOG_DEBUG("JTAGID is 0x%08X\n", dr);
+		LOG_DEBUG(INFOMSG_REG_08X, "JTAGID", dr);
 		
 		for (ir = 0; ir < 10; ir++)
 		{
@@ -529,7 +527,7 @@ READ_TARGET_HANDLER(avr32jtag)
 			{
 				return ERROR_FAIL;
 			}
-			LOG_DEBUG("FLASHC_FSR is 0x%08X\n", dr);
+			LOG_DEBUG(INFOMSG_REG_08X, "FLASHC_FSR", dr);
 			
 			dr = 0;
 			avr32jtag_sab_access(AVR32_SAB_SLAVE_OCD, 0, 
@@ -538,7 +536,7 @@ READ_TARGET_HANDLER(avr32jtag)
 			{
 				return ERROR_FAIL;
 			}
-			LOG_DEBUG("OCD_DID is 0x%08X\n", dr);
+			LOG_DEBUG(INFOMSG_REG_08X, "OCD_DID", dr);
 		}
 		
 		// clear rev area of id

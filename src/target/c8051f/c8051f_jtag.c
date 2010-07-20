@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 by Simon Qian <SimonQian@SimonQian.com>            *
+ *   Copyright (C) 2009 - 2010 by Simon Qian <SimonQian@SimonQian.com>     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -112,7 +112,7 @@ RESULT c8051f_jtag_ind_read(uint8_t addr, uint32_t *value, uint8_t num_bits)
 #ifdef PARAM_CHECK
 	if ((addr < C8051F_IR_FLASHCON) || (addr > C8051F_IR_FLASHSCL))
 	{
-		LOG_BUG(_GETTEXT(ERRMSG_INVALID_ADDRESS), addr, CUR_TARGET_STRING);
+		LOG_BUG(ERRMSG_INVALID_ADDRESS, addr, CUR_TARGET_STRING);
 		return ERRCODE_INVALID;
 	}
 #endif
@@ -138,7 +138,7 @@ RESULT c8051f_jtag_ind_write(uint8_t addr, uint32_t *value, uint8_t num_bits)
 #ifdef PARAM_CHECK
 	if ((addr < C8051F_IR_FLASHCON) || (addr > C8051F_IR_FLASHSCL))
 	{
-		LOG_BUG(_GETTEXT(ERRMSG_INVALID_ADDRESS), addr, CUR_TARGET_STRING);
+		LOG_BUG(ERRMSG_INVALID_ADDRESS, addr, CUR_TARGET_STRING);
 		return ERRCODE_INVALID;
 	}
 #endif
@@ -283,8 +283,7 @@ WRITE_TARGET_HANDLER(c8051fjtag)
 		
 		if (ERROR_OK != jtag_commit())
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ADDR), 
-						"program flash", addr);
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION_ADDR, "program flash", addr);
 			ret = ERRCODE_FAILURE_OPERATION_ADDR;
 			break;
 		}
@@ -292,8 +291,8 @@ WRITE_TARGET_HANDLER(c8051fjtag)
 		{
 			if ((read_buf[i] & 0x06) != 0)
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ADDR), 
-							"program flash", addr + i);
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION_ADDR, "program flash", 
+							addr + i);
 				ret = ERRCODE_FAILURE_OPERATION;
 				break;
 			}
@@ -359,8 +358,7 @@ READ_TARGET_HANDLER(c8051fjtag)
 		
 		if (ERROR_OK != jtag_commit())
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ADDR), 
-						"read flash", addr);
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION_ADDR, "read flash", addr);
 			ret = ERRCODE_FAILURE_OPERATION_ADDR;
 			break;
 		}

@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 by Simon Qian <SimonQian@SimonQian.com>            *
+ *   Copyright (C) 2009 - 2010 by Simon Qian <SimonQian@SimonQian.com>     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -126,7 +126,7 @@ RESULT pgbar_init(char *s, char *e, uint32_t min, uint32_t max,
 		end_str = (char*)malloc(strlen(e) + 1);
 		if (NULL == end_str)
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+			LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 			return ERRCODE_NOT_ENOUGH_MEMORY;
 		}
 		strcpy(end_str, (const char *)e);

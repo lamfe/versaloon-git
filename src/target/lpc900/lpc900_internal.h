@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 by Simon Qian <SimonQian@SimonQian.com>            *
+ *   Copyright (C) 2009 - 2010 by Simon Qian <SimonQian@SimonQian.com>     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *

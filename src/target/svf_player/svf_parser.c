@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 by Simon Qian <SimonQian@SimonQian.com>            *
+ *   Copyright (C) 2009 - 2010 by Simon Qian <SimonQian@SimonQian.com>     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -156,7 +156,7 @@ static RESULT svf_parser_adjust_array_length(uint8_t **arr,
 		*arr = (uint8_t*)malloc(new_byte_len);
 		if (NULL == *arr)
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+			LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 			return ERRCODE_NOT_ENOUGH_MEMORY;
 		}
 		memset(*arr, 0, new_byte_len);
@@ -187,7 +187,7 @@ static void svf_parser_append_bit(uint8_t *dest, uint32_t dest_bit_len,
 	
 	if ((src_bit_len > 0) && ((NULL == src) || (NULL == dest)))
 	{
-		LOG_BUG(_GETTEXT(ERRMSG_INVALID_BUFFER), "source");
+		LOG_BUG(ERRMSG_INVALID_BUFFER, "source");
 		return;
 	}
 	
@@ -232,7 +232,7 @@ static RESULT svf_parser_parse_cmd_string(char *str, uint32_t len,
 		{
 		case '!':
 		case '/':
-			LOG_BUG("error when parsing svf command\n");
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "parse svf command");
 			return ERROR_FAIL;
 			break;
 		case '(':
@@ -270,7 +270,7 @@ static RESULT svf_parser_copy_hexstring_to_binary(char *str, uint8_t **bin,
 
 	if (ERROR_OK != svf_parser_adjust_array_length(bin, orig_bit_len, bit_len))
 	{
-		LOG_ERROR("fail to adjust length of array");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "adjust length of array");
 		return ERROR_FAIL;
 	}
 
@@ -295,7 +295,7 @@ static RESULT svf_parser_copy_hexstring_to_binary(char *str, uint8_t **bin,
 				}
 				else
 				{
-					LOG_ERROR("invalid hex string");
+					LOG_ERROR(ERRMSG_INVALID_TARGET, "hex string");
 					return ERROR_FAIL;
 				}
 			}
@@ -389,7 +389,7 @@ uint32_t svf_parser_get_command(FILE *file, char **cmd_buffer,
 											   + SVFP_CMD_INC_CNT + 1);
 					if (NULL == tmp_buffer)
 					{
-						LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+						LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 						return ERRCODE_NOT_ENOUGH_MEMORY;
 					}
 					if (*cmd_len > 0)
@@ -454,8 +454,9 @@ RESULT svf_parser_check_tdo(void)
 					{
 						bit_mask = (1 << svf_parser_check[i].bit_len) - 1;
 					}
-					LOG_ERROR("\
-tdo check error at line %d, read = 0x%X, want = 0x%X, mask = 0x%X\n", 
+					LOG_ERROR(
+							"tdo check error at line %d, read = 0x%X, "
+							"want = 0x%X, mask = 0x%X", 
 							svf_parser_check[i].line_num, 
 							(*(uint32_t*)(svf_parser_tdi_buffer + index)) 
 								& bit_mask, 
@@ -481,7 +482,7 @@ RESULT svf_parser_add_check_para(uint8_t enabled, uint32_t buffer_offset,
 {
 	if (svf_parser_check_index >= SVF_PARSER_DATA_BUFFER_SIZE)
 	{
-		LOG_BUG(_GETTEXT("toooooo many operation undone\n"));
+		LOG_BUG("toooooo many operation undone");
 		return ERROR_FAIL;
 	}
 	
@@ -513,7 +514,7 @@ RESULT svf_parser_run_command(char *cmd_str)
 	// for STATE
 	enum tap_state_t *path = NULL;
 	
-	LOG_DEBUG("%s\n", cmd_str);
+	LOG_DEBUG("%s", cmd_str);
 	
 	ret = svf_parser_parse_cmd_string(cmd_str, (uint32_t)strlen(cmd_str), 
 									  argus, &num_of_argu);
@@ -531,7 +532,7 @@ RESULT svf_parser_run_command(char *cmd_str)
 	case ENDIR:
 		if (num_of_argu != 2)
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_PARAMETER), argus[0]);
+			LOG_ERROR(ERRMSG_INVALID_PARAMETER, argus[0]);
 			return ERRCODE_INVALID_PARAMETER;
 		}
 		
@@ -539,26 +540,26 @@ RESULT svf_parser_run_command(char *cmd_str)
 							(char **)tap_state_name, dimof(tap_state_name));
 		if (!tap_state_is_stable(i_tmp))
 		{
-			LOG_ERROR(_GETTEXT("state defined is not stable state\n"));
+			LOG_ERROR("state defined is not stable state");
 			return ERROR_FAIL;
 		}
 		if (ENDDR == command)
 		{
 			svf_parser_para.dr_end_state = i_tmp;
-			LOG_DEBUG("\tdr_end_state = %s\n", 
+			LOG_DEBUG("\tdr_end_state = %s", 
 					  tap_state_name[svf_parser_para.dr_end_state]);
 		}
 		else
 		{
 			svf_parser_para.ir_end_state = i_tmp;
-			LOG_DEBUG("\tir_end_state = %s\n", 
+			LOG_DEBUG("\tir_end_state = %s", 
 					  tap_state_name[svf_parser_para.ir_end_state]);
 		}
 		break;
 	case FREQUENCY:
 		if ((num_of_argu != 1) && (num_of_argu != 3))
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_PARAMETER), argus[0]);
+			LOG_ERROR(ERRMSG_INVALID_PARAMETER, argus[0]);
 			return ERRCODE_INVALID_PARAMETER;
 		}
 		
@@ -570,25 +571,24 @@ RESULT svf_parser_run_command(char *cmd_str)
 		{
 			if (strcmp(argus[2], "HZ"))
 			{
-				LOG_ERROR(_GETTEXT("HZ not found in FREQUENCY command\n"));
+				LOG_ERROR("HZ not found in FREQUENCY command");
 				return ERROR_FAIL;
 			}
 			if (ERROR_OK != tap_commit())
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "do jtag");
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "do jtag");
 				return ERRCODE_FAILURE_OPERATION;
 			}
 			if (ERROR_OK != svf_parser_check_tdo())
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-						  "check tdo data");
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "check tdo data");
 				return ERRCODE_FAILURE_OPERATION;
 			}
 			
 			svf_parser_para.frequency = (float)atof(argus[1]);
 			jtag_config((uint16_t)(svf_parser_para.frequency / 1000));
 			
-			LOG_DEBUG("\tfrequency = %f\n", svf_parser_para.frequency);
+			LOG_DEBUG("\tfrequency = %f", svf_parser_para.frequency);
 		}
 		break;
 	case HDR:
@@ -612,7 +612,7 @@ RESULT svf_parser_run_command(char *cmd_str)
 XXR_common:
 		if ((num_of_argu > 10) || (num_of_argu % 2))
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_PARAMETER), argus[0]);
+			LOG_ERROR(ERRMSG_INVALID_PARAMETER, argus[0]);
 			return ERRCODE_INVALID_PARAMETER;
 		}
 		
@@ -620,17 +620,17 @@ XXR_common:
 		xxr_para_tmp->len = atoi(argus[1]);
 		if (xxr_para_tmp->len > SVF_PARSER_DATA_BUFFER_SIZE / 2 * 8)
 		{
-			LOG_ERROR("%d is toooo long for one scan.\n", xxr_para_tmp->len);
+			LOG_ERROR("%d is toooo long for one scan.", xxr_para_tmp->len);
 			return ERROR_FAIL;
 		}
-		LOG_DEBUG("\tlength = %d\n", xxr_para_tmp->len);
+		LOG_DEBUG("\tlength = %d", xxr_para_tmp->len);
 		xxr_para_tmp->data_mask = 0;
 		for (i = 2; i < num_of_argu; i += 2)
 		{
 			if ((argus[i + 1][0] != '(') 
 				|| (argus[i + 1][strlen(argus[i + 1]) - 1] != ')'))
 			{
-				LOG_ERROR(_GETTEXT("data section error\n"));
+				LOG_ERROR("data section error");
 				return ERROR_FAIL;
 			}
 			
@@ -662,7 +662,7 @@ XXR_common:
 			}
 			else
 			{
-				LOG_ERROR("unknow parameter: %s\n", argus[i]);
+				LOG_ERROR("unknow parameter: %s", argus[i]);
 				return ERROR_FAIL;
 			}
 			
@@ -670,12 +670,11 @@ XXR_common:
 									pbuffer_tmp, i_tmp, xxr_para_tmp->len);
 			if (ret != ERROR_OK)
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-						  "parse hex value");
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "parse hex value");
 				return ERRCODE_FAILURE_OPERATION;
 			}
 			
-			LOG_DEBUG("\t%s = 0x%X\n", argus[i], 
+			LOG_DEBUG("\t%s = 0x%X", argus[i], 
 					  ( **(int**)pbuffer_tmp) 
 						& ((1 << (xxr_para_tmp->len)) - 1));
 		}
@@ -691,8 +690,7 @@ XXR_common:
 													xxr_para_tmp->len);
 			if (ret != ERROR_OK)
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-						  "adjust length of array");
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "adjust length of array");
 				return ERRCODE_FAILURE_OPERATION;
 			}
 		}
@@ -707,8 +705,7 @@ XXR_common:
 													xxr_para_tmp->len);
 			if (ret != ERROR_OK)
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-						  "adjust length of array");
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "adjust length of array");
 				return ERRCODE_FAILURE_OPERATION;
 			}
 			svf_parser_append_1s(xxr_para_tmp->mask, 0, xxr_para_tmp->len);
@@ -721,7 +718,7 @@ XXR_common:
 				if (ERROR_OK != svf_parser_adjust_array_length(&xxr_para_tmp->tdo, i_tmp, 
 																xxr_para_tmp->len))
 				{
-					LOG_ERROR("fail to adjust length of array");
+					LOG_ERROR(ERRMSG_FAILURE_OPERATION, "adjust length of array");
 					return ERROR_FAIL;
 				}
 			}
@@ -730,7 +727,7 @@ XXR_common:
 				if (ERROR_OK != svf_parser_adjust_array_length(&xxr_para_tmp->mask, i_tmp, 
 																xxr_para_tmp->len))
 				{
-					LOG_ERROR("fail to adjust length of array");
+					LOG_ERROR(ERRMSG_FAILURE_OPERATION, "adjust length of array");
 					return ERROR_FAIL;
 				}
 			}
@@ -878,13 +875,13 @@ XXR_common:
 		break;
 	case PIO:
 	case PIOMAP:
-		LOG_ERROR("PIO and PIOMAP are not supported\n");
+		LOG_ERROR("PIO and PIOMAP are not supported");
 		return ERROR_FAIL;
 		break;
 	case RUNTEST:
 		if ((num_of_argu < 3) && (num_of_argu > 11))
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_PARAMETER), argus[0]);
+			LOG_ERROR(ERRMSG_INVALID_PARAMETER, argus[0]);
 			return ERRCODE_INVALID_PARAMETER;
 		}
 		
@@ -906,13 +903,13 @@ XXR_common:
 				// When a run_state is specified, 
 				// the new  run_state becomes the default end_state
 				svf_parser_para.runtest_end_state = i_tmp;
-				LOG_DEBUG("\trun_state = %s\n", 
+				LOG_DEBUG("\trun_state = %s", 
 						  tap_state_name[svf_parser_para.runtest_run_state]);
 				i++;
 			}
 			else
 			{
-				LOG_ERROR("%s is not valid state\n", tap_state_name[i_tmp]);
+				LOG_ERROR("%s is not valid state", tap_state_name[i_tmp]);
 				return ERROR_FAIL;
 			}
 		}
@@ -924,11 +921,11 @@ XXR_common:
 			{
 				// clock source is TCK
 				run_count = atoi(argus[i]);
-				LOG_DEBUG("\trun_count@TCK = %d\n", run_count);
+				LOG_DEBUG("\trun_count@TCK = %d", run_count);
 			}
 			else
 			{
-				LOG_ERROR("%s not supported for clock\n", argus[i + 1]);
+				LOG_ERROR("%s not supported for clock", argus[i + 1]);
 				return ERROR_FAIL;
 			}
 			i += 2;
@@ -938,7 +935,7 @@ XXR_common:
 		if (((i + 2) <= num_of_argu) && !strcmp(argus[i + 1], "SEC"))
 		{
 			min_time = (float)atof(argus[i]);
-			LOG_DEBUG("\tmin_time = %fs\n", min_time);
+			LOG_DEBUG("\tmin_time = %fs", min_time);
 			i += 2;
 		}
 		
@@ -947,7 +944,7 @@ XXR_common:
 			&& !strcmp(argus[i + 2], "SEC"))
 		{
 			max_time = (float)atof(argus[i + 1]);
-			LOG_DEBUG("\tmax_time = %fs\n", max_time);
+			LOG_DEBUG("\tmax_time = %fs", max_time);
 			i += 3;
 		}
 		// ENDSTATE end_state
@@ -958,12 +955,12 @@ XXR_common:
 			if (tap_state_is_stable(i_tmp))
 			{
 				svf_parser_para.runtest_end_state = i_tmp;
-				LOG_DEBUG("\tend_state = %s\n", 
+				LOG_DEBUG("\tend_state = %s", 
 						  tap_state_name[svf_parser_para.runtest_end_state]);
 			}
 			else
 			{
-				LOG_ERROR("%s is not valid state\n", tap_state_name[i_tmp]);
+				LOG_ERROR("%s is not valid state", tap_state_name[i_tmp]);
 				return ERROR_FAIL;
 			}
 			i += 2;
@@ -990,15 +987,14 @@ XXR_common:
 		}
 		else
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-					  "parse parameter of RUNTEST");
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "parse parameter of RUNTEST");
 			return ERRCODE_FAILURE_OPERATION;
 		}
 		break;
 	case STATE:
 		if (num_of_argu < 2)
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_PARAMETER), argus[0]);
+			LOG_ERROR(ERRMSG_INVALID_PARAMETER, argus[0]);
 			return ERRCODE_INVALID_PARAMETER;
 		}
 		
@@ -1012,8 +1008,8 @@ XXR_common:
 							(char **)tap_state_name, dimof(tap_state_name));
 				if (!tap_state_is_valid(path[i - 1]))
 				{
-					LOG_ERROR(_GETTEXT(ERRMSG_INVALID), 
-							  tap_state_name[path[i - 1]], "tap state");
+					LOG_ERROR(ERRMSG_INVALID, tap_state_name[path[i - 1]], 
+								"tap state");
 					return ERRCODE_INVALID;
 				}
 			}
@@ -1022,13 +1018,13 @@ XXR_common:
 				// last state MUST be stable state
 				// TODO: call path_move
 				tap_path_move(num_of_argu - 1, path);
-				LOG_DEBUG("\tmove to %s by path_move\n", 
+				LOG_DEBUG("\tmove to %s by path_move", 
 						  tap_state_name[path[num_of_argu - 1]]);
 			}
 			else
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_INVALID), 
-						  tap_state_name[path[num_of_argu - 1]], "tap state");
+				LOG_ERROR(ERRMSG_INVALID, 
+						tap_state_name[path[num_of_argu - 1]], "tap state");
 				return ERRCODE_INVALID;
 			}
 			if (NULL != path)
@@ -1047,13 +1043,12 @@ XXR_common:
 				// TODO: call state_move
 				tap_end_state(i_tmp);
 				tap_state_move();
-				LOG_DEBUG("\tmove to %s by state_move\n", 
+				LOG_DEBUG("\tmove to %s by state_move", 
 							tap_state_name[i_tmp]);
 			}
 			else
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_INVALID), 
-						  tap_state_name[i_tmp], "tap state");
+				LOG_ERROR(ERRMSG_INVALID, tap_state_name[i_tmp], "tap state");
 				return ERRCODE_INVALID;
 			}
 		}
@@ -1061,7 +1056,7 @@ XXR_common:
 	case TRST:
 		if (num_of_argu != 2)
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_PARAMETER), argus[0]);
+			LOG_ERROR(ERRMSG_INVALID_PARAMETER, argus[0]);
 			return ERRCODE_INVALID_PARAMETER;
 		}
 		
@@ -1069,13 +1064,12 @@ XXR_common:
 		{
 			if (ERROR_OK != tap_commit())
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "do jtag");
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "do jtag");
 				return ERRCODE_FAILURE_OPERATION;
 			}
 			if (ERROR_OK != svf_parser_check_tdo())
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-						  "check tdo data");
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "check tdo data");
 				return ERRCODE_FAILURE_OPERATION;
 			}
 			
@@ -1111,22 +1105,21 @@ XXR_common:
 				}
 				break;
 			default:
-				LOG_ERROR(_GETTEXT(ERRMSG_INVALID), argus[1], "TRST mode");
+				LOG_ERROR(ERRMSG_INVALID, argus[1], "TRST mode");
 				return ERRCODE_INVALID;
 			}
 			svf_parser_para.trst_mode = i_tmp;
-			LOG_DEBUG("\ttrst_mode = %s\n", 
+			LOG_DEBUG("\ttrst_mode = %s", 
 					  svf_trst_mode_name[svf_parser_para.trst_mode]);
 		}
 		else
 		{
-			LOG_ERROR(_GETTEXT(
-					  "can not accpet TRST command if trst_mode is ABSENT\n"));
+			LOG_ERROR("can not accpet TRST command if trst_mode is ABSENT");
 			return ERROR_FAIL;
 		}
 		break;
 	default:
-		LOG_ERROR(_GETTEXT(ERRMSG_INVALID), argus[0], "svf command");
+		LOG_ERROR(ERRMSG_INVALID, argus[0], "svf command");
 		return ERRCODE_INVALID;
 		break;
 	}
@@ -1140,13 +1133,12 @@ XXR_common:
 		{
 			if (ERROR_OK != tap_commit())
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "do jtag");
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "do jtag");
 				return ERRCODE_FAILURE_OPERATION;
 			}
 			else if (ERROR_OK != svf_parser_check_tdo())
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-						  "check tdo data");
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "check tdo data");
 				return ERRCODE_FAILURE_OPERATION;
 			}
 			
@@ -1155,7 +1147,7 @@ XXR_common:
 			case SIR:
 			case SDR:
 				memcpy(&read_value, svf_parser_tdi_buffer, sizeof(read_value));
-				LOG_DEBUG("\tTDO read = 0x%X\n", 
+				LOG_DEBUG("\tTDO read = 0x%X", 
 						read_value & ((1 << svf_parser_check[0].bit_len) - 1));
 				break;
 			default:
@@ -1172,13 +1164,12 @@ XXR_common:
 		{
 			if (ERROR_OK != tap_commit())
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "do jtag");
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "do jtag");
 				return ERRCODE_FAILURE_OPERATION;
 			}
 			else if (ERROR_OK != svf_parser_check_tdo())
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-						  "check tdo data");
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "check tdo data");
 				return ERRCODE_FAILURE_OPERATION;
 			}
 		}

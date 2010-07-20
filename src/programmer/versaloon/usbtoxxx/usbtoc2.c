@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 by Simon Qian <SimonQian@SimonQian.com>            *
+ *   Copyright (C) 2009 - 2010 by Simon Qian <SimonQian@SimonQian.com>     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -46,7 +46,7 @@ RESULT usbtoc2_config(uint8_t interface_index)
 #if PARAM_CHECK
 	if (interface_index > 7)
 	{
-		LOG_BUG(_GETTEXT("invalid inteface_index %d.\n"), interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
 		return ERROR_FAIL;
 	}
 #endif
@@ -59,7 +59,7 @@ RESULT usbtoc2_readaddr(uint8_t interface_index, uint8_t *data)
 #if PARAM_CHECK
 	if (interface_index > 7)
 	{
-		LOG_BUG(_GETTEXT("invalid inteface_index %d.\n"), interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
 		return ERROR_FAIL;
 	}
 #endif
@@ -80,7 +80,7 @@ RESULT usbtoc2_writeaddr(uint8_t interface_index, uint8_t addr)
 #if PARAM_CHECK
 	if (interface_index > 7)
 	{
-		LOG_BUG(_GETTEXT("invalid inteface_index %d.\n"), interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
 		return ERROR_FAIL;
 	}
 #endif
@@ -96,12 +96,12 @@ RESULT usbtoc2_data(uint8_t interface_index, uint8_t r, uint8_t len,
 #if PARAM_CHECK
 	if (interface_index > 7)
 	{
-		LOG_BUG(_GETTEXT("invalid inteface_index %d.\n"), interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
 		return ERROR_FAIL;
 	}
 	if ((len > 4) || (0 == len))
 	{
-		LOG_BUG(_GETTEXT("C2 max data length is from 1 to 4\n"));
+		LOG_BUG(ERRMSG_INVALID_VALUE, len, "C2 data length(1..4)");
 		return ERRCODE_INVALID_PARAMETER;
 	}
 #endif

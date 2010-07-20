@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 by Simon Qian <SimonQian@SimonQian.com>            *
+ *   Copyright (C) 2009 - 2010 by Simon Qian <SimonQian@SimonQian.com>     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -98,8 +98,8 @@ uint32_t print_usb_devices(uint16_t VID, uint16_t PID, uint8_t serialindex,
 				usb = usb_open(dev);
 				if (NULL == usb)
 				{
-					LOG_ERROR(_GETTEXT("failed to open %04X:%04X, %s\n"), 
-							  VID, PID, usb_strerror());
+					LOG_ERROR("failed to open %04X:%04X, %s", VID, PID, 
+								usb_strerror());
 					continue;
 				}
 				
@@ -118,12 +118,12 @@ uint32_t print_usb_devices(uint16_t VID, uint16_t PID, uint8_t serialindex,
 					// print current device
 					if (strlen((char *)buf) > 0)
 					{
-						printf(_GETTEXT("%s%d: 0x%04X:0x%04X:%s on %s.\n"), 
+						printf("%s%d: 0x%04X:0x%04X:%s on %s.", 
 								productstring, c, VID, PID, buf, dev->filename);
 					}
 					else
 					{
-						printf(_GETTEXT("%s%d: 0x%04X:0x%04X on %s.\n"), 
+						printf("%s%d: 0x%04X:0x%04X on %s.", 
 								productstring, c, VID, PID, dev->filename);
 					}
 					c++;
@@ -169,16 +169,18 @@ usb_dev_handle* find_usb_device(uint16_t VID, uint16_t PID, uint8_t interface,
 				usb = usb_open(dev);
 				if (NULL == usb)
 				{
-					LOG_ERROR(_GETTEXT("failed to open %04X:%04X, %s\n"), 
-							  VID, PID, usb_strerror());
+					LOG_ERROR("failed to open %04X:%04X, %s", VID, PID, 
+								usb_strerror());
 					continue;
 				}
 				
 				// check description string
 				if (((productstring != NULL) 
-						&& !usb_check_string(usb, productindex, productstring, NULL, 0))
+						&& !usb_check_string(usb, productindex, productstring, 
+												NULL, 0))
 					|| ((serialstring != NULL) 
-						&& !usb_check_string(usb, serialindex, serialstring, NULL, 0)))
+						&& !usb_check_string(usb, serialindex, serialstring, 
+												NULL, 0)))
 				{
 					usb_close(usb);
 					usb = NULL;
@@ -189,7 +191,7 @@ usb_dev_handle* find_usb_device(uint16_t VID, uint16_t PID, uint8_t interface,
 				config_value = dev->config[0].bConfigurationValue;
 				if (usb_set_configuration(usb, config_value) != 0)
 				{
-					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_MESSAGE), 
+					LOG_ERROR(ERRMSG_FAILURE_OPERATION_MESSAGE, 
 								"set configuration", usb_strerror());
 					usb_close(usb);
 					usb = NULL;
@@ -197,7 +199,7 @@ usb_dev_handle* find_usb_device(uint16_t VID, uint16_t PID, uint8_t interface,
 				}
 				if (usb_claim_interface(usb, interface) != 0)
 				{
-					LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_MESSAGE), 
+					LOG_ERROR(ERRMSG_FAILURE_OPERATION_MESSAGE, 
 								"claim interface", usb_strerror());
 					usb_close(usb);
 					usb = NULL;

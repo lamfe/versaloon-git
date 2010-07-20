@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 by Simon Qian <SimonQian@SimonQian.com>            *
+ *   Copyright (C) 2009 - 2010 by Simon Qian <SimonQian@SimonQian.com>     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -49,7 +49,7 @@ RESULT usbtousart_config(uint8_t interface_index, uint32_t baudrate,
 #if PARAM_CHECK
 	if (interface_index > 7)
 	{
-		LOG_BUG(_GETTEXT("invalid inteface_index %d.\n"), interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
 		return ERROR_FAIL;
 	}
 #endif
@@ -71,7 +71,7 @@ RESULT usbtousart_receive(uint8_t interface_index, uint8_t *buf, uint16_t len)
 #if PARAM_CHECK
 	if ((interface_index > 7) || (0 == len) || (NULL == buf))
 	{
-		LOG_BUG(_GETTEXT("invalid inteface_index %d.\n"), interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
 		return ERROR_FAIL;
 	}
 #endif
@@ -88,7 +88,7 @@ RESULT usbtousart_send(uint8_t interface_index, uint8_t *buf, uint16_t len)
 #if PARAM_CHECK
 	if ((interface_index > 7) || (0 == len) || (NULL == buf))
 	{
-		LOG_BUG(_GETTEXT("invalid inteface_index %d.\n"), interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
 		return ERROR_FAIL;
 	}
 #endif
@@ -106,7 +106,7 @@ RESULT usbtousart_status(uint8_t interface_index, uint32_t buffer_len[2])
 #if PARAM_CHECK
 	if ((interface_index > 7) || (NULL == buffer_len))
 	{
-		LOG_BUG(_GETTEXT("invalid inteface_index %d.\n"), interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
 		return ERROR_FAIL;
 	}
 #endif

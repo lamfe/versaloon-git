@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 by Simon Qian <SimonQian@SimonQian.com>            *
+ *   Copyright (C) 2009 - 2010 by Simon Qian <SimonQian@SimonQian.com>     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -80,7 +80,7 @@ RESULT FILELIST_Add(struct filelist **fl, char *path, uint32_t seg_offset,
 	newitem = (struct filelist*)malloc(sizeof(struct filelist));
 	if (NULL == newitem)
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 		return ERROR_FAIL;
 	}
 	newitem->path = (char *)malloc(strlen(path) + 1);
@@ -89,7 +89,7 @@ RESULT FILELIST_Add(struct filelist **fl, char *path, uint32_t seg_offset,
 		free(newitem);
 		newitem = NULL;
 		
-		LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 		return ERROR_FAIL;
 	}
 	strcpy(newitem->path, path);

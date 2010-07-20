@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 by Simon Qian <SimonQian@SimonQian.com>            *
+ *   Copyright (C) 2009 - 2010 by Simon Qian <SimonQian@SimonQian.com>     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -47,7 +47,7 @@ RESULT usbtoi2c_config(uint8_t interface_index, uint16_t kHz,
 #if PARAM_CHECK
 	if (interface_index > 7)
 	{
-		LOG_BUG(_GETTEXT("invalid inteface_index %d.\n"), interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
 		return ERROR_FAIL;
 	}
 #endif
@@ -69,14 +69,14 @@ RESULT usbtoi2c_read(uint8_t interface_index, uint16_t chip_addr,
 #if PARAM_CHECK
 	if (interface_index > 7)
 	{
-		LOG_BUG(_GETTEXT("invalid inteface_index %d.\n"), interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
 		return ERROR_FAIL;
 	}
 #endif
 	
 	if (data_len > 256)
 	{
-		LOG_BUG(_GETTEXT("too many data to transfer on I2C\n"));
+		LOG_BUG(ERRMSG_INVALID_VALUE, data_len, "I2C data size(1..256)");
 		return ERROR_FAIL;
 	}
 	
@@ -96,14 +96,14 @@ RESULT usbtoi2c_write(uint8_t interface_index, uint16_t chip_addr,
 #if PARAM_CHECK
 	if (interface_index > 7)
 	{
-		LOG_BUG(_GETTEXT("invalid inteface_index %d.\n"), interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
 		return ERROR_FAIL;
 	}
 #endif
 	
 	if (data_len > 256)
 	{
-		LOG_BUG(_GETTEXT("too many data to transfer on I2C\n"));
+		LOG_BUG(ERRMSG_INVALID_VALUE, data_len, "I2C data size(1..256)");
 		return ERROR_FAIL;
 	}
 	

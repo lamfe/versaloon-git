@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 by Simon Qian <SimonQian@SimonQian.com>            *
+ *   Copyright (C) 2009 - 2010 by Simon Qian <SimonQian@SimonQian.com>     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -94,14 +94,14 @@ PARSE_ARGUMENT_HANDLER(s5x)
 		// set Wait time
 		if (NULL == argu)
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), cmd);
+			LOG_ERROR(ERRMSG_INVALID_OPTION, cmd);
 			return ERRCODE_INVALID_OPTION;
 		}
 		
 		s5x_byte_delay_us = (uint16_t)strtoul(argu, NULL, 0);
 		if (s5x_byte_delay_us & 0x8000)
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), cmd);
+			LOG_ERROR(ERRMSG_INVALID_OPTION, cmd);
 			return ERRCODE_INVALID_OPTION;
 		}
 		
@@ -179,7 +179,7 @@ ENTER_PROGRAM_MODE_HANDLER(s5x)
 		|| ((param->param[S5X_PARAM_PE_OUT] != 0xFF) 
 			&& (param->param[S5X_PARAM_PE_OUT] != poll_value)))
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_ENTER_PROG_MODE));
+		LOG_ERROR(ERRMSG_FAILURE_ENTER_PROG_MODE);
 		return ERRCODE_FAILURE_ENTER_PROG_MODE;
 	}
 	
@@ -300,8 +300,7 @@ WRITE_TARGET_HANDLER(s5x)
 	case LOCK_CHAR:
 		if ((buff[0] < 1) || (buff[0] > 4))
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_VALUE), buff[0], 
-						"lock_value(1..4)");
+			LOG_ERROR(ERRMSG_INVALID_VALUE, buff[0], "lock_value(1..4)");
 			ret = ERRCODE_INVALID;
 			break;
 		}

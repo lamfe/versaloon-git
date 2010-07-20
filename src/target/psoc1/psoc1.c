@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 by Simon Qian <SimonQian@SimonQian.com>            *
+ *   Copyright (C) 2009 - 2010 by Simon Qian <SimonQian@SimonQian.com>     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -171,7 +171,7 @@ RESULT issp_wait_and_poll_with_ret(uint8_t *buf, uint8_t want_ssc_return_value)
 #ifdef PARAM_CHECK
 	if (want_ssc_return_value > 8)
 	{
-		LOG_BUG(_GETTEXT(ERRMSG_INVALID_PARAMETER), __FUNCTION__);
+		LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
 		return ERRCODE_INVALID_PARAMETER;
 	}
 #endif
@@ -264,7 +264,7 @@ ENTER_PROGRAM_MODE_HANDLER(psoc1)
 	// ISSP Init
 	if (ERROR_OK != issp_init())
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "initialize issp");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "initialize issp");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
@@ -280,7 +280,7 @@ ENTER_PROGRAM_MODE_HANDLER(psoc1)
 	case PSOC1_POWERON_MODE:
 		if (voltage > 2000)
 		{
-			LOG_ERROR(_GETTEXT("Target should power off in power-on mode\n"));
+			LOG_ERROR("Target should power off in power-on mode");
 			return ERROR_FAIL;
 		}
 		if (ERROR_OK != issp_enter_program_mode(ISSP_PM_POWER_ON))
@@ -297,15 +297,13 @@ ENTER_PROGRAM_MODE_HANDLER(psoc1)
 	// call calibrate1
 	if (ERROR_OK != issp_call_ssc(PSOC1_SSC_CMD_Calibrate1, 0, 1, NULL, 0))
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-					"call calibrate1");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "call calibrate1");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	// init2 read table no.1
 	if (ERROR_OK != issp_call_ssc(PSOC1_SSC_CMD_TableRead, 1, 1, NULL, 0))
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-					"read table no.1");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read table no.1");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	// init3 do the hell

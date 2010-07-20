@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 by Simon Qian <SimonQian@SimonQian.com>            *
+ *   Copyright (C) 2009 - 2010 by Simon Qian <SimonQian@SimonQian.com>     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -186,8 +186,7 @@ WRITE_TARGET_HANDLER(c8051fc2)
 		c2_read_dr(&dr);
 		if ((ERROR_OK != commit()) || (dr != C8051F_C2_REP_COMMAND_OK))
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ADDR), 
-					  "program flash", addr);
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION_ADDR, "program flash", addr);
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
@@ -209,8 +208,7 @@ WRITE_TARGET_HANDLER(c8051fc2)
 		c2_read_dr(&dr);
 		if ((ERROR_OK != commit()) || (dr != C8051F_C2_REP_COMMAND_OK))
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ADDR), 
-					  "program flash", addr);
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION_ADDR, "program flash", addr);
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
@@ -224,8 +222,7 @@ WRITE_TARGET_HANDLER(c8051fc2)
 		c2_poll_out_ready();
 		if (ERROR_OK != commit())
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ADDR), 
-					  "program flash", addr);
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION_ADDR, "program flash", addr);
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
@@ -267,8 +264,7 @@ READ_TARGET_HANDLER(c8051fc2)
 		c2_read_dr(&dr);
 		if ((ERROR_OK != commit()) || (dr != C8051F_C2_REP_COMMAND_OK))
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ADDR), 
-					  "read flash", addr);
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION_ADDR, "read flash", addr);
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
 		}

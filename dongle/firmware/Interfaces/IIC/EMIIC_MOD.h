@@ -1,4 +1,4 @@
-// Copyright (C) 2009 by Simon Qian <SimonQian@SimonQian.com> 
+// Copyright (C) 2009 - 2010 by Simon Qian <SimonQian@SimonQian.com> 
 
 #ifndef __EMIIC_MOD_INCLUDED__
 #define __EMIIC_MOD_INCLUDED__

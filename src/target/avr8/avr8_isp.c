@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 by Simon Qian <SimonQian@SimonQian.com>            *
+ *   Copyright (C) 2009 - 2010 by Simon Qian <SimonQian@SimonQian.com>     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -149,8 +149,7 @@ try_frequency:
 		if (pi->frequency > 1)
 		{
 			pi->frequency /= 2;
-			LOG_WARNING(_GETTEXT("frequency too fast, try slower: %d\n"), 
-							pi->frequency);
+			LOG_WARNING("frequency too fast, try slower: %d", pi->frequency);
 			goto try_frequency;
 		}
 		else
@@ -432,8 +431,7 @@ WRITE_TARGET_HANDLER(avr8isp)
 		}
 		else
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "fuse", 
-						param->chip_name);
+			LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, "fuse", param->chip_name);
 			ret = ERRCODE_NOT_SUPPORT;
 			break;
 		}
@@ -464,8 +462,7 @@ WRITE_TARGET_HANDLER(avr8isp)
 		}
 		else
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "lock", 
-						param->chip_name);
+			LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, "lock", param->chip_name);
 			ret = ERRCODE_NOT_SUPPORT;
 			break;
 		}
@@ -594,8 +591,7 @@ READ_TARGET_HANDLER(avr8isp)
 		}
 		else
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "fuse", 
-						param->chip_name);
+			LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, "fuse", param->chip_name);
 			ret = ERRCODE_NOT_SUPPORT;
 			break;
 		}
@@ -616,8 +612,7 @@ READ_TARGET_HANDLER(avr8isp)
 		}
 		else
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "lock", 
-						param->chip_name);
+			LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, "lock", param->chip_name);
 			ret = ERRCODE_NOT_SUPPORT;
 			break;
 		}
@@ -665,8 +660,7 @@ READ_TARGET_HANDLER(avr8isp)
 		}
 		else
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), "calibration", 
-						param->chip_name);
+			LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, "calibration", param->chip_name);
 			ret = ERRCODE_NOT_SUPPORT;
 			break;
 		}

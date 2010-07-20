@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 by Simon Qian <SimonQian@SimonQian.com>            *
+ *   Copyright (C) 2009 - 2010 by Simon Qian <SimonQian@SimonQian.com>     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -82,7 +82,7 @@ ENTER_PROGRAM_MODE_HANDLER(msp430jtagsbw)
 		IR_Shift_Read(IR_BYPASS, &tmp8);
 		if (ERROR_OK != commit())
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "init chip");
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "init chip");
 			return ERRCODE_FAILURE_OPERATION;
 		}
 		if (MSP430_JTAG_ID == tmp8)
@@ -108,7 +108,7 @@ ENTER_PROGRAM_MODE_HANDLER(msp430jtagsbw)
 	}
 	if (0 == i)
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "detect target chip");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "detect target chip");
 		return ERROR_FAIL;
 	}
 	
@@ -120,12 +120,12 @@ ENTER_PROGRAM_MODE_HANDLER(msp430jtagsbw)
 		DR_Shift16_Read(0xAAAA, &dr);
 		if (ERROR_OK != commit())
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "init programming");
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "init programming");
 			return ERRCODE_FAILURE_OPERATION;
 		}
 		if (0x5555 == dr)
 		{
-			LOG_ERROR(_GETTEXT("fuse of current chip is blown\n"));
+			LOG_ERROR("fuse of current chip is blown");
 			return ERROR_FAIL;
 		}
 	}
@@ -142,8 +142,7 @@ LEAVE_PROGRAM_MODE_HANDLER(msp430jtagsbw)
 	msp430_jtag_fini();
 	if (ERROR_OK != commit())
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-				  "exit program mode");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "exit program mode");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	return ERROR_OK;
@@ -177,7 +176,7 @@ ERASE_TARGET_HANDLER(msp430jtagsbw)
 		
 		if (ERROR_OK != commit())
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "erase chip");
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "erase chip");
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
@@ -200,8 +199,7 @@ WRITE_TARGET_HANDLER(msp430jtagsbw)
 		WriteFLASH((word)addr, (word)(size / 2), (word*)buff);
 		if (ERROR_OK != commit())
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ADDR), 
-						"write flash", addr);
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION_ADDR, "write flash", addr);
 			ret = ERRCODE_FAILURE_OPERATION_ADDR;
 			break;
 		}
@@ -252,15 +250,13 @@ READ_TARGET_HANDLER(msp430jtagsbw)
 									(word*)buff, &CRC_check);
 			if (ERROR_OK != commit())
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-							"read crc check");
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read crc check");
 				ret = ERRCODE_FAILURE_OPERATION;
 				break;
 			}
 			if (CRC_calc != CRC_check)
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ADDR), 
-							"verify flash", addr);
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION_ADDR, "verify flash", addr);
 				ret = ERRCODE_FAILURE_OPERATION_ADDR;
 				break;
 			}

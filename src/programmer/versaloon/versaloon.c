@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 by Simon Qian <SimonQian@SimonQian.com>            *
+ *   Copyright (C) 2009 - 2010 by Simon Qian <SimonQian@SimonQian.com>     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -81,7 +81,7 @@ RESULT versaloon_check_argument(char cmd, const char *argu)
 		// --usb
 		if (NULL == argu)
 		{
-			LOG_BUG(_GETTEXT(ERRMSG_INVALID_OPTION), cmd);
+			LOG_BUG(ERRMSG_INVALID_OPTION, cmd);
 			return ERRCODE_INVALID_OPTION;
 		}
 		
@@ -110,7 +110,7 @@ RESULT versaloon_check_argument(char cmd, const char *argu)
 				&& (*end_pointer != '-')) 
 			|| ('\0' == *(end_pointer + 1)))
 		{
-			LOG_BUG(_GETTEXT(ERRMSG_INVALID_OPTION), cmd);
+			LOG_BUG(ERRMSG_INVALID_OPTION, cmd);
 			return ERRCODE_INVALID_OPTION;
 		}
 		cur_pointer = end_pointer + 1;
@@ -120,7 +120,7 @@ RESULT versaloon_check_argument(char cmd, const char *argu)
 				&& (*end_pointer != '-')) 
 			|| ('\0' == *(end_pointer + 1)))
 		{
-			LOG_BUG(_GETTEXT(ERRMSG_INVALID_OPTION), cmd);
+			LOG_BUG(ERRMSG_INVALID_OPTION, cmd);
 			return ERRCODE_INVALID_OPTION;
 		}
 		cur_pointer = end_pointer + 1;
@@ -130,7 +130,7 @@ RESULT versaloon_check_argument(char cmd, const char *argu)
 				&& (*end_pointer != '-')) 
 			|| ('\0' == *(end_pointer + 1)))
 		{
-			LOG_BUG(_GETTEXT(ERRMSG_INVALID_OPTION), cmd);
+			LOG_BUG(ERRMSG_INVALID_OPTION, cmd);
 			return ERRCODE_INVALID_OPTION;
 		}
 		cur_pointer = end_pointer + 1;
@@ -156,23 +156,22 @@ RESULT versaloon_check_argument(char cmd, const char *argu)
 		end_pointer = cur_pointer + strlen(versaloon_serialstring);
 		if ((end_pointer == cur_pointer) || (*end_pointer != '\0'))
 		{
-			LOG_BUG(_GETTEXT(ERRMSG_INVALID_OPTION), cmd);
+			LOG_BUG(ERRMSG_INVALID_OPTION, cmd);
 			return ERRCODE_INVALID_OPTION;
 		}
 		
 print_usb_device:
 		if (versaloon_serialstring != NULL)
 		{
-			LOG_DEBUG(
-			   _GETTEXT("Versaloon is on 0x%04X:0x%04X(0x%02x_0x%02X):%s.\n"), 
-			   versaloon_vid, versaloon_pid, versaloon_epin, versaloon_epout, 
-			   versaloon_serialstring);
+			LOG_DEBUG("Versaloon is on 0x%04X:0x%04X(0x%02x_0x%02X):%s.", 
+					   versaloon_vid, versaloon_pid, versaloon_epin, 
+					   versaloon_epout, versaloon_serialstring);
 		}
 		else
 		{
-			LOG_DEBUG(
-				_GETTEXT("Versaloon is on 0x%04X:0x%04X(0x%02x_0x%02X).\n"), 
-				versaloon_vid, versaloon_pid, versaloon_epin, versaloon_epout);
+			LOG_DEBUG("Versaloon is on 0x%04X:0x%04X(0x%02x_0x%02X).", 
+						versaloon_vid, versaloon_pid, versaloon_epin, 
+						versaloon_epout);
 		}
 		break;
 	default:
@@ -204,8 +203,8 @@ RESULT versaloon_add_pending(uint8_t type, uint8_t cmd, uint16_t actual_szie,
 #if PARAM_CHECK
 	if (versaloon_pending_idx >= VERSALOON_MAX_PENDING_NUMBER)
 	{
-		LOG_BUG(_GETTEXT(ERRMSG_INVALID_INDEX), 
-				versaloon_pending_idx, "versaloon pending data");
+		LOG_BUG(ERRMSG_INVALID_INDEX, versaloon_pending_idx, 
+					"versaloon pending data");
 		return ERROR_FAIL;
 	}
 #endif
@@ -233,12 +232,12 @@ RESULT versaloon_send_command(uint16_t out_len, uint16_t *inlen)
 #if PARAM_CHECK
 	if (NULL == versaloon_buf)
 	{
-		LOG_BUG(_GETTEXT(ERRMSG_INVALID_BUFFER), TO_STR(versaloon_buf));
+		LOG_BUG(ERRMSG_INVALID_BUFFER, TO_STR(versaloon_buf));
 		return ERRCODE_INVALID_BUFFER;
 	}
 	if ((0 == out_len) || (out_len > versaloon_buf_size))
 	{
-		LOG_BUG(_GETTEXT(ERRMSG_INVALID_PARAMETER), __FUNCTION__);
+		LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
 		return ERRCODE_INVALID_PARAMETER;
 	}
 #endif
@@ -247,8 +246,8 @@ RESULT versaloon_send_command(uint16_t out_len, uint16_t *inlen)
 						 (char *)versaloon_buf, out_len, versaloon_to);
 	if (ret != out_len)
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ERRSTRING), 
-				  "send usb data", usb_strerror());
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION_ERRSTRING, "send usb data", 
+					usb_strerror());
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
@@ -263,8 +262,8 @@ RESULT versaloon_send_command(uint16_t out_len, uint16_t *inlen)
 		}
 		else
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION_ERRSTRING), 
-					  "receive usb data", usb_strerror());
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION_ERRSTRING, "receive usb data", 
+						usb_strerror());
 			return ERROR_FAIL;
 		}
 	}
@@ -291,12 +290,12 @@ RESULT versaloon_get_target_voltage(uint16_t *voltage)
 #if PARAM_CHECK
 	if (NULL == versaloon_buf)
 	{
-		LOG_BUG(_GETTEXT(ERRMSG_INVALID_BUFFER), TO_STR(versaloon_buf));
+		LOG_BUG(ERRMSG_INVALID_BUFFER, TO_STR(versaloon_buf));
 		return ERRCODE_INVALID_BUFFER;
 	}
 	if (NULL == voltage)
 	{
-		LOG_BUG(_GETTEXT(ERRMSG_INVALID_PARAMETER), __FUNCTION__);
+		LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
 		return ERRCODE_INVALID_PARAMETER;
 	}
 #endif
@@ -305,8 +304,7 @@ RESULT versaloon_get_target_voltage(uint16_t *voltage)
 	
 	if ((ERROR_OK != versaloon_send_command(1, &inlen)) || (inlen != 2))
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-				  "communicate with versaloon");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "communicate with versaloon");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	else
@@ -354,15 +352,13 @@ RESULT versaloon_init(void)
 	{
 		if (versaloon_serialstring != NULL)
 		{
-			LOG_ERROR(
-				_GETTEXT("Not found vid=0x%04x,pid = 0x%04x,serial = %s.\n"), 
-				versaloon_vid, versaloon_pid, versaloon_serialstring);
+			LOG_ERROR("Not found vid=0x%04x,pid = 0x%04x,serial = %s.", 
+						versaloon_vid, versaloon_pid, versaloon_serialstring);
 		}
 		else
 		{
-			LOG_ERROR(
-				_GETTEXT("Not found vid=0x%04x,pid = 0x%04x.\n"), 
-				versaloon_vid, versaloon_pid);
+			LOG_ERROR("Not found vid=0x%04x,pid = 0x%04x.", versaloon_vid, 
+						versaloon_pid);
 		}
 		return ERROR_FAIL;
 	}
@@ -371,7 +367,7 @@ RESULT versaloon_init(void)
 	versaloon_buf = (uint8_t *)malloc(versaloon_buf_size);
 	if (NULL == versaloon_buf)
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 		return ERRCODE_NOT_ENOUGH_MEMORY;
 	}
 	
@@ -395,14 +391,13 @@ RESULT versaloon_init(void)
 	if (VERSALOON_RETRY_CNT == retry)
 	{
 		versaloon_fini();
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-				  "communicate with versaloon");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "communicate with versaloon");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
 	versaloon_buf[ret] = 0;
 	versaloon_buf_size = versaloon_buf[0] + (versaloon_buf[1] << 8);
-	LOG_INFO("%s\n", versaloon_buf + 2);
+	LOG_INFO("%s", versaloon_buf + 2);
 	
 	// free temporary buffer
 	free(versaloon_buf);
@@ -412,14 +407,14 @@ RESULT versaloon_init(void)
 	if (NULL == versaloon_buf)
 	{
 		versaloon_fini();
-		LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 		return ERRCODE_NOT_ENOUGH_MEMORY;
 	}
 	versaloon_cmd_buf = (uint8_t *)malloc(versaloon_buf_size - 3);
 	if (NULL == versaloon_cmd_buf)
 	{
 		versaloon_fini();
-		LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 		return ERRCODE_NOT_ENOUGH_MEMORY;
 	}
 	return versaloon_get_target_voltage(&ret);
@@ -430,7 +425,7 @@ RESULT versaloon_enter_firmware_update_mode(void)
 #if PARAM_CHECK
 	if (NULL == versaloon_buf)
 	{
-		LOG_BUG(_GETTEXT(ERRMSG_INVALID_BUFFER), TO_STR(versaloon_buf));
+		LOG_BUG(ERRMSG_INVALID_BUFFER, TO_STR(versaloon_buf));
 		return ERRCODE_INVALID_BUFFER;
 	}
 #endif
@@ -441,8 +436,7 @@ RESULT versaloon_enter_firmware_update_mode(void)
 	
 	if (ERROR_OK != versaloon_send_command(3, NULL))
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-				  "communicate with versaloon");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "communicate with versaloon");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	else
@@ -470,12 +464,12 @@ RESULT versaloon_get_hardware(uint8_t *hardware)
 #if PARAM_CHECK
 	if (NULL == versaloon_buf)
 	{
-		LOG_BUG(_GETTEXT(ERRMSG_INVALID_BUFFER), TO_STR(versaloon_buf));
+		LOG_BUG(ERRMSG_INVALID_BUFFER, TO_STR(versaloon_buf));
 		return ERRCODE_INVALID_BUFFER;
 	}
 	if (NULL == hardware)
 	{
-		LOG_BUG(_GETTEXT(ERRMSG_INVALID_PARAMETER), __FUNCTION__);
+		LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
 		return ERRCODE_INVALID_PARAMETER;
 	}
 #endif
@@ -484,15 +478,14 @@ RESULT versaloon_get_hardware(uint8_t *hardware)
 	
 	if ((ERROR_OK != versaloon_send_command(1, &inlen)) || (inlen != 1))
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-				  "communicate with versaloon");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "communicate with versaloon");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	else
 	{
 		*hardware = versaloon_buf[0];
-		LOG_DEBUG(_GETTEXT("versaloon hardware is %s\n"), 
-				  versaloon_get_hardware_name(*hardware));
+		LOG_DEBUG("versaloon hardware is %s", 
+					versaloon_get_hardware_name(*hardware));
 		return ERROR_OK;
 	}
 }
@@ -504,12 +497,12 @@ RESULT versaloon_query_mass_product_data_size(uint32_t *size)
 #if PARAM_CHECK
 	if (NULL == versaloon_buf)
 	{
-		LOG_BUG(_GETTEXT(ERRMSG_INVALID_BUFFER), TO_STR(versaloon_buf));
+		LOG_BUG(ERRMSG_INVALID_BUFFER, TO_STR(versaloon_buf));
 		return ERRCODE_INVALID_BUFFER;
 	}
 	if (NULL == size)
 	{
-		LOG_BUG(_GETTEXT(ERRMSG_INVALID_PARAMETER), __FUNCTION__);
+		LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
 		return ERRCODE_INVALID_PARAMETER;
 	}
 #endif
@@ -518,8 +511,7 @@ RESULT versaloon_query_mass_product_data_size(uint32_t *size)
 	
 	if ((ERROR_OK != versaloon_send_command(1, &inlen)) || (inlen != 4))
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-				  "communicate with versaloon");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "communicate with versaloon");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	else
@@ -537,7 +529,7 @@ RESULT versaloon_erase_mass_product_data(void)
 #if PARAM_CHECK
 	if (NULL == versaloon_buf)
 	{
-		LOG_BUG(_GETTEXT(ERRMSG_INVALID_BUFFER), TO_STR(versaloon_buf));
+		LOG_BUG(ERRMSG_INVALID_BUFFER, TO_STR(versaloon_buf));
 		return ERRCODE_INVALID_BUFFER;
 	}
 #endif
@@ -546,14 +538,12 @@ RESULT versaloon_erase_mass_product_data(void)
 	
 	if ((ERROR_OK != versaloon_send_command(1, &inlen)) || (inlen != 1))
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-				  "communicate with versaloon");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "communicate with versaloon");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	if (versaloon_buf[0] != MP_OK)
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-				  "erase mass product data");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "erase mass product data");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
@@ -567,12 +557,12 @@ RESULT versaloon_checksum_mass_product_data(uint16_t * checksum, uint16_t len)
 #if PARAM_CHECK
 	if (NULL == versaloon_buf)
 	{
-		LOG_BUG(_GETTEXT(ERRMSG_INVALID_BUFFER), TO_STR(versaloon_buf));
+		LOG_BUG(ERRMSG_INVALID_BUFFER, TO_STR(versaloon_buf));
 		return ERRCODE_INVALID_BUFFER;
 	}
 	if (NULL == checksum)
 	{
-		LOG_BUG(_GETTEXT(ERRMSG_INVALID_PARAMETER), __FUNCTION__);
+		LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
 		return ERRCODE_INVALID_PARAMETER;
 	}
 #endif
@@ -583,8 +573,7 @@ RESULT versaloon_checksum_mass_product_data(uint16_t * checksum, uint16_t len)
 	
 	if ((ERROR_OK != versaloon_send_command(3, &inlen)) || (inlen != 2))
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-				  "communicate with versaloon");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "communicate with versaloon");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	*checksum = versaloon_buf[0] + (versaloon_buf[1] << 8);
@@ -601,20 +590,19 @@ RESULT versaloon_download_mass_product_data(const char *name, uint8_t *buffer,
 #if PARAM_CHECK
 	if ((NULL == buffer) || (0 == len))
 	{
-		LOG_BUG(_GETTEXT(ERRMSG_INVALID_PARAMETER), __FUNCTION__);
+		LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
 		return ERRCODE_INVALID_PARAMETER;
 	}
 #endif
 	
 	if (ERROR_OK != versaloon_query_mass_product_data_size(&size))
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-				  "get size of mass-product area");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "get size of mass-product area");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	if (len >= size)
 	{
-		LOG_ERROR(_GETTEXT("Not enough mass-product area\n"));
+		LOG_ERROR("Not enough mass-product area");
 		return ERROR_FAIL;
 	}
 	if (ERROR_OK != versaloon_erase_mass_product_data())
@@ -631,7 +619,7 @@ RESULT versaloon_download_mass_product_data(const char *name, uint8_t *buffer,
 	else
 	{
 		// target is not supported, SHOULD be checked in the main()
-		LOG_BUG(_GETTEXT(ERRMSG_NOT_SUPPORT), name);
+		LOG_BUG(ERRMSG_NOT_SUPPORT, name);
 		return ERRCODE_NOT_SUPPORT;
 	}
 	
@@ -666,15 +654,13 @@ RESULT versaloon_download_mass_product_data(const char *name, uint8_t *buffer,
 		// program
 		if ((ERROR_OK != versaloon_send_command(263, &inlen)) || (inlen != 1))
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-						  "communicate with versaloon");
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "communicate with versaloon");
 			pgbar_fini();
 			return ERRCODE_FAILURE_OPERATION;
 		}
 		if (versaloon_buf[0] != MP_OK)
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-						  "write mass product data");
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "write mass product data");
 			pgbar_fini();
 			return ERRCODE_FAILURE_OPERATION;
 		}
@@ -686,19 +672,18 @@ RESULT versaloon_download_mass_product_data(const char *name, uint8_t *buffer,
 	// verify checksum
 	if (ERROR_OK != versaloon_checksum_mass_product_data(&inlen, (uint16_t)len))
 	{
-		LOG_WARNING(_GETTEXT(ERRMSG_FAILURE_READ), "checksum");
+		LOG_WARNING(ERRMSG_FAILURE_READ, "checksum");
 	}
 	else
 	{
 		if (checksum != inlen)
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_VERIFY), "checksum");
+			LOG_ERROR(ERRMSG_FAILURE_VERIFY, "checksum");
 			return ERRCODE_FAILURE_VERIFY;
 		}
 		else
 		{
-			LOG_INFO(_GETTEXT(INFOMSG_VERIFIED), 
-					 "checksum of mass product data");
+			LOG_INFO(INFOMSG_VERIFIED, "checksum of mass product data");
 		}
 	}
 	

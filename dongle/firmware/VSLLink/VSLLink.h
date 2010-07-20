@@ -1,5 +1,5 @@
 /**************************************************************************
- *  Copyright (C) 2008 by Simon Qian                                      *
+ *  Copyright (C) 2008 - 2010 by Simon Qian                               *
  *  SimonQian@SimonQian.com                                               *
  *                                                                        *
  *  Project:    Versaloon                                                 *

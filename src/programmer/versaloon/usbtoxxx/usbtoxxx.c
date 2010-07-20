@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 by Simon Qian <SimonQian@SimonQian.com>            *
+ *   Copyright (C) 2009 - 2010 by Simon Qian <SimonQian@SimonQian.com>     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -95,7 +95,7 @@ RESULT usbtoxxx_validate_current_command_type(void)
 		// not the first command
 		if (NULL == usbtoxxx_buffer)
 		{
-			LOG_BUG(_GETTEXT(ERRMSG_INVALID_BUFFER), TO_STR(usbtoxxx_buffer));
+			LOG_BUG(ERRMSG_INVALID_BUFFER, TO_STR(usbtoxxx_buffer));
 			return ERRCODE_INVALID_BUFFER;
 		}
 		
@@ -132,14 +132,13 @@ RESULT usbtoxxx_execute_command(void)
 	
 	if (poll_nesting)
 	{
-		LOG_BUG(_GETTEXT("Invalid use of USB_TO_POLL.\n"));
+		LOG_BUG(ERRMSG_INVALID_USAGE, "USB_TO_POLL");
 		return ERROR_FAIL;
 	}
 	
 	if (ERROR_OK != usbtoxxx_validate_current_command_type())
 	{
-		LOG_BUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-				"validate previous commands");
+		LOG_BUG(ERRMSG_FAILURE_OPERATION, "validate previous commands");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	if (3 == usbtoxxx_buffer_index)
@@ -169,15 +168,15 @@ RESULT usbtoxxx_execute_command(void)
 			if (USB_TO_XXX_CMD_NOT_SUPPORT 
 				== versaloon_buf[usbtoxxx_buffer_index])
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_NOT_SUPPORT_BY), 
-						  usbtoxxx_get_type_name(versaloon_pending[i].type), 
-						  "current dongle");
+				LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, 
+							usbtoxxx_get_type_name(versaloon_pending[i].type), 
+							"current dongle");
 				result = ERROR_FAIL;
 				break;
 			}
 			else if (USB_TO_XXX_OK != versaloon_buf[usbtoxxx_buffer_index])
 			{
-				LOG_ERROR(_GETTEXT("%s command 0x%02x failed with 0x%02x\n"), 
+				LOG_ERROR("%s command 0x%02x failed with 0x%02x", 
 					usbtoxxx_get_type_name(versaloon_pending[i].type), 
 					versaloon_pending[i].cmd, 
 					versaloon_buf[usbtoxxx_buffer_index]);
@@ -205,7 +204,7 @@ RESULT usbtoxxx_execute_command(void)
 		usbtoxxx_buffer_index += versaloon_pending[i].actual_data_size;
 		if (usbtoxxx_buffer_index > inlen)
 		{
-			LOG_BUG(_GETTEXT("%s command 0x%02x process error\n"), 
+			LOG_BUG("%s command 0x%02x process error", 
 					usbtoxxx_get_type_name(versaloon_pending[i].type), 
 					versaloon_pending[i].cmd);
 			result = ERROR_FAIL;
@@ -216,7 +215,7 @@ RESULT usbtoxxx_execute_command(void)
 	// data is not the right size
 	if (inlen != usbtoxxx_buffer_index)
 	{
-		LOG_ERROR(_GETTEXT("length of return data invalid\n"));
+		LOG_ERROR(ERRMSG_INVALID_TARGET, "length of return data");
 		result = ERROR_FAIL;
 	}
 	
@@ -266,7 +265,7 @@ RESULT usbtoxxx_ensure_buffer_size(uint16_t cmdlen)
 		{
 			if (0 == poll_context.type_pre)
 			{
-				LOG_BUG(_GETTEXT("USB_TO_POLL toooooo long\n"));
+				LOG_BUG("USB_TO_POLL toooooo long");
 				return ERROR_OK;
 			}
 			
@@ -323,8 +322,7 @@ RESULT usbtoxxx_add_command(uint8_t type, uint8_t cmd, uint8_t *cmdbuf,
 	{
 		if (ERROR_OK != usbtoxxx_validate_current_command_type())
 		{
-			LOG_BUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-				"validate previous commands");
+			LOG_BUG(ERRMSG_FAILURE_OPERATION, "validate previous commands");
 			return ERRCODE_FAILURE_OPERATION;
 		}
 		type_pre = type;
@@ -382,8 +380,7 @@ RESULT usbtopoll_start(uint16_t retry_cnt, uint16_t interval_us)
 	
 	if (ERROR_OK != usbtoxxx_validate_current_command_type())
 	{
-		LOG_BUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-				"validate previous commands");
+		LOG_BUG(ERRMSG_FAILURE_OPERATION, "validate previous commands");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	poll_nesting++;
@@ -402,7 +399,7 @@ RESULT usbtopoll_end(void)
 {
 	if (!poll_nesting)
 	{
-		LOG_BUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), "check poll nesting");
+		LOG_BUG(ERRMSG_FAILURE_OPERATION, "check poll nesting");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	if (ERROR_OK != usbtoxxx_ensure_buffer_size(3 + 1))
@@ -412,8 +409,7 @@ RESULT usbtopoll_end(void)
 	
 	if (ERROR_OK != usbtoxxx_validate_current_command_type())
 	{
-		LOG_BUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-				"validate previous commands");
+		LOG_BUG(ERRMSG_FAILURE_OPERATION, "validate previous commands");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
@@ -432,12 +428,12 @@ RESULT usbtopoll_checkok(uint8_t equ, uint16_t offset, uint8_t size,
 	
 	if (size > 4)
 	{
-		LOG_BUG(_GETTEXT(ERRMSG_INVALID_PARAMETER), __FUNCTION__);
+		LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
 		return ERRCODE_INVALID_PARAMETER;
 	}
 	if (!poll_nesting)
 	{
-		LOG_BUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), "check poll nesting");
+		LOG_BUG(ERRMSG_FAILURE_OPERATION, "check poll nesting");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	if (ERROR_OK != usbtoxxx_ensure_buffer_size(3 + 4 + 2 * size))
@@ -447,8 +443,7 @@ RESULT usbtopoll_checkok(uint8_t equ, uint16_t offset, uint8_t size,
 	
 	if (ERROR_OK != usbtoxxx_validate_current_command_type())
 	{
-		LOG_BUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-				"validate previous commands");
+		LOG_BUG(ERRMSG_FAILURE_OPERATION, "validate previous commands");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
@@ -478,12 +473,12 @@ RESULT usbtopoll_checkfail(uint8_t equ, uint16_t offset, uint8_t size,
 	
 	if (size > 4)
 	{
-		LOG_BUG(_GETTEXT(ERRMSG_INVALID_PARAMETER), __FUNCTION__);
+		LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
 		return ERRCODE_INVALID_PARAMETER;
 	}
 	if (!poll_nesting)
 	{
-		LOG_BUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), "check poll nesting");
+		LOG_BUG(ERRMSG_FAILURE_OPERATION, "check poll nesting");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	if (ERROR_OK != usbtoxxx_ensure_buffer_size(3 + 4 + 2 * size))
@@ -493,8 +488,7 @@ RESULT usbtopoll_checkfail(uint8_t equ, uint16_t offset, uint8_t size,
 	
 	if (ERROR_OK != usbtoxxx_validate_current_command_type())
 	{
-		LOG_BUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-				"validate previous commands");
+		LOG_BUG(ERRMSG_FAILURE_OPERATION, "validate previous commands");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
@@ -521,7 +515,7 @@ RESULT usbtopoll_verifybuff(uint16_t offset, uint16_t size, uint8_t *buff)
 {
 	if (!poll_nesting)
 	{
-		LOG_BUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), "check poll nesting");
+		LOG_BUG(ERRMSG_FAILURE_OPERATION, "check poll nesting");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	if (ERROR_OK != usbtoxxx_ensure_buffer_size(3 + 5 + size))
@@ -531,8 +525,7 @@ RESULT usbtopoll_verifybuff(uint16_t offset, uint16_t size, uint8_t *buff)
 	
 	if (ERROR_OK != usbtoxxx_validate_current_command_type())
 	{
-		LOG_BUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-				"validate previous commands");
+		LOG_BUG(ERRMSG_FAILURE_OPERATION, "validate previous commands");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
@@ -561,8 +554,7 @@ RESULT usbtodelay_delay(uint16_t dly)
 	
 	if (ERROR_OK != usbtoxxx_validate_current_command_type())
 	{
-		LOG_BUG(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-					"validate previous commands");
+		LOG_BUG(ERRMSG_FAILURE_OPERATION, "validate previous commands");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	type_pre = USB_TO_DELAY;

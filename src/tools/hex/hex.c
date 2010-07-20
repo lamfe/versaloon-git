@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 by Simon Qian <SimonQian@SimonQian.com>            *
+ *   Copyright (C) 2009 - 2010 by Simon Qian <SimonQian@SimonQian.com>     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -52,7 +52,7 @@ RESULT read_hex_file(FILE *hex_file, WRITE_MEMORY_CALLBACK callback,
 #ifdef PARAM_CHECK
 	if ((NULL == hex_file) || (NULL == callback))
 	{
-		LOG_BUG(_GETTEXT(ERRMSG_INVALID_PARAMETER), __FUNCTION__);
+		LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
 		return ERRCODE_INVALID_PARAMETER;
 	}
 #endif
@@ -157,7 +157,7 @@ RESULT read_hex_file(FILE *hex_file, WRITE_MEMORY_CALLBACK callback,
 			ext_addr1 = (line_buf[4] << 24) | (line_buf[5] << 16);
 			break;
 		default:
-			LOG_WARNING(_GETTEXT(ERRMSG_INVALID_VALUE_MESSAGE), line_buf[3], 
+			LOG_WARNING(ERRMSG_INVALID_VALUE_MESSAGE, line_buf[3], 
 						"hex type", "current line ignored!!");
 			break;
 		}
@@ -175,8 +175,8 @@ static RESULT write_hex_line(FILE *hex_file, uint8_t data_len,
 #ifdef PARAM_CHECK
 	if ((NULL == hex_file) || ((data_len > 0) && (NULL == data)))
 	{
-		LOG_BUG("parameter invalid\n\n");
-		return ERROR_FAIL;
+		LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
+		return ERRCODE_INVALID_PARAMETER;
 	}
 #endif
 	

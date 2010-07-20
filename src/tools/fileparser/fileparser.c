@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 by Simon Qian <SimonQian@SimonQian.com>            *
+ *   Copyright (C) 2009 - 2010 by Simon Qian <SimonQian@SimonQian.com>     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -178,8 +178,7 @@ RESULT save_target_to_file(struct filelist *fl, uint8_t *buff,
 		target_file->file = fopen(target_file->path, "wb");
 		if (NULL == target_file->file)
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_HANDLE_DEVICE), "open", 
-						target_file->path);
+			LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "open", target_file->path);
 			return ERROR_FAIL;
 		}
 	}
@@ -214,8 +213,7 @@ RESULT read_bin_file(FILE *bin_file, WRITE_MEMORY_CALLBACK callback,
 			}
 			else
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-							"read input binary file");
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read input binary file");
 				return ERRCODE_FAILURE_OPERATION;
 			}
 		}

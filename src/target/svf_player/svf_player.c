@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 by Simon Qian <SimonQian@SimonQian.com>            *
+ *   Copyright (C) 2009 - 2010 by Simon Qian <SimonQian@SimonQian.com>     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -123,7 +123,7 @@ EXECUTE_HANDLER(svfp)
 		|| (toupper(fl_in->path[strlen(fl_in->path) - 2]) != 'V') 
 		|| (toupper(fl_in->path[strlen(fl_in->path) - 1]) != 'F'))
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_NOT_DEFINED), "svf file");
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "svf file");
 		return ERROR_FAIL;
 	}
 	svf_file = fl_in->file;
@@ -136,7 +136,7 @@ EXECUTE_HANDLER(svfp)
 	
 	if (ERROR_OK != tap_init())
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "open jtag");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "open jtag");
 		svf_parser_fini();
 		return ERRCODE_FAILURE_OPERATION;
 	}
@@ -145,8 +145,8 @@ EXECUTE_HANDLER(svfp)
 	{
 		if (ERROR_OK != svf_parser_run_command(first_command))
 		{
-			LOG_ERROR(_GETTEXT("Fail to execute first command: %s\n"), 
-					  first_command);
+			LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "execute first command", 
+						first_command);
 			ret = ERROR_FAIL;
 			goto leave_program_mode;
 		}
@@ -168,8 +168,7 @@ EXECUTE_HANDLER(svfp)
 			{
 				pgbar_fini();
 			}
-			LOG_ERROR(_GETTEXT("Command execute failed at line %d\n"), 
-					  svf_line_number);
+			LOG_ERROR("Command execute failed at line %d", svf_line_number);
 			ret = ERROR_FAIL;
 			goto leave_program_mode;
 		}
@@ -187,14 +186,13 @@ EXECUTE_HANDLER(svfp)
 	// commit last commands
 	if (ERROR_OK != tap_commit())
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), "do jtag");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "do jtag");
 		ret = ERROR_FAIL;
 		goto leave_program_mode;
 	}
 	else if (ERROR_OK != svf_parser_check_tdo())
 	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-				  "check tdo data");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "check tdo data");
 		ret = ERROR_FAIL;
 		goto leave_program_mode;
 	}
@@ -204,7 +202,7 @@ EXECUTE_HANDLER(svfp)
 		pgbar_update(svf_file_index);
 		pgbar_fini();
 	}
-	LOG_INFO(_GETTEXT("%d commands execute finised OK\n"), command_num);
+	LOG_INFO("%d commands execute finised OK", command_num);
 	
 leave_program_mode:
 	// free all

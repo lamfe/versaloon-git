@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 by Simon Qian <SimonQian@SimonQian.com>            *
+ *   Copyright (C) 2009 - 2010 by Simon Qian <SimonQian@SimonQian.com>     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -86,7 +86,7 @@ PARSE_ARGUMENT_HANDLER(stm32)
 	case 'm':
 		if (NULL == argu)
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_INVALID_OPTION), cmd);
+			LOG_ERROR(ERRMSG_INVALID_OPTION, cmd);
 			return ERRCODE_INVALID_OPTION;
 		}
 		mode = (uint8_t)strtoul(argu, NULL,0);
@@ -140,7 +140,7 @@ void stm32_print_device(uint32_t mcuid)
 	switch (den)
 	{
 	case STM32_DEN_LOW:
-		LOG_INFO(_GETTEXT("STM32 type: low-density device\n"));
+		LOG_INFO("STM32 type: low-density device");
 		switch (rev)
 		{
 		case 0x1000:
@@ -149,7 +149,7 @@ void stm32_print_device(uint32_t mcuid)
 		}
 		break;
 	case STM32_DEN_MEDIUM:
-		LOG_INFO(_GETTEXT("STM32 type: medium-density device\n"));
+		LOG_INFO("STM32 type: medium-density device");
 		switch (rev)
 		{
 		case 0x0000:
@@ -167,7 +167,7 @@ void stm32_print_device(uint32_t mcuid)
 		}
 		break;
 	case STM32_DEN_HIGH:
-		LOG_INFO(_GETTEXT("STM32 type: high-density device\n"));
+		LOG_INFO("STM32 type: high-density device");
 		switch (rev)
 		{
 		case 0x1000:
@@ -179,7 +179,7 @@ void stm32_print_device(uint32_t mcuid)
 		}
 		break;
 	case STM32_DEN_CONNECTIVITY:
-		LOG_INFO(_GETTEXT("STM32 type: connectivity device\n"));
+		LOG_INFO("STM32 type: connectivity device");
 		switch (rev)
 		{
 		case 0x1000:
@@ -191,7 +191,7 @@ void stm32_print_device(uint32_t mcuid)
 		}
 		break;
 	case STM32_DEN_VALUELINE:
-		LOG_INFO(_GETTEXT("STM32 type: value-line device\n"));
+		LOG_INFO("STM32 type: value-line device");
 		switch (rev)
 		{
 		case 0x1000:
@@ -203,12 +203,12 @@ void stm32_print_device(uint32_t mcuid)
 		}
 		break;
 	default:
-		LOG_INFO(_GETTEXT("STM32 type: unknown device(%08X)\n"), mcuid);
+		LOG_INFO("STM32 type: unknown device(%08X)", mcuid);
 		break;
 	}
 	if (rev_char != 0)
 	{
-		LOG_INFO(_GETTEXT("STM32 revision: %c\n"), rev_char);
+		LOG_INFO("STM32 revision: %c", rev_char);
 	}
 }
 

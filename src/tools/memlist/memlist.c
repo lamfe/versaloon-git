@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 by Simon Qian <SimonQian@SimonQian.com>            *
+ *   Copyright (C) 2009 - 2010 by Simon Qian <SimonQian@SimonQian.com>     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -165,7 +165,7 @@ RESULT MEMLIST_Add(struct memlist **ml, uint32_t addr, uint32_t len,
 		*ml = (struct memlist*)malloc(sizeof(struct memlist));
 		if (NULL == *ml)
 		{
-			LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+			LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 			return ERROR_FAIL;
 		}
 		
@@ -180,7 +180,7 @@ RESULT MEMLIST_Add(struct memlist **ml, uint32_t addr, uint32_t len,
 			newitem = (struct memlist*)malloc(sizeof(struct memlist));
 			if (NULL == newitem)
 			{
-				LOG_ERROR(_GETTEXT(ERRMSG_NOT_ENOUGH_MEMORY));
+				LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 				return ERROR_FAIL;
 			}
 			
