@@ -51,6 +51,7 @@ type
     pnlSettings: TPanel;
     pnlButton: TPanel;
     tInit:     TTimer;
+    procedure btnCancelClick(Sender: TObject);
     procedure btnOKClick(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: boolean);
     procedure FormKeyPress(Sender: TObject; var Key: char);
@@ -405,6 +406,11 @@ begin
   bCancel := False;
 end;
 
+procedure TFormParaEditor.btnCancelClick(Sender: TObject);
+begin
+  bCancel := True;
+end;
+
 procedure TFormParaEditor.FormCloseQuery(Sender: TObject; var CanClose: boolean);
 var
   i: integer;
@@ -418,6 +424,7 @@ begin
 
   if not bCancel then
   begin
+    bCancel := True;
     for i := low(Param_Record.warnings) to high(Param_Record.warnings) do
     begin
       BufferFunc_And(Param_Value, Param_Record.warnings[i].mask, dest);
@@ -432,7 +439,6 @@ begin
         else if EnableWarning and (mrNo = MessageDlg(Param_Record.warnings[i].msg,
           mtWarning, [mbYes, mbNo], 0)) then
         begin
-          bCancel  := True;
           CanClose := False;
           break;
         end;

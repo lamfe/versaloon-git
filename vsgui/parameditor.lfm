@@ -52,6 +52,7 @@ object FormParaEditor: TFormParaEditor
       Width = 75
       Caption = '&Cancel'
       ModalResult = 2
+      OnClick = btnCancelClick
       TabOrder = 1
     end
   end
