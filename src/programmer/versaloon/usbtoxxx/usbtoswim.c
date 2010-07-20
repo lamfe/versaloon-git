@@ -23,13 +23,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "app_cfg.h"
-#include "app_type.h"
-#include "app_err.h"
-#include "app_log.h"
-#include "prog_interface.h"
-
-#include "programmer.h"
+#include "../versaloon_include.h"
 #include "../versaloon.h"
 #include "../versaloon_internal.h"
 #include "usbtoxxx.h"
@@ -47,8 +41,8 @@ RESULT usbtoswim_fini(void)
 	return usbtoxxx_fini_command(USB_TO_SWIM);
 }
 
-RESULT usbtoswim_set_param(uint8_t interface_index, uint8_t mHz, 
-							uint8_t cnt0, uint8_t cnt1)
+RESULT usbtoswim_config(uint8_t interface_index, uint8_t mHz, uint8_t cnt0, 
+						uint8_t cnt1)
 {
 	uint8_t buff[3];
 	

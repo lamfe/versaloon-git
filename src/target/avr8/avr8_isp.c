@@ -59,27 +59,26 @@ struct program_functions_t avr8isp_program_functions =
 
 
 
-#define spi_init()				interfaces->spi.spi_init()
-#define spi_fini()				interfaces->spi.spi_fini()
+#define spi_init()				interfaces->spi.init()
+#define spi_fini()				interfaces->spi.fini()
 #define spi_conf(speed)			\
-	interfaces->spi.spi_config((speed), SPI_CPOL_LOW, SPI_CPHA_1EDGE, \
-		SPI_MSB_FIRST)
+	interfaces->spi.config((speed), SPI_CPOL_LOW, SPI_CPHA_1EDGE, SPI_MSB_FIRST)
 #define spi_io(out, outlen, in, inpos, inlen)	\
-	interfaces->spi.spi_io((out), (in), (outlen), (inpos), (inlen))
+	interfaces->spi.io((out), (in), (outlen), (inpos), (inlen))
 
-#define reset_init()			interfaces->gpio.gpio_init()
-#define reset_fini()			interfaces->gpio.gpio_fini()
+#define reset_init()			interfaces->gpio.init()
+#define reset_fini()			interfaces->gpio.fini()
 #define reset_output()			\
-	interfaces->gpio.gpio_config(GPIO_SRST, GPIO_SRST, 0)
+	interfaces->gpio.config(GPIO_SRST, GPIO_SRST, 0)
 #define reset_input()			\
-	interfaces->gpio.gpio_config(GPIO_SRST, 0, GPIO_SRST)
+	interfaces->gpio.config(GPIO_SRST, 0, GPIO_SRST)
 #define reset_set()				reset_input()
-#define reset_clr()				interfaces->gpio.gpio_out(GPIO_SRST, 0)
+#define reset_clr()				interfaces->gpio.out(GPIO_SRST, 0)
 
-#define poll_start()			interfaces->poll.poll_start(20, 500)
-#define poll_end()				interfaces->poll.poll_end()
+#define poll_start()			interfaces->poll.start(20, 500)
+#define poll_end()				interfaces->poll.end()
 #define poll_ok(o, m, v)		\
-	interfaces->poll.poll_checkok(POLL_CHECK_EQU, (o), 1, (m), (v))
+	interfaces->poll.checkok(POLL_CHECK_EQU, (o), 1, (m), (v))
 
 #define delay_ms(ms)			interfaces->delay.delayms((ms) | 0x8000)
 #define delay_us(us)			interfaces->delay.delayus((us) & 0x7FFF)

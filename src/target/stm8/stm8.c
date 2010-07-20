@@ -118,34 +118,36 @@ PARSE_ARGUMENT_HANDLER(stm8)
 
 
 
-#define reset_init()			interfaces->gpio.gpio_init()
-#define reset_fini()			interfaces->gpio.gpio_fini()
-#define reset_output()			interfaces->gpio.gpio_config(SWIM_RST_PIN, SWIM_RST_PIN, 0)
-#define reset_input()			interfaces->gpio.gpio_config(SWIM_RST_PIN, 0, SWIM_RST_PIN)
+#define reset_init()			interfaces->gpio.init()
+#define reset_fini()			interfaces->gpio.fini()
+#define reset_output()			\
+	interfaces->gpio.config(SWIM_RST_PIN, SWIM_RST_PIN, 0)
+#define reset_input()			\
+	interfaces->gpio.config(SWIM_RST_PIN, 0, SWIM_RST_PIN)
 #define reset_set()				reset_input()
 #define reset_clr()				do{\
-									interfaces->gpio.gpio_out(SWIM_RST_PIN, 0);\
+									interfaces->gpio.out(SWIM_RST_PIN, 0);\
 									reset_output();\
 								}while(0)
 
-#define swim_init()				interfaces->swim.swim_init()
-#define swim_fini()				interfaces->swim.swim_fini()
-#define swim_set_param(m,c0,c1)	interfaces->swim.swim_set_param((m), (c0), (c1))
-#define swim_srst()				interfaces->swim.swim_srst()
-#define swim_wotf(a, b, l)		interfaces->swim.swim_wotf((b), (l), (a))
-#define swim_rotf(a, b, l)		interfaces->swim.swim_rotf((b), (l), (a))
-#define swim_sync(m)			interfaces->swim.swim_sync(m)
-#define swim_enable()			interfaces->swim.swim_enable()
+#define swim_init()				interfaces->swim.init()
+#define swim_fini()				interfaces->swim.fini()
+#define swim_config(m,c0,c1)	interfaces->swim.config((m), (c0), (c1))
+#define swim_srst()				interfaces->swim.srst()
+#define swim_wotf(a, b, l)		interfaces->swim.wotf((b), (l), (a))
+#define swim_rotf(a, b, l)		interfaces->swim.rotf((b), (l), (a))
+#define swim_sync(m)			interfaces->swim.sync(m)
+#define swim_enable()			interfaces->swim.enable()
 
 #define delay_ms(ms)			interfaces->delay.delayms((ms) | 0x8000)
 #define delay_us(us)			interfaces->delay.delayus((us) & 0x7FFF)
 
-#define poll_start()			interfaces->poll.poll_start(100, 100)
-#define poll_end()				interfaces->poll.poll_end()
+#define poll_start()			interfaces->poll.start(100, 100)
+#define poll_end()				interfaces->poll.end()
 #define poll_ok(o, m, v)		\
-	interfaces->poll.poll_checkok(POLL_CHECK_EQU, (o), 1, (m), (v))
+	interfaces->poll.checkok(POLL_CHECK_EQU, (o), 1, (m), (v))
 #define poll_fail(o, m, v)		\
-	interfaces->poll.poll_checkfail(POLL_CHECK_EQU, (o), 1, (m), (v))
+	interfaces->poll.checkfail(POLL_CHECK_EQU, (o), 1, (m), (v))
 
 #define commit()				interfaces->peripheral_commit()
 
@@ -528,11 +530,11 @@ ENTER_PROGRAM_MODE_HANDLER(stm8swim)
 	swim_init();
 	if (param->param[STM8_PARAM_CLK_SWIMCCR] != 0)
 	{
-		swim_set_param(target_mhz / 2, 20, 2);
+		swim_config(target_mhz / 2, 20, 2);
 	}
 	else
 	{
-		swim_set_param(target_mhz, 20, 2);
+		swim_config(target_mhz, 20, 2);
 	}
 	delay_ms(10);
 	swim_srst();
@@ -547,7 +549,7 @@ ENTER_PROGRAM_MODE_HANDLER(stm8swim)
 	if (param->param[STM8_PARAM_CLK_SWIMCCR] != 0)
 	{
 		swim_wotf_reg(param->param[STM8_PARAM_CLK_SWIMCCR], 0x01, 1);
-		swim_set_param(target_mhz, 20, 2);
+		swim_config(target_mhz, 20, 2);
 	}
 	else
 	{
@@ -567,7 +569,7 @@ ENTER_PROGRAM_MODE_HANDLER(stm8swim)
 						| STM8_SWIM_CSR_SWIM_DM | STM8_SWIM_CSR_HS 
 						| STM8_SWIM_CSR_RST | STM8_SWIM_CSR_PRI, 1);
 		delay_ms(10);
-		swim_set_param(target_mhz, 8, 2);
+		swim_config(target_mhz, 8, 2);
 	}
 	else
 	{

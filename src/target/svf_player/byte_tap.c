@@ -394,7 +394,7 @@ RESULT tap_init(void)
 	{
 		return ERROR_FAIL;
 	}
-	if (ERROR_OK != jtag_set_frequency(1000))
+	if (ERROR_OK != jtag_config(1000))
 	{
 		return ERROR_FAIL;
 	}

@@ -61,19 +61,19 @@ struct program_functions_t c8051fc2_program_functions =
 #define delay_ms(ms)			interfaces->delay.delayms((ms) | 0x8000)
 #define delay_us(us)			interfaces->delay.delayus((us) & 0x7FFF)
 
-#define c2_init()				interfaces->c2.c2_init()
-#define c2_fini()				interfaces->c2.c2_fini()
-#define c2_write_ir(ir)			interfaces->c2.c2_addr_write(ir)
-#define c2_read_ir(ir)			interfaces->c2.c2_addr_read(ir);
-#define c2_write_dr(dr)			interfaces->c2.c2_data_write(&dr, 1)
-#define c2_read_dr(dr)			interfaces->c2.c2_data_read(dr, 1)
+#define c2_init()				interfaces->c2.init()
+#define c2_fini()				interfaces->c2.fini()
+#define c2_write_ir(ir)			interfaces->c2.addr_write(ir)
+#define c2_read_ir(ir)			interfaces->c2.addr_read(ir);
+#define c2_write_dr(dr)			interfaces->c2.data_write(&dr, 1)
+#define c2_read_dr(dr)			interfaces->c2.data_read(dr, 1)
 #define c2_poll_out_ready()		c8051f_c2_addr_poll(0x01, 0x01, 500)
 #define c2_poll_in_busy()		c8051f_c2_addr_poll(0x02, 0x00, 500)
 
-#define poll_start(cnt)			interfaces->poll.poll_start((cnt), 100)
-#define poll_end()				interfaces->poll.poll_end()
+#define poll_start(cnt)			interfaces->poll.start((cnt), 100)
+#define poll_end()				interfaces->poll.end()
 #define poll_ok(o, m, v)		\
-	interfaces->poll.poll_checkok(POLL_CHECK_EQU, (o), 1, (m), (v))
+	interfaces->poll.checkok(POLL_CHECK_EQU, (o), 1, (m), (v))
 
 #define commit()				interfaces->peripheral_commit()
 

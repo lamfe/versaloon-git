@@ -29,22 +29,22 @@
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
 
-uint8_t usbtospi_num_of_interface = 0;
+uint8_t usbtojtagraw_num_of_interface = 0;
 
-RESULT usbtospi_init(void)
+RESULT usbtojtagraw_init(void)
 {
-	return usbtoxxx_init_command(USB_TO_SPI, &usbtospi_num_of_interface);
+	return usbtoxxx_init_command(USB_TO_JTAG_RAW, 
+									&usbtojtagraw_num_of_interface);
 }
 
-RESULT usbtospi_fini(void)
+RESULT usbtojtagraw_fini(void)
 {
-	return usbtoxxx_fini_command(USB_TO_SPI);
+	return usbtoxxx_fini_command(USB_TO_JTAG_RAW);
 }
 
-RESULT usbtospi_config(uint8_t interface_index, uint16_t freq, uint8_t cpol, 
-					   uint8_t cpha, uint8_t firstbit)
+RESULT usbtojtagraw_config(uint8_t interface_index, uint16_t kHz)
 {
-	uint8_t conf[3];
+	uint8_t cfg_buf[2];
 	
 #if PARAM_CHECK
 	if (interface_index > 7)
@@ -54,15 +54,14 @@ RESULT usbtospi_config(uint8_t interface_index, uint16_t freq, uint8_t cpol,
 	}
 #endif
 	
-	conf[0] = cpol | cpha | firstbit;
-	conf[1] = (freq >> 0) & 0xFF;
-	conf[2] = (freq >> 8) & 0xFF;
+	cfg_buf[0] = (kHz >> 0) & 0xFF;
+	cfg_buf[1] = (kHz >> 8) & 0xFF;
 	
-	return usbtoxxx_conf_command(USB_TO_SPI, interface_index, conf, 3);
+	return usbtoxxx_conf_command(USB_TO_JTAG_RAW, interface_index, cfg_buf, 2);
 }
 
-RESULT usbtospi_io(uint8_t interface_index, uint8_t *out, uint8_t *in, 
-				   uint16_t outlen, uint16_t inpos, uint16_t inlen)
+RESULT usbtojtagraw_execute(uint8_t interface_index, uint8_t *tdi, 
+							uint8_t *tms, uint8_t *tdo, uint16_t bytelen)
 {
 #if PARAM_CHECK
 	if (interface_index > 7)
@@ -71,8 +70,9 @@ RESULT usbtospi_io(uint8_t interface_index, uint8_t *out, uint8_t *in,
 		return ERROR_FAIL;
 	}
 #endif
-	
-	return usbtoxxx_inout_command(USB_TO_SPI, interface_index, out, outlen, 
-								  outlen, in, inpos, inlen, 1);
+	memcpy(versaloon_cmd_buf, tdi, bytelen);
+	memcpy(versaloon_cmd_buf + bytelen, tms, bytelen);
+	return usbtoxxx_inout_command(USB_TO_JTAG_RAW, interface_index, 
+				versaloon_cmd_buf, bytelen * 2, bytelen, tdo, 0, bytelen, 0);
 }
 

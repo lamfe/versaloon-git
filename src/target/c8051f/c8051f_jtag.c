@@ -61,13 +61,17 @@ struct program_functions_t c8051fjtag_program_functions =
 static struct interfaces_info_t *interfaces = NULL;
 
 
-#define jtag_init()					interfaces->jtag_hl.jtag_hl_init()
-#define jtag_fini()					interfaces->jtag_hl.jtag_hl_fini()
-#define jtag_config(kHz,a,b,c,d)	interfaces->jtag_hl.jtag_hl_config((kHz), (a), (b), (c), (d))
-#define jtag_runtest(len)			interfaces->jtag_hl.jtag_hl_runtest(len)
-#define jtag_ir_write(ir, len)		interfaces->jtag_hl.jtag_hl_ir((uint8_t*)(ir), (len), 1, 0)
-#define jtag_dr_write(dr, len)		interfaces->jtag_hl.jtag_hl_dr((uint8_t*)(dr), (len), 1, 0)
-#define jtag_dr_read(dr, len)		interfaces->jtag_hl.jtag_hl_dr((uint8_t*)(dr), (len), 1, 1)
+#define jtag_init()					interfaces->jtag_hl.init()
+#define jtag_fini()					interfaces->jtag_hl.fini()
+#define jtag_config(kHz,a,b,c,d)	\
+	interfaces->jtag_hl.config((kHz), (a), (b), (c), (d))
+#define jtag_runtest(len)			interfaces->jtag_hl.runtest(len)
+#define jtag_ir_write(i, len)		\
+	interfaces->jtag_hl.ir((uint8_t*)(i), (len), 1, 0)
+#define jtag_dr_write(d, len)		\
+	interfaces->jtag_hl.dr((uint8_t*)(d), (len), 1, 0)
+#define jtag_dr_read(d, len)		\
+	interfaces->jtag_hl.dr((uint8_t*)(d), (len), 1, 1)
 
 #if 0
 #define jtag_poll_busy()			c8051f_jtag_poll_busy()
@@ -80,10 +84,10 @@ static struct interfaces_info_t *interfaces = NULL;
 #define jtag_delay_us(us)			interfaces->delay.delayus((us))
 #define jtag_delay_ms(ms)			interfaces->delay.delayms((ms))
 
-#define poll_start(cnt, int)		interfaces->poll.poll_start((cnt), (int))
-#define poll_end()					interfaces->poll.poll_end()
+#define poll_start(cnt, int)		interfaces->poll.start((cnt), (int))
+#define poll_end()					interfaces->poll.end()
 #define poll_ok(o, m, v)			\
-	interfaces->poll.poll_checkok(POLL_CHECK_EQU, (o), 1, (m), (v))
+	interfaces->poll.checkok(POLL_CHECK_EQU, (o), 1, (m), (v))
 
 #define jtag_commit()				interfaces->peripheral_commit()
 

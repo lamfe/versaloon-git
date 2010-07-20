@@ -23,13 +23,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "port.h"
-#include "app_cfg.h"
-#include "app_type.h"
-#include "app_err.h"
-#include "app_log.h"
-
-#include "programmer.h"
+#include "../versaloon_include.h"
 #include "../versaloon.h"
 #include "../versaloon_internal.h"
 #include "usbtoxxx.h"

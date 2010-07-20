@@ -112,27 +112,27 @@ PARSE_ARGUMENT_HANDLER(avr32)
 	return ERROR_OK;
 }
 
-#define jtag_init()					interfaces->jtag_hl.jtag_hl_init()
-#define jtag_fini()					interfaces->jtag_hl.jtag_hl_fini()
+#define jtag_init()					interfaces->jtag_hl.init()
+#define jtag_fini()					interfaces->jtag_hl.fini()
 #define jtag_config(kHz,a,b,c,d)	\
-	interfaces->jtag_hl.jtag_hl_config((kHz), (a), (b), (c), (d))
-#define jtag_runtest(len)			interfaces->jtag_hl.jtag_hl_runtest(len)
-#define jtag_ir_write(ir, len)		\
-	interfaces->jtag_hl.jtag_hl_ir((uint8_t*)(ir), (len), AVR32_JTAG_RTI_CYCLE, 0)
-#define jtag_dr_write(dr, len)		\
-	interfaces->jtag_hl.jtag_hl_dr((uint8_t*)(dr), (len), AVR32_JTAG_RTI_CYCLE, 0)
-#define jtag_dr_read(dr, len)		\
-	interfaces->jtag_hl.jtag_hl_dr((uint8_t*)(dr), (len), AVR32_JTAG_RTI_CYCLE, 1)
+	interfaces->jtag_hl.config((kHz), (a), (b), (c), (d))
+#define jtag_runtest(len)			interfaces->jtag_hl.runtest(len)
+#define jtag_ir_write(i, len)		\
+	interfaces->jtag_hl.ir((uint8_t*)(i), (len), AVR32_JTAG_RTI_CYCLE, 0)
+#define jtag_dr_write(d, len)		\
+	interfaces->jtag_hl.dr((uint8_t*)(d), (len), AVR32_JTAG_RTI_CYCLE, 0)
+#define jtag_dr_read(d, len)		\
+	interfaces->jtag_hl.dr((uint8_t*)(d), (len), AVR32_JTAG_RTI_CYCLE, 1)
 #define jtag_register_callback(s,r)	\
-	interfaces->jtag_hl.jtag_hl_register_callback((s), (r))
+	interfaces->jtag_hl.register_callback((s), (r))
 
 // retry 1000 times with 0 interval
-#define poll_start()				interfaces->poll.poll_start(1000, 0)
-#define poll_end()					interfaces->poll.poll_end()
+#define poll_start()				interfaces->poll.start(1000, 0)
+#define poll_end()					interfaces->poll.end()
 #define poll_ok(o, m, v)			\
-	interfaces->poll.poll_checkok(POLL_CHECK_EQU, (o), 1, (m), (v))
+	interfaces->poll.checkok(POLL_CHECK_EQU, (o), 1, (m), (v))
 #define poll_fail(o, m, v)		\
-	interfaces->poll.poll_checkfail(POLL_CHECK_EQU, (o), 1, (m), (v))
+	interfaces->poll.checkfail(POLL_CHECK_EQU, (o), 1, (m), (v))
 
 #define delay_ms(ms)				interfaces->delay.delayms((ms) | 0x8000)
 #define delay_us(us)				interfaces->delay.delayus((us) & 0x7FFF)

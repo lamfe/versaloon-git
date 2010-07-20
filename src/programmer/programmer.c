@@ -505,7 +505,7 @@ RESULT programmer_get_target_voltage(uint8_t argc, const char *argv[])
 		return ERROR_FAIL;
 	}
 	
-	if (ERROR_OK != tv->get_target_voltage(&voltage))
+	if (ERROR_OK != tv->get(&voltage))
 	{
 		ret = ERROR_FAIL;
 	}
@@ -529,7 +529,7 @@ RESULT programmer_set_target_voltage(uint8_t argc, const char *argv[])
 	}
 	
 	voltage = (uint16_t)strtoul(argv[1], NULL, 0);
-	return tv->set_target_voltage(voltage);
+	return tv->set(voltage);
 }
 
 // iic
@@ -543,7 +543,7 @@ RESULT programmer_iic_init(uint8_t argc, const char *argv[])
 		return ERROR_FAIL;
 	}
 	
-	i2c->i2c_init();
+	i2c->init();
 	return cur_programmer->interfaces.peripheral_commit();
 }
 
@@ -557,7 +557,7 @@ RESULT programmer_iic_fini(uint8_t argc, const char *argv[])
 		return ERROR_FAIL;
 	}
 	
-	i2c->i2c_fini();
+	i2c->fini();
 	return cur_programmer->interfaces.peripheral_commit();
 }
 
@@ -585,8 +585,8 @@ RESULT programmer_iic_read(uint8_t argc, const char *argv[])
 		return ERROR_FAIL;
 	}
 	
-	i2c->i2c_set_speed(speed_khz, 0xFFFF, 0);
-	i2c->i2c_read(addr, buff, data_size, 1);
+	i2c->config(speed_khz, 0xFFFF, 0);
+	i2c->read(addr, buff, data_size, 1);
 	ret = cur_programmer->interfaces.peripheral_commit();
 	if (ERROR_OK == ret)
 	{

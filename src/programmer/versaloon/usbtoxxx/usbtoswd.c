@@ -24,13 +24,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "app_cfg.h"
-#include "app_type.h"
-#include "app_err.h"
-#include "app_log.h"
-#include "prog_interface.h"
-
-#include "programmer.h"
+#include "../versaloon_include.h"
 #include "../versaloon.h"
 #include "../versaloon_internal.h"
 #include "usbtoxxx.h"
@@ -49,9 +43,13 @@ RESULT usbtoswd_callback(void *p, uint8_t *src, uint8_t *processed)
 	return ERROR_OK;
 }
 
-uint8_t usbtoswd_get_last_ack(void)
+RESULT usbtoswd_get_last_ack(uint8_t *last_ack)
 {
-	return usbtoswd_last_ack;
+	if (last_ack != NULL)
+	{
+		*last_ack = usbtoswd_last_ack;
+	}
+	return ERROR_OK;
 }
 
 RESULT usbtoswd_init(void)
