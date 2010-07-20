@@ -44,49 +44,45 @@ static uint8_t ack_value;
 struct adi_dp_info_t adi_dp_info;
 
 // Reset
-#define reset_init()			adi_prog->gpio.gpio_init()
-#define reset_fini()			adi_prog->gpio.gpio_fini()
-#define reset_output()			\
-	adi_prog->gpio.gpio_config(JTAG_SRST, JTAG_SRST, 0)
-#define reset_input()			\
-	adi_prog->gpio.gpio_config(JTAG_SRST, 0, JTAG_SRST)
+#define reset_init()			adi_prog->gpio.init()
+#define reset_fini()			adi_prog->gpio.fini()
+#define reset_output()			adi_prog->gpio.config(JTAG_SRST, JTAG_SRST, 0)
+#define reset_input()			adi_prog->gpio.config(JTAG_SRST, 0, JTAG_SRST)
 #define reset_set()				reset_input()
 #define reset_clr()				adi_prog->gpio.gpio_out(JTAG_SRST, 0)
-#define trst_output()			\
-	adi_prog->gpio.gpio_config(JTAG_TRST, JTAG_TRST, 0)
-#define trst_input()			\
-	adi_prog->gpio.gpio_config(JTAG_TRST, 0, JTAG_TRST)
+#define trst_output()			adi_prog->gpio.config(JTAG_TRST, JTAG_TRST, 0)
+#define trst_input()			adi_prog->gpio.config(JTAG_TRST, 0, JTAG_TRST)
 #define trst_set()				trst_input()
-#define trst_clr()				adi_prog->gpio.gpio_out(JTAG_TRST, 0)
+#define trst_clr()				adi_prog->gpio.out(JTAG_TRST, 0)
 #define reset_commit()			adi_prog->peripheral_commit()
 
 // JTAG
-#define jtag_init()				adi_prog->jtag_hl.jtag_hl_init()
-#define jtag_fini()				adi_prog->jtag_hl.jtag_hl_fini()
+#define jtag_init()				adi_prog->jtag_hl.init()
+#define jtag_fini()				adi_prog->jtag_hl.fini()
 #define jtag_config(kHz,a,b,c,d)	\
-	adi_prog->jtag_hl.jtag_hl_config((kHz), (a), (b), (c), (d))
-#define jtag_tms(tms, len)		adi_prog->jtag_hl.jtag_hl_tms((tms), (len))
-#define jtag_runtest(len)		adi_prog->jtag_hl.jtag_hl_runtest(len)
-#define jtag_ir_w(ir, len)		\
-	adi_prog->jtag_hl.jtag_hl_ir((uint8_t*)(ir), (len), 1, 0)
-#define jtag_dr_w(dr, len)		\
-	adi_prog->jtag_hl.jtag_hl_dr((uint8_t*)(dr), (len), 1, 0)
-#define jtag_dr_rw(dr, len)		\
-	adi_prog->jtag_hl.jtag_hl_dr((uint8_t*)(dr), (len), 1, 1)
+	adi_prog->jtag_hl.config((kHz), (a), (b), (c), (d))
+#define jtag_tms(m, len)		adi_prog->jtag_hl.tms((m), (len))
+#define jtag_runtest(len)		adi_prog->jtag_hl.runtest(len)
+#define jtag_ir_w(i, len)		\
+	adi_prog->jtag_hl.ir((uint8_t*)(i), (len), 1, 0)
+#define jtag_dr_w(d, len)		\
+	adi_prog->jtag_hl.dr((uint8_t*)(d), (len), 1, 0)
+#define jtag_dr_rw(d, len)		\
+	adi_prog->jtag_hl.dr((uint8_t*)(d), (len), 1, 1)
 
 #define jtag_register_callback(s,r)	\
-	adi_prog->jtag_hl.jtag_hl_register_callback((s), (r))
+	adi_prog->jtag_hl.register_callback((s), (r))
 #define jtag_commit()			adi_prog->peripheral_commit()
 
 // SWD
-#define swd_init()				adi_prog->swd.swd_init()
-#define swd_fini()				adi_prog->swd.swd_fini()
-#define swd_seqout(b, l)		adi_prog->swd.swd_seqout((b), (l))
-#define swd_seqin(b, l)			adi_prog->swd.swd_seqin((b), (l))
-#define swd_transact(r, v)		adi_prog->swd.swd_transact((r), (v))
-#define swd_setpara(t, r, d)	adi_prog->swd.swd_setpara((t), (r), (d))
+#define swd_init()				adi_prog->swd.init()
+#define swd_fini()				adi_prog->swd.fini()
+#define swd_seqout(b, l)		adi_prog->swd.seqout((b), (l))
+#define swd_seqin(b, l)			adi_prog->swd.seqin((b), (l))
+#define swd_transact(r, v)		adi_prog->swd.transact((r), (v))
+#define swd_config(t, r, d)		adi_prog->swd.config((t), (r), (d))
+#define swd_get_last_ack(ack)	adi_prog->swd.get_last_ack(ack)
 #define swd_commit()			adi_prog->peripheral_commit()
-#define swd_get_last_ack(ack)	adi_prog->swd.swd_get_last_ack(ack)
 
 RESULT adi_dp_read_reg(uint8_t reg_addr, uint32_t *value, uint8_t check_result);
 RESULT adi_dp_write_reg(uint8_t reg_addr, uint32_t *value, 
@@ -292,7 +288,7 @@ static RESULT adi_dpif_init(struct program_context_t *context, adi_dp_if_t *inte
 	case ADI_DP_SWD:
 		ack_value = ADI_SWDDP_ACK_OK;
 		swd_init();
-		swd_setpara(adi_dp_if->adi_dp_if_info.adi_dp_swd.swd_trn, 
+		swd_config(adi_dp_if->adi_dp_if_info.adi_dp_swd.swd_trn, 
 					adi_dp_if->adi_dp_if_info.adi_dp_swd.swd_retry, 
 					adi_dp_if->adi_dp_if_info.adi_dp_swd.swd_dly);
 		swd_seqout((uint8_t*)adi_jtag_to_swd_seq, 

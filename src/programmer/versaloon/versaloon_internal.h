@@ -49,6 +49,7 @@
 #define VERSALOON_WRITE_OFFLINE_DATA	0x0A
 #define VERSALOON_GET_OFFLINE_CHECKSUM	0x0B
 #define VERSALOON_FW_UPDATE				0x0F
+#define VERSALOON_FW_UPDATE_KEY			0xAA
 
 // MCU Command
 #define VERSALOON_MCU_CMD_START			0x10
@@ -80,6 +81,7 @@
 #define VERSALOON_LPCICP_PORT			0
 #define VERSALOON_JTAGHL_PORT			0
 #define VERSALOON_JTAGLL_PORT			0
+#define VERSALOON_JTAGRAW_PORT			0
 #define VERSALOON_SWD_PORT				0
 #define VERSALOON_C2_PORT				0
 #define VERSALOON_I2C_PORT				0
@@ -112,20 +114,7 @@ void versaloon_set_callback(versaloon_callback_t callback);
 RESULT versaloon_add_pending(uint8_t type, uint8_t cmd, uint16_t actual_szie, 
 	uint16_t want_pos, uint16_t want_size, uint8_t *buffer, uint8_t collect);
 
-
-
-
-RESULT versaloon_get_target_voltage(uint16_t *voltage);
-RESULT versaloon_get_hardware(uint8_t *hardware);
-const char* versaloon_get_hardware_name(uint8_t idx);
 RESULT versaloon_send_command(uint16_t out_len, uint16_t *inlen);
-RESULT versaloon_init(void);
-RESULT versaloon_fini(void);
-
-RESULT versaloon_download_mass_product_data(const char *name, uint8_t *buffer, 
-											uint32_t len);
-RESULT versaloon_query_mass_product_data_size(uint32_t *size);
-
 extern uint8_t *versaloon_buf;
 extern uint8_t *versaloon_cmd_buf;
 extern uint16_t versaloon_buf_size;

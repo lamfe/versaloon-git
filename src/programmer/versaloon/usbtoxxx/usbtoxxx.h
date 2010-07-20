@@ -108,6 +108,16 @@ RESULT usbtojtaghl_register_callback(jtag_callback_t send_callback,
 
 
 
+// USB_TO_JTAG_RAW
+RESULT usbtojtagraw_init(void);
+RESULT usbtojtagraw_fini(void);
+RESULT usbtojtagraw_config(uint8_t interface_index, uint16_t kHz);
+RESULT usbtojtagraw_execute(uint8_t interface_index, uint8_t *tdi, 
+							uint8_t *tms, uint8_t *tdo, uint16_t bytelen);
+
+
+
+
 // USB_TO_C2
 RESULT usbtoc2_init(void);
 RESULT usbtoc2_fini(void);
@@ -122,7 +132,7 @@ RESULT usbtoc2_data(uint8_t interface_index, uint8_t r, uint8_t len,
 // USB_TO_I2C
 RESULT usbtoi2c_init(void);
 RESULT usbtoi2c_fini(void);
-RESULT usbtoi2c_set_speed(uint8_t interface_index, uint16_t kHz, 
+RESULT usbtoi2c_config(uint8_t interface_index, uint16_t kHz, 
 							uint16_t dead_cnt, uint16_t byte_interval);
 RESULT usbtoi2c_read(uint8_t interface_index, uint16_t chip_addr, 
 						uint8_t *data, uint16_t data_len, uint8_t stop);
@@ -193,15 +203,15 @@ RESULT usbtoswd_seqout(uint8_t interface_index, uint8_t *data, uint16_t bitlen);
 RESULT usbtoswd_seqin(uint8_t interface_index, uint8_t *data, uint16_t bitlen);
 RESULT usbtoswd_transact(uint8_t interface_index, uint8_t request, 
 							uint32_t *data);
-uint8_t usbtoswd_get_last_ack(void);
+RESULT usbtoswd_get_last_ack(uint8_t *last_ack);
 
 
 
 // USB_TO_SWIM
 RESULT usbtoswim_init(void);
 RESULT usbtoswim_fini(void);
-RESULT usbtoswim_set_param(uint8_t interface_index, uint8_t mHz, 
-							uint8_t cnt0, uint8_t cnt1);
+RESULT usbtoswim_config(uint8_t interface_index, uint8_t mHz, uint8_t cnt0, 
+						uint8_t cnt1);
 RESULT usbtoswim_srst(uint8_t interface_index);
 RESULT usbtoswim_wotf(uint8_t interface_index, uint8_t *data, 
 						uint16_t bytelen, uint32_t addr);

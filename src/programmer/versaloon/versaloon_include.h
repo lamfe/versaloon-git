@@ -16,63 +16,19 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
+// This file is used to include different header and macros
+// according to different platform
+#include "port.h"
 
-#include <stdio.h>
-#include <string.h>
+#include "app_cfg.h"
+#include "app_type.h"
+#include "app_err.h"
+#include "app_log.h"
+#include "prog_interface.h"
+#include "programmer.h"
 
-#include "../versaloon_include.h"
-#include "../versaloon.h"
-#include "../versaloon_internal.h"
-#include "usbtoxxx.h"
-#include "usbtoxxx_internal.h"
+#include "usb.h"
+#include "usbapi.h"
 
-uint8_t usbtospi_num_of_interface = 0;
-
-RESULT usbtospi_init(void)
-{
-	return usbtoxxx_init_command(USB_TO_SPI, &usbtospi_num_of_interface);
-}
-
-RESULT usbtospi_fini(void)
-{
-	return usbtoxxx_fini_command(USB_TO_SPI);
-}
-
-RESULT usbtospi_config(uint8_t interface_index, uint16_t freq, uint8_t cpol, 
-					   uint8_t cpha, uint8_t firstbit)
-{
-	uint8_t conf[3];
-	
-#if PARAM_CHECK
-	if (interface_index > 7)
-	{
-		LOG_BUG(_GETTEXT("invalid inteface_index %d.\n"), interface_index);
-		return ERROR_FAIL;
-	}
-#endif
-	
-	conf[0] = cpol | cpha | firstbit;
-	conf[1] = (freq >> 0) & 0xFF;
-	conf[2] = (freq >> 8) & 0xFF;
-	
-	return usbtoxxx_conf_command(USB_TO_SPI, interface_index, conf, 3);
-}
-
-RESULT usbtospi_io(uint8_t interface_index, uint8_t *out, uint8_t *in, 
-				   uint16_t outlen, uint16_t inpos, uint16_t inlen)
-{
-#if PARAM_CHECK
-	if (interface_index > 7)
-	{
-		LOG_BUG(_GETTEXT("invalid inteface_index %d.\n"), interface_index);
-		return ERROR_FAIL;
-	}
-#endif
-	
-	return usbtoxxx_inout_command(USB_TO_SPI, interface_index, out, outlen, 
-								  outlen, in, inpos, inlen, 1);
-}
+#include "pgbar.h"
 

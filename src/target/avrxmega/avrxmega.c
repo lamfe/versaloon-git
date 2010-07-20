@@ -48,7 +48,7 @@
 
 struct program_area_map_t avrxmega_program_area_map[] = 
 {
-	{APPLICATION_CHAR, 1, 0, 0, 0, AREA_ATTR_EWR | AREA_ATTR_RNP},
+	{APPLICATION_CHAR, 1, 0, 0, 0, AREA_ATTR_EWR | AREA_ATTR_RAE | AREA_ATTR_RAW | AREA_ATTR_RNP},
 	{0, 0, 0, 0, 0, 0}
 };
 
@@ -115,30 +115,27 @@ PARSE_ARGUMENT_HANDLER(avrxmega)
 	return ERROR_OK;
 }
 
-#define jtag_init()					interfaces->jtag_hl.jtag_hl_init()
-#define jtag_fini()					interfaces->jtag_hl.jtag_hl_fini()
+#define jtag_init()					interfaces->jtag_hl.init()
+#define jtag_fini()					interfaces->jtag_hl.fini()
 #define jtag_config(kHz,a,b,c,d)	\
-	interfaces->jtag_hl.jtag_hl_config((kHz), (a), (b), (c), (d))
-#define jtag_runtest(len)			interfaces->jtag_hl.jtag_hl_runtest(len)
-#define jtag_ir_write(ir, len)		\
-	interfaces->jtag_hl.jtag_hl_ir((uint8_t*)(ir), (len), \
-										AVRXMEGA_JTAG_RTI_CYCLE, 0)
-#define jtag_dr_write(dr, len)		\
-	interfaces->jtag_hl.jtag_hl_dr((uint8_t*)(dr), (len), \
-										AVRXMEGA_JTAG_RTI_CYCLE, 0)
-#define jtag_dr_read(dr, len)		\
-	interfaces->jtag_hl.jtag_hl_dr((uint8_t*)(dr), (len), \
-										AVRXMEGA_JTAG_RTI_CYCLE, 1)
+	interfaces->jtag_hl.config((kHz), (a), (b), (c), (d))
+#define jtag_runtest(len)			interfaces->jtag_hl.runtest(len)
+#define jtag_ir_write(i, len)		\
+	interfaces->jtag_hl.ir((uint8_t*)(i), (len), AVRXMEGA_JTAG_RTI_CYCLE, 0)
+#define jtag_dr_write(d, len)		\
+	interfaces->jtag_hl.dr((uint8_t*)(d), (len), AVRXMEGA_JTAG_RTI_CYCLE, 0)
+#define jtag_dr_read(d, len)		\
+	interfaces->jtag_hl.dr((uint8_t*)(d), (len), AVRXMEGA_JTAG_RTI_CYCLE, 1)
 #define jtag_register_callback(s,r)	\
-	interfaces->jtag_hl.jtag_hl_register_callback((s), (r))
+	interfaces->jtag_hl.register_callback((s), (r))
 
 // retry 4000 times with 1us interval
-#define poll_start(ten_us)			interfaces->poll.poll_start((ten_us), 10)
-#define poll_end()					interfaces->poll.poll_end()
+#define poll_start(ten_us)			interfaces->poll.start((ten_us), 10)
+#define poll_end()					interfaces->poll.end()
 #define poll_ok(t, s, m, v)			\
-	interfaces->poll.poll_checkok((t), 1, (s), (m), (v))
+	interfaces->poll.checkok((t), 1, (s), (m), (v))
 #define poll_fail(t, s, m, v)		\
-	interfaces->poll.poll_checkfail((t), 1, (s), (m), (v))
+	interfaces->poll.checkfail((t), 1, (s), (m), (v))
 
 #define delay_ms(ms)				interfaces->delay.delayms((ms) | 0x8000)
 #define delay_us(us)				interfaces->delay.delayus((us) & 0x7FFF)
@@ -532,6 +529,24 @@ static RESULT pdi_write_memory(uint32_t addr, uint16_t size, uint8_t *buff)
 	return ERROR_OK;
 }
 
+RESULT pdi_sts(uint32_t addr, uint8_t data)
+{
+	pdi_write_parity_value(
+				PDI_INSTR_STS(PDI_DATASIZE_4BYTES, PDI_DATASIZE_1BYTE), 1);
+	pdi_write_parity_value(addr, 4);
+	pdi_write_parity_value(data, 1);
+	return ERROR_OK;
+}
+
+RESULT pdi_lds(uint32_t addr, uint8_t *data)
+{
+	pdi_write_parity_value(
+				PDI_INSTR_LDS(PDI_DATASIZE_4BYTES, PDI_DATASIZE_1BYTE), 1);
+	pdi_write_parity_value(addr, 4);
+	pdi_read(data);
+	return ERROR_OK;
+}
+
 
 
 
@@ -548,17 +563,14 @@ static RESULT avrxmega_nvm_pollready(void)
 {
 	poll_start(5000);
 	
-//	pdi_read_reg(PDI_REG_STATUS, NULL);
-//	nvm_poll_bus_ready();
+	pdi_read_reg(PDI_REG_STATUS, NULL);
+	nvm_poll_bus_ready();
 	
-	pdi_write_parity_value(
-				PDI_INSTR_LDS(PDI_DATASIZE_4BYTES, PDI_DATASIZE_1BYTE), 1);
-	pdi_write_parity_value(AVRXMEGA_NVM_REG_STATUS, 4);
-	pdi_read(NULL);
+	pdi_lds(AVRXMEGA_NVM_REG_STATUS, NULL);
 	nvm_poll_control_ready();
 	
 	poll_end();
-	delay_ms(20);
+	
 	return ERROR_OK;
 }
 
@@ -567,10 +579,7 @@ static RESULT avrxmega_nvm_read(uint32_t addr, uint16_t size, uint8_t *buff)
 	avrxmega_nvm_pollready();
 	
 	// write AVRXMEGA_NVM_CMD_READNVM to NVM_CMD
-	pdi_write_parity_value(
-				PDI_INSTR_STS(PDI_DATASIZE_4BYTES, PDI_DATASIZE_1BYTE), 1);
-	pdi_write_parity_value(AVRXMEGA_NVM_REG_CMD, 4);
-	pdi_write_parity_value(AVRXMEGA_NVM_CMD_READNVM, 1);
+	pdi_sts(AVRXMEGA_NVM_REG_CMD, AVRXMEGA_NVM_CMD_READNVM);
 	
 	return pdi_read_memory(addr, size, buff);
 }
@@ -581,38 +590,20 @@ static RESULT avrxmega_nvm_writepage(uint8_t write_buff_cmd,
 {
 	avrxmega_nvm_pollready();
 	
-	pdi_write_parity_value(
-				PDI_INSTR_STS(PDI_DATASIZE_4BYTES, PDI_DATASIZE_1BYTE), 1);
-	pdi_write_parity_value(AVRXMEGA_NVM_REG_CMD, 4);
-	pdi_write_parity_value(erase_buff_cmd, 1);
-	
-	pdi_write_parity_value(
-				PDI_INSTR_STS(PDI_DATASIZE_4BYTES, PDI_DATASIZE_1BYTE), 1);
-	pdi_write_parity_value(AVRXMEGA_NVM_REG_CTRLA, 4);
-	pdi_write_parity_value(AVRXMEGA_NVM_REG_CTRLA_CMDEX, 1);
+	pdi_sts(AVRXMEGA_NVM_REG_CMD, erase_buff_cmd);
+	pdi_sts(AVRXMEGA_NVM_REG_CTRLA, AVRXMEGA_NVM_REG_CTRLA_CMDEX);
 	
 	avrxmega_nvm_pollready();
 	
-	pdi_write_parity_value(
-				PDI_INSTR_STS(PDI_DATASIZE_4BYTES, PDI_DATASIZE_1BYTE), 1);
-	pdi_write_parity_value(AVRXMEGA_NVM_REG_CMD, 4);
-	pdi_write_parity_value(write_buff_cmd, 1);
-	
+	pdi_sts(AVRXMEGA_NVM_REG_CMD, write_buff_cmd);
 	pdi_write_memory(addr, size, buff);
 	
 //	avrxmega_nvm_pollready();
 	
-	pdi_write_parity_value(
-				PDI_INSTR_STS(PDI_DATASIZE_4BYTES, PDI_DATASIZE_1BYTE), 1);
-	pdi_write_parity_value(AVRXMEGA_NVM_REG_CMD, 4);
-	pdi_write_parity_value(write_page_cmd, 1);
+	pdi_sts(AVRXMEGA_NVM_REG_CMD, write_page_cmd);
+	pdi_sts(addr, 0x00);
 	
-	pdi_write_parity_value(
-				PDI_INSTR_STS(PDI_DATASIZE_4BYTES, PDI_DATASIZE_1BYTE), 1);
-	pdi_write_parity_value(addr, 4);
-	pdi_write_parity_value(0x00, 1);
-	
-	avrxmega_nvm_pollready();
+//	avrxmega_nvm_pollready();
 	return pdi_commit();
 //	return ERROR_OK;
 }
@@ -623,16 +614,10 @@ static RESULT avrxmega_nvm_writebyte(uint8_t cmd, uint32_t addr, uint8_t data)
 	avrxmega_nvm_pollready();
 	
 	// write cmd to NVM_CMD
-	pdi_write_parity_value(
-				PDI_INSTR_STS(PDI_DATASIZE_4BYTES, PDI_DATASIZE_1BYTE), 1);
-	pdi_write_parity_value(AVRXMEGA_NVM_REG_CMD, 4);
-	pdi_write_parity_value(cmd, 1);
+	pdi_sts(AVRXMEGA_NVM_REG_CMD, cmd);
 	
 	// write new byte to the target
-	pdi_write_parity_value(
-				PDI_INSTR_STS(PDI_DATASIZE_4BYTES, PDI_DATASIZE_1BYTE), 1);
-	pdi_write_parity_value(addr, 4);
-	pdi_write_parity_value(data, 1);
+	pdi_sts(addr, data);
 	
 	return ERROR_OK;
 }
@@ -643,16 +628,12 @@ static RESULT avrxmega_nvm_chip_erase(uint8_t cmd)
 	avrxmega_nvm_pollready();
 	
 	// write cmd to NVM_CMD
-	pdi_write_parity_value(
-				PDI_INSTR_STS(PDI_DATASIZE_4BYTES, PDI_DATASIZE_1BYTE), 1);
-	pdi_write_parity_value(AVRXMEGA_NVM_REG_CMD, 4);
-	pdi_write_parity_value(cmd, 1);
+	pdi_sts(AVRXMEGA_NVM_REG_CMD, cmd);
 	
 	// write AVRXMEGA_NVM_REG_CTRLA_CMDEX to NVM_CTRLA
-	pdi_write_parity_value(
-				PDI_INSTR_STS(PDI_DATASIZE_4BYTES, PDI_DATASIZE_1BYTE), 1);
-	pdi_write_parity_value(AVRXMEGA_NVM_REG_CTRLA, 4);
-	pdi_write_parity_value(AVRXMEGA_NVM_REG_CTRLA_CMDEX, 1);
+	pdi_sts(AVRXMEGA_NVM_REG_CTRLA, AVRXMEGA_NVM_REG_CTRLA_CMDEX);
+	
+	avrxmega_nvm_pollready();
 	return pdi_commit();
 }
 
@@ -661,16 +642,11 @@ static RESULT avrxmega_nvm_erase_target(uint8_t cmd, uint32_t addr)
 	avrxmega_nvm_pollready();
 	
 	// write cmd to NVM_CMD
-	pdi_write_parity_value(PDI_INSTR_STS(
-				PDI_DATASIZE_4BYTES, PDI_DATASIZE_1BYTE), 1);
-	pdi_write_parity_value(AVRXMEGA_NVM_REG_CMD, 1);
-	pdi_write_parity_value(cmd, 1);
+	pdi_sts(AVRXMEGA_NVM_REG_CMD, cmd);
 	
-	pdi_write_parity_value(PDI_INSTR_STS(
-				PDI_DATASIZE_4BYTES, PDI_DATASIZE_1BYTE), 1);
-	pdi_write_parity_value(addr, 4);
-	pdi_write_parity_value(0x00, 1);
+	pdi_sts(addr, 0x00);
 	
+	avrxmega_nvm_pollready();
 	return pdi_commit();
 }
 

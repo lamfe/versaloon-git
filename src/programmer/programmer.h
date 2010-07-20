@@ -44,33 +44,32 @@ struct misc_param_t
 
 struct interface_usart_t
 {
-	RESULT (*usart_init)(void);
-	RESULT (*usart_fini)(void);
-	RESULT (*usart_config)(uint32_t baudrate, uint8_t datalength, 
-								char paritybit, char stopbit, char handshake);
-	RESULT (*usart_send)(uint8_t *buf, uint16_t len);
-	RESULT (*usart_receive)(uint8_t *buf, uint16_t len);
-	RESULT (*usart_status)(uint32_t buffer_size[2]);
+	RESULT (*init)(void);
+	RESULT (*fini)(void);
+	RESULT (*config)(uint32_t baudrate, uint8_t datalength, char paritybit, 
+						char stopbit, char handshake);
+	RESULT (*send)(uint8_t *buf, uint16_t len);
+	RESULT (*receive)(uint8_t *buf, uint16_t len);
+	RESULT (*status)(uint32_t buffer_size[2]);
 };
 
 struct interface_spi_t
 {
-	RESULT (*spi_init)(void);
-	RESULT (*spi_fini)(void);
-	RESULT (*spi_config)(uint16_t kHz, uint8_t cpol, uint8_t cpha, 
-							uint8_t first_bit);
-	RESULT (*spi_io)(uint8_t *out, uint8_t *in, uint16_t len, 
-						uint16_t inpos, uint16_t inlen);
+	RESULT (*init)(void);
+	RESULT (*fini)(void);
+	RESULT (*config)(uint16_t kHz, uint8_t cpol, uint8_t cpha, 
+						uint8_t first_bit);
+	RESULT (*io)(uint8_t *out, uint8_t *in, uint16_t len, 
+					uint16_t inpos, uint16_t inlen);
 };
 
 struct interface_gpio_t
 {
-	RESULT (*gpio_init)(void);
-	RESULT (*gpio_fini)(void);
-	RESULT (*gpio_config)(uint16_t pin_mask, uint16_t io, 
-							uint16_t input_pull_mask);
-	RESULT (*gpio_out)(uint16_t pin_mask, uint16_t value);
-	RESULT (*gpio_in)(uint16_t pin_mask, uint16_t *value);
+	RESULT (*init)(void);
+	RESULT (*fini)(void);
+	RESULT (*config)(uint16_t pin_mask, uint16_t io, uint16_t input_pull_mask);
+	RESULT (*out)(uint16_t pin_mask, uint16_t value);
+	RESULT (*in)(uint16_t pin_mask, uint16_t *value);
 };
 
 struct interface_delay_t
@@ -81,131 +80,134 @@ struct interface_delay_t
 
 struct interface_issp_t
 {
-	RESULT (*issp_init)(void);
-	RESULT (*issp_fini)(void);
-	RESULT (*issp_enter_program_mode)(uint8_t mode);
-	RESULT (*issp_leave_program_mode)(uint8_t mode);
-	RESULT (*issp_wait_and_poll)(void);
-	RESULT (*issp_vector)(uint8_t operate, uint8_t addr, uint8_t data, 
-							uint8_t *buf);
+	RESULT (*init)(void);
+	RESULT (*fini)(void);
+	RESULT (*enter_program_mode)(uint8_t mode);
+	RESULT (*leave_program_mode)(uint8_t mode);
+	RESULT (*wait_and_poll)(void);
+	RESULT (*vector)(uint8_t operate, uint8_t addr, uint8_t data, uint8_t *buf);
 };
 
 struct interface_swd_t
 {
-	RESULT (*swd_init)(void);
-	RESULT (*swd_fini)(void);
-	RESULT (*swd_seqout)(uint8_t *data, uint16_t bitlen);
-	RESULT (*swd_seqin)(uint8_t *data, uint16_t bitlen);
-	RESULT (*swd_transact)(uint8_t request, uint32_t *data);
-	RESULT (*swd_setpara)(uint8_t trn, uint16_t retry, uint16_t dly);
-	RESULT (*swd_get_last_ack)(uint8_t *result);
+	RESULT (*init)(void);
+	RESULT (*fini)(void);
+	RESULT (*config)(uint8_t trn, uint16_t retry, uint16_t dly);
+	RESULT (*seqout)(uint8_t *data, uint16_t bitlen);
+	RESULT (*seqin)(uint8_t *data, uint16_t bitlen);
+	RESULT (*transact)(uint8_t request, uint32_t *data);
+	RESULT (*get_last_ack)(uint8_t *result);
 };
 
 struct interface_jtag_hl_t
 {
-	RESULT (*jtag_hl_init)(void);
-	RESULT (*jtag_hl_fini)(void);
-	RESULT (*jtag_hl_config)(uint16_t kHz, uint8_t ub, uint8_t ua, 
-								uint16_t bb, uint16_t ba);
-	RESULT (*jtag_hl_tms)(uint8_t* tms, uint16_t bitlen);
-	RESULT (*jtag_hl_runtest)(uint32_t cycles);
-	RESULT (*jtag_hl_ir)(uint8_t *ir, uint8_t len, uint8_t idle, 
-							uint8_t want_ret);
-	RESULT (*jtag_hl_dr)(uint8_t *dr, uint16_t len, uint8_t idle, 
-							uint8_t want_ret);
-	RESULT (*jtag_hl_register_callback)(jtag_callback_t send_callback, 
+	RESULT (*init)(void);
+	RESULT (*fini)(void);
+	RESULT (*config)(uint16_t kHz, uint8_t ub, uint8_t ua, uint16_t bb, 
+						uint16_t ba);
+	RESULT (*tms)(uint8_t* tms, uint16_t bitlen);
+	RESULT (*runtest)(uint32_t cycles);
+	RESULT (*ir)(uint8_t *ir, uint8_t len, uint8_t idle, uint8_t want_ret);
+	RESULT (*dr)(uint8_t *dr, uint16_t len, uint8_t idle, uint8_t want_ret);
+	RESULT (*register_callback)(jtag_callback_t send_callback, 
 										jtag_callback_t receive_callback);
 };
 
 struct interface_jtag_ll_t
 {
-	RESULT (*jtag_ll_init)(void);
-	RESULT (*jtag_ll_fini)(void);
-	RESULT (*jtag_ll_set_frequency)(uint16_t kHz);
-	RESULT (*jtag_ll_tms)(uint8_t *tms, uint8_t bytelen);
-	RESULT (*jtag_ll_tms_clocks)(uint32_t bytelen, uint8_t tms);
-	RESULT (*jtag_ll_scan)(uint8_t* r, uint16_t bitlen, 
-							uint8_t tms_before_valid, uint8_t tms_before, 
-							uint8_t tms_after0, uint8_t tms_after1);
+	RESULT (*init)(void);
+	RESULT (*fini)(void);
+	RESULT (*config)(uint16_t kHz);
+	RESULT (*tms)(uint8_t *tms, uint8_t bytelen);
+	RESULT (*tms_clocks)(uint32_t bytelen, uint8_t tms);
+	RESULT (*scan)(uint8_t* r, uint16_t bitlen, uint8_t tms_before_valid, 
+					uint8_t tms_before, uint8_t tms_after0, uint8_t tms_after1);
+};
+
+struct interface_jtag_raw_t
+{
+	RESULT (*init)(void);
+	RESULT (*fini)(void);
+	RESULT (*config)(uint16_t kHz);
+	RESULT (*execute)(uint8_t* tdi, uint8_t* tms, uint8_t *tdo, uint16_t bytelen);
 };
 
 struct interface_msp430jtag_t
 {
-	RESULT (*msp430jtag_init)(void);
-	RESULT (*msp430jtag_fini)(void);
-	RESULT (*msp430jtag_config)(uint8_t has_test);
-	RESULT (*msp430jtag_ir)(uint8_t *ir, uint8_t want_ret);
-	RESULT (*msp430jtag_dr)(uint32_t *dr, uint8_t len, uint8_t want_ret);
-	RESULT (*msp430jtag_tclk)(uint8_t value);
-	RESULT (*msp430jtag_tclk_strobe)(uint16_t cnt);
-	RESULT (*msp430jtag_reset)(void);
-	RESULT (*msp430jtag_poll)(uint32_t dr, uint32_t mask, uint32_t value, 
-						uint8_t len, uint16_t poll_cnt, uint8_t toggle_tclk);
+	RESULT (*init)(void);
+	RESULT (*fini)(void);
+	RESULT (*config)(uint8_t has_test);
+	RESULT (*ir)(uint8_t *ir, uint8_t want_ret);
+	RESULT (*dr)(uint32_t *dr, uint8_t len, uint8_t want_ret);
+	RESULT (*tclk)(uint8_t value);
+	RESULT (*tclk_strobe)(uint16_t cnt);
+	RESULT (*reset)(void);
+	RESULT (*poll)(uint32_t dr, uint32_t mask, uint32_t value, uint8_t len, 
+					uint16_t poll_cnt, uint8_t toggle_tclk);
 };
 
 struct interface_msp430sbw_t
 {
-	RESULT (*msp430sbw_init)(void);
-	RESULT (*msp430sbw_fini)(void);
-	RESULT (*msp430sbw_config)(uint8_t has_test);
-	RESULT (*msp430sbw_ir)(uint8_t *ir, uint8_t want_ret);
-	RESULT (*msp430sbw_dr)(uint32_t *dr, uint8_t len, uint8_t want_ret);
-	RESULT (*msp430sbw_tclk)(uint8_t value);
-	RESULT (*msp430sbw_tclk_strobe)(uint16_t cnt);
-	RESULT (*msp430sbw_reset)(void);
-	RESULT (*msp430sbw_poll)(uint32_t dr, uint32_t mask, uint32_t value, 
-						uint8_t len, uint16_t poll_cnt, uint8_t toggle_tclk);
+	RESULT (*init)(void);
+	RESULT (*fini)(void);
+	RESULT (*config)(uint8_t has_test);
+	RESULT (*ir)(uint8_t *ir, uint8_t want_ret);
+	RESULT (*dr)(uint32_t *dr, uint8_t len, uint8_t want_ret);
+	RESULT (*tclk)(uint8_t value);
+	RESULT (*tclk_strobe)(uint16_t cnt);
+	RESULT (*reset)(void);
+	RESULT (*poll)(uint32_t dr, uint32_t mask, uint32_t value, uint8_t len, 
+					uint16_t poll_cnt, uint8_t toggle_tclk);
 };
 
 struct interface_c2_t
 {
-	RESULT (*c2_init)(void);
-	RESULT (*c2_fini)(void);
-	RESULT (*c2_addr_write)(uint8_t addr);
-	RESULT (*c2_addr_read)(uint8_t *data);
-	RESULT (*c2_data_read)(uint8_t *data, uint8_t len);
-	RESULT (*c2_data_write)(uint8_t *data, uint8_t len);
+	RESULT (*init)(void);
+	RESULT (*fini)(void);
+	RESULT (*addr_write)(uint8_t addr);
+	RESULT (*addr_read)(uint8_t *data);
+	RESULT (*data_read)(uint8_t *data, uint8_t len);
+	RESULT (*data_write)(uint8_t *data, uint8_t len);
 };
 
 struct interface_i2c_t
 {
-	RESULT (*i2c_init)(void);
-	RESULT (*i2c_fini)(void);
-	RESULT (*i2c_set_speed)(uint16_t kHz, uint16_t dead_cnt, 
-							uint16_t byte_interval);
-	RESULT (*i2c_read)(uint16_t chip_addr, uint8_t *data, uint16_t data_len, 
-						uint8_t stop);
-	RESULT (*i2c_write)(uint16_t chip_addr, uint8_t *data, uint16_t data_len, 
-						uint8_t stop);
+	RESULT (*init)(void);
+	RESULT (*fini)(void);
+	RESULT (*config)(uint16_t kHz, uint16_t dead_cnt, uint16_t byte_interval);
+	RESULT (*read)(uint16_t chip_addr, uint8_t *data, uint16_t data_len, 
+					uint8_t stop);
+	RESULT (*write)(uint16_t chip_addr, uint8_t *data, uint16_t data_len, 
+					uint8_t stop);
 };
 
 struct interface_lpcicp_t
 {
-	RESULT (*lpcicp_init)(void);
-	RESULT (*lpcicp_fini)(void);
-	RESULT (*lpcicp_enter_program_mode)(void);
-	RESULT (*lpcicp_in)(uint8_t *buff, uint16_t len);
-	RESULT (*lpcicp_out)(uint8_t *buff, uint16_t len);
-	RESULT (*lpcicp_poll_ready)(uint8_t data, uint8_t *ret, uint8_t setmask, 
+	RESULT (*init)(void);
+	RESULT (*fini)(void);
+	RESULT (*enter_program_mode)(void);
+	RESULT (*in)(uint8_t *buff, uint16_t len);
+	RESULT (*out)(uint8_t *buff, uint16_t len);
+	RESULT (*poll_ready)(uint8_t data, uint8_t *ret, uint8_t setmask, 
 								uint8_t clearmask, uint16_t pollcnt);
 };
 
 struct interface_swim_t
 {
-	RESULT (*swim_init)(void);
-	RESULT (*swim_fini)(void);
-	RESULT (*swim_set_param)(uint8_t mHz, uint8_t cnt0, uint8_t cnt1);
-	RESULT (*swim_srst)(void);
-	RESULT (*swim_wotf)(uint8_t *data, uint16_t bytelen, uint32_t addr);
-	RESULT (*swim_rotf)(uint8_t *data, uint16_t bytelen, uint32_t addr);
-	RESULT (*swim_sync)(uint8_t mHz);
-	RESULT (*swim_enable)(void);
+	RESULT (*init)(void);
+	RESULT (*fini)(void);
+	RESULT (*config)(uint8_t mHz, uint8_t cnt0, uint8_t cnt1);
+	RESULT (*srst)(void);
+	RESULT (*wotf)(uint8_t *data, uint16_t bytelen, uint32_t addr);
+	RESULT (*rotf)(uint8_t *data, uint16_t bytelen, uint32_t addr);
+	RESULT (*sync)(uint8_t mHz);
+	RESULT (*enable)(void);
 };
 
 struct interface_target_voltage_t
 {
-	RESULT (*get_target_voltage)(uint16_t *voltage);
-	RESULT (*set_target_voltage)(uint16_t voltage);
+	RESULT (*get)(uint16_t *voltage);
+	RESULT (*set)(uint16_t voltage);
 };
 
 enum poll_check_type_t
@@ -215,13 +217,13 @@ enum poll_check_type_t
 };
 struct interface_poll_t
 {
-	RESULT (*poll_start)(uint16_t retry, uint16_t interval_us);
-	RESULT (*poll_end)(void);
-	RESULT (*poll_checkok)(enum poll_check_type_t type, uint16_t offset, 
-								uint8_t size, uint32_t mask, uint32_t value);
-	RESULT (*poll_checkfail)(enum poll_check_type_t type, uint16_t offset, 
-								uint8_t size, uint32_t mask, uint32_t value);
-	RESULT (*poll_verifybuff)(uint16_t offset, uint16_t size, uint8_t *buff);
+	RESULT (*start)(uint16_t retry, uint16_t interval_us);
+	RESULT (*end)(void);
+	RESULT (*checkok)(enum poll_check_type_t type, uint16_t offset, 
+						uint8_t size, uint32_t mask, uint32_t value);
+	RESULT (*checkfail)(enum poll_check_type_t type, uint16_t offset, 
+						uint8_t size, uint32_t mask, uint32_t value);
+	RESULT (*verifybuff)(uint16_t offset, uint16_t size, uint8_t *buff);
 };
 
 struct interfaces_info_t
@@ -235,6 +237,7 @@ struct interfaces_info_t
 	struct interface_swd_t swd;
 	struct interface_jtag_hl_t jtag_hl;
 	struct interface_jtag_ll_t jtag_ll;
+	struct interface_jtag_raw_t jtag_raw;
 	struct interface_msp430jtag_t msp430jtag;
 	struct interface_msp430sbw_t msp430sbw;
 	struct interface_c2_t c2;
@@ -288,6 +291,7 @@ struct programmer_info_t
 			{0, 0, 0, 0, 0, 0, 0},\
 			{0, 0, 0, 0, 0, 0, 0, 0},\
 			{0, 0, 0, 0, 0, 0},\
+			{0, 0, 0, 0},\
 			{0, 0, 0, 0, 0, 0, 0, 0, 0},\
 			{0, 0, 0, 0, 0, 0, 0, 0, 0},\
 			{0, 0, 0, 0, 0, 0},\

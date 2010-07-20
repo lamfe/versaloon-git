@@ -23,22 +23,10 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "port.h"
-#include "app_cfg.h"
-#include "app_type.h"
-#include "app_err.h"
-#include "app_log.h"
-#include "prog_interface.h"
-
-#include "usb.h"
-#include "usbapi.h"
-
-#include "pgbar.h"
-#include "../programmer.h"
+#include "versaloon_include.h"
 #include "versaloon.h"
 #include "versaloon_internal.h"
 #include "usbtoxxx/usbtoxxx.h"
-
 
 const char *versaloon_hardwares[] = 
 {
@@ -286,6 +274,71 @@ RESULT versaloon_send_command(uint16_t out_len, uint16_t *inlen)
 	}
 }
 
+RESULT versaloon_set_target_voltage(uint16_t voltage)
+{
+	usbtopwr_init();
+	usbtopwr_config(VERSALOON_POWER_PORT);
+	usbtopwr_output(VERSALOON_POWER_PORT, voltage);
+	usbtopwr_fini();
+	
+	return usbtoxxx_execute_command();
+}
+
+RESULT versaloon_get_target_voltage(uint16_t *voltage)
+{
+	uint16_t inlen;
+	
+#if PARAM_CHECK
+	if (NULL == versaloon_buf)
+	{
+		LOG_BUG(_GETTEXT(ERRMSG_INVALID_BUFFER), TO_STR(versaloon_buf));
+		return ERRCODE_INVALID_BUFFER;
+	}
+	if (NULL == voltage)
+	{
+		LOG_BUG(_GETTEXT(ERRMSG_INVALID_PARAMETER), __FUNCTION__);
+		return ERRCODE_INVALID_PARAMETER;
+	}
+#endif
+	
+	versaloon_buf[0] = VERSALOON_GET_TVCC;
+	
+	if ((ERROR_OK != versaloon_send_command(1, &inlen)) || (inlen != 2))
+	{
+		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
+				  "communicate with versaloon");
+		return ERRCODE_FAILURE_OPERATION;
+	}
+	else
+	{
+		*voltage = versaloon_buf[0] + (versaloon_buf[1] << 8);
+		return ERROR_OK;
+	}
+}
+
+RESULT versaloon_fini(void)
+{
+	if (versaloon_device_handle != NULL)
+	{
+		usb_release_interface(versaloon_device_handle, versaloon_interface);
+		usb_close(versaloon_device_handle);
+		versaloon_device_handle = NULL;
+		
+		if (versaloon_buf != NULL)
+		{
+			free(versaloon_buf);
+			versaloon_buf = NULL;
+		}
+		if (versaloon_cmd_buf != NULL)
+		{
+			free(versaloon_cmd_buf);
+			versaloon_cmd_buf = NULL;
+		}
+	}
+	
+	return ERROR_OK;
+}
+
 #define VERSALOON_RETRY_CNT				10
 RESULT versaloon_init(void)
 {
@@ -372,29 +425,6 @@ RESULT versaloon_init(void)
 	return versaloon_get_target_voltage(&ret);
 }
 
-RESULT versaloon_fini(void)
-{
-	if (versaloon_device_handle != NULL)
-	{
-		usb_release_interface(versaloon_device_handle, versaloon_interface);
-		usb_close(versaloon_device_handle);
-		versaloon_device_handle = NULL;
-		
-		if (versaloon_buf != NULL)
-		{
-			free(versaloon_buf);
-			versaloon_buf = NULL;
-		}
-		if (versaloon_cmd_buf != NULL)
-		{
-			free(versaloon_cmd_buf);
-			versaloon_cmd_buf = NULL;
-		}
-	}
-	
-	return ERROR_OK;
-}
-
 RESULT versaloon_enter_firmware_update_mode(void)
 {
 #if PARAM_CHECK
@@ -406,8 +436,8 @@ RESULT versaloon_enter_firmware_update_mode(void)
 #endif
 	
 	versaloon_buf[0] = VERSALOON_FW_UPDATE;
-	versaloon_buf[1] = 0xAA;
-	versaloon_buf[2] = 0x55;
+	versaloon_buf[1] = (uint8_t)(VERSALOON_FW_UPDATE_KEY);
+	versaloon_buf[2] = (uint8_t)(~VERSALOON_FW_UPDATE_KEY);
 	
 	if (ERROR_OK != versaloon_send_command(3, NULL))
 	{
@@ -463,48 +493,6 @@ RESULT versaloon_get_hardware(uint8_t *hardware)
 		*hardware = versaloon_buf[0];
 		LOG_DEBUG(_GETTEXT("versaloon hardware is %s\n"), 
 				  versaloon_get_hardware_name(*hardware));
-		return ERROR_OK;
-	}
-}
-
-RESULT versaloon_set_target_voltage(uint16_t voltage)
-{
-	usbtopwr_init();
-	usbtopwr_config(VERSALOON_POWER_PORT);
-	usbtopwr_output(VERSALOON_POWER_PORT, voltage);
-	usbtopwr_fini();
-	
-	return usbtoxxx_execute_command();
-}
-
-RESULT versaloon_get_target_voltage(uint16_t *voltage)
-{
-	uint16_t inlen;
-	
-#if PARAM_CHECK
-	if (NULL == versaloon_buf)
-	{
-		LOG_BUG(_GETTEXT(ERRMSG_INVALID_BUFFER), TO_STR(versaloon_buf));
-		return ERRCODE_INVALID_BUFFER;
-	}
-	if (NULL == voltage)
-	{
-		LOG_BUG(_GETTEXT(ERRMSG_INVALID_PARAMETER), __FUNCTION__);
-		return ERRCODE_INVALID_PARAMETER;
-	}
-#endif
-	
-	versaloon_buf[0] = VERSALOON_GET_TVCC;
-	
-	if ((ERROR_OK != versaloon_send_command(1, &inlen)) || (inlen != 2))
-	{
-		LOG_ERROR(_GETTEXT(ERRMSG_FAILURE_OPERATION), 
-				  "communicate with versaloon");
-		return ERRCODE_FAILURE_OPERATION;
-	}
-	else
-	{
-		*voltage = versaloon_buf[0] + (versaloon_buf[1] << 8);
 		return ERROR_OK;
 	}
 }
@@ -910,11 +898,7 @@ RESULT versaloon_lpcicp_poll_ready(uint8_t data, uint8_t *ret, uint8_t setmask,
 // SWD
 RESULT versaloon_swd_get_last_ack(uint8_t *result)
 {
-	if (result != NULL)
-	{
-		*result = usbtoswd_get_last_ack();
-	}
-	return ERROR_OK;
+	return usbtoswd_get_last_ack(result);
 }
 RESULT versaloon_swd_init(void)
 {
@@ -924,7 +908,7 @@ RESULT versaloon_swd_fini(void)
 {
 	return usbtoswd_fini();
 }
-RESULT versaloon_swd_setpara(uint8_t trn, uint16_t retry, uint16_t dly)
+RESULT versaloon_swd_config(uint8_t trn, uint16_t retry, uint16_t dly)
 {
 	return usbtoswd_config(VERSALOON_SWD_PORT, trn, retry, dly);
 }
@@ -941,15 +925,32 @@ RESULT versaloon_swd_transact(uint8_t request, uint32_t *data)
 	return usbtoswd_transact(VERSALOON_SWD_PORT, request, data);
 }
 // JTAG
-RESULT versaloon_jtagll_connect(void)
+RESULT versaloon_jtagraw_init(void)
+{
+	return usbtojtagraw_init();
+}
+RESULT versaloon_jtagraw_fini(void)
+{
+	return usbtojtagraw_fini();
+}
+RESULT versaloon_jtagraw_config(uint16_t kHz)
+{
+	return usbtojtagraw_config(VERSALOON_JTAGRAW_PORT, kHz);
+}
+RESULT versaloon_jtagraw_execute(uint8_t *tdi, uint8_t *tms, uint8_t *tdo, 
+									uint16_t bytelen)
+{
+	return usbtojtagraw_execute(VERSALOON_JTAGRAW_PORT, tdi, tms, tdo, bytelen);
+}
+RESULT versaloon_jtagll_init(void)
 {
 	return usbtojtagll_init();
 }
-RESULT versaloon_jtagll_disconnect(void)
+RESULT versaloon_jtagll_fini(void)
 {
 	return usbtojtagll_fini();
 }
-RESULT versaloon_jtagll_set_frequency(uint16_t kHz)
+RESULT versaloon_jtagll_config(uint16_t kHz)
 {
 	return usbtojtagll_config(VERSALOON_JTAGLL_PORT, kHz);
 }
@@ -1128,10 +1129,10 @@ RESULT versaloon_i2c_fini(void)
 {
 	return usbtoi2c_fini();
 }
-RESULT versaloon_i2c_set_speed(uint16_t kHz, uint16_t dead_cnt, 
+RESULT versaloon_i2c_config(uint16_t kHz, uint16_t dead_cnt, 
 								uint16_t byte_interval)
 {
-	return usbtoi2c_set_speed(VERSALOON_I2C_PORT, kHz, dead_cnt, byte_interval);
+	return usbtoi2c_config(VERSALOON_I2C_PORT, kHz, dead_cnt, byte_interval);
 }
 RESULT versaloon_i2c_read(uint16_t chip_addr, uint8_t *data, 
 							uint16_t data_len, uint8_t stop)
@@ -1152,9 +1153,9 @@ RESULT versaloon_swim_fini(void)
 {
 	return usbtoswim_fini();
 }
-RESULT versaloon_swim_set_param(uint8_t mHz, uint8_t cnt0, uint8_t cnt1)
+RESULT versaloon_swim_config(uint8_t mHz, uint8_t cnt0, uint8_t cnt1)
 {
-	return usbtoswim_set_param(VERSALOON_SWIM_PORT, mHz, cnt0, cnt1);
+	return usbtoswim_config(VERSALOON_SWIM_PORT, mHz, cnt0, cnt1);
 }
 RESULT versaloon_swim_srst(void)
 {
@@ -1187,135 +1188,141 @@ RESULT versaloon_init_capability(void *p)
 	t->init = versaloon_init;
 	t->fini = versaloon_fini;
 	
-	t->interfaces_mask = (SPI | GPIO | ISSP | JTAG_LL | JTAG_HL | SWIM 
-						| C2 | MSP430_JTAG | MSP430_SBW | LPC_ICP | SWD);
+	t->interfaces_mask = (USART | SPI | I2C | GPIO | POWER | ISSP | JTAG_LL 
+		| JTAG_HL | SWIM | JTAG_RAW | C2 | MSP430_JTAG | LPC_ICP | SWD);
 	
 	// USART
-	i->usart.usart_init = versaloon_usart_init;
-	i->usart.usart_fini = versaloon_usart_fini;
-	i->usart.usart_config = versaloon_usart_config;
-	i->usart.usart_send = versaloon_usart_send;
-	i->usart.usart_receive = versaloon_usart_receive;
-	i->usart.usart_status = versaloon_usart_status;
+	i->usart.init = versaloon_usart_init;
+	i->usart.fini = versaloon_usart_fini;
+	i->usart.config = versaloon_usart_config;
+	i->usart.send = versaloon_usart_send;
+	i->usart.receive = versaloon_usart_receive;
+	i->usart.status = versaloon_usart_status;
 	
 	// SPI
-	i->spi.spi_init = versaloon_spi_init;
-	i->spi.spi_fini = versaloon_spi_fini;
-	i->spi.spi_config = versaloon_spi_config;
-	i->spi.spi_io = versaloon_spi_io;
+	i->spi.init = versaloon_spi_init;
+	i->spi.fini = versaloon_spi_fini;
+	i->spi.config = versaloon_spi_config;
+	i->spi.io = versaloon_spi_io;
 	
 	// GPIO
-	i->gpio.gpio_init = versaloon_gpio_init;
-	i->gpio.gpio_fini = versaloon_gpio_fini;
-	i->gpio.gpio_config = versaloon_gpio_config;
-	i->gpio.gpio_in = versaloon_gpio_in;
-	i->gpio.gpio_out = versaloon_gpio_out;
+	i->gpio.init = versaloon_gpio_init;
+	i->gpio.fini = versaloon_gpio_fini;
+	i->gpio.config = versaloon_gpio_config;
+	i->gpio.in = versaloon_gpio_in;
+	i->gpio.out = versaloon_gpio_out;
 	
 	// Delay
 	i->delay.delayms = versaloon_delay_ms;
 	i->delay.delayus = versaloon_delay_us;
 	
 	// ISSP
-	i->issp.issp_init = versaloon_issp_init;
-	i->issp.issp_fini = versaloon_issp_fini;
-	i->issp.issp_enter_program_mode = versaloon_issp_enter_program_mode;
-	i->issp.issp_leave_program_mode = versaloon_issp_leave_program_mode;
-	i->issp.issp_wait_and_poll = versaloon_issp_wait_and_poll;
-	i->issp.issp_vector = versaloon_issp_vector;
+	i->issp.init = versaloon_issp_init;
+	i->issp.fini = versaloon_issp_fini;
+	i->issp.enter_program_mode = versaloon_issp_enter_program_mode;
+	i->issp.leave_program_mode = versaloon_issp_leave_program_mode;
+	i->issp.wait_and_poll = versaloon_issp_wait_and_poll;
+	i->issp.vector = versaloon_issp_vector;
 	
 	// LPCICP
-	i->lpcicp.lpcicp_init = versaloon_lpcicp_init;
-	i->lpcicp.lpcicp_fini = versaloon_lpcicp_fini;
-	i->lpcicp.lpcicp_enter_program_mode = versaloon_lpcicp_enter_program_mode;
-	i->lpcicp.lpcicp_in = versaloon_lpcicp_in;
-	i->lpcicp.lpcicp_out = versaloon_lpcicp_out;
-	i->lpcicp.lpcicp_poll_ready = versaloon_lpcicp_poll_ready;
+	i->lpcicp.init = versaloon_lpcicp_init;
+	i->lpcicp.fini = versaloon_lpcicp_fini;
+	i->lpcicp.enter_program_mode = versaloon_lpcicp_enter_program_mode;
+	i->lpcicp.in = versaloon_lpcicp_in;
+	i->lpcicp.out = versaloon_lpcicp_out;
+	i->lpcicp.poll_ready = versaloon_lpcicp_poll_ready;
 	
 	// Target voltage
-	i->target_voltage.get_target_voltage = versaloon_get_target_voltage;
-	i->target_voltage.set_target_voltage = versaloon_set_target_voltage;
+	i->target_voltage.get = versaloon_get_target_voltage;
+	i->target_voltage.set = versaloon_set_target_voltage;
 	
 	// JTAG_HL & SWD
-	i->swd.swd_init = versaloon_swd_init;
-	i->swd.swd_fini = versaloon_swd_fini;
-	i->swd.swd_seqout = versaloon_swd_seqout;
-	i->swd.swd_seqin = versaloon_swd_seqin;
-	i->swd.swd_transact = versaloon_swd_transact;
-	i->swd.swd_setpara = versaloon_swd_setpara;
-	i->swd.swd_get_last_ack = versaloon_swd_get_last_ack;
+	i->swd.init = versaloon_swd_init;
+	i->swd.fini = versaloon_swd_fini;
+	i->swd.seqout = versaloon_swd_seqout;
+	i->swd.seqin = versaloon_swd_seqin;
+	i->swd.transact = versaloon_swd_transact;
+	i->swd.config = versaloon_swd_config;
+	i->swd.get_last_ack = versaloon_swd_get_last_ack;
 
-	i->jtag_hl.jtag_hl_init = versaloon_jtaghl_init;
-	i->jtag_hl.jtag_hl_fini = versaloon_jtaghl_fini;
-	i->jtag_hl.jtag_hl_config= versaloon_jtaghl_config;
-	i->jtag_hl.jtag_hl_tms = versaloon_jtaghl_tms;
-	i->jtag_hl.jtag_hl_runtest = versaloon_jtaghl_runtest;
-	i->jtag_hl.jtag_hl_ir = versaloon_jtaghl_ir;
-	i->jtag_hl.jtag_hl_dr = versaloon_jtaghl_dr;
-	i->jtag_hl.jtag_hl_register_callback = versaloon_jtaghl_register_callback;
+	i->jtag_hl.init = versaloon_jtaghl_init;
+	i->jtag_hl.fini = versaloon_jtaghl_fini;
+	i->jtag_hl.config= versaloon_jtaghl_config;
+	i->jtag_hl.tms = versaloon_jtaghl_tms;
+	i->jtag_hl.runtest = versaloon_jtaghl_runtest;
+	i->jtag_hl.ir = versaloon_jtaghl_ir;
+	i->jtag_hl.dr = versaloon_jtaghl_dr;
+	i->jtag_hl.register_callback = versaloon_jtaghl_register_callback;
 	
 	// JTAG_LL
-	i->jtag_ll.jtag_ll_init = versaloon_jtagll_connect;
-	i->jtag_ll.jtag_ll_fini = versaloon_jtagll_disconnect;
-	i->jtag_ll.jtag_ll_set_frequency = versaloon_jtagll_set_frequency;
-	i->jtag_ll.jtag_ll_tms = versaloon_jtagll_tms;
-	i->jtag_ll.jtag_ll_tms_clocks = versaloon_jtagll_tms_clocks;
-	i->jtag_ll.jtag_ll_scan = versaloon_jtagll_scan;
+	i->jtag_ll.init = versaloon_jtagll_init;
+	i->jtag_ll.fini = versaloon_jtagll_fini;
+	i->jtag_ll.config = versaloon_jtagll_config;
+	i->jtag_ll.tms = versaloon_jtagll_tms;
+	i->jtag_ll.tms_clocks = versaloon_jtagll_tms_clocks;
+	i->jtag_ll.scan = versaloon_jtagll_scan;
+	
+	// JTAG_RAW
+	i->jtag_raw.init = versaloon_jtagraw_init;
+	i->jtag_raw.fini = versaloon_jtagraw_fini;
+	i->jtag_raw.config = versaloon_jtagraw_config;
+	i->jtag_raw.execute = versaloon_jtagraw_execute;
 	
 	// MSP430_JTAG
-	i->msp430jtag.msp430jtag_init = versaloon_msp430jtag_init;
-	i->msp430jtag.msp430jtag_fini = versaloon_msp430jtag_fini;
-	i->msp430jtag.msp430jtag_config = versaloon_msp430jtag_config;
-	i->msp430jtag.msp430jtag_ir = versaloon_msp430jtag_ir;
-	i->msp430jtag.msp430jtag_dr = versaloon_msp430jtag_dr;
-	i->msp430jtag.msp430jtag_tclk = versaloon_msp430jtag_tclk;
-	i->msp430jtag.msp430jtag_tclk_strobe = versaloon_msp430jtag_tclk_strobe;
-	i->msp430jtag.msp430jtag_reset = versaloon_msp430jtag_reset;
-	i->msp430jtag.msp430jtag_poll = versaloon_msp430jtag_poll;
+	i->msp430jtag.init = versaloon_msp430jtag_init;
+	i->msp430jtag.fini = versaloon_msp430jtag_fini;
+	i->msp430jtag.config = versaloon_msp430jtag_config;
+	i->msp430jtag.ir = versaloon_msp430jtag_ir;
+	i->msp430jtag.dr = versaloon_msp430jtag_dr;
+	i->msp430jtag.tclk = versaloon_msp430jtag_tclk;
+	i->msp430jtag.tclk_strobe = versaloon_msp430jtag_tclk_strobe;
+	i->msp430jtag.reset = versaloon_msp430jtag_reset;
+	i->msp430jtag.poll = versaloon_msp430jtag_poll;
 	
 	// MSP430_SBW
-	i->msp430sbw.msp430sbw_init = versaloon_msp430sbw_init;
-	i->msp430sbw.msp430sbw_fini = versaloon_msp430sbw_fini;
-	i->msp430sbw.msp430sbw_config = versaloon_msp430sbw_config;
-	i->msp430sbw.msp430sbw_ir = versaloon_msp430sbw_ir;
-	i->msp430sbw.msp430sbw_dr = versaloon_msp430sbw_dr;
-	i->msp430sbw.msp430sbw_tclk = versaloon_msp430sbw_tclk;
-	i->msp430sbw.msp430sbw_tclk_strobe = versaloon_msp430sbw_tclk_strobe;
-	i->msp430sbw.msp430sbw_reset = versaloon_msp430sbw_reset;
-	i->msp430sbw.msp430sbw_poll = versaloon_msp430sbw_poll;
+	i->msp430sbw.init = versaloon_msp430sbw_init;
+	i->msp430sbw.fini = versaloon_msp430sbw_fini;
+	i->msp430sbw.config = versaloon_msp430sbw_config;
+	i->msp430sbw.ir = versaloon_msp430sbw_ir;
+	i->msp430sbw.dr = versaloon_msp430sbw_dr;
+	i->msp430sbw.tclk = versaloon_msp430sbw_tclk;
+	i->msp430sbw.tclk_strobe = versaloon_msp430sbw_tclk_strobe;
+	i->msp430sbw.reset = versaloon_msp430sbw_reset;
+	i->msp430sbw.poll = versaloon_msp430sbw_poll;
 	
 	// C2
-	i->c2.c2_init = versaloon_c2_init;
-	i->c2.c2_fini = versaloon_c2_fini;
-	i->c2.c2_addr_write = versaloon_c2_addr_write;
-	i->c2.c2_addr_read = versaloon_c2_addr_read;
-	i->c2.c2_data_write = versaloon_c2_data_write;
-	i->c2.c2_data_read = versaloon_c2_data_read;
+	i->c2.init = versaloon_c2_init;
+	i->c2.fini = versaloon_c2_fini;
+	i->c2.addr_write = versaloon_c2_addr_write;
+	i->c2.addr_read = versaloon_c2_addr_read;
+	i->c2.data_write = versaloon_c2_data_write;
+	i->c2.data_read = versaloon_c2_data_read;
 	
 	// I2C
-	i->i2c.i2c_init = versaloon_i2c_init;
-	i->i2c.i2c_fini = versaloon_i2c_fini;
-	i->i2c.i2c_set_speed = versaloon_i2c_set_speed;
-	i->i2c.i2c_read = versaloon_i2c_read;
-	i->i2c.i2c_write = versaloon_i2c_write;
+	i->i2c.init = versaloon_i2c_init;
+	i->i2c.fini = versaloon_i2c_fini;
+	i->i2c.config = versaloon_i2c_config;
+	i->i2c.read = versaloon_i2c_read;
+	i->i2c.write = versaloon_i2c_write;
 	
 	// SWIM
-	i->swim.swim_init = versaloon_swim_init;
-	i->swim.swim_fini = versaloon_swim_fini;
-	i->swim.swim_set_param = versaloon_swim_set_param;
-	i->swim.swim_srst = versaloon_swim_srst;
-	i->swim.swim_wotf = versaloon_swim_wotf;
-	i->swim.swim_rotf = versaloon_swim_rotf;
-	i->swim.swim_sync = versaloon_swim_sync;
-	i->swim.swim_enable = versaloon_swim_enable;
+	i->swim.init = versaloon_swim_init;
+	i->swim.fini = versaloon_swim_fini;
+	i->swim.config = versaloon_swim_config;
+	i->swim.srst = versaloon_swim_srst;
+	i->swim.wotf = versaloon_swim_wotf;
+	i->swim.rotf = versaloon_swim_rotf;
+	i->swim.sync = versaloon_swim_sync;
+	i->swim.enable = versaloon_swim_enable;
 	
 	// POLL
-	i->poll.poll_start = versaloon_poll_start;
-	i->poll.poll_end = versaloon_poll_end;
-	i->poll.poll_checkok = versaloon_poll_checkok;
-	i->poll.poll_checkfail = versaloon_poll_checkfail;
-	i->poll.poll_verifybuff = versaloon_poll_verifybuff;
+	i->poll.start = versaloon_poll_start;
+	i->poll.end = versaloon_poll_end;
+	i->poll.checkok = versaloon_poll_checkok;
+	i->poll.checkfail = versaloon_poll_checkfail;
+	i->poll.verifybuff = versaloon_poll_verifybuff;
 	
-	i->peripheral_commit= versaloon_peripheral_commit;
+	i->peripheral_commit = versaloon_peripheral_commit;
 	
 	// Mass-product
 	t->download_mass_product_data = versaloon_download_mass_product_data;

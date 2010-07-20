@@ -23,13 +23,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "app_cfg.h"
-#include "app_type.h"
-#include "app_err.h"
-#include "app_log.h"
-#include "prog_interface.h"
-
-#include "programmer.h"
+#include "../versaloon_include.h"
 #include "../versaloon.h"
 #include "../versaloon_internal.h"
 #include "usbtoxxx.h"
@@ -47,7 +41,7 @@ RESULT usbtoi2c_fini(void)
 	return usbtoxxx_fini_command(USB_TO_I2C);
 }
 
-RESULT usbtoi2c_set_speed(uint8_t interface_index, uint16_t kHz, 
+RESULT usbtoi2c_config(uint8_t interface_index, uint16_t kHz, 
 							uint16_t dead_cnt, uint16_t byte_interval)
 {
 #if PARAM_CHECK

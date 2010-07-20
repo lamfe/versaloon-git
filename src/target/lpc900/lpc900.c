@@ -100,17 +100,15 @@ PARSE_ARGUMENT_HANDLER(lpc900)
 
 static struct interfaces_info_t *interfaces = NULL;
 
-#define icp_init()					interfaces->lpcicp.lpcicp_init()
-#define icp_fini()					interfaces->lpcicp.lpcicp_fini()
-#define icp_enter_program_mode()	\
-	interfaces->lpcicp.lpcicp_enter_program_mode()
-#define icp_leave_program_mode()	\
-	interfaces->lpcicp.lpcicp_leave_program_mode()
-#define icp_commit()				interfaces->peripheral_commit()
-#define icp_in(buf, len)			interfaces->lpcicp.lpcicp_in((buf), (len))
-#define icp_out(buf, len)			interfaces->lpcicp.lpcicp_out((buf), (len))
+#define icp_init()					interfaces->lpcicp.init()
+#define icp_fini()					interfaces->lpcicp.fini()
+#define icp_enter_program_mode()	interfaces->lpcicp.enter_program_mode()
+#define icp_leave_program_mode()	interfaces->lpcicp.leave_program_mode()
+#define icp_in(buf, len)			interfaces->lpcicp.in((buf), (len))
+#define icp_out(buf, len)			interfaces->lpcicp.out((buf), (len))
 #define icp_poll(dat, ptr, set, clear, cnt)	\
-	interfaces->lpcicp.lpcicp_poll_ready((dat), (ptr), (set), (clear), (cnt))
+	interfaces->lpcicp.poll_ready((dat), (ptr), (set), (clear), (cnt))
+#define icp_commit()				interfaces->peripheral_commit()
 
 #define LPCICP_POLL_ON_SET			0
 #define LPCICP_POLL_ON_CLEAR		1

@@ -586,7 +586,7 @@ RESULT svf_parser_run_command(char *cmd_str)
 			}
 			
 			svf_parser_para.frequency = (float)atof(argus[1]);
-			jtag_set_frequency((uint16_t)(svf_parser_para.frequency / 1000));
+			jtag_config((uint16_t)(svf_parser_para.frequency / 1000));
 			
 			LOG_DEBUG("\tfrequency = %f\n", svf_parser_para.frequency);
 		}

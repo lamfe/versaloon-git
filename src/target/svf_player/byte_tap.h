@@ -23,24 +23,23 @@
 
 extern struct interfaces_info_t *interfaces;
 
-#define jtag_init()				interfaces->jtag_ll.jtag_ll_init()
-#define jtag_fini()				interfaces->jtag_ll.jtag_ll_fini()
-#define jtag_set_frequency(f)	interfaces->jtag_ll.jtag_ll_set_frequency(f)
-#define jtag_tms(tms, len)		interfaces->jtag_ll.jtag_ll_tms((tms), (len))
-#define jtag_tms_clocks(len, tms)	\
-	interfaces->jtag_ll.jtag_ll_tms_clocks(len, tms)
+#define jtag_init()					interfaces->jtag_ll.init()
+#define jtag_fini()					interfaces->jtag_ll.fini()
+#define jtag_config(f)				interfaces->jtag_ll.config(f)
+#define jtag_tms(m, len)			interfaces->jtag_ll.tms((m), (len))
+#define jtag_tms_clocks(len, m)		interfaces->jtag_ll.tms_clocks((len), (m))
 #define jtag_xr(d, l, v, b, a0, a1)	\
-	interfaces->jtag_ll.jtag_ll_scan((d), (l), (v), (v), (a0), (a1))
-#define jtag_commit()			interfaces->peripheral_commit()
+	interfaces->jtag_ll.scan((d), (l), (v), (v), (a0), (a1))
+#define jtag_commit()				interfaces->peripheral_commit()
 
-#define jtag_trst_init()		interfaces->gpio.gpio_init()
-#define jtag_trst_fini()		interfaces->gpio.gpio_fini()
-#define jtag_trst_output()		\
-	interfaces->gpio.gpio_config(JTAG_TRST, JTAG_TRST, 0)
-#define jtag_trst_input()		\
-	interfaces->gpio.gpio_config(JTAG_TRST, 0, JTAG_TRST)
-#define jtag_trst_1()			interfaces->gpio.gpio_out(JTAG_TRST, JTAG_TRST)
-#define jtag_trst_0()			interfaces->gpio.gpio_out(JTAG_TRST, 0)
+#define jtag_trst_init()			interfaces->gpio.init()
+#define jtag_trst_fini()			interfaces->gpio.fini()
+#define jtag_trst_output()			\
+	interfaces->gpio.config(JTAG_TRST, JTAG_TRST, 0)
+#define jtag_trst_input()			\
+	interfaces->gpio.config(JTAG_TRST, 0, JTAG_TRST)
+#define jtag_trst_1()			interfaces->gpio.out(JTAG_TRST, JTAG_TRST)
+#define jtag_trst_0()			interfaces->gpio.out(JTAG_TRST, 0)
 
 
 #define TAP_NUM_OF_STATE		16
