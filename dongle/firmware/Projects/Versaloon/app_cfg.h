@@ -90,6 +90,7 @@
 // page 1
 #	define USB_TO_JTAG_LL_EN			1
 #	define USB_TO_JTAG_HL_EN			1
+#	define USB_TO_JTAG_RAW_EN			1
 #	define USB_TO_ISSP_EN				1
 #	define USB_TO_C2_EN					1
 #	define USB_TO_MSP430_JTAG_EN		1
