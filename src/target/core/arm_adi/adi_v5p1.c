@@ -35,7 +35,7 @@
 #include "programmer.h"
 
 #include "adi_v5p1.h"
-
+#include "adi_v5p1_internal.h"
 
 static struct interfaces_info_t *adi_prog = NULL;
 static adi_dp_if_t *adi_dp_if;
