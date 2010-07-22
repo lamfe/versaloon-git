@@ -19,8 +19,6 @@
 #ifndef __CM3_STM32_H_INCLUDED__
 #define __CM3_STM32_H_INCLUDED__
 
-#include "adi_v5p1.h"
-
 #define STM32_PAGE_SIZE_RW			5120
 
 #define STM32_IRC_KHZ				8000

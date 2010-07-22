@@ -43,6 +43,7 @@
 #include "cm3_stm32.h"
 #include "cm3_lpc1000.h"
 #include "cm3_at91sam3.h"
+#include "cm3_lm3s.h"
 
 #include "cm3_internal.h"
 
@@ -65,9 +66,38 @@ struct program_functions_t cm3_program_functions =
 
 const struct cm3_param_t cm3_chips_param[] = {
 //	chip_name,		jtag_khz,				pos			swd_trn,swd_delay,	program_functions
-	{"cm3_stm32",	STM32_IRC_KHZ / 6,		{0,1,0,5},	2,		0,			&stm32swj_program_functions},
-	{"cm3_lpc1000",	LPC1000_IRC_KHZ / 6,	{0,0,0,0},	2,		1,			&lpc1000swj_program_functions},
-	{"cm3_at91sam3",AT91SAM3_IRC_KHZ / 6,	{0,0,0,0},	2,		0,			&at91sam3swj_program_functions}
+	{
+		"cm3_stm32",
+		STM32_IRC_KHZ / 6,
+		{0,1,0,5},
+		2,
+		0,
+		&stm32swj_program_functions
+	},
+	{
+		"cm3_lpc1000",
+		LPC1000_IRC_KHZ / 6,
+		{0,0,0,0},
+		2,
+		1,
+		&lpc1000swj_program_functions
+	},
+	{
+		"cm3_at91sam3",
+		AT91SAM3_IRC_KHZ / 6,
+		{0,0,0,0},
+		2,
+		0,
+		&at91sam3swj_program_functions
+	},
+	{
+		"cm3_lm3s",
+		LM3S_IRC_KHZ / 6,
+		{0,0,0,0},
+		2,
+		0,
+		&lm3sswj_program_functions
+	}
 };
 static uint8_t cm3_chip_index = 0;
 
@@ -214,6 +244,36 @@ LEAVE_PROGRAM_MODE_HANDLER(cm3)
 	if (pf->leave_program_mode != NULL)
 	{
 		ret = pf->leave_program_mode(context, success);
+	}
+	
+	if (cm3_execute_flag && success 
+		&& (context->op->write_operations & APPLICATION))
+	{
+		uint32_t reg;
+		
+		if (ERROR_OK != cm3_dp_halt())
+		{
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "halt cm3");
+			return ERRCODE_FAILURE_OPERATION;
+		}
+		if (ERROR_OK != 
+				cm3_write_core_register(CM3_COREREG_PC, &cm3_execute_addr))
+		{
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "write PC");
+			return ERRCODE_FAILURE_OPERATION;
+		}
+		reg = 0;
+		if ((ERROR_OK != cm3_read_core_register(CM3_COREREG_PC, &reg)) 
+			|| (reg != cm3_execute_addr))
+		{
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "verify written PC");
+			return ERRCODE_FAILURE_OPERATION;
+		}
+		if (ERROR_OK != cm3_dp_run())
+		{
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "run code");
+			return ERRCODE_FAILURE_OPERATION;
+		}
 	}
 	
 	// jtag/swd fini

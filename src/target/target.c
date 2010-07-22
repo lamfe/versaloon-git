@@ -59,6 +59,7 @@
 #include "at91sam3/at91sam3.h"
 #include "avr32/avr32.h"
 #include "avrxmega/avrxmega.h"
+#include "lm3s/lm3s.h"
 
 const struct target_area_name_t target_area_name[NUM_OF_TARGET_AREA] = 
 {
@@ -111,6 +112,19 @@ struct target_info_t targets_info[] =
 		&lpc1000_program_functions,			// program_functions
 		lpc1000_parse_argument,				// parse_argument
 		lpc1000_adjust_setting,				// adjust_setting
+		
+		NULL,								// get_mass_product_data_size
+		NULL,								// prepare_mass_product_data
+	},
+	// lm3s
+	{
+		LM3S_STRING,						// name
+		AUTO_DETECT CAN_EXECUTE,			// feature
+		lm3s_program_area_map,				// program_area_map
+		lm3s_program_mode,					// program_mode
+		&lm3s_program_functions,			// program_functions
+		lm3s_parse_argument,				// parse_argument
+		NULL,								// adjust_setting
 		
 		NULL,								// get_mass_product_data_size
 		NULL,								// prepare_mass_product_data

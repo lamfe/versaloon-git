@@ -362,35 +362,9 @@ ENTER_PROGRAM_MODE_HANDLER(lpc1000swj)
 
 LEAVE_PROGRAM_MODE_HANDLER(lpc1000swj)
 {
-	uint32_t reg;
+	REFERENCE_PARAMETER(context);
+	REFERENCE_PARAMETER(success);
 	
-	if (cm3_execute_flag && success 
-		&& (context->op->write_operations & APPLICATION))
-	{
-		if (ERROR_OK != cm3_dp_halt())
-		{
-			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "halt lpc1000");
-			return ERRCODE_FAILURE_OPERATION;
-		}
-		if (ERROR_OK != 
-				cm3_write_core_register(CM3_COREREG_PC, &cm3_execute_addr))
-		{
-			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "write PC");
-			return ERRCODE_FAILURE_OPERATION;
-		}
-		reg = 0;
-		if ((ERROR_OK != cm3_read_core_register(CM3_COREREG_PC, &reg)) 
-			|| (reg != cm3_execute_addr))
-		{
-			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "verify written PC");
-			return ERRCODE_FAILURE_OPERATION;
-		}
-		if (ERROR_OK != cm3_dp_run())
-		{
-			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "run code");
-			return ERRCODE_FAILURE_OPERATION;
-		}
-	}
 	return ERROR_OK;
 }
 
