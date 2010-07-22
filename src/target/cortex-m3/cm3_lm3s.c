@@ -76,6 +76,18 @@ ENTER_PROGRAM_MODE_HANDLER(lm3sswj)
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
+	// disable flash programming interrupts
+	reg = 0;
+	if (ERROR_OK != adi_memap_write_reg(LM3S_FLASHCTL_FCIM, &reg, 0))
+	{
+		return ERROR_FAIL;
+	}
+	reg = LM3S_FLASHCTL_INT_PROGRAMMING | LM3S_FLASHCTL_INT_ACCESS;
+	if (ERROR_OK != adi_memap_write_reg(LM3S_FLASHCTL_FCMISC, &reg, 1))
+	{
+		return ERROR_FAIL;
+	}
+	
 	// unlock
 	// 0xFFFFFFFF to FMPRE and FMPPE
 	reg = 0xFFFFFFFF;
