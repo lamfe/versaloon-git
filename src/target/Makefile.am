@@ -18,7 +18,8 @@ INCLUDES = \
     -I$(top_srcdir)/src/target/lpc1000 \
     -I$(top_srcdir)/src/target/at91sam3 \
 	-I$(top_srcdir)/src/target/avr32 \
-    -I$(top_srcdir)/src/target/avrxmega
+    -I$(top_srcdir)/src/target/avrxmega \
+    -I$(top_srcdir)/src/target/lm3s
 
 METASOURCES = AUTO
 noinst_LIBRARIES = libtgt.a
@@ -30,6 +31,7 @@ libtgt_a_SOURCES = \
     cortex-m3/cm3_stm32.c \
     cortex-m3/cm3_lpc1000.c \
     cortex-m3/cm3_at91sam3.c \
+    cortex-m3/cm3_lm3s.c \
     cortex-m3/cm3_common.c \
     at89s5x/at89s5x.c \
     avr8/avr8.c \
@@ -57,6 +59,7 @@ libtgt_a_SOURCES = \
     lpc1000/lpc1000.c \
     at91sam3/at91sam3.c \
     avr32/avr32.c \
-    avrxmega/avrxmega.c
+    avrxmega/avrxmega.c \
+    lm3s/lm3s.c
 
 MAINTAINERCLEANFILES = Makefile.in
