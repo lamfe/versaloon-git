@@ -16,12 +16,45 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#ifndef __CM3_AT91SAM3_H_INCLUDED__
-#define __CM3_AT91SAM3_H_INCLUDED__
 
-#define AT91SAM3_IRC_KHZ			4000
+#ifndef __LM3S_INTERNAL_H_INCLUDED__
+#define __LM3S_INTERNAL_H_INCLUDED__
 
-extern const struct program_functions_t at91sam3swj_program_functions;
+#define LM3S_JTAG						0
+#define LM3S_SWD						1
 
-#endif /* __CM3_AT91SAM3_H_INCLUDED__ */
+#define LM3S_SYSCTL_BASE				0x400FE000
+#define LM3S_SYSCTL_DID0				(LM3S_SYSCTL_BASE + 0x000)
+#define	LM3S_SYSCTL_DID1				(LM3S_SYSCTL_BASE + 0x004)
+#define LM3S_SYSCTL_DC0					(LM3S_SYSCTL_BASE + 0x008)
+#define LM3S_SYSCTL_DC1					(LM3S_SYSCTL_BASE + 0x010)
+#define LM3S_SYSCTL_DC2					(LM3S_SYSCTL_BASE + 0x014)
+#define LM3S_SYSCTL_DC3					(LM3S_SYSCTL_BASE + 0x018)
+#define LM3S_SYSCTL_FMPRE				(LM3S_SYSCTL_BASE + 0x130)
+#define LM3S_SYSCTL_FMPPE				(LM3S_SYSCTL_BASE + 0x134)
+#define LM3S_SYSCTL_USECRL				(LM3S_SYSCTL_BASE + 0x140)
+
+#define LM3S_FLASHCTL_BASE				0x400FD000
+#define LM3S_FLASHCTL_FMA				(LM3S_FLASHCTL_BASE + 0x000)
+#define LM3S_FLASHCTL_FMD				(LM3S_FLASHCTL_BASE + 0x004)
+#define LM3S_FLASHCTL_FMC				(LM3S_FLASHCTL_BASE + 0x008)
+#define LM3S_FLASHCTL_FMC_KEY			0xA4420000
+#define LM3S_FLASHCTL_FMC_WRITE			0x0001
+#define LM3S_FLASHCTL_FMC_ERASE			0x0002
+#define LM3S_FLASHCTL_FMC_MERASE		0x0004
+#define LM3S_FLASHCTL_FMC_COMT			0x0008
+
+struct lm3s_device_info_t
+{
+	uint32_t did0;
+	uint32_t did1;
+	uint32_t dc0;
+	uint32_t dc1;
+	uint32_t dc2;
+	uint32_t dc3;
+};
+
+RESULT lm3s_check_device(struct lm3s_device_info_t *device);
+
+#endif /* __LM3S_INTERNAL_H_INCLUDED__ */
 

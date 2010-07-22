@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<series name="lm3s">
+  <chip name="lm3s">
+    <chip_id>0x0000</chip_id>
+    <program_mode>j:JTAG(F)|s:SWD</program_mode>
+    <app_page_size>1024</app_page_size>
+    <app_page_num>256</app_page_num>
+    <app_default>0xFF</app_default>
+    <app_addr>0x00000000</app_addr>
+    <app_seg>0</app_seg>
+  </chip>
+  <chip name="lm3s102">
+    <chip_id>0x0002</chip_id>
+    <program_mode>js</program_mode>
+    <app_page_num>8</app_page_num>
+  </chip>
+</series>

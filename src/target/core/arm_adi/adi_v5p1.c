@@ -56,6 +56,9 @@ struct adi_dp_info_t adi_dp_info;
 #define trst_clr()				adi_prog->gpio.out(JTAG_TRST, 0)
 #define reset_commit()			adi_prog->peripheral_commit()
 
+// Delay
+#define delay_ms(ms)			adi_prog->delay.delayms((ms) | 0x8000)
+
 // JTAG
 #define jtag_init()				adi_prog->jtag_hl.init()
 #define jtag_fini()				adi_prog->jtag_hl.fini()
@@ -260,6 +263,7 @@ static RESULT adi_dpif_init(struct program_context_t *context, adi_dp_if_t *inte
 	reset_init();
 	reset_input();
 	trst_input();
+	delay_ms(100);
 	reset_commit();
 	
 	switch(adi_dp_if->type)
