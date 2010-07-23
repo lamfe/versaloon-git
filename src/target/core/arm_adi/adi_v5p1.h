@@ -35,30 +35,28 @@ enum adi_dp_target_core_t
 
 typedef struct
 {
-	struct {
-		enum adi_dpif_type_t type;
-		union
+	enum adi_dpif_type_t type;
+	union
+	{
+		struct
 		{
-			struct
-			{
-				uint8_t ub;
-				uint8_t ua;
-				uint16_t bb;
-				uint16_t ba;
-				uint16_t jtag_khz;
-			} dpif_jtag_setting;
-			struct
-			{
-				uint8_t swd_trn;
-				uint16_t swd_retry;
-				uint16_t swd_dly;
-			} dpif_swd_setting;
-		} dpif_setting;
-	} dpif;
-	enum adi_dp_target_core_t core;
+			uint8_t ub;
+			uint8_t ua;
+			uint16_t bb;
+			uint16_t ba;
+			uint16_t jtag_khz;
+		} dpif_jtag_setting;
+		struct
+		{
+			uint8_t swd_trn;
+			uint16_t swd_retry;
+			uint16_t swd_dly;
+		} dpif_swd_setting;
+	} dpif_setting;
 }adi_dpif_t;
 
-RESULT adi_init(struct program_context_t *context, adi_dpif_t *interf);
+RESULT adi_init(struct program_context_t *context, adi_dpif_t *interf, 
+					enum adi_dp_target_core_t *core);
 RESULT adi_fini(void);
 RESULT adi_dp_commit(void);
 
