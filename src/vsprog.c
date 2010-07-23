@@ -143,8 +143,8 @@ static void free_all_and_exit(int exit_code)
 	exit(exit_code);
 }
 
-static RESULT parse_operation(uint32_t *operation, 
-							  const char *opt, uint32_t optlen)
+static RESULT parse_operation(uint32_t *operation, const char *opt, 
+								uint32_t optlen)
 {
 	uint32_t mask = 0, tmp;
 	uint32_t i;

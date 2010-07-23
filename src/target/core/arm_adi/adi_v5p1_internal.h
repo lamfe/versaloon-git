@@ -29,6 +29,9 @@ struct adi_dp_t
 	uint32_t ap_bank_value;
 	uint32_t ap_csw_value;
 	uint32_t ap_tar_value;
+	
+	uint8_t memaccess_tck;
+	uint32_t tar_autoincr_block;
 };
 
 struct adi_dp_info_t
