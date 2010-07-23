@@ -170,46 +170,45 @@ ENTER_PROGRAM_MODE_HANDLER(cm3)
 		LOG_WARNING("debug port not defined, use JTAG by default.");
 		context->pi->mode = ADI_DP_JTAG;
 	}
-	dp.dpif.type = context->pi->mode;
-	dp.core = ADI_DP_INVALID;
+	dp.type = context->pi->mode;
 	
 	switch(context->pi->mode)
 	{
 	case ADI_DP_JTAG:
 		if (context->pi->frequency)
 		{
-			dp.dpif.dpif_setting.dpif_jtag_setting.jtag_khz = 
+			dp.dpif_setting.dpif_jtag_setting.jtag_khz = 
 				context->pi->frequency;
 		}
 		else
 		{
-			dp.dpif.dpif_setting.dpif_jtag_setting.jtag_khz = 
+			dp.dpif_setting.dpif_jtag_setting.jtag_khz = 
 				cm3_chips_param[cm3_chip_index].jtag_khz;
 		}
-		dp.dpif.dpif_setting.dpif_jtag_setting.ub = 
+		dp.dpif_setting.dpif_jtag_setting.ub = 
 				cm3_chips_param[cm3_chip_index].jtag_pos.ub;
-		dp.dpif.dpif_setting.dpif_jtag_setting.ua = 
+		dp.dpif_setting.dpif_jtag_setting.ua = 
 				cm3_chips_param[cm3_chip_index].jtag_pos.ua;
-		dp.dpif.dpif_setting.dpif_jtag_setting.bb = 
+		dp.dpif_setting.dpif_jtag_setting.bb = 
 				cm3_chips_param[cm3_chip_index].jtag_pos.bb;
-		dp.dpif.dpif_setting.dpif_jtag_setting.ba = 
+		dp.dpif_setting.dpif_jtag_setting.ba = 
 				cm3_chips_param[cm3_chip_index].jtag_pos.ba;
 		
 		break;
 	case ADI_DP_SWD:
-		dp.dpif.dpif_setting.dpif_swd_setting.swd_trn = 
+		dp.dpif_setting.dpif_swd_setting.swd_trn = 
 				cm3_chips_param[cm3_chip_index].swd_trn;
 		if (context->pi->wait_state)
 		{
-			dp.dpif.dpif_setting.dpif_swd_setting.swd_dly = 
+			dp.dpif_setting.dpif_swd_setting.swd_dly = 
 				context->pi->wait_state;
 		}
 		else
 		{
-			dp.dpif.dpif_setting.dpif_swd_setting.swd_dly = 
+			dp.dpif_setting.dpif_swd_setting.swd_dly = 
 				cm3_chips_param[cm3_chip_index].swd_delay;
 		}
-		dp.dpif.dpif_setting.dpif_swd_setting.swd_retry = 0;
+		dp.dpif_setting.dpif_swd_setting.swd_retry = 0;
 		
 		break;
 	}

@@ -49,11 +49,12 @@ RESULT cm3_dp_fini(void)
 RESULT cm3_dp_init(struct program_context_t *context, adi_dpif_t *dp)
 {
 	uint32_t cpuid;
+	enum adi_dp_target_core_t tgt_core = ADI_DP_INVALID;
 	
 	memcpy(&cm3_dp_if, dp, sizeof(cm3_dp_if));
 	
 	// adi_init will initialize the core type
-	if (ERROR_OK != adi_init(context, &cm3_dp_if))
+	if (ERROR_OK != adi_init(context, &cm3_dp_if, &tgt_core))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "initialize cm3 interface");
 		return ERRCODE_FAILURE_OPERATION;
@@ -66,17 +67,17 @@ RESULT cm3_dp_init(struct program_context_t *context, adi_dpif_t *dp)
 	}
 	// 0xC23 is for CortexM3
 	// 0xC20 is for CortexM0
-	if ((((cpuid >> 4) & 0xC3F) == 0xC23) && (ADI_DP_CM3 == cm3_dp_if.core))
+	if ((((cpuid >> 4) & 0xC3F) == 0xC23) && (ADI_DP_CM3 == tgt_core))
 	{
 		LOG_INFO("CORTEX-M3 processor detected");
 	}
-	else if ((((cpuid >> 4) & 0xC3F) == 0xC20) && (ADI_DP_CM0 == cm3_dp_if.core))
+	else if ((((cpuid >> 4) & 0xC3F) == 0xC20) && (ADI_DP_CM0 == tgt_core))
 	{
 		LOG_INFO("CORTEX-M0 processor detected");
 	}
 	else
 	{
-		LOG_WARNING("Is target a CORTEX-M3?");
+		LOG_WARNING("Is target a CORTEX-Chip?");
 	}
 	LOG_INFO(INFOMSG_REG_08X, "CPUID", cpuid);
 	
