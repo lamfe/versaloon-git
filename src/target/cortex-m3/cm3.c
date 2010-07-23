@@ -65,38 +65,37 @@ struct program_functions_t cm3_program_functions =
 };
 
 const struct cm3_param_t cm3_chips_param[] = {
-//	chip_name,		jtag_khz,				pos			swd_trn,swd_delay,	program_functions
 	{
-		"cm3_stm32",
-		STM32_IRC_KHZ / 6,
-		{0,1,0,5},
-		2,
-		0,
-		&stm32swj_program_functions
+		"cm3_stm32",					// chip_name
+		STM32_IRC_KHZ / 6,				// jtag_khz
+		{0,1,0,5},						// jtag_pos
+		2,								// swd_trn
+		0,								// swd_delay
+		&stm32swj_program_functions		// program_functions
 	},
 	{
-		"cm3_lpc1000",
-		LPC1000_IRC_KHZ / 6,
-		{0,0,0,0},
-		2,
-		1,
-		&lpc1000swj_program_functions
+		"cm3_lpc1000",					// chip_name
+		LPC1000_IRC_KHZ / 6,			// jtag_khz
+		{0,0,0,0},						// jtag_pos
+		2,								// swd_trn
+		1,								// swd_delay
+		&lpc1000swj_program_functions	// program_functions
 	},
 	{
-		"cm3_at91sam3",
-		AT91SAM3_IRC_KHZ / 6,
-		{0,0,0,0},
-		2,
-		0,
-		&at91sam3swj_program_functions
+		"cm3_at91sam3",					// chip_name
+		AT91SAM3_IRC_KHZ / 6,			// jtag_khz
+		{0,0,0,0},						// jtag_pos
+		2,								// swd_trn
+		0,								// swd_delay
+		&at91sam3swj_program_functions	// program_functions
 	},
 	{
-		"cm3_lm3s",
-		LM3S_IRC_KHZ / 6,
-		{0,0,0,0},
-		2,
-		0,
-		&lm3sswj_program_functions
+		"cm3_lm3s",						// chip_name
+		LM3S_IRC_KHZ / 6,				// jtag_khz
+		{0,0,0,0},						// jtag_pos
+		2,								// swd_trn
+		0,								// swd_delay
+		&lm3sswj_program_functions		// program_functions
 	}
 };
 static uint8_t cm3_chip_index = 0;
@@ -154,7 +153,7 @@ PARSE_ARGUMENT_HANDLER(cm3)
 
 ENTER_PROGRAM_MODE_HANDLER(cm3)
 {
-	adi_dp_if_t dp;
+	adi_dpif_t dp;
 	const struct program_functions_t *pf = 
 		cm3_chips_param[cm3_chip_index].program_functions;
 	
@@ -171,7 +170,7 @@ ENTER_PROGRAM_MODE_HANDLER(cm3)
 		LOG_WARNING("debug port not defined, use JTAG by default.");
 		context->pi->mode = ADI_DP_JTAG;
 	}
-	dp.type = context->pi->mode;
+	dp.dpif.type = context->pi->mode;
 	dp.core = ADI_DP_INVALID;
 	
 	switch(context->pi->mode)
@@ -179,36 +178,38 @@ ENTER_PROGRAM_MODE_HANDLER(cm3)
 	case ADI_DP_JTAG:
 		if (context->pi->frequency)
 		{
-			dp.adi_dp_if_info.adi_dp_jtag.jtag_khz = context->pi->frequency;
+			dp.dpif.dpif_setting.dpif_jtag_setting.jtag_khz = 
+				context->pi->frequency;
 		}
 		else
 		{
-			dp.adi_dp_if_info.adi_dp_jtag.jtag_khz = 
+			dp.dpif.dpif_setting.dpif_jtag_setting.jtag_khz = 
 				cm3_chips_param[cm3_chip_index].jtag_khz;
 		}
-		dp.adi_dp_if_info.adi_dp_jtag.ub = 
-				cm3_chips_param[cm3_chip_index].pos.ub;
-		dp.adi_dp_if_info.adi_dp_jtag.ua = 
-				cm3_chips_param[cm3_chip_index].pos.ua;
-		dp.adi_dp_if_info.adi_dp_jtag.bb = 
-				cm3_chips_param[cm3_chip_index].pos.bb;
-		dp.adi_dp_if_info.adi_dp_jtag.ba = 
-				cm3_chips_param[cm3_chip_index].pos.ba;
+		dp.dpif.dpif_setting.dpif_jtag_setting.ub = 
+				cm3_chips_param[cm3_chip_index].jtag_pos.ub;
+		dp.dpif.dpif_setting.dpif_jtag_setting.ua = 
+				cm3_chips_param[cm3_chip_index].jtag_pos.ua;
+		dp.dpif.dpif_setting.dpif_jtag_setting.bb = 
+				cm3_chips_param[cm3_chip_index].jtag_pos.bb;
+		dp.dpif.dpif_setting.dpif_jtag_setting.ba = 
+				cm3_chips_param[cm3_chip_index].jtag_pos.ba;
 		
 		break;
 	case ADI_DP_SWD:
-		dp.adi_dp_if_info.adi_dp_swd.swd_trn = 
+		dp.dpif.dpif_setting.dpif_swd_setting.swd_trn = 
 				cm3_chips_param[cm3_chip_index].swd_trn;
 		if (context->pi->wait_state)
 		{
-			dp.adi_dp_if_info.adi_dp_swd.swd_dly = context->pi->wait_state;
+			dp.dpif.dpif_setting.dpif_swd_setting.swd_dly = 
+				context->pi->wait_state;
 		}
 		else
 		{
-			dp.adi_dp_if_info.adi_dp_swd.swd_dly = 
+			dp.dpif.dpif_setting.dpif_swd_setting.swd_dly = 
 				cm3_chips_param[cm3_chip_index].swd_delay;
 		}
-		dp.adi_dp_if_info.adi_dp_swd.swd_retry = 0;
+		dp.dpif.dpif_setting.dpif_swd_setting.swd_retry = 0;
 		
 		break;
 	}

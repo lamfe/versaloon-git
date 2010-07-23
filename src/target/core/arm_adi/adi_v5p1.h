@@ -20,7 +20,7 @@
 #ifndef __ADI_V5P1_H_INCLUDED__
 #define __ADI_V5P1_H_INCLUDED__
 
-enum adi_dp_if_type_t
+enum adi_dpif_type_t
 {
 	ADI_DP_JTAG = 0, 
 	ADI_DP_SWD = 1
@@ -35,35 +35,34 @@ enum adi_dp_target_core_t
 
 typedef struct
 {
-	enum adi_dp_if_type_t type;
+	struct {
+		enum adi_dpif_type_t type;
+		union
+		{
+			struct
+			{
+				uint8_t ub;
+				uint8_t ua;
+				uint16_t bb;
+				uint16_t ba;
+				uint16_t jtag_khz;
+			} dpif_jtag_setting;
+			struct
+			{
+				uint8_t swd_trn;
+				uint16_t swd_retry;
+				uint16_t swd_dly;
+			} dpif_swd_setting;
+		} dpif_setting;
+	} dpif;
 	enum adi_dp_target_core_t core;
-	union
-	{
-		struct
-		{
-			uint8_t ub;
-			uint8_t ua;
-			uint16_t bb;
-			uint16_t ba;
-			uint16_t jtag_khz;
-		}adi_dp_jtag;
-		struct
-		{
-			uint8_t swd_trn;
-			uint16_t swd_retry;
-			uint16_t swd_dly;
-		}adi_dp_swd;
-	}adi_dp_if_info;
-	uint8_t memaccess_tck;
-	uint32_t tar_autoincr_block;
-}adi_dp_if_t;
+}adi_dpif_t;
 
-RESULT adi_init(struct program_context_t *context, adi_dp_if_t *interf);
+RESULT adi_init(struct program_context_t *context, adi_dpif_t *interf);
 RESULT adi_fini(void);
 RESULT adi_dp_commit(void);
 
-uint32_t adi_memap_get_max_tar_block_size(uint32_t tar_autoincr_block, 
-										uint32_t address);
+uint32_t adi_memap_get_max_tar_block_size(uint32_t address);
 
 RESULT adi_memap_read_reg(uint32_t address, uint32_t *reg, 
 							uint8_t check_result);

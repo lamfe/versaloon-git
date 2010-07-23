@@ -194,9 +194,10 @@ WRITE_TARGET_HANDLER(lm3sswj)
 	switch (area)
 	{
 	case APPLICATION_CHAR:
-		if (size % 4)
+		// check alignment
+		if ((size % 4) || (addr %4))
 		{
-			LOG_ERROR(ERRMSG_INVALID_TARGET, "size value");
+			LOG_ERROR(ERRMSG_INVALID_TARGET, "flash addr and/or size");
 			return ERROR_FAIL;
 		}
 		

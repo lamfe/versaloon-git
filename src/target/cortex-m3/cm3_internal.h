@@ -23,7 +23,7 @@ struct cm3_param_t
 {
 	const char *chip_name;
 	uint16_t jtag_khz;
-	struct jtag_pos_t pos;
+	struct jtag_pos_t jtag_pos;
 	uint8_t swd_trn;
 	uint16_t swd_delay;
 	const struct program_functions_t *program_functions;

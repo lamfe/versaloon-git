@@ -39,45 +39,21 @@
 #include "adi_v5p1.h"
 #include "cm3_common.h"
 
-adi_dp_if_t cm3_dp_if;
-
-RESULT cm3_dp_parameter_init(adi_dp_if_t *dp)
-{
-	dp->memaccess_tck = 8;
-	switch (dp->core)
-	{
-	case ADI_DP_CM3:
-		dp->tar_autoincr_block = (1 << 12);
-		break;
-	case ADI_DP_CM0:
-		dp->tar_autoincr_block = (1 << 10);
-		break;
-	default:
-		LOG_ERROR("unknown core: %d", dp->core);
-		return ERROR_FAIL;
-		break;
-	}
-	
-	return ERROR_OK;
-}
+adi_dpif_t cm3_dp_if;
 
 RESULT cm3_dp_fini(void)
 {
 	return adi_fini();
 }
 
-RESULT cm3_dp_init(struct program_context_t *context, adi_dp_if_t *dp)
+RESULT cm3_dp_init(struct program_context_t *context, adi_dpif_t *dp)
 {
 	uint32_t cpuid;
 	
 	memcpy(&cm3_dp_if, dp, sizeof(cm3_dp_if));
 	
-	// note: cm3_dp_if->tar_autoincr_block and cm3_dp_if->memaccess_tck 
-	// CANNOT be used in adi_init
-	// adi_init will initialize the core type and then 
-	// cm3_dp_parameter_init will initialize these 2 parts
-	if ((ERROR_OK != adi_init(context, &cm3_dp_if)) 
-		|| (ERROR_OK != cm3_dp_parameter_init(&cm3_dp_if)))
+	// adi_init will initialize the core type
+	if (ERROR_OK != adi_init(context, &cm3_dp_if))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "initialize cm3 interface");
 		return ERRCODE_FAILURE_OPERATION;
@@ -141,14 +117,15 @@ RESULT cm3_read_core_register(uint8_t reg_idx, uint32_t *value)
 
 uint32_t cm3_get_max_block_size(uint32_t address)
 {
-	return adi_memap_get_max_tar_block_size(cm3_dp_if.tar_autoincr_block, 
-											address);
+	return adi_memap_get_max_tar_block_size(address);
 }
 
 RESULT cm3_reset(void)
 {
 	uint32_t reg;
 	
+	// check result should not be enabled here
+	// because after reset, dp maybe disabled
 	reg = CM3_REG_NVIC_AIRCR_VECTKEY | CM3_REG_NVIC_AIRCR_SYSRESETREQ;
 	if (ERROR_OK != adi_memap_write_reg(CM3_REG_NVIC_AIRCR, &reg, 0))
 	{
