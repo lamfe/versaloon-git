@@ -49,7 +49,7 @@ extern int verbosity_stack[1];
 				snprintf(s, 4, " " format, (buff)[__j]);\
 				strncat(line, s, sizeof(s));\
 			}\
-			func("%s" LOG_LINE_END, line);\
+			func("%s", line);\
 		}\
 	}while(0)
 

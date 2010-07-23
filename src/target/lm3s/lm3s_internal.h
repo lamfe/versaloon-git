@@ -23,6 +23,8 @@
 #define LM3S_JTAG						0
 #define LM3S_SWD						1
 
+#define LM3S_SRAM_ADDR					0x20000000
+
 #define LM3S_SYSCTL_BASE				0x400FE000
 #define LM3S_SYSCTL_DID0				(LM3S_SYSCTL_BASE + 0x000)
 #define	LM3S_SYSCTL_DID1				(LM3S_SYSCTL_BASE + 0x004)
