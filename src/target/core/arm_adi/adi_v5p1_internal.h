@@ -33,7 +33,7 @@ struct adi_dp_t
 
 struct adi_dp_info_t
 {
-	enum adi_dp_if_type_t type;
+	enum adi_dpif_type_t type;
 	enum adi_dp_target_core_t core;
 	uint8_t memaccess_tck;
 	uint32_t tar_autoincr_block;

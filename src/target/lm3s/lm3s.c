@@ -173,10 +173,47 @@ RESULT lm3s_check_device(struct lm3s_device_info_t *device)
 	
 	// sram_size
 	tmp = (device->dc0 >> 16) & 0xFFFF;
+	if (tmp < 7)
+	{
+		LOG_WARNING(ERRMSG_INVALID_VALUE, tmp, "LM3S sram_size code");
+	}
 	switch (tmp)
 	{
-	case 7:
+	case 0x07:
 		sram_size = 2;
+		break;
+	case 0x0F:
+		sram_size = 4;
+		break;
+	case 0x17:
+		sram_size = 6;
+		break;
+	case 0x1F:
+		sram_size = 8;
+		break;
+	case 0x2F:
+		sram_size = 12;
+		break;
+	case 0x3F:
+		sram_size = 16;
+		break;
+	case 0x4F:
+		sram_size = 20;
+		break;
+	case 0x5F:
+		sram_size = 24;
+		break;
+	case 0x7F:
+		sram_size = 32;
+		break;
+	case 0xBF:
+		sram_size = 48;
+		break;
+	case 0xFF:
+		sram_size = 64;
+		break;
+	case 0x017F:
+		sram_size = 96;
 		break;
 	default:
 		sram_size = 0;
@@ -185,10 +222,32 @@ RESULT lm3s_check_device(struct lm3s_device_info_t *device)
 	}
 	// flash_size
 	tmp = (device->dc0 >> 0) & 0xFFFF;
+	if (tmp < 3)
+	{
+		LOG_WARNING(ERRMSG_INVALID_VALUE, tmp, "LM3S flash_size code");
+	}
 	switch (tmp)
 	{
-	case 3:
+	case 0x03:
 		flash_size = 8;
+		break;
+	case 0x07:
+		flash_size = 16;
+		break;
+	case 0x0F:
+		flash_size = 32;
+		break;
+	case 0x1F:
+		flash_size = 64;
+		break;
+	case 0x2F:
+		flash_size = 96;
+		break;
+	case 0x3F:
+		flash_size = 128;
+		break;
+	case 0x7F:
+		flash_size = 256;
 		break;
 	default:
 		flash_size = 0;
