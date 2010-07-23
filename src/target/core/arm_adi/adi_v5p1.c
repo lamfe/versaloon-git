@@ -93,13 +93,13 @@ static RESULT adi_dp_write_reg(uint8_t reg_addr, uint32_t *value,
 								uint8_t check_result);
 static RESULT adi_dp_transaction_endcheck(void);
 
-const static uint8_t adi_swd_reset_seq[] = 
+static const uint8_t adi_swd_reset_seq[] = 
 {
 	// at least 50-bit '1'
 	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
 };
 
-const static uint8_t adi_jtag_to_swd_seq[] = 
+static const uint8_t adi_jtag_to_swd_seq[] = 
 {
 	// at least 50-bit '1'
 	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 
@@ -109,7 +109,7 @@ const static uint8_t adi_jtag_to_swd_seq[] =
 	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x0F
 };
 
-const static uint8_t adi_swd_to_jtag_seq[] = 
+static const uint8_t adi_swd_to_jtag_seq[] = 
 {
 	// at least 50-bit '1'
 	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 
@@ -210,7 +210,7 @@ RESULT adi_dp_commit(void)
 
 static RESULT adi_dpif_fini(void)
 {
-	enum adi_dp_if_type_t dp_type;
+	enum adi_dpif_type_t dp_type;
 	RESULT ret = ERROR_OK;
 	
 	if (NULL == adi_dp_if)
