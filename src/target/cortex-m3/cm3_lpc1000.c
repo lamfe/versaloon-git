@@ -421,7 +421,7 @@ WRITE_TARGET_HANDLER(lpc1000swj)
 	struct chip_param_t *param = context->param;
 	uint32_t iap_cmd_param[5], iap_reply[4];
 	uint32_t start_sector;
-	uint8_t pingpong = 0;
+	uint8_t ticktock = 0;
 	uint16_t page_size = (uint16_t)param->chip_areas[APPLICATION_IDX].page_size;
 	
 	switch (area)
@@ -429,7 +429,7 @@ WRITE_TARGET_HANDLER(lpc1000swj)
 	case APPLICATION_CHAR:
 		if (param->chip_areas[SRAM_IDX].size < (uint32_t)(1024 + 2 * page_size))
 		{
-			// pingpong mode is not available
+			// ticktock mode is not available
 			
 			// check
 			if ((addr & 0xFF) 
@@ -518,10 +518,10 @@ WRITE_TARGET_HANDLER(lpc1000swj)
 		{
 			buff += page_size;
 			addr += page_size;
-			pingpong++;
+			ticktock++;
 			
 			// write buff to target SRAM
-			if (pingpong & 1)
+			if (ticktock & 1)
 			{
 				if (ERROR_OK != adi_memap_write_buf(
 						LPC1000_SRAM_ADDR + 1024 + page_size, buff, page_size))
@@ -563,7 +563,7 @@ WRITE_TARGET_HANDLER(lpc1000swj)
 			
 			memset(iap_cmd_param, 0, sizeof(iap_cmd_param));
 			iap_cmd_param[0] = addr;			// Destination flash address
-			if (pingpong & 1)
+			if (ticktock & 1)
 			{
 				iap_cmd_param[1] = LPC1000_SRAM_ADDR + 1024 + page_size;	// Source RAM address
 			}

@@ -92,6 +92,7 @@ PARSE_ARGUMENT_HANDLER(lm3s)
 		{
 		case LM3S_JTAG:
 		case LM3S_SWD:
+			lm3s_program_area_map[0].attr |= AREA_ATTR_WNP;
 			cm3_mode_offset = 0;
 			cm3_parse_argument('c', "cm3_lm3s");
 			memcpy(&lm3s_program_functions, &cm3_program_functions, 
