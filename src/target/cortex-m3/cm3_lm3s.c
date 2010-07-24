@@ -64,10 +64,13 @@ const struct program_functions_t lm3sswj_program_functions =
 	READ_TARGET_FUNCNAME(lm3sswj)
 };
 
+static uint32_t lm3sswj_iap_cnt = 0;
+
 #define LM3S_IAP_BASE			LM3S_SRAM_ADDR
 #define LM3S_IAP_COMMAND_OFFSET	100
 #define LM3S_IAP_COMMAND_ADDR	(LM3S_IAP_BASE + LM3S_IAP_COMMAND_OFFSET)
 #define LM3S_IAP_SYNC_ADDR		(LM3S_IAP_BASE + 120)
+#define LM3S_IAP_CNT_ADDR		(LM3S_IAP_BASE + 124)
 static uint8_t iap_code[] = 
 {
 							// wait_start:
@@ -80,40 +83,42 @@ static uint8_t iap_code[] =
 	0x18, 0x4B,				// ldr		r3, [PC, #XX]		// load src_addr
 	0x19, 0x4C,				// ldr		r4, [PC, #XX]		// load command
 	0x19, 0x4D,				// ldr		r5, [PC, #XX]		// load cnt
-	// 14 bytes above
+	0x15, 0x4E,				// ldr		r6, [PC, #XX]		// laod address of FMA
+	// 16 bytes above
 							// clear_sync:
-	0x1A, 0xA0,				// add		r0, PC, #XX			// load address of sync
+	0x19, 0xA0,				// add		r0, PC, #XX			// load address of sync
 	0x00, 0x21,				// mov		r1, #0
 	0x01, 0x60,				// str		r1, [r0]
-	// 20 bytes above
+	// 22 bytes above
 							// do_operation:
-	0x13, 0x48,				// ldr		r0, [PC, #XX]		// load address of FMA
+	0x30, 0x46,				// mov		r0, r6				// load address of FMA
 	0x02, 0x60,				// str		r2, [r0]			// FMA = tgt_addr
 	0x00, 0x1D,				// adds		r0, r0, #4			// &FMD = &FMA + 4
 	0x19, 0x68,				// ldr		r1, [r3]			// load src_data
 	0x01, 0x60,				// str		r1, [r0]			// FMD = *str_data
 	0x00, 0x1D,				// adds		r0, r0, #4			// &FMC = &FMD + 4
 	0x04, 0x60,				// str		r4, [r0]			// FMC = command
-	// 34 bytes above
+	// 36 bytes above
 							// wait_operation_finish:
 	0x01, 0x68,				// ldr		r1, [r0]			// r1 = FMC
 	0x21, 0x40,				// ands		r1, r1, r4			// r1 = r1 & command
 	0xFC, 0xD1,				// bne		wait_operation_finish
-	// 40 bytes above
+	// 42 bytes above
 							// adjust_param:
 	0x12, 0x1D,				// adds		r2, r2, #4			// tgt_addr + 4
 	0x1B, 0x1D,				// adds		r3, r3, #4			// src_addr + 4
 	0x6D, 0x1E,				// subs		r5, r5, #1			// cnt - 1
-	// 46 bytes above
-	0xF0, 0xD1,				// bne		do_operation
-							// clear_busy:
-	0x12, 0xA0,				// add		r0, PC, #XX			// load address of sync
-	0x00, 0x21,				// mov		r1, #0
+	// 48 bytes above
+	0xF1, 0xD1,				// bne		do_operation
+							// adjust_iap_cnt:
+	0x12, 0xA0,				// add		r0, PC, #XX			// load address of iap_cnt
+	0x01, 0x68,				// ldr		r1, [r0]
+	0x49, 0x1C,				// adds		r1, r1, #1
 	0x01, 0x60,				// str		r1, [r0]
 							// wait_next_run:
-	0xE3, 0xE7,				// b		wait_start
+	0xE1, 0xE7,				// b		wait_start
 	0xFE, 0xE7,				// b		$
-	// 52 bytes above
+	// 62 bytes above
 	// fill
 	0x00, 0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00,
@@ -124,8 +129,7 @@ static uint8_t iap_code[] =
 	0x00, 0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00,
-	0x00, 0x00, 0x00, 0x00,
-	0x00, 0x00,
+	0x00, 0x00, 
 	// 100 bytes above
 	// parameters
 	0x00, 0x00, 0x00, 0x00,	// FMA_addr
@@ -134,7 +138,7 @@ static uint8_t iap_code[] =
 	0x00, 0x00, 0x00, 0x00,	// command
 	0x00, 0x00, 0x00, 0x00,	// cnt
 	0x00, 0x00, 0x00, 0x00,	// sync
-	0x00, 0x00, 0x00, 0x00	// idle(0)/busy(1)/error(>1)
+	0x00, 0x00, 0x00, 0x00	// iap_cnt
 };
 
 struct lm3sswj_iap_cmd_t
@@ -146,158 +150,55 @@ struct lm3sswj_iap_cmd_t
 	uint32_t cnt;
 };
 
-static RESULT lm3sswj_debug_info(void)
+static RESULT lm3sswj_iap_poll_finish(uint32_t cnt_idx, uint8_t *fail)
 {
-	uint32_t reg;
-	uint8_t i;
-	uint8_t *buffer;
-	RESULT ret = ERROR_OK;
-	
-	buffer = (uint8_t *)malloc(sizeof(iap_code));
-	if (NULL == buffer)
-	{
-		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-		ret = ERRCODE_NOT_ENOUGH_MEMORY;
-		goto end;
-	}
-	
-	LOG_INFO("report to author on this message.");
-	
-	if (ERROR_OK != cm3_dp_halt())
-	{
-		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "halt lpc1000");
-		ret = ERRCODE_FAILURE_OPERATION;
-		goto end;
-	}
-	
-	for (i = 0; i < 13; i++)
-	{
-		reg = 0;
-		if (ERROR_OK != cm3_read_core_register(i, &reg))
-		{
-			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read register");
-			ret = ERRCODE_FAILURE_OPERATION;
-			goto end;
-		}
-		LOG_INFO("r%d: %08X", i, reg);
-	}
-	reg = 0;
-	if (ERROR_OK != cm3_read_core_register(CM3_COREREG_SP, &reg))
-	{
-		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read sp");
-		ret = ERRCODE_FAILURE_OPERATION;
-		goto end;
-	}
-	LOG_INFO(INFOMSG_REG_08X, "sp", reg);
-	reg = 0;
-	if (ERROR_OK != cm3_read_core_register(CM3_COREREG_LR, &reg))
-	{
-		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read lr");
-		ret = ERRCODE_FAILURE_OPERATION;
-		goto end;
-	}
-	LOG_INFO(INFOMSG_REG_08X, "lr", reg);
-	reg = 0;
-	if (ERROR_OK != cm3_read_core_register(CM3_COREREG_PC, &reg))
-	{
-		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read pc");
-		ret = ERRCODE_FAILURE_OPERATION;
-		goto end;
-	}
-	LOG_INFO(INFOMSG_REG_08X, "pc", reg);
-	
-	LOG_INFO("SRAM dump at 0x%08X:", LM3S_IAP_BASE);
-	if (ERROR_OK != adi_memap_read_buf(LM3S_IAP_BASE, buffer, 
-													sizeof(iap_code)))
-	{
-		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read sram");
-		ret = ERRCODE_FAILURE_OPERATION;
-		goto end;
-	}
-	LOG_BYTE_BUF(buffer, sizeof(iap_code), LOG_INFO, "%02X", 16);
-	
-end:
-	if (buffer != NULL)
-	{
-		free(buffer);
-		buffer = NULL;
-	}
-	
-	return ret;
-}
-
-static RESULT lm3sswj_iap_run(struct lm3sswj_iap_cmd_t * cmd)
-{
-	uint32_t buff_tmp[7];
-	
-	memset(buff_tmp, 0, sizeof(buff_tmp));
-	buff_tmp[0] = cmd->FMA_addr;
-	buff_tmp[1] = cmd->tgt_addr;
-	buff_tmp[2] = cmd->src_addr;
-	buff_tmp[3] = cmd->command;
-	buff_tmp[4] = cmd->cnt;
-	buff_tmp[5] = 1;				// sync
-	buff_tmp[6] = 1;				// busy
-	
-	// write iap command with sync to target SRAM
-	// sync is 4-byte AFTER command in sram
-	if (ERROR_OK != adi_memap_write_buf(LM3S_IAP_COMMAND_ADDR, 
-										(uint8_t*)buff_tmp, sizeof(buff_tmp)))
-	{
-		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "load iap cmd to SRAM");
-		return ERRCODE_FAILURE_OPERATION;
-	}
-	
-	return ERROR_OK;
-}
-
-static RESULT lm3sswj_iap_poll_result(uint32_t *result, uint8_t *fail)
-{
-	uint32_t buff_tmp[2];
+	uint32_t iap_cnt;
 	
 	*fail = 0;
 	
-	// read result and sync
-	// sync is 4-byte BEFORE result
-	if (ERROR_OK != adi_memap_read_buf(LM3S_IAP_SYNC_ADDR, 
-								(uint8_t *)buff_tmp, sizeof(buff_tmp)))
+	// read busy
+	if (ERROR_OK != adi_memap_read_reg(LM3S_IAP_CNT_ADDR, &iap_cnt, 1))
 	{
 		*fail = 1;
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read iap sync");
 		return ERRCODE_FAILURE_OPERATION;
 	}
-	if (0 == buff_tmp[0])
+	if (iap_cnt > lm3sswj_iap_cnt)
 	{
-		if (buff_tmp[1] > 1)
-		{
-			// error
-			*fail = 1;
-			lm3sswj_debug_info();
-			LOG_ERROR(ERRMSG_FAILURE_OPERATION_ERRCODE, "call iap", 
-						buff_tmp[1]);
-			return ERRCODE_FAILURE_OPERATION;
-		}
-		else
-		{
-			*result = buff_tmp[1];
-			
-			if (1 == buff_tmp[1])
-			{
-				// busy
-				return ERROR_FAIL;
-			}
-			else
-			{
-				// idle
-				return ERROR_OK;
-			}
-		}
+		*fail = 1;
+		cm3_dump(LM3S_IAP_BASE, sizeof(iap_code));
+		return ERROR_FAIL;
+	}
+	if (iap_cnt == cnt_idx)
+	{
+		return ERROR_OK;
 	}
 	
 	return ERROR_FAIL;
 }
 
-static RESULT lm3sswj_iap_wait_ready(uint32_t *result)
+static RESULT lm3sswj_iap_poll_param_taken(uint8_t *fail)
+{
+	uint32_t sync;
+	
+	*fail = 0;
+	
+	// read sync
+	if (ERROR_OK != adi_memap_read_reg(LM3S_IAP_SYNC_ADDR, &sync, 1))
+	{
+		*fail = 1;
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read iap sync");
+		return ERRCODE_FAILURE_OPERATION;
+	}
+	if (0 == sync)
+	{
+		return ERROR_OK;
+	}
+	
+	return ERROR_FAIL;
+}
+
+static RESULT lm3sswj_iap_wait_param_taken(void)
 {
 	uint8_t fail = 0;
 	uint32_t start, end;
@@ -305,11 +206,11 @@ static RESULT lm3sswj_iap_wait_ready(uint32_t *result)
 	start = get_time_in_ms();
 	while (1)
 	{
-		if (ERROR_OK != lm3sswj_iap_poll_result(result, &fail))
+		if (ERROR_OK != lm3sswj_iap_poll_param_taken(&fail))
 		{
 			if (fail)
 			{
-				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "poll iap result");
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "poll iap param taken");
 				return ERROR_FAIL;
 			}
 			else
@@ -318,8 +219,8 @@ static RESULT lm3sswj_iap_wait_ready(uint32_t *result)
 				// wait 1s at most
 				if ((end - start) > 1000)
 				{
-					lm3sswj_debug_info();
-					LOG_ERROR(ERRMSG_TIMEOUT, "wait for iap ready");
+					cm3_dump(LM3S_IAP_BASE, sizeof(iap_code));
+					LOG_ERROR(ERRMSG_TIMEOUT, "wait for iap param taken");
 					return ERRCODE_FAILURE_OPERATION;
 				}
 			}
@@ -333,10 +234,76 @@ static RESULT lm3sswj_iap_wait_ready(uint32_t *result)
 	return ERROR_OK;
 }
 
-static RESULT lm3sswj_iap_call(struct lm3sswj_iap_cmd_t *cmd, uint32_t *result)
+static RESULT lm3sswj_iap_wait_finish(uint32_t cnt_idx)
+{
+	uint8_t fail = 0;
+	uint32_t start, end;
+	
+	start = get_time_in_ms();
+	while (1)
+	{
+		if (ERROR_OK != lm3sswj_iap_poll_finish(cnt_idx, &fail))
+		{
+			if (fail)
+			{
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "poll iap finish");
+				return ERROR_FAIL;
+			}
+			else
+			{
+				end = get_time_in_ms();
+				// wait 1s at most
+				if ((end - start) > 1000)
+				{
+					cm3_dump(LM3S_IAP_BASE, sizeof(iap_code));
+					LOG_ERROR(ERRMSG_TIMEOUT, "wait for iap finish");
+					return ERRCODE_FAILURE_OPERATION;
+				}
+			}
+		}
+		else
+		{
+			break;
+		}
+	}
+	
+	return ERROR_OK;
+}
+
+static RESULT lm3sswj_iap_run(struct lm3sswj_iap_cmd_t * cmd)
+{
+	uint32_t buff_tmp[6];
+	
+	if (ERROR_OK != lm3sswj_iap_wait_param_taken())
+	{
+		return ERROR_FAIL;
+	}
+	
+	memset(buff_tmp, 0, sizeof(buff_tmp));
+	buff_tmp[0] = cmd->FMA_addr;
+	buff_tmp[1] = cmd->tgt_addr;
+	buff_tmp[2] = cmd->src_addr;
+	buff_tmp[3] = cmd->command;
+	buff_tmp[4] = cmd->cnt;
+	buff_tmp[5] = 1;				// sync
+	
+	// write iap command with sync to target SRAM
+	// sync is 4-byte AFTER command in sram
+	if (ERROR_OK != adi_memap_write_buf(LM3S_IAP_COMMAND_ADDR, 
+										(uint8_t*)buff_tmp, sizeof(buff_tmp)))
+	{
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "load iap cmd to SRAM");
+		return ERRCODE_FAILURE_OPERATION;
+	}
+	lm3sswj_iap_cnt++;
+	
+	return ERROR_OK;
+}
+
+static RESULT lm3sswj_iap_call(struct lm3sswj_iap_cmd_t *cmd)
 {	
 	if ((ERROR_OK != lm3sswj_iap_run(cmd)) 
-		|| (ERROR_OK != lm3sswj_iap_wait_ready(result)))
+		|| (ERROR_OK != lm3sswj_iap_wait_finish(lm3sswj_iap_cnt)))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "run iap command");
 		return ERROR_FAIL;
@@ -439,7 +406,6 @@ LEAVE_PROGRAM_MODE_HANDLER(lm3sswj)
 ERASE_TARGET_HANDLER(lm3sswj)
 {
 	RESULT ret= ERROR_OK;
-	uint32_t result;
 	struct lm3sswj_iap_cmd_t cmd;
 	
 	REFERENCE_PARAMETER(size);
@@ -454,8 +420,7 @@ ERASE_TARGET_HANDLER(lm3sswj)
 		cmd.src_addr = 0;
 		cmd.command = LM3S_FLASHCTL_FMC_MERASE | LM3S_FLASHCTL_FMC_KEY;
 		cmd.cnt = 1;
-		result = 0;
-		ret = lm3sswj_iap_call(&cmd, &result);
+		ret = lm3sswj_iap_call(&cmd);
 		break;
 	default:
 		ret = ERROR_FAIL;
@@ -467,7 +432,6 @@ ERASE_TARGET_HANDLER(lm3sswj)
 WRITE_TARGET_HANDLER(lm3sswj)
 {
 	RESULT ret = ERROR_OK;
-	uint32_t result;
 	struct lm3sswj_iap_cmd_t cmd;
 	uint32_t page_size = 512;
 	uint8_t ticktock = 0;
@@ -495,7 +459,6 @@ WRITE_TARGET_HANDLER(lm3sswj)
 		cmd.src_addr = LM3S_SRAM_ADDR + 1024;
 		cmd.command = LM3S_FLASHCTL_FMC_WRITE | LM3S_FLASHCTL_FMC_KEY;
 		cmd.cnt = page_size / 4;
-		result = 0;
 		if (ERROR_OK != lm3sswj_iap_run(&cmd))
 		{
 			ret = ERROR_FAIL;
@@ -529,15 +492,6 @@ WRITE_TARGET_HANDLER(lm3sswj)
 				}
 			}
 			
-			// wait ready
-			result = 0;
-			if (ERROR_OK != lm3sswj_iap_wait_ready(&result))
-			{
-				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "run iap");
-				return ERRCODE_FAILURE_OPERATION;
-			}
-			
-			cmd.FMA_addr = LM3S_FLASHCTL_FMA;
 			cmd.tgt_addr = addr;
 			if (ticktock & 1)
 			{
@@ -547,21 +501,24 @@ WRITE_TARGET_HANDLER(lm3sswj)
 			{
 				cmd.src_addr = LM3S_SRAM_ADDR + 1024;				// Source RAM address
 			}
-			cmd.command = LM3S_FLASHCTL_FMC_WRITE | LM3S_FLASHCTL_FMC_KEY;
-			cmd.cnt = page_size / 4;
-			result = 0;
 			if (ERROR_OK != lm3sswj_iap_run(&cmd))
 			{
 				ret = ERROR_FAIL;
 				break;
 			}
 			
+			// wait ready
+			if (ERROR_OK != lm3sswj_iap_wait_finish(lm3sswj_iap_cnt - 1))
+			{
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "run iap");
+				return ERRCODE_FAILURE_OPERATION;
+			}
+			
 			size -= page_size;
 			pgbar_update(page_size);
 		}
 		// wait ready
-		result = 0;
-		if (ERROR_OK != lm3sswj_iap_wait_ready(&result))
+		if (ERROR_OK != lm3sswj_iap_wait_finish(lm3sswj_iap_cnt))
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "run iap");
 			return ERRCODE_FAILURE_OPERATION;

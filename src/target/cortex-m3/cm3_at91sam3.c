@@ -178,86 +178,6 @@ struct at91sam3swj_iap_reply_t
 };
 
 #if 0
-static RESULT at91sam3swj_debug_info(void)
-{
-	uint32_t reg;
-	uint8_t i;
-	uint8_t *buffer;
-	RESULT ret = ERROR_OK;
-	
-	buffer = (uint8_t *)malloc(sizeof(iap_code) + 256);
-	if (NULL == buffer)
-	{
-		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-		ret = ERRCODE_NOT_ENOUGH_MEMORY;
-		goto end;
-	}
-	
-	LOG_INFO("report to author on this message.");
-	
-	if (ERROR_OK != cm3_dp_halt())
-	{
-		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "halt at91sam3");
-		ret = ERRCODE_FAILURE_OPERATION;
-		goto end;
-	}
-	
-	for (i = 0; i < 13; i++)
-	{
-		reg = 0;
-		if (ERROR_OK != cm3_read_core_register(i, &reg))
-		{
-			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read register");
-			ret = ERRCODE_FAILURE_OPERATION;
-			goto end;
-		}
-		LOG_INFO("r%d: %08X", i, reg);
-	}
-	reg = 0;
-	if (ERROR_OK != cm3_read_core_register(CM3_COREREG_SP, &reg))
-	{
-		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read sp");
-		ret = ERRCODE_FAILURE_OPERATION;
-		goto end;
-	}
-	LOG_INFO(INFOMSG_REG_08X, "sp", reg);
-	reg = 0;
-	if (ERROR_OK != cm3_read_core_register(CM3_COREREG_LR, &reg))
-	{
-		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read lr");
-		ret = ERRCODE_FAILURE_OPERATION;
-		goto end;
-	}
-	LOG_INFO(INFOMSG_REG_08X, "lr", reg);
-	reg = 0;
-	if (ERROR_OK != cm3_read_core_register(CM3_COREREG_PC, &reg))
-	{
-		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read pc");
-		ret = ERRCODE_FAILURE_OPERATION;
-		goto end;
-	}
-	LOG_INFO(INFOMSG_REG_08X, "pc", reg);
-	
-	LOG_INFO("SRAM dump at 0x%08X:", AT91SAM3_IAP_BASE);
-	if (ERROR_OK != adi_memap_read_buf(AT91SAM3_IAP_BASE, buffer, 
-													sizeof(iap_code) + 256))
-	{
-		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read sram");
-		ret = ERRCODE_FAILURE_OPERATION;
-		goto end;
-	}
-	LOG_BYTE_BUF(buffer, sizeof(iap_code) + 256, LOG_INFO, "%02X", 16);
-	
-end:
-	if (buffer != NULL)
-	{
-		free(buffer);
-		buffer = NULL;
-	}
-	
-	return ret;
-}
-
 static RESULT at91sam3swj_iap_run(struct at91sam3swj_iap_command_t *cmd)
 {
 	uint32_t buff_tmp[9];
@@ -325,7 +245,7 @@ static RESULT at91sam3swj_iap_poll_result(struct at91sam3swj_iap_reply_t *reply,
 		if (buff_tmp[0] != 1)
 		{
 			*fail = 1;
-			at91sam3swj_debug_info();
+			cm3_dump(AT91SAM3_IAP_BASE, sizeof(iap_code) + 256);
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION_ERRCODE, "call iap", 
 						buff_tmp[1]);
 			return ERRCODE_FAILURE_OPERATION;
@@ -363,7 +283,7 @@ static RESULT at91sam3swj_iap_wait_ready(struct at91sam3swj_iap_reply_t *reply)
 				// wait 1s at most
 				if ((end - start) > 1000)
 				{
-					at91sam3swj_debug_info();
+					cm3_dump(AT91SAM3_IAP_BASE, sizeof(iap_code) + 256);
 					LOG_ERROR(ERRMSG_TIMEOUT, "wait for iap ready");
 					return ERRCODE_FAILURE_OPERATION;
 				}
