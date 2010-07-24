@@ -82,6 +82,7 @@ RESULT cm3_read_core_register(uint8_t reg_idx, uint32_t *value);
 RESULT cm3_write_core_register(uint8_t reg_idx, uint32_t *value);
 
 uint32_t cm3_get_max_block_size(uint32_t address);
+RESULT cm3_dump(uint32_t addr, uint32_t size);
 
 #endif	// __CM3_COMMON_H_INCLUDED__
 
