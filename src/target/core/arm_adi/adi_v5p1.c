@@ -685,8 +685,8 @@ RESULT adi_init(struct program_context_t *context, adi_dpif_t *interf,
 	uint32_t tmp;
 	uint8_t cnt, retry = 3;
 	
-	adi_dp_if = interf;
 init:
+	adi_dp_if = interf;
 	// initialize interface
 	if (ERROR_OK != adi_dpif_init(context, interf))
 	{
