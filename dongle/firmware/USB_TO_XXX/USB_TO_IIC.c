@@ -23,14 +23,12 @@
 #	include "PowerExt.h"
 #endif
 
-extern uint16_t dead_cnt;
-
 void USB_TO_IIC_ProcessCmd(uint8* dat, uint16 len)
 {
 	uint16 index, device_num, length;
 	uint8 command;
 
-	uint16 result, data_len, result_index;
+	uint16 result, data_len, result_index, actual_len;
 
 	index = 0;
 	while(index < len)
@@ -57,8 +55,8 @@ void USB_TO_IIC_ProcessCmd(uint8* dat, uint16 len)
 
 			break;
 		case USB_TO_XXX_CONFIG:
-			dead_cnt = dat[index + 2] + (dat[index + 3] << 8);
-			if(IIC_Init(dat[index + 0] + (dat[index + 1] << 8), dat[index + 4] + (dat[index + 5] << 8)) == 0)
+			if(IIC_Init(dat[index + 0] + (dat[index + 1] << 8), dat[index + 2] + (dat[index + 3] << 8), 
+						dat[index + 4] + (dat[index + 5] << 8)) == 0)
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
@@ -83,16 +81,10 @@ void USB_TO_IIC_ProcessCmd(uint8* dat, uint16 len)
 			result = IIC_Read(	dat[index + 0],							// chip_addr
 								&buffer_reply[rep_len + 1],				// data
 								data_len,								// data_len
-								dat[index + 3]);						// stop
+								dat[index + 3], 						// stop
+								&actual_len);
 
-			if(result == data_len)
-			{
-				buffer_reply[result_index] = USB_TO_XXX_OK;
-			}
-			else
-			{
-				buffer_reply[result_index] = USB_TO_XXX_FAILED;
-			}
+			buffer_reply[result_index] = result;
 			rep_len += data_len + 1;
 
 			break;
@@ -102,16 +94,10 @@ void USB_TO_IIC_ProcessCmd(uint8* dat, uint16 len)
 			result = IIC_Write(	dat[index + 0],							// chip_addr
 								&dat[index + 4],						// data
 								data_len,								// data_len
-								dat[index + 3]);						// stop
+								dat[index + 3], 						// stop
+								&actual_len);
 
-			if(result == data_len)
-			{
-				buffer_reply[result_index] = USB_TO_XXX_OK;
-			}
-			else
-			{
-				buffer_reply[result_index] = USB_TO_XXX_FAILED;
-			}
+			buffer_reply[result_index] = result;
 			rep_len += 1;
 
 			break;

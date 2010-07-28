@@ -42,7 +42,7 @@ RESULT usbtoi2c_fini(void)
 }
 
 RESULT usbtoi2c_config(uint8_t interface_index, uint16_t kHz, 
-							uint16_t dead_cnt, uint16_t byte_interval)
+						uint16_t byte_interval, uint16_t max_dly)
 {
 #if PARAM_CHECK
 	if (interface_index > 7)
@@ -54,10 +54,10 @@ RESULT usbtoi2c_config(uint8_t interface_index, uint16_t kHz,
 	
 	versaloon_cmd_buf[0] = (kHz >> 0) & 0xFF;
 	versaloon_cmd_buf[1] = (kHz >> 8) & 0xFF;
-	versaloon_cmd_buf[2] = (dead_cnt >> 0) & 0xFF;
-	versaloon_cmd_buf[3] = (dead_cnt >> 8) & 0xFF;
-	versaloon_cmd_buf[4] = (byte_interval >> 0) & 0xFF;
-	versaloon_cmd_buf[5] = (byte_interval >> 8) & 0xFF;
+	versaloon_cmd_buf[2] = (byte_interval >> 0) & 0xFF;
+	versaloon_cmd_buf[3] = (byte_interval >> 8) & 0xFF;
+	versaloon_cmd_buf[4] = (max_dly >> 0) & 0xFF;
+	versaloon_cmd_buf[5] = (max_dly >> 8) & 0xFF;
 	
 	return usbtoxxx_conf_command(USB_TO_I2C, interface_index, 
 								 versaloon_cmd_buf, 6);

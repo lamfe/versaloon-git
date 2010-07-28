@@ -135,4 +135,5 @@ AC_OUTPUT(
     src/target/Makefile
     src/tools/Makefile
     src/programmer/Makefile
+    src/scripts/Makefile
   )

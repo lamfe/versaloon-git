@@ -49,6 +49,7 @@
 #include "programmer.h"
 #include "target.h"
 #include "hex.h"
+#include "scripts.h"
 
 #define OPTSTR			"hvS:P:s:c:Mp:U:D:Ld:Go:F:m:x:C:I:O:J:Zb:V:t:K:W:A"
 static const struct option long_opts[] =
@@ -792,7 +793,7 @@ Parse_File:
 				free_all_and_exit(EXIT_FAILURE);
 			}
 			
-			programmer_run_script(optarg);
+			misc_run_script(optarg);
 			
 			cur_programmer->fini();
 			free_all_and_exit(EXIT_SUCCESS);
