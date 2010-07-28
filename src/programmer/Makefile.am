@@ -4,7 +4,8 @@ INCLUDES = \
     -I$(top_srcdir)/src/tools/pgbar \
     -I$(top_srcdir)/src/driver \
     -I$(top_srcdir)/src/driver/usb \
-    -I$(top_srcdir)/src/driver/timer
+    -I$(top_srcdir)/src/driver/timer \
+    -I$(top_srcdir)/src/scripts
 
 METASOURCES = AUTO
 noinst_LIBRARIES = libprog.a

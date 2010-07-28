@@ -28,20 +28,6 @@ typedef RESULT (*jtag_callback_t)(enum jtag_irdr_t cmd, uint32_t ir,
 								  uint8_t *dest_buffer, uint8_t *src_buffer, 
 								  uint16_t buffer_len, uint16_t *processed);
 
-// msic_cmd
-struct misc_cmd_t
-{
-	const char *cmd_name;
-	const char *help_str;
-	RESULT (*processor)(uint8_t argc, const char *argv[]);
-};
-struct misc_param_t
-{
-	const char *param_name;
-	const char *help_str;
-	uint32_t value;
-};
-
 struct interface_usart_t
 {
 	RESULT (*init)(void);
@@ -174,7 +160,7 @@ struct interface_i2c_t
 {
 	RESULT (*init)(void);
 	RESULT (*fini)(void);
-	RESULT (*config)(uint16_t kHz, uint16_t dead_cnt, uint16_t byte_interval);
+	RESULT (*config)(uint16_t kHz, uint16_t byte_interval, uint16_t max_dly);
 	RESULT (*read)(uint16_t chip_addr, uint8_t *data, uint16_t data_len, 
 					uint8_t stop);
 	RESULT (*write)(uint16_t chip_addr, uint8_t *data, uint16_t data_len, 

@@ -1,4 +1,4 @@
-SUBDIRS = driver programmer target tools
+SUBDIRS = driver programmer target tools scripts
 
 bin_PROGRAMS = vsprog
 
@@ -17,7 +17,8 @@ INCLUDES = \
     -I$(top_srcdir)/src/tools/strparser \
     -I$(top_srcdir)/src/target \
     -I$(top_srcdir)/src/driver \
-    -I$(top_srcdir)/src/programmer
+    -I$(top_srcdir)/src/programmer \
+    -I$(top_srcdir)/src/scripts
 
 vsprog_CPPFLAGS = @CPPFLAGS@
 vsprog_CPPFLAGS += -DPKGBLDDATE=\"`date +%F-%R`\"
@@ -35,6 +36,7 @@ vsprog_LDADD = \
     $(top_builddir)/src/target/libtgt.a \
     $(top_builddir)/src/tools/libtool.a \
     $(top_builddir)/src/driver/libdrv.a \
+    $(top_builddir)/src/scripts/libscripts.a \
     $(MINGWLDADD) -lusb $(XML_LIBS)
 
 MAINTAINERCLEANFILES = Makefile.in

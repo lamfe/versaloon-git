@@ -17,8 +17,7 @@
 #define IIC_ADDR_MASK				0x03FF
 #define IIC_ADDR_10BIT				0x8000
 
-uint8 IIC_Init(uint16 kHz, uint16 ByteInterval);
+uint8 IIC_Init(uint16 kHz, uint16 ByteInterval, uint16 max_dly);
 void IIC_Fini(void);
-uint8 IIC_SetParameter(uint16 kHz, uint16 ByteInterval);
-uint16 IIC_Write(uint8 chip_addr, uint8 *data, uint16 data_len, uint8 stop);
-uint16 IIC_Read(uint8 chip_addr, uint8 *data, uint16 data_len, uint8 stop);
+uint8 IIC_Write(uint8 chip_addr, uint8 *data, uint16 data_len, uint8 stop, uint16_t *actual_len);
+uint8 IIC_Read(uint8 chip_addr, uint8 *data, uint16 data_len, uint8 stop, uint16_t *actual_len);

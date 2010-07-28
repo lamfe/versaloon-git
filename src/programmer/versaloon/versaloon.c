@@ -1114,10 +1114,10 @@ RESULT versaloon_i2c_fini(void)
 {
 	return usbtoi2c_fini();
 }
-RESULT versaloon_i2c_config(uint16_t kHz, uint16_t dead_cnt, 
-								uint16_t byte_interval)
+RESULT versaloon_i2c_config(uint16_t kHz, uint16_t byte_interval, 
+							uint16_t max_dly)
 {
-	return usbtoi2c_config(VERSALOON_I2C_PORT, kHz, dead_cnt, byte_interval);
+	return usbtoi2c_config(VERSALOON_I2C_PORT, kHz, byte_interval, max_dly);
 }
 RESULT versaloon_i2c_read(uint16_t chip_addr, uint8_t *data, 
 							uint16_t data_len, uint8_t stop)
