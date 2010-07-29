@@ -132,8 +132,8 @@ void SWD_StopClock(void)
 
 uint8 SWD_Transaction(uint8 request, uint32 *buff)
 {
-	uint32 reply;
-	uint8 read = request & SWD_TRANS_RnW, parity, data_parity;
+	uint32 reply, dummy;
+	uint8 read = request & SWD_TRANS_RnW, parity;
 	uint16 retry = 0;
 
 SWD_RETRY:
@@ -153,9 +153,9 @@ SWD_RETRY:
 		SWD_SeqIn((uint8*)&reply, 3);
 		// receive data and parity
 		parity = SWD_SeqIn((uint8*)buff, 32);
-		parity += SWD_SeqIn((uint8*)&data_parity, 1);
+		parity += SWD_SeqIn((uint8*)&dummy, 1);
 		// trn
-		SWD_SeqIn((uint8*)&data_parity, SWD_Trn);
+		SWD_SeqIn((uint8*)&dummy, SWD_Trn);
 
 		// set swdio output to output stop clock
 		SWD_SWDIO_SET();
