@@ -7,7 +7,9 @@ INCLUDES = \
     -I$(top_srcdir)/src/tools/filelist \
     -I$(top_srcdir)/src/tools/hex \
     -I$(top_srcdir)/src/tools/fileparser \
-    -I$(top_srcdir)/src/tools/bufffunc
+    -I$(top_srcdir)/src/tools/bufffunc \
+    -I$(top_srcdir)/src/tools/strparser \
+    -I$(top_srcdir)/src/scripts
 
 METASOURCES = AUTO
 noinst_LIBRARIES = libtool.a

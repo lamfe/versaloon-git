@@ -24,8 +24,7 @@
 extern struct program_area_map_t avrxmega_program_area_map[];
 extern const struct program_mode_t avrxmega_program_mode[];
 extern struct program_functions_t avrxmega_program_functions;
-
-PARSE_ARGUMENT_HANDLER(avrxmega);
+extern const struct misc_cmd_t avrxmega_notifier[];
 
 #endif /* __AVRXMEGA_H_INCLUDED__ */
 

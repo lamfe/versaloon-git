@@ -30,12 +30,10 @@
 #include "app_log.h"
 #include "prog_interface.h"
 
-#include "memlist.h"
-#include "pgbar.h"
-
 #include "vsprog.h"
 #include "programmer.h"
 #include "target.h"
+#include "scripts.h"
 
 #include "c8051f.h"
 #include "c8051f_internal.h"

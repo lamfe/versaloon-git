@@ -30,6 +30,50 @@ struct misc_param_t
 	uint32_t value;
 };
 
+#define MISC_HANDLER(name)						\
+	static RESULT (name)(uint16_t argc, const char *argv[])
+
+#define MISC_CMD(name, helpstr, handler)		\
+	{\
+		(name),\
+		(helpstr),\
+		(handler)\
+	}
+#define MISC_CMD_END							MISC_CMD(NULL, NULL, NULL)
+#define MISC_PARAM(name, helpstr, default)		\
+	{\
+		(name),\
+		(helpstr),\
+		(default)\
+	}
+#define MISC_PARAM_END							MISC_PARAM(NULL, NULL, 0)
+
+#define MISC_CHECK_ARGC(n)						\
+	if (argc != (n))\
+	{\
+		LOG_ERROR(ERRMSG_INVALID_CMD, argv[0]);\
+		misc_print_help(argv[0]);\
+		return ERROR_FAIL;\
+	}
+#define MISC_CHECK_ARGC_2(n1, n2)				\
+	if ((argc != (n1)) && (argc != (n2)))\
+	{\
+		LOG_ERROR(ERRMSG_INVALID_CMD, argv[0]);\
+		misc_print_help(argv[0]);\
+		return ERROR_FAIL;\
+	}
+#define MISC_CHECK_ARGC_MIN(n)					\
+	if (argc < (n))\
+	{\
+		LOG_ERROR(ERRMSG_INVALID_CMD, argv[0]);\
+		misc_print_help(argv[0]);\
+		return ERROR_FAIL;\
+	}
+
+RESULT misc_cmd_supported(const struct misc_cmd_t *notifier, char *notify_cmd);
+RESULT misc_call_notifier(const struct misc_cmd_t *notifier, 
+							char *notify_cmd, char *notify_param);
 RESULT misc_print_help(const char *name);
 RESULT misc_run_script(char *cmd);
+RESULT misc_run_cmd(uint16_t argc, const char *argv[]);
 

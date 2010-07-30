@@ -28,7 +28,28 @@
 #include "app_log.h"
 #include "app_err.h"
 
+#include "scripts.h"
 #include "filelist.h"
+#include "strparser.h"
+
+MISC_HANDLER(filelist_add_inputfile);
+MISC_HANDLER(filelist_add_outputfile);
+struct misc_cmd_t filelist_cmd[] = 
+{
+	MISC_CMD(	"input-file",
+				"add input file, format: input-file/I FILE[@SEG,ADDR]",
+				filelist_add_inputfile),
+	MISC_CMD(	"I",
+				"add input file, format: input-file/I FILE[@SEG,ADDR]",
+				filelist_add_inputfile),
+	MISC_CMD(	"output-file",
+				"add output file, format: output-file/O FILE[@SEG,ADDR]",
+				filelist_add_outputfile),
+	MISC_CMD(	"O",
+				"add output file, format: output-file/O FILE[@SEG,ADDR]",
+				filelist_add_outputfile),
+	MISC_CMD_END
+};
 
 static void FILELIST_InsertLast(struct filelist *fl, struct filelist *newitem)
 {
@@ -140,5 +161,105 @@ void FILELIST_Free(struct filelist **fl)
 	}
 	tmp1 = tmp2 = NULL;
 	*fl = NULL;
+}
+
+extern struct filelist *fl_in, *fl_out;
+static RESULT filelist_add_file(struct filelist **fl, char *file)
+{
+	uint32_t seg_offset, addr_offset;
+	uint32_t i;
+	
+	for (i = strlen(file) - 1; i > 0; i--)
+	{
+		if ('@' == file[i])
+		{
+			break;
+		}
+	}
+	seg_offset = addr_offset = 0;
+	if (i > 0)
+	{
+		uint32_t buff[2];
+		char format[] = "%4d,%4d";
+		
+		file[i] = '\0';
+		if (ERROR_OK != strparser_parse(&file[i + 1], format, 
+											(uint8_t*)buff, sizeof(buff)))
+		{
+			LOG_ERROR(ERRMSG_NOT_SUPPORT_AS, &file[i + 1], format);
+			return ERROR_FAIL;
+		}
+		seg_offset = buff[0];
+		addr_offset = buff[1];
+	}
+	
+	if (ERROR_OK != FILELIST_Add(fl, file, seg_offset, addr_offset))
+	{
+		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "add file: ", file);
+		return ERROR_FAIL;
+	}
+	return ERROR_OK;
+}
+
+static RESULT filelist_check_collision(struct filelist *fl1, 
+										struct filelist *fl2)
+{
+	struct filelist *fl_out_tmp = fl1;
+	
+	while (fl_out_tmp != NULL)
+	{
+		struct filelist *fl_in_tmp = fl2;
+		
+		while (fl_in_tmp != NULL)
+		{
+			if (!strcmp(fl_out_tmp->path, fl_in_tmp->path))
+			{
+				return ERROR_FAIL;
+			}
+			
+			fl_in_tmp = FILELIST_GetNext(fl_in_tmp);
+		}
+		
+		fl_out_tmp = FILELIST_GetNext(fl_out_tmp);
+	}
+	
+	return ERROR_OK;
+}
+
+MISC_HANDLER(filelist_add_inputfile)
+{
+	MISC_CHECK_ARGC(2);
+	if (ERROR_OK != filelist_add_file(&fl_in, (char *)argv[1]))
+	{
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "add input file");
+		return ERROR_FAIL;
+	}
+	if (ERROR_OK != filelist_check_collision(fl_in, fl_out))
+	{
+		LOG_ERROR("inputfile CANNOT be meanwhile outputfile!");
+		return ERROR_FAIL;
+	}
+	if ((fl_in != NULL) && (ERROR_OK != FILELIST_Open(fl_in, "rb")))
+	{
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "open input file");
+		return ERROR_FAIL;
+	}
+	return ERROR_OK;
+}
+
+MISC_HANDLER(filelist_add_outputfile)
+{
+	MISC_CHECK_ARGC(2);
+	if (ERROR_OK != filelist_add_file(&fl_out, (char *)argv[1]))
+	{
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "add output file");
+		return ERROR_FAIL;
+	}
+	if (ERROR_OK != filelist_check_collision(fl_in, fl_out))
+	{
+		LOG_ERROR("inputfile CANNOT be meanwhile outputfile!");
+		return ERROR_FAIL;
+	}
+	return ERROR_OK;
 }
 

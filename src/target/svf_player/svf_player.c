@@ -31,14 +31,13 @@
 #include "app_log.h"
 #include "prog_interface.h"
 
-#include "memlist.h"
 #include "filelist.h"
 #include "pgbar.h"
 
 #include "vsprog.h"
 #include "programmer.h"
 #include "target.h"
-
+#include "scripts.h"
 
 #include "byte_tap.h"
 #include "svf.h"
@@ -69,30 +68,24 @@ const struct program_functions_t svfp_program_functions =
 #define SVF_SET_FREQ_CMD			"FREQUENCY %.02f HZ"
 static char *first_command = NULL;
 
-static void svfp_usage(void)
+MISC_HANDLER(svfp_help)
 {
+	MISC_CHECK_ARGC(1);
 	printf("\
 Usage of %s:\n\
   -F,  --frequency <FREQUENCY>              set JTAG frequency, in KHz\n\n", 
 		   CUR_TARGET_STRING);
-}
-
-PARSE_ARGUMENT_HANDLER(svfp)
-{
-	argu = argu;
-	
-	switch (cmd)
-	{
-	case 'h':
-		svfp_usage();
-		break;
-	default:
-		return ERROR_FAIL;
-		break;
-	}
-	
 	return ERROR_OK;
 }
+
+const struct misc_cmd_t svfp_notifier[] = 
+{
+	MISC_CMD(	"help",
+				"print help information of current target for internal call",
+				svfp_help),
+	MISC_CMD_END
+};
+
 
 
 

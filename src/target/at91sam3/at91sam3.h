@@ -24,8 +24,7 @@
 extern struct program_area_map_t at91sam3_program_area_map[];
 extern const struct program_mode_t at91sam3_program_mode[];
 extern struct program_functions_t at91sam3_program_functions;
-
-PARSE_ARGUMENT_HANDLER(at91sam3);
+extern const struct misc_cmd_t at91sam3_notifier[];
 
 #endif /* __AT91SAM3_H_INCLUDED__ */
 

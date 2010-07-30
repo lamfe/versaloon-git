@@ -46,6 +46,7 @@
 #define ERRCODE_INVALID						ERROR_FAIL
 
 #define ERRMSG_INVALID_OPTION				"Invalid option: %c."
+#define ERRMSG_INVALID_OPERATION			"Invalid operation: %c."
 #define ERRMSG_INVALID_CMD					"Invalid cmd: %s."
 #define ERRCODE_INVALID_OPTION				ERROR_FAIL
 

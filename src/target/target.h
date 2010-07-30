@@ -149,6 +149,8 @@ struct program_info_t
 	uint32_t kernel_khz;
 	uint8_t wait_state;
 	struct jtag_pos_t jtag_pos;
+	uint8_t execute_flag;
+	uint32_t execute_addr;
 	
 	uint8_t *mass_product_data;
 	uint32_t mass_product_data_size;
@@ -250,14 +252,13 @@ struct program_functions_t
 	// read one page at addr
 	RESULT (*read_target)(struct program_context_t *context, char area, 
 							uint32_t addr, uint8_t *buff, uint32_t size);
+	// verify one page at addr
+//	RESULT (*verify_target)(struct program_context_t *context, char area, 
+//							uint32_t addr, uint8_t *buff, uint32_t size);
 };
 
 #define	PARSE_ARGUMENT_FUNCNAME(mod)		ASSEMBLE_FUNCNAME(mod, _parse_argument)
 #define ADJUST_SETTING_FUNCNAME(mod)		ASSEMBLE_FUNCNAME(mod, _adjust_setting)
-
-#define PARSE_ARGUMENT_HANDLER(mod)			\
-			RESULT PARSE_ARGUMENT_FUNCNAME(mod)\
-						(char cmd, const char *argu)
 #define ADJUST_SETTING_HANDLER(mod)			\
 			RESULT ADJUST_SETTING_FUNCNAME(mod)\
 						(struct program_info_t *pi, \
@@ -271,7 +272,7 @@ struct target_info_t
 	const struct program_area_map_t *program_area_map;
 	const struct program_mode_t *program_mode;
 	const struct program_functions_t *program_functions;
-	RESULT (*parse_argument)(char cmd, const char *argu);
+	const struct misc_cmd_t *notifier;
 	RESULT (*adjust_setting)(struct program_info_t *pi, 
 							struct chip_param_t *param, uint32_t program_mode);
 	

@@ -24,8 +24,7 @@
 extern const struct program_area_map_t c8051f_program_area_map[];
 extern const struct program_mode_t c8051f_program_mode[];
 extern struct program_functions_t c8051f_program_functions;
-
-PARSE_ARGUMENT_HANDLER(c8051f);
+extern const struct misc_cmd_t c8051f_notifier[];
 
 #endif /* __C8051F_H_INCLUDED__ */
 

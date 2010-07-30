@@ -24,8 +24,7 @@
 extern struct program_area_map_t avr32_program_area_map[];
 extern const struct program_mode_t avr32_program_mode[];
 extern struct program_functions_t avr32_program_functions;
-
-PARSE_ARGUMENT_HANDLER(avr32);
+extern const struct misc_cmd_t avr32_notifier[];
 
 #endif /* __AVR32_H_INCLUDED__ */
 

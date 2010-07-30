@@ -24,8 +24,7 @@
 extern const struct program_area_map_t lpc900_program_area_map[];
 extern const struct program_mode_t lpc900_program_mode[];
 extern const struct program_functions_t lpc900_program_functions;
-
-PARSE_ARGUMENT_HANDLER(lpc900);
+extern const struct misc_cmd_t lpc900_notifier[];
 
 #endif /* __LPC900_H_INCLUDED__ */
 

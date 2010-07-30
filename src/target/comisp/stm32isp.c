@@ -31,12 +31,10 @@
 #include "app_log.h"
 #include "prog_interface.h"
 
-#include "memlist.h"
-#include "pgbar.h"
-
 #include "vsprog.h"
 #include "programmer.h"
 #include "target.h"
+#include "scripts.h"
 
 #include "comisp.h"
 #include "stm32isp.h"
@@ -749,15 +747,16 @@ ENTER_PROGRAM_MODE_HANDLER(stm32isp)
 
 LEAVE_PROGRAM_MODE_HANDLER(stm32isp)
 {
+	struct program_info_t *pi = context->pi;
 	RESULT ret = ERROR_OK;
 	
-	if (comisp_execute_flag && success 
+	if (pi->execute_flag && success 
 		&& (context->op->write_operations & APPLICATION))
 	{
-		if (ERROR_OK != stm32isp_execute_code(comisp_execute_addr))
+		if (ERROR_OK != stm32isp_execute_code(pi->execute_addr))
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATE_ADDRESS, "execute code", 
-						comisp_execute_addr);
+						pi->execute_addr);
 			ret = ERROR_FAIL;
 		}
 	}

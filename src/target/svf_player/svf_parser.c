@@ -31,11 +31,10 @@
 #include "app_log.h"
 #include "prog_interface.h"
 
-#include "memlist.h"
-
 #include "vsprog.h"
 #include "programmer.h"
 #include "target.h"
+#include "scripts.h"
 
 #include "byte_tap.h"
 #include "svf.h"

@@ -37,94 +37,87 @@
 #define PARAM_NO_COMMIT						1
 struct misc_param_t misc_param[] =
 {
-	{
-		"exit_on_fail",
-		"whether to exit when execute fail",
-		0
-	},
-	{
-		"no_commit",
-		"no commit on command except commit command",
-		0
-	},
-	{
-		NULL,
-		NULL,
-		0
-	}
+	MISC_PARAM(	"exit_on_fail",
+				"whether to exit when execute fail",
+				0),
+	MISC_PARAM(	"no_commit",
+				"no commit on command except commit command",
+				0),
+	MISC_PARAM_END
 };
 
-RESULT misc_set_parameters(uint16_t argc, const char *argv[]);
-RESULT misc_help(uint16_t argc, const char *argv[]);
-RESULT misc_shell(uint16_t argc, const char *argv[]);
-RESULT misc_run(uint16_t argc, const char *argv[]);
-RESULT misc_loop(uint16_t argc, const char *argv[]);
-RESULT misc_exit(uint16_t argc, const char *argv[]);
-RESULT misc_close(uint16_t argc, const char *argv[]);
+MISC_HANDLER(misc_set_parameters);
+MISC_HANDLER(misc_help);
+MISC_HANDLER(misc_shell);
+MISC_HANDLER(misc_run);
+MISC_HANDLER(misc_loop);
+MISC_HANDLER(misc_exit);
+MISC_HANDLER(misc_close);
+MISC_HANDLER(misc_run_command);
+MISC_HANDLER(misc_log_info);
+MISC_HANDLER(misc_getchar);
+
 struct misc_cmd_t misc_generic_cmd[] = 
 {
-	// param
-	{
-		"param",
-		"set parameters, format: param NAME VALUE",
-		misc_set_parameters
-	},
-	// help
-	{
-		"help",
-		"print help message, format: help <OBJECT>",
-		misc_help
-	},
-	// shell
-	{
-		"shell",
-		"enter shell mode, format: shell",
-		misc_shell
-	},
-	// run
-	{
-		"run",
-		"run script file, format: run FILE_NAME [quiet]",
-		misc_run
-	},
-	// loop
-	{
-		"loop",
-		"loop next command, format: loop COUNT",
-		misc_loop
-	},
-	// exit
-	{
-		"exit",
-		"exit current session, format: exit",
-		misc_exit
-	},
-	// close
-	{
-		"close",
-		"close program, format: close",
-		misc_close
-	},
-	{
-		NULL,
-		NULL,
-		NULL
-	}
+	MISC_CMD(	"param",
+				"set parameters, format: param NAME VALUE",
+				misc_set_parameters),
+	MISC_CMD(	"misc-help",
+				"print misc-help message, format: misc-help <OBJECT>",
+				misc_help),
+	MISC_CMD(	"shell",
+				"enter shell mode, format: shell",
+				misc_shell),
+	MISC_CMD(	"run",
+				"run script file, format: run FILE_NAME [quiet]",
+				misc_run),
+	MISC_CMD(	"loop",
+				"loop next command, format: loop COUNT",
+				misc_loop),
+	MISC_CMD(	"exit",
+				"exit current session, format: exit",
+				misc_exit),
+	MISC_CMD(	"close",
+				"close program, format: close",
+				misc_close),
+	MISC_CMD(	"misc-cmd",
+				"run misc command, format: misc-cmd/V COMMAND",
+				misc_run_command),
+	MISC_CMD(	"V",
+				"run misc command, format: misc-cmd/V COMMAND",
+				misc_run_command),
+	MISC_CMD(	"log_info",
+				"display information, format: log_info INFO",
+				misc_log_info),
+	MISC_CMD(	"getchar",
+				"wait keyboard input, format: getchar",
+				misc_getchar),
+	MISC_CMD_END
 };
 
-extern struct misc_param_t programmer_param[];
 extern struct misc_cmd_t programmer_cmd[];
+extern struct misc_cmd_t pgbar_cmd[];
+extern struct misc_cmd_t vsprog_cmd[];
+extern struct misc_cmd_t target_cmd[];
+extern struct misc_cmd_t filelist_cmd[];
+extern struct misc_cmd_t comisp_cmd[];
+extern struct misc_cmd_t usbapi_cmd[];
 
 struct misc_param_t *misc_params_list[] = 
 {
-	misc_param,
-	programmer_param
+	misc_param
 };
 
 struct misc_cmd_t *misc_cmds_list[] = 
 {
 	misc_generic_cmd,
-	programmer_cmd
+	vsprog_cmd,
+	target_cmd,
+	pgbar_cmd,
+	filelist_cmd,
+	programmer_cmd,
+	comisp_cmd,
+	usbapi_cmd
 };
 
 static int8_t misc_exit_mark = 0;
@@ -159,9 +152,10 @@ static struct misc_param_t* mic_search_param(const char *name)
 	return NULL;
 }
 
-static struct misc_cmd_t* misc_search_cmd(const char *name)
+static struct misc_cmd_t* misc_search_cmd(struct misc_cmd_t ** cmds_list, 
+										uint32_t cmd_size, const char *name)
 {
-	int i, j;
+	uint32_t i, j;
 	struct misc_cmd_t *cmd = NULL;
 	
 	if (NULL == name)
@@ -169,9 +163,9 @@ static struct misc_cmd_t* misc_search_cmd(const char *name)
 		return NULL;
 	}
 	
-	for (i = 0; i < (int)dimof(misc_cmds_list); i++)
+	for (i = 0; i < cmd_size; i++)
 	{
-		cmd = misc_cmds_list[i];
+		cmd = cmds_list[i];
 		
 		j= 0;
 		while ((cmd != NULL) && (cmd[j].cmd_name != NULL))
@@ -190,7 +184,8 @@ static struct misc_cmd_t* misc_search_cmd(const char *name)
 
 RESULT misc_print_help(const char *name)
 {
-	struct misc_cmd_t *cmd = misc_search_cmd(name);
+	struct misc_cmd_t *cmd = misc_search_cmd(misc_cmds_list, 
+		dimof(misc_cmds_list), name);
 	
 	if (NULL == cmd)
 	{
@@ -235,11 +230,35 @@ static RESULT misc_parse_cmd_line(char *cmd, uint16_t *argc, char **argv)
 			break;
 		}
 		
-		argv[argu_num++] = &cmd[i];
-		while (!isspace(cmd[i]) && (cmd[i] != '\0'))
+		if (('\'' == cmd[i]) || ('"' == cmd[i]))
 		{
-			i++;
+			// everything between ' or " is one parameter
+			// nesting of ' and " is not supported
+			uint32_t j;
+			char div = cmd[i];
+			
+			j = i + 1;
+			argv[argu_num++] = &cmd[j];
+			while (cmd[j] != div)
+			{
+				if ('\0' == cmd[j])
+				{
+					// shouldn't end here too
+					return ERROR_FAIL;
+				}
+				j++;
+			}
+			i = j;
 		}
+		else
+		{
+			argv[argu_num++] = &cmd[i];
+			while (!isspace(cmd[i]) && (cmd[i] != '\0'))
+			{
+				i++;
+			}
+		}
+		
 		cmd[i++] = '\0';
 		if (argu_num >= *argc)
 		{
@@ -251,9 +270,73 @@ static RESULT misc_parse_cmd_line(char *cmd, uint16_t *argc, char **argv)
 	return ERROR_OK;
 }
 
-static RESULT misc_run_cmd(uint16_t argc, const char *argv[])
+RESULT misc_cmd_supported(const struct misc_cmd_t *notifier, char *notify_cmd)
 {
-	struct misc_cmd_t *cmd = misc_search_cmd(argv[0]);
+	struct misc_cmd_t *cmds_list[1], *cmd;
+	
+	if ((NULL == notifier) || (NULL == notify_cmd))
+	{
+		return ERROR_FAIL;
+	}
+	
+	cmd = misc_search_cmd((struct misc_cmd_t **)&notifier, dimof(cmds_list), 
+							notify_cmd);
+	if (NULL == cmd)
+	{
+		return ERROR_FAIL;
+	}
+	return ERROR_OK;
+}
+
+RESULT misc_call_notifier(const struct misc_cmd_t *notifier, 
+							char *notify_cmd, char *notify_param)
+{
+	struct misc_cmd_t *cmds_list[1], *cmd;
+	char *argv[2];
+	uint16_t argc;
+	
+	if ((NULL == notifier) || (NULL == notify_cmd))
+	{
+		return ERROR_FAIL;
+	}
+	
+	argv[0] = notify_cmd;
+	argv[1] = notify_param;
+	cmds_list[0] = (struct misc_cmd_t *)notifier;
+	if (notify_param != NULL)
+	{
+		argc = dimof(argv);
+	}
+	else
+	{
+		argc = 1;
+	}
+	
+	cmd = misc_search_cmd(cmds_list, dimof(cmds_list), argv[0]);
+	if (NULL == cmd)
+	{
+		LOG_ERROR(ERRMSG_NOT_SUPPORT, argv[0]);
+		return ERROR_FAIL;
+	}
+	
+	if (NULL == cmd->processor)
+	{
+		LOG_ERROR(ERRMSG_INVALID_CMD, argv[0]);
+		return ERROR_FAIL;
+	}
+	else if (ERROR_OK != cmd->processor(argc, (const char **)argv))
+	{
+		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "run", argv[0]);
+		return ERROR_FAIL;
+	}
+	
+	return ERROR_OK;
+}
+
+RESULT misc_run_cmd(uint16_t argc, const char *argv[])
+{
+	struct misc_cmd_t *cmd = misc_search_cmd(misc_cmds_list, 
+		dimof(misc_cmds_list), argv[0]);
 	
 	if (NULL == cmd)
 	{
@@ -283,8 +366,8 @@ RESULT misc_run_script(char *cmd)
 	uint32_t i, run_times;
 	
 	argc = (uint16_t)dimof(argv);
-	misc_parse_cmd_line(cmd, &argc, (char **)argv);
-	if ((0 == argc) || ('#' == argv[0][0]))
+	if ((ERROR_OK != misc_parse_cmd_line(cmd, &argc, (char **)argv)) 
+		|| ((0 == argc) || ('#' == argv[0][0])))
 	{
 		return ERROR_OK;
 	}
@@ -308,14 +391,19 @@ RESULT misc_run_script(char *cmd)
 	}
 	
 	// commit if required
-	if (misc_param[PARAM_NO_COMMIT].value)
+	if ((cur_programmer != NULL) 
+		&& (cur_programmer->interfaces.peripheral_commit != NULL))
 	{
-		return ret;
+		if (misc_param[PARAM_NO_COMMIT].value)
+		{
+			return ret;
+		}
+		else
+		{
+			return cur_programmer->interfaces.peripheral_commit();
+		}
 	}
-	else
-	{
-		return cur_programmer->interfaces.peripheral_commit();
-	}
+	return ERROR_OK;
 }
 
 static RESULT misc_run_file(FILE *f, char *head, uint8_t quiet)
@@ -371,19 +459,16 @@ static RESULT misc_run_file(FILE *f, char *head, uint8_t quiet)
 
 // commands
 // param
-RESULT misc_set_parameters(uint16_t argc, const char *argv[])
+MISC_HANDLER(misc_set_parameters)
 {
 	struct misc_param_t *param = NULL;
 	
-	if (3 != argc)
-	{
-		misc_print_help(argv[0]);
-		return ERROR_FAIL;
-	}
+	MISC_CHECK_ARGC(3);
 	
 	param = mic_search_param(argv[1]);
 	if (NULL == param)
 	{
+		LOG_ERROR(ERRMSG_NOT_SUPPORT_AS, argv[1], "parameters");
 		misc_print_help(argv[0]);
 		return ERROR_FAIL;
 	}
@@ -394,19 +479,16 @@ RESULT misc_set_parameters(uint16_t argc, const char *argv[])
 }
 
 // help
-RESULT misc_help(uint16_t argc, const char *argv[])
+MISC_HANDLER(misc_help)
 {
 	struct misc_cmd_t *cmd = NULL;
 	
-	if ((argc != 2) && (argc != 1))
-	{
-		misc_print_help(argv[0]);
-		return ERROR_FAIL;
-	}
+	MISC_CHECK_ARGC_2(1, 2);
 	
 	if (2 == argc)
 	{
-		cmd = misc_search_cmd(argv[1]);
+		cmd = misc_search_cmd(misc_cmds_list, 
+			dimof(misc_cmds_list), argv[1]);
 		
 		if (NULL == cmd)
 		{
@@ -440,32 +522,31 @@ RESULT misc_help(uint16_t argc, const char *argv[])
 }
 
 // shell
-RESULT misc_shell(uint16_t argc, const char *argv[])
+MISC_HANDLER(misc_shell)
 {
-	REFERENCE_PARAMETER(argv);
-	if (argc != 1)
-	{
-		misc_print_help(argv[0]);
-		return ERROR_FAIL;
-	}
+	MISC_CHECK_ARGC(1);
 	
 	LOG_INFO("enter shell mode.");
 	
-	return misc_run_file(stdin, cur_programmer->name, 0);
+	if (cur_programmer != NULL)
+	{
+		return misc_run_file(stdin, cur_programmer->name, 0);
+	}
+	else
+	{
+		return misc_run_file(stdin, NULL, 0);
+	}
 }
 
 // run
-RESULT misc_run(uint16_t argc, const char *argv[])
+MISC_HANDLER(misc_run)
 {
 	FILE *f = NULL;
 	uint8_t quiet = 0;
 	RESULT ret = ERROR_OK;
 	
-	if ((argc != 2) && (argc != 3))
-	{
-		misc_print_help(argv[0]);
-		return ERROR_FAIL;
-	}
+	MISC_CHECK_ARGC_2(2, 3);
+	
 	if ((3 == argc) && (!strcmp(argv[2], "quiet")))
 	{
 		quiet = 1;
@@ -486,44 +567,48 @@ RESULT misc_run(uint16_t argc, const char *argv[])
 }
 
 // loop
-RESULT misc_loop(uint16_t argc, const char *argv[])
+MISC_HANDLER(misc_loop)
 {
-	if (argc != 2)
-	{
-		misc_print_help(argv[0]);
-		return ERROR_FAIL;
-	}
+	MISC_CHECK_ARGC(2);
 	
 	misc_loop_cnt = strtoul(argv[1], NULL, 0);
 	return ERROR_OK;
 }
 
 // exit
-RESULT misc_exit(uint16_t argc, const char *argv[])
+MISC_HANDLER(misc_exit)
 {
-	REFERENCE_PARAMETER(argv);
-	if (argc != 1)
-	{
-		misc_print_help(argv[0]);
-		return ERROR_FAIL;
-	}
-	
+	MISC_CHECK_ARGC(1);
 	misc_exit_mark = 1;
-	
 	return ERROR_OK;
 }
 
 // close
-RESULT misc_close(uint16_t argc, const char *argv[])
+MISC_HANDLER(misc_close)
 {
-	REFERENCE_PARAMETER(argv);
-	if (argc != 1)
-	{
-		misc_print_help(argv[0]);
-		return ERROR_FAIL;
-	}
-	
+	MISC_CHECK_ARGC(1);
 	misc_exit_mark = -1;
+	return ERROR_OK;
+}
+
+MISC_HANDLER(misc_run_command)
+{
+	MISC_CHECK_ARGC(2);
+	misc_run_script((char *)argv[1]);
+	return ERROR_OK;
+}
+
+MISC_HANDLER(misc_log_info)
+{
+	MISC_CHECK_ARGC(2);
+	LOG_INFO("%s", argv[1]);
+	return ERROR_OK;
+}
+
+MISC_HANDLER(misc_getchar)
+{
+	MISC_CHECK_ARGC(1);
+	getchar();
 	return ERROR_OK;
 }
 

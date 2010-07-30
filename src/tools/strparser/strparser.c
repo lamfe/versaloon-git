@@ -215,6 +215,7 @@ parse_integer:
 				LOG_DEBUG("format error: %s", str);
 				return ERROR_FAIL;
 			}
+			str++;
 			break;
 		}
 	}

@@ -31,6 +31,7 @@
 #include "app_log.h"
 #include "app_err.h"
 
+#include "vsprog.h"
 #include "scripts.h"
 #include "prog_interface.h"
 #include "programmer.h"
@@ -52,144 +53,144 @@ struct programmer_info_t programmers_info[] =
 
 struct programmer_info_t *cur_programmer = NULL;
 
-struct misc_param_t programmer_param[] =
-{
-	{
-		NULL,
-		NULL,
-		0
-	}
-};
+MISC_HANDLER(programmer_get_target_voltage);
+MISC_HANDLER(programmer_set_target_voltage);
 
-RESULT programmer_get_target_voltage(uint16_t argc, const char *argv[]);
-RESULT programmer_set_target_voltage(uint16_t argc, const char *argv[]);
+MISC_HANDLER(programmer_iic_init);
+MISC_HANDLER(programmer_iic_fini);
+MISC_HANDLER(programmer_iic_config);
+MISC_HANDLER(programmer_iic_read);
+MISC_HANDLER(programmer_iic_write);
 
-RESULT programmer_iic_init(uint16_t argc, const char *argv[]);
-RESULT programmer_iic_fini(uint16_t argc, const char *argv[]);
-RESULT programmer_iic_config(uint16_t argc, const char *argv[]);
-RESULT programmer_iic_read(uint16_t argc, const char *argv[]);
-RESULT programmer_iic_write(uint16_t argc, const char *argv[]);
+MISC_HANDLER(programmer_gpio_init);
+MISC_HANDLER(programmer_gpio_fini);
+MISC_HANDLER(programmer_gpio_config);
+MISC_HANDLER(programmer_gpio_out);
+MISC_HANDLER(programmer_gpio_in);
 
-RESULT programmer_gpio_init(uint16_t argc, const char *argv[]);
-RESULT programmer_gpio_fini(uint16_t argc, const char *argv[]);
-RESULT programmer_gpio_config(uint16_t argc, const char *argv[]);
-RESULT programmer_gpio_out(uint16_t argc, const char *argv[]);
-RESULT programmer_gpio_in(uint16_t argc, const char *argv[]);
+MISC_HANDLER(programmer_spi_init);
+MISC_HANDLER(programmer_spi_fini);
+MISC_HANDLER(programmer_spi_config);
+MISC_HANDLER(programmer_spi_io);
 
-RESULT programmer_delay_us(uint16_t argc, const char *argv[]);
-RESULT programmer_delay_ms(uint16_t argc, const char *argv[]);
-RESULT programmer_commit(uint16_t argc, const char *argv[]);
+MISC_HANDLER(programmer_delay_us);
+MISC_HANDLER(programmer_delay_ms);
+MISC_HANDLER(programmer_commit);
+
+MISC_HANDLER(programmer_list);
+MISC_HANDLER(programmer_define);
 
 struct misc_cmd_t programmer_cmd[] = 
 {
-	// voltage
-	{
-		"get_tvcc",
-		"get target voltage, format: get_tvcc",
-		programmer_get_target_voltage
-	},
-	// powerout
-	{
-		"set_tvcc",
-		"output power to target, format: set_tvcc VOLTAGE_IN_MV",
-		programmer_set_target_voltage
-	},
-	// gpio
-	{
-		"gpio_init",
-		"initialize gpio, format: gpio_init [MASK IO PULL]",
-		programmer_gpio_init
-	},
-	{
-		"gpio_fini",
-		"finalize gpio, format: gpio_fini",
-		programmer_gpio_fini
-	},
-	{
-		"gpio_config",
-		"initialize gpio, format: gpio_config MASK IO PULL",
-		programmer_gpio_config
-	},
-	{
-		"gpio_out",
-		"gpio output, format: gpio_out MASK VALUE",
-		programmer_gpio_out
-	},
-	{
-		"gpio_in",
-		"gpio input, format: gpio_in MASK",
-		programmer_gpio_in
-	},
-	// iic
-	{
-		"iic_init",
-		"initialize iic, format: iic_init [KHZ MAX_DLY_US]",
-		programmer_iic_init
-	},
-	{
-		"iic_fini",
-		"finalize iic, format: iic_fini",
-		programmer_iic_fini
-	},
-	{
-		"iic_config",
-		"config iic, format: iic_config KHZ MAX_DLY_US",
-		programmer_iic_config
-	},
-	{
-		"iic_read",
-		"read data from iic, format: iic_read SLAVE_ADDR DATA_SIZE",
-		programmer_iic_read
-	},
-	{
-		"iic_write",
-		"write data to iic, format: iic_write SLAVE_ADDR DATA_SIZE DATA0 DATA1...",
-		programmer_iic_write
-	},
-	// delay
-	{
-		"delayus",
-		"delay us, format: delayus US",
-		programmer_delay_us
-	},
-	{
-		"delayms",
-		"delay ms, format: delayus MS",
-		programmer_delay_ms
-	},
-	// commit
-	{
-		"commit",
-		"commit all commands",
-		programmer_commit
-	},
-	{
-		NULL,
-		NULL,
-		NULL
-	}
+	MISC_CMD(	"display-programmer",
+				"list programmers connected, format: display-programmer/L",
+				programmer_list),
+	MISC_CMD(	"L",
+				"list programmers connected, format: display-programmer/L",
+				programmer_list),
+	MISC_CMD(	"programmer",
+				"define programmer to use, format: programmer/p PROGRAMMER",
+				programmer_define),
+	MISC_CMD(	"p",
+				"define programmer to use, format: programmer/p PROGRAMMER",
+				programmer_define),
+	MISC_CMD(	"get_tvcc", 
+				"get target voltage, format: get_tvcc", 
+				programmer_get_target_voltage),
+	MISC_CMD(	"set_tvcc", 
+				"output power to target, format: set_tvcc VOLTAGE_IN_MV", 
+				programmer_set_target_voltage),
+	MISC_CMD(	"gpio_init",
+				"initialize gpio, format: gpio_init [MASK IO PULL]",
+				programmer_gpio_init),
+	MISC_CMD(	"gpio_fini",
+				"finalize gpio, format: gpio_fini",
+				programmer_gpio_fini),
+	MISC_CMD(	"gpio_config",
+				"config gpio, format: gpio_config MASK IO PULL",
+				programmer_gpio_config),
+	MISC_CMD(	"gpio_out",
+				"gpio output, format: gpio_out MASK VALUE",
+				programmer_gpio_out),
+	MISC_CMD(	"gpio_in",
+				"gpio input, format: gpio_in MASK",
+				programmer_gpio_in),
+	MISC_CMD(	"spi_init",
+				"initialize spi, format: spi_init [KHZ CPOL CPHA FIRSTBIT]",
+				programmer_spi_init),
+	MISC_CMD(	"spi_fini",
+				"finalize spi, format: spi_fini",
+				programmer_spi_fini),
+	MISC_CMD(	"spi_config",
+				"config spi, format: spi_config KHZ CPOL CPHA FIRSTBIT",
+				programmer_spi_config),
+	MISC_CMD(	"spi_io",
+				"spi input and output, format: spi_io DATASIZE DATA...",
+				programmer_spi_io),
+	MISC_CMD(	"iic_init",
+				"initialize iic, format: iic_init [KHZ MAX_DLY_US]",
+				programmer_iic_init),
+	MISC_CMD(	"iic_fini",
+				"finalize iic, format: iic_fini",
+				programmer_iic_fini),
+	MISC_CMD(	"iic_config",
+				"config iic, format: iic_config KHZ MAX_DLY_US",
+				programmer_iic_config),
+	MISC_CMD(	"iic_read",
+				"read data from iic, format: iic_read SLAVE_ADDR DATA_SIZE",
+				programmer_iic_read),
+	MISC_CMD(	"iic_write",
+				"write data to iic, format: "
+				"iic_write SLAVE_ADDR DATA_SIZE DATA0...",
+				programmer_iic_write),
+	MISC_CMD(	"delayus",
+				"delay us, format: delayus US",
+				programmer_delay_us),
+	MISC_CMD(	"delayms",
+				"delay ms, format: delayus MS",
+				programmer_delay_ms),
+	MISC_CMD(	"commit",
+				"commit all commands",
+				programmer_commit),
+	MISC_CMD_END
 };
 
 RESULT programmer_init(const char *programmer)
 {
+	struct programmer_info_t *programmer_tmp;
 	uint32_t i;
 	
+	programmer_tmp = NULL;
 	if (programmer != NULL)
 	{
 		for (i = 0; programmers_info[i].name != NULL; i++)
 		{
 			if (!strcmp(programmers_info[i].name, programmer))
 			{
-				cur_programmer = &programmers_info[i];
-				return ERROR_OK;
+				programmer_tmp = &programmers_info[i];
+				break;
 			}
 		}
-		return ERROR_FAIL;
 	}
 	else
 	{
-		cur_programmer = &programmers_info[PROGRAMMER_DEFAULT];
+		programmer_tmp = &programmers_info[PROGRAMMER_DEFAULT];
+	}
+	
+	if (programmer_tmp != NULL)
+	{
+		if ((cur_programmer != NULL) && (cur_programmer == programmer_tmp))
+		{
+			return ERROR_OK;
+		}
+		cur_programmer = programmer_tmp;
+		cur_programmer->init_capability(cur_programmer);
+		
 		return ERROR_OK;
+	}
+	else
+	{
+		return ERROR_FAIL;
 	}
 }
 
@@ -220,20 +221,56 @@ void programmer_print_help(void)
 
 
 // scripts support
+MISC_HANDLER(programmer_list)
+{
+	uint32_t i, j = 0;
+	
+	vsprog_no_call_operate();
+	MISC_CHECK_ARGC(1);
+	
+	for (i = 0; programmers_info[i].name != NULL; i++)
+	{
+		j += programmers_info[i].display_programmer();
+	}
+	if (0 == j)
+	{
+		LOG_INFO("no programmer found.");
+	}
+	return ERROR_OK;
+}
+
+MISC_HANDLER(programmer_define)
+{
+	char *programmer;
+	
+	MISC_CHECK_ARGC_2(1, 2);
+	if (1 == argc)
+	{
+		programmer = NULL;
+	}
+	else
+	{
+		programmer = (char *)argv[1];
+	}
+	
+	if (ERROR_OK != programmer_init(programmer))
+	{
+		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "initialize programmer: ", 
+					argv[1]);
+		return ERROR_FAIL;
+	}
+	return ERROR_OK;
+}
+
 // tvcc
-RESULT programmer_get_target_voltage(uint16_t argc, const char *argv[])
+MISC_HANDLER(programmer_get_target_voltage)
 {
 	struct interface_target_voltage_t *tv = 
 						&(cur_programmer->interfaces.target_voltage);
 	uint16_t voltage = 0;
 	RESULT ret = ERROR_OK;
 	
-	REFERENCE_PARAMETER(argv);
-	if (argc != 1)
-	{
-		programmer_print_help();
-		return ERROR_FAIL;
-	}
+	MISC_CHECK_ARGC(1);
 	
 	if (ERROR_OK != tv->get(&voltage))
 	{
@@ -246,30 +283,22 @@ RESULT programmer_get_target_voltage(uint16_t argc, const char *argv[])
 	return ret;
 }
 
-RESULT programmer_set_target_voltage(uint16_t argc, const char *argv[])
+MISC_HANDLER(programmer_set_target_voltage)
 {
 	struct interface_target_voltage_t *tv = 
 						&(cur_programmer->interfaces.target_voltage);
 	uint16_t voltage = 0;
 	
-	if (argc != 2)
-	{
-		misc_print_help(argv[0]);
-		return ERROR_FAIL;
-	}
+	MISC_CHECK_ARGC(2);
 	
 	voltage = (uint16_t)strtoul(argv[1], NULL, 0);
 	return tv->set(voltage);
 }
 
 // gpio
-RESULT programmer_gpio_init(uint16_t argc, const char *argv[])
+MISC_HANDLER(programmer_gpio_init)
 {
-	if ((argc != 1) && (argc != 4))
-	{
-		misc_print_help(argv[0]);
-		return ERROR_FAIL;
-	}
+	MISC_CHECK_ARGC_2(1, 4);
 	
 	if (ERROR_OK != cur_programmer->interfaces.gpio.init())
 	{
@@ -283,26 +312,19 @@ RESULT programmer_gpio_init(uint16_t argc, const char *argv[])
 	return ERROR_OK;
 }
 
-RESULT programmer_gpio_fini(uint16_t argc, const char *argv[])
+MISC_HANDLER(programmer_gpio_fini)
 {
-	if (argc != 1)
-	{
-		misc_print_help(argv[0]);
-		return ERROR_FAIL;
-	}
+	MISC_CHECK_ARGC(1);
 	
 	return cur_programmer->interfaces.gpio.fini();
 }
 
-RESULT programmer_gpio_config(uint16_t argc, const char *argv[])
+MISC_HANDLER(programmer_gpio_config)
 {
 	uint16_t mask, io, pull;
 	
-	if (argc != 4)
-	{
-		misc_print_help(argv[0]);
-		return ERROR_FAIL;
-	}
+	MISC_CHECK_ARGC(4);
+	
 	mask = (uint16_t)strtoul(argv[1], NULL, 0);
 	io = (uint16_t)strtoul(argv[2], NULL, 0);
 	pull = (uint16_t)strtoul(argv[3], NULL, 0);
@@ -310,31 +332,25 @@ RESULT programmer_gpio_config(uint16_t argc, const char *argv[])
 	return cur_programmer->interfaces.gpio.config(mask, io, pull);
 }
 
-RESULT programmer_gpio_out(uint16_t argc, const char *argv[])
+MISC_HANDLER(programmer_gpio_out)
 {
 	uint16_t mask, value;
 	
-	if (argc != 3)
-	{
-		misc_print_help(argv[0]);
-		return ERROR_FAIL;
-	}
+	MISC_CHECK_ARGC(3);
+	
 	mask = (uint16_t)strtoul(argv[1], NULL, 0);
 	value = (uint16_t)strtoul(argv[2], NULL, 0);
 	
 	return cur_programmer->interfaces.gpio.out(mask, value);
 }
 
-RESULT programmer_gpio_in(uint16_t argc, const char *argv[])
+MISC_HANDLER(programmer_gpio_in)
 {
 	uint16_t mask, value;
 	RESULT ret = ERROR_OK;
 	
-	if (argc != 2)
-	{
-		misc_print_help(argv[0]);
-		return ERROR_FAIL;
-	}
+	MISC_CHECK_ARGC(2);
+	
 	mask = (uint16_t)strtoul(argv[1], NULL, 0);
 	
 	ret = cur_programmer->interfaces.gpio.in(mask, &value);
@@ -349,85 +365,79 @@ RESULT programmer_gpio_in(uint16_t argc, const char *argv[])
 	return ret;
 }
 
-// iic
-RESULT programmer_iic_init(uint16_t argc, const char *argv[])
+// spi
+MISC_HANDLER(programmer_spi_init)
 {
-	struct interface_i2c_t *i2c = &(cur_programmer->interfaces.i2c);
+	MISC_CHECK_ARGC_2(1, 5);
 	
-	REFERENCE_PARAMETER(argv);
-	if ((argc != 1) && (argc != 3))
-	{
-		misc_print_help(argv[0]);
-		return ERROR_FAIL;
-	}
-	
-	if (ERROR_OK != i2c->init())
+	if (ERROR_OK != cur_programmer->interfaces.spi.init())
 	{
 		return ERROR_FAIL;
 	}
 	
-	if (3 == argc)
+	if (5 == argc)
 	{
-		return programmer_iic_config(argc, argv);
+		return programmer_spi_config(argc, argv);
 	}
 	return ERROR_OK;
 }
 
-RESULT programmer_iic_fini(uint16_t argc, const char *argv[])
+MISC_HANDLER(programmer_spi_fini)
 {
-	struct interface_i2c_t *i2c = &(cur_programmer->interfaces.i2c);
+	MISC_CHECK_ARGC(1);
 	
-	REFERENCE_PARAMETER(argv);
-	if (argc != 1)
-	{
-		misc_print_help(argv[0]);
-		return ERROR_FAIL;
-	}
-	
-	return i2c->fini();
+	return cur_programmer->interfaces.spi.fini();
 }
 
-RESULT programmer_iic_config(uint16_t argc, const char *argv[])
+MISC_HANDLER(programmer_spi_config)
 {
-	struct interface_i2c_t *i2c = &(cur_programmer->interfaces.i2c);
-	uint16_t speed_khz = 0;
-	uint16_t max_dly = 0;
+	uint16_t khz = 0;
+	uint8_t cpol, cpha, firstbit;
 	
-	if (argc != 3)
-	{
-		misc_print_help(argv[0]);
-		return ERROR_FAIL;
-	}
+	MISC_CHECK_ARGC(5);
 	
-	speed_khz = (uint16_t)strtoul(argv[1], NULL, 0);
-	max_dly = (uint16_t)strtoul(argv[2], NULL, 0);
+	khz = (uint16_t)strtoul(argv[1], NULL, 0);
+	cpol = (uint8_t)strtoul(argv[2], NULL, 0);
+	cpha = (uint8_t)strtoul(argv[3], NULL, 0);
+	firstbit = (uint8_t)strtoul(argv[4], NULL, 0);
 	
-	return i2c->config(speed_khz, 0, max_dly);
+	return cur_programmer->interfaces.spi.config(khz, cpol, cpha, firstbit);
 }
 
-RESULT programmer_iic_read(uint16_t argc, const char *argv[])
+MISC_HANDLER(programmer_spi_io)
 {
-	struct interface_i2c_t *i2c = &(cur_programmer->interfaces.i2c);
-	uint8_t data_size = 0;
-	uint8_t addr = 0;
+	uint16_t data_size = 0;
 	uint8_t *buff = NULL;
 	RESULT ret = ERROR_OK;
 	
-	if (argc != 3)
-	{
-		misc_print_help(argv[0]);
-		return ERROR_FAIL;
-	}
+	MISC_CHECK_ARGC_MIN(2);
 	
-	addr = (uint8_t)strtoul(argv[1], NULL, 0);
-	data_size = (uint8_t)strtoul(argv[2], NULL, 0);
+	data_size = (uint16_t)strtoul(argv[1], NULL, 0);
+
+	MISC_CHECK_ARGC_2(2, 2 + data_size);
+	
 	buff = (uint8_t*)malloc(data_size);
 	if (NULL == buff)
 	{
 		return ERROR_FAIL;
 	}
 	
-	ret = i2c->read(addr, buff, data_size, 1);
+	if (2 == argc)
+	{
+		memset(buff, 0, data_size);
+	}
+	else
+	{
+		uint16_t i;
+		
+		for (i = 0; i < data_size; i++)
+		{
+			buff[i] = (uint8_t)strtoul(argv[2 + i], NULL, 0);
+		}
+	}
+	
+	ret = cur_programmer->interfaces.spi.io(buff, buff, data_size, 0, 
+											data_size);
 	if (ERROR_OK == ret)
 	{
 		ret = cur_programmer->interfaces.peripheral_commit();
@@ -445,25 +455,95 @@ RESULT programmer_iic_read(uint16_t argc, const char *argv[])
 	return ret;
 }
 
-RESULT programmer_iic_write(uint16_t argc, const char *argv[])
+// iic
+MISC_HANDLER(programmer_iic_init)
 {
-	struct interface_i2c_t *i2c = &(cur_programmer->interfaces.i2c);
+	MISC_CHECK_ARGC_2(1, 3);
+	
+	if (ERROR_OK != cur_programmer->interfaces.i2c.init())
+	{
+		return ERROR_FAIL;
+	}
+	
+	if (3 == argc)
+	{
+		return programmer_iic_config(argc, argv);
+	}
+	return ERROR_OK;
+}
+
+MISC_HANDLER(programmer_iic_fini)
+{
+	MISC_CHECK_ARGC(1);
+	
+	return cur_programmer->interfaces.i2c.fini();
+}
+
+MISC_HANDLER(programmer_iic_config)
+{
+	uint16_t khz = 0;
+	uint16_t max_dly = 0;
+	
+	MISC_CHECK_ARGC(3);
+	
+	khz = (uint16_t)strtoul(argv[1], NULL, 0);
+	max_dly = (uint16_t)strtoul(argv[2], NULL, 0);
+	
+	return cur_programmer->interfaces.i2c.config(khz, 0, max_dly);
+}
+
+MISC_HANDLER(programmer_iic_read)
+{
+	uint8_t data_size = 0;
+	uint8_t addr = 0;
+	uint8_t *buff = NULL;
+	RESULT ret = ERROR_OK;
+	
+	MISC_CHECK_ARGC(3);
+	
+	addr = (uint8_t)strtoul(argv[1], NULL, 0);
+	data_size = (uint8_t)strtoul(argv[2], NULL, 0);
+	buff = (uint8_t*)malloc(data_size);
+	if (NULL == buff)
+	{
+		return ERROR_FAIL;
+	}
+	
+	ret = cur_programmer->interfaces.i2c.read(addr, buff, data_size, 1);
+	if (ERROR_OK == ret)
+	{
+		ret = cur_programmer->interfaces.peripheral_commit();
+		if (ERROR_OK == ret)
+		{
+			LOG_BYTE_BUF(buff, data_size, LOG_INFO, "%02X", 16);
+		}
+	}
+	
+	if (buff != NULL)
+	{
+		free(buff);
+		buff = NULL;
+	}
+	return ret;
+}
+
+MISC_HANDLER(programmer_iic_write)
+{
 	uint8_t data_size = 0;
 	uint8_t addr = 0;
 	uint8_t *buff = NULL;
 	uint8_t i;
 	RESULT ret = ERROR_OK;
 	
-	if (argc < 3)
-	{
-		misc_print_help(argv[0]);
-		return ERROR_FAIL;
-	}
+	MISC_CHECK_ARGC_MIN(3);
 	
 	addr = (uint8_t)strtoul(argv[1], NULL, 0);
 	data_size = (uint8_t)strtoul(argv[2], NULL, 0);
-	if ((0 == data_size) || (argc != 3 + data_size))
+	
+	MISC_CHECK_ARGC(3 + data_size);
+	if (0 == data_size)
 	{
+		LOG_ERROR(ERRMSG_INVALID_TARGET, "data_size");
 		misc_print_help(argv[0]);
 		return ERROR_FAIL;
 	}
@@ -479,7 +559,7 @@ RESULT programmer_iic_write(uint16_t argc, const char *argv[])
 		buff[i] = (uint8_t)strtoul(argv[3 + i], NULL, 0);
 	}
 	
-	ret = i2c->write(addr, buff, data_size, 1);
+	ret = cur_programmer->interfaces.i2c.write(addr, buff, data_size, 1);
 	
 	if (buff != NULL)
 	{
@@ -490,39 +570,30 @@ RESULT programmer_iic_write(uint16_t argc, const char *argv[])
 }
 
 // delay
-RESULT programmer_delay_us(uint16_t argc, const char *argv[])
+MISC_HANDLER(programmer_delay_us)
 {
 	uint16_t delay;
 	
-	if (argc != 2)
-	{
-		misc_print_help(argv[0]);
-		return ERROR_FAIL;
-	}
+	MISC_CHECK_ARGC(2);
 	
 	delay = (uint16_t)strtoul(argv[1], NULL, 0);
 	return cur_programmer->interfaces.delay.delayus(delay);
 }
 
-RESULT programmer_delay_ms(uint16_t argc, const char *argv[])
+MISC_HANDLER(programmer_delay_ms)
 {
 	uint16_t delay;
 	
-	if (argc != 2)
-	{
-		misc_print_help(argv[0]);
-		return ERROR_FAIL;
-	}
+	MISC_CHECK_ARGC(2);
 	
 	delay = (uint16_t)strtoul(argv[1], NULL, 0);
 	return cur_programmer->interfaces.delay.delayms(delay);
 }
 
 // commit
-RESULT programmer_commit(uint16_t argc, const char *argv[])
+MISC_HANDLER(programmer_commit)
 {
-	REFERENCE_PARAMETER(argc);
-	REFERENCE_PARAMETER(argv);
+	MISC_CHECK_ARGC(1);
 	
 	return cur_programmer->interfaces.peripheral_commit();
 }

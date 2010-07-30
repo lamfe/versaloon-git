@@ -33,15 +33,16 @@
 #include "app_log.h"
 #include "prog_interface.h"
 
+#include "vsprog.h"
 #include "memlist.h"
 #include "pgbar.h"
 #include "strparser.h"
 #include "bufffunc.h"
 #include <libxml/parser.h>
 
-#include "vsprog.h"
 #include "programmer.h"
 #include "target.h"
+#include "scripts.h"
 
 #include "target.h"
 #include "at89s5x/at89s5x.h"
@@ -60,6 +61,102 @@
 #include "avr32/avr32.h"
 #include "avrxmega/avrxmega.h"
 #include "lm3s/lm3s.h"
+
+MISC_HANDLER(target_memory_detail);
+MISC_HANDLER(target_parameter_detail);
+MISC_HANDLER(target_series);
+MISC_HANDLER(target_chip);
+MISC_HANDLER(target_value);
+MISC_HANDLER(target_interface_frequency);
+MISC_HANDLER(target_kernel_khz);
+MISC_HANDLER(target_wait_state);
+MISC_HANDLER(target_auto_adjust);
+MISC_HANDLER(target_jtag_dc);
+MISC_HANDLER(target_interface_mode);
+MISC_HANDLER(target_operate);
+MISC_HANDLER(target_execute_addr);
+
+struct misc_cmd_t target_cmd[] = 
+{
+	MISC_CMD(	"memory-detail",
+				"show memory detail, format: memory-detail/D TARGET",
+				target_memory_detail),
+	MISC_CMD(	"D",
+				"show memory detail, format: memory-detail/D TARGET",
+				target_memory_detail),
+	MISC_CMD(	"parameter",
+				"show parameter detail, format: parameter/P TARGET",
+				target_parameter_detail),
+	MISC_CMD(	"P",
+				"show parameter detail, format: parameter/P TARGET",
+				target_parameter_detail),
+	MISC_CMD(	"target-series",
+				"set target series, format: target-series/s SERIES",
+				target_series),
+	MISC_CMD(	"s",
+				"set target series, format: target-series/s SERIES",
+				target_series),
+	MISC_CMD(	"target-chip",
+				"set target chip, format: target-chip/c CHIP",
+				target_chip),
+	MISC_CMD(	"c",
+				"set target chip, format: target-chip/c CHIP",
+				target_chip),
+	MISC_CMD(	"target",
+				"set target value, format: target/t TARGET VALUE",
+				target_value),
+	MISC_CMD(	"t",
+				"set target value, format: target/t TARGET VALUE",
+				target_value),
+	MISC_CMD(	"frequency",
+				"set frequency of programming interface, "
+				"format: frequency/f FREQUENCY",
+				target_interface_frequency),
+	MISC_CMD(	"F",
+				"set frequency of programming interface, "
+				"format: frequency/f FREQUENCY",
+				target_interface_frequency),
+	MISC_CMD(	"kernel-khz",
+				"set target kernel frequency in khz, format: kernel-khz/K KHZ",
+				target_kernel_khz),
+	MISC_CMD(	"K",
+				"set target kernel frequency in khz, format: kernel-khz/K KHZ",
+				target_kernel_khz),
+	MISC_CMD(	"wait-state",
+				"set target wait state, format: wait-state/W WAIT",
+				target_wait_state),
+	MISC_CMD(	"W",
+				"set target wait state, format: wait-state/W WAIT",
+				target_wait_state),
+	MISC_CMD(	"auto-adjust",
+				"set target auto adjust, format: auto-adjust/A",
+				target_auto_adjust),
+	MISC_CMD(	"A",
+				"set target auto adjust, format: auto-adjust/A",
+				target_auto_adjust),
+	MISC_CMD(	"jtag-dc",
+				"set JTAG daisy chain, format: jtag-dc/J UB_UA_BB_BA",
+				target_jtag_dc),
+	MISC_CMD(	"J",
+				"set JTAG daisy chain, format: jtag-dc/J UB_UA_BB_BA",
+				target_jtag_dc),
+	MISC_CMD(	"mode",
+				"set interface mode, format: mode/m MODE",
+				target_interface_mode),
+	MISC_CMD(	"m",
+				"set interface mode, format: mode/m MODE",
+				target_interface_mode),
+	MISC_CMD(	"operate",
+				"operate target programming, format: operate",
+				target_operate),
+	MISC_CMD(	"execute",
+				"execute defined address, format: execute/x ADDR",
+				target_execute_addr),
+	MISC_CMD(	"x",
+				"execute defined address, format: execute/x ADDR",
+				target_execute_addr),
+	MISC_CMD_END
+};
 
 const struct target_area_name_t target_area_name[NUM_OF_TARGET_AREA] = 
 {
@@ -97,7 +194,7 @@ struct target_info_t targets_info[] =
 		stm32_program_area_map,				// program_area_map
 		stm32_program_mode,					// program_mode
 		&stm32_program_functions,			// program_functions
-		stm32_parse_argument,				// parse_argument
+		stm32_notifier,						// notifier
 		NULL,								// adjust_setting
 		
 		NULL,								// get_mass_product_data_size
@@ -110,7 +207,7 @@ struct target_info_t targets_info[] =
 		lpc1000_program_area_map,			// program_area_map
 		lpc1000_program_mode,				// program_mode
 		&lpc1000_program_functions,			// program_functions
-		lpc1000_parse_argument,				// parse_argument
+		lpc1000_notifier,					// notifier
 		lpc1000_adjust_setting,				// adjust_setting
 		
 		NULL,								// get_mass_product_data_size
@@ -123,7 +220,7 @@ struct target_info_t targets_info[] =
 		lm3s_program_area_map,				// program_area_map
 		lm3s_program_mode,					// program_mode
 		&lm3s_program_functions,			// program_functions
-		lm3s_parse_argument,				// parse_argument
+		lm3s_notifier,						// notifier
 		NULL,								// adjust_setting
 		
 		NULL,								// get_mass_product_data_size
@@ -136,7 +233,7 @@ struct target_info_t targets_info[] =
 		at91sam3_program_area_map,			// program_area_map
 		at91sam3_program_mode,				// program_mode
 		&at91sam3_program_functions,		// program_functions
-		at91sam3_parse_argument,			// parse_argument
+		at91sam3_notifier,					// notifier
 		NULL,								// adjust_setting
 		
 		NULL,								// get_mass_product_data_size
@@ -149,7 +246,7 @@ struct target_info_t targets_info[] =
 		avr32_program_area_map,				// program_area_map
 		avr32_program_mode,					// program_mode
 		&avr32_program_functions,			// program_functions
-		avr32_parse_argument,				// parse_argument
+		avr32_notifier,						// notifier
 		NULL,								// adjust_setting
 		
 		NULL,								// get_mass_product_data_size
@@ -162,7 +259,7 @@ struct target_info_t targets_info[] =
 		avrxmega_program_area_map,			// program_area_map
 		avrxmega_program_mode,				// program_mode
 		&avrxmega_program_functions,		// program_functions
-		avrxmega_parse_argument,			// parse_argument
+		avrxmega_notifier,					// notifier
 		NULL,								// adjust_setting
 		
 		NULL,								// get_mass_product_data_size
@@ -175,7 +272,7 @@ struct target_info_t targets_info[] =
 		stm8_program_area_map,				// program_area_map
 		stm8_program_mode,					// program_mode
 		&stm8_program_functions,			// program_functions
-		stm8_parse_argument,				// parse_argument
+		stm8_notifier,						// notifier
 		NULL,								// adjust_setting
 		
 		NULL,								// get_mass_product_data_size
@@ -188,7 +285,7 @@ struct target_info_t targets_info[] =
 		s5x_program_area_map,				// program_area_map
 		s5x_program_mode,					// program_mode
 		&s5x_program_functions,				// program_functions
-		s5x_parse_argument,					// parse_argument
+		s5x_notifier,						// notifier
 		NULL,								// adjust_setting
 		
 		NULL,								// get_mass_product_data_size
@@ -201,7 +298,7 @@ struct target_info_t targets_info[] =
 		psoc1_program_area_map,				// program_area_map
 		psoc1_program_mode,					// program_mode
 		&psoc1_program_functions,			// program_functions
-		psoc1_parse_argument,				// parse_argument
+		psoc1_notifier,						// notifier
 		psoc1_adjust_setting,				// adjust_setting
 		
 		NULL,								// get_mass_product_data_size
@@ -214,7 +311,7 @@ struct target_info_t targets_info[] =
 		msp430_program_area_map,			// program_area_map
 		msp430_program_mode,				// program_mode
 		&msp430_program_functions,			// program_functions
-		msp430_parse_argument,				// parse_argument
+		msp430_notifier,					// notifier
 		NULL,								// adjust_setting
 		
 		NULL,								// get_mass_product_data_size
@@ -227,7 +324,7 @@ struct target_info_t targets_info[] =
 		c8051f_program_area_map,			// program_area_map
 		c8051f_program_mode,				// program_mode
 		&c8051f_program_functions,			// program_functions
-		c8051f_parse_argument,				// parse_argument
+		c8051f_notifier,					// notifier
 		NULL,								// adjust_setting
 		
 		NULL,								// get_mass_product_data_size
@@ -240,7 +337,7 @@ struct target_info_t targets_info[] =
 		avr8_program_area_map,				// program_area_map
 		avr8_program_mode,					// program_mode
 		&avr8_program_functions,			// program_functions
-		avr8_parse_argument,				// parse_argument
+		avr8_notifier,						// notifier
 		NULL,								// adjust_setting
 		
 		NULL,								// get_mass_product_data_size
@@ -253,7 +350,7 @@ struct target_info_t targets_info[] =
 		svfp_program_area_map,				// program_area_map
 		svfp_program_mode,					// program_mode
 		&svfp_program_functions,			// program_functions
-		svfp_parse_argument,				// parse_argument
+		svfp_notifier,						// notifier
 		NULL,								// adjust_setting
 		
 		NULL,								// get_mass_product_data_size
@@ -266,7 +363,7 @@ struct target_info_t targets_info[] =
 		lpc900_program_area_map,			// program_area_map
 		lpc900_program_mode,				// program_mode
 		&lpc900_program_functions,			// program_functions
-		lpc900_parse_argument,				// parse_argument
+		lpc900_notifier,					// notifier
 		NULL,								// adjust_setting
 		
 		NULL,								// get_mass_product_data_size
@@ -278,7 +375,7 @@ struct target_info_t targets_info[] =
 		NULL,								// program_area_map
 		NULL,								// program_mode
 		NULL,								// program_functions
-		NULL,								// parse_argument
+		NULL,								// notifier
 		NULL,								// adjust_setting
 		
 		NULL,								// get_mass_product_data_size
@@ -646,6 +743,16 @@ RESULT target_program(struct program_context_t *context)
 	struct memlist **ml, *ml_tmp;
 	uint32_t time_in_ms = 1000;
 	uint8_t special_string[256];
+	
+	if ((NULL == pf) 
+		|| ((NULL == pf->execute) 
+			&& ((NULL == pf->read_target) 
+				|| (NULL == pf->write_target) 
+				|| (NULL == pf->erase_target))))
+	{
+		LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, "current mode", pi->chip_name);
+		return ERROR_FAIL;
+	}
 	
 	// check mode
 	if ((target_chips.num_of_chips > 0) 
@@ -1290,7 +1397,7 @@ RESULT target_init(struct program_info_t *pi, struct programmer_info_t *prog)
 	LOG_PUSH();
 	LOG_MUTE();
 	sprintf(mode_buff, "%d", pi->mode);
-	cur_target->parse_argument('m', mode_buff);
+	misc_call_notifier(cur_target->notifier, "mode", mode_buff);
 	LOG_POP();
 	
 	if (NULL == pi->chip_name)
@@ -1632,13 +1739,16 @@ void target_print_target(uint32_t index)
 		i++;
 	}
 	// extra info from target
-	targets_info[index].parse_argument('E', NULL);
+	if (ERROR_OK == misc_cmd_supported(targets_info[index].notifier, "extra"))
+	{
+		misc_call_notifier(targets_info[index].notifier, "extra", NULL);
+	}
 	printf("\n");
 	
 	// Targets based on ComPort outputs there special COM settings
 	if (strchr(targets_info[index].feature, 'C') != NULL)
 	{
-		targets_info[index].parse_argument('S', NULL);
+		misc_call_notifier(targets_info[index].notifier, "support", NULL);
 	}
 	else
 	{
@@ -1691,7 +1801,7 @@ void target_print_help(void)
 	
 	for (i = 0; targets_info[i].name != NULL; i++)
 	{
-		targets_info[i].parse_argument('h', NULL);
+		misc_call_notifier(targets_info[i].notifier, "help", NULL);
 	}
 }
 
@@ -3308,6 +3418,428 @@ RESULT target_release_chip_series(struct chip_series_t *s)
 	}
 	memset(s, 0, sizeof(struct chip_series_t));
 	
+	return ERROR_OK;
+}
+
+MISC_HANDLER(target_memory_detail)
+{
+	char target_char;
+	
+	vsprog_no_call_operate();
+	MISC_CHECK_ARGC(2);
+	
+	if (((NULL == program_info.chip_name) || (NULL == cur_target))
+		&& (NULL == program_info.chip_type))
+	{
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "Target");
+		return ERROR_FAIL;
+	}
+	if (((NULL == program_info.chip_name) || (NULL == cur_target))
+		&& (NULL != program_info.chip_type))
+	{
+		program_info.chip_name = program_info.chip_type;
+		target_info_init(&program_info);
+		if (NULL == cur_target)
+		{
+			LOG_ERROR(ERRMSG_NOT_DEFINED, "Target");
+			return ERROR_FAIL;
+		}
+	}
+	
+	if (!strcmp(argv[1], "all"))
+	{
+		target_char = 0;
+	}
+	else
+	{
+		target_char = target_area_char_by_fullname((char *)argv[1]);
+		if (0 == target_char)
+		{
+			LOG_ERROR(ERRMSG_NOT_SUPPORT, argv[1]);
+			return ERROR_FAIL;
+		}
+	}
+	
+	if (ERROR_OK != target_init(&program_info, cur_programmer))
+	{
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "initialize target");
+		return ERROR_FAIL;
+	}
+	
+	target_print_memory(target_char);
+	return ERROR_OK;
+}
+
+MISC_HANDLER(target_parameter_detail)
+{
+	char target_char;
+	
+	vsprog_no_call_operate();
+	MISC_CHECK_ARGC(2);
+	
+	if ((NULL == program_info.chip_name) 
+		|| (NULL == program_info.chip_type) 
+		|| (NULL == cur_target))
+	{
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "Target");
+		return ERROR_FAIL;
+	}
+	
+	if (strlen(argv[1]) > 1)
+	{
+		target_char = target_area_char_by_fullname((char *)argv[1]);
+		if (0 == target_char)
+		{
+			LOG_ERROR(ERRMSG_NOT_SUPPORT, argv[1]);
+			return ERROR_FAIL;
+		}
+	}
+	else
+	{
+		target_char = argv[1][0];
+	}
+	
+	if (ERROR_OK != target_init(&program_info, cur_programmer))
+	{
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "initialize target");
+		return ERROR_FAIL;
+	}
+	
+	target_print_setting(target_char);
+	return ERROR_OK;
+}
+
+MISC_HANDLER(target_series)
+{
+	MISC_CHECK_ARGC(2);
+	
+	program_info.chip_type = (char *)argv[1];
+	if (ERROR_OK != target_info_init(&program_info))
+	{
+		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "initialize target: ", argv[1]);
+		return ERROR_FAIL;
+	}
+	return ERROR_OK;
+}
+
+MISC_HANDLER(target_chip)
+{
+	MISC_CHECK_ARGC(2);
+	
+	program_info.chip_name = (char *)argv[1];
+	if (ERROR_OK != target_info_init(&program_info))
+	{
+		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "initialize target: ", argv[1]);
+		return ERROR_FAIL;
+	}
+	return ERROR_OK;
+}
+
+MISC_HANDLER(target_value)
+{
+	int8_t target_idx;
+	
+	MISC_CHECK_ARGC(2);
+	
+	if (strlen(argv[1]) < 2)
+	{
+		LOG_ERROR(ERRMSG_INVALID_CMD, argv[0]);
+		misc_print_help(argv[0]);
+		return ERROR_FAIL;
+	}
+	target_idx = (int)target_area_idx(argv[1][0]);
+	if (target_idx < 0)
+	{
+		LOG_ERROR(ERRMSG_INVALID_CHARACTER, argv[1][0], "target");
+		return ERROR_FAIL;
+	}
+	program_info.program_areas[target_idx].cli_str = (char *)&argv[1][1];
+	program_info.areas_defined |= target_area_name[target_idx].mask;
+	return ERROR_OK;
+}
+
+MISC_HANDLER(target_interface_frequency)
+{
+	MISC_CHECK_ARGC(2);
+	program_info.frequency = (uint16_t)strtoul(argv[1], NULL, 0);
+	return ERROR_OK;
+}
+
+MISC_HANDLER(target_kernel_khz)
+{
+	MISC_CHECK_ARGC(2);
+	program_info.kernel_khz = (uint32_t)strtoul(argv[1], NULL, 0);
+	return ERROR_OK;
+}
+
+MISC_HANDLER(target_wait_state)
+{
+	MISC_CHECK_ARGC(2);
+	program_info.wait_state = (uint8_t)strtoul(argv[1], NULL, 0);
+	return ERROR_OK;
+}
+
+MISC_HANDLER(target_auto_adjust)
+{
+	MISC_CHECK_ARGC(1);
+	program_info.auto_adjust = 1;
+	return ERROR_OK;
+}
+
+MISC_HANDLER(target_jtag_dc)
+{
+	// UB(1) UA(1) BB(2) BA(2)
+	uint8_t buff[6];
+	char format[] = "%1d%1d%2d%2d";
+	
+	MISC_CHECK_ARGC(2);
+	if (ERROR_OK != 
+		strparser_parse((char *)argv[1], format, buff, sizeof(buff)))
+	{
+		LOG_ERROR(ERRMSG_NOT_SUPPORT_AS, argv[1], format);
+		return ERROR_FAIL;
+	}
+	program_info.jtag_pos.ub = buff[0];
+	program_info.jtag_pos.ua = buff[1];
+	program_info.jtag_pos.bb = buff[2] + (buff[3] << 8);
+	program_info.jtag_pos.ba = buff[4] + (buff[5] << 8);
+	return ERROR_OK;
+}
+
+MISC_HANDLER(target_interface_mode)
+{
+	int8_t mode;
+	
+	MISC_CHECK_ARGC(2);
+	
+	if (NULL == cur_target)
+	{
+		LOG_ERROR(ERRMSG_NOT_INITIALIZED, "", "target");
+		return ERROR_FAIL;
+	}
+	if (strlen(argv[1]) != 1)
+	{
+		LOG_ERROR(ERRMSG_INVALID_CMD, argv[0]);
+		misc_print_help(argv[0]);
+		return ERROR_FAIL;
+	}
+	mode = target_mode_get_idx(cur_target->program_mode, argv[1][0]);
+	if (mode < 0)
+	{
+		LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, argv[1], cur_target->name);
+		return ERROR_FAIL;
+	}
+	
+	program_info.mode = (uint8_t)mode;
+	return ERROR_OK;
+}
+
+MISC_HANDLER(target_execute_addr)
+{
+	MISC_CHECK_ARGC(2);
+	
+	program_info.execute_addr = (uint32_t)strtoul(argv[1], NULL, 0);
+	program_info.execute_flag = 1;
+	return ERROR_OK;
+}
+
+#include "filelist.h"
+#include "fileparser.h"
+
+extern struct operation_t operations;
+extern struct filelist *fl_in, *fl_out;
+extern uint8_t firmware_update_flag;
+MISC_HANDLER(target_operate)
+{
+	RESULT ret = ERROR_OK;
+	uint32_t require_hex_file_for_read = 0;
+	uint32_t require_hex_file_for_write = 0;
+	uint32_t i;
+	
+	MISC_CHECK_ARGC(1);
+	
+	// init and check programmer's ability
+	i = cur_target->program_mode[program_info.mode].interface_needed;
+	if ((cur_programmer->interfaces_mask & i) != i)
+	{
+		LOG_ERROR("%s can not support %s in the mode defined.", 
+					cur_programmer->name, cur_target->name);
+		return ERROR_FAIL;
+	}
+	
+	// check file
+	target_prepare_operations(&operations, 
+					&require_hex_file_for_read, &require_hex_file_for_write);
+	if ((require_hex_file_for_read > 0) 
+		&& ((NULL == fl_in) || (NULL == fl_in->path) || (NULL == fl_in->file)))
+	{
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "input file");
+		return ERROR_FAIL;
+	}
+	if ((require_hex_file_for_write > 0) 
+		&& ((NULL == fl_out) || (NULL == fl_out->path)))
+	{
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "output file");
+		return ERROR_FAIL;
+	}
+	
+	// init programmer
+	if (firmware_update_flag)
+	{
+		int verbosity_tmp = verbosity;
+		
+		// send command first to enter into firmware update mode
+		verbosity = -1;
+		ret = cur_programmer->init();
+		verbosity = verbosity_tmp;
+		if (ERROR_OK == ret)
+		{
+			if (cur_programmer->enter_firmware_update_mode != NULL)
+			{
+				if (ERROR_OK != cur_programmer->enter_firmware_update_mode())
+				{
+					LOG_ERROR(ERRMSG_FAILURE_OPERATION, 
+								"enter into firmware update mode");
+					return ERROR_FAIL;
+				}
+			}
+			
+			// close device
+			cur_programmer->fini();
+			// sleep 3s
+			sleep_ms(3000);
+		}
+	}
+	else if (cur_target->program_mode[program_info.mode].interface_needed)
+	{
+		ret = cur_programmer->init();
+		if (ret != ERROR_OK)
+		{
+			LOG_ERROR(ERRMSG_NOT_INITIALIZED, "Programmer", 
+						cur_programmer->name);
+			return ERROR_FAIL;
+		}
+	}
+	
+	// init target
+	ret = target_init(&program_info, cur_programmer);
+	if (ret != ERROR_OK)
+	{
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "initialize target");
+		return ERROR_FAIL;
+	}
+	
+	// malloc buffer
+	ret = target_alloc_data_buffer();
+	if (ret != ERROR_OK)
+	{
+		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
+		return ERROR_FAIL;
+	}
+	ret = target_parse_cli_string();
+	if (ret != ERROR_OK)
+	{
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "parse cli_string");
+		return ERROR_FAIL;
+	}
+	// read file
+	if (require_hex_file_for_read > 0)
+	{
+		struct filelist *fl = fl_in;
+		
+		while ((fl != NULL) && (fl->path != NULL) && (fl->file != NULL) 
+			&& (strlen(fl->path) > 4))
+		{
+			ret = parse_file(fl->path, fl->file, (void *)&program_info, 
+								&target_write_buffer_from_file_callback, 
+								fl->seg_offset, fl->addr_offset);
+			if (ret != ERROR_OK)
+			{
+				LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "parse input file", 
+							fl->path);
+				return ERROR_FAIL;
+			}
+			
+			fl = FILELIST_GetNext(fl);
+		}
+	}
+	if (ERROR_OK != target_check_defined(operations))
+	{
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "check target defined content");
+		return ERROR_FAIL;
+	}
+	// insert a dly between 2 operations
+	sleep_ms(100);
+	
+	// do programming
+	{
+		struct program_context_t context;
+		
+		// in system programmer
+		if ((!(operations.checksum_operations || operations.erase_operations 
+				|| operations.read_operations || operations.verify_operations 
+				|| operations.write_operations)) 
+			&& (NULL == strchr(cur_target->feature, NO_TARGET[0])))
+		{
+			// no operation defined
+			// and not no_target operation
+			return ERROR_OK;
+		}
+		
+		context.op = &operations;
+		context.param = &target_chip_param;
+		context.pi = &program_info;
+		context.prog = cur_programmer;
+		ret = target_program(&context);
+		if (ret != ERROR_OK)
+		{
+			LOG_ERROR(ERRMSG_FAILURE_OPERATE_DEVICE, cur_target->name);
+			return ERROR_FAIL;
+		}
+		
+		// save contect to file for read operation
+		if (cur_target != NULL)
+		{
+			struct program_area_map_t *p_map = 
+					(struct program_area_map_t *)cur_target->program_area_map;
+			
+			while (p_map->name != 0)
+			{
+				if ((p_map->data_pos) 
+					&& (operations.read_operations 
+						& target_area_mask(p_map->name)))
+				{
+					uint8_t *buff = NULL;
+					uint32_t size = 0;
+					struct chip_area_info_t *area;
+					int8_t area_idx;
+					
+					area_idx = target_area_idx(p_map->name);
+					if (area_idx < 0)
+					{
+						p_map++;
+						continue;
+					}
+					area = &target_chip_param.chip_areas[area_idx];
+					target_get_target_area(p_map->name, &buff, &size);
+					if ((buff != NULL) && (size > 0) && (fl_out != NULL))
+					{
+						if (ERROR_OK != save_target_to_file(fl_out, buff, 
+								size, area->seg, area->addr, p_map->fseg_addr, 
+								p_map->fstart_addr))
+						{
+							LOG_ERROR(ERRMSG_FAILURE_OPERATION, 
+										"write data to file");
+							return ERROR_FAIL;
+						}
+					}
+				}
+				
+				p_map++;
+			}
+			end_file(fl_out);
+		}
+	}
 	return ERROR_OK;
 }
 

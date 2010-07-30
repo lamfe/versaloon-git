@@ -30,12 +30,10 @@
 #include "app_log.h"
 #include "prog_interface.h"
 
-#include "memlist.h"
-#include "pgbar.h"
-
 #include "vsprog.h"
 #include "programmer.h"
 #include "target.h"
+#include "scripts.h"
 
 #include "c8051f.h"
 #include "c8051f_internal.h"
@@ -57,47 +55,44 @@ const struct program_mode_t c8051f_program_mode[] =
 
 struct program_functions_t c8051f_program_functions;
 
-static void c8051f_usage(void)
+MISC_HANDLER(c8051f_help)
 {
+	MISC_CHECK_ARGC(1);
 	printf("\
 Usage of %s:\n\
   -m,  --mode <MODE>                        set mode<j|c>\n\n", 
 			CUR_TARGET_STRING);
+	return ERROR_OK;
 }
 
-PARSE_ARGUMENT_HANDLER(c8051f)
+MISC_HANDLER(c8051f_mode)
 {
 	uint8_t mode;
 	
-	switch (cmd)
+	MISC_CHECK_ARGC(2);
+	mode = (uint8_t)strtoul(argv[1], NULL,0);
+	switch (mode)
 	{
-	case 'h':
-		c8051f_usage();
+	case C8051F_JTAG:
+		memcpy(&c8051f_program_functions, &c8051fjtag_program_functions, 
+				sizeof(c8051f_program_functions));
 		break;
-	case 'm':
-		if (NULL == argu)
-		{
-			LOG_ERROR(ERRMSG_INVALID_OPTION, cmd);
-			return ERRCODE_INVALID_OPTION;
-		}
-		mode = (uint8_t)strtoul(argu, NULL,0);
-		switch (mode)
-		{
-		case C8051F_JTAG:
-			memcpy(&c8051f_program_functions, &c8051fjtag_program_functions, 
-					sizeof(c8051f_program_functions));
-			break;
-		case C8051F_C2:
-			memcpy(&c8051f_program_functions, &c8051fc2_program_functions, 
-					sizeof(c8051f_program_functions));
-			break;
-		}
-		break;
-	default:
-		return ERROR_FAIL;
+	case C8051F_C2:
+		memcpy(&c8051f_program_functions, &c8051fc2_program_functions, 
+				sizeof(c8051f_program_functions));
 		break;
 	}
-	
 	return ERROR_OK;
 }
+
+const struct misc_cmd_t c8051f_notifier[] = 
+{
+	MISC_CMD(	"help",
+				"print help information of current target for internal call",
+				c8051f_help),
+	MISC_CMD(	"mode",
+				"set programming mode of target for internal call",
+				c8051f_mode),
+	MISC_CMD_END
+};
 

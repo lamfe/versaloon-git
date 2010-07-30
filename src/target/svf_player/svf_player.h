@@ -24,8 +24,7 @@
 extern const struct program_area_map_t svfp_program_area_map[];
 extern const struct program_mode_t svfp_program_mode[];
 extern const struct program_functions_t svfp_program_functions;
-
-PARSE_ARGUMENT_HANDLER(svfp);
+extern const struct misc_cmd_t svfp_notifier[];
 
 #endif /* __SVF_PLAYER_H_INCLUDED__ */
 

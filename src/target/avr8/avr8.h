@@ -24,8 +24,7 @@
 extern const struct program_area_map_t avr8_program_area_map[];
 extern const struct program_mode_t avr8_program_mode[];
 extern struct program_functions_t avr8_program_functions;
-
-PARSE_ARGUMENT_HANDLER(avr8);
+extern const struct misc_cmd_t avr8_notifier[];
 
 #endif /* __AVR8_H_INCLUDED__ */
 

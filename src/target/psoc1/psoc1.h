@@ -24,8 +24,8 @@
 extern const struct program_area_map_t psoc1_program_area_map[];
 extern const struct program_mode_t psoc1_program_mode[];
 extern const struct program_functions_t psoc1_program_functions;
+extern const struct misc_cmd_t psoc1_notifier[];
 
-PARSE_ARGUMENT_HANDLER(psoc1);
 ADJUST_SETTING_HANDLER(psoc1);
 
 #endif /* __PSOC1_H_INCLUDED__ */
