@@ -172,7 +172,7 @@ static void free_all(void)
 	
 	if (cur_target != NULL)
 	{
-		memset(cur_target, 0, sizeof(cur_target));
+		cur_target = NULL;
 	}
 	
 	if ((cur_programmer != NULL) && (cur_programmer->fini != NULL))
@@ -181,6 +181,7 @@ static void free_all(void)
 		cur_programmer = NULL;
 	}
 	
+	memset(&operations, 0, sizeof(operations));
 	memset(&program_info, 0, sizeof(program_info));
 	memset(&target_chip_param, 0, sizeof(target_chip_param));
 	
@@ -349,7 +350,7 @@ MISC_HANDLER(vsprog_support)
 		// print all Supported programmers
 		programmer_print_list();
 	}
-	else if (!strcmp(optarg, "target"))
+	else if (!strcmp(argv[1], "target"))
 	{
 		// print all Supported devices
 		target_print_list();
@@ -375,7 +376,7 @@ MISC_HANDLER(vsprog_support)
 			}
 		}
 		
-		LOG_ERROR(ERRMSG_NOT_SUPPORT, optarg);
+		LOG_ERROR(ERRMSG_NOT_SUPPORT, argv[1]);
 		LOG_ERROR(ERRMSG_TRY_SUPPORT);
 		return ERROR_FAIL;
 	}
@@ -425,7 +426,7 @@ Parse_Operation:
 		}
 		else
 		{
-			if (ERROR_OK != parse_operation(popt_tmp, optarg + 1, argu_num))
+			if (ERROR_OK != parse_operation(popt_tmp, &argv[1][1], argu_num))
 			{
 				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "parse operation");
 				return ERROR_FAIL;

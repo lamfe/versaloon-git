@@ -3626,7 +3626,7 @@ MISC_HANDLER(target_interface_mode)
 	
 	if (NULL == cur_target)
 	{
-		LOG_ERROR(ERRMSG_NOT_INITIALIZED, "", "target");
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "target");
 		return ERROR_FAIL;
 	}
 	if (strlen(argv[1]) != 1)
@@ -3669,6 +3669,11 @@ MISC_HANDLER(target_operate)
 	uint32_t i;
 	
 	MISC_CHECK_ARGC(1);
+	if (NULL == cur_target)
+	{
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "Target");
+		return ERROR_FAIL;
+	}
 	
 	if (cur_target->program_mode[program_info.mode].interface_needed 
 		&& (ERROR_OK != programmer_assert()))
