@@ -420,7 +420,7 @@ begin
       end;
       3://htSegAddr
       begin
-        if (LineInfo.ByteSize <> 2) or (LineInfo.Addr <> 0) then
+        if LineInfo.Addr <> 0 then
         begin
           exit;
         end;
