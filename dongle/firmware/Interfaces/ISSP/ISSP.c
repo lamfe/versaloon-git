@@ -152,7 +152,7 @@ void ISSP_EnterProgMode(uint8 mode)
 		ISSP_PowerOff();
 		DelayMS(1);
 		ISSP_PowerOn();
-		DelayUS(500 * (mode >> 2));
+		DelayMS(5);
 
 		while(ISSP_SDATA_GET() && --to)
 		{
