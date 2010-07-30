@@ -32,12 +32,10 @@
 #include "app_log.h"
 #include "prog_interface.h"
 
-#include "memlist.h"
-#include "pgbar.h"
-
 #include "vsprog.h"
 #include "programmer.h"
 #include "target.h"
+#include "scripts.h"
 
 #include "cm3.h"
 #include "cm3_stm32.h"
@@ -101,55 +99,36 @@ const struct cm3_param_t cm3_chips_param[] = {
 static uint8_t cm3_chip_index = 0;
 
 uint8_t cm3_mode_offset = 0;
-uint8_t cm3_execute_flag = 0;
-uint32_t cm3_execute_addr = 0;
 
-PARSE_ARGUMENT_HANDLER(cm3)
+MISC_HANDLER(cm3_chip)
 {
 	uint8_t i;
-	
-	switch (cmd)
+	MISC_CHECK_ARGC(2);
+	for (i = 0; i < dimof(cm3_chips_param); i++)
 	{
-	case 'c':
-		if (NULL == argu)
+		if (!strcmp(cm3_chips_param[i].chip_name, argv[1]))
 		{
-			LOG_ERROR(ERRMSG_INVALID_OPTION, cmd);
-			return ERRCODE_INVALID_OPTION;
+			cm3_chip_index = i;
+			memcpy(&cm3_program_functions, 
+					cm3_chips_param[i].program_functions, 
+					sizeof(cm3_program_functions));
+			cm3_program_functions.enter_program_mode = 
+				ENTER_PROGRAM_MODE_FUNCNAME(cm3);
+			cm3_program_functions.leave_program_mode = 
+				LEAVE_PROGRAM_MODE_FUNCNAME(cm3);
+			return ERROR_OK;
 		}
-		
-		for (i = 0; i < dimof(cm3_chips_param); i++)
-		{
-			if (!strcmp(cm3_chips_param[i].chip_name, argu))
-			{
-				cm3_chip_index = i;
-				memcpy(&cm3_program_functions, 
-						cm3_chips_param[i].program_functions, 
-						sizeof(cm3_program_functions));
-				cm3_program_functions.enter_program_mode = 
-					ENTER_PROGRAM_MODE_FUNCNAME(cm3);
-				cm3_program_functions.leave_program_mode = 
-					LEAVE_PROGRAM_MODE_FUNCNAME(cm3);
-				break;
-			}
-		}
-		break;
-	case 'x':
-		if (NULL == argu)
-		{
-			LOG_ERROR(ERRMSG_INVALID_OPTION, cmd);
-			return ERRCODE_INVALID_OPTION;
-		}
-		
-		cm3_execute_addr = (uint32_t)strtoul(argu, NULL, 0);
-		cm3_execute_flag = 1;
-		break;
-	default:
-		return ERROR_FAIL;
-		break;
 	}
-	
-	return ERROR_OK;
+	return ERROR_FAIL;
 }
+
+const struct misc_cmd_t cm3_notifier[] = 
+{
+	MISC_CMD(	"chip",
+				"select target chip for internal call",
+				cm3_chip),
+	MISC_CMD_END
+};
 
 ENTER_PROGRAM_MODE_HANDLER(cm3)
 {
@@ -232,6 +211,7 @@ ENTER_PROGRAM_MODE_HANDLER(cm3)
 
 LEAVE_PROGRAM_MODE_HANDLER(cm3)
 {
+	struct program_info_t *pi = context->pi;
 	const struct program_functions_t *pf = 
 		cm3_chips_param[cm3_chip_index].program_functions;
 	RESULT ret = ERROR_OK;
@@ -246,7 +226,7 @@ LEAVE_PROGRAM_MODE_HANDLER(cm3)
 		ret = pf->leave_program_mode(context, success);
 	}
 	
-	if (cm3_execute_flag && success 
+	if (pi->execute_flag && success 
 		&& (context->op->write_operations & APPLICATION))
 	{
 		uint32_t reg;
@@ -257,14 +237,14 @@ LEAVE_PROGRAM_MODE_HANDLER(cm3)
 			return ERRCODE_FAILURE_OPERATION;
 		}
 		if (ERROR_OK != 
-				cm3_write_core_register(CM3_COREREG_PC, &cm3_execute_addr))
+				cm3_write_core_register(CM3_COREREG_PC, &pi->execute_addr))
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "write PC");
 			return ERRCODE_FAILURE_OPERATION;
 		}
 		reg = 0;
 		if ((ERROR_OK != cm3_read_core_register(CM3_COREREG_PC, &reg)) 
-			|| (reg != cm3_execute_addr))
+			|| (reg != pi->execute_addr))
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "verify written PC");
 			return ERRCODE_FAILURE_OPERATION;
@@ -279,10 +259,6 @@ LEAVE_PROGRAM_MODE_HANDLER(cm3)
 	// jtag/swd fini
 	cm3_reset();
 	cm3_dp_fini();
-	if (!(context->op->read_operations & CHIPID))
-	{
-		cm3_execute_flag = 0;
-	}
 	return ret;
 }
 

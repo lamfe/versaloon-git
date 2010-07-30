@@ -24,8 +24,8 @@
 extern struct program_area_map_t lpc1000_program_area_map[];
 extern const struct program_mode_t lpc1000_program_mode[];
 extern struct program_functions_t lpc1000_program_functions;
+extern const struct misc_cmd_t lpc1000_notifier[];
 
-PARSE_ARGUMENT_HANDLER(lpc1000);
 ADJUST_SETTING_HANDLER(lpc1000);
 
 #endif /* __LPC1000_H_INCLUDED__ */

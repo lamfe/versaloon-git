@@ -30,12 +30,10 @@
 #include "app_log.h"
 #include "prog_interface.h"
 
-#include "memlist.h"
-#include "pgbar.h"
-
 #include "vsprog.h"
 #include "programmer.h"
 #include "target.h"
+#include "scripts.h"
 
 #include "at89s5x.h"
 #include "at89s5x_internal.h"
@@ -72,47 +70,26 @@ const struct program_functions_t s5x_program_functions =
 	READ_TARGET_FUNCNAME(s5x)
 };
 
-static uint16_t s5x_byte_delay_us = 500;
-
-void s5x_usage(void)
+MISC_HANDLER(s5x_help)
 {
+	MISC_CHECK_ARGC(1);
 	printf("\
 Usage of %s:\n\
   -F,  --frequency <FREQUENCY>              set ISP frequency, in KHz\n\
   -m,  --mode <MODE>                        set program mode<b|p>\n\n", 
 			CUR_TARGET_STRING);
-}
-
-PARSE_ARGUMENT_HANDLER(s5x)
-{
-	switch(cmd)
-	{
-	case 'h':
-		s5x_usage();
-		break;
-	case 'w':
-		// set Wait time
-		if (NULL == argu)
-		{
-			LOG_ERROR(ERRMSG_INVALID_OPTION, cmd);
-			return ERRCODE_INVALID_OPTION;
-		}
-		
-		s5x_byte_delay_us = (uint16_t)strtoul(argu, NULL, 0);
-		if (s5x_byte_delay_us & 0x8000)
-		{
-			LOG_ERROR(ERRMSG_INVALID_OPTION, cmd);
-			return ERRCODE_INVALID_OPTION;
-		}
-		
-		break;
-	default:
-		return ERROR_FAIL;
-		break;
-	}
-
 	return ERROR_OK;
 }
+
+const struct misc_cmd_t s5x_notifier[] = 
+{
+	MISC_CMD(	"help",
+				"print help information of current target for internal call",
+				s5x_help),
+	MISC_CMD_END
+};
+
+static uint16_t s5x_byte_delay_us = 500;
 
 #define spi_init()				prog->interfaces.spi.init()
 #define spi_fini()				prog->interfaces.spi.fini()
@@ -148,6 +125,10 @@ ENTER_PROGRAM_MODE_HANDLER(s5x)
 	if (!context->pi->frequency)
 	{
 		context->pi->frequency = CUR_DEFAULT_FREQ;
+	}
+	if (context->pi->wait_state)
+	{
+		s5x_byte_delay_us = context->pi->wait_state;
 	}
 	
 	// init

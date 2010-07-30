@@ -22,8 +22,7 @@
 #define CM3_STRING						"cm3"
 
 extern struct program_functions_t cm3_program_functions;
-
-PARSE_ARGUMENT_HANDLER(cm3);
+extern const struct misc_cmd_t cm3_notifier[];
 
 extern uint8_t cm3_mode_offset;
 

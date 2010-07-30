@@ -31,12 +31,12 @@
 #include "app_log.h"
 #include "prog_interface.h"
 
-#include "memlist.h"
 #include "pgbar.h"
 
 #include "vsprog.h"
 #include "programmer.h"
 #include "target.h"
+#include "scripts.h"
 
 #include "cm3.h"
 #include "cm3_lm3s.h"

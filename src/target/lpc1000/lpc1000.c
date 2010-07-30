@@ -31,13 +31,10 @@
 #include "app_log.h"
 #include "prog_interface.h"
 
-#include "memlist.h"
-#include "filelist.h"
-#include "pgbar.h"
-
 #include "vsprog.h"
 #include "programmer.h"
 #include "target.h"
+#include "scripts.h"
 
 #include "lpc1000.h"
 #include "lpc1000_internal.h"
@@ -65,8 +62,9 @@ RESULT (*lpc1000_enter_program_mode_save)(struct program_context_t *context);
 ENTER_PROGRAM_MODE_HANDLER(lpc1000);
 struct program_functions_t lpc1000_program_functions;
 
-static void lpc1000_usage(void)
+MISC_HANDLER(lpc1000_help)
 {
+	MISC_CHECK_ARGC(1);
 	printf("\
 Usage of %s:\n\
   -C,  --comport <COMM_ATTRIBUTE>           set com port\n\
@@ -75,67 +73,65 @@ Usage of %s:\n\
   -F,  --frequency <FREQUENCY>              set JTAG frequency, in KHz\n\
   -A,  --auto-adjust                        add checksum for first 7 vectors\n\n",
 			CUR_TARGET_STRING);
+	return ERROR_OK;
 }
 
-PARSE_ARGUMENT_HANDLER(lpc1000)
+MISC_HANDLER(lpc1000_mode)
 {
 	uint8_t mode;
 	
-	switch (cmd)
+	MISC_CHECK_ARGC(2);
+	mode = (uint8_t)strtoul(argv[1], NULL,0);
+	switch (mode)
 	{
-	case 'h':
-		lpc1000_usage();
+	case LPC1000_JTAG:
+	case LPC1000_SWD:
+		cm3_mode_offset = 0;
+		misc_call_notifier(cm3_notifier, "chip", "cm3_lpc1000");
+		memcpy(&lpc1000_program_functions, &cm3_program_functions, 
+				sizeof(lpc1000_program_functions));
+		lpc1000_enter_program_mode_save = 
+								cm3_program_functions.enter_program_mode;
 		break;
-	case 'm':
-		if (NULL == argu)
-		{
-			LOG_ERROR(ERRMSG_INVALID_OPTION, cmd);
-			return ERRCODE_INVALID_OPTION;
-		}
-		mode = (uint8_t)strtoul(argu, NULL,0);
-		switch (mode)
-		{
-		case LPC1000_JTAG:
-		case LPC1000_SWD:
-			cm3_mode_offset = 0;
-			cm3_parse_argument('c', "cm3_lpc1000");
-			memcpy(&lpc1000_program_functions, &cm3_program_functions, 
-					sizeof(lpc1000_program_functions));
-			lpc1000_enter_program_mode_save = 
-									cm3_program_functions.enter_program_mode;
-			break;
-		case LPC1000_ISP:
-			comisp_mode_offset = LPC1000_ISP;
-			comisp_parse_argument('c', "comisp_lpc1000");
-			memcpy(&lpc1000_program_functions, &comisp_program_functions, 
-					sizeof(lpc1000_program_functions));
-			lpc1000_enter_program_mode_save = 
-									comisp_program_functions.enter_program_mode;
-			break;
-		}
-		lpc1000_program_functions.enter_program_mode = 
-									ENTER_PROGRAM_MODE_FUNCNAME(lpc1000);
-		break;
-	case 'E':
-		comisp_print_comm_info(COMISP_LPCARM);
-		break;
-	case 'b':
-		cm3_parse_argument(cmd, argu);
-		break;
-	case 'C':
-		comisp_parse_argument(cmd, argu);
-		break;
-	case 'x':
-		cm3_parse_argument(cmd, argu);
-		comisp_parse_argument(cmd, argu);
-		break;
-	default:
+	case LPC1000_ISP:
+		comisp_mode_offset = LPC1000_ISP;
+		misc_call_notifier(comisp_notifier, "chip", "comisp_lpc1000");
+		memcpy(&lpc1000_program_functions, &comisp_program_functions, 
+				sizeof(lpc1000_program_functions));
+		lpc1000_enter_program_mode_save = 
+								comisp_program_functions.enter_program_mode;
+		// not yet
 		return ERROR_FAIL;
 		break;
 	}
-	
+	lpc1000_program_functions.enter_program_mode = 
+								ENTER_PROGRAM_MODE_FUNCNAME(lpc1000);
 	return ERROR_OK;
 }
+
+MISC_HANDLER(lpc1000_extra)
+{
+	char cmd[4] = "E ";
+	
+	MISC_CHECK_ARGC(1);
+	cmd[2] = '0' + COMISP_LPCARM;
+	cmd[3] = '\0';
+	return misc_run_script(cmd);
+}
+
+const struct misc_cmd_t lpc1000_notifier[] = 
+{
+	MISC_CMD(	"help",
+				"print help information of current target for internal call",
+				lpc1000_help),
+	MISC_CMD(	"mode",
+				"set programming mode of target for internal call",
+				lpc1000_mode),
+	MISC_CMD(	"extra",
+				"print extra information for internal call",
+				lpc1000_extra),
+	MISC_CMD_END
+};
 
 ADJUST_SETTING_HANDLER(lpc1000)
 {

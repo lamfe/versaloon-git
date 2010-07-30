@@ -25,7 +25,10 @@
 #include "app_err.h"
 #include "app_log.h"
 #include "prog_interface.h"
+
 #include "programmer.h"
+#include "scripts.h"
+#include "strparser.h"
 
 #include "usb.h"
 #include "usbapi.h"

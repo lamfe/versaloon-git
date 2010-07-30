@@ -24,10 +24,8 @@
 #define COMISP_LPCARM					1
 
 extern struct program_functions_t comisp_program_functions;
+extern const struct misc_cmd_t comisp_notifier[];
 
-PARSE_ARGUMENT_HANDLER(comisp);
-
-void comisp_print_comm_info(uint8_t i);
 extern uint8_t comisp_mode_offset;
 
 #endif /* __COMISP_H_INCLUDED__ */

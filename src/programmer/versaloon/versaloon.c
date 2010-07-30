@@ -43,12 +43,6 @@ struct versaloon_pending_t versaloon_pending[VERSALOON_MAX_PENDING_NUMBER];
 uint16_t versaloon_pending_idx = 0;
 
 static usb_dev_handle *versaloon_device_handle = NULL;
-static uint16_t versaloon_vid = VERSALOON_VID;
-static uint16_t versaloon_pid = VERSALOON_PID;
-static char *versaloon_serialstring = NULL;
-static uint8_t versaloon_epout = VERSALOON_OUTP;
-static uint8_t versaloon_epin = VERSALOON_INP;
-static uint8_t versaloon_interface = 1;
 static uint32_t versaloon_to = VERSALOON_TIMEOUT;
 
 void versaloon_usage(void)
@@ -67,8 +61,7 @@ void versaloon_support(void)
 
 RESULT versaloon_check_argument(char cmd, const char *argu)
 {
-	char *cur_pointer, *end_pointer;
-	
+	REFERENCE_PARAMETER(argu);
 	switch (cmd)
 	{
 	case 'h':
@@ -76,103 +69,6 @@ RESULT versaloon_check_argument(char cmd, const char *argu)
 		break;
 	case 'S':
 		versaloon_support();
-		break;
-	case 'U':
-		// --usb
-		if (NULL == argu)
-		{
-			LOG_BUG(ERRMSG_INVALID_OPTION, cmd);
-			return ERRCODE_INVALID_OPTION;
-		}
-		
-		cur_pointer = (char *)argu;
-		// Format: SERIALSTRING
-		while (*cur_pointer != 0)
-		{
-			if ((' ' == *cur_pointer) || ('_' == *cur_pointer) 
-				|| ('-' == *cur_pointer))
-			{
-				break;
-			}
-			cur_pointer++;
-		}
-		if ((cur_pointer - argu) == (int32_t)strlen(argu))
-		{
-			versaloon_serialstring = (char *)argu;
-			goto print_usb_device;
-		}
-		
-		cur_pointer = (char *)argu;
-		// Format: VID_PID_EPIN_EPOUT_INTERFACE_SERIALSTRING
-		versaloon_vid = (uint16_t)strtoul(cur_pointer, &end_pointer, 0);
-		if ((end_pointer == cur_pointer) 
-			|| ((*end_pointer != '_') && (*end_pointer != ' ') 
-				&& (*end_pointer != '-')) 
-			|| ('\0' == *(end_pointer + 1)))
-		{
-			LOG_BUG(ERRMSG_INVALID_OPTION, cmd);
-			return ERRCODE_INVALID_OPTION;
-		}
-		cur_pointer = end_pointer + 1;
-		versaloon_pid = (uint16_t)strtoul(cur_pointer, &end_pointer, 0);
-		if ((end_pointer == cur_pointer) 
-			|| ((*end_pointer != '_') && (*end_pointer != ' ') 
-				&& (*end_pointer != '-')) 
-			|| ('\0' == *(end_pointer + 1)))
-		{
-			LOG_BUG(ERRMSG_INVALID_OPTION, cmd);
-			return ERRCODE_INVALID_OPTION;
-		}
-		cur_pointer = end_pointer + 1;
-		versaloon_epin = (uint8_t)strtoul(cur_pointer, &end_pointer, 0);
-		if ((end_pointer == cur_pointer) 
-			|| ((*end_pointer != '_') && (*end_pointer != ' ') 
-				&& (*end_pointer != '-')) 
-			|| ('\0' == *(end_pointer + 1)))
-		{
-			LOG_BUG(ERRMSG_INVALID_OPTION, cmd);
-			return ERRCODE_INVALID_OPTION;
-		}
-		cur_pointer = end_pointer + 1;
-		versaloon_epout = (uint8_t)strtoul(cur_pointer, &end_pointer, 0);
-		if ((end_pointer == cur_pointer) 
-			|| ((*end_pointer != '_') && (*end_pointer != ' ') 
-				&& (*end_pointer != '-')) 
-			|| ('\0' == *(end_pointer + 1)))
-		{
-			goto print_usb_device;
-		}
-		cur_pointer = end_pointer + 1;
-		versaloon_interface = (uint8_t)strtoul(cur_pointer, &end_pointer, 0);
-		if ((end_pointer == cur_pointer) 
-			|| ((*end_pointer != '_') && (*end_pointer != ' ') 
-				&& (*end_pointer != '-')) 
-			|| ('\0' == *(end_pointer + 1)))
-		{
-			goto print_usb_device;
-		}
-		cur_pointer = end_pointer + 1;
-		versaloon_serialstring = cur_pointer;
-		end_pointer = cur_pointer + strlen(versaloon_serialstring);
-		if ((end_pointer == cur_pointer) || (*end_pointer != '\0'))
-		{
-			LOG_BUG(ERRMSG_INVALID_OPTION, cmd);
-			return ERRCODE_INVALID_OPTION;
-		}
-		
-print_usb_device:
-		if (versaloon_serialstring != NULL)
-		{
-			LOG_DEBUG("Versaloon is on 0x%04X:0x%04X(0x%02x_0x%02X):%s.", 
-					   versaloon_vid, versaloon_pid, versaloon_epin, 
-					   versaloon_epout, versaloon_serialstring);
-		}
-		else
-		{
-			LOG_DEBUG("Versaloon is on 0x%04X:0x%04X(0x%02x_0x%02X).", 
-						versaloon_vid, versaloon_pid, versaloon_epin, 
-						versaloon_epout);
-		}
 		break;
 	default:
 		return ERROR_FAIL;
@@ -242,7 +138,7 @@ RESULT versaloon_send_command(uint16_t out_len, uint16_t *inlen)
 	}
 #endif
 	
-	ret = usb_bulk_write(versaloon_device_handle, versaloon_epout, 
+	ret = usb_bulk_write(versaloon_device_handle, usb_param_epout(), 
 						 (char *)versaloon_buf, out_len, versaloon_to);
 	if (ret != out_len)
 	{
@@ -253,7 +149,7 @@ RESULT versaloon_send_command(uint16_t out_len, uint16_t *inlen)
 	
 	if (inlen != NULL)
 	{
-		ret = usb_bulk_read(versaloon_device_handle, versaloon_epin, 
+		ret = usb_bulk_read(versaloon_device_handle, usb_param_epin(), 
 					(char *)versaloon_buf, versaloon_buf_size, versaloon_to);
 		if (ret > 0)
 		{
@@ -318,7 +214,7 @@ RESULT versaloon_fini(void)
 {
 	if (versaloon_device_handle != NULL)
 	{
-		usb_release_interface(versaloon_device_handle, versaloon_interface);
+		usb_release_interface(versaloon_device_handle, usb_param_interface());
 		usb_close(versaloon_device_handle);
 		versaloon_device_handle = NULL;
 		
@@ -344,21 +240,21 @@ RESULT versaloon_init(void)
 	uint8_t retry;
 	uint32_t timeout_tmp;
 	
-	versaloon_device_handle = find_usb_device(versaloon_vid, versaloon_pid, 
-						versaloon_interface, VERSALOON_SERIALSTRING_INDEX, 
-						versaloon_serialstring, VERSALOON_PRODUCTSTRING_INDEX, 
+	versaloon_device_handle = find_usb_device(usb_param_vid(), 
+		usb_param_pid(), usb_param_interface(), VERSALOON_SERIALSTRING_INDEX, 
+		usb_param_serial(), VERSALOON_PRODUCTSTRING_INDEX, 
 						VERSALOON_PRODUCTSTRING);
 	if (NULL == versaloon_device_handle)
 	{
-		if (versaloon_serialstring != NULL)
+		if (usb_param_serial() != NULL)
 		{
 			LOG_ERROR("Not found vid=0x%04x,pid = 0x%04x,serial = %s.", 
-						versaloon_vid, versaloon_pid, versaloon_serialstring);
+						usb_param_vid(), usb_param_pid(), usb_param_serial());
 		}
 		else
 		{
-			LOG_ERROR("Not found vid=0x%04x,pid = 0x%04x.", versaloon_vid, 
-						versaloon_pid);
+			LOG_ERROR("Not found vid=0x%04x,pid = 0x%04x.", usb_param_vid(), 
+						usb_param_pid());
 		}
 		return ERROR_FAIL;
 	}
@@ -488,206 +384,6 @@ RESULT versaloon_get_hardware(uint8_t *hardware)
 					versaloon_get_hardware_name(*hardware));
 		return ERROR_OK;
 	}
-}
-
-RESULT versaloon_query_mass_product_data_size(uint32_t *size)
-{
-	uint16_t inlen;
-	
-#if PARAM_CHECK
-	if (NULL == versaloon_buf)
-	{
-		LOG_BUG(ERRMSG_INVALID_BUFFER, TO_STR(versaloon_buf));
-		return ERRCODE_INVALID_BUFFER;
-	}
-	if (NULL == size)
-	{
-		LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
-		return ERRCODE_INVALID_PARAMETER;
-	}
-#endif
-	
-	versaloon_buf[0] = VERSALOON_GET_OFFLINE_SIZE;
-	
-	if ((ERROR_OK != versaloon_send_command(1, &inlen)) || (inlen != 4))
-	{
-		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "communicate with versaloon");
-		return ERRCODE_FAILURE_OPERATION;
-	}
-	else
-	{
-		*size = versaloon_buf[0] + (versaloon_buf[1] << 8) 
-				+ (versaloon_buf[2] << 16) + (versaloon_buf[3] << 24);
-		return ERROR_OK;
-	}
-}
-
-RESULT versaloon_erase_mass_product_data(void)
-{
-	uint16_t inlen;
-	
-#if PARAM_CHECK
-	if (NULL == versaloon_buf)
-	{
-		LOG_BUG(ERRMSG_INVALID_BUFFER, TO_STR(versaloon_buf));
-		return ERRCODE_INVALID_BUFFER;
-	}
-#endif
-	
-	versaloon_buf[0] = VERSALOON_ERASE_OFFLINE_DATA;
-	
-	if ((ERROR_OK != versaloon_send_command(1, &inlen)) || (inlen != 1))
-	{
-		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "communicate with versaloon");
-		return ERRCODE_FAILURE_OPERATION;
-	}
-	if (versaloon_buf[0] != MP_OK)
-	{
-		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "erase mass product data");
-		return ERRCODE_FAILURE_OPERATION;
-	}
-	
-	return ERROR_OK;
-}
-
-RESULT versaloon_checksum_mass_product_data(uint16_t * checksum, uint16_t len)
-{
-	uint16_t inlen;
-	
-#if PARAM_CHECK
-	if (NULL == versaloon_buf)
-	{
-		LOG_BUG(ERRMSG_INVALID_BUFFER, TO_STR(versaloon_buf));
-		return ERRCODE_INVALID_BUFFER;
-	}
-	if (NULL == checksum)
-	{
-		LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
-		return ERRCODE_INVALID_PARAMETER;
-	}
-#endif
-	
-	versaloon_buf[0] = VERSALOON_GET_OFFLINE_CHECKSUM;
-	versaloon_buf[1] = (len >> 0) & 0xFF;
-	versaloon_buf[2] = (len >> 8) & 0xFF;
-	
-	if ((ERROR_OK != versaloon_send_command(3, &inlen)) || (inlen != 2))
-	{
-		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "communicate with versaloon");
-		return ERRCODE_FAILURE_OPERATION;
-	}
-	*checksum = versaloon_buf[0] + (versaloon_buf[1] << 8);
-	
-	return ERROR_OK;
-}
-
-RESULT versaloon_download_mass_product_data(const char *name, uint8_t *buffer, 
-											uint32_t len)
-{
-	uint32_t size = 0, i, j;
-	uint16_t inlen, checksum = 0;
-	
-#if PARAM_CHECK
-	if ((NULL == buffer) || (0 == len))
-	{
-		LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
-		return ERRCODE_INVALID_PARAMETER;
-	}
-#endif
-	
-	if (ERROR_OK != versaloon_query_mass_product_data_size(&size))
-	{
-		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "get size of mass-product area");
-		return ERRCODE_FAILURE_OPERATION;
-	}
-	if (len >= size)
-	{
-		LOG_ERROR("Not enough mass-product area");
-		return ERROR_FAIL;
-	}
-	if (ERROR_OK != versaloon_erase_mass_product_data())
-	{
-		return ERROR_FAIL;
-	}
-	
-	// check target index
-	if (!strcmp(name, "psoc"))
-	{
-		// target is psoc
-		buffer[0] = MP_ISSP;
-	}
-	else
-	{
-		// target is not supported, SHOULD be checked in the main()
-		LOG_BUG(ERRMSG_NOT_SUPPORT, name);
-		return ERRCODE_NOT_SUPPORT;
-	}
-	
-	pgbar_init("writing mp data |", "|", 0, len, PROGRESS_STEP, '=');
-	
-	for (i = 0; i < len; i += 256)
-	{
-		// command: 1byte
-		versaloon_buf[0] = VERSALOON_WRITE_OFFLINE_DATA;
-		// length: 2bytes
-		versaloon_buf[1] = 0x00;
-		versaloon_buf[2] = 0x01;
-		// address: 4bytes
-		versaloon_buf[3] = (i >> 0) & 0xFF;
-		versaloon_buf[4] = (i >> 8) & 0xFF;
-		versaloon_buf[5] = (i >> 16) & 0xFF;
-		versaloon_buf[6] = (i >> 24) & 0xFF;
-		// data: 256 bytes
-		for (j = 0; j < 256; j++)
-		{
-			if ((i + j) < len)
-			{
-				versaloon_buf[7 + j] = buffer[i + j];
-				checksum += versaloon_buf[7 + j];
-			}
-			else
-			{
-				versaloon_buf[7 + j] = 0xFF;
-			}
-		}
-		
-		// program
-		if ((ERROR_OK != versaloon_send_command(263, &inlen)) || (inlen != 1))
-		{
-			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "communicate with versaloon");
-			pgbar_fini();
-			return ERRCODE_FAILURE_OPERATION;
-		}
-		if (versaloon_buf[0] != MP_OK)
-		{
-			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "write mass product data");
-			pgbar_fini();
-			return ERRCODE_FAILURE_OPERATION;
-		}
-		
-		pgbar_update(256);
-	}
-	pgbar_fini();
-	
-	// verify checksum
-	if (ERROR_OK != versaloon_checksum_mass_product_data(&inlen, (uint16_t)len))
-	{
-		LOG_WARNING(ERRMSG_FAILURE_READ, "checksum");
-	}
-	else
-	{
-		if (checksum != inlen)
-		{
-			LOG_ERROR(ERRMSG_FAILURE_VERIFY, "checksum");
-			return ERRCODE_FAILURE_VERIFY;
-		}
-		else
-		{
-			LOG_INFO(INFOMSG_VERIFIED, "checksum of mass product data");
-		}
-	}
-	
-	return ERROR_OK;
 }
 
 
@@ -1309,21 +1005,25 @@ RESULT versaloon_init_capability(void *p)
 	
 	i->peripheral_commit = versaloon_peripheral_commit;
 	
-	// Mass-product
-	t->download_mass_product_data = versaloon_download_mass_product_data;
-	t->query_mass_product_data_size = versaloon_query_mass_product_data_size;
-	
 	// firmware update
 	t->enter_firmware_update_mode = versaloon_enter_firmware_update_mode;
+	
+	// usb parameter
+	usb_set_param(VERSALOON_VID, VERSALOON_PID, VERSALOON_INP, 
+					VERSALOON_OUTP, 1);
 	
 	return ERROR_OK;
 }
 
 uint32_t versaloon_display_programmer(void)
 {
+	// usb parameter
+	usb_set_param(VERSALOON_VID, VERSALOON_PID, VERSALOON_INP, 
+					VERSALOON_OUTP, 1);
+	
 	printf(_GETTEXT("Supported Programmer by Versaloon driver:\n"));
-	return print_usb_devices(versaloon_vid, versaloon_pid, 
-		VERSALOON_SERIALSTRING_INDEX, versaloon_serialstring, 
-		VERSALOON_PRODUCTSTRING_INDEX, VERSALOON_PRODUCTSTRING);
+	return print_usb_devices(usb_param_vid(), usb_param_pid(), 
+					VERSALOON_SERIALSTRING_INDEX, usb_param_serial(), 
+					VERSALOON_PRODUCTSTRING_INDEX, VERSALOON_PRODUCTSTRING);
 }
 

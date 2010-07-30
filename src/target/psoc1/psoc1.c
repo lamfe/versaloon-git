@@ -30,12 +30,12 @@
 #include "app_log.h"
 #include "prog_interface.h"
 
-#include "memlist.h"
 #include "pgbar.h"
 
 #include "vsprog.h"
 #include "programmer.h"
 #include "target.h"
+#include "scripts.h"
 
 #include "psoc1.h"
 #include "psoc1_internal.h"
@@ -76,30 +76,23 @@ const struct program_functions_t psoc1_program_functions =
 #define VECTORS_NUM				17
 #define VECTORS_TABLE_SIZE		128
 
-void psoc1_usage(void)
+MISC_HANDLER(psoc1_help)
 {
+	MISC_CHECK_ARGC(1);
 	printf("\
 Usage of %s:\n\
   -m,  --mode <MODE>                        set mode<r|p>\n\n", 
 			CUR_TARGET_STRING);
-}
-
-PARSE_ARGUMENT_HANDLER(psoc1)
-{
-	argu = argu;
-	
-	switch (cmd)
-	{
-	case 'h':
-		psoc1_usage();
-		break;
-	default:
-		return ERROR_FAIL;
-		break;
-	}
-	
 	return ERROR_OK;
 }
+
+const struct misc_cmd_t psoc1_notifier[] = 
+{
+	MISC_CMD(	"help",
+				"print help information of current target for internal call",
+				psoc1_help),
+	MISC_CMD_END
+};
 
 
 

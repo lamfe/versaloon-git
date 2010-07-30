@@ -31,13 +31,10 @@
 #include "app_log.h"
 #include "prog_interface.h"
 
-#include "memlist.h"
-#include "filelist.h"
-#include "pgbar.h"
-
 #include "vsprog.h"
 #include "programmer.h"
 #include "target.h"
+#include "scripts.h"
 
 #include "at91sam3.h"
 #include "at91sam3_internal.h"
@@ -65,57 +62,46 @@ const struct program_mode_t at91sam3_program_mode[] =
 
 struct program_functions_t at91sam3_program_functions;
 
-uint8_t at91sam3_wait_state = 0;
-
-static void at91sam3_usage(void)
+MISC_HANDLER(at91sam3_help)
 {
+	MISC_CHECK_ARGC(1);
 	printf("\
 Usage of %s:\n\
   -m,  --mode <MODE>                        set mode<j|s>\n\
   -x,  --execute <ADDRESS>                  execute program\n\
-  -F,  --frequency <FREQUENCY>              set JTAG frequency, in KHz\n\
-  -B,  --block-idx <0|1>                    define plane index\n\n",
+  -F,  --frequency <FREQUENCY>              set JTAG frequency, in KHz\n\n",
 			CUR_TARGET_STRING);
+	return ERROR_OK;
 }
 
-PARSE_ARGUMENT_HANDLER(at91sam3)
+MISC_HANDLER(at91sam3_mode)
 {
 	uint8_t mode;
 	
-	switch (cmd)
+	MISC_CHECK_ARGC(2);
+	mode = (uint8_t)strtoul(argv[1], NULL,0);
+	switch (mode)
 	{
-	case 'h':
-		at91sam3_usage();
-		break;
-	case 'm':
-		if (NULL == argu)
-		{
-			LOG_ERROR(ERRMSG_INVALID_OPTION, cmd);
-			return ERRCODE_INVALID_OPTION;
-		}
-		mode = (uint8_t)strtoul(argu, NULL,0);
-		switch (mode)
-		{
-		case AT91SAM3_JTAG:
-		case AT91SAM3_SWD:
-			at91sam3_program_area_map[0].attr |= AREA_ATTR_RNP;
-			cm3_mode_offset = 0;
-			cm3_parse_argument('c', "cm3_at91sam3");
-			memcpy(&at91sam3_program_functions, &cm3_program_functions, 
-					sizeof(at91sam3_program_functions));
-			break;
-		}
-		break;
-	case 'b':
-		cm3_parse_argument(cmd, argu);
-		break;
-	case 'x':
-		cm3_parse_argument(cmd, argu);
-		break;
-	default:
-		return ERROR_FAIL;
+	case AT91SAM3_JTAG:
+	case AT91SAM3_SWD:
+		at91sam3_program_area_map[0].attr |= AREA_ATTR_RNP;
+		cm3_mode_offset = 0;
+		misc_call_notifier(cm3_notifier, "chip", "cm3_at91sam3");
+		memcpy(&at91sam3_program_functions, &cm3_program_functions, 
+				sizeof(at91sam3_program_functions));
 		break;
 	}
-	
 	return ERROR_OK;
 }
+
+const struct misc_cmd_t at91sam3_notifier[] = 
+{
+	MISC_CMD(	"help",
+				"print help information of current target for internal call",
+				at91sam3_help),
+	MISC_CMD(	"mode",
+				"set programming mode of target for internal call",
+				at91sam3_mode),
+	MISC_CMD_END
+};
+

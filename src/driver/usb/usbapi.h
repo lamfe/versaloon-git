@@ -21,6 +21,26 @@
 
 #include "usb.h"
 
+struct usbapi_param_t
+{
+	uint8_t valid;
+	uint16_t vid;
+	uint16_t pid;
+	uint8_t epin;
+	uint8_t epout;
+	uint8_t interface;
+	char serialstring[256];
+};
+
+uint8_t usb_param_valid(void);
+uint16_t usb_param_vid(void);
+uint16_t usb_param_pid(void);
+uint8_t usb_param_epin(void);
+uint8_t usb_param_epout(void);
+uint8_t usb_param_interface(void);
+char *usb_param_serial(void);
+void usb_set_param(uint16_t vid, uint16_t pid, uint8_t epin, uint8_t epout, 
+					uint8_t interface);
 uint32_t print_usb_devices(uint16_t VID, uint16_t PID, uint8_t serialindex, 
 							char *serialstring, uint8_t productindex, 
 							char *productstring);

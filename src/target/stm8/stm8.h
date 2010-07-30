@@ -23,9 +23,8 @@
 
 extern struct program_area_map_t stm8_program_area_map[];
 extern const struct program_mode_t stm8_program_mode[];
-extern const struct program_functions_t stm8_program_functions;
-
-PARSE_ARGUMENT_HANDLER(stm8);
+extern struct program_functions_t stm8_program_functions;
+extern const struct misc_cmd_t stm8_notifier[];
 
 #endif /* __STM8_H_INCLUDED__ */
 

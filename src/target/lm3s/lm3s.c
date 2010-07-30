@@ -31,13 +31,10 @@
 #include "app_log.h"
 #include "prog_interface.h"
 
-#include "memlist.h"
-#include "filelist.h"
-#include "pgbar.h"
-
 #include "vsprog.h"
 #include "programmer.h"
 #include "target.h"
+#include "scripts.h"
 
 #include "lm3s.h"
 #include "lm3s_internal.h"
@@ -61,8 +58,9 @@ const struct program_mode_t lm3s_program_mode[] =
 
 struct program_functions_t lm3s_program_functions;
 
-static void lm3s_usage(void)
+MISC_HANDLER(lm3s_help)
 {
+	MISC_CHECK_ARGC(1);
 	printf("\
 Usage of %s:\n\
   -C,  --comport <COMM_ATTRIBUTE>           set com port\n\
@@ -70,49 +68,39 @@ Usage of %s:\n\
   -x,  --execute <ADDRESS>                  execute program\n\
   -F,  --frequency <FREQUENCY>              set JTAG frequency, in KHz\n\n",
 			CUR_TARGET_STRING);
+	return ERROR_OK;
 }
 
-PARSE_ARGUMENT_HANDLER(lm3s)
+MISC_HANDLER(lm3s_mode)
 {
 	uint8_t mode;
 	
-	switch (cmd)
-	{
-	case 'h':
-		lm3s_usage();
-		break;
-	case 'm':
-		if (NULL == argu)
-		{
-			LOG_ERROR(ERRMSG_INVALID_OPTION, cmd);
-			return ERRCODE_INVALID_OPTION;
-		}
-		mode = (uint8_t)strtoul(argu, NULL,0);
+	MISC_CHECK_ARGC(2);
+	mode = (uint8_t)strtoul(argv[1], NULL,0);
 		switch (mode)
 		{
 		case LM3S_JTAG:
 		case LM3S_SWD:
 			lm3s_program_area_map[0].attr |= AREA_ATTR_WNP;
 			cm3_mode_offset = 0;
-			cm3_parse_argument('c', "cm3_lm3s");
+			misc_call_notifier(cm3_notifier, "chip", "cm3_lm3s");
 			memcpy(&lm3s_program_functions, &cm3_program_functions, 
 					sizeof(lm3s_program_functions));
 			break;
 		}
-		break;
-	case 'b':
-		cm3_parse_argument(cmd, argu);
-		break;
-	case 'x':
-		cm3_parse_argument(cmd, argu);
-		break;
-	default:
-		return ERROR_FAIL;
-		break;
-	}
-	
 	return ERROR_OK;
 }
+
+const struct misc_cmd_t lm3s_notifier[] = 
+{
+	MISC_CMD(	"help",
+				"print help information of current target for internal call",
+				lm3s_help),
+	MISC_CMD(	"mode",
+				"set programming mode of target for internal call",
+				lm3s_mode),
+	MISC_CMD_END
+};
 
 RESULT lm3s_check_device(struct lm3s_device_info_t *device)
 {

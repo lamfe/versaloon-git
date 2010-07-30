@@ -32,13 +32,12 @@
 #include "prog_interface.h"
 
 #include "timer.h"
-
-#include "memlist.h"
 #include "pgbar.h"
 
 #include "vsprog.h"
 #include "programmer.h"
 #include "target.h"
+#include "scripts.h"
 
 #include "cm3.h"
 #include "cm3_at91sam3.h"
