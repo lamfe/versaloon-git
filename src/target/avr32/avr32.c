@@ -357,6 +357,7 @@ ENTER_PROGRAM_MODE_HANDLER(avr32jtag)
 {
 	struct program_info_t *pi = context->pi;
 	
+	pending_4bytes = 0;
 	interfaces = &(context->prog->interfaces);
 	
 	if (!pi->frequency)

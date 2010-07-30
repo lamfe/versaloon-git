@@ -66,7 +66,6 @@ const struct program_functions_t svfp_program_functions =
 
 
 #define SVF_SET_FREQ_CMD			"FREQUENCY %.02f HZ"
-static char *first_command = NULL;
 
 MISC_HANDLER(svfp_help)
 {
@@ -94,6 +93,7 @@ extern struct filelist *fl_in;
 
 EXECUTE_HANDLER(svfp)
 {
+	char *first_command = NULL;
 	struct program_info_t *pi = context->pi;
 	FILE *svf_file = NULL;
 	uint32_t svf_file_size = 0, command_num = 0;

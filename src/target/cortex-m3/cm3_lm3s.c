@@ -317,6 +317,7 @@ ENTER_PROGRAM_MODE_HANDLER(lm3sswj)
 	uint32_t reg;
 	
 	REFERENCE_PARAMETER(context);
+	lm3sswj_iap_cnt = 0;
 	
 	if (ERROR_OK != cm3_dp_halt())
 	{
