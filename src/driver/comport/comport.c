@@ -475,7 +475,7 @@ int32_t comm_ctrl_hw(uint8_t dtr, uint8_t rts)
 static uint8_t usbtocomm_open = 0;
 void comm_close_usbtocomm(void)
 {
-	struct interfaces_info_t *interfaces = &(cur_programmer->interfaces);
+	struct interfaces_info_t *interfaces = NULL;
 	if (!usbtocomm_open)
 	{
 		return;
@@ -483,6 +483,7 @@ void comm_close_usbtocomm(void)
 	
 	if (cur_programmer != NULL)
 	{
+		interfaces = &(cur_programmer->interfaces);
 		interfaces->usart.fini();
 		interfaces->peripheral_commit();
 		
@@ -500,17 +501,11 @@ RESULT comm_open_usbtocomm(char *comport, uint32_t baudrate,
 	struct interfaces_info_t *interfaces = NULL;
 	REFERENCE_PARAMETER(comport);
 	
-	if (NULL == cur_programmer)
+	if (ERROR_OK != programmer_assert())
 	{
 		return ERROR_FAIL;
 	}
 	interfaces = &(cur_programmer->interfaces);
-	
-	if ((cur_programmer->init != NULL) 
-		&& (ERROR_OK != cur_programmer->init()))
-	{
-		return ERROR_FAIL;
-	}
 	
 	// paritybit
 	switch (paritybit)
@@ -574,7 +569,7 @@ RESULT comm_open_usbtocomm(char *comport, uint32_t baudrate,
 
 int32_t comm_read_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 {
-	struct interfaces_info_t *interfaces = &(cur_programmer->interfaces);
+	struct interfaces_info_t *interfaces = NULL;
 	uint32_t start, end;
 	uint32_t buffer_len[2];
 	
@@ -582,6 +577,7 @@ int32_t comm_read_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 	{
 		return ERROR_FAIL;
 	}
+	interfaces = &(cur_programmer->interfaces);
 	
 	start = get_time_in_ms();
 	do
@@ -637,7 +633,7 @@ int32_t comm_read_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 
 int32_t comm_write_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 {
-	struct interfaces_info_t *interfaces = &(cur_programmer->interfaces);
+	struct interfaces_info_t *interfaces = NULL;
 	uint32_t start, end;
 	uint32_t buffer_len[2];
 	
@@ -645,6 +641,7 @@ int32_t comm_write_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 	{
 		return ERROR_FAIL;
 	}
+	interfaces = &(cur_programmer->interfaces);
 	
 	LOG_PUSH();
 	LOG_MUTE();

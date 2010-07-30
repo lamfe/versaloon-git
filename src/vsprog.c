@@ -178,7 +178,7 @@ static void free_all(void)
 	if ((cur_programmer != NULL) && (cur_programmer->fini != NULL))
 	{
 		cur_programmer->fini();
-		memset(cur_programmer, 0, sizeof(cur_programmer));
+		cur_programmer = NULL;
 	}
 	
 	memset(&program_info, 0, sizeof(program_info));
@@ -530,10 +530,7 @@ MISC_HANDLER(vsprog_init)
 		}
 	}
 	
-	misc_run_script("free-all");
-	// run: "programmer" to setup default programmer
-	misc_run_script("programmer");
-	return ERROR_OK;
+	return misc_run_script("free-all");
 }
 
 int main(int argc, char* argv[])
@@ -547,7 +544,11 @@ int main(int argc, char* argv[])
 	misc_argv[0] = "init";
 	misc_argv[1] = argv[0];
 	misc_argc = 2;
-	misc_run_cmd(misc_argc, (const char **)misc_argv);
+	if (ERROR_OK != misc_run_cmd(misc_argc, (const char **)misc_argv))
+	{
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "initialize");
+		free_all_and_exit(EXIT_SUCCESS);
+	}
 	
 	// if no argument, print help
 	if (1 == argc)
@@ -602,9 +603,14 @@ int main(int argc, char* argv[])
 				misc_argc = 1;
 			}
 			
-			if (ERROR_OK != misc_run_cmd(misc_argc, (const char **)misc_argv))
+			if (ERROR_OK != misc_cmd_supported(misc_argv[0]))
 			{
 				lose_argu = 1;
+			}
+			else if (ERROR_OK != misc_run_cmd(misc_argc, 
+												(const char **)misc_argv))
+			{
+				free_all_and_exit(EXIT_FAILURE);
 			}
 			break;
 		}

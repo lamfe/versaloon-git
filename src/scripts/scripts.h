@@ -70,9 +70,12 @@ struct misc_param_t
 		return ERROR_FAIL;\
 	}
 
-RESULT misc_cmd_supported(const struct misc_cmd_t *notifier, char *notify_cmd);
+void misc_set_fatal_error(void);
+RESULT misc_cmd_supported_by_notifier(const struct misc_cmd_t *notifier, 
+										char *notify_cmd);
 RESULT misc_call_notifier(const struct misc_cmd_t *notifier, 
 							char *notify_cmd, char *notify_param);
+RESULT misc_cmd_supported(char *name);
 RESULT misc_print_help(const char *name);
 RESULT misc_run_script(char *cmd);
 RESULT misc_run_cmd(uint16_t argc, const char *argv[]);

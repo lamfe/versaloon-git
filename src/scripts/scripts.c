@@ -122,6 +122,12 @@ struct misc_cmd_t *misc_cmds_list[] =
 
 static int8_t misc_exit_mark = 0;
 static uint32_t misc_loop_cnt = 0;
+static uint8_t misc_fatal_error = 0;
+
+void misc_set_fatal_error(void)
+{
+	misc_fatal_error = 1;
+}
 
 static struct misc_param_t* mic_search_param(const char *name)
 {
@@ -270,7 +276,8 @@ static RESULT misc_parse_cmd_line(char *cmd, uint16_t *argc, char **argv)
 	return ERROR_OK;
 }
 
-RESULT misc_cmd_supported(const struct misc_cmd_t *notifier, char *notify_cmd)
+RESULT misc_cmd_supported_by_notifier(const struct misc_cmd_t *notifier, 
+										char *notify_cmd)
 {
 	struct misc_cmd_t *cmds_list[1], *cmd;
 	
@@ -333,6 +340,21 @@ RESULT misc_call_notifier(const struct misc_cmd_t *notifier,
 	return ERROR_OK;
 }
 
+RESULT misc_cmd_supported(char *name)
+{
+	struct misc_cmd_t *cmd = misc_search_cmd(misc_cmds_list, 
+		dimof(misc_cmds_list), name);
+	
+	if (NULL == cmd)
+	{
+		return ERROR_FAIL;
+	}
+	else
+	{
+		return ERROR_OK;
+	}
+}
+
 RESULT misc_run_cmd(uint16_t argc, const char *argv[])
 {
 	struct misc_cmd_t *cmd = misc_search_cmd(misc_cmds_list, 
@@ -383,7 +405,8 @@ RESULT misc_run_script(char *cmd)
 	{
 		ret = misc_run_cmd(argc, (const char**)argv);
 		if ((ret != ERROR_OK) 
-			&& misc_param[PARAM_EXIT_ON_FAIL].value)
+			&& (misc_fatal_error 
+				|| misc_param[PARAM_EXIT_ON_FAIL].value))
 		{
 			misc_exit_mark = -1;
 			return ret;
@@ -435,8 +458,9 @@ static RESULT misc_run_file(FILE *f, char *head, uint8_t quiet)
 		{
 			printf("%s", cmd_line);
 		}
-		if ((ERROR_OK != misc_run_script(cmd_line))
-			&& misc_param[PARAM_EXIT_ON_FAIL].value)
+		if ((ERROR_OK != misc_run_script(cmd_line)) 
+			&& (misc_fatal_error 
+				|| misc_param[PARAM_EXIT_ON_FAIL].value))
 		{
 			return ERROR_FAIL;
 		}
@@ -594,8 +618,7 @@ MISC_HANDLER(misc_close)
 MISC_HANDLER(misc_run_command)
 {
 	MISC_CHECK_ARGC(2);
-	misc_run_script((char *)argv[1]);
-	return ERROR_OK;
+	return misc_run_script((char *)argv[1]);
 }
 
 MISC_HANDLER(misc_log_info)
