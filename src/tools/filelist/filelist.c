@@ -241,6 +241,7 @@ MISC_HANDLER(filelist_add_inputfile)
 	}
 	if ((fl_in != NULL) && (ERROR_OK != FILELIST_Open(fl_in, "rb")))
 	{
+		FILELIST_Free(&fl_in);
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "open input file");
 		return ERROR_FAIL;
 	}

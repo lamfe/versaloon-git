@@ -30,6 +30,7 @@
 #include "app_log.h"
 #include "app_err.h"
 
+#include "vsprog.h"
 #include "scripts.h"
 #include "programmer.h"
 
@@ -436,9 +437,13 @@ static RESULT misc_run_file(FILE *f, char *head, uint8_t quiet)
 	rewind(f);
 	while (1)
 	{
-		if ((!quiet) && (head != NULL))
+		if (!quiet)
 		{
-			printf("%s>>>", head);
+			if (head != NULL)
+			{
+				printf("%s", head);
+			}
+			printf(">>>");
 		}
 		
 		// get a line
@@ -521,7 +526,7 @@ MISC_HANDLER(misc_help)
 		else
 		{
 			LOG_INFO("command %s:", argv[1]);
-			LOG_INFO("\t%s: %s", cmd->cmd_name, cmd->help_str);
+			LOG_INFO("  %s: %s", cmd->cmd_name, cmd->help_str);
 		}
 	}
 	else if (1 == argc)
@@ -537,7 +542,7 @@ MISC_HANDLER(misc_help)
 			j = 0;
 			while (cmd[j].cmd_name != NULL)
 			{
-				LOG_INFO("\t%s: %s", cmd[j].cmd_name, cmd[j].help_str);
+				LOG_INFO("  %s: %s", cmd[j].cmd_name, cmd[j].help_str);
 				j++;
 			}
 		}
@@ -617,6 +622,7 @@ MISC_HANDLER(misc_close)
 
 MISC_HANDLER(misc_run_command)
 {
+	vsprog_no_call_operate();
 	MISC_CHECK_ARGC(2);
 	return misc_run_script((char *)argv[1]);
 }
