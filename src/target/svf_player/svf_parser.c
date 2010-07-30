@@ -125,6 +125,9 @@ void svf_parser_init(void)
 	svf_parser_para.runtest_run_state = IDLE;
 	svf_parser_para.ir_end_state = IDLE;
 	svf_parser_para.dr_end_state = IDLE;
+	
+	svf_parser_check_index = 0;
+	svf_parser_buffer_index = 0;
 }
 
 void svf_parser_fini(void)

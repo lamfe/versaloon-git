@@ -181,10 +181,6 @@ RESULT programmer_init(const char *programmer)
 	{
 		if (cur_programmer != NULL)
 		{
-			if (cur_programmer == programmer_tmp)
-			{
-				return ERROR_OK;
-			}
 			cur_programmer->fini();
 		}
 		

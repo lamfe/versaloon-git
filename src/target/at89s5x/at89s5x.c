@@ -126,6 +126,7 @@ ENTER_PROGRAM_MODE_HANDLER(s5x)
 	{
 		context->pi->frequency = CUR_DEFAULT_FREQ;
 	}
+	s5x_byte_delay_us = 500;
 	if (context->pi->wait_state)
 	{
 		s5x_byte_delay_us = context->pi->wait_state;

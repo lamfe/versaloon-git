@@ -657,6 +657,8 @@ ENTER_PROGRAM_MODE_HANDLER(avrxmega)
 	interfaces = &(context->prog->interfaces);
 	avrxmega_progmode = context->pi->mode;
 	pi = context->pi;
+	pdi_append_0 = 0;
+	pdi_err = 0;
 	
 	// init
 	if (ERROR_OK != pdi_init())
