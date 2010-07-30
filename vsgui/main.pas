@@ -828,8 +828,7 @@ var
 begin
   Result := True;
 
-  VSProg_GUIFeatureInit(VSProg_Targets.TargetSeries[pcMain.ActivePage.Tag].Feature,
-    False);
+  VSProg_GUIFeatureInit(VSProg_Targets.TargetSeries[index].Feature, False);
 
   cbboxTarget.Clear;
   for i := 0 to VSProg_Targets.TargetSeries[index].ChipCount - 1 do
