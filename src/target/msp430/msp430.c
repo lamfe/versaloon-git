@@ -56,6 +56,7 @@ const struct program_mode_t msp430_program_mode[] =
 	{0, NULL, 0}
 };
 
+RESULT (*enter_program_mode_save)(struct program_context_t *context);
 struct program_functions_t msp430_program_functions;
 
 RESULT (*msp430jtagsbw_init)(void);
@@ -79,15 +80,17 @@ Usage of %s:\n\
 	return ERROR_OK;
 }
 
-MISC_HANDLER(msp430_mode)
+ENTER_PROGRAM_MODE_HANDLER(msp430)
 {
-	uint8_t mode;
-	struct interfaces_info_t *interfaces = 
-		&(cur_programmer->interfaces);
+	struct program_info_t *pi = context->pi;
+	struct interfaces_info_t *interfaces = &context->prog->interfaces;
 	
-	MISC_CHECK_ARGC(2);
-	mode = (uint8_t)strtoul(argv[1], NULL,0);
-	switch (mode)
+	if (NULL == enter_program_mode_save)
+	{
+		return ERROR_FAIL;
+	}
+	
+	switch (pi->mode)
 	{
 	case MSP430_MODE_JTAG:
 		msp430jtagsbw_init = interfaces->msp430jtag.init;
@@ -99,9 +102,6 @@ MISC_HANDLER(msp430_mode)
 		msp430jtagsbw_tclk_strobe = interfaces->msp430jtag.tclk_strobe;
 		msp430jtagsbw_reset = interfaces->msp430jtag.reset;
 		msp430jtagsbw_poll = interfaces->msp430jtag.poll;
-		
-		memcpy(&msp430_program_functions, &msp430jtagsbw_program_functions, 
-				sizeof(msp430_program_functions));
 		break;
 	case MSP430_MODE_SBW:
 		msp430jtagsbw_init = interfaces->msp430sbw.init;
@@ -113,9 +113,29 @@ MISC_HANDLER(msp430_mode)
 		msp430jtagsbw_tclk_strobe = interfaces->msp430sbw.tclk_strobe;
 		msp430jtagsbw_reset = interfaces->msp430sbw.reset;
 		msp430jtagsbw_poll = interfaces->msp430sbw.poll;
-		
+		break;
+	case MSP430_MODE_BSL:
+		return ERROR_FAIL;
+		break;
+	}
+	
+	return enter_program_mode_save(context);
+}
+
+MISC_HANDLER(msp430_mode)
+{
+	uint8_t mode;
+	
+	MISC_CHECK_ARGC(2);
+	mode = (uint8_t)strtoul(argv[1], NULL,0);
+	switch (mode)
+	{
+	case MSP430_MODE_JTAG:
+	case MSP430_MODE_SBW:
 		memcpy(&msp430_program_functions, &msp430jtagsbw_program_functions, 
 				sizeof(msp430_program_functions));
+		enter_program_mode_save = msp430jtagsbw_program_functions.enter_program_mode;
+		msp430_program_functions.enter_program_mode = msp430_enter_program_mode;
 		break;
 	case MSP430_MODE_BSL:
 		return ERROR_FAIL;

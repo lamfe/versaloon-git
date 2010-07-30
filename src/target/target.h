@@ -334,40 +334,18 @@ extern struct target_info_t targets_info[];
 extern struct program_info_t program_info;
 extern struct chip_param_t target_chip_param;
 
-RESULT target_build_chip_series(const char *chip_name, 
-		const struct program_mode_t *program_mode, struct chip_series_t *s);
-RESULT target_release_chip_series(struct chip_series_t *s);
-
-RESULT target_build_chip_fl(const char *chip_series, const char *chip_module, 
-							char *type, struct chip_fl_t *fl);
-RESULT target_release_chip_fl(struct chip_fl_t *fl);
-
 uint32_t target_area_mask(char area_name);
 char* target_area_fullname(char area_name);
 int8_t target_area_idx(char area_name);
 char target_area_char_by_fullname(char *fullname);
 char* target_area_fullname_by_mask(uint32_t mask);
 
-int8_t target_mode_get_idx(const struct program_mode_t *mode, char mode_name);
-
-void target_print_memory(char type);
-void target_print_setting(char type);
 void target_print_target(uint32_t index);
 void target_print_list(void);
 void target_print_help(void);
-uint32_t target_get_number(void);
-void target_get_target_area(char area, uint8_t **buff, uint32_t *size);
-RESULT target_program(struct program_context_t *context);
-RESULT target_init(struct program_info_t *pi, struct programmer_info_t *prog);
-RESULT target_info_init(struct program_info_t *pi);
-RESULT target_write_buffer_from_file_callback(uint32_t address, 
-			uint32_t seg_addr, uint8_t* data, uint32_t length, void* buffer);
+
 RESULT target_alloc_data_buffer(void);
-RESULT target_parse_cli_string(void);
 void target_free_data_buffer(void);
-RESULT target_check_defined(struct operation_t operations);
-RESULT target_prepare_operations(struct operation_t *operations, 
-							uint32_t *readfile, uint32_t *writefile);
 
 #endif /* __TARGET_H_INCLUDED__ */
 

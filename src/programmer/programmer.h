@@ -297,6 +297,7 @@ void programmer_print_list(void);
 void programmer_print_help(void);
 RESULT programmer_init(const char *programmer);
 RESULT programmer_run_script(char *cmd);
+RESULT programmer_assert(void);
 
 #endif /* __PROGRAMMER_H_INCLUDED__ */
 

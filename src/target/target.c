@@ -62,6 +62,14 @@
 #include "avrxmega/avrxmega.h"
 #include "lm3s/lm3s.h"
 
+static RESULT target_build_chip_series(const char *chip_name, 
+		const struct program_mode_t *program_mode, struct chip_series_t *s);
+static RESULT target_release_chip_series(struct chip_series_t *s);
+
+static RESULT target_build_chip_fl(const char *chip_series, const char *chip_module, 
+							char *type, struct chip_fl_t *fl);
+static RESULT target_release_chip_fl(struct chip_fl_t *fl);
+
 MISC_HANDLER(target_memory_detail);
 MISC_HANDLER(target_parameter_detail);
 MISC_HANDLER(target_series);
@@ -385,7 +393,7 @@ struct target_info_t targets_info[] =
 struct target_info_t *cur_target = NULL;
 struct program_info_t program_info;
 
-RESULT target_parse_cli_string(void)
+static RESULT target_parse_cli_string(void)
 {
 	uint8_t i;
 	RESULT ret;
@@ -484,7 +492,7 @@ void target_free_data_buffer(void)
 	}
 }
 
-void target_get_target_area(char area, uint8_t **buff, uint32_t *size)
+static void target_get_target_area(char area, uint8_t **buff, uint32_t *size)
 {
 	int8_t i;
 	
@@ -604,7 +612,8 @@ static RESULT target_check_single_defined(uint32_t opt)
 	return ERROR_OK;
 }
 
-int8_t target_mode_get_idx(const struct program_mode_t *mode, char mode_name)
+static int8_t target_mode_get_idx(const struct program_mode_t *mode, 
+									char mode_name)
 {
 	int8_t i;
 	
@@ -625,7 +634,7 @@ int8_t target_mode_get_idx(const struct program_mode_t *mode, char mode_name)
 	return -1;
 }
 
-RESULT target_check_defined(struct operation_t operations)
+static RESULT target_check_defined(struct operation_t operations)
 {
 	if (ERROR_OK != target_check_single_defined(operations.verify_operations) 
 		|| (ERROR_OK 
@@ -639,7 +648,7 @@ RESULT target_check_defined(struct operation_t operations)
 	}
 }
 
-RESULT target_write_buffer_from_file_callback(uint32_t address, 
+static RESULT target_write_buffer_from_file_callback(uint32_t address, 
 			uint32_t seg_addr, uint8_t* data, uint32_t length, void* buffer)
 {
 	uint32_t i;
@@ -719,7 +728,7 @@ RESULT target_write_buffer_from_file_callback(uint32_t address,
 	return ERROR_FAIL;
 }
 
-RESULT target_program(struct program_context_t *context)
+static RESULT target_program(struct program_context_t *context)
 {
 	const struct program_functions_t *pf = cur_target->program_functions;
 	const struct program_area_map_t *p_map = cur_target->program_area_map;
@@ -1388,7 +1397,7 @@ leave_program_mode:
 	return ret;
 }
 
-RESULT target_init(struct program_info_t *pi, struct programmer_info_t *prog)
+static RESULT target_init(struct program_info_t *pi)
 {
 	uint16_t i;
 	uint8_t area_idx;
@@ -1422,12 +1431,19 @@ RESULT target_init(struct program_info_t *pi, struct programmer_info_t *prog)
 			struct program_context_t context;
 			struct operation_t opt_tmp;
 			
+			if (ERROR_OK != programmer_assert())
+			{
+				LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", 
+							"programmer module");
+				return ERROR_FAIL;
+			}
+			
 			memset(&opt_tmp, 0, sizeof(opt_tmp));
 			opt_tmp.read_operations = CHIPID;
 			context.op = &opt_tmp;
 			context.param = &target_chip_param;
 			context.pi = pi;
-			context.prog = prog;
+			context.prog = cur_programmer;
 			if (ERROR_OK != target_program(&context))
 			{
 				LOG_ERROR(ERRMSG_AUTODETECT_FAIL, pi->chip_type);
@@ -1519,7 +1535,7 @@ static uint32_t target_prepare_operation(uint32_t *operation)
 	return ret;
 }
 
-RESULT target_prepare_operations(struct operation_t *operations, 
+static RESULT target_prepare_operations(struct operation_t *operations, 
 									uint32_t *readfile, uint32_t *writefile)
 {
 	if ((NULL == cur_target) || (NULL == cur_target->program_area_map) 
@@ -1739,7 +1755,8 @@ void target_print_target(uint32_t index)
 		i++;
 	}
 	// extra info from target
-	if (ERROR_OK == misc_cmd_supported(targets_info[index].notifier, "extra"))
+	if (ERROR_OK == 
+		misc_cmd_supported_by_notifier(targets_info[index].notifier, "extra"))
 	{
 		misc_call_notifier(targets_info[index].notifier, "extra", NULL);
 	}
@@ -1805,11 +1822,6 @@ void target_print_help(void)
 	}
 }
 
-uint32_t target_get_number(void)
-{
-	return sizeof(targets_info) / sizeof(targets_info[0]) - 1;
-}
-
 static RESULT target_probe_chip(char *chip_name)
 {
 	uint32_t i;
@@ -1835,7 +1847,7 @@ static RESULT target_probe_chip(char *chip_name)
 	return ERROR_FAIL;
 }
 
-RESULT target_info_init(struct program_info_t *pi)
+static RESULT target_info_init(struct program_info_t *pi)
 {
 	uint32_t i;
 	RESULT (*probe_chip)(char *chip_name);
@@ -1952,8 +1964,8 @@ static uint32_t target_xml_get_child_number(xmlNodePtr parentNode,
 	return result;
 }
 
-RESULT target_build_chip_fl(const char *chip_series, const char *chip_module, 
-							char *type, struct chip_fl_t *fl)
+static RESULT target_build_chip_fl(const char *chip_series, 
+				const char *chip_module, char *type, struct chip_fl_t *fl)
 {
 	xmlDocPtr doc = NULL;
 	xmlNodePtr curNode = NULL;
@@ -2538,7 +2550,7 @@ free_and_exit:
 	return ret;
 }
 
-RESULT target_release_chip_fl(struct chip_fl_t *fl)
+static RESULT target_release_chip_fl(struct chip_fl_t *fl)
 {
 	uint32_t i, j;
 	
@@ -2646,7 +2658,7 @@ RESULT target_release_chip_fl(struct chip_fl_t *fl)
 	return ERROR_OK;
 }
 
-RESULT target_build_chip_series(const char *chip_series, 
+static RESULT target_build_chip_series(const char *chip_series, 
 		const struct program_mode_t *program_mode, struct chip_series_t *s)
 {
 	xmlDocPtr doc = NULL;
@@ -3385,7 +3397,7 @@ free_and_exit:
 	return ret;
 }
 
-RESULT target_release_chip_series(struct chip_series_t *s)
+static RESULT target_release_chip_series(struct chip_series_t *s)
 {
 	uint32_t i, j;
 	
@@ -3460,7 +3472,7 @@ MISC_HANDLER(target_memory_detail)
 		}
 	}
 	
-	if (ERROR_OK != target_init(&program_info, cur_programmer))
+	if (ERROR_OK != target_init(&program_info))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "initialize target");
 		return ERROR_FAIL;
@@ -3499,7 +3511,7 @@ MISC_HANDLER(target_parameter_detail)
 		target_char = argv[1][0];
 	}
 	
-	if (ERROR_OK != target_init(&program_info, cur_programmer))
+	if (ERROR_OK != target_init(&program_info))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "initialize target");
 		return ERROR_FAIL;
@@ -3658,6 +3670,13 @@ MISC_HANDLER(target_operate)
 	
 	MISC_CHECK_ARGC(1);
 	
+	if (cur_target->program_mode[program_info.mode].interface_needed 
+		&& (ERROR_OK != programmer_assert()))
+	{
+		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
+		return ERROR_FAIL;
+	}
+	
 	// init and check programmer's ability
 	i = cur_target->program_mode[program_info.mode].interface_needed;
 	if ((cur_programmer->interfaces_mask & i) != i)
@@ -3710,19 +3729,9 @@ MISC_HANDLER(target_operate)
 			sleep_ms(3000);
 		}
 	}
-	else if (cur_target->program_mode[program_info.mode].interface_needed)
-	{
-		ret = cur_programmer->init();
-		if (ret != ERROR_OK)
-		{
-			LOG_ERROR(ERRMSG_NOT_INITIALIZED, "Programmer", 
-						cur_programmer->name);
-			return ERROR_FAIL;
-		}
-	}
 	
 	// init target
-	ret = target_init(&program_info, cur_programmer);
+	ret = target_init(&program_info);
 	if (ret != ERROR_OK)
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "initialize target");
