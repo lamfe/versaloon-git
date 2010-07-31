@@ -3674,11 +3674,17 @@ MISC_HANDLER(target_operate)
 		LOG_ERROR(ERRMSG_NOT_DEFINED, "Target");
 		return ERROR_FAIL;
 	}
-	
-	if (cur_target->program_mode[program_info.mode].interface_needed 
-		&& (ERROR_OK != programmer_assert()))
+	if (ERROR_OK != programmer_assert())
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
+		return ERROR_FAIL;
+	}
+	
+	i = cur_target->program_mode[program_info.mode].interface_needed;
+	if ((cur_programmer->interfaces_mask & i) != i)
+	{
+		LOG_ERROR("%s can not support %s in the mode defined.", 
+					cur_programmer->name, cur_target->name);
 		return ERROR_FAIL;
 	}
 	
