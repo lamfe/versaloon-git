@@ -35,6 +35,25 @@ const char *versaloon_hardwares[] =
 	"Versaloon_Nano",		// 3
 };
 
+MISC_HANDLER(versaloon_support);
+MISC_HANDLER(versaloon_help);
+const struct misc_cmd_t versaloon_notifier[] = 
+{
+	MISC_CMD(	"support",
+				"print support information, format: support/S",
+				versaloon_support),
+	MISC_CMD(	"S",
+				"print support information, format: support/S",
+				versaloon_support),
+	MISC_CMD(	"help",
+				"print help information, format: help/h",
+				versaloon_help),
+	MISC_CMD(	"h",
+				"print help information, format: help/h",
+				versaloon_help),
+	MISC_CMD_END
+};
+
 uint8_t *versaloon_buf = NULL;
 uint8_t *versaloon_cmd_buf = NULL;
 uint16_t versaloon_buf_size = 256;
@@ -45,38 +64,24 @@ uint16_t versaloon_pending_idx = 0;
 static usb_dev_handle *versaloon_device_handle = NULL;
 static uint32_t versaloon_to = VERSALOON_TIMEOUT;
 
-void versaloon_usage(void)
+MISC_HANDLER(versaloon_help)
 {
+	MISC_CHECK_ARGC(1);
 	printf("\
 Usage of %s:\n\
   -U,  --usb <PID_VID_EPIN_EPOUT>           set usb VID, PID, EPIN, EPOUT\n\n", 
 		   VERSALOON_STRING);
-}
-
-void versaloon_support(void)
-{
-	printf("\
-%s: see http://www.SimonQian.com/en/Versaloon\n", VERSALOON_STRING);
-}
-
-RESULT versaloon_check_argument(char cmd, const char *argu)
-{
-	REFERENCE_PARAMETER(argu);
-	switch (cmd)
-	{
-	case 'h':
-		versaloon_usage();
-		break;
-	case 'S':
-		versaloon_support();
-		break;
-	default:
-		return ERROR_FAIL;
-		break;
-	}
-	
 	return ERROR_OK;
 }
+
+MISC_HANDLER(versaloon_support)
+{
+	MISC_CHECK_ARGC(1);
+	printf("\
+%s: see http://www.SimonQian.com/en/Versaloon\n", VERSALOON_STRING);
+	return ERROR_OK;
+}
+
 
 
 
@@ -1009,8 +1014,11 @@ RESULT versaloon_init_capability(void *p)
 	t->enter_firmware_update_mode = versaloon_enter_firmware_update_mode;
 	
 	// usb parameter
-	usb_set_param(VERSALOON_VID, VERSALOON_PID, VERSALOON_INP, 
-					VERSALOON_OUTP, 1);
+	if (!usb_param_valid())
+	{
+		usb_set_param(VERSALOON_VID, VERSALOON_PID, VERSALOON_INP, 
+						VERSALOON_OUTP, 1);
+	}
 	
 	return ERROR_OK;
 }
@@ -1018,8 +1026,11 @@ RESULT versaloon_init_capability(void *p)
 uint32_t versaloon_display_programmer(void)
 {
 	// usb parameter
-	usb_set_param(VERSALOON_VID, VERSALOON_PID, VERSALOON_INP, 
-					VERSALOON_OUTP, 1);
+	if (!usb_param_valid())
+	{
+		usb_set_param(VERSALOON_VID, VERSALOON_PID, VERSALOON_INP, 
+						VERSALOON_OUTP, 1);
+	}
 	
 	printf(_GETTEXT("Supported Programmer by Versaloon driver:\n"));
 	return print_usb_devices(usb_param_vid(), usb_param_pid(), 

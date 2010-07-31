@@ -45,7 +45,7 @@ struct programmer_info_t programmers_info[] =
 {
 	// versaloon
 	PROGRAMMER_DEFINE(VERSALOON_STRING, 			// name
-					  versaloon_check_argument, 	// check_argument
+					  versaloon_notifier, 			// notifier
 					  versaloon_init_capability, 	// init_capability
 					  versaloon_display_programmer),// display_programmer
 	PROGRAMMER_DEFINE(NULL, NULL, NULL, NULL)
@@ -215,7 +215,7 @@ void programmer_print_list(void)
 	printf("Supported programmers:\n");
 	for (i = 0; programmers_info[i].name != NULL; i++)
 	{
-		programmers_info[i].parse_argument('S', NULL);
+		misc_call_notifier(programmers_info[i].notifier, "support", NULL);
 	}
 	printf("\n");
 }
@@ -226,7 +226,7 @@ void programmer_print_help(void)
 	
 	for (i = 0; programmers_info[i].name != NULL; i++)
 	{
-		programmers_info[i].parse_argument('h', NULL);
+		misc_call_notifier(programmers_info[i].notifier, "help", NULL);
 	}
 }
 

@@ -363,7 +363,8 @@ MISC_HANDLER(vsprog_support)
 		{
 			if (!strcmp(programmers_info[i].name, argv[1]))
 			{
-				programmers_info[i].parse_argument('S', argv[1]);
+				misc_call_notifier(programmers_info[i].notifier, 
+									"support", NULL);
 				return ERROR_OK;
 			}
 		}
