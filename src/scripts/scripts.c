@@ -383,16 +383,45 @@ RESULT misc_run_cmd(uint16_t argc, const char *argv[])
 
 RESULT misc_run_script(char *cmd)
 {
+	char *buff_in_memory = NULL, first_char;
 	uint16_t argc;
 	char *argv[1024];
 	RESULT ret = ERROR_OK;
 	uint32_t i, run_times;
 	
-	argc = (uint16_t)dimof(argv);
-	if ((ERROR_OK != misc_parse_cmd_line(cmd, &argc, (char **)argv)) 
-		|| ((0 == argc) || ('#' == argv[0][0])))
+	first_char = 0;
+	for (i = 0; i < strlen(cmd); i++)
 	{
+		first_char = cmd[i];
+		if (!isspace(first_char))
+		{
+			break;
+		}
+	}
+	if ('#' == first_char)
+	{
+		// comment line
 		return ERROR_OK;
+	}
+	
+	buff_in_memory = (char *)malloc(strlen(cmd) + 1);
+	if (NULL == buff_in_memory)
+	{
+		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
+		return ERROR_FAIL;
+	}
+	strcpy(buff_in_memory, cmd);
+	
+	argc = (uint16_t)dimof(argv);
+	if (ERROR_OK != misc_parse_cmd_line(buff_in_memory, &argc, (char **)argv))
+	{
+		ret = ERROR_FAIL;
+		goto end;
+	}
+	// empty line or comment line
+	if ((0 == argc) || ('#' == argv[0][0]))
+	{
+		goto end;
 	}
 	
 	// run command
@@ -410,7 +439,7 @@ RESULT misc_run_script(char *cmd)
 				|| misc_param[PARAM_EXIT_ON_FAIL].value))
 		{
 			misc_exit_mark = -1;
-			return ret;
+			goto end;
 		}
 	}
 	
@@ -418,16 +447,18 @@ RESULT misc_run_script(char *cmd)
 	if ((cur_programmer != NULL) 
 		&& (cur_programmer->interfaces.peripheral_commit != NULL))
 	{
-		if (misc_param[PARAM_NO_COMMIT].value)
+		if (0 == misc_param[PARAM_NO_COMMIT].value)
 		{
-			return ret;
-		}
-		else
-		{
-			return cur_programmer->interfaces.peripheral_commit();
+			ret = cur_programmer->interfaces.peripheral_commit();
 		}
 	}
-	return ERROR_OK;
+end:
+	if (buff_in_memory != NULL)
+	{
+		free(buff_in_memory);
+		buff_in_memory = NULL;
+	}
+	return ret;
 }
 
 static RESULT misc_run_file(FILE *f, char *head, uint8_t quiet)

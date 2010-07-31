@@ -151,7 +151,6 @@ int verbosity = LOG_DEFAULT_LEVEL;
 int verbosity_stack[1];
 struct operation_t operations;
 static int vsprog_query_cmd = 0;
-static char __buffer_for_cmd__[32];
 
 static char *program_name = NULL;
 static char *program_dir = NULL;
@@ -532,8 +531,7 @@ MISC_HANDLER(vsprog_init)
 		}
 	}
 	
-	strcpy(__buffer_for_cmd__, "free-all");
-	return misc_run_script(__buffer_for_cmd__);
+	return misc_run_script("free-all");
 }
 
 int main(int argc, char* argv[])
@@ -557,8 +555,7 @@ int main(int argc, char* argv[])
 	if (1 == argc)
 	{
 		// no parameter
-		strcpy(__buffer_for_cmd__, "help");
-		misc_run_script(__buffer_for_cmd__);
+		misc_run_script("help");
 		free_all_and_exit(EXIT_SUCCESS);
 	}
 	
@@ -589,8 +586,7 @@ int main(int argc, char* argv[])
 		case '?':
 			LOG_ERROR(ERRMSG_INVALID_CMD, argv[optind]);
 			LOG_ERROR(ERRMSG_TRY_HELP);
-			strcpy(__buffer_for_cmd__, "help");
-			misc_run_script(__buffer_for_cmd__);
+			misc_run_script("help");
 			free_all_and_exit(EXIT_FAILURE);
 			break;
 		default:
@@ -637,8 +633,7 @@ int main(int argc, char* argv[])
 	{
 		print_title();
 		
-		strcpy(__buffer_for_cmd__, "operate");
-		if (ERROR_OK != misc_run_script(__buffer_for_cmd__))
+		if (ERROR_OK != misc_run_script("operate"))
 		{
 			free_all_and_exit(EXIT_FAILURE);
 		}
