@@ -239,7 +239,7 @@ struct programmer_info_t
 	// the 3 element listed below MUST be define valid
 	// other functions can be initialized in .init_ability()
 	char *name;
-	RESULT (*parse_argument)(char cmd, const char *argu);
+	const struct misc_cmd_t *notifier;
 	RESULT (*init_capability)(void *p);
 	uint32_t (*display_programmer)(void);
 	
