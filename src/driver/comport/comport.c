@@ -486,11 +486,6 @@ void comm_close_usbtocomm(void)
 		interfaces = &(cur_programmer->interfaces);
 		interfaces->usart.fini();
 		interfaces->peripheral_commit();
-		
-		if (cur_programmer->fini != NULL)
-		{
-			cur_programmer->fini();
-		}
 	}
 	usbtocomm_open = 0;
 }

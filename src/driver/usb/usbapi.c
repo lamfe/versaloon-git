@@ -90,7 +90,6 @@ MISC_HANDLER(usbapi_param)
 	}
 	
 	ptr = usb_setting;
-	usb_param.valid = 1;
 	if (1 == i)
 	{
 		strncpy(usb_param.serialstring, (char*)&ptr[0], 
@@ -98,6 +97,7 @@ MISC_HANDLER(usbapi_param)
 	}
 	else if (0 == i)
 	{
+		usb_param.valid = 1;
 		usb_param.vid = ptr[0] + (ptr[1] << 8);
 		usb_param.pid = ptr[2] + (ptr[3] << 8);
 		usb_param.epin = ptr[4];
