@@ -142,16 +142,15 @@ ENTER_PROGRAM_MODE_HANDLER(cm3)
 	}
 	
 	// jtag/swd init
-	context->pi->mode -= cm3_mode_offset;
-	if ((context->pi->mode != ADI_DP_JTAG) 
-		&& (context->pi->mode != ADI_DP_SWD))
+	if (((context->pi->mode - cm3_mode_offset) != ADI_DP_JTAG) 
+		&& ((context->pi->mode - cm3_mode_offset) != ADI_DP_SWD))
 	{
 		LOG_WARNING("debug port not defined, use JTAG by default.");
-		context->pi->mode = ADI_DP_JTAG;
+		context->pi->mode = ADI_DP_JTAG + cm3_mode_offset;
 	}
-	dp.type = context->pi->mode;
+	dp.type = context->pi->mode - cm3_mode_offset;
 	
-	switch(context->pi->mode)
+	switch(dp.type)
 	{
 	case ADI_DP_JTAG:
 		if (context->pi->frequency)
