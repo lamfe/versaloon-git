@@ -3720,7 +3720,6 @@ MISC_HANDLER(target_operate)
 		
 		// send command first to enter into firmware update mode
 		verbosity = -1;
-		ret = cur_programmer->init();
 		verbosity = verbosity_tmp;
 		if (ERROR_OK == ret)
 		{
