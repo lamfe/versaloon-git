@@ -194,7 +194,7 @@ RESULT programmer_init(const char *programmer)
 	}
 }
 
-RESULT programmer_assert(void)
+RESULT programmer_assert(struct programmer_info_t **prog)
 {
 	if (NULL == cur_programmer)
 	{
@@ -203,6 +203,10 @@ RESULT programmer_assert(void)
 		{
 			misc_set_fatal_error();
 			return ERROR_FAIL;
+		}
+		if (prog != NULL)
+		{
+			*prog = cur_programmer;
 		}
 	}
 	return ERROR_OK;
@@ -283,7 +287,7 @@ MISC_HANDLER(programmer_get_target_voltage)
 	RESULT ret = ERROR_OK;
 	
 	MISC_CHECK_ARGC(1);
-	if (ERROR_OK != programmer_assert())
+	if (ERROR_OK != programmer_assert(NULL))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
 		return ERROR_FAIL;
@@ -305,7 +309,7 @@ MISC_HANDLER(programmer_set_target_voltage)
 	uint16_t voltage = 0;
 	
 	MISC_CHECK_ARGC(2);
-	if (ERROR_OK != programmer_assert())
+	if (ERROR_OK != programmer_assert(NULL))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
 		return ERROR_FAIL;
@@ -319,7 +323,7 @@ MISC_HANDLER(programmer_set_target_voltage)
 MISC_HANDLER(programmer_gpio_init)
 {
 	MISC_CHECK_ARGC_2(1, 4);
-	if (ERROR_OK != programmer_assert())
+	if (ERROR_OK != programmer_assert(NULL))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
 		return ERROR_FAIL;
@@ -340,7 +344,7 @@ MISC_HANDLER(programmer_gpio_init)
 MISC_HANDLER(programmer_gpio_fini)
 {
 	MISC_CHECK_ARGC(1);
-	if (ERROR_OK != programmer_assert())
+	if (ERROR_OK != programmer_assert(NULL))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
 		return ERROR_FAIL;
@@ -354,7 +358,7 @@ MISC_HANDLER(programmer_gpio_config)
 	uint16_t mask, io, pull;
 	
 	MISC_CHECK_ARGC(4);
-	if (ERROR_OK != programmer_assert())
+	if (ERROR_OK != programmer_assert(NULL))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
 		return ERROR_FAIL;
@@ -372,7 +376,7 @@ MISC_HANDLER(programmer_gpio_out)
 	uint16_t mask, value;
 	
 	MISC_CHECK_ARGC(3);
-	if (ERROR_OK != programmer_assert())
+	if (ERROR_OK != programmer_assert(NULL))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
 		return ERROR_FAIL;
@@ -390,7 +394,7 @@ MISC_HANDLER(programmer_gpio_in)
 	RESULT ret = ERROR_OK;
 	
 	MISC_CHECK_ARGC(2);
-	if (ERROR_OK != programmer_assert())
+	if (ERROR_OK != programmer_assert(NULL))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
 		return ERROR_FAIL;
@@ -414,7 +418,7 @@ MISC_HANDLER(programmer_gpio_in)
 MISC_HANDLER(programmer_spi_init)
 {
 	MISC_CHECK_ARGC_2(1, 5);
-	if (ERROR_OK != programmer_assert())
+	if (ERROR_OK != programmer_assert(NULL))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
 		return ERROR_FAIL;
@@ -435,7 +439,7 @@ MISC_HANDLER(programmer_spi_init)
 MISC_HANDLER(programmer_spi_fini)
 {
 	MISC_CHECK_ARGC(1);
-	if (ERROR_OK != programmer_assert())
+	if (ERROR_OK != programmer_assert(NULL))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
 		return ERROR_FAIL;
@@ -450,7 +454,7 @@ MISC_HANDLER(programmer_spi_config)
 	uint8_t cpol, cpha, firstbit;
 	
 	MISC_CHECK_ARGC(5);
-	if (ERROR_OK != programmer_assert())
+	if (ERROR_OK != programmer_assert(NULL))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
 		return ERROR_FAIL;
@@ -471,7 +475,7 @@ MISC_HANDLER(programmer_spi_io)
 	RESULT ret = ERROR_OK;
 	
 	MISC_CHECK_ARGC_MIN(2);
-	if (ERROR_OK != programmer_assert())
+	if (ERROR_OK != programmer_assert(NULL))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
 		return ERROR_FAIL;
@@ -524,7 +528,7 @@ MISC_HANDLER(programmer_spi_io)
 MISC_HANDLER(programmer_iic_init)
 {
 	MISC_CHECK_ARGC_2(1, 3);
-	if (ERROR_OK != programmer_assert())
+	if (ERROR_OK != programmer_assert(NULL))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
 		return ERROR_FAIL;
@@ -545,7 +549,7 @@ MISC_HANDLER(programmer_iic_init)
 MISC_HANDLER(programmer_iic_fini)
 {
 	MISC_CHECK_ARGC(1);
-	if (ERROR_OK != programmer_assert())
+	if (ERROR_OK != programmer_assert(NULL))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
 		return ERROR_FAIL;
@@ -560,7 +564,7 @@ MISC_HANDLER(programmer_iic_config)
 	uint16_t max_dly = 0;
 	
 	MISC_CHECK_ARGC(3);
-	if (ERROR_OK != programmer_assert())
+	if (ERROR_OK != programmer_assert(NULL))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
 		return ERROR_FAIL;
@@ -580,7 +584,7 @@ MISC_HANDLER(programmer_iic_read)
 	RESULT ret = ERROR_OK;
 	
 	MISC_CHECK_ARGC(3);
-	if (ERROR_OK != programmer_assert())
+	if (ERROR_OK != programmer_assert(NULL))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
 		return ERROR_FAIL;
@@ -621,7 +625,7 @@ MISC_HANDLER(programmer_iic_write)
 	RESULT ret = ERROR_OK;
 	
 	MISC_CHECK_ARGC_MIN(3);
-	if (ERROR_OK != programmer_assert())
+	if (ERROR_OK != programmer_assert(NULL))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
 		return ERROR_FAIL;
@@ -665,7 +669,7 @@ MISC_HANDLER(programmer_delay_us)
 	uint16_t delay;
 	
 	MISC_CHECK_ARGC(2);
-	if (ERROR_OK != programmer_assert())
+	if (ERROR_OK != programmer_assert(NULL))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
 		return ERROR_FAIL;
@@ -680,7 +684,7 @@ MISC_HANDLER(programmer_delay_ms)
 	uint16_t delay;
 	
 	MISC_CHECK_ARGC(2);
-	if (ERROR_OK != programmer_assert())
+	if (ERROR_OK != programmer_assert(NULL))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
 		return ERROR_FAIL;
@@ -694,7 +698,7 @@ MISC_HANDLER(programmer_delay_ms)
 MISC_HANDLER(programmer_commit)
 {
 	MISC_CHECK_ARGC(1);
-	if (ERROR_OK != programmer_assert())
+	if (ERROR_OK != programmer_assert(NULL))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
 		return ERROR_FAIL;
