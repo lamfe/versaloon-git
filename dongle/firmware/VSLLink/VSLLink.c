@@ -188,6 +188,7 @@ void VSLLink_ProcessCmd(uint8* dat, uint16 len)
 			// SWD
 			SWD_SetRetryCount(0);
 			SWD_SetTurnaround(1);
+			SWD_SetDelay(1);
 			SWD_Init();
 		}
 		else
