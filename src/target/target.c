@@ -776,7 +776,7 @@ static RESULT target_program(struct program_context_t *context)
 	i = cur_target->program_mode[program_info.mode].interface_needed;
 	if (i)
 	{
-		if (ERROR_OK != programmer_assert())
+		if (ERROR_OK != programmer_assert(&context->prog))
 		{
 			LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
 			return ERROR_FAIL;
@@ -3710,7 +3710,7 @@ MISC_HANDLER(target_operate)
 		verbosity = verbosity_tmp;
 		if (ERROR_OK == ret)
 		{
-			if (ERROR_OK != programmer_assert())
+			if (ERROR_OK != programmer_assert(NULL))
 			{
 				LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", 
 							"programmer module");

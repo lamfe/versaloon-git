@@ -496,7 +496,7 @@ RESULT comm_open_usbtocomm(char *comport, uint32_t baudrate,
 	struct interfaces_info_t *interfaces = NULL;
 	REFERENCE_PARAMETER(comport);
 	
-	if (ERROR_OK != programmer_assert())
+	if (ERROR_OK != programmer_assert(NULL))
 	{
 		return ERROR_FAIL;
 	}
