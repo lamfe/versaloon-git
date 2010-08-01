@@ -772,6 +772,23 @@ static RESULT target_program(struct program_context_t *context)
 		return ERROR_FAIL;
 	}
 	
+	// assert programmer
+	i = cur_target->program_mode[program_info.mode].interface_needed;
+	if (i)
+	{
+		if (ERROR_OK != programmer_assert())
+		{
+			LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
+			return ERROR_FAIL;
+		}
+		if ((cur_programmer->interfaces_mask & i) != i)
+		{
+			LOG_ERROR("%s can not support %s in the mode defined.", 
+						cur_programmer->name, cur_target->name);
+			return ERROR_FAIL;
+		}
+	}
+	
 	if ((pf->enter_program_mode != NULL) 
 		&&(pf->enter_program_mode(context) != ERROR_OK))
 	{
@@ -1430,13 +1447,6 @@ static RESULT target_init(struct program_info_t *pi)
 		{
 			struct program_context_t context;
 			struct operation_t opt_tmp;
-			
-			if (ERROR_OK != programmer_assert())
-			{
-				LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", 
-							"programmer module");
-				return ERROR_FAIL;
-			}
 			
 			memset(&opt_tmp, 0, sizeof(opt_tmp));
 			opt_tmp.read_operations = CHIPID;
@@ -3666,34 +3676,11 @@ MISC_HANDLER(target_operate)
 	RESULT ret = ERROR_OK;
 	uint32_t require_hex_file_for_read = 0;
 	uint32_t require_hex_file_for_write = 0;
-	uint32_t i;
 	
 	MISC_CHECK_ARGC(1);
 	if (NULL == cur_target)
 	{
 		LOG_ERROR(ERRMSG_NOT_DEFINED, "Target");
-		return ERROR_FAIL;
-	}
-	if (ERROR_OK != programmer_assert())
-	{
-		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
-		return ERROR_FAIL;
-	}
-	
-	i = cur_target->program_mode[program_info.mode].interface_needed;
-	if ((cur_programmer->interfaces_mask & i) != i)
-	{
-		LOG_ERROR("%s can not support %s in the mode defined.", 
-					cur_programmer->name, cur_target->name);
-		return ERROR_FAIL;
-	}
-	
-	// init and check programmer's ability
-	i = cur_target->program_mode[program_info.mode].interface_needed;
-	if ((cur_programmer->interfaces_mask & i) != i)
-	{
-		LOG_ERROR("%s can not support %s in the mode defined.", 
-					cur_programmer->name, cur_target->name);
 		return ERROR_FAIL;
 	}
 	
@@ -3723,6 +3710,13 @@ MISC_HANDLER(target_operate)
 		verbosity = verbosity_tmp;
 		if (ERROR_OK == ret)
 		{
+			if (ERROR_OK != programmer_assert())
+			{
+				LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", 
+							"programmer module");
+				return ERROR_FAIL;
+			}
+			
 			if (cur_programmer->enter_firmware_update_mode != NULL)
 			{
 				if (ERROR_OK != cur_programmer->enter_firmware_update_mode())
