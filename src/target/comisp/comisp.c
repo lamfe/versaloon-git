@@ -82,8 +82,6 @@ const struct comisp_param_t comisp_chips_param[] = {
 };
 static uint8_t comisp_chip_index = 0;
 
-uint8_t comisp_mode_offset = 0;
-
 struct com_mode_t com_mode = 
 {"", 115200, 8, COMM_PARITYBIT_NONE, COMM_STOPBIT_1, 
 COMM_HANDSHAKE_NONE, COMM_AUXPIN_DISABLE};
@@ -210,7 +208,6 @@ ENTER_PROGRAM_MODE_HANDLER(comisp)
 	struct program_functions_t *pf = 
 					comisp_chips_param[comisp_chip_index].program_functions;
 	
-	context->pi->mode -= comisp_mode_offset;
 	if (pf->enter_program_mode != NULL)
 	{
 		return pf->enter_program_mode(context);

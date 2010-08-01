@@ -94,7 +94,6 @@ MISC_HANDLER(lpc1000_mode)
 								cm3_program_functions.enter_program_mode;
 		break;
 	case LPC1000_ISP:
-		comisp_mode_offset = LPC1000_ISP;
 		misc_call_notifier(comisp_notifier, "chip", "comisp_lpc1000");
 		memcpy(&lpc1000_program_functions, &comisp_program_functions, 
 				sizeof(lpc1000_program_functions));

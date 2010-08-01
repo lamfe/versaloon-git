@@ -91,7 +91,6 @@ MISC_HANDLER(stm32_mode)
 		break;
 	case STM32_ISP:
 		stm32_program_area_map[0].attr &= ~AREA_ATTR_NP;
-		comisp_mode_offset = STM32_ISP;
 		misc_call_notifier(comisp_notifier, "chip", "comisp_stm32");
 		memcpy(&stm32_program_functions, &comisp_program_functions, 
 				sizeof(stm32_program_functions));
