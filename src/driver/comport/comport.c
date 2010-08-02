@@ -473,17 +473,16 @@ int32_t comm_ctrl_hw(uint8_t dtr, uint8_t rts)
 #endif
 
 static uint8_t usbtocomm_open = 0;
+static struct interfaces_info_t *interfaces = NULL;
 void comm_close_usbtocomm(void)
 {
-	struct interfaces_info_t *interfaces = NULL;
 	if (!usbtocomm_open)
 	{
 		return;
 	}
 	
-	if (cur_programmer != NULL)
+	if (interfaces != NULL)
 	{
-		interfaces = &(cur_programmer->interfaces);
 		interfaces->usart.fini();
 		interfaces->peripheral_commit();
 	}
@@ -493,14 +492,14 @@ void comm_close_usbtocomm(void)
 RESULT comm_open_usbtocomm(char *comport, uint32_t baudrate, 
 			uint8_t datalength, char paritybit, char stopbit, char handshake)
 {
-	struct interfaces_info_t *interfaces = NULL;
+	struct programmer_info_t *prog = NULL;
 	REFERENCE_PARAMETER(comport);
 	
-	if (ERROR_OK != programmer_assert(NULL))
+	if ((ERROR_OK != programmer_assert(&prog)) || (NULL == prog))
 	{
 		return ERROR_FAIL;
 	}
-	interfaces = &(cur_programmer->interfaces);
+	interfaces = &(prog->interfaces);
 	
 	// paritybit
 	switch (paritybit)
@@ -564,7 +563,6 @@ RESULT comm_open_usbtocomm(char *comport, uint32_t baudrate,
 
 int32_t comm_read_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 {
-	struct interfaces_info_t *interfaces = NULL;
 	uint32_t start, end;
 	uint32_t buffer_len[2];
 	
@@ -572,7 +570,6 @@ int32_t comm_read_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 	{
 		return ERROR_FAIL;
 	}
-	interfaces = &(cur_programmer->interfaces);
 	
 	start = get_time_in_ms();
 	do
@@ -628,7 +625,6 @@ int32_t comm_read_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 
 int32_t comm_write_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 {
-	struct interfaces_info_t *interfaces = NULL;
 	uint32_t start, end;
 	uint32_t buffer_len[2];
 	
@@ -636,7 +632,6 @@ int32_t comm_write_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 	{
 		return ERROR_FAIL;
 	}
-	interfaces = &(cur_programmer->interfaces);
 	
 	LOG_PUSH();
 	LOG_MUTE();
@@ -701,7 +696,7 @@ int32_t comm_ctrl_usbtocomm(uint8_t dtr, uint8_t rts)
 	REFERENCE_PARAMETER(dtr);
 	REFERENCE_PARAMETER(rts);
 	
-	if ((NULL == cur_programmer) || !usbtocomm_open)
+	if ((NULL == interfaces) || !usbtocomm_open)
 	{
 		return ERROR_FAIL;
 	}

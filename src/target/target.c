@@ -776,15 +776,16 @@ static RESULT target_program(struct program_context_t *context)
 	i = cur_target->program_mode[program_info.mode].interface_needed;
 	if (i)
 	{
-		if (ERROR_OK != programmer_assert(&context->prog))
+		if ((ERROR_OK != programmer_assert(&context->prog)) 
+			|| (NULL == context->prog))
 		{
 			LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
 			return ERROR_FAIL;
 		}
-		if ((cur_programmer->interfaces_mask & i) != i)
+		if ((context->prog->interfaces_mask & i) != i)
 		{
 			LOG_ERROR("%s can not support %s in the mode defined.", 
-						cur_programmer->name, cur_target->name);
+						context->prog->name, cur_target->name);
 			return ERROR_FAIL;
 		}
 	}
@@ -3710,16 +3711,17 @@ MISC_HANDLER(target_operate)
 		verbosity = verbosity_tmp;
 		if (ERROR_OK == ret)
 		{
-			if (ERROR_OK != programmer_assert(NULL))
+			struct programmer_info_t *prog = NULL;
+			if ((ERROR_OK != programmer_assert(&prog)) || (NULL == prog))
 			{
 				LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", 
 							"programmer module");
 				return ERROR_FAIL;
 			}
 			
-			if (cur_programmer->enter_firmware_update_mode != NULL)
+			if (prog->enter_firmware_update_mode != NULL)
 			{
-				if (ERROR_OK != cur_programmer->enter_firmware_update_mode())
+				if (ERROR_OK != prog->enter_firmware_update_mode())
 				{
 					LOG_ERROR(ERRMSG_FAILURE_OPERATION, 
 								"enter into firmware update mode");
@@ -3728,7 +3730,7 @@ MISC_HANDLER(target_operate)
 			}
 			
 			// close device
-			cur_programmer->fini();
+			prog->fini();
 			// sleep 3s
 			sleep_ms(3000);
 		}
