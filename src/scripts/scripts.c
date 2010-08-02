@@ -29,6 +29,7 @@
 #include "app_type.h"
 #include "app_log.h"
 #include "app_err.h"
+#include "port.h"
 
 #include "vsprog.h"
 #include "scripts.h"
@@ -57,6 +58,7 @@ MISC_HANDLER(misc_close);
 MISC_HANDLER(misc_run_command);
 MISC_HANDLER(misc_log_info);
 MISC_HANDLER(misc_getchar);
+MISC_HANDLER(misc_sleep);
 
 struct misc_cmd_t misc_generic_cmd[] = 
 {
@@ -93,6 +95,9 @@ struct misc_cmd_t misc_generic_cmd[] =
 	MISC_CMD(	"getchar",
 				"wait keyboard input, format: getchar",
 				misc_getchar),
+	MISC_CMD(	"sleep",
+				"sleep defined ms, format: sleep MS",
+				misc_sleep),
 	MISC_CMD_END
 };
 
@@ -669,6 +674,15 @@ MISC_HANDLER(misc_getchar)
 {
 	MISC_CHECK_ARGC(1);
 	getchar();
+	return ERROR_OK;
+}
+
+MISC_HANDLER(misc_sleep)
+{
+	uint32_t ms;
+	MISC_CHECK_ARGC(2);
+	ms = (uint32_t)strtoul(argv[1], NULL, 0);
+	sleep_ms(ms);
 	return ERROR_OK;
 }
 
