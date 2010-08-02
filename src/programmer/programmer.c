@@ -285,15 +285,16 @@ MISC_HANDLER(programmer_get_target_voltage)
 {
 	uint16_t voltage = 0;
 	RESULT ret = ERROR_OK;
+	struct programmer_info_t *prog = NULL;
 	
 	MISC_CHECK_ARGC(1);
-	if (ERROR_OK != programmer_assert(NULL))
+	if ((ERROR_OK != programmer_assert(&prog)) || (NULL == prog))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
 		return ERROR_FAIL;
 	}
 	
-	if (ERROR_OK != cur_programmer->interfaces.target_voltage.get(&voltage))
+	if (ERROR_OK != prog->interfaces.target_voltage.get(&voltage))
 	{
 		ret = ERROR_FAIL;
 	}
@@ -307,29 +308,32 @@ MISC_HANDLER(programmer_get_target_voltage)
 MISC_HANDLER(programmer_set_target_voltage)
 {
 	uint16_t voltage = 0;
+	struct programmer_info_t *prog = NULL;
 	
 	MISC_CHECK_ARGC(2);
-	if (ERROR_OK != programmer_assert(NULL))
+	if ((ERROR_OK != programmer_assert(&prog)) || (NULL == prog))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
 		return ERROR_FAIL;
 	}
 	
 	voltage = (uint16_t)strtoul(argv[1], NULL, 0);
-	return cur_programmer->interfaces.target_voltage.set(voltage);
+	return prog->interfaces.target_voltage.set(voltage);
 }
 
 // gpio
 MISC_HANDLER(programmer_gpio_init)
 {
+	struct programmer_info_t *prog = NULL;
+	
 	MISC_CHECK_ARGC_2(1, 4);
-	if (ERROR_OK != programmer_assert(NULL))
+	if ((ERROR_OK != programmer_assert(&prog)) || (NULL == prog))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
 		return ERROR_FAIL;
 	}
 	
-	if (ERROR_OK != cur_programmer->interfaces.gpio.init())
+	if (ERROR_OK != prog->interfaces.gpio.init())
 	{
 		return ERROR_FAIL;
 	}
@@ -343,22 +347,25 @@ MISC_HANDLER(programmer_gpio_init)
 
 MISC_HANDLER(programmer_gpio_fini)
 {
+	struct programmer_info_t *prog = NULL;
+	
 	MISC_CHECK_ARGC(1);
-	if (ERROR_OK != programmer_assert(NULL))
+	if ((ERROR_OK != programmer_assert(&prog)) || (NULL == prog))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
 		return ERROR_FAIL;
 	}
 	
-	return cur_programmer->interfaces.gpio.fini();
+	return prog->interfaces.gpio.fini();
 }
 
 MISC_HANDLER(programmer_gpio_config)
 {
 	uint16_t mask, io, pull;
+	struct programmer_info_t *prog = NULL;
 	
 	MISC_CHECK_ARGC(4);
-	if (ERROR_OK != programmer_assert(NULL))
+	if ((ERROR_OK != programmer_assert(&prog)) || (NULL == prog))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
 		return ERROR_FAIL;
@@ -368,15 +375,16 @@ MISC_HANDLER(programmer_gpio_config)
 	io = (uint16_t)strtoul(argv[2], NULL, 0);
 	pull = (uint16_t)strtoul(argv[3], NULL, 0);
 	
-	return cur_programmer->interfaces.gpio.config(mask, io, pull);
+	return prog->interfaces.gpio.config(mask, io, pull);
 }
 
 MISC_HANDLER(programmer_gpio_out)
 {
 	uint16_t mask, value;
+	struct programmer_info_t *prog = NULL;
 	
 	MISC_CHECK_ARGC(3);
-	if (ERROR_OK != programmer_assert(NULL))
+	if ((ERROR_OK != programmer_assert(&prog)) || (NULL == prog))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
 		return ERROR_FAIL;
@@ -385,16 +393,17 @@ MISC_HANDLER(programmer_gpio_out)
 	mask = (uint16_t)strtoul(argv[1], NULL, 0);
 	value = (uint16_t)strtoul(argv[2], NULL, 0);
 	
-	return cur_programmer->interfaces.gpio.out(mask, value);
+	return prog->interfaces.gpio.out(mask, value);
 }
 
 MISC_HANDLER(programmer_gpio_in)
 {
 	uint16_t mask, value;
 	RESULT ret = ERROR_OK;
+	struct programmer_info_t *prog = NULL;
 	
 	MISC_CHECK_ARGC(2);
-	if (ERROR_OK != programmer_assert(NULL))
+	if ((ERROR_OK != programmer_assert(&prog)) || (NULL == prog))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
 		return ERROR_FAIL;
@@ -402,10 +411,10 @@ MISC_HANDLER(programmer_gpio_in)
 	
 	mask = (uint16_t)strtoul(argv[1], NULL, 0);
 	
-	ret = cur_programmer->interfaces.gpio.in(mask, &value);
+	ret = prog->interfaces.gpio.in(mask, &value);
 	if (ERROR_OK == ret)
 	{
-		ret = cur_programmer->interfaces.peripheral_commit();
+		ret = prog->interfaces.peripheral_commit();
 		if (ERROR_OK == ret)
 		{
 			LOG_INFO(INFOMSG_REG_04X, "GPIO", value);
@@ -417,14 +426,16 @@ MISC_HANDLER(programmer_gpio_in)
 // spi
 MISC_HANDLER(programmer_spi_init)
 {
+	struct programmer_info_t *prog = NULL;
+	
 	MISC_CHECK_ARGC_2(1, 5);
-	if (ERROR_OK != programmer_assert(NULL))
+	if ((ERROR_OK != programmer_assert(&prog)) || (NULL == prog))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
 		return ERROR_FAIL;
 	}
 	
-	if (ERROR_OK != cur_programmer->interfaces.spi.init())
+	if (ERROR_OK != prog->interfaces.spi.init())
 	{
 		return ERROR_FAIL;
 	}
@@ -438,23 +449,26 @@ MISC_HANDLER(programmer_spi_init)
 
 MISC_HANDLER(programmer_spi_fini)
 {
+	struct programmer_info_t *prog = NULL;
+	
 	MISC_CHECK_ARGC(1);
-	if (ERROR_OK != programmer_assert(NULL))
+	if ((ERROR_OK != programmer_assert(&prog)) || (NULL == prog))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
 		return ERROR_FAIL;
 	}
 	
-	return cur_programmer->interfaces.spi.fini();
+	return prog->interfaces.spi.fini();
 }
 
 MISC_HANDLER(programmer_spi_config)
 {
 	uint16_t khz = 0;
 	uint8_t cpol, cpha, firstbit;
+	struct programmer_info_t *prog = NULL;
 	
 	MISC_CHECK_ARGC(5);
-	if (ERROR_OK != programmer_assert(NULL))
+	if ((ERROR_OK != programmer_assert(&prog)) || (NULL == prog))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
 		return ERROR_FAIL;
@@ -465,7 +479,7 @@ MISC_HANDLER(programmer_spi_config)
 	cpha = (uint8_t)strtoul(argv[3], NULL, 0);
 	firstbit = (uint8_t)strtoul(argv[4], NULL, 0);
 	
-	return cur_programmer->interfaces.spi.config(khz, cpol, cpha, firstbit);
+	return prog->interfaces.spi.config(khz, cpol, cpha, firstbit);
 }
 
 MISC_HANDLER(programmer_spi_io)
@@ -473,9 +487,10 @@ MISC_HANDLER(programmer_spi_io)
 	uint16_t data_size = 0;
 	uint8_t *buff = NULL;
 	RESULT ret = ERROR_OK;
+	struct programmer_info_t *prog = NULL;
 	
 	MISC_CHECK_ARGC_MIN(2);
-	if (ERROR_OK != programmer_assert(NULL))
+	if ((ERROR_OK != programmer_assert(&prog)) || (NULL == prog))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
 		return ERROR_FAIL;
@@ -505,11 +520,11 @@ MISC_HANDLER(programmer_spi_io)
 		}
 	}
 	
-	ret = cur_programmer->interfaces.spi.io(buff, buff, data_size, 0, 
+	ret = prog->interfaces.spi.io(buff, buff, data_size, 0, 
 											data_size);
 	if (ERROR_OK == ret)
 	{
-		ret = cur_programmer->interfaces.peripheral_commit();
+		ret = prog->interfaces.peripheral_commit();
 		if (ERROR_OK == ret)
 		{
 			LOG_BYTE_BUF(buff, data_size, LOG_INFO, "%02X", 16);
@@ -527,14 +542,16 @@ MISC_HANDLER(programmer_spi_io)
 // iic
 MISC_HANDLER(programmer_iic_init)
 {
+	struct programmer_info_t *prog = NULL;
+	
 	MISC_CHECK_ARGC_2(1, 3);
-	if (ERROR_OK != programmer_assert(NULL))
+	if ((ERROR_OK != programmer_assert(&prog)) || (NULL == prog))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
 		return ERROR_FAIL;
 	}
 	
-	if (ERROR_OK != cur_programmer->interfaces.i2c.init())
+	if (ERROR_OK != prog->interfaces.i2c.init())
 	{
 		return ERROR_FAIL;
 	}
@@ -548,23 +565,26 @@ MISC_HANDLER(programmer_iic_init)
 
 MISC_HANDLER(programmer_iic_fini)
 {
+	struct programmer_info_t *prog = NULL;
+	
 	MISC_CHECK_ARGC(1);
-	if (ERROR_OK != programmer_assert(NULL))
+	if ((ERROR_OK != programmer_assert(&prog)) || (NULL == prog))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
 		return ERROR_FAIL;
 	}
 	
-	return cur_programmer->interfaces.i2c.fini();
+	return prog->interfaces.i2c.fini();
 }
 
 MISC_HANDLER(programmer_iic_config)
 {
 	uint16_t khz = 0;
 	uint16_t max_dly = 0;
+	struct programmer_info_t *prog = NULL;
 	
 	MISC_CHECK_ARGC(3);
-	if (ERROR_OK != programmer_assert(NULL))
+	if ((ERROR_OK != programmer_assert(&prog)) || (NULL == prog))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
 		return ERROR_FAIL;
@@ -573,7 +593,7 @@ MISC_HANDLER(programmer_iic_config)
 	khz = (uint16_t)strtoul(argv[1], NULL, 0);
 	max_dly = (uint16_t)strtoul(argv[2], NULL, 0);
 	
-	return cur_programmer->interfaces.i2c.config(khz, 0, max_dly);
+	return prog->interfaces.i2c.config(khz, 0, max_dly);
 }
 
 MISC_HANDLER(programmer_iic_read)
@@ -582,9 +602,10 @@ MISC_HANDLER(programmer_iic_read)
 	uint8_t addr = 0;
 	uint8_t *buff = NULL;
 	RESULT ret = ERROR_OK;
+	struct programmer_info_t *prog = NULL;
 	
 	MISC_CHECK_ARGC(3);
-	if (ERROR_OK != programmer_assert(NULL))
+	if ((ERROR_OK != programmer_assert(&prog)) || (NULL == prog))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
 		return ERROR_FAIL;
@@ -598,10 +619,10 @@ MISC_HANDLER(programmer_iic_read)
 		return ERROR_FAIL;
 	}
 	
-	ret = cur_programmer->interfaces.i2c.read(addr, buff, data_size, 1);
+	ret = prog->interfaces.i2c.read(addr, buff, data_size, 1);
 	if (ERROR_OK == ret)
 	{
-		ret = cur_programmer->interfaces.peripheral_commit();
+		ret = prog->interfaces.peripheral_commit();
 		if (ERROR_OK == ret)
 		{
 			LOG_BYTE_BUF(buff, data_size, LOG_INFO, "%02X", 16);
@@ -623,9 +644,10 @@ MISC_HANDLER(programmer_iic_write)
 	uint8_t *buff = NULL;
 	uint8_t i;
 	RESULT ret = ERROR_OK;
+	struct programmer_info_t *prog = NULL;
 	
 	MISC_CHECK_ARGC_MIN(3);
-	if (ERROR_OK != programmer_assert(NULL))
+	if ((ERROR_OK != programmer_assert(&prog)) || (NULL == prog))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
 		return ERROR_FAIL;
@@ -653,7 +675,7 @@ MISC_HANDLER(programmer_iic_write)
 		buff[i] = (uint8_t)strtoul(argv[3 + i], NULL, 0);
 	}
 	
-	ret = cur_programmer->interfaces.i2c.write(addr, buff, data_size, 1);
+	ret = prog->interfaces.i2c.write(addr, buff, data_size, 1);
 	
 	if (buff != NULL)
 	{
@@ -667,43 +689,47 @@ MISC_HANDLER(programmer_iic_write)
 MISC_HANDLER(programmer_delay_us)
 {
 	uint16_t delay;
+	struct programmer_info_t *prog = NULL;
 	
 	MISC_CHECK_ARGC(2);
-	if (ERROR_OK != programmer_assert(NULL))
+	if ((ERROR_OK != programmer_assert(&prog)) || (NULL == prog))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
 		return ERROR_FAIL;
 	}
 	
 	delay = (uint16_t)strtoul(argv[1], NULL, 0);
-	return cur_programmer->interfaces.delay.delayus(delay);
+	return prog->interfaces.delay.delayus(delay);
 }
 
 MISC_HANDLER(programmer_delay_ms)
 {
 	uint16_t delay;
+	struct programmer_info_t *prog = NULL;
 	
 	MISC_CHECK_ARGC(2);
-	if (ERROR_OK != programmer_assert(NULL))
+	if ((ERROR_OK != programmer_assert(&prog)) || (NULL == prog))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
 		return ERROR_FAIL;
 	}
 	
 	delay = (uint16_t)strtoul(argv[1], NULL, 0);
-	return cur_programmer->interfaces.delay.delayms(delay);
+	return prog->interfaces.delay.delayms(delay);
 }
 
 // commit
 MISC_HANDLER(programmer_commit)
 {
+	struct programmer_info_t *prog = NULL;
+	
 	MISC_CHECK_ARGC(1);
-	if (ERROR_OK != programmer_assert(NULL))
+	if ((ERROR_OK != programmer_assert(&prog)) || (NULL == prog))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
 		return ERROR_FAIL;
 	}
 	
-	return cur_programmer->interfaces.peripheral_commit();
+	return prog->interfaces.peripheral_commit();
 }
 
