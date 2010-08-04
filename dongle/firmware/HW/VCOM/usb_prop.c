@@ -392,6 +392,7 @@ RESULT Virtual_Com_Port_NoData_Setup(uint8_t RequestNo)
     if (RequestNo == 0)
     {
       CDC_IF_Fini();
+      CDC_enable = 0;
       return USB_SUCCESS;
     }
   }
