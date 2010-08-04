@@ -411,7 +411,7 @@ RESULT misc_run_script(char *cmd)
 			break;
 		}
 	}
-	if ('#' == first_char)
+	if (MISC_COMMENT_CHAR == first_char)
 	{
 		// comment line
 		return ERROR_OK;
@@ -432,7 +432,7 @@ RESULT misc_run_script(char *cmd)
 		goto end;
 	}
 	// empty line or comment line
-	if ((0 == argc) || ('#' == argv[0][0]))
+	if ((0 == argc) || (MISC_COMMENT_CHAR == argv[0][0]))
 	{
 		goto end;
 	}
@@ -476,20 +476,13 @@ end:
 
 static RESULT misc_run_file(FILE *f, char *head, uint8_t quiet)
 {
-	char cmd_line[4096];
+	char cmd_line[4096], *cmd_ptr;
+	uint8_t cur_cmd_quiet;
+	uint32_t i;
 	
 	rewind(f);
 	while (1)
 	{
-		if (!quiet && !misc_quiet_mode)
-		{
-			if (head != NULL)
-			{
-				printf("%s", head);
-			}
-			printf(">>>");
-		}
-		
 		// get a line
 		if (NULL == fgets(cmd_line, sizeof(cmd_line), f))
 		{
@@ -503,11 +496,32 @@ static RESULT misc_run_file(FILE *f, char *head, uint8_t quiet)
 			}
 		}
 		
-		if ((!quiet && !misc_quiet_mode) && (f != stdin))
+		cmd_ptr = '\0';
+		for (i = 0; i < strlen(cmd_line); i++)
 		{
-			printf("%s", cmd_line);
+			cmd_ptr = &cmd_line[i];
+			if (!isspace(*cmd_ptr))
+			{
+				break;
+			}
 		}
-		if ((ERROR_OK != misc_run_script(cmd_line)) 
+		
+		cur_cmd_quiet = 0;
+		if (MISC_HIDE_CHAR == *cmd_ptr)
+		{
+			// not display current command
+			cur_cmd_quiet = 1;
+			cmd_ptr++;
+		}
+		if ((!quiet && !misc_quiet_mode && !cur_cmd_quiet) && (f != stdin))
+		{
+			if (head != NULL)
+			{
+				printf("%s", head);
+			}
+			printf(">>>%s", cmd_line);
+		}
+		if ((ERROR_OK != misc_run_script(cmd_ptr)) 
 			&& (misc_fatal_error 
 				|| misc_param[PARAM_EXIT_ON_FAIL].value))
 		{
