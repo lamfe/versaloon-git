@@ -69,6 +69,20 @@ struct misc_param_t
 		misc_print_help(argv[0]);\
 		return ERROR_FAIL;\
 	}
+#define MISC_CHECK_ARGC_MAX(n)					\
+	if (argc > (n))\
+	{\
+		LOG_ERROR(ERRMSG_INVALID_CMD, argv[0]);\
+		misc_print_help(argv[0]);\
+		return ERROR_FAIL;\
+	}
+#define MISC_CHECK_ARGC_RANGE(min, max)			\
+	if ((argc < (min)) || (argc > (max)))\
+	{\
+		LOG_ERROR(ERRMSG_INVALID_CMD, argv[0]);\
+		misc_print_help(argv[0]);\
+		return ERROR_FAIL;\
+	}
 
 void misc_set_fatal_error(void);
 RESULT misc_cmd_supported_by_notifier(const struct misc_cmd_t *notifier, 
