@@ -84,6 +84,9 @@ struct misc_param_t
 		return ERROR_FAIL;\
 	}
 
+#define MISC_COMMENT_CHAR						'#'
+#define MISC_HIDE_CHAR							'@'
+
 void misc_set_fatal_error(void);
 RESULT misc_cmd_supported_by_notifier(const struct misc_cmd_t *notifier, 
 										char *notify_cmd);
