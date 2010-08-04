@@ -204,10 +204,10 @@ RESULT programmer_assert(struct programmer_info_t **prog)
 			misc_set_fatal_error();
 			return ERROR_FAIL;
 		}
-		if (prog != NULL)
-		{
-			*prog = cur_programmer;
-		}
+	}
+	if (prog != NULL)
+	{
+		*prog = cur_programmer;
 	}
 	return ERROR_OK;
 }
