@@ -272,6 +272,17 @@ RESULT versaloon_init(void)
 		return ERRCODE_NOT_ENOUGH_MEMORY;
 	}
 	
+	// disable cdc device first
+	if (0 > usb_control_msg(versaloon_device_handle, 
+			USB_TYPE_VENDOR | USB_RECIP_INTERFACE, 0, 0, 0, NULL, 0, 
+			versaloon_to))
+	{
+		versaloon_fini();
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION_MESSAGE, 
+					"disable cdc device in versaloon", usb_strerror());
+		return ERRCODE_FAILURE_OPERATION;
+	}
+	
 	// connect to versaloon
 	LOG_PUSH();
 	LOG_MUTE();
