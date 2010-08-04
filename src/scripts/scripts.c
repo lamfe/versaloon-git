@@ -59,6 +59,7 @@ MISC_HANDLER(misc_run_command);
 MISC_HANDLER(misc_log_info);
 MISC_HANDLER(misc_getchar);
 MISC_HANDLER(misc_sleep);
+MISC_HANDLER(misc_quiet);
 
 struct misc_cmd_t misc_generic_cmd[] = 
 {
@@ -98,6 +99,12 @@ struct misc_cmd_t misc_generic_cmd[] =
 	MISC_CMD(	"sleep",
 				"sleep defined ms, format: sleep MS",
 				misc_sleep),
+	MISC_CMD(	"quiet",
+				"set quiet mode, format: quiet/q [0/1]",
+				misc_quiet),
+	MISC_CMD(	"q",
+				"set quiet mode, format: quiet/q [0/1]",
+				misc_quiet),
 	MISC_CMD_END
 };
 
@@ -129,6 +136,7 @@ struct misc_cmd_t *misc_cmds_list[] =
 static int8_t misc_exit_mark = 0;
 static uint32_t misc_loop_cnt = 0;
 static uint8_t misc_fatal_error = 0;
+static uint8_t misc_quiet_mode = 0;
 
 void misc_set_fatal_error(void)
 {
@@ -379,7 +387,7 @@ RESULT misc_run_cmd(uint16_t argc, const char *argv[])
 	}
 	else if (ERROR_OK != cmd->processor(argc, argv))
 	{
-		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "run", argv[0]);
+		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "run command:", argv[0]);
 		return ERROR_FAIL;
 	}
 	
@@ -473,7 +481,7 @@ static RESULT misc_run_file(FILE *f, char *head, uint8_t quiet)
 	rewind(f);
 	while (1)
 	{
-		if (!quiet)
+		if (!quiet && !misc_quiet_mode)
 		{
 			if (head != NULL)
 			{
@@ -495,7 +503,7 @@ static RESULT misc_run_file(FILE *f, char *head, uint8_t quiet)
 			}
 		}
 		
-		if ((!quiet) && (f != stdin))
+		if ((!quiet && !misc_quiet_mode) && (f != stdin))
 		{
 			printf("%s", cmd_line);
 		}
@@ -505,7 +513,7 @@ static RESULT misc_run_file(FILE *f, char *head, uint8_t quiet)
 		{
 			return ERROR_FAIL;
 		}
-		if (!quiet)
+		if (!quiet && !misc_quiet_mode)
 		{
 			printf("\n");
 		}
@@ -683,6 +691,20 @@ MISC_HANDLER(misc_sleep)
 	MISC_CHECK_ARGC(2);
 	ms = (uint32_t)strtoul(argv[1], NULL, 0);
 	sleep_ms(ms);
+	return ERROR_OK;
+}
+
+MISC_HANDLER(misc_quiet)
+{
+	MISC_CHECK_ARGC_RANGE(1, 2);
+	if (1 == argc)
+	{
+		misc_quiet_mode = 1;
+	}
+	else if (2 == argc)
+	{
+		misc_quiet_mode = (uint8_t)strtoul(argv[1], NULL, 0);
+	}
 	return ERROR_OK;
 }
 

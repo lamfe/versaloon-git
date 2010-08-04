@@ -50,7 +50,7 @@
 #include "hex.h"
 #include "scripts.h"
 
-#define OPTSTR			"hvS:P:s:c:Mp:U:D:Ld:Go:F:m:x:C:I:O:J:Zb:V:t:K:W:A"
+#define OPTSTR			"hvS:P:s:c:Mp:U:D:Ld:Go:F:m:x:C:I:O:J:Zb:V:t:K:W:Aq"
 static const struct option long_opts[] =
 {
 	{"help", no_argument, NULL, 'h'},
@@ -81,6 +81,7 @@ static const struct option long_opts[] =
 	{"firmware-update", no_argument, NULL, 'Z'},
 	{"buffsize", required_argument, NULL, 'b'},
 	{"misc-cmd", required_argument, NULL, 'V'},
+	{"quiet", no_argument, NULL, 'q'},
 	{NULL, 0, NULL, 0},
 };
 
@@ -189,11 +190,8 @@ static void free_all(void)
 	target_free_data_buffer();
 }
 
-static void free_all_and_exit(int exit_code)
+static void free_vsprog_system(void)
 {
-	free_all();
-	
-	// buffer below will be freed ONLY when exit program
 	if (program_name != NULL)
 	{
 		free(program_name);
@@ -209,6 +207,12 @@ static void free_all_and_exit(int exit_code)
 		free(config_dir);
 		config_dir = NULL;
 	}
+}
+
+static void free_all_and_exit(int exit_code)
+{
+	misc_run_script("free-all");
+	free_vsprog_system();
 	exit(exit_code);
 }
 
@@ -470,6 +474,8 @@ MISC_HANDLER(vsprog_init)
 	
 	MISC_CHECK_ARGC(2);
 	
+	free_vsprog_system();
+	
 	// get directory of the application
 	program_dir = (char *)malloc(strlen(argv[1]) + 1);
 	program_name = (char *)malloc(strlen(argv[1]) + 1);
@@ -617,16 +623,11 @@ int main(int argc, char* argv[])
 			break;
 		}
 	}
-	if (lose_argu || (optind < (argc - 1)))
+	if (lose_argu)
 	{
-		// parameter parse error
-		// print error message and exit
-		if (optind < argc)
-		{
-			LOG_ERROR(ERRMSG_INVALID_CMD, argv[optind]);
-			LOG_ERROR(ERRMSG_TRY_HELP);
-			free_all_and_exit(EXIT_FAILURE);
-		}
+		LOG_ERROR(ERRMSG_INVALID_CMD, argv[optind]);
+		LOG_ERROR(ERRMSG_TRY_HELP);
+		free_all_and_exit(EXIT_FAILURE);
 	}
 	
 	// "operate" programming if target and operation are both defined
@@ -637,6 +638,22 @@ int main(int argc, char* argv[])
 		if (ERROR_OK != misc_run_script("operate"))
 		{
 			free_all_and_exit(EXIT_FAILURE);
+		}
+	}
+	
+	if (optind < (argc - 1))
+	{
+		if (optind == (argc - 2))
+		{
+			optind++;
+			misc_argv[0] = "run";
+			misc_argv[1] = argv[optind];
+			misc_argc = 2;
+			if (ERROR_OK != misc_run_cmd(misc_argc, (const char **)misc_argv))
+			{
+				LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "run", misc_argv[1]);
+				free_all_and_exit(EXIT_SUCCESS);
+			}
 		}
 	}
 	
