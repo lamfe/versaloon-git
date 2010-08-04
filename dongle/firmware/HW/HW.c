@@ -395,7 +395,7 @@ void USB_Init_SerialString(uint8 *strSerial, uint16 len)
 	}
 }
 
-static uint8 __if_inited = 0;
+static uint32 __if_inited = 0;
 void CDC_IF_Fini(void)
 {
 	NVIC_InitTypeDef NVIC_InitStructure;
@@ -413,9 +413,12 @@ void CDC_IF_Fini(void)
 #endif
 	USART_Port_Fini();
 
-	PWREXT_Release();
-	GLOBAL_OUTPUT_Release();
-	__if_inited = 0;
+	while (__if_inited)
+	{
+		__if_inited--;
+		PWREXT_Release();
+		GLOBAL_OUTPUT_Release();
+	}
 }
 
 void CDC_IF_Setup(uint32 baudrate, uint8 datatype, uint8 paritytype, uint8 stopbittype)
@@ -428,13 +431,13 @@ void CDC_IF_Setup(uint32 baudrate, uint8 datatype, uint8 paritytype, uint8 stopb
 
 	if(!__if_inited)
 	{
-		__if_inited = 1;
 		USART_DeInit(USART_DEF_PORT);
 #if USART_AUX_PORT_EN
 		USART_AUX_Port_Init();
 #endif
 		USART_Port_Init();
 	}
+	__if_inited++;
 
 	/* Enable the USART1 Interrupt */
 	NVIC_InitStructure.NVIC_IRQChannel = USART_IRQ;
