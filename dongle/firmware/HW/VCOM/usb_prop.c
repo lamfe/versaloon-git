@@ -387,8 +387,15 @@ RESULT Virtual_Com_Port_Data_Setup(uint8_t RequestNo)
 *******************************************************************************/
 RESULT Virtual_Com_Port_NoData_Setup(uint8_t RequestNo)
 {
-
-  if (Type_Recipient == (CLASS_REQUEST | INTERFACE_RECIPIENT))
+  if (Type_Recipient == (VENDOR_REQUEST | INTERFACE_RECIPIENT))
+  {
+    if (RequestNo == 0)
+    {
+      CDC_IF_Fini();
+      return USB_SUCCESS;
+    }
+  }
+  else if (Type_Recipient == (CLASS_REQUEST | INTERFACE_RECIPIENT))
   {
     if ((RequestNo == SET_COMM_FEATURE) || (RequestNo == SEND_BREAK))
     {

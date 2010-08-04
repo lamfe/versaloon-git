@@ -423,6 +423,9 @@ void CDC_IF_Setup(uint32 baudrate, uint8 datatype, uint8 paritytype, uint8 stopb
 	USART_InitTypeDef USART_InitStructure;
 	NVIC_InitTypeDef NVIC_InitStructure;
 
+	FIFO_Reset(&CDC_OUT_fifo);
+	FIFO_Reset(&CDC_IN_fifo);
+
 	if(!__if_inited)
 	{
 		__if_inited = 1;

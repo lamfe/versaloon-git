@@ -224,7 +224,7 @@ uint32_t print_usb_devices(uint16_t VID, uint16_t PID, uint8_t serialindex,
 							char *serialstring, uint8_t productindex, 
 							char *productstring)
 {
-	usb_dev_handle *usb = NULL;
+	usb_dev_handle *dev_handle = NULL;
 	struct usb_bus *busses;
 	struct usb_bus *bus;
 	struct usb_device *dev;
@@ -243,8 +243,8 @@ uint32_t print_usb_devices(uint16_t VID, uint16_t PID, uint8_t serialindex,
 			if ((dev->descriptor.idVendor == VID) 
 				&& (dev->descriptor.idProduct == PID))
 			{
-				usb = usb_open(dev);
-				if (NULL == usb)
+				dev_handle = usb_open(dev);
+				if (NULL == dev_handle)
 				{
 					LOG_ERROR("failed to open %04X:%04X, %s", VID, PID, 
 								usb_strerror());
@@ -253,15 +253,17 @@ uint32_t print_usb_devices(uint16_t VID, uint16_t PID, uint8_t serialindex,
 				
 				// check description string
 				if (((productstring != NULL) 
-						&& !usb_check_string(usb, productindex, productstring, NULL, 0))
-					|| !usb_check_string(usb, serialindex, serialstring, (char*)buf, sizeof(buf)))
+						&& !usb_check_string(dev_handle, productindex, 
+												productstring, NULL, 0))
+					|| !usb_check_string(dev_handle, serialindex, serialstring, 
+												(char*)buf, sizeof(buf)))
 				{
-					usb_close(usb);
-					usb = NULL;
+					usb_close(dev_handle);
+					dev_handle = NULL;
 					continue;
 				}
 				
-				if (usb != NULL)
+				if (dev_handle != NULL)
 				{
 					// print current device
 					if (strlen((char *)buf) > 0)
@@ -276,17 +278,17 @@ uint32_t print_usb_devices(uint16_t VID, uint16_t PID, uint8_t serialindex,
 					}
 					c++;
 					
-					usb_close(usb);
-					usb = NULL;
+					usb_close(dev_handle);
+					dev_handle = NULL;
 				}
 			}
 		}
 	}
 	
-	if (usb != NULL)
+	if (dev_handle != NULL)
 	{
-		usb_close(usb);
-		usb = NULL;
+		usb_close(dev_handle);
+		dev_handle = NULL;
 	}
 	
 	return c;
@@ -296,7 +298,7 @@ usb_dev_handle* find_usb_device(uint16_t VID, uint16_t PID, uint8_t interface,
 								uint8_t serialindex, char *serialstring, 
 								uint8_t productindex, char *productstring)
 {
-	usb_dev_handle *usb = NULL;
+	usb_dev_handle *dev_handle = NULL;
 	struct usb_bus *busses;
 	struct usb_bus *bus;
 	struct usb_device *dev;
@@ -314,8 +316,8 @@ usb_dev_handle* find_usb_device(uint16_t VID, uint16_t PID, uint8_t interface,
 			if ((dev->descriptor.idVendor == VID) 
 				&& (dev->descriptor.idProduct == PID))
 			{
-				usb = usb_open(dev);
-				if (NULL == usb)
+				dev_handle = usb_open(dev);
+				if (NULL == dev_handle)
 				{
 					LOG_ERROR("failed to open %04X:%04X, %s", VID, PID, 
 								usb_strerror());
@@ -324,48 +326,66 @@ usb_dev_handle* find_usb_device(uint16_t VID, uint16_t PID, uint8_t interface,
 				
 				// check description string
 				if (((productstring != NULL) 
-						&& !usb_check_string(usb, productindex, productstring, 
-												NULL, 0))
+						&& !usb_check_string(dev_handle, productindex, 
+												productstring, NULL, 0))
 					|| ((serialstring != NULL) 
-						&& !usb_check_string(usb, serialindex, serialstring, 
-												NULL, 0)))
+						&& !usb_check_string(dev_handle, serialindex, 
+												serialstring, NULL, 0)))
 				{
-					usb_close(usb);
-					usb = NULL;
+					usb_close(dev_handle);
+					dev_handle = NULL;
 					continue;
 				}
 				
 #if !IS_WIN32
 				usb_reset(usb);
+				
+				{
+					char driver_name[256];
+					memset(driver_name, 0, sizeof(driver_name));
+					if (usb_get_driver_np(dev_handle, interface, driver_name, 
+											sizeof(driver_name)) == 0)
+					{
+						if (usb_detach_kernel_driver_np(dev_handle, 
+														interface) < 0)
+						{
+							LOG_ERROR("fail to detach form: %s, err: %s", 
+										driver_name, usb_strerror());
+							printf("%s\n", usb_strerror());
+							continue;
+						}
+						usb_set_altinterface(dh, interface);
+					}
+				}
 #endif
 				
 				// usb_set_configuration required under win32
 				config_value = dev->config[0].bConfigurationValue;
-				if (usb_set_configuration(usb, config_value) != 0)
+				if (usb_set_configuration(dev_handle, config_value) != 0)
 				{
 					LOG_ERROR(ERRMSG_FAILURE_OPERATION_MESSAGE, 
 								"set configuration", usb_strerror());
-					usb_close(usb);
-					usb = NULL;
+					usb_close(dev_handle);
+					dev_handle = NULL;
 					continue;
 				}
-				if (usb_claim_interface(usb, interface) != 0)
+				if (usb_claim_interface(dev_handle, interface) != 0)
 				{
 					LOG_ERROR(ERRMSG_FAILURE_OPERATION_MESSAGE, 
 								"claim interface", usb_strerror());
-					usb_close(usb);
-					usb = NULL;
+					usb_close(dev_handle);
+					dev_handle = NULL;
 					continue;
 				}
 				
-				if (usb != NULL)
+				if (dev_handle != NULL)
 				{
-					return usb;
+					return dev_handle;
 				}
 			}
 		}
 	}
 	
-	return usb;
+	return dev_handle;
 }
 
