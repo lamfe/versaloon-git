@@ -50,7 +50,7 @@
 #include "hex.h"
 #include "scripts.h"
 
-#define OPTSTR			"hvS:P:s:c:Mp:U:D:Ld:Go:F:m:x:C:I:O:J:Zb:V:t:K:W:Aq"
+#define OPTSTR			"hvS:P:s:c:Mp:U:D:Ld:Go:F:m:x:C:I:O:J:Zb:V:t:K:W:Aq:"
 static const struct option long_opts[] =
 {
 	{"help", no_argument, NULL, 'h'},
@@ -81,7 +81,7 @@ static const struct option long_opts[] =
 	{"firmware-update", no_argument, NULL, 'Z'},
 	{"buffsize", required_argument, NULL, 'b'},
 	{"misc-cmd", required_argument, NULL, 'V'},
-	{"quiet", no_argument, NULL, 'q'},
+	{"quiet", optional_argument, NULL, 'q'},
 	{NULL, 0, NULL, 0},
 };
 
@@ -641,19 +641,15 @@ int main(int argc, char* argv[])
 		}
 	}
 	
-	if (optind < (argc - 1))
+	while (optind < argc)
 	{
-		if (optind == (argc - 2))
+		misc_argv[0] = "run";
+		misc_argv[1] = argv[optind++];
+		misc_argc = 2;
+		if (ERROR_OK != misc_run_cmd(misc_argc, (const char **)misc_argv))
 		{
-			optind++;
-			misc_argv[0] = "run";
-			misc_argv[1] = argv[optind];
-			misc_argc = 2;
-			if (ERROR_OK != misc_run_cmd(misc_argc, (const char **)misc_argv))
-			{
-				LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "run", misc_argv[1]);
-				free_all_and_exit(EXIT_SUCCESS);
-			}
+			LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "run", misc_argv[1]);
+			free_all_and_exit(EXIT_SUCCESS);
 		}
 	}
 	
