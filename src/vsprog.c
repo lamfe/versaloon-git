@@ -50,7 +50,7 @@
 #include "hex.h"
 #include "scripts.h"
 
-#define OPTSTR			"hvS:P:s:c:Mp:U:D:Ld:Go:F:m:x:C:I:O:J:Zb:V:t:K:W:Aq:"
+#define OPTSTR			"hvS:P:s:c:Mp:U:D:Ld:Go:F:m:x:C:I:O:J:Zb:V:t:K:W:Aq"
 static const struct option long_opts[] =
 {
 	{"help", no_argument, NULL, 'h'},
@@ -81,7 +81,7 @@ static const struct option long_opts[] =
 	{"firmware-update", no_argument, NULL, 'Z'},
 	{"buffsize", required_argument, NULL, 'b'},
 	{"misc-cmd", required_argument, NULL, 'V'},
-	{"quiet", optional_argument, NULL, 'q'},
+	{"quiet", no_argument, NULL, 'q'},
 	{NULL, 0, NULL, 0},
 };
 

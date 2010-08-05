@@ -527,7 +527,7 @@ static RESULT misc_run_file(FILE *f, char *head, uint8_t quiet)
 		{
 			return ERROR_FAIL;
 		}
-		if (!quiet && !misc_quiet_mode)
+		if (!quiet && !misc_quiet_mode && !cur_cmd_quiet)
 		{
 			printf("\n");
 		}
