@@ -1466,7 +1466,16 @@ static RESULT target_init(struct program_info_t *pi)
 			{
 				if (pi->chip_id == target_chips.chips_param[i].chip_id)
 				{
-					pi->chip_name = target_chips.chips_param[i].chip_name;
+					pi->chip_name = 
+						(char *)malloc(
+							strlen(target_chips.chips_param[i].chip_name) + 1);
+					if (NULL == pi->chip_name)
+					{
+						LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
+						return ERRCODE_NOT_ENOUGH_MEMORY;
+					}
+					strcpy(pi->chip_name, 
+							target_chips.chips_param[i].chip_name);
 					LOG_INFO(INFOMSG_CHIP_FOUND, pi->chip_name);
 					
 					goto Post_Init;
@@ -1893,7 +1902,13 @@ static RESULT target_info_init(struct program_info_t *pi)
 			if (probe_chip(pi->chip_name) == ERROR_OK)
 			{
 				cur_target = &targets_info[i];
-				pi->chip_type = (char *)targets_info[i].name;
+				pi->chip_type = (char *)malloc(strlen(targets_info[i].name) + 1);
+				if (NULL == pi->chip_type)
+				{
+					LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
+					return ERRCODE_NOT_ENOUGH_MEMORY;
+				}
+				strcpy(pi->chip_type, targets_info[i].name);
 				LOG_DEBUG("%s initialized for %s.", cur_target->name, 
 							pi->chip_name);
 				
@@ -3536,7 +3551,19 @@ MISC_HANDLER(target_series)
 {
 	MISC_CHECK_ARGC(2);
 	
-	program_info.chip_type = (char *)argv[1];
+	if (program_info.chip_type != NULL)
+	{
+		free(program_info.chip_type);
+		program_info.chip_type = NULL;
+	}
+	program_info.chip_type = (char *)malloc(strlen(argv[1]) + 1);
+	if (NULL == program_info.chip_type)
+	{
+		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
+		return ERRCODE_NOT_ENOUGH_MEMORY;
+	}
+	strcpy(program_info.chip_type, argv[1]);
+	
 	if (ERROR_OK != target_info_init(&program_info))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "initialize target: ", argv[1]);
@@ -3549,7 +3576,19 @@ MISC_HANDLER(target_chip)
 {
 	MISC_CHECK_ARGC(2);
 	
-	program_info.chip_name = (char *)argv[1];
+	if (program_info.chip_name != NULL)
+	{
+		free(program_info.chip_name);
+		program_info.chip_name = NULL;
+	}
+	program_info.chip_name = (char *)malloc(strlen(argv[1]) + 1);
+	if (NULL == program_info.chip_name)
+	{
+		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
+		return ERRCODE_NOT_ENOUGH_MEMORY;
+	}
+	strcpy(program_info.chip_name, argv[1]);
+	
 	if (ERROR_OK != target_info_init(&program_info))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "initialize target: ", argv[1]);

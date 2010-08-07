@@ -183,6 +183,16 @@ static void free_all(void)
 	}
 	
 	memset(&operations, 0, sizeof(operations));
+	if (program_info.chip_name != NULL)
+	{
+		free(program_info.chip_name);
+		program_info.chip_name = NULL;
+	}
+	if (program_info.chip_type != NULL)
+	{
+		free(program_info.chip_type);
+		program_info.chip_type = NULL;
+	}
 	memset(&program_info, 0, sizeof(program_info));
 	memset(&target_chip_param, 0, sizeof(target_chip_param));
 	
