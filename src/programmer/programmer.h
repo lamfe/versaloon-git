@@ -81,8 +81,7 @@ struct interface_swd_t
 	RESULT (*config)(uint8_t trn, uint16_t retry, uint16_t dly);
 	RESULT (*seqout)(uint8_t *data, uint16_t bitlen);
 	RESULT (*seqin)(uint8_t *data, uint16_t bitlen);
-	RESULT (*transact)(uint8_t request, uint32_t *data);
-	RESULT (*get_last_ack)(uint8_t *result);
+	RESULT (*transact)(uint8_t request, uint32_t *data, uint8_t *ack);
 };
 
 struct interface_jtag_hl_t
@@ -274,7 +273,7 @@ struct programmer_info_t
 			{0, 0, 0, 0, 0},\
 			{0, 0},\
 			{0, 0, 0, 0, 0, 0},\
-			{0, 0, 0, 0, 0, 0, 0},\
+			{0, 0, 0, 0, 0, 0},\
 			{0, 0, 0, 0, 0, 0, 0, 0},\
 			{0, 0, 0, 0, 0, 0},\
 			{0, 0, 0, 0},\

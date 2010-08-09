@@ -31,24 +31,18 @@
 #include "usbtoxxx_internal.h"
 
 uint8_t usbtoswd_num_of_interface = 0;
-uint8_t usbtoswd_last_ack = 0x01;		// SWD_ACK_OK
 
 RESULT usbtoswd_callback(void *p, uint8_t *src, uint8_t *processed)
 {
-	p = p;
+	struct versaloon_pending_t *pending = (struct versaloon_pending_t *)p;
+	
 	processed = processed;
 	
-	usbtoswd_last_ack = src[0];
-	
-	return ERROR_OK;
-}
-
-RESULT usbtoswd_get_last_ack(uint8_t *last_ack)
-{
-	if (last_ack != NULL)
+	if (pending->extra_data != NULL)
 	{
-		*last_ack = usbtoswd_last_ack;
+		*((uint8_t *)pending->extra_data) = src[0];
 	}
+	
 	return ERROR_OK;
 }
 
@@ -125,7 +119,8 @@ RESULT usbtoswd_seqin(uint8_t interface_index, uint8_t *data, uint16_t bitlen)
 								data, 0, bytelen, 0);
 }
 
-RESULT usbtoswd_transact(uint8_t interface_index, uint8_t request, uint32_t *data)
+RESULT usbtoswd_transact(uint8_t interface_index, uint8_t request, 
+							uint32_t *data, uint8_t *ack)
 {
 	uint8_t parity;
 	uint8_t buff[5];
@@ -153,6 +148,7 @@ RESULT usbtoswd_transact(uint8_t interface_index, uint8_t request, uint32_t *dat
 		memset(buff + 1, 0, 4);
 	}
 	
+	versaloon_set_extra_data(ack);
 	versaloon_set_callback(usbtoswd_callback);
 	if (request & 0x04)
 	{

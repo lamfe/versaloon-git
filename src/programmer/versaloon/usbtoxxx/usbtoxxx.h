@@ -202,8 +202,7 @@ RESULT usbtoswd_config(uint8_t interface_index, uint8_t trn, uint16_t retry,
 RESULT usbtoswd_seqout(uint8_t interface_index, uint8_t *data, uint16_t bitlen);
 RESULT usbtoswd_seqin(uint8_t interface_index, uint8_t *data, uint16_t bitlen);
 RESULT usbtoswd_transact(uint8_t interface_index, uint8_t request, 
-							uint32_t *data);
-RESULT usbtoswd_get_last_ack(uint8_t *last_ack);
+							uint32_t *data, uint8_t *ack);
 
 
 

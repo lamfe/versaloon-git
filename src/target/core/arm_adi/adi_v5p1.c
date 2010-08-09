@@ -83,7 +83,7 @@ struct adi_dp_info_t adi_dp_info;
 #define swd_fini()				adi_prog->swd.fini()
 #define swd_seqout(b, l)		adi_prog->swd.seqout((b), (l))
 #define swd_seqin(b, l)			adi_prog->swd.seqin((b), (l))
-#define swd_transact(r, v)		adi_prog->swd.transact((r), (v))
+#define swd_transact(r, v, a)	adi_prog->swd.transact((r), (v), (a))
 #define swd_config(t, r, d)		adi_prog->swd.config((t), (r), (d))
 #define swd_get_last_ack(ack)	adi_prog->swd.get_last_ack(ack)
 #define swd_commit()			adi_prog->peripheral_commit()
@@ -198,11 +198,7 @@ RESULT adi_dp_commit(void)
 		return jtag_commit();
 		break;
 	case ADI_DP_SWD:
-		if (ERROR_OK != swd_commit())
-		{
-			return ERROR_FAIL;
-		}
-		return swd_get_last_ack(&adi_dp.ack);
+		return swd_commit();
 		break;
 	default:
 		return ERROR_FAIL;
@@ -366,7 +362,8 @@ static RESULT adi_dp_scan(uint8_t instr, uint8_t reg_addr, uint8_t RnW,
 		}
 		// switch reg_addr
 		reg_addr = (reg_addr << 1) & 0x18;
-		swd_transact(reg_addr | ((RnW & 1) << 2) | ((instr & 1) << 1), value);
+		swd_transact(reg_addr | ((RnW & 1) << 2) | ((instr & 1) << 1), value, 
+						&adi_dp.ack);
 		break;
 	}
 	
