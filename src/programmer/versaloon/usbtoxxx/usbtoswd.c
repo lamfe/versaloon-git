@@ -144,7 +144,14 @@ RESULT usbtoswd_transact(uint8_t interface_index, uint8_t request, uint32_t *dat
 	parity += (request >> 4) & 1;
 	parity &= 1;
 	buff[0] = (request | 0x81 | (parity << 5)) & ~0x40;
-	memcpy(buff + 1, (uint8_t*)data, 4);
+	if (data != NULL)
+	{
+		memcpy(buff + 1, (uint8_t*)data, 4);
+	}
+	else
+	{
+		memset(buff + 1, 0, 4);
+	}
 	
 	versaloon_set_callback(usbtoswd_callback);
 	if (request & 0x04)
