@@ -89,6 +89,7 @@ MISC_HANDLER(versaloon_support)
 // programmer_cmd
 static uint32_t versaloon_pending_id = 0;
 static versaloon_callback_t versaloon_callback = NULL;
+static void *versaloon_extra_data = NULL;
 void versaloon_set_pending_id(uint32_t id)
 {
 	versaloon_pending_id = id;
@@ -96,6 +97,10 @@ void versaloon_set_pending_id(uint32_t id)
 void versaloon_set_callback(versaloon_callback_t callback)
 {
 	versaloon_callback = callback;
+}
+void versaloon_set_extra_data(void * p)
+{
+	versaloon_extra_data = p;
 }
 
 RESULT versaloon_add_pending(uint8_t type, uint8_t cmd, uint16_t actual_szie, 
@@ -119,6 +124,8 @@ RESULT versaloon_add_pending(uint8_t type, uint8_t cmd, uint16_t actual_szie,
 	versaloon_pending[versaloon_pending_idx].collect = collect;
 	versaloon_pending[versaloon_pending_idx].id = versaloon_pending_id;
 	versaloon_pending_id = 0;
+	versaloon_pending[versaloon_pending_idx].extra_data = versaloon_extra_data;
+	versaloon_extra_data = NULL;
 	versaloon_pending[versaloon_pending_idx].callback = versaloon_callback;
 	versaloon_callback = NULL;
 	versaloon_pending_idx++;
@@ -593,10 +600,6 @@ RESULT versaloon_lpcicp_poll_ready(uint8_t data, uint8_t *ret, uint8_t setmask,
 								  clearmask, pollcnt);
 }
 // SWD
-RESULT versaloon_swd_get_last_ack(uint8_t *result)
-{
-	return usbtoswd_get_last_ack(result);
-}
 RESULT versaloon_swd_init(void)
 {
 	return usbtoswd_init();
@@ -617,9 +620,9 @@ RESULT versaloon_swd_seqin(uint8_t *data, uint16_t bitlen)
 {
 	return usbtoswd_seqin(VERSALOON_SWD_PORT, data, bitlen);
 }
-RESULT versaloon_swd_transact(uint8_t request, uint32_t *data)
+RESULT versaloon_swd_transact(uint8_t request, uint32_t *data, uint8_t *ack)
 {
-	return usbtoswd_transact(VERSALOON_SWD_PORT, request, data);
+	return usbtoswd_transact(VERSALOON_SWD_PORT, request, data, ack);
 }
 // JTAG
 RESULT versaloon_jtagraw_init(void)
@@ -940,7 +943,6 @@ RESULT versaloon_init_capability(void *p)
 	i->swd.seqin = versaloon_swd_seqin;
 	i->swd.transact = versaloon_swd_transact;
 	i->swd.config = versaloon_swd_config;
-	i->swd.get_last_ack = versaloon_swd_get_last_ack;
 
 	i->jtag_hl.init = versaloon_jtaghl_init;
 	i->jtag_hl.fini = versaloon_jtaghl_fini;
