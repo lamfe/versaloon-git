@@ -71,7 +71,7 @@ struct program_functions_t avr8isp_program_functions =
 #define reset_input()			\
 	interfaces->gpio.config(GPIO_SRST, 0, GPIO_SRST)
 #define reset_set()				reset_input()
-#define reset_clr()				interfaces->gpio.out(GPIO_SRST, 0)
+#define reset_clr()				reset_output()
 
 #define poll_start()			interfaces->poll.start(20, 500)
 #define poll_end()				interfaces->poll.end()
@@ -122,12 +122,10 @@ try_frequency:
 	
 	// toggle reset
 	reset_clr();
-	reset_output();
 	delay_ms(1);
 	reset_input();
 	delay_ms(1);
 	reset_clr();
-	reset_output();
 	delay_ms(10);
 	
 	// enter into program mode command
