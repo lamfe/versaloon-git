@@ -70,6 +70,14 @@ void USB_TO_GPIO_ProcessCmd(uint8* dat, uint16 len)
 			{
 				if (io_data & USB_TO_GPIO_SRST)
 				{
+					if(port_data & USB_TO_GPIO_SRST)
+					{
+						SW_SET();
+					}
+					else
+					{
+						SW_CLR();
+					}
 					SW_SETOUTPUT();
 				}
 				else
@@ -89,6 +97,14 @@ void USB_TO_GPIO_ProcessCmd(uint8* dat, uint16 len)
 			{
 				if (io_data & USB_TO_GPIO_TRST)
 				{
+					if(port_data & USB_TO_GPIO_TRST)
+					{
+						SW_RST_SET();
+					}
+					else
+					{
+						SW_RST_CLR();
+					}
 					SW_RST_SETOUTPUT();
 				}
 				else
@@ -108,6 +124,14 @@ void USB_TO_GPIO_ProcessCmd(uint8* dat, uint16 len)
 			{
 				if (io_data & USB_TO_GPIO_TMS)
 				{
+					if(port_data & USB_TO_GPIO_TMS)
+					{
+						JTAG_TAP_TMS_SET();
+					}
+					else
+					{
+						JTAG_TAP_TMS_CLR();
+					}
 					JTAG_TAP_TMS_SETOUTPUT();
 				}
 				else
@@ -121,6 +145,14 @@ void USB_TO_GPIO_ProcessCmd(uint8* dat, uint16 len)
 			{
 				if (io_data & USB_TO_GPIO_USR1)
 				{
+					if(port_data & USB_TO_GPIO_USR1)
+					{
+						JTAG_TAP_USR1_SET();
+					}
+					else
+					{
+						JTAG_TAP_USR1_CLR();
+					}
 					JTAG_TAP_USR1_SETOUTPUT();
 				}
 				else
@@ -132,6 +164,14 @@ void USB_TO_GPIO_ProcessCmd(uint8* dat, uint16 len)
 			{
 				if (io_data & USB_TO_GPIO_USR2)
 				{
+					if(port_data & USB_TO_GPIO_USR2)
+					{
+						JTAG_TAP_USR2_SET();
+					}
+					else
+					{
+						JTAG_TAP_USR2_CLR();
+					}
 					JTAG_TAP_USR2_SETOUTPUT();
 				}
 				else

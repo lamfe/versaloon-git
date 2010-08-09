@@ -49,11 +49,12 @@ struct adi_dp_info_t adi_dp_info;
 #define reset_output()			adi_prog->gpio.config(JTAG_SRST, JTAG_SRST, 0)
 #define reset_input()			adi_prog->gpio.config(JTAG_SRST, 0, JTAG_SRST)
 #define reset_set()				reset_input()
-#define reset_clr()				adi_prog->gpio.gpio_out(JTAG_SRST, 0)
-#define trst_output()			adi_prog->gpio.config(JTAG_TRST, JTAG_TRST, 0)
+#define reset_clr()				reset_output()
+#define trst_output(value)		\
+	adi_prog->gpio.config(JTAG_TRST, JTAG_TRST, (value) ? JTAG_TRST : 0)
 #define trst_input()			adi_prog->gpio.config(JTAG_TRST, 0, JTAG_TRST)
-#define trst_set()				trst_input()
-#define trst_clr()				adi_prog->gpio.out(JTAG_TRST, 0)
+#define trst_set()				trst_output(1)
+#define trst_clr()				trst_output(0)
 #define reset_commit()			adi_prog->peripheral_commit()
 
 // Delay
@@ -262,13 +263,13 @@ static RESULT adi_dpif_init(struct program_context_t *context, adi_dpif_t *inter
 	
 	reset_init();
 	reset_input();
-	trst_input();
 	delay_ms(100);
 	reset_commit();
 	
 	switch(adi_dp_if->type)
 	{
 	case ADI_DP_JTAG:
+		trst_output(1);
 		ack_value = ADI_JTAGDP_ACK_OK_FAIL;
 		jtag_init();
 		jtag_config(
@@ -291,6 +292,7 @@ static RESULT adi_dpif_init(struct program_context_t *context, adi_dpif_t *inter
 		}
 		break;
 	case ADI_DP_SWD:
+		trst_input();
 		ack_value = ADI_SWDDP_ACK_OK;
 		swd_init();
 		swd_config(

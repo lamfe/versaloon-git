@@ -1080,21 +1080,13 @@ XXR_common:
 			switch (i_tmp)
 			{
 			case TRST_ON:
-				if (ERROR_OK != jtag_trst_output())
-				{
-					return ERROR_FAIL;
-				}
-				if (ERROR_OK != jtag_trst_0())
+				if (ERROR_OK != jtag_trst_output(0))
 				{
 					return ERROR_FAIL;
 				}
 				break;
 			case TRST_OFF:
-				if (ERROR_OK != jtag_trst_output())
-				{
-					return ERROR_FAIL;
-				}
-				if (ERROR_OK != jtag_trst_1())
+				if (ERROR_OK != jtag_trst_output(1))
 				{
 					return ERROR_FAIL;
 				}

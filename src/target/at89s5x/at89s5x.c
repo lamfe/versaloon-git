@@ -102,11 +102,10 @@ static uint16_t s5x_byte_delay_us = 500;
 #define reset_init()			prog->interfaces.gpio.init()
 #define reset_fini()			prog->interfaces.gpio.fini()
 #define reset_output()			\
-	prog->interfaces.gpio.config(GPIO_SRST, GPIO_SRST, 0)
+	prog->interfaces.gpio.config(GPIO_SRST, GPIO_SRST, GPIO_SRST)
 #define reset_input()			\
 	prog->interfaces.gpio.config(GPIO_SRST, 0, GPIO_SRST)
-#define reset_set()				\
-	prog->interfaces.gpio.out(GPIO_SRST, GPIO_SRST)
+#define reset_set()				reset_output()
 #define reset_clr()				reset_input()
 
 #define delay_ms(ms)			prog->interfaces.delay.delayms((ms) | 0x8000)
@@ -141,12 +140,10 @@ ENTER_PROGRAM_MODE_HANDLER(s5x)
 	
 	// toggle reset
 	reset_set();
-	reset_output();
 	delay_ms(100);
 	reset_input();
 	delay_ms(30);
 	reset_set();
-	reset_output();
 	delay_ms(10);
 	
 	// enter into program mode command
