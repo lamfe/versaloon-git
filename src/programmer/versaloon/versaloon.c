@@ -289,6 +289,7 @@ RESULT versaloon_init(void)
 					"disable cdc device in versaloon", usb_strerror());
 		return ERRCODE_FAILURE_OPERATION;
 	}
+	sleep_ms(100);
 	
 	// connect to versaloon
 	LOG_PUSH();
