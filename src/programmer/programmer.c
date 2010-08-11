@@ -499,35 +499,24 @@ MISC_HANDLER(programmer_spi_io)
 	data_size = (uint16_t)strtoul(argv[1], NULL, 0);
 
 	MISC_CHECK_ARGC_2(2, 2 + data_size);
-	
-	buff = (uint8_t*)malloc(data_size);
-	if (NULL == buff)
+	if (0 == data_size)
 	{
+		LOG_ERROR(ERRMSG_INVALID_TARGET, "data_size");
+		misc_print_help(argv[0]);
 		return ERROR_FAIL;
 	}
 	
-	if (2 == argc)
-	{
-		memset(buff, 0, data_size);
-	}
-	else
-	{
-		uint16_t i;
-		
-		for (i = 0; i < data_size; i++)
-		{
-			buff[i] = (uint8_t)strtoul(argv[2 + i], NULL, 0);
-		}
-	}
-	
-	ret = prog->interfaces.spi.io(buff, buff, data_size, 0, 
-											data_size);
+	ret = misc_get_binary_buffer(argc - 2, &argv[2], 1, data_size, (void**)&buff);
 	if (ERROR_OK == ret)
 	{
-		ret = prog->interfaces.peripheral_commit();
+		ret = prog->interfaces.spi.io(buff, buff, data_size, 0, data_size);
 		if (ERROR_OK == ret)
 		{
-			LOG_BYTE_BUF(buff, data_size, LOG_INFO, "%02X", 16);
+			ret = prog->interfaces.peripheral_commit();
+			if (ERROR_OK == ret)
+			{
+				LOG_BYTE_BUF(buff, data_size, LOG_INFO, "%02X", 16);
+			}
 		}
 	}
 	
@@ -642,7 +631,6 @@ MISC_HANDLER(programmer_iic_write)
 	uint8_t data_size = 0;
 	uint8_t addr = 0;
 	uint8_t *buff = NULL;
-	uint8_t i;
 	RESULT ret = ERROR_OK;
 	struct programmer_info_t *prog = NULL;
 	
@@ -664,18 +652,11 @@ MISC_HANDLER(programmer_iic_write)
 		return ERROR_FAIL;
 	}
 	
-	buff = (uint8_t*)malloc(data_size);
-	if (NULL == buff)
+	ret = misc_get_binary_buffer(argc - 3, &argv[3], 1, data_size, (void**)&buff);
+	if (ERROR_OK == ret)
 	{
-		return ERROR_FAIL;
+		ret = prog->interfaces.i2c.write(addr, buff, data_size, 1);
 	}
-	
-	for (i = 0; i < data_size; i++)
-	{
-		buff[i] = (uint8_t)strtoul(argv[3 + i], NULL, 0);
-	}
-	
-	ret = prog->interfaces.i2c.write(addr, buff, data_size, 1);
 	
 	if (buff != NULL)
 	{
