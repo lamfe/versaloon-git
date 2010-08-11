@@ -96,4 +96,6 @@ RESULT misc_cmd_supported(char *name);
 RESULT misc_print_help(const char *name);
 RESULT misc_run_script(char *cmd);
 RESULT misc_run_cmd(uint16_t argc, const char *argv[]);
+RESULT misc_get_binary_buffer(uint16_t argc, const char *argv[], 
+						uint8_t data_size, uint32_t data_num, void **pbuff);
 

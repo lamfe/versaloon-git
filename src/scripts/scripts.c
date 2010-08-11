@@ -138,9 +138,76 @@ static uint32_t misc_loop_cnt = 0;
 static uint8_t misc_fatal_error = 0;
 static uint8_t misc_quiet_mode = 0;
 
+RESULT misc_get_binary_buffer(uint16_t argc, const char *argv[], 
+						uint8_t data_size, uint32_t data_num, void **pbuff)
+{
+	uint32_t i;
+	uint64_t value;
+	
+	if ((NULL == argv) || (argc < data_num) || (NULL == pbuff)
+		|| ((data_size != 1) && (data_size != 2) && (data_size != 4) 
+			&& (data_size != 8)))
+	{
+		return ERROR_FAIL;
+	}
+	
+	if (NULL == *pbuff)
+	{
+		*pbuff = malloc(data_size * data_num);
+		if (NULL == *pbuff)
+		{
+			return ERROR_FAIL;
+		}
+	}
+	
+	for (i = 0; i < data_num; i++)
+	{
+		value = strtoull(argv[i], NULL, 0);
+		switch (data_size)
+		{
+		case 1:
+			(*(uint8_t **)pbuff)[i] = (uint8_t)value;
+			break;
+		case 2:
+			(*(uint16_t **)pbuff)[i] = (uint16_t)value;
+			break;
+		case 4:
+			(*(uint32_t **)pbuff)[i] = (uint32_t)value;
+			break;
+		case 8:
+			(*(uint64_t **)pbuff)[i] = (uint64_t)value;
+			break;
+		default:
+			return ERROR_FAIL;
+			break;
+		}
+	}
+	return ERROR_OK;
+}
+
 void misc_set_fatal_error(void)
 {
 	misc_fatal_error = 1;
+}
+
+static char misc_get_first_non_space_char(char *cmd, uint32_t *idx)
+{
+	char result = 0;
+	uint32_t i;
+	
+	for (i = 0; i < strlen(cmd); i++)
+	{
+		if (!isspace(cmd[i]))
+		{
+			result = cmd[i];
+			break;
+		}
+	}
+	if (idx != NULL)
+	{
+		*idx = i;
+	}
+	return result;
 }
 
 static struct misc_param_t* mic_search_param(const char *name)
@@ -396,22 +463,14 @@ RESULT misc_run_cmd(uint16_t argc, const char *argv[])
 
 RESULT misc_run_script(char *cmd)
 {
-	char *buff_in_memory = NULL, first_char;
+	char *buff_in_memory = NULL;
 	uint16_t argc;
 	char *argv[1024];
 	RESULT ret = ERROR_OK;
 	uint32_t i, run_times;
 	
-	first_char = 0;
-	for (i = 0; i < strlen(cmd); i++)
-	{
-		first_char = cmd[i];
-		if (!isspace(first_char))
-		{
-			break;
-		}
-	}
-	if (MISC_COMMENT_CHAR == first_char)
+	if (MISC_COMMENT_CHAR == 
+			misc_get_first_non_space_char(cmd, NULL))
 	{
 		// comment line
 		return ERROR_OK;
@@ -432,7 +491,7 @@ RESULT misc_run_script(char *cmd)
 		goto end;
 	}
 	// empty line or comment line
-	if ((0 == argc) || (MISC_COMMENT_CHAR == argv[0][0]))
+	if (0 == argc)
 	{
 		goto end;
 	}
@@ -483,6 +542,15 @@ static RESULT misc_run_file(FILE *f, char *head, uint8_t quiet)
 	rewind(f);
 	while (1)
 	{
+		if (!quiet && !misc_quiet_mode)
+		{
+			if (head != NULL)
+			{
+				printf("%s", head);
+			}
+			printf(">>>");
+		}
+		
 		// get a line
 		if (NULL == fgets(cmd_line, sizeof(cmd_line), f))
 		{
@@ -496,31 +564,22 @@ static RESULT misc_run_file(FILE *f, char *head, uint8_t quiet)
 			}
 		}
 		
-		cmd_ptr = '\0';
-		for (i = 0; i < strlen(cmd_line); i++)
+		cur_cmd_quiet = 0;
+		if (MISC_HIDE_CHAR == 
+				misc_get_first_non_space_char(cmd_line, &i))
 		{
-			cmd_ptr = &cmd_line[i];
-			if (!isspace(*cmd_ptr))
-			{
-				break;
-			}
+			i++;
+			cur_cmd_quiet = 1;
+		}
+		cmd_ptr = &cmd_line[i];
+		
+		if ((f != stdin) && !quiet && !misc_quiet_mode && !cur_cmd_quiet)
+		{
+			// run from non-shell mode, print the command line to run
+			// in shell mode, the command line will have been printed in fgets
+			printf("%s", cmd_line);
 		}
 		
-		cur_cmd_quiet = 0;
-		if (MISC_HIDE_CHAR == *cmd_ptr)
-		{
-			// not display current command
-			cur_cmd_quiet = 1;
-			cmd_ptr++;
-		}
-		if ((!quiet && !misc_quiet_mode && !cur_cmd_quiet) && (f != stdin))
-		{
-			if (head != NULL)
-			{
-				printf("%s", head);
-			}
-			printf(">>>%s", cmd_line);
-		}
 		if ((ERROR_OK != misc_run_script(cmd_ptr)) 
 			&& (misc_fatal_error 
 				|| misc_param[PARAM_EXIT_ON_FAIL].value))
@@ -621,7 +680,7 @@ MISC_HANDLER(misc_shell)
 	}
 	else
 	{
-		return misc_run_file(stdin, NULL, 0);
+		return misc_run_file(stdin, "stdin", 0);
 	}
 }
 
