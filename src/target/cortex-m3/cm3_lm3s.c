@@ -315,6 +315,7 @@ static RESULT lm3sswj_iap_call(struct lm3sswj_iap_cmd_t *cmd)
 ENTER_PROGRAM_MODE_HANDLER(lm3sswj)
 {
 	uint32_t reg;
+	uint8_t verify_buff[sizeof(iap_code)];
 	
 	REFERENCE_PARAMETER(context);
 	lm3sswj_iap_cnt = 0;
@@ -376,6 +377,19 @@ ENTER_PROGRAM_MODE_HANDLER(lm3sswj)
 											sizeof(iap_code)))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "load iap_code to SRAM");
+		return ERRCODE_FAILURE_OPERATION;
+	}
+	// verify iap_code
+	memset(verify_buff, 0, sizeof(iap_code));
+	if (ERROR_OK != adi_memap_read_buf(LM3S_IAP_BASE, verify_buff, 
+										sizeof(iap_code)))
+	{
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read flash_loader");
+		return ERRCODE_FAILURE_OPERATION;
+	}
+	if (memcmp(verify_buff, iap_code, sizeof(iap_code)))
+	{
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "verify flash_loader");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	

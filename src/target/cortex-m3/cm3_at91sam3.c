@@ -367,6 +367,7 @@ ENTER_PROGRAM_MODE_HANDLER(at91sam3swj)
 	struct at91sam3swj_iap_command_t command;
 	uint32_t *para_ptr = (uint32_t*)&iap_code[AT91SAM3_IAP_PARAM_OFFSET];
 	uint32_t reg;
+	uint8_t verify_buff[sizeof(iap_code)];
 	
 	if (ERROR_OK != cm3_dp_halt())
 	{
@@ -389,6 +390,19 @@ ENTER_PROGRAM_MODE_HANDLER(at91sam3swj)
 											sizeof(iap_code)))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "load iap_code to SRAM");
+		return ERRCODE_FAILURE_OPERATION;
+	}
+	// verify iap_code
+	memset(verify_buff, 0, sizeof(iap_code));
+	if (ERROR_OK != adi_memap_read_buf(AT91SAM3_IAP_BASE, verify_buff, 
+										sizeof(iap_code)))
+	{
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read flash_loader");
+		return ERRCODE_FAILURE_OPERATION;
+	}
+	if (memcmp(verify_buff, iap_code, sizeof(iap_code)))
+	{
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "verify flash_loader");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	

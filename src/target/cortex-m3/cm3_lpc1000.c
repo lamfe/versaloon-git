@@ -231,6 +231,7 @@ static RESULT lpc1000swj_iap_call(uint32_t cmd, uint32_t param_table[5],
 
 ENTER_PROGRAM_MODE_HANDLER(lpc1000swj)
 {
+	uint8_t verify_buff[sizeof(iap_code)];
 	uint32_t *para_ptr = (uint32_t*)&iap_code[LPC1000_IAP_PARAM_OFFSET];
 	uint32_t reg;
 	
@@ -259,6 +260,19 @@ ENTER_PROGRAM_MODE_HANDLER(lpc1000swj)
 											sizeof(iap_code)))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "load iap_code to SRAM");
+		return ERRCODE_FAILURE_OPERATION;
+	}
+	// verify iap_code
+	memset(verify_buff, 0, sizeof(iap_code));
+	if (ERROR_OK != adi_memap_read_buf(LPC1000_IAP_BASE, verify_buff, 
+										sizeof(iap_code)))
+	{
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read flash_loader");
+		return ERRCODE_FAILURE_OPERATION;
+	}
+	if (memcmp(verify_buff, iap_code, sizeof(iap_code)))
+	{
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "verify flash_loader");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
