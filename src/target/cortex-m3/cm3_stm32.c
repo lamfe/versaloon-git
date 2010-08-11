@@ -66,6 +66,67 @@ const struct program_functions_t stm32swj_program_functions =
 	READ_TARGET_FUNCNAME(stm32swj)
 };
 
+#define STM32_IAP_BASE				STM32_SRAM_ADDR
+#define FL_PARA_ADDR_BASE			\
+					(STM32_IAP_BASE + sizeof(iap_code) - 4 * 4)
+#define FL_ADDR_RAM_SRC				(FL_PARA_ADDR_BASE + 0)
+#define FL_ADDR_FLASH_DEST			(FL_PARA_ADDR_BASE + 4)
+#define FL_ADDR_WORD_LENGTH			(FL_PARA_ADDR_BASE + 8)
+#define FL_ADDR_RESULT				(FL_PARA_ADDR_BASE + 12)
+#define FL_ADDR_DATA				(STM32_IAP_BASE + 1024)
+static uint8_t iap_code[] = {
+								/* init: */
+	0x16, 0x4C,					/* ldr.n	r4, STM32_FLASH_CR */
+	0x17, 0x4D,					/* ldr.n	r5, STM32_FLASH_SR */
+	0x17, 0x4F,					/* ldr.n	r7, result */
+								/* wait_start: */
+	0x57, 0xF8, 0x04, 0x3C,		/* ldr.w	r3, [r7, #-4] */
+	0x00, 0x2B,					/* cmp		r3, #0 */
+	0xFB, 0xD0,					/* beq 		wait_start */
+								/* update: */
+	0x16, 0x48,					/* ldr.n	r0, ram_ptr */
+	0x16, 0x49,					/* ldr.n	r1, flash_ptr */
+	0x4F, 0xF0, 0x00, 0x06,		/* mov.w	r6, #0 */
+	0x16, 0x4A,					/* ldr.n	r2, number_of_words */
+								/* write: */
+	0x4F, 0xF0, 0x01, 0x03,		/* mov.w	r3, #1 */
+	0x23, 0x60,					/* str		r3, [r4, #0] */
+	0x30, 0xF8, 0x02, 0x3B,		/* ldrh.w	r3, [r0], #2 */
+	0x21, 0xF8, 0x02, 0x3B,		/* strh.w	r3, [r1], #2 */
+								/* busy: */
+	0x2B, 0x68,					/* ldr 		r3, [r5, #0] */
+	0x13, 0xF0, 0x01, 0x0F,		/* tst 		r3, #0x01 */
+	0xFB, 0xD0,					/* beq 		busy */
+	0x13, 0xF0, 0x14, 0x0F,		/* tst		r3, #0x14 */
+	0x0F, 0xD1,					/* bne		exit */
+	0x06, 0xF1, 0x01, 0x06,		/* add		r6, r6, #1 */
+	0x96, 0x42,					/* cmp		r2, r6 */
+	0xED, 0xD3,					/* bcc		write */
+	0x13, 0x00,					/* movs		r3, r2 */
+	0x3A, 0x60,					/* str		r2, [r7] */
+								/* wait_data */
+	0x0B, 0x4A,					/* ldr.n	r2, number_of_words */
+	0x93, 0x42,					/* cmp		r3, r2 */
+	0xFC, 0xD2,					/* bcs.n	wait_data */
+	0x12, 0x04,					/* lsls		r2, r2, #16 */
+	0xE5, 0xD5,					/* bpl.n	write */
+	0x52, 0x00,					/* lsls		r2, r2, #1 */
+	0x52, 0x0C,					/* lsrs		r2, r2, #17 */
+	0x47, 0xF8, 0x04, 0x2C,		/* str.w	r2, [r7, #-4] */
+	0xDC, 0xE7,					/* b		update */
+								/* exit: */
+	0x6F, 0xF0, 0x00, 0x02,		/* mvn.w	r2, #0 */
+	0x3A, 0x60,					/* str		r2, [r7] */
+	0xFE, 0xE7,					/* b $ */
+	0x10, 0x20, 0x02, 0x40,		/* STM32_FLASH_CR:	.word 0x40022010 */
+	0x0C, 0x20, 0x02, 0x40,		/* STM32_FLASH_SR:	.word 0x4002200C */
+	0xEC, 0x03, 0x00, 0x20,		/* address of result */
+	0x00, 0x00, 0x00, 0x00, 	/* ram address */
+	0x00, 0x00, 0x00, 0x00,		/* flash address */
+	0x00, 0x00, 0x00, 0x00,		/* number_of_words(2-byte), set to 0 */
+	0x00, 0x00, 0x00, 0x00		/* result, set to 0 */
+};
+
 RESULT stm32_wait_status_busy(uint32_t *status, uint32_t timeout)
 {
 	uint32_t reg;
@@ -178,90 +239,47 @@ ERASE_TARGET_HANDLER(stm32swj)
 
 WRITE_TARGET_HANDLER(stm32swj)
 {
-	uint32_t reg, block_size;
+	uint32_t reg;
 	uint32_t cur_run_size, cur_block_size;
 	uint32_t start_time, run_time;
 	uint8_t update_setting;
-#define FL_PARA_ADDR_BASE			\
-					(STM32_SRAM_ADDR + sizeof(stm32_fl_code) - 4 * 4)
-#define FL_ADDR_RAM_SRC				(FL_PARA_ADDR_BASE + 0)
-#define FL_ADDR_FLASH_DEST			(FL_PARA_ADDR_BASE + 4)
-#define FL_ADDR_WORD_LENGTH			(FL_PARA_ADDR_BASE + 8)
-#define FL_ADDR_RESULT				(FL_PARA_ADDR_BASE + 12)
-#define FL_ADDR_DATA				(STM32_SRAM_ADDR + 1024)
-	uint8_t stm32_fl_code[] = {
-									/* init: */
-		0x16, 0x4C,					/* ldr.n	r4, STM32_FLASH_CR */
-		0x17, 0x4D,					/* ldr.n	r5, STM32_FLASH_SR */
-		0x17, 0x4F,					/* ldr.n	r7, result */
-									/* wait_start: */
-		0x57, 0xF8, 0x04, 0x3C,		/* ldr.w	r3, [r7, #-4] */
-		0x00, 0x2B,					/* cmp		r3, #0 */
-		0xFB, 0xD0,					/* beq 		wait_start */
-									/* update: */
-		0x16, 0x48,					/* ldr.n	r0, ram_ptr */
-		0x16, 0x49,					/* ldr.n	r1, flash_ptr */
-		0x4F, 0xF0, 0x00, 0x06,		/* mov.w	r6, #0 */
-		0x16, 0x4A,					/* ldr.n	r2, number_of_words */
-									/* write: */
-		0x4F, 0xF0, 0x01, 0x03,		/* mov.w	r3, #1 */
-		0x23, 0x60,					/* str		r3, [r4, #0] */
-		0x30, 0xF8, 0x02, 0x3B,		/* ldrh.w	r3, [r0], #2 */
-		0x21, 0xF8, 0x02, 0x3B,		/* strh.w	r3, [r1], #2 */
-									/* busy: */
-		0x2B, 0x68,					/* ldr 		r3, [r5, #0] */
-		0x13, 0xF0, 0x01, 0x0F,		/* tst 		r3, #0x01 */
-		0xFB, 0xD0,					/* beq 		busy */
-		0x13, 0xF0, 0x14, 0x0F,		/* tst		r3, #0x14 */
-		0x0F, 0xD1,					/* bne		exit */
-		0x06, 0xF1, 0x01, 0x06,		/* add		r6, r6, #1 */
-		0x96, 0x42,					/* cmp		r2, r6 */
-		0xED, 0xD3,					/* bcc		write */
-		0x13, 0x00,					/* movs		r3, r2 */
-		0x3A, 0x60,					/* str		r2, [r7] */
-									/* wait_data */
-		0x0B, 0x4A,					/* ldr.n	r2, number_of_words */
-		0x93, 0x42,					/* cmp		r3, r2 */
-		0xFC, 0xD2,					/* bcs.n	wait_data */
-		0x12, 0x04,					/* lsls		r2, r2, #16 */
-		0xE5, 0xD5,					/* bpl.n	write */
-		0x52, 0x00,					/* lsls		r2, r2, #1 */
-		0x52, 0x0C,					/* lsrs		r2, r2, #17 */
-		0x47, 0xF8, 0x04, 0x2C,		/* str.w	r2, [r7, #-4] */
-		0xDC, 0xE7,					/* b		update */
-									/* exit: */
-		0x6F, 0xF0, 0x00, 0x02,		/* mvn.w	r2, #0 */
-		0x3A, 0x60,					/* str		r2, [r7] */
-		0xFE, 0xE7,					/* b $ */
-		0x10, 0x20, 0x02, 0x40,		/* STM32_FLASH_CR:	.word 0x40022010 */
-		0x0C, 0x20, 0x02, 0x40,		/* STM32_FLASH_SR:	.word 0x4002200C */
-		0xEC, 0x03, 0x00, 0x20,		/* address of result */
-		0x00, 0x00, 0x00, 0x00, 	/* ram address */
-		0x00, 0x00, 0x00, 0x00,		/* flash address */
-		0x00, 0x00, 0x00, 0x00,		/* number_of_words(2-byte), set to 0 */
-		0x00, 0x00, 0x00, 0x00		/* result, set to 0 */
-	};
+	uint8_t verify_buff[sizeof(iap_code)];
 	RESULT ret = ERROR_OK;
 	REFERENCE_PARAMETER(context);
 	
 	switch (area)
 	{
 	case APPLICATION_CHAR:
-		block_size = sizeof(stm32_fl_code);
 		// last_but_three dword is RAM address for data, set to 1K at SRAM
-		*(uint32_t *)(stm32_fl_code + block_size - 4 * 4) = FL_ADDR_DATA;
+		*(uint32_t *)(iap_code + sizeof(iap_code) - 4 * 4) = FL_ADDR_DATA;
 		// last_but_four dword is SRAM address of last dword
-		*(uint32_t *)(stm32_fl_code + block_size - 4 * 5) = FL_ADDR_RESULT;
+		*(uint32_t *)(iap_code + sizeof(iap_code) - 4 * 5) = FL_ADDR_RESULT;
 		
 		// write code to target SRAM
-		if (ERROR_OK != adi_memap_write_buf(STM32_SRAM_ADDR, stm32_fl_code, 
-												block_size))
+		if (ERROR_OK != adi_memap_write_buf(STM32_IAP_BASE, iap_code, 
+												sizeof(iap_code)))
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "load flash_loader to SRAM");
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
-		reg = STM32_SRAM_ADDR;
+		// verify iap_code
+		memset(verify_buff, 0, sizeof(iap_code));
+		if (ERROR_OK != adi_memap_read_buf(STM32_IAP_BASE, verify_buff, 
+												sizeof(iap_code)))
+		{
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read flash_loader");
+			ret = ERRCODE_FAILURE_OPERATION;
+			break;
+		}
+		if (memcmp(verify_buff, iap_code, sizeof(iap_code)))
+		{
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "verify flash_loader");
+			ret = ERRCODE_FAILURE_OPERATION;
+			break;
+		}
+		
+		reg = STM32_IAP_BASE;
 		if (ERROR_OK != cm3_write_core_register(CM3_COREREG_PC, &reg))
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "write PC");
