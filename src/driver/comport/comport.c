@@ -39,6 +39,7 @@ RESULT comm_open_hw(char *comport, uint32_t baudrate, uint8_t datalength,
 int32_t comm_read_hw(uint8_t *buffer, uint32_t num_of_bytes);
 int32_t comm_write_hw(uint8_t *buffer, uint32_t num_of_bytes);
 int32_t comm_ctrl_hw(uint8_t dtr, uint8_t rts);
+int32_t comm_flush_hw(void);
 
 void comm_close_usbtocomm(void);
 RESULT comm_open_usbtocomm(char *comport, uint32_t baudrate, 
@@ -46,6 +47,7 @@ RESULT comm_open_usbtocomm(char *comport, uint32_t baudrate,
 int32_t comm_read_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes);
 int32_t comm_write_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes);
 int32_t comm_ctrl_usbtocomm(uint8_t dtr, uint8_t rts);
+int32_t comm_flush_usbtocomm(void);
 
 #define COMM_HW					0
 #define COMM_USBTOCOMM			1
@@ -58,6 +60,7 @@ struct comm_func_t comm_func[] =
 		comm_read_hw,
 		comm_write_hw,
 		comm_ctrl_hw,
+		comm_flush_hw,
 	},
 	{
 		comm_open_usbtocomm,
@@ -65,6 +68,7 @@ struct comm_func_t comm_func[] =
 		comm_read_usbtocomm,
 		comm_write_usbtocomm,
 		comm_ctrl_usbtocomm,
+		comm_flush_usbtocomm
 	}
 };
 
@@ -235,6 +239,17 @@ RESULT comm_open_hw(char *comport, uint32_t baudrate, uint8_t datalength,
 	}
 	
 	return ERROR_OK;
+}
+
+int32_t comm_flush_hw(void)
+{
+	if (!PurgeComm(hComm, PURGE_RXABORT | PURGE_RXCLEAR 
+						  | PURGE_TXABORT | PURGE_TXCLEAR))
+	{
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "purge comm port");
+		return -1;
+	}
+	return 0;
 }
 
 int32_t comm_read_hw(uint8_t *buffer, uint32_t num_of_bytes)
@@ -434,6 +449,11 @@ RESULT comm_open_hw(char *comport, uint32_t baudrate, uint8_t datalength,
 	return ERROR_OK;
 }
 
+int32_t comm_flush_hw(void)
+{
+	return tcflush(hComm, TCLIFLUSH);
+}
+
 int32_t comm_read_hw(uint8_t *buffer, uint32_t num_of_bytes)
 {
 	uint32_t current_length = 0;
@@ -564,11 +584,11 @@ RESULT comm_open_usbtocomm(char *comport, uint32_t baudrate,
 int32_t comm_read_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 {
 	uint32_t start, end;
-	uint32_t buffer_len[2];
+	struct usart_status_t status;
 	
 	if (!usbtocomm_open)
 	{
-		return ERROR_FAIL;
+		return -1;
 	}
 	
 	start = get_time_in_ms();
@@ -599,22 +619,22 @@ int32_t comm_read_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 		return 0;
 	}
 	
-	memset(buffer_len, 0, sizeof(buffer_len));
 	LOG_PUSH();
 	LOG_MUTE();
-	if ((ERROR_OK != interfaces->usart.status(buffer_len)) 
+	if ((ERROR_OK != interfaces->usart.status(&status)) 
 		|| (ERROR_OK != interfaces->peripheral_commit()))
 	{
 		// error
 		LOG_POP();
 		return -1;
 	}
-	else if ((buffer_len[1] != 0) 
-		&& ((ERROR_OK != interfaces->usart.receive(buffer, (uint16_t)buffer_len[1])) 
-			|| (ERROR_OK != interfaces->peripheral_commit())))
+	else if ((status.rx_buff_size != 0) 
+		&& ((ERROR_OK == interfaces->usart.receive(buffer, 
+											(uint16_t)status.rx_buff_size)) 
+			&& (ERROR_OK == interfaces->peripheral_commit())))
 	{
 		LOG_POP();
-		return (int32_t)buffer_len[1];
+		return (int32_t)status.rx_buff_size;
 	}
 	else
 	{
@@ -625,26 +645,29 @@ int32_t comm_read_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 
 int32_t comm_write_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 {
-	uint32_t start, end;
-	uint32_t buffer_len[2];
+	int32_t data_sent;
 	
 	if (!usbtocomm_open)
 	{
-		return ERROR_FAIL;
+		return -1;
 	}
 	
+	data_sent = 0;
+	if ((ERROR_OK == interfaces->usart.send(buffer, (uint16_t)num_of_bytes)) 
+		&& (ERROR_OK == interfaces->peripheral_commit()))
+	{
+		data_sent = (int32_t)num_of_bytes;
+	}
+	
+#if 0
 	LOG_PUSH();
 	LOG_MUTE();
-	if ((ERROR_OK != interfaces->usart.send(buffer, (uint16_t)num_of_bytes)) 
-		|| (ERROR_OK != interfaces->peripheral_commit()))
+	if ((ERROR_OK == interfaces->usart.send(buffer, (uint16_t)num_of_bytes)) 
+		&& (ERROR_OK == interfaces->peripheral_commit()))
 	{
-		LOG_POP();
+		data_sent = num_of_bytes;
 	}
-	else
-	{
-		LOG_POP();
-		return (int32_t)num_of_bytes;
-	}
+	LOG_POP();
 	
 	// fail to send data at firt try
 	// if usart_status is available
@@ -653,41 +676,100 @@ int32_t comm_write_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 	//    return 0
 	if (NULL == interfaces->usart.status)
 	{
+		return (int32_t)data_sent;
+	}
+	
+	if (data_sent != (int32_t)num_of_bytes)
+	{
+		struct usart_status_t status;
+		uint32_t start, end;
+		
+		// get current time
+		start = get_time_in_ms();
+		// get buffer_size available for tx
+		LOG_PUSH();
+		LOG_MUTE();
+		if ((ERROR_OK != interfaces->usart.status(&status)) 
+			|| (ERROR_OK != interfaces->peripheral_commit()))
+		{
+			// error
+			LOG_POP();
+			return -1;
+		}
+		LOG_POP();
+		
+		do
+		{
+			LOG_PUSH();
+			LOG_MUTE();
+			if ((ERROR_OK != interfaces->usart.send(buffer, 
+											(uint16_t)(num_of_bytes - data_sent))) 
+				|| (ERROR_OK != interfaces->peripheral_commit()))
+			{
+				LOG_POP();
+			}
+			else
+			{
+				LOG_POP();
+				data_sent += num_of_bytes - data_sent;
+				break;
+			}
+			end = get_time_in_ms();
+		} while ((end - start) < 50 + 5 * (num_of_bytes - status.tx_buff_avail));
+		
+		// time out
 		return 0;
 	}
 	
-	// get current time
-	start = get_time_in_ms();
-	// get buffer_size available for tx
-	memset(buffer_len, 0, sizeof(buffer_len));
-	LOG_PUSH();
-	LOG_MUTE();
-	if ((ERROR_OK != interfaces->usart.status(buffer_len)) 
-		|| (ERROR_OK != interfaces->peripheral_commit()))
+	// poll ready
+	while (1)
 	{
-		// error
-		LOG_POP();
-		return -1;
-	}
-	LOG_POP();
-	do
-	{
+		struct usart_status_t status;
+		
+		// get buffer_size for tx
 		LOG_PUSH();
 		LOG_MUTE();
-		if ((ERROR_OK != interfaces->usart.send(buffer, (uint16_t)num_of_bytes)) 
+		if ((ERROR_OK != interfaces->usart.status(&status)) 
 			|| (ERROR_OK != interfaces->peripheral_commit()))
 		{
+			// error
 			LOG_POP();
+			return -1;
 		}
-		else
+		LOG_POP();
+		
+		if (!status.tx_buff_size)
 		{
-			LOG_POP();
-			return (int32_t)num_of_bytes;
+			break;
 		}
-		end = get_time_in_ms();
-	} while ((end - start) < 50 + 5 * (num_of_bytes - buffer_len[0]));
+	}
+#endif
 	
-	// time out
+	return data_sent;
+}
+
+int32_t comm_flush_usbtocomm(void)
+{
+	uint8_t buff;
+	int32_t result;
+	
+	if (!usbtocomm_open)
+	{
+		return -1;
+	}
+	
+	while (1)
+	{
+		result = comm_read_usbtocomm(&buff, 1);
+		if (result < 0)
+		{
+			return result;
+		}
+		if (0 == result)
+		{
+			break;
+		}
+	}
 	return 0;
 }
 
@@ -698,7 +780,7 @@ int32_t comm_ctrl_usbtocomm(uint8_t dtr, uint8_t rts)
 	
 	if ((NULL == interfaces) || !usbtocomm_open)
 	{
-		return ERROR_FAIL;
+		return -1;
 	}
 	
 	return 0;
@@ -739,3 +821,9 @@ int32_t comm_ctrl(uint8_t dtr, uint8_t rts)
 {
 	return comm_func[comm_idx].comm_ctrl(dtr, rts);
 }
+
+int32_t comm_flush(void)
+{
+	return comm_func[comm_idx].comm_flush();
+}
+

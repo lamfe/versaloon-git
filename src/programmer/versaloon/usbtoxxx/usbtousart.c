@@ -101,16 +101,18 @@ RESULT usbtousart_send(uint8_t interface_index, uint8_t *buf, uint16_t len)
 										versaloon_cmd_buf, 2 + len, 1);
 }
 
-RESULT usbtousart_status(uint8_t interface_index, uint32_t buffer_len[2])
+RESULT usbtousart_status(uint8_t interface_index, 
+							struct usbtousart_status_t *status)
 {
 #if PARAM_CHECK
-	if ((interface_index > 7) || (NULL == buffer_len))
+	if ((interface_index > 7) || (NULL == status))
 	{
 		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
 		return ERROR_FAIL;
 	}
 #endif
 	
-	return usbtoxxx_status_command(USB_TO_USART, interface_index, 8, 
-									(uint8_t *)buffer_len, 0, 8, 0);
+	return usbtoxxx_status_command(USB_TO_USART, interface_index, 
+			sizeof(struct usbtousart_status_t), (uint8_t *)status, 0, 
+			sizeof(struct usbtousart_status_t), 0);
 }

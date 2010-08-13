@@ -28,6 +28,14 @@ typedef RESULT (*jtag_callback_t)(enum jtag_irdr_t cmd, uint32_t ir,
 								  uint8_t *dest_buffer, uint8_t *src_buffer, 
 								  uint16_t buffer_len, uint16_t *processed);
 
+struct usart_status_t
+{
+	uint32_t tx_buff_avail;
+	uint32_t tx_buff_size;
+	uint32_t rx_buff_avail;
+	uint32_t rx_buff_size;
+};
+
 struct interface_usart_t
 {
 	RESULT (*init)(void);
@@ -36,7 +44,7 @@ struct interface_usart_t
 						char stopbit, char handshake);
 	RESULT (*send)(uint8_t *buf, uint16_t len);
 	RESULT (*receive)(uint8_t *buf, uint16_t len);
-	RESULT (*status)(uint32_t buffer_size[2]);
+	RESULT (*status)(struct usart_status_t *status);
 };
 
 struct interface_spi_t

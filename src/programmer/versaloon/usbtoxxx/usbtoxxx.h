@@ -27,13 +27,21 @@ RESULT usbtodelay_delay(uint16_t dly);
 
 
 // USB_TO_USART
+struct usbtousart_status_t
+{
+	uint32_t tx_buff_avail;
+	uint32_t tx_buff_size;
+	uint32_t rx_buff_avail;
+	uint32_t rx_buff_size;
+};
 RESULT usbtousart_init(void);
 RESULT usbtousart_fini(void);
 RESULT usbtousart_config(uint8_t interface_index, uint32_t baudrate, 
 			uint8_t datalength, char paritybit, char stopbit, char handshake);
 RESULT usbtousart_send(uint8_t interface_index, uint8_t *buf, uint16_t len);
 RESULT usbtousart_receive(uint8_t interface_index, uint8_t *buf, uint16_t len);
-RESULT usbtousart_status(uint8_t interface_index, uint32_t buffer_len[2]);
+RESULT usbtousart_status(uint8_t interface_index, 
+							struct usbtousart_status_t *status);
 
 // USB_TO_SPI
 RESULT usbtospi_init(void);

@@ -30,7 +30,7 @@ void USB_TO_USART_ProcessCmd(uint8* dat, uint16 len)
 {
 	uint16 index, device_num, length;
 	uint8 command;
-	uint32 data_len;
+	uint32 data_len, i;
 	uint32 baudrate;
 	uint8 datalength, parity, stopbit;
 
@@ -102,6 +102,15 @@ void USB_TO_USART_ProcessCmd(uint8* dat, uint16 len)
 		case USB_TO_XXX_OUT:
 			data_len = dat[index + 0] + (dat[index + 1] << 8);
 			
+#if 1
+			for (i = 0; i < data_len; i++)
+			{
+//				while (USART_GetFlagStatus(USART_DEF_PORT, USART_FLAG_TC) != SET);
+				while (USART_GetFlagStatus(USART_DEF_PORT, USART_FLAG_TXE) != SET);
+				USART_SendData(USART_DEF_PORT, dat[index + 2 + i]);
+			}
+			buffer_reply[rep_len++] = USB_TO_XXX_OK;
+#else
 			// check memory available
 			if (FIFO_Get_AvailableLength(&CDC_OUT_fifo) >= data_len)
 			{
@@ -119,12 +128,24 @@ void USB_TO_USART_ProcessCmd(uint8* dat, uint16 len)
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
-
+#endif
 			break;
 		case USB_TO_XXX_STATUS:
 			buffer_reply[rep_len++] = USB_TO_XXX_OK;
 
 			data_len = FIFO_Get_AvailableLength(&CDC_OUT_fifo);
+			buffer_reply[rep_len++] = (data_len >> 0) & 0xFF;
+			buffer_reply[rep_len++] = (data_len >> 8) & 0xFF;
+			buffer_reply[rep_len++] = (data_len >> 16) & 0xFF;
+			buffer_reply[rep_len++] = (data_len >> 24) & 0xFF;
+
+			data_len = FIFO_Get_Length(&CDC_OUT_fifo);
+			buffer_reply[rep_len++] = (data_len >> 0) & 0xFF;
+			buffer_reply[rep_len++] = (data_len >> 8) & 0xFF;
+			buffer_reply[rep_len++] = (data_len >> 16) & 0xFF;
+			buffer_reply[rep_len++] = (data_len >> 24) & 0xFF;
+
+			data_len = FIFO_Get_AvailableLength(&CDC_IN_fifo);
 			buffer_reply[rep_len++] = (data_len >> 0) & 0xFF;
 			buffer_reply[rep_len++] = (data_len >> 8) & 0xFF;
 			buffer_reply[rep_len++] = (data_len >> 16) & 0xFF;

@@ -61,12 +61,12 @@ struct program_functions_t stm32isp_program_functions =
 	READ_TARGET_FUNCNAME(stm32isp)
 };
 
-RESULT stm32isp_sync(void)
+static RESULT stm32isp_sync(void)
 {
 	uint8_t buffer[1], retry = 10;
 	int32_t comm_ret;
 
-	if (com_mode.auxpin)
+	if ((com_mode.auxpin != 'N') && (com_mode.auxpin != 'n'))
 	{
 		// DTR <==> Reset
 		// RTS <==> BOOT0
@@ -79,19 +79,7 @@ RESULT stm32isp_sync(void)
 		sleep_ms(10);
 	}
 	
-	while(1)
-	{
-		comm_ret = comm_read(buffer, 1);
-		if (comm_ret < 0)
-		{
-			LOG_DEBUG(ERRMSG_FAILURE_OPERATE_DEVICE, com_mode.comport);
-			return ERRCODE_FAILURE_OPERATION;
-		}
-		if (comm_ret == 0)
-		{
-			break;
-		}
-	}
+	comm_flush();
 	
 	// write the sync byte to the chip
 	buffer[0] = STM32ISP_SYNC;
@@ -161,7 +149,7 @@ RESULT stm32isp_sync(void)
 	}
 }
 
-RESULT stm32isp_send_command(uint8_t cmd, const char *cmd_name, 
+static RESULT stm32isp_send_command(uint8_t cmd, const char *cmd_name, 
 							 uint8_t *test_protect)
 {
 	uint8_t buffer[2];
@@ -194,7 +182,7 @@ RESULT stm32isp_send_command(uint8_t cmd, const char *cmd_name,
 	return ERROR_OK;
 }
 
-RESULT stm32isp_get_ack(uint8_t accept_0_as_final_ack, uint8_t *ret, 
+static RESULT stm32isp_get_ack(uint8_t accept_0_as_final_ack, uint8_t *ret, 
 							uint8_t quiet)
 {
 	uint8_t buffer[1];
@@ -222,7 +210,7 @@ RESULT stm32isp_get_ack(uint8_t accept_0_as_final_ack, uint8_t *ret,
 #define STM32ISP_RECEIVE			0
 // data_len_size > 0 means that data_len bytes 
 // MUST be send/received first for data_len_size bytes
-RESULT stm32isp_process_data(uint16_t *data_len, uint8_t data_len_size, 
+static RESULT stm32isp_process_data(uint16_t *data_len, uint8_t data_len_size, 
 							 uint8_t *data, uint8_t send1_receive0)
 {
 	uint16_t actual_len = 0;
@@ -290,7 +278,7 @@ RESULT stm32isp_process_data(uint16_t *data_len, uint8_t data_len_size,
 	return ERROR_OK;
 }
 
-RESULT stm32isp_read_bootloader_version(uint8_t *rev)
+static RESULT stm32isp_read_bootloader_version(uint8_t *rev)
 {
 	RESULT ret;
 	uint8_t buffer[3];
@@ -315,7 +303,7 @@ RESULT stm32isp_read_bootloader_version(uint8_t *rev)
 	return stm32isp_get_ack(0, buffer, 0);
 }
 
-RESULT stm32isp_read_product_id(uint32_t *id)
+static RESULT stm32isp_read_product_id(uint32_t *id)
 {
 	RESULT ret;
 	uint16_t len = 4;
@@ -338,7 +326,8 @@ RESULT stm32isp_read_product_id(uint32_t *id)
 	return stm32isp_get_ack(0, buffer, 0);
 }
 
-RESULT stm32isp_readout_protect(void)
+#if 0
+static RESULT stm32isp_readout_protect(void)
 {
 	RESULT ret;
 	uint8_t buffer[1];
@@ -354,8 +343,9 @@ RESULT stm32isp_readout_protect(void)
 	
 	return stm32isp_get_ack(1, buffer, 0);
 }
+#endif
 
-RESULT stm32isp_readout_unprotect(void)
+static RESULT stm32isp_readout_unprotect(void)
 {
 	RESULT ret;
 	uint8_t buffer[1];
@@ -372,7 +362,8 @@ RESULT stm32isp_readout_unprotect(void)
 	return stm32isp_get_ack(1, buffer, 0);
 }
 
-RESULT stm32isp_write_protect(void)
+#if 0
+static RESULT stm32isp_write_protect(void)
 {
 	RESULT ret;
 	uint8_t buffer[1];
@@ -388,8 +379,9 @@ RESULT stm32isp_write_protect(void)
 	
 	return stm32isp_get_ack(1, buffer, 0);
 }
+#endif
 
-RESULT stm32isp_write_unprotect(void)
+static RESULT stm32isp_write_unprotect(void)
 {
 	RESULT ret;
 	uint8_t buffer[1];
@@ -406,7 +398,7 @@ RESULT stm32isp_write_unprotect(void)
 	return stm32isp_get_ack(1, buffer, 0);
 }
 
-RESULT stm32isp_read_memory(uint32_t addr, uint8_t *data, uint16_t *data_len)
+static RESULT stm32isp_read_memory(uint32_t addr, uint8_t *data, uint16_t *data_len)
 {
 	uint8_t buffer[5], test_protect = 0;
 	uint16_t len = 5;
@@ -502,7 +494,7 @@ RESULT stm32isp_read_memory(uint32_t addr, uint8_t *data, uint16_t *data_len)
 	return ERROR_OK;
 }
 
-RESULT stm32isp_write_memory(uint32_t addr, uint8_t *data, uint16_t data_len)
+static RESULT stm32isp_write_memory(uint32_t addr, uint8_t *data, uint16_t data_len)
 {
 	uint8_t buffer[5], test_protect = 0, time_out = 10;
 	uint16_t len = 5, i;
@@ -611,7 +603,7 @@ RESULT stm32isp_write_memory(uint32_t addr, uint8_t *data, uint16_t data_len)
 	return ERROR_OK;
 }
 
-RESULT stm32isp_erase_sector(uint8_t num_of_sector, uint8_t *sector_num)
+static RESULT stm32isp_erase_sector(uint8_t num_of_sector, uint8_t *sector_num)
 {
 	uint8_t buffer[2], dly_cnt, i;
 	RESULT ret;
@@ -677,7 +669,7 @@ RESULT stm32isp_erase_sector(uint8_t num_of_sector, uint8_t *sector_num)
 	return ERROR_OK;
 }
 
-RESULT stm32isp_execute_code(uint32_t addr)
+static RESULT stm32isp_execute_code(uint32_t addr)
 {
 	uint8_t buffer[5];
 	RESULT ret;
@@ -710,20 +702,6 @@ ENTER_PROGRAM_MODE_HANDLER(stm32isp)
 {
 	uint8_t bootloader_version = 0;
 	REFERENCE_PARAMETER(context);
-	
-	if ((NULL == com_mode.comport) || (0 == strlen(com_mode.comport)))
-	{
-		LOG_ERROR(ERRMSG_NOT_DEFINED, "comport");
-		return ERROR_FAIL;
-	}
-	
-	// comm init
-	if (ERROR_OK != comm_open(com_mode.comport, com_mode.baudrate, 8, 
-			COMM_PARITYBIT_EVEN, COMM_STOPBIT_1, COMM_HANDSHAKE_NONE))
-	{
-		LOG_ERROR(ERRMSG_FAILURE_OPEN, com_mode.comport);
-		return ERRCODE_FAILURE_OPEN;
-	}
 	
 	// sync first
 	if (ERROR_OK != stm32isp_sync())
@@ -761,7 +739,6 @@ LEAVE_PROGRAM_MODE_HANDLER(stm32isp)
 		}
 	}
 	
-	comm_close();
 	return ret;
 }
 

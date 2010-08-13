@@ -19,5 +19,7 @@
 #ifndef __LPCARMISP_H_INCLUDED__
 #define __LPCARMISP_H_INCLUDED__
 
+extern struct program_functions_t lpcarmisp_program_functions;
+
 #endif /* __LPCARMISP_H_INCLUDED__ */
 
