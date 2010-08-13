@@ -39,6 +39,7 @@ struct comm_func_t
 	int32_t (*comm_read)(uint8_t *buffer, uint32_t num_of_bytes);
 	int32_t (*comm_write)(uint8_t *buffer, uint32_t num_of_bytes);
 	int32_t (*comm_ctrl)(uint8_t dtr, uint8_t rts);
+	int32_t (*comm_flush)(void);
 };
 
 void comm_close(void);
@@ -47,6 +48,7 @@ RESULT comm_open(char *comport, uint32_t baudrate, uint8_t datalength,
 int32_t comm_read(uint8_t *buffer, uint32_t num_of_bytes);
 int32_t comm_write(uint8_t *buffer, uint32_t num_of_bytes);
 int32_t comm_ctrl(uint8_t dtr, uint8_t rts);
+int32_t comm_flush(void);
 
 #endif /* __COMPORT_H_INCLUDED__ */
 

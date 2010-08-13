@@ -94,13 +94,11 @@ MISC_HANDLER(lpc1000_mode)
 								cm3_program_functions.enter_program_mode;
 		break;
 	case LPC1000_ISP:
-		misc_call_notifier(comisp_notifier, "chip", "comisp_lpc1000");
+		misc_call_notifier(comisp_notifier, "chip", "comisp_lpcarm");
 		memcpy(&lpc1000_program_functions, &comisp_program_functions, 
 				sizeof(lpc1000_program_functions));
 		lpc1000_enter_program_mode_save = 
 								comisp_program_functions.enter_program_mode;
-		// not yet
-		return ERROR_FAIL;
 		break;
 	}
 	lpc1000_program_functions.enter_program_mode = 
@@ -169,8 +167,20 @@ ADJUST_SETTING_HANDLER(lpc1000)
 		}
 		break;
 	case LPC1000_ISP:
-		lpc1000_program_area_map[0].attr &= ~AREA_ATTR_NP;
-		if (!flash_info->page_size)
+		lpc1000_program_area_map[0].attr &= ~(AREA_ATTR_NP | AREA_ATTR_RAW);
+		if (sram_info->size >= 4 * 1024 + 0x200 + 32)
+		{
+			flash_info->page_size =  4 * 1024;
+		}
+		else if (sram_info->size >= 1 * 1024 + 0x200 + 32)
+		{
+			flash_info->page_size = 1 * 1024;
+		}
+		else if (sram_info->size >= 512 + 0x200 + 32)
+		{
+			flash_info->page_size = 512;
+		}
+		else
 		{
 			flash_info->page_size = 256;
 		}
@@ -181,18 +191,18 @@ ADJUST_SETTING_HANDLER(lpc1000)
 	return ERROR_OK;
 }
 
-uint32_t lpc1000_get_sector_idx_by_addr(struct program_context_t *context, 
+uint8_t lpc1000_get_sector_idx_by_addr(struct program_context_t *context, 
 										uint32_t addr)
 {
 	REFERENCE_PARAMETER(context);
 	
 	if (addr < (4 * 1024 * 16))
 	{
-		return addr / (4 * 1024);
+		return (uint8_t)(addr / (4 * 1024));
 	}
 	else if (addr < (512 * 1024))
 	{
-		return 16 + (addr - (4 * 1024 * 16)) / (32 * 1024);
+		return (uint8_t)(16 + (addr - (4 * 1024 * 16)) / (32 * 1024));
 	}
 	else
 	{

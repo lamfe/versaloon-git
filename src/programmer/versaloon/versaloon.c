@@ -452,9 +452,10 @@ RESULT versaloon_usart_receive(uint8_t *buf, uint16_t len)
 {
 	return usbtousart_receive(VERSALOON_USART_PORT, buf, len);
 }
-RESULT versaloon_usart_status(uint32_t buffer_len[2])
+RESULT versaloon_usart_status(struct usart_status_t *status)
 {
-	return usbtousart_status(VERSALOON_USART_PORT, buffer_len);
+	return usbtousart_status(VERSALOON_USART_PORT, 
+								(struct usbtousart_status_t *)status);
 }
 // SPI
 RESULT versaloon_spi_init(void)

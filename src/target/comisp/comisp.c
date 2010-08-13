@@ -72,13 +72,14 @@ struct misc_cmd_t comisp_cmd[] =
 };
 
 ENTER_PROGRAM_MODE_HANDLER(comisp);
+LEAVE_PROGRAM_MODE_HANDLER(comisp);
 struct program_functions_t comisp_program_functions;
 
 const struct comisp_param_t comisp_chips_param[] = {
 //	chip_name,			com_mode,																											
 //						{comport,	baudrate,	datalength,	paritybit,			stopbit,		handshake,				aux_pin},				program_functions
 	{"comisp_stm32",	{"",		-1,			8,			COMM_PARITYBIT_EVEN,COMM_STOPBIT_1,	COMM_PARAMETER_UNSURE,	COMM_PARAMETER_UNSURE}, &stm32isp_program_functions},
-	{"comisp_lpcarm",	{"",		-1,			8,			COMM_PARITYBIT_NONE,COMM_STOPBIT_1,	COMM_PARAMETER_UNSURE,	COMM_PARAMETER_UNSURE}, NULL},
+	{"comisp_lpcarm",	{"",		-1,			8,			COMM_PARITYBIT_NONE,COMM_STOPBIT_1,	COMM_PARAMETER_UNSURE,	COMM_PARAMETER_UNSURE}, &lpcarmisp_program_functions},
 };
 static uint8_t comisp_chip_index = 0;
 
@@ -189,6 +190,8 @@ MISC_HANDLER(comisp_chip)
 					sizeof(comisp_program_functions));
 			comisp_program_functions.enter_program_mode = \
 					ENTER_PROGRAM_MODE_FUNCNAME(comisp);
+			comisp_program_functions.leave_program_mode = \
+					LEAVE_PROGRAM_MODE_FUNCNAME(comisp);
 			return ERROR_OK;
 		}
 	}
@@ -208,6 +211,19 @@ ENTER_PROGRAM_MODE_HANDLER(comisp)
 	struct program_functions_t *pf = 
 					comisp_chips_param[comisp_chip_index].program_functions;
 	
+	if ((NULL == com_mode.comport) || (0 == strlen(com_mode.comport)))
+	{
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "comport");
+		return ERROR_FAIL;
+	}
+	// comm init
+	if (ERROR_OK != comm_open(com_mode.comport, com_mode.baudrate, 8, 
+		com_mode.paritybit, com_mode.stopbit, com_mode.handshake))
+	{
+		LOG_ERROR(ERRMSG_FAILURE_OPEN, com_mode.comport);
+		return ERRCODE_FAILURE_OPEN;
+	}
+	
 	if (pf->enter_program_mode != NULL)
 	{
 		return pf->enter_program_mode(context);
@@ -215,3 +231,17 @@ ENTER_PROGRAM_MODE_HANDLER(comisp)
 	return ERROR_OK;
 }
 
+LEAVE_PROGRAM_MODE_HANDLER(comisp)
+{
+	struct program_functions_t *pf = 
+					comisp_chips_param[comisp_chip_index].program_functions;
+	RESULT ret = ERROR_OK;
+	
+	if (pf->leave_program_mode != NULL)
+	{
+		ret = pf->leave_program_mode(context, success);
+	}
+	
+	comm_close();
+	return ret;
+}

@@ -564,7 +564,7 @@ READ_TARGET_HANDLER(lpc1000swj)
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
-		LOG_INFO("Serian Number: %08X%08X%08X%08X", 
+		LOG_INFO("Serial Number: %08X%08X%08X%08X", 
 					iap_reply[3], iap_reply[2], iap_reply[1], iap_reply[0]);
 		
 		memset(iap_cmd_param, 0, sizeof(iap_cmd_param));
@@ -607,7 +607,7 @@ READ_TARGET_HANDLER(lpc1000swj)
 		}
 		break;
 	default:
-		ret = ERROR_OK;
+		ret = ERROR_FAIL;
 		break;
 	}
 	return ret;

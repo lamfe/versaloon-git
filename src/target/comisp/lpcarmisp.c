@@ -24,6 +24,7 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include "port.h"
 #include "app_cfg.h"
 #include "app_type.h"
 #include "app_err.h"
@@ -39,6 +40,939 @@
 #include "lpcarmisp.h"
 
 #include "comisp_internal.h"
+#include "lpc1000_internal.h"
 
 #include "comport.h"
+
+ENTER_PROGRAM_MODE_HANDLER(lpcarmisp);
+LEAVE_PROGRAM_MODE_HANDLER(lpcarmisp);
+ERASE_TARGET_HANDLER(lpcarmisp);
+WRITE_TARGET_HANDLER(lpcarmisp);
+READ_TARGET_HANDLER(lpcarmisp);
+struct program_functions_t lpcarmisp_program_functions = 
+{
+	NULL,			// execute
+	ENTER_PROGRAM_MODE_FUNCNAME(lpcarmisp), 
+	LEAVE_PROGRAM_MODE_FUNCNAME(lpcarmisp), 
+	ERASE_TARGET_FUNCNAME(lpcarmisp), 
+	WRITE_TARGET_FUNCNAME(lpcarmisp), 
+	READ_TARGET_FUNCNAME(lpcarmisp)
+};
+
+static char uuchar(uint8_t value)
+{
+	value = (value & 0x3F) + 32;
+	return (value == 32) ? 96 : value;
+}
+
+static RESULT uuencode(char *str, uint8_t *data, uint8_t len)
+{
+	uint8_t i;
+	uint32_t value;
+	
+	*str++ = uuchar(len);
+	len = (len + 2) / 3;
+	for (i = 0; i < len; i++)
+	{
+		value = (data[0] << 16) + (data[1] << 8) + data[2];
+		*str++ = uuchar((uint8_t)(value >> 18));
+		*str++ = uuchar((uint8_t)(value >> 12));
+		*str++ = uuchar((uint8_t)(value >> 6));
+		*str++ = uuchar((uint8_t)(value >> 0));
+		data += 3;
+	}
+	*str = '\0';
+	return ERROR_OK;
+}
+
+static RESULT uudecode(char *str, uint8_t *data, uint8_t *len)
+{
+	uint8_t i, loop;
+	uint32_t value;
+	uint8_t want_len = *len;
+	
+	if ((NULL == str) || (NULL == data) || (NULL == len) || (0 == strlen(str)) 
+		|| (str[0] < 33) || (str[0] > 77))
+	{
+		return ERROR_FAIL;
+	}
+	for (i = 0; i < strlen(str); i++)
+	{
+		if ((str[i] < 32) || (str[i] > 96))
+		{
+			return ERROR_FAIL;
+		}
+		str[i] -= 32;
+	}
+	
+	*len = *str++;
+	loop = (*len + 2) / 3;
+	for (i = 0; i < loop; i++)
+	{
+		value = ((str[0] & 0x3F) << 18) + ((str[1] & 0x3F) << 12) 
+				+ ((str[2] & 0x3F) << 6) + ((str[3] & 0x3F) << 0);
+		if (want_len)
+		{
+			want_len--;
+			*data++ = (value >> 16) & 0xFF;
+		}
+		if (want_len)
+		{
+			want_len--;
+			*data++ = (value >> 8) & 0xFF;
+		}
+		if (want_len)
+		{
+			want_len--;
+			*data++ = (value >> 0) & 0xFF;
+		}
+		str += 4;
+	}
+	return ERROR_OK;
+}
+
+static RESULT uu_send(uint8_t *data, uint32_t size)
+{
+	// max format: data \r checksum \r
+	char str[61 + 1 + 10 + 1], sum[10];
+	uint8_t cur_size, sum_reply;
+	int32_t comm_ret;
+	uint8_t line_num;
+	uint32_t sum_start_size;
+	uint8_t *sum_start_pos;
+	uint8_t i;
+	uint32_t checksum;
+	
+	line_num = 0;
+	sum_start_pos = NULL;
+	sum_start_size = size;
+	checksum = 0;
+	while (size > 0)
+	{
+		if (NULL == sum_start_pos)
+		{
+			sum_start_pos = data;
+			sum_start_size = size;
+			checksum = 0;
+		}
+		
+		cur_size = (uint8_t)((size > 45) ? 45 : size);
+		size -= cur_size;
+		
+		for (i = 0; i < cur_size; i++)
+		{
+			checksum += data[i];
+		}
+		
+		uuencode(str, data, cur_size);
+		strcat(str, "\r");
+		sum_reply = 0;
+		if (!size || (++line_num >= 20))
+		{
+			sum_reply = 1;
+			snprintf(sum, sizeof(sum), "%d", checksum);
+			strcat(str, sum);
+			strcat(str, "\r");
+		}
+		comm_ret = comm_write((uint8_t *)str, strlen(str));
+		if (comm_ret != (int32_t)strlen(str))
+		{
+			return ERROR_FAIL;
+		}
+		data += cur_size;
+		
+		if (sum_reply)
+		{
+			line_num = 0;
+			comm_ret = comm_read((uint8_t *)sum, 4);
+			if (comm_ret != 4)
+			{
+				return ERROR_FAIL;
+			}
+			if ((sum[comm_ret - 2] != '\r') || (sum[comm_ret - 1] != '\n'))
+			{
+				int32_t comm_ret1;
+				
+				comm_ret1 = comm_read((uint8_t *)&sum[comm_ret], 4);
+				if ((comm_ret1 < 0) || (sum[comm_ret + comm_ret1 - 2] != '\r') 
+					|| (sum[comm_ret + comm_ret1 - 1] != '\n'))
+				{
+					return ERROR_FAIL;
+				}
+			}
+			sum[comm_ret] = '\0';
+			if (!strcmp(sum, "OK\r\n"))
+			{
+				
+			}
+			else if (!strcmp(sum, "RESEND\r\n"))
+			{
+				data = sum_start_pos;
+				size = sum_start_size;
+			}
+			else
+			{
+				return ERROR_FAIL;
+			}
+			sum_start_pos = NULL;
+		}
+	}
+	return ERROR_OK;
+}
+
+static RESULT uu_recv(uint8_t *data, uint32_t size)
+{
+	// max format: data \r\n checksum \r\n
+	char str[61 + 2 + 10 + 2];
+	char sum[10];
+	uint8_t cur_size, len_tmp;
+	int32_t comm_ret;
+	uint32_t comm_data_size, comm_sum_size;
+	uint8_t line_num;
+	uint32_t sum_start_size;
+	uint8_t *sum_start_pos;
+	uint8_t i;
+	uint32_t checksum;
+	
+	line_num = 0;
+	sum_start_pos = NULL;
+	sum_start_size = size;
+	checksum = 0;
+	while (size > 0)
+	{
+		if (NULL == sum_start_pos)
+		{
+			sum_start_pos = data;
+			sum_start_size = size;
+			checksum = 0;
+		}
+		
+		cur_size = (uint8_t)((size > 45) ? 45 : size);
+		size -= cur_size;
+		
+		comm_data_size = 1 + 2 + (cur_size + 2) / 3 * 4;
+		comm_sum_size = 0;
+		if (!size || (++line_num >= 20))
+		{
+			snprintf(sum, sizeof(sum), "%d", checksum);
+			comm_sum_size = 2 + strlen(sum);
+		}
+		comm_ret = comm_read((uint8_t *)str, comm_data_size + comm_sum_size);
+		if (comm_ret < (int32_t)comm_data_size)
+		{
+			return ERROR_FAIL;
+		}
+		if ((str[comm_ret - 2] != '\r') || (str[comm_ret - 1] != '\n'))
+		{
+			int32_t comm_ret1;
+			
+			comm_ret1 = comm_read((uint8_t *)&str[comm_ret], 10);
+			if ((comm_ret1 < 0) || (str[comm_ret + comm_ret1 - 2] != '\r') 
+				|| (str[comm_ret + comm_ret1 - 1] != '\n'))
+			{
+				return ERROR_FAIL;
+			}
+		}
+		
+		// remove \r\n
+		str[comm_data_size - 2] = '\0';
+		len_tmp = cur_size;
+		if ((ERROR_OK != uudecode(str, data, &len_tmp)) 
+			|| (len_tmp != cur_size))
+		{
+			return ERROR_FAIL;
+		}
+		for (i = 0; i < cur_size; i++)
+		{
+			checksum += data[i];
+		}
+		data += cur_size;
+		
+		if (comm_sum_size)
+		{
+			uint32_t checksum_tmp;
+			
+			line_num = 0;
+			checksum_tmp = strtoul(&str[comm_data_size], NULL, 0);
+			
+			if (checksum == checksum_tmp)
+			{
+				strcpy(str, "OK\r");
+			}
+			else
+			{
+				strcpy(str, "RESEND\r");
+				data = sum_start_pos;
+				size = sum_start_size;
+			}
+			comm_ret = comm_write((uint8_t *)str, strlen(str));
+			if (comm_ret != (int32_t)strlen(str))
+			{
+				return ERROR_FAIL;
+			}
+			sum_start_pos = NULL;
+		}
+	}
+	return ERROR_OK;
+}
+
+#define LPCARMISP_CMD_ABORT				0x1B
+#define LPCARMISP_CMD_SYNC				"?"
+#define LPCARMISP_CMD_SYNCED			"Synchronized\r"
+#define LPCARMISP_RPL_SYNCED			"Synchronized\r\n"
+#define LPCARMISP_RPL_OK				"OK\r\n"
+#define LPCARMISP_CMD_UNLOCK			"U"
+#define LPCARMISP_CMD_BAUDRATE			"B"
+#define LPCARMISP_CMD_ECHO				"A"
+#define LPCARMISP_CMD_WRITE2RAM			"W"
+#define LPCARMISP_CMD_READMEMORY		"R"
+#define LPCARMISP_CMD_PREPARESECTORS	"P"
+#define LPCARMISP_CMD_RAM2FLASH			"C"
+#define LPCARMISP_CMD_ERASESECTORS		"E"
+#define LPCARMISP_CMD_READCHIPID		"J"
+#define LPCARMISP_CMD_READBOOTVER		"K"
+#define LPCARMISP_CMD_READSERIAL		"N"
+#define LPCARMISP_RPL_SUCCESS			"0\r\n"
+
+static RESULT lpcarmisp_transact(char *buff, uint8_t echo, char *reply, 
+									uint32_t *reply_size)
+{
+	int32_t comm_ret;
+	
+	if ((NULL == reply_size) || (NULL == buff) || (0 == strlen(buff)))
+	{
+		LOG_BUG(ERRMSG_INVALID_TARGET, "parameters");
+		return ERROR_FAIL;
+	}
+	
+	comm_ret = comm_write((uint8_t *)buff, strlen(buff));
+	if (comm_ret != (int32_t)strlen(buff))
+	{
+		*reply_size = 0;
+		LOG_DEBUG(ERRMSG_FAILURE_HANDLE_DEVICE, "write", buff);
+		return ERROR_FAIL;
+	}
+	
+	if ((reply != NULL) && (*reply_size > 0))
+	{
+		uint32_t reply_pos, reply_len;
+		
+		reply_pos = 0;
+		reply_len = *reply_size;
+		if (echo)
+		{
+			// '\n' is not sent when echoing command
+			reply_pos += strlen(buff);
+			reply_len += strlen(buff);
+		}
+		
+		comm_ret = comm_read((uint8_t *)reply, reply_len);
+		if (comm_ret < 0)
+		{
+			*reply_size = 0;
+			LOG_DEBUG(ERRMSG_FAILURE_OPERATE_DEVICE, com_mode.comport);
+			return ERRCODE_FAILURE_OPERATION;
+		}
+		if (comm_ret != (int32_t)reply_len)
+		{
+			*reply_size = (uint32_t)comm_ret;
+			reply[comm_ret] = '\0';
+			LOG_DEBUG(ERRMSG_FAILURE_HANDLE_DEVICE, "receive reply of", buff);
+			return ERROR_FAIL;
+		}
+		reply[reply_len] = '\0';
+		
+		if (echo && (strstr(reply, buff) != reply))
+		{
+			*reply_size = 0;
+			LOG_DEBUG(ERRMSG_FAILURE_HANDLE_DEVICE, "receive echo of", buff);
+			return ERROR_FAIL;
+		}
+		
+		strcpy(reply, &reply[reply_pos]);
+	}
+	return ERROR_OK;
+}
+
+static uint8_t echo;
+static uint8_t cmd_argc, reply_argc;
+static char *cmd_argv[4], *reply_argv[4];
+static char reply_buff[64];
+static char cmd_buff[64];
+static RESULT lpcarmisp_process(uint8_t cmd_argc, char **cmd_argv, 
+				uint32_t *reply_size, uint8_t *reply_argc, char **reply_argv)
+{
+	uint8_t i, new;
+	uint32_t len;
+	
+	if ((0 == cmd_argc) || (NULL == cmd_argv) || (NULL == reply_size) 
+		|| (NULL == reply_argc) || (NULL == reply_argv))
+	{
+		return ERROR_FAIL;
+	}
+	
+	strcpy(cmd_buff, "");
+	for (i = 0; i < cmd_argc; i++)
+	{
+		strcat(cmd_buff, cmd_argv[i]);
+		if (i < (cmd_argc - 1))
+		{
+			strcat(cmd_buff, " ");
+		}
+	}
+	strcat(cmd_buff, "\r");
+	
+	lpcarmisp_transact(cmd_buff, echo, reply_buff, reply_size);
+	if (!*reply_size)
+	{
+		return ERROR_FAIL;
+	}
+	
+	// result
+	if (strstr(reply_buff, LPCARMISP_RPL_SUCCESS) != reply_buff)
+	{
+		LOG_BYTE_BUF(reply_buff, *reply_size, LOG_DEBUG, "%c", 255);
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION_ERRCODE, "result", 
+					(int)strtoul(reply_buff, NULL, 0));
+		return ERROR_FAIL;
+	}
+	
+	// parse reply argc and argv
+	*reply_argc = 0;
+	len = strlen(reply_buff);
+	new = 1;
+	for (i = 3; i < len; i++)
+	{
+		if ((reply_buff[i] != '\n') && (reply_buff[i] != '\r'))
+		{
+			if (new)
+			{
+				new = 0;
+				reply_argv[(*reply_argc)++] = &reply_buff[i];
+			}
+		}
+		else
+		{
+			new = 1;
+			reply_buff[i] = '\0';
+		}
+	}
+	return ERROR_OK;
+}
+
+static RESULT lpcarmisp_abort(void)
+{
+	char cmd[2] = {LPCARMISP_CMD_ABORT, 0};
+	uint32_t reply_size = 0;
+	RESULT ret;
+	
+	ret = lpcarmisp_transact(cmd, 1, NULL, &reply_size);
+	comm_flush();
+	return ret;
+}
+
+static RESULT lpcarmisp_sync(uint32_t kernel_khz)
+{
+	char buffer[32];
+	uint32_t reply_size;
+	
+	if ((com_mode.auxpin != 'N') && (com_mode.auxpin != 'n'))
+	{
+		// DTR <==> Reset
+		// RTS <==> BOOT
+		
+		// Reset:0, BOOT:0
+		comm_ctrl(0, 0);
+		sleep_ms(10);
+		// Reset:1, BOOT:0
+		comm_ctrl(1, 0);
+		sleep_ms(10);
+	}
+	
+	comm_flush();
+	
+	reply_size = strlen(LPCARMISP_RPL_SYNCED);
+	if (ERROR_OK != lpcarmisp_transact(LPCARMISP_CMD_SYNC, 0, buffer, 
+										&reply_size))
+	{
+		LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "run sync command");
+		return ERRCODE_FAILURE_OPERATION;
+	}
+	if (strcmp(buffer, LPCARMISP_RPL_SYNCED))
+	{
+		LOG_DEBUG(ERRMSG_FAILURE_OPERATION_ERRSTRING, 
+					"receive sync reply", buffer);
+		return ERROR_FAIL;
+	}
+	
+	reply_size = strlen(LPCARMISP_RPL_OK);
+	if (ERROR_OK != lpcarmisp_transact(LPCARMISP_CMD_SYNCED, 1, buffer, 
+										&reply_size))
+	{
+		LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "run synced command");
+		return ERRCODE_FAILURE_OPERATION;
+	}
+	if (strcmp(buffer, LPCARMISP_RPL_OK))
+	{
+		LOG_DEBUG(ERRMSG_FAILURE_OPERATION_ERRSTRING, 
+					"receive synced reply", buffer);
+		return ERROR_FAIL;
+	}
+	
+	sprintf(cmd_buff, "%d\r", kernel_khz);
+	reply_size = strlen(LPCARMISP_RPL_OK);
+	if (ERROR_OK != lpcarmisp_transact(cmd_buff, 1, buffer, 
+										&reply_size))
+	{
+		LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "run kernel_khz command");
+		return ERRCODE_FAILURE_OPERATION;
+	}
+	if (strcmp(buffer, LPCARMISP_RPL_OK))
+	{
+		LOG_DEBUG(ERRMSG_FAILURE_OPERATION_ERRSTRING, 
+					"receive synced reply", buffer);
+		return ERROR_FAIL;
+	}
+
+	return ERROR_OK;
+}
+
+static RESULT lpcarmisp_unlock(void)
+{
+	uint32_t reply_size;
+	
+	cmd_argv[0] = LPCARMISP_CMD_UNLOCK;
+	cmd_argv[1] = "23130";
+	cmd_argc = 2;
+	reply_size = strlen(LPCARMISP_RPL_SUCCESS);
+	if (ERROR_OK != lpcarmisp_process(cmd_argc, (char **)cmd_argv, 
+							&reply_size, &reply_argc, (char **)reply_argv))
+	{
+		LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "run echo command");
+		return ERRCODE_FAILURE_OPERATION;
+	}
+	
+	return ERROR_OK;
+}
+
+static RESULT lpcarmisp_echo(uint8_t on)
+{
+	uint32_t reply_size;
+	
+	cmd_argv[0] = LPCARMISP_CMD_ECHO;
+	cmd_argv[1] = on ? "1" : "0";
+	cmd_argc = 2;
+	reply_size = strlen(LPCARMISP_RPL_SUCCESS);
+	if (ERROR_OK != lpcarmisp_process(cmd_argc, (char **)cmd_argv, 
+							&reply_size, &reply_argc, (char **)reply_argv))
+	{
+		LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "run echo command");
+		return ERRCODE_FAILURE_OPERATION;
+	}
+	
+	if (on)
+	{
+		echo = 1;
+	}
+	else
+	{
+		echo = 0;
+	}
+	
+	return ERROR_OK;
+}
+
+static RESULT lpcarmisp_write_to_ram(uint32_t addr, uint8_t *buff, 
+										uint32_t size)
+{
+	uint32_t reply_size;
+	char addr_str[11], size_str[11];
+	
+	if ((size & 0x02) || (addr & 0x03))
+	{
+		return ERROR_FAIL;
+	}
+	
+	cmd_argv[0] = LPCARMISP_CMD_WRITE2RAM;
+	snprintf(addr_str, sizeof(addr_str), "%d", addr);
+	snprintf(size_str, sizeof(size_str), "%d", size);
+	cmd_argv[1] = addr_str;
+	cmd_argv[2] = size_str;
+	cmd_argc = 3;
+	reply_size = strlen(LPCARMISP_RPL_SUCCESS);
+	if (ERROR_OK != lpcarmisp_process(cmd_argc, (char **)cmd_argv, 
+							&reply_size, &reply_argc, (char **)reply_argv))
+	{
+		LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "run prepare sectors command");
+		return ERRCODE_FAILURE_OPERATION;
+	}
+	
+	if (ERROR_OK != uu_send(buff, size))
+	{
+		lpcarmisp_abort();
+		return ERROR_FAIL;
+	}
+	return ERROR_OK;
+}
+
+static RESULT lpcarmisp_read_memory(uint32_t addr, uint8_t *buff, 
+										uint32_t size)
+{
+	uint32_t reply_size;
+	char addr_str[11], size_str[11];
+	
+	if ((addr & 0x03) || (size & 0x02))
+	{
+		return ERROR_FAIL;
+	}
+	
+	cmd_argv[0] = LPCARMISP_CMD_READMEMORY;
+	snprintf(addr_str, sizeof(addr_str), "%d", addr);
+	snprintf(size_str, sizeof(size_str), "%d", size);
+	cmd_argv[1] = addr_str;
+	cmd_argv[2] = size_str;
+	cmd_argc = 3;
+	reply_size = strlen(LPCARMISP_RPL_SUCCESS);
+	if (ERROR_OK != lpcarmisp_process(cmd_argc, (char **)cmd_argv, 
+							&reply_size, &reply_argc, (char **)reply_argv))
+	{
+		LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "run prepare sectors command");
+		return ERRCODE_FAILURE_OPERATION;
+	}
+	
+	// read data
+	if (ERROR_OK != uu_recv(buff, size))
+	{
+		lpcarmisp_abort();
+		return ERROR_FAIL;
+	}
+	return ERROR_OK;
+}
+
+static RESULT lpcarmisp_prepare_sectors(uint8_t start_sector, 
+										uint8_t end_sector)
+{
+	uint32_t reply_size;
+	char start_sector_str[4], end_sector_str[4];
+	
+	cmd_argv[0] = LPCARMISP_CMD_PREPARESECTORS;
+	snprintf(start_sector_str, sizeof(start_sector_str), "%d", start_sector);
+	snprintf(end_sector_str, sizeof(end_sector_str), "%d", end_sector);
+	cmd_argv[1] = start_sector_str;
+	cmd_argv[2] = end_sector_str;
+	cmd_argc = 3;
+	reply_size = strlen(LPCARMISP_RPL_SUCCESS);
+	if (ERROR_OK != lpcarmisp_process(cmd_argc, (char **)cmd_argv, 
+							&reply_size, &reply_argc, (char **)reply_argv))
+	{
+		LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "run prepare sectors command");
+		return ERRCODE_FAILURE_OPERATION;
+	}
+	
+	return ERROR_OK;
+}
+
+static RESULT lpcarmisp_copy_ram_to_flash(uint32_t flash_addr, 
+					uint32_t ram_addr, uint32_t size)
+{
+	uint32_t reply_size;
+	char flash_addr_str[11], ram_addr_str[11], size_str[11];
+	
+	if ((flash_addr & 0xFF) 
+		|| ((size != 256) && (size != 512) && (size != 1024) && (size != 4096)))
+	{
+		return ERROR_FAIL;
+	}
+	
+	cmd_argv[0] = LPCARMISP_CMD_RAM2FLASH;
+	snprintf(flash_addr_str, sizeof(flash_addr_str), "%d", flash_addr);
+	snprintf(ram_addr_str, sizeof(ram_addr_str), "%d", ram_addr);
+	snprintf(size_str, sizeof(size_str), "%d", size);
+	cmd_argv[1] = flash_addr_str;
+	cmd_argv[2] = ram_addr_str;
+	cmd_argv[3] = size_str;
+	cmd_argc = 4;
+	reply_size = strlen(LPCARMISP_RPL_SUCCESS);
+	if (ERROR_OK != lpcarmisp_process(cmd_argc, (char **)cmd_argv, 
+							&reply_size, &reply_argc, (char **)reply_argv))
+	{
+		LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "run prepare sectors command");
+		return ERRCODE_FAILURE_OPERATION;
+	}
+	
+	return ERROR_OK;
+}
+
+static RESULT lpcarmisp_erase_sectors(uint8_t start_sector, 
+										uint8_t end_sector)
+{
+	uint32_t reply_size;
+	char start_sector_str[4], end_sector_str[4];
+	
+	cmd_argv[0] = LPCARMISP_CMD_ERASESECTORS;
+	snprintf(start_sector_str, sizeof(start_sector_str), "%d", start_sector);
+	snprintf(end_sector_str, sizeof(end_sector_str), "%d", end_sector);
+	cmd_argv[1] = start_sector_str;
+	cmd_argv[2] = end_sector_str;
+	cmd_argc = 3;
+	reply_size = strlen(LPCARMISP_RPL_SUCCESS);
+	if (ERROR_OK != lpcarmisp_process(cmd_argc, (char **)cmd_argv, 
+							&reply_size, &reply_argc, (char **)reply_argv))
+	{
+		LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "run erase sectors command");
+		return ERRCODE_FAILURE_OPERATION;
+	}
+	
+	return ERROR_OK;
+}
+
+static RESULT lpcarmisp_read_part_id(uint32_t *id)
+{
+	uint32_t reply_size;
+	
+	cmd_argv[0] = LPCARMISP_CMD_READCHIPID;
+	cmd_argc = 1;
+	reply_size = strlen(LPCARMISP_RPL_SUCCESS) + 12;
+	if (ERROR_OK != lpcarmisp_process(cmd_argc, (char **)cmd_argv, 
+							&reply_size, &reply_argc, (char **)reply_argv))
+	{
+		LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "run echo command");
+		return ERRCODE_FAILURE_OPERATION;
+	}
+	
+	if (id != NULL)
+	{
+		*id = strtoul(reply_argv[0], NULL, 0);
+	}
+	return ERROR_OK;
+}
+
+static RESULT lpcarmisp_read_boot_version(uint8_t *major, uint8_t *minor)
+{
+	uint32_t reply_size;
+	
+	cmd_argv[0] = LPCARMISP_CMD_READBOOTVER;
+	cmd_argc = 1;
+	reply_size = strlen(LPCARMISP_RPL_SUCCESS) + 6;
+	if (ERROR_OK != lpcarmisp_process(cmd_argc, (char **)cmd_argv, 
+							&reply_size, &reply_argc, (char **)reply_argv))
+	{
+		LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "run echo command");
+		return ERRCODE_FAILURE_OPERATION;
+	}
+	
+	if (reply_argc != 2)
+	{
+		return ERROR_FAIL;
+	}
+	if (major != NULL)
+	{
+		*major = (uint8_t)strtoul(reply_argv[0], NULL, 0);
+	}
+	if (minor != NULL)
+	{
+		*minor = (uint8_t)strtoul(reply_argv[1], NULL, 0);
+	}
+	return ERROR_OK;
+}
+
+static RESULT lpcarmisp_read_serial_number(uint32_t serial[4])
+{
+	uint32_t reply_size;
+	
+	cmd_argv[0] = LPCARMISP_CMD_READSERIAL;
+	cmd_argc = 1;
+	reply_size = strlen(LPCARMISP_RPL_SUCCESS) + 48;
+	if (ERROR_OK != lpcarmisp_process(cmd_argc, (char **)cmd_argv, 
+							&reply_size, &reply_argc, (char **)reply_argv))
+	{
+		LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "run echo command");
+		return ERRCODE_FAILURE_OPERATION;
+	}
+	
+	if (reply_argc != 4)
+	{
+		return ERROR_FAIL;
+	}
+	if (serial != NULL)
+	{
+		serial[0] = strtoul(reply_argv[0], NULL, 0);
+		serial[1] = strtoul(reply_argv[1], NULL, 0);
+		serial[2] = strtoul(reply_argv[2], NULL, 0);
+		serial[3] = strtoul(reply_argv[3], NULL, 0);
+	}
+	return ERROR_OK;
+}
+
+#if 0
+static RESULT lpcarmisp_compare(uint32_t addr1, uint32_t addr2, uint32_t size)
+{
+	REFERENCE_PARAMETER(addr1);
+	REFERENCE_PARAMETER(addr2);
+	REFERENCE_PARAMETER(size);
+	return ERROR_FAIL;
+}
+
+static RESULT lpcarmisp_set_baudrate(uint32_t baudrate)
+{
+	// Is this function necessary if auto-baudrate is supported?
+	uint32_t reply_size;
+	char baudrate_str[11];
+	
+	cmd_argv[0] = LPCARMISP_CMD_BAUDRATE;
+	snprintf(baudrate_str, sizeof(baudrate_str), "%d", baudrate);
+	cmd_argv[1] = baudrate_str;
+	cmd_argv[2] = "1";
+	cmd_argc = 3;
+	reply_size = strlen(LPCARMISP_RPL_SUCCESS);
+	if (ERROR_OK != lpcarmisp_process(cmd_argc, (char **)cmd_argv, 
+							&reply_size, &reply_argc, (char **)reply_argv))
+	{
+		LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "run echo command");
+		return ERRCODE_FAILURE_OPERATION;
+	}
+	
+	return ERROR_OK;
+}
+
+static RESULT lpcarmisp_blank_check_sectors(uint32_t start_sector, 
+											uint32_t end_sector)
+{
+	REFERENCE_PARAMETER(start_sector);
+	REFERENCE_PARAMETER(end_sector);
+	return ERROR_OK;
+}
+
+static RESULT lpcarmisp_go(uint32_t addr, uint32_t mode)
+{
+	REFERENCE_PARAMETER(addr);
+	REFERENCE_PARAMETER(mode);
+	return ERROR_OK;
+}
+#endif
+
+
+ENTER_PROGRAM_MODE_HANDLER(lpcarmisp)
+{
+	struct program_info_t *pi = context->pi;
+	RESULT ret = ERROR_OK;
+	uint8_t ver_major, ver_minor;
+	uint8_t retry = 2;
+	uint32_t serial[4];
+	
+	echo = 1;
+	while (retry--)
+	{
+		// sync first
+		ret = lpcarmisp_sync(pi->kernel_khz);
+		if (ERROR_OK == ret)
+		{
+			ret = lpcarmisp_echo(0);
+			if (ERROR_OK == ret)
+			{
+				ret = lpcarmisp_read_boot_version(&ver_major, &ver_minor);
+				if (ERROR_OK == ret)
+				{
+					LOG_INFO(INFOMSG_BOOTLOADER_VERSION, ver_major, ver_minor);
+					ret = lpcarmisp_read_serial_number(serial);
+					if (ERROR_OK == ret)
+					{
+						LOG_INFO("Serial Number: %08X%08X%08X%08X", 
+									serial[3], serial[2], 
+									serial[1], serial[0]);
+//						ret = lpcarmisp_set_baudrate(230400);
+						if (ERROR_OK == ret)
+						{
+							ret = lpcarmisp_unlock();
+							break;
+						}
+					}
+				}
+			}
+		}
+	}
+	return ret;
+}
+
+LEAVE_PROGRAM_MODE_HANDLER(lpcarmisp)
+{
+	REFERENCE_PARAMETER(success);
+	REFERENCE_PARAMETER(context);
+	return ERROR_OK;
+}
+
+ERASE_TARGET_HANDLER(lpcarmisp)
+{
+	struct chip_area_info_t *f = &context->param->chip_areas[APPLICATION_IDX];
+	uint8_t end_sector;
+	RESULT ret = ERROR_OK;
+	
+	REFERENCE_PARAMETER(size);
+	REFERENCE_PARAMETER(addr);
+	
+	switch (area)
+	{
+	case APPLICATION_CHAR:
+		end_sector = 
+			lpc1000_get_sector_idx_by_addr(context, f->addr + f->size - 1);
+		ret = lpcarmisp_prepare_sectors(0, end_sector);
+		if (ERROR_OK == ret)
+		{
+			ret = lpcarmisp_erase_sectors(0, end_sector);
+		}
+		break;
+	default:
+		ret = ERROR_FAIL;
+	}
+	return ret;
+}
+
+WRITE_TARGET_HANDLER(lpcarmisp)
+{
+	uint8_t sector_idx;
+	uint32_t ram_addr;
+	RESULT ret = ERROR_OK;
+	REFERENCE_PARAMETER(context);
+	
+	switch (area)
+	{
+	case APPLICATION_CHAR:
+		ram_addr = LPC1000_SRAM_ADDR + 0x200;
+		sector_idx = lpc1000_get_sector_idx_by_addr(context, addr);
+		ret = lpcarmisp_prepare_sectors(sector_idx, sector_idx);
+		if (ERROR_OK == ret)
+		{
+			ret = lpcarmisp_write_to_ram(ram_addr, buff, size);
+			if (ERROR_OK == ret)
+			{
+				ret = lpcarmisp_copy_ram_to_flash(addr, ram_addr, size);
+			}
+		}
+		break;
+	default:
+		ret = ERROR_FAIL;
+		break;
+	}
+	return ret;
+}
+
+READ_TARGET_HANDLER(lpcarmisp)
+{
+	RESULT ret = ERROR_OK;
+	REFERENCE_PARAMETER(context);
+	
+	switch (area)
+	{
+	case CHIPID_CHAR:
+		ret = lpcarmisp_read_part_id((uint32_t*)buff);
+		break;
+	case APPLICATION_CHAR:
+		ret = lpcarmisp_read_memory(addr, buff, size);
+		break;
+	default:
+		ret = ERROR_FAIL;
+		break;
+	}
+	return ret;
+}
 
