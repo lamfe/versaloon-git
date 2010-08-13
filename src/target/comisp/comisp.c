@@ -119,10 +119,10 @@ MISC_HANDLER(comisp_comm)
 		// port(s):baudrate(4d):datalength(1d):parity(c):stop(1d)
 		// :handshake(1d):extra(1d)
 		// Eg: COM1:115200_8N1_HA
-		"%s%4d%1d%c%1d%c%c",
+		"%s%4d%1d%c%c%c%c",
 		// port(s):baudrate(4d):datalength(1d):parity(c):stop(1d)
 		// Eg: COM1:115200_8N1
-		"%s%4d%1d%c%1d",
+		"%s%4d%1d%c%c",
 		// port(s):baudrate(4d)
 		// Eg: COM1:115200
 		"%s%4d",

@@ -607,7 +607,7 @@ int32_t comm_read_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 			return (int32_t)num_of_bytes;
 		}
 		end = get_time_in_ms();
-	} while ((end - start) < (50 + 5 * num_of_bytes));
+	} while ((end - start) < (100 + 5 * num_of_bytes));
 	
 	// fail to receive data
 	// if usart_status is available
