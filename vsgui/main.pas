@@ -40,7 +40,7 @@ type
     btnEditCali: TButton;
     btnOpenFile: TButton;
     btnSetPower: TButton;
-    btnModeSetup: TButton;
+    btnComSetup: TButton;
     btnEditInterface: TButton;
     btnEditTarget: TButton;
     btnEditScript: TButton;
@@ -135,7 +135,7 @@ type
     procedure btnEditTargetClick(Sender: TObject);
     procedure btnEditUsrSigClick(Sender: TObject);
     procedure btnEraseClick(Sender: TObject);
-    procedure btnModeSetupClick(Sender: TObject);
+    procedure btnComSetupClick(Sender: TObject);
     procedure btnOpenFileClick(Sender: TObject);
     procedure btnOpenOCDRunClick(Sender: TObject);
     procedure btnOpenOCDStopClick(Sender: TObject);
@@ -400,7 +400,7 @@ begin
   CenterControl(btnOpenFile, cbboxInputFile);
   CenterControl(lblMode, cbboxMode);
   CenterControl(lbledtAddr, cbboxMode);
-  CenterControl(btnModeSetup, cbboxMode);
+  CenterControl(btnComSetup, cbboxMode);
   CenterControl(sedtFreq, cbboxMode);
   CenterControl(lblKHz, cbboxMode);
   CenterControl(chkboxNoconnect, lbledtSpecialStr);
@@ -546,7 +546,7 @@ begin
   if Pos('F', para) > 0 then
   begin
     sedtFreq.Visible     := True;
-    btnModeSetup.Visible := False;
+    btnComSetup.Visible := False;
   end
   else
   begin
@@ -556,7 +556,7 @@ begin
   if Pos('C', para) > 0 then
   begin
     sedtFreq.Visible     := False;
-    btnModeSetup.Visible := True;
+    btnComSetup.Visible := True;
 
     // Set COMM Settings
     strTmp := CurTargetChip.ExtraStr;
@@ -575,7 +575,7 @@ begin
   end
   else
   begin
-    btnModeSetup.Visible := False;
+    btnComSetup.Visible := False;
   end;
 
   lblKHz.Visible := sedtFreq.Visible;
@@ -1302,6 +1302,18 @@ begin
           chkboxEraseBeforeWrite.Checked := xmlcfgMain.GetValue('target/ebw', False);
           chkboxVerifyAfterWrite.Checked := xmlcfgMain.GetValue('target/vaw', False);
           lbledtExtraPara.Text := xmlcfgMain.GetValue('target/extraparam', '');
+          ComMode.comstr := xmlcfgMain.GetValue('commode/com', '');
+          ComMode.baudrate := xmlcfgMain.GetValue('commode/baudrate', DEFAULT_BAUDRATE);
+          ComMode.datalength := xmlcfgMain.GetValue('commode/datalength', DEFAULT_DATALENGTH);
+          strTmp := xmlcfgMain.GetValue('commode/parity', DEFAULT_PARITYBIT_CHAR);
+          ComMode.paritybit := strTmp[1];
+          strTmp := xmlcfgMain.GetValue('commode/stop', DEFAULT_STOPBIT_CHAR);
+          ComMode.stopbit := strTmp[1];
+          strTmp := xmlcfgMain.GetValue('commode/handshake', DEFAULT_HANDSHAKE_CHAR);
+          ComMode.handshake := strTmp[1];
+          strTmp := xmlcfgMain.GetValue('commode/aux', DEFAULT_AUXPIN_CHAR);
+          ComMode.auxpin := strTmp[1];
+          FormComSetup.ComSetPara(ComMode);
         end;
       end;
     end
@@ -1517,7 +1529,7 @@ begin
   LogInfo('Idle');
 end;
 
-procedure TFormMain.btnModeSetupClick(Sender: TObject);
+procedure TFormMain.btnComSetupClick(Sender: TObject);
 begin
   FormComSetup.ShowModal;
   FormComSetup.GetComMode(ComMode);
@@ -2112,6 +2124,14 @@ begin
   xmlcfgMain.SetValue('target/ebw', chkboxEraseBeforeWrite.Checked);
   xmlcfgMain.SetValue('target/vaw', chkboxVerifyAfterWrite.Checked);
   xmlcfgMain.SetValue('target/extraparam', lbledtExtraPara.Text);
+  FormComSetup.GetComMode(ComMode);
+  xmlcfgMain.SetValue('commode/com', ComMode.comstr);
+  xmlcfgMain.SetValue('commode/baudrate', ComMode.baudrate);
+  xmlcfgMain.SetValue('commode/datalength', ComMode.datalength);
+  xmlcfgMain.SetValue('commode/parity', ComMode.paritybit);
+  xmlcfgMain.SetValue('commode/stop', ComMode.stopbit);
+  xmlcfgMain.SetValue('commode/handshake', ComMode.handshake);
+  xmlcfgMain.SetValue('commode/aux', ComMode.auxpin);
   xmlcfgMain.Flush;
 
   tiMain.Hide;
@@ -2202,7 +2222,7 @@ var
   faddr, fseg: cardinal;
 begin
   // COM Mode
-  if btnModeSetup.Visible then
+  if btnComSetup.Visible then
   begin
     if ComMode.comstr = '' then
     begin

@@ -563,14 +563,14 @@ object FormMain: TFormMain
             State = cbChecked
             TabOrder = 11
           end
-          object btnModeSetup: TButton
+          object btnComSetup: TButton
             Left = 265
             Height = 25
             Hint = 'Mode Setup'
             Top = 36
             Width = 79
             Caption = '&Comm'
-            OnClick = btnModeSetupClick
+            OnClick = btnComSetupClick
             ParentShowHint = False
             ShowHint = True
             TabOrder = 12

@@ -9,6 +9,7 @@ object FormComSetup: TFormComSetup
   ClientHeight = 220
   ClientWidth = 203
   KeyPreview = True
+  OnCreate = FormCreate
   OnKeyPress = FormKeyPress
   OnShow = FormShow
   Position = poMainFormCenter
