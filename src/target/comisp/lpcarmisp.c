@@ -189,6 +189,7 @@ static RESULT uu_send(uint8_t *data, uint32_t size)
 			{
 				return ERROR_FAIL;
 			}
+			sum[comm_ret] = '\0';
 			if ((sum[comm_ret - 2] != '\r') || (sum[comm_ret - 1] != '\n'))
 			{
 				int32_t comm_ret1;
@@ -199,8 +200,9 @@ static RESULT uu_send(uint8_t *data, uint32_t size)
 				{
 					return ERROR_FAIL;
 				}
+				sum[comm_ret + comm_ret1] = '\0';
 			}
-			sum[comm_ret] = '\0';
+			
 			if (!strcmp(sum, "OK\r\n"))
 			{
 				
@@ -432,7 +434,7 @@ static RESULT lpcarmisp_process(uint8_t cmd_argc, char **cmd_argv,
 	if (strstr(reply_buff, LPCARMISP_RPL_SUCCESS) != reply_buff)
 	{
 		LOG_BYTE_BUF(reply_buff, *reply_size, LOG_DEBUG, "%c", 255);
-		LOG_ERROR(ERRMSG_FAILURE_OPERATION_ERRCODE, "result", 
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION_ERRCODE, "get success sesult", 
 					(int)strtoul(reply_buff, NULL, 0));
 		return ERROR_FAIL;
 	}
@@ -495,8 +497,12 @@ static RESULT lpcarmisp_sync(uint32_t kernel_khz)
 	if (ERROR_OK != lpcarmisp_transact(LPCARMISP_CMD_SYNC, 0, buffer, 
 										&reply_size))
 	{
-		LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "run sync command");
-		return ERRCODE_FAILURE_OPERATION;
+//		if (!reply_size && strcmp(buffer, LPCARMISP_RPL_OK) 
+//			&& strcmp(buffer, LPCARMISP_RPL_SUCCESS))
+		{
+			lpcarmisp_abort();
+		}
+		return ERROR_OK;
 	}
 	if (strcmp(buffer, LPCARMISP_RPL_SYNCED))
 	{
