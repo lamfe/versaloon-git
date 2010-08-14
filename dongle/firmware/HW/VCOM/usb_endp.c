@@ -17,9 +17,6 @@
 #if USB_PROTOCOL == USB_ST_VCOM
 
 /* Includes ------------------------------------------------------------------*/
-#if VSLLINK_EN
-#	include "VSLLink.h"
-#endif
 #include "fifo.h"
 #include "USB_proto.h"
 
@@ -190,23 +187,6 @@ void EP3_OUT_Callback(void)
 		{
 			// USB_TO_XXX Support
 			cmd_len = buffer_out[1] + ((u16)buffer_out[2] << 8);
-		}
-#endif
-#if VSLLINK_EN
-		else //if(buffer_out[0] <= VERSALOON_VSLLINK_CMD_END)
-		{
-			// JTAG Debugger Support
-			if((buffer_out[0] == VSLLINK_CMD_HW_JTAGSEQCMD) 
-				|| (buffer_out[0] == VSLLINK_CMD_HW_JTAGHLCMD) 
-				|| (buffer_out[0] == VSLLINK_CMD_HW_JTAGRAWCMD) 
-				|| (buffer_out[0] == VSLLINK_CMD_HW_SWDCMD))
-			{
-				cmd_len = buffer_out[1] + ((u16)buffer_out[2] << 8);
-			}
-			else
-			{
-				cmd_len = pkg_len;
-			}
 		}
 #endif
 	}

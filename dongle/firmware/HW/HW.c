@@ -6,22 +6,13 @@
 #endif
 
 #include "usb_lib.h"
-#if USB_PROTOCOL == USB_ST_VCOM
-#	include "hw_config.h"
-#	include "usb_conf.h"
-#	include "usb_desc.h"
-#	include "usb_cdc.h"
-#elif (USB_PROTOCOL == USB_AT_JTAGICE_MKII) || (USB_PROTOCOL == USB_AT_DRAGON)
-#	include "hw_config_at.h"
-#	include "usb_conf_at.h"
-#	include "usb_desc_at.h"
-#	include "usb_cdc_at.h"
-#endif
+#include "hw_config.h"
+#include "usb_conf.h"
+#include "usb_desc.h"
+#include "usb_cdc.h"
 #define USB_DATA_SIZE		BULK_MAX_PACKET_SIZE
 
-#if (	((USB_PROTOCOL == USB_AT_JTAGICE_MKII) || (USB_PROTOCOL == USB_AT_DRAGON))	\
-		&& (USB_WITH_CDC == USB_WITH_IAD_CDC) && USB_WITH_MASSSTORAGE)				\
-	|| ((USB_PROTOCOL == USB_ST_VCOM) && USB_WITH_MASSSTORAGE)
+#if USB_WITH_MASSSTORAGE
 #	include "mass_mal.h"
 #endif
 
@@ -78,9 +69,7 @@ void Sys_Init(void)
 	/* Configure the ADC ports */
 	ADC_Configuration();
 
-#if (	((USB_PROTOCOL == USB_AT_JTAGICE_MKII) || (USB_PROTOCOL == USB_AT_DRAGON))	\
-		&& (USB_WITH_CDC == USB_WITH_IAD_CDC) && USB_WITH_MASSSTORAGE)				\
-	|| ((USB_PROTOCOL == USB_ST_VCOM) && USB_WITH_MASSSTORAGE)
+#if USB_WITH_MASSSTORAGE
 	MAL_Init(0);
 #endif
 
@@ -178,11 +167,9 @@ void GPIO_Configuration(void)
 	// powerext
 	PWREXT_INIT();
 
-#if MP_EN
 	// Key Init
 	BKP_TamperPinCmd(DISABLE);
 	KEY_Init();
-#endif
 
 	// LED Init
 	Led_RW_OFF();

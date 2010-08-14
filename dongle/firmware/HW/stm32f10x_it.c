@@ -26,11 +26,7 @@
 #include "HW.h"
 
 #include "usb_lib.h"
-#if USB_PROTOCOL == USB_ST_VCOM
-#	include "usb_istr.h"
-#elif (USB_PROTOCOL == USB_AT_JTAGICE_MKII) || (USB_PROTOCOL == USB_AT_DRAGON)
-#	include "usb_istr_at.h"
-#endif
+#include "usb_istr.h"
 
 /** @addtogroup Template_Project
   * @{

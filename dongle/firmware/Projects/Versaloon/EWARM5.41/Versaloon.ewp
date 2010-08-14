@@ -303,7 +303,6 @@
           <state>$PROJ_DIR$\..\..\..\Interfaces\ISSP\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\LPC_ICP\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\MSP430_JTAG\</state>
-          <state>$PROJ_DIR$\..\..\..\VSLLink\</state>
           <state>$PROJ_DIR$\..\..\..\USB_TO_XXX\</state>
         </option>
         <option>
@@ -1141,7 +1140,6 @@
           <state>$PROJ_DIR$\..\..\..\Interfaces\ISSP\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\LPC_ICP\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\MSP430_JTAG\</state>
-          <state>$PROJ_DIR$\..\..\..\VSLLink\</state>
           <state>$PROJ_DIR$\..\..\..\USB_TO_XXX\</state>
         </option>
         <option>
@@ -2069,12 +2067,6 @@
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB_TO_XXX.c</name>
-    </file>
-  </group>
-  <group>
-    <name>VSLLink</name>
-    <file>
-      <name>$PROJ_DIR$\..\..\..\VSLLink\VSLLink.c</name>
     </file>
   </group>
   <file>

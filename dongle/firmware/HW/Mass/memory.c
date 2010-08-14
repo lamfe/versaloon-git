@@ -15,22 +15,15 @@
 
 #include "app_cfg.h"
 
-#if (	((USB_PROTOCOL == USB_AT_JTAGICE_MKII) || (USB_PROTOCOL == USB_AT_DRAGON))	\
-		&& (USB_WITH_CDC == USB_WITH_IAD_CDC) && USB_WITH_MASSSTORAGE)				\
-	|| ((USB_PROTOCOL == USB_ST_VCOM) && USB_WITH_MASSSTORAGE)
+#if USB_WITH_MASSSTORAGE
 
 /* Includes ------------------------------------------------------------------*/
 #include <stdint.h>
 #include "memory.h"
-#if USB_PROTOCOL == USB_ST_VCOM
-#	include "usb_desc.h"
-#	include "usb_conf.h"
-#	include "hw_config.h"
-#elif (USB_PROTOCOL == USB_AT_JTAGICE_MKII) || (USB_PROTOCOL == USB_AT_DRAGON)
-#	include "usb_desc_at.h"
-#	include "usb_conf_at.h"
-#	include "hw_config_at.h"
-#endif
+
+#include "usb_desc.h"
+#include "usb_conf.h"
+#include "hw_config.h"
 #include "usb_bot.h"
 #include "usb_scsi.h"
 #include "usb_regs.h"
