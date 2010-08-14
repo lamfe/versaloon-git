@@ -41,6 +41,7 @@ type
     procedure CenterControl(ctl: TControl; ref: TControl);
     procedure AdjustComponentColor(Sender: TControl);
     procedure btnOKClick(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
     procedure FormKeyPress(Sender: TObject; var Key: char);
     procedure FormShow(Sender: TObject);
     procedure CheckComPort();
@@ -49,6 +50,7 @@ type
     { private declarations }
   public
     { public declarations }
+    procedure ComSetPara(ComMode: TComMode);
     procedure ComInitPara(ComInitMode: TComMode);
     procedure ComInitPara(CommStr: string);
     procedure GetComMode(var ComMode: TComMode);
@@ -101,6 +103,16 @@ end;
 procedure TFormComSetup.btnOKClick(Sender: TObject);
 begin
   Close;
+end;
+
+procedure TFormComSetup.FormCreate(Sender: TObject);
+begin
+  cbboxBaudrate.Text := IntToStr(DEFAULT_BAUDRATE);
+  cbboxDataLength.Text := IntToStr(DEFAULT_DATALENGTH);
+  cbboxParitybit.ItemIndex := DEFAULT_PARITYBIT;
+  cbboxStopbit.ItemIndex := DEFAULT_STOPBIT;
+  cbboxHandshake.ItemIndex := DEFAULT_HANDSHAKE;
+  cbboxAuxPin.ItemIndex := DEFAULT_AUXPIN;
 end;
 
 procedure TFormComSetup.FormKeyPress(Sender: TObject; var Key: char);
@@ -206,108 +218,99 @@ end;
 
 procedure TFormComSetup.ComInitPara(ComInitMode: TComMode);
 begin
-  CheckComPort;
-
-  if ComInitMode.baudrate >= 0 then
-  begin
-    cbboxBaudrate.Text := IntToStr(ComInitMode.baudrate);
-    cbboxBaudrate.Enabled := FALSE;
-  end
-  else
-  begin
-    cbboxBaudrate.Text := IntToStr(DEFAULT_BAUDRATE);
-  end;
+  cbboxBaudrate.Enabled := not (ComInitMode.baudrate > 0);
   AdjustComponentColor(cbboxBaudrate);
 
-  if ComInitMode.datalength >= 0 then
-  begin
-    cbboxDataLength.Text := IntToStr(ComInitMode.datalength);
-    cbboxDataLength.Enabled := FALSE;
-  end
-  else
-  begin
-    cbboxDataLength.Text := IntToStr(DEFAULT_DATALENGTH);
-  end;
+  cbboxDataLength.Enabled := not (ComInitMode.datalength > 0);
   AdjustComponentColor(cbboxDataLength);
 
-  if ComInitMode.paritybit = Char('N') then
-  begin
-    cbboxParitybit.Text := 'None';
-    cbboxParitybit.Enabled := FALSE;
-  end
-  else if ComInitMode.paritybit = Char('O') then
-  begin
-    cbboxParitybit.Text := 'Odd';
-    cbboxParitybit.Enabled := FALSE;
-  end
-  else if ComInitMode.paritybit = Char('E') then
-  begin
-    cbboxParitybit.Text := 'Even';
-    cbboxParitybit.Enabled := FALSE;
-  end
-  else
-  begin
-    cbboxParitybit.ItemIndex := DEFAULT_PARITYBIT;
-  end;
+  cbboxParitybit.Enabled := not (
+     (ComInitMode.paritybit = Char('N'))
+     or (ComInitMode.paritybit = Char('O'))
+     or (ComInitMode.paritybit = Char('E')));
   AdjustComponentColor(cbboxParitybit);
 
-  if ComInitMode.stopbit = Char('1') then
-  begin
-    cbboxStopbit.Text := '1';
-    cbboxStopbit.Enabled := FALSE;
-  end
-  else if ComInitMode.stopbit = Char('P') then
-  begin
-    cbboxStopbit.Text := '1.5';
-    cbboxStopbit.Enabled := FALSE;
-  end
-  else if ComInitMode.stopbit = Char('2') then
-  begin
-    cbboxStopbit.Text := '2';
-    cbboxStopbit.Enabled := FALSE;
-  end
-  else
-  begin
-    cbboxStopbit.ItemIndex := DEFAULT_STOPBIT;
-  end;
+  cbboxStopbit.Enabled := not (
+     (ComInitMode.stopbit = Char('1'))
+     or (ComInitMode.stopbit = Char('P'))
+     or (ComInitMode.stopbit = Char('2')));
   AdjustComponentColor(cbboxStopbit);
 
-  if ComInitMode.handshake = Char('N') then
-  begin
-    cbboxHandshake.Text := 'None';
-    cbboxHandshake.Enabled := FALSE;
-  end
-  else if ComInitMode.handshake = Char('S') then
-  begin
-    cbboxHandshake.Text := 'Software';
-    cbboxHandshake.Enabled := FALSE;
-  end
-  else if ComInitMode.handshake = Char('H') then
-  begin
-    cbboxHandshake.Text := 'Hardware';
-    cbboxHandshake.Enabled := FALSE;
-  end
-  else
-  begin
-    cbboxHandshake.ItemIndex := DEFAULT_HANDSHAKE;
-  end;
+  cbboxHandshake.Enabled := not (
+     (ComInitMode.handshake = Char('N'))
+     or (ComInitMode.handshake = Char('S'))
+     or (ComInitMode.handshake = Char('H')));
   AdjustComponentColor(cbboxHandshake);
 
-  if ComInitMode.auxpin = Char('N') then
+  cbboxAuxPin.Enabled := not (
+     (ComInitMode.auxpin = Char('N'))
+     or (ComInitMode.auxpin = Char('A')));
+  AdjustComponentColor(cbboxAuxPin);
+
+  ComSetPara(ComInitMode);
+end;
+
+procedure TFormComSetup.ComSetPara(ComMode: TComMode);
+begin
+  CheckComPort;
+
+  if ComMode.baudrate > 0 then
+  begin
+    cbboxBaudrate.Text := IntToStr(ComMode.baudrate);
+  end;
+
+  if ComMode.datalength > 0 then
+  begin
+    cbboxDataLength.Text := IntToStr(ComMode.datalength);
+  end;
+
+  if ComMode.paritybit = Char('N') then
+  begin
+    cbboxParitybit.Text := 'None';
+  end
+  else if ComMode.paritybit = Char('O') then
+  begin
+    cbboxParitybit.Text := 'Odd';
+  end
+  else if ComMode.paritybit = Char('E') then
+  begin
+    cbboxParitybit.Text := 'Even';
+  end;
+
+  if ComMode.stopbit = Char('1') then
+  begin
+    cbboxStopbit.Text := '1';
+  end
+  else if ComMode.stopbit = Char('P') then
+  begin
+    cbboxStopbit.Text := '1.5';
+  end
+  else if ComMode.stopbit = Char('2') then
+  begin
+    cbboxStopbit.Text := '2';
+  end;
+
+  if ComMode.handshake = Char('N') then
+  begin
+    cbboxHandshake.Text := 'None';
+  end
+  else if ComMode.handshake = Char('S') then
+  begin
+    cbboxHandshake.Text := 'Software';
+  end
+  else if ComMode.handshake = Char('H') then
+  begin
+    cbboxHandshake.Text := 'Hardware';
+  end;
+
+  if ComMode.auxpin = Char('N') then
   begin
     cbboxAuxPin.Text := 'None';
-    cbboxAuxPin.Enabled := FALSE;
   end
-  else if ComInitMode.auxpin = Char('A') then
+  else if ComMode.auxpin = Char('A') then
   begin
     cbboxAuxPin.Text := 'AuxPin';
-    cbboxAuxPin.Enabled := FALSE;
-  end
-  else
-  begin
-    cbboxAuxPin.ItemIndex := DEFAULT_AUXPIN;
   end;
-  AdjustComponentColor(cbboxAuxPin);
 end;
 
 procedure TFormComSetup.GetComMode(var ComMode: TComMode);
