@@ -26,6 +26,7 @@
 void USB_TO_JTAG_RAW_ProcessCmd(uint8* dat, uint16 len)
 {
 	uint16 index, device_num, length;
+	uint32 num_of_bits, num_of_bytes, num_of_databyte;
 	uint8 command;
 
 	index = 0;
@@ -70,8 +71,22 @@ void USB_TO_JTAG_RAW_ProcessCmd(uint8* dat, uint16 len)
 			break;
 		case USB_TO_XXX_IN_OUT:
 			buffer_reply[rep_len++] = USB_TO_XXX_OK;
-			JTAG_TAP_HS_Operate_DMA(length / 2, &dat[index], &dat[index + length / 2], &buffer_reply[rep_len]);
-			rep_len += length / 2;
+
+			num_of_bits = dat[index] + (dat[index + 1] << 8) 
+							+ (dat[index + 2] << 16) + (dat[index + 3] << 24);
+			num_of_bytes = num_of_bits >> 3;
+			num_of_bits = num_of_bits & 0x03;
+			num_of_databyte = num_of_bytes + ((num_of_bits > 0) ? 1 : 0);
+			if (num_of_bytes)
+			{
+				JTAG_TAP_HS_Operate_DMA(num_of_bytes, &dat[index + 4], 
+					&dat[index + 4 + num_of_databyte], &buffer_reply[rep_len]);
+			}
+			if (num_of_bits)
+			{
+				// TODO: shift out num_of_bits in the last byte
+			}
+			rep_len += num_of_databyte;
 
 			break;
 		default:

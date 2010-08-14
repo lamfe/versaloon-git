@@ -640,9 +640,9 @@ RESULT versaloon_jtagraw_config(uint16_t kHz)
 	return usbtojtagraw_config(VERSALOON_JTAGRAW_PORT, kHz);
 }
 RESULT versaloon_jtagraw_execute(uint8_t *tdi, uint8_t *tms, uint8_t *tdo, 
-									uint16_t bytelen)
+									uint32_t bitlen)
 {
-	return usbtojtagraw_execute(VERSALOON_JTAGRAW_PORT, tdi, tms, tdo, bytelen);
+	return usbtojtagraw_execute(VERSALOON_JTAGRAW_PORT, tdi, tms, tdo, bitlen);
 }
 RESULT versaloon_jtagll_init(void)
 {
