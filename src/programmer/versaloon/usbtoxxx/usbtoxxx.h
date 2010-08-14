@@ -121,7 +121,7 @@ RESULT usbtojtagraw_init(void);
 RESULT usbtojtagraw_fini(void);
 RESULT usbtojtagraw_config(uint8_t interface_index, uint16_t kHz);
 RESULT usbtojtagraw_execute(uint8_t interface_index, uint8_t *tdi, 
-							uint8_t *tms, uint8_t *tdo, uint16_t bytelen);
+							uint8_t *tms, uint8_t *tdo, uint32_t bitlen);
 
 
 

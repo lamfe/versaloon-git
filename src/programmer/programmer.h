@@ -122,7 +122,7 @@ struct interface_jtag_raw_t
 	RESULT (*init)(void);
 	RESULT (*fini)(void);
 	RESULT (*config)(uint16_t kHz);
-	RESULT (*execute)(uint8_t* tdi, uint8_t* tms, uint8_t *tdo, uint16_t bytelen);
+	RESULT (*execute)(uint8_t* tdi, uint8_t* tms, uint8_t *tdo, uint32_t bitlen);
 };
 
 struct interface_msp430jtag_t
