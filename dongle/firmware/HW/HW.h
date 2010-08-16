@@ -62,8 +62,8 @@ void CDC_IF_RX_Int(uint8 dat);
 void CDC_IF_TX_Int(void);
 
 #if INTERFACE_JTAG_EN
-void JTAG_DMA_Fini(void);
-void JTAG_DMA_Init(void);
+void JTAG_TAP_HS_DMA_Fini(void);
+void JTAG_TAP_HS_DMA_Init(void);
 #endif
 
 #if INTERFACE_SPI_EN

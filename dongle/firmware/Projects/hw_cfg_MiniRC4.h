@@ -225,6 +225,9 @@
 											SPI_I2S_DMACmd(JTAG_TAP_HS_SPI_S, SPI_I2S_DMAReq_Tx, ENABLE);\
 										}while(0)
 
+#define JTAG_TAP_HS_SPIS_Disable()		SPI_Cmd(JTAG_TAP_HS_SPI_S, DISABLE)
+#define JTAG_TAP_HS_SPIS_Enable()		SPI_Cmd(JTAG_TAP_HS_SPI_S, ENABLE)
+
 #define JTAG_TAP_HS_SPI_M_RX_DMA_LEN(l)	(JTAG_TAP_HS_SPI_M_RX_DMA->CNDTR = (uint32)(l))
 #define JTAG_TAP_HS_SPI_M_RX_DMA_ADDR(a)(JTAG_TAP_HS_SPI_M_RX_DMA->CMAR = (uint32)(a))
 #define JTAG_TAP_HS_SPI_M_RX_DMA_EN()	(JTAG_TAP_HS_SPI_M_RX_DMA->CCR |= (uint32)1)
@@ -243,29 +246,41 @@
 #define JTAG_TAP_TCK1_PIN				GPIO_PIN_3
 #define JTAG_TAP_TMS_PIN				GPIO_PIN_4
 
-#define JTAG_TAP_HS_PortInit()			do{\
-											RCC_APB2PeriphClockCmd(RCC_APB2Periph_SPI1, ENABLE);\
-											RCC_APB1PeriphClockCmd(RCC_APB1Periph_SPI2, ENABLE);\
-											GPIO_PinRemapConfig(GPIO_Remap_SPI1, ENABLE);\
+#define JTAG_TAP_HS_PortIOInit()		do{\
 											GPIO_Dir(JTAG_TAP_HS_MPORT, GPIO_MODE_AF_PP, JTAG_TAP_TCK_PIN);\
 											GPIO_Dir(JTAG_TAP_HS_MPORT, GPIO_MODE_AF_PP, JTAG_TAP_TDO_PIN);\
 											GPIO_Dir(JTAG_TAP_HS_MPORT, GPIO_MODE_AF_PP, JTAG_TAP_TDI_PIN);\
 											GPIO_Dir(JTAG_TAP_HS_SPORT, GPIO_MODE_AF_PP, JTAG_TAP_TCK1_PIN);\
 											GPIO_Dir(JTAG_TAP_HS_SPORT, GPIO_MODE_AF_PP, JTAG_TAP_TMS_PIN);\
 										}while(0)
-#define JTAG_TAP_HS_PortFini()			do{\
+
+#define JTAG_TAP_HS_PortIOFini()		do{\
 											GPIO_Dir(JTAG_TAP_HS_MPORT, GPIO_MODE_IN_FLOATING, JTAG_TAP_TCK_PIN);\
 											GPIO_Dir(JTAG_TAP_HS_MPORT, GPIO_MODE_IN_FLOATING, JTAG_TAP_TDO_PIN);\
 											GPIO_Dir(JTAG_TAP_HS_MPORT, GPIO_MODE_IN_FLOATING, JTAG_TAP_TDI_PIN);\
 											GPIO_Dir(JTAG_TAP_HS_SPORT, GPIO_MODE_IN_FLOATING, JTAG_TAP_TCK1_PIN);\
 											GPIO_Dir(JTAG_TAP_HS_SPORT, GPIO_MODE_IN_FLOATING, JTAG_TAP_TMS_PIN);\
+										}while(0)
+
+#define JTAG_TAP_HS_PortInit()			do{\
+											RCC_APB2PeriphClockCmd(RCC_APB2Periph_SPI1, ENABLE);\
+											RCC_APB1PeriphClockCmd(RCC_APB1Periph_SPI2, ENABLE);\
+											GPIO_PinRemapConfig(GPIO_Remap_SPI1, ENABLE);\
+											JTAG_TAP_HS_PortIOInit();\
+										}while(0)
+#define JTAG_TAP_HS_PortFini()			do{\
+											JTAG_TAP_HS_PortIOFini();\
 											RCC_APB2PeriphClockCmd(RCC_APB2Periph_SPI1, DISABLE);\
 											RCC_APB1PeriphClockCmd(RCC_APB1Periph_SPI2, DISABLE);\
 											GPIO_PinRemapConfig(GPIO_Remap_SPI1, DISABLE);\
 										}while(0)
 
-#define JTAG_TAP_HS_SetSpeed(div)		SPI_Configuration(JTAG_TAP_HS_SPI_M,SPI_Mode_Master,(div),\
-														SPI_FirstBit_LSB,SPI_CPOL_High,SPI_CPHA_2Edge)
+#define JTAG_TAP_HS_SetSpeed(div)		do{\
+											SPI_Configuration(JTAG_TAP_HS_SPI_M,SPI_Mode_Master,(div),\
+												SPI_FirstBit_LSB,SPI_CPOL_High,SPI_CPHA_2Edge);\
+											SPI_Configuration(JTAG_TAP_HS_SPI_S,SPI_Mode_Slave,\
+												SPI_BaudRatePrescaler_2,SPI_FirstBit_LSB,SPI_CPOL_High,SPI_CPHA_2Edge);\
+										}while(0)
 
 #define JTAG_TAP_HS_TMS_Out(tms)		JTAG_TAP_HS_SPI_S->DR = (tms)
 #define JTAG_TAP_HS_TDI_Out(tdi)		JTAG_TAP_HS_SPI_M->DR = (tdi)

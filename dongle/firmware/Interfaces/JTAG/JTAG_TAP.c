@@ -23,60 +23,210 @@
 #define JTAG_TAP_DR_IR_PREPARE_DLY()	
 
 static uint32 JTAG_TAP_UnitsBefore, JTAG_TAP_UnitsAfter, JTAG_TAP_BitsBefore, JTAG_TAP_BitsAfter;
+void (*JTAG_TAP_Operate_RAW)(uint32 bit_len, uint8 *tdi, uint8 *tms, uint8 *tdo);
+uint16 (*JTAG_TAP_Operate_Asyn)(uint16 tdi, uint16 tms);
 
-/// JTAG Speed
-int16 JTAG_Freq = 0xFFFF;
+static int16 JTAG_kHz = 0xFFFF;
 
-RAMFUNC void JTAG_TAP_HS_Operate_DMA(uint16 byte_len, uint8 *tdi, uint8 *tms, uint8 *tdo)
+static void JTAG_TAP_RTCK_Wait(uint8 signal)
 {
-	uint16 i;
+	uint32 retry = 1000;	// 1000us = 1ms, min clock is 1K
 
-	JTAG_TAP_HS_SPI_M_RX_DMA_LEN(byte_len);
-	JTAG_TAP_HS_SPI_M_RX_DMA_ADDR((uint32)tdo);
-	JTAG_TAP_HS_SPI_M_RX_DMA_EN();
-	JTAG_TAP_HS_SPI_S_TX_DMA_LEN(byte_len);
-	JTAG_TAP_HS_SPI_S_TX_DMA_ADDR((uint32)tms);
-	JTAG_TAP_HS_SPI_S_TX_DMA_EN();
-
-	for(i = 0; i < byte_len; i++)
+	while (retry--)
 	{
-		JTAG_TAP_HS_WaitTxReady();
-		JTAG_TAP_HS_TDI_Out(tdi[i]);
+		if ((signal && JTAG_TAP_RTCK_GET()) 
+			|| (!signal && !JTAG_TAP_RTCK_GET()))
+		{
+			break;
+		}
+		DelayUS(1);
 	}
-
-	JTAG_TAP_HS_SPI_M_RX_DMA_WAIT();
-	JTAG_TAP_HS_SPI_S_TX_DMA_WAIT();
-
-	JTAG_TAP_HS_SPI_M_RX_DMA_DIS();
-	JTAG_TAP_HS_SPI_S_TX_DMA_DIS();
 }
 
-RAMFUNC uint16 JTAG_TAP_HS_Operate_Asyn(uint16 tdi, uint16 tms)
+static uint16 JTAG_TAP_GPIO_Operate_Asyn(uint16 tdi, uint16 tms)
+{
+	static uint16 tdo = 0;
+	uint16 result = tdo;
+	uint8 i;
+
+	tdo = 0;
+	for (i = 0; i < 8; i++)
+	{
+		tdo >>= 1;
+		JTAG_TAP_TCK_CLR();
+		if (!JTAG_kHz)
+		{
+			JTAG_TAP_RTCK_Wait(0);
+		}
+
+		if (tdi & 1)
+		{
+			JTAG_TAP_TDI_SET();
+		}
+		else
+		{
+			JTAG_TAP_TDI_CLR();
+		}
+		if (tms & 1)
+		{
+			JTAG_TAP_TMS_SET();
+		}
+		else
+		{
+			JTAG_TAP_TMS_CLR();
+		}
+
+		if (JTAG_kHz)
+		{
+			DelayUS(500 / JTAG_kHz);
+		}
+		JTAG_TAP_TCK_SET();
+		if (JTAG_TAP_TDO_GET())
+		{
+			tdo |= 0x80;
+		}
+		if (JTAG_kHz)
+		{
+			DelayUS(500 / JTAG_kHz);
+		}
+		else
+		{
+			JTAG_TAP_RTCK_Wait(1);
+		}
+
+		tdi >>= 1;
+		tms >>= 1;
+	}
+
+	return result;
+}
+
+static void JTAG_TAP_GPIO_Operate_RAW(uint32 bit_len, uint8 *tdi, uint8 *tms, uint8 *tdo)
+{
+	uint32 offset;
+	uint8 mask;
+	uint32 i;
+
+	for (i = 0; i < bit_len; i++)
+	{
+		offset = i >> 3;
+		mask = 1 << (i & 7);
+		if (1 == mask)
+		{
+			tdo[offset] = 0;
+		}
+
+		JTAG_TAP_TCK_CLR();
+		if (!JTAG_kHz)
+		{
+			JTAG_TAP_RTCK_Wait(0);
+		}
+
+		if (tdi[offset] & mask)
+		{
+			JTAG_TAP_TDI_SET();
+		}
+		else
+		{
+			JTAG_TAP_TDI_CLR();
+		}
+		if (tms[offset] & mask)
+		{
+			JTAG_TAP_TMS_SET();
+		}
+		else
+		{
+			JTAG_TAP_TMS_CLR();
+		}
+
+		if (JTAG_kHz)
+		{
+			DelayUS(500 / JTAG_kHz);
+		}
+		JTAG_TAP_TCK_SET();
+		if (JTAG_TAP_TDO_GET())
+		{
+			tdo[offset] |= mask;
+		}
+		if (JTAG_kHz)
+		{
+			DelayUS(500 / JTAG_kHz);
+		}
+		else
+		{
+			JTAG_TAP_RTCK_Wait(1);
+		}
+	}
+}
+
+static void JTAG_TAP_HS_Operate_RAW_DMA(uint32 bit_len, uint8 *tdi, uint8 *tms, uint8 *tdo)
+{
+	uint16 i, byte_len = bit_len >> 3;
+
+	if (byte_len)
+	{
+		JTAG_TAP_HS_SPI_M_RX_DMA_LEN(byte_len);
+		JTAG_TAP_HS_SPI_M_RX_DMA_ADDR((uint32)tdo);
+		JTAG_TAP_HS_SPI_M_RX_DMA_EN();
+		JTAG_TAP_HS_SPI_S_TX_DMA_LEN(byte_len);
+		JTAG_TAP_HS_SPI_S_TX_DMA_ADDR((uint32)tms);
+		JTAG_TAP_HS_SPI_S_TX_DMA_EN();
+
+		for(i = 0; i < byte_len; i++)
+		{
+			JTAG_TAP_HS_WaitTxReady();
+			JTAG_TAP_HS_TDI_Out(tdi[i]);
+		}
+
+		JTAG_TAP_HS_SPI_M_RX_DMA_WAIT();
+		JTAG_TAP_HS_SPI_S_TX_DMA_WAIT();
+
+		JTAG_TAP_HS_SPI_M_RX_DMA_DIS();
+		JTAG_TAP_HS_SPI_S_TX_DMA_DIS();
+	}
+	tdi += byte_len;
+	tms += byte_len;
+	tdo += byte_len;
+	if (bit_len & 7)
+	{
+		JTAG_TAP_HS_SPIS_Disable();
+		JTAG_TAP_TCK_SET();
+		JTAG_TAP_TCK_SETOUTPUT();
+		JTAG_TAP_TDO_SETINPUT();
+		JTAG_TAP_TDI_SETOUTPUT();
+		JTAG_TAP_TMS_SETOUTPUT();
+		
+		JTAG_TAP_GPIO_Operate_RAW(bit_len & 7, tdi, tms, tdo);
+
+		JTAG_TAP_HS_SPIS_Enable();
+		SPI_Cmd(JTAG_TAP_HS_SPI_S, ENABLE);
+		JTAG_TAP_HS_PortIOInit();
+	}
+}
+
+static uint16 JTAG_TAP_HS_Operate_Asyn(uint16 tdi, uint16 tms)
 {
 	uint16 tdo;
 
 	JTAG_TAP_HS_WaitRxReady();
 	tdo = JTAG_TAP_HS_In();
-
 	JTAG_TAP_HS_Out(tms, tdi);
 
 	return tdo;
 }
 
-RAMFUNC void JTAG_TAP_HS_OperateOut_Asyn(uint16 tdi, uint16 tms)
-{
-	JTAG_TAP_HS_Operate_Asyn(tdi, tms);
-}
 
 
-RAMFUNC void JTAG_TAP_HS_RW(uint8 *tdo, uint8 *tdi, uint8 tms_before, uint8 tms_after0, uint8 tms_after1, uint16 dat_byte_len)
+
+
+void JTAG_TAP_RW(uint8 *tdo, uint8 *tdi, uint8 tms_before, uint8 tms_after0, uint8 tms_after1, uint16 dat_byte_len)
 {
 	uint8 tdo_tmp;
 	uint16 ret_len = 0, cur_pos = 0;
 
 	if(dat_byte_len & 0x8000)
 	{
-		JTAG_TAP_HS_Operate_Asyn(tdi[cur_pos++], tms_before);
+		JTAG_TAP_Operate_Asyn(tdi[cur_pos++], tms_before);
 		ret_len++;
 		dat_byte_len &= 0x7FFF;
 		dat_byte_len--;
@@ -86,30 +236,30 @@ RAMFUNC void JTAG_TAP_HS_RW(uint8 *tdo, uint8 *tdi, uint8 tms_before, uint8 tms_
 	dat_byte_len--;
 	while(dat_byte_len-- > 0)
 	{
-		tdo_tmp = JTAG_TAP_HS_Operate_Asyn(tdi[cur_pos++], 0);
+		tdo_tmp = JTAG_TAP_Operate_Asyn(tdi[cur_pos++], 0);
 		if(ret_len > 0)
 		{
 			tdo[ret_len - 1] = tdo_tmp;
 		}
 		ret_len++;
 	}
-	tdo_tmp = JTAG_TAP_HS_Operate_Asyn(tdi[cur_pos], tms_after0);
+	tdo_tmp = JTAG_TAP_Operate_Asyn(tdi[cur_pos], tms_after0);
 	if(ret_len > 0)
 	{
 		tdo[ret_len - 1] = tdo_tmp;
 	}
-	tdo_tmp = JTAG_TAP_HS_Operate_Asyn(0, tms_after1);
+	tdo_tmp = JTAG_TAP_Operate_Asyn(0, tms_after1);
 	tdo[ret_len] = tdo_tmp;
 }
 
-RAMFUNC void JTAG_TAP_HS_R(uint8 *tdo, uint8 tms_before, uint8 tms_after0, uint8 tms_after1, uint16 dat_byte_len)
+void JTAG_TAP_R(uint8 *tdo, uint8 tms_before, uint8 tms_after0, uint8 tms_after1, uint16 dat_byte_len)
 {
 	uint8 tdo_tmp;
 	uint16 ret_len = 0;
 
 	if(dat_byte_len & 0x8000)
 	{
-		JTAG_TAP_HS_Operate_Asyn(0, tms_before);
+		JTAG_TAP_Operate_Asyn(0, tms_before);
 		ret_len++;
 		dat_byte_len &= 0x7FFF;
 		dat_byte_len--;
@@ -119,29 +269,29 @@ RAMFUNC void JTAG_TAP_HS_R(uint8 *tdo, uint8 tms_before, uint8 tms_after0, uint8
 	dat_byte_len--;
 	while(dat_byte_len-- > 0)
 	{
-		tdo_tmp = JTAG_TAP_HS_Operate_Asyn(0, 0);
+		tdo_tmp = JTAG_TAP_Operate_Asyn(0, 0);
 		if(ret_len > 0)
 		{
 			tdo[ret_len - 1] = tdo_tmp;
 		}
 		ret_len++;
 	}
-	tdo_tmp = JTAG_TAP_HS_Operate_Asyn(0, tms_after0);
+	tdo_tmp = JTAG_TAP_Operate_Asyn(0, tms_after0);
 	if(ret_len > 0)
 	{
 		tdo[ret_len - 1] = tdo_tmp;
 	}
-	tdo_tmp = JTAG_TAP_HS_Operate_Asyn(0, tms_after1);
+	tdo_tmp = JTAG_TAP_Operate_Asyn(0, tms_after1);
 	tdo[ret_len] = tdo_tmp;
 }
 
-RAMFUNC void JTAG_TAP_HS_W(uint8 *tdi, uint8 tms_before, uint8 tms_after0, uint8 tms_after1, uint16 dat_byte_len)
+void JTAG_TAP_W(uint8 *tdi, uint8 tms_before, uint8 tms_after0, uint8 tms_after1, uint16 dat_byte_len)
 {
 	uint16 cur_pos = 0;
 
 	if(dat_byte_len & 0x8000)
 	{
-		JTAG_TAP_HS_OperateOut_Asyn(tdi[cur_pos++], tms_before);
+		JTAG_TAP_Operate_Asyn(tdi[cur_pos++], tms_before);
 		dat_byte_len &= 0x7FFF;
 		dat_byte_len--;
 	}
@@ -150,10 +300,10 @@ RAMFUNC void JTAG_TAP_HS_W(uint8 *tdi, uint8 tms_before, uint8 tms_after0, uint8
 	dat_byte_len--;
 	while(dat_byte_len-- > 0)
 	{
-		JTAG_TAP_HS_OperateOut_Asyn(tdi[cur_pos++], 0);
+		JTAG_TAP_Operate_Asyn(tdi[cur_pos++], 0);
 	}
-	JTAG_TAP_HS_OperateOut_Asyn(tdi[cur_pos], tms_after0);
-	JTAG_TAP_HS_OperateOut_Asyn(0, tms_after1);
+	JTAG_TAP_Operate_Asyn(tdi[cur_pos], tms_after0);
+	JTAG_TAP_Operate_Asyn(0, tms_after1);
 }
 
 
@@ -170,11 +320,11 @@ RAMFUNC void JTAG_TAP_HS_W(uint8 *tdi, uint8 tms_before, uint8 tms_after0, uint8
 uint8 JTAG_TAP_1s[] = {0x00, 0x01, 0x03, 0x07, 0x0F, 0x1F, 0x3F, 0x7F, 0xFF};
 uint8 JTAG_TAP_TMS_scrap = 0;
 uint8 JTAG_TAP_TMS_scraplen = 0;
-RAMFUNC void JTAG_TAP_TMS_Bit(uint8* tms, uint8 bit_len)
+void JTAG_TAP_TMS_Bit(uint8* tms, uint8 bit_len)
 {
 	while (bit_len >= 8)
 	{
-		JTAG_TAP_HS_WriteTMSByte_ASYN(*tms);
+		JTAG_TAP_WriteTMSByte_ASYN(*tms);
 		tms++;
 		bit_len -= 8;
 	}
@@ -185,7 +335,7 @@ RAMFUNC void JTAG_TAP_TMS_Bit(uint8* tms, uint8 bit_len)
 	}
 }
 
-RAMFUNC static void JTAG_TAP_ProcessDataRW(uint8 *tdo, uint8 *tdi, uint8 tms_before, uint8 tms_len_before, uint16 bit_len, uint8 len_of_1s_before, uint8 len_of_1s_after, uint8 idle)
+static void JTAG_TAP_ProcessDataRW(uint8 *tdo, uint8 *tdi, uint8 tms_before, uint8 tms_len_before, uint16 bit_len, uint8 len_of_1s_before, uint8 len_of_1s_after, uint8 idle)
 {
 	uint8 tdi_tmp, tdo_tmp, tms_tmp, len_tmp;
 	uint8 offset, Rec_offset;
@@ -202,7 +352,7 @@ RAMFUNC static void JTAG_TAP_ProcessDataRW(uint8 *tdo, uint8 *tdi, uint8 tms_bef
 		if ((tms_len_before + JTAG_TAP_TMS_scraplen) > 8)
 		{
 			JTAG_TAP_TMS_scrap |= tms_before << JTAG_TAP_TMS_scraplen;
-			JTAG_TAP_HS_WriteTMSByte_ASYN(JTAG_TAP_TMS_scrap);
+			JTAG_TAP_WriteTMSByte_ASYN(JTAG_TAP_TMS_scrap);
 
 			tms_before >>= 8 - JTAG_TAP_TMS_scraplen;
 			tms_len_before -= 8 - JTAG_TAP_TMS_scraplen;
@@ -337,7 +487,7 @@ RAMFUNC static void JTAG_TAP_ProcessDataRW(uint8 *tdo, uint8 *tdi, uint8 tms_bef
 		{
 			tms_tmp |= 1 << (len_tmp - 1);
 		}
-		tdo_tmp = JTAG_TAP_HS_Operate_Asyn(tdi_tmp, tms_tmp);
+		tdo_tmp = JTAG_TAP_Operate_Asyn(tdi_tmp, tms_tmp);
 		len_tmp = 0;
 		tms_tmp = 0;
 
@@ -367,12 +517,12 @@ RAMFUNC static void JTAG_TAP_ProcessDataRW(uint8 *tdo, uint8 *tdi, uint8 tms_bef
 	len_tmp = idle & 0x07;
 	if(len_tmp < 6)
 	{
-		tdo_tmp = JTAG_TAP_HS_Operate_Asyn(0, JTAG_TAP_HS_TMS_E12UPDATE >> idle);
+		tdo_tmp = JTAG_TAP_Operate_Asyn(0, JTAG_TAP_TMS_E12UPDATE >> idle);
 	}
 	else
 	{
-		tdo_tmp = JTAG_TAP_HS_Operate_Asyn(0, JTAG_TAP_HS_TMS_E12UPDATE << (8 - idle));
-		JTAG_TAP_HS_Operate_Asyn(0, JTAG_TAP_HS_TMS_E12UPDATE >> idle);
+		tdo_tmp = JTAG_TAP_Operate_Asyn(0, JTAG_TAP_TMS_E12UPDATE << (8 - idle));
+		JTAG_TAP_Operate_Asyn(0, JTAG_TAP_TMS_E12UPDATE >> idle);
 	}
 	if((tdo != (uint8*)0) && (bit_len_remain > 0))
 	{
@@ -393,7 +543,7 @@ RAMFUNC static void JTAG_TAP_ProcessDataRW(uint8 *tdo, uint8 *tdi, uint8 tms_bef
 	len_tmp = idle >> 3;
 	while(len_tmp--)
 	{
-		JTAG_TAP_HS_Operate_Asyn(0, 0);
+		JTAG_TAP_Operate_Asyn(0, 0);
 	}
 }
 
@@ -527,54 +677,83 @@ void JTAG_TAP_SetDaisyChainPos(uint32 ub, uint32 ua, uint32 bb, uint32 ba)
 	JTAG_TAP_BitsAfter		= ba;
 }
 
-static uint8 JTAG_TAP_HS_GetDivFromFreq(uint16 freq)
+static uint8 JTAG_TAP_HS_GetDivFromFreq(uint16 kHz)
 {
-	return SPI_GetSCKDiv(freq);
+	return SPI_GetSCKDiv(kHz);
 }
 
-// freq is in KHz
-void JTAG_TAP_HS_SetTCKFreq(uint16 freq)
+void JTAG_TAP_SetTCKFreq(uint16 kHz)
 {
-	if(freq == 0)
-	{
-		JTAG_Freq = JTAG_TAP_HS_MIN_SPEED;
-	}
-
 	// Set Speed
-	JTAG_Freq = freq;
-	JTAG_TAP_HS_SetSpeed(JTAG_TAP_HS_GetDivFromFreq(freq));
+	JTAG_kHz = kHz;
+	if (JTAG_kHz >= JTAG_TAP_HS_MIN_KHZ)
+	{
+		JTAG_TAP_HS_SetSpeed(JTAG_TAP_HS_GetDivFromFreq(kHz));
+	}
 }
 
-static uint8 __jtag_inited = 0;
-void JTAG_TAP_HS_Init(uint16 freq, uint8 mode)
+void JTAG_TAP_Init(uint16 kHz, uint8 mode)
 {
-	if(__jtag_inited)
-		return;
-	__jtag_inited = 1;
+	JTAG_TAP_Fini();
 
-	JTAG_TAP_HS_PortInit();
-
-	JTAG_TAP_HS_SetSpeed(JTAG_TAP_HS_GetDivFromFreq(freq));
-	SPI_Configuration(JTAG_TAP_HS_SPI_S,SPI_Mode_Slave,SPI_BaudRatePrescaler_2,SPI_FirstBit_LSB,SPI_CPOL_High,SPI_CPHA_2Edge);
+	if (kHz >= JTAG_TAP_HS_MIN_KHZ)
+	{
+		JTAG_TAP_HS_PortInit();
+	}
+	else
+	{
+		JTAG_TAP_TCK_SET();
+		JTAG_TAP_TCK_SETOUTPUT();
+		JTAG_TAP_TDO_SETINPUT();
+		JTAG_TAP_TDI_SETOUTPUT();
+		JTAG_TAP_TMS_SETOUTPUT();
+		JTAG_TAP_RTCK_SETINPUT();
+	}
+	JTAG_TAP_SetTCKFreq(kHz);
+	if (!kHz)
+	{
+		// Wait RTCK
+		JTAG_TAP_RTCK_Wait(1);
+	}
 
 	if(mode == JTAG_TAP_ASYN)
 	{
-		JTAG_TAP_HS_Out(JTAG_TAP_HS_TMS_2RTI, 0);
+		JTAG_TAP_HS_Out(JTAG_TAP_TMS_2RTI, 0);
+		if (kHz >= JTAG_TAP_HS_MIN_KHZ)
+		{
+			JTAG_TAP_Operate_Asyn = JTAG_TAP_HS_Operate_Asyn;
+		}
+		else
+		{
+			JTAG_TAP_Operate_Asyn = JTAG_TAP_GPIO_Operate_Asyn;
+		}
 	}
-	else if(mode == JTAG_TAP_DMA)
+	else if(mode == JTAG_TAP_RAW)
 	{
-		// DMA Init
-		JTAG_DMA_Init();
+		if (kHz >= JTAG_TAP_HS_MIN_KHZ)
+		{
+			// DMA Init
+			JTAG_TAP_HS_DMA_Init();
+
+			JTAG_TAP_Operate_RAW = JTAG_TAP_HS_Operate_RAW_DMA;
+		}
+		else
+		{
+			JTAG_TAP_Operate_RAW = JTAG_TAP_GPIO_Operate_RAW;
+		}
+	}
+	else
+	{
+		JTAG_TAP_Operate_RAW = JTAG_TAP_GPIO_Operate_RAW;
+		JTAG_TAP_Operate_Asyn = JTAG_TAP_GPIO_Operate_Asyn;
 	}
 }
 
-void JTAG_TAP_HS_Fini(void)
+void JTAG_TAP_Fini(void)
 {
-	__jtag_inited = 0;
+	JTAG_TAP_HS_DMA_Fini();
 
-	JTAG_DMA_Fini();
-
-	JTAG_Freq = 0xFFFF;
+	JTAG_kHz = 0xFFFF;
 	JTAG_TAP_HS_PortFini();
 
 	SPI_I2S_DeInit(JTAG_TAP_HS_SPI_M);
