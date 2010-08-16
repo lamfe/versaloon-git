@@ -29,8 +29,8 @@
 #define JTAG_TAP_Reset_ASYN()			JTAG_TAP_WriteTMSByte_ASYN(JTAG_TAP_TMS_2RTI)
 #define JTAG_TAP_WriteTMSByte_ASYN(tms)	JTAG_TAP_Operate_Asyn(0, tms)
 
-void (*JTAG_TAP_Operate_RAW)(uint32 bit_len, uint8 *tdi, uint8 *tms, uint8 *tdo);
-uint16 (*JTAG_TAP_Operate_Asyn)(uint16 tdi, uint16 tms);
+extern void (*JTAG_TAP_Operate_RAW)(uint32 bit_len, uint8 *tdi, uint8 *tms, uint8 *tdo);
+extern uint16 (*JTAG_TAP_Operate_Asyn)(uint16 tdi, uint16 tms);
 
 void JTAG_TAP_SetTCKFreq(uint16 kHz);
 void JTAG_TAP_SetDaisyChainPos(uint32 ub, uint32 ua, uint32 bb, uint32 ba);
