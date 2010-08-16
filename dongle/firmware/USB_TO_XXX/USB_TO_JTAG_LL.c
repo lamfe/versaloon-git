@@ -56,14 +56,13 @@ void USB_TO_JTAG_LL_ProcessCmd(uint8* dat, uint16 len)
 
 			break;
 		case USB_TO_XXX_CONFIG:
-			JTAG_TAP_HS_Init(dat[index + 0] | (dat[index + 1] << 8), JTAG_TAP_ASYN);
-			JTAG_TAP_HS_SetTCKFreq(dat[index + 0] | (dat[index + 1] << 8));
+			JTAG_TAP_Init(dat[index + 0] | (dat[index + 1] << 8), JTAG_TAP_ASYN);
 
 			buffer_reply[rep_len++] = USB_TO_XXX_OK;
 
 			break;
 		case USB_TO_XXX_FINI:
-			JTAG_TAP_HS_Fini();
+			JTAG_TAP_Fini();
 
 			PWREXT_Release();
 			GLOBAL_OUTPUT_Release();
@@ -78,7 +77,7 @@ void USB_TO_JTAG_LL_ProcessCmd(uint8* dat, uint16 len)
 
 			buffer_reply[rep_len++] = USB_TO_XXX_OK;
 
-			JTAG_TAP_HS_RW(buffer_reply + rep_len,					// tdo
+			JTAG_TAP_RW(buffer_reply + rep_len,						// tdo
 						   &dat[index + 2 + para],					// tdi
 						   dat[index + 2],							// tms_before
 						   dat[index + 2 + cur_dat_len + para],		// tms_after0
@@ -92,7 +91,7 @@ void USB_TO_JTAG_LL_ProcessCmd(uint8* dat, uint16 len)
 
 			for(i = 0; i < cur_dat_len; i++)
 			{
-				JTAG_TAP_HS_WriteTMSByte_ASYN(dat[index + i]);
+				JTAG_TAP_WriteTMSByte_ASYN(dat[index + i]);
 			}
 
 			buffer_reply[rep_len++] = USB_TO_XXX_OK;
@@ -106,7 +105,7 @@ void USB_TO_JTAG_LL_ProcessCmd(uint8* dat, uint16 len)
 						  (	(uint32)dat[index + 4] << 24);
 			while(cur_dat_len--)
 			{
-				JTAG_TAP_HS_WriteTMSByte_ASYN(para);
+				JTAG_TAP_WriteTMSByte_ASYN(para);
 			}
 			buffer_reply[rep_len++] = USB_TO_XXX_OK;
 

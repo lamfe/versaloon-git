@@ -55,15 +55,14 @@ void USB_TO_JTAG_HL_ProcessCmd(uint8* dat, uint16 len)
 
 			break;
 		case USB_TO_XXX_CONFIG:
-			JTAG_TAP_HS_Init(dat[index + 0] | (dat[index + 1] << 8), JTAG_TAP_ASYN);
-			JTAG_TAP_HS_SetTCKFreq(dat[index + 0] | (dat[index + 1] << 8));
+			JTAG_TAP_Init(dat[index + 0] | (dat[index + 1] << 8), JTAG_TAP_ASYN);
 			JTAG_TAP_SetDaisyChainPos(dat[index + 2], dat[index + 3], dat[index + 4] + (dat[index + 5] << 8), dat[index + 6] + (dat[index + 7] << 8));
 
 			buffer_reply[rep_len++] = USB_TO_XXX_OK;
 
 			break;
 		case USB_TO_XXX_FINI:
-			JTAG_TAP_HS_Fini();
+			JTAG_TAP_Fini();
 
 			PWREXT_Release();
 			GLOBAL_OUTPUT_Release();

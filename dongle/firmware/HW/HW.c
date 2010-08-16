@@ -258,7 +258,7 @@ void SPI_Configuration(SPI_TypeDef* SPIx,u16 mode,u16 brp,u16 fb,u16 cpol,u16 cp
 #endif
 
 #if INTERFACE_JTAG_EN
-void JTAG_DMA_Fini(void)
+void JTAG_TAP_HS_DMA_Fini(void)
 {
 	DMA_DeInit(JTAG_TAP_HS_SPI_M_RX_DMA);
 	DMA_DeInit(JTAG_TAP_HS_SPI_M_TX_DMA);
@@ -266,7 +266,7 @@ void JTAG_DMA_Fini(void)
 	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, DISABLE);
 }
 
-void JTAG_DMA_Init(void)
+void JTAG_TAP_HS_DMA_Init(void)
 {
 	DMA_InitTypeDef  DMA_InitStructure;
 

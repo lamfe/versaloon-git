@@ -77,7 +77,7 @@ RESULT usbtojtagraw_execute(uint8_t interface_index, uint8_t *tdi,
 	{
 		return ERROR_FAIL;
 	}
-	bytelen = (uint16_t)((bitlen >> 3) + ((bitlen & 0x03) > 0 ? 1 : 0));
+	bytelen = (uint16_t)((bitlen >> 3) + ((bitlen & 0x07) ? 1 : 0));
 	
 	versaloon_cmd_buf[0] = (bitlen >> 0) & 0xFF;
 	versaloon_cmd_buf[1] = (bitlen >> 8) & 0xFF;
