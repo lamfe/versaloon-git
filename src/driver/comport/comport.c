@@ -451,7 +451,7 @@ RESULT comm_open_hw(char *comport, uint32_t baudrate, uint8_t datalength,
 
 int32_t comm_flush_hw(void)
 {
-	return tcflush(hComm, TCLIFLUSH);
+	return tcflush(hComm, TCIFLUSH);
 }
 
 int32_t comm_read_hw(uint8_t *buffer, uint32_t num_of_bytes)
