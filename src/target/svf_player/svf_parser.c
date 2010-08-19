@@ -808,7 +808,12 @@ XXR_common:
 				svf_parser_add_check_para(0, svf_parser_buffer_index, i);
 			}
 			
-			tap_scan_dr(&svf_parser_tdi_buffer[svf_parser_buffer_index], i);
+			if (ERROR_OK != tap_scan_dr(
+					&svf_parser_tdi_buffer[svf_parser_buffer_index], i))
+			{
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "call tap_scan_dr");
+				return ERROR_FAIL;
+			}
 			svf_parser_buffer_index += (i + 7) >> 3;
 		}
 		else if (SIR == command)
@@ -877,7 +882,12 @@ XXR_common:
 				svf_parser_add_check_para(0, svf_parser_buffer_index, i);
 			}
 			
-			tap_scan_ir(&svf_parser_tdi_buffer[svf_parser_buffer_index], i);
+			if (ERROR_OK != tap_scan_ir(
+					&svf_parser_tdi_buffer[svf_parser_buffer_index], i))
+			{
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "call tap_scan_ir");
+				return ERROR_FAIL;
+			}
 			svf_parser_buffer_index += (i + 7) >> 3;
 		}
 		break;
@@ -989,6 +999,7 @@ XXR_common:
 								svf_parser_para.runtest_end_state, run_count);
 				if (ret != ERROR_OK)
 				{
+					LOG_ERROR(ERRMSG_FAILURE_OPERATION, "call tap_runtest");
 					return ERROR_FAIL;
 				}
 			}
@@ -1032,7 +1043,11 @@ XXR_common:
 			{
 				// last state MUST be stable state
 				// TODO: call path_move
-				tap_path_move(num_of_argu - 1, path);
+				if (ERROR_OK != tap_path_move(num_of_argu - 1, path))
+				{
+					LOG_ERROR(ERRMSG_FAILURE_OPERATION, "call tap_path_move");
+					return ERROR_FAIL;
+				}
 				LOG_DEBUG("\tmove to %s by path_move", 
 						  tap_state_name[path[num_of_argu - 1]]);
 			}
@@ -1055,8 +1070,16 @@ XXR_common:
 			if (tap_state_is_stable(i_tmp))
 			{
 				// TODO: call state_move
-				tap_end_state(i_tmp);
-				tap_state_move();
+				if (ERROR_OK != tap_end_state(i_tmp))
+				{
+					LOG_ERROR(ERRMSG_FAILURE_OPERATION, "call tap_end_state");
+					return ERROR_FAIL;
+				}
+				if (ERROR_OK != tap_state_move())
+				{
+					LOG_ERROR(ERRMSG_FAILURE_OPERATION, "call tap_state_move");
+					return ERROR_FAIL;
+				}
 				LOG_DEBUG("\tmove to %s by state_move", 
 							tap_state_name[i_tmp]);
 			}
