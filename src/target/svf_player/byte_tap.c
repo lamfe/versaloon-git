@@ -54,21 +54,29 @@ const char *tap_state_name[TAP_NUM_OF_STATE] =
 	"IRUPDATE",
 };
 
-// tap_move[from_state][to_state]
-const uint8_t tap_move[6][6] = 
+struct tap_move_info_t
 {
-//	RESET,	IDLE,	DRSHIFT,DRPAUSE,IRSHIFT,IRPAUSE
-	{0xff,	0x7f,	0x2f,	0x0a,	0x37,	0x16},	// RESET
-	{0xff,	0x00,	0x45,	0x05,	0x4b,	0x0b},	// IDLE
-	{0x00,	0x00,	0x00,	0x00,	0x00,	0x00},	// DRSHIFT
-	{0xff,	0x60,	0x40,	0x5c,	0x3c,	0x5e},	// DRPAUSE
-	{0x00,	0x00,	0x00,	0x00,	0x00,	0x00},	// IRSHIFT
-	{0xff,	0x60,	0x38,	0x5c,	0x40,	0x5e}	// IRPAUSE
+	uint8_t tms;
+	uint8_t insert_pos;
+	uint8_t insert_value;
+};
+
+// tap_move[from_state][to_state]
+const struct tap_move_info_t tap_move[6][6] = 
+{
+//	RESET,		IDLE,		DRSHIFT,	DRPAUSE,	IRSHIFT,	IRPAUSE
+{{0xff,0,1},{0x7f,0,1},	{0x2f,0,1},	{0x0a,0,1},	{0x37,0,1},	{0x16,0,1}},// RESET
+{{0xff,0,1},{0x00,0,0},	{0x45,4,0},	{0x05,4,0},	{0x4b,4,0},	{0x0b,4,0}},// IDLE
+{{0x00,0,0},{0x00,0,0},	{0x00,0,0},	{0x00,0,0},	{0x00,0,0},	{0x00,0,0}},// DRSHIFT
+{{0xff,0,1},{0x60,0,0},	{0x40,0,0},	{0x5c,0,0},	{0x3c,0,0},	{0x5e,0,0}},// DRPAUSE
+{{0x00,0,0},{0x00,0,0},	{0x00,0,0},	{0x00,0,0},	{0x00,0,0},	{0x00,0,0}},// IRSHIFT
+{{0xff,0,1},{0x60,0,0},	{0x38,0,0},	{0x5c,0,0},	{0x40,0,0},	{0x5e,0,0}}// IRPAUSE
 };
 
 enum tap_state_t end_state = IDLE;
 enum tap_state_t cur_state = IDLE;
-uint8_t tap_tms_remain = 0;
+uint8_t tap_tms_remain_cycles = 0;
+uint8_t tap_tms_remain;
 
 uint8_t tap_state_is_stable(enum tap_state_t state)
 {
@@ -105,6 +113,7 @@ RESULT tap_end_state(enum tap_state_t state)
 
 RESULT tap_state_move(void)
 {
+	const struct tap_move_info_t *tm;
 	uint16_t tms_16bit;
 
 	if ((cur_state == DRSHIFT) || (cur_state == IRSHIFT))
@@ -113,22 +122,27 @@ RESULT tap_state_move(void)
 		return ERROR_FAIL;
 	}
 	
-	if (tap_tms_remain > 0)
+	if (tap_tms_remain_cycles > 0)
 	{
-		// state is in IDLE, tap_tms_remain clocks should be shifted first
-		tms_16bit = tap_move[cur_state][end_state];
-		if (tms_16bit & 0x80)
+		tm = &tap_move[cur_state][end_state];
+		tms_16bit = ((1 << tap_tms_remain_cycles) - 1) & tap_tms_remain;
+		tms_16bit |= (tm->tms & ((1 << tm->insert_pos) - 1)) 
+						<< tap_tms_remain_cycles;
+		if (tm->insert_value)
 		{
-			tms_16bit |= 0xFF << 8;
+			tms_16bit |= ((1 << (8 - tap_tms_remain_cycles)) - 1) 
+							<< (tap_tms_remain_cycles + tm->insert_pos);
 		}
-		tms_16bit <<= tap_tms_remain;
-		tap_tms_remain = 0;
+		tms_16bit |= (tm->tms >> tm->insert_pos) << (8 + tm->insert_pos);
+		
 		cur_state = end_state;
+		tap_tms_remain_cycles = 0;
 		return jtag_tms((uint8_t*)&tms_16bit, 2);
 	}
 	else
 	{
-		if (ERROR_OK != jtag_tms((uint8_t*)&tap_move[cur_state][end_state], 1))
+		if (ERROR_OK 
+			!= jtag_tms((uint8_t*)&tap_move[cur_state][end_state].tms, 1))
 		{
 			return ERROR_FAIL;
 		}
@@ -171,7 +185,7 @@ RESULT tap_path_move(uint32_t num_states, enum tap_state_t *path)
 RESULT tap_runtest(enum tap_state_t run_state, enum tap_state_t end_state, 
 				   uint32_t num_cycles)
 {
-	uint8_t buffer0, tms;
+	uint8_t tms;
 	
 	if ((IDLE == run_state) || (DRPAUSE == run_state) 
 		|| (IRPAUSE == run_state))
@@ -235,16 +249,14 @@ RESULT tap_runtest(enum tap_state_t run_state, enum tap_state_t end_state,
 	}
 	num_cycles &= 7;
 	
-	tap_tms_remain = (uint8_t)num_cycles;
-	if (run_state != IDLE)
+	tap_tms_remain_cycles = (uint8_t)num_cycles;
+	if (tms)
 	{
-		// not runtest in IDLE, just shift out 1 byte
-		buffer0 = 0;
-		if (ERROR_OK != jtag_tms(&buffer0, 1))
-		{
-			return ERROR_FAIL;
-		}
-		tap_tms_remain = 0;
+		tap_tms_remain = (1 << tap_tms_remain_cycles) - 1;
+	}
+	else
+	{
+		tap_tms_remain = 0x00;
 	}
 	if (end_state != run_state)
 	{
@@ -258,14 +270,7 @@ RESULT tap_runtest(enum tap_state_t run_state, enum tap_state_t end_state,
 			return ERROR_FAIL;
 		}
 	}
-	if (tap_tms_remain > 0)
-	{
-		cur_state = run_state;
-	}
-	else
-	{
-		cur_state = end_state;
-	}
+	cur_state = end_state;
 	
 	return ERROR_OK;
 }
@@ -274,18 +279,6 @@ RESULT tap_scan_ir(uint8_t *buffer, uint32_t bit_size)
 {
 	enum tap_state_t last_end_state = end_state;
 	RESULT ret;
-	
-	if (tap_tms_remain > 0)
-	{
-		if (ERROR_OK != tap_end_state(IRPAUSE))
-		{
-			return ERROR_FAIL;
-		}
-		if (ERROR_OK != tap_state_move())
-		{
-			return ERROR_FAIL;
-		}
-	}
 	
 	if (ERROR_OK != tap_end_state(IRSHIFT))
 	{
@@ -303,7 +296,7 @@ RESULT tap_scan_ir(uint8_t *buffer, uint32_t bit_size)
 	if (end_state != IRPAUSE)
 	{
 		ret = jtag_xr(buffer, (uint16_t)bit_size, 0, 0, 
-					1 << ((bit_size - 1) % 8), tap_move[IRPAUSE][end_state]);
+				1 << ((bit_size - 1) % 8), tap_move[IRPAUSE][end_state].tms);
 		if (ret != ERROR_OK)
 		{
 			return ERROR_FAIL;
@@ -312,7 +305,7 @@ RESULT tap_scan_ir(uint8_t *buffer, uint32_t bit_size)
 	else
 	{
 		ret = jtag_xr(buffer, (uint16_t)bit_size, 0, 0, 
-					  1 << ((bit_size - 1) % 8), 0);
+						1 << ((bit_size - 1) % 8), 0);
 		if (ret != ERROR_OK)
 		{
 			return ERROR_FAIL;
@@ -327,18 +320,6 @@ RESULT tap_scan_dr(uint8_t *buffer, uint32_t bit_size)
 {
 	enum tap_state_t last_end_state = end_state;
 	RESULT ret;
-	
-	if (tap_tms_remain > 0)
-	{
-		if (ERROR_OK != tap_end_state(DRPAUSE))
-		{
-			return ERROR_FAIL;
-		}
-		if (ERROR_OK != tap_state_move())
-		{
-			return ERROR_FAIL;
-		}
-	}
 	
 	if (ERROR_OK != tap_end_state(DRSHIFT))
 	{
@@ -356,7 +337,7 @@ RESULT tap_scan_dr(uint8_t *buffer, uint32_t bit_size)
 	if (end_state != DRPAUSE)
 	{
 		ret = jtag_xr(buffer, (uint16_t)bit_size, 0, 0, 
-					1 << ((bit_size - 1) % 8), tap_move[DRPAUSE][end_state]);
+				1 << ((bit_size - 1) % 8), tap_move[DRPAUSE][end_state].tms);
 		if (ret != ERROR_OK)
 		{
 			return ERROR_FAIL;
@@ -365,7 +346,7 @@ RESULT tap_scan_dr(uint8_t *buffer, uint32_t bit_size)
 	else
 	{
 		ret = jtag_xr(buffer, (uint16_t)bit_size, 0, 0, 
-					  1 << ((bit_size - 1) % 8), 0);
+						1 << ((bit_size - 1) % 8), 0);
 		if (ret != ERROR_OK)
 		{
 			return ERROR_FAIL;
