@@ -687,22 +687,6 @@ XXR_common:
 						& ((1 << (xxr_para_tmp->len)) - 1));
 		}
 		
-		// for TIR, TDR, HIR, HDR only:
-		// malloc TDO buffer if TDO is not defined
-		// because they will be referenced in SIR/SDR command
-		if (!(xxr_para_tmp->data_mask & XXR_TDO) && (xxr_para_tmp->len > 0) 
-			&& ((TIR == command) || (TDR == command) 
-				|| (HIR == command) || (HDR == command)))
-		{
-			ret = svf_parser_adjust_array_length(&xxr_para_tmp->tdo, i_tmp, 
-													xxr_para_tmp->len);
-			if (ret != ERROR_OK)
-			{
-				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "adjust length of array");
-				return ERRCODE_FAILURE_OPERATION;
-			}
-		}
-		
 		// If a command changes the length of the last scan of the same type 
 		// and the MASK parameter is absent, the mask pattern used is all cares
 		if (!(xxr_para_tmp->data_mask & XXR_MASK) 
