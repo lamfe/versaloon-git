@@ -265,16 +265,10 @@ parse_char:
 }
 
 static RESULT svf_parser_copy_hexstring_to_binary(char *str, uint8_t **bin, 
-									uint32_t orig_bit_len, uint32_t bit_len)
+													uint32_t bit_len)
 {
 	uint32_t i, str_len = strlen(str), str_hbyte_len = (bit_len + 3) >> 2;
 	uint8_t ch = 0;
-
-	if (ERROR_OK != svf_parser_adjust_array_length(bin, orig_bit_len, bit_len))
-	{
-		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "adjust length of array");
-		return ERROR_FAIL;
-	}
 
 	for (i = 0; i < str_hbyte_len; i++)
 	{
@@ -626,6 +620,18 @@ XXR_common:
 			return ERROR_FAIL;
 		}
 		LOG_DEBUG("\tlength = %d", xxr_para_tmp->len);
+		if ((ERROR_OK != svf_parser_adjust_array_length(&xxr_para_tmp->tdi, 
+												i_tmp, xxr_para_tmp->len)) 
+			|| (ERROR_OK != svf_parser_adjust_array_length(&xxr_para_tmp->tdo, 
+												i_tmp, xxr_para_tmp->len)) 
+			|| (ERROR_OK != svf_parser_adjust_array_length(&xxr_para_tmp->mask, 
+												i_tmp, xxr_para_tmp->len)) 
+			|| (ERROR_OK != svf_parser_adjust_array_length(&xxr_para_tmp->smask, 
+												i_tmp, xxr_para_tmp->len)))
+		{
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "adjust length of array");
+			return ERROR_FAIL;
+		}
 		xxr_para_tmp->data_mask = 0;
 		for (i = 2; i < num_of_argu; i += 2)
 		{
@@ -669,7 +675,7 @@ XXR_common:
 			}
 			
 			ret = svf_parser_copy_hexstring_to_binary(&argus[i + 1][1], 
-									pbuffer_tmp, i_tmp, xxr_para_tmp->len);
+									pbuffer_tmp, xxr_para_tmp->len);
 			if (ret != ERROR_OK)
 			{
 				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "parse hex value");
@@ -1004,6 +1010,11 @@ XXR_common:
 		{
 			// STATE pathstate1 ... stable_state
 			path = malloc((num_of_argu - 1) * sizeof(enum tap_state_t));
+			if (NULL == path)
+			{
+				LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
+				return ERRCODE_NOT_ENOUGH_MEMORY;
+			}
 			for (i = 1; i < num_of_argu; i++)
 			{
 				path[i - 1] = svf_parser_find_string_in_array(argus[i], 
@@ -1012,10 +1023,12 @@ XXR_common:
 				{
 					LOG_ERROR(ERRMSG_INVALID, tap_state_name[path[i - 1]], 
 								"tap state");
+					free(path);
+					path = NULL;
 					return ERRCODE_INVALID;
 				}
 			}
-			if (tap_state_is_stable(path[num_of_argu - 1]))
+			if (tap_state_is_stable(path[num_of_argu - 2]))
 			{
 				// last state MUST be stable state
 				// TODO: call path_move
@@ -1027,13 +1040,12 @@ XXR_common:
 			{
 				LOG_ERROR(ERRMSG_INVALID, 
 						tap_state_name[path[num_of_argu - 1]], "tap state");
-				return ERRCODE_INVALID;
-			}
-			if (NULL != path)
-			{
 				free(path);
 				path = NULL;
+				return ERRCODE_INVALID;
 			}
+			free(path);
+			path = NULL;
 		}
 		else
 		{
