@@ -305,6 +305,10 @@ RESULT tap_runtest(enum tap_state_t run_state, enum tap_state_t end_state,
 		{
 			num_cycles -= 8 - tap_tms_remain_cycles;
 			tap_tms_remain_cycles = 0;
+			if (ERROR_OK != jtag_tms(&tms_tmp, 1))
+			{
+				return ERROR_FAIL;
+			}
 		}
 		else
 		{

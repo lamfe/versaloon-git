@@ -963,7 +963,6 @@ XXR_common:
 		{
 			if (run_count > 0)
 			{
-				// TODO: do runtest
 				ret = tap_runtest(svf_parser_para.runtest_run_state, 
 								svf_parser_para.runtest_end_state, run_count);
 				if (ret != ERROR_OK)
@@ -1009,14 +1008,33 @@ XXR_common:
 		if (tap_state_is_stable(path[num_of_argu - 2]))
 		{
 			// last state MUST be stable state
-			// TODO: call path_move
-			if (ERROR_OK != tap_path_move(num_of_argu - 1, path))
+			if (2 == num_of_argu)
 			{
-				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "call tap_path_move");
-				return ERROR_FAIL;
+				// use state_move
+				if ((ERROR_OK != tap_end_state(path[0])) 
+					|| (ERROR_OK != tap_state_move()))
+				{
+					LOG_ERROR(ERRMSG_FAILURE_OPERATION, "call tap_state_move");
+					free(path);
+					path = NULL;
+					return ERROR_FAIL;
+				}
+				LOG_DEBUG("\tmove to %s by state_move", 
+						  tap_state_name[path[num_of_argu - 2]]);
 			}
-			LOG_DEBUG("\tmove to %s by path_move", 
-					  tap_state_name[path[num_of_argu - 2]]);
+			else
+			{
+				// use path_move
+				if (ERROR_OK != tap_path_move(num_of_argu - 1, path))
+				{
+					LOG_ERROR(ERRMSG_FAILURE_OPERATION, "call tap_path_move");
+					free(path);
+					path = NULL;
+					return ERROR_FAIL;
+				}
+				LOG_DEBUG("\tmove to %s by path_move", 
+						  tap_state_name[path[num_of_argu - 2]]);
+			}
 		}
 		else
 		{
