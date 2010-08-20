@@ -683,7 +683,8 @@ XXR_common:
 			}
 			
 			LOG_DEBUG("\t%s = 0x%X", argus[i], 
-					(**(int**)pbuffer_tmp) & ((1 << xxr_para_tmp->len) - 1));
+				(uint32_t)((**(uint32_t**)pbuffer_tmp) 
+					& (((uint64_t)1 << xxr_para_tmp->len) - 1)));
 		}
 		
 		// If a command changes the length of the last scan of the same type 
