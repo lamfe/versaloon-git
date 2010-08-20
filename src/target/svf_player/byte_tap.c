@@ -54,6 +54,32 @@ const char *tap_state_name[TAP_NUM_OF_STATE] =
 	"IRUPDATE",
 };
 
+struct tap_path_info_t
+{
+	enum tap_state_t next_state_by0;
+	enum tap_state_t next_state_by1;
+};
+
+const struct tap_path_info_t tap_path[TAP_NUM_OF_STATE] = 
+{
+	{IDLE, RESET},			// RESET
+	{IDLE, DRSELECT},		// IDLE
+	{DRSHIFT, DREXIT1},		// DRSHIFT
+	{DRPAUSE, DREXIT2},		// DRAPUSE
+	{IRSHIFT, IREXIT1},		// IRSHIFT
+	{IRPAUSE, IREXIT2},		// IRPAUSE
+	{DRCAPTURE, IRSELECT},	// DRSELECT
+	{DRSHIFT, DREXIT1},		// DRCAPTURE
+	{DRPAUSE, DRUPDATE},	// DREXIT1
+	{DRSHIFT, DRUPDATE},	// DREXIT2
+	{IDLE, DRSELECT},		// DRUPDATE
+	{IRCAPTURE, RESET},		// IRSELECT
+	{IRSHIFT, IREXIT1},		// IRCAPTURE
+	{IRPAUSE, IRUPDATE},	// IREXIT1
+	{IRSHIFT, IRUPDATE},	// IREXIT2
+	{IDLE, DRSELECT}		// IRUPDATE
+};
+
 struct tap_move_info_t
 {
 	uint8_t tms;
@@ -154,32 +180,53 @@ RESULT tap_state_move(void)
 
 RESULT tap_path_move(uint32_t num_states, enum tap_state_t *path)
 {
-	if ((2 == num_states) && (RESET == path[0]) && (IDLE == path[1]))
+	uint8_t tms;
+	uint32_t i;
+	uint8_t remain_cycles;
+	
+	tms = tap_tms_remain_cycles > 0 ? 
+			tap_tms_remain & ((1 << tap_tms_remain_cycles) - 1) : 0;
+	remain_cycles = (tap_tms_remain_cycles + num_states) % 8;
+	
+	for (i = 0; i < num_states; i++)
 	{
-		if (ERROR_OK != tap_end_state(path[0]))
+		if (!tap_state_is_valid(path[i]))
 		{
-			return ERROR_FAIL;
-		}
-		if (ERROR_OK != tap_state_move())
-		{
-			return ERROR_FAIL;
-		}
-		if (ERROR_OK != tap_end_state(path[1]))
-		{
-			return ERROR_FAIL;
-		}
-		if (ERROR_OK != tap_state_move())
-		{
+			LOG_BUG("%d is not a valid state", path[i]);
 			return ERROR_FAIL;
 		}
 		
-		return ERROR_OK;
+		if (path[i] == tap_path[cur_state].next_state_by0)
+		{
+			tms &= ~(1 << ((i + tap_tms_remain_cycles) % 8));
+		}
+		else if (path[i] == tap_path[cur_state].next_state_by1)
+		{
+			tms |= 1 << ((i + tap_tms_remain_cycles) % 8);
+		}
+		else
+		{
+			LOG_ERROR("can not shift to %s from %s", 
+						tap_state_name[cur_state], tap_state_name[path[i]]);
+			return ERROR_FAIL;
+		}
+		cur_state = path[i];
+		
+		if (((i + tap_tms_remain_cycles) % 8) == 7)
+		{
+			if (ERROR_OK != jtag_tms(&tms, 1))
+			{
+				return ERROR_FAIL;
+			}
+			tap_tms_remain_cycles = 0;
+			tms = 0;
+		}
 	}
-	else
-	{
-		LOG_ERROR("path move is not supported");
-		return ERROR_FAIL;
-	}
+	
+	tap_tms_remain_cycles = remain_cycles;
+	tap_tms_remain = tms;
+	
+	return ERROR_OK;
 }
 
 RESULT tap_runtest(enum tap_state_t run_state, enum tap_state_t end_state, 
@@ -234,30 +281,67 @@ RESULT tap_runtest(enum tap_state_t run_state, enum tap_state_t end_state,
 			return ERROR_FAIL;
 		}
 	}
-	
-	if (ERROR_OK != jtag_tms_clocks(num_cycles >> 3, tms))
+	else if (tap_tms_remain_cycles)
 	{
-		return ERROR_FAIL;
+		uint8_t tms_tmp = tap_tms_remain & ((1 << tap_tms_remain_cycles) - 1);
+		
+		if (tms)
+		{
+			uint8_t bits1;
+			
+			if ((tap_tms_remain_cycles + num_cycles) >= 8)
+			{
+				bits1 = 8 - tap_tms_remain_cycles;
+			}
+			else
+			{
+				bits1 = (uint8_t)num_cycles;
+			}
+			
+			tms_tmp |= ((1 << bits1) - 1) << tap_tms_remain_cycles;
+		}
+		
+		if ((tap_tms_remain_cycles + num_cycles) >= 8)
+		{
+			num_cycles -= 8 - tap_tms_remain_cycles;
+			tap_tms_remain_cycles = 0;
+		}
+		else
+		{
+			tap_tms_remain_cycles = 
+						(uint8_t)(tap_tms_remain_cycles + num_cycles);
+			tap_tms_remain = tms_tmp;
+			num_cycles = 0;
+		}
 	}
-	if (num_cycles > 0xFFFF)
+	
+	if (num_cycles)
 	{
-		// it will take to much time, commit here
-		if (ERROR_OK != tap_commit())
+		if (ERROR_OK != jtag_tms_clocks(num_cycles >> 3, tms))
 		{
 			return ERROR_FAIL;
 		}
+		if (num_cycles > 0xFFFF)
+		{
+			// it will take to much time, commit here
+			if (ERROR_OK != tap_commit())
+			{
+				return ERROR_FAIL;
+			}
+		}
+		num_cycles &= 7;
+		
+		tap_tms_remain_cycles = (uint8_t)num_cycles;
+		if (tms)
+		{
+			tap_tms_remain = (1 << tap_tms_remain_cycles) - 1;
+		}
+		else
+		{
+			tap_tms_remain = 0x00;
+		}
 	}
-	num_cycles &= 7;
 	
-	tap_tms_remain_cycles = (uint8_t)num_cycles;
-	if (tms)
-	{
-		tap_tms_remain = (1 << tap_tms_remain_cycles) - 1;
-	}
-	else
-	{
-		tap_tms_remain = 0x00;
-	}
 	if (end_state != run_state)
 	{
 		// runtest in IDLE, but end_state is not IDLE
@@ -359,6 +443,21 @@ RESULT tap_scan_dr(uint8_t *buffer, uint32_t bit_size)
 
 RESULT tap_commit(void)
 {
+	if (tap_tms_remain_cycles)
+	{
+		// append last tms
+		tap_tms_remain &= (1 << tap_tms_remain_cycles) - 1;
+		if (tap_tms_remain & (1 << (tap_tms_remain_cycles - 1)))
+		{
+			tap_tms_remain |= ((1 << (8 - tap_tms_remain_cycles)) - 1) 
+								<< tap_tms_remain_cycles;
+		}
+		tap_tms_remain_cycles = 0;
+		if (ERROR_OK != jtag_tms(&tap_tms_remain, 1))
+		{
+			return ERROR_FAIL;
+		}
+	}
 	if (ERROR_OK != jtag_commit())
 	{
 		return ERROR_FAIL;
