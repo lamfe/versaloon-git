@@ -60,7 +60,7 @@ enum tap_state_t
 	DRUPDATE,
 	IRSELECT,
 	IRCAPTURE,
-	IREXTI1,
+	IREXIT1,
 	IREXIT2,
 	IRUPDATE,
 };

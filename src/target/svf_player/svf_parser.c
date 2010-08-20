@@ -683,8 +683,7 @@ XXR_common:
 			}
 			
 			LOG_DEBUG("\t%s = 0x%X", argus[i], 
-					  ( **(int**)pbuffer_tmp) 
-						& ((1 << (xxr_para_tmp->len)) - 1));
+					(**(int**)pbuffer_tmp) & ((1 << xxr_para_tmp->len) - 1));
 		}
 		
 		// If a command changes the length of the last scan of the same type 
@@ -693,36 +692,11 @@ XXR_common:
 			&& (i_tmp != xxr_para_tmp->len))
 		{
 			// MASK not defined and length changed
-			ret = svf_parser_adjust_array_length(&xxr_para_tmp->mask, i_tmp, 
-													xxr_para_tmp->len);
-			if (ret != ERROR_OK)
-			{
-				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "adjust length of array");
-				return ERRCODE_FAILURE_OPERATION;
-			}
 			svf_parser_append_1s(xxr_para_tmp->mask, 0, xxr_para_tmp->len);
 		}
 		// If TDO is absent, no comparison is needed, set the mask to 0
 		if (!(xxr_para_tmp->data_mask & XXR_TDO))
 		{
-			if (NULL == xxr_para_tmp->tdo)
-			{
-				if (ERROR_OK != svf_parser_adjust_array_length(&xxr_para_tmp->tdo, i_tmp, 
-																xxr_para_tmp->len))
-				{
-					LOG_ERROR(ERRMSG_FAILURE_OPERATION, "adjust length of array");
-					return ERROR_FAIL;
-				}
-			}
-			if (NULL == xxr_para_tmp->mask)
-			{
-				if (ERROR_OK != svf_parser_adjust_array_length(&xxr_para_tmp->mask, i_tmp, 
-																xxr_para_tmp->len))
-				{
-					LOG_ERROR(ERRMSG_FAILURE_OPERATION, "adjust length of array");
-					return ERROR_FAIL;
-				}
-			}
 			memset(xxr_para_tmp->mask, 0, (xxr_para_tmp->len + 7) >> 3);
 		}
 		
@@ -792,6 +766,11 @@ XXR_common:
 				svf_parser_add_check_para(0, svf_parser_buffer_index, i);
 			}
 			
+			if (ERROR_OK != tap_end_state(svf_parser_para.dr_end_state))
+			{
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "call tap_end_state");
+				return ERROR_FAIL;
+			}
 			if (ERROR_OK != tap_scan_dr(
 					&svf_parser_tdi_buffer[svf_parser_buffer_index], i))
 			{
@@ -866,6 +845,11 @@ XXR_common:
 				svf_parser_add_check_para(0, svf_parser_buffer_index, i);
 			}
 			
+			if (ERROR_OK != tap_end_state(svf_parser_para.ir_end_state))
+			{
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "call tap_end_state");
+				return ERROR_FAIL;
+			}
 			if (ERROR_OK != tap_scan_ir(
 					&svf_parser_tdi_buffer[svf_parser_buffer_index], i))
 			{
@@ -1001,78 +985,48 @@ XXR_common:
 			return ERRCODE_INVALID_PARAMETER;
 		}
 		
-		if (num_of_argu > 2)
+		// STATE pathstate1 ... stable_state
+		path = malloc((num_of_argu - 1) * sizeof(enum tap_state_t));
+		if (NULL == path)
 		{
-			// STATE pathstate1 ... stable_state
-			path = malloc((num_of_argu - 1) * sizeof(enum tap_state_t));
-			if (NULL == path)
+			LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
+			return ERRCODE_NOT_ENOUGH_MEMORY;
+		}
+		for (i = 1; i < num_of_argu; i++)
+		{
+			path[i - 1] = svf_parser_find_string_in_array(argus[i], 
+						(char **)tap_state_name, dimof(tap_state_name));
+			if (!tap_state_is_valid(path[i - 1]))
 			{
-				LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-				return ERRCODE_NOT_ENOUGH_MEMORY;
-			}
-			for (i = 1; i < num_of_argu; i++)
-			{
-				path[i - 1] = svf_parser_find_string_in_array(argus[i], 
-							(char **)tap_state_name, dimof(tap_state_name));
-				if (!tap_state_is_valid(path[i - 1]))
-				{
-					LOG_ERROR(ERRMSG_INVALID, tap_state_name[path[i - 1]], 
-								"tap state");
-					free(path);
-					path = NULL;
-					return ERRCODE_INVALID;
-				}
-			}
-			if (tap_state_is_stable(path[num_of_argu - 2]))
-			{
-				// last state MUST be stable state
-				// TODO: call path_move
-				if (ERROR_OK != tap_path_move(num_of_argu - 1, path))
-				{
-					LOG_ERROR(ERRMSG_FAILURE_OPERATION, "call tap_path_move");
-					return ERROR_FAIL;
-				}
-				LOG_DEBUG("\tmove to %s by path_move", 
-						  tap_state_name[path[num_of_argu - 1]]);
-			}
-			else
-			{
-				LOG_ERROR(ERRMSG_INVALID, 
-						tap_state_name[path[num_of_argu - 1]], "tap state");
+				LOG_ERROR(ERRMSG_INVALID, tap_state_name[path[i - 1]], 
+							"tap state");
 				free(path);
 				path = NULL;
 				return ERRCODE_INVALID;
 			}
-			free(path);
-			path = NULL;
+		}
+		if (tap_state_is_stable(path[num_of_argu - 2]))
+		{
+			// last state MUST be stable state
+			// TODO: call path_move
+			if (ERROR_OK != tap_path_move(num_of_argu - 1, path))
+			{
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "call tap_path_move");
+				return ERROR_FAIL;
+			}
+			LOG_DEBUG("\tmove to %s by path_move", 
+					  tap_state_name[path[num_of_argu - 2]]);
 		}
 		else
 		{
-			// STATE stable_state
-			i_tmp = svf_parser_find_string_in_array(argus[1], 
-							(char **)tap_state_name, dimof(tap_state_name));
-			if (tap_state_is_stable(i_tmp))
-			{
-				// TODO: call state_move
-				if (ERROR_OK != tap_end_state(i_tmp))
-				{
-					LOG_ERROR(ERRMSG_FAILURE_OPERATION, "call tap_end_state");
-					return ERROR_FAIL;
-				}
-				if (ERROR_OK != tap_state_move())
-				{
-					LOG_ERROR(ERRMSG_FAILURE_OPERATION, "call tap_state_move");
-					return ERROR_FAIL;
-				}
-				LOG_DEBUG("\tmove to %s by state_move", 
-							tap_state_name[i_tmp]);
-			}
-			else
-			{
-				LOG_ERROR(ERRMSG_INVALID, tap_state_name[i_tmp], "tap state");
-				return ERRCODE_INVALID;
-			}
+			LOG_ERROR(ERRMSG_INVALID, 
+					tap_state_name[path[num_of_argu - 2]], "tap state");
+			free(path);
+			path = NULL;
+			return ERRCODE_INVALID;
 		}
+		free(path);
+		path = NULL;
 		break;
 	case TRST:
 		if (num_of_argu != 2)
@@ -1141,8 +1095,7 @@ XXR_common:
 	{
 		uint32_t read_value;
 		
-		if (((command != STATE) && (command != RUNTEST)) 
-				|| ((command == STATE) && (num_of_argu == 2)))
+		if ((command != STATE) && (command != RUNTEST))
 		{
 			if (ERROR_OK != tap_commit())
 			{
