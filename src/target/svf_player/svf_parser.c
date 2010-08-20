@@ -510,7 +510,7 @@ RESULT svf_parser_run_command(char *cmd_str)
 	// for STATE
 	enum tap_state_t *path = NULL;
 	
-	LOG_DEBUG("%s", cmd_str);
+	LOG_DEBUG("line %d: %s", svf_line_number, cmd_str);
 	
 	ret = svf_parser_parse_cmd_string(cmd_str, (uint32_t)strlen(cmd_str), 
 									  argus, &num_of_argu);
