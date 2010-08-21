@@ -293,7 +293,7 @@ ENTER_PROGRAM_MODE_HANDLER(lpc1000swj)
 	// to access first sector successfully
 	if (param->param[LPC1000_PARAM_SYSMEMREMAP_ADDR])
 	{
-		reg = LPC1000_SYSMEMREMAP_USERFLASH;
+		reg = param->param[LPC1000_PARAM_FLASHREMAP_VALUE];
 		if (ERROR_OK != adi_memap_write_reg(
 				param->param[LPC1000_PARAM_SYSMEMREMAP_ADDR], &reg, 1))
 		{

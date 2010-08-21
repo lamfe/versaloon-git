@@ -43,10 +43,7 @@
 
 #define LPC1000_PARAM_IRC_KHZ				0
 #define LPC1000_PARAM_SYSMEMREMAP_ADDR		1
-
-#define LPC1000_SYSMEMREMAP_BOOTLOADER		0
-#define LPC1000_SYSMEMREMAP_USERRAM			1
-#define LPC1000_SYSMEMREMAP_USERFLASH		2
+#define LPC1000_PARAM_FLASHREMAP_VALUE		2
 
 uint8_t lpc1000_get_sector_idx_by_addr(struct program_context_t *context, 
 										uint32_t addr);
