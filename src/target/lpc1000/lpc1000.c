@@ -46,7 +46,7 @@
 
 struct program_area_map_t lpc1000_program_area_map[] = 
 {
-	{APPLICATION_CHAR, 1, 0, 0, 0, AREA_ATTR_EWR | AREA_ATTR_RAW},
+	{APPLICATION_CHAR, 1, 0, 0, 0, AREA_ATTR_EWR},
 	{0, 0, 0, 0, 0, 0}
 };
 
@@ -167,7 +167,7 @@ ADJUST_SETTING_HANDLER(lpc1000)
 		}
 		break;
 	case LPC1000_ISP:
-		lpc1000_program_area_map[0].attr &= ~(AREA_ATTR_NP | AREA_ATTR_RAW);
+		lpc1000_program_area_map[0].attr &= ~AREA_ATTR_NP;
 		if (sram_info->size >= 4 * 1024 + 0x200 + 32)
 		{
 			flash_info->page_size =  4 * 1024;
