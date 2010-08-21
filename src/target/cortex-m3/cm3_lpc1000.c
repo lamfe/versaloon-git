@@ -234,8 +234,7 @@ ENTER_PROGRAM_MODE_HANDLER(lpc1000swj)
 	uint8_t verify_buff[sizeof(iap_code)];
 	uint32_t *para_ptr = (uint32_t*)&iap_code[LPC1000_IAP_PARAM_OFFSET];
 	uint32_t reg;
-	
-	REFERENCE_PARAMETER(context);
+	struct chip_param_t *param = context->param;
 	
 	para_ptr[0] = LPC1000_IAP_ENTRY;
 	para_ptr[1] = LPC1000_IAP_COMMAND_ADDR;
@@ -288,6 +287,19 @@ ENTER_PROGRAM_MODE_HANDLER(lpc1000swj)
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "run iap");
 		return ERRCODE_FAILURE_OPERATION;
+	}
+	
+	// SYSMEMREMAP should be written to LPC1000_SYSMEMREMAP_USERFLASH
+	// to access first sector successfully
+	if (param->param[LPC1000_PARAM_SYSMEMREMAP_ADDR])
+	{
+		reg = LPC1000_SYSMEMREMAP_USERFLASH;
+		if (ERROR_OK != adi_memap_write_reg(
+				param->param[LPC1000_PARAM_SYSMEMREMAP_ADDR], &reg, 1))
+		{
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "write PC");
+			return ERRCODE_FAILURE_OPERATION;
+		}
 	}
 	
 	return ERROR_OK;
