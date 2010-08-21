@@ -518,7 +518,7 @@ ENTER_PROGRAM_MODE_HANDLER(stm8swim)
 	swim_enable();
 	if (ERROR_OK != commit())
 	{
-		reset_input();
+		reset_set();
 		reset_fini();
 		commit();
 		LOG_ERROR("No response on SWIM! Is target connected?");
@@ -616,14 +616,21 @@ ENTER_PROGRAM_MODE_HANDLER(stm8swim)
 LEAVE_PROGRAM_MODE_HANDLER(stm8swim)
 {
 	RESULT ret = ERROR_OK;
+	struct chip_param_t *param = context->param;
+
 	REFERENCE_PARAMETER(success);
 	interfaces = &(context->prog->interfaces);
 	
 	if (stm8_swim_enabled)
 	{
-		swim_srst();
+		if (param->param[STM8_PARAM_CLK_SWIMCCR] != 0)
+		{
+			swim_wotf_reg(param->param[STM8_PARAM_CLK_SWIMCCR], 0x00, 1);
+		}
 		swim_fini();
-		reset_input();
+		reset_clr();
+		delay_ms(20);
+		reset_set();
 		reset_fini();
 		ret = commit();
 	}
