@@ -440,7 +440,8 @@ RESULT svf_parser_check_tdo(void)
 			{
 				if ((   svf_parser_tdi_buffer[index + j] 
 						& svf_parser_mask_buffer[index + j]) 
-					!= svf_parser_tdo_buffer[index + j])
+					!= (svf_parser_tdo_buffer[index + j] 
+						& svf_parser_mask_buffer[index + j]))
 				{
 					if (svf_parser_check[i].bit_len >= 32)
 					{
