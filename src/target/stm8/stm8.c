@@ -623,6 +623,7 @@ LEAVE_PROGRAM_MODE_HANDLER(stm8swim)
 	
 	if (stm8_swim_enabled)
 	{
+		stm8_swim_enabled = 0;
 		if (param->param[STM8_PARAM_CLK_SWIMCCR] != 0)
 		{
 			swim_wotf_reg(param->param[STM8_PARAM_CLK_SWIMCCR], 0x00, 1);
@@ -756,7 +757,6 @@ WRITE_TARGET_HANDLER(stm8swim)
 	struct chip_param_t *param = context->param;
 	struct operation_t *op = context->op;
 	uint8_t cmd;
-	uint8_t fuse_page[STM8_FUSEPAGE_SIZE];
 	uint8_t i;
 	struct stm8_optionbyte_info_t *optionbyte_info;
 	uint8_t optionbyte_num;
@@ -858,13 +858,6 @@ do_write_flashee:
 			break;
 		}
 		
-		swim_rotf(STM8_FUSEPAGE_ADDR, fuse_page, sizeof(fuse_page));
-		ret = commit();
-		if (ret != ERROR_OK)
-		{
-			break;
-		}
-		
 		cmd = STM8_FLASH_CR2_OPT;
 		switch (param->param[STM8_PARAM_TYPE])
 		{
@@ -879,7 +872,7 @@ do_write_flashee:
 				(struct stm8_optionbyte_info_t *)&stm8_optionbyte_info_stm8l;
 			optionbyte_num = dimof(stm8_optionbyte_info_stm8l);
 do_write_fuse:
-			for (i = 1; i < optionbyte_num; i++)
+			for (i = 0; i < optionbyte_num; i++)
 			{
 				fuse_offset = optionbyte_info[i].offset;
 				fuse_addr = optionbyte_info[i].addr;
@@ -889,8 +882,7 @@ do_write_fuse:
 					continue;
 				}
 				
-				if ((ERROR_OK == ret) && mask[fuse_offset] 
-					&& (buff[fuse_offset] != fuse_page[fuse_addr]))
+				if ((ERROR_OK == ret) && mask[fuse_offset])
 				{
 					// index 9 to 16 is TMU_KEY
 					// 0x00 and 0xFF is invlid for TMU_KEY
@@ -910,6 +902,16 @@ do_write_fuse:
 							param->param[STM8_PARAM_FLASH_IAPSR], cmd, 
 							STM8_FUSEPAGE_ADDR + fuse_addr, 
 							buff[fuse_offset], 1);
+					
+					// commit with out error information for ROP option byte
+					// error will issue if chage ROP from 0xAA to non 0xAA
+					if ((0 == fuse_offset) && (buff[fuse_offset] != 0xAA))
+					{
+						LOG_PUSH();
+						LOG_MUTE();
+						commit();
+						LOG_POP();
+					}
 					
 					// index 1 to 8 is generic fuse
 					// for STM8S and STM8A a xor'ed byte should be written 
