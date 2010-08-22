@@ -86,10 +86,8 @@ void SWIM_Fini()
 	SWIM_Inited = 0;
 }
 
-uint8 SWIM_Enable(void)
+void SWIM_EnableClockInput(void)
 {
-	uint8 i;
-	uint32 dly;
 	TIM_ICInitTypeDef TIM_ICInitStructure;
 
 	SWIM_clock_div = 0;
@@ -109,6 +107,12 @@ uint8 SWIM_Enable(void)
 	TIM_SelectMasterSlaveMode(SWIM_IN_TIMER, TIM_MasterSlaveMode_Enable);
 	TIM_DMACmd(SWIM_IN_TIMER, TIM_DMA_CC2, ENABLE);
 	TIM_Cmd(SWIM_IN_TIMER, ENABLE);
+}
+
+uint8 SWIM_EnterProgMode(void)
+{
+	uint8 i;
+	uint32 dly;
 
 	SWIM_IN_TIMER_DMA_INIT(10, SWIM_DMA_Buffer);
 
