@@ -484,6 +484,7 @@ static RESULT stm8_fl_run(struct stm8_fl_param_t *param)
 #endif
 
 static uint8_t stm8_swim_enabled = 0;
+static uint8_t stm8_target_mhz = 0;
 
 ENTER_PROGRAM_MODE_HANDLER(stm8swim)
 {
@@ -494,14 +495,14 @@ ENTER_PROGRAM_MODE_HANDLER(stm8swim)
 #ifdef STM8_USE_FLASHLOADER
 	struct operation_t *op = context->op;
 #endif
-	uint8_t target_mhz = (uint8_t)param->param[STM8_PARAM_IRC];
 	
+	stm8_target_mhz = (uint8_t)param->param[STM8_PARAM_IRC];
 	interfaces = &(context->prog->interfaces);
 	
 	if ((pi->wait_state) && (param->param[STM8_PARAM_CLK_SWIMCCR] != 0))
 	{
 		param->param[STM8_PARAM_CLK_SWIMCCR] = 0;
-		target_mhz /= 2;
+		stm8_target_mhz /= 2;
 	}
 	
 	stm8_swim_enabled = 0;
@@ -515,6 +516,7 @@ ENTER_PROGRAM_MODE_HANDLER(stm8swim)
 	delay_ms(20);
 	reset_clr();
 	delay_ms(10);
+	swim_init();
 	swim_enable();
 	if (ERROR_OK != commit())
 	{
@@ -527,14 +529,13 @@ ENTER_PROGRAM_MODE_HANDLER(stm8swim)
 	
 	stm8_swim_enabled = 1;
 	// SWIM mode
-	swim_init();
 	if (param->param[STM8_PARAM_CLK_SWIMCCR] != 0)
 	{
-		swim_config(target_mhz / 2, 20, 2);
+		swim_config(stm8_target_mhz / 2, 20, 2);
 	}
 	else
 	{
-		swim_config(target_mhz, 20, 2);
+		swim_config(stm8_target_mhz, 20, 2);
 	}
 	delay_ms(10);
 	swim_srst();
@@ -549,13 +550,13 @@ ENTER_PROGRAM_MODE_HANDLER(stm8swim)
 	if (param->param[STM8_PARAM_CLK_SWIMCCR] != 0)
 	{
 		swim_wotf_reg(param->param[STM8_PARAM_CLK_SWIMCCR], 0x01, 1);
-		swim_config(target_mhz, 20, 2);
 	}
 	else
 	{
-		target_mhz /= 2;
+		stm8_target_mhz /= 2;
 	}
-	swim_sync(target_mhz);
+	swim_sync(stm8_target_mhz);
+	swim_config(stm8_target_mhz, 20, 2);
 	swim_rotf(0x0067F0, test_buf0, 6);
 	// enable high speed mode if available
 	swim_rotf(STM8_REG_SWIM_CSR, test_buf1, 1);
@@ -569,7 +570,7 @@ ENTER_PROGRAM_MODE_HANDLER(stm8swim)
 						| STM8_SWIM_CSR_SWIM_DM | STM8_SWIM_CSR_HS 
 						| STM8_SWIM_CSR_RST | STM8_SWIM_CSR_PRI, 1);
 		delay_ms(10);
-		swim_config(target_mhz, 8, 2);
+		swim_config(stm8_target_mhz, 8, 2);
 	}
 	else
 	{
@@ -623,14 +624,31 @@ LEAVE_PROGRAM_MODE_HANDLER(stm8swim)
 	
 	if (stm8_swim_enabled)
 	{
+		uint8_t swim_csr;
+		
+		swim_rotf(STM8_REG_SWIM_CSR, &swim_csr, 1);
+		if (ERROR_OK != commit())
+		{
+			return ERROR_FAIL;
+		}
+		
 		stm8_swim_enabled = 0;
 		if (param->param[STM8_PARAM_CLK_SWIMCCR] != 0)
 		{
 			swim_wotf_reg(param->param[STM8_PARAM_CLK_SWIMCCR], 0x00, 1);
+			stm8_target_mhz /= 2;
+			swim_sync(stm8_target_mhz);
+			if (swim_csr & STM8_SWIM_CSR_HSIT)
+			{
+				swim_config(stm8_target_mhz, 8, 2);
+			}
+			else
+			{
+				swim_config(stm8_target_mhz, 20, 2);
+			}
 		}
+		swim_srst();
 		swim_fini();
-		reset_clr();
-		delay_ms(20);
 		reset_set();
 		reset_fini();
 		ret = commit();
@@ -857,6 +875,7 @@ do_write_flashee:
 			ret = ERROR_FAIL;
 			break;
 		}
+		delay_ms(10);
 		
 		cmd = STM8_FLASH_CR2_OPT;
 		switch (param->param[STM8_PARAM_TYPE])

@@ -119,7 +119,8 @@ void USB_TO_SWIM_ProcessCmd(uint8* dat, uint16 len)
 			}
 			break;
 		case USB_TO_XXX_ENABLE:
-			if (SWIM_Enable())
+			SWIM_EnableClockInput();
+			if (SWIM_EnterProgMode())
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}

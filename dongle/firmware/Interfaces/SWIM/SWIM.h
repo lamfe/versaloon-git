@@ -21,4 +21,5 @@ uint8 SWIM_SetClockParam(uint8 mHz, uint8 cnt0, uint8 cnt1);
 uint8 SWIM_WOTF(uint32 addr, uint16 len, uint8 *data);
 uint8 SWIM_ROTF(uint32 addr, uint16 len, uint8 *data);
 uint8 SWIM_SRST(void);
-uint8 SWIM_Enable(void);
+void SWIM_EnableClockInput(void);
+uint8 SWIM_EnterProgMode(void);
