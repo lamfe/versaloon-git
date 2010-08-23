@@ -3599,6 +3599,7 @@ MISC_HANDLER(target_chip)
 
 MISC_HANDLER(target_value)
 {
+	char *dest;
 	int8_t target_idx;
 	
 	MISC_CHECK_ARGC(2);
@@ -3615,7 +3616,18 @@ MISC_HANDLER(target_value)
 		LOG_ERROR(ERRMSG_INVALID_CHARACTER, argv[1][0], "target");
 		return ERROR_FAIL;
 	}
-	program_info.program_areas[target_idx].cli_str = (char *)&argv[1][1];
+	dest = (char *)malloc(strlen(&argv[1][1]) + 1);
+	if (NULL == dest)
+	{
+		return ERROR_FAIL;
+	}
+	strcpy(dest, &argv[1][1]);
+	if (NULL != program_info.program_areas[target_idx].cli_str)
+	{
+		free(program_info.program_areas[target_idx].cli_str);
+		program_info.program_areas[target_idx].cli_str = NULL;
+	}
+	program_info.program_areas[target_idx].cli_str = dest;
 	program_info.areas_defined |= target_area_name[target_idx].mask;
 	return ERROR_OK;
 }

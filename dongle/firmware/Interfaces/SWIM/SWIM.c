@@ -40,73 +40,28 @@ static uint16 SWIM_clock_div = 0;
 
 #define SWIM_SYNC_CYCLES				128
 
-static void SWIM_SetClockParamInit(void)
-{
-	TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
-	TIM_OCInitTypeDef TIM_OCInitStructure;
-
-	/* SWIM_TIMER_OUT */
-	TIM_TimeBaseStructInit(&TIM_TimeBaseStructure);
-	TIM_TimeBaseStructure.TIM_Prescaler = 0;
-	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
-	TIM_TimeBaseStructure.TIM_Period = 0;
-	TIM_TimeBaseStructure.TIM_ClockDivision = 0;
-	TIM_TimeBaseStructure.TIM_RepetitionCounter = 0;
-	TIM_TimeBaseInit(SWIM_OUT_TIMER, &TIM_TimeBaseStructure);
-
-	TIM_OCStructInit(&TIM_OCInitStructure);
-	TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM1;
-	TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;
-	TIM_OCInitStructure.TIM_Pulse = 0;
-	TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_Low;
-	TIM_OC1Init(SWIM_OUT_TIMER, &TIM_OCInitStructure);
-
-	TIM_OC1PreloadConfig(SWIM_OUT_TIMER, TIM_OCPreload_Enable);
-	TIM_ARRPreloadConfig(SWIM_OUT_TIMER, ENABLE);
-	TIM_Cmd(SWIM_OUT_TIMER, ENABLE);
-	SWIM_OUT_TIMER_PWMEN();
-}
-
 void SWIM_Init()
 {
 	if (!SWIM_Inited)
 	{
 		SWIM_Inited = 1;
-		SWIM_OUT_TIMER_INIT();
-		SWIM_SetClockParamInit();
-		SWIM_PORT_INIT();
+		SYNCSWPWM_OUT_TIMER_INIT();
+		SYNCSWPWM_PORT_OD_INIT();
 	}
 }
 
 void SWIM_Fini()
 {
-	SWIM_PORT_FINI();
-	SWIM_OUT_TIMER_FINI();
-	SWIM_IN_TIMER_FINI();
+	SYNCSWPWM_PORT_OD_FINI();
+	SYNCSWPWM_OUT_TIMER_FINI();
+	SYNCSWPWM_IN_TIMER_FINI();
 	SWIM_Inited = 0;
 }
 
 void SWIM_EnableClockInput(void)
 {
-	TIM_ICInitTypeDef TIM_ICInitStructure;
-
 	SWIM_clock_div = 0;
-	SWIM_IN_TIMER_INIT();
-
-	/* SWIM_TIMER_IN */
-	TIM_ICStructInit(&TIM_ICInitStructure);
-	TIM_ICInitStructure.TIM_Channel = TIM_Channel_2;
-	TIM_ICInitStructure.TIM_ICPolarity = TIM_ICPolarity_Rising;
-	TIM_ICInitStructure.TIM_ICSelection = TIM_ICSelection_IndirectTI;
-	TIM_ICInitStructure.TIM_ICPrescaler = TIM_ICPSC_DIV1;
-	TIM_ICInitStructure.TIM_ICFilter = 0;
-	TIM_PWMIConfig(SWIM_IN_TIMER, &TIM_ICInitStructure);
-
-	TIM_SelectInputTrigger(SWIM_IN_TIMER, TIM_TS_TI1FP1);
-	TIM_SelectSlaveMode(SWIM_IN_TIMER, TIM_SlaveMode_Reset);
-	TIM_SelectMasterSlaveMode(SWIM_IN_TIMER, TIM_MasterSlaveMode_Enable);
-	TIM_DMACmd(SWIM_IN_TIMER, TIM_DMA_CC2, ENABLE);
-	TIM_Cmd(SWIM_IN_TIMER, ENABLE);
+	SYNCSWPWM_IN_TIMER_INIT();
 }
 
 uint8 SWIM_EnterProgMode(void)
@@ -114,7 +69,7 @@ uint8 SWIM_EnterProgMode(void)
 	uint8 i;
 	uint32 dly;
 
-	SWIM_IN_TIMER_DMA_INIT(10, SWIM_DMA_Buffer);
+	SYNCSWPWM_IN_TIMER_DMA_INIT(10, SWIM_DMA_Buffer);
 
 	SWIM_CLR();
 	DelayUS(1000);
@@ -136,7 +91,7 @@ uint8 SWIM_EnterProgMode(void)
 	SWIM_SET();
 
 	dly = SWIM_MAX_DLY;
-	SWIM_IN_TIMER_DMA_WAIT(dly);
+	SYNCSWPWM_IN_TIMER_DMA_WAIT(dly);
 	if (!dly)
 	{
 		return 1;
@@ -159,24 +114,17 @@ uint8 SWIM_Sync(uint8 mHz)
 		clock_div++;
 	}
 	
-	SWIM_IN_TIMER_DMA_INIT(2, SWIM_DMA_Buffer);
+	SYNCSWPWM_IN_TIMER_DMA_INIT(2, SWIM_DMA_Buffer);
 	
-	arr_save = SWIM_OUT_TIMER->ARR;
-	SWIM_OUT_TIMER->ARR = SWIM_SYNC_CYCLES * clock_div + 1;
-	SWIM_OUT_TIMER->EGR = TIM_PSCReloadMode_Immediate;
-	SWIM_OUT_TIMER->CR1 |= ((uint16_t)0x0002);
-	SWIM_OUT_TIMER->SR = (uint16_t)~TIM_FLAG_Update;
-	SWIM_OUT_TIMER->CCR1 = SWIM_SYNC_CYCLES * clock_div;
-	SWIM_OUT_TIMER->CR1 &= ((uint16_t)0x03FD);
-	SWIM_WaitOutBitReady();
-	SWIM_OUT_TIMER->SR = (uint16_t)~TIM_FLAG_Update;
-	SWIM_OUT_TIMER->CCR1 = 0;
-	SWIM_WaitOutBitReady();
+	arr_save = SYNCSWPWM_OUT_TIMER_GetCycle();
+	SYNCSWPWM_OUT_TIMER_SetCycle(SWIM_SYNC_CYCLES * clock_div + 1);
+	SYNCSWPWM_OUT_TIMER_Outfirst(SWIM_SYNC_CYCLES * clock_div);
+	SYNCSWPWM_OUT_TIMER_OutReady(0);
 	
 	dly = SWIM_MAX_DLY;
-	SWIM_IN_TIMER_DMA_WAIT(dly);
-	SWIM_OUT_TIMER->ARR = arr_save;
-	SWIM_OUT_TIMER->EGR = TIM_PSCReloadMode_Immediate;
+	SYNCSWPWM_IN_TIMER_DMA_WAIT(dly);
+	SYNCSWPWM_OUT_TIMER_SetCycle(arr_save);
+
 	if (!dly)
 	{
 		return 1;
@@ -218,8 +166,7 @@ uint8 SWIM_SetClockParam(uint8 mHz, uint8 cnt0, uint8 cnt1)
 	}
 	SWIM_PULSE_Threshold = SWIM_PULSE_0 + SWIM_PULSE_1;
 
-	SWIM_OUT_TIMER->ARR = SWIM_PULSE_Threshold;
-	SWIM_OUT_TIMER->EGR = TIM_PSCReloadMode_Immediate;
+	SYNCSWPWM_OUT_TIMER_SetCycle(SWIM_PULSE_Threshold);
 
 	SWIM_PULSE_Threshold >>= 1;
 	return 0;
@@ -232,50 +179,39 @@ uint8 SWIM_HW_Out(uint8 cmd, uint8 bitlen, uint16 retry_cnt)
 
 retry:
 
-	SWIM_IN_TIMER_DMA_INIT(bitlen + 3, SWIM_DMA_Buffer);
+	SYNCSWPWM_IN_TIMER_DMA_INIT(bitlen + 3, SWIM_DMA_Buffer);
 
-	SWIM_OUT_TIMER->CR1 |= ((uint16_t)0x0002);
-	SWIM_OUT_TIMER->SR = (uint16_t)~TIM_FLAG_Update;
-	// first bit MUST be '0' for output data
-	SWIM_OUT_TIMER->CCR1 = SWIM_PULSE_0;
-	SWIM_OUT_TIMER->CR1 &= ((uint16_t)0x03FD);
-	SWIM_WaitOutBitReady();
-	SWIM_OUT_TIMER->SR = (uint16_t)~TIM_FLAG_Update;
+	SYNCSWPWM_OUT_TIMER_Outfirst(SWIM_PULSE_0);
 
 	p = 0;
 	for (i = bitlen - 1; i >= 0; i--)
 	{
 		if ((cmd >> i) & 1)
 		{
-			SWIM_OUT_TIMER->CCR1 = SWIM_PULSE_1;
+			SYNCSWPWM_OUT_TIMER_Out(SWIM_PULSE_1);
 			p++;
 		}
 		else
 		{
-			SWIM_OUT_TIMER->CCR1 = SWIM_PULSE_0;
+			SYNCSWPWM_OUT_TIMER_Out(SWIM_PULSE_0);
 		}
-		// wait for previous waveform
-		SWIM_WaitOutBitReady();
-		SWIM_OUT_TIMER->SR = (uint16_t)~TIM_FLAG_Update;
+		SYNCSWPWM_OUT_TIMER_WaitReady();
 	}
 	// parity bit
 	if (p & 1)
 	{
-		SWIM_OUT_TIMER->CCR1 = SWIM_PULSE_1;
+		SYNCSWPWM_OUT_TIMER_OutReady(SWIM_PULSE_1);
 	}
 	else
 	{
-		SWIM_OUT_TIMER->CCR1 = SWIM_PULSE_0;
+		SYNCSWPWM_OUT_TIMER_OutReady(SWIM_PULSE_0);
 	}
 	// wait for last waveform -- parity bit
-	SWIM_WaitOutBitReady();
-	SWIM_OUT_TIMER->SR = (uint16_t)~TIM_FLAG_Update;
-	SWIM_OUT_TIMER->CCR1 = 0;
-	SWIM_WaitOutBitReady();
+	SYNCSWPWM_OUT_TIMER_OutReady(0);
 
 	dly = SWIM_MAX_DLY;
-	SWIM_IN_TIMER_DMA_WAIT(dly);
-	SWIM_IN_TIMER_DMA_INIT(10, SWIM_DMA_Buffer + 1);
+	SYNCSWPWM_IN_TIMER_DMA_WAIT(dly);
+	SYNCSWPWM_IN_TIMER_DMA_INIT(10, SWIM_DMA_Buffer + 1);
 
 	if (!dly)
 	{
@@ -307,7 +243,7 @@ uint8 SWIM_HW_In(uint8* data, uint8 bitlen)
 	uint32 dly;
 
 	dly = SWIM_MAX_DLY;
-	SWIM_IN_TIMER_DMA_WAIT(dly);
+	SYNCSWPWM_IN_TIMER_DMA_WAIT(dly);
 	*data = 0;
 	if (dly && (SWIM_DMA_Buffer[1] < SWIM_PULSE_Threshold))
 	{
@@ -318,16 +254,10 @@ uint8 SWIM_HW_In(uint8* data, uint8 bitlen)
 				*data |= 1 << (7 - dly);
 			}
 		}
-		SWIM_IN_TIMER_DMA_INIT(11, SWIM_DMA_Buffer);
+		SYNCSWPWM_IN_TIMER_DMA_INIT(11, SWIM_DMA_Buffer);
 
-		SWIM_OUT_TIMER->CR1 |= ((uint16_t)0x0002);
-		SWIM_OUT_TIMER->SR = (uint16_t)~TIM_FLAG_Update;
-		SWIM_OUT_TIMER->CCR1 = SWIM_PULSE_1;
-		SWIM_OUT_TIMER->CR1 &= ((uint16_t)0x03FD);
-		SWIM_WaitOutBitReady();
-		SWIM_OUT_TIMER->SR = (uint16_t)~TIM_FLAG_Update;
-		SWIM_OUT_TIMER->CCR1 = 0;
-		SWIM_WaitOutBitReady();
+		SYNCSWPWM_OUT_TIMER_Outfirst(SWIM_PULSE_1);
+		SYNCSWPWM_OUT_TIMER_OutReady(0);
 	}
 	else
 	{

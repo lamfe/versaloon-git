@@ -510,6 +510,10 @@ RESULT misc_run_script(char *cmd)
 			&& (misc_fatal_error 
 				|| misc_param[PARAM_EXIT_ON_FAIL].value))
 		{
+			if (run_times > 1)
+			{
+				LOG_ERROR("fail to run the %dth times", i + 1);
+			}
 			misc_exit_mark = -1;
 			goto end;
 		}
