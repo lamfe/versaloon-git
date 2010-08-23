@@ -76,65 +76,6 @@
 #define SYNCSW_CLR()					GPIO_ClrPins(SYNCSW_OUT_PORT, GPIO_PIN_GetMask(SYNCSW_OUT_PIN))
 #define SYNCSW_GET()					GPIO_GetInPins(SYNCSW_IN_PORT, GPIO_PIN_GetMask(SYNCSW_IN_PIN))
 
-/***************************** STM8_SWIM ******************************/
-#define SWIM_OUT_TIMER					TIM1
-#define SWIM_IN_TIMER					TIM3
-#define SWIM_IN_TIMER_DMA				DMA1_Channel6
-
-#define SWIM_IN_TIMER_INIT()			do{\
-											DMA_InitTypeDef DMA_InitStructure;\
-											\
-											RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, ENABLE);\
-											RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, ENABLE);\
-											\
-											DMA_DeInit(SWIM_IN_TIMER_DMA);\
-											DMA_StructInit(&DMA_InitStructure);\
-											DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)&(SWIM_IN_TIMER->CCR1);\
-											DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralSRC;\
-											DMA_InitStructure.DMA_BufferSize = 0;\
-											DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;\
-											DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;\
-											DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_HalfWord;\
-											DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_HalfWord;\
-											DMA_InitStructure.DMA_Mode = DMA_Mode_Normal;\
-											DMA_InitStructure.DMA_Priority = DMA_Priority_High;\
-											DMA_InitStructure.DMA_M2M = DMA_M2M_Disable;\
-											DMA_Init(SWIM_IN_TIMER_DMA, &DMA_InitStructure);\
-										}while(0)
-#define SWIM_IN_TIMER_FINI()			do{\
-											TIM_DeInit(SWIM_IN_TIMER);\
-											RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, DISABLE);\
-											DMA_DeInit(SWIM_IN_TIMER_DMA);\
-											RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, DISABLE);\
-										}while(0)
-#define SWIM_IN_TIMER_DMA_INIT(l, a)	do{\
-											SWIM_IN_TIMER_DMA->CCR &= ~1;\
-											SWIM_IN_TIMER_DMA->CNDTR = (l);\
-											SWIM_IN_TIMER_DMA->CMAR = (uint32_t)(a);\
-											SWIM_IN_TIMER_DMA->CCR |= 1;\
-										}while(0)
-#define SWIM_IN_TIMER_DMA_WAIT(dly)		do{while((!(DMA1->ISR & DMA1_FLAG_TC6)) && --dly); DMA1->IFCR = DMA1_FLAG_TC6;}while(0)
-//#define SWIM_IN_TIMER_DMA_WAIT(dly)		while(!(SWIM_IN_TIMER->SR & 2))
-#define SWIM_OUT_TIMER_INIT()			do{\
-											RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM1, ENABLE);\
-										}while(0)
-#define SWIM_OUT_TIMER_FINI()			do{\
-											TIM_DeInit(SWIM_OUT_TIMER);\
-											RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM1, DISABLE);\
-										}while(0)
-#define SWIM_OUT_TIMER_PWMEN()			TIM_CtrlPWMOutputs(SWIM_OUT_TIMER, ENABLE)
-#define SWIM_PORT_INIT()				do{\
-											GPIO_PinRemapConfig(GPIO_PartialRemap_TIM3, ENABLE);\
-											GPIO_SetPins(JTAG_TAP_RTCK_PORT, GPIO_PIN_GetMask(JTAG_TAP_RTCK_PIN));\
-											GPIO_Dir(JTAG_TAP_RTCK_PORT, GPIO_MODE_AF_OD, JTAG_TAP_RTCK_PIN);\
-											GPIO_Dir(SYNCSW_OUT_PORT, GPIO_MODE_IN_FLOATING, SYNCSW_OUT_PIN);\
-										}while(0)
-#define SWIM_PORT_FINI()				do{\
-											GPIO_Dir(JTAG_TAP_RTCK_PORT, GPIO_MODE_IN_FLOATING, JTAG_TAP_RTCK_PIN);\
-											GPIO_PinRemapConfig(GPIO_PartialRemap_TIM3, DISABLE);\
-										}while(0)
-#define SWIM_WaitOutBitReady()			while(!(SWIM_OUT_TIMER->SR & TIM_FLAG_Update))
-
 /***************************** SWD ******************************/
 #define SWD_SWDIO_SETOUTPUT()			JTAG_TAP_TMS_SETOUTPUT()
 #define SWD_SWDIO_SETINPUT()			JTAG_TAP_TMS_SETINPUT()

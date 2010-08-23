@@ -168,6 +168,8 @@ struct filelist *fl_in = NULL, *fl_out = NULL;
 
 static void free_all(void)
 {
+	uint32_t i;
+	
 	FILELIST_Free(&fl_in);
 	FILELIST_Free(&fl_out);
 	
@@ -192,6 +194,14 @@ static void free_all(void)
 	{
 		free(program_info.chip_type);
 		program_info.chip_type = NULL;
+	}
+	for (i = 0; i < dimof(target_area_name); i++)
+	{
+		if (program_info.program_areas[i].cli_str != NULL)
+		{
+			free(program_info.program_areas[i].cli_str);
+			program_info.program_areas[i].cli_str = NULL;
+		}
 	}
 	memset(&program_info, 0, sizeof(program_info));
 	memset(&target_chip_param, 0, sizeof(target_chip_param));

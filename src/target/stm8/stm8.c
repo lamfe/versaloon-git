@@ -636,20 +636,11 @@ LEAVE_PROGRAM_MODE_HANDLER(stm8swim)
 		if (param->param[STM8_PARAM_CLK_SWIMCCR] != 0)
 		{
 			swim_wotf_reg(param->param[STM8_PARAM_CLK_SWIMCCR], 0x00, 1);
-			stm8_target_mhz /= 2;
-			swim_sync(stm8_target_mhz);
-			if (swim_csr & STM8_SWIM_CSR_HSIT)
-			{
-				swim_config(stm8_target_mhz, 8, 2);
-			}
-			else
-			{
-				swim_config(stm8_target_mhz, 20, 2);
-			}
 		}
-		swim_srst();
-		swim_fini();
+		reset_clr();
+		delay_ms(20);
 		reset_set();
+		swim_fini();
 		reset_fini();
 		ret = commit();
 	}
