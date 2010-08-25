@@ -1119,7 +1119,7 @@ object FormMain: TFormMain
   end
   object odInputFile: TOpenDialog
     DefaultExt = '.hex'
-    Filter = 'HEX File|*.hex|BIN File|*.bin'
+    Filter = 'HEX File|*.hex|BIN File|*.bin|S19 File|*.s19'
     left = 552
     top = 488
   end
