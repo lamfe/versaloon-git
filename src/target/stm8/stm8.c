@@ -919,7 +919,9 @@ do_write_fuse:
 					{
 						LOG_PUSH();
 						LOG_MUTE();
+						delay_ms(100);
 						commit();
+						delay_ms(100);
 						LOG_POP();
 					}
 					
