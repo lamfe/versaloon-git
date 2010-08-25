@@ -362,11 +362,15 @@ WRITE_TARGET_HANDLER(hcs08)
 	case APPLICATION_CHAR:
 		for (i = 0; i < size; i++)
 		{
-			ret = hcs08_flash_cmd((uint16_t)addr + i, buff[i], 
-									HCS08_FCMD_MBURSTPROG);
-			if (ret != ERROR_OK)
+			if ((addr + i < HCS08_NONVIOL_REG_START) 
+				|| (addr + i > HCS08_NONVIOL_REG_END))
 			{
-				break;
+				ret = hcs08_flash_cmd((uint16_t)addr + i, buff[i], 
+										HCS08_FCMD_MBURSTPROG);
+				if (ret != ERROR_OK)
+				{
+					break;
+				}
 			}
 		}
 		break;

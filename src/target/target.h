@@ -132,6 +132,7 @@ struct program_area_t
 	uint8_t *buff;
 	uint32_t size;
 	struct memlist *memlist;
+	struct memlist *exact_memlist;
 };
 
 struct program_info_t
