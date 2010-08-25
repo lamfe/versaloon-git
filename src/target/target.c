@@ -503,6 +503,10 @@ void target_free_data_buffer(void)
 		{
 			MEMLIST_Free(&area->memlist);
 		}
+		if (area->exact_memlist != NULL)
+		{
+			MEMLIST_Free(&area->exact_memlist);
+		}
 	}
 }
 
@@ -669,7 +673,7 @@ static RESULT target_write_buffer_from_file_callback(uint32_t address,
 	int8_t area_idx;
 	char area_name;
 	uint8_t *area_buff;
-	struct memlist **area_memlist;
+	struct memlist **area_memlist, **area_exact_memlist;
 	uint32_t area_seg, area_addr, area_size, area_page_size;
 	struct program_info_t *pi = (struct program_info_t *)buffer;
 	uint32_t mem_addr;
@@ -701,6 +705,7 @@ static RESULT target_write_buffer_from_file_callback(uint32_t address,
 		
 		area_buff = pi->program_areas[area_idx].buff;
 		area_memlist = &(pi->program_areas[area_idx].memlist);
+		area_exact_memlist = &(pi->program_areas[area_idx].exact_memlist);
 		
 		if ((area_seg != seg_addr) || (area_addr > address) 
 			|| ((area_addr + area_size) < (address + length)))
@@ -728,6 +733,12 @@ static RESULT target_write_buffer_from_file_callback(uint32_t address,
 				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "add memory list");
 				return ERRCODE_FAILURE_OPERATION;
 			}
+			ret = MEMLIST_Add(area_exact_memlist, address, length, 1);
+			if (ret != ERROR_OK)
+			{
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "add memory list");
+				return ERRCODE_FAILURE_OPERATION;
+			}
 		}
 		else
 		{
@@ -740,6 +751,63 @@ static RESULT target_write_buffer_from_file_callback(uint32_t address,
 	
 	// not found
 	return ERROR_FAIL;
+}
+
+static RESULT MEMLIST_VerifyBuff(struct memlist *ml, uint8_t *buf1, 
+				uint8_t *buf2, uint32_t addr, uint32_t len, uint32_t *pos)
+{
+	uint32_t i, len_tmp, offset, verified_len;
+	
+	if ((NULL == buf1) || (NULL == buf2))
+	{
+		return ERROR_FAIL;
+	}
+	
+	verified_len = 0;
+	while ((ml != NULL) && (verified_len < len))
+	{
+		if ((ml->addr >= addr) && (ml->addr < (addr + len)))
+		{
+			offset = ml->addr - addr;
+			if ((ml->addr + ml->len) <= (addr + len))
+			{
+				len_tmp = ml->len;
+			}
+			else
+			{
+				len_tmp = len;
+			}
+		}
+		else if ((addr >= ml->addr) && (addr < (ml->addr + ml->len)))
+		{
+			offset = 0;
+			if ((ml->addr + ml->len) <= (addr + len))
+			{
+				len_tmp = ml->len - (addr - ml->addr);
+			}
+			else
+			{
+				len_tmp = len;
+			}
+		}
+		else
+		{
+			ml = MEMLIST_GetNext(ml);
+			continue;
+		}
+		
+		for (i = 0; i < len_tmp; i++)
+		{
+			if (buf1[offset + i] != buf2[offset + i])
+			{
+				*pos = offset + i;
+				return ERROR_FAIL;
+			}
+		}
+		verified_len += len_tmp;
+		ml = MEMLIST_GetNext(ml);
+	}
+	return ERROR_OK;
 }
 
 static RESULT target_program(struct program_context_t *context)
@@ -763,7 +831,7 @@ static RESULT target_program(struct program_context_t *context)
 	char format_tmp[32];
 	uint8_t *tbuff;
 	char *fullname, str_tmp[256];
-	struct memlist **ml, *ml_tmp;
+	struct memlist **ml, *ml_tmp, *ml_exact = NULL;
 	uint32_t time_in_ms = 1000;
 	uint8_t special_string[256];
 	
@@ -890,6 +958,7 @@ static RESULT target_program(struct program_context_t *context)
 		if (p_map[i].data_pos)
 		{
 			ml = &(prog_area->memlist);
+			ml_exact = prog_area->exact_memlist;
 			target_size = MEMLIST_CalcAllSize(*ml);
 		}
 		else
@@ -1246,20 +1315,28 @@ static RESULT target_program(struct program_context_t *context)
 					
 					if (op->verify_operations & area_mask)
 					{
-						for (j = 0; j < ml_tmp->len; j++)
+						// verify according to ml_exact
+						if (NULL == ml_exact)
 						{
-							if (tbuff[read_offset + j] != read_buf[j])
-							{
-								pgbar_fini();
-								LOG_ERROR(
-									ERRMSG_FAILURE_VERIFY_AT_02X, 
-									fullname, ml_tmp->addr + j, 
-									read_buf[j], tbuff[read_offset + j]);
-								free(read_buf);
-								read_buf = NULL;
-								ret = ERRCODE_FAILURE_VERIFY;
-								goto leave_program_mode;
-							}
+							LOG_BUG(ERRMSG_INVALID_BUFFER, "ml_exact");
+							ret = ERROR_FAIL;
+							goto leave_program_mode;
+						}
+						j = 0;
+						if (ERROR_OK != 
+							MEMLIST_VerifyBuff(ml_exact, read_buf, 
+												&tbuff[read_offset], 
+												ml_tmp->addr, 
+												ml_tmp->len, &j))
+						{
+							pgbar_fini();
+							LOG_ERROR(ERRMSG_FAILURE_VERIFY_AT_02X, 
+										fullname, ml_tmp->addr + j, 
+										read_buf[j], tbuff[read_offset + j]);
+							free(read_buf);
+							read_buf = NULL;
+							ret = ERRCODE_FAILURE_VERIFY;
+							goto leave_program_mode;
 						}
 					}
 					else
