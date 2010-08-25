@@ -34,6 +34,7 @@
 #include "port.h"
 
 #include "hex.h"
+#include "s19.h"
 
 RESULT read_bin_file(FILE *bin_file, WRITE_MEMORY_CALLBACK callback, 
 					void *buffer, uint32_t seg_offset, uint32_t addr_offset);
@@ -43,7 +44,8 @@ RESULT write_bin_file(FILE *bin_file, uint32_t file_addr, uint8_t *buff,
 static struct file_parser_t file_parser[] = 
 {
 	{"HEX", read_hex_file, write_hex_file, write_hex_file_end}, 
-	{"BIN", read_bin_file, write_bin_file, NULL}
+	{"BIN", read_bin_file, write_bin_file, NULL},
+	{"S19", read_s19_file, write_s19_file, write_s19_file_end}
 };
 
 static uint8_t check_file_ext(char *file_name, char *ext)

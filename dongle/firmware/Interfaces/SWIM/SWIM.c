@@ -118,8 +118,8 @@ uint8 SWIM_Sync(uint8 mHz)
 	
 	arr_save = SYNCSWPWM_OUT_TIMER_GetCycle();
 	SYNCSWPWM_OUT_TIMER_SetCycle(SWIM_SYNC_CYCLES * clock_div + 1);
-	SYNCSWPWM_OUT_TIMER_Outfirst(SWIM_SYNC_CYCLES * clock_div);
-	SYNCSWPWM_OUT_TIMER_OutReady(0);
+	SYNCSWPWM_OUT_TIMER_OutfirstRdy(SWIM_SYNC_CYCLES * clock_div);
+	SYNCSWPWM_OUT_TIMER_OutRdy(0);
 	
 	dly = SWIM_MAX_DLY;
 	SYNCSWPWM_IN_TIMER_DMA_WAIT(dly);
@@ -181,7 +181,7 @@ retry:
 
 	SYNCSWPWM_IN_TIMER_DMA_INIT(bitlen + 3, SWIM_DMA_Buffer);
 
-	SYNCSWPWM_OUT_TIMER_Outfirst(SWIM_PULSE_0);
+	SYNCSWPWM_OUT_TIMER_OutfirstRdy(SWIM_PULSE_0);
 
 	p = 0;
 	for (i = bitlen - 1; i >= 0; i--)
@@ -200,14 +200,14 @@ retry:
 	// parity bit
 	if (p & 1)
 	{
-		SYNCSWPWM_OUT_TIMER_OutReady(SWIM_PULSE_1);
+		SYNCSWPWM_OUT_TIMER_OutRdy(SWIM_PULSE_1);
 	}
 	else
 	{
-		SYNCSWPWM_OUT_TIMER_OutReady(SWIM_PULSE_0);
+		SYNCSWPWM_OUT_TIMER_OutRdy(SWIM_PULSE_0);
 	}
 	// wait for last waveform -- parity bit
-	SYNCSWPWM_OUT_TIMER_OutReady(0);
+	SYNCSWPWM_OUT_TIMER_OutRdy(0);
 
 	dly = SWIM_MAX_DLY;
 	SYNCSWPWM_IN_TIMER_DMA_WAIT(dly);
@@ -256,8 +256,8 @@ uint8 SWIM_HW_In(uint8* data, uint8 bitlen)
 		}
 		SYNCSWPWM_IN_TIMER_DMA_INIT(11, SWIM_DMA_Buffer);
 
-		SYNCSWPWM_OUT_TIMER_Outfirst(SWIM_PULSE_1);
-		SYNCSWPWM_OUT_TIMER_OutReady(0);
+		SYNCSWPWM_OUT_TIMER_OutfirstRdy(SWIM_PULSE_1);
+		SYNCSWPWM_OUT_TIMER_OutRdy(0);
 	}
 	else
 	{

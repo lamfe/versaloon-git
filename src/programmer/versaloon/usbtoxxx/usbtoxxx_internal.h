@@ -139,9 +139,10 @@ RESULT usbtoxxx_add_command(uint8_t type, uint8_t cmd, uint8_t *cmdbuf,
 #define usbtoxxx_reset_command(type, port, cmdbuf, cmdlen)					\
 			usbtoxxx_add_command((type), (USB_TO_XXX_RESET | (port)), \
 								 (cmdbuf), (cmdlen), 0, NULL, 0, 0, 0)
-#define usbtoxxx_sync_command(type, port, cmdbuf, cmdlen)					\
+#define usbtoxxx_sync_command(type, port, cmdbuf, cmdlen, retlen, wantbuf)	\
 			usbtoxxx_add_command((type), (USB_TO_XXX_SYNC | (port)), \
-								 (cmdbuf), (cmdlen), 0, NULL, 0, 0, 0)
+								 (cmdbuf), (cmdlen), (retlen), (wantbuf), 0, \
+								 (retlen), 0)
 #define usbtoxxx_enable_command(type, port, cmdbuf, cmdlen)					\
 			usbtoxxx_add_command((type), (USB_TO_XXX_ENABLE | (port)), \
 								 (cmdbuf), (cmdlen), 0, NULL, 0, 0, 0)

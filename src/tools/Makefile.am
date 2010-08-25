@@ -6,6 +6,7 @@ INCLUDES = \
     -I$(top_srcdir)/src/tools/list \
     -I$(top_srcdir)/src/tools/filelist \
     -I$(top_srcdir)/src/tools/hex \
+    -I$(top_srcdir)/src/tools/s19 \
     -I$(top_srcdir)/src/tools/fileparser \
     -I$(top_srcdir)/src/tools/bufffunc \
     -I$(top_srcdir)/src/tools/strparser \
@@ -21,7 +22,8 @@ libtool_a_SOURCES = \
     filelist/filelist.c \
     fileparser/fileparser.c \
     strparser/strparser.c \
-    bufffunc/bufffunc.c
+    bufffunc/bufffunc.c \
+    s19/s19.c
 
 #noinst_HEADERS = \
 #    hex/hex.h \

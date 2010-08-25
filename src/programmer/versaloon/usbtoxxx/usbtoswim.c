@@ -132,7 +132,8 @@ RESULT usbtoswim_sync(uint8_t interface_index, uint8_t mHz)
 	
 	buff[0] = mHz;
 	
-	return usbtoxxx_sync_command(USB_TO_SWIM, interface_index, buff, 1);
+	return usbtoxxx_sync_command(USB_TO_SWIM, interface_index, buff, 1, 
+									0, NULL);
 }
 
 RESULT usbtoswim_enable(uint8_t interface_index)
