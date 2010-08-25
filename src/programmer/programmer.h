@@ -197,6 +197,15 @@ struct interface_swim_t
 	RESULT (*enable)(void);
 };
 
+struct interface_bdm_t
+{
+	RESULT (*init)(void);
+	RESULT (*fini)(void);
+	RESULT (*sync)(uint16_t *khz);
+	RESULT (*transact)(uint8_t *out, uint8_t outlen, uint8_t *in, 
+						uint8_t inlen, uint8_t delay, uint8_t ack);
+};
+
 struct interface_target_voltage_t
 {
 	RESULT (*get)(uint16_t *voltage);
@@ -237,6 +246,7 @@ struct interfaces_info_t
 	struct interface_i2c_t i2c;
 	struct interface_lpcicp_t lpcicp;
 	struct interface_swim_t swim;
+	struct interface_bdm_t bdm;
 	struct interface_poll_t poll;
 	RESULT (*peripheral_commit)(void);
 };
@@ -291,6 +301,7 @@ struct programmer_info_t
 			{0, 0, 0, 0, 0},\
 			{0, 0, 0, 0, 0, 0},\
 			{0, 0, 0, 0, 0, 0, 0, 0},\
+			{0, 0, 0, 0},\
 			{0, 0, 0, 0, 0},\
 			0\
 		},\

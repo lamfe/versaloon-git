@@ -303,6 +303,7 @@
           <state>$PROJ_DIR$\..\..\..\Interfaces\ISSP\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\LPC_ICP\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\MSP430_JTAG\</state>
+          <state>$PROJ_DIR$\..\..\..\Interfaces\BDM\</state>
           <state>$PROJ_DIR$\..\..\..\USB_TO_XXX\</state>
         </option>
         <option>
@@ -1140,6 +1141,7 @@
           <state>$PROJ_DIR$\..\..\..\Interfaces\ISSP\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\LPC_ICP\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\MSP430_JTAG\</state>
+          <state>$PROJ_DIR$\..\..\..\Interfaces\BDM\</state>
           <state>$PROJ_DIR$\..\..\..\USB_TO_XXX\</state>
         </option>
         <option>
@@ -1940,6 +1942,12 @@
   <group>
     <name>Interfaces</name>
     <group>
+      <name>BDM</name>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\Interfaces\BDM\BDM.c</name>
+      </file>
+    </group>
+    <group>
       <name>C2</name>
       <file>
         <name>$PROJ_DIR$\..\..\..\Interfaces\C2\C2.c</name>
@@ -2013,6 +2021,9 @@
     <name>USB_TO_XXX</name>
     <file>
       <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB_TO_ADC.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB_TO_BDM.C</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB_TO_C2.c</name>

@@ -879,6 +879,33 @@ RESULT versaloon_swim_enable(void)
 {
 	return usbtoswim_enable(VERSALOON_SWIM_PORT);
 }
+// BDM
+RESULT versaloon_bdm_init(void)
+{
+	if (ERROR_OK != usbtobdm_init())
+	{
+		return ERROR_FAIL;
+	}
+	else if (ERROR_OK != usbtobdm_config(VERSALOON_BDM_PORT))
+	{
+		return ERROR_FAIL;
+	}
+	return ERROR_OK;
+}
+RESULT versaloon_bdm_fini(void)
+{
+	return usbtobdm_fini();
+}
+RESULT versaloon_bdm_sync(uint16_t *khz)
+{
+	return usbtobdm_sync(VERSALOON_BDM_PORT, khz);
+}
+RESULT versaloon_bdm_transact(uint8_t *out, uint8_t outlen, uint8_t *in, 
+								uint8_t inlen, uint8_t delay, uint8_t ack)
+{
+	return usbtobdm_transact(VERSALOON_BDM_PORT, out, outlen, in, inlen, 
+								delay, ack);
+}
 
 
 
@@ -1015,6 +1042,12 @@ RESULT versaloon_init_capability(void *p)
 	i->swim.rotf = versaloon_swim_rotf;
 	i->swim.sync = versaloon_swim_sync;
 	i->swim.enable = versaloon_swim_enable;
+	
+	// BDM
+	i->bdm.init = versaloon_bdm_init;
+	i->bdm.fini = versaloon_bdm_fini;
+	i->bdm.sync = versaloon_bdm_sync;
+	i->bdm.transact = versaloon_bdm_transact;
 	
 	// POLL
 	i->poll.start = versaloon_poll_start;

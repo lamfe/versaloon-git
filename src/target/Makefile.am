@@ -62,6 +62,7 @@ libtgt_a_SOURCES = \
     at91sam3/at91sam3.c \
     avr32/avr32.c \
     avrxmega/avrxmega.c \
-    lm3s/lm3s.c
+    lm3s/lm3s.c \
+    hcs08/hcs08.c
 
 MAINTAINERCLEANFILES = Makefile.in
