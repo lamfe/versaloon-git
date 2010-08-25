@@ -83,6 +83,9 @@ struct jtag_pos_t
 #define SWIM_PIN				GPIO_TMS
 #define SWIM_RST_PIN			GPIO_SRST
 
+// BDM
+#define BDM_PIN					GPIO_TMS
+
 // SPI
 #define SPI_CPOL_HIGH			0x20
 #define SPI_CPOL_LOW			0x00

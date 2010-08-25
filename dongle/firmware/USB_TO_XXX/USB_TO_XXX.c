@@ -158,6 +158,11 @@ void USB_TO_XXX_ProcessCmd(uint8* dat, uint16 len)
 			USB_TO_MSP430_JTAG_ProcessCmd(dat + USB_TO_XXX_CmdIdx + 3, USB_TO_XXX_CmdLen_tmp);
 			break;
 #endif
+#if USB_TO_BDM_EN
+		case USB_TO_BDM:
+			USB_TO_BDM_ProcessCmd(dat + USB_TO_XXX_CmdIdx + 3, USB_TO_XXX_CmdLen_tmp);
+			break;
+#endif
 
 /****************************** Page2 ******************************/
 #if USB_TO_POWER_EN

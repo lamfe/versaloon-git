@@ -74,6 +74,7 @@
 #	define USB_TO_LPCICP_EN				1
 #	define USB_TO_SWD_EN				1
 #	define USB_TO_SWIM_EN				1
+#	define USB_TO_BDM_EN				1
 // page 2
 #	define USB_TO_POWER_EN				1
 #endif
@@ -145,6 +146,7 @@ extern void GLOBAL_OUTPUT_Release(void);
 #	define USB_TO_LPCICP_EN				0
 #	define USB_TO_SWD_EN				0
 #	define USB_TO_SWIM_EN				0
+#	define USB_TO_BDM_EN				0
 // page 2
 #	define USB_TO_POWER_EN				0
 #endif
@@ -166,6 +168,7 @@ extern void GLOBAL_OUTPUT_Release(void);
 #define INTERFACE_SWIM_EN				(USB_TO_XXX_EN && USB_TO_SWIM_EN)
 #define INTERFACE_USART_EN				(USB_TO_XXX_EN && USB_TO_USART_EN)
 #define INTERFACE_SWD_EN				(USB_TO_XXX_EN && USB_TO_SWD_EN)
+#define INTERFACE_BDM_EN				(USB_TO_XXX_EN && USB_TO_BDM_EN)
 
 /*************************** Includes Application ***************************/
 #include "HW.h"

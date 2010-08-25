@@ -228,5 +228,16 @@ RESULT usbtoswim_sync(uint8_t interface_index, uint8_t mHz);
 RESULT usbtoswim_enable(uint8_t interface_index);
 
 
+
+
+// BDM
+RESULT usbtobdm_init(void);
+RESULT usbtobdm_fini(void);
+RESULT usbtobdm_config(uint8_t interface_index);
+RESULT usbtobdm_sync(uint8_t interface_index, uint16_t *khz);
+RESULT usbtobdm_transact(uint8_t interface_index, uint8_t *out, 
+	uint8_t outlen, uint8_t *in, uint8_t inlen, uint8_t delay, uint8_t ack);
+
+
 #endif /* __USBTOXXX_H_INCLUDED__ */
 

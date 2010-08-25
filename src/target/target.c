@@ -61,6 +61,7 @@
 #include "avr32/avr32.h"
 #include "avrxmega/avrxmega.h"
 #include "lm3s/lm3s.h"
+#include "hcs08/hcs08.h"
 
 static RESULT target_build_chip_series(const char *chip_name, 
 		const struct program_mode_t *program_mode, struct chip_series_t *s);
@@ -372,6 +373,19 @@ struct target_info_t targets_info[] =
 		lpc900_program_mode,				// program_mode
 		&lpc900_program_functions,			// program_functions
 		lpc900_notifier,					// notifier
+		NULL,								// adjust_setting
+		
+		NULL,								// get_mass_product_data_size
+		NULL,								// prepare_mass_product_data
+	},
+	// HCS08
+	{
+		HCS08_STRING,						// name
+		AUTO_DETECT,						// feature
+		hcs08_program_area_map,				// program_area_map
+		hcs08_program_mode,					// program_mode
+		&hcs08_program_functions,			// program_functions
+		hcs08_notifier,						// notifier
 		NULL,								// adjust_setting
 		
 		NULL,								// get_mass_product_data_size

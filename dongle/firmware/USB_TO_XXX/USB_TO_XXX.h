@@ -37,6 +37,7 @@
 #define USB_TO_LPCICP				(VERSALOON_USB_TO_XXX_CMD_START + 0x25)
 #define USB_TO_SWD					(VERSALOON_USB_TO_XXX_CMD_START + 0x26)
 #define USB_TO_JTAG_RAW				(VERSALOON_USB_TO_XXX_CMD_START + 0x27)
+#define USB_TO_BDM					(VERSALOON_USB_TO_XXX_CMD_START + 0x28)
 #define USB_TO_MSP430_JTAG			(VERSALOON_USB_TO_XXX_CMD_START + 0x38)
 // Page2
 #define USB_TO_POWER				(VERSALOON_USB_TO_XXX_CMD_START + 0x40)
@@ -67,6 +68,7 @@ void USB_TO_C2_ProcessCmd(uint8* dat, uint16 len);
 void USB_TO_LPCICP_ProcessCmd(uint8* dat, uint16 len);
 void USB_TO_SWD_ProcessCmd(uint8* dat, uint16 len);
 void USB_TO_MSP430_JTAG_ProcessCmd(uint8* dat, uint16 len);
+void USB_TO_BDM_ProcessCmd(uint8* dat, uint16 len);
 // Page2
 void USB_TO_POWER_ProcessCmd(uint8* dat, uint16 len);
 extern int8 USB_TO_POLL_Index;
@@ -138,6 +140,8 @@ extern int8 USB_TO_POLL_Index;
 #define USB_TO_POLL_CHECKOK			0x02
 #define USB_TO_POLL_CHECKFAIL		0x03
 #define USB_TO_POLL_VERIFYBUFF		0x04
+// USB_TO_BDM
+#define USB_TO_BDM_TRANSACT			USB_TO_XXX_IN_OUT
 
 // USB_TO_XXX Replys
 #define USB_TO_XXX_OK				0x00
@@ -213,3 +217,4 @@ extern int8 USB_TO_POLL_Index;
 #define USB_TO_POWER_NUM			1
 #define USB_TO_POLL_NUM				2
 #define USB_TO_SWIM_NUM				1
+#define USB_TO_BDM_NUM				1
