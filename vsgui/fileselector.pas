@@ -212,7 +212,7 @@ begin
     FileNameEdtArr[i]      := TFileNameEdit.Create(Self);
     FileNameEdtArr[i].Parent := pnlMain;
     FileNameEdtArr[i].FileName := filename;
-    FileNameEdtArr[i].Filter := 'HEX File|*.hex|BIN File|*.bin';
+    FileNameEdtArr[i].Filter := 'HEX File|*.hex|BIN File|*.bin|S19 File|*.s19';
     FileNameEdtArr[i].Hint := filename;
     FileNameEdtArr[i].Flat := True;
     FileNameEdtArr[i].ShowHint := True;
@@ -227,6 +227,10 @@ begin
     else if str = '.bin' then
     begin
       FileNameEdtArr[i].FilterIndex := 2;
+    end
+    else if str = '.s19' then
+    begin
+      FileNameEdtArr[i].FilterIndex := 3;
     end;
   end;
 end;
@@ -250,6 +254,10 @@ begin
   else if str = '.bin' then
   begin
     (Sender as TFileNameEdit).FilterIndex := 2;
+  end
+  else if str = '.s19' then
+  begin
+    (Sender as TFileNameEdit).FilterIndex := 3;
   end;
 end;
 

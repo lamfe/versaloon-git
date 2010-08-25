@@ -2276,7 +2276,7 @@ begin
 
       strTmp := Copy(cbboxInputFile.Text, i + 1, Length(cbboxInputFile.Text) - i);
       strExt := LowerCase(ExtractFileExt(strTmp));
-      if strExt = '.hex' then
+      if (strExt = '.hex') or (strExt = '.s19') then
       begin
         caller.AddParameter(io_file_opt + '"' + strTmp + '@' +
           IntToStr(fseg) + ',' + IntToStr(faddr) + '"');
@@ -2318,7 +2318,7 @@ begin
           end;
 
           strExt := LowerCase(ExtractFileExt(TargetFile[i].filename));
-          if strExt = '.hex' then
+          if (strExt = '.hex') or (strExt = '.s19') then
           begin
             caller.AddParameter(io_file_opt + '"' + TargetFile[i].filename +
               '@' + IntToStr(fseg) + ',' + IntToStr(faddr) + '"');
