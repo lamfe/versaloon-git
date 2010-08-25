@@ -2896,6 +2896,12 @@ static RESULT target_build_chip_series(const char *chip_series,
 					(uint32_t)strtoull(
 						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
 			}
+			else if (!xmlStrcmp(paramNode->name, BAD_CAST "sram_addr"))
+			{
+				p_param->chip_areas[SRAM_IDX].addr = 
+					(uint32_t)strtoul(
+						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
+			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "sram_page_size"))
 			{
 				p_param->chip_areas[SRAM_IDX].page_size = 

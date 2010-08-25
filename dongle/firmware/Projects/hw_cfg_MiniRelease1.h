@@ -179,14 +179,14 @@
 #define SYNCSWPWM_OUT_TIMER_Out(ccr)		do {\
 												SYNCSWPWM_OUT_TIMER->CCR1 = (ccr);\
 											} while (0)
-#define SYNCSWPWM_OUT_TIMER_Outfirst(ccr)	do {\
+#define SYNCSWPWM_OUT_TIMER_OutfirstRdy(ccr)do {\
 												SYNCSWPWM_OUT_TIMER->CR1 |= ((uint16_t)0x0002);\
 												SYNCSWPWM_OUT_TIMER->SR = (uint16_t)~TIM_FLAG_Update;\
 												SYNCSWPWM_OUT_TIMER_Out(ccr);\
 												SYNCSWPWM_OUT_TIMER->CR1 &= ((uint16_t)0x03FD);\
 												SYNCSWPWM_OUT_TIMER_WaitReady();\
 											} while (0)
-#define SYNCSWPWM_OUT_TIMER_OutReady(ccr)	do {\
+#define SYNCSWPWM_OUT_TIMER_OutRdy(ccr)		do {\
 												SYNCSWPWM_OUT_TIMER_Out(ccr);\
 												SYNCSWPWM_OUT_TIMER_WaitReady();\
 											} while (0)
