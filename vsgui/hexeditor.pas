@@ -161,15 +161,23 @@ function ValidateHexFile(hFile: TFileStream; var buffer; ChangeList: TMemList;
   seg_offset, addr_offset: int64): boolean;
 function PrepareHexFile(hFile: TFileStream; default_byte: byte;
     bytesize, start_addr: cardinal; seg_offset, addr_offset: int64): boolean;
+function ReadS19File(hFile: TFileStream; var buffer; bytesize, start_addr: cardinal;
+  seg_offset, addr_offset: int64): boolean;
+function ValidateS19File(hFile: TFileStream; var buffer; ChangeList: TMemList;
+  default_byte: byte; bytesize, start_addr: cardinal;
+  seg_offset, addr_offset: int64): boolean;
+function PrepareS19File(hFile: TFileStream; default_byte: byte;
+    bytesize, start_addr: cardinal; seg_offset, addr_offset: int64): boolean;
 
 var
   FormHexEditor: TFormHexEditor;
 
 const
-  FileParser: array[0..1] of TFileParser =
+  FileParser: array[0..2] of TFileParser =
     (
     (ext: '.bin'; ReadFile: @ReadBinFile; ValidateFile: @ValidateBinFile; PrepareFile: @PrepareBinFile),
-    (ext: '.hex'; ReadFile: @ReadHexFile; ValidateFile: @ValidateHexFile; PrepareFile: @PrepareHexFile)
+    (ext: '.hex'; ReadFile: @ReadHexFile; ValidateFile: @ValidateHexFile; PrepareFile: @PrepareHexFile),
+    (ext: '.s19'; ReadFile: @ReadS19File; ValidateFile: @ValidateS19File; PrepareFile: @PrepareS19File)
     );
   BYTES_IN_ROW: integer  = 16;
   DIVIDER_WIDTH: integer = 20;
@@ -177,6 +185,246 @@ const
 
 
 implementation
+
+function IgnoreEmptyLine(hFile: TFileStream; var lastchar: char;
+  var haslastchar: boolean): cardinal;
+var
+  ch: char;
+begin
+  Result      := 0;
+  haslastchar := False;
+  ch          := Char(0);
+  repeat
+    if hFile.Read(ch, 1) <> 1 then
+    begin
+      exit;
+    end;
+    Inc(Result);
+  until (ch <> char(10)) and (ch <> char(13));
+  lastchar    := ch;
+  haslastchar := True;
+end;
+
+function ReadS19FileLine(hFile: TFileStream; var buff;
+  var LineInfo: THexFileLineInfo): boolean;
+var
+  P:    PByte;
+  ch:   char;
+  checksum: byte;
+  line: string;
+  i:    integer;
+  headread: boolean;
+  FileLineLength: cardinal;
+begin
+  P      := @buff;
+  Result := False;
+  headread := False;
+  ch     := Char(0);
+
+  FileLineLength := IgnoreEmptyLine(hFile, ch, headread);
+  if (FileLineLength = 0) or (not headread) then
+  begin
+    Result := True;
+    LineInfo.EmptyLeadingByteLength := FileLineLength;
+    LineInfo.FileLineLength := 0;
+    exit;
+  end;
+  LineInfo.EmptyLeadingByteLength := FileLineLength - 1;
+
+  // first char MUST be S
+  if (ch <> 'S') then
+  begin
+    exit;
+  end;
+
+  // read line
+  line := '';
+  repeat
+    if (hFile.Read(ch, 1) <> 1) then
+    begin
+      break;
+    end
+    else if (ch = char(10)) or (ch = char(13)) then
+    begin
+      Inc(FileLineLength);
+      break;
+    end
+    else
+    begin
+      Inc(FileLineLength);
+      line := line + ch;
+    end;
+  until False;
+  if (Length(line) < 9) or ((Length(line) mod 2) = 0)
+     or (line[1] < '0') or (line[1] > '9') then
+  begin
+    exit;
+  end;
+
+  LineInfo.DataType := byte(line[1]) - byte('0');
+  LineInfo.ByteSize := byte(StrToIntRadix(Copy(line, 2, 2), 16));
+  if Length(line) <> (3 + 2 * LineInfo.ByteSize) then
+  begin
+    exit;
+  end;
+
+  checksum := 0;
+  for i := 0 to LineInfo.ByteSize do
+  begin
+    (P + i)^ := byte(StrToIntRadix(Copy(line, 4 + 2 * i, 2), 16));
+    Inc(checksum, (P + i)^);
+  end;
+  // validity check
+  if byte(checksum + LineInfo.ByteSize) <> $FF then
+  begin
+    exit;
+  end;
+
+  LineInfo.FileLineLength := FileLineLength;
+  Result := True;
+end;
+
+function ReadS19File(hFile: TFileStream; var buffer; bytesize, start_addr: cardinal;
+  seg_offset, addr_offset: int64): boolean;
+var
+  buff: array[0 .. 260] of byte;
+  data_addr: cardinal;
+  LineInfo: THexFileLineInfo;
+  P: PByte;
+begin
+  seg_offset := seg_offset;
+
+  p      := @buffer;
+  hFile.Position := 0;
+  Result := False;
+
+  LineInfo.Addr := 0;
+  LineInfo.ByteSize := 0;
+  LineInfo.DataOffset := 0;
+  LineInfo.DataType := 0;
+  LineInfo.EmptyLeadingByteLength := 0;
+  LineInfo.FileLineLength := 0;
+
+  FillChar(buff[0], Length(buff), 0);
+
+  while True do
+  begin
+    if not ReadS19FileLine(hFile, buff, LineInfo) then
+    begin
+      exit;
+    end;
+    if LineInfo.FileLineLength = 0 then
+    begin
+      Result := True;
+      exit;
+    end;
+
+    // process data
+    case LineInfo.DataType of
+      0://S0
+      begin
+
+      end;
+      1://S1
+      begin
+        data_addr := buff[1] + (buff[0] shl 8);
+        if not ((data_addr < start_addr) or
+          (data_addr < (addr_offset + start_addr))) then
+        begin
+          Dec(data_addr, start_addr);
+          Dec(LineInfo.ByteSize, 3);
+          if (LineInfo.ByteSize + data_addr) > bytesize then
+          begin
+            if data_addr > bytesize then
+            begin
+              LineInfo.ByteSize := 0;
+            end
+            else
+            begin
+              LineInfo.ByteSize := bytesize - data_addr;
+            end;
+          end;
+          Move(buff[2], (P + data_addr - addr_offset)^, LineInfo.ByteSize);
+        end;
+      end;
+      2: //S2
+      begin
+        data_addr := buff[2] + (buff[1] shl 16) + (buff[0] shl 8);
+        if not ((data_addr < start_addr) or
+          (data_addr < (addr_offset + start_addr))) then
+        begin
+          Dec(data_addr, start_addr);
+          Dec(LineInfo.ByteSize, 4);
+          if (LineInfo.ByteSize + data_addr) > bytesize then
+          begin
+            if data_addr > bytesize then
+            begin
+              LineInfo.ByteSize := 0;
+            end
+            else
+            begin
+              LineInfo.ByteSize := bytesize - data_addr;
+            end;
+          end;
+          Move(buff[3], (P + data_addr - addr_offset)^, LineInfo.ByteSize);
+        end;
+      end;
+      3: //S3
+      begin
+        data_addr := buff[3] + (buff[2] shl 24) + (buff[1] shl 16) + (buff[0] shl 8);
+        if not ((data_addr < start_addr) or
+          (data_addr < (addr_offset + start_addr))) then
+        begin
+          Dec(data_addr, start_addr);
+          Dec(LineInfo.ByteSize, 5);
+          if (LineInfo.ByteSize + data_addr) > bytesize then
+          begin
+            if data_addr > bytesize then
+            begin
+              LineInfo.ByteSize := 0;
+            end
+            else
+            begin
+              LineInfo.ByteSize := bytesize - data_addr;
+            end;
+          end;
+          Move(buff[4], (P + data_addr - addr_offset)^, LineInfo.ByteSize);
+        end;
+      end;
+      7, 8, 9:
+      begin
+        Result := True;
+        Exit;
+      end;
+    end;
+  end;
+end;
+
+function ValidateS19File(hFile: TFileStream; var buffer; ChangeList: TMemList;
+  default_byte: byte; bytesize, start_addr: cardinal;
+  seg_offset, addr_offset: int64): boolean;
+begin
+  hFile := hFile;
+  ChangeList := ChangeList;
+  default_byte := default_byte;
+  bytesize := bytesize;
+  start_addr := start_addr;
+  seg_offset := seg_offset;
+  addr_offset := addr_offset;
+  Result := False;
+end;
+
+function PrepareS19File(hFile: TFileStream; default_byte: byte;
+    bytesize, start_addr: cardinal; seg_offset, addr_offset: int64): boolean;
+begin
+  hFile := hFile;
+  default_byte := default_byte;
+  bytesize := bytesize;
+  start_addr := start_addr;
+  seg_offset := seg_offset;
+  addr_offset := addr_offset;
+  Result := False;
+end;
 
 function ReadBinFile(hFile: TFileStream; var buffer; bytesize, start_addr: cardinal;
   seg_offset, addr_offset: int64): boolean;
@@ -248,25 +496,6 @@ begin
   hFile.Position := 0;
   hFile.Write(buf_tmp[1], bytesize);
   Result := True;
-end;
-
-function IgnoreEmptyLine(hFile: TFileStream; var lastchar: char;
-  var haslastchar: boolean): cardinal;
-var
-  ch: char;
-begin
-  Result      := 0;
-  haslastchar := False;
-  ch          := Char(0);
-  repeat
-    if hFile.Read(ch, 1) <> 1 then
-    begin
-      exit;
-    end;
-    Inc(Result);
-  until (ch <> char(10)) and (ch <> char(13));
-  lastchar    := ch;
-  haslastchar := True;
 end;
 
 function ReadHexFileLine(hFile: TFileStream; var buff;
