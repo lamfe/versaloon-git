@@ -20,7 +20,7 @@
 #include "BDM.h"
 
 uint8 BDM_Inited = 0;
-static uint16 BDM_DMA_Buffer[112];
+static uint16 BDM_DMA_Buffer[8 * 7 + 1];
 static uint16 BDM_clock_div = 0;
 
 static uint16 BDM_PULSE_0;
@@ -160,19 +160,17 @@ uint8 BDM_InByte(void)
 uint8 BDM_Transact(uint8 token, uint8 *out, uint8 *in)
 {
 	uint32 dly;
-	uint16 outlen, inlen, i, offset;
+	uint16 outlen, inlen, i;
 
-	outlen = BDM_OUT_LEN(token) + BDM_IN_LEN(token);
+	outlen = BDM_OUT_LEN(token);
 	if (!outlen)
 	{
 		return 1;
 	}
-	offset = 0;
 	outlen *= 8;
 	if (BDM_ACK(token))
 	{
 		outlen++;
-		offset = 1;
 	}
 	SYNCSWPWM_IN_TIMER_DMA_INIT(outlen, BDM_DMA_Buffer);
 
@@ -192,14 +190,6 @@ uint8 BDM_Transact(uint8 token, uint8 *out, uint8 *in)
 		return 1;
 	}
 
-	// in data
-	inlen = BDM_IN_LEN(token);
-	for (i = 0; i < inlen; i++)
-	{
-		BDM_InByte();
-	}
-
-	// wait for in data
 	dly = BDM_MAX_DLY;
 	SYNCSWPWM_IN_TIMER_DMA_WAIT(dly);
 	if (!dly)
@@ -207,16 +197,35 @@ uint8 BDM_Transact(uint8 token, uint8 *out, uint8 *in)
 		return 1;
 	}
 
-	for (i = 0; i < inlen * 8; i++)
+	// in data
+	inlen = BDM_IN_LEN(token);
+	if (inlen)
 	{
-		in[i / 8] <<= 1;
-		if (BDM_DMA_Buffer[outlen * 8 + offset + i] >= BDM_PULSE_Threshold)
+		SYNCSWPWM_IN_TIMER_DMA_INIT(inlen * 8, BDM_DMA_Buffer);
+
+		for (i = 0; i < inlen; i++)
 		{
-			in[i / 8] &= ~1;
+			BDM_InByte();
 		}
-		else
+
+		dly = BDM_MAX_DLY;
+		SYNCSWPWM_IN_TIMER_DMA_WAIT(dly);
+		if (!dly)
 		{
-			in[i / 8] |= 1;
+			return 1;
+		}
+
+		for (i = 0; i < inlen * 8; i++)
+		{
+			in[i / 8] <<= 1;
+			if (BDM_DMA_Buffer[i] >= BDM_PULSE_Threshold)
+			{
+				in[i / 8] &= ~1;
+			}
+			else
+			{
+				in[i / 8] |= 1;
+			}
 		}
 	}
 
