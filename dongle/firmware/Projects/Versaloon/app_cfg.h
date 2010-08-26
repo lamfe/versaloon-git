@@ -23,9 +23,6 @@
 #include "hw_cfg_MiniRelease1.h"
 //#include "hw_cfg_ProRC1.h"
 
-#define _SYS_FREQUENCY					72		// in MHz
-#define _SYS_FLASH_VECTOR_TABLE_SHIFT	0x2000	// application will locate at 0x08002000
-
 /*************************** Includes Library ***************************/
 #include "stm32f10x_conf.h"
 #include "app_type.h"

@@ -73,6 +73,8 @@ void Sys_Init(void)
 	MAL_Init(0);
 #endif
 
+	USB_Pull_Init();
+	USB_Connect();
 	USB_Init();
 }
 

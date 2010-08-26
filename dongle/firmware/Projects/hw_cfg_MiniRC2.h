@@ -22,6 +22,9 @@
 #endif
 #define HSE_VALUE 						((uint32_t)12000000)
 
+#define _SYS_FREQUENCY					72		// in MHz
+#define _SYS_FLASH_VECTOR_TABLE_SHIFT	0x2000	// application will locate at 0x08002000
+
 /****************************** Power ******************************/
 #define PWREXT_INIT()					
 #define PWREXT_ENABLE()					
@@ -457,6 +460,10 @@
 // For USB 1.1, use DM
 #define USB_DP_PORT						GPIOA
 #define USB_DP_PIN						GPIO_PIN_12
+
+#define USB_Pull_Init()					
+#define USB_Connect()					
+#define USB_Disconnect()				
 
 #define USB_Disable()					PowerOff()
 #define USB_D_SETOUTPUT()				GPIO_Dir(USB_DP_PORT, GPIO_MODE_OUT_PP, USB_DP_PIN)

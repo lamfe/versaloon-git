@@ -87,6 +87,7 @@ void Versaloon_ProcessCommonCmd(uint8* dat, uint16 len)
 			// Reset USB, and Reset MCU
 			USB_Disable();
 
+			USB_Disconnect();
 			USB_D_CLR();
 			USB_D_SETOUTPUT();
 			DelayMS(10);
