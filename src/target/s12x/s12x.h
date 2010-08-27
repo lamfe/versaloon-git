@@ -16,15 +16,15 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#ifndef __HCS08_H_INCLUDED__
-#define __HCS08_H_INCLUDED__
+#ifndef __S12X_H_INCLUDED__
+#define __S12X_H_INCLUDED__
 
-#define HCS08_STRING					"hcs08"
+#define S12X_STRING					"s12x"
 
-extern const struct program_area_map_t hcs08_program_area_map[];
-extern const struct program_mode_t hcs08_program_mode[];
-extern const struct program_functions_t hcs08_program_functions;
-extern const struct misc_cmd_t hcs08_notifier[];
+extern const struct program_area_map_t s12x_program_area_map[];
+extern const struct program_mode_t s12x_program_mode[];
+extern const struct program_functions_t s12x_program_functions;
+extern const struct misc_cmd_t s12x_notifier[];
 
-#endif /* __HCS08_H_INCLUDED__ */
+#endif /* __S12X_H_INCLUDED__ */
 

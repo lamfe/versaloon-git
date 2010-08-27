@@ -63,6 +63,7 @@ libtgt_a_SOURCES = \
     avr32/avr32.c \
     avrxmega/avrxmega.c \
     lm3s/lm3s.c \
-    hcs08/hcs08.c
+    hcs08/hcs08.c \
+    s12x/s12x.c
 
 MAINTAINERCLEANFILES = Makefile.in
