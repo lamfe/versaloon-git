@@ -62,6 +62,7 @@
 #include "avrxmega/avrxmega.h"
 #include "lm3s/lm3s.h"
 #include "hcs08/hcs08.h"
+#include "s12x/s12x.h"
 
 static RESULT target_build_chip_series(const char *chip_name, 
 		const struct program_mode_t *program_mode, struct chip_series_t *s);
@@ -386,6 +387,19 @@ struct target_info_t targets_info[] =
 		hcs08_program_mode,					// program_mode
 		&hcs08_program_functions,			// program_functions
 		hcs08_notifier,						// notifier
+		NULL,								// adjust_setting
+		
+		NULL,								// get_mass_product_data_size
+		NULL,								// prepare_mass_product_data
+	},
+	// S12X
+	{
+		S12X_STRING,						// name
+		"",									// feature
+		s12x_program_area_map,				// program_area_map
+		s12x_program_mode,					// program_mode
+		&s12x_program_functions,			// program_functions
+		s12x_notifier,						// notifier
 		NULL,								// adjust_setting
 		
 		NULL,								// get_mass_product_data_size
