@@ -22,6 +22,7 @@
 //#include "hw_cfg_MiniRC4.h"
 #include "hw_cfg_MiniRelease1.h"
 //#include "hw_cfg_ProRC1.h"
+//#include "hw_cfg_STBee_Mini.h"
 
 /*************************** Includes Library ***************************/
 #include "stm32f10x_conf.h"
