@@ -1938,6 +1938,9 @@
     <file>
       <name>$PROJ_DIR$\..\..\hw_cfg_ProRC1.h</name>
     </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\hw_cfg_STBee_Mini.h</name>
+    </file>
   </group>
   <group>
     <name>Interfaces</name>

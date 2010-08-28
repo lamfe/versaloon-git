@@ -20,7 +20,7 @@
 #ifdef HSE_VALUE
 #undef HSE_VALUE
 #endif
-#define HSE_VALUE 						((uint32_t)12000000)
+#define HSE_VALUE						((uint32_t)12000000)
 
 #define _SYS_FREQUENCY					72		// in MHz
 #define _SYS_FLASH_VECTOR_TABLE_SHIFT	0x2000	// application will locate at 0x08002000
@@ -212,9 +212,9 @@
 
 #define JTAG_TAP_HS_SetSpeed(div)		do{\
 											SPI_Configuration(JTAG_TAP_HS_SPI_M,SPI_Mode_Master,(div),\
-												SPI_FirstBit_LSB,SPI_CPOL_High,SPI_CPHA_2Edge);\
+											SPI_FirstBit_LSB,SPI_CPOL_High,SPI_CPHA_2Edge);\
 											SPI_Configuration(JTAG_TAP_HS_SPI_S,SPI_Mode_Slave,\
-												SPI_BaudRatePrescaler_2,SPI_FirstBit_LSB,SPI_CPOL_High,SPI_CPHA_2Edge);\
+											SPI_BaudRatePrescaler_2,SPI_FirstBit_LSB,SPI_CPOL_High,SPI_CPHA_2Edge);\
 										}while(0)
 
 #define JTAG_TAP_HS_TMS_Out(tms)		JTAG_TAP_HS_SPI_S->DR = (tms)

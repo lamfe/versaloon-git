@@ -20,7 +20,7 @@
 #ifdef HSE_VALUE
 #undef HSE_VALUE
 #endif
-#define HSE_VALUE 						((uint32_t)12000000)
+#define HSE_VALUE						((uint32_t)12000000)
 
 #define _SYS_FREQUENCY					72		// in MHz
 #define _SYS_FLASH_VECTOR_TABLE_SHIFT	0x2000	// application will locate at 0x08002000
@@ -175,34 +175,34 @@
 												SYNCSWPWM_OUT_TIMER->EGR = TIM_PSCReloadMode_Immediate;\
 											} while (0)
 #define SYNCSWPWM_OUT_TIMER_GetCycle(cycle)	SYNCSWPWM_OUT_TIMER->ARR
-#define SYNCSWPWM_OUT_TIMER_WaitReady()		do {\
-												while(!(SYNCSWPWM_OUT_TIMER->SR & TIM_FLAG_Update));\
-												SYNCSWPWM_OUT_TIMER->SR = (uint16_t)~TIM_FLAG_Update;\
-											} while (0)
-#define SYNCSWPWM_OUT_TIMER_Out(ccr)		do {\
-												SYNCSWPWM_OUT_TIMER->CCR1 = (ccr);\
-											} while (0)
-#define SYNCSWPWM_OUT_TIMER_OutfirstRdy(ccr)do {\
-												SYNCSWPWM_OUT_TIMER->CR1 |= ((uint16_t)0x0002);\
-												SYNCSWPWM_OUT_TIMER->SR = (uint16_t)~TIM_FLAG_Update;\
-												SYNCSWPWM_OUT_TIMER_Out(ccr);\
-												SYNCSWPWM_OUT_TIMER->CR1 &= ((uint16_t)0x03FD);\
-												SYNCSWPWM_OUT_TIMER_WaitReady();\
-											} while (0)
-#define SYNCSWPWM_OUT_TIMER_OutRdy(ccr)		do {\
-												SYNCSWPWM_OUT_TIMER_Out(ccr);\
-												SYNCSWPWM_OUT_TIMER_WaitReady();\
-											} while (0)
+#define SYNCSWPWM_OUT_TIMER_WaitReady()	do {\
+											while(!(SYNCSWPWM_OUT_TIMER->SR & TIM_FLAG_Update));\
+											SYNCSWPWM_OUT_TIMER->SR = (uint16_t)~TIM_FLAG_Update;\
+										} while (0)
+#define SYNCSWPWM_OUT_TIMER_Out(ccr)	do {\
+											SYNCSWPWM_OUT_TIMER->CCR1 = (ccr);\
+										} while (0)
+#define SYNCSWPWM_OUT_TIMER_OutfirstRdy(ccr)	do {\
+													SYNCSWPWM_OUT_TIMER->CR1 |= ((uint16_t)0x0002);\
+													SYNCSWPWM_OUT_TIMER->SR = (uint16_t)~TIM_FLAG_Update;\
+													SYNCSWPWM_OUT_TIMER_Out(ccr);\
+													SYNCSWPWM_OUT_TIMER->CR1 &= ((uint16_t)0x03FD);\
+													SYNCSWPWM_OUT_TIMER_WaitReady();\
+												} while (0)
+#define SYNCSWPWM_OUT_TIMER_OutRdy(ccr)	do {\
+											SYNCSWPWM_OUT_TIMER_Out(ccr);\
+											SYNCSWPWM_OUT_TIMER_WaitReady();\
+										} while (0)
 #define SYNCSWPWM_OUT_TIMER_DMA_INIT(l, a)	do{\
 												SYNCSWPWM_OUT_TIMER_DMA->CCR &= ~1;\
 												SYNCSWPWM_OUT_TIMER_DMA->CNDTR = (l);\
 												SYNCSWPWM_OUT_TIMER_DMA->CMAR = (uint32_t)(a);\
 												SYNCSWPWM_OUT_TIMER_DMA->CCR |= 1;\
 											}while(0)
-#define SYNCSWPWM_OUT_TIMER_DMA_WAIT()		do{\
-												while(!(DMA1->ISR & DMA1_FLAG_TC6));\
-												DMA1->IFCR = DMA1_FLAG_TC6;\
-											}while(0)
+#define SYNCSWPWM_OUT_TIMER_DMA_WAIT()	do{\
+											while(!(DMA1->ISR & DMA1_FLAG_TC6));\
+											DMA1->IFCR = DMA1_FLAG_TC6;\
+										}while(0)
 
 #define SYNCSWPWM_PORT_INIT()			GPIO_PinRemapConfig(GPIO_PartialRemap_TIM3, ENABLE)
 #define SYNCSWPWM_PORT_FINI()			GPIO_PinRemapConfig(GPIO_PartialRemap_TIM3, DISABLE)
@@ -383,9 +383,9 @@
 
 #define JTAG_TAP_HS_SetSpeed(div)		do{\
 											SPI_Configuration(JTAG_TAP_HS_SPI_M,SPI_Mode_Master,(div),\
-												SPI_FirstBit_LSB,SPI_CPOL_High,SPI_CPHA_2Edge);\
+											SPI_FirstBit_LSB,SPI_CPOL_High,SPI_CPHA_2Edge);\
 											SPI_Configuration(JTAG_TAP_HS_SPI_S,SPI_Mode_Slave,\
-												SPI_BaudRatePrescaler_2,SPI_FirstBit_LSB,SPI_CPOL_High,SPI_CPHA_2Edge);\
+											SPI_BaudRatePrescaler_2,SPI_FirstBit_LSB,SPI_CPOL_High,SPI_CPHA_2Edge);\
 										}while(0)
 
 #define JTAG_TAP_HS_TMS_Out(tms)		JTAG_TAP_HS_SPI_S->DR = (tms)
@@ -623,9 +623,7 @@
 // LED_RW
 #define LED_RW_PORT						GPIOA
 #define LED_RW_PIN						GPIO_PIN_14
-#define Led_RW_Init()					do{\
-											GPIO_Dir(LED_RW_PORT, GPIO_MODE_OUT_PP, LED_RW_PIN);\
-										}while(0)
+#define Led_RW_Init()					GPIO_Dir(LED_RW_PORT, GPIO_MODE_OUT_PP, LED_RW_PIN)
 #define Led_RW_ON()						GPIO_ClrPins(LED_RW_PORT, GPIO_PIN_GetMask(LED_RW_PIN))
 #define Led_RW_OFF()					GPIO_SetPins(LED_RW_PORT, GPIO_PIN_GetMask(LED_RW_PIN))
 
