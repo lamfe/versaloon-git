@@ -733,7 +733,7 @@ void JTAG_TAP_Init(uint16 kHz, uint8 mode)
 		if (kHz >= JTAG_TAP_HS_MIN_KHZ)
 		{
 			// DMA Init
-			JTAG_TAP_HS_DMA_Init();
+			JTAG_TAP_HS_DMA_INIT();
 
 			JTAG_TAP_Operate_RAW = JTAG_TAP_HS_Operate_RAW_DMA;
 		}
@@ -751,7 +751,7 @@ void JTAG_TAP_Init(uint16 kHz, uint8 mode)
 
 void JTAG_TAP_Fini(void)
 {
-	JTAG_TAP_HS_DMA_Fini();
+	JTAG_TAP_HS_DMA_FINI();
 
 	JTAG_kHz = 0xFFFF;
 	JTAG_TAP_HS_PortFini();
