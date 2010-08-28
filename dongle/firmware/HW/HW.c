@@ -259,42 +259,6 @@ void SPI_Configuration(SPI_TypeDef* SPIx,u16 mode,u16 brp,u16 fb,u16 cpol,u16 cp
 }
 #endif
 
-#if INTERFACE_JTAG_EN
-void JTAG_TAP_HS_DMA_Fini(void)
-{
-	DMA_DeInit(JTAG_TAP_HS_SPI_M_RX_DMA);
-	DMA_DeInit(JTAG_TAP_HS_SPI_M_TX_DMA);
-	DMA_DeInit(JTAG_TAP_HS_SPI_S_TX_DMA);
-	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, DISABLE);
-}
-
-void JTAG_TAP_HS_DMA_Init(void)
-{
-	DMA_InitTypeDef  DMA_InitStructure;
-
-	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, ENABLE);
-	
-	DMA_InitStructure.DMA_PeripheralBaseAddr = (u32)&JTAG_TAP_HS_SPI_M->DR;
-	DMA_InitStructure.DMA_MemoryBaseAddr = (uint32)0;
-	DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralSRC;
-	DMA_InitStructure.DMA_BufferSize = 0;
-	DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
-	DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
-	DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte;
-	DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;
-	DMA_InitStructure.DMA_Mode = DMA_Mode_Normal;
-	DMA_InitStructure.DMA_Priority = DMA_Priority_VeryHigh;
-	DMA_InitStructure.DMA_M2M = DMA_M2M_Disable;
-	DMA_Init(JTAG_TAP_HS_SPI_M_RX_DMA, &DMA_InitStructure);
-
-	DMA_InitStructure.DMA_PeripheralBaseAddr = (u32)&JTAG_TAP_HS_SPI_S->DR;
-	DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralDST;
-	DMA_Init(JTAG_TAP_HS_SPI_S_TX_DMA, &DMA_InitStructure);
-
-	JTAG_TAP_HS_SPI_EnableDMA();
-}
-#endif
-
 /*******************************************************************************
 * Function Name	: ADC_Configuration
 * Description		: Configures SPI Interface.

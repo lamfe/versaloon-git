@@ -172,6 +172,37 @@
 #define JTAG_TAP_HS_SPIS_Disable()		SPI_Cmd(JTAG_TAP_HS_SPI_S, DISABLE)
 #define JTAG_TAP_HS_SPIS_Enable()		SPI_Cmd(JTAG_TAP_HS_SPI_S, ENABLE)
 
+#define JTAG_TAP_HS_DMA_FINI()			do{\
+											DMA_DeInit(JTAG_TAP_HS_SPI_M_RX_DMA);\
+											DMA_DeInit(JTAG_TAP_HS_SPI_M_TX_DMA);\
+											DMA_DeInit(JTAG_TAP_HS_SPI_S_TX_DMA);\
+											RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, DISABLE);\
+										} while (0)
+#define JTAG_TAP_HS_DMA_INIT()			do{\
+											DMA_InitTypeDef  DMA_InitStructure;\
+											\
+											RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, ENABLE);\
+											\
+											DMA_InitStructure.DMA_PeripheralBaseAddr = (u32)&JTAG_TAP_HS_SPI_M->DR;\
+											DMA_InitStructure.DMA_MemoryBaseAddr = (uint32)0;\
+											DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralSRC;\
+											DMA_InitStructure.DMA_BufferSize = 0;\
+											DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;\
+											DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;\
+											DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte;\
+											DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;\
+											DMA_InitStructure.DMA_Mode = DMA_Mode_Normal;\
+											DMA_InitStructure.DMA_Priority = DMA_Priority_VeryHigh;\
+											DMA_InitStructure.DMA_M2M = DMA_M2M_Disable;\
+											DMA_Init(JTAG_TAP_HS_SPI_M_RX_DMA, &DMA_InitStructure);\
+											\
+											DMA_InitStructure.DMA_PeripheralBaseAddr = (u32)&JTAG_TAP_HS_SPI_S->DR;\
+											DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralDST;\
+											DMA_Init(JTAG_TAP_HS_SPI_S_TX_DMA, &DMA_InitStructure);\
+											\
+											JTAG_TAP_HS_SPI_EnableDMA();\
+										} while (0)
+
 #define JTAG_TAP_HS_SPI_M_RX_DMA_LEN(l)	(JTAG_TAP_HS_SPI_M_RX_DMA->CNDTR = (uint32)(l))
 #define JTAG_TAP_HS_SPI_M_RX_DMA_ADDR(a)(JTAG_TAP_HS_SPI_M_RX_DMA->CMAR = (uint32)(a))
 #define JTAG_TAP_HS_SPI_M_RX_DMA_EN()	(JTAG_TAP_HS_SPI_M_RX_DMA->CCR |= (uint32)1)
