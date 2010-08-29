@@ -37,9 +37,9 @@ void BDM_Init(void)
 	{
 		BDM_Inited = 1;
 		BDM_clock_div = 0;
+		SYNCSWPWM_IN_TIMER_INIT();
 		SYNCSWPWM_OUT_TIMER_INIT();
 		SYNCSWPWM_PORT_OD_INIT();
-		SYNCSWPWM_IN_TIMER_INIT();
 	}
 }
 
@@ -150,7 +150,8 @@ uint8 BDM_InByte(void)
 	{
 		*ptr++ = BDM_PULSE_1;
 	}
-	SYNCSWPWM_OUT_TIMER_DMA_INIT(8, BDM_DMA_OUT_Buffer);
+	*ptr++ = 0;
+	SYNCSWPWM_OUT_TIMER_DMA_INIT(9, BDM_DMA_OUT_Buffer);
 	SYNCSWPWM_OUT_TIMER_DMA_WAIT();
 
 	return 0;
