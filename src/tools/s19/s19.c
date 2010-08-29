@@ -151,8 +151,8 @@ RESULT read_s19_file(FILE *s19_file, WRITE_MEMORY_CALLBACK callback,
 			goto parse_data;
 			// data sequence
 parse_data:
-			if (ERROR_OK != callback(addr_offset + addr, seg_offset, data, 
-										length, buffer))
+			if (ERROR_OK != callback(fileparser_cur_ext, addr_offset + addr, 
+										seg_offset, data, length, buffer))
 			{
 				return ERROR_FAIL;
 			}
@@ -273,9 +273,11 @@ static RESULT write_s19_line(FILE *s19_file, uint8_t data_len,
 
 RESULT write_s19_file(FILE *s19_file, uint32_t file_addr, 
 						uint8_t *buff, uint32_t buff_size, 
-						uint32_t seg_addr, uint32_t start_addr)
+						uint32_t seg_addr, uint32_t start_addr, 
+						ADJUST_MAPPING_CALLBACK remap)
 {
 	uint8_t tmp;
+	uint32_t tmp_addr;
 	RESULT ret;
 	
 	REFERENCE_PARAMETER(file_addr);
@@ -294,7 +296,12 @@ RESULT write_s19_file(FILE *s19_file, uint32_t file_addr,
 		}
 		
 		// write
-		ret = write_s19_line(s19_file, (uint8_t)tmp, start_addr, S19_S3, buff);
+		tmp_addr = start_addr;
+		if ((remap != NULL) && (ERROR_OK != remap(&tmp_addr, 0)))
+		{
+			return ERROR_FAIL;
+		}
+		ret = write_s19_line(s19_file, (uint8_t)tmp, tmp_addr, S19_S3, buff);
 		if (ret != ERROR_OK)
 		{
 			return ret;

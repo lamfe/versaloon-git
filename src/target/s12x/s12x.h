@@ -26,5 +26,7 @@ extern const struct program_mode_t s12x_program_mode[];
 extern const struct program_functions_t s12x_program_functions;
 extern const struct misc_cmd_t s12x_notifier[];
 
+ADJUST_MAPPING_HANDLER(s12x);
+
 #endif /* __S12X_H_INCLUDED__ */
 

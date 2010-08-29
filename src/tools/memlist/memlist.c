@@ -133,8 +133,12 @@ static void MEMLIST_Insert(struct memlist **ml, struct memlist **newitem)
 	if (MEMLIST_GetNext(ml_tmp) != NULL)
 	{
 		sllint_insert((*newitem)->list, MEMLIST_GetNext(ml_tmp)->list);
+		*ml = *newitem;
 	}
-	sllint_insert(ml_tmp->list, (*newitem)->list);
+	else
+	{
+		sllint_insert(ml_tmp->list, (*newitem)->list);
+	}
 }
 
 uint32_t MEMLIST_CalcAllSize(struct memlist *ml)

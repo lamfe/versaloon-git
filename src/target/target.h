@@ -262,9 +262,16 @@ struct program_functions_t
 #define ADJUST_SETTING_FUNCNAME(mod)		ASSEMBLE_FUNCNAME(mod, _adjust_setting)
 #define ADJUST_SETTING_HANDLER(mod)			\
 			RESULT ADJUST_SETTING_FUNCNAME(mod)\
-						(struct program_info_t *pi, \
-							struct chip_param_t *param, \
-							uint32_t program_mode)
+					(struct program_info_t *pi, struct chip_param_t *param, \
+						uint32_t program_mode)
+
+#define ADJUST_MAPPING_FUNCNAME(mod)		ASSEMBLE_FUNCNAME(mod, _adjust_mapping)
+#define ADJUST_MAPPING_HANDLER(mod)			\
+			RESULT ADJUST_MAPPING_FUNCNAME(mod)\
+					(uint32_t *address, uint8_t dir)
+
+#define TARGET_MAPPING_FROM_FILE			1
+#define TARGET_MAPPING_TO_FILE				0
 
 struct target_info_t
 {
@@ -276,11 +283,7 @@ struct target_info_t
 	const struct misc_cmd_t *notifier;
 	RESULT (*adjust_setting)(struct program_info_t *pi, 
 							struct chip_param_t *param, uint32_t program_mode);
-	
-	RESULT (*get_mass_product_data_size)(struct operation_t operations, 
-						struct program_info_t *pi, uint32_t *size);
-	RESULT (*prepare_mass_product_data)(struct operation_t operations, 
-						struct program_info_t *pi, uint8_t *buff);
+	RESULT (*adjust_mapping)(uint32_t *address, uint8_t dir);
 };
 
 struct chip_series_t
