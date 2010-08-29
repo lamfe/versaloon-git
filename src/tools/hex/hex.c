@@ -122,7 +122,7 @@ RESULT read_hex_file(FILE *hex_file, WRITE_MEMORY_CALLBACK callback,
 		{
 		case HEX_TYPE_DATA:
 			// data record
-			if (ERROR_OK != callback(
+			if (ERROR_OK != callback(fileparser_cur_ext, 
 					ext_addr0 + ext_addr1 + addr_offset + addr, 
 					seg_addr + seg_offset, &line_buf[4], length, buffer))
 			{
@@ -230,11 +230,13 @@ static RESULT write_hex_line(FILE *hex_file, uint8_t data_len,
 
 RESULT write_hex_file(FILE *hex_file, uint32_t file_addr, 
 						uint8_t *buff, uint32_t buff_size, 
-						uint32_t seg_addr, uint32_t start_addr)
+						uint32_t seg_addr, uint32_t start_addr, 
+						ADJUST_MAPPING_CALLBACK remap)
 {
 	uint8_t tmp;
 	uint16_t addr_high_orig, addr_tmp_big_endian;
 	RESULT ret;
+	uint32_t tmp_addr;
 	
 	file_addr = file_addr;
 	
@@ -285,8 +287,13 @@ RESULT write_hex_file(FILE *hex_file, uint32_t file_addr,
 		}
 		
 		// write
+		tmp_addr = start_addr;
+		if ((remap != NULL) && (ERROR_OK != remap(&tmp_addr, 0)))
+		{
+			return ERROR_FAIL;
+		}
 		ret = write_hex_line(hex_file, (uint8_t)tmp, 
-						(uint16_t)(start_addr & 0xFFFF), HEX_TYPE_DATA, buff);
+						(uint16_t)(tmp_addr & 0xFFFF), HEX_TYPE_DATA, buff);
 		if (ret != ERROR_OK)
 		{
 			return ret;

@@ -206,9 +206,7 @@ struct target_info_t targets_info[] =
 		&stm32_program_functions,			// program_functions
 		stm32_notifier,						// notifier
 		NULL,								// adjust_setting
-		
-		NULL,								// get_mass_product_data_size
-		NULL,								// prepare_mass_product_data
+		NULL,								// adjust_mapping
 	},
 	// lpc1000
 	{
@@ -219,9 +217,7 @@ struct target_info_t targets_info[] =
 		&lpc1000_program_functions,			// program_functions
 		lpc1000_notifier,					// notifier
 		lpc1000_adjust_setting,				// adjust_setting
-		
-		NULL,								// get_mass_product_data_size
-		NULL,								// prepare_mass_product_data
+		NULL,								// adjust_mapping
 	},
 	// lm3s
 	{
@@ -232,9 +228,7 @@ struct target_info_t targets_info[] =
 		&lm3s_program_functions,			// program_functions
 		lm3s_notifier,						// notifier
 		NULL,								// adjust_setting
-		
-		NULL,								// get_mass_product_data_size
-		NULL,								// prepare_mass_product_data
+		NULL,								// adjust_mapping
 	},
 	// at91sam3
 	{
@@ -245,9 +239,7 @@ struct target_info_t targets_info[] =
 		&at91sam3_program_functions,		// program_functions
 		at91sam3_notifier,					// notifier
 		NULL,								// adjust_setting
-		
-		NULL,								// get_mass_product_data_size
-		NULL,								// prepare_mass_product_data
+		NULL,								// adjust_mapping
 	},
 	// avr32
 /*	{
@@ -258,9 +250,7 @@ struct target_info_t targets_info[] =
 		&avr32_program_functions,			// program_functions
 		avr32_notifier,						// notifier
 		NULL,								// adjust_setting
-		
-		NULL,								// get_mass_product_data_size
-		NULL,								// prepare_mass_product_data
+		NULL,								// adjust_mapping
 	},
 */	// avrxmega
 	{
@@ -271,9 +261,7 @@ struct target_info_t targets_info[] =
 		&avrxmega_program_functions,		// program_functions
 		avrxmega_notifier,					// notifier
 		NULL,								// adjust_setting
-		
-		NULL,								// get_mass_product_data_size
-		NULL,								// prepare_mass_product_data
+		NULL,								// adjust_mapping
 	},
 	// stm8
 	{
@@ -284,9 +272,7 @@ struct target_info_t targets_info[] =
 		&stm8_program_functions,			// program_functions
 		stm8_notifier,						// notifier
 		NULL,								// adjust_setting
-		
-		NULL,								// get_mass_product_data_size
-		NULL,								// prepare_mass_product_data
+		NULL,								// adjust_mapping
 	},
 	// at89s5x
 	{
@@ -297,9 +283,7 @@ struct target_info_t targets_info[] =
 		&s5x_program_functions,				// program_functions
 		s5x_notifier,						// notifier
 		NULL,								// adjust_setting
-		
-		NULL,								// get_mass_product_data_size
-		NULL,								// prepare_mass_product_data
+		NULL,								// adjust_mapping
 	},
 	// psoc
 	{
@@ -310,9 +294,7 @@ struct target_info_t targets_info[] =
 		&psoc1_program_functions,			// program_functions
 		psoc1_notifier,						// notifier
 		psoc1_adjust_setting,				// adjust_setting
-		
-		NULL,								// get_mass_product_data_size
-		NULL,								// prepare_mass_product_data
+		NULL,								// adjust_mapping
 	},
 	// msp430
 	{
@@ -323,9 +305,7 @@ struct target_info_t targets_info[] =
 		&msp430_program_functions,			// program_functions
 		msp430_notifier,					// notifier
 		NULL,								// adjust_setting
-		
-		NULL,								// get_mass_product_data_size
-		NULL,								// prepare_mass_product_data
+		NULL,								// adjust_mapping
 	},
 	// c8051f
 	{
@@ -336,9 +316,7 @@ struct target_info_t targets_info[] =
 		&c8051f_program_functions,			// program_functions
 		c8051f_notifier,					// notifier
 		NULL,								// adjust_setting
-		
-		NULL,								// get_mass_product_data_size
-		NULL,								// prepare_mass_product_data
+		NULL,								// adjust_mapping
 	},
 	// avr8
 	{
@@ -349,9 +327,7 @@ struct target_info_t targets_info[] =
 		&avr8_program_functions,			// program_functions
 		avr8_notifier,						// notifier
 		NULL,								// adjust_setting
-		
-		NULL,								// get_mass_product_data_size
-		NULL,								// prepare_mass_product_data
+		NULL,								// adjust_mapping
 	},
 	// svf_player
 	{
@@ -362,9 +338,7 @@ struct target_info_t targets_info[] =
 		&svfp_program_functions,			// program_functions
 		svfp_notifier,						// notifier
 		NULL,								// adjust_setting
-		
-		NULL,								// get_mass_product_data_size
-		NULL,								// prepare_mass_product_data
+		NULL,								// adjust_mapping
 	},
 	// lpc900
 	{
@@ -375,9 +349,7 @@ struct target_info_t targets_info[] =
 		&lpc900_program_functions,			// program_functions
 		lpc900_notifier,					// notifier
 		NULL,								// adjust_setting
-		
-		NULL,								// get_mass_product_data_size
-		NULL,								// prepare_mass_product_data
+		NULL,								// adjust_mapping
 	},
 	// HCS08
 	{
@@ -388,9 +360,7 @@ struct target_info_t targets_info[] =
 		&hcs08_program_functions,			// program_functions
 		hcs08_notifier,						// notifier
 		NULL,								// adjust_setting
-		
-		NULL,								// get_mass_product_data_size
-		NULL,								// prepare_mass_product_data
+		NULL,								// adjust_mapping
 	},
 	// S12X
 	{
@@ -401,9 +371,7 @@ struct target_info_t targets_info[] =
 		&s12x_program_functions,			// program_functions
 		s12x_notifier,						// notifier
 		NULL,								// adjust_setting
-		
-		NULL,								// get_mass_product_data_size
-		NULL,								// prepare_mass_product_data
+		s12x_adjust_mapping,				// adjust_mapping
 	},
 	{
 		NULL,								// name
@@ -413,9 +381,7 @@ struct target_info_t targets_info[] =
 		NULL,								// program_functions
 		NULL,								// notifier
 		NULL,								// adjust_setting
-		
-		NULL,								// get_mass_product_data_size
-		NULL,								// prepare_mass_product_data
+		NULL,								// adjust_mapping
 	}
 };
 struct target_info_t *cur_target = NULL;
@@ -680,8 +646,9 @@ static RESULT target_check_defined(struct operation_t operations)
 	}
 }
 
-static RESULT target_write_buffer_from_file_callback(uint32_t address, 
-			uint32_t seg_addr, uint8_t* data, uint32_t length, void* buffer)
+static RESULT target_write_buffer_from_file_callback(char * ext, 
+				uint32_t address, uint32_t seg_addr, uint8_t* data, 
+				uint32_t length, void* buffer)
 {
 	uint32_t i;
 	int8_t area_idx;
@@ -693,9 +660,21 @@ static RESULT target_write_buffer_from_file_callback(uint32_t address,
 	uint32_t mem_addr;
 	RESULT ret;
 	
-	if ((NULL == cur_target) || (0 == strlen(target_chip_param.chip_name)))
+	if ((NULL == cur_target) || (0 == strlen(target_chip_param.chip_name)) 
+		|| (NULL == ext))
 	{
 		LOG_BUG(ERRMSG_NOT_INITIALIZED, "target", "");
+		return ERROR_FAIL;
+	}
+	
+	// remap if adjust_mapping is defined and format is not BIN
+	if ((strcmp(ext, "BIN")) && 
+		(cur_target->adjust_mapping != NULL) && 
+		(ERROR_OK != cur_target->adjust_mapping(&address, 
+												TARGET_MAPPING_FROM_FILE)))
+	{
+		LOG_BUG(ERRMSG_FAILURE_OPERATE_ADDRESS, "remap target address", 
+				address);
 		return ERROR_FAIL;
 	}
 	
@@ -4003,7 +3982,8 @@ MISC_HANDLER(target_operate)
 					{
 						if (ERROR_OK != save_target_to_file(fl_out, buff, 
 								size, area->seg, area->addr, p_map->fseg_addr, 
-								p_map->fstart_addr))
+								p_map->fstart_addr, 
+								cur_target->adjust_mapping))
 						{
 							LOG_ERROR(ERRMSG_FAILURE_OPERATION, 
 										"write data to file");

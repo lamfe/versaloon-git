@@ -39,8 +39,10 @@
 RESULT read_bin_file(FILE *bin_file, WRITE_MEMORY_CALLBACK callback, 
 					void *buffer, uint32_t seg_offset, uint32_t addr_offset);
 RESULT write_bin_file(FILE *bin_file, uint32_t file_addr, uint8_t *buff, 
-					uint32_t buff_size, uint32_t seg_addr, uint32_t start_addr);
+					uint32_t buff_size, uint32_t seg_addr, uint32_t start_addr, 
+					ADJUST_MAPPING_CALLBACK remap);
 
+char *fileparser_cur_ext = NULL;
 static struct file_parser_t file_parser[] = 
 {
 	{"HEX", read_hex_file, write_hex_file, write_hex_file_end}, 
@@ -109,6 +111,7 @@ RESULT parse_file(char *file_name, FILE *file, void *para,
 		return ERROR_OK;
 	}
 	
+	fileparser_cur_ext = file_parser[i].ext;
 	return file_parser[i].parse_file(file, callback, para, 
 										seg_offset, addr_offset);
 }
@@ -145,7 +148,7 @@ RESULT end_file(struct filelist *fl)
 
 RESULT save_target_to_file(struct filelist *fl, uint8_t *buff, 
 					uint32_t buff_size, uint32_t seg_addr, uint32_t start_addr, 
-					int32_t fseg, int32_t faddr)
+					int32_t fseg, int32_t faddr, ADJUST_MAPPING_CALLBACK remap)
 {
 	uint8_t i;
 	struct filelist *target_file = fl;
@@ -193,8 +196,8 @@ RESULT save_target_to_file(struct filelist *fl, uint8_t *buff,
 	}
 	
 	target_file->access = 1;
-	return file_parser[i].save_target_to_file(target_file->file, 
-						start_addr, buff, buff_size, seg_addr, start_addr);
+	return file_parser[i].save_target_to_file(target_file->file, start_addr, 
+								buff, buff_size, seg_addr, start_addr, remap);
 }
 
 RESULT read_bin_file(FILE *bin_file, WRITE_MEMORY_CALLBACK callback, 
@@ -221,7 +224,7 @@ RESULT read_bin_file(FILE *bin_file, WRITE_MEMORY_CALLBACK callback,
 			}
 		}
 		
-		ret = callback(addr + addr_offset, seg_offset, 
+		ret = callback(fileparser_cur_ext, addr + addr_offset, seg_offset, 
 						cur_buff, cur_len, buffer);
 		if (ret != ERROR_OK)
 		{
@@ -235,10 +238,13 @@ RESULT read_bin_file(FILE *bin_file, WRITE_MEMORY_CALLBACK callback,
 
 RESULT write_bin_file(FILE *bin_file, uint32_t file_addr, 
 						uint8_t *buff, uint32_t buff_size, 
-						uint32_t seg_addr, uint32_t start_addr)
+						uint32_t seg_addr, uint32_t start_addr, 
+						ADJUST_MAPPING_CALLBACK remap)
 {
 	uint32_t file_size = 0;
 	RESULT ret = ERROR_OK;
+	
+	REFERENCE_PARAMETER(remap);
 	
 	// seg_addr is not used in binary file
 	seg_addr = seg_addr;

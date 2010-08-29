@@ -367,10 +367,10 @@ WRITE_TARGET_HANDLER(s12x)
 				param[0] = (S12X_FTMR_FCMD_ProgramPFlash << 8) 
 					| (((addr + i) & 0xFF0000) >> 16);
 				param[1] = (addr + i) & 0x00FFFF;
-				param[2] = buff[i + 0] + (buff[i + 1] << 8);
-				param[3] = buff[i + 2] + (buff[i + 3] << 8);
-				param[4] = buff[i + 4] + (buff[i + 5] << 8);
-				param[5] = buff[i + 6] + (buff[i + 7] << 8);
+				param[2] = (buff[i + 0] << 8) + buff[i + 1];
+				param[3] = (buff[i + 2] << 8) + buff[i + 3];
+				param[4] = (buff[i + 4] << 8) + buff[i + 5];
+				param[5] = (buff[i + 6] << 8) + buff[i + 7];
 				ret = s12x_flash_cmd(6, param);
 				if (ret != ERROR_OK)
 				{
@@ -417,5 +417,31 @@ READ_TARGET_HANDLER(s12x)
 		break;
 	}
 	return ret;
+}
+
+ADJUST_MAPPING_HANDLER(s12x)
+{
+	if (TARGET_MAPPING_FROM_FILE == dir)
+	{
+		if (!(*address & 0x00FF0000))
+		{
+			*address |= 0x00FF0000;
+		}
+		// address:	bit0  .. bit13
+		// PPAGE:	bit14 .. bit21
+		// bit22:	1
+		*address = (*address & 0x3FFF) | ((*address & 0x00FF0000) >> 2) 
+					| (1 << 22);
+	}
+	else if (TARGET_MAPPING_TO_FILE == dir)
+	{
+		*address = (*address & 0xFFFF) | ((*address & 0x003FC000) << 2);
+	}
+	else
+	{
+		LOG_BUG(ERRMSG_INVALID_TARGET, "mapping direction");
+		return ERROR_FAIL;
+	}
+	return ERROR_OK;
 }
 
