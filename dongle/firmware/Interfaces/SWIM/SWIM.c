@@ -170,7 +170,8 @@ uint8 SWIM_SetClockParam(uint8 mHz, uint8 cnt0, uint8 cnt1)
 	}
 	SWIM_PULSE_Threshold = SWIM_PULSE_0 + SWIM_PULSE_1;
 
-	SYNCSWPWM_OUT_TIMER_SetCycle(SWIM_PULSE_Threshold);
+	// 1.125 times
+	SYNCSWPWM_OUT_TIMER_SetCycle(SWIM_PULSE_Threshold + (SWIM_PULSE_Threshold >> 3));
 
 	SWIM_PULSE_Threshold >>= 1;
 	return 0;

@@ -84,7 +84,7 @@
 #define SYNCSWPWM_GPIO_PIN				GPIO_PIN_6
 
 #define SYNCSWPWM_OUT_TIMER				TIM3
-#define SYNCSWPWM_OUT_TIMER_DMA			DMA1_Channel3
+#define SYNCSWPWM_OUT_TIMER_DMA			DMA1_Channel6
 #define SYNCSWPWM_IN_TIMER				TIM4
 #define SYNCSWPWM_IN_TIMER_DMA			DMA1_Channel4
 
@@ -180,7 +180,7 @@
 											\
 											TIM_OC1PreloadConfig(SYNCSWPWM_OUT_TIMER, TIM_OCPreload_Enable);\
 											TIM_ARRPreloadConfig(SYNCSWPWM_OUT_TIMER, ENABLE);\
-											TIM_DMACmd(SYNCSWPWM_OUT_TIMER, TIM_DMA_Update, ENABLE);\
+											TIM_DMACmd(SYNCSWPWM_OUT_TIMER, TIM_DMA_CC1, ENABLE);\
 											TIM_Cmd(SYNCSWPWM_OUT_TIMER, ENABLE);\
 											TIM_CtrlPWMOutputs(SYNCSWPWM_OUT_TIMER, ENABLE);\
 										}while(0)
@@ -203,8 +203,8 @@
 												SYNCSWPWM_OUT_TIMER_DMA->CCR |= 1;\
 											}while(0)
 #define SYNCSWPWM_OUT_TIMER_DMA_WAIT()	do{\
-											while(!(DMA1->ISR & DMA1_FLAG_TC3));\
-											DMA1->IFCR = DMA1_FLAG_TC3;\
+											while(!(DMA1->ISR & DMA1_FLAG_TC6));\
+											DMA1->IFCR = DMA1_FLAG_TC6;\
 										}while(0)
 
 #define SYNCSWPWM_PORT_INIT()			GPIO_PinRemapConfig(GPIO_PartialRemap_TIM3, ENABLE)
