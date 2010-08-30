@@ -291,7 +291,6 @@
           <state>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\STM32_USB-FS-Device_Driver\inc</state>
           <state>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\inc</state>
           <state>$PROJ_DIR$\..\..\..\Tools\fifo\</state>
-          <state>$PROJ_DIR$\..\..\..\HW\VCOM\</state>
           <state>$PROJ_DIR$\..\..\..\HW\Mass\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\JTAG\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\SWD\</state>
@@ -305,6 +304,7 @@
           <state>$PROJ_DIR$\..\..\..\Interfaces\MSP430_JTAG\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\BDM\</state>
           <state>$PROJ_DIR$\..\..\..\USB_TO_XXX\</state>
+          <state>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -1129,7 +1129,6 @@
           <state>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\STM32_USB-FS-Device_Driver\inc</state>
           <state>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\inc</state>
           <state>$PROJ_DIR$\..\..\..\Tools\fifo\</state>
-          <state>$PROJ_DIR$\..\..\..\HW\VCOM\</state>
           <state>$PROJ_DIR$\..\..\..\HW\Mass\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\JTAG\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\SWD\</state>
@@ -1143,6 +1142,7 @@
           <state>$PROJ_DIR$\..\..\..\Interfaces\MSP430_JTAG\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\BDM\</state>
           <state>$PROJ_DIR$\..\..\..\USB_TO_XXX\</state>
+          <state>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -1892,24 +1892,6 @@
           <name>$PROJ_DIR$\..\..\..\HW\Mass\usb_scsi.c</name>
         </file>
       </group>
-      <group>
-        <name>ST_VCOM</name>
-        <file>
-          <name>$PROJ_DIR$\..\..\..\HW\VCOM\usb_desc.c</name>
-        </file>
-        <file>
-          <name>$PROJ_DIR$\..\..\..\HW\VCOM\usb_endp.c</name>
-        </file>
-        <file>
-          <name>$PROJ_DIR$\..\..\..\HW\VCOM\usb_istr.c</name>
-        </file>
-        <file>
-          <name>$PROJ_DIR$\..\..\..\HW\VCOM\usb_prop.c</name>
-        </file>
-        <file>
-          <name>$PROJ_DIR$\..\..\..\HW\VCOM\usb_pwr.c</name>
-        </file>
-      </group>
     </group>
     <file>
       <name>$PROJ_DIR$\..\..\..\HW\HW.c</name>
@@ -2022,6 +2004,27 @@
   </group>
   <group>
     <name>USB_TO_XXX</name>
+    <group>
+      <name>USB</name>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB\usb_desc.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB\usb_endp.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB\usb_istr.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB\usb_prop.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB\usb_pwr.c</name>
+      </file>
+    </group>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\CommandProcessor.c</name>
+    </file>
     <file>
       <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB_TO_ADC.c</name>
     </file>
