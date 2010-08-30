@@ -14,7 +14,7 @@
  *      2008-11-07:     created(by SimonQian)                             *
  **************************************************************************/
 
-#include "USB_proto.h"
+#include "CommandProcessor.h"
 
 // USB_TO_XXX USB Commands
 // Page0

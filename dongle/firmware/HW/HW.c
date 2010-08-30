@@ -1,6 +1,5 @@
 #include "app_cfg.h"
 #include "HW.h"
-#include "fifo.h"
 #if POWER_OUT_EN
 #	include "PowerExt.h"
 #endif
@@ -15,6 +14,9 @@
 #if USB_WITH_MASSSTORAGE
 #	include "mass_mal.h"
 #endif
+
+uint8 asyn_rx_buf[ASYN_DATA_BUFF_SIZE];
+uint16 Vtarget = 0;
 
 void GPIO_Dir(GPIO_TypeDef* GPIOx, uint8 mode, uint8 pin)
 {
@@ -302,6 +304,64 @@ void ADC_Configuration(void)
 	/* Start ADC1 Software Conversion */ 
 	ADC_SoftwareStartConvCmd(ADC1, ENABLE);
 #endif
+}
+
+// GLOBAL_OUTPUT
+uint8 GLOBAL_OUTPUT_Count = 0;
+void GLOBAL_OUTPUT_Acquire(void)
+{
+	if(!GLOBAL_OUTPUT_Count)
+	{
+		GLOBAL_OUTPUT_ENABLE();
+	}
+	GLOBAL_OUTPUT_Count++;
+}
+
+void GLOBAL_OUTPUT_Release(void)
+{
+	if (GLOBAL_OUTPUT_Count)
+	{
+		GLOBAL_OUTPUT_Count--;
+		if(!GLOBAL_OUTPUT_Count)
+		{
+			GLOBAL_OUTPUT_DISABLE();
+		}
+	}
+}
+
+void PWREXT_Check(uint8 b_control_led)
+{
+	static u32 dly = 0;
+
+	if(++dly > 0xFFFF)
+	{
+		dly = 0;
+#if POWER_SAMPLE_EN
+		Vtarget = ADC_GetConversionValue(TVCC_ADC_PORT);
+		// convert target power to be in mV unit
+		Vtarget = Vtarget * TVCC_SAMPLE_VREF * TVCC_SAMPLE_DIV / TVCC_SAMPLE_MAXVAL;
+#if POWER_OUT_EN
+		// if PowerExt is enabled and no power on the line
+		if((Vtarget < TVCC_SAMPLE_MIN_POWER))
+		{
+			// release power
+			PWREXT_ForceRelease();
+		}
+#endif
+		if (b_control_led)
+		{
+			// Control LED
+			if(Vtarget > TVCC_SAMPLE_MIN_POWER)	// Red LED indicate the target power
+			{
+				LED_RED_ON();
+			}
+			else
+			{
+				LED_RED_OFF();
+			}
+		}
+#endif
+	}
 }
 
 void USB_Init_SerialString(uint8 *strSerial, uint16 len)

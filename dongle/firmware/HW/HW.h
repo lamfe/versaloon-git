@@ -74,3 +74,5 @@ void SUSP_Callback(void);
 s32 USB_Out_IsReady(void);
 s32 USB_Out_PollReady(void);
 void USB_Out(u8 *data, u32 len);
+
+void PWREXT_Check(uint8 b_control_led);
