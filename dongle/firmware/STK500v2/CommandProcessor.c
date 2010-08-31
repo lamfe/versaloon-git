@@ -20,7 +20,7 @@
 
 void ProcessCommand(uint8* dat, uint16 len)
 {
-	STK500V2_Process(buffer_out, cmd_len & 0xFFFF);
+	STK500V2_Process(dat, len);
 }
 
 void ProcessIdle(void)

@@ -31,14 +31,6 @@
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-uint8_t buffer_out[USB_DATA_BUFF_SIZE], *buffer_in = NULL;
-__IO uint32_t count_out = 0;
-__IO uint32_t usb_in_data_remain = 0, usb_in_numofpackage = 0;
-__IO uint32_t buffer_ptr = 0;
-__IO uint32_t usb_ovf = 0;
-
-__IO uint32_t cmd_len = 0;
-__IO uint32_t rep_len = 0;
 
 // OUT means PC OUT, Device input
 // IN means PC IN, Device output

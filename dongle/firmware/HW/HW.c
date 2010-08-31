@@ -21,6 +21,15 @@
 #	endif
 #endif
 
+uint8_t buffer_out[USB_DATA_BUFF_SIZE], *buffer_in = NULL;
+__IO uint32_t count_out = 0;
+__IO uint32_t usb_in_data_remain = 0, usb_in_numofpackage = 0;
+__IO uint32_t buffer_ptr = 0;
+__IO uint32_t usb_ovf = 0;
+
+__IO uint32_t cmd_len = 0;
+__IO uint32_t rep_len = 0;
+
 uint8 asyn_rx_buf[ASYN_DATA_BUFF_SIZE];
 uint16 Vtarget = 0;
 
@@ -644,6 +653,9 @@ void CDC_IF_TX_Int(void)
 #endif		// CDC_IF_EN
 #endif		// CDC_IF_EN
 
+#ifdef USB_OUT_EN
+#if USB_OUT_EN
+
 s32 USB_Out_IsReady(void)
 {
 	if (usb_in_numofpackage > 0)
@@ -783,6 +795,9 @@ void USB_Out(u8 *data, u32 len)
 #endif
 	SetEPTxValid(ENDP2);
 }
+
+#endif
+#endif
 
 /*******************************************************************************
 * Function Name	: USB_Cable_Config
