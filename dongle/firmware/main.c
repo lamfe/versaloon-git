@@ -44,6 +44,8 @@ int main(void)
 
 			ProcessCommand(&buffer_out[0], cmd_len & 0xFFFF);
 
+#ifdef USB_OUT_EN
+#if USB_OUT_EN
 			if(rep_len > 0)
 			{
 				// indicate reply data is valie
@@ -56,6 +58,8 @@ int main(void)
 			}
 
 			count_out = 0;				// set USB receive pointer to 0
+#endif
+#endif
 		}
 		else
 		{
@@ -63,6 +67,8 @@ int main(void)
 			ProcessIdle();				// Idle loop
 		}
 
+#ifdef USB_OUT_EN
+#if USB_OUT_EN
 		if(rep_len & 0x80000000)		// there is valid data to be sent to PC
 		{
 			USB_Out(buffer_out, rep_len & 0xFFFF);
@@ -75,6 +81,8 @@ int main(void)
 			cmd_len = 0;
 			rep_len = 0;
 		}
+#endif
+#endif
 		LED_USB_ON();					// command processed, light USB LED
 	}
 }

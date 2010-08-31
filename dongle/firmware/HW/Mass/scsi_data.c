@@ -45,9 +45,15 @@ uint8_t Standard_Inquiry_Data[] =
 #if USB_PROTOCOL == USB_ST_VCOM
     'F', 'D', 'o', 'n', 'V', 'C', 'O',
     'M', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
-#else
+#elif USB_PROTOCOL == USB_AT_JTAGICE_MKII
     'F', 'D', 'o', 'n', 'J', 'T', 'A',
     'G', 'I', 'C', 'E', 'm', 'k', 'I', 'I', ' ',
+#elif USB_PROTOCOL == USB_AT_DRAGON
+    'F', 'D', 'o', 'n', 'A', 'V', 'R',
+    'D', 'r', 'a', 'g', 'o', 'n', ' ', ' ', ' ',
+#elif USB_PROTOCOL == USB_MASS
+    'F', 'D', 'o', 'n', 'V', 'e', 'r',
+    's', 'a', 'l', 'o', 'o', 'n', ' ', ' ', ' ',
 #endif
 	/* Product Revision Level */
     '1', '.', '0', ' '

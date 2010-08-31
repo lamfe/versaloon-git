@@ -33,10 +33,12 @@
 #include "CommandProcessor.h"
 
 /************************ What do U want ************************/
-#define USB_AT_DRAGON					1
-#define USB_AT_JTAGICE_MKII				2
+#define USB_AT_DRAGON					10
+#define USB_AT_JTAGICE_MKII				11
 
 #define USB_PROTOCOL					USB_AT_JTAGICE_MKII
+
+#define USB_OUT_EN						1
 
 #define POWER_OUT_EN					1
 #define POWER_SAMPLE_EN					1
@@ -46,12 +48,6 @@
 /***************************** Buffer ****************************/
 #define USB_DATA_BUFF_SIZE				(12 * 1024)
 #define ASYN_DATA_BUFF_SIZE				(4 * 1024)
-
-/***************************** EXTERN ****************************/
-extern __IO uint32_t rep_len, cmd_len;
-extern uint8_t buffer_out[USB_DATA_BUFF_SIZE], *buffer_in;
-extern __IO uint32_t count_out, usb_ovf;
-extern __IO uint32_t usb_in_data_remain, usb_in_numofpackage;
 
 /**************************** Checks ****************************/
 #if !POWER_OUT_EN

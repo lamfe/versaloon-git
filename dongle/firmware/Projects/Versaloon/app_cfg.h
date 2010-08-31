@@ -36,6 +36,8 @@
 #define USB_ST_VCOM						0x02
 #define USB_PROTOCOL					USB_ST_VCOM
 
+#define USB_OUT_EN						1
+
 #define USB_WITH_NO_CDC					0				// 0 more USB Interface descriptor
 #define USB_WITH_COMPOSITE_CDC			1				// 1 more USB Interface descriptor
 #define USB_WITH_IAD_CDC				2				// 2 more USB Interface descriptors
@@ -85,12 +87,6 @@
 /***************************** Buffer ****************************/
 #define USB_DATA_BUFF_SIZE				(12 * 1024)
 #define ASYN_DATA_BUFF_SIZE				(4 * 1024)
-
-/***************************** EXTERN ****************************/
-extern __IO uint32_t rep_len, cmd_len;
-extern uint8_t buffer_out[USB_DATA_BUFF_SIZE], *buffer_in;
-extern __IO uint32_t count_out, usb_ovf;
-extern __IO uint32_t usb_in_data_remain, usb_in_numofpackage;
 
 /**************************** Checks ****************************/
 #define _HARDWARE_VER_STR				make_ver(_HARDWARE_VER)

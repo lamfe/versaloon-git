@@ -30,6 +30,15 @@
 #include "usb_mem.h"
 #include "mass_mal.h"
 
+#ifdef MSD_BUFF_SIZE_IN_DWORD
+#	if MSD_BUFF_SIZE_IN_DWORD < (MSD_MEMORY_BLOCK_SIZE / 4)
+#		undef MSD_BUFF_SIZE_IN_DWORD
+#		define MSD_BUFF_SIZE_IN_DWORD	MSD_MEMORY_BLOCK_SIZE / 4
+#	endif
+#else
+#	define MSD_BUFF_SIZE_IN_DWORD		MSD_MEMORY_BLOCK_SIZE / 4
+#endif
+
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
@@ -38,7 +47,7 @@ uint32_t Block_Read_count = 0;
 uint32_t Block_offset;
 uint32_t Counter = 0;
 uint32_t  Idx;
-uint32_t Data_Buffer[MSD_MEMORY_BLOCK_SIZE / 4];
+uint32_t Data_Buffer[MSD_BUFF_SIZE_IN_DWORD];
 uint8_t TransferState = TXFR_IDLE;
 /* Extern variables ----------------------------------------------------------*/
 extern uint8_t Bulk_Data_Buff[BULK_MAX_PACKET_SIZE];  /* data buffer*/
