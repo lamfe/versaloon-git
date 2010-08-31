@@ -2,29 +2,24 @@
  *  Copyright (C) 2008 - 2010 by Simon Qian                               *
  *  SimonQian@SimonQian.com                                               *
  *                                                                        *
- *  Project:    Versaloon                                                 *
- *  File:       app_type.h                                                *
+ *  Project:    STK500V2                                                  *
+ *  File:       STK500.h                                                  *
  *  Author:     SimonQian                                                 *
  *  Versaion:   See changelog                                             *
- *  Purpose:    type defines                                              *
+ *  Purpose:    header for STK500 protocol                                *
  *  License:    See license                                               *
  *------------------------------------------------------------------------*
  *  Change Log:                                                           *
  *      YYYY-MM-DD:     What(by Who)                                      *
- *      2008-11-07:     created(by SimonQian)                             *
+ *      2010-08-31:     created(by SimonQian)                             *
  **************************************************************************/
 
-#ifndef __APP_TYPE_H_INCLUDED__
-#define __APP_TYPE_H_INCLUDED__
+extern uint8 STK500_PARAM_SCK_Duration;
+extern uint8 STK500_PARAM_Reset_Polarity;
+extern uint8 STK500_PARAM_DischargeDelay;
+extern uint32 SKT500_Target_Address;
+extern uint8 STK500V2_PARAM_RunAfterProgramming;
 
-#include <stdint.h>
-#include <stdbool.h>
+uint8 STK500_ISP_ProcessProgCmd(uint8* dat, uint16 len);
 
-typedef u8 uint8;
-typedef u16 uint16;
-typedef s8 int8;
-typedef s16 int16;
-typedef u32 uint32;
-typedef s32 int32;
-
-#endif // __APP_TYPE_H_INCLUDED__
+void STK500_ProcessCmd(uint8 *dat, uint16 len);

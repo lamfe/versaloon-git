@@ -92,19 +92,14 @@ extern uint8_t buffer_out[USB_DATA_BUFF_SIZE], *buffer_in;
 extern __IO uint32_t count_out, usb_ovf;
 extern __IO uint32_t usb_in_data_remain, usb_in_numofpackage;
 
-extern uint8 asyn_rx_buf[ASYN_DATA_BUFF_SIZE];
-extern uint16 Vtarget;
-
-extern void System_Idle_Loop(void);
-extern void GLOBAL_OUTPUT_Acquire(void);
-extern void GLOBAL_OUTPUT_Release(void);
-
 /**************************** Checks ****************************/
 #define _HARDWARE_VER_STR				make_ver(_HARDWARE_VER)
 #define make_ver(v)						make_str(v)
 #define make_str(s)						# s
 
-
+#if (USB_PROTOCOL == USB_ST_VCOM)
+#	define CDC_IF_EN					1
+#endif
 
 #if !POWER_OUT_EN
 #define PWREXT_Acquire()
