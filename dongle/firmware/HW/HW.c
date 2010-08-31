@@ -8,11 +8,17 @@
 #include "hw_config.h"
 #include "usb_conf.h"
 #include "usb_desc.h"
-#include "usb_cdc.h"
+#ifdef CDC_IF_EN
+#	if CDC_IF_EN
+#		include "usb_cdc.h"
+#	endif
+#endif
 #define USB_DATA_SIZE		BULK_MAX_PACKET_SIZE
 
-#if USB_WITH_MASSSTORAGE
-#	include "mass_mal.h"
+#ifdef USB_WITH_MASSSTORAGE
+#	if USB_WITH_MASSSTORAGE
+#		include "mass_mal.h"
+#	endif
 #endif
 
 uint8 asyn_rx_buf[ASYN_DATA_BUFF_SIZE];
@@ -71,8 +77,10 @@ void Sys_Init(void)
 	/* Configure the ADC ports */
 	ADC_Configuration();
 
-#if USB_WITH_MASSSTORAGE
+#ifdef USB_WITH_MASSSTORAGE
+#	if USB_WITH_MASSSTORAGE
 	MAL_Init(0);
+#	endif
 #endif
 
 	USB_Pull_Init();
@@ -408,6 +416,9 @@ void USB_Init_SerialString(uint8 *strSerial, uint16 len)
 	}
 }
 
+#ifdef CDC_IF_EN
+#if CDC_IF_EN
+
 static uint32 __if_inited = 0;
 void CDC_IF_Fini(void)
 {
@@ -629,6 +640,9 @@ void CDC_IF_TX_Int(void)
 	}
 #endif
 }
+
+#endif		// CDC_IF_EN
+#endif		// CDC_IF_EN
 
 s32 USB_Out_IsReady(void)
 {

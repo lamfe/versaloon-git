@@ -75,4 +75,10 @@ s32 USB_Out_IsReady(void);
 s32 USB_Out_PollReady(void);
 void USB_Out(u8 *data, u32 len);
 
+extern uint8 asyn_rx_buf[ASYN_DATA_BUFF_SIZE];
+extern uint16 Vtarget;
+
+void GLOBAL_OUTPUT_Acquire(void);
+void GLOBAL_OUTPUT_Release(void);
+
 void PWREXT_Check(uint8 b_control_led);

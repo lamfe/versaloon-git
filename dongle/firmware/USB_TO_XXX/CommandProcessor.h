@@ -3,28 +3,35 @@
  *  SimonQian@SimonQian.com                                               *
  *                                                                        *
  *  Project:    Versaloon                                                 *
- *  File:       app_type.h                                                *
+ *  File:       CommandProcesor.h                                         *
  *  Author:     SimonQian                                                 *
  *  Versaion:   See changelog                                             *
- *  Purpose:    type defines                                              *
+ *  Purpose:    header of CommandProcesor for Versaloon/USB_TO_XXX        *
  *  License:    See license                                               *
  *------------------------------------------------------------------------*
  *  Change Log:                                                           *
  *      YYYY-MM-DD:     What(by Who)                                      *
- *      2008-11-07:     created(by SimonQian)                             *
+ *      2010-08-30:     created(by SimonQian)                             *
  **************************************************************************/
 
-#ifndef __APP_TYPE_H_INCLUDED__
-#define __APP_TYPE_H_INCLUDED__
+// Common Commands
+#define VERSALOON_COMMON_CMD_START		0x00
+#define VERSALOON_COMMON_CMD_END		0x0F
 
-#include <stdint.h>
-#include <stdbool.h>
+#define VERSALOON_GET_INFO				0x00
+#define VERSALOON_GET_TVCC				0x01
+#define VERSALOON_GET_HARDWARE			0x02
+#define VERSALOON_GET_OFFLINE_SIZE		0x08
+#define VERSALOON_ERASE_OFFLINE_DATA	0x09
+#define VERSALOON_WRITE_OFFLINE_DATA	0x0A
+#define VERSALOON_GET_OFFLINE_CHECKSUM	0x0B
+#define VERSALOON_FW_UPDATE				0x0F
 
-typedef u8 uint8;
-typedef u16 uint16;
-typedef s8 int8;
-typedef s16 int16;
-typedef u32 uint32;
-typedef s32 int32;
+// USB_TO_XXX Command
+#define VERSALOON_USB_TO_XXX_CMD_START	0x20
+#define VERSALOON_USB_TO_XXX_CMD_END	0x7F
 
-#endif // __APP_TYPE_H_INCLUDED__
+void ProcessCommand(uint8* dat, uint16 len);
+void ProcessIdle(void);
+uint8 CheckLocalHandler(void);
+void ProcessLocalHandler(void);

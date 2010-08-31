@@ -242,10 +242,10 @@
 										}while(0)
 
 #define JTAG_TAP_HS_SetSpeed(div)		do{\
-											SPI_Configuration(JTAG_TAP_HS_SPI_M,SPI_Mode_Master,(div),\
-												SPI_FirstBit_LSB,SPI_CPOL_High,SPI_CPHA_2Edge);\
-											SPI_Configuration(JTAG_TAP_HS_SPI_S,SPI_Mode_Slave,\
-												SPI_BaudRatePrescaler_2,SPI_FirstBit_LSB,SPI_CPOL_High,SPI_CPHA_2Edge);\
+											SPI_Configuration(JTAG_TAP_HS_SPI_M, SPI_Mode_Master, (div),\
+																SPI_FirstBit_LSB, SPI_CPOL_High, SPI_CPHA_2Edge);\
+											SPI_Configuration(JTAG_TAP_HS_SPI_S, SPI_Mode_Slave,SPI_BaudRatePrescaler_2, \
+																SPI_FirstBit_LSB, SPI_CPOL_High, SPI_CPHA_2Edge);\
 										}while(0)
 
 #define JTAG_TAP_HS_TMS_Out(tms)		JTAG_TAP_HS_SPI_S->DR = (tms)
@@ -305,13 +305,13 @@
 										}while(0)
 
 
-/****************************** ISP ******************************/
-#define ISP_SetRST()					JTAG_TAP_SRST_SET()
-#define ISP_ClrRST()					JTAG_TAP_SRST_CLR()
-#define ISP_GetRST()					JTAG_TAP_SRST_GET()
+/****************************** Reset ******************************/
+#define RST_SET()						SW_SET()
+#define RST_CLR()						SW_CLR()
+#define RST_GET()						SW_GET()
 
-#define ISP_SetRSTOutput()				SW_SETOUTPUT()
-#define ISP_SetRSTInput()				SW_SETINPUT_PU()
+#define RST_SETOUTPUT()					SW_SETOUTPUT()
+#define RST_SETINPUT()					SW_SETINPUT_PU()
 
 /************************** MSP430 JTAG ****************************/
 #define MSP430_JTAG_TEST_SETOUTPUT()	JTAG_TAP_TRST_SETOUTPUT()
