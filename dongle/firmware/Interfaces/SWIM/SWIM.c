@@ -85,9 +85,9 @@ uint8 SWIM_EnterProgMode(void)
 	for (i = 0; i < 4; i++)
 	{
 		SWIM_SET();
-		DelayUS(256);
+		DelayUS(250);
 		SWIM_CLR();
-		DelayUS(256);
+		DelayUS(250);
 	}
 	SWIM_SET();
 

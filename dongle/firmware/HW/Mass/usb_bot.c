@@ -24,6 +24,11 @@
 #include "usb_regs.h"
 #include "usb_mem.h"
 #include "usb_bot.h"
+
+#if USB_PROTOCOL == USB_STLINK
+#	include "STLink.h"
+#endif
+
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
@@ -62,6 +67,14 @@ void Mass_Storage_In (void)
         case SCSI_READ10:
           SCSI_Read10_Cmd(CBW.bLUN , SCSI_LBA , SCSI_BlkLen);
           break;
+#if USB_PROTOCOL == USB_STLINK
+        default:
+          if (CBW.CB[0] >= STLINK_SCSI_MIN_CMD)
+          {
+            STLink_SCSI_Process(&CBW.CB[0]);
+          }
+          break;
+#endif
       }
       break;
     case BOT_DATA_IN_LAST:
@@ -100,6 +113,13 @@ void Mass_Storage_Out (void)
         SCSI_Write10_Cmd(CBW.bLUN , SCSI_LBA , SCSI_BlkLen);
         break;
       }
+#if USB_PROTOCOL == USB_STLINK
+      else if (CMD >= STLINK_SCSI_MIN_CMD)
+      {
+        STLink_SCSI_Process(&CBW.CB[0]);
+        break;
+      }
+#endif
       Bot_Abort(DIR_OUT);
       Set_Scsi_Sense_Data(CBW.bLUN, ILLEGAL_REQUEST, INVALID_FIELED_IN_COMMAND);
       Set_CSW (CSW_PHASE_ERROR, SEND_CSW_DISABLE);
@@ -241,6 +261,13 @@ void CBW_Decode(void)
           break;
 
         default:
+#if USB_PROTOCOL == USB_STLINK
+        if (CBW.CB[0] >= STLINK_SCSI_MIN_CMD)
+        {
+          STLink_SCSI_Process(&CBW.CB[0]);
+        }
+        else
+#endif
         {
           Bot_Abort(BOTH_DIR);
           Set_Scsi_Sense_Data(CBW.bLUN, ILLEGAL_REQUEST, INVALID_COMMAND);

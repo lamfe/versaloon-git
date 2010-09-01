@@ -58,7 +58,11 @@ int main(void)
 			}
 
 			count_out = 0;				// set USB receive pointer to 0
+#else
+			cmd_len = 0;
 #endif
+#else
+			cmd_len = 0;
 #endif
 		}
 		else

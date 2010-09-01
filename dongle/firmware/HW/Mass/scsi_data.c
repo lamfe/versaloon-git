@@ -51,7 +51,7 @@ uint8_t Standard_Inquiry_Data[] =
 #elif USB_PROTOCOL == USB_AT_DRAGON
     'F', 'D', 'o', 'n', 'A', 'V', 'R',
     'D', 'r', 'a', 'g', 'o', 'n', ' ', ' ', ' ',
-#elif USB_PROTOCOL == USB_MASS
+#elif USB_PROTOCOL == USB_STLINK
     'F', 'D', 'o', 'n', 'V', 'e', 'r',
     's', 'a', 'l', 'o', 'o', 'n', ' ', ' ', ' ',
 #endif
