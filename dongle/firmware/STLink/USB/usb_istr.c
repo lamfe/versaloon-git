@@ -13,12 +13,8 @@
 * INFORMATION CONTAINED HEREIN IN CONNECTION WITH THEIR PRODUCTS.
 *******************************************************************************/
 
-#include "app_cfg.h"
-#if (USB_PROTOCOL == USB_AT_JTAGICE_MKII) || (USB_PROTOCOL == USB_AT_DRAGON)
-
 /* Includes ------------------------------------------------------------------*/
 #include "usb_lib.h"
-
 #include "usb_prop.h"
 #include "usb_pwr.h"
 #include "usb_istr.h"
@@ -72,10 +68,8 @@ void USB_Istr(void)
 #if (IMR_MSK & ISTR_RESET)
   if (wIstr & ISTR_RESET & wInterrupt_Mask)
   {
-
     _SetISTR((uint16_t)CLR_RESET);
     Device_Property.Reset();
-
 #ifdef RESET_CALLBACK
     RESET_Callback();
 #endif
@@ -85,9 +79,7 @@ void USB_Istr(void)
 #if (IMR_MSK & ISTR_DOVR)
   if (wIstr & ISTR_DOVR & wInterrupt_Mask)
   {
-
     _SetISTR((uint16_t)CLR_DOVR);
-
 #ifdef DOVR_CALLBACK
     DOVR_Callback();
 #endif
@@ -97,9 +89,7 @@ void USB_Istr(void)
 #if (IMR_MSK & ISTR_ERR)
   if (wIstr & ISTR_ERR & wInterrupt_Mask)
   {
-
     _SetISTR((uint16_t)CLR_ERR);
-
 #ifdef ERR_CALLBACK
     ERR_Callback();
 #endif
@@ -109,10 +99,8 @@ void USB_Istr(void)
 #if (IMR_MSK & ISTR_WKUP)
   if (wIstr & ISTR_WKUP & wInterrupt_Mask)
   {
-
     _SetISTR((uint16_t)CLR_WKUP);
     Resume(RESUME_EXTERNAL);
-
 #ifdef WKUP_CALLBACK
     WKUP_Callback();
 #endif
@@ -135,7 +123,6 @@ void USB_Istr(void)
     }
     /* clear of the ISTR bit must be done after setting of CNTR_FSUSP */
     _SetISTR((uint16_t)CLR_SUSP);
-
 #ifdef SUSP_CALLBACK
     SUSP_Callback();
 #endif
@@ -145,7 +132,6 @@ void USB_Istr(void)
 #if (IMR_MSK & ISTR_SOF)
   if (wIstr & ISTR_SOF & wInterrupt_Mask)
   {
-
     _SetISTR((uint16_t)CLR_SOF);
     bIntPackSOF++;
 
@@ -158,7 +144,6 @@ void USB_Istr(void)
 #if (IMR_MSK & ISTR_ESOF)
   if (wIstr & ISTR_ESOF & wInterrupt_Mask)
   {
-
     _SetISTR((uint16_t)CLR_ESOF);
     /* resume handling timing is made with ESOFs */
     Resume(RESUME_ESOF); /* request without change of the machine state */
@@ -181,6 +166,4 @@ void USB_Istr(void)
   }
 #endif
 } /* USB_Istr */
-
-#endif  // #if (USB_PROTOCOL == USB_AT_JTAGICE_MKII) || (USB_PROTOCOL == USB_AT_DRAGON)
 /******************* (C) COPYRIGHT 2009 STMicroelectronics *****END OF FILE****/

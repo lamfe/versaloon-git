@@ -78,6 +78,7 @@
 											SW_SETINPUT_PD();\
 											GPIO_Dir(SW_DIR_PORT, GPIO_MODE_OUT_PP, SW_DIR_PIN);\
 										}while(0)
+#define SW_SETINPUT()					SW_SETINPUT_PU()
 #define SW_SETINPUT_PU()				do{\
 											SW_PULL_SET();\
 											GPIO_Dir(SW_PORT, GPIO_MODE_IPU, SW_PIN);\
@@ -92,6 +93,7 @@
 											GPIO_SetPins(SW_DIR_PORT, GPIO_PIN_GetMask(SW_DIR_PIN));\
 											GPIO_Dir(SW_PORT, GPIO_MODE_OUT_PP, SW_PIN);\
 										}while(0)
+#define SW_SETOUTPUT_OD()				SW_SETOUTPUT()
 #define SW_SET()						GPIO_SetPins(SW_PORT, GPIO_PIN_GetMask(SW_PIN))
 #define SW_CLR()						GPIO_ClrPins(SW_PORT, GPIO_PIN_GetMask(SW_PIN))
 #define SW_GET()						GPIO_GetInPins(SW_PORT, GPIO_PIN_GetMask(SW_PIN))
