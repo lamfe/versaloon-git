@@ -28,10 +28,6 @@ USR_INCS+= -I $(SRCDIR)/HW -I $(PRJDIR)/..
 USR_SRCS+= $(SRCDIR)/HW/Port/GCC/myString.c
 USR_INCS+= -I $(SRCDIR)/HW/Port/GCC
 
-# Delay
-USR_SRCS+= $(SRCDIR)/HW/Port/GCC/Delay/delay.c
-USR_INCS+= -I $(SRCDIR)/HW/Port/GCC/Delay
-
 # USB
 USR_SRCS+= $(SRCDIR)/USB_TO_XXX/USB/usb_desc.c $(SRCDIR)/USB_TO_XXX/USB/usb_endp.c
 USR_SRCS+= $(SRCDIR)/USB_TO_XXX/USB/usb_istr.c $(SRCDIR)/USB_TO_XXX/USB/usb_prop.c

@@ -92,6 +92,8 @@ void Sys_Init(void)
 #	endif
 #endif
 
+	DELAYTIMER_INIT();
+
 	USB_Pull_Init();
 	USB_Connect();
 	USB_Init();
@@ -423,6 +425,31 @@ void USB_Init_SerialString(uint8 *strSerial, uint16 len)
 		chip_serial++;
 		i += 4;
 	}
+}
+
+// Delay
+void DelayUS(volatile uint32 dly)
+{
+	uint32 dly_tmp;
+
+	while (dly)
+	{
+		if (dly > DELAYTIMER_MAXDELAY_US)
+		{
+			dly_tmp = DELAYTIMER_MAXDELAY_US;
+		}
+		else
+		{
+			dly_tmp = dly;
+		}
+		DELAYTIMER_DelayUS(dly_tmp);
+		dly -= dly_tmp;
+	}
+}
+
+void DelayMS(uint32 dly)
+{
+	DelayUS(1000 * dly);
 }
 
 #ifdef CDC_IF_EN
