@@ -46,6 +46,7 @@ void USB_TO_XXX_ProcessCmd(uint8* dat, uint16 len)
 {
 	uint16 USB_TO_XXX_CmdIdx;
 	uint16 USB_TO_XXX_CmdLen_tmp;
+	uint16 dly;
 
 	// for USB_TO_ALL command, data area(from the 3rd byte) is the real command to execute
 	if(dat[0] == USB_TO_ALL)
@@ -171,7 +172,15 @@ void USB_TO_XXX_ProcessCmd(uint8* dat, uint16 len)
 			break;
 #endif
 		case USB_TO_DELAY:
-			DelayUSMS(dat[USB_TO_XXX_CmdIdx + 3] + (dat[USB_TO_XXX_CmdIdx + 4] << 8));
+			dly = dat[USB_TO_XXX_CmdIdx + 3] + (dat[USB_TO_XXX_CmdIdx + 4] << 8);
+			if(dly & 0x8000)
+			{
+				DelayMS(dly & 0x7FFF);
+			}
+			else
+			{
+				DelayUS(dly);
+			}
 
 			buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			break;
@@ -250,7 +259,15 @@ void USB_TO_XXX_ProcessCmd(uint8* dat, uint16 len)
 							USB_TO_POLL_Context[USB_TO_POLL_Index].poll_retry--;
 							if (USB_TO_POLL_Context[USB_TO_POLL_Index].poll_interval)
 							{
-								DelayUSMS(USB_TO_POLL_Context[USB_TO_POLL_Index].poll_interval);
+								dly = USB_TO_POLL_Context[USB_TO_POLL_Index].poll_interval;
+								if(dly & 0x8000)
+								{
+									DelayMS(dly & 0x7FFF);
+								}
+								else
+								{
+									DelayUS(dly);
+								}
 							}
 
 							USB_TO_POLL_Context[USB_TO_POLL_Index].poll_result = 1;

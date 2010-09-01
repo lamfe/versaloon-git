@@ -42,6 +42,24 @@
 #define GLOBAL_OUTPUT_ENABLE()			
 #define GLOBAL_OUTPUT_DISABLE()			
 
+/****************************** DelayTimer ******************************/
+#define DELAYTIMER_MAXDELAY_US			200000
+
+#define DELAYTIMER_INIT()				do{\
+											SysTick->CTRL &= ~SysTick_CTRL_TICKINT_Msk;\
+											SysTick->CTRL |= SysTick_CLKSource_HCLK;\
+											SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;\
+											SysTick->VAL = 0;\
+										} while (0)
+
+#define DELAYTIMER_DelayUS(us)			do{\
+											SysTick->LOAD = (us) * _SYS_FREQUENCY;\
+											SysTick->CTRL |= SysTick_CTRL_ENABLE_Msk;\
+											while (!(SysTick->CTRL & SysTick_CTRL_COUNTFLAG_Msk));\
+											SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;\
+											SysTick->VAL = 0;\
+										} while (0)
+
 /****************************** SW ******************************/
 #define SW_PORT							GPIOB
 #define SW_PIN							GPIO_PIN_11

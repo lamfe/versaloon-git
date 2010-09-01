@@ -284,7 +284,6 @@
           <state>$PROJ_DIR$\..\..\</state>
           <state>$PROJ_DIR$\..\..\..\</state>
           <state>$PROJ_DIR$\..\..\..\HW\Port\IAR\</state>
-          <state>$PROJ_DIR$\..\..\..\HW\Port\IAR\Delay\</state>
           <state>$PROJ_DIR$\..\..\..\HW\</state>
           <state>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\CMSIS\CM3\CoreSupport</state>
           <state>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x</state>
@@ -1122,7 +1121,6 @@
           <state>$PROJ_DIR$\..\..\</state>
           <state>$PROJ_DIR$\..\..\..\</state>
           <state>$PROJ_DIR$\..\..\..\HW\Port\IAR\</state>
-          <state>$PROJ_DIR$\..\..\..\HW\Port\IAR\Delay\</state>
           <state>$PROJ_DIR$\..\..\..\HW\</state>
           <state>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\CMSIS\CM3\CoreSupport</state>
           <state>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x</state>
@@ -1683,15 +1681,6 @@
   </mfc_discard>
   <group>
     <name>HW</name>
-    <group>
-      <name>Port</name>
-      <group>
-        <name>Delay</name>
-        <file>
-          <name>$PROJ_DIR$\..\..\..\HW\Port\IAR\Delay\delay.c</name>
-        </file>
-      </group>
-    </group>
     <group>
       <name>STM32F10x_Lib</name>
       <group>

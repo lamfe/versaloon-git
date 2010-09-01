@@ -29,7 +29,6 @@
 #include "app_type.h"
 #include "port.h"
 #include "myString.h"
-#include "delay.h"
 #include "CommandProcessor.h"
 
 /************************ What do U want ************************/
