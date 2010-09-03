@@ -348,6 +348,16 @@ void GLOBAL_OUTPUT_Release(void)
 	}
 }
 
+uint16 SampleVtarget(void)
+{
+	uint16 tmp;
+
+	tmp = ADC_GetConversionValue(TVCC_ADC_PORT);
+	// convert target power to be in mV unit
+	tmp = Vtarget * TVCC_SAMPLE_VREF * TVCC_SAMPLE_DIV / TVCC_SAMPLE_MAXVAL;
+	return tmp;
+}
+
 void PWREXT_Check(uint8 b_control_led)
 {
 	static u32 dly = 0;
@@ -356,9 +366,7 @@ void PWREXT_Check(uint8 b_control_led)
 	{
 		dly = 0;
 #if POWER_SAMPLE_EN
-		Vtarget = ADC_GetConversionValue(TVCC_ADC_PORT);
-		// convert target power to be in mV unit
-		Vtarget = Vtarget * TVCC_SAMPLE_VREF * TVCC_SAMPLE_DIV / TVCC_SAMPLE_MAXVAL;
+		Vtarget = SampleVtarget();
 #if POWER_OUT_EN
 		// if PowerExt is enabled and no power on the line
 		if((Vtarget < TVCC_SAMPLE_MIN_POWER))

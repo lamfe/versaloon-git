@@ -27,7 +27,7 @@ void USB_TO_BDM_ProcessCmd(uint8* dat, uint16 len)
 {
 	uint16 index, device_num, length;
 	uint8 command;
-	uint8 token;
+	uint16 token;
 	uint16 processed_len;
 	uint16 reply_ack_pos;
 	uint8 err;
@@ -78,7 +78,8 @@ void USB_TO_BDM_ProcessCmd(uint8* dat, uint16 len)
 			processed_len = 0;
 			while (processed_len < length)
 			{
-				token = dat[index + processed_len++];
+				token = dat[index + processed_len] + (dat[index + processed_len + 1] << 8);
+				processed_len += 2;
 				if (BDM_Transact(token, &dat[index + processed_len], 
 						&buffer_reply[rep_len]))
 				{

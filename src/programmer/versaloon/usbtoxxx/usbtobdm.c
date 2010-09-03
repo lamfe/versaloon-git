@@ -71,31 +71,34 @@ RESULT usbtobdm_sync(uint8_t interface_index, uint16_t *khz)
 RESULT usbtobdm_transact(uint8_t interface_index, uint8_t *out, 
 	uint8_t outlen, uint8_t *in, uint8_t inlen, uint8_t delay, uint8_t ack)
 {
+	uint16_t token;
+	
 #if PARAM_CHECK
 	if (interface_index > 7)
 	{
 		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
 		return ERROR_FAIL;
 	}
-	if ((outlen > 7) || (inlen > 7) || (NULL == out))
+	if ((outlen > 0x0F) || (inlen > 0x0F) || (NULL == out) || (delay > 3))
 	{
 		return ERROR_FAIL;
 	}
 #endif
 	
-	versaloon_cmd_buf[0] = outlen | (inlen << 4) | (delay ? 0x08 : 0x00) 
-								| (ack ? 0x80: 0x00);
-	memcpy(&versaloon_cmd_buf[1], out, outlen);
+	token = outlen | (inlen << 8) | (delay << 6) | (ack ? 0x8000 : 0x0000);
+	versaloon_cmd_buf[0] = (token >> 0) & 0xFF;
+	versaloon_cmd_buf[1] = (token >> 8) & 0xFF;
+	memcpy(&versaloon_cmd_buf[2], out, outlen);
 	
 	if (NULL == in)
 	{
 		return usbtoxxx_inout_command(USB_TO_BDM, interface_index, 
-					versaloon_cmd_buf, 1 + outlen, inlen, NULL, 0, 0, 1);
+					versaloon_cmd_buf, 2 + outlen, inlen, NULL, 0, 0, 1);
 	}
 	else
 	{
 		return usbtoxxx_inout_command(USB_TO_BDM, interface_index, 
-					versaloon_cmd_buf, 1 + outlen, inlen, in, 0, inlen, 1);
+					versaloon_cmd_buf, 2 + outlen, inlen, in, 0, inlen, 1);
 	}
 }
 

@@ -48,7 +48,7 @@ int main(void)
 #if USB_OUT_EN
 			if(rep_len > 0)
 			{
-				// indicate reply data is valie
+				// indicate reply data is valid
 				rep_len |= 0x80000000;
 			}
 			else
