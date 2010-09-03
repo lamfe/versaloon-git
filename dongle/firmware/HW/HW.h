@@ -81,6 +81,7 @@ extern uint16 Vtarget;
 void GLOBAL_OUTPUT_Acquire(void);
 void GLOBAL_OUTPUT_Release(void);
 
+uint16 SampleVtarget(void);
 void PWREXT_Check(uint8 b_control_led);
 
 extern __IO uint32_t rep_len, cmd_len;
