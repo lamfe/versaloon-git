@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-<series name="s12x">
-  <chip name="s12x">
+<series name="hcs12">
+  <chip name="hcs12">
     <chip_id>0x0000</chip_id>
     <app_page_size>1024</app_page_size>
     <app_page_num>115</app_page_num>
