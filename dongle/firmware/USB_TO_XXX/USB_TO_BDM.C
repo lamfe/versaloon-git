@@ -42,7 +42,7 @@ void USB_TO_BDM_ProcessCmd(uint8* dat, uint16 len)
 			buffer_reply[rep_len++] = USB_TO_XXX_INVALID_INDEX;
 			return;
 		}
-		length = LE_TO_SYS_U16(GET_LE_U16(&dat[index + 1]));
+		length = GET_LE_U16(&dat[index + 1]);
 		index += 3;
 
 		switch(command)
@@ -78,7 +78,7 @@ void USB_TO_BDM_ProcessCmd(uint8* dat, uint16 len)
 			processed_len = 0;
 			while (processed_len < length)
 			{
-				token = LE_TO_SYS_U16(GET_LE_U16(&dat[index + processed_len]));
+				token = GET_LE_U16(&dat[index + processed_len]);
 				processed_len += 2;
 				if (BDM_Transact(token, &dat[index + processed_len], 
 						&buffer_reply[rep_len]))

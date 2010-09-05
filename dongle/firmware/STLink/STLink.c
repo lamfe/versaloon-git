@@ -125,8 +125,8 @@ void STLink_SWIM_Process(uint8_t *cmd)
 		}
 		break;
 	case STLINK_SUBCMD_SWIM_WOTF:
-		byte_num = (cmd[1] << 8) + cmd[2];
-		addr = (cmd[4] << 16) + (cmd[5] << 8) + (cmd[6] << 0);
+		byte_num = GET_BE_U16(&cmd[1]);
+		addr = GET_BE_U32(&cmd[3]);
 
 		if (SWIM_WOTF(addr, byte_num, &cmd[7]))
 		{
@@ -139,8 +139,8 @@ void STLink_SWIM_Process(uint8_t *cmd)
 		}
 		break;
 	case STLINK_SUBCMD_SWIM_ROTF:
-		byte_num = (cmd[1] << 8) + cmd[2];
-		addr = (cmd[4] << 16) + (cmd[5] << 8) + (cmd[6] << 0);
+		byte_num = GET_BE_U16(&cmd[1]);
+		addr = GET_BE_U32(&cmd[3]);
 
 		if (SWIM_ROTF(addr, byte_num, &cmd[7]))
 		{

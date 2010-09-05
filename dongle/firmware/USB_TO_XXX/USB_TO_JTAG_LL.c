@@ -41,7 +41,7 @@ void USB_TO_JTAG_LL_ProcessCmd(uint8* dat, uint16 len)
 			buffer_reply[rep_len++] = USB_TO_XXX_INVALID_INDEX;
 			return;
 		}
-		length = LE_TO_SYS_U16(GET_LE_U16(&dat[index + 1]));
+		length = GET_LE_U16(&dat[index + 1]);
 		index += 3;
 
 		switch(command)
@@ -56,7 +56,7 @@ void USB_TO_JTAG_LL_ProcessCmd(uint8* dat, uint16 len)
 
 			break;
 		case USB_TO_XXX_CONFIG:
-			JTAG_TAP_Init(LE_TO_SYS_U16(GET_LE_U16(&dat[index])), JTAG_TAP_ASYN);
+			JTAG_TAP_Init(GET_LE_U16(&dat[index]), JTAG_TAP_ASYN);
 
 			buffer_reply[rep_len++] = USB_TO_XXX_OK;
 
@@ -71,7 +71,7 @@ void USB_TO_JTAG_LL_ProcessCmd(uint8* dat, uint16 len)
 
 			break;
 		case USB_TO_JTAG_LL_SCAN:
-			cur_dat_len = LE_TO_SYS_U16(GET_LE_U16(&dat[index]));
+			cur_dat_len = GET_LE_U16(&dat[index]);
 			para = cur_dat_len >> 15;
 			cur_dat_len &= 0x7FFF;
 
@@ -99,7 +99,7 @@ void USB_TO_JTAG_LL_ProcessCmd(uint8* dat, uint16 len)
 			break;
 		case USB_TO_JTAG_LL_TMS_CLOCKS:
 			para = dat[index];
-			cur_dat_len = LE_TO_SYS_U32(GET_LE_U32(&dat[index + 1]));
+			cur_dat_len = GET_LE_U32(&dat[index + 1]);
 			while(cur_dat_len--)
 			{
 				JTAG_TAP_WriteTMSByte_ASYN(para);

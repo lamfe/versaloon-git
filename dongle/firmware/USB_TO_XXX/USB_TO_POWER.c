@@ -39,7 +39,7 @@ void USB_TO_POWER_ProcessCmd(uint8* dat, uint16 len)
 			buffer_reply[rep_len++] = USB_TO_XXX_INVALID_INDEX;
 			return;
 		}
-		length = LE_TO_SYS_U16(GET_LE_U16(&dat[index + 1]));
+		length = GET_LE_U16(&dat[index + 1]);
 		index += 3;
 
 		switch(command)
@@ -59,7 +59,7 @@ void USB_TO_POWER_ProcessCmd(uint8* dat, uint16 len)
 
 			break;
 		case USB_TO_XXX_OUT:
-			voltage = LE_TO_SYS_U16(GET_LE_U16(&dat[index]));
+			voltage = GET_LE_U16(&dat[index]);
 			if (!PWREXT_GetState())
 			{
 				power_state = 0;

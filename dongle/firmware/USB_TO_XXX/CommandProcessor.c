@@ -51,7 +51,7 @@ static void Versaloon_ProcessCommonCmd(uint8* dat, uint16 len)
 		break;
 #if VERSALOON_FW_UPDATE_EN
 	case VERSALOON_FW_UPDATE:
-		key = LE_TO_SYS_U16(GET_LE_U16(&dat[1]));
+		key = GET_LE_U16(&dat[1]);
 		if(key == FWU_KEY)
 		{
 			RCC_APB1PeriphClockCmd(RCC_APB1Periph_BKP | RCC_APB1Periph_PWR, ENABLE);
