@@ -85,8 +85,8 @@ uint8 STK500V2_MEGA_JTAG_ProcessCmd(uint8* dat, uint16 len)
 		}
 		break;
 	case CMND_WRITE_MEMORY:
-		addr = (dat[6] << 0) + (dat[7] << 8) + (dat[8] << 16) + (dat[9] << 24);
-		length = dat[2] + (dat[3] << 8) + (dat[4] << 16) + (dat[5] << 24);
+		length = GET_LE_U32(&dat[2]);
+		addr = GET_LE_U32(&dat[6]);
 
 		switch(dat[1])
 		{
@@ -139,8 +139,8 @@ uint8 STK500V2_MEGA_JTAG_ProcessCmd(uint8* dat, uint16 len)
 		STK500V2_RSP_OK();
 		break;
 	case CMND_READ_MEMORY:
-		addr = (dat[6] << 0) + (dat[7] << 8) + (dat[8] << 16) + (dat[9] << 24);
-		length = dat[2] + (dat[3] << 8) + (dat[4] << 16) + (dat[5] << 24);
+		length = GET_LE_U32(&dat[2]);
+		addr = GET_LE_U32(&dat[6]);
 
 		switch(dat[1])
 		{
@@ -233,7 +233,7 @@ uint8 STK500V2_MEGA_JTAG_ProcessCmd(uint8* dat, uint16 len)
 		STK500V2_RSP_MEMORY(length);
 		break;
 	case CMND_WRITE_PC:
-		addr = dat[1] | (dat[2] << 8);
+		addr = GET_LE_U16(&dat[1]);
 
 		if(STK500V2_MCUState != MCUSTATE_STOPPED)
 		{
@@ -252,8 +252,7 @@ uint8 STK500V2_MEGA_JTAG_ProcessCmd(uint8* dat, uint16 len)
 			return 0;
 		}
 
-//		dat[1] = AVR_Context.PC;
-//		dat[2] = AVR_Context.PC >> 8;
+//		SET_LE_U16(&dat[1], AVR_Context.PC);
 		dat[3] = 0;
 		dat[4] = 0;
 		STK500V2_RSP_PC();
@@ -307,7 +306,7 @@ uint8 STK500V2_MEGA_JTAG_ProcessCmd(uint8* dat, uint16 len)
 		STK500V2_RSP_SELFTEST();
 		break;
 	case CMND_SET_BREAK:
-		addr = dat[3] | (dat[4] << 8);
+		addr = GET_LE_U16(&dat[3]);
 		switch(dat[1])
 		{
 		case 1:

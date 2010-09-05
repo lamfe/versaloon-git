@@ -344,8 +344,7 @@ void STK500V2_Process(uint8* dat, uint16 len)
 	STK500V2_ProcessCmd(dat + 8, len - 10);
 
 	// set reply length in the 8-byte protocol area
-	dat[3] = (uint8)(rep_len & 0xFFFF);
-	dat[4] = (uint8)((rep_len & 0xFFFF) >> 8);
+	SET_LE_U16(&dat[3], rep_len & 0xFFFF);
 
 	// Calc CRC16
 	STK500V2_CRC_Val = STK500V2_CRC_INIT;
@@ -354,7 +353,7 @@ void STK500V2_Process(uint8* dat, uint16 len)
 		STK500V2_CRC16(dat[len]);
 	}
 	// Append CRC16
-	memcpy(dat + (rep_len & 0xFFFF) + 8, (u8*)&STK500V2_CRC_Val, 2);
+	SET_LE_U16(&dat[(rep_len & 0xFFFF) + 8], STK500V2_CRC_Val);
 
 	rep_len += 10;		// 8 bytes protocol area and 2 bytes CRC16
 }

@@ -67,10 +67,10 @@ bool STKPARAM_GetValue(const struct STKPARAM *param, uint8 index, void *value)
 			*(uint8*)value = *param[idx].ptr.p_u8;
 			break;
 		case 2:
-			*(uint16*)value = *param[idx].ptr.p_u16;
+			SET_LE_U16(value, *param[idx].ptr.p_u16);
 			break;
 		case 4:
-			*(uint32*)value = *param[idx].ptr.p_u32;
+			SET_LE_U32(value, *param[idx].ptr.p_u32);
 			break;
 		default:
 			return false;
@@ -91,10 +91,10 @@ bool STKPARAM_SetValue(const struct STKPARAM *param, uint8 index, void *value)
 			*param[idx].ptr.p_u8 = *(uint8*)value;
 			break;
 		case 2:
-			*param[idx].ptr.p_u16 = *(uint16*)value;
+			*param[idx].ptr.p_u16 = GET_LE_U16(value);
 			break;
 		case 4:
-			*param[idx].ptr.p_u32 = *(uint32*)value;
+			*param[idx].ptr.p_u32 = GET_LE_U32(value);
 			break;
 		default:
 			return false;
