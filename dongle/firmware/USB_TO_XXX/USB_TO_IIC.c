@@ -40,7 +40,7 @@ void USB_TO_IIC_ProcessCmd(uint8* dat, uint16 len)
 			buffer_reply[rep_len++] = USB_TO_XXX_INVALID_INDEX;
 			return;
 		}
-		length = dat[index + 1] + (dat[index + 2] << 8);
+		length = LE_TO_SYS_U16(GET_LE_U16(&dat[index + 1]));
 		index += 3;
 
 		switch(command)
@@ -55,8 +55,9 @@ void USB_TO_IIC_ProcessCmd(uint8* dat, uint16 len)
 
 			break;
 		case USB_TO_XXX_CONFIG:
-			if(IIC_Init(dat[index + 0] + (dat[index + 1] << 8), dat[index + 2] + (dat[index + 3] << 8), 
-						dat[index + 4] + (dat[index + 5] << 8)) == 0)
+			if(IIC_Init(LE_TO_SYS_U16(GET_LE_U16(&dat[index + 0])), 
+						LE_TO_SYS_U16(GET_LE_U16(&dat[index + 2])), 
+						LE_TO_SYS_U16(GET_LE_U16(&dat[index + 4]))) == 0)
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
@@ -77,7 +78,7 @@ void USB_TO_IIC_ProcessCmd(uint8* dat, uint16 len)
 			break;
 		case USB_TO_IIC_Read:
 			result_index = rep_len;
-			data_len = dat[index + 1] + (dat[index + 2] << 8);
+			data_len = LE_TO_SYS_U16(GET_LE_U16(&dat[index + 1]));
 			result = IIC_Read(	dat[index + 0],							// chip_addr
 								&buffer_reply[rep_len + 1],				// data
 								data_len,								// data_len
@@ -90,7 +91,7 @@ void USB_TO_IIC_ProcessCmd(uint8* dat, uint16 len)
 			break;
 		case USB_TO_IIC_Write:
 			result_index = rep_len;
-			data_len = dat[index + 1] + (dat[index + 2] << 8);
+			data_len = LE_TO_SYS_U16(GET_LE_U16(&dat[index + 1]));
 			result = IIC_Write(	dat[index + 0],							// chip_addr
 								&dat[index + 4],						// data
 								data_len,								// data_len

@@ -285,7 +285,7 @@ uint8 SWIM_WOTF(uint32 addr, uint16 len, uint8 *data)
 {
 	uint16 processed_len;
 	uint8 cur_len, i;
-	uint32 cur_addr;
+	uint32 cur_addr, addr_tmp;
 
 	if ((0 == len) || ((uint8*)0 == data))
 	{
@@ -305,6 +305,8 @@ uint8 SWIM_WOTF(uint32 addr, uint16 len, uint8 *data)
 			cur_len = len - processed_len;
 		}
 
+		SET_LE_U32(&addr_tmp, cur_addr);
+
 		if(SWIM_HW_Out(SWIM_CMD_WOTF, SWIM_CMD_BITLEN, SWIM_MAX_RESEND_CNT))
 		{
 			return 1;
@@ -313,15 +315,15 @@ uint8 SWIM_WOTF(uint32 addr, uint16 len, uint8 *data)
 		{
 			return 1;
 		}
-		if (SWIM_HW_Out((cur_addr >> 16) & 0xFF, 8, 0))
+		if (SWIM_HW_Out((addr_tmp >> 16) & 0xFF, 8, 0))
 		{
 			return 1;
 		}
-		if (SWIM_HW_Out((cur_addr >> 8) & 0xFF, 8, 0))
+		if (SWIM_HW_Out((addr_tmp >> 8) & 0xFF, 8, 0))
 		{
 			return 1;
 		}
-		if (SWIM_HW_Out((cur_addr >> 0) & 0xFF, 8, 0))
+		if (SWIM_HW_Out((addr_tmp >> 0) & 0xFF, 8, 0))
 		{
 			return 1;
 		}
@@ -344,7 +346,7 @@ uint8 SWIM_ROTF(uint32 addr, uint16 len, uint8 *data)
 {
 	uint16 processed_len;
 	uint8 cur_len, i;
-	uint32 cur_addr;
+	uint32 cur_addr, addr_tmp;
 
 	if ((0 == len) || ((uint8*)0 == data))
 	{
@@ -364,6 +366,8 @@ uint8 SWIM_ROTF(uint32 addr, uint16 len, uint8 *data)
 			cur_len = len - processed_len;
 		}
 
+		SET_LE_U32(&addr_tmp, cur_addr);
+
 		if(SWIM_HW_Out(SWIM_CMD_ROTF, SWIM_CMD_BITLEN, SWIM_MAX_RESEND_CNT))
 		{
 			return 1;
@@ -372,15 +376,15 @@ uint8 SWIM_ROTF(uint32 addr, uint16 len, uint8 *data)
 		{
 			return 1;
 		}
-		if (SWIM_HW_Out((cur_addr >> 16) & 0xFF, 8, 0))
+		if (SWIM_HW_Out((addr_tmp >> 16) & 0xFF, 8, 0))
 		{
 			return 1;
 		}
-		if (SWIM_HW_Out((cur_addr >> 8) & 0xFF, 8, 0))
+		if (SWIM_HW_Out((addr_tmp >> 8) & 0xFF, 8, 0))
 		{
 			return 1;
 		}
-		if (SWIM_HW_Out((cur_addr >> 0) & 0xFF, 8, 0))
+		if (SWIM_HW_Out((addr_tmp >> 0) & 0xFF, 8, 0))
 		{
 			return 1;
 		}

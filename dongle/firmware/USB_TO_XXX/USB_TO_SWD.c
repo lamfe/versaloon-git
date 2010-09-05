@@ -27,6 +27,7 @@ void USB_TO_SWD_ProcessCmd(uint8* dat, uint16 len)
 {
 	uint16 index, device_num, length;
 	uint8 command;
+	uint32 swd_data;
 
 	uint16 cur_dat_len;
 
@@ -40,7 +41,7 @@ void USB_TO_SWD_ProcessCmd(uint8* dat, uint16 len)
 			buffer_reply[rep_len++] = USB_TO_XXX_INVALID_INDEX;
 			return;
 		}
-		length = dat[index + 1] + (dat[index + 2] << 8);
+		length = LE_TO_SYS_U16(GET_LE_U16(&dat[index + 1]));
 		index += 3;
 
 		switch(command)
@@ -56,8 +57,8 @@ void USB_TO_SWD_ProcessCmd(uint8* dat, uint16 len)
 			break;
 		case USB_TO_XXX_CONFIG:
 			SWD_SetTurnaround(dat[index + 0]);
-			SWD_SetRetryCount(dat[index + 1] + (dat[index + 2] << 8));
-			SWD_SetDelay(dat[index + 3] + (dat[index + 4] << 8));
+			SWD_SetRetryCount(LE_TO_SYS_U16(GET_LE_U16(&dat[index + 1])));
+			SWD_SetDelay(LE_TO_SYS_U16(GET_LE_U16(&dat[index + 3])));
 			SWD_Init();
 
 			buffer_reply[rep_len++] = USB_TO_XXX_OK;
@@ -75,7 +76,7 @@ void USB_TO_SWD_ProcessCmd(uint8* dat, uint16 len)
 		case USB_TO_SWD_SEQOUT:
 			buffer_reply[rep_len++] = USB_TO_XXX_OK;
 
-			cur_dat_len = dat[index] + (dat[index + 1] << 8);
+			cur_dat_len = LE_TO_SYS_U16(GET_LE_U16(&dat[index]));
 			SWD_SWDIO_SET();
 			SWD_SWDIO_SETOUTPUT();
 			SWD_SeqOut(&dat[index + 2], cur_dat_len);
@@ -85,7 +86,7 @@ void USB_TO_SWD_ProcessCmd(uint8* dat, uint16 len)
 		case USB_TO_SWD_SEQIN:
 			buffer_reply[rep_len++] = USB_TO_XXX_OK;
 
-			cur_dat_len = dat[index] + (dat[index + 1] << 8);
+			cur_dat_len = LE_TO_SYS_U16(GET_LE_U16(&dat[index]));
 			SWD_SeqIn(&buffer_reply[rep_len], cur_dat_len);
 			rep_len += (cur_dat_len + 7) >> 3;
 
@@ -93,8 +94,9 @@ void USB_TO_SWD_ProcessCmd(uint8* dat, uint16 len)
 		case USB_TO_SWD_Transact:
 			buffer_reply[rep_len++] = USB_TO_XXX_OK;
 
-			buffer_reply[rep_len] = SWD_Transaction(dat[index], (uint32*)(dat + index + 1));
-			memcpy(buffer_reply + rep_len + 1, dat + index + 1, 4);
+			swd_data = LE_TO_SYS_U32(GET_LE_U32(&dat[index + 1]));
+			buffer_reply[rep_len] = SWD_Transaction(dat[index], &swd_data);
+			SET_LE_U32(buffer_reply + rep_len + 1, swd_data);
 			rep_len += 5;
 
 			 break;

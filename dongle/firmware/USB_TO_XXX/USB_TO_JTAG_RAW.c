@@ -39,7 +39,7 @@ void USB_TO_JTAG_RAW_ProcessCmd(uint8* dat, uint16 len)
 			buffer_reply[rep_len++] = USB_TO_XXX_INVALID_INDEX;
 			return;
 		}
-		length = dat[index + 1] + (dat[index + 2] << 8);
+		length = LE_TO_SYS_U16(GET_LE_U16(&dat[index + 1]));
 		index += 3;
 
 		switch(command)
@@ -54,7 +54,7 @@ void USB_TO_JTAG_RAW_ProcessCmd(uint8* dat, uint16 len)
 
 			break;
 		case USB_TO_XXX_CONFIG:
-			JTAG_TAP_Init(dat[index + 0] | (dat[index + 1] << 8), JTAG_TAP_RAW);
+			JTAG_TAP_Init(LE_TO_SYS_U16(GET_LE_U16(&dat[index])), JTAG_TAP_RAW);
 
 			buffer_reply[rep_len++] = USB_TO_XXX_OK;
 
@@ -71,9 +71,8 @@ void USB_TO_JTAG_RAW_ProcessCmd(uint8* dat, uint16 len)
 		case USB_TO_XXX_IN_OUT:
 			buffer_reply[rep_len++] = USB_TO_XXX_OK;
 
-			num_of_bits = dat[index] + (dat[index + 1] << 8) 
-							+ (dat[index + 2] << 16) + (dat[index + 3] << 24);
-			num_of_databyte = (num_of_bits >> 3) + ((num_of_bits & 7) ? 1 : 0);
+			num_of_bits = LE_TO_SYS_U32(GET_LE_U32(&dat[index]));
+			num_of_databyte = ((num_of_bits + 7) >> 3);
 
 			JTAG_TAP_Operate_RAW(num_of_bits, &dat[index + 4], 
 					&dat[index + 4 + num_of_databyte], &buffer_reply[rep_len]);

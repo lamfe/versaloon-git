@@ -39,7 +39,7 @@ void USB_TO_SWIM_ProcessCmd(uint8* dat, uint16 len)
 			buffer_reply[rep_len++] = USB_TO_XXX_INVALID_INDEX;
 			return;
 		}
-		length = dat[index + 1] + (dat[index + 2] << 8);
+		length = LE_TO_SYS_U16(GET_LE_U16(&dat[index + 1]));
 		index += 3;
 
 		switch(command)
@@ -72,9 +72,9 @@ void USB_TO_SWIM_ProcessCmd(uint8* dat, uint16 len)
 
 			break;
 		case USB_TO_XXX_OUT:
-			swim_addr = (dat[index + 2] << 0) + (dat[index + 3] << 8) + (dat[index + 4] << 16);
-			swim_len = (dat[index + 0] << 0) + (dat[index + 1] << 8);
-			if (SWIM_WOTF(swim_addr, swim_len, &dat[index + 5]))
+			swim_len = LE_TO_SYS_U16(GET_LE_U16(&dat[index + 0]));
+			swim_addr = LE_TO_SYS_U32(GET_LE_U32(&dat[index + 2]));
+			if (SWIM_WOTF(swim_addr, swim_len, &dat[index + 6]))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
@@ -85,8 +85,8 @@ void USB_TO_SWIM_ProcessCmd(uint8* dat, uint16 len)
 
 			break;
 		case USB_TO_XXX_IN:
-			swim_addr = (dat[index + 2] << 0) + (dat[index + 3] << 8) + (dat[index + 4] << 16);
-			swim_len = (dat[index + 0] << 0) + (dat[index + 1] << 8);
+			swim_len = LE_TO_SYS_U16(GET_LE_U16(&dat[index + 0]));
+			swim_addr = LE_TO_SYS_U32(GET_LE_U32(&dat[index + 2]));
 			if (SWIM_ROTF(swim_addr, swim_len, &buffer_reply[rep_len + 1]))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
