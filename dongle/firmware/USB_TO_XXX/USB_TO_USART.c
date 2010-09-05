@@ -44,7 +44,7 @@ void USB_TO_USART_ProcessCmd(uint8* dat, uint16 len)
 			buffer_reply[rep_len++] = USB_TO_XXX_INVALID_INDEX;
 			return;
 		}
-		length = LE_TO_SYS_U16(GET_LE_U16(&dat[index + 1]));
+		length = GET_LE_U16(&dat[index + 1]);
 		index += 3;
 
 		switch(command)
@@ -58,7 +58,7 @@ void USB_TO_USART_ProcessCmd(uint8* dat, uint16 len)
 		case USB_TO_XXX_CONFIG:
 			buffer_reply[rep_len++] = USB_TO_XXX_OK;
 
-			baudrate = LE_TO_SYS_U32(GET_LE_U32(&dat[index]));
+			baudrate = GET_LE_U32(&dat[index]);
 			datalength = dat[index + 4];
 			parity = dat[index + 5];
 			stopbit = dat[index + 6];
@@ -76,7 +76,7 @@ void USB_TO_USART_ProcessCmd(uint8* dat, uint16 len)
 
 			break;
 		case USB_TO_XXX_IN:
-			data_len = LE_TO_SYS_U16(GET_LE_U16(&dat[index]));
+			data_len = GET_LE_U16(&dat[index]);
 
 			if (FIFO_Get_Length(&CDC_IN_fifo) >= data_len)
 			{
@@ -97,7 +97,7 @@ void USB_TO_USART_ProcessCmd(uint8* dat, uint16 len)
 
 			break;
 		case USB_TO_XXX_OUT:
-			data_len = LE_TO_SYS_U16(GET_LE_U16(&dat[index]));
+			data_len = GET_LE_U16(&dat[index]);
 			
 #if 1
 			for (i = 0; i < data_len; i++)

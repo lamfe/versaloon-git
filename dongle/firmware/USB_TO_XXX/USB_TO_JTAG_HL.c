@@ -40,7 +40,7 @@ void USB_TO_JTAG_HL_ProcessCmd(uint8* dat, uint16 len)
 			buffer_reply[rep_len++] = USB_TO_XXX_INVALID_INDEX;
 			return;
 		}
-		length = LE_TO_SYS_U16(GET_LE_U16(&dat[index + 1]));
+		length = GET_LE_U16(&dat[index + 1]);
 		index += 3;
 
 		switch(command)
@@ -55,10 +55,9 @@ void USB_TO_JTAG_HL_ProcessCmd(uint8* dat, uint16 len)
 
 			break;
 		case USB_TO_XXX_CONFIG:
-			JTAG_TAP_Init(LE_TO_SYS_U16(GET_LE_U16(&dat[index])), JTAG_TAP_ASYN);
+			JTAG_TAP_Init(GET_LE_U16(&dat[index]), JTAG_TAP_ASYN);
 			JTAG_TAP_SetDaisyChainPos(dat[index + 2], dat[index + 3], 
-					LE_TO_SYS_U16(GET_LE_U16(&dat[index + 4])), 
-					LE_TO_SYS_U16(GET_LE_U16(&dat[index + 6])));
+					GET_LE_U16(&dat[index + 4]), GET_LE_U16(&dat[index + 6]));
 
 			buffer_reply[rep_len++] = USB_TO_XXX_OK;
 
@@ -78,7 +77,7 @@ void USB_TO_JTAG_HL_ProcessCmd(uint8* dat, uint16 len)
 			len_tmp = 0;
 			while(len_tmp < length)
 			{
-				i = LE_TO_SYS_U16(GET_LE_U16(&dat[index + len_tmp]));	// in bit
+				i = GET_LE_U16(&dat[index + len_tmp]);					// in bit
 				cur_dat_len = i & 0x7FFF;
 
 				if(i & 0x8000)

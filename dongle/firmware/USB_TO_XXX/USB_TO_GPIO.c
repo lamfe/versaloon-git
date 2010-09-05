@@ -39,7 +39,7 @@ void USB_TO_GPIO_ProcessCmd(uint8* dat, uint16 len)
 			buffer_reply[rep_len++] = USB_TO_XXX_INVALID_INDEX;
 			return;
 		}
-		length = LE_TO_SYS_U16(GET_LE_U16(&dat[index + 1]));
+		length = GET_LE_U16(&dat[index + 1]);
 		index += 3;
 
 		switch(command)
@@ -54,9 +54,9 @@ void USB_TO_GPIO_ProcessCmd(uint8* dat, uint16 len)
 
 			break;
 		case USB_TO_XXX_CONFIG:
-			mask_data = LE_TO_SYS_U16(GET_LE_U16(&dat[index + 0]));
-			io_data   = LE_TO_SYS_U16(GET_LE_U16(&dat[index + 2]));
-			port_data = LE_TO_SYS_U16(GET_LE_U16(&dat[index + 4]));
+			mask_data = GET_LE_U16(&dat[index + 0]);
+			io_data   = GET_LE_U16(&dat[index + 2]);
+			port_data = GET_LE_U16(&dat[index + 4]);
 			io_data  &= mask_data;
 
 			if ((mask_data & io_data & ~USB_TO_GPIO_OUT_MSK) 
@@ -208,7 +208,7 @@ void USB_TO_GPIO_ProcessCmd(uint8* dat, uint16 len)
 
 			break;
 		case USB_TO_XXX_IN:
-			mask_data = LE_TO_SYS_U16(GET_LE_U16(&dat[index]));
+			mask_data = GET_LE_U16(&dat[index]);
 			if(mask_data & ~USB_TO_GPIO_IN_MSK)
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_INVALID_PARA;
@@ -274,7 +274,7 @@ void USB_TO_GPIO_ProcessCmd(uint8* dat, uint16 len)
 
 			break;
 		case USB_TO_XXX_OUT:
-			mask_data = LE_TO_SYS_U16(GET_LE_U16(&dat[index + 0]));
+			mask_data = GET_LE_U16(&dat[index + 0]);
 			if((mask_data & ~USB_TO_GPIO_MSK) > 0)
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_INVALID_PARA;
@@ -283,7 +283,7 @@ void USB_TO_GPIO_ProcessCmd(uint8* dat, uint16 len)
 
 			buffer_reply[rep_len++] = USB_TO_XXX_OK;
 
-			port_data = LE_TO_SYS_U16(GET_LE_U16(&dat[index + 2]));
+			port_data = GET_LE_U16(&dat[index + 2]);
 
 			if(mask_data & USB_TO_GPIO_SRST)
 			{
