@@ -43,7 +43,7 @@ void USB_TO_SPI_ProcessCmd(uint8* dat, uint16 len)
 			buffer_reply[rep_len++] = USB_TO_XXX_INVALID_INDEX;
 			return;
 		}
-		length = dat[index + 1] + (dat[index + 2] << 8);
+		length = LE_TO_SYS_U16(GET_LE_U16(&dat[index + 1]));
 		index += 3;
 
 		switch(command)
@@ -59,7 +59,7 @@ void USB_TO_SPI_ProcessCmd(uint8* dat, uint16 len)
 			break;
 		case USB_TO_XXX_CONFIG:
 			attr = dat[index];
-			frequency = dat[index + 1] + (dat[index + 2] << 8);
+			frequency = LE_TO_SYS_U16(GET_LE_U16(&dat[index + 1]));
 			index += 3;
 
 			if(attr & USB_TO_SPI_CPOL_HIGH)

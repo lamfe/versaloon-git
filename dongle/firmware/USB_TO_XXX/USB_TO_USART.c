@@ -44,7 +44,7 @@ void USB_TO_USART_ProcessCmd(uint8* dat, uint16 len)
 			buffer_reply[rep_len++] = USB_TO_XXX_INVALID_INDEX;
 			return;
 		}
-		length = dat[index + 1] + (dat[index + 2] << 8);
+		length = LE_TO_SYS_U16(GET_LE_U16(&dat[index + 1]));
 		index += 3;
 
 		switch(command)
@@ -58,10 +58,7 @@ void USB_TO_USART_ProcessCmd(uint8* dat, uint16 len)
 		case USB_TO_XXX_CONFIG:
 			buffer_reply[rep_len++] = USB_TO_XXX_OK;
 
-			baudrate =	(	(uint32)dat[index + 0] << 0) + 
-						(	(uint32)dat[index + 1] << 8) + 
-						(	(uint32)dat[index + 2] << 16) + 
-						(	(uint32)dat[index + 3] << 24);
+			baudrate = LE_TO_SYS_U32(GET_LE_U32(&dat[index]));
 			datalength = dat[index + 4];
 			parity = dat[index + 5];
 			stopbit = dat[index + 6];
@@ -79,7 +76,7 @@ void USB_TO_USART_ProcessCmd(uint8* dat, uint16 len)
 
 			break;
 		case USB_TO_XXX_IN:
-			data_len = dat[index + 0] + (dat[index + 1] << 8);
+			data_len = LE_TO_SYS_U16(GET_LE_U16(&dat[index]));
 
 			if (FIFO_Get_Length(&CDC_IN_fifo) >= data_len)
 			{
@@ -100,7 +97,7 @@ void USB_TO_USART_ProcessCmd(uint8* dat, uint16 len)
 
 			break;
 		case USB_TO_XXX_OUT:
-			data_len = dat[index + 0] + (dat[index + 1] << 8);
+			data_len = LE_TO_SYS_U16(GET_LE_U16(&dat[index]));
 			
 #if 1
 			for (i = 0; i < data_len; i++)
@@ -134,28 +131,20 @@ void USB_TO_USART_ProcessCmd(uint8* dat, uint16 len)
 			buffer_reply[rep_len++] = USB_TO_XXX_OK;
 
 			data_len = FIFO_Get_AvailableLength(&CDC_OUT_fifo);
-			buffer_reply[rep_len++] = (data_len >> 0) & 0xFF;
-			buffer_reply[rep_len++] = (data_len >> 8) & 0xFF;
-			buffer_reply[rep_len++] = (data_len >> 16) & 0xFF;
-			buffer_reply[rep_len++] = (data_len >> 24) & 0xFF;
+			SET_LE_U32(&buffer_reply[rep_len], data_len);
+			rep_len += sizeof(uint32);
 
 			data_len = FIFO_Get_Length(&CDC_OUT_fifo);
-			buffer_reply[rep_len++] = (data_len >> 0) & 0xFF;
-			buffer_reply[rep_len++] = (data_len >> 8) & 0xFF;
-			buffer_reply[rep_len++] = (data_len >> 16) & 0xFF;
-			buffer_reply[rep_len++] = (data_len >> 24) & 0xFF;
+			SET_LE_U32(&buffer_reply[rep_len], data_len);
+			rep_len += sizeof(uint32);
 
 			data_len = FIFO_Get_AvailableLength(&CDC_IN_fifo);
-			buffer_reply[rep_len++] = (data_len >> 0) & 0xFF;
-			buffer_reply[rep_len++] = (data_len >> 8) & 0xFF;
-			buffer_reply[rep_len++] = (data_len >> 16) & 0xFF;
-			buffer_reply[rep_len++] = (data_len >> 24) & 0xFF;
+			SET_LE_U32(&buffer_reply[rep_len], data_len);
+			rep_len += sizeof(uint32);
 
 			data_len = FIFO_Get_Length(&CDC_IN_fifo);
-			buffer_reply[rep_len++] = (data_len >> 0) & 0xFF;
-			buffer_reply[rep_len++] = (data_len >> 8) & 0xFF;
-			buffer_reply[rep_len++] = (data_len >> 16) & 0xFF;
-			buffer_reply[rep_len++] = (data_len >> 24) & 0xFF;
+			SET_LE_U32(&buffer_reply[rep_len], data_len);
+			rep_len += sizeof(uint32);
 
 			break;
 		default:

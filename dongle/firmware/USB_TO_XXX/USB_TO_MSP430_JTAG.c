@@ -42,7 +42,7 @@ void USB_TO_MSP430_JTAG_ProcessCmd(uint8* dat, uint16 len)
 			buffer_reply[rep_len++] = USB_TO_XXX_INVALID_INDEX;
 			return;
 		}
-		length = dat[index + 1] + (dat[index + 2] << 8);
+		length = LE_TO_SYS_U16(GET_LE_U16(&dat[index + 1]));
 		index += 3;
 
 		switch(command)
@@ -105,10 +105,12 @@ void USB_TO_MSP430_JTAG_ProcessCmd(uint8* dat, uint16 len)
 
 			break;
 		case USB_TO_MSP430_JTAG_Poll:
-			memcpy(&data, dat + index + 3, 4);
-			memcpy(&mask, dat + index + 7, 4);
-			memcpy(&value, dat + index + 11, 4);
-			if(MSP430_JTAG_Poll(data, mask, value, dat[index], dat[index + 1] + (dat[index + 2] << 8)))
+			len_tmp = LE_TO_SYS_U16(GET_LE_U16(&dat[index + 1]));
+			data = LE_TO_SYS_U32(GET_LE_U32(&dat[index + 3]));
+			mask = LE_TO_SYS_U32(GET_LE_U32(&dat[index + 7]));
+			value = LE_TO_SYS_U32(GET_LE_U32(&dat[index + 11]));
+
+			if(MSP430_JTAG_Poll(data, mask, value, dat[index], len_tmp))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
@@ -121,7 +123,7 @@ void USB_TO_MSP430_JTAG_ProcessCmd(uint8* dat, uint16 len)
 		case USB_TO_MSP430_JTAG_TCLK_STROBE:
 			buffer_reply[rep_len++] = USB_TO_XXX_OK;
 
-			MSP430_JTAG_TCLK_STROKE(dat[index] + (dat[index + 1] << 8));
+			MSP430_JTAG_TCLK_STROKE(LE_TO_SYS_U16(GET_LE_U16(&dat[index])));
 
 			break;
 		case USB_TO_MSP430_JTAG_Reset:

@@ -35,7 +35,7 @@ void USB_TO_LPCICP_ProcessCmd(uint8* dat, uint16 len)
 			buffer_reply[rep_len++] = USB_TO_XXX_INVALID_INDEX;
 			return;
 		}
-		length = dat[index + 1] + (dat[index + 2] << 8);
+		length = LE_TO_SYS_U16(GET_LE_U16(&dat[index + 1]));
 		index += 3;
 
 		switch(command)
@@ -84,10 +84,11 @@ void USB_TO_LPCICP_ProcessCmd(uint8* dat, uint16 len)
 			break;
 		case USB_TO_LPCICP_PollRdy:
 			buffer_reply[rep_len++] = USB_TO_XXX_OK;
-			buffer_reply[rep_len++] = LPCICP_Poll(dat[index], 		// out
-												dat[index + 1], 	// setbit
-												dat[index + 2],		// clearbit
-												dat[index + 3] + (dat[index + 4] << 8));	// pollcnt
+			buffer_reply[rep_len++] = LPCICP_Poll(
+					dat[index + 0], 								// out
+					dat[index + 1], 								// setbit
+					dat[index + 2],									// clearbit
+					LE_TO_SYS_U16(GET_LE_U16(&dat[index + 3])));	// pollcnt
 
 			break;
 		default:

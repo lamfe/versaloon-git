@@ -62,7 +62,7 @@ void USB_TO_XXX_ProcessCmd(uint8* dat, uint16 len)
 	while(USB_TO_XXX_CmdIdx < len)
 	{
 		// get command length
-		USB_TO_XXX_CmdLen_tmp = dat[USB_TO_XXX_CmdIdx + 1] + (dat[USB_TO_XXX_CmdIdx + 2] << 8) - 3;
+		USB_TO_XXX_CmdLen_tmp = LE_TO_SYS_U16(GET_LE_U16(&dat[USB_TO_XXX_CmdIdx + 1])) - 3;
 		// poll command type and call different module
 		switch(dat[USB_TO_XXX_CmdIdx])
 		{
@@ -172,7 +172,7 @@ void USB_TO_XXX_ProcessCmd(uint8* dat, uint16 len)
 			break;
 #endif
 		case USB_TO_DELAY:
-			dly = dat[USB_TO_XXX_CmdIdx + 3] + (dat[USB_TO_XXX_CmdIdx + 4] << 8);
+			dly = LE_TO_SYS_U16(GET_LE_U16(&dat[USB_TO_XXX_CmdIdx + 3]));
 			if(dly & 0x8000)
 			{
 				DelayMS(dly & 0x7FFF);
@@ -200,9 +200,12 @@ void USB_TO_XXX_ProcessCmd(uint8* dat, uint16 len)
 
 					USB_TO_POLL_Context[USB_TO_POLL_Index].buffer_reply_save = buffer_reply;
 					USB_TO_POLL_Context[USB_TO_POLL_Index].rep_len_save = rep_len;
-					USB_TO_POLL_Context[USB_TO_POLL_Index].cmd_index = USB_TO_XXX_CmdIdx + USB_TO_XXX_CmdLen_tmp + 3;
-					USB_TO_POLL_Context[USB_TO_POLL_Index].poll_retry = dat[USB_TO_XXX_CmdIdx + 4] + (dat[USB_TO_XXX_CmdIdx + 5] << 8);
-					USB_TO_POLL_Context[USB_TO_POLL_Index].poll_interval = dat[USB_TO_XXX_CmdIdx + 6] + (dat[USB_TO_XXX_CmdIdx + 7] << 8);
+					USB_TO_POLL_Context[USB_TO_POLL_Index].cmd_index = 
+						USB_TO_XXX_CmdIdx + USB_TO_XXX_CmdLen_tmp + 3;
+					USB_TO_POLL_Context[USB_TO_POLL_Index].poll_retry = 
+						LE_TO_SYS_U16(GET_LE_U16(&dat[USB_TO_XXX_CmdIdx + 4]));
+					USB_TO_POLL_Context[USB_TO_POLL_Index].poll_interval = 
+						LE_TO_SYS_U16(GET_LE_U16(&dat[USB_TO_XXX_CmdIdx + 6]));
 					USB_TO_POLL_Context[USB_TO_POLL_Index].poll_result = 1;
 
 					buffer_reply = (uint8 *)USB_TO_POLL_buffer_reply[USB_TO_POLL_Index];
@@ -287,7 +290,7 @@ void USB_TO_XXX_ProcessCmd(uint8* dat, uint16 len)
 					uint16_t offset;
 					uint32_t mask, value, data;
 
-					offset = dat[USB_TO_XXX_CmdIdx + 4] + (dat[USB_TO_XXX_CmdIdx + 5] << 8);
+					offset = LE_TO_SYS_U16(GET_LE_U16(&dat[USB_TO_XXX_CmdIdx + 4]));
 					size = dat[USB_TO_XXX_CmdIdx + 6];
 					if (size > 4)
 					{
@@ -321,7 +324,7 @@ void USB_TO_XXX_ProcessCmd(uint8* dat, uint16 len)
 					uint16_t offset;
 					uint32_t mask, value, data;
 
-					offset = dat[USB_TO_XXX_CmdIdx + 4] + (dat[USB_TO_XXX_CmdIdx + 5] << 8);
+					offset = LE_TO_SYS_U16(GET_LE_U16(&dat[USB_TO_XXX_CmdIdx + 4]));
 					size = dat[USB_TO_XXX_CmdIdx + 6];
 					if (size > 4)
 					{
@@ -353,8 +356,8 @@ void USB_TO_XXX_ProcessCmd(uint8* dat, uint16 len)
 				{
 					uint16_t size, offset;
 
-					offset = dat[USB_TO_XXX_CmdIdx + 4] + (dat[USB_TO_XXX_CmdIdx + 5] << 8);
-					size = dat[USB_TO_XXX_CmdIdx + 6] + (dat[USB_TO_XXX_CmdIdx + 7] << 8);
+					offset = LE_TO_SYS_U16(GET_LE_U16(&dat[USB_TO_XXX_CmdIdx + 4]));
+					size = LE_TO_SYS_U16(GET_LE_U16(&dat[USB_TO_XXX_CmdIdx + 6]));
 					if (memcmp(&buffer_reply[rep_len - 1 - offset], &dat[USB_TO_XXX_CmdIdx + 8], size))
 					{
 						USB_TO_POLL_Context[USB_TO_POLL_Index].poll_result = 0;

@@ -37,14 +37,12 @@ static void Versaloon_ProcessCommonCmd(uint8* dat, uint16 len)
 	switch(dat[0])
 	{
 	case VERSALOON_GET_INFO:
-		dat[0] = USB_DATA_BUFF_SIZE & 0xFF;
-		dat[1] = (USB_DATA_BUFF_SIZE >> 8) & 0xFF;
+		SET_LE_U16(&dat[0], USB_DATA_BUFF_SIZE);
 		memcpy(dat + 2, Versaloon_Ver, sizeof(Versaloon_Ver));
 		rep_len = sizeof(Versaloon_Ver) + 2;
 		break;
 	case VERSALOON_GET_TVCC:
-		dat[0] = Vtarget & 0xFF;
-		dat[1] = (Vtarget >> 8) & 0xFF;
+		SET_LE_U16(&dat[0], Vtarget);
 		rep_len = 2;
 		break;
 	case VERSALOON_GET_HARDWARE:
@@ -53,7 +51,7 @@ static void Versaloon_ProcessCommonCmd(uint8* dat, uint16 len)
 		break;
 #if VERSALOON_FW_UPDATE_EN
 	case VERSALOON_FW_UPDATE:
-		key = dat[1] + (dat[2] << 8);
+		key = LE_TO_SYS_U16(GET_LE_U16(&dat[1]));
 		if(key == FWU_KEY)
 		{
 			RCC_APB1PeriphClockCmd(RCC_APB1Periph_BKP | RCC_APB1Periph_PWR, ENABLE);

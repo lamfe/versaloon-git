@@ -24,6 +24,7 @@
 
 #define _SYS_FREQUENCY					72		// in MHz
 #define _SYS_FLASH_VECTOR_TABLE_SHIFT	0x2000	// application will locate at 0x08002000
+#define _SYS_ENDIAN						_SYS_LITTLE_ENDIAN
 
 /****************************** Power ******************************/
 #define PWREXT_INIT()					

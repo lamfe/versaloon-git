@@ -23,6 +23,7 @@ void USB_TO_ADC_ProcessCmd(uint8* dat, uint16 len)
 {
 	uint16 index, device_num, length;
 	uint8 command;
+	uint16 adc_result;
 
 	index = 0;
 	while(index < len)
@@ -34,7 +35,7 @@ void USB_TO_ADC_ProcessCmd(uint8* dat, uint16 len)
 			buffer_reply[rep_len++] = USB_TO_XXX_INVALID_INDEX;
 			return;
 		}
-		length = dat[index + 1] + (dat[index + 2] << 8);
+		length = LE_TO_SYS_U16(GET_LE_U16(&dat[index + 1]));
 		index += 3;
 
 		switch(command)
@@ -55,9 +56,10 @@ void USB_TO_ADC_ProcessCmd(uint8* dat, uint16 len)
 			break;
 		case USB_TO_XXX_IN:
 			buffer_reply[rep_len++] = USB_TO_XXX_OK;
-			// use Vtarget directly
-			buffer_reply[rep_len++] = (uint8)(Vtarget >> 0);
-			buffer_reply[rep_len++] = (uint8)(Vtarget >> 8);
+
+			adc_result = SampleVtarget();
+			SET_LE_U16(&buffer_reply[rep_len], adc_result);
+			rep_len += 2;
 
 			break;
 		default:
