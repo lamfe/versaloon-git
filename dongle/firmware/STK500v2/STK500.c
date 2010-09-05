@@ -64,7 +64,7 @@ static uint8 STK500_ProcessGenCmd(uint8* dat, uint16 len)
 		rep_len = 2;
 		break;
 	case CMD_LOAD_ADDRESS:
-		SKT500_Target_Address = (dat[1] << 24) + (dat[2] << 16) + (dat[3] << 8) + dat[4];
+		SKT500_Target_Address = GET_BE_U32(&dat[1]);
 		rep_len = 2;
 		return STATUS_CMD_OK;
 	default:
