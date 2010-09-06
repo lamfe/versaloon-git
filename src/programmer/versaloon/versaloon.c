@@ -217,7 +217,7 @@ RESULT versaloon_get_target_voltage(uint16_t *voltage)
 	}
 	else
 	{
-		*voltage = versaloon_buf[0] + (versaloon_buf[1] << 8);
+		*voltage = GET_LE_U16(&versaloon_buf[0]);
 		return ERROR_OK;
 	}
 }
@@ -316,7 +316,7 @@ RESULT versaloon_init(void)
 	}
 	
 	versaloon_buf[ret] = 0;
-	versaloon_buf_size = versaloon_buf[0] + (versaloon_buf[1] << 8);
+	versaloon_buf_size = GET_LE_U16(&versaloon_buf[0]);
 	LOG_INFO("%s", versaloon_buf + 2);
 	
 	// free temporary buffer
@@ -724,9 +724,9 @@ RESULT versaloon_msp430jtag_ir(uint8_t *ir, uint8_t want_ret)
 {
 	return usbtomsp430jtag_ir(VERSALOON_MSP430_JTAG_PORT, ir, want_ret);
 }
-RESULT versaloon_msp430jtag_dr(uint32_t *dr, uint8_t len, uint8_t want_ret)
+RESULT versaloon_msp430jtag_dr(uint32_t *dr, uint8_t bitlen, uint8_t want_ret)
 {
-	return usbtomsp430jtag_dr(VERSALOON_MSP430_JTAG_PORT, dr, len, want_ret);
+	return usbtomsp430jtag_dr(VERSALOON_MSP430_JTAG_PORT, dr, bitlen, want_ret);
 }
 RESULT versaloon_msp430jtag_tclk(uint8_t value)
 {

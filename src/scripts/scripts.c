@@ -34,6 +34,7 @@
 #include "vsprog.h"
 #include "scripts.h"
 #include "programmer.h"
+#include "bufffunc.h"
 
 #define PARAM_EXIT_ON_FAIL					0
 #define PARAM_NO_COMMIT						1
@@ -476,13 +477,11 @@ RESULT misc_run_script(char *cmd)
 		return ERROR_OK;
 	}
 	
-	buff_in_memory = (char *)malloc(strlen(cmd) + 1);
-	if (NULL == buff_in_memory)
+	if (NULL == bufffunc_malloc_and_copy_str(&buff_in_memory, cmd))
 	{
 		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 		return ERROR_FAIL;
 	}
-	strcpy(buff_in_memory, cmd);
 	
 	argc = (uint16_t)dimof(argv);
 	if (ERROR_OK != misc_parse_cmd_line(buff_in_memory, &argc, (char **)argv))

@@ -46,7 +46,7 @@ RESULT usbtousart_status(uint8_t interface_index,
 // USB_TO_SPI
 RESULT usbtospi_init(void);
 RESULT usbtospi_fini(void);
-RESULT usbtospi_config(uint8_t interface_index, uint16_t freq, uint8_t cpol, 
+RESULT usbtospi_config(uint8_t interface_index, uint16_t kHz, uint8_t cpol, 
 					   uint8_t cpha, uint8_t firstbit);
 RESULT usbtospi_io(uint8_t interface_index, uint8_t *out, uint8_t *in, 
 				   uint16_t outlen, uint16_t inpos, uint16_t inlen);
@@ -155,8 +155,8 @@ RESULT usbtomsp430jtag_fini(void);
 RESULT usbtomsp430jtag_config(uint8_t interface_index, uint8_t has_test);
 RESULT usbtomsp430jtag_ir(uint8_t interface_index, uint8_t *ir, 
 							uint8_t want_ret);
-RESULT usbtomsp430jtag_dr(uint8_t interface_index, uint32_t *dr, uint8_t len, 
-						  uint8_t want_ret);
+RESULT usbtomsp430jtag_dr(uint8_t interface_index, uint32_t *dr, 
+							uint8_t bitlen, uint8_t want_ret);
 RESULT usbtomsp430jtag_tclk(uint8_t interface_index, uint8_t value);
 RESULT usbtomsp430jtag_tclk_strobe(uint8_t interface_index, uint16_t cnt);
 RESULT usbtomsp430jtag_reset(uint8_t interface_index);
@@ -172,8 +172,8 @@ RESULT usbtomsp430sbw_fini(void);
 RESULT usbtomsp430sbw_config(uint8_t interface_index);
 RESULT usbtomsp430sbw_ir(uint8_t interface_index, uint8_t *ir, 
 							uint8_t want_ret);
-RESULT usbtomsp430sbw_dr(uint8_t interface_index, uint32_t *dr, uint8_t len, 
-						 uint8_t want_ret);
+RESULT usbtomsp430sbw_dr(uint8_t interface_index, uint32_t *dr, 
+							uint8_t bitlen, uint8_t want_ret);
 RESULT usbtomsp430sbw_tclk(uint8_t interface_index, uint8_t value);
 RESULT usbtomsp430sbw_tclk_strobe(uint8_t interface_index, uint16_t cnt);
 RESULT usbtomsp430sbw_reset(uint8_t interface_index);

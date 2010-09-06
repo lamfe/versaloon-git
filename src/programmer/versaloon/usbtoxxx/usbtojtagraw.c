@@ -54,8 +54,7 @@ RESULT usbtojtagraw_config(uint8_t interface_index, uint16_t kHz)
 	}
 #endif
 	
-	cfg_buf[0] = (kHz >> 0) & 0xFF;
-	cfg_buf[1] = (kHz >> 8) & 0xFF;
+	SET_LE_U16(&cfg_buf[0], kHz);
 	
 	return usbtoxxx_conf_command(USB_TO_JTAG_RAW, interface_index, cfg_buf, 2);
 }
@@ -77,12 +76,9 @@ RESULT usbtojtagraw_execute(uint8_t interface_index, uint8_t *tdi,
 	{
 		return ERROR_FAIL;
 	}
-	bytelen = (uint16_t)((bitlen >> 3) + ((bitlen & 0x07) ? 1 : 0));
+	bytelen = (uint16_t)((bitlen + 7) >> 3);
 	
-	versaloon_cmd_buf[0] = (bitlen >> 0) & 0xFF;
-	versaloon_cmd_buf[1] = (bitlen >> 8) & 0xFF;
-	versaloon_cmd_buf[2] = (bitlen >> 16) & 0xFF;
-	versaloon_cmd_buf[3] = (bitlen >> 24) & 0xFF;
+	SET_LE_U32(&versaloon_cmd_buf[0], bitlen);
 	memcpy(versaloon_cmd_buf + 4, tdi, bytelen);
 	memcpy(versaloon_cmd_buf + 4 + bytelen, tms, bytelen);
 	

@@ -197,6 +197,7 @@ ProgramStart:
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read chip id");
 		return ERRCODE_FAILURE_OPERATION;
 	}
+	device_id = LE_TO_SYS_U32(device_id);
 	if ((device_id & 0x00FF0000) != 0x00150000)
 	{
 		icp_fini();
@@ -333,6 +334,7 @@ READ_TARGET_HANDLER(lpc900icp)
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read chip id");
 			return ERRCODE_FAILURE_OPERATION;
 		}
+		*(uint32_t *)buff = LE_TO_SYS_U32(*(uint32_t *)buff);
 		break;
 	case APPLICATION_CHAR:
 		if (context->op->verify_operations & APPLICATION)
@@ -372,6 +374,7 @@ READ_TARGET_HANDLER(lpc900icp)
 				ret = ERRCODE_FAILURE_OPERATION;
 				break;
 			}
+			crc_in_chip = LE_TO_SYS_U32(crc_in_chip);
 			
 			// calculate crc in file
 			crc_in_file = 0;

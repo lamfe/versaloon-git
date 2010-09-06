@@ -323,6 +323,7 @@ static RESULT stm32isp_read_product_id(uint32_t *id)
 		LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "get product id");
 		return ERRCODE_FAILURE_OPERATION;
 	}
+	*id = LE_TO_SYS_U32(*id);
 	return stm32isp_get_ack(0, buffer, 0);
 }
 
@@ -444,10 +445,7 @@ static RESULT stm32isp_read_memory(uint32_t addr, uint8_t *data, uint16_t *data_
 		}
 	}
 	// send address + checksum
-	buffer[0] = (addr >> 24) & 0xFF;
-	buffer[1] = (addr >> 16) & 0xFF;
-	buffer[2] = (addr >> 8) & 0xFF;
-	buffer[3] = (addr >> 0) & 0xFF;
+	SET_BE_U32(&buffer[0], addr);
 	buffer[4] = buffer[0] ^ buffer[1] ^ buffer[2] ^ buffer[3];
 	ret = stm32isp_process_data(&len, 0, buffer, STM32ISP_SEND);
 	if (ret != ERROR_OK)
@@ -460,7 +458,7 @@ static RESULT stm32isp_read_memory(uint32_t addr, uint8_t *data, uint16_t *data_
 	{
 		return ERROR_FAIL;
 	}
-	// send data
+	// send length
 	buffer[0] = (uint8_t)(*data_len - 1);
 	buffer[1] = ~buffer[0];
 	len = 2;
@@ -539,10 +537,7 @@ static RESULT stm32isp_write_memory(uint32_t addr, uint8_t *data, uint16_t data_
 		}
 	}
 	// send address + checksum
-	buffer[0] = (addr >> 24) & 0xFF;
-	buffer[1] = (addr >> 16) & 0xFF;
-	buffer[2] = (addr >> 8) & 0xFF;
-	buffer[3] = (addr >> 0) & 0xFF;
+	SET_BE_U32(&buffer[0], addr);
 	buffer[4] = buffer[0] ^ buffer[1] ^ buffer[2] ^ buffer[3];
 	ret = stm32isp_process_data(&len, 0, buffer, STM32ISP_SEND);
 	if (ret != ERROR_OK)
@@ -683,10 +678,7 @@ static RESULT stm32isp_execute_code(uint32_t addr)
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	// send address + checksum
-	buffer[0] = (addr >> 24) & 0xFF;
-	buffer[1] = (addr >> 16) & 0xFF;
-	buffer[2] = (addr >> 8) & 0xFF;
-	buffer[3] = (addr >> 0) & 0xFF;
+	SET_BE_U32(&buffer[0], addr);
 	buffer[4] = buffer[0] ^ buffer[1] ^ buffer[2] ^ buffer[3];
 	ret = stm32isp_process_data(&len, 0, buffer, STM32ISP_SEND);
 	if (ret != ERROR_OK)
@@ -809,7 +801,7 @@ READ_TARGET_HANDLER(stm32isp)
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
-		flash_kb = (tmpbuff[1] << 8) + tmpbuff[0];
+		flash_kb = GET_LE_U16(&tmpbuff[0]);
 		if (flash_kb <= 512)
 		{
 			pi->program_areas[APPLICATION_IDX].size = flash_kb * 1024;
@@ -820,7 +812,7 @@ READ_TARGET_HANDLER(stm32isp)
 			return ERRCODE_INVALID;
 		}
 		LOG_INFO("Flash memory size: %i KB", flash_kb);
-		sram_kb = (tmpbuff[3] << 8) + tmpbuff[2];
+		sram_kb = GET_LE_U16(&tmpbuff[2]);
 		if (sram_kb != 0xFFFF)
 		{
 			LOG_INFO("SRAM memory size: %i KB", sram_kb);

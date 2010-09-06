@@ -117,7 +117,7 @@ RESULT read_hex_file(FILE *hex_file, WRITE_MEMORY_CALLBACK callback,
 		}
 		
 		// process data according to data type
-		addr = (line_buf[1] << 8) + line_buf[2];
+		addr = GET_BE_U16(&line_buf[1]);
 		switch (line_buf[3])
 		{
 		case HEX_TYPE_DATA:

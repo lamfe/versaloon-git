@@ -85,12 +85,8 @@ RESULT usbtoswim_wotf(uint8_t interface_index, uint8_t *data, uint16_t bytelen,
 	}
 #endif
 	
-	versaloon_cmd_buf[0] = (bytelen >> 0) & 0xFF;
-	versaloon_cmd_buf[1] = (bytelen >> 8) & 0xFF;
-	versaloon_cmd_buf[2] = (addr >> 0) & 0xFF;
-	versaloon_cmd_buf[3] = (addr >> 8) & 0xFF;
-	versaloon_cmd_buf[4] = (addr >> 16) & 0xFF;
-	versaloon_cmd_buf[5] = 0;
+	SET_LE_U16(&versaloon_cmd_buf[0], bytelen);
+	SET_LE_U32(&versaloon_cmd_buf[2], addr);
 	memcpy(&versaloon_cmd_buf[6], data, bytelen);
 	
 	return usbtoxxx_out_command(USB_TO_SWIM, interface_index, 
@@ -108,13 +104,9 @@ RESULT usbtoswim_rotf(uint8_t interface_index, uint8_t *data, uint16_t bytelen,
 	}
 #endif
 	
-	versaloon_cmd_buf[0] = (bytelen >> 0) & 0xFF;
-	versaloon_cmd_buf[1] = (bytelen >> 8) & 0xFF;
-	versaloon_cmd_buf[2] = (addr >> 0) & 0xFF;
-	versaloon_cmd_buf[3] = (addr >> 8) & 0xFF;
-	versaloon_cmd_buf[4] = (addr >> 16) & 0xFF;
-	versaloon_cmd_buf[5] = 0;
-	memset(&versaloon_cmd_buf[5], 0, bytelen);
+	SET_LE_U16(&versaloon_cmd_buf[0], bytelen);
+	SET_LE_U32(&versaloon_cmd_buf[2], addr);
+	memset(&versaloon_cmd_buf[6], 0, bytelen);
 	
 	return usbtoxxx_in_command(USB_TO_SWIM, interface_index, 
 				versaloon_cmd_buf, bytelen + 6, bytelen, data, 0, bytelen, 0);

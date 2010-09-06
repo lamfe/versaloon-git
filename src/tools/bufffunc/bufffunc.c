@@ -60,6 +60,11 @@ char* bufffunc_malloc_and_copy_str(char** dest, char* src)
 	{
 		return NULL;
 	}
+	if (*dest != NULL)
+	{
+		free(*dest);
+		*dest = NULL;
+	}
 	
 	*dest = (char*)malloc(strlen(src) + 1);
 	if (NULL == *dest)

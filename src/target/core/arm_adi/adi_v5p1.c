@@ -332,6 +332,7 @@ static RESULT adi_dp_scan(uint8_t instr, uint8_t reg_addr, uint8_t RnW,
 			jtag_ir_w(&instr, ADI_JTAGDP_IRLEN);
 		}
 		
+		*value = SYS_TO_LE_U32(*value);
 		// scan dr
 		adi_dp_first3bits = ((reg_addr >> 1) & 0x06) | (RnW & 1);
 		if (RnW)
@@ -372,7 +373,7 @@ static RESULT adi_dp_scan(uint8_t instr, uint8_t reg_addr, uint8_t RnW,
 
 static RESULT adi_dpif_read_id(uint32_t *id)
 {
-	uint16_t ir;
+	uint8_t ir;
 	
 	if (NULL == adi_dp_if)
 	{
@@ -392,6 +393,7 @@ static RESULT adi_dpif_read_id(uint32_t *id)
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read JTAG_ID");
 			return ERRCODE_FAILURE_OPERATION;
 		}
+		*id = LE_TO_SYS_U32(*id);
 		LOG_INFO(INFOMSG_REG_08X, "JTAG_ID", *id);
 		break;
 	case ADI_DP_SWD:
@@ -402,6 +404,7 @@ static RESULT adi_dpif_read_id(uint32_t *id)
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read SWD_ID");
 			return ERRCODE_FAILURE_OPERATION;
 		}
+		*id = LE_TO_SYS_U32(*id);
 		LOG_INFO(INFOMSG_REG_08X, "SWDID", *id);
 		break;
 	default:
@@ -474,6 +477,7 @@ static RESULT adi_dp_transaction_endcheck(void)
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "access dap");
 			return ERRCODE_FAILURE_OPERATION;
 		}
+		ctrl_stat = LE_TO_SYS_U32(ctrl_stat);
 	} while ((adi_dp.ack != ack_value) && (--cnt));
 	
 	if (!cnt)
@@ -774,6 +778,7 @@ init:
 	{
 		return ERROR_FAIL;
 	}
+	tmp = LE_TO_SYS_U32(tmp);
 	
 	cnt = 0;
 	while (!(tmp & ADI_DP_REG_CTRL_STAT_CDBGPWRUPACK) && (cnt++ < 10))
@@ -808,6 +813,7 @@ init:
 	{
 		return ERROR_FAIL;
 	}
+	adi_dp_info.ahb_ap_id = LE_TO_SYS_U32(adi_dp_info.ahb_ap_id);
 	LOG_INFO(INFOMSG_REG_08X, "AHB-AP_ID", adi_dp_info.ahb_ap_id);
 	
 	if (ERROR_OK != 
@@ -815,6 +821,7 @@ init:
 	{
 		return ERROR_FAIL;
 	}
+	adi_dp_info.rom_address = LE_TO_SYS_U32(adi_dp_info.rom_address);
 	LOG_INFO(INFOMSG_REG_08X, "ROM_ADDRESS", adi_dp_info.rom_address);
 	
 	if (ERROR_OK != 
@@ -822,6 +829,7 @@ init:
 	{
 		return ERROR_FAIL;
 	}
+	adi_dp_info.config = LE_TO_SYS_U32(adi_dp_info.config);
 	if (adi_dp_info.config & 1)
 	{
 		LOG_INFO(INFOMSG_REG_08X_STR, "CFG", adi_dp_info.config, "Big-endian");

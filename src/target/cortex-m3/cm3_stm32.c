@@ -135,6 +135,7 @@ RESULT stm32_wait_status_busy(uint32_t *status, uint32_t timeout)
 	{
 		return ERROR_FAIL;
 	}
+	reg = LE_TO_SYS_U32(reg);
 	while ((reg & STM32_FLASH_SR_BSY) && timeout)
 	{
 		timeout--;
@@ -143,6 +144,7 @@ RESULT stm32_wait_status_busy(uint32_t *status, uint32_t timeout)
 		{
 			return ERROR_FAIL;
 		}
+		reg = LE_TO_SYS_U32(reg);
 	}
 	*status = reg;
 	if (reg & (STM32_FLASH_SR_PGERR | STM32_FLASH_SR_WRPRTERR))
@@ -251,9 +253,11 @@ WRITE_TARGET_HANDLER(stm32swj)
 	{
 	case APPLICATION_CHAR:
 		// last_but_three dword is RAM address for data, set to 1K at SRAM
-		*(uint32_t *)(iap_code + sizeof(iap_code) - 4 * 4) = FL_ADDR_DATA;
+		*(uint32_t *)(iap_code + sizeof(iap_code) - 4 * 4) = 
+												SYS_TO_LE_U32(FL_ADDR_DATA);
 		// last_but_four dword is SRAM address of last dword
-		*(uint32_t *)(iap_code + sizeof(iap_code) - 4 * 5) = FL_ADDR_RESULT;
+		*(uint32_t *)(iap_code + sizeof(iap_code) - 4 * 5) = 
+												SYS_TO_LE_U32(FL_ADDR_RESULT);
 		
 		// write code to target SRAM
 		if (ERROR_OK != adi_memap_write_buf(STM32_IAP_BASE, iap_code, 
@@ -355,6 +359,7 @@ WRITE_TARGET_HANDLER(stm32swj)
 						ret = ERRCODE_FAILURE_OPERATION;
 						break;
 					}
+					reg = LE_TO_SYS_U32(reg);
 					
 					run_time = get_time_in_ms();
 					if ((run_time - start_time) > 1000)
@@ -399,6 +404,7 @@ READ_TARGET_HANDLER(stm32swj)
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
+		mcu_id = LE_TO_SYS_U32(mcu_id);
 		stm32_print_device(mcu_id);
 		mcu_id &= STM32_DEN_MSK;
 		*(uint32_t *)buff = mcu_id;
@@ -410,6 +416,7 @@ READ_TARGET_HANDLER(stm32swj)
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
+		mcu_id = LE_TO_SYS_U32(mcu_id);
 		if ((mcu_id & 0xFFFF) <= 512)
 		{
 			pi->program_areas[APPLICATION_IDX].size = (mcu_id & 0xFFFF) * 1024;

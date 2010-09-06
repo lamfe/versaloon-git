@@ -54,10 +54,7 @@ RESULT usbtousart_config(uint8_t interface_index, uint32_t baudrate,
 	}
 #endif
 	
-	conf[0] = (baudrate >> 0) & 0xFF;
-	conf[1] = (baudrate >> 8) & 0xFF;
-	conf[2] = (baudrate >> 16) & 0xFF;
-	conf[3] = (baudrate >> 24) & 0xFF;
+	SET_LE_U32(&conf[0], baudrate);
 	conf[4] = datalength;
 	conf[5] = paritybit;
 	conf[6] = stopbit;
@@ -75,8 +72,8 @@ RESULT usbtousart_receive(uint8_t interface_index, uint8_t *buf, uint16_t len)
 		return ERROR_FAIL;
 	}
 #endif
-	versaloon_cmd_buf[0] = (len >> 0) & 0xFF;
-	versaloon_cmd_buf[1] = (len >> 8) & 0xFF;
+	
+	SET_LE_U16(&versaloon_cmd_buf[0], len);
 	memset(&versaloon_cmd_buf[2], 0, len);
 	
 	return usbtoxxx_in_command(USB_TO_USART, interface_index, 
@@ -93,8 +90,7 @@ RESULT usbtousart_send(uint8_t interface_index, uint8_t *buf, uint16_t len)
 	}
 #endif
 	
-	versaloon_cmd_buf[0] = (len >> 0) & 0xFF;
-	versaloon_cmd_buf[1] = (len >> 8) & 0xFF;
+	SET_LE_U16(&versaloon_cmd_buf[0], len);
 	memcpy(&versaloon_cmd_buf[2], buf, len);
 	
 	return usbtoxxx_out_command(USB_TO_USART, interface_index, 

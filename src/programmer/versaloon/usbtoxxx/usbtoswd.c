@@ -71,10 +71,8 @@ RESULT usbtoswd_config(uint8_t interface_index, uint8_t trn, uint16_t retry,
 #endif
 	
 	cfg_buf[0] = trn;
-	cfg_buf[1] = (retry >> 0) & 0xFF;
-	cfg_buf[2] = (retry >> 8) & 0xFF;
-	cfg_buf[3] = (dly >> 0) & 0xFF;
-	cfg_buf[4] = (dly >> 8) & 0xFF;
+	SET_LE_U16(&cfg_buf[1], retry);
+	SET_LE_U16(&cfg_buf[3], dly);
 	
 	return usbtoxxx_conf_command(USB_TO_SWD, interface_index, cfg_buf, 5);
 }
@@ -91,8 +89,7 @@ RESULT usbtoswd_seqout(uint8_t interface_index, uint8_t *data, uint16_t bitlen)
 	}
 #endif
 	
-	versaloon_cmd_buf[0] = (bitlen >> 0) & 0xFF;
-	versaloon_cmd_buf[1] = (bitlen >> 8) & 0xFF;
+	SET_LE_U16(&versaloon_cmd_buf[0], bitlen);
 	memcpy(versaloon_cmd_buf + 2, data, bytelen);
 	
 	return usbtoxxx_out_command(USB_TO_SWD, interface_index, 
@@ -112,8 +109,7 @@ RESULT usbtoswd_seqin(uint8_t interface_index, uint8_t *data, uint16_t bitlen)
 	}
 #endif
 	
-	buff[0] = (bitlen >> 0) & 0xFF;
-	buff[1] = (bitlen >> 8) & 0xFF;
+	SET_LE_U16(&buff[0], bitlen);
 	
 	return usbtoxxx_in_command(USB_TO_SWD, interface_index, buff, 2, bytelen, 
 								data, 0, bytelen, 0);
@@ -141,7 +137,7 @@ RESULT usbtoswd_transact(uint8_t interface_index, uint8_t request,
 	buff[0] = (request | 0x81 | (parity << 5)) & ~0x40;
 	if (data != NULL)
 	{
-		memcpy(buff + 1, (uint8_t*)data, 4);
+		SET_LE_U32(&buff[1], *data);
 	}
 	else
 	{

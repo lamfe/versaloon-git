@@ -89,13 +89,11 @@ static struct interfaces_info_t *interfaces = NULL;
 
 #define jtag_commit()				interfaces->peripheral_commit()
 
-uint32_t dummy;
-
 RESULT c8051f_jtag_poll_busy(void)
 {
 	poll_start(C8051F_JTAG_MAX_POLL_COUNT, 0);
 	
-	jtag_dr_read(&dummy, 1);
+	jtag_dr_read(NULL, 1);
 	poll_ok(0, 0x01, 0x00);
 	
 	poll_end();
@@ -103,6 +101,7 @@ RESULT c8051f_jtag_poll_busy(void)
 	return ERROR_OK;
 }
 
+// *value read will be little endian
 RESULT c8051f_jtag_ind_read(uint8_t addr, uint32_t *value, uint8_t num_bits)
 {
 	uint16_t ir, dr;
@@ -115,10 +114,10 @@ RESULT c8051f_jtag_ind_read(uint8_t addr, uint32_t *value, uint8_t num_bits)
 	}
 #endif
 	
-	ir = addr | C8051F_IR_STATECNTL_SUSPEND;
+	ir = SYS_TO_LE_U16(addr | C8051F_IR_STATECNTL_SUSPEND);
 	jtag_ir_write(&ir, C8051F_IR_LEN);
 	
-	dr = C8051F_INDOPTCODE_READ;
+	dr = SYS_TO_LE_U16(C8051F_INDOPTCODE_READ);
 	jtag_dr_write(&dr, 2);
 	
 	dr = 0;
@@ -129,6 +128,7 @@ RESULT c8051f_jtag_ind_read(uint8_t addr, uint32_t *value, uint8_t num_bits)
 	return ERROR_OK;
 }
 
+// *value is SYS endian
 RESULT c8051f_jtag_ind_write(uint8_t addr, uint32_t *value, uint8_t num_bits)
 {
 	uint16_t ir, dr;
@@ -141,10 +141,11 @@ RESULT c8051f_jtag_ind_write(uint8_t addr, uint32_t *value, uint8_t num_bits)
 	}
 #endif
 	
-	ir = addr | C8051F_IR_STATECNTL_SUSPEND;
+	ir = SYS_TO_LE_U16(addr | C8051F_IR_STATECNTL_SUSPEND);
 	jtag_ir_write(&ir, C8051F_IR_LEN);
 	
 	*value |= C8051F_INDOPTCODE_WRITE << num_bits;
+	*value = SYS_TO_LE_U32(*value);
 	jtag_dr_write(value, num_bits + 2);
 	
 	dr = 0;
@@ -157,7 +158,7 @@ RESULT c8051f_jtag_poll_flbusy(uint16_t poll_cnt, uint16_t interval)
 {
 	poll_start(poll_cnt, interval);
 	
-	c8051f_jtag_ind_read(C8051F_IR_FLASHDAT, &dummy, 1);
+	c8051f_jtag_ind_read(C8051F_IR_FLASHDAT, NULL, 1);
 	poll_ok(0, 0x02, 0x00);
 	
 	poll_end();
@@ -231,7 +232,7 @@ ERASE_TARGET_HANDLER(c8051fjtag)
 		// read FLBusy and FLFail
 		c8051f_jtag_ind_read(C8051F_IR_FLASHDAT, &dr, 2);
 		
-		if ((ERROR_OK != jtag_commit()) || (dr & 0x02))
+		if ((ERROR_OK != jtag_commit()) || (LE_TO_SYS_U32(dr) & 0x02))
 		{
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
@@ -315,18 +316,18 @@ READ_TARGET_HANDLER(c8051fjtag)
 	switch (area)
 	{
 	case CHIPID_CHAR:
-		ir = C8051F_IR_STATECNTL_RESET | C8051F_IR_BYPASS;
+		ir = SYS_TO_LE_U16(C8051F_IR_STATECNTL_RESET | C8051F_IR_BYPASS);
 		jtag_ir_write(&ir, C8051F_IR_LEN);
-		ir = C8051F_IR_STATECNTL_HALT | C8051F_IR_IDCODE;
+		ir = SYS_TO_LE_U16(C8051F_IR_STATECNTL_HALT | C8051F_IR_IDCODE);
 		jtag_ir_write(&ir, C8051F_IR_LEN);
-		dr = 0;
+		dr = SYS_TO_LE_U32(0);
 		jtag_dr_read(&dr, C8051F_DR_IDCODE_LEN);
 		if (ERROR_OK != jtag_commit())
 		{
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
-		*(uint32_t*)buff = dr & C8051F_JTAG_ID_MASK;
+		*(uint32_t*)buff = LE_TO_SYS_U32(dr) & C8051F_JTAG_ID_MASK;
 		break;
 	case APPLICATION_CHAR:
 		// set FLASHADR to address to read from

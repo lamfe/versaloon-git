@@ -884,8 +884,7 @@ ENTER_PROGRAM_MODE_HANDLER(lpcarmisp)
 					if (ERROR_OK == ret)
 					{
 						LOG_INFO("Serial Number: %08X%08X%08X%08X", 
-									serial[3], serial[2], 
-									serial[1], serial[0]);
+							serial[3], serial[2], serial[1], serial[0]);
 //						ret = lpcarmisp_set_baudrate(230400);
 						if (ERROR_OK == ret)
 						{
