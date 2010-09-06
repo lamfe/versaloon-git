@@ -2770,7 +2770,7 @@ static RESULT target_build_chip_series(const char *chip_series,
 	xmlNodePtr curNode = NULL;
 	char *filename = NULL;
 	struct chip_param_t *p_param;
-	uint32_t i, j, target_para_size_defined;
+	uint32_t i, j, k, target_para_size_defined;
 	RESULT ret = ERROR_OK;
 	FILE *fp;
 	
@@ -3485,6 +3485,11 @@ static RESULT target_build_chip_series(const char *chip_series,
 			{
 				memcpy(&s->chips_param[j], &s->chips_param[0], 
 							sizeof(struct chip_param_t));
+				s->chips_param[j].program_mode_str = NULL;
+				for (k = 0; k < dimof(target_area_name); k++)
+				{
+					s->chips_param[j].chip_areas[k].cli_format = NULL;
+				}
 			}
 		}
 		
