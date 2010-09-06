@@ -100,8 +100,7 @@ RESULT usbtoxxx_validate_current_command_type(void)
 		}
 		
 		usbtoxxx_buffer[0] = type_pre;
-		usbtoxxx_buffer[1] = (usbtoxxx_current_cmd_index >> 0) & 0xFF;
-		usbtoxxx_buffer[2] = (usbtoxxx_current_cmd_index >> 8) & 0xFF;
+		SET_LE_U16(&usbtoxxx_buffer[1], usbtoxxx_current_cmd_index);
 		
 		usbtoxxx_buffer_index += usbtoxxx_current_cmd_index;
 	}
@@ -128,7 +127,7 @@ RESULT usbtoxxx_execute_command(void)
 	uint16_t i;
 	uint16_t inlen;
 	uint8_t processed;
-	uint8_t result = ERROR_OK;
+	RESULT result = ERROR_OK;
 	
 	if (poll_nesting)
 	{
@@ -147,8 +146,7 @@ RESULT usbtoxxx_execute_command(void)
 	}
 	
 	versaloon_buf[0] = USB_TO_ALL;
-	versaloon_buf[1] = (usbtoxxx_buffer_index >> 0) & 0xFF;
-	versaloon_buf[2] = (usbtoxxx_buffer_index >> 8) & 0xFF;
+	SET_LE_U16(&versaloon_buf[1], usbtoxxx_buffer_index);
 	
 	if (ERROR_OK != versaloon_send_command(usbtoxxx_buffer_index, &inlen))
 	{
@@ -342,15 +340,13 @@ RESULT usbtoxxx_add_command(uint8_t type, uint8_t cmd, uint8_t *cmdbuf,
 			collect_index = 0;
 			collect_cmd = 0;
 		}
-		usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = (cmdlen >> 0) & 0xFF;
-		usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = (cmdlen >> 8) & 0xFF;
+		SET_LE_U16(&usbtoxxx_buffer[usbtoxxx_current_cmd_index], cmdlen);
+		usbtoxxx_current_cmd_index += 2;
 	}
 	else
 	{
-		len_tmp = usbtoxxx_buffer[collect_index + 0] 
-				  + (usbtoxxx_buffer[collect_index + 1] << 8) + cmdlen;
-		usbtoxxx_buffer[collect_index + 0] = (len_tmp >> 0) & 0xFF;
-		usbtoxxx_buffer[collect_index + 1] = (len_tmp >> 8) & 0xFF;
+		len_tmp = GET_LE_U16(&usbtoxxx_buffer[collect_index]) + cmdlen;
+		SET_LE_U16(&usbtoxxx_buffer[collect_index], len_tmp);
 	}
 	
 	if (cmdbuf != NULL)
@@ -387,10 +383,10 @@ RESULT usbtopoll_start(uint16_t retry_cnt, uint16_t interval_us)
 	type_pre = USB_TO_POLL;
 	
 	usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = USB_TO_POLL_START;
-	usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = (retry_cnt >> 0) & 0xFF;
-	usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = (retry_cnt >> 8) & 0xFF;
-	usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = (interval_us >> 0) & 0xFF;
-	usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = (interval_us >> 8) & 0xFF;
+	SET_LE_U16(&usbtoxxx_buffer[usbtoxxx_current_cmd_index], retry_cnt);
+	usbtoxxx_current_cmd_index += 2;
+	SET_LE_U16(&usbtoxxx_buffer[usbtoxxx_current_cmd_index], interval_us);
+	usbtoxxx_current_cmd_index += 2;
 	
 	return versaloon_add_pending(USB_TO_POLL, 0, 0, 0, 0, NULL, 0);
 }
@@ -450,8 +446,8 @@ RESULT usbtopoll_checkok(uint8_t equ, uint16_t offset, uint8_t size,
 	type_pre = USB_TO_POLL;
 	
 	usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = USB_TO_POLL_CHECKOK;
-	usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = (offset >> 0) & 0xFF;
-	usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = (offset >> 8) & 0xFF;
+	SET_LE_U16(&usbtoxxx_buffer[usbtoxxx_current_cmd_index], offset);
+	usbtoxxx_current_cmd_index += 2;
 	usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = size;
 	usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = equ;
 	for (i =0; i < size; i++)
@@ -495,8 +491,8 @@ RESULT usbtopoll_checkfail(uint8_t equ, uint16_t offset, uint8_t size,
 	type_pre = USB_TO_POLL;
 	
 	usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = USB_TO_POLL_CHECKFAIL;
-	usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = (offset >> 0) & 0xFF;
-	usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = (offset >> 8) & 0xFF;
+	SET_LE_U16(&usbtoxxx_buffer[usbtoxxx_current_cmd_index], offset);
+	usbtoxxx_current_cmd_index += 2;
 	usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = size;
 	usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = equ;
 	for (i =0; i < size; i++)
@@ -532,10 +528,10 @@ RESULT usbtopoll_verifybuff(uint16_t offset, uint16_t size, uint8_t *buff)
 	type_pre = USB_TO_POLL;
 	
 	usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = USB_TO_POLL_VERIFYBUFF;
-	usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = (offset >> 0) & 0xFF;
-	usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = (offset >> 8) & 0xFF;
-	usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = (size >> 0) & 0xFF;
-	usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = (size >> 8) & 0xFF;
+	SET_LE_U16(&usbtoxxx_buffer[usbtoxxx_current_cmd_index], offset);
+	usbtoxxx_current_cmd_index += 2;
+	SET_LE_U16(&usbtoxxx_buffer[usbtoxxx_current_cmd_index], size);
+	usbtoxxx_current_cmd_index += 2;
 	memcpy(&usbtoxxx_buffer[usbtoxxx_current_cmd_index], buff, size);
 	usbtoxxx_current_cmd_index += size;
 	
@@ -559,8 +555,8 @@ RESULT usbtodelay_delay(uint16_t dly)
 	}
 	type_pre = USB_TO_DELAY;
 	
-	usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = (dly >> 0) & 0xFF;
-	usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = (dly >> 8) & 0xFF;
+	SET_LE_U16(&usbtoxxx_buffer[usbtoxxx_current_cmd_index], dly);
+	usbtoxxx_current_cmd_index += 2;
 	
 	return versaloon_add_pending(USB_TO_DELAY, 0, 0, 0, 0, NULL, 0);
 }

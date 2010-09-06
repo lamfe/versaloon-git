@@ -111,12 +111,16 @@ static uint16_t s5x_byte_delay_us = 500;
 #define delay_ms(ms)			prog->interfaces.delay.delayms((ms) | 0x8000)
 #define delay_us(us)			prog->interfaces.delay.delayus((us) & 0x7FFF)
 
+#define poll_start_once()		prog->interfaces.poll.start(0, 0)
+#define poll_end()				prog->interfaces.poll.end()
+#define poll_fail_unequ(o, m, v)\
+	prog->interfaces.poll.checkfail(POLL_CHECK_UNEQU, (o), 1, (m), (v))
+
 #define commit()				prog->interfaces.peripheral_commit()
 
 ENTER_PROGRAM_MODE_HANDLER(s5x)
 {
 	uint8_t cmd_buf[4];
-	uint8_t poll_value;
 	
 	struct program_info_t *pi = context->pi;
 	struct chip_param_t *param = context->param;
@@ -151,12 +155,19 @@ ENTER_PROGRAM_MODE_HANDLER(s5x)
 	cmd_buf[1] = 0x53;
 	cmd_buf[2] = 0x00;
 	cmd_buf[3] = 0x00;
-	poll_value = 0;
 	// ret[3] should be 0x69
-	spi_io(cmd_buf, 4, &poll_value, 3, 1);
-	if ((ERROR_OK != commit()) 
-		|| ((param->param[S5X_PARAM_PE_OUT] != 0xFF) 
-			&& (param->param[S5X_PARAM_PE_OUT] != poll_value)))
+	poll_start_once();
+	spi_io(cmd_buf, 4, NULL, 0, 0);
+	if (param->param[S5X_PARAM_PE_OUT] != 0xFF)
+	{
+		poll_fail_unequ(0, 0xFF, (uint8_t)param->param[S5X_PARAM_PE_OUT]);
+	}
+	else
+	{
+		poll_fail_unequ(0, 0xFF, 0x69);
+	}
+	poll_end();
+	if (ERROR_OK != commit())
 	{
 		LOG_ERROR(ERRMSG_FAILURE_ENTER_PROG_MODE);
 		return ERRCODE_FAILURE_ENTER_PROG_MODE;

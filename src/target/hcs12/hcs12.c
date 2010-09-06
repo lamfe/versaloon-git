@@ -159,8 +159,7 @@ static RESULT hcs12_read(uint8_t cmd, uint16_t addr, uint16_t *data)
 	uint8_t outbuff[3];
 	
 	outbuff[0] = cmd;
-	outbuff[1] = (addr >> 8) & 0xFF;
-	outbuff[2] = (addr >> 0) & 0xFF;
+	SET_BE_U16(&outbuff[1], addr);
 	return bdm_transact(outbuff, sizeof(outbuff), (uint8_t *)data, 2, 1, 1);
 }
 
@@ -169,10 +168,8 @@ static RESULT hcs12_write(uint8_t cmd, uint16_t addr, uint16_t data)
 	uint8_t outbuff[5];
 	
 	outbuff[0] = cmd;
-	outbuff[1] = (addr >> 8) & 0xFF;
-	outbuff[2] = (addr >> 0) & 0xFF;
-	outbuff[3] = (data >> 8) & 0xFF;
-	outbuff[4] = (data >> 0) & 0xFF;
+	SET_BE_U16(&outbuff[1], addr);
+	SET_BE_U16(&outbuff[3], data);
 	return bdm_transact(outbuff, sizeof(outbuff), NULL, 0, 1, 1);
 }
 /*

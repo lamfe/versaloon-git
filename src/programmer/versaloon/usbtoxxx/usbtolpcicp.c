@@ -111,8 +111,7 @@ RESULT usbtolpcicp_poll_ready(uint8_t interface_index, uint8_t *ret,
 	cmdbuf[0] = data;
 	cmdbuf[1] = setmask;
 	cmdbuf[2] = clearmask;
-	cmdbuf[3] = (pollcnt >> 0) & 0xFF;
-	cmdbuf[4] = (pollcnt >> 8) & 0xFF;
+	SET_LE_U16(&cmdbuf[3], pollcnt);
 	
 	return usbtoxxx_poll_command(USB_TO_LPCICP, interface_index, cmdbuf, 5, 
 								 ret, 1);

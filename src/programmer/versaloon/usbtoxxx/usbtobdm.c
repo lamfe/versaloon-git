@@ -86,8 +86,7 @@ RESULT usbtobdm_transact(uint8_t interface_index, uint8_t *out,
 #endif
 	
 	token = outlen | (inlen << 8) | (delay << 6) | (ack ? 0x8000 : 0x0000);
-	versaloon_cmd_buf[0] = (token >> 0) & 0xFF;
-	versaloon_cmd_buf[1] = (token >> 8) & 0xFF;
+	SET_LE_U16(&versaloon_cmd_buf[0], token);
 	memcpy(&versaloon_cmd_buf[2], out, outlen);
 	
 	if (NULL == in)

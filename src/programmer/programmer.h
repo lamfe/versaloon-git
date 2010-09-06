@@ -131,7 +131,7 @@ struct interface_msp430jtag_t
 	RESULT (*fini)(void);
 	RESULT (*config)(uint8_t has_test);
 	RESULT (*ir)(uint8_t *ir, uint8_t want_ret);
-	RESULT (*dr)(uint32_t *dr, uint8_t len, uint8_t want_ret);
+	RESULT (*dr)(uint32_t *dr, uint8_t bitlen, uint8_t want_ret);
 	RESULT (*tclk)(uint8_t value);
 	RESULT (*tclk_strobe)(uint16_t cnt);
 	RESULT (*reset)(void);

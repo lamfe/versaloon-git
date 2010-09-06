@@ -177,8 +177,7 @@ static RESULT hcs08_read_byte(uint16_t addr, uint8_t *value)
 	uint8_t outbuff[3];
 	
 	outbuff[0] = HCS08_BDMCMD_READBYTE;
-	outbuff[1] = (addr >> 8) & 0xFF;
-	outbuff[2] = (addr >> 0) & 0xFF;
+	SET_BE_U16(&outbuff[1], addr);
 	return bdm_transact(outbuff, sizeof(outbuff), value, 1, 1, 1);
 }
 
@@ -187,8 +186,7 @@ static RESULT hcs08_write_byte(uint16_t addr, uint8_t value)
 	uint8_t outbuff[4];
 	
 	outbuff[0] = HCS08_BDMCMD_WRITEBYTE;
-	outbuff[1] = (addr >> 8) & 0xFF;
-	outbuff[2] = (addr >> 0) & 0xFF;
+	SET_BE_U16(&outbuff[1], addr);
 	outbuff[3] = value;
 	return bdm_transact(outbuff, sizeof(outbuff), NULL, 0, 1, 1);
 }

@@ -1550,16 +1550,12 @@ static RESULT target_init(struct program_info_t *pi)
 			{
 				if (pi->chip_id == target_chips.chips_param[i].chip_id)
 				{
-					pi->chip_name = 
-						(char *)malloc(
-							strlen(target_chips.chips_param[i].chip_name) + 1);
-					if (NULL == pi->chip_name)
+					if (NULL == bufffunc_malloc_and_copy_str(&pi->chip_name, 
+									target_chips.chips_param[i].chip_name))
 					{
 						LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 						return ERRCODE_NOT_ENOUGH_MEMORY;
 					}
-					strcpy(pi->chip_name, 
-							target_chips.chips_param[i].chip_name);
 					LOG_INFO(INFOMSG_CHIP_FOUND, pi->chip_name);
 					
 					goto Post_Init;
@@ -1986,13 +1982,12 @@ static RESULT target_info_init(struct program_info_t *pi)
 			if (probe_chip(pi->chip_name) == ERROR_OK)
 			{
 				cur_target = &targets_info[i];
-				pi->chip_type = (char *)malloc(strlen(targets_info[i].name) + 1);
-				if (NULL == pi->chip_type)
+				if (NULL == bufffunc_malloc_and_copy_str(&pi->chip_type, 
+									(char *)targets_info[i].name))
 				{
 					LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 					return ERRCODE_NOT_ENOUGH_MEMORY;
 				}
-				strcpy(pi->chip_type, targets_info[i].name);
 				LOG_DEBUG("%s initialized for %s.", cur_target->name, 
 							pi->chip_name);
 				
@@ -2908,15 +2903,13 @@ static RESULT target_build_chip_series(const char *chip_series,
 				char *mode_tmp = (char *)xmlNodeGetContent(paramNode);
 				int8_t mode_idx;
 				
-				p_param->program_mode_str = 
-										(char *)malloc(strlen(mode_tmp) + 1);
-				if (NULL == p_param->program_mode_str)
+				if (NULL == bufffunc_malloc_and_copy_str(
+									&p_param->program_mode_str, mode_tmp))
 				{
 					LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 					ret = ERRCODE_NOT_ENOUGH_MEMORY;
 					goto free_and_exit;
 				}
-				strcpy(p_param->program_mode_str, mode_tmp);
 				p_param->program_mode = 0;
 				if ((0 != i) 
 					|| (strcmp(chip_series, p_param->chip_name)))
@@ -3646,13 +3639,12 @@ MISC_HANDLER(target_series)
 		free(program_info.chip_type);
 		program_info.chip_type = NULL;
 	}
-	program_info.chip_type = (char *)malloc(strlen(argv[1]) + 1);
-	if (NULL == program_info.chip_type)
+	if (NULL == bufffunc_malloc_and_copy_str(&program_info.chip_type, 
+												(char *)argv[1]))
 	{
 		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 		return ERRCODE_NOT_ENOUGH_MEMORY;
 	}
-	strcpy(program_info.chip_type, argv[1]);
 	
 	if (ERROR_OK != target_info_init(&program_info))
 	{
@@ -3671,13 +3663,12 @@ MISC_HANDLER(target_chip)
 		free(program_info.chip_name);
 		program_info.chip_name = NULL;
 	}
-	program_info.chip_name = (char *)malloc(strlen(argv[1]) + 1);
-	if (NULL == program_info.chip_name)
+	if (NULL == bufffunc_malloc_and_copy_str(&program_info.chip_name, 
+												(char *)argv[1]))
 	{
 		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 		return ERRCODE_NOT_ENOUGH_MEMORY;
 	}
-	strcpy(program_info.chip_name, argv[1]);
 	
 	if (ERROR_OK != target_info_init(&program_info))
 	{
@@ -3706,12 +3697,10 @@ MISC_HANDLER(target_value)
 		LOG_ERROR(ERRMSG_INVALID_CHARACTER, argv[1][0], "target");
 		return ERROR_FAIL;
 	}
-	dest = (char *)malloc(strlen(&argv[1][1]) + 1);
-	if (NULL == dest)
+	if (NULL == bufffunc_malloc_and_copy_str(&dest, (char *)&argv[1][1]))
 	{
 		return ERROR_FAIL;
 	}
-	strcpy(dest, &argv[1][1]);
 	if (NULL != program_info.program_areas[target_idx].cli_str)
 	{
 		free(program_info.program_areas[target_idx].cli_str);

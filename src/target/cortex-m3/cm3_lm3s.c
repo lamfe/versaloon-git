@@ -163,6 +163,7 @@ static RESULT lm3sswj_iap_poll_finish(uint32_t cnt_idx, uint8_t *fail)
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read iap sync");
 		return ERRCODE_FAILURE_OPERATION;
 	}
+	iap_cnt = LE_TO_SYS_U32(iap_cnt);
 	if (iap_cnt > lm3sswj_iap_cnt)
 	{
 		*fail = 1;
@@ -190,6 +191,7 @@ static RESULT lm3sswj_iap_poll_param_taken(uint8_t *fail)
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read iap sync");
 		return ERRCODE_FAILURE_OPERATION;
 	}
+	sync = LE_TO_SYS_U32(sync);
 	if (0 == sync)
 	{
 		return ERROR_OK;
@@ -570,8 +572,18 @@ READ_TARGET_HANDLER(lm3sswj)
 			|| (ERROR_OK != 
 				adi_memap_read_reg(LM3S_SYSCTL_DC2, &lm3s_device.dc2, 0)) 
 			|| (ERROR_OK != 
-				adi_memap_read_reg(LM3S_SYSCTL_DC3, &lm3s_device.dc3, 1)) 
-			|| (ERROR_OK != lm3s_check_device(&lm3s_device)))
+				adi_memap_read_reg(LM3S_SYSCTL_DC3, &lm3s_device.dc3, 1)))
+		{
+			ret = ERRCODE_FAILURE_OPERATION;
+			break;
+		}
+		lm3s_device.did0 = LE_TO_SYS_U32(lm3s_device.did0);
+		lm3s_device.did1 = LE_TO_SYS_U32(lm3s_device.did1);
+		lm3s_device.dc0 = LE_TO_SYS_U32(lm3s_device.dc0);
+		lm3s_device.dc1 = LE_TO_SYS_U32(lm3s_device.dc1);
+		lm3s_device.dc2 = LE_TO_SYS_U32(lm3s_device.dc2);
+		lm3s_device.dc3 = LE_TO_SYS_U32(lm3s_device.dc3);
+		if (ERROR_OK != lm3s_check_device(&lm3s_device))
 		{
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;

@@ -80,8 +80,8 @@ struct program_functions_t avr8jtag_program_functions =
 
 #define AVR_JTAG_RTI_CYCLE							1
 
-#define AVR_JTAG_Reset(r)							(AVR_JTAG_SendIns(AVR_JTAG_INS_AVR_RESET), AVR_JTAG_SendDat((r),AVR_JTAG_REG_Reset_Len))
-
+#define AVR_JTAG_Reset(r)							(AVR_JTAG_SendIns(AVR_JTAG_INS_AVR_RESET), AVR_JTAG_SendDat((r), AVR_JTAG_REG_Reset_Len))
+#define AVR_JTAG_PROG_Enable(v)						(AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_ENABLE), AVR_JTAG_SendDat((v), AVR_JTAG_REG_ProgrammingEnable_Len))
 
 // JTAG Programming Instructions:
 #define AVR_JTAG_PROG_OPERATIONCOMPLETE				0x0200
@@ -184,10 +184,10 @@ static struct interfaces_info_t *interfaces = NULL;
 
 #define AVR_JTAG_SendIns(i)			(ir = (i), \
 									 jtag_ir_write(&ir, AVR_JTAG_INS_LEN))
-#define AVR_JTAG_SendDat(d, len)	(dr = (d), jtag_dr_write(&dr, (len)))
+#define AVR_JTAG_SendDat(d, len)	(dr = SYS_TO_LE_U16(d), jtag_dr_write(&dr, (len)))
 void AVR_JTAG_ReadDat(uint16_t w, uint16_t* r, uint8_t len)
 {
-	*r = w;
+	*r = SYS_TO_LE_U16(w);
 	jtag_dr_read(r, len);
 }
 
@@ -205,7 +205,7 @@ ENTER_PROGRAM_MODE_HANDLER(avr8jtag)
 {
 	struct program_info_t *pi = context->pi;
 	uint8_t ir;
-	uint32_t dr;
+	uint16_t dr;
 	
 	interfaces = &(context->prog->interfaces);
 	
@@ -221,15 +221,14 @@ ENTER_PROGRAM_MODE_HANDLER(avr8jtag)
 	
 	// enter program mode
 	AVR_JTAG_Reset(1);
-	AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_ENABLE);
-	AVR_JTAG_SendDat(0xA370, AVR_JTAG_REG_ProgrammingEnable_Len);
+	AVR_JTAG_PROG_Enable(0xA370);
 	return jtag_commit();
 }
 
 LEAVE_PROGRAM_MODE_HANDLER(avr8jtag)
 {
 	uint8_t ir;
-	uint32_t dr;
+	uint16_t dr;
 	
 	REFERENCE_PARAMETER(context);
 	REFERENCE_PARAMETER(success);
@@ -237,8 +236,7 @@ LEAVE_PROGRAM_MODE_HANDLER(avr8jtag)
 	AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
 	AVR_JTAG_PROG_LoadNoOperationCommand();
 	
-	AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_ENABLE);
-	AVR_JTAG_SendDat(0, AVR_JTAG_REG_ProgrammingEnable_Len);
+	AVR_JTAG_PROG_Enable(0);
 	
 	AVR_JTAG_Reset(0);
 	jtag_fini();
@@ -248,7 +246,7 @@ LEAVE_PROGRAM_MODE_HANDLER(avr8jtag)
 ERASE_TARGET_HANDLER(avr8jtag)
 {
 	uint8_t ir;
-	uint32_t dr;
+	uint16_t dr;
 	
 	REFERENCE_PARAMETER(context);
 	REFERENCE_PARAMETER(area);
@@ -265,7 +263,7 @@ WRITE_TARGET_HANDLER(avr8jtag)
 {
 	struct chip_param_t *param = context->param;
 	uint8_t ir;
-	uint32_t dr;
+	uint16_t dr;
 	uint32_t i;
 	uint32_t ee_page_size;
 	RESULT ret = ERROR_OK;
@@ -401,7 +399,7 @@ READ_TARGET_HANDLER(avr8jtag)
 {
 	struct chip_param_t *param = context->param;
 	uint8_t ir;
-	uint32_t dr;
+	uint16_t dr;
 	uint32_t i, j, k;
 	uint32_t ee_page_size;
 	uint8_t page_buf[256 + 1];

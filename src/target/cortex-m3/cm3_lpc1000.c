@@ -127,13 +127,13 @@ static RESULT lpc1000swj_iap_run(uint32_t cmd, uint32_t param_table[5])
 	uint32_t buff_tmp[7];
 	
 	memset(buff_tmp, 0, sizeof(buff_tmp));
-	buff_tmp[0] = cmd;				// iap command
-	buff_tmp[1] = param_table[0];	// iap parameters
-	buff_tmp[2] = param_table[1];
-	buff_tmp[3] = param_table[2];
-	buff_tmp[4] = param_table[3];
-	buff_tmp[5] = param_table[4];
-	buff_tmp[6] = 1;				// sync
+	buff_tmp[0] = SYS_TO_LE_U32(cmd);				// iap command
+	buff_tmp[1] = SYS_TO_LE_U32(param_table[0]);	// iap parameters
+	buff_tmp[2] = SYS_TO_LE_U32(param_table[1]);
+	buff_tmp[3] = SYS_TO_LE_U32(param_table[2]);
+	buff_tmp[4] = SYS_TO_LE_U32(param_table[3]);
+	buff_tmp[5] = SYS_TO_LE_U32(param_table[4]);
+	buff_tmp[6] = SYS_TO_LE_U32(1);					// sync
 	
 	// write iap command with sync to target SRAM
 	// sync is 4-byte AFTER command in sram
@@ -150,6 +150,7 @@ static RESULT lpc1000swj_iap_run(uint32_t cmd, uint32_t param_table[5])
 static RESULT lpc1000swj_iap_poll_result(uint32_t result_table[4], uint8_t *fail)
 {
 	uint32_t buff_tmp[6];
+	uint8_t i;
 	
 	*fail = 0;
 	
@@ -162,6 +163,11 @@ static RESULT lpc1000swj_iap_poll_result(uint32_t result_table[4], uint8_t *fail
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read iap sync");
 		return ERRCODE_FAILURE_OPERATION;
 	}
+	for (i = 0; i < dimof(buff_tmp); i++)
+	{
+		buff_tmp[i] = LE_TO_SYS_U32(buff_tmp[i]);
+	}
+	
 	if (0 == buff_tmp[0])
 	{
 		if (buff_tmp[1] != 0)
@@ -236,9 +242,9 @@ ENTER_PROGRAM_MODE_HANDLER(lpc1000swj)
 	uint32_t reg;
 	struct chip_param_t *param = context->param;
 	
-	para_ptr[0] = LPC1000_IAP_ENTRY;
-	para_ptr[1] = LPC1000_IAP_COMMAND_ADDR;
-	para_ptr[2] = LPC1000_IAP_RESULT_ADDR;
+	para_ptr[0] = SYS_TO_LE_U32(LPC1000_IAP_ENTRY);
+	para_ptr[1] = SYS_TO_LE_U32(LPC1000_IAP_COMMAND_ADDR);
+	para_ptr[2] = SYS_TO_LE_U32(LPC1000_IAP_RESULT_ADDR);
 	
 	if (ERROR_OK != cm3_dp_halt())
 	{

@@ -41,7 +41,7 @@ RESULT usbtospi_fini(void)
 	return usbtoxxx_fini_command(USB_TO_SPI);
 }
 
-RESULT usbtospi_config(uint8_t interface_index, uint16_t freq, uint8_t cpol, 
+RESULT usbtospi_config(uint8_t interface_index, uint16_t kHz, uint8_t cpol, 
 					   uint8_t cpha, uint8_t firstbit)
 {
 	uint8_t conf[3];
@@ -55,8 +55,7 @@ RESULT usbtospi_config(uint8_t interface_index, uint16_t freq, uint8_t cpol,
 #endif
 	
 	conf[0] = cpol | cpha | firstbit;
-	conf[1] = (freq >> 0) & 0xFF;
-	conf[2] = (freq >> 8) & 0xFF;
+	SET_LE_U16(&conf[1], kHz);
 	
 	return usbtoxxx_conf_command(USB_TO_SPI, interface_index, conf, 3);
 }

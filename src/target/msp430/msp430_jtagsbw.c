@@ -115,12 +115,14 @@ ENTER_PROGRAM_MODE_HANDLER(msp430jtagsbw)
 	for (i = 3; i > 0; i--)
 	{
 		IR_Shift(IR_CNTRL_SIG_CAPTURE);
+		dr = 0;
 		DR_Shift16_Read(0xAAAA, &dr);
 		if (ERROR_OK != commit())
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "init programming");
 			return ERRCODE_FAILURE_OPERATION;
 		}
+		dr = LE_TO_SYS_U32(dr);
 		if (0x5555 == dr)
 		{
 			LOG_ERROR("fuse of current chip is blown");
@@ -236,7 +238,8 @@ READ_TARGET_HANDLER(msp430jtagsbw)
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
-		*(uint16_t *)buff = ((chip_id << 8) + (chip_id >> 8)) & 0x0000FFFF;
+		chip_id = LE_TO_SYS_U16(chip_id);
+		*(uint16_t *)buff = SYS_TO_BE_U16(chip_id);
 		break;
 	case APPLICATION_CHAR:
 		if (op->verify_operations & APPLICATION)
@@ -252,6 +255,7 @@ READ_TARGET_HANDLER(msp430jtagsbw)
 				ret = ERRCODE_FAILURE_OPERATION;
 				break;
 			}
+			CRC_check = LE_TO_SYS_U16(CRC_check);
 			if (CRC_calc != CRC_check)
 			{
 				LOG_ERROR(ERRMSG_FAILURE_OPERATION_ADDR, "verify flash", addr);

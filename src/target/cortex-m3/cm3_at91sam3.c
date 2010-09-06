@@ -335,6 +335,7 @@ static RESULT at91sam3swj_iap_call(struct at91sam3swj_iap_command_t *cmd,
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read fsr");
 			return ERRCODE_FAILURE_OPERATION;
 		}
+		reg = LE_TO_SYS_U32(reg);
 		end = get_time_in_ms();
 	} while (!(reg & 1) && ((end - start) < 500));
 	
@@ -353,6 +354,7 @@ static RESULT at91sam3swj_iap_call(struct at91sam3swj_iap_command_t *cmd,
 				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read frr");
 				return ERRCODE_FAILURE_OPERATION;
 			}
+			reply->data[i] = LE_TO_SYS_U32(reply->data[i]);
 		}
 	}
 	
@@ -375,7 +377,7 @@ ENTER_PROGRAM_MODE_HANDLER(at91sam3swj)
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
-	para_ptr[0] = AT91SAM3_IAP_SYNC_ADDR;
+	para_ptr[0] = SYS_TO_LE_U32(AT91SAM3_IAP_SYNC_ADDR);
 	
 	// write sp
 	reg = AT91SAM3_SRAM_ADDR + 1024;
@@ -433,6 +435,7 @@ ENTER_PROGRAM_MODE_HANDLER(at91sam3swj)
 		{
 			reg = 0;
 		}
+		reg = LE_TO_SYS_U32(reg);
 		LOG_POP();
 		if (!(reg & 1))
 		{
@@ -452,6 +455,7 @@ ENTER_PROGRAM_MODE_HANDLER(at91sam3swj)
 				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read fsr");
 				return ERRCODE_FAILURE_OPERATION;
 			}
+			reg = LE_TO_SYS_U32(reg);
 			if (!(reg & 1))
 			{
 				LOG_ERROR("eefc is busy");
@@ -709,6 +713,7 @@ READ_TARGET_HANDLER(at91sam3swj)
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "address of iap_entry");
 			return ERRCODE_FAILURE_OPERATION;
 		}
+		*buff = LE_TO_SYS_U32(*buff);
 		break;
 	case EEPROM_CHAR:
 	case APPLICATION_CHAR:

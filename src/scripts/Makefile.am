@@ -2,7 +2,8 @@ INCLUDES = \
     $(all_includes) \
     -I$(top_srcdir)/src \
     -I$(top_srcdir)/src/programmer \
-    -I$(top_srcdir)/src/driver
+    -I$(top_srcdir)/src/driver \
+    -I$(top_srcdir)/src/tools/bufffunc
 
 METASOURCES = AUTO
 noinst_LIBRARIES = libscripts.a

@@ -65,6 +65,7 @@ RESULT cm3_dp_init(struct program_context_t *context, adi_dpif_t *dp)
 	{
 		return ERROR_FAIL;
 	}
+	cpuid = LE_TO_SYS_U32(cpuid);
 	// 0xC23 is for CortexM3
 	// 0xC20 is for CortexM0
 	if ((((cpuid >> 4) & 0xC3F) == 0xC23) && (ADI_DP_CM3 == tgt_core))
@@ -144,6 +145,7 @@ RESULT cm3_dp_run(void)
 	{
 		return ERROR_FAIL;
 	}
+	dcb_dhcsr = LE_TO_SYS_U32(dcb_dhcsr);
 	
 	// enable debug
 	if (!(dcb_dhcsr & CM3_DCB_DHCSR_C_DEBUGEN))
@@ -155,6 +157,7 @@ RESULT cm3_dp_run(void)
 		{
 			return ERROR_FAIL;
 		}
+		dcb_dhcsr = LE_TO_SYS_U32(dcb_dhcsr);
 	}
 	
 	if (dcb_dhcsr & CM3_DCB_DHCSR_S_HALT)
@@ -167,6 +170,7 @@ RESULT cm3_dp_run(void)
 		{
 			return ERROR_FAIL;
 		}
+		dcb_dhcsr = LE_TO_SYS_U32(dcb_dhcsr);
 	}
 	// wait halt clear
 	wait_halt_clear_delay_in_10ms = 100;	// 1000ms max delay in all
@@ -176,6 +180,7 @@ RESULT cm3_dp_run(void)
 		{
 			return ERROR_FAIL;
 		}
+		dcb_dhcsr = LE_TO_SYS_U32(dcb_dhcsr);
 		wait_halt_clear_delay_in_10ms--;
 		sleep_ms(10);
 	}
@@ -199,6 +204,7 @@ RESULT cm3_dp_halt(void)
 	{
 		return ERROR_FAIL;
 	}
+	dcb_dhcsr = LE_TO_SYS_U32(dcb_dhcsr);
 	
 	// enable debug
 	if (!(dcb_dhcsr & CM3_DCB_DHCSR_C_DEBUGEN))
@@ -211,6 +217,7 @@ RESULT cm3_dp_halt(void)
 		{
 			return ERROR_FAIL;
 		}
+		dcb_dhcsr = LE_TO_SYS_U32(dcb_dhcsr);
 	}
 	// halt
 	if (!(dcb_dhcsr & CM3_DCB_DHCSR_S_HALT))
@@ -223,6 +230,7 @@ RESULT cm3_dp_halt(void)
 		{
 			return ERROR_FAIL;
 		}
+		dcb_dhcsr = LE_TO_SYS_U32(dcb_dhcsr);
 	}
 	// wait halt
 	wait_halt_delay_in_10ms = 100;	// 1000ms max delay in all
@@ -232,6 +240,7 @@ RESULT cm3_dp_halt(void)
 		{
 			return ERROR_FAIL;
 		}
+		dcb_dhcsr = LE_TO_SYS_U32(dcb_dhcsr);
 		wait_halt_delay_in_10ms--;
 		sleep_ms(10);
 	}
@@ -279,6 +288,7 @@ RESULT cm3_dump(uint32_t addr, uint32_t size)
 			ret = ERRCODE_FAILURE_OPERATION;
 			goto end;
 		}
+		reg = LE_TO_SYS_U32(reg);
 		LOG_INFO("r%d: %08X", i, reg);
 	}
 	reg = 0;
@@ -288,6 +298,7 @@ RESULT cm3_dump(uint32_t addr, uint32_t size)
 		ret = ERRCODE_FAILURE_OPERATION;
 		goto end;
 	}
+	reg = LE_TO_SYS_U32(reg);
 	LOG_INFO(INFOMSG_REG_08X, "sp", reg);
 	reg = 0;
 	if (ERROR_OK != cm3_read_core_register(CM3_COREREG_LR, &reg))
@@ -296,6 +307,7 @@ RESULT cm3_dump(uint32_t addr, uint32_t size)
 		ret = ERRCODE_FAILURE_OPERATION;
 		goto end;
 	}
+	reg = LE_TO_SYS_U32(reg);
 	LOG_INFO(INFOMSG_REG_08X, "lr", reg);
 	reg = 0;
 	if (ERROR_OK != cm3_read_core_register(CM3_COREREG_PC, &reg))
@@ -304,6 +316,7 @@ RESULT cm3_dump(uint32_t addr, uint32_t size)
 		ret = ERRCODE_FAILURE_OPERATION;
 		goto end;
 	}
+	reg = LE_TO_SYS_U32(reg);
 	LOG_INFO(INFOMSG_REG_08X, "pc", reg);
 	
 	LOG_INFO("SRAM dump at 0x%08X:", addr);

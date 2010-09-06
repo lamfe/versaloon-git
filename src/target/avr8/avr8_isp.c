@@ -74,9 +74,12 @@ struct program_functions_t avr8isp_program_functions =
 #define reset_clr()				reset_output()
 
 #define poll_start()			interfaces->poll.start(20, 500)
+#define poll_start_once()		interfaces->poll.start(0, 0)
 #define poll_end()				interfaces->poll.end()
 #define poll_ok(o, m, v)		\
 	interfaces->poll.checkok(POLL_CHECK_EQU, (o), 1, (m), (v))
+#define poll_fail_unequ(o, m, v)\
+	interfaces->poll.checkfail(POLL_CHECK_UNEQU, (o), 1, (m), (v))
 
 #define delay_ms(ms)			interfaces->delay.delayms((ms) | 0x8000)
 #define delay_us(us)			interfaces->delay.delayus((us) & 0x7FFF)
@@ -103,7 +106,6 @@ ENTER_PROGRAM_MODE_HANDLER(avr8isp)
 {
 	struct program_info_t *pi = context->pi;
 	uint8_t cmd_buf[4];
-	uint8_t poll_byte;
 	
 	interfaces = &(context->prog->interfaces);
 	
@@ -133,15 +135,16 @@ try_frequency:
 	cmd_buf[1] = 0x53;
 	cmd_buf[2] = 0x00;
 	cmd_buf[3] = 0x00;
-	poll_byte = 0;
 	// ret[2] should be 0x53
-	spi_io(cmd_buf, 4, &poll_byte, 2, 1);
+	poll_start_once();
+	spi_io(cmd_buf, 4, NULL, 0, 0);
+	poll_fail_unequ(1, 0xFF, 0x53);
+	poll_end();
+	LOG_PUSH();
+	LOG_MUTE();
 	if (ERROR_OK != commit())
 	{
-		return ERRCODE_FAILURE_ENTER_PROG_MODE;
-	}
-	if (poll_byte != 0x53)
-	{
+		LOG_POP();
 		if (pi->frequency > 1)
 		{
 			pi->frequency /= 2;
@@ -153,6 +156,7 @@ try_frequency:
 			return ERRCODE_FAILURE_ENTER_PROG_MODE;
 		}
 	}
+	LOG_POP();
 	
 	return ERROR_OK;
 }

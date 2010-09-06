@@ -53,8 +53,7 @@ RESULT usbtojtagll_config(uint8_t interface_index, uint16_t kHz)
 	}
 #endif
 	
-	cfg_buf[0] = (kHz >> 0) & 0xFF;
-	cfg_buf[1] = (kHz >> 8) & 0xFF;
+	SET_LE_U16(&cfg_buf[0], kHz);
 	
 	return usbtoxxx_conf_command(USB_TO_JTAG_LL, interface_index, cfg_buf, 2);
 }
@@ -93,10 +92,7 @@ RESULT usbtojtagll_tms_clocks(uint8_t interface_index, uint32_t bytelen,
 	{
 		buff[0] = 0x00;
 	}
-	buff[1] = (bytelen >> 0) & 0xFF;
-	buff[2] = (bytelen >> 8) & 0xFF;
-	buff[3] = (bytelen >> 16) & 0xFF;
-	buff[4] = (bytelen >> 24) & 0xFF;
+	SET_LE_U32(&buff[1], bytelen);
 	
 	return usbtoxxx_poll_command(USB_TO_JTAG_LL, interface_index, buff, 
 									5, NULL, 0);
@@ -119,15 +115,12 @@ RESULT usbtojtagll_scan(uint8_t interface_index, uint8_t* r, uint16_t bitlen,
 	if (tms_before_valid)
 	{
 		tms_before_valid = 1;
-		versaloon_cmd_buf[0] = (bytelen >> 0) & 0xFF;
-		versaloon_cmd_buf[1] = ((bytelen >> 8) & 0xFF) | 0x80;
+		bytelen |= 0x8000;
 		versaloon_cmd_buf[2] = tms_before;
 	}
-	else
-	{
-		versaloon_cmd_buf[0] = (bytelen >> 0) & 0xFF;
-		versaloon_cmd_buf[1] = (bytelen >> 8) & 0xFF;
-	}
+	SET_LE_U16(&versaloon_cmd_buf[0], bytelen);
+	bytelen &= 0x7FFF;
+	
 	memcpy(&versaloon_cmd_buf[2 + tms_before_valid], r, bytelen);
 	versaloon_cmd_buf[2 + tms_before_valid + bytelen + 0] = tms_after0;
 	versaloon_cmd_buf[2 + tms_before_valid + bytelen + 1] = tms_after1;

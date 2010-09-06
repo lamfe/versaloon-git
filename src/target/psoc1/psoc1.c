@@ -493,6 +493,7 @@ READ_TARGET_HANDLER(psoc1)
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
+		*(uint16_t *)buff = LE_TO_SYS_U16(*(uint16_t *)buff);
 		break;
 	case APPLICATION_CHAR:
 		for (bank = 0; bank < bank_num; bank++)

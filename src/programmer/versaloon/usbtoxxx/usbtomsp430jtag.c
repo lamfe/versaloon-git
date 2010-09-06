@@ -76,10 +76,10 @@ RESULT usbtomsp430jtag_ir(uint8_t interface_index, uint8_t *ir,
 	}
 }
 
-RESULT usbtomsp430jtag_dr(uint8_t interface_index, uint32_t *dr, uint8_t len, 
-						  uint8_t want_ret)
+RESULT usbtomsp430jtag_dr(uint8_t interface_index, uint32_t *dr, 
+							uint8_t bitlen, uint8_t want_ret)
 {
-	uint8_t buff[5], byte_len = (len + 7) >> 3;
+	uint8_t buff[5], byte_len = (bitlen + 7) >> 3;
 	
 #if PARAM_CHECK
 	if (interface_index > 7)
@@ -89,7 +89,7 @@ RESULT usbtomsp430jtag_dr(uint8_t interface_index, uint32_t *dr, uint8_t len,
 	}
 #endif
 	
-	buff[0] = len | 0x80;
+	buff[0] = bitlen | 0x80;
 	memcpy(buff + 1, dr, byte_len);
 	
 	if (want_ret)
@@ -165,10 +165,10 @@ RESULT usbtomsp430jtag_poll(uint8_t interface_index, uint32_t dr,
 	{
 		poll_cnt |= 0x8000;
 	}
-	memcpy(buff + 1, (uint8_t*)&poll_cnt, 2);
-	memcpy(buff + 3, (uint8_t*)&dr, 4);
-	memcpy(buff + 7, (uint8_t*)&mask, 4);
-	memcpy(buff + 11, (uint8_t*)&value, 4);
+	SET_LE_U16(&buff[1], poll_cnt);
+	SET_LE_U32(&buff[3], dr);
+	SET_LE_U32(&buff[7], mask);
+	SET_LE_U32(&buff[11], value);
 	
 	return usbtoxxx_poll_command(USB_TO_MSP430_JTAG, interface_index, 
 								 buff, 15, NULL, 0);

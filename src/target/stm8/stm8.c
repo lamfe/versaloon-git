@@ -290,6 +290,7 @@ static uint8_t stm8_flashloader[] =
 
 static RESULT swim_wotf_reg(uint32_t addr, uint32_t value, uint8_t size)
 {
+	value = SYS_TO_LE_U32(value);
 	return swim_wotf(addr, (uint8_t*)&value, size);
 }
 
@@ -308,12 +309,11 @@ static void stm8_unlock_flash(uint32_t pukr)
 static RESULT stm8_poll_ready(uint32_t iapsr)
 {
 	RESULT ret;
-	static uint8_t data;
 	
 	ret = poll_start();
 	if (ret != ERROR_FAIL)
 	{
-		ret = swim_rotf(iapsr, &data, 1);
+		ret = swim_rotf(iapsr, NULL, 1);
 	}
 	if (ret != ERROR_FAIL)
 	{
@@ -462,15 +462,11 @@ static RESULT stm8_fl_run(struct stm8_fl_param_t *param)
 		ret = poll_end();
 	}
 	
-	buff[STM8_FL_IAPSR_OFFSET + 0]		= (param->iapsr_addr >> 8) & 0xFF;
-	buff[STM8_FL_IAPSR_OFFSET + 1]		= (param->iapsr_addr >> 0) & 0xFF;
-	buff[STM8_FL_CR2_OFFSET + 0]		= (param->cr2_addr >> 8) & 0xFF;
-	buff[STM8_FL_CR2_OFFSET + 1]		= (param->cr2_addr >> 0) & 0xFF;
-	buff[STM8_FL_NCR2_OFFSET + 0]		= (param->ncr2_addr >> 8) & 0xFF;
-	buff[STM8_FL_NCR2_OFFSET + 1]		= (param->ncr2_addr >> 0) & 0xFF;
+	SET_BE_U16(&buff[STM8_FL_IAPSR_OFFSET], param->iapsr_addr);
+	SET_BE_U16(&buff[STM8_FL_CR2_OFFSET], param->cr2_addr);
+	SET_BE_U16(&buff[STM8_FL_NCR2_OFFSET], param->ncr2_addr);
 	buff[STM8_FL_BLOCKSIZE_OFFSET]		= param->block_size;
-	buff[STM8_FL_DATAADDR_OFFSET + 0]	= (param->data_addr >> 8) & 0xFF;
-	buff[STM8_FL_DATAADDR_OFFSET + 1]	= (param->data_addr >> 0) & 0xFF;
+	SET_BE_U16(&buff[STM8_FL_DATAADDR_OFFSET], param->data_addr);
 	buff[STM8_FL_TARGETADDR_OFFSET + 0]	= (param->target_addr >> 16) & 0xFF;
 	buff[STM8_FL_TARGETADDR_OFFSET + 1]	= (param->target_addr >> 8) & 0xFF;
 	buff[STM8_FL_TARGETADDR_OFFSET + 2]	= (param->target_addr >> 0) & 0xFF;

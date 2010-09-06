@@ -105,14 +105,11 @@ RESULT usbtojtaghl_config(uint8_t interface_index, uint16_t kHz, uint8_t ub,
 	}
 #endif
 	
-	cfg_buf[0] = (kHz >> 0) & 0xFF;
-	cfg_buf[1] = (kHz >> 8) & 0xFF;
+	SET_LE_U16(&cfg_buf[0], kHz);
 	cfg_buf[2] = ub;
 	cfg_buf[3] = ua;
-	cfg_buf[4] = (bb >> 0) & 0xFF;
-	cfg_buf[5] = (bb >> 8) & 0xFF;
-	cfg_buf[6] = (ba >> 0) & 0xFF;
-	cfg_buf[7] = (ba >> 8) & 0xFF;
+	SET_LE_U16(&cfg_buf[4], bb);
+	SET_LE_U16(&cfg_buf[6], ba);
 	
 	return usbtoxxx_conf_command(USB_TO_JTAG_HL, interface_index, cfg_buf, 8);
 }
@@ -142,8 +139,7 @@ RESULT usbtojtaghl_ir(uint8_t interface_index, uint8_t *ir, uint16_t bitlen,
 	}
 	
 	bitlen |= 0x8000;		// indicate ir
-	versaloon_cmd_buf[0] = (bitlen >> 0) & 0xFF;
-	versaloon_cmd_buf[1] = (bitlen >> 8) & 0xFF;
+	SET_LE_U16(&versaloon_cmd_buf[0], bitlen);
 	versaloon_cmd_buf[2] = idle;
 	
 	if (usbtojtaghl_send_callback != NULL)
@@ -190,8 +186,7 @@ RESULT usbtojtaghl_dr(uint8_t interface_index, uint8_t *dr, uint16_t bitlen,
 	}
 #endif
 	
-	versaloon_cmd_buf[0] = (bitlen >> 0) & 0xFF;
-	versaloon_cmd_buf[1] = (bitlen >> 8) & 0xFF;
+	SET_LE_U16(&versaloon_cmd_buf[0], bitlen);
 	versaloon_cmd_buf[2] = idle;
 	
 	if (usbtojtaghl_send_callback != NULL)
