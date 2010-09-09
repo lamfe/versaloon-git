@@ -1108,6 +1108,9 @@ void bdmHCS_off( void ) {
 #endif
    if (!bdm_option.leaveTargetPowered)
       VDD_OFF();
+#if TARGET_HARDWARE==H_VERSALOON
+   BDM_Fini();
+#endif
    bdmHCS_interfaceIdle();
 }
 
