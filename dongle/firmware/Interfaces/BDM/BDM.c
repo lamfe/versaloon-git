@@ -38,6 +38,8 @@ static uint16 BDM_PULSE_Threshold;
 
 void BDM_Init(void)
 {
+	BDM_Fini();
+
 	if (!BDM_Inited)
 	{
 		BDM_Inited = 1;
