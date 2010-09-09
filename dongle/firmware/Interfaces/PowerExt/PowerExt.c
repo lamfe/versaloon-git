@@ -23,7 +23,8 @@ static uint8 PWREXT_EnableCount = 0;
 
 void PWREXT_Acquire(void)
 {
-	if(Vtarget < TVCC_SAMPLE_MIN_POWER)
+	uint16 vtarget = SampleVtarget();
+	if(vtarget < TVCC_SAMPLE_MIN_POWER)
 	{
 		if(!PWREXT_EnableCount)
 		{
