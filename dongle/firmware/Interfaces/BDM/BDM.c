@@ -106,7 +106,6 @@ uint8 BDM_Sync(uint16 *khz)
 		SYNCSWPWM_OUT_TIMER_SetCycle(BDM_clock_div * BDM_1BIT_CYCLES / BDM_SYNC_CYCLES);
 		return 0;
 	}
-	return 0;
 }
 
 uint8 BDM_OutByte(uint8 data)
