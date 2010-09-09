@@ -485,7 +485,7 @@ U8 f_CMD_HCS12_WRITE_MEM(void) {
       }
       else {
          // Even address && >=2 bytes remaining
-         BDM12_CMD_WRITEW(addr,*((U16 *)data_ptr)); // write a word
+         BDM12_CMD_WRITEW(addr,GET_BE_U16(data_ptr)); // write a word
          addr     +=2;                    // increment memory address
          data_ptr +=2;                    // increment buffer pointer
          count    -=2;                    // decrement count of bytes
