@@ -28,6 +28,11 @@ static uint16 BDM_PULSE_0;
 static uint16 BDM_PULSE_1;
 static uint16 BDM_PULSE_Threshold;
 
+#define BDM_SIG0_CYCLES					13
+#define BDM_SIG1_CYCLES					4
+#define BDM_1BIT_CYCLES					18
+#define BDM_THRES_CYCLES				9
+
 #define BDM_SYNC_CYCLES					128
 #define BDM_MAX_DLY						0xFFFFF
 
@@ -87,20 +92,21 @@ uint8 BDM_Sync(uint16 *khz)
 	{
 		BDM_clock_div = BDM_DMA_IN_Buffer[1];
 		*khz = _SYS_FREQUENCY * 1000 * 128 / BDM_clock_div;
-		BDM_PULSE_1 = BDM_clock_div * 4 / BDM_SYNC_CYCLES;
-		if ((BDM_clock_div * 5 % BDM_SYNC_CYCLES) >= (BDM_SYNC_CYCLES / 2))
+		BDM_PULSE_1 = BDM_clock_div * BDM_SIG1_CYCLES / BDM_SYNC_CYCLES;
+		if ((BDM_clock_div * BDM_SIG1_CYCLES % BDM_SYNC_CYCLES) >= (BDM_SYNC_CYCLES / 2))
 		{
 			BDM_PULSE_1++;
 		}
-		BDM_PULSE_0 = BDM_clock_div * 13 / BDM_SYNC_CYCLES;
-		if ((BDM_clock_div * 13 % BDM_SYNC_CYCLES) >= (BDM_SYNC_CYCLES / 2))
+		BDM_PULSE_0 = BDM_clock_div * BDM_SIG0_CYCLES / BDM_SYNC_CYCLES;
+		if ((BDM_clock_div * BDM_SIG0_CYCLES % BDM_SYNC_CYCLES) >= (BDM_SYNC_CYCLES / 2))
 		{
 			BDM_PULSE_0++;
 		}
-		BDM_PULSE_Threshold = BDM_clock_div * 9 / BDM_SYNC_CYCLES;
-		SYNCSWPWM_OUT_TIMER_SetCycle(BDM_clock_div * 18 / BDM_SYNC_CYCLES);
+		BDM_PULSE_Threshold = BDM_clock_div * BDM_THRES_CYCLES / BDM_SYNC_CYCLES;
+		SYNCSWPWM_OUT_TIMER_SetCycle(BDM_clock_div * BDM_1BIT_CYCLES / BDM_SYNC_CYCLES);
 		return 0;
 	}
+	return 0;
 }
 
 uint8 BDM_OutByte(uint8 data)
