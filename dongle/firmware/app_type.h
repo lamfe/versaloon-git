@@ -70,4 +70,8 @@ typedef s32 int32;
 #define SET_BE_U16(p, v)			SET_U16_MSBFIRST(p, v)
 #define SET_BE_U32(p, v)			SET_U32_MSBFIRST(p, v)
 
+#ifndef NULL
+#	define NULL						((void*)0)
+#endif
+
 #endif // __APP_TYPE_H_INCLUDED__

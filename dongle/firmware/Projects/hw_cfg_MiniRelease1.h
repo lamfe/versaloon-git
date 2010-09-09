@@ -256,13 +256,12 @@
 											GPIO_ClrPins(SYNCSWPWM_GPIO_PORT, GPIO_PIN_GetMask(SYNCSWPWM_GPIO_PIN));\
 											GPIO_Dir(SYNCSWPWM_GPIO_PORT, GPIO_MODE_OUT_PP, SYNCSWPWM_GPIO_PIN);\
 										} while (0)
+#define SWIM_GET()						GPIO_GetInPins(SYNCSWPWM_GPIO_PORT, GPIO_PIN_GetMask(SYNCSWPWM_GPIO_PIN))
 
 /***************************** BDM ******************************/
-#define BDM_SET()						GPIO_Dir(SYNCSWPWM_GPIO_PORT, GPIO_MODE_IPU, SYNCSWPWM_GPIO_PIN)
-#define BDM_CLR()						do{\
-											GPIO_ClrPins(SYNCSWPWM_GPIO_PORT, GPIO_PIN_GetMask(SYNCSWPWM_GPIO_PIN));\
-											GPIO_Dir(SYNCSWPWM_GPIO_PORT, GPIO_MODE_OUT_PP, SYNCSWPWM_GPIO_PIN);\
-										} while (0)
+#define BDM_SET()						SWIM_SET()
+#define BDM_CLR()						SWIM_CLR()
+#define BDM_GET()						SWIM_GET()
 
 /***************************** SWD ******************************/
 #define SWD_SWDIO_SETOUTPUT()			JTAG_TAP_TMS_SETOUTPUT()
