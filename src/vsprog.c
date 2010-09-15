@@ -473,11 +473,40 @@ MISC_HANDLER(vsprog_mass)
 	return ERROR_FAIL;
 }
 
-uint8_t firmware_update_flag = 0;
 MISC_HANDLER(vsprog_firmware_update)
 {
+	int verbosity_tmp;
+	struct programmer_info_t *prog = NULL;
+	
 	MISC_CHECK_ARGC(1);
-	firmware_update_flag = 1;
+	
+	// send command first to enter into firmware update mode
+	verbosity_tmp = verbosity;
+	verbosity = -1;
+	verbosity = verbosity_tmp;
+	
+	if ((ERROR_OK != programmer_assert(&prog)) || (NULL == prog))
+	{
+		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", 
+					"programmer module");
+		return ERROR_FAIL;
+	}
+	
+	if (prog->enter_firmware_update_mode != NULL)
+	{
+		if (ERROR_OK != prog->enter_firmware_update_mode())
+		{
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, 
+						"enter into firmware update mode");
+			return ERROR_FAIL;
+		}
+	}
+	
+	// close device
+	prog->fini();
+	// sleep 3s
+	sleep_ms(3000);
+	
 	return ERROR_OK;
 }
 

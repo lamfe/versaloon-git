@@ -3806,7 +3806,6 @@ MISC_HANDLER(target_execute_addr)
 
 extern struct operation_t operations;
 extern struct filelist *fl_in, *fl_out;
-extern uint8_t firmware_update_flag;
 MISC_HANDLER(target_operate)
 {
 	RESULT ret = ERROR_OK;
@@ -3834,41 +3833,6 @@ MISC_HANDLER(target_operate)
 	{
 		LOG_ERROR(ERRMSG_NOT_DEFINED, "output file");
 		return ERROR_FAIL;
-	}
-	
-	// init programmer
-	if (firmware_update_flag)
-	{
-		int verbosity_tmp = verbosity;
-		
-		// send command first to enter into firmware update mode
-		verbosity = -1;
-		verbosity = verbosity_tmp;
-		if (ERROR_OK == ret)
-		{
-			struct programmer_info_t *prog = NULL;
-			if ((ERROR_OK != programmer_assert(&prog)) || (NULL == prog))
-			{
-				LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", 
-							"programmer module");
-				return ERROR_FAIL;
-			}
-			
-			if (prog->enter_firmware_update_mode != NULL)
-			{
-				if (ERROR_OK != prog->enter_firmware_update_mode())
-				{
-					LOG_ERROR(ERRMSG_FAILURE_OPERATION, 
-								"enter into firmware update mode");
-					return ERROR_FAIL;
-				}
-			}
-			
-			// close device
-			prog->fini();
-			// sleep 3s
-			sleep_ms(3000);
-		}
 	}
 	
 	// init target
