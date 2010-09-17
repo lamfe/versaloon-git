@@ -41,10 +41,11 @@
 #define HV						(1 << 25)
 #define PDI						(1 << 26)
 #define JTAG_RAW				(1 << 27)
+#define BDM						(1 << 28)
 #define INVALID_INTERFACE		(1 << 30)
 #define INTERFACES_MASK			(USART | SPI | I2C | GPIO | CAN | CLOCK | ADC \
 								 | DAC | POWER | ISSP | JTAG | MSP430_JTAG \
-								 | LPC_ICP | MSP430_SBW | SWD | SWIM | HV)
+								 | LPC_ICP | MSP430_SBW | SWD | SWIM | HV | BDM)
 
 
 // GPIO pins

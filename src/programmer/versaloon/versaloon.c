@@ -918,7 +918,7 @@ RESULT versaloon_init_capability(void *p)
 	t->fini = versaloon_fini;
 	
 	t->interfaces_mask = (USART | SPI | I2C | GPIO | POWER | ISSP | JTAG_LL 
-		| JTAG_HL | SWIM | JTAG_RAW | C2 | MSP430_JTAG | LPC_ICP | SWD);
+		| JTAG_HL | SWIM | JTAG_RAW | C2 | MSP430_JTAG | LPC_ICP | SWD | BDM);
 	
 	// USART
 	i->usart.init = versaloon_usart_init;
