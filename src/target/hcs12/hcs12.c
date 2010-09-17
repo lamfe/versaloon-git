@@ -50,8 +50,7 @@ const struct program_area_map_t hcs12_program_area_map[] =
 
 const struct program_mode_t hcs12_program_mode[] = 
 {
-	{'r', "", ISSP},
-	{'p', "", ISSP},
+	{'b', "", BDM},
 	{0, NULL, 0}
 };
 
