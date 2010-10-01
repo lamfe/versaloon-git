@@ -18,6 +18,10 @@
 #include "STK500v2_Const.h"
 #include "STK500v2.h"
 
+void BeforeInit(void){}
+
+void AfterInit(void){}
+
 void ProcessCommand(uint8* dat, uint16 len)
 {
 	STK500V2_Process(dat, len);

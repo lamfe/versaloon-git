@@ -17,6 +17,10 @@
 #include "app_cfg.h"
 #include "STLink.h"
 
+void BeforeInit(void){}
+
+void AfterInit(void){}
+
 void ProcessCommand(uint8* dat, uint16 len)
 {
 	STLink_SWIM_Process(dat);

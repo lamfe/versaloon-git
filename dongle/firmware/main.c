@@ -26,7 +26,9 @@
 
 int main(void)
 {
+	BeforeInit();
 	Sys_Init();
+	AfterInit();
 
 	LED_GREEN_ON();
 	LED_USB_ON();

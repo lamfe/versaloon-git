@@ -21,6 +21,10 @@
 #include "BDM_USBDM.h"
 #include "CmdProcessing.h"
 
+void BeforeInit(void){}
+
+void AfterInit(void){}
+
 void ProcessCommand(uint8* dat, uint16 len)
 {
 	memcpy(commandBuffer, dat, len);

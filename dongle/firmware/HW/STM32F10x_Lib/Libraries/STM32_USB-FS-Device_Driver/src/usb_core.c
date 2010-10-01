@@ -540,7 +540,9 @@ void DataStageIn(void)
     Length = save_wLength;
   }
 
-  DataBuffer = (*pEPinfo->CopyData)(Length);
+  // modified by simon for some specific application
+//  DataBuffer = (*pEPinfo->CopyData)(Length);
+  DataBuffer = (*pEPinfo->CopyData)(pInformation->USBwLength);
 
 #ifdef STM32F10X_CL
   OTGD_FS_PCD_EP_Write (ENDP0, DataBuffer, Length);

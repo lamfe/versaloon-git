@@ -28,6 +28,10 @@
 
 uint8 Versaloon_Ver[] = "Versaloon(" _HARDWARE_VER_STR ")by Simon(compiled on " __DATE__ ")";
 
+void BeforeInit(void){}
+
+void AfterInit(void){}
+
 static void Versaloon_ProcessCommonCmd(uint8* dat, uint16 len)
 {
 #if VERSALOON_FW_UPDATE_EN
