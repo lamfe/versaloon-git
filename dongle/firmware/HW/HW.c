@@ -33,7 +33,7 @@ __IO uint32_t rep_len = 0;
 uint8 asyn_rx_buf[ASYN_DATA_BUFF_SIZE];
 uint16 Vtarget = 0;
 
-void GPIO_Dir(GPIO_TypeDef* GPIOx, uint8 mode, uint8 pin)
+void GPIO_SetMode(GPIO_TypeDef* GPIOx, uint8 pin, uint8 mode)
 {
 	uint32 tmp_reg;
 
@@ -205,7 +205,7 @@ void GPIO_Configuration(void)
 
 #if POWER_SAMPLE_EN
 	// VSample Init
-	GPIO_Dir(TVCC_PORT, GPIO_MODE_AIN, TVCC_PIN);
+	GPIO_SetMode(TVCC_PORT, TVCC_PIN, GPIO_MODE_AIN);
 #endif
 }
 

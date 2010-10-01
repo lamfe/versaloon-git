@@ -39,11 +39,11 @@
 #define GPIO_PIN_15					15
 #define GPIO_PIN_GetMask(p)			(((uint32)1) << (p))
 
-#define GPIO_SetPins(port, msk)		(port)->BSRR = (msk)
-#define GPIO_ClrPins(port, msk)		(port)->BRR = (msk)
-#define GPIO_GetOutPins(port, msk)	((port)->ODR & (msk))
-#define GPIO_GetInPins(port, msk)	((port)->IDR & (msk))
-void GPIO_Dir(GPIO_TypeDef* GPIOx, uint8 mode, uint8 pin);
+#define GPIO_SetPins(port, pin)		(port)->BSRR = GPIO_PIN_GetMask(pin)
+#define GPIO_ClrPins(port, pin)		(port)->BRR = GPIO_PIN_GetMask(pin)
+#define GPIO_GetOutPins(port, pin)	((port)->ODR & GPIO_PIN_GetMask(pin))
+#define GPIO_GetInPins(port, pin)	((port)->IDR & GPIO_PIN_GetMask(pin))
+void GPIO_SetMode(GPIO_TypeDef* GPIOx, uint8 pin, uint8 mode);
 
 
 void Sys_Init(void);

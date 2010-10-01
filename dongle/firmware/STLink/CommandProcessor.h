@@ -14,6 +14,8 @@
  *      2010-09-01:     created(by SimonQian)                             *
  **************************************************************************/
 
+void BeforeInit(void);
+void AfterInit(void);
 void ProcessCommand(uint8* dat, uint16 len);
 void ProcessIdle(void);
 uint8 CheckLocalHandler(void);

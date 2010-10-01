@@ -31,6 +31,8 @@
 #define VERSALOON_USB_TO_XXX_CMD_START	0x20
 #define VERSALOON_USB_TO_XXX_CMD_END	0x7F
 
+void BeforeInit(void);
+void AfterInit(void);
 void ProcessCommand(uint8* dat, uint16 len);
 void ProcessIdle(void);
 uint8 CheckLocalHandler(void);
