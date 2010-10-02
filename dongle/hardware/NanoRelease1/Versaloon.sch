@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date 29/08/2010 14:09:26
+EESchema Schematic File Version 2  date 02/10/2010 21:39:13
 LIBS:power
 LIBS:elec-unifil
 LIBS:simonqian
@@ -30,13 +30,12 @@ LIBS:cypress
 LIBS:siliconi
 LIBS:contrib
 LIBS:valves
-LIBS:Versaloon-cache
 EELAYER 24  0
 EELAYER END
 $Descr User 6000 7000
 Sheet 1 1
 Title ""
-Date "29 aug 2010"
+Date "2 oct 2010"
 Rev ""
 Comp ""
 Comment1 ""
@@ -394,7 +393,7 @@ L R R6
 U 1 1 4AF6CA04
 P 1150 5150
 F 0 "R6" V 1200 4950 50  0000 C CNN
-F 1 "1.5K" V 1150 5150 50  0000 C CNN
+F 1 "4.7K" V 1150 5150 50  0000 C CNN
 	1    1150 5150
 	0    1    1    0   
 $EndComp
@@ -540,7 +539,7 @@ L R R5
 U 1 1 48FF462B
 P 1150 4950
 F 0 "R5" V 1200 4750 50  0000 C CNN
-F 1 "1.5K" V 1150 4950 50  0000 C CNN
+F 1 "3.3K" V 1150 4950 50  0000 C CNN
 	1    1150 4950
 	0    1    1    0   
 $EndComp
@@ -624,7 +623,7 @@ L R R4
 U 1 1 4836052E
 P 1150 4750
 F 0 "R4" V 1200 4550 50  0000 C CNN
-F 1 "1.5K" V 1150 4750 50  0000 C CNN
+F 1 "470" V 1150 4750 50  0000 C CNN
 	1    1150 4750
 	0    1    1    0   
 $EndComp
