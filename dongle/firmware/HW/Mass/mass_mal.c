@@ -65,8 +65,8 @@ uint16_t MAL_Init(uint8_t lun)
       }
       else
       {
-        Mass_Block_Size[0]  = 0;
-        Mass_Block_Count[0] = 0;
+        Mass_Block_Size[0]  = MSD_MEMORY_BLOCK_SIZE;
+        Mass_Block_Count[0] = MAL_GetRealBlockCount();
       }
       if (Mass_Block_Size[0] != MSD_MEMORY_BLOCK_SIZE)
       {
