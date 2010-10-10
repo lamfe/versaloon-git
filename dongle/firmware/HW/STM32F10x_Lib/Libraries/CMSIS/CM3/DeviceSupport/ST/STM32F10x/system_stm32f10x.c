@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    system_stm32f10x.c
   * @author  MCD Application Team
-  * @version V3.2.0
-  * @date    03/01/2010
+  * @version V3.3.0
+  * @date    04/16/2010
   * @brief   CMSIS Cortex-M3 Device Peripheral Access Layer System Source File.
   ******************************************************************************  
   *
@@ -84,10 +84,10 @@
 #endif
 
 /*!< Uncomment the following line if you need to use external SRAM mounted
-     on STM3210E-EVAL board (STM32 High density devices) as data memory  */ 
-#ifdef STM32F10X_HD
+     on STM3210E-EVAL board (STM32 High density and XL-density devices) as data memory  */ 
+#if defined (STM32F10X_HD) || (defined STM32F10X_XL)
 /* #define DATA_IN_ExtSRAM */
-#endif /* STM32F10X_HD */
+#endif
 
 /**
   * @}
@@ -211,16 +211,15 @@ void SystemInit (void)
   RCC->CIR = 0x009F0000;
 #endif /* STM32F10X_CL */
     
-  /* Configure the System clock frequency, HCLK, PCLK2 and PCLK1 prescalers */
-  /* Configure the Flash Latency cycles and enable prefetch buffer */
-  SetSysClock();
-
-#ifdef STM32F10X_HD
+#if defined (STM32F10X_HD) || (defined STM32F10X_XL)
   #ifdef DATA_IN_ExtSRAM
     SystemInit_ExtMemCtl(); 
   #endif /* DATA_IN_ExtSRAM */
-#endif /* STM32F10X_HD */  
+#endif 
 
+  /* Configure the System clock frequency, HCLK, PCLK2 and PCLK1 prescalers */
+  /* Configure the Flash Latency cycles and enable prefetch buffer */
+  SetSysClock();
 }
 
 /**
