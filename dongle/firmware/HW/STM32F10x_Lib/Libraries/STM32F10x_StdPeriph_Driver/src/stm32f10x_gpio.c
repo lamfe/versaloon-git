@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f10x_gpio.c
   * @author  MCD Application Team
-  * @version V3.2.0
-  * @date    03/01/2010
+  * @version V3.3.0
+  * @date    04/16/2010
   * @brief   This file provides all the GPIO firmware functions.
   ******************************************************************************
   * @copy
@@ -525,7 +525,13 @@ void GPIO_EventOutputCmd(FunctionalState NewState)
   *     @arg GPIO_Remap_TIM16
   *     @arg GPIO_Remap_TIM17
   *     @arg GPIO_Remap_CEC
-  *     @arg GPIO_Remap_TIM1_DMA              
+  *     @arg GPIO_Remap_TIM1_DMA 
+  *     @arg GPIO_Remap_TIM9
+  *     @arg GPIO_Remap_TIM10
+  *     @arg GPIO_Remap_TIM11
+  *     @arg GPIO_Remap_TIM13
+  *     @arg GPIO_Remap_TIM14
+  *     @arg GPIO_Remap_FSMC_NADV               
   * @note  If the GPIO_Remap_TIM2ITR1_PTP_SOF is enabled the TIM2 ITR1 is connected 
   *        to Ethernet PTP output. When Reset TIM2 ITR1 is connected to USB OTG SOF output.       
   * @param  NewState: new state of the port pin remapping.

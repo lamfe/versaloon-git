@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    system_stm32f10x.h
   * @author  MCD Application Team
-  * @version V3.2.0
-  * @date    03/01/2010
+  * @version V3.3.0
+  * @date    04/16/2010
   * @brief   CMSIS Cortex-M3 Device Peripheral Access Layer System Header File.
   ******************************************************************************  
   *

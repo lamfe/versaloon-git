@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f10x_rcc.h
   * @author  MCD Application Team
-  * @version V3.2.0
-  * @date    03/01/2010
+  * @version V3.3.0
+  * @date    04/16/2010
   * @brief   This file contains all the functions prototypes for the RCC firmware 
   *          library.
   ******************************************************************************
@@ -511,8 +511,11 @@ typedef struct
 #define RCC_APB2Periph_TIM15             ((uint32_t)0x00010000)
 #define RCC_APB2Periph_TIM16             ((uint32_t)0x00020000)
 #define RCC_APB2Periph_TIM17             ((uint32_t)0x00040000)
+#define RCC_APB2Periph_TIM9              ((uint32_t)0x00080000)
+#define RCC_APB2Periph_TIM10             ((uint32_t)0x00100000)
+#define RCC_APB2Periph_TIM11             ((uint32_t)0x00200000)
 
-#define IS_RCC_APB2_PERIPH(PERIPH) ((((PERIPH) & 0xFFF80002) == 0x00) && ((PERIPH) != 0x00))
+#define IS_RCC_APB2_PERIPH(PERIPH) ((((PERIPH) & 0xFFC00002) == 0x00) && ((PERIPH) != 0x00))
 /**
   * @}
   */ 
@@ -527,6 +530,9 @@ typedef struct
 #define RCC_APB1Periph_TIM5              ((uint32_t)0x00000008)
 #define RCC_APB1Periph_TIM6              ((uint32_t)0x00000010)
 #define RCC_APB1Periph_TIM7              ((uint32_t)0x00000020)
+#define RCC_APB1Periph_TIM12             ((uint32_t)0x00000040)
+#define RCC_APB1Periph_TIM13             ((uint32_t)0x00000080)
+#define RCC_APB1Periph_TIM14             ((uint32_t)0x00000100)
 #define RCC_APB1Periph_WWDG              ((uint32_t)0x00000800)
 #define RCC_APB1Periph_SPI2              ((uint32_t)0x00004000)
 #define RCC_APB1Periph_SPI3              ((uint32_t)0x00008000)
@@ -544,7 +550,7 @@ typedef struct
 #define RCC_APB1Periph_DAC               ((uint32_t)0x20000000)
 #define RCC_APB1Periph_CEC               ((uint32_t)0x40000000)
  
-#define IS_RCC_APB1_PERIPH(PERIPH) ((((PERIPH) & 0x810137C0) == 0x00) && ((PERIPH) != 0x00))
+#define IS_RCC_APB1_PERIPH(PERIPH) ((((PERIPH) & 0x81013600) == 0x00) && ((PERIPH) != 0x00))
 
 /**
   * @}

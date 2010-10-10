@@ -1,8 +1,8 @@
 ;/******************** (C) COPYRIGHT 2010 STMicroelectronics ********************
 ;* File Name          : startup_stm32f10x_ld_vl.s
 ;* Author             : MCD Application Team
-;* Version            : V3.2.0
-;* Date               : 03/01/2010
+;* Version            : V3.3.0
+;* Date               : 04/16/2010
 ;* Description        : STM32F10x Low Density Value Line Devices vector table 
 ;*                      for EWARM5.x toolchain.
 ;*                      This module performs:
@@ -135,8 +135,8 @@ __vector_table
         PUBWEAK Reset_Handler
         SECTION .text:CODE:REORDER(2)
 Reset_Handler
-;        LDR     R0, =SystemInit
-;        BLX     R0
+        LDR     R0, =SystemInit
+        BLX     R0
         LDR     R0, =__iar_program_start
         BX      R0
         

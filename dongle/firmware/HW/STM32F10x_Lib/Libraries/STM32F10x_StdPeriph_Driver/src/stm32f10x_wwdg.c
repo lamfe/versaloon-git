@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f10x_wwdg.c
   * @author  MCD Application Team
-  * @version V3.2.0
-  * @date    03/01/2010
+  * @version V3.3.0
+  * @date    04/16/2010
   * @brief   This file provides all the WWDG firmware functions.
   ******************************************************************************
   * @copy
