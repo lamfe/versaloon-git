@@ -1597,8 +1597,18 @@ Post_Init:
 	while (cur_target->program_area_map[i].name != 0)
 	{
 		area_idx = target_area_idx(cur_target->program_area_map[i].name);
-		pi->program_areas[area_idx].size = 
+		if (!pi->program_areas[area_idx].size)
+		{
+			// if size is not detected, copy from record in xml config
+			pi->program_areas[area_idx].size = 
 								target_chip_param.chip_areas[area_idx].size;
+		}
+		else
+		{
+			// if size is detected, overwrite target parameters
+			target_chip_param.chip_areas[area_idx].size = 
+								pi->program_areas[area_idx].size;
+		}
 		i++;
 	}
 	
