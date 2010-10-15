@@ -27,7 +27,7 @@
 uint32_t Mass_Memory_Size[MAL_LUN_NUM];
 uint32_t Mass_Block_Size[MAL_LUN_NUM];
 uint32_t Mass_Block_Count[MAL_LUN_NUM];
-uint32_t Status = 0;
+uint16_t Mass_Status[MAL_LUN_NUM];
 
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
@@ -90,9 +90,9 @@ uint16_t MAL_Init(uint8_t lun)
 * Output         : None
 * Return         : None
 *******************************************************************************/
-uint16_t MAL_Write(uint8_t lun, uint32_t Memory_Offset, uint32_t *Writebuff, uint16_t Transfer_Length)
+uint16_t MAL_Write(uint8_t lun, uint64_t Memory_Offset, uint32_t *Writebuff, uint16_t Transfer_Length)
 {
-  uint16_t i;
+  uint32_t i;
   switch (lun)
   {
     case 0:
@@ -133,9 +133,9 @@ uint16_t MAL_Write(uint8_t lun, uint32_t Memory_Offset, uint32_t *Writebuff, uin
 * Output         : None
 * Return         : Buffer pointer
 *******************************************************************************/
-uint16_t MAL_Read(uint8_t lun, uint32_t Memory_Offset, uint32_t *Readbuff, uint16_t Transfer_Length)
+uint16_t MAL_Read(uint8_t lun, uint64_t Memory_Offset, uint32_t *Readbuff, uint16_t Transfer_Length)
 {
-  uint16_t i;
+  uint32_t i;
   switch (lun)
   {
     case 0:
@@ -166,14 +166,14 @@ uint16_t MAL_Read(uint8_t lun, uint32_t Memory_Offset, uint32_t *Readbuff, uint1
 *******************************************************************************/
 uint16_t MAL_GetStatus (uint8_t lun)
 {
-  switch (lun)
+  if (lun < MAL_LUN_NUM)
   {
-    case 0:
-      break;
-    default:
-      return MAL_FAIL;
+    return Mass_Status[lun];
   }
-  return MAL_OK;
+  else
+  {
+    return MAL_FAIL;
+  }
 }
 
 #endif

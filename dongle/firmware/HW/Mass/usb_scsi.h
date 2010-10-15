@@ -86,6 +86,12 @@
 #define STANDARD_INQUIRY_DATA_LEN                   0x24
 #define BLKVFY                                      0x04
 
+#define STOP_MOTOR                                  0x00
+#define START_MOTOR                                 0x01
+#define EJECT_MEDIA                                 0x02
+#define LOAD_MEDIA                                  0x03
+#define LOEJ_START_MASK                             0x03
+
 extern  uint8_t Page00_Inquiry_Data[];
 extern  uint8_t Standard_Inquiry_Data[];
 extern  uint8_t Mode_Sense6_data[];
@@ -100,7 +106,7 @@ void SCSI_Inquiry_Cmd(uint8_t lun);
 void SCSI_ReadFormatCapacity_Cmd(uint8_t lun);
 void SCSI_ReadCapacity10_Cmd(uint8_t lun);
 void SCSI_RequestSense_Cmd (uint8_t lun);
-void SCSI_Start_Stop_Unit_Cmd(uint8_t lun);
+void SCSI_Start_Stop_Unit_Cmd(uint8_t lun, uint8_t state);
 void SCSI_ModeSense6_Cmd (uint8_t lun);
 void SCSI_ModeSense10_Cmd (uint8_t lun);
 void SCSI_Write10_Cmd(uint8_t lun , uint32_t LBA , uint32_t BlockNbr);
