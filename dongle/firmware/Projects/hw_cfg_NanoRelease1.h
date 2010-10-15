@@ -679,6 +679,9 @@
 #define LED_USB_OFF()					Led_RW_ON()
 
 /****************************** KEY ******************************/
+#define ADC_PORT						GPIOB
+#define ADC_PIN							GPIO_PIN_0
+
 #define KEY_PORT						GPIOB
 #define KEY_PIN							GPIO_PIN_9
 #define KEY_IsDown()					GPIO_GetInPins(KEY_PORT, KEY_PIN)
