@@ -39,6 +39,7 @@ extern Bulk_Only_CSW CSW;
 extern uint32_t Mass_Memory_Size[MAL_LUN_NUM];
 extern uint32_t Mass_Block_Size[MAL_LUN_NUM];
 extern uint32_t Mass_Block_Count[MAL_LUN_NUM];
+extern uint16_t Mass_Status[MAL_LUN_NUM];
 
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
@@ -202,8 +203,22 @@ void Set_Scsi_Sense_Data(uint8_t lun, uint8_t Sens_Key, uint8_t Asc)
 * Output         : None.
 * Return         : None.
 *******************************************************************************/
-void SCSI_Start_Stop_Unit_Cmd(uint8_t lun)
+void SCSI_Start_Stop_Unit_Cmd(uint8_t lun, uint8_t state)
 {
+  switch (state)
+  {
+  case STOP_MOTOR:
+    break;
+  case START_MOTOR:
+    break;
+  case EJECT_MEDIA:
+    Mass_Status[lun] = MAL_FAIL;
+    break;
+  case LOAD_MEDIA:
+    break;
+  default:
+    break;
+  }
   Set_CSW (CSW_CMD_PASSED, SEND_CSW_ENABLE);
 }
 

@@ -64,7 +64,8 @@ extern uint32_t Mass_Block_Size[MAL_LUN_NUM];
 
 void Read_Memory(uint8_t lun, uint32_t Memory_Offset, uint32_t Transfer_Length)
 {
-  static uint32_t Offset, Length;
+  static uint64_t Offset;
+  static uint32_t Length;
 
   if (TransferState == TXFR_IDLE )
   {
@@ -115,7 +116,8 @@ void Read_Memory(uint8_t lun, uint32_t Memory_Offset, uint32_t Transfer_Length)
 void Write_Memory (uint8_t lun, uint32_t Memory_Offset, uint32_t Transfer_Length)
 {
 
-  static uint32_t W_Offset, W_Length;
+  static uint64_t W_Offset;
+  static uint32_t W_Length;
 
   uint32_t temp =  Counter + 64;
 

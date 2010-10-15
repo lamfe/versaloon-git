@@ -188,10 +188,11 @@ void CBW_Decode(void)
           SCSI_Inquiry_Cmd(CBW.bLUN);
           break;
         case SCSI_START_STOP_UNIT:
-          SCSI_Start_Stop_Unit_Cmd(CBW.bLUN);
+          SCSI_Start_Stop_Unit_Cmd(CBW.bLUN, CBW.CB[4] & LOEJ_START_MASK);
           break;
         case SCSI_ALLOW_MEDIUM_REMOVAL:
-          SCSI_Start_Stop_Unit_Cmd(CBW.bLUN);
+//          SCSI_Start_Stop_Unit_Cmd(CBW.bLUN);
+          Set_CSW (CSW_CMD_PASSED, SEND_CSW_ENABLE);
           break;
         case SCSI_MODE_SENSE6:
           SCSI_ModeSense6_Cmd (CBW.bLUN);
