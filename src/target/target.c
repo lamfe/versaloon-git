@@ -1074,14 +1074,13 @@ static RESULT target_program(struct program_context_t *context)
 						uint8_t *tmp_buf = &(tbuff[tmp_addr - start_addr]);
 						
 						if (ERROR_OK != pf->write_target(context, area_char, 
-								tmp_addr, tmp_buf, target_size))
+								tmp_addr, tmp_buf, ml_tmp->len))
 						{
 							pgbar_fini();
 							LOG_ERROR(ERRMSG_FAILURE_PROGRAM, fullname);
 							ret = ERRCODE_FAILURE_OPERATION;
 							goto leave_program_mode;
 						}
-								
 					}
 					else
 					{
