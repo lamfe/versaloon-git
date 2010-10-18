@@ -252,6 +252,13 @@ WRITE_TARGET_HANDLER(stm32swj)
 	switch (area)
 	{
 	case APPLICATION_CHAR:
+		if (ERROR_OK != cm3_dp_halt())
+		{
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "halt stm32");
+			ret = ERRCODE_FAILURE_OPERATION;
+			break;
+		}
+
 		// last_but_three dword is RAM address for data, set to 1K at SRAM
 		*(uint32_t *)(iap_code + sizeof(iap_code) - 4 * 4) = 
 												SYS_TO_LE_U32(FL_ADDR_DATA);
