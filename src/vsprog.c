@@ -679,11 +679,15 @@ int main(int argc, char* argv[])
 		free_all_and_exit(EXIT_FAILURE);
 	}
 	
-	// "operate" programming if target and operation are both defined
+	// "prepare" and then "operate" programming if target and operation are both defined
 	if ((cur_target != NULL) && (!vsprog_query_cmd))
 	{
 		print_title();
 		
+		if (ERROR_OK != misc_run_script("prepare"))
+		{
+			free_all_and_exit(EXIT_FAILURE);
+		}
 		if (ERROR_OK != misc_run_script("operate"))
 		{
 			free_all_and_exit(EXIT_FAILURE);

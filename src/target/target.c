@@ -83,6 +83,7 @@ MISC_HANDLER(target_wait_state);
 MISC_HANDLER(target_auto_adjust);
 MISC_HANDLER(target_jtag_dc);
 MISC_HANDLER(target_interface_mode);
+MISC_HANDLER(target_prepare);
 MISC_HANDLER(target_operate);
 MISC_HANDLER(target_execute_addr);
 
@@ -156,6 +157,9 @@ struct misc_cmd_t target_cmd[] =
 	MISC_CMD(	"m",
 				"set interface mode, format: mode/m MODE",
 				target_interface_mode),
+	MISC_CMD(	"prepare",
+				"prepare target programming, format: prepare",
+				target_prepare),
 	MISC_CMD(	"operate",
 				"operate target programming, format: operate",
 				target_operate),
@@ -3815,7 +3819,7 @@ MISC_HANDLER(target_execute_addr)
 
 extern struct operation_t operations;
 extern struct filelist *fl_in, *fl_out;
-MISC_HANDLER(target_operate)
+MISC_HANDLER(target_prepare)
 {
 	RESULT ret = ERROR_OK;
 	uint32_t require_hex_file_for_read = 0;
@@ -3894,75 +3898,85 @@ MISC_HANDLER(target_operate)
 	// insert a dly between 2 operations
 	sleep_ms(100);
 	
-	// do programming
+	return ERROR_OK;
+}
+
+MISC_HANDLER(target_operate)
+{
+	RESULT ret = ERROR_OK;
+	struct program_context_t context;
+	
+	MISC_CHECK_ARGC(1);
+	if (NULL == cur_target)
 	{
-		struct program_context_t context;
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "Target");
+		return ERROR_FAIL;
+	}
+	
+	// in system programmer
+	if ((!(operations.checksum_operations || operations.erase_operations 
+			|| operations.read_operations || operations.verify_operations 
+			|| operations.write_operations)) 
+		&& (NULL == strchr(cur_target->feature, NO_TARGET[0])))
+	{
+		// no operation defined
+		// and not no_target operation
+		return ERROR_OK;
+	}
+	
+	context.op = &operations;
+	context.param = &target_chip_param;
+	context.pi = &program_info;
+	context.prog = cur_programmer;
+	ret = target_program(&context);
+	if (ret != ERROR_OK)
+	{
+		LOG_ERROR(ERRMSG_FAILURE_OPERATE_DEVICE, cur_target->name);
+		return ERROR_FAIL;
+	}
+	
+	// save contect to file for read operation
+	if (cur_target != NULL)
+	{
+		struct program_area_map_t *p_map = 
+				(struct program_area_map_t *)cur_target->program_area_map;
 		
-		// in system programmer
-		if ((!(operations.checksum_operations || operations.erase_operations 
-				|| operations.read_operations || operations.verify_operations 
-				|| operations.write_operations)) 
-			&& (NULL == strchr(cur_target->feature, NO_TARGET[0])))
+		while (p_map->name != 0)
 		{
-			// no operation defined
-			// and not no_target operation
-			return ERROR_OK;
-		}
-		
-		context.op = &operations;
-		context.param = &target_chip_param;
-		context.pi = &program_info;
-		context.prog = cur_programmer;
-		ret = target_program(&context);
-		if (ret != ERROR_OK)
-		{
-			LOG_ERROR(ERRMSG_FAILURE_OPERATE_DEVICE, cur_target->name);
-			return ERROR_FAIL;
-		}
-		
-		// save contect to file for read operation
-		if (cur_target != NULL)
-		{
-			struct program_area_map_t *p_map = 
-					(struct program_area_map_t *)cur_target->program_area_map;
-			
-			while (p_map->name != 0)
+			if ((p_map->data_pos) 
+				&& (operations.read_operations 
+					& target_area_mask(p_map->name)))
 			{
-				if ((p_map->data_pos) 
-					&& (operations.read_operations 
-						& target_area_mask(p_map->name)))
+				uint8_t *buff = NULL;
+				uint32_t size = 0;
+				struct chip_area_info_t *area;
+				int8_t area_idx;
+				
+				area_idx = target_area_idx(p_map->name);
+				if (area_idx < 0)
 				{
-					uint8_t *buff = NULL;
-					uint32_t size = 0;
-					struct chip_area_info_t *area;
-					int8_t area_idx;
-					
-					area_idx = target_area_idx(p_map->name);
-					if (area_idx < 0)
+					p_map++;
+					continue;
+				}
+				area = &target_chip_param.chip_areas[area_idx];
+				target_get_target_area(p_map->name, &buff, &size);
+				if ((buff != NULL) && (size > 0) && (fl_out != NULL))
+				{
+					if (ERROR_OK != save_target_to_file(fl_out, buff, 
+							size, area->seg, area->addr, p_map->fseg_addr, 
+							p_map->fstart_addr, 
+							cur_target->adjust_mapping))
 					{
-						p_map++;
-						continue;
-					}
-					area = &target_chip_param.chip_areas[area_idx];
-					target_get_target_area(p_map->name, &buff, &size);
-					if ((buff != NULL) && (size > 0) && (fl_out != NULL))
-					{
-						if (ERROR_OK != save_target_to_file(fl_out, buff, 
-								size, area->seg, area->addr, p_map->fseg_addr, 
-								p_map->fstart_addr, 
-								cur_target->adjust_mapping))
-						{
-							LOG_ERROR(ERRMSG_FAILURE_OPERATION, 
-										"write data to file");
-							return ERROR_FAIL;
-						}
+						LOG_ERROR(ERRMSG_FAILURE_OPERATION, 
+									"write data to file");
+						return ERROR_FAIL;
 					}
 				}
-				
-				p_map++;
 			}
-			end_file(fl_out);
+			
+			p_map++;
 		}
+		end_file(fl_out);
 	}
 	return ERROR_OK;
 }
