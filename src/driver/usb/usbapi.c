@@ -336,7 +336,7 @@ usb_dev_handle* find_usb_device(uint16_t VID, uint16_t PID, uint8_t interface,
 					dev_handle = NULL;
 					continue;
 				}
-#if !IS_WIN32
+#if !IS_WIN32 && !IS_DARWIN
 				usb_reset(dev_handle);
 				
 				{
