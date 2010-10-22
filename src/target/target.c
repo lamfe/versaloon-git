@@ -4047,7 +4047,7 @@ MISC_HANDLER(target_erase)
 	struct operation_t operations;
 	struct program_context_t context;
 	RESULT ret;
-	uint8_t index;
+	int8_t index;
 	
 	MISC_CHECK_ARGC_2(1, 2);
 	if (NULL == cur_target)
@@ -4091,7 +4091,7 @@ MISC_HANDLER(target_write)
 	struct operation_t operations_tmp;
 	struct program_context_t context;
 	RESULT ret;
-	uint8_t index;
+	int8_t index;
 	
 	MISC_CHECK_ARGC_2(1, 2);
 	if (NULL == cur_target)
@@ -4137,7 +4137,7 @@ MISC_HANDLER(target_verify)
 	struct operation_t operations_tmp;
 	struct program_context_t context;
 	RESULT ret;
-	uint8_t index;
+	int8_t index;
 	
 	MISC_CHECK_ARGC_2(1, 2);
 	if (NULL == cur_target)
@@ -4185,7 +4185,7 @@ MISC_HANDLER(target_read)
 	struct memlist *ml_tmp, *pml_save;
 	RESULT ret;
 	uint32_t byteaddr, bytesize;
-	uint8_t index;
+	int8_t index;
 	
 	MISC_CHECK_ARGC(4);
 	if (NULL == cur_target)
