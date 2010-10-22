@@ -86,6 +86,12 @@ MISC_HANDLER(target_interface_mode);
 MISC_HANDLER(target_prepare);
 MISC_HANDLER(target_operate);
 MISC_HANDLER(target_execute_addr);
+MISC_HANDLER(target_enter_program_mode);
+MISC_HANDLER(target_leave_program_mode);
+MISC_HANDLER(target_erase);
+MISC_HANDLER(target_write);
+MISC_HANDLER(target_read);
+MISC_HANDLER(target_verify);
 
 struct misc_cmd_t target_cmd[] = 
 {
@@ -169,6 +175,24 @@ struct misc_cmd_t target_cmd[] =
 	MISC_CMD(	"x",
 				"execute defined address, format: execute/x ADDR",
 				target_execute_addr),
+	MISC_CMD(	"enter_program_mode",
+				"enter program mode, format: enter_program_mode",
+				target_enter_program_mode),
+	MISC_CMD(	"leave_program_mode",
+				"leave program mode, format: leave_program_mode",
+				target_leave_program_mode),
+	MISC_CMD(	"erase",
+				"erase target area, format: erase [AREA_CHAR]",
+				target_erase),
+	MISC_CMD(	"read",
+				"read target area, format: read AREA_CHAR ADDR SIZE",
+				target_read),
+	MISC_CMD(	"write",
+				"write target area, format: write [AREA_CHAR]",
+				target_write),
+	MISC_CMD(	"verify",
+				"verify target area, format: verify [AREA_CHAR]",
+				target_verify),
 	MISC_CMD_END
 };
 
@@ -511,6 +535,20 @@ static void target_get_target_area(char area, uint8_t **buff, uint32_t *size)
 	}
 }
 
+int8_t target_area_idx_by_fullname(char *fullname)
+{
+	int8_t i;
+	
+	for (i = 0; i < (int8_t)dimof(target_area_name); i++)
+	{
+		if (!strcmp(target_area_name[i].full_name, fullname))
+		{
+			return i;
+		}
+	}
+	return -1;
+}
+
 char target_area_char_by_fullname(char *fullname)
 {
 	uint32_t i;
@@ -594,6 +632,18 @@ uint32_t target_area_mask(char area_name)
 	else
 	{
 		return target_area_name[i].mask;
+	}
+}
+
+int8_t target_area_idx_by_name(char *name)
+{
+	if (strlen(name) == 1)
+	{
+		return target_area_idx(name[0]);
+	}
+	else
+	{
+		return target_area_idx_by_fullname(name);
 	}
 }
 
@@ -807,30 +857,12 @@ static RESULT MEMLIST_VerifyBuff(struct memlist *ml, uint8_t *buf1,
 	return ERROR_OK;
 }
 
-static RESULT target_program(struct program_context_t *context)
+static RESULT target_program_check(struct program_context_t *context)
 {
 	const struct program_functions_t *pf = cur_target->program_functions;
-	const struct program_area_map_t *p_map = cur_target->program_area_map;
 	struct program_info_t *pi = context->pi;
-	struct operation_t *op = context->op;
 	struct chip_param_t *param = context->param;
-	
-	struct chip_area_info_t *area_info;
-	struct program_area_t *prog_area;
-	RESULT ret = ERROR_OK;
-	uint32_t i, j;
-	int8_t area_idx;
-	char area_char;
-	uint32_t area_mask;
-	enum area_attr_t area_attr;
-	uint32_t target_size, page_size, start_addr;
-	char *format = NULL;
-	char format_tmp[32];
-	uint8_t *tbuff;
-	char *fullname, str_tmp[256];
-	struct memlist **ml, *ml_tmp, *ml_exact = NULL;
-	uint32_t time_in_ms = 1000;
-	uint8_t special_string[256];
+	uint32_t i;
 	
 	if ((NULL == pf) 
 		|| ((NULL == pf->execute) 
@@ -868,19 +900,81 @@ static RESULT target_program(struct program_context_t *context)
 			return ERROR_FAIL;
 		}
 	}
+	return ERROR_OK;
+}
+
+static RESULT target_enter_progmode(struct program_context_t *context)
+{
+	const struct program_functions_t *pf = cur_target->program_functions;
+	
+	if (ERROR_OK != target_program_check(context))
+	{
+		return ERROR_FAIL;
+	}
 	
 	if ((pf->enter_program_mode != NULL) 
 		&&(pf->enter_program_mode(context) != ERROR_OK))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "enter program mode");
-		ret = ERRCODE_FAILURE_ENTER_PROG_MODE;
-		goto leave_program_mode;
+		return ERRCODE_FAILURE_ENTER_PROG_MODE;
+	}
+	return ERROR_OK;
+}
+
+static RESULT target_leave_progmode(struct program_context_t *context, 
+									uint8_t success)
+{
+	const struct program_functions_t *pf = cur_target->program_functions;
+	
+	if (ERROR_OK != target_program_check(context))
+	{
+		return ERROR_FAIL;
+	}
+	
+	// leave with success
+	if ((pf->leave_program_mode != NULL) 
+		&&(pf->leave_program_mode(context, success) != ERROR_OK))
+	{
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "leave program mode");
+		return ERRCODE_FAILURE_ENTER_PROG_MODE;
+	}
+	return ERROR_OK;
+}
+
+static RESULT target_program(struct program_context_t *context)
+{
+	const struct program_functions_t *pf = cur_target->program_functions;
+	const struct program_area_map_t *p_map = cur_target->program_area_map;
+	struct program_info_t *pi = context->pi;
+	struct operation_t *op = context->op;
+	struct chip_param_t *param = context->param;
+	
+	struct chip_area_info_t *area_info;
+	struct program_area_t *prog_area;
+	RESULT ret = ERROR_OK;
+	uint32_t i, j;
+	int8_t area_idx;
+	char area_char;
+	uint32_t area_mask;
+	enum area_attr_t area_attr;
+	uint32_t target_size, page_size, start_addr;
+	char *format = NULL;
+	char format_tmp[32];
+	uint8_t *tbuff;
+	char *fullname, str_tmp[256];
+	struct memlist **ml, *ml_tmp, *ml_exact = NULL;
+	uint32_t time_in_ms = 1000;
+	uint8_t special_string[256];
+	
+	if (ERROR_OK != target_program_check(context))
+	{
+		return ERROR_FAIL;
 	}
 	
 	if (pf->execute != NULL)
 	{
 		ret = pf->execute(context);
-		goto leave_program_mode;
+		goto target_program_exit;
 	}
 	
 	// read chip id
@@ -890,7 +984,7 @@ static RESULT target_program(struct program_context_t *context)
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read chip id");
 		ret = ERRCODE_FAILURE_OPERATION;
-		goto leave_program_mode;
+		goto target_program_exit;
 	}
 	LOG_INFO(INFOMSG_TARGET_CHIP_ID, pi->chip_id);
 	if (!(op->read_operations & CHIPID))
@@ -902,7 +996,7 @@ static RESULT target_program(struct program_context_t *context)
 	}
 	else
 	{
-		goto leave_program_mode;
+		goto target_program_exit;
 	}
 	
 	// chip erase
@@ -917,7 +1011,7 @@ static RESULT target_program(struct program_context_t *context)
 			pgbar_fini();
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "erase chip");
 			ret = ERRCODE_FAILURE_OPERATION;
-			goto leave_program_mode;
+			goto target_program_exit;
 		}
 		
 		pgbar_update(1);
@@ -969,7 +1063,7 @@ static RESULT target_program(struct program_context_t *context)
 				{
 					LOG_ERROR(ERRMSG_NOT_DEFINED, "cli_format");
 					ret = ERROR_FAIL;
-					goto leave_program_mode;
+					goto target_program_exit;
 				}
 				// default type is hex value with 16-bit length
 				snprintf(format_tmp, sizeof(format_tmp), "%%%dx", target_size);
@@ -1012,7 +1106,7 @@ static RESULT target_program(struct program_context_t *context)
 						pgbar_fini();
 						LOG_ERROR(ERRMSG_FAILURE_ERASE, fullname);
 						ret = ERRCODE_FAILURE_OPERATION;
-						goto leave_program_mode;
+						goto target_program_exit;
 					}
 					pgbar_update(1);
 				}
@@ -1026,7 +1120,7 @@ static RESULT target_program(struct program_context_t *context)
 					pgbar_fini();
 					LOG_ERROR(ERRMSG_FAILURE_ERASE, fullname);
 					ret = ERRCODE_FAILURE_OPERATION;
-					goto leave_program_mode;
+					goto target_program_exit;
 				}
 				pgbar_update(area_info->page_num);
 			}
@@ -1049,11 +1143,10 @@ static RESULT target_program(struct program_context_t *context)
 					return ERRCODE_FAILURE_OPERATION;
 				}
 				sleep_ms(100);
-				if ((pf->enter_program_mode != NULL) 
-					&& (ERROR_OK != pf->enter_program_mode(context)))
+				if (ERROR_OK != target_enter_progmode(context))
 				{
 					ret = ERRCODE_FAILURE_OPERATION;
-					goto leave_program_mode;
+					goto target_program_exit;
 				}
 			}
 		}
@@ -1083,7 +1176,7 @@ static RESULT target_program(struct program_context_t *context)
 							pgbar_fini();
 							LOG_ERROR(ERRMSG_FAILURE_PROGRAM, fullname);
 							ret = ERRCODE_FAILURE_OPERATION;
-							goto leave_program_mode;
+							goto target_program_exit;
 						}
 					}
 					else
@@ -1099,7 +1192,7 @@ static RESULT target_program(struct program_context_t *context)
 								pgbar_fini();
 								LOG_ERROR(ERRMSG_FAILURE_PROGRAM, fullname);
 								ret = ERRCODE_FAILURE_OPERATION;
-								goto leave_program_mode;
+								goto target_program_exit;
 							}
 							pgbar_update(page_size);
 						}
@@ -1118,7 +1211,7 @@ static RESULT target_program(struct program_context_t *context)
 						LOG_BUG(ERRMSG_INVALID_BUFFER, 
 								TO_STR(prog_area->cli_str));
 						ret = ERROR_FAIL;
-						goto leave_program_mode;
+						goto target_program_exit;
 					}
 					buff_tmp = (uint8_t *)prog_area->cli_str;
 				}
@@ -1130,7 +1223,7 @@ static RESULT target_program(struct program_context_t *context)
 				{
 					LOG_ERROR(ERRMSG_INVALID_BUFFER, "tbuff(prog_area->buff)");
 					ret = ERROR_FAIL;
-					goto leave_program_mode;
+					goto target_program_exit;
 				}
 				if (ERROR_OK != pf->write_target(context, area_char, 
 											start_addr, buff_tmp, target_size))
@@ -1138,7 +1231,7 @@ static RESULT target_program(struct program_context_t *context)
 					pgbar_fini();
 					LOG_ERROR(ERRMSG_FAILURE_PROGRAM, fullname);
 					ret = ERRCODE_FAILURE_OPERATION;
-					goto leave_program_mode;
+					goto target_program_exit;
 				}
 				pgbar_update(target_size);
 			}
@@ -1161,11 +1254,10 @@ static RESULT target_program(struct program_context_t *context)
 					return ERRCODE_FAILURE_OPERATION;
 				}
 				sleep_ms(100);
-				if ((pf->enter_program_mode != NULL) 
-					&& (ERROR_OK != pf->enter_program_mode(context)))
+				if (ERROR_OK != target_enter_progmode(context))
 				{
 					ret = ERRCODE_FAILURE_OPERATION;
-					goto leave_program_mode;
+					goto target_program_exit;
 				}
 			}
 		}
@@ -1189,7 +1281,7 @@ static RESULT target_program(struct program_context_t *context)
 					pgbar_fini();
 					LOG_ERROR(ERRMSG_FAILURE_VERIFY, fullname);
 					ret = ERRCODE_FAILURE_OPERATION;
-					goto leave_program_mode;
+					goto target_program_exit;
 				}
 				
 				pgbar_update(target_size);
@@ -1211,7 +1303,7 @@ static RESULT target_program(struct program_context_t *context)
 							pgbar_fini();
 							LOG_ERROR(ERRMSG_FAILURE_READ, fullname);
 							ret = ERRCODE_FAILURE_OPERATION;
-							goto leave_program_mode;
+							goto target_program_exit;
 						}
 						pgbar_update(page_size);
 					}
@@ -1225,14 +1317,15 @@ static RESULT target_program(struct program_context_t *context)
 					|| (op->verify_operations & area_mask))
 				&& (area_attr & AREA_ATTR_R))
 		{
-			if ((p_map[i].data_pos) && (op->read_operations & area_mask))
+			if ((p_map[i].data_pos) && (op->read_operations & area_mask) && 
+				(NULL == *ml))
 			{
 				if (ERROR_OK != MEMLIST_Add(ml, area_info->addr, 
 											area_info->size, page_size))
 				{
 					LOG_ERROR(ERRMSG_FAILURE_OPERATION, "add memory list");
 					ret = ERRCODE_FAILURE_OPERATION;
-					goto leave_program_mode;
+					goto target_program_exit;
 				}
 				target_size = MEMLIST_CalcAllSize(*ml);
 			}
@@ -1273,7 +1366,7 @@ static RESULT target_program(struct program_context_t *context)
 					{
 						LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 						ret = ERRCODE_NOT_ENOUGH_MEMORY;
-						goto leave_program_mode;
+						goto target_program_exit;
 					}
 					
 					if (area_attr & AREA_ATTR_RNP)
@@ -1286,7 +1379,7 @@ static RESULT target_program(struct program_context_t *context)
 							pgbar_fini();
 							LOG_ERROR(ERRMSG_FAILURE_READ, fullname);
 							ret = ERRCODE_FAILURE_OPERATION;
-							goto leave_program_mode;
+							goto target_program_exit;
 						}
 					}
 					else
@@ -1302,7 +1395,7 @@ static RESULT target_program(struct program_context_t *context)
 								pgbar_fini();
 								LOG_ERROR(ERRMSG_FAILURE_READ, fullname);
 								ret = ERRCODE_FAILURE_OPERATION;
-								goto leave_program_mode;
+								goto target_program_exit;
 							}
 							
 							pgbar_update(page_size);
@@ -1316,7 +1409,7 @@ static RESULT target_program(struct program_context_t *context)
 						{
 							LOG_BUG(ERRMSG_INVALID_BUFFER, "ml_exact");
 							ret = ERROR_FAIL;
-							goto leave_program_mode;
+							goto target_program_exit;
 						}
 						j = 0;
 						if (ERROR_OK != 
@@ -1332,7 +1425,7 @@ static RESULT target_program(struct program_context_t *context)
 							free(read_buf);
 							read_buf = NULL;
 							ret = ERRCODE_FAILURE_VERIFY;
-							goto leave_program_mode;
+							goto target_program_exit;
 						}
 					}
 					else
@@ -1362,7 +1455,7 @@ static RESULT target_program(struct program_context_t *context)
 					{
 						LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 						ret = ERRCODE_NOT_ENOUGH_MEMORY;
-						goto leave_program_mode;
+						goto target_program_exit;
 					}
 					memset(buff_tmp, 0, target_size);
 					alloced = 1;
@@ -1373,7 +1466,7 @@ static RESULT target_program(struct program_context_t *context)
 					pgbar_fini();
 					LOG_ERROR(ERRMSG_FAILURE_READ, fullname);
 					ret = ERRCODE_FAILURE_OPERATION;
-					goto leave_program_mode;
+					goto target_program_exit;
 				}
 				pgbar_update(target_size);
 				time_in_ms = pgbar_fini();
@@ -1392,7 +1485,7 @@ static RESULT target_program(struct program_context_t *context)
 							LOG_ERROR(ERRMSG_FAILURE_VERIFY_STR, 
 								fullname, special_string, prog_area->cli_str);
 							ret = ERRCODE_FAILURE_VERIFY;
-							goto leave_program_mode;
+							goto target_program_exit;
 						}
 					}
 					else
@@ -1408,7 +1501,7 @@ static RESULT target_program(struct program_context_t *context)
 							{
 								LOG_BUG(ERRMSG_INVALID_BUFFER, "format");
 								ret = ERROR_FAIL;
-								goto leave_program_mode;
+								goto target_program_exit;
 							}
 							read_str = strparser_solve(format, buff_tmp, 0);
 							if (NULL == read_str)
@@ -1416,7 +1509,7 @@ static RESULT target_program(struct program_context_t *context)
 								LOG_ERROR(ERRMSG_FAILURE_OPERATION, 
 											"solve value");
 								ret = ERRCODE_FAILURE_OPERATION;
-								goto leave_program_mode;
+								goto target_program_exit;
 							}
 							want_str = strparser_solve(format, tbuff, 0);
 							if (NULL == want_str)
@@ -1426,7 +1519,7 @@ static RESULT target_program(struct program_context_t *context)
 								LOG_ERROR(ERRMSG_FAILURE_OPERATION, 
 											"solve value");
 								ret = ERRCODE_FAILURE_OPERATION;
-								goto leave_program_mode;
+								goto target_program_exit;
 							}
 							LOG_ERROR(ERRMSG_FAILURE_VERIFY_STR, 
 								fullname, read_str, want_str);
@@ -1435,7 +1528,7 @@ static RESULT target_program(struct program_context_t *context)
 							free(want_str);
 							want_str = NULL;
 							ret = ERRCODE_FAILURE_VERIFY;
-							goto leave_program_mode;
+							goto target_program_exit;
 						}
 					}
 				}
@@ -1452,14 +1545,14 @@ static RESULT target_program(struct program_context_t *context)
 						{
 							LOG_BUG(ERRMSG_INVALID_BUFFER, "format");
 							ret = ERROR_FAIL;
-							goto leave_program_mode;
+							goto target_program_exit;
 						}
 						read_str = strparser_solve(format, buff_tmp, 0);
 						if (NULL == read_str)
 						{
 							LOG_ERROR(ERRMSG_FAILURE_OPERATION, "solve value");
 							ret = ERRCODE_FAILURE_OPERATION;
-							goto leave_program_mode;
+							goto target_program_exit;
 						}
 						LOG_INFO(INFOMSG_TARGET_READ, fullname, read_str);
 						free(read_str);
@@ -1487,18 +1580,7 @@ static RESULT target_program(struct program_context_t *context)
 		i++;
 	}
 	
-leave_program_mode:
-	if (pf->leave_program_mode != NULL)
-	{
-		if (ret != ERROR_OK)
-		{
-			pf->leave_program_mode(context, 0);
-		}
-		else if (ERROR_OK != pf->leave_program_mode(context, 1))
-		{
-			ret = ERROR_FAIL;
-		}
-	}
+target_program_exit:
 	return ret;
 }
 
@@ -1542,7 +1624,14 @@ static RESULT target_init(struct program_info_t *pi)
 			context.param = &target_chip_param;
 			context.pi = pi;
 			context.prog = cur_programmer;
-			if (ERROR_OK != target_program(&context))
+			if ((ERROR_OK != target_enter_progmode(&context)) || 
+				(ERROR_OK != target_program(&context)))
+			{
+				target_leave_progmode(&context, 0);
+				LOG_ERROR(ERRMSG_AUTODETECT_FAIL, pi->chip_type);
+				return ERRCODE_AUTODETECT_FAIL;
+			}
+			if (ERROR_OK != target_leave_progmode(&context, 1))
 			{
 				LOG_ERROR(ERRMSG_AUTODETECT_FAIL, pi->chip_type);
 				return ERRCODE_AUTODETECT_FAIL;
@@ -3897,6 +3986,249 @@ MISC_HANDLER(target_prepare)
 	}
 	// insert a dly between 2 operations
 	sleep_ms(100);
+	
+	return ERROR_OK;
+}
+
+MISC_HANDLER(target_enter_program_mode)
+{
+	struct program_context_t context;
+	RESULT ret;
+	
+	MISC_CHECK_ARGC(1);
+	if (NULL == cur_target)
+	{
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "Target");
+		return ERROR_FAIL;
+	}
+	
+	context.op = &operations;
+	context.param = &target_chip_param;
+	context.pi = &program_info;
+	context.prog = cur_programmer;
+	ret = target_enter_progmode(&context);
+	if (ret != ERROR_OK)
+	{
+		LOG_ERROR(ERRMSG_FAILURE_OPERATE_DEVICE, cur_target->name);
+		return ERROR_FAIL;
+	}
+	return ERROR_OK;
+}
+
+MISC_HANDLER(target_leave_program_mode)
+{
+	struct program_context_t context;
+	uint8_t success;
+	RESULT ret;
+	
+	MISC_CHECK_ARGC(2);
+	if (NULL == cur_target)
+	{
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "Target");
+		return ERROR_FAIL;
+	}
+	success = (uint8_t)strtoul(argv[1], NULL, 0);
+	
+	context.op = &operations;
+	context.param = &target_chip_param;
+	context.pi = &program_info;
+	context.prog = cur_programmer;
+	ret = target_leave_progmode(&context, success);
+	if (ret != ERROR_OK)
+	{
+		LOG_ERROR(ERRMSG_FAILURE_OPERATE_DEVICE, cur_target->name);
+		return ERROR_FAIL;
+	}
+	return ERROR_OK;
+}
+
+MISC_HANDLER(target_erase)
+{
+	struct operation_t operations;
+	struct program_context_t context;
+	RESULT ret;
+	uint8_t index;
+	
+	MISC_CHECK_ARGC_2(1, 2);
+	if (NULL == cur_target)
+	{
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "Target");
+		return ERROR_FAIL;
+	}
+	
+	memset(&operations, 0, sizeof(operations));
+	if ((1 == argc) || (argv[1][0] == ALL_CHAR))
+	{
+		operations.erase_operations = 0xFFFFFFFF;
+	}
+	else
+	{
+		index = target_area_idx_by_name((char *)argv[1]);
+		if (index < 0)
+		{
+			LOG_ERROR(ERRMSG_INVALID_TARGET, "target area");
+			return ERROR_FAIL;
+		}
+		memset(&operations, 0, sizeof(operations));
+		operations.erase_operations = target_area_name[index].mask;
+	}
+	
+	context.op = &operations;
+	context.param = &target_chip_param;
+	context.pi = &program_info;
+	context.prog = cur_programmer;
+	ret = target_program(&context);
+	if (ret != ERROR_OK)
+	{
+		LOG_ERROR(ERRMSG_FAILURE_OPERATE_DEVICE, cur_target->name);
+		return ERROR_FAIL;
+	}
+	return ERROR_OK;
+}
+
+MISC_HANDLER(target_write)
+{
+	struct operation_t operations_tmp;
+	struct program_context_t context;
+	RESULT ret;
+	uint8_t index;
+	
+	MISC_CHECK_ARGC_2(1, 2);
+	if (NULL == cur_target)
+	{
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "Target");
+		return ERROR_FAIL;
+	}
+	
+	operations_tmp = operations;
+	memset(&operations, 0, sizeof(operations));
+	if ((1 == argc) || (argv[1][0] == ALL_CHAR))
+	{
+		operations.write_operations = 0xFFFFFFFF;
+	}
+	else
+	{
+		index = target_area_idx_by_name((char *)argv[1]);
+		if (index < 0)
+		{
+			LOG_ERROR(ERRMSG_INVALID_TARGET, "target area");
+			return ERROR_FAIL;
+		}
+		memset(&operations, 0, sizeof(operations));
+		operations.write_operations = target_area_name[index].mask;
+	}
+	
+	context.op = &operations;
+	context.param = &target_chip_param;
+	context.pi = &program_info;
+	context.prog = cur_programmer;
+	ret = target_program(&context);
+	operations = operations_tmp;
+	if (ret != ERROR_OK)
+	{
+		LOG_ERROR(ERRMSG_FAILURE_OPERATE_DEVICE, cur_target->name);
+		return ERROR_FAIL;
+	}
+	return ERROR_OK;
+}
+
+MISC_HANDLER(target_verify)
+{
+	struct operation_t operations_tmp;
+	struct program_context_t context;
+	RESULT ret;
+	uint8_t index;
+	
+	MISC_CHECK_ARGC_2(1, 2);
+	if (NULL == cur_target)
+	{
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "Target");
+		return ERROR_FAIL;
+	}
+	
+	operations_tmp = operations;
+	memset(&operations, 0, sizeof(operations));
+	if ((1 == argc) || (argv[1][0] == ALL_CHAR))
+	{
+		operations.verify_operations = 0xFFFFFFFF;
+	}
+	else
+	{
+		index = target_area_idx_by_name((char *)argv[1]);
+		if (index < 0)
+		{
+			LOG_ERROR(ERRMSG_INVALID_TARGET, "target area");
+			return ERROR_FAIL;
+		}
+		memset(&operations, 0, sizeof(operations));
+		operations.verify_operations = target_area_name[index].mask;
+	}
+	
+	context.op = &operations;
+	context.param = &target_chip_param;
+	context.pi = &program_info;
+	context.prog = cur_programmer;
+	ret = target_program(&context);
+	operations = operations_tmp;
+	if (ret != ERROR_OK)
+	{
+		LOG_ERROR(ERRMSG_FAILURE_OPERATE_DEVICE, cur_target->name);
+		return ERROR_FAIL;
+	}
+	return ERROR_OK;
+}
+
+MISC_HANDLER(target_read)
+{
+	struct operation_t operations_tmp;
+	struct program_context_t context;
+	struct memlist *ml_tmp, *pml_save;
+	RESULT ret;
+	uint32_t byteaddr, bytesize;
+	uint8_t index;
+	
+	MISC_CHECK_ARGC(4);
+	if (NULL == cur_target)
+	{
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "Target");
+		return ERROR_FAIL;
+	}
+	
+	index = target_area_idx_by_name((char *)argv[1]);
+	if (index < 0)
+	{
+		LOG_ERROR(ERRMSG_INVALID_TARGET, "target area");
+		return ERROR_FAIL;
+	}
+	
+	operations_tmp = operations;
+	memset(&operations, 0, sizeof(operations));
+	operations.read_operations = target_area_name[index].mask;
+	
+	byteaddr = strtoul(argv[2], NULL, 0);
+	bytesize = strtoul(argv[3], NULL, 0);
+	
+	if (ERROR_OK != MEMLIST_Add(&ml_tmp, byteaddr, bytesize, 
+			target_chip_param.chip_areas[index].page_size))
+	{
+		return ERROR_FAIL;
+	}
+	pml_save = program_info.program_areas[index].memlist;
+	program_info.program_areas[index].memlist = ml_tmp;
+	
+	context.op = &operations;
+	context.param = &target_chip_param;
+	context.pi = &program_info;
+	context.prog = cur_programmer;
+	ret = target_program(&context);
+	program_info.program_areas[index].memlist = pml_save;
+	MEMLIST_Free(&ml_tmp);
+	operations = operations_tmp;
+	if (ret != ERROR_OK)
+	{
+		LOG_ERROR(ERRMSG_FAILURE_OPERATE_DEVICE, cur_target->name);
+		return ERROR_FAIL;
+	}
 	
 	return ERROR_OK;
 }
