@@ -413,7 +413,13 @@ MISC_HANDLER(vsprog_operation)
 	uint32_t argu_num;
 	uint32_t *popt_tmp;
 	
-	MISC_CHECK_ARGC(2);
+	MISC_CHECK_ARGC_2(1, 2);
+	
+	if (1 == argc)
+	{
+		memset(&operations, 0, sizeof(operations));
+		return ERROR_OK;
+	}
 	
 	argu_num = strlen(argv[1]) - 1;
 	if (NULL == cur_target)
@@ -688,7 +694,16 @@ int main(int argc, char* argv[])
 		{
 			free_all_and_exit(EXIT_FAILURE);
 		}
+		if (ERROR_OK != misc_run_script("enter_program_mode"))
+		{
+			free_all_and_exit(EXIT_FAILURE);
+		}
 		if (ERROR_OK != misc_run_script("operate"))
+		{
+			misc_run_script("leave_program_mode 0");
+			free_all_and_exit(EXIT_FAILURE);
+		}
+		if (ERROR_OK != misc_run_script("leave_program_mode 1"))
 		{
 			free_all_and_exit(EXIT_FAILURE);
 		}

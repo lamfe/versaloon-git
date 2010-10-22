@@ -228,7 +228,14 @@ static RESULT filelist_check_collision(struct filelist *fl1,
 
 MISC_HANDLER(filelist_add_inputfile)
 {
-	MISC_CHECK_ARGC(2);
+	MISC_CHECK_ARGC_2(1, 2);
+	
+	if (1 == argc)
+	{
+		FILELIST_Free(&fl_in);
+		return ERROR_OK;
+	}
+	
 	if (ERROR_OK != filelist_add_file(&fl_in, (char *)argv[1]))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "add input file");
@@ -250,7 +257,14 @@ MISC_HANDLER(filelist_add_inputfile)
 
 MISC_HANDLER(filelist_add_outputfile)
 {
-	MISC_CHECK_ARGC(2);
+	MISC_CHECK_ARGC_2(1, 2);
+	
+	if (1 == argc)
+	{
+		FILELIST_Free(&fl_out);
+		return ERROR_OK;
+	}
+	
 	if (ERROR_OK != filelist_add_file(&fl_out, (char *)argv[1]))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "add output file");
