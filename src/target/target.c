@@ -3896,10 +3896,19 @@ MISC_HANDLER(target_interface_mode)
 
 MISC_HANDLER(target_execute_addr)
 {
-	MISC_CHECK_ARGC(2);
+	MISC_CHECK_ARGC_2(1, 2);
 	
-	program_info.execute_addr = (uint32_t)strtoul(argv[1], NULL, 0);
-	program_info.execute_flag = 1;
+	if (1 == argc)
+	{
+		program_info.execute_addr = 0;
+		program_info.execute_flag = 0;
+	}
+	else
+	{
+		program_info.execute_addr = (uint32_t)strtoul(argv[1], NULL, 0);
+		program_info.execute_flag = 1;
+	}
+	
 	return ERROR_OK;
 }
 
