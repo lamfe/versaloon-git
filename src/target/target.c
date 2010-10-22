@@ -4182,7 +4182,7 @@ MISC_HANDLER(target_read)
 {
 	struct operation_t operations_tmp;
 	struct program_context_t context;
-	struct memlist *ml_tmp, *pml_save;
+	struct memlist *ml_tmp = NULL, *pml_save = NULL;
 	RESULT ret;
 	uint32_t byteaddr, bytesize;
 	int8_t index;
