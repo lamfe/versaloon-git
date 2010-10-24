@@ -386,6 +386,7 @@ RESULT Virtual_Com_Port_Data_Setup(uint8_t RequestNo)
 *******************************************************************************/
 RESULT Virtual_Com_Port_NoData_Setup(uint8_t RequestNo)
 {
+#if CDC_IF_EN
   if (Type_Recipient == (VENDOR_REQUEST | INTERFACE_RECIPIENT))
   {
     if (RequestNo == 0)
@@ -395,7 +396,9 @@ RESULT Virtual_Com_Port_NoData_Setup(uint8_t RequestNo)
       return USB_SUCCESS;
     }
   }
-  else if (Type_Recipient == (CLASS_REQUEST | INTERFACE_RECIPIENT))
+  else 
+#endif
+  if (Type_Recipient == (CLASS_REQUEST | INTERFACE_RECIPIENT))
   {
     if ((RequestNo == SET_COMM_FEATURE) || (RequestNo == SEND_BREAK))
     {
@@ -549,7 +552,9 @@ uint8_t *Virtual_Com_Port_SetLineCoding(uint16_t Length)
   CDC_enable = 1;
   LED_RED_OFF();
   linecoding.datatype = 8;
+#if CDC_IF_EN
   CDC_IF_Setup(linecoding.bitrate, linecoding.datatype, linecoding.paritytype, linecoding.stopbittype);
+#endif
   return(uint8_t *)&linecoding;
 }
 

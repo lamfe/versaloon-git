@@ -15,7 +15,7 @@
  **************************************************************************/
 
 #include "app_cfg.h"
-#if INTERFACE_JTAG_EN
+#if INTERFACE_SWD_EN
 
 #include "SWD.h"
 
