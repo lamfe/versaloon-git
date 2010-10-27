@@ -79,6 +79,7 @@ MISC_HANDLER(target_chip);
 MISC_HANDLER(target_value);
 MISC_HANDLER(target_interface_frequency);
 MISC_HANDLER(target_kernel_khz);
+MISC_HANDLER(target_erase_on_demand);
 MISC_HANDLER(target_wait_state);
 MISC_HANDLER(target_auto_adjust);
 MISC_HANDLER(target_jtag_dc);
@@ -142,6 +143,12 @@ struct misc_cmd_t target_cmd[] =
 	MISC_CMD(	"wait-state",
 				"set target wait state, format: wait-state/W WAIT",
 				target_wait_state),
+	MISC_CMD(	"e",
+				"erase on demand feature, format: e/erase-on-demand",
+				target_erase_on_demand),
+	MISC_CMD(	"erase-on-demand",
+				"erase on demand feature, format: e/erase-on-demand",
+				target_erase_on_demand),
 	MISC_CMD(	"W",
 				"set target wait state, format: wait-state/W WAIT",
 				target_wait_state),
@@ -3829,6 +3836,31 @@ MISC_HANDLER(target_kernel_khz)
 {
 	MISC_CHECK_ARGC(2);
 	program_info.kernel_khz = (uint32_t)strtoul(argv[1], NULL, 0);
+	return ERROR_OK;
+}
+
+MISC_HANDLER(target_erase_on_demand)
+{
+	uint32_t tmp;
+	
+	MISC_CHECK_ARGC_2(1, 2);
+	
+	if (1 == argc)
+	{
+		program_info.erase_on_demand = true;
+	}
+	else
+	{
+		tmp = strtoul(argv[1], NULL, 0);
+		if (tmp)
+		{
+			program_info.erase_on_demand = true;
+		}
+		else
+		{
+			program_info.erase_on_demand = false;
+		}
+	}
 	return ERROR_OK;
 }
 

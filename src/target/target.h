@@ -148,6 +148,7 @@ struct program_info_t
 	uint8_t auto_adjust;
 	uint16_t frequency;
 	uint32_t kernel_khz;
+	bool erase_on_demand;
 	uint8_t wait_state;
 	struct jtag_pos_t jtag_pos;
 	uint8_t execute_flag;

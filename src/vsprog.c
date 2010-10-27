@@ -50,7 +50,7 @@
 #include "hex.h"
 #include "scripts.h"
 
-#define OPTSTR			"hvS:P:s:c:Mp:U:D:Ld:Go:F:m:x:C:I:O:J:Zb:V:t:K:W:Aq"
+#define OPTSTR			"hvS:P:s:c:Mp:U:D:Ld:Go:F:m:x:C:I:O:J:Zb:V:t:K:W:Aqe"
 static const struct option long_opts[] =
 {
 	{"help", no_argument, NULL, 'h'},
@@ -82,6 +82,7 @@ static const struct option long_opts[] =
 	{"buffsize", required_argument, NULL, 'b'},
 	{"misc-cmd", required_argument, NULL, 'V'},
 	{"quiet", no_argument, NULL, 'q'},
+	{"erase-on-demand", no_argument, NULL, 'e'},
 	{NULL, 0, NULL, 0},
 };
 
@@ -304,6 +305,7 @@ Usage: %s [OPTION]...\n\
   -c,  --target-module <MODULE>             set target module\n\
   -p,  --programmer <PROGRAMMER>            set programmer\n\
   -o,  --operation <OPERATIONS>             set programming operation\n\
+  -e,  --erase-on-demand                    erase target according to demand\n\
   -I,  --input-file \"<FILE>[ seg addr]\"     set input file\n\
   -O,  --output-file \"<FILE>[ seg addr]\"    set output file\n\
   -F,  --frequency <FREQUENCY_IN_KHz>       set programming frequency\n\

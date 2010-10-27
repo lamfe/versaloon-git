@@ -755,13 +755,42 @@ ERASE_TARGET_HANDLER(stm32isp)
 
 WRITE_TARGET_HANDLER(stm32isp)
 {
-	RESULT ret;
-	REFERENCE_PARAMETER(context);
+	struct operation_t *op = context->op;
+	struct program_info_t *pi = context->pi;
+	struct chip_param_t *param = context->param;
+	RESULT ret = ERROR_OK;
+	uint8_t page_num;
+	uint16_t page_size;
 	
 	switch (area)
 	{
 	case APPLICATION_CHAR:
-		ret = stm32isp_write_memory(addr, buff, (uint16_t)size);
+		// erase is not defined and erase-on-demand is defined
+		if (!(op->erase_operations & APPLICATION) && pi->erase_on_demand)
+		{
+			page_num = (uint8_t)((addr - STM32_FLASH_ADDR) / 
+									param->chip_areas[APPLICATION_IDX].page_size);
+			ret = stm32isp_erase_sector(1, &page_num);
+			if (ret != ERROR_OK)
+			{
+				break;
+			}
+		}
+		while (size > 0)
+		{
+			if (size > 256)
+			{
+				page_size = 256;
+			}
+			else
+			{
+				page_size = (uint16_t)size;
+			}
+			ret = stm32isp_write_memory(addr, buff, page_size);
+			size -= page_size;
+			addr += page_size;
+			buff += page_size;
+		}
 		break;
 	default:
 		ret = ERROR_FAIL;
@@ -776,7 +805,7 @@ READ_TARGET_HANDLER(stm32isp)
 	uint32_t mcu_id = 0;
 	uint16_t len;
 	uint8_t tmpbuff[4];
-	uint16_t flash_kb, sram_kb, page_size_tmp;
+	uint16_t flash_kb, sram_kb, page_size, page_size_tmp;
 	RESULT ret = ERROR_OK;
 	
 	switch (area)
@@ -819,11 +848,25 @@ READ_TARGET_HANDLER(stm32isp)
 		}
 		break;
 	case APPLICATION_CHAR:
-		page_size_tmp = (uint16_t)size;
-		ret = stm32isp_read_memory(addr, buff, &page_size_tmp);
-		if ((ret != ERROR_OK) || (page_size_tmp != size))
+		while (size > 0)
 		{
-			ret = ERROR_FAIL;
+			if (size > 256)
+			{
+				page_size = 256;
+			}
+			else
+			{
+				page_size = (uint16_t)size;
+			}
+			page_size_tmp = page_size;
+			ret = stm32isp_read_memory(addr, buff, &page_size_tmp);
+			if ((ret != ERROR_OK) || (page_size != page_size_tmp))
+			{
+				ret = ERROR_FAIL;
+			}
+			size -= page_size;
+			addr += page_size;
+			buff += page_size;
 		}
 		break;
 	default:

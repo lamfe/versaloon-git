@@ -21,6 +21,7 @@
 #define __APP_TYPE_H_INCLUDED__
 
 #include <stdint.h>
+#include <stdbool.h>
 
 typedef enum result_s
 {
