@@ -801,6 +801,7 @@ WRITE_TARGET_HANDLER(stm32isp)
 
 READ_TARGET_HANDLER(stm32isp)
 {
+	struct chip_param_t *param = context->param;
 	struct program_info_t *pi = context->pi;
 	uint32_t mcu_id = 0;
 	uint16_t len;
@@ -831,14 +832,37 @@ READ_TARGET_HANDLER(stm32isp)
 			break;
 		}
 		flash_kb = GET_LE_U16(&tmpbuff[0]);
-		if (flash_kb <= 512)
+		if ((flash_kb > 0) && (flash_kb <= 512))
 		{
-			pi->program_areas[APPLICATION_IDX].size = flash_kb * 1024;
+			pi->program_areas[APPLICATION_IDX].size = 
+			param->chip_areas[APPLICATION_IDX].size = flash_kb * 1024;
 		}
 		else
 		{
 			LOG_ERROR(ERRMSG_INVALID_VALUE, flash_kb, "stm32 flash size");
 			return ERRCODE_INVALID;
+		}
+		if (!param->chip_areas[APPLICATION_IDX].page_size)
+		{
+			switch (mcu_id & STM32_DEN_MSK)
+			{
+			case STM32_DEN_LOW:
+			case STM32_DEN_MEDIUM:
+			case STM32_DEN_VALUELINE:
+			default:
+				param->chip_areas[APPLICATION_IDX].page_size = 1024;
+				break;
+			case STM32_DEN_HIGH:
+			case STM32_DEN_CONNECTIVITY:
+				param->chip_areas[APPLICATION_IDX].page_size = 2048;
+				break;
+			}
+		}
+		if (!param->chip_areas[APPLICATION_IDX].page_num)
+		{
+			struct chip_area_info_t *flash = 
+										&param->chip_areas[APPLICATION_IDX];
+			flash->page_num = flash->size / flash->page_size;
 		}
 		LOG_INFO("Flash memory size: %i KB", flash_kb);
 		sram_kb = GET_LE_U16(&tmpbuff[2]);
