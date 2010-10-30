@@ -28,8 +28,8 @@
   <chip name="stm32_conn">
     <chip_id>0x0418</chip_id>
     <program_mode>jsi</program_mode>
-    <app_page_size>1024</app_page_size>
-    <app_page_num>1024</app_page_num>
+    <app_page_size>2048</app_page_size>
+    <app_page_num>512</app_page_num>
   </chip>
   <chip name="stm32_vl">
     <chip_id>0x0420</chip_id>
