@@ -1,7 +1,7 @@
 #include "app_cfg.h"
 #if USB_PROTOCOL == USB_ST_VCOM
 
-#include "FIFO.h"
+#include "fifo.h"
 
 extern __IO uint8_t CDC_enable;
 extern FIFO CDC_OUT_fifo;
