@@ -137,7 +137,7 @@ struct misc_cmd_t *misc_cmds_list[] =
 static int8_t misc_exit_mark = 0;
 static uint32_t misc_loop_cnt = 0;
 static uint8_t misc_fatal_error = 0;
-static uint8_t misc_quiet_mode = 0;
+static uint8_t *misc_quiet_mode_ptr = NULL;
 
 RESULT misc_get_binary_buffer(uint16_t argc, const char *argv[], 
 						uint8_t data_size, uint32_t data_num, void **pbuff)
@@ -539,13 +539,16 @@ end:
 static RESULT misc_run_file(FILE *f, char *head, uint8_t quiet)
 {
 	char cmd_line[4096], *cmd_ptr;
-	uint8_t cur_cmd_quiet;
+	uint8_t cur_cmd_quiet, misc_quiet_mode;
 	uint32_t i;
+	
+	misc_quiet_mode = 0;
+	misc_quiet_mode_ptr = &misc_quiet_mode;
 	
 	rewind(f);
 	while (1)
 	{
-		if (!quiet && !misc_quiet_mode)
+		if ((f == stdin) && !quiet && !misc_quiet_mode)
 		{
 			if (head != NULL)
 			{
@@ -575,6 +578,15 @@ static RESULT misc_run_file(FILE *f, char *head, uint8_t quiet)
 			cur_cmd_quiet = 1;
 		}
 		cmd_ptr = &cmd_line[i];
+		
+		if ((f != stdin) && !quiet && !misc_quiet_mode && !cur_cmd_quiet)
+		{
+			if (head != NULL)
+			{
+				printf("%s", head);
+			}
+			printf(">>>");
+		}
 		
 		if ((f != stdin) && !quiet && !misc_quiet_mode && !cur_cmd_quiet)
 		{
@@ -773,13 +785,18 @@ MISC_HANDLER(misc_sleep)
 MISC_HANDLER(misc_quiet)
 {
 	MISC_CHECK_ARGC_RANGE(1, 2);
+	if (NULL == misc_quiet_mode_ptr)
+	{
+		return ERROR_OK;
+	}
+	
 	if (1 == argc)
 	{
-		misc_quiet_mode = 1;
+		*misc_quiet_mode_ptr = 1;
 	}
 	else if (2 == argc)
 	{
-		misc_quiet_mode = (uint8_t)strtoul(argv[1], NULL, 0);
+		*misc_quiet_mode_ptr = (uint8_t)strtoul(argv[1], NULL, 0);
 	}
 	return ERROR_OK;
 }
