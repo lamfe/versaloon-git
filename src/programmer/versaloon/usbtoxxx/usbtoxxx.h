@@ -44,7 +44,7 @@ RESULT usbtospi_fini(uint8_t interface_index);
 RESULT usbtospi_config(uint8_t interface_index, uint16_t kHz, uint8_t cpol, 
 					   uint8_t cpha, uint8_t firstbit);
 RESULT usbtospi_io(uint8_t interface_index, uint8_t *out, uint8_t *in, 
-				   uint16_t outlen, uint16_t inpos, uint16_t inlen);
+					uint16_t bytelen);
 
 
 

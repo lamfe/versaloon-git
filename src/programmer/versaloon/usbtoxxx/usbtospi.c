@@ -59,7 +59,7 @@ RESULT usbtospi_config(uint8_t interface_index, uint16_t kHz, uint8_t cpol,
 }
 
 RESULT usbtospi_io(uint8_t interface_index, uint8_t *out, uint8_t *in, 
-				   uint16_t outlen, uint16_t inpos, uint16_t inlen)
+				   uint16_t bytelen)
 {
 #if PARAM_CHECK
 	if (interface_index > 7)
@@ -69,7 +69,7 @@ RESULT usbtospi_io(uint8_t interface_index, uint8_t *out, uint8_t *in,
 	}
 #endif
 	
-	return usbtoxxx_inout_command(USB_TO_SPI, interface_index, out, outlen, 
-								  outlen, in, inpos, inlen, 1);
+	return usbtoxxx_inout_command(USB_TO_SPI, interface_index, out, bytelen, 
+								  bytelen, in, 0, bytelen, 1);
 }
 

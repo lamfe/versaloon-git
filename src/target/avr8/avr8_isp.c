@@ -61,8 +61,8 @@ struct program_functions_t avr8isp_program_functions =
 #define spi_fini()				interfaces->spi.fini(0)
 #define spi_conf(speed)			\
 	interfaces->spi.config(0, (speed), SPI_CPOL_LOW, SPI_CPHA_1EDGE, SPI_MSB_FIRST)
-#define spi_io(out, outlen, in, inpos, inlen)	\
-	interfaces->spi.io(0, (out), (in), (outlen), (inpos), (inlen))
+#define spi_io(out, bytelen, in)\
+	interfaces->spi.io(0, (out), (in), (bytelen))
 
 #define reset_init()			interfaces->gpio.init(0)
 #define reset_fini()			interfaces->gpio.fini(0)
@@ -97,7 +97,7 @@ static void avr8_isp_pollready(void)
 	cmd_buf[1] = 0x00;
 	cmd_buf[2] = 0x00;
 	cmd_buf[3] = 0x00;
-	spi_io(cmd_buf, 4, NULL, 0, 0);
+	spi_io(cmd_buf, 4, NULL);
 	poll_ok(0, 0x01, 0x00);
 	poll_end();
 }
@@ -137,7 +137,7 @@ try_frequency:
 	cmd_buf[3] = 0x00;
 	// ret[2] should be 0x53
 	poll_start_once();
-	spi_io(cmd_buf, 4, NULL, 0, 0);
+	spi_io(cmd_buf, 4, NULL);
 	poll_fail_unequ(1, 0xFF, 0x53);
 	poll_end();
 	LOG_PUSH();
@@ -185,7 +185,7 @@ ERASE_TARGET_HANDLER(avr8isp)
 	cmd_buf[1] = 0x80;
 	cmd_buf[2] = 0x00;
 	cmd_buf[3] = 0x00;
-	spi_io(cmd_buf, 4, NULL, 0, 0);
+	spi_io(cmd_buf, 4, NULL);
 	
 	if (param->param[AVR8_PARAM_ISP_POLL])
 	{
@@ -228,7 +228,7 @@ WRITE_TARGET_HANDLER(avr8isp)
 				cmd_buf[1] = (uint8_t)(i >> 9);
 				cmd_buf[2] = (uint8_t)(i >> 1);
 				cmd_buf[3] = buff[i];
-				spi_io(cmd_buf, 4, NULL, 0, 0);
+				spi_io(cmd_buf, 4, NULL);
 			}
 			
 			// write page
@@ -236,7 +236,7 @@ WRITE_TARGET_HANDLER(avr8isp)
 			cmd_buf[1] = (uint8_t)(addr >> 9);
 			cmd_buf[2] = (uint8_t)(addr >> 1);
 			cmd_buf[3] = 0x00;
-			spi_io(cmd_buf, 4, NULL, 0, 0);
+			spi_io(cmd_buf, 4, NULL);
 			
 			if (param->param[AVR8_PARAM_ISP_POLL])
 			{
@@ -270,7 +270,7 @@ WRITE_TARGET_HANDLER(avr8isp)
 				cmd_buf[1] = (uint8_t)((addr + i) >> 9);
 				cmd_buf[2] = (uint8_t)((addr + i) >> 1);
 				cmd_buf[3] = buff[i];
-				spi_io(cmd_buf, 4, NULL, 0, 0);
+				spi_io(cmd_buf, 4, NULL);
 				
 				if (param->param[AVR8_PARAM_ISP_POLL])
 				{
@@ -303,7 +303,7 @@ WRITE_TARGET_HANDLER(avr8isp)
 					cmd_buf[1] = 0x00;
 					cmd_buf[2] = (uint8_t)i;
 					cmd_buf[3] = buff[i];
-					spi_io(cmd_buf, 4, NULL, 0, 0);
+					spi_io(cmd_buf, 4, NULL);
 				}
 				
 				// write page
@@ -311,7 +311,7 @@ WRITE_TARGET_HANDLER(avr8isp)
 				cmd_buf[1] = (uint8_t)(addr >> 8);
 				cmd_buf[2] = (uint8_t)(addr >> 0);
 				cmd_buf[3] = 0x00;
-				spi_io(cmd_buf, 4, NULL, 0, 0);
+				spi_io(cmd_buf, 4, NULL);
 				
 				if (param->param[AVR8_PARAM_ISP_POLL])
 				{
@@ -343,7 +343,7 @@ WRITE_TARGET_HANDLER(avr8isp)
 					cmd_buf[1] = (uint8_t)((addr + i) >> 8);
 					cmd_buf[2] = (uint8_t)((addr + i) >> 0);
 					cmd_buf[3] = buff[i];
-					spi_io(cmd_buf, 4, NULL, 0, 0);
+					spi_io(cmd_buf, 4, NULL);
 					
 					if (param->param[AVR8_PARAM_ISP_POLL])
 					{
@@ -374,7 +374,7 @@ WRITE_TARGET_HANDLER(avr8isp)
 			cmd_buf[1] = 0xA0;
 			cmd_buf[2] = 0x00;
 			cmd_buf[3] = buff[0];
-			spi_io(cmd_buf, 4, NULL, 0, 0);
+			spi_io(cmd_buf, 4, NULL);
 			
 			if (param->param[AVR8_PARAM_ISP_POLL])
 			{
@@ -392,7 +392,7 @@ WRITE_TARGET_HANDLER(avr8isp)
 			cmd_buf[1] = 0xA8;
 			cmd_buf[2] = 0x00;
 			cmd_buf[3] = buff[1];
-			spi_io(cmd_buf, 4, NULL, 0, 0);
+			spi_io(cmd_buf, 4, NULL);
 			
 			if (param->param[AVR8_PARAM_ISP_POLL])
 			{
@@ -410,7 +410,7 @@ WRITE_TARGET_HANDLER(avr8isp)
 			cmd_buf[1] = 0xA4;
 			cmd_buf[2] = 0x00;
 			cmd_buf[3] = buff[2];
-			spi_io(cmd_buf, 4, NULL, 0, 0);
+			spi_io(cmd_buf, 4, NULL);
 			
 			if (param->param[AVR8_PARAM_ISP_POLL])
 			{
@@ -443,7 +443,7 @@ WRITE_TARGET_HANDLER(avr8isp)
 			cmd_buf[1] = 0xE0;
 			cmd_buf[2] = 0x00;
 			cmd_buf[3] = buff[0];
-			spi_io(cmd_buf, 4, NULL, 0, 0);
+			spi_io(cmd_buf, 4, NULL);
 			
 			if (param->param[AVR8_PARAM_ISP_POLL])
 			{
@@ -476,7 +476,7 @@ WRITE_TARGET_HANDLER(avr8isp)
 READ_TARGET_HANDLER(avr8isp)
 {
 	struct chip_param_t *param = context->param;
-	uint8_t cmd_buf[4];
+	uint8_t cmd_buf[4], ret_buf[256 * 4];
 	uint32_t i;
 	uint32_t ee_page_size;
 	RESULT ret = ERROR_OK;
@@ -488,24 +488,32 @@ READ_TARGET_HANDLER(avr8isp)
 		cmd_buf[1] = 0x00;
 		cmd_buf[2] = 0x00;
 		cmd_buf[3] = 0x00;
-		spi_io(cmd_buf, 4, &buff[2], 3, 1);
+		spi_io(cmd_buf, 4, &ret_buf[0]);
 		cmd_buf[0] = 0x30;
 		cmd_buf[1] = 0x00;
 		cmd_buf[2] = 0x01;
 		cmd_buf[3] = 0x00;
-		spi_io(cmd_buf, 4, &buff[1], 3, 1);
+		spi_io(cmd_buf, 4, &ret_buf[4]);
 		cmd_buf[0] = 0x30;
 		cmd_buf[1] = 0x00;
 		cmd_buf[2] = 0x02;
 		cmd_buf[3] = 0x00;
-		spi_io(cmd_buf, 4, &buff[0], 3, 1);
+		spi_io(cmd_buf, 4, &ret_buf[8]);
 		if (ERROR_OK != commit())
 		{
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
+		buff[0] = ret_buf[11];
+		buff[1] = ret_buf[7];
+		buff[2] = ret_buf[3];
 		break;
 	case APPLICATION_CHAR:
+		if (size > 256)
+		{
+			return ERROR_FAIL;
+		}
+		
 		for (i = 0; i < size; i++)
 		{
 			if (i & 1)
@@ -521,7 +529,7 @@ READ_TARGET_HANDLER(avr8isp)
 			cmd_buf[1] = (uint8_t)((addr + i) >> 9);
 			cmd_buf[2] = (uint8_t)((addr + i) >> 1);
 			cmd_buf[3] = 0;
-			spi_io(cmd_buf, 4, buff + i, 3, 1);
+			spi_io(cmd_buf, 4, &ret_buf[4 * i]);
 		}
 		
 		if (ERROR_OK != commit())
@@ -529,8 +537,17 @@ READ_TARGET_HANDLER(avr8isp)
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
+		for (i = 0; i < size; i++)
+		{
+			buff[i] = ret_buf[4 * i + 3];
+		}
 		break;
 	case EEPROM_CHAR:
+		if (size > 256)
+		{
+			return ERROR_FAIL;
+		}
+		
 		ee_page_size = param->chip_areas[EEPROM_IDX].page_size;
 		while (size > 0)
 		{
@@ -540,7 +557,7 @@ READ_TARGET_HANDLER(avr8isp)
 				cmd_buf[1] = (uint8_t)((addr + i) >> 8);
 				cmd_buf[2] = (uint8_t)((addr + i) >> 0);
 				cmd_buf[3] = 0;
-				spi_io(cmd_buf, 4, buff + i, 3, 1);
+				spi_io(cmd_buf, 4, &ret_buf[4 * i]);
 			}
 			size -= ee_page_size;
 			addr += ee_page_size;
@@ -552,8 +569,13 @@ READ_TARGET_HANDLER(avr8isp)
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
+		for (i = 0; i < size; i++)
+		{
+			buff[i] = ret_buf[4 * i + 3];
+		}
 		break;
 	case FUSE_CHAR:
+		memset(ret_buf, 0, 3);
 		// low bits
 		if (param->chip_areas[FUSE_IDX].size > 0)
 		{
@@ -561,7 +583,7 @@ READ_TARGET_HANDLER(avr8isp)
 			cmd_buf[1] = 0x00;
 			cmd_buf[2] = 0x00;
 			cmd_buf[3] = 0x00;
-			spi_io(cmd_buf, 4, &buff[0], 3, 1);
+			spi_io(cmd_buf, 4, &ret_buf[0]);
 		}
 		// high bits
 		if (param->chip_areas[FUSE_IDX].size > 1)
@@ -570,7 +592,7 @@ READ_TARGET_HANDLER(avr8isp)
 			cmd_buf[1] = 0x08;
 			cmd_buf[2] = 0x00;
 			cmd_buf[3] = 0x00;
-			spi_io(cmd_buf, 4, &buff[1], 3, 1);
+			spi_io(cmd_buf, 4, &ret_buf[4]);
 		}
 		// extended bits
 		if (param->chip_areas[FUSE_IDX].size > 2)
@@ -579,7 +601,7 @@ READ_TARGET_HANDLER(avr8isp)
 			cmd_buf[1] = 0x08;
 			cmd_buf[2] = 0x00;
 			cmd_buf[3] = 0x00;
-			spi_io(cmd_buf, 4, &buff[2], 3, 1);
+			spi_io(cmd_buf, 4, &ret_buf[8]);
 		}
 		if (param->chip_areas[FUSE_IDX].size > 0)
 		{
@@ -588,6 +610,9 @@ READ_TARGET_HANDLER(avr8isp)
 				ret = ERRCODE_FAILURE_OPERATION;
 				break;
 			}
+			buff[0] = ret_buf[3];
+			buff[1] = ret_buf[7];
+			buff[2] = ret_buf[11];
 		}
 		else
 		{
@@ -603,12 +628,13 @@ READ_TARGET_HANDLER(avr8isp)
 			cmd_buf[1] = 0x00;
 			cmd_buf[2] = 0x00;
 			cmd_buf[3] = 0x00;
-			spi_io(cmd_buf, 4, &buff[0], 3, 1);
+			spi_io(cmd_buf, 4, &ret_buf[0]);
 			if (ERROR_OK != commit())
 			{
 				ret = ERRCODE_FAILURE_OPERATION;
 				break;
 			}
+			buff[0] = ret_buf[3];
 		}
 		else
 		{
@@ -618,13 +644,14 @@ READ_TARGET_HANDLER(avr8isp)
 		}
 		break;
 	case CALIBRATION_CHAR:
+		memset(ret_buf, 0, 4);
 		if (param->chip_areas[CALIBRATION_IDX].size > 0)
 		{
 			cmd_buf[0] = 0x38;
 			cmd_buf[1] = 0x00;
 			cmd_buf[2] = 0x00;
 			cmd_buf[3] = 0x00;
-			spi_io(cmd_buf, 4, &buff[0], 3, 1);
+			spi_io(cmd_buf, 4, &ret_buf[0]);
 		}
 		if (param->chip_areas[CALIBRATION_IDX].size > 1)
 		{
@@ -632,7 +659,7 @@ READ_TARGET_HANDLER(avr8isp)
 			cmd_buf[1] = 0x00;
 			cmd_buf[2] = 0x01;
 			cmd_buf[3] = 0x00;
-			spi_io(cmd_buf, 4, &buff[1], 3, 1);
+			spi_io(cmd_buf, 4, &ret_buf[4]);
 		}
 		if (param->chip_areas[CALIBRATION_IDX].size > 2)
 		{
@@ -640,7 +667,7 @@ READ_TARGET_HANDLER(avr8isp)
 			cmd_buf[1] = 0x00;
 			cmd_buf[2] = 0x02;
 			cmd_buf[3] = 0x00;
-			spi_io(cmd_buf, 4, &buff[2], 3, 1);
+			spi_io(cmd_buf, 4, &ret_buf[8]);
 		}
 		if (param->chip_areas[CALIBRATION_IDX].size > 3)
 		{
@@ -648,7 +675,7 @@ READ_TARGET_HANDLER(avr8isp)
 			cmd_buf[1] = 0x00;
 			cmd_buf[2] = 0x03;
 			cmd_buf[3] = 0x00;
-			spi_io(cmd_buf, 4, &buff[3], 3, 1);
+			spi_io(cmd_buf, 4, &ret_buf[12]);
 		}
 		if (param->chip_areas[CALIBRATION_IDX].size > 0)
 		{
@@ -657,6 +684,10 @@ READ_TARGET_HANDLER(avr8isp)
 				ret = ERRCODE_FAILURE_OPERATION;
 				break;
 			}
+			buff[0] = ret_buf[3];
+			buff[1] = ret_buf[7];
+			buff[2] = ret_buf[11];
+			buff[3] = ret_buf[15];
 		}
 		else
 		{

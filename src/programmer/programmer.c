@@ -509,7 +509,7 @@ MISC_HANDLER(programmer_spi_io)
 	ret = misc_get_binary_buffer(argc - 2, &argv[2], 1, data_size, (void**)&buff);
 	if (ERROR_OK == ret)
 	{
-		ret = prog->interfaces.spi.io(0, buff, buff, data_size, 0, data_size);
+		ret = prog->interfaces.spi.io(0, buff, buff, data_size);
 		if (ERROR_OK == ret)
 		{
 			ret = prog->interfaces.peripheral_commit();
