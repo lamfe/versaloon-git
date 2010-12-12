@@ -24,10 +24,10 @@ void USB_TO_SPI_ProcessCmd(uint8* dat, uint16 len)
 {
 	uint16 index, device_idx, length;
 	uint8 command;
-
+	
 	uint8 attr;
 	uint16 frequency;
-
+	
 	index = 0;
 	while(index < len)
 	{
@@ -35,7 +35,7 @@ void USB_TO_SPI_ProcessCmd(uint8* dat, uint16 len)
 		device_idx = dat[index] & USB_TO_XXX_IDXMASK;
 		length = GET_LE_U16(&dat[index + 1]);
 		index += 3;
-
+		
 		switch(command)
 		{
 		case USB_TO_XXX_INIT:
@@ -47,18 +47,16 @@ void USB_TO_SPI_ProcessCmd(uint8* dat, uint16 len)
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
-
 			break;
 		case USB_TO_XXX_CONFIG:
 			attr = dat[index];
 			frequency = GET_LE_U16(&dat[index + 1]);
 			index += 3;
-
-			if (ERROR_OK == 
-					interfaces->spi.config(device_idx, frequency, 
-										  attr & USB_TO_SPI_CPOL_MASK, 
-										  attr & USB_TO_SPI_CPHA_MASK, 
-										  attr & USB_TO_SPI_FIRSTBIT_MASK))
+			
+			if (ERROR_OK == interfaces->spi.config(device_idx, frequency, 
+											attr & USB_TO_SPI_CPOL_MASK, 
+											attr & USB_TO_SPI_CPHA_MASK, 
+											attr & USB_TO_SPI_FIRSTBIT_MASK))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
@@ -66,7 +64,6 @@ void USB_TO_SPI_ProcessCmd(uint8* dat, uint16 len)
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
-
 			break;
 		case USB_TO_XXX_FINI:
 			if (ERROR_OK == interfaces->spi.fini(device_idx))
@@ -77,12 +74,10 @@ void USB_TO_SPI_ProcessCmd(uint8* dat, uint16 len)
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
-
 			break;
 		case USB_TO_XXX_IN_OUT:
-			if (ERROR_OK == 
-					interfaces->spi.io(device_idx, &dat[index], 
-									  &buffer_reply[rep_len + 1], length))
+			if (ERROR_OK == interfaces->spi.io(device_idx, &dat[index], 
+								&buffer_reply[rep_len + 1], length))
 			{
 				buffer_reply[rep_len] = USB_TO_XXX_OK;
 			}
@@ -91,11 +86,9 @@ void USB_TO_SPI_ProcessCmd(uint8* dat, uint16 len)
 				buffer_reply[rep_len] = USB_TO_XXX_FAILED;
 			}
 			rep_len += 1 + length;
-
 			break;
 		default:
 			buffer_reply[rep_len++] = USB_TO_XXX_CMD_NOT_SUPPORT;
-
 			break;
 		}
 		index += length;

@@ -56,7 +56,6 @@ struct interface_spi_t
 	RESULT (*fini)(uint8_t index);
 	RESULT (*config)(uint8_t index, uint16_t kHz, uint8_t cpol, uint8_t cpha, 
 					 uint8_t first_bit);
-	// todo: simplify prototype
 	RESULT (*io)(uint8_t index, uint8_t *out, uint8_t *in, uint16_t len);
 };
 
@@ -108,8 +107,6 @@ struct interface_jtag_hl_t
 	RESULT (*runtest)(uint8_t index, uint32_t cycles);
 	RESULT (*ir)(uint8_t index, uint8_t *ir, uint16_t bitlen, uint8_t idle);
 	RESULT (*dr)(uint8_t index, uint8_t *dr, uint16_t bitlen, uint8_t idle);
-//	RESULT (*register_callback)(uint8_t index, jtag_callback_t send_callback, 
-//								jtag_callback_t receive_callback);
 };
 
 struct interface_jtag_ll_t

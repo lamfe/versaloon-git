@@ -25,7 +25,7 @@ void USB_TO_JTAG_RAW_ProcessCmd(uint8* dat, uint16 len)
 	uint16 index, device_idx, length;
 	uint32 num_of_bits, num_of_databyte;
 	uint8 command;
-
+	
 	index = 0;
 	while(index < len)
 	{
@@ -33,7 +33,7 @@ void USB_TO_JTAG_RAW_ProcessCmd(uint8* dat, uint16 len)
 		device_idx = dat[index] & USB_TO_XXX_IDXMASK;
 		length = GET_LE_U16(&dat[index + 1]);
 		index += 3;
-
+		
 		switch(command)
 		{
 		case USB_TO_XXX_INIT:
@@ -84,7 +84,6 @@ void USB_TO_JTAG_RAW_ProcessCmd(uint8* dat, uint16 len)
 			break;
 		default:
 			buffer_reply[rep_len++] = USB_TO_XXX_CMD_NOT_SUPPORT;
-
 			break;
 		}
 		index += length;

@@ -24,7 +24,7 @@ void USB_TO_POWER_ProcessCmd(uint8* dat, uint16 len)
 {
 	uint16 index, device_idx, length, voltage;
 	uint8 command;
-
+	
 	index = 0;
 	while(index < len)
 	{
@@ -32,21 +32,38 @@ void USB_TO_POWER_ProcessCmd(uint8* dat, uint16 len)
 		device_idx = dat[index] & USB_TO_XXX_IDXMASK;
 		length = GET_LE_U16(&dat[index + 1]);
 		index += 3;
-
+		
 		switch(command)
 		{
 		case USB_TO_XXX_INIT:
-			buffer_reply[rep_len++] = USB_TO_XXX_OK;
-
+			if (0 == device_idx)
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+			}
+			else
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+			}
 			break;
 		case USB_TO_XXX_CONFIG:
-			buffer_reply[rep_len++] = USB_TO_XXX_OK;
-			// no need to configure in this implementation for they are already configured
-
+			if (0 == device_idx)
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+			}
+			else
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+			}
 			break;
 		case USB_TO_XXX_FINI:
-			buffer_reply[rep_len++] = USB_TO_XXX_OK;
-
+			if (0 == device_idx)
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+			}
+			else
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+			}
 			break;
 		case USB_TO_XXX_IN:
 			if (ERROR_OK == interfaces->target_voltage.get(device_idx, &voltage))
@@ -59,7 +76,6 @@ void USB_TO_POWER_ProcessCmd(uint8* dat, uint16 len)
 				buffer_reply[rep_len] = USB_TO_XXX_FAILED;
 			}
 			rep_len += 3;
-
 			break;
 		case USB_TO_XXX_OUT:
 			voltage = GET_LE_U16(&dat[index]);
@@ -71,11 +87,9 @@ void USB_TO_POWER_ProcessCmd(uint8* dat, uint16 len)
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
-
 			break;
 		default:
 			buffer_reply[rep_len++] = USB_TO_XXX_CMD_NOT_SUPPORT;
-
 			break;
 		}
 		index += length;

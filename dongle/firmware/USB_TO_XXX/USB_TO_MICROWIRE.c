@@ -21,44 +21,33 @@
 
 void USB_TO_MICROWIRE_ProcessCmd(uint8* dat, uint16 len)
 {
-	uint16 index, device_num, length;
+	uint16 index, device_idx, length;
 	uint8 command;
-
+	
 	index = 0;
 	while(index < len)
 	{
 		command = dat[index] & USB_TO_XXX_CMDMASK;
-		device_num = dat[index] & USB_TO_XXX_IDXMASK;
-		if(device_num >= USB_TO_MICROWIRE_NUM)
-		{
-			buffer_reply[rep_len++] = USB_TO_XXX_INVALID_INDEX;
-			return;
-		}
+		device_idx = dat[index] & USB_TO_XXX_IDXMASK;
 		length = GET_LE_U16(&dat[index + 1]);
 		index += 3;
-
+		
 		switch(command)
 		{
 		case USB_TO_XXX_INIT:
 			buffer_reply[rep_len++] = USB_TO_XXX_OK;
-
 			break;
 		case USB_TO_XXX_CONFIG:
 			buffer_reply[rep_len++] = USB_TO_XXX_OK;
-			// no need to configure in this implementation for they are already configured
-
 			break;
 		case USB_TO_XXX_FINI:
 			buffer_reply[rep_len++] = USB_TO_XXX_OK;
-
 			break;
 		case USB_TO_XXX_IN:
 			buffer_reply[rep_len++] = USB_TO_XXX_OK;
-
 			break;
 		default:
 			buffer_reply[rep_len++] = USB_TO_XXX_CMD_NOT_SUPPORT;
-
 			break;
 		}
 		index += length;

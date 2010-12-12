@@ -29,7 +29,7 @@ void USB_TO_ISSP_ProcessCmd(uint8* dat, uint16 len)
 	uint8_t operate, addr, data;
 	uint16_t rlen, i;
 	uint16 vector_num;
-
+	
 	index = 0;
 	while(index < len)
 	{
@@ -37,7 +37,7 @@ void USB_TO_ISSP_ProcessCmd(uint8* dat, uint16 len)
 		device_idx = dat[index] & USB_TO_XXX_IDXMASK;
 		length = GET_LE_U16(&dat[index + 1]);
 		index += 3;
-
+		
 		switch(command)
 		{
 		case USB_TO_XXX_INIT:
@@ -49,7 +49,6 @@ void USB_TO_ISSP_ProcessCmd(uint8* dat, uint16 len)
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
-
 			break;
 		case USB_TO_XXX_FINI:
 			if (ERROR_OK == interfaces->issp.fini(device_idx))
@@ -60,7 +59,6 @@ void USB_TO_ISSP_ProcessCmd(uint8* dat, uint16 len)
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
-
 			break;
 		case USB_TO_ISSP_Vector:
 			if(length % 3 != 0)
@@ -69,9 +67,10 @@ void USB_TO_ISSP_ProcessCmd(uint8* dat, uint16 len)
 				return;
 			}
 			vector_num = length / 3;
-
+			
 			fail = false;
 			rlen = 0;
+			
 			for(i = 0; i < vector_num; i++)
 			{
 				operate = dat[index + i * 3];
@@ -97,7 +96,6 @@ void USB_TO_ISSP_ProcessCmd(uint8* dat, uint16 len)
 				buffer_reply[rep_len] = USB_TO_XXX_OK;
 			}
 			rep_len += 1 + rlen;
-
 			break;
 		case USB_TO_ISSP_EnterProgMode:
 			if (ERROR_OK == interfaces->issp.enter_program_mode(device_idx, dat[index]))
@@ -108,7 +106,6 @@ void USB_TO_ISSP_ProcessCmd(uint8* dat, uint16 len)
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
-
 			break;
 		case USB_TO_ISSP_LeaveProgMode:
 			if(ERROR_OK == interfaces->issp.leave_program_mode(device_idx, dat[index]))
@@ -119,7 +116,6 @@ void USB_TO_ISSP_ProcessCmd(uint8* dat, uint16 len)
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
-
 			break;
 		case USB_TO_ISSP_WaitAndPoll:
 			if(ERROR_OK == interfaces->issp.wait_and_poll(device_idx))
@@ -130,11 +126,9 @@ void USB_TO_ISSP_ProcessCmd(uint8* dat, uint16 len)
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
-
 			break;
 		default:
 			buffer_reply[rep_len++] = USB_TO_XXX_CMD_NOT_SUPPORT;
-
 			break;
 		}
 		index += length;
