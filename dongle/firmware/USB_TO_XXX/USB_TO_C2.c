@@ -24,9 +24,9 @@ void USB_TO_C2_ProcessCmd(uint8* dat, uint16 len)
 {
 	uint16 index, device_idx, length;
 	uint8 command;
-
+	
 	uint8 tmp;
-
+	
 	index = 0;
 	while(index < len)
 	{
@@ -34,7 +34,7 @@ void USB_TO_C2_ProcessCmd(uint8* dat, uint16 len)
 		device_idx = dat[index] & USB_TO_XXX_IDXMASK;
 		length = GET_LE_U16(&dat[index + 1]);
 		index += 3;
-
+		
 		switch(command)
 		{
 		case USB_TO_XXX_INIT:
@@ -83,7 +83,6 @@ void USB_TO_C2_ProcessCmd(uint8* dat, uint16 len)
 					buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 				}
 			}
-
 			break;
 		case USB_TO_C2_WriteAddr:
 			if (ERROR_OK == interfaces->c2.addr_write(device_idx, dat[index]))
@@ -108,7 +107,6 @@ void USB_TO_C2_ProcessCmd(uint8* dat, uint16 len)
 			break;
 		default:
 			buffer_reply[rep_len++] = USB_TO_XXX_INVALID_CMD;
-
 			break;
 		}
 		index += length;

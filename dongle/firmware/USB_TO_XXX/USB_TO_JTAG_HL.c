@@ -24,11 +24,11 @@ void USB_TO_JTAG_HL_ProcessCmd(uint8* dat, uint16 len)
 {
 	uint16 index, device_idx, length;
 	uint8 command;
-
+	
 	uint16 cur_dat_len, i, len_tmp;
 	uint16_t rindex;
 	bool fail;
-
+	
 	index = 0;
 	while(index < len)
 	{
@@ -36,7 +36,7 @@ void USB_TO_JTAG_HL_ProcessCmd(uint8* dat, uint16 len)
 		device_idx = dat[index] & USB_TO_XXX_IDXMASK;
 		length = GET_LE_U16(&dat[index + 1]);
 		index += 3;
-
+		
 		switch(command)
 		{
 		case USB_TO_XXX_INIT:
@@ -80,7 +80,7 @@ void USB_TO_JTAG_HL_ProcessCmd(uint8* dat, uint16 len)
 			{
 				i = GET_LE_U16(&dat[index + len_tmp]);					// in bit
 				cur_dat_len = i & 0x7FFF;
-
+				
 				if(i & 0x8000)
 				{
 					if (ERROR_OK == interfaces->jtag_hl.ir(device_idx, &dat[index + len_tmp + 3], 
@@ -107,7 +107,7 @@ void USB_TO_JTAG_HL_ProcessCmd(uint8* dat, uint16 len)
 						break;
 					}
 				}
-
+				
 				cur_dat_len = (cur_dat_len + 7) >> 3;
 				rep_len += cur_dat_len;
 				len_tmp += cur_dat_len + 3;
@@ -134,7 +134,6 @@ void USB_TO_JTAG_HL_ProcessCmd(uint8* dat, uint16 len)
 			break;
 		default:
 			buffer_reply[rep_len++] = USB_TO_XXX_CMD_NOT_SUPPORT;
-
 			break;
 		}
 		index += length;

@@ -24,10 +24,10 @@ void USB_TO_SWD_ProcessCmd(uint8* dat, uint16 len)
 {
 	uint16 index, device_idx, length;
 	uint8 command;
+	
 	uint32 swd_data;
-
 	uint16 bitlen;
-
+	
 	index = 0;
 	while(index < len)
 	{
@@ -35,7 +35,7 @@ void USB_TO_SWD_ProcessCmd(uint8* dat, uint16 len)
 		device_idx = dat[index] & USB_TO_XXX_IDXMASK;
 		length = GET_LE_U16(&dat[index + 1]);
 		index += 3;
-
+		
 		switch(command)
 		{
 		case USB_TO_XXX_INIT:
@@ -71,8 +71,7 @@ void USB_TO_SWD_ProcessCmd(uint8* dat, uint16 len)
 			break;
 		case USB_TO_SWD_SEQOUT:
 			bitlen = GET_LE_U16(&dat[index]);
-			if (ERROR_OK == interfaces->swd.seqout(device_idx, &dat[index + 2], 
-													bitlen))
+			if (ERROR_OK == interfaces->swd.seqout(device_idx, &dat[index + 2], bitlen))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
@@ -83,8 +82,7 @@ void USB_TO_SWD_ProcessCmd(uint8* dat, uint16 len)
 			break;
 		case USB_TO_SWD_SEQIN:
 			bitlen = GET_LE_U16(&dat[index]);
-			if (ERROR_OK == interfaces->swd.seqin(device_idx, &buffer_reply[rep_len + 1], 
-													bitlen))
+			if (ERROR_OK == interfaces->swd.seqin(device_idx, &buffer_reply[rep_len + 1], bitlen))
 			{
 				buffer_reply[rep_len] = USB_TO_XXX_OK;
 			}
@@ -110,7 +108,6 @@ void USB_TO_SWD_ProcessCmd(uint8* dat, uint16 len)
 			break;
 		default:
 			buffer_reply[rep_len++] = USB_TO_XXX_CMD_NOT_SUPPORT;
-
 			break;
 		}
 		index += length;
