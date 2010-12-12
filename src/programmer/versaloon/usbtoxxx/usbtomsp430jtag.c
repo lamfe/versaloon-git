@@ -45,7 +45,8 @@ RESULT usbtomsp430jtag_config(uint8_t interface_index, uint8_t has_test)
 								 &has_test, 1);
 }
 
-RESULT usbtomsp430jtag_ir(uint8_t interface_index, uint8_t *ir)
+RESULT usbtomsp430jtag_ir(uint8_t interface_index, uint8_t *ir, 
+							uint8_t want_ret)
 {
 	uint8_t buff[2];
 	
@@ -60,12 +61,20 @@ RESULT usbtomsp430jtag_ir(uint8_t interface_index, uint8_t *ir)
 	buff[0] = 8;
 	buff[1] = *ir;
 	
-	return usbtoxxx_inout_command(USB_TO_MSP430_JTAG, interface_index, 
-								  buff, 2, 1, ir, 0, 1, 1);
+	if (want_ret)
+	{
+		return usbtoxxx_inout_command(USB_TO_MSP430_JTAG, interface_index, 
+									  buff, 2, 1, ir, 0, 1, 1);
+	}
+	else
+	{
+		return usbtoxxx_inout_command(USB_TO_MSP430_JTAG, interface_index, 
+									  buff, 2, 1, NULL, 0, 0, 1);
+	}
 }
 
 RESULT usbtomsp430jtag_dr(uint8_t interface_index, uint32_t *dr, 
-							uint8_t bitlen)
+							uint8_t bitlen, uint8_t want_ret)
 {
 	uint8_t buff[5], byte_len = (bitlen + 7) >> 3;
 	
@@ -80,8 +89,16 @@ RESULT usbtomsp430jtag_dr(uint8_t interface_index, uint32_t *dr,
 	buff[0] = bitlen | 0x80;
 	memcpy(buff + 1, dr, byte_len);
 	
-	return usbtoxxx_inout_command(USB_TO_MSP430_JTAG, interface_index, 
-			buff, byte_len + 1, byte_len, (uint8_t*)dr, 0, byte_len, 1);
+	if (want_ret)
+	{
+		return usbtoxxx_inout_command(USB_TO_MSP430_JTAG, interface_index, 
+				buff, byte_len + 1, byte_len, (uint8_t*)dr, 0, byte_len, 1);
+	}
+	else
+	{
+		return usbtoxxx_inout_command(USB_TO_MSP430_JTAG, interface_index, 
+				buff, byte_len + 1, byte_len, NULL, 0, 0, 1);
+	}
 }
 
 RESULT usbtomsp430jtag_tclk(uint8_t interface_index, uint8_t value)

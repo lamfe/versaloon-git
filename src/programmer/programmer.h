@@ -26,7 +26,7 @@ enum jtag_irdr_t
 };
 typedef RESULT (*jtag_callback_t)(uint8_t index, enum jtag_irdr_t cmd, 
 									uint32_t ir, uint8_t *dest_buffer, 
-									uint8_t *src_buffer, uint16_t buffer_len, 
+									uint8_t *src_buffer, uint16_t bytelen, 
 									uint16_t *processed);
 
 struct usart_status_t
@@ -103,8 +103,10 @@ struct interface_jtag_hl_t
 						uint16_t bb, uint16_t ba);
 	RESULT (*tms)(uint8_t index, uint8_t* tms, uint16_t bitlen);
 	RESULT (*runtest)(uint8_t index, uint32_t cycles);
-	RESULT (*ir)(uint8_t index, uint8_t *ir, uint16_t bitlen, uint8_t idle);
-	RESULT (*dr)(uint8_t index, uint8_t *dr, uint16_t bitlen, uint8_t idle);
+	RESULT (*ir)(uint8_t index, uint8_t *ir, uint16_t bitlen, uint8_t idle, 
+					uint8_t want_ret);
+	RESULT (*dr)(uint8_t index, uint8_t *dr, uint16_t bitlen, uint8_t idle, 
+					uint8_t want_ret);
 	RESULT (*register_callback)(uint8_t index, jtag_callback_t send_callback, 
 										jtag_callback_t receive_callback);
 };
@@ -135,8 +137,8 @@ struct interface_msp430jtag_t
 	RESULT (*init)(uint8_t index);
 	RESULT (*fini)(uint8_t index);
 	RESULT (*config)(uint8_t index, uint8_t has_test);
-	RESULT (*ir)(uint8_t index, uint8_t *ir);
-	RESULT (*dr)(uint8_t index, uint32_t *dr, uint8_t bitlen);
+	RESULT (*ir)(uint8_t index, uint8_t *ir, uint8_t want_ret);
+	RESULT (*dr)(uint8_t index, uint32_t *dr, uint8_t bitlen, uint8_t want_ret);
 	RESULT (*tclk)(uint8_t index, uint8_t value);
 	RESULT (*tclk_strobe)(uint8_t index, uint16_t cnt);
 	RESULT (*reset)(uint8_t index);
@@ -149,8 +151,8 @@ struct interface_msp430sbw_t
 	RESULT (*init)(uint8_t index);
 	RESULT (*fini)(uint8_t index);
 	RESULT (*config)(uint8_t index, uint8_t has_test);
-	RESULT (*ir)(uint8_t index, uint8_t *ir);
-	RESULT (*dr)(uint8_t index, uint32_t *dr, uint8_t len);
+	RESULT (*ir)(uint8_t index, uint8_t *ir, uint8_t want_ret);
+	RESULT (*dr)(uint8_t index, uint32_t *dr, uint8_t len, uint8_t want_ret);
 	RESULT (*tclk)(uint8_t index, uint8_t value);
 	RESULT (*tclk_strobe)(uint8_t index, uint16_t cnt);
 	RESULT (*reset)(uint8_t index);

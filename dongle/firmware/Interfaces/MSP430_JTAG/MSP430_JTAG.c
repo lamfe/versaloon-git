@@ -322,8 +322,10 @@ RESULT msp430jtag_config(uint8_t index, uint8_t has_test)
 	}
 }
 
-RESULT msp430jtag_ir(uint8_t index, uint8_t *ir)
+RESULT msp430jtag_ir(uint8_t index, uint8_t *ir, uint8_t want_ret)
 {
+	uint8_t ir_tmp;
+	
 	switch (index)
 	{
 	case 0:
@@ -332,15 +334,21 @@ RESULT msp430jtag_ir(uint8_t index, uint8_t *ir)
 			return ERROR_FAIL;
 		}
 		
-		*ir = MSP430_JTAG_IR(*ir, MSP430_JTAG_IR_LEN);
+		ir_tmp = MSP430_JTAG_IR(*ir, MSP430_JTAG_IR_LEN);
+		if (want_ret)
+		{
+			*ir = ir_tmp;
+		}
 		return ERROR_OK;
 	default:
 		return ERROR_FAIL;
 	}
 }
 
-RESULT msp430jtag_dr(uint8_t index, uint32_t *dr, uint8_t bitlen)
+RESULT msp430jtag_dr(uint8_t index, uint32_t *dr, uint8_t bitlen, uint8_t want_ret)
 {
+	uint32_t dr_tmp;
+	
 	switch (index)
 	{
 	case 0:
@@ -349,7 +357,11 @@ RESULT msp430jtag_dr(uint8_t index, uint32_t *dr, uint8_t bitlen)
 			return ERROR_FAIL;
 		}
 		
-		*dr = MSP430_JTAG_DR(*dr, bitlen);
+		dr_tmp = MSP430_JTAG_DR(*dr, bitlen);
+		if (want_ret)
+		{
+			*dr = dr_tmp;
+		}
 		return ERROR_OK;
 	default:
 		return ERROR_FAIL;

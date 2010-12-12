@@ -776,7 +776,7 @@ static void JTAG_TAP_Init(uint16 kHz, uint8 mode)
 	}
 }
 
-RESULT jtag_hl_init(uint8_t index)
+RESULT jtaghl_init(uint8_t index)
 {
 	switch (index)
 	{
@@ -787,7 +787,7 @@ RESULT jtag_hl_init(uint8_t index)
 	}
 }
 
-RESULT jtag_hl_fini(uint8_t index)
+RESULT jtaghl_fini(uint8_t index)
 {
 	switch (index)
 	{
@@ -799,7 +799,7 @@ RESULT jtag_hl_fini(uint8_t index)
 	}
 }
 
-RESULT jtag_hl_config(uint8_t index, uint16_t kHz, uint8_t ub, uint8_t ua, 
+RESULT jtaghl_config(uint8_t index, uint16_t kHz, uint8_t ub, uint8_t ua, 
 						uint16_t bb, uint16_t ba)
 {
 	switch (index)
@@ -813,7 +813,7 @@ RESULT jtag_hl_config(uint8_t index, uint16_t kHz, uint8_t ub, uint8_t ua,
 	}
 }
 
-RESULT jtag_hl_tms(uint8_t index, uint8_t* tms, uint16_t bitlen)
+RESULT jtaghl_tms(uint8_t index, uint8_t* tms, uint16_t bitlen)
 {
 	switch (index)
 	{
@@ -825,7 +825,7 @@ RESULT jtag_hl_tms(uint8_t index, uint8_t* tms, uint16_t bitlen)
 	}
 }
 
-RESULT jtag_hl_runtest(uint8_t index, uint32_t cycles)
+RESULT jtaghl_runtest(uint8_t index, uint32_t cycles)
 {
 	uint8_t tms[256 / 8];
 	uint16_t cur_cycles;
@@ -844,7 +844,7 @@ RESULT jtag_hl_runtest(uint8_t index, uint32_t cycles)
 			{
 				cur_cycles = (uint8_t)cycles;
 			}
-			if (ERROR_OK != jtag_hl_tms(index, tms, cur_cycles))
+			if (ERROR_OK != jtaghl_tms(index, tms, cur_cycles))
 			{
 				return ERROR_FAIL;
 			}
@@ -856,31 +856,138 @@ RESULT jtag_hl_runtest(uint8_t index, uint32_t cycles)
 	}
 }
 
-RESULT jtag_hl_ir(uint8_t index, uint8_t *ir, uint16_t bitlen, uint8_t idle)
+jtag_callback_t jtaghl_receive_callback = NULL;
+jtag_callback_t jtaghl_send_callback = NULL;
+uint32_t jtaghl_ir_backup;
+RESULT jtaghl_register_callback(uint8_t index, jtag_callback_t send_callback, 
+								 jtag_callback_t receive_callback)
 {
 	switch (index)
 	{
 	case 0:
-		JTAG_TAP_InstrPtr(ir, ir, bitlen, idle);
+		jtaghl_receive_callback = receive_callback;
+		jtaghl_send_callback = send_callback;
 		return ERROR_OK;
 	default:
 		return ERROR_FAIL;
 	}
 }
 
-RESULT jtag_hl_dr(uint8_t index, uint8_t *dr, uint16_t bitlen, uint8_t idle)
+RESULT jtaghl_ir(uint8_t index, uint8_t *ir, uint16_t bitlen, uint8_t idle, uint8_t want_ret)
 {
+	uint16_t bytelen = (bitlen + 7) >> 3;
+	uint64_t ir_tmp = 0;
+	uint8_t *pir;
+	uint16_t processed_len;
+	
 	switch (index)
 	{
 	case 0:
-		JTAG_TAP_DataPtr(dr, dr, bitlen, idle);
+		jtaghl_ir_backup = 0;
+		if (bytelen > 4)
+		{
+			memcpy(&jtaghl_ir_backup, ir, 4);
+		}
+		else
+		{
+			memcpy(&jtaghl_ir_backup, ir, bytelen);
+		}
+		
+		processed_len = 0;
+		if (jtaghl_send_callback != NULL)
+		{
+			if (ERROR_OK != jtaghl_send_callback(index, JTAG_SCANTYPE_IR, jtaghl_ir_backup, 
+								(uint8_t *)&ir_tmp, ir, bytelen, &processed_len))
+			{
+				return ERROR_FAIL;
+			}
+		}
+		if (!processed_len)
+		{
+			pir = ir;
+		}
+		else
+		{
+			pir = (uint8_t *)&ir_tmp;
+		}
+		
+		JTAG_TAP_InstrPtr(pir, pir, bitlen, idle);
+		
+		if (want_ret)
+		{
+			processed_len = 0;
+			if (jtaghl_receive_callback != NULL)
+			{
+				if (ERROR_OK != jtaghl_receive_callback(index, JTAG_SCANTYPE_IR, jtaghl_ir_backup, 
+									ir, pir, bytelen, &processed_len))
+				{
+					return ERROR_FAIL;
+				}
+			}
+			if (!processed_len)
+			{
+				memcpy(ir, pir, bytelen);
+			}
+		}
 		return ERROR_OK;
 	default:
 		return ERROR_FAIL;
 	}
 }
 
-RESULT jtag_ll_init(uint8_t index)
+RESULT jtaghl_dr(uint8_t index, uint8_t *dr, uint16_t bitlen, uint8_t idle, uint8_t want_ret)
+{
+	uint16_t bytelen = (bitlen + 7) >> 3;
+	uint64_t dr_tmp = 0;
+	uint8_t *pdr;
+	uint16_t processed_len;
+	
+	switch (index)
+	{
+	case 0:
+		processed_len = 0;
+		if (jtaghl_send_callback != NULL)
+		{
+			if (ERROR_OK != jtaghl_send_callback(index, JTAG_SCANTYPE_DR, jtaghl_ir_backup, 
+								(uint8_t *)&dr_tmp, dr, bytelen, &processed_len))
+			{
+				return ERROR_FAIL;
+			}
+		}
+		if (!processed_len)
+		{
+			pdr = dr;
+		}
+		else
+		{
+			pdr = (uint8_t *)&dr_tmp;
+		}
+		
+		JTAG_TAP_DataPtr(pdr, pdr, bitlen, idle);
+		
+		if (want_ret)
+		{
+			processed_len = 0;
+			if (jtaghl_receive_callback != NULL)
+			{
+				if (ERROR_OK != jtaghl_receive_callback(index, JTAG_SCANTYPE_DR, jtaghl_ir_backup, 
+									dr, pdr, bytelen, &processed_len))
+				{
+					return ERROR_FAIL;
+				}
+			}
+			if (!processed_len)
+			{
+				memcpy(dr, pdr, bytelen);
+			}
+		}
+		return ERROR_OK;
+	default:
+		return ERROR_FAIL;
+	}
+}
+
+RESULT jtagll_init(uint8_t index)
 {
 	switch (index)
 	{
@@ -891,7 +998,7 @@ RESULT jtag_ll_init(uint8_t index)
 	}
 }
 
-RESULT jtag_ll_fini(uint8_t index)
+RESULT jtagll_fini(uint8_t index)
 {
 	switch (index)
 	{
@@ -903,7 +1010,7 @@ RESULT jtag_ll_fini(uint8_t index)
 	}
 }
 
-RESULT jtag_ll_config(uint8_t index, uint16_t kHz)
+RESULT jtagll_config(uint8_t index, uint16_t kHz)
 {
 	switch (index)
 	{
@@ -915,7 +1022,7 @@ RESULT jtag_ll_config(uint8_t index, uint16_t kHz)
 	}
 }
 
-RESULT jtag_ll_tms(uint8_t index, uint8_t *tms, uint8_t bytelen)
+RESULT jtagll_tms(uint8_t index, uint8_t *tms, uint8_t bytelen)
 {
 	uint16_t i;
 	
@@ -932,7 +1039,7 @@ RESULT jtag_ll_tms(uint8_t index, uint8_t *tms, uint8_t bytelen)
 	}
 }
 
-RESULT jtag_ll_tms_clocks(uint8_t index, uint32_t bytelen, uint8_t tms)
+RESULT jtagll_tms_clocks(uint8_t index, uint32_t bytelen, uint8_t tms)
 {
 	switch (index)
 	{
@@ -947,7 +1054,7 @@ RESULT jtag_ll_tms_clocks(uint8_t index, uint32_t bytelen, uint8_t tms)
 	}
 }
 
-RESULT jtag_ll_scan(uint8_t index, uint8_t* data, uint16_t bitlen, 
+RESULT jtagll_scan(uint8_t index, uint8_t* data, uint16_t bitlen, 
 					uint8_t tms_before_valid, uint8_t tms_before, 
 					uint8_t tms_after0, uint8_t tms_after1)
 {
@@ -972,7 +1079,7 @@ RESULT jtag_ll_scan(uint8_t index, uint8_t* data, uint16_t bitlen,
 	}
 }
 
-RESULT jtag_raw_init(uint8_t index)
+RESULT jtagraw_init(uint8_t index)
 {
 	switch (index)
 	{
@@ -983,7 +1090,7 @@ RESULT jtag_raw_init(uint8_t index)
 	}
 }
 
-RESULT jtag_raw_fini(uint8_t index)
+RESULT jtagraw_fini(uint8_t index)
 {
 	switch (index)
 	{
@@ -995,7 +1102,7 @@ RESULT jtag_raw_fini(uint8_t index)
 	}
 }
 
-RESULT jtag_raw_config(uint8_t index, uint16_t kHz)
+RESULT jtagraw_config(uint8_t index, uint16_t kHz)
 {
 	switch (index)
 	{
@@ -1007,7 +1114,7 @@ RESULT jtag_raw_config(uint8_t index, uint16_t kHz)
 	}
 }
 
-RESULT jtag_raw_execute(uint8_t index, uint8_t* tdi, uint8_t* tms, 
+RESULT jtagraw_execute(uint8_t index, uint8_t* tdi, uint8_t* tms, 
 						uint8_t *tdo, uint32_t bitlen)
 {
 	switch (index)

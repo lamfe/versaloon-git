@@ -125,7 +125,6 @@ RESULT usbtoxxx_execute_command(void)
 {
 	uint16_t i;
 	uint16_t inlen;
-	uint8_t processed;
 	RESULT result = ERROR_OK;
 	
 	if (poll_nesting)
@@ -184,19 +183,23 @@ RESULT usbtoxxx_execute_command(void)
 		}
 		
 		// get result data
-		processed = 0;
-		if (versaloon_pending[i].callback != NULL)
-		{
-			versaloon_pending[i].callback(&versaloon_pending[i], 
-						versaloon_buf + usbtoxxx_buffer_index, &processed);
-		}
-		if (!processed && (versaloon_pending[i].want_data_size > 0) 
+		if ((versaloon_pending[i].want_data_size > 0) 
 			&& (versaloon_pending[i].data_buffer != NULL))
 		{
-			memcpy(versaloon_pending[i].data_buffer, 
-				   versaloon_buf + usbtoxxx_buffer_index 
-						+ versaloon_pending[i].want_data_pos, 
-				   versaloon_pending[i].want_data_size);
+			uint8_t processed = 0;
+			
+			if (versaloon_pending[i].callback != NULL)
+			{
+				versaloon_pending[i].callback(&versaloon_pending[i], 
+							versaloon_buf + usbtoxxx_buffer_index, &processed);
+			}
+			if (!processed)
+			{
+				memcpy(versaloon_pending[i].data_buffer, 
+					   versaloon_buf + usbtoxxx_buffer_index 
+							+ versaloon_pending[i].want_data_pos, 
+					   versaloon_pending[i].want_data_size);
+			}
 		}
 		usbtoxxx_buffer_index += versaloon_pending[i].actual_data_size;
 		if (usbtoxxx_buffer_index > inlen)

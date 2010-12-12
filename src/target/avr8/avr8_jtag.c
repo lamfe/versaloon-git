@@ -164,10 +164,12 @@ struct program_functions_t avr8jtag_program_functions =
 #define jtag_config(kHz,a,b,c,d)	\
 	interfaces->jtag_hl.config(0, (kHz), (a), (b), (c), (d))
 #define jtag_runtest(len)			interfaces->jtag_hl.runtest(0, len)
-#define jtag_ir(i, len)				\
-	interfaces->jtag_hl.ir(0, (uint8_t*)(i), (len), 1)
-#define jtag_dr(d, len)				\
-	interfaces->jtag_hl.dr(0, (uint8_t*)(d), (len), 1)
+#define jtag_ir_write(i, len)		\
+	interfaces->jtag_hl.ir(0, (uint8_t*)(i), (len), 1, 0)
+#define jtag_dr_write(d, len)		\
+	interfaces->jtag_hl.dr(0, (uint8_t*)(d), (len), 1, 0)
+#define jtag_dr_read(d, len)		\
+	interfaces->jtag_hl.dr(0, (uint8_t*)(d), (len), 1, 1)
 
 #define poll_start()				interfaces->poll.start(20, 500)
 #define poll_end()					interfaces->poll.end()
@@ -181,12 +183,12 @@ struct program_functions_t avr8jtag_program_functions =
 static struct interfaces_info_t *interfaces = NULL;
 
 #define AVR_JTAG_SendIns(i)			(ir = (i), \
-									 jtag_ir(&ir, AVR_JTAG_INS_LEN))
-#define AVR_JTAG_SendDat(d, len)	(dr = SYS_TO_LE_U16(d), jtag_dr(&dr, (len)))
+									 jtag_ir_write(&ir, AVR_JTAG_INS_LEN))
+#define AVR_JTAG_SendDat(d, len)	(dr = SYS_TO_LE_U16(d), jtag_dr_write(&dr, (len)))
 void AVR_JTAG_ReadDat(uint16_t w, uint16_t* r, uint8_t len)
 {
 	*r = SYS_TO_LE_U16(w);
-	jtag_dr(r, len);
+	jtag_dr_read(r, len);
 }
 
 void AVR_JTAG_WaitComplete(uint16_t cmd)
@@ -278,13 +280,13 @@ WRITE_TARGET_HANDLER(avr8jtag)
 		
 		if (param->param[AVR8_PARAM_JTAG_FULL_BITSTREAM])
 		{
-			jtag_dr(buff, (uint16_t)(size * 8));
+			jtag_dr_write(buff, (uint16_t)(size * 8));
 		}
 		else
 		{
 			for (i = 0; i < size; i++)
 			{
-				jtag_dr(buff + i, 8);
+				jtag_dr_write(buff + i, 8);
 			}
 		}
 		AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
@@ -433,14 +435,14 @@ READ_TARGET_HANDLER(avr8jtag)
 		if (param->param[AVR8_PARAM_JTAG_FULL_BITSTREAM])
 		{
 			dr = 0;
-			jtag_dr(&dr, 8);
-			jtag_dr(page_buf, (uint16_t)(size * 8));
+			jtag_dr_write(&dr, 8);
+			jtag_dr_read(page_buf, (uint16_t)(size * 8));
 		}
 		else
 		{
 			for (i = 0; i < size; i++)
 			{
-				jtag_dr(page_buf + i, 8);
+				jtag_dr_read(page_buf + i, 8);
 			}
 		}
 		

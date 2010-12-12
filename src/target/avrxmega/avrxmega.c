@@ -118,10 +118,12 @@ const struct misc_cmd_t avrxmega_notifier[] =
 #define jtag_config(kHz,a,b,c,d)	\
 	interfaces->jtag_hl.config(0, (kHz), (a), (b), (c), (d))
 #define jtag_runtest(len)			interfaces->jtag_hl.runtest(0, len)
-#define jtag_ir(i, len)				\
-	interfaces->jtag_hl.ir(0, (uint8_t*)(i), (len), AVRXMEGA_JTAG_RTI_CYCLE)
-#define jtag_dr(d, len)				\
-	interfaces->jtag_hl.dr(0, (uint8_t*)(d), (len), AVRXMEGA_JTAG_RTI_CYCLE)
+#define jtag_ir_write(i, len)		\
+	interfaces->jtag_hl.ir(0, (uint8_t*)(i), (len), AVRXMEGA_JTAG_RTI_CYCLE, 0)
+#define jtag_dr_write(d, len)		\
+	interfaces->jtag_hl.dr(0, (uint8_t*)(d), (len), AVRXMEGA_JTAG_RTI_CYCLE, 0)
+#define jtag_dr_read(d, len)		\
+	interfaces->jtag_hl.dr(0, (uint8_t*)(d), (len), AVRXMEGA_JTAG_RTI_CYCLE, 1)
 #define jtag_register_callback(s,r)	\
 	interfaces->jtag_hl.register_callback(0, (s), (r))
 
@@ -137,7 +139,7 @@ const struct misc_cmd_t avrxmega_notifier[] =
 #define delay_us(us)				interfaces->delay.delayus((us) & 0x7FFF)
 #define commit()					interfaces->peripheral_commit()
 
-#define avrxmega_jtag_ir(ir)		jtag_ir((ir), AVRXMEGA_JTAG_INS_Len)
+#define avrxmega_jtag_ir(ir)		jtag_ir_write((ir), AVRXMEGA_JTAG_INS_Len)
 
 #define pdi_poll_delay_empty_jtag()	\
 	do{\
@@ -292,7 +294,7 @@ static RESULT pdi_write(uint16_t data)
 	switch (avrxmega_progmode)
 	{
 	case AVRXMEGA_JTAG:
-		ret = jtag_dr(&data, AVRXMEGA_JTAG_DR_PDICOM_LEN);
+		ret = jtag_dr_write(&data, AVRXMEGA_JTAG_DR_PDICOM_LEN);
 		break;
 	case AVRXMEGA_PDI:
 		ret = ERROR_FAIL;
@@ -317,7 +319,7 @@ static RESULT pdi_read(uint8_t *data)
 		}
 		poll_start(1000);
 		pdi_append_0 = 1;
-		ret = jtag_dr(data, AVRXMEGA_JTAG_DR_PDICOM_LEN);
+		ret = jtag_dr_read(data, AVRXMEGA_JTAG_DR_PDICOM_LEN);
 		pdi_append_0 = 0;
 		pdi_poll();
 		poll_end();
@@ -375,7 +377,7 @@ static RESULT pdi_init(void)
 						pi->jtag_pos.bb, pi->jtag_pos.ba);
 		ir = AVRXMEGA_JTAG_INS_IDCODE;
 		avrxmega_jtag_ir(&ir);
-		jtag_dr(&id, 32);
+		jtag_dr_read(&id, 32);
 		ir = AVRXMEGA_JTAG_INS_PDICOM;
 		avrxmega_jtag_ir(&ir);
 		pdi_break();

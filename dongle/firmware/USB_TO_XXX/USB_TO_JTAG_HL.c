@@ -84,7 +84,7 @@ void USB_TO_JTAG_HL_ProcessCmd(uint8* dat, uint16 len)
 				if(i & 0x8000)
 				{
 					if (ERROR_OK == interfaces->jtag_hl.ir(device_idx, &dat[index + len_tmp + 3], 
-										cur_dat_len, dat[index + len_tmp + 2]))
+										cur_dat_len, dat[index + len_tmp + 2], 1))
 					{
 						memcpy(&buffer_reply[rep_len], &dat[index + len_tmp + 3], (cur_dat_len + 7) >> 3);
 					}
@@ -97,7 +97,7 @@ void USB_TO_JTAG_HL_ProcessCmd(uint8* dat, uint16 len)
 				else
 				{
 					if (ERROR_OK == interfaces->jtag_hl.dr(device_idx, &dat[index + len_tmp + 3], 
-										cur_dat_len, dat[index + len_tmp + 2]))
+										cur_dat_len, dat[index + len_tmp + 2], 1))
 					{
 						memcpy(&buffer_reply[rep_len], &dat[index + len_tmp + 3], (cur_dat_len + 7) >> 3);
 					}

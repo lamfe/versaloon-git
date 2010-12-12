@@ -97,7 +97,7 @@ void USB_TO_MSP430_JTAG_ProcessCmd(uint8* dat, uint16 len)
 					data = 0;
 					memcpy((uint8*)&data, dat + index + len_tmp + 1, byte_len);
 					
-					if (ERROR_OK == interfaces->msp430jtag.dr(device_idx, &data, bit_len & 0x7F))
+					if (ERROR_OK == interfaces->msp430jtag.dr(device_idx, &data, bit_len & 0x7F, 1))
 					{
 						memcpy(buffer_reply + rep_len, &data, byte_len);
 					}
@@ -112,7 +112,7 @@ void USB_TO_MSP430_JTAG_ProcessCmd(uint8* dat, uint16 len)
 				else
 				{
 					// IR
-					if (ERROR_OK == interfaces->msp430jtag.ir(device_idx, &dat[index + len_tmp + 1]))
+					if (ERROR_OK == interfaces->msp430jtag.ir(device_idx, &dat[index + len_tmp + 1], 1))
 					{
 						buffer_reply[rep_len++] = dat[index + len_tmp + 1];
 					}
