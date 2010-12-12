@@ -54,8 +54,7 @@ struct interface_spi_t
 	RESULT (*fini)(uint8_t index);
 	RESULT (*config)(uint8_t index, uint16_t kHz, uint8_t cpol, uint8_t cpha, 
 						uint8_t first_bit);
-	RESULT (*io)(uint8_t index, uint8_t *out, uint8_t *in, uint16_t len, 
-					uint16_t inpos, uint16_t inlen);
+	RESULT (*io)(uint8_t index, uint8_t *out, uint8_t *in, uint16_t bytelen);
 };
 
 struct interface_gpio_t

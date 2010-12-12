@@ -96,8 +96,8 @@ static uint16_t s5x_byte_delay_us = 500;
 #define spi_conf(speed)			\
 	prog->interfaces.spi.config(0, (speed), SPI_CPOL_LOW, SPI_CPHA_1EDGE, \
 								SPI_MSB_FIRST)
-#define spi_io(out, outlen, in, inpos, inlen)	\
-	prog->interfaces.spi.io(0, (out), (in), (outlen), (inpos), (inlen))
+#define spi_io(out, bytelen, in)\
+	prog->interfaces.spi.io(0, (out), (in), (bytelen))
 
 #define reset_init()			prog->interfaces.gpio.init(0)
 #define reset_fini()			prog->interfaces.gpio.fini(0)
@@ -157,7 +157,7 @@ ENTER_PROGRAM_MODE_HANDLER(s5x)
 	cmd_buf[3] = 0x00;
 	// ret[3] should be 0x69
 	poll_start_once();
-	spi_io(cmd_buf, 4, NULL, 0, 0);
+	spi_io(cmd_buf, 4, NULL);
 	if (param->param[S5X_PARAM_PE_OUT] != 0xFF)
 	{
 		poll_fail_unequ(0, 0xFF, (uint8_t)param->param[S5X_PARAM_PE_OUT]);
@@ -205,7 +205,7 @@ ERASE_TARGET_HANDLER(s5x)
 	cmd_buf[1] = 0x80;
 	cmd_buf[2] = 0x00;
 	cmd_buf[3] = 0x00;
-	spi_io(cmd_buf, 4, NULL, 0, 0);
+	spi_io(cmd_buf, 4, NULL);
 	delay_ms(500);
 	if (ERROR_OK != commit())
 	{
@@ -232,17 +232,17 @@ WRITE_TARGET_HANDLER(s5x)
 			cmd_buf[1] = (addr >> 8) & 0xFF;
 			if (size == 256)
 			{
-				spi_io(cmd_buf, 2, NULL, 0, 0);
+				spi_io(cmd_buf, 2, NULL);
 			}
 			else
 			{
 				cmd_buf[2] = addr & 0xFF;
-				spi_io(cmd_buf, 3, NULL, 0, 0);
+				spi_io(cmd_buf, 3, NULL);
 			}
 			
 			for (i = 0; i < size; i++)
 			{
-				spi_io(&buff[i], 1, NULL, 0, 0);
+				spi_io(&buff[i], 1, NULL);
 				delay_us(s5x_byte_delay_us);
 			}
 			
@@ -259,7 +259,7 @@ WRITE_TARGET_HANDLER(s5x)
 				cmd_buf[1] = (uint8_t)((addr + i) >> 8);
 				cmd_buf[2] = (uint8_t)((addr + i) >> 0);
 				cmd_buf[3] = buff[i];
-				spi_io(cmd_buf, 4, NULL, 0, 0);
+				spi_io(cmd_buf, 4, NULL);
 				delay_us(s5x_byte_delay_us);
 			}
 			
@@ -279,7 +279,7 @@ WRITE_TARGET_HANDLER(s5x)
 		cmd_buf[1] = 0x10 + (buff[0] & 0x0F);
 		cmd_buf[2] = 0x00;
 		cmd_buf[3] = 0x00;
-		spi_io(cmd_buf, 4, NULL, 0, 0);
+		spi_io(cmd_buf, 4, NULL);
 		delay_ms(100);
 		if (ERROR_OK != commit())
 		{
@@ -305,7 +305,7 @@ WRITE_TARGET_HANDLER(s5x)
 					cmd_buf[1] = 0xE0 + (uint8_t)i;
 					cmd_buf[2] = 0x00;
 					cmd_buf[3] = 0x00;
-					spi_io(cmd_buf, 4, NULL, 0, 0);
+					spi_io(cmd_buf, 4, NULL);
 					delay_ms(100);
 				}
 			}
@@ -328,7 +328,7 @@ READ_TARGET_HANDLER(s5x)
 {
 	struct programmer_info_t *prog = context->prog;
 	struct program_info_t *pi = context->pi;
-	uint8_t cmd_buf[4], tmp8, lock;
+	uint8_t cmd_buf[4], ret_buf[256 * 4], tmp8, lock;
 	uint32_t i;
 	RESULT ret = ERROR_OK;
 	
@@ -339,22 +339,25 @@ READ_TARGET_HANDLER(s5x)
 		cmd_buf[1] = 0x00;
 		cmd_buf[2] = 0x00;
 		cmd_buf[3] = 0x00;
-		spi_io(cmd_buf, 4, &buff[2], 3, 1);
+		spi_io(cmd_buf, 4, &ret_buf[0]);
 		cmd_buf[0] = 0x28;
 		cmd_buf[1] = 0x01;
 		cmd_buf[2] = 0x00;
 		cmd_buf[3] = 0x00;
-		spi_io(cmd_buf, 4, &buff[1], 3, 1);
+		spi_io(cmd_buf, 4, &ret_buf[4]);
 		cmd_buf[0] = 0x28;
 		cmd_buf[1] = 0x02;
 		cmd_buf[2] = 0x00;
 		cmd_buf[3] = 0x00;
-		spi_io(cmd_buf, 4, &buff[0], 3, 1);
+		spi_io(cmd_buf, 4, &ret_buf[8]);
 		if (ERROR_OK != commit())
 		{
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
+		buff[0] = ret_buf[11];
+		buff[1] = ret_buf[7];
+		buff[2] = ret_buf[3];
 		break;
 	case APPLICATION_CHAR:
 		switch (pi->mode)
@@ -364,15 +367,15 @@ READ_TARGET_HANDLER(s5x)
 			cmd_buf[1] = (addr >> 8) & 0xFF;
 			if (size == 256)
 			{
-				spi_io(cmd_buf, 2, NULL, 0, 0);
+				spi_io(cmd_buf, 2, NULL);
 			}
 			else
 			{
 				cmd_buf[2] = addr & 0xFF;
-				spi_io(cmd_buf, 3, NULL, 0, 0);
+				spi_io(cmd_buf, 3, NULL);
 			}
 			
-			spi_io(buff, (uint16_t)size, buff, 0, (uint16_t)size);
+			spi_io(buff, (uint16_t)size, buff);
 			
 			if (ERROR_OK != commit())
 			{
@@ -381,19 +384,28 @@ READ_TARGET_HANDLER(s5x)
 			}
 			break;
 		case S5X_BYTE_MODE:
+			if (size > 256)
+			{
+				return ERROR_FAIL;
+			}
+			
 			for (i = 0; i < size; i++)
 			{
 				cmd_buf[0] = 0x20;
 				cmd_buf[1] = (uint8_t)((addr + i) >> 8);
 				cmd_buf[2] = (uint8_t)((addr + i) >> 0);
 				cmd_buf[3] = 0;
-				spi_io(cmd_buf, 4, buff + i, 3, 1);
+				spi_io(cmd_buf, 4, &ret_buf[4 * 8]);
 			}
 			
 			if (ERROR_OK != commit())
 			{
 				ret = ERRCODE_FAILURE_OPERATION;
 				break;
+			}
+			for (i = 0; i < size; i++)
+			{
+				buff[i] = ret_buf[4 * i + 3];
 			}
 			break;
 		default:
@@ -405,26 +417,27 @@ READ_TARGET_HANDLER(s5x)
 		cmd_buf[1] = 0x00;
 		cmd_buf[2] = 0x00;
 		cmd_buf[3] = 0x00;
-		spi_io(cmd_buf, 4, &tmp8, 3, 1);
+		spi_io(cmd_buf, 4, &ret_buf[0]);
 		if (ERROR_OK != commit())
 		{
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
-		tmp8 &= 0x0F;
+		buff[0] = ret_buf[3] & 0x0F;
 		break;
 	case LOCK_CHAR:
 		cmd_buf[0] = 0x24;
 		cmd_buf[1] = 0x00;
 		cmd_buf[2] = 0x00;
 		cmd_buf[3] = 0x00;
-		spi_io(cmd_buf, 4, &tmp8, 3, 1);
+		spi_io(cmd_buf, 4, &ret_buf[0]);
 		if (ERROR_OK != commit())
 		{
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
 		
+		tmp8 = ret_buf[3];
 		lock = 0;
 		for (i = 0; i < 3; i++)
 		{
