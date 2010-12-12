@@ -114,7 +114,7 @@ RESULT usbtojtaghl_config(uint8_t interface_index, uint16_t kHz, uint8_t ub,
 }
 
 RESULT usbtojtaghl_ir(uint8_t interface_index, uint8_t *ir, uint16_t bitlen, 
-					  uint8_t idle, uint8_t want_ret)
+					  uint8_t idle)
 {
 	uint16_t bytelen = (bitlen + 7) >> 3;
 	uint16_t processed_len = 0;
@@ -159,20 +159,13 @@ RESULT usbtojtaghl_ir(uint8_t interface_index, uint8_t *ir, uint16_t bitlen,
 	// clear MSB to indicate IR
 	versaloon_set_pending_id(usbtojtaghl_ir_backup & 0x7FFFFFFF);
 	versaloon_set_callback(usbtojtaghl_callback);
-	if (want_ret)
-	{
-		return usbtoxxx_inout_command(USB_TO_JTAG_HL, interface_index, 
-					versaloon_cmd_buf, bytelen + 3, bytelen, ir, 0, bytelen, 1);
-	}
-	else
-	{
-		return usbtoxxx_inout_command(USB_TO_JTAG_HL, interface_index, 
-					versaloon_cmd_buf, bytelen + 3, bytelen, NULL, 0, 0, 1);
-	}
+	
+	return usbtoxxx_inout_command(USB_TO_JTAG_HL, interface_index, 
+				versaloon_cmd_buf, bytelen + 3, bytelen, ir, 0, bytelen, 1);
 }
 
 RESULT usbtojtaghl_dr(uint8_t interface_index, uint8_t *dr, uint16_t bitlen, 
-					  uint8_t idle, uint8_t want_ret)
+					  uint8_t idle)
 {
 	uint16_t bytelen = (bitlen + 7) >> 3;
 	uint16_t processed_len = 0;
@@ -206,16 +199,9 @@ RESULT usbtojtaghl_dr(uint8_t interface_index, uint8_t *dr, uint16_t bitlen,
 	// set MSB to indicate DR
 	versaloon_set_pending_id(usbtojtaghl_ir_backup | 0x80000000);
 	versaloon_set_callback(usbtojtaghl_callback);
-	if (want_ret)
-	{
-		return usbtoxxx_inout_command(USB_TO_JTAG_HL, interface_index, 
-					versaloon_cmd_buf, bytelen + 3, bytelen, dr, 0, bytelen, 1);
-	}
-	else
-	{
-		return usbtoxxx_inout_command(USB_TO_JTAG_HL, interface_index, 
-					versaloon_cmd_buf, bytelen + 3, bytelen, NULL, 0, 0, 1);
-	}
+	
+	return usbtoxxx_inout_command(USB_TO_JTAG_HL, interface_index, 
+				versaloon_cmd_buf, bytelen + 3, bytelen, dr, 0, bytelen, 1);
 }
 
 RESULT usbtojtaghl_tms(uint8_t interface_index, uint8_t *tms, uint16_t bitlen)

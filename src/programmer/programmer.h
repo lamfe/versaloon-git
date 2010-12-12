@@ -54,7 +54,6 @@ struct interface_spi_t
 	RESULT (*fini)(uint8_t index);
 	RESULT (*config)(uint8_t index, uint16_t kHz, uint8_t cpol, uint8_t cpha, 
 						uint8_t first_bit);
-	// todo: simplify prototype
 	RESULT (*io)(uint8_t index, uint8_t *out, uint8_t *in, uint16_t len, 
 					uint16_t inpos, uint16_t inlen);
 };
@@ -105,11 +104,8 @@ struct interface_jtag_hl_t
 						uint16_t bb, uint16_t ba);
 	RESULT (*tms)(uint8_t index, uint8_t* tms, uint16_t bitlen);
 	RESULT (*runtest)(uint8_t index, uint32_t cycles);
-	// todo: remove want_ret
-	RESULT (*ir)(uint8_t index, uint8_t *ir, uint16_t bitlen, uint8_t idle, 
-					uint8_t want_ret);
-	RESULT (*dr)(uint8_t index, uint8_t *dr, uint16_t bitlen, uint8_t idle, 
-					uint8_t want_ret);
+	RESULT (*ir)(uint8_t index, uint8_t *ir, uint16_t bitlen, uint8_t idle);
+	RESULT (*dr)(uint8_t index, uint8_t *dr, uint16_t bitlen, uint8_t idle);
 	RESULT (*register_callback)(uint8_t index, jtag_callback_t send_callback, 
 										jtag_callback_t receive_callback);
 };
@@ -140,9 +136,8 @@ struct interface_msp430jtag_t
 	RESULT (*init)(uint8_t index);
 	RESULT (*fini)(uint8_t index);
 	RESULT (*config)(uint8_t index, uint8_t has_test);
-	// todo: remove want_ret
-	RESULT (*ir)(uint8_t index, uint8_t *ir, uint8_t want_ret);
-	RESULT (*dr)(uint8_t index, uint32_t *dr, uint8_t bitlen, uint8_t want_ret);
+	RESULT (*ir)(uint8_t index, uint8_t *ir);
+	RESULT (*dr)(uint8_t index, uint32_t *dr, uint8_t bitlen);
 	RESULT (*tclk)(uint8_t index, uint8_t value);
 	RESULT (*tclk_strobe)(uint8_t index, uint16_t cnt);
 	RESULT (*reset)(uint8_t index);
@@ -155,9 +150,8 @@ struct interface_msp430sbw_t
 	RESULT (*init)(uint8_t index);
 	RESULT (*fini)(uint8_t index);
 	RESULT (*config)(uint8_t index, uint8_t has_test);
-	// todo: remove want_ret
-	RESULT (*ir)(uint8_t index, uint8_t *ir, uint8_t want_ret);
-	RESULT (*dr)(uint8_t index, uint32_t *dr, uint8_t len, uint8_t want_ret);
+	RESULT (*ir)(uint8_t index, uint8_t *ir);
+	RESULT (*dr)(uint8_t index, uint32_t *dr, uint8_t len);
 	RESULT (*tclk)(uint8_t index, uint8_t value);
 	RESULT (*tclk_strobe)(uint8_t index, uint16_t cnt);
 	RESULT (*reset)(uint8_t index);

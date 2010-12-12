@@ -67,12 +67,10 @@ struct adi_dp_info_t adi_dp_info;
 	adi_prog->jtag_hl.config(0, (kHz), (a), (b), (c), (d))
 #define jtag_tms(m, len)		adi_prog->jtag_hl.tms(0, (m), (len))
 #define jtag_runtest(len)		adi_prog->jtag_hl.runtest(0, len)
-#define jtag_ir_w(i, len)		\
-	adi_prog->jtag_hl.ir(0, (uint8_t*)(i), (len), 1, 0)
-#define jtag_dr_w(d, len)		\
-	adi_prog->jtag_hl.dr(0, (uint8_t*)(d), (len), 1, 0)
-#define jtag_dr_rw(d, len)		\
-	adi_prog->jtag_hl.dr(0, (uint8_t*)(d), (len), 1, 1)
+#define jtag_ir(i, len)			\
+	adi_prog->jtag_hl.ir(0, (uint8_t*)(i), (len), 1)
+#define jtag_dr(d, len)			\
+	adi_prog->jtag_hl.dr(0, (uint8_t*)(d), (len), 1)
 
 #define jtag_register_callback(s,r)	\
 	adi_prog->jtag_hl.register_callback(0, (s), (r))
@@ -333,22 +331,13 @@ static RESULT adi_dp_scan(uint8_t instr, uint8_t reg_addr, uint8_t RnW,
 		if (adi_dp.cur_ir != instr)
 		{
 			adi_dp.cur_ir = instr;
-			jtag_ir_w(&instr, ADI_JTAGDP_IRLEN);
+			jtag_ir(&instr, ADI_JTAGDP_IRLEN);
 		}
 		
 		*value = SYS_TO_LE_U32(*value);
 		// scan dr
 		adi_dp_first3bits = ((reg_addr >> 1) & 0x06) | (RnW & 1);
-		if (RnW)
-		{
-			// read
-			jtag_dr_rw(value, ADI_JTAGDP_IR_APDPACC_LEN);
-		}
-		else
-		{
-			// write
-			jtag_dr_w(value, ADI_JTAGDP_IR_APDPACC_LEN);
-		}
+		jtag_dr(value, ADI_JTAGDP_IR_APDPACC_LEN);
 		
 		// memory access tck clocks
 		if ((ADI_JTAGDP_IR_APACC == instr) 
@@ -389,8 +378,8 @@ static RESULT adi_dpif_read_id(uint32_t *id)
 	{
 	case ADI_DP_JTAG:
 		ir = ADI_JTAGDP_IR_IDCODE;
-		jtag_ir_w(&ir, ADI_JTAGDP_IRLEN);
-		jtag_dr_rw(id, ADI_JTAGDP_IR_IDCODE_LEN);
+		jtag_ir(&ir, ADI_JTAGDP_IRLEN);
+		jtag_dr(id, ADI_JTAGDP_IR_IDCODE_LEN);
 		
 		if (ERROR_OK != adi_dp_commit())
 		{
