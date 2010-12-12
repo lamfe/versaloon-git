@@ -112,26 +112,26 @@ static struct interfaces_info_t *interfaces = NULL;
 #define PSOC1_SSC_CMD_Calibrate0			0x08
 #define PSOC1_SSC_CMD_Calibrate1			0x09
 
-#define get_target_voltage(v)				interfaces->target_voltage.get(v)
+#define get_target_voltage(v)				interfaces->target_voltage.get(0, v)
 
-#define issp_init()							interfaces->issp.init()
-#define issp_fini()							interfaces->issp.fini()
+#define issp_init()							interfaces->issp.init(0)
+#define issp_fini()							interfaces->issp.fini(0)
 #define issp_enter_program_mode(mode)		\
-	interfaces->issp.enter_program_mode(mode)
+	interfaces->issp.enter_program_mode(0, mode)
 #define issp_leave_program_mode(mode)		\
-	interfaces->issp.leave_program_mode(mode)
-#define issp_wait_and_poll()				interfaces->issp.wait_and_poll()
+	interfaces->issp.leave_program_mode(0, mode)
+#define issp_wait_and_poll()				interfaces->issp.wait_and_poll(0)
 #define issp_commit()						interfaces->peripheral_commit()
 
 #define issp_0s()							\
-	interfaces->issp.vector(ISSP_VECTOR_0S, 0x00, 0x00, NULL)
+	interfaces->issp.vector(0, ISSP_VECTOR_0S, 0x00, 0x00, NULL)
 #define issp_read_sram(addr, buf)			\
-	interfaces->issp.vector(ISSP_VECTOR_READ_SRAM, (uint8_t)(addr), 0x00, (buf))
+	interfaces->issp.vector(0, ISSP_VECTOR_READ_SRAM, (uint8_t)(addr), 0x00, (buf))
 #define issp_write_sram(addr, data)			\
-	interfaces->issp.vector(ISSP_VECTOR_WRITE_SRAM, (uint8_t)(addr), \
+	interfaces->issp.vector(0, ISSP_VECTOR_WRITE_SRAM, (uint8_t)(addr), \
 							(uint8_t)(data),NULL)
 #define issp_write_reg(addr, data)			\
-	interfaces->issp.vector(ISSP_VECTOR_WRITE_REG, (uint8_t)(addr), \
+	interfaces->issp.vector(0, ISSP_VECTOR_WRITE_REG, (uint8_t)(addr), \
 							(uint8_t)(data),NULL)
 
 #define issp_set_cup_a(cmd)					issp_write_reg(0xF0, (cmd))

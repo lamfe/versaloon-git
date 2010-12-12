@@ -18,10 +18,10 @@
 #define LPCICP_POLL_ON_CLEAR		1
 #define LPCICP_POLL_TIME_OUT		2
 
-void LPCICP_Init(void);
-void LPCICP_Fini(void);
-void LPCICP_LeavrProgMode(void);
-void LPCICP_EnterProgMode(void);
-void LPCICP_In(uint8 *buff, uint16 len);
-void LPCICP_Out(uint8 *buff, uint16 len);
-uint8 LPCICP_Poll(uint8 out, uint8 setbit, uint8 clearbit, uint16 pollcnt);
+RESULT lpcicp_init(uint8_t index);
+RESULT lpcicp_fini(uint8_t index);
+RESULT lpcicp_enter_program_mode(uint8_t index);
+RESULT lpcicp_in(uint8_t index, uint8_t *buff, uint16_t len);
+RESULT lpcicp_out(uint8_t index, uint8_t *buff, uint16_t len);
+RESULT lpcicp_poll_ready(uint8_t index, uint8_t data, uint8_t *ret, 
+							uint8_t setmask, uint8_t clearmask, uint16_t pollcnt);

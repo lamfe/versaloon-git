@@ -91,20 +91,20 @@ const struct misc_cmd_t s5x_notifier[] =
 
 static uint16_t s5x_byte_delay_us = 500;
 
-#define spi_init()				prog->interfaces.spi.init()
-#define spi_fini()				prog->interfaces.spi.fini()
+#define spi_init()				prog->interfaces.spi.init(0)
+#define spi_fini()				prog->interfaces.spi.fini(0)
 #define spi_conf(speed)			\
-	prog->interfaces.spi.config((speed), SPI_CPOL_LOW, SPI_CPHA_1EDGE, \
+	prog->interfaces.spi.config(0, (speed), SPI_CPOL_LOW, SPI_CPHA_1EDGE, \
 								SPI_MSB_FIRST)
 #define spi_io(out, outlen, in, inpos, inlen)	\
-	prog->interfaces.spi.io((out), (in), (outlen), (inpos), (inlen))
+	prog->interfaces.spi.io(0, (out), (in), (outlen), (inpos), (inlen))
 
-#define reset_init()			prog->interfaces.gpio.init()
-#define reset_fini()			prog->interfaces.gpio.fini()
+#define reset_init()			prog->interfaces.gpio.init(0)
+#define reset_fini()			prog->interfaces.gpio.fini(0)
 #define reset_output()			\
-	prog->interfaces.gpio.config(GPIO_SRST, GPIO_SRST, GPIO_SRST)
+	prog->interfaces.gpio.config(0, GPIO_SRST, GPIO_SRST, GPIO_SRST)
 #define reset_input()			\
-	prog->interfaces.gpio.config(GPIO_SRST, 0, GPIO_SRST)
+	prog->interfaces.gpio.config(0, GPIO_SRST, 0, GPIO_SRST)
 #define reset_set()				reset_output()
 #define reset_clr()				reset_input()
 

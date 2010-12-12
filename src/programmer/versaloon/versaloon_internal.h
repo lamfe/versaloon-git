@@ -73,25 +73,6 @@
 
 
 
-// interfaces
-#define VERSALOON_USART_PORT			0
-#define VERSALOON_SPI_PORT				0
-#define VERSALOON_GPIO_PORT				0
-#define VERSALOON_ISSP_PORT				0
-#define VERSALOON_LPCICP_PORT			0
-#define VERSALOON_JTAGHL_PORT			0
-#define VERSALOON_JTAGLL_PORT			0
-#define VERSALOON_JTAGRAW_PORT			0
-#define VERSALOON_SWD_PORT				0
-#define VERSALOON_C2_PORT				0
-#define VERSALOON_I2C_PORT				0
-#define VERSALOON_MSP430_JTAG_PORT		0
-#define VERSALOON_POWER_PORT			0
-#define VERSALOON_SWIM_PORT				0
-#define VERSALOON_BDM_PORT				0
-
-
-
 // pending struct
 #define VERSALOON_MAX_PENDING_NUMBER	4096
 typedef RESULT (*versaloon_callback_t)(void *, uint8_t *, uint8_t *);

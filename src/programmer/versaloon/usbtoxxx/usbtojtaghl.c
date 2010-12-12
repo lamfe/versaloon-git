@@ -29,8 +29,6 @@
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
 
-uint8_t usbtojtaghl_num_of_interface = 0;
-
 jtag_callback_t usbtojtaghl_receive_callback = NULL;
 jtag_callback_t usbtojtaghl_send_callback = NULL;
 uint32_t usbtojtaghl_ir_backup = 0;
@@ -49,14 +47,14 @@ RESULT usbtojtaghl_callback(void *p, uint8_t *src, uint8_t *processed)
 	if (cur_pending->id & 0x80000000)
 	{
 		// DR
-		ret = usbtojtaghl_receive_callback(JTAG_SCANTYPE_DR, 
+		ret = usbtojtaghl_receive_callback(0, JTAG_SCANTYPE_DR, 
 				cur_pending->id & 0x7FFFFFFF, cur_pending->data_buffer, 
 				src, cur_pending->actual_data_size, &processed_len);
 	}
 	else
 	{
 		// IR
-		ret = usbtojtaghl_receive_callback(JTAG_SCANTYPE_IR, 
+		ret = usbtojtaghl_receive_callback(0, JTAG_SCANTYPE_IR, 
 				cur_pending->id & 0x7FFFFFFF, cur_pending->data_buffer, 
 				src, cur_pending->actual_data_size, &processed_len);
 	}
@@ -73,23 +71,24 @@ RESULT usbtojtaghl_callback(void *p, uint8_t *src, uint8_t *processed)
 	return ERROR_OK;
 }
 
-RESULT usbtojtaghl_register_callback(jtag_callback_t send_callback, 
+RESULT usbtojtaghl_register_callback(uint8_t index, jtag_callback_t send_callback, 
 									 jtag_callback_t receive_callback)
 {
+	REFERENCE_PARAMETER(index);
+	
 	usbtojtaghl_send_callback = send_callback;
 	usbtojtaghl_receive_callback = receive_callback;
 	return ERROR_OK;
 }
 
-RESULT usbtojtaghl_init(void)
+RESULT usbtojtaghl_init(uint8_t interface_index)
 {
-	return usbtoxxx_init_command(USB_TO_JTAG_HL, 
-								 &usbtojtaghl_num_of_interface);
+	return usbtoxxx_init_command(USB_TO_JTAG_HL, interface_index);
 }
 
-RESULT usbtojtaghl_fini(void)
+RESULT usbtojtaghl_fini(uint8_t interface_index)
 {
-	return usbtoxxx_fini_command(USB_TO_JTAG_HL);
+	return usbtoxxx_fini_command(USB_TO_JTAG_HL, interface_index);
 }
 
 RESULT usbtojtaghl_config(uint8_t interface_index, uint16_t kHz, uint8_t ub, 
@@ -144,7 +143,7 @@ RESULT usbtojtaghl_ir(uint8_t interface_index, uint8_t *ir, uint16_t bitlen,
 	
 	if (usbtojtaghl_send_callback != NULL)
 	{
-		usbtojtaghl_send_callback(JTAG_SCANTYPE_IR, usbtojtaghl_ir_backup, 
+		usbtojtaghl_send_callback(0, JTAG_SCANTYPE_IR, usbtojtaghl_ir_backup, 
 						versaloon_cmd_buf + 3, ir, bytelen, &processed_len);
 	}
 	
@@ -191,7 +190,7 @@ RESULT usbtojtaghl_dr(uint8_t interface_index, uint8_t *dr, uint16_t bitlen,
 	
 	if (usbtojtaghl_send_callback != NULL)
 	{
-		usbtojtaghl_send_callback(JTAG_SCANTYPE_DR, usbtojtaghl_ir_backup, 
+		usbtojtaghl_send_callback(0, JTAG_SCANTYPE_DR, usbtojtaghl_ir_backup, 
 						versaloon_cmd_buf + 3, dr, bytelen, &processed_len);
 	}
 	

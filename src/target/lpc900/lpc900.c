@@ -92,14 +92,14 @@ const struct misc_cmd_t lpc900_notifier[] =
 
 static struct interfaces_info_t *interfaces = NULL;
 
-#define icp_init()					interfaces->lpcicp.init()
-#define icp_fini()					interfaces->lpcicp.fini()
-#define icp_enter_program_mode()	interfaces->lpcicp.enter_program_mode()
-#define icp_leave_program_mode()	interfaces->lpcicp.leave_program_mode()
-#define icp_in(buf, len)			interfaces->lpcicp.in((buf), (len))
-#define icp_out(buf, len)			interfaces->lpcicp.out((buf), (len))
+#define icp_init()					interfaces->lpcicp.init(0)
+#define icp_fini()					interfaces->lpcicp.fini(0)
+#define icp_enter_program_mode()	interfaces->lpcicp.enter_program_mode(0)
+#define icp_leave_program_mode()	interfaces->lpcicp.leave_program_mode(0)
+#define icp_in(buf, len)			interfaces->lpcicp.in(0, (buf), (len))
+#define icp_out(buf, len)			interfaces->lpcicp.out(0, (buf), (len))
 #define icp_poll(dat, ptr, set, clear, cnt)	\
-	interfaces->lpcicp.poll_ready((dat), (ptr), (set), (clear), (cnt))
+	interfaces->lpcicp.poll_ready(0, (dat), (ptr), (set), (clear), (cnt))
 #define icp_commit()				interfaces->peripheral_commit()
 
 #define LPCICP_POLL_ON_SET			0

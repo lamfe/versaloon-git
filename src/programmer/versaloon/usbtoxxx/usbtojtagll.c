@@ -29,16 +29,14 @@
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
 
-uint8_t usbtojtagll_num_of_interface = 0;
-
-RESULT usbtojtagll_init(void)
+RESULT usbtojtagll_init(uint8_t interface_index)
 {
-	return usbtoxxx_init_command(USB_TO_JTAG_LL, &usbtojtagll_num_of_interface);
+	return usbtoxxx_init_command(USB_TO_JTAG_LL, interface_index);
 }
 
-RESULT usbtojtagll_fini(void)
+RESULT usbtojtagll_fini(uint8_t interface_index)
 {
-	return usbtoxxx_fini_command(USB_TO_JTAG_LL);
+	return usbtoxxx_fini_command(USB_TO_JTAG_LL, interface_index);
 }
 
 RESULT usbtojtagll_config(uint8_t interface_index, uint16_t kHz)
@@ -98,9 +96,10 @@ RESULT usbtojtagll_tms_clocks(uint8_t interface_index, uint32_t bytelen,
 									5, NULL, 0);
 }
 
-RESULT usbtojtagll_scan(uint8_t interface_index, uint8_t* r, uint16_t bitlen, 
-						uint8_t tms_before_valid, uint8_t tms_before, 
-						uint8_t tms_after0, uint8_t tms_after1)
+RESULT usbtojtagll_scan(uint8_t interface_index, uint8_t* data, 
+						uint16_t bitlen, uint8_t tms_before_valid, 
+						uint8_t tms_before, uint8_t tms_after0, 
+						uint8_t tms_after1)
 {
 	uint16_t bytelen = (bitlen + 7) >> 3;
 	
@@ -121,12 +120,12 @@ RESULT usbtojtagll_scan(uint8_t interface_index, uint8_t* r, uint16_t bitlen,
 	SET_LE_U16(&versaloon_cmd_buf[0], bytelen);
 	bytelen &= 0x7FFF;
 	
-	memcpy(&versaloon_cmd_buf[2 + tms_before_valid], r, bytelen);
+	memcpy(&versaloon_cmd_buf[2 + tms_before_valid], data, bytelen);
 	versaloon_cmd_buf[2 + tms_before_valid + bytelen + 0] = tms_after0;
 	versaloon_cmd_buf[2 + tms_before_valid + bytelen + 1] = tms_after1;
 	
 	return usbtoxxx_inout_command(USB_TO_JTAG_LL, interface_index, 
 							versaloon_cmd_buf, bytelen + tms_before_valid + 4, 
-							bytelen, r, 0, bytelen, 0);
+							bytelen, data, 0, bytelen, 0);
 }
 

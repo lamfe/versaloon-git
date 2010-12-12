@@ -17,44 +17,26 @@
 #define JTAG_TAP_HS_MAX_KHZ				(_SYS_FREQUENCY * 500 / 2)		// in KHz
 #define JTAG_TAP_HS_MIN_KHZ				(_SYS_FREQUENCY * 500 / 256)	// in KHz
 
-#define JTAG_TAP_TMS_2TLR				0xFF
-#define JTAG_TAP_TMS_2RTI				0x7F
-#define JTAG_TAP_TMS_E12UPDATE			0xC0
+RESULT jtag_hl_init(uint8_t index);
+RESULT jtag_hl_fini(uint8_t index);
+RESULT jtag_hl_config(uint8_t index, uint16_t kHz, uint8_t ub, uint8_t ua, 
+						uint16_t bb, uint16_t ba);
+RESULT jtag_hl_tms(uint8_t index, uint8_t* tms, uint16_t bitlen);
+RESULT jtag_hl_runtest(uint8_t index, uint32_t cycles);
+RESULT jtag_hl_ir(uint8_t index, uint8_t *ir, uint16_t bitlen, uint8_t idle);
+RESULT jtag_hl_dr(uint8_t index, uint8_t *dr, uint16_t bitlen, uint8_t idle);
 
-#define JTAG_TAP_TMS_UPDATERTI2SD		0x01
-#define JTAG_TAP_TMS_UPDATERTI2SD_LEN	3
-#define JTAG_TAP_TMS_UPDATERTI2SI		0x03
-#define JTAG_TAP_TMS_UPDATERTI2SI_LEN	4
+RESULT jtag_ll_init(uint8_t index);
+RESULT jtag_ll_fini(uint8_t index);
+RESULT jtag_ll_config(uint8_t index, uint16_t kHz);
+RESULT jtag_ll_tms(uint8_t index, uint8_t *tms, uint8_t bytelen);
+RESULT jtag_ll_tms_clocks(uint8_t index, uint32_t bytelen, uint8_t tms);
+RESULT jtag_ll_scan(uint8_t index, uint8_t* data, uint16_t bitlen, 
+					uint8_t tms_before_valid, uint8_t tms_before, 
+					uint8_t tms_after0, uint8_t tms_after1);
 
-#define JTAG_TAP_Reset_ASYN()			JTAG_TAP_WriteTMSByte_ASYN(JTAG_TAP_TMS_2RTI)
-#define JTAG_TAP_WriteTMSByte_ASYN(tms)	JTAG_TAP_Operate_Asyn(0, tms)
-
-extern void (*JTAG_TAP_Operate_RAW)(uint32 bit_len, uint8 *tdi, uint8 *tms, uint8 *tdo);
-extern uint16 (*JTAG_TAP_Operate_Asyn)(uint16 tdi, uint16 tms);
-
-void JTAG_TAP_SetTCKFreq(uint16 kHz);
-void JTAG_TAP_SetDaisyChainPos(uint32 ub, uint32 ua, uint32 bb, uint32 ba);
-#define JTAG_TAP_ASYN					0
-#define JTAG_TAP_RAW					1
-void JTAG_TAP_Init(uint16 kHz, uint8 mode);
-void JTAG_TAP_Fini(void);
-
-void JTAG_TAP_RW(uint8 *tdo, uint8 *tdi, uint8 tms_before, uint8 tms_after0, uint8 tms_after1, uint16 dat_byte_len);
-void JTAG_TAP_R(uint8 *tdo, uint8 tms_before, uint8 tms_after0, uint8 tms_after1, uint16 dat_byte_len);
-void JTAG_TAP_W(uint8 *tdi, uint8 tms_before, uint8 tms_after0, uint8 tms_after1, uint16 dat_byte_len);
-
-// About idle parameter: 
-// If 0,		JTAG_TAP will stay in UPDATE_IR or UPDATE_DR
-// If 1 -- 5,	JTAG_TAP will stay in RT/I, and idle - 1 shifts on RT/I
-void JTAG_TAP_TMS_Bit(uint8* tms, uint8 bit_len);
-uint32 JTAG_TAP_Instr(uint32 instr, uint8 bit_len, uint8 idle);
-void JTAG_TAP_InstrPtr(uint8 *instr, uint8 *tdo, uint16 bit_len, uint8 idle);
-void JTAG_TAP_InstrOutPtr(uint8 *instr, uint16 bit_len, uint8 idle);
-void JTAG_TAP_DataInPtr(uint8 *tdo, uint16 bit_len, uint8 idle);
-void JTAG_TAP_DataOutPtr(uint8 *tdi, uint16 bit_len, uint8 idle);
-void JTAG_TAP_DataPtr(uint8 *tdi, uint8 *tdo, uint16 bit_len, uint8 idle);
-uint32 JTAG_TAP_Data(uint32 tdi, uint16 bit_len, uint8 idle);
-void JTAG_TAP_DataOut(uint32 tdi, uint16 bit_len, uint8 idle);
-uint32 JTAG_TAP_DataIn(uint16 bit_len, uint8 idle);
-
-extern int16 JTAG_Freq;		// in KHz
+RESULT jtag_raw_init(uint8_t index);
+RESULT jtag_raw_fini(uint8_t index);
+RESULT jtag_raw_config(uint8_t index, uint16_t kHz);
+RESULT jtag_raw_execute(uint8_t index, uint8_t* tdi, uint8_t* tms, 
+						uint8_t *tdo, uint32_t bitlen);

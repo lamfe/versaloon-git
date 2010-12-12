@@ -18,6 +18,7 @@
 #if USB_TO_XXX_EN
 
 #include "USB_TO_XXX.h"
+#include "interfaces.h"
 
 typedef struct
 {
@@ -173,9 +174,10 @@ void USB_TO_XXX_ProcessCmd(uint8* dat, uint16 len)
 #endif
 		case USB_TO_DELAY:
 			dly = GET_LE_U16(&dat[USB_TO_XXX_CmdIdx + 3]);
+
 			if(dly & 0x8000)
 			{
-				DelayMS(dly & 0x7FFF);
+				interfaces->delay.delayms(dly & 0x7FFF);
 			}
 			else
 			{

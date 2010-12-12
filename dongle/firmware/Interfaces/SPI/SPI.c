@@ -17,19 +17,20 @@
 #include "app_cfg.h"
 #if INTERFACE_SPI_EN
 
+#include "interfaces.h"
 #include "SPI.h"
 
 uint8 SPI_Emu = 0;
 uint32 SPI_Dly;
 
-void SPI_Delay(uint8 dly)
+static void SPI_Delay(uint8 dly)
 {
 	DelayUS(dly);
 }
 
-void SPI_Config(uint32 freq_hz, uint32 firstbit, uint32 cpol, uint32 cpha)
+static void SPI_Config(uint32 freq_hz, uint32 firstbit, uint32 cpol, uint32 cpha)
 {
-	if(freq_hz < SPI_MIN_SPEED * 1000)
+	if(freq_hz < SPI_MIN_KHZ * 1000)
 	{
 		SPI_Emu = 1;
 
@@ -90,7 +91,9 @@ uint8 SPI_GetSCKDiv(uint16 freq_khz)
 /// spi Read and Write emulated by IO
 /// @param[in]	data	data to write
 /// @return		data read
-uint8 SPI_RW_Emu(uint8 data)
+#define SPI_DATA_LEN			8
+#define SPI_MSB					(1 << (SPI_DATA_LEN - 1))
+static uint8 SPI_RW_Emu(uint8 data)
 {
 	uint8 tmp,ret = 0;
 
@@ -127,26 +130,10 @@ uint8 SPI_RW_Emu(uint8 data)
 	return ret;
 }
 
-/// spi Read and Write by spi hardware
-/// @param[in]	data	data to write
-/// @return		data read
-uint8 SPI_RW_HW(uint8 data)
-{
-	uint8 ret;
-
-	SPI_WaitReady();
-
-	ret =  SPI_GetData();
-
-	SPI_SetData(data);
-
-	return ret;
-}
-
 /// spi Read and Write
 /// @param[in]	data	data to write
 /// @return		data read
-uint8 SPI_RW(uint8 data)
+static uint8 SPI_RW(uint8 data)
 {
 	uint8 ret;
 
@@ -164,6 +151,93 @@ uint8 SPI_RW(uint8 data)
 	}
 
 	return ret;
+}
+
+RESULT spi_init(uint8_t index)
+{
+	switch (index)
+	{
+	case 0:
+		return ERROR_OK;
+	default:
+		return ERROR_FAIL;
+	}
+}
+
+RESULT spi_fini(uint8_t index)
+{
+	switch (index)
+	{
+	case 0:
+		SPI_I2S_DeInit(SPI_Interface);
+		SPI_AllInput();
+		return ERROR_OK;
+	default:
+		return ERROR_FAIL;
+	}
+}
+
+RESULT spi_config(uint8_t index, uint16_t kHz, uint8_t cpol, uint8_t cpha, 
+					 uint8_t first_bit)
+{
+	switch (index)
+	{
+	case 0:
+		if(cpol & SPI_CPOL_MASK)
+		{
+			cpol = SPI_CPOL_High;
+		}
+		else
+		{
+			cpol = SPI_CPOL_Low;
+		}
+		if(cpha & SPI_CPHA_MASK)
+		{
+			// 2 edge
+			cpha = SPI_CPHA_2Edge;
+		}
+		else
+		{
+			// 1 edge
+			cpha = SPI_CPHA_1Edge;
+		}
+		if(first_bit & SPI_FIRSTBIT_MASK)
+		{
+			// msb first
+			first_bit = SPI_FirstBit_MSB;
+		}
+		else
+		{
+			// lsb first
+			first_bit = SPI_FirstBit_LSB;
+		}
+		SPI_Config(kHz * 1000, first_bit, cpol, cpha);
+		return ERROR_FAIL;
+	default:
+		return ERROR_FAIL;
+	}
+}
+
+RESULT spi_io(uint8_t index, uint8_t *out, uint8_t *in, uint16_t len)
+{
+	uint16_t i;
+
+	switch (index)
+	{
+	case 0:
+		if ((NULL == out) || (NULL == in))
+		{
+			return ERROR_FAIL;
+		}
+		
+		for(i = 0; i < len; i++)
+		{
+			in[i] = SPI_RW(out[i]);
+		}
+		return ERROR_OK;
+	default:
+		return ERROR_FAIL;
+	}
 }
 
 #endif

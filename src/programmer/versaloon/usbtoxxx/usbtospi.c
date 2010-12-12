@@ -29,16 +29,14 @@
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
 
-uint8_t usbtospi_num_of_interface = 0;
-
-RESULT usbtospi_init(void)
+RESULT usbtospi_init(uint8_t interface_index)
 {
-	return usbtoxxx_init_command(USB_TO_SPI, &usbtospi_num_of_interface);
+	return usbtoxxx_init_command(USB_TO_SPI, interface_index);
 }
 
-RESULT usbtospi_fini(void)
+RESULT usbtospi_fini(uint8_t interface_index)
 {
-	return usbtoxxx_fini_command(USB_TO_SPI);
+	return usbtoxxx_fini_command(USB_TO_SPI, interface_index);
 }
 
 RESULT usbtospi_config(uint8_t interface_index, uint16_t kHz, uint8_t cpol, 

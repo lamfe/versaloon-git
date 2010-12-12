@@ -29,29 +29,14 @@
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
 
-uint8_t usbtobdm_num_of_interface = 0;
-
-RESULT usbtobdm_init(void)
+RESULT usbtobdm_init(uint8_t interface_index)
 {
-	return usbtoxxx_init_command(USB_TO_BDM, &usbtobdm_num_of_interface);
+	return usbtoxxx_init_command(USB_TO_BDM, interface_index);
 }
 
-RESULT usbtobdm_fini(void)
+RESULT usbtobdm_fini(uint8_t interface_index)
 {
-	return usbtoxxx_fini_command(USB_TO_BDM);
-}
-
-RESULT usbtobdm_config(uint8_t interface_index)
-{
-#if PARAM_CHECK
-	if (interface_index > 7)
-	{
-		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
-		return ERROR_FAIL;
-	}
-#endif
-	
-	return usbtoxxx_conf_command(USB_TO_BDM, interface_index, NULL, 0);
+	return usbtoxxx_fini_command(USB_TO_BDM, interface_index);
 }
 
 RESULT usbtobdm_sync(uint8_t interface_index, uint16_t *khz)

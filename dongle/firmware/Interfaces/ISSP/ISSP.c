@@ -17,10 +17,30 @@
 #include "app_cfg.h"
 #if INTERFACE_ISSP_EN
 
+#include "interfaces.h"
 #include "ISSP.h"
+
 #if POWER_OUT_EN
 #	include "PowerExt.h"
 #endif
+
+#define ISSP_VECTOR_BITNUM		22
+
+// read or write
+#define ISSP_VECTOR_R			1
+#define ISSP_VECTOR_W			0
+
+// target
+#define ISSP_VECTOR_SRAM		0
+#define ISSP_VECTOR_CPUBANK		1
+
+// Prog Mode
+#define ISSP_PM_RESET			(1 << 0)
+#define ISSP_PM_POWER_ON		(0 << 0)
+
+// wap result
+#define ISSP_WAP_OK				0x00
+#define ISSP_WAP_TIMEOUT		0x01
 
 #define ISSP_Delay()			DelayUS(0)
 
@@ -128,121 +148,188 @@ void ISSP_Vector_0s(void)
 	ISSP_SDATA_SETINPUT();
 }
 
-void ISSP_EnterProgMode(uint8 mode)
+RESULT issp_enter_program_mode(uint8_t index, uint8 mode)
 {
 	uint16 to = 1000;
 
-	ISSP_SDATA_SETOUTPUT();
-
-	GLOBAL_OUTPUT_Acquire();
-	if(mode == ISSP_PM_RESET)
+	switch (index)
 	{
-		PWREXT_Acquire();
-		DelayMS(1);
-
-		ISSP_XRES_SET();
-		ISSP_XRES_SETOUTPUT();
-		DelayMS(1);
-		ISSP_XRES_CLR();
-	}
-	else if(mode == ISSP_PM_POWER_ON)
-	{
-		ISSP_SDATA_SETINPUT();
-
-		ISSP_PowerOff();
-		DelayMS(1);
-		ISSP_PowerOn();
-		DelayMS(5);
-
-		while(ISSP_SDATA_GET() && --to)
+	case 0:
+		if((mode == ISSP_PM_POWER_ON) && (Vtarget > TVCC_SAMPLE_MIN_POWER))
 		{
-			DelayUS(10);
+			return ERROR_FAIL;
 		}
 
 		ISSP_SDATA_SETOUTPUT();
+
+		GLOBAL_OUTPUT_Acquire();
+		if(mode == ISSP_PM_RESET)
+		{
+			PWREXT_Acquire();
+			DelayMS(1);
+
+			ISSP_XRES_SET();
+			ISSP_XRES_SETOUTPUT();
+			DelayMS(1);
+			ISSP_XRES_CLR();
+		}
+		else if(mode == ISSP_PM_POWER_ON)
+		{
+			ISSP_SDATA_SETINPUT();
+
+			ISSP_PowerOff();
+			DelayMS(1);
+			ISSP_PowerOn();
+			DelayMS(5);
+
+			while(ISSP_SDATA_GET() && --to)
+			{
+				DelayUS(10);
+			}
+
+			ISSP_SDATA_SETOUTPUT();
+		}
+
+		ISSP_SCLK_CLR();
+		ISSP_SCLK_SETOUTPUT();
+
+		ISSP_Vector(1, 0x50, 0x00, 0, 0);
+		ISSP_Vector_0s();
+		ISSP_Vector_0s();
+		ISSP_Vector_0s();
+		ISSP_Vector_0s();
+		ISSP_Vector_0s();
+
+		ISSP_SDATA_SETINPUT();
+		return ERROR_OK;
+	default:
+		return ERROR_FAIL;
 	}
-
-	ISSP_SCLK_CLR();
-	ISSP_SCLK_SETOUTPUT();
-
-	ISSP_Vector(1, 0x50, 0x00, 0, 0);
-	ISSP_Vector_0s();
-	ISSP_Vector_0s();
-	ISSP_Vector_0s();
-	ISSP_Vector_0s();
-	ISSP_Vector_0s();
-
-	ISSP_SDATA_SETINPUT();
 }
 
-void ISSP_LeaveProgMode(uint8 mode)
+RESULT issp_leave_program_mode(uint8_t index, uint8 mode)
 {
-	if(mode == ISSP_PM_RESET)
+	switch (index)
 	{
-		ISSP_XRES_SET();
-		DelayMS(1);
-		ISSP_XRES_SETINPUT();
-		ISSP_SCLK_SETINPUT();
+	case 0:
+		if(mode == ISSP_PM_RESET)
+		{
+			ISSP_XRES_SET();
+			DelayMS(1);
+			ISSP_XRES_SETINPUT();
+			ISSP_SCLK_SETINPUT();
 
-		PWREXT_Release();
-		GLOBAL_OUTPUT_Release();
-	}
-	else if(mode == ISSP_PM_POWER_ON)
-	{
-		ISSP_PowerOff();
-		ISSP_SCLK_SETINPUT();
+			PWREXT_Release();
+			GLOBAL_OUTPUT_Release();
+		}
+		else if(mode == ISSP_PM_POWER_ON)
+		{
+			ISSP_PowerOff();
+			ISSP_SCLK_SETINPUT();
+		}
+		return ERROR_OK;
+	default:
+		return ERROR_FAIL;
 	}
 }
 
-uint8 ISSP_WaitAndPoll(void)
+RESULT issp_wait_and_poll(uint8_t index)
 {
 	uint8 i;
 	uint16 dly;
 
-	ISSP_SDATA_SETINPUT();
-	ISSP_In_Bit();
-	dly = 100;
-	while(!ISSP_SDATA_GET())
+	switch (index)
 	{
-		DelayUS(10);
-		if(--dly == 0)
+	case 0:
+		ISSP_SDATA_SETINPUT();
+		ISSP_In_Bit();
+		dly = 100;
+		while(!ISSP_SDATA_GET())
 		{
-			return ISSP_WAP_TIMEOUT;
+			DelayUS(10);
+			if(--dly == 0)
+			{
+				return ERROR_FAIL;
+			}
 		}
-	}
 
-	dly = 10000;
-	while(ISSP_SDATA_GET())
-	{
-		DelayUS(10);
-		if(--dly == 0)
+		dly = 10000;
+		while(ISSP_SDATA_GET())
 		{
-			return ISSP_WAP_TIMEOUT;
+			DelayUS(10);
+			if(--dly == 0)
+			{
+				return ERROR_FAIL;
+			}
 		}
+
+		ISSP_SDATA_CLR();
+		ISSP_SDATA_SETOUTPUT();
+
+		for(i = 0; i < 40; i++)
+		{
+			ISSP_Out_Bit(0);
+		}
+		return ERROR_OK;
+	default:
+		return ERROR_FAIL;
 	}
-
-	ISSP_SDATA_CLR();
-	ISSP_SDATA_SETOUTPUT();
-
-	for(i = 0; i < 40; i++)
-	{
-		ISSP_Out_Bit(0);
-	}
-
-	return ISSP_WAP_OK;
 }
 
-void ISSP_Init(void)
+RESULT issp_init(uint8_t index)
 {
-	ISSP_Fini();
+	switch (index)
+	{
+	case 0:
+		return issp_fini(index);
+	default:
+		return ERROR_FAIL;
+	}
 }
 
-void ISSP_Fini(void)
+RESULT issp_fini(uint8_t index)
 {
-	ISSP_XRES_CLR();
-	ISSP_XRES_SETINPUT();
-	ISSP_SDATA_SETINPUT();
-	ISSP_SCLK_SETINPUT();
+	switch (index)
+	{
+	case 0:
+		ISSP_XRES_CLR();
+		ISSP_XRES_SETINPUT();
+		ISSP_SDATA_SETINPUT();
+		ISSP_SCLK_SETINPUT();
+		return ERROR_OK;
+	default:
+		return ERROR_FAIL;
+	}
+}
+
+RESULT issp_vector(uint8_t index, uint8_t operate, uint8_t addr, 
+					 uint8_t data, uint8_t *buf)
+{
+	if(operate & ISSP_OPERATE_0s)
+	{
+		ISSP_Vector_0s();
+	}
+	else
+	{
+		if(operate & ISSP_OPERATE_READ)
+		{
+			uint8_t buf_tmp;
+			// Read
+			buf_tmp = ISSP_Vector(operate & ISSP_OPERATE_BANK, addr, data, 1,
+									operate & ISSP_OPERATE_APPENDBIT);
+			if (buf != NULL)
+			{
+				*buf = buf_tmp;
+			}
+		}
+		else
+		{
+			// Write
+			ISSP_Vector(operate & ISSP_OPERATE_BANK, addr, data, 0,
+							operate & ISSP_OPERATE_APPENDBIT);
+		}
+	}
+	return ERROR_OK;
 }
 
 #endif

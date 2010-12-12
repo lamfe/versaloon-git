@@ -294,7 +294,7 @@ MISC_HANDLER(programmer_get_target_voltage)
 		return ERROR_FAIL;
 	}
 	
-	if (ERROR_OK != prog->interfaces.target_voltage.get(&voltage))
+	if (ERROR_OK != prog->interfaces.target_voltage.get(0, &voltage))
 	{
 		ret = ERROR_FAIL;
 	}
@@ -318,7 +318,7 @@ MISC_HANDLER(programmer_set_target_voltage)
 	}
 	
 	voltage = (uint16_t)strtoul(argv[1], NULL, 0);
-	return prog->interfaces.target_voltage.set(voltage);
+	return prog->interfaces.target_voltage.set(0, voltage);
 }
 
 // gpio
@@ -333,7 +333,7 @@ MISC_HANDLER(programmer_gpio_init)
 		return ERROR_FAIL;
 	}
 	
-	if (ERROR_OK != prog->interfaces.gpio.init())
+	if (ERROR_OK != prog->interfaces.gpio.init(0))
 	{
 		return ERROR_FAIL;
 	}
@@ -356,7 +356,7 @@ MISC_HANDLER(programmer_gpio_fini)
 		return ERROR_FAIL;
 	}
 	
-	return prog->interfaces.gpio.fini();
+	return prog->interfaces.gpio.fini(0);
 }
 
 MISC_HANDLER(programmer_gpio_config)
@@ -375,7 +375,7 @@ MISC_HANDLER(programmer_gpio_config)
 	io = (uint16_t)strtoul(argv[2], NULL, 0);
 	pull = (uint16_t)strtoul(argv[3], NULL, 0);
 	
-	return prog->interfaces.gpio.config(mask, io, pull);
+	return prog->interfaces.gpio.config(0, mask, io, pull);
 }
 
 MISC_HANDLER(programmer_gpio_out)
@@ -393,7 +393,7 @@ MISC_HANDLER(programmer_gpio_out)
 	mask = (uint16_t)strtoul(argv[1], NULL, 0);
 	value = (uint16_t)strtoul(argv[2], NULL, 0);
 	
-	return prog->interfaces.gpio.out(mask, value);
+	return prog->interfaces.gpio.out(0, mask, value);
 }
 
 MISC_HANDLER(programmer_gpio_in)
@@ -411,7 +411,7 @@ MISC_HANDLER(programmer_gpio_in)
 	
 	mask = (uint16_t)strtoul(argv[1], NULL, 0);
 	
-	ret = prog->interfaces.gpio.in(mask, &value);
+	ret = prog->interfaces.gpio.in(0, mask, &value);
 	if (ERROR_OK == ret)
 	{
 		ret = prog->interfaces.peripheral_commit();
@@ -435,7 +435,7 @@ MISC_HANDLER(programmer_spi_init)
 		return ERROR_FAIL;
 	}
 	
-	if (ERROR_OK != prog->interfaces.spi.init())
+	if (ERROR_OK != prog->interfaces.spi.init(0))
 	{
 		return ERROR_FAIL;
 	}
@@ -458,7 +458,7 @@ MISC_HANDLER(programmer_spi_fini)
 		return ERROR_FAIL;
 	}
 	
-	return prog->interfaces.spi.fini();
+	return prog->interfaces.spi.fini(0);
 }
 
 MISC_HANDLER(programmer_spi_config)
@@ -479,7 +479,7 @@ MISC_HANDLER(programmer_spi_config)
 	cpha = (uint8_t)strtoul(argv[3], NULL, 0);
 	firstbit = (uint8_t)strtoul(argv[4], NULL, 0);
 	
-	return prog->interfaces.spi.config(khz, cpol, cpha, firstbit);
+	return prog->interfaces.spi.config(0, khz, cpol, cpha, firstbit);
 }
 
 MISC_HANDLER(programmer_spi_io)
@@ -509,7 +509,7 @@ MISC_HANDLER(programmer_spi_io)
 	ret = misc_get_binary_buffer(argc - 2, &argv[2], 1, data_size, (void**)&buff);
 	if (ERROR_OK == ret)
 	{
-		ret = prog->interfaces.spi.io(buff, buff, data_size, 0, data_size);
+		ret = prog->interfaces.spi.io(0, buff, buff, data_size, 0, data_size);
 		if (ERROR_OK == ret)
 		{
 			ret = prog->interfaces.peripheral_commit();
@@ -540,7 +540,7 @@ MISC_HANDLER(programmer_iic_init)
 		return ERROR_FAIL;
 	}
 	
-	if (ERROR_OK != prog->interfaces.i2c.init())
+	if (ERROR_OK != prog->interfaces.i2c.init(0))
 	{
 		return ERROR_FAIL;
 	}
@@ -563,7 +563,7 @@ MISC_HANDLER(programmer_iic_fini)
 		return ERROR_FAIL;
 	}
 	
-	return prog->interfaces.i2c.fini();
+	return prog->interfaces.i2c.fini(0);
 }
 
 MISC_HANDLER(programmer_iic_config)
@@ -582,7 +582,7 @@ MISC_HANDLER(programmer_iic_config)
 	khz = (uint16_t)strtoul(argv[1], NULL, 0);
 	max_dly = (uint16_t)strtoul(argv[2], NULL, 0);
 	
-	return prog->interfaces.i2c.config(khz, 0, max_dly);
+	return prog->interfaces.i2c.config(0, khz, 0, max_dly);
 }
 
 MISC_HANDLER(programmer_iic_read)
@@ -608,7 +608,7 @@ MISC_HANDLER(programmer_iic_read)
 		return ERROR_FAIL;
 	}
 	
-	ret = prog->interfaces.i2c.read(addr, buff, data_size, 1);
+	ret = prog->interfaces.i2c.read(0, addr, buff, data_size, 1);
 	if (ERROR_OK == ret)
 	{
 		ret = prog->interfaces.peripheral_commit();
@@ -655,7 +655,7 @@ MISC_HANDLER(programmer_iic_write)
 	ret = misc_get_binary_buffer(argc - 3, &argv[3], 1, data_size, (void**)&buff);
 	if (ERROR_OK == ret)
 	{
-		ret = prog->interfaces.i2c.write(addr, buff, data_size, 1);
+		ret = prog->interfaces.i2c.write(0, addr, buff, data_size, 1);
 	}
 	
 	if (buff != NULL)

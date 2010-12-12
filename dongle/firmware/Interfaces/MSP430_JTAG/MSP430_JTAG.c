@@ -17,11 +17,13 @@
 #include "app_cfg.h"
 #if INTERFACE_MSP430_JTAG_EN
 
+#include "interfaces.h"
 #include "MSP430_JTAG.h"
 
 #define MSP430_JTAG_DELAY()				DelayUS(0)
+#define MSP430_JTAG_IR_LEN				8
 
-void MSP430_JTAG_Init(uint8 has_test)
+static void MSP430_JTAG_Init(uint8 has_test)
 {
 	JTAG_TAP_TMS_CLR();
 	JTAG_TAP_TMS_SETOUTPUT();
@@ -71,7 +73,7 @@ void MSP430_JTAG_Init(uint8 has_test)
 	}
 }
 
-void MSP430_JTAG_Fini(void)
+static void MSP430_JTAG_Fini(void)
 {
 #if 1
 	MSP430_JTAG_TEST_CLR();
@@ -90,7 +92,7 @@ void MSP430_JTAG_Fini(void)
 #endif
 }
 
-void MSP430_JTAG_TCLK(uint8 tclk)
+static void MSP430_JTAG_TCLK(uint8 tclk)
 {
 	if(tclk)
 	{
@@ -102,7 +104,7 @@ void MSP430_JTAG_TCLK(uint8 tclk)
 	}
 }
 
-void MSP430_JTAG_TCLK_STROKE(uint16 cnt)
+static void MSP430_JTAG_TCLK_STROKE(uint16 cnt)
 {
 	while(cnt--)
 	{
@@ -170,7 +172,7 @@ static uint32 MSP430_JTAG_Shift(uint32 data, uint8 len)
 	return tdo;
 }
 
-uint32 MSP430_JTAG_DR(uint32 dr, uint8 len)
+static uint32 MSP430_JTAG_DR(uint32 dr, uint8 len)
 {
 	// RTI
 	JTAG_TAP_TMS_SET();
@@ -193,7 +195,7 @@ uint32 MSP430_JTAG_DR(uint32 dr, uint8 len)
 	return MSP430_JTAG_Shift(dr, len);
 }
 
-uint8 MSP430_JTAG_IR(uint8 ir, uint8 len)
+static uint8 MSP430_JTAG_IR(uint8 ir, uint8 len)
 {
 	// RTI
 	JTAG_TAP_TMS_SET();
@@ -221,7 +223,7 @@ uint8 MSP430_JTAG_IR(uint8 ir, uint8 len)
 	return (uint8)MSP430_JTAG_Shift(ir, len);
 }
 
-void MSP430_JTAG_Reset(void)
+static void MSP430_JTAG_Reset(void)
 {
 	uint8 i;
 
@@ -266,7 +268,7 @@ void MSP430_JTAG_Reset(void)
 	MSP430_JTAG_DELAY();
 }
 
-uint8 MSP430_JTAG_Poll(uint32 data, uint32 mask, uint32 value, uint8 len, uint16 poll_cnt)
+static uint8 MSP430_JTAG_Poll(uint32 data, uint32 mask, uint32 value, uint8 len, uint16 poll_cnt)
 {
 	uint8 toggle_tclk = (poll_cnt & 0x8000) > 0;
 
@@ -284,6 +286,129 @@ uint8 MSP430_JTAG_Poll(uint32 data, uint32 mask, uint32 value, uint8 len, uint16
 		}
 	}
 	return 1;
+}
+
+RESULT msp430jtag_init(uint8_t index)
+{
+	switch (index)
+	{
+	case 0:
+		return ERROR_OK;
+	default:
+		return ERROR_FAIL;
+	}
+}
+
+RESULT msp430jtag_fini(uint8_t index)
+{
+	switch (index)
+	{
+	case 0:
+		MSP430_JTAG_Fini();
+		return ERROR_OK;
+	default:
+		return ERROR_FAIL;
+	}
+}
+RESULT msp430jtag_config(uint8_t index, uint8_t has_test)
+{
+	switch (index)
+	{
+	case 0:
+		MSP430_JTAG_Init(has_test);
+		return ERROR_OK;
+	default:
+		return ERROR_FAIL;
+	}
+}
+
+RESULT msp430jtag_ir(uint8_t index, uint8_t *ir)
+{
+	switch (index)
+	{
+	case 0:
+		if (NULL == ir)
+		{
+			return ERROR_FAIL;
+		}
+		
+		*ir = MSP430_JTAG_IR(*ir, MSP430_JTAG_IR_LEN);
+		return ERROR_OK;
+	default:
+		return ERROR_FAIL;
+	}
+}
+
+RESULT msp430jtag_dr(uint8_t index, uint32_t *dr, uint8_t bitlen)
+{
+	switch (index)
+	{
+	case 0:
+		if (NULL == dr)
+		{
+			return ERROR_FAIL;
+		}
+		
+		*dr = MSP430_JTAG_DR(*dr, bitlen);
+		return ERROR_OK;
+	default:
+		return ERROR_FAIL;
+	}
+}
+
+RESULT msp430jtag_tclk(uint8_t index, uint8_t value)
+{
+	switch (index)
+	{
+	case 0:
+		MSP430_JTAG_TCLK(value);
+		return ERROR_OK;
+	default:
+		return ERROR_FAIL;
+	}
+}
+
+RESULT msp430jtag_tclk_strobe(uint8_t index, uint16_t cnt)
+{
+	switch (index)
+	{
+	case 0:
+		MSP430_JTAG_TCLK_STROKE(cnt);
+		return ERROR_OK;
+	default:
+		return ERROR_FAIL;
+	}
+}
+
+RESULT msp430jtag_reset(uint8_t index)
+{
+	switch (index)
+	{
+	case 0:
+		MSP430_JTAG_Reset();
+		return ERROR_OK;
+	default:
+		return ERROR_FAIL;
+	}
+}
+
+RESULT msp430jtag_poll(uint8_t index, uint32_t dr, uint32_t mask, uint32_t value, 
+				uint8_t len, uint16_t poll_cnt, uint8_t toggle_tclk)
+{
+	switch (index)
+	{
+	case 0:
+		if(MSP430_JTAG_Poll(dr, mask, value, len, poll_cnt | (toggle_tclk ? 0x8000 : 0)))
+		{
+			return ERROR_FAIL;
+		}
+		else
+		{
+			return ERROR_OK;
+		}
+	default:
+		return ERROR_FAIL;
+	}
 }
 
 #endif

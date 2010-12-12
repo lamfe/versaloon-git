@@ -17,6 +17,7 @@
 #include "app_cfg.h"
 #if INTERFACE_BDM_EN
 
+#include "interfaces.h"
 #include "BDM.h"
 
 uint8 BDM_Inited = 0;
@@ -36,7 +37,15 @@ static uint16 BDM_PULSE_Threshold;
 #define BDM_SYNC_CYCLES					128
 #define BDM_MAX_DLY						0xFFFFF
 
-void BDM_Init(void)
+static void BDM_Fini(void)
+{
+	SYNCSWPWM_PORT_OD_FINI();
+	SYNCSWPWM_OUT_TIMER_FINI();
+	SYNCSWPWM_IN_TIMER_FINI();
+	BDM_Inited = 0;
+}
+
+static void BDM_Init(void)
 {
 	BDM_Fini();
 
@@ -50,15 +59,7 @@ void BDM_Init(void)
 	}
 }
 
-void BDM_Fini(void)
-{
-	SYNCSWPWM_PORT_OD_FINI();
-	SYNCSWPWM_OUT_TIMER_FINI();
-	SYNCSWPWM_IN_TIMER_FINI();
-	BDM_Inited = 0;
-}
-
-uint8 BDM_Sync(uint16 *khz)
+static uint8 BDM_Sync(uint16 *khz)
 {
 	uint32 dly;
 
@@ -75,7 +76,7 @@ uint8 BDM_Sync(uint16 *khz)
 	// more 10ms for stablity
 	DelayMS(10);
 
-	SYNCSWPWM_IN_TIMER_DMA_INIT(2, BDM_DMA_IN_Buffer);
+	SYNCSWPWM_IN_TIMER_RISE_DMA_INIT(2, BDM_DMA_IN_Buffer);
 
 	SYNCSWPWM_OUT_TIMER_SetCycle(0xFFFF);
 	BDM_DMA_OUT_Buffer[0] = 0xFF00;
@@ -84,7 +85,7 @@ uint8 BDM_Sync(uint16 *khz)
 	SYNCSWPWM_OUT_TIMER_DMA_WAIT();
 
 	dly = BDM_MAX_DLY;
-	SYNCSWPWM_IN_TIMER_DMA_WAIT(dly);
+	SYNCSWPWM_IN_TIMER_RISE_DMA_WAIT(dly);
 
 	if (!dly)
 	{
@@ -110,7 +111,7 @@ uint8 BDM_Sync(uint16 *khz)
 	}
 }
 
-uint8 BDM_OutByte(uint8 data)
+static uint8 BDM_OutByte(uint8 data)
 {
 	int8 i;
 	uint16 *ptr = &BDM_DMA_OUT_Buffer[0];
@@ -133,7 +134,7 @@ uint8 BDM_OutByte(uint8 data)
 	return 0;
 }
 
-uint8 BDM_OutDly(void)
+static uint8 BDM_OutDly(void)
 {
 	uint8 i;
 	uint16 *ptr = &BDM_DMA_OUT_Buffer[0];
@@ -148,13 +149,13 @@ uint8 BDM_OutDly(void)
 	return 0;
 }
 
-uint8 BDM_InByte(uint8 *data)
+static uint8 BDM_InByte(uint8 *data)
 {
 	uint32 dly;
 	int8 i;
 	uint16 *ptr = &BDM_DMA_OUT_Buffer[0];
 
-	SYNCSWPWM_IN_TIMER_DMA_INIT(8, BDM_DMA_IN_Buffer);
+	SYNCSWPWM_IN_TIMER_RISE_DMA_INIT(8, BDM_DMA_IN_Buffer);
 
 	for (i = 0; i < 8; i++)
 	{
@@ -165,7 +166,7 @@ uint8 BDM_InByte(uint8 *data)
 	SYNCSWPWM_OUT_TIMER_DMA_WAIT();
 
 	dly = BDM_MAX_DLY;
-	SYNCSWPWM_IN_TIMER_DMA_WAIT(dly);
+	SYNCSWPWM_IN_TIMER_RISE_DMA_WAIT(dly);
 	if (!dly)
 	{
 		return 1;
@@ -187,7 +188,7 @@ uint8 BDM_InByte(uint8 *data)
 	return 0;
 }
 
-uint8 BDM_Transact(uint16 token, uint8 *out, uint8 *in)
+static uint8 BDM_Transact(uint16 token, uint8 *out, uint8 *in)
 {
 	uint32 dly;
 	uint16 outlen, inlen, i;
@@ -202,7 +203,7 @@ uint8 BDM_Transact(uint16 token, uint8 *out, uint8 *in)
 	{
 		outlen++;
 	}
-	SYNCSWPWM_IN_TIMER_DMA_INIT(outlen, BDM_DMA_IN_Buffer);
+	SYNCSWPWM_IN_TIMER_RISE_DMA_INIT(outlen, BDM_DMA_IN_Buffer);
 
 	// out data
 	outlen = BDM_OUT_LEN(token);
@@ -225,7 +226,7 @@ uint8 BDM_Transact(uint16 token, uint8 *out, uint8 *in)
 	}
 
 	dly = BDM_MAX_DLY;
-	SYNCSWPWM_IN_TIMER_DMA_WAIT(dly);
+	SYNCSWPWM_IN_TIMER_RISE_DMA_WAIT(dly);
 	if (!dly)
 	{
 		return 1;
@@ -245,6 +246,70 @@ uint8 BDM_Transact(uint16 token, uint8 *out, uint8 *in)
 	}
 
 	return 0;
+}
+
+RESULT bdm_init(uint8_t index)
+{
+	switch (index)
+	{
+	case 0:
+		BDM_Init();
+		return ERROR_OK;
+	default:
+		return ERROR_FAIL;
+	}
+}
+
+RESULT bdm_fini(uint8_t index)
+{
+	switch (index)
+	{
+	case 0:
+		BDM_Fini();
+		return ERROR_OK;
+	default:
+		return ERROR_FAIL;
+	}
+}
+
+RESULT bdm_sync(uint8_t index, uint16_t *khz)
+{
+	switch (index)
+	{
+	case 0:
+		if (BDM_Sync(khz))
+		{
+			return ERROR_FAIL;
+		}
+		else
+		{
+			return ERROR_OK;
+		}
+	default:
+		return ERROR_FAIL;
+	}
+}
+
+RESULT bdm_transact(uint8_t index, uint8_t *out, uint8_t outlen, uint8_t *in, 
+			uint8_t inlen, uint8_t delay, uint8_t ack)
+{
+	uint16_t token;
+	
+	switch (index)
+	{
+	case 0:
+		token = outlen | (inlen << 8) | (delay << 6) | (ack ? 0x8000 : 0x0000);
+		if (BDM_Transact(token, out, in))
+		{
+			return ERROR_FAIL;
+		}
+		else
+		{
+			return ERROR_OK;
+		}
+	default:
+		return ERROR_FAIL;
+	}
 }
 
 #endif

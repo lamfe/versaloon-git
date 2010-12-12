@@ -110,19 +110,19 @@ const struct misc_cmd_t avr32_notifier[] =
 
 
 
-#define jtag_init()					interfaces->jtag_hl.init()
-#define jtag_fini()					interfaces->jtag_hl.fini()
+#define jtag_init()					interfaces->jtag_hl.init(0)
+#define jtag_fini()					interfaces->jtag_hl.fini(0)
 #define jtag_config(kHz,a,b,c,d)	\
-	interfaces->jtag_hl.config((kHz), (a), (b), (c), (d))
-#define jtag_runtest(len)			interfaces->jtag_hl.runtest(len)
+	interfaces->jtag_hl.config(0, (kHz), (a), (b), (c), (d))
+#define jtag_runtest(len)			interfaces->jtag_hl.runtest(0, len)
 #define jtag_ir_write(i, len)		\
-	interfaces->jtag_hl.ir((uint8_t*)(i), (len), AVR32_JTAG_RTI_CYCLE, 0)
+	interfaces->jtag_hl.ir(0, (uint8_t*)(i), (len), AVR32_JTAG_RTI_CYCLE, 0)
 #define jtag_dr_write(d, len)		\
-	interfaces->jtag_hl.dr((uint8_t*)(d), (len), AVR32_JTAG_RTI_CYCLE, 0)
+	interfaces->jtag_hl.dr(0, (uint8_t*)(d), (len), AVR32_JTAG_RTI_CYCLE, 0)
 #define jtag_dr_read(d, len)		\
-	interfaces->jtag_hl.dr((uint8_t*)(d), (len), AVR32_JTAG_RTI_CYCLE, 1)
+	interfaces->jtag_hl.dr(0, (uint8_t*)(d), (len), AVR32_JTAG_RTI_CYCLE, 1)
 #define jtag_register_callback(s,r)	\
-	interfaces->jtag_hl.register_callback((s), (r))
+	interfaces->jtag_hl.register_callback(0, (s), (r))
 
 // retry 1000 times with 0 interval
 #define poll_start()				interfaces->poll.start(1000, 0)
@@ -143,10 +143,12 @@ const struct misc_cmd_t avr32_notifier[] =
 static struct interfaces_info_t *interfaces = NULL;
 
 static uint8_t pending_4bytes = 0;
-RESULT avr32jtag_receive_callback(enum jtag_irdr_t cmd, uint32_t ir, 
-									uint8_t *dest_buffer, uint8_t *src_buffer, 
-									uint16_t bytelen, uint16_t *processed)
+RESULT avr32jtag_receive_callback(uint8_t index, enum jtag_irdr_t cmd, 
+					uint32_t ir, uint8_t *dest_buffer, uint8_t *src_buffer, 
+					uint16_t bytelen, uint16_t *processed)
 {
+	REFERENCE_PARAMETER(index);
+	
 	if (NULL == src_buffer)
 	{
 		return ERROR_FAIL;
@@ -175,10 +177,12 @@ RESULT avr32jtag_receive_callback(enum jtag_irdr_t cmd, uint32_t ir,
 	return ERROR_FAIL;
 }
 
-RESULT avr32jtag_send_callback(enum jtag_irdr_t cmd, uint32_t ir, 
-								uint8_t *dest_buffer, uint8_t *src_buffer,
-								uint16_t bytelen, uint16_t *processed_len)
+RESULT avr32jtag_send_callback(uint8_t index, enum jtag_irdr_t cmd, 
+					uint32_t ir, uint8_t *dest_buffer, uint8_t *src_buffer,
+					uint16_t bytelen, uint16_t *processed_len)
 {
+	REFERENCE_PARAMETER(index);
+	
 	if ((NULL == src_buffer) || (NULL == dest_buffer))
 	{
 		return ERROR_FAIL;

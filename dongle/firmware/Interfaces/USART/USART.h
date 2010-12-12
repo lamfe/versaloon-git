@@ -3,10 +3,10 @@
  *  SimonQian@SimonQian.com                                               *
  *                                                                        *
  *  Project:    Versaloon                                                 *
- *  File:       SWD.h                                                     *
+ *  File:       USART.h                                                   *
  *  Author:     SimonQian                                                 *
  *  Versaion:   See changelog                                             *
- *  Purpose:    SWD interface header file                                 *
+ *  Purpose:    USART interface header file                               *
  *  License:    See license                                               *
  *------------------------------------------------------------------------*
  *  Change Log:                                                           *
@@ -14,9 +14,10 @@
  *      2008-11-07:     created(by SimonQian)                             *
  **************************************************************************/
 
-RESULT swd_init(uint8_t index);
-RESULT swd_fini(uint8_t index);
-RESULT swd_config(uint8_t index, uint8_t trn, uint16_t retry, uint16_t dly);
-RESULT swd_seqout(uint8_t index, uint8_t *data, uint16_t bitlen);
-RESULT swd_seqin(uint8_t index, uint8_t *data, uint16_t bitlen);
-RESULT swd_transact(uint8_t index, uint8_t request, uint32_t *data, uint8_t *ack);
+RESULT usart_init(uint8_t index);
+RESULT usart_fini(uint8_t index);
+RESULT usart_config(uint8_t index, uint32_t baudrate, uint8_t datalength, 
+					 char paritybit, char stopbit, char handshake);
+RESULT usart_send(uint8_t index, uint8_t *buf, uint16_t len);
+RESULT usart_receive(uint8_t index, uint8_t *buf, uint16_t len);
+RESULT usart_status(uint8_t index, struct usart_status_t *status);

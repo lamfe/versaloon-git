@@ -59,15 +59,15 @@ const struct program_mode_t msp430_program_mode[] =
 RESULT (*enter_program_mode_save)(struct program_context_t *context);
 struct program_functions_t msp430_program_functions;
 
-RESULT (*msp430jtagsbw_init)(void);
-RESULT (*msp430jtagsbw_fini)(void);
-RESULT (*msp430jtagsbw_config)(uint8_t has_test);
-RESULT (*msp430jtagsbw_ir)(uint8_t *ir, uint8_t want_ret);
-RESULT (*msp430jtagsbw_dr)(uint32_t *dr, uint8_t len, uint8_t want_ret);
-RESULT (*msp430jtagsbw_tclk)(uint8_t value);
-RESULT (*msp430jtagsbw_tclk_strobe)(uint16_t cnt);
-RESULT (*msp430jtagsbw_reset)(void);
-RESULT (*msp430jtagsbw_poll)(uint32_t dr, uint32_t mask, uint32_t value, 
+RESULT (*msp430jtagsbw_init)(uint8_t index);
+RESULT (*msp430jtagsbw_fini)(uint8_t index);
+RESULT (*msp430jtagsbw_config)(uint8_t index, uint8_t has_test);
+RESULT (*msp430jtagsbw_ir)(uint8_t index, uint8_t *ir, uint8_t want_ret);
+RESULT (*msp430jtagsbw_dr)(uint8_t index, uint32_t *dr, uint8_t len, uint8_t want_ret);
+RESULT (*msp430jtagsbw_tclk)(uint8_t index, uint8_t value);
+RESULT (*msp430jtagsbw_tclk_strobe)(uint8_t index, uint16_t cnt);
+RESULT (*msp430jtagsbw_reset)(uint8_t index);
+RESULT (*msp430jtagsbw_poll)(uint8_t index, uint32_t dr, uint32_t mask, uint32_t value, 
 						uint8_t len, uint16_t poll_cnt, uint8_t toggle_tclk);
 
 MISC_HANDLER(msp430_help)

@@ -19,7 +19,8 @@
 #define BDM_IN_LEN(token)		(((token) & 0x0F00) >> 8)
 #define BDM_ACK(token)			(((token) & 0x8000) != 0)
 
-void BDM_Init(void);
-void BDM_Fini(void);
-uint8 BDM_Sync(uint16 *khz);
-uint8 BDM_Transact(uint16 token, uint8 *out, uint8 *in);
+RESULT bdm_init(uint8_t index);
+RESULT bdm_fini(uint8_t index);
+RESULT bdm_sync(uint8_t index, uint16_t *khz);
+RESULT bdm_transact(uint8_t index, uint8_t *out, uint8_t outlen, uint8_t *in, 
+			uint8_t inlen, uint8_t delay, uint8_t ack);

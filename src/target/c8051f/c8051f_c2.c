@@ -59,12 +59,12 @@ struct program_functions_t c8051fc2_program_functions =
 #define delay_ms(ms)			interfaces->delay.delayms((ms) | 0x8000)
 #define delay_us(us)			interfaces->delay.delayus((us) & 0x7FFF)
 
-#define c2_init()				interfaces->c2.init()
-#define c2_fini()				interfaces->c2.fini()
-#define c2_write_ir(ir)			interfaces->c2.addr_write(ir)
-#define c2_read_ir(ir)			interfaces->c2.addr_read(ir);
-#define c2_write_dr(dr)			interfaces->c2.data_write(&dr, 1)
-#define c2_read_dr(dr)			interfaces->c2.data_read(dr, 1)
+#define c2_init()				interfaces->c2.init(0)
+#define c2_fini()				interfaces->c2.fini(0)
+#define c2_write_ir(ir)			interfaces->c2.addr_write(0, ir)
+#define c2_read_ir(ir)			interfaces->c2.addr_read(0, ir);
+#define c2_write_dr(dr)			interfaces->c2.data_write(0, &dr, 1)
+#define c2_read_dr(dr)			interfaces->c2.data_read(0, dr, 1)
 #define c2_poll_out_ready()		c8051f_c2_addr_poll(0x01, 0x01, 500)
 #define c2_poll_in_busy()		c8051f_c2_addr_poll(0x02, 0x00, 500)
 

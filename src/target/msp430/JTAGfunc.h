@@ -28,20 +28,20 @@
 
 
 
-#define msp430_jtag_init()									msp430jtagsbw_init()
-#define msp430_jtag_fini()									msp430jtagsbw_fini()
-#define msp430_jtag_config(has_test)						msp430jtagsbw_config(has_test)
-#define msp430_jtag_clr_tclk()								msp430jtagsbw_tclk(0)
-#define msp430_jtag_set_tclk()								msp430jtagsbw_tclk(1)
-#define msp430_jtag_ir_w(i)									{ ir = i; msp430jtagsbw_ir((uint8_t*)&ir, 0); }
-#define msp430_jtag_ir_rw(i, ptr)							{ *(uint8_t*)(ptr) = i; msp430jtagsbw_ir((uint8_t*)(ptr), 1); }
-#define msp430_jtag_dr16_w(d)								{ dr = SYS_TO_LE_U32(d); msp430jtagsbw_dr((uint32_t*)&dr, 16, 0); }
-#define msp430_jtag_dr16_rw(d, ptr)							{ *(uint32_t*)(ptr) = SYS_TO_LE_U32(d); msp430jtagsbw_dr((uint32_t*)(ptr), 16, 1); }
-#define msp430_jtag_dr20_w(d)								{ dr = SYS_TO_LE_U32(d); msp430jtagsbw_dr((uint32_t*)&dr, 20, 0); } while(0)
-#define msp430_jtag_dr20_rw(d, ptr)							{ *(uint32_t*)(ptr) = SYS_TO_LE_U32(d); msp430jtagsbw_dr((uint32_t*)(ptr), 20, 1); }
-#define msp430_jtag_dr_poll(dr, mask, value, len, cnt, t)	msp430jtagsbw_poll((dr), (mask), (value), (len), (cnt), (t))
-#define msp430_jtag_dr16_poll(dr, mask, value, cnt, t)		msp430jtagsbw_poll((dr), (mask), (value), 16, (cnt), (t))
-#define msp430_jtag_reset()									msp430jtagsbw_reset()
+#define msp430_jtag_init()									msp430jtagsbw_init(0)
+#define msp430_jtag_fini()									msp430jtagsbw_fini(0)
+#define msp430_jtag_config(has_test)						msp430jtagsbw_config(0, has_test)
+#define msp430_jtag_clr_tclk()								msp430jtagsbw_tclk(0, 0)
+#define msp430_jtag_set_tclk()								msp430jtagsbw_tclk(0, 1)
+#define msp430_jtag_ir_w(i)									{ ir = i; msp430jtagsbw_ir(0, (uint8_t*)&ir, 0); }
+#define msp430_jtag_ir_rw(i, ptr)							{ *(uint8_t*)(ptr) = i; msp430jtagsbw_ir(0, (uint8_t*)(ptr), 1); }
+#define msp430_jtag_dr16_w(d)								{ dr = SYS_TO_LE_U32(d); msp430jtagsbw_dr(0, (uint32_t*)&dr, 16, 0); }
+#define msp430_jtag_dr16_rw(d, ptr)							{ *(uint32_t*)(ptr) = SYS_TO_LE_U32(d); msp430jtagsbw_dr(0, (uint32_t*)(ptr), 16, 1); }
+#define msp430_jtag_dr20_w(d)								{ dr = SYS_TO_LE_U32(d); msp430jtagsbw_dr(0, (uint32_t*)&dr, 20, 0); } while(0)
+#define msp430_jtag_dr20_rw(d, ptr)							{ *(uint32_t*)(ptr) = SYS_TO_LE_U32(d); msp430jtagsbw_dr(0, (uint32_t*)(ptr), 20, 1); }
+#define msp430_jtag_dr_poll(dr, mask, value, len, cnt, t)	msp430jtagsbw_poll(0, (dr), (mask), (value), (len), (cnt), (t))
+#define msp430_jtag_dr16_poll(dr, mask, value, cnt, t)		msp430jtagsbw_poll(0, (dr), (mask), (value), 16, (cnt), (t))
+#define msp430_jtag_reset()									msp430jtagsbw_reset(0)
 
 #define delay_ms(ms)										prog->interfaces.delay.delayms((ms) | 0x8000)
 #define delay_us(us)										prog->interfaces.delay.delayus((us) & 0x7FFF)
@@ -58,8 +58,8 @@ typedef uint16_t word;
 
 #define DR_Shift16_Read(d, ptr)								msp430_jtag_dr16_rw((d), (ptr))
 #define IR_Shift_Read(i, ptr)								msp430_jtag_ir_rw((i), (ptr))
-#define DR_Shift0()											{ dr = SYS_TO_LE_U32(1); msp430jtagsbw_dr((uint32_t*)&dr, 1, 0); }
-#define TCLKstrobes(cnt)									msp430jtagsbw_tclk_strobe(cnt)
+#define DR_Shift0()											{ dr = SYS_TO_LE_U32(1); msp430jtagsbw_dr(0, (uint32_t*)&dr, 1, 0); }
+#define TCLKstrobes(cnt)									msp430jtagsbw_tclk_strobe(0, cnt)
 
 
 

@@ -14,10 +14,11 @@
  *      2008-11-07:     created(by SimonQian)                             *
  **************************************************************************/
 
-#define IIC_ADDR_MASK				0x03FF
-#define IIC_ADDR_10BIT				0x8000
-
-uint8 IIC_Init(uint16 kHz, uint16 ByteInterval, uint16 max_dly);
-void IIC_Fini(void);
-uint8 IIC_Write(uint8 chip_addr, uint8 *data, uint16 data_len, uint8 stop, uint16_t *actual_len);
-uint8 IIC_Read(uint8 chip_addr, uint8 *data, uint16 data_len, uint8 stop, uint16_t *actual_len);
+RESULT iic_init(uint8_t index);
+RESULT iic_fini(uint8_t index);
+RESULT iic_config(uint8_t index, uint16_t kHz, uint16_t byte_interval, 
+				 uint16_t max_dly);
+RESULT iic_read(uint8_t index, uint16_t chip_addr, uint8_t *data, 
+			   uint16_t data_len, uint8_t stop);
+RESULT iic_write(uint8_t index, uint16_t chip_addr, uint8_t *data, 
+				uint16_t data_len, uint8_t stop);

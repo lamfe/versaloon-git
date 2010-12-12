@@ -29,16 +29,14 @@
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
 
-uint8_t usbtousart_num_of_interface;
-
-RESULT usbtousart_init(void)
+RESULT usbtousart_init(uint8_t interface_index)
 {
-	return usbtoxxx_init_command(USB_TO_USART, &usbtousart_num_of_interface);
+	return usbtoxxx_init_command(USB_TO_USART, interface_index);
 }
 
-RESULT usbtousart_fini(void)
+RESULT usbtousart_fini(uint8_t interface_index)
 {
-	return usbtoxxx_fini_command(USB_TO_USART);
+	return usbtoxxx_fini_command(USB_TO_USART, interface_index);
 }
 
 RESULT usbtousart_config(uint8_t interface_index, uint32_t baudrate, 
@@ -98,7 +96,7 @@ RESULT usbtousart_send(uint8_t interface_index, uint8_t *buf, uint16_t len)
 }
 
 RESULT usbtousart_status(uint8_t interface_index, 
-							struct usbtousart_status_t *status)
+							struct usart_status_t *status)
 {
 #if PARAM_CHECK
 	if ((interface_index > 7) || (NULL == status))
@@ -109,6 +107,6 @@ RESULT usbtousart_status(uint8_t interface_index,
 #endif
 	
 	return usbtoxxx_status_command(USB_TO_USART, interface_index, 
-			sizeof(struct usbtousart_status_t), (uint8_t *)status, 0, 
-			sizeof(struct usbtousart_status_t), 0);
+			sizeof(struct usart_status_t), (uint8_t *)status, 0, 
+			sizeof(struct usart_status_t), 0);
 }

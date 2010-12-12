@@ -14,20 +14,9 @@
  *      2008-11-07:     created(by SimonQian)                             *
  **************************************************************************/
 
-#define C2_INS_Read							0x00
-#define C2_INS_Write						0x01
-#define C2_INS_Data							0x00
-#define C2_INS_Addr							0x02
-
-#define C2_INS_DataRead						(C2_INS_Data | C2_INS_Read)
-#define C2_INS_AddrRead						(C2_INS_Addr | C2_INS_Read)
-#define C2_INS_DataWrite					(C2_INS_Data | C2_INS_Write)
-#define C2_INS_AddrWrite					(C2_INS_Addr | C2_INS_Write)
-
-void C2_Init(void);
-void C2_Fini(void);
-void C2_ReadAddr(uint8 *ir);
-void C2_WriteAddr(uint8 ir);
-uint8 C2_ReadData(uint8 *data);
-uint8 C2_WriteData(uint8 data);
-
+RESULT c2_init(uint8_t index);
+RESULT c2_fini(uint8_t index);
+RESULT c2_addr_write(uint8_t index, uint8_t addr);
+RESULT c2_addr_read(uint8_t index, uint8_t *data);
+RESULT c2_data_read(uint8_t index, uint8_t *data, uint8_t len);
+RESULT c2_data_write(uint8_t index, uint8_t *data, uint8_t len);

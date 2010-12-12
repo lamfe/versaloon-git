@@ -18,14 +18,11 @@
 #if USB_TO_JTAG_RAW_EN
 
 #include "USB_TO_XXX.h"
-#include "JTAG_TAP.h"
-#if POWER_OUT_EN
-#	include "PowerExt.h"
-#endif
+#include "interfaces.h"
 
 void USB_TO_JTAG_RAW_ProcessCmd(uint8* dat, uint16 len)
 {
-	uint16 index, device_num, length;
+	uint16 index, device_idx, length;
 	uint32 num_of_bits, num_of_databyte;
 	uint8 command;
 
@@ -33,52 +30,57 @@ void USB_TO_JTAG_RAW_ProcessCmd(uint8* dat, uint16 len)
 	while(index < len)
 	{
 		command = dat[index] & USB_TO_XXX_CMDMASK;
-		device_num = dat[index] & USB_TO_XXX_IDXMASK;
-		if(device_num >= USB_TO_JTAG_RAW_NUM)
-		{
-			buffer_reply[rep_len++] = USB_TO_XXX_INVALID_INDEX;
-			return;
-		}
+		device_idx = dat[index] & USB_TO_XXX_IDXMASK;
 		length = GET_LE_U16(&dat[index + 1]);
 		index += 3;
 
 		switch(command)
 		{
 		case USB_TO_XXX_INIT:
-			buffer_reply[rep_len++] = USB_TO_XXX_OK;
-			buffer_reply[rep_len++] = USB_TO_JTAG_RAW_NUM;
-
-			GLOBAL_OUTPUT_Acquire();
-			PWREXT_Acquire();
-			DelayMS(1);
-
+			if (ERROR_OK == interfaces->jtag_raw.init(device_idx))
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+			}
+			else
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+			}
 			break;
 		case USB_TO_XXX_CONFIG:
-			JTAG_TAP_Init(GET_LE_U16(&dat[index]), JTAG_TAP_RAW);
-
-			buffer_reply[rep_len++] = USB_TO_XXX_OK;
-
+			if (ERROR_OK == interfaces->jtag_raw.config(device_idx, GET_LE_U16(&dat[index])))
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+			}
+			else
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+			}
 			break;
 		case USB_TO_XXX_FINI:
-			JTAG_TAP_Fini();
-
-			PWREXT_Release();
-			GLOBAL_OUTPUT_Release();
-
-			buffer_reply[rep_len++] = USB_TO_XXX_OK;
-
+			if (ERROR_OK == interfaces->jtag_raw.fini(device_idx))
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+			}
+			else
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+			}
 			break;
 		case USB_TO_XXX_IN_OUT:
-			buffer_reply[rep_len++] = USB_TO_XXX_OK;
-
 			num_of_bits = GET_LE_U32(&dat[index]);
 			num_of_databyte = ((num_of_bits + 7) >> 3);
-
-			JTAG_TAP_Operate_RAW(num_of_bits, &dat[index + 4], 
-					&dat[index + 4 + num_of_databyte], &buffer_reply[rep_len]);
-
+			
+			if (ERROR_OK == interfaces->jtag_raw.execute(device_idx, 
+								&dat[index + 4], &dat[index + 4 + num_of_databyte], 
+								&buffer_reply[rep_len + 1], num_of_bits))
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+			}
+			else
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+			}
 			rep_len += num_of_databyte;
-
 			break;
 		default:
 			buffer_reply[rep_len++] = USB_TO_XXX_CMD_NOT_SUPPORT;

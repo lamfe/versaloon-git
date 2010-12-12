@@ -18,27 +18,18 @@
 #if USB_TO_POWER_EN
 
 #include "USB_TO_XXX.h"
-#if POWER_OUT_EN
-#	include "PowerExt.h"
-#endif
-
-uint8 power_state = 0;
+#include "interfaces.h"
 
 void USB_TO_POWER_ProcessCmd(uint8* dat, uint16 len)
 {
-	uint16 index, device_num, length, voltage;
+	uint16 index, device_idx, length, voltage;
 	uint8 command;
 
 	index = 0;
 	while(index < len)
 	{
 		command = dat[index] & USB_TO_XXX_CMDMASK;
-		device_num = dat[index] & USB_TO_XXX_IDXMASK;
-		if(device_num >= USB_TO_POWER_NUM)
-		{
-			buffer_reply[rep_len++] = USB_TO_XXX_INVALID_INDEX;
-			return;
-		}
+		device_idx = dat[index] & USB_TO_XXX_IDXMASK;
 		length = GET_LE_U16(&dat[index + 1]);
 		index += 3;
 
@@ -46,7 +37,6 @@ void USB_TO_POWER_ProcessCmd(uint8* dat, uint16 len)
 		{
 		case USB_TO_XXX_INIT:
 			buffer_reply[rep_len++] = USB_TO_XXX_OK;
-			buffer_reply[rep_len++] = USB_TO_POWER_NUM;
 
 			break;
 		case USB_TO_XXX_CONFIG:
@@ -58,31 +48,24 @@ void USB_TO_POWER_ProcessCmd(uint8* dat, uint16 len)
 			buffer_reply[rep_len++] = USB_TO_XXX_OK;
 
 			break;
+		case USB_TO_XXX_IN:
+			if (ERROR_OK == interfaces->target_voltage.get(device_idx, &voltage))
+			{
+				buffer_reply[rep_len] = USB_TO_XXX_OK;
+				SET_LE_U16(&buffer_reply[rep_len], voltage);
+			}
+			else
+			{
+				buffer_reply[rep_len] = USB_TO_XXX_FAILED;
+			}
+			rep_len += 3;
+
+			break;
 		case USB_TO_XXX_OUT:
 			voltage = GET_LE_U16(&dat[index]);
-			if (!PWREXT_GetState())
-			{
-				power_state = 0;
-			}
-
-			if(voltage == 3300)
-			{
-				// only support 3.3V
-				buffer_reply[rep_len++] = USB_TO_XXX_OK;
-				if (!power_state)
-				{
-					power_state = 1;
-					PWREXT_Acquire();
-				}
-			}
-			else if(voltage == 0)
+			if (ERROR_OK == interfaces->target_voltage.set(device_idx, voltage))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
-				if (power_state)
-				{
-					power_state = 0;
-					PWREXT_ForceRelease();
-				}
 			}
 			else
 			{

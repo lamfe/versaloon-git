@@ -29,29 +29,14 @@
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
 
-uint8_t usbtoissp_num_of_interface = 0;
-
-RESULT usbtoissp_init(void)
+RESULT usbtoissp_init(uint8_t interface_index)
 {
-	return usbtoxxx_init_command(USB_TO_ISSP, &usbtoissp_num_of_interface);
+	return usbtoxxx_init_command(USB_TO_ISSP, interface_index);
 }
 
-RESULT usbtoissp_fini(void)
+RESULT usbtoissp_fini(uint8_t interface_index)
 {
-	return usbtoxxx_fini_command(USB_TO_ISSP);
-}
-
-RESULT usbtoissp_config(uint8_t interface_index)
-{
-#if PARAM_CHECK
-	if (interface_index > 7)
-	{
-		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
-		return ERROR_FAIL;
-	}
-#endif
-	
-	return usbtoxxx_conf_command(USB_TO_ISSP, interface_index, NULL, 0);
+	return usbtoxxx_fini_command(USB_TO_ISSP, interface_index);
 }
 
 RESULT usbtoissp_vector(uint8_t interface_index, uint8_t operate, uint8_t addr, 

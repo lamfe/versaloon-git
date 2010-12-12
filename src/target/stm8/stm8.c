@@ -121,23 +121,23 @@ const struct misc_cmd_t stm8_notifier[] =
 
 
 
-#define reset_init()			interfaces->gpio.init()
-#define reset_fini()			interfaces->gpio.fini()
+#define reset_init()			interfaces->gpio.init(0)
+#define reset_fini()			interfaces->gpio.fini(0)
 #define reset_output()			\
-	interfaces->gpio.config(SWIM_RST_PIN, SWIM_RST_PIN, 0)
+	interfaces->gpio.config(0, SWIM_RST_PIN, SWIM_RST_PIN, 0)
 #define reset_input()			\
-	interfaces->gpio.config(SWIM_RST_PIN, 0, SWIM_RST_PIN)
+	interfaces->gpio.config(0, SWIM_RST_PIN, 0, SWIM_RST_PIN)
 #define reset_set()				reset_input()
 #define reset_clr()				reset_output()
 
-#define swim_init()				interfaces->swim.init()
-#define swim_fini()				interfaces->swim.fini()
-#define swim_config(m,c0,c1)	interfaces->swim.config((m), (c0), (c1))
-#define swim_srst()				interfaces->swim.srst()
-#define swim_wotf(a, b, l)		interfaces->swim.wotf((b), (l), (a))
-#define swim_rotf(a, b, l)		interfaces->swim.rotf((b), (l), (a))
-#define swim_sync(m)			interfaces->swim.sync(m)
-#define swim_enable()			interfaces->swim.enable()
+#define swim_init()				interfaces->swim.init(0)
+#define swim_fini()				interfaces->swim.fini(0)
+#define swim_config(m,c0,c1)	interfaces->swim.config(0, (m), (c0), (c1))
+#define swim_srst()				interfaces->swim.srst(0)
+#define swim_wotf(a, b, l)		interfaces->swim.wotf(0, (b), (l), (a))
+#define swim_rotf(a, b, l)		interfaces->swim.rotf(0, (b), (l), (a))
+#define swim_sync(m)			interfaces->swim.sync(0, m)
+#define swim_enable()			interfaces->swim.enable(0)
 
 #define delay_ms(ms)			interfaces->delay.delayms((ms) | 0x8000)
 #define delay_us(us)			interfaces->delay.delayus((us) & 0x7FFF)

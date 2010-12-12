@@ -29,17 +29,14 @@
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
 
-uint8_t usbtojtagraw_num_of_interface = 0;
-
-RESULT usbtojtagraw_init(void)
+RESULT usbtojtagraw_init(uint8_t interface_index)
 {
-	return usbtoxxx_init_command(USB_TO_JTAG_RAW, 
-									&usbtojtagraw_num_of_interface);
+	return usbtoxxx_init_command(USB_TO_JTAG_RAW, interface_index);
 }
 
-RESULT usbtojtagraw_fini(void)
+RESULT usbtojtagraw_fini(uint8_t interface_index)
 {
-	return usbtoxxx_fini_command(USB_TO_JTAG_RAW);
+	return usbtoxxx_fini_command(USB_TO_JTAG_RAW, interface_index);
 }
 
 RESULT usbtojtagraw_config(uint8_t interface_index, uint16_t kHz)

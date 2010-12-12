@@ -18,43 +18,35 @@
 #if USB_TO_SPI_EN
 
 #include "USB_TO_XXX.h"
-#include "SPI.h"
-#if POWER_OUT_EN
-#	include "PowerExt.h"
-#endif
-
-#define USB_TO_SPI_GetSPI(index)			SPI_Interface
+#include "interfaces.h"
 
 void USB_TO_SPI_ProcessCmd(uint8* dat, uint16 len)
 {
-	uint16 index, device_num, length;
+	uint16 index, device_idx, length;
 	uint8 command;
 
-	uint8 cpol, cpha, firstbit, attr;
-	uint16 frequency, i;
+	uint8 attr;
+	uint16 frequency;
 
 	index = 0;
 	while(index < len)
 	{
 		command = dat[index] & USB_TO_XXX_CMDMASK;
-		device_num = dat[index] & USB_TO_XXX_IDXMASK;
-		if(device_num >= USB_TO_SPI_NUM)
-		{
-			buffer_reply[rep_len++] = USB_TO_XXX_INVALID_INDEX;
-			return;
-		}
+		device_idx = dat[index] & USB_TO_XXX_IDXMASK;
 		length = GET_LE_U16(&dat[index + 1]);
 		index += 3;
 
 		switch(command)
 		{
 		case USB_TO_XXX_INIT:
-			buffer_reply[rep_len++] = USB_TO_XXX_OK;
-			buffer_reply[rep_len++] = USB_TO_SPI_NUM;
-
-			GLOBAL_OUTPUT_Acquire();
-			PWREXT_Acquire();
-			DelayMS(1);
+			if (ERROR_OK == interfaces->spi.init(device_idx))
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+			}
+			else
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+			}
 
 			break;
 		case USB_TO_XXX_CONFIG:
@@ -62,57 +54,43 @@ void USB_TO_SPI_ProcessCmd(uint8* dat, uint16 len)
 			frequency = GET_LE_U16(&dat[index + 1]);
 			index += 3;
 
-			if(attr & USB_TO_SPI_CPOL_HIGH)
+			if (ERROR_OK == 
+					interfaces->spi.config(device_idx, frequency, 
+										  attr & USB_TO_SPI_CPOL_MASK, 
+										  attr & USB_TO_SPI_CPHA_MASK, 
+										  attr & USB_TO_SPI_FIRSTBIT_MASK))
 			{
-				cpol = SPI_CPOL_High;
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
 			else
 			{
-				cpol = SPI_CPOL_Low;
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
-			if(attr & USB_TO_SPI_CPHA_2EDGE)
-			{
-				// 2 edge
-				cpha = SPI_CPHA_2Edge;
-			}
-			else
-			{
-				// 1 edge
-				cpha = SPI_CPHA_1Edge;
-			}
-			if(attr & USB_TO_SPI_MSB_FIRST)
-			{
-				// msb first
-				firstbit = SPI_FirstBit_MSB;
-			}
-			else
-			{
-				// lsb first
-				firstbit = SPI_FirstBit_LSB;
-			}
-
-			SPI_Config(frequency * 1000, firstbit, cpol, cpha);
-
-			buffer_reply[rep_len++] = USB_TO_XXX_OK;
 
 			break;
 		case USB_TO_XXX_FINI:
-			SPI_I2S_DeInit(USB_TO_SPI_GetSPI(i));
-			SPI_AllInput();
-
-			PWREXT_Release();
-			GLOBAL_OUTPUT_Release();
-
-			buffer_reply[rep_len++] = USB_TO_XXX_OK;
+			if (ERROR_OK == interfaces->spi.fini(device_idx))
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+			}
+			else
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+			}
 
 			break;
 		case USB_TO_XXX_IN_OUT:
-			buffer_reply[rep_len++] = USB_TO_XXX_OK;
-
-			for(i = 0; i < length; i++)
+			if (ERROR_OK == 
+					interfaces->spi.io(device_idx, &dat[index], 
+									  &buffer_reply[rep_len + 1], length))
 			{
-				buffer_reply[rep_len++] = SPI_RW(dat[index + i]);
+				buffer_reply[rep_len] = USB_TO_XXX_OK;
 			}
+			else
+			{
+				buffer_reply[rep_len] = USB_TO_XXX_FAILED;
+			}
+			rep_len += 1 + length;
 
 			break;
 		default:

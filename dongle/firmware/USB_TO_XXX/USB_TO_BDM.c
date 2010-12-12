@@ -18,99 +18,93 @@
 #if USB_TO_BDM_EN
 
 #include "USB_TO_XXX.h"
+#include "interfaces.h"
 #include "BDM.h"
-#if POWER_OUT_EN
-#	include "PowerExt.h"
-#endif
 
 void USB_TO_BDM_ProcessCmd(uint8* dat, uint16 len)
 {
-	uint16 index, device_num, length;
+	uint16 index, device_idx, length;
 	uint8 command;
 	uint16 token;
 	uint16 processed_len;
-	uint16 reply_ack_pos;
-	uint8 err;
+	uint16 rindex;
+	bool fail;
 
 	index = 0;
 	while(index < len)
 	{
 		command = dat[index] & USB_TO_XXX_CMDMASK;
-		device_num = dat[index] & USB_TO_XXX_IDXMASK;
-		if(device_num >= USB_TO_BDM_NUM)
-		{
-			buffer_reply[rep_len++] = USB_TO_XXX_INVALID_INDEX;
-			return;
-		}
+		device_idx = dat[index] & USB_TO_XXX_IDXMASK;
 		length = GET_LE_U16(&dat[index + 1]);
 		index += 3;
 
 		switch(command)
 		{
 		case USB_TO_XXX_INIT:
-			buffer_reply[rep_len++] = USB_TO_XXX_OK;
-			buffer_reply[rep_len++] = USB_TO_BDM_NUM;
-
-			GLOBAL_OUTPUT_Acquire();
-			PWREXT_Acquire();
-			DelayMS(1);
-
-			break;
-		case USB_TO_XXX_CONFIG:
-			buffer_reply[rep_len++] = USB_TO_XXX_OK;
-
-			BDM_Init();
-
+			if (ERROR_OK == interfaces->bdm.init(device_idx))
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+			}
+			else
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+			}
 			break;
 		case USB_TO_XXX_FINI:
-			buffer_reply[rep_len++] = USB_TO_XXX_OK;
-
-			BDM_Fini();
-
-			PWREXT_Release();
-			GLOBAL_OUTPUT_Release();
-
+			if (ERROR_OK == interfaces->bdm.fini(device_idx))
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+			}
+			else
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+			}
 			break;
 		case USB_TO_BDM_TRANSACT:
-			reply_ack_pos = rep_len++;
-
-			err = 0;
+			rindex = rep_len++;
+			fail = false;
 			processed_len = 0;
+			
 			while (processed_len < length)
 			{
 				token = GET_LE_U16(&dat[index + processed_len]);
 				processed_len += 2;
-				if (BDM_Transact(token, &dat[index + processed_len], 
-						&buffer_reply[rep_len]))
+				
+				if (ERROR_OK == interfaces->bdm.transact(device_idx, 
+									&dat[index + processed_len], BDM_OUT_LEN(token), 
+									&buffer_reply[rep_len], BDM_IN_LEN(token), 
+									BDM_OUT_DLY_CNT(token), BDM_ACK(token)))
 				{
-					err = 1;
+					
+				}
+				else
+				{
+					fail = true;
 					break;
 				}
 				processed_len += BDM_OUT_LEN(token);
 				rep_len += BDM_IN_LEN(token);
 			}
-
-			if (err)
+			if (fail)
 			{
-				buffer_reply[reply_ack_pos] = USB_TO_XXX_FAILED;
+				buffer_reply[rindex] = USB_TO_XXX_FAILED;
 			}
 			else
 			{
-				buffer_reply[reply_ack_pos] = USB_TO_XXX_OK;
+				buffer_reply[rindex] = USB_TO_XXX_OK;
 			}
-
 			break;
 		case USB_TO_XXX_SYNC:
-			if (BDM_Sync(&processed_len))
-			{
-				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
-			}
-			else
+			if (ERROR_OK == interfaces->bdm.sync(device_idx, &processed_len))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 				SET_LE_U16(&buffer_reply[rep_len], processed_len);
-				rep_len += sizeof(uint16);
 			}
+			else
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+			}
+			rep_len += 2;
 			break;
 		default:
 			buffer_reply[rep_len++] = USB_TO_XXX_INVALID_CMD;

@@ -29,16 +29,14 @@
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
 
-uint8_t usbtopwr_num_of_interface = 0;
-
-RESULT usbtopwr_init(void)
+RESULT usbtopwr_init(uint8_t interface_index)
 {
-	return usbtoxxx_init_command(USB_TO_POWER, &usbtopwr_num_of_interface);
+	return usbtoxxx_init_command(USB_TO_POWER, interface_index);
 }
 
-RESULT usbtopwr_fini(void)
+RESULT usbtopwr_fini(uint8_t interface_index)
 {
-	return usbtoxxx_fini_command(USB_TO_POWER);
+	return usbtoxxx_fini_command(USB_TO_POWER, interface_index);
 }
 
 RESULT usbtopwr_config(uint8_t interface_index)

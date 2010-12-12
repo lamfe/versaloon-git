@@ -57,19 +57,19 @@ struct program_functions_t avr8isp_program_functions =
 
 
 
-#define spi_init()				interfaces->spi.init()
-#define spi_fini()				interfaces->spi.fini()
+#define spi_init()				interfaces->spi.init(0)
+#define spi_fini()				interfaces->spi.fini(0)
 #define spi_conf(speed)			\
-	interfaces->spi.config((speed), SPI_CPOL_LOW, SPI_CPHA_1EDGE, SPI_MSB_FIRST)
+	interfaces->spi.config(0, (speed), SPI_CPOL_LOW, SPI_CPHA_1EDGE, SPI_MSB_FIRST)
 #define spi_io(out, outlen, in, inpos, inlen)	\
-	interfaces->spi.io((out), (in), (outlen), (inpos), (inlen))
+	interfaces->spi.io(0, (out), (in), (outlen), (inpos), (inlen))
 
-#define reset_init()			interfaces->gpio.init()
-#define reset_fini()			interfaces->gpio.fini()
+#define reset_init()			interfaces->gpio.init(0)
+#define reset_fini()			interfaces->gpio.fini(0)
 #define reset_output()			\
-	interfaces->gpio.config(GPIO_SRST, GPIO_SRST, 0)
+	interfaces->gpio.config(0, GPIO_SRST, GPIO_SRST, 0)
 #define reset_input()			\
-	interfaces->gpio.config(GPIO_SRST, 0, GPIO_SRST)
+	interfaces->gpio.config(0, GPIO_SRST, 0, GPIO_SRST)
 #define reset_set()				reset_input()
 #define reset_clr()				reset_output()
 

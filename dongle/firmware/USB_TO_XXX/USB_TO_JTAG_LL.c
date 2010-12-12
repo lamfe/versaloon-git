@@ -18,94 +18,97 @@
 #if USB_TO_JTAG_LL_EN
 
 #include "USB_TO_XXX.h"
-#include "JTAG_TAP.h"
-#if POWER_OUT_EN
-#	include "PowerExt.h"
-#endif
+#include "interfaces.h"
 
 void USB_TO_JTAG_LL_ProcessCmd(uint8* dat, uint16 len)
 {
-	uint16 index, device_num, length;
+	uint16 index, device_idx, length;
 	uint8 command;
 
 	uint8 para;
-	uint32 cur_dat_len, i;
+	uint32 cur_dat_len;
 
 	index = 0;
 	while(index < len)
 	{
 		command = dat[index] & USB_TO_XXX_CMDMASK;
-		device_num = dat[index] & USB_TO_XXX_IDXMASK;
-		if(device_num >= USB_TO_JTAG_LL_NUM)
-		{
-			buffer_reply[rep_len++] = USB_TO_XXX_INVALID_INDEX;
-			return;
-		}
+		device_idx = dat[index] & USB_TO_XXX_IDXMASK;
 		length = GET_LE_U16(&dat[index + 1]);
 		index += 3;
 
 		switch(command)
 		{
 		case USB_TO_XXX_INIT:
-			buffer_reply[rep_len++] = USB_TO_XXX_OK;
-			buffer_reply[rep_len++] = USB_TO_JTAG_LL_NUM;
-
-			GLOBAL_OUTPUT_Acquire();
-			PWREXT_Acquire();
-			DelayMS(1);
-
+			if (ERROR_OK == interfaces->jtag_ll.init(device_idx))
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+			}
+			else
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+			}
 			break;
 		case USB_TO_XXX_CONFIG:
-			JTAG_TAP_Init(GET_LE_U16(&dat[index]), JTAG_TAP_ASYN);
-
-			buffer_reply[rep_len++] = USB_TO_XXX_OK;
-
+			if (ERROR_OK == interfaces->jtag_ll.config(device_idx, GET_LE_U16(&dat[index])))
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+			}
+			else
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+			}
 			break;
 		case USB_TO_XXX_FINI:
-			JTAG_TAP_Fini();
-
-			PWREXT_Release();
-			GLOBAL_OUTPUT_Release();
-
-			buffer_reply[rep_len++] = USB_TO_XXX_OK;
-
+			if (ERROR_OK == interfaces->jtag_ll.fini(device_idx))
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+			}
+			else
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+			}
 			break;
 		case USB_TO_JTAG_LL_SCAN:
 			cur_dat_len = GET_LE_U16(&dat[index]);
 			para = cur_dat_len >> 15;
 			cur_dat_len &= 0x7FFF;
 
-			buffer_reply[rep_len++] = USB_TO_XXX_OK;
-
-			JTAG_TAP_RW(buffer_reply + rep_len,						// tdo
-						&dat[index + 2 + para],						// tdi
-						dat[index + 2],								// tms_before
-						dat[index + 2 + cur_dat_len + para],		// tms_after0
-						dat[index + 2 + cur_dat_len + para + 1],	// tms_after1
-						cur_dat_len | ((uint16)para << 15));		// dat_byte_len
+			if (ERROR_OK == interfaces->jtag_ll.scan(device_idx, 
+								&dat[index + 2 + para], cur_dat_len * 8, para, 
+								dat[index + 2], dat[index + 2 + cur_dat_len + para], 
+								dat[index + 2 + cur_dat_len + para + 1]))
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+				memcpy(&buffer_reply[rep_len], &dat[index + 2 + para], cur_dat_len);
+			}
+			else
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+			}
 			rep_len += cur_dat_len;
-
 			break;
 		case USB_TO_JTAG_LL_TMS:
-			cur_dat_len = length;									// in Byte
-
-			for(i = 0; i < cur_dat_len; i++)
+			if (ERROR_OK == interfaces->jtag_ll.tms(device_idx, &dat[index], length))
 			{
-				JTAG_TAP_WriteTMSByte_ASYN(dat[index + i]);
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
-
-			buffer_reply[rep_len++] = USB_TO_XXX_OK;
-
+			else
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+			}
 			break;
 		case USB_TO_JTAG_LL_TMS_CLOCKS:
 			para = dat[index];
 			cur_dat_len = GET_LE_U32(&dat[index + 1]);
-			while(cur_dat_len--)
+			
+			if (ERROR_OK == interfaces->jtag_ll.tms_clocks(device_idx, cur_dat_len, para))
 			{
-				JTAG_TAP_WriteTMSByte_ASYN(para);
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
-			buffer_reply[rep_len++] = USB_TO_XXX_OK;
-
+			else
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+			}
 			break;
 		default:
 			buffer_reply[rep_len++] = USB_TO_XXX_CMD_NOT_SUPPORT;

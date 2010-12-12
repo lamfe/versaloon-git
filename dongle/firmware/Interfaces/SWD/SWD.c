@@ -17,7 +17,20 @@
 #include "app_cfg.h"
 #if INTERFACE_SWD_EN
 
+#include "interfaces.h"
 #include "SWD.h"
+
+#define SWD_SUCCESS				0x00
+#define SWD_FAULT				0x80
+#define SWD_RETRY_OUT			0x40
+#define SWD_ACK_ERROR			0x20
+#define SWD_PARITY_ERROR		0x10
+
+#define SWD_ACK_OK				0x01
+#define SWD_ACK_WAIT			0x02
+#define SWD_ACK_FAULT			0x04
+
+#define SWD_TRANS_RnW			(1 << 2)
 
 uint8 SWD_Trn = 1;
 uint16 SWD_Retry = 0;
@@ -250,6 +263,104 @@ void SWD_SetTurnaround(uint8 cycles)
 void SWD_SetRetryCount(uint16 retry)
 {
 	SWD_Retry = retry;
+}
+
+RESULT swd_init(uint8_t index)
+{
+	switch (index)
+	{
+	case 0:
+		return ERROR_OK;
+	default:
+		return ERROR_FAIL;
+	}
+}
+
+RESULT swd_fini(uint8_t index)
+{
+	switch (index)
+	{
+	case 0:
+		SWD_Fini();
+		return ERROR_OK;
+	default:
+		return ERROR_FAIL;
+	}
+}
+
+RESULT swd_config(uint8_t index, uint8_t trn, uint16_t retry, uint16_t dly)
+{
+	switch (index)
+	{
+	case 0:
+		SWD_SetTurnaround(trn);
+		SWD_SetRetryCount(retry);
+		SWD_SetDelay(dly);
+		SWD_Init();
+		return ERROR_OK;
+	default:
+		return ERROR_FAIL;
+	}
+}
+
+RESULT swd_seqout(uint8_t index, uint8_t *data, uint16_t bitlen)
+{
+	switch (index)
+	{
+	case 0:
+		if (data == NULL)
+		{
+			return ERROR_FAIL;
+		}
+		
+		SWD_SWDIO_SET();
+		SWD_SWDIO_SETOUTPUT();
+		SWD_SeqOut(data, bitlen);
+		SWD_SWDIO_SETINPUT();
+		return ERROR_OK;
+	default:
+		return ERROR_FAIL;
+	}
+}
+
+RESULT swd_seqin(uint8_t index, uint8_t *data, uint16_t bitlen)
+{
+	switch (index)
+	{
+	case 0:
+		if (data == NULL)
+		{
+			return ERROR_FAIL;
+		}
+		
+		SWD_SeqIn(data, bitlen);
+		return ERROR_OK;
+	default:
+		return ERROR_FAIL;
+	}
+}
+
+RESULT swd_transact(uint8_t index, uint8_t request, uint32_t *data, 
+					   uint8_t *ack)
+{
+	uint8_t ack_tmp;
+	switch (index)
+	{
+	case 0:
+		if (data == NULL)
+		{
+			return ERROR_FAIL;
+		}
+		
+		ack_tmp = SWD_Transaction(request, data);
+		if (ack != NULL)
+		{
+			*ack = ack_tmp;
+		}
+		return ERROR_OK;
+	default:
+		return ERROR_FAIL;
+	}
 }
 
 #endif

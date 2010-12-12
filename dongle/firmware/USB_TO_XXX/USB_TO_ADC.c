@@ -42,7 +42,6 @@ void USB_TO_ADC_ProcessCmd(uint8* dat, uint16 len)
 		{
 		case USB_TO_XXX_INIT:
 			buffer_reply[rep_len++] = USB_TO_XXX_OK;
-			buffer_reply[rep_len++] = USB_TO_ADC_NUM;
 
 			break;
 		case USB_TO_XXX_CONFIG:

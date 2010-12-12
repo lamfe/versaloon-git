@@ -14,13 +14,13 @@
  *      2008-11-07:     created(by SimonQian)                             *
  **************************************************************************/
 
-#define MSP430_JTAG_IR_LEN					8
-
-void MSP430_JTAG_Init(uint8 has_test);
-void MSP430_JTAG_Fini(void);
-void MSP430_JTAG_TCLK(uint8 tclk);
-void MSP430_JTAG_TCLK_STROKE(uint16 cnt);
-uint8 MSP430_JTAG_Poll(uint32 data, uint32 mask, uint32 value, uint8 len, uint16 poll_cnt);
-uint32 MSP430_JTAG_DR(uint32 dr, uint8 len);
-uint8 MSP430_JTAG_IR(uint8 ir, uint8 len);
-void MSP430_JTAG_Reset(void);
+RESULT msp430jtag_init(uint8_t index);
+RESULT msp430jtag_fini(uint8_t index);
+RESULT msp430jtag_config(uint8_t index, uint8_t has_test);
+RESULT msp430jtag_ir(uint8_t index, uint8_t *ir);
+RESULT msp430jtag_dr(uint8_t index, uint32_t *dr, uint8_t bitlen);
+RESULT msp430jtag_tclk(uint8_t index, uint8_t value);
+RESULT msp430jtag_tclk_strobe(uint8_t index, uint16_t cnt);
+RESULT msp430jtag_reset(uint8_t index);
+RESULT msp430jtag_poll(uint8_t index, uint32_t dr, uint32_t mask, uint32_t value, 
+				uint8_t len, uint16_t poll_cnt, uint8_t toggle_tclk);

@@ -29,29 +29,14 @@
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
 
-uint8_t usbtoc2_num_of_interface = 0;
-
-RESULT usbtoc2_init(void)
+RESULT usbtoc2_init(uint8_t interface_index)
 {
-	return usbtoxxx_init_command(USB_TO_C2, &usbtoc2_num_of_interface);
+	return usbtoxxx_init_command(USB_TO_C2, interface_index);
 }
 
-RESULT usbtoc2_fini(void)
+RESULT usbtoc2_fini(uint8_t interface_index)
 {
-	return usbtoxxx_fini_command(USB_TO_C2);
-}
-
-RESULT usbtoc2_config(uint8_t interface_index)
-{
-#if PARAM_CHECK
-	if (interface_index > 7)
-	{
-		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
-		return ERROR_FAIL;
-	}
-#endif
-	
-	return usbtoxxx_conf_command(USB_TO_C2, interface_index, NULL, 0);
+	return usbtoxxx_fini_command(USB_TO_C2, interface_index);
 }
 
 RESULT usbtoc2_readaddr(uint8_t interface_index, uint8_t *data)
@@ -88,8 +73,7 @@ RESULT usbtoc2_writeaddr(uint8_t interface_index, uint8_t addr)
 	return usbtoxxx_out_command(USB_TO_C2, interface_index, &addr, 1, 0);
 }
 
-RESULT usbtoc2_data(uint8_t interface_index, uint8_t r, uint8_t len, 
-						uint8_t *buf)
+RESULT usbtoc2_readdata(uint8_t interface_index, uint8_t *buf, uint8_t len)
 {
 	uint8_t cmdbuf[5];
 	
@@ -106,21 +90,34 @@ RESULT usbtoc2_data(uint8_t interface_index, uint8_t r, uint8_t len,
 	}
 #endif
 	
-	if (r)
+	cmdbuf[0] = 0x80 | len;
+	memset(cmdbuf + 1, 0, len);
+	
+	return usbtoxxx_inout_command(USB_TO_C2, interface_index, cmdbuf, 
+									1 + len, len, buf, 0, len, 0);
+}
+
+RESULT usbtoc2_writedata(uint8_t interface_index, uint8_t *buf, uint8_t len)
+{
+	uint8_t cmdbuf[5];
+	
+#if PARAM_CHECK
+	if (interface_index > 7)
 	{
-		cmdbuf[0] = 0x80 | len;
-		memset(cmdbuf + 1, 0, len);
-		
-		return usbtoxxx_inout_command(USB_TO_C2, interface_index, cmdbuf, 
-									  1 + len, len, buf, 0, len, 0);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
+		return ERROR_FAIL;
 	}
-	else
+	if ((len > 4) || (0 == len))
 	{
-		cmdbuf[0] = len;
-		memcpy(cmdbuf + 1, buf, len);
-		
-		return usbtoxxx_inout_command(USB_TO_C2, interface_index, cmdbuf, 
-									  1 + len, 0, NULL, 0, 0, 0);
+		LOG_BUG(ERRMSG_INVALID_VALUE, len, "C2 data length(1..4)");
+		return ERRCODE_INVALID_PARAMETER;
 	}
+#endif
+	
+	cmdbuf[0] = len;
+	memcpy(cmdbuf + 1, buf, len);
+	
+	return usbtoxxx_inout_command(USB_TO_C2, interface_index, cmdbuf, 
+									1 + len, 0, NULL, 0, 0, 0);
 }
 
