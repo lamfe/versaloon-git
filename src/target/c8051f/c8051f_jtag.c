@@ -64,10 +64,12 @@ static struct interfaces_info_t *interfaces = NULL;
 #define jtag_config(kHz,a,b,c,d)	\
 	interfaces->jtag_hl.config(0, (kHz), (a), (b), (c), (d))
 #define jtag_runtest(len)			interfaces->jtag_hl.runtest(0, len)
-#define jtag_ir(i, len)				\
-	interfaces->jtag_hl.ir(0, (uint8_t*)(i), (len), 1)
-#define jtag_dr(d, len)				\
-	interfaces->jtag_hl.dr(0, (uint8_t*)(d), (len), 1)
+#define jtag_ir_write(i, len)		\
+	interfaces->jtag_hl.ir(0, (uint8_t*)(i), (len), 1, 0)
+#define jtag_dr_write(d, len)		\
+	interfaces->jtag_hl.dr(0, (uint8_t*)(d), (len), 1, 0)
+#define jtag_dr_read(d, len)		\
+	interfaces->jtag_hl.dr(0, (uint8_t*)(d), (len), 1, 1)
 
 #if 0
 #define jtag_poll_busy()			c8051f_jtag_poll_busy()
@@ -91,7 +93,7 @@ RESULT c8051f_jtag_poll_busy(void)
 {
 	poll_start(C8051F_JTAG_MAX_POLL_COUNT, 0);
 	
-	jtag_dr(NULL, 1);
+	jtag_dr_read(NULL, 1);
 	poll_ok(0, 0x01, 0x00);
 	
 	poll_end();
@@ -113,15 +115,15 @@ RESULT c8051f_jtag_ind_read(uint8_t addr, uint32_t *value, uint8_t num_bits)
 #endif
 	
 	ir = SYS_TO_LE_U16(addr | C8051F_IR_STATECNTL_SUSPEND);
-	jtag_ir(&ir, C8051F_IR_LEN);
+	jtag_ir_write(&ir, C8051F_IR_LEN);
 	
 	dr = SYS_TO_LE_U16(C8051F_INDOPTCODE_READ);
-	jtag_dr(&dr, 2);
+	jtag_dr_write(&dr, 2);
 	
 	dr = 0;
 	jtag_poll_busy();
 	
-	jtag_dr(value, num_bits + 1);
+	jtag_dr_read(value, num_bits + 1);
 	
 	return ERROR_OK;
 }
@@ -140,11 +142,11 @@ RESULT c8051f_jtag_ind_write(uint8_t addr, uint32_t *value, uint8_t num_bits)
 #endif
 	
 	ir = SYS_TO_LE_U16(addr | C8051F_IR_STATECNTL_SUSPEND);
-	jtag_ir(&ir, C8051F_IR_LEN);
+	jtag_ir_write(&ir, C8051F_IR_LEN);
 	
 	*value |= C8051F_INDOPTCODE_WRITE << num_bits;
 	*value = SYS_TO_LE_U32(*value);
-	jtag_dr(value, num_bits + 2);
+	jtag_dr_write(value, num_bits + 2);
 	
 	dr = 0;
 	jtag_poll_busy();
@@ -315,11 +317,11 @@ READ_TARGET_HANDLER(c8051fjtag)
 	{
 	case CHIPID_CHAR:
 		ir = SYS_TO_LE_U16(C8051F_IR_STATECNTL_RESET | C8051F_IR_BYPASS);
-		jtag_ir(&ir, C8051F_IR_LEN);
+		jtag_ir_write(&ir, C8051F_IR_LEN);
 		ir = SYS_TO_LE_U16(C8051F_IR_STATECNTL_HALT | C8051F_IR_IDCODE);
-		jtag_ir(&ir, C8051F_IR_LEN);
+		jtag_ir_write(&ir, C8051F_IR_LEN);
 		dr = SYS_TO_LE_U32(0);
-		jtag_dr(&dr, C8051F_DR_IDCODE_LEN);
+		jtag_dr_read(&dr, C8051F_DR_IDCODE_LEN);
 		if (ERROR_OK != jtag_commit())
 		{
 			ret = ERRCODE_FAILURE_OPERATION;

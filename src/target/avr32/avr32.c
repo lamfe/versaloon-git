@@ -115,10 +115,12 @@ const struct misc_cmd_t avr32_notifier[] =
 #define jtag_config(kHz,a,b,c,d)	\
 	interfaces->jtag_hl.config(0, (kHz), (a), (b), (c), (d))
 #define jtag_runtest(len)			interfaces->jtag_hl.runtest(0, len)
-#define jtag_ir(i, len)				\
-	interfaces->jtag_hl.ir(0, (uint8_t*)(i), (len), AVR32_JTAG_RTI_CYCLE)
-#define jtag_dr(d, len)				\
-	interfaces->jtag_hl.dr(0, (uint8_t*)(d), (len), AVR32_JTAG_RTI_CYCLE)
+#define jtag_ir_write(i, len)		\
+	interfaces->jtag_hl.ir(0, (uint8_t*)(i), (len), AVR32_JTAG_RTI_CYCLE, 0)
+#define jtag_dr_write(d, len)		\
+	interfaces->jtag_hl.dr(0, (uint8_t*)(d), (len), AVR32_JTAG_RTI_CYCLE, 0)
+#define jtag_dr_read(d, len)		\
+	interfaces->jtag_hl.dr(0, (uint8_t*)(d), (len), AVR32_JTAG_RTI_CYCLE, 1)
 #define jtag_register_callback(s,r)	\
 	interfaces->jtag_hl.register_callback(0, (s), (r))
 
@@ -134,8 +136,9 @@ const struct misc_cmd_t avr32_notifier[] =
 #define delay_us(us)				interfaces->delay.delayus((us) & 0x7FFF)
 #define jtag_commit()				interfaces->peripheral_commit()
 
-#define avr32jtag_Instr(ir)			jtag_ir((ir), AVR32_JTAG_INS_Len)
-#define avr32jtag_Data				jtag_dr
+#define avr32jtag_Instr(ir)			jtag_ir_write((ir), AVR32_JTAG_INS_Len)
+#define avr32jtag_DataW				jtag_dr_write
+#define avr32jtag_DataR				jtag_dr_read
 
 static struct interfaces_info_t *interfaces = NULL;
 
@@ -239,14 +242,14 @@ static RESULT avr32jtag_sab_word_access(uint8_t slave_addr, uint32_t addr,
 	
 	// Phase 2: Write Address
 	cmd = (read > 0) | (addr >> 1) | ((uint64_t)slave_addr << 31);
-	avr32jtag_Data(&cmd, 35);
+	avr32jtag_DataW(&cmd, 35);
 	
 	// Phase 3: Read/Write Data
 	if (read)
 	{
 		poll_start();
 		pending_4bytes = 1;
-		avr32jtag_Data(data, 34);
+		avr32jtag_DataR(data, 34);
 		poll_fail(0, AVR32_JTAG_DRRET_ERROR, AVR32_JTAG_DRRET_ERROR);
 		poll_ok(0, AVR32_JTAG_DRRET_BUSY, 0);
 		poll_end();
@@ -255,7 +258,7 @@ static RESULT avr32jtag_sab_word_access(uint8_t slave_addr, uint32_t addr,
 	{
 		// no error will occur here
 		poll_start();
-		avr32jtag_Data(data, 32);
+		avr32jtag_DataW(data, 32);
 		poll_fail(3, AVR32_JTAG_IRRET_PROTECT, AVR32_JTAG_IRRET_PROTECT);
 		poll_fail(3, AVR32_JTAG_IRRET_ERROR, AVR32_JTAG_IRRET_ERROR);
 		poll_ok(3, AVR32_JTAG_DRRET_BUSY, 0);
@@ -303,7 +306,7 @@ static RESULT avr32jtag_sab_access(uint8_t slave_addr, uint32_t addr,
 		{
 			poll_start();
 			pending_4bytes = 1;
-			avr32jtag_Data(data + 4 * i, 34);
+			avr32jtag_DataR(data + 4 * i, 34);
 			poll_fail(0, AVR32_JTAG_DRRET_ERROR, AVR32_JTAG_DRRET_ERROR);
 			poll_ok(0, AVR32_JTAG_DRRET_BUSY, 0);
 			poll_end();
@@ -311,7 +314,7 @@ static RESULT avr32jtag_sab_access(uint8_t slave_addr, uint32_t addr,
 		else
 		{
 			poll_start();
-			avr32jtag_Data(data + 4 * i, 32);
+			avr32jtag_DataW(data + 4 * i, 32);
 			poll_fail(3, AVR32_JTAG_IRRET_PROTECT, AVR32_JTAG_IRRET_PROTECT);
 			poll_fail(3, AVR32_JTAG_IRRET_ERROR, AVR32_JTAG_IRRET_ERROR);
 			poll_ok(3, AVR32_JTAG_IRRET_BUSY, 0);
@@ -511,7 +514,7 @@ READ_TARGET_HANDLER(avr32jtag)
 		ir = AVR32_JTAG_INS_IDCODE;
 		avr32jtag_Instr(&ir);
 		dr = 0;
-		jtag_dr(&dr, 32);
+		jtag_dr_read(&dr, 32);
 		if (ERROR_OK != jtag_commit())
 		{
 			return ERROR_FAIL;

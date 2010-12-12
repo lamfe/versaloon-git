@@ -17,8 +17,8 @@
 RESULT msp430jtag_init(uint8_t index);
 RESULT msp430jtag_fini(uint8_t index);
 RESULT msp430jtag_config(uint8_t index, uint8_t has_test);
-RESULT msp430jtag_ir(uint8_t index, uint8_t *ir);
-RESULT msp430jtag_dr(uint8_t index, uint32_t *dr, uint8_t bitlen);
+RESULT msp430jtag_ir(uint8_t index, uint8_t *ir, uint8_t want_ret);
+RESULT msp430jtag_dr(uint8_t index, uint32_t *dr, uint8_t bitlen, uint8_t want_ret);
 RESULT msp430jtag_tclk(uint8_t index, uint8_t value);
 RESULT msp430jtag_tclk_strobe(uint8_t index, uint16_t cnt);
 RESULT msp430jtag_reset(uint8_t index);

@@ -136,29 +136,30 @@ const struct interfaces_info_t internal_interfaces =
 	},
 	{
 		// jtag_hl
-		jtag_hl_init,
-		jtag_hl_fini,
-		jtag_hl_config,
-		jtag_hl_tms,
-		jtag_hl_runtest,
-		jtag_hl_ir,
-		jtag_hl_dr
+		jtaghl_init,
+		jtaghl_fini,
+		jtaghl_config,
+		jtaghl_tms,
+		jtaghl_runtest,
+		jtaghl_ir,
+		jtaghl_dr,
+		jtaghl_register_callback
 	},
 	{
 		// jtag_ll
-		jtag_ll_init,
-		jtag_ll_fini,
-		jtag_ll_config,
-		jtag_ll_tms,
-		jtag_ll_tms_clocks,
-		jtag_ll_scan
+		jtagll_init,
+		jtagll_fini,
+		jtagll_config,
+		jtagll_tms,
+		jtagll_tms_clocks,
+		jtagll_scan
 	},
 	{
 		// jtag_raw
-		jtag_raw_init,
-		jtag_raw_fini,
-		jtag_raw_config,
-		jtag_raw_execute
+		jtagraw_init,
+		jtagraw_fini,
+		jtagraw_config,
+		jtagraw_execute
 	},
 	{
 		// msp430jtag
