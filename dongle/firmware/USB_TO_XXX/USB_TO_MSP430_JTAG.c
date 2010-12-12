@@ -18,119 +18,157 @@
 #if USB_TO_MSP430_JTAG_EN
 
 #include "USB_TO_XXX.h"
-#include "MSP430_JTAG.h"
-#if POWER_OUT_EN
-#	include "PowerExt.h"
-#endif
+#include "interfaces.h"
 
 void USB_TO_MSP430_JTAG_ProcessCmd(uint8* dat, uint16 len)
 {
-	uint16 index, device_num, length;
+	uint16 index, device_idx, length;
 	uint8 command;
 
 	uint32 data, mask, value;
 	uint16 len_tmp;
 	uint8 byte_len, bit_len;
+	bool fail;
+	uint16_t rindex;
 
 	index = 0;
 	while(index < len)
 	{
 		command = dat[index] & USB_TO_XXX_CMDMASK;
-		device_num = dat[index] & USB_TO_XXX_IDXMASK;
-		if(device_num >= USB_TO_MSP430_JTAG_NUM)
-		{
-			buffer_reply[rep_len++] = USB_TO_XXX_INVALID_INDEX;
-			return;
-		}
+		device_idx = dat[index] & USB_TO_XXX_IDXMASK;
 		length = GET_LE_U16(&dat[index + 1]);
 		index += 3;
 
 		switch(command)
 		{
 		case USB_TO_XXX_INIT:
-			buffer_reply[rep_len++] = USB_TO_XXX_OK;
-			buffer_reply[rep_len++] = USB_TO_MSP430_JTAG_NUM;
-
-			GLOBAL_OUTPUT_Acquire();
-			PWREXT_Acquire();
-			DelayMS(1);
-
+			if (ERROR_OK == interfaces->msp430jtag.init(device_idx))
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+			}
+			else
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+			}
 			break;
 		case USB_TO_XXX_CONFIG:
-			buffer_reply[rep_len++] = USB_TO_XXX_OK;
-
-			MSP430_JTAG_Init(dat[index]);
-
+			if (ERROR_OK == interfaces->msp430jtag.config(device_idx, dat[index]))
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+			}
+			else
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+			}
 			break;
 		case USB_TO_XXX_FINI:
-			buffer_reply[rep_len++] = USB_TO_XXX_OK;
-
-			MSP430_JTAG_Fini();
-
-			PWREXT_Release();
-			GLOBAL_OUTPUT_Release();
-
+			if (ERROR_OK == interfaces->msp430jtag.fini(device_idx))
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+			}
+			else
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+			}
 			break;
 		case USB_TO_MSP430_JTAG_TCLK:
-			buffer_reply[rep_len++] = USB_TO_XXX_OK;
-
-			MSP430_JTAG_TCLK(dat[index]);
-
+			if (ERROR_OK == interfaces->msp430jtag.tclk(device_idx, dat[index]))
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+			}
+			else
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+			}
 			break;
 		case USB_TO_MSP430_JTAG_IRDR:
-			buffer_reply[rep_len++] = USB_TO_XXX_OK;
-
+			fail = false;
 			len_tmp = 0;
+			rindex = rep_len++;
+			
 			while(len_tmp < length)
 			{
 				bit_len = dat[index + len_tmp + 0];
 				byte_len = ((bit_len & 0x7F) + 7) >> 3;
+				
 				if(bit_len & 0x80)
 				{
 					// DR
 					data = 0;
 					memcpy((uint8*)&data, dat + index + len_tmp + 1, byte_len);
-					value = MSP430_JTAG_DR(data, bit_len & 0x7F);
-					memcpy(buffer_reply + rep_len, &value, byte_len);
+					
+					if (ERROR_OK == interfaces->msp430jtag.dr(device_idx, &data, bit_len & 0x7F))
+					{
+						memcpy(buffer_reply + rep_len, &data, byte_len);
+					}
+					else
+					{
+						fail = true;
+						break;
+					}
 					rep_len += byte_len;
 					len_tmp += 1 + byte_len;
 				}
 				else
 				{
 					// IR
-					buffer_reply[rep_len++] = MSP430_JTAG_IR(dat[index + len_tmp + 1], MSP430_JTAG_IR_LEN);
+					if (ERROR_OK == interfaces->msp430jtag.ir(device_idx, &dat[index + len_tmp + 1]))
+					{
+						buffer_reply[rep_len++] = dat[index + len_tmp + 1];
+					}
+					else
+					{
+						fail = true;
+						break;
+					}
 					len_tmp += 2;
 				}
 			}
-
+			if (fail)
+			{
+				buffer_reply[rindex] = USB_TO_XXX_FAILED;
+			}
+			else
+			{
+				buffer_reply[rindex] = USB_TO_XXX_OK;
+			}
 			break;
 		case USB_TO_MSP430_JTAG_Poll:
 			len_tmp = GET_LE_U16(&dat[index + 1]);
 			data = GET_LE_U32(&dat[index + 3]);
 			mask = GET_LE_U32(&dat[index + 7]);
 			value = GET_LE_U32(&dat[index + 11]);
-
-			if(MSP430_JTAG_Poll(data, mask, value, dat[index], len_tmp))
-			{
-				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
-			}
-			else
+			
+			if (ERROR_OK == interfaces->msp430jtag.poll(device_idx, data, mask, value, 
+								dat[index], len_tmp & 0x7FFF, len_tmp & 0x8000))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
-
+			else
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+			}
 			break;
 		case USB_TO_MSP430_JTAG_TCLK_STROBE:
-			buffer_reply[rep_len++] = USB_TO_XXX_OK;
-
-			MSP430_JTAG_TCLK_STROKE(GET_LE_U16(&dat[index]));
-
+			if (ERROR_OK == interfaces->msp430jtag.tclk_strobe(device_idx, 
+								GET_LE_U16(&dat[index])))
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+			}
+			else
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+			}
 			break;
 		case USB_TO_MSP430_JTAG_Reset:
-			buffer_reply[rep_len++] = USB_TO_XXX_OK;
-
-			MSP430_JTAG_Reset();
-
+			if (ERROR_OK == interfaces->msp430jtag.reset(device_idx))
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+			}
+			else
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+			}
 			break;
 		default:
 			buffer_reply[rep_len++] = USB_TO_XXX_CMD_NOT_SUPPORT;

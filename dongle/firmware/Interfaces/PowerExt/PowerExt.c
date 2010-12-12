@@ -17,6 +17,7 @@
 #include "app_cfg.h"
 #if POWER_OUT_EN
 
+#include "interfaces.h"
 #include "PowerExt.h"
 
 static uint8 PWREXT_EnableCount = 0;
@@ -57,6 +58,54 @@ void PWREXT_ForceRelease(void)
 uint8 PWREXT_GetState(void)
 {
 	return PWREXT_EnableCount;
+}
+
+uint8 power_state = 0;
+RESULT target_voltage_set(uint8_t index, uint16_t voltage)
+{
+	switch (index)
+	{
+	case 0:
+		if (!PWREXT_GetState())
+		{
+			power_state = 0;
+		}
+
+		if(voltage == 3300)
+		{
+			// only support 3.3V
+			if (!power_state)
+			{
+				power_state = 1;
+				PWREXT_Acquire();
+			}
+			return ERROR_OK;
+		}
+		else if(voltage == 0)
+		{
+			if (power_state)
+			{
+				power_state = 0;
+				PWREXT_ForceRelease();
+			}
+			return ERROR_OK;
+		}
+		else
+		{
+			return ERROR_FAIL;
+		}
+	default:
+		return ERROR_FAIL;
+	}
+}
+
+RESULT target_voltage_get(uint8_t index, uint16_t *voltage)
+{
+	if (voltage != NULL)
+	{
+		*voltage = Vtarget;
+	}
+	return ERROR_OK;
 }
 
 #endif /* USB_TO_POWER_EN || POWER_OUT_EN*/

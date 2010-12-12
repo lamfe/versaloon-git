@@ -43,6 +43,14 @@ USR_INCS+= -I $(SRCDIR)/HW/Mass
 USR_SRCS+= $(SRCDIR)/Tools/fifo/fifo.c
 USR_INCS+= -I $(SRCDIR)/Tools/fifo
 
+#GPIO
+USR_SRCS+= $(SRCDIR)/Interfaces/GPIO/GPIO.c
+USR_INCS+= -I $(SRCDIR)/Interfaces/GPIO
+
+#USART
+USR_SRCS+= $(SRCDIR)/Interfaces/USART/USART.c
+USR_INCS+= -I $(SRCDIR)/Interfaces/USART
+
 #SPI
 USR_SRCS+= $(SRCDIR)/Interfaces/SPI/SPI.c
 USR_INCS+= -I $(SRCDIR)/Interfaces/SPI
@@ -86,6 +94,10 @@ USR_INCS+= -I $(SRCDIR)/Interfaces/MSP430_JTAG
 #BDM
 USR_SRCS+= $(SRCDIR)/Interfaces/BDM/BDM.c
 USR_INCS+= -I $(SRCDIR)/Interfaces/BDM
+
+#interfaces
+USR_SRCS+= $(SRCDIR)/Interfaces/interfaces.c
+USR_INCS+= -I $(SRCDIR)/Interfaces
 
 # USB_TO_XXX
 USR_SRCS+= $(SRCDIR)/USB_TO_XXX/USB_TO_XXX.c $(SRCDIR)/USB_TO_XXX/USB_TO_USART.c

@@ -18,14 +18,11 @@
 #if USB_TO_C2_EN
 
 #include "USB_TO_XXX.h"
-#include "C2.h"
-#if POWER_OUT_EN
-#	include "PowerExt.h"
-#endif
+#include "interfaces.h"
 
 void USB_TO_C2_ProcessCmd(uint8* dat, uint16 len)
 {
-	uint16 index, device_num, length;
+	uint16 index, device_idx, length;
 	uint8 command;
 
 	uint8 tmp;
@@ -34,78 +31,80 @@ void USB_TO_C2_ProcessCmd(uint8* dat, uint16 len)
 	while(index < len)
 	{
 		command = dat[index] & USB_TO_XXX_CMDMASK;
-		device_num = dat[index] & USB_TO_XXX_IDXMASK;
-		if(device_num >= USB_TO_C2_NUM)
-		{
-			buffer_reply[rep_len++] = USB_TO_XXX_INVALID_INDEX;
-			return;
-		}
+		device_idx = dat[index] & USB_TO_XXX_IDXMASK;
 		length = GET_LE_U16(&dat[index + 1]);
 		index += 3;
 
 		switch(command)
 		{
 		case USB_TO_XXX_INIT:
-			buffer_reply[rep_len++] = USB_TO_XXX_OK;
-			buffer_reply[rep_len++] = USB_TO_C2_NUM;
-
-			GLOBAL_OUTPUT_Acquire();
-			PWREXT_Acquire();
-			DelayMS(1);
-
-			break;
-		case USB_TO_XXX_CONFIG:
-			buffer_reply[rep_len++] = USB_TO_XXX_OK;
-
-			C2_Init();
-
-			break;
-		case USB_TO_XXX_FINI:
-			buffer_reply[rep_len++] = USB_TO_XXX_OK;
-
-			C2_Fini();
-
-			PWREXT_Release();
-			GLOBAL_OUTPUT_Release();
-
-			break;
-		case USB_TO_C2_Data:
-			tmp = dat[index + 0] & 0x07;
-			if(dat[index + 0] & 0x80)
+			if (ERROR_OK == interfaces->c2.init(device_idx))
 			{
-				if(C2_ReadData(buffer_reply + rep_len + 1))
-				{
-					buffer_reply[rep_len] = USB_TO_XXX_FAILED;
-				}
-				else
-				{
-					buffer_reply[rep_len] = USB_TO_XXX_OK;
-				}
-				rep_len += 1 + tmp;
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
 			else
 			{
-				if(C2_WriteData(dat[index + 1]))
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+			}
+			break;
+		case USB_TO_XXX_FINI:
+			if (ERROR_OK == interfaces->c2.fini(device_idx))
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+			}
+			else
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+			}
+			break;
+		case USB_TO_C2_Data:
+			tmp = dat[index + 0] & 0x07;
+			
+			if(dat[index + 0] & 0x80)
+			{
+				if (ERROR_OK == interfaces->c2.data_read(device_idx, &buffer_reply[rep_len + 1], tmp))
 				{
-					buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+					buffer_reply[rep_len++] = USB_TO_XXX_OK;
 				}
 				else
 				{
+					buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+				}
+				rep_len += tmp;
+			}
+			else
+			{
+				if (ERROR_OK == interfaces->c2.data_write(device_idx, &dat[index + 1], tmp))
+				{
 					buffer_reply[rep_len++] = USB_TO_XXX_OK;
+				}
+				else
+				{
+					buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 				}
 			}
 
 			break;
 		case USB_TO_C2_WriteAddr:
-			C2_WriteAddr(dat[index]);
-			buffer_reply[rep_len++] = USB_TO_XXX_OK;
-
+			if (ERROR_OK == interfaces->c2.addr_write(device_idx, dat[index]))
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+			}
+			else
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+			}
 			break;
 		case USB_TO_C2_ReadAddr:
-			C2_ReadAddr(&buffer_reply[rep_len + 1]);
-			buffer_reply[rep_len] = USB_TO_XXX_OK;
-			rep_len += 2;
-
+			if (ERROR_OK == interfaces->c2.addr_read(device_idx, &buffer_reply[rep_len + 1]))
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+			}
+			else
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+			}
+			rep_len++;
 			break;
 		default:
 			buffer_reply[rep_len++] = USB_TO_XXX_INVALID_CMD;

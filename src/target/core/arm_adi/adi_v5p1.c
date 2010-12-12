@@ -44,15 +44,15 @@ static uint8_t ack_value;
 struct adi_dp_info_t adi_dp_info;
 
 // Reset
-#define reset_init()			adi_prog->gpio.init()
-#define reset_fini()			adi_prog->gpio.fini()
-#define reset_output()			adi_prog->gpio.config(JTAG_SRST, JTAG_SRST, 0)
-#define reset_input()			adi_prog->gpio.config(JTAG_SRST, 0, JTAG_SRST)
+#define reset_init()			adi_prog->gpio.init(0)
+#define reset_fini()			adi_prog->gpio.fini(0)
+#define reset_output()			adi_prog->gpio.config(0, JTAG_SRST, JTAG_SRST, 0)
+#define reset_input()			adi_prog->gpio.config(0, JTAG_SRST, 0, JTAG_SRST)
 #define reset_set()				reset_input()
 #define reset_clr()				reset_output()
 #define trst_output(value)		\
-	adi_prog->gpio.config(JTAG_TRST, JTAG_TRST, (value) ? JTAG_TRST : 0)
-#define trst_input()			adi_prog->gpio.config(JTAG_TRST, 0, JTAG_TRST)
+	adi_prog->gpio.config(0, JTAG_TRST, JTAG_TRST, (value) ? JTAG_TRST : 0)
+#define trst_input()			adi_prog->gpio.config(0, JTAG_TRST, 0, JTAG_TRST)
 #define trst_set()				trst_output(1)
 #define trst_clr()				trst_output(0)
 #define reset_commit()			adi_prog->peripheral_commit()
@@ -61,31 +61,31 @@ struct adi_dp_info_t adi_dp_info;
 #define delay_ms(ms)			adi_prog->delay.delayms((ms) | 0x8000)
 
 // JTAG
-#define jtag_init()				adi_prog->jtag_hl.init()
-#define jtag_fini()				adi_prog->jtag_hl.fini()
+#define jtag_init()				adi_prog->jtag_hl.init(0)
+#define jtag_fini()				adi_prog->jtag_hl.fini(0)
 #define jtag_config(kHz,a,b,c,d)	\
-	adi_prog->jtag_hl.config((kHz), (a), (b), (c), (d))
-#define jtag_tms(m, len)		adi_prog->jtag_hl.tms((m), (len))
-#define jtag_runtest(len)		adi_prog->jtag_hl.runtest(len)
+	adi_prog->jtag_hl.config(0, (kHz), (a), (b), (c), (d))
+#define jtag_tms(m, len)		adi_prog->jtag_hl.tms(0, (m), (len))
+#define jtag_runtest(len)		adi_prog->jtag_hl.runtest(0, len)
 #define jtag_ir_w(i, len)		\
-	adi_prog->jtag_hl.ir((uint8_t*)(i), (len), 1, 0)
+	adi_prog->jtag_hl.ir(0, (uint8_t*)(i), (len), 1, 0)
 #define jtag_dr_w(d, len)		\
-	adi_prog->jtag_hl.dr((uint8_t*)(d), (len), 1, 0)
+	adi_prog->jtag_hl.dr(0, (uint8_t*)(d), (len), 1, 0)
 #define jtag_dr_rw(d, len)		\
-	adi_prog->jtag_hl.dr((uint8_t*)(d), (len), 1, 1)
+	adi_prog->jtag_hl.dr(0, (uint8_t*)(d), (len), 1, 1)
 
 #define jtag_register_callback(s,r)	\
-	adi_prog->jtag_hl.register_callback((s), (r))
+	adi_prog->jtag_hl.register_callback(0, (s), (r))
 #define jtag_commit()			adi_prog->peripheral_commit()
 
 // SWD
-#define swd_init()				adi_prog->swd.init()
-#define swd_fini()				adi_prog->swd.fini()
-#define swd_seqout(b, l)		adi_prog->swd.seqout((b), (l))
-#define swd_seqin(b, l)			adi_prog->swd.seqin((b), (l))
-#define swd_transact(r, v, a)	adi_prog->swd.transact((r), (v), (a))
-#define swd_config(t, r, d)		adi_prog->swd.config((t), (r), (d))
-#define swd_get_last_ack(ack)	adi_prog->swd.get_last_ack(ack)
+#define swd_init()				adi_prog->swd.init(0)
+#define swd_fini()				adi_prog->swd.fini(0)
+#define swd_seqout(b, l)		adi_prog->swd.seqout(0, (b), (l))
+#define swd_seqin(b, l)			adi_prog->swd.seqin(0, (b), (l))
+#define swd_transact(r, v, a)	adi_prog->swd.transact(0, (r), (v), (a))
+#define swd_config(t, r, d)		adi_prog->swd.config(0, (t), (r), (d))
+#define swd_get_last_ack(ack)	adi_prog->swd.get_last_ack(0, ack)
 #define swd_commit()			adi_prog->peripheral_commit()
 
 static RESULT adi_dp_read_reg(uint8_t reg_addr, uint32_t *value, 
@@ -120,10 +120,12 @@ static const uint8_t adi_swd_to_jtag_seq[] =
 	0xFF
 };
 
-static RESULT adi_dpif_receive_callback(enum jtag_irdr_t cmd, uint32_t ir, 
-									uint8_t *dest_buffer, uint8_t *src_buffer, 
-									uint16_t bytelen, uint16_t *processed)
+static RESULT adi_dpif_receive_callback(uint8_t index, enum jtag_irdr_t cmd, 
+						uint32_t ir, uint8_t *dest_buffer, uint8_t *src_buffer, 
+						uint16_t bytelen, uint16_t *processed)
 {
+	REFERENCE_PARAMETER(index);
+	
 	if (NULL == src_buffer)
 	{
 		return ERROR_FAIL;
@@ -156,10 +158,12 @@ static RESULT adi_dpif_receive_callback(enum jtag_irdr_t cmd, uint32_t ir,
 }
 
 static uint8_t adi_dp_first3bits;
-static RESULT adi_dpif_send_callback(enum jtag_irdr_t cmd, uint32_t ir, 
-								uint8_t *dest_buffer, uint8_t *src_buffer,
-								uint16_t bytelen, uint16_t *processed_len)
+static RESULT adi_dpif_send_callback(uint8_t index, enum jtag_irdr_t cmd, 
+					uint32_t ir, uint8_t *dest_buffer, uint8_t *src_buffer,
+					uint16_t bytelen, uint16_t *processed_len)
 {
+	REFERENCE_PARAMETER(index);
+	
 	if ((NULL == src_buffer) || (NULL == dest_buffer))
 	{
 		return ERROR_FAIL;

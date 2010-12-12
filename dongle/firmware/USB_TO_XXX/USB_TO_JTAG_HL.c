@@ -18,63 +18,64 @@
 #if USB_TO_JTAG_HL_EN
 
 #include "USB_TO_XXX.h"
-#include "JTAG_TAP.h"
-#if POWER_OUT_EN
-#	include "PowerExt.h"
-#endif
+#include "interfaces.h"
 
 void USB_TO_JTAG_HL_ProcessCmd(uint8* dat, uint16 len)
 {
-	uint16 index, device_num, length;
+	uint16 index, device_idx, length;
 	uint8 command;
 
 	uint16 cur_dat_len, i, len_tmp;
+	uint16_t rindex;
+	bool fail;
 
 	index = 0;
 	while(index < len)
 	{
 		command = dat[index] & USB_TO_XXX_CMDMASK;
-		device_num = dat[index] & USB_TO_XXX_IDXMASK;
-		if(device_num >= USB_TO_JTAG_HL_NUM)
-		{
-			buffer_reply[rep_len++] = USB_TO_XXX_INVALID_INDEX;
-			return;
-		}
+		device_idx = dat[index] & USB_TO_XXX_IDXMASK;
 		length = GET_LE_U16(&dat[index + 1]);
 		index += 3;
 
 		switch(command)
 		{
 		case USB_TO_XXX_INIT:
-			buffer_reply[rep_len++] = USB_TO_XXX_OK;
-			buffer_reply[rep_len++] = USB_TO_JTAG_HL_NUM;
-
-			GLOBAL_OUTPUT_Acquire();
-			PWREXT_Acquire();
-			DelayMS(1);
-
+			if (ERROR_OK == interfaces->jtag_hl.init(device_idx))
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+			}
+			else
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+			}
 			break;
 		case USB_TO_XXX_CONFIG:
-			JTAG_TAP_Init(GET_LE_U16(&dat[index]), JTAG_TAP_ASYN);
-			JTAG_TAP_SetDaisyChainPos(dat[index + 2], dat[index + 3], 
-					GET_LE_U16(&dat[index + 4]), GET_LE_U16(&dat[index + 6]));
-
-			buffer_reply[rep_len++] = USB_TO_XXX_OK;
-
+			if (ERROR_OK == interfaces->jtag_hl.config(device_idx, GET_LE_U16(&dat[index]), 
+								dat[index + 2], dat[index + 3], 
+								GET_LE_U16(&dat[index + 4]), GET_LE_U16(&dat[index + 6])))
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+			}
+			else
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+			}
 			break;
 		case USB_TO_XXX_FINI:
-			JTAG_TAP_Fini();
-
-			PWREXT_Release();
-			GLOBAL_OUTPUT_Release();
-
-			buffer_reply[rep_len++] = USB_TO_XXX_OK;
-
+			if (ERROR_OK == interfaces->jtag_hl.fini(device_idx))
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+			}
+			else
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+			}
 			break;
 		case USB_TO_JTAG_HL_IR_DR:
-			buffer_reply[rep_len++] = USB_TO_XXX_OK;
-
+			fail = false;
+			rindex = rep_len++;
 			len_tmp = 0;
+			
 			while(len_tmp < length)
 			{
 				i = GET_LE_U16(&dat[index + len_tmp]);					// in bit
@@ -82,32 +83,54 @@ void USB_TO_JTAG_HL_ProcessCmd(uint8* dat, uint16 len)
 
 				if(i & 0x8000)
 				{
-					JTAG_TAP_InstrPtr(dat + index + len_tmp + 3,		// intstr
-									    buffer_reply + rep_len,			// tdo
-										cur_dat_len,					// length_in_bits
-										dat[index + len_tmp + 2]);		// idle
+					if (ERROR_OK == interfaces->jtag_hl.ir(device_idx, &dat[index + len_tmp + 3], 
+										cur_dat_len, dat[index + len_tmp + 2]))
+					{
+						memcpy(&buffer_reply[rep_len], &dat[index + len_tmp + 3], (cur_dat_len + 7) >> 3);
+					}
+					else
+					{
+						fail = true;
+						break;
+					}
 				}
 				else
 				{
-					JTAG_TAP_DataPtr(dat + index + len_tmp + 3,			// tdi
-									 buffer_reply + rep_len,			// tdo
-									 cur_dat_len,						// length_in_bits
-									 dat[index + len_tmp + 2]);			// idle
+					if (ERROR_OK == interfaces->jtag_hl.dr(device_idx, &dat[index + len_tmp + 3], 
+										cur_dat_len, dat[index + len_tmp + 2]))
+					{
+						memcpy(&buffer_reply[rep_len], &dat[index + len_tmp + 3], (cur_dat_len + 7) >> 3);
+					}
+					else
+					{
+						fail = true;
+						break;
+					}
 				}
 
 				cur_dat_len = (cur_dat_len + 7) >> 3;
 				rep_len += cur_dat_len;
 				len_tmp += cur_dat_len + 3;
 			}
-
+			if (fail)
+			{
+				buffer_reply[rindex] = USB_TO_XXX_FAILED;
+			}
+			else
+			{
+				buffer_reply[rindex] = USB_TO_XXX_OK;
+			}
 			break;
 		case USB_TO_JTAG_HL_TMS:
-			cur_dat_len = dat[index + 0] + 1;							// in bit, at lease 1
-
-			buffer_reply[rep_len++] = USB_TO_XXX_OK;
-
-			JTAG_TAP_TMS_Bit(&dat[index + 1], cur_dat_len);
-
+			if (ERROR_OK == interfaces->jtag_hl.tms(device_idx, &dat[index + 1], 
+														dat[index + 0] + 1))
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+			}
+			else
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+			}
 			break;
 		default:
 			buffer_reply[rep_len++] = USB_TO_XXX_CMD_NOT_SUPPORT;

@@ -160,46 +160,13 @@ extern int8 USB_TO_POLL_Index;
 
 
 // USB_TO_SPI
-#define USB_TO_SPI_CPOL_HIGH		0x20
-#define USB_TO_SPI_CPOL_LOW			0x00
-#define USB_TO_SPI_CPHA_2EDGE		0x40
-#define USB_TO_SPI_CPHA_1EDGE		0x00
-#define USB_TO_SPI_MSB_FIRST		0x80
-
-
-// USB_TO_GPIO
-#define USB_TO_GPIO_DIR_MSK			0x01
-#define USB_TO_GPIO_SRST			(1 << 0)
-#define USB_TO_GPIO_TRST			(1 << 1)
-#if JTAG_HAS_USER_PIN
-#	define USB_TO_GPIO_USR1			(1 << 2)
-#	define USB_TO_GPIO_USR2			(1 << 3)
-#else
-#	define USB_TO_GPIO_USR1			0
-#	define USB_TO_GPIO_USR2			0
-#endif
-#define USB_TO_GPIO_TCK				(1 << 4)
-#define USB_TO_GPIO_TDO				(1 << 5)
-#define USB_TO_GPIO_TDI				(1 << 6)
-#define USB_TO_GPIO_RTCK			(1 << 7)
-#define USB_TO_GPIO_TMS				(1 << 8)
-#define USB_TO_GPIO_OUT_MSK			(USB_TO_GPIO_SRST | USB_TO_GPIO_TRST | USB_TO_GPIO_USR1 | USB_TO_GPIO_USR2 | USB_TO_GPIO_TCK | USB_TO_GPIO_TDI | USB_TO_GPIO_TMS)
-#define USB_TO_GPIO_IN_MSK			(USB_TO_GPIO_SRST | USB_TO_GPIO_TRST | USB_TO_GPIO_USR1 | USB_TO_GPIO_USR2 | USB_TO_GPIO_TDO | USB_TO_GPIO_RTCK | USB_TO_GPIO_TMS)
-#define USB_TO_GPIO_MSK				(USB_TO_GPIO_OUT_MSK | USB_TO_GPIO_IN_MSK)
-
-
-// USB_TO_ISSP
-#define USB_TO_ISSP_ATTR_BANK		(1 << 0)
-#define USB_TO_ISSP_ATTR_READ		(1 << 1)
-#define USB_TO_ISSP_ATTR_APPENDBIT	(1 << 2)
-#define USB_TO_ISSP_ATTR_0s			(1 << 3)
+#define USB_TO_SPI_CPOL_MASK		SPI_CPOL_MASK
+#define USB_TO_SPI_CPHA_MASK		SPI_CPHA_MASK
+#define USB_TO_SPI_FIRSTBIT_MASK	SPI_FIRSTBIT_MASK
 
 
 // Number of Interfaces
-#define USB_TO_USART_NUM			1
-#define USB_TO_SPI_NUM				1
 #define USB_TO_IIC_NUM				1
-#define USB_TO_GPIO_NUM				1
 #define USB_TO_CAN_NUM				1
 #define USB_TO_PWM_NUM				1
 #define USB_TO_ADC_NUM				1
@@ -214,7 +181,6 @@ extern int8 USB_TO_POLL_Index;
 #define USB_TO_C2_NUM				1
 #define USB_TO_MSP430_JTAG_NUM		1
 #define USB_TO_SBW_NUM				1
-#define USB_TO_POWER_NUM			1
 #define USB_TO_POLL_NUM				2
 #define USB_TO_SWIM_NUM				1
 #define USB_TO_BDM_NUM				1

@@ -17,6 +17,7 @@
 #include "app_cfg.h"
 #if INTERFACE_C2_EN
 
+#include "interfaces.h"
 #include "C2.h"
 
 #define C2_Delay()						DelayUS(0)
@@ -183,6 +184,90 @@ uint8 C2_WriteData(uint8 data)
 	C2_END();
 
 	return 0;
+}
+
+RESULT c2_init(uint8_t index)
+{
+	switch (index)
+	{
+	case 0:
+		C2_Init();
+		return ERROR_OK;
+	default:
+		return ERROR_FAIL;
+	}
+}
+
+RESULT c2_fini(uint8_t index)
+{
+	switch (index)
+	{
+	case 0:
+		C2_Fini();
+		return ERROR_OK;
+	default:
+		return ERROR_FAIL;
+	}
+}
+
+RESULT c2_addr_write(uint8_t index, uint8_t addr)
+{
+	switch (index)
+	{
+	case 0:
+		C2_WriteAddr(addr);
+		return ERROR_OK;
+	default:
+		return ERROR_FAIL;
+	}
+}
+
+RESULT c2_addr_read(uint8_t index, uint8_t *data)
+{
+	switch (index)
+	{
+	case 0:
+		C2_ReadAddr(data);
+		return ERROR_OK;
+	default:
+		return ERROR_FAIL;
+	}
+}
+
+RESULT c2_data_read(uint8_t index, uint8_t *data, uint8_t len)
+{
+	switch (index)
+	{
+	case 0:
+		if(C2_ReadData(data))
+		{
+			return ERROR_FAIL;
+		}
+		else
+		{
+			return ERROR_OK;
+		}
+	default:
+		return ERROR_FAIL;
+	}
+}
+
+RESULT c2_data_write(uint8_t index, uint8_t *data, uint8_t len)
+{
+	switch (index)
+	{
+	case 0:
+		if(C2_WriteData(*data))
+		{
+			return ERROR_FAIL;
+		}
+		else
+		{
+			return ERROR_OK;
+		}
+	default:
+		return ERROR_FAIL;
+	}
 }
 
 #endif

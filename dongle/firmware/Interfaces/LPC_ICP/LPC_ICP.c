@@ -17,6 +17,7 @@
 #include "app_cfg.h"
 #if INTERFACE_LPC_ICP_EN
 
+#include "interfaces.h"
 #include "LPC_ICP.h"
 #if POWER_OUT_EN
 #	include "PowerExt.h"
@@ -28,7 +29,7 @@
 #define LPCICP_SHIFT_DELAY_SHORT		0
 #define LPCICP_SHIFT_DELAY_LONG			0
 
-void LPCICP_Init(void)
+static void LPCICP_Init(void)
 {
 	LPCICP_RST_CLR();
 	LPCICP_RST_SETOUTPUT();
@@ -42,7 +43,7 @@ void LPCICP_Init(void)
 	GLOBAL_OUTPUT_Acquire();
 }
 
-void LPCICP_Fini(void)
+static void LPCICP_Fini(void)
 {
 	GLOBAL_OUTPUT_Release();
 
@@ -51,12 +52,12 @@ void LPCICP_Fini(void)
 	LPCICP_PCL_SETINPUT();
 }
 
-void LPCICP_LeavrProgMode(void)
+static void LPCICP_LeavrProgMode(void)
 {
 	PWREXT_Release();
 }
 
-void LPCICP_EnterProgMode(void)
+static void LPCICP_EnterProgMode(void)
 {
 	uint8 toggle_count;
 
@@ -76,7 +77,7 @@ void LPCICP_EnterProgMode(void)
 	LPCICP_PDA_SETINPUT();
 }
 
-void LPCICP_In(uint8 *buff, uint16 len)
+static void LPCICP_In(uint8 *buff, uint16 len)
 {
 	uint32 i;
 
@@ -98,7 +99,7 @@ void LPCICP_In(uint8 *buff, uint16 len)
 	}
 }
 
-void LPCICP_Out(uint8 *buff, uint16 len)
+static void LPCICP_Out(uint8 *buff, uint16 len)
 {
 	uint32 i;
 
@@ -125,7 +126,7 @@ void LPCICP_Out(uint8 *buff, uint16 len)
 	LPCICP_PDA_SETINPUT();
 }
 
-uint8 LPCICP_Poll(uint8 out, uint8 setbit, uint8 clearbit, uint16 pollcnt)
+static uint8 LPCICP_Poll(uint8 out, uint8 setbit, uint8 clearbit, uint16 pollcnt)
 {
 	uint8 tmp;
 
@@ -145,6 +146,97 @@ uint8 LPCICP_Poll(uint8 out, uint8 setbit, uint8 clearbit, uint16 pollcnt)
 	}
 
 	return LPCICP_POLL_TIME_OUT;
+}
+
+RESULT lpcicp_init(uint8_t index)
+{
+	switch (index)
+	{
+	case 0:
+		LPCICP_Init();
+		return ERROR_OK;
+	default:
+		return ERROR_FAIL;
+	}
+}
+
+RESULT lpcicp_fini(uint8_t index)
+{
+	switch (index)
+	{
+	case 0:
+		LPCICP_LeavrProgMode();
+		LPCICP_Fini();
+		return ERROR_OK;
+	default:
+		return ERROR_FAIL;
+	}
+}
+
+RESULT lpcicp_enter_program_mode(uint8_t index)
+{
+	uint16_t voltage;
+	
+	switch (index)
+	{
+	case 0:
+		if ((ERROR_OK != interfaces->target_voltage.get(0, &voltage)) || 
+			(voltage > TVCC_SAMPLE_MIN_POWER))
+		{
+			// No power should be applied on the target
+			return ERROR_FAIL;
+		}
+		else
+		{
+			LPCICP_EnterProgMode();
+			return ERROR_OK;
+		}
+	default:
+		return ERROR_FAIL;
+	}
+}
+
+RESULT lpcicp_in(uint8_t index, uint8_t *buff, uint16_t len)
+{
+	switch (index)
+	{
+	case 0:
+		LPCICP_In(buff, len);
+		return ERROR_OK;
+	default:
+		return ERROR_FAIL;
+	}
+}
+
+RESULT lpcicp_out(uint8_t index, uint8_t *buff, uint16_t len)
+{
+	switch (index)
+	{
+	case 0:
+		LPCICP_Out(buff, len);
+		return ERROR_OK;
+	default:
+		return ERROR_FAIL;
+	}
+}
+
+RESULT lpcicp_poll_ready(uint8_t index, uint8_t data, uint8_t *ret, 
+							uint8_t setmask, uint8_t clearmask, uint16_t pollcnt)
+{
+	uint8_t ret_tmp;
+	
+	switch (index)
+	{
+	case 0:
+		ret_tmp = LPCICP_Poll(data, setmask, clearmask, pollcnt);
+		if (ret != NULL)
+		{
+			*ret = ret_tmp;
+		}
+		return ERROR_OK;
+	default:
+		return ERROR_FAIL;
+	}
 }
 
 #endif	// INTERFACE_LPC_ICP_EN

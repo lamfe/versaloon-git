@@ -17,10 +17,26 @@
 #include "app_cfg.h"
 #if INTERFACE_JTAG_EN
 
+#include "interfaces.h"
 #include "JTAG_TAP.h"
 #include "SPI.h"
 
 #define JTAG_TAP_DR_IR_PREPARE_DLY()	
+
+#define JTAG_TAP_TMS_2TLR				0xFF
+#define JTAG_TAP_TMS_2RTI				0x7F
+#define JTAG_TAP_TMS_E12UPDATE			0xC0
+
+#define JTAG_TAP_TMS_UPDATERTI2SD		0x01
+#define JTAG_TAP_TMS_UPDATERTI2SD_LEN	3
+#define JTAG_TAP_TMS_UPDATERTI2SI		0x03
+#define JTAG_TAP_TMS_UPDATERTI2SI_LEN	4
+
+#define JTAG_TAP_ASYN					0
+#define JTAG_TAP_RAW					1
+
+#define JTAG_TAP_Reset_ASYN()			JTAG_TAP_WriteTMSByte_ASYN(JTAG_TAP_TMS_2RTI)
+#define JTAG_TAP_WriteTMSByte_ASYN(tms)	JTAG_TAP_Operate_Asyn(0, tms)
 
 static uint32 JTAG_TAP_UnitsBefore, JTAG_TAP_UnitsAfter, JTAG_TAP_BitsBefore, JTAG_TAP_BitsAfter;
 void (*JTAG_TAP_Operate_RAW)(uint32 bit_len, uint8 *tdi, uint8 *tms, uint8 *tdo);
@@ -219,7 +235,7 @@ static uint16 JTAG_TAP_HS_Operate_Asyn(uint16 tdi, uint16 tms)
 
 
 
-void JTAG_TAP_RW(uint8 *tdo, uint8 *tdi, uint8 tms_before, uint8 tms_after0, uint8 tms_after1, uint16 dat_byte_len)
+static void JTAG_TAP_RW(uint8 *tdo, uint8 *tdi, uint8 tms_before, uint8 tms_after0, uint8 tms_after1, uint16 dat_byte_len)
 {
 	uint8 tdo_tmp;
 	uint16 ret_len = 0, cur_pos = 0;
@@ -252,7 +268,7 @@ void JTAG_TAP_RW(uint8 *tdo, uint8 *tdi, uint8 tms_before, uint8 tms_after0, uin
 	tdo[ret_len] = tdo_tmp;
 }
 
-void JTAG_TAP_R(uint8 *tdo, uint8 tms_before, uint8 tms_after0, uint8 tms_after1, uint16 dat_byte_len)
+static void JTAG_TAP_R(uint8 *tdo, uint8 tms_before, uint8 tms_after0, uint8 tms_after1, uint16 dat_byte_len)
 {
 	uint8 tdo_tmp;
 	uint16 ret_len = 0;
@@ -285,7 +301,7 @@ void JTAG_TAP_R(uint8 *tdo, uint8 tms_before, uint8 tms_after0, uint8 tms_after1
 	tdo[ret_len] = tdo_tmp;
 }
 
-void JTAG_TAP_W(uint8 *tdi, uint8 tms_before, uint8 tms_after0, uint8 tms_after1, uint16 dat_byte_len)
+static void JTAG_TAP_W(uint8 *tdi, uint8 tms_before, uint8 tms_after0, uint8 tms_after1, uint16 dat_byte_len)
 {
 	uint16 cur_pos = 0;
 
@@ -320,7 +336,7 @@ void JTAG_TAP_W(uint8 *tdi, uint8 tms_before, uint8 tms_after0, uint8 tms_after1
 uint8 JTAG_TAP_1s[] = {0x00, 0x01, 0x03, 0x07, 0x0F, 0x1F, 0x3F, 0x7F, 0xFF};
 uint8 JTAG_TAP_TMS_scrap = 0;
 uint8 JTAG_TAP_TMS_scraplen = 0;
-void JTAG_TAP_TMS_Bit(uint8* tms, uint8 bit_len)
+static void JTAG_TAP_TMS_Bit(uint8* tms, uint8 bit_len)
 {
 	while (bit_len >= 8)
 	{
@@ -547,7 +563,7 @@ static void JTAG_TAP_ProcessDataRW(uint8 *tdo, uint8 *tdi, uint8 tms_before, uin
 	}
 }
 
-uint32 JTAG_TAP_Instr(uint32 instr, uint8 bit_len, uint8 idle)
+static uint32 JTAG_TAP_Instr(uint32 instr, uint8 bit_len, uint8 idle)
 {
 	uint32 ret;
 
@@ -563,7 +579,7 @@ uint32 JTAG_TAP_Instr(uint32 instr, uint8 bit_len, uint8 idle)
 	return ret;
 }
 
-void JTAG_TAP_InstrPtr(uint8 *instr, uint8 *tdo, uint16 bit_len, uint8 idle)
+static void JTAG_TAP_InstrPtr(uint8 *instr, uint8 *tdo, uint16 bit_len, uint8 idle)
 {
 	JTAG_TAP_ProcessDataRW(tdo,
 						   instr,
@@ -575,7 +591,7 @@ void JTAG_TAP_InstrPtr(uint8 *instr, uint8 *tdo, uint16 bit_len, uint8 idle)
 						   idle);
 }
 
-void JTAG_TAP_InstrOutPtr(uint8 *instr, uint16 bit_len, uint8 idle)
+static void JTAG_TAP_InstrOutPtr(uint8 *instr, uint16 bit_len, uint8 idle)
 {
 	JTAG_TAP_ProcessDataRW((uint8*)0,
 						   instr,
@@ -587,7 +603,7 @@ void JTAG_TAP_InstrOutPtr(uint8 *instr, uint16 bit_len, uint8 idle)
 						   idle);
 }
 
-void JTAG_TAP_DataOutPtr(uint8 *tdi, uint16 bit_len, uint8 idle)
+static void JTAG_TAP_DataOutPtr(uint8 *tdi, uint16 bit_len, uint8 idle)
 {
 	JTAG_TAP_ProcessDataRW((uint8*)0,
 						   tdi,
@@ -599,7 +615,7 @@ void JTAG_TAP_DataOutPtr(uint8 *tdi, uint16 bit_len, uint8 idle)
 						   idle);
 }
 
-void JTAG_TAP_DataInPtr(uint8 *tdo, uint16 bit_len, uint8 idle)
+static void JTAG_TAP_DataInPtr(uint8 *tdo, uint16 bit_len, uint8 idle)
 {
 	JTAG_TAP_ProcessDataRW(tdo,
 						   (uint8*)0,
@@ -611,7 +627,7 @@ void JTAG_TAP_DataInPtr(uint8 *tdo, uint16 bit_len, uint8 idle)
 						   idle);
 }
 
-void JTAG_TAP_DataPtr(uint8 *tdi, uint8 *tdo, uint16 bit_len, uint8 idle)
+static void JTAG_TAP_DataPtr(uint8 *tdi, uint8 *tdo, uint16 bit_len, uint8 idle)
 {
 	JTAG_TAP_ProcessDataRW(tdo,
 						   tdi,
@@ -623,7 +639,7 @@ void JTAG_TAP_DataPtr(uint8 *tdi, uint8 *tdo, uint16 bit_len, uint8 idle)
 						   idle);
 }
 
-uint32 JTAG_TAP_Data(uint32 tdi, uint16 bit_len, uint8 idle)
+static uint32 JTAG_TAP_Data(uint32 tdi, uint16 bit_len, uint8 idle)
 {
 	uint32 tdo;
 
@@ -639,7 +655,7 @@ uint32 JTAG_TAP_Data(uint32 tdi, uint16 bit_len, uint8 idle)
 	return tdo;
 }
 
-void JTAG_TAP_DataOut(uint32 tdi, uint16 bit_len, uint8 idle)
+static void JTAG_TAP_DataOut(uint32 tdi, uint16 bit_len, uint8 idle)
 {
 	JTAG_TAP_ProcessDataRW((uint8*)0,
 						   (uint8*)&tdi,
@@ -651,7 +667,7 @@ void JTAG_TAP_DataOut(uint32 tdi, uint16 bit_len, uint8 idle)
 						   idle);
 }
 
-uint32 JTAG_TAP_DataIn(uint16 bit_len, uint8 idle)
+static uint32 JTAG_TAP_DataIn(uint16 bit_len, uint8 idle)
 {
 	uint32 tdo;
 
@@ -669,7 +685,7 @@ uint32 JTAG_TAP_DataIn(uint16 bit_len, uint8 idle)
 
 
 
-void JTAG_TAP_SetDaisyChainPos(uint32 ub, uint32 ua, uint32 bb, uint32 ba)
+static void JTAG_TAP_SetDaisyChainPos(uint32 ub, uint32 ua, uint32 bb, uint32 ba)
 {
 	JTAG_TAP_UnitsBefore	= ub;
 	JTAG_TAP_UnitsAfter		= ua;
@@ -682,7 +698,7 @@ static uint8 JTAG_TAP_HS_GetDivFromFreq(uint16 kHz)
 	return SPI_GetSCKDiv(kHz);
 }
 
-void JTAG_TAP_SetTCKFreq(uint16 kHz)
+static void JTAG_TAP_SetTCKFreq(uint16 kHz)
 {
 	// Set Speed
 	JTAG_kHz = kHz;
@@ -692,7 +708,18 @@ void JTAG_TAP_SetTCKFreq(uint16 kHz)
 	}
 }
 
-void JTAG_TAP_Init(uint16 kHz, uint8 mode)
+static void JTAG_TAP_Fini(void)
+{
+	JTAG_TAP_HS_DMA_FINI();
+
+	JTAG_kHz = 0xFFFF;
+	JTAG_TAP_HS_PortFini();
+
+	SPI_I2S_DeInit(JTAG_TAP_HS_SPI_M);
+	SPI_I2S_DeInit(JTAG_TAP_HS_SPI_S);
+}
+
+static void JTAG_TAP_Init(uint16 kHz, uint8 mode)
 {
 	JTAG_TAP_Fini();
 
@@ -749,15 +776,253 @@ void JTAG_TAP_Init(uint16 kHz, uint8 mode)
 	}
 }
 
-void JTAG_TAP_Fini(void)
+RESULT jtag_hl_init(uint8_t index)
 {
-	JTAG_TAP_HS_DMA_FINI();
+	switch (index)
+	{
+	case 0:
+		return ERROR_OK;
+	default:
+		return ERROR_FAIL;
+	}
+}
 
-	JTAG_kHz = 0xFFFF;
-	JTAG_TAP_HS_PortFini();
+RESULT jtag_hl_fini(uint8_t index)
+{
+	switch (index)
+	{
+	case 0:
+		JTAG_TAP_Fini();
+		return ERROR_OK;
+	default:
+		return ERROR_FAIL;
+	}
+}
 
-	SPI_I2S_DeInit(JTAG_TAP_HS_SPI_M);
-	SPI_I2S_DeInit(JTAG_TAP_HS_SPI_S);
+RESULT jtag_hl_config(uint8_t index, uint16_t kHz, uint8_t ub, uint8_t ua, 
+						uint16_t bb, uint16_t ba)
+{
+	switch (index)
+	{
+	case 0:
+		JTAG_TAP_Init(kHz, JTAG_TAP_ASYN);
+		JTAG_TAP_SetDaisyChainPos(ub, ua, bb, ba);
+		return ERROR_OK;
+	default:
+		return ERROR_FAIL;
+	}
+}
+
+RESULT jtag_hl_tms(uint8_t index, uint8_t* tms, uint16_t bitlen)
+{
+	switch (index)
+	{
+	case 0:
+		JTAG_TAP_TMS_Bit(tms, bitlen);
+		return ERROR_OK;
+	default:
+		return ERROR_FAIL;
+	}
+}
+
+RESULT jtag_hl_runtest(uint8_t index, uint32_t cycles)
+{
+	uint8_t tms[256 / 8];
+	uint16_t cur_cycles;
+	
+	switch (index)
+	{
+	case 0:
+		memset(tms, 0, sizeof(tms));
+		while (cycles > 0)
+		{
+			if (cycles > 256)
+			{
+				cur_cycles = 256;
+			}
+			else
+			{
+				cur_cycles = (uint8_t)cycles;
+			}
+			if (ERROR_OK != jtag_hl_tms(index, tms, cur_cycles))
+			{
+				return ERROR_FAIL;
+			}
+			cycles -= cur_cycles;
+		}
+		return ERROR_OK;
+	default:
+		return ERROR_FAIL;
+	}
+}
+
+RESULT jtag_hl_ir(uint8_t index, uint8_t *ir, uint16_t bitlen, uint8_t idle)
+{
+	switch (index)
+	{
+	case 0:
+		JTAG_TAP_InstrPtr(ir, ir, bitlen, idle);
+		return ERROR_OK;
+	default:
+		return ERROR_FAIL;
+	}
+}
+
+RESULT jtag_hl_dr(uint8_t index, uint8_t *dr, uint16_t bitlen, uint8_t idle)
+{
+	switch (index)
+	{
+	case 0:
+		JTAG_TAP_DataPtr(dr, dr, bitlen, idle);
+		return ERROR_OK;
+	default:
+		return ERROR_FAIL;
+	}
+}
+
+RESULT jtag_ll_init(uint8_t index)
+{
+	switch (index)
+	{
+	case 0:
+		return ERROR_OK;
+	default:
+		return ERROR_FAIL;
+	}
+}
+
+RESULT jtag_ll_fini(uint8_t index)
+{
+	switch (index)
+	{
+	case 0:
+		JTAG_TAP_Fini();
+		return ERROR_OK;
+	default:
+		return ERROR_FAIL;
+	}
+}
+
+RESULT jtag_ll_config(uint8_t index, uint16_t kHz)
+{
+	switch (index)
+	{
+	case 0:
+		JTAG_TAP_Init(kHz, JTAG_TAP_ASYN);
+		return ERROR_OK;
+	default:
+		return ERROR_FAIL;
+	}
+}
+
+RESULT jtag_ll_tms(uint8_t index, uint8_t *tms, uint8_t bytelen)
+{
+	uint16_t i;
+	
+	switch (index)
+	{
+	case 0:
+		for(i = 0; i < bytelen; i++)
+		{
+			JTAG_TAP_WriteTMSByte_ASYN(tms[i]);
+		}
+		return ERROR_OK;
+	default:
+		return ERROR_FAIL;
+	}
+}
+
+RESULT jtag_ll_tms_clocks(uint8_t index, uint32_t bytelen, uint8_t tms)
+{
+	switch (index)
+	{
+	case 0:
+		while(bytelen--)
+		{
+			JTAG_TAP_WriteTMSByte_ASYN(tms);
+		}
+		return ERROR_OK;
+	default:
+		return ERROR_FAIL;
+	}
+}
+
+RESULT jtag_ll_scan(uint8_t index, uint8_t* data, uint16_t bitlen, 
+					uint8_t tms_before_valid, uint8_t tms_before, 
+					uint8_t tms_after0, uint8_t tms_after1)
+{
+	uint16_t bytelen = (bitlen + 7) >> 3;
+	
+	switch (index)
+	{
+	case 0:
+		if (NULL == data)
+		{
+			return ERROR_FAIL;
+		}
+		
+		if (tms_before_valid)
+		{
+			bytelen |= 0x8000;
+		}
+		JTAG_TAP_RW(data, data, tms_before, tms_after0, tms_after1, bytelen);
+		return ERROR_OK;
+	default:
+		return ERROR_FAIL;
+	}
+}
+
+RESULT jtag_raw_init(uint8_t index)
+{
+	switch (index)
+	{
+	case 0:
+		return ERROR_OK;
+	default:
+		return ERROR_FAIL;
+	}
+}
+
+RESULT jtag_raw_fini(uint8_t index)
+{
+	switch (index)
+	{
+	case 0:
+		JTAG_TAP_Fini();
+		return ERROR_OK;
+	default:
+		return ERROR_FAIL;
+	}
+}
+
+RESULT jtag_raw_config(uint8_t index, uint16_t kHz)
+{
+	switch (index)
+	{
+	case 0:
+		JTAG_TAP_Init(kHz, JTAG_TAP_RAW);
+		return ERROR_OK;
+	default:
+		return ERROR_FAIL;
+	}
+}
+
+RESULT jtag_raw_execute(uint8_t index, uint8_t* tdi, uint8_t* tms, 
+						uint8_t *tdo, uint32_t bitlen)
+{
+	switch (index)
+	{
+	case 0:
+		if ((NULL == tdi) || (NULL == tms) || (NULL == tdo))
+		{
+			return ERROR_FAIL;
+		}
+		
+		JTAG_TAP_Operate_RAW(bitlen, tdi, tms, tdo);
+		return ERROR_OK;
+	default:
+		return ERROR_FAIL;
+	}
 }
 
 #endif

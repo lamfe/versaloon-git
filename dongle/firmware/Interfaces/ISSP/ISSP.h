@@ -14,29 +14,15 @@
  *      2008-11-07:     created(by SimonQian)                             *
  **************************************************************************/
 
-#define ISSP_VECTOR_BITNUM		22
+#define ISSP_OPERATE_BANK		(1 << 0)
+#define ISSP_OPERATE_READ		(1 << 1)
+#define ISSP_OPERATE_APPENDBIT	(1 << 2)
+#define ISSP_OPERATE_0s			(1 << 3)
 
-// read or write
-#define ISSP_VECTOR_R			1
-#define ISSP_VECTOR_W			0
-
-// target
-#define ISSP_VECTOR_SRAM		0
-#define ISSP_VECTOR_CPUBANK		1
-
-// Prog Mode
-#define ISSP_PM_RESET			(1 << 0)
-#define ISSP_PM_POWER_ON		(0 << 0)
-
-// wap result
-#define ISSP_WAP_OK				0x00
-#define ISSP_WAP_TIMEOUT		0x01
-
-uint8 ISSP_Vector(uint8 bank, uint8 addr, uint8 data, uint8 r, uint8 append_bit);
-void ISSP_Vector_0s(void);
-void ISSP_EnterProgMode(uint8 mode);
-void ISSP_LeaveProgMode(uint8 mode);
-uint8 ISSP_WaitAndPoll(void);
-
-void ISSP_Init(void);
-void ISSP_Fini(void);
+RESULT issp_vector(uint8_t index, uint8_t operate, uint8_t addr, 
+					 uint8_t data, uint8_t *buf);
+RESULT issp_enter_program_mode(uint8_t index, uint8 mode);
+RESULT issp_leave_program_mode(uint8_t index, uint8 mode);
+RESULT issp_wait_and_poll(uint8_t index);
+RESULT issp_init(uint8_t index);
+RESULT issp_fini(uint8_t index);

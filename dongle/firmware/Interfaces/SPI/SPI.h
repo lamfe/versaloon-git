@@ -16,16 +16,14 @@
 
 // Only Support Master Mode
 
-#define SPI_MAX_SPEED			(_SYS_FREQUENCY * 500 / 2)		// in KHz
-#define SPI_MIN_SPEED			(_SYS_FREQUENCY * 500 / 256)	// in KHz
+#define SPI_MAX_KHZ				(_SYS_FREQUENCY * 500 / 2)		// in KHz
+#define SPI_MIN_KHZ				(_SYS_FREQUENCY * 500 / 256)	// in KHz
 
-#define SPI_DATA_LEN			8
-#define SPI_MSB					(1 << (SPI_DATA_LEN - 1))
-
-uint8 SPI_RW_Emu(uint8 data);
-uint8 SPI_RW_HW(uint8 data);
-void SPI_Config(uint32 freq_hz, uint32 firstbit, uint32 cpol, uint32 cpha);
 uint8 SPI_GetSCKDiv(uint16 freq_khz);
-uint8 SPI_RW(uint8 data);
 
-extern uint8 SPI_Emu;
+RESULT spi_init(uint8_t index);
+RESULT spi_fini(uint8_t index);
+RESULT spi_io(uint8_t index, uint8_t *out, uint8_t *in, uint16_t len);
+RESULT spi_config(uint8_t index, uint16_t kHz, uint8_t cpol, uint8_t cpha, 
+					 uint8_t first_bit);
+RESULT spi_io(uint8_t index, uint8_t *out, uint8_t *in, uint16_t len);

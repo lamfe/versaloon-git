@@ -291,6 +291,9 @@
           <state>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\inc</state>
           <state>$PROJ_DIR$\..\..\..\Tools\fifo\</state>
           <state>$PROJ_DIR$\..\..\..\HW\Mass\</state>
+          <state>$PROJ_DIR$\..\..\..\Interfaces\</state>
+          <state>$PROJ_DIR$\..\..\..\Interfaces\GPIO\</state>
+          <state>$PROJ_DIR$\..\..\..\Interfaces\USART\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\JTAG\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\SWD\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\SWIM\</state>
@@ -1128,6 +1131,9 @@
           <state>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\inc</state>
           <state>$PROJ_DIR$\..\..\..\Tools\fifo\</state>
           <state>$PROJ_DIR$\..\..\..\HW\Mass\</state>
+          <state>$PROJ_DIR$\..\..\..\Interfaces\</state>
+          <state>$PROJ_DIR$\..\..\..\Interfaces\GPIO\</state>
+          <state>$PROJ_DIR$\..\..\..\Interfaces\USART\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\JTAG\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\SWD\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\SWIM\</state>
@@ -1928,6 +1934,12 @@
       </file>
     </group>
     <group>
+      <name>GPIO</name>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\Interfaces\GPIO\GPIO.c</name>
+      </file>
+    </group>
+    <group>
       <name>IIC</name>
       <file>
         <name>$PROJ_DIR$\..\..\..\Interfaces\IIC\IIC.c</name>
@@ -1981,6 +1993,15 @@
         <name>$PROJ_DIR$\..\..\..\Interfaces\SWIM\SWIM.c</name>
       </file>
     </group>
+    <group>
+      <name>USART</name>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\Interfaces\USART\USART.c</name>
+      </file>
+    </group>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\Interfaces\interfaces.c</name>
+    </file>
   </group>
   <group>
     <name>Tools</name>

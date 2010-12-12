@@ -29,16 +29,14 @@
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
 
-uint8_t usbtomsp430sbw_num_of_interface = 0;
-
-RESULT usbtomsp430sbw_init(void)
+RESULT usbtomsp430sbw_init(uint8_t interface_index)
 {
-	return usbtoxxx_init_command(USB_TO_SBW, &usbtomsp430sbw_num_of_interface);
+	return usbtoxxx_init_command(USB_TO_SBW, interface_index);
 }
 
-RESULT usbtomsp430sbw_fini(void)
+RESULT usbtomsp430sbw_fini(uint8_t interface_index)
 {
-	return usbtoxxx_fini_command(USB_TO_SBW);
+	return usbtoxxx_fini_command(USB_TO_SBW, interface_index);
 }
 
 RESULT usbtomsp430sbw_config(uint8_t interface_index)

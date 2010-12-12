@@ -512,7 +512,7 @@ void comm_close_usbtocomm(void)
 	
 	if (interfaces != NULL)
 	{
-		interfaces->usart.fini();
+		interfaces->usart.fini(0);
 		interfaces->peripheral_commit();
 	}
 	usbtocomm_open = 0;
@@ -578,8 +578,8 @@ RESULT comm_open_usbtocomm(char *comport, uint32_t baudrate,
 	handshake = 0;
 	
 	// initialize usbtocomm
-	if ((ERROR_OK != interfaces->usart.init())
-		|| (ERROR_OK != interfaces->usart.config(baudrate, datalength, 
+	if ((ERROR_OK != interfaces->usart.init(0))
+		|| (ERROR_OK != interfaces->usart.config(0, baudrate, datalength, 
 												paritybit, stopbit, handshake)) 
 		|| (ERROR_OK != interfaces->peripheral_commit()))
 	{
@@ -605,7 +605,7 @@ int32_t comm_read_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 	{
 		LOG_PUSH();
 		LOG_MUTE();
-		if ((ERROR_OK != interfaces->usart.receive(buffer, (uint16_t)num_of_bytes)) 
+		if ((ERROR_OK != interfaces->usart.receive(0, buffer, (uint16_t)num_of_bytes)) 
 			|| (ERROR_OK != interfaces->peripheral_commit()))
 		{
 			LOG_POP();
@@ -630,7 +630,7 @@ int32_t comm_read_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 	
 	LOG_PUSH();
 	LOG_MUTE();
-	if ((ERROR_OK != interfaces->usart.status(&status)) 
+	if ((ERROR_OK != interfaces->usart.status(0, &status)) 
 		|| (ERROR_OK != interfaces->peripheral_commit()))
 	{
 		// error
@@ -638,7 +638,7 @@ int32_t comm_read_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 		return -1;
 	}
 	else if ((status.rx_buff_size != 0) 
-		&& ((ERROR_OK == interfaces->usart.receive(buffer, 
+		&& ((ERROR_OK == interfaces->usart.receive(0, buffer, 
 											(uint16_t)status.rx_buff_size)) 
 			&& (ERROR_OK == interfaces->peripheral_commit())))
 	{
@@ -662,7 +662,7 @@ int32_t comm_write_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 	}
 	
 	data_sent = 0;
-	if ((ERROR_OK == interfaces->usart.send(buffer, (uint16_t)num_of_bytes)) 
+	if ((ERROR_OK == interfaces->usart.send(0, buffer, (uint16_t)num_of_bytes)) 
 		&& (ERROR_OK == interfaces->peripheral_commit()))
 	{
 		data_sent = (int32_t)num_of_bytes;

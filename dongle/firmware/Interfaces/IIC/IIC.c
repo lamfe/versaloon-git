@@ -17,61 +17,133 @@
 #include "app_cfg.h"
 #if INTERFACE_IIC_EN
 
+#include "interfaces.h"
 #include "IIC_MOD_Common.h"
 #include "EMIIC_MOD.h"
 #include "IIC.h"
 
-DEFINE_EMIIC_MOD(USBTOXXX, IIC_SCL_CLR, IIC_SCL_SET, IIC_SCL_GET, IIC_SDA_CLR, IIC_SDA_SET, IIC_SDA_GET, DelayUS, uint16)
+DEFINE_EMIIC_MOD(USBTOXXX, IIC_SCL_CLR, IIC_SCL_SET, IIC_SCL_GET, IIC_SDA_CLR, IIC_SDA_SET, IIC_SDA_GET, DelayUS, uint16_t)
 
 uint16 IIC_Delay;
 
-uint8 IIC_SetParameter(uint16 kHz, uint16 ByteInterval, uint16 max_dly)
+RESULT iic_init(uint8_t index)
+{
+	switch (index)
+	{
+	case 0:
+		return ERROR_OK;
+	default:
+		return ERROR_FAIL;
+	}
+}
+
+RESULT iic_fini(uint8_t index)
+{
+	switch (index)
+	{
+	case 0:
+		if (IIC_MOD_ACK == EMIIC_USBTOXXX_DeInit())
+		{
+			return ERROR_OK;
+		}
+		else
+		{
+			return ERROR_FAIL;
+		}
+	default:
+		return ERROR_FAIL;
+	}
+}
+
+RESULT iic_config(uint8_t index, uint16_t kHz, uint16_t byte_interval, 
+				 uint16_t max_dly)
 {
 	uint16 clock_cycle = 1000 / kHz;
-	EMIIC_USBTOXXX_SetParameter(clock_cycle, max_dly, 1, ByteInterval);
-	return 0;
-}
-
-uint8 IIC_Init(uint16 kHz, uint16 ByteInterval, uint16 max_dly)
-{
-	IIC_PULL_INIT();
-	EMIIC_USBTOXXX_Init();
-	return IIC_SetParameter(kHz, ByteInterval, max_dly);
-}
-
-void IIC_Fini(void)
-{
-	EMIIC_USBTOXXX_DeInit();
-}
-
-uint8 IIC_Write(uint8 chip_addr, uint8 *data, uint16 data_len, uint8 stop, uint16 *actual_len)
-{
-	IIC_STOP_t iic_stop;
-
-	if (stop)
+	
+	switch (index)
 	{
-		iic_stop = IIC_FORCESTOP;
+	case 0:
+		IIC_PULL_INIT();
+		if (IIC_MOD_ACK == EMIIC_USBTOXXX_Init())
+		{
+			if (IIC_MOD_ACK == EMIIC_USBTOXXX_SetParameter(clock_cycle, max_dly, 1, byte_interval))
+			{
+				return ERROR_OK;
+			}
+			else
+			{
+				return ERROR_FAIL;
+			}
+		}
+		else
+		{
+			return ERROR_FAIL;
+		}
+	default:
+		return ERROR_FAIL;
 	}
-	else
-	{
-		iic_stop = IIC_NOSTOP;
-	}
-	return (uint8)EMIIC_USBTOXXX_Send(chip_addr, data, data_len, iic_stop, actual_len);
 }
 
-uint8 IIC_Read(uint8 chip_addr, uint8 *data, uint16 data_len, uint8 stop, uint16 *actual_len)
+RESULT iic_read(uint8_t index, uint16_t chip_addr, uint8_t *data, 
+			   uint16_t data_len, uint8_t stop)
 {
 	IIC_STOP_t iic_stop;
+	uint16_t actual_len;
+	
+	switch (index)
+	{
+	case 0:
+		if (stop)
+		{
+			iic_stop = IIC_FORCESTOP;
+		}
+		else
+		{
+			iic_stop = IIC_NOSTOP;
+		}
+		
+		if (IIC_MOD_ACK == EMIIC_USBTOXXX_Receive(chip_addr, data, data_len, iic_stop, &actual_len))
+		{
+			return ERROR_OK;
+		}
+		else
+		{
+			return ERROR_FAIL;
+		}
+	default:
+		return ERROR_FAIL;
+	}
+}
 
-	if (stop)
+RESULT iic_write(uint8_t index, uint16_t chip_addr, uint8_t *data, 
+				uint16_t data_len, uint8_t stop)
+{
+	IIC_STOP_t iic_stop;
+	uint16_t actual_len;
+	
+	switch (index)
 	{
-		iic_stop = IIC_FORCESTOP;
+	case 0:
+		if (stop)
+		{
+			iic_stop = IIC_FORCESTOP;
+		}
+		else
+		{
+			iic_stop = IIC_NOSTOP;
+		}
+		
+		if (IIC_MOD_ACK == EMIIC_USBTOXXX_Send(chip_addr, data, data_len, iic_stop, &actual_len))
+		{
+			return ERROR_OK;
+		}
+		else
+		{
+			return ERROR_FAIL;
+		}
+	default:
+		return ERROR_FAIL;
 	}
-	else
-	{
-		iic_stop = IIC_NOSTOP;
-	}
-	return (uint8)EMIIC_USBTOXXX_Receive(chip_addr, data, data_len, iic_stop, actual_len);
 }
 
 #endif

@@ -159,17 +159,17 @@ struct program_functions_t avr8jtag_program_functions =
 
 
 
-#define jtag_init()					interfaces->jtag_hl.init()
-#define jtag_fini()					interfaces->jtag_hl.fini()
+#define jtag_init()					interfaces->jtag_hl.init(0)
+#define jtag_fini()					interfaces->jtag_hl.fini(0)
 #define jtag_config(kHz,a,b,c,d)	\
-	interfaces->jtag_hl.config((kHz), (a), (b), (c), (d))
-#define jtag_runtest(len)			interfaces->jtag_hl.runtest(len)
+	interfaces->jtag_hl.config(0, (kHz), (a), (b), (c), (d))
+#define jtag_runtest(len)			interfaces->jtag_hl.runtest(0, len)
 #define jtag_ir_write(i, len)		\
-	interfaces->jtag_hl.ir((uint8_t*)(i), (len), 1, 0)
+	interfaces->jtag_hl.ir(0, (uint8_t*)(i), (len), 1, 0)
 #define jtag_dr_write(d, len)		\
-	interfaces->jtag_hl.dr((uint8_t*)(d), (len), 1, 0)
+	interfaces->jtag_hl.dr(0, (uint8_t*)(d), (len), 1, 0)
 #define jtag_dr_read(d, len)		\
-	interfaces->jtag_hl.dr((uint8_t*)(d), (len), 1, 1)
+	interfaces->jtag_hl.dr(0, (uint8_t*)(d), (len), 1, 1)
 
 #define poll_start()				interfaces->poll.start(20, 500)
 #define poll_end()					interfaces->poll.end()

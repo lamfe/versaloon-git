@@ -30,8 +30,6 @@
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
 
-uint8_t usbtoswd_num_of_interface = 0;
-
 RESULT usbtoswd_callback(void *p, uint8_t *src, uint8_t *processed)
 {
 	struct versaloon_pending_t *pending = (struct versaloon_pending_t *)p;
@@ -46,15 +44,14 @@ RESULT usbtoswd_callback(void *p, uint8_t *src, uint8_t *processed)
 	return ERROR_OK;
 }
 
-RESULT usbtoswd_init(void)
+RESULT usbtoswd_init(uint8_t interface_index)
 {
-	return usbtoxxx_init_command(USB_TO_SWD, 
-								 &usbtoswd_num_of_interface);
+	return usbtoxxx_init_command(USB_TO_SWD, interface_index);
 }
 
-RESULT usbtoswd_fini(void)
+RESULT usbtoswd_fini(uint8_t interface_index)
 {
-	return usbtoxxx_fini_command(USB_TO_SWD);
+	return usbtoxxx_fini_command(USB_TO_SWD, interface_index);
 }
 
 RESULT usbtoswd_config(uint8_t interface_index, uint8_t trn, uint16_t retry, 

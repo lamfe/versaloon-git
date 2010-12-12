@@ -29,16 +29,14 @@
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
 
-uint8_t usbtogpio_num_of_interface;
-
-RESULT usbtogpio_init(void)
+RESULT usbtogpio_init(uint8_t interface_index)
 {
-	return usbtoxxx_init_command(USB_TO_GPIO, &usbtogpio_num_of_interface);
+	return usbtoxxx_init_command(USB_TO_GPIO, interface_index);
 }
 
-RESULT usbtogpio_fini(void)
+RESULT usbtogpio_fini(uint8_t interface_index)
 {
-	return usbtoxxx_fini_command(USB_TO_GPIO);
+	return usbtoxxx_fini_command(USB_TO_GPIO, interface_index);
 }
 
 RESULT usbtogpio_config(uint8_t interface_index, uint16_t mask, 

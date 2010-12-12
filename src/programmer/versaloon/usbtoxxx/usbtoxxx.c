@@ -54,7 +54,6 @@ static uint8_t type_pre = 0;
 static uint16_t usbtoxxx_buffer_index = 0;
 static uint16_t usbtoxxx_current_cmd_index = 0;
 static uint8_t *usbtoxxx_buffer = NULL;
-uint8_t null_char = 0;
 
 uint16_t collect_index = 0;
 uint8_t collect_cmd;

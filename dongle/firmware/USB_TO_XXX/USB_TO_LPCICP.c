@@ -18,78 +18,86 @@
 #if USB_TO_LPCICP_EN
 
 #include "USB_TO_XXX.h"
-#include "LPC_ICP.h"
+#include "interfaces.h"
 
 void USB_TO_LPCICP_ProcessCmd(uint8* dat, uint16 len)
 {
-	uint16 index, device_num, length;
+	uint16 index, device_idx, length;
 	uint8 command;
 
 	index = 0;
 	while(index < len)
 	{
 		command = dat[index] & USB_TO_XXX_CMDMASK;
-		device_num = dat[index] & USB_TO_XXX_IDXMASK;
-		if(device_num >= USB_TO_LPCICP_NUM)
-		{
-			buffer_reply[rep_len++] = USB_TO_XXX_INVALID_INDEX;
-			return;
-		}
+		device_idx = dat[index] & USB_TO_XXX_IDXMASK;
 		length = GET_LE_U16(&dat[index + 1]);
 		index += 3;
 
 		switch(command)
 		{
 		case USB_TO_XXX_INIT:
-			buffer_reply[rep_len++] = USB_TO_XXX_OK;
-			buffer_reply[rep_len++] = USB_TO_LPCICP_NUM;
-
-			LPCICP_Init();
-
-			break;
-		case USB_TO_XXX_CONFIG:
-			buffer_reply[rep_len++] = USB_TO_XXX_OK;
-
-			break;
-		case USB_TO_XXX_FINI:
-			LPCICP_LeavrProgMode();
-			LPCICP_Fini();
-			buffer_reply[rep_len++] = USB_TO_XXX_OK;
-
-			break;
-		case USB_TO_LPCICP_EnterProgMode:
-			if (Vtarget > TVCC_SAMPLE_MIN_POWER)
+			if (ERROR_OK == interfaces->lpcicp.init(device_idx))
 			{
-				// No power should be on the target
-				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
 			else
 			{
-				LPCICP_EnterProgMode();
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+			}
+			break;
+		case USB_TO_XXX_FINI:
+			if (ERROR_OK == interfaces->lpcicp.fini(device_idx))
+			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
-
+			else
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+			}
+			break;
+		case USB_TO_LPCICP_EnterProgMode:
+			if (ERROR_OK == interfaces->lpcicp.enter_program_mode(device_idx))
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+			}
+			else
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+			}
 			break;
 		case USB_TO_LPCICP_In:
-			LPCICP_In(&dat[index], length);
-			buffer_reply[rep_len++] = USB_TO_XXX_OK;
-			memcpy(&buffer_reply[rep_len], &dat[index], length);
+			if (ERROR_OK == interfaces->lpcicp.in(device_idx, &buffer_reply[rep_len + 1], length))
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+			}
+			else
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+			}
 			rep_len += length;
-
 			break;
 		case USB_TO_LPCICP_Out:
-			LPCICP_Out(&dat[index], length);
-			buffer_reply[rep_len++] = USB_TO_XXX_OK;
-
+			if (ERROR_OK == interfaces->lpcicp.out(device_idx, &dat[index], length))
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+			}
+			else
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+			}
 			break;
 		case USB_TO_LPCICP_PollRdy:
-			buffer_reply[rep_len++] = USB_TO_XXX_OK;
-			buffer_reply[rep_len++] = LPCICP_Poll(
-					dat[index + 0], 								// out
-					dat[index + 1], 								// setbit
-					dat[index + 2],									// clearbit
-					GET_LE_U16(&dat[index + 3]));					// pollcnt
-
+			if (ERROR_OK == interfaces->lpcicp.poll_ready(device_idx, dat[index + 0], 
+								&buffer_reply[rep_len + 1], dat[index + 1], 
+								dat[index + 2], GET_LE_U16(&dat[index + 3])))
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+			}
+			else
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+			}
+			rep_len++;
 			break;
 		default:
 			buffer_reply[rep_len++] = USB_TO_XXX_CMD_NOT_SUPPORT;

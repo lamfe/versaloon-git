@@ -17,10 +17,8 @@
 #include "app_cfg.h"
 #if INTERFACE_SWIM_EN
 
+#include "interfaces.h"
 #include "SWIM.h"
-#if POWER_OUT_EN
-#	include "PowerExt.h"
-#endif
 
 static uint8 SWIM_Inited = 0;
 static uint16 SWIM_PULSE_0;
@@ -41,7 +39,7 @@ static uint16 SWIM_clock_div = 0;
 
 #define SWIM_SYNC_CYCLES				128
 
-void SWIM_Init()
+static void SWIM_Init()
 {
 	if (!SWIM_Inited)
 	{
@@ -51,7 +49,7 @@ void SWIM_Init()
 	}
 }
 
-void SWIM_Fini()
+static void SWIM_Fini()
 {
 	SYNCSWPWM_PORT_OD_FINI();
 	SYNCSWPWM_OUT_TIMER_FINI();
@@ -59,18 +57,18 @@ void SWIM_Fini()
 	SWIM_Inited = 0;
 }
 
-void SWIM_EnableClockInput(void)
+static void SWIM_EnableClockInput(void)
 {
 	SWIM_clock_div = 0;
 	SYNCSWPWM_IN_TIMER_INIT();
 }
 
-uint8 SWIM_EnterProgMode(void)
+static uint8 SWIM_EnterProgMode(void)
 {
 	uint8 i;
 	uint32 dly;
 
-	SYNCSWPWM_IN_TIMER_DMA_INIT(10, SWIM_DMA_IN_Buffer);
+	SYNCSWPWM_IN_TIMER_RISE_DMA_INIT(10, SWIM_DMA_IN_Buffer);
 
 	SWIM_CLR();
 	DelayUS(1000);
@@ -92,7 +90,7 @@ uint8 SWIM_EnterProgMode(void)
 	SWIM_SET();
 
 	dly = SWIM_MAX_DLY;
-	SYNCSWPWM_IN_TIMER_DMA_WAIT(dly);
+	SYNCSWPWM_IN_TIMER_RISE_DMA_WAIT(dly);
 	if (!dly)
 	{
 		return 1;
@@ -103,7 +101,7 @@ uint8 SWIM_EnterProgMode(void)
 	}
 }
 
-uint8 SWIM_Sync(uint8 mHz)
+static uint8 SWIM_Sync(uint8 mHz)
 {
 	uint32 dly;
 	uint16 clock_div;
@@ -115,7 +113,7 @@ uint8 SWIM_Sync(uint8 mHz)
 		clock_div++;
 	}
 	
-	SYNCSWPWM_IN_TIMER_DMA_INIT(2, SWIM_DMA_IN_Buffer);
+	SYNCSWPWM_IN_TIMER_RISE_DMA_INIT(2, SWIM_DMA_IN_Buffer);
 	
 	arr_save = SYNCSWPWM_OUT_TIMER_GetCycle();
 	SYNCSWPWM_OUT_TIMER_SetCycle(SWIM_SYNC_CYCLES * clock_div + 1);
@@ -126,7 +124,7 @@ uint8 SWIM_Sync(uint8 mHz)
 	SYNCSWPWM_OUT_TIMER_DMA_WAIT();
 
 	dly = SWIM_MAX_DLY;
-	SYNCSWPWM_IN_TIMER_DMA_WAIT(dly);
+	SYNCSWPWM_IN_TIMER_RISE_DMA_WAIT(dly);
 	SYNCSWPWM_OUT_TIMER_SetCycle(arr_save);
 
 	if (!dly)
@@ -140,7 +138,7 @@ uint8 SWIM_Sync(uint8 mHz)
 	}
 }
 
-uint8 SWIM_SetClockParam(uint8 mHz, uint8 cnt0, uint8 cnt1)
+static uint8 SWIM_SetClockParam(uint8 mHz, uint8 cnt0, uint8 cnt1)
 {
 	uint16 clock_div;
 	
@@ -177,7 +175,7 @@ uint8 SWIM_SetClockParam(uint8 mHz, uint8 cnt0, uint8 cnt1)
 	return 0;
 }
 
-uint8 SWIM_HW_Out(uint8 cmd, uint8 bitlen, uint16 retry_cnt)
+static uint8 SWIM_HW_Out(uint8 cmd, uint8 bitlen, uint16 retry_cnt)
 {
 	int8 i, p;
 	uint32 dly;
@@ -185,7 +183,7 @@ uint8 SWIM_HW_Out(uint8 cmd, uint8 bitlen, uint16 retry_cnt)
 
 retry:
 
-	SYNCSWPWM_IN_TIMER_DMA_INIT(bitlen + 3, SWIM_DMA_IN_Buffer);
+	SYNCSWPWM_IN_TIMER_RISE_DMA_INIT(bitlen + 3, SWIM_DMA_IN_Buffer);
 
 	*ptr++ = SWIM_PULSE_0;
 
@@ -217,8 +215,8 @@ retry:
 	SYNCSWPWM_OUT_TIMER_DMA_WAIT();
 
 	dly = SWIM_MAX_DLY;
-	SYNCSWPWM_IN_TIMER_DMA_WAIT(dly);
-	SYNCSWPWM_IN_TIMER_DMA_INIT(10, SWIM_DMA_IN_Buffer + 1);
+	SYNCSWPWM_IN_TIMER_RISE_DMA_WAIT(dly);
+	SYNCSWPWM_IN_TIMER_RISE_DMA_INIT(10, SWIM_DMA_IN_Buffer + 1);
 
 	if (!dly)
 	{
@@ -244,13 +242,13 @@ retry:
 	}
 }
 
-uint8 SWIM_HW_In(uint8* data, uint8 bitlen)
+static uint8 SWIM_HW_In(uint8* data, uint8 bitlen)
 {
 	uint8 ret = 0;
 	uint32 dly;
 
 	dly = SWIM_MAX_DLY;
-	SYNCSWPWM_IN_TIMER_DMA_WAIT(dly);
+	SYNCSWPWM_IN_TIMER_RISE_DMA_WAIT(dly);
 	*data = 0;
 	if (dly && (SWIM_DMA_IN_Buffer[1] < SWIM_PULSE_Threshold))
 	{
@@ -261,7 +259,7 @@ uint8 SWIM_HW_In(uint8* data, uint8 bitlen)
 				*data |= 1 << (7 - dly);
 			}
 		}
-		SYNCSWPWM_IN_TIMER_DMA_INIT(11, SWIM_DMA_IN_Buffer);
+		SYNCSWPWM_IN_TIMER_RISE_DMA_INIT(11, SWIM_DMA_IN_Buffer);
 
 		SWIM_DMA_OUT_Buffer[0] = SWIM_PULSE_1;
 		SWIM_DMA_OUT_Buffer[1] = 0;
@@ -276,12 +274,12 @@ uint8 SWIM_HW_In(uint8* data, uint8 bitlen)
 	return ret;
 }
 
-uint8 SWIM_SRST(void)
+static uint8 SWIM_SRST(void)
 {
 	return SWIM_HW_Out(SWIM_CMD_SRST, SWIM_CMD_BITLEN, SWIM_MAX_RESEND_CNT);
 }
 
-uint8 SWIM_WOTF(uint32 addr, uint16 len, uint8 *data)
+static uint8 SWIM_WOTF(uint32 addr, uint16 len, uint8 *data)
 {
 	uint16 processed_len;
 	uint8 cur_len, i;
@@ -342,7 +340,7 @@ uint8 SWIM_WOTF(uint32 addr, uint16 len, uint8 *data)
 	return 0;
 }
 
-uint8 SWIM_ROTF(uint32 addr, uint16 len, uint8 *data)
+static uint8 SWIM_ROTF(uint32 addr, uint16 len, uint8 *data)
 {
 	uint16 processed_len;
 	uint8 cur_len, i;
@@ -401,6 +399,139 @@ uint8 SWIM_ROTF(uint32 addr, uint16 len, uint8 *data)
 	}
 
 	return 0;
+}
+
+RESULT swim_init(uint8_t index)
+{
+	switch (index)
+	{
+	case 0:
+		return ERROR_OK;
+	default:
+		return ERROR_FAIL;
+	}
+}
+
+RESULT swim_fini(uint8_t index)
+{
+	switch (index)
+	{
+	case 0:
+		SWIM_Fini();
+		return ERROR_OK;
+	default:
+		return ERROR_FAIL;
+	}
+}
+
+RESULT swim_config(uint8_t index, uint8_t mHz, uint8_t cnt0, uint8_t cnt1)
+{
+	switch (index)
+	{
+	case 0:
+		SWIM_Init();
+		if (SWIM_SetClockParam(mHz, cnt0, cnt1))
+		{
+			return ERROR_FAIL;
+		}
+		else
+		{
+			return ERROR_OK;
+		}
+	default:
+		return ERROR_FAIL;
+	}
+}
+
+RESULT swim_srst(uint8_t index)
+{
+	switch (index)
+	{
+	case 0:
+		if (SWIM_SRST())
+		{
+			return ERROR_FAIL;
+		}
+		else
+		{
+			return ERROR_OK;
+		}
+	default:
+		return ERROR_FAIL;
+	}
+}
+
+RESULT swim_wotf(uint8_t index, uint8_t *data, uint16_t bytelen, uint32_t addr)
+{
+	switch (index)
+	{
+	case 0:
+		if (SWIM_WOTF(addr, bytelen, data))
+		{
+			return ERROR_FAIL;
+		}
+		else
+		{
+			return ERROR_OK;
+		}
+	default:
+		return ERROR_FAIL;
+	}
+}
+
+RESULT swim_rotf(uint8_t index, uint8_t *data, uint16_t bytelen, uint32_t addr)
+{
+	switch (index)
+	{
+	case 0:
+		if (SWIM_ROTF(addr, bytelen, data))
+		{
+			return ERROR_FAIL;
+		}
+		else
+		{
+			return ERROR_OK;
+		}
+	default:
+		return ERROR_FAIL;
+	}
+}
+
+RESULT swim_sync(uint8_t index, uint8_t mHz)
+{
+	switch (index)
+	{
+	case 0:
+		if (SWIM_Sync(mHz))
+		{
+			return ERROR_FAIL;
+		}
+		else
+		{
+			return ERROR_OK;
+		}
+	default:
+		return ERROR_FAIL;
+	}
+}
+
+RESULT swim_enable(uint8_t index)
+{
+	switch (index)
+	{
+	case 0:
+		SWIM_EnableClockInput();
+		if (SWIM_EnterProgMode())
+		{
+			return ERROR_FAIL;
+		}
+		else
+		{
+			return ERROR_OK;
+		}
+	default:
+		return ERROR_FAIL;
+	}
 }
 
 #endif		// #if STM8_SWIM_EN

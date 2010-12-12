@@ -29,16 +29,14 @@
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
 
-uint8_t usbtoswim_num_of_interface = 0;
-
-RESULT usbtoswim_init(void)
+RESULT usbtoswim_init(uint8_t interface_index)
 {
-	return usbtoxxx_init_command(USB_TO_SWIM, &usbtoswim_num_of_interface);
+	return usbtoxxx_init_command(USB_TO_SWIM, interface_index);
 }
 
-RESULT usbtoswim_fini(void)
+RESULT usbtoswim_fini(uint8_t interface_index)
 {
-	return usbtoxxx_fini_command(USB_TO_SWIM);
+	return usbtoxxx_fini_command(USB_TO_SWIM, interface_index);
 }
 
 RESULT usbtoswim_config(uint8_t interface_index, uint8_t mHz, uint8_t cnt0, 

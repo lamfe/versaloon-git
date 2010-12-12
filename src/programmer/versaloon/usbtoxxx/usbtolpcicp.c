@@ -29,16 +29,14 @@
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
 
-uint8_t usbtolpcicp_num_of_interface = 0;
-
-RESULT usbtolpcicp_init(void)
+RESULT usbtolpcicp_init(uint8_t interface_index)
 {
-	return usbtoxxx_init_command(USB_TO_LPCICP, &usbtolpcicp_num_of_interface);
+	return usbtoxxx_init_command(USB_TO_LPCICP, interface_index);
 }
 
-RESULT usbtolpcicp_fini(void)
+RESULT usbtolpcicp_fini(uint8_t interface_index)
 {
-	return usbtoxxx_fini_command(USB_TO_LPCICP);
+	return usbtoxxx_fini_command(USB_TO_LPCICP, interface_index);
 }
 
 RESULT usbtolpcicp_config(uint8_t interface_index)
@@ -95,8 +93,8 @@ RESULT usbtolpcicp_out(uint8_t interface_index, uint8_t *buff, uint16_t len)
 	return usbtoxxx_out_command(USB_TO_LPCICP, interface_index, buff, len, 0);
 }
 
-RESULT usbtolpcicp_poll_ready(uint8_t interface_index, uint8_t *ret, 
-			uint8_t data, uint8_t setmask, uint8_t clearmask, uint16_t pollcnt)
+RESULT usbtolpcicp_poll_ready(uint8_t interface_index, uint8_t data, 
+			uint8_t *ret, uint8_t setmask, uint8_t clearmask, uint16_t pollcnt)
 {
 	uint8_t cmdbuf[5];
 	

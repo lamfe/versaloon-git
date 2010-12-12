@@ -18,115 +18,113 @@
 #if USB_TO_SWIM_EN
 
 #include "USB_TO_XXX.h"
-#include "SWIM.h"
-#if POWER_OUT_EN
-#	include "PowerExt.h"
-#endif
+#include "interfaces.h"
 
 void USB_TO_SWIM_ProcessCmd(uint8* dat, uint16 len)
 {
-	uint16 index, device_num, length;
+	uint16 index, device_idx, length;
 	uint8 command;
-	uint32 swim_addr, swim_len;
+	uint32 swim_addr;
+	uint16 swim_len;
 
 	index = 0;
 	while(index < len)
 	{
 		command = dat[index] & USB_TO_XXX_CMDMASK;
-		device_num = dat[index] & USB_TO_XXX_IDXMASK;
-		if(device_num >= USB_TO_SWIM_NUM)
-		{
-			buffer_reply[rep_len++] = USB_TO_XXX_INVALID_INDEX;
-			return;
-		}
+		device_idx = dat[index] & USB_TO_XXX_IDXMASK;
 		length = GET_LE_U16(&dat[index + 1]);
 		index += 3;
 
 		switch(command)
 		{
 		case USB_TO_XXX_INIT:
-			buffer_reply[rep_len++] = USB_TO_XXX_OK;
-			buffer_reply[rep_len++] = USB_TO_SWIM_NUM;
-			GLOBAL_OUTPUT_Acquire();
-			PWREXT_Acquire();
-			DelayMS(1);
-
-			break;
-		case USB_TO_XXX_CONFIG:
-			SWIM_Init();
-			if (SWIM_SetClockParam(dat[index + 0], dat[index + 1], dat[index + 2]))
-			{
-				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
-			}
-			else
+			if (ERROR_OK == interfaces->swim.init(device_idx))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
-
+			else
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+			}
+			break;
+		case USB_TO_XXX_CONFIG:
+			if (ERROR_OK == interfaces->swim.config(device_idx, dat[index + 0], 
+								dat[index + 1], dat[index + 2]))
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+			}
+			else
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+			}
 			break;
 		case USB_TO_XXX_FINI:
-			SWIM_Fini();
-			PWREXT_Release();
-			GLOBAL_OUTPUT_Release();
-			buffer_reply[rep_len++] = USB_TO_XXX_OK;
-
+			if (ERROR_OK == interfaces->swim.fini(device_idx))
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+			}
+			else
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+			}
 			break;
 		case USB_TO_XXX_OUT:
 			swim_len = GET_LE_U16(&dat[index + 0]);
 			swim_addr = GET_LE_U32(&dat[index + 2]);
-			if (SWIM_WOTF(swim_addr, swim_len, &dat[index + 6]))
-			{
-				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
-			}
-			else
+			
+			if (ERROR_OK == interfaces->swim.wotf(device_idx, &dat[index + 6], 
+								swim_len, swim_addr))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
-
+			else
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+			}
 			break;
 		case USB_TO_XXX_IN:
 			swim_len = GET_LE_U16(&dat[index + 0]);
 			swim_addr = GET_LE_U32(&dat[index + 2]);
-			if (SWIM_ROTF(swim_addr, swim_len, &buffer_reply[rep_len + 1]))
+			
+			if (ERROR_OK == interfaces->swim.rotf(device_idx, &buffer_reply[rep_len + 1], 
+								swim_len, swim_addr))
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
 			else
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_OK;
-				rep_len += swim_len;
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
-
+			rep_len += swim_len;
 			break;
 		case USB_TO_XXX_RESET:
-			if (SWIM_SRST())
+			if (ERROR_OK == interfaces->swim.srst(device_idx))
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
 			else
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
 			break;
 		case USB_TO_XXX_SYNC:
-			if (SWIM_Sync(dat[index + 0]))
+			if (ERROR_OK == interfaces->swim.sync(device_idx, dat[index + 0]))
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
 			else
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
 			break;
 		case USB_TO_XXX_ENABLE:
-			SWIM_EnableClockInput();
-			if (SWIM_EnterProgMode())
+			if (ERROR_OK == interfaces->swim.enable(device_idx))
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
 			else
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
 			break;
 		default:
