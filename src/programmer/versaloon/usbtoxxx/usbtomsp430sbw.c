@@ -52,7 +52,7 @@ RESULT usbtomsp430sbw_config(uint8_t interface_index)
 	return usbtoxxx_conf_command(USB_TO_SBW, interface_index, NULL, 0);
 }
 
-RESULT usbtomsp430sbw_ir(uint8_t interface_index, uint8_t *ir, uint8_t want_ret)
+RESULT usbtomsp430sbw_ir(uint8_t interface_index, uint8_t *ir)
 {
 	uint8_t buff[2];
 	
@@ -67,20 +67,12 @@ RESULT usbtomsp430sbw_ir(uint8_t interface_index, uint8_t *ir, uint8_t want_ret)
 	buff[0] = 8;
 	buff[1] = *ir;
 	
-	if (want_ret)
-	{
-		return usbtoxxx_inout_command(USB_TO_SBW, interface_index, 
-									  buff, 2, 1, ir, 0, 1, 1);
-	}
-	else
-	{
-		return usbtoxxx_inout_command(USB_TO_SBW, interface_index, 
-									  buff, 2, 1, NULL, 0, 0, 1);
-	}
+	return usbtoxxx_inout_command(USB_TO_SBW, interface_index, 
+								  buff, 2, 1, ir, 0, 1, 1);
 }
 
 RESULT usbtomsp430sbw_dr(uint8_t interface_index, uint32_t *dr, 
-							uint8_t bitlen, uint8_t want_ret)
+							uint8_t bitlen)
 {
 	uint8_t buff[5], byte_len = (bitlen + 7) >> 3;
 	
@@ -95,16 +87,8 @@ RESULT usbtomsp430sbw_dr(uint8_t interface_index, uint32_t *dr,
 	buff[0] = bitlen | 0x80;
 	memcpy(buff + 1, dr, byte_len);
 
-	if (want_ret)
-	{
-		return usbtoxxx_inout_command(USB_TO_SBW, interface_index, buff, 
-						byte_len + 1, byte_len, (uint8_t*)dr, 0, byte_len, 1);
-	}
-	else
-	{
-		return usbtoxxx_inout_command(USB_TO_SBW, interface_index, buff, 
-									  byte_len + 1, byte_len, NULL, 0, 0, 1);
-	}
+	return usbtoxxx_inout_command(USB_TO_SBW, interface_index, buff, 
+					byte_len + 1, byte_len, (uint8_t*)dr, 0, byte_len, 1);
 }
 
 RESULT usbtomsp430sbw_tclk(uint8_t interface_index, uint8_t value)

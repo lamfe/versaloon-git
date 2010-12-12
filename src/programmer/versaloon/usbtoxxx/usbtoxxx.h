@@ -101,9 +101,9 @@ RESULT usbtojtaghl_fini(uint8_t interface_index);
 RESULT usbtojtaghl_config(uint8_t interface_index, uint16_t kHz, uint8_t ub, 
 						  uint8_t ua, uint16_t bb, uint16_t ba);
 RESULT usbtojtaghl_ir(uint8_t interface_index, uint8_t *ir, uint16_t bitlen, 
-					  uint8_t idle, uint8_t want_ret);
+					  uint8_t idle);
 RESULT usbtojtaghl_dr(uint8_t interface_index, uint8_t *dr, uint16_t bitlen, 
-					  uint8_t idle, uint8_t want_ret);
+					  uint8_t idle);
 RESULT usbtojtaghl_tms(uint8_t interface_index, uint8_t *tms, uint16_t bitlen);
 RESULT usbtojtaghl_runtest(uint8_t interface_index, uint32_t cycles);
 RESULT usbtojtaghl_register_callback(uint8_t index, jtag_callback_t send_callback, 
@@ -147,10 +147,9 @@ RESULT usbtoi2c_write(uint8_t interface_index, uint16_t chip_addr,
 RESULT usbtomsp430jtag_init(uint8_t interface_index);
 RESULT usbtomsp430jtag_fini(uint8_t interface_index);
 RESULT usbtomsp430jtag_config(uint8_t interface_index, uint8_t has_test);
-RESULT usbtomsp430jtag_ir(uint8_t interface_index, uint8_t *ir, 
-							uint8_t want_ret);
+RESULT usbtomsp430jtag_ir(uint8_t interface_index, uint8_t *ir);
 RESULT usbtomsp430jtag_dr(uint8_t interface_index, uint32_t *dr, 
-							uint8_t bitlen, uint8_t want_ret);
+							uint8_t bitlen);
 RESULT usbtomsp430jtag_tclk(uint8_t interface_index, uint8_t value);
 RESULT usbtomsp430jtag_tclk_strobe(uint8_t interface_index, uint16_t cnt);
 RESULT usbtomsp430jtag_reset(uint8_t interface_index);
@@ -164,10 +163,9 @@ RESULT usbtomsp430jtag_poll(uint8_t interface_index, uint32_t dr,
 RESULT usbtomsp430sbw_init(uint8_t interface_index);
 RESULT usbtomsp430sbw_fini(uint8_t interface_index);
 RESULT usbtomsp430sbw_config(uint8_t interface_index);
-RESULT usbtomsp430sbw_ir(uint8_t interface_index, uint8_t *ir, 
-							uint8_t want_ret);
+RESULT usbtomsp430sbw_ir(uint8_t interface_index, uint8_t *ir);
 RESULT usbtomsp430sbw_dr(uint8_t interface_index, uint32_t *dr, 
-							uint8_t bitlen, uint8_t want_ret);
+							uint8_t bitlen);
 RESULT usbtomsp430sbw_tclk(uint8_t interface_index, uint8_t value);
 RESULT usbtomsp430sbw_tclk_strobe(uint8_t interface_index, uint16_t cnt);
 RESULT usbtomsp430sbw_reset(uint8_t interface_index);
