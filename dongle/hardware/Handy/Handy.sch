@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date 13/12/2010 22:48:51
+EESchema Schematic File Version 2  date 13/12/2010 23:20:06
 LIBS:simonqian
 LIBS:power
 LIBS:device
@@ -31,6 +31,7 @@ LIBS:atmel
 LIBS:contrib
 LIBS:valves
 LIBS:stm32
+LIBS:Handy-cache
 EELAYER 24  0
 EELAYER END
 $Descr A3 16535 11700
@@ -44,8 +45,25 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
-Text Label 5000 8500 0    60   ~ 0
-PVCC_SAMP
+$Comp
+L THERMISTOR TH?
+U 1 1 4D063998
+P 12700 7450
+F 0 "TH?" V 12800 7500 50  0000 C CNN
+F 1 "THERMISTOR" V 12600 7450 50  0000 C CNN
+	1    12700 7450
+	1    0    0    -1  
+$EndComp
+Text Label 12700 7200 0    60   ~ 0
+TEMP_SAMP
+Wire Wire Line
+	13200 7200 12700 7200
+Wire Wire Line
+	900  3300 1100 3300
+Wire Wire Line
+	1100 3300 1100 3050
+Wire Wire Line
+	1100 3050 1800 3050
 Wire Wire Line
 	5350 8500 5000 8500
 Wire Wire Line
@@ -964,6 +982,117 @@ Connection ~ 12350 6050
 Connection ~ 12550 5050
 Wire Wire Line
 	3500 6900 3500 6550
+Wire Wire Line
+	1800 2950 1100 2950
+Wire Wire Line
+	1100 2950 1100 2700
+Wire Wire Line
+	1100 2700 900  2700
+Wire Wire Line
+	7750 10300 7350 10300
+$Comp
+L GND #PWR?
+U 1 1 4D0638F4
+P 12700 7700
+F 0 "#PWR?" H 12700 7700 30  0001 C CNN
+F 1 "GND" H 12700 7630 30  0001 C CNN
+	1    12700 7700
+	1    0    0    -1  
+$EndComp
+$Comp
+L VCC #PWR?
+U 1 1 4D0638E8
+P 12700 6700
+F 0 "#PWR?" H 12700 6800 30  0001 C CNN
+F 1 "VCC" H 12700 6800 30  0000 C CNN
+	1    12700 6700
+	1    0    0    -1  
+$EndComp
+$Comp
+L R R?
+U 1 1 4D0638E3
+P 12700 6950
+F 0 "R?" V 12780 6950 50  0000 C CNN
+F 1 "1K" V 12700 6950 50  0000 C CNN
+	1    12700 6950
+	-1   0    0    1   
+$EndComp
+Text Label 7350 10300 0    60   ~ 0
+VCC_SAMP
+$Comp
+L GND #PWR?
+U 1 1 4D0638CB
+P 7350 10800
+F 0 "#PWR?" H 7350 10800 30  0001 C CNN
+F 1 "GND" H 7350 10730 30  0001 C CNN
+	1    7350 10800
+	1    0    0    -1  
+$EndComp
+$Comp
+L R R?
+U 1 1 4D0638C8
+P 7350 10550
+F 0 "R?" V 7430 10550 50  0000 C CNN
+F 1 "1K" V 7350 10550 50  0000 C CNN
+	1    7350 10550
+	1    0    0    -1  
+$EndComp
+$Comp
+L R R?
+U 1 1 4D0638C2
+P 7100 10300
+F 0 "R?" V 7180 10300 50  0000 C CNN
+F 1 "1K" V 7100 10300 50  0000 C CNN
+	1    7100 10300
+	0    -1   -1   0   
+$EndComp
+$Comp
+L GND #PWR?
+U 1 1 4D0637C5
+P 900 2300
+F 0 "#PWR?" H 900 2300 30  0001 C CNN
+F 1 "GND" H 900 2230 30  0001 C CNN
+	1    900  2300
+	-1   0    0    1   
+$EndComp
+$Comp
+L GND #PWR?
+U 1 1 4D0637C1
+P 900 3700
+F 0 "#PWR?" H 900 3700 30  0001 C CNN
+F 1 "GND" H 900 3630 30  0001 C CNN
+	1    900  3700
+	1    0    0    -1  
+$EndComp
+$Comp
+L C C?
+U 1 1 4D0637BB
+P 900 3500
+F 0 "C?" H 950 3600 50  0000 L CNN
+F 1 "C" H 950 3400 50  0000 L CNN
+	1    900  3500
+	-1   0    0    1   
+$EndComp
+$Comp
+L C C?
+U 1 1 4D0637B6
+P 900 2500
+F 0 "C?" H 950 2600 50  0000 L CNN
+F 1 "C" H 950 2400 50  0000 L CNN
+	1    900  2500
+	-1   0    0    1   
+$EndComp
+$Comp
+L QUARTZCMS4 X?
+U 1 1 4D0637AD
+P 900 3000
+F 0 "X?" H 900 3150 60  0000 C CNN
+F 1 "32768" H 900 2850 60  0000 C CNN
+	1    900  3000
+	0    1    1    0   
+$EndComp
+Text Label 5000 8500 0    60   ~ 0
+PVCC_SAMP
 $Comp
 L GND #PWR?
 U 1 1 4D06322D
