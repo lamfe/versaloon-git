@@ -70,7 +70,7 @@ void USB_TO_USART_ProcessCmd(uint8* dat, uint16 len)
 		case USB_TO_XXX_FINI:
 			if (ERROR_OK == interfaces->usart.fini(device_idx))
 			{
-				
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
 			else
 			{
@@ -116,7 +116,7 @@ void USB_TO_USART_ProcessCmd(uint8* dat, uint16 len)
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
-			rep_len += 12;
+			rep_len += 16;
 			break;
 		default:
 			buffer_reply[rep_len++] = USB_TO_XXX_CMD_NOT_SUPPORT;
