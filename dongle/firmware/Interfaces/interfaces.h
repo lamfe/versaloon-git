@@ -240,16 +240,6 @@ enum poll_check_type_t
 	POLL_CHECK_EQU,
 	POLL_CHECK_UNEQU
 };
-struct interface_poll_t
-{
-	RESULT (*start)(uint16_t retry, uint16_t interval_us);
-	RESULT (*end)(void);
-	RESULT (*checkok)(enum poll_check_type_t type, uint16_t offset, 
-					  uint8_t size, uint32_t mask, uint32_t value);
-	RESULT (*checkfail)(enum poll_check_type_t type, uint16_t offset, 
-						uint8_t size, uint32_t mask, uint32_t value);
-	RESULT (*verifybuff)(uint16_t offset, uint16_t size, uint8_t *buff);
-};
 
 struct interfaces_info_t
 {
@@ -270,7 +260,6 @@ struct interfaces_info_t
 	struct interface_lpcicp_t lpcicp;
 	struct interface_swim_t swim;
 	struct interface_bdm_t bdm;
-	struct interface_poll_t poll;
 	RESULT (*peripheral_commit)(void);
 };
 

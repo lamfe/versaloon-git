@@ -47,34 +47,6 @@ RESULT delay_delayus(uint16_t us)
 	return ERROR_OK;
 }
 
-// poll, NOT APPLICABLE HERE
-RESULT poll_start(uint16_t retry, uint16_t interval_us)
-{
-	return ERROR_FAIL;
-}
-
-RESULT poll_end(void)
-{
-	return ERROR_FAIL;
-}
-
-RESULT poll_checkok(enum poll_check_type_t type, uint16_t offset, uint8_t size, 
-						uint32_t mask, uint32_t value)
-{
-	return ERROR_FAIL;
-}
-
-RESULT poll_checkfail(enum poll_check_type_t type, uint16_t offset, uint8_t size, 
-						uint32_t mask, uint32_t value)
-{
-	return ERROR_FAIL;
-}
-
-RESULT poll_verifybuff(uint16_t offset, uint16_t size, uint8_t *buff)
-{
-	return ERROR_FAIL;
-}
-
 RESULT peripheral_commit(void)
 {
 	return ERROR_OK;
@@ -220,14 +192,6 @@ const struct interfaces_info_t internal_interfaces =
 		bdm_fini,
 		bdm_sync,
 		bdm_transact
-	},
-	{
-		// poll
-		poll_start,
-		poll_end,
-		poll_checkok,
-		poll_checkfail,
-		poll_verifybuff
 	},
 	peripheral_commit
 };
