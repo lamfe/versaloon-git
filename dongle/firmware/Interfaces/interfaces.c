@@ -54,11 +54,14 @@ RESULT peripheral_commit(void)
 
 const struct interfaces_info_t internal_interfaces = 
 {
+#if POWER_OUT_EN
 	{
 		// target_voltage
 		target_voltage_get,
 		target_voltage_set
 	},
+#endif
+#if USB_TO_USART_EN
 	{
 		// usart
 		usart_init,
@@ -68,6 +71,8 @@ const struct interfaces_info_t internal_interfaces =
 		usart_receive,
 		usart_status
 	},
+#endif
+#if USB_TO_SPI_EN
 	{
 		// spi
 		spi_init,
@@ -75,6 +80,8 @@ const struct interfaces_info_t internal_interfaces =
 		spi_config,
 		spi_io
 	},
+#endif
+#if USB_TO_GPIO_EN
 	{
 		// gpio
 		gpio_init,
@@ -83,11 +90,15 @@ const struct interfaces_info_t internal_interfaces =
 		gpio_out,
 		gpio_in
 	},
+#endif
+// Allways included
 	{
 		// delay
 		delay_delayms,
 		delay_delayus
 	},
+//
+#if USB_TO_ISSP_EN
 	{
 		// issp
 		issp_init,
@@ -97,6 +108,8 @@ const struct interfaces_info_t internal_interfaces =
 		issp_wait_and_poll,
 		issp_vector
 	},
+#endif
+#if USB_TO_SWD_EN
 	{
 		// swd
 		swd_init,
@@ -106,6 +119,8 @@ const struct interfaces_info_t internal_interfaces =
 		swd_seqin,
 		swd_transact
 	},
+#endif
+#if USB_TO_JTAG_HL_EN
 	{
 		// jtag_hl
 		jtaghl_init,
@@ -117,6 +132,8 @@ const struct interfaces_info_t internal_interfaces =
 		jtaghl_dr,
 		jtaghl_register_callback
 	},
+#endif
+#if USB_TO_JTAG_LL_EN
 	{
 		// jtag_ll
 		jtagll_init,
@@ -126,6 +143,8 @@ const struct interfaces_info_t internal_interfaces =
 		jtagll_tms_clocks,
 		jtagll_scan
 	},
+#endif
+#if USB_TO_JTAG_RAW_EN
 	{
 		// jtag_raw
 		jtagraw_init,
@@ -133,6 +152,8 @@ const struct interfaces_info_t internal_interfaces =
 		jtagraw_config,
 		jtagraw_execute
 	},
+#endif
+#if USB_TO_MSP430_JTAG_EN
 	{
 		// msp430jtag
 		msp430jtag_init,
@@ -145,10 +166,14 @@ const struct interfaces_info_t internal_interfaces =
 		msp430jtag_reset,
 		msp430jtag_poll
 	},
+#endif
+#if USB_TO_MSP430_SBW_EN
 	{
 		// msp430sbw
 		NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
 	},
+#endif
+#if USB_TO_C2_EN
 	{
 		// c2
 		c2_init,
@@ -158,6 +183,8 @@ const struct interfaces_info_t internal_interfaces =
 		c2_data_write,
 		c2_data_read
 	},
+#endif
+#if USB_TO_IIC_EN
 	{
 		// i2c
 		iic_init,
@@ -166,6 +193,8 @@ const struct interfaces_info_t internal_interfaces =
 		iic_read,
 		iic_write
 	},
+#endif
+#if USB_TO_LPCICP_EN
 	{
 		// lpcicp
 		lpcicp_init,
@@ -175,6 +204,8 @@ const struct interfaces_info_t internal_interfaces =
 		lpcicp_out,
 		lpcicp_poll_ready
 	},
+#endif
+#if USB_TO_SWIM_EN
 	{
 		// swim
 		swim_init,
@@ -186,6 +217,8 @@ const struct interfaces_info_t internal_interfaces =
 		swim_sync,
 		swim_enable
 	},
+#endif
+#if USB_TO_BDM_EN
 	{
 		// bdm
 		bdm_init,
@@ -193,6 +226,7 @@ const struct interfaces_info_t internal_interfaces =
 		bdm_sync,
 		bdm_transact
 	},
+#endif
 	peripheral_commit
 };
 
