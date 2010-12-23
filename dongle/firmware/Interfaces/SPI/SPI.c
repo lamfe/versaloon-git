@@ -212,7 +212,7 @@ RESULT spi_config(uint8_t index, uint16_t kHz, uint8_t cpol, uint8_t cpha,
 			first_bit = SPI_FirstBit_LSB;
 		}
 		SPI_Config(kHz * 1000, first_bit, cpol, cpha);
-		return ERROR_FAIL;
+		return ERROR_OK;
 	default:
 		return ERROR_FAIL;
 	}
