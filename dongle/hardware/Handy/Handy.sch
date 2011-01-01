@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date 30/12/2010 15:43:44
+EESchema Schematic File Version 2  date 31/12/2010 12:50:01
 LIBS:simonqian
 LIBS:power
 LIBS:device
@@ -37,7 +37,7 @@ EELAYER END
 $Descr A3 16535 11700
 Sheet 1 1
 Title ""
-Date "30 dec 2010"
+Date "31 dec 2010"
 Rev ""
 Comp ""
 Comment1 ""
@@ -46,18 +46,27 @@ Comment3 ""
 Comment4 ""
 $EndDescr
 $Comp
-L CONN_8X2 P?
-U 1 1 4D1C37F3
-P 14350 7200
-F 0 "P?" H 14350 7650 60  0000 C CNN
-F 1 "CONN_8X2" V 14350 7200 50  0000 C CNN
-	1    14350 7200
+L INDUCTOR L?
+U 1 1 4CFF3C71
+P 900 5750
+F 0 "L?" V 850 5750 40  0000 C CNN
+F 1 "INDUCTOR" V 1000 5750 40  0000 C CNN
+	1    900  5750
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
+	1800 5450 900  5450
+$Comp
+L VCC #PWR?
+U 1 1 4CFF4677
+P 900 6050
+F 0 "#PWR?" H 900 6150 30  0001 C CNN
+F 1 "VCC" H 900 6150 30  0000 C CNN
+	1    900  6050
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
 	7300 3150 6900 3150
-Text Label 10200 10600 0    60   ~ 0
-PROGKEY
 Wire Wire Line
 	9750 9250 10400 9250
 Wire Wire Line
@@ -130,8 +139,6 @@ Wire Wire Line
 	13500 8300 13850 8300
 Wire Wire Line
 	13500 8200 13850 8200
-Wire Wire Line
-	11600 6950 11950 6950
 Wire Wire Line
 	15100 7450 14750 7450
 Wire Wire Line
@@ -266,8 +273,6 @@ Wire Wire Line
 Wire Wire Line
 	2700 6550 2700 6800
 Connection ~ 1150 5450
-Wire Wire Line
-	1800 5450 900  5450
 Wire Bus Line
 	15800 1600 15800 650 
 Wire Bus Line
@@ -974,10 +979,6 @@ Wire Wire Line
 Wire Wire Line
 	14750 7550 15100 7550
 Wire Wire Line
-	12450 6950 12450 7050
-Wire Wire Line
-	12450 7050 11600 7050
-Wire Wire Line
 	11600 7300 12450 7300
 Wire Wire Line
 	12450 7300 12450 7200
@@ -1003,6 +1004,17 @@ Wire Wire Line
 	9750 9000 10150 9000
 Wire Wire Line
 	9750 9400 9900 9400
+$Comp
+L CONN_8X2 P?
+U 1 1 4D1C37F3
+P 14350 7200
+F 0 "P?" H 14350 7650 60  0000 C CNN
+F 1 "CONN_8X2" V 14350 7200 50  0000 C CNN
+	1    14350 7200
+	1    0    0    -1  
+$EndComp
+Text Label 10200 10600 0    60   ~ 0
+PROGKEY
 Text Label 9900 9400 2    60   ~ 0
 5V
 $Comp
@@ -1120,9 +1132,9 @@ F 1 "NUF8401MN" H 14350 8100 70  0000 C CNN
 	1    0    0    -1  
 $EndComp
 Text Label 11950 7550 2    60   ~ 0
-P_ADC2
+P_ADC1
 Text Label 11950 7450 2    60   ~ 0
-PADC2
+PADC1
 $Comp
 L GND #PWR?
 U 1 1 4D17CD3B
@@ -1178,40 +1190,9 @@ F 1 "GND" H 12950 7130 30  0001 C CNN
 	0    -1   -1   0   
 $EndComp
 Text Label 11950 7200 2    60   ~ 0
-PADC1
-Text Label 11950 7300 2    60   ~ 0
-P_ADC1
-Text Label 11950 7050 2    60   ~ 0
-P_ADC0
-Text Label 11950 6950 2    60   ~ 0
 PADC0
-$Comp
-L GND #PWR?
-U 1 1 4D17CCF7
-P 12950 6950
-F 0 "#PWR?" H 12950 6950 30  0001 C CNN
-F 1 "GND" H 12950 6880 30  0001 C CNN
-	1    12950 6950
-	0    -1   -1   0   
-$EndComp
-$Comp
-L R R?
-U 1 1 4D17CCF3
-P 12700 6950
-F 0 "R?" V 12780 6950 50  0000 C CNN
-F 1 "1K" V 12700 6950 50  0000 C CNN
-	1    12700 6950
-	0    1    1    0   
-$EndComp
-$Comp
-L R R?
-U 1 1 4D17CCC7
-P 12200 6950
-F 0 "R?" V 12280 6950 50  0000 C CNN
-F 1 "1K" V 12200 6950 50  0000 C CNN
-	1    12200 6950
-	0    1    1    0   
-$EndComp
+Text Label 11950 7300 2    60   ~ 0
+P_ADC0
 Text Label 14750 7550 0    60   ~ 0
 PIO11
 Text Label 13950 7550 2    60   ~ 0
@@ -2852,15 +2833,6 @@ F 1 "GND" H 1400 5080 30  0001 C CNN
 	0    1    1    0   
 $EndComp
 $Comp
-L VCC #PWR?
-U 1 1 4CFF4677
-P 900 6050
-F 0 "#PWR?" H 900 6150 30  0001 C CNN
-F 1 "VCC" H 900 6150 30  0000 C CNN
-	1    900  6050
-	-1   0    0    1   
-$EndComp
-$Comp
 L C C?
 U 1 1 4CFF466A
 P 1250 4850
@@ -2966,7 +2938,7 @@ L SPX5205 U?
 U 1 1 4CFF3DB2
 P 6150 10400
 F 0 "U?" H 6150 10600 70  0000 C CNN
-F 1 "SPX5205" H 6150 10200 70  0000 C CNN
+F 1 "7833" H 6150 10200 70  0000 C CNN
 	1    6150 10400
 	1    0    0    -1  
 $EndComp
@@ -3004,15 +2976,6 @@ P 1150 5650
 F 0 "C?" H 1200 5750 50  0000 L CNN
 F 1 "10uF" H 1200 5550 50  0000 L CNN
 	1    1150 5650
-	1    0    0    -1  
-$EndComp
-$Comp
-L INDUCTOR L?
-U 1 1 4CFF3C71
-P 900 5750
-F 0 "L?" V 850 5750 40  0000 C CNN
-F 1 "INDUCTOR" V 1000 5750 40  0000 C CNN
-	1    900  5750
 	1    0    0    -1  
 $EndComp
 Text Label 6950 950  0    60   ~ 0
