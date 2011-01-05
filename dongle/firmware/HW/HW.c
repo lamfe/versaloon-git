@@ -74,6 +74,8 @@ void GPIO_SetMode(GPIO_TypeDef* GPIOx, uint8 pin, uint8 mode)
 *******************************************************************************/
 void Sys_Init(void)
 {
+	HW_INIT();
+
 	/* Configure the system clocks */
 	RCC_Configuration();
 
@@ -175,9 +177,6 @@ void RCC_Configuration(void)
 *******************************************************************************/
 void GPIO_Configuration(void)
 {
-	// Disable JTAG
-	GPIO_PinRemapConfig(GPIO_Remap_SWJ_Disable, ENABLE);
-
 	// Enable pin
 	GLOBAL_OUTPUT_DISABLE();
 	GLOBAL_OUTPUT_INIT();
