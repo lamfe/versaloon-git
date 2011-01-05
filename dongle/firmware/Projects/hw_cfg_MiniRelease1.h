@@ -25,6 +25,27 @@
 #define _SYS_FREQUENCY					72		// in MHz
 #define _SYS_FLASH_VECTOR_TABLE_SHIFT	0x2000	// application will locate at 0x08002000
 
+/****************************** Abilities ******************************/
+#define HW_HAS_USART					1
+#define HW_HAS_SPI						1
+#define HW_HAS_IIC						1
+#define HW_HAS_GPIO						1
+#define HW_HAS_CAN						0
+#define HW_HAS_PWM						0
+#define HW_HAS_ADC						1
+#define HW_HAS_DAC						0
+#define HW_HAS_MICROWIRE				0
+#define HW_HAS_JTAG						1
+#define HW_HAS_ISSP						1
+#define HW_HAS_C2						1
+#define HW_HAS_MSP430_JTAG				1
+#define HW_HAS_MSP430_SBW				0
+#define HW_HAS_LPCICP					1
+#define HW_HAS_SWD						1
+#define HW_HAS_SWIM						1
+#define HW_HAS_BDM						1
+#define HW_HAS_POWERCONTROL				1
+
 /****************************** Power ******************************/
 #define PWREXT_EN_PORT					GPIOB
 #define PWREXT_EN_PIN					GPIO_PIN_8

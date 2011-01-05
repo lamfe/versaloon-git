@@ -47,36 +47,36 @@
 
 #define USB_TO_XXX_EN					1
 
-#define POWER_OUT_EN					1
-#define POWER_SAMPLE_EN					1
+#define POWER_OUT_EN					(1 && HW_HAS_POWERCONTROL)
+#define POWER_SAMPLE_EN					(1 && HW_HAS_ADC)
 
 #define VERSALOON_FW_UPDATE_EN			1
 
 #if USB_TO_XXX_EN
 // page 0
-#	define USB_TO_USART_EN				1
-#	define USB_TO_SPI_EN				1
-#	define USB_TO_IIC_EN				1
-#	define USB_TO_GPIO_EN				1
-#	define USB_TO_CAN_EN				0
-#	define USB_TO_PWM_EN				0
-#	define USB_TO_ADC_EN				1
-#	define USB_TO_DAC_EN				0
-#	define USB_TO_MICROWIRE_EN			0
+#	define USB_TO_USART_EN				(1 && HW_HAS_USART)
+#	define USB_TO_SPI_EN				(1 && HW_HAS_SPI)
+#	define USB_TO_IIC_EN				(1 && HW_HAS_IIC)
+#	define USB_TO_GPIO_EN				(1 && HW_HAS_GPIO)
+#	define USB_TO_CAN_EN				(0 && HW_HAS_CAN)
+#	define USB_TO_PWM_EN				(0 && HW_HAS_PWM)
+#	define USB_TO_ADC_EN				(1 && HW_HAS_ADC)
+#	define USB_TO_DAC_EN				(0 && HW_HAS_DAC)
+#	define USB_TO_MICROWIRE_EN			(0 && HW_HAS_MICROWIRE)
 // page 1
-#	define USB_TO_JTAG_LL_EN			1
-#	define USB_TO_JTAG_HL_EN			1
-#	define USB_TO_JTAG_RAW_EN			1
-#	define USB_TO_ISSP_EN				1
-#	define USB_TO_C2_EN					1
-#	define USB_TO_MSP430_JTAG_EN		1
-#	define USB_TO_MSP430_SBW_EN			0
-#	define USB_TO_LPCICP_EN				1
-#	define USB_TO_SWD_EN				1
-#	define USB_TO_SWIM_EN				1
-#	define USB_TO_BDM_EN				1
+#	define USB_TO_JTAG_LL_EN			(1 && HW_HAS_JTAG)
+#	define USB_TO_JTAG_HL_EN			(1 && HW_HAS_JTAG)
+#	define USB_TO_JTAG_RAW_EN			(1 && HW_HAS_JTAG)
+#	define USB_TO_ISSP_EN				(1 && HW_HAS_ISSP)
+#	define USB_TO_C2_EN					(1 && HW_HAS_C2)
+#	define USB_TO_MSP430_JTAG_EN		(1 && HW_HAS_MSP430_JTAG)
+#	define USB_TO_MSP430_SBW_EN			(0 && HW_HAS_MSP430_SBW)
+#	define USB_TO_LPCICP_EN				(1 && HW_HAS_LPCICP)
+#	define USB_TO_SWD_EN				(1 && HW_HAS_SWD)
+#	define USB_TO_SWIM_EN				(1 && HW_HAS_SWIM)
+#	define USB_TO_BDM_EN				(1 && HW_HAS_BDM)
 // page 2
-#	define USB_TO_POWER_EN				1
+#	define USB_TO_POWER_EN				(1 && HW_HAS_POWERCONTROL)
 #endif
 
 /****************************** Mass ******************************/
