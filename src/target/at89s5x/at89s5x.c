@@ -395,7 +395,7 @@ READ_TARGET_HANDLER(s5x)
 				cmd_buf[1] = (uint8_t)((addr + i) >> 8);
 				cmd_buf[2] = (uint8_t)((addr + i) >> 0);
 				cmd_buf[3] = 0;
-				spi_io(cmd_buf, 4, &ret_buf[4 * 8]);
+				spi_io(cmd_buf, 4, &ret_buf[4 * i]);
 			}
 			
 			if (ERROR_OK != commit())
