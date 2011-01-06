@@ -477,7 +477,7 @@ READ_TARGET_HANDLER(avr8isp)
 {
 	struct chip_param_t *param = context->param;
 	uint8_t cmd_buf[4], ret_buf[256 * 4];
-	uint32_t i;
+	uint32_t i, j;
 	uint32_t ee_page_size;
 	RESULT ret = ERROR_OK;
 	
@@ -549,7 +549,7 @@ READ_TARGET_HANDLER(avr8isp)
 		}
 		
 		ee_page_size = param->chip_areas[EEPROM_IDX].page_size;
-		while (size > 0)
+		for (j = 0; j < size;)
 		{
 			for (i = 0; i < ee_page_size; i++)
 			{
@@ -557,11 +557,10 @@ READ_TARGET_HANDLER(avr8isp)
 				cmd_buf[1] = (uint8_t)((addr + i) >> 8);
 				cmd_buf[2] = (uint8_t)((addr + i) >> 0);
 				cmd_buf[3] = 0;
-				spi_io(cmd_buf, 4, &ret_buf[4 * i]);
+				spi_io(cmd_buf, 4, &ret_buf[4 * j]);
+				j++;
 			}
-			size -= ee_page_size;
 			addr += ee_page_size;
-			buff += ee_page_size;
 		}
 		
 		if (ERROR_OK != commit())
