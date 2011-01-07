@@ -74,10 +74,10 @@ void GPIO_SetMode(GPIO_TypeDef* GPIOx, uint8 pin, uint8 mode)
 *******************************************************************************/
 void Sys_Init(void)
 {
-	HW_INIT();
-
 	/* Configure the system clocks */
 	RCC_Configuration();
+
+	HW_INIT();
 
 	/* NVIC Configuration */
 	NVIC_Configuration();
