@@ -158,6 +158,7 @@
 #define INTERFACE_USART_EN				(USB_TO_XXX_EN && USB_TO_USART_EN)
 #define INTERFACE_SWD_EN				(USB_TO_XXX_EN && USB_TO_SWD_EN)
 #define INTERFACE_BDM_EN				(USB_TO_XXX_EN && USB_TO_BDM_EN)
+#define INTERFACE_GPIO_EN				(USB_TO_XXX_EN && USB_TO_GPIO_EN)
 
 /*************************** Includes Application ***************************/
 #include "HW.h"

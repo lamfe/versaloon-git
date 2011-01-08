@@ -246,52 +246,52 @@ struct interfaces_info_t
 #if 	POWER_OUT_EN
 	struct interface_target_voltage_t target_voltage;
 #endif
-#if	USB_TO_USART_EN
+#if	INTERFACE_USART_EN
 	struct interface_usart_t usart;
 #endif
-#if	USB_TO_SPI_EN
+#if	INTERFACE_SPI_EN
 	struct interface_spi_t spi;
 #endif
-#if	USB_TO_GPIO_EN
+#if	INTERFACE_GPIO_EN
 	struct interface_gpio_t gpio;
 #endif
 // 	Allways included
 	struct interface_delay_t delay;
 //
-#if	USB_TO_ISSP_EN
+#if	INTERFACE_ISSP_EN
 	struct interface_issp_t issp;
 #endif
-#if	USB_TO_SWD_EN
+#if	INTERFACE_SWD_EN
 	struct interface_swd_t swd;
 #endif
-#if	USB_TO_JTAG_HL_EN
+#if	INTERFACE_JTAG_EN
 	struct interface_jtag_hl_t jtag_hl;
 #endif
-#if	USB_TO_JTAG_LL_EN
+#if	INTERFACE_JTAG_EN
 	struct interface_jtag_ll_t jtag_ll;
 #endif
-#if	USB_TO_JTAG_RAW_EN
+#if	INTERFACE_JTAG_EN
 	struct interface_jtag_raw_t jtag_raw;
 #endif
-#if	USB_TO_MSP430_JTAG_EN
+#if	INTERFACE_MSP430_JTAG_EN
 	struct interface_msp430jtag_t msp430jtag;
 #endif
-#if	USB_TO_MSP430_SBW_EN
+#if	INTERFACE_MSP430_SBW_EN
 	struct interface_msp430sbw_t msp430sbw;
 #endif
-#if	USB_TO_C2_EN
+#if	INTERFACE_C2_EN
 	struct interface_c2_t c2;
 #endif
-#if	USB_TO_IIC_EN
+#if	INTERFACE_IIC_EN
 	struct interface_i2c_t i2c;
 #endif
-#if	USB_TO_LPCICP_EN
+#if	INTERFACE_LPC_ICP_EN
 	struct interface_lpcicp_t lpcicp;
 #endif
-#if	USB_TO_SWIM_EN
+#if	INTERFACE_SWIM_EN
 	struct interface_swim_t swim;
 #endif
-#if	USB_TO_BDM_EN
+#if	INTERFACE_BDM_EN
 	struct interface_bdm_t bdm;
 #endif
 	RESULT (*peripheral_commit)(void);

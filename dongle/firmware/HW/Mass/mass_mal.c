@@ -143,7 +143,7 @@ uint16_t MAL_Read(uint8_t lun, uint64_t Memory_Offset, uint32_t *Readbuff, uint1
       {
         if ((Memory_Offset + i * 4 + 4) <= Mass_Memory_Size[lun])
         {
-          Readbuff[i] = *(uint32*)(MSD_MEMORY_START_ADDR + Memory_Offset + i * 4);
+          Readbuff[i] = *(uint32*)(uint32)(MSD_MEMORY_START_ADDR + Memory_Offset + i * 4);
         }
         else
         {
