@@ -16,7 +16,7 @@
 #include "app_cfg.h"
 
 #include "STLink.h"
-#include "Interfaces.h"
+#include "interfaces.h"
 #include "GPIO.h"
 
 #define STLINK_CMD_READSERN				0xF1

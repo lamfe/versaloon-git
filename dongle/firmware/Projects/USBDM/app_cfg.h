@@ -56,9 +56,9 @@
 #define USB_RX_DOUBLEBUFFER_EN			1
 #define USB_TX_DOUBLEBUFFER_EN			0
 
+#define INTERFACE_GPIO_EN				1
 #define INTERFACE_JTAG_EN				1
 #define INTERFACE_SPI_EN				1
-#define INTERFACE_USART_EN				1
 #define INTERFACE_BDM_EN				1
 
 /*************************** Includes Application ***************************/

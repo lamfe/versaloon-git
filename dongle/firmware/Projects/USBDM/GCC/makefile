@@ -34,6 +34,14 @@ USR_SRCS+= $(SRCDIR)/USBDM/USB/usb_istr.c $(SRCDIR)/USBDM/USB/usb_prop.c
 USR_SRCS+= $(SRCDIR)/USBDM/USB/usb_pwr.c
 USR_INCS+= -I $(SRCDIR)/USBDM/USB
 
+#interfaces
+USR_SRCS+= $(SRCDIR)/Interfaces/interfaces.c
+USR_INCS+= -I $(SRCDIR)/Interfaces
+
+#GPIO
+USR_SRCS+= $(SRCDIR)/Interfaces/GPIO/GPIO.c
+USR_INCS+= -I $(SRCDIR)/Interfaces/GPIO
+
 #SPI
 USR_SRCS+= $(SRCDIR)/Interfaces/SPI/SPI.c
 USR_INCS+= -I $(SRCDIR)/Interfaces/SPI

@@ -345,7 +345,7 @@ U8 rc = BDM_RC_OK;
          DATA_PORT      = BDM_DIR_Rx_WR;
          DATA_PORT_DDR  = BDM_DIR_Rx_MASK|BDM_OUT_MASK;
 #else
-         BDM_CLR();
+		 interfaces->gpio.config(0, GPIO_SYNCSWPWM_GPIO, GPIO_SYNCSWPWM_GPIO, 0);
 #endif
       }
    }
@@ -577,7 +577,7 @@ int timeout = 1000;
 
 //! Once off initialisation
 //!
-void bdm_init(void) {
+void usbdm_bdm_init(void) {
 
    // Turn off important things
 #if (CAPABILITY&CAP_FLASH)

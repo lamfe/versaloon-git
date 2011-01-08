@@ -141,7 +141,7 @@ void slowTimerWait(U16 delay);
 #endif
 U8   initTimers(void);
 
-void bdm_init(void);
+void usbdm_bdm_init(void);
 U8   bdm_setTarget(U8 target);
 void bdm_checkTargetVdd(void);
 void bdm_suspend(void);
