@@ -19,6 +19,9 @@
 
 RESULT jtaghl_init(uint8_t index);
 RESULT jtaghl_fini(uint8_t index);
+RESULT jtaghl_config_speed(uint8_t index, uint16_t kHz);
+RESULT jtaghl_config_daisychain(uint8_t index, uint8_t ub, uint8_t ua, 
+						uint16_t bb, uint16_t ba);
 RESULT jtaghl_config(uint8_t index, uint16_t kHz, uint8_t ub, uint8_t ua, 
 						uint16_t bb, uint16_t ba);
 RESULT jtaghl_tms(uint8_t index, uint8_t* tms, uint16_t bitlen);

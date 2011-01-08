@@ -110,6 +110,9 @@ struct interface_jtag_hl_t
 {
 	RESULT (*init)(uint8_t index);
 	RESULT (*fini)(uint8_t index);
+	RESULT (*config_speed)(uint8_t index, uint16_t kHz);
+	RESULT (*config_daisychain)(uint8_t index, uint8_t ub, uint8_t ua, 
+									uint16_t bb, uint16_t ba);
 	RESULT (*config)(uint8_t index, uint16_t kHz, uint8_t ub, uint8_t ua, 
 					 uint16_t bb, uint16_t ba);
 	RESULT (*tms)(uint8_t index, uint8_t* tms, uint16_t bitlen);
@@ -243,7 +246,7 @@ enum poll_check_type_t
 
 struct interfaces_info_t
 {
-#if 	POWER_OUT_EN
+#if POWER_OUT_EN
 	struct interface_target_voltage_t target_voltage;
 #endif
 #if	INTERFACE_USART_EN

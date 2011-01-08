@@ -93,7 +93,7 @@
 #define make_str(s)						# s
 
 #if (USB_PROTOCOL == USB_ST_VCOM)
-#	define CDC_IF_EN					1
+#	define CDC_IF_EN					(1 && HW_HAS_USART)
 #endif
 
 #if !POWER_OUT_EN
