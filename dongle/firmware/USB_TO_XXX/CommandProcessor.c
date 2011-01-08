@@ -104,7 +104,9 @@ void ProcessIdle(void)
 {
 	if (USBTOUSART_En)
 	{
+#if CDC_IF_EN
 		CDC_Process();
+#endif
 	}
 }
 
@@ -117,7 +119,9 @@ void ProcessLocalHandler(void)
 {
 	while(CDC_enable)
 	{
+#if CDC_IF_EN
 		CDC_Process();
+#endif
 		PWREXT_Check(0);
 	}
 }

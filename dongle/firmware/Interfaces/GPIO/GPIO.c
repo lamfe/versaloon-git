@@ -105,6 +105,7 @@ RESULT gpio_config(uint8_t index, uint16_t pin_mask, uint16_t io,
 				}
 			}
 		}
+#if INTERFACE_BDM_EN
 		if (pin_mask & GPIO_SYNCSWPWM_GPIO)
 		{
 			if (io & GPIO_SYNCSWPWM_GPIO)
@@ -131,6 +132,7 @@ RESULT gpio_config(uint8_t index, uint16_t pin_mask, uint16_t io,
 				}
 			}
 		}
+#endif
 		if (pin_mask & GPIO_TMS)
 		{
 			if (io & GPIO_TMS)
@@ -244,6 +246,7 @@ RESULT gpio_out(uint8_t index, uint16_t pin_mask, uint16_t value)
 				SW_RST_CLR();
 			}
 		}
+#if INTERFACE_BDM_EN
 		if(pin_mask & GPIO_SYNCSWPWM_GPIO)
 		{
 			if(value & GPIO_SYNCSWPWM_GPIO)
@@ -255,6 +258,7 @@ RESULT gpio_out(uint8_t index, uint16_t pin_mask, uint16_t value)
 				SYNCSWPWM_GPIO_CLR();
 			}
 		}
+#endif
 		if(pin_mask & GPIO_TMS)
 		{
 			if(value & GPIO_TMS)
@@ -345,6 +349,7 @@ RESULT gpio_in(uint8_t index, uint16_t pin_mask, uint16_t *value)
 				port_data |= GPIO_TRST;
 			}
 		}
+#if INTERFACE_BDM_EN
 		if(pin_mask & GPIO_SYNCSWPWM_GPIO)
 		{
 			if(SYNCSWPWM_GPIO_GET())
@@ -352,6 +357,7 @@ RESULT gpio_in(uint8_t index, uint16_t pin_mask, uint16_t *value)
 				port_data |= GPIO_SYNCSWPWM_GPIO;
 			}
 		}
+#endif
 		if(pin_mask & GPIO_TMS)
 		{
 			if(JTAG_TAP_TMS_GET())

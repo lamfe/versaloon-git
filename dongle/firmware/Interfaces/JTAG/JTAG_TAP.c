@@ -799,15 +799,46 @@ RESULT jtaghl_fini(uint8_t index)
 	}
 }
 
+RESULT jtaghl_config_speed(uint8_t index, uint16_t kHz)
+{
+	switch (index)
+	{
+	case 0:
+		JTAG_TAP_Init(kHz, JTAG_TAP_ASYN);
+		return ERROR_OK;
+	default:
+		return ERROR_FAIL;
+	}
+}
+
+RESULT jtaghl_config_daisychain(uint8_t index, uint8_t ub, uint8_t ua, 
+								uint16_t bb, uint16_t ba)
+{
+	switch (index)
+	{
+	case 0:
+		JTAG_TAP_SetDaisyChainPos(ub, ua, bb, ba);
+		return ERROR_OK;
+	default:
+		return ERROR_FAIL;
+	}
+}
+
 RESULT jtaghl_config(uint8_t index, uint16_t kHz, uint8_t ub, uint8_t ua, 
 						uint16_t bb, uint16_t ba)
 {
 	switch (index)
 	{
 	case 0:
-		JTAG_TAP_Init(kHz, JTAG_TAP_ASYN);
-		JTAG_TAP_SetDaisyChainPos(ub, ua, bb, ba);
-		return ERROR_OK;
+		if ((ERROR_OK != jtaghl_config_speed(index, kHz)) || 
+			(ERROR_OK != jtaghl_config_daisychain(index, ub, ua, bb, ba)))
+		{
+			return ERROR_FAIL;
+		}
+		else
+		{
+			return ERROR_OK;
+		}
 	default:
 		return ERROR_FAIL;
 	}

@@ -17,19 +17,45 @@
 #include "app_cfg.h"
 #include "interfaces.h"
 
-#include "USART/USART.h"
-#include "PowerExt/PowerExt.h"
-#include "SPI/SPI.h"
-#include "GPIO/GPIO.h"
-#include "ISSP/ISSP.h"
-#include "SWD/SWD.h"
-#include "JTAG/JTAG_TAP.h"
-#include "MSP430_JTAG/MSP430_JTAG.h"
-#include "C2/C2.h"
-#include "IIC/IIC.h"
-#include "LPC_ICP/LPC_ICP.h"
-#include "SWIM/SWIM.h"
-#include "BDM/BDM.h"
+#if INTERFACE_USART_EN
+#	include "USART/USART.h"
+#endif
+#if POWER_OUT_EN
+#	include "PowerExt/PowerExt.h"
+#endif
+#if INTERFACE_SPI_EN
+#	include "SPI/SPI.h"
+#endif
+#if INTERFACE_GPIO_EN
+#	include "GPIO/GPIO.h"
+#endif
+#if INTERFACE_ISSP_EN
+#	include "ISSP/ISSP.h"
+#endif
+#if INTERFACE_SWD_EN
+#	include "SWD/SWD.h"
+#endif
+#if INTERFACE_JTAG_EN
+#	include "JTAG/JTAG_TAP.h"
+#endif
+#if INTERFACE_MSP430_JTAG_EN
+#	include "MSP430_JTAG/MSP430_JTAG.h"
+#endif
+#if INTERFACE_C2_EN
+#	include "C2/C2.h"
+#endif
+#if INTERFACE_IIC_EN
+#	include "IIC/IIC.h"
+#endif
+#if INTERFACE_LPC_ICP_EN
+#	include "LPC_ICP/LPC_ICP.h"
+#endif
+#if INTERFACE_SWIM_EN
+#	include "SWIM/SWIM.h"
+#endif
+#if INTERFACE_BDM_EN
+#	include "BDM/BDM.h"
+#endif
 
 // work around, because RESULT is comflict with struct in usb_core.h
 RESULT target_voltage_set(uint8_t index, uint16_t voltage);
@@ -125,6 +151,8 @@ const struct interfaces_info_t internal_interfaces =
 		// jtag_hl
 		jtaghl_init,
 		jtaghl_fini,
+		jtaghl_config_speed,
+		jtaghl_config_daisychain,
 		jtaghl_config,
 		jtaghl_tms,
 		jtaghl_runtest,
