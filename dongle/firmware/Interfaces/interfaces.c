@@ -17,19 +17,19 @@
 #include "app_cfg.h"
 #include "interfaces.h"
 
-#include "USART.h"
-#include "PowerExt.h"
-#include "SPI.h"
-#include "GPIO.h"
-#include "ISSP.h"
-#include "SWD.h"
-#include "JTAG_TAP.h"
-#include "MSP430_JTAG.h"
-#include "C2.h"
-#include "IIC.h"
-#include "LPC_ICP.h"
-#include "SWIM.h"
-#include "BDM.h"
+#include "USART/USART.h"
+#include "PowerExt/PowerExt.h"
+#include "SPI/SPI.h"
+#include "GPIO/GPIO.h"
+#include "ISSP/ISSP.h"
+#include "SWD/SWD.h"
+#include "JTAG/JTAG_TAP.h"
+#include "MSP430_JTAG/MSP430_JTAG.h"
+#include "C2/C2.h"
+#include "IIC/IIC.h"
+#include "LPC_ICP/LPC_ICP.h"
+#include "SWIM/SWIM.h"
+#include "BDM/BDM.h"
 
 // work around, because RESULT is comflict with struct in usb_core.h
 RESULT target_voltage_set(uint8_t index, uint16_t voltage);
@@ -61,7 +61,7 @@ const struct interfaces_info_t internal_interfaces =
 		target_voltage_set
 	},
 #endif
-#if USB_TO_USART_EN
+#if INTERFACE_USART_EN
 	{
 		// usart
 		usart_init,
@@ -72,7 +72,7 @@ const struct interfaces_info_t internal_interfaces =
 		usart_status
 	},
 #endif
-#if USB_TO_SPI_EN
+#if INTERFACE_SPI_EN
 	{
 		// spi
 		spi_init,
@@ -81,7 +81,7 @@ const struct interfaces_info_t internal_interfaces =
 		spi_io
 	},
 #endif
-#if USB_TO_GPIO_EN
+#if INTERFACE_GPIO_EN
 	{
 		// gpio
 		gpio_init,
@@ -98,7 +98,7 @@ const struct interfaces_info_t internal_interfaces =
 		delay_delayus
 	},
 //
-#if USB_TO_ISSP_EN
+#if INTERFACE_ISSP_EN
 	{
 		// issp
 		issp_init,
@@ -109,7 +109,7 @@ const struct interfaces_info_t internal_interfaces =
 		issp_vector
 	},
 #endif
-#if USB_TO_SWD_EN
+#if INTERFACE_SWD_EN
 	{
 		// swd
 		swd_init,
@@ -120,7 +120,7 @@ const struct interfaces_info_t internal_interfaces =
 		swd_transact
 	},
 #endif
-#if USB_TO_JTAG_HL_EN
+#if INTERFACE_JTAG_EN
 	{
 		// jtag_hl
 		jtaghl_init,
@@ -133,7 +133,7 @@ const struct interfaces_info_t internal_interfaces =
 		jtaghl_register_callback
 	},
 #endif
-#if USB_TO_JTAG_LL_EN
+#if INTERFACE_JTAG_EN
 	{
 		// jtag_ll
 		jtagll_init,
@@ -144,7 +144,7 @@ const struct interfaces_info_t internal_interfaces =
 		jtagll_scan
 	},
 #endif
-#if USB_TO_JTAG_RAW_EN
+#if INTERFACE_JTAG_EN
 	{
 		// jtag_raw
 		jtagraw_init,
@@ -153,7 +153,7 @@ const struct interfaces_info_t internal_interfaces =
 		jtagraw_execute
 	},
 #endif
-#if USB_TO_MSP430_JTAG_EN
+#if INTERFACE_MSP430_JTAG_EN
 	{
 		// msp430jtag
 		msp430jtag_init,
@@ -167,13 +167,13 @@ const struct interfaces_info_t internal_interfaces =
 		msp430jtag_poll
 	},
 #endif
-#if USB_TO_MSP430_SBW_EN
+#if INTERFACE_MSP430_SBW_EN
 	{
 		// msp430sbw
 		NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
 	},
 #endif
-#if USB_TO_C2_EN
+#if INTERFACE_C2_EN
 	{
 		// c2
 		c2_init,
@@ -184,7 +184,7 @@ const struct interfaces_info_t internal_interfaces =
 		c2_data_read
 	},
 #endif
-#if USB_TO_IIC_EN
+#if INTERFACE_IIC_EN
 	{
 		// i2c
 		iic_init,
@@ -194,7 +194,7 @@ const struct interfaces_info_t internal_interfaces =
 		iic_write
 	},
 #endif
-#if USB_TO_LPCICP_EN
+#if INTERFACE_LPC_ICP_EN
 	{
 		// lpcicp
 		lpcicp_init,
@@ -205,7 +205,7 @@ const struct interfaces_info_t internal_interfaces =
 		lpcicp_poll_ready
 	},
 #endif
-#if USB_TO_SWIM_EN
+#if INTERFACE_SWIM_EN
 	{
 		// swim
 		swim_init,
@@ -218,7 +218,7 @@ const struct interfaces_info_t internal_interfaces =
 		swim_enable
 	},
 #endif
-#if USB_TO_BDM_EN
+#if INTERFACE_BDM_EN
 	{
 		// bdm
 		bdm_init,

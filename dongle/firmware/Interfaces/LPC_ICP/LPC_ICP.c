@@ -20,7 +20,7 @@
 #include "interfaces.h"
 #include "LPC_ICP.h"
 #if POWER_OUT_EN
-#	include "PowerExt.h"
+#	include "../PowerExt/PowerExt.h"
 #endif
 
 #define LPCICP_POWERON_DELAY			10

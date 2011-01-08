@@ -21,7 +21,7 @@
 #include "ISSP.h"
 
 #if POWER_OUT_EN
-#	include "PowerExt.h"
+#	include "../PowerExt/PowerExt.h"
 #endif
 
 #define ISSP_VECTOR_BITNUM		22

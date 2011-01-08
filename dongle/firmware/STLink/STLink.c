@@ -16,10 +16,8 @@
 #include "app_cfg.h"
 
 #include "STLink.h"
-#include "SWIM.h"
-#if POWER_OUT_EN
-#	include "PowerExt.h"
-#endif
+#include "Interfaces.h"
+#include "GPIO.h"
 
 #define STLINK_CMD_READSERN				0xF1
 #define STLINK_CMD_0XF2					0xF2
@@ -56,16 +54,15 @@ static uint8_t STLink_target_clock = 8;
 
 static void STLink_Reset_On(void)
 {
-	SW_CLR();
-	SW_SETOUTPUT();
+	interfaces->gpio.config(0, GPIO_SRST, GPIO_SRST, 0);
 }
 
 static void STLink_Reset_Off(void)
 {
-	SW_SETINPUT_PU();
+	interfaces->gpio.config(0, GPIO_SRST, 0, GPIO_SRST);
 }
 
-static uint8_t STLink_SetSWIMSpeed(uint8_t speed)
+static RESULT STLink_SetSWIMSpeed(uint8_t speed)
 {
 	uint8_t cnt0, cnt1;
 
@@ -81,7 +78,7 @@ static uint8_t STLink_SetSWIMSpeed(uint8_t speed)
 		cnt0 = 20;
 		cnt1 = 2;
 	}
-	return SWIM_SetClockParam(STLink_target_clock, cnt0, cnt1);
+	return interfaces->swim.config(0, STLink_target_clock, cnt0, cnt1);
 }
 
 void STLink_SWIM_Process(uint8_t *cmd)
@@ -92,8 +89,7 @@ void STLink_SWIM_Process(uint8_t *cmd)
 	switch (cmd[0])
 	{
 	case STLINK_SUBCMD_SWIM_ENTRY:
-		SWIM_EnableClockInput();
-		if (SWIM_EnterProgMode())
+		if (ERROR_OK != interfaces->swim.enable(0))
 		{
 			STLink_state = STLINK_STATE_FAIL_ENTRY;
 		}
@@ -102,10 +98,11 @@ void STLink_SWIM_Process(uint8_t *cmd)
 			STLink_state = STLINK_STATE_READY;
 		}
 
-		SWIM_Init();
+		interfaces->swim.init(0);
+		interfaces->gpio.init(0);
 		break;
 	case STLINK_SUBCMD_SWIM_SRST:
-		if (SWIM_SRST())
+		if (ERROR_OK != interfaces->swim.srst(0))
 		{
 			STLink_state = STLINK_STATE_TIMEOUT;
 		}
@@ -115,7 +112,8 @@ void STLink_SWIM_Process(uint8_t *cmd)
 		}
 		break;
 	case STLINK_SUBCMD_SWIM_SYNC:
-		if (SWIM_Sync(STLink_target_clock) || STLink_SetSWIMSpeed(STLink_SWIM_Speed))
+		if ((ERROR_OK != interfaces->swim.sync(0, STLink_target_clock)) || 
+			(ERROR_OK != STLink_SetSWIMSpeed(STLink_SWIM_Speed)))
 		{
 			STLink_state = STLINK_STATE_TIMEOUT;
 		}
@@ -128,7 +126,7 @@ void STLink_SWIM_Process(uint8_t *cmd)
 		byte_num = GET_BE_U16(&cmd[1]);
 		addr = GET_BE_U32(&cmd[3]);
 
-		if (SWIM_WOTF(addr, byte_num, &cmd[7]))
+		if (ERROR_OK != interfaces->swim.wotf(0, &cmd[7], byte_num, addr))
 		{
 			STLink_state = STLINK_STATE_TIMEOUT;
 		}
@@ -142,7 +140,7 @@ void STLink_SWIM_Process(uint8_t *cmd)
 		byte_num = GET_BE_U16(&cmd[1]);
 		addr = GET_BE_U32(&cmd[3]);
 
-		if (SWIM_ROTF(addr, byte_num, &cmd[7]))
+		if (ERROR_OK != interfaces->swim.rotf(0, &cmd[7], byte_num, addr))
 		{
 			STLink_state = STLINK_STATE_TIMEOUT;
 		}
@@ -190,18 +188,16 @@ void STLink_SCSI_Process(uint8_t *cmd)
 		switch (cmd[1])
 		{
 		case STLINK_SUBCMD_INIT:
-			GLOBAL_OUTPUT_Acquire();
-			PWREXT_Acquire();
-			DelayMS(20);
+			interfaces->target_voltage.set(0, 3300);
+			interfaces->delay.delayms(20);
 
 			Set_CSW (CSW_CMD_PASSED, SEND_CSW_ENABLE);
 			break;
 		case STLINK_SUBCMD_FINI:
-			SWIM_Fini();
-			SW_SETINPUT();
-
-			PWREXT_Release();
-			GLOBAL_OUTPUT_Release();
+			interfaces->swim.fini(0);
+			interfaces->gpio.config(0, GPIO_SRST, 0, GPIO_SRST);
+			interfaces->gpio.fini(0);
+			interfaces->target_voltage.set(0, 0);
 
 			Set_CSW (CSW_CMD_PASSED, SEND_CSW_ENABLE);
 			break;
@@ -213,7 +209,7 @@ void STLink_SCSI_Process(uint8_t *cmd)
 			break;
 		case STLINK_SUBCMD_SPEED:
 			STLink_SWIM_Speed = cmd[2];
-			if (STLink_SetSWIMSpeed(STLink_SWIM_Speed))
+			if (ERROR_OK != STLink_SetSWIMSpeed(STLink_SWIM_Speed))
 			{
 				STLink_state = STLINK_STATE_TIMEOUT;
 			}
@@ -226,8 +222,7 @@ void STLink_SCSI_Process(uint8_t *cmd)
 			cmd_len = 0x80000000 | 1;
 			STLink_state = STLINK_STATE_BUSY;
 #else
-			SWIM_EnableClockInput();
-			if (SWIM_EnterProgMode())
+			if (ERROR_OK != interfaces->swim.enable(0))
 			{
 				STLink_state = STLINK_STATE_FAIL_ENTRY;
 			}
@@ -236,7 +231,7 @@ void STLink_SCSI_Process(uint8_t *cmd)
 				STLink_state = STLINK_STATE_READY;
 			}
 
-			SWIM_Init();
+			interfaces->swim.init(0);
 #endif
 
 			Set_CSW (CSW_CMD_PASSED, SEND_CSW_ENABLE);

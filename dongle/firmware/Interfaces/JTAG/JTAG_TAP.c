@@ -19,7 +19,7 @@
 
 #include "interfaces.h"
 #include "JTAG_TAP.h"
-#include "SPI.h"
+#include "../SPI/SPI.h"
 
 #define JTAG_TAP_DR_IR_PREPARE_DLY()	
 

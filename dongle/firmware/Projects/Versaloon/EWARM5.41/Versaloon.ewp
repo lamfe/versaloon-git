@@ -87,7 +87,7 @@
         </option>
         <option>
           <name>OGLastSavedByProductVersion</name>
-          <state>5.50.0.51907</state>
+          <state>6.10.1.52170</state>
         </option>
         <option>
           <name>GeneralEnableMisra</name>
@@ -288,18 +288,7 @@
           <state>$PROJ_DIR$\..\..\..\Tools\fifo\</state>
           <state>$PROJ_DIR$\..\..\..\HW\Mass\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\</state>
-          <state>$PROJ_DIR$\..\..\..\Interfaces\GPIO\</state>
-          <state>$PROJ_DIR$\..\..\..\Interfaces\USART\</state>
-          <state>$PROJ_DIR$\..\..\..\Interfaces\JTAG\</state>
-          <state>$PROJ_DIR$\..\..\..\Interfaces\SWD\</state>
-          <state>$PROJ_DIR$\..\..\..\Interfaces\SWIM\</state>
-          <state>$PROJ_DIR$\..\..\..\Interfaces\SPI\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\PowerExt\</state>
-          <state>$PROJ_DIR$\..\..\..\Interfaces\IIC\</state>
-          <state>$PROJ_DIR$\..\..\..\Interfaces\C2\</state>
-          <state>$PROJ_DIR$\..\..\..\Interfaces\ISSP\</state>
-          <state>$PROJ_DIR$\..\..\..\Interfaces\LPC_ICP\</state>
-          <state>$PROJ_DIR$\..\..\..\Interfaces\MSP430_JTAG\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\BDM\</state>
           <state>$PROJ_DIR$\..\..\..\USB_TO_XXX\</state>
           <state>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB</state>
@@ -1172,18 +1161,7 @@
           <state>$PROJ_DIR$\..\..\..\Tools\fifo\</state>
           <state>$PROJ_DIR$\..\..\..\HW\Mass\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\</state>
-          <state>$PROJ_DIR$\..\..\..\Interfaces\GPIO\</state>
-          <state>$PROJ_DIR$\..\..\..\Interfaces\USART\</state>
-          <state>$PROJ_DIR$\..\..\..\Interfaces\JTAG\</state>
-          <state>$PROJ_DIR$\..\..\..\Interfaces\SWD\</state>
-          <state>$PROJ_DIR$\..\..\..\Interfaces\SWIM\</state>
-          <state>$PROJ_DIR$\..\..\..\Interfaces\SPI\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\PowerExt\</state>
-          <state>$PROJ_DIR$\..\..\..\Interfaces\IIC\</state>
-          <state>$PROJ_DIR$\..\..\..\Interfaces\C2\</state>
-          <state>$PROJ_DIR$\..\..\..\Interfaces\ISSP\</state>
-          <state>$PROJ_DIR$\..\..\..\Interfaces\LPC_ICP\</state>
-          <state>$PROJ_DIR$\..\..\..\Interfaces\MSP430_JTAG\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\BDM\</state>
           <state>$PROJ_DIR$\..\..\..\USB_TO_XXX\</state>
           <state>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB</state>
