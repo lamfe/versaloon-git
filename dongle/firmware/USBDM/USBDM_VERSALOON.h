@@ -4,7 +4,8 @@
 #	include "PowerExt.h"
 #endif
 
-#include "BDM.h"
+#include "interfaces.h"
+#include "GPIO.h"
 
 #include "Commands.h"
 #include "BDM_USBDM.h"
@@ -18,17 +19,14 @@
 // RESET control & sensing
 //
 // RESET output pin
-#define RESET_LOW()         do{\
-								RST_CLR();\
-								RST_SETOUTPUT();\
-							} while (0)
-#define RESET_3STATE()      RST_SETINPUT()
+#define RESET_LOW()         interfaces->gpio.config(0, GPIO_SRST, GPIO_SRST, 0)
+#define RESET_3STATE()      interfaces->gpio.config(0, GPIO_SRST, 0, GPIO_SRST)
 
-#define RESET_IN			RST_GET()
+U8 RESET_IN(void);
 #define RESET_IS_HIGH       (RESET_IN!=0)
 
 #define VDD_OFF()           PWREXT_ForceRelease() // Vdd Off
-#define VDD3_ON()           PWREXT_Acquire() // Vdd = 3.3V
+#define VDD3_ON()           interfaces->target_voltage.set(0, 3300) // Vdd = 3.3V
 #define VDD5_ON()           // Vdd = 5V
 
 #define CONFIGURE_VDD_SENSE()
@@ -44,8 +42,8 @@
 //#define BKPT_LOW()         (JTAG_TAP_TMS_CLR(),JTAG_TAP_TMS_SETOUTPUT())
 //#define BKPT_HIGH()        (JTAG_TAP_TMS_SETINPUT())
 
-#define BDM_3STATE_TX()		BDM_SET()
-#define BDM_IN				BDM_GET()
+#define BDM_3STATE_TX()		interfaces->gpio.config(0, GPIO_SYNCSWPWM_GPIO, 0, GPIO_SYNCSWPWM_GPIO)
+U8 BDM_IN(void);
 
 #define RED_LED_ON()		
 #define RED_LED_OFF()		

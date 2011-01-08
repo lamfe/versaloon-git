@@ -101,7 +101,33 @@ RESULT gpio_config(uint8_t index, uint16_t pin_mask, uint16_t io,
 				}
 				else
 				{
-				SW_RST_SETINPUT_PD();
+					SW_RST_SETINPUT_PD();
+				}
+			}
+		}
+		if (pin_mask & GPIO_SYNCSWPWM_GPIO)
+		{
+			if (io & GPIO_SYNCSWPWM_GPIO)
+			{
+				if(input_pull_mask & GPIO_SYNCSWPWM_GPIO)
+				{
+					SYNCSWPWM_GPIO_SET();
+				}
+				else
+				{
+					SYNCSWPWM_GPIO_CLR();
+				}
+				SYNCSWPWM_GPIO_SETOUTPUT();
+			}
+			else
+			{
+				if (input_pull_mask & GPIO_SYNCSWPWM_GPIO)
+				{
+					SYNCSWPWM_GPIO_SETINPUT_PU();
+				}
+				else
+				{
+					SYNCSWPWM_GPIO_SETINPUT_PD();
 				}
 			}
 		}
@@ -218,6 +244,17 @@ RESULT gpio_out(uint8_t index, uint16_t pin_mask, uint16_t value)
 				SW_RST_CLR();
 			}
 		}
+		if(pin_mask & GPIO_SYNCSWPWM_GPIO)
+		{
+			if(value & GPIO_SYNCSWPWM_GPIO)
+			{
+				SYNCSWPWM_GPIO_SET();
+			}
+			else
+			{
+				SYNCSWPWM_GPIO_CLR();
+			}
+		}
 		if(pin_mask & GPIO_TMS)
 		{
 			if(value & GPIO_TMS)
@@ -306,6 +343,13 @@ RESULT gpio_in(uint8_t index, uint16_t pin_mask, uint16_t *value)
 			if(SW_RST_GET())
 			{
 				port_data |= GPIO_TRST;
+			}
+		}
+		if(pin_mask & GPIO_SYNCSWPWM_GPIO)
+		{
+			if(SYNCSWPWM_GPIO_GET())
+			{
+				port_data |= GPIO_SYNCSWPWM_GPIO;
 			}
 		}
 		if(pin_mask & GPIO_TMS)
