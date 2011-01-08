@@ -40,8 +40,8 @@ USR_SRCS+= $(SRCDIR)/HW/Mass/usb_scsi.c $(SRCDIR)/HW/Mass/usb_bot.c
 USR_INCS+= -I $(SRCDIR)/HW/Mass
 
 # SWIM
-USR_SRCS+= $(SRCDIR)/Interfaces/SWIM/SWIM.c
-USR_INCS+= -I $(SRCDIR)/Interfaces/SWIM
+USR_SRCS+= $(SRCDIR)/Interfaces/interfaces.c $(SRCDIR)/Interfaces/SWIM/SWIM.c $(SRCDIR)/Interfaces/GPIO/GPIO.c
+USR_INCS+= -I $(SRCDIR)/Interfaces/SWIM -I $(SRCDIR)/Interfaces/GPIO -I $(SRCDIR)/Interfaces
 
 # PowerExt
 USR_SRCS+= $(SRCDIR)/Interfaces/PowerExt/PowerExt.c
