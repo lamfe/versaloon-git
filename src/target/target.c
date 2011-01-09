@@ -3811,6 +3811,7 @@ MISC_HANDLER(target_value)
 		LOG_ERROR(ERRMSG_INVALID_CHARACTER, argv[1][0], "target");
 		return ERROR_FAIL;
 	}
+	dest = NULL;
 	if (NULL == bufffunc_malloc_and_copy_str(&dest, (char *)&argv[1][1]))
 	{
 		return ERROR_FAIL;
