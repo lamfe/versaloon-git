@@ -16,12 +16,36 @@
 
 #include "app_cfg.h"
 
-#include "JTAG_TAP.h"
+#include "interfaces.h"
 #include "AVR32_JTAG.h"
 
 #define AVR32_JTAG_SAB_Delay()		
 
 #define AVR32_JTAG_MaxRetry				0//0xFFFF
+
+uint32_t AVR32_JTAG_Instr(uint32_t instr)
+{
+	interfaces->jtag_hl.ir(0, (uint8_t *)&instr, AVR32_JTAG_INS_Len, AVR32_JTAG_RTI_CYCLE, 1);
+	return instr;
+}
+uint32_t AVR32_JTAG_Data(uint32_t tdi, uint16_t bitlen)
+{
+	interfaces->jtag_hl.dr(0, (uint8_t *)&tdi, bitlen, AVR32_JTAG_RTI_CYCLE, 1);
+	return tdi;
+}
+void AVR32_JTAG_DataInPtr(uint8_t *ptdo, uint16_t bitlen)
+{
+	interfaces->jtag_hl.dr(0, ptdo, bitlen, AVR32_JTAG_RTI_CYCLE, 1);
+}
+void AVR32_JTAG_DataOutPtr(uint8_t *ptdi, uint16_t bitlen)
+{
+	interfaces->jtag_hl.dr(0, ptdi, bitlen, AVR32_JTAG_RTI_CYCLE, 0);
+}
+void AVR32_JTAG_DataPtr(uint8_t *ptdi, uint8_t *ptdo, uint16_t bitlen)
+{
+	memcpy(ptdo, ptdi, (bitlen + 7) >> 3);
+	interfaces->jtag_hl.dr(0, ptdo, bitlen, AVR32_JTAG_RTI_CYCLE, 1);
+}
 
 uint8 AVR32_JTAG_CancelAccess(void)
 {

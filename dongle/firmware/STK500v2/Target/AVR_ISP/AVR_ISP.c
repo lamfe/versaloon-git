@@ -16,23 +16,16 @@
 
 #include "app_cfg.h"
 
-#include "SPI.h"
+#include "interfaces.h"
+#include "GPIO.h"
 #include "AVR_ISP.h"
-#if POWER_OUT_EN
-#	include "PowerExt.h"
-#endif
 
 /// ISP Communicate
 /// @param[in]		data	data to send
 /// @param[out]		ret		data received
 void AVRISP_CommInt(uint8 *data, uint8 *ret, uint32 len)
 {
-	uint8 i;
-
-	for(i = 0; i < len; i++)
-	{
-		ret[i] = SPI_RW(data[i]);
-	}
+	interfaces->spi.io(0, data, ret, len);
 }
 
 /// ISP Wait Ready
@@ -51,7 +44,7 @@ poll:
 
 	if((cmd[3] & 1) && --dly)
 	{
-		DelayUS(80);
+		interfaces->delay.delayus(80);
 		goto poll;
 	}
 
@@ -69,22 +62,19 @@ poll:
 /// @return
 void AVRISP_Init(uint32 freq)
 {
-	GLOBAL_OUTPUT_Acquire();
-	PWREXT_Acquire();
-	DelayMS(1);
-
-	RST_SETOUTPUT();
-	SPI_Config(freq, SPI_FirstBit_MSB, SPI_CPOL_Low, SPI_CPHA_1Edge);
+	interfaces->target_voltage.set(0, 3300);
+	interfaces->delay.delayms(1);
+	interfaces->gpio.init(0);
+	interfaces->gpio.config(0, GPIO_SRST, GPIO_SRST, GPIO_SRST);
+	interfaces->spi.init(0);
+	interfaces->spi.config(0, freq / 1000, SPI_CPOL_LOW, SPI_CPHA_1EDGE, SPI_MSB_FIRST);
 }
 
 /// ISP Finilization
 /// @return
 void AVRISP_Fini(void)
 {
-	SPI_Disable();
-	SPI_AllInput();
-	RST_SETINPUT();
-
-	PWREXT_Release();
-	GLOBAL_OUTPUT_Release();
+	interfaces->spi.fini(0);
+	interfaces->gpio.config(0, GPIO_SRST, 0, GPIO_SRST);
+	interfaces->target_voltage.set(0, 0);
 }

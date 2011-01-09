@@ -34,6 +34,14 @@ USR_SRCS+= $(SRCDIR)/STK500v2/USB/usb_istr.c $(SRCDIR)/STK500v2/USB/usb_prop.c
 USR_SRCS+= $(SRCDIR)/STK500v2/USB/usb_pwr.c
 USR_INCS+= -I $(SRCDIR)/STK500v2/USB
 
+# interfaces
+USR_SRCS+= $(SRCDIR)/Interfaces/interfaces.c
+USR_INCS+= -I $(SRCDIR)/Interfaces
+
+# GPIO
+USR_SRCS+= $(SRCDIR)/Interfaces/GPIO/GPIO.c
+USR_INCS+= -I $(SRCDIR)/Interfaces/GPIO
+
 #SPI
 USR_SRCS+= $(SRCDIR)/Interfaces/SPI/SPI.c
 USR_INCS+= -I $(SRCDIR)/Interfaces/SPI

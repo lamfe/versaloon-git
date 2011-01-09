@@ -20,7 +20,7 @@
 
 #include "STK_Param.h"
 
-#include "JTAG_TAP.h"
+#include "interfaces.h"
 
 #include "Target/MEGA_JTAG/MEGA_JTAG.h"
 #include "Target/MEGA_JTAG/MEGA_JTAG_PRG.h"
@@ -293,7 +293,7 @@ uint8 STK500V2_MEGA_JTAG_ProcessCmd(uint8* dat, uint16 len)
 	case CMND_RESET:
 		AVR_JTAG_Reset(1);
 //		AVR_JTAG_SendIns(AVR_JTAG_INS_DBG_FORCE_BRK);
-		DelayMS(1);
+		interfaces->delay.delayms(1);
 		AVR_JTAG_Reset(0);
 //		AVR_JTAGOCD_SaveContext();
 //		STK500V2_MCUState = MCUSTATE_RUNNING;
@@ -407,7 +407,8 @@ uint8 STK500V2_MEGA_JTAG_ProcessCmd(uint8* dat, uint16 len)
 		break;
 	case CMND_RESTORE_TARGET:
 		AVR_JTAG_Reset(1);
-		JTAG_TAP_Reset_ASYN();
+		tmp8 = 0x7F;
+		interfaces->jtag_hl.tms(0, &tmp8, 8);
 		AVR_JTAG_Reset(0);
 
 		STK500V2_RSP_OK();

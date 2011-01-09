@@ -37,11 +37,11 @@
 
 #define AVR32_JTAG_RTI_CYCLE					1
 
-#define AVR32_JTAG_Instr(instr)					JTAG_TAP_Instr(instr, AVR32_JTAG_INS_Len, AVR32_JTAG_RTI_CYCLE)
-#define AVR32_JTAG_Data(tdi, len)				JTAG_TAP_Data(tdi, len, AVR32_JTAG_RTI_CYCLE)
-#define AVR32_JTAG_DataInPtr(ptdo, len)			JTAG_TAP_DataInPtr(ptdo, len, AVR32_JTAG_RTI_CYCLE)
-#define AVR32_JTAG_DataOutPtr(ptdi, len)		JTAG_TAP_DataOutPtr(ptdi, len, AVR32_JTAG_RTI_CYCLE)
-#define AVR32_JTAG_DataPtr(ptdi, ptdo, len)		JTAG_TAP_DataPtr(ptdi, ptdo, len, AVR32_JTAG_RTI_CYCLE)
+uint32_t AVR32_JTAG_Instr(uint32_t instr);
+uint32_t AVR32_JTAG_Data(uint32_t tdi, uint16_t bitlen);
+void AVR32_JTAG_DataInPtr(uint8_t *ptdo, uint16_t bitlen);
+void AVR32_JTAG_DataOutPtr(uint8_t *ptdi, uint16_t bitlen);
+void AVR32_JTAG_DataPtr(uint8_t *ptdi, uint8_t *ptdo, uint16_t bitlen);
 
 uint8 AVR32_JTAG_SAB_WordAccess(uint8 *addr, uint8 *data, uint8 r);
 uint8 AVR32_JTAG_SAB_WordBlockAccess(uint8 *addr, uint8 *data, uint8 r, uint8 len);

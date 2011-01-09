@@ -12,7 +12,7 @@
       <name>General</name>
       <archiveVersion>3</archiveVersion>
       <data>
-        <version>17</version>
+        <version>18</version>
         <wantNonLocal>1</wantNonLocal>
         <debug>1</debug>
         <option>
@@ -29,7 +29,7 @@
         </option>
         <option>
           <name>Variant</name>
-          <version>16</version>
+          <version>17</version>
           <state>37</state>
         </option>
         <option>
@@ -82,16 +82,12 @@
           <state>Use the normal configuration of the C/C++ runtime library. No locale interface, C locale, no file descriptor support, no multibytes in printf and scanf, and no hex floats in strtod.</state>
         </option>
         <option>
-          <name>RTConfigPath</name>
-          <state>$TOOLKIT_DIR$\INC\DLib_Config_Normal.h</state>
-        </option>
-        <option>
           <name>OGProductVersion</name>
           <state>5.10.0.159</state>
         </option>
         <option>
           <name>OGLastSavedByProductVersion</name>
-          <state>5.50.0.51907</state>
+          <state>6.10.1.52170</state>
         </option>
         <option>
           <name>GeneralEnableMisra</name>
@@ -135,13 +131,17 @@
           <version>0</version>
           <state>111101110010111111111000110111111111111111111111111110010111101111010101111111111111111111111111101111111011111001111011111011111111111111111</state>
         </option>
+        <option>
+          <name>RTConfigPath2</name>
+          <state>$TOOLKIT_DIR$\INC\c\DLib_Config_Normal.h</state>
+        </option>
       </data>
     </settings>
     <settings>
       <name>ICCARM</name>
       <archiveVersion>2</archiveVersion>
       <data>
-        <version>22</version>
+        <version>26</version>
         <wantNonLocal>1</wantNonLocal>
         <debug>1</debug>
         <option>
@@ -263,10 +263,6 @@
           <state>$FILE_BNAME$.o</state>
         </option>
         <option>
-          <name>CCLangSelect</name>
-          <state>0</state>
-        </option>
-        <option>
           <name>CCLibConfigHeader</name>
           <state>1</state>
         </option>
@@ -289,19 +285,16 @@
           <state>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x</state>
           <state>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\STM32_USB-FS-Device_Driver\inc</state>
           <state>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\inc</state>
-          <state>$PROJ_DIR$\..\..\..\Interfaces\JTAG\</state>
-          <state>$PROJ_DIR$\..\..\..\Interfaces\SPI\</state>
+          <state>$PROJ_DIR$\..\..\..\Interfaces\</state>
+          <state>$PROJ_DIR$\..\..\..\Interfaces\GPIO\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\PowerExt\</state>
+          <state>$PROJ_DIR$\..\..\..\Interfaces\JTAG\</state>
           <state>$PROJ_DIR$\..\..\..\STK500v2</state>
           <state>$PROJ_DIR$\..\..\..\STK500v2\USB</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
           <state>0</state>
-        </option>
-        <option>
-          <name>CCStdIncludePath</name>
-          <state>$TOOLKIT_DIR$\INC\</state>
         </option>
         <option>
           <name>CCCodeSection</name>
@@ -350,13 +343,49 @@
           <name>CCPosIndNoDynInit</name>
           <state>0</state>
         </option>
+        <option>
+          <name>IccLang</name>
+          <state>0</state>
+        </option>
+        <option>
+          <name>IccCDialect</name>
+          <state>1</state>
+        </option>
+        <option>
+          <name>IccAllowVLA</name>
+          <state>0</state>
+        </option>
+        <option>
+          <name>IccCppDialect</name>
+          <state>1</state>
+        </option>
+        <option>
+          <name>IccExceptions</name>
+          <state>1</state>
+        </option>
+        <option>
+          <name>IccRTTI</name>
+          <state>1</state>
+        </option>
+        <option>
+          <name>IccStaticDestr</name>
+          <state>1</state>
+        </option>
+        <option>
+          <name>IccRelaxedFpPrecision</name>
+          <state>0</state>
+        </option>
+        <option>
+          <name>IccCppInlineSemantics</name>
+          <state>1</state>
+        </option>
       </data>
     </settings>
     <settings>
       <name>AARM</name>
       <archiveVersion>2</archiveVersion>
       <data>
-        <version>7</version>
+        <version>8</version>
         <wantNonLocal>1</wantNonLocal>
         <debug>1</debug>
         <option>
@@ -501,10 +530,6 @@
           <state>0</state>
         </option>
         <option>
-          <name>AStdIncludes</name>
-          <state>$TOOLKIT_DIR$\INC\</state>
-        </option>
-        <option>
           <name>AUserIncludes</name>
           <state></state>
         </option>
@@ -573,7 +598,7 @@
       <name>ILINK</name>
       <archiveVersion>0</archiveVersion>
       <data>
-        <version>9</version>
+        <version>11</version>
         <wantNonLocal>1</wantNonLocal>
         <debug>1</debug>
         <option>
@@ -799,6 +824,26 @@
           <name>IlinkLogUnusedFragments</name>
           <state>0</state>
         </option>
+        <option>
+          <name>IlinkCrcReverseByteOrder</name>
+          <state>0</state>
+        </option>
+        <option>
+          <name>IlinkCrcUseAsInput</name>
+          <state>1</state>
+        </option>
+        <option>
+          <name>IlinkOptInline</name>
+          <state>0</state>
+        </option>
+        <option>
+          <name>IlinkOptExceptionsAllow</name>
+          <state>1</state>
+        </option>
+        <option>
+          <name>IlinkOptExceptionsForce</name>
+          <state>0</state>
+        </option>
       </data>
     </settings>
     <settings>
@@ -838,7 +883,7 @@
       <name>General</name>
       <archiveVersion>3</archiveVersion>
       <data>
-        <version>17</version>
+        <version>18</version>
         <wantNonLocal>1</wantNonLocal>
         <debug>0</debug>
         <option>
@@ -855,7 +900,7 @@
         </option>
         <option>
           <name>Variant</name>
-          <version>16</version>
+          <version>17</version>
           <state>37</state>
         </option>
         <option>
@@ -908,16 +953,12 @@
           <state>Use the normal configuration of the C/C++ runtime library. No locale interface, C locale, no file descriptor support, no multibytes in printf and scanf, and no hex floats in strtod.</state>
         </option>
         <option>
-          <name>RTConfigPath</name>
-          <state>$TOOLKIT_DIR$\INC\DLib_Config_Normal.h</state>
-        </option>
-        <option>
           <name>OGProductVersion</name>
           <state>5.10.0.159</state>
         </option>
         <option>
           <name>OGLastSavedByProductVersion</name>
-          <state>5.50.0.51907</state>
+          <state>6.10.1.52170</state>
         </option>
         <option>
           <name>GeneralEnableMisra</name>
@@ -961,13 +1002,17 @@
           <version>0</version>
           <state>111101110010111111111000110111111111111111111111111110010111101111010101111111111111111111111111101111111011111001111011111011111111111111111</state>
         </option>
+        <option>
+          <name>RTConfigPath2</name>
+          <state>$TOOLKIT_DIR$\INC\c\DLib_Config_Normal.h</state>
+        </option>
       </data>
     </settings>
     <settings>
       <name>ICCARM</name>
       <archiveVersion>2</archiveVersion>
       <data>
-        <version>22</version>
+        <version>26</version>
         <wantNonLocal>1</wantNonLocal>
         <debug>0</debug>
         <option>
@@ -1090,10 +1135,6 @@
           <state>$FILE_BNAME$.o</state>
         </option>
         <option>
-          <name>CCLangSelect</name>
-          <state>0</state>
-        </option>
-        <option>
           <name>CCLibConfigHeader</name>
           <state>1</state>
         </option>
@@ -1116,6 +1157,8 @@
           <state>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x</state>
           <state>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\STM32_USB-FS-Device_Driver\inc</state>
           <state>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\inc</state>
+          <state>$PROJ_DIR$\..\..\..\Interfaces\</state>
+          <state>$PROJ_DIR$\..\..\..\Interfaces\GPIO\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\JTAG\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\SPI\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\PowerExt\</state>
@@ -1125,10 +1168,6 @@
         <option>
           <name>CCStdIncCheck</name>
           <state>0</state>
-        </option>
-        <option>
-          <name>CCStdIncludePath</name>
-          <state>$TOOLKIT_DIR$\INC\</state>
         </option>
         <option>
           <name>CCCodeSection</name>
@@ -1177,13 +1216,49 @@
           <name>CCPosIndNoDynInit</name>
           <state>0</state>
         </option>
+        <option>
+          <name>IccLang</name>
+          <state>0</state>
+        </option>
+        <option>
+          <name>IccCDialect</name>
+          <state>1</state>
+        </option>
+        <option>
+          <name>IccAllowVLA</name>
+          <state>0</state>
+        </option>
+        <option>
+          <name>IccCppDialect</name>
+          <state>1</state>
+        </option>
+        <option>
+          <name>IccExceptions</name>
+          <state>1</state>
+        </option>
+        <option>
+          <name>IccRTTI</name>
+          <state>1</state>
+        </option>
+        <option>
+          <name>IccStaticDestr</name>
+          <state>1</state>
+        </option>
+        <option>
+          <name>IccRelaxedFpPrecision</name>
+          <state>0</state>
+        </option>
+        <option>
+          <name>IccCppInlineSemantics</name>
+          <state>1</state>
+        </option>
       </data>
     </settings>
     <settings>
       <name>AARM</name>
       <archiveVersion>2</archiveVersion>
       <data>
-        <version>7</version>
+        <version>8</version>
         <wantNonLocal>1</wantNonLocal>
         <debug>0</debug>
         <option>
@@ -1328,10 +1403,6 @@
           <state>0</state>
         </option>
         <option>
-          <name>AStdIncludes</name>
-          <state>$TOOLKIT_DIR$\INC\</state>
-        </option>
-        <option>
           <name>AUserIncludes</name>
           <state></state>
         </option>
@@ -1400,7 +1471,7 @@
       <name>ILINK</name>
       <archiveVersion>0</archiveVersion>
       <data>
-        <version>9</version>
+        <version>11</version>
         <wantNonLocal>1</wantNonLocal>
         <debug>0</debug>
         <option>
@@ -1626,6 +1697,26 @@
           <name>IlinkLogUnusedFragments</name>
           <state>0</state>
         </option>
+        <option>
+          <name>IlinkCrcReverseByteOrder</name>
+          <state>0</state>
+        </option>
+        <option>
+          <name>IlinkCrcUseAsInput</name>
+          <state>1</state>
+        </option>
+        <option>
+          <name>IlinkOptInline</name>
+          <state>1</state>
+        </option>
+        <option>
+          <name>IlinkOptExceptionsAllow</name>
+          <state>1</state>
+        </option>
+        <option>
+          <name>IlinkOptExceptionsForce</name>
+          <state>0</state>
+        </option>
       </data>
     </settings>
     <settings>
@@ -1656,7 +1747,6 @@
     </settings>
   </configuration>
   <mfc_discard>
-    <configuration>Debug</configuration>
     <configuration>Release</configuration>
   </mfc_discard>
   <group>
@@ -1875,6 +1965,12 @@
   <group>
     <name>Interfaces</name>
     <group>
+      <name>GPIO</name>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\Interfaces\GPIO\GPIO.c</name>
+      </file>
+    </group>
+    <group>
       <name>JTAG</name>
       <file>
         <name>$PROJ_DIR$\..\..\..\Interfaces\JTAG\JTAG_TAP.c</name>
@@ -1892,6 +1988,9 @@
         <name>$PROJ_DIR$\..\..\..\Interfaces\SPI\SPI.c</name>
       </file>
     </group>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\Interfaces\interfaces.c</name>
+    </file>
   </group>
   <group>
     <name>STK500v2</name>
@@ -1950,7 +2049,7 @@
       <name>$PROJ_DIR$\..\..\..\STK500v2\STK500v2_AVR32_JTAG.c</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\..\STK500v2\STK500V2_MEGA_JTAG.c</name>
+      <name>$PROJ_DIR$\..\..\..\STK500v2\STK500v2_MEGA_JTAG.c</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\..\STK500v2\STK_Param.c</name>

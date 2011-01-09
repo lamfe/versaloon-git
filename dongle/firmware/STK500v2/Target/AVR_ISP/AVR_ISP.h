@@ -21,9 +21,27 @@
 // RST		<-->	OD
 
 /// ISP Disable Reset
-#define AVRISP_RST_Off()			if(STK500_PARAM_Reset_Polarity)RST_SET();else RST_CLR()
+#define AVRISP_RST_Off()			do{\
+										if(STK500_PARAM_Reset_Polarity)\
+										{\
+											interfaces->gpio.out(0, GPIO_SRST, GPIO_SRST);\
+										}\
+										else\
+										{\
+											interfaces->gpio.out(0, GPIO_SRST, 0);\
+										}\
+									} while (0)
 /// ISP Enable Reset
-#define AVRISP_RST_On()				if(STK500_PARAM_Reset_Polarity)RST_CLR();else RST_SET()
+#define AVRISP_RST_On()				do {\
+										if(STK500_PARAM_Reset_Polarity)\
+										{\
+											interfaces->gpio.out(0, GPIO_SRST, 0);\
+										}\
+										else\
+										{\
+											interfaces->gpio.out(0, GPIO_SRST, GPIO_SRST);\
+										}\
+									} while (0)
 
 
 void AVRISP_Init(uint32 freq);
