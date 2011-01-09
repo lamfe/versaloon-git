@@ -21,8 +21,7 @@
 #include "STK500.h"
 
 #include "STK_Param.h"
-
-#include "JTAG_TAP.h"
+#include "interfaces.h"
 
 #if POWER_OUT_EN
 #	include "PowerExt.h"
@@ -81,7 +80,8 @@ bool STK500V2_OnWriteDaisyChain(const struct STKPARAM *param, uint8 attr)
 	{
 		if((STK500V2_EmuMode == EMUMODE_MEGA_JTAG) || (STK500V2_EmuMode == EMUMODE_AVR32_JTAG))
 		{
-			JTAG_TAP_SetDaisyChainPos((STK500V2_PARAM_DaisyChain >> 0) & 0xFF, 
+			interfaces->jtag_hl.config_daisychain(0, 
+										(STK500V2_PARAM_DaisyChain >> 0) & 0xFF, 
 										(STK500V2_PARAM_DaisyChain >> 8) & 0xFF, 
 										(STK500V2_PARAM_DaisyChain >> 16) & 0xFF, 
 										(STK500V2_PARAM_DaisyChain >> 24) & 0xFF);
@@ -98,11 +98,12 @@ bool STK500V2_OnWriteEmuMode(const struct STKPARAM *param, uint8 attr)
 			|| (STK500V2_EmuMode == EMUMODE_AVR32_JTAG) 
 			|| (STK500V2_EmuMode == EMUMODE_XMEGA_JTAG))
 		{
-			JTAG_TAP_Init(AVR_JTAG_DEFAULT_SPEED, JTAG_TAP_ASYN);
+			interfaces->jtag_hl.init(0);
+			interfaces->jtag_hl.config_speed(0, AVR_JTAG_DEFAULT_SPEED);
 		}
 		else
 		{
-			JTAG_TAP_Fini();
+			interfaces->jtag_hl.fini(0);
 		}
 		return (STK500V2_EmuMode == EMUMODE_MEGA_JTAG) 
 				|| (STK500V2_EmuMode == EMUMODE_NONE) 
@@ -220,16 +221,13 @@ static void STK500V2_ProcessCommonCmd(uint8* dat, uint16 len)
 	switch(dat[0])
 	{
 	case CMND_SIGN_OFF:
-		GLOBAL_OUTPUT_Release();
-		PWREXT_Release();
-
-		JTAG_TAP_Fini();
+		interfaces->target_voltage.set(0, 0);
+		interfaces->jtag_hl.fini(0);
 		STK500V2_MCUState = MCUSTATE_STOPPED;
 		STK500V2_RSP_OK();
 		break;
 	case CMND_SIGN_ON:
-		GLOBAL_OUTPUT_Acquire();
-		PWREXT_Acquire();
+		interfaces->target_voltage.set(0, 3300);
 
 		STK500V2_MCUState = MCUSTATE_STOPPED;
 

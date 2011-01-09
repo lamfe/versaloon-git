@@ -18,7 +18,7 @@
 #include "STK500v2_Const.h"
 #include "STK500v2.h"
 
-#include "JTAG_TAP.h"
+#include "interfaces.h"
 
 #include "Target/AVR32_JTAG/AVR32_JTAG.h"
 

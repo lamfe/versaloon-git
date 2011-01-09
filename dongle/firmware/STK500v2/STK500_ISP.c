@@ -18,7 +18,8 @@
 #include "STK500_Const.h"
 #include "STK500.h"
 
-#include "SPI.h"
+#include "interfaces.h"
+#include "GPIO.h"
 #include "Target/AVR_ISP/AVR_ISP.h"
 
 /// SPI Command data
@@ -83,18 +84,18 @@ uint8 STK500_ISP_ProcessProgCmd(uint8* dat, uint16 len)
 		AVRISP_Init(AVRISP_Freqs[STK500_PARAM_SCK_Duration] / 4);
 
 		// Atmel give a long delay,could be shorter
-		DelayMS(1);
+		interfaces->delay.delayms(1);
 		AVRISP_RST_Off();
-		DelayMS(1);
+		interfaces->delay.delayms(1);
 		AVRISP_RST_On();
 
-		DelayMS(dat[3]);
+		interfaces->delay.delayms(dat[3]);
 
 		for(delay = 0; delay < 4; delay++)
 		{
-			AVRISP_SPI_ret[delay] = SPI_RW(dat[8 + delay]);
+			interfaces->spi.io(0, &dat[8 + delay], &AVRISP_SPI_ret[delay], 1);
 // NOT necessary to delay this delay
-//			DelayMS(dat[5]);
+//			interfaces->delay.delayms(dat[5]);
 		}
 
 		if((dat[7] > 0) && (AVRISP_SPI_ret[dat[7] - 1] != dat[6]))
@@ -111,13 +112,13 @@ uint8 STK500_ISP_ProcessProgCmd(uint8* dat, uint16 len)
 //dat[1]	preDelay				Pre-delay(in ms)
 //dat[2]	postDelay				Post-delay(in ms)
 
-		DelayMS(20);		// Wait last operation ready
+		interfaces->delay.delayms(20);		// Wait last operation ready
 //		AVRISP_RDY_Wait();
 
 		AVRISP_RST_Off();
-		DelayMS(dat[1]);
+		interfaces->delay.delayms(dat[1]);
 		AVRISP_Fini();
-		DelayMS(dat[2]);
+		interfaces->delay.delayms(dat[2]);
 
 		rep_len = 2;
 		return STATUS_CMD_OK;
@@ -138,7 +139,7 @@ uint8 STK500_ISP_ProcessProgCmd(uint8* dat, uint16 len)
 
 		AVRISP_Comm(&dat[3], (uint8*)AVRISP_SPI_ret);
 
-		DelayMS(dat[1]);
+		interfaces->delay.delayms(dat[1]);
 		if(dat[2])
 		{
 			if(AVRISP_RDY_Wait())
@@ -149,7 +150,7 @@ uint8 STK500_ISP_ProcessProgCmd(uint8* dat, uint16 len)
 		}
 //		else
 //		{
-//			DelayMS(dat[1]);
+//			interfaces->delay.delayms(dat[1]);
 //		}
 
 		rep_len = 2;
@@ -215,7 +216,7 @@ uint8 STK500_ISP_ProcessProgCmd(uint8* dat, uint16 len)
 						delay = 255;
 						do
 						{
-							DelayUS(80);
+							interfaces->delay.delayus(80);
 							AVRISP_SPI_cmd[0] = command_tmp;
 							SET_BE_U16(&AVRISP_SPI_cmd[1], tmp16);
 							AVRISP_SPI_cmd[3] = 0;
@@ -229,7 +230,7 @@ uint8 STK500_ISP_ProcessProgCmd(uint8* dat, uint16 len)
 					}
 					else
 					{
-						DelayMS(dat[4]);
+						interfaces->delay.delayms(dat[4]);
 					}
 				}
 				else if(operation & 0x40)
@@ -244,7 +245,7 @@ uint8 STK500_ISP_ProcessProgCmd(uint8* dat, uint16 len)
 				else
 				{
 					// Delay
-					DelayMS(dat[4]);
+					interfaces->delay.delayms(dat[4]);
 				}
 			}
 		}
@@ -275,7 +276,7 @@ uint8 STK500_ISP_ProcessProgCmd(uint8* dat, uint16 len)
 						delay = 255;
 						do
 						{
-							DelayUS(80);
+							interfaces->delay.delayus(80);
 							if(i & 1)
 							{
 								AVRISP_SPI_cmd[0] = command_tmp | 0x08;
@@ -295,7 +296,7 @@ uint8 STK500_ISP_ProcessProgCmd(uint8* dat, uint16 len)
 					}
 					else
 					{
-						DelayMS(dat[4]);
+						interfaces->delay.delayms(dat[4]);
 					}
 				}
 				else if(operation & 0x08)
@@ -310,7 +311,7 @@ uint8 STK500_ISP_ProcessProgCmd(uint8* dat, uint16 len)
 				else
 				{
 					// Delay
-					DelayMS(dat[4]);
+					interfaces->delay.delayms(dat[4]);
 				}
 
 				if(i & 1)
@@ -394,7 +395,7 @@ uint8 STK500_ISP_ProcessProgCmd(uint8* dat, uint16 len)
 						delay = 255;
 						do
 						{
-							DelayUS(80);
+							interfaces->delay.delayus(80);
 							AVRISP_SPI_cmd[0] = command_tmp;
 							SET_BE_U16(&AVRISP_SPI_cmd[1], tmp16);
 							AVRISP_SPI_cmd[3] = 0;
@@ -408,7 +409,7 @@ uint8 STK500_ISP_ProcessProgCmd(uint8* dat, uint16 len)
 					}
 					else
 					{
-						DelayMS(dat[4]);
+						interfaces->delay.delayms(dat[4]);
 					}
 				}
 				else if(operation & 0x40)
@@ -423,7 +424,7 @@ uint8 STK500_ISP_ProcessProgCmd(uint8* dat, uint16 len)
 				else
 				{
 					// Delay
-					DelayMS(dat[4]);
+					interfaces->delay.delayms(dat[4]);
 				}
 
 			}
@@ -448,7 +449,7 @@ uint8 STK500_ISP_ProcessProgCmd(uint8* dat, uint16 len)
 						delay = 255;
 						do
 						{
-							DelayUS(80);
+							interfaces->delay.delayus(80);
 							AVRISP_SPI_cmd[0] = command_tmp;
 							AVRISP_SPI_cmd[3] = 0;
 							AVRISP_Comm((uint8*)AVRISP_SPI_cmd, (uint8*)AVRISP_SPI_ret);
@@ -461,7 +462,7 @@ uint8 STK500_ISP_ProcessProgCmd(uint8* dat, uint16 len)
 					}
 					else
 					{
-						DelayMS(dat[4]);
+						interfaces->delay.delayms(dat[4]);
 					}
 				}
 				else if(operation & 0x08)
@@ -476,7 +477,7 @@ uint8 STK500_ISP_ProcessProgCmd(uint8* dat, uint16 len)
 				else
 				{
 					// Delay
-					DelayMS(dat[4]);
+					interfaces->delay.delayms(dat[4]);
 				}
 
 				SKT500_Target_Address++;
@@ -554,11 +555,12 @@ uint8 STK500_ISP_ProcessProgCmd(uint8* dat, uint16 len)
 		{
 			if(i < operation)
 			{
-				command_tmp = SPI_RW(dat[4 + i]);
+				interfaces->spi.io(0, &dat[4 + i], &command_tmp, 1);
 			}
 			else
 			{
-				command_tmp = SPI_RW(0);
+				command_tmp = 0;
+				interfaces->spi.io(0, &command_tmp, &command_tmp, 1);
 			}
 
 			if((i >= command) && (tmp16 < delay))

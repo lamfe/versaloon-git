@@ -18,15 +18,26 @@
 
 #include "STK500v2.h"
 
-#include "JTAG_TAP.h"
+#include "interfaces.h"
 #include "MEGA_JTAG.h"
 #include "MEGA_JTAG_PRG.h"
+
+uint32_t AVR_JTAG_SendIns(uint32_t ins)
+{
+	interfaces->jtag_hl.ir(0, (uint8_t *)&ins, AVR_JTAG_INS_Len, AVR_JTAG_RTI_CYCLE, 1);
+	return ins;
+}
+uint32_t AVR_JTAG_SendDat(uint32_t dat, uint16_t bitlen)
+{
+	interfaces->jtag_hl.dr(0, (uint8_t *)&dat, bitlen, AVR_JTAG_RTI_CYCLE, 1);
+	return dat;
+}
 
 /// Read JTAG ID
 void AVR_JTAGPRG_ReadJTAGID(uint8 *id)
 {
 	AVR_JTAG_SendIns(AVR_JTAG_INS_IDCODE);
-	JTAG_TAP_DataInPtr(id, AVR_JTAG_REG_JTAGID_Len, AVR_JTAG_RTI_CYCLE);
+	interfaces->jtag_hl.dr(0, id, AVR_JTAG_REG_JTAGID_Len, AVR_JTAG_RTI_CYCLE, 1);
 }
 
 /// Enter programming mode
@@ -157,14 +168,15 @@ void AVR_JTAGPRG_ReadFlashPage(uint8 *flash, uint32 addr, uint32 len)
 
 		if(ddf->ucAllowFullPageBitstream)
 		{
-			JTAG_TAP_Data(0, 8, AVR_JTAG_RTI_CYCLE);
-			JTAG_TAP_DataInPtr(flash + j * ddf->uiFlashPageSize, ddf->uiFlashPageSize * 8, AVR_JTAG_RTI_CYCLE);
+			uint8_t tmp0 = 0;
+			interfaces->jtag_hl.dr(0, &tmp0, 8, AVR_JTAG_RTI_CYCLE, 0);
+			interfaces->jtag_hl.dr(0, &flash[j * ddf->uiFlashPageSize], ddf->uiFlashPageSize * 8, AVR_JTAG_RTI_CYCLE, 1);
 		}
 		else
 		{
 			for(i = 0; i < len; i++)
 			{
-				flash[j * ddf->uiFlashPageSize + i] = JTAG_TAP_Data(0, 8, AVR_JTAG_RTI_CYCLE);
+				interfaces->jtag_hl.dr(0, &flash[j * ddf->uiFlashPageSize + i], 8, AVR_JTAG_RTI_CYCLE, 1);
 			}
 		}
 	}
@@ -252,13 +264,13 @@ void AVR_JTAGPRG_WriteFlashPage(uint8 *flash, uint32 addr, uint32 len)
 
 	if(ddf->ucAllowFullPageBitstream)
 	{
-		JTAG_TAP_DataOutPtr(flash, len * 8, AVR_JTAG_RTI_CYCLE);
+		interfaces->jtag_hl.dr(0, flash, len * 8, AVR_JTAG_RTI_CYCLE, 0);
 	}
 	else
 	{
 		for(i = 0; i < len; i++)
 		{
-			JTAG_TAP_Data(flash[i], 8, AVR_JTAG_RTI_CYCLE);
+			interfaces->jtag_hl.dr(0, &flash[i], 8, AVR_JTAG_RTI_CYCLE, 0);
 		}
 	}
 

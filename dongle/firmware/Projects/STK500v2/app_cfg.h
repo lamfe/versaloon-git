@@ -39,6 +39,9 @@
 
 #define USB_OUT_EN						1
 
+#define INTERFACE_GPIO_EN				1
+#define INTERFACE_SPI_EN				1
+#define INTERFACE_JTAG_EN				1
 #define POWER_OUT_EN					1
 #define POWER_SAMPLE_EN					1
 

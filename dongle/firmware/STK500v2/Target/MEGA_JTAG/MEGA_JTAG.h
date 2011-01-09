@@ -187,9 +187,7 @@
 // No Operation Command
 #define AVR_JTAG_PROG_LoadNoOperationCommand()	(AVR_JTAG_PROG_INS(0x2300), AVR_JTAG_PROG_INS(0x3300))
 
-
-
-#define AVR_JTAG_SendIns(ins)					JTAG_TAP_Instr((uint8)(ins), AVR_JTAG_INS_Len, AVR_JTAG_RTI_CYCLE)
-#define AVR_JTAG_SendDat(dat, len)				JTAG_TAP_Data((uint16)(dat), (len), AVR_JTAG_RTI_CYCLE)
+uint32_t AVR_JTAG_SendIns(uint32_t ins);
+uint32_t AVR_JTAG_SendDat(uint32_t dat, uint16_t bitlen);
 
 void AVR_JTAG_Init(void);
