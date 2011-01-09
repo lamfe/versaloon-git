@@ -12,6 +12,7 @@
  *  Change Log:                                                           *
  *      YYYY-MM-DD:     What(by Who)                                      *
  *      2008-11-07:     created(by SimonQian)                             *
+ *      2011-01-09:     Add stmxx-discovery (by Bingo)                    *
  **************************************************************************/
 
 /************************ What do U have ************************/
@@ -23,6 +24,8 @@
 #include "hw_cfg_MiniRelease1.h"
 //#include "hw_cfg_ProRC1.h"
 //#include "hw_cfg_STBee_Mini.h"
+//#include "hw_cfg_stm8s-discovery.h"
+//#include "hw_cfg_stm32vl-discovery.h"
 
 /*************************** Includes Library ***************************/
 #include "stm32f10x_conf.h"

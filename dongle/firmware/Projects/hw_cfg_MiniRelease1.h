@@ -20,6 +20,8 @@
 #ifdef HSE_VALUE
 #undef HSE_VALUE
 #endif
+// Remember to change HSE_VALUE in 
+// dongle/firmware/HW/STM32F10x_Lib/Libraries/CMSIS/CM3/DeviceSupport/ST/STM32F10x/stm32f10x.h to same setting
 #define HSE_VALUE						((uint32_t)12000000)
 
 #define _SYS_FREQUENCY					72		// in MHz

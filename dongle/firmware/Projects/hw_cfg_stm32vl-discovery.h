@@ -3,36 +3,41 @@
  *  SimonQian@SimonQian.com                                               *
  *                                                                        *
  *  Project:    Versaloon                                                 *
- *  File:       hw_cfg_STBee_Mini.h                                       *
+ *  File:       hw_cfg_MiniRelease1.h                                     *
  *  Author:     SimonQian                                                 *
  *  Versaion:   See changelog                                             *
- *  Purpose:    hardware configuration file for STBee Mini                *
+ *  Purpose:    hardware configuration file for Mini Version Release1     *
  *  License:    See license                                               *
  *------------------------------------------------------------------------*
  *  Change Log:                                                           *
  *      YYYY-MM-DD:     What(by Who)                                      *
- *      2010-08-28:     created(by Yasuo Kawachi)                         *
+ *      2008-11-07:     created(by SimonQian)                             *
+ *      2008-11-22:     rewrite GPIO_Dir(by SimonQian)                    *
+ *      2011-01-08:     adapt to STM32VL-Discovery (by Bingo)             *
  **************************************************************************/
 
-// Note: Modify the link file, locate the application at 0x08003000
+//
+// To make the STM8S-Discovery or STM32VL-Discovery firmware
+// Use : make -f make-discovery
+//
 
-#define STBee_Mini						0x31
-#define _HARDWARE_VER					STBee_Mini
+#define STM32VL_DISCOVERY				0x42
+#define _HARDWARE_VER					STM32VL_DISCOVERY
 #ifdef HSE_VALUE
 #undef HSE_VALUE
 #endif
 // Remember to change HSE_VALUE in 
 // dongle/firmware/HW/STM32F10x_Lib/Libraries/CMSIS/CM3/DeviceSupport/ST/STM32F10x/stm32f10x.h to same setting
-#define HSE_VALUE						((uint32_t)12000000)
+#define HSE_VALUE					((uint32_t)8000000)
 
 #define _SYS_FREQUENCY					72		// in MHz
-#define _SYS_FLASH_VECTOR_TABLE_SHIFT	0x3000	// application will locate at 0x08003000
+#define _SYS_FLASH_VECTOR_TABLE_SHIFT	0x0000	// application will locate at 0x08000000
 
 /****************************** Abilities ******************************/
-#define HW_HAS_USART					0
+#define HW_HAS_USART					1
 #define HW_HAS_SPI						0
 #define HW_HAS_IIC						0
-#define HW_HAS_GPIO						0
+#define HW_HAS_GPIO						1
 #define HW_HAS_CAN						0
 #define HW_HAS_PWM						0
 #define HW_HAS_ADC						0
@@ -50,13 +55,59 @@
 #define HW_HAS_POWERCONTROL				0
 
 /****************************** Init ******************************/
-#define HW_INIT()						do{\
-											GPIO_PinRemapConfig(GPIO_Remap_SWJ_Disable, ENABLE);\
-										} while (0)
+#define HW_INIT()				//No Jtag Remapping
+
+
+/****************************** STM32VL-Discovery Pins ******************************/
+#define STM32VL_SWD_PORT	GPIOB
+#define STM32VL_TCK1_PORT	GPIOA
+
+//
+//
+// NOTE !! - 	Right now we are reversing the SWCLK & SWDIO PINS on the VL Board Connectors CN2 and CN3
+//		This is due to the way Versaloon handles the SWDIO - where it needs 2 pins , and one is permanently used as input.
+//		On the VL Board , JTCK is connected to 2 pins , and fits perfect to the above requirement
+//
+//           	This means that the standard jumpers on CN3 can't be used , one must use wire(s) (for 1-4). And connect 1-4 and 2-3.
+//	     	CN2 Pin2 = TMS/SWDIO 
+//		CN2 Pin4 = TCK/SWCLK
+//
+#define	STM32VL_T_JTMS		GPIO_PIN_14	//GPIOB - Used as SWCLK
+#define	STM32VL_T_JTCK		GPIO_PIN_13	//GPIOB - Used as SWDIO - Connected to PA5 on VL board
+
+#define	STM32VL_T_JTCK_1	GPIO_PIN_5	//GPIOA - Used as SWDIO - Connected to PB13 on VL board
+
+#define	STM32VL_SWIM_1		GPIO_PIN_8	//GPIOB
+#define	STM32VL_SWIM_2		GPIO_PIN_11	//GPIOB
+
+#define	STM32VL_SWIM_RST	GPIO_PIN_6	//GPIOB
+#define	STM32VL_SWIM_RST_IN	GPIO_PIN_5	//GPIOB
+
+#define	STM32VL_STM_JRST	PB4
+#define	STM32VL_STM_JTDO	PB3
+#define	STM32VL_STM_JTDI	PA15
+#define	STM32VL_STM_JTCK	PA14
+#define	STM32VL_STM_JTMS	PA13
+#define STM32VL_USB_DP		PA12
+#define STM32VL_USB_DM		PA11
+
+#define	STM32VL_U1_RX		PA10
+#define	STM32VL_U1_TX		PA9
+
+#define	STM32VL_ST_LINK_LED	GPIO_PIN_8	//GPIOA
+
+#define STM32VL_T_JRST		GPIO_PIN_1	//GPIOB
+#define STM32VL_T_NRST		GPIO_PIN_0	//GPIOB
+#define	STM32VL_T_JTDI		GPIO_PIN_7	//GPIOA
+#define STM32VL_T_JTDO		GPIO_PIN_6	//GPIOA
+
+#define	STM32VL_U2_CK		GPIO_PIN_4	//GPIOA
+#define STM32VL_U2_RX		GPIO_PIN_3	//GPIOA
+#define STM32VL_U2_TX		GPIO_PIN_2	//GPIOA	
 
 /****************************** Power ******************************/
-#define PWREXT_EN_PORT					GPIOB
-#define PWREXT_EN_PIN					GPIO_PIN_8
+#define PWREXT_EN_PORT					GPIOA
+#define PWREXT_EN_PIN					STM32VL_U2_TX
 
 #define PWREXT_INIT()					PWREXT_DISABLE()
 #define PWREXT_ENABLE()					do{\
@@ -66,9 +117,29 @@
 #define PWREXT_DISABLE()				GPIO_SetMode(PWREXT_EN_PORT, PWREXT_EN_PIN, GPIO_MODE_IN_FLOATING)
 
 /****************************** Global Output ******************************/
-#define GLOBAL_OUTPUT_INIT()			
-#define GLOBAL_OUTPUT_ENABLE()			
-#define GLOBAL_OUTPUT_DISABLE()			
+#define GLOBAL_OUTPUT_INIT()				do{\
+								GPIO_SetMode(STM32VL_SWD_PORT, STM32VL_T_JTCK, GPIO_MODE_IN_FLOATING);\
+								GPIO_SetMode(STM32VL_TCK1_PORT, STM32VL_T_JTCK_1, GPIO_MODE_IN_FLOATING);\
+								GPIO_SetMode(STM32VL_SWD_PORT, STM32VL_T_JTMS, GPIO_MODE_IN_FLOATING);\
+								GPIO_SetMode(STM32VL_SWD_PORT, STM32VL_SWIM_RST, GPIO_MODE_IN_FLOATING);\
+								GPIO_SetMode(STM32VL_SWD_PORT, STM32VL_SWIM_RST_IN, GPIO_MODE_IN_FLOATING);\
+							}while(0)
+	
+#define GLOBAL_OUTPUT_ENABLE()				do{\
+								GPIO_SetMode(STM32VL_SWD_PORT, STM32VL_T_JTCK, GPIO_MODE_IN_FLOATING);\
+								GPIO_SetMode(STM32VL_TCK1_PORT, STM32VL_T_JTCK_1, GPIO_MODE_IN_FLOATING);\
+								GPIO_SetMode(STM32VL_SWD_PORT, STM32VL_T_JTMS, GPIO_MODE_IN_FLOATING);\
+								GPIO_SetMode(STM32VL_SWD_PORT, STM32VL_SWIM_RST, GPIO_MODE_IN_FLOATING);\
+								GPIO_SetMode(STM32VL_SWD_PORT, STM32VL_SWIM_RST_IN, GPIO_MODE_IN_FLOATING);\
+							}while(0)
+		
+#define GLOBAL_OUTPUT_DISABLE()				do{\
+								GPIO_SetMode(STM32VL_SWD_PORT, STM32VL_T_JTCK, GPIO_MODE_IN_FLOATING);\
+								GPIO_SetMode(STM32VL_TCK1_PORT, STM32VL_T_JTCK_1, GPIO_MODE_IN_FLOATING);\
+								GPIO_SetMode(STM32VL_SWD_PORT, STM32VL_T_JTMS, GPIO_MODE_IN_FLOATING);\
+								GPIO_SetMode(STM32VL_SWD_PORT, STM32VL_SWIM_RST, GPIO_MODE_IN_FLOATING);\
+								GPIO_SetMode(STM32VL_SWD_PORT, STM32VL_SWIM_RST_IN, GPIO_MODE_IN_FLOATING);\
+							}while(0)		
 
 /****************************** DelayTimer ******************************/
 #define DELAYTIMER_MAXDELAY_US			200000
@@ -97,14 +168,15 @@
 										} while (0)
 
 /****************************** SW ******************************/
-#define SW_PORT							GPIOB
-#define SW_PIN							GPIO_PIN_11
-#define SW_RST_PORT						GPIOB
-#define SW_RST_PIN						GPIO_PIN_10
-#define SYNCSW_IN_PORT					GPIOB
-#define SYNCSW_IN_PIN					GPIO_PIN_6
-#define SYNCSW_OUT_PORT					GPIOB
-#define SYNCSW_OUT_PIN					GPIO_PIN_4
+#define SW_PORT						GPIOB
+#define SW_PIN						STM32VL_T_NRST
+#define SW_RST_PORT					GPIOB
+#define SW_RST_PIN					STM32VL_T_JRST
+
+#define SYNCSW_IN_PORT					STM32VL_TCK1_PORT
+#define SYNCSW_IN_PIN					STM32VL_T_JTCK_1
+#define SYNCSW_OUT_PORT					STM32VL_SWD_PORT
+#define SYNCSW_OUT_PIN					STM32VL_T_JTCK
 
 #define SW_PULL_INIT()					
 #define SW_DIR_INIT()					SW_SETINPUT_PD()
@@ -138,12 +210,13 @@
 
 // SYNCSW in PWM mode
 #define SYNCSWPWM_GPIO_PORT				GPIOB
-#define SYNCSWPWM_GPIO_PIN				GPIO_PIN_6
+#define SYNCSWPWM_GPIO_PIN				GPIO_PIN_13
 
 #define SYNCSWPWM_OUT_TIMER				TIM3
 #define SYNCSWPWM_OUT_TIMER_DMA			DMA1_Channel6
 #define SYNCSWPWM_IN_TIMER				TIM4
-#define SYNCSWPWM_IN_TIMER_DMA			DMA1_Channel4
+#define SYNCSWPWM_IN_TIMER_RISE_DMA		DMA1_Channel4
+#define SYNCSWPWM_IN_TIMER_FALL_DMA		DMA1_Channel1
 
 #define SYNCSWPWM_IN_TIMER_INIT()		do{\
 											DMA_InitTypeDef DMA_InitStructure;\
@@ -152,7 +225,7 @@
 											RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, ENABLE);\
 											RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4, ENABLE);\
 											\
-											DMA_DeInit(SYNCSWPWM_IN_TIMER_DMA);\
+											DMA_DeInit(SYNCSWPWM_IN_TIMER_RISE_DMA);\
 											DMA_StructInit(&DMA_InitStructure);\
 											DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)&(SYNCSWPWM_IN_TIMER->CCR2);\
 											DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralSRC;\
@@ -164,8 +237,23 @@
 											DMA_InitStructure.DMA_Mode = DMA_Mode_Normal;\
 											DMA_InitStructure.DMA_Priority = DMA_Priority_High;\
 											DMA_InitStructure.DMA_M2M = DMA_M2M_Disable;\
-											DMA_Init(SYNCSWPWM_IN_TIMER_DMA, &DMA_InitStructure);\
-											DMA_Cmd(SYNCSWPWM_IN_TIMER_DMA, ENABLE);\
+											DMA_Init(SYNCSWPWM_IN_TIMER_RISE_DMA, &DMA_InitStructure);\
+											DMA_Cmd(SYNCSWPWM_IN_TIMER_RISE_DMA, ENABLE);\
+											\
+											DMA_DeInit(SYNCSWPWM_IN_TIMER_FALL_DMA);\
+											DMA_StructInit(&DMA_InitStructure);\
+											DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)&(SYNCSWPWM_IN_TIMER->CCR1);\
+											DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralSRC;\
+											DMA_InitStructure.DMA_BufferSize = 0;\
+											DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;\
+											DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;\
+											DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_HalfWord;\
+											DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_HalfWord;\
+											DMA_InitStructure.DMA_Mode = DMA_Mode_Normal;\
+											DMA_InitStructure.DMA_Priority = DMA_Priority_High;\
+											DMA_InitStructure.DMA_M2M = DMA_M2M_Disable;\
+											DMA_Init(SYNCSWPWM_IN_TIMER_FALL_DMA, &DMA_InitStructure);\
+											DMA_Cmd(SYNCSWPWM_IN_TIMER_FALL_DMA, ENABLE);\
 											\
 											TIM_ICStructInit(&TIM_ICInitStructure);\
 											TIM_ICInitStructure.TIM_Channel = TIM_Channel_2;\
@@ -179,23 +267,49 @@
 											TIM_SelectSlaveMode(SYNCSWPWM_IN_TIMER, TIM_SlaveMode_Reset);\
 											TIM_SelectMasterSlaveMode(SYNCSWPWM_IN_TIMER, TIM_MasterSlaveMode_Enable);\
 											TIM_DMACmd(SYNCSWPWM_IN_TIMER, TIM_DMA_CC2, ENABLE);\
+											TIM_DMACmd(SYNCSWPWM_IN_TIMER, TIM_DMA_CC1, ENABLE);\
+											\
+											TIM_PrescalerConfig(SYNCSWPWM_IN_TIMER, 0, TIM_PSCReloadMode_Immediate);\
 											TIM_Cmd(SYNCSWPWM_IN_TIMER, ENABLE);\
 										}while(0)
 #define SYNCSWPWM_IN_TIMER_FINI()		do{\
 											TIM_DeInit(SYNCSWPWM_IN_TIMER);\
 											RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4, DISABLE);\
-											DMA_DeInit(SYNCSWPWM_IN_TIMER_DMA);\
+											DMA_DeInit(SYNCSWPWM_IN_TIMER_RISE_DMA);\
+											DMA_DeInit(SYNCSWPWM_IN_TIMER_FALL_DMA);\
 											RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, DISABLE);\
 										}while(0)
-#define SYNCSWPWM_IN_TIMER_DMA_INIT(l, a)	do{\
-												SYNCSWPWM_IN_TIMER_DMA->CCR &= ~1;\
-												SYNCSWPWM_IN_TIMER_DMA->CNDTR = (l);\
-												SYNCSWPWM_IN_TIMER_DMA->CMAR = (uint32_t)(a);\
-												SYNCSWPWM_IN_TIMER_DMA->CCR |= 1;\
-											}while(0)
+#define SYNCSWPWM_IN_TIMER_RISE_DMA_INIT(l, a)	do{\
+													SYNCSWPWM_IN_TIMER_RISE_DMA->CCR &= ~1;\
+													SYNCSWPWM_IN_TIMER_RISE_DMA->CNDTR = (l);\
+													SYNCSWPWM_IN_TIMER_RISE_DMA->CMAR = (uint32_t)(a);\
+													SYNCSWPWM_IN_TIMER_RISE_DMA->CCR |= 1;\
+												}while(0)
+#define SYNCSWPWM_IN_TIMER_RISE_DMA_READY()		(DMA1->ISR & DMA1_FLAG_TC4)
+#define SYNCSWPWM_IN_TIMER_RISE_DMA_RESET()		(DMA1->IFCR = DMA1_FLAG_TC4)
+#define SYNCSWPWM_IN_TIMER_RISE_DMA_WAIT(dly)	do{\
+													while((!SYNCSWPWM_IN_TIMER_RISE_DMA_READY()) && --dly);\
+													SYNCSWPWM_IN_TIMER_RISE_DMA_RESET();\
+												}while(0)
+#define SYNCSWPWM_IN_TIMER_FALL_DMA_INIT(l, a)	do{\
+													SYNCSWPWM_IN_TIMER_FALL_DMA->CCR &= ~1;\
+													SYNCSWPWM_IN_TIMER_FALL_DMA->CNDTR = (l);\
+													SYNCSWPWM_IN_TIMER_FALL_DMA->CMAR = (uint32_t)(a);\
+													SYNCSWPWM_IN_TIMER_FALL_DMA->CCR |= 1;\
+												}while(0)
+#define SYNCSWPWM_IN_TIMER_FALL_DMA_READY()		(DMA1->ISR & DMA1_FLAG_TC1)
+#define SYNCSWPWM_IN_TIMER_FALL_DMA_RESET()		(DMA1->IFCR = DMA1_FLAG_TC1)
+#define SYNCSWPWM_IN_TIMER_FALL_DMA_WAIT(dly)	do{\
+													while((!SYNCSWPWM_IN_TIMER_FALL_DMA_READY()) && --dly);\
+													SYNCSWPWM_IN_TIMER_FALL_DMA_RESET();\
+												}while(0)
+#define SYNCSWPWM_IN_TIMER_DMA_INIT(l, a, b)	do{\
+													SYNCSWPWM_IN_TIMER_RISE_DMA_INIT((l), (a));\
+													SYNCSWPWM_IN_TIMER_FALL_DMA_INIT((l), (b));\
+												}while(0)
 #define SYNCSWPWM_IN_TIMER_DMA_WAIT(dly)	do{\
-												while((!(DMA1->ISR & DMA1_FLAG_TC4)) && --dly);\
-												DMA1->IFCR = DMA1_FLAG_TC4;\
+												SYNCSWPWM_IN_TIMER_RISE_DMA_WAIT(dly);\
+												SYNCSWPWM_IN_TIMER_FALL_DMA_WAIT(dly);\
 											}while(0)
 
 #define SYNCSWPWM_OUT_TIMER_INIT()		do{\
@@ -293,13 +407,12 @@
 											GPIO_ClrPins(SYNCSWPWM_GPIO_PORT, SYNCSWPWM_GPIO_PIN);\
 											GPIO_SetMode(SYNCSWPWM_GPIO_PORT, SYNCSWPWM_GPIO_PIN, GPIO_MODE_OUT_PP);\
 										} while (0)
+#define SWIM_GET()						GPIO_GetInPins(SYNCSWPWM_GPIO_PORT, SYNCSWPWM_GPIO_PIN)
 
 /***************************** BDM ******************************/
-#define BDM_SET()						GPIO_SetMode(SYNCSWPWM_GPIO_PORT, SYNCSWPWM_GPIO_PIN, GPIO_MODE_IPU)
-#define BDM_CLR()						do{\
-											GPIO_ClrPins(SYNCSWPWM_GPIO_PORT, SYNCSWPWM_GPIO_PIN);\
-											GPIO_SetMode(SYNCSWPWM_GPIO_PORT, SYNCSWPWM_GPIO_PIN, GPIO_MODE_OUT_PP);\
-										} while (0)
+#define BDM_SET()						SWIM_SET()
+#define BDM_CLR()						SWIM_CLR()
+#define BDM_GET()						SWIM_GET()
 
 /***************************** SWD ******************************/
 #define SWD_SWDIO_SETOUTPUT()			JTAG_TAP_TMS_SETOUTPUT()
@@ -315,11 +428,11 @@
 
 /***************************** JTAG ******************************/
 #define JTAG_TAP_PORT					GPIOB
-#define JTAG_TAP_TCK_PIN				GPIO_PIN_13
-#define JTAG_TAP_TDO_PIN				GPIO_PIN_14
-#define JTAG_TAP_TDI_PIN				GPIO_PIN_15
+#define JTAG_TAP_TCK_PIN				STM32VL_T_JTMS
+#define JTAG_TAP_TDO_PIN				STM32VL_SWIM_RST
+#define JTAG_TAP_TDI_PIN				STM32VL_SWIM_RST_IN
 #define JTAG_TAP_RTCK_PORT				GPIOA
-#define JTAG_TAP_RTCK_PIN				GPIO_PIN_8
+#define JTAG_TAP_RTCK_PIN				GPIO_PIN_6
 
 #define JTAG_HAS_USER_PIN				1
 
@@ -694,9 +807,9 @@
 
 /****************************** LED ******************************/
 #define LED_RED_PORT					GPIOA
-#define LED_RED_PIN						GPIO_PIN_15
-#define LED_GREEN_PORT					GPIOB
-#define LED_GREEN_PIN					GPIO_PIN_5
+#define LED_RED_PIN					STM32VL_T_JTDI
+#define LED_GREEN_PORT					GPIOA
+#define LED_GREEN_PIN					STM32VL_T_JTDO
 #define LED_RED_ON()					GPIO_ClrPins(LED_RED_PORT, LED_RED_PIN)
 #define LED_RED_OFF()					GPIO_SetPins(LED_RED_PORT, LED_RED_PIN)
 #define LED_GREEN_ON()					GPIO_ClrPins(LED_GREEN_PORT, LED_GREEN_PIN)
@@ -713,7 +826,7 @@
 
 // LED_RW
 #define LED_RW_PORT						GPIOA
-#define LED_RW_PIN						GPIO_PIN_13
+#define LED_RW_PIN						STM32VL_ST_LINK_LED
 #define Led_RW_Init()					GPIO_SetMode(LED_RW_PORT, LED_RW_PIN, GPIO_MODE_OUT_PP)
 #define Led_RW_ON()						GPIO_ClrPins(LED_RW_PORT, LED_RW_PIN)
 #define Led_RW_OFF()					GPIO_SetPins(LED_RW_PORT, LED_RW_PIN)
@@ -724,11 +837,11 @@
 #define LED_USB_OFF()					Led_RW_ON()
 
 /****************************** KEY ******************************/
-#define KEY_PORT						GPIOC
-#define KEY_PIN							GPIO_PIN_13
-#define KEY_IsDown()					!GPIO_GetInPins(KEY_PORT, KEY_PIN)
-#define KEY_Init()						GPIO_SetMode(KEY_PORT, KEY_PIN, GPIO_MODE_IPU)
-#define KEY_Fini()						GPIO_SetMode(KEY_PORT, KEY_PIN, GPIO_MODE_IN_FLOATING)
+#define KEY_PORT						GPIOB
+#define KEY_PIN							GPIO_PIN_9
+#define KEY_IsDown()						//!GPIO_GetInPins(KEY_PORT, KEY_PIN)
+#define KEY_Init()						//GPIO_SetMode(KEY_PORT, KEY_PIN, GPIO_MODE_IPU)
+#define KEY_Fini()						//GPIO_SetMode(KEY_PORT, KEY_PIN, GPIO_MODE_IN_FLOATING)
 
 /****************************** USB *****************************/
 // For USB 2.0, use DP
@@ -736,14 +849,71 @@
 #define USB_DP_PORT						GPIOA
 #define USB_DP_PIN						GPIO_PIN_12
 
-#define USB_DISC_PORT					GPIOA
-#define USB_DISC_PIN					GPIO_PIN_14
-
-#define USB_Pull_Init()					GPIO_SetMode(USB_DISC_PORT, USB_DISC_PIN, GPIO_MODE_OUT_PP)
-#define USB_Connect()					GPIO_SetPins(USB_DISC_PORT, USB_DISC_PIN)
-#define USB_Disconnect()				GPIO_SetMode(USB_DISC_PORT, USB_DISC_PIN, GPIO_MODE_IN_FLOATING)
+#define USB_Pull_Init()					
+#define USB_Connect()					
+#define USB_Disconnect()				
 
 #define USB_Disable()					PowerOff()
 #define USB_D_SETOUTPUT()				GPIO_SetMode(USB_DP_PORT, USB_DP_PIN, GPIO_MODE_OUT_PP)
 #define USB_D_SET()						GPIO_SetPins(USB_DP_PORT, USB_DP_PIN)
 #define USB_D_CLR()						GPIO_ClrPins(USB_DP_PORT, USB_DP_PIN)
+
+/****************************** USBBlater *****************************/
+
+#define USBBlaster_JTAG_PORT			GPIOB
+#define USBBlaster_TMS					GPIO_PIN_4
+#define USBBlaster_TCK					GPIO_PIN_13
+#define USBBlaster_TDI					GPIO_PIN_15
+#define USBBlaster_TDO					GPIO_PIN_14
+#define USBBlaster_NCS					GPIO_PIN_11
+#define USBBlaster_NCE					GPIO_PIN_10
+
+#define USBBlaster_AS_PORT				GPIOA
+#define USBBlaster_ASDO					GPIO_PIN_8
+
+#define USBBlaster_TMS_SETOUTPUT()		GPIO_SetMode(USBBlaster_JTAG_PORT, USBBlaster_TMS, GPIO_MODE_OUT_PP)
+#define USBBlaster_TMS_SETINPUT()		GPIO_SetMode(USBBlaster_JTAG_PORT, USBBlaster_TMS, GPIO_MODE_IN_FLOATING)
+#define USBBlaster_TMS_SET()			GPIO_SetPins(USBBlaster_JTAG_PORT, USBBlaster_TMS)
+#define USBBlaster_TMS_CLR()			GPIO_ClrPins(USBBlaster_JTAG_PORT, USBBlaster_TMS)
+#define USBBlaster_TMS_GET()			GPIO_GetInPins(USBBlaster_JTAG_PORT, USBBlaster_TMS)
+
+#define USBBlaster_TCK_SETOUTPUT()		GPIO_SetMode(USBBlaster_JTAG_PORT, USBBlaster_TCK, GPIO_MODE_OUT_PP)
+#define USBBlaster_TCK_SETINPUT()		GPIO_SetMode(USBBlaster_JTAG_PORT, USBBlaster_TCK, GPIO_MODE_IN_FLOATING)
+#define USBBlaster_TCK_SET()			GPIO_SetPins(USBBlaster_JTAG_PORT, USBBlaster_TCK)
+#define USBBlaster_TCK_CLR()			GPIO_ClrPins(USBBlaster_JTAG_PORT, USBBlaster_TCK)
+#define USBBlaster_TCK_GET()			GPIO_GetInPins(USBBlaster_JTAG_PORT, USBBlaster_TCK)
+
+#define USBBlaster_TDI_SETOUTPUT()		GPIO_SetMode(USBBlaster_JTAG_PORT, USBBlaster_TDI, GPIO_MODE_OUT_PP)
+#define USBBlaster_TDI_SETINPUT()		GPIO_SetMode(USBBlaster_JTAG_PORT, USBBlaster_TDI, GPIO_MODE_IN_FLOATING)
+#define USBBlaster_TDI_SET()			GPIO_SetPins(USBBlaster_JTAG_PORT, USBBlaster_TDI)
+#define USBBlaster_TDI_CLR()			GPIO_ClrPins(USBBlaster_JTAG_PORT, USBBlaster_TDI)
+#define USBBlaster_TDI_GET()			GPIO_GetInPins(USBBlaster_JTAG_PORT, USBBlaster_TDI)
+
+#define USBBlaster_TDO_SETOUTPUT()		GPIO_SetMode(USBBlaster_JTAG_PORT, USBBlaster_TDO, GPIO_MODE_OUT_PP)
+#define USBBlaster_TDO_SETINPUT()		GPIO_SetMode(USBBlaster_JTAG_PORT, USBBlaster_TDO, GPIO_MODE_IPU)
+#define USBBlaster_TDO_SET()			GPIO_SetPins(USBBlaster_JTAG_PORT, USBBlaster_TDO)
+#define USBBlaster_TDO_CLR()			GPIO_ClrPins(USBBlaster_JTAG_PORT, USBBlaster_TDO)
+//#define USBBlaster_TDO_GET()			GPIO_GetInPins(USBBlaster_JTAG_PORT,USBBlaster_TDO)
+#define USBBlaster_TDO_GET()			GPIO_ReadInputDataBit(USBBlaster_JTAG_PORT, GPIO_Pin_14)
+
+#define USBBlaster_NCS_SETOUTPUT()		GPIO_SetMode(USBBlaster_JTAG_PORT, USBBlaster_NCS, GPIO_MODE_OUT_PP)
+#define USBBlaster_NCS_SETINPUT()		GPIO_SetMode(USBBlaster_JTAG_PORT, USBBlaster_NCS, GPIO_MODE_IN_FLOATING)
+#define USBBlaster_NCS_SET()			GPIO_SetPins(USBBlaster_JTAG_PORT, USBBlaster_NCS)
+#define USBBlaster_NCS_CLR()			GPIO_ClrPins(USBBlaster_JTAG_PORT, USBBlaster_NCS)
+//#define USBBlaster_NCS_GET()			GPIO_GetOutPins(USBBlaster_JTAG_PORT, USBBlaster_NCS)
+#define USBBlaster_NCS_GET()			GPIO_ReadOutputDataBit(USBBlaster_JTAG_PORT, GPIO_Pin_11)
+
+#define USBBlaster_NCE_SETOUTPUT()		GPIO_SetMode(USBBlaster_JTAG_PORT, USBBlaster_NCE, GPIO_MODE_OUT_PP)
+#define USBBlaster_NCE_SETINPUT()		GPIO_SetMode(USBBlaster_JTAG_PORT, USBBlaster_NCE, GPIO_MODE_IN_FLOATING)
+#define USBBlaster_NCE_SET()			GPIO_SetPins(USBBlaster_JTAG_PORT, USBBlaster_NCE)
+#define USBBlaster_NCE_CLR()			GPIO_ClrPins(USBBlaster_JTAG_PORT, USBBlaster_NCE)
+#define USBBlaster_NCE_GET()			GPIO_GetInPins(USBBlaster_JTAG_PORT, USBBlaster_NCE)
+
+#define USBBlaster_ASDO_SETOUTPUT()		GPIO_SetMode(USBBlaster_AS_PORT, USBBlaster_ASDO, GPIO_MODE_OUT_PP)
+
+#define USBBlaster_ASDO_SETINPUT()		GPIO_SetMode(USBBlaster_AS_PORT, USBBlaster_ASDO, GPIO_MODE_IPU)
+#define USBBlaster_ASDO_SET()			GPIO_SetPins(USBBlaster_AS_PORT, USBBlaster_ASDO)
+#define USBBlaster_ASDO_CLR()			GPIO_ClrPins(USBBlaster_AS_PORT, USBBlaster_ASDO)
+//#define USBBlaster_ASDO_GET()			GPIO_GetInPins(USBBlaster_AS_PORT, USBBlaster_ASDO)
+#define USBBlaster_ASDO_GET()			GPIO_ReadInputDataBit(USBBlaster_AS_PORT, GPIO_Pin_8)
+

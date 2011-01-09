@@ -1984,6 +1984,12 @@
     <file>
       <name>$PROJ_DIR$\..\..\hw_cfg_STBee_Mini.h</name>
     </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\hw_cfg_stm32vl-discovery.h</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\hw_cfg_stm8s-discovery.h</name>
+    </file>
   </group>
   <group>
     <name>Interfaces</name>
