@@ -1052,6 +1052,10 @@ static RESULT target_program(struct program_context_t *context)
 		}
 		
 		prog_area = &(pi->program_areas[area_idx]);
+		if (area_info->size > prog_area->size)
+		{
+			area_info->size = prog_area->size;
+		}
 		tbuff = prog_area->buff;
 		if (p_map[i].data_pos)
 		{
