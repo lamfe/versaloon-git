@@ -95,7 +95,7 @@ ifeq ($(HW_BOARD),STM8S_Discovery)
 _HARDWARE_VER			= 0x32
 FLASH_LOAD_OFFSET	= 0x0000
 HSE_VALUE 		= 8000000
-LD_FILE 		= sd-discovery.ld
+LD_FILE 		= st-discovery.ld
 TARGET_STM32 		= MediumDensity
 else
 ########################################################################
