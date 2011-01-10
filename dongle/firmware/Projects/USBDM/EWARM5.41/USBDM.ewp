@@ -148,6 +148,8 @@
           <name>CCDefines</name>
           <state>USE_STDPERIPH_DRIVER</state>
           <state>STM32F10X_MD</state>
+          <state>_HARDWARE_VER=0x15</state>
+          <state>FLASH_LOAD_OFFSET=0x2000</state>
         </option>
         <option>
           <name>CCPreprocFile</name>
@@ -682,7 +684,7 @@
         </option>
         <option>
           <name>IlinkIcfFile</name>
-          <state>$PROJ_DIR$\USBDM.icf</state>
+          <state>$PROJ_DIR$\..\..\Versaloon.icf</state>
         </option>
         <option>
           <name>IlinkIcfFileSlave</name>
@@ -1023,6 +1025,8 @@
           <state>NDEBUG</state>
           <state>USE_STDPERIPH_DRIVER</state>
           <state>STM32F10X_MD</state>
+          <state>_HARDWARE_VER=0x15</state>
+          <state>FLASH_LOAD_OFFSET=0x2000</state>
         </option>
         <option>
           <name>CCPreprocFile</name>
@@ -1557,7 +1561,7 @@
         </option>
         <option>
           <name>IlinkIcfFile</name>
-          <state>$PROJ_DIR$\USBDM.icf</state>
+          <state>$PROJ_DIR$\..\..\Versaloon.icf</state>
         </option>
         <option>
           <name>IlinkIcfFileSlave</name>

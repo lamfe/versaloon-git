@@ -22,9 +22,10 @@
 
 void USB_TO_JTAG_RAW_ProcessCmd(uint8* dat, uint16 len)
 {
-	uint16 index, device_idx, length;
+	uint16 index, length;
+	uint8 command, device_idx;
+	
 	uint32 num_of_bits, num_of_databyte;
-	uint8 command;
 	
 	index = 0;
 	while(index < len)

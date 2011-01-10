@@ -1,17 +1,32 @@
 # options and settings
 PROJECT	= USBDM
+
+# 
+# To select your board , set HW_BOARD to one of the below boards
+# Available boards:
+# NanoRelease1
+# MiniRC2
+# MiniRC3
+# MiniRC4
+# MiniRelease1
+# ProRC1
+# STBee_Mini
+# STM8S_Discovery
+# STM32VL_Discovery
+#
+HW_BOARD = MiniRelease1
+#
+
+#
+include	../../board_defs.mk
+#
+
+#
 # available OPT:
 # 0 - 3: low optimization - high optimization
 # s: size optimization
 OPT	= s
-# Available target:
-# LowDensity
-# LowDensityValueLine
-# MediumDensity
-# MediumDensityValueLine
-# HighDensity
-# ConnectivityLine
-TARGET_STM32 = MediumDensity
+
 # set to yes to include USB library
 INCLUDE_USB_LIB = yes
 
@@ -19,10 +34,12 @@ INCLUDE_USB_LIB = yes
 # add .c source files to USR_SRCS
 # add .h header files to USR_INCS
 # add pre-defines to USR_DEFS
+# add library directory to USR_LIBS
 USR_SRCS+= $(SRCDIR)/main.c $(SRCDIR)/HW/stm32f10x_it.c
 USR_SRCS+= $(SRCDIR)/HW/HW.c
 USR_INCS+= -I $(SRCDIR)/HW -I $(PRJDIR)/..
 #USR_DEFS+= -DADD_USER_DEFINES_HERE
+#USR_LIBS+= -L./
 
 # myString
 USR_SRCS+= $(SRCDIR)/HW/Port/GCC/myString.c
@@ -177,7 +194,7 @@ TCHAIN = arm-none-eabi
 INCLUDE_DIRS = -I $(PRJDIR) -I $(SRCDIR) $(LIBSTM32_INCS) $(USR_INCS)
 COMPILE_OPTS = -mcpu=cortex-m3 -mthumb -mfpu=vfp 
 COMPILE_OPTS+= -nostartfiles -fno-common -fomit-frame-pointer -Wall -g -O$(OPT)
-LIBRARY_DIRS = 
+LIBRARY_DIRS = $(USR_LIBS)
 PREDEFINES   = $(LIBSTM32_DEFS) $(USR_DEFS)
 
 CC = $(TCHAIN)-gcc
@@ -190,7 +207,7 @@ AS = $(TCHAIN)-gcc
 ASFLAGS = $(COMPILE_OPTS) -c
 
 LD = $(TCHAIN)-gcc
-LDFLAGS = -Wl,--gc-sections,-Map=$(PROJECT).map,-cref,-u,Reset_Handler $(INCLUDE_DIRS) $(LIBRARY_DIRS) -T ./stm32.ld
+LDFLAGS = -Wl,--gc-sections,-Map=$(PROJECT).map,-cref,-u,Reset_Handler $(INCLUDE_DIRS) $(LIBRARY_DIRS) -T $(LD_FILE)
 
 OBJCP = $(TCHAIN)-objcopy
 
