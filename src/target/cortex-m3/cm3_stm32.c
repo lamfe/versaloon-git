@@ -426,8 +426,15 @@ READ_TARGET_HANDLER(stm32swj)
 		mcu_id = LE_TO_SYS_U32(mcu_id);
 		if ((mcu_id & 0xFFFF) <= 512)
 		{
-			pi->program_areas[APPLICATION_IDX].size = (mcu_id & 0xFFFF) * 1024;
 			LOG_INFO("Flash memory size: %i KB", mcu_id & 0xFFFF);
+			if ((mcu_id & 0xFFFF) >= 128)
+			{
+				pi->program_areas[APPLICATION_IDX].size = (mcu_id & 0xFFFF) * 1024;
+			}
+			else
+			{
+				pi->program_areas[APPLICATION_IDX].size = 128 * 1024;
+			}
 		}
 		else
 		{
