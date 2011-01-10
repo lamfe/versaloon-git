@@ -30,7 +30,7 @@ void *memset(void *m, int c, u32 len)
 
 	for (; len > 0; len--)
 		*ptr++ = u8_c;
-	return (s);
+	return m;
 }
 
 #endif
