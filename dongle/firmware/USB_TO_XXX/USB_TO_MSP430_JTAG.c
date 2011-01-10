@@ -22,8 +22,8 @@
 
 void USB_TO_MSP430_JTAG_ProcessCmd(uint8* dat, uint16 len)
 {
-	uint16 index, device_idx, length;
-	uint8 command;
+	uint16 index, length;
+	uint8 command, device_idx;
 	
 	uint32 data, mask, value;
 	uint16 len_tmp;
@@ -140,7 +140,7 @@ void USB_TO_MSP430_JTAG_ProcessCmd(uint8* dat, uint16 len)
 			value = GET_LE_U32(&dat[index + 11]);
 			
 			if (ERROR_OK == interfaces->msp430jtag.poll(device_idx, data, mask, value, 
-								dat[index], len_tmp & 0x7FFF, len_tmp & 0x8000))
+								dat[index], len_tmp & 0x7FFF, (len_tmp & 0x8000) > 0))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}

@@ -23,4 +23,14 @@ int memcmp(const void *m0, const void *m1, u32 len)
 	return 0;
 }
 
+void *memset(void *m, int c, u32 len)
+{
+	const u8 u8_c = (u8)c;
+	u8 *ptr = (u8 *)m;
+
+	for (; len > 0; len--)
+		*ptr++ = u8_c;
+	return (s);
+}
+
 #endif

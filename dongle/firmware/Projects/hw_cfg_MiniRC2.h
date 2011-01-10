@@ -15,17 +15,12 @@
  *      2008-11-22:     rewrite GPIO_Dir(by SimonQian)                    *
  **************************************************************************/
 
-#define STM32_MINI_RC2					0x12
-#define _HARDWARE_VER					STM32_MINI_RC2
-#ifdef HSE_VALUE
-#undef HSE_VALUE
-#endif
-// Remember to change HSE_VALUE in 
-// dongle/firmware/HW/STM32F10x_Lib/Libraries/CMSIS/CM3/DeviceSupport/ST/STM32F10x/stm32f10x.h to same setting
+#ifndef HSE_VALUE
 #define HSE_VALUE						((uint32_t)12000000)
+#endif
 
 #define _SYS_FREQUENCY					72		// in MHz
-#define _SYS_FLASH_VECTOR_TABLE_SHIFT	0x2000	// application will locate at 0x08002000
+#define _SYS_FLASH_VECTOR_TABLE_SHIFT	FLASH_LOAD_OFFSET // From board_defs.mk
 
 /****************************** Power ******************************/
 #define PWREXT_INIT()					

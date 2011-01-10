@@ -18,20 +18,14 @@
 
 //
 // To make the STM8S-Discovery or STM32VL-Discovery firmware
-// Use : make -f make-discovery
 //
 
-#define STM32VL_DISCOVERY				0x42
-#define _HARDWARE_VER					STM32VL_DISCOVERY
-#ifdef HSE_VALUE
-#undef HSE_VALUE
+#ifndef HSE_VALUE
+#define HSE_VALUE						((uint32_t)8000000)
 #endif
-// Remember to change HSE_VALUE in 
-// dongle/firmware/HW/STM32F10x_Lib/Libraries/CMSIS/CM3/DeviceSupport/ST/STM32F10x/stm32f10x.h to same setting
-#define HSE_VALUE					((uint32_t)8000000)
 
 #define _SYS_FREQUENCY					72		// in MHz
-#define _SYS_FLASH_VECTOR_TABLE_SHIFT	0x0000	// application will locate at 0x08000000
+#define _SYS_FLASH_VECTOR_TABLE_SHIFT	FLASH_LOAD_OFFSET // From board_defs.mk
 
 /****************************** Abilities ******************************/
 #define HW_HAS_USART					1

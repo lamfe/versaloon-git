@@ -22,8 +22,8 @@
 
 void USB_TO_JTAG_HL_ProcessCmd(uint8* dat, uint16 len)
 {
-	uint16 index, device_idx, length;
-	uint8 command;
+	uint16 index, length;
+	uint8 command, device_idx;
 	
 	uint16 cur_dat_len, i, len_tmp;
 	uint16_t rindex;

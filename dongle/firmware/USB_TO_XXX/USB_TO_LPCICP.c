@@ -22,8 +22,8 @@
 
 void USB_TO_LPCICP_ProcessCmd(uint8* dat, uint16 len)
 {
-	uint16 index, device_idx, length;
-	uint8 command;
+	uint16 index, length;
+	uint8 command, device_idx;
 	
 	index = 0;
 	while(index < len)
