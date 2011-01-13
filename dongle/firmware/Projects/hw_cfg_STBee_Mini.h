@@ -27,7 +27,7 @@
 #define HW_HAS_USART					0
 #define HW_HAS_SPI						0
 #define HW_HAS_IIC						0
-#define HW_HAS_GPIO						0
+#define HW_HAS_GPIO						1
 #define HW_HAS_CAN						0
 #define HW_HAS_PWM						0
 #define HW_HAS_ADC						0
@@ -102,7 +102,7 @@
 #define SYNCSW_OUT_PIN					GPIO_PIN_4
 
 #define SW_PULL_INIT()					
-#define SW_DIR_INIT()					SW_SETINPUT_PD()
+#define SW_DIR_INIT()					
 #define SW_SETINPUT()					GPIO_SetMode(SW_PORT, SW_PIN, GPIO_MODE_IN_FLOATING)
 #define SW_SETINPUT_PU()				GPIO_SetMode(SW_PORT, SW_PIN, GPIO_MODE_IPU)
 #define SW_SETINPUT_PD()				GPIO_SetMode(SW_PORT, SW_PIN, GPIO_MODE_IPD)
@@ -113,7 +113,8 @@
 #define SW_GET()						GPIO_GetInPins(SW_PORT, SW_PIN)
 
 #define SW_RST_PULL_INIT()				
-#define SW_RST_DIR_INIT()				SW_RST_SETINPUT_PD()
+#define SW_RST_DIR_INIT()				
+#define SW_RST_SETINPUT()				GPIO_SetMode(SW_RST_PORT, SW_RST_PIN, GPIO_MODE_IN_FLOATING)
 #define SW_RST_SETINPUT_PU()			GPIO_SetMode(SW_RST_PORT, SW_RST_PIN, GPIO_MODE_IPU)
 #define SW_RST_SETINPUT_PD()			GPIO_SetMode(SW_RST_PORT, SW_RST_PIN, GPIO_MODE_IPD)
 #define SW_RST_SETOUTPUT()				GPIO_SetMode(SW_RST_PORT, SW_RST_PIN, GPIO_MODE_OUT_PP)
@@ -121,10 +122,7 @@
 #define SW_RST_CLR()					GPIO_ClrPins(SW_RST_PORT, SW_RST_PIN)
 #define SW_RST_GET()					GPIO_GetInPins(SW_RST_PORT, SW_RST_PIN)
 
-#define SYNCSW_DIR_INIT()				do{\
-											SYNCSW_SETINPUT();\
-											GPIO_SetMode(SYNCSW_IN_PORT, SYNCSW_IN_PIN, GPIO_MODE_IPU);\
-										}while(0)
+#define SYNCSW_DIR_INIT()				
 #define SYNCSW_SETINPUT()				GPIO_SetMode(SYNCSW_OUT_PORT, SYNCSW_OUT_PIN, GPIO_MODE_IN_FLOATING)
 #define SYNCSW_SETOUTPUT()				GPIO_SetMode(SYNCSW_OUT_PORT, SYNCSW_OUT_PIN, GPIO_MODE_OUT_PP)
 #define SYNCSW_SET()					GPIO_SetPins(SYNCSW_OUT_PORT, SYNCSW_OUT_PIN)
