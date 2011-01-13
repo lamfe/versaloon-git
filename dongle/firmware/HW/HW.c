@@ -178,8 +178,8 @@ void RCC_Configuration(void)
 void GPIO_Configuration(void)
 {
 	// Enable pin
-	GLOBAL_OUTPUT_DISABLE();
 	GLOBAL_OUTPUT_INIT();
+	GLOBAL_OUTPUT_DISABLE();
 	SW_PULL_INIT();
 	SW_DIR_INIT();
 	SW_RST_PULL_INIT();
