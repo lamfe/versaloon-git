@@ -340,6 +340,13 @@ WRITE_TARGET_HANDLER(stm32swj)
 			return ERROR_FAIL;
 		}
 		
+		if (ERROR_OK != cm3_dp_halt())
+		{
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "halt stm32");
+			ret = ERRCODE_FAILURE_OPERATION;
+			break;
+		}
+		
 		reg = STM32_FLASH_CR_OPTER | STM32_FLASH_CR_OPTWRE;
 		adi_memap_write_reg32(STM32_FLASH_CR, &reg, 0);
 		reg |= STM32_FLASH_CR_STRT;
