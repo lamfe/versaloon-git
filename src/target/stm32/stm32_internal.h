@@ -40,6 +40,17 @@
 #define STM32_REG_FLASH_RAM_SIZE	0x1FFFF7E0
 #define STM32_REG_MCU_ID			0xE0042000
 
+#define STM32_OB_ADDR				0x1FFFF800
+#define STM32_OB_SIZE				16
+#define STM32_OB_RDP				(STM32_OB_ADDR + 0)
+#define STM32_OB_USER				(STM32_OB_ADDR + 2)
+#define STM32_OB_DATA0				(STM32_OB_ADDR + 4)
+#define STM32_OB_DATA1				(STM32_OB_ADDR + 6)
+#define STM32_OB_WRP0				(STM32_OB_ADDR + 8)
+#define STM32_OB_WRP1				(STM32_OB_ADDR + 10)
+#define STM32_OB_WRP2				(STM32_OB_ADDR + 12)
+#define STM32_OB_WRP3				(STM32_OB_ADDR + 14)
+
 void stm32_print_device(uint32_t mcuid);
 
 #endif /* __STM32_INTERNAL_H_INCLUDED__ */

@@ -33,15 +33,7 @@
 #define STM32_FLASH_OBR				0x4002201C
 #define STM32_FLASH_WRPR			0x40022020
 
-/* option byte location */
-#define STM32_OB_RDP				0x1FFFF800
-#define STM32_OB_USER				0x1FFFF802
-#define STM32_OB_DATA0				0x1FFFF804
-#define STM32_OB_DATA1				0x1FFFF806
-#define STM32_OB_WRP0				0x1FFFF808
-#define STM32_OB_WRP1				0x1FFFF80A
-#define STM32_OB_WRP2				0x1FFFF80C
-#define STM32_OB_WRP3				0x1FFFF80E
+#define STM32_FLASH_OBR_RDPRT		(1 << 1)
 
 /* FLASH_CR register bits */
 #define STM32_FLASH_CR_PG			(1 << 0)
