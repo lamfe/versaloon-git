@@ -242,7 +242,7 @@ var
 
 const
   DEBUG_LOG_SHOW: boolean = False;
-  POLLTHREAD_EN: boolean = False;
+  POLLTHREAD_EN: boolean = True;
   DISPLAY_ALL_COMPORT_WHEN_UPDATE = True;
   APP_STR: string     = 'Vsgui';
   VERSION_STR: string = '';
@@ -2024,7 +2024,7 @@ begin
     Sleep(100);
     if Assigned(PollThread) then
     begin
-      PollThread.Free;
+//      PollThread.Free;
     end;
   end;
 
