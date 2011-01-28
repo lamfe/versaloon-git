@@ -698,6 +698,7 @@ int main(int argc, char* argv[])
 		}
 		if (ERROR_OK != misc_run_script("enter_program_mode"))
 		{
+			misc_run_script("leave_program_mode 0");
 			free_all_and_exit(EXIT_FAILURE);
 		}
 		if (ERROR_OK != misc_run_script("operate"))

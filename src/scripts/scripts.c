@@ -524,7 +524,10 @@ RESULT misc_run_script(char *cmd)
 	{
 		if (0 == misc_param[PARAM_NO_COMMIT].value)
 		{
-			ret = cur_programmer->interfaces.peripheral_commit();
+			if (ERROR_OK != cur_programmer->interfaces.peripheral_commit())
+			{
+				ret = ERROR_FAIL;
+			}
 		}
 	}
 end:
