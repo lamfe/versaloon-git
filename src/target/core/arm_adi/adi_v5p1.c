@@ -566,7 +566,7 @@ static RESULT adi_dp_setup_accessport(uint32_t csw, uint32_t tar)
 	return ERROR_OK;
 }
 
-RESULT adi_memap_write_reg(uint32_t address, uint32_t *reg, 
+RESULT adi_memap_write_reg32(uint32_t address, uint32_t *reg, 
 								uint8_t check_result)
 {
 	adi_dp_setup_accessport(ADI_AP_REG_CSW_32BIT | ADI_AP_REG_CSW_ADDRINC_OFF, 
@@ -576,13 +576,77 @@ RESULT adi_memap_write_reg(uint32_t address, uint32_t *reg,
 							check_result);
 }
 
-RESULT adi_memap_read_reg(uint32_t address, uint32_t *reg, uint8_t check_result)
+RESULT adi_memap_read_reg32(uint32_t address, uint32_t *reg, uint8_t check_result)
 {
 	adi_dp_setup_accessport(ADI_AP_REG_CSW_32BIT | ADI_AP_REG_CSW_ADDRINC_OFF, 
 							address & 0xFFFFFFF0);
 	
 	return adi_ap_read_reg(ADI_AP_REG_BD0 | (address & 0x0000000C), reg, 
 						   check_result);
+}
+
+RESULT adi_memap_write_reg16(uint32_t address, uint16_t *reg, 
+								uint8_t check_result)
+{
+	uint32_t reg32;
+	
+	adi_dp_setup_accessport(ADI_AP_REG_CSW_16BIT | ADI_AP_REG_CSW_ADDRINC_OFF, 
+							address & 0xFFFFFFF0);
+	
+	reg32 = *reg << (8 * (address & 3));
+	return adi_ap_write_reg(ADI_AP_REG_BD0 | (address & 0x0000000E), &reg32, 
+							check_result);
+}
+
+RESULT adi_memap_read_reg16(uint32_t address, uint16_t *reg, 
+							uint8_t check_result)
+{
+	uint32_t reg32;
+	
+	REFERENCE_PARAMETER(check_result);
+	
+	adi_dp_setup_accessport(ADI_AP_REG_CSW_16BIT | ADI_AP_REG_CSW_ADDRINC_OFF, 
+							address & 0xFFFFFFF0);
+	
+	if (ERROR_OK != adi_ap_read_reg(ADI_AP_REG_BD0 | (address & 0x0000000E), 
+							&reg32, 1))
+	{
+		return ERROR_FAIL;
+	}
+	*reg = (uint16_t)(reg32 >> (8 * (address & 3)));
+	return ERROR_OK;
+}
+
+RESULT adi_memap_write_reg8(uint32_t address, uint8_t *reg, 
+								uint8_t check_result)
+{
+	uint32_t reg32;
+	
+	adi_dp_setup_accessport(ADI_AP_REG_CSW_8BIT | ADI_AP_REG_CSW_ADDRINC_OFF, 
+							address & 0xFFFFFFF0);
+	
+	reg32 = *reg << (8 * (address & 3));
+	return adi_ap_write_reg(ADI_AP_REG_BD0 | (address & 0x0000000F), &reg32, 
+							check_result);
+}
+
+RESULT adi_memap_read_reg8(uint32_t address, uint8_t *reg, 
+							uint8_t check_result)
+{
+	uint32_t reg32;
+	
+	REFERENCE_PARAMETER(check_result);
+	
+	adi_dp_setup_accessport(ADI_AP_REG_CSW_8BIT | ADI_AP_REG_CSW_ADDRINC_OFF, 
+							address & 0xFFFFFFF0);
+	
+	if (ERROR_OK != adi_ap_read_reg(ADI_AP_REG_BD0 | (address & 0x0000000F), 
+							&reg32, 1))
+	{
+		return ERROR_FAIL;
+	}
+	*reg = (uint8_t)(reg32 >> (8 * (address & 3)));
+	return ERROR_OK;
 }
 
 uint32_t adi_memap_get_max_tar_block_size(uint32_t address)

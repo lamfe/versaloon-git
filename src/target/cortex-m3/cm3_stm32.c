@@ -131,7 +131,7 @@ RESULT stm32_wait_status_busy(uint32_t *status, uint32_t timeout)
 {
 	uint32_t reg;
 	
-	if (ERROR_OK != adi_memap_read_reg(STM32_FLASH_SR, &reg, 1))
+	if (ERROR_OK != adi_memap_read_reg32(STM32_FLASH_SR, &reg, 1))
 	{
 		return ERROR_FAIL;
 	}
@@ -140,7 +140,7 @@ RESULT stm32_wait_status_busy(uint32_t *status, uint32_t timeout)
 	{
 		timeout--;
 		sleep_ms(1);
-		if (ERROR_OK != adi_memap_read_reg(STM32_FLASH_SR, &reg, 1))
+		if (ERROR_OK != adi_memap_read_reg32(STM32_FLASH_SR, &reg, 1))
 		{
 			return ERROR_FAIL;
 		}
@@ -150,7 +150,7 @@ RESULT stm32_wait_status_busy(uint32_t *status, uint32_t timeout)
 	if (reg & (STM32_FLASH_SR_PGERR | STM32_FLASH_SR_WRPRTERR))
 	{
 		reg = STM32_FLASH_SR_PGERR | STM32_FLASH_SR_WRPRTERR;
-		adi_memap_write_reg(STM32_FLASH_SR, &reg, 1);
+		adi_memap_write_reg32(STM32_FLASH_SR, &reg, 1);
 	}
 	
 	return ERROR_OK;
@@ -162,9 +162,9 @@ RESULT stm32_mass_erase(void)
 	
 	// mass erase flash memory
 	reg = STM32_FLASH_CR_MER;
-	adi_memap_write_reg(STM32_FLASH_CR, &reg, 0);
+	adi_memap_write_reg32(STM32_FLASH_CR, &reg, 0);
 	reg = STM32_FLASH_CR_MER | STM32_FLASH_CR_STRT;
-	adi_memap_write_reg(STM32_FLASH_CR, &reg, 0);
+	adi_memap_write_reg32(STM32_FLASH_CR, &reg, 0);
 	
 	// wait busy
 	if (ERROR_OK != stm32_wait_status_busy(&reg, 10))
@@ -190,9 +190,9 @@ ENTER_PROGRAM_MODE_HANDLER(stm32swj)
 		|| (op->write_operations & APPLICATION))
 	{
 		reg = STM32_FLASH_UNLOCK_KEY1;
-		adi_memap_write_reg(STM32_FLASH_KEYR, &reg, 0);
+		adi_memap_write_reg32(STM32_FLASH_KEYR, &reg, 0);
 		reg = STM32_FLASH_UNLOCK_KEY2;
-		if (ERROR_OK != adi_memap_write_reg(STM32_FLASH_KEYR, &reg, 1))
+		if (ERROR_OK != adi_memap_write_reg32(STM32_FLASH_KEYR, &reg, 1))
 		{
 			return ERROR_FAIL;
 		}
@@ -330,7 +330,7 @@ WRITE_TARGET_HANDLER(stm32swj)
 			if (0 == cur_run_size)
 			{
 				// first run, update flash address
-				adi_memap_write_reg(FL_ADDR_FLASH_DEST, &addr, 0);
+				adi_memap_write_reg32(FL_ADDR_FLASH_DEST, &addr, 0);
 			}
 			// write word length
 			cur_run_size += cur_block_size;
@@ -343,7 +343,7 @@ WRITE_TARGET_HANDLER(stm32swj)
 				reg |= 0x8000;
 			}
 			if (ERROR_OK != 
-						adi_memap_write_reg(FL_ADDR_WORD_LENGTH, &reg, 1))
+						adi_memap_write_reg32(FL_ADDR_WORD_LENGTH, &reg, 1))
 			{
 				LOG_ERROR(ERRMSG_FAILURE_OPERATION, 
 							"download parameters to flash_loader");
@@ -359,7 +359,7 @@ WRITE_TARGET_HANDLER(stm32swj)
 				reg = 0;
 				do{
 					if (ERROR_OK != 
-								adi_memap_read_reg(FL_ADDR_RESULT, &reg, 1))
+								adi_memap_read_reg32(FL_ADDR_RESULT, &reg, 1))
 					{
 						LOG_ERROR(ERRMSG_FAILURE_OPERATION, 
 									"read result from flash_loader");
@@ -406,7 +406,7 @@ READ_TARGET_HANDLER(stm32swj)
 	{
 	case CHIPID_CHAR:
 		// read MCU ID at STM32_REG_MCU_ID
-		if (ERROR_OK != adi_memap_read_reg(STM32_REG_MCU_ID, &mcu_id, 1))
+		if (ERROR_OK != adi_memap_read_reg32(STM32_REG_MCU_ID, &mcu_id, 1))
 		{
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
@@ -417,7 +417,7 @@ READ_TARGET_HANDLER(stm32swj)
 		*(uint32_t *)buff = mcu_id;
 		
 		// read flash and ram size
-		if (ERROR_OK != adi_memap_read_reg(STM32_REG_FLASH_RAM_SIZE, &mcu_id, 1))
+		if (ERROR_OK != adi_memap_read_reg32(STM32_REG_FLASH_RAM_SIZE, &mcu_id, 1))
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read stm32 flash_ram size");
 			ret = ERRCODE_FAILURE_OPERATION;

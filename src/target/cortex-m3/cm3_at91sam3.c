@@ -318,7 +318,7 @@ static RESULT at91sam3swj_iap_call(struct at91sam3swj_iap_command_t *cmd,
 	uint32_t i;
 	
 	reg = cmd->iap_command | AT91SAM3_EEFC_FKEY;
-	if (ERROR_OK != adi_memap_write_reg(
+	if (ERROR_OK != adi_memap_write_reg32(
 							cmd->eefc_base + AT91SAM3_EEFC_FCR_OFFSET, &reg, 1))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "write fcr");
@@ -329,7 +329,7 @@ static RESULT at91sam3swj_iap_call(struct at91sam3swj_iap_command_t *cmd,
 	do
 	{
 		reg = 0;
-		if (ERROR_OK != adi_memap_read_reg(
+		if (ERROR_OK != adi_memap_read_reg32(
 							cmd->eefc_base + AT91SAM3_EEFC_FSR_OFFSET, &reg, 1))
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read fsr");
@@ -348,7 +348,7 @@ static RESULT at91sam3swj_iap_call(struct at91sam3swj_iap_command_t *cmd,
 	{
 		for (i = 0; i < reply->data_num; i++)
 		{
-			if (ERROR_OK != adi_memap_read_reg(
+			if (ERROR_OK != adi_memap_read_reg32(
 				cmd->eefc_base + AT91SAM3_EEFC_FRR_OFFSET, &reply->data[i], 1))
 			{
 				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read frr");
@@ -430,7 +430,7 @@ ENTER_PROGRAM_MODE_HANDLER(at91sam3swj)
 		LOG_PUSH();
 		LOG_MUTE();
 		reg = 0;
-		if (ERROR_OK != adi_memap_read_reg(
+		if (ERROR_OK != adi_memap_read_reg32(
 						command.eefc_base + AT91SAM3_EEFC_FSR_OFFSET, &reg, 1))
 		{
 			reg = 0;
@@ -449,7 +449,7 @@ ENTER_PROGRAM_MODE_HANDLER(at91sam3swj)
 			
 			// try again
 			reg = 0;
-			if (ERROR_OK != adi_memap_read_reg(
+			if (ERROR_OK != adi_memap_read_reg32(
 						command.eefc_base + AT91SAM3_EEFC_FSR_OFFSET, &reg, 1))
 			{
 				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read fsr");
@@ -707,7 +707,7 @@ READ_TARGET_HANDLER(at91sam3swj)
 	switch (area)
 	{
 	case CHIPID_CHAR:
-		if (ERROR_OK != adi_memap_read_reg(AT91SAM3_CHIPID_CIDR, 
+		if (ERROR_OK != adi_memap_read_reg32(AT91SAM3_CHIPID_CIDR, 
 												(uint32_t*)buff, 1))
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "address of iap_entry");
