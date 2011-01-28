@@ -61,7 +61,7 @@ RESULT cm3_dp_init(struct program_context_t *context, adi_dpif_t *dp)
 	}
 	
 	if ((ERROR_OK != cm3_dp_halt()) 
-		|| (ERROR_OK != adi_memap_read_reg(CM3_CPUID, &cpuid, 1)))
+		|| (ERROR_OK != adi_memap_read_reg32(CM3_CPUID, &cpuid, 1)))
 	{
 		return ERROR_FAIL;
 	}
@@ -89,32 +89,32 @@ RESULT cm3_write_core_register(uint8_t reg_idx, uint32_t *value)
 {
 	uint32_t dcrdr, reg;
 	
-	if (ERROR_OK != adi_memap_read_reg(CM3_DCB_DCRDR, &dcrdr, 1))
+	if (ERROR_OK != adi_memap_read_reg32(CM3_DCB_DCRDR, &dcrdr, 1))
 	{
 		return ERROR_FAIL;
 	}
 	
 	reg = reg_idx | CM3_DCB_DCRSR_WnR;
-	adi_memap_write_reg(CM3_DCB_DCRDR, value, 0);
-	adi_memap_write_reg(CM3_DCB_DCRSR, &reg, 0);
+	adi_memap_write_reg32(CM3_DCB_DCRDR, value, 0);
+	adi_memap_write_reg32(CM3_DCB_DCRSR, &reg, 0);
 	
-	return adi_memap_write_reg(CM3_DCB_DCRDR, &dcrdr, 1);
+	return adi_memap_write_reg32(CM3_DCB_DCRDR, &dcrdr, 1);
 }
 
 RESULT cm3_read_core_register(uint8_t reg_idx, uint32_t *value)
 {
 	uint32_t dcrdr, reg;
 	
-	if (ERROR_OK != adi_memap_read_reg(CM3_DCB_DCRDR, &dcrdr, 1))
+	if (ERROR_OK != adi_memap_read_reg32(CM3_DCB_DCRDR, &dcrdr, 1))
 	{
 		return ERROR_FAIL;
 	}
 	
 	reg = reg_idx;
-	adi_memap_write_reg(CM3_DCB_DCRSR, &reg, 0);
-	adi_memap_read_reg(CM3_DCB_DCRDR, value, 0);
+	adi_memap_write_reg32(CM3_DCB_DCRSR, &reg, 0);
+	adi_memap_read_reg32(CM3_DCB_DCRDR, value, 0);
 	
-	return adi_memap_write_reg(CM3_DCB_DCRDR, &dcrdr, 1);
+	return adi_memap_write_reg32(CM3_DCB_DCRDR, &dcrdr, 1);
 }
 
 uint32_t cm3_get_max_block_size(uint32_t address)
@@ -129,7 +129,7 @@ RESULT cm3_reset(void)
 	// check result should not be enabled here
 	// because after reset, dp maybe disabled
 	reg = CM3_REG_NVIC_AIRCR_VECTKEY | CM3_REG_NVIC_AIRCR_SYSRESETREQ;
-	if (ERROR_OK != adi_memap_write_reg(CM3_REG_NVIC_AIRCR, &reg, 0))
+	if (ERROR_OK != adi_memap_write_reg32(CM3_REG_NVIC_AIRCR, &reg, 0))
 	{
 		return ERROR_FAIL;
 	}
@@ -141,7 +141,7 @@ RESULT cm3_dp_run(void)
 	uint32_t dcb_dhcsr = 0;
 	uint8_t wait_halt_clear_delay_in_10ms;
 	
-	if (ERROR_OK != adi_memap_read_reg(CM3_DCB_DHCSR, &dcb_dhcsr, 1))
+	if (ERROR_OK != adi_memap_read_reg32(CM3_DCB_DHCSR, &dcb_dhcsr, 1))
 	{
 		return ERROR_FAIL;
 	}
@@ -151,9 +151,9 @@ RESULT cm3_dp_run(void)
 	if (!(dcb_dhcsr & CM3_DCB_DHCSR_C_DEBUGEN))
 	{
 		dcb_dhcsr = (uint32_t)(CM3_DCB_DHCSR_DBGKEY | CM3_DCB_DHCSR_C_DEBUGEN);
-		adi_memap_write_reg(CM3_DCB_DHCSR, &dcb_dhcsr, 0);
+		adi_memap_write_reg32(CM3_DCB_DHCSR, &dcb_dhcsr, 0);
 		
-		if (ERROR_OK != adi_memap_read_reg(CM3_DCB_DHCSR, &dcb_dhcsr, 1))
+		if (ERROR_OK != adi_memap_read_reg32(CM3_DCB_DHCSR, &dcb_dhcsr, 1))
 		{
 			return ERROR_FAIL;
 		}
@@ -164,9 +164,9 @@ RESULT cm3_dp_run(void)
 	{
 		// clear halt
 		dcb_dhcsr = (uint32_t)(CM3_DCB_DHCSR_DBGKEY | CM3_DCB_DHCSR_C_DEBUGEN);
-		adi_memap_write_reg(CM3_DCB_DHCSR, &dcb_dhcsr, 0);
+		adi_memap_write_reg32(CM3_DCB_DHCSR, &dcb_dhcsr, 0);
 		
-		if (ERROR_OK != adi_memap_read_reg(CM3_DCB_DHCSR, &dcb_dhcsr, 1))
+		if (ERROR_OK != adi_memap_read_reg32(CM3_DCB_DHCSR, &dcb_dhcsr, 1))
 		{
 			return ERROR_FAIL;
 		}
@@ -176,7 +176,7 @@ RESULT cm3_dp_run(void)
 	wait_halt_clear_delay_in_10ms = 100;	// 1000ms max delay in all
 	while ((dcb_dhcsr & CM3_DCB_DHCSR_S_HALT) && wait_halt_clear_delay_in_10ms)
 	{
-		if (ERROR_OK != adi_memap_read_reg(CM3_DCB_DHCSR, &dcb_dhcsr, 1))
+		if (ERROR_OK != adi_memap_read_reg32(CM3_DCB_DHCSR, &dcb_dhcsr, 1))
 		{
 			return ERROR_FAIL;
 		}
@@ -200,7 +200,7 @@ RESULT cm3_dp_halt(void)
 	uint32_t dcb_dhcsr = 0;
 	uint8_t wait_halt_delay_in_10ms;
 	
-	if (ERROR_OK != adi_memap_read_reg(CM3_DCB_DHCSR, &dcb_dhcsr, 1))
+	if (ERROR_OK != adi_memap_read_reg32(CM3_DCB_DHCSR, &dcb_dhcsr, 1))
 	{
 		return ERROR_FAIL;
 	}
@@ -211,9 +211,9 @@ RESULT cm3_dp_halt(void)
 	{
 		dcb_dhcsr = (uint32_t)(CM3_DCB_DHCSR_DBGKEY | CM3_DCB_DHCSR_C_DEBUGEN 
 								| CM3_DCB_DHCSR_C_HALT);
-		adi_memap_write_reg(CM3_DCB_DHCSR, &dcb_dhcsr, 0);
+		adi_memap_write_reg32(CM3_DCB_DHCSR, &dcb_dhcsr, 0);
 		
-		if (ERROR_OK != adi_memap_read_reg(CM3_DCB_DHCSR, &dcb_dhcsr, 1))
+		if (ERROR_OK != adi_memap_read_reg32(CM3_DCB_DHCSR, &dcb_dhcsr, 1))
 		{
 			return ERROR_FAIL;
 		}
@@ -224,9 +224,9 @@ RESULT cm3_dp_halt(void)
 	{
 		dcb_dhcsr = (uint32_t)(CM3_DCB_DHCSR_DBGKEY | CM3_DCB_DHCSR_C_DEBUGEN 
 								| CM3_DCB_DHCSR_C_HALT);
-		adi_memap_write_reg(CM3_DCB_DHCSR, &dcb_dhcsr, 0);
+		adi_memap_write_reg32(CM3_DCB_DHCSR, &dcb_dhcsr, 0);
 		
-		if (ERROR_OK != adi_memap_read_reg(CM3_DCB_DHCSR, &dcb_dhcsr, 1))
+		if (ERROR_OK != adi_memap_read_reg32(CM3_DCB_DHCSR, &dcb_dhcsr, 1))
 		{
 			return ERROR_FAIL;
 		}
@@ -236,7 +236,7 @@ RESULT cm3_dp_halt(void)
 	wait_halt_delay_in_10ms = 100;	// 1000ms max delay in all
 	while ((!(dcb_dhcsr & CM3_DCB_DHCSR_S_HALT)) && wait_halt_delay_in_10ms)
 	{
-		if (ERROR_OK != adi_memap_read_reg(CM3_DCB_DHCSR, &dcb_dhcsr, 1))
+		if (ERROR_OK != adi_memap_read_reg32(CM3_DCB_DHCSR, &dcb_dhcsr, 1))
 		{
 			return ERROR_FAIL;
 		}

@@ -300,7 +300,7 @@ ENTER_PROGRAM_MODE_HANDLER(lpc1000swj)
 	if (param->param[LPC1000_PARAM_SYSMEMREMAP_ADDR])
 	{
 		reg = param->param[LPC1000_PARAM_FLASHREMAP_VALUE];
-		if (ERROR_OK != adi_memap_write_reg(
+		if (ERROR_OK != adi_memap_write_reg32(
 				param->param[LPC1000_PARAM_SYSMEMREMAP_ADDR], &reg, 1))
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "write PC");

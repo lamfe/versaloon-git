@@ -157,7 +157,7 @@ static RESULT lm3sswj_iap_poll_finish(uint32_t cnt_idx, uint8_t *fail)
 	*fail = 0;
 	
 	// read busy
-	if (ERROR_OK != adi_memap_read_reg(LM3S_IAP_CNT_ADDR, &iap_cnt, 1))
+	if (ERROR_OK != adi_memap_read_reg32(LM3S_IAP_CNT_ADDR, &iap_cnt, 1))
 	{
 		*fail = 1;
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read iap sync");
@@ -185,7 +185,7 @@ static RESULT lm3sswj_iap_poll_param_taken(uint8_t *fail)
 	*fail = 0;
 	
 	// read sync
-	if (ERROR_OK != adi_memap_read_reg(LM3S_IAP_SYNC_ADDR, &sync, 1))
+	if (ERROR_OK != adi_memap_read_reg32(LM3S_IAP_SYNC_ADDR, &sync, 1))
 	{
 		*fail = 1;
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read iap sync");
@@ -330,12 +330,12 @@ ENTER_PROGRAM_MODE_HANDLER(lm3sswj)
 	
 	// disable flash programming interrupts
 	reg = 0;
-	if (ERROR_OK != adi_memap_write_reg(LM3S_FLASHCTL_FCIM, &reg, 0))
+	if (ERROR_OK != adi_memap_write_reg32(LM3S_FLASHCTL_FCIM, &reg, 0))
 	{
 		return ERROR_FAIL;
 	}
 	reg = LM3S_FLASHCTL_INT_PROGRAMMING | LM3S_FLASHCTL_INT_ACCESS;
-	if (ERROR_OK != adi_memap_write_reg(LM3S_FLASHCTL_FCMISC, &reg, 1))
+	if (ERROR_OK != adi_memap_write_reg32(LM3S_FLASHCTL_FCMISC, &reg, 1))
 	{
 		return ERROR_FAIL;
 	}
@@ -343,33 +343,33 @@ ENTER_PROGRAM_MODE_HANDLER(lm3sswj)
 	// unlock
 	// 0xFFFFFFFF to FMPRE and FMPPE
 	reg = 0xFFFFFFFF;
-	if (ERROR_OK != adi_memap_write_reg(LM3S_SYSCTL_FMPRE, &reg, 0))
+	if (ERROR_OK != adi_memap_write_reg32(LM3S_SYSCTL_FMPRE, &reg, 0))
 	{
 		return ERROR_FAIL;
 	}
-	if (ERROR_OK != adi_memap_write_reg(LM3S_SYSCTL_FMPPE, &reg, 1))
+	if (ERROR_OK != adi_memap_write_reg32(LM3S_SYSCTL_FMPPE, &reg, 1))
 	{
 		return ERROR_FAIL;
 	}
 	// commit FMPRE
 	reg = 0;
-	if (ERROR_OK != adi_memap_write_reg(LM3S_FLASHCTL_FMA, &reg, 1))
+	if (ERROR_OK != adi_memap_write_reg32(LM3S_FLASHCTL_FMA, &reg, 1))
 	{
 		return ERROR_FAIL;
 	}
 	reg = LM3S_FLASHCTL_FMC_COMT;
-	if (ERROR_OK != adi_memap_write_reg(LM3S_FLASHCTL_FMC, &reg, 1))
+	if (ERROR_OK != adi_memap_write_reg32(LM3S_FLASHCTL_FMC, &reg, 1))
 	{
 		return ERROR_FAIL;
 	}
 	// commit EMPPE
 	reg = 1;
-	if (ERROR_OK != adi_memap_write_reg(LM3S_FLASHCTL_FMA, &reg, 1))
+	if (ERROR_OK != adi_memap_write_reg32(LM3S_FLASHCTL_FMA, &reg, 1))
 	{
 		return ERROR_FAIL;
 	}
 	reg = LM3S_FLASHCTL_FMC_COMT;
-	if (ERROR_OK != adi_memap_write_reg(LM3S_FLASHCTL_FMC, &reg, 1))
+	if (ERROR_OK != adi_memap_write_reg32(LM3S_FLASHCTL_FMC, &reg, 1))
 	{
 		return ERROR_FAIL;
 	}
@@ -562,17 +562,17 @@ READ_TARGET_HANDLER(lm3sswj)
 	{
 	case CHIPID_CHAR:
 		if ((ERROR_OK != 
-				adi_memap_read_reg(LM3S_SYSCTL_DID0, &lm3s_device.did0, 0)) 
+				adi_memap_read_reg32(LM3S_SYSCTL_DID0, &lm3s_device.did0, 0)) 
 			|| (ERROR_OK != 
-				adi_memap_read_reg(LM3S_SYSCTL_DID1, &lm3s_device.did1, 0)) 
+				adi_memap_read_reg32(LM3S_SYSCTL_DID1, &lm3s_device.did1, 0)) 
 			|| (ERROR_OK != 
-				adi_memap_read_reg(LM3S_SYSCTL_DC0, &lm3s_device.dc0, 0)) 
+				adi_memap_read_reg32(LM3S_SYSCTL_DC0, &lm3s_device.dc0, 0)) 
 			|| (ERROR_OK != 
-				adi_memap_read_reg(LM3S_SYSCTL_DC1, &lm3s_device.dc1, 0)) 
+				adi_memap_read_reg32(LM3S_SYSCTL_DC1, &lm3s_device.dc1, 0)) 
 			|| (ERROR_OK != 
-				adi_memap_read_reg(LM3S_SYSCTL_DC2, &lm3s_device.dc2, 0)) 
+				adi_memap_read_reg32(LM3S_SYSCTL_DC2, &lm3s_device.dc2, 0)) 
 			|| (ERROR_OK != 
-				adi_memap_read_reg(LM3S_SYSCTL_DC3, &lm3s_device.dc3, 1)))
+				adi_memap_read_reg32(LM3S_SYSCTL_DC3, &lm3s_device.dc3, 1)))
 		{
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
