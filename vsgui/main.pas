@@ -2185,11 +2185,15 @@ begin
     if VSProg_Taken_By_Polling then
     begin
       // occupied by polling thread, wait a while
-      Sleep(100);
+      {Sleep(100);
       if not VSProg_Caller.Take() then
       begin
         // give up ......
         exit;
+      end;
+      }
+      while not VSProg_Caller.Take() do
+      begin
       end;
     end
     else
