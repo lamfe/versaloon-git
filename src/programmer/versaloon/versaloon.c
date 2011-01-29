@@ -238,6 +238,8 @@ static RESULT versaloon_fini(void)
 {
 	if (versaloon_device_handle != NULL)
 	{
+		usbtoxxx_fini();
+		
 		usb_release_interface(versaloon_device_handle, usb_param_interface());
 		usb_close(versaloon_device_handle);
 		versaloon_device_handle = NULL;
