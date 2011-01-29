@@ -183,9 +183,9 @@ RESULT stm32_mass_erase(void)
 
 ENTER_PROGRAM_MODE_HANDLER(stm32swj)
 {
-	struct operation_t *op = context->op;
 	uint32_t reg, flash_obr, flash_wrpr;
-	uint16_t reg16;
+	
+	REFERENCE_PARAMETER(context);
 	
 	// unlock flash and option bytes
 	reg = STM32_FLASH_UNLOCK_KEY1;
@@ -205,77 +205,10 @@ ENTER_PROGRAM_MODE_HANDLER(stm32swj)
 	LOG_INFO(INFOMSG_REG_08X, "FLASH_OBR", flash_obr);
 	LOG_INFO(INFOMSG_REG_08X, "FLASH_WRPR", flash_wrpr);
 	
-	if (((flash_obr & STM32_FLASH_OBR_RDPRT)
-			&& ((op->read_operations & ~CHIPID) || (op->verify_operations & ~CHIPID) 
-				|| op->erase_operations)) 
-		|| ((flash_wrpr != 0xFFFFFFFF) 
-			&& (op->write_operations || op->erase_operations)))
+	if ((flash_obr & STM32_FLASH_OBR_RDPRT) || (flash_wrpr != 0xFFFFFFFF))
 	{
-		reg = STM32_FLASH_CR_OPTER | STM32_FLASH_CR_OPTWRE;
-		adi_memap_write_reg32(STM32_FLASH_CR, &reg, 0);
-		reg |= STM32_FLASH_CR_STRT;
-		adi_memap_write_reg32(STM32_FLASH_CR, &reg, 0);
-		
-		if (ERROR_OK != stm32_wait_status_busy(&reg, 10))
-		{
-			return ERROR_FAIL;
-		}
-		
-		reg = STM32_FLASH_CR_OPTPG | STM32_FLASH_CR_OPTWRE;
-		adi_memap_write_reg32(STM32_FLASH_CR, &reg, 0);
-		
-		if (flash_obr & STM32_FLASH_OBR_RDPRT)
-		{
-			reg16 = 0x5AA5;
-			adi_memap_write_reg16(STM32_OB_RDP, &reg16, 0);
-			if (ERROR_OK != stm32_wait_status_busy(&reg, 10))
-			{
-				return ERROR_FAIL;
-			}
-		}
-		if (flash_wrpr != 0xFFFFFFFF)
-		{
-			reg16 = 0x00FF;
-			adi_memap_write_reg16(STM32_OB_WRP0, &reg16, 0);
-			if (ERROR_OK != stm32_wait_status_busy(&reg, 10))
-			{
-				return ERROR_FAIL;
-			}
-			reg16 = 0x00FF;
-			adi_memap_write_reg16(STM32_OB_WRP1, &reg16, 0);
-			if (ERROR_OK != stm32_wait_status_busy(&reg, 10))
-			{
-				return ERROR_FAIL;
-			}
-			reg16 = 0x00FF;
-			adi_memap_write_reg16(STM32_OB_WRP2, &reg16, 0);
-			if (ERROR_OK != stm32_wait_status_busy(&reg, 10))
-			{
-				return ERROR_FAIL;
-			}
-			reg16 = 0x00FF;
-			adi_memap_write_reg16(STM32_OB_WRP3, &reg16, 0);
-			if (ERROR_OK != stm32_wait_status_busy(&reg, 10))
-			{
-				return ERROR_FAIL;
-			}
-		}
-	}
-	
-	if ((flash_obr & STM32_FLASH_OBR_RDPRT) 
-		&& ((op->read_operations & ~CHIPID) || op->verify_operations 
-			|| op->write_operations || op->erase_operations))
-	{
-		LOG_ERROR("target read unprotected, "
-					"powercycle target and run the command again");
-		return ERROR_FAIL;
-	}
-	if ((flash_wrpr != 0xFFFFFFFF) 
-		&& (op->write_operations || op->erase_operations))
-	{
-		LOG_ERROR("target write unprotected, "
-					"powercycle target and run the command again");
-		return ERROR_FAIL;
+		LOG_WARNING("STM32 locked, to unlock, run "
+					"vsprog -cstm32_XX -mX -oeu -owu -tu0xFFFFFFFFFFFFFFA5");
 	}
 	
 	return ERROR_OK;
@@ -292,12 +225,25 @@ LEAVE_PROGRAM_MODE_HANDLER(stm32swj)
 ERASE_TARGET_HANDLER(stm32swj)
 {
 	RESULT ret= ERROR_OK;
+	uint32_t reg;
+	
 	REFERENCE_PARAMETER(size);
 	REFERENCE_PARAMETER(addr);
 	REFERENCE_PARAMETER(context);
 	
 	switch (area)
 	{
+	case FUSE_CHAR:
+		reg = STM32_FLASH_CR_OPTER | STM32_FLASH_CR_OPTWRE;
+		adi_memap_write_reg32(STM32_FLASH_CR, &reg, 0);
+		reg |= STM32_FLASH_CR_STRT;
+		adi_memap_write_reg32(STM32_FLASH_CR, &reg, 0);
+		
+		if (ERROR_OK != stm32_wait_status_busy(&reg, 10))
+		{
+			return ERROR_FAIL;
+		}
+		break;
 	case APPLICATION_CHAR:
 		// halt target first
 		if (ERROR_OK != cm3_dp_halt())
