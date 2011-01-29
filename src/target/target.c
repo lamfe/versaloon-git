@@ -1097,13 +1097,14 @@ static RESULT target_program(struct program_context_t *context)
 			&& (!(area_attr & AREA_ATTR_EWW) 
 				|| !(op->write_operations & area_mask)))
 		{
+			uint32_t page_num = 
+				area_info->page_num > 0 ? area_info->page_num : 1;
 			// target erase
 			LOG_INFO(INFOMSG_ERASING, fullname);
 			strcpy(str_tmp, "erasing ");
 			strcat(str_tmp, fullname);
 			strcat(str_tmp, " |");
-			pgbar_init(str_tmp, "|", 0, area_info->page_num, PROGRESS_STEP, 
-							PROGRESS_CHAR);
+			pgbar_init(str_tmp, "|", 0, page_num, PROGRESS_STEP, PROGRESS_CHAR);
 			
 			if (area_attr & AREA_ATTR_EP)
 			{
@@ -1132,7 +1133,7 @@ static RESULT target_program(struct program_context_t *context)
 					ret = ERRCODE_FAILURE_OPERATION;
 					goto target_program_exit;
 				}
-				pgbar_update(area_info->page_num);
+				pgbar_update(page_num);
 			}
 			
 			pgbar_fini();
