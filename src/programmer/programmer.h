@@ -19,6 +19,8 @@
 #ifndef __PROGRAMMER_H_INCLUDED__
 #define __PROGRAMMER_H_INCLUDED__
 
+char* get_interface_name(uint64_t i);
+
 enum jtag_irdr_t
 {
 	JTAG_SCANTYPE_IR, 
@@ -273,11 +275,11 @@ struct programmer_info_t
 	uint32_t (*display_programmer)(void);
 	
 	// init and fini
-	RESULT (*init)(void);
+	RESULT (*init)(void *p);
 	RESULT (*fini)(void);
 	
 	// interfaces supported
-	uint32_t interfaces_mask;
+	uint64_t interfaces_mask;
 	
 	// peripheral
 	struct interfaces_info_t interfaces;

@@ -869,7 +869,7 @@ static RESULT target_program_check(struct program_context_t *context)
 	const struct program_functions_t *pf = cur_target->program_functions;
 	struct program_info_t *pi = context->pi;
 	struct chip_param_t *param = context->param;
-	uint32_t i;
+	uint64_t i;
 	
 	if ((NULL == pf) 
 		|| ((NULL == pf->execute) 
@@ -902,8 +902,7 @@ static RESULT target_program_check(struct program_context_t *context)
 		}
 		if ((context->prog->interfaces_mask & i) != i)
 		{
-			LOG_ERROR("%s can not support %s in the mode defined.", 
-						context->prog->name, cur_target->name);
+			LOG_ERROR("interface not supported: %s.", get_interface_name(i));
 			return ERROR_FAIL;
 		}
 	}
@@ -1647,6 +1646,9 @@ static RESULT target_init(struct program_info_t *pi)
 				LOG_ERROR(ERRMSG_AUTODETECT_FAIL, pi->chip_type);
 				return ERRCODE_AUTODETECT_FAIL;
 			}
+			
+			// insert a dly between 2 operations
+			sleep_ms(100);
 			
 			LOG_INFO(INFOMSG_AUTODETECT_SIGNATURE, pi->chip_id);
 			for (i = 0; i < target_chips.num_of_chips; i++)
@@ -4030,8 +4032,6 @@ MISC_HANDLER(target_prepare)
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "check target defined content");
 		return ERROR_FAIL;
 	}
-	// insert a dly between 2 operations
-	sleep_ms(100);
 	
 	return ERROR_OK;
 }

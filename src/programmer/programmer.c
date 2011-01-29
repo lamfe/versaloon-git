@@ -155,6 +155,39 @@ struct misc_cmd_t programmer_cmd[] =
 	MISC_CMD_END
 };
 
+char* get_interface_name(uint64_t i)
+{
+#define interface_case(i) case i: return #i
+	
+	switch (i)
+	{
+	interface_case(USART);
+	interface_case(SPI);
+	interface_case(I2C);
+	interface_case(GPIO);
+	interface_case(CAN);
+	interface_case(CLOCK);
+	interface_case(ADC);
+	interface_case(DAC);
+	interface_case(POWER);
+	interface_case(ISSP);
+	interface_case(JTAG_LL);
+	interface_case(JTAG_HL);
+	interface_case(JTAG_RAW);
+	interface_case(C2);
+	interface_case(MSP430_SBW);
+	interface_case(MSP430_JTAG);
+	interface_case(LPC_ICP);
+	interface_case(SWD);
+	interface_case(SWIM);
+	interface_case(HV);
+	interface_case(PDI);
+	interface_case(BDM);
+	default:
+		return NULL;
+	}
+}
+
 RESULT programmer_init(const char *programmer)
 {
 	struct programmer_info_t *programmer_tmp;
@@ -186,7 +219,11 @@ RESULT programmer_init(const char *programmer)
 		
 		cur_programmer = programmer_tmp;
 		cur_programmer->init_capability(cur_programmer);
-		return cur_programmer->init();
+		if (ERROR_OK != cur_programmer->init(cur_programmer))
+		{
+			return ERROR_FAIL;
+		}
+		return misc_run_script("get_tvcc");
 	}
 	else
 	{
