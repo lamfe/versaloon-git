@@ -25,8 +25,6 @@ RESULT usbtoxxx_init(void);
 RESULT usbtoxxx_fini(void);
 RESULT usbtoxxx_execute_command(void);
 
-//#define USB_TO_XXX_ABILITIES_LEN			\
-//	((VERSALOON_USB_TO_XXX_CMD_END + 1 - VERSALOON_USB_TO_XXX_CMD_START) / 8)
 #define USB_TO_XXX_ABILITIES_LEN			12
 extern uint8_t usbtoxxx_abilities[USB_TO_XXX_ABILITIES_LEN];
 bool usbtoxxx_interface_supported(uint8_t cmd);
