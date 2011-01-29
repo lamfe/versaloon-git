@@ -42,7 +42,7 @@ RESULT gpio_fini(uint8_t index)
 }
 
 RESULT gpio_config(uint8_t index, uint16_t pin_mask, uint16_t io, 
-					 uint16_t input_pull_mask)
+					uint16_t pull_en_mask, uint16_t input_pull_mask)
 {
 	switch (index)
 	{
@@ -69,13 +69,20 @@ RESULT gpio_config(uint8_t index, uint16_t pin_mask, uint16_t io,
 			}
 			else
 			{
-				if (input_pull_mask & GPIO_SRST)
+				if (pull_en_mask & GPIO_SRST)
 				{
-					SW_SETINPUT_PU();
+					if (input_pull_mask & GPIO_SRST)
+					{
+						SW_SETINPUT_PU();
+					}
+					else
+					{
+						SW_SETINPUT_PD();
+					}
 				}
 				else
 				{
-					SW_SETINPUT_PD();
+					SW_SETINPUT();
 				}
 			}
 		}
@@ -95,13 +102,20 @@ RESULT gpio_config(uint8_t index, uint16_t pin_mask, uint16_t io,
 			}
 			else
 			{
-				if (input_pull_mask & GPIO_TRST)
+				if (pull_en_mask & GPIO_TRST)
 				{
-					SW_RST_SETINPUT_PU();
+					if (input_pull_mask & GPIO_TRST)
+					{
+						SW_RST_SETINPUT_PU();
+					}
+					else
+					{
+						SW_RST_SETINPUT_PD();
+					}
 				}
 				else
 				{
-					SW_RST_SETINPUT_PD();
+					SW_RST_SETINPUT();
 				}
 			}
 		}
@@ -122,13 +136,20 @@ RESULT gpio_config(uint8_t index, uint16_t pin_mask, uint16_t io,
 			}
 			else
 			{
-				if (input_pull_mask & GPIO_SYNCSWPWM_GPIO)
+				if (pull_en_mask & GPIO_SYNCSWPWM_GPIO)
 				{
-					SYNCSWPWM_GPIO_SETINPUT_PU();
+					if (input_pull_mask & GPIO_SYNCSWPWM_GPIO)
+					{
+						SYNCSWPWM_GPIO_SETINPUT_PU();
+					}
+					else
+					{
+						SYNCSWPWM_GPIO_SETINPUT_PD();
+					}
 				}
 				else
 				{
-					SYNCSWPWM_GPIO_SETINPUT_PD();
+					SYNCSWPWM_GPIO_SETINPUT();
 				}
 			}
 		}

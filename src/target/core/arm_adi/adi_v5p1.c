@@ -46,13 +46,16 @@ struct adi_dp_info_t adi_dp_info;
 // Reset
 #define reset_init()			adi_prog->gpio.init(0)
 #define reset_fini()			adi_prog->gpio.fini(0)
-#define reset_output()			adi_prog->gpio.config(0, JTAG_SRST, JTAG_SRST, 0)
-#define reset_input()			adi_prog->gpio.config(0, JTAG_SRST, 0, JTAG_SRST)
+#define reset_output()			\
+	adi_prog->gpio.config(0, JTAG_SRST, JTAG_SRST, 0, 0)
+#define reset_input()			\
+	adi_prog->gpio.config(0, JTAG_SRST, 0, JTAG_SRST, JTAG_SRST)
 #define reset_set()				reset_input()
 #define reset_clr()				reset_output()
 #define trst_output(value)		\
-	adi_prog->gpio.config(0, JTAG_TRST, JTAG_TRST, (value) ? JTAG_TRST : 0)
-#define trst_input()			adi_prog->gpio.config(0, JTAG_TRST, 0, JTAG_TRST)
+	adi_prog->gpio.config(0, JTAG_TRST, JTAG_TRST, 0, (value) ? JTAG_TRST : 0)
+#define trst_input()			\
+	adi_prog->gpio.config(0, JTAG_TRST, 0, JTAG_TRST, JTAG_TRST)
 #define trst_set()				trst_output(1)
 #define trst_clr()				trst_output(0)
 #define reset_commit()			adi_prog->peripheral_commit()

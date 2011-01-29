@@ -36,9 +36,9 @@ extern struct interfaces_info_t *interfaces;
 #define jtag_trst_init()			interfaces->gpio.init(0)
 #define jtag_trst_fini()			interfaces->gpio.fini(0)
 #define jtag_trst_output(value)		\
-	interfaces->gpio.config(0, JTAG_TRST, JTAG_TRST, (value) ? JTAG_TRST : 0)
+	interfaces->gpio.config(0, JTAG_TRST, JTAG_TRST, 0, (value) ? JTAG_TRST : 0)
 #define jtag_trst_input()			\
-	interfaces->gpio.config(0, JTAG_TRST, 0, JTAG_TRST)
+	interfaces->gpio.config(0, JTAG_TRST, 0, JTAG_TRST, JTAG_TRST)
 #define jtag_trst_1()			interfaces->gpio.out(0, JTAG_TRST, JTAG_TRST)
 #define jtag_trst_0()			interfaces->gpio.out(0, JTAG_TRST, 0)
 

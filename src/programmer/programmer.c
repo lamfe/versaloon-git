@@ -398,10 +398,10 @@ MISC_HANDLER(programmer_gpio_fini)
 
 MISC_HANDLER(programmer_gpio_config)
 {
-	uint16_t mask, io, pull;
+	uint16_t mask, io, pull, pull_en;
 	struct programmer_info_t *prog = NULL;
 	
-	MISC_CHECK_ARGC(4);
+	MISC_CHECK_ARGC(5);
 	if ((ERROR_OK != programmer_assert(&prog)) || (NULL == prog))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
@@ -410,9 +410,10 @@ MISC_HANDLER(programmer_gpio_config)
 	
 	mask = (uint16_t)strtoul(argv[1], NULL, 0);
 	io = (uint16_t)strtoul(argv[2], NULL, 0);
-	pull = (uint16_t)strtoul(argv[3], NULL, 0);
+	pull_en = (uint16_t)strtoul(argv[3], NULL, 0);
+	pull = (uint16_t)strtoul(argv[4], NULL, 0);
 	
-	return prog->interfaces.gpio.config(0, mask, io, pull);
+	return prog->interfaces.gpio.config(0, mask, io, pull_en, pull);
 }
 
 MISC_HANDLER(programmer_gpio_out)
