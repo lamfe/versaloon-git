@@ -46,6 +46,7 @@
 #define USB_TO_POWER				(VERSALOON_USB_TO_XXX_CMD_START + 0x40)
 #define USB_TO_DELAY				(VERSALOON_USB_TO_XXX_CMD_START + 0x41)
 #define USB_TO_POLL					(VERSALOON_USB_TO_XXX_CMD_START + 0x42)
+#define USB_TO_INFO					(VERSALOON_USB_TO_XXX_CMD_START + 0x5E)
 #define USB_TO_ALL					(VERSALOON_USB_TO_XXX_CMD_START + 0x5F)
 
 
@@ -91,8 +92,6 @@
 
 
 // USB_TO_XXX
-RESULT usbtoxxx_init(void);
-void usbtoxxx_fini(void);
 RESULT usbtoxxx_add_pending(uint8_t type, uint8_t cmd, uint16_t 
 							actual_szie, uint16_t want_pos, 
 							uint16_t want_size, uint8_t *buffer);

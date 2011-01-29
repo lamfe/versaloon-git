@@ -172,7 +172,7 @@ struct program_mode_t
 {
 	char name;
 	const char *feature;
-	uint32_t interface_needed;
+	uint64_t interface_needed;
 };
 
 #define TARGET_CONF_FILE_EXT		".xml"

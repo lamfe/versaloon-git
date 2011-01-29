@@ -17,6 +17,7 @@ type
   TPollThread = class(TThread)
   private
     FTargetVoltage: integer;
+    FProgrammerAbilities: string;
     FConnectOK: boolean;
     FAppPath: string;
     procedure Update;
@@ -220,6 +221,7 @@ type
     Page_Init: boolean;
   public
     { public declarations }
+    strProgrammerAbilities: string;
   end;
 
 var
@@ -272,6 +274,7 @@ begin
   begin
     CurProgrammerInfo := 'N.C.';
   end;
+  FormMain.strProgrammerAbilities := FProgrammerAbilities;
   FormMain.UpdateTitle();
 end;
 
@@ -304,18 +307,19 @@ begin
     begin
       VSProg_Caller.AddParameter('U' + ProgrammerParameter);
     end;
-    VSProg_Caller.AddParameter('V"get_tvcc"');
+    VSProg_Caller.AddParameter('pversaloon');
     VSProg_Parser.Prepare();
-    VSProg_Parser.ParserFunc      := @VSProg_Parser.TargetVoltageParser;
+    VSProg_Parser.ParserFunc      := @VSProg_Parser.ProgrammerParser;
     VSProg_Parser.LogOutputEnable := False;
     VSProg_Caller.bProcessMessage := False;
     VSProg_Caller.Run(@VSProg_Parser.CommonParser, False, True);
     VSProg_Caller.bProcessMessage := True;
     VSProg_Parser.LogOutputEnable := True;
-    if (not VSProg_Parser.HasError) and (VSProg_Parser.ResultStrings.Count > 0) then
+    if (not VSProg_Parser.HasError) and (VSProg_Parser.ResultStrings.Count > 1) then
     begin
       FConnectOK     := True;
-      FTargetVoltage := StrToInt(VSProg_Parser.ResultStrings.Strings[0]);
+      FProgrammerAbilities := VSProg_Parser.ResultStrings.Strings[0];
+      FTargetVoltage := StrToInt(VSProg_Parser.ResultStrings.Strings[1]);
     end
     else
     begin

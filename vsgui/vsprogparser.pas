@@ -31,6 +31,8 @@ type
     function VersionParser(var line: string): boolean;
     function TargetVoltageParser(var line: string): boolean;
     function OperationParser(var line: string): boolean;
+    // used for -p
+    function ProgrammerParser(var line: string): boolean;
     // used for parsing fuse/lock/calibration settings
     function SettingTargetInfoParser(var line: string): boolean;
     // used for parsing flash/eeprom information
@@ -358,6 +360,21 @@ begin
       Inc(i);
     end;
   end;
+end;
+
+function TVSProg_Parser.ProgrammerParser(var line: string): boolean;
+var
+  pos_start: integer;
+  strTmp: string;
+begin
+  pos_start := Pos('USB_TO_XXX abilities: ', line);
+  if pos_start > 0 then
+  begin
+    Inc(pos_start, Length('USB_TO_XXX abilities: '));
+    strTmp := Copy(line, pos_start, Length(line) - pos_start);
+    FResultStrings.Add(strTmp);
+  end;
+  Result := TargetVoltageParser(line);
 end;
 
 function TVSProg_Parser.SettingTargetInfoParser(var line: string): boolean;

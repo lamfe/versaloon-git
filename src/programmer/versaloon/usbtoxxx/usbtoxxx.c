@@ -46,6 +46,8 @@ N_A, N_A, N_A, N_A, N_A, N_A, N_A, N_A,
 N_A, N_A, N_A, N_A, N_A, N_A, N_A, "usbtoall"
 };
 
+uint8_t usbtoxxx_abilities[USB_TO_XXX_ABILITIES_LEN];
+
 #define usbtoxxx_get_type_name(type)	\
 			types_name[((type) - VERSALOON_USB_TO_XXX_CMD_START) \
 					   % (sizeof(types_name) / sizeof(types_name[0]))]
@@ -239,13 +241,36 @@ RESULT usbtoxxx_execute_command(void)
 RESULT usbtoxxx_init(void)
 {
 	versaloon_pending_idx = 0;
+	
+	if ((ERROR_OK != usbtoinfo_get_abilities(usbtoxxx_abilities)) || 
+		(ERROR_OK != usbtoxxx_execute_command()))
+	{
+		return ERROR_FAIL;
+	}
+	LOG_INFO("USB_TO_XXX abilities: 0x%08X:0x%08X:0x%08X", 
+		GET_LE_U32(&usbtoxxx_abilities[0]), 
+		GET_LE_U32(&usbtoxxx_abilities[4]), 
+		GET_LE_U32(&usbtoxxx_abilities[8]));
 	return ERROR_OK;
 }
 
-void usbtoxxx_fini(void)
+RESULT usbtoxxx_fini(void)
 {
 	usbtoxxx_buffer = NULL;
 	type_pre = 0;
+	return ERROR_OK;
+}
+
+bool usbtoxxx_interface_supported(uint8_t cmd)
+{
+	if ((cmd < VERSALOON_USB_TO_XXX_CMD_START) || 
+		(cmd > VERSALOON_USB_TO_XXX_CMD_END))
+	{
+		return false;
+	}
+	
+	cmd -= VERSALOON_USB_TO_XXX_CMD_START;
+	return (usbtoxxx_abilities[cmd  / 8] & (1 << (cmd % 8))) > 0;
 }
 
 
@@ -361,6 +386,27 @@ RESULT usbtoxxx_add_command(uint8_t type, uint8_t cmd, uint8_t *cmdbuf,
 								 wantbuf, collect);
 }
 
+
+
+
+
+RESULT usbtoinfo_get_abilities(uint8_t abilities[USB_TO_XXX_ABILITIES_LEN])
+{
+	if (ERROR_OK != usbtoxxx_ensure_buffer_size(3))
+	{
+		return ERROR_FAIL;
+	}
+	
+	if (ERROR_OK != usbtoxxx_validate_current_command_type())
+	{
+		LOG_BUG(ERRMSG_FAILURE_OPERATION, "validate previous commands");
+		return ERRCODE_FAILURE_OPERATION;
+	}
+	type_pre = USB_TO_INFO;
+	
+	return versaloon_add_pending(USB_TO_INFO, 0, USB_TO_XXX_ABILITIES_LEN, 0, 
+									USB_TO_XXX_ABILITIES_LEN, abilities, 0);
+}
 
 
 

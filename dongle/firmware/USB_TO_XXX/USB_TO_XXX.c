@@ -43,11 +43,27 @@ int8 USB_TO_POLL_Index;
 
 uint8* buffer_reply;
 
+#define USB_TO_XXX_ABILITIES_LEN			\
+	((VERSALOON_USB_TO_XXX_CMD_END + 1 - VERSALOON_USB_TO_XXX_CMD_START) / 8)
+
+static void USB_TO_XXX_AddAbility(uint8 abilities[USB_TO_XXX_ABILITIES_LEN], uint8 cmd)
+{
+	if ((cmd < VERSALOON_USB_TO_XXX_CMD_START) || 
+		(cmd > VERSALOON_USB_TO_XXX_CMD_END))
+	{
+		return;
+	}
+
+	cmd -= VERSALOON_USB_TO_XXX_CMD_START;
+	abilities[cmd / 8] |= 1 << (cmd % 8);
+}
+
 void USB_TO_XXX_ProcessCmd(uint8* dat, uint16 len)
 {
 	uint16 USB_TO_XXX_CmdIdx;
 	uint16 USB_TO_XXX_CmdLen_tmp;
 	uint16 dly;
+	uint8 USB_TO_XXX_Abilities[USB_TO_XXX_ABILITIES_LEN];
 
 	// for USB_TO_ALL command, data area(from the 3rd byte) is the real command to execute
 	if(dat[0] == USB_TO_ALL)
@@ -67,6 +83,77 @@ void USB_TO_XXX_ProcessCmd(uint8* dat, uint16 len)
 		// poll command type and call different module
 		switch(dat[USB_TO_XXX_CmdIdx])
 		{
+		case USB_TO_INFO:
+			buffer_reply[rep_len++] = USB_TO_XXX_OK;
+
+			memset(USB_TO_XXX_Abilities, 0, sizeof(USB_TO_XXX_Abilities));
+#if USB_TO_USART_EN
+			USB_TO_XXX_AddAbility(USB_TO_XXX_Abilities, USB_TO_USART);
+#endif
+#if USB_TO_SPI_EN
+			USB_TO_XXX_AddAbility(USB_TO_XXX_Abilities, USB_TO_SPI);
+#endif
+#if USB_TO_IIC_EN
+			USB_TO_XXX_AddAbility(USB_TO_XXX_Abilities, USB_TO_IIC);
+#endif
+#if USB_TO_GPIO_EN
+			USB_TO_XXX_AddAbility(USB_TO_XXX_Abilities, USB_TO_GPIO);
+#endif
+#if USB_TO_CAN_EN
+			USB_TO_XXX_AddAbility(USB_TO_XXX_Abilities, USB_TO_CAN);
+#endif
+#if USB_TO_PWM_EN
+			USB_TO_XXX_AddAbility(USB_TO_XXX_Abilities, USB_TO_PWM);
+#endif
+#if USB_TO_ADC_EN
+			USB_TO_XXX_AddAbility(USB_TO_XXX_Abilities, USB_TO_ADC);
+#endif
+#if USB_TO_DAC_EN
+			USB_TO_XXX_AddAbility(USB_TO_XXX_Abilities, USB_TO_DAC);
+#endif
+#if USB_TO_MICROWIRE_EN
+			USB_TO_XXX_AddAbility(USB_TO_XXX_Abilities, USB_TO_MICROWIRE);
+#endif
+#if USB_TO_SWIM_EN
+			USB_TO_XXX_AddAbility(USB_TO_XXX_Abilities, USB_TO_SWIM);
+#endif
+#if USB_TO_JTAG_LL_EN
+			USB_TO_XXX_AddAbility(USB_TO_XXX_Abilities, USB_TO_JTAG_LL);
+#endif
+#if USB_TO_JTAG_RAW_EN
+			USB_TO_XXX_AddAbility(USB_TO_XXX_Abilities, USB_TO_JTAG_RAW);
+#endif
+#if USB_TO_JTAG_HL_EN
+			USB_TO_XXX_AddAbility(USB_TO_XXX_Abilities, USB_TO_JTAG_HL);
+#endif
+#if USB_TO_ISSP_EN
+			USB_TO_XXX_AddAbility(USB_TO_XXX_Abilities, USB_TO_ISSP);
+#endif
+#if USB_TO_C2_EN
+			USB_TO_XXX_AddAbility(USB_TO_XXX_Abilities, USB_TO_C2);
+#endif
+#if USB_TO_LPCICP_EN
+			USB_TO_XXX_AddAbility(USB_TO_XXX_Abilities, USB_TO_LPCICP);
+#endif
+#if USB_TO_SWD_EN
+			USB_TO_XXX_AddAbility(USB_TO_XXX_Abilities, USB_TO_SWD);
+#endif
+#if USB_TO_MSP430_JTAG_EN
+			USB_TO_XXX_AddAbility(USB_TO_XXX_Abilities, USB_TO_MSP430_JTAG);
+#endif
+#if USB_TO_BDM_EN
+			USB_TO_XXX_AddAbility(USB_TO_XXX_Abilities, USB_TO_BDM);
+#endif
+#if USB_TO_POWER_EN
+			USB_TO_XXX_AddAbility(USB_TO_XXX_Abilities, USB_TO_POWER);
+#endif
+			USB_TO_XXX_AddAbility(USB_TO_XXX_Abilities, USB_TO_DELAY);
+			USB_TO_XXX_AddAbility(USB_TO_XXX_Abilities, USB_TO_POLL);
+			USB_TO_XXX_AddAbility(USB_TO_XXX_Abilities, USB_TO_INFO);
+			USB_TO_XXX_AddAbility(USB_TO_XXX_Abilities, USB_TO_ALL);
+			memcpy(&buffer_reply[rep_len], USB_TO_XXX_Abilities, USB_TO_XXX_ABILITIES_LEN);
+			rep_len += USB_TO_XXX_ABILITIES_LEN;
+		break;
 /****************************** Page0 ******************************/
 #if USB_TO_USART_EN
 		case USB_TO_USART:

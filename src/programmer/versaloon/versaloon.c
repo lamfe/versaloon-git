@@ -27,6 +27,7 @@
 #include "versaloon.h"
 #include "versaloon_internal.h"
 #include "usbtoxxx/usbtoxxx.h"
+#include "usbtoxxx/usbtoxxx_internal.h"
 
 const char *versaloon_hardwares[] = 
 {
@@ -181,6 +182,13 @@ RESULT versaloon_send_command(uint16_t out_len, uint16_t *inlen)
 	}
 }
 
+static RESULT versaloon_peripheral_commit(void)
+{
+	RESULT ret = usbtoxxx_execute_command();
+	versaloon_to = VERSALOON_TIMEOUT;
+	return ret;
+}
+
 RESULT versaloon_set_target_voltage(uint8_t index, uint16_t voltage)
 {
 	REFERENCE_PARAMETER(index);
@@ -226,7 +234,7 @@ RESULT versaloon_get_target_voltage(uint8_t index, uint16_t *voltage)
 	}
 }
 
-RESULT versaloon_fini(void)
+static RESULT versaloon_fini(void)
 {
 	if (versaloon_device_handle != NULL)
 	{
@@ -250,8 +258,9 @@ RESULT versaloon_fini(void)
 }
 
 #define VERSALOON_RETRY_CNT				10
-RESULT versaloon_init(void)
+static RESULT versaloon_init(void *p)
 {
+	struct programmer_info_t *t = (struct programmer_info_t *)p;
 	uint16_t ret = 0;
 	uint8_t retry;
 	uint32_t timeout_tmp;
@@ -341,10 +350,112 @@ RESULT versaloon_init(void)
 		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 		return ERRCODE_NOT_ENOUGH_MEMORY;
 	}
-	return versaloon_get_target_voltage(0, &ret);
+	
+	if (ERROR_OK != usbtoxxx_init())
+	{
+		return ERROR_FAIL;
+	}
+	// fixes programmer abilities
+	if ((t->interfaces_mask & USART) && 
+		!usbtoxxx_interface_supported(USB_TO_USART))
+	{
+		t->interfaces_mask &= ~USART;
+	}
+	if ((t->interfaces_mask & SPI) && 
+		!usbtoxxx_interface_supported(USB_TO_SPI))
+	{
+		t->interfaces_mask &= ~SPI;
+	}
+	if ((t->interfaces_mask & I2C) && 
+		!usbtoxxx_interface_supported(USB_TO_I2C))
+	{
+		t->interfaces_mask &= ~I2C;
+	}
+	if ((t->interfaces_mask & GPIO) && 
+		!usbtoxxx_interface_supported(USB_TO_GPIO))
+	{
+		t->interfaces_mask &= ~GPIO;
+	}
+	if ((t->interfaces_mask & CAN) && 
+		!usbtoxxx_interface_supported(USB_TO_CAN))
+	{
+		t->interfaces_mask &= ~CAN;
+	}
+	if ((t->interfaces_mask & ADC) && 
+		!usbtoxxx_interface_supported(USB_TO_ADC))
+	{
+		t->interfaces_mask &= ~ADC;
+	}
+	if ((t->interfaces_mask & DAC) && 
+		!usbtoxxx_interface_supported(USB_TO_DAC))
+	{
+		t->interfaces_mask &= ~DAC;
+	}
+	if ((t->interfaces_mask & POWER) && 
+		!usbtoxxx_interface_supported(USB_TO_POWER))
+	{
+		t->interfaces_mask &= ~POWER;
+	}
+	if ((t->interfaces_mask & ISSP) && 
+		!usbtoxxx_interface_supported(USB_TO_ISSP))
+	{
+		t->interfaces_mask &= ~ISSP;
+	}
+	if ((t->interfaces_mask & JTAG_HL) && 
+		!usbtoxxx_interface_supported(USB_TO_JTAG_HL))
+	{
+		t->interfaces_mask &= ~JTAG_HL;
+	}
+	if ((t->interfaces_mask & JTAG_LL) && 
+		!usbtoxxx_interface_supported(USB_TO_JTAG_LL))
+	{
+		t->interfaces_mask &= ~JTAG_LL;
+	}
+	if ((t->interfaces_mask & MSP430_JTAG) && 
+		!usbtoxxx_interface_supported(USB_TO_MSP430_JTAG))
+	{
+		t->interfaces_mask &= ~MSP430_JTAG;
+	}
+	if ((t->interfaces_mask & C2) && 
+		!usbtoxxx_interface_supported(USB_TO_C2))
+	{
+		t->interfaces_mask &= ~C2;
+	}
+	if ((t->interfaces_mask & USART) && 
+		!usbtoxxx_interface_supported(USB_TO_USART))
+	{
+		t->interfaces_mask &= ~USART;
+	}
+	if ((t->interfaces_mask & LPC_ICP) && 
+		!usbtoxxx_interface_supported(USB_TO_LPCICP))
+	{
+		t->interfaces_mask &= ~LPC_ICP;
+	}
+	if ((t->interfaces_mask & SWD) && 
+		!usbtoxxx_interface_supported(USB_TO_SWD))
+	{
+		t->interfaces_mask &= ~SWD;
+	}
+	if ((t->interfaces_mask & SWIM) && 
+		!usbtoxxx_interface_supported(USB_TO_SWIM))
+	{
+		t->interfaces_mask &= ~SWIM;
+	}
+	if ((t->interfaces_mask & JTAG_RAW) && 
+		!usbtoxxx_interface_supported(USB_TO_JTAG_RAW))
+	{
+		t->interfaces_mask &= ~JTAG_RAW;
+	}
+	if ((t->interfaces_mask & BDM) && 
+		!usbtoxxx_interface_supported(USB_TO_BDM))
+	{
+		t->interfaces_mask &= ~BDM;
+	}
+	
+	return ERROR_OK;
 }
 
-RESULT versaloon_enter_firmware_update_mode(void)
+static RESULT versaloon_enter_firmware_update_mode(void)
 {
 #if PARAM_CHECK
 	if (NULL == versaloon_buf)
@@ -420,33 +531,26 @@ RESULT versaloon_get_hardware(uint8_t *hardware)
 
 
 // Interfaces:
-// Commit
-RESULT versaloon_peripheral_commit(void)
-{
-	RESULT ret = usbtoxxx_execute_command();
-	versaloon_to = VERSALOON_TIMEOUT;
-	return ret;
-}
 // Delay
-RESULT versaloon_delay_ms(uint16_t ms)
+static RESULT versaloon_delay_ms(uint16_t ms)
 {
 	return usbtodelay_delay(ms | 0x8000);
 }
-RESULT versaloon_delay_us(uint16_t us)
+static RESULT versaloon_delay_us(uint16_t us)
 {
 	return usbtodelay_delay(us & 0x7FFF);
 }
 // POLL
-RESULT versaloon_poll_start(uint16_t retry_cnt, uint16_t interval_us)
+static RESULT versaloon_poll_start(uint16_t retry_cnt, uint16_t interval_us)
 {
 	versaloon_to = VERSALOON_TIMEOUT_LONG;
 	return usbtopoll_start(retry_cnt, interval_us);
 }
-RESULT versaloon_poll_end(void)
+static RESULT versaloon_poll_end(void)
 {
 	return usbtopoll_end();
 }
-RESULT versaloon_poll_checkok(enum poll_check_type_t type, uint16_t offset, 
+static RESULT versaloon_poll_checkok(enum poll_check_type_t type, uint16_t offset, 
 								uint8_t size, uint32_t mask, uint32_t value)
 {
 	uint8_t equ = 0;
@@ -457,7 +561,7 @@ RESULT versaloon_poll_checkok(enum poll_check_type_t type, uint16_t offset,
 	}
 	return usbtopoll_checkok(equ, offset, size, mask, value);
 }
-RESULT versaloon_poll_checkfail(enum poll_check_type_t type, uint16_t offset, 
+static RESULT versaloon_poll_checkfail(enum poll_check_type_t type, uint16_t offset, 
 								uint8_t size, uint32_t mask, uint32_t value)
 {
 	uint8_t equ = 0;
@@ -468,7 +572,7 @@ RESULT versaloon_poll_checkfail(enum poll_check_type_t type, uint16_t offset,
 	}
 	return usbtopoll_checkfail(equ, offset, size, mask, value);
 }
-RESULT versaloon_poll_verifybuff(uint16_t offset, uint16_t size, uint8_t *buff)
+static RESULT versaloon_poll_verifybuff(uint16_t offset, uint16_t size, uint8_t *buff)
 {
 	return usbtopoll_verifybuff(offset, size, buff);
 }
