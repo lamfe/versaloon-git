@@ -1435,9 +1435,20 @@ begin
 end;
 
 function TFormMain.VSProg_AddEraseOperation(): boolean;
+var
+  para: string;
 begin
-  VSProg_Caller.AddParameter('oe');
-  Result := True;
+  Result := False;
+  para   := VSProg_GetEnabledOperationString();
+  if para <> '' then
+  begin
+    Result := True;
+    para   := 'oe' + para;
+    if Result then
+    begin
+      VSProg_Caller.AddParameter(para);
+    end;
+  end;
 end;
 
 function TFormMain.VSProg_AddWriteOperation(): boolean;
