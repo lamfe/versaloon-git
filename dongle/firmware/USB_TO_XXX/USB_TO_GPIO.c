@@ -25,7 +25,7 @@ void USB_TO_GPIO_ProcessCmd(uint8* dat, uint16 len)
 	uint16 index, length;
 	uint8 command, device_idx;
 	
-	uint16 port_data, mask_data, io_data;
+	uint16 port_data, mask_data, io_data, pull_en_mask;
 	
 	index = 0;
 	while(index < len)
@@ -50,10 +50,11 @@ void USB_TO_GPIO_ProcessCmd(uint8* dat, uint16 len)
 		case USB_TO_XXX_CONFIG:
 			mask_data = GET_LE_U16(&dat[index + 0]);
 			io_data   = GET_LE_U16(&dat[index + 2]);
-			port_data = GET_LE_U16(&dat[index + 4]);
+			pull_en_mask  = GET_LE_U16(&dat[index + 4]);
+			port_data = GET_LE_U16(&dat[index + 6]);
 			io_data  &= mask_data;
 			
-			if (ERROR_OK == interfaces->gpio.config(device_idx, mask_data, io_data, port_data))
+			if (ERROR_OK == interfaces->gpio.config(device_idx, mask_data, io_data, pull_en_mask, port_data))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}

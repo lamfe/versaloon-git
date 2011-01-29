@@ -67,9 +67,9 @@ struct program_functions_t avr8isp_program_functions =
 #define reset_init()			interfaces->gpio.init(0)
 #define reset_fini()			interfaces->gpio.fini(0)
 #define reset_output()			\
-	interfaces->gpio.config(0, GPIO_SRST, GPIO_SRST, 0)
+	interfaces->gpio.config(0, GPIO_SRST, GPIO_SRST, 0, 0)
 #define reset_input()			\
-	interfaces->gpio.config(0, GPIO_SRST, 0, GPIO_SRST)
+	interfaces->gpio.config(0, GPIO_SRST, 0, GPIO_SRST, GPIO_SRST)
 #define reset_set()				reset_input()
 #define reset_clr()				reset_output()
 

@@ -124,9 +124,9 @@ const struct misc_cmd_t stm8_notifier[] =
 #define reset_init()			interfaces->gpio.init(0)
 #define reset_fini()			interfaces->gpio.fini(0)
 #define reset_output()			\
-	interfaces->gpio.config(0, SWIM_RST_PIN, SWIM_RST_PIN, 0)
+	interfaces->gpio.config(0, SWIM_RST_PIN, SWIM_RST_PIN, 0, 0)
 #define reset_input()			\
-	interfaces->gpio.config(0, SWIM_RST_PIN, 0, SWIM_RST_PIN)
+	interfaces->gpio.config(0, SWIM_RST_PIN, 0, SWIM_RST_PIN, SWIM_RST_PIN)
 #define reset_set()				reset_input()
 #define reset_clr()				reset_output()
 

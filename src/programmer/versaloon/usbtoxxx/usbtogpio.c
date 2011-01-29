@@ -40,9 +40,10 @@ RESULT usbtogpio_fini(uint8_t interface_index)
 }
 
 RESULT usbtogpio_config(uint8_t interface_index, uint16_t mask, 
-						uint16_t dir_mask, uint16_t input_pull_mask)
+						uint16_t dir_mask, uint16_t pull_en_mask, 
+						uint16_t input_pull_mask)
 {
-	uint8_t conf[6];
+	uint8_t conf[8];
 	
 #if PARAM_CHECK
 	if (interface_index > 7)
@@ -55,9 +56,11 @@ RESULT usbtogpio_config(uint8_t interface_index, uint16_t mask,
 	dir_mask &= mask;
 	SET_LE_U16(&conf[0], mask);
 	SET_LE_U16(&conf[2], dir_mask);
-	SET_LE_U16(&conf[4], input_pull_mask);
+	SET_LE_U16(&conf[4], pull_en_mask);
+	SET_LE_U16(&conf[6], input_pull_mask);
 	
-	return usbtoxxx_conf_command(USB_TO_GPIO, interface_index, conf, 6);
+	return usbtoxxx_conf_command(USB_TO_GPIO, interface_index, conf, 
+									sizeof(conf));
 }
 
 RESULT usbtogpio_in(uint8_t interface_index, uint16_t mask, uint16_t *value)

@@ -37,6 +37,6 @@
 RESULT gpio_init(uint8_t index);
 RESULT gpio_fini(uint8_t index);
 RESULT gpio_config(uint8_t index, uint16_t pin_mask, uint16_t io, 
-					 uint16_t input_pull_mask);
+					uint16_t pull_en_mask, uint16_t input_pull_mask);
 RESULT gpio_out(uint8_t index, uint16_t pin_mask, uint16_t value);
 RESULT gpio_in(uint8_t index, uint16_t pin_mask, uint16_t *value);
