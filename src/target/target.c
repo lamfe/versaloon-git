@@ -233,6 +233,7 @@ struct chip_param_t target_chip_param;
 struct target_info_t targets_info[] = 
 {
 	// stm32
+#if TARGET_STM32_EN
 	{
 		STM32_STRING,						// name
 		AUTO_DETECT CAN_EXECUTE,			// feature
@@ -243,6 +244,8 @@ struct target_info_t targets_info[] =
 		NULL,								// adjust_setting
 		NULL,								// adjust_mapping
 	},
+#endif
+#if TARGET_LPC1000_EN
 	// lpc1000
 	{
 		LPC1000_STRING,						// name
@@ -254,6 +257,8 @@ struct target_info_t targets_info[] =
 		lpc1000_adjust_setting,				// adjust_setting
 		NULL,								// adjust_mapping
 	},
+#endif
+#if TARGET_LM3S_EN
 	// lm3s
 	{
 		LM3S_STRING,						// name
@@ -265,6 +270,8 @@ struct target_info_t targets_info[] =
 		NULL,								// adjust_setting
 		NULL,								// adjust_mapping
 	},
+#endif
+#if TARGET_AT91SAM3_EN
 	// at91sam3
 	{
 		AT91SAM3_STRING,					// name
@@ -276,8 +283,10 @@ struct target_info_t targets_info[] =
 		NULL,								// adjust_setting
 		NULL,								// adjust_mapping
 	},
+#endif
+#if TARGET_AVR32_EN
 	// avr32
-/*	{
+	{
 		AVR32_STRING,						// name
 		AUTO_DETECT CAN_EXECUTE,			// feature
 		avr32_program_area_map,				// program_area_map
@@ -287,7 +296,9 @@ struct target_info_t targets_info[] =
 		NULL,								// adjust_setting
 		NULL,								// adjust_mapping
 	},
-*/	// avrxmega
+#endif
+#if TARGET_AVRXMEGA_EN
+	// avrxmega
 	{
 		AVRXMEGA_STRING,					// name
 		AUTO_DETECT,						// feature
@@ -298,6 +309,8 @@ struct target_info_t targets_info[] =
 		NULL,								// adjust_setting
 		NULL,								// adjust_mapping
 	},
+#endif
+#if TARGET_STM8_EN
 	// stm8
 	{
 		STM8_STRING,						// name
@@ -309,6 +322,8 @@ struct target_info_t targets_info[] =
 		NULL,								// adjust_setting
 		NULL,								// adjust_mapping
 	},
+#endif
+#if TARGET_AT89S5X_EN
 	// at89s5x
 	{
 		S5X_STRING,							// name
@@ -320,7 +335,9 @@ struct target_info_t targets_info[] =
 		NULL,								// adjust_setting
 		NULL,								// adjust_mapping
 	},
-	// psoc
+#endif
+#if TARGET_PSOC1_EN
+	// psoc1
 	{
 		PSOC1_STRING,						// name
 		AUTO_DETECT,						// feature
@@ -331,6 +348,8 @@ struct target_info_t targets_info[] =
 		psoc1_adjust_setting,				// adjust_setting
 		NULL,								// adjust_mapping
 	},
+#endif
+#if TARGET_MSP430_EN
 	// msp430
 	{
 		MSP430_STRING,						// name
@@ -342,6 +361,8 @@ struct target_info_t targets_info[] =
 		NULL,								// adjust_setting
 		NULL,								// adjust_mapping
 	},
+#endif
+#if TARGET_C8051F_EN
 	// c8051f
 	{
 		C8051F_STRING,						// name
@@ -353,6 +374,8 @@ struct target_info_t targets_info[] =
 		NULL,								// adjust_setting
 		NULL,								// adjust_mapping
 	},
+#endif
+#if TARGET_AVR8_EN
 	// avr8
 	{
 		AVR8_STRING,						// name
@@ -364,6 +387,8 @@ struct target_info_t targets_info[] =
 		NULL,								// adjust_setting
 		NULL,								// adjust_mapping
 	},
+#endif
+#if TARGET_SVF_EN
 	// svf_player
 	{
 		SVFP_STRING,						// name
@@ -375,6 +400,8 @@ struct target_info_t targets_info[] =
 		NULL,								// adjust_setting
 		NULL,								// adjust_mapping
 	},
+#endif
+#if TARGET_LPC900_EN
 	// lpc900
 	{
 		LPC900_STRING,						// name
@@ -386,6 +413,8 @@ struct target_info_t targets_info[] =
 		NULL,								// adjust_setting
 		NULL,								// adjust_mapping
 	},
+#endif
+#if TARGET_HCS08_EN
 	// HCS08
 	{
 		HCS08_STRING,						// name
@@ -397,6 +426,8 @@ struct target_info_t targets_info[] =
 		NULL,								// adjust_setting
 		NULL,								// adjust_mapping
 	},
+#endif
+#if TARGET_HCS12_EN
 	// HCS12
 	{
 		HCS12_STRING,						// name
@@ -408,6 +439,7 @@ struct target_info_t targets_info[] =
 		NULL,								// adjust_setting
 		hcs12_adjust_mapping,				// adjust_mapping
 	},
+#endif
 	{
 		NULL,								// name
 		0,									// areas

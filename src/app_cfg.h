@@ -21,5 +21,23 @@
 
 #define PARAM_CHECK				1
 
+// Target Support Configuration
+#define TARGET_TAT89S5X_EN		1
+#define TARGET_AT91SAM3_EN		1
+#define TARGET_AVR32_EN			0
+#define TARGET_AVR8_EN			1
+#define TARGET_AVRXMEGA_EN		0
+#define TARGET_C8051F_EN		1
+#define TARGET_HCS08_EN			1
+#define TARGET_HCS12_EN			1
+#define TARGET_LM3S_EN			1
+#define TARGET_LPC1000_EN		1
+#define TARGET_LPC900_EN		1
+#define TARGET_MSP430_EN		1
+#define TARGET_PSOC1_EN			1
+#define TARGET_STM32_EN			1
+#define TARGET_STM8_EN			1
+#define TARGET_SVF_EN			1
+
 #endif /* __APP_CFG_INCLUDED__ */
 
