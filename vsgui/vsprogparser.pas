@@ -74,6 +74,12 @@ type
     property ResultStrings: TStringList Read FResultStrings;
   end;
 
+  TVSProgErrorTranslator = record
+    ErrStr: string;
+    DisplayErrStr: string;
+  end;
+  function VSProg_TranslateError(ErrStr: string): string;
+
   function GetParameter(line, para_name: string; var Value: QWord): boolean;
   function GetParameter(line, para_name: string; var Value: integer): boolean;
   function GetParameter(line, para_name: string; var Value: cardinal): boolean;
@@ -82,6 +88,11 @@ type
 const
   EQUAL_STR: string      = ' = ';
   MAX_ERROR_LINES: integer = 10;
+  VSProgErrorTranslator : array [0 .. 1] of TVSProgErrorTranslator =
+  (
+    (ErrStr: 'interface not supported: '; DisplayErrStr: 'Current interfaces not supported, get a VersaloonFull!!'),
+    (ErrStr: ''; DisplayErrStr: '')
+  );
 
 implementation
 
@@ -190,6 +201,23 @@ begin
   begin
     Value  := 0;
     Result := False;
+  end;
+end;
+
+function VSProg_TranslateError(ErrStr: string): string;
+var
+  strTmp: string;
+  i: integer;
+begin
+  Result := '';
+  for i := LOW(VSProgErrorTranslator) to HIGH(VSProgErrorTranslator) do
+  begin
+    strTmp := VSProgErrorTranslator[i].ErrStr;
+    if (strTmp <> '') and (Pos(strTmp, ErrStr) > 0) then
+    begin
+      Result := VSProgErrorTranslator[i].DisplayErrStr;
+      Exit;
+    end;
   end;
 end;
 

@@ -450,6 +450,8 @@ end;
 
 function TFormMain.VSProg_RunAlgorithm(var caller: TCLI_Caller;
   parser: TParserFunc; result_num: integer; silent: boolean): boolean;
+var
+  strTmp: string;
 begin
   Result := False;
   VSProg_Parser.Prepare();
@@ -462,7 +464,12 @@ begin
   if (VSProg_Parser.HasError) and (not silent) then
   begin
     Beep();
-    MessageDlg('Error', VSProg_Parser.ErrorStr, mtError, [mbOK], 0);
+    strTmp := VSProg_TranslateError(VSProg_Parser.ErrorStr);
+    if strTmp = '' then
+    begin
+      strTmp := VSProg_Parser.ErrorStr;
+    end;
+    MessageDlg('Error', strTmp, mtError, [mbOK], 0);
   end
   else if VSProg_Parser.ResultStrings.Count >= result_num then
   begin
