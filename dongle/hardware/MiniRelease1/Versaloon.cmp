@@ -1,4 +1,4 @@
-Cmp-Mod V01 Created by CVpcb (20090216-RC5) date = 17/01/2010 02:02:48
+Cmp-Mod V01 Created by CvPCB (2010-05-05 BZR 2356)-stable date = 03/02/2011 06:31:31
 
 BeginCmp
 TimeStamp = /480A3089;
@@ -172,7 +172,7 @@ BeginCmp
 TimeStamp = /480A45B7;
 Reference = P0;
 ValeurCmp = USBMINI-B;
-IdModule  = MINIUSB;
+IdModule  = MINIUSB_M;
 EndCmp
 
 BeginCmp

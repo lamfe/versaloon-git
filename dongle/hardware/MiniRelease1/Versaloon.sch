@@ -1,11 +1,41 @@
-EESchema Schematic File Version 2  date 22/02/2010 20:27:07
-LIBS:power,elec-unifil,simonqian,stm32,device,transistors,conn,linear,regul,74xx,cmos4000,adc-dac,memory,xilinx,special,microcontrollers,dsp,microchip,analog_switches,motorola,texas,intel,audio,interface,digital-audio,philips,display,cypress,siliconi,contrib,valves,.\Versaloon.cache
+EESchema Schematic File Version 2  date 02/02/2011 23:50:32
+LIBS:power
+LIBS:elec-unifil
+LIBS:simonqian
+LIBS:stm32
+LIBS:device
+LIBS:transistors
+LIBS:conn
+LIBS:linear
+LIBS:regul
+LIBS:74xx
+LIBS:cmos4000
+LIBS:adc-dac
+LIBS:memory
+LIBS:xilinx
+LIBS:special
+LIBS:microcontrollers
+LIBS:dsp
+LIBS:microchip
+LIBS:analog_switches
+LIBS:motorola
+LIBS:texas
+LIBS:intel
+LIBS:audio
+LIBS:interface
+LIBS:digital-audio
+LIBS:philips
+LIBS:display
+LIBS:cypress
+LIBS:siliconi
+LIBS:contrib
+LIBS:valves
 EELAYER 23  0
 EELAYER END
 $Descr User 6000 7000
 Sheet 1 1
 Title ""
-Date "27 may 2008"
+Date "2 feb 2011"
 Rev ""
 Comp ""
 Comment1 ""
@@ -1105,7 +1135,7 @@ F 9 "" H 700 4350 60  0001 C CNN "”Ú6"
 F 10 "" H 700 4350 60  0001 C CNN "”Ú7"
 F 11 "" H 700 4350 60  0001 C CNN "”Ú8"
 	1    700  4350
-	1    0    0    1   
+	1    0    0    -1  
 $EndComp
 Text Label 2650 5650 0    60   ~ 0
 T_SRST
