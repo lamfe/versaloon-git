@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date 02/10/2010 21:39:13
+EESchema Schematic File Version 2  date 03/02/2011 06:28:57
 LIBS:power
 LIBS:elec-unifil
 LIBS:simonqian
@@ -35,7 +35,7 @@ EELAYER END
 $Descr User 6000 7000
 Sheet 1 1
 Title ""
-Date "2 oct 2010"
+Date "2 feb 2011"
 Rev ""
 Comp ""
 Comment1 ""
@@ -46,10 +46,10 @@ $EndDescr
 $Comp
 L TST P2
 U 1 1 4C0E88C5
-P 2200 750
-F 0 "P2" H 2200 1050 40  0000 C CNN
-F 1 "TST" H 2200 1000 30  0000 C CNN
-	1    2200 750 
+P 2150 750
+F 0 "P2" H 2150 1050 40  0000 C CNN
+F 1 "TST" H 2150 1000 30  0000 C CNN
+	1    2150 750 
 	-1   0    0    1   
 $EndComp
 $Comp
@@ -100,9 +100,9 @@ Wire Wire Line
 Wire Wire Line
 	1750 5400 1450 5400
 Wire Wire Line
-	950  950  850  950 
+	1000 950  900  950 
 Wire Wire Line
-	850  950  850  750 
+	900  950  900  750 
 Wire Wire Line
 	1700 2600 1350 2600
 Wire Wire Line
@@ -248,10 +248,10 @@ Wire Wire Line
 Wire Wire Line
 	3950 1050 3500 1050
 Wire Wire Line
-	1850 750  2200 750 
+	1800 750  2150 750 
 Wire Wire Line
-	700  750  950  750 
-Connection ~ 850  750 
+	750  750  1000 750 
+Connection ~ 900  750 
 Wire Wire Line
 	1750 5500 1450 5500
 Wire Wire Line
@@ -649,15 +649,15 @@ F 1 "LED_Red" H 1950 4700 50  0000 C CNN
 	1    1600 4750
 	1    0    0    -1  
 $EndComp
-Text Label 700  750  0    60   ~ 0
+Text Label 750  750  0    60   ~ 0
 5V
 $Comp
 L GND #PWR06
 U 1 1 4815FC8E
-P 950 850
-F 0 "#PWR06" H 950 850 30  0001 C CNN
-F 1 "GND" H 950 780 30  0001 C CNN
-	1    950  850 
+P 1000 850
+F 0 "#PWR06" H 1000 850 30  0001 C CNN
+F 1 "GND" H 1000 780 30  0001 C CNN
+	1    1000 850 
 	0    1    1    0   
 $EndComp
 Text Label 4650 5600 0    60   ~ 0
@@ -710,24 +710,24 @@ F 1 "GND" H 1100 2930 30  0001 C CNN
 	1    1100 3000
 	1    0    0    -1  
 $EndComp
-Text Label 2000 750  0    60   ~ 0
+Text Label 1950 750  0    60   ~ 0
 VCC
 $Comp
 L GND #PWR09
 U 1 1 480A38F2
-P 2000 1150
-F 0 "#PWR09" H 2000 1150 30  0001 C CNN
-F 1 "GND" H 2000 1080 30  0001 C CNN
-	1    2000 1150
+P 1950 1150
+F 0 "#PWR09" H 1950 1150 30  0001 C CNN
+F 1 "GND" H 1950 1080 30  0001 C CNN
+	1    1950 1150
 	1    0    0    -1  
 $EndComp
 $Comp
 L GND #PWR010
 U 1 1 480A38E9
-P 700 1150
-F 0 "#PWR010" H 700 1150 30  0001 C CNN
-F 1 "GND" H 700 1080 30  0001 C CNN
-	1    700  1150
+P 750 1150
+F 0 "#PWR010" H 750 1150 30  0001 C CNN
+F 1 "GND" H 750 1080 30  0001 C CNN
+	1    750  1150
 	1    0    0    -1  
 $EndComp
 Text Label 4200 4850 0    60   ~ 0
@@ -782,19 +782,19 @@ $EndComp
 $Comp
 L CAPAPOL C1
 U 1 1 480A309B
-P 2000 950
-F 0 "C1" H 1850 1050 50  0000 L CNN
-F 1 "100uF" H 1800 850 50  0000 L CNN
-	1    2000 950 
+P 1950 950
+F 0 "C1" H 1800 1050 50  0000 L CNN
+F 1 "100uF" H 1750 850 50  0000 L CNN
+	1    1950 950 
 	1    0    0    -1  
 $EndComp
 $Comp
 L CAPAPOL C0
 U 1 1 480A3089
-P 700 950
-F 0 "C0" H 700 1050 50  0000 L CNN
-F 1 "100uF" H 700 850 50  0000 L CNN
-	1    700  950 
+P 750 950
+F 0 "C0" H 750 1050 50  0000 L CNN
+F 1 "100uF" H 750 850 50  0000 L CNN
+	1    750  950 
 	1    0    0    -1  
 $EndComp
 $Comp
