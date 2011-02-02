@@ -1,4 +1,4 @@
-update=02/02/2011 19:14:19
+update=03/02/2011 06:12:37
 last_client=pcbnew
 [general]
 version=1
@@ -6,6 +6,11 @@ RootSch=Versaloon.sch
 BoardNm=Versaloon.brd
 [common]
 NetDir=
+[cvpcb]
+version=1
+NetIExt=net
+[cvpcb/libraries]
+EquName1=devcms
 [eeschema]
 version=1
 LibDir=
@@ -73,11 +78,6 @@ LibName28=cypress
 LibName29=siliconi
 LibName30=contrib
 LibName31=valves
-[cvpcb]
-version=1
-NetIExt=net
-[cvpcb/libraries]
-EquName1=devcms
 [pcbnew]
 version=1
 PadDrlX=0
