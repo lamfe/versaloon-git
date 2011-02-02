@@ -1,4 +1,4 @@
-update=10/06/2010 03:21:43
+update=02/02/2011 19:14:19
 last_client=pcbnew
 [general]
 version=1
@@ -39,7 +39,7 @@ RptLab=1
 SimCmd=
 UseNetN=0
 LabSize=60
-PrintMonochrome=1
+PrintMonochrome=0
 ShowSheetReferenceAndTitleBlock=1
 [eeschema/libraries]
 LibName1=power
@@ -81,8 +81,8 @@ EquName1=devcms
 [pcbnew]
 version=1
 PadDrlX=0
-PadDimH=250
-PadDimV=450
+PadDimH=600
+PadDimV=1000
 BoardThickness=630
 SgPcb45=1
 TxtPcbV=800
@@ -95,7 +95,7 @@ DrawLar=100
 EdgeLar=50
 TxtLar=120
 MSegLar=50
-LastNetListRead=
+LastNetListRead=Versaloon.net
 [pcbnew/libraries]
 LibDir=
 LibName1=simonqian
@@ -106,3 +106,4 @@ LibName5=divers
 LibName6=libcms
 LibName7=display
 LibName8=valves
+LibName9=D:\\ProfessionalTools\\KiCad\\share\\netlib\\modules\\netlib
