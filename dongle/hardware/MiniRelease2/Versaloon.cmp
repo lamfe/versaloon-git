@@ -1,4 +1,4 @@
-Cmp-Mod V01 Created by CvPCB (2010-05-05 BZR 2356)-stable date = 03/02/2011 02:05:37
+Cmp-Mod V01 Created by CvPCB (2010-05-05 BZR 2356)-stable date = 03/02/2011 15:44:55
 
 BeginCmp
 TimeStamp = /480A3064;
@@ -207,7 +207,7 @@ BeginCmp
 TimeStamp = /4D4678C0;
 Reference = Q0;
 ValeurCmp = 8050;
-IdModule  = SOT89;
+IdModule  = SOT89BCE;
 EndCmp
 
 BeginCmp
@@ -249,13 +249,6 @@ BeginCmp
 TimeStamp = /4B36768D;
 Reference = R12;
 ValeurCmp = 1K;
-IdModule  = SM0603L;
-EndCmp
-
-BeginCmp
-TimeStamp = /4D466A31;
-Reference = R14;
-ValeurCmp = 10K;
 IdModule  = SM0603L;
 EndCmp
 
@@ -428,6 +421,34 @@ IdModule  = PINTST;
 EndCmp
 
 BeginCmp
+TimeStamp = /4D4A5CB8;
+Reference = T13;
+ValeurCmp = TST;
+IdModule  = TEST_1PIN;
+EndCmp
+
+BeginCmp
+TimeStamp = /4D4A5CBB;
+Reference = T14;
+ValeurCmp = TST;
+IdModule  = TEST_1PIN;
+EndCmp
+
+BeginCmp
+TimeStamp = /4D4A5CBE;
+Reference = T15;
+ValeurCmp = TST;
+IdModule  = TEST_1PIN;
+EndCmp
+
+BeginCmp
+TimeStamp = /4D4A5CB0;
+Reference = T16;
+ValeurCmp = TST;
+IdModule  = TEST_1PIN;
+EndCmp
+
+BeginCmp
 TimeStamp = /4D1FB37F;
 Reference = U0;
 ValeurCmp = STM32F200-64PIN;
@@ -486,7 +507,7 @@ EndCmp
 BeginCmp
 TimeStamp = /4D468EBB;
 Reference = U9;
-ValeurCmp = HV230;
+ValeurCmp = HV232;
 IdModule  = SO8E;
 EndCmp
 
