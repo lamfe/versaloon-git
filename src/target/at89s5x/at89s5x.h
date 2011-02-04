@@ -24,7 +24,7 @@
 extern const struct program_area_map_t s5x_program_area_map[];
 extern const struct program_mode_t s5x_program_mode[];
 extern const struct program_functions_t s5x_program_functions;
-extern const struct misc_cmd_t s5x_notifier[];
+extern const struct vss_cmd_t s5x_notifier[];
 
 #endif /* __AT89S5X_H_INCLUDED__ */
 

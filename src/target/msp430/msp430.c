@@ -72,9 +72,9 @@ RESULT (*msp430jtagsbw_poll)(uint8_t index, uint32_t dr, uint32_t mask,
 								uint32_t value, uint8_t len, 
 								uint16_t poll_cnt, uint8_t toggle_tclk);
 
-MISC_HANDLER(msp430_help)
+VSS_HANDLER(msp430_help)
 {
-	MISC_CHECK_ARGC(1);
+	VSS_CHECK_ARGC(1);
 	printf("\
 Usage of %s:\n\
   -m,  --mode <MODE>                        set mode<j|s|b>\n\n", 
@@ -124,11 +124,11 @@ ENTER_PROGRAM_MODE_HANDLER(msp430)
 	return enter_program_mode_save(context);
 }
 
-MISC_HANDLER(msp430_mode)
+VSS_HANDLER(msp430_mode)
 {
 	uint8_t mode;
 	
-	MISC_CHECK_ARGC(2);
+	VSS_CHECK_ARGC(2);
 	mode = (uint8_t)strtoul(argv[1], NULL,0);
 	switch (mode)
 	{
@@ -146,14 +146,14 @@ MISC_HANDLER(msp430_mode)
 	return ERROR_OK;
 }
 
-const struct misc_cmd_t msp430_notifier[] = 
+const struct vss_cmd_t msp430_notifier[] = 
 {
-	MISC_CMD(	"help",
+	VSS_CMD(	"help",
 				"print help information of current target for internal call",
 				msp430_help),
-	MISC_CMD(	"mode",
+	VSS_CMD(	"mode",
 				"set programming mode of target for internal call",
 				msp430_mode),
-	MISC_CMD_END
+	VSS_CMD_END
 };
 

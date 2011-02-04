@@ -36,23 +36,23 @@ const char *versaloon_hardwares[] =
 	"Versaloon_Nano",		// 3
 };
 
-MISC_HANDLER(versaloon_support);
-MISC_HANDLER(versaloon_help);
-const struct misc_cmd_t versaloon_notifier[] = 
+VSS_HANDLER(versaloon_support);
+VSS_HANDLER(versaloon_help);
+const struct vss_cmd_t versaloon_notifier[] = 
 {
-	MISC_CMD(	"support",
+	VSS_CMD(	"support",
 				"print support information, format: support/S",
 				versaloon_support),
-	MISC_CMD(	"S",
+	VSS_CMD(	"S",
 				"print support information, format: support/S",
 				versaloon_support),
-	MISC_CMD(	"help",
+	VSS_CMD(	"help",
 				"print help information, format: help/h",
 				versaloon_help),
-	MISC_CMD(	"h",
+	VSS_CMD(	"h",
 				"print help information, format: help/h",
 				versaloon_help),
-	MISC_CMD_END
+	VSS_CMD_END
 };
 
 uint8_t *versaloon_buf = NULL;
@@ -65,9 +65,9 @@ uint16_t versaloon_pending_idx = 0;
 static usb_dev_handle *versaloon_device_handle = NULL;
 static uint32_t versaloon_to = VERSALOON_TIMEOUT;
 
-MISC_HANDLER(versaloon_help)
+VSS_HANDLER(versaloon_help)
 {
-	MISC_CHECK_ARGC(1);
+	VSS_CHECK_ARGC(1);
 	printf("\
 Usage of %s:\n\
   -U,  --usb <PID_VID_EPIN_EPOUT>           set usb VID, PID, EPIN, EPOUT\n\n", 
@@ -75,9 +75,9 @@ Usage of %s:\n\
 	return ERROR_OK;
 }
 
-MISC_HANDLER(versaloon_support)
+VSS_HANDLER(versaloon_support)
 {
-	MISC_CHECK_ARGC(1);
+	VSS_CHECK_ARGC(1);
 	printf("\
 %s: see http://www.SimonQian.com/en/Versaloon\n", VERSALOON_STRING);
 	return ERROR_OK;

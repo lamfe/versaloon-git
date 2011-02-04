@@ -100,10 +100,10 @@ static uint8_t cm3_chip_index = 0;
 
 uint8_t cm3_mode_offset = 0;
 
-MISC_HANDLER(cm3_chip)
+VSS_HANDLER(cm3_chip)
 {
 	uint8_t i;
-	MISC_CHECK_ARGC(2);
+	VSS_CHECK_ARGC(2);
 	for (i = 0; i < dimof(cm3_chips_param); i++)
 	{
 		if (!strcmp(cm3_chips_param[i].chip_name, argv[1]))
@@ -122,12 +122,12 @@ MISC_HANDLER(cm3_chip)
 	return ERROR_FAIL;
 }
 
-const struct misc_cmd_t cm3_notifier[] = 
+const struct vss_cmd_t cm3_notifier[] = 
 {
-	MISC_CMD(	"chip",
+	VSS_CMD(	"chip",
 				"select target chip for internal call",
 				cm3_chip),
-	MISC_CMD_END
+	VSS_CMD_END
 };
 
 ENTER_PROGRAM_MODE_HANDLER(cm3)

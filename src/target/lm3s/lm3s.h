@@ -24,7 +24,7 @@
 extern struct program_area_map_t lm3s_program_area_map[];
 extern const struct program_mode_t lm3s_program_mode[];
 extern struct program_functions_t lm3s_program_functions;
-extern const struct misc_cmd_t lm3s_notifier[];
+extern const struct vss_cmd_t lm3s_notifier[];
 
 #endif /* __LM3S_H_INCLUDED__ */
 

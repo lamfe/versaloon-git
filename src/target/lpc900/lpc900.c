@@ -68,20 +68,20 @@ const struct program_functions_t lpc900_program_functions =
 	READ_TARGET_FUNCNAME(lpc900icp)
 };
 
-MISC_HANDLER(lpc900_help)
+VSS_HANDLER(lpc900_help)
 {
-	MISC_CHECK_ARGC(1);
+	VSS_CHECK_ARGC(1);
 	printf("\
 Usage of %s:\n\n", CUR_TARGET_STRING);
 	return ERROR_OK;
 }
 
-const struct misc_cmd_t lpc900_notifier[] = 
+const struct vss_cmd_t lpc900_notifier[] = 
 {
-	MISC_CMD(	"help",
+	VSS_CMD(	"help",
 				"print help information of current target for internal call",
 				lpc900_help),
-	MISC_CMD_END
+	VSS_CMD_END
 };
 
 

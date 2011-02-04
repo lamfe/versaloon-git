@@ -32,23 +32,23 @@
 #include "filelist.h"
 #include "strparser.h"
 
-MISC_HANDLER(filelist_add_inputfile);
-MISC_HANDLER(filelist_add_outputfile);
-struct misc_cmd_t filelist_cmd[] = 
+VSS_HANDLER(filelist_add_inputfile);
+VSS_HANDLER(filelist_add_outputfile);
+struct vss_cmd_t filelist_cmd[] = 
 {
-	MISC_CMD(	"input-file",
+	VSS_CMD(	"input-file",
 				"add input file, format: input-file/I FILE[@SEG,ADDR]",
 				filelist_add_inputfile),
-	MISC_CMD(	"I",
+	VSS_CMD(	"I",
 				"add input file, format: input-file/I FILE[@SEG,ADDR]",
 				filelist_add_inputfile),
-	MISC_CMD(	"output-file",
+	VSS_CMD(	"output-file",
 				"add output file, format: output-file/O FILE[@SEG,ADDR]",
 				filelist_add_outputfile),
-	MISC_CMD(	"O",
+	VSS_CMD(	"O",
 				"add output file, format: output-file/O FILE[@SEG,ADDR]",
 				filelist_add_outputfile),
-	MISC_CMD_END
+	VSS_CMD_END
 };
 
 static void FILELIST_InsertLast(struct filelist *fl, struct filelist *newitem)
@@ -226,9 +226,9 @@ static RESULT filelist_check_collision(struct filelist *fl1,
 	return ERROR_OK;
 }
 
-MISC_HANDLER(filelist_add_inputfile)
+VSS_HANDLER(filelist_add_inputfile)
 {
-	MISC_CHECK_ARGC_2(1, 2);
+	VSS_CHECK_ARGC_2(1, 2);
 	
 	if (1 == argc)
 	{
@@ -255,9 +255,9 @@ MISC_HANDLER(filelist_add_inputfile)
 	return ERROR_OK;
 }
 
-MISC_HANDLER(filelist_add_outputfile)
+VSS_HANDLER(filelist_add_outputfile)
 {
-	MISC_CHECK_ARGC_2(1, 2);
+	VSS_CHECK_ARGC_2(1, 2);
 	
 	if (1 == argc)
 	{

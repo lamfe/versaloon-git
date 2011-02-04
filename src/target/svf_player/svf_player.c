@@ -67,9 +67,9 @@ const struct program_functions_t svfp_program_functions =
 
 #define SVF_SET_FREQ_CMD			"FREQUENCY %.02f HZ"
 
-MISC_HANDLER(svfp_help)
+VSS_HANDLER(svfp_help)
 {
-	MISC_CHECK_ARGC(1);
+	VSS_CHECK_ARGC(1);
 	printf("\
 Usage of %s:\n\
   -F,  --frequency <FREQUENCY>              set JTAG frequency, in KHz\n\n", 
@@ -77,12 +77,12 @@ Usage of %s:\n\
 	return ERROR_OK;
 }
 
-const struct misc_cmd_t svfp_notifier[] = 
+const struct vss_cmd_t svfp_notifier[] = 
 {
-	MISC_CMD(	"help",
+	VSS_CMD(	"help",
 				"print help information of current target for internal call",
 				svfp_help),
-	MISC_CMD_END
+	VSS_CMD_END
 };
 
 
