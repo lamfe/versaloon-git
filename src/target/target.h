@@ -281,7 +281,7 @@ struct target_info_t
 	const struct program_area_map_t *program_area_map;
 	const struct program_mode_t *program_mode;
 	const struct program_functions_t *program_functions;
-	const struct misc_cmd_t *notifier;
+	const struct vss_cmd_t *notifier;
 	RESULT (*adjust_setting)(struct program_info_t *pi, 
 							struct chip_param_t *param, uint32_t program_mode);
 	RESULT (*adjust_mapping)(uint32_t *address, uint8_t dir);

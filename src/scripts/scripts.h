@@ -17,85 +17,85 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-struct misc_cmd_t
+struct vss_cmd_t
 {
 	const char *cmd_name;
 	const char *help_str;
 	RESULT (*processor)(uint16_t argc, const char *argv[]);
 };
-struct misc_param_t
+struct vss_param_t
 {
 	const char *param_name;
 	const char *help_str;
 	uint32_t value;
 };
 
-#define MISC_HANDLER(name)						\
+#define VSS_HANDLER(name)						\
 	static RESULT (name)(uint16_t argc, const char *argv[])
 
-#define MISC_CMD(name, helpstr, handler)		\
+#define VSS_CMD(name, helpstr, handler)			\
 	{\
 		(name),\
 		(helpstr),\
 		(handler)\
 	}
-#define MISC_CMD_END							MISC_CMD(NULL, NULL, NULL)
-#define MISC_PARAM(name, helpstr, default)		\
+#define VSS_CMD_END								VSS_CMD(NULL, NULL, NULL)
+#define VSS_PARAM(name, helpstr, default)		\
 	{\
 		(name),\
 		(helpstr),\
 		(default)\
 	}
-#define MISC_PARAM_END							MISC_PARAM(NULL, NULL, 0)
+#define VSS_PARAM_END							VSS_PARAM(NULL, NULL, 0)
 
-#define MISC_CHECK_ARGC(n)						\
+#define VSS_CHECK_ARGC(n)						\
 	if (argc != (n))\
 	{\
 		LOG_ERROR(ERRMSG_INVALID_CMD, argv[0]);\
-		misc_print_help(argv[0]);\
+		vss_print_help(argv[0]);\
 		return ERROR_FAIL;\
 	}
-#define MISC_CHECK_ARGC_2(n1, n2)				\
+#define VSS_CHECK_ARGC_2(n1, n2)				\
 	if ((argc != (n1)) && (argc != (n2)))\
 	{\
 		LOG_ERROR(ERRMSG_INVALID_CMD, argv[0]);\
-		misc_print_help(argv[0]);\
+		vss_print_help(argv[0]);\
 		return ERROR_FAIL;\
 	}
-#define MISC_CHECK_ARGC_MIN(n)					\
+#define VSS_CHECK_ARGC_MIN(n)					\
 	if (argc < (n))\
 	{\
 		LOG_ERROR(ERRMSG_INVALID_CMD, argv[0]);\
-		misc_print_help(argv[0]);\
+		vss_print_help(argv[0]);\
 		return ERROR_FAIL;\
 	}
-#define MISC_CHECK_ARGC_MAX(n)					\
+#define VSS_CHECK_ARGC_MAX(n)					\
 	if (argc > (n))\
 	{\
 		LOG_ERROR(ERRMSG_INVALID_CMD, argv[0]);\
-		misc_print_help(argv[0]);\
+		vss_print_help(argv[0]);\
 		return ERROR_FAIL;\
 	}
-#define MISC_CHECK_ARGC_RANGE(min, max)			\
+#define VSS_CHECK_ARGC_RANGE(min, max)			\
 	if ((argc < (min)) || (argc > (max)))\
 	{\
 		LOG_ERROR(ERRMSG_INVALID_CMD, argv[0]);\
-		misc_print_help(argv[0]);\
+		vss_print_help(argv[0]);\
 		return ERROR_FAIL;\
 	}
 
-#define MISC_COMMENT_CHAR						'#'
-#define MISC_HIDE_CHAR							'@'
+#define VSS_COMMENT_CHAR						'#'
+#define VSS_HIDE_CHAR							'@'
 
-void misc_set_fatal_error(void);
-RESULT misc_cmd_supported_by_notifier(const struct misc_cmd_t *notifier, 
+void vss_set_fatal_error(void);
+RESULT vss_cmd_supported_by_notifier(const struct vss_cmd_t *notifier, 
 										char *notify_cmd);
-RESULT misc_call_notifier(const struct misc_cmd_t *notifier, 
+RESULT vss_call_notifier(const struct vss_cmd_t *notifier, 
 							char *notify_cmd, char *notify_param);
-RESULT misc_cmd_supported(char *name);
-RESULT misc_print_help(const char *name);
-RESULT misc_run_script(char *cmd);
-RESULT misc_run_cmd(uint16_t argc, const char *argv[]);
-RESULT misc_get_binary_buffer(uint16_t argc, const char *argv[], 
+RESULT vss_cmd_supported(char *name);
+RESULT vss_print_help(const char *name);
+RESULT vss_run_script(char *cmd);
+RESULT vss_run_cmd(uint16_t argc, const char *argv[]);
+RESULT vss_get_binary_buffer(uint16_t argc, const char *argv[], 
 						uint8_t data_size, uint32_t data_num, void **pbuff);
 

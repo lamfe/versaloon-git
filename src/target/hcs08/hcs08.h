@@ -24,7 +24,7 @@
 extern const struct program_area_map_t hcs08_program_area_map[];
 extern const struct program_mode_t hcs08_program_mode[];
 extern const struct program_functions_t hcs08_program_functions;
-extern const struct misc_cmd_t hcs08_notifier[];
+extern const struct vss_cmd_t hcs08_notifier[];
 
 #endif /* __HCS08_H_INCLUDED__ */
 

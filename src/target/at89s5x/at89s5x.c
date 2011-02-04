@@ -70,9 +70,9 @@ const struct program_functions_t s5x_program_functions =
 	READ_TARGET_FUNCNAME(s5x)
 };
 
-MISC_HANDLER(s5x_help)
+VSS_HANDLER(s5x_help)
 {
-	MISC_CHECK_ARGC(1);
+	VSS_CHECK_ARGC(1);
 	printf("\
 Usage of %s:\n\
   -F,  --frequency <FREQUENCY>              set ISP frequency, in KHz\n\
@@ -81,12 +81,12 @@ Usage of %s:\n\
 	return ERROR_OK;
 }
 
-const struct misc_cmd_t s5x_notifier[] = 
+const struct vss_cmd_t s5x_notifier[] = 
 {
-	MISC_CMD(	"help",
+	VSS_CMD(	"help",
 				"print help information of current target for internal call",
 				s5x_help),
-	MISC_CMD_END
+	VSS_CMD_END
 };
 
 static uint16_t s5x_byte_delay_us = 500;

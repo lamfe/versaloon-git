@@ -53,106 +53,106 @@ struct programmer_info_t programmers_info[] =
 
 struct programmer_info_t *cur_programmer = NULL;
 
-MISC_HANDLER(programmer_get_target_voltage);
-MISC_HANDLER(programmer_set_target_voltage);
+VSS_HANDLER(programmer_get_target_voltage);
+VSS_HANDLER(programmer_set_target_voltage);
 
-MISC_HANDLER(programmer_iic_init);
-MISC_HANDLER(programmer_iic_fini);
-MISC_HANDLER(programmer_iic_config);
-MISC_HANDLER(programmer_iic_read);
-MISC_HANDLER(programmer_iic_write);
+VSS_HANDLER(programmer_iic_init);
+VSS_HANDLER(programmer_iic_fini);
+VSS_HANDLER(programmer_iic_config);
+VSS_HANDLER(programmer_iic_read);
+VSS_HANDLER(programmer_iic_write);
 
-MISC_HANDLER(programmer_gpio_init);
-MISC_HANDLER(programmer_gpio_fini);
-MISC_HANDLER(programmer_gpio_config);
-MISC_HANDLER(programmer_gpio_out);
-MISC_HANDLER(programmer_gpio_in);
+VSS_HANDLER(programmer_gpio_init);
+VSS_HANDLER(programmer_gpio_fini);
+VSS_HANDLER(programmer_gpio_config);
+VSS_HANDLER(programmer_gpio_out);
+VSS_HANDLER(programmer_gpio_in);
 
-MISC_HANDLER(programmer_spi_init);
-MISC_HANDLER(programmer_spi_fini);
-MISC_HANDLER(programmer_spi_config);
-MISC_HANDLER(programmer_spi_io);
+VSS_HANDLER(programmer_spi_init);
+VSS_HANDLER(programmer_spi_fini);
+VSS_HANDLER(programmer_spi_config);
+VSS_HANDLER(programmer_spi_io);
 
-MISC_HANDLER(programmer_delay_us);
-MISC_HANDLER(programmer_delay_ms);
-MISC_HANDLER(programmer_commit);
+VSS_HANDLER(programmer_delay_us);
+VSS_HANDLER(programmer_delay_ms);
+VSS_HANDLER(programmer_commit);
 
-MISC_HANDLER(programmer_list);
-MISC_HANDLER(programmer_define);
+VSS_HANDLER(programmer_list);
+VSS_HANDLER(programmer_define);
 
-struct misc_cmd_t programmer_cmd[] = 
+struct vss_cmd_t programmer_cmd[] = 
 {
-	MISC_CMD(	"display-programmer",
+	VSS_CMD(	"display-programmer",
 				"list programmers connected, format: display-programmer/L",
 				programmer_list),
-	MISC_CMD(	"L",
+	VSS_CMD(	"L",
 				"list programmers connected, format: display-programmer/L",
 				programmer_list),
-	MISC_CMD(	"programmer",
+	VSS_CMD(	"programmer",
 				"define programmer to use, format: programmer/p PROGRAMMER",
 				programmer_define),
-	MISC_CMD(	"p",
+	VSS_CMD(	"p",
 				"define programmer to use, format: programmer/p PROGRAMMER",
 				programmer_define),
-	MISC_CMD(	"get_tvcc", 
+	VSS_CMD(	"get_tvcc", 
 				"get target voltage, format: get_tvcc", 
 				programmer_get_target_voltage),
-	MISC_CMD(	"set_tvcc", 
+	VSS_CMD(	"set_tvcc", 
 				"output power to target, format: set_tvcc VOLTAGE_IN_MV", 
 				programmer_set_target_voltage),
-	MISC_CMD(	"gpio_init",
+	VSS_CMD(	"gpio_init",
 				"initialize gpio, format: gpio_init [MASK IO PULL]",
 				programmer_gpio_init),
-	MISC_CMD(	"gpio_fini",
+	VSS_CMD(	"gpio_fini",
 				"finalize gpio, format: gpio_fini",
 				programmer_gpio_fini),
-	MISC_CMD(	"gpio_config",
+	VSS_CMD(	"gpio_config",
 				"config gpio, format: gpio_config MASK IO PULL",
 				programmer_gpio_config),
-	MISC_CMD(	"gpio_out",
+	VSS_CMD(	"gpio_out",
 				"gpio output, format: gpio_out MASK VALUE",
 				programmer_gpio_out),
-	MISC_CMD(	"gpio_in",
+	VSS_CMD(	"gpio_in",
 				"gpio input, format: gpio_in MASK",
 				programmer_gpio_in),
-	MISC_CMD(	"spi_init",
+	VSS_CMD(	"spi_init",
 				"initialize spi, format: spi_init [KHZ CPOL CPHA FIRSTBIT]",
 				programmer_spi_init),
-	MISC_CMD(	"spi_fini",
+	VSS_CMD(	"spi_fini",
 				"finalize spi, format: spi_fini",
 				programmer_spi_fini),
-	MISC_CMD(	"spi_config",
+	VSS_CMD(	"spi_config",
 				"config spi, format: spi_config KHZ CPOL CPHA FIRSTBIT",
 				programmer_spi_config),
-	MISC_CMD(	"spi_io",
+	VSS_CMD(	"spi_io",
 				"spi input and output, format: spi_io DATASIZE DATA...",
 				programmer_spi_io),
-	MISC_CMD(	"iic_init",
+	VSS_CMD(	"iic_init",
 				"initialize iic, format: iic_init [KHZ MAX_DLY_US]",
 				programmer_iic_init),
-	MISC_CMD(	"iic_fini",
+	VSS_CMD(	"iic_fini",
 				"finalize iic, format: iic_fini",
 				programmer_iic_fini),
-	MISC_CMD(	"iic_config",
+	VSS_CMD(	"iic_config",
 				"config iic, format: iic_config KHZ MAX_DLY_US",
 				programmer_iic_config),
-	MISC_CMD(	"iic_read",
+	VSS_CMD(	"iic_read",
 				"read data from iic, format: iic_read SLAVE_ADDR DATA_SIZE",
 				programmer_iic_read),
-	MISC_CMD(	"iic_write",
+	VSS_CMD(	"iic_write",
 				"write data to iic, format: "
 				"iic_write SLAVE_ADDR DATA_SIZE DATA0...",
 				programmer_iic_write),
-	MISC_CMD(	"delayus",
+	VSS_CMD(	"delayus",
 				"delay us, format: delayus US",
 				programmer_delay_us),
-	MISC_CMD(	"delayms",
+	VSS_CMD(	"delayms",
 				"delay ms, format: delayus MS",
 				programmer_delay_ms),
-	MISC_CMD(	"commit",
+	VSS_CMD(	"commit",
 				"commit all commands",
 				programmer_commit),
-	MISC_CMD_END
+	VSS_CMD_END
 };
 
 char* get_interface_name(uint64_t i)
@@ -223,7 +223,7 @@ RESULT programmer_init(const char *programmer)
 		{
 			return ERROR_FAIL;
 		}
-		return misc_run_script("get_tvcc");
+		return vss_run_script("get_tvcc");
 	}
 	else
 	{
@@ -238,7 +238,7 @@ RESULT programmer_assert(struct programmer_info_t **prog)
 		if ((ERROR_OK != programmer_init(NULL)) 
 			|| (NULL == cur_programmer))
 		{
-			misc_set_fatal_error();
+			vss_set_fatal_error();
 			return ERROR_FAIL;
 		}
 	}
@@ -256,7 +256,7 @@ void programmer_print_list(void)
 	printf("Supported programmers:\n");
 	for (i = 0; programmers_info[i].name != NULL; i++)
 	{
-		misc_call_notifier(programmers_info[i].notifier, "support", NULL);
+		vss_call_notifier(programmers_info[i].notifier, "support", NULL);
 	}
 	printf("\n");
 }
@@ -267,7 +267,7 @@ void programmer_print_help(void)
 	
 	for (i = 0; programmers_info[i].name != NULL; i++)
 	{
-		misc_call_notifier(programmers_info[i].notifier, "help", NULL);
+		vss_call_notifier(programmers_info[i].notifier, "help", NULL);
 	}
 }
 
@@ -276,12 +276,12 @@ void programmer_print_help(void)
 
 
 // scripts support
-MISC_HANDLER(programmer_list)
+VSS_HANDLER(programmer_list)
 {
 	uint32_t i, j = 0;
 	
 	vsprog_no_call_operate();
-	MISC_CHECK_ARGC(1);
+	VSS_CHECK_ARGC(1);
 	
 	for (i = 0; programmers_info[i].name != NULL; i++)
 	{
@@ -294,11 +294,11 @@ MISC_HANDLER(programmer_list)
 	return ERROR_OK;
 }
 
-MISC_HANDLER(programmer_define)
+VSS_HANDLER(programmer_define)
 {
 	char *programmer;
 	
-	MISC_CHECK_ARGC_2(1, 2);
+	VSS_CHECK_ARGC_2(1, 2);
 	if (1 == argc)
 	{
 		programmer = NULL;
@@ -318,13 +318,13 @@ MISC_HANDLER(programmer_define)
 }
 
 // tvcc
-MISC_HANDLER(programmer_get_target_voltage)
+VSS_HANDLER(programmer_get_target_voltage)
 {
 	uint16_t voltage = 0;
 	RESULT ret = ERROR_OK;
 	struct programmer_info_t *prog = NULL;
 	
-	MISC_CHECK_ARGC(1);
+	VSS_CHECK_ARGC(1);
 	if ((ERROR_OK != programmer_assert(&prog)) || (NULL == prog))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
@@ -342,12 +342,12 @@ MISC_HANDLER(programmer_get_target_voltage)
 	return ret;
 }
 
-MISC_HANDLER(programmer_set_target_voltage)
+VSS_HANDLER(programmer_set_target_voltage)
 {
 	uint16_t voltage = 0;
 	struct programmer_info_t *prog = NULL;
 	
-	MISC_CHECK_ARGC(2);
+	VSS_CHECK_ARGC(2);
 	if ((ERROR_OK != programmer_assert(&prog)) || (NULL == prog))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
@@ -359,11 +359,11 @@ MISC_HANDLER(programmer_set_target_voltage)
 }
 
 // gpio
-MISC_HANDLER(programmer_gpio_init)
+VSS_HANDLER(programmer_gpio_init)
 {
 	struct programmer_info_t *prog = NULL;
 	
-	MISC_CHECK_ARGC_2(1, 4);
+	VSS_CHECK_ARGC_2(1, 4);
 	if ((ERROR_OK != programmer_assert(&prog)) || (NULL == prog))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
@@ -382,11 +382,11 @@ MISC_HANDLER(programmer_gpio_init)
 	return ERROR_OK;
 }
 
-MISC_HANDLER(programmer_gpio_fini)
+VSS_HANDLER(programmer_gpio_fini)
 {
 	struct programmer_info_t *prog = NULL;
 	
-	MISC_CHECK_ARGC(1);
+	VSS_CHECK_ARGC(1);
 	if ((ERROR_OK != programmer_assert(&prog)) || (NULL == prog))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
@@ -396,12 +396,12 @@ MISC_HANDLER(programmer_gpio_fini)
 	return prog->interfaces.gpio.fini(0);
 }
 
-MISC_HANDLER(programmer_gpio_config)
+VSS_HANDLER(programmer_gpio_config)
 {
 	uint16_t mask, io, pull, pull_en;
 	struct programmer_info_t *prog = NULL;
 	
-	MISC_CHECK_ARGC(5);
+	VSS_CHECK_ARGC(5);
 	if ((ERROR_OK != programmer_assert(&prog)) || (NULL == prog))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
@@ -416,12 +416,12 @@ MISC_HANDLER(programmer_gpio_config)
 	return prog->interfaces.gpio.config(0, mask, io, pull_en, pull);
 }
 
-MISC_HANDLER(programmer_gpio_out)
+VSS_HANDLER(programmer_gpio_out)
 {
 	uint16_t mask, value;
 	struct programmer_info_t *prog = NULL;
 	
-	MISC_CHECK_ARGC(3);
+	VSS_CHECK_ARGC(3);
 	if ((ERROR_OK != programmer_assert(&prog)) || (NULL == prog))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
@@ -434,13 +434,13 @@ MISC_HANDLER(programmer_gpio_out)
 	return prog->interfaces.gpio.out(0, mask, value);
 }
 
-MISC_HANDLER(programmer_gpio_in)
+VSS_HANDLER(programmer_gpio_in)
 {
 	uint16_t mask, value;
 	RESULT ret = ERROR_OK;
 	struct programmer_info_t *prog = NULL;
 	
-	MISC_CHECK_ARGC(2);
+	VSS_CHECK_ARGC(2);
 	if ((ERROR_OK != programmer_assert(&prog)) || (NULL == prog))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
@@ -462,11 +462,11 @@ MISC_HANDLER(programmer_gpio_in)
 }
 
 // spi
-MISC_HANDLER(programmer_spi_init)
+VSS_HANDLER(programmer_spi_init)
 {
 	struct programmer_info_t *prog = NULL;
 	
-	MISC_CHECK_ARGC_2(1, 5);
+	VSS_CHECK_ARGC_2(1, 5);
 	if ((ERROR_OK != programmer_assert(&prog)) || (NULL == prog))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
@@ -485,11 +485,11 @@ MISC_HANDLER(programmer_spi_init)
 	return ERROR_OK;
 }
 
-MISC_HANDLER(programmer_spi_fini)
+VSS_HANDLER(programmer_spi_fini)
 {
 	struct programmer_info_t *prog = NULL;
 	
-	MISC_CHECK_ARGC(1);
+	VSS_CHECK_ARGC(1);
 	if ((ERROR_OK != programmer_assert(&prog)) || (NULL == prog))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
@@ -499,13 +499,13 @@ MISC_HANDLER(programmer_spi_fini)
 	return prog->interfaces.spi.fini(0);
 }
 
-MISC_HANDLER(programmer_spi_config)
+VSS_HANDLER(programmer_spi_config)
 {
 	uint16_t khz = 0;
 	uint8_t cpol, cpha, firstbit;
 	struct programmer_info_t *prog = NULL;
 	
-	MISC_CHECK_ARGC(5);
+	VSS_CHECK_ARGC(5);
 	if ((ERROR_OK != programmer_assert(&prog)) || (NULL == prog))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
@@ -520,14 +520,14 @@ MISC_HANDLER(programmer_spi_config)
 	return prog->interfaces.spi.config(0, khz, cpol, cpha, firstbit);
 }
 
-MISC_HANDLER(programmer_spi_io)
+VSS_HANDLER(programmer_spi_io)
 {
 	uint16_t data_size = 0;
 	uint8_t *buff = NULL;
 	RESULT ret = ERROR_OK;
 	struct programmer_info_t *prog = NULL;
 	
-	MISC_CHECK_ARGC_MIN(2);
+	VSS_CHECK_ARGC_MIN(2);
 	if ((ERROR_OK != programmer_assert(&prog)) || (NULL == prog))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
@@ -536,15 +536,15 @@ MISC_HANDLER(programmer_spi_io)
 	
 	data_size = (uint16_t)strtoul(argv[1], NULL, 0);
 
-	MISC_CHECK_ARGC_2(2, 2 + data_size);
+	VSS_CHECK_ARGC_2(2, 2 + data_size);
 	if (0 == data_size)
 	{
 		LOG_ERROR(ERRMSG_INVALID_TARGET, "data_size");
-		misc_print_help(argv[0]);
+		vss_print_help(argv[0]);
 		return ERROR_FAIL;
 	}
 	
-	ret = misc_get_binary_buffer(argc - 2, &argv[2], 1, data_size, (void**)&buff);
+	ret = vss_get_binary_buffer(argc - 2, &argv[2], 1, data_size, (void**)&buff);
 	if (ERROR_OK == ret)
 	{
 		ret = prog->interfaces.spi.io(0, buff, buff, data_size);
@@ -567,11 +567,11 @@ MISC_HANDLER(programmer_spi_io)
 }
 
 // iic
-MISC_HANDLER(programmer_iic_init)
+VSS_HANDLER(programmer_iic_init)
 {
 	struct programmer_info_t *prog = NULL;
 	
-	MISC_CHECK_ARGC_2(1, 3);
+	VSS_CHECK_ARGC_2(1, 3);
 	if ((ERROR_OK != programmer_assert(&prog)) || (NULL == prog))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
@@ -590,11 +590,11 @@ MISC_HANDLER(programmer_iic_init)
 	return ERROR_OK;
 }
 
-MISC_HANDLER(programmer_iic_fini)
+VSS_HANDLER(programmer_iic_fini)
 {
 	struct programmer_info_t *prog = NULL;
 	
-	MISC_CHECK_ARGC(1);
+	VSS_CHECK_ARGC(1);
 	if ((ERROR_OK != programmer_assert(&prog)) || (NULL == prog))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
@@ -604,13 +604,13 @@ MISC_HANDLER(programmer_iic_fini)
 	return prog->interfaces.i2c.fini(0);
 }
 
-MISC_HANDLER(programmer_iic_config)
+VSS_HANDLER(programmer_iic_config)
 {
 	uint16_t khz = 0;
 	uint16_t max_dly = 0;
 	struct programmer_info_t *prog = NULL;
 	
-	MISC_CHECK_ARGC(3);
+	VSS_CHECK_ARGC(3);
 	if ((ERROR_OK != programmer_assert(&prog)) || (NULL == prog))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
@@ -623,7 +623,7 @@ MISC_HANDLER(programmer_iic_config)
 	return prog->interfaces.i2c.config(0, khz, 0, max_dly);
 }
 
-MISC_HANDLER(programmer_iic_read)
+VSS_HANDLER(programmer_iic_read)
 {
 	uint8_t data_size = 0;
 	uint8_t addr = 0;
@@ -631,7 +631,7 @@ MISC_HANDLER(programmer_iic_read)
 	RESULT ret = ERROR_OK;
 	struct programmer_info_t *prog = NULL;
 	
-	MISC_CHECK_ARGC(3);
+	VSS_CHECK_ARGC(3);
 	if ((ERROR_OK != programmer_assert(&prog)) || (NULL == prog))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
@@ -664,7 +664,7 @@ MISC_HANDLER(programmer_iic_read)
 	return ret;
 }
 
-MISC_HANDLER(programmer_iic_write)
+VSS_HANDLER(programmer_iic_write)
 {
 	uint8_t data_size = 0;
 	uint8_t addr = 0;
@@ -672,7 +672,7 @@ MISC_HANDLER(programmer_iic_write)
 	RESULT ret = ERROR_OK;
 	struct programmer_info_t *prog = NULL;
 	
-	MISC_CHECK_ARGC_MIN(3);
+	VSS_CHECK_ARGC_MIN(3);
 	if ((ERROR_OK != programmer_assert(&prog)) || (NULL == prog))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
@@ -682,15 +682,15 @@ MISC_HANDLER(programmer_iic_write)
 	addr = (uint8_t)strtoul(argv[1], NULL, 0);
 	data_size = (uint8_t)strtoul(argv[2], NULL, 0);
 	
-	MISC_CHECK_ARGC(3 + data_size);
+	VSS_CHECK_ARGC(3 + data_size);
 	if (0 == data_size)
 	{
 		LOG_ERROR(ERRMSG_INVALID_TARGET, "data_size");
-		misc_print_help(argv[0]);
+		vss_print_help(argv[0]);
 		return ERROR_FAIL;
 	}
 	
-	ret = misc_get_binary_buffer(argc - 3, &argv[3], 1, data_size, (void**)&buff);
+	ret = vss_get_binary_buffer(argc - 3, &argv[3], 1, data_size, (void**)&buff);
 	if (ERROR_OK == ret)
 	{
 		ret = prog->interfaces.i2c.write(0, addr, buff, data_size, 1);
@@ -705,12 +705,12 @@ MISC_HANDLER(programmer_iic_write)
 }
 
 // delay
-MISC_HANDLER(programmer_delay_us)
+VSS_HANDLER(programmer_delay_us)
 {
 	uint16_t delay;
 	struct programmer_info_t *prog = NULL;
 	
-	MISC_CHECK_ARGC(2);
+	VSS_CHECK_ARGC(2);
 	if ((ERROR_OK != programmer_assert(&prog)) || (NULL == prog))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
@@ -721,12 +721,12 @@ MISC_HANDLER(programmer_delay_us)
 	return prog->interfaces.delay.delayus(delay);
 }
 
-MISC_HANDLER(programmer_delay_ms)
+VSS_HANDLER(programmer_delay_ms)
 {
 	uint16_t delay;
 	struct programmer_info_t *prog = NULL;
 	
-	MISC_CHECK_ARGC(2);
+	VSS_CHECK_ARGC(2);
 	if ((ERROR_OK != programmer_assert(&prog)) || (NULL == prog))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
@@ -738,11 +738,11 @@ MISC_HANDLER(programmer_delay_ms)
 }
 
 // commit
-MISC_HANDLER(programmer_commit)
+VSS_HANDLER(programmer_commit)
 {
 	struct programmer_info_t *prog = NULL;
 	
-	MISC_CHECK_ARGC(1);
+	VSS_CHECK_ARGC(1);
 	if ((ERROR_OK != programmer_assert(&prog)) || (NULL == prog))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");

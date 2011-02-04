@@ -62,9 +62,9 @@ RESULT (*lpc1000_enter_program_mode_save)(struct program_context_t *context);
 ENTER_PROGRAM_MODE_HANDLER(lpc1000);
 struct program_functions_t lpc1000_program_functions;
 
-MISC_HANDLER(lpc1000_help)
+VSS_HANDLER(lpc1000_help)
 {
-	MISC_CHECK_ARGC(1);
+	VSS_CHECK_ARGC(1);
 	printf("\
 Usage of %s:\n\
   -C,  --comport <COMM_ATTRIBUTE>           set com port\n\
@@ -76,25 +76,25 @@ Usage of %s:\n\
 	return ERROR_OK;
 }
 
-MISC_HANDLER(lpc1000_mode)
+VSS_HANDLER(lpc1000_mode)
 {
 	uint8_t mode;
 	
-	MISC_CHECK_ARGC(2);
+	VSS_CHECK_ARGC(2);
 	mode = (uint8_t)strtoul(argv[1], NULL,0);
 	switch (mode)
 	{
 	case LPC1000_JTAG:
 	case LPC1000_SWD:
 		cm3_mode_offset = 0;
-		misc_call_notifier(cm3_notifier, "chip", "cm3_lpc1000");
+		vss_call_notifier(cm3_notifier, "chip", "cm3_lpc1000");
 		memcpy(&lpc1000_program_functions, &cm3_program_functions, 
 				sizeof(lpc1000_program_functions));
 		lpc1000_enter_program_mode_save = 
 								cm3_program_functions.enter_program_mode;
 		break;
 	case LPC1000_ISP:
-		misc_call_notifier(comisp_notifier, "chip", "comisp_lpcarm");
+		vss_call_notifier(comisp_notifier, "chip", "comisp_lpcarm");
 		memcpy(&lpc1000_program_functions, &comisp_program_functions, 
 				sizeof(lpc1000_program_functions));
 		lpc1000_enter_program_mode_save = 
@@ -106,28 +106,28 @@ MISC_HANDLER(lpc1000_mode)
 	return ERROR_OK;
 }
 
-MISC_HANDLER(lpc1000_extra)
+VSS_HANDLER(lpc1000_extra)
 {
 	char cmd[4] = "E ";
 	
-	MISC_CHECK_ARGC(1);
+	VSS_CHECK_ARGC(1);
 	cmd[2] = '0' + COMISP_LPCARM;
 	cmd[3] = '\0';
-	return misc_run_script(cmd);
+	return vss_run_script(cmd);
 }
 
-const struct misc_cmd_t lpc1000_notifier[] = 
+const struct vss_cmd_t lpc1000_notifier[] = 
 {
-	MISC_CMD(	"help",
+	VSS_CMD(	"help",
 				"print help information of current target for internal call",
 				lpc1000_help),
-	MISC_CMD(	"mode",
+	VSS_CMD(	"mode",
 				"set programming mode of target for internal call",
 				lpc1000_mode),
-	MISC_CMD(	"extra",
+	VSS_CMD(	"extra",
 				"print extra information for internal call",
 				lpc1000_extra),
-	MISC_CMD_END
+	VSS_CMD_END
 };
 
 ADJUST_SETTING_HANDLER(lpc1000)

@@ -23,7 +23,7 @@
 
 RESULT versaloon_init_capability(void *p);
 uint32_t versaloon_display_programmer(void);
-extern const struct misc_cmd_t versaloon_notifier[];
+extern const struct vss_cmd_t versaloon_notifier[];
 
 #endif /* __VERSALOON_H_INCLUDED__ */
 

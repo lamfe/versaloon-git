@@ -80,73 +80,73 @@ static const struct option long_opts[] =
 	{"auto-adjust", no_argument, NULL, 'A'},
 	{"firmware-update", no_argument, NULL, 'Z'},
 	{"buffsize", required_argument, NULL, 'b'},
-	{"misc-cmd", required_argument, NULL, 'V'},
+	{"vss-cmd", required_argument, NULL, 'V'},
 	{"quiet", no_argument, NULL, 'q'},
 	{"erase-on-demand", no_argument, NULL, 'e'},
 	{NULL, 0, NULL, 0},
 };
 
-MISC_HANDLER(vsprog_help);
-MISC_HANDLER(vsprog_version);
-MISC_HANDLER(vsprog_debug_level);
-MISC_HANDLER(vsprog_support);
-MISC_HANDLER(vsprog_operation);
-MISC_HANDLER(vsprog_mass);
-MISC_HANDLER(vsprog_firmware_update);
-MISC_HANDLER(vsprog_free_all);
-MISC_HANDLER(vsprog_init);
+VSS_HANDLER(vsprog_help);
+VSS_HANDLER(vsprog_version);
+VSS_HANDLER(vsprog_debug_level);
+VSS_HANDLER(vsprog_support);
+VSS_HANDLER(vsprog_operation);
+VSS_HANDLER(vsprog_mass);
+VSS_HANDLER(vsprog_firmware_update);
+VSS_HANDLER(vsprog_free_all);
+VSS_HANDLER(vsprog_init);
 
-struct misc_cmd_t vsprog_cmd[] = 
+struct vss_cmd_t vsprog_cmd[] = 
 {
-	MISC_CMD(	"help",
+	VSS_CMD(	"help",
 				"show help, format: help/h",
 				vsprog_help),
-	MISC_CMD(	"h",
+	VSS_CMD(	"h",
 				"show help, format: help/h",
 				vsprog_help),
-	MISC_CMD(	"version",
+	VSS_CMD(	"version",
 				"show version, format: version/v",
 				vsprog_version),
-	MISC_CMD(	"v",
+	VSS_CMD(	"v",
 				"show version, format: version/v",
 				vsprog_version),
-	MISC_CMD(	"debug",
+	VSS_CMD(	"debug",
 				"set debug level, format: debug/D LEVEL",
 				vsprog_debug_level),
-	MISC_CMD(	"d",
+	VSS_CMD(	"d",
 				"set debug level, format: debug/D LEVEL",
 				vsprog_debug_level),
-	MISC_CMD(	"support",
+	VSS_CMD(	"support",
 				"display support information, format: support/S [TARGET]",
 				vsprog_support),
-	MISC_CMD(	"S",
+	VSS_CMD(	"S",
 				"display support information, format: support/S [TARGET]",
 				vsprog_support),
-	MISC_CMD(	"operation",
+	VSS_CMD(	"operation",
 				"define operations, format: operation/o [OPERATIONS]",
 				vsprog_operation),
-	MISC_CMD(	"o",
+	VSS_CMD(	"o",
 				"define operations, format: operation/o [OPERATIONS]",
 				vsprog_operation),
-	MISC_CMD(	"mass-product",
+	VSS_CMD(	"mass-product",
 				"enable mass product mode, format: mass-product/M",
 				vsprog_mass),
-	MISC_CMD(	"M",
+	VSS_CMD(	"M",
 				"enable mass product mode, format: mass-product/M",
 				vsprog_mass),
-	MISC_CMD(	"firmware-update",
+	VSS_CMD(	"firmware-update",
 				"enter firmware update mode, format: firmware-update/Z",
 				vsprog_firmware_update),
-	MISC_CMD(	"Z",
+	VSS_CMD(	"Z",
 				"enter firmware update mode, format: firmware-update/Z",
 				vsprog_firmware_update),
-	MISC_CMD(	"free-all", 
+	VSS_CMD(	"free-all", 
 				"free everything, format: free-all",
 				vsprog_free_all),
-	MISC_CMD(	"init",
+	VSS_CMD(	"init",
 				"vsprog initialization, format: init",
 				vsprog_init),
-	MISC_CMD_END
+	VSS_CMD_END
 };
 
 int verbosity = LOG_DEFAULT_LEVEL;
@@ -232,7 +232,7 @@ static void free_vsprog_system(void)
 
 static void free_all_and_exit(int exit_code)
 {
-	misc_run_script("free-all");
+	vss_run_script("free-all");
 	free_vsprog_system();
 	exit(exit_code);
 }
@@ -286,17 +286,17 @@ static void print_system_info(void)
 	printf("\n");
 }
 
-MISC_HANDLER(vsprog_help)
+VSS_HANDLER(vsprog_help)
 {
 	vsprog_query_cmd = 1;
-	MISC_CHECK_ARGC(1);
+	VSS_CHECK_ARGC(1);
 	
 	printf(_GETTEXT("\
 Usage: %s [OPTION]...\n\
   -h,  --help                               display this help\n\
   -v,  --version                            display vsprog version\n\
   -S,  --support <TARGET>                   display support information\n\
-  -V,  --misc-cmd \"<CMD PARA>\"              run programmer defined command\n\
+  -V,  --vss-cmd \"<CMD PARA>\"              run programmer defined command\n\
   -P,  --parameter <AREA>                   display parameter for target area\n\
   -D,  --memory-detail <AREA>               display memory info for target area\n\
   -J,  --jtag-dc <UB UA BB BA>              set JTAG Daisy Chain\n\
@@ -323,10 +323,10 @@ Usage: %s [OPTION]...\n\
 	return ERROR_OK;
 }
 
-MISC_HANDLER(vsprog_version)
+VSS_HANDLER(vsprog_version)
 {
 	vsprog_query_cmd = 1;
-	MISC_CHECK_ARGC(1);
+	VSS_CHECK_ARGC(1);
 	
 	printf(_GETTEXT(VSPROG_VERSION "\n" VSPROG_COPYRIGHT "\n\n\
 This is free software; see the source for copying conditions.\n\
@@ -336,16 +336,16 @@ FOR A PARTICULAR PURPOSE.\n"));
 	return ERROR_OK;
 }
 
-MISC_HANDLER(vsprog_debug_level)
+VSS_HANDLER(vsprog_debug_level)
 {
 	int value;
 	
-	MISC_CHECK_ARGC(2);
+	VSS_CHECK_ARGC(2);
 	
 	value = (int)strtoul(argv[1], NULL, 0);
 	if ((value < 0) || (value > DEBUG_LEVEL))
 	{
-		misc_print_help(argv[0]);
+		vss_print_help(argv[0]);
 		return ERROR_FAIL;
 	}
 	
@@ -353,10 +353,10 @@ MISC_HANDLER(vsprog_debug_level)
 	return ERROR_OK;
 }
 
-MISC_HANDLER(vsprog_support)
+VSS_HANDLER(vsprog_support)
 {
 	vsprog_query_cmd = 1;
-	MISC_CHECK_ARGC(2);
+	VSS_CHECK_ARGC(2);
 	
 	if (!strcmp(argv[1], "all"))
 	{
@@ -389,7 +389,7 @@ MISC_HANDLER(vsprog_support)
 		{
 			if (!strcmp(programmers_info[i].name, argv[1]))
 			{
-				misc_call_notifier(programmers_info[i].notifier, 
+				vss_call_notifier(programmers_info[i].notifier, 
 									"support", NULL);
 				return ERROR_OK;
 			}
@@ -410,12 +410,12 @@ MISC_HANDLER(vsprog_support)
 	return ERROR_OK;
 }
 
-MISC_HANDLER(vsprog_operation)
+VSS_HANDLER(vsprog_operation)
 {
 	uint32_t argu_num;
 	uint32_t *popt_tmp;
 	
-	MISC_CHECK_ARGC_2(1, 2);
+	VSS_CHECK_ARGC_2(1, 2);
 	
 	if (1 == argc)
 	{
@@ -474,19 +474,19 @@ Parse_Operation:
 	return ERROR_OK;
 }
 
-MISC_HANDLER(vsprog_mass)
+VSS_HANDLER(vsprog_mass)
 {
-	MISC_CHECK_ARGC(1);
+	VSS_CHECK_ARGC(1);
 	LOG_ERROR(ERRMSG_NOT_SUPPORT, "mass product mode");
 	return ERROR_FAIL;
 }
 
-MISC_HANDLER(vsprog_firmware_update)
+VSS_HANDLER(vsprog_firmware_update)
 {
 	int verbosity_tmp;
 	struct programmer_info_t *prog = NULL;
 	
-	MISC_CHECK_ARGC(1);
+	VSS_CHECK_ARGC(1);
 	
 	// send command first to enter into firmware update mode
 	verbosity_tmp = verbosity;
@@ -518,18 +518,18 @@ MISC_HANDLER(vsprog_firmware_update)
 	return ERROR_OK;
 }
 
-MISC_HANDLER(vsprog_free_all)
+VSS_HANDLER(vsprog_free_all)
 {
-	MISC_CHECK_ARGC(1);
+	VSS_CHECK_ARGC(1);
 	free_all();
 	return ERROR_OK;
 }
 
-MISC_HANDLER(vsprog_init)
+VSS_HANDLER(vsprog_init)
 {
 	uint32_t i;
 	
-	MISC_CHECK_ARGC(2);
+	VSS_CHECK_ARGC(2);
 	
 	free_vsprog_system();
 	
@@ -595,21 +595,21 @@ MISC_HANDLER(vsprog_init)
 		}
 	}
 	
-	return misc_run_script("free-all");
+	return vss_run_script("free-all");
 }
 
 int main(int argc, char* argv[])
 {
 	int optc;
 	uint8_t lose_argu = 0;
-	char *misc_argv[2];
-	char misc_cmd[2];
-	uint16_t misc_argc;
+	char *vss_argv[2];
+	char vss_cmd[2];
+	uint16_t vss_argc;
 	
-	misc_argv[0] = "init";
-	misc_argv[1] = argv[0];
-	misc_argc = 2;
-	if (ERROR_OK != misc_run_cmd(misc_argc, (const char **)misc_argv))
+	vss_argv[0] = "init";
+	vss_argv[1] = argv[0];
+	vss_argc = 2;
+	if (ERROR_OK != vss_run_cmd(vss_argc, (const char **)vss_argv))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "initialize");
 		free_all_and_exit(EXIT_SUCCESS);
@@ -619,7 +619,7 @@ int main(int argc, char* argv[])
 	if (1 == argc)
 	{
 		// no parameter
-		misc_run_script("help");
+		vss_run_script("help");
 		free_all_and_exit(EXIT_SUCCESS);
 	}
 	
@@ -650,30 +650,30 @@ int main(int argc, char* argv[])
 		case '?':
 			LOG_ERROR(ERRMSG_INVALID_CMD, argv[optind]);
 			LOG_ERROR(ERRMSG_TRY_HELP);
-			misc_run_script("help");
+			vss_run_script("help");
 			free_all_and_exit(EXIT_FAILURE);
 			break;
 		default:
-			misc_cmd[0] = (char)optc;
-			misc_cmd[1] = '\0';
-			misc_argv[0] = misc_cmd;
+			vss_cmd[0] = (char)optc;
+			vss_cmd[1] = '\0';
+			vss_argv[0] = vss_cmd;
 			if (optarg != NULL)
 			{
-				misc_argv[1] = optarg;
-				misc_argc = 2;
+				vss_argv[1] = optarg;
+				vss_argc = 2;
 			}
 			else
 			{
-				misc_argv[1] = NULL;
-				misc_argc = 1;
+				vss_argv[1] = NULL;
+				vss_argc = 1;
 			}
 			
-			if (ERROR_OK != misc_cmd_supported(misc_argv[0]))
+			if (ERROR_OK != vss_cmd_supported(vss_argv[0]))
 			{
 				lose_argu = 1;
 			}
-			else if (ERROR_OK != misc_run_cmd(misc_argc, 
-												(const char **)misc_argv))
+			else if (ERROR_OK != vss_run_cmd(vss_argc, 
+												(const char **)vss_argv))
 			{
 				free_all_and_exit(EXIT_FAILURE);
 			}
@@ -692,21 +692,21 @@ int main(int argc, char* argv[])
 	{
 		print_title();
 		
-		if (ERROR_OK != misc_run_script("prepare"))
+		if (ERROR_OK != vss_run_script("prepare"))
 		{
 			free_all_and_exit(EXIT_FAILURE);
 		}
-		if (ERROR_OK != misc_run_script("enter_program_mode"))
+		if (ERROR_OK != vss_run_script("enter_program_mode"))
 		{
-			misc_run_script("leave_program_mode 0");
+			vss_run_script("leave_program_mode 0");
 			free_all_and_exit(EXIT_FAILURE);
 		}
-		if (ERROR_OK != misc_run_script("operate"))
+		if (ERROR_OK != vss_run_script("operate"))
 		{
-			misc_run_script("leave_program_mode 0");
+			vss_run_script("leave_program_mode 0");
 			free_all_and_exit(EXIT_FAILURE);
 		}
-		if (ERROR_OK != misc_run_script("leave_program_mode 1"))
+		if (ERROR_OK != vss_run_script("leave_program_mode 1"))
 		{
 			free_all_and_exit(EXIT_FAILURE);
 		}
@@ -714,12 +714,12 @@ int main(int argc, char* argv[])
 	
 	while (optind < argc)
 	{
-		misc_argv[0] = "run";
-		misc_argv[1] = argv[optind++];
-		misc_argc = 2;
-		if (ERROR_OK != misc_run_cmd(misc_argc, (const char **)misc_argv))
+		vss_argv[0] = "run";
+		vss_argv[1] = argv[optind++];
+		vss_argc = 2;
+		if (ERROR_OK != vss_run_cmd(vss_argc, (const char **)vss_argv))
 		{
-			LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "run", misc_argv[1]);
+			LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "run", vss_argv[1]);
 			free_all_and_exit(EXIT_SUCCESS);
 		}
 	}

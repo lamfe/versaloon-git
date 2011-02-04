@@ -52,23 +52,23 @@
 
 #define CUR_TARGET_STRING			COMISP_STRING
 
-MISC_HANDLER(comisp_comm);
-MISC_HANDLER(comisp_print_cominfo);
+VSS_HANDLER(comisp_comm);
+VSS_HANDLER(comisp_print_cominfo);
 
-struct misc_cmd_t comisp_cmd[] = 
+struct vss_cmd_t comisp_cmd[] = 
 {
-	MISC_CMD(	"comport",
+	VSS_CMD(	"comport",
 				"set com port, format: "
 				"comport/C COM_BAUDRATE_DATALEN_PARITY_STOP_HANDSHAKE_EXTRA",
 				comisp_comm),
-	MISC_CMD(	"C",
+	VSS_CMD(	"C",
 				"set com port, format: "
 				"comport/C COM_BAUDRATE_DATALEN_PARITY_STOP_HANDSHAKE_EXTRA",
 				comisp_comm),
-	MISC_CMD(	"E",
+	VSS_CMD(	"E",
 				"print com info, format: E",
 				comisp_print_cominfo),
-	MISC_CMD_END
+	VSS_CMD_END
 };
 
 ENTER_PROGRAM_MODE_HANDLER(comisp);
@@ -87,12 +87,12 @@ struct com_mode_t com_mode =
 {"", 115200, 8, COMM_PARITYBIT_NONE, COMM_STOPBIT_1, 
 COMM_HANDSHAKE_NONE, COMM_AUXPIN_DISABLE};
 
-MISC_HANDLER(comisp_print_cominfo)
+VSS_HANDLER(comisp_print_cominfo)
 {
 	uint8_t i;
 	
 	vsprog_no_call_operate();
-	MISC_CHECK_ARGC(2);
+	VSS_CHECK_ARGC(2);
 	
 	i = (uint8_t)strtoul(argv[1], NULL, 0);
 	
@@ -105,7 +105,7 @@ MISC_HANDLER(comisp_print_cominfo)
 	return ERROR_OK;
 }
 
-MISC_HANDLER(comisp_comm)
+VSS_HANDLER(comisp_comm)
 {
 	// port: 256 bytes
 	// baudrate: 4 bytes
@@ -131,7 +131,7 @@ MISC_HANDLER(comisp_comm)
 		"%s"
 	};
 	
-	MISC_CHECK_ARGC(2);
+	VSS_CHECK_ARGC(2);
 	
 	success = ERROR_FAIL;
 	for (i = 0; i < dimof(formats); i++)
@@ -148,7 +148,7 @@ MISC_HANDLER(comisp_comm)
 	if (success != ERROR_OK)
 	{
 		LOG_ERROR(ERRMSG_INVALID_CMD, argv[0]);
-		misc_print_help(argv[0]);
+		vss_print_help(argv[0]);
 		return ERRCODE_INVALID_OPTION;
 	}
 	
@@ -176,10 +176,10 @@ MISC_HANDLER(comisp_comm)
 	return ERROR_OK;
 }
 
-MISC_HANDLER(comisp_chip)
+VSS_HANDLER(comisp_chip)
 {
 	uint8_t i;
-	MISC_CHECK_ARGC(2);
+	VSS_CHECK_ARGC(2);
 	for (i = 0; i < dimof(comisp_chips_param); i++)
 	{
 		if (!strcmp(comisp_chips_param[i].chip_name, argv[1]))
@@ -198,12 +198,12 @@ MISC_HANDLER(comisp_chip)
 	return ERROR_FAIL;
 }
 
-const struct misc_cmd_t comisp_notifier[] = 
+const struct vss_cmd_t comisp_notifier[] = 
 {
-	MISC_CMD(	"chip",
+	VSS_CMD(	"chip",
 				"select target chip for internal call",
 				comisp_chip),
-	MISC_CMD_END
+	VSS_CMD_END
 };
 
 ENTER_PROGRAM_MODE_HANDLER(comisp)

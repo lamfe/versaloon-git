@@ -24,7 +24,7 @@
 extern struct program_area_map_t msp430_program_area_map[];
 extern const struct program_mode_t msp430_program_mode[];
 extern struct program_functions_t msp430_program_functions;
-extern const struct misc_cmd_t msp430_notifier[];
+extern const struct vss_cmd_t msp430_notifier[];
 
 #endif /* __MSP430_H_INCLUDED__ */
 

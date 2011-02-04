@@ -34,21 +34,21 @@
 
 static struct usbapi_param_t usb_param;
 
-MISC_HANDLER(usbapi_param);
-struct misc_cmd_t usbapi_cmd[] = 
+VSS_HANDLER(usbapi_param);
+struct vss_cmd_t usbapi_cmd[] = 
 {
-	MISC_CMD(	"usb",
+	VSS_CMD(	"usb",
 				"set usb device, format: "
 				"usb/U [VID_PID_EPIN_EPOUT_INTERFACE_]SERIALSTRING",
 				usbapi_param),
-	MISC_CMD(	"U",
+	VSS_CMD(	"U",
 				"set usb device, format: "
 				"usb/U [VID_PID_EPIN_EPOUT_INTERFACE_]SERIALSTRING",
 				usbapi_param),
-	MISC_CMD_END
+	VSS_CMD_END
 };
 
-MISC_HANDLER(usbapi_param)
+VSS_HANDLER(usbapi_param)
 {
 	// vid: 2 bytes
 	// pid: 2 bytes
@@ -68,7 +68,7 @@ MISC_HANDLER(usbapi_param)
 		"%s"
 	};
 	
-	MISC_CHECK_ARGC(2);
+	VSS_CHECK_ARGC(2);
 	
 	success = ERROR_FAIL;
 	for (i = 0; i < dimof(formats); i++)
@@ -85,7 +85,7 @@ MISC_HANDLER(usbapi_param)
 	if (success != ERROR_OK)
 	{
 		LOG_ERROR(ERRMSG_INVALID_CMD, argv[0]);
-		misc_print_help(argv[0]);
+		vss_print_help(argv[0]);
 		return ERRCODE_INVALID_OPTION;
 	}
 	

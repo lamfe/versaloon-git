@@ -75,9 +75,9 @@ struct program_functions_t avrxmega_program_functions =
 	READ_TARGET_FUNCNAME(avrxmega)
 };
 
-MISC_HANDLER(avrxmega_help)
+VSS_HANDLER(avrxmega_help)
 {
-	MISC_CHECK_ARGC(1);
+	VSS_CHECK_ARGC(1);
 	printf("\
 Usage of %s:\n\
   -m,  --mode <MODE>                        set mode<j>\n\
@@ -86,11 +86,11 @@ Usage of %s:\n\
 	return ERROR_OK;
 }
 
-MISC_HANDLER(avrxmega_mode)
+VSS_HANDLER(avrxmega_mode)
 {
 	uint8_t mode;
 	
-	MISC_CHECK_ARGC(2);
+	VSS_CHECK_ARGC(2);
 	mode = (uint8_t)strtoul(argv[1], NULL,0);
 	switch (mode)
 	{
@@ -102,15 +102,15 @@ MISC_HANDLER(avrxmega_mode)
 	return ERROR_OK;
 }
 
-const struct misc_cmd_t avrxmega_notifier[] = 
+const struct vss_cmd_t avrxmega_notifier[] = 
 {
-	MISC_CMD(	"help",
+	VSS_CMD(	"help",
 				"print help information of current target for internal call",
 				avrxmega_help),
-	MISC_CMD(	"mode",
+	VSS_CMD(	"mode",
 				"set programming mode of target for internal call",
 				avrxmega_mode),
-	MISC_CMD_END
+	VSS_CMD_END
 };
 
 #define jtag_init()					interfaces->jtag_hl.init(0)

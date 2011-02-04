@@ -61,9 +61,9 @@ const struct program_mode_t stm32_program_mode[] =
 
 struct program_functions_t stm32_program_functions;
 
-MISC_HANDLER(stm32_help)
+VSS_HANDLER(stm32_help)
 {
-	MISC_CHECK_ARGC(1);
+	VSS_CHECK_ARGC(1);
 	printf("\
 Usage of %s:\n\
   -C,  --comport <COMM_ATTRIBUTE>           set com port\n\
@@ -74,11 +74,11 @@ Usage of %s:\n\
 	return ERROR_OK;
 }
 
-MISC_HANDLER(stm32_mode)
+VSS_HANDLER(stm32_mode)
 {
 	uint8_t mode;
 	
-	MISC_CHECK_ARGC(2);
+	VSS_CHECK_ARGC(2);
 	mode = (uint8_t)strtoul(argv[1], NULL,0);
 	switch (mode)
 	{
@@ -86,13 +86,13 @@ MISC_HANDLER(stm32_mode)
 	case STM32_SWD:
 		stm32_program_area_map[0].attr |= AREA_ATTR_NP;
 		cm3_mode_offset = 0;
-		misc_call_notifier(cm3_notifier, "chip", "cm3_stm32");
+		vss_call_notifier(cm3_notifier, "chip", "cm3_stm32");
 		memcpy(&stm32_program_functions, &cm3_program_functions, 
 				sizeof(stm32_program_functions));
 		break;
 	case STM32_ISP:
 		stm32_program_area_map[0].attr &= ~AREA_ATTR_NP;
-		misc_call_notifier(comisp_notifier, "chip", "comisp_stm32");
+		vss_call_notifier(comisp_notifier, "chip", "comisp_stm32");
 		memcpy(&stm32_program_functions, &comisp_program_functions, 
 				sizeof(stm32_program_functions));
 		break;
@@ -100,28 +100,28 @@ MISC_HANDLER(stm32_mode)
 	return ERROR_OK;
 }
 
-MISC_HANDLER(stm32_extra)
+VSS_HANDLER(stm32_extra)
 {
 	char cmd[4] = "E ";
 	
-	MISC_CHECK_ARGC(1);
+	VSS_CHECK_ARGC(1);
 	cmd[2] = '0' + COMISP_STM32;
 	cmd[3] = '\0';
-	return misc_run_script(cmd);
+	return vss_run_script(cmd);
 }
 
-const struct misc_cmd_t stm32_notifier[] = 
+const struct vss_cmd_t stm32_notifier[] = 
 {
-	MISC_CMD(	"help",
+	VSS_CMD(	"help",
 				"print help information of current target for internal call",
 				stm32_help),
-	MISC_CMD(	"mode",
+	VSS_CMD(	"mode",
 				"set programming mode of target for internal call",
 				stm32_mode),
-	MISC_CMD(	"extra",
+	VSS_CMD(	"extra",
 				"print extra information for internal call",
 				stm32_extra),
-	MISC_CMD_END
+	VSS_CMD_END
 };
 
 void stm32_print_device(uint32_t mcuid)

@@ -33,16 +33,16 @@
 #include "pgbar.h"
 #include "scripts.h"
 
-MISC_HANDLER(pgbar_gui);
-struct misc_cmd_t pgbar_cmd[] = 
+VSS_HANDLER(pgbar_gui);
+struct vss_cmd_t pgbar_cmd[] = 
 {
-	MISC_CMD(	"gui-mode",
+	VSS_CMD(	"gui-mode",
 				"enable GUI mode, format: gui-mode/G",
 				pgbar_gui),
-	MISC_CMD(	"G",
+	VSS_CMD(	"G",
 				"enable GUI mode, format: gui-mode/G",
 				pgbar_gui),
-	MISC_CMD_END
+	VSS_CMD_END
 };
 
 static char *end_str = NULL, disp_char = 0;
@@ -56,9 +56,9 @@ static uint32_t pgbar_get_char_num(int32_t pos)
 	return (pos - min_num) * max_num_of_chars / (max_num - min_num);
 }
 
-MISC_HANDLER(pgbar_gui)
+VSS_HANDLER(pgbar_gui)
 {
-	MISC_CHECK_ARGC(1);
+	VSS_CHECK_ARGC(1);
 	gui_mode_flag = 1;
 	return ERROR_OK;
 }

@@ -76,9 +76,9 @@ const struct program_functions_t psoc1_program_functions =
 #define VECTORS_NUM				17
 #define VECTORS_TABLE_SIZE		128
 
-MISC_HANDLER(psoc1_help)
+VSS_HANDLER(psoc1_help)
 {
-	MISC_CHECK_ARGC(1);
+	VSS_CHECK_ARGC(1);
 	printf("\
 Usage of %s:\n\
   -m,  --mode <MODE>                        set mode<r|p>\n\n", 
@@ -86,12 +86,12 @@ Usage of %s:\n\
 	return ERROR_OK;
 }
 
-const struct misc_cmd_t psoc1_notifier[] = 
+const struct vss_cmd_t psoc1_notifier[] = 
 {
-	MISC_CMD(	"help",
+	VSS_CMD(	"help",
 				"print help information of current target for internal call",
 				psoc1_help),
-	MISC_CMD_END
+	VSS_CMD_END
 };
 
 

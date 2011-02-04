@@ -72,135 +72,135 @@ static RESULT target_build_chip_fl(const char *chip_series, const char *chip_mod
 							char *type, struct chip_fl_t *fl);
 static RESULT target_release_chip_fl(struct chip_fl_t *fl);
 
-MISC_HANDLER(target_memory_detail);
-MISC_HANDLER(target_parameter_detail);
-MISC_HANDLER(target_series);
-MISC_HANDLER(target_chip);
-MISC_HANDLER(target_value);
-MISC_HANDLER(target_interface_frequency);
-MISC_HANDLER(target_kernel_khz);
-MISC_HANDLER(target_erase_on_demand);
-MISC_HANDLER(target_wait_state);
-MISC_HANDLER(target_auto_adjust);
-MISC_HANDLER(target_jtag_dc);
-MISC_HANDLER(target_interface_mode);
-MISC_HANDLER(target_prepare);
-MISC_HANDLER(target_operate);
-MISC_HANDLER(target_execute_addr);
-MISC_HANDLER(target_enter_program_mode);
-MISC_HANDLER(target_leave_program_mode);
-MISC_HANDLER(target_erase);
-MISC_HANDLER(target_write);
-MISC_HANDLER(target_read);
-MISC_HANDLER(target_verify);
+VSS_HANDLER(target_memory_detail);
+VSS_HANDLER(target_parameter_detail);
+VSS_HANDLER(target_series);
+VSS_HANDLER(target_chip);
+VSS_HANDLER(target_value);
+VSS_HANDLER(target_interface_frequency);
+VSS_HANDLER(target_kernel_khz);
+VSS_HANDLER(target_erase_on_demand);
+VSS_HANDLER(target_wait_state);
+VSS_HANDLER(target_auto_adjust);
+VSS_HANDLER(target_jtag_dc);
+VSS_HANDLER(target_interface_mode);
+VSS_HANDLER(target_prepare);
+VSS_HANDLER(target_operate);
+VSS_HANDLER(target_execute_addr);
+VSS_HANDLER(target_enter_program_mode);
+VSS_HANDLER(target_leave_program_mode);
+VSS_HANDLER(target_erase);
+VSS_HANDLER(target_write);
+VSS_HANDLER(target_read);
+VSS_HANDLER(target_verify);
 
-struct misc_cmd_t target_cmd[] = 
+struct vss_cmd_t target_cmd[] = 
 {
-	MISC_CMD(	"memory-detail",
+	VSS_CMD(	"memory-detail",
 				"show memory detail, format: memory-detail/D TARGET",
 				target_memory_detail),
-	MISC_CMD(	"D",
+	VSS_CMD(	"D",
 				"show memory detail, format: memory-detail/D TARGET",
 				target_memory_detail),
-	MISC_CMD(	"parameter",
+	VSS_CMD(	"parameter",
 				"show parameter detail, format: parameter/P TARGET",
 				target_parameter_detail),
-	MISC_CMD(	"P",
+	VSS_CMD(	"P",
 				"show parameter detail, format: parameter/P TARGET",
 				target_parameter_detail),
-	MISC_CMD(	"target-series",
+	VSS_CMD(	"target-series",
 				"set target series, format: target-series/s SERIES",
 				target_series),
-	MISC_CMD(	"s",
+	VSS_CMD(	"s",
 				"set target series, format: target-series/s SERIES",
 				target_series),
-	MISC_CMD(	"target-chip",
+	VSS_CMD(	"target-chip",
 				"set target chip, format: target-chip/c CHIP",
 				target_chip),
-	MISC_CMD(	"c",
+	VSS_CMD(	"c",
 				"set target chip, format: target-chip/c CHIP",
 				target_chip),
-	MISC_CMD(	"target",
+	VSS_CMD(	"target",
 				"set target value, format: target/t TARGET VALUE",
 				target_value),
-	MISC_CMD(	"t",
+	VSS_CMD(	"t",
 				"set target value, format: target/t TARGET VALUE",
 				target_value),
-	MISC_CMD(	"frequency",
+	VSS_CMD(	"frequency",
 				"set frequency of programming interface, "
 				"format: frequency/f FREQUENCY",
 				target_interface_frequency),
-	MISC_CMD(	"F",
+	VSS_CMD(	"F",
 				"set frequency of programming interface, "
 				"format: frequency/f FREQUENCY",
 				target_interface_frequency),
-	MISC_CMD(	"kernel-khz",
+	VSS_CMD(	"kernel-khz",
 				"set target kernel frequency in khz, format: kernel-khz/K KHZ",
 				target_kernel_khz),
-	MISC_CMD(	"K",
+	VSS_CMD(	"K",
 				"set target kernel frequency in khz, format: kernel-khz/K KHZ",
 				target_kernel_khz),
-	MISC_CMD(	"wait-state",
+	VSS_CMD(	"wait-state",
 				"set target wait state, format: wait-state/W WAIT",
 				target_wait_state),
-	MISC_CMD(	"e",
+	VSS_CMD(	"e",
 				"erase on demand feature, format: e/erase-on-demand",
 				target_erase_on_demand),
-	MISC_CMD(	"erase-on-demand",
+	VSS_CMD(	"erase-on-demand",
 				"erase on demand feature, format: e/erase-on-demand",
 				target_erase_on_demand),
-	MISC_CMD(	"W",
+	VSS_CMD(	"W",
 				"set target wait state, format: wait-state/W WAIT",
 				target_wait_state),
-	MISC_CMD(	"auto-adjust",
+	VSS_CMD(	"auto-adjust",
 				"set target auto adjust, format: auto-adjust/A",
 				target_auto_adjust),
-	MISC_CMD(	"A",
+	VSS_CMD(	"A",
 				"set target auto adjust, format: auto-adjust/A",
 				target_auto_adjust),
-	MISC_CMD(	"jtag-dc",
+	VSS_CMD(	"jtag-dc",
 				"set JTAG daisy chain, format: jtag-dc/J UB_UA_BB_BA",
 				target_jtag_dc),
-	MISC_CMD(	"J",
+	VSS_CMD(	"J",
 				"set JTAG daisy chain, format: jtag-dc/J UB_UA_BB_BA",
 				target_jtag_dc),
-	MISC_CMD(	"mode",
+	VSS_CMD(	"mode",
 				"set interface mode, format: mode/m MODE",
 				target_interface_mode),
-	MISC_CMD(	"m",
+	VSS_CMD(	"m",
 				"set interface mode, format: mode/m MODE",
 				target_interface_mode),
-	MISC_CMD(	"prepare",
+	VSS_CMD(	"prepare",
 				"prepare target programming, format: prepare",
 				target_prepare),
-	MISC_CMD(	"operate",
+	VSS_CMD(	"operate",
 				"operate target programming, format: operate",
 				target_operate),
-	MISC_CMD(	"execute",
+	VSS_CMD(	"execute",
 				"execute defined address, format: execute/x ADDR",
 				target_execute_addr),
-	MISC_CMD(	"x",
+	VSS_CMD(	"x",
 				"execute defined address, format: execute/x ADDR",
 				target_execute_addr),
-	MISC_CMD(	"enter_program_mode",
+	VSS_CMD(	"enter_program_mode",
 				"enter program mode, format: enter_program_mode",
 				target_enter_program_mode),
-	MISC_CMD(	"leave_program_mode",
+	VSS_CMD(	"leave_program_mode",
 				"leave program mode, format: leave_program_mode",
 				target_leave_program_mode),
-	MISC_CMD(	"erase",
+	VSS_CMD(	"erase",
 				"erase target area, format: erase [AREA_CHAR]",
 				target_erase),
-	MISC_CMD(	"read",
+	VSS_CMD(	"read",
 				"read target area, format: read AREA_CHAR ADDR SIZE",
 				target_read),
-	MISC_CMD(	"write",
+	VSS_CMD(	"write",
 				"write target area, format: write [AREA_CHAR]",
 				target_write),
-	MISC_CMD(	"verify",
+	VSS_CMD(	"verify",
 				"verify target area, format: verify [AREA_CHAR]",
 				target_verify),
-	MISC_CMD_END
+	VSS_CMD_END
 };
 
 const struct target_area_name_t target_area_name[NUM_OF_TARGET_AREA] = 
@@ -1636,7 +1636,7 @@ static RESULT target_init(struct program_info_t *pi)
 	LOG_PUSH();
 	LOG_MUTE();
 	sprintf(mode_buff, "%d", pi->mode);
-	misc_call_notifier(cur_target->notifier, "mode", mode_buff);
+	vss_call_notifier(cur_target->notifier, "mode", mode_buff);
 	LOG_POP();
 	
 	if (NULL == pi->chip_name)
@@ -2004,16 +2004,16 @@ void target_print_target(uint32_t index)
 	}
 	// extra info from target
 	if (ERROR_OK == 
-		misc_cmd_supported_by_notifier(targets_info[index].notifier, "extra"))
+		vss_cmd_supported_by_notifier(targets_info[index].notifier, "extra"))
 	{
-		misc_call_notifier(targets_info[index].notifier, "extra", NULL);
+		vss_call_notifier(targets_info[index].notifier, "extra", NULL);
 	}
 	printf("\n");
 	
 	// Targets based on ComPort outputs there special COM settings
 	if (strchr(targets_info[index].feature, 'C') != NULL)
 	{
-		misc_call_notifier(targets_info[index].notifier, "support", NULL);
+		vss_call_notifier(targets_info[index].notifier, "support", NULL);
 	}
 	else
 	{
@@ -2066,7 +2066,7 @@ void target_print_help(void)
 	
 	for (i = 0; targets_info[i].name != NULL; i++)
 	{
-		misc_call_notifier(targets_info[i].notifier, "help", NULL);
+		vss_call_notifier(targets_info[i].notifier, "help", NULL);
 	}
 }
 
@@ -3695,12 +3695,12 @@ static RESULT target_release_chip_series(struct chip_series_t *s)
 	return ERROR_OK;
 }
 
-MISC_HANDLER(target_memory_detail)
+VSS_HANDLER(target_memory_detail)
 {
 	char target_char;
 	
 	vsprog_no_call_operate();
-	MISC_CHECK_ARGC(2);
+	VSS_CHECK_ARGC(2);
 	
 	if (((NULL == program_info.chip_name) || (NULL == cur_target))
 		&& (NULL == program_info.chip_type))
@@ -3744,12 +3744,12 @@ MISC_HANDLER(target_memory_detail)
 	return ERROR_OK;
 }
 
-MISC_HANDLER(target_parameter_detail)
+VSS_HANDLER(target_parameter_detail)
 {
 	char target_char;
 	
 	vsprog_no_call_operate();
-	MISC_CHECK_ARGC(2);
+	VSS_CHECK_ARGC(2);
 	
 	if ((NULL == program_info.chip_name) 
 		|| (NULL == program_info.chip_type) 
@@ -3783,9 +3783,9 @@ MISC_HANDLER(target_parameter_detail)
 	return ERROR_OK;
 }
 
-MISC_HANDLER(target_series)
+VSS_HANDLER(target_series)
 {
-	MISC_CHECK_ARGC(2);
+	VSS_CHECK_ARGC(2);
 	
 	if (program_info.chip_type != NULL)
 	{
@@ -3807,9 +3807,9 @@ MISC_HANDLER(target_series)
 	return ERROR_OK;
 }
 
-MISC_HANDLER(target_chip)
+VSS_HANDLER(target_chip)
 {
-	MISC_CHECK_ARGC(2);
+	VSS_CHECK_ARGC(2);
 	
 	if (program_info.chip_name != NULL)
 	{
@@ -3831,17 +3831,17 @@ MISC_HANDLER(target_chip)
 	return ERROR_OK;
 }
 
-MISC_HANDLER(target_value)
+VSS_HANDLER(target_value)
 {
 	char *dest;
 	int8_t target_idx;
 	
-	MISC_CHECK_ARGC(2);
+	VSS_CHECK_ARGC(2);
 	
 	if (strlen(argv[1]) < 2)
 	{
 		LOG_ERROR(ERRMSG_INVALID_CMD, argv[0]);
-		misc_print_help(argv[0]);
+		vss_print_help(argv[0]);
 		return ERROR_FAIL;
 	}
 	target_idx = (int)target_area_idx(argv[1][0]);
@@ -3865,25 +3865,25 @@ MISC_HANDLER(target_value)
 	return ERROR_OK;
 }
 
-MISC_HANDLER(target_interface_frequency)
+VSS_HANDLER(target_interface_frequency)
 {
-	MISC_CHECK_ARGC(2);
+	VSS_CHECK_ARGC(2);
 	program_info.frequency = (uint16_t)strtoul(argv[1], NULL, 0);
 	return ERROR_OK;
 }
 
-MISC_HANDLER(target_kernel_khz)
+VSS_HANDLER(target_kernel_khz)
 {
-	MISC_CHECK_ARGC(2);
+	VSS_CHECK_ARGC(2);
 	program_info.kernel_khz = (uint32_t)strtoul(argv[1], NULL, 0);
 	return ERROR_OK;
 }
 
-MISC_HANDLER(target_erase_on_demand)
+VSS_HANDLER(target_erase_on_demand)
 {
 	uint32_t tmp;
 	
-	MISC_CHECK_ARGC_2(1, 2);
+	VSS_CHECK_ARGC_2(1, 2);
 	
 	if (1 == argc)
 	{
@@ -3904,27 +3904,27 @@ MISC_HANDLER(target_erase_on_demand)
 	return ERROR_OK;
 }
 
-MISC_HANDLER(target_wait_state)
+VSS_HANDLER(target_wait_state)
 {
-	MISC_CHECK_ARGC(2);
+	VSS_CHECK_ARGC(2);
 	program_info.wait_state = (uint8_t)strtoul(argv[1], NULL, 0);
 	return ERROR_OK;
 }
 
-MISC_HANDLER(target_auto_adjust)
+VSS_HANDLER(target_auto_adjust)
 {
-	MISC_CHECK_ARGC(1);
+	VSS_CHECK_ARGC(1);
 	program_info.auto_adjust = 1;
 	return ERROR_OK;
 }
 
-MISC_HANDLER(target_jtag_dc)
+VSS_HANDLER(target_jtag_dc)
 {
 	// UB(1) UA(1) BB(2) BA(2)
 	uint8_t buff[6];
 	char format[] = "%1d%1d%2d%2d";
 	
-	MISC_CHECK_ARGC(2);
+	VSS_CHECK_ARGC(2);
 	if (ERROR_OK != 
 		strparser_parse((char *)argv[1], format, buff, sizeof(buff)))
 	{
@@ -3938,11 +3938,11 @@ MISC_HANDLER(target_jtag_dc)
 	return ERROR_OK;
 }
 
-MISC_HANDLER(target_interface_mode)
+VSS_HANDLER(target_interface_mode)
 {
 	int8_t mode;
 	
-	MISC_CHECK_ARGC(2);
+	VSS_CHECK_ARGC(2);
 	
 	if (NULL == cur_target)
 	{
@@ -3952,7 +3952,7 @@ MISC_HANDLER(target_interface_mode)
 	if (strlen(argv[1]) != 1)
 	{
 		LOG_ERROR(ERRMSG_INVALID_CMD, argv[0]);
-		misc_print_help(argv[0]);
+		vss_print_help(argv[0]);
 		return ERROR_FAIL;
 	}
 	mode = target_mode_get_idx(cur_target->program_mode, argv[1][0]);
@@ -3966,9 +3966,9 @@ MISC_HANDLER(target_interface_mode)
 	return ERROR_OK;
 }
 
-MISC_HANDLER(target_execute_addr)
+VSS_HANDLER(target_execute_addr)
 {
-	MISC_CHECK_ARGC_2(1, 2);
+	VSS_CHECK_ARGC_2(1, 2);
 	
 	if (1 == argc)
 	{
@@ -3989,13 +3989,13 @@ MISC_HANDLER(target_execute_addr)
 
 extern struct operation_t operations;
 extern struct filelist *fl_in, *fl_out;
-MISC_HANDLER(target_prepare)
+VSS_HANDLER(target_prepare)
 {
 	RESULT ret = ERROR_OK;
 	uint32_t require_hex_file_for_read = 0;
 	uint32_t require_hex_file_for_write = 0;
 	
-	MISC_CHECK_ARGC(1);
+	VSS_CHECK_ARGC(1);
 	if (NULL == cur_target)
 	{
 		LOG_ERROR(ERRMSG_NOT_DEFINED, "Target");
@@ -4069,12 +4069,12 @@ MISC_HANDLER(target_prepare)
 	return ERROR_OK;
 }
 
-MISC_HANDLER(target_enter_program_mode)
+VSS_HANDLER(target_enter_program_mode)
 {
 	struct program_context_t context;
 	RESULT ret;
 	
-	MISC_CHECK_ARGC(1);
+	VSS_CHECK_ARGC(1);
 	if (NULL == cur_target)
 	{
 		LOG_ERROR(ERRMSG_NOT_DEFINED, "Target");
@@ -4094,13 +4094,13 @@ MISC_HANDLER(target_enter_program_mode)
 	return ERROR_OK;
 }
 
-MISC_HANDLER(target_leave_program_mode)
+VSS_HANDLER(target_leave_program_mode)
 {
 	struct program_context_t context;
 	uint8_t success;
 	RESULT ret;
 	
-	MISC_CHECK_ARGC(2);
+	VSS_CHECK_ARGC(2);
 	if (NULL == cur_target)
 	{
 		LOG_ERROR(ERRMSG_NOT_DEFINED, "Target");
@@ -4121,14 +4121,14 @@ MISC_HANDLER(target_leave_program_mode)
 	return ERROR_OK;
 }
 
-MISC_HANDLER(target_erase)
+VSS_HANDLER(target_erase)
 {
 	struct operation_t operations;
 	struct program_context_t context;
 	RESULT ret;
 	int8_t index;
 	
-	MISC_CHECK_ARGC_2(1, 2);
+	VSS_CHECK_ARGC_2(1, 2);
 	if (NULL == cur_target)
 	{
 		LOG_ERROR(ERRMSG_NOT_DEFINED, "Target");
@@ -4165,14 +4165,14 @@ MISC_HANDLER(target_erase)
 	return ERROR_OK;
 }
 
-MISC_HANDLER(target_write)
+VSS_HANDLER(target_write)
 {
 	struct operation_t operations_tmp;
 	struct program_context_t context;
 	RESULT ret;
 	int8_t index;
 	
-	MISC_CHECK_ARGC_2(1, 2);
+	VSS_CHECK_ARGC_2(1, 2);
 	if (NULL == cur_target)
 	{
 		LOG_ERROR(ERRMSG_NOT_DEFINED, "Target");
@@ -4211,14 +4211,14 @@ MISC_HANDLER(target_write)
 	return ERROR_OK;
 }
 
-MISC_HANDLER(target_verify)
+VSS_HANDLER(target_verify)
 {
 	struct operation_t operations_tmp;
 	struct program_context_t context;
 	RESULT ret;
 	int8_t index;
 	
-	MISC_CHECK_ARGC_2(1, 2);
+	VSS_CHECK_ARGC_2(1, 2);
 	if (NULL == cur_target)
 	{
 		LOG_ERROR(ERRMSG_NOT_DEFINED, "Target");
@@ -4257,7 +4257,7 @@ MISC_HANDLER(target_verify)
 	return ERROR_OK;
 }
 
-MISC_HANDLER(target_read)
+VSS_HANDLER(target_read)
 {
 	struct operation_t operations_tmp;
 	struct program_context_t context;
@@ -4266,7 +4266,7 @@ MISC_HANDLER(target_read)
 	uint32_t byteaddr, bytesize;
 	int8_t index;
 	
-	MISC_CHECK_ARGC(4);
+	VSS_CHECK_ARGC(4);
 	if (NULL == cur_target)
 	{
 		LOG_ERROR(ERRMSG_NOT_DEFINED, "Target");
@@ -4312,12 +4312,12 @@ MISC_HANDLER(target_read)
 	return ERROR_OK;
 }
 
-MISC_HANDLER(target_operate)
+VSS_HANDLER(target_operate)
 {
 	RESULT ret = ERROR_OK;
 	struct program_context_t context;
 	
-	MISC_CHECK_ARGC(1);
+	VSS_CHECK_ARGC(1);
 	if (NULL == cur_target)
 	{
 		LOG_ERROR(ERRMSG_NOT_DEFINED, "Target");

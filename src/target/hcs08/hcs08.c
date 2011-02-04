@@ -69,9 +69,9 @@ const struct program_functions_t hcs08_program_functions =
 	READ_TARGET_FUNCNAME(hcs08)
 };
 
-MISC_HANDLER(hcs08_help)
+VSS_HANDLER(hcs08_help)
 {
-	MISC_CHECK_ARGC(1);
+	VSS_CHECK_ARGC(1);
 	printf("\
 Usage of %s:\n\
   -m,  --mode <MODE>                        set mode<r|p>\n\n", 
@@ -79,12 +79,12 @@ Usage of %s:\n\
 	return ERROR_OK;
 }
 
-const struct misc_cmd_t hcs08_notifier[] = 
+const struct vss_cmd_t hcs08_notifier[] = 
 {
-	MISC_CMD(	"help",
+	VSS_CMD(	"help",
 				"print help information of current target for internal call",
 				hcs08_help),
-	MISC_CMD_END
+	VSS_CMD_END
 };
 
 
