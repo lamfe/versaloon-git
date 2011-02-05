@@ -29,6 +29,17 @@ struct vss_param_t
 	const char *help_str;
 	uint32_t value;
 };
+struct vss_function_cmd_t
+{
+	char *func_cmd;
+	struct vss_function_cmd_t *next;
+};
+struct vss_function_t
+{
+	char *func_name;
+	struct vss_function_cmd_t *cmds;
+	struct vss_function_t *next;
+};
 
 #define VSS_HANDLER(name)						\
 	static RESULT (name)(uint16_t argc, const char *argv[])
