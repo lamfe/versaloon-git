@@ -233,6 +233,7 @@ static void free_vsprog_system(void)
 static void free_all_and_exit(int exit_code)
 {
 	vss_run_script("free-all");
+	vss_run_script("function_free");
 	free_vsprog_system();
 	exit(exit_code);
 }
