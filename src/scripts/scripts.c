@@ -659,6 +659,11 @@ static RESULT vss_run_file(FILE *f, char *head, uint8_t quiet)
 		
 		if ((vss_cur_function != NULL) && (cmd_ptr != strstr(cmd_ptr, "end_function")))
 		{
+			if ((cmd_ptr == strstr(cmd_ptr, "function")) && isspace(cmd_ptr[strlen("function")]))
+			{
+				LOG_ERROR("function nesting not supported");
+				return ERROR_FAIL;
+			}
 			if (ERROR_OK != vss_append_function_cmd(vss_cur_function, cmd_ptr))
 			{
 				return ERROR_FAIL;
