@@ -1667,8 +1667,12 @@ static RESULT target_init(struct program_info_t *pi)
 			context.param = &target_chip_param;
 			context.pi = pi;
 			context.prog = cur_programmer;
-			if ((ERROR_OK != target_enter_progmode(&context)) || 
-				(ERROR_OK != target_program(&context)))
+			if (ERROR_OK != target_enter_progmode(&context))
+			{
+				LOG_ERROR(ERRMSG_AUTODETECT_FAIL, pi->chip_type);
+				return ERRCODE_AUTODETECT_FAIL;
+			}
+			if (ERROR_OK != target_program(&context))
 			{
 				target_leave_progmode(&context, 0);
 				LOG_ERROR(ERRMSG_AUTODETECT_FAIL, pi->chip_type);
