@@ -1,4 +1,4 @@
-Cmp-Mod V01 Created by CvPCB (2010-05-05 BZR 2356)-stable date = 03/02/2011 16:35:01
+Cmp-Mod V01 Created by CvPCB (2010-05-05 BZR 2356)-stable date = 07/02/2011 19:58:03
 
 BeginCmp
 TimeStamp = /480A3064;
@@ -155,6 +155,13 @@ IdModule  = DSM1206;
 EndCmp
 
 BeginCmp
+TimeStamp = /4D4FD9CD;
+Reference = D7;
+ValeurCmp = 4148;
+IdModule  = DSM0805L;
+EndCmp
+
+BeginCmp
 TimeStamp = /480A4692;
 Reference = F0;
 ValeurCmp = 200mA_FUSE;
@@ -213,6 +220,13 @@ EndCmp
 BeginCmp
 TimeStamp = /4D467B81;
 Reference = Q1;
+ValeurCmp = 8050;
+IdModule  = SOT23EBC;
+EndCmp
+
+BeginCmp
+TimeStamp = /4D4FD9DF;
+Reference = Q2;
 ValeurCmp = 8050;
 IdModule  = SOT23EBC;
 EndCmp
@@ -334,6 +348,20 @@ TimeStamp = /4D46E38A;
 Reference = R33;
 ValeurCmp = 0;
 IdModule  = SM0603L;
+EndCmp
+
+BeginCmp
+TimeStamp = /4D4FD9E9;
+Reference = R34;
+ValeurCmp = 1K;
+IdModule  = SM0603L;
+EndCmp
+
+BeginCmp
+TimeStamp = /4D4FD9C0;
+Reference = SP0;
+ValeurCmp = SPEAKER;
+IdModule  = BEEPER_5x5_SMD;
 EndCmp
 
 BeginCmp
