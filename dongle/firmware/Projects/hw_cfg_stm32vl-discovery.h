@@ -49,12 +49,12 @@
 #define HW_HAS_POWERCONTROL				0
 
 /****************************** Init ******************************/
-#define HW_INIT()				//No Jtag Remapping
+#define HW_INIT()						//No Jtag Remapping
 
 
 /****************************** STM32VL-Discovery Pins ******************************/
-#define STM32VL_SWD_PORT	GPIOB
-#define STM32VL_TCK1_PORT	GPIOA
+#define STM32VL_SWD_PORT				GPIOB
+#define STM32VL_TCK1_PORT				GPIOA
 
 //
 //
@@ -66,38 +66,38 @@
 //	     	CN2 Pin2 = TMS/SWDIO 
 //		CN2 Pin4 = TCK/SWCLK
 //
-#define	STM32VL_T_JTMS		GPIO_PIN_14	//GPIOB - Used as SWCLK
-#define	STM32VL_T_JTCK		GPIO_PIN_13	//GPIOB - Used as SWDIO - Connected to PA5 on VL board
+#define	STM32VL_T_JTMS					GPIO_PIN_14	//GPIOB - Used as SWCLK
+#define	STM32VL_T_JTCK					GPIO_PIN_13	//GPIOB - Used as SWDIO - Connected to PA5 on VL board
 
-#define	STM32VL_T_JTCK_1	GPIO_PIN_5	//GPIOA - Used as SWDIO - Connected to PB13 on VL board
+#define	STM32VL_T_JTCK_1				GPIO_PIN_5	//GPIOA - Used as SWDIO - Connected to PB13 on VL board
 
-#define	STM32VL_SWIM_1		GPIO_PIN_8	//GPIOB
-#define	STM32VL_SWIM_2		GPIO_PIN_11	//GPIOB
+#define	STM32VL_SWIM_1					GPIO_PIN_8	//GPIOB
+#define	STM32VL_SWIM_2					GPIO_PIN_11	//GPIOB
 
-#define	STM32VL_SWIM_RST	GPIO_PIN_6	//GPIOB
-#define	STM32VL_SWIM_RST_IN	GPIO_PIN_5	//GPIOB
+#define	STM32VL_SWIM_RST				GPIO_PIN_6	//GPIOB
+#define	STM32VL_SWIM_RST_IN				GPIO_PIN_5	//GPIOB
 
-#define	STM32VL_STM_JRST	PB4
-#define	STM32VL_STM_JTDO	PB3
-#define	STM32VL_STM_JTDI	PA15
-#define	STM32VL_STM_JTCK	PA14
-#define	STM32VL_STM_JTMS	PA13
-#define STM32VL_USB_DP		PA12
-#define STM32VL_USB_DM		PA11
+#define	STM32VL_STM_JRST				PB4
+#define	STM32VL_STM_JTDO				PB3
+#define	STM32VL_STM_JTDI				PA15
+#define	STM32VL_STM_JTCK				PA14
+#define	STM32VL_STM_JTMS				PA13
+#define STM32VL_USB_DP					PA12
+#define STM32VL_USB_DM					PA11
 
-#define	STM32VL_U1_RX		PA10
-#define	STM32VL_U1_TX		PA9
+#define	STM32VL_U1_RX					PA10
+#define	STM32VL_U1_TX					PA9
 
-#define	STM32VL_ST_LINK_LED	GPIO_PIN_8	//GPIOA
+#define	STM32VL_ST_LINK_LED				GPIO_PIN_8	//GPIOA
 
-#define STM32VL_T_JRST		GPIO_PIN_1	//GPIOB
-#define STM32VL_T_NRST		GPIO_PIN_0	//GPIOB
-#define	STM32VL_T_JTDI		GPIO_PIN_7	//GPIOA
-#define STM32VL_T_JTDO		GPIO_PIN_6	//GPIOA
+#define STM32VL_T_JRST					GPIO_PIN_1	//GPIOB
+#define STM32VL_T_NRST					GPIO_PIN_0	//GPIOB
+#define	STM32VL_T_JTDI					GPIO_PIN_7	//GPIOA
+#define STM32VL_T_JTDO					GPIO_PIN_6	//GPIOA
 
-#define	STM32VL_U2_CK		GPIO_PIN_4	//GPIOA
-#define STM32VL_U2_RX		GPIO_PIN_3	//GPIOA
-#define STM32VL_U2_TX		GPIO_PIN_2	//GPIOA	
+#define	STM32VL_U2_CK					GPIO_PIN_4	//GPIOA
+#define STM32VL_U2_RX					GPIO_PIN_3	//GPIOA
+#define STM32VL_U2_TX					GPIO_PIN_2	//GPIOA	
 
 /****************************** Power ******************************/
 #define PWREXT_EN_PORT					GPIOA
@@ -111,29 +111,9 @@
 #define PWREXT_DISABLE()				GPIO_SetMode(PWREXT_EN_PORT, PWREXT_EN_PIN, GPIO_MODE_IN_FLOATING)
 
 /****************************** Global Output ******************************/
-#define GLOBAL_OUTPUT_INIT()				do{\
-								GPIO_SetMode(STM32VL_SWD_PORT, STM32VL_T_JTCK, GPIO_MODE_IN_FLOATING);\
-								GPIO_SetMode(STM32VL_TCK1_PORT, STM32VL_T_JTCK_1, GPIO_MODE_IN_FLOATING);\
-								GPIO_SetMode(STM32VL_SWD_PORT, STM32VL_T_JTMS, GPIO_MODE_IN_FLOATING);\
-								GPIO_SetMode(STM32VL_SWD_PORT, STM32VL_SWIM_RST, GPIO_MODE_IN_FLOATING);\
-								GPIO_SetMode(STM32VL_SWD_PORT, STM32VL_SWIM_RST_IN, GPIO_MODE_IN_FLOATING);\
-							}while(0)
-	
-#define GLOBAL_OUTPUT_ENABLE()				do{\
-								GPIO_SetMode(STM32VL_SWD_PORT, STM32VL_T_JTCK, GPIO_MODE_IN_FLOATING);\
-								GPIO_SetMode(STM32VL_TCK1_PORT, STM32VL_T_JTCK_1, GPIO_MODE_IN_FLOATING);\
-								GPIO_SetMode(STM32VL_SWD_PORT, STM32VL_T_JTMS, GPIO_MODE_IN_FLOATING);\
-								GPIO_SetMode(STM32VL_SWD_PORT, STM32VL_SWIM_RST, GPIO_MODE_IN_FLOATING);\
-								GPIO_SetMode(STM32VL_SWD_PORT, STM32VL_SWIM_RST_IN, GPIO_MODE_IN_FLOATING);\
-							}while(0)
-		
-#define GLOBAL_OUTPUT_DISABLE()				do{\
-								GPIO_SetMode(STM32VL_SWD_PORT, STM32VL_T_JTCK, GPIO_MODE_IN_FLOATING);\
-								GPIO_SetMode(STM32VL_TCK1_PORT, STM32VL_T_JTCK_1, GPIO_MODE_IN_FLOATING);\
-								GPIO_SetMode(STM32VL_SWD_PORT, STM32VL_T_JTMS, GPIO_MODE_IN_FLOATING);\
-								GPIO_SetMode(STM32VL_SWD_PORT, STM32VL_SWIM_RST, GPIO_MODE_IN_FLOATING);\
-								GPIO_SetMode(STM32VL_SWD_PORT, STM32VL_SWIM_RST_IN, GPIO_MODE_IN_FLOATING);\
-							}while(0)		
+#define GLOBAL_OUTPUT_INIT()			
+#define GLOBAL_OUTPUT_ENABLE()			
+#define GLOBAL_OUTPUT_DISABLE()				
 
 /****************************** DelayTimer ******************************/
 #define DELAYTIMER_MAXDELAY_US			200000
@@ -162,10 +142,10 @@
 										} while (0)
 
 /****************************** SW ******************************/
-#define SW_PORT						GPIOB
-#define SW_PIN						STM32VL_T_NRST
-#define SW_RST_PORT					GPIOB
-#define SW_RST_PIN					STM32VL_T_JRST
+#define SW_PORT							GPIOB
+#define SW_PIN							STM32VL_T_NRST
+#define SW_RST_PORT						GPIOB
+#define SW_RST_PIN						STM32VL_T_JRST
 
 #define SYNCSW_IN_PORT					STM32VL_TCK1_PORT
 #define SYNCSW_IN_PIN					STM32VL_T_JTCK_1
