@@ -52,58 +52,58 @@
 #define HW_INIT()			//No JTAG Pin Remap
 
 /****************************** STM8S-Discovery Pins ******************************/
-#define STM8S_SWD_PORT		GPIOB
+#define STM8S_SWD_PORT					GPIOB
 
-//#define	STM8S_SWIM_IN_1		PB9
-#define	STM8S_SWIM_IN_1		GPIO_PIN_9
+//#define	STM8S_SWIM_IN_1				PB9
+#define	STM8S_SWIM_IN_1					GPIO_PIN_9
 
-//#define	STM8S_SWIM_IN_2		PB7
-#define	STM8S_SWIM_IN_2		GPIO_PIN_7
+//#define	STM8S_SWIM_IN_2				PB7
+#define	STM8S_SWIM_IN_2					GPIO_PIN_7
 
-//#define	STM8S_SWIM_IN_3		PB10
-#define	STM8S_SWIM_IN_3		GPIO_PIN_10
+//#define	STM8S_SWIM_IN_3				PB10
+#define	STM8S_SWIM_IN_3					GPIO_PIN_10
 
-//#define	STM8S_SWIM_1		PB8
-#define	STM8S_SWIM_1		GPIO_PIN_8
-//#define	STM8S_SWIM_2		PB11
-#define	STM8S_SWIM_2		GPIO_PIN_11
+//#define	STM8S_SWIM_1				PB8
+#define	STM8S_SWIM_1					GPIO_PIN_8
+//#define	STM8S_SWIM_2				PB11
+#define	STM8S_SWIM_2					GPIO_PIN_11
 
-//#define	STM8S_SWIM_RST		PB6
-#define	STM8S_SWIM_RST		GPIO_PIN_6
-//#define	STM8S_SWIM_RST_IN	PB5
-#define	STM8S_SWIM_RST_IN	GPIO_PIN_5
+//#define	STM8S_SWIM_RST				PB6
+#define	STM8S_SWIM_RST					GPIO_PIN_6
+//#define	STM8S_SWIM_RST_IN			PB5
+#define	STM8S_SWIM_RST_IN				GPIO_PIN_5
 
-#define	STM8S_STM_JRST		PB4
-#define	STM8S_STM_JTDO		PB3
-#define	STM8S_STM_JTDI		PA15
-#define	STM8S_STM_JTCK		PA14
-#define	STM8S_STM_JTMS		PA13
-#define STM8S_USB_DP		PA12
-#define STM8S_USB_DM		PA11
+#define	STM8S_STM_JRST					PB4
+#define	STM8S_STM_JTDO					PB3
+#define	STM8S_STM_JTDI					PA15
+#define	STM8S_STM_JTCK					PA14
+#define	STM8S_STM_JTMS					PA13
+#define STM8S_USB_DP					PA12
+#define STM8S_USB_DM					PA11
 
-#define	STM8S_U1_RX		PA10
-#define	STM8S_U1_TX		PA9
+#define	STM8S_U1_RX						PA10
+#define	STM8S_U1_TX						PA9
 
-#define	STM8S_ST_LINK_LED	PA8
+#define	STM8S_ST_LINK_LED				PA8
 
-//#define STM8S_T_JTMS		PB14
-#define	STM8S_T_JTMS		GPIO_PIN_14
-//#define STM8S_T_JTCK		PB13
-#define STM8S_T_JTCK		GPIO_PIN_13
-//#define STM8S_T_JRST		PB1
-#define STM8S_T_JRST		GPIO_PIN_1
-//#define STM8S_T_NRST		PB0
-#define STM8S_T_NRST		GPIO_PIN_0
-//#define STM8S_T_JTDI		PA7
-#define	STM8S_T_JTDI		GPIO_PIN_7
-//#define STM8S_T_JTDO		PA6
-#define STM8S_T_JTDO		GPIO_PIN_6
+//#define STM8S_T_JTMS					PB14
+#define	STM8S_T_JTMS					GPIO_PIN_14
+//#define STM8S_T_JTCK					PB13
+#define STM8S_T_JTCK					GPIO_PIN_13
+//#define STM8S_T_JRST					PB1
+#define STM8S_T_JRST					GPIO_PIN_1
+//#define STM8S_T_NRST					PB0
+#define STM8S_T_NRST					GPIO_PIN_0
+//#define STM8S_T_JTDI					PA7
+#define	STM8S_T_JTDI					GPIO_PIN_7
+//#define STM8S_T_JTDO					PA6
+#define STM8S_T_JTDO					GPIO_PIN_6
 /*** Warning STM8S_T_JTCK_1 connected to STM8S_T_JTCK/PB13 on PCB ***/
-#define STM8S_T_JTCK_1		PA5
+#define STM8S_T_JTCK_1					PA5
 
-#define	STM8S_U2_CK		PA4
-#define STM8S_U2_RX		PA3
-#define STM8S_U2_TX		PA2
+#define	STM8S_U2_CK						PA4
+#define STM8S_U2_RX						PA3
+#define STM8S_U2_TX						PA2
 
 /****************************** Power ******************************/
 #define PWREXT_EN_PORT					GPIOB
@@ -117,35 +117,9 @@
 #define PWREXT_DISABLE()				GPIO_SetMode(PWREXT_EN_PORT, PWREXT_EN_PIN, GPIO_MODE_IN_FLOATING)
 
 /****************************** Global Output ******************************/
-#define GLOBAL_OUTPUT_INIT()				do{\
-								GPIO_SetMode(STM8S_SWD_PORT, STM8S_SWIM_1, GPIO_MODE_IN_FLOATING);\
-								GPIO_SetMode(STM8S_SWD_PORT, STM8S_SWIM_2, GPIO_MODE_IN_FLOATING);\
-								GPIO_SetMode(STM8S_SWD_PORT, STM8S_SWIM_IN_1, GPIO_MODE_IN_FLOATING);\
-								GPIO_SetMode(STM8S_SWD_PORT, STM8S_SWIM_IN_2, GPIO_MODE_IN_FLOATING);\
-								GPIO_SetMode(STM8S_SWD_PORT, STM8S_SWIM_IN_3, GPIO_MODE_IN_FLOATING);\
-								GPIO_SetMode(STM8S_SWD_PORT, STM8S_SWIM_RST, GPIO_MODE_IN_FLOATING);\
-								GPIO_SetMode(STM8S_SWD_PORT, STM8S_SWIM_RST_IN, GPIO_MODE_IN_FLOATING);\
-							}while(0)
-	
-#define GLOBAL_OUTPUT_ENABLE()				do{\
-								GPIO_SetMode(STM8S_SWD_PORT, STM8S_SWIM_1, GPIO_MODE_IN_FLOATING);\
-								GPIO_SetMode(STM8S_SWD_PORT, STM8S_SWIM_2, GPIO_MODE_IN_FLOATING);\
-								GPIO_SetMode(STM8S_SWD_PORT, STM8S_SWIM_IN_1, GPIO_MODE_IN_FLOATING);\
-								GPIO_SetMode(STM8S_SWD_PORT, STM8S_SWIM_IN_2, GPIO_MODE_IN_FLOATING);\
-								GPIO_SetMode(STM8S_SWD_PORT, STM8S_SWIM_IN_3, GPIO_MODE_IN_FLOATING);\
-								GPIO_SetMode(STM8S_SWD_PORT, STM8S_SWIM_RST, GPIO_MODE_IN_FLOATING);\
-								GPIO_SetMode(STM8S_SWD_PORT, STM8S_SWIM_RST_IN, GPIO_MODE_IN_FLOATING);\
-							}while(0)	
-		
-#define GLOBAL_OUTPUT_DISABLE()				do{\
-								GPIO_SetMode(STM8S_SWD_PORT, STM8S_SWIM_1, GPIO_MODE_IN_FLOATING);\
-								GPIO_SetMode(STM8S_SWD_PORT, STM8S_SWIM_2, GPIO_MODE_IN_FLOATING);\
-								GPIO_SetMode(STM8S_SWD_PORT, STM8S_SWIM_IN_1, GPIO_MODE_IN_FLOATING);\
-								GPIO_SetMode(STM8S_SWD_PORT, STM8S_SWIM_IN_2, GPIO_MODE_IN_FLOATING);\
-								GPIO_SetMode(STM8S_SWD_PORT, STM8S_SWIM_IN_3, GPIO_MODE_IN_FLOATING);\
-								GPIO_SetMode(STM8S_SWD_PORT, STM8S_SWIM_RST, GPIO_MODE_IN_FLOATING);\
-								GPIO_SetMode(STM8S_SWD_PORT, STM8S_SWIM_RST_IN, GPIO_MODE_IN_FLOATING);\
-							}while(0)		
+#define GLOBAL_OUTPUT_INIT()			
+#define GLOBAL_OUTPUT_ENABLE()			
+#define GLOBAL_OUTPUT_DISABLE()			
 
 /****************************** DelayTimer ******************************/
 #define DELAYTIMER_MAXDELAY_US			200000
@@ -174,10 +148,10 @@
 										} while (0)
 
 /****************************** SW ******************************/
-#define SW_PORT						GPIOB
-#define SW_PIN						STM8S_T_JRST
-#define SW_RST_PORT					GPIOB
-#define SW_RST_PIN					STM8S_T_NRST
+#define SW_PORT							GPIOB
+#define SW_PIN							STM8S_T_JRST
+#define SW_RST_PORT						GPIOB
+#define SW_RST_PIN						STM8S_T_NRST
 
 #define SYNCSW_IN_PORT					STM8S_SWD_PORT
 #define SYNCSW_IN_PIN					STM8S_SWIM_IN_1
@@ -811,7 +785,7 @@
 
 /****************************** LED ******************************/
 #define LED_RED_PORT					GPIOA
-#define LED_RED_PIN					STM8S_T_JTDI
+#define LED_RED_PIN						STM8S_T_JTDI
 #define LED_GREEN_PORT					GPIOA
 #define LED_GREEN_PIN					STM8S_T_JTDO
 #define LED_RED_ON()					GPIO_ClrPins(LED_RED_PORT, LED_RED_PIN)
