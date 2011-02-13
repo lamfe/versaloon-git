@@ -88,24 +88,50 @@ struct program_functions_t avr8isp_program_functions =
 
 static struct interfaces_info_t *interfaces = NULL;
 
-static void avr8_isp_pollready(void)
+static RESULT avr8_isp_pollready(void)
 {
-	uint8_t cmd_buf[4];
+	uint8_t cmd_buf[4], ret_buf[4];
 	
-	poll_start();
-	cmd_buf[0] = 0xF0;
-	cmd_buf[1] = 0x00;
-	cmd_buf[2] = 0x00;
-	cmd_buf[3] = 0x00;
-	spi_io(cmd_buf, 4, NULL);
-	poll_ok(0, 0x01, 0x00);
-	poll_end();
+	if (interfaces->support_mask & POLL)
+	{
+		poll_start();
+		cmd_buf[0] = 0xF0;
+		cmd_buf[1] = 0x00;
+		cmd_buf[2] = 0x00;
+		cmd_buf[3] = 0x00;
+		spi_io(cmd_buf, 4, NULL);
+		poll_ok(0, 0x01, 0x00);
+		poll_end();
+		return ERROR_OK;
+	}
+	else
+	{
+		uint8_t i = 20;
+		while (i--)
+		{
+			cmd_buf[0] = 0xF0;
+			cmd_buf[1] = 0x00;
+			cmd_buf[2] = 0x00;
+			cmd_buf[3] = 0x00;
+			spi_io(cmd_buf, 4, ret_buf);
+			if (ERROR_OK != commit())
+			{
+				return ERROR_FAIL;
+			}
+			if ((ret_buf[3] & 0x01) == 0x00)
+			{
+				return ERROR_OK;
+			}
+			delay_us(500);
+		}
+		return ERROR_FAIL;
+	}
 }
 
 ENTER_PROGRAM_MODE_HANDLER(avr8isp)
 {
 	struct program_info_t *pi = context->pi;
-	uint8_t cmd_buf[4];
+	uint8_t cmd_buf[4], ret_buf[4];
 	
 	interfaces = &(context->prog->interfaces);
 	
@@ -136,27 +162,52 @@ try_frequency:
 	cmd_buf[2] = 0x00;
 	cmd_buf[3] = 0x00;
 	// ret[2] should be 0x53
-	poll_start_once();
-	spi_io(cmd_buf, 4, NULL);
-	poll_fail_unequ(1, 0xFF, 0x53);
-	poll_end();
-	LOG_PUSH();
-	LOG_MUTE();
-	if (ERROR_OK != commit())
+	if (interfaces->support_mask & POLL)
 	{
-		LOG_POP();
-		if (pi->frequency > 1)
+		poll_start_once();
+		spi_io(cmd_buf, 4, NULL);
+		poll_fail_unequ(1, 0xFF, 0x53);
+		poll_end();
+		
+		LOG_PUSH();
+		LOG_MUTE();
+		if (ERROR_OK != commit())
 		{
-			pi->frequency /= 2;
-			LOG_WARNING("frequency too fast, try slower: %d", pi->frequency);
-			goto try_frequency;
+			LOG_POP();
+			if (pi->frequency > 1)
+			{
+				pi->frequency /= 2;
+				LOG_WARNING("frequency too fast, try slower: %d", pi->frequency);
+				goto try_frequency;
+			}
+			else
+			{
+				return ERRCODE_FAILURE_ENTER_PROG_MODE;
+			}
 		}
-		else
+		LOG_POP();
+	}
+	else
+	{
+		spi_io(cmd_buf, 4, ret_buf);
+		if (ERROR_OK != commit())
 		{
-			return ERRCODE_FAILURE_ENTER_PROG_MODE;
+			return ERROR_FAIL;
+		}
+		if (ret_buf[2] != 0x53)
+		{
+			if (pi->frequency > 1)
+			{
+				pi->frequency /= 2;
+				LOG_WARNING("frequency too fast, try slower: %d", pi->frequency);
+				goto try_frequency;
+			}
+			else
+			{
+				return ERRCODE_FAILURE_ENTER_PROG_MODE;
+			}
 		}
 	}
-	LOG_POP();
 	
 	return ERROR_OK;
 }
