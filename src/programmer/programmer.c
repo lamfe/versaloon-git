@@ -223,7 +223,7 @@ RESULT programmer_init(const char *programmer)
 		{
 			return ERROR_FAIL;
 		}
-		if (cur_programmer->interfaces_mask & POWER)
+		if (cur_programmer->interfaces.support_mask & POWER)
 		{
 			return vss_run_script("get_tvcc");
 		}
@@ -337,7 +337,7 @@ VSS_HANDLER(programmer_get_target_voltage)
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
 		return ERROR_FAIL;
 	}
-	if (!(cur_programmer->interfaces_mask & POWER))
+	if (!(cur_programmer->interfaces.support_mask & POWER))
 	{
 		LOG_ERROR(ERRMSG_NOT_SUPPORT, "power interface");
 		return ERROR_FAIL;
@@ -365,7 +365,7 @@ VSS_HANDLER(programmer_set_target_voltage)
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
 		return ERROR_FAIL;
 	}
-	if (!(cur_programmer->interfaces_mask & POWER))
+	if (!(cur_programmer->interfaces.support_mask & POWER))
 	{
 		LOG_ERROR(ERRMSG_NOT_SUPPORT, "power interface");
 		return ERROR_FAIL;
