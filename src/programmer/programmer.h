@@ -244,6 +244,7 @@ struct interface_poll_t
 
 struct interfaces_info_t
 {
+	uint64_t support_mask;
 	struct interface_target_voltage_t target_voltage;
 	struct interface_usart_t usart;
 	struct interface_spi_t spi;
@@ -278,9 +279,6 @@ struct programmer_info_t
 	RESULT (*init)(void *p);
 	RESULT (*fini)(void);
 	
-	// interfaces supported
-	uint64_t interfaces_mask;
-	
 	// peripheral
 	struct interfaces_info_t interfaces;
 	
@@ -297,8 +295,9 @@ struct programmer_info_t
 						  display_programmer)						\
 	{\
 		name, parse_argument, init_capability, display_programmer, 	\
-		0, 0, 0, \
+		0, 0, \
 		{\
+			0, \
 			{0, 0},\
 			{0, 0, 0, 0, 0, 0},\
 			{0, 0, 0, 0},\

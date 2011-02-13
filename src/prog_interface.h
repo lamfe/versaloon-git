@@ -42,6 +42,7 @@
 #define PDI						(1ULL << 26)
 #define JTAG_RAW				(1ULL << 27)
 #define BDM						(1ULL << 28)
+#define POLL					(1ULL << 29)
 #define INVALID_INTERFACE		(1ULL << 63)
 #define INTERFACES_MASK			(USART | SPI | I2C | GPIO | CAN | CLOCK | ADC \
 								 | DAC | POWER | ISSP | JTAG | MSP430_JTAG \

@@ -932,7 +932,7 @@ static RESULT target_program_check(struct program_context_t *context)
 			LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
 			return ERROR_FAIL;
 		}
-		if ((context->prog->interfaces_mask & i) != i)
+		if ((context->prog->interfaces.support_mask & i) != i)
 		{
 			LOG_ERROR("interface not supported: %s.", get_interface_name(i));
 			return ERROR_FAIL;
