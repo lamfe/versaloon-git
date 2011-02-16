@@ -39,11 +39,11 @@ struct vss_cmd_t usbapi_cmd[] =
 {
 	VSS_CMD(	"usb",
 				"set usb device, format: "
-				"usb/U [VID_PID_EPIN_EPOUT_INTERFACE_]SERIALSTRING",
+				"usb/U [VID_PID_EPIN_EPOUT_INTERFACE|TYPESTRING]SERIALSTRING",
 				usbapi_param),
 	VSS_CMD(	"U",
 				"set usb device, format: "
-				"usb/U [VID_PID_EPIN_EPOUT_INTERFACE_]SERIALSTRING",
+				"usb/U [VID_PID_EPIN_EPOUT_INTERFACE|TYPESTRING]SERIALSTRING",
 				usbapi_param),
 	VSS_CMD_END
 };
@@ -56,7 +56,7 @@ VSS_HANDLER(usbapi_param)
 	// epout: 1 byte
 	// interface: 1 byte
 	// serialstring: 256 bytes
-	uint8_t usb_setting[256 + 7], *ptr;
+	uint8_t usb_setting[2 * 256 + 7], *ptr;
 	RESULT success;
 	uint8_t i;
 	char* formats[] = 
@@ -64,6 +64,8 @@ VSS_HANDLER(usbapi_param)
 		// VID_PID_EPIN_EPOUT_INTERFACE_SERIALSTRING
 		// vid(2d):pid(2d):epin(1d):epout(1d):interface(1d):serialstring(s)
 		"%2d%2d%1d%1d%1d%s",
+		// typestring:serialstring(s)
+		"%s%s",
 		// serialstring(s)
 		"%s"
 	};
@@ -90,14 +92,21 @@ VSS_HANDLER(usbapi_param)
 	}
 	
 	ptr = usb_setting;
+	usb_param.valid = 1;
 	if (1 == i)
+	{
+		strncpy(usb_param.typestring, (char*)&ptr[0], 
+					sizeof(usb_param.typestring));
+		strncpy(usb_param.serialstring, (char*)&ptr[0] + strlen(usb_param.typestring) +1, 
+					sizeof(usb_param.serialstring));
+	}
+	else if (2 == i)
 	{
 		strncpy(usb_param.serialstring, (char*)&ptr[0], 
 					sizeof(usb_param.serialstring));
 	}
 	else if (0 == i)
 	{
-		usb_param.valid = 1;
 		usb_param.vid = ptr[0] + (ptr[1] << 8);
 		usb_param.pid = ptr[2] + (ptr[3] << 8);
 		usb_param.epin = ptr[4];
@@ -163,6 +172,18 @@ uint8_t usb_param_epout(void)
 uint8_t usb_param_interface(void)
 {
 	return usb_param.interface;
+}
+
+char *usb_param_type(void)
+{
+	if (strlen(usb_param.typestring) > 0)
+	{
+		return usb_param.typestring;
+	}
+	else
+	{
+		return NULL;
+	}
 }
 
 char *usb_param_serial(void)
@@ -255,8 +276,9 @@ uint32_t print_usb_devices(uint16_t VID, uint16_t PID, uint8_t serialindex,
 				if (((productstring != NULL) 
 						&& !usb_check_string(dev_handle, productindex, 
 												productstring, NULL, 0))
-					|| !usb_check_string(dev_handle, serialindex, serialstring, 
-												(char*)buf, sizeof(buf)))
+				    || ((serialstring != NULL)
+					    && !usb_check_string(dev_handle, serialindex, serialstring, 
+								 (char*)buf, sizeof(buf))))
 				{
 					usb_close(dev_handle);
 					dev_handle = NULL;
