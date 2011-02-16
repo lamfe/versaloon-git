@@ -29,6 +29,7 @@ struct usbapi_param_t
 	uint8_t epin;
 	uint8_t epout;
 	uint8_t interface;
+	char typestring[256];
 	char serialstring[256];
 };
 
@@ -38,6 +39,7 @@ uint16_t usb_param_pid(void);
 uint8_t usb_param_epin(void);
 uint8_t usb_param_epout(void);
 uint8_t usb_param_interface(void);
+char *usb_param_type(void);
 char *usb_param_serial(void);
 void usb_set_param(uint16_t vid, uint16_t pid, uint8_t epin, uint8_t epout, 
 					uint8_t interface);
