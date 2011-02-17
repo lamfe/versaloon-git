@@ -43,12 +43,12 @@ char *usb_param_type(void);
 char *usb_param_serial(void);
 void usb_set_param(uint16_t vid, uint16_t pid, uint8_t epin, uint8_t epout, 
 					uint8_t interface);
-uint32_t print_usb_devices(uint16_t VID, uint16_t PID, uint8_t serialindex, 
-							char *serialstring, uint8_t productindex, 
+uint32_t print_usb_devices(uint16_t VID, uint16_t PID, int8_t serialindex, 
+							char *serialstring, int8_t productindex, 
 							char *productstring);
 usb_dev_handle* find_usb_device(uint16_t VID, uint16_t PID, uint8_t interface, 
-								uint8_t serialindex, char *serialstring, 
-								uint8_t productindex, char *productstring);
+								int8_t serialindex, char *serialstring, 
+								int8_t productindex, char *productstring);
 
 #endif /* __USBAPI_H_INCLUDED__ */
 

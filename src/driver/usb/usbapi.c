@@ -241,8 +241,8 @@ free_and_return:
 	return ret;
 }
 
-uint32_t print_usb_devices(uint16_t VID, uint16_t PID, uint8_t serialindex, 
-							char *serialstring, uint8_t productindex, 
+uint32_t print_usb_devices(uint16_t VID, uint16_t PID, int8_t serialindex, 
+							char *serialstring, int8_t productindex, 
 							char *productstring)
 {
 	usb_dev_handle *dev_handle = NULL;
@@ -251,7 +251,8 @@ uint32_t print_usb_devices(uint16_t VID, uint16_t PID, uint8_t serialindex,
 	struct usb_device *dev;
 	int c = 0;
 	uint8_t buf[256];
-
+	
+	memset(buf, 0, sizeof(buf));
 	usb_init();
 	usb_find_busses();
 	usb_find_devices();
@@ -273,11 +274,11 @@ uint32_t print_usb_devices(uint16_t VID, uint16_t PID, uint8_t serialindex,
 				}
 				
 				// check description string
-				if (((productstring != NULL) 
+				if (((productstring != NULL) && (productindex >= 0) 
 						&& !usb_check_string(dev_handle, productindex, 
 												productstring, NULL, 0))
-				    || ((serialstring != NULL)
-					    && !usb_check_string(dev_handle, serialindex, serialstring, 
+				    || ((serialindex >= 0) 
+						&& !usb_check_string(dev_handle, serialindex, serialstring, 
 								 (char*)buf, sizeof(buf))))
 				{
 					usb_close(dev_handle);
@@ -317,8 +318,8 @@ uint32_t print_usb_devices(uint16_t VID, uint16_t PID, uint8_t serialindex,
 }
 
 usb_dev_handle* find_usb_device(uint16_t VID, uint16_t PID, uint8_t interface, 
-								uint8_t serialindex, char *serialstring, 
-								uint8_t productindex, char *productstring)
+								int8_t serialindex, char *serialstring, 
+								int8_t productindex, char *productstring)
 {
 	usb_dev_handle *dev_handle = NULL;
 	struct usb_bus *busses;
@@ -347,10 +348,10 @@ usb_dev_handle* find_usb_device(uint16_t VID, uint16_t PID, uint8_t interface,
 				}
 				
 				// check description string
-				if (((productstring != NULL) 
+				if (((productstring != NULL) && (productindex >= 0) 
 						&& !usb_check_string(dev_handle, productindex, 
 												productstring, NULL, 0))
-					|| ((serialstring != NULL) 
+					|| ((serialstring != NULL) && (serialindex >= 0) 
 						&& !usb_check_string(dev_handle, serialindex, 
 												serialstring, NULL, 0)))
 				{
