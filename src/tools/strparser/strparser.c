@@ -79,6 +79,11 @@ RESULT strparser_parse(char * str, char * format, uint8_t * buff,
 	cur_index = 0;
 	while (format[cur_index] != '\0')
 	{
+		if ('\0' == str[0])
+		{
+			return ERROR_FAIL;
+		}
+		
 		cur_ch = format[cur_index++];
 		switch (cur_ch)
 		{
@@ -166,7 +171,6 @@ parse_integer:
 				}
 				
 				*buff++ = *str++;
-				
 				size_avail--;
 				
 				while ((str[0] != '\0') && strparser_is_divider(str[0]))
@@ -186,11 +190,7 @@ parse_integer:
 					}
 					
 					*buff++ = *str++;
-					
-					if (size && !size_avail)
-					{
-						size_avail--;
-					}
+					size_avail--;
 				}
 				if (size && !size_avail)
 				{
