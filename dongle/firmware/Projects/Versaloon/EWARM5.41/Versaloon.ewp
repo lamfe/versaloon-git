@@ -2010,6 +2010,12 @@
       </file>
     </group>
     <group>
+      <name>DUSI</name>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\Interfaces\DUSI\DUSI.c</name>
+      </file>
+    </group>
+    <group>
       <name>GPIO</name>
       <file>
         <name>$PROJ_DIR$\..\..\..\Interfaces\GPIO\GPIO.c</name>
@@ -2122,6 +2128,9 @@
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB_TO_DAC.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB_TO_DUSI.c</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB_TO_GPIO.c</name>

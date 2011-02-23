@@ -93,7 +93,7 @@
 #	define USB_TO_PWM_EN				(0 && HW_HAS_PWM)
 #	define USB_TO_ADC_EN				(1 && HW_HAS_ADC)
 #	define USB_TO_DAC_EN				(0 && HW_HAS_DAC)
-#	define USB_TO_MICROWIRE_EN			(0 && HW_HAS_MICROWIRE)
+#	define USB_TO_DUSI_EN				(1 && HW_HAS_DUSI)
 // page 1
 #	define USB_TO_JTAG_LL_EN			(1 && HW_HAS_JTAG)
 #	define USB_TO_JTAG_HL_EN			(1 && HW_HAS_JTAG)
@@ -154,7 +154,7 @@
 #	define USB_TO_PWM_EN				0
 #	define USB_TO_ADC_EN				0
 #	define USB_TO_DAC_EN				0
-#	define USB_TO_MICROWIRE_EN			0
+#	define USB_TO_DUSI_EN				0
 // page 1
 #	define USB_TO_JTAG_LL_EN			0
 #	define USB_TO_JTAG_HL_EN			0
@@ -190,6 +190,7 @@
 #define INTERFACE_SWD_EN				(USB_TO_XXX_EN && USB_TO_SWD_EN)
 #define INTERFACE_BDM_EN				(USB_TO_XXX_EN && USB_TO_BDM_EN)
 #define INTERFACE_GPIO_EN				(USB_TO_XXX_EN && USB_TO_GPIO_EN)
+#define INTERFACE_DUSI_EN				(USB_TO_XXX_EN && USB_TO_DUSI_EN)
 
 /*************************** Includes Application ***************************/
 #include "HW.h"

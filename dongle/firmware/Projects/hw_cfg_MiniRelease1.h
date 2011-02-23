@@ -31,7 +31,7 @@
 #define HW_HAS_PWM						0
 #define HW_HAS_ADC						1
 #define HW_HAS_DAC						0
-#define HW_HAS_MICROWIRE				0
+#define HW_HAS_DUSI						1
 #define HW_HAS_JTAG						1
 #define HW_HAS_ISSP						1
 #define HW_HAS_C2						1
@@ -354,6 +354,14 @@
 #define SWD_SWCLK_SET()					JTAG_TAP_TCK_SET()
 #define SWD_SWCLK_CLR()					JTAG_TAP_TCK_CLR()
 
+/***************************** DUSI ******************************/
+#define DUSI_Config(d, fb, cpol, cpha)	do{\
+											SPI_Configuration(JTAG_TAP_HS_SPI_M, SPI_Mode_Master, (d),\
+																(fb), (cpol), (cpha));\
+											SPI_Configuration(JTAG_TAP_HS_SPI_S, SPI_Mode_Slave,SPI_BaudRatePrescaler_2, \
+																(fb), (cpol), (cpha));\
+										} while (0)
+
 /***************************** JTAG ******************************/
 #define JTAG_TAP_PORT					GPIOB
 #define JTAG_TAP_TCK_PIN				GPIO_PIN_13
@@ -513,12 +521,7 @@
 											GPIO_PinRemapConfig(GPIO_Remap_SPI1, DISABLE);\
 										}while(0)
 
-#define JTAG_TAP_HS_SetSpeed(div)		do{\
-											SPI_Configuration(JTAG_TAP_HS_SPI_M, SPI_Mode_Master, (div),\
-																SPI_FirstBit_LSB, SPI_CPOL_High, SPI_CPHA_2Edge);\
-											SPI_Configuration(JTAG_TAP_HS_SPI_S, SPI_Mode_Slave,SPI_BaudRatePrescaler_2, \
-																SPI_FirstBit_LSB, SPI_CPOL_High, SPI_CPHA_2Edge);\
-										}while(0)
+#define JTAG_TAP_HS_SetSpeed(div)		DUSI_Config(div, SPI_FirstBit_LSB, SPI_CPOL_High, SPI_CPHA_2Edge)
 
 #define JTAG_TAP_HS_TMS_Out(tms)		JTAG_TAP_HS_SPI_S->DR = (tms)
 #define JTAG_TAP_HS_TDI_Out(tdi)		JTAG_TAP_HS_SPI_M->DR = (tdi)
