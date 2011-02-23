@@ -242,5 +242,14 @@ RESULT usbtobdm_transact(uint8_t interface_index, uint8_t *out,
 	uint8_t outlen, uint8_t *in, uint8_t inlen, uint8_t delay, uint8_t ack);
 
 
+
+// USB_TO_DUSI
+RESULT usbtodusi_init(uint8_t interface_index);
+RESULT usbtodusi_fini(uint8_t interface_index);
+RESULT usbtodusi_config(uint8_t interface_index, uint16_t kHz, uint8_t cpol, 
+						uint8_t cpha, uint8_t firstbit);
+RESULT usbtodusi_io(uint8_t interface_index, uint8_t *mo, uint8_t *mi, 
+					uint8_t *so, uint8_t *si, uint32_t bitlen);
+
 #endif /* __USBTOXXX_H_INCLUDED__ */
 

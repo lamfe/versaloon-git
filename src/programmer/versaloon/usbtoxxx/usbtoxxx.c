@@ -132,16 +132,19 @@ RESULT usbtoxxx_execute_command(void)
 	if (poll_nesting)
 	{
 		LOG_BUG(ERRMSG_INVALID_USAGE, "USB_TO_POLL");
+		versaloon_free_want_pos();
 		return ERROR_FAIL;
 	}
 	
 	if (ERROR_OK != usbtoxxx_validate_current_command_type())
 	{
 		LOG_BUG(ERRMSG_FAILURE_OPERATION, "validate previous commands");
+		versaloon_free_want_pos();
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	if (3 == usbtoxxx_buffer_index)
 	{
+		versaloon_free_want_pos();
 		return ERROR_OK;
 	}
 	
@@ -150,6 +153,7 @@ RESULT usbtoxxx_execute_command(void)
 	
 	if (ERROR_OK != versaloon_send_command(usbtoxxx_buffer_index, &inlen))
 	{
+		versaloon_free_want_pos();
 		return ERROR_FAIL;
 	}
 	
@@ -185,7 +189,35 @@ RESULT usbtoxxx_execute_command(void)
 		}
 		
 		// get result data
-		if ((versaloon_pending[i].want_data_size > 0) 
+		if (versaloon_pending[i].pos != NULL)
+		{
+			uint8_t processed = 0;
+			
+			if (versaloon_pending[i].callback != NULL)
+			{
+				versaloon_pending[i].callback(&versaloon_pending[i], 
+							versaloon_buf + usbtoxxx_buffer_index, &processed);
+			}
+			if (!processed)
+			{
+				struct versaloon_want_pos_t *tmp, *free_tmp;
+				
+				free_tmp = tmp = versaloon_pending[i].pos;
+				while (tmp != NULL)
+				{
+					if ((tmp->buff != NULL) && (tmp->size > 0))
+					{
+						memcpy(tmp->buff, versaloon_buf + usbtoxxx_buffer_index 
+							+ tmp->offset, tmp->size);
+					}
+					free_tmp = tmp;
+					tmp = tmp->next;
+					free(free_tmp);
+				}
+				versaloon_pending[i].pos = NULL;
+			}
+		}
+		else if ((versaloon_pending[i].want_data_size > 0) 
 			&& (versaloon_pending[i].data_buffer != NULL))
 		{
 			uint8_t processed = 0;
@@ -234,7 +266,7 @@ RESULT usbtoxxx_execute_command(void)
 	type_pre = 0;
 	collect_cmd = 0;
 	collect_index = 0;
-	
+	versaloon_free_want_pos();
 	return result;
 }
 

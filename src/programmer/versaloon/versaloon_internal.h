@@ -76,6 +76,13 @@
 // pending struct
 #define VERSALOON_MAX_PENDING_NUMBER	4096
 typedef RESULT (*versaloon_callback_t)(void *, uint8_t *, uint8_t *);
+struct versaloon_want_pos_t
+{
+	uint16_t offset;
+	uint16_t size;
+	uint8_t *buff;
+	struct versaloon_want_pos_t *next;
+};
 struct versaloon_pending_t
 {
 	uint8_t type;
@@ -86,6 +93,7 @@ struct versaloon_pending_t
 	uint8_t *data_buffer;
 	uint8_t collect;
 	uint32_t id;
+	struct versaloon_want_pos_t *pos;
 	void *extra_data;
 	versaloon_callback_t callback;
 };
@@ -95,8 +103,10 @@ extern uint16_t versaloon_pending_idx;
 void versaloon_set_pending_id(uint32_t id);
 void versaloon_set_callback(versaloon_callback_t callback);
 void versaloon_set_extra_data(void * p);
+RESULT versaloon_add_want_pos(uint16_t offset, uint16_t size, uint8_t *buff);
 RESULT versaloon_add_pending(uint8_t type, uint8_t cmd, uint16_t actual_szie, 
 	uint16_t want_pos, uint16_t want_size, uint8_t *buffer, uint8_t collect);
+void versaloon_free_want_pos(void);
 
 RESULT versaloon_send_command(uint16_t out_len, uint16_t *inlen);
 extern uint8_t *versaloon_buf;

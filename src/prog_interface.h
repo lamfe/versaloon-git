@@ -43,6 +43,7 @@
 #define JTAG_RAW				(1ULL << 27)
 #define BDM						(1ULL << 28)
 #define POLL					(1ULL << 29)
+#define DUSI					(1ULL << 30)
 #define INVALID_INTERFACE		(1ULL << 63)
 #define INTERFACES_MASK			(USART | SPI | I2C | GPIO | CAN | CLOCK | ADC \
 								 | DAC | POWER | ISSP | JTAG | MSP430_JTAG \
@@ -95,6 +96,14 @@ struct jtag_pos_t
 #define SPI_CPHA_1EDGE			0x00
 #define SPI_MSB_FIRST			0x80
 #define SPI_LSB_FIRST			0x00
+
+// DUSI
+#define DUSI_CPOL_HIGH			0x20
+#define DUSI_CPOL_LOW			0x00
+#define DUSI_CPHA_2EDGE			0x40
+#define DUSI_CPHA_1EDGE			0x00
+#define DUSI_MSB_FIRST			0x80
+#define DUSI_LSB_FIRST			0x00
 
 // ISSP for PSoC
 #define ISSP_PM_RESET			(1 << 0)
