@@ -56,6 +56,9 @@
 #if INTERFACE_BDM_EN
 #	include "BDM/BDM.h"
 #endif
+#if INTERFACE_DUSI_EN
+#	include "DUSI/DUSI.h"
+#endif
 
 // work around, because RESULT is comflict with struct in usb_core.h
 RESULT target_voltage_set(uint8_t index, uint16_t voltage);
@@ -253,6 +256,15 @@ const struct interfaces_info_t internal_interfaces =
 		bdm_fini,
 		bdm_sync,
 		bdm_transact
+	},
+#endif
+#if INTERFACE_DUSI_EN
+	{
+		// dusi
+		dusi_init,
+		dusi_fini,
+		dusi_config,
+		dusi_io
 	},
 #endif
 	peripheral_commit
