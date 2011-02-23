@@ -91,6 +91,7 @@ VSS_HANDLER(versaloon_support)
 static uint32_t versaloon_pending_id = 0;
 static versaloon_callback_t versaloon_callback = NULL;
 static void *versaloon_extra_data = NULL;
+static struct versaloon_want_pos_t *versaloon_want_pos = NULL;
 void versaloon_set_pending_id(uint32_t id)
 {
 	versaloon_pending_id = id;
@@ -102,6 +103,66 @@ void versaloon_set_callback(versaloon_callback_t callback)
 void versaloon_set_extra_data(void * p)
 {
 	versaloon_extra_data = p;
+}
+
+void versaloon_free_want_pos(void)
+{
+	uint16_t i;
+	struct versaloon_want_pos_t *tmp, *free_tmp;
+	
+	tmp = versaloon_want_pos;
+	while (tmp != NULL)
+	{
+		free_tmp = tmp;
+		tmp = tmp->next;
+		free(free_tmp);
+	}
+	versaloon_want_pos = NULL;
+	
+	for (i = 0; i < dimof(versaloon_pending); i++)
+	{
+		tmp = versaloon_pending[i].pos;
+		while (tmp != NULL)
+		{
+			free_tmp = tmp;
+			tmp = tmp->next;
+			free(free_tmp);
+		}
+		versaloon_pending[i].pos = NULL;
+	}
+}
+
+RESULT versaloon_add_want_pos(uint16_t offset, uint16_t size, uint8_t *buff)
+{
+	struct versaloon_want_pos_t *new_pos = NULL;
+	
+	new_pos = (struct versaloon_want_pos_t *)malloc(sizeof(*new_pos));
+	if (NULL == new_pos)
+	{
+		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
+		return ERRCODE_NOT_ENOUGH_MEMORY;
+	}
+	new_pos->offset = offset;
+	new_pos->size = size;
+	new_pos->buff = buff;
+	new_pos->next = NULL;
+	
+	if (NULL == versaloon_want_pos)
+	{
+		versaloon_want_pos = new_pos;
+	}
+	else
+	{
+		struct versaloon_want_pos_t *tmp = versaloon_want_pos;
+		
+		while (tmp->next != NULL)
+		{
+			tmp = tmp->next;
+		}
+		tmp->next = new_pos;
+	}
+	
+	return ERROR_OK;
 }
 
 RESULT versaloon_add_pending(uint8_t type, uint8_t cmd, uint16_t actual_szie, 
@@ -129,6 +190,8 @@ RESULT versaloon_add_pending(uint8_t type, uint8_t cmd, uint16_t actual_szie,
 	versaloon_extra_data = NULL;
 	versaloon_pending[versaloon_pending_idx].callback = versaloon_callback;
 	versaloon_callback = NULL;
+	versaloon_pending[versaloon_pending_idx].pos = versaloon_want_pos;
+	versaloon_want_pos = NULL;
 	versaloon_pending_idx++;
 	
 	return ERROR_OK;
@@ -239,6 +302,7 @@ static RESULT versaloon_fini(void)
 	if (versaloon_device_handle != NULL)
 	{
 		usbtoxxx_fini();
+		versaloon_free_want_pos();
 		
 		usb_release_interface(versaloon_device_handle, usb_param_interface());
 		usb_close(versaloon_device_handle);
@@ -266,6 +330,12 @@ static RESULT versaloon_init(void *p)
 	uint16_t ret = 0;
 	uint8_t retry;
 	uint32_t timeout_tmp;
+	uint16_t i;
+	
+	for (i = 0; i < dimof(versaloon_pending); i++)
+	{
+		versaloon_pending[i].pos = NULL;
+	}
 	
 	versaloon_device_handle = find_usb_device(usb_param_vid(), 
 		usb_param_pid(), usb_param_interface(), VERSALOON_SERIALSTRING_INDEX, 
@@ -458,6 +528,11 @@ static RESULT versaloon_init(void *p)
 	{
 		t->interfaces.support_mask &= ~BDM;
 	}
+	if ((t->interfaces.support_mask & DUSI) && 
+		!usbtoxxx_interface_supported(USB_TO_DUSI))
+	{
+		t->interfaces.support_mask &= ~DUSI;
+	}
 	
 	return ERROR_OK;
 }
@@ -612,7 +687,8 @@ RESULT versaloon_init_capability(void *p)
 	t->fini = versaloon_fini;
 	
 	i->support_mask = (USART | SPI | I2C | GPIO | POWER | ISSP | JTAG_LL | POLL 
-		| JTAG_HL | SWIM | JTAG_RAW | C2 | MSP430_JTAG | LPC_ICP | SWD | BDM);
+		| JTAG_HL | SWIM | JTAG_RAW | C2 | MSP430_JTAG | LPC_ICP | SWD | BDM 
+		| DUSI);
 	
 	// USART
 	i->usart.init = usbtousart_init;

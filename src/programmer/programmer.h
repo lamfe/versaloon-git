@@ -220,6 +220,16 @@ struct interface_bdm_t
 						uint8_t ack);
 };
 
+struct interface_dusi_t
+{
+	RESULT (*init)(uint8_t index);
+	RESULT (*fini)(uint8_t index);
+	RESULT (*config)(uint8_t index, uint16_t kHz, uint8_t cpol, uint8_t cpha, 
+					 uint8_t first_bit);
+	RESULT (*io)(uint8_t index, uint8_t *mo, uint8_t *mi, uint8_t *so, 
+				 uint8_t *si, uint32_t bitlen);
+};
+
 struct interface_target_voltage_t
 {
 	RESULT (*get)(uint8_t index, uint16_t *voltage);
@@ -262,6 +272,7 @@ struct interfaces_info_t
 	struct interface_lpcicp_t lpcicp;
 	struct interface_swim_t swim;
 	struct interface_bdm_t bdm;
+	struct interface_dusi_t dusi;
 	struct interface_poll_t poll;
 	RESULT (*peripheral_commit)(void);
 };
@@ -314,6 +325,7 @@ struct programmer_info_t
 			{0, 0, 0, 0, 0},\
 			{0, 0, 0, 0, 0, 0},\
 			{0, 0, 0, 0, 0, 0, 0, 0},\
+			{0, 0, 0, 0},\
 			{0, 0, 0, 0},\
 			{0, 0, 0, 0, 0},\
 			0\
