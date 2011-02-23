@@ -108,21 +108,46 @@ RESULT dusi_config(uint8_t index, uint16_t kHz, uint8_t cpol, uint8_t cpha,
 }
 
 RESULT dusi_io(uint8_t index, uint8_t *mo, uint8_t *mi, uint8_t *so, uint8_t *si, 
-			   uint32_t len)
+			   uint32_t bitlen)
 {
-	uint16_t i;
-
+	uint32_t i;
+	uint8_t tmp;
+	
 	switch (index)
 	{
 	case 0:
-		if ((NULL == mo) || (NULL == mo) || (NULL == so) || (NULL == si))
+		// currently support byte mode ONLY
+		bitlen /= 8;
+		for(i = 0; i < bitlen; i++)
 		{
-			return ERROR_FAIL;
-		}
-		
-		for(i = 0; i < len; i++)
-		{
-//			in[i] = SPI_RW(out[i]);
+			if (so != NULL)
+			{
+				DUSI_SlaveOutBytePtr(so);
+				so++;
+			}
+			if (mo != NULL)
+			{
+				tmp = *mo;
+				mo++;
+			}
+			else
+			{
+				tmp = 0;
+			}
+			DUSI_MasterOutByte(tmp);
+			
+			JTAG_TAP_HS_WaitReady();
+			
+			if (si != NULL)
+			{
+				*si = DUSI_SlaveInByte();
+				si++;
+			}
+			if (mi != NULL)
+			{
+				*mi = DUSI_MasterInByte();
+				mi++;
+			}
 		}
 		return ERROR_OK;
 	default:
