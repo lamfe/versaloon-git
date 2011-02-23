@@ -330,12 +330,8 @@ static RESULT versaloon_init(void *p)
 	uint16_t ret = 0;
 	uint8_t retry;
 	uint32_t timeout_tmp;
-	uint16_t i;
 	
-	for (i = 0; i < dimof(versaloon_pending); i++)
-	{
-		versaloon_pending[i].pos = NULL;
-	}
+	memset(versaloon_pending, 0, sizeof(versaloon_pending));
 	
 	versaloon_device_handle = find_usb_device(usb_param_vid(), 
 		usb_param_pid(), usb_param_interface(), VERSALOON_SERIALSTRING_INDEX, 
