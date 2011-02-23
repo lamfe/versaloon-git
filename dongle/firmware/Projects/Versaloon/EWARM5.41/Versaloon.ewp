@@ -2154,9 +2154,6 @@
       <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB_TO_LPCICP.c</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB_TO_MICROWIRE.c</name>
-    </file>
-    <file>
       <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB_TO_MSP430_JTAG.c</name>
     </file>
     <file>

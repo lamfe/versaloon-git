@@ -362,6 +362,25 @@
 																(fb), (cpol), (cpha));\
 										} while (0)
 
+#define DUSI_MasterOutByte(mo)			JTAG_TAP_HS_SPI_M->DR = (mo)
+#define DUSI_SlaveOutByte(so)			JTAG_TAP_HS_SPI_S->DR = (so)
+#define DUSI_MasterOutBytePtr(pmo)		DUSI_MasterOutByte(*(uint8_t *)(pmo))
+#define DUSI_SlaveOutBytePtr(pso)		DUSI_SlaveOutByte(*(uint8_t *)(pso))
+#define DUSI_OutByte(mo, so)			do{\
+											DUSI_SlaveOutByte(so);\
+											DUSI_MasterOutByte(mo);\
+										} while (0)
+#define DUSI_OutBytePtr(pmo, pso)		DUSI_OutByte(*(uint8_t*)pmo, *(uint8_t *)pso)
+
+#define DUSI_MasterInByte(mi)			JTAG_TAP_HS_SPI_M->DR
+#define DUSI_SlaveInByte(si)			JTAG_TAP_HS_SPI_S->DR
+#define DUSI_MasterInBytePtr(pmi)		*(uint8_t *)(pmi) = JTAG_TAP_HS_SPI_M->DR
+#define DUSI_SlaveInBytePtr(psi)		*(uint8_t *)(psi) = JTAG_TAP_HS_SPI_S->DR
+#define DUSI_InBytePtr(pmi, psi)		do {\
+											*(uint8_t *)(psi) = JTAG_TAP_HS_SPI_S->DR;\
+											*(uint8_t *)(pmi) = JTAG_TAP_HS_SPI_M->DR;\
+										} while (0)
+
 /***************************** JTAG ******************************/
 #define JTAG_TAP_PORT					GPIOB
 #define JTAG_TAP_TCK_PIN				GPIO_PIN_13
