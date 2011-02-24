@@ -2046,6 +2046,12 @@
       </file>
     </group>
     <group>
+      <name>MicroWire</name>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\Interfaces\MicroWire\MicroWire.c</name>
+      </file>
+    </group>
+    <group>
       <name>MSP430_JTAG</name>
       <file>
         <name>$PROJ_DIR$\..\..\..\Interfaces\MSP430_JTAG\MSP430_JTAG.c</name>
@@ -2152,6 +2158,9 @@
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB_TO_LPCICP.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB_TO_MICROWIRE.c</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB_TO_MSP430_JTAG.c</name>
