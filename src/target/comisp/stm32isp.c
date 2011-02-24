@@ -807,6 +807,7 @@ READ_TARGET_HANDLER(stm32isp)
 	uint16_t len;
 	uint8_t tmpbuff[4];
 	uint16_t flash_kb, sram_kb, page_size, page_size_tmp;
+	uint16_t den;
 	RESULT ret = ERROR_OK;
 	
 	switch (area)
@@ -819,6 +820,7 @@ READ_TARGET_HANDLER(stm32isp)
 			break;
 		}
 		mcu_id = 0xFFFF0000 | ((mcu_id >> 20) & STM32_DEN_MSK);
+		den = mcu_id & STM32_DEN_MSK;
 		stm32_print_device(mcu_id);
 		*(uint32_t *)buff = mcu_id & STM32_DEN_MSK;
 		
@@ -836,6 +838,13 @@ READ_TARGET_HANDLER(stm32isp)
 		{
 			pi->program_areas[APPLICATION_IDX].size = 
 			param->chip_areas[APPLICATION_IDX].size = flash_kb * 1024;
+		}
+		else if ((STM32_DEN_VALUELINE == den) && (0xFFFFFFFF == mcu_id))
+		{
+			// FLASH_RAM_SIZE register of STM32 ValueLine devices will be 0xFFFFFFFF
+			// we use 128K by default
+			pi->program_areas[APPLICATION_IDX].size = 
+			param->chip_areas[APPLICATION_IDX].size = 128 * 1024;
 		}
 		else
 		{

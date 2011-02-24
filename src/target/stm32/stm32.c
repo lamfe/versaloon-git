@@ -170,6 +170,9 @@ void stm32_print_device(uint32_t mcuid)
 		case 0x1001:
 			rev_char = 'Z';
 			break;
+		case 0x1003:
+			rev_char = 'Y';
+			break;
 		}
 		break;
 	case STM32_DEN_CONNECTIVITY:
@@ -193,6 +196,15 @@ void stm32_print_device(uint32_t mcuid)
 			break;
 		case 0x1001:
 			rev_char = 'Z';
+			break;
+		}
+		break;
+	case STM32_DEN_XL:
+		LOG_INFO("STM32 type: XL device");
+		switch (rev)
+		{
+		case 0x1000:
+			rev_char = 'A';
 			break;
 		}
 		break;
