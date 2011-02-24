@@ -26,6 +26,7 @@
 #define USB_TO_PWM					(VERSALOON_USB_TO_XXX_CMD_START + 0x05)
 #define USB_TO_ADC					(VERSALOON_USB_TO_XXX_CMD_START + 0x06)
 #define USB_TO_DAC					(VERSALOON_USB_TO_XXX_CMD_START + 0x07)
+#define USB_TO_MICROWIRE			(VERSALOON_USB_TO_XXX_CMD_START + 0x08)
 #define USB_TO_SWIM					(VERSALOON_USB_TO_XXX_CMD_START + 0x09)
 #define USB_TO_DUSI					(VERSALOON_USB_TO_XXX_CMD_START + 0x0A)
 // Page1
@@ -59,6 +60,7 @@ void USB_TO_PWM_ProcessCmd(uint8* dat, uint16 len);
 void USB_TO_ADC_ProcessCmd(uint8* dat, uint16 len);
 void USB_TO_DAC_ProcessCmd(uint8* dat, uint16 len);
 void USB_TO_SWIM_ProcessCmd(uint8* dat, uint16 len);
+void USB_TO_MICROWIRE_ProcessCmd(uint8* dat, uint16 len);
 void USB_TO_DUSI_ProcessCmd(uint8* dat, uint16 len);
 // Page1
 void USB_TO_JTAG_LL_ProcessCmd(uint8* dat, uint16 len);
@@ -192,3 +194,4 @@ extern int8 USB_TO_POLL_Index;
 #define USB_TO_SWIM_NUM				1
 #define USB_TO_BDM_NUM				1
 #define USB_TO_DUSI_NUM				1
+#define USB_TO_MICROWIRE_NUM		1

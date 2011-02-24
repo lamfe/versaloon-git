@@ -31,6 +31,7 @@
 #define HW_HAS_PWM						0
 #define HW_HAS_ADC						1
 #define HW_HAS_DAC						0
+#define HW_HAS_MICROWIRE				1
 #define HW_HAS_DUSI						1
 #define HW_HAS_JTAG						1
 #define HW_HAS_ISSP						1

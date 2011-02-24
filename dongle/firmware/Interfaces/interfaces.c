@@ -59,6 +59,9 @@
 #if INTERFACE_DUSI_EN
 #	include "DUSI/DUSI.h"
 #endif
+#if INTERFACE_MICROWIRE_EN
+#	include "MicroWire/MicroWire.h"
+#endif
 
 // work around, because RESULT is comflict with struct in usb_core.h
 RESULT target_voltage_set(uint8_t index, uint16_t voltage);
@@ -265,6 +268,16 @@ const struct interfaces_info_t internal_interfaces =
 		dusi_fini,
 		dusi_config,
 		dusi_io
+	},
+#endif
+#if INTERFACE_MICROWIRE_EN
+	{
+		// microwire
+		microwire_init,
+		microwire_fini,
+		microwire_config,
+		microwire_io,
+		microwire_poll
 	},
 #endif
 	peripheral_commit
