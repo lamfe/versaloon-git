@@ -20,6 +20,154 @@
 #include "interfaces.h"
 #include "MicroWire.h"
 
+static uint16_t MicroWire_DelayUS = 0;
+static uint8_t MicroWire_SelPolarity = 0;
+
+static void MicroWire_Select(void)
+{
+	if (MicroWire_SelPolarity)
+	{
+		MICROWIRE_SEL_SET();
+	}
+	else
+	{
+		MICROWIRE_SEL_CLR();
+	}
+}
+
+static void MicroWire_Release(void)
+{
+	if (MicroWire_SelPolarity)
+	{
+		MICROWIRE_SEL_CLR();
+	}
+	else
+	{
+		MICROWIRE_SEL_SET();
+	}
+}
+
+static void MicroWire_OutBit(uint8_t out)
+{
+	if (out)
+	{
+		MICROWIRE_SO_SET();
+	}
+	else
+	{
+		MICROWIRE_SO_CLR();
+	}
+	DelayUS(MicroWire_DelayUS);
+	MICROWIRE_SK_SET();
+	DelayUS(MicroWire_DelayUS * 2);
+	MICROWIRE_SK_CLR();
+	DelayUS(MicroWire_DelayUS);
+}
+
+static uint8_t MicroWire_InBit(void)
+{
+	uint8_t si;
+	
+	DelayUS(MicroWire_DelayUS);
+	MICROWIRE_SK_SET();
+	DelayUS(MicroWire_DelayUS);
+	si = MICROWIRE_SI_GET() > 0;
+	DelayUS(MicroWire_DelayUS);
+	MICROWIRE_SK_CLR();
+	DelayUS(MicroWire_DelayUS);
+	return si;
+}
+
+static void MicroWire_Init(uint8_t sel_polarity)
+{
+	MicroWire_SelPolarity = sel_polarity;
+	MicroWire_Release();
+	MICROWIRE_SEL_SETOUTPUT();
+	
+	MICROWIRE_SK_CLR();
+	MICROWIRE_SK_SETOUTPUT();
+	MICROWIRE_SO_SETOUTPUT();
+	MICROWIRE_SI_SETINPUT();
+}
+
+static void MicroWire_Fini(void)
+{
+	MICROWIRE_SEL_SETINPUT();
+	MICROWIRE_SK_SETINPUT();
+	MICROWIRE_SO_SETINPUT();
+	MICROWIRE_SI_SETINPUT();
+}
+
+static void MicroWire_Config(uint16_t kHz)
+{
+	if (!kHz)
+	{
+		kHz = 1;
+	}
+	
+	MicroWire_DelayUS = (1000 / 4) / kHz;
+}
+
+static RESULT MicroWire_Poll(uint16_t interval_us, uint16_t retry_cnt)
+{
+	MicroWire_Select();
+	
+	while (!MICROWIRE_SI_GET() && retry_cnt--)
+	{
+		DelayUS(interval_us);
+	}
+	
+	MicroWire_Release();
+	
+	if (retry_cnt)
+	{
+		return ERROR_OK;
+	}
+	else
+	{
+		return ERROR_FAIL;
+	}
+}
+
+static void MicroWire_Transact(uint32_t opcode, uint8_t opcode_bitlen, 
+								uint32_t addr, uint8_t addr_bitlen, 
+								uint32_t data, uint8_t data_bitlen, 
+								uint8_t *ret, uint8_t ret_bitlen)
+{
+	uint16_t i;
+	
+	MicroWire_Select();
+	
+	MicroWire_OutBit(1);
+	
+	for (i = 0; i < opcode_bitlen; i++)
+	{
+		MicroWire_OutBit(opcode & (1UL << (7 - (i % 8))));
+	}
+	for (i = 0; i < addr_bitlen; i++)
+	{
+		MicroWire_OutBit(addr & (1UL << (7 - (i % 8))));
+	}
+	for (i = 0; i < data_bitlen; i++)
+	{
+		MicroWire_OutBit(data & (1UL << (7 - (i % 8))));
+	}
+	
+	for (i = 0; i < ret_bitlen; i++)
+	{
+		if (MicroWire_InBit())
+		{
+			ret[i / 8] |= 1 << (7 - (i % 8));
+		}
+		else
+		{
+			ret[i / 8] &= ~(1 << (8 - (i % 8)));
+		}
+	}
+	
+	MicroWire_Release();
+}
+
 RESULT microwire_init(uint8_t index)
 {
 	switch (index)
@@ -36,6 +184,7 @@ RESULT microwire_fini(uint8_t index)
 	switch (index)
 	{
 	case 0:
+		MicroWire_Fini();
 		return ERROR_OK;
 	default:
 		return ERROR_FAIL;
@@ -47,18 +196,27 @@ RESULT microwire_config(uint8_t index, uint16_t kHz, uint8_t sel_polarity)
 	switch (index)
 	{
 	case 0:
+		MicroWire_Init(sel_polarity);
+		MicroWire_Config(kHz);
 		return ERROR_OK;
 	default:
 		return ERROR_FAIL;
 	}
 }
 
-RESULT microwire_io(uint8_t index, uint8_t *opcode, uint16_t opcode_bitlen, 
-					uint8_t *input, uint16_t input_bitlen)
+RESULT microwire_transport(uint8_t index, 
+						   uint32_t opcode, uint8_t opcode_bitlen, 
+						   uint32_t addr, uint8_t addr_bitlen, 
+						   uint32_t data, uint8_t data_bitlen, 
+						   uint8_t *ret, uint8_t ret_bitlen)
 {
 	switch (index)
 	{
 	case 0:
+		MicroWire_Transact(opcode, opcode_bitlen, 
+						   addr, addr_bitlen, 
+						   data, data_bitlen, 
+						   ret, ret_bitlen);
 		return ERROR_OK;
 	default:
 		return ERROR_FAIL;
@@ -70,7 +228,7 @@ RESULT microwire_poll(uint8_t index, uint16_t interval_us, uint16_t retry_cnt)
 	switch (index)
 	{
 	case 0:
-		return ERROR_OK;
+		return MicroWire_Poll(interval_us, retry_cnt);
 	default:
 		return ERROR_FAIL;
 	}

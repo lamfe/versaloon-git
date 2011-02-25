@@ -31,7 +31,9 @@ libprog_a_SOURCES = \
     versaloon/usbtoxxx/usbtoswd.c \
     versaloon/usbtoxxx/usbtoswim.c \
     versaloon/usbtoxxx/usbtojtagraw.c \
-    versaloon/usbtoxxx/usbtobdm.c
+    versaloon/usbtoxxx/usbtobdm.c \
+    versaloon/usbtoxxx/usbtodusi.c \
+    versaloon/usbtoxxx/usbtomicrowire.c
 
 #noinst_HEADERS = \
     programmer.h \

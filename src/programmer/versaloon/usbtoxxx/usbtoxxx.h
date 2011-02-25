@@ -251,5 +251,19 @@ RESULT usbtodusi_config(uint8_t interface_index, uint16_t kHz, uint8_t cpol,
 RESULT usbtodusi_io(uint8_t interface_index, uint8_t *mo, uint8_t *mi, 
 					uint8_t *so, uint8_t *si, uint32_t bitlen);
 
+
+// USB_TO_MICROWIRE
+RESULT usbtomicrowire_init(uint8_t interface_index);
+RESULT usbtomicrowire_fini(uint8_t interface_index);
+RESULT usbtomicrowire_config(uint8_t interface_index, uint16_t kHz, 
+								uint8_t sel_polarity);
+RESULT usbtomicrowire_transport(uint8_t interface_index, 
+								uint32_t opcode, uint8_t opcode_bitlen, 
+								uint32_t addr, uint8_t addr_bitlen, 
+								uint32_t data, uint8_t data_bitlen, 
+								uint8_t *reply, uint8_t reply_bitlen);
+RESULT usbtomicrowire_poll(uint8_t interface_index, uint16_t interval_us, 
+							uint16_t retry_cnt);
+
 #endif /* __USBTOXXX_H_INCLUDED__ */
 
