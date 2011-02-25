@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<series name="93cx6">
+  <chip name="93cx6">
+    <chip_id>0x00000000</chip_id>
+    <app_page_size>128</app_page_size>
+    <app_page_num>16</app_page_num>
+    <app_default>0xFF</app_default>
+    <app_addr>0</app_addr>
+    <app_seg>0</app_seg>
+    <chip_erase>1</chip_erase>
+  </chip>
+  <chip name="93c46">
+    <app_page_size>128</app_page_size>
+    <app_page_num>1</app_page_num>
+  </chip>
+  <chip name="93c56">
+    <app_page_size>128</app_page_size>
+    <app_page_num>2</app_page_num>
+  </chip>
+  <chip name="93c66">
+    <app_page_size>128</app_page_size>
+    <app_page_num>4</app_page_num>
+  </chip>
+  <chip name="93c76">
+    <app_page_size>128</app_page_size>
+    <app_page_num>8</app_page_num>
+  </chip>
+  <chip name="93c86">
+    <app_page_size>128</app_page_size>
+    <app_page_num>16</app_page_num>
+  </chip>
+</series>

@@ -112,7 +112,7 @@ static RESULT MicroWire_Poll(uint16_t interval_us, uint16_t retry_cnt)
 {
 	MicroWire_Select();
 	
-	while (!MICROWIRE_SI_GET() && retry_cnt--)
+	while (!MICROWIRE_SI_GET() && --retry_cnt)
 	{
 		DelayUS(interval_us);
 	}

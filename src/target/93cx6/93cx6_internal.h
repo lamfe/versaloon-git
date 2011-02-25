@@ -16,29 +16,29 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#ifndef __APP_CFG_INCLUDED__
-#define __APP_CFG_INCLUDED__
+#ifndef __EE93CX6_INTERNAL_H_INCLUDED__
+#define __EE93CX6_INTERNAL_H_INCLUDED__
 
-#define PARAM_CHECK				1
+#define EE93CX6_OPCODE_READ					0x02
+#define EE93CX6_OPCODE_READ_BITLEN			2
+#define EE93CX6_OPCODE_WRITE				0x01
+#define EE93CX6_OPCODE_WRITE_BITLEN			2
+#define EE93CX6_OPCODE_ERASE				0x03
+#define EE93CX6_OPCODE_ERASE_BITLEN			2
 
-// Target Support Configuration
-#define TARGET_TAT89S5X_EN		1
-#define TARGET_AT91SAM3_EN		1
-#define TARGET_AVR32_EN			0
-#define TARGET_AVR8_EN			1
-#define TARGET_AVRXMEGA_EN		0
-#define TARGET_C8051F_EN		1
-#define TARGET_HCS08_EN			1
-#define TARGET_HCS12_EN			1
-#define TARGET_LM3S_EN			1
-#define TARGET_LPC1000_EN		1
-#define TARGET_LPC900_EN		1
-#define TARGET_MSP430_EN		1
-#define TARGET_PSOC1_EN			1
-#define TARGET_STM32_EN			1
-#define TARGET_STM8_EN			1
-#define TARGET_SVF_EN			1
-#define TARGET_EE93CX6_EN		1
+#define EE93CX6_OPCODE_WEN					0x03
+#define EE93CX6_OPCODE_WEN_BITLEN			4
+#define EE93CX6_OPCODE_WDS					0x00
+#define EE93CX6_OPCODE_WDS_BITLEN			4
+#define EE93CX6_OPCODE_ERAL					0x02
+#define EE93CX6_OPCODE_ERAL_BITLEN			4
+#define EE93CX6_OPCODE_WRAL					0x01
+#define EE93CX6_OPCODE_WRAL_BITLEN			4
 
-#endif /* __APP_CFG_INCLUDED__ */
+#define EE93CX6_PARAM_ADDR_BITLEN			0
+
+#define EE93CX6_MODE_BYTE					0
+#define EE93CX6_MODE_WORD					1
+
+#endif /* __EE93CX6_INTERNAL_H_INCLUDED__ */
 
