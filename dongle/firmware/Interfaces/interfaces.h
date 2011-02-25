@@ -247,8 +247,11 @@ struct interface_microwire_t
 	RESULT (*init)(uint8_t index);
 	RESULT (*fini)(uint8_t index);
 	RESULT (*config)(uint8_t index, uint16_t kHz, uint8_t sel_polarity);
-	RESULT (*io)(uint8_t index, uint8_t *opcode, uint16_t opcode_bitlen, 
-				 uint8_t *input, uint16_t input_bitlen);
+	RESULT (*transport)(uint8_t index, 
+						uint32_t opcode, uint8_t opcode_bitlen, 
+						uint32_t addr, uint8_t addr_bitlen, 
+						uint32_t data, uint8_t data_bitlen, 
+						uint8_t *reply, uint8_t reply_bitlen);
 	RESULT (*poll)(uint8_t index, uint16_t interval_us, uint16_t retry_cnt);
 };
 

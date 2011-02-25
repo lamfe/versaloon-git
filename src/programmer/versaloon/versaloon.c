@@ -529,6 +529,11 @@ static RESULT versaloon_init(void *p)
 	{
 		t->interfaces.support_mask &= ~DUSI;
 	}
+	if ((t->interfaces.support_mask & MICROWIRE) && 
+		!usbtoxxx_interface_supported(USB_TO_MICROWIRE))
+	{
+		t->interfaces.support_mask &= ~MICROWIRE;
+	}
 	
 	return ERROR_OK;
 }
@@ -684,7 +689,7 @@ RESULT versaloon_init_capability(void *p)
 	
 	i->support_mask = (USART | SPI | I2C | GPIO | POWER | ISSP | JTAG_LL | POLL 
 		| JTAG_HL | SWIM | JTAG_RAW | C2 | MSP430_JTAG | LPC_ICP | SWD | BDM 
-		| DUSI);
+		| DUSI | MICROWIRE);
 	
 	// USART
 	i->usart.init = usbtousart_init;
@@ -814,6 +819,19 @@ RESULT versaloon_init_capability(void *p)
 	i->bdm.fini = usbtobdm_fini;
 	i->bdm.sync = usbtobdm_sync;
 	i->bdm.transact = usbtobdm_transact;
+	
+	// DUSI
+	i->dusi.init = usbtodusi_init;
+	i->dusi.fini = usbtodusi_fini;
+	i->dusi.config = usbtodusi_config;
+	i->dusi.io = usbtodusi_io;
+	
+	// MICROWIRE
+	i->microwire.init = usbtomicrowire_init;
+	i->microwire.fini = usbtomicrowire_fini;
+	i->microwire.config = usbtomicrowire_config;
+	i->microwire.transport = usbtomicrowire_transport;
+	i->microwire.poll = usbtomicrowire_poll;
 	
 	// POLL
 	i->poll.start = versaloon_poll_start;

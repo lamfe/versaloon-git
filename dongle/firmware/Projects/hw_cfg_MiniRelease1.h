@@ -574,6 +574,11 @@
 #define SPI_SCK_SETOUTPUT()				JTAG_TAP_TCK_SETOUTPUT()
 #define SPI_SCK_SETINPUT()				JTAG_TAP_TCK_SETINPUT()
 
+#define SPI_SS_SETOUTPUT()				SW_RST_SETOUTPUT()
+#define SPI_SS_SETINPUT()				SW_RST_SETINPUT()
+#define SPI_SS_SET()					SW_RST_SET()
+#define SPI_SS_CLR()					SW_RST_CLR()
+
 #define SPI_Disable()					SPI_I2S_DeInit(SPI_Interface)
 #define SPI_SetData(d)					SPI_Interface->DR = (d)
 #define SPI_GetData()					SPI_Interface->DR
@@ -599,6 +604,24 @@
 											GPIO_SetMode(JTAG_TAP_PORT, JTAG_TAP_TDI_PIN, GPIO_MODE_AF_PP);\
 										}while(0)
 
+/****************************** MicroWire ******************************/
+#define MICROWIRE_SEL_SETOUTPUT()		SPI_SS_SETOUTPUT()
+#define MICROWIRE_SEL_SETINPUT()		SPI_SS_SETINPUT()
+#define MICROWIRE_SEL_SET()				SPI_SS_SET()
+#define MICROWIRE_SEL_CLR()				SPI_SS_CLR()
+
+#define MICROWIRE_SO_SETOUTPUT()		SPI_MOSI_SETOUTPUT()
+#define MICROWIRE_SO_SETINPUT()			SPI_MOSI_SETINPUT()
+#define MICROWIRE_SO_SET()				SPI_MOSI_SET()
+#define MICROWIRE_SO_CLR()				SPI_MOSI_CLR()
+
+#define MICROWIRE_SI_SETINPUT()			SPI_MISO_SETINPUT()
+#define MICROWIRE_SI_GET()				SPI_MISO_GET()
+
+#define MICROWIRE_SK_SETOUTPUT()		SPI_SCK_SETOUTPUT()
+#define MICROWIRE_SK_SETINPUT()			SPI_SCK_SETINPUT()
+#define MICROWIRE_SK_SET()				SPI_SCK_SET()
+#define MICROWIRE_SK_CLR()				SPI_SCK_CLR()
 
 /****************************** Reset ******************************/
 #define RST_SET()						SW_SET()

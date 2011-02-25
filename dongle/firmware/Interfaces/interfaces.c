@@ -276,7 +276,7 @@ const struct interfaces_info_t internal_interfaces =
 		microwire_init,
 		microwire_fini,
 		microwire_config,
-		microwire_io,
+		microwire_transport,
 		microwire_poll
 	},
 #endif
