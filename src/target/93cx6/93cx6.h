@@ -16,29 +16,15 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#ifndef __APP_CFG_INCLUDED__
-#define __APP_CFG_INCLUDED__
+#ifndef __EE93CX6_H_INCLUDED__
+#define __EE93CX6_H_INCLUDED__
 
-#define PARAM_CHECK				1
+#define EE93CX6_STRING						"93cx6"
 
-// Target Support Configuration
-#define TARGET_TAT89S5X_EN		1
-#define TARGET_AT91SAM3_EN		1
-#define TARGET_AVR32_EN			0
-#define TARGET_AVR8_EN			1
-#define TARGET_AVRXMEGA_EN		0
-#define TARGET_C8051F_EN		1
-#define TARGET_HCS08_EN			1
-#define TARGET_HCS12_EN			1
-#define TARGET_LM3S_EN			1
-#define TARGET_LPC1000_EN		1
-#define TARGET_LPC900_EN		1
-#define TARGET_MSP430_EN		1
-#define TARGET_PSOC1_EN			1
-#define TARGET_STM32_EN			1
-#define TARGET_STM8_EN			1
-#define TARGET_SVF_EN			1
-#define TARGET_EE93CX6_EN		1
+extern struct program_area_map_t ee93cx6_program_area_map[];
+extern const struct program_mode_t ee93cx6_program_mode[];
+extern const struct program_functions_t ee93cx6_program_functions;
+extern const struct vss_cmd_t ee93cx6_notifier[];
 
-#endif /* __APP_CFG_INCLUDED__ */
+#endif /* __EE93CX6_H_INCLUDED__ */
 
