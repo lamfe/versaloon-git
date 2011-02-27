@@ -273,7 +273,7 @@ WRITE_TARGET_HANDLER(stm32swj)
 	uint32_t i;
 	uint32_t cur_run_size, cur_block_size;
 	uint32_t start_time, run_time;
-	uint8_t update_setting;
+	uint8_t update_setting, current_bank;
 	uint8_t verify_buff[sizeof(iap_code)];
 	RESULT ret = ERROR_OK;
 	REFERENCE_PARAMETER(context);
@@ -317,17 +317,34 @@ WRITE_TARGET_HANDLER(stm32swj)
 		}
 		break;
 	case APPLICATION_CHAR:
+stm32swj_download_flashloader:
 		if (ERROR_OK != cm3_dp_halt())
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "halt stm32");
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
-
+		
+		if (addr >= STM32_FLASH_BANK2_ADDR)
+		{
+			current_bank = 2;
+			*(uint32_t *)(iap_code + sizeof(iap_code) - 4 * 6) = 
+												SYS_TO_LE_U32(STM32_FLASH_SR2);
+			*(uint32_t *)(iap_code + sizeof(iap_code) - 4 * 7) = 
+												SYS_TO_LE_U32(STM32_FLASH_CR2);
+		}
+		else
+		{
+			current_bank = 1;
+			*(uint32_t *)(iap_code + sizeof(iap_code) - 4 * 6) = 
+												SYS_TO_LE_U32(STM32_FLASH_SR);
+			*(uint32_t *)(iap_code + sizeof(iap_code) - 4 * 7) = 
+												SYS_TO_LE_U32(STM32_FLASH_CR);
+		}
 		// last_but_three dword is RAM address for data, set to 1K at SRAM
 		*(uint32_t *)(iap_code + sizeof(iap_code) - 4 * 4) = 
 												SYS_TO_LE_U32(FL_ADDR_DATA);
-		// last_but_four dword is SRAM address of last dword
+		// last_but_four dword is address of result
 		*(uint32_t *)(iap_code + sizeof(iap_code) - 4 * 5) = 
 												SYS_TO_LE_U32(FL_ADDR_RESULT);
 		
@@ -450,6 +467,12 @@ WRITE_TARGET_HANDLER(stm32swj)
 			addr += cur_block_size;
 			buff += cur_block_size;
 			pgbar_update(cur_block_size);
+			
+			if (((1 == current_bank) && (addr >= STM32_FLASH_BANK2_ADDR)) || 
+				((2 == current_bank) && (addr < STM32_FLASH_BANK2_ADDR)))
+			{
+				goto stm32swj_download_flashloader;
+			}
 		}
 		break;
 	default:
