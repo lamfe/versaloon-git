@@ -47,7 +47,7 @@ static void MicroWire_Release(void)
 	}
 }
 
-static void MicroWire_OutBit(uint8_t out)
+static void MicroWire_OutBit(uint32_t out)
 {
 	if (out)
 	{
@@ -70,10 +70,9 @@ static uint8_t MicroWire_InBit(void)
 	
 	DelayUS(MicroWire_DelayUS);
 	MICROWIRE_SK_SET();
-	DelayUS(MicroWire_DelayUS);
-	si = MICROWIRE_SI_GET() > 0;
-	DelayUS(MicroWire_DelayUS);
+	DelayUS(MicroWire_DelayUS * 2);
 	MICROWIRE_SK_CLR();
+	si = MICROWIRE_SI_GET() > 0;
 	DelayUS(MicroWire_DelayUS);
 	return si;
 }
@@ -142,15 +141,15 @@ static void MicroWire_Transact(uint32_t opcode, uint8_t opcode_bitlen,
 	
 	for (i = 0; i < opcode_bitlen; i++)
 	{
-		MicroWire_OutBit(opcode & (1UL << (7 - (i % 8))));
+		MicroWire_OutBit(opcode & (1UL << (opcode_bitlen - 1 - i)));
 	}
 	for (i = 0; i < addr_bitlen; i++)
 	{
-		MicroWire_OutBit(addr & (1UL << (7 - (i % 8))));
+		MicroWire_OutBit(addr & (1UL << (addr_bitlen - 1 - i)));
 	}
 	for (i = 0; i < data_bitlen; i++)
 	{
-		MicroWire_OutBit(data & (1UL << (7 - (i % 8))));
+		MicroWire_OutBit(data & (1UL << (data_bitlen - 1 - i)));
 	}
 	
 	for (i = 0; i < ret_bitlen; i++)
@@ -161,7 +160,7 @@ static void MicroWire_Transact(uint32_t opcode, uint8_t opcode_bitlen,
 		}
 		else
 		{
-			ret[i / 8] &= ~(1 << (8 - (i % 8)));
+			ret[i / 8] &= ~(1 << (7 - (i % 8)));
 		}
 	}
 	

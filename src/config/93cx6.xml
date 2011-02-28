@@ -2,31 +2,41 @@
 <series name="93cx6">
   <chip name="93cx6">
     <chip_id>0x00000000</chip_id>
-    <app_page_size>128</app_page_size>
-    <app_page_num>16</app_page_num>
-    <app_default>0xFF</app_default>
-    <app_addr>0</app_addr>
-    <app_seg>0</app_seg>
+    <ee_page_size>128</ee_page_size>
+    <ee_page_num>16</ee_page_num>
+    <ee_default>0xFF</ee_default>
+    <ee_addr>0</ee_addr>
+    <ee_seg>0</ee_seg>
     <chip_erase>1</chip_erase>
   </chip>
   <chip name="93c46">
-    <app_page_size>128</app_page_size>
-    <app_page_num>1</app_page_num>
+    <ee_page_size>128</ee_page_size>
+    <ee_page_num>1</ee_page_num>
+    <param0>7</param0>
+    <param1>2</param1>
   </chip>
   <chip name="93c56">
-    <app_page_size>128</app_page_size>
-    <app_page_num>2</app_page_num>
+    <ee_page_size>128</ee_page_size>
+    <ee_page_num>2</ee_page_num>
+    <param0>9</param0>
+    <param1>2</param1>
   </chip>
   <chip name="93c66">
-    <app_page_size>128</app_page_size>
-    <app_page_num>4</app_page_num>
+    <ee_page_size>128</ee_page_size>
+    <ee_page_num>4</ee_page_num>
+    <param0>9</param0>
+    <param1>2</param1>
   </chip>
   <chip name="93c76">
-    <app_page_size>128</app_page_size>
-    <app_page_num>8</app_page_num>
+    <ee_page_size>128</ee_page_size>
+    <ee_page_num>8</ee_page_num>
+    <param0>11</param0>
+    <param1>2</param1>
   </chip>
   <chip name="93c86">
-    <app_page_size>128</app_page_size>
-    <app_page_num>16</app_page_num>
+    <ee_page_size>128</ee_page_size>
+    <ee_page_num>16</ee_page_num>
+    <param0>11</param0>
+    <param1>2</param1>
   </chip>
 </series>
