@@ -70,7 +70,7 @@ const struct program_functions_t ee93cx6_program_functions =
 	READ_TARGET_FUNCNAME(ee93cx6)
 };
 
-static uint8_t ee93cx6_addr_bitlen;
+static uint8_t ee93cx6_addr_bitlen, ee93cx6_cmd_bitlen;
 static uint8_t ee93cx6_origination_mode;
 
 VSS_HANDLER(ee93cx6_help)
@@ -140,16 +140,19 @@ static struct interfaces_info_t *interfaces = NULL;
 
 ENTER_PROGRAM_MODE_HANDLER(ee93cx6)
 {
+	struct operation_t *op = context->op;
 	struct chip_param_t *param = context->param;
 	struct program_info_t *pi = context->pi;
 	uint32_t cmd;
 	
 	interfaces = &(context->prog->interfaces);
 	ee93cx6_addr_bitlen = (uint8_t)param->param[EE93CX6_PARAM_ADDR_BITLEN];
+	ee93cx6_cmd_bitlen = (uint8_t)param->param[EE93CX6_PARAM_OPCODE_BITLEN];
 	if (EE93CX6_MODE_BYTE != ee93cx6_origination_mode)
 	{
 		ee93cx6_addr_bitlen--;
 	}
+	ee93cx6_cmd_bitlen += ee93cx6_addr_bitlen;
 	
 	if (ee93cx6_addr_bitlen > 32)
 	{
@@ -164,9 +167,12 @@ ENTER_PROGRAM_MODE_HANDLER(ee93cx6)
 	mw_init();
 	mw_config(pi->frequency);
 	
-	cmd = EE93CX6_OPCODE_WEN << 
-			(ee93cx6_addr_bitlen - EE93CX6_OPCODE_WEN_BITLEN);
-	mw_cmd(cmd, ee93cx6_addr_bitlen);
+	if (op->erase_operations || op->write_operations)
+	{
+		cmd = EE93CX6_OPCODE_WEN << 
+					(ee93cx6_cmd_bitlen - EE93CX6_OPCODE_WEN_BITLEN);
+		mw_cmd(cmd, ee93cx6_cmd_bitlen);
+	}
 	return commit();
 }
 
@@ -178,8 +184,8 @@ LEAVE_PROGRAM_MODE_HANDLER(ee93cx6)
 	REFERENCE_PARAMETER(success);
 	
 	cmd = EE93CX6_OPCODE_WDS << 
-			(ee93cx6_addr_bitlen - EE93CX6_OPCODE_WDS_BITLEN);
-	mw_cmd(cmd, ee93cx6_addr_bitlen);
+				(ee93cx6_cmd_bitlen - EE93CX6_OPCODE_WDS_BITLEN);
+	mw_cmd(cmd, ee93cx6_cmd_bitlen);
 	
 	mw_fini();
 	return commit();
@@ -195,9 +201,9 @@ ERASE_TARGET_HANDLER(ee93cx6)
 	REFERENCE_PARAMETER(size);
 	
 	cmd = EE93CX6_OPCODE_ERAL << 
-			(ee93cx6_addr_bitlen - EE93CX6_OPCODE_ERAL_BITLEN);
-	mw_cmd(cmd, ee93cx6_addr_bitlen);
-	if (ERROR_OK == mw_poll())
+			(ee93cx6_cmd_bitlen - EE93CX6_OPCODE_ERAL_BITLEN);
+	mw_cmd(cmd, ee93cx6_cmd_bitlen);
+	if (ERROR_OK != mw_poll())
 	{
 		return ERROR_FAIL;
 	}
@@ -220,7 +226,8 @@ WRITE_TARGET_HANDLER(ee93cx6)
 		case EE93CX6_MODE_BYTE:
 			for (i = 0; i < size; i++)
 			{
-				if (ERROR_OK != mw_write(addr, ee93cx6_addr_bitlen, buff[i], 8))
+				if (ERROR_OK != 
+					mw_write(addr + i, ee93cx6_addr_bitlen, buff[i], 8))
 				{
 					return ERROR_FAIL;
 				}
@@ -236,7 +243,8 @@ WRITE_TARGET_HANDLER(ee93cx6)
 			for (i = 0; i < size; i += 2)
 			{
 				if (ERROR_OK != 
-					mw_write(addr, ee93cx6_addr_bitlen, ptr16[i], 16))
+					mw_write((addr + i) / 2, ee93cx6_addr_bitlen, 
+								SYS_TO_BE_U16(ptr16[i / 2]), 16))
 				{
 					return ERROR_FAIL;
 				}
@@ -273,7 +281,8 @@ READ_TARGET_HANDLER(ee93cx6)
 		case EE93CX6_MODE_BYTE:
 			for (i = 0; i < size; i++)
 			{
-				if (ERROR_OK != mw_read(addr, ee93cx6_addr_bitlen, &buff[i], 8))
+				if (ERROR_OK != 
+					mw_read(addr + i, ee93cx6_addr_bitlen, &buff[i], 8))
 				{
 					return ERROR_FAIL;
 				}
@@ -284,7 +293,7 @@ READ_TARGET_HANDLER(ee93cx6)
 			for (i = 0; i < size; i += 2)
 			{
 				if (ERROR_OK != 
-					mw_read(addr, ee93cx6_addr_bitlen, &buff[i], 16))
+					mw_read((addr + i) / 2, ee93cx6_addr_bitlen, &buff[i], 16))
 				{
 					return ERROR_FAIL;
 				}
