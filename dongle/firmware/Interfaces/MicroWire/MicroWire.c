@@ -134,6 +134,7 @@ static void MicroWire_Transact(uint32_t opcode, uint8_t opcode_bitlen,
 								uint8_t *ret, uint8_t ret_bitlen)
 {
 	uint16_t i;
+	uint32_t reply;
 	
 	MicroWire_Select();
 	
@@ -152,17 +153,15 @@ static void MicroWire_Transact(uint32_t opcode, uint8_t opcode_bitlen,
 		MicroWire_OutBit(data & (1UL << (data_bitlen - 1 - i)));
 	}
 	
+	reply = 0;
 	for (i = 0; i < ret_bitlen; i++)
 	{
 		if (MicroWire_InBit())
 		{
-			ret[i / 8] |= 1 << (7 - (i % 8));
-		}
-		else
-		{
-			ret[i / 8] &= ~(1 << (7 - (i % 8)));
+			reply |= 1UL << (ret_bitlen - 1 - i);
 		}
 	}
+	memcpy(ret, &reply, (ret_bitlen + 7) / 8);
 	
 	MicroWire_Release();
 }

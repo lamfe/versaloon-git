@@ -244,7 +244,7 @@ WRITE_TARGET_HANDLER(ee93cx6)
 			{
 				if (ERROR_OK != 
 					mw_write((addr + i) / 2, ee93cx6_addr_bitlen, 
-								SYS_TO_BE_U16(ptr16[i / 2]), 16))
+								SYS_TO_LE_U16(ptr16[i / 2]), 16))
 				{
 					return ERROR_FAIL;
 				}
