@@ -31,8 +31,7 @@ void USB_TO_MICROWIRE_ProcessCmd(uint8* dat, uint16 len)
 	
 	uint16_t cmd_offset, reply_offset;
 	uint8_t opcode_bitlen, addr_bitlen, data_bitlen, reply_bitlen;
-	uint8_t reply_bytelen;
-	uint32_t opcode = 0, addr = 0, data = 0, reply;
+	uint32_t opcode = 0, addr = 0, data = 0;
 	bool result;
 	
 	index = 0;
@@ -105,17 +104,14 @@ void USB_TO_MICROWIRE_ProcessCmd(uint8* dat, uint16 len)
 					cmd_offset += 4;
 				}
 				
-				reply = 0;
 				if (ERROR_OK != interfaces->microwire.transport(device_idx, 
 						opcode, opcode_bitlen, addr, addr_bitlen, data, data_bitlen, 
-						(uint8_t *)&reply, reply_bitlen))
+						&buffer_reply[rep_len + 1 + reply_offset], reply_bitlen))
 				{
 					result = false;
 					break;
 				}
-				reply_bytelen = (reply_bitlen + 7) / 8;
-				memcpy(&buffer_reply[rep_len + 1 + reply_offset], &reply, reply_bytelen);
-				reply_offset += reply_bytelen;
+				reply_offset += (reply_bitlen + 7) / 8;
 			}
 			if (result)
 			{
