@@ -137,11 +137,11 @@ struct vss_cmd_t programmer_cmd[] =
 				"config iic, format: iic_config KHZ MAX_DLY_US",
 				programmer_iic_config),
 	VSS_CMD(	"iic_read",
-				"read data from iic, format: iic_read SLAVE_ADDR DATA_SIZE",
+				"read data from iic, format: iic_read SLAVE_ADDR STOP DATA_SIZE",
 				programmer_iic_read),
 	VSS_CMD(	"iic_write",
 				"write data to iic, format: "
-				"iic_write SLAVE_ADDR DATA_SIZE DATA0...",
+				"iic_write SLAVE_ADDR STOP DATA_SIZE DATA0...",
 				programmer_iic_write),
 	VSS_CMD(	"delayus",
 				"delay us, format: delayus US",
@@ -644,11 +644,12 @@ VSS_HANDLER(programmer_iic_read)
 {
 	uint8_t data_size = 0;
 	uint8_t addr = 0;
+	uint8_t stop = 0;
 	uint8_t *buff = NULL;
 	RESULT ret = ERROR_OK;
 	struct programmer_info_t *prog = NULL;
 	
-	VSS_CHECK_ARGC(3);
+	VSS_CHECK_ARGC(4);
 	if ((ERROR_OK != programmer_assert(&prog)) || (NULL == prog))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
@@ -656,14 +657,15 @@ VSS_HANDLER(programmer_iic_read)
 	}
 	
 	addr = (uint8_t)strtoul(argv[1], NULL, 0);
-	data_size = (uint8_t)strtoul(argv[2], NULL, 0);
+	stop = (uint8_t)strtoul(argv[2], NULL, 0);
+	data_size = (uint8_t)strtoul(argv[3], NULL, 0);
 	buff = (uint8_t*)malloc(data_size);
 	if (NULL == buff)
 	{
 		return ERROR_FAIL;
 	}
 	
-	ret = prog->interfaces.i2c.read(0, addr, buff, data_size, 1);
+	ret = prog->interfaces.i2c.read(0, addr, buff, data_size, stop);
 	if (ERROR_OK == ret)
 	{
 		ret = prog->interfaces.peripheral_commit();
@@ -685,11 +687,12 @@ VSS_HANDLER(programmer_iic_write)
 {
 	uint8_t data_size = 0;
 	uint8_t addr = 0;
+	uint8_t stop = 0;
 	uint8_t *buff = NULL;
 	RESULT ret = ERROR_OK;
 	struct programmer_info_t *prog = NULL;
 	
-	VSS_CHECK_ARGC_MIN(3);
+	VSS_CHECK_ARGC_MIN(4);
 	if ((ERROR_OK != programmer_assert(&prog)) || (NULL == prog))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
@@ -697,9 +700,10 @@ VSS_HANDLER(programmer_iic_write)
 	}
 	
 	addr = (uint8_t)strtoul(argv[1], NULL, 0);
-	data_size = (uint8_t)strtoul(argv[2], NULL, 0);
+	stop = (uint8_t)strtoul(argv[2], NULL, 0);
+	data_size = (uint8_t)strtoul(argv[3], NULL, 0);
 	
-	VSS_CHECK_ARGC(3 + data_size);
+	VSS_CHECK_ARGC(4 + data_size);
 	if (0 == data_size)
 	{
 		LOG_ERROR(ERRMSG_INVALID_TARGET, "data_size");
@@ -707,10 +711,10 @@ VSS_HANDLER(programmer_iic_write)
 		return ERROR_FAIL;
 	}
 	
-	ret = vss_get_binary_buffer(argc - 3, &argv[3], 1, data_size, (void**)&buff);
+	ret = vss_get_binary_buffer(argc - 4, &argv[4], 1, data_size, (void**)&buff);
 	if (ERROR_OK == ret)
 	{
-		ret = prog->interfaces.i2c.write(0, addr, buff, data_size, 1);
+		ret = prog->interfaces.i2c.write(0, addr, buff, data_size, stop);
 	}
 	
 	if (buff != NULL)
