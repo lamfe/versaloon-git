@@ -61,6 +61,8 @@ VSS_HANDLER(programmer_iic_fini);
 VSS_HANDLER(programmer_iic_config);
 VSS_HANDLER(programmer_iic_read);
 VSS_HANDLER(programmer_iic_write);
+VSS_HANDLER(programmer_iic_read_buff8);
+VSS_HANDLER(programmer_iic_write_buff8);
 
 VSS_HANDLER(programmer_gpio_init);
 VSS_HANDLER(programmer_gpio_fini);
@@ -143,6 +145,13 @@ struct vss_cmd_t programmer_cmd[] =
 				"write data to iic, format: "
 				"iic_write SLAVE_ADDR STOP DATA_SIZE DATA0...",
 				programmer_iic_write),
+	VSS_CMD(	"iic_read_buff8",
+				"read data from iic, format: iic_read_buff8 SLAVE_ADDR DATA_SIZE ADDR",
+				programmer_iic_read_buff8),
+	VSS_CMD(	"iic_write_buff8",
+				"write data to iic, format: "
+				"iic_write_buff8 SLAVE_ADDR DATA_SIZE ADDR DATA0...",
+				programmer_iic_write_buff8),
 	VSS_CMD(	"delayus",
 				"delay us, format: delayus US",
 				programmer_delay_us),
@@ -715,6 +724,93 @@ VSS_HANDLER(programmer_iic_write)
 	if (ERROR_OK == ret)
 	{
 		ret = prog->interfaces.i2c.write(0, addr, buff, data_size, stop);
+	}
+	
+	if (buff != NULL)
+	{
+		free(buff);
+		buff = NULL;
+	}
+	return ret;
+}
+
+VSS_HANDLER(programmer_iic_read_buff8)
+{
+	uint8_t data_size = 0;
+	uint8_t slave_addr = 0, addr;
+	uint8_t *buff = NULL;
+	RESULT ret = ERROR_OK;
+	struct programmer_info_t *prog = NULL;
+	
+	VSS_CHECK_ARGC(4);
+	if ((ERROR_OK != programmer_assert(&prog)) || (NULL == prog))
+	{
+		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
+		return ERROR_FAIL;
+	}
+	
+	slave_addr = (uint8_t)strtoul(argv[1], NULL, 0);
+	data_size = (uint8_t)strtoul(argv[2], NULL, 0);
+	addr = (uint8_t)strtoul(argv[3], NULL, 0);
+	buff = (uint8_t*)malloc(data_size);
+	if (NULL == buff)
+	{
+		return ERROR_FAIL;
+	}
+	
+	ret = prog->interfaces.i2c.write(0, slave_addr, &addr, 1, 0);
+	if (ERROR_OK == ret)
+	{
+		ret = prog->interfaces.i2c.read(0, slave_addr, buff, data_size, 1);
+		if (ERROR_OK == ret)
+		{
+			ret = prog->interfaces.peripheral_commit();
+			if (ERROR_OK == ret)
+			{
+				LOG_BYTE_BUF(buff, data_size, LOG_INFO, "%02X", 16);
+			}
+		}
+	}
+	
+	if (buff != NULL)
+	{
+		free(buff);
+		buff = NULL;
+	}
+	return ret;
+}
+
+VSS_HANDLER(programmer_iic_write_buff8)
+{
+	uint8_t data_size = 0;
+	uint8_t slave_addr = 0;
+	uint8_t *buff = NULL;
+	RESULT ret = ERROR_OK;
+	struct programmer_info_t *prog = NULL;
+	
+	VSS_CHECK_ARGC_MIN(4);
+	if ((ERROR_OK != programmer_assert(&prog)) || (NULL == prog))
+	{
+		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
+		return ERROR_FAIL;
+	}
+	
+	slave_addr = (uint8_t)strtoul(argv[1], NULL, 0);
+	data_size = (uint8_t)strtoul(argv[2], NULL, 0);
+	
+	VSS_CHECK_ARGC(4 + data_size);
+	if (0 == data_size)
+	{
+		LOG_ERROR(ERRMSG_INVALID_TARGET, "data_size");
+		vss_print_help(argv[0]);
+		return ERROR_FAIL;
+	}
+	
+	ret = vss_get_binary_buffer(argc - 3, &argv[3], 1, data_size + 1, 
+								(void**)&buff);
+	if (ERROR_OK == ret)
+	{
+		ret = prog->interfaces.i2c.write(0, slave_addr, buff, data_size + 1, 1);
 	}
 	
 	if (buff != NULL)
