@@ -534,6 +534,11 @@ static RESULT versaloon_init(void *p)
 	{
 		t->interfaces.support_mask &= ~MICROWIRE;
 	}
+	if ((t->interfaces.support_mask & PWM) && 
+		!usbtoxxx_interface_supported(USB_TO_PWM))
+	{
+		t->interfaces.support_mask &= ~PWM;
+	}
 	
 	return ERROR_OK;
 }
@@ -689,7 +694,7 @@ RESULT versaloon_init_capability(void *p)
 	
 	i->support_mask = (USART | SPI | I2C | GPIO | POWER | ISSP | JTAG_LL | POLL 
 		| JTAG_HL | SWIM | JTAG_RAW | C2 | MSP430_JTAG | LPC_ICP | SWD | BDM 
-		| DUSI | MICROWIRE);
+		| DUSI | MICROWIRE | PWM);
 	
 	// USART
 	i->usart.init = usbtousart_init;
@@ -832,6 +837,12 @@ RESULT versaloon_init_capability(void *p)
 	i->microwire.config = usbtomicrowire_config;
 	i->microwire.transport = usbtomicrowire_transport;
 	i->microwire.poll = usbtomicrowire_poll;
+	
+	// PWM
+	i->pwm.init = usbtopwm_init;
+	i->pwm.fini = usbtopwm_fini;
+	i->pwm.config = usbtopwm_config;
+	i->pwm.out = usbtopwm_out;
 	
 	// POLL
 	i->poll.start = versaloon_poll_start;

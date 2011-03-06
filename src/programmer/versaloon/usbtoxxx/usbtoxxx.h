@@ -234,7 +234,7 @@ RESULT usbtoswim_enable(uint8_t interface_index);
 
 
 
-// BDM
+// USB_TO_BDM
 RESULT usbtobdm_init(uint8_t interface_index);
 RESULT usbtobdm_fini(uint8_t interface_index);
 RESULT usbtobdm_sync(uint8_t interface_index, uint16_t *khz);
@@ -252,6 +252,7 @@ RESULT usbtodusi_io(uint8_t interface_index, uint8_t *mo, uint8_t *mi,
 					uint8_t *so, uint8_t *si, uint32_t bitlen);
 
 
+
 // USB_TO_MICROWIRE
 RESULT usbtomicrowire_init(uint8_t interface_index);
 RESULT usbtomicrowire_fini(uint8_t interface_index);
@@ -264,6 +265,14 @@ RESULT usbtomicrowire_transport(uint8_t interface_index,
 								uint8_t *reply, uint8_t reply_bitlen);
 RESULT usbtomicrowire_poll(uint8_t interface_index, uint16_t interval_us, 
 							uint16_t retry_cnt);
+
+
+
+// USB_TO_PWM
+RESULT usbtopwm_init(uint8_t interface_index);
+RESULT usbtopwm_fini(uint8_t interface_index);
+RESULT usbtopwm_config(uint8_t interface_index, uint16_t kHz, uint8_t idle);
+RESULT usbtopwm_out(uint8_t interface_index, uint16_t count, uint16_t *rate);
 
 #endif /* __USBTOXXX_H_INCLUDED__ */
 

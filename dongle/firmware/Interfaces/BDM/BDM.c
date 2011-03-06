@@ -94,7 +94,7 @@ static uint8 BDM_Sync(uint16 *khz)
 	else
 	{
 		BDM_clock_div = BDM_DMA_IN_Buffer[1];
-		*khz = _SYS_FREQUENCY * 1000 * 128 / BDM_clock_div;
+		*khz = SYNCSWPWM_OUT_TIMER_MHZ * 1000 * 128 / BDM_clock_div;
 		BDM_PULSE_1 = BDM_clock_div * BDM_SIG1_CYCLES / BDM_SYNC_CYCLES;
 		if ((BDM_clock_div * BDM_SIG1_CYCLES % BDM_SYNC_CYCLES) >= (BDM_SYNC_CYCLES / 2))
 		{

@@ -2064,6 +2064,12 @@
       </file>
     </group>
     <group>
+      <name>PWM</name>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\Interfaces\PWM\PWM.c</name>
+      </file>
+    </group>
+    <group>
       <name>SPI</name>
       <file>
         <name>$PROJ_DIR$\..\..\..\Interfaces\SPI\SPI.c</name>

@@ -28,7 +28,7 @@
 #define HW_HAS_IIC						1
 #define HW_HAS_GPIO						1
 #define HW_HAS_CAN						0
-#define HW_HAS_PWM						0
+#define HW_HAS_PWM						1
 #define HW_HAS_ADC						1
 #define HW_HAS_DAC						0
 #define HW_HAS_MICROWIRE				0
@@ -140,6 +140,7 @@
 #define SYNCSWPWM_GPIO_CLR()			GPIO_ClrPins(SYNCSWPWM_GPIO_PORT, SYNCSWPWM_GPIO_PIN)
 #define SYNCSWPWM_GPIO_GET()			GPIO_GetInPins(SYNCSWPWM_GPIO_PORT, SYNCSWPWM_GPIO_PIN)
 
+#define SYNCSWPWM_OUT_TIMER_MHZ			_SYS_FREQUENCY
 #define SYNCSWPWM_OUT_TIMER				TIM3
 #define SYNCSWPWM_OUT_TIMER_DMA			DMA1_Channel6
 #define SYNCSWPWM_IN_TIMER				TIM4

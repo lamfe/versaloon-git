@@ -107,8 +107,8 @@ static uint8 SWIM_Sync(uint8 mHz)
 	uint16 clock_div;
 	uint16 arr_save;
 	
-	clock_div = _SYS_FREQUENCY / mHz;
-	if ((_SYS_FREQUENCY % mHz) > (mHz / 2))
+	clock_div = SYNCSWPWM_OUT_TIMER_MHZ / mHz;
+	if ((SYNCSWPWM_OUT_TIMER_MHZ % mHz) > (mHz / 2))
 	{
 		clock_div++;
 	}
@@ -148,8 +148,8 @@ static uint8 SWIM_SetClockParam(uint8 mHz, uint8 cnt0, uint8 cnt1)
 	}
 	else
 	{
-		clock_div = _SYS_FREQUENCY / mHz;
-		if ((_SYS_FREQUENCY % mHz) >= (mHz / 2))
+		clock_div = SYNCSWPWM_OUT_TIMER_MHZ / mHz;
+		if ((SYNCSWPWM_OUT_TIMER_MHZ % mHz) >= (mHz / 2))
 		{
 			clock_div++;
 		}

@@ -62,6 +62,9 @@
 #if INTERFACE_MICROWIRE_EN
 #	include "MicroWire/MicroWire.h"
 #endif
+#if INTERFACE_PWM_EN
+#	include "PWM/PWM.h"
+#endif
 
 // work around, because RESULT is comflict with struct in usb_core.h
 RESULT target_voltage_set(uint8_t index, uint16_t voltage);
@@ -278,6 +281,15 @@ const struct interfaces_info_t internal_interfaces =
 		microwire_config,
 		microwire_transport,
 		microwire_poll
+	},
+#endif
+#if INTERFACE_PWM_EN
+	{
+		// pwm
+		pwm_init,
+		pwm_fini,
+		pwm_config,
+		pwm_out
 	},
 #endif
 	peripheral_commit
