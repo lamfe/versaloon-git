@@ -55,7 +55,8 @@ struct vss_cmd_t dal_cmd[] =
 				"finalize mic2826 through IIC, format: mic2826.fini",
 				mic2826_vss_fini),
 	VSS_CMD(	"mic2826.config",
-				"config mic2826 through IIC, format: mic2826.config CHANNEL MV",
+				"config mic2826 through IIC, format: "
+				"mic2826.config DCDC LDO1 LOD2 LDO3",
 				mic2826_vss_config),
 #endif
 	VSS_CMD_END
