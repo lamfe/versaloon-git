@@ -60,7 +60,7 @@ struct tap_path_info_t
 	enum tap_state_t next_state_by1;
 };
 
-const struct tap_path_info_t tap_path[TAP_NUM_OF_STATE] = 
+static const struct tap_path_info_t tap_path[TAP_NUM_OF_STATE] = 
 {
 	{IDLE, RESET},			// RESET
 	{IDLE, DRSELECT},		// IDLE
@@ -88,7 +88,7 @@ struct tap_move_info_t
 };
 
 // tap_move[from_state][to_state]
-const struct tap_move_info_t tap_move[6][6] = 
+static const struct tap_move_info_t tap_move[6][6] = 
 {
 //	RESET,		IDLE,		DRSHIFT,	DRPAUSE,	IRSHIFT,	IRPAUSE
 {{0xff,0,1},{0x7f,0,1},	{0x2f,0,1},	{0x0a,0,1},	{0x37,0,1},	{0x16,0,1}},// RESET
@@ -99,10 +99,73 @@ const struct tap_move_info_t tap_move[6][6] =
 {{0xff,0,1},{0x60,0,0},	{0x38,0,0},	{0x5c,0,0},	{0x40,0,0},	{0x5e,0,0}}// IRPAUSE
 };
 
-enum tap_state_t end_state = IDLE;
-enum tap_state_t cur_state = IDLE;
-uint8_t tap_tms_remain_cycles = 0;
-uint8_t tap_tms_remain;
+static enum tap_state_t end_state = IDLE;
+static enum tap_state_t cur_state = IDLE;
+static uint8_t tap_tms_remain_cycles = 0;
+static uint8_t tap_tms_remain;
+
+static struct interfaces_info_t *interfaces = NULL;
+
+RESULT jtag_init(void)
+{
+	return interfaces->jtag_ll.init(0);
+}
+RESULT jtag_fini(void)
+{
+	return interfaces->jtag_ll.fini(0);
+}
+RESULT jtag_config(uint16_t kHz)
+{
+	return interfaces->jtag_ll.config(0, kHz);
+}
+RESULT jtag_tms(uint8_t *tms, uint8_t bytelen)
+{
+	return interfaces->jtag_ll.tms(0, tms, bytelen);
+}
+RESULT jtag_tms_clocks(uint32_t bytelen, uint8_t tms)
+{
+	return interfaces->jtag_ll.tms_clocks(0, bytelen, tms);
+}
+RESULT jtag_xr(uint8_t *data, uint16_t bitlen, uint8_t tms_before_valid, 
+				uint8_t tms_before, uint8_t tms_after0, uint8_t tms_after1)
+{
+	return interfaces->jtag_ll.scan(0, data, bitlen, tms_before_valid, 
+									tms_before, tms_after0, tms_after1);
+}
+RESULT jtag_commit(void)
+{
+	return interfaces->peripheral_commit();
+}
+
+RESULT jtag_trst_init(void)
+{
+	return interfaces->gpio.init(0);
+}
+RESULT jtag_trst_fini(void)
+{
+	return interfaces->gpio.fini(0);
+}
+RESULT jtag_trst_output(uint8_t value)
+{
+	return interfaces->gpio.config(0, JTAG_TRST, JTAG_TRST, 
+									0, value ? JTAG_TRST : 0);
+}
+RESULT jtag_trst_input(void)
+{
+	return interfaces->gpio.config(0, JTAG_TRST, 0, JTAG_TRST, JTAG_TRST);
+}
+RESULT jtag_trst_1(void)
+{
+	return interfaces->gpio.out(0, JTAG_TRST, JTAG_TRST);
+}
+RESULT jtag_trst_0(void)
+{
+	return interfaces->gpio.out(0, JTAG_TRST, 0);
+}
+
+
+
+
 
 uint8_t tap_state_is_stable(enum tap_state_t state)
 {
@@ -469,8 +532,10 @@ RESULT tap_commit(void)
 	return ERROR_OK;
 }
 
-RESULT tap_init(void)
+RESULT tap_init(struct interfaces_info_t *ifs)
 {
+	interfaces = ifs;
+	
 	if (ERROR_OK != jtag_init())
 	{
 		return ERROR_FAIL;

@@ -21,26 +21,21 @@
 #ifndef __BYTE_TAP_H_INCLUDED__
 #define __BYTE_TAP_H_INCLUDED__
 
-extern struct interfaces_info_t *interfaces;
+RESULT jtag_init(void);
+RESULT jtag_fini(void);
+RESULT jtag_config(uint16_t kHz);
+RESULT jtag_tms(uint8_t *tms, uint8_t bytelen);
+RESULT jtag_tms_clocks(uint32_t bytelen, uint8_t tms);
+RESULT jtag_xr(uint8_t *data, uint16_t bitlen, uint8_t tms_before_valid, 
+				uint8_t tms_before, uint8_t tms_after0, uint8_t tms_after1);
+RESULT jtag_commit(void);
 
-#define jtag_init()					interfaces->jtag_ll.init(0)
-#define jtag_fini()					interfaces->jtag_ll.fini(0)
-#define jtag_config(f)				interfaces->jtag_ll.config(0, f)
-#define jtag_tms(m, len)			interfaces->jtag_ll.tms(0, (m), (len))
-#define jtag_tms_clocks(len, m)		\
-	interfaces->jtag_ll.tms_clocks(0, (len), (m))
-#define jtag_xr(d, l, v, b, a0, a1)	\
-	interfaces->jtag_ll.scan(0, (d), (l), (v), (v), (a0), (a1))
-#define jtag_commit()				interfaces->peripheral_commit()
-
-#define jtag_trst_init()			interfaces->gpio.init(0)
-#define jtag_trst_fini()			interfaces->gpio.fini(0)
-#define jtag_trst_output(value)		\
-	interfaces->gpio.config(0, JTAG_TRST, JTAG_TRST, 0, (value) ? JTAG_TRST : 0)
-#define jtag_trst_input()			\
-	interfaces->gpio.config(0, JTAG_TRST, 0, JTAG_TRST, JTAG_TRST)
-#define jtag_trst_1()			interfaces->gpio.out(0, JTAG_TRST, JTAG_TRST)
-#define jtag_trst_0()			interfaces->gpio.out(0, JTAG_TRST, 0)
+RESULT jtag_trst_init(void);
+RESULT jtag_trst_fini(void);
+RESULT jtag_trst_output(uint8_t value);
+RESULT jtag_trst_input(void);
+RESULT jtag_trst_1(void);
+RESULT jtag_trst_0(void);
 
 
 #define TAP_NUM_OF_STATE		16
@@ -68,7 +63,7 @@ enum tap_state_t
 
 extern const char *tap_state_name[TAP_NUM_OF_STATE];
 
-RESULT tap_init(void);
+RESULT tap_init(struct interfaces_info_t *ifs);
 RESULT tap_fini(void);
 uint8_t tap_state_is_stable(enum tap_state_t state);
 uint8_t tap_state_is_valid(enum tap_state_t state);
