@@ -42,7 +42,7 @@ struct vss_function_t
 };
 
 #define VSS_HANDLER(name)						\
-	static RESULT (name)(uint16_t argc, const char *argv[])
+	RESULT (name)(uint16_t argc, const char *argv[])
 
 #define VSS_CMD(name, helpstr, handler)			\
 	{\

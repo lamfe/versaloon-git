@@ -88,7 +88,6 @@ const struct vss_cmd_t svfp_notifier[] =
 
 
 
-struct interfaces_info_t *interfaces = NULL;
 extern struct filelist *fl_in;
 
 EXECUTE_HANDLER(svfp)
@@ -100,8 +99,6 @@ EXECUTE_HANDLER(svfp)
 	char *svfp_command_buffer = NULL;
 	uint32_t svfp_command_buffer_len = 0;
 	RESULT ret = ERROR_OK;
-	
-	interfaces = &(context->prog->interfaces);
 	
 	if (pi->frequency)
 	{
@@ -127,7 +124,7 @@ EXECUTE_HANDLER(svfp)
 	
 	svf_parser_init();
 	
-	if (ERROR_OK != tap_init())
+	if (ERROR_OK != tap_init(&(context->prog->interfaces)))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "open jtag");
 		svf_parser_fini();

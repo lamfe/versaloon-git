@@ -132,6 +132,7 @@ extern struct vss_cmd_t target_cmd[];
 extern struct vss_cmd_t filelist_cmd[];
 extern struct vss_cmd_t comisp_cmd[];
 extern struct vss_cmd_t usbapi_cmd[];
+extern struct vss_cmd_t dal_cmd[];
 
 struct vss_param_t *vss_params_list[] = 
 {
@@ -147,7 +148,8 @@ struct vss_cmd_t *vss_cmds_list[] =
 	filelist_cmd,
 	programmer_cmd,
 	comisp_cmd,
-	usbapi_cmd
+	usbapi_cmd,
+	dal_cmd
 };
 
 static int8_t vss_exit_mark = 0;
