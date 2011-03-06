@@ -120,6 +120,10 @@ USR_INCS+= -I $(SRCDIR)/Interfaces/MSP430_JTAG
 USR_SRCS+= $(SRCDIR)/Interfaces/BDM/BDM.c
 USR_INCS+= -I $(SRCDIR)/Interfaces/BDM
 
+#PWM
+USR_SRCS+= $(SRCDIR)/Interfaces/PWM/PWM.c
+USR_INCS+= -I $(SRCDIR)/Interfaces/PWM
+
 #interfaces
 USR_SRCS+= $(SRCDIR)/Interfaces/interfaces.c
 USR_INCS+= -I $(SRCDIR)/Interfaces

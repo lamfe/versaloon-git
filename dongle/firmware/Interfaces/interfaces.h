@@ -255,6 +255,14 @@ struct interface_microwire_t
 	RESULT (*poll)(uint8_t index, uint16_t interval_us, uint16_t retry_cnt);
 };
 
+struct interface_pwm_t
+{
+	RESULT (*init)(uint8_t index);
+	RESULT (*fini)(uint8_t index);
+	RESULT (*config)(uint8_t index, uint16_t kHz, uint8_t idle);
+	RESULT (*out)(uint8_t index, uint16_t count, uint16_t *rate);
+};
+
 struct interface_target_voltage_t
 {
 	RESULT (*get)(uint8_t index, uint16_t *voltage);
@@ -325,6 +333,9 @@ struct interfaces_info_t
 #endif
 #if INTERFACE_MICROWIRE_EN
 	struct interface_microwire_t microwire;
+#endif
+#if INTERFACE_PWM_EN
+	struct interface_pwm_t pwm;
 #endif
 	RESULT (*peripheral_commit)(void);
 };
