@@ -31,6 +31,7 @@
 #include "mic2826.h"
 
 #define MIC2826_IIC_ADDR					0xB4
+#define MIC2826_IIC_RETRY					10
 
 #define MIC2826_REG_ENABLE					0x00
 #define MIC2826_REG_STATUS					0x01
@@ -41,10 +42,10 @@
 
 #define MIC2826_REG_ENABLE_POAF				0x20
 #define MIC2826_REG_ENABLE_SEQCNT			0x10
-#define MIC2826_REG_LDO3_EN					0x08
-#define MIC2826_REG_LDO2_EN					0x04
-#define MIC2826_REG_LDO1_EN					0x02
-#define MIC2826_REG_DCDC_EN					0x01
+#define MIC2826_REG_ENABLE_LDO3				0x08
+#define MIC2826_REG_ENABLE_LDO2				0x04
+#define MIC2826_REG_ENABLE_LDO1				0x02
+#define MIC2826_REG_ENABLE_DCDC				0x01
 
 static uint8_t mic2826_ldo_regmap[] = 
 {
@@ -57,51 +58,62 @@ static uint8_t mic2826_ldo_regmap[] =
 	0xE3, 0xE6, 0xE8
 };
 
-static RESULT mic2826_dcdc_voltage2reg(uint16_t mV, uint8_t *reg)
+static uint8_t mic2826_dcdc_voltage2reg(uint16_t mV)
 {
-	uint8_t reg_tmp;
-	
 	// 800 - 1175: 25 step
 	// 1200 - 1800: 50 step
 	if ((mV >= 1200) && (mV <= 1800))
 	{
-		reg_tmp = (uint8_t)((1200 - 800) / 25 + (mV - 1200) / 50);
+		return (uint8_t)((1200 - 800) / 25 + (mV - 1200) / 50);
 	}
 	else if ((mV >= 800) && (mV < 1200))
 	{
-		reg_tmp = (uint8_t)((mV - 800) / 25);
+		return (uint8_t)((mV - 800) / 25);
 	}
 	else
 	{
-		return ERROR_FAIL;
+		return 0;
 	}
-	
-	if (NULL != reg)
-	{
-		*reg = reg_tmp;
-	}
-	return ERROR_OK;
 }
 
-static RESULT mic2826_ldo_voltage2reg(uint16_t mV, uint8_t *reg)
+static uint8_t mic2826_ldo_voltage2reg(uint16_t mV)
 {
-	uint8_t reg_tmp;
-	
 	// 800 - 3300: 25 step
 	if ((mV >= 800) && (mV <= 3300))
 	{
-		reg_tmp = (uint8_t)((mV - 800) / 50);
+		return mic2826_ldo_regmap[(mV - 800) / 50];
 	}
 	else
 	{
-		return ERROR_FAIL;
+		return 0;
 	}
+}
+
+static RESULT mic2826_write_reg(uint8_t addr, uint8_t reg)
+{
+	uint8_t cmd[2];
+	uint8_t retry;
+	RESULT ret = ERROR_FAIL;
 	
-	if (NULL != reg)
+	cmd[0] = addr;
+	cmd[1] = reg;
+	retry = MIC2826_IIC_RETRY;
+	while (retry--)
 	{
-		*reg = mic2826_ldo_regmap[reg_tmp];
+		if (ERROR_OK != 
+			interfaces->i2c.write(MIC2826_IIC_IDX, MIC2826_IIC_ADDR, cmd, 2, 1))
+		{
+			continue;
+		}
+		
+		if (ERROR_OK != interfaces->peripheral_commit())
+		{
+			continue;
+		}
+		ret = ERROR_OK;
+		break;
 	}
-	return ERROR_OK;
+	return ret;
 }
 
 static RESULT mic2826_init(uint16_t kHz)
@@ -117,86 +129,39 @@ static RESULT mic2826_fini(void)
 	return interfaces->peripheral_commit();
 }
 
-static RESULT mic2826_config(uint8_t channel, uint16_t mV)
+static RESULT mic2826_config(uint16_t DCDC_mV, uint16_t LDO1_mV, 
+								uint16_t LDO2_mV, uint16_t LDO3_mV)
 {
-	uint8_t reg[2], en_reg;
+	uint8_t en_reg;
 	
-	if (channel > MIC2826_CHANNEL_LDO3)
-	{
-		return ERROR_FAIL;
-	}
-	
-	reg[0] = MIC2826_REG_ENABLE;
-	if (ERROR_OK != 
-		interfaces->i2c.write(MIC2826_IIC_IDX, MIC2826_IIC_ADDR, reg, 1, 0))
-	{
-		return ERROR_FAIL;
-	}
-	if (ERROR_OK != 
-		interfaces->i2c.read(MIC2826_IIC_IDX, MIC2826_IIC_ADDR, &en_reg, 1, 1))
-	{
-		return ERROR_FAIL;
-	}
-	if (ERROR_OK != interfaces->peripheral_commit())
+	if ((((DCDC_mV != 0) && (DCDC_mV < 800)) || (DCDC_mV > 1200)) || 
+		(((LDO1_mV != 0) && (LDO1_mV < 800)) || (LDO1_mV > 3300)) || 
+		(((LDO2_mV != 0) && (LDO2_mV < 800)) || (LDO2_mV > 3300)) || 
+		(((LDO3_mV != 0) && (LDO3_mV < 800)) || (LDO3_mV > 3300)))
 	{
 		return ERROR_FAIL;
 	}
 	
-	if (mV >= 800)
-	{
-		reg[0] = MIC2826_REG_DCDC + channel;
-		if (MIC2826_CHANNEL_DCDC == channel)
-		{
-			if (ERROR_OK != mic2826_dcdc_voltage2reg(mV, &reg[1]))
-			{
-				return ERROR_FAIL;
-			}
-		}
-		else
-		{
-			if (ERROR_OK != mic2826_ldo_voltage2reg(mV, &reg[1]))
-			{
-				return ERROR_FAIL;
-			}
-		}
-		interfaces->delay.delayus(100);
-		if (ERROR_OK != 
-			interfaces->i2c.write(MIC2826_IIC_IDX, MIC2826_IIC_ADDR, reg, 2, 1))
-		{
-			return ERROR_FAIL;
-		}
-		
-		if (!(en_reg & (1 << channel)))
-		{
-			reg[0] = MIC2826_REG_ENABLE;
-			reg[1] = en_reg | (1 << channel);
-			if (ERROR_OK != 
-				interfaces->i2c.write(MIC2826_IIC_IDX, MIC2826_IIC_ADDR, reg, 
-										2, 1))
-			{
-				return ERROR_FAIL;
-			}
-		}
-		if (ERROR_OK != interfaces->peripheral_commit())
-		{
-			return ERROR_FAIL;
-		}
-	}
-	else if (0 == mV)
-	{
-		reg[0] = MIC2826_REG_ENABLE;
-		reg[1] = en_reg & ~(1 << channel);
-		if (ERROR_OK != 
-			interfaces->i2c.write(MIC2826_IIC_IDX, MIC2826_IIC_ADDR, reg, 2, 1))
-		{
-			return ERROR_FAIL;
-		}
-		if (ERROR_OK != interfaces->peripheral_commit())
-		{
-			return ERROR_FAIL;
-		}
-	}
-	else
+	en_reg = (DCDC_mV ? MIC2826_REG_ENABLE_DCDC : 0) 
+				| (LDO1_mV ? MIC2826_REG_ENABLE_LDO1 : 0) 
+				| (LDO2_mV ? MIC2826_REG_ENABLE_LDO2 : 0) 
+#if MIC2826_HAS_LDO3
+				| (LDO3_mV ? MIC2826_REG_ENABLE_LDO3 : 0)
+#endif
+				;
+	
+	if ((ERROR_OK != mic2826_write_reg(MIC2826_REG_DCDC, 
+							mic2826_dcdc_voltage2reg(DCDC_mV))) 
+		|| (ERROR_OK != mic2826_write_reg(MIC2826_REG_LDO1, 
+							mic2826_ldo_voltage2reg(LDO1_mV))) 
+		|| (ERROR_OK != mic2826_write_reg(MIC2826_REG_LDO2, 
+							mic2826_ldo_voltage2reg(LDO2_mV))) 
+#if MIC2826_HAS_LDO3
+		|| (ERROR_OK != mic2826_write_reg(MIC2826_REG_LDO3, 
+							mic2826_ldo_voltage2reg(LDO3_mV))) 
+#endif
+		|| (ERROR_OK != mic2826_write_reg(MIC2826_REG_ENABLE, en_reg))
+		)
 	{
 		return ERROR_FAIL;
 	}

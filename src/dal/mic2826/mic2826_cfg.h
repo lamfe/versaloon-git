@@ -17,5 +17,6 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#define MIC2826_HAS_LDO3					0
 #define MIC2826_IIC_IDX						0
 

@@ -26,7 +26,8 @@ struct mic2826_t
 {
 	RESULT (*init)(uint16_t kHz);
 	RESULT (*fini)(void);
-	RESULT (*config)(uint8_t channel, uint16_t mV);
+	RESULT (*config)(uint16_t DCDC_mV, uint16_t LDO1_mV, 
+						uint16_t LDO2_mV, uint16_t LDO3_mV);
 };
 extern const struct mic2826_t mic2826;
 

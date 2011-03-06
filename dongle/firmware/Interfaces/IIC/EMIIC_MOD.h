@@ -184,7 +184,7 @@
         }\
     }\
     \
-    static IIC_MOD_RESULT_t EMIIC_##MOD_NAME##_ReceiveByte(uint8_t *byte, uint8_t last)\
+    static IIC_MOD_RESULT_t EMIIC_##MOD_NAME##_ReceiveByte(uint8_t *byte)\
     {\
         uint8_t i;\
         \
@@ -207,18 +207,7 @@
             SCL_D();\
         }\
         DLY_FUNC(s_EMIIC_##MOD_NAME##_QuarterCycle_Len);\
-        if (last)\
-        {\
-            SDA_R();\
-            if (IIC_MOD_ACK != EMIIC_##MOD_NAME##_WaitSDA_R())\
-            {\
-                return IIC_MOD_TO;\
-            }\
-        }\
-        else\
-        {\
-            SDA_D();\
-        }\
+        SDA_D();\
         DLY_FUNC(s_EMIIC_##MOD_NAME##_QuarterCycle_Len);\
         SCL_R();\
         if (IIC_MOD_ACK != EMIIC_##MOD_NAME##_WaitSCL_R())\
@@ -291,7 +280,7 @@
         \
         for (; *actual_len < len; (*actual_len)++)\
         {\
-            result = EMIIC_##MOD_NAME##_ReceiveByte(&buff[*actual_len], *actual_len == (len - 1));\
+            result = EMIIC_##MOD_NAME##_ReceiveByte(&buff[*actual_len]);\
             if (IIC_MOD_TO == result)\
             {\
                 EMIIC_##MOD_NAME##_Stop();\

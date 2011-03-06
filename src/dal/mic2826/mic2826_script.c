@@ -51,13 +51,21 @@ VSS_HANDLER(mic2826_vss_fini)
 
 VSS_HANDLER(mic2826_vss_config)
 {
-	uint8_t channel;
-	uint16_t mV;
+	uint16_t DCDC_mV, LDO1_mV, LDO2_mV, LDO3_mV;
+	RESULT ret;
 	
-	VSS_CHECK_ARGC(3);
+	VSS_CHECK_ARGC(5);
 	
-	channel = (uint8_t)strtoul(argv[1], NULL, 0);
-	mV = (uint16_t)strtoul(argv[2], NULL, 0);
-	return mic2826.config(channel, mV);
+	DCDC_mV = (uint16_t)strtoul(argv[1], NULL, 0);
+	LDO1_mV = (uint16_t)strtoul(argv[2], NULL, 0);
+	LDO2_mV = (uint16_t)strtoul(argv[3], NULL, 0);
+	LDO3_mV = (uint16_t)strtoul(argv[4], NULL, 0);
+	
+	LOG_PUSH();
+	LOG_MUTE();
+	ret = mic2826.config(DCDC_mV, LDO1_mV, LDO2_mV, LDO3_mV);
+	LOG_POP();
+	
+	return ret;
 }
 
