@@ -46,7 +46,7 @@ RESULT pwm_fini(uint8_t index)
 	}
 }
 
-RESULT pwm_config(uint8_t index, uint16_t kHz, uint8_t idle)
+RESULT pwm_config(uint8_t index, uint16_t kHz)
 {
 	switch (index)
 	{

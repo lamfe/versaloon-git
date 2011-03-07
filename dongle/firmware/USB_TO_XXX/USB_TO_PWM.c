@@ -26,7 +26,6 @@ void USB_TO_PWM_ProcessCmd(uint8* dat, uint16 len)
 	uint8 command, device_idx;
 	
 	uint16_t kHz, count;
-	uint8_t idle;
 	
 	index = 0;
 	while(index < len)
@@ -49,10 +48,9 @@ void USB_TO_PWM_ProcessCmd(uint8* dat, uint16 len)
 			}
 			break;
 		case USB_TO_XXX_CONFIG:
-			kHz = GET_LE_U16(&dat[index + 0]);
-			idle = dat[index + 2];
+			kHz = GET_LE_U16(&dat[index]);
 			
-			if (ERROR_OK == interfaces->pwm.config(device_idx, kHz, idle))
+			if (ERROR_OK == interfaces->pwm.config(device_idx, kHz))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
