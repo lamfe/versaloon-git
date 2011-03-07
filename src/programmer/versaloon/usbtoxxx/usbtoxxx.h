@@ -271,7 +271,7 @@ RESULT usbtomicrowire_poll(uint8_t interface_index, uint16_t interval_us,
 // USB_TO_PWM
 RESULT usbtopwm_init(uint8_t interface_index);
 RESULT usbtopwm_fini(uint8_t interface_index);
-RESULT usbtopwm_config(uint8_t interface_index, uint16_t kHz, uint8_t idle);
+RESULT usbtopwm_config(uint8_t interface_index, uint16_t kHz);
 RESULT usbtopwm_out(uint8_t interface_index, uint16_t count, uint16_t *rate);
 
 #endif /* __USBTOXXX_H_INCLUDED__ */
