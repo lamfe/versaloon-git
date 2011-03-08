@@ -69,6 +69,10 @@ RESULT pwm_config(uint8_t index, uint16_t kHz, uint8_t pushpull, uint8_t polarit
 		}
 		
 		pwm0_cycle = SYNCSWPWM_OUT_TIMER_MHZ * 1000 / kHz;
+		if (pwm0_cycle >= 0xFFFF)
+		{
+			pwm0_cycle = 0xFFFE;
+		}
 		SYNCSWPWM_OUT_TIMER_SetCycle(pwm0_cycle);
 		if (pwm0_cur_rate)
 		{
@@ -97,7 +101,7 @@ RESULT pwm_out(uint8_t index, uint16_t count, uint16_t *rate)
 		pwm0_cur_rate = rate[count - 1];
 		for (i = 0; i < count; i++)
 		{
-			pwm_buff[i] = rate[i] * pwm0_cycle / 0xFFFF;
+			pwm_buff[i] = rate[i] * (pwm0_cycle + 1) / 0xFFFF;
 		}
 		SYNCSWPWM_OUT_TIMER_DMA_INIT(count, pwm_buff);
 		SYNCSWPWM_OUT_TIMER_DMA_WAIT();
