@@ -843,6 +843,7 @@ RESULT versaloon_init_capability(void *p)
 	i->pwm.fini = usbtopwm_fini;
 	i->pwm.config = usbtopwm_config;
 	i->pwm.out = usbtopwm_out;
+	i->pwm.in = usbtopwm_in;
 	
 	// POLL
 	i->poll.start = versaloon_poll_start;

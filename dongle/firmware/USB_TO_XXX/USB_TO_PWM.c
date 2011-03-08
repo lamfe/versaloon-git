@@ -26,6 +26,7 @@ void USB_TO_PWM_ProcessCmd(uint8* dat, uint16 len)
 	uint8 command, device_idx;
 	
 	uint16_t kHz, count;
+	uint8_t polarity, pushpull;
 	
 	index = 0;
 	while(index < len)
@@ -49,8 +50,10 @@ void USB_TO_PWM_ProcessCmd(uint8* dat, uint16 len)
 			break;
 		case USB_TO_XXX_CONFIG:
 			kHz = GET_LE_U16(&dat[index]);
+			pushpull = dat[index + 2];
+			polarity = dat[index + 3];
 			
-			if (ERROR_OK == interfaces->pwm.config(device_idx, kHz))
+			if (ERROR_OK == interfaces->pwm.config(device_idx, kHz, pushpull, polarity))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
@@ -80,6 +83,19 @@ void USB_TO_PWM_ProcessCmd(uint8* dat, uint16 len)
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
+			break;
+		case USB_TO_XXX_IN:
+			count = GET_LE_U16(&dat[index + 0]);
+			
+			if (ERROR_OK == interfaces->pwm.in(device_idx, count, (uint16_t *)&buffer_reply[rep_len + 1]))
+			{
+				buffer_reply[rep_len] = USB_TO_XXX_OK;
+			}
+			else
+			{
+				buffer_reply[rep_len] = USB_TO_XXX_FAILED;
+			}
+			rep_len += 1 + 4 * count;
 			break;
 		default:
 			buffer_reply[rep_len++] = USB_TO_XXX_CMD_NOT_SUPPORT;

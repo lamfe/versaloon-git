@@ -242,11 +242,12 @@
 												SYNCSWPWM_IN_TIMER_FALL_DMA_WAIT(dly);\
 											}while(0)
 
-#define SYNCSWPWM_OUT_TIMER_INIT()		do{\
+#define SYNCSWPWM_OUT_TIMER_INIT(p)		do{\
 											DMA_InitTypeDef DMA_InitStructure;\
 											TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;\
 											TIM_OCInitTypeDef TIM_OCInitStructure;\
 											\
+											RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, ENABLE);\
 											RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, ENABLE);\
 											\
 											DMA_DeInit(SYNCSWPWM_OUT_TIMER_DMA);\
@@ -276,7 +277,7 @@
 											TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM1;\
 											TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;\
 											TIM_OCInitStructure.TIM_Pulse = 0;\
-											TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_Low;\
+											TIM_OCInitStructure.TIM_OCPolarity = (p) ? TIM_OCPolarity_High : TIM_OCPolarity_Low;\
 											TIM_OC1Init(SYNCSWPWM_OUT_TIMER, &TIM_OCInitStructure);\
 											\
 											TIM_OC1PreloadConfig(SYNCSWPWM_OUT_TIMER, TIM_OCPreload_Enable);\
@@ -295,7 +296,9 @@
 												SYNCSWPWM_OUT_TIMER->ARR = (cycle);\
 												SYNCSWPWM_OUT_TIMER->EGR = TIM_PSCReloadMode_Immediate;\
 											} while (0)
-#define SYNCSWPWM_OUT_TIMER_GetCycle(cycle)	SYNCSWPWM_OUT_TIMER->ARR
+#define SYNCSWPWM_OUT_TIMER_GetCycle()	SYNCSWPWM_OUT_TIMER->ARR
+#define SYNCSWPWM_OUT_TIMER_GetRate()	SYNCSWPWM_OUT_TIMER->CCR1
+#define SYNCSWPWM_OUT_TIMER_SetRate(r)	SYNCSWPWM_OUT_TIMER->CCR1 = (r)
 #define SYNCSWPWM_OUT_TIMER_DMA_INIT(l, a)	do{\
 												SYNCSWPWM_OUT_TIMER->EGR = TIM_PSCReloadMode_Immediate;\
 												SYNCSWPWM_OUT_TIMER_DMA->CCR &= ~1;\
@@ -316,17 +319,12 @@
 											GPIO_SetPins(SYNCSW_OUT_PORT, SYNCSW_OUT_PIN);\
 											GPIO_SetMode(SYNCSW_OUT_PORT, SYNCSW_OUT_PIN, GPIO_MODE_AF_OD);\
 										}while(0)
-#define SYNCSWPWM_PORT_OD_FINI()		do{\
-											GPIO_SetMode(SYNCSW_OUT_PORT, SYNCSW_OUT_PIN, GPIO_MODE_IN_FLOATING);\
-											SYNCSWPWM_PORT_FINI();\
-										}while(0)
-
 #define SYNCSWPWM_PORT_PP_INIT()		do{\
 											SYNCSWPWM_PORT_INIT();\
 											GPIO_SetPins(SYNCSW_OUT_PORT, SYNCSW_OUT_PIN);\
 											GPIO_SetMode(SYNCSW_OUT_PORT, SYNCSW_OUT_PIN, GPIO_MODE_AF_PP);\
 										}while(0)
-#define SYNCSWPWM_PORT_PP_FINI()		do{\
+#define SYNCSWPWM_PORT_ODPP_FINI()		do{\
 											GPIO_SetMode(SYNCSW_OUT_PORT, SYNCSW_OUT_PIN, GPIO_MODE_IN_FLOATING);\
 											SYNCSWPWM_PORT_FINI();\
 										}while(0)

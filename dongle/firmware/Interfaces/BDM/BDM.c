@@ -39,7 +39,7 @@ static uint16 BDM_PULSE_Threshold;
 
 static void BDM_Fini(void)
 {
-	SYNCSWPWM_PORT_OD_FINI();
+	SYNCSWPWM_PORT_ODPP_FINI();
 	SYNCSWPWM_OUT_TIMER_FINI();
 	SYNCSWPWM_IN_TIMER_FINI();
 	BDM_Inited = 0;
@@ -54,7 +54,7 @@ static void BDM_Init(void)
 		BDM_Inited = 1;
 		BDM_clock_div = 0;
 		SYNCSWPWM_IN_TIMER_INIT();
-		SYNCSWPWM_OUT_TIMER_INIT();
+		SYNCSWPWM_OUT_TIMER_INIT(0);
 		SYNCSWPWM_PORT_OD_INIT();
 	}
 }

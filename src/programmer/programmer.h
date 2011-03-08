@@ -247,8 +247,10 @@ struct interface_pwm_t
 {
 	RESULT (*init)(uint8_t index);
 	RESULT (*fini)(uint8_t index);
-	RESULT (*config)(uint8_t index, uint16_t kHz);
+	RESULT (*config)(uint8_t index, uint16_t kHz, uint8_t pushpull, 
+						uint8_t polarity);
 	RESULT (*out)(uint8_t index, uint16_t count, uint16_t *rate);
+	RESULT (*in)(uint8_t index, uint16_t count, uint16_t *rate);
 };
 
 struct interface_target_voltage_t
@@ -351,7 +353,7 @@ struct programmer_info_t
 			{0, 0, 0, 0},\
 			{0, 0, 0, 0},\
 			{0, 0, 0, 0, 0},\
-			{0, 0, 0, 0},\
+			{0, 0, 0, 0, 0},\
 			{0, 0, 0, 0, 0},\
 			0\
 		},\

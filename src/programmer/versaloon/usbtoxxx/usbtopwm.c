@@ -39,9 +39,10 @@ RESULT usbtopwm_fini(uint8_t interface_index)
 	return usbtoxxx_fini_command(USB_TO_PWM, interface_index);
 }
 
-RESULT usbtopwm_config(uint8_t interface_index, uint16_t kHz)
+RESULT usbtopwm_config(uint8_t interface_index, uint16_t kHz, uint8_t pushpull, 
+						uint8_t polarity)
 {
-	uint8_t buff[2];
+	uint8_t buff[4];
 	
 #if PARAM_CHECK
 	if (interface_index > 7)
@@ -52,8 +53,10 @@ RESULT usbtopwm_config(uint8_t interface_index, uint16_t kHz)
 #endif
 	
 	SET_LE_U16(&buff[0], kHz);
+	buff[2] = pushpull;
+	buff[3] = polarity;
 	
-	return usbtoxxx_conf_command(USB_TO_PWM, interface_index, buff, 2);
+	return usbtoxxx_conf_command(USB_TO_PWM, interface_index, buff, 4);
 }
 
 RESULT usbtopwm_out(uint8_t interface_index, uint16_t count, uint16_t *rate)
@@ -80,5 +83,26 @@ RESULT usbtopwm_out(uint8_t interface_index, uint16_t count, uint16_t *rate)
 	
 	return usbtoxxx_out_command(USB_TO_PWM, interface_index, versaloon_cmd_buf, 
 								2 + 2 * count, 0);
+}
+
+RESULT usbtopwm_in(uint8_t interface_index, uint16_t count, uint16_t *rate)
+{
+#if PARAM_CHECK
+	if (interface_index > 7)
+	{
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
+		return ERROR_FAIL;
+	}
+	if (NULL == rate)
+	{
+		return ERROR_FAIL;
+	}
+#endif
+	
+	SET_LE_U16(&versaloon_cmd_buf[0], count);
+	memset(&versaloon_cmd_buf[2], 0, 4 * count);
+	
+	return usbtoxxx_in_command(USB_TO_PWM, interface_index, versaloon_cmd_buf, 
+					2 + 4 * count, 4 * count, (uint8_t *)rate, 0, 4 * count, 0);
 }
 
