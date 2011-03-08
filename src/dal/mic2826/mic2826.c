@@ -26,7 +26,7 @@
 #include "app_cfg.h"
 #include "app_type.h"
 
-#include "..\dal_internal.h"
+#include "../dal_internal.h"
 #include "mic2826_cfg.h"
 #include "mic2826.h"
 
