@@ -27,6 +27,8 @@ typedef s16 int16;
 typedef u32 uint32;
 typedef s32 int32;
 
+#define dimof(arr)					(sizeof(arr) / sizeof((arr)[0]))
+
 #define GET_U16_MSBFIRST(p)			(	((*((uint8 *)(p) + 0)) << 8) | \
 										((*((uint8 *)(p) + 1)) << 0))
 #define GET_U32_MSBFIRST(p)			(	((*((uint8 *)(p) + 0)) << 24) | \

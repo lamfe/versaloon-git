@@ -337,7 +337,9 @@
 												SYNCSWPWM_OUT_TIMER->ARR = (cycle);\
 												SYNCSWPWM_OUT_TIMER->EGR = TIM_PSCReloadMode_Immediate;\
 											} while (0)
-#define SYNCSWPWM_OUT_TIMER_GetCycle(cycle)	SYNCSWPWM_OUT_TIMER->ARR
+#define SYNCSWPWM_OUT_TIMER_GetCycle()	SYNCSWPWM_OUT_TIMER->ARR
+#define SYNCSWPWM_OUT_TIMER_GetRate()	SYNCSWPWM_OUT_TIMER->CCR1
+#define SYNCSWPWM_OUT_TIMER_SetRate(r)	SYNCSWPWM_OUT_TIMER->CCR1 = (r)
 #define SYNCSWPWM_OUT_TIMER_DMA_INIT(l, a)	do{\
 												SYNCSWPWM_OUT_TIMER->EGR = TIM_PSCReloadMode_Immediate;\
 												SYNCSWPWM_OUT_TIMER_DMA->CCR &= ~1;\
@@ -358,17 +360,12 @@
 											GPIO_SetPins(SYNCSW_OUT_PORT, SYNCSW_OUT_PIN);\
 											GPIO_SetMode(SYNCSW_OUT_PORT, SYNCSW_OUT_PIN, GPIO_MODE_AF_OD);\
 										}while(0)
-#define SYNCSWPWM_PORT_OD_FINI()		do{\
-											GPIO_SetMode(SYNCSW_OUT_PORT, SYNCSW_OUT_PIN, GPIO_MODE_IN_FLOATING);\
-											SYNCSWPWM_PORT_FINI();\
-										}while(0)
-
 #define SYNCSWPWM_PORT_PP_INIT()		do{\
 											SYNCSWPWM_PORT_INIT();\
 											GPIO_SetPins(SYNCSW_OUT_PORT, SYNCSW_OUT_PIN);\
 											GPIO_SetMode(SYNCSW_OUT_PORT, SYNCSW_OUT_PIN, GPIO_MODE_AF_PP);\
 										}while(0)
-#define SYNCSWPWM_PORT_PP_FINI()		do{\
+#define SYNCSWPWM_PORT_ODPP_FINI()		do{\
 											GPIO_SetMode(SYNCSW_OUT_PORT, SYNCSW_OUT_PIN, GPIO_MODE_IN_FLOATING);\
 											SYNCSWPWM_PORT_FINI();\
 										}while(0)

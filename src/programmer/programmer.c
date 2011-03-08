@@ -75,6 +75,11 @@ VSS_HANDLER(programmer_spi_fini);
 VSS_HANDLER(programmer_spi_config);
 VSS_HANDLER(programmer_spi_io);
 
+VSS_HANDLER(programmer_pwm_init);
+VSS_HANDLER(programmer_pwm_fini);
+VSS_HANDLER(programmer_pwm_config);
+VSS_HANDLER(programmer_pwm_out);
+
 VSS_HANDLER(programmer_delay_us);
 VSS_HANDLER(programmer_delay_ms);
 VSS_HANDLER(programmer_commit);
@@ -152,6 +157,18 @@ struct vss_cmd_t programmer_cmd[] =
 				"write data to iic, format: "
 				"iic_write_buff8 SLAVE_ADDR DATA_SIZE ADDR DATA0...",
 				programmer_iic_write_buff8),
+	VSS_CMD(	"pwm_init",
+				"initialize pwm module, format: pwm_init [KHZ PUSHPULL POLARITY]",
+				programmer_pwm_init),
+	VSS_CMD(	"pwm_fini",
+				"finialize pwm module, format: pwm_fini",
+				programmer_pwm_fini),
+	VSS_CMD(	"pwm_config",
+				"config pwm module, format: pwm_config KHZ PUSHPULL POLARITY",
+				programmer_pwm_config),
+	VSS_CMD(	"pwm_out",
+				"output pwm sequence, format: pwm_out CNT RATE0 RATE1 ...",
+				programmer_pwm_out),
 	VSS_CMD(	"delayus",
 				"delay us, format: delayus US",
 				programmer_delay_us),
@@ -811,6 +828,102 @@ VSS_HANDLER(programmer_iic_write_buff8)
 	if (ERROR_OK == ret)
 	{
 		ret = prog->interfaces.i2c.write(0, slave_addr, buff, data_size + 1, 1);
+	}
+	
+	if (buff != NULL)
+	{
+		free(buff);
+		buff = NULL;
+	}
+	return ret;
+}
+
+// pwm
+VSS_HANDLER(programmer_pwm_init)
+{
+	struct programmer_info_t *prog = NULL;
+	
+	VSS_CHECK_ARGC_2(1, 4);
+	if ((ERROR_OK != programmer_assert(&prog)) || (NULL == prog))
+	{
+		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
+		return ERROR_FAIL;
+	}
+	
+	if (ERROR_OK != prog->interfaces.pwm.init(0))
+	{
+		return ERROR_FAIL;
+	}
+	
+	if (4 == argc)
+	{
+		return programmer_pwm_config(argc, argv);
+	}
+	return ERROR_OK;
+}
+
+VSS_HANDLER(programmer_pwm_fini)
+{
+	struct programmer_info_t *prog = NULL;
+	
+	VSS_CHECK_ARGC(1);
+	if ((ERROR_OK != programmer_assert(&prog)) || (NULL == prog))
+	{
+		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
+		return ERROR_FAIL;
+	}
+	
+	return prog->interfaces.pwm.fini(0);
+}
+
+VSS_HANDLER(programmer_pwm_config)
+{
+	struct programmer_info_t *prog = NULL;
+	uint16_t kHz;
+	uint8_t pushpull, polarity;
+	
+	VSS_CHECK_ARGC(4);
+	if ((ERROR_OK != programmer_assert(&prog)) || (NULL == prog))
+	{
+		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
+		return ERROR_FAIL;
+	}
+	
+	kHz = (uint16_t)strtoul(argv[1], NULL, 0);
+	pushpull = (uint8_t)strtoul(argv[2], NULL, 0);
+	polarity = (uint8_t)strtoul(argv[3], NULL, 0);
+	
+	return prog->interfaces.pwm.config(0, kHz, pushpull, polarity);
+}
+
+VSS_HANDLER(programmer_pwm_out)
+{
+	uint16_t count = 0;
+	uint16_t *buff = NULL;
+	RESULT ret = ERROR_OK;
+	struct programmer_info_t *prog = NULL;
+	
+	VSS_CHECK_ARGC_MIN(3);
+	if ((ERROR_OK != programmer_assert(&prog)) || (NULL == prog))
+	{
+		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
+		return ERROR_FAIL;
+	}
+	
+	count = (uint16_t)strtoul(argv[1], NULL, 0);
+	
+	VSS_CHECK_ARGC(2 + count);
+	if (0 == count)
+	{
+		LOG_ERROR(ERRMSG_INVALID_TARGET, "count");
+		vss_print_help(argv[0]);
+		return ERROR_FAIL;
+	}
+	
+	ret = vss_get_binary_buffer(argc - 2, &argv[2], 2, count, (void**)&buff);
+	if (ERROR_OK == ret)
+	{
+		ret = prog->interfaces.pwm.out(0, count, buff);
 	}
 	
 	if (buff != NULL)

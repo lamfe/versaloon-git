@@ -289,7 +289,8 @@ const struct interfaces_info_t internal_interfaces =
 		pwm_init,
 		pwm_fini,
 		pwm_config,
-		pwm_out
+		pwm_out,
+		pwm_in
 	},
 #endif
 	peripheral_commit
