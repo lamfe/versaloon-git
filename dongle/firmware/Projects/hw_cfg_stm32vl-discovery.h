@@ -14,6 +14,7 @@
  *      2008-11-07:     created(by SimonQian)                             *
  *      2008-11-22:     rewrite GPIO_Dir(by SimonQian)                    *
  *      2011-01-08:     adapt to STM32VL-Discovery (by Bingo)             *
+ *      2011-03-10:     Modify to use PB1/SRST as VL Reset    (by Bingo)  *
  **************************************************************************/
 
 //
@@ -143,9 +144,9 @@
 
 /****************************** SW ******************************/
 #define SW_PORT							GPIOB
-#define SW_PIN							STM32VL_T_NRST
+#define SW_PIN							STM32VL_T_JRST
 #define SW_RST_PORT						GPIOB
-#define SW_RST_PIN						STM32VL_T_JRST
+#define SW_RST_PIN						STM32VL_T_NRST
 
 #define SYNCSW_IN_PORT					STM32VL_TCK1_PORT
 #define SYNCSW_IN_PIN					STM32VL_T_JTCK_1
