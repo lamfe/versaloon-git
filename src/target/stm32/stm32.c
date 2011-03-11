@@ -124,6 +124,41 @@ const struct vss_cmd_t stm32_notifier[] =
 	VSS_CMD_END
 };
 
+uint16_t stm32_get_flash_size(uint32_t mcuid, uint32_t flash_sram_reg)
+{
+	uint16_t den = mcuid & STM32_DEN_MSK;
+	uint16_t flash_size = flash_sram_reg & 0xFFFF;
+	
+	if (0xFFFF == flash_size)
+	{
+		switch (den)
+		{
+		case STM32_DEN_LOW:
+			return 32;
+		case STM32_DEN_MEDIUM:
+			return 128;
+		case STM32_DEN_HIGH:
+			return 512;
+		case STM32_DEN_CONNECTIVITY:
+			return 256;
+		case STM32_DEN_VALUELINE:
+			return 128;
+		case STM32_DEN_XL:
+			return 1024;
+		default:
+			return 1024;
+		}
+	}
+	else
+	{
+		if ((STM32_DEN_MEDIUM == den) && (flash_size < 128))
+		{
+			flash_size = 128;
+		}
+		return flash_size;
+	}
+}
+
 void stm32_print_device(uint32_t mcuid)
 {
 	char rev_char = 0;

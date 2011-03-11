@@ -488,9 +488,9 @@ READ_TARGET_HANDLER(stm32swj)
 {
 	struct program_info_t *pi = context->pi;
 	uint8_t option_bytes[STM32_OB_SIZE], i;
-	uint32_t mcu_id = 0;
+	uint32_t mcu_id = 0, flash_sram_size, flash_obr;
 	uint32_t cur_block_size;
-	uint16_t den;
+	uint16_t den, flash_size;
 	RESULT ret = ERROR_OK;
 	
 	switch (area)
@@ -508,53 +508,32 @@ READ_TARGET_HANDLER(stm32swj)
 		mcu_id &= STM32_DEN_MSK;
 		*(uint32_t *)buff = mcu_id;
 		
-		if (ERROR_OK != adi_memap_read_reg32(STM32_FLASH_OBR, &mcu_id, 1))
+		if (ERROR_OK != adi_memap_read_reg32(STM32_FLASH_OBR, &flash_obr, 1))
 		{
 			return ERROR_FAIL;
 		}
-		if (mcu_id & STM32_FLASH_OBR_RDPRT)
+		if (flash_obr & STM32_FLASH_OBR_RDPRT)
 		{
 			// read protected, flash size and sram size is not readable
 			return ERROR_OK;
 		}
 		
 		// read flash and ram size
-		if (ERROR_OK != adi_memap_read_reg32(STM32_REG_FLASH_RAM_SIZE, &mcu_id, 1))
+		if (ERROR_OK != 
+			adi_memap_read_reg32(STM32_REG_FLASH_RAM_SIZE, &flash_sram_size, 1))
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read stm32 flash_ram size");
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
-		mcu_id = LE_TO_SYS_U32(mcu_id);
-		if ((mcu_id & 0xFFFF) <= 512)
+		flash_sram_size = LE_TO_SYS_U32(flash_sram_size);
+		flash_size = stm32_get_flash_size(mcu_id, flash_sram_size);
+		pi->program_areas[APPLICATION_IDX].size = flash_size * 1024;
+		
+		LOG_INFO("Flash memory size: %i KB", flash_size);
+		if ((flash_sram_size >> 16) != 0xFFFF)
 		{
-			LOG_INFO("Flash memory size: %i KB", mcu_id & 0xFFFF);
-			if ((mcu_id & 0xFFFF) >= 128)
-			{
-				pi->program_areas[APPLICATION_IDX].size = (mcu_id & 0xFFFF) * 1024;
-			}
-			else
-			{
-				// 128K flash is available for 64K devices
-				pi->program_areas[APPLICATION_IDX].size = 128 * 1024;
-			}
-		}
-		else if ((STM32_DEN_VALUELINE == den) && (0xFFFFFFFF == mcu_id))
-		{
-			// FLASH_RAM_SIZE register of STM32 ValueLine devices will be 0xFFFFFFFF
-			// we use 128K by default
-			pi->program_areas[APPLICATION_IDX].size = 128 * 1024;
-		}
-		else
-		{
-			LOG_ERROR(ERRMSG_INVALID_VALUE, mcu_id & 0xFFFF, 
-						"stm32 flash size");
-			ret = ERRCODE_INVALID;
-			break;
-		}
-		if ((mcu_id >> 16) != 0xFFFF)
-		{
-			LOG_INFO("SRAM memory size: %i KB", mcu_id >> 16);
+			LOG_INFO("SRAM memory size: %i KB", flash_sram_size >> 16);
 		}
 		break;
 	case FUSE_CHAR:
