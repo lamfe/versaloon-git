@@ -224,12 +224,13 @@ LEAVE_PROGRAM_MODE_HANDLER(stm32swj)
 
 ERASE_TARGET_HANDLER(stm32swj)
 {
+	struct program_info_t *pi = context->pi;
+	struct operation_t *op = context->op;
 	RESULT ret= ERROR_OK;
 	uint32_t reg;
 	
 	REFERENCE_PARAMETER(size);
 	REFERENCE_PARAMETER(addr);
-	REFERENCE_PARAMETER(context);
 	
 	switch (area)
 	{
@@ -242,6 +243,18 @@ ERASE_TARGET_HANDLER(stm32swj)
 		if (ERROR_OK != stm32_wait_status_busy(&reg, 10))
 		{
 			return ERROR_FAIL;
+		}
+		
+		// if fuse write will not be performed, 
+		// we MUST write a default non-lock value(0xFFFFFFFFFFFFFFA5) to fuse, 
+		// or STM32 will be locked
+		if (!(op->write_operations & FUSE))
+		{
+			uint64_t fuse = 0xFFFFFFFFFFFFFFA5;
+			
+			// TODO: fix here for big-endian
+			memcpy(pi->program_areas[FUSE_IDX].buff, &fuse, 8);
+			op->write_operations |= FUSE;
 		}
 		break;
 	case APPLICATION_CHAR:
