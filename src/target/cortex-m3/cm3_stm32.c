@@ -468,8 +468,9 @@ stm32swj_download_flashloader:
 			buff += cur_block_size;
 			pgbar_update(cur_block_size);
 			
-			if (((1 == current_bank) && (addr >= STM32_FLASH_BANK2_ADDR)) || 
-				((2 == current_bank) && (addr < STM32_FLASH_BANK2_ADDR)))
+			if (size && 
+					(((1 == current_bank) && (addr >= STM32_FLASH_BANK2_ADDR)) || 
+					((2 == current_bank) && (addr < STM32_FLASH_BANK2_ADDR))))
 			{
 				goto stm32swj_download_flashloader;
 			}
