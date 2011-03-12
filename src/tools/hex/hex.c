@@ -34,11 +34,12 @@
 
 enum  HEX_TYPE
 {
-	HEX_TYPE_DATA			= 0x00,
-	HEX_TYPE_EOF			= 0x01,
-	HEX_TYPE_LINEAR_ADDR	= 0x02,
-	HEX_TYPE_SEG_ADDR		= 0x03,
-	HEX_TYPE_EXT_ADDR		= 0x04
+	HEX_TYPE_DATA				= 0x00,
+	HEX_TYPE_EOF				= 0x01,
+	HEX_TYPE_EXT_SEG_ADDR		= 0x02,
+	HEX_TYPE_START_SEG_ADDR		= 0x03,
+	HEX_TYPE_EXT_LINEAR_ADDR	= 0x04,
+	HEX_TYPE_START_LINEAR_ADDR	= 0x05
 };
 
 RESULT read_hex_file(FILE *hex_file, WRITE_MEMORY_CALLBACK callback, 
@@ -120,7 +121,7 @@ RESULT read_hex_file(FILE *hex_file, WRITE_MEMORY_CALLBACK callback,
 		addr = GET_BE_U16(&line_buf[1]);
 		switch (line_buf[3])
 		{
-		case HEX_TYPE_DATA:
+		case HEX_TYPE_DATA: //Type 0
 			// data record
 			if (ERROR_OK != callback(fileparser_cur_ext, 
 					ext_addr0 + ext_addr1 + addr_offset + addr, 
@@ -129,11 +130,11 @@ RESULT read_hex_file(FILE *hex_file, WRITE_MEMORY_CALLBACK callback,
 				return ERROR_FAIL;
 			}
 			break;
-		case HEX_TYPE_EOF:
+		case HEX_TYPE_EOF: // Type 1
 			// end of file
 			return ERROR_OK;
 			break;
-		case HEX_TYPE_LINEAR_ADDR:
+		case HEX_TYPE_EXT_SEG_ADDR: //Type 2
 			// bit 4-19 of address
 			if ((length != 2) || (addr != 0))
 			{
@@ -141,7 +142,7 @@ RESULT read_hex_file(FILE *hex_file, WRITE_MEMORY_CALLBACK callback,
 			}
 			ext_addr0 = (line_buf[4] << 12) | (line_buf[5] << 4);
 			break;
-		case HEX_TYPE_SEG_ADDR:
+		case HEX_TYPE_START_SEG_ADDR: //Type3
 			// segment address
 			if (addr != 0)
 			{
@@ -149,13 +150,17 @@ RESULT read_hex_file(FILE *hex_file, WRITE_MEMORY_CALLBACK callback,
 			}
 			seg_addr = (line_buf[4] << 8) | line_buf[5];
 			break;
-		case HEX_TYPE_EXT_ADDR:
+		case HEX_TYPE_EXT_LINEAR_ADDR: //Type 4
 			// high 16 bit of address
 			if ((length != 2) || (addr != 0))
 			{
 				return ERROR_FAIL;
 			}
 			ext_addr1 = (line_buf[4] << 24) | (line_buf[5] << 16);
+			break;
+		case HEX_TYPE_START_LINEAR_ADDR: //Type 5
+			//Skip hex record type 5 - Start Linear Address Record , but don't log a warning
+			//The Start Linear Address Record is used to specify the execution start address for the object file.
 			break;
 		default:
 			LOG_WARNING(ERRMSG_INVALID_VALUE_MESSAGE, line_buf[3], 
@@ -242,7 +247,7 @@ RESULT write_hex_file(FILE *hex_file, uint32_t file_addr,
 	
 	// write seg_addr
 	seg_addr = ((seg_addr >> 8) & 0x000000FF) | ((seg_addr << 8) & 0x0000FF00);
-	ret = write_hex_line(hex_file, 2, (uint16_t)0, HEX_TYPE_SEG_ADDR, 
+	ret = write_hex_line(hex_file, 2, (uint16_t)0, HEX_TYPE_START_SEG_ADDR, 
 							(uint8_t *)&seg_addr);
 	if (ret != ERROR_OK)
 	{
@@ -253,7 +258,7 @@ RESULT write_hex_file(FILE *hex_file, uint32_t file_addr,
 	addr_high_orig = start_addr >> 16;
 	addr_tmp_big_endian = ((addr_high_orig >> 8) & 0x000000FF) 
 							| ((addr_high_orig << 8) & 0x0000FF00);
-	ret = write_hex_line(hex_file, 2, (uint16_t)0, HEX_TYPE_EXT_ADDR, 
+	ret = write_hex_line(hex_file, 2, (uint16_t)0, HEX_TYPE_EXT_LINEAR_ADDR, 
 							(uint8_t *)&addr_tmp_big_endian);
 	if (ret != ERROR_OK)
 	{
@@ -269,7 +274,7 @@ RESULT write_hex_file(FILE *hex_file, uint32_t file_addr,
 			addr_high_orig = start_addr >> 16;
 			addr_tmp_big_endian = ((addr_high_orig >> 8) & 0x000000FF) 
 									| ((addr_high_orig << 8) & 0x0000FF00);
-			ret = write_hex_line(hex_file, 2, (uint16_t)0, HEX_TYPE_EXT_ADDR, 
+			ret = write_hex_line(hex_file, 2, (uint16_t)0, HEX_TYPE_EXT_LINEAR_ADDR, 
 									(uint8_t *)&addr_tmp_big_endian);
 			if (ret != ERROR_OK)
 			{
