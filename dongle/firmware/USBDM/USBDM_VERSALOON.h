@@ -19,8 +19,8 @@
 // RESET control & sensing
 //
 // RESET output pin
-#define RESET_LOW()         interfaces->gpio.config(0, GPIO_SRST, GPIO_SRST, 0)
-#define RESET_3STATE()      interfaces->gpio.config(0, GPIO_SRST, 0, GPIO_SRST)
+#define RESET_LOW()         interfaces->gpio.config(0, GPIO_SRST, GPIO_SRST, 0, 0)
+#define RESET_3STATE()      interfaces->gpio.config(0, GPIO_SRST, 0, GPIO_SRST, GPIO_SRST)
 
 U8 RESET_IN(void);
 #define RESET_IS_HIGH       (RESET_IN!=0)
@@ -42,7 +42,7 @@ U8 RESET_IN(void);
 //#define BKPT_LOW()         (JTAG_TAP_TMS_CLR(),JTAG_TAP_TMS_SETOUTPUT())
 //#define BKPT_HIGH()        (JTAG_TAP_TMS_SETINPUT())
 
-#define BDM_3STATE_TX()		interfaces->gpio.config(0, GPIO_SYNCSWPWM_GPIO, 0, GPIO_SYNCSWPWM_GPIO)
+#define BDM_3STATE_TX()		interfaces->gpio.config(0, GPIO_SYNCSWPWM_GPIO, 0, GPIO_SYNCSWPWM_GPIO, GPIO_SYNCSWPWM_GPIO)
 U8 BDM_IN(void);
 
 #define RED_LED_ON()		

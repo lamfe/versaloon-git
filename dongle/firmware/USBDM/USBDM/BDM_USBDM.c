@@ -493,7 +493,7 @@ U8 bdm_hardwareReset(U8 mode) {
       BDM_OUT = 0;        // Drive BKGD low
       BDM_ENABLE_TX();
 #else
-      interfaces->gpio.config(0, GPIO_SYNCSWPWM_GPIO, GPIO_SYNCSWPWM_GPIO, 0);
+      interfaces->gpio.config(0, GPIO_SYNCSWPWM_GPIO, GPIO_SYNCSWPWM_GPIO, 0, 0);
 #endif
 
       WAIT_US(RESET_SETTLE); // Wait for signals to settle
@@ -604,7 +604,7 @@ U8 rc;
       BDM_OUT  = 0;      // drive BKGD low (out of reset)
       BDM_ENABLE_TX();
 #else
-      interfaces->gpio.config(0, GPIO_SYNCSWPWM_GPIO, GPIO_SYNCSWPWM_GPIO, 0);
+      interfaces->gpio.config(0, GPIO_SYNCSWPWM_GPIO, GPIO_SYNCSWPWM_GPIO, 0, 0);
 #endif
    }
 
@@ -732,7 +732,7 @@ U8 rc = BDM_RC_OK;
    DATA_PORT      = BDM_DIR_Rx_WR;
    DATA_PORT_DDR  = BDM_DIR_Rx_MASK|BDM_OUT_MASK;
 #else
-   interfaces->gpio.config(0, GPIO_SYNCSWPWM_GPIO, GPIO_SYNCSWPWM_GPIO, 0);
+   interfaces->gpio.config(0, GPIO_SYNCSWPWM_GPIO, GPIO_SYNCSWPWM_GPIO, 0, 0);
 #endif
    RESET_LOW();
    WAIT_US(RESET_SETTLE);
@@ -790,7 +790,7 @@ U8  bdm_setInterfaceLevel(U8 level) {
          DATA_PORT      = BDM_DIR_Rx_WR;                // Enable BKGD buffer,  BKGD = 0
          DATA_PORT_DDR  = BDM_DIR_Rx_MASK|BDM_OUT_MASK; // Enable port pins
 #else
-         interfaces->gpio.config(0, GPIO_SYNCSWPWM_GPIO, GPIO_SYNCSWPWM_GPIO, 0);
+         interfaces->gpio.config(0, GPIO_SYNCSWPWM_GPIO, GPIO_SYNCSWPWM_GPIO, 0, 0);
 #endif
          break;
       case SI_BKGD_HIGH : // BKGD pin=H
@@ -798,7 +798,7 @@ U8  bdm_setInterfaceLevel(U8 level) {
          DATA_PORT      = BDM_DIR_Rx_WR  |BDM_OUT_MASK; // Enable BKGD buffer,  BKGD = 1
          DATA_PORT_DDR  = BDM_DIR_Rx_MASK|BDM_OUT_MASK; // Enable port pins
 #else
-         interfaces->gpio.config(0, GPIO_SYNCSWPWM_GPIO, 0, GPIO_SYNCSWPWM_GPIO);
+         interfaces->gpio.config(0, GPIO_SYNCSWPWM_GPIO, 0, GPIO_SYNCSWPWM_GPIO, GPIO_SYNCSWPWM_GPIO);
 #endif
          break;
       default :           // BKGD pin=3-state
@@ -806,7 +806,7 @@ U8  bdm_setInterfaceLevel(U8 level) {
          DATA_PORT      = BDM_DIR_Rx_RD;                // Disable BKGD buffer, BKGD = X
          DATA_PORT_DDR  = BDM_DIR_Rx_MASK;              // Enable port pins
 #else
-         interfaces->gpio.config(0, GPIO_SYNCSWPWM_GPIO, 0, GPIO_SYNCSWPWM_GPIO);
+         interfaces->gpio.config(0, GPIO_SYNCSWPWM_GPIO, 0, GPIO_SYNCSWPWM_GPIO, GPIO_SYNCSWPWM_GPIO);
 #endif
          break;
    }

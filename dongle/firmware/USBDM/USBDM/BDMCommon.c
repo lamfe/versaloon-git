@@ -345,7 +345,7 @@ U8 rc = BDM_RC_OK;
          DATA_PORT      = BDM_DIR_Rx_WR;
          DATA_PORT_DDR  = BDM_DIR_Rx_MASK|BDM_OUT_MASK;
 #else
-		 interfaces->gpio.config(0, GPIO_SYNCSWPWM_GPIO, GPIO_SYNCSWPWM_GPIO, 0);
+		 interfaces->gpio.config(0, GPIO_SYNCSWPWM_GPIO, GPIO_SYNCSWPWM_GPIO, 0, 0);
 #endif
       }
    }
