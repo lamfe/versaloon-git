@@ -40,8 +40,10 @@ RESULT usbtoi2c_fini(uint8_t interface_index)
 }
 
 RESULT usbtoi2c_config(uint8_t interface_index, uint16_t kHz, 
-						uint16_t byte_interval, uint16_t max_dly)
+					uint16_t byte_interval, uint16_t max_dly, bool nacklast)
 {
+	uint8_t buff[7];
+	
 #if PARAM_CHECK
 	if (interface_index > 7)
 	{
@@ -50,12 +52,13 @@ RESULT usbtoi2c_config(uint8_t interface_index, uint16_t kHz,
 	}
 #endif
 	
-	SET_LE_U16(&versaloon_cmd_buf[0], kHz);
-	SET_LE_U16(&versaloon_cmd_buf[2], byte_interval);
-	SET_LE_U16(&versaloon_cmd_buf[4], max_dly);
+	SET_LE_U16(&buff[0], kHz);
+	SET_LE_U16(&buff[2], byte_interval);
+	SET_LE_U16(&buff[4], max_dly);
+	buff[6] = nacklast ? 1 : 0;
 	
 	return usbtoxxx_conf_command(USB_TO_I2C, interface_index, 
-								 versaloon_cmd_buf, 6);
+								 buff, 7);
 }
 
 RESULT usbtoi2c_read(uint8_t interface_index, uint16_t chip_addr, 
