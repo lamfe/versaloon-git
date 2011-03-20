@@ -27,8 +27,8 @@
 #include "app_type.h"
 
 #include "../dal_internal.h"
-#include "mic2826_cfg.h"
-#include "mic2826.h"
+#include "mic2826_drv_cfg.h"
+#include "mic2826_drv.h"
 
 #define MIC2826_IIC_ADDR					0xB4
 #define MIC2826_IIC_RETRY					10
@@ -119,7 +119,7 @@ static RESULT mic2826_write_reg(uint8_t addr, uint8_t reg)
 static RESULT mic2826_init(uint16_t kHz)
 {
 	interfaces->i2c.init(MIC2826_IIC_IDX);
-	interfaces->i2c.config(MIC2826_IIC_IDX, kHz, 0, 0xFFFF);
+	interfaces->i2c.config(MIC2826_IIC_IDX, kHz, 0, 0xFFFF, false);
 	return interfaces->peripheral_commit();
 }
 

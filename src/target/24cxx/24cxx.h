@@ -16,57 +16,15 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
+#ifndef __EE24CXX_H_INCLUDED__
+#define __EE24CXX_H_INCLUDED__
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
+#define EE24CXX_STRING						"24cxx"
 
-#include <stdio.h>
-#include <stdlib.h>
+extern struct program_area_map_t ee24cxx_program_area_map[];
+extern const struct program_mode_t ee24cxx_program_mode[];
+extern const struct program_functions_t ee24cxx_program_functions;
+extern const struct vss_cmd_t ee24cxx_notifier[];
 
-#include "app_cfg.h"
-#include "app_type.h"
-#include "app_log.h"
-#include "app_err.h"
-#include "port.h"
-
-#include "scripts.h"
-#include "programmer.h"
-#include "mic2826_drv.h"
-
-VSS_HANDLER(mic2826_vss_init)
-{
-	uint16_t kHz;
-	
-	VSS_CHECK_ARGC(2);
-	
-	kHz = (uint16_t)strtoul(argv[1], NULL, 0);
-	return mic2826.init(kHz);
-}
-
-VSS_HANDLER(mic2826_vss_fini)
-{
-	VSS_CHECK_ARGC(1);
-	return mic2826.fini();
-}
-
-VSS_HANDLER(mic2826_vss_config)
-{
-	uint16_t DCDC_mV, LDO1_mV, LDO2_mV, LDO3_mV;
-	RESULT ret;
-	
-	VSS_CHECK_ARGC(5);
-	
-	DCDC_mV = (uint16_t)strtoul(argv[1], NULL, 0);
-	LDO1_mV = (uint16_t)strtoul(argv[2], NULL, 0);
-	LDO2_mV = (uint16_t)strtoul(argv[3], NULL, 0);
-	LDO3_mV = (uint16_t)strtoul(argv[4], NULL, 0);
-	
-	LOG_PUSH();
-	LOG_MUTE();
-	ret = mic2826.config(DCDC_mV, LDO1_mV, LDO2_mV, LDO3_mV);
-	LOG_POP();
-	
-	return ret;
-}
+#endif /* __EE24CXX_H_INCLUDED__ */
 

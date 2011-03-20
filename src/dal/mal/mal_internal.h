@@ -17,56 +17,42 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
-#include <stdio.h>
-#include <stdlib.h>
-
-#include "app_cfg.h"
-#include "app_type.h"
-#include "app_log.h"
-#include "app_err.h"
-#include "port.h"
-
-#include "scripts.h"
-#include "programmer.h"
-#include "mic2826_drv.h"
-
-VSS_HANDLER(mic2826_vss_init)
+struct mal_capacity_t
 {
-	uint16_t kHz;
-	
-	VSS_CHECK_ARGC(2);
-	
-	kHz = (uint16_t)strtoul(argv[1], NULL, 0);
-	return mic2826.init(kHz);
-}
+	uint64_t block_size;
+	uint64_t block_number;
+};
 
-VSS_HANDLER(mic2826_vss_fini)
+struct mal_driver_t
 {
-	VSS_CHECK_ARGC(1);
-	return mic2826.fini();
-}
-
-VSS_HANDLER(mic2826_vss_config)
-{
-	uint16_t DCDC_mV, LDO1_mV, LDO2_mV, LDO3_mV;
-	RESULT ret;
+	uint16_t index;
+	struct mal_capacity_t capacity;
 	
-	VSS_CHECK_ARGC(5);
+	RESULT (*init)(void);
+	RESULT (*fini)(void);
+	RESULT (*config)(void *param);
 	
-	DCDC_mV = (uint16_t)strtoul(argv[1], NULL, 0);
-	LDO1_mV = (uint16_t)strtoul(argv[2], NULL, 0);
-	LDO2_mV = (uint16_t)strtoul(argv[3], NULL, 0);
-	LDO3_mV = (uint16_t)strtoul(argv[4], NULL, 0);
+	RESULT (*eraseall_nb_start)(void);
+	RESULT (*eraseall_nb_isready)(void);
+	RESULT (*eraseall_nb_waitready)(void);
+	RESULT (*eraseall_nb_end)(void);
 	
-	LOG_PUSH();
-	LOG_MUTE();
-	ret = mic2826.config(DCDC_mV, LDO1_mV, LDO2_mV, LDO3_mV);
-	LOG_POP();
+	RESULT (*eraseblock_nb_start)(uint64_t address, uint64_t count);
+	RESULT (*eraseblock_nb)(uint64_t address);
+	RESULT (*eraseblock_nb_isready)(void);
+	RESULT (*eraseblock_nb_waitready)(void);
+	RESULT (*eraseblock_nb_end)(void);
 	
-	return ret;
-}
+	RESULT (*readblock_nb_start)(uint64_t address, uint64_t count);
+	RESULT (*readblock_nb)(uint64_t address, uint8_t *buff);
+	RESULT (*readblock_nb_isready)(void);
+	RESULT (*readblock_nb_waitready)(void);
+	RESULT (*readblock_nb_end)(void);
+	
+	RESULT (*writeblock_nb_start)(uint64_t address, uint64_t count);
+	RESULT (*writeblock_nb)(uint64_t address, uint8_t *buff);
+	RESULT (*writeblock_nb_isready)(void);
+	RESULT (*writeblock_nb_waitready)(void);
+	RESULT (*writeblock_nb_end)(void);
+};
 
