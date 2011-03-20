@@ -56,7 +56,7 @@ RESULT iic_fini(uint8_t index)
 }
 
 RESULT iic_config(uint8_t index, uint16_t kHz, uint16_t byte_interval, 
-				 uint16_t max_dly)
+				 uint16_t max_dly, bool nacklast)
 {
 	uint16 clock_cycle = 1000 / kHz;
 	
@@ -66,7 +66,7 @@ RESULT iic_config(uint8_t index, uint16_t kHz, uint16_t byte_interval,
 		IIC_PULL_INIT();
 		if (IIC_MOD_ACK == EMIIC_USBTOXXX_Init())
 		{
-			if (IIC_MOD_ACK == EMIIC_USBTOXXX_SetParameter(clock_cycle, max_dly, 1, byte_interval))
+			if (IIC_MOD_ACK == EMIIC_USBTOXXX_SetParameter(clock_cycle, max_dly, 1, byte_interval, nacklast))
 			{
 				return ERROR_OK;
 			}

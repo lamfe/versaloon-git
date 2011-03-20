@@ -141,7 +141,7 @@ struct vss_cmd_t programmer_cmd[] =
 				"finalize iic, format: iic_fini",
 				programmer_iic_fini),
 	VSS_CMD(	"iic_config",
-				"config iic, format: iic_config KHZ MAX_DLY_US",
+				"config iic, format: iic_config KHZ MAX_DLY_US NACKLAST",
 				programmer_iic_config),
 	VSS_CMD(	"iic_read",
 				"read data from iic, format: iic_read SLAVE_ADDR STOP DATA_SIZE",
@@ -651,6 +651,7 @@ VSS_HANDLER(programmer_iic_config)
 {
 	uint16_t khz = 0;
 	uint16_t max_dly = 0;
+	bool nacklast = false;
 	struct programmer_info_t *prog = NULL;
 	
 	VSS_CHECK_ARGC(3);
@@ -662,8 +663,9 @@ VSS_HANDLER(programmer_iic_config)
 	
 	khz = (uint16_t)strtoul(argv[1], NULL, 0);
 	max_dly = (uint16_t)strtoul(argv[2], NULL, 0);
+	nacklast = strtoul(argv[3], NULL, 0) > 0;
 	
-	return prog->interfaces.i2c.config(0, khz, 0, max_dly);
+	return prog->interfaces.i2c.config(0, khz, 0, max_dly, nacklast);
 }
 
 VSS_HANDLER(programmer_iic_read)

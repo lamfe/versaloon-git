@@ -145,7 +145,7 @@ RESULT usbtoc2_readdata(uint8_t interface_index, uint8_t *buf, uint8_t len);
 RESULT usbtoi2c_init(uint8_t interface_index);
 RESULT usbtoi2c_fini(uint8_t interface_index);
 RESULT usbtoi2c_config(uint8_t interface_index, uint16_t kHz, 
-						uint16_t byte_interval, uint16_t max_dly);
+					uint16_t byte_interval, uint16_t max_dly, bool nacklast);
 RESULT usbtoi2c_read(uint8_t interface_index, uint16_t chip_addr, 
 						uint8_t *data, uint16_t data_len, uint8_t stop);
 RESULT usbtoi2c_write(uint8_t interface_index, uint16_t chip_addr, 
