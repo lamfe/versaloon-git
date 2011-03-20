@@ -64,6 +64,7 @@
 #include "hcs08/hcs08.h"
 #include "hcs12/hcs12.h"
 #include "93cx6/93cx6.h"
+#include "24cxx/24cxx.h"
 
 static RESULT target_build_chip_series(const char *chip_name, 
 		const struct program_mode_t *program_mode, struct chip_series_t *s);
@@ -450,6 +451,19 @@ struct target_info_t targets_info[] =
 		ee93cx6_program_mode,				// program_mode
 		&ee93cx6_program_functions,			// program_functions
 		ee93cx6_notifier,					// notifier
+		NULL,								// adjust_setting
+		NULL,								// adjust_mapping
+	},
+#endif
+#if TARGET_EE24CXX_EN
+	// EE24CXX
+	{
+		EE24CXX_STRING,						// name
+		"",									// feature
+		ee24cxx_program_area_map,			// program_area_map
+		ee24cxx_program_mode,				// program_mode
+		&ee24cxx_program_functions,			// program_functions
+		ee24cxx_notifier,					// notifier
 		NULL,								// adjust_setting
 		NULL,								// adjust_mapping
 	},

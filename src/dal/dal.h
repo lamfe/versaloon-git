@@ -19,3 +19,8 @@
 
 #define DAL_MIC2826_EN						1
 
+#define DAL_EE93CX6_EN						1
+#define DAL_EE24CXX_EN						1
+#define DAL_DF25XX_EN						1
+#define DAL_DF45XX_EN						1
+
