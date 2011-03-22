@@ -63,8 +63,8 @@
 #include "lm3s/lm3s.h"
 #include "hcs08/hcs08.h"
 #include "hcs12/hcs12.h"
-#include "93cx6/93cx6.h"
-#include "24cxx/24cxx.h"
+#include "ee93cx6/ee93cx6.h"
+#include "ee24cxx/ee24cxx.h"
 
 static RESULT target_build_chip_series(const char *chip_name, 
 		const struct program_mode_t *program_mode, struct chip_series_t *s);

@@ -41,8 +41,8 @@
 #include "mal/mal.h"
 #include "ee24cxx/ee24cxx_drv.h"
 
-#include "24cxx.h"
-#include "24cxx_internal.h"
+#include "ee24cxx.h"
+#include "ee24cxx_internal.h"
 
 #define CUR_TARGET_STRING			EE24CXX_STRING
 
