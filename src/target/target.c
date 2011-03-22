@@ -65,6 +65,7 @@
 #include "hcs12/hcs12.h"
 #include "ee93cx6/ee93cx6.h"
 #include "ee24cxx/ee24cxx.h"
+#include "df25xx/df25xx.h"
 
 static RESULT target_build_chip_series(const char *chip_name, 
 		const struct program_mode_t *program_mode, struct chip_series_t *s);
@@ -464,6 +465,19 @@ struct target_info_t targets_info[] =
 		ee24cxx_program_mode,				// program_mode
 		&ee24cxx_program_functions,			// program_functions
 		ee24cxx_notifier,					// notifier
+		NULL,								// adjust_setting
+		NULL,								// adjust_mapping
+	},
+#endif
+#if TARGET_DF25XX_EN
+	// DF25XX
+	{
+		DF25XX_STRING,						// name
+		"",									// feature
+		df25xx_program_area_map,			// program_area_map
+		df25xx_program_mode,				// program_mode
+		&df25xx_program_functions,			// program_functions
+		df25xx_notifier,					// notifier
 		NULL,								// adjust_setting
 		NULL,								// adjust_mapping
 	},

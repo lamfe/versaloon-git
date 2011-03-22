@@ -19,6 +19,7 @@
 
 #ifdef SYS_ON_VERSALOON
 #else
+#include "prog_interface.h"
 #include "programmer.h"
 extern struct interfaces_info_t *interfaces;
 #endif

@@ -67,6 +67,7 @@ libtgt_a_SOURCES = \
     hcs08/hcs08.c \
     hcs12/hcs12.c \
     ee93cx6/ee93cx6.c \
-    ee24cxx/ee24cxx.c
+    ee24cxx/ee24cxx.c \
+    df25xx/df25xx.c
 
 MAINTAINERCLEANFILES = Makefile.in

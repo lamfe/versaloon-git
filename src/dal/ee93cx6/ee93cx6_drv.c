@@ -287,6 +287,7 @@ struct mal_driver_t ee93cx6_drv =
 	
 	ee93cx6_drv_init,
 	ee93cx6_drv_fini,
+	NULL,
 	
 	ee93cx6_drv_eraseall_nb_start,
 	NULL,

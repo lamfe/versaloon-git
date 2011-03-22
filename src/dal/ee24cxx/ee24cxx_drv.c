@@ -43,7 +43,7 @@ static RESULT ee24cxx_drv_init(void *param)
 	}
 	memcpy(&ee24cxx_drv_param, param, sizeof(ee24cxx_drv_param));
 	
-	if (ee24cxx_drv_param.iic_khz)
+	if (!ee24cxx_drv_param.iic_khz)
 	{
 		ee24cxx_drv_param.iic_khz = 100;
 	}
@@ -73,7 +73,8 @@ static RESULT ee24cxx_drv_readblock_nb(uint64_t address, uint8_t *buff)
 	if ((ERROR_OK != interfaces->i2c.write(EE24CXX_IIC_IDX, 
 			ee24cxx_drv_param.iic_addr, (uint8_t *)&addr_word, 2, 0)) || 
 		(ERROR_OK != interfaces->i2c.read(EE24CXX_IIC_IDX, 
-			ee24cxx_drv_param.iic_addr, buff, ee24cxx_drv.capacity.block_size, 1)))
+			ee24cxx_drv_param.iic_addr, buff, 
+			(uint16_t)ee24cxx_drv.capacity.block_size, 1)))
 	{
 		return ERROR_FAIL;
 	}
@@ -123,6 +124,7 @@ struct mal_driver_t ee24cxx_drv =
 	
 	ee24cxx_drv_init,
 	ee24cxx_drv_fini,
+	NULL,
 	
 	NULL,
 	NULL,

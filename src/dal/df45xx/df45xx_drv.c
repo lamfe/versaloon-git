@@ -51,6 +51,11 @@ static RESULT df45xx_drv_fini(void)
 	return ERROR_OK;
 }
 
+static RESULT df45xx_drv_getinfo(void *info)
+{
+	return ERROR_OK;
+}
+
 static RESULT df45xx_drv_eraseall_nb_start(void)
 {
 	return ERROR_OK;
@@ -154,6 +159,7 @@ struct mal_driver_t df45xx_drv =
 	
 	df45xx_drv_init,
 	df45xx_drv_fini,
+	df45xx_drv_getinfo,
 	
 	df45xx_drv_eraseall_nb_start,
 	df45xx_drv_eraseall_nb_isready,
