@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-<series name="93cx6">
-  <chip name="93cx6">
+<series name="ee93cx6">
+  <chip name="ee93cx6">
     <program_mode>b:Byte(F)|w:Word(F)</program_mode>
     <chip_id>0x00000000</chip_id>
     <ee_page_size>128</ee_page_size>
@@ -10,35 +10,35 @@
     <ee_seg>0</ee_seg>
     <chip_erase>1</chip_erase>
   </chip>
-  <chip name="93c46">
+  <chip name="ee93c46">
     <program_mode>bw</program_mode>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>1</ee_page_num>
     <param0>7</param0>
     <param1>2</param1>
   </chip>
-  <chip name="93c56">
+  <chip name="ee93c56">
     <program_mode>bw</program_mode>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>2</ee_page_num>
     <param0>9</param0>
     <param1>2</param1>
   </chip>
-  <chip name="93c66">
+  <chip name="ee93c66">
     <program_mode>bw</program_mode>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>4</ee_page_num>
     <param0>9</param0>
     <param1>2</param1>
   </chip>
-  <chip name="93c76">
+  <chip name="ee93c76">
     <program_mode>bw</program_mode>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>8</ee_page_num>
     <param0>11</param0>
     <param1>2</param1>
   </chip>
-  <chip name="93c86">
+  <chip name="ee93c86">
     <program_mode>bw</program_mode>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>16</ee_page_num>
