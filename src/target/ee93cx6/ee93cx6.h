@@ -19,7 +19,7 @@
 #ifndef __EE93CX6_H_INCLUDED__
 #define __EE93CX6_H_INCLUDED__
 
-#define EE93CX6_STRING						"93cx6"
+#define EE93CX6_STRING						"ee93cx6"
 
 extern struct program_area_map_t ee93cx6_program_area_map[];
 extern const struct program_mode_t ee93cx6_program_mode[];

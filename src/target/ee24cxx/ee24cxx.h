@@ -19,7 +19,7 @@
 #ifndef __EE24CXX_H_INCLUDED__
 #define __EE24CXX_H_INCLUDED__
 
-#define EE24CXX_STRING						"24cxx"
+#define EE24CXX_STRING						"ee24cxx"
 
 extern struct program_area_map_t ee24cxx_program_area_map[];
 extern const struct program_mode_t ee24cxx_program_mode[];
