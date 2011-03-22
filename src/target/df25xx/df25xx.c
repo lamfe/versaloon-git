@@ -196,7 +196,7 @@ READ_TARGET_HANDLER(df25xx)
 		{
 			return ERROR_FAIL;
 		}
-		return commit();
+		return ERROR_OK;
 		break;
 	default:
 		return ERROR_FAIL;

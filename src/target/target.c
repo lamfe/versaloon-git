@@ -1028,6 +1028,7 @@ static RESULT target_program(struct program_context_t *context)
 	struct program_info_t *pi = context->pi;
 	struct operation_t *op = context->op;
 	struct chip_param_t *param = context->param;
+	struct programmer_info_t *prog = context->prog;
 	
 	struct chip_area_info_t *area_info;
 	struct program_area_t *prog_area;
@@ -1209,6 +1210,12 @@ static RESULT target_program(struct program_context_t *context)
 				}
 				pgbar_update(page_num);
 			}
+			if (ERROR_OK != prog->interfaces.peripheral_commit())
+			{
+				LOG_ERROR(ERRMSG_FAILURE_ERASE, fullname);
+				ret = ERRCODE_FAILURE_OPERATION;
+				goto target_program_exit;
+			}
 			
 			pgbar_fini();
 			LOG_INFO(INFOMSG_ERASED, fullname);
@@ -1320,6 +1327,12 @@ static RESULT target_program(struct program_context_t *context)
 				}
 				pgbar_update(target_size);
 			}
+			if (ERROR_OK != prog->interfaces.peripheral_commit())
+			{
+				LOG_ERROR(ERRMSG_FAILURE_PROGRAM, fullname);
+				ret = ERRCODE_FAILURE_OPERATION;
+				goto target_program_exit;
+			}
 			
 			time_in_ms = pgbar_fini();
 			LOG_INFO(INFOMSG_PROGRAMMED_SIZE, fullname, target_size, 
@@ -1394,6 +1407,12 @@ static RESULT target_program(struct program_context_t *context)
 					}
 					ml_tmp = MEMLIST_GetNext(ml_tmp);
 				}
+			}
+			if (ERROR_OK != prog->interfaces.peripheral_commit())
+			{
+				LOG_ERROR(ERRMSG_FAILURE_READ, fullname);
+				ret = ERRCODE_FAILURE_OPERATION;
+				goto target_program_exit;
 			}
 			
 			pgbar_fini();
@@ -1486,6 +1505,12 @@ static RESULT target_program(struct program_context_t *context)
 							pgbar_update(page_size);
 						}
 					}
+					if (ERROR_OK != prog->interfaces.peripheral_commit())
+					{
+						LOG_ERROR(ERRMSG_FAILURE_READ, fullname);
+						ret = ERRCODE_FAILURE_OPERATION;
+						goto target_program_exit;
+					}
 					
 					if (op->verify_operations & area_mask)
 					{
@@ -1549,6 +1574,12 @@ static RESULT target_program(struct program_context_t *context)
 							start_addr, buff_tmp, target_size))
 				{
 					pgbar_fini();
+					LOG_ERROR(ERRMSG_FAILURE_READ, fullname);
+					ret = ERRCODE_FAILURE_OPERATION;
+					goto target_program_exit;
+				}
+				if (ERROR_OK != prog->interfaces.peripheral_commit())
+				{
 					LOG_ERROR(ERRMSG_FAILURE_READ, fullname);
 					ret = ERRCODE_FAILURE_OPERATION;
 					goto target_program_exit;
