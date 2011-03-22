@@ -41,8 +41,8 @@
 #include "mal/mal.h"
 #include "ee93cx6/ee93cx6_drv.h"
 
-#include "93cx6.h"
-#include "93cx6_internal.h"
+#include "ee93cx6.h"
+#include "ee93cx6_internal.h"
 
 #define CUR_TARGET_STRING			EE93CX6_STRING
 
