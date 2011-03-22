@@ -47,20 +47,20 @@ static struct mal_driver_t *mal_drivers[] =
 
 static struct mal_driver_t* mal_find_driver(uint16_t index)
 {
-	struct mal_driver_t *p = mal_drivers[0];
+	struct mal_driver_t **p = mal_drivers;
 	
-	while (p != NULL)
+	while (*p != NULL)
 	{
-		if (index == p->index)
+		if (index == (*p)->index)
 		{
-			return p;
+			return *p;
 		}
 		p++;
 	}
 	return NULL;
 }
 
-static RESULT mal_init(uint16_t index)
+static RESULT mal_init(uint16_t index, void *param)
 {
 	struct mal_driver_t* driver;
 	
@@ -70,7 +70,7 @@ static RESULT mal_init(uint16_t index)
 		return ERROR_FAIL;
 	}
 	
-	return driver->init();
+	return driver->init(param);
 }
 
 static RESULT mal_fini(uint16_t index)
@@ -84,19 +84,6 @@ static RESULT mal_fini(uint16_t index)
 	}
 	
 	return driver->fini();
-}
-
-static RESULT mal_config(uint16_t index, void *param)
-{
-	struct mal_driver_t* driver;
-	
-	driver = mal_find_driver(index);
-	if ((NULL == driver) || (NULL == driver->config))
-	{
-		return ERROR_FAIL;
-	}
-	
-	return driver->config(param);
 }
 
 static RESULT mal_getcapacity(uint16_t index, uint64_t *block_size, 
@@ -587,7 +574,6 @@ struct mal_t mal =
 {
 	mal_init,
 	mal_fini,
-	mal_config,
 	mal_getcapacity,
 	mal_setcapacity,
 	

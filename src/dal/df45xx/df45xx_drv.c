@@ -35,19 +35,19 @@
 
 static struct df45xx_drv_param_t df45xx_drv_param;
 
-static RESULT df45xx_drv_init(void)
+static RESULT df45xx_drv_init(void *param)
 {
+	if (NULL == param)
+	{
+		return ERROR_FAIL;
+	}
+	memcpy(&df45xx_drv_param, param, sizeof(df45xx_drv_param));
+	
 	return ERROR_OK;
 }
 
 static RESULT df45xx_drv_fini(void)
 {
-	return ERROR_OK;
-}
-
-static RESULT df45xx_drv_config(void *param)
-{
-	memcpy(&df45xx_drv_param, param, sizeof(df45xx_drv_param));
 	return ERROR_OK;
 }
 
@@ -149,11 +149,11 @@ static RESULT df45xx_drv_writeblock_nb_end(void)
 struct mal_driver_t df45xx_drv = 
 {
 	MAL_IDX_DF45XX,
+	0,
 	{0, 0},
 	
 	df45xx_drv_init,
 	df45xx_drv_fini,
-	df45xx_drv_config,
 	
 	df45xx_drv_eraseall_nb_start,
 	df45xx_drv_eraseall_nb_isready,

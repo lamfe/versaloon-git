@@ -33,37 +33,93 @@
 #include "ee93cx6_drv_cfg.h"
 #include "ee93cx6_drv.h"
 
+#define EE93CX6_OPCODE_READ					0x02
+#define EE93CX6_OPCODE_READ_BITLEN			2
+#define EE93CX6_OPCODE_WRITE				0x01
+#define EE93CX6_OPCODE_WRITE_BITLEN			2
+#define EE93CX6_OPCODE_ERASE				0x03
+#define EE93CX6_OPCODE_ERASE_BITLEN			2
+
+#define EE93CX6_OPCODE_WEN					0x03
+#define EE93CX6_OPCODE_WEN_BITLEN			4
+#define EE93CX6_OPCODE_WDS					0x00
+#define EE93CX6_OPCODE_WDS_BITLEN			4
+#define EE93CX6_OPCODE_ERAL					0x02
+#define EE93CX6_OPCODE_ERAL_BITLEN			4
+#define EE93CX6_OPCODE_WRAL					0x01
+#define EE93CX6_OPCODE_WRAL_BITLEN			4
+
 static struct ee93cx6_drv_param_t ee93cx6_drv_param;
 
-static RESULT ee93cx6_drv_init(void)
+static RESULT ee93cx6_drv_poll(void)
 {
+	return interfaces->microwire.poll(EE93CX6_MW_IDX, EE93CX6_POLL_INTERVAL_US, 
+										EE93CX6_POLL_RETRY_CNT);
+}
+
+static RESULT ee93cx6_drv_init(void *param)
+{
+	uint32_t cmd;
+	
+	if (NULL == param)
+	{
+		return ERROR_FAIL;
+	}
+	memcpy(&ee93cx6_drv_param, param, sizeof(ee93cx6_drv_param));
+	
+	if (EE93CX6_ORIGINATION_BYTE != ee93cx6_drv_param.origination_mode)
+	{
+		ee93cx6_drv_param.cmd_bitlen += ee93cx6_drv_param.addr_bitlen - 1;
+	}
+	if (ee93cx6_drv_param.addr_bitlen > 32)
+	{
+		return ERROR_FAIL;
+	}
+	if (!ee93cx6_drv_param.iic_khz)
+	{
+		ee93cx6_drv_param.iic_khz = 2000;
+	}
+	
+	interfaces->microwire.init(EE93CX6_MW_IDX);
+	interfaces->microwire.config(EE93CX6_MW_IDX, ee93cx6_drv_param.iic_khz, 1);
+	
+	cmd = EE93CX6_OPCODE_WEN << 
+				(ee93cx6_drv_param.cmd_bitlen - EE93CX6_OPCODE_WEN_BITLEN);
+	interfaces->microwire.transport(EE93CX6_MW_IDX, cmd, 
+				ee93cx6_drv_param.cmd_bitlen, 0, 0, 0, 0, NULL, 0);
+	
 	return ERROR_OK;
 }
 
 static RESULT ee93cx6_drv_fini(void)
 {
-	return ERROR_OK;
-}
-
-static RESULT ee93cx6_drv_config(void *param)
-{
-	memcpy(&ee93cx6_drv_param, param, sizeof(ee93cx6_drv_param));
+	uint32_t cmd;
+	
+	cmd = EE93CX6_OPCODE_WDS << 
+				(ee93cx6_drv_param.cmd_bitlen - EE93CX6_OPCODE_WDS_BITLEN);
+	interfaces->microwire.transport(EE93CX6_MW_IDX, 
+				cmd, ee93cx6_drv_param.cmd_bitlen, 0, 0, 0, 0, NULL, 0);
+	
+	interfaces->microwire.fini(EE93CX6_MW_IDX);
+	
 	return ERROR_OK;
 }
 
 static RESULT ee93cx6_drv_eraseall_nb_start(void)
 {
-	return ERROR_OK;
-}
-
-static RESULT ee93cx6_drv_eraseall_nb_isready(void)
-{
+	uint32_t cmd;
+	
+	cmd = EE93CX6_OPCODE_ERAL << 
+				(ee93cx6_drv_param.cmd_bitlen - EE93CX6_OPCODE_ERAL_BITLEN);
+	interfaces->microwire.transport(EE93CX6_MW_IDX, 
+				cmd, ee93cx6_drv_param.cmd_bitlen, 0, 0, 0, 0, NULL, 0);
+	
 	return ERROR_OK;
 }
 
 static RESULT ee93cx6_drv_eraseall_nb_waitready(void)
 {
-	return ERROR_OK;
+	return ee93cx6_drv_poll();
 }
 
 static RESULT ee93cx6_drv_eraseall_nb_end(void)
@@ -73,22 +129,36 @@ static RESULT ee93cx6_drv_eraseall_nb_end(void)
 
 static RESULT ee93cx6_drv_eraseblock_nb_start(uint64_t address, uint64_t count)
 {
+	REFERENCE_PARAMETER(address);
+	REFERENCE_PARAMETER(count);
+	
 	return ERROR_OK;
 }
 
 static RESULT ee93cx6_drv_eraseblock_nb(uint64_t address)
 {
-	return ERROR_OK;
-}
-
-static RESULT ee93cx6_drv_eraseblock_nb_isready(void)
-{
+	switch (ee93cx6_drv_param.origination_mode)
+	{
+	case EE93CX6_ORIGINATION_BYTE:
+		interfaces->microwire.transport(EE93CX6_MW_IDX, EE93CX6_OPCODE_ERASE, 
+			EE93CX6_OPCODE_ERASE_BITLEN, (uint32_t)address, 
+			ee93cx6_drv_param.addr_bitlen, 0, 0, NULL, 0);
+		break;
+	case EE93CX6_ORIGINATION_WORD:
+		interfaces->microwire.transport(EE93CX6_MW_IDX, EE93CX6_OPCODE_ERASE, 
+			EE93CX6_OPCODE_ERASE_BITLEN, (uint32_t)(address / 2), 
+			ee93cx6_drv_param.addr_bitlen - 1, 0, 0, NULL, 0);
+		break;
+	default:
+		return ERROR_FAIL;
+	}
+	
 	return ERROR_OK;
 }
 
 static RESULT ee93cx6_drv_eraseblock_nb_waitready(void)
 {
-	return ERROR_OK;
+	return ee93cx6_drv_poll();
 }
 
 static RESULT ee93cx6_drv_eraseblock_nb_end(void)
@@ -98,16 +168,46 @@ static RESULT ee93cx6_drv_eraseblock_nb_end(void)
 
 static RESULT ee93cx6_drv_readblock_nb_start(uint64_t address, uint64_t count)
 {
+	REFERENCE_PARAMETER(address);
+	REFERENCE_PARAMETER(count);
+	
 	return ERROR_OK;
 }
 
 static RESULT ee93cx6_drv_readblock_nb(uint64_t address, uint8_t *buff)
 {
-	return ERROR_OK;
-}
-
-static RESULT ee93cx6_drv_readblock_nb_isready(void)
-{
+	uint8_t i;
+	
+	switch (ee93cx6_drv_param.origination_mode)
+	{
+	case EE93CX6_ORIGINATION_BYTE:
+		for (i = 0; i < ee93cx6_drv.capacity.block_size; i++)
+		{
+			if (ERROR_OK != interfaces->microwire.transport(EE93CX6_MW_IDX, 
+					EE93CX6_OPCODE_READ, EE93CX6_OPCODE_READ_BITLEN, 
+					(uint32_t)(address + i), ee93cx6_drv_param.addr_bitlen, 
+					0, 0, &buff[i], 8))
+			{
+				return ERROR_FAIL;
+			}
+		}
+		break;
+	case EE93CX6_ORIGINATION_WORD:
+		for (i = 0; i < ee93cx6_drv.capacity.block_size; i += 2)
+		{
+			if (ERROR_OK != interfaces->microwire.transport(EE93CX6_MW_IDX, 
+					EE93CX6_OPCODE_READ, EE93CX6_OPCODE_READ_BITLEN, 
+					(uint32_t)((address + i) / 2), ee93cx6_drv_param.addr_bitlen - 1, 
+					0, 0, &buff[i], 16))
+			{
+				return ERROR_FAIL;
+			}
+		}
+		break;
+	default:
+		return ERROR_FAIL;
+	}
+	
 	return ERROR_OK;
 }
 
@@ -123,22 +223,54 @@ static RESULT ee93cx6_drv_readblock_nb_end(void)
 
 static RESULT ee93cx6_drv_writeblock_nb_start(uint64_t address, uint64_t count)
 {
+	REFERENCE_PARAMETER(address);
+	REFERENCE_PARAMETER(count);
+	
 	return ERROR_OK;
 }
 
 static RESULT ee93cx6_drv_writeblock_nb(uint64_t address, uint8_t *buff)
 {
-	return ERROR_OK;
-}
-
-static RESULT ee93cx6_drv_writeblock_nb_isready(void)
-{
+	uint8_t i;
+	uint16_t *ptr16;
+	
+	switch (ee93cx6_drv_param.origination_mode)
+	{
+	case EE93CX6_ORIGINATION_BYTE:
+		for (i = 0; i < ee93cx6_drv.capacity.block_size; i++)
+		{
+			if (ERROR_OK != interfaces->microwire.transport(EE93CX6_MW_IDX, 
+					EE93CX6_OPCODE_WRITE, EE93CX6_OPCODE_WRITE_BITLEN, 
+					(uint32_t)(address + i), ee93cx6_drv_param.addr_bitlen, 
+					buff[i], 8, NULL, 0))
+			{
+				return ERROR_FAIL;
+			}
+		}
+		break;
+	case EE93CX6_ORIGINATION_WORD:
+		ptr16 = (uint16_t *)buff;
+		for (i = 0; i < ee93cx6_drv.capacity.block_size; i += 2)
+		{
+			if (ERROR_OK != interfaces->microwire.transport(EE93CX6_MW_IDX, 
+					EE93CX6_OPCODE_WRITE, EE93CX6_OPCODE_WRITE_BITLEN, 
+					(uint32_t)((address + i) / 2), ee93cx6_drv_param.addr_bitlen - 1, 
+					SYS_TO_LE_U16(ptr16[i / 2]), 16, NULL, 0))
+			{
+				return ERROR_FAIL;
+			}
+		}
+		break;
+	default:
+		return ERROR_FAIL;
+	}
+	
 	return ERROR_OK;
 }
 
 static RESULT ee93cx6_drv_writeblock_nb_waitready(void)
 {
-	return ERROR_OK;
+	return ee93cx6_drv_poll();
 }
 
 static RESULT ee93cx6_drv_writeblock_nb_end(void)
@@ -149,32 +281,33 @@ static RESULT ee93cx6_drv_writeblock_nb_end(void)
 struct mal_driver_t ee93cx6_drv = 
 {
 	MAL_IDX_EE93CX6,
+	MAL_SUPPORT_ERASEALL | MAL_SUPPORT_ERASEBLOCK | 
+	MAL_SUPPORT_WRITEBLOCK | MAL_SUPPORT_READBLOCK,
 	{0, 0},
 	
 	ee93cx6_drv_init,
 	ee93cx6_drv_fini,
-	ee93cx6_drv_config,
 	
 	ee93cx6_drv_eraseall_nb_start,
-	ee93cx6_drv_eraseall_nb_isready,
+	NULL,
 	ee93cx6_drv_eraseall_nb_waitready,
 	ee93cx6_drv_eraseall_nb_end,
 	
 	ee93cx6_drv_eraseblock_nb_start,
 	ee93cx6_drv_eraseblock_nb,
-	ee93cx6_drv_eraseblock_nb_isready,
+	NULL,
 	ee93cx6_drv_eraseblock_nb_waitready,
 	ee93cx6_drv_eraseblock_nb_end,
 	
 	ee93cx6_drv_readblock_nb_start,
 	ee93cx6_drv_readblock_nb,
-	ee93cx6_drv_readblock_nb_isready,
+	NULL,
 	ee93cx6_drv_readblock_nb_waitready,
 	ee93cx6_drv_readblock_nb_end,
 	
 	ee93cx6_drv_writeblock_nb_start,
 	ee93cx6_drv_writeblock_nb,
-	ee93cx6_drv_writeblock_nb_isready,
+	NULL,
 	ee93cx6_drv_writeblock_nb_waitready,
 	ee93cx6_drv_writeblock_nb_end
 };
