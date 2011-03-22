@@ -17,12 +17,21 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#ifndef __EE93CX6_DRV_H_INCLUDED__
+#define __EE93CX6_DRV_H_INCLUDED__
+
+#define EE93CX6_ORIGINATION_BYTE			0
+#define EE93CX6_ORIGINATION_WORD			1
+
 struct ee93cx6_drv_param_t
 {
 	uint16_t iic_khz;
 	uint8_t addr_bitlen;
 	uint8_t cmd_bitlen;
+	uint8_t origination_mode;
 };
 
 extern struct mal_driver_t ee93cx6_drv;
+
+#endif /* __EE93CX6_DRV_H_INCLUDED__ */
 

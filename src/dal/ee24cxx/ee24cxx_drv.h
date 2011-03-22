@@ -17,6 +17,9 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#ifndef __EE24CXX_DRV_H_INCLUDED__
+#define __EE24CXX_DRV_H_INCLUDED__
+
 struct ee24cxx_drv_param_t
 {
 	uint16_t iic_khz;
@@ -24,4 +27,6 @@ struct ee24cxx_drv_param_t
 };
 
 extern struct mal_driver_t ee24cxx_drv;
+
+#endif /*  __EE24CXX_DRV_H_INCLUDED__ */
 

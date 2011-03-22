@@ -37,6 +37,10 @@
 #include "target.h"
 #include "scripts.h"
 
+#include "dal.h"
+#include "mal/mal.h"
+#include "ee24cxx/ee24cxx_drv.h"
+
 #include "24cxx.h"
 #include "24cxx_internal.h"
 
@@ -69,8 +73,6 @@ const struct program_functions_t ee24cxx_program_functions =
 	READ_TARGET_FUNCNAME(ee24cxx)
 };
 
-static uint8_t ee24cxx_addr = 0xAC;
-
 VSS_HANDLER(ee24cxx_help)
 {
 	VSS_CHECK_ARGC(1);
@@ -98,16 +100,29 @@ static struct interfaces_info_t *interfaces = NULL;
 
 ENTER_PROGRAM_MODE_HANDLER(ee24cxx)
 {
+	struct chip_param_t *param = context->param;
 	struct program_info_t *pi = context->pi;
+	struct ee24cxx_drv_param_t drv_param;
 	
 	interfaces = &(context->prog->interfaces);
-	
-	if (!pi->frequency)
+	if (ERROR_OK != dal_init(interfaces))
 	{
-		pi->frequency = 100;
+		return ERROR_FAIL;
 	}
-	interfaces->i2c.init(0);
-	interfaces->i2c.config(0, pi->frequency, 0, 10000, true);
+	
+	drv_param.iic_addr = 0xAC;
+	drv_param.iic_khz = pi->frequency;
+	if (ERROR_OK != mal.init(MAL_IDX_EE24CXX, &drv_param))
+	{
+		return ERROR_FAIL;
+	}
+	if (ERROR_OK != mal.setcapacity(MAL_IDX_EE24CXX, 
+			param->chip_areas[EEPROM_IDX].page_size, 
+			param->chip_areas[EEPROM_IDX].page_num))
+	{
+		return ERROR_FAIL;
+	}
+	
 	return commit();
 }
 
@@ -116,7 +131,7 @@ LEAVE_PROGRAM_MODE_HANDLER(ee24cxx)
 	REFERENCE_PARAMETER(context);
 	REFERENCE_PARAMETER(success);
 	
-	interfaces->i2c.fini(0);
+	mal.fini(MAL_IDX_EE24CXX);
 	return commit();
 }
 
@@ -127,48 +142,58 @@ ERASE_TARGET_HANDLER(ee24cxx)
 	REFERENCE_PARAMETER(addr);
 	REFERENCE_PARAMETER(size);
 	
-	return commit();
+	// no need to erase
+	return ERROR_OK;
 }
 
 WRITE_TARGET_HANDLER(ee24cxx)
 {
-	uint16_t addr_word = (uint16_t)addr;
-	RESULT ret = ERROR_OK;
-	
-	REFERENCE_PARAMETER(context);
+	struct chip_param_t *param = context->param;
 	
 	switch (area)
 	{
 	case EEPROM_CHAR:
-		addr_word = SYS_TO_LE_U16(addr_word);
-//		interfaces->i2c.write(0, ee24cxx_addr, (uint8_t *)&addr_word, 2, 0);
-//		interfaces->i2c.read(0, ee24cxx_addr, buff, (uint16_t)size, 1);
-//		interfaces->peripheral_commit();
+		if (size % param->chip_areas[EEPROM_IDX].page_size)
+		{
+			return ERROR_FAIL;
+		}
+		size /= param->chip_areas[EEPROM_IDX].page_size;
+		
+		if (ERROR_OK != mal.writeblock(MAL_IDX_EE24CXX, addr, buff, size))
+		{
+			return ERROR_FAIL;
+		}
+		return commit();
 		break;
 	default:
-		break;
+		return ERROR_FAIL;
 	}
-	return ret;
 }
 
 READ_TARGET_HANDLER(ee24cxx)
 {
-	uint16_t addr_word = (uint16_t)addr;
-	RESULT ret = ERROR_OK;
-	
-	REFERENCE_PARAMETER(context);
+	struct chip_param_t *param = context->param;
 	
 	switch (area)
 	{
+	case CHIPID_CHAR:
+		return ERROR_OK;
+		break;
 	case EEPROM_CHAR:
-		addr_word = SYS_TO_BE_U16(addr_word);
-		interfaces->i2c.write(0, ee24cxx_addr, (uint8_t *)&addr_word, 2, 0);
-		interfaces->i2c.read(0, ee24cxx_addr, buff, (uint16_t)size, 1);
-		ret = interfaces->peripheral_commit();
+		if (size % param->chip_areas[EEPROM_IDX].page_size)
+		{
+			return ERROR_FAIL;
+		}
+		size /= param->chip_areas[EEPROM_IDX].page_size;
+		
+		if (ERROR_OK != mal.readblock(MAL_IDX_EE24CXX, addr, buff, size))
+		{
+			return ERROR_FAIL;
+		}
+		return commit();
 		break;
 	default:
-		break;
+		return ERROR_FAIL;
 	}
-	return ret;
 }
 

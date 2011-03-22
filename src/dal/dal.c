@@ -29,7 +29,6 @@
 #include "app_err.h"
 
 #include "scripts.h"
-#include "programmer.h"
 
 #include "dal.h"
 

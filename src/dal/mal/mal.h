@@ -39,9 +39,8 @@
 
 struct mal_t
 {
-	RESULT (*init)(uint16_t index);
+	RESULT (*init)(uint16_t index, void *param);
 	RESULT (*fini)(uint16_t index);
-	RESULT (*config)(uint16_t index, void *param);
 	RESULT (*getcapacity)(uint16_t index, uint64_t *block_size, 
 							uint64_t *block_number);
 	RESULT (*setcapacity)(uint16_t index, uint64_t block_size, 

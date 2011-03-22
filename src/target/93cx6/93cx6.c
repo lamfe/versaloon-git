@@ -37,6 +37,10 @@
 #include "target.h"
 #include "scripts.h"
 
+#include "dal.h"
+#include "mal/mal.h"
+#include "ee93cx6/ee93cx6_drv.h"
+
 #include "93cx6.h"
 #include "93cx6_internal.h"
 
@@ -70,7 +74,6 @@ const struct program_functions_t ee93cx6_program_functions =
 	READ_TARGET_FUNCNAME(ee93cx6)
 };
 
-static uint8_t ee93cx6_addr_bitlen, ee93cx6_cmd_bitlen;
 static uint8_t ee93cx6_origination_mode;
 
 VSS_HANDLER(ee93cx6_help)
@@ -119,91 +122,62 @@ const struct vss_cmd_t ee93cx6_notifier[] =
 
 
 static struct interfaces_info_t *interfaces = NULL;
-#define mw_init()					interfaces->microwire.init(0)
-#define mw_fini()					interfaces->microwire.fini(0)
-#define mw_config(kHz)				interfaces->microwire.config(0, (kHz), 1)
-#define mw_poll()					interfaces->microwire.poll(0, 1000, 10)
-#define mw_cmd(cmd, bitlen)			\
-	interfaces->microwire.transport(0, (cmd), (bitlen), 0, 0, 0, 0, NULL, 0)
-#define mw_write(addr, addr_bitlen, data, data_bitlen)	\
-	interfaces->microwire.transport(0, EE93CX6_OPCODE_WRITE, \
-		EE93CX6_OPCODE_WRITE_BITLEN, (addr), (addr_bitlen), (data), \
-		(data_bitlen), NULL, 0)
-#define mw_read(addr, addr_bitlen, data, data_bitlen)	\
-	interfaces->microwire.transport(0, EE93CX6_OPCODE_READ, \
-		EE93CX6_OPCODE_READ_BITLEN, (addr), (addr_bitlen), 0, 0, \
-		(data), (data_bitlen))
-#define mw_erase(addr, addr_bitlen)	\
-	interfaces->microwire.transport(0, EE93CX6_OPCODE_ERASE, \
-		EE93CX6_OPCODE_ERASE_BITLEN, (addr), (addr_bitlen), 0, 0, NULL, 0)
 #define commit()					interfaces->peripheral_commit()
 
 ENTER_PROGRAM_MODE_HANDLER(ee93cx6)
 {
-	struct operation_t *op = context->op;
 	struct chip_param_t *param = context->param;
 	struct program_info_t *pi = context->pi;
-	uint32_t cmd;
+	struct ee93cx6_drv_param_t drv_param;
 	
 	interfaces = &(context->prog->interfaces);
-	ee93cx6_addr_bitlen = (uint8_t)param->param[EE93CX6_PARAM_ADDR_BITLEN];
-	ee93cx6_cmd_bitlen = (uint8_t)param->param[EE93CX6_PARAM_OPCODE_BITLEN];
-	if (EE93CX6_MODE_BYTE != ee93cx6_origination_mode)
-	{
-		ee93cx6_addr_bitlen--;
-	}
-	ee93cx6_cmd_bitlen += ee93cx6_addr_bitlen;
-	
-	if (ee93cx6_addr_bitlen > 32)
+	if (ERROR_OK != dal_init(interfaces))
 	{
 		return ERROR_FAIL;
 	}
 	
-	if (!pi->frequency)
+	drv_param.addr_bitlen = (uint8_t)param->param[EE93CX6_PARAM_ADDR_BITLEN];
+	drv_param.cmd_bitlen = (uint8_t)param->param[EE93CX6_PARAM_OPCODE_BITLEN];
+	drv_param.iic_khz = pi->frequency;
+	if (EE93CX6_MODE_BYTE == ee93cx6_origination_mode)
 	{
-		pi->frequency = 2000;
+		drv_param.origination_mode = EE93CX6_ORIGINATION_BYTE;
+	}
+	else
+	{
+		drv_param.origination_mode = EE93CX6_ORIGINATION_WORD;
+	}
+	if (ERROR_OK != mal.init(MAL_IDX_EE93CX6, &drv_param))
+	{
+		return ERROR_FAIL;
+	}
+	if (ERROR_OK != mal.setcapacity(MAL_IDX_EE93CX6, 
+			param->chip_areas[EEPROM_IDX].page_size, 
+			param->chip_areas[EEPROM_IDX].page_num))
+	{
+		return ERROR_FAIL;
 	}
 	
-	mw_init();
-	mw_config(pi->frequency);
-	
-	if (op->erase_operations || op->write_operations)
-	{
-		cmd = EE93CX6_OPCODE_WEN << 
-					(ee93cx6_cmd_bitlen - EE93CX6_OPCODE_WEN_BITLEN);
-		mw_cmd(cmd, ee93cx6_cmd_bitlen);
-	}
 	return commit();
 }
 
 LEAVE_PROGRAM_MODE_HANDLER(ee93cx6)
 {
-	uint32_t cmd;
-	
 	REFERENCE_PARAMETER(context);
 	REFERENCE_PARAMETER(success);
 	
-	cmd = EE93CX6_OPCODE_WDS << 
-				(ee93cx6_cmd_bitlen - EE93CX6_OPCODE_WDS_BITLEN);
-	mw_cmd(cmd, ee93cx6_cmd_bitlen);
-	
-	mw_fini();
+	mal.fini(MAL_IDX_EE93CX6);
 	return commit();
 }
 
 ERASE_TARGET_HANDLER(ee93cx6)
 {
-	uint32_t cmd;
-	
 	REFERENCE_PARAMETER(context);
 	REFERENCE_PARAMETER(area);
 	REFERENCE_PARAMETER(addr);
 	REFERENCE_PARAMETER(size);
 	
-	cmd = EE93CX6_OPCODE_ERAL << 
-			(ee93cx6_cmd_bitlen - EE93CX6_OPCODE_ERAL_BITLEN);
-	mw_cmd(cmd, ee93cx6_cmd_bitlen);
-	if (ERROR_OK != mw_poll())
+	if (ERROR_OK != mal.eraseall(MAL_IDX_EE93CX6))
 	{
 		return ERROR_FAIL;
 	}
@@ -212,102 +186,49 @@ ERASE_TARGET_HANDLER(ee93cx6)
 
 WRITE_TARGET_HANDLER(ee93cx6)
 {
-	uint32_t i;
-	RESULT ret = ERROR_OK;
-	uint16_t *ptr16;
-	
-	REFERENCE_PARAMETER(context);
+	struct chip_param_t *param = context->param;
 	
 	switch (area)
 	{
 	case EEPROM_CHAR:
-		switch (ee93cx6_origination_mode)
+		if (size % param->chip_areas[EEPROM_IDX].page_size)
 		{
-		case EE93CX6_MODE_BYTE:
-			for (i = 0; i < size; i++)
-			{
-				if (ERROR_OK != 
-					mw_write(addr + i, ee93cx6_addr_bitlen, buff[i], 8))
-				{
-					return ERROR_FAIL;
-				}
-				if (ERROR_OK != mw_poll())
-				{
-					return ERROR_FAIL;
-				}
-			}
-			ret = commit();
-			break;
-		case EE93CX6_MODE_WORD:
-			ptr16 = (uint16_t *)buff;
-			for (i = 0; i < size; i += 2)
-			{
-				if (ERROR_OK != 
-					mw_write((addr + i) / 2, ee93cx6_addr_bitlen, 
-								SYS_TO_LE_U16(ptr16[i / 2]), 16))
-				{
-					return ERROR_FAIL;
-				}
-				if (ERROR_OK != mw_poll())
-				{
-					return ERROR_FAIL;
-				}
-			}
-			ret = commit();
-			break;
-		default:
-			ret = ERROR_FAIL;
-			break;
+			return ERROR_FAIL;
 		}
+		size /= param->chip_areas[EEPROM_IDX].page_size;
+		
+		if (ERROR_OK != mal.writeblock(MAL_IDX_EE93CX6, addr, buff, size))
+		{
+			return ERROR_FAIL;
+		}
+		return commit();
 		break;
 	default:
-		break;
+		return ERROR_FAIL;
 	}
-	return ret;
 }
 
 READ_TARGET_HANDLER(ee93cx6)
 {
-	uint32_t i;
-	RESULT ret = ERROR_OK;
-	
-	REFERENCE_PARAMETER(context);
+	struct chip_param_t *param = context->param;
 	
 	switch (area)
 	{
 	case EEPROM_CHAR:
-		switch (ee93cx6_origination_mode)
+		if (size % param->chip_areas[EEPROM_IDX].page_size)
 		{
-		case EE93CX6_MODE_BYTE:
-			for (i = 0; i < size; i++)
-			{
-				if (ERROR_OK != 
-					mw_read(addr + i, ee93cx6_addr_bitlen, &buff[i], 8))
-				{
-					return ERROR_FAIL;
-				}
-			}
-			ret = commit();
-			break;
-		case EE93CX6_MODE_WORD:
-			for (i = 0; i < size; i += 2)
-			{
-				if (ERROR_OK != 
-					mw_read((addr + i) / 2, ee93cx6_addr_bitlen, &buff[i], 16))
-				{
-					return ERROR_FAIL;
-				}
-			}
-			ret = commit();
-			break;
-		default:
-			ret = ERROR_FAIL;
-			break;
+			return ERROR_FAIL;
 		}
+		size /= param->chip_areas[EEPROM_IDX].page_size;
+		
+		if (ERROR_OK != mal.readblock(MAL_IDX_EE93CX6, addr, buff, size))
+		{
+			return ERROR_FAIL;
+		}
+		return commit();
 		break;
 	default:
-		break;
+		return ERROR_FAIL;
 	}
-	return ret;
 }
 

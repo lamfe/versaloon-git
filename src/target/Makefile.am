@@ -21,7 +21,8 @@ INCLUDES = \
     -I$(top_srcdir)/src/target/avr32 \
     -I$(top_srcdir)/src/target/avrxmega \
     -I$(top_srcdir)/src/target/lm3s \
-    -I$(top_srcdir)/src/scripts
+    -I$(top_srcdir)/src/scripts \
+    -I$(top_srcdir)/src/dal
 
 METASOURCES = AUTO
 noinst_LIBRARIES = libtgt.a

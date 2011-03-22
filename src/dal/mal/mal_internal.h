@@ -17,6 +17,11 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#define MAL_SUPPORT_ERASEALL				(1 << 0)
+#define MAL_SUPPORT_ERASEBLOCK				(1 << 1)
+#define MAL_SUPPORT_READBLOCK				(1 << 2)
+#define MAL_SUPPORT_WRITEBLOCK				(1 << 3)
+
 struct mal_capacity_t
 {
 	uint64_t block_size;
@@ -26,11 +31,11 @@ struct mal_capacity_t
 struct mal_driver_t
 {
 	uint16_t index;
+	uint8_t support;
 	struct mal_capacity_t capacity;
 	
-	RESULT (*init)(void);
+	RESULT (*init)(void *param);
 	RESULT (*fini)(void);
-	RESULT (*config)(void *param);
 	
 	RESULT (*eraseall_nb_start)(void);
 	RESULT (*eraseall_nb_isready)(void);
