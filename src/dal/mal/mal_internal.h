@@ -36,6 +36,7 @@ struct mal_driver_t
 	
 	RESULT (*init)(void *param);
 	RESULT (*fini)(void);
+	RESULT (*getinfo)(void *info);
 	
 	RESULT (*eraseall_nb_start)(void);
 	RESULT (*eraseall_nb_isready)(void);

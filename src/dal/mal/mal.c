@@ -86,6 +86,19 @@ static RESULT mal_fini(uint16_t index)
 	return driver->fini();
 }
 
+static RESULT mal_getinfo(uint16_t index, void *info)
+{
+	struct mal_driver_t* driver;
+	
+	driver = mal_find_driver(index);
+	if ((NULL == driver) || (NULL == driver->getinfo))
+	{
+		return ERROR_FAIL;
+	}
+	
+	return driver->getinfo(info);
+}
+
 static RESULT mal_getcapacity(uint16_t index, uint64_t *block_size, 
 								uint64_t *block_number)
 {
@@ -574,6 +587,7 @@ struct mal_t mal =
 {
 	mal_init,
 	mal_fini,
+	mal_getinfo,
 	mal_getcapacity,
 	mal_setcapacity,
 	

@@ -16,22 +16,10 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
+#ifndef __DF25XX_INTERNAL_H_INCLUDED__
+#define __DF25XX_INTERNAL_H_INCLUDED__
 
-#ifndef __DF25XX_DRV_H_INCLUDED__
-#define __DF25XX_DRV_H_INCLUDED__
 
-struct df25xx_drv_param_t
-{
-	uint16_t spi_khz;
-};
 
-struct df25xx_drv_info_t
-{
-	uint8_t manufacturer_id;
-	uint16_t device_id;
-};
-
-extern struct mal_driver_t df25xx_drv;
-
-#endif /* __DF25XX_DRV_H_INCLUDED__ */
+#endif /* __DF25XX_INTERNAL_H_INCLUDED__ */
 

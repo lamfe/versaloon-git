@@ -40,6 +40,7 @@
 #define TARGET_SVF_EN			1
 #define TARGET_EE93CX6_EN		1
 #define TARGET_EE24CXX_EN		1
+#define TARGET_DF25XX_EN		1
 
 #endif /* __APP_CFG_INCLUDED__ */
 
