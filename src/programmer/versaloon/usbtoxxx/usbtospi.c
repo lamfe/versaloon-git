@@ -61,6 +61,8 @@ RESULT usbtospi_config(uint8_t interface_index, uint16_t kHz, uint8_t cpol,
 RESULT usbtospi_io(uint8_t interface_index, uint8_t *out, uint8_t *in, 
 				   uint16_t bytelen)
 {
+	uint8_t *cmd_ptr;
+	
 #if PARAM_CHECK
 	if (interface_index > 7)
 	{
@@ -69,7 +71,17 @@ RESULT usbtospi_io(uint8_t interface_index, uint8_t *out, uint8_t *in,
 	}
 #endif
 	
-	return usbtoxxx_inout_command(USB_TO_SPI, interface_index, out, bytelen, 
-								  bytelen, in, 0, bytelen, 1);
+	if (NULL == out)
+	{
+		cmd_ptr = versaloon_cmd_buf;
+		memset(cmd_ptr, 0, bytelen);
+	}
+	else
+	{
+		cmd_ptr = out;
+	}
+	
+	return usbtoxxx_inout_command(USB_TO_SPI, interface_index, cmd_ptr, 
+									bytelen, bytelen, in, 0, bytelen, 1);
 }
 

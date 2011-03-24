@@ -173,8 +173,8 @@ static RESULT df25xx_drv_readblock_nb(uint64_t address, uint8_t *buff)
 	cmd[1] = (address >> 16) & 0xFF;
 	cmd[2] = (address >> 8 ) & 0xFF;
 	cmd[3] = (address >> 0 ) & 0xFF;
-	interfaces->spi.io(DF25XX_SPI_IDX, cmd, cmd, 4);
-	interfaces->spi.io(DF25XX_SPI_IDX, buff, buff, 
+	interfaces->spi.io(DF25XX_SPI_IDX, cmd, NULL, 4);
+	interfaces->spi.io(DF25XX_SPI_IDX, NULL, buff, 
 						(uint16_t)df25xx_drv.capacity.block_size);
 	
 	df25xx_drv_cs_deassert();
