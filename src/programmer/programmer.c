@@ -151,7 +151,7 @@ struct vss_cmd_t programmer_cmd[] =
 				"iic_write SLAVE_ADDR STOP DATA_SIZE DATA0...",
 				programmer_iic_write),
 	VSS_CMD(	"iic_read_buff8",
-				"read data from iic, format: iic_read_buff8 SLAVE_ADDR DATA_SIZE ADDR",
+				"read data from iic, format: iic_read_buff8 SLAVE_ADDR NACKLAST DATA_SIZE ADDR",
 				programmer_iic_read_buff8),
 	VSS_CMD(	"iic_write_buff8",
 				"write data to iic, format: "
@@ -757,6 +757,7 @@ VSS_HANDLER(programmer_iic_read_buff8)
 {
 	uint8_t data_size = 0;
 	uint8_t slave_addr = 0, addr;
+	bool nacklast = false;
 	uint8_t *buff = NULL;
 	RESULT ret = ERROR_OK;
 	struct programmer_info_t *prog = NULL;
@@ -769,8 +770,9 @@ VSS_HANDLER(programmer_iic_read_buff8)
 	}
 	
 	slave_addr = (uint8_t)strtoul(argv[1], NULL, 0);
-	data_size = (uint8_t)strtoul(argv[2], NULL, 0);
-	addr = (uint8_t)strtoul(argv[3], NULL, 0);
+	nacklast = strtoul(argv[2], NULL, 0) > 0;
+	data_size = (uint8_t)strtoul(argv[3], NULL, 0);
+	addr = (uint8_t)strtoul(argv[4], NULL, 0);
 	buff = (uint8_t*)malloc(data_size);
 	if (NULL == buff)
 	{
@@ -780,7 +782,8 @@ VSS_HANDLER(programmer_iic_read_buff8)
 	ret = prog->interfaces.i2c.write(0, slave_addr, &addr, 1, 0);
 	if (ERROR_OK == ret)
 	{
-		ret = prog->interfaces.i2c.read(0, slave_addr, buff, data_size, 1, true);
+		ret = prog->interfaces.i2c.read(0, slave_addr, buff, data_size, 1, 
+										nacklast);
 		if (ERROR_OK == ret)
 		{
 			ret = prog->interfaces.peripheral_commit();
