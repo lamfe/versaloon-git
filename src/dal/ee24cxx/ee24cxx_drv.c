@@ -49,7 +49,7 @@ static RESULT ee24cxx_drv_init(void *param)
 	}
 	interfaces->i2c.init(EE24CXX_IIC_IDX);
 	interfaces->i2c.config(EE24CXX_IIC_IDX, ee24cxx_drv_param.iic_khz, 0, 
-							10000, true);
+							10000);
 	
 	return ERROR_OK;
 }
@@ -74,7 +74,7 @@ static RESULT ee24cxx_drv_readblock_nb(uint64_t address, uint8_t *buff)
 			ee24cxx_drv_param.iic_addr, (uint8_t *)&addr_word, 2, 0)) || 
 		(ERROR_OK != interfaces->i2c.read(EE24CXX_IIC_IDX, 
 			ee24cxx_drv_param.iic_addr, buff, 
-			(uint16_t)ee24cxx_drv.capacity.block_size, 1)))
+			(uint16_t)ee24cxx_drv.capacity.block_size, 1, true)))
 	{
 		return ERROR_FAIL;
 	}

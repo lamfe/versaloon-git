@@ -56,7 +56,7 @@ RESULT iic_fini(uint8_t index)
 }
 
 RESULT iic_config(uint8_t index, uint16_t kHz, uint16_t byte_interval, 
-				 uint16_t max_dly, bool nacklast)
+				 uint16_t max_dly)
 {
 	uint16 clock_cycle = 1000 / kHz;
 	
@@ -66,7 +66,7 @@ RESULT iic_config(uint8_t index, uint16_t kHz, uint16_t byte_interval,
 		IIC_PULL_INIT();
 		if (IIC_MOD_ACK == EMIIC_USBTOXXX_Init())
 		{
-			if (IIC_MOD_ACK == EMIIC_USBTOXXX_SetParameter(clock_cycle, max_dly, 1, byte_interval, nacklast))
+			if (IIC_MOD_ACK == EMIIC_USBTOXXX_SetParameter(clock_cycle, max_dly, 1, byte_interval))
 			{
 				return ERROR_OK;
 			}
@@ -85,7 +85,7 @@ RESULT iic_config(uint8_t index, uint16_t kHz, uint16_t byte_interval,
 }
 
 RESULT iic_read(uint8_t index, uint16_t chip_addr, uint8_t *data, 
-			   uint16_t data_len, uint8_t stop)
+			   uint16_t data_len, uint8_t stop, bool nacklast)
 {
 	IIC_STOP_t iic_stop;
 	uint16_t actual_len;
@@ -102,7 +102,7 @@ RESULT iic_read(uint8_t index, uint16_t chip_addr, uint8_t *data,
 			iic_stop = IIC_NOSTOP;
 		}
 		
-		if (IIC_MOD_ACK == EMIIC_USBTOXXX_Receive(chip_addr, data, data_len, iic_stop, &actual_len))
+		if (IIC_MOD_ACK == EMIIC_USBTOXXX_Receive(chip_addr, data, data_len, iic_stop, nacklast, &actual_len))
 		{
 			return ERROR_OK;
 		}
@@ -116,7 +116,7 @@ RESULT iic_read(uint8_t index, uint16_t chip_addr, uint8_t *data,
 }
 
 RESULT iic_write(uint8_t index, uint16_t chip_addr, uint8_t *data, 
-				uint16_t data_len, uint8_t stop)
+					uint16_t data_len, uint8_t stop)
 {
 	IIC_STOP_t iic_stop;
 	uint16_t actual_len;

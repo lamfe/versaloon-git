@@ -177,9 +177,9 @@ struct interface_i2c_t
 	RESULT (*init)(uint8_t index);
 	RESULT (*fini)(uint8_t index);
 	RESULT (*config)(uint8_t index, uint16_t kHz, uint16_t byte_interval, 
-						uint16_t max_dly, bool nacklast);
+						uint16_t max_dly);
 	RESULT (*read)(uint8_t index, uint16_t chip_addr, uint8_t *data, 
-					uint16_t data_len, uint8_t stop);
+					uint16_t data_len, uint8_t stop, bool nacklast);
 	RESULT (*write)(uint8_t index, uint16_t chip_addr, uint8_t *data, 
 					uint16_t data_len, uint8_t stop);
 };

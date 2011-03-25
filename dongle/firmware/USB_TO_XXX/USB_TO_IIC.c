@@ -25,6 +25,7 @@ void USB_TO_IIC_ProcessCmd(uint8* dat, uint16 len)
 	uint16 index, length;
 	uint8 command, device_idx;
 	
+	uint8_t chip_addr, stop;
 	uint16 data_len;
 	bool nacklast;
 	
@@ -49,12 +50,10 @@ void USB_TO_IIC_ProcessCmd(uint8* dat, uint16 len)
 			}
 			break;
 		case USB_TO_XXX_CONFIG:
-			nacklast = dat[index + 6] > 0;
 			if (ERROR_OK == interfaces->i2c.config(device_idx, 
 								GET_LE_U16(&dat[index + 0]), 
 								GET_LE_U16(&dat[index + 2]), 
-								GET_LE_U16(&dat[index + 4]), 
-								nacklast))
+								GET_LE_U16(&dat[index + 4])))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
@@ -74,10 +73,13 @@ void USB_TO_IIC_ProcessCmd(uint8* dat, uint16 len)
 			}
 			break;
 		case USB_TO_IIC_Read:
+			chip_addr = dat[index + 0];
 			data_len = GET_LE_U16(&dat[index + 1]);
+			stop = dat[index + 3];
+			nacklast = dat[index + 4] > 0;
 			
-			if (ERROR_OK == interfaces->i2c.read(device_idx, dat[index + 0], 
-								&buffer_reply[rep_len + 1], data_len, dat[index + 3]))
+			if (ERROR_OK == interfaces->i2c.read(device_idx, chip_addr, 
+								&buffer_reply[rep_len + 1], data_len, stop, nacklast))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}

@@ -119,7 +119,7 @@ static RESULT mic2826_write_reg(uint8_t addr, uint8_t reg)
 static RESULT mic2826_init(uint16_t kHz)
 {
 	interfaces->i2c.init(MIC2826_IIC_IDX);
-	interfaces->i2c.config(MIC2826_IIC_IDX, kHz, 0, 0xFFFF, false);
+	interfaces->i2c.config(MIC2826_IIC_IDX, kHz, 0, 0xFFFF);
 	return interfaces->peripheral_commit();
 }
 
