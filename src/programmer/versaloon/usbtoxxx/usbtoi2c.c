@@ -72,9 +72,9 @@ RESULT usbtoi2c_read(uint8_t interface_index, uint16_t chip_addr,
 	}
 #endif
 	
-	if (data_len > 256)
+	if (data_len > (versaloon_buf_size - 6 - 4))
 	{
-		LOG_BUG(ERRMSG_INVALID_VALUE, data_len, "I2C data size(1..256)");
+		LOG_BUG(ERRMSG_INVALID_VALUE, data_len, "I2C data size too large");
 		return ERROR_FAIL;
 	}
 	
@@ -99,9 +99,9 @@ RESULT usbtoi2c_write(uint8_t interface_index, uint16_t chip_addr,
 	}
 #endif
 	
-	if (data_len > 256)
+	if (data_len > (versaloon_buf_size - 6 - 4))
 	{
-		LOG_BUG(ERRMSG_INVALID_VALUE, data_len, "I2C data size(1..256)");
+		LOG_BUG(ERRMSG_INVALID_VALUE, data_len, "I2C data size too large");
 		return ERROR_FAIL;
 	}
 	
