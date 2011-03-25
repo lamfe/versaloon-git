@@ -320,7 +320,7 @@ struct interface_gpio_t
 {
 	RESULT (*init)(uint8_t index);
 	RESULT (*fini)(uint8_t index);
-	RESULT (*config)(uint8_t index, uint16_t pin_mask, uint16_t io, uint16_t input_pull_mask);
+	RESULT (*config)(uint8_t index, uint16_t pin_mask, uint16_t io, uint16_t pull_en_mask, uint16_t input_pull_mask);
 	RESULT (*out)(uint8_t index, uint16_t pin_mask, uint16_t value);
 	RESULT (*in)(uint8_t index, uint16_t pin_mask, uint16_t *value);
 };
@@ -342,7 +342,8 @@ Finalize the GPIO port.
 Config the GPIO pin to be output or input, pull-up or pull-down.
 \newline\emph{pin\_mask} is the mask of IOs to be operated.
 \newline\emph{io} is the input and output mask, '1' for output, '0' for input.
-\newline\emph{input\_pull\_mask} is the pullup or pulldown status, '1' for pullup, '0' for pulldown.
+\newline\emph{pull\_en\_mask} is the enable of pull status in input mode, '1' for enable, '0' for disable, ignored in output mode.
+\newline\emph{input\_pull\_mask} is the pullup or pulldown status in input mode, '1' for pullup, '0' for pulldown; or the output value in output mode.
 \item \textbf{out}
 Output to the GPIO pin.
 \newline\emph{pin\_mask} is the mask of IOs to be operated.
@@ -471,7 +472,7 @@ struct interface_i2c_t
 	RESULT (*init)(uint8_t index);
 	RESULT (*fini)(uint8_t index);
 	RESULT (*config)(uint8_t index, uint16_t kHz, uint16_t byte_interval, uint16_t max_dly);
-	RESULT (*read)(uint8_t index, uint16_t chip_addr, uint8_t *data, uint16_t data_len, uint8_t stop);
+	RESULT (*read)(uint8_t index, uint16_t chip_addr, uint8_t *data, uint16_t data_len, uint8_t stop, bool nacklast);
 	RESULT (*write)(uint8_t index, uint16_t chip_addr, uint8_t *data, uint16_t data_len, uint8_t stop);
 };
 \end{lstlisting}
@@ -495,6 +496,7 @@ Read from IIC slave.
 \newline\emph{*data} is the buffer of data to be read.
 \newline\emph{data\_len} is the maxium length of the data to be read.
 \newline\emph{stop} is to define whether to send stop signal after the read operation.
+\newline\emph{nacklast} is to define whether to nack the last byte when receiving data.
 \item \textbf{write}
 Write to IIC slave.
 \newline\emph{chip\_addr} is the address of the slave IIC chip.
