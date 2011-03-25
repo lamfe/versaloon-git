@@ -141,10 +141,10 @@ struct vss_cmd_t programmer_cmd[] =
 				"finalize iic, format: iic_fini",
 				programmer_iic_fini),
 	VSS_CMD(	"iic_config",
-				"config iic, format: iic_config KHZ MAX_DLY_US NACKLAST",
+				"config iic, format: iic_config KHZ MAX_DLY_US",
 				programmer_iic_config),
 	VSS_CMD(	"iic_read",
-				"read data from iic, format: iic_read SLAVE_ADDR STOP DATA_SIZE",
+				"read data from iic, format: iic_read SLAVE_ADDR STOP NACKLAST DATA_SIZE",
 				programmer_iic_read),
 	VSS_CMD(	"iic_write",
 				"write data to iic, format: "
@@ -651,7 +651,6 @@ VSS_HANDLER(programmer_iic_config)
 {
 	uint16_t khz = 0;
 	uint16_t max_dly = 0;
-	bool nacklast = false;
 	struct programmer_info_t *prog = NULL;
 	
 	VSS_CHECK_ARGC(3);
@@ -663,9 +662,8 @@ VSS_HANDLER(programmer_iic_config)
 	
 	khz = (uint16_t)strtoul(argv[1], NULL, 0);
 	max_dly = (uint16_t)strtoul(argv[2], NULL, 0);
-	nacklast = strtoul(argv[3], NULL, 0) > 0;
 	
-	return prog->interfaces.i2c.config(0, khz, 0, max_dly, nacklast);
+	return prog->interfaces.i2c.config(0, khz, 0, max_dly);
 }
 
 VSS_HANDLER(programmer_iic_read)
@@ -673,6 +671,7 @@ VSS_HANDLER(programmer_iic_read)
 	uint8_t data_size = 0;
 	uint8_t addr = 0;
 	uint8_t stop = 0;
+	bool nacklast = false;
 	uint8_t *buff = NULL;
 	RESULT ret = ERROR_OK;
 	struct programmer_info_t *prog = NULL;
@@ -686,14 +685,15 @@ VSS_HANDLER(programmer_iic_read)
 	
 	addr = (uint8_t)strtoul(argv[1], NULL, 0);
 	stop = (uint8_t)strtoul(argv[2], NULL, 0);
-	data_size = (uint8_t)strtoul(argv[3], NULL, 0);
+	nacklast = strtoul(argv[3], NULL, 0) > 0;
+	data_size = (uint8_t)strtoul(argv[4], NULL, 0);
 	buff = (uint8_t*)malloc(data_size);
 	if (NULL == buff)
 	{
 		return ERROR_FAIL;
 	}
 	
-	ret = prog->interfaces.i2c.read(0, addr, buff, data_size, stop);
+	ret = prog->interfaces.i2c.read(0, addr, buff, data_size, stop, nacklast);
 	if (ERROR_OK == ret)
 	{
 		ret = prog->interfaces.peripheral_commit();
@@ -780,7 +780,7 @@ VSS_HANDLER(programmer_iic_read_buff8)
 	ret = prog->interfaces.i2c.write(0, slave_addr, &addr, 1, 0);
 	if (ERROR_OK == ret)
 	{
-		ret = prog->interfaces.i2c.read(0, slave_addr, buff, data_size, 1);
+		ret = prog->interfaces.i2c.read(0, slave_addr, buff, data_size, 1, true);
 		if (ERROR_OK == ret)
 		{
 			ret = prog->interfaces.peripheral_commit();

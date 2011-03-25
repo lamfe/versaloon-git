@@ -4,10 +4,10 @@
 #define __EMIIC_MOD_INCLUDED__
 
 #define DECLARE_EMIIC_MOD(MOD_NAME, DLY_TYPE)      \
-    extern IIC_MOD_RESULT_t EMIIC_##MOD_NAME##_SetParameter(DLY_TYPE ClockCycle, DLY_TYPE D_MaxDly, DLY_TYPE D_DlyStep, DLY_TYPE ByteInterval, bool NackLast);\
+    extern IIC_MOD_RESULT_t EMIIC_##MOD_NAME##_SetParameter(DLY_TYPE ClockCycle, DLY_TYPE D_MaxDly, DLY_TYPE D_DlyStep, DLY_TYPE ByteInterval);\
     extern IIC_MOD_RESULT_t EMIIC_##MOD_NAME##_Init(void);\
     extern IIC_MOD_RESULT_t EMIIC_##MOD_NAME##_DeInit(void);\
-    extern IIC_MOD_RESULT_t EMIIC_##MOD_NAME##_Send(uint8_t addr, uint8_t *buff, uint16_t len, IIC_STOP_t stop, uint16_t *actual_len);\
+    extern IIC_MOD_RESULT_t EMIIC_##MOD_NAME##_Send(uint8_t addr, uint8_t *buff, uint16_t len, IIC_STOP_t stop, bool nacklast, uint16_t *actual_len);\
     extern IIC_MOD_RESULT_t EMIIC_##MOD_NAME##_Receive(uint8_t addr, uint8_t *buff, uint16_t len, IIC_STOP_t stop, uint16_t *actual_len);
 
 // MOD_NAME:name of IIC module
@@ -24,9 +24,8 @@
     static DLY_TYPE s_EMIIC_##MOD_NAME##_D_MaxDly = 0;\
     static DLY_TYPE s_EMIIC_##MOD_NAME##_D_DlyStep = 0;\
     static DLY_TYPE s_EMIIC_##MOD_NAME##_ByteInterval = 0;\
-    static bool s_EMIIC_##MOD_NAME##_NackLast = 0;\
     \
-    IIC_MOD_RESULT_t EMIIC_##MOD_NAME##_SetParameter(DLY_TYPE ClockCycle, DLY_TYPE D_MaxDly, DLY_TYPE D_DlyStep, DLY_TYPE ByteInterval, bool NackLast)\
+    IIC_MOD_RESULT_t EMIIC_##MOD_NAME##_SetParameter(DLY_TYPE ClockCycle, DLY_TYPE D_MaxDly, DLY_TYPE D_DlyStep, DLY_TYPE ByteInterval)\
     {\
         s_EMIIC_##MOD_NAME##_QuarterCycle_Len = ClockCycle / 4;\
         if (!s_EMIIC_##MOD_NAME##_QuarterCycle_Len && ClockCycle)\
@@ -43,7 +42,6 @@
         }\
         s_EMIIC_##MOD_NAME##_D_DlyStep = D_DlyStep;\
         s_EMIIC_##MOD_NAME##_ByteInterval = ByteInterval;\
-        s_EMIIC_##MOD_NAME##_NackLast = NackLast;\
         return IIC_MOD_ACK;\
     }\
     \
@@ -277,7 +275,7 @@
         }\
     }\
     \
-    IIC_MOD_RESULT_t EMIIC_##MOD_NAME##_Receive(uint8_t addr, uint8_t *buff, uint16_t len, IIC_STOP_t stop, uint16_t *actual_len)\
+    IIC_MOD_RESULT_t EMIIC_##MOD_NAME##_Receive(uint8_t addr, uint8_t *buff, uint16_t len, IIC_STOP_t stop, bool nacklast, uint16_t *actual_len)\
     {\
         IIC_MOD_RESULT_t result;\
         \
@@ -293,7 +291,7 @@
         \
         for (; *actual_len < len; (*actual_len)++)\
         {\
-            result = EMIIC_##MOD_NAME##_ReceiveByte(&buff[*actual_len], s_EMIIC_##MOD_NAME##_NackLast && (*actual_len == (len - 1)));\
+            result = EMIIC_##MOD_NAME##_ReceiveByte(&buff[*actual_len], nacklast && (*actual_len == (len - 1)));\
             if (IIC_MOD_TO == result)\
             {\
                 EMIIC_##MOD_NAME##_Stop();\
