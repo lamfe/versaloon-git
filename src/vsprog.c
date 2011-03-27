@@ -50,7 +50,7 @@
 #include "hex.h"
 #include "scripts.h"
 
-#define OPTSTR			"hvS:P:s:c:Mp:U:D:Ld:Go:F:m:x:C:I:O:J:Zb:V:t:K:W:Aqe"
+#define OPTSTR			"hvS:P:s:c:Mp:U:D:Ld:Go:F:m:x:C:I:O:J:Zb:V:t:K:W:Aqel:i:"
 static const struct option long_opts[] =
 {
 	{"help", no_argument, NULL, 'h'},
@@ -62,6 +62,8 @@ static const struct option long_opts[] =
 	{"target-module", required_argument, NULL, 'c'},
 	{"mass-product", no_argument, NULL, 'M'},
 	{"programmer", required_argument, NULL, 'p'},
+	{"virtualprog", required_argument, NULL, 'l'},
+	{"indexes", required_argument, NULL, 'i'},
 	{"usb", required_argument, NULL, 'U'},
 	{"list-programmer", no_argument, NULL, 'L'},
 	{"debug", required_argument, NULL, 'd'},
@@ -305,6 +307,8 @@ Usage: %s [OPTION]...\n\
   -s,  --target-series <SERIES>             set target series\n\
   -c,  --target-module <MODULE>             set target module\n\
   -p,  --programmer <PROGRAMMER>            set programmer\n\
+  -l,  --virtualprog <VIRTUAL_PROGRAMMER>   set virtual programmer\n\
+  -i,  --indexes <INDEX_STR>                configure indexes of virtual programmer\n\
   -o,  --operation <OPERATIONS>             set programming operation\n\
   -e,  --erase-on-demand                    erase target according to demand\n\
   -I,  --input-file \"<FILE>[ seg addr]\"     set input file\n\
