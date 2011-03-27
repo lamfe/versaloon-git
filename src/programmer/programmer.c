@@ -86,6 +86,8 @@ VSS_HANDLER(programmer_commit);
 
 VSS_HANDLER(programmer_list);
 VSS_HANDLER(programmer_define);
+VSS_HANDLER(virtualprog_define);
+VSS_HANDLER(virtualprog_indexes);
 
 struct vss_cmd_t programmer_cmd[] = 
 {
@@ -95,6 +97,20 @@ struct vss_cmd_t programmer_cmd[] =
 	VSS_CMD(	"L",
 				"list programmers connected, format: display-programmer/L",
 				programmer_list),
+	VSS_CMD(	"l",
+				"define virtual programmer, format: virtualprog/l TARGET",
+				virtualprog_define),
+	VSS_CMD(	"virtualprog",
+				"define virtual programmer, format: virtualprog/l TARGET",
+				virtualprog_define),
+	VSS_CMD(	"indexes",
+				"define indexes used by virtual programmer, "
+				"format: indexes/i INDEX_STR",
+				virtualprog_indexes),
+	VSS_CMD(	"i",
+				"define indexes used by virtual programmer, "
+				"format: indexes/i INDEX_STR",
+				virtualprog_indexes),
 	VSS_CMD(	"programmer",
 				"define programmer to use, format: programmer/p PROGRAMMER",
 				programmer_define),
@@ -144,14 +160,16 @@ struct vss_cmd_t programmer_cmd[] =
 				"config iic, format: iic_config KHZ MAX_DLY_US",
 				programmer_iic_config),
 	VSS_CMD(	"iic_read",
-				"read data from iic, format: iic_read SLAVE_ADDR STOP NACKLAST DATA_SIZE",
+				"read data from iic, "
+				"format: iic_read SLAVE_ADDR STOP NACKLAST DATA_SIZE",
 				programmer_iic_read),
 	VSS_CMD(	"iic_write",
 				"write data to iic, format: "
 				"iic_write SLAVE_ADDR STOP DATA_SIZE DATA0...",
 				programmer_iic_write),
 	VSS_CMD(	"iic_read_buff8",
-				"read data from iic, format: iic_read_buff8 SLAVE_ADDR NACKLAST DATA_SIZE ADDR",
+				"read data from iic, "
+				"format: iic_read_buff8 SLAVE_ADDR NACKLAST DATA_SIZE ADDR",
 				programmer_iic_read_buff8),
 	VSS_CMD(	"iic_write_buff8",
 				"write data to iic, format: "
@@ -325,6 +343,20 @@ VSS_HANDLER(programmer_list)
 		LOG_INFO("no programmer found.");
 	}
 	return ERROR_OK;
+}
+
+VSS_HANDLER(virtualprog_define)
+{
+	VSS_CHECK_ARGC(1);
+	// not support now
+	return ERROR_FAIL;
+}
+
+VSS_HANDLER(virtualprog_indexes)
+{
+	VSS_CHECK_ARGC(1);
+	// not support now
+	return ERROR_FAIL;
 }
 
 VSS_HANDLER(programmer_define)
