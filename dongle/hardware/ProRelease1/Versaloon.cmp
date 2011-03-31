@@ -1,4 +1,4 @@
-Cmp-Mod V01 Created by CvPCB (2010-05-05 BZR 2356)-stable date = 27/03/2011 22:09:42
+Cmp-Mod V01 Created by CvPCB (2010-05-05 BZR 2356)-stable date = 31/03/2011 21:14:15
 
 BeginCmp
 TimeStamp = /480A3064;
@@ -158,175 +158,182 @@ BeginCmp
 TimeStamp = /4D8EE2EF;
 Reference = D10;
 ValeurCmp = 5.1V;
-IdModule  = DSM0603;
+IdModule  = DSM0402;
 EndCmp
 
 BeginCmp
 TimeStamp = /4D8EE2F2;
 Reference = D11;
 ValeurCmp = 5.1V;
-IdModule  = DSM0603;
+IdModule  = DSM0402;
 EndCmp
 
 BeginCmp
 TimeStamp = /4D8EE2F6;
 Reference = D12;
 ValeurCmp = 5.1V;
-IdModule  = DSM0603;
+IdModule  = DSM0402;
 EndCmp
 
 BeginCmp
 TimeStamp = /4D8EE2F3;
 Reference = D13;
 ValeurCmp = 5.1V;
-IdModule  = DSM0603;
+IdModule  = DSM0402;
 EndCmp
 
 BeginCmp
 TimeStamp = /4D8EE2D7;
 Reference = D14;
 ValeurCmp = 5.1V;
-IdModule  = DSM0603;
+IdModule  = DSM0402;
 EndCmp
 
 BeginCmp
 TimeStamp = /4D8EE2DA;
 Reference = D15;
 ValeurCmp = 5.1V;
-IdModule  = DSM0603;
+IdModule  = DSM0402;
 EndCmp
 
 BeginCmp
 TimeStamp = /4D8EE2DE;
 Reference = D16;
 ValeurCmp = 5.1V;
-IdModule  = DSM0603;
+IdModule  = DSM0402;
 EndCmp
 
 BeginCmp
 TimeStamp = /4D8EE2DB;
 Reference = D17;
 ValeurCmp = 5.1V;
-IdModule  = DSM0603;
+IdModule  = DSM0402;
 EndCmp
 
 BeginCmp
 TimeStamp = /4D8EE29F;
 Reference = D18;
 ValeurCmp = 5.1V;
-IdModule  = DSM0603;
+IdModule  = DSM0402;
 EndCmp
 
 BeginCmp
 TimeStamp = /4D8EE29C;
 Reference = D19;
 ValeurCmp = 5.1V;
-IdModule  = DSM0603;
+IdModule  = DSM0402;
 EndCmp
 
 BeginCmp
 TimeStamp = /4D8EE298;
 Reference = D20;
 ValeurCmp = 5.1V;
-IdModule  = DSM0603;
+IdModule  = DSM0402;
 EndCmp
 
 BeginCmp
 TimeStamp = /4D8EE29B;
 Reference = D21;
 ValeurCmp = 5.1V;
-IdModule  = DSM0603;
+IdModule  = DSM0402;
 EndCmp
 
 BeginCmp
 TimeStamp = /4D8EE1F2;
 Reference = D22;
 ValeurCmp = 5.1V;
-IdModule  = DSM0603;
+IdModule  = DSM0402;
 EndCmp
 
 BeginCmp
 TimeStamp = /4D8EE28A;
 Reference = D23;
 ValeurCmp = 5.1V;
-IdModule  = DSM0603;
+IdModule  = DSM0402;
 EndCmp
 
 BeginCmp
 TimeStamp = /4D8EE28F;
 Reference = D24;
 ValeurCmp = 5.1V;
-IdModule  = DSM0603;
+IdModule  = DSM0402;
 EndCmp
 
 BeginCmp
 TimeStamp = /4D8EE28C;
 Reference = D25;
 ValeurCmp = 5.1V;
-IdModule  = DSM0603;
+IdModule  = DSM0402;
 EndCmp
 
 BeginCmp
 TimeStamp = /4D8EE339;
 Reference = D26;
 ValeurCmp = 5.1V;
-IdModule  = DSM0603;
+IdModule  = DSM0402;
 EndCmp
 
 BeginCmp
 TimeStamp = /4D8EE332;
 Reference = D27;
 ValeurCmp = 5.1V;
-IdModule  = DSM0603;
+IdModule  = DSM0402;
 EndCmp
 
 BeginCmp
 TimeStamp = /4D8EE350;
 Reference = D30;
 ValeurCmp = 5.1V;
-IdModule  = DSM0603;
+IdModule  = DSM0402;
 EndCmp
 
 BeginCmp
 TimeStamp = /4D8EE353;
 Reference = D31;
 ValeurCmp = 5.1V;
-IdModule  = DSM0603;
+IdModule  = DSM0402;
 EndCmp
 
 BeginCmp
 TimeStamp = /4D8EE357;
 Reference = D32;
 ValeurCmp = 5.1V;
-IdModule  = DSM0603;
+IdModule  = DSM0402;
 EndCmp
 
 BeginCmp
 TimeStamp = /4D8EE354;
 Reference = D33;
 ValeurCmp = 5.1V;
-IdModule  = DSM0603;
+IdModule  = DSM0402;
 EndCmp
 
 BeginCmp
 TimeStamp = /4D8EE38C;
 Reference = D34;
 ValeurCmp = 5.1V;
-IdModule  = DSM0603;
+IdModule  = DSM0402;
 EndCmp
 
 BeginCmp
 TimeStamp = /4D8F34BD;
 Reference = D35;
 ValeurCmp = 5.1V;
-IdModule  = DSM0603;
+IdModule  = DSM0402;
 EndCmp
 
 BeginCmp
 TimeStamp = /4D8F34C0;
 Reference = D36;
 ValeurCmp = 5.1V;
-IdModule  = DSM0603;
+IdModule  = DSM0402;
+EndCmp
+
+BeginCmp
+TimeStamp = /4D947DFE;
+Reference = D37;
+ValeurCmp = 3.3V;
+IdModule  = DSM0402;
 EndCmp
 
 BeginCmp
@@ -663,13 +670,6 @@ TimeStamp = /4D4A5CB0;
 Reference = T16;
 ValeurCmp = TST;
 IdModule  = TEST_1PIN;
-EndCmp
-
-BeginCmp
-TimeStamp = /4D8F4460;
-Reference = T17;
-ValeurCmp = TST;
-IdModule  = PINTST;
 EndCmp
 
 BeginCmp

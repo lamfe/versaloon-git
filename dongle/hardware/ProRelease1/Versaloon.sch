@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date 27/03/2011 22:07:58
+EESchema Schematic File Version 2  date 31/03/2011 21:14:00
 LIBS:power
 LIBS:elec-unifil
 LIBS:simonqian
@@ -36,7 +36,7 @@ EELAYER END
 $Descr User 7000 9699
 Sheet 1 1
 Title ""
-Date "27 mar 2011"
+Date "31 mar 2011"
 Rev ""
 Comp ""
 Comment1 ""
@@ -44,8 +44,10 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+Text Label 4350 8350 0    60   ~ 0
+T_SPE
 Wire Wire Line
-	2500 7950 2500 8100
+	4700 8350 4350 8350
 Wire Wire Line
 	2500 8100 2850 8100
 Wire Wire Line
@@ -664,15 +666,36 @@ Wire Wire Line
 	3950 8150 3900 8150
 Wire Wire Line
 	3600 8100 3250 8100
+Wire Wire Line
+	3950 8350 3900 8350
 $Comp
-L TST T17
-U 1 1 4D8F4460
-P 2500 7950
-F 0 "T17" H 2500 8200 40  0000 C CNN
-F 1 "TST" H 2500 8100 30  0000 C CNN
-	1    2500 7950
+L ZENER D37
+U 1 1 4D947DFE
+P 4150 8350
+F 0 "D37" H 4300 8400 50  0000 C CNN
+F 1 "3.3V" H 4000 8400 40  0000 C CNN
+	1    4150 8350
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR?
+U 1 1 4D947DFC
+P 3900 8350
+F 0 "#PWR?" H 3900 8350 30  0001 C CNN
+F 1 "GND" H 3900 8280 30  0001 C CNN
+F 4 "" H 3900 8350 60  0001 C CNN "Óò1"
+F 5 "" H 3900 8350 60  0001 C CNN "Óò2"
+F 6 "" H 3900 8350 60  0001 C CNN "Óò3"
+F 7 "" H 3900 8350 60  0001 C CNN "Óò4"
+F 8 "" H 3900 8350 60  0001 C CNN "Óò5"
+F 9 "" H 3900 8350 60  0001 C CNN "Óò6"
+F 10 "" H 3900 8350 60  0001 C CNN "Óò7"
+F 11 "" H 3900 8350 60  0001 C CNN "Óò8"
+	1    3900 8350
 	0    1    1    0   
 $EndComp
+Text Label 6000 7550 0    60   ~ 0
+P_SPE
 Text Label 3250 8100 0    60   ~ 0
 P_SPE
 Text Label 2850 8100 2    60   ~ 0
@@ -2024,8 +2047,6 @@ Text Label 6000 7650 0    60   ~ 0
 VOUT1
 Text Label 5200 7750 2    60   ~ 0
 P_GND
-Text Label 6000 7550 0    60   ~ 0
-VCC
 Text Label 6000 7750 0    60   ~ 0
 HV_OUT
 Text Label 5200 6650 2    60   ~ 0
