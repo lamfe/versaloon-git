@@ -31,11 +31,19 @@
 #if DAL_DF45XX_EN
 #	include "../df45xx/df45xx_drv.h"
 #endif
+#if DAL_SD_SPI_EN
+#	include "../sd_spi/sd_spi_drv.h"
+#endif
+#if DAL_SD_SDIO_EN
+#	include "../sd_sdio/sd_sdio_drv.h"
+#endif
 
 #define MAL_IDX_EE93CX6						1
 #define MAL_IDX_EE24CXX						2
 #define MAL_IDX_DF25XX						3
 #define MAL_IDX_DF45XX						4
+#define MAL_IDX_SD_SPI						5
+#define MAL_IDX_SD_SDIO						6
 
 struct mal_t
 {

@@ -42,6 +42,12 @@ static struct mal_driver_t *mal_drivers[] =
 #if DAL_DF45XX_EN
 	&df45xx_drv,
 #endif
+#if DAL_SD_SPI_EN
+	&sd_spi_drv,
+#endif
+#if DAL_SD_SDIO_EN
+	&sd_sdio_drv,
+#endif
 	NULL
 };
 
