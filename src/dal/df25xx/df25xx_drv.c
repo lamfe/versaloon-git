@@ -47,15 +47,14 @@ static struct df25xx_drv_param_t df25xx_drv_param;
 
 static RESULT df25xx_drv_cs_assert(void)
 {
-	interfaces->gpio.config(DF25XX_CS_GPIO_IDX, DF25XX_CS_GPIO_PIN, 
-							DF25XX_CS_GPIO_PIN, 0, 0);
+	interfaces->gpio.config(DF25XX_CS_PORT, DF25XX_CS_PIN, DF25XX_CS_PIN, 0, 0);
 	return ERROR_OK;
 }
 
 static RESULT df25xx_drv_cs_deassert(void)
 {
-	interfaces->gpio.config(DF25XX_CS_GPIO_IDX, DF25XX_CS_GPIO_PIN, 0, 
-							DF25XX_CS_GPIO_PIN, DF25XX_CS_GPIO_PIN);
+	interfaces->gpio.config(DF25XX_CS_PORT, DF25XX_CS_PIN, 0, 
+							DF25XX_CS_PIN, DF25XX_CS_PIN);
 	return ERROR_OK;
 }
 
@@ -79,9 +78,9 @@ static RESULT df25xx_drv_init(void *param)
 	{
 		df25xx_drv_param.spi_khz = 9000;
 	}
-	interfaces->gpio.init(DF25XX_CS_GPIO_IDX);
-	interfaces->gpio.config(DF25XX_CS_GPIO_IDX, DF25XX_CS_GPIO_PIN, 0, 
-							DF25XX_CS_GPIO_PIN, DF25XX_CS_GPIO_PIN);
+	interfaces->gpio.init(DF25XX_CS_PORT);
+	interfaces->gpio.config(DF25XX_CS_PORT, DF25XX_CS_PIN, 0, 
+							DF25XX_CS_PIN, DF25XX_CS_PIN);
 	interfaces->spi.init(DF25XX_SPI_IDX);
 	interfaces->spi.config(DF25XX_SPI_IDX, df25xx_drv_param.spi_khz, 
 							SPI_CPOL_HIGH, SPI_CPHA_2EDGE, SPI_MSB_FIRST);
@@ -108,7 +107,7 @@ static RESULT df25xx_drv_getinfo(void *info)
 
 static RESULT df25xx_drv_fini(void)
 {
-	interfaces->gpio.fini(DF25XX_CS_GPIO_IDX);
+	interfaces->gpio.fini(DF25XX_CS_PORT);
 	interfaces->spi.fini(DF25XX_SPI_IDX);
 	return ERROR_OK;
 }

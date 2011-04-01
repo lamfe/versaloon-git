@@ -30,101 +30,95 @@
 #include "../dal_internal.h"
 #include "../mal/mal_internal.h"
 #include "../mal/mal.h"
-#include "ee24cxx_drv_cfg.h"
-#include "ee24cxx_drv.h"
+#include "sd_spi_drv_cfg.h"
+#include "sd_spi_drv.h"
 
-static struct ee24cxx_drv_param_t ee24cxx_drv_param;
+static struct sd_spi_drv_param_t sd_spi_drv_param;
 
-static RESULT ee24cxx_drv_init(void *param)
+static RESULT sd_spi_drv_init(void *param)
 {
 	if (NULL == param)
 	{
 		return ERROR_FAIL;
 	}
-	memcpy(&ee24cxx_drv_param, param, sizeof(ee24cxx_drv_param));
+	memcpy(&sd_spi_drv_param, param, sizeof(sd_spi_drv_param));
 	
-	if (!ee24cxx_drv_param.iic_khz)
+	if (!sd_spi_drv_param.spi_khz)
 	{
-		ee24cxx_drv_param.iic_khz = 100;
+		sd_spi_drv_param.spi_khz = 100;
 	}
-	interfaces->i2c.init(EE24CXX_IIC_IDX);
-	interfaces->i2c.config(EE24CXX_IIC_IDX, ee24cxx_drv_param.iic_khz, 0, 
-							10000);
+	interfaces->gpio.init(SD_CS_PORT);
+	interfaces->gpio.config(SD_CS_PORT, SD_CS_PIN, 0, SD_CS_PIN, SD_CS_PIN);
+	interfaces->spi.init(SD_SPI_IDX);
+	interfaces->spi.config(SD_SPI_IDX, sd_spi_drv_param.spi_khz, 
+							SPI_CPOL_HIGH, SPI_CPHA_2EDGE, SPI_MSB_FIRST);
+	
+	// SD Init
 	
 	return ERROR_OK;
 }
 
-static RESULT ee24cxx_drv_fini(void)
+static RESULT sd_spi_drv_fini(void)
 {
-	interfaces->i2c.fini(EE24CXX_IIC_IDX);
+	interfaces->gpio.fini(SD_CS_PORT);
+	interfaces->spi.fini(SD_SPI_IDX);
 	return ERROR_OK;
 }
 
-static RESULT ee24cxx_drv_readblock_nb_start(uint64_t address, uint64_t count)
-{
-	return ERROR_OK;
-}
-
-static RESULT ee24cxx_drv_readblock_nb(uint64_t address, uint8_t *buff)
-{
-	uint16_t addr_word = (uint16_t)address;
-	
-	addr_word = SYS_TO_BE_U16(addr_word);
-	if ((ERROR_OK != interfaces->i2c.write(EE24CXX_IIC_IDX, 
-			ee24cxx_drv_param.iic_addr, (uint8_t *)&addr_word, 2, 0)) || 
-		(ERROR_OK != interfaces->i2c.read(EE24CXX_IIC_IDX, 
-			ee24cxx_drv_param.iic_addr, buff, 
-			(uint16_t)ee24cxx_drv.capacity.block_size, 1, true)))
-	{
-		return ERROR_FAIL;
-	}
-	return ERROR_OK;
-}
-
-static RESULT ee24cxx_drv_readblock_nb_isready(void)
+static RESULT sd_spi_getinfo(void *info)
 {
 	return ERROR_OK;
 }
 
-static RESULT ee24cxx_drv_readblock_nb_end(void)
+static RESULT sd_spi_drv_readblock_nb_start(uint64_t address, uint64_t count)
 {
 	return ERROR_OK;
 }
 
-static RESULT ee24cxx_drv_writeblock_nb_start(uint64_t address, uint64_t count)
+static RESULT sd_spi_drv_readblock_nb(uint64_t address, uint8_t *buff)
 {
 	return ERROR_OK;
 }
 
-static RESULT ee24cxx_drv_writeblock_nb(uint64_t address, uint8_t *buff)
+static RESULT sd_spi_drv_readblock_nb_isready(void)
 {
 	return ERROR_OK;
 }
 
-static RESULT ee24cxx_drv_writeblock_nb_isready(void)
+static RESULT sd_spi_drv_readblock_nb_end(void)
 {
 	return ERROR_OK;
 }
 
-static RESULT ee24cxx_drv_writeblock_nb_waitready(void)
+static RESULT sd_spi_drv_writeblock_nb_start(uint64_t address, uint64_t count)
 {
 	return ERROR_OK;
 }
 
-static RESULT ee24cxx_drv_writeblock_nb_end(void)
+static RESULT sd_spi_drv_writeblock_nb(uint64_t address, uint8_t *buff)
 {
 	return ERROR_OK;
 }
 
-struct mal_driver_t ee24cxx_drv = 
+static RESULT sd_spi_drv_writeblock_nb_isready(void)
 {
-	MAL_IDX_EE24CXX,
+	return ERROR_OK;
+}
+
+static RESULT sd_spi_drv_writeblock_nb_end(void)
+{
+	return ERROR_OK;
+}
+
+struct mal_driver_t sd_spi_drv = 
+{
+	MAL_IDX_SD_SPI,
 	MAL_SUPPORT_READBLOCK | MAL_SUPPORT_WRITEBLOCK,
 	{0, 0},
 	
-	ee24cxx_drv_init,
-	ee24cxx_drv_fini,
-	NULL,
+	sd_spi_drv_init,
+	sd_spi_drv_fini,
+	sd_spi_getinfo,
 	
 	NULL,
 	NULL,
@@ -137,16 +131,16 @@ struct mal_driver_t ee24cxx_drv =
 	NULL,
 	NULL,
 	
-	ee24cxx_drv_readblock_nb_start,
-	ee24cxx_drv_readblock_nb,
-	ee24cxx_drv_readblock_nb_isready,
+	sd_spi_drv_readblock_nb_start,
+	sd_spi_drv_readblock_nb,
+	sd_spi_drv_readblock_nb_isready,
 	NULL,
-	ee24cxx_drv_readblock_nb_end,
+	sd_spi_drv_readblock_nb_end,
 	
-	ee24cxx_drv_writeblock_nb_start,
-	ee24cxx_drv_writeblock_nb,
-	ee24cxx_drv_writeblock_nb_isready,
-	ee24cxx_drv_writeblock_nb_waitready,
-	ee24cxx_drv_writeblock_nb_end
+	sd_spi_drv_writeblock_nb_start,
+	sd_spi_drv_writeblock_nb,
+	sd_spi_drv_writeblock_nb_isready,
+	NULL,
+	sd_spi_drv_writeblock_nb_end
 };
 
