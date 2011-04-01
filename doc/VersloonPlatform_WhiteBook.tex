@@ -1,5 +1,6 @@
 \documentclass[a4paper,12pt]{book}
 
+\usepackage{color}
 \usepackage[T1]{fontenc}
 \usepackage{bookman}
 \normalfont
@@ -12,11 +13,22 @@
 
 \usepackage{minitoc}
 \usepackage{hyperref}
+\hypersetup{
+bookmarksnumbered=true,
+colorlinks=true,
+pdfpagelayout={OneColumn},
+pdfstartview={FitH}
+}
 
 \usepackage{listings}
-\lstset{language=C}
-\lstset{breaklines}
-\lstset{extendedchars=false}
+\lstset{
+language=C,
+breaklines=true,
+extendedchars=false,
+keywordstyle=\color{blue},
+%commentstyle=\color{}
+morekeywords={int8_t,uint8_t,int16_t,uint16_t,int32_t,uint32_t,int64_t,uint64_t,bool}
+}
 
 \usepackage{fancyhdr}
 \pagestyle{fancy}
