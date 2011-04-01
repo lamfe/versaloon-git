@@ -160,11 +160,6 @@ static RESULT df25xx_drv_eraseblock_nb_end(void)
 
 static RESULT df25xx_drv_readblock_nb_start(uint64_t address, uint64_t count)
 {
-	return ERROR_OK;
-}
-
-static RESULT df25xx_drv_readblock_nb(uint64_t address, uint8_t *buff)
-{
 	uint8_t cmd[4];
 	
 	df25xx_drv_cs_assert();
@@ -173,13 +168,13 @@ static RESULT df25xx_drv_readblock_nb(uint64_t address, uint8_t *buff)
 	cmd[1] = (address >> 16) & 0xFF;
 	cmd[2] = (address >> 8 ) & 0xFF;
 	cmd[3] = (address >> 0 ) & 0xFF;
-	interfaces->spi.io(DF25XX_SPI_IDX, cmd, NULL, 4);
-	interfaces->spi.io(DF25XX_SPI_IDX, NULL, buff, 
+	return interfaces->spi.io(DF25XX_SPI_IDX, cmd, NULL, 4);
+}
+
+static RESULT df25xx_drv_readblock_nb(uint64_t address, uint8_t *buff)
+{
+	return interfaces->spi.io(DF25XX_SPI_IDX, NULL, buff, 
 						(uint16_t)df25xx_drv.capacity.block_size);
-	
-	df25xx_drv_cs_deassert();
-	
-	return ERROR_OK;
 }
 
 static RESULT df25xx_drv_readblock_nb_isready(void)
@@ -194,7 +189,7 @@ static RESULT df25xx_drv_readblock_nb_waitready(void)
 
 static RESULT df25xx_drv_readblock_nb_end(void)
 {
-	return ERROR_OK;
+	return df25xx_drv_cs_deassert();
 }
 
 static RESULT df25xx_drv_writeblock_nb_start(uint64_t address, uint64_t count)
