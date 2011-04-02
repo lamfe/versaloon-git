@@ -47,15 +47,14 @@ static struct df25xx_drv_param_t df25xx_drv_param;
 
 static RESULT df25xx_drv_cs_assert(void)
 {
-	interfaces->gpio.config(DF25XX_CS_PORT, DF25XX_CS_PIN, DF25XX_CS_PIN, 0, 0);
-	return ERROR_OK;
+	return interfaces->gpio.config(DF25XX_CS_PORT, DF25XX_CS_PIN, 
+									DF25XX_CS_PIN, 0, 0);
 }
 
 static RESULT df25xx_drv_cs_deassert(void)
 {
-	interfaces->gpio.config(DF25XX_CS_PORT, DF25XX_CS_PIN, 0, 
-							DF25XX_CS_PIN, DF25XX_CS_PIN);
-	return ERROR_OK;
+	return interfaces->gpio.config(DF25XX_CS_PORT, DF25XX_CS_PIN, 0, 
+									DF25XX_CS_PIN, DF25XX_CS_PIN);
 }
 
 static RESULT df25xx_drv_io(uint8_t *out, uint8_t *in, uint16_t len)
@@ -109,7 +108,7 @@ static RESULT df25xx_drv_fini(void)
 {
 	interfaces->gpio.fini(DF25XX_CS_PORT);
 	interfaces->spi.fini(DF25XX_SPI_IDX);
-	return ERROR_OK;
+	return interfaces->peripheral_commit();
 }
 
 static RESULT df25xx_drv_eraseall_nb_start(void)

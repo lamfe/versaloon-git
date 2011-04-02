@@ -17,6 +17,7 @@ libdal_a_SOURCES = \
     ee24cxx/ee24cxx_drv.c \
     df25xx/df25xx_drv.c \
     df45xx/df45xx_drv.c \
-    sd_spi/sd_spi_drv.c
+    sd/sd_spi_drv.c \
+    sd/sd_common.c
 
 MAINTAINERCLEANFILES = Makefile.in

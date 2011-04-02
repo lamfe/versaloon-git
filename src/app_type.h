@@ -109,7 +109,7 @@ typedef enum result_s
 #	define LE_TO_SYS_U16(v)			((uint16_t)(v))
 #	define LE_TO_SYS_U32(v)			((uint32_t)(v))
 #	define BE_TO_SYS_U16(v)			SWAP_U16(v)
-#	define BE_TO_SYS_U32(v)			SWAP_I32(v)
+#	define BE_TO_SYS_U32(v)			SWAP_U32(v)
 
 #	define SYS_TO_LE_U16(v)			((uint16_t)(v))
 #	define SYS_TO_LE_U32(v)			((uint32_t)(v))

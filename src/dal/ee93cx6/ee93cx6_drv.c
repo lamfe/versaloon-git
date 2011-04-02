@@ -101,8 +101,7 @@ static RESULT ee93cx6_drv_fini(void)
 				cmd, ee93cx6_drv_param.cmd_bitlen, 0, 0, 0, 0, NULL, 0);
 	
 	interfaces->microwire.fini(EE93CX6_MW_IDX);
-	
-	return ERROR_OK;
+	return interfaces->peripheral_commit();
 }
 
 static RESULT ee93cx6_drv_eraseall_nb_start(void)
