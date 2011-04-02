@@ -32,10 +32,10 @@
 #	include "../df45xx/df45xx_drv.h"
 #endif
 #if DAL_SD_SPI_EN
-#	include "../sd_spi/sd_spi_drv.h"
+#	include "../sd/sd_spi_drv.h"
 #endif
 #if DAL_SD_SDIO_EN
-#	include "../sd_sdio/sd_sdio_drv.h"
+#	include "../sd/sd_sdio_drv.h"
 #endif
 
 #define MAL_IDX_EE93CX6						1

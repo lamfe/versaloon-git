@@ -57,7 +57,7 @@ static RESULT ee24cxx_drv_init(void *param)
 static RESULT ee24cxx_drv_fini(void)
 {
 	interfaces->i2c.fini(EE24CXX_IIC_IDX);
-	return ERROR_OK;
+	return interfaces->peripheral_commit();
 }
 
 static RESULT ee24cxx_drv_readblock_nb_start(uint64_t address, uint64_t count)

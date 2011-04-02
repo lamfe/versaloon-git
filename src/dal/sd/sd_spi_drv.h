@@ -17,7 +17,10 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#define SD_SPI_IDX							0
-#define SD_CS_PORT							0
-#define SD_CS_PIN							GPIO_SRST
+#ifndef __SD_SPI_DRV_H_INCLUDED__
+#define __SD_SPI_DRV_H_INCLUDED__
+
+extern struct mal_driver_t sd_spi_drv;
+
+#endif /*  __SD_SPI_DRV_H_INCLUDED__ */
 
