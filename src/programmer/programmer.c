@@ -261,12 +261,12 @@ RESULT programmer_init(const char *programmer)
 			cur_programmer->fini();
 		}
 		
-		cur_programmer = programmer_tmp;
-		cur_programmer->init_capability(cur_programmer);
-		if (ERROR_OK != cur_programmer->init(cur_programmer))
+		programmer_tmp->init_capability(programmer_tmp);
+		if (ERROR_OK != programmer_tmp->init(programmer_tmp))
 		{
 			return ERROR_FAIL;
 		}
+		cur_programmer = programmer_tmp;
 		if (cur_programmer->interfaces.support_mask & POWER)
 		{
 			return vss_run_script("get_tvcc");
