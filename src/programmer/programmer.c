@@ -259,6 +259,7 @@ RESULT programmer_init(const char *programmer)
 		if (cur_programmer != NULL)
 		{
 			cur_programmer->fini();
+			cur_programmer = NULL;
 		}
 		
 		programmer_tmp->init_capability(programmer_tmp);
