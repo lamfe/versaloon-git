@@ -312,8 +312,8 @@ Usage: %s [OPTION]...\n\
   -i,  --indexes <INDEX_STR>                configure indexes of virtual programmer\n\
   -o,  --operation <OPERATIONS>             set programming operation\n\
   -e,  --erase-on-demand                    erase target according to demand\n\
-  -I,  --input-file \"<FILE>[ seg addr]\"     set input file\n\
-  -O,  --output-file \"<FILE>[ seg addr]\"    set output file\n\
+  -I,  --input-file \"<FILE>[@SEG,ADDR]\"     set input file\n\
+  -O,  --output-file \"<FILE>[@SEG,ADDR]\"    set output file\n\
   -F,  --frequency <FREQUENCY_KHZ>          set programming frequency\n\
   -K,  --kernel-khz <KERNEL_KHZ>            set kernel frequency\n\
   -Q,  --quartz-khz <QUARTZ_KHZ>            set quartz frequency\n\
