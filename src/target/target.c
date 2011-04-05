@@ -82,6 +82,7 @@ VSS_HANDLER(target_chip);
 VSS_HANDLER(target_value);
 VSS_HANDLER(target_interface_frequency);
 VSS_HANDLER(target_kernel_khz);
+VSS_HANDLER(target_quartz_khz);
 VSS_HANDLER(target_erase_on_demand);
 VSS_HANDLER(target_wait_state);
 VSS_HANDLER(target_auto_adjust);
@@ -143,6 +144,12 @@ struct vss_cmd_t target_cmd[] =
 	VSS_CMD(	"K",
 				"set target kernel frequency in khz, format: kernel-khz/K KHZ",
 				target_kernel_khz),
+	VSS_CMD(	"quartz-khz",
+				"set target quartz frequency in khz, format: quartz-khz/Q KHZ",
+				target_quartz_khz),
+	VSS_CMD(	"Q",
+				"set target quartz frequency in khz, format: quartz-khz/Q KHZ",
+				target_quartz_khz),
 	VSS_CMD(	"wait-state",
 				"set target wait state, format: wait-state/W WAIT",
 				target_wait_state),
@@ -3953,6 +3960,13 @@ VSS_HANDLER(target_kernel_khz)
 {
 	VSS_CHECK_ARGC(2);
 	program_info.kernel_khz = (uint32_t)strtoul(argv[1], NULL, 0);
+	return ERROR_OK;
+}
+
+VSS_HANDLER(target_quartz_khz)
+{
+	VSS_CHECK_ARGC(2);
+	program_info.quartz_khz = (uint32_t)strtoul(argv[1], NULL, 0);
 	return ERROR_OK;
 }
 
