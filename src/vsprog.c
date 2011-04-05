@@ -50,7 +50,7 @@
 #include "hex.h"
 #include "scripts.h"
 
-#define OPTSTR			"hvS:P:s:c:Mp:U:D:Ld:Go:F:m:x:C:I:O:J:Zb:V:t:K:W:Aqel:i:"
+#define OPTSTR			"hvS:P:s:c:Mp:U:D:Ld:Go:F:m:x:C:I:O:J:Zb:V:t:K:W:Aqel:i:Q:"
 static const struct option long_opts[] =
 {
 	{"help", no_argument, NULL, 'h'},
@@ -78,6 +78,7 @@ static const struct option long_opts[] =
 	{"output-file", required_argument, NULL, 'O'},
 	{"jtag-dc", required_argument, NULL, 'J'},
 	{"kernel-khz", required_argument, NULL, 'K'},
+	{"quartz-khz", required_argument, NULL, 'Q'},
 	{"wait-state", required_argument, NULL, 'W'},
 	{"auto-adjust", no_argument, NULL, 'A'},
 	{"firmware-update", no_argument, NULL, 'Z'},
@@ -313,7 +314,10 @@ Usage: %s [OPTION]...\n\
   -e,  --erase-on-demand                    erase target according to demand\n\
   -I,  --input-file \"<FILE>[ seg addr]\"     set input file\n\
   -O,  --output-file \"<FILE>[ seg addr]\"    set output file\n\
-  -F,  --frequency <FREQUENCY_IN_KHz>       set programming frequency\n\
+  -F,  --frequency <FREQUENCY_KHZ>          set programming frequency\n\
+  -K,  --kernel-khz <KERNEL_KHZ>            set kernel frequency\n\
+  -Q,  --quartz-khz <QUARTZ_KHZ>            set quartz frequency\n\
+  -A,  --auto-adjust                        enable auto-adjust feature\n\
   -m,  --mode <MODE>                        set programming mode\n\
   -t,  --target <TARGET VALUE>              set target value, eg(fuse): -tu0x02\n\
   -L,  --list-programmer                    list programmers available\n\
