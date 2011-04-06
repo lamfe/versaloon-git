@@ -608,7 +608,7 @@ VSS_HANDLER(interface_iic_read)
 	RESULT ret = ERROR_OK;
 	struct interfaces_info_t *ifs = NULL;
 	
-	VSS_CHECK_ARGC(4);
+	VSS_CHECK_ARGC(5);
 	if ((ERROR_OK != interface_assert(&ifs)) || (NULL == ifs))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "interface module");
@@ -694,7 +694,7 @@ VSS_HANDLER(interface_iic_read_buff8)
 	RESULT ret = ERROR_OK;
 	struct interfaces_info_t *ifs = NULL;
 	
-	VSS_CHECK_ARGC(4);
+	VSS_CHECK_ARGC(5);
 	if ((ERROR_OK != interface_assert(&ifs)) || (NULL == ifs))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "interface module");
