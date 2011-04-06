@@ -493,7 +493,7 @@ ENTER_PROGRAM_MODE_HANDLER(stm8swim)
 #endif
 	
 	stm8_target_mhz = (uint8_t)param->param[STM8_PARAM_IRC];
-	interfaces = &(context->prog->interfaces);
+	interfaces = context->prog;
 	
 	if ((pi->wait_state) && (param->param[STM8_PARAM_CLK_SWIMCCR] != 0))
 	{
@@ -616,7 +616,7 @@ LEAVE_PROGRAM_MODE_HANDLER(stm8swim)
 	struct chip_param_t *param = context->param;
 
 	REFERENCE_PARAMETER(success);
-	interfaces = &(context->prog->interfaces);
+	interfaces = context->prog;
 	
 	if (stm8_swim_enabled)
 	{

@@ -207,7 +207,7 @@ ENTER_PROGRAM_MODE_HANDLER(avr8jtag)
 	uint8_t ir;
 	uint16_t dr;
 	
-	interfaces = &(context->prog->interfaces);
+	interfaces = context->prog;
 	
 	if (!pi->frequency)
 	{

@@ -222,7 +222,7 @@ ENTER_PROGRAM_MODE_HANDLER(hcs08)
 	uint16_t kernel_khz;
 	uint8_t bdm_status;
 	
-	interfaces = &(context->prog->interfaces);
+	interfaces = context->prog;
 	
 	reset_init();
 	reset_set();

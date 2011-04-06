@@ -22,7 +22,7 @@
 
 #include <stdio.h>
 
-#include "../dal.h"
+#include "../dal_cfg.h"
 #include "mal.h"
 #include "mal_internal.h"
 

@@ -30,6 +30,8 @@
 
 #include "scripts.h"
 
+#include "interfaces.h"
+#include "dal_cfg.h"
 #include "dal.h"
 
 #if DAL_MIC2826_EN
@@ -78,16 +80,16 @@ RESULT dal_init(struct interfaces_info_t *ifs)
 
 VSS_HANDLER(dal_vss_init)
 {
-	struct programmer_info_t *prog = NULL;
+	struct interfaces_info_t *ifs = NULL;
 	
 	VSS_CHECK_ARGC(1);
-	if ((ERROR_OK != programmer_assert(&prog)) || (NULL == prog))
+	if ((ERROR_OK != interface_assert(&ifs)) || (NULL == ifs))
 	{
-		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
+		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "interface module");
 		return ERROR_FAIL;
 	}
 	
-	return dal_init(&prog->interfaces);
+	return dal_init(ifs);
 }
 
 VSS_HANDLER(dal_vss_fini)

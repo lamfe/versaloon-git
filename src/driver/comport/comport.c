@@ -521,14 +521,14 @@ void comm_close_usbtocomm(void)
 RESULT comm_open_usbtocomm(char *comport, uint32_t baudrate, 
 			uint8_t datalength, char paritybit, char stopbit, char handshake)
 {
-	struct programmer_info_t *prog = NULL;
+	struct interfaces_info_t *prog = NULL;
 	REFERENCE_PARAMETER(comport);
 	
-	if ((ERROR_OK != programmer_assert(&prog)) || (NULL == prog))
+	if ((ERROR_OK != interface_assert(&prog)) || (NULL == prog))
 	{
 		return ERROR_FAIL;
 	}
-	interfaces = &(prog->interfaces);
+	interfaces = prog;
 	
 	// paritybit
 	switch (paritybit)

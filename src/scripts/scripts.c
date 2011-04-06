@@ -125,7 +125,7 @@ struct vss_cmd_t vss_generic_cmd[] =
 	VSS_CMD_END
 };
 
-extern struct vss_cmd_t programmer_cmd[];
+extern struct vss_cmd_t interface_cmd[];
 extern struct vss_cmd_t pgbar_cmd[];
 extern struct vss_cmd_t vsprog_cmd[];
 extern struct vss_cmd_t target_cmd[];
@@ -146,7 +146,7 @@ struct vss_cmd_t *vss_cmds_list[] =
 	target_cmd,
 	pgbar_cmd,
 	filelist_cmd,
-	programmer_cmd,
+	interface_cmd,
 	comisp_cmd,
 	usbapi_cmd,
 	dal_cmd
@@ -581,12 +581,12 @@ RESULT vss_run_script(char *cmd)
 	}
 	
 	// commit if required
-	if ((cur_programmer != NULL) 
-		&& (cur_programmer->interfaces.peripheral_commit != NULL))
+	if ((cur_interface != NULL) 
+		&& (cur_interface->peripheral_commit != NULL))
 	{
 		if (0 == vss_param[PARAM_NO_COMMIT].value)
 		{
-			if (ERROR_OK != cur_programmer->interfaces.peripheral_commit())
+			if (ERROR_OK != cur_interface->peripheral_commit())
 			{
 				ret = ERROR_FAIL;
 			}
@@ -764,9 +764,9 @@ VSS_HANDLER(vss_shell)
 	
 	LOG_INFO("enter shell mode.");
 	
-	if (cur_programmer != NULL)
+	if (cur_interface != NULL)
 	{
-		return vss_run_file(stdin, cur_programmer->name, 0);
+		return vss_run_file(stdin, cur_interface->name, 0);
 	}
 	else
 	{

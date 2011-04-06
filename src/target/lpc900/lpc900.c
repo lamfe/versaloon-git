@@ -149,7 +149,7 @@ ENTER_PROGRAM_MODE_HANDLER(lpc900icp)
 	uint32_t device_id;	
 	uint8_t tmpbuf[5], retry = 0;
 	
-	interfaces = &(context->prog->interfaces);
+	interfaces = context->prog;
 	// ICP Init
 ProgramStart:
 	if (ERROR_OK != icp_init())

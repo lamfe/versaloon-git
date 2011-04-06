@@ -975,13 +975,13 @@ static RESULT target_program_check(struct program_context_t *context)
 	i = cur_target->program_mode[program_info.mode].interface_needed;
 	if (i)
 	{
-		if ((ERROR_OK != programmer_assert(&context->prog)) 
+		if ((ERROR_OK != interface_assert(&context->prog)) 
 			|| (NULL == context->prog))
 		{
 			LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
 			return ERROR_FAIL;
 		}
-		if ((context->prog->interfaces.support_mask & i) != i)
+		if ((context->prog->support_mask & i) != i)
 		{
 			LOG_ERROR("interface not supported: %s.", get_interface_name(i));
 			return ERROR_FAIL;
@@ -1035,7 +1035,7 @@ static RESULT target_program(struct program_context_t *context)
 	struct program_info_t *pi = context->pi;
 	struct operation_t *op = context->op;
 	struct chip_param_t *param = context->param;
-	struct programmer_info_t *prog = context->prog;
+	struct interfaces_info_t *prog = context->prog;
 	
 	struct chip_area_info_t *area_info;
 	struct program_area_t *prog_area;
@@ -1217,7 +1217,7 @@ static RESULT target_program(struct program_context_t *context)
 				}
 				pgbar_update(page_num);
 			}
-			if (ERROR_OK != prog->interfaces.peripheral_commit())
+			if (ERROR_OK != prog->peripheral_commit())
 			{
 				LOG_ERROR(ERRMSG_FAILURE_ERASE, fullname);
 				ret = ERRCODE_FAILURE_OPERATION;
@@ -1334,7 +1334,7 @@ static RESULT target_program(struct program_context_t *context)
 				}
 				pgbar_update(target_size);
 			}
-			if (ERROR_OK != prog->interfaces.peripheral_commit())
+			if (ERROR_OK != prog->peripheral_commit())
 			{
 				LOG_ERROR(ERRMSG_FAILURE_PROGRAM, fullname);
 				ret = ERRCODE_FAILURE_OPERATION;
@@ -1415,7 +1415,7 @@ static RESULT target_program(struct program_context_t *context)
 					ml_tmp = MEMLIST_GetNext(ml_tmp);
 				}
 			}
-			if (ERROR_OK != prog->interfaces.peripheral_commit())
+			if (ERROR_OK != prog->peripheral_commit())
 			{
 				LOG_ERROR(ERRMSG_FAILURE_READ, fullname);
 				ret = ERRCODE_FAILURE_OPERATION;
@@ -1512,7 +1512,7 @@ static RESULT target_program(struct program_context_t *context)
 							pgbar_update(page_size);
 						}
 					}
-					if (ERROR_OK != prog->interfaces.peripheral_commit())
+					if (ERROR_OK != prog->peripheral_commit())
 					{
 						LOG_ERROR(ERRMSG_FAILURE_READ, fullname);
 						ret = ERRCODE_FAILURE_OPERATION;
@@ -1585,7 +1585,7 @@ static RESULT target_program(struct program_context_t *context)
 					ret = ERRCODE_FAILURE_OPERATION;
 					goto target_program_exit;
 				}
-				if (ERROR_OK != prog->interfaces.peripheral_commit())
+				if (ERROR_OK != prog->peripheral_commit())
 				{
 					LOG_ERROR(ERRMSG_FAILURE_READ, fullname);
 					ret = ERRCODE_FAILURE_OPERATION;
@@ -1746,7 +1746,7 @@ static RESULT target_init(struct program_info_t *pi)
 			context.op = &opt_tmp;
 			context.param = &target_chip_param;
 			context.pi = pi;
-			context.prog = cur_programmer;
+			context.prog = cur_interface;
 			if (ERROR_OK != target_enter_progmode(&context))
 			{
 				LOG_ERROR(ERRMSG_AUTODETECT_FAIL, pi->chip_type);
@@ -4175,7 +4175,7 @@ VSS_HANDLER(target_enter_program_mode)
 	context.op = &operations;
 	context.param = &target_chip_param;
 	context.pi = &program_info;
-	context.prog = cur_programmer;
+	context.prog = cur_interface;
 	ret = target_enter_progmode(&context);
 	if (ret != ERROR_OK)
 	{
@@ -4202,7 +4202,7 @@ VSS_HANDLER(target_leave_program_mode)
 	context.op = &operations;
 	context.param = &target_chip_param;
 	context.pi = &program_info;
-	context.prog = cur_programmer;
+	context.prog = cur_interface;
 	ret = target_leave_progmode(&context, success);
 	if (ret != ERROR_OK)
 	{
@@ -4246,7 +4246,7 @@ VSS_HANDLER(target_erase)
 	context.op = &operations;
 	context.param = &target_chip_param;
 	context.pi = &program_info;
-	context.prog = cur_programmer;
+	context.prog = cur_interface;
 	ret = target_program(&context);
 	if (ret != ERROR_OK)
 	{
@@ -4291,7 +4291,7 @@ VSS_HANDLER(target_write)
 	context.op = &operations;
 	context.param = &target_chip_param;
 	context.pi = &program_info;
-	context.prog = cur_programmer;
+	context.prog = cur_interface;
 	ret = target_program(&context);
 	operations = operations_tmp;
 	if (ret != ERROR_OK)
@@ -4337,7 +4337,7 @@ VSS_HANDLER(target_verify)
 	context.op = &operations;
 	context.param = &target_chip_param;
 	context.pi = &program_info;
-	context.prog = cur_programmer;
+	context.prog = cur_interface;
 	ret = target_program(&context);
 	operations = operations_tmp;
 	if (ret != ERROR_OK)
@@ -4389,7 +4389,7 @@ VSS_HANDLER(target_read)
 	context.op = &operations;
 	context.param = &target_chip_param;
 	context.pi = &program_info;
-	context.prog = cur_programmer;
+	context.prog = cur_interface;
 	ret = target_program(&context);
 	program_info.program_areas[index].memlist = pml_save;
 	MEMLIST_Free(&ml_tmp);
@@ -4429,7 +4429,7 @@ VSS_HANDLER(target_operate)
 	context.op = &operations;
 	context.param = &target_chip_param;
 	context.pi = &program_info;
-	context.prog = cur_programmer;
+	context.prog = cur_interface;
 	ret = target_program(&context);
 	if (ret != ERROR_OK)
 	{

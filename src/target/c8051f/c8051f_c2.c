@@ -94,7 +94,7 @@ ENTER_PROGRAM_MODE_HANDLER(c8051fc2)
 	struct chip_param_t *param = context->param;
 	uint8_t dr;
 	
-	interfaces = &(context->prog->interfaces);
+	interfaces = context->prog;
 	c2_init();
 	// enable flash programming
 	c2_write_ir((uint8_t)param->param[C8051F_PARAM_FPCTL_ADDR]);

@@ -247,7 +247,7 @@ ENTER_PROGRAM_MODE_HANDLER(psoc1)
 	struct program_info_t *pi = context->pi;
 	uint16_t voltage;
 	
-	interfaces = &(context->prog->interfaces);
+	interfaces = context->prog;
 	
 	if (ERROR_OK != get_target_voltage(&voltage))
 	{

@@ -104,7 +104,7 @@ ENTER_PROGRAM_MODE_HANDLER(ee24cxx)
 	struct program_info_t *pi = context->pi;
 	struct ee24cxx_drv_param_t drv_param;
 	
-	interfaces = &(context->prog->interfaces);
+	interfaces = context->prog;
 	if (ERROR_OK != dal_init(interfaces))
 	{
 		return ERROR_FAIL;

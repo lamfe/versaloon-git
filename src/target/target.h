@@ -208,7 +208,7 @@ struct program_context_t
 	struct operation_t *op;
 	struct program_info_t *pi;
 	struct chip_param_t *param;
-	struct programmer_info_t *prog;
+	struct interfaces_info_t *prog;
 };
 
 #define	EXECUTE_FUNCNAME(mod)				ASSEMBLE_FUNCNAME(mod, _execute)

@@ -3,7 +3,8 @@ INCLUDES = \
     -I$(top_srcdir)/src \
     -I$(top_srcdir)/src/driver \
     -I$(top_srcdir)/src/programmer \
-    -I$(top_srcdir)/src/scripts
+    -I$(top_srcdir)/src/scripts \
+    -I$(top_srcdir)/src/programmer/interfaces
 
 METASOURCES = AUTO
 noinst_LIBRARIES = libdal.a

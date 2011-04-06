@@ -658,7 +658,7 @@ static RESULT avrxmega_nvm_erase_target(uint8_t cmd, uint32_t addr)
 
 ENTER_PROGRAM_MODE_HANDLER(avrxmega)
 {
-	interfaces = &(context->prog->interfaces);
+	interfaces = context->prog;
 	avrxmega_progmode = context->pi->mode;
 	pi = context->pi;
 	pdi_append_0 = 0;

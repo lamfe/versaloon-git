@@ -43,9 +43,9 @@
 #define msp430_jtag_dr16_poll(dr, mask, value, cnt, t)		msp430jtagsbw_poll(0, (dr), (mask), (value), 16, (cnt), (t))
 #define msp430_jtag_reset()									msp430jtagsbw_reset(0)
 
-#define delay_ms(ms)										prog->interfaces.delay.delayms((ms) | 0x8000)
-#define delay_us(us)										prog->interfaces.delay.delayus((us) & 0x7FFF)
-#define commit()											prog->interfaces.peripheral_commit()
+#define delay_ms(ms)										prog->delay.delayms((ms) | 0x8000)
+#define delay_us(us)										prog->delay.delayus((us) & 0x7FFF)
+#define commit()											prog->peripheral_commit()
 
 
 typedef uint16_t word;
