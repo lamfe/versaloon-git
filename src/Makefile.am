@@ -32,11 +32,11 @@ endif
 vsprog_LDFLAGS = $(all_libraries)
 
 vsprog_LDADD = \
+    $(top_builddir)/src/scripts/libscripts.a \
     $(top_builddir)/src/programmer/libprog.a \
     $(top_builddir)/src/target/libtgt.a \
     $(top_builddir)/src/tools/libtool.a \
     $(top_builddir)/src/driver/libdrv.a \
-    $(top_builddir)/src/scripts/libscripts.a \
     $(top_builddir)/src/dal/libdal.a \
     $(MINGWLDADD) -lusb $(XML_LIBS)
 
