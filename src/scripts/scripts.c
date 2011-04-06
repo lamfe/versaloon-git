@@ -126,6 +126,7 @@ struct vss_cmd_t vss_generic_cmd[] =
 };
 
 extern struct vss_cmd_t interface_cmd[];
+extern struct vss_cmd_t programmer_cmd[];
 extern struct vss_cmd_t pgbar_cmd[];
 extern struct vss_cmd_t vsprog_cmd[];
 extern struct vss_cmd_t target_cmd[];
@@ -146,6 +147,7 @@ struct vss_cmd_t *vss_cmds_list[] =
 	target_cmd,
 	pgbar_cmd,
 	filelist_cmd,
+	programmer_cmd,
 	interface_cmd,
 	comisp_cmd,
 	usbapi_cmd,
