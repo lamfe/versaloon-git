@@ -50,7 +50,7 @@
 #include "hex.h"
 #include "scripts.h"
 
-#define OPTSTR			"hvS:P:s:c:Mp:U:D:Ld:Go:F:m:x:C:I:O:J:Zb:V:t:K:W:Aqel:i:Q:"
+#define OPTSTR			"hvS:P:s:c:Mp:U:D:Ld:Go:F:m:x:C:I:O:J:b:V:t:K:W:Aqel:i:Q:"
 static const struct option long_opts[] =
 {
 	{"help", no_argument, NULL, 'h'},
@@ -81,7 +81,6 @@ static const struct option long_opts[] =
 	{"quartz-khz", required_argument, NULL, 'Q'},
 	{"wait-state", required_argument, NULL, 'W'},
 	{"auto-adjust", no_argument, NULL, 'A'},
-	{"firmware-update", no_argument, NULL, 'Z'},
 	{"buffsize", required_argument, NULL, 'b'},
 	{"vss-cmd", required_argument, NULL, 'V'},
 	{"quiet", no_argument, NULL, 'q'},
@@ -95,7 +94,6 @@ VSS_HANDLER(vsprog_debug_level);
 VSS_HANDLER(vsprog_support);
 VSS_HANDLER(vsprog_operation);
 VSS_HANDLER(vsprog_mass);
-VSS_HANDLER(vsprog_firmware_update);
 VSS_HANDLER(vsprog_free_all);
 VSS_HANDLER(vsprog_init);
 
@@ -137,12 +135,6 @@ struct vss_cmd_t vsprog_cmd[] =
 	VSS_CMD(	"M",
 				"enable mass product mode, format: mass-product/M",
 				vsprog_mass),
-	VSS_CMD(	"firmware-update",
-				"enter firmware update mode, format: firmware-update/Z",
-				vsprog_firmware_update),
-	VSS_CMD(	"Z",
-				"enter firmware update mode, format: firmware-update/Z",
-				vsprog_firmware_update),
 	VSS_CMD(	"free-all", 
 				"free everything, format: free-all",
 				vsprog_free_all),
@@ -182,10 +174,10 @@ static void free_all(void)
 		cur_target = NULL;
 	}
 	
-	if ((cur_programmer != NULL) && (cur_programmer->fini != NULL))
+	if ((cur_interface != NULL) && (cur_interface->fini != NULL))
 	{
-		cur_programmer->fini();
-		cur_programmer = NULL;
+		cur_interface->fini();
+		cur_interface = NULL;
 	}
 	
 	memset(&operations, 0, sizeof(operations));
@@ -322,11 +314,10 @@ Usage: %s [OPTION]...\n\
   -t,  --target <TARGET VALUE>              set target value, eg(fuse): -tu0x02\n\
   -L,  --list-programmer                    list programmers available\n\
   -M,  --mass-product                       set mass_product mode\n\
-  -G,  --gui-mode                           set gui_mode\n\
-  -Z,  --firmware-update                    enter into firmware update mode\n\n"), 
+  -G,  --gui-mode                           set gui_mode\n\n"), 
 			program_name);
 
-	programmer_print_help();
+	interface_print_help();
 	target_print_help();
 	
 	return ERROR_OK;
@@ -372,7 +363,7 @@ VSS_HANDLER(vsprog_support)
 		// print system information
 		print_system_info();
 		// print all Supported programmers
-		programmer_print_list();
+		interface_print_list();
 		// print all Supported devices
 		target_print_list();
 	}
@@ -383,7 +374,7 @@ VSS_HANDLER(vsprog_support)
 	else if (!strcmp(argv[1], "programmer"))
 	{
 		// print all Supported programmers
-		programmer_print_list();
+		interface_print_list();
 	}
 	else if (!strcmp(argv[1], "target"))
 	{
@@ -394,11 +385,11 @@ VSS_HANDLER(vsprog_support)
 	{
 		uint32_t i;
 		
-		for (i = 0; programmers_info[i].name != NULL; i++)
+		for (i = 0; interfaces_info[i] != NULL; i++)
 		{
-			if (!strcmp(programmers_info[i].name, argv[1]))
+			if (!strcmp(interfaces_info[i]->name, argv[1]))
 			{
-				vss_call_notifier(programmers_info[i].notifier, 
+				vss_call_notifier(interfaces_info[i]->notifier, 
 									"support", NULL);
 				return ERROR_OK;
 			}
@@ -488,43 +479,6 @@ VSS_HANDLER(vsprog_mass)
 	VSS_CHECK_ARGC(1);
 	LOG_ERROR(ERRMSG_NOT_SUPPORT, "mass product mode");
 	return ERROR_FAIL;
-}
-
-VSS_HANDLER(vsprog_firmware_update)
-{
-	int verbosity_tmp;
-	struct programmer_info_t *prog = NULL;
-	
-	VSS_CHECK_ARGC(1);
-	
-	// send command first to enter into firmware update mode
-	verbosity_tmp = verbosity;
-	verbosity = -1;
-	verbosity = verbosity_tmp;
-	
-	if ((ERROR_OK != programmer_assert(&prog)) || (NULL == prog))
-	{
-		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", 
-					"programmer module");
-		return ERROR_FAIL;
-	}
-	
-	if (prog->enter_firmware_update_mode != NULL)
-	{
-		if (ERROR_OK != prog->enter_firmware_update_mode())
-		{
-			LOG_ERROR(ERRMSG_FAILURE_OPERATION, 
-						"enter into firmware update mode");
-			return ERROR_FAIL;
-		}
-	}
-	
-	// close device
-	prog->fini();
-	// sleep 3s
-	sleep_ms(3000);
-	
-	return ERROR_OK;
 }
 
 VSS_HANDLER(vsprog_free_all)

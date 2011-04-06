@@ -29,6 +29,8 @@
 #include "usbtoxxx/usbtoxxx.h"
 #include "usbtoxxx/usbtoxxx_internal.h"
 
+#define VERSALOON_STRING					"versaloon"
+
 const char *versaloon_hardwares[] = 
 {
 	"Versaloon_Full",		// 1
@@ -326,13 +328,18 @@ static RESULT versaloon_fini(void)
 #define VERSALOON_RETRY_CNT				10
 static RESULT versaloon_init(void *p)
 {
-	struct programmer_info_t *t = (struct programmer_info_t *)p;
+	struct interfaces_info_t *t = (struct interfaces_info_t *)p;
 	uint16_t ret = 0;
 	uint8_t retry;
 	uint32_t timeout_tmp;
 	
 	memset(versaloon_pending, 0, sizeof(versaloon_pending));
 	
+	if (!usb_param_valid())
+	{
+		usb_set_param(VERSALOON_VID, VERSALOON_PID, VERSALOON_INP, 
+						VERSALOON_OUTP, 1);
+	}
 	versaloon_device_handle = find_usb_device(usb_param_vid(), 
 		usb_param_pid(), usb_param_interface(), VERSALOON_SERIALSTRING_INDEX, 
 		usb_param_serial(), VERSALOON_PRODUCTSTRING_INDEX, 
@@ -424,148 +431,123 @@ static RESULT versaloon_init(void *p)
 		return ERROR_FAIL;
 	}
 	// fixes programmer abilities
-	if ((t->interfaces.support_mask & POLL) && 
+	if ((t->support_mask & POLL) && 
 		!usbtoxxx_interface_supported(USB_TO_POLL))
 	{
-		t->interfaces.support_mask &= ~POLL;
+		t->support_mask &= ~POLL;
 	}
-	if ((t->interfaces.support_mask & USART) && 
+	if ((t->support_mask & USART) && 
 		!usbtoxxx_interface_supported(USB_TO_USART))
 	{
-		t->interfaces.support_mask &= ~USART;
+		t->support_mask &= ~USART;
 	}
-	if ((t->interfaces.support_mask & SPI) && 
+	if ((t->support_mask & SPI) && 
 		!usbtoxxx_interface_supported(USB_TO_SPI))
 	{
-		t->interfaces.support_mask &= ~SPI;
+		t->support_mask &= ~SPI;
 	}
-	if ((t->interfaces.support_mask & I2C) && 
+	if ((t->support_mask & I2C) && 
 		!usbtoxxx_interface_supported(USB_TO_I2C))
 	{
-		t->interfaces.support_mask &= ~I2C;
+		t->support_mask &= ~I2C;
 	}
-	if ((t->interfaces.support_mask & GPIO) && 
+	if ((t->support_mask & GPIO) && 
 		!usbtoxxx_interface_supported(USB_TO_GPIO))
 	{
-		t->interfaces.support_mask &= ~GPIO;
+		t->support_mask &= ~GPIO;
 	}
-	if ((t->interfaces.support_mask & CAN) && 
+	if ((t->support_mask & CAN) && 
 		!usbtoxxx_interface_supported(USB_TO_CAN))
 	{
-		t->interfaces.support_mask &= ~CAN;
+		t->support_mask &= ~CAN;
 	}
-	if ((t->interfaces.support_mask & ADC) && 
+	if ((t->support_mask & ADC) && 
 		!usbtoxxx_interface_supported(USB_TO_ADC))
 	{
-		t->interfaces.support_mask &= ~ADC;
+		t->support_mask &= ~ADC;
 	}
-	if ((t->interfaces.support_mask & DAC) && 
+	if ((t->support_mask & DAC) && 
 		!usbtoxxx_interface_supported(USB_TO_DAC))
 	{
-		t->interfaces.support_mask &= ~DAC;
+		t->support_mask &= ~DAC;
 	}
-	if ((t->interfaces.support_mask & POWER) && 
+	if ((t->support_mask & POWER) && 
 		!usbtoxxx_interface_supported(USB_TO_POWER))
 	{
-		t->interfaces.support_mask &= ~POWER;
+		t->support_mask &= ~POWER;
 	}
-	if ((t->interfaces.support_mask & ISSP) && 
+	if ((t->support_mask & ISSP) && 
 		!usbtoxxx_interface_supported(USB_TO_ISSP))
 	{
-		t->interfaces.support_mask &= ~ISSP;
+		t->support_mask &= ~ISSP;
 	}
-	if ((t->interfaces.support_mask & JTAG_HL) && 
+	if ((t->support_mask & JTAG_HL) && 
 		!usbtoxxx_interface_supported(USB_TO_JTAG_HL))
 	{
-		t->interfaces.support_mask &= ~JTAG_HL;
+		t->support_mask &= ~JTAG_HL;
 	}
-	if ((t->interfaces.support_mask & JTAG_LL) && 
+	if ((t->support_mask & JTAG_LL) && 
 		!usbtoxxx_interface_supported(USB_TO_JTAG_LL))
 	{
-		t->interfaces.support_mask &= ~JTAG_LL;
+		t->support_mask &= ~JTAG_LL;
 	}
-	if ((t->interfaces.support_mask & MSP430_JTAG) && 
+	if ((t->support_mask & MSP430_JTAG) && 
 		!usbtoxxx_interface_supported(USB_TO_MSP430_JTAG))
 	{
-		t->interfaces.support_mask &= ~MSP430_JTAG;
+		t->support_mask &= ~MSP430_JTAG;
 	}
-	if ((t->interfaces.support_mask & C2) && 
+	if ((t->support_mask & C2) && 
 		!usbtoxxx_interface_supported(USB_TO_C2))
 	{
-		t->interfaces.support_mask &= ~C2;
+		t->support_mask &= ~C2;
 	}
-	if ((t->interfaces.support_mask & USART) && 
+	if ((t->support_mask & USART) && 
 		!usbtoxxx_interface_supported(USB_TO_USART))
 	{
-		t->interfaces.support_mask &= ~USART;
+		t->support_mask &= ~USART;
 	}
-	if ((t->interfaces.support_mask & LPC_ICP) && 
+	if ((t->support_mask & LPC_ICP) && 
 		!usbtoxxx_interface_supported(USB_TO_LPCICP))
 	{
-		t->interfaces.support_mask &= ~LPC_ICP;
+		t->support_mask &= ~LPC_ICP;
 	}
-	if ((t->interfaces.support_mask & SWD) && 
+	if ((t->support_mask & SWD) && 
 		!usbtoxxx_interface_supported(USB_TO_SWD))
 	{
-		t->interfaces.support_mask &= ~SWD;
+		t->support_mask &= ~SWD;
 	}
-	if ((t->interfaces.support_mask & SWIM) && 
+	if ((t->support_mask & SWIM) && 
 		!usbtoxxx_interface_supported(USB_TO_SWIM))
 	{
-		t->interfaces.support_mask &= ~SWIM;
+		t->support_mask &= ~SWIM;
 	}
-	if ((t->interfaces.support_mask & JTAG_RAW) && 
+	if ((t->support_mask & JTAG_RAW) && 
 		!usbtoxxx_interface_supported(USB_TO_JTAG_RAW))
 	{
-		t->interfaces.support_mask &= ~JTAG_RAW;
+		t->support_mask &= ~JTAG_RAW;
 	}
-	if ((t->interfaces.support_mask & BDM) && 
+	if ((t->support_mask & BDM) && 
 		!usbtoxxx_interface_supported(USB_TO_BDM))
 	{
-		t->interfaces.support_mask &= ~BDM;
+		t->support_mask &= ~BDM;
 	}
-	if ((t->interfaces.support_mask & DUSI) && 
+	if ((t->support_mask & DUSI) && 
 		!usbtoxxx_interface_supported(USB_TO_DUSI))
 	{
-		t->interfaces.support_mask &= ~DUSI;
+		t->support_mask &= ~DUSI;
 	}
-	if ((t->interfaces.support_mask & MICROWIRE) && 
+	if ((t->support_mask & MICROWIRE) && 
 		!usbtoxxx_interface_supported(USB_TO_MICROWIRE))
 	{
-		t->interfaces.support_mask &= ~MICROWIRE;
+		t->support_mask &= ~MICROWIRE;
 	}
-	if ((t->interfaces.support_mask & PWM) && 
+	if ((t->support_mask & PWM) && 
 		!usbtoxxx_interface_supported(USB_TO_PWM))
 	{
-		t->interfaces.support_mask &= ~PWM;
+		t->support_mask &= ~PWM;
 	}
 	
 	return ERROR_OK;
-}
-
-static RESULT versaloon_enter_firmware_update_mode(void)
-{
-#if PARAM_CHECK
-	if (NULL == versaloon_buf)
-	{
-		LOG_BUG(ERRMSG_INVALID_BUFFER, TO_STR(versaloon_buf));
-		return ERRCODE_INVALID_BUFFER;
-	}
-#endif
-	
-	versaloon_buf[0] = VERSALOON_FW_UPDATE;
-	versaloon_buf[1] = (uint8_t)(VERSALOON_FW_UPDATE_KEY);
-	versaloon_buf[2] = (uint8_t)(~VERSALOON_FW_UPDATE_KEY);
-	
-	if (ERROR_OK != versaloon_send_command(3, NULL))
-	{
-		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "communicate with versaloon");
-		return ERRCODE_FAILURE_OPERATION;
-	}
-	else
-	{
-		return ERROR_OK;
-	}
 }
 
 const char* versaloon_get_hardware_name(uint8_t idx)
@@ -619,15 +601,6 @@ RESULT versaloon_get_hardware(uint8_t *hardware)
 
 
 // Interfaces:
-// Delay
-static RESULT versaloon_delay_ms(uint16_t ms)
-{
-	return usbtodelay_delay(ms | 0x8000);
-}
-static RESULT versaloon_delay_us(uint16_t us)
-{
-	return usbtodelay_delay(us & 0x7FFF);
-}
 // POLL
 static RESULT versaloon_poll_start(uint16_t retry_cnt, uint16_t interval_us)
 {
@@ -665,209 +638,7 @@ static RESULT versaloon_poll_verifybuff(uint16_t offset, uint16_t size, uint8_t 
 	return usbtopoll_verifybuff(offset, size, buff);
 }
 
-
-
-
-// MSP430_SBW, not implemented for chips with TEST pin
-RESULT versaloon_msp430sbw_config(uint8_t index, uint8_t has_test)
-{
-	if (has_test)
-	{
-		return usbtomsp430sbw_config(index);
-	}
-	else
-	{
-		// not support yet
-		return ERROR_FAIL;
-	}
-}
-
-
-
-RESULT versaloon_init_capability(void *p)
-{
-	struct programmer_info_t *t = (struct programmer_info_t *)p;
-	struct interfaces_info_t *i = &(t->interfaces);
-	
-	t->init = versaloon_init;
-	t->fini = versaloon_fini;
-	
-	i->support_mask = (USART | SPI | I2C | GPIO | POWER | ISSP | JTAG_LL | POLL 
-		| JTAG_HL | SWIM | JTAG_RAW | C2 | MSP430_JTAG | LPC_ICP | SWD | BDM 
-		| DUSI | MICROWIRE | PWM);
-	
-	// USART
-	i->usart.init = usbtousart_init;
-	i->usart.fini = usbtousart_fini;
-	i->usart.config = usbtousart_config;
-	i->usart.send = usbtousart_send;
-	i->usart.receive = usbtousart_receive;
-	i->usart.status = usbtousart_status;
-	
-	// SPI
-	i->spi.init = usbtospi_init;
-	i->spi.fini = usbtospi_fini;
-	i->spi.config = usbtospi_config;
-	i->spi.io = usbtospi_io;
-	
-	// GPIO
-	i->gpio.init = usbtogpio_init;
-	i->gpio.fini = usbtogpio_fini;
-	i->gpio.config = usbtogpio_config;
-	i->gpio.in = usbtogpio_in;
-	i->gpio.out = usbtogpio_out;
-	
-	// Delay
-	i->delay.delayms = versaloon_delay_ms;
-	i->delay.delayus = versaloon_delay_us;
-	
-	// ISSP
-	i->issp.init = usbtoissp_init;
-	i->issp.fini = usbtoissp_fini;
-	i->issp.enter_program_mode = usbtoissp_enter_program_mode;
-	i->issp.leave_program_mode = usbtoissp_leave_program_mode;
-	i->issp.wait_and_poll = usbtoissp_wait_and_poll;
-	i->issp.vector = usbtoissp_vector;
-	
-	// LPCICP
-	i->lpcicp.init = usbtolpcicp_init;
-	i->lpcicp.fini = usbtolpcicp_fini;
-	i->lpcicp.enter_program_mode = usbtolpcicp_enter_program_mode;
-	i->lpcicp.in = usbtolpcicp_in;
-	i->lpcicp.out = usbtolpcicp_out;
-	i->lpcicp.poll_ready = usbtolpcicp_poll_ready;
-	
-	// Target voltage
-	i->target_voltage.get = versaloon_get_target_voltage;
-	i->target_voltage.set = versaloon_set_target_voltage;
-	
-	// JTAG_HL & SWD
-	i->swd.init = usbtoswd_init;
-	i->swd.fini = usbtoswd_fini;
-	i->swd.seqout = usbtoswd_seqout;
-	i->swd.seqin = usbtoswd_seqin;
-	i->swd.transact = usbtoswd_transact;
-	i->swd.config = usbtoswd_config;
-
-	i->jtag_hl.init = usbtojtaghl_init;
-	i->jtag_hl.fini = usbtojtaghl_fini;
-	i->jtag_hl.config= usbtojtaghl_config;
-	i->jtag_hl.tms = usbtojtaghl_tms;
-	i->jtag_hl.runtest = usbtojtaghl_runtest;
-	i->jtag_hl.ir = usbtojtaghl_ir;
-	i->jtag_hl.dr = usbtojtaghl_dr;
-	i->jtag_hl.register_callback = usbtojtaghl_register_callback;
-	
-	// JTAG_LL
-	i->jtag_ll.init = usbtojtagll_init;
-	i->jtag_ll.fini = usbtojtagll_fini;
-	i->jtag_ll.config = usbtojtagll_config;
-	i->jtag_ll.tms = usbtojtagll_tms;
-	i->jtag_ll.tms_clocks = usbtojtagll_tms_clocks;
-	i->jtag_ll.scan = usbtojtagll_scan;
-	
-	// JTAG_RAW
-	i->jtag_raw.init = usbtojtagraw_init;
-	i->jtag_raw.fini = usbtojtagraw_fini;
-	i->jtag_raw.config = usbtojtagraw_config;
-	i->jtag_raw.execute = usbtojtagraw_execute;
-	
-	// MSP430_JTAG
-	i->msp430jtag.init = usbtomsp430jtag_init;
-	i->msp430jtag.fini = usbtomsp430jtag_fini;
-	i->msp430jtag.config = usbtomsp430jtag_config;
-	i->msp430jtag.ir = usbtomsp430jtag_ir;
-	i->msp430jtag.dr = usbtomsp430jtag_dr;
-	i->msp430jtag.tclk = usbtomsp430jtag_tclk;
-	i->msp430jtag.tclk_strobe = usbtomsp430jtag_tclk_strobe;
-	i->msp430jtag.reset = usbtomsp430jtag_reset;
-	i->msp430jtag.poll = usbtomsp430jtag_poll;
-	
-	// MSP430_SBW
-	i->msp430sbw.init = usbtomsp430sbw_init;
-	i->msp430sbw.fini = usbtomsp430sbw_fini;
-	i->msp430sbw.config = versaloon_msp430sbw_config;
-	i->msp430sbw.ir = usbtomsp430sbw_ir;
-	i->msp430sbw.dr = usbtomsp430sbw_dr;
-	i->msp430sbw.tclk = usbtomsp430sbw_tclk;
-	i->msp430sbw.tclk_strobe = usbtomsp430sbw_tclk_strobe;
-	i->msp430sbw.reset = usbtomsp430sbw_reset;
-	i->msp430sbw.poll = usbtomsp430sbw_poll;
-	
-	// C2
-	i->c2.init = usbtoc2_init;
-	i->c2.fini = usbtoc2_fini;
-	i->c2.addr_write = usbtoc2_writeaddr;
-	i->c2.addr_read = usbtoc2_readaddr;
-	i->c2.data_write = usbtoc2_writedata;
-	i->c2.data_read = usbtoc2_readdata;
-	
-	// I2C
-	i->i2c.init = usbtoi2c_init;
-	i->i2c.fini = usbtoi2c_fini;
-	i->i2c.config = usbtoi2c_config;
-	i->i2c.read = usbtoi2c_read;
-	i->i2c.write = usbtoi2c_write;
-	
-	// SWIM
-	i->swim.init = usbtoswim_init;
-	i->swim.fini = usbtoswim_fini;
-	i->swim.config = usbtoswim_config;
-	i->swim.srst = usbtoswim_srst;
-	i->swim.wotf = usbtoswim_wotf;
-	i->swim.rotf = usbtoswim_rotf;
-	i->swim.sync = usbtoswim_sync;
-	i->swim.enable = usbtoswim_enable;
-	
-	// BDM
-	i->bdm.init = usbtobdm_init;
-	i->bdm.fini = usbtobdm_fini;
-	i->bdm.sync = usbtobdm_sync;
-	i->bdm.transact = usbtobdm_transact;
-	
-	// DUSI
-	i->dusi.init = usbtodusi_init;
-	i->dusi.fini = usbtodusi_fini;
-	i->dusi.config = usbtodusi_config;
-	i->dusi.io = usbtodusi_io;
-	
-	// MICROWIRE
-	i->microwire.init = usbtomicrowire_init;
-	i->microwire.fini = usbtomicrowire_fini;
-	i->microwire.config = usbtomicrowire_config;
-	i->microwire.transport = usbtomicrowire_transport;
-	i->microwire.poll = usbtomicrowire_poll;
-	
-	// PWM
-	i->pwm.init = usbtopwm_init;
-	i->pwm.fini = usbtopwm_fini;
-	i->pwm.config = usbtopwm_config;
-	i->pwm.out = usbtopwm_out;
-	i->pwm.in = usbtopwm_in;
-	
-	// POLL
-	i->poll.start = versaloon_poll_start;
-	i->poll.end = versaloon_poll_end;
-	i->poll.checkok = versaloon_poll_checkok;
-	i->poll.checkfail = versaloon_poll_checkfail;
-	i->poll.verifybuff = versaloon_poll_verifybuff;
-	
-	i->peripheral_commit = versaloon_peripheral_commit;
-	
-	// firmware update
-	t->enter_firmware_update_mode = versaloon_enter_firmware_update_mode;
-	
-	// usb parameter
-	if (!usb_param_valid())
-	{
-		usb_set_param(VERSALOON_VID, VERSALOON_PID, VERSALOON_INP, 
-						VERSALOON_OUTP, 1);
-	}
-	
-	return ERROR_OK;
-}
-
-uint32_t versaloon_display_programmer(void)
+static uint32_t versaloon_display_programmer(void)
 {
 	// usb parameter
 	if (!usb_param_valid())
@@ -881,4 +652,175 @@ uint32_t versaloon_display_programmer(void)
 					VERSALOON_SERIALSTRING_INDEX, usb_param_serial(), 
 					VERSALOON_PRODUCTSTRING_INDEX, VERSALOON_PRODUCTSTRING);
 }
+
+struct interfaces_info_t versaloon_interfaces = 
+{
+	VERSALOON_STRING,
+	versaloon_notifier,
+	versaloon_display_programmer,
+	
+	versaloon_init,
+	versaloon_fini,
+	
+	USART | SPI | I2C | GPIO | POWER | ISSP | JTAG_LL | POLL | JTAG_HL | SWIM | 
+	JTAG_RAW | C2 | MSP430_JTAG | LPC_ICP | SWD | BDM | DUSI | MICROWIRE | PWM,
+	{	// target_voltage
+		versaloon_get_target_voltage,
+		versaloon_set_target_voltage
+	},
+	{	// usart
+		usbtousart_init,
+		usbtousart_fini,
+		usbtousart_config,
+		usbtousart_send,
+		usbtousart_receive,
+		usbtousart_status
+	},
+	{	// spi
+		usbtospi_init,
+		usbtospi_fini,
+		usbtospi_config,
+		usbtospi_io
+	},
+	{	// gpio
+		usbtogpio_init,
+		usbtogpio_fini,
+		usbtogpio_config,
+		usbtogpio_out,
+		usbtogpio_in
+	},
+	{	// delay
+		usbtodelay_delayms,
+		usbtodelay_delayus
+	},
+	{	// issp
+		usbtoissp_init,
+		usbtoissp_fini,
+		usbtoissp_enter_program_mode,
+		usbtoissp_leave_program_mode,
+		usbtoissp_wait_and_poll,
+		usbtoissp_vector
+	},
+	{	// swd
+		usbtoswd_init,
+		usbtoswd_fini,
+		usbtoswd_config,
+		usbtoswd_seqout,
+		usbtoswd_seqin,
+		usbtoswd_transact
+	},
+	{	// jtag_hl
+		usbtojtaghl_init,
+		usbtojtaghl_fini,
+		usbtojtaghl_config,
+		usbtojtaghl_tms,
+		usbtojtaghl_runtest,
+		usbtojtaghl_ir,
+		usbtojtaghl_dr,
+		usbtojtaghl_register_callback
+	},
+	{	// jtag_ll
+		usbtojtagll_init,
+		usbtojtagll_fini,
+		usbtojtagll_config,
+		usbtojtagll_tms,
+		usbtojtagll_tms_clocks,
+		usbtojtagll_scan
+	},
+	{	// jtag_raw
+		usbtojtagraw_init,
+		usbtojtagraw_fini,
+		usbtojtagraw_config,
+		usbtojtagraw_execute
+	},
+	{	// msp430_jtag
+		usbtomsp430jtag_init,
+		usbtomsp430jtag_fini,
+		usbtomsp430jtag_config,
+		usbtomsp430jtag_ir,
+		usbtomsp430jtag_dr,
+		usbtomsp430jtag_tclk,
+		usbtomsp430jtag_tclk_strobe,
+		usbtomsp430jtag_reset,
+		usbtomsp430jtag_poll
+	},
+	{	// msp430_sbw
+		usbtomsp430sbw_init,
+		usbtomsp430sbw_fini,
+		usbtomsp430sbw_config,
+		usbtomsp430sbw_ir,
+		usbtomsp430sbw_dr,
+		usbtomsp430sbw_tclk,
+		usbtomsp430sbw_tclk_strobe,
+		usbtomsp430sbw_reset,
+		usbtomsp430sbw_poll
+	},
+	{	// c2
+		usbtoc2_init,
+		usbtoc2_fini,
+		usbtoc2_writeaddr,
+		usbtoc2_readaddr,
+		usbtoc2_readdata,
+		usbtoc2_writedata
+	},
+	{	// i2c
+		usbtoi2c_init,
+		usbtoi2c_fini,
+		usbtoi2c_config,
+		usbtoi2c_read,
+		usbtoi2c_write
+	},
+	{	// lpcicp
+		usbtolpcicp_init,
+		usbtolpcicp_fini,
+		usbtolpcicp_enter_program_mode,
+		usbtolpcicp_in,
+		usbtolpcicp_out,
+		usbtolpcicp_poll_ready
+	},
+	{	// swim
+		usbtoswim_init,
+		usbtoswim_fini,
+		usbtoswim_config,
+		usbtoswim_srst,
+		usbtoswim_wotf,
+		usbtoswim_rotf,
+		usbtoswim_sync,
+		usbtoswim_enable
+	},
+	{	// bdm
+		usbtobdm_init,
+		usbtobdm_fini,
+		usbtobdm_sync,
+		usbtobdm_transact
+	},
+	{	// dusi
+		usbtodusi_init,
+		usbtodusi_fini,
+		usbtodusi_config,
+		usbtodusi_io
+	},
+	{	// microwire
+		usbtomicrowire_init,
+		usbtomicrowire_fini,
+		usbtomicrowire_config,
+		usbtomicrowire_transport,
+		usbtomicrowire_poll
+	},
+	{	// pwm
+		usbtopwm_init,
+		usbtopwm_fini,
+		usbtopwm_config,
+		usbtopwm_out,
+		usbtopwm_in
+	},
+	{	// poll
+		versaloon_poll_start,
+		versaloon_poll_end,
+		versaloon_poll_checkok,
+		versaloon_poll_checkfail,
+		versaloon_poll_verifybuff
+	},
+	versaloon_peripheral_commit
+};
 

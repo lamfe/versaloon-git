@@ -34,6 +34,8 @@ RESULT usbtoinfo_get_abilities(uint8_t abilities[USB_TO_XXX_ABILITIES_LEN]);
 
 // USB_TO_DELAY
 RESULT usbtodelay_delay(uint16_t dly);
+RESULT usbtodelay_delayms(uint16_t ms);
+RESULT usbtodelay_delayus(uint16_t us);
 
 
 
@@ -174,7 +176,7 @@ RESULT usbtomsp430jtag_poll(uint8_t interface_index, uint32_t dr,
 // USB_TO_MSP430_SBW
 RESULT usbtomsp430sbw_init(uint8_t interface_index);
 RESULT usbtomsp430sbw_fini(uint8_t interface_index);
-RESULT usbtomsp430sbw_config(uint8_t interface_index);
+RESULT usbtomsp430sbw_config(uint8_t interface_index, uint8_t has_test);
 RESULT usbtomsp430sbw_ir(uint8_t interface_index, uint8_t *ir, 
 							uint8_t want_ret);
 RESULT usbtomsp430sbw_dr(uint8_t interface_index, uint32_t *dr, 

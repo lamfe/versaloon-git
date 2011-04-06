@@ -262,7 +262,7 @@ static RESULT adi_dpif_init(struct program_context_t *context, adi_dpif_t *inter
 		return ERROR_FAIL;
 	}
 	
-	adi_prog = &(context->prog->interfaces);
+	adi_prog = context->prog;
 	
 	reset_init();
 	reset_input();

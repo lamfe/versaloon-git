@@ -133,7 +133,7 @@ ENTER_PROGRAM_MODE_HANDLER(avr8isp)
 	struct program_info_t *pi = context->pi;
 	uint8_t cmd_buf[4], ret_buf[4];
 	
-	interfaces = &(context->prog->interfaces);
+	interfaces = context->prog;
 	
 	if (!pi->frequency)
 	{

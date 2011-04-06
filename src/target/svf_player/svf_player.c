@@ -124,7 +124,7 @@ EXECUTE_HANDLER(svfp)
 	
 	svf_parser_init();
 	
-	if (ERROR_OK != tap_init(&(context->prog->interfaces)))
+	if (ERROR_OK != tap_init(context->prog))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "open jtag");
 		svf_parser_fini();

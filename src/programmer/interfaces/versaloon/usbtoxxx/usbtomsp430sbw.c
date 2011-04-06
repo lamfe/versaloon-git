@@ -39,8 +39,9 @@ RESULT usbtomsp430sbw_fini(uint8_t interface_index)
 	return usbtoxxx_fini_command(USB_TO_SBW, interface_index);
 }
 
-RESULT usbtomsp430sbw_config(uint8_t interface_index)
+RESULT usbtomsp430sbw_config(uint8_t interface_index, uint8_t has_test)
 {
+	REFERENCE_PARAMETER(has_test);
 #if PARAM_CHECK
 	if (interface_index > 7)
 	{

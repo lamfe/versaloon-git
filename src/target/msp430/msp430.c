@@ -85,7 +85,7 @@ Usage of %s:\n\
 ENTER_PROGRAM_MODE_HANDLER(msp430)
 {
 	struct program_info_t *pi = context->pi;
-	struct interfaces_info_t *interfaces = &context->prog->interfaces;
+	struct interfaces_info_t *interfaces = context->prog;
 	
 	if (NULL == enter_program_mode_save)
 	{

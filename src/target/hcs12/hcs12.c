@@ -243,7 +243,7 @@ ENTER_PROGRAM_MODE_HANDLER(hcs12)
 {
 	uint16_t kernel_khz;
 	
-	interfaces = &(context->prog->interfaces);
+	interfaces = context->prog;
 	
 	reset_init();
 	reset_set();

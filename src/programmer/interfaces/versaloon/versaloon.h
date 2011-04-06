@@ -19,11 +19,7 @@
 #ifndef __VERSALOON_H_INCLUDED__
 #define __VERSALOON_H_INCLUDED__
 
-#define VERSALOON_STRING				"versaloon"
-
-RESULT versaloon_init_capability(void *p);
-uint32_t versaloon_display_programmer(void);
-extern const struct vss_cmd_t versaloon_notifier[];
+extern struct interfaces_info_t versaloon_interfaces;
 
 #endif /* __VERSALOON_H_INCLUDED__ */
 

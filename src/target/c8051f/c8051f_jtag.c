@@ -175,7 +175,7 @@ ENTER_PROGRAM_MODE_HANDLER(c8051fjtag)
 	{
 		context->pi->frequency = CUR_DEFAULT_FREQ;
 	}
-	interfaces = &(context->prog->interfaces);
+	interfaces = context->prog;
 	
 	jtag_init();
 	jtag_config(pi->frequency, pi->jtag_pos.ub, pi->jtag_pos.ua, 

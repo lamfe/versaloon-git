@@ -91,40 +91,42 @@ const struct vss_cmd_t s5x_notifier[] =
 
 static uint16_t s5x_byte_delay_us = 500;
 
-#define spi_init()				prog->interfaces.spi.init(0)
-#define spi_fini()				prog->interfaces.spi.fini(0)
+#define spi_init()				interfaces->spi.init(0)
+#define spi_fini()				interfaces->spi.fini(0)
 #define spi_conf(speed)			\
-	prog->interfaces.spi.config(0, (speed), SPI_CPOL_LOW, SPI_CPHA_1EDGE, \
-								SPI_MSB_FIRST)
+	interfaces->spi.config(0, (speed), SPI_CPOL_LOW, SPI_CPHA_1EDGE, \
+							SPI_MSB_FIRST)
 #define spi_io(out, bytelen, in)\
-	prog->interfaces.spi.io(0, (out), (in), (bytelen))
+	interfaces->spi.io(0, (out), (in), (bytelen))
 
-#define reset_init()			prog->interfaces.gpio.init(0)
-#define reset_fini()			prog->interfaces.gpio.fini(0)
+#define reset_init()			interfaces->gpio.init(0)
+#define reset_fini()			interfaces->gpio.fini(0)
 #define reset_output()			\
-	prog->interfaces.gpio.config(0, GPIO_SRST, GPIO_SRST, 0, GPIO_SRST)
+	interfaces->gpio.config(0, GPIO_SRST, GPIO_SRST, 0, GPIO_SRST)
 #define reset_input()			\
-	prog->interfaces.gpio.config(0, GPIO_SRST, 0, GPIO_SRST, GPIO_SRST)
+	interfaces->gpio.config(0, GPIO_SRST, 0, GPIO_SRST, GPIO_SRST)
 #define reset_set()				reset_output()
 #define reset_clr()				reset_input()
 
-#define delay_ms(ms)			prog->interfaces.delay.delayms((ms) | 0x8000)
-#define delay_us(us)			prog->interfaces.delay.delayus((us) & 0x7FFF)
+#define delay_ms(ms)			interfaces->delay.delayms((ms) | 0x8000)
+#define delay_us(us)			interfaces->delay.delayus((us) & 0x7FFF)
 
-#define poll_start_once()		prog->interfaces.poll.start(0, 0)
-#define poll_end()				prog->interfaces.poll.end()
+#define poll_start_once()		interfaces->poll.start(0, 0)
+#define poll_end()				interfaces->poll.end()
 #define poll_fail_unequ(o, m, v)\
-	prog->interfaces.poll.checkfail(POLL_CHECK_UNEQU, (o), 1, (m), (v))
+	interfaces->poll.checkfail(POLL_CHECK_UNEQU, (o), 1, (m), (v))
 
-#define commit()				prog->interfaces.peripheral_commit()
+#define commit()				interfaces->peripheral_commit()
+
+static struct interfaces_info_t *interfaces = NULL;
 
 ENTER_PROGRAM_MODE_HANDLER(s5x)
 {
-	uint8_t cmd_buf[4];
-	
 	struct program_info_t *pi = context->pi;
 	struct chip_param_t *param = context->param;
-	struct programmer_info_t *prog = context->prog;
+	uint8_t cmd_buf[4];
+	
+	interfaces = context->prog;
 	if (!context->pi->frequency)
 	{
 		context->pi->frequency = CUR_DEFAULT_FREQ;
@@ -178,8 +180,7 @@ ENTER_PROGRAM_MODE_HANDLER(s5x)
 
 LEAVE_PROGRAM_MODE_HANDLER(s5x)
 {
-	struct programmer_info_t *prog = context->prog;
-	
+	REFERENCE_PARAMETER(context);
 	REFERENCE_PARAMETER(success);
 	
 	reset_input();
@@ -194,9 +195,9 @@ LEAVE_PROGRAM_MODE_HANDLER(s5x)
 
 ERASE_TARGET_HANDLER(s5x)
 {
-	struct programmer_info_t *prog = context->prog;
 	uint8_t cmd_buf[4];
 	
+	REFERENCE_PARAMETER(context);
 	REFERENCE_PARAMETER(area);
 	REFERENCE_PARAMETER(addr);
 	REFERENCE_PARAMETER(size);
@@ -216,7 +217,6 @@ ERASE_TARGET_HANDLER(s5x)
 
 WRITE_TARGET_HANDLER(s5x)
 {
-	struct programmer_info_t *prog = context->prog;
 	struct program_info_t *pi = context->pi;
 	uint8_t cmd_buf[4];
 	uint32_t i;
@@ -326,7 +326,6 @@ WRITE_TARGET_HANDLER(s5x)
 
 READ_TARGET_HANDLER(s5x)
 {
-	struct programmer_info_t *prog = context->prog;
 	struct program_info_t *pi = context->pi;
 	uint8_t cmd_buf[4], ret_buf[256 * 4], tmp8, lock;
 	uint32_t i;

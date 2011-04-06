@@ -16,10 +16,13 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#ifndef __PROGRAMMER_H_INCLUDED__
-#define __PROGRAMMER_H_INCLUDED__
 
-#include "interfaces/interfaces.h"
+#define DAL_MIC2826_EN						1
 
-#endif /* __PROGRAMMER_H_INCLUDED__ */
+#define DAL_EE93CX6_EN						1
+#define DAL_EE24CXX_EN						1
+#define DAL_DF25XX_EN						1
+#define DAL_DF45XX_EN						1
+#define DAL_SD_SPI_EN						1
+#define DAL_SD_SDIO_EN						0
 

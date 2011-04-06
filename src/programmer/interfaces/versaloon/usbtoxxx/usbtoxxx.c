@@ -641,3 +641,13 @@ RESULT usbtodelay_delay(uint16_t dly)
 	return versaloon_add_pending(USB_TO_DELAY, 0, 0, 0, 0, NULL, 0);
 }
 
+RESULT usbtodelay_delayms(uint16_t ms)
+{
+	return usbtodelay_delay(ms | 0x8000);
+}
+
+RESULT usbtodelay_delayus(uint16_t us)
+{
+	return usbtodelay_delay(us & 0x7FFF);
+}
+

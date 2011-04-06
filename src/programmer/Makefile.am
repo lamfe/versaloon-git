@@ -13,28 +13,29 @@ noinst_LIBRARIES = libprog.a
 
 libprog_a_SOURCES = \
     programmer.c \
-    versaloon/versaloon.c \
-    versaloon/usbtoxxx/usbtoadc.c \
-    versaloon/usbtoxxx/usbtoc2.c \
-    versaloon/usbtoxxx/usbtogpio.c \
-    versaloon/usbtoxxx/usbtoi2c.c \
-    versaloon/usbtoxxx/usbtoissp.c \
-    versaloon/usbtoxxx/usbtomsp430jtag.c \
-    versaloon/usbtoxxx/usbtomsp430sbw.c \
-    versaloon/usbtoxxx/usbtospi.c \
-    versaloon/usbtoxxx/usbtousart.c \
-    versaloon/usbtoxxx/usbtoxxx.c \
-    versaloon/usbtoxxx/usbtolpcicp.c \
-    versaloon/usbtoxxx/usbtopwr.c \
-    versaloon/usbtoxxx/usbtojtaghl.c \
-    versaloon/usbtoxxx/usbtojtagll.c \
-    versaloon/usbtoxxx/usbtoswd.c \
-    versaloon/usbtoxxx/usbtoswim.c \
-    versaloon/usbtoxxx/usbtojtagraw.c \
-    versaloon/usbtoxxx/usbtobdm.c \
-    versaloon/usbtoxxx/usbtodusi.c \
-    versaloon/usbtoxxx/usbtomicrowire.c \
-    versaloon/usbtoxxx/usbtopwm.c
+    interfaces/interfaces.c \
+    interfaces/versaloon/versaloon.c \
+    interfaces/versaloon/usbtoxxx/usbtoadc.c \
+    interfaces/versaloon/usbtoxxx/usbtoc2.c \
+    interfaces/versaloon/usbtoxxx/usbtogpio.c \
+    interfaces/versaloon/usbtoxxx/usbtoi2c.c \
+    interfaces/versaloon/usbtoxxx/usbtoissp.c \
+    interfaces/versaloon/usbtoxxx/usbtomsp430jtag.c \
+    interfaces/versaloon/usbtoxxx/usbtomsp430sbw.c \
+    interfaces/versaloon/usbtoxxx/usbtospi.c \
+    interfaces/versaloon/usbtoxxx/usbtousart.c \
+    interfaces/versaloon/usbtoxxx/usbtoxxx.c \
+    interfaces/versaloon/usbtoxxx/usbtolpcicp.c \
+    interfaces/versaloon/usbtoxxx/usbtopwr.c \
+    interfaces/versaloon/usbtoxxx/usbtojtaghl.c \
+    interfaces/versaloon/usbtoxxx/usbtojtagll.c \
+    interfaces/versaloon/usbtoxxx/usbtoswd.c \
+    interfaces/versaloon/usbtoxxx/usbtoswim.c \
+    interfaces/versaloon/usbtoxxx/usbtojtagraw.c \
+    interfaces/versaloon/usbtoxxx/usbtobdm.c \
+    interfaces/versaloon/usbtoxxx/usbtodusi.c \
+    interfaces/versaloon/usbtoxxx/usbtomicrowire.c \
+    interfaces/versaloon/usbtoxxx/usbtopwm.c
 
 #noinst_HEADERS = \
     programmer.h \
