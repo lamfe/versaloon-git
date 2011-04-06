@@ -229,7 +229,7 @@ RESULT interface_init(const char *ifs)
 		cur_interface = interface_tmp;
 		if (cur_interface->support_mask & POWER)
 		{
-			return vss_run_script("get_tvcc");
+			return vss_run_script("tvcc.get");
 		}
 		else
 		{
