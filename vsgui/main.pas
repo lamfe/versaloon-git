@@ -1842,7 +1842,7 @@ begin
     exit;
   end;
 
-  VSProg_Caller.AddParameter('V"set_tvcc ' + cbboxPower.Text + '"');
+  VSProg_Caller.AddParameter('V"tvcc.set ' + cbboxPower.Text + '"');
   LogInfo('Running...');
   VSProg_RunAlgorithm(VSProg_Caller, nil, 0, False);
   LogInfo('Idle');
