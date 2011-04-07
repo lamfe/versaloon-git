@@ -34,7 +34,6 @@
 #include "timer.h"
 
 #include "memlist.h"
-#include "filelist.h"
 #include "pgbar.h"
 
 #include "vsprog.h"
