@@ -176,7 +176,6 @@ struct program_mode_t
 	uint64_t interface_needed;
 };
 
-#define TARGET_CONF_FILE_EXT		".xml"
 #define TARGET_MAX_CHIP_NAME_LEN	32
 
 struct chip_area_info_t
@@ -345,6 +344,11 @@ char* target_area_fullname(char area_name);
 int8_t target_area_idx(char area_name);
 char target_area_char_by_fullname(char *fullname);
 char* target_area_fullname_by_mask(uint32_t mask);
+
+int8_t target_mode_get_idx(const struct program_mode_t *mode, char mode_name);
+
+RESULT target_release_chip_series(struct chip_series_t *s);
+RESULT target_release_chip_fl(struct chip_fl_t *fl);
 
 void target_print_target(uint32_t index);
 void target_print_list(void);

@@ -8,12 +8,10 @@ vsprog_SOURCES = $(MAINFILE)
 INCLUDES = \
     $(all_includes) \
     -I$(top_srcdir)/src \
-    -I$(top_srcdir)/src/tools/hex \
     -I$(top_srcdir)/src/tools/pgbar \
     -I$(top_srcdir)/src/tools/list \
     -I$(top_srcdir)/src/tools/memlist \
     -I$(top_srcdir)/src/tools/filelist \
-    -I$(top_srcdir)/src/tools/fileparser \
     -I$(top_srcdir)/src/tools/strparser \
     -I$(top_srcdir)/src/target \
     -I$(top_srcdir)/src/driver \

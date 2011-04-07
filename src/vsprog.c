@@ -39,7 +39,6 @@
 #include "app_err.h"
 #include "prog_interface.h"
 
-#include "fileparser.h"
 #include "memlist.h"
 #include "filelist.h"
 #include "strparser.h"
@@ -47,7 +46,6 @@
 #include "vsprog.h"
 #include "programmer.h"
 #include "target.h"
-#include "hex.h"
 #include "scripts.h"
 
 #define OPTSTR			"hvS:P:s:c:Mp:U:D:Ld:Go:F:m:x:C:I:O:J:b:V:t:K:W:Aqel:i:Q:"
