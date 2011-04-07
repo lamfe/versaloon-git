@@ -117,10 +117,10 @@ struct vss_cmd_t vss_generic_cmd[] =
 				"end a function",
 				vss_function_end),
 	VSS_CMD(	"function_call",
-				"call a function",
+				"call a function, format: function_call FUNC_NAME",
 				vss_function_call),
 	VSS_CMD(	"function_free",
-				"free all functions",
+				"free function(s), format: function_free [FUNC_NAME]",
 				vss_function_free),
 	VSS_CMD_END
 };
@@ -161,6 +161,76 @@ static uint8_t *vss_quiet_mode_ptr = NULL;
 
 static struct vss_function_t *vss_functions = NULL, *vss_cur_function = NULL;
 
+static struct vss_function_t *vss_function_search(struct vss_function_t *f, char *func_name)
+{
+	if (func_name != NULL)
+	{
+		while (f != NULL)
+		{
+			if (!strcpy(f->func_name, func_name))
+			{
+				return f;
+			}
+			f = f->next;
+		}
+	}
+	return NULL;
+}
+
+static RESULT vss_function_run(struct vss_function_t *f)
+{
+	struct vss_function_cmd_t *cmd;
+	
+	if ((NULL == f) || (NULL == f->cmds))
+	{
+		return ERROR_OK;
+	}
+	
+	cmd = f->cmds;
+	while (cmd->func_cmd != NULL)
+	{
+		if (ERROR_OK != vss_run_script(cmd->func_cmd))
+		{
+			return ERROR_FAIL;
+		}
+		cmd = cmd->next;
+	}
+	
+	return ERROR_OK;
+}
+
+static RESULT vss_function_free_node(struct vss_function_t *f)
+{
+	struct vss_function_cmd_t *cmd, *cmd_tmp;
+	
+	if (NULL == f)
+	{
+		return ERROR_OK;
+	}
+	
+	cmd = f->cmds;
+	while (cmd != NULL)
+	{
+		cmd_tmp = cmd;
+		cmd = cmd->next;
+		if (cmd_tmp->func_cmd != NULL)
+		{
+			free(cmd_tmp->func_cmd);
+			cmd_tmp->func_cmd = NULL;
+		}
+		free(cmd_tmp);
+	}
+	if (f->func_name != NULL)
+	{
+		free(f->func_name);
+		f->func_name = NULL;
+	}
+	free(f);
+	f = NULL;
+	
+	return ERROR_OK;
+}
+
 static RESULT vss_append_function_cmd(struct vss_function_t *func, char * str)
 {
 	struct vss_function_cmd_t *cmd, *tmp;
@@ -198,7 +268,7 @@ static RESULT vss_append_function_cmd(struct vss_function_t *func, char * str)
 		}
 		tmp->next = cmd;
 	}
-	
+	cmd = tmp = NULL;
 	return ERROR_OK;
 }
 
@@ -880,7 +950,7 @@ VSS_HANDLER(vss_quiet)
 
 VSS_HANDLER(vss_function_register)
 {
-	struct vss_function_t *func, *func_last;
+	struct vss_function_t *func;
 	
 	VSS_CHECK_ARGC(2);
 	
@@ -890,23 +960,15 @@ VSS_HANDLER(vss_function_register)
 		return ERROR_FAIL;
 	}
 	
-	func = func_last = vss_functions;
-	while (func != NULL)
+	if (NULL != vss_function_search(vss_functions, (char *)argv[1]))
 	{
-		if (!strcmp(func->func_name, argv[1]))
-		{
-			func = func_last = NULL;
-			LOG_ERROR("%s already registered!!", func->func_name);
-			return ERROR_FAIL;
-		}
-		func_last = func;
-		func = func->next;
+		LOG_ERROR("function %s already registered!!", argv[1]);
+		return ERROR_FAIL;
 	}
 	
 	func = (struct vss_function_t *)malloc(sizeof(struct vss_function_t));
 	if (NULL == func)
 	{
-		func = func_last = NULL;
 		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 		return ERROR_FAIL;
 	}
@@ -915,21 +977,11 @@ VSS_HANDLER(vss_function_register)
 	if (NULL == bufffunc_malloc_and_copy_str(&func->func_name, (char *)argv[1]))
 	{
 		free(func);
-		func = func_last = NULL;
 		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 		return ERROR_FAIL;
 	}
-	if (func_last != NULL)
-	{
-		func_last->next = func;
-	}
-	else
-	{
-		vss_functions = func;
-	}
-	
-	vss_cur_function = func;
-	func = func_last = NULL;
+	func->next = vss_functions;
+	vss_cur_function = vss_functions = func;
 	return ERROR_OK;
 }
 
@@ -944,7 +996,6 @@ VSS_HANDLER(vss_function_end)
 	}
 	
 	ret = vss_append_function_cmd(vss_cur_function, NULL);
-	
 	vss_cur_function = NULL;
 	return ret;
 }
@@ -955,59 +1006,70 @@ VSS_HANDLER(vss_function_call)
 	
 	VSS_CHECK_ARGC(2);
 	
-	func = vss_functions;
-	while (func != NULL)
+	func = vss_function_search(vss_functions, (char *)argv[1]);
+	if ((NULL == func) || (ERROR_OK != vss_function_run(func)))
 	{
-		if ((!strcmp(func->func_name, argv[1])) && (func->cmds != NULL))
-		{
-			struct vss_function_cmd_t *cmd = func->cmds;
-			
-			while (cmd->func_cmd != NULL)
-			{
-				if (ERROR_OK != vss_run_script(cmd->func_cmd))
-				{
-					func = NULL;
-					cmd = NULL;
-					return ERROR_FAIL;
-				}
-				cmd = cmd->next;
-			}
-		}
-		func = func->next;
+		return ERROR_FAIL;
 	}
-	func = NULL;
 	return ERROR_OK;
 }
 
 VSS_HANDLER(vss_function_free)
 {
-	struct vss_function_t *func_tmp;
-	struct vss_function_cmd_t *cmd_tmp;
-	struct vss_function_t *func = vss_functions;
-	struct vss_function_cmd_t *cmd;
+	struct vss_function_t *func_tmp, *func;
+	RESULT ret = ERROR_FAIL;
 	
-	VSS_CHECK_ARGC(1);
+	VSS_CHECK_ARGC_MAX(2);
 	
-	while (func != NULL)
+	func = vss_functions;
+	if (2 == argc)
 	{
-		cmd = func->cmds;
-		func_tmp = func;
-		func = func->next;
-		
-		while (cmd != NULL)
+		if (NULL == vss_function_search(vss_functions, (char *)argv[1]))
 		{
-			cmd_tmp = cmd;
-			cmd = cmd->next;
-			if (cmd_tmp->func_cmd != NULL)
-			{
-				free(cmd_tmp->func_cmd);
-			}
-			free(cmd_tmp);
+			LOG_ERROR("function %s not exists!!", argv[1]);
+			return ERROR_FAIL;
 		}
-		free(func_tmp);
+		
+		if (!strcmp(func->func_name, argv[1]))
+		{
+			vss_functions = func->next;
+			ret = vss_function_free_node(func);
+			func = NULL;
+		}
+		else
+		{
+			func_tmp = func;
+			func = func->next;
+			while (func != NULL)
+			{
+				if (!strcmp(func->func_name, argv[1]))
+				{
+					func_tmp->next = func->next;
+					ret = vss_function_free_node(func);
+					func = NULL;
+					break;
+				}
+				func_tmp = func;
+				func = func->next;
+			}
+		}
+	}
+	else
+	{
+		// free all functions
+		while (func != NULL)
+		{
+			func_tmp = func;
+			func = func->next;
+			ret = vss_function_free_node(func_tmp);
+			func_tmp = NULL;
+			if (ERROR_OK != ret)
+			{
+				break;
+			}
+		}
 	}
 	
-	func_tmp = func = NULL;
-	cmd_tmp = cmd = NULL;
-	return ERROR_OK;
+	return ret;
 }
+
