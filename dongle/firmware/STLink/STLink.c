@@ -54,12 +54,12 @@ static uint8_t STLink_target_clock = 8;
 
 static void STLink_Reset_On(void)
 {
-	interfaces->gpio.config(0, GPIO_SRST, GPIO_SRST, 0);
+	interfaces->gpio.config(0, GPIO_SRST, GPIO_SRST, 0, 0);
 }
 
 static void STLink_Reset_Off(void)
 {
-	interfaces->gpio.config(0, GPIO_SRST, 0, GPIO_SRST);
+	interfaces->gpio.config(0, GPIO_SRST, 0, GPIO_SRST, GPIO_SRST);
 }
 
 static RESULT STLink_SetSWIMSpeed(uint8_t speed)
@@ -195,7 +195,7 @@ void STLink_SCSI_Process(uint8_t *cmd)
 			break;
 		case STLINK_SUBCMD_FINI:
 			interfaces->swim.fini(0);
-			interfaces->gpio.config(0, GPIO_SRST, 0, GPIO_SRST);
+			interfaces->gpio.config(0, GPIO_SRST, 0, GPIO_SRST, GPIO_SRST);
 			interfaces->gpio.fini(0);
 			interfaces->target_voltage.set(0, 0);
 

@@ -71,24 +71,91 @@ RESULT target_voltage_set(uint8_t index, uint16_t voltage);
 RESULT target_voltage_get(uint8_t index, uint16_t *voltage);
 
 // delay
-RESULT delay_delayms(uint16_t ms)
+static RESULT delay_delayms(uint16_t ms)
 {
 	DelayMS(ms);
 	return ERROR_OK;
 }
-RESULT delay_delayus(uint16_t us)
+static RESULT delay_delayus(uint16_t us)
 {
 	DelayUS(us);
 	return ERROR_OK;
 }
 
-RESULT peripheral_commit(void)
+static RESULT peripheral_commit(void)
+{
+	return ERROR_OK;
+}
+
+static RESULT interface_init(void *p)
+{
+	BeforeInit();
+	Sys_Init();
+	AfterInit();
+	return ERROR_OK;
+}
+
+static RESULT interface_fini(void)
 {
 	return ERROR_OK;
 }
 
 const struct interfaces_info_t internal_interfaces = 
 {
+	interface_init,
+	interface_fini,
+	
+	0
+#if INTERFACE_USART_EN
+	| IFS_USART 
+#endif
+#if INTERFACE_SPI_EN
+	| IFS_SPI 
+#endif
+#if INTERFACE_IIC_EN
+	| IFS_I2C 
+#endif
+#if INTERFACE_GPIO_EN
+	| IFS_GPIO 
+#endif
+#if POWER_OUT_EN
+	| IFS_POWER 
+#endif
+#if INTERFACE_ISSP_EN
+	| IFS_ISSP 
+#endif
+#if INTERFACE_JTAG_EN
+	| IFS_JTAG_LL | IFS_JTAG_HL | IFS_JTAG_RAW 
+#endif
+#if INTERFACE_SWIM_EN
+	| IFS_SWIM 
+#endif
+#if INTERFACE_C2_EN
+	| IFS_C2 
+#endif
+#if INTERFACE_MSP430_JTAG_EN
+	| IFS_MSP430_JTAG 
+#endif
+#if INTERFACE_LPC_ICP_EN
+	| IFS_LPC_ICP 
+#endif
+#if INTERFACE_SWD_EN
+	| IFS_SWD 
+#endif
+#if INTERFACE_BDM_EN
+	| IFS_BDM 
+#endif
+#if INTERFACE_DUSI_EN
+	| IFS_DUSI 
+#endif
+#if INTERFACE_MICROWIRE_EN
+	| IFS_MICROWIRE 
+#endif
+#if INTERFACE_PWM_EN
+	| IFS_PWM
+#endif
+	,
+	
 #if POWER_OUT_EN
 	{
 		// target_voltage

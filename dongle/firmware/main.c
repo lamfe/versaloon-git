@@ -16,6 +16,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "app_cfg.h"
+#include "interfaces.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -26,9 +27,7 @@
 
 int main(void)
 {
-	BeforeInit();
-	Sys_Init();
-	AfterInit();
+	interfaces->init(NULL);
 
 	LED_GREEN_ON();
 	LED_USB_ON();

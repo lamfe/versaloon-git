@@ -28,7 +28,6 @@
 #include "app_type.h"
 #include "app_err.h"
 #include "app_log.h"
-#include "prog_interface.h"
 
 #include "pgbar.h"
 
@@ -50,7 +49,7 @@ const struct program_area_map_t hcs12_program_area_map[] =
 
 const struct program_mode_t hcs12_program_mode[] = 
 {
-	{'b', "", BDM},
+	{'b', "", IFS_BDM},
 	{0, NULL, 0}
 };
 

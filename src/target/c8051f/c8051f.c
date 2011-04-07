@@ -28,7 +28,6 @@
 #include "app_type.h"
 #include "app_err.h"
 #include "app_log.h"
-#include "prog_interface.h"
 
 #include "vsprog.h"
 #include "programmer.h"
@@ -48,8 +47,8 @@ const struct program_area_map_t c8051f_program_area_map[] =
 
 const struct program_mode_t c8051f_program_mode[] = 
 {
-	{'j', SET_FREQUENCY, JTAG_HL},
-	{'c', SET_FREQUENCY, C2 | GPIO},
+	{'j', SET_FREQUENCY, IFS_JTAG_HL},
+	{'c', SET_FREQUENCY, IFS_C2 | IFS_GPIO},
 	{0, NULL, 0}
 };
 

@@ -29,7 +29,6 @@
 #include "app_err.h"
 
 #include "scripts.h"
-#include "prog_interface.h"
 #include "interfaces.h"
 #include "versaloon/versaloon.h"
 
@@ -163,28 +162,28 @@ char* get_interface_name(uint64_t i)
 	
 	switch (i)
 	{
-	interface_case(USART);
-	interface_case(SPI);
-	interface_case(I2C);
-	interface_case(GPIO);
-	interface_case(CAN);
-	interface_case(CLOCK);
-	interface_case(ADC);
-	interface_case(DAC);
-	interface_case(POWER);
-	interface_case(ISSP);
-	interface_case(JTAG_LL);
-	interface_case(JTAG_HL);
-	interface_case(JTAG_RAW);
-	interface_case(C2);
-	interface_case(MSP430_SBW);
-	interface_case(MSP430_JTAG);
-	interface_case(LPC_ICP);
-	interface_case(SWD);
-	interface_case(SWIM);
-	interface_case(HV);
-	interface_case(PDI);
-	interface_case(BDM);
+	interface_case(IFS_USART);
+	interface_case(IFS_SPI);
+	interface_case(IFS_I2C);
+	interface_case(IFS_GPIO);
+	interface_case(IFS_CAN);
+	interface_case(IFS_CLOCK);
+	interface_case(IFS_ADC);
+	interface_case(IFS_DAC);
+	interface_case(IFS_POWER);
+	interface_case(IFS_ISSP);
+	interface_case(IFS_JTAG_LL);
+	interface_case(IFS_JTAG_HL);
+	interface_case(IFS_JTAG_RAW);
+	interface_case(IFS_C2);
+	interface_case(IFS_MSP430_SBW);
+	interface_case(IFS_MSP430_JTAG);
+	interface_case(IFS_LPC_ICP);
+	interface_case(IFS_SWD);
+	interface_case(IFS_SWIM);
+	interface_case(IFS_HV);
+	interface_case(IFS_PDI);
+	interface_case(IFS_BDM);
 	default:
 		return NULL;
 	}
@@ -227,7 +226,7 @@ RESULT interface_init(const char *ifs)
 			return ERROR_FAIL;
 		}
 		cur_interface = interface_tmp;
-		if (cur_interface->support_mask & POWER)
+		if (cur_interface->support_mask & IFS_POWER)
 		{
 			return vss_run_script("tvcc.get");
 		}
@@ -295,7 +294,7 @@ VSS_HANDLER(interface_get_target_voltage)
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "interface module");
 		return ERROR_FAIL;
 	}
-	if (!(cur_interface->support_mask & POWER))
+	if (!(cur_interface->support_mask & IFS_POWER))
 	{
 		LOG_ERROR(ERRMSG_NOT_SUPPORT, "power interface");
 		return ERROR_FAIL;
@@ -323,7 +322,7 @@ VSS_HANDLER(interface_set_target_voltage)
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "interface module");
 		return ERROR_FAIL;
 	}
-	if (!(cur_interface->support_mask & POWER))
+	if (!(cur_interface->support_mask & IFS_POWER))
 	{
 		LOG_ERROR(ERRMSG_NOT_SUPPORT, "power interface");
 		return ERROR_FAIL;

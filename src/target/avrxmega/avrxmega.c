@@ -29,7 +29,6 @@
 #include "app_type.h"
 #include "app_err.h"
 #include "app_log.h"
-#include "prog_interface.h"
 
 #include "timer.h"
 
@@ -54,8 +53,8 @@ struct program_area_map_t avrxmega_program_area_map[] =
 
 const struct program_mode_t avrxmega_program_mode[] = 
 {
-	{'j', SET_FREQUENCY, JTAG_HL},
-	{'p', 0, PDI},
+	{'j', SET_FREQUENCY, IFS_JTAG_HL},
+	{'p', 0, IFS_PDI},
 	{0, NULL, 0}
 };
 

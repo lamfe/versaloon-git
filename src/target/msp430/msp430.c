@@ -28,7 +28,6 @@
 #include "app_type.h"
 #include "app_err.h"
 #include "app_log.h"
-#include "prog_interface.h"
 
 #include "vsprog.h"
 #include "programmer.h"
@@ -50,8 +49,8 @@ struct program_area_map_t msp430_program_area_map[] =
 
 const struct program_mode_t msp430_program_mode[] = 
 {
-	{'j', "", MSP430_JTAG},
-	{'s', "", MSP430_SBW},
+	{'j', "", IFS_MSP430_JTAG},
+	{'s', "", IFS_MSP430_SBW},
 	{'b', USE_COMM, 0},
 	{0, NULL, 0}
 };

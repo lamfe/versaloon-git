@@ -28,11 +28,10 @@
 #include "app_type.h"
 #include "app_err.h"
 #include "app_log.h"
-#include "prog_interface.h"
 
 #include "vsprog.h"
-#include "target.h"
 #include "programmer.h"
+#include "target.h"
 
 #include "adi_v5p1.h"
 #include "adi_v5p1_internal.h"
