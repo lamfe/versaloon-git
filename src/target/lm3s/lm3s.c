@@ -29,7 +29,6 @@
 #include "app_type.h"
 #include "app_err.h"
 #include "app_log.h"
-#include "prog_interface.h"
 
 #include "vsprog.h"
 #include "programmer.h"
@@ -51,8 +50,8 @@ struct program_area_map_t lm3s_program_area_map[] =
 
 const struct program_mode_t lm3s_program_mode[] = 
 {
-	{'j', SET_FREQUENCY, JTAG_HL},
-	{'s', "", SWD},
+	{'j', SET_FREQUENCY, IFS_JTAG_HL},
+	{'s', "", IFS_SWD},
 	{0, NULL, 0}
 };
 

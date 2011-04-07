@@ -28,7 +28,6 @@
 #include "app_type.h"
 #include "app_err.h"
 #include "app_log.h"
-#include "prog_interface.h"
 
 #include "vsprog.h"
 #include "programmer.h"
@@ -92,7 +91,7 @@ static RESULT avr8_isp_pollready(void)
 {
 	uint8_t cmd_buf[4], ret_buf[4];
 	
-	if (interfaces->support_mask & POLL)
+	if (interfaces->support_mask & IFS_POLL)
 	{
 		poll_start();
 		cmd_buf[0] = 0xF0;
@@ -162,7 +161,7 @@ try_frequency:
 	cmd_buf[2] = 0x00;
 	cmd_buf[3] = 0x00;
 	// ret[2] should be 0x53
-	if (interfaces->support_mask & POLL)
+	if (interfaces->support_mask & IFS_POLL)
 	{
 		poll_start_once();
 		spi_io(cmd_buf, 4, NULL);

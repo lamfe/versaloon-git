@@ -29,7 +29,6 @@
 #include "app_type.h"
 #include "app_err.h"
 #include "app_log.h"
-#include "prog_interface.h"
 
 #include "vsprog.h"
 #include "programmer.h"
@@ -49,7 +48,7 @@ const struct program_area_map_t lpc900_program_area_map[] =
 
 const struct program_mode_t lpc900_program_mode[] = 
 {
-	{'*', "", LPC_ICP},
+	{'*', "", IFS_LPC_ICP},
 	{0, NULL, 0}
 };
 

@@ -28,7 +28,6 @@
 #include "app_type.h"
 #include "app_err.h"
 #include "app_log.h"
-#include "prog_interface.h"
 
 #include "pgbar.h"
 
@@ -54,7 +53,7 @@ struct program_area_map_t ee24cxx_program_area_map[] =
 
 const struct program_mode_t ee24cxx_program_mode[] = 
 {
-	{'*', SET_FREQUENCY, I2C},
+	{'*', SET_FREQUENCY, IFS_I2C},
 	{0, NULL, 0}
 };
 

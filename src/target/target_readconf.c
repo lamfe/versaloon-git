@@ -33,9 +33,9 @@
 #include <libxml/parser.h>
 
 #include "vsprog.h"
-#include "prog_interface.h"
 #include "bufffunc.h"
 #include "strparser.h"
+#include "programmer.h"
 #include "target.h"
 
 #define TARGET_CONF_FILE_EXT			".xml"

@@ -431,120 +431,120 @@ static RESULT versaloon_init(void *p)
 		return ERROR_FAIL;
 	}
 	// fixes programmer abilities
-	if ((t->support_mask & POLL) && 
+	if ((t->support_mask & IFS_POLL) && 
 		!usbtoxxx_interface_supported(USB_TO_POLL))
 	{
-		t->support_mask &= ~POLL;
+		t->support_mask &= ~IFS_POLL;
 	}
-	if ((t->support_mask & USART) && 
+	if ((t->support_mask & IFS_USART) && 
 		!usbtoxxx_interface_supported(USB_TO_USART))
 	{
-		t->support_mask &= ~USART;
+		t->support_mask &= ~IFS_USART;
 	}
-	if ((t->support_mask & SPI) && 
+	if ((t->support_mask & IFS_SPI) && 
 		!usbtoxxx_interface_supported(USB_TO_SPI))
 	{
-		t->support_mask &= ~SPI;
+		t->support_mask &= ~IFS_SPI;
 	}
-	if ((t->support_mask & I2C) && 
+	if ((t->support_mask & IFS_I2C) && 
 		!usbtoxxx_interface_supported(USB_TO_I2C))
 	{
-		t->support_mask &= ~I2C;
+		t->support_mask &= ~IFS_I2C;
 	}
-	if ((t->support_mask & GPIO) && 
+	if ((t->support_mask & IFS_GPIO) && 
 		!usbtoxxx_interface_supported(USB_TO_GPIO))
 	{
-		t->support_mask &= ~GPIO;
+		t->support_mask &= ~IFS_GPIO;
 	}
-	if ((t->support_mask & CAN) && 
+	if ((t->support_mask & IFS_CAN) && 
 		!usbtoxxx_interface_supported(USB_TO_CAN))
 	{
-		t->support_mask &= ~CAN;
+		t->support_mask &= ~IFS_CAN;
 	}
-	if ((t->support_mask & ADC) && 
+	if ((t->support_mask & IFS_ADC) && 
 		!usbtoxxx_interface_supported(USB_TO_ADC))
 	{
-		t->support_mask &= ~ADC;
+		t->support_mask &= ~IFS_ADC;
 	}
-	if ((t->support_mask & DAC) && 
+	if ((t->support_mask & IFS_DAC) && 
 		!usbtoxxx_interface_supported(USB_TO_DAC))
 	{
-		t->support_mask &= ~DAC;
+		t->support_mask &= ~IFS_DAC;
 	}
-	if ((t->support_mask & POWER) && 
+	if ((t->support_mask & IFS_POWER) && 
 		!usbtoxxx_interface_supported(USB_TO_POWER))
 	{
-		t->support_mask &= ~POWER;
+		t->support_mask &= ~IFS_POWER;
 	}
-	if ((t->support_mask & ISSP) && 
+	if ((t->support_mask & IFS_ISSP) && 
 		!usbtoxxx_interface_supported(USB_TO_ISSP))
 	{
-		t->support_mask &= ~ISSP;
+		t->support_mask &= ~IFS_ISSP;
 	}
-	if ((t->support_mask & JTAG_HL) && 
+	if ((t->support_mask & IFS_JTAG_HL) && 
 		!usbtoxxx_interface_supported(USB_TO_JTAG_HL))
 	{
-		t->support_mask &= ~JTAG_HL;
+		t->support_mask &= ~IFS_JTAG_HL;
 	}
-	if ((t->support_mask & JTAG_LL) && 
+	if ((t->support_mask & IFS_JTAG_LL) && 
 		!usbtoxxx_interface_supported(USB_TO_JTAG_LL))
 	{
-		t->support_mask &= ~JTAG_LL;
+		t->support_mask &= ~IFS_JTAG_LL;
 	}
-	if ((t->support_mask & MSP430_JTAG) && 
+	if ((t->support_mask & IFS_MSP430_JTAG) && 
 		!usbtoxxx_interface_supported(USB_TO_MSP430_JTAG))
 	{
-		t->support_mask &= ~MSP430_JTAG;
+		t->support_mask &= ~IFS_MSP430_JTAG;
 	}
-	if ((t->support_mask & C2) && 
+	if ((t->support_mask & IFS_C2) && 
 		!usbtoxxx_interface_supported(USB_TO_C2))
 	{
-		t->support_mask &= ~C2;
+		t->support_mask &= ~IFS_C2;
 	}
-	if ((t->support_mask & USART) && 
+	if ((t->support_mask & IFS_USART) && 
 		!usbtoxxx_interface_supported(USB_TO_USART))
 	{
-		t->support_mask &= ~USART;
+		t->support_mask &= ~IFS_USART;
 	}
-	if ((t->support_mask & LPC_ICP) && 
+	if ((t->support_mask & IFS_LPC_ICP) && 
 		!usbtoxxx_interface_supported(USB_TO_LPCICP))
 	{
-		t->support_mask &= ~LPC_ICP;
+		t->support_mask &= ~IFS_LPC_ICP;
 	}
-	if ((t->support_mask & SWD) && 
+	if ((t->support_mask & IFS_SWD) && 
 		!usbtoxxx_interface_supported(USB_TO_SWD))
 	{
-		t->support_mask &= ~SWD;
+		t->support_mask &= ~IFS_SWD;
 	}
-	if ((t->support_mask & SWIM) && 
+	if ((t->support_mask & IFS_SWIM) && 
 		!usbtoxxx_interface_supported(USB_TO_SWIM))
 	{
-		t->support_mask &= ~SWIM;
+		t->support_mask &= ~IFS_SWIM;
 	}
-	if ((t->support_mask & JTAG_RAW) && 
+	if ((t->support_mask & IFS_JTAG_RAW) && 
 		!usbtoxxx_interface_supported(USB_TO_JTAG_RAW))
 	{
-		t->support_mask &= ~JTAG_RAW;
+		t->support_mask &= ~IFS_JTAG_RAW;
 	}
-	if ((t->support_mask & BDM) && 
+	if ((t->support_mask & IFS_BDM) && 
 		!usbtoxxx_interface_supported(USB_TO_BDM))
 	{
-		t->support_mask &= ~BDM;
+		t->support_mask &= ~IFS_BDM;
 	}
-	if ((t->support_mask & DUSI) && 
+	if ((t->support_mask & IFS_DUSI) && 
 		!usbtoxxx_interface_supported(USB_TO_DUSI))
 	{
-		t->support_mask &= ~DUSI;
+		t->support_mask &= ~IFS_DUSI;
 	}
-	if ((t->support_mask & MICROWIRE) && 
+	if ((t->support_mask & IFS_MICROWIRE) && 
 		!usbtoxxx_interface_supported(USB_TO_MICROWIRE))
 	{
-		t->support_mask &= ~MICROWIRE;
+		t->support_mask &= ~IFS_MICROWIRE;
 	}
-	if ((t->support_mask & PWM) && 
+	if ((t->support_mask & IFS_PWM) && 
 		!usbtoxxx_interface_supported(USB_TO_PWM))
 	{
-		t->support_mask &= ~PWM;
+		t->support_mask &= ~IFS_PWM;
 	}
 	
 	return ERROR_OK;
@@ -662,8 +662,11 @@ struct interfaces_info_t versaloon_interfaces =
 	versaloon_init,
 	versaloon_fini,
 	
-	USART | SPI | I2C | GPIO | POWER | ISSP | JTAG_LL | POLL | JTAG_HL | SWIM | 
-	JTAG_RAW | C2 | MSP430_JTAG | LPC_ICP | SWD | BDM | DUSI | MICROWIRE | PWM,
+	IFS_USART | IFS_SPI | IFS_I2C | IFS_GPIO | IFS_POWER | IFS_ISSP | 
+	IFS_JTAG_LL | IFS_POLL | IFS_JTAG_HL | IFS_SWIM | IFS_JTAG_RAW | IFS_C2 | 
+	IFS_MSP430_JTAG | IFS_LPC_ICP | IFS_SWD | IFS_BDM | IFS_DUSI | 
+	IFS_MICROWIRE | IFS_PWM,
+	
 	{	// target_voltage
 		versaloon_get_target_voltage,
 		versaloon_set_target_voltage

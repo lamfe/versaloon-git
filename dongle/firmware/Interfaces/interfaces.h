@@ -17,6 +17,8 @@
 #ifndef __INTERFACES_H__
 #define __INTERFACES_H__
 
+#include "interfaces_const.h"
+
 typedef enum result_s
 {
 	ERROR_OK = 0,
@@ -278,6 +280,10 @@ enum poll_check_type_t
 
 struct interfaces_info_t
 {
+	RESULT (*init)(void *p);
+	RESULT (*fini)(void);
+	
+	uint64_t support_mask;
 #if POWER_OUT_EN
 	struct interface_target_voltage_t target_voltage;
 #endif

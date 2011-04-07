@@ -20,6 +20,8 @@
 #ifndef __INTERFACES_H_INCLUDED__
 #define __INTERFACES_H_INCLUDED__
 
+#include "interfaces_const.h"
+
 char* get_interface_name(uint64_t i);
 
 enum jtag_irdr_t

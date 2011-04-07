@@ -28,7 +28,6 @@
 #include "app_type.h"
 #include "app_err.h"
 #include "app_log.h"
-#include "prog_interface.h"
 
 #include "pgbar.h"
 
@@ -52,8 +51,8 @@ const struct program_area_map_t psoc1_program_area_map[] =
 
 const struct program_mode_t psoc1_program_mode[] = 
 {
-	{'r', "", ISSP},
-	{'p', "", ISSP},
+	{'r', "", IFS_ISSP},
+	{'p', "", IFS_ISSP},
 	{0, NULL, 0}
 };
 

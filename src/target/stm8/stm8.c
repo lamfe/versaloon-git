@@ -28,7 +28,6 @@
 #include "app_type.h"
 #include "app_err.h"
 #include "app_log.h"
-#include "prog_interface.h"
 
 #include "pgbar.h"
 
@@ -52,7 +51,7 @@ struct program_area_map_t stm8_program_area_map[] =
 
 const struct program_mode_t stm8_program_mode[] = 
 {
-	{'s', "", SWIM},
+	{'s', "", IFS_SWIM},
 	{'i', USE_COMM, 0},
 	{0, NULL, 0}
 };

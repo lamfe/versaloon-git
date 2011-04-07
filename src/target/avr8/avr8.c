@@ -28,7 +28,6 @@
 #include "app_type.h"
 #include "app_err.h"
 #include "app_log.h"
-#include "prog_interface.h"
 
 #include "vsprog.h"
 #include "programmer.h"
@@ -52,10 +51,10 @@ const struct program_area_map_t avr8_program_area_map[] =
 
 const struct program_mode_t avr8_program_mode[] = 
 {
-	{'i', SET_FREQUENCY, SPI | GPIO},
-	{'j', SET_FREQUENCY, JTAG_HL},
-	{'p', "", HV},
-	{'s', "", HV},
+	{'i', SET_FREQUENCY, IFS_SPI | IFS_GPIO},
+	{'j', SET_FREQUENCY, IFS_JTAG_HL},
+	{'p', "", IFS_HV},
+	{'s', "", IFS_HV},
 	{0, NULL, 0}
 };
 

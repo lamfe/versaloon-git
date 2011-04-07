@@ -65,7 +65,7 @@ void AVRISP_Init(uint32 freq)
 	interfaces->target_voltage.set(0, 3300);
 	interfaces->delay.delayms(1);
 	interfaces->gpio.init(0);
-	interfaces->gpio.config(0, GPIO_SRST, GPIO_SRST, GPIO_SRST);
+	interfaces->gpio.config(0, GPIO_SRST, GPIO_SRST, GPIO_SRST, GPIO_SRST);
 	interfaces->spi.init(0);
 	interfaces->spi.config(0, freq / 1000, SPI_CPOL_LOW, SPI_CPHA_1EDGE, SPI_MSB_FIRST);
 }
@@ -75,6 +75,6 @@ void AVRISP_Init(uint32 freq)
 void AVRISP_Fini(void)
 {
 	interfaces->spi.fini(0);
-	interfaces->gpio.config(0, GPIO_SRST, 0, GPIO_SRST);
+	interfaces->gpio.config(0, GPIO_SRST, 0, GPIO_SRST, GPIO_SRST);
 	interfaces->target_voltage.set(0, 0);
 }

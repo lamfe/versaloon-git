@@ -28,7 +28,6 @@
 #include "app_type.h"
 #include "app_err.h"
 #include "app_log.h"
-#include "prog_interface.h"
 
 #include "pgbar.h"
 
@@ -54,7 +53,7 @@ struct program_area_map_t df25xx_program_area_map[] =
 
 const struct program_mode_t df25xx_program_mode[] = 
 {
-	{'*', SET_FREQUENCY, SPI | GPIO},
+	{'*', SET_FREQUENCY, IFS_SPI | IFS_GPIO},
 	{0, NULL, 0}
 };
 

@@ -28,7 +28,6 @@
 #include "app_type.h"
 #include "app_err.h"
 #include "app_log.h"
-#include "prog_interface.h"
 
 #include "pgbar.h"
 
@@ -54,8 +53,8 @@ struct program_area_map_t ee93cx6_program_area_map[] =
 
 const struct program_mode_t ee93cx6_program_mode[] = 
 {
-	{'b', SET_FREQUENCY, MICROWIRE},
-	{'w', SET_FREQUENCY, MICROWIRE},
+	{'b', SET_FREQUENCY, IFS_MICROWIRE},
+	{'w', SET_FREQUENCY, IFS_MICROWIRE},
 	{0, NULL, 0}
 };
 

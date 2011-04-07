@@ -28,7 +28,6 @@
 #include "app_type.h"
 #include "app_err.h"
 #include "app_log.h"
-#include "prog_interface.h"
 
 #include "vsprog.h"
 #include "programmer.h"
@@ -50,8 +49,8 @@ const struct program_area_map_t s5x_program_area_map[] =
 
 const struct program_mode_t s5x_program_mode[] = 
 {
-	{'p', SET_FREQUENCY, SPI | GPIO},
-	{'b', SET_FREQUENCY, SPI | GPIO},
+	{'p', SET_FREQUENCY, IFS_SPI | IFS_GPIO},
+	{'b', SET_FREQUENCY, IFS_SPI | IFS_GPIO},
 	{0, NULL, 0}
 };
 
