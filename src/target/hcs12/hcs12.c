@@ -20,12 +20,12 @@
 #include "config.h"
 #endif
 
-#include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 
 #include "app_cfg.h"
 #include "app_type.h"
+#include "app_io.h"
 #include "app_err.h"
 #include "app_log.h"
 
@@ -71,7 +71,7 @@ const struct program_functions_t hcs12_program_functions =
 VSS_HANDLER(hcs12_help)
 {
 	VSS_CHECK_ARGC(1);
-	printf("\
+	PRINTF("\
 Usage of %s:\n\
   -m,  --mode <MODE>                        set mode<r|p>\n\n", 
 			CUR_TARGET_STRING);

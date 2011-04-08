@@ -20,7 +20,6 @@
 #include "config.h"
 #endif
 
-#include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -29,6 +28,7 @@
 #include "port.h"
 #include "app_cfg.h"
 #include "app_type.h"
+#include "app_io.h"
 #include "app_err.h"
 #include "app_log.h"
 
@@ -2051,22 +2051,22 @@ static void target_print_single_memory(char type)
 		return;
 	}
 	
-	printf("%s of %s:\n", full_type, program_info.chip_name);
+	PRINTF("%s of %s:\n", full_type, program_info.chip_name);
 	if (p_map[mapidx].data_pos)
 	{
-		printf("%c_seg = 0x%08X, ", type, 
+		PRINTF("%c_seg = 0x%08X, ", type, 
 				target_chip_param.chip_areas[paramidx].seg);
-		printf("%c_addr = 0x%08X, ", type, 
+		PRINTF("%c_addr = 0x%08X, ", type, 
 				target_chip_param.chip_areas[paramidx].addr);
 	}
 	else if (target_chip_param.chip_areas[paramidx].cli_format != NULL)
 	{
-		printf("%c_format = %s, ", type, 
+		PRINTF("%c_format = %s, ", type, 
 				target_chip_param.chip_areas[paramidx].cli_format);
 	}
-	printf("%c_default = 0x%"PRIX64", ", type, 
+	PRINTF("%c_default = 0x%"PRIX64", ", type, 
 				target_chip_param.chip_areas[paramidx].default_value);
-	printf("%c_bytelen = %d\n", type, 
+	PRINTF("%c_bytelen = %d\n", type, 
 				target_chip_param.chip_areas[paramidx].size);
 }
 
@@ -2130,50 +2130,50 @@ void target_print_setting(char type)
 	}
 	
 	// print fl
-	printf("%s of %s:\n", full_type, program_info.chip_name);
-	printf("init = %s, ", fl.init_value);
-	printf("num_of_warnings = %d, ", fl.num_of_fl_warnings);
-	printf("num_of_settings = %d\n", fl.num_of_fl_settings);
+	PRINTF("%s of %s:\n", full_type, program_info.chip_name);
+	PRINTF("init = %s, ", fl.init_value);
+	PRINTF("num_of_warnings = %d, ", fl.num_of_fl_warnings);
+	PRINTF("num_of_settings = %d\n", fl.num_of_fl_settings);
 	for (i = 0; i < fl.num_of_fl_warnings; i++)
 	{
-		printf("warning: mask = %s, ", fl.warnings[i].mask);
-		printf("value = %s, ", fl.warnings[i].value);
-		printf("msg = %s, ", fl.warnings[i].msg);
-		printf("ban = %d\n", fl.warnings[i].ban);
+		PRINTF("warning: mask = %s, ", fl.warnings[i].mask);
+		PRINTF("value = %s, ", fl.warnings[i].value);
+		PRINTF("msg = %s, ", fl.warnings[i].msg);
+		PRINTF("ban = %d\n", fl.warnings[i].ban);
 	}
 	for (i = 0; i < fl.num_of_fl_settings; i++)
 	{
-		printf("setting: name = %s, ", fl.settings[i].name);
-		printf("mask = %s, ", fl.settings[i].mask);
-		printf("num_of_choices = %d", fl.settings[i].num_of_choices);
+		PRINTF("setting: name = %s, ", fl.settings[i].name);
+		PRINTF("mask = %s, ", fl.settings[i].mask);
+		PRINTF("num_of_choices = %d", fl.settings[i].num_of_choices);
 		if (fl.settings[i].ban != NULL)
 		{
-			printf(", ban = %s", fl.settings[i].ban);
+			PRINTF(", ban = %s", fl.settings[i].ban);
 		}
 		if (fl.settings[i].info != NULL)
 		{
-			printf(", info = %s", fl.settings[i].info);
+			PRINTF(", info = %s", fl.settings[i].info);
 		}
 		if (fl.settings[i].format != NULL)
 		{
-			printf(", format = %s", fl.settings[i].format);
+			PRINTF(", format = %s", fl.settings[i].format);
 		}
 		if (fl.settings[i].use_checkbox)
 		{
-			printf(", checked = %s", fl.settings[i].checked);
-			printf(", unchecked = %s", fl.settings[i].unchecked);
+			PRINTF(", checked = %s", fl.settings[i].checked);
+			PRINTF(", unchecked = %s", fl.settings[i].unchecked);
 		}
 		else if (fl.settings[i].use_edit)
 		{
-			printf(", radix = %d", fl.settings[i].radix);
-			printf(", shift = %d", fl.settings[i].shift);
-			printf(", bytelen = %d", fl.settings[i].bytelen);
+			PRINTF(", radix = %d", fl.settings[i].radix);
+			PRINTF(", shift = %d", fl.settings[i].shift);
+			PRINTF(", bytelen = %d", fl.settings[i].bytelen);
 		}
-		printf("\n");
+		PRINTF("\n");
 		for (j = 0; j < fl.settings[i].num_of_choices; j++)
 		{
-			printf("choice: value = %s, ", fl.settings[i].choices[j].value);
-			printf("text = %s\n", fl.settings[i].choices[j].text);
+			PRINTF("choice: value = %s, ", fl.settings[i].choices[j].value);
+			PRINTF("text = %s\n", fl.settings[i].choices[j].text);
 		}
 	}
 	
@@ -2202,12 +2202,12 @@ void target_print_target(uint32_t index)
 	
 	if (strlen(targets_info[index].feature) > 0)
 	{
-		printf("Support list of %s(%s):", targets_info[index].name, 
+		PRINTF("Support list of %s(%s):", targets_info[index].name, 
 				targets_info[index].feature);
 	}
 	else
 	{
-		printf("Support list of %s:", targets_info[index].name);
+		PRINTF("Support list of %s:", targets_info[index].name);
 	}
 	// fake
 	p_map = (struct program_area_map_t *)targets_info[index].program_area_map;
@@ -2216,11 +2216,11 @@ void target_print_target(uint32_t index)
 	{
 		if (p_map[i].fseg_addr)
 		{
-			printf(" %c_fseg = 0x%X,", p_map[i].name, p_map[i].fseg_addr);
+			PRINTF(" %c_fseg = 0x%X,", p_map[i].name, p_map[i].fseg_addr);
 		}
 		if (p_map[i].fstart_addr)
 		{
-			printf(" %c_faddr = 0x%X,", p_map[i].name, p_map[i].fstart_addr);
+			PRINTF(" %c_faddr = 0x%X,", p_map[i].name, p_map[i].fstart_addr);
 		}
 		i++;
 	}
@@ -2230,7 +2230,7 @@ void target_print_target(uint32_t index)
 	{
 		vss_call_notifier(targets_info[index].notifier, "extra", NULL);
 	}
-	printf("\n");
+	PRINTF("\n");
 	
 	// Targets based on ComPort outputs there special COM settings
 	if (strchr(targets_info[index].feature, 'C') != NULL)
@@ -2244,28 +2244,28 @@ void target_print_target(uint32_t index)
 			p_param = &target_chips.chips_param[i];
 			
 			// name
-			printf("%s:", p_param->chip_name);
+			PRINTF("%s:", p_param->chip_name);
 			// id
-			printf(" id = 0x%X,", p_param->chip_id);
+			PRINTF(" id = 0x%X,", p_param->chip_id);
 			// mode
 			if (p_param->program_mode_str != NULL)
 			{
-				printf(" mode = %s,", p_param->program_mode_str);
+				PRINTF(" mode = %s,", p_param->program_mode_str);
 			}
 			// area
-			printf(" area = ");
+			PRINTF(" area = ");
 			area[2] = 0;
 			j = 0;
 			while (p_map[j].name != 0)
 			{
 				area[0] = p_map[j].name;
 				area[1] = p_map[j].data_pos + '0';
-				printf("%s", area);
+				PRINTF("%s", area);
 				j++;
 			}
-			printf("\n");
+			PRINTF("\n");
 		}
-		printf("\n");
+		PRINTF("\n");
 	}
 	
 	target_release_chip_series(&target_chips);
@@ -2275,7 +2275,7 @@ void target_print_list(void)
 {
 	uint32_t i;
 	
-	printf(_GETTEXT("Supported targets:\n"));
+	PRINTF(_GETTEXT("Supported targets:\n"));
 	for (i = 0; targets_info[i].name != NULL; i++)
 	{
 		target_print_target(i);

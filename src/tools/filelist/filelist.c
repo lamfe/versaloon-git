@@ -21,10 +21,10 @@
 #endif
 
 #include <stdlib.h>
-#include <stdio.h>
 #include <string.h>
 
 #include "app_type.h"
+#include "app_io.h"
 #include "app_log.h"
 #include "app_err.h"
 

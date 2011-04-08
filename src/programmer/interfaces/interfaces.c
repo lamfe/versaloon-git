@@ -20,11 +20,10 @@
 #include "config.h"
 #endif
 
-#include <stdio.h>
-
 #include "port.h"
 #include "app_cfg.h"
 #include "app_type.h"
+#include "app_io.h"
 #include "app_log.h"
 #include "app_err.h"
 
@@ -263,12 +262,12 @@ void interface_print_list(void)
 {
 	uint32_t i;
 	
-	printf("Supported interfaces:\n");
+	PRINTF("Supported interfaces:\n");
 	for (i = 0; interfaces_info[i] != NULL; i++)
 	{
 		vss_call_notifier(interfaces_info[i]->notifier, "support", NULL);
 	}
-	printf("\n");
+	PRINTF("\n");
 }
 
 void interface_print_help(void)

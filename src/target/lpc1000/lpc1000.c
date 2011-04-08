@@ -20,13 +20,13 @@
 #include "config.h"
 #endif
 
-#include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
 
 #include "app_cfg.h"
 #include "app_type.h"
+#include "app_io.h"
 #include "app_err.h"
 #include "app_log.h"
 
@@ -64,7 +64,7 @@ struct program_functions_t lpc1000_program_functions;
 VSS_HANDLER(lpc1000_help)
 {
 	VSS_CHECK_ARGC(1);
-	printf("\
+	PRINTF("\
 Usage of %s:\n\
   -C,  --comport <COMM_ATTRIBUTE>           set com port\n\
   -m,  --mode <MODE>                        set mode<j|s|i>\n\

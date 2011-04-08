@@ -21,11 +21,11 @@
 #include "config.h"
 #endif
 
-#include <stdio.h>
 #include <string.h>
 
 #include "app_cfg.h"
 #include "app_type.h"
+#include "app_io.h"
 
 #include "../dal_internal.h"
 #include "../mal/mal_internal.h"

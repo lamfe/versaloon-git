@@ -21,7 +21,6 @@
 #endif
 
 #include <stdlib.h>
-#include <stdio.h>
 #include <string.h>
 
 #include "../versaloon_include.h"

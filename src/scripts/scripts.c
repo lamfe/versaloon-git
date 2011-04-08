@@ -21,12 +21,12 @@
 #endif
 
 #include <stdlib.h>
-#include <stdio.h>
 #include <string.h>
 #include <ctype.h>
 
 #include "app_cfg.h"
 #include "app_type.h"
+#include "app_io.h"
 #include "app_log.h"
 #include "app_err.h"
 #include "port.h"
@@ -689,9 +689,9 @@ static RESULT vss_run_file(FILE *f, char *head, uint8_t quiet)
 		{
 			if (head != NULL)
 			{
-				printf("%s", head);
+				PRINTF("%s", head);
 			}
-			printf(">>>");
+			PRINTF(">>>");
 		}
 		
 		// get a line
@@ -719,16 +719,16 @@ static RESULT vss_run_file(FILE *f, char *head, uint8_t quiet)
 		{
 			if (head != NULL)
 			{
-				printf("%s", head);
+				PRINTF("%s", head);
 			}
-			printf(">>>");
+			PRINTF(">>>");
 		}
 		
 		if ((f != stdin) && !quiet && !vss_quiet_mode && !cur_cmd_quiet)
 		{
 			// run from non-shell mode, print the command line to run
 			// in shell mode, the command line will have been printed in fgets
-			printf("%s", cmd_line);
+			PRINTF("%s", cmd_line);
 		}
 		
 		if ((vss_cur_function != NULL) && (cmd_ptr != strstr(cmd_ptr, "end_function")))
@@ -750,7 +750,7 @@ static RESULT vss_run_file(FILE *f, char *head, uint8_t quiet)
 		}
 		if (!quiet && !vss_quiet_mode && !cur_cmd_quiet)
 		{
-			printf("\n");
+			PRINTF("\n");
 		}
 		if (vss_exit_mark != 0)
 		{

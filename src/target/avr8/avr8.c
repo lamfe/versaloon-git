@@ -20,12 +20,12 @@
 #include "config.h"
 #endif
 
-#include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 
 #include "app_cfg.h"
 #include "app_type.h"
+#include "app_io.h"
 #include "app_err.h"
 #include "app_log.h"
 
@@ -63,7 +63,7 @@ struct program_functions_t avr8_program_functions;
 VSS_HANDLER(avr8_help)
 {
 	VSS_CHECK_ARGC(1);
-	printf("\
+	PRINTF("\
 Usage of %s:\n\
   -F,  --frequency <FREQUENCY>              set ISP frequency, in KHz\n\
   -m,  --mode <MODE>                        set mode<b|p>\n\n", 

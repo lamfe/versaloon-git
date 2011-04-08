@@ -20,7 +20,6 @@
 #include "config.h"
 #endif
 
-#include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -28,6 +27,7 @@
 #include "port.h"
 #include "app_cfg.h"
 #include "app_type.h"
+#include "app_io.h"
 #include "app_err.h"
 #include "app_log.h"
 
@@ -95,12 +95,12 @@ VSS_HANDLER(comisp_print_cominfo)
 	
 	i = (uint8_t)strtoul(argv[1], NULL, 0);
 	
-	printf("baudrate = %d, ", comisp_chips_param[i].com_mode.baudrate);
-	printf("datalength = %d, ", comisp_chips_param[i].com_mode.datalength);
-	printf("paritybit = %c, ", comisp_chips_param[i].com_mode.paritybit);
-	printf("stopbit = %c, ", comisp_chips_param[i].com_mode.stopbit);
-	printf("handshake = %c, ", comisp_chips_param[i].com_mode.handshake);
-	printf("auxpin = %c",comisp_chips_param[i].com_mode.auxpin);
+	PRINTF("baudrate = %d, ", comisp_chips_param[i].com_mode.baudrate);
+	PRINTF("datalength = %d, ", comisp_chips_param[i].com_mode.datalength);
+	PRINTF("paritybit = %c, ", comisp_chips_param[i].com_mode.paritybit);
+	PRINTF("stopbit = %c, ", comisp_chips_param[i].com_mode.stopbit);
+	PRINTF("handshake = %c, ", comisp_chips_param[i].com_mode.handshake);
+	PRINTF("auxpin = %c",comisp_chips_param[i].com_mode.auxpin);
 	return ERROR_OK;
 }
 

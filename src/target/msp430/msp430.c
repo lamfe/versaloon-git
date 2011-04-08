@@ -20,12 +20,12 @@
 #include "config.h"
 #endif
 
-#include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 
 #include "app_cfg.h"
 #include "app_type.h"
+#include "app_io.h"
 #include "app_err.h"
 #include "app_log.h"
 
@@ -74,7 +74,7 @@ RESULT (*msp430jtagsbw_poll)(uint8_t index, uint32_t dr, uint32_t mask,
 VSS_HANDLER(msp430_help)
 {
 	VSS_CHECK_ARGC(1);
-	printf("\
+	PRINTF("\
 Usage of %s:\n\
   -m,  --mode <MODE>                        set mode<j|s|b>\n\n", 
 			CUR_TARGET_STRING);
