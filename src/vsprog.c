@@ -565,6 +565,8 @@ int main(int argc, char* argv[])
 	char vss_cmd[2];
 	uint16_t vss_argc;
 	
+	APP_IO_INIT();
+	
 	vss_argv[0] = "init";
 	vss_argv[1] = argv[0];
 	vss_argc = 2;

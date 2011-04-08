@@ -695,7 +695,7 @@ static RESULT vss_run_file(FILE *f, char *head, uint8_t quiet)
 		}
 		
 		// get a line
-		if (NULL == fgets(cmd_line, sizeof(cmd_line), f))
+		if (NULL == FGETS(cmd_line, sizeof(cmd_line), f))
 		{
 			if (!feof(f))
 			{
@@ -916,7 +916,7 @@ VSS_HANDLER(vss_log_info)
 VSS_HANDLER(vss_getchar)
 {
 	VSS_CHECK_ARGC(1);
-	getchar();
+	GETCHAR();
 	return ERROR_OK;
 }
 
