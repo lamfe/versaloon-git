@@ -28,13 +28,13 @@
 
 #include <getopt.h>
 #include <locale.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "port.h"
 #include "app_cfg.h"
 #include "app_type.h"
+#include "app_io.h"
 #include "app_log.h"
 #include "app_err.h"
 
@@ -266,17 +266,16 @@ static RESULT parse_operation(uint32_t *operation, const char *opt,
 
 static void print_title(void)
 {
-	printf(_GETTEXT(VSPROG_VERSION "\n" VSPROG_COPYRIGHT "\n\n\
+	PRINTF(_GETTEXT(VSPROG_VERSION "\n" VSPROG_COPYRIGHT "\n\n\
 URL: http://www.SimonQian.com/en/Versaloon\n\
 mail: SimonQian@SimonQian.com\n\n"));
 }
 
 static void print_system_info(void)
 {
-	printf("System Information:\n");
-	printf("config_dir = %s\n", config_dir);
-	
-	printf("\n");
+	PRINTF("System Information:\n");
+	PRINTF("config_dir = %s\n", config_dir);
+	PRINTF("\n");
 }
 
 VSS_HANDLER(vsprog_help)
@@ -284,7 +283,7 @@ VSS_HANDLER(vsprog_help)
 	vsprog_query_cmd = 1;
 	VSS_CHECK_ARGC(1);
 	
-	printf(_GETTEXT("\
+	PRINTF(_GETTEXT("\
 Usage: %s [OPTION]...\n\
   -h,  --help                               display this help\n\
   -v,  --version                            display vsprog version\n\
@@ -325,7 +324,7 @@ VSS_HANDLER(vsprog_version)
 	vsprog_query_cmd = 1;
 	VSS_CHECK_ARGC(1);
 	
-	printf(_GETTEXT(VSPROG_VERSION "\n" VSPROG_COPYRIGHT "\n\n\
+	PRINTF(_GETTEXT(VSPROG_VERSION "\n" VSPROG_COPYRIGHT "\n\n\
 This is free software; see the source for copying conditions.\n\
 There is NO warranty; not even for MERCHANTABILITY or FITNESS\n\
 FOR A PARTICULAR PURPOSE.\n"));

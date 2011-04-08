@@ -21,10 +21,9 @@
 #include "config.h"
 #endif
 
-#include <stdio.h>
-
 #include "app_cfg.h"
 #include "app_type.h"
+#include "app_io.h"
 
 #include "../dal_internal.h"
 #include "mic2826_drv_cfg.h"

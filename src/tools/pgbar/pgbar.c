@@ -20,11 +20,11 @@
 #include "config.h"
 #endif
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "app_type.h"
+#include "app_io.h"
 #include "app_log.h"
 #include "app_err.h"
 
@@ -101,7 +101,7 @@ void pgbar_update(int32_t step)
 		{
 			if (!gui_mode_flag)
 			{
-				printf("\b \b");
+				PRINTF("\b \b");
 			}
 		}
 		
@@ -109,22 +109,22 @@ void pgbar_update(int32_t step)
 		{
 			if (noc > 0)
 			{
-				printf("%c", disp_char);
+				PRINTF("%c", disp_char);
 				noc--;
 			}
 			else
 			{
-				printf("\b \b");
+				PRINTF("\b \b");
 				noc++;
 			}
 		}
 		
 		// output percentage
-		printf("%%%02d", pgbar_get_char_num(position) * 100 / max_num_of_chars);
+		PRINTF("%%%02d", pgbar_get_char_num(position) * 100 / max_num_of_chars);
 		
 		if (gui_mode_flag)
 		{
-			printf("\n");
+			PRINTF("\n");
 		}
 		
 		// flush output
@@ -154,13 +154,13 @@ RESULT pgbar_init(char *s, char *e, uint32_t min, uint32_t max,
 	// print initial string
 	if (NULL != s)
 	{
-		printf("%s", s);
+		PRINTF("%s", s);
 	}
 	// print initial percentage
-	printf("%%00");
+	PRINTF("%%00");
 	if (gui_mode_flag)
 	{
-		printf("\n");
+		PRINTF("\n");
 	}
 	
 	// get start time
@@ -176,7 +176,7 @@ uint32_t pgbar_fini(void)
 	// print final string
 	if (end_str != NULL)
 	{
-		printf("%s ", end_str);
+		PRINTF("%s ", end_str);
 		// free allocated memory
 		free(end_str);
 		end_str = NULL;
@@ -184,7 +184,7 @@ uint32_t pgbar_fini(void)
 	
 	// get current time and calculate time used
 	end_time = get_time_in_ms();
-	printf("%02.02fs used\n", (float)(end_time - start_time) / 1000);
+	PRINTF("%02.02fs used\n", (float)(end_time - start_time) / 1000);
 	
 	// flush output
 	fflush(stdout);

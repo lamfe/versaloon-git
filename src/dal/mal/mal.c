@@ -20,7 +20,7 @@
 #include "config.h"
 #endif
 
-#include <stdio.h>
+#include "app_io.h"
 
 #include "../dal_cfg.h"
 #include "mal.h"

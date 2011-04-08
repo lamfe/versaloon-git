@@ -20,10 +20,10 @@
 #include "config.h"
 #endif
 
-#include <stdio.h>
 #include <string.h>
 
 #include "app_type.h"
+#include "app_io.h"
 #include "app_log.h"
 #include "app_err.h"
 
@@ -291,12 +291,12 @@ uint32_t print_usb_devices(uint16_t VID, uint16_t PID, int8_t serialindex,
 					// print current device
 					if (strlen((char *)buf) > 0)
 					{
-						printf("%s%d: 0x%04X:0x%04X:%s on %s.\n", 
+						PRINTF("%s%d: 0x%04X:0x%04X:%s on %s.\n", 
 								productstring, c, VID, PID, buf, dev->filename);
 					}
 					else
 					{
-						printf("%s%d: 0x%04X:0x%04X on %s.\n", 
+						PRINTF("%s%d: 0x%04X:0x%04X on %s.\n", 
 								productstring, c, VID, PID, dev->filename);
 					}
 					c++;

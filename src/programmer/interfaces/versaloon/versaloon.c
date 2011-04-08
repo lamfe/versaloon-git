@@ -20,7 +20,6 @@
 #include "config.h"
 #endif
 
-#include <stdio.h>
 #include <string.h>
 
 #include "versaloon_include.h"
@@ -70,7 +69,7 @@ static uint32_t versaloon_to = VERSALOON_TIMEOUT;
 VSS_HANDLER(versaloon_help)
 {
 	VSS_CHECK_ARGC(1);
-	printf("\
+	PRINTF("\
 Usage of %s:\n\
   -U,  --usb <PID_VID_EPIN_EPOUT>           set usb VID, PID, EPIN, EPOUT\n\n", 
 		   VERSALOON_STRING);
@@ -80,7 +79,7 @@ Usage of %s:\n\
 VSS_HANDLER(versaloon_support)
 {
 	VSS_CHECK_ARGC(1);
-	printf("\
+	PRINTF("\
 %s: see http://www.SimonQian.com/en/Versaloon\n", VERSALOON_STRING);
 	return ERROR_OK;
 }
@@ -647,7 +646,7 @@ static uint32_t versaloon_display_programmer(void)
 						VERSALOON_OUTP, 1);
 	}
 	
-	printf(_GETTEXT("Supported Programmer by Versaloon driver:\n"));
+	PRINTF(_GETTEXT("Supported Programmer by Versaloon driver:\n"));
 	return print_usb_devices(usb_param_vid(), usb_param_pid(), 
 					VERSALOON_SERIALSTRING_INDEX, usb_param_serial(), 
 					VERSALOON_PRODUCTSTRING_INDEX, VERSALOON_PRODUCTSTRING);
