@@ -143,6 +143,24 @@ static RESULT mal_setcapacity(uint16_t index, uint64_t block_size,
 	return ERROR_OK;
 }
 
+static RESULT mal_poll(uint16_t index)
+{
+	struct mal_driver_t* driver;
+	RESULT ret = ERROR_OK;
+	
+	driver = mal_find_driver(index);
+	if (NULL == driver)
+	{
+		return ERROR_FAIL;
+	}
+	
+	if (driver->poll != NULL)
+	{
+		ret = driver->poll();
+	}
+	return ret;
+}
+
 static RESULT mal_eraseblock_nb_start(uint16_t index, uint64_t address, 
 										uint64_t count)
 {
@@ -596,6 +614,7 @@ struct mal_t mal =
 	mal_getinfo,
 	mal_getcapacity,
 	mal_setcapacity,
+	mal_poll,
 	
 	mal_eraseall,
 	mal_eraseblock,

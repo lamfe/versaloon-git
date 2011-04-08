@@ -54,6 +54,7 @@ struct mal_t
 							uint64_t *block_number);
 	RESULT (*setcapacity)(uint16_t index, uint64_t block_size, 
 							uint64_t block_number);
+	RESULT (*poll)(uint16_t index);
 	
 	RESULT (*eraseall)(uint16_t index);
 	RESULT (*eraseblock)(uint16_t index, uint64_t address, uint64_t count);

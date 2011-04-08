@@ -125,6 +125,7 @@ struct mal_driver_t ee24cxx_drv =
 	ee24cxx_drv_init,
 	ee24cxx_drv_fini,
 	NULL,
+	NULL,
 	
 	NULL,
 	NULL,
