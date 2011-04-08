@@ -1057,6 +1057,7 @@ VSS_HANDLER(vss_function_free)
 	else
 	{
 		// free all functions
+		ret = ERROR_OK;
 		while (func != NULL)
 		{
 			func_tmp = func;
