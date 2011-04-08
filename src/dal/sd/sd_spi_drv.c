@@ -391,6 +391,7 @@ struct mal_driver_t sd_spi_drv =
 	sd_spi_drv_init,
 	sd_spi_drv_fini,
 	sd_spi_getinfo,
+	NULL,
 	
 	NULL,
 	NULL,

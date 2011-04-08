@@ -224,6 +224,7 @@ struct mal_driver_t df25xx_drv =
 	df25xx_drv_init,
 	df25xx_drv_fini,
 	df25xx_drv_getinfo,
+	NULL,
 	
 	df25xx_drv_eraseall_nb_start,
 	df25xx_drv_eraseall_nb_isready,
