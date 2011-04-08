@@ -36,9 +36,9 @@
 #include "target.h"
 #include "scripts.h"
 
-#include "dal.h"
-#include "mal/mal.h"
-#include "df25xx/df25xx_drv.h"
+#include "dal/dal.h"
+#include "dal/mal/mal.h"
+#include "dal/df25xx/df25xx_drv.h"
 
 #include "df25xx.h"
 #include "df25xx_internal.h"

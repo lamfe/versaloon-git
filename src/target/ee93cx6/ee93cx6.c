@@ -36,9 +36,9 @@
 #include "target.h"
 #include "scripts.h"
 
-#include "dal.h"
-#include "mal/mal.h"
-#include "ee93cx6/ee93cx6_drv.h"
+#include "dal/dal.h"
+#include "dal/mal/mal.h"
+#include "dal/ee93cx6/ee93cx6_drv.h"
 
 #include "ee93cx6.h"
 #include "ee93cx6_internal.h"

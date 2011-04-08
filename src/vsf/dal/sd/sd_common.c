@@ -27,7 +27,7 @@
 #include "app_type.h"
 #include "app_io.h"
 
-#include "mal/mal_internal.h"
+#include "../mal/mal_internal.h"
 #include "sd_common.h"
 
 uint8_t sd_spi_calc_chksum(uint8_t *data, uint32_t num)
