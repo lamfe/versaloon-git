@@ -1,4 +1,4 @@
-SUBDIRS = driver programmer target tools scripts dal
+SUBDIRS = driver programmer target tools scripts vsf
 
 bin_PROGRAMS = vsprog
 
@@ -35,7 +35,7 @@ vsprog_LDADD = \
     $(top_builddir)/src/target/libtgt.a \
     $(top_builddir)/src/tools/libtool.a \
     $(top_builddir)/src/driver/libdrv.a \
-    $(top_builddir)/src/dal/libdal.a \
+    $(top_builddir)/src/vsf/libvsf.a \
     $(MINGWLDADD) -lusb $(XML_LIBS)
 
 MAINTAINERCLEANFILES = Makefile.in
