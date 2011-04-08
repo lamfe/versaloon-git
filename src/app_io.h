@@ -21,8 +21,14 @@
 
 #include <stdio.h>
 
+#define APP_IO_INIT()					
+
 #define FPRINTF							fprintf
 #define PRINTF							printf
 #define FFLUSH							fflush
 
+#define FGETS							fgets
+#define GETCHAR							getchar
+
 #endif	// __APP_IO_H_INCLUDED__
+
