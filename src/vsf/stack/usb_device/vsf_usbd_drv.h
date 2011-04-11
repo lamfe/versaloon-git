@@ -38,12 +38,6 @@ enum ep_type_t
 	EP_TYPE_ISO,
 };
 
-enum usberr_type_t
-{
-	USBERR_OK,
-	USBERR_INVALID_CRC,
-};
-
 #define USB_DRV_ABILITY_SUSPEND_RESUME
 #define USB_DRV_ABILITY_CONNECT_DISCONNECT
 #define USB_DRV_ABILITY_LOWPOWER
@@ -70,12 +64,11 @@ struct vsfusbd_drv_t
 	struct vsfusbd_callback_t
 	{
 		RESULT (*on_RESET)(void);
-		RESULT (*on_ERROR)(enum usberr_type_t type);
+		RESULT (*on_ERROR)(enum usb_err_type_t type);
 		RESULT (*on_WAKEUP)(void);
 		RESULT (*on_SUSPEND)(void);
 		RESULT (*on_RESUME)(void);
 		RESULT (*on_SOF)(void);
-		RESULT (*on_NO_SOF)(void);
 		RESULT (*on_SETUP)(void);
 	} callback;
 	

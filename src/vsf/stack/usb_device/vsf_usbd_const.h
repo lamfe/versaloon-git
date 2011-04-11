@@ -82,5 +82,13 @@ enum usb_feature_t
 	USB_FEATURE_REMOTE_WAKEUP		= 0x02,
 };
 
+// error
+enum usb_err_type_t
+{
+	USBERR_OK,
+	USBERR_INVALID_CRC,
+	USBERR_SOF_TO,
+};
+
 #endif	// __VSF_USBD_CONST_H_INCLUDED__
 
