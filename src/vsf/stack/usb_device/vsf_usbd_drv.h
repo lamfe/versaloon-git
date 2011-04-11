@@ -92,8 +92,8 @@ struct vsfusbd_drv_t
 		
 		struct vsfusb_ep_callback_t
 		{
-			struct vsf_buffer_t buffer_out;
-			struct vsf_buffer_t buffer_in;
+			struct vsf_transaction_buffer_t buffer_out;
+			struct vsf_transaction_buffer_t buffer_in;
 			
 			RESULT (*on_IN)(void);
 			RESULT (*on_OUT)(void);
