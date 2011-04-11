@@ -384,7 +384,7 @@ stm32swj_download_flashloader:
 			break;
 		}
 		
-		reg = STM32_IAP_BASE;
+		reg = STM32_IAP_BASE + 1;
 		if (ERROR_OK != cm3_write_core_register(CM3_COREREG_PC, &reg))
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "write PC");
