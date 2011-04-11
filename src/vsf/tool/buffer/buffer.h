@@ -26,5 +26,11 @@ struct vsf_buffer_t
 	uint16_t size;
 };
 
+struct vsf_transaction_buffer_t
+{
+	struct vsf_buffer_t buffer;
+	uint16_t position;
+};
+
 #endif	// __BUFFER_H_INCLUDED__
 
