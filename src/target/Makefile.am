@@ -1,8 +1,8 @@
 INCLUDES = \
     $(all_includes) \
+    -I$(top_srcdir)/src/vsf/tool/list \
     -I$(top_srcdir)/src \
     -I$(top_srcdir)/src/programmer \
-    -I$(top_srcdir)/src/tools/list \
     -I$(top_srcdir)/src/tools/memlist \
     -I$(top_srcdir)/src/tools/filelist \
     -I$(top_srcdir)/src/tools/fileparser \
