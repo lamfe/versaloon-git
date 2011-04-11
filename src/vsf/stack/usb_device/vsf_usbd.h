@@ -99,7 +99,25 @@ struct vsfusbd_t
 	RESULT (*out_nb_isready)(void);
 	RESULT (*out)(uint8_t ep, uint8_t *buff, uint16_t size);
 	
-	struct vsfusbd_drv_t drv;
+	// user callback
+	struct vsfusbd_user_callback_t
+	{
+		RESULT (*on_RESET)(void);
+		RESULT (*on_ERROR)(enum usb_err_type_t type);
+		RESULT (*on_WAKEUP)(void);
+		RESULT (*on_SUSPEND)(void);
+		RESULT (*on_RESUME)(void);
+		RESULT (*on_SOF)(void);
+		
+		RESULT (*on_IN)(uint8_t ep);
+		RESULT (*on_OUT)(uint8_t ep);
+#if VSFUSBD_EP_ISO_EN
+		RESULT (*on_SYNC_UNDERFLOW)(uint8_t ep);
+		RESULT (*on_SYNC_OVERFLOW)(uint8_t ep);
+#endif
+	} user_callback;
+	
+	struct vsfusbd_drv_t *drv;
 };
 
 #endif	// __VSF_USBD_H_INCLUDED__
