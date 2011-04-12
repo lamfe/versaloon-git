@@ -127,13 +127,16 @@ RESULT usbtojtaghl_ir(uint8_t interface_index, uint8_t *ir, uint16_t bitlen,
 #endif
 	
 	usbtojtaghl_ir_backup = 0;
-	if (bytelen > 4)
+	if (ir != NULL)
 	{
-		memcpy(&usbtojtaghl_ir_backup, ir, 4);
-	}
-	else
-	{
-		memcpy(&usbtojtaghl_ir_backup, ir, bytelen);
+		if (bytelen > 4)
+		{
+			memcpy(&usbtojtaghl_ir_backup, ir, 4);
+		}
+		else
+		{
+			memcpy(&usbtojtaghl_ir_backup, ir, bytelen);
+		}
 	}
 	
 	bitlen |= 0x8000;		// indicate ir
@@ -150,9 +153,13 @@ RESULT usbtojtaghl_ir(uint8_t interface_index, uint8_t *ir, uint16_t bitlen,
 	{
 		bytelen = processed_len;
 	}
-	else
+	else if (ir != NULL)
 	{
 		memcpy(versaloon_cmd_buf + 3, ir, bytelen);
+	}
+	else
+	{
+		memset(versaloon_cmd_buf + 3, 0, bytelen);
 	}
 	
 	// clear MSB to indicate IR
@@ -197,9 +204,13 @@ RESULT usbtojtaghl_dr(uint8_t interface_index, uint8_t *dr, uint16_t bitlen,
 	{
 		bytelen = processed_len;
 	}
-	else
+	else if (dr != NULL)
 	{
 		memcpy(versaloon_cmd_buf + 3, dr, bytelen);
+	}
+	else
+	{
+		memset(versaloon_cmd_buf + 3, 0, bytelen);
 	}
 	
 	// set MSB to indicate DR
