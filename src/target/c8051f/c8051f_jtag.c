@@ -202,7 +202,6 @@ ERASE_TARGET_HANDLER(c8051fjtag)
 	uint32_t dr;
 	RESULT ret = ERROR_OK;
 	
-	REFERENCE_PARAMETER(context);
 	REFERENCE_PARAMETER(size);
 	REFERENCE_PARAMETER(addr);
 	
@@ -221,6 +220,7 @@ ERASE_TARGET_HANDLER(c8051fjtag)
 		// set FLASHCON for poll operation
 		dr = 0;
 		c8051f_jtag_ind_write(C8051F_IR_FLASHCON, &dr, C8051F_DR_FLASHCON_LEN);
+		jtag_delay_ms(1500);
 		c8051f_jtag_poll_flbusy(1500, 1000);
 		if (ERROR_OK != jtag_commit())
 		{
