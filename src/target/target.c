@@ -1355,7 +1355,7 @@ static RESULT target_program(struct program_context_t *context)
 				}
 				pgbar_update(page_num);
 			}
-			if (ERROR_OK != prog->peripheral_commit())
+			if ((prog != NULL) && (ERROR_OK != prog->peripheral_commit()))
 			{
 				LOG_ERROR(ERRMSG_FAILURE_ERASE, fullname);
 				ret = ERRCODE_FAILURE_OPERATION;
@@ -1472,7 +1472,7 @@ static RESULT target_program(struct program_context_t *context)
 				}
 				pgbar_update(target_size);
 			}
-			if (ERROR_OK != prog->peripheral_commit())
+			if ((prog != NULL) && (ERROR_OK != prog->peripheral_commit()))
 			{
 				LOG_ERROR(ERRMSG_FAILURE_PROGRAM, fullname);
 				ret = ERRCODE_FAILURE_OPERATION;
@@ -1553,7 +1553,7 @@ static RESULT target_program(struct program_context_t *context)
 					ml_tmp = MEMLIST_GetNext(ml_tmp);
 				}
 			}
-			if (ERROR_OK != prog->peripheral_commit())
+			if ((prog != NULL) && (ERROR_OK != prog->peripheral_commit()))
 			{
 				LOG_ERROR(ERRMSG_FAILURE_READ, fullname);
 				ret = ERRCODE_FAILURE_OPERATION;
@@ -1650,7 +1650,8 @@ static RESULT target_program(struct program_context_t *context)
 							pgbar_update(page_size);
 						}
 					}
-					if (ERROR_OK != prog->peripheral_commit())
+					if ((prog != NULL) && 
+						(ERROR_OK != prog->peripheral_commit()))
 					{
 						LOG_ERROR(ERRMSG_FAILURE_READ, fullname);
 						ret = ERRCODE_FAILURE_OPERATION;
@@ -1723,7 +1724,7 @@ static RESULT target_program(struct program_context_t *context)
 					ret = ERRCODE_FAILURE_OPERATION;
 					goto target_program_exit;
 				}
-				if (ERROR_OK != prog->peripheral_commit())
+				if ((prog != NULL) && (ERROR_OK != prog->peripheral_commit()))
 				{
 					LOG_ERROR(ERRMSG_FAILURE_READ, fullname);
 					ret = ERRCODE_FAILURE_OPERATION;
