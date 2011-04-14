@@ -288,6 +288,16 @@ ENTER_PROGRAM_MODE_HANDLER(lpc1000swj)
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
+	if (ERROR_OK != cm3_read_core_register(CM3_COREREG_20, &reg))
+	{
+		return ERROR_FAIL;
+	}
+	reg |= CM3_PRIMASK_PM;
+	if (ERROR_OK != cm3_write_core_register(CM3_COREREG_20, &reg))
+	{
+		return ERROR_FAIL;
+	}
+	
 	if (ERROR_OK != cm3_dp_resume())
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "run iap");

@@ -349,7 +349,7 @@ RESULT cm3_dump(uint32_t addr, uint32_t size)
 	reg = LE_TO_SYS_U32(reg);
 	LOG_INFO(INFOMSG_REG_08X, "psp", reg);
 	
-	if (ERROR_OK != cm3_read_core_register(CM3_COREREG_CONTROL, &reg))
+	if (ERROR_OK != cm3_read_core_register(CM3_COREREG_20, &reg))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read core_reg 20");
 		ret = ERRCODE_FAILURE_OPERATION;
