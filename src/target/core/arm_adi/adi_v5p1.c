@@ -36,7 +36,7 @@
 #include "adi_v5p1_internal.h"
 
 static struct interfaces_info_t *adi_prog = NULL;
-static adi_dpif_t *adi_dp_if;
+static struct adi_dpif_t *adi_dp_if;
 static struct adi_dp_t adi_dp;
 static uint8_t ack_value;
 struct adi_dp_info_t adi_dp_info;
@@ -249,7 +249,7 @@ static RESULT adi_dpif_fini(void)
 	return ret;
 }
 
-static RESULT adi_dpif_init(struct program_context_t *context, adi_dpif_t *interf)
+static RESULT adi_dpif_init(struct program_context_t *context, struct adi_dpif_t *interf)
 {
 	struct program_info_t *pi = context->pi;
 	
@@ -747,7 +747,7 @@ RESULT adi_fini(void)
 	return adi_dpif_fini();
 }
 
-RESULT adi_init(struct program_context_t *context, adi_dpif_t *interf, 
+RESULT adi_init(struct program_context_t *context, struct adi_dpif_t *interf, 
 					enum adi_dp_target_core_t *core)
 {
 	uint32_t tmp;

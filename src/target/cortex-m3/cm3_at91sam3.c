@@ -415,7 +415,7 @@ ENTER_PROGRAM_MODE_HANDLER(at91sam3swj)
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
-	if (ERROR_OK != cm3_dp_run())
+	if (ERROR_OK != cm3_dp_resume())
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "run iap");
 		return ERRCODE_FAILURE_OPERATION;

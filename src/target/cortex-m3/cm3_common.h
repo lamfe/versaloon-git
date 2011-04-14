@@ -28,6 +28,12 @@
 #define CM3_COREREG_SP						13
 #define CM3_COREREG_LR						14
 #define CM3_COREREG_PC						15
+#define CM3_COREREG_XPSR					16
+#define CM3_COREREG_MSP						17
+#define CM3_COREREG_PSP						18
+#define CM3_COREREG_CONTROL					20
+
+#define CM3_XPSR_T							0x01000000
 
 /* Debug Control Block */
 #define CM3_DCB_DHCSR						0xE000EDF0
@@ -70,12 +76,12 @@
 #define CM3_REG_NVIC_AIRCR_VECTCLRACTIVE	(1 << 1)
 #define CM3_REG_NVIC_AIRCR_VECTRESET		(1 << 0)
 
-RESULT cm3_dp_parameter_init(adi_dpif_t *dp);
+RESULT cm3_dp_parameter_init(struct adi_dpif_t *dp);
 RESULT cm3_dp_fini(void);
-RESULT cm3_dp_init(struct program_context_t *context, adi_dpif_t *interf);
+RESULT cm3_dp_init(struct program_context_t *context, struct adi_dpif_t *interf);
 
 RESULT cm3_dp_halt(void);
-RESULT cm3_dp_run(void);
+RESULT cm3_dp_resume(void);
 RESULT cm3_reset(void);
 
 RESULT cm3_read_core_register(uint8_t reg_idx, uint32_t *value);
