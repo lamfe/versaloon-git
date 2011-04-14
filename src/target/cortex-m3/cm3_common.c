@@ -38,16 +38,16 @@
 #include "adi_v5p1.h"
 #include "cm3_common.h"
 
-adi_dpif_t cm3_dp_if;
+struct adi_dpif_t cm3_dp_if;
 
 RESULT cm3_dp_fini(void)
 {
 	return adi_fini();
 }
 
-RESULT cm3_dp_init(struct program_context_t *context, adi_dpif_t *dp)
+RESULT cm3_dp_init(struct program_context_t *context, struct adi_dpif_t *dp)
 {
-	uint32_t cpuid;
+	uint32_t cpuid, dcb_dhcsr;
 	enum adi_dp_target_core_t tgt_core = ADI_DP_INVALID;
 	
 	memcpy(&cm3_dp_if, dp, sizeof(cm3_dp_if));
@@ -57,6 +57,24 @@ RESULT cm3_dp_init(struct program_context_t *context, adi_dpif_t *dp)
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "initialize cm3 interface");
 		return ERRCODE_FAILURE_OPERATION;
+	}
+	
+	// enable debug
+	if (ERROR_OK != adi_memap_read_reg32(CM3_DCB_DHCSR, &dcb_dhcsr, 1))
+	{
+		return ERROR_FAIL;
+	}
+	dcb_dhcsr = LE_TO_SYS_U32(dcb_dhcsr);
+	
+	if (!(dcb_dhcsr & CM3_DCB_DHCSR_C_DEBUGEN))
+	{
+		uint32_t reg0 = 0;
+		dcb_dhcsr = (uint32_t)(CM3_DCB_DHCSR_DBGKEY | CM3_DCB_DHCSR_C_DEBUGEN);
+		if ((ERROR_OK != adi_memap_write_reg32(CM3_DCB_DHCSR, &dcb_dhcsr, 0)) || 
+			(ERROR_OK != adi_memap_write_reg32(CM3_DCB_DCRDR, &reg0, 1)))
+		{
+			return ERROR_FAIL;
+		}
 	}
 	
 	if ((ERROR_OK != cm3_dp_halt()) 
@@ -69,11 +87,13 @@ RESULT cm3_dp_init(struct program_context_t *context, adi_dpif_t *dp)
 	// 0xC20 is for CortexM0
 	if ((((cpuid >> 4) & 0xC3F) == 0xC23) && (ADI_DP_CM3 == tgt_core))
 	{
-		LOG_INFO("CORTEX-M3 processor detected");
+		LOG_INFO("CORTEX-M3 r%dp%d processor detected", 
+					(cpuid >> 20) & 0x0F, (cpuid >> 0) & 0x0F);
 	}
 	else if ((((cpuid >> 4) & 0xC3F) == 0xC20) && (ADI_DP_CM0 == tgt_core))
 	{
-		LOG_INFO("CORTEX-M0 processor detected");
+		LOG_INFO("CORTEX-M0 r%dp%d processor detected", 
+					(cpuid >> 20) & 0x0F, (cpuid >> 0) & 0x0F);
 	}
 	else
 	{
@@ -135,7 +155,7 @@ RESULT cm3_reset(void)
 	return adi_dp_commit();
 }
 
-RESULT cm3_dp_run(void)
+RESULT cm3_dp_resume(void)
 {
 	uint32_t dcb_dhcsr = 0;
 	uint8_t wait_halt_clear_delay_in_10ms;
@@ -145,24 +165,16 @@ RESULT cm3_dp_run(void)
 		return ERROR_FAIL;
 	}
 	dcb_dhcsr = LE_TO_SYS_U32(dcb_dhcsr);
-	
-	// enable debug
 	if (!(dcb_dhcsr & CM3_DCB_DHCSR_C_DEBUGEN))
 	{
-		dcb_dhcsr = (uint32_t)(CM3_DCB_DHCSR_DBGKEY | CM3_DCB_DHCSR_C_DEBUGEN);
-		adi_memap_write_reg32(CM3_DCB_DHCSR, &dcb_dhcsr, 0);
-		
-		if (ERROR_OK != adi_memap_read_reg32(CM3_DCB_DHCSR, &dcb_dhcsr, 1))
-		{
-			return ERROR_FAIL;
-		}
-		dcb_dhcsr = LE_TO_SYS_U32(dcb_dhcsr);
+		return ERROR_FAIL;
 	}
 	
 	if (dcb_dhcsr & CM3_DCB_DHCSR_S_HALT)
 	{
 		// clear halt
-		dcb_dhcsr = (uint32_t)(CM3_DCB_DHCSR_DBGKEY | CM3_DCB_DHCSR_C_DEBUGEN);
+		dcb_dhcsr &= ~(0xFFFF0000 | CM3_DCB_DHCSR_C_HALT);
+		dcb_dhcsr |= CM3_DCB_DHCSR_DBGKEY | CM3_DCB_DHCSR_C_DEBUGEN;
 		adi_memap_write_reg32(CM3_DCB_DHCSR, &dcb_dhcsr, 0);
 		
 		if (ERROR_OK != adi_memap_read_reg32(CM3_DCB_DHCSR, &dcb_dhcsr, 1))
@@ -204,25 +216,17 @@ RESULT cm3_dp_halt(void)
 		return ERROR_FAIL;
 	}
 	dcb_dhcsr = LE_TO_SYS_U32(dcb_dhcsr);
-	
-	// enable debug
 	if (!(dcb_dhcsr & CM3_DCB_DHCSR_C_DEBUGEN))
 	{
-		dcb_dhcsr = (uint32_t)(CM3_DCB_DHCSR_DBGKEY | CM3_DCB_DHCSR_C_DEBUGEN 
-								| CM3_DCB_DHCSR_C_HALT);
-		adi_memap_write_reg32(CM3_DCB_DHCSR, &dcb_dhcsr, 0);
-		
-		if (ERROR_OK != adi_memap_read_reg32(CM3_DCB_DHCSR, &dcb_dhcsr, 1))
-		{
-			return ERROR_FAIL;
-		}
-		dcb_dhcsr = LE_TO_SYS_U32(dcb_dhcsr);
+		return ERROR_FAIL;
 	}
+	
 	// halt
 	if (!(dcb_dhcsr & CM3_DCB_DHCSR_S_HALT))
 	{
-		dcb_dhcsr = (uint32_t)(CM3_DCB_DHCSR_DBGKEY | CM3_DCB_DHCSR_C_DEBUGEN 
-								| CM3_DCB_DHCSR_C_HALT);
+		dcb_dhcsr &= ~0xFFFF0000;
+		dcb_dhcsr |= CM3_DCB_DHCSR_DBGKEY | CM3_DCB_DHCSR_C_DEBUGEN | 
+						CM3_DCB_DHCSR_C_HALT;
 		adi_memap_write_reg32(CM3_DCB_DHCSR, &dcb_dhcsr, 0);
 		
 		if (ERROR_OK != adi_memap_read_reg32(CM3_DCB_DHCSR, &dcb_dhcsr, 1))
@@ -231,6 +235,7 @@ RESULT cm3_dp_halt(void)
 		}
 		dcb_dhcsr = LE_TO_SYS_U32(dcb_dhcsr);
 	}
+	
 	// wait halt
 	wait_halt_delay_in_10ms = 100;	// 1000ms max delay in all
 	while ((!(dcb_dhcsr & CM3_DCB_DHCSR_S_HALT)) && wait_halt_delay_in_10ms)
@@ -280,7 +285,6 @@ RESULT cm3_dump(uint32_t addr, uint32_t size)
 	
 	for (i = 0; i < 13; i++)
 	{
-		reg = 0;
 		if (ERROR_OK != cm3_read_core_register(i, &reg))
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read register");
@@ -290,7 +294,7 @@ RESULT cm3_dump(uint32_t addr, uint32_t size)
 		reg = LE_TO_SYS_U32(reg);
 		LOG_INFO("r%d: %08X", i, reg);
 	}
-	reg = 0;
+	
 	if (ERROR_OK != cm3_read_core_register(CM3_COREREG_SP, &reg))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read sp");
@@ -299,7 +303,7 @@ RESULT cm3_dump(uint32_t addr, uint32_t size)
 	}
 	reg = LE_TO_SYS_U32(reg);
 	LOG_INFO(INFOMSG_REG_08X, "sp", reg);
-	reg = 0;
+	
 	if (ERROR_OK != cm3_read_core_register(CM3_COREREG_LR, &reg))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read lr");
@@ -308,7 +312,7 @@ RESULT cm3_dump(uint32_t addr, uint32_t size)
 	}
 	reg = LE_TO_SYS_U32(reg);
 	LOG_INFO(INFOMSG_REG_08X, "lr", reg);
-	reg = 0;
+	
 	if (ERROR_OK != cm3_read_core_register(CM3_COREREG_PC, &reg))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read pc");
@@ -317,6 +321,45 @@ RESULT cm3_dump(uint32_t addr, uint32_t size)
 	}
 	reg = LE_TO_SYS_U32(reg);
 	LOG_INFO(INFOMSG_REG_08X, "pc", reg);
+	
+	if (ERROR_OK != cm3_read_core_register(CM3_COREREG_XPSR, &reg))
+	{
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read xpsr");
+		ret = ERRCODE_FAILURE_OPERATION;
+		goto end;
+	}
+	reg = LE_TO_SYS_U32(reg);
+	LOG_INFO(INFOMSG_REG_08X, "xpsr", reg);
+	
+	if (ERROR_OK != cm3_read_core_register(CM3_COREREG_MSP, &reg))
+	{
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read msp");
+		ret = ERRCODE_FAILURE_OPERATION;
+		goto end;
+	}
+	reg = LE_TO_SYS_U32(reg);
+	LOG_INFO(INFOMSG_REG_08X, "msp", reg);
+	
+	if (ERROR_OK != cm3_read_core_register(CM3_COREREG_PSP, &reg))
+	{
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read psp");
+		ret = ERRCODE_FAILURE_OPERATION;
+		goto end;
+	}
+	reg = LE_TO_SYS_U32(reg);
+	LOG_INFO(INFOMSG_REG_08X, "psp", reg);
+	
+	if (ERROR_OK != cm3_read_core_register(CM3_COREREG_CONTROL, &reg))
+	{
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read core_reg 20");
+		ret = ERRCODE_FAILURE_OPERATION;
+		goto end;
+	}
+	reg = LE_TO_SYS_U32(reg);
+	LOG_INFO(INFOMSG_REG_02X, "primask", (reg >> 0) & 0xFF);
+	LOG_INFO(INFOMSG_REG_02X, "basepri", (reg >> 8) & 0xFF);
+	LOG_INFO(INFOMSG_REG_02X, "faultmask", (reg >> 16) & 0xFF);
+	LOG_INFO(INFOMSG_REG_02X, "control", (reg >> 24) & 0xFF);
 	
 	LOG_INFO("SRAM dump at 0x%08X:", addr);
 	if (ERROR_OK != adi_memap_read_buf(addr, buffer, size))

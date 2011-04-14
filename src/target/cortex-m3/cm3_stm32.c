@@ -391,7 +391,7 @@ stm32swj_download_flashloader:
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
-		if (ERROR_OK != cm3_dp_run())
+		if (ERROR_OK != cm3_dp_resume())
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "run flash_loader");
 			ret = ERRCODE_FAILURE_OPERATION;

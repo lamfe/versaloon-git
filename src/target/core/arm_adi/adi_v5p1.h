@@ -33,7 +33,7 @@ enum adi_dp_target_core_t
 	ADI_DP_CM3
 };
 
-typedef struct
+struct adi_dpif_t
 {
 	enum adi_dpif_type_t type;
 	union
@@ -53,9 +53,9 @@ typedef struct
 			uint16_t swd_dly;
 		} dpif_swd_setting;
 	} dpif_setting;
-}adi_dpif_t;
+};
 
-RESULT adi_init(struct program_context_t *context, adi_dpif_t *interf, 
+RESULT adi_init(struct program_context_t *context, struct adi_dpif_t *interf, 
 					enum adi_dp_target_core_t *core);
 RESULT adi_fini(void);
 RESULT adi_dp_commit(void);

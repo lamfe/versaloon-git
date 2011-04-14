@@ -131,7 +131,7 @@ const struct vss_cmd_t cm3_notifier[] =
 
 ENTER_PROGRAM_MODE_HANDLER(cm3)
 {
-	adi_dpif_t dp;
+	struct adi_dpif_t dp;
 	const struct program_functions_t *pf = 
 		cm3_chips_param[cm3_chip_index].program_functions;
 	
@@ -247,7 +247,7 @@ LEAVE_PROGRAM_MODE_HANDLER(cm3)
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "verify written PC");
 			return ERRCODE_FAILURE_OPERATION;
 		}
-		if (ERROR_OK != cm3_dp_run())
+		if (ERROR_OK != cm3_dp_resume())
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "run code");
 			return ERRCODE_FAILURE_OPERATION;
