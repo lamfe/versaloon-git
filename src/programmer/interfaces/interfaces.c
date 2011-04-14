@@ -114,7 +114,7 @@ struct vss_cmd_t interface_cmd[] =
 				"initialize iic, format: iic.init [KHZ MAX_DLY_US]",
 				interface_iic_init),
 	VSS_CMD(	"iic.fini",
-				"finalize iic, format: iic.fini",
+				"finalize iic, format: iic.fini [KHZ MAX_DLY_US]",
 				interface_iic_fini),
 	VSS_CMD(	"iic.config",
 				"config iic, format: iic.config KHZ MAX_DLY_US",
