@@ -31,9 +31,11 @@
 #define CM3_COREREG_XPSR					16
 #define CM3_COREREG_MSP						17
 #define CM3_COREREG_PSP						18
-#define CM3_COREREG_CONTROL					20
+#define CM3_COREREG_20						20
 
 #define CM3_XPSR_T							0x01000000
+#define CM3_PRIMASK_PM						0x00000001
+#define CM3_FAULTMASK_FM					0x00010000
 
 /* Debug Control Block */
 #define CM3_DCB_DHCSR						0xE000EDF0
