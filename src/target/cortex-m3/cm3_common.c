@@ -172,6 +172,19 @@ RESULT cm3_dp_resume(void)
 	
 	if (dcb_dhcsr & CM3_DCB_DHCSR_S_HALT)
 	{
+		uint32_t corereg20;
+		
+		// disable exception
+		if (ERROR_OK != cm3_read_core_register(CM3_COREREG_20, &corereg20))
+		{
+			return ERROR_FAIL;
+		}
+		corereg20 |= CM3_PRIMASK_PM;
+		if (ERROR_OK != cm3_write_core_register(CM3_COREREG_20, &corereg20))
+		{
+			return ERROR_FAIL;
+		}
+		
 		// clear halt
 		dcb_dhcsr &= ~(0xFFFF0000 | CM3_DCB_DHCSR_C_HALT);
 		dcb_dhcsr |= CM3_DCB_DHCSR_DBGKEY | CM3_DCB_DHCSR_C_DEBUGEN;
