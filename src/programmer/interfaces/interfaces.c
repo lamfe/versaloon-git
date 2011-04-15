@@ -375,7 +375,7 @@ VSS_HANDLER(interface_gpio_fini)
 
 VSS_HANDLER(interface_gpio_config)
 {
-	uint16_t mask, io, pull, pull_en;
+	uint32_t mask, io, pull, pull_en;
 	struct interfaces_info_t *ifs = NULL;
 	
 	VSS_CHECK_ARGC(5);
@@ -385,17 +385,17 @@ VSS_HANDLER(interface_gpio_config)
 		return ERROR_FAIL;
 	}
 	
-	mask = (uint16_t)strtoul(argv[1], NULL, 0);
-	io = (uint16_t)strtoul(argv[2], NULL, 0);
-	pull_en = (uint16_t)strtoul(argv[3], NULL, 0);
-	pull = (uint16_t)strtoul(argv[4], NULL, 0);
+	mask = (uint32_t)strtoul(argv[1], NULL, 0);
+	io = (uint32_t)strtoul(argv[2], NULL, 0);
+	pull_en = (uint32_t)strtoul(argv[3], NULL, 0);
+	pull = (uint32_t)strtoul(argv[4], NULL, 0);
 	
 	return ifs->gpio.config(0, mask, io, pull_en, pull);
 }
 
 VSS_HANDLER(interface_gpio_out)
 {
-	uint16_t mask, value;
+	uint32_t mask, value;
 	struct interfaces_info_t *ifs = NULL;
 	
 	VSS_CHECK_ARGC(3);
@@ -405,15 +405,15 @@ VSS_HANDLER(interface_gpio_out)
 		return ERROR_FAIL;
 	}
 	
-	mask = (uint16_t)strtoul(argv[1], NULL, 0);
-	value = (uint16_t)strtoul(argv[2], NULL, 0);
+	mask = (uint32_t)strtoul(argv[1], NULL, 0);
+	value = (uint32_t)strtoul(argv[2], NULL, 0);
 	
 	return ifs->gpio.out(0, mask, value);
 }
 
 VSS_HANDLER(interface_gpio_in)
 {
-	uint16_t mask, value;
+	uint32_t mask, value;
 	RESULT ret = ERROR_OK;
 	struct interfaces_info_t *ifs = NULL;
 	
@@ -424,7 +424,7 @@ VSS_HANDLER(interface_gpio_in)
 		return ERROR_FAIL;
 	}
 	
-	mask = (uint16_t)strtoul(argv[1], NULL, 0);
+	mask = (uint32_t)strtoul(argv[1], NULL, 0);
 	
 	ret = ifs->gpio.in(0, mask, &value);
 	if (ERROR_OK == ret)
@@ -432,7 +432,7 @@ VSS_HANDLER(interface_gpio_in)
 		ret = ifs->peripheral_commit();
 		if (ERROR_OK == ret)
 		{
-			LOG_INFO(INFOMSG_REG_04X, "GPIO", value);
+			LOG_INFO(INFOMSG_REG_08X, "GPIO", value);
 		}
 	}
 	return ret;

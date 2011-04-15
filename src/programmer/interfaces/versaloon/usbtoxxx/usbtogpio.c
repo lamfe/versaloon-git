@@ -38,9 +38,9 @@ RESULT usbtogpio_fini(uint8_t interface_index)
 	return usbtoxxx_fini_command(USB_TO_GPIO, interface_index);
 }
 
-RESULT usbtogpio_config(uint8_t interface_index, uint16_t mask, 
-						uint16_t dir_mask, uint16_t pull_en_mask, 
-						uint16_t input_pull_mask)
+RESULT usbtogpio_config(uint8_t interface_index, uint32_t mask, 
+						uint32_t dir_mask, uint32_t pull_en_mask, 
+						uint32_t input_pull_mask)
 {
 	uint8_t conf[8];
 	
@@ -62,7 +62,7 @@ RESULT usbtogpio_config(uint8_t interface_index, uint16_t mask,
 									sizeof(conf));
 }
 
-RESULT usbtogpio_in(uint8_t interface_index, uint16_t mask, uint16_t *value)
+RESULT usbtogpio_in(uint8_t interface_index, uint32_t mask, uint32_t *value)
 {
 	uint8_t buf[2];
 	
@@ -80,7 +80,7 @@ RESULT usbtogpio_in(uint8_t interface_index, uint16_t mask, uint16_t *value)
 							   (uint8_t*)value, 0, 2, 0);
 }
 
-RESULT usbtogpio_out(uint8_t interface_index, uint16_t mask, uint16_t value)
+RESULT usbtogpio_out(uint8_t interface_index, uint32_t mask, uint32_t value)
 {
 	uint8_t buf[4];
 	
