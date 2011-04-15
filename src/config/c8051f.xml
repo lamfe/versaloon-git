@@ -135,19 +135,19 @@
   <chip name="c8051f02x">
     <program_mode>j</program_mode>
     <chip_id>0x00003243</chip_id>
-    <app_page_num>127</app_page_num>
+    <app_page_num>126</app_page_num>
     <param0>0xFDFF</param0>
   </chip>
   <chip name="c8051f04x">
     <program_mode>j</program_mode>
     <chip_id>0x00005243</chip_id>
-    <app_page_num>127</app_page_num>
+    <app_page_num>126</app_page_num>
     <param0>0xFDFF</param0>
   </chip>
   <chip name="c8051f06x">
     <program_mode>j</program_mode>
     <chip_id>0x00006243</chip_id>
-    <app_page_num>127</app_page_num>
+    <app_page_num>126</app_page_num>
     <param0>0xFBFF</param0>
   </chip>
 </series>
