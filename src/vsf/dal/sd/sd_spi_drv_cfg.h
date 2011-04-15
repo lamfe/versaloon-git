@@ -17,9 +17,5 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#define SD_SPI_IDX							0
-#define SD_CS_PORT							0
-#define SD_CS_PIN							GPIO_SRST
-
 #define SD_SPI_CMD_TIMEOUT					32
 

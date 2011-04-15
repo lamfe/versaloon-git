@@ -17,10 +17,22 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#ifndef __DF45XX_DRV_H_INCLUDED__
+#define __DF45XX_DRV_H_INCLUDED__
+
 struct df45xx_drv_param_t
 {
 	uint16_t spi_khz;
 };
 
+struct df45xx_drv_interface_t
+{
+	uint8_t cs_port;
+	uint32_t cs_pin;
+	uint8_t spi_port;
+};
+
 extern struct mal_driver_t df45xx_drv;
+
+#endif	// __DF45XX_DRV_H_INCLUDED__
 

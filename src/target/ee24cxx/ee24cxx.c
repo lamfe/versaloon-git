@@ -102,9 +102,16 @@ ENTER_PROGRAM_MODE_HANDLER(ee24cxx)
 	struct chip_param_t *param = context->param;
 	struct program_info_t *pi = context->pi;
 	struct ee24cxx_drv_param_t drv_param;
+	struct ee24cxx_drv_interface_t drv_ifs;
 	
 	interfaces = context->prog;
 	if (ERROR_OK != dal_init(interfaces))
+	{
+		return ERROR_FAIL;
+	}
+	
+	drv_ifs.iic_port = 0;
+	if (ERROR_OK != mal.config_interface(MAL_IDX_EE24CXX, &drv_ifs))
 	{
 		return ERROR_FAIL;
 	}

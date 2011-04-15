@@ -17,7 +17,4 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#define DF25XX_CS_PORT						0
-#define DF25XX_CS_PIN						GPIO_SRST
-#define DF25XX_SPI_IDX						0
 

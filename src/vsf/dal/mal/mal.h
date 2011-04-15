@@ -47,6 +47,8 @@
 
 struct mal_t
 {
+	RESULT (*config_interface)(uint16_t index, void *ifs);
+	
 	RESULT (*init)(uint16_t index, void *param);
 	RESULT (*fini)(uint16_t index);
 	RESULT (*getinfo)(uint16_t index, void *info);

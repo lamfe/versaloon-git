@@ -17,17 +17,29 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#ifndef __MIC2826_DRV_H_INCLUDED__
+#define __MIC2826_DRV_H_INCLUDED__
+
 #define MIC2826_CHANNEL_DCDC				0
 #define MIC2826_CHANNEL_LDO1				1
 #define MIC2826_CHANNEL_LDO2				2
 #define MIC2826_CHANNEL_LDO3				3
 
-struct mic2826_t
+struct mic2826_drv_t
 {
+	RESULT (*config_interface)(void *ifs);
 	RESULT (*init)(uint16_t kHz);
 	RESULT (*fini)(void);
 	RESULT (*config)(uint16_t DCDC_mV, uint16_t LDO1_mV, 
 						uint16_t LDO2_mV, uint16_t LDO3_mV);
 };
-extern const struct mic2826_t mic2826;
+
+struct mic2826_drv_interface_t
+{
+	uint8_t iic_port;
+};
+
+extern const struct mic2826_drv_t mic2826_drv;
+
+#endif	// __MIC2826_DRV_H_INCLUDED__
 

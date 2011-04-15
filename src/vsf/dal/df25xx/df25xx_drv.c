@@ -27,6 +27,7 @@
 #include "app_type.h"
 #include "app_io.h"
 
+#include "../dal_cfg.h"
 #include "../dal_internal.h"
 #include "../mal/mal_internal.h"
 #include "../mal/mal.h"
@@ -43,25 +44,37 @@
 #define DF25XX_CMD_CHER						0x60
 #define DF25XX_CMD_RDID						0x9F
 
+static struct df25xx_drv_interface_t df25xx_drv_ifs;
 static struct df25xx_drv_param_t df25xx_drv_param;
 
 static RESULT df25xx_drv_cs_assert(void)
 {
-	return interfaces->gpio.config(DF25XX_CS_PORT, DF25XX_CS_PIN, 
-									DF25XX_CS_PIN, 0, 0);
+	return interfaces->gpio.config(df25xx_drv_ifs.cs_port, 
+		df25xx_drv_ifs.cs_pin, df25xx_drv_ifs.cs_pin, 0, 0);
 }
 
 static RESULT df25xx_drv_cs_deassert(void)
 {
-	return interfaces->gpio.config(DF25XX_CS_PORT, DF25XX_CS_PIN, 0, 
-									DF25XX_CS_PIN, DF25XX_CS_PIN);
+	return interfaces->gpio.config(df25xx_drv_ifs.cs_port, 
+		df25xx_drv_ifs.cs_pin, 0, df25xx_drv_ifs.cs_pin, df25xx_drv_ifs.cs_pin);
 }
 
 static RESULT df25xx_drv_io(uint8_t *out, uint8_t *in, uint16_t len)
 {
 	df25xx_drv_cs_assert();
-	interfaces->spi.io(DF25XX_SPI_IDX, out, in, len);
+	interfaces->spi.io(df25xx_drv_ifs.spi_port, out, in, len);
 	df25xx_drv_cs_deassert();
+	return ERROR_OK;
+}
+
+static RESULT df25xx_drv_config_interface(void *ifs)
+{
+	if (NULL == ifs)
+	{
+		return ERROR_FAIL;
+	}
+	
+	memcpy(&df25xx_drv_ifs, ifs, sizeof(df25xx_drv_ifs));
 	return ERROR_OK;
 }
 
@@ -77,11 +90,11 @@ static RESULT df25xx_drv_init(void *param)
 	{
 		df25xx_drv_param.spi_khz = 9000;
 	}
-	interfaces->gpio.init(DF25XX_CS_PORT);
-	interfaces->gpio.config(DF25XX_CS_PORT, DF25XX_CS_PIN, 0, 
-							DF25XX_CS_PIN, DF25XX_CS_PIN);
-	interfaces->spi.init(DF25XX_SPI_IDX);
-	interfaces->spi.config(DF25XX_SPI_IDX, df25xx_drv_param.spi_khz, 
+	interfaces->gpio.init(df25xx_drv_ifs.cs_port);
+	interfaces->gpio.config(df25xx_drv_ifs.cs_port, df25xx_drv_ifs.cs_pin, 0, 
+							df25xx_drv_ifs.cs_pin, df25xx_drv_ifs.cs_pin);
+	interfaces->spi.init(df25xx_drv_ifs.spi_port);
+	interfaces->spi.config(df25xx_drv_ifs.spi_port, df25xx_drv_param.spi_khz, 
 							SPI_CPOL_HIGH, SPI_CPHA_2EDGE, SPI_MSB_FIRST);
 	
 	return ERROR_OK;
@@ -106,8 +119,8 @@ static RESULT df25xx_drv_getinfo(void *info)
 
 static RESULT df25xx_drv_fini(void)
 {
-	interfaces->gpio.fini(DF25XX_CS_PORT);
-	interfaces->spi.fini(DF25XX_SPI_IDX);
+	interfaces->gpio.fini(df25xx_drv_ifs.cs_port);
+	interfaces->spi.fini(df25xx_drv_ifs.spi_port);
 	return interfaces->peripheral_commit();
 }
 
@@ -166,12 +179,12 @@ static RESULT df25xx_drv_readblock_nb_start(uint64_t address, uint64_t count)
 	cmd[1] = (address >> 16) & 0xFF;
 	cmd[2] = (address >> 8 ) & 0xFF;
 	cmd[3] = (address >> 0 ) & 0xFF;
-	return interfaces->spi.io(DF25XX_SPI_IDX, cmd, NULL, 4);
+	return interfaces->spi.io(df25xx_drv_ifs.spi_port, cmd, NULL, 4);
 }
 
 static RESULT df25xx_drv_readblock_nb(uint64_t address, uint8_t *buff)
 {
-	return interfaces->spi.io(DF25XX_SPI_IDX, NULL, buff, 
+	return interfaces->spi.io(df25xx_drv_ifs.spi_port, NULL, buff, 
 						(uint16_t)df25xx_drv.capacity.block_size);
 }
 
@@ -220,6 +233,8 @@ struct mal_driver_t df25xx_drv =
 	MAL_IDX_DF25XX,
 	MAL_SUPPORT_READBLOCK,
 	{0, 0},
+	
+	df25xx_drv_config_interface,
 	
 	df25xx_drv_init,
 	df25xx_drv_fini,

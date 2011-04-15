@@ -66,6 +66,19 @@ static struct mal_driver_t* mal_find_driver(uint16_t index)
 	return NULL;
 }
 
+static RESULT mal_config_interface(uint16_t index, void *ifs)
+{
+	struct mal_driver_t* driver;
+	
+	driver = mal_find_driver(index);
+	if ((NULL == driver) || (NULL == driver->config_interface))
+	{
+		return ERROR_FAIL;
+	}
+	
+	return driver->config_interface(ifs);
+}
+
 static RESULT mal_init(uint16_t index, void *param)
 {
 	struct mal_driver_t* driver;
@@ -609,6 +622,8 @@ static RESULT mal_writeblock(uint16_t index, uint64_t address, uint8_t *buff,
 
 struct mal_t mal = 
 {
+	mal_config_interface,
+	
 	mal_init,
 	mal_fini,
 	mal_getinfo,

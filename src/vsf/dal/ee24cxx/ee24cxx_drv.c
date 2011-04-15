@@ -27,13 +27,26 @@
 #include "app_type.h"
 #include "app_io.h"
 
+#include "../dal_cfg.h"
 #include "../dal_internal.h"
 #include "../mal/mal_internal.h"
 #include "../mal/mal.h"
 #include "ee24cxx_drv_cfg.h"
 #include "ee24cxx_drv.h"
 
+static struct ee24cxx_drv_interface_t ee24cxx_drv_ifs;
 static struct ee24cxx_drv_param_t ee24cxx_drv_param;
+
+static RESULT ee24cxx_drv_config_interface(void *ifs)
+{
+	if (NULL == ifs)
+	{
+		return ERROR_FAIL;
+	}
+	
+	memcpy(&ee24cxx_drv_ifs, ifs, sizeof(ee24cxx_drv_ifs));
+	return ERROR_OK;
+}
 
 static RESULT ee24cxx_drv_init(void *param)
 {
@@ -47,16 +60,16 @@ static RESULT ee24cxx_drv_init(void *param)
 	{
 		ee24cxx_drv_param.iic_khz = 100;
 	}
-	interfaces->i2c.init(EE24CXX_IIC_IDX);
-	interfaces->i2c.config(EE24CXX_IIC_IDX, ee24cxx_drv_param.iic_khz, 0, 
-							10000);
+	interfaces->i2c.init(ee24cxx_drv_ifs.iic_port);
+	interfaces->i2c.config(ee24cxx_drv_ifs.iic_port, ee24cxx_drv_param.iic_khz, 
+							0, 10000);
 	
 	return ERROR_OK;
 }
 
 static RESULT ee24cxx_drv_fini(void)
 {
-	interfaces->i2c.fini(EE24CXX_IIC_IDX);
+	interfaces->i2c.fini(ee24cxx_drv_ifs.iic_port);
 	return interfaces->peripheral_commit();
 }
 
@@ -70,9 +83,9 @@ static RESULT ee24cxx_drv_readblock_nb(uint64_t address, uint8_t *buff)
 	uint16_t addr_word = (uint16_t)address;
 	
 	addr_word = SYS_TO_BE_U16(addr_word);
-	if ((ERROR_OK != interfaces->i2c.write(EE24CXX_IIC_IDX, 
+	if ((ERROR_OK != interfaces->i2c.write(ee24cxx_drv_ifs.iic_port, 
 			ee24cxx_drv_param.iic_addr, (uint8_t *)&addr_word, 2, 0)) || 
-		(ERROR_OK != interfaces->i2c.read(EE24CXX_IIC_IDX, 
+		(ERROR_OK != interfaces->i2c.read(ee24cxx_drv_ifs.iic_port, 
 			ee24cxx_drv_param.iic_addr, buff, 
 			(uint16_t)ee24cxx_drv.capacity.block_size, 1, true)))
 	{
@@ -121,6 +134,8 @@ struct mal_driver_t ee24cxx_drv =
 	MAL_IDX_EE24CXX,
 	MAL_SUPPORT_READBLOCK | MAL_SUPPORT_WRITEBLOCK,
 	{0, 0},
+	
+	ee24cxx_drv_config_interface,
 	
 	ee24cxx_drv_init,
 	ee24cxx_drv_fini,

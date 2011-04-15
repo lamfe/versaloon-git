@@ -27,13 +27,26 @@
 #include "app_type.h"
 #include "app_io.h"
 
+#include "../dal_cfg.h"
 #include "../dal_internal.h"
 #include "../mal/mal_internal.h"
 #include "../mal/mal.h"
 #include "df45xx_drv_cfg.h"
 #include "df45xx_drv.h"
 
+static struct df45xx_drv_interface_t df45xx_drv_ifs;
 static struct df45xx_drv_param_t df45xx_drv_param;
+
+static RESULT df45xx_drv_config_interface(void *ifs)
+{
+	if (NULL == ifs)
+	{
+		return ERROR_FAIL;
+	}
+	
+	memcpy(&df45xx_drv_ifs, ifs, sizeof(df45xx_drv_ifs));
+	return ERROR_OK;
+}
 
 static RESULT df45xx_drv_init(void *param)
 {
@@ -156,6 +169,8 @@ struct mal_driver_t df45xx_drv =
 	MAL_IDX_DF45XX,
 	0,
 	{0, 0},
+	
+	df45xx_drv_config_interface,
 	
 	df45xx_drv_init,
 	df45xx_drv_fini,

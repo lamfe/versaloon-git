@@ -34,6 +34,8 @@ struct mal_driver_t
 	uint8_t support;
 	struct mal_capacity_t capacity;
 	
+	RESULT (*config_interface)(void *ifs);
+	
 	RESULT (*init)(void *param);
 	RESULT (*fini)(void);
 	RESULT (*getinfo)(void *info);

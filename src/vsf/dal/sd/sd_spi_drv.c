@@ -34,17 +34,19 @@
 #include "sd_spi_drv_cfg.h"
 #include "sd_spi_drv.h"
 
+static struct sd_spi_drv_interface_t sd_spi_drv_ifs;
 static enum sd_cardtype_t sd_cardtype = SD_CARDTYPE_NONE;
 
 static RESULT sd_spi_drv_cs_assert(void)
 {
-	return interfaces->gpio.config(SD_CS_PORT, SD_CS_PIN, SD_CS_PIN, 0, 0);
+	return interfaces->gpio.config(sd_spi_drv_ifs.cs_port, 
+		sd_spi_drv_ifs.cs_pin, sd_spi_drv_ifs.cs_pin, 0, 0);
 }
 
 static RESULT sd_spi_drv_cs_deassert(void)
 {
-	return interfaces->gpio.config(SD_CS_PORT, SD_CS_PIN, 0, SD_CS_PIN, 
-									SD_CS_PIN);
+	return interfaces->gpio.config(sd_spi_drv_ifs.cs_port, 
+		sd_spi_drv_ifs.cs_pin, 0, sd_spi_drv_ifs.cs_pin, sd_spi_drv_ifs.cs_pin);
 }
 
 static RESULT sd_spi_drv_send_empty_bytes(uint8_t cnt)
@@ -53,7 +55,7 @@ static RESULT sd_spi_drv_send_empty_bytes(uint8_t cnt)
 	
 	while (cnt--)
 	{
-		interfaces->spi.io(SD_SPI_IDX, &byte_0xFF, NULL, 1);
+		interfaces->spi.io(sd_spi_drv_ifs.spi_port, &byte_0xFF, NULL, 1);
 	}
 	return ERROR_OK;
 }
@@ -70,13 +72,13 @@ static RESULT sd_spi_cmd(uint8_t cmd, uint32_t arg, uint8_t *respr1)
 	cmd_pkt[3] = (arg >>  8) & 0xFF;
 	cmd_pkt[4] = (arg >>  0) & 0xFF;
 	cmd_pkt[5] = (sd_spi_calc_chksum(&cmd_pkt[0], 5) << 1) | 0x01;
-	interfaces->spi.io(SD_SPI_IDX, cmd_pkt, NULL, 6);
+	interfaces->spi.io(sd_spi_drv_ifs.spi_port, cmd_pkt, NULL, 6);
 	
 	// read resp
 	retry = 0;
 	while (retry++ < SD_SPI_CMD_TIMEOUT)
 	{
-		interfaces->spi.io(SD_SPI_IDX, NULL, &resp, 1);
+		interfaces->spi.io(sd_spi_drv_ifs.spi_port, NULL, &resp, 1);
 		if (ERROR_OK != interfaces->peripheral_commit())
 		{
 			return ERROR_FAIL;
@@ -116,7 +118,7 @@ static RESULT sd_spi_cmdr(uint8_t cmd, uint32_t arg, uint8_t *respr1,
 			sd_spi_drv_cs_deassert();
 			return ERROR_FAIL;
 		}
-		interfaces->spi.io(SD_SPI_IDX, NULL, respr3_7, 4);
+		interfaces->spi.io(sd_spi_drv_ifs.spi_port, NULL, respr3_7, 4);
 	}
 	sd_spi_drv_cs_deassert();
 	return interfaces->peripheral_commit();
@@ -153,7 +155,7 @@ static RESULT sd_spi_wait_for_start(void)
 	data = 0xFF;
 	while (clks++ < 312500)
 	{
-		interfaces->spi.io(SD_SPI_IDX, NULL, &data, 1);
+		interfaces->spi.io(sd_spi_drv_ifs.spi_port, NULL, &data, 1);
 		if (ERROR_OK != interfaces->peripheral_commit())
 		{
 			return ERROR_FAIL;
@@ -166,7 +168,8 @@ static RESULT sd_spi_wait_for_start(void)
 	return ERROR_FAIL;
 }
 
-static RESULT sd_spi_cmdrdata(uint8_t cmd, uint32_t arg, uint8_t *data, uint32_t len)
+static RESULT sd_spi_cmdrdata(uint8_t cmd, uint32_t arg, uint8_t *data, 
+								uint32_t len)
 {
 	uint8_t crc[2];
 	uint8_t resp;
@@ -178,10 +181,21 @@ static RESULT sd_spi_cmdrdata(uint8_t cmd, uint32_t arg, uint8_t *data, uint32_t
 		sd_spi_drv_cs_deassert();
 		return ERROR_FAIL;
 	}
-	interfaces->spi.io(SD_SPI_IDX, NULL, data, (uint16_t)len);
-	interfaces->spi.io(SD_SPI_IDX, NULL, crc, 2);
+	interfaces->spi.io(sd_spi_drv_ifs.spi_port, NULL, data, (uint16_t)len);
+	interfaces->spi.io(sd_spi_drv_ifs.spi_port, NULL, crc, 2);
 	sd_spi_drv_cs_deassert();
 	return interfaces->peripheral_commit();
+}
+
+static RESULT sd_spi_drv_config_interface(void *ifs)
+{
+	if (NULL == ifs)
+	{
+		return ERROR_FAIL;
+	}
+	
+	memcpy(&sd_spi_drv_ifs, ifs, sizeof(sd_spi_drv_ifs));
+	return ERROR_OK;
 }
 
 static RESULT sd_spi_drv_init(void *param)
@@ -191,12 +205,13 @@ static RESULT sd_spi_drv_init(void *param)
 	uint32_t ocr;
 	struct sd_info_t sd_info;
 	
-	interfaces->gpio.init(SD_CS_PORT);
-	interfaces->gpio.config(SD_CS_PORT, SD_CS_PIN, 0, SD_CS_PIN, SD_CS_PIN);
-	interfaces->spi.init(SD_SPI_IDX);
+	interfaces->gpio.init(sd_spi_drv_ifs.cs_port);
+	interfaces->gpio.config(sd_spi_drv_ifs.cs_port, sd_spi_drv_ifs.cs_pin, 
+							0, sd_spi_drv_ifs.cs_pin, sd_spi_drv_ifs.cs_pin);
+	interfaces->spi.init(sd_spi_drv_ifs.spi_port);
 	// use slowest spi speed when initializing
-	interfaces->spi.config(SD_SPI_IDX, 0, SPI_CPOL_HIGH, SPI_CPHA_2EDGE, 
-							SPI_MSB_FIRST);
+	interfaces->spi.config(sd_spi_drv_ifs.spi_port, 0, SPI_CPOL_HIGH, 
+							SPI_CPHA_2EDGE, SPI_MSB_FIRST);
 	
 	// SD Init
 	sd_cardtype = SD_CARDTYPE_NONE;
@@ -234,7 +249,8 @@ static RESULT sd_spi_drv_init(void *param)
 	{
 		return ERROR_FAIL;
 	}
-	if ((resp_r1 == SD_R1_IN_IDLE_STATE) && (resp_r3to7[3] == SD_CMD8_CHK_PATTERN))
+	if ((resp_r1 == SD_R1_IN_IDLE_STATE) && 
+		(resp_r3to7[3] == SD_CMD8_CHK_PATTERN))
 	{
 		sd_cardtype = SD_CARDTYPE_SD_V2;
 	}
@@ -288,8 +304,8 @@ static RESULT sd_spi_drv_init(void *param)
 	retry = 0;
 	while (retry++ < SD_SPI_CMD_TIMEOUT)
 	{
-		if (ERROR_OK != sd_spi_cmdr(SD_CMD_READ_OCR, 0x40000000, (uint8_t*)&ocr, 
-									resp_r3to7))
+		if (ERROR_OK != sd_spi_cmdr(SD_CMD_READ_OCR, 0x40000000, 
+									(uint8_t*)&ocr, resp_r3to7))
 		{
 			return ERROR_FAIL;
 		}
@@ -310,8 +326,11 @@ static RESULT sd_spi_drv_init(void *param)
 	
 	if ((NULL == sd_spi_drv.getinfo) || 
 		(ERROR_OK != sd_spi_drv.getinfo(&sd_info)) || 
-		(ERROR_OK != interfaces->spi.config(SD_SPI_IDX, sd_info.frequency_mHz, 
-							SPI_CPOL_HIGH, SPI_CPHA_2EDGE, SPI_MSB_FIRST)) || 
+		(ERROR_OK != interfaces->spi.config(sd_spi_drv_ifs.spi_port, 
+											sd_info.frequency_mHz, 
+											SPI_CPOL_HIGH, 
+											SPI_CPHA_2EDGE, 
+											SPI_MSB_FIRST)) || 
 		(ERROR_OK != interfaces->peripheral_commit()) ||
 		(ERROR_OK != sd_spi_cmdr(SD_CMD_SET_BLOCKLEN, 512, &resp_r1, NULL)))
 	{
@@ -323,8 +342,8 @@ static RESULT sd_spi_drv_init(void *param)
 
 static RESULT sd_spi_drv_fini(void)
 {
-	interfaces->gpio.fini(SD_CS_PORT);
-	interfaces->spi.fini(SD_SPI_IDX);
+	interfaces->gpio.fini(sd_spi_drv_ifs.cs_port);
+	interfaces->spi.fini(sd_spi_drv_ifs.spi_port);
 	return interfaces->peripheral_commit();
 }
 
@@ -387,6 +406,8 @@ struct mal_driver_t sd_spi_drv =
 	MAL_IDX_SD_SPI,
 	MAL_SUPPORT_READBLOCK | MAL_SUPPORT_WRITEBLOCK,
 	{0, 0},
+	
+	sd_spi_drv_config_interface,
 	
 	sd_spi_drv_init,
 	sd_spi_drv_fini,

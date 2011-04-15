@@ -128,9 +128,16 @@ ENTER_PROGRAM_MODE_HANDLER(ee93cx6)
 	struct chip_param_t *param = context->param;
 	struct program_info_t *pi = context->pi;
 	struct ee93cx6_drv_param_t drv_param;
+	struct ee93cx6_drv_interface_t drv_ifs;
 	
 	interfaces = context->prog;
 	if (ERROR_OK != dal_init(interfaces))
+	{
+		return ERROR_FAIL;
+	}
+	
+	drv_ifs.mw_port = 0;
+	if (ERROR_OK != mal.config_interface(MAL_IDX_EE93CX6, &drv_ifs))
 	{
 		return ERROR_FAIL;
 	}
