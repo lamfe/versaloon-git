@@ -46,6 +46,7 @@ const struct program_area_map_t avr8_program_area_map[] =
 	{FUSE_CHAR, 0, 0, 0, 0, AREA_ATTR_WR},
 	{LOCK_CHAR, 0, 0, 0, 0, AREA_ATTR_WR},
 	{CALIBRATION_CHAR, 0, 0, 0, 0, AREA_ATTR_R},
+	{UNIQUEID_CHAR, 0, 0, 0, 0, AREA_ATTR_R},
 	{0, 0, 0, 0, 0, 0}
 };
 

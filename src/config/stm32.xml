@@ -34,6 +34,7 @@
       <setting name="WRP3" mask="0xFF00000000000000" info="WRP3" radix="16" shift="56" bytelen="1" format="%1x" />
       <setting name="ALL" mask="0xFFFFFFFFFFFFFFFF" info="Option bytes" radix="16" shift="0" bytelen="8" format="%8x" />
     </fuse>
+    <uid init="0xFF" bytesize="12" mask="0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF" format="%4x%4x%4x"></uid>
   </chip>
   <chip name="stm32_md">
     <chip_id>0x0410</chip_id>
@@ -62,6 +63,7 @@
       <setting name="WRP3" mask="0xFF00000000000000" info="WRP3" radix="16" shift="56" bytelen="1" format="%1x" />
       <setting name="ALL" mask="0xFFFFFFFFFFFFFFFF" info="Option bytes" radix="16" shift="0" bytelen="8" format="%8x" />
     </fuse>
+    <uid init="0xFF" bytesize="12" mask="0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF" format="%4x%4x%4x"></uid>
   </chip>
   <chip name="stm32_hd">
     <chip_id>0x0414</chip_id>
@@ -90,6 +92,7 @@
       <setting name="WRP3" mask="0xFF00000000000000" info="WRP3" radix="16" shift="56" bytelen="1" format="%1x" />
       <setting name="ALL" mask="0xFFFFFFFFFFFFFFFF" info="Option bytes" radix="16" shift="0" bytelen="8" format="%8x" />
     </fuse>
+    <uid init="0xFF" bytesize="12" mask="0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF" format="%4x%4x%4x"></uid>
   </chip>
   <chip name="stm32_conn">
     <chip_id>0x0418</chip_id>
@@ -118,6 +121,7 @@
       <setting name="WRP3" mask="0xFF00000000000000" info="WRP3" radix="16" shift="56" bytelen="1" format="%1x" />
       <setting name="ALL" mask="0xFFFFFFFFFFFFFFFF" info="Option bytes" radix="16" shift="0" bytelen="8" format="%8x" />
     </fuse>
+    <uid init="0xFF" bytesize="12" mask="0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF" format="%4x%4x%4x"></uid>
   </chip>
   <chip name="stm32_vl">
     <chip_id>0x0420</chip_id>
@@ -146,6 +150,7 @@
       <setting name="WRP3" mask="0xFF00000000000000" info="WRP3" radix="16" shift="56" bytelen="1" format="%1x" />
       <setting name="ALL" mask="0xFFFFFFFFFFFFFFFF" info="Option bytes" radix="16" shift="0" bytelen="8" format="%8x" />
     </fuse>
+    <uid init="0xFF" bytesize="12" mask="0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF" format="%4x%4x%4x"></uid>
   </chip>
   <chip name="stm32_xl">
     <chip_id>0x0430</chip_id>
@@ -174,5 +179,6 @@
       <setting name="WRP3" mask="0xFF00000000000000" info="WRP3" radix="16" shift="56" bytelen="1" format="%1x" />
       <setting name="ALL" mask="0xFFFFFFFFFFFFFFFF" info="Option bytes" radix="16" shift="0" bytelen="8" format="%8x" />
     </fuse>
+    <uid init="0xFF" bytesize="12" mask="0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF" format="%4x%4x%4x"></uid>
   </chip>
 </series>

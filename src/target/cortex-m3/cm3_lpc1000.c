@@ -574,18 +574,6 @@ READ_TARGET_HANDLER(lpc1000swj)
 		
 		memset(iap_cmd_param, 0, sizeof(iap_cmd_param));
 		memset(iap_reply, 0, sizeof(iap_reply));
-		if (ERROR_OK != lpc1000swj_iap_call(LPC1000_IAPCMD_READ_SERIAL, 
-												iap_cmd_param, iap_reply))
-		{
-			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read serialnum");
-			ret = ERRCODE_FAILURE_OPERATION;
-			break;
-		}
-		LOG_INFO("Serial Number: %08X%08X%08X%08X", 
-					iap_reply[3], iap_reply[2], iap_reply[1], iap_reply[0]);
-		
-		memset(iap_cmd_param, 0, sizeof(iap_cmd_param));
-		memset(iap_reply, 0, sizeof(iap_reply));
 		if (ERROR_OK != lpc1000swj_iap_call(LPC1000_IAPCMD_READ_ID, 
 												iap_cmd_param, iap_reply))
 		{
@@ -621,6 +609,16 @@ READ_TARGET_HANDLER(lpc1000swj)
 			addr += cur_block_size;
 			buff += cur_block_size;
 			pgbar_update(cur_block_size);
+		}
+		break;
+	case UNIQUEID_CHAR:
+		memset(iap_cmd_param, 0, sizeof(iap_cmd_param));
+		if (ERROR_OK != lpc1000swj_iap_call(LPC1000_IAPCMD_READ_SERIAL, 
+											iap_cmd_param, (uint32_t *)buff))
+		{
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read serialnum");
+			ret = ERRCODE_FAILURE_OPERATION;
+			break;
 		}
 		break;
 	default:

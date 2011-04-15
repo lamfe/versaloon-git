@@ -55,6 +55,8 @@
 #define STM32_OB_WRP2				(STM32_OB_ADDR + 12)
 #define STM32_OB_WRP3				(STM32_OB_ADDR + 14)
 
+#define STM32_UID_ADDR				(0x1FFFF7E8)
+
 void stm32_print_device(uint32_t mcuid);
 uint16_t stm32_get_flash_size(uint32_t mcuid, uint32_t flash_sram_reg);
 

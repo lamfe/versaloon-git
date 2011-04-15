@@ -16,6 +16,7 @@
     <program_mode>si</program_mode>
     <sram_size>2048</sram_size>
     <app_page_num>8</app_page_num>
+    <uid init="0xFF" bytesize="16" mask="0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF" format="%4x%4x%4x%4x"></uid>
     <param0>12000</param0>
     <param1>0x40048000</param1>
     <param2>2</param2>
@@ -25,6 +26,7 @@
     <program_mode>si</program_mode>
     <sram_size>4096</sram_size>
     <app_page_num>8</app_page_num>
+    <uid init="0xFF" bytesize="16" mask="0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF" format="%4x%4x%4x%4x"></uid>
     <param0>12000</param0>
     <param1>0x40048000</param1>
     <param2>2</param2>
@@ -34,6 +36,7 @@
     <program_mode>si</program_mode>
     <sram_size>2048</sram_size>
     <app_page_num>32</app_page_num>
+    <uid init="0xFF" bytesize="16" mask="0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF" format="%4x%4x%4x%4x"></uid>
     <param0>12000</param0>
     <param1>0x40048000</param1>
     <param2>2</param2>
@@ -43,6 +46,7 @@
     <program_mode>si</program_mode>
     <sram_size>4096</sram_size>
     <app_page_num>16</app_page_num>
+    <uid init="0xFF" bytesize="16" mask="0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF" format="%4x%4x%4x%4x"></uid>
     <param0>12000</param0>
     <param1>0x40048000</param1>
     <param2>2</param2>
@@ -52,6 +56,7 @@
     <program_mode>si</program_mode>
     <sram_size>4096</sram_size>
     <app_page_num>24</app_page_num>
+    <uid init="0xFF" bytesize="16" mask="0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF" format="%4x%4x%4x%4x"></uid>
     <param0>12000</param0>
     <param1>0x40048000</param1>
     <param2>2</param2>
@@ -61,6 +66,7 @@
     <program_mode>si</program_mode>
     <sram_size>8192</sram_size>
     <app_page_num>24</app_page_num>
+    <uid init="0xFF" bytesize="16" mask="0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF" format="%4x%4x%4x%4x"></uid>
     <param0>12000</param0>
     <param1>0x40048000</param1>
     <param2>2</param2>
@@ -70,6 +76,7 @@
     <program_mode>si</program_mode>
     <sram_size>4096</sram_size>
     <app_page_num>32</app_page_num>
+    <uid init="0xFF" bytesize="16" mask="0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF" format="%4x%4x%4x%4x"></uid>
     <param0>12000</param0>
     <param1>0x40048000</param1>
     <param2>2</param2>
@@ -79,6 +86,7 @@
     <program_mode>si</program_mode>
     <sram_size>8192</sram_size>
     <app_page_num>32</app_page_num>
+    <uid init="0xFF" bytesize="16" mask="0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF" format="%4x%4x%4x%4x"></uid>
     <param0>12000</param0>
     <param1>0x40048000</param1>
     <param2>2</param2>
@@ -88,6 +96,7 @@
     <program_mode>si</program_mode>
     <sram_size>8192</sram_size>
     <app_page_num>16</app_page_num>
+    <uid init="0xFF" bytesize="16" mask="0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF" format="%4x%4x%4x%4x"></uid>
     <param0>12000</param0>
     <param1>0x40048000</param1>
     <param2>2</param2>
@@ -97,6 +106,7 @@
     <program_mode>si</program_mode>
     <sram_size>8192</sram_size>
     <app_page_num>32</app_page_num>
+    <uid init="0xFF" bytesize="16" mask="0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF" format="%4x%4x%4x%4x"></uid>
     <param0>12000</param0>
     <param1>0x40048000</param1>
     <param2>2</param2>
@@ -106,6 +116,7 @@
     <program_mode>jsi</program_mode>
     <sram_size>2048</sram_size>
     <app_page_num>8</app_page_num>
+    <uid init="0xFF" bytesize="16" mask="0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF" format="%4x%4x%4x%4x"></uid>
     <param0>12000</param0>
     <param1>0x40048000</param1>
     <param2>2</param2>
@@ -115,6 +126,7 @@
     <program_mode>jsi</program_mode>
     <sram_size>8192</sram_size>
     <app_page_num>32</app_page_num>
+    <uid init="0xFF" bytesize="16" mask="0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF" format="%4x%4x%4x%4x"></uid>
     <param0>12000</param0>
     <param1>0x40048000</param1>
     <param2>2</param2>
@@ -124,6 +136,7 @@
     <program_mode>jsi</program_mode>
     <sram_size>4096</sram_size>
     <app_page_num>16</app_page_num>
+    <uid init="0xFF" bytesize="16" mask="0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF" format="%4x%4x%4x%4x"></uid>
     <param0>12000</param0>
     <param1>0x40048000</param1>
     <param2>2</param2>
@@ -133,6 +146,7 @@
     <program_mode>jsi</program_mode>
     <sram_size>8192</sram_size>
     <app_page_num>32</app_page_num>
+    <uid init="0xFF" bytesize="16" mask="0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF" format="%4x%4x%4x%4x"></uid>
     <param0>12000</param0>
     <param1>0x40048000</param1>
     <param2>2</param2>
@@ -142,6 +156,7 @@
     <program_mode>jsi</program_mode>
     <sram_size>65536</sram_size>
     <app_page_num>512</app_page_num>
+    <uid init="0xFF" bytesize="16" mask="0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF" format="%4x%4x%4x%4x"></uid>
     <param0>4000</param0>
     <param1>0x400FC040</param1>
     <param2>1</param2>
@@ -151,6 +166,7 @@
     <program_mode>jsi</program_mode>
     <sram_size>65536</sram_size>
     <app_page_num>512</app_page_num>
+    <uid init="0xFF" bytesize="16" mask="0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF" format="%4x%4x%4x%4x"></uid>
     <param0>4000</param0>
     <param1>0x400FC040</param1>
     <param2>1</param2>
@@ -160,6 +176,7 @@
     <program_mode>jsi</program_mode>
     <sram_size>65536</sram_size>
     <app_page_num>512</app_page_num>
+    <uid init="0xFF" bytesize="16" mask="0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF" format="%4x%4x%4x%4x"></uid>
     <param0>4000</param0>
     <param1>0x400FC040</param1>
     <param2>1</param2>
@@ -169,6 +186,7 @@
     <program_mode>jsi</program_mode>
 	<sram_size>65536</sram_size>
     <app_page_num>256</app_page_num>
+    <uid init="0xFF" bytesize="16" mask="0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF" format="%4x%4x%4x%4x"></uid>
     <param0>4000</param0>
     <param1>0x400FC040</param1>
     <param2>1</param2>
@@ -178,6 +196,7 @@
     <program_mode>jsi</program_mode>
     <sram_size>65536</sram_size>
     <app_page_num>256</app_page_num>
+    <uid init="0xFF" bytesize="16" mask="0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF" format="%4x%4x%4x%4x"></uid>
     <param0>4000</param0>
     <param1>0x400FC040</param1>
     <param2>1</param2>
@@ -187,6 +206,7 @@
     <program_mode>jsi</program_mode>
     <sram_size>32768</sram_size>
     <app_page_num>128</app_page_num>
+    <uid init="0xFF" bytesize="16" mask="0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF" format="%4x%4x%4x%4x"></uid>
     <param0>4000</param0>
     <param1>0x400FC040</param1>
     <param2>1</param2>
@@ -196,6 +216,7 @@
     <program_mode>jsi</program_mode>
     <sram_size>65536</sram_size>
     <app_page_num>512</app_page_num>
+    <uid init="0xFF" bytesize="16" mask="0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF" format="%4x%4x%4x%4x"></uid>
     <param0>4000</param0>
     <param1>0x400FC040</param1>
     <param2>1</param2>
@@ -205,6 +226,7 @@
     <program_mode>jsi</program_mode>
     <sram_size>65536</sram_size>
     <app_page_num>512</app_page_num>
+    <uid init="0xFF" bytesize="16" mask="0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF" format="%4x%4x%4x%4x"></uid>
     <param0>4000</param0>
     <param1>0x400FC040</param1>
     <param2>1</param2>
@@ -214,6 +236,7 @@
     <program_mode>jsi</program_mode>
     <sram_size>32768</sram_size>
     <app_page_num>256</app_page_num>
+    <uid init="0xFF" bytesize="16" mask="0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF" format="%4x%4x%4x%4x"></uid>
     <param0>4000</param0>
     <param1>0x400FC040</param1>
     <param2>1</param2>
@@ -223,6 +246,7 @@
     <program_mode>jsi</program_mode>
     <sram_size>32768</sram_size>
     <app_page_num>128</app_page_num>
+    <uid init="0xFF" bytesize="16" mask="0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF" format="%4x%4x%4x%4x"></uid>
     <param0>4000</param0>
     <param1>0x400FC040</param1>
     <param2>1</param2>
@@ -232,6 +256,7 @@
     <program_mode>jsi</program_mode>
     <sram_size>16384</sram_size>
     <app_page_num>64</app_page_num>
+    <uid init="0xFF" bytesize="16" mask="0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF" format="%4x%4x%4x%4x"></uid>
     <param0>4000</param0>
     <param1>0x400FC040</param1>
     <param2>1</param2>
@@ -241,6 +266,7 @@
     <program_mode>jsi</program_mode>
     <sram_size>8192</sram_size>
     <app_page_num>32</app_page_num>
+    <uid init="0xFF" bytesize="16" mask="0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF" format="%4x%4x%4x%4x"></uid>
     <param0>4000</param0>
     <param1>0x400FC040</param1>
     <param2>1</param2>
