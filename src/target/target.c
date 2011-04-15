@@ -1705,6 +1705,10 @@ static RESULT target_program(struct program_context_t *context)
 				{
 					buff_tmp = special_string;
 				}
+				else if (tbuff != NULL)
+				{
+					buff_tmp = tbuff;
+				}
 				else
 				{
 					buff_tmp = (uint8_t*)malloc(target_size);
