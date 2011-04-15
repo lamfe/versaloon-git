@@ -66,10 +66,10 @@ struct interface_gpio_t
 {
 	RESULT (*init)(uint8_t index);
 	RESULT (*fini)(uint8_t index);
-	RESULT (*config)(uint8_t index, uint16_t pin_mask, uint16_t io, 
-						uint16_t pull_en_mask, uint16_t input_pull_mask);
-	RESULT (*out)(uint8_t index, uint16_t pin_mask, uint16_t value);
-	RESULT (*in)(uint8_t index, uint16_t pin_mask, uint16_t *value);
+	RESULT (*config)(uint8_t index, uint32_t pin_mask, uint32_t io, 
+						uint32_t pull_en_mask, uint32_t input_pull_mask);
+	RESULT (*out)(uint8_t index, uint32_t pin_mask, uint32_t value);
+	RESULT (*in)(uint8_t index, uint32_t pin_mask, uint32_t *value);
 };
 
 struct interface_delay_t
