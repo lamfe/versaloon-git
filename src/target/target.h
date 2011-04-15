@@ -49,6 +49,7 @@
 #define CALIBRATION_CHKSUM_IDX		(1 + CALIBRATION_IDX)
 #define SRAM_IDX					18
 #define SPECIAL_STRING_IDX			19
+#define UNIQUEID_IDX				20
 
 #define CHIPID						(1 << CHIPID_IDX)
 #define CHIPID_CHKSUM				(1 << CHIPID_CHKSUM_IDX)
@@ -70,11 +71,12 @@
 #define CALIBRATION_CHKSUM			(1 << CALIBRATION_CHKSUM_IDX)
 #define SRAM						(1 << SRAM_IDX)
 #define SPECIAL_STRING				(1 << SPECIAL_STRING_IDX)
+#define UNIQUEID					(1 << UNIQUEID_IDX)
 #define ALL							0x80000000UL
 #define TARGET_AREA_MASK			(BOOTLOADER | APPLICATION | EEPROM \
 									 | OTP_ROM | FUSE | LOCK | USER_SIG \
 									 | CHECKSUM | ALL)
-#define NUM_OF_TARGET_AREA			20
+#define NUM_OF_TARGET_AREA			21
 
 enum area_attr_t
 {
@@ -116,6 +118,7 @@ enum area_attr_t
 #define CALIBRATION_CHKSUM_CHAR		'C'
 #define SRAM_CHAR					'r'
 #define SPECIAL_STRING_CHAR			't'
+#define UNIQUEID_CHAR				'q'
 
 struct target_area_name_t
 {

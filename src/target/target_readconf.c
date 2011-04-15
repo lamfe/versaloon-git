@@ -877,6 +877,26 @@ RESULT target_build_chip_series(const char *chip_series,
 						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
 				p_param->chip_areas[SRAM_IDX].size = 0;
 			}
+			else if (!xmlStrcmp(paramNode->name, BAD_CAST "uid_addr"))
+			{
+				p_param->chip_areas[UNIQUEID_IDX].addr = 
+					(uint32_t)strtoul(
+						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
+			}
+			else if (!xmlStrcmp(paramNode->name, BAD_CAST "uid_page_size"))
+			{
+				p_param->chip_areas[UNIQUEID_IDX].page_size = 
+					(uint32_t)strtoul(
+						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
+				p_param->chip_areas[UNIQUEID_IDX].size = 0;
+			}
+			else if (!xmlStrcmp(paramNode->name, BAD_CAST "uid_page_num"))
+			{
+				p_param->chip_areas[UNIQUEID_IDX].page_num = 
+					(uint32_t)strtoul(
+						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
+				p_param->chip_areas[UNIQUEID_IDX].size = 0;
+			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "app_addr"))
 			{
 				p_param->chip_areas[APPLICATION_IDX].addr = 
@@ -1083,6 +1103,12 @@ RESULT target_build_chip_series(const char *chip_series,
 				p_param->chip_areas[SRAM_IDX].size = (uint32_t)strtoul(
 						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
 			}
+			else if (!xmlStrcmp(paramNode->name, BAD_CAST "uid_size"))
+			{
+				target_para_size_defined |= UNIQUEID;
+				p_param->chip_areas[UNIQUEID_IDX].size = (uint32_t)strtoul(
+						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
+			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "app_size"))
 			{
 				target_para_size_defined |= APPLICATION;
@@ -1106,6 +1132,62 @@ RESULT target_build_chip_series(const char *chip_series,
 				target_para_size_defined |= USRSIG;
 				p_param->chip_areas[USRSIG_IDX].size = (uint32_t)strtoul(
 						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
+			}
+			else if (!xmlStrcmp(paramNode->name, BAD_CAST "uid"))
+			{
+				target_para_size_defined |= UNIQUEID;
+				p_param->chip_areas[UNIQUEID_IDX].size = (uint32_t)strtoul(
+					(const char *)xmlGetProp(paramNode, BAD_CAST "bytesize"), 
+					NULL, 0);
+				size = p_param->chip_areas[UNIQUEID_IDX].size;
+				p_param->chip_areas[UNIQUEID_IDX].default_value = strtoull(
+					(const char *)xmlGetProp(paramNode, BAD_CAST "init"), 
+					NULL, 0);
+				p_param->chip_areas[UNIQUEID_IDX].cli_format = NULL;
+				p_param->chip_areas[UNIQUEID_IDX].mask = NULL;
+				str = (char *)xmlGetProp(paramNode, BAD_CAST "format");
+				if (str != NULL)
+				{
+					if (NULL == bufffunc_malloc_and_copy_str(
+						&p_param->chip_areas[UNIQUEID_IDX].cli_format, str))
+					{
+						LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
+						ret = ERRCODE_NOT_ENOUGH_MEMORY;
+						goto free_and_exit;
+					}
+					format = p_param->chip_areas[UNIQUEID_IDX].cli_format;
+				}
+				else
+				{
+					if (size > 8)
+					{
+						LOG_ERROR(ERRMSG_NOT_DEFINED, "format node");
+						ret = ERROR_FAIL;
+						goto free_and_exit;
+					}
+					snprintf(format_tmp, sizeof(format_tmp), "%%%dx", size);
+					format = format_tmp;
+				}
+				str = (char *)xmlGetProp(paramNode, BAD_CAST "mask");
+				if (str != NULL)
+				{
+					p_param->chip_areas[UNIQUEID_IDX].mask = 
+						(uint8_t *)malloc(size);
+					if (NULL == p_param->chip_areas[UNIQUEID_IDX].mask)
+					{
+						LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
+						ret = ERRCODE_NOT_ENOUGH_MEMORY;
+						goto free_and_exit;
+					}
+					buff = p_param->chip_areas[UNIQUEID_IDX].mask;
+					if (ERROR_OK != 
+							strparser_parse(str, format, buff, size))
+					{
+						LOG_ERROR(ERRMSG_FAILURE_OPERATION, "parse mask node");
+						ret = ERRCODE_FAILURE_OPERATION;
+						goto free_and_exit;
+					}
+				}
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "fuse"))
 			{
@@ -1305,6 +1387,13 @@ RESULT target_build_chip_series(const char *chip_series,
 			paramNode = paramNode->next->next;
 		}
 		
+		if (!(target_para_size_defined & UNIQUEID) 
+			&& !p_param->chip_areas[UNIQUEID_IDX].size)
+		{
+			p_param->chip_areas[UNIQUEID_IDX].size = 
+				p_param->chip_areas[UNIQUEID_IDX].page_size 
+				* p_param->chip_areas[UNIQUEID_IDX].page_num;
+		}
 		if (!(target_para_size_defined & SRAM) 
 			&& !p_param->chip_areas[SRAM_IDX].size)
 		{

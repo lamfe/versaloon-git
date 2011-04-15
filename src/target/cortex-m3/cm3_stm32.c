@@ -587,8 +587,19 @@ READ_TARGET_HANDLER(stm32swj)
 			pgbar_update(cur_block_size);
 		}
 		break;
+	case UNIQUEID_CHAR:
+		if ((ERROR_OK != adi_memap_read_reg32(STM32_UID_ADDR + 0, 
+											(((uint32_t *)buff) + 0), 0)) || 
+			(ERROR_OK != adi_memap_read_reg32(STM32_UID_ADDR + 4, 
+											(((uint32_t *)buff) + 1), 0)) || 
+			(ERROR_OK != adi_memap_read_reg32(STM32_UID_ADDR + 8, 
+											(((uint32_t *)buff) + 2), 1)))
+		{
+			ret = ERROR_FAIL;
+		}
+		break;
 	default:
-		ret = ERROR_OK;
+		ret = ERROR_FAIL;
 		break;
 	}
 	return ret;

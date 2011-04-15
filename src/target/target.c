@@ -224,7 +224,8 @@ const struct target_area_name_t target_area_name[NUM_OF_TARGET_AREA] =
 	{CALIBRATION_CHAR,			CALIBRATION,		"calibration"},
 	{CALIBRATION_CHKSUM_CHAR,	CALIBRATION_CHKSUM,	"calibration_checksum"},
 	{SRAM_CHAR,					SRAM,				"sram"},
-	{SPECIAL_STRING_CHAR,		SPECIAL_STRING,		"special_str"}
+	{SPECIAL_STRING_CHAR,		SPECIAL_STRING,		"special_str"},
+	{UNIQUEID_CHAR,				UNIQUEID,			"uniqueid"}
 };
 
 struct chip_series_t target_chips = {0, NULL};
