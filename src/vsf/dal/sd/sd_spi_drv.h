@@ -20,6 +20,13 @@
 #ifndef __SD_SPI_DRV_H_INCLUDED__
 #define __SD_SPI_DRV_H_INCLUDED__
 
+struct sd_spi_drv_interface_t
+{
+	uint8_t cs_port;
+	uint32_t cs_pin;
+	uint8_t spi_port;
+};
+
 extern struct mal_driver_t sd_spi_drv;
 
 #endif /*  __SD_SPI_DRV_H_INCLUDED__ */

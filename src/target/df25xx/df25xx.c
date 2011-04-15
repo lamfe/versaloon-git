@@ -102,9 +102,18 @@ ENTER_PROGRAM_MODE_HANDLER(df25xx)
 	struct chip_param_t *param = context->param;
 	struct program_info_t *pi = context->pi;
 	struct df25xx_drv_param_t drv_param;
+	struct df25xx_drv_interface_t drv_ifs;
 	
 	interfaces = context->prog;
 	if (ERROR_OK != dal_init(interfaces))
+	{
+		return ERROR_FAIL;
+	}
+	
+	drv_ifs.cs_port = 0;
+	drv_ifs.cs_pin = GPIO_SRST;
+	drv_ifs.spi_port = 0;
+	if (ERROR_OK != mal.config_interface(MAL_IDX_DF25XX, &drv_ifs))
 	{
 		return ERROR_FAIL;
 	}

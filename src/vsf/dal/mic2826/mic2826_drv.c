@@ -21,6 +21,8 @@
 #include "config.h"
 #endif
 
+#include <string.h>
+
 #include "app_cfg.h"
 #include "app_type.h"
 #include "app_io.h"
@@ -46,7 +48,9 @@
 #define MIC2826_REG_ENABLE_LDO1				0x02
 #define MIC2826_REG_ENABLE_DCDC				0x01
 
-static uint8_t mic2826_ldo_regmap[] = 
+static struct mic2826_drv_interface_t mic2826_drv_ifs;
+
+static uint8_t mic2826_drv_ldo_regmap[] = 
 {
 	0x00, 0x0B, 0x14, 0x1D, 0x25, 0x2E, 0x37, 0x3E, 
 	0x45, 0x4C, 0x52, 0x57, 0x5C, 0x61, 0x65, 0x69, 
@@ -80,7 +84,7 @@ static uint8_t mic2826_ldo_voltage2reg(uint16_t mV)
 	// 800 - 3300: 25 step
 	if ((mV >= 800) && (mV <= 3300))
 	{
-		return mic2826_ldo_regmap[(mV - 800) / 50];
+		return mic2826_drv_ldo_regmap[(mV - 800) / 50];
 	}
 	else
 	{
@@ -100,7 +104,8 @@ static RESULT mic2826_write_reg(uint8_t addr, uint8_t reg)
 	while (retry--)
 	{
 		if (ERROR_OK != 
-			interfaces->i2c.write(MIC2826_IIC_IDX, MIC2826_IIC_ADDR, cmd, 2, 1))
+			interfaces->i2c.write(mic2826_drv_ifs.iic_port, MIC2826_IIC_ADDR, 
+									cmd, 2, 1))
 		{
 			continue;
 		}
@@ -115,21 +120,31 @@ static RESULT mic2826_write_reg(uint8_t addr, uint8_t reg)
 	return ret;
 }
 
-static RESULT mic2826_init(uint16_t kHz)
+static RESULT mic2826_drv_config_interface(void *ifs)
 {
-	interfaces->i2c.init(MIC2826_IIC_IDX);
-	interfaces->i2c.config(MIC2826_IIC_IDX, kHz, 0, 0xFFFF);
+	if (NULL == ifs)
+	{
+		return ERROR_FAIL;
+	}
+	memcpy(&mic2826_drv_ifs, ifs, sizeof(mic2826_drv_ifs));
+	return ERROR_OK;
+}
+
+static RESULT mic2826_drv_init(uint16_t kHz)
+{
+	interfaces->i2c.init(mic2826_drv_ifs.iic_port);
+	interfaces->i2c.config(mic2826_drv_ifs.iic_port, kHz, 0, 0xFFFF);
 	return interfaces->peripheral_commit();
 }
 
-static RESULT mic2826_fini(void)
+static RESULT mic2826_drv_fini(void)
 {
-	interfaces->i2c.fini(MIC2826_IIC_IDX);
+	interfaces->i2c.fini(mic2826_drv_ifs.iic_port);
 	return interfaces->peripheral_commit();
 }
 
-static RESULT mic2826_config(uint16_t DCDC_mV, uint16_t LDO1_mV, 
-								uint16_t LDO2_mV, uint16_t LDO3_mV)
+static RESULT mic2826_drv_config(uint16_t DCDC_mV, uint16_t LDO1_mV, 
+									uint16_t LDO2_mV, uint16_t LDO3_mV)
 {
 	uint8_t en_reg;
 	
@@ -167,10 +182,11 @@ static RESULT mic2826_config(uint16_t DCDC_mV, uint16_t LDO1_mV,
 	return ERROR_OK;
 }
 
-const struct mic2826_t mic2826 = 
+const struct mic2826_drv_t mic2826_drv = 
 {
-	mic2826_init,
-	mic2826_fini,
-	mic2826_config
+	mic2826_drv_config_interface,
+	mic2826_drv_init,
+	mic2826_drv_fini,
+	mic2826_drv_config
 };
 

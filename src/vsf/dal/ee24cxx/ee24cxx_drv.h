@@ -26,6 +26,11 @@ struct ee24cxx_drv_param_t
 	uint8_t iic_addr;
 };
 
+struct ee24cxx_drv_interface_t
+{
+	uint8_t iic_port;
+};
+
 extern struct mal_driver_t ee24cxx_drv;
 
 #endif /*  __EE24CXX_DRV_H_INCLUDED__ */

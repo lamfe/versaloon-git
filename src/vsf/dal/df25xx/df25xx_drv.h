@@ -31,6 +31,13 @@ struct df25xx_drv_info_t
 	uint16_t device_id;
 };
 
+struct df25xx_drv_interface_t
+{
+	uint8_t cs_port;
+	uint32_t cs_pin;
+	uint8_t spi_port;
+};
+
 extern struct mal_driver_t df25xx_drv;
 
 #endif /* __DF25XX_DRV_H_INCLUDED__ */
