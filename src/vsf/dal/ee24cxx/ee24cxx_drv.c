@@ -111,6 +111,22 @@ static RESULT ee24cxx_drv_writeblock_nb_start(uint64_t address, uint64_t count)
 
 static RESULT ee24cxx_drv_writeblock_nb(uint64_t address, uint8_t *buff)
 {
+	uint8_t buffe_tmp[32 + 2];
+	
+	if (ee24cxx_drv.capacity.block_size != 32)
+	{
+		return ERROR_FAIL;
+	}
+	
+	SET_BE_U16(&buffe_tmp[0], (uint16_t)address);
+	memcpy(&buffe_tmp[2], buff, 32);
+	
+	if ((ERROR_OK != interfaces->i2c.write(ee24cxx_drv_ifs.iic_port, 
+			ee24cxx_drv_param.iic_addr, buffe_tmp, 2 + 32, 1)) || 
+		(ERROR_OK != interfaces->delay.delayms(5)))
+	{
+		return ERROR_FAIL;
+	}
 	return ERROR_OK;
 }
 
