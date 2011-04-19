@@ -340,10 +340,9 @@ READ_TARGET_HANDLER(c8051fjtag)
 			dr = 0x02;
 			c8051f_jtag_ind_write(C8051F_IR_FLASHCON, &dr, 
 									C8051F_DR_FLASHCON_LEN);
-			// initiate the read operation
+			// initiate the read operation, 0-bit
 			dr = 0;
-			c8051f_jtag_ind_read(C8051F_IR_FLASHDAT, &dr, 
-									C8051F_DR_FLASHDAT_RLEN);
+			c8051f_jtag_ind_read(C8051F_IR_FLASHDAT, &dr, 0);
 			// set FLASHCON for poll operation
 			dr = 0;
 			c8051f_jtag_ind_write(C8051F_IR_FLASHCON, &dr, 
