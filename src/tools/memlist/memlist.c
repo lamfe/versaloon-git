@@ -112,12 +112,11 @@ static RESULT MEMLIST_Merge(struct memlist *ml, uint32_t addr, uint32_t len,
 	return ERROR_FAIL;
 }
 
-static void MEMLIST_Insert(struct memlist **ml, struct memlist **newitem)
+static void MEMLIST_Insert(struct memlist **ml, struct memlist *newitem)
 {
 	struct memlist *ml_tmp, ml_virtual_head;
 	
-	if ((NULL == ml) || (NULL == *ml) || (NULL == newitem) 
-		|| (NULL == *newitem))
+	if ((NULL == ml) || (NULL == *ml) || (NULL == newitem))
 	{
 		return;
 	}
@@ -125,19 +124,23 @@ static void MEMLIST_Insert(struct memlist **ml, struct memlist **newitem)
 	sllint_insert(ml_virtual_head.list, (*ml)->list);
 	ml_tmp = &ml_virtual_head;
 	while ((MEMLIST_GetNext(ml_tmp) != NULL) 
-			&& ((*newitem)->addr > MEMLIST_GetNext(ml_tmp)->addr))
+			&& (newitem->addr > MEMLIST_GetNext(ml_tmp)->addr))
 	{
 		ml_tmp = MEMLIST_GetNext(ml_tmp);
 	}
 	
 	if (MEMLIST_GetNext(ml_tmp) != NULL)
 	{
-		sllint_insert((*newitem)->list, MEMLIST_GetNext(ml_tmp)->list);
-		*ml = *newitem;
+		sllint_insert(newitem->list, MEMLIST_GetNext(ml_tmp)->list);
+		sllint_insert(ml_tmp->list, newitem->list);
+		if (ml_tmp == &ml_virtual_head)
+		{
+			*ml = newitem;
+		}
 	}
 	else
 	{
-		sllint_insert(ml_tmp->list, (*newitem)->list);
+		sllint_insert(ml_tmp->list, newitem->list);
 	}
 }
 
@@ -191,7 +194,7 @@ RESULT MEMLIST_Add(struct memlist **ml, uint32_t addr, uint32_t len,
 			newitem->addr = MEMLIST_AdjustAddr(addr, page_size);
 			newitem->len = MEMLIST_AdjustLen(len, page_size);
 			sllist_init_node(newitem->list);
-			MEMLIST_Insert(ml, &newitem);
+			MEMLIST_Insert(ml, newitem);
 		}
 	}
 	
