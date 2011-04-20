@@ -149,8 +149,11 @@ ERASE_TARGET_HANDLER(df25xx)
 	REFERENCE_PARAMETER(addr);
 	REFERENCE_PARAMETER(size);
 	
-	// no need to erase
-	return ERROR_OK;
+	if (ERROR_OK != mal.eraseall(MAL_IDX_DF25XX))
+	{
+		return ERROR_FAIL;
+	}
+	return commit();
 }
 
 WRITE_TARGET_HANDLER(df25xx)
