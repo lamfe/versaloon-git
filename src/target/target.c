@@ -64,6 +64,7 @@
 #include "ee93cx6/ee93cx6.h"
 #include "ee24cxx/ee24cxx.h"
 #include "df25xx/df25xx.h"
+#include "stm32f2/stm32f2.h"
 
 VSS_HANDLER(target_memory_detail);
 VSS_HANDLER(target_parameter_detail);
@@ -242,6 +243,19 @@ struct target_info_t targets_info[] =
 		stm32_program_mode,					// program_mode
 		&stm32_program_functions,			// program_functions
 		stm32_notifier,						// notifier
+		NULL,								// adjust_setting
+		NULL,								// adjust_mapping
+	},
+#endif
+	// stm32f2
+#if TARGET_STM32F2_EN
+	{
+		STM32F2_STRING,						// name
+		AUTO_DETECT CAN_EXECUTE,			// feature
+		stm32f2_program_area_map,			// program_area_map
+		stm32f2_program_mode,				// program_mode
+		&stm32f2_program_functions,			// program_functions
+		stm32f2_notifier,					// notifier
 		NULL,								// adjust_setting
 		NULL,								// adjust_mapping
 	},

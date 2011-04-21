@@ -22,6 +22,7 @@
 #define COMISP_STRING					"comisp"
 #define COMISP_STM32					0
 #define COMISP_LPCARM					1
+#define COMISP_STM32F2					2
 
 extern struct program_functions_t comisp_program_functions;
 extern const struct vss_cmd_t comisp_notifier[];

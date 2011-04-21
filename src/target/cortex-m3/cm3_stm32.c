@@ -126,7 +126,7 @@ static uint8_t iap_code[] = {
 	0x00, 0x00, 0x00, 0x00		/* result, set to 0 */
 };
 
-RESULT stm32_wait_status_busy(uint32_t *status, uint32_t timeout)
+static RESULT stm32_wait_status_busy(uint32_t *status, uint32_t timeout)
 {
 	uint32_t reg;
 	
@@ -146,38 +146,31 @@ RESULT stm32_wait_status_busy(uint32_t *status, uint32_t timeout)
 		reg = LE_TO_SYS_U32(reg);
 	}
 	*status = reg;
-	if (reg & (STM32_FLASH_SR_PGERR | STM32_FLASH_SR_WRPRTERR))
+	if (reg & STM32_FLASH_SR_ERRMSK)
 	{
-		reg = STM32_FLASH_SR_PGERR | STM32_FLASH_SR_WRPRTERR;
+		reg = STM32_FLASH_SR_ERRMSK;
 		adi_memap_write_reg32(STM32_FLASH_SR, &reg, 1);
 	}
 	
 	return ERROR_OK;
 }
 
-RESULT stm32_mass_erase(void)
+static RESULT stm32_mass_erase(void)
 {
 	uint32_t reg;
 	
-	// mass erase flash memory
 	reg = STM32_FLASH_CR_MER;
 	adi_memap_write_reg32(STM32_FLASH_CR, &reg, 0);
 	reg = STM32_FLASH_CR_MER | STM32_FLASH_CR_STRT;
 	adi_memap_write_reg32(STM32_FLASH_CR, &reg, 0);
 	
 	// wait busy
-	if (ERROR_OK != stm32_wait_status_busy(&reg, 10))
+	if ((ERROR_OK != stm32_wait_status_busy(&reg, 20000)) || 
+		(reg & (STM32_FLASH_SR_ERRMSK | STM32_FLASH_SR_BSY)))
 	{
 		return ERROR_FAIL;
 	}
-	if (reg & STM32_FLASH_SR_WRPRTERR)
-	{
-		return ERROR_FAIL;
-	}
-	else
-	{
-		return ERROR_OK;
-	}
+	return ERROR_OK;
 }
 
 ENTER_PROGRAM_MODE_HANDLER(stm32swj)
@@ -239,7 +232,8 @@ ERASE_TARGET_HANDLER(stm32swj)
 		reg |= STM32_FLASH_CR_STRT;
 		adi_memap_write_reg32(STM32_FLASH_CR, &reg, 0);
 		
-		if (ERROR_OK != stm32_wait_status_busy(&reg, 10))
+		if ((ERROR_OK != stm32_wait_status_busy(&reg, 10)) || 
+			(reg & (STM32_FLASH_SR_ERRMSK | STM32_FLASH_SR_BSY)))
 		{
 			return ERROR_FAIL;
 		}
@@ -310,7 +304,8 @@ WRITE_TARGET_HANDLER(stm32swj)
 		reg |= STM32_FLASH_CR_STRT;
 		adi_memap_write_reg32(STM32_FLASH_CR, &reg, 0);
 		
-		if (ERROR_OK != stm32_wait_status_busy(&reg, 10))
+		if ((ERROR_OK != stm32_wait_status_busy(&reg, 10)) || 
+			(reg & (STM32_FLASH_SR_ERRMSK | STM32_FLASH_SR_BSY)))
 		{
 			return ERROR_FAIL;
 		}
@@ -322,7 +317,8 @@ WRITE_TARGET_HANDLER(stm32swj)
 		{
 			reg16 = buff[i] | (~buff[i] << 8);
 			adi_memap_write_reg16(STM32_OB_ADDR + i * 2, &reg16, 0);
-			if (ERROR_OK != stm32_wait_status_busy(&reg, 10))
+			if ((ERROR_OK != stm32_wait_status_busy(&reg, 10)) || 
+				(reg & (STM32_FLASH_SR_ERRMSK | STM32_FLASH_SR_BSY)))
 			{
 				return ERROR_FAIL;
 			}
