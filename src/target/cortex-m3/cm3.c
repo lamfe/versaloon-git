@@ -41,6 +41,7 @@
 #include "cm3_lpc1000.h"
 #include "cm3_at91sam3.h"
 #include "cm3_lm3s.h"
+#include "cm3_stm32f2.h"
 
 #include "cm3_internal.h"
 
@@ -69,6 +70,14 @@ const struct cm3_param_t cm3_chips_param[] = {
 		2,								// swd_trn
 		0,								// swd_delay
 		&stm32swj_program_functions		// program_functions
+	},
+	{
+		"cm3_stm32f2",					// chip_name
+		STM32F2_IRC_KHZ / 6,			// jtag_khz
+		{0,1,0,5},						// jtag_pos
+		2,								// swd_trn
+		0,								// swd_delay
+		&stm32f2swj_program_functions	// program_functions
 	},
 	{
 		"cm3_lpc1000",					// chip_name
