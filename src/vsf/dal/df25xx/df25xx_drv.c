@@ -34,15 +34,18 @@
 #include "df25xx_drv_cfg.h"
 #include "df25xx_drv.h"
 
-#define DF25XX_CMD_WRSR						0x01
-#define DF25XX_CMD_PGWR						0x02
-#define DF25XX_CMD_PGRD						0x03
-#define DF25XX_CMD_WRDI						0x04
-#define DF25XX_CMD_RSDR						0x05
-#define DF25XX_CMD_WREN						0x06
-#define DF25XX_CMD_ER4K						0x20
-#define DF25XX_CMD_CHER						0x60
-#define DF25XX_CMD_RDID						0x9F
+#define DF25XX_CMD_WRSR						0x01	//write status register 
+#define DF25XX_CMD_PGWR						0x02	//page program
+#define DF25XX_CMD_PGRD						0x03	//read data
+#define DF25XX_CMD_WRDI						0x04	//write disable
+#define DF25XX_CMD_RDSR						0x05	//read status register 1(7 to 0)
+#define DF25XX_CMD_WREN						0x06	//write enable
+#define DF25XX_CMD_ER4K						0x20	//sector erase
+#define DF25XX_CMD_CHER						0x60	//chip erase
+#define DF25XX_CMD_RDID						0x9F	//jedec id
+
+#define DF25XX_STATE_BUSY					(1 << 0)
+#define DF25XX_STATE_WEL					(1 << 1)
 
 static struct df25xx_drv_interface_t df25xx_drv_ifs;
 static struct df25xx_drv_param_t df25xx_drv_param;
@@ -121,79 +124,122 @@ static RESULT df25xx_drv_fini(void)
 {
 	interfaces->gpio.fini(df25xx_drv_ifs.cs_port);
 	interfaces->spi.fini(df25xx_drv_ifs.spi_port);
-	return interfaces->peripheral_commit();
+	return ERROR_OK;
 }
 
 static RESULT df25xx_drv_eraseall_nb_start(void)
 {
-	return ERROR_OK;
+	uint8_t buff[2];
+	
+	df25xx_drv_cs_assert();
+	buff[0] = DF25XX_CMD_WREN;
+	buff[1] = DF25XX_CMD_CHER;
+	interfaces->spi.io(df25xx_drv_ifs.spi_port, buff, NULL, 2);
+	return df25xx_drv_cs_deassert();
 }
 
 static RESULT df25xx_drv_eraseall_nb_isready(void)
 {
-	return ERROR_OK;
-}
-
-static RESULT df25xx_drv_eraseall_nb_waitready(void)
-{
+	uint8_t buff[2];
+	
+	df25xx_drv_cs_assert();
+	buff[0] = DF25XX_CMD_RDSR;
+	interfaces->spi.io(df25xx_drv_ifs.spi_port, buff, buff, 2);
+	df25xx_drv_cs_deassert();
+	
+	if ((ERROR_OK != interfaces->peripheral_commit()) || 
+		(buff[1] & DF25XX_STATE_BUSY))
+	{
+		return ERROR_FAIL;
+	}
 	return ERROR_OK;
 }
 
 static RESULT df25xx_drv_eraseall_nb_end(void)
 {
-	return ERROR_OK;
+	uint8_t buff[1];
+	
+	df25xx_drv_cs_assert();
+	buff[0] = DF25XX_CMD_WRDI;
+	interfaces->spi.io(df25xx_drv_ifs.spi_port, buff, NULL, 1);
+	return df25xx_drv_cs_deassert();
 }
 
 static RESULT df25xx_drv_eraseblock_nb_start(uint64_t address, uint64_t count)
 {
-	return ERROR_OK;
+	uint8_t buff[1];
+	
+	REFERENCE_PARAMETER(count);
+	REFERENCE_PARAMETER(address);
+	
+	df25xx_drv_cs_assert();
+	buff[0] = DF25XX_CMD_WREN;
+	interfaces->spi.io(df25xx_drv_ifs.spi_port, buff, NULL, 1);
+	return df25xx_drv_cs_deassert();
 }
 
 static RESULT df25xx_drv_eraseblock_nb(uint64_t address)
 {
-	return ERROR_OK;
+	uint8_t buff[4];
+	
+	df25xx_drv_cs_assert();
+	buff[0] = DF25XX_CMD_ER4K;
+	buff[1] = (address >> 16) & 0xFF;
+	buff[2] = (address >> 8 ) & 0xFF;
+	buff[3] = (address >> 0 ) & 0xFF;
+	interfaces->spi.io(df25xx_drv_ifs.spi_port, buff, NULL, 4);
+	return df25xx_drv_cs_deassert();
 }
 
 static RESULT df25xx_drv_eraseblock_nb_isready(void)
 {
-	return ERROR_OK;
-}
-
-static RESULT df25xx_drv_eraseblock_nb_waitready(void)
-{
+	uint8_t buff[2];
+	
+	df25xx_drv_cs_assert();
+	buff[0] = DF25XX_CMD_RDSR;
+	interfaces->spi.io(df25xx_drv_ifs.spi_port, buff, buff, 2);
+	df25xx_drv_cs_deassert();
+	
+	if ((ERROR_OK != interfaces->peripheral_commit()) || 
+		(buff[1] & DF25XX_STATE_BUSY))
+	{
+		return ERROR_FAIL;
+	}
 	return ERROR_OK;
 }
 
 static RESULT df25xx_drv_eraseblock_nb_end(void)
 {
-	return ERROR_OK;
+	uint8_t buff[1];
+	
+	df25xx_drv_cs_assert();
+	buff[0] = DF25XX_CMD_WRDI;
+	interfaces->spi.io(df25xx_drv_ifs.spi_port, buff, NULL, 1);
+	return df25xx_drv_cs_deassert();
 }
 
 static RESULT df25xx_drv_readblock_nb_start(uint64_t address, uint64_t count)
 {
-	uint8_t cmd[4];
+	uint8_t buff[4];
+	
+	REFERENCE_PARAMETER(count);
 	
 	df25xx_drv_cs_assert();
-	
-	cmd[0] = DF25XX_CMD_PGRD;
-	cmd[1] = (address >> 16) & 0xFF;
-	cmd[2] = (address >> 8 ) & 0xFF;
-	cmd[3] = (address >> 0 ) & 0xFF;
-	return interfaces->spi.io(df25xx_drv_ifs.spi_port, cmd, NULL, 4);
+	buff[0] = DF25XX_CMD_PGRD;
+	buff[1] = (address >> 16) & 0xFF;
+	buff[2] = (address >> 8 ) & 0xFF;
+	buff[3] = (address >> 0 ) & 0xFF;
+	return interfaces->spi.io(df25xx_drv_ifs.spi_port, buff, NULL, 4);
 }
 
 static RESULT df25xx_drv_readblock_nb(uint64_t address, uint8_t *buff)
 {
+	REFERENCE_PARAMETER(address);
 	return interfaces->spi.io(df25xx_drv_ifs.spi_port, NULL, buff, 
 						(uint16_t)df25xx_drv.capacity.block_size);
 }
 
 static RESULT df25xx_drv_readblock_nb_isready(void)
-{
-	return ERROR_OK;
-}
-
-static RESULT df25xx_drv_readblock_nb_waitready(void)
 {
 	return ERROR_OK;
 }
@@ -205,33 +251,63 @@ static RESULT df25xx_drv_readblock_nb_end(void)
 
 static RESULT df25xx_drv_writeblock_nb_start(uint64_t address, uint64_t count)
 {
-	return ERROR_OK;
+	uint8_t buff[1];
+	
+	REFERENCE_PARAMETER(count);
+	REFERENCE_PARAMETER(address);
+	
+	df25xx_drv_cs_assert();
+	buff[0] = DF25XX_CMD_WREN;
+	interfaces->spi.io(df25xx_drv_ifs.spi_port, buff, NULL, 1);
+	return df25xx_drv_cs_deassert();
 }
 
 static RESULT df25xx_drv_writeblock_nb(uint64_t address, uint8_t *buff)
 {
-	return ERROR_OK;
+	uint8_t cmd[4];
+	
+	df25xx_drv_cs_assert();
+	cmd[0] = DF25XX_CMD_PGWR;
+	cmd[1] = (address >> 16) & 0xFF;
+	cmd[2] = (address >> 8 ) & 0xFF;
+	cmd[3] = (address >> 0 ) & 0xFF;
+	interfaces->spi.io(df25xx_drv_ifs.spi_port, cmd, NULL, 4);
+	interfaces->spi.io(df25xx_drv_ifs.spi_port, buff, NULL, 
+						(uint16_t)df25xx_drv.capacity.block_size);
+	return df25xx_drv_cs_deassert();
 }
 
 static RESULT df25xx_drv_writeblock_nb_isready(void)
 {
-	return ERROR_OK;
-}
-
-static RESULT df25xx_drv_writeblock_nb_waitready(void)
-{
+	uint8_t buff[2];
+	
+	df25xx_drv_cs_assert();
+	buff[0] = DF25XX_CMD_RDSR;
+	interfaces->spi.io(df25xx_drv_ifs.spi_port, buff, buff, 2);
+	df25xx_drv_cs_deassert();
+	
+	if ((ERROR_OK != interfaces->peripheral_commit()) || 
+		(buff[1] & DF25XX_STATE_BUSY))
+	{
+		return ERROR_FAIL;
+	}
 	return ERROR_OK;
 }
 
 static RESULT df25xx_drv_writeblock_nb_end(void)
 {
-	return ERROR_OK;
+	uint8_t buff[1];
+	
+	df25xx_drv_cs_assert();
+	buff[0] = DF25XX_CMD_WRDI;
+	interfaces->spi.io(df25xx_drv_ifs.spi_port, buff, NULL, 1);
+	return df25xx_drv_cs_deassert();
 }
 
 struct mal_driver_t df25xx_drv = 
 {
 	MAL_IDX_DF25XX,
-	MAL_SUPPORT_READBLOCK,
+	MAL_SUPPORT_READBLOCK | MAL_SUPPORT_WRITEBLOCK | MAL_SUPPORT_ERASEBLOCK,
 	{0, 0},
 	
 	df25xx_drv_config_interface,
@@ -243,25 +319,25 @@ struct mal_driver_t df25xx_drv =
 	
 	df25xx_drv_eraseall_nb_start,
 	df25xx_drv_eraseall_nb_isready,
-	df25xx_drv_eraseall_nb_waitready,
+	NULL,
 	df25xx_drv_eraseall_nb_end,
 	
 	df25xx_drv_eraseblock_nb_start,
 	df25xx_drv_eraseblock_nb,
 	df25xx_drv_eraseblock_nb_isready,
-	df25xx_drv_eraseblock_nb_waitready,
+	NULL,
 	df25xx_drv_eraseblock_nb_end,
 	
 	df25xx_drv_readblock_nb_start,
 	df25xx_drv_readblock_nb,
 	df25xx_drv_readblock_nb_isready,
-	df25xx_drv_readblock_nb_waitready,
+	NULL,
 	df25xx_drv_readblock_nb_end,
 	
 	df25xx_drv_writeblock_nb_start,
 	df25xx_drv_writeblock_nb,
 	df25xx_drv_writeblock_nb_isready,
-	df25xx_drv_writeblock_nb_waitready,
+	NULL,
 	df25xx_drv_writeblock_nb_end
 };
 
