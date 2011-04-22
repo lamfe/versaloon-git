@@ -125,7 +125,6 @@ static RESULT lpc1000swj_iap_run(uint32_t cmd, uint32_t param_table[5])
 {
 	uint32_t buff_tmp[7];
 	
-	memset(buff_tmp, 0, sizeof(buff_tmp));
 	buff_tmp[0] = SYS_TO_LE_U32(cmd);				// iap command
 	buff_tmp[1] = SYS_TO_LE_U32(param_table[0]);	// iap parameters
 	buff_tmp[2] = SYS_TO_LE_U32(param_table[1]);
@@ -146,19 +145,19 @@ static RESULT lpc1000swj_iap_run(uint32_t cmd, uint32_t param_table[5])
 	return ERROR_OK;
 }
 
-static RESULT lpc1000swj_iap_poll_result(uint32_t result_table[4], uint8_t *fail)
+static RESULT lpc1000swj_iap_poll_result(uint32_t result_table[4], bool *failed)
 {
 	uint32_t buff_tmp[6];
 	uint8_t i;
 	
-	*fail = 0;
+	*failed = false;
 	
 	// read result and sync
 	// sync is 4-byte BEFORE result
 	if (ERROR_OK != adi_memap_read_buf(LPC1000_IAP_SYNC_ADDR, 
 										(uint8_t *)buff_tmp, 24))
 	{
-		*fail = 1;
+		*failed = true;
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read iap sync");
 		return ERRCODE_FAILURE_OPERATION;
 	}
@@ -171,7 +170,7 @@ static RESULT lpc1000swj_iap_poll_result(uint32_t result_table[4], uint8_t *fail
 	{
 		if (buff_tmp[1] != 0)
 		{
-			*fail = 1;
+			*failed = true;
 			cm3_dump(LPC1000_IAP_BASE, sizeof(iap_code));
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION_ERRCODE, "call iap", 
 						buff_tmp[1]);
@@ -187,15 +186,15 @@ static RESULT lpc1000swj_iap_poll_result(uint32_t result_table[4], uint8_t *fail
 
 static RESULT lpc1000swj_iap_wait_ready(uint32_t result_table[4])
 {
-	uint8_t fail = 0;
+	bool failed = false;
 	uint32_t start, end;
 	
 	start = get_time_in_ms();
 	while (1)
 	{
-		if (ERROR_OK != lpc1000swj_iap_poll_result(result_table, &fail))
+		if (ERROR_OK != lpc1000swj_iap_poll_result(result_table, &failed))
 		{
-			if (fail)
+			if (failed)
 			{
 				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "poll iap result");
 				return ERROR_FAIL;
@@ -230,7 +229,6 @@ static RESULT lpc1000swj_iap_call(uint32_t cmd, uint32_t param_table[5],
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "run iap command");
 		return ERROR_FAIL;
 	}
-	
 	return ERROR_OK;
 }
 

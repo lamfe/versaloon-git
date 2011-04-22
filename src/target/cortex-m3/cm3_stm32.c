@@ -48,8 +48,6 @@
 
 #include "timer.h"
 
-#define STM32SWJ_BUFFER_SIZE		512
-
 ENTER_PROGRAM_MODE_HANDLER(stm32swj);
 LEAVE_PROGRAM_MODE_HANDLER(stm32swj);
 ERASE_TARGET_HANDLER(stm32swj);
@@ -65,109 +63,268 @@ const struct program_functions_t stm32swj_program_functions =
 	READ_TARGET_FUNCNAME(stm32swj)
 };
 
-#define STM32_IAP_BASE				STM32_SRAM_ADDR
-#define FL_PARA_ADDR_BASE			\
-					(STM32_IAP_BASE + sizeof(iap_code) - 4 * 4)
-#define FL_ADDR_RAM_SRC				(FL_PARA_ADDR_BASE + 0)
-#define FL_ADDR_FLASH_DEST			(FL_PARA_ADDR_BASE + 4)
-#define FL_ADDR_WORD_LENGTH			(FL_PARA_ADDR_BASE + 8)
-#define FL_ADDR_RESULT				(FL_PARA_ADDR_BASE + 12)
-#define FL_ADDR_DATA				(STM32_IAP_BASE + 1024)
-static uint8_t iap_code[] = {
-								/* init: */
-	0x16, 0x4C,					/* ldr.n	r4, STM32_FLASH_CR */
-	0x17, 0x4D,					/* ldr.n	r5, STM32_FLASH_SR */
-	0x17, 0x4F,					/* ldr.n	r7, result */
-								/* wait_start: */
-	0x57, 0xF8, 0x04, 0x3C,		/* ldr.w	r3, [r7, #-4] */
-	0x00, 0x2B,					/* cmp		r3, #0 */
-	0xFB, 0xD0,					/* beq 		wait_start */
-								/* update: */
-	0x16, 0x48,					/* ldr.n	r0, ram_ptr */
-	0x16, 0x49,					/* ldr.n	r1, flash_ptr */
-	0x4F, 0xF0, 0x00, 0x06,		/* mov.w	r6, #0 */
-	0x16, 0x4A,					/* ldr.n	r2, number_of_words */
-								/* write: */
-	0x4F, 0xF0, 0x01, 0x03,		/* mov.w	r3, #1 */
-	0x23, 0x60,					/* str		r3, [r4, #0] */
-	0x30, 0xF8, 0x02, 0x3B,		/* ldrh.w	r3, [r0], #2 */
-	0x21, 0xF8, 0x02, 0x3B,		/* strh.w	r3, [r1], #2 */
-								/* busy: */
-	0x2B, 0x68,					/* ldr 		r3, [r5, #0] */
-	0x13, 0xF0, 0x01, 0x0F,		/* tst 		r3, #0x01 */
-	0xFB, 0xD0,					/* beq 		busy */
-	0x13, 0xF0, 0x14, 0x0F,		/* tst		r3, #0x14 */
-	0x0F, 0xD1,					/* bne		exit */
-	0x06, 0xF1, 0x01, 0x06,		/* add		r6, r6, #1 */
-	0x96, 0x42,					/* cmp		r2, r6 */
-	0xED, 0xD3,					/* bcc		write */
-	0x13, 0x00,					/* movs		r3, r2 */
-	0x3A, 0x60,					/* str		r2, [r7] */
-								/* wait_data */
-	0x0B, 0x4A,					/* ldr.n	r2, number_of_words */
-	0x93, 0x42,					/* cmp		r3, r2 */
-	0xFC, 0xD2,					/* bcs.n	wait_data */
-	0x12, 0x04,					/* lsls		r2, r2, #16 */
-	0xE5, 0xD5,					/* bpl.n	write */
-	0x52, 0x00,					/* lsls		r2, r2, #1 */
-	0x52, 0x0C,					/* lsrs		r2, r2, #17 */
-	0x47, 0xF8, 0x04, 0x2C,		/* str.w	r2, [r7, #-4] */
-	0xDC, 0xE7,					/* b		update */
-								/* exit: */
-	0x6F, 0xF0, 0x00, 0x02,		/* mvn.w	r2, #0 */
-	0x3A, 0x60,					/* str		r2, [r7] */
-	0xFE, 0xE7,					/* b $ */
-	0x10, 0x20, 0x02, 0x40,		/* STM32_FLASH_CR:	.word 0x40022010 */
-	0x0C, 0x20, 0x02, 0x40,		/* STM32_FLASH_SR:	.word 0x4002200C */
-	0xEC, 0x03, 0x00, 0x20,		/* address of result */
-	0x00, 0x00, 0x00, 0x00, 	/* ram address */
-	0x00, 0x00, 0x00, 0x00,		/* flash address */
-	0x00, 0x00, 0x00, 0x00,		/* number_of_words(2-byte), set to 0 */
-	0x00, 0x00, 0x00, 0x00		/* result, set to 0 */
+struct stm32_iap_cmd_t
+{
+	uint32_t cr_addr;
+	uint32_t cr_value1;
+	uint32_t cr_value2;
+	
+	uint32_t sr_addr;
+	uint32_t sr_busy_mask;
+	uint32_t sr_err_mask;
+	
+	uint32_t target_addr;
+	uint32_t ram_addr;
+	
+	uint32_t data_type;
+	uint32_t data_size;
 };
 
-static RESULT stm32_wait_status_busy(uint32_t *status, uint32_t timeout)
+struct stm32_iap_result_t
 {
-	uint32_t reg;
+	uint32_t result;
+};
+
+static uint32_t stm32swj_iap_cnt = 0;
+
+#define STM32_IAP_BASE				STM32_SRAM_ADDR
+#define STM32_IAP_COMMAND_ADDR		(STM32_IAP_BASE + 0x80)
+#define STM32_IAP_SYNC_ADDR			(STM32_IAP_BASE + 0xA4)
+// buffer_size MUST be 2048 bytes to hold 2 flash pages
+#define STM32_IAP_BUFFER_SIZE		(2048)
+#define STM32_IAP_BUFFER_ADDR		(STM32_IAP_BASE + 1024)
+static uint8_t iap_code[] = {
+								/* wait_start: */
+	0x28, 0x48,					/* ldr.n	r0, [PC, #0xA0]	;load SYNC */
+	0x00, 0x28,					/* cmp		r0, #0 */
+	0xFC, 0xD0,					/* beq.n	wait_start */
+								/* update command: */
+	0x1E, 0x48,					/* ldr.n	r0, [PC, #0x78]	;load CR_ADDR */
+	0x1E, 0x49,					/* ldr.n	r1, [PC, #0x78] ;load CR_VALUE1 */
+	0x1F, 0x4A,					/* ldr.n	r2, [PC, #0x7C] ;load CR_VALUE2 */
+								/* write_cr: */
+	0x01, 0x60,					/* str		r1, [r0]		;write CR */
+	0x12, 0x42,					/* tst		r2, r2 */
+	0x00, 0xD0,					/* beq.n	load_parameter */
+	0x02, 0x60,					/* str		r2, [r0] */
+								/* load_parameter: */
+	0x1D, 0x48,					/* ldr.n	r0, [PC, #0x74] ;load SR_ADDR */
+	0x1E, 0x49,					/* ldr.n	r1, [PC, #0x78] ;load SR_BUSY_MASK */
+	0x1E, 0x4A,					/* ldr.n	r2, [PC, #0x78] ;load TARGET_ADDR */
+	0x1F, 0x4B,					/* ldr.n	r3, [PC, #0x7C] ;load RAM_ADDR */
+	0x1F, 0x4C,					/* ldr.n	r4, [PC, #0x7C] ;load DATA_TYPE */
+	0x20, 0x4D,					/* ldr.n	r5, [PC, #0x80] ;load DATA_SIZE */
+								/* clear_sync: */
+	0x00, 0x26,					/* movs		r6, #0 */
+	0x20, 0xA7,					/* adr.n	r7, PC, #0x84 */
+	0x3E, 0x60,					/* str		r6, [r7] */
+								/* check_data_size */
+	0x2D, 0x42,					/* tst		r5, r5 */
+	0xEA, 0xD0,					/* beq.n	wait_start */
+								/* check_data_type */
+	0xA6, 0x1B,					/* subs		r6, r4, r6 */
+	0x00, 0xD1,					/* bne.n	write_data */
+	0x0F, 0xE0,					/* b		wait_busy */
+								/* write_data: */
+	0x01, 0x26,					/* movs		r1, #1 */
+	0xA6, 0x1B,					/* subs		r6, r4, r6 */
+	0x02, 0xD1,					/* be.n		write_word_dword */
+	0x1F, 0x78,					/* ldrb		r7, [r3] */
+	0x17, 0x70,					/* strb		r7, [r2] */
+	0x07, 0xE0,					/* b.n		adjust_addr */
+								/* write_word_dword: */
+	0x02, 0x26,					/* movs		r6, #2 */
+	0xA6, 0x1B,					/* subs		r6, r4, r6 */
+	0x02, 0xD1,					/* be.n		write_dword */
+	0x1F, 0x88,					/* ldrh		r7, [r3] */
+	0x17, 0x80,					/* str		r7, [r2] */
+	0x01, 0xE0,					/* b.n		adjust_addr */
+								/* wrire_dword: */
+	0x1F, 0x68,					/* ldr		r7, [r3] */
+	0x17, 0x60,					/* str		r7, [r2] */
+								/* adjust_addr: */
+	0x22, 0x44,					/* add		r2, r2, r4 */
+	0x23, 0x44,					/* add		r3, r3, r4 */
+								/* wait_busy: */
+	0x07, 0x68,					/* ldr		r7, [r0] */
+	0x0F, 0x40,					/* ands		r7, r7, r1 */
+	0xFC, 0xD1,					/* bne.n	wait_busy */
+								/* check_all_written: */
+	0x6D, 0x1E,					/* subs		r5, r5, #1 */
+	0xEA, 0xD1,					/* bne.n	write_data */
+								/* increase_result */
+	0x13, 0x48,					/* ldr.n	r0, [PC, #0x4C] */
+	0x40, 0x1C,					/* adds		r0, r0, #1 */
+	0x12, 0xA1,					/* adr.n	r1, PC, #0x48 */
+	0x08, 0x60,					/* str		r0, [r1] */
+	0xCD, 0xE7,					/* b.n		wait_start */
+								/* exit: */
+								/* write_result_false: */
+	0x00, 0x20,					/* movs		r0, #0 */
+	0x20, 0xA1,					/* adr.n	r1, PC, #0x80 */
+	0x08, 0x60,					/* str		r0, [r1] */
+								/* dead_loop: */
+	0xFE, 0xE7,					/* b $ */
 	
-	if (ERROR_OK != adi_memap_read_reg32(STM32_FLASH_SR, &reg, 1))
+	0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,
+	
+	0x00, 0x00, 0x00, 0x00,		/* cr_addr */
+	0x00, 0x00, 0x00, 0x00,		/* cr_value1 */
+	0x00, 0x00, 0x00, 0x00,		/* cr_value2 */
+	0x00, 0x00, 0x00, 0x00,		/* sr_addr */
+	0x00, 0x00, 0x00, 0x00,		/* sr_busy_mask */
+	0x00, 0x00, 0x00, 0x00,		/* target_addr */
+	0x00, 0x00, 0x00, 0x00,		/* ram_addr */
+	0x00, 0x00, 0x00, 0x00,		/* data_type */
+	0x00, 0x00, 0x00, 0x00,		/* data_size */
+	
+	0x00, 0x00, 0x00, 0x00,		/* sync */
+	
+	0x00, 0x00, 0x00, 0x00,		/* result */
+};
+
+static RESULT stm32swj_iap_run(struct stm32_iap_cmd_t *cmd)
+{
+	uint32_t buff_tmp[10];
+	
+	buff_tmp[0] = SYS_TO_LE_U32(cmd->cr_addr);
+	buff_tmp[1] = SYS_TO_LE_U32(cmd->cr_value1);
+	buff_tmp[2] = SYS_TO_LE_U32(cmd->cr_value2);
+	buff_tmp[3] = SYS_TO_LE_U32(cmd->sr_addr);
+	buff_tmp[4] = SYS_TO_LE_U32(cmd->sr_busy_mask);
+	buff_tmp[5] = SYS_TO_LE_U32(cmd->target_addr);
+	buff_tmp[6] = SYS_TO_LE_U32(cmd->ram_addr);
+	buff_tmp[7] = SYS_TO_LE_U32(cmd->data_type);
+	buff_tmp[8] = SYS_TO_LE_U32(cmd->data_size);
+	buff_tmp[9] = SYS_TO_LE_U32(1);
+	
+	// write iap command with sync to target SRAM
+	// sync is 4-byte AFTER command in sram
+	if (ERROR_OK != adi_memap_write_buf(STM32_IAP_COMMAND_ADDR, 
+										(uint8_t*)buff_tmp, sizeof(buff_tmp)))
 	{
-		return ERROR_FAIL;
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "load iap cmd to SRAM");
+		return ERRCODE_FAILURE_OPERATION;
 	}
-	reg = LE_TO_SYS_U32(reg);
-	while ((reg & STM32_FLASH_SR_BSY) && timeout)
+	stm32swj_iap_cnt++;
+	
+	return ERROR_OK;
+}
+
+static RESULT stm32swj_iap_poll_result(struct stm32_iap_result_t *result, bool *failed)
+{
+	uint32_t buff_tmp[2];
+	uint8_t i;
+	
+	*failed = false;
+	
+	// read result and sync
+	// sync is 4-byte BEFORE result
+	if (ERROR_OK != adi_memap_read_buf(STM32_IAP_SYNC_ADDR, 
+										(uint8_t *)buff_tmp, sizeof(buff_tmp)))
 	{
-		timeout--;
-		sleep_ms(1);
-		if (ERROR_OK != adi_memap_read_reg32(STM32_FLASH_SR, &reg, 1))
+		*failed = true;
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read iap sync");
+		return ERRCODE_FAILURE_OPERATION;
+	}
+	for (i = 0; i < dimof(buff_tmp); i++)
+	{
+		buff_tmp[i] = LE_TO_SYS_U32(buff_tmp[i]);
+	}
+	
+	if (0 == buff_tmp[0])
+	{
+		result->result = buff_tmp[1];
+		return ERROR_OK;
+	}
+	
+	return ERROR_FAIL;
+}
+
+static RESULT stm32swj_iap_end_check(void)
+{
+	bool failed;
+	uint32_t start, end;
+	struct stm32_iap_result_t result;
+	
+	start = get_time_in_ms();
+	while (1)
+	{
+		if ((ERROR_OK != stm32swj_iap_poll_result(&result, &failed)) || 
+			(result.result != stm32swj_iap_cnt))
 		{
-			return ERROR_FAIL;
+			if (failed)
+			{
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "poll iap result");
+				return ERROR_FAIL;
+			}
+			else
+			{
+				end = get_time_in_ms();
+				// wait 1s at most
+				if ((end - start) > 1000)
+				{
+					cm3_dump(STM32_IAP_BASE, sizeof(iap_code));
+					LOG_ERROR(ERRMSG_TIMEOUT, "wait for iap ready");
+					return ERRCODE_FAILURE_OPERATION;
+				}
+			}
 		}
-		reg = LE_TO_SYS_U32(reg);
-	}
-	*status = reg;
-	if (reg & STM32_FLASH_SR_ERRMSK)
-	{
-		reg = STM32_FLASH_SR_ERRMSK;
-		adi_memap_write_reg32(STM32_FLASH_SR, &reg, 1);
+		else
+		{
+			break;
+		}
 	}
 	
 	return ERROR_OK;
 }
 
-static RESULT stm32_mass_erase(void)
+static RESULT stm32swj_iap_wait_ready(struct stm32_iap_result_t *result)
 {
-	uint32_t reg;
+	bool failed;
+	uint32_t start, end;
 	
-	reg = STM32_FLASH_CR_MER;
-	adi_memap_write_reg32(STM32_FLASH_CR, &reg, 0);
-	reg = STM32_FLASH_CR_MER | STM32_FLASH_CR_STRT;
-	adi_memap_write_reg32(STM32_FLASH_CR, &reg, 0);
-	
-	// wait busy
-	if ((ERROR_OK != stm32_wait_status_busy(&reg, 20000)) || 
-		(reg & (STM32_FLASH_SR_ERRMSK | STM32_FLASH_SR_BSY)))
+	start = get_time_in_ms();
+	while (1)
 	{
+		if (ERROR_OK !=	stm32swj_iap_poll_result(result, &failed))
+		{
+			if (failed)
+			{
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "poll iap result");
+				return ERROR_FAIL;
+			}
+			else
+			{
+				end = get_time_in_ms();
+				// wait 1s at most
+				if ((end - start) > 1000)
+				{
+					cm3_dump(STM32_IAP_BASE, sizeof(iap_code));
+					LOG_ERROR(ERRMSG_TIMEOUT, "wait for iap ready");
+					return ERRCODE_FAILURE_OPERATION;
+				}
+			}
+		}
+		else
+		{
+			break;
+		}
+	}
+	
+	return ERROR_OK;
+}
+
+static RESULT stm32swj_iap_call(struct stm32_iap_cmd_t *cmd, struct stm32_iap_result_t *result)
+{
+	if ((ERROR_OK != stm32swj_iap_run(cmd)) 
+		|| (ERROR_OK != stm32swj_iap_wait_ready(result)))
+	{
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "run iap command");
 		return ERROR_FAIL;
 	}
 	return ERROR_OK;
@@ -176,6 +333,7 @@ static RESULT stm32_mass_erase(void)
 ENTER_PROGRAM_MODE_HANDLER(stm32swj)
 {
 	uint32_t reg, flash_obr, flash_wrpr;
+	uint8_t verify_buff[sizeof(iap_code)];
 	
 	REFERENCE_PARAMETER(context);
 	
@@ -203,6 +361,47 @@ ENTER_PROGRAM_MODE_HANDLER(stm32swj)
 					"vsprog -cstm32_XX -mX -oeu -owu -tu0xFFFFFFFFFFFFFFA5");
 	}
 	
+	// download flash_loader
+	if (ERROR_OK != cm3_dp_halt())
+	{
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "halt stm32");
+		return ERRCODE_FAILURE_OPERATION;
+	}
+	
+	// write code to target SRAM
+	if (ERROR_OK != adi_memap_write_buf(STM32_IAP_BASE, iap_code, 
+											sizeof(iap_code)))
+	{
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "load flash_loader to SRAM");
+		return ERRCODE_FAILURE_OPERATION;
+	}
+	// verify iap_code
+	memset(verify_buff, 0, sizeof(iap_code));
+	if (ERROR_OK != adi_memap_read_buf(STM32_IAP_BASE, verify_buff, 
+											sizeof(iap_code)))
+	{
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read flash_loader");
+		return ERRCODE_FAILURE_OPERATION;
+	}
+	if (memcmp(verify_buff, iap_code, sizeof(iap_code)))
+	{
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "verify flash_loader");
+		return ERRCODE_FAILURE_OPERATION;
+	}
+	
+	reg = STM32_IAP_BASE + 1;
+	if (ERROR_OK != cm3_write_core_register(CM3_COREREG_PC, &reg))
+	{
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "write PC");
+		return ERRCODE_FAILURE_OPERATION;
+	}
+	if (ERROR_OK != cm3_dp_resume())
+	{
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "run flash_loader");
+		return ERRCODE_FAILURE_OPERATION;
+	}
+	stm32swj_iap_cnt = 0;
+	
 	return ERROR_OK;
 }
 
@@ -216,26 +415,32 @@ LEAVE_PROGRAM_MODE_HANDLER(stm32swj)
 
 ERASE_TARGET_HANDLER(stm32swj)
 {
+	struct chip_param_t *param = context->param;
 	struct program_info_t *pi = context->pi;
 	struct operation_t *op = context->op;
 	RESULT ret= ERROR_OK;
-	uint32_t reg;
+	struct stm32_iap_cmd_t cmd;
+	struct stm32_iap_result_t result;
 	
 	REFERENCE_PARAMETER(size);
 	REFERENCE_PARAMETER(addr);
 	
+	cmd.sr_busy_mask = STM32_FLASH_SR_BSY;
+	cmd.sr_err_mask = STM32_FLASH_SR_ERRMSK;
 	switch (area)
 	{
 	case FUSE_CHAR:
-		reg = STM32_FLASH_CR_OPTER | STM32_FLASH_CR_OPTWRE;
-		adi_memap_write_reg32(STM32_FLASH_CR, &reg, 0);
-		reg |= STM32_FLASH_CR_STRT;
-		adi_memap_write_reg32(STM32_FLASH_CR, &reg, 0);
-		
-		if ((ERROR_OK != stm32_wait_status_busy(&reg, 10)) || 
-			(reg & (STM32_FLASH_SR_ERRMSK | STM32_FLASH_SR_BSY)))
+		cmd.cr_addr = STM32_FLASH_CR;
+		cmd.sr_addr = STM32_FLASH_SR;
+		cmd.cr_value1 = STM32_FLASH_CR_OPTER | STM32_FLASH_CR_OPTWRE;
+		cmd.cr_value2 = cmd.cr_value1 | STM32_FLASH_CR_STRT;
+		cmd.data_type = 0;
+		cmd.data_size = 1;
+		if ((ERROR_OK != stm32swj_iap_call(&cmd, &result)) || 
+			(ERROR_OK != stm32swj_iap_end_check()))
 		{
-			return ERROR_FAIL;
+			ret = ERRCODE_FAILURE_OPERATION;
+			break;
 		}
 		
 		// if fuse write will not be performed, 
@@ -251,19 +456,29 @@ ERASE_TARGET_HANDLER(stm32swj)
 		}
 		break;
 	case APPLICATION_CHAR:
-		// halt target first
-		if (ERROR_OK != cm3_dp_halt())
-		{
-			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "halt stm32");
-			ret = ERRCODE_FAILURE_OPERATION;
-			break;
-		}
-		// erase all flash
-		if (ERROR_OK != stm32_mass_erase())
+		cmd.cr_addr = STM32_FLASH_CR;
+		cmd.sr_addr = STM32_FLASH_SR;
+		cmd.cr_value1 = STM32_FLASH_CR_MER;
+		cmd.cr_value2 = cmd.cr_value1 | STM32_FLASH_CR_STRT;
+		cmd.data_type = 0;
+		cmd.data_size = 1;
+		if (ERROR_OK != stm32swj_iap_call(&cmd, &result))
 		{
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
+		
+		if (param->chip_areas[APPLICATION_IDX].size > STM32_FLASH_BANK_SIZE)
+		{
+			cmd.cr_addr = STM32_FLASH_CR2;
+			cmd.sr_addr = STM32_FLASH_SR2;
+			if (ERROR_OK != stm32swj_iap_call(&cmd, &result))
+			{
+				ret = ERRCODE_FAILURE_OPERATION;
+				break;
+			}
+		}
+		ret = stm32swj_iap_end_check();
 		break;
 	default:
 		ret = ERROR_FAIL;
@@ -274,16 +489,17 @@ ERASE_TARGET_HANDLER(stm32swj)
 
 WRITE_TARGET_HANDLER(stm32swj)
 {
-	uint32_t reg;
-	uint16_t reg16;
-	uint32_t i;
-	uint32_t cur_run_size, cur_block_size;
-	uint32_t start_time, run_time;
-	uint8_t update_setting, current_bank;
-	uint8_t verify_buff[sizeof(iap_code)];
+	uint8_t i;
+	uint8_t fuse_buff[STM32_OB_SIZE];
+	uint8_t tick_tock;
 	RESULT ret = ERROR_OK;
+	struct stm32_iap_cmd_t cmd;
+	struct stm32_iap_result_t result;
+	
 	REFERENCE_PARAMETER(context);
 	
+	cmd.sr_busy_mask = STM32_FLASH_SR_BSY;
+	cmd.sr_err_mask = STM32_FLASH_SR_ERRMSK;
 	switch (area)
 	{
 	case FUSE_CHAR:
@@ -292,197 +508,101 @@ WRITE_TARGET_HANDLER(stm32swj)
 			return ERROR_FAIL;
 		}
 		
-		if (ERROR_OK != cm3_dp_halt())
+		for (i = 0; i < STM32_OB_SIZE / 2; i++)
 		{
-			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "halt stm32");
+			fuse_buff[2 * i] = buff[i];
+			fuse_buff[2 * i + 1] = ~buff[i];
+		}
+		
+		cmd.cr_addr = STM32_FLASH_CR;
+		cmd.sr_addr = STM32_FLASH_SR;
+		cmd.cr_value1 = STM32_FLASH_CR_OPTPG | STM32_FLASH_CR_OPTWRE;
+		cmd.cr_value2 = 0;
+		cmd.target_addr = STM32_OB_ADDR;
+		cmd.ram_addr = STM32_IAP_BUFFER_ADDR;
+		cmd.data_type = 2;
+		cmd.data_size = STM32_OB_SIZE / 2;
+		if ((ERROR_OK != adi_memap_write_buf(cmd.ram_addr, fuse_buff, 
+												STM32_OB_SIZE)) || 
+			(ERROR_OK != stm32swj_iap_call(&cmd, &result)) || 
+			(ERROR_OK != stm32swj_iap_end_check()))
+		{
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
-		
-		reg = STM32_FLASH_CR_OPTER | STM32_FLASH_CR_OPTWRE;
-		adi_memap_write_reg32(STM32_FLASH_CR, &reg, 0);
-		reg |= STM32_FLASH_CR_STRT;
-		adi_memap_write_reg32(STM32_FLASH_CR, &reg, 0);
-		
-		if ((ERROR_OK != stm32_wait_status_busy(&reg, 10)) || 
-			(reg & (STM32_FLASH_SR_ERRMSK | STM32_FLASH_SR_BSY)))
+		break;
+	case APPLICATION_CHAR:
+#define STM32_IAP_PAGE_SIZE			(STM32_IAP_BUFFER_SIZE / 2)
+#define	STM32_IAP_PAGE0_ADDR		STM32_IAP_BUFFER_ADDR
+#define STM32_IAP_PAGE1_ADDR		(STM32_IAP_BUFFER_ADDR + STM32_IAP_PAGE_SIZE)
+		if (size % STM32_IAP_PAGE_SIZE)
 		{
 			return ERROR_FAIL;
 		}
 		
-		reg = STM32_FLASH_CR_OPTPG | STM32_FLASH_CR_OPTWRE;
-		adi_memap_write_reg32(STM32_FLASH_CR, &reg, 0);
-		
-		for (i = 0; i < size; i++)
-		{
-			reg16 = buff[i] | (~buff[i] << 8);
-			adi_memap_write_reg16(STM32_OB_ADDR + i * 2, &reg16, 0);
-			if ((ERROR_OK != stm32_wait_status_busy(&reg, 10)) || 
-				(reg & (STM32_FLASH_SR_ERRMSK | STM32_FLASH_SR_BSY)))
-			{
-				return ERROR_FAIL;
-			}
-		}
-		break;
-	case APPLICATION_CHAR:
-stm32swj_download_flashloader:
-		if (ERROR_OK != cm3_dp_halt())
-		{
-			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "halt stm32");
-			ret = ERRCODE_FAILURE_OPERATION;
-			break;
-		}
-		
 		if (addr >= STM32_FLASH_BANK2_ADDR)
 		{
-			current_bank = 2;
-			*(uint32_t *)(iap_code + sizeof(iap_code) - 4 * 6) = 
-												SYS_TO_LE_U32(STM32_FLASH_SR2);
-			*(uint32_t *)(iap_code + sizeof(iap_code) - 4 * 7) = 
-												SYS_TO_LE_U32(STM32_FLASH_CR2);
+			cmd.cr_addr = STM32_FLASH_CR2;
+			cmd.sr_addr = STM32_FLASH_SR2;
 		}
 		else
 		{
-			current_bank = 1;
-			*(uint32_t *)(iap_code + sizeof(iap_code) - 4 * 6) = 
-												SYS_TO_LE_U32(STM32_FLASH_SR);
-			*(uint32_t *)(iap_code + sizeof(iap_code) - 4 * 7) = 
-												SYS_TO_LE_U32(STM32_FLASH_CR);
+			cmd.cr_addr = STM32_FLASH_CR;
+			cmd.sr_addr = STM32_FLASH_SR;
 		}
-		// last_but_three dword is RAM address for data, set to 1K at SRAM
-		*(uint32_t *)(iap_code + sizeof(iap_code) - 4 * 4) = 
-												SYS_TO_LE_U32(FL_ADDR_DATA);
-		// last_but_four dword is address of result
-		*(uint32_t *)(iap_code + sizeof(iap_code) - 4 * 5) = 
-												SYS_TO_LE_U32(FL_ADDR_RESULT);
+		cmd.cr_value1 = STM32_FLASH_CR_PG;
+		cmd.cr_value2 = 0;
+		cmd.target_addr = addr;
+		cmd.ram_addr = STM32_IAP_PAGE0_ADDR;
+		cmd.data_type = 2;
+		cmd.data_size = STM32_IAP_PAGE_SIZE / 2;
+		if ((ERROR_OK != adi_memap_write_buf(cmd.ram_addr, buff, STM32_IAP_PAGE_SIZE)) || 
+			(ERROR_OK != stm32swj_iap_call(&cmd, &result)))
+		{
+			ret = ERRCODE_FAILURE_OPERATION;
+			break;
+		}
+		size -= STM32_IAP_PAGE_SIZE;
+		buff += STM32_IAP_PAGE_SIZE;
+		addr +=STM32_IAP_PAGE_SIZE;
+		pgbar_update(STM32_IAP_PAGE_SIZE);
+		tick_tock = 1;
 		
-		// write code to target SRAM
-		if (ERROR_OK != adi_memap_write_buf(STM32_IAP_BASE, iap_code, 
-												sizeof(iap_code)))
-		{
-			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "load flash_loader to SRAM");
-			ret = ERRCODE_FAILURE_OPERATION;
-			break;
-		}
-		// verify iap_code
-		memset(verify_buff, 0, sizeof(iap_code));
-		if (ERROR_OK != adi_memap_read_buf(STM32_IAP_BASE, verify_buff, 
-												sizeof(iap_code)))
-		{
-			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read flash_loader");
-			ret = ERRCODE_FAILURE_OPERATION;
-			break;
-		}
-		if (memcmp(verify_buff, iap_code, sizeof(iap_code)))
-		{
-			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "verify flash_loader");
-			ret = ERRCODE_FAILURE_OPERATION;
-			break;
-		}
-		
-		reg = STM32_IAP_BASE + 1;
-		if (ERROR_OK != cm3_write_core_register(CM3_COREREG_PC, &reg))
-		{
-			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "write PC");
-			ret = ERRCODE_FAILURE_OPERATION;
-			break;
-		}
-		if (ERROR_OK != cm3_dp_resume())
-		{
-			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "run flash_loader");
-			ret = ERRCODE_FAILURE_OPERATION;
-			break;
-		}
-		
-		cur_run_size = 0;
-		update_setting = 0;
 		while (size)
 		{
-			if (size > STM32SWJ_BUFFER_SIZE)
+			if (addr >= STM32_FLASH_BANK2_ADDR)
 			{
-				cur_block_size = STM32SWJ_BUFFER_SIZE;
+				cmd.cr_addr = STM32_FLASH_CR2;
+				cmd.sr_addr = STM32_FLASH_SR2;
 			}
 			else
 			{
-				cur_block_size = size;
+				cmd.cr_addr = STM32_FLASH_CR;
+				cmd.sr_addr = STM32_FLASH_SR;
 			}
-			
-			// write flash content to FL_PARA_ADDR_DATA
-			if (ERROR_OK != adi_memap_write_buf(FL_ADDR_DATA + cur_run_size,
-														buff, cur_block_size))
+			cmd.target_addr = addr;
+			if (tick_tock & 1)
 			{
-				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "download flash data");
+				cmd.ram_addr = STM32_IAP_PAGE1_ADDR;
+			}
+			else
+			{
+				cmd.ram_addr = STM32_IAP_PAGE0_ADDR;
+			}
+			if ((ERROR_OK != adi_memap_write_buf(cmd.ram_addr, buff, STM32_IAP_PAGE_SIZE)) || 
+				(ERROR_OK != stm32swj_iap_call(&cmd, &result)))
+			{
 				ret = ERRCODE_FAILURE_OPERATION;
 				break;
 			}
 			
-			// write flash address
-			if (0 == cur_run_size)
-			{
-				// first run, update flash address
-				adi_memap_write_reg32(FL_ADDR_FLASH_DEST, &addr, 0);
-			}
-			// write word length
-			cur_run_size += cur_block_size;
-			reg = cur_run_size / 2;
-			if (update_setting)
-			{
-				update_setting = 0;
-				// not the first run
-				// or the length by 0x8000 to indicate reload addresses
-				reg |= 0x8000;
-			}
-			if (ERROR_OK != 
-						adi_memap_write_reg32(FL_ADDR_WORD_LENGTH, &reg, 1))
-			{
-				LOG_ERROR(ERRMSG_FAILURE_OPERATION, 
-							"download parameters to flash_loader");
-				ret = ERRCODE_FAILURE_OPERATION;
-				break;
-			}
-			
-			// wait ready
-			if ((cur_run_size >=  STM32_PAGE_SIZE_RW) 
-				|| (size <= STM32SWJ_BUFFER_SIZE))
-			{
-				start_time = get_time_in_ms();
-				reg = 0;
-				do{
-					if (ERROR_OK != 
-								adi_memap_read_reg32(FL_ADDR_RESULT, &reg, 1))
-					{
-						LOG_ERROR(ERRMSG_FAILURE_OPERATION, 
-									"read result from flash_loader");
-						ret = ERRCODE_FAILURE_OPERATION;
-						break;
-					}
-					reg = LE_TO_SYS_U32(reg);
-					
-					run_time = get_time_in_ms();
-					if ((run_time - start_time) > 1000)
-					{
-						LOG_ERROR(ERRMSG_FAILURE_OPERATION, 
-									"wait OK from flash_loader");
-						ret = ERRCODE_FAILURE_OPERATION;
-						break;
-					}
-				} while(reg != cur_run_size / 2);
-				cur_run_size = 0;
-				update_setting = 1;		// need to update settings
-			}
-			
-			size -= cur_block_size;
-			addr += cur_block_size;
-			buff += cur_block_size;
-			pgbar_update(cur_block_size);
-			
-			if (size && 
-					(((1 == current_bank) && (addr >= STM32_FLASH_BANK2_ADDR)) || 
-					((2 == current_bank) && (addr < STM32_FLASH_BANK2_ADDR))))
-			{
-				goto stm32swj_download_flashloader;
-			}
+			size -= STM32_IAP_PAGE_SIZE;
+			buff += STM32_IAP_PAGE_SIZE;
+			addr +=STM32_IAP_PAGE_SIZE;
+			pgbar_update(STM32_IAP_PAGE_SIZE);
+			tick_tock++;
 		}
+		ret = stm32swj_iap_end_check();
 		break;
 	default:
 		ret = ERROR_FAIL;
