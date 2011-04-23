@@ -187,6 +187,54 @@ static uint8_t iap_code[] = {
 	0x00, 0x00, 0x00, 0x00,		/* result */
 };
 
+static RESULT stm32swj_iap_init(void)
+{
+	uint32_t reg;
+	uint8_t verify_buff[sizeof(iap_code)];
+	
+	// download flash_loader
+	if (ERROR_OK != cm3_dp_halt())
+	{
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "halt stm32");
+		return ERRCODE_FAILURE_OPERATION;
+	}
+	
+	// write code to target SRAM
+	if (ERROR_OK != adi_memap_write_buf(STM32_IAP_BASE, iap_code, 
+											sizeof(iap_code)))
+	{
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "load flash_loader to SRAM");
+		return ERRCODE_FAILURE_OPERATION;
+	}
+	// verify iap_code
+	memset(verify_buff, 0, sizeof(iap_code));
+	if (ERROR_OK != adi_memap_read_buf(STM32_IAP_BASE, verify_buff, 
+											sizeof(iap_code)))
+	{
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read flash_loader");
+		return ERRCODE_FAILURE_OPERATION;
+	}
+	if (memcmp(verify_buff, iap_code, sizeof(iap_code)))
+	{
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "verify flash_loader");
+		return ERRCODE_FAILURE_OPERATION;
+	}
+	
+	reg = STM32_IAP_BASE + 1;
+	if (ERROR_OK != cm3_write_core_register(CM3_COREREG_PC, &reg))
+	{
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "write PC");
+		return ERRCODE_FAILURE_OPERATION;
+	}
+	if (ERROR_OK != cm3_dp_resume())
+	{
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "run flash_loader");
+		return ERRCODE_FAILURE_OPERATION;
+	}
+	stm32swj_iap_cnt = 0;
+	return ERROR_OK;
+}
+
 static RESULT stm32swj_iap_run(struct stm32_iap_cmd_t *cmd)
 {
 	uint32_t buff_tmp[10];
@@ -245,17 +293,17 @@ static RESULT stm32swj_iap_poll_result(struct stm32_iap_result_t *result, bool *
 	return ERROR_FAIL;
 }
 
-static RESULT stm32swj_iap_end_check(void)
+static RESULT stm32swj_iap_wait_ready(struct stm32_iap_result_t *result, 
+										bool last)
 {
 	bool failed;
 	uint32_t start, end;
-	struct stm32_iap_result_t result;
 	
 	start = get_time_in_ms();
 	while (1)
 	{
-		if ((ERROR_OK != stm32swj_iap_poll_result(&result, &failed)) || 
-			(result.result != stm32swj_iap_cnt))
+		if ((ERROR_OK != stm32swj_iap_poll_result(result, &failed)) || 
+			(last && (result->result != stm32swj_iap_cnt)))
 		{
 			if (failed)
 			{
@@ -283,46 +331,11 @@ static RESULT stm32swj_iap_end_check(void)
 	return ERROR_OK;
 }
 
-static RESULT stm32swj_iap_wait_ready(struct stm32_iap_result_t *result)
-{
-	bool failed;
-	uint32_t start, end;
-	
-	start = get_time_in_ms();
-	while (1)
-	{
-		if (ERROR_OK !=	stm32swj_iap_poll_result(result, &failed))
-		{
-			if (failed)
-			{
-				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "poll iap result");
-				return ERROR_FAIL;
-			}
-			else
-			{
-				end = get_time_in_ms();
-				// wait 1s at most
-				if ((end - start) > 1000)
-				{
-					cm3_dump(STM32_IAP_BASE, sizeof(iap_code));
-					LOG_ERROR(ERRMSG_TIMEOUT, "wait for iap ready");
-					return ERRCODE_FAILURE_OPERATION;
-				}
-			}
-		}
-		else
-		{
-			break;
-		}
-	}
-	
-	return ERROR_OK;
-}
-
-static RESULT stm32swj_iap_call(struct stm32_iap_cmd_t *cmd, struct stm32_iap_result_t *result)
+static RESULT stm32swj_iap_call(struct stm32_iap_cmd_t *cmd, 
+								struct stm32_iap_result_t *result, bool last)
 {
 	if ((ERROR_OK != stm32swj_iap_run(cmd)) 
-		|| (ERROR_OK != stm32swj_iap_wait_ready(result)))
+		|| (ERROR_OK != stm32swj_iap_wait_ready(result, last)))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "run iap command");
 		return ERROR_FAIL;
@@ -333,7 +346,6 @@ static RESULT stm32swj_iap_call(struct stm32_iap_cmd_t *cmd, struct stm32_iap_re
 ENTER_PROGRAM_MODE_HANDLER(stm32swj)
 {
 	uint32_t reg, flash_obr, flash_wrpr;
-	uint8_t verify_buff[sizeof(iap_code)];
 	
 	REFERENCE_PARAMETER(context);
 	
@@ -361,48 +373,7 @@ ENTER_PROGRAM_MODE_HANDLER(stm32swj)
 					"vsprog -cstm32_XX -mX -oeu -owu -tu0xFFFFFFFFFFFFFFA5");
 	}
 	
-	// download flash_loader
-	if (ERROR_OK != cm3_dp_halt())
-	{
-		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "halt stm32");
-		return ERRCODE_FAILURE_OPERATION;
-	}
-	
-	// write code to target SRAM
-	if (ERROR_OK != adi_memap_write_buf(STM32_IAP_BASE, iap_code, 
-											sizeof(iap_code)))
-	{
-		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "load flash_loader to SRAM");
-		return ERRCODE_FAILURE_OPERATION;
-	}
-	// verify iap_code
-	memset(verify_buff, 0, sizeof(iap_code));
-	if (ERROR_OK != adi_memap_read_buf(STM32_IAP_BASE, verify_buff, 
-											sizeof(iap_code)))
-	{
-		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read flash_loader");
-		return ERRCODE_FAILURE_OPERATION;
-	}
-	if (memcmp(verify_buff, iap_code, sizeof(iap_code)))
-	{
-		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "verify flash_loader");
-		return ERRCODE_FAILURE_OPERATION;
-	}
-	
-	reg = STM32_IAP_BASE + 1;
-	if (ERROR_OK != cm3_write_core_register(CM3_COREREG_PC, &reg))
-	{
-		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "write PC");
-		return ERRCODE_FAILURE_OPERATION;
-	}
-	if (ERROR_OK != cm3_dp_resume())
-	{
-		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "run flash_loader");
-		return ERRCODE_FAILURE_OPERATION;
-	}
-	stm32swj_iap_cnt = 0;
-	
-	return ERROR_OK;
+	return stm32swj_iap_init();
 }
 
 LEAVE_PROGRAM_MODE_HANDLER(stm32swj)
@@ -436,8 +407,7 @@ ERASE_TARGET_HANDLER(stm32swj)
 		cmd.cr_value2 = cmd.cr_value1 | STM32_FLASH_CR_STRT;
 		cmd.data_type = 0;
 		cmd.data_size = 1;
-		if ((ERROR_OK != stm32swj_iap_call(&cmd, &result)) || 
-			(ERROR_OK != stm32swj_iap_end_check()))
+		if (ERROR_OK != stm32swj_iap_call(&cmd, &result, true))
 		{
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
@@ -462,7 +432,7 @@ ERASE_TARGET_HANDLER(stm32swj)
 		cmd.cr_value2 = cmd.cr_value1 | STM32_FLASH_CR_STRT;
 		cmd.data_type = 0;
 		cmd.data_size = 1;
-		if (ERROR_OK != stm32swj_iap_call(&cmd, &result))
+		if (ERROR_OK != stm32swj_iap_call(&cmd, &result, true))
 		{
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
@@ -472,13 +442,12 @@ ERASE_TARGET_HANDLER(stm32swj)
 		{
 			cmd.cr_addr = STM32_FLASH_CR2;
 			cmd.sr_addr = STM32_FLASH_SR2;
-			if (ERROR_OK != stm32swj_iap_call(&cmd, &result))
+			if (ERROR_OK != stm32swj_iap_call(&cmd, &result, true))
 			{
 				ret = ERRCODE_FAILURE_OPERATION;
 				break;
 			}
 		}
-		ret = stm32swj_iap_end_check();
 		break;
 	default:
 		ret = ERROR_FAIL;
@@ -495,6 +464,7 @@ WRITE_TARGET_HANDLER(stm32swj)
 	RESULT ret = ERROR_OK;
 	struct stm32_iap_cmd_t cmd;
 	struct stm32_iap_result_t result;
+	bool last;
 	
 	REFERENCE_PARAMETER(context);
 	
@@ -524,8 +494,7 @@ WRITE_TARGET_HANDLER(stm32swj)
 		cmd.data_size = STM32_OB_SIZE / 2;
 		if ((ERROR_OK != adi_memap_write_buf(cmd.ram_addr, fuse_buff, 
 												STM32_OB_SIZE)) || 
-			(ERROR_OK != stm32swj_iap_call(&cmd, &result)) || 
-			(ERROR_OK != stm32swj_iap_end_check()))
+			(ERROR_OK != stm32swj_iap_call(&cmd, &result, true)))
 		{
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
@@ -540,6 +509,11 @@ WRITE_TARGET_HANDLER(stm32swj)
 			return ERROR_FAIL;
 		}
 		
+		last = false;
+		if (size == STM32_IAP_PAGE_SIZE)
+		{
+			last = true;
+		}
 		if (addr >= STM32_FLASH_BANK2_ADDR)
 		{
 			cmd.cr_addr = STM32_FLASH_CR2;
@@ -557,7 +531,7 @@ WRITE_TARGET_HANDLER(stm32swj)
 		cmd.data_type = 2;
 		cmd.data_size = STM32_IAP_PAGE_SIZE / 2;
 		if ((ERROR_OK != adi_memap_write_buf(cmd.ram_addr, buff, STM32_IAP_PAGE_SIZE)) || 
-			(ERROR_OK != stm32swj_iap_call(&cmd, &result)))
+			(ERROR_OK != stm32swj_iap_call(&cmd, &result, last)))
 		{
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
@@ -570,6 +544,10 @@ WRITE_TARGET_HANDLER(stm32swj)
 		
 		while (size)
 		{
+			if (size == STM32_IAP_PAGE_SIZE)
+			{
+				last = true;
+			}
 			if (addr >= STM32_FLASH_BANK2_ADDR)
 			{
 				cmd.cr_addr = STM32_FLASH_CR2;
@@ -590,7 +568,7 @@ WRITE_TARGET_HANDLER(stm32swj)
 				cmd.ram_addr = STM32_IAP_PAGE0_ADDR;
 			}
 			if ((ERROR_OK != adi_memap_write_buf(cmd.ram_addr, buff, STM32_IAP_PAGE_SIZE)) || 
-				(ERROR_OK != stm32swj_iap_call(&cmd, &result)))
+				(ERROR_OK != stm32swj_iap_call(&cmd, &result, last)))
 			{
 				ret = ERRCODE_FAILURE_OPERATION;
 				break;
@@ -602,7 +580,6 @@ WRITE_TARGET_HANDLER(stm32swj)
 			pgbar_update(STM32_IAP_PAGE_SIZE);
 			tick_tock++;
 		}
-		ret = stm32swj_iap_end_check();
 		break;
 	default:
 		ret = ERROR_FAIL;

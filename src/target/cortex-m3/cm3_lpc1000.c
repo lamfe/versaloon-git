@@ -121,6 +121,62 @@ static uint8_t iap_code[] = {
 	0, 0, 0, 0				// reply[3]
 };
 
+static RESULT lpc1000swj_iap_init(void)
+{
+	uint8_t verify_buff[sizeof(iap_code)];
+	uint32_t reg;
+	
+	if (ERROR_OK != cm3_dp_halt())
+	{
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "halt lpc1000");
+		return ERRCODE_FAILURE_OPERATION;
+	}
+	
+	// write sp
+	reg = LPC1000_SRAM_ADDR + 1024;
+	if (ERROR_OK != cm3_write_core_register(CM3_COREREG_SP, &reg))
+	{
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "write SP");
+		return ERRCODE_FAILURE_OPERATION;
+	}
+	
+	// write iap_code to target SRAM
+	if (ERROR_OK != adi_memap_write_buf(LPC1000_IAP_BASE, (uint8_t*)iap_code, 
+											sizeof(iap_code)))
+	{
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "load iap_code to SRAM");
+		return ERRCODE_FAILURE_OPERATION;
+	}
+	// verify iap_code
+	memset(verify_buff, 0, sizeof(iap_code));
+	if (ERROR_OK != adi_memap_read_buf(LPC1000_IAP_BASE, verify_buff, 
+										sizeof(iap_code)))
+	{
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read flash_loader");
+		return ERRCODE_FAILURE_OPERATION;
+	}
+	if (memcmp(verify_buff, iap_code, sizeof(iap_code)))
+	{
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "verify flash_loader");
+		return ERRCODE_FAILURE_OPERATION;
+	}
+	
+	// write pc
+	reg = LPC1000_IAP_BASE + 1;
+	if (ERROR_OK != cm3_write_core_register(CM3_COREREG_PC, &reg))
+	{
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "write PC");
+		return ERRCODE_FAILURE_OPERATION;
+	}
+	
+	if (ERROR_OK != cm3_dp_resume())
+	{
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "run iap");
+		return ERRCODE_FAILURE_OPERATION;
+	}
+	return ERROR_OK;
+}
+
 static RESULT lpc1000swj_iap_run(uint32_t cmd, uint32_t param_table[5])
 {
 	uint32_t buff_tmp[7];
@@ -234,7 +290,6 @@ static RESULT lpc1000swj_iap_call(uint32_t cmd, uint32_t param_table[5],
 
 ENTER_PROGRAM_MODE_HANDLER(lpc1000swj)
 {
-	uint8_t verify_buff[sizeof(iap_code)];
 	uint32_t *para_ptr = (uint32_t*)&iap_code[LPC1000_IAP_PARAM_OFFSET];
 	uint32_t reg;
 	struct chip_param_t *param = context->param;
@@ -243,53 +298,9 @@ ENTER_PROGRAM_MODE_HANDLER(lpc1000swj)
 	para_ptr[1] = SYS_TO_LE_U32(LPC1000_IAP_COMMAND_ADDR);
 	para_ptr[2] = SYS_TO_LE_U32(LPC1000_IAP_RESULT_ADDR);
 	
-	if (ERROR_OK != cm3_dp_halt())
+	if (ERROR_OK != lpc1000swj_iap_init())
 	{
-		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "halt lpc1000");
-		return ERRCODE_FAILURE_OPERATION;
-	}
-	
-	// write sp
-	reg = LPC1000_SRAM_ADDR + 1024;
-	if (ERROR_OK != cm3_write_core_register(CM3_COREREG_SP, &reg))
-	{
-		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "write SP");
-		return ERRCODE_FAILURE_OPERATION;
-	}
-	
-	// write iap_code to target SRAM
-	if (ERROR_OK != adi_memap_write_buf(LPC1000_IAP_BASE, (uint8_t*)iap_code, 
-											sizeof(iap_code)))
-	{
-		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "load iap_code to SRAM");
-		return ERRCODE_FAILURE_OPERATION;
-	}
-	// verify iap_code
-	memset(verify_buff, 0, sizeof(iap_code));
-	if (ERROR_OK != adi_memap_read_buf(LPC1000_IAP_BASE, verify_buff, 
-										sizeof(iap_code)))
-	{
-		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read flash_loader");
-		return ERRCODE_FAILURE_OPERATION;
-	}
-	if (memcmp(verify_buff, iap_code, sizeof(iap_code)))
-	{
-		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "verify flash_loader");
-		return ERRCODE_FAILURE_OPERATION;
-	}
-	
-	// write pc
-	reg = LPC1000_IAP_BASE + 1;
-	if (ERROR_OK != cm3_write_core_register(CM3_COREREG_PC, &reg))
-	{
-		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "write PC");
-		return ERRCODE_FAILURE_OPERATION;
-	}
-	
-	if (ERROR_OK != cm3_dp_resume())
-	{
-		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "run iap");
-		return ERRCODE_FAILURE_OPERATION;
+		return ERROR_FAIL;
 	}
 	
 	// SYSMEMREMAP should be written to LPC1000_SYSMEMREMAP_USERFLASH
