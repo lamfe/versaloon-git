@@ -101,10 +101,11 @@ ENTER_PROGRAM_MODE_HANDLER(stm32swj)
 
 LEAVE_PROGRAM_MODE_HANDLER(stm32swj)
 {
+	struct stm32_fl_result_t result;
 	REFERENCE_PARAMETER(context);
 	REFERENCE_PARAMETER(success);
 	
-	return ERROR_OK;
+	return stm32swj_fl_wait_ready(&result, true);
 }
 
 ERASE_TARGET_HANDLER(stm32swj)
@@ -183,12 +184,10 @@ WRITE_TARGET_HANDLER(stm32swj)
 {
 	uint8_t i;
 	uint8_t fuse_buff[STM32_OB_SIZE];
-	uint8_t tick_tock;
-	uint32_t cur_size;
+	static uint8_t tick_tock = 0;
 	RESULT ret = ERROR_OK;
 	struct stm32_fl_cmd_t cmd;
 	struct stm32_fl_result_t result;
-	bool last;
 	
 	REFERENCE_PARAMETER(context);
 	
@@ -225,16 +224,6 @@ WRITE_TARGET_HANDLER(stm32swj)
 		}
 		break;
 	case APPLICATION_CHAR:
-		last = false;
-		if (size <= STM32_FL_PAGE_SIZE)
-		{
-			cur_size = size;
-			last = true;
-		}
-		else
-		{
-			cur_size = STM32_FL_PAGE_SIZE;
-		}
 		if (addr >= STM32_FLASH_BANK2_ADDR)
 		{
 			cmd.cr_addr = STM32_FLASH_CR2;
@@ -248,66 +237,26 @@ WRITE_TARGET_HANDLER(stm32swj)
 		cmd.cr_value1 = STM32_FLASH_CR_PG;
 		cmd.cr_value2 = 0;
 		cmd.target_addr = addr;
-		cmd.ram_addr = STM32_FL_PAGE0_ADDR;
+		if (tick_tock & 1)
+		{
+			cmd.ram_addr = STM32_FL_PAGE1_ADDR;
+		}
+		else
+		{
+			cmd.ram_addr = STM32_FL_PAGE0_ADDR;
+		}
 		cmd.data_type = 2;
-		cmd.data_size = cur_size / 2;
-		if ((ERROR_OK != adi_memap_write_buf(cmd.ram_addr, buff, cur_size)) || 
-			(ERROR_OK != stm32swj_fl_call(&cmd, &result, last)))
+		cmd.data_size = size / 2;
+		if ((ERROR_OK != adi_memap_write_buf(cmd.ram_addr, buff, size)) || 
+			(ERROR_OK != stm32swj_fl_call(&cmd, &result, false)))
 		{
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
-		size -= cur_size;
-		buff += cur_size;
-		addr += cur_size;
-		pgbar_update(cur_size);
-		tick_tock = 1;
-		
-		while (size)
-		{
-			if (size <= STM32_FL_PAGE_SIZE)
-			{
-				cur_size = size;
-				last = true;
-			}
-			else
-			{
-				cur_size = STM32_FL_PAGE_SIZE;
-			}
-			if (addr >= STM32_FLASH_BANK2_ADDR)
-			{
-				cmd.cr_addr = STM32_FLASH_CR2;
-				cmd.sr_addr = STM32_FLASH_SR2;
-			}
-			else
-			{
-				cmd.cr_addr = STM32_FLASH_CR;
-				cmd.sr_addr = STM32_FLASH_SR;
-			}
-			cmd.target_addr = addr;
-			if (tick_tock & 1)
-			{
-				cmd.ram_addr = STM32_FL_PAGE1_ADDR;
-			}
-			else
-			{
-				cmd.ram_addr = STM32_FL_PAGE0_ADDR;
-			}
-			cmd.data_size = cur_size / 2;
-			if ((ERROR_OK != 
-					adi_memap_write_buf(cmd.ram_addr, buff, cur_size)) || 
-				(ERROR_OK != stm32swj_fl_call(&cmd, &result, last)))
-			{
-				ret = ERRCODE_FAILURE_OPERATION;
-				break;
-			}
-			
-			size -= cur_size;
-			buff += cur_size;
-			addr += cur_size;
-			pgbar_update(cur_size);
-			tick_tock++;
-		}
+		size -= size;
+		buff += size;
+		addr += size;
+		tick_tock++;
 		break;
 	default:
 		ret = ERROR_FAIL;

@@ -84,14 +84,14 @@ VSS_HANDLER(stm32_mode)
 	{
 	case STM32_JTAG:
 	case STM32_SWD:
-		stm32_program_area_map[0].attr |= AREA_ATTR_NP;
+		stm32_program_area_map[0].attr |= AREA_ATTR_RNP;
 		cm3_mode_offset = 0;
 		vss_call_notifier(cm3_notifier, "chip", "cm3_stm32");
 		memcpy(&stm32_program_functions, &cm3_program_functions, 
 				sizeof(stm32_program_functions));
 		break;
 	case STM32_ISP:
-		stm32_program_area_map[0].attr &= ~AREA_ATTR_NP;
+		stm32_program_area_map[0].attr &= ~AREA_ATTR_RNP;
 		vss_call_notifier(comisp_notifier, "chip", "comisp_stm32");
 		memcpy(&stm32_program_functions, &comisp_program_functions, 
 				sizeof(stm32_program_functions));
