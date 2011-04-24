@@ -17,32 +17,39 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef __STM32F2_INTERNAL_H_INCLUDED__
-#define __STM32F2_INTERNAL_H_INCLUDED__
+#ifndef __CM3_STM32_FL_H_INCLUDED__
+#define __CM3_STM32_FL_H_INCLUDED__
 
-#define STM32F2_FLASH_ADDR				0x08000000
-#define STM32F2_SRAM_ADDR				0x20000000
-#define STM32F2_FLASH_DEFAULT			0xFF
-#define STM32F2_FLASH_BANK_SIZE			(512 * 1024)
-#define STM32F2_FLASH_BANK_ADDR			STM32F2_FLASH_ADDR
+#define STM32_FL_BUFFER_OFFSET		1024
 
-#define STM32F2_JTAG					0
-#define STM32F2_SWD						1
-#define STM32F2_ISP						2
+struct stm32_fl_cmd_t
+{
+	uint32_t cr_addr;
+	uint32_t cr_value1;
+	uint32_t cr_value2;
+	
+	uint32_t sr_addr;
+	uint32_t sr_busy_mask;
+	uint32_t sr_err_mask;
+	
+	uint32_t target_addr;
+	uint32_t ram_addr;
+	
+	uint32_t data_type;
+	uint32_t data_size;
+};
 
-#define STM32F2_REV_MSK					0xFFFF0000
-#define STM32F2_DEN_MSK					0x00000FFF
-#define STM32F2_DEN_XL					0x0411
+struct stm32_fl_result_t
+{
+	uint32_t result;
+};
 
-#define STM32F2_REG_MCU_ID				0xE0042000
+RESULT stm32swj_fl_init(uint32_t fl_base);
+RESULT stm32swj_fl_run(struct stm32_fl_cmd_t *cmd);
+RESULT stm32swj_fl_poll_result(struct stm32_fl_result_t *result, bool *failed);
+RESULT stm32swj_fl_wait_ready(struct stm32_fl_result_t *result, bool last);
+RESULT stm32swj_fl_call(struct stm32_fl_cmd_t *cmd, 
+							struct stm32_fl_result_t *result, bool last);
 
-#define STM32F2_OB_ADDR					0x1FFFC000
-#define STM32F2_OB_SIZE					16
-
-#define STM32F2_UID_ADDR				(0x1FFF7A10)
-
-void stm32f2_print_device(uint32_t mcuid);
-uint16_t stm32f2_get_flash_size(uint32_t mcuid, uint32_t flash_sram_reg);
-
-#endif /* __STM32F2_INTERNAL_H_INCLUDED__ */
+#endif	// __CM3_STM32_FL_H_INCLUDED__
 

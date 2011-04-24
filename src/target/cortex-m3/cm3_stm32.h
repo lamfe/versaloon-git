@@ -59,6 +59,8 @@
 
 #define STM32_FLASH_UNLOCK_KEY1		0x45670123
 #define STM32_FLASH_UNLOCK_KEY2		0xCDEF89AB
+#define STM32_OPT_UNLOCK_KEY1		0x45670123
+#define STM32_OPT_UNLOCK_KEY2		0xCDEF89AB
 
 extern const struct program_functions_t stm32swj_program_functions;
 
