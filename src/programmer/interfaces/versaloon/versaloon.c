@@ -658,6 +658,9 @@ struct interfaces_info_t versaloon_interfaces =
 	versaloon_notifier,
 	versaloon_display_programmer,
 	
+	false,
+	NULL,
+	
 	versaloon_init,
 	versaloon_fini,
 	
