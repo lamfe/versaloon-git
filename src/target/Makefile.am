@@ -33,6 +33,7 @@ libtgt_a_SOURCES = \
     target_readconf.c \
     core/arm_adi/adi_v5p1.c \
     cortex-m3/cm3.c \
+    cortex-m3/cm3_stm32_fl.c \
     cortex-m3/cm3_stm32.c \
     cortex-m3/cm3_stm32f2.c \
     cortex-m3/cm3_lpc1000.c \
