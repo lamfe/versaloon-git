@@ -424,7 +424,11 @@ ERASE_TARGET_HANDLER(lm3sswj)
 		cmd.src_addr = 0;
 		cmd.command = LM3S_FLASHCTL_FMC_MERASE | LM3S_FLASHCTL_FMC_KEY;
 		cmd.cnt = 1;
-		ret = lm3sswj_iap_run(&cmd);
+		if ((ERROR_OK != lm3sswj_iap_run(&cmd)) || 
+			(ERROR_OK != lm3sswj_iap_wait_finish(lm3sswj_iap_cnt)))
+		{
+			ret = ERROR_FAIL;
+		}
 		break;
 	default:
 		ret = ERROR_FAIL;
