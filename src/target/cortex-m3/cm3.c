@@ -62,7 +62,7 @@ struct program_functions_t cm3_program_functions =
 	NULL
 };
 
-const struct cm3_param_t cm3_chips_param[] = {
+const struct cm3_param_t cm3_chips_param[CM3_PARAM_TARGET_NUM] = {
 	{
 		"cm3_stm32",					// chip_name
 		STM32_IRC_KHZ / 6,				// jtag_khz

@@ -284,6 +284,10 @@ struct interfaces_info_t
 	const struct vss_cmd_t *notifier;
 	uint32_t (*display_programmer)(void);
 	
+	// virtual interface support
+	bool is_virtual;
+	struct program_mode_t *mode;
+	
 	// init and fini
 	RESULT (*init)(void *p);
 	RESULT (*fini)(void);
@@ -314,11 +318,13 @@ struct interfaces_info_t
 };
 
 extern struct interfaces_info_t *cur_interface;
+extern struct interfaces_info_t *cur_real_interface;
 extern struct interfaces_info_t *interfaces_info[];
 
 void interface_print_list(void);
 void interface_print_help(void);
 RESULT interface_init(const char *ifs);
+RESULT virtual_interface_init(const char *vifs, const char mode);
 RESULT interface_assert(struct interfaces_info_t **ifs);
 
 #endif	// __INTERFACES_H_INCLUDED__

@@ -1,18 +1,18 @@
 /***************************************************************************
  *   Copyright (C) 2009 - 2010 by Simon Qian <SimonQian@SimonQian.com>     *
  *                                                                         *
- *   This ifsram is free software; you can redistribute it and/or modify  *
+ *   This ifsram is free software; you can redistribute it and/or modify   *
  *   it under the terms of the GNU General Public License as published by  *
  *   the Free Software Foundation; either version 2 of the License, or     *
  *   (at your option) any later version.                                   *
  *                                                                         *
- *   This ifsram is distributed in the hope that it will be useful,       *
+ *   This ifsram is distributed in the hope that it will be useful,        *
  *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
  *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this ifsram; if not, write to the                         *
+ *   along with this ifsram; if not, write to the                          *
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
@@ -31,18 +31,25 @@
 #include "app_log.h"
 #include "app_err.h"
 
+#include "interfaces_const.h"
+#include "target.h"
 #include "scripts.h"
 #include "interfaces.h"
 #include "versaloon/versaloon.h"
+#include "virtualinterface/vi_stm32/vi_stm32.h"
 
 struct interfaces_info_t *interfaces_info[] = 
 {
+	// real interfaces
 	// versaloon
 	&versaloon_interfaces,
+	// virtual interfaces
+	&vi_stm32_interfaces,
 	NULL
 };
 
 struct interfaces_info_t *cur_interface = NULL;
+struct interfaces_info_t *cur_real_interface = NULL;
 
 VSS_HANDLER(interface_get_target_voltage);
 VSS_HANDLER(interface_set_target_voltage);
@@ -194,7 +201,7 @@ char* get_interface_name(uint64_t i)
 
 #define INTERFACE_DEFAULT				0
 
-RESULT interface_init(const char *ifs)
+static struct interfaces_info_t *find_interface_by_name(const char *ifs)
 {
 	struct interfaces_info_t *interface_tmp;
 	uint32_t i;
@@ -211,18 +218,94 @@ RESULT interface_init(const char *ifs)
 			}
 		}
 	}
+	return interface_tmp;
+}
+
+RESULT virtual_interface_init(const char *vifs, const char mode)
+{
+	struct interfaces_info_t *interface_tmp;
+	
+	interface_tmp = find_interface_by_name(vifs);
+	if ((vifs != NULL) && (NULL == interface_tmp))
+	{
+		return ERROR_FAIL;
+	}
+	
+	if (NULL == interface_tmp)
+	{
+		if (cur_real_interface != NULL)
+		{
+			cur_interface = cur_real_interface;
+		}
+	}
+	else if (interface_tmp->is_virtual)
+	{
+		uint32_t i = 0;
+		
+		if (interface_tmp->mode != NULL)
+		{
+			while (interface_tmp->mode[i].name != 0)
+			{
+				if (mode == interface_tmp->mode[i].name)
+				{
+					break;
+				}
+				i++;
+			}
+			if (!interface_tmp->mode[i].name)
+			{
+				return ERROR_FAIL;
+			}
+		}
+		
+		if (NULL == cur_interface)
+		{
+			if (ERROR_OK != interface_init(NULL))
+			{
+				return ERROR_FAIL;
+			}
+		}
+		
+		if (cur_interface->is_virtual)
+		{
+			cur_interface = interface_tmp;
+		}
+		else
+		{
+			cur_real_interface = cur_interface;
+			cur_interface = interface_tmp;
+		}
+		cur_interface->init(&i);
+	}
 	else
+	{
+		return ERROR_FAIL;
+	}
+	return ERROR_OK;
+}
+
+RESULT interface_init(const char *ifs)
+{
+	struct interfaces_info_t *interface_tmp;
+	
+	interface_tmp = find_interface_by_name(ifs);
+	if (NULL == interface_tmp)
 	{
 		interface_tmp = interfaces_info[INTERFACE_DEFAULT];
 	}
 	
-	if (interface_tmp != NULL)
+	if ((interface_tmp != NULL) && (!interface_tmp->is_virtual))
 	{
-		if (cur_interface != NULL)
+		if ((cur_interface != NULL) && (!cur_interface->is_virtual))
 		{
 			cur_interface->fini();
-			cur_interface = NULL;
 		}
+		if ((cur_real_interface != NULL) && (!cur_real_interface->is_virtual))
+		{
+			cur_real_interface->fini();
+		}
+		cur_interface = NULL;
+		cur_real_interface = NULL;
 		
 		if (ERROR_OK != interface_tmp->init(interface_tmp))
 		{
@@ -346,6 +429,11 @@ VSS_HANDLER(interface_gpio_init)
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "interface module");
 		return ERROR_FAIL;
 	}
+	if (!(cur_interface->support_mask & IFS_GPIO))
+	{
+		LOG_ERROR(ERRMSG_NOT_SUPPORT, "gpio interface");
+		return ERROR_FAIL;
+	}
 	
 	if (ERROR_OK != ifs->gpio.init(0))
 	{
@@ -369,6 +457,11 @@ VSS_HANDLER(interface_gpio_fini)
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "interface module");
 		return ERROR_FAIL;
 	}
+	if (!(cur_interface->support_mask & IFS_GPIO))
+	{
+		LOG_ERROR(ERRMSG_NOT_SUPPORT, "gpio interface");
+		return ERROR_FAIL;
+	}
 	
 	return ifs->gpio.fini(0);
 }
@@ -382,6 +475,11 @@ VSS_HANDLER(interface_gpio_config)
 	if ((ERROR_OK != interface_assert(&ifs)) || (NULL == ifs))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "interface module");
+		return ERROR_FAIL;
+	}
+	if (!(cur_interface->support_mask & IFS_GPIO))
+	{
+		LOG_ERROR(ERRMSG_NOT_SUPPORT, "gpio interface");
 		return ERROR_FAIL;
 	}
 	
@@ -404,6 +502,11 @@ VSS_HANDLER(interface_gpio_out)
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "interface module");
 		return ERROR_FAIL;
 	}
+	if (!(cur_interface->support_mask & IFS_GPIO))
+	{
+		LOG_ERROR(ERRMSG_NOT_SUPPORT, "gpio interface");
+		return ERROR_FAIL;
+	}
 	
 	mask = (uint32_t)strtoul(argv[1], NULL, 0);
 	value = (uint32_t)strtoul(argv[2], NULL, 0);
@@ -421,6 +524,11 @@ VSS_HANDLER(interface_gpio_in)
 	if ((ERROR_OK != interface_assert(&ifs)) || (NULL == ifs))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "interface module");
+		return ERROR_FAIL;
+	}
+	if (!(cur_interface->support_mask & IFS_GPIO))
+	{
+		LOG_ERROR(ERRMSG_NOT_SUPPORT, "gpio interface");
 		return ERROR_FAIL;
 	}
 	
@@ -449,6 +557,11 @@ VSS_HANDLER(interface_spi_init)
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "interface module");
 		return ERROR_FAIL;
 	}
+	if (!(cur_interface->support_mask & IFS_SPI))
+	{
+		LOG_ERROR(ERRMSG_NOT_SUPPORT, "spi interface");
+		return ERROR_FAIL;
+	}
 	
 	if (ERROR_OK != ifs->spi.init(0))
 	{
@@ -472,6 +585,11 @@ VSS_HANDLER(interface_spi_fini)
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "interface module");
 		return ERROR_FAIL;
 	}
+	if (!(cur_interface->support_mask & IFS_SPI))
+	{
+		LOG_ERROR(ERRMSG_NOT_SUPPORT, "spi interface");
+		return ERROR_FAIL;
+	}
 	
 	return ifs->spi.fini(0);
 }
@@ -486,6 +604,11 @@ VSS_HANDLER(interface_spi_config)
 	if ((ERROR_OK != interface_assert(&ifs)) || (NULL == ifs))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "interface module");
+		return ERROR_FAIL;
+	}
+	if (!(cur_interface->support_mask & IFS_SPI))
+	{
+		LOG_ERROR(ERRMSG_NOT_SUPPORT, "spi interface");
 		return ERROR_FAIL;
 	}
 	
@@ -508,6 +631,11 @@ VSS_HANDLER(interface_spi_io)
 	if ((ERROR_OK != interface_assert(&ifs)) || (NULL == ifs))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "interface module");
+		return ERROR_FAIL;
+	}
+	if (!(cur_interface->support_mask & IFS_SPI))
+	{
+		LOG_ERROR(ERRMSG_NOT_SUPPORT, "spi interface");
 		return ERROR_FAIL;
 	}
 	
@@ -554,6 +682,11 @@ VSS_HANDLER(interface_iic_init)
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "interface module");
 		return ERROR_FAIL;
 	}
+	if (!(cur_interface->support_mask & IFS_I2C))
+	{
+		LOG_ERROR(ERRMSG_NOT_SUPPORT, "iic interface");
+		return ERROR_FAIL;
+	}
 	
 	if (ERROR_OK != ifs->i2c.init(0))
 	{
@@ -577,6 +710,11 @@ VSS_HANDLER(interface_iic_fini)
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "interface module");
 		return ERROR_FAIL;
 	}
+	if (!(cur_interface->support_mask & IFS_I2C))
+	{
+		LOG_ERROR(ERRMSG_NOT_SUPPORT, "iic interface");
+		return ERROR_FAIL;
+	}
 	
 	return ifs->i2c.fini(0);
 }
@@ -591,6 +729,11 @@ VSS_HANDLER(interface_iic_config)
 	if ((ERROR_OK != interface_assert(&ifs)) || (NULL == ifs))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "interface module");
+		return ERROR_FAIL;
+	}
+	if (!(cur_interface->support_mask & IFS_I2C))
+	{
+		LOG_ERROR(ERRMSG_NOT_SUPPORT, "iic interface");
 		return ERROR_FAIL;
 	}
 	
@@ -614,6 +757,11 @@ VSS_HANDLER(interface_iic_read)
 	if ((ERROR_OK != interface_assert(&ifs)) || (NULL == ifs))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "interface module");
+		return ERROR_FAIL;
+	}
+	if (!(cur_interface->support_mask & IFS_I2C))
+	{
+		LOG_ERROR(ERRMSG_NOT_SUPPORT, "iic interface");
 		return ERROR_FAIL;
 	}
 	
@@ -660,6 +808,11 @@ VSS_HANDLER(interface_iic_write)
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "interface module");
 		return ERROR_FAIL;
 	}
+	if (!(cur_interface->support_mask & IFS_I2C))
+	{
+		LOG_ERROR(ERRMSG_NOT_SUPPORT, "iic interface");
+		return ERROR_FAIL;
+	}
 	
 	addr = (uint8_t)strtoul(argv[1], NULL, 0);
 	stop = (uint8_t)strtoul(argv[2], NULL, 0);
@@ -700,6 +853,11 @@ VSS_HANDLER(interface_iic_read_buff8)
 	if ((ERROR_OK != interface_assert(&ifs)) || (NULL == ifs))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "interface module");
+		return ERROR_FAIL;
+	}
+	if (!(cur_interface->support_mask & IFS_I2C))
+	{
+		LOG_ERROR(ERRMSG_NOT_SUPPORT, "iic interface");
 		return ERROR_FAIL;
 	}
 	
@@ -750,6 +908,11 @@ VSS_HANDLER(interface_iic_write_buff8)
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "interface module");
 		return ERROR_FAIL;
 	}
+	if (!(cur_interface->support_mask & IFS_I2C))
+	{
+		LOG_ERROR(ERRMSG_NOT_SUPPORT, "iic interface");
+		return ERROR_FAIL;
+	}
 	
 	slave_addr = (uint8_t)strtoul(argv[1], NULL, 0);
 	data_size = (uint8_t)strtoul(argv[2], NULL, 0);
@@ -788,6 +951,11 @@ VSS_HANDLER(interface_pwm_init)
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "interface module");
 		return ERROR_FAIL;
 	}
+	if (!(cur_interface->support_mask & IFS_PWM))
+	{
+		LOG_ERROR(ERRMSG_NOT_SUPPORT, "pwm interface");
+		return ERROR_FAIL;
+	}
 	
 	if (ERROR_OK != ifs->pwm.init(0))
 	{
@@ -811,6 +979,11 @@ VSS_HANDLER(interface_pwm_fini)
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "interface module");
 		return ERROR_FAIL;
 	}
+	if (!(cur_interface->support_mask & IFS_PWM))
+	{
+		LOG_ERROR(ERRMSG_NOT_SUPPORT, "pwm interface");
+		return ERROR_FAIL;
+	}
 	
 	return ifs->pwm.fini(0);
 }
@@ -825,6 +998,11 @@ VSS_HANDLER(interface_pwm_config)
 	if ((ERROR_OK != interface_assert(&ifs)) || (NULL == ifs))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "interface module");
+		return ERROR_FAIL;
+	}
+	if (!(cur_interface->support_mask & IFS_PWM))
+	{
+		LOG_ERROR(ERRMSG_NOT_SUPPORT, "pwm interface");
 		return ERROR_FAIL;
 	}
 	
@@ -846,6 +1024,11 @@ VSS_HANDLER(interface_pwm_out)
 	if ((ERROR_OK != interface_assert(&ifs)) || (NULL == ifs))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "interface module");
+		return ERROR_FAIL;
+	}
+	if (!(cur_interface->support_mask & IFS_PWM))
+	{
+		LOG_ERROR(ERRMSG_NOT_SUPPORT, "pwm interface");
 		return ERROR_FAIL;
 	}
 	

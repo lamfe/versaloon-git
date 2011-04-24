@@ -554,7 +554,7 @@ VSS_HANDLER(vsprog_init)
 		}
 	}
 	
-	return vss_run_script("free-all");
+	return ERROR_OK;
 }
 
 int main(int argc, char* argv[])
@@ -566,6 +566,7 @@ int main(int argc, char* argv[])
 	uint16_t vss_argc;
 	
 	APP_IO_INIT();
+	print_title();
 	
 	vss_argv[0] = "init";
 	vss_argv[1] = argv[0];
@@ -651,8 +652,6 @@ int main(int argc, char* argv[])
 	// "prepare" and then "operate" programming if target and operation are both defined
 	if ((cur_target != NULL) && (!vsprog_query_cmd))
 	{
-		print_title();
-		
 		if (ERROR_OK != vss_run_script("prepare"))
 		{
 			free_all_and_exit(EXIT_FAILURE);

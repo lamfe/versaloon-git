@@ -22,7 +22,6 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
 
 #include "port.h"
 #include "app_cfg.h"
@@ -34,6 +33,7 @@
 #include "vsprog.h"
 #include "scripts.h"
 #include "programmer.h"
+#include "strparser.h"
 
 #include "interfaces/interfaces.h"
 #include "interfaces/versaloon/versaloon.h"
@@ -90,7 +90,10 @@ VSS_HANDLER(programmer_list)
 	
 	for (i = 0; interfaces_info[i] != NULL; i++)
 	{
-		j += interfaces_info[i]->display_programmer();
+		if (interfaces_info[i]->display_programmer != NULL)
+		{
+			j += interfaces_info[i]->display_programmer();
+		}
 	}
 	if (0 == j)
 	{
@@ -101,14 +104,29 @@ VSS_HANDLER(programmer_list)
 
 VSS_HANDLER(virtualprog_define)
 {
-	VSS_CHECK_ARGC(1);
-	// not support now
-	return ERROR_FAIL;
+	char *ifs = NULL, mode = 0;
+	int len;
+	
+	VSS_CHECK_ARGC(2);
+	len = strlen(argv[1]);
+	ifs = (char *)argv[1];
+	if ((len > 2) && (':' == argv[1][len - 2]))
+	{
+		ifs[len - 2] = '\0';
+		mode = argv[1][len - 1];
+	}
+	if (ERROR_OK != virtual_interface_init(ifs, mode))
+	{
+		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "initialize programmer: ", 
+					argv[1]);
+		return ERROR_FAIL;
+	}
+	return ERROR_OK;
 }
 
 VSS_HANDLER(virtualprog_indexes)
 {
-	VSS_CHECK_ARGC(1);
+	VSS_CHECK_ARGC(2);
 	// not support now
 	return ERROR_FAIL;
 }
@@ -118,15 +136,8 @@ VSS_HANDLER(programmer_define)
 	char *programmer;
 	
 	VSS_CHECK_ARGC_2(1, 2);
-	if (1 == argc)
-	{
-		programmer = NULL;
-	}
-	else
-	{
-		programmer = (char *)argv[1];
-	}
-	
+
+	programmer = (1 == argc) ? NULL : (char *)argv[1];
 	if (ERROR_OK != interface_init(programmer))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "initialize programmer: ", 
