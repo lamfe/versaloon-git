@@ -27,7 +27,7 @@
 #include "app_err.h"
 #include "app_log.h"
 
-#include "interfaces.h"
+#include "../../interfaces.h"
 #include "target.h"
 #include "scripts.h"
 
@@ -75,7 +75,7 @@ VSS_HANDLER(vi_stm32_help)
 VSS_HANDLER(vi_stm32_support)
 {
 	VSS_CHECK_ARGC(1);
-	PRINTF("%s: virtual programmer on stm32.\n");
+	PRINTF("%s: virtual programmer on stm32.\n", VI_STM32_STRING);
 	return ERROR_OK;
 }
 
