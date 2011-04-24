@@ -286,7 +286,7 @@ struct interfaces_info_t
 	
 	// virtual interface support
 	bool is_virtual;
-	struct program_mode_t *mode;
+	const struct program_mode_t *mode;
 	
 	// init and fini
 	RESULT (*init)(void *p);

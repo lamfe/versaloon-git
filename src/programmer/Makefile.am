@@ -6,7 +6,10 @@ INCLUDES = \
     -I$(top_srcdir)/src/driver/usb \
     -I$(top_srcdir)/src/driver/timer \
     -I$(top_srcdir)/src/scripts \
-    -I$(top_srcdir)/src/tools/strparser
+    -I$(top_srcdir)/src/tools/strparser \
+    -I$(top_srcdir)/src/target \
+    -I$(top_srcdir)/src/target/core/arm_adi \
+    -I$(top_srcdir)/src/target/cortex-m3
 
 METASOURCES = AUTO
 noinst_LIBRARIES = libprog.a
@@ -35,7 +38,8 @@ libprog_a_SOURCES = \
     interfaces/versaloon/usbtoxxx/usbtobdm.c \
     interfaces/versaloon/usbtoxxx/usbtodusi.c \
     interfaces/versaloon/usbtoxxx/usbtomicrowire.c \
-    interfaces/versaloon/usbtoxxx/usbtopwm.c
+    interfaces/versaloon/usbtoxxx/usbtopwm.c \
+    interfaces/virtualinterface/vi_stm32/vi_stm32.c
 
 #noinst_HEADERS = \
     programmer.h \
