@@ -293,11 +293,14 @@ struct interfaces_info_t
 	RESULT (*fini)(void);
 	
 	uint64_t support_mask;
-	struct interface_target_voltage_t target_voltage;
+	struct interface_delay_t delay;
+	struct interface_gpio_t gpio;
 	struct interface_usart_t usart;
 	struct interface_spi_t spi;
-	struct interface_gpio_t gpio;
-	struct interface_delay_t delay;
+	struct interface_i2c_t i2c;
+	struct interface_pwm_t pwm;
+	struct interface_microwire_t microwire;
+	struct interface_target_voltage_t target_voltage;
 	struct interface_issp_t issp;
 	struct interface_swd_t swd;
 	struct interface_jtag_hl_t jtag_hl;
@@ -306,13 +309,10 @@ struct interfaces_info_t
 	struct interface_msp430jtag_t msp430jtag;
 	struct interface_msp430sbw_t msp430sbw;
 	struct interface_c2_t c2;
-	struct interface_i2c_t i2c;
 	struct interface_lpcicp_t lpcicp;
 	struct interface_swim_t swim;
 	struct interface_bdm_t bdm;
 	struct interface_dusi_t dusi;
-	struct interface_microwire_t microwire;
-	struct interface_pwm_t pwm;
 	struct interface_poll_t poll;
 	RESULT (*peripheral_commit)(void);
 };

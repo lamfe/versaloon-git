@@ -127,29 +127,6 @@ static RESULT vi_stm32_fini(void)
 	return cur_real_interface->fini();
 }
 
-// SPI
-RESULT vi_stm32_spi_init(uint8_t interface_index)
-{
-	return ERROR_OK;
-}
-
-RESULT vi_stm32_spi_fini(uint8_t interface_index)
-{
-	return ERROR_OK;
-}
-
-RESULT vi_stm32_spi_config(uint8_t interface_index, uint16_t kHz, uint8_t cpol, 
-					   uint8_t cpha, uint8_t firstbit)
-{
-	return ERROR_OK;
-}
-
-RESULT vi_stm32_spi_io(uint8_t interface_index, uint8_t *out, uint8_t *in, 
-						uint16_t bytelen)
-{
-	return ERROR_OK;
-}
-
 // GPIO
 RESULT vi_stm32_gpio_init(uint8_t interface_index)
 {
@@ -174,6 +151,119 @@ RESULT vi_stm32_gpio_in(uint8_t interface_index, uint32_t mask, uint32_t *value)
 }
 
 RESULT vi_stm32_gpio_out(uint8_t interface_index, uint32_t mask, uint32_t value)
+{
+	return ERROR_OK;
+}
+
+// USART
+RESULT vi_stm32_usart_init(uint8_t interface_index)
+{
+	return ERROR_OK;
+}
+
+RESULT vi_stm32_usart_fini(uint8_t interface_index)
+{
+	return ERROR_OK;
+}
+
+RESULT vi_stm32_usart_config(uint8_t interface_index, uint32_t baudrate, 
+			uint8_t datalength, char paritybit, char stopbit, char handshake)
+{
+	return ERROR_OK;
+}
+
+RESULT vi_stm32_usart_receive(uint8_t interface_index, uint8_t *buf, uint16_t len)
+{
+	return ERROR_OK;
+}
+
+RESULT vi_stm32_usart_send(uint8_t interface_index, uint8_t *buf, uint16_t len)
+{
+	return ERROR_OK;
+}
+
+RESULT vi_stm32_usart_status(uint8_t interface_index, 
+							struct usart_status_t *status)
+{
+	return ERROR_OK;
+}
+
+// SPI
+RESULT vi_stm32_spi_init(uint8_t interface_index)
+{
+	return ERROR_OK;
+}
+
+RESULT vi_stm32_spi_fini(uint8_t interface_index)
+{
+	return ERROR_OK;
+}
+
+RESULT vi_stm32_spi_config(uint8_t interface_index, uint16_t kHz, uint8_t cpol, 
+					   uint8_t cpha, uint8_t firstbit)
+{
+	return ERROR_OK;
+}
+
+RESULT vi_stm32_spi_io(uint8_t interface_index, uint8_t *out, uint8_t *in, 
+						uint16_t bytelen)
+{
+	return ERROR_OK;
+}
+
+// IIC
+RESULT vi_stm32_iic_init(uint8_t interface_index)
+{
+	return ERROR_OK;
+}
+
+RESULT vi_stm32_iic_fini(uint8_t interface_index)
+{
+	return ERROR_OK;
+}
+
+RESULT vi_stm32_iic_config(uint8_t interface_index, uint16_t kHz, 
+							uint16_t byte_interval, uint16_t max_dly)
+{
+	return ERROR_OK;
+}
+
+RESULT vi_stm32_iic_read(uint8_t interface_index, uint16_t chip_addr, 
+							uint8_t *data, uint16_t data_len, uint8_t stop, 
+							bool nacklast)
+{
+	return ERROR_OK;
+}
+
+RESULT vi_stm32_iic_write(uint8_t interface_index, uint16_t chip_addr, 
+							uint8_t *data, uint16_t data_len, uint8_t stop)
+{
+	return ERROR_OK;
+}
+
+// PWM
+RESULT vi_stm32_pwm_init(uint8_t interface_index)
+{
+	return ERROR_OK;
+}
+
+RESULT vi_stm32_pwm_fini(uint8_t interface_index)
+{
+	return ERROR_OK;
+}
+
+RESULT vi_stm32_pwm_config(uint8_t interface_index, uint16_t kHz, 
+							uint8_t pushpull, uint8_t polarity)
+{
+	return ERROR_OK;
+}
+
+RESULT vi_stm32_pwm_out(uint8_t interface_index, uint16_t count, uint16_t *rate)
+{
+	return ERROR_OK;
+}
+
+RESULT vi_stm32_pwm_in(uint8_t interface_index, uint16_t count, uint16_t *rate)
 {
 	return ERROR_OK;
 }
@@ -206,19 +296,11 @@ struct interfaces_info_t vi_stm32_interfaces =
 	vi_stm32_init,
 	vi_stm32_fini,
 	
-	IFS_SPI | IFS_GPIO,
+	IFS_GPIO | IFS_USART | IFS_SPI | IFS_I2C | IFS_PWM,
 	
-	{	// target_voltage
-		NULL, NULL
-	},
-	{	// usart
-		NULL, NULL, NULL, NULL, NULL, NULL
-	},
-	{	// spi
-		vi_stm32_spi_init,
-		vi_stm32_spi_fini,
-		vi_stm32_spi_config,
-		vi_stm32_spi_io
+	{	// delay
+		vi_stm32_delayms,
+		vi_stm32_delayus
 	},
 	{	// gpio
 		vi_stm32_gpio_init,
@@ -227,9 +309,39 @@ struct interfaces_info_t vi_stm32_interfaces =
 		vi_stm32_gpio_out,
 		vi_stm32_gpio_in
 	},
-	{	// delay
-		vi_stm32_delayms,
-		vi_stm32_delayus
+	{	// usart
+		vi_stm32_usart_init,
+		vi_stm32_usart_fini,
+		vi_stm32_usart_config,
+		vi_stm32_usart_send,
+		vi_stm32_usart_receive,
+		vi_stm32_usart_status
+	},
+	{	// spi
+		vi_stm32_spi_init,
+		vi_stm32_spi_fini,
+		vi_stm32_spi_config,
+		vi_stm32_spi_io
+	},
+	{	// i2c
+		vi_stm32_iic_init,
+		vi_stm32_iic_fini,
+		vi_stm32_iic_config,
+		vi_stm32_iic_read,
+		vi_stm32_iic_write
+	},
+	{	// pwm
+		vi_stm32_pwm_init,
+		vi_stm32_pwm_fini,
+		vi_stm32_pwm_config,
+		vi_stm32_pwm_out,
+		vi_stm32_pwm_in
+	},
+	{	// microwire
+		NULL, NULL, NULL, NULL, NULL
+	},
+	{	// target_voltage
+		NULL, NULL
 	},
 	{	// issp
 		NULL, NULL, NULL, NULL, NULL, NULL
@@ -255,9 +367,6 @@ struct interfaces_info_t vi_stm32_interfaces =
 	{	// c2
 		NULL, NULL, NULL, NULL, NULL, NULL
 	},
-	{	// i2c
-		NULL, NULL, NULL, NULL, NULL
-	},
 	{	// lpcicp
 		NULL, NULL, NULL, NULL, NULL, NULL
 	},
@@ -269,12 +378,6 @@ struct interfaces_info_t vi_stm32_interfaces =
 	},
 	{	// dusi
 		NULL, NULL, NULL, NULL
-	},
-	{	// microwire
-		NULL, NULL, NULL, NULL, NULL
-	},
-	{	// pwm
-		NULL, NULL, NULL, NULL, NULL
 	},
 	{	// poll
 		NULL, NULL, NULL, NULL, NULL
