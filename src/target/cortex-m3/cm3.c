@@ -141,6 +141,7 @@ const struct vss_cmd_t cm3_notifier[] =
 ENTER_PROGRAM_MODE_HANDLER(cm3)
 {
 	struct adi_dpif_t dp;
+	struct program_info_t *pi = context->pi;
 	const struct program_functions_t *pf = 
 		cm3_chips_param[cm3_chip_index].program_functions;
 	
@@ -172,13 +173,13 @@ ENTER_PROGRAM_MODE_HANDLER(cm3)
 				cm3_chips_param[cm3_chip_index].jtag_khz;
 		}
 		dp.dpif_setting.dpif_jtag_setting.ub = 
-				cm3_chips_param[cm3_chip_index].jtag_pos.ub;
+			cm3_chips_param[cm3_chip_index].jtag_pos.ub + pi->jtag_pos.ub;
 		dp.dpif_setting.dpif_jtag_setting.ua = 
-				cm3_chips_param[cm3_chip_index].jtag_pos.ua;
+			cm3_chips_param[cm3_chip_index].jtag_pos.ua + pi->jtag_pos.ua;
 		dp.dpif_setting.dpif_jtag_setting.bb = 
-				cm3_chips_param[cm3_chip_index].jtag_pos.bb;
+			cm3_chips_param[cm3_chip_index].jtag_pos.bb + pi->jtag_pos.bb;
 		dp.dpif_setting.dpif_jtag_setting.ba = 
-				cm3_chips_param[cm3_chip_index].jtag_pos.ba;
+			cm3_chips_param[cm3_chip_index].jtag_pos.ba + pi->jtag_pos.ba;
 		
 		break;
 	case ADI_DP_SWD:
@@ -200,7 +201,7 @@ ENTER_PROGRAM_MODE_HANDLER(cm3)
 	}
 	
 	// mode independent
-	if (ERROR_OK != cm3_dp_init(context, &dp))
+	if (ERROR_OK != cm3_dp_init(context->prog, &dp))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "initialize cm3");
 		LOG_ERROR("Maybe your last firmware disable the JTAG/SWD port"

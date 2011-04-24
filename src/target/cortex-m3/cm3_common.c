@@ -20,10 +20,6 @@
 #include "config.h"
 #endif
 
-#include <string.h>
-#include <stdlib.h>
-#include <ctype.h>
-
 #include "port.h"
 #include "app_cfg.h"
 #include "app_type.h"
@@ -31,9 +27,7 @@
 #include "app_err.h"
 #include "app_log.h"
 
-#include "vsprog.h"
 #include "programmer.h"
-#include "target.h"
 
 #include "adi_v5p1.h"
 #include "cm3_common.h"
@@ -45,15 +39,15 @@ RESULT cm3_dp_fini(void)
 	return adi_fini();
 }
 
-RESULT cm3_dp_init(struct program_context_t *context, struct adi_dpif_t *dp)
+RESULT cm3_dp_init(struct interfaces_info_t *ifs, struct adi_dpif_t *dp)
 {
 	uint32_t cpuid, dcb_dhcsr;
 	enum adi_dp_target_core_t tgt_core = ADI_DP_INVALID;
 	
-	memcpy(&cm3_dp_if, dp, sizeof(cm3_dp_if));
+	cm3_dp_if = *dp;
 	
 	// adi_init will initialize the core type
-	if (ERROR_OK != adi_init(context, &cm3_dp_if, &tgt_core))
+	if (ERROR_OK != adi_init(ifs, &cm3_dp_if, &tgt_core))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "initialize cm3 interface");
 		return ERRCODE_FAILURE_OPERATION;

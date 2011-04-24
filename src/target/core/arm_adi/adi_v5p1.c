@@ -28,9 +28,7 @@
 #include "app_err.h"
 #include "app_log.h"
 
-#include "vsprog.h"
 #include "programmer.h"
-#include "target.h"
 
 #include "adi_v5p1.h"
 #include "adi_v5p1_internal.h"
@@ -249,18 +247,16 @@ static RESULT adi_dpif_fini(void)
 	return ret;
 }
 
-static RESULT adi_dpif_init(struct program_context_t *context, struct adi_dpif_t *interf)
+static RESULT adi_dpif_init(struct interfaces_info_t *ifs, struct adi_dpif_t *interf)
 {
-	struct program_info_t *pi = context->pi;
-	
-	if ((NULL == context) || (NULL == interf) 
+	if ((NULL == ifs) || (NULL == interf) 
 		|| ((interf->type != ADI_DP_JTAG) && (interf->type != ADI_DP_SWD)))
 	{
 		LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
 		return ERROR_FAIL;
 	}
 	
-	adi_prog = context->prog;
+	adi_prog = ifs;
 	
 	reset_init();
 	reset_input();
@@ -275,10 +271,10 @@ static RESULT adi_dpif_init(struct program_context_t *context, struct adi_dpif_t
 		jtag_init();
 		jtag_config(
 			adi_dp_if->dpif_setting.dpif_jtag_setting.jtag_khz, 
-			adi_dp_if->dpif_setting.dpif_jtag_setting.ub + pi->jtag_pos.ub, 
-			adi_dp_if->dpif_setting.dpif_jtag_setting.ua + pi->jtag_pos.ua, 
-			adi_dp_if->dpif_setting.dpif_jtag_setting.bb + pi->jtag_pos.bb, 
-			adi_dp_if->dpif_setting.dpif_jtag_setting.ba + pi->jtag_pos.ba);
+			adi_dp_if->dpif_setting.dpif_jtag_setting.ub, 
+			adi_dp_if->dpif_setting.dpif_jtag_setting.ua, 
+			adi_dp_if->dpif_setting.dpif_jtag_setting.bb, 
+			adi_dp_if->dpif_setting.dpif_jtag_setting.ba);
 		jtag_tms((uint8_t*)adi_swd_to_jtag_seq, 
 					sizeof(adi_swd_to_jtag_seq) * 8);
 		if (ERROR_OK == adi_dp_commit())
@@ -747,7 +743,7 @@ RESULT adi_fini(void)
 	return adi_dpif_fini();
 }
 
-RESULT adi_init(struct program_context_t *context, struct adi_dpif_t *interf, 
+RESULT adi_init(struct interfaces_info_t *ifs, struct adi_dpif_t *interf, 
 					enum adi_dp_target_core_t *core)
 {
 	uint32_t tmp;
@@ -756,7 +752,7 @@ RESULT adi_init(struct program_context_t *context, struct adi_dpif_t *interf,
 init:
 	adi_dp_if = interf;
 	// initialize interface
-	if (ERROR_OK != adi_dpif_init(context, interf))
+	if (ERROR_OK != adi_dpif_init(ifs, interf))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, 
 					"initialize adi debugport interface");
