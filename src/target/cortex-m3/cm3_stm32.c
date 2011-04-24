@@ -253,9 +253,6 @@ WRITE_TARGET_HANDLER(stm32swj)
 			ret = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
-		size -= size;
-		buff += size;
-		addr += size;
 		tick_tock++;
 		break;
 	default:

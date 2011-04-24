@@ -301,18 +301,6 @@ static RESULT lm3sswj_iap_run(struct lm3sswj_iap_cmd_t * cmd)
 	return ERROR_OK;
 }
 
-static RESULT lm3sswj_iap_call(struct lm3sswj_iap_cmd_t *cmd)
-{	
-	if ((ERROR_OK != lm3sswj_iap_run(cmd)) 
-		|| (ERROR_OK != lm3sswj_iap_wait_finish(lm3sswj_iap_cnt)))
-	{
-		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "run iap command");
-		return ERROR_FAIL;
-	}
-	
-	return ERROR_OK;
-}
-
 ENTER_PROGRAM_MODE_HANDLER(lm3sswj)
 {
 	uint32_t reg;
@@ -416,7 +404,7 @@ LEAVE_PROGRAM_MODE_HANDLER(lm3sswj)
 	REFERENCE_PARAMETER(context);
 	REFERENCE_PARAMETER(success);
 	
-	return ERROR_OK;
+	return lm3sswj_iap_wait_finish(lm3sswj_iap_cnt);
 }
 
 ERASE_TARGET_HANDLER(lm3sswj)
@@ -436,7 +424,7 @@ ERASE_TARGET_HANDLER(lm3sswj)
 		cmd.src_addr = 0;
 		cmd.command = LM3S_FLASHCTL_FMC_MERASE | LM3S_FLASHCTL_FMC_KEY;
 		cmd.cnt = 1;
-		ret = lm3sswj_iap_call(&cmd);
+		ret = lm3sswj_iap_run(&cmd);
 		break;
 	default:
 		ret = ERROR_FAIL;
@@ -450,7 +438,8 @@ WRITE_TARGET_HANDLER(lm3sswj)
 	RESULT ret = ERROR_OK;
 	struct lm3sswj_iap_cmd_t cmd;
 	uint32_t page_size = 512;
-	uint8_t ticktock = 0;
+	static uint8_t ticktock = 0;
+	uint32_t ram_addr;
 	
 	REFERENCE_PARAMETER(context);
 	
@@ -458,88 +447,38 @@ WRITE_TARGET_HANDLER(lm3sswj)
 	{
 	case APPLICATION_CHAR:
 		// check alignment
-		if ((size % 4) || (addr %4))
+		if ((size % 4) || (addr % 4))
 		{
 			LOG_ERROR(ERRMSG_INVALID_TARGET, "flash addr and/or size");
 			return ERROR_FAIL;
 		}
 		
-		// write first buff to target SRAM
-		if (ERROR_OK != adi_memap_write_buf(LM3S_SRAM_ADDR + 1024, buff, page_size))
-		{
-			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "load data to SRAM");
-			return ERRCODE_FAILURE_OPERATION;
-		}
 		cmd.FMA_addr = LM3S_FLASHCTL_FMA;
-		cmd.tgt_addr = addr;
-		cmd.src_addr = LM3S_SRAM_ADDR + 1024;
 		cmd.command = LM3S_FLASHCTL_FMC_WRITE | LM3S_FLASHCTL_FMC_KEY;
 		cmd.cnt = page_size / 4;
-		if (ERROR_OK != lm3sswj_iap_run(&cmd))
-		{
-			ret = ERROR_FAIL;
-			break;
-		}
-		size -= page_size;
-		
 		while (size)
 		{
-			buff += page_size;
-			addr += page_size;
-			ticktock++;
-			
-			// write buff to target SRAM
 			if (ticktock & 1)
 			{
-				if (ERROR_OK != adi_memap_write_buf(
-						LM3S_SRAM_ADDR + 1024 + page_size, buff, page_size))
-				{
-					LOG_ERROR(ERRMSG_FAILURE_OPERATION, "load data to SRAM");
-					return ERRCODE_FAILURE_OPERATION;
-				}
+				ram_addr = LM3S_SRAM_ADDR + 1024 + page_size;
 			}
 			else
 			{
-				if (ERROR_OK != adi_memap_write_buf(
-						LM3S_SRAM_ADDR + 1024, buff, page_size))
-				{
-					LOG_ERROR(ERRMSG_FAILURE_OPERATION, "load data to SRAM");
-					return ERRCODE_FAILURE_OPERATION;
-				}
+				ram_addr = LM3S_SRAM_ADDR + 1024;
 			}
-			
 			cmd.tgt_addr = addr;
-			if (ticktock & 1)
-			{
-				cmd.src_addr = LM3S_SRAM_ADDR + 1024 + page_size;	// Source RAM address
-			}
-			else
-			{
-				cmd.src_addr = LM3S_SRAM_ADDR + 1024;				// Source RAM address
-			}
-			if (ERROR_OK != lm3sswj_iap_run(&cmd))
+			cmd.src_addr = ram_addr;
+			if ((ERROR_OK != adi_memap_write_buf(ram_addr, buff, page_size)) || 
+				(ERROR_OK != lm3sswj_iap_run(&cmd)))
 			{
 				ret = ERROR_FAIL;
 				break;
 			}
-			
-			// wait ready
-			if (ERROR_OK != lm3sswj_iap_wait_finish(lm3sswj_iap_cnt - 1))
-			{
-				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "run iap");
-				return ERRCODE_FAILURE_OPERATION;
-			}
-			
+			ticktock++;
 			size -= page_size;
-			pgbar_update(page_size);
+			buff += page_size;
+			addr += page_size;
 		}
-		// wait ready
-		if (ERROR_OK != lm3sswj_iap_wait_finish(lm3sswj_iap_cnt))
-		{
-			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "run iap");
-			return ERRCODE_FAILURE_OPERATION;
-		}
-		pgbar_update(page_size);
 		break;
 	default:
 		ret = ERROR_FAIL;
