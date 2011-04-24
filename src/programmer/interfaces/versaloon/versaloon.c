@@ -669,9 +669,16 @@ struct interfaces_info_t versaloon_interfaces =
 	IFS_MSP430_JTAG | IFS_LPC_ICP | IFS_SWD | IFS_BDM | IFS_DUSI | 
 	IFS_MICROWIRE | IFS_PWM,
 	
-	{	// target_voltage
-		versaloon_get_target_voltage,
-		versaloon_set_target_voltage
+	{	// delay
+		usbtodelay_delayms,
+		usbtodelay_delayus
+	},
+	{	// gpio
+		usbtogpio_init,
+		usbtogpio_fini,
+		usbtogpio_config,
+		usbtogpio_out,
+		usbtogpio_in
 	},
 	{	// usart
 		usbtousart_init,
@@ -687,16 +694,30 @@ struct interfaces_info_t versaloon_interfaces =
 		usbtospi_config,
 		usbtospi_io
 	},
-	{	// gpio
-		usbtogpio_init,
-		usbtogpio_fini,
-		usbtogpio_config,
-		usbtogpio_out,
-		usbtogpio_in
+	{	// i2c
+		usbtoi2c_init,
+		usbtoi2c_fini,
+		usbtoi2c_config,
+		usbtoi2c_read,
+		usbtoi2c_write
 	},
-	{	// delay
-		usbtodelay_delayms,
-		usbtodelay_delayus
+	{	// pwm
+		usbtopwm_init,
+		usbtopwm_fini,
+		usbtopwm_config,
+		usbtopwm_out,
+		usbtopwm_in
+	},
+	{	// microwire
+		usbtomicrowire_init,
+		usbtomicrowire_fini,
+		usbtomicrowire_config,
+		usbtomicrowire_transport,
+		usbtomicrowire_poll
+	},
+	{	// target_voltage
+		versaloon_get_target_voltage,
+		versaloon_set_target_voltage
 	},
 	{	// issp
 		usbtoissp_init,
@@ -768,13 +789,6 @@ struct interfaces_info_t versaloon_interfaces =
 		usbtoc2_readdata,
 		usbtoc2_writedata
 	},
-	{	// i2c
-		usbtoi2c_init,
-		usbtoi2c_fini,
-		usbtoi2c_config,
-		usbtoi2c_read,
-		usbtoi2c_write
-	},
 	{	// lpcicp
 		usbtolpcicp_init,
 		usbtolpcicp_fini,
@@ -804,20 +818,6 @@ struct interfaces_info_t versaloon_interfaces =
 		usbtodusi_fini,
 		usbtodusi_config,
 		usbtodusi_io
-	},
-	{	// microwire
-		usbtomicrowire_init,
-		usbtomicrowire_fini,
-		usbtomicrowire_config,
-		usbtomicrowire_transport,
-		usbtomicrowire_poll
-	},
-	{	// pwm
-		usbtopwm_init,
-		usbtopwm_fini,
-		usbtopwm_config,
-		usbtopwm_out,
-		usbtopwm_in
 	},
 	{	// poll
 		versaloon_poll_start,
