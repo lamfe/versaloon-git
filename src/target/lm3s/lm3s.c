@@ -76,17 +76,19 @@ VSS_HANDLER(lm3s_mode)
 	
 	VSS_CHECK_ARGC(2);
 	mode = (uint8_t)strtoul(argv[1], NULL,0);
-		switch (mode)
-		{
-		case LM3S_JTAG:
-		case LM3S_SWD:
-			lm3s_program_area_map[0].attr |= AREA_ATTR_WNP;
-			cm3_mode_offset = 0;
-			vss_call_notifier(cm3_notifier, "chip", "cm3_lm3s");
-			memcpy(&lm3s_program_functions, &cm3_program_functions, 
-					sizeof(lm3s_program_functions));
-			break;
-		}
+	switch (mode)
+	{
+	case LM3S_JTAG:
+	case LM3S_SWD:
+		lm3s_program_area_map[0].attr |= AREA_ATTR_RNP;
+		cm3_mode_offset = 0;
+		vss_call_notifier(cm3_notifier, "chip", "cm3_lm3s");
+		memcpy(&lm3s_program_functions, &cm3_program_functions, 
+				sizeof(lm3s_program_functions));
+		break;
+	default:
+		return ERROR_FAIL;
+	}
 	return ERROR_OK;
 }
 
