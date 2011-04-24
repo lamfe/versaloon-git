@@ -55,7 +55,7 @@ struct adi_dpif_t
 	} dpif_setting;
 };
 
-RESULT adi_init(struct program_context_t *context, struct adi_dpif_t *interf, 
+RESULT adi_init(struct interfaces_info_t *ifs, struct adi_dpif_t *interf, 
 					enum adi_dp_target_core_t *core);
 RESULT adi_fini(void);
 RESULT adi_dp_commit(void);

@@ -80,7 +80,7 @@
 
 RESULT cm3_dp_parameter_init(struct adi_dpif_t *dp);
 RESULT cm3_dp_fini(void);
-RESULT cm3_dp_init(struct program_context_t *context, struct adi_dpif_t *interf);
+RESULT cm3_dp_init(struct interfaces_info_t *ifs, struct adi_dpif_t *interf);
 
 RESULT cm3_dp_halt(void);
 RESULT cm3_dp_resume(void);
