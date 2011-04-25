@@ -73,22 +73,19 @@ static uint32_t lm3sswj_iap_cnt = 0;
 static uint8_t iap_code[] = 
 {
 							// wait_start:
-	0x1D, 0x48,				// ldr		r0, [PC, #XX]		// load sync
+	0x1D, 0x48,				// ldr		r0, [PC, #116]		// load sync
 	0x00, 0x28,				// cmp		r0, #0
 	0xFC, 0xD0,				// beq 		wait_start
-	// 6 bytes above
 							// init:
-	0x18, 0x4A,				// ldr		r2, [PC, #XX]		// laod tgt_addr
-	0x18, 0x4B,				// ldr		r3, [PC, #XX]		// load src_addr
-	0x19, 0x4C,				// ldr		r4, [PC, #XX]		// load command
-	0x19, 0x4D,				// ldr		r5, [PC, #XX]		// load cnt
-	0x15, 0x4E,				// ldr		r6, [PC, #XX]		// laod address of FMA
-	// 16 bytes above
+	0x18, 0x4A,				// ldr		r2, [PC, #96]		// laod tgt_addr
+	0x18, 0x4B,				// ldr		r3, [PC, #96]		// load src_addr
+	0x19, 0x4C,				// ldr		r4, [PC, #100]		// load command
+	0x19, 0x4D,				// ldr		r5, [PC, #100]		// load cnt
+	0x15, 0x4E,				// ldr		r6, [PC, #84]		// laod address of FMA
 							// clear_sync:
-	0x19, 0xA0,				// add		r0, PC, #XX			// load address of sync
+	0x19, 0xA0,				// add		r0, PC, #100		// load address of sync
 	0x00, 0x21,				// mov		r1, #0
 	0x01, 0x60,				// str		r1, [r0]
-	// 22 bytes above
 							// do_operation:
 	0x30, 0x46,				// mov		r0, r6				// load address of FMA
 	0x02, 0x60,				// str		r2, [r0]			// FMA = tgt_addr
@@ -97,20 +94,17 @@ static uint8_t iap_code[] =
 	0x01, 0x60,				// str		r1, [r0]			// FMD = *str_data
 	0x00, 0x1D,				// adds		r0, r0, #4			// &FMC = &FMD + 4
 	0x04, 0x60,				// str		r4, [r0]			// FMC = command
-	// 36 bytes above
 							// wait_operation_finish:
 	0x01, 0x68,				// ldr		r1, [r0]			// r1 = FMC
 	0x21, 0x40,				// ands		r1, r1, r4			// r1 = r1 & command
 	0xFC, 0xD1,				// bne		wait_operation_finish
-	// 42 bytes above
 							// adjust_param:
 	0x12, 0x1D,				// adds		r2, r2, #4			// tgt_addr + 4
 	0x1B, 0x1D,				// adds		r3, r3, #4			// src_addr + 4
 	0x6D, 0x1E,				// subs		r5, r5, #1			// cnt - 1
-	// 48 bytes above
 	0xF1, 0xD1,				// bne		do_operation
 							// adjust_iap_cnt:
-	0x12, 0xA0,				// add		r0, PC, #XX			// load address of iap_cnt
+	0x12, 0xA0,				// add		r0, PC, #72			// load address of iap_cnt
 	0x01, 0x68,				// ldr		r1, [r0]
 	0x49, 0x1C,				// adds		r1, r1, #1
 	0x01, 0x60,				// str		r1, [r0]
