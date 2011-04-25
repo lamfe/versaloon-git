@@ -145,20 +145,12 @@ ADJUST_SETTING_HANDLER(lpc1000)
 	case LPC1000_JTAG:
 	case LPC1000_SWD:
 		lpc1000_program_area_map[0].attr |= AREA_ATTR_RNP;
-		if (sram_info->size >= 5 * 1024 + 32)
+		if (sram_info->size >= 9 * 1024)
 		{
-			if (sram_info->size >= 9 * 1024 + 32)
-			{
-				lpc1000_program_area_map[0].attr |= AREA_ATTR_WNP;
-			}
-			flash_info->page_size =  4 * 1024;
+			flash_info->page_size = 4 * 1024;
 		}
-		else if (sram_info->size >= 2 * 1024 + 32)
+		else if (sram_info->size >= 3 * 1024)
 		{
-			if (sram_info->size >= 3 * 1024 + 32)
-			{
-				lpc1000_program_area_map[0].attr |= AREA_ATTR_WNP;
-			}
 			flash_info->page_size = 1 * 1024;
 		}
 		else
