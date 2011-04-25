@@ -289,7 +289,7 @@ RESULT stm32swj_fl_wait_ready(struct stm32_fl_result_t *result, bool last)
 			{
 				end = get_time_in_ms();
 				// wait 1s at most
-				if ((end - start) > 1000)
+				if ((end - start) > 20000)
 				{
 					cm3_dump(stm32swj_fl_base, sizeof(fl_code));
 					LOG_ERROR(ERRMSG_TIMEOUT, "wait for flashloader ready");
