@@ -27,6 +27,7 @@
 #include "app_type.h"
 #include "app_io.h"
 
+#include "../mal/mal.h"
 #include "../mal/mal_internal.h"
 #include "sd_common.h"
 

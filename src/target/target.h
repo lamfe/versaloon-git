@@ -157,6 +157,7 @@ struct program_info_t
 	struct jtag_pos_t jtag_pos;
 	uint8_t execute_flag;
 	uint32_t execute_addr;
+	char *ifs_indexes;
 	
 	uint8_t *mass_product_data;
 	uint32_t mass_product_data_size;

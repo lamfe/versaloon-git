@@ -27,9 +27,8 @@
 #include "app_type.h"
 #include "app_io.h"
 
-#include "../dal_internal.h"
-#include "../mal/mal_internal.h"
 #include "../mal/mal.h"
+#include "../mal/mal_internal.h"
 #include "sd_common.h"
 #include "sd_spi_drv_cfg.h"
 #include "sd_spi_drv.h"
@@ -401,13 +400,34 @@ static RESULT sd_spi_drv_writeblock_nb_end(void)
 	return ERROR_OK;
 }
 
+#if DAL_INTERFACE_PARSER_EN
+static RESULT sd_spi_drv_parse_interface(uint8_t *buff)
+{
+	if (NULL == buff)
+	{
+		return ERROR_FAIL;
+	}
+	sd_spi_drv_ifs.spi_port = buff[0];
+	sd_spi_drv_ifs.cs_port = buff[1];
+	sd_spi_drv_ifs.cs_pin = *(uint32_t *)&buff[2];
+	return ERROR_OK;
+}
+#endif
+
 struct mal_driver_t sd_spi_drv = 
 {
+	{
+		"sd_spi",
+#if DAL_INTERFACE_PARSER_EN
+		"spi:%1dcs:%1d,%4x",
+		sd_spi_drv_parse_interface,
+#endif
+		sd_spi_drv_config_interface,
+	},
+	
 	MAL_IDX_SD_SPI,
 	MAL_SUPPORT_READBLOCK | MAL_SUPPORT_WRITEBLOCK,
 	{0, 0},
-	
-	sd_spi_drv_config_interface,
 	
 	sd_spi_drv_init,
 	sd_spi_drv_fini,

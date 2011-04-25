@@ -17,7 +17,14 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#ifndef __MAL_H_INCLUDED__
+#define __MAL_H_INCLUDED__
+
 #include "app_type.h"
+
+#include "../dal_cfg.h"
+#include "../dal_internal.h"
+#include "../dal.h"
 
 #if DAL_EE93CX6_EN
 #	include "../ee93cx6/ee93cx6_drv.h"
@@ -93,4 +100,6 @@ struct mal_t
 };
 
 extern struct mal_t mal;
+
+#endif	// __MAL_H_INCLUDED__
 

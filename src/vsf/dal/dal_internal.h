@@ -17,9 +17,14 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#ifndef __DAL_INTERNAL_H_INCLUDED__
+#define __DAL_INTERNAL_H_INCLUDED__
+
 #ifdef SYS_ON_VERSALOON
 #else
 #include "programmer.h"
 extern struct interfaces_info_t *interfaces;
 #endif
+
+#endif	// __DAL_INTERNAL_H_INCLUDED__
 

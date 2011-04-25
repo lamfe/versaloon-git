@@ -43,7 +43,6 @@
 VSS_HANDLER(programmer_list);
 VSS_HANDLER(programmer_define);
 VSS_HANDLER(virtualprog_define);
-VSS_HANDLER(virtualprog_indexes);
 
 struct vss_cmd_t programmer_cmd[] = 
 {
@@ -59,14 +58,6 @@ struct vss_cmd_t programmer_cmd[] =
 	VSS_CMD(	"virtualprog",
 				"define virtual programmer, format: virtualprog/l TARGET",
 				virtualprog_define),
-	VSS_CMD(	"indexes",
-				"define indexes used by virtual programmer, "
-				"format: indexes/i INDEX_STR",
-				virtualprog_indexes),
-	VSS_CMD(	"i",
-				"define indexes used by virtual programmer, "
-				"format: indexes/i INDEX_STR",
-				virtualprog_indexes),
 	VSS_CMD(	"programmer",
 				"define programmer to use, format: programmer/p PROGRAMMER",
 				programmer_define),
@@ -122,13 +113,6 @@ VSS_HANDLER(virtualprog_define)
 		return ERROR_FAIL;
 	}
 	return ERROR_OK;
-}
-
-VSS_HANDLER(virtualprog_indexes)
-{
-	VSS_CHECK_ARGC(2);
-	// not support now
-	return ERROR_FAIL;
 }
 
 VSS_HANDLER(programmer_define)

@@ -42,7 +42,7 @@ VSS_HANDLER(mic2826_vss_init)
 	VSS_CHECK_ARGC(2);
 	
 	ifs.iic_port = 0;
-	if (ERROR_OK != mic2826_drv.config_interface(&ifs))
+	if (ERROR_OK != mic2826_drv.driver.config_interface(&ifs))
 	{
 		return ERROR_FAIL;
 	}

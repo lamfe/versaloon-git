@@ -20,6 +20,10 @@
 #ifndef __MIC2826_DRV_H_INCLUDED__
 #define __MIC2826_DRV_H_INCLUDED__
 
+#include "../dal_cfg.h"
+#include "../dal_internal.h"
+#include "../dal.h"
+
 #define MIC2826_CHANNEL_DCDC				0
 #define MIC2826_CHANNEL_LDO1				1
 #define MIC2826_CHANNEL_LDO2				2
@@ -27,7 +31,7 @@
 
 struct mic2826_drv_t
 {
-	RESULT (*config_interface)(void *ifs);
+	struct dal_driver_t driver;
 	RESULT (*init)(uint16_t kHz);
 	RESULT (*fini)(void);
 	RESULT (*config)(uint16_t DCDC_mV, uint16_t LDO1_mV, 
