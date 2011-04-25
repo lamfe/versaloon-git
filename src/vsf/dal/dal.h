@@ -17,8 +17,24 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#ifndef __DAL_H_INCLUDED__
+#define __DAL_H_INCLUDED__
+
 #include "app_cfg.h"
 #include "app_type.h"
 
+struct dal_driver_t
+{
+	char *name;
+#if DAL_INTERFACE_PARSER_EN
+	char *ifs_format;
+	RESULT (*parse_interface)(uint8_t *buff);
+#endif
+	RESULT (*config_interface)(void *ifs);
+};
+
 RESULT dal_init(struct interfaces_info_t *ifs);
+RESULT dal_config_interface(char *dal_name, char *ifs);
+
+#endif	// __DAL_H_INCLUDED__
 

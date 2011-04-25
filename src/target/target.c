@@ -88,6 +88,7 @@ VSS_HANDLER(target_erase);
 VSS_HANDLER(target_write);
 VSS_HANDLER(target_read);
 VSS_HANDLER(target_verify);
+VSS_HANDLER(target_interface_indexes);
 
 struct vss_cmd_t target_cmd[] = 
 {
@@ -201,6 +202,12 @@ struct vss_cmd_t target_cmd[] =
 	VSS_CMD(	"verify",
 				"verify target area, format: verify [AREA_CHAR]",
 				target_verify),
+	VSS_CMD(	"indexes",
+				"define interfaces indexes used, format: indexes/i INDEX_STR",
+				target_interface_indexes),
+	VSS_CMD(	"i",
+				"define interfaces indexes used, format: indexes/i INDEX_STR",
+				target_interface_indexes),
 	VSS_CMD_END
 };
 
@@ -3138,6 +3145,26 @@ VSS_HANDLER(target_operate)
 			p_map++;
 		}
 		end_file(fl_out);
+	}
+	return ERROR_OK;
+}
+
+VSS_HANDLER(target_interface_indexes)
+{
+	VSS_CHECK_ARGC_2(1, 2);
+	
+	if (program_info.ifs_indexes != NULL)
+	{
+		free(program_info.ifs_indexes);
+		program_info.ifs_indexes = NULL;
+	}
+	
+	if ((2 == argc) && 
+		(NULL == bufffunc_malloc_and_copy_str(
+							&program_info.ifs_indexes, (char *)argv[1])))
+	{
+		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
+		return ERRCODE_NOT_ENOUGH_MEMORY;
 	}
 	return ERROR_OK;
 }

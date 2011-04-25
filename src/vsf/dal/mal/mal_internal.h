@@ -30,11 +30,11 @@ struct mal_capacity_t
 
 struct mal_driver_t
 {
+	struct dal_driver_t driver;
+	
 	uint16_t index;
 	uint8_t support;
 	struct mal_capacity_t capacity;
-	
-	RESULT (*config_interface)(void *ifs);
 	
 	RESULT (*init)(void *param);
 	RESULT (*fini)(void);

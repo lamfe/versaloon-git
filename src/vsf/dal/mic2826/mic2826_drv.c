@@ -27,7 +27,6 @@
 #include "app_type.h"
 #include "app_io.h"
 
-#include "../dal_internal.h"
 #include "mic2826_drv_cfg.h"
 #include "mic2826_drv.h"
 
@@ -182,9 +181,29 @@ static RESULT mic2826_drv_config(uint16_t DCDC_mV, uint16_t LDO1_mV,
 	return ERROR_OK;
 }
 
+#if DAL_INTERFACE_PARSER_EN
+static RESULT mic2826_drv_parse_interface(uint8_t *buff)
+{
+	if (NULL == buff)
+	{
+		return ERROR_FAIL;
+	}
+	mic2826_drv_ifs.iic_port = buff[0];
+	return ERROR_OK;
+}
+#endif
+
 const struct mic2826_drv_t mic2826_drv = 
 {
-	mic2826_drv_config_interface,
+	{
+		"mic2826",
+#if DAL_INTERFACE_PARSER_EN
+		"iic:%1d",
+		mic2826_drv_parse_interface,
+#endif
+		mic2826_drv_config_interface,
+	},
+	
 	mic2826_drv_init,
 	mic2826_drv_fini,
 	mic2826_drv_config

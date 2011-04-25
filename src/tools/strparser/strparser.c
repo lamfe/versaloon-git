@@ -60,6 +60,33 @@ RESULT strparser_check(char * str, char * format)
 	return strparser_parse(str, format, buff, sizeof(buff));
 }
 
+uint32_t strparser_getsize(char * format)
+{
+	char *ptr_tmp;
+	uint32_t size;
+	uint32_t param;
+	
+	if (NULL == format)
+	{
+		return ERROR_FAIL;
+	}
+	
+	size = 0;
+	while (format[0])
+	{
+		if ('%' == format[0])
+		{
+			param = strtoul(&format[1], &ptr_tmp, 0);
+			if (ptr_tmp != &format[1])
+			{
+				size += param;
+			}
+		}
+		format++;
+	}
+	return size;
+}
+
 RESULT strparser_parse(char * str, char * format, uint8_t * buff, 
 						uint32_t size)
 {

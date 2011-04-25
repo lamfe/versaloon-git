@@ -20,9 +20,9 @@
 #include "config.h"
 #endif
 
+#include "app_type.h"
 #include "app_io.h"
 
-#include "../dal_cfg.h"
 #include "mal.h"
 #include "mal_internal.h"
 
@@ -68,74 +68,74 @@ static struct mal_driver_t* mal_find_driver(uint16_t index)
 
 static RESULT mal_config_interface(uint16_t index, void *ifs)
 {
-	struct mal_driver_t* driver;
+	struct mal_driver_t* mal_driver;
 	
-	driver = mal_find_driver(index);
-	if ((NULL == driver) || (NULL == driver->config_interface))
+	mal_driver = mal_find_driver(index);
+	if ((NULL == mal_driver) || (NULL == mal_driver->driver.config_interface))
 	{
 		return ERROR_FAIL;
 	}
 	
-	return driver->config_interface(ifs);
+	return mal_driver->driver.config_interface(ifs);
 }
 
 static RESULT mal_init(uint16_t index, void *param)
 {
-	struct mal_driver_t* driver;
+	struct mal_driver_t* mal_driver;
 	
-	driver = mal_find_driver(index);
-	if ((NULL == driver) || (NULL == driver->init))
+	mal_driver = mal_find_driver(index);
+	if ((NULL == mal_driver) || (NULL == mal_driver->init))
 	{
 		return ERROR_FAIL;
 	}
 	
-	return driver->init(param);
+	return mal_driver->init(param);
 }
 
 static RESULT mal_fini(uint16_t index)
 {
-	struct mal_driver_t* driver;
+	struct mal_driver_t* mal_driver;
 	
-	driver = mal_find_driver(index);
-	if ((NULL == driver) || (NULL == driver->fini))
+	mal_driver = mal_find_driver(index);
+	if ((NULL == mal_driver) || (NULL == mal_driver->fini))
 	{
 		return ERROR_FAIL;
 	}
 	
-	return driver->fini();
+	return mal_driver->fini();
 }
 
 static RESULT mal_getinfo(uint16_t index, void *info)
 {
-	struct mal_driver_t* driver;
+	struct mal_driver_t* mal_driver;
 	
-	driver = mal_find_driver(index);
-	if ((NULL == driver) || (NULL == driver->getinfo))
+	mal_driver = mal_find_driver(index);
+	if ((NULL == mal_driver) || (NULL == mal_driver->getinfo))
 	{
 		return ERROR_FAIL;
 	}
 	
-	return driver->getinfo(info);
+	return mal_driver->getinfo(info);
 }
 
 static RESULT mal_getcapacity(uint16_t index, uint64_t *block_size, 
 								uint64_t *block_number)
 {
-	struct mal_driver_t* driver;
+	struct mal_driver_t* mal_driver;
 	
-	driver = mal_find_driver(index);
-	if (NULL == driver)
+	mal_driver = mal_find_driver(index);
+	if (NULL == mal_driver)
 	{
 		return ERROR_FAIL;
 	}
 	
 	if (block_size != NULL)
 	{
-		*block_size = driver->capacity.block_size;
+		*block_size = mal_driver->capacity.block_size;
 	}
 	if (block_number != NULL)
 	{
-		*block_number = driver->capacity.block_number;
+		*block_number = mal_driver->capacity.block_number;
 	}
 	return ERROR_OK;
 }
@@ -143,33 +143,33 @@ static RESULT mal_getcapacity(uint16_t index, uint64_t *block_size,
 static RESULT mal_setcapacity(uint16_t index, uint64_t block_size, 
 								uint64_t block_number)
 {
-	struct mal_driver_t* driver;
+	struct mal_driver_t* mal_driver;
 	
-	driver = mal_find_driver(index);
-	if (NULL == driver)
+	mal_driver = mal_find_driver(index);
+	if (NULL == mal_driver)
 	{
 		return ERROR_FAIL;
 	}
 	
-	driver->capacity.block_size = block_size;
-	driver->capacity.block_number = block_number;
+	mal_driver->capacity.block_size = block_size;
+	mal_driver->capacity.block_number = block_number;
 	return ERROR_OK;
 }
 
 static RESULT mal_poll(uint16_t index)
 {
-	struct mal_driver_t* driver;
+	struct mal_driver_t* mal_driver;
 	RESULT ret = ERROR_OK;
 	
-	driver = mal_find_driver(index);
-	if (NULL == driver)
+	mal_driver = mal_find_driver(index);
+	if (NULL == mal_driver)
 	{
 		return ERROR_FAIL;
 	}
 	
-	if (driver->poll != NULL)
+	if (mal_driver->poll != NULL)
 	{
-		ret = driver->poll();
+		ret = mal_driver->poll();
 	}
 	return ret;
 }
@@ -177,60 +177,60 @@ static RESULT mal_poll(uint16_t index)
 static RESULT mal_eraseblock_nb_start(uint16_t index, uint64_t address, 
 										uint64_t count)
 {
-	struct mal_driver_t* driver;
+	struct mal_driver_t* mal_driver;
 	
-	driver = mal_find_driver(index);
-	if ((NULL == driver) || (NULL == driver->eraseblock_nb_start))
+	mal_driver = mal_find_driver(index);
+	if ((NULL == mal_driver) || (NULL == mal_driver->eraseblock_nb_start))
 	{
 		return ERROR_FAIL;
 	}
 	
-	return driver->eraseblock_nb_start(address, count);
+	return mal_driver->eraseblock_nb_start(address, count);
 }
 
 static RESULT mal_eraseblock_nb(uint16_t index, uint64_t address)
 {
-	struct mal_driver_t* driver;
+	struct mal_driver_t* mal_driver;
 	
-	driver = mal_find_driver(index);
-	if ((NULL == driver) || (NULL == driver->eraseblock_nb))
+	mal_driver = mal_find_driver(index);
+	if ((NULL == mal_driver) || (NULL == mal_driver->eraseblock_nb))
 	{
 		return ERROR_FAIL;
 	}
 	
-	return driver->eraseblock_nb(address);
+	return mal_driver->eraseblock_nb(address);
 }
 
 static RESULT mal_eraseblock_nb_isready(uint16_t index)
 {
-	struct mal_driver_t* driver;
+	struct mal_driver_t* mal_driver;
 	
-	driver = mal_find_driver(index);
-	if ((NULL == driver) || (NULL == driver->eraseblock_nb_isready))
+	mal_driver = mal_find_driver(index);
+	if ((NULL == mal_driver) || (NULL == mal_driver->eraseblock_nb_isready))
 	{
 		return ERROR_FAIL;
 	}
 	
-	return driver->eraseblock_nb_isready();
+	return mal_driver->eraseblock_nb_isready();
 }
 
 static RESULT mal_eraseblock_nb_waitready(uint16_t index)
 {
-	struct mal_driver_t* driver;
+	struct mal_driver_t* mal_driver;
 	
-	driver = mal_find_driver(index);
-	if (NULL == driver)
+	mal_driver = mal_find_driver(index);
+	if (NULL == mal_driver)
 	{
 		return ERROR_FAIL;
 	}
 	
-	if (driver->eraseblock_nb_waitready != NULL)
+	if (mal_driver->eraseblock_nb_waitready != NULL)
 	{
-		return driver->eraseblock_nb_waitready();
+		return mal_driver->eraseblock_nb_waitready();
 	}
 	else
 	{
-		if (driver->eraseblock_nb_isready != NULL)
+		if (mal_driver->eraseblock_nb_isready != NULL)
 		{
 			uint32_t dly;
 			RESULT ret;
@@ -253,60 +253,60 @@ static RESULT mal_eraseblock_nb_waitready(uint16_t index)
 
 static RESULT mal_eraseblock_nb_end(uint16_t index)
 {
-	struct mal_driver_t* driver;
+	struct mal_driver_t* mal_driver;
 	
-	driver = mal_find_driver(index);
-	if ((NULL == driver) || (NULL == driver->eraseblock_nb_end))
+	mal_driver = mal_find_driver(index);
+	if ((NULL == mal_driver) || (NULL == mal_driver->eraseblock_nb_end))
 	{
 		return ERROR_FAIL;
 	}
 	
-	return driver->eraseblock_nb_end();
+	return mal_driver->eraseblock_nb_end();
 }
 
 static RESULT mal_eraseall_nb_start(uint16_t index)
 {
-	struct mal_driver_t* driver;
+	struct mal_driver_t* mal_driver;
 	
-	driver = mal_find_driver(index);
-	if ((NULL == driver) || (NULL == driver->eraseall_nb_start))
+	mal_driver = mal_find_driver(index);
+	if ((NULL == mal_driver) || (NULL == mal_driver->eraseall_nb_start))
 	{
 		return ERROR_FAIL;
 	}
 	
-	return driver->eraseall_nb_start();
+	return mal_driver->eraseall_nb_start();
 }
 
 static RESULT mal_eraseall_nb_isready(uint16_t index)
 {
-	struct mal_driver_t* driver;
+	struct mal_driver_t* mal_driver;
 	
-	driver = mal_find_driver(index);
-	if ((NULL == driver) || (NULL == driver->eraseall_nb_isready))
+	mal_driver = mal_find_driver(index);
+	if ((NULL == mal_driver) || (NULL == mal_driver->eraseall_nb_isready))
 	{
 		return ERROR_FAIL;
 	}
 	
-	return driver->eraseall_nb_isready();
+	return mal_driver->eraseall_nb_isready();
 }
 
 static RESULT mal_eraseall_nb_waitready(uint16_t index)
 {
-	struct mal_driver_t* driver;
+	struct mal_driver_t* mal_driver;
 	
-	driver = mal_find_driver(index);
-	if (NULL == driver)
+	mal_driver = mal_find_driver(index);
+	if (NULL == mal_driver)
 	{
 		return ERROR_FAIL;
 	}
 	
-	if (driver->eraseall_nb_waitready != NULL)
+	if (mal_driver->eraseall_nb_waitready != NULL)
 	{
-		return driver->eraseall_nb_waitready();
+		return mal_driver->eraseall_nb_waitready();
 	}
 	else
 	{
-		if (driver->eraseall_nb_isready != NULL)
+		if (mal_driver->eraseall_nb_isready != NULL)
 		{
 			uint32_t dly;
 			RESULT ret;
@@ -329,74 +329,74 @@ static RESULT mal_eraseall_nb_waitready(uint16_t index)
 
 static RESULT mal_eraseall_nb_end(uint16_t index)
 {
-	struct mal_driver_t* driver;
+	struct mal_driver_t* mal_driver;
 	
-	driver = mal_find_driver(index);
-	if ((NULL == driver) || (NULL == driver->eraseall_nb_end))
+	mal_driver = mal_find_driver(index);
+	if ((NULL == mal_driver) || (NULL == mal_driver->eraseall_nb_end))
 	{
 		return ERROR_FAIL;
 	}
 	
-	return driver->eraseall_nb_end();
+	return mal_driver->eraseall_nb_end();
 }
 
 static RESULT mal_readblock_nb_start(uint16_t index, uint64_t address, 
 										uint64_t count)
 {
-	struct mal_driver_t* driver;
+	struct mal_driver_t* mal_driver;
 	
-	driver = mal_find_driver(index);
-	if ((NULL == driver) || (NULL == driver->readblock_nb_start))
+	mal_driver = mal_find_driver(index);
+	if ((NULL == mal_driver) || (NULL == mal_driver->readblock_nb_start))
 	{
 		return ERROR_FAIL;
 	}
 	
-	return driver->readblock_nb_start(address, count);
+	return mal_driver->readblock_nb_start(address, count);
 }
 
 static RESULT mal_readblock_nb(uint16_t index, uint64_t address, uint8_t *buff)
 {
-	struct mal_driver_t* driver;
+	struct mal_driver_t* mal_driver;
 	
-	driver = mal_find_driver(index);
-	if ((NULL == driver) || (NULL == driver->readblock_nb))
+	mal_driver = mal_find_driver(index);
+	if ((NULL == mal_driver) || (NULL == mal_driver->readblock_nb))
 	{
 		return ERROR_FAIL;
 	}
 	
-	return driver->readblock_nb(address, buff);
+	return mal_driver->readblock_nb(address, buff);
 }
 
 static RESULT mal_readblock_nb_isready(uint16_t index)
 {
-	struct mal_driver_t* driver;
+	struct mal_driver_t* mal_driver;
 	
-	driver = mal_find_driver(index);
-	if ((NULL == driver) || (NULL == driver->readblock_nb_isready))
+	mal_driver = mal_find_driver(index);
+	if ((NULL == mal_driver) || (NULL == mal_driver->readblock_nb_isready))
 	{
 		return ERROR_FAIL;
 	}
 	
-	return driver->readblock_nb_isready();
+	return mal_driver->readblock_nb_isready();
 }
 
 static RESULT mal_readblock_nb_waitready(uint16_t index)
 {
-	struct mal_driver_t* driver;
+	struct mal_driver_t* mal_driver;
 	
-	driver = mal_find_driver(index);
-	if (NULL == driver)
+	mal_driver = mal_find_driver(index);
+	if (NULL == mal_driver)
 	{
 		return ERROR_FAIL;
 	}
 	
-	if (driver->readblock_nb_waitready != NULL)
+	if (mal_driver->readblock_nb_waitready != NULL)
 	{
-		return driver->readblock_nb_waitready();
+		return mal_driver->readblock_nb_waitready();
 	}
 	else
 	{
-		if (driver->readblock_nb_isready != NULL)
+		if (mal_driver->readblock_nb_isready != NULL)
 		{
 			uint32_t dly;
 			RESULT ret;
@@ -419,74 +419,74 @@ static RESULT mal_readblock_nb_waitready(uint16_t index)
 
 static RESULT mal_readblock_nb_end(uint16_t index)
 {
-	struct mal_driver_t* driver;
+	struct mal_driver_t* mal_driver;
 	
-	driver = mal_find_driver(index);
-	if ((NULL == driver) || (NULL == driver->readblock_nb_end))
+	mal_driver = mal_find_driver(index);
+	if ((NULL == mal_driver) || (NULL == mal_driver->readblock_nb_end))
 	{
 		return ERROR_FAIL;
 	}
 	
-	return driver->readblock_nb_end();
+	return mal_driver->readblock_nb_end();
 }
 
 static RESULT mal_writeblock_nb_start(uint16_t index, uint64_t address, 
 										uint64_t count)
 {
-	struct mal_driver_t* driver;
+	struct mal_driver_t* mal_driver;
 	
-	driver = mal_find_driver(index);
-	if ((NULL == driver) || (NULL == driver->writeblock_nb_start))
+	mal_driver = mal_find_driver(index);
+	if ((NULL == mal_driver) || (NULL == mal_driver->writeblock_nb_start))
 	{
 		return ERROR_FAIL;
 	}
 	
-	return driver->writeblock_nb_start(address, count);
+	return mal_driver->writeblock_nb_start(address, count);
 }
 
 static RESULT mal_writeblock_nb(uint16_t index, uint64_t address, uint8_t *buff)
 {
-	struct mal_driver_t* driver;
+	struct mal_driver_t* mal_driver;
 	
-	driver = mal_find_driver(index);
-	if ((NULL == driver) || (NULL == driver->writeblock_nb))
+	mal_driver = mal_find_driver(index);
+	if ((NULL == mal_driver) || (NULL == mal_driver->writeblock_nb))
 	{
 		return ERROR_FAIL;
 	}
 	
-	return driver->writeblock_nb(address, buff);
+	return mal_driver->writeblock_nb(address, buff);
 }
 
 static RESULT mal_writeblock_nb_isready(uint16_t index)
 {
-	struct mal_driver_t* driver;
+	struct mal_driver_t* mal_driver;
 	
-	driver = mal_find_driver(index);
-	if ((NULL == driver) || (NULL == driver->writeblock_nb_isready))
+	mal_driver = mal_find_driver(index);
+	if ((NULL == mal_driver) || (NULL == mal_driver->writeblock_nb_isready))
 	{
 		return ERROR_FAIL;
 	}
 	
-	return driver->writeblock_nb_isready();
+	return mal_driver->writeblock_nb_isready();
 }
 
 static RESULT mal_writeblock_nb_waitready(uint16_t index)
 {
-	struct mal_driver_t* driver;
+	struct mal_driver_t* mal_driver;
 	
-	driver = mal_find_driver(index);
-	if (NULL == driver)
+	mal_driver = mal_find_driver(index);
+	if (NULL == mal_driver)
 	{
 		return ERROR_FAIL;
 	}
 	
-	if (driver->writeblock_nb_waitready != NULL)
+	if (mal_driver->writeblock_nb_waitready != NULL)
 	{
-		return driver->writeblock_nb_waitready();
+		return mal_driver->writeblock_nb_waitready();
 	}
 	else
 	{
-		if (driver->writeblock_nb_isready != NULL)
+		if (mal_driver->writeblock_nb_isready != NULL)
 		{
 			uint32_t dly;
 			RESULT ret;
@@ -509,15 +509,15 @@ static RESULT mal_writeblock_nb_waitready(uint16_t index)
 
 static RESULT mal_writeblock_nb_end(uint16_t index)
 {
-	struct mal_driver_t* driver;
+	struct mal_driver_t* mal_driver;
 	
-	driver = mal_find_driver(index);
-	if ((NULL == driver) || (NULL == driver->writeblock_nb_end))
+	mal_driver = mal_find_driver(index);
+	if ((NULL == mal_driver) || (NULL == mal_driver->writeblock_nb_end))
 	{
 		return ERROR_FAIL;
 	}
 	
-	return driver->writeblock_nb_end();
+	return mal_driver->writeblock_nb_end();
 }
 
 static RESULT mal_eraseblock(uint16_t index, uint64_t address, uint64_t count)

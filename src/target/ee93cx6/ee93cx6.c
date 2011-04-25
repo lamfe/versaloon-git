@@ -120,7 +120,6 @@ const struct vss_cmd_t ee93cx6_notifier[] =
 
 
 
-static struct interfaces_info_t *interfaces = NULL;
 #define commit()					interfaces->peripheral_commit()
 
 ENTER_PROGRAM_MODE_HANDLER(ee93cx6)
@@ -130,16 +129,25 @@ ENTER_PROGRAM_MODE_HANDLER(ee93cx6)
 	struct ee93cx6_drv_param_t drv_param;
 	struct ee93cx6_drv_interface_t drv_ifs;
 	
-	interfaces = context->prog;
-	if (ERROR_OK != dal_init(interfaces))
+	if (ERROR_OK != dal_init(context->prog))
 	{
 		return ERROR_FAIL;
 	}
 	
-	drv_ifs.mw_port = 0;
-	if (ERROR_OK != mal.config_interface(MAL_IDX_EE93CX6, &drv_ifs))
+	if (pi->ifs_indexes != NULL)
 	{
-		return ERROR_FAIL;
+		if (ERROR_OK != dal_config_interface(EE93CX6_STRING, pi->ifs_indexes))
+		{
+			return ERROR_FAIL;
+		}
+	}
+	else
+	{
+		drv_ifs.mw_port = 0;
+		if (ERROR_OK != mal.config_interface(MAL_IDX_EE93CX6, &drv_ifs))
+		{
+			return ERROR_FAIL;
+		}
 	}
 	
 	drv_param.addr_bitlen = (uint8_t)param->param[EE93CX6_PARAM_ADDR_BITLEN];

@@ -27,10 +27,8 @@
 #include "app_type.h"
 #include "app_io.h"
 
-#include "../dal_cfg.h"
-#include "../dal_internal.h"
-#include "../mal/mal_internal.h"
 #include "../mal/mal.h"
+#include "../mal/mal_internal.h"
 #include "df45xx_drv_cfg.h"
 #include "df45xx_drv.h"
 
@@ -164,13 +162,34 @@ static RESULT df45xx_drv_writeblock_nb_end(void)
 	return ERROR_OK;
 }
 
+#if DAL_INTERFACE_PARSER_EN
+static RESULT df45xx_drv_parse_interface(uint8_t *buff)
+{
+	if (NULL == buff)
+	{
+		return ERROR_FAIL;
+	}
+	df45xx_drv_ifs.spi_port = buff[0];
+	df45xx_drv_ifs.cs_port = buff[1];
+	df45xx_drv_ifs.cs_pin = *(uint32_t *)&buff[2];
+	return ERROR_OK;
+}
+#endif
+
 struct mal_driver_t df45xx_drv = 
 {
+	{
+		"df45xx",
+#if DAL_INTERFACE_PARSER_EN
+		"spi:%1dcs:%1d,%4x",
+		df45xx_drv_parse_interface,
+#endif
+		df45xx_drv_config_interface,
+	},
+	
 	MAL_IDX_DF45XX,
 	0,
 	{0, 0},
-	
-	df45xx_drv_config_interface,
 	
 	df45xx_drv_init,
 	df45xx_drv_fini,

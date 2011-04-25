@@ -27,10 +27,8 @@
 #include "app_type.h"
 #include "app_io.h"
 
-#include "../dal_cfg.h"
-#include "../dal_internal.h"
-#include "../mal/mal_internal.h"
 #include "../mal/mal.h"
+#include "../mal/mal_internal.h"
 #include "ee93cx6_drv_cfg.h"
 #include "ee93cx6_drv.h"
 
@@ -296,14 +294,33 @@ static RESULT ee93cx6_drv_writeblock_nb_end(void)
 	return ERROR_OK;
 }
 
+#if DAL_INTERFACE_PARSER_EN
+static RESULT ee93cx6_drv_parse_interface(uint8_t *buff)
+{
+	if (NULL == buff)
+	{
+		return ERROR_FAIL;
+	}
+	ee93cx6_drv_ifs.mw_port = buff[0];
+	return ERROR_OK;
+}
+#endif
+
 struct mal_driver_t ee93cx6_drv = 
 {
+	{
+		"ee93cx6",
+#if DAL_INTERFACE_PARSER_EN
+		"microwire:%1d",
+		ee93cx6_drv_parse_interface,
+#endif
+		ee93cx6_drv_config_interface,
+	},
+	
 	MAL_IDX_EE93CX6,
 	MAL_SUPPORT_ERASEALL | MAL_SUPPORT_ERASEBLOCK | 
 	MAL_SUPPORT_WRITEBLOCK | MAL_SUPPORT_READBLOCK,
 	{0, 0},
-	
-	ee93cx6_drv_config_interface,
 	
 	ee93cx6_drv_init,
 	ee93cx6_drv_fini,

@@ -36,7 +36,6 @@
 #include "target.h"
 #include "scripts.h"
 
-#include "dal/dal.h"
 #include "dal/mal/mal.h"
 #include "dal/df25xx/df25xx_drv.h"
 
@@ -94,7 +93,6 @@ const struct vss_cmd_t df25xx_notifier[] =
 
 
 
-static struct interfaces_info_t *interfaces = NULL;
 #define commit()					interfaces->peripheral_commit()
 
 ENTER_PROGRAM_MODE_HANDLER(df25xx)
@@ -104,18 +102,27 @@ ENTER_PROGRAM_MODE_HANDLER(df25xx)
 	struct df25xx_drv_param_t drv_param;
 	struct df25xx_drv_interface_t drv_ifs;
 	
-	interfaces = context->prog;
-	if (ERROR_OK != dal_init(interfaces))
+	if (ERROR_OK != dal_init(context->prog))
 	{
 		return ERROR_FAIL;
 	}
 	
-	drv_ifs.cs_port = 0;
-	drv_ifs.cs_pin = GPIO_SRST;
-	drv_ifs.spi_port = 0;
-	if (ERROR_OK != mal.config_interface(MAL_IDX_DF25XX, &drv_ifs))
+	if (pi->ifs_indexes != NULL)
 	{
-		return ERROR_FAIL;
+		if (ERROR_OK != dal_config_interface(DF25XX_STRING, pi->ifs_indexes))
+		{
+			return ERROR_FAIL;
+		}
+	}
+	else
+	{
+		drv_ifs.cs_port = 0;
+		drv_ifs.cs_pin = GPIO_SRST;
+		drv_ifs.spi_port = 0;
+		if (ERROR_OK != mal.config_interface(MAL_IDX_DF25XX, &drv_ifs))
+		{
+			return ERROR_FAIL;
+		}
 	}
 	
 	drv_param.spi_khz = pi->frequency;

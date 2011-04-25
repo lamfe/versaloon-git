@@ -188,6 +188,11 @@ static void free_all(void)
 		free(program_info.chip_type);
 		program_info.chip_type = NULL;
 	}
+	if (program_info.ifs_indexes != NULL)
+	{
+		free(program_info.ifs_indexes);
+		program_info.ifs_indexes = NULL;
+	}
 	for (i = 0; i < dimof(target_area_name); i++)
 	{
 		if (program_info.program_areas[i].cli_str != NULL)

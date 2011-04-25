@@ -27,10 +27,8 @@
 #include "app_type.h"
 #include "app_io.h"
 
-#include "../dal_cfg.h"
-#include "../dal_internal.h"
-#include "../mal/mal_internal.h"
 #include "../mal/mal.h"
+#include "../mal/mal_internal.h"
 #include "ee24cxx_drv_cfg.h"
 #include "ee24cxx_drv.h"
 
@@ -145,13 +143,32 @@ static RESULT ee24cxx_drv_writeblock_nb_end(void)
 	return ERROR_OK;
 }
 
+#if DAL_INTERFACE_PARSER_EN
+static RESULT ee24cxx_drv_parse_interface(uint8_t *buff)
+{
+	if (NULL == buff)
+	{
+		return ERROR_FAIL;
+	}
+	ee24cxx_drv_ifs.iic_port = buff[0];
+	return ERROR_OK;
+}
+#endif
+
 struct mal_driver_t ee24cxx_drv = 
 {
+	{
+		"ee24cxx",
+#if DAL_INTERFACE_PARSER_EN
+		"iic:%1d",
+		ee24cxx_drv_parse_interface,
+#endif
+		ee24cxx_drv_config_interface,
+	},
+	
 	MAL_IDX_EE24CXX,
 	MAL_SUPPORT_READBLOCK | MAL_SUPPORT_WRITEBLOCK,
 	{0, 0},
-	
-	ee24cxx_drv_config_interface,
 	
 	ee24cxx_drv_init,
 	ee24cxx_drv_fini,

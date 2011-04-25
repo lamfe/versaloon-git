@@ -94,7 +94,6 @@ const struct vss_cmd_t ee24cxx_notifier[] =
 
 
 
-static struct interfaces_info_t *interfaces = NULL;
 #define commit()					interfaces->peripheral_commit()
 
 ENTER_PROGRAM_MODE_HANDLER(ee24cxx)
@@ -104,16 +103,25 @@ ENTER_PROGRAM_MODE_HANDLER(ee24cxx)
 	struct ee24cxx_drv_param_t drv_param;
 	struct ee24cxx_drv_interface_t drv_ifs;
 	
-	interfaces = context->prog;
-	if (ERROR_OK != dal_init(interfaces))
+	if (ERROR_OK != dal_init(context->prog))
 	{
 		return ERROR_FAIL;
 	}
 	
-	drv_ifs.iic_port = 0;
-	if (ERROR_OK != mal.config_interface(MAL_IDX_EE24CXX, &drv_ifs))
+	if (pi->ifs_indexes != NULL)
 	{
-		return ERROR_FAIL;
+		if (ERROR_OK != dal_config_interface(EE24CXX_STRING, pi->ifs_indexes))
+		{
+			return ERROR_FAIL;
+		}
+	}
+	else
+	{
+		drv_ifs.iic_port = 0;
+		if (ERROR_OK != mal.config_interface(MAL_IDX_EE24CXX, &drv_ifs))
+		{
+			return ERROR_FAIL;
+		}
 	}
 	
 	drv_param.iic_addr = 0xAC;
