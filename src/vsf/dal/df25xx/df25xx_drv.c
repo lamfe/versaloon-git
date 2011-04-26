@@ -131,8 +131,12 @@ static RESULT df25xx_drv_eraseall_nb_start(void)
 	
 	df25xx_drv_cs_assert();
 	buff[0] = DF25XX_CMD_WREN;
-	buff[1] = DF25XX_CMD_CHER;
-	interfaces->spi.io(df25xx_drv_ifs.spi_port, buff, NULL, 2);
+	interfaces->spi.io(df25xx_drv_ifs.spi_port, buff, NULL, 1);
+	df25xx_drv_cs_deassert();
+	
+	df25xx_drv_cs_assert();
+	buff[0] = DF25XX_CMD_CHER;
+	interfaces->spi.io(df25xx_drv_ifs.spi_port, buff, NULL, 1);
 	return df25xx_drv_cs_deassert();
 }
 
