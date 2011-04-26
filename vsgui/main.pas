@@ -46,6 +46,7 @@ type
     btnEditTarget: TButton;
     btnEditScript: TButton;
     btnEditSpecialStr: TButton;
+    btnBatchProgram: TButton;
     cbboxOpenOCDInterface: TComboBox;
     cbboxOpenOCDScript: TComboBox;
     cbboxOpenOCDTarget: TComboBox;
@@ -120,6 +121,9 @@ type
     pmTray:    TPopupMenu;
     sbMain:    TStatusBar;
     sedtFreq:  TSpinEdit;
+    shapeResult: TShape;
+    tsBatchProgrammer: TTabSheet;
+    tBlink: TTimer;
     tInit:     TTimer;
     tsVsprog:  TTabSheet;
     tsJTAG:    TTabSheet;
@@ -140,6 +144,7 @@ type
     procedure btnOpenFileClick(Sender: TObject);
     procedure btnOpenOCDRunClick(Sender: TObject);
     procedure btnOpenOCDStopClick(Sender: TObject);
+    procedure btnBatchProgramClick(Sender: TObject);
     procedure btnReadClick(Sender: TObject);
     procedure btnSetPowerClick(Sender: TObject);
     procedure btnEditSpecialStrClick(Sender: TObject);
@@ -164,6 +169,7 @@ type
     procedure pcMainChanging(Sender: TObject; var AllowChange: boolean);
     procedure pcMainPageChanged(Sender: TObject);
     procedure sedtFreqEditingDone(Sender: TObject);
+    procedure tBlinkTimer(Sender: TObject);
     procedure tiMainClick(Sender: TObject);
     procedure tInitTimer(Sender: TObject);
 
@@ -456,23 +462,30 @@ begin
   Result := False;
   VSProg_Parser.Prepare();
   VSProg_Parser.ParserFunc := parser;
+  tBlink.Enabled := True;
   caller.Run(@VSProg_Parser.CommonParser, False, True);
+  tBlink.Enabled := False;
   VSProg_Parser.CallbackFunc    := nil;
   VSProg_Parser.LogOutputEnable := True;
   VSProg_Caller.Application     := '';
 
-  if (VSProg_Parser.HasError) and (not silent) then
+  if (VSProg_Parser.HasError) then
   begin
-    Beep();
-    strTmp := VSProg_TranslateError(VSProg_Parser.ErrorStr);
-    if strTmp = '' then
+    shapeResult.Brush.Color := clRed;
+    if not silent then
     begin
-      strTmp := VSProg_Parser.ErrorStr;
+      Beep();
+      strTmp := VSProg_TranslateError(VSProg_Parser.ErrorStr);
+      if strTmp = '' then
+      begin
+        strTmp := VSProg_Parser.ErrorStr;
+      end;
+      MessageDlg('Error', strTmp, mtError, [mbOK], 0);
     end;
-    MessageDlg('Error', strTmp, mtError, [mbOK], 0);
   end
   else if VSProg_Parser.ResultStrings.Count >= result_num then
   begin
+    shapeResult.Brush.Color := clGreen;
     Result := True;
   end;
 end;
@@ -1344,6 +1357,18 @@ begin
   end;
 end;
 
+procedure TFormMain.tBlinkTimer(Sender: TObject);
+begin
+  if shapeResult.Brush.Color <> clYellow then
+  begin
+    shapeResult.Brush.Color := clYellow;
+  end
+  else
+  begin
+    shapeResult.Brush.Color := clWhite;
+  end;
+end;
+
 procedure TFormMain.btnTargetDetectClick(Sender: TObject);
 begin
   if not VSProg_PrepareToRunCLI then
@@ -1627,6 +1652,11 @@ begin
   begin
     VSProg_Caller.Stop();
   end;
+end;
+
+procedure TFormMain.btnBatchProgramClick(Sender: TObject);
+begin
+  btnWrite.Click;
 end;
 
 procedure TFormMain.ShowTargetArea(AreaName: char; var Sender: TObject;

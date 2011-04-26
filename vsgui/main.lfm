@@ -912,6 +912,28 @@ object FormMain: TFormMain
           end
         end
       end
+      object tsBatchProgrammer: TTabSheet
+        Caption = 'BatchProgrammer'
+        ClientHeight = 545
+        ClientWidth = 389
+        object shapeResult: TShape
+          Left = 8
+          Height = 368
+          Top = 5
+          Width = 373
+          Brush.Color = clGreen
+          Shape = stCircle
+        end
+        object btnBatchProgram: TButton
+          Left = 8
+          Height = 168
+          Top = 373
+          Width = 379
+          Caption = 'Batch Program'
+          OnClick = btnBatchProgramClick
+          TabOrder = 0
+        end
+      end
       object tsAbout: TTabSheet
         Tag = -1
         Caption = 'About'
@@ -1136,5 +1158,11 @@ object FormMain: TFormMain
     OnTimer = tInitTimer
     left = 600
     top = 488
+  end
+  object tBlink: TTimer
+    Interval = 2000
+    OnTimer = tBlinkTimer
+    left = 16
+    top = 40
   end
 end
