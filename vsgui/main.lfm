@@ -928,7 +928,7 @@ object FormMain: TFormMain
           Left = 8
           Height = 168
           Top = 373
-          Width = 379
+          Width = 374
           Caption = 'Batch Program'
           OnClick = btnBatchProgramClick
           TabOrder = 0
