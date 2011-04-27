@@ -20,6 +20,8 @@
 #include "config.h"
 #endif
 
+#include <string.h>
+
 #include "port.h"
 #include "app_type.h"
 #include "app_io.h"
