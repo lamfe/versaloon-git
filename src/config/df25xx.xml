@@ -10,7 +10,7 @@
   </chip>
   <chip name="df25q32">
     <chip_id>0x00EF4016</chip_id>
-    <app_page_size>4096</app_page_size>
-    <app_page_num>1024</app_page_num>
+    <app_page_size>256</app_page_size>
+    <app_page_num>16384</app_page_num>
   </chip>
 </series>
