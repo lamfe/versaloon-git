@@ -348,6 +348,8 @@ begin
       VSProg_Parser.LogOutputEnable := False;
       VSProg_Caller.bProcessMessage := False;
       VSProg_Caller.Run(@VSProg_Parser.CommonParser, False, True);
+      VSProg_Caller.bProcessMessage := True;
+      VSProg_Parser.LogOutputEnable := True;
       if not VSProg_Parser.HasError then
       begin
         ProgrammerParameter := VSProg_Programmer.SerialNumber;
