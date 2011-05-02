@@ -2048,8 +2048,9 @@ end;
 
 procedure TFormMain.dedtPathChange(Sender: TObject);
 begin
-  if (Sender as TDirectoryEdit).Directory[Length(
-    (Sender as TDirectoryEdit).Directory)] <> System.DirectorySeparator then
+  if ((Sender as TDirectoryEdit).Directory <> '') and
+     ((Sender as TDirectoryEdit).Directory[Length(
+    (Sender as TDirectoryEdit).Directory)] <> System.DirectorySeparator) then
   begin
     (Sender as TDirectoryEdit).Directory :=
       (Sender as TDirectoryEdit).Directory + System.DirectorySeparator;
