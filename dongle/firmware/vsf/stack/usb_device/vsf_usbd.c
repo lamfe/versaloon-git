@@ -46,7 +46,7 @@ static RESULT vsfusbd_device_get_descriptor(struct vsfusbd_device_t *device,
 
 RESULT vsfusbd_device_init(struct vsfusbd_device_t *device)
 {
-	if ((ERROR_OK != device->drv->init()) || 
+	if ((ERROR_OK != device->drv->init(device)) || 
 		(ERROR_OK != device->drv->connect()) || 
 		((deivce->callback.init != NULL) && 
 			(ERROR_OK != deivce->callback.init())))
