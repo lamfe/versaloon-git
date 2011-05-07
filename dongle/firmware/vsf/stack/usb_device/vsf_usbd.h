@@ -80,6 +80,7 @@ struct vsfusbd_class_protocol_t
 	
 	RESULT (*init)(void);
 	RESULT (*fini)(void);
+	RESULT (*poll)(void);
 };
 
 struct vsfusbd_iface_t

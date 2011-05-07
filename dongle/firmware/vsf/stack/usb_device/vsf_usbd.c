@@ -70,11 +70,22 @@ RESULT vsfusbd_device_fini(struct vsfusbd_device_t *device)
 
 RESULT vsfusbd_device_poll(struct vsfusbd_device_t *device)
 {
+	struct vsfusbd_config_t *cur_config = &device->config[device->configuration];
+	uint8_t i;
+	
 	if ((ERROR_OK != device->drv->poll()) || 
 		((deivce->callback.poll != NULL) && 
 			(ERROR_OK != deivce->callback.poll())))
 	{
 		return ERROR_FAIL;
+	}
+	for (i = 0; i < config->iface_num; i++)
+	{
+		if ((config->iface[i].poll != NULL) && 
+			(ERROR_OK != config->iface[i].poll()))
+		{
+			return ERROR_FAIL;
+		}
 	}
 	return ERROR_OK;
 }
@@ -884,6 +895,23 @@ RESULT vsfusbd_on_RESET(struct vsfusbd_device_t *device)
 	device->num_of_configuration = desc.buff[USB_DESC_DEVICE_OFF_CFGNUM];
 	config = device->config;
 	
+	// call user initialization
+	if ((config->init != NULL) && (ERROR_OK != config->init()))
+	{
+		return ERROR_FAIL;
+	}
+	for (i = 0; i < config->num_of_ifaces; i++)
+	{
+		if (((config->iface[i].init != NULL) && 
+				(ERROR_OK != config->iface[i].init())) || 
+			((config->iface[i].class_protocol != NULL) && 
+				(config->iface[i].class_protocol.init != NULL) && 
+				(ERROR_OK != config->iface[i].class_protocol.init())))
+		{
+			return ERROR_FAIL;
+		}
+	}
+	
 	// config ep0
 	if ((ERROR_OK != device->drv->ep.set_type(0, USB_EP_TYPE_CONTROL)) || 
 		(ERROR_OK != device->drv->ep.set_IN_size(ep_size)) || 
@@ -907,23 +935,6 @@ RESULT vsfusbd_on_RESET(struct vsfusbd_device_t *device)
 		return ERROR_FAIL;
 	}
 	config->num_of_ifaces = desc.buff[USB_DESC_CONFIG_OFF_IFNUM];
-	
-	// call user initialization
-	if ((config->init != NULL) && (ERROR_OK != config->init()))
-	{
-		return ERROR_FAIL;
-	}
-	for (i = 0; i < config->num_of_ifaces; i++)
-	{
-		if (((config->iface[i].init != NULL) && 
-				(ERROR_OK != config->iface[i].init())) || 
-			((config->iface[i].class_protocol != NULL) && 
-				(config->iface[i].class_protocol.init != NULL) && 
-				(ERROR_OK != config->iface[i].class_protocol.init())))
-		{
-			return ERROR_FAIL;
-		}
-	}
 	
 	// initialize device feature according to 
 	// bmAttributes field in configuration descriptor
