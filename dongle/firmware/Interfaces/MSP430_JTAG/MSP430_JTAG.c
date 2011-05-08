@@ -23,7 +23,7 @@
 #define MSP430_JTAG_DELAY()				DelayUS(0)
 #define MSP430_JTAG_IR_LEN				8
 
-static void MSP430_JTAG_Init(uint8 has_test)
+static void MSP430_JTAG_Init(uint8_t has_test)
 {
 	JTAG_TAP_TMS_CLR();
 	JTAG_TAP_TMS_SETOUTPUT();
@@ -92,7 +92,7 @@ static void MSP430_JTAG_Fini(void)
 #endif
 }
 
-static void MSP430_JTAG_TCLK(uint8 tclk)
+static void MSP430_JTAG_TCLK(uint8_t tclk)
 {
 	if(tclk)
 	{
@@ -104,7 +104,7 @@ static void MSP430_JTAG_TCLK(uint8 tclk)
 	}
 }
 
-static void MSP430_JTAG_TCLK_STROKE(uint16 cnt)
+static void MSP430_JTAG_TCLK_STROKE(uint16_t cnt)
 {
 	while(cnt--)
 	{
@@ -114,11 +114,11 @@ static void MSP430_JTAG_TCLK_STROKE(uint16 cnt)
 	}
 }
 
-static uint32 MSP430_JTAG_Shift(uint32 data, uint8 len)
+static uint32_t MSP430_JTAG_Shift(uint32_t data, uint8_t len)
 {
-	uint32 tclk = JTAG_TAP_TDI_GET();
-	uint32 tdo = 0, mask = 1 << (len - 1);
-	uint8 i;
+	uint32_t tclk = JTAG_TAP_TDI_GET();
+	uint32_t tdo = 0, mask = 1 << (len - 1);
+	uint8_t i;
 
 	for(i = len; i > 0; i--)
 	{
@@ -172,7 +172,7 @@ static uint32 MSP430_JTAG_Shift(uint32 data, uint8 len)
 	return tdo;
 }
 
-static uint32 MSP430_JTAG_DR(uint32 dr, uint8 len)
+static uint32_t MSP430_JTAG_DR(uint32_t dr, uint8_t len)
 {
 	// RTI
 	JTAG_TAP_TMS_SET();
@@ -195,7 +195,7 @@ static uint32 MSP430_JTAG_DR(uint32 dr, uint8 len)
 	return MSP430_JTAG_Shift(dr, len);
 }
 
-static uint8 MSP430_JTAG_IR(uint8 ir, uint8 len)
+static uint8_t MSP430_JTAG_IR(uint8_t ir, uint8_t len)
 {
 	// RTI
 	JTAG_TAP_TMS_SET();
@@ -220,12 +220,12 @@ static uint8 MSP430_JTAG_IR(uint8 ir, uint8 len)
 	JTAG_TAP_TCK_SET();
 	MSP430_JTAG_DELAY();
 
-	return (uint8)MSP430_JTAG_Shift(ir, len);
+	return (uint8_t)MSP430_JTAG_Shift(ir, len);
 }
 
 static void MSP430_JTAG_Reset(void)
 {
-	uint8 i;
+	uint8_t i;
 
 	JTAG_TAP_TDI_SET();
 	JTAG_TAP_TMS_SET();
@@ -268,9 +268,9 @@ static void MSP430_JTAG_Reset(void)
 	MSP430_JTAG_DELAY();
 }
 
-static uint8 MSP430_JTAG_Poll(uint32 data, uint32 mask, uint32 value, uint8 len, uint16 poll_cnt)
+static uint8_t MSP430_JTAG_Poll(uint32_t data, uint32_t mask, uint32_t value, uint8_t len, uint16_t poll_cnt)
 {
-	uint8 toggle_tclk = (poll_cnt & 0x8000) > 0;
+	uint8_t toggle_tclk = (poll_cnt & 0x8000) > 0;
 
 	poll_cnt &= 0x7FFF;
 	while(poll_cnt-- > 0)

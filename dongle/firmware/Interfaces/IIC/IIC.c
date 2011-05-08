@@ -24,7 +24,7 @@
 
 DEFINE_EMIIC_MOD(USBTOXXX, IIC_SCL_CLR, IIC_SCL_SET, IIC_SCL_GET, IIC_SDA_CLR, IIC_SDA_SET, IIC_SDA_GET, DelayUS, uint16_t)
 
-uint16 IIC_Delay;
+uint16_t IIC_Delay;
 
 RESULT iic_init(uint8_t index)
 {
@@ -58,7 +58,7 @@ RESULT iic_fini(uint8_t index)
 RESULT iic_config(uint8_t index, uint16_t kHz, uint16_t byte_interval, 
 				 uint16_t max_dly)
 {
-	uint16 clock_cycle = 1000 / kHz;
+	uint16_t clock_cycle = 1000 / kHz;
 	
 	switch (index)
 	{

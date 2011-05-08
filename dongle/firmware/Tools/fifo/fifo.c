@@ -18,7 +18,7 @@
 #include "fifo.h"
 
 //#define FIFO_Get_Next_Idx(pos, size)		++(pos) % (size)
-static uint32 FIFO_Get_Next_Idx(uint32 pos, uint32 size)
+static uint32_t FIFO_Get_Next_Idx(uint32_t pos, uint32_t size)
 {
 	pos++;
 	if(pos >= size)
@@ -29,12 +29,12 @@ static uint32 FIFO_Get_Next_Idx(uint32 pos, uint32 size)
 	return pos;
 }
 
-uint32 FIFO_Get_AvailableLength(FIFO *fifo)
+uint32_t FIFO_Get_AvailableLength(FIFO *fifo)
 {
 	return fifo->size - FIFO_Get_Length(fifo);
 }
 
-uint32 FIFO_Get_Length(FIFO *fifo)
+uint32_t FIFO_Get_Length(FIFO *fifo)
 {
 	if (fifo->header >= fifo->tail)
 	{
@@ -46,7 +46,7 @@ uint32 FIFO_Get_Length(FIFO *fifo)
 	}
 }
 
-uint32 FIFO_Add_Byte(FIFO *fifo, uint8 data)
+uint32_t FIFO_Add_Byte(FIFO *fifo, uint8_t data)
 {
 	if (FIFO_Get_AvailableLength(fifo) > 1)
 	{
@@ -60,9 +60,9 @@ uint32 FIFO_Add_Byte(FIFO *fifo, uint8 data)
 	}
 }
 
-uint32 FIFO_Add_Buffer(FIFO *fifo, uint8 *src_buff, uint32 len)
+uint32_t FIFO_Add_Buffer(FIFO *fifo, uint8_t *src_buff, uint32_t len)
 {
-	uint32 actual_len = len;
+	uint32_t actual_len = len;
 
 	if(actual_len >= FIFO_Get_AvailableLength(fifo))
 	{
@@ -88,9 +88,9 @@ uint32 FIFO_Add_Buffer(FIFO *fifo, uint8 *src_buff, uint32 len)
 	return actual_len;
 }
 
-uint32 FIFO_Get_Buffer(FIFO *fifo, uint8 *dest_buff, uint32 len)
+uint32_t FIFO_Get_Buffer(FIFO *fifo, uint8_t *dest_buff, uint32_t len)
 {
-	uint32 actual_len = len, avail_len = FIFO_Get_Length(fifo);
+	uint32_t actual_len = len, avail_len = FIFO_Get_Length(fifo);
 
 	if(actual_len > avail_len)
 	{
@@ -117,9 +117,9 @@ uint32 FIFO_Get_Buffer(FIFO *fifo, uint8 *dest_buff, uint32 len)
 }
 
 // make sure there is data in the buffer, if no data is in the buffer, 0 is returned
-uint8 FIFO_Get_Byte(FIFO *fifo)
+uint8_t FIFO_Get_Byte(FIFO *fifo)
 {
-	uint8 byte;
+	uint8_t byte;
 
 	if(FIFO_Get_Length(fifo) > 0)
 	{
@@ -131,7 +131,7 @@ uint8 FIFO_Get_Byte(FIFO *fifo)
 	return 0;
 }
 
-uint32 FIFO_Get_Consequent_Buffer_Size(FIFO *fifo)
+uint32_t FIFO_Get_Consequent_Buffer_Size(FIFO *fifo)
 {
 	if (fifo->header >= fifo->tail)
 	{
@@ -143,15 +143,15 @@ uint32 FIFO_Get_Consequent_Buffer_Size(FIFO *fifo)
 	}
 }
 
-uint32 FIFO_Get_Consequent_Buffer(FIFO *fifo, uint8 **buff)
+uint32_t FIFO_Get_Consequent_Buffer(FIFO *fifo, uint8_t **buff)
 {
-	*buff = (uint8*)(fifo->buffer + fifo->tail);
+	*buff = (uint8_t*)(fifo->buffer + fifo->tail);
 	return FIFO_Get_Consequent_Buffer_Size(fifo);
 }
 
-uint32 FIFO_Release_Consequent_Buffer(FIFO *fifo, uint32 size)
+uint32_t FIFO_Release_Consequent_Buffer(FIFO *fifo, uint32_t size)
 {
-	uint32 actual_size = FIFO_Get_Consequent_Buffer_Size(fifo);
+	uint32_t actual_size = FIFO_Get_Consequent_Buffer_Size(fifo);
 
 	if (size < actual_size)
 	{

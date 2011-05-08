@@ -25,8 +25,8 @@
 #include "Target/MEGA_JTAG/MEGA_JTAG.h"
 #include "Target/MEGA_JTAG/MEGA_JTAG_PRG.h"
 
-bool STK500V2_OnWriteEntryPoint(const struct STKPARAM *param, uint8 attr);
-bool STK500V2_OnReadJTAGID(const struct STKPARAM *param, uint8 attr);
+bool STK500V2_OnWriteEntryPoint(const struct STKPARAM *param, uint8_t attr);
+bool STK500V2_OnReadJTAGID(const struct STKPARAM *param, uint8_t attr);
 
 static const struct STKPARAM STK500V2_MEGA_JTAG_Param[] = 
 {
@@ -36,16 +36,16 @@ static const struct STKPARAM STK500V2_MEGA_JTAG_Param[] =
 	STKPARAM_NULL
 };
 
-bool STK500V2_OnReadJTAGID(const struct STKPARAM *param, uint8 attr)
+bool STK500V2_OnReadJTAGID(const struct STKPARAM *param, uint8_t attr)
 {
 	if (STKPARAM_ATTR_R == attr)
 	{
-		AVR_JTAGPRG_ReadJTAGID((uint8*)&STK500V2_NULL);
+		AVR_JTAGPRG_ReadJTAGID((uint8_t*)&STK500V2_NULL);
 	}
 	return true;
 }
 
-bool STK500V2_OnWriteEntryPoint(const struct STKPARAM *param, uint8 attr)
+bool STK500V2_OnWriteEntryPoint(const struct STKPARAM *param, uint8_t attr)
 {
 	if (STKPARAM_ATTR_W == attr)
 	{
@@ -61,16 +61,16 @@ bool STK500V2_OnWriteEntryPoint(const struct STKPARAM *param, uint8 attr)
 /// @param[in]	dat		Command Array
 /// @param[in]	len		Command Length
 /// @return		Command Result
-uint8 STK500V2_MEGA_JTAG_ProcessCmd(uint8* dat, uint16 len)
+uint8_t STK500V2_MEGA_JTAG_ProcessCmd(uint8_t *dat, uint16_t len)
 {
-	uint32 addr, length, data;
-	uint8 tmp8;
+	uint32_t addr, length, data;
+	uint8_t tmp8;
 
 	switch(dat[0])
 	{
 	case CMND_SET_PARAMETER:
 		length = 0;
-		if (STKPARAM_GetSize(STK500V2_MEGA_JTAG_Param, dat[1], (uint8*)&length))
+		if (STKPARAM_GetSize(STK500V2_MEGA_JTAG_Param, dat[1], (uint8_t*)&length))
 		{
 			STKPARAM_SetValue(STK500V2_MEGA_JTAG_Param, dat[1], &dat[2]);
 			STK500V2_RSP_OK();
@@ -78,7 +78,7 @@ uint8 STK500V2_MEGA_JTAG_ProcessCmd(uint8* dat, uint16 len)
 		break;
 	case CMND_GET_PARAMETER:
 		length = 0;
-		if (STKPARAM_GetSize(STK500V2_MEGA_JTAG_Param, dat[1], (uint8*)&length))
+		if (STKPARAM_GetSize(STK500V2_MEGA_JTAG_Param, dat[1], (uint8_t*)&length))
 		{
 			STKPARAM_GetValue(STK500V2_MEGA_JTAG_Param, dat[1], &dat[1]);
 			STK500V2_RSP_PARAMETER(length);
@@ -210,11 +210,11 @@ uint8 STK500V2_MEGA_JTAG_ProcessCmd(uint8* dat, uint16 len)
 				STK500V2_RSP_ILLEGAL_MCU_STATE();
 				return 0;
 			}
-			AVR_JTAGPRG_ReadSignature((uint8*)&data);
+			AVR_JTAGPRG_ReadSignature((uint8_t*)&data);
 
 			for(tmp8 = 0; tmp8 < length; tmp8++)
 			{
-				dat[1 + tmp8] = ((uint8*)&data)[tmp8 + addr];
+				dat[1 + tmp8] = ((uint8_t*)&data)[tmp8 + addr];
 			}
 			break;
 		case MEMTYPE_OSCCAL_BYTE:

@@ -21,10 +21,10 @@
 
 #include "STK_Param.h"
 
-uint8 STK500_PARAM_SCK_Duration = 0;
-uint8 STK500_PARAM_Reset_Polarity = 0;
-uint8 STK500_PARAM_DischargeDelay = 0;
-uint32 SKT500_Target_Address = 0;
+uint8_t STK500_PARAM_SCK_Duration = 0;
+uint8_t STK500_PARAM_Reset_Polarity = 0;
+uint8_t STK500_PARAM_DischargeDelay = 0;
+uint32_t SKT500_Target_Address = 0;
 
 const struct STKPARAM STK500_Param[] = 
 {
@@ -38,15 +38,15 @@ const struct STKPARAM STK500_Param[] =
 /// @param[in]	dat		Command Array
 /// @param[in]	len		Command Length
 /// @return		Command Result
-static uint8 STK500_ProcessGenCmd(uint8* dat, uint16 len)
+static uint8_t STK500_ProcessGenCmd(uint8_t* dat, uint16_t len)
 {
-	uint8 length;
+	uint8_t length;
 
 	switch(dat[0])
 	{
 	case CMD_SET_PARAMETER:
 		length = 0;
-		if (STKPARAM_GetSize(STK500_Param, dat[1], (uint8*)&length))
+		if (STKPARAM_GetSize(STK500_Param, dat[1], (uint8_t*)&length))
 		{
 			STKPARAM_SetValue(STK500_Param, dat[1], &dat[2]);
 		}
@@ -54,7 +54,7 @@ static uint8 STK500_ProcessGenCmd(uint8* dat, uint16 len)
 		break;
 	case CMD_GET_PARAMETER:
 		length = 0;
-		if (STKPARAM_GetSize(STK500_Param, dat[1], (uint8*)&length))
+		if (STKPARAM_GetSize(STK500_Param, dat[1], (uint8_t*)&length))
 		{
 			STKPARAM_GetValue(STK500_Param, dat[1], &dat[2]);
 		}
@@ -79,9 +79,9 @@ static uint8 STK500_ProcessGenCmd(uint8* dat, uint16 len)
 /// STK500 Process Command, support ISP, HVPP and HVSP
 /// @param[in]	dat		Command Array
 /// @param[in]	len		Command Length
-void STK500_ProcessCmd(uint8 *dat, uint16 len)
+void STK500_ProcessCmd(uint8_t *dat, uint16_t len)
 {
-	uint8 tmp = 0;
+	uint8_t tmp = 0;
 
 	if((dat[0] & STK500_CMDTYPE_MASK) == CMDTYPE_GENERAL)
 	{

@@ -21,14 +21,14 @@
 
 #if USB_TO_USART_EN
 
-void USB_TO_USART_ProcessCmd(uint8* dat, uint16 len)
+void USB_TO_USART_ProcessCmd(uint8_t *dat, uint16_t len)
 {
-	uint16 index, length;
-	uint8 command, device_idx;
+	uint16_t index, length;
+	uint8_t command, device_idx;
 	
-	uint32 data_len;
-	uint32 baudrate;
-	uint8 datalength, paritybit, stopbit;
+	uint32_t data_len;
+	uint32_t baudrate;
+	uint8_t datalength, paritybit, stopbit;
 	struct usart_status_t status;
 	
 	index = 0;

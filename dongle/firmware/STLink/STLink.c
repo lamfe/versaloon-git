@@ -203,7 +203,7 @@ void STLink_SCSI_Process(uint8_t *cmd)
 			break;
 		case STLINK_SUBCMD_0X02:
 			{
-				uint8 buff[] = {0x00, 0x01, 0x01, 0x03, 0x00, 0x00, 0x00, 0x00};
+				uint8_t buff[] = {0x00, 0x01, 0x01, 0x03, 0x00, 0x00, 0x00, 0x00};
 				Transfer_Data_Request((uint8_t*)buff, (uint16_t)sizeof(buff));
 			}
 			break;
@@ -320,7 +320,7 @@ void STLink_SCSI_Process(uint8_t *cmd)
 			break;
 		case STLINK_SUBCMD_POLL:
 			{
-				uint8 buff[4];
+				uint8_t buff[4];
 				buff[0] = STLink_state;
 				buff[1] = (STLink_process_queue_len >> 0) &0xFF;
 				buff[2] = (STLink_process_queue_len >> 8) &0xFF;

@@ -20,14 +20,14 @@
 #include "interfaces.h"
 #include "BDM.h"
 
-uint8 BDM_Inited = 0;
-static uint16 BDM_DMA_OUT_Buffer[16];
-static uint16 BDM_DMA_IN_Buffer[8 * 0xF + 1];
-static uint16 BDM_clock_div = 0;
+uint8_t BDM_Inited = 0;
+static uint16_t BDM_DMA_OUT_Buffer[16];
+static uint16_t BDM_DMA_IN_Buffer[8 * 0xF + 1];
+static uint16_t BDM_clock_div = 0;
 
-static uint16 BDM_PULSE_0;
-static uint16 BDM_PULSE_1;
-static uint16 BDM_PULSE_Threshold;
+static uint16_t BDM_PULSE_0;
+static uint16_t BDM_PULSE_1;
+static uint16_t BDM_PULSE_Threshold;
 
 #define BDM_SIG0_CYCLES					13
 #define BDM_SIG1_CYCLES					4
@@ -59,9 +59,9 @@ static void BDM_Init(void)
 	}
 }
 
-static uint8 BDM_Sync(uint16 *khz)
+static uint8_t BDM_Sync(uint16_t *khz)
 {
-	uint32 dly;
+	uint32_t dly;
 
 	// reset MUST be released to perform sync
 	dly = 0;
@@ -111,10 +111,10 @@ static uint8 BDM_Sync(uint16 *khz)
 	}
 }
 
-static uint8 BDM_OutByte(uint8 data)
+static uint8_t BDM_OutByte(uint8_t data)
 {
-	int8 i;
-	uint16 *ptr = &BDM_DMA_OUT_Buffer[0];
+	int8_t i;
+	uint16_t *ptr = &BDM_DMA_OUT_Buffer[0];
 
 	for (i = 7; i >= 0; i--)
 	{
@@ -134,10 +134,10 @@ static uint8 BDM_OutByte(uint8 data)
 	return 0;
 }
 
-static uint8 BDM_OutDly(void)
+static uint8_t BDM_OutDly(void)
 {
-	uint8 i;
-	uint16 *ptr = &BDM_DMA_OUT_Buffer[0];
+	uint8_t i;
+	uint16_t *ptr = &BDM_DMA_OUT_Buffer[0];
 
 	for (i = 0; i < 16; i++)
 	{
@@ -149,11 +149,11 @@ static uint8 BDM_OutDly(void)
 	return 0;
 }
 
-static uint8 BDM_InByte(uint8 *data)
+static uint8_t BDM_InByte(uint8_t *data)
 {
-	uint32 dly;
-	int8 i;
-	uint16 *ptr = &BDM_DMA_OUT_Buffer[0];
+	uint32_t dly;
+	int8_t i;
+	uint16_t *ptr = &BDM_DMA_OUT_Buffer[0];
 
 	SYNCSWPWM_IN_TIMER_RISE_DMA_INIT(8, BDM_DMA_IN_Buffer);
 
@@ -188,10 +188,10 @@ static uint8 BDM_InByte(uint8 *data)
 	return 0;
 }
 
-static uint8 BDM_Transact(uint16 token, uint8 *out, uint8 *in)
+static uint8_t BDM_Transact(uint16_t token, uint8_t *out, uint8_t *in)
 {
-	uint32 dly;
-	uint16 outlen, inlen, i;
+	uint32_t dly;
+	uint16_t outlen, inlen, i;
 
 	outlen = BDM_OUT_LEN(token);
 	if (!outlen)

@@ -20,14 +20,14 @@
 #include "interfaces.h"
 #include "SWIM.h"
 
-static uint8 SWIM_Inited = 0;
-static uint16 SWIM_PULSE_0;
-static uint16 SWIM_PULSE_1;
-static uint16 SWIM_PULSE_Threshold;
+static uint8_t SWIM_Inited = 0;
+static uint16_t SWIM_PULSE_0;
+static uint16_t SWIM_PULSE_1;
+static uint16_t SWIM_PULSE_Threshold;
 // max length is 1(header)+8(data)+1(parity)+1(ack from target)+1(empty)
-static uint16 SWIM_DMA_IN_Buffer[12];
-static uint16 SWIM_DMA_OUT_Buffer[12];
-static uint16 SWIM_clock_div = 0;
+static uint16_t SWIM_DMA_IN_Buffer[12];
+static uint16_t SWIM_DMA_OUT_Buffer[12];
+static uint16_t SWIM_clock_div = 0;
 
 #define SWIM_MAX_DLY					0xFFFFF
 #define SWIM_MAX_RESEND_CNT				20
@@ -63,10 +63,10 @@ static void SWIM_EnableClockInput(void)
 	SYNCSWPWM_IN_TIMER_INIT();
 }
 
-static uint8 SWIM_EnterProgMode(void)
+static uint8_t SWIM_EnterProgMode(void)
 {
-	uint8 i;
-	uint32 dly;
+	uint8_t i;
+	uint32_t dly;
 
 	SYNCSWPWM_IN_TIMER_RISE_DMA_INIT(10, SWIM_DMA_IN_Buffer);
 
@@ -101,11 +101,11 @@ static uint8 SWIM_EnterProgMode(void)
 	}
 }
 
-static uint8 SWIM_Sync(uint8 mHz)
+static uint8_t SWIM_Sync(uint8_t mHz)
 {
-	uint32 dly;
-	uint16 clock_div;
-	uint16 arr_save;
+	uint32_t dly;
+	uint16_t clock_div;
+	uint16_t arr_save;
 	
 	clock_div = SYNCSWPWM_OUT_TIMER_MHZ / mHz;
 	if ((SYNCSWPWM_OUT_TIMER_MHZ % mHz) > (mHz / 2))
@@ -138,9 +138,9 @@ static uint8 SWIM_Sync(uint8 mHz)
 	}
 }
 
-static uint8 SWIM_SetClockParam(uint8 mHz, uint8 cnt0, uint8 cnt1)
+static uint8_t SWIM_SetClockParam(uint8_t mHz, uint8_t cnt0, uint8_t cnt1)
 {
-	uint16 clock_div;
+	uint16_t clock_div;
 	
 	if (SWIM_clock_div)
 	{
@@ -175,11 +175,11 @@ static uint8 SWIM_SetClockParam(uint8 mHz, uint8 cnt0, uint8 cnt1)
 	return 0;
 }
 
-static uint8 SWIM_HW_Out(uint8 cmd, uint8 bitlen, uint16 retry_cnt)
+static uint8_t SWIM_HW_Out(uint8_t cmd, uint8_t bitlen, uint16_t retry_cnt)
 {
-	int8 i, p;
-	uint32 dly;
-	uint16 *ptr = &SWIM_DMA_OUT_Buffer[0];
+	int8_t i, p;
+	uint32_t dly;
+	uint16_t *ptr = &SWIM_DMA_OUT_Buffer[0];
 
 retry:
 
@@ -242,10 +242,10 @@ retry:
 	}
 }
 
-static uint8 SWIM_HW_In(uint8* data, uint8 bitlen)
+static uint8_t SWIM_HW_In(uint8_t* data, uint8_t bitlen)
 {
-	uint8 ret = 0;
-	uint32 dly;
+	uint8_t ret = 0;
+	uint32_t dly;
 
 	dly = SWIM_MAX_DLY;
 	SYNCSWPWM_IN_TIMER_RISE_DMA_WAIT(dly);
@@ -274,18 +274,18 @@ static uint8 SWIM_HW_In(uint8* data, uint8 bitlen)
 	return ret;
 }
 
-static uint8 SWIM_SRST(void)
+static uint8_t SWIM_SRST(void)
 {
 	return SWIM_HW_Out(SWIM_CMD_SRST, SWIM_CMD_BITLEN, SWIM_MAX_RESEND_CNT);
 }
 
-static uint8 SWIM_WOTF(uint32 addr, uint16 len, uint8 *data)
+static uint8_t SWIM_WOTF(uint32_t addr, uint16_t len, uint8_t *data)
 {
-	uint16 processed_len;
-	uint8 cur_len, i;
-	uint32 cur_addr, addr_tmp;
+	uint16_t processed_len;
+	uint8_t cur_len, i;
+	uint32_t cur_addr, addr_tmp;
 
-	if ((0 == len) || ((uint8*)0 == data))
+	if ((0 == len) || ((uint8_t*)0 == data))
 	{
 		return 1;
 	}
@@ -340,13 +340,13 @@ static uint8 SWIM_WOTF(uint32 addr, uint16 len, uint8 *data)
 	return 0;
 }
 
-static uint8 SWIM_ROTF(uint32 addr, uint16 len, uint8 *data)
+static uint8_t SWIM_ROTF(uint32_t addr, uint16_t len, uint8_t *data)
 {
-	uint16 processed_len;
-	uint8 cur_len, i;
-	uint32 cur_addr, addr_tmp;
+	uint16_t processed_len;
+	uint8_t cur_len, i;
+	uint32_t cur_addr, addr_tmp;
 
-	if ((0 == len) || ((uint8*)0 == data))
+	if ((0 == len) || ((uint8_t*)0 == data))
 	{
 		return 1;
 	}

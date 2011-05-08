@@ -20,22 +20,22 @@
 
 struct STKPARAM
 {
-	uint8 index;
-	uint8 attr;
-	uint8 size;
+	uint8_t index;
+	uint8_t attr;
+	uint8_t size;
 	union
 	{
 		void *p_void;
-		uint8 *p_u8;
-		uint16 *p_u16;
-		uint32 *p_u32;
+		uint8_t *p_u8;
+		uint16_t *p_u16;
+		uint32_t *p_u32;
 	}ptr;
-	bool (*OnReadWrite)(const struct STKPARAM *param, uint8 attr);
+	bool (*OnReadWrite)(const struct STKPARAM *param, uint8_t attr);
 };
 
 #define STKPARAM_DECLEAR(idx, attr, size, p, rw)	{(idx), (attr), (size), {(p)}, (rw)}
 #define STKPARAM_NULL								STKPARAM_DECLEAR(0, 0, 0, 0, 0)
 
-bool STKPARAM_GetSize(const struct STKPARAM *param, uint8 index, uint8 *size);
-bool STKPARAM_GetValue(const struct STKPARAM *param, uint8 index, void *value);
-bool STKPARAM_SetValue(const struct STKPARAM *param, uint8 index, void *value);
+bool STKPARAM_GetSize(const struct STKPARAM *param, uint8_t index, uint8_t *size);
+bool STKPARAM_GetValue(const struct STKPARAM *param, uint8_t index, void *value);
+bool STKPARAM_SetValue(const struct STKPARAM *param, uint8_t index, void *value);

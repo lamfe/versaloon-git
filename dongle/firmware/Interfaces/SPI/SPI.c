@@ -20,15 +20,15 @@
 #include "interfaces.h"
 #include "SPI.h"
 
-uint8 SPI_Emu = 0;
-uint32 SPI_Dly;
+uint8_t SPI_Emu = 0;
+uint32_t SPI_Dly;
 
-static void SPI_Delay(uint8 dly)
+static void SPI_Delay(uint8_t dly)
 {
 	DelayUS(dly);
 }
 
-static void SPI_Config(uint32 freq_hz, uint32 firstbit, uint32 cpol, uint32 cpha)
+static void SPI_Config(uint32_t freq_hz, uint32_t firstbit, uint32_t cpol, uint32_t cpha)
 {
 	if(freq_hz < SPI_MIN_KHZ * 1000)
 	{
@@ -49,7 +49,7 @@ static void SPI_Config(uint32 freq_hz, uint32 firstbit, uint32 cpol, uint32 cpha
 	}
 }
 
-uint8 SPI_GetSCKDiv(uint16 freq_khz)
+uint8_t SPI_GetSCKDiv(uint16_t freq_khz)
 {
 	// Set Speed
 	if(freq_khz >= _SYS_FREQUENCY * 500 / 2)
@@ -85,7 +85,7 @@ uint8 SPI_GetSCKDiv(uint16 freq_khz)
 		freq_khz = 7;
 	}
 
-	return (uint8)(freq_khz << 3);
+	return (uint8_t)(freq_khz << 3);
 }
 
 /// spi Read and Write emulated by IO
@@ -93,9 +93,9 @@ uint8 SPI_GetSCKDiv(uint16 freq_khz)
 /// @return		data read
 #define SPI_DATA_LEN			8
 #define SPI_MSB					(1 << (SPI_DATA_LEN - 1))
-static uint8 SPI_RW_Emu(uint8 data)
+static uint8_t SPI_RW_Emu(uint8_t data)
 {
-	uint8 tmp,ret = 0;
+	uint8_t tmp,ret = 0;
 
 	for(tmp = SPI_DATA_LEN; tmp; tmp--)
 	{
@@ -133,9 +133,9 @@ static uint8 SPI_RW_Emu(uint8 data)
 /// spi Read and Write
 /// @param[in]	data	data to write
 /// @return		data read
-static uint8 SPI_RW(uint8 data)
+static uint8_t SPI_RW(uint8_t data)
 {
-	uint8 ret;
+	uint8_t ret;
 
 	if(SPI_Emu)
 	{

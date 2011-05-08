@@ -47,18 +47,18 @@ void AVR32_JTAG_DataPtr(uint8_t *ptdi, uint8_t *ptdo, uint16_t bitlen)
 	interfaces->jtag_hl.dr(0, ptdo, bitlen, AVR32_JTAG_RTI_CYCLE, 1);
 }
 
-uint8 AVR32_JTAG_CancelAccess(void)
+uint8_t AVR32_JTAG_CancelAccess(void)
 {
 #if AVR32_JTAG_MaxRetry > 0
-	uint32 cnt;
+	uint32_t cnt;
 #endif
-	uint8 instr_ret;
+	uint8_t instr_ret;
 
 #if AVR32_JTAG_MaxRetry > 0
 	cnt = 0;
 #endif
 	do{
-		instr_ret = (uint8)AVR32_JTAG_Instr(AVR32_JTAG_INS_CANCEL_ACCESS);
+		instr_ret = (uint8_t)AVR32_JTAG_Instr(AVR32_JTAG_INS_CANCEL_ACCESS);
 #if AVR32_JTAG_MaxRetry > 0
 		if(++cnt > AVR32_JTAG_MaxRetry)
 		{
@@ -70,11 +70,11 @@ uint8 AVR32_JTAG_CancelAccess(void)
 	return 0;
 }
 
-uint8 AVR32_JTAG_NexusAccess(uint8 a, uint8 *data, uint8 r)
+uint8_t AVR32_JTAG_NexusAccess(uint8_t a, uint8_t *data, uint8_t r)
 {
-	uint8 ret[5];
+	uint8_t ret[5];
 #if AVR32_JTAG_MaxRetry > 0
-	uint32 cnt;
+	uint32_t cnt;
 #endif
 
 	// Phase 1: Write AVR32_JTAG_INS_NEXUS_ACCESS to IR
@@ -151,11 +151,11 @@ uint8 AVR32_JTAG_NexusAccess(uint8 a, uint8 *data, uint8 r)
 	return 0;
 }
 
-uint8 AVR32_JTAG_SAB_WordAccess(uint8 *addr, uint8 *data, uint8 r)
+uint8_t AVR32_JTAG_SAB_WordAccess(uint8_t *addr, uint8_t *data, uint8_t r)
 {
-	uint8 cmd[5],ret[5];
+	uint8_t cmd[5],ret[5];
 #if AVR32_JTAG_MaxRetry > 0
-	uint32 cnt;
+	uint32_t cnt;
 #endif
 
 	// Phase 1: Write AVR32_JTAG_INS_MEMORY_WORD_ACCESS to IR
@@ -241,12 +241,12 @@ uint8 AVR32_JTAG_SAB_WordAccess(uint8 *addr, uint8 *data, uint8 r)
 	return 0;
 }
 
-uint8 AVR32_JTAG_SAB_WordBlockAccess(uint8 *addr, uint8 *data, uint8 r, uint8 len)
+uint8_t AVR32_JTAG_SAB_WordBlockAccess(uint8_t *addr, uint8_t *data, uint8_t r, uint8_t len)
 {
-	uint8 i;
-	uint8 ret[5];
+	uint8_t i;
+	uint8_t ret[5];
 #if AVR32_JTAG_MaxRetry > 0
-	uint32 cnt;
+	uint32_t cnt;
 #endif
 
 	// Phase 1: Read/Write the first Word

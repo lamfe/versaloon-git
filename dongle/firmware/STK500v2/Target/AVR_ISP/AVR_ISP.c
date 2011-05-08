@@ -23,24 +23,24 @@
 /// ISP Communicate
 /// @param[in]		data	data to send
 /// @param[out]		ret		data received
-void AVRISP_CommInt(uint8 *data, uint8 *ret, uint32 len)
+void AVRISP_CommInt(uint8_t *data, uint8_t *ret, uint32_t len)
 {
 	interfaces->spi.io(0, data, ret, len);
 }
 
 /// ISP Wait Ready
 /// @return		Success or not
-uint8 AVRISP_RDY_Wait()
+uint8_t AVRISP_RDY_Wait()
 {
-	uint8 dly = 255;
-	uint8 cmd[4];
+	uint8_t dly = 255;
+	uint8_t cmd[4];
 
 poll:
 	cmd[0] = 0xF0;
 	cmd[1] = 0x00;
 	cmd[2] = 0x00;
 	cmd[3] = 0x00;
-	AVRISP_Comm((uint8*)cmd, (uint8*)cmd);
+	AVRISP_Comm((uint8_t*)cmd, (uint8_t*)cmd);
 
 	if((cmd[3] & 1) && --dly)
 	{
@@ -60,7 +60,7 @@ poll:
 
 /// ISP Initialization
 /// @return
-void AVRISP_Init(uint32 freq)
+void AVRISP_Init(uint32_t freq)
 {
 	interfaces->target_voltage.set(0, 3300);
 	interfaces->delay.delayms(1);

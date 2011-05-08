@@ -19,7 +19,7 @@
 
 #include "USB_TO_XXX.h"
 
-void USB_TO_DAC_ProcessCmd(uint8* dat, uint16 len)
+void USB_TO_DAC_ProcessCmd(uint8_t *dat, uint16_t len)
 {
 }
 

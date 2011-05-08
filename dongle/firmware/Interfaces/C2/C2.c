@@ -41,9 +41,9 @@ void C2_Fini(void)
 	C2_C2CK_SETINPUT();
 }
 
-void C2_ReadAddr(uint8 *ir)
+void C2_ReadAddr(uint8_t *ir)
 {
-	uint8 tmp, i;
+	uint8_t tmp, i;
 
 	C2_START();
 
@@ -71,9 +71,9 @@ void C2_ReadAddr(uint8 *ir)
 	C2_END();
 }
 
-void C2_WriteAddr(uint8 ir)
+void C2_WriteAddr(uint8_t ir)
 {
-	uint8 i;
+	uint8_t i;
 
 	C2_START();
 
@@ -102,9 +102,9 @@ void C2_WriteAddr(uint8 ir)
 	C2_END();
 }
 
-uint8 C2_ReadData(uint8 *data)
+uint8_t C2_ReadData(uint8_t *data)
 {
-	uint8 tmp, i;
+	uint8_t tmp, i;
 
 	C2_START();
 
@@ -143,9 +143,9 @@ uint8 C2_ReadData(uint8 *data)
 	return 0;
 }
 
-uint8 C2_WriteData(uint8 data)
+uint8_t C2_WriteData(uint8_t data)
 {
-	uint8 i;
+	uint8_t i;
 
 	C2_START();
 

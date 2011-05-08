@@ -34,7 +34,7 @@ uint32_t AVR_JTAG_SendDat(uint32_t dat, uint16_t bitlen)
 }
 
 /// Read JTAG ID
-void AVR_JTAGPRG_ReadJTAGID(uint8 *id)
+void AVR_JTAGPRG_ReadJTAGID(uint8_t *id)
 {
 	AVR_JTAG_SendIns(AVR_JTAG_INS_IDCODE);
 	interfaces->jtag_hl.dr(0, id, AVR_JTAG_REG_JTAGID_Len, AVR_JTAG_RTI_CYCLE, 1);
@@ -70,7 +70,7 @@ void AVR_JTAGPRG_ChipErase(void)
 }
 
 // Read OSCCAL byte
-uint8 AVR_JTAGPRG_ReadOSCCALByte(uint8 addr)
+uint8_t AVR_JTAGPRG_ReadOSCCALByte(uint8_t addr)
 {
 	AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
 	AVR_JTAG_PROG_EnterCaliByteRead();
@@ -80,7 +80,7 @@ uint8 AVR_JTAGPRG_ReadOSCCALByte(uint8 addr)
 }
 
 /// Read Signature
-void AVR_JTAGPRG_ReadSignature(uint8* sig)
+void AVR_JTAGPRG_ReadSignature(uint8_t *sig)
 {
 	AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
 	AVR_JTAG_PROG_EnterSignByteRead();
@@ -94,7 +94,7 @@ void AVR_JTAGPRG_ReadSignature(uint8* sig)
 }
 
 /// Read Lockbits
-uint8 AVR_JTAGPRG_ReadLockbits(void)
+uint8_t AVR_JTAGPRG_ReadLockbits(void)
 {
 	AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
 	AVR_JTAG_PROG_EnterFuseLockbitRead();
@@ -103,7 +103,7 @@ uint8 AVR_JTAGPRG_ReadLockbits(void)
 }
 
 /// Read Fuse low byte
-uint8 AVR_JTAGPRG_ReadFuseLowByte(void)
+uint8_t AVR_JTAGPRG_ReadFuseLowByte(void)
 {
 	AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
 	AVR_JTAG_PROG_EnterFuseLockbitRead();
@@ -112,7 +112,7 @@ uint8 AVR_JTAGPRG_ReadFuseLowByte(void)
 }
 
 /// Read Fuse high byte
-uint8 AVR_JTAGPRG_ReadFuseHighByte(void)
+uint8_t AVR_JTAGPRG_ReadFuseHighByte(void)
 {
 	AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
 	AVR_JTAG_PROG_EnterFuseLockbitRead();
@@ -121,7 +121,7 @@ uint8 AVR_JTAGPRG_ReadFuseHighByte(void)
 }
 
 /// Read Fuse extend byte
-uint8 AVR_JTAGPRG_ReadFuseExtByte(void)
+uint8_t AVR_JTAGPRG_ReadFuseExtByte(void)
 {
 	AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
 	AVR_JTAG_PROG_EnterFuseLockbitRead();
@@ -130,9 +130,9 @@ uint8 AVR_JTAGPRG_ReadFuseExtByte(void)
 }
 
 /// Read EEPROM page
-void AVR_JTAGPRG_ReadEEPROMPage(uint8 *eeprom, uint32 addr, uint32 len)
+void AVR_JTAGPRG_ReadEEPROMPage(uint8_t *eeprom, uint32_t addr, uint32_t len)
 {
-	uint32 i;
+	uint32_t i;
 
 	AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
 	AVR_JTAG_PROG_EnterEEPROMRead();
@@ -148,9 +148,9 @@ void AVR_JTAGPRG_ReadEEPROMPage(uint8 *eeprom, uint32 addr, uint32 len)
 }
 
 /// Read Flash page
-void AVR_JTAGPRG_ReadFlashPage(uint8 *flash, uint32 addr, uint32 len)
+void AVR_JTAGPRG_ReadFlashPage(uint8_t *flash, uint32_t addr, uint32_t len)
 {
-	uint32 i, j, page_num = len / ddf->uiFlashPageSize;
+	uint32_t i, j, page_num = len / ddf->uiFlashPageSize;
 
 	AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
 	AVR_JTAG_PROG_EnterFlashRead();
@@ -183,7 +183,7 @@ void AVR_JTAGPRG_ReadFlashPage(uint8 *flash, uint32 addr, uint32 len)
 }
 
 /// Write lockbits
-void AVR_JTAGPRG_WriteLockbits(uint8 lockbits)
+void AVR_JTAGPRG_WriteLockbits(uint8_t lockbits)
 {
 	AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
 	AVR_JTAG_PROG_EnterLockbitWrite();
@@ -194,7 +194,7 @@ void AVR_JTAGPRG_WriteLockbits(uint8 lockbits)
 }
 
 /// Write Fuse low byte
-void AVR_JTAGPRG_WriteFuseLowByte(uint8 fuselowbyte)
+void AVR_JTAGPRG_WriteFuseLowByte(uint8_t fuselowbyte)
 {
 	AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
 	AVR_JTAG_PROG_EnterFuseWrite();
@@ -205,7 +205,7 @@ void AVR_JTAGPRG_WriteFuseLowByte(uint8 fuselowbyte)
 }
 
 /// Write Fuse high byte
-void AVR_JTAGPRG_WriteFuseHighByte(uint8 fusehighbyte)
+void AVR_JTAGPRG_WriteFuseHighByte(uint8_t fusehighbyte)
 {
 	AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
 	AVR_JTAG_PROG_EnterFuseWrite();
@@ -216,7 +216,7 @@ void AVR_JTAGPRG_WriteFuseHighByte(uint8 fusehighbyte)
 }
 
 /// Write Fuse extend byte
-void AVR_JTAGPRG_WriteFuseExtByte(uint8 fuseextbyte)
+void AVR_JTAGPRG_WriteFuseExtByte(uint8_t fuseextbyte)
 {
 	AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
 	AVR_JTAG_PROG_EnterFuseWrite();
@@ -227,9 +227,9 @@ void AVR_JTAGPRG_WriteFuseExtByte(uint8 fuseextbyte)
 }
 
 /// Write EEPROM page
-void AVR_JTAGPRG_WriteEEPROMPage(uint8 *eeprom, uint32 addr, uint32 len)
+void AVR_JTAGPRG_WriteEEPROMPage(uint8_t *eeprom, uint32_t addr, uint32_t len)
 {
-	uint32 i;
+	uint32_t i;
 
 	AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
 	AVR_JTAG_PROG_EnterEEPROMWrite();
@@ -247,9 +247,9 @@ void AVR_JTAGPRG_WriteEEPROMPage(uint8 *eeprom, uint32 addr, uint32 len)
 }
 
 /// Write Flash page
-void AVR_JTAGPRG_WriteFlashPage(uint8 *flash, uint32 addr, uint32 len)
+void AVR_JTAGPRG_WriteFlashPage(uint8_t *flash, uint32_t addr, uint32_t len)
 {
-	uint32 i;
+	uint32_t i;
 
 	AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
 	AVR_JTAG_PROG_EnterFlashWrite();

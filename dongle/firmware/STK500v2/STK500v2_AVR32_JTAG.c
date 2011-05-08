@@ -22,10 +22,10 @@
 
 #include "Target/AVR32_JTAG/AVR32_JTAG.h"
 
-uint8 STK500V2_AVR32_JTAG_ProcessCmd(uint8 *dat, uint16 len)
+uint8_t STK500V2_AVR32_JTAG_ProcessCmd(uint8_t *dat, uint16_t len)
 {
-	uint32 i, length;
-	uint8 sab_addr[5], sab_data[5], tmp8;
+	uint32_t i, length;
+	uint8_t sab_addr[5], sab_data[5], tmp8;
 
 	switch (dat[0])
 	{

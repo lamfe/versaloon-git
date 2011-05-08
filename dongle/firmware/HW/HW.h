@@ -37,13 +37,13 @@
 #define GPIO_PIN_13					13
 #define GPIO_PIN_14					14
 #define GPIO_PIN_15					15
-#define GPIO_PIN_GetMask(p)			(((uint32)1) << (p))
+#define GPIO_PIN_GetMask(p)			(((uint32_t)1) << (p))
 
 #define GPIO_SetPins(port, pin)		(port)->BSRR = GPIO_PIN_GetMask(pin)
 #define GPIO_ClrPins(port, pin)		(port)->BRR = GPIO_PIN_GetMask(pin)
 #define GPIO_GetOutPins(port, pin)	((port)->ODR & GPIO_PIN_GetMask(pin))
 #define GPIO_GetInPins(port, pin)	((port)->IDR & GPIO_PIN_GetMask(pin))
-void GPIO_SetMode(GPIO_TypeDef* GPIOx, uint8 pin, uint8 mode);
+void GPIO_SetMode(GPIO_TypeDef* GPIOx, uint8_t pin, uint8_t mode);
 
 
 void Sys_Init(void);
@@ -52,18 +52,20 @@ void NVIC_Configuration(void);
 void GPIO_Configuration(void);
 void ADC_Configuration(void);
 
-void USB_Init_SerialString(uint8 *strSerial, uint16 len);
-void CDC_IF_Setup(uint32 baudrate, uint8 datatype, uint8 paritytype, uint8 stopbittype);
+void USB_Init_SerialString(uint8_t *strSerial, uint16_t len);
+void CDC_IF_Setup(uint32_t baudrate, uint8_t datatype, uint8_t paritytype, 
+					uint8_t stopbittype);
 void CDC_IF_Fini(void);
 void CDC_Process(void);
 void CDC_IF_Enable_Int(void);
 void CDC_IF_Disable_Int(void);
-void CDC_IF_RX_Int(uint8 dat);
+void CDC_IF_RX_Int(uint8_t dat);
 void CDC_IF_TX_Int(void);
 
 #if INTERFACE_SPI_EN
 extern SPI_InitTypeDef   SPI_InitStructure;
-void SPI_Configuration(SPI_TypeDef* SPIx,u16 mode,u16 brp,u16 fb,u16 cpol,u16 cpha);
+void SPI_Configuration(SPI_TypeDef* SPIx, uint16_t mode, uint16_t brp, 
+						uint16_t fb, uint16_t cpol, uint16_t cpha);
 #endif
 
 void DOVR_Callback(void);
@@ -73,22 +75,22 @@ void SUSP_Callback(void);
 
 s32 USB_Out_IsReady(void);
 s32 USB_Out_PollReady(void);
-void USB_Out(u8 *data, u32 len);
+void USB_Out(uint8_t *data, uint32_t len);
 
-extern uint8 asyn_rx_buf[ASYN_DATA_BUFF_SIZE];
-extern uint16 Vtarget;
+extern uint8_t asyn_rx_buf[ASYN_DATA_BUFF_SIZE];
+extern uint16_t Vtarget;
 
 void GLOBAL_OUTPUT_Acquire(void);
 void GLOBAL_OUTPUT_Release(void);
 
-uint16 SampleVtarget(void);
-void PWREXT_Check(uint8 b_control_led);
+uint16_t SampleVtarget(void);
+void PWREXT_Check(uint8_t b_control_led);
 
-extern __IO uint32_t rep_len, cmd_len;
+extern volatile uint32_t rep_len, cmd_len;
 extern uint8_t buffer_out[USB_DATA_BUFF_SIZE], *buffer_in;
-extern __IO uint32_t count_out, usb_ovf;
-extern __IO uint32_t usb_in_data_remain, usb_in_numofpackage;
+extern volatile uint32_t count_out, usb_ovf;
+extern volatile uint32_t usb_in_data_remain, usb_in_numofpackage;
 
 // Delay
-void DelayUS(uint32);
-void DelayMS(uint32);
+void DelayUS(uint32_t);
+void DelayMS(uint32_t);

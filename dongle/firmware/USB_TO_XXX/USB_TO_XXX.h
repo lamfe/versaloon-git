@@ -48,33 +48,33 @@
 #define USB_TO_ALL					(VERSALOON_USB_TO_XXX_CMD_START + 0x5F)
 
 // USB_TO_XXX USB Processors
-extern uint8* buffer_reply;
-void USB_TO_XXX_ProcessCmd(uint8* dat, uint16 len);
+extern uint8_t *buffer_reply;
+void USB_TO_XXX_ProcessCmd(uint8_t *dat, uint16_t len);
 // Page0
-void USB_TO_USART_ProcessCmd(uint8* dat, uint16 len);
-void USB_TO_SPI_ProcessCmd(uint8* dat, uint16 len);
-void USB_TO_IIC_ProcessCmd(uint8* dat, uint16 len);
-void USB_TO_GPIO_ProcessCmd(uint8* dat, uint16 len);
-void USB_TO_CAN_ProcessCmd(uint8* dat, uint16 len);
-void USB_TO_PWM_ProcessCmd(uint8* dat, uint16 len);
-void USB_TO_ADC_ProcessCmd(uint8* dat, uint16 len);
-void USB_TO_DAC_ProcessCmd(uint8* dat, uint16 len);
-void USB_TO_SWIM_ProcessCmd(uint8* dat, uint16 len);
-void USB_TO_MICROWIRE_ProcessCmd(uint8* dat, uint16 len);
-void USB_TO_DUSI_ProcessCmd(uint8* dat, uint16 len);
+void USB_TO_USART_ProcessCmd(uint8_t *dat, uint16_t len);
+void USB_TO_SPI_ProcessCmd(uint8_t *dat, uint16_t len);
+void USB_TO_IIC_ProcessCmd(uint8_t *dat, uint16_t len);
+void USB_TO_GPIO_ProcessCmd(uint8_t *dat, uint16_t len);
+void USB_TO_CAN_ProcessCmd(uint8_t *dat, uint16_t len);
+void USB_TO_PWM_ProcessCmd(uint8_t *dat, uint16_t len);
+void USB_TO_ADC_ProcessCmd(uint8_t *dat, uint16_t len);
+void USB_TO_DAC_ProcessCmd(uint8_t *dat, uint16_t len);
+void USB_TO_SWIM_ProcessCmd(uint8_t *dat, uint16_t len);
+void USB_TO_MICROWIRE_ProcessCmd(uint8_t *dat, uint16_t len);
+void USB_TO_DUSI_ProcessCmd(uint8_t *dat, uint16_t len);
 // Page1
-void USB_TO_JTAG_LL_ProcessCmd(uint8* dat, uint16 len);
-void USB_TO_JTAG_HL_ProcessCmd(uint8* dat, uint16 len);
-void USB_TO_JTAG_RAW_ProcessCmd(uint8* dat, uint16 len);
-void USB_TO_ISSP_ProcessCmd(uint8* dat, uint16 len);
-void USB_TO_C2_ProcessCmd(uint8* dat, uint16 len);
-void USB_TO_LPCICP_ProcessCmd(uint8* dat, uint16 len);
-void USB_TO_SWD_ProcessCmd(uint8* dat, uint16 len);
-void USB_TO_MSP430_JTAG_ProcessCmd(uint8* dat, uint16 len);
-void USB_TO_BDM_ProcessCmd(uint8* dat, uint16 len);
+void USB_TO_JTAG_LL_ProcessCmd(uint8_t *dat, uint16_t len);
+void USB_TO_JTAG_HL_ProcessCmd(uint8_t *dat, uint16_t len);
+void USB_TO_JTAG_RAW_ProcessCmd(uint8_t *dat, uint16_t len);
+void USB_TO_ISSP_ProcessCmd(uint8_t *dat, uint16_t len);
+void USB_TO_C2_ProcessCmd(uint8_t *dat, uint16_t len);
+void USB_TO_LPCICP_ProcessCmd(uint8_t *dat, uint16_t len);
+void USB_TO_SWD_ProcessCmd(uint8_t *dat, uint16_t len);
+void USB_TO_MSP430_JTAG_ProcessCmd(uint8_t *dat, uint16_t len);
+void USB_TO_BDM_ProcessCmd(uint8_t *dat, uint16_t len);
 // Page2
-void USB_TO_POWER_ProcessCmd(uint8* dat, uint16 len);
-extern int8 USB_TO_POLL_Index;
+void USB_TO_POWER_ProcessCmd(uint8_t * dat, uint16_t len);
+extern int8_t USB_TO_POLL_Index;
 
 // USB_TO_XXX Masks
 #define USB_TO_XXX_CMDMASK			0xF8

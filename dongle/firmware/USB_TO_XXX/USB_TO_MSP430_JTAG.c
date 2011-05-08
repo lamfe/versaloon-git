@@ -20,14 +20,14 @@
 #include "USB_TO_XXX.h"
 #include "interfaces.h"
 
-void USB_TO_MSP430_JTAG_ProcessCmd(uint8* dat, uint16 len)
+void USB_TO_MSP430_JTAG_ProcessCmd(uint8_t *dat, uint16_t len)
 {
-	uint16 index, length;
-	uint8 command, device_idx;
+	uint16_t index, length;
+	uint8_t command, device_idx;
 	
-	uint32 data, mask, value;
-	uint16 len_tmp;
-	uint8 byte_len, bit_len;
+	uint32_t data, mask, value;
+	uint16_t len_tmp;
+	uint8_t byte_len, bit_len;
 	bool fail;
 	uint16_t rindex;
 	
@@ -95,7 +95,7 @@ void USB_TO_MSP430_JTAG_ProcessCmd(uint8* dat, uint16 len)
 				{
 					// DR
 					data = 0;
-					memcpy((uint8*)&data, dat + index + len_tmp + 1, byte_len);
+					memcpy((uint8_t*)&data, dat + index + len_tmp + 1, byte_len);
 					
 					if (ERROR_OK == interfaces->msp430jtag.dr(device_idx, &data, bit_len & 0x7F, 1))
 					{

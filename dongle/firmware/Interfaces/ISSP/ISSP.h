@@ -21,8 +21,8 @@
 
 RESULT issp_vector(uint8_t index, uint8_t operate, uint8_t addr, 
 					 uint8_t data, uint8_t *buf);
-RESULT issp_enter_program_mode(uint8_t index, uint8 mode);
-RESULT issp_leave_program_mode(uint8_t index, uint8 mode);
+RESULT issp_enter_program_mode(uint8_t index, uint8_t mode);
+RESULT issp_leave_program_mode(uint8_t index, uint8_t mode);
 RESULT issp_wait_and_poll(uint8_t index);
 RESULT issp_init(uint8_t index);
 RESULT issp_fini(uint8_t index);

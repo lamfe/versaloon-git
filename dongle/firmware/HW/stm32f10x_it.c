@@ -205,7 +205,7 @@ ROOTFUNC void USART1_IRQHandler(void)
 #if ((USB_PROTOCOL == USB_ST_VCOM) || (USB_WITH_CDC != 0)) && CDC_IF_EN
   if(USART_GetITStatus(USART1, USART_IT_RXNE) != RESET)
   {
-    CDC_IF_RX_Int((uint8)USART_ReceiveData(USART1));
+    CDC_IF_RX_Int((uint8_t)USART_ReceiveData(USART1));
 //    USART_ClearITPendingBit(USART1, USART_IT_RXNE);	// cleared by a read to Data Register
   }
 #if !USB_CDC_BY_POLLING

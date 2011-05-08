@@ -19,7 +19,7 @@
 #define SPI_MAX_KHZ				(_SYS_FREQUENCY * 500 / 2)		// in KHz
 #define SPI_MIN_KHZ				(_SYS_FREQUENCY * 500 / 256)	// in KHz
 
-uint8 SPI_GetSCKDiv(uint16 freq_khz);
+uint8_t SPI_GetSCKDiv(uint16_t freq_khz);
 
 RESULT spi_init(uint8_t index);
 RESULT spi_fini(uint8_t index);

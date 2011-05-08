@@ -44,7 +44,7 @@
 
 #define ISSP_Delay()			DelayUS(0)
 
-static void ISSP_Out_Bit(uint8 bit)
+static void ISSP_Out_Bit(uint8_t bit)
 {
 	if(bit)
 	{
@@ -64,9 +64,9 @@ static void ISSP_Out_Bit(uint8 bit)
 	ISSP_Delay();
 }
 
-static uint8 ISSP_In_Bit(void)
+static uint8_t ISSP_In_Bit(void)
 {
-	uint8 ret;
+	uint8_t ret;
 
 	ISSP_SCLK_SET();
 
@@ -81,9 +81,10 @@ static uint8 ISSP_In_Bit(void)
 	return ret;
 }
 
-uint8 ISSP_Vector(uint8 bank, uint8 addr, uint8 data, uint8 r, uint8 append_bit)
+uint8_t ISSP_Vector(uint8_t bank, uint8_t addr, uint8_t data, uint8_t r, 
+					uint8_t append_bit)
 {
-	uint8 i;
+	uint8_t i;
 
 	ISSP_SDATA_SETOUTPUT();
 
@@ -136,7 +137,7 @@ uint8 ISSP_Vector(uint8 bank, uint8 addr, uint8 data, uint8 r, uint8 append_bit)
 
 void ISSP_Vector_0s(void)
 {
-	uint8 i;
+	uint8_t i;
 
 	ISSP_SDATA_SETOUTPUT();
 
@@ -148,9 +149,9 @@ void ISSP_Vector_0s(void)
 	ISSP_SDATA_SETINPUT();
 }
 
-RESULT issp_enter_program_mode(uint8_t index, uint8 mode)
+RESULT issp_enter_program_mode(uint8_t index, uint8_t mode)
 {
-	uint16 to = 1000;
+	uint16_t to = 1000;
 
 	switch (index)
 	{
@@ -207,7 +208,7 @@ RESULT issp_enter_program_mode(uint8_t index, uint8 mode)
 	}
 }
 
-RESULT issp_leave_program_mode(uint8_t index, uint8 mode)
+RESULT issp_leave_program_mode(uint8_t index, uint8_t mode)
 {
 	switch (index)
 	{
@@ -235,8 +236,8 @@ RESULT issp_leave_program_mode(uint8_t index, uint8 mode)
 
 RESULT issp_wait_and_poll(uint8_t index)
 {
-	uint8 i;
-	uint16 dly;
+	uint8_t i;
+	uint16_t dly;
 
 	switch (index)
 	{
