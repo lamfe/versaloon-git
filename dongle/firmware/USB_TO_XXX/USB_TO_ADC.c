@@ -20,12 +20,12 @@
 #include "USB_TO_XXX.h"
 #include "interfaces.h"
 
-void USB_TO_ADC_ProcessCmd(uint8* dat, uint16 len)
+void USB_TO_ADC_ProcessCmd(uint8_t *dat, uint16_t len)
 {
-	uint16 index, length;
-	uint8 command, device_idx;
+	uint16_t index, length;
+	uint8_t command, device_idx;
 	
-	uint16 adc_result;
+	uint16_t adc_result;
 	
 	index = 0;
 	while(index < len)

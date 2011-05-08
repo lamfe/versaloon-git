@@ -21,7 +21,7 @@
 #include "../SPI/SPI.h"
 #include "DUSI.h"
 
-static uint8 DUSI_GetDivFromFreq(uint16 kHz)
+static uint8_t DUSI_GetDivFromFreq(uint16_t kHz)
 {
 	return SPI_GetSCKDiv(kHz);
 }

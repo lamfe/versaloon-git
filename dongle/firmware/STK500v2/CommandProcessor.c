@@ -22,7 +22,7 @@ void BeforeInit(void){}
 
 void AfterInit(void){}
 
-void ProcessCommand(uint8* dat, uint16 len)
+void ProcessCommand(uint8_t *dat, uint16_t len)
 {
 	STK500V2_Process(dat, len);
 }
@@ -32,7 +32,7 @@ void ProcessIdle(void)
 	STK500V2_Poll();
 }
 
-uint8 CheckLocalHandler(void)
+uint8_t CheckLocalHandler(void)
 {
 	return 0;
 }

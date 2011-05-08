@@ -32,19 +32,19 @@
 
 #define SWD_TRANS_RnW			(1 << 2)
 
-uint8 SWD_Trn = 1;
-uint16 SWD_Retry = 0;
-uint16 SWD_Delay = 0;
+uint8_t SWD_Trn = 1;
+uint16_t SWD_Retry = 0;
+uint16_t SWD_Delay = 0;
 
 #define SWD_Delay()		DelayUS(SWD_Delay)
 
-uint8 (*SWD_SeqIn)(uint8 *seq, uint16 num_of_bits);
-uint8 (*SWD_SeqOut)(uint8 *seq, uint16 num_of_bits);
+uint8_t (*SWD_SeqIn)(uint8_t *seq, uint16_t num_of_bits);
+uint8_t (*SWD_SeqOut)(uint8_t *seq, uint16_t num_of_bits);
 
-uint8 SWD_SeqIn_NoDelay(uint8 *seq, uint16 num_of_bits)
+uint8_t SWD_SeqIn_NoDelay(uint8_t *seq, uint16_t num_of_bits)
 {
-	uint16 i;
-	uint8 parity = 0;
+	uint16_t i;
+	uint8_t parity = 0;
 
 	for (i = 0; i < num_of_bits; i++)
 	{
@@ -63,10 +63,10 @@ uint8 SWD_SeqIn_NoDelay(uint8 *seq, uint16 num_of_bits)
 	return parity & 1;
 }
 
-uint8 SWD_SeqOut_NoDelay(uint8 *seq, uint16 num_of_bits)
+uint8_t SWD_SeqOut_NoDelay(uint8_t *seq, uint16_t num_of_bits)
 {
-	uint16 i;
-	uint8 parity = 0;
+	uint16_t i;
+	uint8_t parity = 0;
 
 	for (i = 0; i < num_of_bits; i++)
 	{
@@ -86,10 +86,10 @@ uint8 SWD_SeqOut_NoDelay(uint8 *seq, uint16 num_of_bits)
 	return parity & 1;
 }
 
-uint8 SWD_SeqIn_Delay(uint8 *seq, uint16 num_of_bits)
+uint8_t SWD_SeqIn_Delay(uint8_t *seq, uint16_t num_of_bits)
 {
-	uint16 i;
-	uint8 parity = 0;
+	uint16_t i;
+	uint8_t parity = 0;
 
 	for (i = 0; i < num_of_bits; i++)
 	{
@@ -110,10 +110,10 @@ uint8 SWD_SeqIn_Delay(uint8 *seq, uint16 num_of_bits)
 	return parity & 1;
 }
 
-uint8 SWD_SeqOut_Delay(uint8 *seq, uint16 num_of_bits)
+uint8_t SWD_SeqOut_Delay(uint8_t *seq, uint16_t num_of_bits)
 {
-	uint16 i;
-	uint8 parity = 0;
+	uint16_t i;
+	uint8_t parity = 0;
 
 	for (i = 0; i < num_of_bits; i++)
 	{
@@ -137,17 +137,17 @@ uint8 SWD_SeqOut_Delay(uint8 *seq, uint16 num_of_bits)
 
 void SWD_StopClock(void)
 {
-	uint32 null = 0;
+	uint32_t null = 0;
 
 	// shift in at least 8 bits
-	SWD_SeqOut((uint8*)&null, 8);
+	SWD_SeqOut((uint8_t*)&null, 8);
 }
 
-uint8 SWD_Transaction(uint8 request, uint32 *buff)
+uint8_t SWD_Transaction(uint8_t request, uint32_t *buff)
 {
-	uint32 reply, dummy, data;
-	uint8 read = request & SWD_TRANS_RnW, parity;
-	uint16 retry = 0;
+	uint32_t reply, dummy, data;
+	uint8_t read = request & SWD_TRANS_RnW, parity;
+	uint16_t retry = 0;
 
 SWD_RETRY:
 	// set swdio output to output request
@@ -165,12 +165,12 @@ SWD_RETRY:
 	if (read)
 	{
 		// receive 3-bit reply
-		SWD_SeqIn((uint8*)&reply, 3);
+		SWD_SeqIn((uint8_t*)&reply, 3);
 		// receive data and parity
-		parity = SWD_SeqIn((uint8*)&data, 32);
-		parity += SWD_SeqIn((uint8*)&dummy, 1);
+		parity = SWD_SeqIn((uint8_t*)&data, 32);
+		parity += SWD_SeqIn((uint8_t*)&dummy, 1);
 		// trn
-		SWD_SeqIn((uint8*)&dummy, SWD_Trn);
+		SWD_SeqIn((uint8_t*)&dummy, SWD_Trn);
 
 		// set swdio output to output stop clock
 		SWD_SWDIO_SET();
@@ -179,14 +179,14 @@ SWD_RETRY:
 	else
 	{
 		// receive trn and 3-bit reply and then trn
-		SWD_SeqIn((uint8*)&reply, SWD_Trn + 3);
+		SWD_SeqIn((uint8_t*)&reply, SWD_Trn + 3);
 
 		// set swdio output to output data
 		SWD_SWDIO_SET();
 		SWD_SWDIO_SETOUTPUT();
 
 		// send data and parity
-		parity = SWD_SeqOut((uint8*)&data, 32);
+		parity = SWD_SeqOut((uint8_t*)&data, 32);
 		parity += SWD_SeqOut(&parity, 1);
 	}
 	SWD_StopClock();
@@ -237,7 +237,7 @@ void SWD_Fini(void)
 	SWD_SWCLK_SETINPUT();
 }
 
-void SWD_SetDelay(uint16 dly)
+void SWD_SetDelay(uint16_t dly)
 {
 	if (!dly)
 	{
@@ -252,7 +252,7 @@ void SWD_SetDelay(uint16 dly)
 	}
 }
 
-void SWD_SetTurnaround(uint8 cycles)
+void SWD_SetTurnaround(uint8_t cycles)
 {
 	if (cycles <= 14)
 	{
@@ -260,7 +260,7 @@ void SWD_SetTurnaround(uint8 cycles)
 	}
 }
 
-void SWD_SetRetryCount(uint16 retry)
+void SWD_SetRetryCount(uint16_t retry)
 {
 	SWD_Retry = retry;
 }

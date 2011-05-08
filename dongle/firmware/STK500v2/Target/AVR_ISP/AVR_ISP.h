@@ -44,12 +44,12 @@
 									} while (0)
 
 
-void AVRISP_Init(uint32 freq);
+void AVRISP_Init(uint32_t freq);
 void AVRISP_Fini(void);
 #define AVRISP_Comm(cmd, ret)		AVRISP_CommInt(cmd, ret, 4)
-void AVRISP_CommInt(uint8*, uint8*, uint32);
+void AVRISP_CommInt(uint8_t*, uint8_t*, uint32_t);
 
 #define AVRISP_Error				1
 #define AVRISP_Success				0
 
-uint8 AVRISP_RDY_Wait(void);
+uint8_t AVRISP_RDY_Wait(void);

@@ -59,7 +59,7 @@ static void LPCICP_LeavrProgMode(void)
 
 static void LPCICP_EnterProgMode(void)
 {
-	uint8 toggle_count;
+	uint8_t toggle_count;
 
 	PWREXT_Acquire();
 	DelayMS(LPCICP_POWERON_DELAY);
@@ -77,9 +77,9 @@ static void LPCICP_EnterProgMode(void)
 	LPCICP_PDA_SETINPUT();
 }
 
-static void LPCICP_In(uint8 *buff, uint16 len)
+static void LPCICP_In(uint8_t *buff, uint16_t len)
 {
-	uint32 i;
+	uint32_t i;
 
 	for (i = 0; i < len * 8; i++)
 	{
@@ -99,9 +99,9 @@ static void LPCICP_In(uint8 *buff, uint16 len)
 	}
 }
 
-static void LPCICP_Out(uint8 *buff, uint16 len)
+static void LPCICP_Out(uint8_t *buff, uint16_t len)
 {
-	uint32 i;
+	uint32_t i;
 
 	LPCICP_PDA_SETOUTPUT();
 
@@ -126,9 +126,9 @@ static void LPCICP_Out(uint8 *buff, uint16 len)
 	LPCICP_PDA_SETINPUT();
 }
 
-static uint8 LPCICP_Poll(uint8 out, uint8 setbit, uint8 clearbit, uint16 pollcnt)
+static uint8_t LPCICP_Poll(uint8_t out, uint8_t setbit, uint8_t clearbit, uint16_t pollcnt)
 {
-	uint8 tmp;
+	uint8_t tmp;
 
 	while (pollcnt-- > 0)
 	{

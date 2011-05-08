@@ -17,9 +17,9 @@
 #include "app_cfg.h"
 #include "STK_Param.h"
 
-static bool STKPARAM_GetIdx(const struct STKPARAM *param, uint8 index, uint8 *idx)
+static bool STKPARAM_GetIdx(const struct STKPARAM *param, uint8_t index, uint8_t *idx)
 {
-	uint8 i;
+	uint8_t i;
 
 	i = 0;
 	while ((param[i].ptr.p_void != 0) && (param[i].size != 0))
@@ -34,9 +34,9 @@ static bool STKPARAM_GetIdx(const struct STKPARAM *param, uint8 index, uint8 *id
 	return false;
 }
 
-bool STKPARAM_GetSize(const struct STKPARAM *param, uint8 index, uint8 *size)
+bool STKPARAM_GetSize(const struct STKPARAM *param, uint8_t index, uint8_t *size)
 {
-	uint8 idx;
+	uint8_t idx;
 	if (STKPARAM_GetIdx(param, index, &idx))
 	{
 		if ((1 == param[idx].size) || (2 == param[idx].size) || (4 == param[idx].size))
@@ -49,9 +49,9 @@ bool STKPARAM_GetSize(const struct STKPARAM *param, uint8 index, uint8 *size)
 	return false;
 }
 
-bool STKPARAM_GetValue(const struct STKPARAM *param, uint8 index, void *value)
+bool STKPARAM_GetValue(const struct STKPARAM *param, uint8_t index, void *value)
 {
-	uint8 idx;
+	uint8_t idx;
 	if ((STKPARAM_GetIdx(param, index, &idx)) && (param[idx].attr & STKPARAM_ATTR_R))
 	{
 		if (param[idx].OnReadWrite != 0)
@@ -64,7 +64,7 @@ bool STKPARAM_GetValue(const struct STKPARAM *param, uint8 index, void *value)
 		switch (param[idx].size)
 		{
 		case 1:
-			*(uint8*)value = *param[idx].ptr.p_u8;
+			*(uint8_t*)value = *param[idx].ptr.p_u8;
 			break;
 		case 2:
 			SET_LE_U16(value, *param[idx].ptr.p_u16);
@@ -80,15 +80,15 @@ bool STKPARAM_GetValue(const struct STKPARAM *param, uint8 index, void *value)
 	return false;
 }
 
-bool STKPARAM_SetValue(const struct STKPARAM *param, uint8 index, void *value)
+bool STKPARAM_SetValue(const struct STKPARAM *param, uint8_t index, void *value)
 {
-	uint8 idx;
+	uint8_t idx;
 	if ((STKPARAM_GetIdx(param, index, &idx)) && (param[idx].attr & STKPARAM_ATTR_W))
 	{
 		switch (param[idx].size)
 		{
 		case 1:
-			*param[idx].ptr.p_u8 = *(uint8*)value;
+			*param[idx].ptr.p_u8 = *(uint8_t*)value;
 			break;
 		case 2:
 			*param[idx].ptr.p_u16 = GET_LE_U16(value);

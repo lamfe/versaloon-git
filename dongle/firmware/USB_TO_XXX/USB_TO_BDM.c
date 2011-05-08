@@ -21,14 +21,14 @@
 #include "interfaces.h"
 #include "BDM.h"
 
-void USB_TO_BDM_ProcessCmd(uint8* dat, uint16 len)
+void USB_TO_BDM_ProcessCmd(uint8_t *dat, uint16_t len)
 {
-	uint16 index, length;
-	uint8 command, device_idx;
+	uint16_t index, length;
+	uint8_t command, device_idx;
 	
-	uint16 token;
-	uint16 processed_len;
-	uint16 rindex;
+	uint16_t token;
+	uint16_t processed_len;
+	uint16_t rindex;
 	bool fail;
 	
 	index = 0;

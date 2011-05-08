@@ -20,14 +20,14 @@
 #include "USB_TO_XXX.h"
 #include "interfaces.h"
 
-void USB_TO_MICROWIRE_ProcessCmd(uint8* dat, uint16 len)
+void USB_TO_MICROWIRE_ProcessCmd(uint8_t *dat, uint16_t len)
 {
-	uint16 index, length;
-	uint8 command, device_idx;
+	uint16_t index, length;
+	uint8_t command, device_idx;
 	
 	uint8_t sel_polarity;
 	uint16_t interval_us, retry_cnt;
-	uint16 frequency;
+	uint16_t frequency;
 	
 	uint16_t cmd_offset, reply_offset;
 	uint8_t opcode_bitlen, addr_bitlen, data_bitlen, reply_bitlen;

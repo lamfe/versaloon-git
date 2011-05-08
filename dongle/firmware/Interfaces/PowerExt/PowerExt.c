@@ -20,11 +20,11 @@
 #include "interfaces.h"
 #include "PowerExt.h"
 
-static uint8 PWREXT_EnableCount = 0;
+static uint8_t PWREXT_EnableCount = 0;
 
 void PWREXT_Acquire(void)
 {
-	uint16 vtarget = SampleVtarget();
+	uint16_t vtarget = SampleVtarget();
 	if(vtarget < TVCC_SAMPLE_MIN_POWER)
 	{
 		if(!PWREXT_EnableCount)
@@ -55,12 +55,12 @@ void PWREXT_ForceRelease(void)
 	}
 }
 
-uint8 PWREXT_GetState(void)
+uint8_t PWREXT_GetState(void)
 {
 	return PWREXT_EnableCount;
 }
 
-uint8 power_state = 0;
+uint8_t power_state = 0;
 RESULT target_voltage_set(uint8_t index, uint16_t voltage)
 {
 	switch (index)

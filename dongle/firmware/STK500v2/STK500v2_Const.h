@@ -66,7 +66,7 @@
 #define __CONNECT(a, b)							a ## b
 
 /***************************************** Common Responses *****************************************/
-void STK500V2_PrepareRSP(uint8,uint32);
+void STK500V2_PrepareRSP(uint8_t, uint32_t);
 #define DECLEAR_RSP(RSP, size)					STK500V2_PrepareRSP(__CONNECT(RSP_, RSP), size)
 #define STK500V2_RSP_OK()						DECLEAR_RSP(OK, 1)
 #define STK500V2_RSP_FAILED()					DECLEAR_RSP(FAILED, 1)
@@ -91,7 +91,7 @@ void STK500V2_PrepareRSP(uint8,uint32);
 
 
 /***************************************** Common Events *****************************************/
-void STK500V2_PrepareEvent(uint8 ID,uint32 len);
+void STK500V2_PrepareEvent(uint8_t ID, uint32_t len);
 #define DECLEAR_EVT(EVT, size)					STK500V2_PrepareEvent(__CONNECT(STK500V2_EVTVAL_, EVT), size)
 #define STK500V2_EVT_BREAK(pc, bc)				do{\
 													buffer_out[9] = (pc) & 0xFF;\

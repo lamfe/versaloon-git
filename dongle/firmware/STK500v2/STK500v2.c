@@ -27,36 +27,36 @@
 #	include "PowerExt.h"
 #endif
 
-static uint8 STK500V2_DeviceName[] = STK500V2_Device_Name " on Versaloon";
+static uint8_t STK500V2_DeviceName[] = STK500V2_Device_Name " on Versaloon";
 
 enum STK500V2_MCUSTATE STK500V2_MCUState = MCUSTATE_STOPPED;
 enum STK500V2_EMUMODE STK500V2_EmuMode = EMUMODE_NONE;
-uint32 STK500V2_PARAM_DaisyChain = 0;
-uint32 STK500V2_NULL = 0;
-uint8 STK500V2_PARAM_RunAfterProgramming = 0;
-uint32 STK500V2_PARAM_AppOffset = 0;
-uint32 STK500V2_PARAM_BootOffset = 0;
-uint8 STK500V2_PARAM_SoftReset = 0;
-uint8 STK500V2_PARAM_ExternalReset = 0;
+uint32_t STK500V2_PARAM_DaisyChain = 0;
+uint32_t STK500V2_NULL = 0;
+uint8_t STK500V2_PARAM_RunAfterProgramming = 0;
+uint32_t STK500V2_PARAM_AppOffset = 0;
+uint32_t STK500V2_PARAM_BootOffset = 0;
+uint8_t STK500V2_PARAM_SoftReset = 0;
+uint8_t STK500V2_PARAM_ExternalReset = 0;
 
 #define STK500V2_MakeVersion(MMajor, MMinor, SMajor, SMinor)	\
-								(((uint32)(MMajor) << 24) \
-									| ((uint32)(MMinor) << 16) \
-									| ((uint32)(SMajor) << 8) \
+								(((uint32_t)(MMajor) << 24) \
+									| ((uint32_t)(MMinor) << 16) \
+									| ((uint32_t)(SMajor) << 8) \
 									| (SMinor))
 #define STK500V2_FW_VER			STK500V2_MakeVersion(STK500V2_MFW_MAJOR_VER, \
 														STK500V2_MFW_MINOR_VER, \
 														STK500V2_SFW_MAJOR_VER, \
 														STK500V2_SFW_MINOR_VER)
-uint8 STK500V2_comm_id			= STK500V2_COMM_ID;
-uint8 STK500V2_m_mcu_bldr		= STK500V2_MBootload_VER;
-uint8 STK500V2_s_mcu_bldr		= STK500V2_SBootload_VER;
-uint8 STK500V2_serial_number[6]	= STK500V2_SerialNumber;
-uint16 STK500V2_hw_version 		= STK500V2_HW_VER;
-uint32 STK500V2_fw_version		= STK500V2_FW_VER;
+uint8_t STK500V2_comm_id			= STK500V2_COMM_ID;
+uint8_t STK500V2_m_mcu_bldr			= STK500V2_MBootload_VER;
+uint8_t STK500V2_s_mcu_bldr			= STK500V2_SBootload_VER;
+uint8_t STK500V2_serial_number[6]	= STK500V2_SerialNumber;
+uint16_t STK500V2_hw_version 		= STK500V2_HW_VER;
+uint32_t STK500V2_fw_version		= STK500V2_FW_VER;
 
-bool STK500V2_OnWriteEmuMode(const struct STKPARAM *param, uint8 attr);
-bool STK500V2_OnWriteDaisyChain(const struct STKPARAM *param, uint8 attr);
+bool STK500V2_OnWriteEmuMode(const struct STKPARAM *param, uint8_t attr);
+bool STK500V2_OnWriteDaisyChain(const struct STKPARAM *param, uint8_t attr);
 
 static const struct STKPARAM STK500V2_Param[] = 
 {
@@ -74,7 +74,7 @@ static const struct STKPARAM STK500V2_Param[] =
 	STKPARAM_NULL
 };
 
-bool STK500V2_OnWriteDaisyChain(const struct STKPARAM *param, uint8 attr)
+bool STK500V2_OnWriteDaisyChain(const struct STKPARAM *param, uint8_t attr)
 {
 	if (STKPARAM_ATTR_W == attr)
 	{
@@ -90,7 +90,7 @@ bool STK500V2_OnWriteDaisyChain(const struct STKPARAM *param, uint8 attr)
 	return true;
 }
 
-bool STK500V2_OnWriteEmuMode(const struct STKPARAM *param, uint8 attr)
+bool STK500V2_OnWriteEmuMode(const struct STKPARAM *param, uint8_t attr)
 {
 	if (STKPARAM_ATTR_W == attr)
 	{
@@ -118,7 +118,7 @@ bool STK500V2_OnWriteEmuMode(const struct STKPARAM *param, uint8 attr)
 /***************************************** CRC Calc. *****************************************/
 #define STK500V2_CRC_INIT				0xFFFF
 
-static const uint16 STK500V2_crc_tbl[256] = {
+static const uint16_t STK500V2_crc_tbl[256] = {
  0x0000, 0x1189, 0x2312, 0x329b, 0x4624, 0x57ad, 0x6536, 0x74bf,
  0x8c48, 0x9dc1, 0xaf5a, 0xbed3, 0xca6c, 0xdbe5, 0xe97e, 0xf8f7,
  0x1081, 0x0108, 0x3393, 0x221a, 0x56a5, 0x472c, 0x75b7, 0x643e,
@@ -153,14 +153,14 @@ static const uint16 STK500V2_crc_tbl[256] = {
  0x7bc7, 0x6a4e, 0x58d5, 0x495c, 0x3de3, 0x2c6a, 0x1ef1, 0x0f78
 };
 
-static uint16 STK500V2_CRC_Val;
+static uint16_t STK500V2_CRC_Val;
 
 /// Calc 16-bit CRC for STK500v2 Protocol
 /// @param[in]		c current char
-static void STK500V2_CRC16(uint8 c)
+static void STK500V2_CRC16(uint8_t c)
 {
-	uint16 tbl_val;
-	uint8 idx = (STK500V2_CRC_Val ^ c);
+	uint16_t tbl_val;
+	uint8_t idx = (STK500V2_CRC_Val ^ c);
 
 	tbl_val = STK500V2_crc_tbl[idx];
 
@@ -173,7 +173,7 @@ static void STK500V2_CRC16(uint8 c)
 /// Prepare Response Package
 /// @param[in]	ID		Response ID
 /// @param[in]	len		Response Length
-void STK500V2_PrepareRSP(uint8 ID, uint32 len)
+void STK500V2_PrepareRSP(uint8_t ID, uint32_t len)
 {
 	rep_len = len;
 	buffer_out[8] = ID;
@@ -182,7 +182,7 @@ void STK500V2_PrepareRSP(uint8 ID, uint32 len)
 /// Prepare Event Package
 /// @param[in]	ID		Response ID
 /// @param[in]	len		Response Length
-void STK500V2_PrepareEvent(uint8 ID, uint32 len)
+void STK500V2_PrepareEvent(uint8_t ID, uint32_t len)
 {
 	rep_len = len;
 	buffer_out[1] = 0xFF;
@@ -214,9 +214,9 @@ static void STK500V2_RSP_SIGN_ON(void)
 /// STK500v2 Process Common Command
 /// @param[in]	dat		Command Array
 /// @param[in]	len		Command Length
-static void STK500V2_ProcessCommonCmd(uint8* dat, uint16 len)
+static void STK500V2_ProcessCommonCmd(uint8_t *dat, uint16_t len)
 {
-	uint16 length;
+	uint16_t length;
 
 	switch(dat[0])
 	{
@@ -235,7 +235,7 @@ static void STK500V2_ProcessCommonCmd(uint8* dat, uint16 len)
 		break;
 	case CMND_SET_PARAMETER:
 		length = 0;
-		if (STKPARAM_GetSize(STK500V2_Param, dat[1], (uint8*)&length))
+		if (STKPARAM_GetSize(STK500V2_Param, dat[1], (uint8_t*)&length))
 		{
 			STKPARAM_SetValue(STK500V2_Param, dat[1], &dat[2]);
 			STK500V2_RSP_OK();
@@ -243,7 +243,7 @@ static void STK500V2_ProcessCommonCmd(uint8* dat, uint16 len)
 		break;
 	case CMND_GET_PARAMETER:
 		length = 0;
-		if (STKPARAM_GetSize(STK500V2_Param, dat[1], (uint8*)&length))
+		if (STKPARAM_GetSize(STK500V2_Param, dat[1], (uint8_t*)&length))
 		{
 			STKPARAM_GetValue(STK500V2_Param, dat[1], &dat[1]);
 			STK500V2_RSP_PARAMETER(length);
@@ -297,7 +297,7 @@ static void STK500V2_ProcessCommonCmd(uint8* dat, uint16 len)
 /// STK500v2 Process Command
 /// @param[in]	dat		Command Array
 /// @param[in]	len		Command Length
-static void STK500V2_ProcessCmd(uint8* dat, uint16 len)
+static void STK500V2_ProcessCmd(uint8_t *dat, uint16_t len)
 {
 	if(dat[0] == CMND_ISP_PACKET)
 	{
@@ -342,7 +342,7 @@ static void STK500V2_ProcessCmd(uint8* dat, uint16 len)
 	}
 }
 
-void STK500V2_Process(uint8* dat, uint16 len)
+void STK500V2_Process(uint8_t *dat, uint16_t len)
 {
 	if (dat[0] != STK500V2_COMMAND_CHAR)
 	{

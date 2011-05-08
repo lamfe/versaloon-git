@@ -43,6 +43,6 @@ void AVR32_JTAG_DataInPtr(uint8_t *ptdo, uint16_t bitlen);
 void AVR32_JTAG_DataOutPtr(uint8_t *ptdi, uint16_t bitlen);
 void AVR32_JTAG_DataPtr(uint8_t *ptdi, uint8_t *ptdo, uint16_t bitlen);
 
-uint8 AVR32_JTAG_SAB_WordAccess(uint8 *addr, uint8 *data, uint8 r);
-uint8 AVR32_JTAG_SAB_WordBlockAccess(uint8 *addr, uint8 *data, uint8 r, uint8 len);
-uint8 AVR32_JTAG_NexusAccess(uint8 a, uint8 *data, uint8 r);
+uint8_t AVR32_JTAG_SAB_WordAccess(uint8_t *addr, uint8_t *data, uint8_t r);
+uint8_t AVR32_JTAG_SAB_WordBlockAccess(uint8_t *addr, uint8_t *data, uint8_t r, uint8_t len);
+uint8_t AVR32_JTAG_NexusAccess(uint8_t a, uint8_t *data, uint8_t r);

@@ -26,16 +26,16 @@
 
 #define FWU_KEY							0x55AA
 
-uint8 Versaloon_Ver[] = "Versaloon(" _HARDWARE_VER_STR ")by Simon(compiled on " __DATE__ ")";
+uint8_t Versaloon_Ver[] = "Versaloon(" _HARDWARE_VER_STR ")by Simon(compiled on " __DATE__ ")";
 
 void BeforeInit(void){}
 
 void AfterInit(void){}
 
-static void Versaloon_ProcessCommonCmd(uint8* dat, uint16 len)
+static void Versaloon_ProcessCommonCmd(uint8_t *dat, uint16_t len)
 {
 #if VERSALOON_FW_UPDATE_EN
-	uint32 key;
+	uint32_t key;
 #endif
 
 	switch(dat[0])
@@ -78,9 +78,9 @@ static void Versaloon_ProcessCommonCmd(uint8* dat, uint16 len)
 	}
 }
 
-void ProcessCommand(uint8* dat, uint16 len)
+void ProcessCommand(uint8_t* dat, uint16_t len)
 {
-	uint8 cmd = 0;
+	uint8_t cmd = 0;
 
 	cmd = buffer_out[0];		// first byte of the USB package is the command byte
 	// check command and call corresponding module
@@ -99,7 +99,7 @@ void ProcessCommand(uint8* dat, uint16 len)
 #endif		// #if USB_TO_XXX_EN
 }
 
-extern uint8 USBTOUSART_En;
+extern uint8_t USBTOUSART_En;
 void ProcessIdle(void)
 {
 	if (USBTOUSART_En)
@@ -110,7 +110,7 @@ void ProcessIdle(void)
 	}
 }
 
-uint8 CheckLocalHandler(void)
+uint8_t CheckLocalHandler(void)
 {
 	return CDC_enable;
 }

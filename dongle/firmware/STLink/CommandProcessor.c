@@ -21,7 +21,7 @@ void BeforeInit(void){}
 
 void AfterInit(void){}
 
-void ProcessCommand(uint8* dat, uint16 len)
+void ProcessCommand(uint8_t *dat, uint16_t len)
 {
 	STLink_SWIM_Process(dat);
 }
@@ -30,7 +30,7 @@ void ProcessIdle(void)
 {
 }
 
-uint8 CheckLocalHandler(void)
+uint8_t CheckLocalHandler(void)
 {
 	return 0;
 }

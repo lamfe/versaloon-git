@@ -22,33 +22,33 @@
 #endif
 
 uint8_t buffer_out[USB_DATA_BUFF_SIZE], *buffer_in = NULL;
-__IO uint32_t count_out = 0;
-__IO uint32_t usb_in_data_remain = 0, usb_in_numofpackage = 0;
-__IO uint32_t buffer_ptr = 0;
-__IO uint32_t usb_ovf = 0;
+volatile uint32_t count_out = 0;
+volatile uint32_t usb_in_data_remain = 0, usb_in_numofpackage = 0;
+volatile uint32_t buffer_ptr = 0;
+volatile uint32_t usb_ovf = 0;
 
-__IO uint32_t cmd_len = 0;
-__IO uint32_t rep_len = 0;
+volatile uint32_t cmd_len = 0;
+volatile uint32_t rep_len = 0;
 
-uint8 asyn_rx_buf[ASYN_DATA_BUFF_SIZE];
-uint16 Vtarget = 0;
+uint8_t asyn_rx_buf[ASYN_DATA_BUFF_SIZE];
+uint16_t Vtarget = 0;
 
-void GPIO_SetMode(GPIO_TypeDef* GPIOx, uint8 pin, uint8 mode)
+void GPIO_SetMode(GPIO_TypeDef* GPIOx, uint8_t pin, uint8_t mode)
 {
-	uint32 tmp_reg;
+	uint32_t tmp_reg;
 
 	if(pin < 8)
 	{
 		tmp_reg = GPIOx->CRL;
-		tmp_reg &= ~(((u32)0x0F) << ((pin - 0) * 4));
-		tmp_reg |= (u32)(mode & 0x0F) << ((pin - 0) * 4);
+		tmp_reg &= ~(((uint32_t)0x0F) << ((pin - 0) * 4));
+		tmp_reg |= (uint32_t)(mode & 0x0F) << ((pin - 0) * 4);
 		GPIOx->CRL = tmp_reg;
 	}
 	else
 	{
 		tmp_reg = GPIOx->CRH;
-		tmp_reg &= ~(((u32)0x0F) << ((pin - 8) * 4));
-		tmp_reg |= (u32)(mode & 0x0F) << ((pin - 8) * 4);
+		tmp_reg &= ~(((uint32_t)0x0F) << ((pin - 8) * 4));
+		tmp_reg |= (uint32_t)(mode & 0x0F) << ((pin - 8) * 4);
 		GPIOx->CRH = tmp_reg;
 	}
 
@@ -56,11 +56,11 @@ void GPIO_SetMode(GPIO_TypeDef* GPIOx, uint8 pin, uint8 mode)
 	{
 		if(mode & 0x10)
 		{
-			GPIOx->BSRR = (((u32)0x01) << pin);
+			GPIOx->BSRR = (((uint32_t)0x01) << pin);
 		}
 		else
 		{
-			GPIOx->BRR = (((u32)0x01) << pin);
+			GPIOx->BRR = (((uint32_t)0x01) << pin);
 		}
 	}
 }
@@ -259,7 +259,8 @@ SPI_InitTypeDef		SPI_InitStructure;
 * Output				 : None
 * Return				 : None
 *******************************************************************************/
-void SPI_Configuration(SPI_TypeDef* SPIx,u16 mode,u16 brp,u16 fb,u16 cpol,u16 cpha)
+void SPI_Configuration(SPI_TypeDef* SPIx, uint16_t mode, uint16_t brp, 
+						uint16_t fb, uint16_t cpol, uint16_t cpha)
 {
 //	DeInit cannot be called here because this function will be called to set the speed of SPI
 //	SPI_I2S_DeInit(SPIx);
@@ -325,7 +326,7 @@ void ADC_Configuration(void)
 }
 
 // GLOBAL_OUTPUT
-uint8 GLOBAL_OUTPUT_Count = 0;
+uint8_t GLOBAL_OUTPUT_Count = 0;
 void GLOBAL_OUTPUT_Acquire(void)
 {
 	if(!GLOBAL_OUTPUT_Count)
@@ -347,10 +348,10 @@ void GLOBAL_OUTPUT_Release(void)
 	}
 }
 
-uint16 SampleVtarget(void)
+uint16_t SampleVtarget(void)
 {
 #if POWER_SAMPLE_EN
-	uint16 tmp;
+	uint16_t tmp;
 
 	tmp = ADC_GetConversionValue(TVCC_ADC_PORT);
 	// convert target power to be in mV unit
@@ -361,9 +362,9 @@ uint16 SampleVtarget(void)
 #endif
 }
 
-void PWREXT_Check(uint8 b_control_led)
+void PWREXT_Check(uint8_t b_control_led)
 {
-	static u32 dly = 0;
+	static uint32_t dly = 0;
 
 	if(++dly > 0xFFFF)
 	{
@@ -394,10 +395,10 @@ void PWREXT_Check(uint8 b_control_led)
 	}
 }
 
-void USB_Init_SerialString(uint8 *strSerial, uint16 len)
+void USB_Init_SerialString(uint8_t *strSerial, uint16_t len)
 {
-	uint8 *chip_serial = (uint8*)0x1FFFF7E8, tmp;
-	uint16 i = 0;
+	uint8_t *chip_serial = (uint8_t*)0x1FFFF7E8, tmp;
+	uint16_t i = 0;
 
 	len /= 2;
 	if (len > 24)
@@ -439,9 +440,9 @@ void USB_Init_SerialString(uint8 *strSerial, uint16 len)
 }
 
 // Delay
-void DelayUS(volatile uint32 dly)
+void DelayUS(volatile uint32_t dly)
 {
-	uint32 dly_tmp;
+	uint32_t dly_tmp;
 
 	while (dly)
 	{
@@ -458,7 +459,7 @@ void DelayUS(volatile uint32 dly)
 	}
 }
 
-void DelayMS(uint32 dly)
+void DelayMS(uint32_t dly)
 {
 	DelayUS(1000 * dly);
 }
@@ -466,7 +467,7 @@ void DelayMS(uint32 dly)
 #ifdef CDC_IF_EN
 #if CDC_IF_EN
 
-static uint32 __if_inited = 0;
+static uint32_t __if_inited = 0;
 void CDC_IF_Fini(void)
 {
 	NVIC_InitTypeDef NVIC_InitStructure;
@@ -492,7 +493,7 @@ void CDC_IF_Fini(void)
 	}
 }
 
-void CDC_IF_Setup(uint32 baudrate, uint8 datatype, uint8 paritytype, uint8 stopbittype)
+void CDC_IF_Setup(uint32_t baudrate, uint8_t datatype, uint8_t paritytype, uint8_t stopbittype)
 {
 	USART_InitTypeDef USART_InitStructure;
 	NVIC_InitTypeDef NVIC_InitStructure;
@@ -566,15 +567,15 @@ void CDC_IF_Setup(uint32 baudrate, uint8 datatype, uint8 paritytype, uint8 stopb
 	PWREXT_Acquire();
 }
 
-extern __IO uint8 CDC_Out_En;
-extern uint8 USBTOUSART_En;
+extern volatile uint8_t CDC_Out_En;
+extern uint8_t USBTOUSART_En;
 void CDC_Process(void)
 {
 #if USB_CDC_BY_POLLING
-	uint32 len;
-	uint8 *buff;
-	static uint32 usb_out_buff_len = 0;
-	static uint32 usart_out_buff_len = 0;
+	uint32_t len;
+	uint8_t *buff;
+	static uint32_t usb_out_buff_len = 0;
+	static uint32_t usart_out_buff_len = 0;
 
 	if (USART_GetFlagStatus(USART_DEF_PORT, USART_FLAG_TC) == SET)
 	{
@@ -645,11 +646,11 @@ void CDC_IF_Disable_Int(void)
 	NVIC_DisableIRQ(USART_IRQ);
 }
 
-void CDC_IF_RX_Int(uint8 dat)
+void CDC_IF_RX_Int(uint8_t dat)
 {
 #if !USB_CDC_BY_POLLING
-	uint8 *buff;
-	uint32 len;
+	uint8_t *buff;
+	uint32_t len;
 #endif
 
 	if(FIFO_Add_Byte(&CDC_IN_fifo, dat) != 1)
@@ -708,7 +709,7 @@ s32 USB_Out_IsReady(void)
 
 s32 USB_Out_PollReady(void)
 {
-	u32 retry;
+	uint32_t retry;
 
 	retry = 0;
 	while(!USB_Out_IsReady())
@@ -730,9 +731,9 @@ s32 USB_Out_PollReady(void)
 	return 0;
 }
 
-void USB_Out(u8 *data, u32 len)
+void USB_Out(uint8_t *data, uint32_t len)
 {
-	u32 ep_size;
+	uint32_t ep_size;
 
 	buffer_in = data;
 	usb_in_numofpackage = (len + USB_DATA_SIZE - 1) / USB_DATA_SIZE;
@@ -897,7 +898,7 @@ void SUSP_Callback(void)
 * Output				 : None
 * Return				 : None
 *******************************************************************************/
-void assert_failed(u8* file, u32 line)
+void assert_failed(uint8_t *file, uint32_t line)
 { 
 	/* User can add his own implementation to report the file name and line number,
 		 ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */

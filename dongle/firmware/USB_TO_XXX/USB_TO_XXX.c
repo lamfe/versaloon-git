@@ -22,15 +22,15 @@
 
 typedef struct
 {
-	uint8 *buffer_reply_save;
-	uint32 rep_len_save;
-	uint16 cmd_index;
-	uint16 poll_retry;
-	uint16 poll_interval;
-	uint8 poll_result;
+	uint8_t *buffer_reply_save;
+	uint32_t rep_len_save;
+	uint16_t cmd_index;
+	uint16_t poll_retry;
+	uint16_t poll_interval;
+	uint8_t poll_result;
 } USB_TO_POLL_Context_t;
 USB_TO_POLL_Context_t USB_TO_POLL_Context[USB_TO_POLL_NUM];
-static const uint8 *USB_TO_POLL_buffer_reply[USB_TO_POLL_NUM] = 
+static const uint8_t *USB_TO_POLL_buffer_reply[USB_TO_POLL_NUM] = 
 {
 #if USB_TO_POLL_NUM >= 1
 	asyn_rx_buf + 1024 * 2
@@ -39,14 +39,14 @@ static const uint8 *USB_TO_POLL_buffer_reply[USB_TO_POLL_NUM] =
 	,asyn_rx_buf + 1024 * 3
 #endif
 };
-int8 USB_TO_POLL_Index;
+int8_t USB_TO_POLL_Index;
 
-uint8* buffer_reply;
+uint8_t *buffer_reply;
 
 #define USB_TO_XXX_ABILITIES_LEN			\
 	((VERSALOON_USB_TO_XXX_CMD_END + 1 - VERSALOON_USB_TO_XXX_CMD_START) / 8)
 
-static void USB_TO_XXX_AddAbility(uint8 abilities[USB_TO_XXX_ABILITIES_LEN], uint8 cmd)
+static void USB_TO_XXX_AddAbility(uint8_t abilities[USB_TO_XXX_ABILITIES_LEN], uint8_t cmd)
 {
 	if ((cmd < VERSALOON_USB_TO_XXX_CMD_START) || 
 		(cmd > VERSALOON_USB_TO_XXX_CMD_END))
@@ -58,12 +58,12 @@ static void USB_TO_XXX_AddAbility(uint8 abilities[USB_TO_XXX_ABILITIES_LEN], uin
 	abilities[cmd / 8] |= 1 << (cmd % 8);
 }
 
-void USB_TO_XXX_ProcessCmd(uint8* dat, uint16 len)
+void USB_TO_XXX_ProcessCmd(uint8_t *dat, uint16_t len)
 {
-	uint16 USB_TO_XXX_CmdIdx;
-	uint16 USB_TO_XXX_CmdLen_tmp;
-	uint16 dly;
-	uint8 USB_TO_XXX_Abilities[USB_TO_XXX_ABILITIES_LEN];
+	uint16_t USB_TO_XXX_CmdIdx;
+	uint16_t USB_TO_XXX_CmdLen_tmp;
+	uint16_t dly;
+	uint8_t USB_TO_XXX_Abilities[USB_TO_XXX_ABILITIES_LEN];
 
 	// for USB_TO_ALL command, data area(from the 3rd byte) is the real command to execute
 	if(dat[0] == USB_TO_ALL)
@@ -305,7 +305,7 @@ void USB_TO_XXX_ProcessCmd(uint8* dat, uint16 len)
 						GET_LE_U16(&dat[USB_TO_XXX_CmdIdx + 6]);
 					USB_TO_POLL_Context[USB_TO_POLL_Index].poll_result = 1;
 
-					buffer_reply = (uint8 *)USB_TO_POLL_buffer_reply[USB_TO_POLL_Index];
+					buffer_reply = (uint8_t *)USB_TO_POLL_buffer_reply[USB_TO_POLL_Index];
 					rep_len = 0;
 				}
 				break;
@@ -372,7 +372,7 @@ void USB_TO_XXX_ProcessCmd(uint8* dat, uint16 len)
 
 							USB_TO_POLL_Context[USB_TO_POLL_Index].poll_result = 1;
 
-							buffer_reply = (uint8 *)USB_TO_POLL_buffer_reply[USB_TO_POLL_Index];
+							buffer_reply = (uint8_t *)USB_TO_POLL_buffer_reply[USB_TO_POLL_Index];
 							rep_len = 0;
 							USB_TO_XXX_CmdIdx = USB_TO_POLL_Context[USB_TO_POLL_Index].cmd_index - USB_TO_XXX_CmdLen_tmp - 3;
 						}

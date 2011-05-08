@@ -22,7 +22,7 @@
 
 extern FIFO CDC_OUT_fifo;
 extern FIFO CDC_IN_fifo;
-uint8 USBTOUSART_En = 0;
+uint8_t USBTOUSART_En = 0;
 
 RESULT usart_init(uint8_t index)
 {

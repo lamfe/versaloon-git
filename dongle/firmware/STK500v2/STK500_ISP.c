@@ -23,12 +23,12 @@
 #include "Target/AVR_ISP/AVR_ISP.h"
 
 /// SPI Command data
-uint8 AVRISP_SPI_cmd[4];
+uint8_t AVRISP_SPI_cmd[4];
 /// SPI Return data
-uint8 AVRISP_SPI_ret[4];
+uint8_t AVRISP_SPI_ret[4];
 
 /// ISP Frequency Array
-const static uint32 AVRISP_Freqs[] = {
+const static uint32_t AVRISP_Freqs[] = {
 	8000000, 4000000, 2000000, 1000000, 500000, 250000, 125000,
 	96386, 89888, 84211, 79208, 74767, 70797, 67227, 64000,
 	61069, 58395, 55945, 51613, 49690, 47905, 46243, 43244,
@@ -53,11 +53,11 @@ const static uint32 AVRISP_Freqs[] = {
 /// @param[in]	dat		Command Array
 /// @param[in]	len		Command Length
 /// @return		Command Result
-uint8 STK500_ISP_ProcessProgCmd(uint8* dat, uint16 len)
+uint8_t STK500_ISP_ProcessProgCmd(uint8_t* dat, uint16_t len)
 {
-	uint16 i;
-	uint16 tmp16, length16;
-	uint8 operation = 0, command, command_tmp, delay;
+	uint16_t i;
+	uint16_t tmp16, length16;
+	uint8_t operation = 0, command, command_tmp, delay;
 
 	switch(dat[0] & ~STK500_CMDTYPE_MASK)
 	{
@@ -137,7 +137,7 @@ uint8 STK500_ISP_ProcessProgCmd(uint8* dat, uint16 len)
 			return STATUS_RDY_BSY_TOUT;
 		}
 
-		AVRISP_Comm(&dat[3], (uint8*)AVRISP_SPI_ret);
+		AVRISP_Comm(&dat[3], (uint8_t*)AVRISP_SPI_ret);
 
 		interfaces->delay.delayms(dat[1]);
 		if(dat[2])
@@ -191,11 +191,11 @@ uint8 STK500_ISP_ProcessProgCmd(uint8* dat, uint16 len)
 				SET_BE_U16(&AVRISP_SPI_cmd[1], SKT500_Target_Address);
 
 				AVRISP_SPI_cmd[3] = dat[10 + i * 2];
-				AVRISP_Comm((uint8*)AVRISP_SPI_cmd, (uint8*)AVRISP_SPI_ret);
+				AVRISP_Comm((uint8_t*)AVRISP_SPI_cmd, (uint8_t*)AVRISP_SPI_ret);
 
 				AVRISP_SPI_cmd[0] = command | 0x08;
 				AVRISP_SPI_cmd[3] = dat[11 + i * 2];
-				AVRISP_Comm((uint8*)AVRISP_SPI_cmd, (uint8*)AVRISP_SPI_ret);
+				AVRISP_Comm((uint8_t*)AVRISP_SPI_cmd, (uint8_t*)AVRISP_SPI_ret);
 
 				SKT500_Target_Address++;
 			}
@@ -205,7 +205,7 @@ uint8 STK500_ISP_ProcessProgCmd(uint8* dat, uint16 len)
 				AVRISP_SPI_cmd[0] = dat[6];
 				SET_BE_U16(&AVRISP_SPI_cmd[1], tmp16);
 				AVRISP_SPI_cmd[3] = 0;
-				AVRISP_Comm((uint8*)AVRISP_SPI_cmd, (uint8*)AVRISP_SPI_ret);
+				AVRISP_Comm((uint8_t*)AVRISP_SPI_cmd, (uint8_t*)AVRISP_SPI_ret);
 
 				if(operation & 0x20)
 				{
@@ -220,7 +220,7 @@ uint8 STK500_ISP_ProcessProgCmd(uint8* dat, uint16 len)
 							AVRISP_SPI_cmd[0] = command_tmp;
 							SET_BE_U16(&AVRISP_SPI_cmd[1], tmp16);
 							AVRISP_SPI_cmd[3] = 0;
-							AVRISP_Comm((uint8*)AVRISP_SPI_cmd, (uint8*)AVRISP_SPI_ret);
+							AVRISP_Comm((uint8_t*)AVRISP_SPI_cmd, (uint8_t*)AVRISP_SPI_ret);
 						}while((AVRISP_SPI_ret[3] == operation) && --delay);
 						if(!delay | (AVRISP_SPI_ret[3] != dat[10]))
 						{
@@ -264,7 +264,7 @@ uint8 STK500_ISP_ProcessProgCmd(uint8* dat, uint16 len)
 				}
 				SET_BE_U16(&AVRISP_SPI_cmd[1], SKT500_Target_Address);
 				AVRISP_SPI_cmd[3] = dat[10 + i];
-				AVRISP_Comm((uint8*)AVRISP_SPI_cmd, (uint8*)AVRISP_SPI_ret);
+				AVRISP_Comm((uint8_t*)AVRISP_SPI_cmd, (uint8_t*)AVRISP_SPI_ret);
 
 				// MUST Full Polling
 				if(operation & 0x04)
@@ -286,7 +286,7 @@ uint8 STK500_ISP_ProcessProgCmd(uint8* dat, uint16 len)
 								AVRISP_SPI_cmd[0] = command_tmp;
 							}
 							AVRISP_SPI_cmd[3] = 0;
-							AVRISP_Comm((uint8*)AVRISP_SPI_cmd, (uint8*)AVRISP_SPI_ret);
+							AVRISP_Comm((uint8_t*)AVRISP_SPI_cmd, (uint8_t*)AVRISP_SPI_ret);
 						}while((AVRISP_SPI_ret[3] == operation) && --delay);
 						if(!delay | (AVRISP_SPI_ret[3] != dat[10 + i]))
 						{
@@ -337,11 +337,11 @@ uint8 STK500_ISP_ProcessProgCmd(uint8* dat, uint16 len)
 		{
 			AVRISP_SPI_cmd[0] = command;
 			SET_BE_U16(&AVRISP_SPI_cmd[1], SKT500_Target_Address);
-			AVRISP_Comm((uint8*)AVRISP_SPI_cmd, (uint8*)AVRISP_SPI_ret);
+			AVRISP_Comm((uint8_t*)AVRISP_SPI_cmd, (uint8_t*)AVRISP_SPI_ret);
 			dat[2 + i * 2] = AVRISP_SPI_ret[3];
 
 			AVRISP_SPI_cmd[0] = command | 0x08;
-			AVRISP_Comm((uint8*)AVRISP_SPI_cmd, (uint8*)AVRISP_SPI_ret);
+			AVRISP_Comm((uint8_t*)AVRISP_SPI_cmd, (uint8_t*)AVRISP_SPI_ret);
 			dat[3 + i * 2] = AVRISP_SPI_ret[3];
 
 			SKT500_Target_Address++;
@@ -373,7 +373,7 @@ uint8 STK500_ISP_ProcessProgCmd(uint8* dat, uint16 len)
 				AVRISP_SPI_cmd[0] = command;
 				SET_BE_U16(&AVRISP_SPI_cmd[1], SKT500_Target_Address);
 				AVRISP_SPI_cmd[3] = dat[10 + i];
-				AVRISP_Comm((uint8*)AVRISP_SPI_cmd, (uint8*)AVRISP_SPI_ret);
+				AVRISP_Comm((uint8_t*)AVRISP_SPI_cmd, (uint8_t*)AVRISP_SPI_ret);
 
 				SKT500_Target_Address++;
 			}
@@ -383,7 +383,7 @@ uint8 STK500_ISP_ProcessProgCmd(uint8* dat, uint16 len)
 				AVRISP_SPI_cmd[0] = dat[6];
 				SET_BE_U16(&AVRISP_SPI_cmd[1], tmp16);
 				AVRISP_SPI_cmd[3] = 0;
-				AVRISP_Comm((uint8*)AVRISP_SPI_cmd, (uint8*)AVRISP_SPI_ret);
+				AVRISP_Comm((uint8_t*)AVRISP_SPI_cmd, (uint8_t*)AVRISP_SPI_ret);
 
 				// Polling
 				if(operation & 0x20)
@@ -399,7 +399,7 @@ uint8 STK500_ISP_ProcessProgCmd(uint8* dat, uint16 len)
 							AVRISP_SPI_cmd[0] = command_tmp;
 							SET_BE_U16(&AVRISP_SPI_cmd[1], tmp16);
 							AVRISP_SPI_cmd[3] = 0;
-							AVRISP_Comm((uint8*)AVRISP_SPI_cmd, (uint8*)AVRISP_SPI_ret);
+							AVRISP_Comm((uint8_t*)AVRISP_SPI_cmd, (uint8_t*)AVRISP_SPI_ret);
 						}while((AVRISP_SPI_ret[3] == operation) && --delay);
 						if(!delay | (AVRISP_SPI_ret[3] != dat[10]))
 						{
@@ -437,7 +437,7 @@ uint8 STK500_ISP_ProcessProgCmd(uint8* dat, uint16 len)
 				AVRISP_SPI_cmd[0] = command;
 				SET_BE_U16(&AVRISP_SPI_cmd[1], SKT500_Target_Address);
 				AVRISP_SPI_cmd[3] = dat[10 + i];
-				AVRISP_Comm((uint8*)AVRISP_SPI_cmd, (uint8*)AVRISP_SPI_ret);
+				AVRISP_Comm((uint8_t*)AVRISP_SPI_cmd, (uint8_t*)AVRISP_SPI_ret);
 
 				// MUST Full Polling
 				if(operation & 0x04)
@@ -452,7 +452,7 @@ uint8 STK500_ISP_ProcessProgCmd(uint8* dat, uint16 len)
 							interfaces->delay.delayus(80);
 							AVRISP_SPI_cmd[0] = command_tmp;
 							AVRISP_SPI_cmd[3] = 0;
-							AVRISP_Comm((uint8*)AVRISP_SPI_cmd, (uint8*)AVRISP_SPI_ret);
+							AVRISP_Comm((uint8_t*)AVRISP_SPI_cmd, (uint8_t*)AVRISP_SPI_ret);
 						}while((AVRISP_SPI_ret[3] == operation) && --delay);
 						if(!delay | (AVRISP_SPI_ret[3] != dat[10 + i]))
 						{
@@ -489,7 +489,7 @@ uint8 STK500_ISP_ProcessProgCmd(uint8* dat, uint16 len)
 	case CMD_READ_EEPROM:
 //dat[idx]	para(value)				Description
 //same as CMD_READ_FLASH
-		length16 = ((uint16)dat[1] << 8) | dat[2];
+		length16 = ((uint16_t)dat[1] << 8) | dat[2];
 		command = dat[3];
 
 		AVRISP_RDY_Wait();
@@ -497,7 +497,7 @@ uint8 STK500_ISP_ProcessProgCmd(uint8* dat, uint16 len)
 		{
 			AVRISP_SPI_cmd[0] = command;
 			SET_BE_U16(&AVRISP_SPI_cmd[1], SKT500_Target_Address);
-			AVRISP_Comm((uint8*)AVRISP_SPI_cmd, (uint8*)AVRISP_SPI_ret);
+			AVRISP_Comm((uint8_t*)AVRISP_SPI_cmd, (uint8_t*)AVRISP_SPI_ret);
 			dat[2 + i] = AVRISP_SPI_ret[3];
 
 			SKT500_Target_Address++;
@@ -514,7 +514,7 @@ uint8 STK500_ISP_ProcessProgCmd(uint8* dat, uint16 len)
 //dat[4]	cmd4
 		AVRISP_RDY_Wait();
 
-		AVRISP_Comm(&dat[1], (uint8*)AVRISP_SPI_ret);
+		AVRISP_Comm(&dat[1], (uint8_t*)AVRISP_SPI_ret);
 
 		dat[2] = STATUS_CMD_OK;
 		rep_len = 3;
@@ -531,7 +531,7 @@ uint8 STK500_ISP_ProcessProgCmd(uint8* dat, uint16 len)
 //dat[5]	cmd4
 		AVRISP_RDY_Wait();
 
-		AVRISP_Comm(dat + 2, (uint8*)AVRISP_SPI_ret);
+		AVRISP_Comm(dat + 2, (uint8_t*)AVRISP_SPI_ret);
 		dat[2] = AVRISP_SPI_ret[dat[1] - 1];
 
 		dat[3] = STATUS_CMD_OK;

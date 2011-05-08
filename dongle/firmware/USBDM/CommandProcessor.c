@@ -25,7 +25,7 @@ void BeforeInit(void){}
 
 void AfterInit(void){}
 
-void ProcessCommand(uint8* dat, uint16 len)
+void ProcessCommand(uint8_t *dat, uint16_t len)
 {
 	memcpy(commandBuffer, dat, len);
 	commandBuffer[0] = len;
@@ -37,7 +37,7 @@ void ProcessIdle(void)
 {
 }
 
-uint8 CheckLocalHandler(void)
+uint8_t CheckLocalHandler(void)
 {
 	return 0;
 }

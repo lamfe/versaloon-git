@@ -36,7 +36,7 @@ enum vsfusbd_ctrl_state_t
 
 struct vsfusbd_ctrl_request_t
 {
-	uint8_t request_type;
+	uint8_t type;
 	uint8_t request;
 	uint16_t value;
 	uint16_t index;
@@ -143,13 +143,15 @@ RESULT vsfusbd_device_poll(struct vsfusbd_device_t *device);
 
 RESULT vsfusbd_ep_in_nb(struct vsfusbd_device_t *device, 
 						uint8_t ep, uint8_t *buff, uint16_t size);
-RESULT vsfusbd_ep_in_nb_isready(struct vsfusbd_device_t *device, uint8_t ep);
+RESULT vsfusbd_ep_in_nb_isready(struct vsfusbd_device_t *device, uint8_t ep, 
+								bool *error);
 RESULT vsfusbd_ep_in(struct vsfusbd_device_t *device, 
 						uint8_t ep, uint8_t *buff, uint16_t size);
 
 RESULT vsfusbd_ep_out_nb(struct vsfusbd_device_t *device, 
 							uint8_t ep, uint8_t *buff, uint16_t size);
-RESULT vsfusbd_ep_out_nb_isready(struct vsfusbd_device_t *device, uint8_t ep);
+RESULT vsfusbd_ep_out_nb_isready(struct vsfusbd_device_t *device, uint8_t ep, 
+									bool *error);
 RESULT vsfusbd_ep_out(struct vsfusbd_device_t *device, 
 						uint8_t ep, uint8_t *buff, uint16_t size);
 
