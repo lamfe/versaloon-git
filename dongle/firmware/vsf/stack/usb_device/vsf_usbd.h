@@ -62,6 +62,8 @@ struct vsfusbd_desc_filter_t
 	RESULT (*read)(struct vsf_buffer_t *buffer);
 };
 
+struct vsfusbd_device_t;
+
 struct vsfusbd_setup_filter_t
 {
 	uint8_t type;
@@ -85,9 +87,6 @@ struct vsfusbd_class_protocol_t
 
 struct vsfusbd_iface_t
 {
-	RESULT (*init)(void);
-	RESULT (*fini)(void);
-	
 	uint8_t alternate_setting;
 	struct vsfusbd_class_protocol_t *class_protocol;
 };

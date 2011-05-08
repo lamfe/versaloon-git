@@ -278,6 +278,65 @@ enum poll_check_type_t
 	POLL_CHECK_UNEQU
 };
 
+enum usb_ep_state_t
+{
+	USB_EP_STAT_STALL,
+	USB_EP_STAT_ACK,
+	USB_EP_STAT_NACK,
+	USB_EP_STAT_DIS,
+};
+
+enum usb_ep_type_t
+{
+	USB_EP_TYPE_CONTROL,
+	USB_EP_TYPE_INTERRUPT,
+	USB_EP_TYPE_BULK,
+	USB_EP_TYPE_ISO
+};
+
+struct interface_usbd_t
+{
+	RESULT (*init)(void *device);
+	RESULT (*fini)(void);
+	RESULT (*reset)(void);
+	RESULT (*poll)(void);
+	
+	RESULT (*connect)(void);
+	RESULT (*disconnect)(void);
+	
+	RESULT (*set_address)(uint8_t addr);
+	uint8_t (*get_address)(void);
+	
+	RESULT (*suspend)(void);
+	RESULT (*resume)(void);
+	RESULT (*lowpower)(uint8_t level);
+	
+	uint32_t (*get_frame_number)(void);
+	
+	struct usbd_endpoint_t
+	{
+		uint8_t num_of_ep;
+		
+		RESULT (*reset)(uint8_t idx);
+		RESULT (*set_type)(uint8_t idx, enum usb_ep_type_t type);
+		RESULT (*get_type)(uint8_t idx);
+		
+		RESULT (*set_IN_epsize)(uint8_t idx, uint16_t size);
+		uint16_t (*get_IN_epsize)(uint8_t idx);
+		enum usb_ep_state_t (*get_IN_state)(uint8_t idx);
+		RESULT (*set_IN_state)(uint8_t idx, enum usb_ep_state_t state);
+		RESULT (*set_IN_count)(uint8_t idx, uint16_t size);
+		RESULT (*write_IN_buffer)(uint8_t idx, uint8_t *buffer, uint16_t size);
+		
+		RESULT (*set_OUT_epsize)(uint8_t idx, uint16_t size);
+		uint16_t (*get_OUT_epsize)(uint8_t idx);
+		enum usb_ep_state_t (*get_OUT_state)(uint8_t idx);
+		RESULT (*set_OUT_state)(uint8_t idx, enum usb_ep_state_t state);
+		RESULT (*get_OUT_count)(uint8_t idx);
+		RESULT (*read_OUT_buffer)(uint8_t idx, uint8_t *buffer, uint16_t size);
+	} ep;
+};
+
 struct interfaces_info_t
 {
 	RESULT (*init)(void *p);
@@ -343,6 +402,9 @@ struct interfaces_info_t
 #endif
 #if INTERFACE_PWM_EN
 	struct interface_pwm_t pwm;
+#endif
+#if INTERFACE_USBD_EN
+	struct interface_usbd_t usbd;
 #endif
 	RESULT (*peripheral_commit)(void);
 };

@@ -293,6 +293,7 @@
           <state>$PROJ_DIR$\..\..\..\Interfaces\PowerExt\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\BDM\</state>
           <state>$PROJ_DIR$\..\..\..\USB_TO_XXX\</state>
+          <state>$PROJ_DIR$\..\..\..\vsf\</state>
           <state>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB</state>
         </option>
         <option>
@@ -2192,6 +2193,33 @@
     <file>
       <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB_TO_XXX.c</name>
     </file>
+  </group>
+  <group>
+    <name>vsf</name>
+    <group>
+      <name>stack</name>
+      <group>
+        <name>usb_device</name>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\vsf\stack\usb_device\vsf_usbd.c</name>
+        </file>
+      </group>
+    </group>
+    <group>
+      <name>tool</name>
+      <group>
+        <name>buffer</name>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\vsf\tool\buffer\buffer.h</name>
+        </file>
+      </group>
+      <group>
+        <name>list</name>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\vsf\tool\list\list.h</name>
+        </file>
+      </group>
+    </group>
   </group>
   <file>
     <name>$PROJ_DIR$\..\app_cfg.h</name>
