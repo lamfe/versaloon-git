@@ -128,6 +128,10 @@ USR_INCS+= -I $(SRCDIR)/Interfaces/PWM
 USR_SRCS+= $(SRCDIR)/Interfaces/interfaces.c
 USR_INCS+= -I $(SRCDIR)/Interfaces
 
+#VSF
+USR_SRCS+= $(SRCDIR)/vsf/stack/usb_device/vsf_usbd.c
+USR_INCS+= -I $(SRCDIR)/vsf
+
 # USB_TO_XXX
 USR_SRCS+= $(SRCDIR)/USB_TO_XXX/USB_TO_XXX.c $(SRCDIR)/USB_TO_XXX/USB_TO_USART.c
 USR_SRCS+= $(SRCDIR)/USB_TO_XXX/USB_TO_SPI.c $(SRCDIR)/USB_TO_XXX/USB_TO_IIC.c
