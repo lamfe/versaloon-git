@@ -781,8 +781,9 @@ static RESULT vsfusbd_on_OUT0(struct vsfusbd_device_t *device)
 	return ret;
 }
 
-RESULT vsfusbd_on_SETUP(struct vsfusbd_device_t *device)
+RESULT vsfusbd_on_SETUP(void *p)
 {
+	struct vsfusbd_device_t *device = p;
 	struct vsfusbd_ctrl_handler_t *ctrl_handler = &device->ctrl_handler;
 	struct vsfusbd_ctrl_request_t *request = &ctrl_handler->request;
 	struct vsf_buffer_t *buffer = &ctrl_handler->tbuffer.buffer;
@@ -848,8 +849,10 @@ exit:
 	return ret;
 }
 
-RESULT vsfusbd_on_IN(struct vsfusbd_device_t *device, uint8_t ep)
+RESULT vsfusbd_on_IN(void *p, uint8_t ep)
 {
+	struct vsfusbd_device_t *device = p;
+	
 	if (0 == ep)
 	{
 		return vsfusbd_on_IN0(device);
@@ -858,8 +861,10 @@ RESULT vsfusbd_on_IN(struct vsfusbd_device_t *device, uint8_t ep)
 	return ERROR_OK;
 }
 
-RESULT vsfusbd_on_OUT(struct vsfusbd_device_t *device, uint8_t ep)
+RESULT vsfusbd_on_OUT(void *p, uint8_t ep)
 {
+	struct vsfusbd_device_t *device = p;
+	
 	if (0 == ep)
 	{
 		return vsfusbd_on_OUT0(device);
@@ -868,18 +873,19 @@ RESULT vsfusbd_on_OUT(struct vsfusbd_device_t *device, uint8_t ep)
 	return ERROR_OK;
 }
 
-RESULT vsfusbd_on_UNDERFLOW(struct vsfusbd_device_t *device, uint8_t ep)
+RESULT vsfusbd_on_UNDERFLOW(void *p, uint8_t ep)
 {
 	return ERROR_OK;
 }
 
-RESULT vsfusbd_on_OVERFLOW(struct vsfusbd_device_t *device, uint8_t ep)
+RESULT vsfusbd_on_OVERFLOW(void *p, uint8_t ep)
 {
 	return ERROR_OK;
 }
 
-RESULT vsfusbd_on_RESET(struct vsfusbd_device_t *device)
+RESULT vsfusbd_on_RESET(void *p)
 {
+	struct vsfusbd_device_t *device = p;
 	struct vsf_buffer_t desc = {NULL, 0};
 	uint16_t pos;
 	uint16_t ep_size, ep_addr, ep_index, ep_attr;
@@ -1035,8 +1041,10 @@ RESULT vsfusbd_on_RESET(struct vsfusbd_device_t *device)
 	return ERROR_OK;
 }
 
-RESULT vsfusbd_on_WAKEUP(struct vsfusbd_device_t *device)
+RESULT vsfusbd_on_WAKEUP(void *p)
 {
+	struct vsfusbd_device_t *device = p;
+	
 	if (device->callback.on_WAKEUP != NULL)
 	{
 		device->callback.on_WAKEUP();
@@ -1044,8 +1052,10 @@ RESULT vsfusbd_on_WAKEUP(struct vsfusbd_device_t *device)
 	return ERROR_OK;
 }
 
-RESULT vsfusbd_on_SUSPEND(struct vsfusbd_device_t *device)
+RESULT vsfusbd_on_SUSPEND(void *p)
 {
+	struct vsfusbd_device_t *device = p;
+	
 	if (device->callback.on_SUSPEND != NULL)
 	{
 		device->callback.on_SUSPEND();
@@ -1053,8 +1063,10 @@ RESULT vsfusbd_on_SUSPEND(struct vsfusbd_device_t *device)
 	return device->drv->suspend();
 }
 
-RESULT vsfusbd_on_RESUME(struct vsfusbd_device_t *device)
+RESULT vsfusbd_on_RESUME(void *p)
 {
+	struct vsfusbd_device_t *device = p;
+	
 	if (device->callback.on_RESUME != NULL)
 	{
 		device->callback.on_RESUME();
@@ -1062,8 +1074,10 @@ RESULT vsfusbd_on_RESUME(struct vsfusbd_device_t *device)
 	return device->drv->resume();
 }
 
-RESULT vsfusbd_on_SOF(struct vsfusbd_device_t *device)
+RESULT vsfusbd_on_SOF(void *p)
 {
+	struct vsfusbd_device_t *device = p;
+	
 	if (device->callback.on_SOF != NULL)
 	{
 		device->callback.on_SOF();
@@ -1071,9 +1085,10 @@ RESULT vsfusbd_on_SOF(struct vsfusbd_device_t *device)
 	return ERROR_OK;
 }
 
-RESULT vsfusbd_on_ERROR(struct vsfusbd_device_t *device, 
-						enum usb_err_type_t type)
+RESULT vsfusbd_on_ERROR(void *p, enum usb_err_type_t type)
 {
+	struct vsfusbd_device_t *device = p;
+	
 	if (device->callback.on_ERROR != NULL)
 	{
 		device->callback.on_ERROR(type);
