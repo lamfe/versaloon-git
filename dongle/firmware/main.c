@@ -27,7 +27,7 @@
 
 int main(void)
 {
-	interfaces->init(NULL);
+	core_interfaces.init(NULL);
 
 	LED_GREEN_ON();
 	LED_USB_ON();

@@ -82,28 +82,26 @@ static RESULT delay_delayus(uint16_t us)
 	return ERROR_OK;
 }
 
-static RESULT peripheral_commit(void)
+static RESULT app_interface_init(void *p)
 {
 	return ERROR_OK;
 }
 
-static RESULT interface_init(void *p)
-{
-	BeforeInit();
-	Sys_Init();
-	AfterInit();
-	return ERROR_OK;
-}
-
-static RESULT interface_fini(void)
+static RESULT app_interface_fini(void)
 {
 	return ERROR_OK;
 }
 
-const struct interfaces_info_t internal_interfaces = 
+static RESULT app_peripheral_commit(void)
 {
-	interface_init,
-	interface_fini,
+	return ERROR_OK;
+}
+
+static const struct interfaces_info_t app_interfaces = 
+{
+	app_interface_init,
+	app_interface_fini,
+	app_peripheral_commit,
 	
 	0
 #if INTERFACE_USART_EN
@@ -154,17 +152,19 @@ const struct interfaces_info_t internal_interfaces =
 #if INTERFACE_PWM_EN
 	| IFS_PWM
 #endif
-	,
 	
-#if POWER_OUT_EN
-	{
-		// target_voltage
-		target_voltage_get,
-		target_voltage_set
-	},
+#if INTERFACE_GPIO_EN
+	,{
+		// gpio
+		gpio_init,
+		gpio_fini,
+		gpio_config,
+		gpio_out,
+		gpio_in
+	}
 #endif
 #if INTERFACE_USART_EN
-	{
+	,{
 		// usart
 		usart_init,
 		usart_fini,
@@ -172,36 +172,53 @@ const struct interfaces_info_t internal_interfaces =
 		usart_send,
 		usart_receive,
 		usart_status
-	},
+	}
 #endif
 #if INTERFACE_SPI_EN
-	{
+	,{
 		// spi
 		spi_init,
 		spi_fini,
 		spi_config,
 		spi_io
-	},
+	}
 #endif
-#if INTERFACE_GPIO_EN
-	{
-		// gpio
-		gpio_init,
-		gpio_fini,
-		gpio_config,
-		gpio_out,
-		gpio_in
-	},
+#if INTERFACE_IIC_EN
+	,{
+		// i2c
+		iic_init,
+		iic_fini,
+		iic_config,
+		iic_read,
+		iic_write
+	}
+#endif
+#if INTERFACE_PWM_EN
+	,{
+		// pwm
+		pwm_init,
+		pwm_fini,
+		pwm_config,
+		pwm_out,
+		pwm_in
+	}
 #endif
 // Allways included
-	{
+	,{
 		// delay
 		delay_delayms,
 		delay_delayus
-	},
+	}
 //
+#if POWER_OUT_EN
+	,{
+		// target_voltage
+		target_voltage_get,
+		target_voltage_set
+	}
+#endif
 #if INTERFACE_ISSP_EN
-	{
+	,{
 		// issp
 		issp_init,
 		issp_fini,
@@ -209,10 +226,10 @@ const struct interfaces_info_t internal_interfaces =
 		issp_leave_program_mode,
 		issp_wait_and_poll,
 		issp_vector
-	},
+	}
 #endif
 #if INTERFACE_SWD_EN
-	{
+	,{
 		// swd
 		swd_init,
 		swd_fini,
@@ -220,10 +237,10 @@ const struct interfaces_info_t internal_interfaces =
 		swd_seqout,
 		swd_seqin,
 		swd_transact
-	},
+	}
 #endif
 #if INTERFACE_JTAG_EN
-	{
+	,{
 		// jtag_hl
 		jtaghl_init,
 		jtaghl_fini,
@@ -235,10 +252,10 @@ const struct interfaces_info_t internal_interfaces =
 		jtaghl_ir,
 		jtaghl_dr,
 		jtaghl_register_callback
-	},
+	}
 #endif
 #if INTERFACE_JTAG_EN
-	{
+	,{
 		// jtag_ll
 		jtagll_init,
 		jtagll_fini,
@@ -246,19 +263,19 @@ const struct interfaces_info_t internal_interfaces =
 		jtagll_tms,
 		jtagll_tms_clocks,
 		jtagll_scan
-	},
+	}
 #endif
 #if INTERFACE_JTAG_EN
-	{
+	,{
 		// jtag_raw
 		jtagraw_init,
 		jtagraw_fini,
 		jtagraw_config,
 		jtagraw_execute
-	},
+	}
 #endif
 #if INTERFACE_MSP430_JTAG_EN
-	{
+	,{
 		// msp430jtag
 		msp430jtag_init,
 		msp430jtag_fini,
@@ -269,16 +286,16 @@ const struct interfaces_info_t internal_interfaces =
 		msp430jtag_tclk_strobe,
 		msp430jtag_reset,
 		msp430jtag_poll
-	},
+	}
 #endif
 #if INTERFACE_MSP430_SBW_EN
-	{
+	,{
 		// msp430sbw
 		NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
-	},
+	}
 #endif
 #if INTERFACE_C2_EN
-	{
+	,{
 		// c2
 		c2_init,
 		c2_fini,
@@ -286,20 +303,10 @@ const struct interfaces_info_t internal_interfaces =
 		c2_addr_read,
 		c2_data_write,
 		c2_data_read
-	},
-#endif
-#if INTERFACE_IIC_EN
-	{
-		// i2c
-		iic_init,
-		iic_fini,
-		iic_config,
-		iic_read,
-		iic_write
-	},
+	}
 #endif
 #if INTERFACE_LPC_ICP_EN
-	{
+	,{
 		// lpcicp
 		lpcicp_init,
 		lpcicp_fini,
@@ -307,10 +314,10 @@ const struct interfaces_info_t internal_interfaces =
 		lpcicp_in,
 		lpcicp_out,
 		lpcicp_poll_ready
-	},
+	}
 #endif
 #if INTERFACE_SWIM_EN
-	{
+	,{
 		// swim
 		swim_init,
 		swim_fini,
@@ -320,47 +327,107 @@ const struct interfaces_info_t internal_interfaces =
 		swim_rotf,
 		swim_sync,
 		swim_enable
-	},
+	}
 #endif
 #if INTERFACE_BDM_EN
-	{
+	,{
 		// bdm
 		bdm_init,
 		bdm_fini,
 		bdm_sync,
 		bdm_transact
-	},
+	}
 #endif
 #if INTERFACE_DUSI_EN
-	{
+	,{
 		// dusi
 		dusi_init,
 		dusi_fini,
 		dusi_config,
 		dusi_io
-	},
+	}
 #endif
 #if INTERFACE_MICROWIRE_EN
-	{
+	,{
 		// microwire
 		microwire_init,
 		microwire_fini,
 		microwire_config,
 		microwire_transport,
 		microwire_poll
-	},
+	}
 #endif
-#if INTERFACE_PWM_EN
-	{
-		// pwm
-		pwm_init,
-		pwm_fini,
-		pwm_config,
-		pwm_out,
-		pwm_in
-	},
-#endif
-	peripheral_commit
 };
 
-const struct interfaces_info_t *interfaces = &internal_interfaces;
+const struct interfaces_info_t *interfaces = &app_interfaces;
+
+
+
+
+
+#include "GPIO/STM32_GPIO.h"
+
+static RESULT core_interface_init(void *p)
+{
+	BeforeInit();
+	Sys_Init();
+	AfterInit();
+	return ERROR_OK;
+}
+
+static RESULT core_interface_fini(void)
+{
+	return ERROR_OK;
+}
+
+const struct core_interfaces_info_t core_interfaces = 
+{
+	core_interface_init,
+	core_interface_fini,
+	
+	{
+		// gpio
+		CORE_GPIO_INIT(__TARGET_CHIP__),
+		CORE_GPIO_FINI(__TARGET_CHIP__),
+		CORE_GPIO_CONFIG(__TARGET_CHIP__),
+		CORE_GPIO_OUT(__TARGET_CHIP__),
+		CORE_GPIO_IN(__TARGET_CHIP__)
+	},
+	{
+		// usart
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		NULL
+	},
+	{
+		// spi
+		NULL,
+		NULL,
+		NULL,
+		NULL
+	},
+	{
+		// i2c
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		NULL
+	},
+	{
+		// pwm
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		NULL
+	},
+	{
+		// delay
+		delay_delayms,
+		delay_delayus
+	}
+};

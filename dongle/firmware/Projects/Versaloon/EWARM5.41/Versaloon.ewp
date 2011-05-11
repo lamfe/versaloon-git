@@ -150,6 +150,7 @@
           <state>STM32F10X_MD</state>
           <state>_HARDWARE_VER=0x15</state>
           <state>FLASH_LOAD_OFFSET=0x2000</state>
+          <state>__TARGET_CHIP__=stm32</state>
         </option>
         <option>
           <name>CCPreprocFile</name>
@@ -291,7 +292,7 @@
           <state>$PROJ_DIR$\..\..\..\HW\Mass\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\APP\</state>
-          <state>$PROJ_DIR$\..\..\..\Interfaces\STM32\</state>
+          <state>$PROJ_DIR$\..\..\..\Interfaces\CPU\STM32\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\APP\PowerExt\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\APP\BDM\</state>
           <state>$PROJ_DIR$\..\..\..\USB_TO_XXX\</state>
@@ -1027,6 +1028,7 @@
           <state>USE_STDPERIPH_DRIVER</state>
           <state>STM32F10X_MD</state>
           <state>_HARDWARE_VER=0x15</state>
+          <state>__TARGET_CHIP__=stm32</state>
           <state>FLASH_LOAD_OFFSET=0x2000</state>
         </option>
         <option>
@@ -1168,9 +1170,12 @@
           <state>$PROJ_DIR$\..\..\..\Tools\fifo\</state>
           <state>$PROJ_DIR$\..\..\..\HW\Mass\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\</state>
-          <state>$PROJ_DIR$\..\..\..\Interfaces\PowerExt\</state>
-          <state>$PROJ_DIR$\..\..\..\Interfaces\BDM\</state>
+          <state>$PROJ_DIR$\..\..\..\Interfaces\APP\</state>
+          <state>$PROJ_DIR$\..\..\..\Interfaces\CPU\STM32\</state>
+          <state>$PROJ_DIR$\..\..\..\Interfaces\APP\PowerExt\</state>
+          <state>$PROJ_DIR$\..\..\..\Interfaces\APP\BDM\</state>
           <state>$PROJ_DIR$\..\..\..\USB_TO_XXX\</state>
+          <state>$PROJ_DIR$\..\..\..\vsf\</state>
           <state>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB</state>
         </option>
         <option>

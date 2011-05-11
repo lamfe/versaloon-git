@@ -23,6 +23,10 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#ifndef __CONNECT
+#	define __CONNECT(a, b)			a ## b
+#endif
+
 typedef enum result_s
 {
 	ERROR_OK = 0,

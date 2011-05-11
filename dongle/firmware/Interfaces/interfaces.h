@@ -341,10 +341,11 @@ struct interfaces_info_t
 {
 	RESULT (*init)(void *p);
 	RESULT (*fini)(void);
+	RESULT (*peripheral_commit)(void);
 	
 	uint64_t support_mask;
-#if POWER_OUT_EN
-	struct interface_target_voltage_t target_voltage;
+#if	INTERFACE_GPIO_EN
+	struct interface_gpio_t gpio;
 #endif
 #if	INTERFACE_USART_EN
 	struct interface_usart_t usart;
@@ -352,12 +353,18 @@ struct interfaces_info_t
 #if	INTERFACE_SPI_EN
 	struct interface_spi_t spi;
 #endif
-#if	INTERFACE_GPIO_EN
-	struct interface_gpio_t gpio;
+#if	INTERFACE_IIC_EN
+	struct interface_i2c_t i2c;
+#endif
+#if INTERFACE_PWM_EN
+	struct interface_pwm_t pwm;
 #endif
 // 	Allways included
 	struct interface_delay_t delay;
 //
+#if POWER_OUT_EN
+	struct interface_target_voltage_t target_voltage;
+#endif
 #if	INTERFACE_ISSP_EN
 	struct interface_issp_t issp;
 #endif
@@ -382,9 +389,6 @@ struct interfaces_info_t
 #if	INTERFACE_C2_EN
 	struct interface_c2_t c2;
 #endif
-#if	INTERFACE_IIC_EN
-	struct interface_i2c_t i2c;
-#endif
 #if	INTERFACE_LPC_ICP_EN
 	struct interface_lpcicp_t lpcicp;
 #endif
@@ -400,15 +404,35 @@ struct interfaces_info_t
 #if INTERFACE_MICROWIRE_EN
 	struct interface_microwire_t microwire;
 #endif
-#if INTERFACE_PWM_EN
-	struct interface_pwm_t pwm;
-#endif
 #if INTERFACE_USBD_EN
 	struct interface_usbd_t usbd;
 #endif
-	RESULT (*peripheral_commit)(void);
 };
 
 extern const struct interfaces_info_t *interfaces;
+
+
+
+
+#define CORE_GPIO_INIT(m)		__CONNECT(m, _gpio_init)
+#define CORE_GPIO_FINI(m)		__CONNECT(m, _gpio_fini)
+#define CORE_GPIO_CONFIG(m)		__CONNECT(m, _gpio_config)
+#define CORE_GPIO_IN(m)			__CONNECT(m, _gpio_in)
+#define CORE_GPIO_OUT(m)		__CONNECT(m, _gpio_out)
+
+struct core_interfaces_info_t
+{
+	RESULT (*init)(void *p);
+	RESULT (*fini)(void);
+	
+	struct interface_gpio_t gpio;
+	struct interface_usart_t usart;
+	struct interface_spi_t spi;
+	struct interface_i2c_t i2c;
+	struct interface_pwm_t pwm;
+	struct interface_delay_t delay;
+};
+
+extern const struct core_interfaces_info_t core_interfaces;
 
 #endif	// __INTERFACES_H__
