@@ -60,73 +60,39 @@ USR_INCS+= -I $(SRCDIR)/HW/Mass
 USR_SRCS+= $(SRCDIR)/Tools/fifo/fifo.c
 USR_INCS+= -I $(SRCDIR)/Tools/fifo
 
-#GPIO
-USR_SRCS+= $(SRCDIR)/Interfaces/GPIO/GPIO.c
-USR_INCS+= -I $(SRCDIR)/Interfaces/GPIO
-
-#USART
-USR_SRCS+= $(SRCDIR)/Interfaces/USART/USART.c
-USR_INCS+= -I $(SRCDIR)/Interfaces/USART
-
-#SPI
-USR_SRCS+= $(SRCDIR)/Interfaces/SPI/SPI.c
-USR_INCS+= -I $(SRCDIR)/Interfaces/SPI
-
-# JTAG
-USR_SRCS+= $(SRCDIR)/Interfaces/JTAG/JTAG_TAP.c
-USR_INCS+= -I $(SRCDIR)/Interfaces/JTAG
-
-# SWD
-USR_SRCS+= $(SRCDIR)/Interfaces/SWD/SWD.c
-USR_INCS+= -I $(SRCDIR)/Interfaces/SWD
-
-# SWIM
-USR_SRCS+= $(SRCDIR)/Interfaces/SWIM/SWIM.c
-USR_INCS+= -I $(SRCDIR)/Interfaces/SWIM
-
-# DUSI
-USR_SRCS+= $(SRCDIR)/Interfaces/DUSI/DUSI.c
-USR_INCS+= -I $(SRCDIR)/Interfaces/DUSI
-
-# MicroWire
-USR_SRCS+= $(SRCDIR)/Interfaces/MicroWire/MicroWire.c
-USR_INCS+= -I $(SRCDIR)/Interfaces/MicroWire
-
-# PowerExt
-USR_SRCS+= $(SRCDIR)/Interfaces/PowerExt/PowerExt.c
-USR_INCS+= -I $(SRCDIR)/Interfaces/PowerExt
-
-# IIC
-USR_SRCS+= $(SRCDIR)/Interfaces/IIC/IIC.c
-USR_INCS+= -I $(SRCDIR)/Interfaces/IIC
-
-#C2
-USR_SRCS+= $(SRCDIR)/Interfaces/C2/C2.c
-USR_INCS+= -I $(SRCDIR)/Interfaces/C2
-
-#ISSP
-USR_SRCS+= $(SRCDIR)/Interfaces/ISSP/ISSP.c
-USR_INCS+= -I $(SRCDIR)/Interfaces/ISSP
-
-#LPC_ICP
-USR_SRCS+= $(SRCDIR)/Interfaces/LPC_ICP/LPC_ICP.c
-USR_INCS+= -I $(SRCDIR)/Interfaces/LPC_ICP
-
-#MSP430_JTAG
-USR_SRCS+= $(SRCDIR)/Interfaces/MSP430_JTAG/MSP430_JTAG.c
-USR_INCS+= -I $(SRCDIR)/Interfaces/MSP430_JTAG
-
-#BDM
-USR_SRCS+= $(SRCDIR)/Interfaces/BDM/BDM.c
-USR_INCS+= -I $(SRCDIR)/Interfaces/BDM
-
-#PWM
-USR_SRCS+= $(SRCDIR)/Interfaces/PWM/PWM.c
-USR_INCS+= -I $(SRCDIR)/Interfaces/PWM
-
 #interfaces
 USR_SRCS+= $(SRCDIR)/Interfaces/interfaces.c
 USR_INCS+= -I $(SRCDIR)/Interfaces
+
+#APP interfaces
+APP_IFACES_DIR = $(SRCDIR)/Interfaces/APP
+USR_INCS+= -I $(APP_IFACES_DIR)
+
+USR_SRCS+= $(APP_IFACES_DIR)/GPIO/GPIO.c $(APP_IFACES_DIR)/USART/USART.c \
+  $(APP_IFACES_DIR)/SPI/SPI.c $(APP_IFACES_DIR)/JTAG/JTAG_TAP.c \
+  $(APP_IFACES_DIR)/SWD/SWD.c $(APP_IFACES_DIR)/SWIM/SWIM.c \
+  $(APP_IFACES_DIR)/DUSI/DUSI.c $(APP_IFACES_DIR)/MicroWire/MicroWire.c \
+  $(APP_IFACES_DIR)/PowerExt/PowerExt.c $(APP_IFACES_DIR)/IIC/IIC.c \
+  $(APP_IFACES_DIR)/C2/C2.c $(APP_IFACES_DIR)/ISSP/ISSP.c \
+  $(APP_IFACES_DIR)/LPC_ICP/LPC_ICP.c $(APP_IFACES_DIR)/MSP430_JTAG/MSP430_JTAG.c \
+  $(APP_IFACES_DIR)/BDM/BDM.c $(APP_IFACES_DIR)/PWM/PWM.c
+USR_INCS+= -I $(APP_IFACES_DIR)/GPIO -I $(APP_IFACES_DIR)/USART \
+  -I $(APP_IFACES_DIR)/SPI -I $(APP_IFACES_DIR)/JTAG \
+  -I $(APP_IFACES_DIR)/SWD -I $(APP_IFACES_DIR)/SWIM \
+  -I $(APP_IFACES_DIR)/DUSI -I $(APP_IFACES_DIR)/MicroWire \
+  -I $(APP_IFACES_DIR)/PowerExt -I $(APP_IFACES_DIR)/IIC \
+  -I $(APP_IFACES_DIR)/C2 -I $(APP_IFACES_DIR)/ISSP \
+  -I $(APP_IFACES_DIR)/LPC_ICP -I $(APP_IFACES_DIR)/MSP430_JTAG \
+  -I $(APP_IFACES_DIR)/BDM -I $(APP_IFACES_DIR)/PWM
+
+#STM32 interfaces
+STM32_IFACES_DIR = $(SRCDIR)/Interfaces/CPU/STM32
+USR_INCS+= -I $(STM32_IFACES_DIR)
+
+USR_SRCS+= $(STM32_IFACES_DIR)/GPIO/STM32_GPIO.c
+USR_INCS+= -I $(STM32_IFACES_DIR)/GPIO -I $(STM32_IFACES_DIR)/USART \
+  -I $(STM32_IFACES_DIR)/SPI -I $(STM32_IFACES_DIR)/IIC \
+  -I $(STM32_IFACES_DIR)/PWM
 
 #VSF
 USR_SRCS+= $(SRCDIR)/vsf/stack/usb_device/vsf_usbd.c

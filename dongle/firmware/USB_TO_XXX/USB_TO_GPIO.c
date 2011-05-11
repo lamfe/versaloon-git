@@ -25,7 +25,7 @@ void USB_TO_GPIO_ProcessCmd(uint8_t *dat, uint16_t len)
 	uint16_t index, length;
 	uint8_t command, device_idx;
 	
-	uint16_t port_data, mask_data, io_data, pull_en_mask;
+	uint32_t port_data, mask_data, io_data, pull_en_mask;
 	
 	index = 0;
 	while(index < len)
