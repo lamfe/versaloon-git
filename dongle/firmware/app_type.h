@@ -20,6 +20,10 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#ifndef __CONNECT
+#	define __CONNECT(a, b)			a ## b
+#endif
+
 #define dimof(arr)					(sizeof(arr) / sizeof((arr)[0]))
 
 #define GET_U16_MSBFIRST(p)			(	((*((uint8_t *)(p) + 0)) << 8) | \
