@@ -41,8 +41,8 @@ RESULT gpio_fini(uint8_t index)
 	}
 }
 
-RESULT gpio_config(uint8_t index, uint16_t pin_mask, uint16_t io, 
-					uint16_t pull_en_mask, uint16_t input_pull_mask)
+RESULT gpio_config(uint8_t index, uint32_t pin_mask, uint32_t io, 
+					uint32_t pull_en_mask, uint32_t input_pull_mask)
 {
 	switch (index)
 	{
@@ -235,7 +235,7 @@ RESULT gpio_config(uint8_t index, uint16_t pin_mask, uint16_t io,
 	}
 }
 
-RESULT gpio_out(uint8_t index, uint16_t pin_mask, uint16_t value)
+RESULT gpio_out(uint8_t index, uint32_t pin_mask, uint32_t value)
 {
 	switch (index)
 	{
@@ -343,9 +343,9 @@ RESULT gpio_out(uint8_t index, uint16_t pin_mask, uint16_t value)
 	}
 }
 
-RESULT gpio_in(uint8_t index, uint16_t pin_mask, uint16_t *value)
+RESULT gpio_in(uint8_t index, uint32_t pin_mask, uint32_t *value)
 {
-	uint16_t port_data;
+	uint32_t port_data;
 
 	switch (index)
 	{
