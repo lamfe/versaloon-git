@@ -269,7 +269,7 @@ READ_TARGET_HANDLER(stm32swj)
 	uint8_t option_bytes[STM32_OB_SIZE], i;
 	uint32_t mcu_id = 0, flash_sram_size, flash_obr;
 	uint32_t cur_block_size;
-	uint16_t den, flash_size;
+	uint16_t flash_size;
 	RESULT ret = ERROR_OK;
 	
 	switch (area)
@@ -282,7 +282,6 @@ READ_TARGET_HANDLER(stm32swj)
 			break;
 		}
 		mcu_id = LE_TO_SYS_U32(mcu_id);
-		den = mcu_id & STM32_DEN_MSK;
 		stm32_print_device(mcu_id);
 		mcu_id &= STM32_DEN_MSK;
 		*(uint32_t *)buff = mcu_id;
