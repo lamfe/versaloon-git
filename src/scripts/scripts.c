@@ -167,7 +167,7 @@ static struct vss_function_t *vss_function_search(struct vss_function_t *f, char
 	{
 		while (f != NULL)
 		{
-			if (!strcpy(f->func_name, func_name))
+			if (!strcmp(f->func_name, func_name))
 			{
 				return f;
 			}
