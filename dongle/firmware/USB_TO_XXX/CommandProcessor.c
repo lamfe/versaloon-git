@@ -16,28 +16,24 @@
 
 #include "app_cfg.h"
 
-#include "usb_lib.h"
-#include "usb_pwr.h"
-#include "usb_cdc.h"
+#include "interfaces.h"
+#include "usb_protocol.h"
 
 #if USB_TO_XXX_EN
 #	include "USB_TO_XXX.h"
 #endif
 
-#define FWU_KEY							0x55AA
-
 uint8_t Versaloon_Ver[] = "Versaloon(" _HARDWARE_VER_STR ")by Simon(compiled on " __DATE__ ")";
 
 void BeforeInit(void){}
 
-void AfterInit(void){}
+void AfterInit(void)
+{
+	usb_protocol_init();
+}
 
 static void Versaloon_ProcessCommonCmd(uint8_t *dat, uint16_t len)
 {
-#if VERSALOON_FW_UPDATE_EN
-	uint32_t key;
-#endif
-
 	switch(dat[0])
 	{
 	case VERSALOON_GET_INFO:
@@ -53,28 +49,6 @@ static void Versaloon_ProcessCommonCmd(uint8_t *dat, uint16_t len)
 		dat[0] = _HARDWARE_VER;
 		rep_len = 1;
 		break;
-#if VERSALOON_FW_UPDATE_EN
-	case VERSALOON_FW_UPDATE:
-		key = GET_LE_U16(&dat[1]);
-		if(key == FWU_KEY)
-		{
-			RCC_APB1PeriphClockCmd(RCC_APB1Periph_BKP | RCC_APB1Periph_PWR, ENABLE);
-			PWR_BackupAccessCmd(ENABLE);
-			BKP_WriteBackupRegister(BKP_DR1, FWU_KEY);
-
-			// Reset USB, and Reset MCU
-			USB_Disable();
-
-			USB_Disconnect();
-			USB_D_CLR();
-			USB_D_SETOUTPUT();
-			DelayMS(10);
-			USB_D_SET();
-
-			NVIC_SystemReset();
-		}
-		break;
-#endif
 	}
 }
 
@@ -82,7 +56,8 @@ void ProcessCommand(uint8_t* dat, uint16_t len)
 {
 	uint8_t cmd = 0;
 
-	cmd = buffer_out[0];		// first byte of the USB package is the command byte
+	// first byte of the USB package is the command byte
+	cmd = buffer_out[0];
 	// check command and call corresponding module
 	if(cmd <= VERSALOON_COMMON_CMD_END)
 	{
@@ -99,29 +74,6 @@ void ProcessCommand(uint8_t* dat, uint16_t len)
 #endif		// #if USB_TO_XXX_EN
 }
 
-extern uint8_t USBTOUSART_En;
-void ProcessIdle(void)
-{
-	if (USBTOUSART_En)
-	{
-#if CDC_IF_EN
-		CDC_Process();
-#endif
-	}
-}
-
-uint8_t CheckLocalHandler(void)
-{
-	return CDC_enable;
-}
-
-void ProcessLocalHandler(void)
-{
-	while(CDC_enable)
-	{
-#if CDC_IF_EN
-		CDC_Process();
-#endif
-		PWREXT_Check(0);
-	}
-}
+void ProcessIdle(void){}
+uint8_t CheckLocalHandler(void){return 0;}
+void ProcessLocalHandler(void){}
