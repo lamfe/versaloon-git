@@ -54,7 +54,7 @@ USR_SRCS+= $(STM32_IFACES_DIR)/HW/Port/GCC/myString.c
 USR_INCS+= -I $(STM32_IFACES_DIR)/HW/Port/GCC
 
 # USB
-USR_SRCS+= $(SRCDIR)/USB_TO_XXX/USB/usb_protocol.c $(SRCDIR)/USB_TO_XXX/USB/usb_endp.c
+USR_SRCS+= $(SRCDIR)/USB_TO_XXX/USB/usb_protocol.c
 USR_INCS+= -I $(SRCDIR)/USB_TO_XXX/USB
 
 # Tools
