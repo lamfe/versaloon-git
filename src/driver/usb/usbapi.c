@@ -64,6 +64,8 @@ VSS_HANDLER(usbapi_param)
 		// VID_PID_EPIN_EPOUT_INTERFACE_SERIALSTRING
 		// vid(2d):pid(2d):epin(1d):epout(1d):interface(1d):serialstring(s)
 		"%2d%2d%1d%1d%1d%s",
+		// typestring:vid(2d):pid(2d):epin(1d):epout(1d)
+		"%2d%2d%1d%1d",
 		// typestring:serialstring(s)
 		"%s%s",
 		// serialstring(s)
@@ -92,25 +94,34 @@ VSS_HANDLER(usbapi_param)
 	}
 	
 	ptr = usb_setting;
-	if (1 == i)
+	if (3 == i)
 	{
-		strncpy(usb_param.typestring, (char*)&ptr[0], 
-					sizeof(usb_param.typestring));
-		strncpy(usb_param.serialstring, (char*)&ptr[0] + strlen(usb_param.typestring) +1, 
+		strncpy(usb_param.serialstring, (char*)&ptr[0], 
 					sizeof(usb_param.serialstring));
 	}
 	else if (2 == i)
 	{
-		strncpy(usb_param.serialstring, (char*)&ptr[0], 
+		strncpy(usb_param.typestring, (char*)&ptr[0], 
+					sizeof(usb_param.typestring));
+		strncpy(usb_param.serialstring, 
+					(char*)&ptr[0] + strlen(usb_param.typestring) + 1, 
 					sizeof(usb_param.serialstring));
+	}
+	else if (1 == i)
+	{
+		usb_param.valid = 1;
+		usb_param.vid = ptr[0] + (ptr[1] << 8);
+		usb_param.pid = ptr[2] + (ptr[3] << 8);
+		usb_param.epin = ptr[4] | 0x80;
+		usb_param.epout = ptr[5] & 0x7F;
 	}
 	else if (0 == i)
 	{
 		usb_param.valid = 1;
 		usb_param.vid = ptr[0] + (ptr[1] << 8);
 		usb_param.pid = ptr[2] + (ptr[3] << 8);
-		usb_param.epin = ptr[4];
-		usb_param.epout = ptr[5];
+		usb_param.epin = ptr[4] | 0x80;
+		usb_param.epout = ptr[5] & 0x7F;
 		usb_param.interface = ptr[6];
 		strncpy(usb_param.serialstring, (char*)&ptr[7], 
 					sizeof(usb_param.serialstring));
@@ -119,13 +130,13 @@ VSS_HANDLER(usbapi_param)
 	if (strlen(usb_param.serialstring) > 0)
 	{
 		LOG_DEBUG("usb_device is on 0x%04X:0x%04X(0x%02x_0x%02X):%s.", 
-			usb_param.valid, usb_param.pid, usb_param.epin, usb_param.epout, 
+			usb_param.vid, usb_param.pid, usb_param.epin, usb_param.epout, 
 			usb_param.serialstring);
 	}
 	else
 	{
 		LOG_DEBUG("usb_device is on 0x%04X:0x%04X(0x%02x_0x%02X).", 
-			usb_param.valid, usb_param.pid, usb_param.epin, usb_param.epout);
+			usb_param.vid, usb_param.pid, usb_param.epin, usb_param.epout);
 	}
 	return ERROR_OK;
 }
@@ -138,8 +149,8 @@ void usb_set_param(uint16_t vid, uint16_t pid, uint8_t epin, uint8_t epout,
 {
 	usb_param.vid = vid;
 	usb_param.pid = pid;
-	usb_param.epin = epin;
-	usb_param.epout = epout;
+	usb_param.epin = epin | 0x80;
+	usb_param.epout = epout & 0x7F;
 	usb_param.interface = interface;
 	usb_param.valid = 1;
 }
