@@ -20,6 +20,8 @@
 #ifndef __VSF_USBD_H_INCLUDED__
 #define __VSF_USBD_H_INCLUDED__
 
+#include "tool/buffer/buffer.h"
+
 enum vsfusbd_ctrl_state_t
 {
 	USB_CTRL_STAT_WAIT_SETUP,
@@ -50,8 +52,17 @@ struct vsfusbd_ctrl_handler_t
 	struct vsfusbd_ctrl_request_t request;
 	struct vsf_transaction_buffer_t tbuffer;
 	struct vsfusbd_setup_filter_t *filter;
+	uint8_t ctrl_reply_buffer[2];
 };
 
+#define VSFUSBD_DESC_DEVICE(lanid, ptr, size, func)			\
+	{USB_DESC_TYPE_DEVICE, 0, (lanid), {(uint8_t*)(ptr), (size)}, (func)}
+#define VSFUSBD_DESC_CONFIG(lanid, idx, ptr, size, func)	\
+	{USB_DESC_TYPE_CONFIGURATION, (idx), (lanid), {(uint8_t*)(ptr), (size)}, (func)}
+#define VSFUSBD_DESC_STRING(lanid, idx, ptr, size, func)	\
+	{USB_DESC_TYPE_STRING, (idx), (lanid), {(uint8_t*)(ptr), (size)}, (func)}
+#define VSFUSBD_DESC_NULL									\
+	{0, 0, 0, {NULL, 0}, NULL}
 struct vsfusbd_desc_filter_t
 {
 	uint8_t type;
@@ -80,9 +91,9 @@ struct vsfusbd_class_protocol_t
 	struct vsfusbd_desc_filter_t *desc_filter;
 	struct vsfusbd_setup_filter_t *req_filter;
 	
-	RESULT (*init)(void);
-	RESULT (*fini)(void);
-	RESULT (*poll)(void);
+	RESULT (*init)(struct vsfusbd_device_t *device);
+	RESULT (*fini)(struct vsfusbd_device_t *device);
+	RESULT (*poll)(struct vsfusbd_device_t *device);
 };
 
 struct vsfusbd_iface_t
@@ -93,8 +104,8 @@ struct vsfusbd_iface_t
 
 struct vsfusbd_config_t
 {
-	RESULT (*init)(void);
-	RESULT (*fini)(void);
+	RESULT (*init)(struct vsfusbd_device_t *device);
+	RESULT (*fini)(struct vsfusbd_device_t *device);
 	
 	uint8_t num_of_ifaces;
 	struct vsfusbd_iface_t *iface;
@@ -105,11 +116,11 @@ struct vsfusbd_device_t
 	uint8_t num_of_configuration;
 	uint8_t configuration;
 	uint8_t feature;
-	uint8_t reply_buff[2];
 	struct vsfusbd_config_t *config;
+	struct vsfusbd_desc_filter_t *desc_filter;
+	struct interface_usbd_t *drv;
 	
 	struct vsfusbd_ctrl_handler_t ctrl_handler;
-	struct vsfusbd_desc_filter_t *desc_filter;
 	
 	// user callbacks
 	const struct vsfusbd_user_callback_t
@@ -132,8 +143,6 @@ struct vsfusbd_device_t
 		void (*on_SYNC_OVERFLOW)(uint8_t ep);
 #endif
 	} callback;
-	
-	struct interface_usbd_t *drv;
 };
 
 RESULT vsfusbd_device_init(struct vsfusbd_device_t *device);

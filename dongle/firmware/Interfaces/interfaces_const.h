@@ -43,11 +43,12 @@
 #define IFS_DUSI				(1ULL << 30)
 #define IFS_MICROWIRE			(1ULL << 31)
 #define IFS_PWM					(1ULL << 32)
+#define IFS_USBD				(1ULL << 33)
 #define IFS_INVALID_INTERFACE	(1ULL << 63)
 #define IFS_MASK				(USART | SPI | I2C | GPIO | CAN | CLOCK | ADC \
 								 | DAC | POWER | ISSP | JTAG | MSP430_JTAG \
 								 | LPC_ICP | MSP430_SBW | SWD | SWIM | HV | BDM\
-								 | MICROWIRE)
+								 | MICROWIRE | USBD)
 
 #endif /* __PROG_INTERFACE_H_INCLUDED__ */
 

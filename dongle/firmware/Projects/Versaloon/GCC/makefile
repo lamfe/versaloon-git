@@ -30,31 +30,32 @@ OPT	= s
 # set to yes to include USB library
 INCLUDE_USB_LIB = yes
 
+# directory define
+PRJDIR	= ..
+SRCDIR  = ../../..
+OBJ_DIR = .
+APP_IFACES_DIR = $(SRCDIR)/Interfaces/APP
+STM32_IFACES_DIR = $(SRCDIR)/Interfaces/CPU/STM32
+STM32_LIB_DIR = $(STM32_IFACES_DIR)/HW/STM32F10x_Lib
+
 # User source files/includes/macros
 # add .c source files to USR_SRCS
 # add .h header files to USR_INCS
 # add pre-defines to USR_DEFS
 # add library directory to USR_LIBS
-USR_SRCS+= $(SRCDIR)/main.c $(SRCDIR)/HW/stm32f10x_it.c
-USR_SRCS+= $(SRCDIR)/HW/HW.c
-USR_INCS+= -I $(SRCDIR)/HW -I $(PRJDIR)/..
+USR_SRCS+= $(SRCDIR)/main.c $(STM32_IFACES_DIR)/HW/stm32f10x_it.c
+USR_SRCS+= $(STM32_IFACES_DIR)/HW/HW.c
+USR_INCS+= -I $(STM32_IFACES_DIR)/HW -I $(PRJDIR)/..
 #USR_DEFS+= -DADD_USER_DEFINES_HERE
 #USR_LIBS+= -L./
 
 # myString
-USR_SRCS+= $(SRCDIR)/HW/Port/GCC/myString.c
-USR_INCS+= -I $(SRCDIR)/HW/Port/GCC
+USR_SRCS+= $(STM32_IFACES_DIR)/HW/Port/GCC/myString.c
+USR_INCS+= -I $(STM32_IFACES_DIR)/HW/Port/GCC
 
 # USB
-USR_SRCS+= $(SRCDIR)/USB_TO_XXX/USB/usb_desc.c $(SRCDIR)/USB_TO_XXX/USB/usb_endp.c
-USR_SRCS+= $(SRCDIR)/USB_TO_XXX/USB/usb_istr.c $(SRCDIR)/USB_TO_XXX/USB/usb_prop.c
-USR_SRCS+= $(SRCDIR)/USB_TO_XXX/USB/usb_pwr.c
+USR_SRCS+= $(SRCDIR)/USB_TO_XXX/USB/usb_protocol.c $(SRCDIR)/USB_TO_XXX/USB/usb_endp.c
 USR_INCS+= -I $(SRCDIR)/USB_TO_XXX/USB
-
-# Mass
-USR_SRCS+= $(SRCDIR)/HW/Mass/mass_mal.c $(SRCDIR)/HW/Mass/memory.c $(SRCDIR)/HW/Mass/scsi_data.c
-USR_SRCS+= $(SRCDIR)/HW/Mass/usb_scsi.c $(SRCDIR)/HW/Mass/usb_bot.c
-USR_INCS+= -I $(SRCDIR)/HW/Mass
 
 # Tools
 USR_SRCS+= $(SRCDIR)/Tools/fifo/fifo.c
@@ -65,9 +66,6 @@ USR_SRCS+= $(SRCDIR)/Interfaces/interfaces.c
 USR_INCS+= -I $(SRCDIR)/Interfaces
 
 #APP interfaces
-APP_IFACES_DIR = $(SRCDIR)/Interfaces/APP
-USR_INCS+= -I $(APP_IFACES_DIR)
-
 USR_SRCS+= $(APP_IFACES_DIR)/GPIO/GPIO.c $(APP_IFACES_DIR)/USART/USART.c \
   $(APP_IFACES_DIR)/SPI/SPI.c $(APP_IFACES_DIR)/JTAG/JTAG_TAP.c \
   $(APP_IFACES_DIR)/SWD/SWD.c $(APP_IFACES_DIR)/SWIM/SWIM.c \
@@ -76,23 +74,22 @@ USR_SRCS+= $(APP_IFACES_DIR)/GPIO/GPIO.c $(APP_IFACES_DIR)/USART/USART.c \
   $(APP_IFACES_DIR)/C2/C2.c $(APP_IFACES_DIR)/ISSP/ISSP.c \
   $(APP_IFACES_DIR)/LPC_ICP/LPC_ICP.c $(APP_IFACES_DIR)/MSP430_JTAG/MSP430_JTAG.c \
   $(APP_IFACES_DIR)/BDM/BDM.c $(APP_IFACES_DIR)/PWM/PWM.c
-USR_INCS+= -I $(APP_IFACES_DIR)/GPIO -I $(APP_IFACES_DIR)/USART \
-  -I $(APP_IFACES_DIR)/SPI -I $(APP_IFACES_DIR)/JTAG \
-  -I $(APP_IFACES_DIR)/SWD -I $(APP_IFACES_DIR)/SWIM \
-  -I $(APP_IFACES_DIR)/DUSI -I $(APP_IFACES_DIR)/MicroWire \
-  -I $(APP_IFACES_DIR)/PowerExt -I $(APP_IFACES_DIR)/IIC \
-  -I $(APP_IFACES_DIR)/C2 -I $(APP_IFACES_DIR)/ISSP \
-  -I $(APP_IFACES_DIR)/LPC_ICP -I $(APP_IFACES_DIR)/MSP430_JTAG \
-  -I $(APP_IFACES_DIR)/BDM -I $(APP_IFACES_DIR)/PWM
+USR_INCS+= -I $(APP_IFACES_DIR) -I $(APP_IFACES_DIR)/GPIO \
+  -I $(APP_IFACES_DIR)/USART -I $(APP_IFACES_DIR)/SPI \
+  -I $(APP_IFACES_DIR)/JTAG -I $(APP_IFACES_DIR)/SWD \
+  -I $(APP_IFACES_DIR)/SWIM -I $(APP_IFACES_DIR)/DUSI \
+  -I $(APP_IFACES_DIR)/MicroWire -I $(APP_IFACES_DIR)/PowerExt \
+  -I $(APP_IFACES_DIR)/IIC -I $(APP_IFACES_DIR)/C2 \
+  -I $(APP_IFACES_DIR)/ISSP -I $(APP_IFACES_DIR)/LPC_ICP \
+  -I $(APP_IFACES_DIR)/MSP430_JTAG -I $(APP_IFACES_DIR)/BDM \
+  -I $(APP_IFACES_DIR)/PWM
 
 #STM32 interfaces
-STM32_IFACES_DIR = $(SRCDIR)/Interfaces/CPU/STM32
-USR_INCS+= -I $(STM32_IFACES_DIR)
-
-USR_SRCS+= $(STM32_IFACES_DIR)/GPIO/STM32_GPIO.c
-USR_INCS+= -I $(STM32_IFACES_DIR)/GPIO -I $(STM32_IFACES_DIR)/USART \
-  -I $(STM32_IFACES_DIR)/SPI -I $(STM32_IFACES_DIR)/IIC \
-  -I $(STM32_IFACES_DIR)/PWM
+USR_SRCS+= $(STM32_IFACES_DIR)/GPIO/STM32_GPIO.c $(STM32_IFACES_DIR)/USBD/STM32_USBD.c
+USR_INCS+= -I $(STM32_IFACES_DIR) -I $(STM32_IFACES_DIR)/GPIO \
+  -I $(STM32_IFACES_DIR)/USART -I $(STM32_IFACES_DIR)/SPI \
+  -I $(STM32_IFACES_DIR)/IIC -I $(STM32_IFACES_DIR)/PWM \
+  -I $(STM32_IFACES_DIR)/USBD
 
 #VSF
 USR_SRCS+= $(SRCDIR)/vsf/stack/usb_device/vsf_usbd.c
@@ -112,14 +109,6 @@ USR_SRCS+= $(SRCDIR)/USB_TO_XXX/USB_TO_BDM.c $(SRCDIR)/USB_TO_XXX/USB_TO_DUSI.c
 USR_SRCS+= $(SRCDIR)/USB_TO_XXX/USB_TO_MICROWIRE.c
 USR_SRCS+= $(SRCDIR)/USB_TO_XXX/CommandProcessor.c
 USR_INCS+= -I $(SRCDIR)/USB_TO_XXX
-
-
-# directory define
-PRJDIR	= ..
-SRCDIR  = ../../..
-OBJ_DIR = .
-STM32_LIB_DIR = $(SRCDIR)/HW/STM32F10x_Lib
-
 
 # LIBSTM32_LIB
 ifeq ($(TARGET_STM32),LowDensity)
@@ -193,16 +182,8 @@ LIBSTM32_INCS = \
 # LIBSTM32_USB_LIB
 ifeq (${INCLUDE_USB_LIB},yes)
   LIBSTM32_SRCS+= \
-    $(STM32_LIB_DIR)/Libraries/STM32_USB-FS-Device_Driver/src/usb_core.c \
-	$(STM32_LIB_DIR)/Libraries/STM32_USB-FS-Device_Driver/src/usb_init.c \
-	$(STM32_LIB_DIR)/Libraries/STM32_USB-FS-Device_Driver/src/usb_int.c \
 	$(STM32_LIB_DIR)/Libraries/STM32_USB-FS-Device_Driver/src/usb_mem.c \
-	$(STM32_LIB_DIR)/Libraries/STM32_USB-FS-Device_Driver/src/usb_regs.c \
-	$(STM32_LIB_DIR)/Libraries/STM32_USB-FS-Device_Driver/src/usb_sil.c \
-	$(STM32_LIB_DIR)/Libraries/STM32_USB-FS-Device_Driver/src/otgd_fs_cal.c \
-	$(STM32_LIB_DIR)/Libraries/STM32_USB-FS-Device_Driver/src/otgd_fs_dev.c \
-	$(STM32_LIB_DIR)/Libraries/STM32_USB-FS-Device_Driver/src/otgd_fs_int.c \
-	$(STM32_LIB_DIR)/Libraries/STM32_USB-FS-Device_Driver/src/otgd_fs_pcd.c
+	$(STM32_LIB_DIR)/Libraries/STM32_USB-FS-Device_Driver/src/usb_regs.c
   LIBSTM32_INCS+= \
     -I $(STM32_LIB_DIR)/Libraries/STM32_USB-FS-Device_Driver/inc
 endif

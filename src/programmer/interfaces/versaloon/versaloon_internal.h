@@ -25,9 +25,10 @@
 #define VERSALOON_PRODUCTSTRING			"Versaloon"
 
 #define VERSALOON_VID					0x0483
-#define VERSALOON_PID					0x5740
+#define VERSALOON_PID					0xA038
 #define VERSALOON_INP					0x82
 #define VERSALOON_OUTP					0x03
+#define VERSALOON_IFACE					0x00
 
 #define VERSALOON_FULL					1
 #define VERSALOON_MINI					2

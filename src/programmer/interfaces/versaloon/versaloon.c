@@ -337,7 +337,7 @@ static RESULT versaloon_init(void *p)
 	if (!usb_param_valid())
 	{
 		usb_set_param(VERSALOON_VID, VERSALOON_PID, VERSALOON_INP, 
-						VERSALOON_OUTP, 1);
+						VERSALOON_OUTP, VERSALOON_IFACE);
 	}
 	versaloon_device_handle = find_usb_device(usb_param_vid(), 
 		usb_param_pid(), usb_param_interface(), VERSALOON_SERIALSTRING_INDEX, 
@@ -366,16 +366,6 @@ static RESULT versaloon_init(void *p)
 		return ERRCODE_NOT_ENOUGH_MEMORY;
 	}
 	
-	// disable cdc device first
-	if (0 > usb_control_msg(versaloon_device_handle, 
-			USB_TYPE_VENDOR | USB_RECIP_INTERFACE, 0, 0, 0, NULL, 0, 
-			versaloon_to))
-	{
-		versaloon_fini();
-		LOG_ERROR(ERRMSG_FAILURE_OPERATION_MESSAGE, 
-					"disable cdc device in versaloon", usb_strerror());
-		return ERRCODE_FAILURE_OPERATION;
-	}
 	sleep_ms(100);
 	
 	// connect to versaloon

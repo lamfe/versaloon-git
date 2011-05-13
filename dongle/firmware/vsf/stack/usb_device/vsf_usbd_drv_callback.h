@@ -20,9 +20,11 @@
 #ifndef __VSF_USBD_DRV_CALLBACK_H_INCLUDED__
 #define __VSF_USBD_DRV_CALLBACK_H_INCLUDED__
 
+typedef RESULT (*vsfusbd_EP_hanlder_t)(void *p, uint8_t ep);
+typedef vsfusbd_EP_hanlder_t vsfusbd_IN_hanlder_t;
+typedef vsfusbd_EP_hanlder_t vsfusbd_OUT_hanlder_t;
+
 RESULT vsfusbd_on_SETUP(void *p);
-RESULT vsfusbd_on_IN(void *p, uint8_t ep);
-RESULT vsfusbd_on_OUT(void *p, uint8_t ep);
 RESULT vsfusbd_on_UNDERFLOW(void *p, uint8_t ep);
 RESULT vsfusbd_on_OVERFLOW(void *p, uint8_t ep);
 RESULT vsfusbd_on_RESET(void *p);

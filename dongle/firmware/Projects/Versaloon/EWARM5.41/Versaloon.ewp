@@ -282,22 +282,21 @@
           <state>$PROJ_DIR$\..\</state>
           <state>$PROJ_DIR$\..\..\</state>
           <state>$PROJ_DIR$\..\..\..\</state>
-          <state>$PROJ_DIR$\..\..\..\HW\Port\IAR\</state>
-          <state>$PROJ_DIR$\..\..\..\HW\</state>
-          <state>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\CMSIS\CM3\CoreSupport</state>
-          <state>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x</state>
-          <state>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\STM32_USB-FS-Device_Driver\inc</state>
-          <state>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\inc</state>
           <state>$PROJ_DIR$\..\..\..\Tools\fifo\</state>
-          <state>$PROJ_DIR$\..\..\..\HW\Mass\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\APP\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\CPU\STM32\</state>
+          <state>$PROJ_DIR$\..\..\..\Interfaces\CPU\STM32\HW\</state>
+          <state>$PROJ_DIR$\..\..\..\Interfaces\CPU\STM32\HW\Port\IAR\</state>
+          <state>$PROJ_DIR$\..\..\..\Interfaces\CPU\STM32\HW\STM32F10x_Lib\Libraries\CMSIS\CM3\CoreSupport</state>
+          <state>$PROJ_DIR$\..\..\..\Interfaces\CPU\STM32\HW\STM32F10x_Lib\Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x</state>
+          <state>$PROJ_DIR$\..\..\..\Interfaces\CPU\STM32\HW\STM32F10x_Lib\Libraries\STM32_USB-FS-Device_Driver\inc</state>
+          <state>$PROJ_DIR$\..\..\..\Interfaces\CPU\STM32\HW\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\inc</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\APP\PowerExt\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\APP\BDM\</state>
           <state>$PROJ_DIR$\..\..\..\USB_TO_XXX\</state>
-          <state>$PROJ_DIR$\..\..\..\vsf\</state>
           <state>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB</state>
+          <state>$PROJ_DIR$\..\..\..\vsf\</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -1161,22 +1160,21 @@
           <state>$PROJ_DIR$\..\</state>
           <state>$PROJ_DIR$\..\..\</state>
           <state>$PROJ_DIR$\..\..\..\</state>
-          <state>$PROJ_DIR$\..\..\..\HW\Port\IAR\</state>
-          <state>$PROJ_DIR$\..\..\..\HW\</state>
-          <state>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\CMSIS\CM3\CoreSupport</state>
-          <state>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x</state>
-          <state>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\STM32_USB-FS-Device_Driver\inc</state>
-          <state>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\inc</state>
           <state>$PROJ_DIR$\..\..\..\Tools\fifo\</state>
-          <state>$PROJ_DIR$\..\..\..\HW\Mass\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\APP\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\CPU\STM32\</state>
+          <state>$PROJ_DIR$\..\..\..\Interfaces\CPU\STM32\HW\</state>
+          <state>$PROJ_DIR$\..\..\..\Interfaces\CPU\STM32\HW\Port\IAR\</state>
+          <state>$PROJ_DIR$\..\..\..\Interfaces\CPU\STM32\HW\STM32F10x_Lib\Libraries\CMSIS\CM3\CoreSupport</state>
+          <state>$PROJ_DIR$\..\..\..\Interfaces\CPU\STM32\HW\STM32F10x_Lib\Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x</state>
+          <state>$PROJ_DIR$\..\..\..\Interfaces\CPU\STM32\HW\STM32F10x_Lib\Libraries\STM32_USB-FS-Device_Driver\inc</state>
+          <state>$PROJ_DIR$\..\..\..\Interfaces\CPU\STM32\HW\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\inc</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\APP\PowerExt\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\APP\BDM\</state>
           <state>$PROJ_DIR$\..\..\..\USB_TO_XXX\</state>
-          <state>$PROJ_DIR$\..\..\..\vsf\</state>
           <state>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB</state>
+          <state>$PROJ_DIR$\..\..\..\vsf\</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -1764,216 +1762,6 @@
     <configuration>Release</configuration>
   </mfc_discard>
   <group>
-    <name>HW</name>
-    <group>
-      <name>STM32F10x_Lib</name>
-      <group>
-        <name>Libraries</name>
-        <group>
-          <name>CMSIS</name>
-          <group>
-            <name>CM3</name>
-            <group>
-              <name>CoreSupport</name>
-              <file>
-                <name>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\CMSIS\CM3\CoreSupport\core_cm3.c</name>
-              </file>
-            </group>
-            <group>
-              <name>DeviceSupport</name>
-              <group>
-                <name>ST</name>
-                <group>
-                  <name>STM32F10x</name>
-                  <group>
-                    <name>startup</name>
-                    <file>
-                      <name>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x\startup\iar\startup_stm32f10x_cl.s</name>
-                      <excluded>
-                        <configuration>Debug</configuration>
-                        <configuration>Release</configuration>
-                      </excluded>
-                    </file>
-                    <file>
-                      <name>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x\startup\iar\startup_stm32f10x_hd.s</name>
-                      <excluded>
-                        <configuration>Debug</configuration>
-                        <configuration>Release</configuration>
-                      </excluded>
-                    </file>
-                    <file>
-                      <name>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x\startup\iar\startup_stm32f10x_ld.s</name>
-                      <excluded>
-                        <configuration>Debug</configuration>
-                        <configuration>Release</configuration>
-                      </excluded>
-                    </file>
-                    <file>
-                      <name>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x\startup\iar\startup_stm32f10x_ld_vl.s</name>
-                      <excluded>
-                        <configuration>Debug</configuration>
-                        <configuration>Release</configuration>
-                      </excluded>
-                    </file>
-                    <file>
-                      <name>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x\startup\iar\startup_stm32f10x_md.s</name>
-                    </file>
-                    <file>
-                      <name>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x\startup\iar\startup_stm32f10x_md_vl.s</name>
-                      <excluded>
-                        <configuration>Debug</configuration>
-                        <configuration>Release</configuration>
-                      </excluded>
-                    </file>
-                  </group>
-                  <file>
-                    <name>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x\system_stm32f10x.c</name>
-                    <excluded>
-                      <configuration>Debug</configuration>
-                      <configuration>Release</configuration>
-                    </excluded>
-                  </file>
-                </group>
-              </group>
-            </group>
-          </group>
-        </group>
-        <group>
-          <name>STM32_USB-FS-Device_Driver</name>
-          <file>
-            <name>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\STM32_USB-FS-Device_Driver\src\otgd_fs_cal.c</name>
-          </file>
-          <file>
-            <name>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\STM32_USB-FS-Device_Driver\src\otgd_fs_dev.c</name>
-          </file>
-          <file>
-            <name>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\STM32_USB-FS-Device_Driver\src\otgd_fs_int.c</name>
-          </file>
-          <file>
-            <name>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\STM32_USB-FS-Device_Driver\src\otgd_fs_pcd.c</name>
-          </file>
-          <file>
-            <name>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\STM32_USB-FS-Device_Driver\src\usb_core.c</name>
-          </file>
-          <file>
-            <name>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\STM32_USB-FS-Device_Driver\src\usb_init.c</name>
-          </file>
-          <file>
-            <name>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\STM32_USB-FS-Device_Driver\src\usb_int.c</name>
-          </file>
-          <file>
-            <name>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\STM32_USB-FS-Device_Driver\src\usb_mem.c</name>
-          </file>
-          <file>
-            <name>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\STM32_USB-FS-Device_Driver\src\usb_regs.c</name>
-          </file>
-          <file>
-            <name>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\STM32_USB-FS-Device_Driver\src\usb_sil.c</name>
-          </file>
-        </group>
-        <group>
-          <name>STM32F10x_StdPeriph_Driver</name>
-          <file>
-            <name>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\misc.c</name>
-          </file>
-          <file>
-            <name>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_adc.c</name>
-          </file>
-          <file>
-            <name>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_bkp.c</name>
-          </file>
-          <file>
-            <name>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_can.c</name>
-          </file>
-          <file>
-            <name>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_cec.c</name>
-          </file>
-          <file>
-            <name>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_crc.c</name>
-          </file>
-          <file>
-            <name>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_dac.c</name>
-          </file>
-          <file>
-            <name>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_dbgmcu.c</name>
-          </file>
-          <file>
-            <name>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_dma.c</name>
-          </file>
-          <file>
-            <name>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_exti.c</name>
-          </file>
-          <file>
-            <name>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_flash.c</name>
-          </file>
-          <file>
-            <name>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_fsmc.c</name>
-          </file>
-          <file>
-            <name>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_gpio.c</name>
-          </file>
-          <file>
-            <name>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_i2c.c</name>
-          </file>
-          <file>
-            <name>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_iwdg.c</name>
-          </file>
-          <file>
-            <name>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_pwr.c</name>
-          </file>
-          <file>
-            <name>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_rcc.c</name>
-          </file>
-          <file>
-            <name>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_rtc.c</name>
-          </file>
-          <file>
-            <name>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_sdio.c</name>
-          </file>
-          <file>
-            <name>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_spi.c</name>
-          </file>
-          <file>
-            <name>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_tim.c</name>
-          </file>
-          <file>
-            <name>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_usart.c</name>
-          </file>
-          <file>
-            <name>$PROJ_DIR$\..\..\..\HW\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_wwdg.c</name>
-          </file>
-        </group>
-      </group>
-    </group>
-    <group>
-      <name>USB</name>
-      <group>
-        <name>Mass</name>
-        <file>
-          <name>$PROJ_DIR$\..\..\..\HW\Mass\mass_mal.c</name>
-        </file>
-        <file>
-          <name>$PROJ_DIR$\..\..\..\HW\Mass\memory.c</name>
-        </file>
-        <file>
-          <name>$PROJ_DIR$\..\..\..\HW\Mass\scsi_data.c</name>
-        </file>
-        <file>
-          <name>$PROJ_DIR$\..\..\..\HW\Mass\usb_bot.c</name>
-        </file>
-        <file>
-          <name>$PROJ_DIR$\..\..\..\HW\Mass\usb_scsi.c</name>
-        </file>
-      </group>
-    </group>
-    <file>
-      <name>$PROJ_DIR$\..\..\..\HW\HW.c</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\..\..\HW\stm32f10x_it.c</name>
-    </file>
-  </group>
-  <group>
     <name>hw_cfg</name>
     <file>
       <name>$PROJ_DIR$\..\..\hw_cfg_MiniRC2.h</name>
@@ -2118,6 +1906,178 @@
           </file>
         </group>
         <group>
+          <name>HW</name>
+          <group>
+            <name>STM32F10x_Lib</name>
+            <group>
+              <name>Libraries</name>
+              <group>
+                <name>CMSIS</name>
+                <group>
+                  <name>CM3</name>
+                  <group>
+                    <name>CoreSupport</name>
+                    <file>
+                      <name>$PROJ_DIR$\..\..\..\Interfaces\CPU\STM32\HW\STM32F10x_Lib\Libraries\CMSIS\CM3\CoreSupport\core_cm3.c</name>
+                    </file>
+                  </group>
+                  <group>
+                    <name>DeviceSupport</name>
+                    <group>
+                      <name>ST</name>
+                      <group>
+                        <name>STM32F10x</name>
+                        <group>
+                          <name>startup</name>
+                          <file>
+                            <name>$PROJ_DIR$\..\..\..\Interfaces\CPU\STM32\HW\STM32F10x_Lib\Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x\startup\iar\startup_stm32f10x_cl.s</name>
+                            <excluded>
+                              <configuration>Debug</configuration>
+                              <configuration>Release</configuration>
+                            </excluded>
+                          </file>
+                          <file>
+                            <name>$PROJ_DIR$\..\..\..\Interfaces\CPU\STM32\HW\STM32F10x_Lib\Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x\startup\iar\startup_stm32f10x_hd.s</name>
+                            <excluded>
+                              <configuration>Debug</configuration>
+                              <configuration>Release</configuration>
+                            </excluded>
+                          </file>
+                          <file>
+                            <name>$PROJ_DIR$\..\..\..\Interfaces\CPU\STM32\HW\STM32F10x_Lib\Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x\startup\iar\startup_stm32f10x_ld.s</name>
+                            <excluded>
+                              <configuration>Debug</configuration>
+                              <configuration>Release</configuration>
+                            </excluded>
+                          </file>
+                          <file>
+                            <name>$PROJ_DIR$\..\..\..\Interfaces\CPU\STM32\HW\STM32F10x_Lib\Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x\startup\iar\startup_stm32f10x_ld_vl.s</name>
+                            <excluded>
+                              <configuration>Debug</configuration>
+                              <configuration>Release</configuration>
+                            </excluded>
+                          </file>
+                          <file>
+                            <name>$PROJ_DIR$\..\..\..\Interfaces\CPU\STM32\HW\STM32F10x_Lib\Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x\startup\iar\startup_stm32f10x_md.s</name>
+                          </file>
+                          <file>
+                            <name>$PROJ_DIR$\..\..\..\Interfaces\CPU\STM32\HW\STM32F10x_Lib\Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x\startup\iar\startup_stm32f10x_md_vl.s</name>
+                            <excluded>
+                              <configuration>Debug</configuration>
+                              <configuration>Release</configuration>
+                            </excluded>
+                          </file>
+                          <file>
+                            <name>$PROJ_DIR$\..\..\..\Interfaces\CPU\STM32\HW\STM32F10x_Lib\Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x\startup\iar\startup_stm32f10x_xl.s</name>
+                            <excluded>
+                              <configuration>Debug</configuration>
+                              <configuration>Release</configuration>
+                            </excluded>
+                          </file>
+                        </group>
+                        <file>
+                          <name>$PROJ_DIR$\..\..\..\Interfaces\CPU\STM32\HW\STM32F10x_Lib\Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x\system_stm32f10x.c</name>
+                          <excluded>
+                            <configuration>Debug</configuration>
+                            <configuration>Release</configuration>
+                          </excluded>
+                        </file>
+                      </group>
+                    </group>
+                  </group>
+                </group>
+              </group>
+              <group>
+                <name>STM32_USB-FS-Device_Driver</name>
+                <file>
+                  <name>$PROJ_DIR$\..\..\..\Interfaces\CPU\STM32\HW\STM32F10x_Lib\Libraries\STM32_USB-FS-Device_Driver\src\usb_mem.c</name>
+                </file>
+                <file>
+                  <name>$PROJ_DIR$\..\..\..\Interfaces\CPU\STM32\HW\STM32F10x_Lib\Libraries\STM32_USB-FS-Device_Driver\src\usb_regs.c</name>
+                </file>
+              </group>
+              <group>
+                <name>STM32F10x_StdPeriph_Driver</name>
+                <file>
+                  <name>$PROJ_DIR$\..\..\..\Interfaces\CPU\STM32\HW\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\misc.c</name>
+                </file>
+                <file>
+                  <name>$PROJ_DIR$\..\..\..\Interfaces\CPU\STM32\HW\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_adc.c</name>
+                </file>
+                <file>
+                  <name>$PROJ_DIR$\..\..\..\Interfaces\CPU\STM32\HW\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_bkp.c</name>
+                </file>
+                <file>
+                  <name>$PROJ_DIR$\..\..\..\Interfaces\CPU\STM32\HW\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_can.c</name>
+                </file>
+                <file>
+                  <name>$PROJ_DIR$\..\..\..\Interfaces\CPU\STM32\HW\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_cec.c</name>
+                </file>
+                <file>
+                  <name>$PROJ_DIR$\..\..\..\Interfaces\CPU\STM32\HW\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_crc.c</name>
+                </file>
+                <file>
+                  <name>$PROJ_DIR$\..\..\..\Interfaces\CPU\STM32\HW\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_dac.c</name>
+                </file>
+                <file>
+                  <name>$PROJ_DIR$\..\..\..\Interfaces\CPU\STM32\HW\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_dbgmcu.c</name>
+                </file>
+                <file>
+                  <name>$PROJ_DIR$\..\..\..\Interfaces\CPU\STM32\HW\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_dma.c</name>
+                </file>
+                <file>
+                  <name>$PROJ_DIR$\..\..\..\Interfaces\CPU\STM32\HW\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_exti.c</name>
+                </file>
+                <file>
+                  <name>$PROJ_DIR$\..\..\..\Interfaces\CPU\STM32\HW\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_flash.c</name>
+                </file>
+                <file>
+                  <name>$PROJ_DIR$\..\..\..\Interfaces\CPU\STM32\HW\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_fsmc.c</name>
+                </file>
+                <file>
+                  <name>$PROJ_DIR$\..\..\..\Interfaces\CPU\STM32\HW\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_gpio.c</name>
+                </file>
+                <file>
+                  <name>$PROJ_DIR$\..\..\..\Interfaces\CPU\STM32\HW\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_i2c.c</name>
+                </file>
+                <file>
+                  <name>$PROJ_DIR$\..\..\..\Interfaces\CPU\STM32\HW\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_iwdg.c</name>
+                </file>
+                <file>
+                  <name>$PROJ_DIR$\..\..\..\Interfaces\CPU\STM32\HW\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_pwr.c</name>
+                </file>
+                <file>
+                  <name>$PROJ_DIR$\..\..\..\Interfaces\CPU\STM32\HW\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_rcc.c</name>
+                </file>
+                <file>
+                  <name>$PROJ_DIR$\..\..\..\Interfaces\CPU\STM32\HW\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_rtc.c</name>
+                </file>
+                <file>
+                  <name>$PROJ_DIR$\..\..\..\Interfaces\CPU\STM32\HW\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_sdio.c</name>
+                </file>
+                <file>
+                  <name>$PROJ_DIR$\..\..\..\Interfaces\CPU\STM32\HW\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_spi.c</name>
+                </file>
+                <file>
+                  <name>$PROJ_DIR$\..\..\..\Interfaces\CPU\STM32\HW\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_tim.c</name>
+                </file>
+                <file>
+                  <name>$PROJ_DIR$\..\..\..\Interfaces\CPU\STM32\HW\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_usart.c</name>
+                </file>
+                <file>
+                  <name>$PROJ_DIR$\..\..\..\Interfaces\CPU\STM32\HW\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_wwdg.c</name>
+                </file>
+              </group>
+            </group>
+          </group>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\Interfaces\CPU\STM32\HW\HW.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\Interfaces\CPU\STM32\HW\stm32f10x_it.c</name>
+          </file>
+        </group>
+        <group>
           <name>IIC</name>
         </group>
         <group>
@@ -2131,6 +2091,9 @@
         </group>
         <group>
           <name>USBD</name>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\Interfaces\CPU\STM32\USBD\STM32_USBD.c</name>
+          </file>
         </group>
       </group>
     </group>
@@ -2152,19 +2115,7 @@
     <group>
       <name>USB</name>
       <file>
-        <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB\usb_desc.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB\usb_endp.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB\usb_istr.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB\usb_prop.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB\usb_pwr.c</name>
+        <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB\usb_protocol.c</name>
       </file>
     </group>
     <file>
@@ -2240,6 +2191,27 @@
       <name>stack</name>
       <group>
         <name>usb_device</name>
+        <group>
+          <name>CLASS</name>
+          <group>
+            <name>CDC</name>
+            <file>
+              <name>$PROJ_DIR$\..\..\..\vsf\stack\usb_device\class\CDC\vsfusbd_CDC.c</name>
+            </file>
+          </group>
+          <group>
+            <name>HID</name>
+            <file>
+              <name>$PROJ_DIR$\..\..\..\vsf\stack\usb_device\class\HID\vsfusbd_HID.c</name>
+            </file>
+          </group>
+          <group>
+            <name>MSC</name>
+            <file>
+              <name>$PROJ_DIR$\..\..\..\vsf\stack\usb_device\class\MSC\vsfusbd_MSC.c</name>
+            </file>
+          </group>
+        </group>
         <file>
           <name>$PROJ_DIR$\..\..\..\vsf\stack\usb_device\vsf_usbd.c</name>
         </file>

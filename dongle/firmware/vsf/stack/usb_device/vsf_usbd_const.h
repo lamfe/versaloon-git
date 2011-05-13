@@ -56,41 +56,32 @@ enum usb_stdreq_t
 	// standard request
 	USB_REQ_GET_STATUS				= 0x00,
 	USB_REQ_CLEAR_FEATURE			= 0x01,
-	USB_REQ_SET_FEATURE				= 0x02,
-	USB_REQ_SET_ADDRESS				= 0x03,
-	USB_REQ_GET_DESCRIPTOR			= 0x04,
-	USB_REQ_SET_DESCRIPTOR			= 0x05,
-	USB_REQ_GET_CONFIGURATION		= 0x06,
-	USB_REQ_SET_CONFIGURATION		= 0x07,
-	USB_REQ_GET_INTERFACE			= 0x08,
-	USB_REQ_SET_INTERFACE			= 0x09,
+	USB_REQ_SET_FEATURE				= 0x03,
+	USB_REQ_SET_ADDRESS				= 0x05,
+	USB_REQ_GET_DESCRIPTOR			= 0x06,
+	USB_REQ_SET_DESCRIPTOR			= 0x07,
+	USB_REQ_GET_CONFIGURATION		= 0x08,
+	USB_REQ_SET_CONFIGURATION		= 0x09,
+	USB_REQ_GET_INTERFACE			= 0x0A,
+	USB_REQ_SET_INTERFACE			= 0x0B,
 };
 
-enum usb_request_type_t
-{
-	USB_REQ_TYPE_STANDARD			= 0x00,
-	USB_REQ_TYPE_CLASS				= 0x20,
-	USB_REQ_TYPE_VENDOR				= 0x40,
-};
+#define USB_REQ_TYPE_STANDARD		0x00
+#define USB_REQ_TYPE_CLASS			0x20
+#define USB_REQ_TYPE_VENDOR			0x40
 #define USB_REQ_TYPE_MASK			0x60
-#define USB_REQ_GET_TYPE(req)		(enum usb_request_type_t)((req) & USB_REQ_TYPE_MASK)
+#define USB_REQ_GET_TYPE(req)		((req) & USB_REQ_TYPE_MASK)
 
-enum usb_request_dir_t
-{
-	USB_REQ_DIR_HTOD				= 0x00,
-	USB_REQ_DIR_DTOH				= 0x80,
-};
+#define USB_REQ_DIR_HTOD			0x00
+#define USB_REQ_DIR_DTOH			0x80
 #define USB_REQ_DIR_MASK			0x80
-#define USB_REQ_GET_DIR(req)		(enum usb_request_dir_t)((req) & USB_REQ_DIR_MASK)
+#define USB_REQ_GET_DIR(req)		((req) & USB_REQ_DIR_MASK)
 
-enum usb_request_recipent_t
-{
-	USB_REQ_RECP_DEVICE				= 0x00,
-	USB_REQ_RECP_INTERFACE			= 0x01,
-	USB_REQ_RECP_ENDPOINT			= 0x02,
-};
+#define USB_REQ_RECP_DEVICE			0x00
+#define USB_REQ_RECP_INTERFACE		0x01
+#define USB_REQ_RECP_ENDPOINT		0x02
 #define USB_REQ_RECP_MASK			0x1F
-#define USB_REQ_GET_RECP(req)		(enum usb_request_recipent_t)((req) & USB_REQ_DIR_MASK)
+#define USB_REQ_GET_RECP(req)		((req) & USB_REQ_DIR_MASK)
 
 // feature
 enum usb_feature_cmd_t
@@ -116,7 +107,7 @@ enum usb_device_feature_t
 // error
 enum usb_err_type_t
 {
-	USBERR_OK,
+	USBERR_ERROR,
 	USBERR_INVALID_CRC,
 	USBERR_SOF_TO,
 };

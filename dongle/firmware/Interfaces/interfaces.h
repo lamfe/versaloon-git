@@ -278,6 +278,9 @@ enum poll_check_type_t
 	POLL_CHECK_UNEQU
 };
 
+#include "stack/usb_device/vsf_usbd_const.h"
+#include "stack/usb_device/vsf_usbd_drv_callback.h"
+
 enum usb_ep_state_t
 {
 	USB_EP_STAT_STALL,
@@ -319,8 +322,10 @@ struct interface_usbd_t
 		
 		RESULT (*reset)(uint8_t idx);
 		RESULT (*set_type)(uint8_t idx, enum usb_ep_type_t type);
-		RESULT (*get_type)(uint8_t idx);
+		enum usb_ep_type_t (*get_type)(uint8_t idx);
 		
+		RESULT (*set_IN_handler)(uint8_t idx, vsfusbd_IN_hanlder_t handler);
+		RESULT (*set_IN_dbuffer)(uint8_t idx);
 		RESULT (*set_IN_epsize)(uint8_t idx, uint16_t size);
 		uint16_t (*get_IN_epsize)(uint8_t idx);
 		enum usb_ep_state_t (*get_IN_state)(uint8_t idx);
@@ -328,11 +333,13 @@ struct interface_usbd_t
 		RESULT (*set_IN_count)(uint8_t idx, uint16_t size);
 		RESULT (*write_IN_buffer)(uint8_t idx, uint8_t *buffer, uint16_t size);
 		
+		RESULT (*set_OUT_handler)(uint8_t idx, vsfusbd_OUT_hanlder_t handler);
+		RESULT (*set_OUT_dbuffer)(uint8_t idx);
 		RESULT (*set_OUT_epsize)(uint8_t idx, uint16_t size);
 		uint16_t (*get_OUT_epsize)(uint8_t idx);
 		enum usb_ep_state_t (*get_OUT_state)(uint8_t idx);
 		RESULT (*set_OUT_state)(uint8_t idx, enum usb_ep_state_t state);
-		RESULT (*get_OUT_count)(uint8_t idx);
+		uint16_t (*get_OUT_count)(uint8_t idx);
 		RESULT (*read_OUT_buffer)(uint8_t idx, uint8_t *buffer, uint16_t size);
 	} ep;
 };
@@ -404,9 +411,6 @@ struct interfaces_info_t
 #if INTERFACE_MICROWIRE_EN
 	struct interface_microwire_t microwire;
 #endif
-#if INTERFACE_USBD_EN
-	struct interface_usbd_t usbd;
-#endif
 };
 
 extern const struct interfaces_info_t *interfaces;
@@ -414,11 +418,46 @@ extern const struct interfaces_info_t *interfaces;
 
 
 
-#define CORE_GPIO_INIT(m)		__CONNECT(m, _gpio_init)
-#define CORE_GPIO_FINI(m)		__CONNECT(m, _gpio_fini)
-#define CORE_GPIO_CONFIG(m)		__CONNECT(m, _gpio_config)
-#define CORE_GPIO_IN(m)			__CONNECT(m, _gpio_in)
-#define CORE_GPIO_OUT(m)		__CONNECT(m, _gpio_out)
+// GPIO
+#define CORE_GPIO_INIT(m)				__CONNECT(m, _gpio_init)
+#define CORE_GPIO_FINI(m)				__CONNECT(m, _gpio_fini)
+#define CORE_GPIO_CONFIG(m)				__CONNECT(m, _gpio_config)
+#define CORE_GPIO_IN(m)					__CONNECT(m, _gpio_in)
+#define CORE_GPIO_OUT(m)				__CONNECT(m, _gpio_out)
+
+// USB
+#define CORE_USBD_INIT(m)				__CONNECT(m, _usbd_init)
+#define CORE_USBD_FINI(m)				__CONNECT(m, _usbd_fini)
+#define CORE_USBD_RESET(m)				__CONNECT(m, _usbd_reset)
+#define CORE_USBD_POLL(m)				__CONNECT(m, _usbd_poll)
+#define CORE_USBD_CONNECT(m)			__CONNECT(m, _usbd_connect)
+#define CORE_USBD_DISCONNECT(m)			__CONNECT(m, _usbd_disconnect)
+#define CORE_USBD_SET_ADDRESS(m)		__CONNECT(m, _usbd_set_address)
+#define CORE_USBD_GET_ADDRESS(m)		__CONNECT(m, _usbd_get_address)
+#define CORE_USBD_SUSPEND(m)			__CONNECT(m, _usbd_suspend)
+#define CORE_USBD_RESUME(m)				__CONNECT(m, _usbd_resume)
+#define CORE_USBD_LOWPOWER(m)			__CONNECT(m, _usbd_lowpower)
+#define CORE_USBD_GET_FRAME_NUM(m)		__CONNECT(m, _usbd_get_frame_number)
+#define CORE_USBD_EP_NUM(m)				__CONNECT(m, _usbd_ep_num)
+#define CORE_USBD_EP_RESET(m)			__CONNECT(m, _usbd_ep_reset)
+#define CORE_USBD_EP_SET_TYPE(m)		__CONNECT(m, _usbd_ep_set_type)
+#define CORE_USBD_EP_GET_TYPE(m)		__CONNECT(m, _usbd_ep_get_type)
+#define CORE_USBD_EP_SET_IN_HANDLER(m)	__CONNECT(m, _usbd_ep_set_IN_handler)
+#define CORE_USBD_EP_SET_IN_DBUFFER(m)	__CONNECT(m, _usbd_ep_set_IN_dbuffer)
+#define CORE_USBD_EP_SET_IN_EPSIZE(m)	__CONNECT(m, _usbd_ep_set_IN_epsize)
+#define CORE_USBD_EP_GET_IN_EPSIZE(m)	__CONNECT(m, _usbd_ep_get_IN_epsize)
+#define CORE_USBD_EP_GET_IN_STATE(m)	__CONNECT(m, _usbd_ep_get_IN_state)
+#define CORE_USBD_EP_SET_IN_STATE(m)	__CONNECT(m, _usbd_ep_set_IN_state)
+#define CORE_USBD_EP_SET_IN_COUNT(m)	__CONNECT(m, _usbd_ep_set_IN_count)
+#define CORE_USBD_EP_WRITE_IN_BUFFER(m)	__CONNECT(m, _usbd_ep_write_IN_buffer)
+#define CORE_USBD_EP_SET_OUT_HANDLER(m)	__CONNECT(m, _usbd_ep_set_OUT_handler)
+#define CORE_USBD_EP_SET_OUT_DBUFFER(m)	__CONNECT(m, _usbd_ep_set_OUT_dbuffer)
+#define CORE_USBD_EP_SET_OUT_EPSIZE(m)	__CONNECT(m, _usbd_ep_set_OUT_epsize)
+#define CORE_USBD_EP_GET_OUT_EPSIZE(m)	__CONNECT(m, _usbd_ep_get_OUT_epsize)
+#define CORE_USBD_EP_GET_OUT_STATE(m)	__CONNECT(m, _usbd_ep_get_OUT_state)
+#define CORE_USBD_EP_SET_OUT_STATE(m)	__CONNECT(m, _usbd_ep_set_OUT_state)
+#define CORE_USBD_EP_GET_OUT_COUNT(m)	__CONNECT(m, _usbd_ep_get_OUT_count)
+#define CORE_USBD_EP_READ_OUT_BUFFER(m)	__CONNECT(m, _usbd_ep_read_OUT_buffer)
 
 struct core_interfaces_info_t
 {
@@ -429,6 +468,7 @@ struct core_interfaces_info_t
 	struct interface_usart_t usart;
 	struct interface_spi_t spi;
 	struct interface_i2c_t i2c;
+	struct interface_usbd_t usbd;
 	struct interface_pwm_t pwm;
 	struct interface_delay_t delay;
 };
