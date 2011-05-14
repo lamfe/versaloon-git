@@ -11,30 +11,32 @@ static RESULT Versaloon_IN_hanlder(void *p, uint8_t ep)
 {
 	struct vsfusbd_device_t *device = p;
 	uint32_t len;
-
-	usb_in_numofpackage--;
-	if(usb_in_data_remain > 0)
+	
+	if(--usb_in_numofpackage > 0)
 	{
-		if(usb_in_data_remain > 64)
+		device->drv->ep.switch_IN_buffer(ep);
+		if(usb_in_numofpackage > 1)
 		{
-			len = 64;
+			if(usb_in_data_remain > 0)
+			{
+				if(usb_in_data_remain > 64)
+				{
+					len = 64;
+				}
+				else
+				{
+					len = usb_in_data_remain;
+				}
+				device->drv->ep.write_IN_buffer(ep, buffer_in, len);
+				device->drv->ep.set_IN_count(ep, len);
+				usb_in_data_remain -= len;
+				buffer_in += len;
+			}
+			else
+			{
+				device->drv->ep.set_IN_count(ep, 0);
+			}
 		}
-		else
-		{
-			len = usb_in_data_remain;
-		}
-		device->drv->ep.write_IN_buffer(ep, buffer_in, len);
-		device->drv->ep.set_IN_count(ep, len);
-		buffer_in += len;
-		usb_in_data_remain -= len;
-	}
-	else
-	{
-		device->drv->ep.set_IN_count(ep, 0);
-	}
-	if(usb_in_numofpackage > 0)
-	{
-		device->drv->ep.set_IN_state(ep, USB_EP_STAT_ACK);
 	}
 	
 	return ERROR_OK;
@@ -51,6 +53,7 @@ static RESULT Versaloon_OUT_hanlder(void *p, uint8_t ep)
 		count_out = 0;
 	}
 	
+	device->drv->ep.switch_OUT_buffer(ep);
 	pkg_len = device->drv->ep.get_OUT_count(ep);
 	device->drv->ep.read_OUT_buffer(ep, buffer_out + count_out, pkg_len);
 	device->drv->ep.set_OUT_state(ep, USB_EP_STAT_ACK);

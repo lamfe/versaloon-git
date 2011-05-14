@@ -35,6 +35,7 @@ enum usb_ep_type_t stm32_usbd_ep_get_type(uint8_t idx);
 
 RESULT stm32_usbd_ep_set_IN_handler(uint8_t idx, vsfusbd_IN_hanlder_t handler);
 RESULT stm32_usbd_ep_set_IN_dbuffer(uint8_t idx);
+RESULT stm32_usbd_ep_switch_IN_buffer(uint8_t idx);
 RESULT stm32_usbd_ep_set_IN_epsize(uint8_t idx, uint16_t epsize);
 uint16_t stm32_usbd_ep_get_IN_epsize(uint8_t idx);
 RESULT stm32_usbd_ep_set_IN_state(uint8_t idx, enum usb_ep_state_t state);
@@ -44,6 +45,7 @@ RESULT stm32_usbd_ep_write_IN_buffer(uint8_t idx, uint8_t *buffer, uint16_t size
 
 RESULT stm32_usbd_ep_set_OUT_handler(uint8_t idx, vsfusbd_OUT_hanlder_t handler);
 RESULT stm32_usbd_ep_set_OUT_dbuffer(uint8_t idx);
+RESULT stm32_usbd_ep_switch_OUT_buffer(uint8_t idx);
 RESULT stm32_usbd_ep_set_OUT_epsize(uint8_t idx, uint16_t epsize);
 uint16_t stm32_usbd_ep_get_OUT_epsize(uint8_t idx);
 RESULT stm32_usbd_ep_set_OUT_state(uint8_t idx, enum usb_ep_state_t state);

@@ -326,6 +326,7 @@ struct interface_usbd_t
 		
 		RESULT (*set_IN_handler)(uint8_t idx, vsfusbd_IN_hanlder_t handler);
 		RESULT (*set_IN_dbuffer)(uint8_t idx);
+		RESULT (*switch_IN_buffer)(uint8_t idx);
 		RESULT (*set_IN_epsize)(uint8_t idx, uint16_t size);
 		uint16_t (*get_IN_epsize)(uint8_t idx);
 		enum usb_ep_state_t (*get_IN_state)(uint8_t idx);
@@ -335,6 +336,7 @@ struct interface_usbd_t
 		
 		RESULT (*set_OUT_handler)(uint8_t idx, vsfusbd_OUT_hanlder_t handler);
 		RESULT (*set_OUT_dbuffer)(uint8_t idx);
+		RESULT (*switch_OUT_buffer)(uint8_t idx);
 		RESULT (*set_OUT_epsize)(uint8_t idx, uint16_t size);
 		uint16_t (*get_OUT_epsize)(uint8_t idx);
 		enum usb_ep_state_t (*get_OUT_state)(uint8_t idx);
@@ -444,6 +446,8 @@ extern const struct interfaces_info_t *interfaces;
 #define CORE_USBD_EP_GET_TYPE(m)		__CONNECT(m, _usbd_ep_get_type)
 #define CORE_USBD_EP_SET_IN_HANDLER(m)	__CONNECT(m, _usbd_ep_set_IN_handler)
 #define CORE_USBD_EP_SET_IN_DBUFFER(m)	__CONNECT(m, _usbd_ep_set_IN_dbuffer)
+#define CORE_USBD_EP_SWITCH_IN_BUFFER(m)\
+										__CONNECT(m, _usbd_ep_switch_IN_buffer)
 #define CORE_USBD_EP_SET_IN_EPSIZE(m)	__CONNECT(m, _usbd_ep_set_IN_epsize)
 #define CORE_USBD_EP_GET_IN_EPSIZE(m)	__CONNECT(m, _usbd_ep_get_IN_epsize)
 #define CORE_USBD_EP_GET_IN_STATE(m)	__CONNECT(m, _usbd_ep_get_IN_state)
@@ -452,6 +456,8 @@ extern const struct interfaces_info_t *interfaces;
 #define CORE_USBD_EP_WRITE_IN_BUFFER(m)	__CONNECT(m, _usbd_ep_write_IN_buffer)
 #define CORE_USBD_EP_SET_OUT_HANDLER(m)	__CONNECT(m, _usbd_ep_set_OUT_handler)
 #define CORE_USBD_EP_SET_OUT_DBUFFER(m)	__CONNECT(m, _usbd_ep_set_OUT_dbuffer)
+#define CORE_USBD_EP_SWITCH_OUT_BUFFER(m)\
+										__CONNECT(m, _usbd_ep_switch_OUT_buffer)
 #define CORE_USBD_EP_SET_OUT_EPSIZE(m)	__CONNECT(m, _usbd_ep_set_OUT_epsize)
 #define CORE_USBD_EP_GET_OUT_EPSIZE(m)	__CONNECT(m, _usbd_ep_get_OUT_epsize)
 #define CORE_USBD_EP_GET_OUT_STATE(m)	__CONNECT(m, _usbd_ep_get_OUT_state)

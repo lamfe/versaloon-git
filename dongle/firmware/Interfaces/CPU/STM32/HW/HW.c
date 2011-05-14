@@ -421,6 +421,8 @@ s32 USB_Out_PollReady(void)
 			usb_ovf = 0;
 			usb_in_numofpackage = 0;
 			usb_in_data_remain = 0;
+// TODO
+ToggleDTOG_RX(ENDP2);
 			SetEPTxStatus(ENDP2, EP_TX_NAK);
 			return -1;
 		}
@@ -441,6 +443,7 @@ void USB_Out(uint8_t *data, uint32_t len)
 	}
 	usb_in_data_remain = len;
 
+#if 0
 	// start to send the first package
 	if(usb_in_data_remain > USB_DATA_SIZE)
 	{
@@ -454,6 +457,80 @@ void USB_Out(uint8_t *data, uint32_t len)
 	SetEPTxCount(ENDP2, ep_size);
 	usb_in_data_remain -= ep_size;
 	buffer_in += ep_size;
+#else
+	if(GetENDPOINT(ENDP2) & EP_DTOG_RX)
+	{
+		if(usb_in_data_remain > USB_DATA_SIZE)
+		{
+			ep_size = USB_DATA_SIZE;
+		}
+		else
+		{
+			ep_size = usb_in_data_remain;
+		}
+		UserToPMABufferCopy(buffer_in, GetEPDblBuf1Addr(ENDP2), ep_size);
+		SetEPDblBuf1Count(ENDP2, EP_DBUF_IN, ep_size);
+		FreeUserBuffer(ENDP2, EP_DBUF_IN);
+		usb_in_data_remain -= ep_size;
+		buffer_in += ep_size;
+
+		if(usb_in_data_remain > 0)
+		{
+			if(usb_in_data_remain > USB_DATA_SIZE)
+			{
+				ep_size = USB_DATA_SIZE;
+			}
+			else
+			{
+				ep_size = usb_in_data_remain;
+			}
+			UserToPMABufferCopy(buffer_in, GetEPDblBuf0Addr(ENDP2), ep_size);
+			SetEPDblBuf0Count(ENDP2, EP_DBUF_IN, ep_size);
+			usb_in_data_remain -= ep_size;
+			buffer_in += ep_size;
+		}
+		else
+		{
+			SetEPDblBuf0Count(ENDP2, EP_DBUF_IN, 0);
+		}
+	}
+	else
+	{
+		if(usb_in_data_remain > USB_DATA_SIZE)
+		{
+			ep_size = USB_DATA_SIZE;
+		}
+		else
+		{
+			ep_size = usb_in_data_remain;
+		}
+		UserToPMABufferCopy(buffer_in, GetEPDblBuf0Addr(ENDP2), ep_size);
+		SetEPDblBuf0Count(ENDP2, EP_DBUF_IN, ep_size);
+		FreeUserBuffer(ENDP2, EP_DBUF_IN);
+		usb_in_data_remain -= ep_size;
+		buffer_in += ep_size;
+
+		if(usb_in_data_remain > 0)
+		{
+			if(usb_in_data_remain > USB_DATA_SIZE)
+			{
+				ep_size = USB_DATA_SIZE;
+			}
+			else
+			{
+				ep_size = usb_in_data_remain;
+			}
+			UserToPMABufferCopy(buffer_in, GetEPDblBuf1Addr(ENDP2), ep_size);
+			SetEPDblBuf1Count(ENDP2, EP_DBUF_IN, ep_size);
+			usb_in_data_remain -= ep_size;
+			buffer_in += ep_size;
+		}
+		else
+		{
+			SetEPDblBuf1Count(ENDP2, EP_DBUF_IN, 0);
+		}
+	}
+#endif
 	SetEPTxValid(ENDP2);
 }
 
