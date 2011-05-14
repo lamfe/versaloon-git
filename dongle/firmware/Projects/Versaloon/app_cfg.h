@@ -20,7 +20,8 @@
 // For GCC, edit HW_BOARD in makefile
 
 //
-// Note The below definitions must correspond to the definitions made in board_defs.mk (same place where the makefile resides)
+// Note The below definitions must correspond to the definitions made in 
+// board_defs.mk (same place where the makefile resides)
 //
 #define NanoRelease1					0x01
 #define MiniRC2							0x12
@@ -112,7 +113,8 @@
 #define INTERFACE_IIC_EN				(USB_TO_XXX_EN && USB_TO_IIC_EN)
 #define INTERFACE_ISSP_EN				(USB_TO_XXX_EN && USB_TO_ISSP_EN)
 #define INTERFACE_LPC_ICP_EN			(USB_TO_XXX_EN && USB_TO_LPCICP_EN)
-#define INTERFACE_JTAG_EN				(USB_TO_XXX_EN && (USB_TO_JTAG_HL_EN || USB_TO_JTAG_LL_EN || USB_TO_JTAG_RAW_EN))
+#define INTERFACE_JTAG_EN				(USB_TO_XXX_EN && \
+				(USB_TO_JTAG_HL_EN || USB_TO_JTAG_LL_EN || USB_TO_JTAG_RAW_EN))
 #define INTERFACE_MSP430_JTAG_EN		(USB_TO_XXX_EN && USB_TO_MSP430_JTAG_EN)
 #define INTERFACE_MSP430_SBW_EN			(USB_TO_XXX_EN && USB_TO_MSP430_SBW_EN)
 #define INTERFACE_SPI_EN				(USB_TO_XXX_EN && USB_TO_SPI_EN)

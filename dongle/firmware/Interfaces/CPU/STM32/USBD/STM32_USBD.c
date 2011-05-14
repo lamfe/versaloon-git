@@ -27,11 +27,15 @@ static uint16_t EP_Cfg_Ptr = 0x200;
 
 vsfusbd_IN_hanlder_t stm32_usbd_IN_handlers[stm32_usbd_ep_num];
 vsfusbd_OUT_hanlder_t stm32_usbd_OUT_handlers[stm32_usbd_ep_num];
+bool stm32_usbd_IN_dbuffer[stm32_usbd_ep_num];
+bool stm32_usbd_OUT_dbuffer[stm32_usbd_ep_num];
 
 RESULT stm32_usbd_init(void *device)
 {
 	memset(stm32_usbd_IN_handlers, 0, sizeof(stm32_usbd_IN_handlers));
 	memset(stm32_usbd_OUT_handlers, 0, sizeof(stm32_usbd_OUT_handlers));
+	memset(stm32_usbd_IN_dbuffer, 0, sizeof(stm32_usbd_IN_dbuffer));
+	memset(stm32_usbd_OUT_dbuffer, 0, sizeof(stm32_usbd_OUT_dbuffer));
 	USBD_Device = device;
 	// reset
 	SetCNTR(CNTR_FRES);
@@ -167,6 +171,27 @@ RESULT stm32_usbd_ep_set_IN_handler(uint8_t idx, vsfusbd_IN_hanlder_t handler)
 
 RESULT stm32_usbd_ep_set_IN_dbuffer(uint8_t idx)
 {
+	uint16_t epsize = GetEPTxCount(idx);
+	
+	SetEPDoubleBuff(idx);
+	EP_Cfg_Ptr -= epsize;
+	if (EP_Cfg_Ptr < stm32_usbd_ep_num * 8)
+	{
+		return ERROR_FAIL;
+	}
+	SetEPDblBuffAddr(idx, GetEPTxAddr(idx), EP_Cfg_Ptr);
+	SetEPDblBuffCount(idx, EP_DBUF_IN, 0);
+	ClearDTOG_RX(idx);
+	ClearDTOG_TX(idx);
+	SetEPRxStatus(idx, EP_RX_DIS);
+	SetEPTxStatus(idx, EP_TX_NAK);
+	stm32_usbd_IN_dbuffer[idx] = true;
+	return ERROR_OK;
+}
+
+RESULT stm32_usbd_ep_switch_IN_buffer(uint8_t idx)
+{
+	FreeUserBuffer(idx, EP_DBUF_IN);
 	return ERROR_OK;
 }
 
@@ -232,13 +257,44 @@ enum usb_ep_state_t stm32_usbd_ep_get_IN_state(uint8_t idx)
 
 RESULT stm32_usbd_ep_set_IN_count(uint8_t idx, uint16_t size)
 {
-	SetEPTxCount(idx, size);
+	if (stm32_usbd_IN_dbuffer[idx])
+	{
+		if(GetENDPOINT(idx) & EP_DTOG_RX)
+		{
+			SetEPDblBuf1Count(idx, EP_DBUF_IN, size);
+		}
+		else
+		{
+			SetEPDblBuf0Count(idx, EP_DBUF_IN, size);
+		}
+	}
+	else
+	{
+		SetEPTxCount(idx, size);
+	}
 	return ERROR_OK;
 }
 
 RESULT stm32_usbd_ep_write_IN_buffer(uint8_t idx, uint8_t *buffer, uint16_t size)
 {
-	UserToPMABufferCopy(buffer, GetEPTxAddr(idx), size);
+	uint32_t PMA_ptr;
+	
+	if (stm32_usbd_IN_dbuffer[idx])
+	{
+		if(GetENDPOINT(idx) & EP_DTOG_RX)
+		{
+			PMA_ptr = GetEPDblBuf1Addr(idx);
+		}
+		else
+		{
+			PMA_ptr = GetEPDblBuf0Addr(idx);
+		}
+	}
+	else
+	{
+		PMA_ptr = GetEPTxAddr(idx);
+	}
+	UserToPMABufferCopy(buffer, PMA_ptr, size);
 	return ERROR_OK;
 }
 
@@ -254,6 +310,36 @@ RESULT stm32_usbd_ep_set_OUT_handler(uint8_t idx, vsfusbd_OUT_hanlder_t handler)
 
 RESULT stm32_usbd_ep_set_OUT_dbuffer(uint8_t idx)
 {
+	uint16_t epsize = *_pEPRxCount(idx);
+	
+	if (epsize & 0x8000)
+	{
+		epsize = (((epsize >> 10) & 0x1F) + 1) * 32;
+	}
+	else
+	{
+		epsize = ((epsize >> 10) & 0x1F) * 2;
+	}
+	SetEPDoubleBuff(idx);
+	EP_Cfg_Ptr -= epsize;
+	if (EP_Cfg_Ptr < stm32_usbd_ep_num * 8)
+	{
+		return ERROR_FAIL;
+	}
+	SetEPDblBuffAddr(idx, GetEPRxAddr(idx), EP_Cfg_Ptr);
+	SetEPDblBuffCount(idx, EP_DBUF_OUT, epsize);
+	ClearDTOG_RX(idx);
+	ClearDTOG_TX(idx);
+	ToggleDTOG_TX(idx);
+	SetEPRxStatus(idx, EP_RX_VALID);
+	SetEPTxStatus(idx, EP_TX_DIS);
+	stm32_usbd_OUT_dbuffer[idx] = true;
+	return ERROR_OK;
+}
+
+RESULT stm32_usbd_ep_switch_OUT_buffer(uint8_t idx)
+{
+	FreeUserBuffer(idx, EP_DBUF_OUT);
 	return ERROR_OK;
 }
 
@@ -319,12 +405,40 @@ enum usb_ep_state_t stm32_usbd_ep_get_OUT_state(uint8_t idx)
 
 uint16_t stm32_usbd_ep_get_OUT_count(uint8_t idx)
 {
-	return GetEPRxCount(idx);
+	if (stm32_usbd_OUT_dbuffer[idx])
+	{
+		if(GetENDPOINT(idx) & EP_DTOG_TX)
+		{
+			return GetEPDblBuf1Count(idx);
+		}
+		else
+		{
+			return GetEPDblBuf0Count(idx);
+		}
+	}
+	else
+	{
+		return GetEPRxCount(idx);
+	}
 }
 
 RESULT stm32_usbd_ep_read_OUT_buffer(uint8_t idx, uint8_t *buffer, uint16_t size)
 {
-	PMAToUserBufferCopy(buffer, GetEPRxAddr(idx), size);
+	if (stm32_usbd_OUT_dbuffer[idx])
+	{
+		if(GetENDPOINT(idx) & EP_DTOG_TX)
+		{
+			PMAToUserBufferCopy(buffer, GetEPDblBuf1Addr(idx), size);
+		}
+		else
+		{
+			PMAToUserBufferCopy(buffer, GetEPDblBuf0Addr(idx), size);
+		}
+	}
+	else
+	{
+		PMAToUserBufferCopy(buffer, GetEPRxAddr(idx), size);
+	}
 	return ERROR_OK;
 }
 
