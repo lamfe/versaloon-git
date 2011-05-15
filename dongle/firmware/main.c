@@ -18,6 +18,8 @@
 #include "app_cfg.h"
 #include "interfaces.h"
 
+#include "usb_protocol.h"
+
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
@@ -76,11 +78,11 @@ int main(void)
 #if USB_OUT_EN
 		if(rep_len & 0x80000000)		// there is valid data to be sent to PC
 		{
-			USB_Out(buffer_out, rep_len & 0xFFFF);
-			if (USB_Out_PollReady() < 0)
-			{
-				// error process
-			}
+			struct vsf_buffer_t buffer;
+			
+			buffer.buffer = buffer_out;
+			buffer.size = rep_len & 0xFFFF;
+			vsfusbd_ep_out(&usb_device, 2, &buffer);
 
 			// reset command length and reply length for next command
 			cmd_len = 0;

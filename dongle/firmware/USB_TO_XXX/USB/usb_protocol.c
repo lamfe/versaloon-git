@@ -1,46 +1,8 @@
 #include "app_cfg.h"
 
 #include "interfaces.h"
-#include "stack/usb_device/vsf_usbd_const.h"
-#include "stack/usb_device/vsf_usbd.h"
-#include "stack/usb_device/vsf_usbd_drv_callback.h"
 
 #include "usb_protocol.h"
-
-static RESULT Versaloon_IN_hanlder(void *p, uint8_t ep)
-{
-	struct vsfusbd_device_t *device = p;
-	uint32_t len;
-	
-	if(--usb_in_numofpackage > 0)
-	{
-		device->drv->ep.switch_IN_buffer(ep);
-		if(usb_in_numofpackage > 1)
-		{
-			if(usb_in_data_remain > 0)
-			{
-				if(usb_in_data_remain > 64)
-				{
-					len = 64;
-				}
-				else
-				{
-					len = usb_in_data_remain;
-				}
-				device->drv->ep.write_IN_buffer(ep, buffer_in, len);
-				device->drv->ep.set_IN_count(ep, len);
-				usb_in_data_remain -= len;
-				buffer_in += len;
-			}
-			else
-			{
-				device->drv->ep.set_IN_count(ep, 0);
-			}
-		}
-	}
-	
-	return ERROR_OK;
-}
 
 static RESULT Versaloon_OUT_hanlder(void *p, uint8_t ep)
 {
@@ -100,7 +62,6 @@ static RESULT versaloon_init(struct vsfusbd_device_t *device)
 {
 	if ((ERROR_OK != device->drv->ep.set_IN_dbuffer(2)) || 
 		(ERROR_OK != device->drv->ep.set_OUT_dbuffer(3)) || 
-		(ERROR_OK != device->drv->ep.set_IN_handler(2, Versaloon_IN_hanlder)) || 
 		(ERROR_OK != device->drv->ep.set_OUT_handler(3, Versaloon_OUT_hanlder)))
 	{
 		return ERROR_FAIL;
@@ -236,7 +197,7 @@ static const struct vsfusbd_config_t config0[] =
 {
 	{NULL, NULL, 1, (struct vsfusbd_iface_t *)ifaces}
 };
-static struct vsfusbd_device_t usb_device = 
+struct vsfusbd_device_t usb_device = 
 {
 	1, 0, 0, (struct vsfusbd_config_t *)config0, 
 	(struct vsfusbd_desc_filter_t *)descriptors, 
