@@ -26,6 +26,10 @@
 #include "vsf_usbd.h"
 #include "vsf_usbd_drv_callback.h"
 
+struct vsf_transaction_buffer_t vsfusbd_IN_tbuffer[16];
+struct vsf_transaction_buffer_t vsfusbd_OUT_tbuffer[16];
+uint32_t vsfusbd_IN_PkgNum[16];
+
 static RESULT vsfusbd_device_get_descriptor(struct vsfusbd_device_t *device, 
 		struct vsfusbd_desc_filter_t *filter, uint8_t type, uint8_t index, 
 		uint16_t lanid, struct vsf_buffer_t *buffer)
@@ -96,8 +100,8 @@ RESULT vsfusbd_device_poll(struct vsfusbd_device_t *device)
 	return ERROR_OK;
 }
 
-RESULT vsfusbd_ep_in_nb(struct vsfusbd_device_t *device, 
-						uint8_t ep, uint8_t *buff, uint16_t size)
+RESULT vsfusbd_ep_in_nb(struct vsfusbd_device_t *device, uint8_t ep, 
+						struct vsf_buffer_t *buffer)
 {
 	return ERROR_OK;
 }
@@ -108,44 +112,103 @@ RESULT vsfusbd_ep_in_nb_isready(struct vsfusbd_device_t *device, uint8_t ep,
 	return ERROR_OK;
 }
 
-RESULT vsfusbd_ep_out_nb(struct vsfusbd_device_t *device, 
-							uint8_t ep, uint8_t *buff, uint16_t size)
+RESULT vsfusbd_ep_out_nb(struct vsfusbd_device_t *device, uint8_t ep, 
+							struct vsf_buffer_t *buffer)
 {
+	struct vsf_transaction_buffer_t *tbuffer = &vsfusbd_IN_tbuffer[ep];
+	uint8_t *buffer_ptr;
+	uint32_t remain_size;
+	uint16_t pkg_size;
+	
+	tbuffer->buffer.buffer	= buffer->buffer;
+	tbuffer->buffer.size	= buffer->size;
+	tbuffer->position		= 0;
+	
+	remain_size = buffer->size;
+	pkg_size = device->drv->ep.get_IN_epsize(ep);
+	vsfusbd_IN_PkgNum[ep] = (remain_size + pkg_size - 1) / pkg_size;
+	if (!(buffer->size % pkg_size))
+	{
+		vsfusbd_IN_PkgNum[ep]++;
+	}
+	pkg_size = (remain_size > pkg_size) ? pkg_size : remain_size;
+	
+	buffer_ptr = buffer->buffer;
+	device->drv->ep.write_IN_buffer(ep, buffer_ptr, pkg_size);
+	device->drv->ep.set_IN_count(ep, pkg_size);
+	tbuffer->position = pkg_size;
+	if (device->drv->ep.is_IN_dbuffer(ep))
+	{
+		device->drv->ep.switch_IN_buffer(ep);
+		
+		remain_size -= pkg_size;
+		if (remain_size)
+		{
+			buffer_ptr += pkg_size;
+			pkg_size = (remain_size > pkg_size) ? pkg_size : remain_size;
+			device->drv->ep.write_IN_buffer(ep, buffer_ptr, pkg_size);
+			device->drv->ep.set_IN_count(ep, pkg_size);
+			tbuffer->position += pkg_size;
+		}
+		else
+		{
+			device->drv->ep.set_IN_count(ep, 0);
+		}
+	}
+	device->drv->ep.set_IN_state(ep, USB_EP_STAT_ACK);
+	
 	return ERROR_OK;
 }
 
 RESULT vsfusbd_ep_out_nb_isready(struct vsfusbd_device_t *device, uint8_t ep, 
-									bool *error)
+									bool *ready)
 {
+	volatile struct vsf_transaction_buffer_t *tbuffer = &vsfusbd_IN_tbuffer[ep];
+	uint16_t position = tbuffer->position, size = tbuffer->buffer.size;
+	*ready = position >= size;
 	return ERROR_OK;
 }
 
-RESULT vsfusbd_ep_in(struct vsfusbd_device_t *device, 
-						uint8_t ep, uint8_t *buff, uint16_t size)
+RESULT vsfusbd_ep_in(struct vsfusbd_device_t *device, uint8_t ep, 
+						struct vsf_buffer_t *buffer)
 {
 	bool error = false;
 	
-	if (ERROR_OK != vsfusbd_ep_in_nb(device, ep, buff, size))
+	if (ERROR_OK != vsfusbd_ep_in_nb(device, ep, buffer))
 	{
 		return ERROR_FAIL;
 	}
 	while ((ERROR_OK != vsfusbd_ep_in_nb_isready(device, ep, &error)) && 
 			!error);
+	if (error)
+	{
+		device->drv->ep.set_OUT_state(ep, USB_EP_STAT_NACK);
+	}
 	return error ? ERROR_FAIL : ERROR_OK;
 }
 
-RESULT vsfusbd_ep_out(struct vsfusbd_device_t *device, 
-						uint8_t ep, uint8_t *buff, uint16_t size)
+RESULT vsfusbd_ep_out(struct vsfusbd_device_t *device, uint8_t ep, 
+						struct vsf_buffer_t *buffer)
 {
-	bool error = false;
+	bool ready = false;
 	
-	if (ERROR_OK != vsfusbd_ep_out_nb(device, ep, buff, size))
+	if (ERROR_OK != vsfusbd_ep_out_nb(device, ep, buffer))
 	{
 		return ERROR_FAIL;
 	}
-	while ((ERROR_OK != vsfusbd_ep_out_nb_isready(device, ep, &error)) && 
-			!error);
-	return error ? ERROR_FAIL : ERROR_OK;
+	while (1)
+	{
+		if (ERROR_OK != vsfusbd_ep_out_nb_isready(device, ep, &ready))
+		{
+			return ERROR_FAIL;
+		}
+		if (ready)
+		{
+			break;
+		}
+	}
+	
+	return ERROR_OK;
 }
 
 
@@ -681,7 +744,7 @@ static RESULT vsfusbd_on_IN0(struct vsfusbd_device_t *device)
 	struct vsf_transaction_buffer_t *tbuffer = &ctrl_handler->tbuffer;
 	RESULT ret = ERROR_OK;
 	uint16_t cur_pkg_size, remain_size;
-	uint8_t *buffer;
+	uint8_t *buffer_ptr;
 	
 	switch (ctrl_handler->state)
 	{
@@ -689,9 +752,9 @@ static RESULT vsfusbd_on_IN0(struct vsfusbd_device_t *device)
 		remain_size = tbuffer->buffer.size - tbuffer->position;
 		cur_pkg_size = (remain_size > ctrl_handler->ep_size) ? 
 							ctrl_handler->ep_size : remain_size;
-		buffer = &tbuffer->buffer.buffer[tbuffer->position];
+		buffer_ptr = &tbuffer->buffer.buffer[tbuffer->position];
 		
-		if ((ERROR_OK != device->drv->ep.write_IN_buffer(0, buffer, 
+		if ((ERROR_OK != device->drv->ep.write_IN_buffer(0, buffer_ptr, 
 															cur_pkg_size)) || 
 			(ERROR_OK != device->drv->ep.set_IN_count(0, cur_pkg_size)))
 		{
@@ -743,13 +806,13 @@ static RESULT vsfusbd_on_OUT0(struct vsfusbd_device_t *device)
 	struct vsf_transaction_buffer_t *tbuffer = &ctrl_handler->tbuffer;
 	RESULT ret = ERROR_OK;
 	uint16_t cur_pkg_size;
-	uint8_t *buffer;
+	uint8_t *buffer_ptr;
 	
 	switch (ctrl_handler->state)
 	{
 	case USB_CTRL_STAT_OUT_DATA:
 		cur_pkg_size = device->drv->ep.get_OUT_count(0);
-		buffer = &tbuffer->buffer.buffer[tbuffer->position];
+		buffer_ptr = &tbuffer->buffer.buffer[tbuffer->position];
 		if ((0 == cur_pkg_size) || 
 			((tbuffer->position + cur_pkg_size) > tbuffer->buffer.size))
 		{
@@ -757,7 +820,7 @@ static RESULT vsfusbd_on_OUT0(struct vsfusbd_device_t *device)
 			break;
 		}
 		
-		ret = device->drv->ep.read_OUT_buffer(0, buffer, cur_pkg_size);
+		ret = device->drv->ep.read_OUT_buffer(0, buffer_ptr, cur_pkg_size);
 		tbuffer->position += cur_pkg_size;
 		if (tbuffer->position == tbuffer->buffer.size)
 		{
@@ -775,7 +838,6 @@ static RESULT vsfusbd_on_OUT0(struct vsfusbd_device_t *device)
 	case USB_CTRL_STAT_LAST_IN_DATA:
 	case USB_CTRL_STAT_WAIT_STATUS_OUT:
 		cur_pkg_size = device->drv->ep.get_OUT_count(0);
-		buffer = tbuffer->buffer.buffer;
 		if ((cur_pkg_size != 0) || 
 			(ERROR_OK != 
 			 	ctrl_handler->filter->process(device, &tbuffer->buffer)))
@@ -876,10 +938,39 @@ exit:
 static RESULT vsfusbd_on_IN(void *p, uint8_t ep)
 {
 	struct vsfusbd_device_t *device = p;
+	struct vsf_transaction_buffer_t *tbuffer = &vsfusbd_IN_tbuffer[ep];
+	uint8_t *buffer_ptr = &tbuffer->buffer.buffer[tbuffer->position];
+	uint32_t remain_size;
+	uint16_t pkg_size;
 	
 	if (0 == ep)
 	{
 		return vsfusbd_on_IN0(device);
+	}
+	
+	if (--vsfusbd_IN_PkgNum[ep] > 0)
+	{
+		if (device->drv->ep.is_IN_dbuffer(ep))
+		{
+			device->drv->ep.switch_IN_buffer(ep);
+		}
+		if (vsfusbd_IN_PkgNum[ep] > 1)
+		{
+			remain_size = tbuffer->buffer.size - tbuffer->position;
+			
+			if (remain_size)
+			{
+				pkg_size = device->drv->ep.get_IN_epsize(ep);
+				pkg_size = (remain_size > pkg_size) ? pkg_size : remain_size;
+				device->drv->ep.write_IN_buffer(ep, buffer_ptr, pkg_size);
+				device->drv->ep.set_IN_count(ep, pkg_size);
+				tbuffer->position += pkg_size;
+			}
+			else
+			{
+				device->drv->ep.set_IN_count(ep, 0);
+			}
+		}
 	}
 	
 	return ERROR_OK;
@@ -888,13 +979,28 @@ static RESULT vsfusbd_on_IN(void *p, uint8_t ep)
 static RESULT vsfusbd_on_OUT(void *p, uint8_t ep)
 {
 	struct vsfusbd_device_t *device = p;
+	struct vsf_transaction_buffer_t *tbuffer = &vsfusbd_OUT_tbuffer[ep];
+	uint16_t pkg_size;
 	
 	if (0 == ep)
 	{
 		return vsfusbd_on_OUT0(device);
 	}
 	
-	return ERROR_OK;
+	if (device->drv->ep.is_OUT_dbuffer(ep))
+	{
+		device->drv->ep.switch_OUT_buffer(ep);
+	}
+	pkg_size = device->drv->ep.get_OUT_count(ep);
+	if ((tbuffer->position < tbuffer->buffer.size) && 
+		((tbuffer->position + pkg_size) < tbuffer->buffer.size))
+	{
+		device->drv->ep.read_OUT_buffer(ep, 
+						&tbuffer->buffer.buffer[tbuffer->position], pkg_size);
+		tbuffer->position += pkg_size;
+		return ERROR_OK;
+	}
+	return ERROR_FAIL;
 }
 
 RESULT vsfusbd_on_UNDERFLOW(void *p, uint8_t ep)
@@ -920,6 +1026,10 @@ RESULT vsfusbd_on_RESET(void *p)
 #if __VSF_DEBUG__
 	uint8_t num_iface;
 #endif
+	
+	memset(vsfusbd_IN_tbuffer, 0, sizeof(vsfusbd_IN_tbuffer));
+	memset(vsfusbd_OUT_tbuffer, 0, sizeof(vsfusbd_OUT_tbuffer));
+	memset(vsfusbd_IN_PkgNum, 0, sizeof(vsfusbd_IN_PkgNum));
 	
 	device->configuration = 0;
 	device->ctrl_handler.state = USB_CTRL_STAT_WAIT_SETUP;
