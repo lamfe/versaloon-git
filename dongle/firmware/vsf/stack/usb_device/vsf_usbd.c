@@ -940,7 +940,7 @@ static RESULT vsfusbd_on_IN(void *p, uint8_t ep)
 	struct vsfusbd_device_t *device = p;
 	struct vsf_transaction_buffer_t *tbuffer = &vsfusbd_IN_tbuffer[ep];
 	uint8_t *buffer_ptr = &tbuffer->buffer.buffer[tbuffer->position];
-	uint32_t remain_size;
+	uint32_t remain_size, pkg_thres;
 	uint16_t pkg_size;
 	
 	if (0 == ep)
@@ -953,8 +953,13 @@ static RESULT vsfusbd_on_IN(void *p, uint8_t ep)
 		if (device->drv->ep.is_IN_dbuffer(ep))
 		{
 			device->drv->ep.switch_IN_buffer(ep);
+			pkg_thres = 1;
 		}
-		if (vsfusbd_IN_PkgNum[ep] > 1)
+		else
+		{
+			pkg_thres = 0;
+		}
+		if (vsfusbd_IN_PkgNum[ep] > pkg_thres)
 		{
 			remain_size = tbuffer->buffer.size - tbuffer->position;
 			
@@ -971,6 +976,7 @@ static RESULT vsfusbd_on_IN(void *p, uint8_t ep)
 				device->drv->ep.set_IN_count(ep, 0);
 			}
 		}
+		device->drv->ep.set_IN_state(ep, USB_EP_STAT_ACK);
 	}
 	
 	return ERROR_OK;
