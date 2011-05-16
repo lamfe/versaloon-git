@@ -25,3 +25,16 @@ enum usb_CDC_req_t
 
 extern const struct vsfusbd_class_protocol_t vsfusbd_CDCMaster_class;
 extern const struct vsfusbd_class_protocol_t vsfusbd_CDCData_class;
+
+struct vsfusbd_CDC_param_t
+{
+	uint8_t usart_port;
+	uint8_t gpio_rts_port;
+	uint32_t gpio_rts_pin;
+	uint8_t gpio_dtr_port;
+	uint32_t gpio_dtr_pin;
+	
+	uint8_t ep_out;
+	uint8_t ep_in;
+};
+RESULT vsfusbd_CDC_set_param(struct vsfusbd_CDC_param_t *param);

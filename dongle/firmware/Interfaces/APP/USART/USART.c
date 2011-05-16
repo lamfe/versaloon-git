@@ -17,19 +17,18 @@
 #include "app_cfg.h"
 #if INTERFACE_USART_EN
 
+#include "HW/HW.h"
 #include "interfaces.h"
 #include "fifo.h"
 
-extern FIFO CDC_OUT_fifo;
-extern FIFO CDC_IN_fifo;
-uint8_t USBTOUSART_En = 0;
+FIFO USART_OUT_fifo;
+FIFO USART_IN_fifo;
 
 RESULT usart_init(uint8_t index)
 {
 	switch (index)
 	{
 	case 0:
-		USBTOUSART_En = 1;
 		return ERROR_OK;
 	default:
 		return ERROR_FAIL;
@@ -41,8 +40,7 @@ RESULT usart_fini(uint8_t index)
 	switch (index)
 	{
 	case 0:
-		CDC_IF_Fini();
-		USBTOUSART_En = 0;
+		USART_IF_Fini();
 		return ERROR_OK;
 	default:
 		return ERROR_FAIL;
@@ -55,9 +53,9 @@ RESULT usart_config(uint8_t index, uint32_t baudrate, uint8_t datalength,
 	switch (index)
 	{
 	case 0:
-		FIFO_Reset(&CDC_OUT_fifo);
-		FIFO_Reset(&CDC_IN_fifo);
-		CDC_IF_Setup(baudrate, datalength, paritybit, stopbit);
+		FIFO_Reset(&USART_OUT_fifo);
+		FIFO_Reset(&USART_IN_fifo);
+		USART_IF_Setup(baudrate, datalength, paritybit, stopbit);
 		return ERROR_OK;
 	default:
 		return ERROR_FAIL;
@@ -98,9 +96,9 @@ RESULT usart_receive(uint8_t index, uint8_t *buf, uint16_t len)
 			return ERROR_FAIL;
 		}
 		
-		if (FIFO_Get_Length(&CDC_IN_fifo) >= len)
+		if (FIFO_Get_Length(&USART_IN_fifo) >= len)
 		{
-			if (len == FIFO_Get_Buffer(&CDC_IN_fifo, buf, len))
+			if (len == FIFO_Get_Buffer(&USART_IN_fifo, buf, len))
 			{
 				return ERROR_OK;
 			}
@@ -128,10 +126,10 @@ RESULT usart_status(uint8_t index, struct usart_status_t *status)
 			return ERROR_FAIL;
 		}
 		
-		status->tx_buff_avail = FIFO_Get_AvailableLength(&CDC_OUT_fifo);
-		status->tx_buff_size = FIFO_Get_Length(&CDC_OUT_fifo);
-		status->rx_buff_avail = FIFO_Get_AvailableLength(&CDC_IN_fifo);
-		status->rx_buff_size = FIFO_Get_Length(&CDC_IN_fifo);
+		status->tx_buff_avail = FIFO_Get_AvailableLength(&USART_OUT_fifo);
+		status->tx_buff_size = FIFO_Get_Length(&USART_OUT_fifo);
+		status->rx_buff_avail = FIFO_Get_AvailableLength(&USART_IN_fifo);
+		status->rx_buff_size = FIFO_Get_Length(&USART_IN_fifo);
 		return ERROR_OK;
 	default:
 		return ERROR_FAIL;

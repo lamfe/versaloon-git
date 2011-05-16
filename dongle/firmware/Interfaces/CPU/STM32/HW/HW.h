@@ -82,3 +82,7 @@ extern volatile uint32_t usb_in_data_remain, usb_in_numofpackage;
 // Delay
 void DelayUS(uint32_t);
 void DelayMS(uint32_t);
+
+// USART
+void USART_IF_Fini(void);
+void USART_IF_Setup(uint32_t baudrate, uint8_t datatype, uint8_t paritytype, uint8_t stopbittype);

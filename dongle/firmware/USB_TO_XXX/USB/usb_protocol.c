@@ -1,6 +1,7 @@
 #include "app_cfg.h"
 
 #include "interfaces.h"
+#include "GPIO/GPIO.h"
 
 #include "usb_protocol.h"
 
@@ -315,5 +316,16 @@ struct vsfusbd_device_t usb_device =
 
 RESULT usb_protocol_init()
 {
+	struct vsfusbd_CDC_param_t CDC_param;
+	
+	CDC_param.usart_port = 0;
+	CDC_param.gpio_rts_port = 0;
+	CDC_param.gpio_rts_pin = GPIO_TDI;
+	CDC_param.gpio_dtr_port = 0;
+	CDC_param.gpio_dtr_pin = GPIO_TMS;
+	CDC_param.ep_out = 4;
+	CDC_param.ep_in = 4;
+	vsfusbd_CDC_set_param(&CDC_param);
+	
 	return vsfusbd_device_init(&usb_device);
 }
