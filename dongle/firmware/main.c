@@ -30,25 +30,20 @@
 int main(void)
 {
 	core_interfaces.init(NULL);
+	usb_protocol_init();
 
 	LED_GREEN_ON();
 	LED_USB_ON();
 
 	while(1)							// system main loop
 	{
-		if (CheckLocalHandler())
-		{
-			ProcessLocalHandler();
-		}
-		else if(cmd_len & 0x80000000)
+		if(cmd_len & 0x80000000)
 		{
 			// A valid USB package has been received
 			LED_USB_OFF();				// USB LED indicate the USB transmission
 
 			ProcessCommand(&buffer_out[0], cmd_len & 0xFFFF);
 
-#ifdef USB_OUT_EN
-#if USB_OUT_EN
 			if(rep_len > 0)
 			{
 				// indicate reply data is valid
@@ -61,12 +56,6 @@ int main(void)
 			}
 
 			count_out = 0;				// set USB receive pointer to 0
-#else
-			cmd_len = 0;
-#endif
-#else
-			cmd_len = 0;
-#endif
 		}
 		else
 		{
@@ -74,8 +63,6 @@ int main(void)
 			ProcessIdle();				// Idle loop
 		}
 
-#ifdef USB_OUT_EN
-#if USB_OUT_EN
 		if(rep_len & 0x80000000)		// there is valid data to be sent to PC
 		{
 			struct vsf_buffer_t buffer;
@@ -88,8 +75,6 @@ int main(void)
 			cmd_len = 0;
 			rep_len = 0;
 		}
-#endif
-#endif
 		LED_USB_ON();					// command processed, light USB LED
 	}
 }

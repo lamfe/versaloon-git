@@ -25,13 +25,6 @@
 
 uint8_t Versaloon_Ver[] = "Versaloon(" _HARDWARE_VER_STR ")by Simon(compiled on " __DATE__ ")";
 
-void BeforeInit(void){}
-
-void AfterInit(void)
-{
-	usb_protocol_init();
-}
-
 static void Versaloon_ProcessCommonCmd(uint8_t *dat, uint16_t len)
 {
 	switch(dat[0])
@@ -75,5 +68,3 @@ void ProcessCommand(uint8_t* dat, uint16_t len)
 }
 
 void ProcessIdle(void){}
-uint8_t CheckLocalHandler(void){return 0;}
-void ProcessLocalHandler(void){}
