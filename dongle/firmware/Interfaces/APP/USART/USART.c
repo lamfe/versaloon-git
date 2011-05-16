@@ -21,14 +21,17 @@
 #include "interfaces.h"
 #include "fifo.h"
 
-FIFO USART_OUT_fifo;
-FIFO USART_IN_fifo;
+uint8_t USART_TX_buff[256], USART_RX_buff[256];
+FIFO USART_TX_fifo = {USART_TX_buff, sizeof(USART_TX_buff), 0, 0};
+FIFO USART_RX_fifo = {USART_RX_buff, sizeof(USART_RX_buff), 0, 0};
 
 RESULT usart_init(uint8_t index)
 {
 	switch (index)
 	{
 	case 0:
+		FIFO_Reset(&USART_TX_fifo);
+		FIFO_Reset(&USART_RX_fifo);
 		return ERROR_OK;
 	default:
 		return ERROR_FAIL;
@@ -53,8 +56,6 @@ RESULT usart_config(uint8_t index, uint32_t baudrate, uint8_t datalength,
 	switch (index)
 	{
 	case 0:
-		FIFO_Reset(&USART_OUT_fifo);
-		FIFO_Reset(&USART_IN_fifo);
 		USART_IF_Setup(baudrate, datalength, paritybit, stopbit);
 		return ERROR_OK;
 	default:
@@ -64,8 +65,6 @@ RESULT usart_config(uint8_t index, uint32_t baudrate, uint8_t datalength,
 
 RESULT usart_send(uint8_t index, uint8_t *buf, uint16_t len)
 {
-	uint16_t i;
-
 	switch (index)
 	{
 	case 0:
@@ -74,11 +73,20 @@ RESULT usart_send(uint8_t index, uint8_t *buf, uint16_t len)
 			return ERROR_FAIL;
 		}
 		
-		for (i = 0; i < len; i++)
+		if (FIFO_Get_Length(&USART_TX_fifo) >= len)
 		{
-//			while (USART_GetFlagStatus(USART_DEF_PORT, USART_FLAG_TC) != SET);
-			while (USART_GetFlagStatus(USART_DEF_PORT, USART_FLAG_TXE) != SET);
-			USART_SendData(USART_DEF_PORT, buf[i]);
+			if (len == FIFO_Add_Buffer(&USART_TX_fifo, buf, len))
+			{
+				return ERROR_OK;
+			}
+			else
+			{
+				return ERROR_FAIL;
+			}
+		}
+		else
+		{
+			return ERROR_FAIL;
 		}
 		return ERROR_OK;
 	default:
@@ -96,9 +104,9 @@ RESULT usart_receive(uint8_t index, uint8_t *buf, uint16_t len)
 			return ERROR_FAIL;
 		}
 		
-		if (FIFO_Get_Length(&USART_IN_fifo) >= len)
+		if (FIFO_Get_Length(&USART_RX_fifo) >= len)
 		{
-			if (len == FIFO_Get_Buffer(&USART_IN_fifo, buf, len))
+			if (len == FIFO_Get_Buffer(&USART_RX_fifo, buf, len))
 			{
 				return ERROR_OK;
 			}
@@ -126,10 +134,26 @@ RESULT usart_status(uint8_t index, struct usart_status_t *status)
 			return ERROR_FAIL;
 		}
 		
-		status->tx_buff_avail = FIFO_Get_AvailableLength(&USART_OUT_fifo);
-		status->tx_buff_size = FIFO_Get_Length(&USART_OUT_fifo);
-		status->rx_buff_avail = FIFO_Get_AvailableLength(&USART_IN_fifo);
-		status->rx_buff_size = FIFO_Get_Length(&USART_IN_fifo);
+		status->tx_buff_avail = FIFO_Get_AvailableLength(&USART_TX_fifo);
+		status->tx_buff_size = FIFO_Get_Length(&USART_TX_fifo);
+		status->rx_buff_avail = FIFO_Get_AvailableLength(&USART_RX_fifo);
+		status->rx_buff_size = FIFO_Get_Length(&USART_RX_fifo);
+		return ERROR_OK;
+	default:
+		return ERROR_FAIL;
+	}
+}
+
+RESULT usart_poll(uint8_t index)
+{
+	switch (index)
+	{
+	case 0:
+		if ((USART_GetFlagStatus(USART_DEF_PORT, USART_FLAG_TC) == SET) && 
+			FIFO_Get_Length(&USART_TX_fifo))
+		{
+			USART_SendData(USART_DEF_PORT, FIFO_Get_Byte(&USART_TX_fifo));
+		}
 		return ERROR_OK;
 	default:
 		return ERROR_FAIL;

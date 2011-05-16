@@ -13,20 +13,56 @@ struct vsfusbd_CDC_line_coding_t vsfusbd_CDC_LineCoding =
 	115200, 0, 0, 8
 };
 uint8_t vsfusbd_CDC_LineCoding_buffer[7];
+volatile bool vsfusbd_CDC_OutEn = true;
 
 static RESULT vsfusbd_CDCData_OUT_hanlder(void *p, uint8_t ep)
 {
 	struct vsfusbd_device_t *device = p;
+	uint16_t pkg_size;
+	uint8_t buffer[64];
+	struct usart_status_t status;
 	
+	pkg_size = device->drv->ep.get_OUT_count(ep);
+	if (pkg_size > 64)
+	{
+		return ERROR_FAIL;
+	}
+	device->drv->ep.read_OUT_buffer(ep, buffer, pkg_size);
+	if (vsfusbd_CDC_OutEn)
+	{
+		device->drv->ep.set_OUT_state(ep, USB_EP_STAT_ACK);
+	}
 	
-	
-	return ERROR_OK;
+	interfaces->usart.status(vsfusbd_CDC_param.usart_port, &status);
+	if (status.tx_buff_avail < 64)
+	{
+		vsfusbd_CDC_OutEn = false;
+	}
+	return interfaces->usart.send(vsfusbd_CDC_param.usart_port, buffer, pkg_size);
 }
+
 static RESULT vsfusbd_CDCData_IN_hanlder(void *p, uint8_t ep)
 {
 	struct vsfusbd_device_t *device = p;
+	uint16_t pkg_size;
+	uint8_t buffer[64];
+	struct usart_status_t status;
 	
-	
+	interfaces->usart.status(vsfusbd_CDC_param.usart_port, &status);
+	if (status.rx_buff_size)
+	{
+		pkg_size = (status.rx_buff_size > sizeof(buffer)) ? sizeof(buffer) : 
+				status.rx_buff_size;
+		interfaces->usart.receive(vsfusbd_CDC_param.usart_port, buffer, pkg_size);
+		device->drv->ep.write_IN_buffer(ep, buffer, pkg_size);
+		device->drv->ep.set_IN_count(ep, pkg_size);
+		device->drv->ep.set_IN_state(ep, USB_EP_STAT_ACK);
+	}
+	else
+	{
+		device->drv->ep.set_IN_count(ep, 0);
+		device->drv->ep.set_IN_state(ep, USB_EP_STAT_ACK);
+	}
 	
 	return ERROR_OK;
 }
@@ -36,8 +72,8 @@ static RESULT vsfusbd_CDCData_class_init(struct vsfusbd_device_t *device)
 	uint8_t port;
 	uint32_t pin;
 	
-	if ((ERROR_OK != device->drv->ep.set_IN_handler(vsfusbd_CDC_param.ep_in, vsfusbd_CDCData_OUT_hanlder)) || 
-		(ERROR_OK != device->drv->ep.set_OUT_handler(vsfusbd_CDC_param.ep_out, vsfusbd_CDCData_IN_hanlder)))
+	if ((ERROR_OK != device->drv->ep.set_IN_handler(vsfusbd_CDC_param.ep_in, vsfusbd_CDCData_IN_hanlder)) || 
+		(ERROR_OK != device->drv->ep.set_OUT_handler(vsfusbd_CDC_param.ep_out, vsfusbd_CDCData_OUT_hanlder)))
 	{
 		return ERROR_FAIL;
 	}
@@ -52,17 +88,25 @@ static RESULT vsfusbd_CDCData_class_init(struct vsfusbd_device_t *device)
 	interfaces->gpio.config(port, pin, pin, 0, 0);
 	port = vsfusbd_CDC_param.usart_port;
 	interfaces->usart.init(port);
-	interfaces->usart.config(port, vsfusbd_CDC_LineCoding.bitrate, 
+	return interfaces->usart.config(port, vsfusbd_CDC_LineCoding.bitrate, 
 		vsfusbd_CDC_LineCoding.datatype, vsfusbd_CDC_LineCoding.paritytype, 
 		vsfusbd_CDC_LineCoding.stopbittype, 0);
-	
-	return ERROR_OK;
 }
 
 static RESULT vsfusbd_CDCData_class_poll(struct vsfusbd_device_t *device)
 {
-	
-	return ERROR_OK;
+	if (!vsfusbd_CDC_OutEn)
+	{
+		struct usart_status_t status;
+		interfaces->usart.status(vsfusbd_CDC_param.usart_port, &status);
+		if (status.tx_buff_avail >= 64)
+		{
+			vsfusbd_CDC_OutEn = true;
+			device->drv->ep.set_OUT_state(vsfusbd_CDC_param.ep_out, 
+							USB_EP_STAT_ACK);
+		}
+	}
+	return interfaces->usart.poll(vsfusbd_CDC_param.usart_port);
 }
 
 static RESULT vsfusbd_CDCMaster_GetLineCoding_prepare(
@@ -108,12 +152,16 @@ static RESULT vsfusbd_CDCMaster_SetLineCoding_prepare(
 static RESULT vsfusbd_CDCMaster_SetLineCoding_process(
 	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
 {
+	uint8_t port;
+	
 	vsfusbd_CDC_LineCoding.bitrate = GET_LE_U32(&buffer->buffer[0]);
 	vsfusbd_CDC_LineCoding.stopbittype = buffer->buffer[4];
 	vsfusbd_CDC_LineCoding.paritytype = buffer->buffer[5];
 	vsfusbd_CDC_LineCoding.datatype = buffer->buffer[6];
-	
-	return ERROR_OK;
+	port = vsfusbd_CDC_param.usart_port;
+	return interfaces->usart.config(port, vsfusbd_CDC_LineCoding.bitrate, 
+		vsfusbd_CDC_LineCoding.datatype, vsfusbd_CDC_LineCoding.paritytype, 
+		vsfusbd_CDC_LineCoding.stopbittype, 0);
 }
 
 static RESULT vsfusbd_CDCMaster_SetControlLineState_prepare(

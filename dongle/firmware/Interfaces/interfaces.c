@@ -171,7 +171,8 @@ static const struct interfaces_info_t app_interfaces =
 		usart_config,
 		usart_send,
 		usart_receive,
-		usart_status
+		usart_status,
+		usart_poll
 	}
 #endif
 #if INTERFACE_SPI_EN

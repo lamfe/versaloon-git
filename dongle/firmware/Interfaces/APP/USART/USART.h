@@ -21,3 +21,4 @@ RESULT usart_config(uint8_t index, uint32_t baudrate, uint8_t datalength,
 RESULT usart_send(uint8_t index, uint8_t *buf, uint16_t len);
 RESULT usart_receive(uint8_t index, uint8_t *buf, uint16_t len);
 RESULT usart_status(uint8_t index, struct usart_status_t *status);
+RESULT usart_poll(uint8_t index);
