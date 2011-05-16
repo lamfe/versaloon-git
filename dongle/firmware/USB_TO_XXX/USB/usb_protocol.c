@@ -299,8 +299,8 @@ static const struct vsfusbd_class_protocol_t Versaloon_Protocol =
 static const struct vsfusbd_iface_t ifaces[] = 
 {
 	{0, (struct vsfusbd_class_protocol_t *)&Versaloon_Protocol},
-	{0, NULL},
-	{0, NULL}
+	{0, (struct vsfusbd_class_protocol_t *)&vsfusbd_CDCMaster_class},
+	{0, (struct vsfusbd_class_protocol_t *)&vsfusbd_CDCData_class}
 };
 static const struct vsfusbd_config_t config0[] = 
 {

@@ -518,7 +518,7 @@ static RESULT vsfusbd_stdreq_set_configuration_process(
 {
 	struct vsfusbd_ctrl_request_t *request = &device->ctrl_handler.request;
 	
-	device->configuration = request->value;
+	device->configuration = request->value - 1;
 	return ERROR_OK;
 }
 
@@ -715,7 +715,7 @@ static struct vsfusbd_setup_filter_t *vsfusbd_get_request_filter(
 										&device->config[device->configuration];
 		
 		if ((iface >= config->num_of_ifaces) || 
-			(config->iface[iface].class_protocol != NULL))
+			(NULL == config->iface[iface].class_protocol))
 		{
 			return NULL;
 		}
