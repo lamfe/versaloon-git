@@ -1,8 +1,10 @@
 #include "app_cfg.h"
 #include "HW.h"
+
 #if POWER_OUT_EN
 #	include "PowerExt.h"
 #endif
+#include "fifo.h"
 
 uint16_t Vtarget = 0;
 
@@ -37,6 +39,109 @@ void GPIO_SetMode(GPIO_TypeDef* GPIOx, uint8_t pin, uint8_t mode)
 		}
 	}
 }
+
+#if INTERFACE_USART_EN
+extern FIFO USART_OUT_fifo;
+extern FIFO USART_IN_fifo;
+
+static uint32_t __USART_if_inited = 0;
+void USART_IF_Fini(void)
+{
+	NVIC_InitTypeDef NVIC_InitStructure;
+
+	/* Disable the USART1 Interrupt */
+	NVIC_InitStructure.NVIC_IRQChannel = USART_IRQ;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+	NVIC_InitStructure.NVIC_IRQChannelCmd = DISABLE;
+	NVIC_Init(&NVIC_InitStructure);
+
+	USART_DeInit(USART_DEF_PORT);
+#if USART_AUX_PORT_EN
+	USART_AUX_Port_Fini();
+#endif
+	USART_Port_Fini();
+
+	while (__USART_if_inited)
+	{
+		__USART_if_inited--;
+		PWREXT_Release();
+		GLOBAL_OUTPUT_Release();
+	}
+}
+
+void USART_IF_Setup(uint32_t baudrate, uint8_t datatype, uint8_t paritytype, uint8_t stopbittype)
+{
+	USART_InitTypeDef USART_InitStructure;
+	NVIC_InitTypeDef NVIC_InitStructure;
+
+	FIFO_Reset(&USART_OUT_fifo);
+	FIFO_Reset(&USART_IN_fifo);
+
+	if(!__USART_if_inited)
+	{
+		USART_DeInit(USART_DEF_PORT);
+#if USART_AUX_PORT_EN
+		USART_AUX_Port_Init();
+#endif
+		USART_Port_Init();
+	}
+	__USART_if_inited++;
+
+	/* Enable the USART1 Interrupt */
+	NVIC_InitStructure.NVIC_IRQChannel = USART_IRQ;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+	NVIC_Init(&NVIC_InitStructure);
+
+	USART_InitStructure.USART_BaudRate = baudrate;
+	switch(stopbittype)
+	{
+	case 0:
+		USART_InitStructure.USART_StopBits = USART_StopBits_1;
+		break;
+	case 1:
+		USART_InitStructure.USART_StopBits = USART_StopBits_1_5;
+		break;
+	case 2:
+		USART_InitStructure.USART_StopBits = USART_StopBits_2;
+		break;
+	default:
+		USART_InitStructure.USART_StopBits = USART_StopBits_1;
+		break;
+	}
+	switch(paritytype)
+	{
+	case 0:
+		USART_InitStructure.USART_Parity = USART_Parity_No;
+		USART_InitStructure.USART_WordLength = USART_WordLength_8b;
+		break;
+	case 1:
+		USART_InitStructure.USART_Parity = USART_Parity_Odd;
+		USART_InitStructure.USART_WordLength = USART_WordLength_9b;
+		break;
+	case 2:
+		USART_InitStructure.USART_Parity = USART_Parity_Even;
+		USART_InitStructure.USART_WordLength = USART_WordLength_9b;
+		break;
+	default:
+		USART_InitStructure.USART_Parity = USART_Parity_No;
+		USART_InitStructure.USART_WordLength = USART_WordLength_8b;
+		break;
+	}
+	USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
+	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None; 
+
+	USART_Init(USART_DEF_PORT, &USART_InitStructure);
+	USART_ITConfig(USART_DEF_PORT, USART_IT_RXNE, ENABLE);
+//	USART_ITConfig(USART_DEF_PORT, USART_IT_TC, ENABLE);
+	USART_Cmd(USART_DEF_PORT, ENABLE);
+
+	GLOBAL_OUTPUT_Acquire();
+	PWREXT_Acquire();
+}
+#endif
 
 /*******************************************************************************
 * Function Name	: Sys_Init

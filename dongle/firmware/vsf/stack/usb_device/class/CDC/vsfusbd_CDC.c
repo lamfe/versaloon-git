@@ -7,14 +7,61 @@
 
 #include "vsfusbd_CDC.h"
 
+struct vsfusbd_CDC_param_t vsfusbd_CDC_param;
 struct vsfusbd_CDC_line_coding_t vsfusbd_CDC_LineCoding = 
 {
 	115200, 0, 0, 8
 };
 uint8_t vsfusbd_CDC_LineCoding_buffer[7];
 
+static RESULT vsfusbd_CDCData_OUT_hanlder(void *p, uint8_t ep)
+{
+	struct vsfusbd_device_t *device = p;
+	
+	
+	
+	return ERROR_OK;
+}
+static RESULT vsfusbd_CDCData_IN_hanlder(void *p, uint8_t ep)
+{
+	struct vsfusbd_device_t *device = p;
+	
+	
+	
+	return ERROR_OK;
+}
+
 static RESULT vsfusbd_CDCData_class_init(struct vsfusbd_device_t *device)
 {
+	uint8_t port;
+	uint32_t pin;
+	
+	if ((ERROR_OK != device->drv->ep.set_IN_handler(vsfusbd_CDC_param.ep_in, vsfusbd_CDCData_OUT_hanlder)) || 
+		(ERROR_OK != device->drv->ep.set_OUT_handler(vsfusbd_CDC_param.ep_out, vsfusbd_CDCData_IN_hanlder)))
+	{
+		return ERROR_FAIL;
+	}
+	
+	port = vsfusbd_CDC_param.gpio_rts_port;
+	pin = vsfusbd_CDC_param.gpio_rts_pin;
+	interfaces->gpio.init(port);
+	interfaces->gpio.config(port, pin, pin, 0, 0);
+	port = vsfusbd_CDC_param.gpio_dtr_port;
+	pin = vsfusbd_CDC_param.gpio_dtr_pin;
+	interfaces->gpio.init(port);
+	interfaces->gpio.config(port, pin, pin, 0, 0);
+	port = vsfusbd_CDC_param.usart_port;
+	interfaces->usart.init(port);
+	interfaces->usart.config(port, vsfusbd_CDC_LineCoding.bitrate, 
+		vsfusbd_CDC_LineCoding.datatype, vsfusbd_CDC_LineCoding.paritytype, 
+		vsfusbd_CDC_LineCoding.stopbittype, 0);
+	
+	return ERROR_OK;
+}
+
+static RESULT vsfusbd_CDCData_class_poll(struct vsfusbd_device_t *device)
+{
+	
 	return ERROR_OK;
 }
 
@@ -73,13 +120,34 @@ static RESULT vsfusbd_CDCMaster_SetControlLineState_prepare(
 	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
 {
 	struct vsfusbd_ctrl_request_t *request = &device->ctrl_handler.request;
+	uint8_t port;
+	uint32_t pin;
 	
 	if ((request->length != 0) || (request->value & USBCDC_CONTROLLINE_MASK))
 	{
 		return ERROR_FAIL;
 	}
 	
-	
+	port = vsfusbd_CDC_param.gpio_dtr_port;
+	pin = vsfusbd_CDC_param.gpio_dtr_pin;
+	if (request->value & USBCDC_CONTROLLINE_DTR)
+	{
+		interfaces->gpio.out(port, pin, pin);
+	}
+	else
+	{
+		interfaces->gpio.out(port, pin, 0);
+	}
+	port = vsfusbd_CDC_param.gpio_rts_port;
+	pin = vsfusbd_CDC_param.gpio_rts_pin;
+	if (request->value & USBCDC_CONTROLLINE_RTS)
+	{
+		interfaces->gpio.out(port, pin, pin);
+	}
+	else
+	{
+		interfaces->gpio.out(port, pin, 0);
+	}
 	
 	return ERROR_OK;
 }
@@ -148,5 +216,11 @@ const struct vsfusbd_class_protocol_t vsfusbd_CDCData_class =
 	NULL,
 	NULL,
 	
-	vsfusbd_CDCData_class_init, NULL, NULL
+	vsfusbd_CDCData_class_init, NULL, vsfusbd_CDCData_class_poll
 };
+
+RESULT vsfusbd_CDC_set_param(struct vsfusbd_CDC_param_t *param)
+{
+	vsfusbd_CDC_param = *param;
+	return ERROR_OK;
+}
