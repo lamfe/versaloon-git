@@ -41,6 +41,7 @@ struct interface_usart_t
 	RESULT (*send)(uint8_t index, uint8_t *buf, uint16_t len);
 	RESULT (*receive)(uint8_t index, uint8_t *buf, uint16_t len);
 	RESULT (*status)(uint8_t index, struct usart_status_t *status);
+	RESULT (*poll)(uint8_t index);
 };
 
 #define SPI_CPOL_MASK			0x20

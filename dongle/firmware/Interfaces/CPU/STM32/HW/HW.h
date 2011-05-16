@@ -86,3 +86,4 @@ void DelayMS(uint32_t);
 // USART
 void USART_IF_Fini(void);
 void USART_IF_Setup(uint32_t baudrate, uint8_t datatype, uint8_t paritytype, uint8_t stopbittype);
+void USART_IF_RX_Int(uint8_t dat);

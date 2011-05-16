@@ -201,6 +201,12 @@ void USBWakeUp_IRQHandler(void)
 *******************************************************************************/
 ROOTFUNC void USART1_IRQHandler(void)
 {
+#if INTERFACE_USART_EN
+  if(USART_GetITStatus(USART1, USART_IT_RXNE) != RESET)
+  {
+    USART_IF_RX_Int((uint8_t)USART_ReceiveData(USART1));
+  }
+#endif
 }
 
 /**

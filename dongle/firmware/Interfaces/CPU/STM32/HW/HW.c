@@ -41,10 +41,9 @@ void GPIO_SetMode(GPIO_TypeDef* GPIOx, uint8_t pin, uint8_t mode)
 }
 
 #if INTERFACE_USART_EN
-extern FIFO USART_OUT_fifo;
-extern FIFO USART_IN_fifo;
+extern FIFO USART_TX_fifo;
+extern FIFO USART_RX_fifo;
 
-static uint32_t __USART_if_inited = 0;
 void USART_IF_Fini(void)
 {
 	NVIC_InitTypeDef NVIC_InitStructure;
@@ -57,17 +56,7 @@ void USART_IF_Fini(void)
 	NVIC_Init(&NVIC_InitStructure);
 
 	USART_DeInit(USART_DEF_PORT);
-#if USART_AUX_PORT_EN
-	USART_AUX_Port_Fini();
-#endif
 	USART_Port_Fini();
-
-	while (__USART_if_inited)
-	{
-		__USART_if_inited--;
-		PWREXT_Release();
-		GLOBAL_OUTPUT_Release();
-	}
 }
 
 void USART_IF_Setup(uint32_t baudrate, uint8_t datatype, uint8_t paritytype, uint8_t stopbittype)
@@ -75,18 +64,8 @@ void USART_IF_Setup(uint32_t baudrate, uint8_t datatype, uint8_t paritytype, uin
 	USART_InitTypeDef USART_InitStructure;
 	NVIC_InitTypeDef NVIC_InitStructure;
 
-	FIFO_Reset(&USART_OUT_fifo);
-	FIFO_Reset(&USART_IN_fifo);
-
-	if(!__USART_if_inited)
-	{
-		USART_DeInit(USART_DEF_PORT);
-#if USART_AUX_PORT_EN
-		USART_AUX_Port_Init();
-#endif
-		USART_Port_Init();
-	}
-	__USART_if_inited++;
+	USART_DeInit(USART_DEF_PORT);
+	USART_Port_Init();
 
 	/* Enable the USART1 Interrupt */
 	NVIC_InitStructure.NVIC_IRQChannel = USART_IRQ;
@@ -135,12 +114,18 @@ void USART_IF_Setup(uint32_t baudrate, uint8_t datatype, uint8_t paritytype, uin
 
 	USART_Init(USART_DEF_PORT, &USART_InitStructure);
 	USART_ITConfig(USART_DEF_PORT, USART_IT_RXNE, ENABLE);
-//	USART_ITConfig(USART_DEF_PORT, USART_IT_TC, ENABLE);
 	USART_Cmd(USART_DEF_PORT, ENABLE);
-
-	GLOBAL_OUTPUT_Acquire();
-	PWREXT_Acquire();
 }
+
+void USART_IF_RX_Int(uint8_t dat)
+{
+	if(FIFO_Add_Byte(&USART_RX_fifo, dat) != 1)
+	{
+		// OVERFLOW
+		LED_RED_ON();
+	}
+}
+
 #endif
 
 /*******************************************************************************
