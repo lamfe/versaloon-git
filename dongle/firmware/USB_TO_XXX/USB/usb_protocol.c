@@ -4,6 +4,12 @@
 
 #include "usb_protocol.h"
 
+uint8_t buffer_out[USB_DATA_BUFF_SIZE], asyn_rx_buf[ASYN_DATA_BUFF_SIZE];
+volatile uint32_t count_out = 0;
+volatile uint32_t usb_ovf = 0;
+volatile uint32_t cmd_len = 0;
+volatile uint32_t rep_len = 0;
+
 static RESULT Versaloon_OUT_hanlder(void *p, uint8_t ep)
 {
 	struct vsfusbd_device_t *device = p;

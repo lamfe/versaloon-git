@@ -1003,6 +1003,7 @@ static RESULT vsfusbd_on_OUT(void *p, uint8_t ep)
 	{
 		device->drv->ep.read_OUT_buffer(ep, 
 						&tbuffer->buffer.buffer[tbuffer->position], pkg_size);
+		device->drv->ep.set_OUT_state(ep, USB_EP_STAT_ACK);
 		tbuffer->position += pkg_size;
 		return ERROR_OK;
 	}

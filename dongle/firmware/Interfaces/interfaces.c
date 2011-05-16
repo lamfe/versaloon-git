@@ -370,9 +370,7 @@ const struct interfaces_info_t *interfaces = &app_interfaces;
 
 static RESULT core_interface_init(void *p)
 {
-	BeforeInit();
 	Sys_Init();
-	AfterInit();
 	return ERROR_OK;
 }
 

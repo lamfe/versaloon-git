@@ -4,20 +4,6 @@
 #	include "PowerExt.h"
 #endif
 
-#include "usb_regs.h"
-#include "usb_mem.h"
-#define USB_DATA_SIZE		64
-
-uint8_t buffer_out[USB_DATA_BUFF_SIZE], *buffer_in = NULL;
-volatile uint32_t count_out = 0;
-volatile uint32_t usb_in_data_remain = 0, usb_in_numofpackage = 0;
-volatile uint32_t buffer_ptr = 0;
-volatile uint32_t usb_ovf = 0;
-
-volatile uint32_t cmd_len = 0;
-volatile uint32_t rep_len = 0;
-
-uint8_t asyn_rx_buf[ASYN_DATA_BUFF_SIZE];
 uint16_t Vtarget = 0;
 
 void GPIO_SetMode(GPIO_TypeDef* GPIOx, uint8_t pin, uint8_t mode)
