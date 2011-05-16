@@ -219,7 +219,7 @@ RESULT vsfusbd_ep_out(struct vsfusbd_device_t *device, uint8_t ep,
 
 
 // standard request handler
-static RESULT vsfusbd_stdreq_prepare_0(
+RESULT vsfusbd_request_prepare_0(
 		struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
 {
 	buffer->buffer = NULL;
@@ -326,7 +326,7 @@ static RESULT vsfusbd_stdreq_clear_device_feature_prepare(
 	}
 	
 	device->feature &= ~USB_CFGATTR_REMOTE_WEAKUP;
-	return vsfusbd_stdreq_prepare_0(device, buffer);
+	return vsfusbd_request_prepare_0(device, buffer);
 }
 static RESULT vsfusbd_stdreq_clear_device_feature_process(
 		struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
@@ -337,7 +337,7 @@ static RESULT vsfusbd_stdreq_clear_device_feature_process(
 static RESULT vsfusbd_stdreq_clear_interface_feature_prepare(
 		struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
 {
-	return vsfusbd_stdreq_prepare_0(device, buffer);
+	return vsfusbd_request_prepare_0(device, buffer);
 }
 static RESULT vsfusbd_stdreq_clear_interface_feature_process(
 		struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
@@ -366,7 +366,7 @@ static RESULT vsfusbd_stdreq_clear_endpoint_feature_prepare(
 	{
 		device->drv->ep.set_OUT_state(ep_num, USB_EP_STAT_ACK);
 	}
-	return vsfusbd_stdreq_prepare_0(device, buffer);
+	return vsfusbd_request_prepare_0(device, buffer);
 }
 static RESULT vsfusbd_stdreq_clear_endpoint_feature_process(
 		struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
@@ -386,7 +386,7 @@ static RESULT vsfusbd_stdreq_set_device_feature_prepare(
 	}
 	
 	device->feature |= USB_CFGATTR_REMOTE_WEAKUP;
-	return vsfusbd_stdreq_prepare_0(device, buffer);
+	return vsfusbd_request_prepare_0(device, buffer);
 }
 static RESULT vsfusbd_stdreq_set_device_feature_process(
 		struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
@@ -397,7 +397,7 @@ static RESULT vsfusbd_stdreq_set_device_feature_process(
 static RESULT vsfusbd_stdreq_set_interface_feature_prepare(
 		struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
 {
-	return vsfusbd_stdreq_prepare_0(device, buffer);
+	return vsfusbd_request_prepare_0(device, buffer);
 }
 static RESULT vsfusbd_stdreq_set_interface_feature_process(
 		struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
@@ -427,7 +427,7 @@ static RESULT vsfusbd_stdreq_set_address_prepare(
 		return ERROR_FAIL;
 	}
 	
-	return vsfusbd_stdreq_prepare_0(device, buffer);
+	return vsfusbd_request_prepare_0(device, buffer);
 }
 static RESULT vsfusbd_stdreq_set_address_process(
 		struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
@@ -511,7 +511,7 @@ static RESULT vsfusbd_stdreq_set_configuration_prepare(
 		return ERROR_FAIL;
 	}
 	
-	return vsfusbd_stdreq_prepare_0(device, buffer);
+	return vsfusbd_request_prepare_0(device, buffer);
 }
 static RESULT vsfusbd_stdreq_set_configuration_process(
 		struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
@@ -561,7 +561,7 @@ static RESULT vsfusbd_stdreq_set_interface_prepare(
 	}
 	
 	config->iface[iface_idx].alternate_setting = alternate_setting;
-	return vsfusbd_stdreq_prepare_0(device, buffer);
+	return vsfusbd_request_prepare_0(device, buffer);
 }
 static RESULT vsfusbd_stdreq_set_interface_process(
 		struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)

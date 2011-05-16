@@ -21,6 +21,13 @@ static RESULT vsfusbd_CDCData_class_init(struct vsfusbd_device_t *device)
 static RESULT vsfusbd_CDCMaster_GetLineCoding_prepare(
 	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
 {
+	struct vsfusbd_ctrl_request_t *request = &device->ctrl_handler.request;
+	
+	if ((request->length != 7) || (request->value != 0))
+	{
+		return ERROR_FAIL;
+	}
+	
 	SET_LE_U32(&vsfusbd_CDC_LineCoding_buffer[0], 
 				vsfusbd_CDC_LineCoding.bitrate);
 	vsfusbd_CDC_LineCoding_buffer[4] = vsfusbd_CDC_LineCoding.stopbittype;
@@ -28,6 +35,7 @@ static RESULT vsfusbd_CDCMaster_GetLineCoding_prepare(
 	vsfusbd_CDC_LineCoding_buffer[6] = vsfusbd_CDC_LineCoding.datatype;
 	buffer->buffer = vsfusbd_CDC_LineCoding_buffer;
 	buffer->size = 7;
+	
 	return ERROR_OK;
 }
 static RESULT vsfusbd_CDCMaster_GetLineCoding_process(
@@ -36,9 +44,43 @@ static RESULT vsfusbd_CDCMaster_GetLineCoding_process(
 	return ERROR_OK;
 }
 
+static RESULT vsfusbd_CDCMaster_SetLineCoding_prepare(
+	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
+{
+	struct vsfusbd_ctrl_request_t *request = &device->ctrl_handler.request;
+	
+	if ((request->length != 7) || (request->value != 0))
+	{
+		return ERROR_FAIL;
+	}
+	
+	buffer->buffer = vsfusbd_CDC_LineCoding_buffer;
+	buffer->size = 7;
+	return ERROR_OK;
+}
+static RESULT vsfusbd_CDCMaster_SetLineCoding_process(
+	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
+{
+	vsfusbd_CDC_LineCoding.bitrate = GET_LE_U32(&buffer->buffer[0]);
+	vsfusbd_CDC_LineCoding.stopbittype = buffer->buffer[4];
+	vsfusbd_CDC_LineCoding.paritytype = buffer->buffer[5];
+	vsfusbd_CDC_LineCoding.datatype = buffer->buffer[6];
+	
+	return ERROR_OK;
+}
+
 static RESULT vsfusbd_CDCMaster_SetControlLineState_prepare(
 	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
 {
+	struct vsfusbd_ctrl_request_t *request = &device->ctrl_handler.request;
+	
+	if ((request->length != 0) || (request->value & USBCDC_CONTROLLINE_MASK))
+	{
+		return ERROR_FAIL;
+	}
+	
+	
+	
 	return ERROR_OK;
 }
 static RESULT vsfusbd_CDCMaster_SetControlLineState_process(
@@ -47,7 +89,25 @@ static RESULT vsfusbd_CDCMaster_SetControlLineState_process(
 	return ERROR_OK;
 }
 
-static struct vsfusbd_setup_filter_t vsfusbd_CDCDATA_class_setup[] = 
+static RESULT vsfusbd_CDCMaster_SendBreak_prepare(
+	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
+{
+	struct vsfusbd_ctrl_request_t *request = &device->ctrl_handler.request;
+	
+	if (request->length != 0)
+	{
+		return ERROR_FAIL;
+	}
+	
+	return ERROR_OK;
+}
+static RESULT vsfusbd_CDCMaster_SendBreak_process(
+	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
+{
+	return ERROR_OK;
+}
+
+static struct vsfusbd_setup_filter_t vsfusbd_CDCMaster_class_setup[] = 
 {
 	{
 		USB_REQ_DIR_DTOH | USB_REQ_TYPE_CLASS | USB_REQ_RECP_INTERFACE,
@@ -57,19 +117,30 @@ static struct vsfusbd_setup_filter_t vsfusbd_CDCDATA_class_setup[] =
 	},
 	{
 		USB_REQ_DIR_HTOD | USB_REQ_TYPE_CLASS | USB_REQ_RECP_INTERFACE,
+		USB_CDCREQ_SET_LINE_CODING,
+		vsfusbd_CDCMaster_SetLineCoding_prepare,
+		vsfusbd_CDCMaster_SetLineCoding_process
+	},
+	{
+		USB_REQ_DIR_HTOD | USB_REQ_TYPE_CLASS | USB_REQ_RECP_INTERFACE,
 		USB_CDCREQ_SET_CONTROL_LINE_STATE,
 		vsfusbd_CDCMaster_SetControlLineState_prepare,
 		vsfusbd_CDCMaster_SetControlLineState_process
+	},
+	{
+		USB_REQ_DIR_HTOD | USB_REQ_TYPE_CLASS | USB_REQ_RECP_INTERFACE,
+		USB_CDCREQ_SEND_BREAK,
+		vsfusbd_CDCMaster_SendBreak_prepare,
+		vsfusbd_CDCMaster_SendBreak_process
 	}
 };
 
 const struct vsfusbd_class_protocol_t vsfusbd_CDCMaster_class = 
 {
 	NULL,
-	vsfusbd_CDCDATA_class_setup,
+	vsfusbd_CDCMaster_class_setup,
 	
-	NULL,
-	NULL, NULL
+	NULL, NULL, NULL
 };
 
 const struct vsfusbd_class_protocol_t vsfusbd_CDCData_class = 
@@ -77,6 +148,5 @@ const struct vsfusbd_class_protocol_t vsfusbd_CDCData_class =
 	NULL,
 	NULL,
 	
-	vsfusbd_CDCData_class_init,
-	NULL, NULL
+	vsfusbd_CDCData_class_init, NULL, NULL
 };
