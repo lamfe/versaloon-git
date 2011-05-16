@@ -759,8 +759,6 @@
 											RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, DISABLE);\
 											GPIO_SetMode(USART_PORT, USART_TXD_PIN, GPIO_MODE_IN_FLOATING);\
 											GPIO_SetMode(USART_PORT, USART_RXD_PIN, GPIO_MODE_IN_FLOATING);\
-											GPIO_SetMode(USART_AUX_PORT, USART_DTR_PIN, GPIO_MODE_IN_FLOATING);\
-											GPIO_SetMode(USART_AUX_PORT, USART_RTS_PIN, GPIO_MODE_IN_FLOATING);\
 										}while(0)
 
 /****************************** ADC ******************************/
