@@ -145,6 +145,9 @@ struct vsfusbd_device_t
 	} callback;
 };
 
+RESULT vsfusbd_request_prepare_0(
+		struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer);
+
 RESULT vsfusbd_device_init(struct vsfusbd_device_t *device);
 RESULT vsfusbd_device_fini(struct vsfusbd_device_t *device);
 RESULT vsfusbd_device_poll(struct vsfusbd_device_t *device);

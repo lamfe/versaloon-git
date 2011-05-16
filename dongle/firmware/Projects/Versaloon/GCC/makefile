@@ -92,7 +92,8 @@ USR_INCS+= -I $(STM32_IFACES_DIR) -I $(STM32_IFACES_DIR)/GPIO \
   -I $(STM32_IFACES_DIR)/USBD
 
 #VSF
-USR_SRCS+= $(SRCDIR)/vsf/stack/usb_device/vsf_usbd.c
+USR_SRCS+= $(SRCDIR)/vsf/stack/usb_device/vsf_usbd.c $(SRCDIR)/vsf/stack/usb_device/class/CDC/vsfusbd_CDC.c
+USR_SRCS+= $(SRCDIR)/vsf/stack/usb_device/class/MSC/vsfusbd_MSC.c $(SRCDIR)/vsf/stack/usb_device/class/HID/vsfusbd_HID.c
 USR_INCS+= -I $(SRCDIR)/vsf
 
 # USB_TO_XXX

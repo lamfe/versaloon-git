@@ -6,6 +6,10 @@ struct vsfusbd_CDC_line_coding_t
 	uint8_t datatype;
 };
 
+#define USBCDC_CONTROLLINE_RTS			0x02
+#define USBCDC_CONTROLLINE_DTR			0x01
+#define USBCDC_CONTROLLINE_MASK			0x03
+
 enum usb_CDC_req_t
 {
 	USB_CDCREQ_SEND_ENCAPSULATED_COMMAND	= 0x00,
