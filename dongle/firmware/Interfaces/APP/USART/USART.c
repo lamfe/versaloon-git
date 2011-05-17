@@ -88,7 +88,6 @@ RESULT usart_send(uint8_t index, uint8_t *buf, uint16_t len)
 		{
 			return ERROR_FAIL;
 		}
-		return ERROR_OK;
 	default:
 		return ERROR_FAIL;
 	}
