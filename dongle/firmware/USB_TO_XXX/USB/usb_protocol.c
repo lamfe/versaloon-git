@@ -305,14 +305,16 @@ static const struct vsfusbd_iface_t ifaces[] =
 };
 static const struct vsfusbd_config_t config0[] = 
 {
-	{NULL, NULL, 3, (struct vsfusbd_iface_t *)ifaces}
+	{
+		NULL, NULL, 3, (struct vsfusbd_iface_t *)ifaces,
+		{-1, -1, -1,  0, 2},
+		{-1,  1,  0, -1, 2},
+	}
 };
 struct vsfusbd_device_t usb_device = 
 {
 	1, 0, 0, (struct vsfusbd_config_t *)config0, 
 	(struct vsfusbd_desc_filter_t *)descriptors, 
-	{-1, -1, -1,  0, 2},
-	{-1,  1,  0, -1, 2},
 	(struct interface_usbd_t *)&core_interfaces.usbd
 };
 
