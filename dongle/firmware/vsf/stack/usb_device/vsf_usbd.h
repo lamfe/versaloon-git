@@ -109,6 +109,8 @@ struct vsfusbd_config_t
 	
 	uint8_t num_of_ifaces;
 	struct vsfusbd_iface_t *iface;
+	int8_t ep_OUT_iface_map[16];
+	int8_t ep_IN_iface_map[16];
 };
 
 struct vsfusbd_device_t
@@ -118,8 +120,6 @@ struct vsfusbd_device_t
 	uint8_t feature;
 	struct vsfusbd_config_t *config;
 	struct vsfusbd_desc_filter_t *desc_filter;
-	int8_t ep_OUT_iface_map[16];
-	int8_t ep_IN_iface_map[16];
 	struct interface_usbd_t *drv;
 	
 	struct vsfusbd_ctrl_handler_t ctrl_handler;

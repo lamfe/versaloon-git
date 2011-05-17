@@ -28,7 +28,8 @@ static struct vsfusbd_CDC_param_t* vsfusbd_CDC_find_param(uint8_t iface)
 static RESULT vsfusbd_CDCData_OUT_hanlder(void *p, uint8_t ep)
 {
 	struct vsfusbd_device_t *device = p;
-	int8_t iface = device->ep_OUT_iface_map[ep];
+	struct vsfusbd_config_t *config = &device->config[device->configuration];
+	int8_t iface = config->ep_OUT_iface_map[ep];
 	struct vsfusbd_CDC_param_t *tmp = NULL;
 	uint16_t pkg_size;
 	uint8_t buffer[64];
@@ -66,7 +67,8 @@ static RESULT vsfusbd_CDCData_OUT_hanlder(void *p, uint8_t ep)
 static RESULT vsfusbd_CDCData_IN_hanlder(void *p, uint8_t ep)
 {
 	struct vsfusbd_device_t *device = p;
-	int8_t iface = device->ep_OUT_iface_map[ep];
+	struct vsfusbd_config_t *config = &device->config[device->configuration];
+	int8_t iface = config->ep_IN_iface_map[ep];
 	struct vsfusbd_CDC_param_t *tmp = NULL;
 	uint16_t pkg_size;
 	uint8_t buffer[64];
