@@ -14,7 +14,7 @@
  *      2011-05-09:     created(by SimonQian)                             *
  **************************************************************************/
 
-#define stm32_usbd_ep_num					8
+extern const uint8_t stm32_usbd_ep_num;
 
 RESULT stm32_usbd_init(void *device);
 RESULT stm32_usbd_fini(void);

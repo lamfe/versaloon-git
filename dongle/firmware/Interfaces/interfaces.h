@@ -58,7 +58,7 @@ struct interface_spi_t
 	RESULT (*init)(uint8_t index);
 	RESULT (*fini)(uint8_t index);
 	RESULT (*config)(uint8_t index, uint16_t kHz, uint8_t cpol, uint8_t cpha, 
-					 uint8_t first_bit);
+						uint8_t first_bit);
 	RESULT (*io)(uint8_t index, uint8_t *out, uint8_t *in, uint16_t len);
 };
 
@@ -319,7 +319,7 @@ struct interface_usbd_t
 	
 	struct usbd_endpoint_t
 	{
-		uint8_t num_of_ep;
+		const uint8_t *num_of_ep;
 		
 		RESULT (*reset)(uint8_t idx);
 		RESULT (*set_type)(uint8_t idx, enum usb_ep_type_t type);
@@ -469,6 +469,62 @@ extern const struct interfaces_info_t *interfaces;
 #define CORE_USBD_EP_SET_OUT_STATE(m)	__CONNECT(m, _usbd_ep_set_OUT_state)
 #define CORE_USBD_EP_GET_OUT_COUNT(m)	__CONNECT(m, _usbd_ep_get_OUT_count)
 #define CORE_USBD_EP_READ_OUT_BUFFER(m)	__CONNECT(m, _usbd_ep_read_OUT_buffer)
+
+// extern drivers
+// GPIO
+RESULT CORE_GPIO_INIT(__TARGET_CHIP__)(uint8_t index);
+RESULT CORE_GPIO_FINI(__TARGET_CHIP__)(uint8_t index);
+RESULT CORE_GPIO_CONFIG(__TARGET_CHIP__)(uint8_t index, uint32_t pin_mask, 
+		uint32_t io, uint32_t pull_en_mask, uint32_t input_pull_mask);
+RESULT CORE_GPIO_IN(__TARGET_CHIP__)(uint8_t index, uint32_t pin_mask, 
+		uint32_t *value);
+RESULT CORE_GPIO_OUT(__TARGET_CHIP__)(uint8_t index, uint32_t pin_mask, 
+		uint32_t value);
+
+// USB
+RESULT CORE_USBD_INIT(__TARGET_CHIP__)(void *device);
+RESULT CORE_USBD_FINI(__TARGET_CHIP__)(void);
+RESULT CORE_USBD_RESET(__TARGET_CHIP__)(void);
+RESULT CORE_USBD_POLL(__TARGET_CHIP__)(void);
+RESULT CORE_USBD_CONNECT(__TARGET_CHIP__)(void);
+RESULT CORE_USBD_DISCONNECT(__TARGET_CHIP__)(void);
+RESULT CORE_USBD_SET_ADDRESS(__TARGET_CHIP__)(uint8_t addr);
+uint8_t CORE_USBD_GET_ADDRESS(__TARGET_CHIP__)(void);
+RESULT CORE_USBD_SUSPEND(__TARGET_CHIP__)(void);
+RESULT CORE_USBD_RESUME(__TARGET_CHIP__)(void);
+RESULT CORE_USBD_LOWPOWER(__TARGET_CHIP__)(uint8_t level);
+uint32_t CORE_USBD_GET_FRAME_NUM(__TARGET_CHIP__)(void);
+extern const uint8_t CORE_USBD_EP_NUM(__TARGET_CHIP__);
+RESULT CORE_USBD_EP_RESET(__TARGET_CHIP__)(uint8_t idx);
+RESULT CORE_USBD_EP_SET_TYPE(__TARGET_CHIP__)(uint8_t idx, 
+		enum usb_ep_type_t type);
+enum usb_ep_type_t CORE_USBD_EP_GET_TYPE(__TARGET_CHIP__)(uint8_t idx);
+RESULT CORE_USBD_EP_SET_IN_HANDLER(__TARGET_CHIP__)(uint8_t idx, 
+		vsfusbd_IN_hanlder_t handler);
+RESULT CORE_USBD_EP_SET_IN_DBUFFER(__TARGET_CHIP__)(uint8_t idx);
+bool CORE_USBD_EP_IS_IN_DBUFFER(__TARGET_CHIP__)(uint8_t idx);
+RESULT CORE_USBD_EP_SWITCH_IN_BUFFER(__TARGET_CHIP__)(uint8_t idx);
+RESULT CORE_USBD_EP_SET_IN_EPSIZE(__TARGET_CHIP__)(uint8_t idx, uint16_t size);
+uint16_t CORE_USBD_EP_GET_IN_EPSIZE(__TARGET_CHIP__)(uint8_t idx);
+enum usb_ep_state_t CORE_USBD_EP_GET_IN_STATE(__TARGET_CHIP__)(uint8_t idx);
+RESULT CORE_USBD_EP_SET_IN_STATE(__TARGET_CHIP__)(uint8_t idx, 
+		enum usb_ep_state_t state);
+RESULT CORE_USBD_EP_SET_IN_COUNT(__TARGET_CHIP__)(uint8_t idx, uint16_t size);
+RESULT CORE_USBD_EP_WRITE_IN_BUFFER(__TARGET_CHIP__)(uint8_t idx, 
+		uint8_t *buffer, uint16_t size);
+RESULT CORE_USBD_EP_SET_OUT_HANDLER(__TARGET_CHIP__)(uint8_t idx, 
+		vsfusbd_OUT_hanlder_t handler);
+RESULT CORE_USBD_EP_SET_OUT_DBUFFER(__TARGET_CHIP__)(uint8_t idx);
+bool CORE_USBD_EP_IS_OUT_DBUFFER(__TARGET_CHIP__)(uint8_t idx);
+RESULT CORE_USBD_EP_SWITCH_OUT_BUFFER(__TARGET_CHIP__)(uint8_t idx);
+RESULT CORE_USBD_EP_SET_OUT_EPSIZE(__TARGET_CHIP__)(uint8_t idx, uint16_t size);
+uint16_t CORE_USBD_EP_GET_OUT_EPSIZE(__TARGET_CHIP__)(uint8_t idx);
+enum usb_ep_state_t CORE_USBD_EP_GET_OUT_STATE(__TARGET_CHIP__)(uint8_t idx);
+RESULT CORE_USBD_EP_SET_OUT_STATE(__TARGET_CHIP__)(uint8_t idx, 
+		enum usb_ep_state_t state);
+uint16_t CORE_USBD_EP_GET_OUT_COUNT(__TARGET_CHIP__)(uint8_t idx);
+RESULT CORE_USBD_EP_READ_OUT_BUFFER(__TARGET_CHIP__)(uint8_t idx, 
+		uint8_t *buffer, uint16_t size);
 
 struct core_interfaces_info_t
 {

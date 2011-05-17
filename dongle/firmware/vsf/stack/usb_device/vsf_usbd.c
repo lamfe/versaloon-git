@@ -285,7 +285,7 @@ static RESULT vsfusbd_stdreq_get_endpoint_status_prepare(
 	enum usb_ep_state_t ep_state;
 	
 	if ((request->value != 0) || 
-		(request->index >= device->drv->ep.num_of_ep))
+		(request->index >= *device->drv->ep.num_of_ep))
 	{
 		return ERROR_FAIL;
 	}
@@ -353,7 +353,7 @@ static RESULT vsfusbd_stdreq_clear_endpoint_feature_prepare(
 	uint8_t ep_dir = request->index & 0x80;
 	
 	if ((request->value != USB_EP_FEATURE_CMD_HALT) || 
-		(ep_num >= device->drv->ep.num_of_ep))
+		(ep_num >= *device->drv->ep.num_of_ep))
 	{
 		return ERROR_FAIL;
 	}
@@ -729,7 +729,7 @@ static struct vsfusbd_setup_filter_t *vsfusbd_get_request_filter(
 static RESULT vsfusbd_config_ep(struct interface_usbd_t *drv, uint8_t ep, 
 		enum usb_ep_state_t in_state, enum usb_ep_state_t out_state)
 {
-	if ((ep >= drv->ep.num_of_ep) || 
+	if ((ep >= *drv->ep.num_of_ep) || 
 		(ERROR_OK != drv->ep.set_IN_state(ep, in_state)) || 
 		(ERROR_OK != drv->ep.set_OUT_state(ep, out_state)))
 	{
@@ -1120,7 +1120,7 @@ RESULT vsfusbd_on_RESET(void *p)
 			ep_size = desc.buffer[pos + USB_DESC_EP_OFF_EPSIZE];
 			ep_index = ep_addr & 0x0F;
 #if __VSF_DEBUG__
-			if (ep_index > (device->drv->ep.num_of_ep - 1))
+			if (ep_index > (*device->drv->ep.num_of_ep - 1))
 			{
 				return ERROR_FAIL;
 			}
@@ -1167,7 +1167,7 @@ RESULT vsfusbd_on_RESET(void *p)
 #endif
 	
 	// call ep handler initialization
-	for (i = 0; i < device->drv->ep.num_of_ep; i++)
+	for (i = 0; i < *device->drv->ep.num_of_ep; i++)
 	{
 		if ((ERROR_OK != device->drv->ep.set_IN_handler(i, vsfusbd_on_IN)) || 
 			(ERROR_OK != device->drv->ep.set_OUT_handler(i, vsfusbd_on_OUT)))

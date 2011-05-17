@@ -14,8 +14,6 @@
  *      2008-11-07:     created(by SimonQian)                             *
  **************************************************************************/
 
-#define STM32_GPIO_NUM					7
-
 RESULT stm32_gpio_init(uint8_t index);
 RESULT stm32_gpio_fini(uint8_t index);
 RESULT stm32_gpio_config(uint8_t index, uint32_t pin_mask, uint32_t io, 

@@ -19,6 +19,8 @@
 
 #include "STM32_GPIO.h"
 
+#define STM32_GPIO_NUM					7
+
 RESULT stm32_gpio_init(uint8_t index)
 {
 #if __VSF_DEBUG__
