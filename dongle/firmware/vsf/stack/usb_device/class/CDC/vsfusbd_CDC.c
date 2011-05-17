@@ -274,7 +274,7 @@ static RESULT vsfusbd_CDCMaster_SendBreak_process(
 	return ERROR_OK;
 }
 
-static struct vsfusbd_setup_filter_t vsfusbd_CDCMaster_class_setup[] = 
+static const struct vsfusbd_setup_filter_t vsfusbd_CDCMaster_class_setup[] = 
 {
 	{
 		USB_REQ_DIR_DTOH | USB_REQ_TYPE_CLASS | USB_REQ_RECP_INTERFACE,
@@ -304,16 +304,15 @@ static struct vsfusbd_setup_filter_t vsfusbd_CDCMaster_class_setup[] =
 
 const struct vsfusbd_class_protocol_t vsfusbd_CDCMaster_class = 
 {
-	NULL,
-	vsfusbd_CDCMaster_class_setup,
+	NULL, NULL,
+	(struct vsfusbd_setup_filter_t *)vsfusbd_CDCMaster_class_setup,
 	
 	NULL, NULL, NULL
 };
 
 const struct vsfusbd_class_protocol_t vsfusbd_CDCData_class = 
 {
-	NULL,
-	NULL,
+	NULL, NULL, NULL,
 	
 	vsfusbd_CDCData_class_init, NULL, vsfusbd_CDCData_class_poll
 };

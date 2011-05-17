@@ -88,6 +88,8 @@ struct vsfusbd_setup_filter_t
 
 struct vsfusbd_class_protocol_t
 {
+	RESULT (*get_desc)(struct vsfusbd_device_t *device, uint8_t type, 
+			uint8_t index, uint16_t lanid, struct vsf_buffer_t *buffer);
 	struct vsfusbd_desc_filter_t *desc_filter;
 	struct vsfusbd_setup_filter_t *req_filter;
 	
@@ -149,6 +151,9 @@ struct vsfusbd_device_t
 
 RESULT vsfusbd_request_prepare_0(
 		struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer);
+RESULT vsfusbd_device_get_descriptor(struct vsfusbd_device_t *device, 
+		struct vsfusbd_desc_filter_t *filter, uint8_t type, uint8_t index, 
+		uint16_t lanid, struct vsf_buffer_t *buffer);
 
 RESULT vsfusbd_device_init(struct vsfusbd_device_t *device);
 RESULT vsfusbd_device_fini(struct vsfusbd_device_t *device);
