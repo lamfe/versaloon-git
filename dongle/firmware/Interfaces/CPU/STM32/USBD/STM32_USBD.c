@@ -22,15 +22,18 @@
 #include "usb_regs.h"
 #include "usb_mem.h"
 
+#define STM32_USBD_EP_NUM					8
+
+const uint8_t stm32_usbd_ep_num = STM32_USBD_EP_NUM;
 static void *USBD_Device = NULL;
 static uint16_t EP_Cfg_Ptr = 0x200;
 
-vsfusbd_IN_hanlder_t stm32_usbd_IN_handlers[stm32_usbd_ep_num];
-vsfusbd_OUT_hanlder_t stm32_usbd_OUT_handlers[stm32_usbd_ep_num];
-uint16_t stm32_usbd_IN_epsize[stm32_usbd_ep_num];
-uint16_t stm32_usbd_OUT_epsize[stm32_usbd_ep_num];
-bool stm32_usbd_IN_dbuffer[stm32_usbd_ep_num];
-bool stm32_usbd_OUT_dbuffer[stm32_usbd_ep_num];
+vsfusbd_IN_hanlder_t stm32_usbd_IN_handlers[STM32_USBD_EP_NUM];
+vsfusbd_OUT_hanlder_t stm32_usbd_OUT_handlers[STM32_USBD_EP_NUM];
+uint16_t stm32_usbd_IN_epsize[STM32_USBD_EP_NUM];
+uint16_t stm32_usbd_OUT_epsize[STM32_USBD_EP_NUM];
+bool stm32_usbd_IN_dbuffer[STM32_USBD_EP_NUM];
+bool stm32_usbd_OUT_dbuffer[STM32_USBD_EP_NUM];
 
 RESULT stm32_usbd_init(void *device)
 {
@@ -85,7 +88,7 @@ RESULT stm32_usbd_set_address(uint8_t address)
 {
 	uint8_t i;
 	
-	for (i = 0; i < stm32_usbd_ep_num; i++)
+	for (i = 0; i < STM32_USBD_EP_NUM; i++)
 	{
 		SetEPAddress(i, i);
 	}
@@ -165,7 +168,7 @@ enum usb_ep_type_t stm32_usbd_ep_get_type(uint8_t idx)
 
 RESULT stm32_usbd_ep_set_IN_handler(uint8_t idx, vsfusbd_IN_hanlder_t handler)
 {
-	if (idx >= stm32_usbd_ep_num)
+	if (idx >= STM32_USBD_EP_NUM)
 	{
 		return ERROR_FAIL;
 	}
@@ -179,7 +182,7 @@ RESULT stm32_usbd_ep_set_IN_dbuffer(uint8_t idx)
 	
 	SetEPDoubleBuff(idx);
 	EP_Cfg_Ptr -= epsize;
-	if (EP_Cfg_Ptr < stm32_usbd_ep_num * 8)
+	if (EP_Cfg_Ptr < STM32_USBD_EP_NUM * 8)
 	{
 		return ERROR_FAIL;
 	}
@@ -214,7 +217,7 @@ RESULT stm32_usbd_ep_set_IN_epsize(uint8_t idx, uint16_t epsize)
 	stm32_usbd_IN_epsize[idx] = epsize;
 	SetEPTxCount(idx, epsize);
 	EP_Cfg_Ptr -= epsize;
-	if (EP_Cfg_Ptr < stm32_usbd_ep_num * 8)
+	if (EP_Cfg_Ptr < STM32_USBD_EP_NUM * 8)
 	{
 		return ERROR_FAIL;
 	}
@@ -310,7 +313,7 @@ RESULT stm32_usbd_ep_write_IN_buffer(uint8_t idx, uint8_t *buffer, uint16_t size
 
 RESULT stm32_usbd_ep_set_OUT_handler(uint8_t idx, vsfusbd_OUT_hanlder_t handler)
 {
-	if (idx >= stm32_usbd_ep_num)
+	if (idx >= STM32_USBD_EP_NUM)
 	{
 		return ERROR_FAIL;
 	}
@@ -324,7 +327,7 @@ RESULT stm32_usbd_ep_set_OUT_dbuffer(uint8_t idx)
 	
 	SetEPDoubleBuff(idx);
 	EP_Cfg_Ptr -= epsize;
-	if (EP_Cfg_Ptr < stm32_usbd_ep_num * 8)
+	if (EP_Cfg_Ptr < STM32_USBD_EP_NUM * 8)
 	{
 		return ERROR_FAIL;
 	}
@@ -360,7 +363,7 @@ RESULT stm32_usbd_ep_set_OUT_epsize(uint8_t idx, uint16_t epsize)
 	stm32_usbd_OUT_epsize[idx] = epsize;
 	SetEPRxCount(idx, epsize);
 	EP_Cfg_Ptr -= epsize;
-	if (EP_Cfg_Ptr < stm32_usbd_ep_num * 8)
+	if (EP_Cfg_Ptr < STM32_USBD_EP_NUM * 8)
 	{
 		return ERROR_FAIL;
 	}

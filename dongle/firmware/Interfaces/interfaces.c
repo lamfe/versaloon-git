@@ -366,8 +366,6 @@ const struct interfaces_info_t *interfaces = &app_interfaces;
 
 
 
-#include "GPIO/STM32_GPIO.h"
-#include "USBD/STM32_USBD.h"
 
 static RESULT core_interface_init(void *p)
 {
@@ -433,7 +431,7 @@ const struct core_interfaces_info_t core_interfaces =
 		CORE_USBD_GET_FRAME_NUM(__TARGET_CHIP__),
 		// ep
 		{
-			CORE_USBD_EP_NUM(__TARGET_CHIP__),
+			&CORE_USBD_EP_NUM(__TARGET_CHIP__),
 			CORE_USBD_EP_RESET(__TARGET_CHIP__),
 			CORE_USBD_EP_SET_TYPE(__TARGET_CHIP__),
 			CORE_USBD_EP_GET_TYPE(__TARGET_CHIP__),
