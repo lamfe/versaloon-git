@@ -1,3 +1,5 @@
+#include "tool/list/list.h"
+
 struct vsfusbd_CDC_line_coding_t
 {
 	uint32_t bitrate;
@@ -34,7 +36,17 @@ struct vsfusbd_CDC_param_t
 	uint8_t gpio_dtr_port;
 	uint32_t gpio_dtr_pin;
 	
+	uint8_t master_iface;
+	uint8_t slave_iface;
 	uint8_t ep_out;
 	uint8_t ep_in;
+	
+	struct vsfusbd_CDC_line_coding_t line_coding;
+	
+	// no need to initialize below by user
+	uint8_t line_coding_buffer[7];
+	volatile bool cdc_out_enable;
+	
+	struct sllist list;
 };
 RESULT vsfusbd_CDC_set_param(struct vsfusbd_CDC_param_t *param);

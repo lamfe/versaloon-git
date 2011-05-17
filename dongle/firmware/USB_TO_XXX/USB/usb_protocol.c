@@ -65,7 +65,7 @@ static RESULT Versaloon_OUT_hanlder(void *p, uint8_t ep)
 	return ERROR_OK;
 }
 
-static RESULT versaloon_init(struct vsfusbd_device_t *device)
+static RESULT versaloon_init(uint8_t iface, struct vsfusbd_device_t *device)
 {
 	if ((ERROR_OK != device->drv->ep.set_IN_dbuffer(2)) || 
 		(ERROR_OK != device->drv->ep.set_OUT_dbuffer(3)) || 
@@ -311,21 +311,33 @@ struct vsfusbd_device_t usb_device =
 {
 	1, 0, 0, (struct vsfusbd_config_t *)config0, 
 	(struct vsfusbd_desc_filter_t *)descriptors, 
+	{-1, -1, -1,  0, 2},
+	{-1,  1,  0, -1, 2},
 	(struct interface_usbd_t *)&core_interfaces.usbd
+};
+
+struct vsfusbd_CDC_param_t Versaloon_CDC_param = 
+{
+	0,			// usart_port
+	0,			// gpio_rts_port
+	GPIO_TDI,	// gpio_rts_pin
+	0,			// gpio_dtr_port
+	GPIO_TMS,	// gpio_dtr_pin
+	
+	1,			// iface_master
+	2,			// iface_slave
+	4,			// ep_out
+	4, 			// ep_in
+	{
+		115200,	// bitrate
+		0,		// stopbittype
+		0,		// paritytype
+		8		// datatype
+	},
 };
 
 RESULT usb_protocol_init()
 {
-	struct vsfusbd_CDC_param_t CDC_param;
-	
-	CDC_param.usart_port = 0;
-	CDC_param.gpio_rts_port = 0;
-	CDC_param.gpio_rts_pin = GPIO_TDI;
-	CDC_param.gpio_dtr_port = 0;
-	CDC_param.gpio_dtr_pin = GPIO_TMS;
-	CDC_param.ep_out = 4;
-	CDC_param.ep_in = 4;
-	vsfusbd_CDC_set_param(&CDC_param);
-	
+	vsfusbd_CDC_set_param(&Versaloon_CDC_param);
 	return vsfusbd_device_init(&usb_device);
 }
