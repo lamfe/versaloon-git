@@ -91,9 +91,9 @@ struct vsfusbd_class_protocol_t
 	struct vsfusbd_desc_filter_t *desc_filter;
 	struct vsfusbd_setup_filter_t *req_filter;
 	
-	RESULT (*init)(struct vsfusbd_device_t *device);
-	RESULT (*fini)(struct vsfusbd_device_t *device);
-	RESULT (*poll)(struct vsfusbd_device_t *device);
+	RESULT (*init)(uint8_t iface, struct vsfusbd_device_t *device);
+	RESULT (*fini)(uint8_t iface, struct vsfusbd_device_t *device);
+	RESULT (*poll)(uint8_t iface, struct vsfusbd_device_t *device);
 };
 
 struct vsfusbd_iface_t
@@ -118,6 +118,8 @@ struct vsfusbd_device_t
 	uint8_t feature;
 	struct vsfusbd_config_t *config;
 	struct vsfusbd_desc_filter_t *desc_filter;
+	int8_t ep_OUT_iface_map[16];
+	int8_t ep_IN_iface_map[16];
 	struct interface_usbd_t *drv;
 	
 	struct vsfusbd_ctrl_handler_t ctrl_handler;

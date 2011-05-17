@@ -92,7 +92,7 @@ RESULT vsfusbd_device_poll(struct vsfusbd_device_t *device)
 	{
 		if ((config->iface[i].class_protocol != NULL) && 
 			(config->iface[i].class_protocol->poll != NULL) && 
-			(ERROR_OK != config->iface[i].class_protocol->poll(device)))
+			(ERROR_OK != config->iface[i].class_protocol->poll(i, device)))
 		{
 			return ERROR_FAIL;
 		}
@@ -1185,7 +1185,7 @@ RESULT vsfusbd_on_RESET(void *p)
 	{
 		if (((config->iface[i].class_protocol != NULL) && 
 				(config->iface[i].class_protocol->init != NULL) && 
-				(ERROR_OK != config->iface[i].class_protocol->init(device))))
+				(ERROR_OK != config->iface[i].class_protocol->init(i, device))))
 		{
 			return ERROR_FAIL;
 		}
