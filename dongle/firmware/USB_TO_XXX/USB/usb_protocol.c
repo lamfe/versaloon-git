@@ -293,7 +293,7 @@ static const struct vsfusbd_desc_filter_t descriptors[] =
 };
 static const struct vsfusbd_class_protocol_t Versaloon_Protocol = 
 {
-	NULL, NULL, 
+	NULL, NULL, NULL, 
 	versaloon_init,
 	NULL, NULL
 };

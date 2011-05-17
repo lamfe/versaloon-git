@@ -30,7 +30,7 @@ struct vsf_transaction_buffer_t vsfusbd_IN_tbuffer[16];
 struct vsf_transaction_buffer_t vsfusbd_OUT_tbuffer[16];
 uint32_t vsfusbd_IN_PkgNum[16];
 
-static RESULT vsfusbd_device_get_descriptor(struct vsfusbd_device_t *device, 
+RESULT vsfusbd_device_get_descriptor(struct vsfusbd_device_t *device, 
 		struct vsfusbd_desc_filter_t *filter, uint8_t type, uint8_t index, 
 		uint16_t lanid, struct vsf_buffer_t *buffer)
 {
@@ -460,17 +460,23 @@ static RESULT vsfusbd_stdreq_get_interface_descriptor_prepare(
 	struct vsfusbd_config_t *config = &device->config[device->configuration];
 	uint8_t type = (request->value >> 8) & 0xFF, index = request->value & 0xFF;
 	uint16_t iface = request->index;
+	struct vsfusbd_class_protocol_t *protocol = 
+										config->iface[iface].class_protocol;
 	
 	if ((iface > config->num_of_ifaces) || 
-		(NULL == config->iface[iface].class_protocol) || 
-		(NULL == config->iface[iface].class_protocol->desc_filter))
+		(NULL == protocol) || (NULL == protocol->desc_filter))
 	{
 		return ERROR_FAIL;
 	}
 	
-	return vsfusbd_device_get_descriptor(device, 
-			config->iface[iface].class_protocol->desc_filter, type, index, 
-			0, buffer);
+	if ((ERROR_OK != vsfusbd_device_get_descriptor(device, 
+				protocol->desc_filter, type, index, 0, buffer)) && 
+		((NULL == protocol->get_desc) || 
+		 	(ERROR_OK != protocol->get_desc(device, type, index, 0, buffer))))
+	{
+		return ERROR_FAIL;
+	}
+	return ERROR_OK;
 }
 static RESULT vsfusbd_stdreq_get_interface_descriptor_process(
 		struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
