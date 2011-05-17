@@ -11,7 +11,7 @@ struct vsfusbd_CDC_param_t *vsfusbd_CDC_param_list = NULL;
 
 static struct vsfusbd_CDC_param_t* vsfusbd_CDC_find_param(uint8_t iface)
 {
-	struct vsfusbd_CDC_param_t *tmp = NULL;
+	struct vsfusbd_CDC_param_t *tmp = vsfusbd_CDC_param_list;
 	
 	while (tmp != NULL)
 	{
