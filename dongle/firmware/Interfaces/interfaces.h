@@ -417,6 +417,8 @@ extern const struct interfaces_info_t *interfaces;
 
 
 
+#define CORE_INIT(m)					__CONNECT(m, _interface_init)
+#define CORE_FINI(m)					__CONNECT(m, _interface_fini)
 // GPIO
 #define CORE_GPIO_INIT(m)				__CONNECT(m, _gpio_init)
 #define CORE_GPIO_FINI(m)				__CONNECT(m, _gpio_fini)

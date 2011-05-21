@@ -135,7 +135,11 @@ void USART_IF_RX_Int(uint8_t dat)
 * Output				 : None
 * Return				 : None
 *******************************************************************************/
-void Sys_Init(void)
+RESULT stm32_interface_fini(void)
+{
+	return ERROR_OK;
+}
+RESULT stm32_interface_init(void *p)
 {
 	/* Configure the system clocks */
 	RCC_Configuration();
@@ -152,6 +156,7 @@ void Sys_Init(void)
 	ADC_Configuration();
 
 	DELAYTIMER_INIT();
+	return ERROR_OK;
 }
 
 /*******************************************************************************

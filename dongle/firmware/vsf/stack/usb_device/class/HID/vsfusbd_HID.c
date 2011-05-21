@@ -113,12 +113,12 @@ static RESULT vsfusbd_HID_class_poll(uint8_t iface,
 		bool r;
 		
 		if ((tmp->reports[i].type == USB_HID_REPORT_TYPE_OUTPUT) && 
-			(	((NULL == report->on_set_get_report) || 
+			((	(NULL == report->on_set_get_report) || 
 				(report->buffer.size != report->stable_buffer.size) || 
 				(ERROR_OK != vsfusbd_HID_class_update_report(report)) || 
 				(ERROR_OK != vsfusbd_ep_out_nb_isready(device, ep, &r)) || 
-				(r && (ERROR_OK != vsfusbd_ep_out_nb(device, ep, buffer))))
-			))
+				(r && (ERROR_OK != vsfusbd_ep_out_nb(device, ep, buffer)))
+			)))
 		{
 			return ERROR_FAIL;
 		}
