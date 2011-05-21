@@ -367,21 +367,10 @@ const struct interfaces_info_t *interfaces = &app_interfaces;
 
 
 
-static RESULT core_interface_init(void *p)
-{
-	Sys_Init();
-	return ERROR_OK;
-}
-
-static RESULT core_interface_fini(void)
-{
-	return ERROR_OK;
-}
-
 const struct core_interfaces_info_t core_interfaces = 
 {
-	core_interface_init,
-	core_interface_fini,
+	CORE_INIT(__TARGET_CHIP__),
+	CORE_FINI(__TARGET_CHIP__),
 	
 	{
 		// gpio

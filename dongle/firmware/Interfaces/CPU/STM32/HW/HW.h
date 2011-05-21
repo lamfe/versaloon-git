@@ -46,7 +46,6 @@
 void GPIO_SetMode(GPIO_TypeDef* GPIOx, uint8_t pin, uint8_t mode);
 
 
-void Sys_Init(void);
 void RCC_Configuration(void);
 void NVIC_Configuration(void);
 void GPIO_Configuration(void);
@@ -82,3 +81,6 @@ void DelayMS(uint32_t);
 void USART_IF_Fini(void);
 void USART_IF_Setup(uint32_t baudrate, uint8_t datatype, uint8_t paritytype, uint8_t stopbittype);
 void USART_IF_RX_Int(uint8_t dat);
+
+RESULT stm32_interface_init(void *p);
+RESULT stm32_interface_fini(void);
