@@ -463,8 +463,8 @@ static RESULT vsfusbd_stdreq_get_interface_descriptor_prepare(
 	struct vsfusbd_class_protocol_t *protocol = 
 										config->iface[iface].class_protocol;
 	
-	if ((iface > config->num_of_ifaces) || 
-		(NULL == protocol) || (NULL == protocol->desc_filter))
+	if ((iface > config->num_of_ifaces) || (NULL == protocol) || 
+		((NULL == protocol->desc_filter) && (NULL == protocol->get_desc)))
 	{
 		return ERROR_FAIL;
 	}

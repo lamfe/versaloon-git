@@ -14,7 +14,11 @@
  *      2008-11-07:     created(by SimonQian)                             *
  **************************************************************************/
 
+#ifndef __USB_TO_XXX_H_INCLUDED__
+#define __USB_TO_XXX_H_INCLUDED__
+
 #include "CommandProcessor.h"
+#include "USB/usb_protocol.h"
 
 // USB_TO_XXX USB Commands
 // Page0
@@ -195,3 +199,5 @@ extern int8_t USB_TO_POLL_Index;
 #define USB_TO_BDM_NUM				1
 #define USB_TO_DUSI_NUM				1
 #define USB_TO_MICROWIRE_NUM		1
+
+#endif	// __USB_TO_XXX_H_INCLUDED__

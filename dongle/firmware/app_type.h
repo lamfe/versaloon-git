@@ -20,6 +20,12 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+typedef enum result_s
+{
+	ERROR_OK = 0,
+	ERROR_FAIL = 1
+} RESULT;
+
 #ifndef __CONNECT
 #	define __CONNECT(a, b)			a ## b
 #endif

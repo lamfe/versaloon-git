@@ -74,11 +74,6 @@ void GLOBAL_OUTPUT_Release(void);
 uint16_t SampleVtarget(void);
 void PWREXT_Check(uint8_t b_control_led);
 
-extern volatile uint32_t rep_len, cmd_len;
-extern uint8_t buffer_out[USB_DATA_BUFF_SIZE], *buffer_in;
-extern volatile uint32_t count_out, usb_ovf;
-extern volatile uint32_t usb_in_data_remain, usb_in_numofpackage;
-
 // Delay
 void DelayUS(uint32_t);
 void DelayMS(uint32_t);
