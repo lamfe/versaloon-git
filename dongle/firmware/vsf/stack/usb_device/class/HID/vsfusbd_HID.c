@@ -258,7 +258,7 @@ static RESULT vsfusbd_HID_SetIdle_prepare(
 	struct vsfusbd_HID_report_t *report = 
 										vsfusbd_HID_find_report_by_id(tmp, id);
 	
-	if ((NULL == tmp) || (NULL == report) || (request->length != 1))
+	if ((NULL == tmp) || (NULL == report) || (request->length != 0))
 	{
 		return ERROR_FAIL;
 	}
@@ -361,9 +361,16 @@ const struct vsfusbd_class_protocol_t vsfusbd_HID_class =
 
 RESULT vsfusbd_HID_set_param(struct vsfusbd_HID_param_t *param)
 {
-	if (vsfusbd_HID_find_param(param->iface) != NULL)
+	uint8_t i;
+	
+	if ((NULL == param) || (vsfusbd_HID_find_param(param->iface) != NULL))
 	{
 		return ERROR_FAIL;
+	}
+	
+	for(i = 0; i < param->num_of_report; i++)
+	{
+		param->reports[i].lock = false;
 	}
 	
 	if (NULL == vsfusbd_HID_param_list)
