@@ -19,12 +19,6 @@
 
 #include "interfaces_const.h"
 
-typedef enum result_s
-{
-	ERROR_OK = 0,
-	ERROR_FAIL = 1
-} RESULT;
-
 struct usart_status_t
 {
 	uint32_t tx_buff_avail;

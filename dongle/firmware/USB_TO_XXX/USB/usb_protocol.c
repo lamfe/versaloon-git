@@ -114,7 +114,7 @@ const uint8_t Versaloon_ConfigDescriptor[] =
 	0x64,	// MaxPower 200 mA
 	
 	// interface descriptor
-	0x09,	// bLength: Endpoint Descriptor size
+	0x09,	// bLength: Interface Descriptor size
 	USB_DESC_TYPE_INTERFACE,
 			// bDescriptorType: Interface
 	0,		// bInterfaceNumber: Number of Interface

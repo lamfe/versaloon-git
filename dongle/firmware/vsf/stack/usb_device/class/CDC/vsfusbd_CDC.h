@@ -1,3 +1,6 @@
+#ifndef __VSFUSBD_CDC_H_INCLUDED__
+#define __VSFUSBD_CDC_H_INCLUDED__
+
 #include "tool/list/list.h"
 
 struct vsfusbd_CDC_line_coding_t
@@ -50,3 +53,5 @@ struct vsfusbd_CDC_param_t
 	struct sllist list;
 };
 RESULT vsfusbd_CDC_set_param(struct vsfusbd_CDC_param_t *param);
+
+#endif	// __VSFUSBD_CDC_H_INCLUDED__

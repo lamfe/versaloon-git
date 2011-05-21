@@ -108,23 +108,24 @@
 #define make_ver(v)						make_str(v)
 #define make_str(s)						# s
 
+#define INTERFACE_IIC_EN				1
+#define INTERFACE_SPI_EN				1
+#define INTERFACE_USART_EN				1
+#define INTERFACE_GPIO_EN				1
+#define INTERFACE_PWM_EN				1
+
 #define INTERFACE_C2_EN					(USB_TO_XXX_EN && USB_TO_C2_EN)
-#define INTERFACE_IIC_EN				(USB_TO_XXX_EN && USB_TO_IIC_EN)
 #define INTERFACE_ISSP_EN				(USB_TO_XXX_EN && USB_TO_ISSP_EN)
 #define INTERFACE_LPC_ICP_EN			(USB_TO_XXX_EN && USB_TO_LPCICP_EN)
 #define INTERFACE_JTAG_EN				(USB_TO_XXX_EN && \
 				(USB_TO_JTAG_HL_EN || USB_TO_JTAG_LL_EN || USB_TO_JTAG_RAW_EN))
 #define INTERFACE_MSP430_JTAG_EN		(USB_TO_XXX_EN && USB_TO_MSP430_JTAG_EN)
 #define INTERFACE_MSP430_SBW_EN			(USB_TO_XXX_EN && USB_TO_MSP430_SBW_EN)
-#define INTERFACE_SPI_EN				(USB_TO_XXX_EN && USB_TO_SPI_EN)
 #define INTERFACE_SWIM_EN				(USB_TO_XXX_EN && USB_TO_SWIM_EN)
-#define INTERFACE_USART_EN				1
 #define INTERFACE_SWD_EN				(USB_TO_XXX_EN && USB_TO_SWD_EN)
 #define INTERFACE_BDM_EN				(USB_TO_XXX_EN && USB_TO_BDM_EN)
-#define INTERFACE_GPIO_EN				(USB_TO_XXX_EN && USB_TO_GPIO_EN)
 #define INTERFACE_DUSI_EN				(USB_TO_XXX_EN && USB_TO_DUSI_EN)
 #define INTERFACE_MICROWIRE_EN			(USB_TO_XXX_EN && USB_TO_MICROWIRE_EN)
-#define INTERFACE_PWM_EN				(USB_TO_XXX_EN && USB_TO_PWM_EN)
 
 /*************************** Includes Application ***************************/
 #include "HW.h"

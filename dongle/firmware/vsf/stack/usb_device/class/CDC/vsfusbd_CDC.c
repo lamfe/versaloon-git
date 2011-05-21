@@ -328,12 +328,12 @@ RESULT vsfusbd_CDC_set_param(struct vsfusbd_CDC_param_t *param)
 	if (NULL == vsfusbd_CDC_param_list)
 	{
 		sllist_init_node(param->list);
-		vsfusbd_CDC_param_list = param;
 	}
 	else
 	{
 		sllint_insert(param->list, vsfusbd_CDC_param_list->list);
 	}
+	vsfusbd_CDC_param_list = param;
 	
 	return ERROR_OK;
 }
