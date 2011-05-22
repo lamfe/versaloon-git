@@ -119,14 +119,20 @@ static RESULT vsfusbd_CDCData_class_init(uint8_t iface,
 		return ERROR_FAIL;
 	}
 	
-	port = tmp->gpio_rts_port;
-	pin = tmp->gpio_rts_pin;
-	interfaces->gpio.init(port);
-	interfaces->gpio.config(port, pin, pin, 0, 0);
-	port = tmp->gpio_dtr_port;
-	pin = tmp->gpio_dtr_pin;
-	interfaces->gpio.init(port);
-	interfaces->gpio.config(port, pin, pin, 0, 0);
+	if (tmp->gpio_rts_enable)
+	{
+		port = tmp->gpio_rts_port;
+		pin = tmp->gpio_rts_pin;
+		interfaces->gpio.init(port);
+		interfaces->gpio.config(port, pin, pin, 0, 0);
+	}
+	if (tmp->gpio_dtr_enable)
+	{
+		port = tmp->gpio_dtr_port;
+		pin = tmp->gpio_dtr_pin;
+		interfaces->gpio.init(port);
+		interfaces->gpio.config(port, pin, pin, 0, 0);
+	}
 	port = tmp->usart_port;
 	interfaces->usart.init(port);
 	return interfaces->usart.config(port, tmp->line_coding.bitrate, 
