@@ -222,30 +222,36 @@ static RESULT vsfusbd_CDCMaster_SetControlLineState_prepare(
 	uint32_t pin;
 	
 	if ((NULL == tmp) || (request->length != 0) || 
-		(request->value & USBCDC_CONTROLLINE_MASK))
+		(request->value & ~USBCDC_CONTROLLINE_MASK))
 	{
 		return ERROR_FAIL;
 	}
 	
-	port = tmp->gpio_dtr_port;
-	pin = tmp->gpio_dtr_pin;
-	if (request->value & USBCDC_CONTROLLINE_DTR)
+	if (tmp->gpio_dtr_enable)
 	{
-		interfaces->gpio.out(port, pin, pin);
+		port = tmp->gpio_dtr_port;
+		pin = tmp->gpio_dtr_pin;
+		if (request->value & USBCDC_CONTROLLINE_DTR)
+		{
+			interfaces->gpio.out(port, pin, pin);
+		}
+		else
+		{
+			interfaces->gpio.out(port, pin, 0);
+		}
 	}
-	else
+	if (tmp->gpio_rts_enable)
 	{
-		interfaces->gpio.out(port, pin, 0);
-	}
-	port = tmp->gpio_rts_port;
-	pin = tmp->gpio_rts_pin;
-	if (request->value & USBCDC_CONTROLLINE_RTS)
-	{
-		interfaces->gpio.out(port, pin, pin);
-	}
-	else
-	{
-		interfaces->gpio.out(port, pin, 0);
+		port = tmp->gpio_rts_port;
+		pin = tmp->gpio_rts_pin;
+		if (request->value & USBCDC_CONTROLLINE_RTS)
+		{
+			interfaces->gpio.out(port, pin, pin);
+		}
+		else
+		{
+			interfaces->gpio.out(port, pin, 0);
+		}
 	}
 	
 	return ERROR_OK;
