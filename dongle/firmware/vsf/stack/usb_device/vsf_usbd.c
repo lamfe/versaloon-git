@@ -823,26 +823,20 @@ static RESULT vsfusbd_on_OUT0(struct vsfusbd_device_t *device)
 	case USB_CTRL_STAT_OUT_DATA:
 		cur_pkg_size = device->drv->ep.get_OUT_count(0);
 		buffer_ptr = &tbuffer->buffer.buffer[tbuffer->position];
-		if ((0 == cur_pkg_size) || 
-			((tbuffer->position + cur_pkg_size) > tbuffer->buffer.size))
+		if ((tbuffer->position + cur_pkg_size) > tbuffer->buffer.size)
 		{
-			ret = ERROR_FAIL;
+			cur_pkg_size = tbuffer->buffer.size - tbuffer->position;
 			break;
 		}
 		
 		ret = device->drv->ep.read_OUT_buffer(0, buffer_ptr, cur_pkg_size);
 		tbuffer->position += cur_pkg_size;
-		if (tbuffer->position == tbuffer->buffer.size)
+		device->drv->ep.set_IN_count(0, 0);
+		if (tbuffer->position >= tbuffer->buffer.size)
 		{
-			ctrl_handler->state = USB_CTRL_STAT_LAST_OUT_DATA;
+			ctrl_handler->state = USB_CTRL_STAT_WAIT_STATUS_IN;
 		}
-		break;
-	case USB_CTRL_STAT_LAST_OUT_DATA:
-		ctrl_handler->state = USB_CTRL_STAT_WAIT_STATUS_IN;
-		if (ERROR_OK != device->drv->ep.set_IN_count(0, 0))
-		{
-			ret = ERROR_FAIL;
-		}
+		vsfusbd_config_ep(device->drv, 0, USB_EP_STAT_ACK, USB_EP_STAT_ACK);
 		break;
 	case USB_CTRL_STAT_IN_DATA:
 	case USB_CTRL_STAT_LAST_IN_DATA:
