@@ -32,6 +32,7 @@ RESULT usart_init(uint8_t index)
 	case 0:
 		FIFO_Reset(&USART_TX_fifo);
 		FIFO_Reset(&USART_RX_fifo);
+		USART_IF_Init();
 		return ERROR_OK;
 	default:
 		return ERROR_FAIL;
@@ -73,7 +74,7 @@ RESULT usart_send(uint8_t index, uint8_t *buf, uint16_t len)
 			return ERROR_FAIL;
 		}
 		
-		if (FIFO_Get_Length(&USART_TX_fifo) >= len)
+		if (FIFO_Get_AvailableLength(&USART_TX_fifo) >= len)
 		{
 			if (len == FIFO_Add_Buffer(&USART_TX_fifo, buf, len))
 			{

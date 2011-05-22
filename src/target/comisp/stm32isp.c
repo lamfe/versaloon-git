@@ -316,13 +316,22 @@ static RESULT stm32isp_read_product_id(uint32_t *id)
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	// read data
+	*id = 0;
 	ret = stm32isp_process_data(&len, 1, (uint8_t*)id, STM32ISP_RECEIVE);
 	if (ret != ERROR_OK)
 	{
 		LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "get product id");
 		return ERRCODE_FAILURE_OPERATION;
 	}
-	*id = LE_TO_SYS_U32(*id);
+	if (2 == len)
+	{
+		*id = BE_TO_SYS_U32(*id);
+		*id <<= 4;
+	}
+	else
+	{
+		*id = LE_TO_SYS_U32(*id);
+	}
 	return stm32isp_get_ack(0, buffer, 0);
 }
 
