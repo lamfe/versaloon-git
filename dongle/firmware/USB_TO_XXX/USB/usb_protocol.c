@@ -321,8 +321,10 @@ struct vsfusbd_device_t usb_device =
 struct vsfusbd_CDC_param_t Versaloon_CDC_param = 
 {
 	0,			// usart_port
+	false,		// gpio_rts_enable
 	0,			// gpio_rts_port
 	GPIO_TDI,	// gpio_rts_pin
+	false,		// gpio_dtr_enable
 	0,			// gpio_dtr_port
 	GPIO_TMS,	// gpio_dtr_pin
 	

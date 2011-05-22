@@ -303,6 +303,10 @@ static RESULT vsfusbd_stdreq_get_endpoint_status_prepare(
 	{
 		ctrl_handler->ctrl_reply_buffer[0] = 1;
 	}
+	else
+	{
+		ctrl_handler->ctrl_reply_buffer[0] = 0;
+	}
 	ctrl_handler->ctrl_reply_buffer[1] = 0;
 	buffer->buffer = ctrl_handler->ctrl_reply_buffer;
 	buffer->size = USB_STATUS_SIZE;
