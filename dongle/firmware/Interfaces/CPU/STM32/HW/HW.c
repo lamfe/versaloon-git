@@ -44,6 +44,11 @@ void GPIO_SetMode(GPIO_TypeDef* GPIOx, uint8_t pin, uint8_t mode)
 extern FIFO USART_TX_fifo;
 extern FIFO USART_RX_fifo;
 
+void USART_IF_Init(void)
+{
+	USART_Port_Init();
+}
+
 void USART_IF_Fini(void)
 {
 	NVIC_InitTypeDef NVIC_InitStructure;
@@ -65,7 +70,6 @@ void USART_IF_Setup(uint32_t baudrate, uint8_t datatype, uint8_t paritytype, uin
 	NVIC_InitTypeDef NVIC_InitStructure;
 
 	USART_DeInit(USART_DEF_PORT);
-	USART_Port_Init();
 
 	/* Enable the USART1 Interrupt */
 	NVIC_InitStructure.NVIC_IRQChannel = USART_IRQ;

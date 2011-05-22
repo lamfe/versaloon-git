@@ -97,7 +97,7 @@ static RESULT vsfusbd_CDCData_IN_hanlder(void *p, uint8_t ep)
 	else
 	{
 		device->drv->ep.set_IN_count(ep, 0);
-		device->drv->ep.set_IN_state(ep, USB_EP_STAT_ACK);
+		device->drv->ep.set_IN_state(ep, USB_EP_STAT_NACK);
 	}
 	
 	return ERROR_OK;
@@ -113,6 +113,8 @@ static RESULT vsfusbd_CDCData_class_init(uint8_t iface,
 	if ((NULL == tmp) || 
 		(ERROR_OK != device->drv->ep.set_IN_handler(tmp->ep_in, 
 												vsfusbd_CDCData_IN_hanlder)) || 
+		(ERROR_OK != device->drv->ep.set_IN_state(tmp->ep_in, 
+														USB_EP_STAT_NACK)) || 
 		(ERROR_OK != device->drv->ep.set_OUT_handler(tmp->ep_out, 
 												vsfusbd_CDCData_OUT_hanlder)))
 	{
@@ -144,16 +146,29 @@ static RESULT vsfusbd_CDCData_class_poll(uint8_t iface,
 											struct vsfusbd_device_t *device)
 {
 	struct vsfusbd_CDC_param_t *tmp = vsfusbd_CDC_find_param(iface);
+	struct usart_status_t status;
+	uint8_t buffer[64];
+	uint16_t pkg_size;
 	
-	if (NULL == tmp)
+	if ((NULL == tmp) || 
+		(ERROR_OK != interfaces->usart.status(tmp->usart_port, &status)))
 	{
 		return ERROR_FAIL;
 	}
 	
+	if ((device->drv->ep.get_IN_state(tmp->ep_in) != USB_EP_STAT_ACK) && 
+		status.rx_buff_size)
+	{
+		pkg_size = (status.rx_buff_size > sizeof(buffer)) ? sizeof(buffer) : 
+				status.rx_buff_size;
+		interfaces->usart.receive(tmp->usart_port, buffer, pkg_size);
+		device->drv->ep.write_IN_buffer(tmp->ep_in, buffer, pkg_size);
+		device->drv->ep.set_IN_count(tmp->ep_in, pkg_size);
+		device->drv->ep.set_IN_state(tmp->ep_in, USB_EP_STAT_ACK);
+	}
+	
 	if (!tmp->cdc_out_enable)
 	{
-		struct usart_status_t status;
-		interfaces->usart.status(tmp->usart_port, &status);
 		if (status.tx_buff_avail >= 64)
 		{
 			tmp->cdc_out_enable = true;
