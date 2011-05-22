@@ -180,12 +180,13 @@ RESULT stm32_usbd_ep_set_IN_dbuffer(uint8_t idx)
 {
 	uint16_t epsize = stm32_usbd_ep_get_IN_epsize(idx);
 	
-	SetEPDoubleBuff(idx);
-	EP_Cfg_Ptr -= epsize;
-	if (EP_Cfg_Ptr < STM32_USBD_EP_NUM * 8)
+	if ((EP_Cfg_Ptr - epsize) < STM32_USBD_EP_NUM * 8)
 	{
 		return ERROR_FAIL;
 	}
+	EP_Cfg_Ptr -= epsize;
+	
+	SetEPDoubleBuff(idx);
 	SetEPDblBuffAddr(idx, GetEPTxAddr(idx), EP_Cfg_Ptr);
 	SetEPDblBuffCount(idx, EP_DBUF_IN, 0);
 	ClearDTOG_RX(idx);
@@ -209,18 +210,14 @@ RESULT stm32_usbd_ep_switch_IN_buffer(uint8_t idx)
 
 RESULT stm32_usbd_ep_set_IN_epsize(uint8_t idx, uint16_t epsize)
 {
-	if (epsize & 0x0007)
+	if ((epsize & 0x0007) || ((EP_Cfg_Ptr - epsize) < STM32_USBD_EP_NUM * 8))
 	{
 		return ERROR_FAIL;
 	}
+	EP_Cfg_Ptr -= epsize;
 	
 	stm32_usbd_IN_epsize[idx] = epsize;
 	SetEPTxCount(idx, epsize);
-	EP_Cfg_Ptr -= epsize;
-	if (EP_Cfg_Ptr < STM32_USBD_EP_NUM * 8)
-	{
-		return ERROR_FAIL;
-	}
 	SetEPTxAddr(idx, EP_Cfg_Ptr);
 	return ERROR_OK;
 }
@@ -325,12 +322,13 @@ RESULT stm32_usbd_ep_set_OUT_dbuffer(uint8_t idx)
 {
 	uint16_t epsize = stm32_usbd_ep_get_OUT_epsize(idx);
 	
-	SetEPDoubleBuff(idx);
-	EP_Cfg_Ptr -= epsize;
-	if (EP_Cfg_Ptr < STM32_USBD_EP_NUM * 8)
+	if ((EP_Cfg_Ptr - epsize) < STM32_USBD_EP_NUM * 8)
 	{
 		return ERROR_FAIL;
 	}
+	EP_Cfg_Ptr -= epsize;
+	
+	SetEPDoubleBuff(idx);
 	SetEPDblBuffAddr(idx, GetEPRxAddr(idx), EP_Cfg_Ptr);
 	SetEPDblBuffCount(idx, EP_DBUF_OUT, epsize);
 	ClearDTOG_RX(idx);
@@ -355,18 +353,14 @@ RESULT stm32_usbd_ep_switch_OUT_buffer(uint8_t idx)
 
 RESULT stm32_usbd_ep_set_OUT_epsize(uint8_t idx, uint16_t epsize)
 {
-	if (epsize & 0x0007)
+	if ((epsize & 0x0007) || ((EP_Cfg_Ptr - epsize) < STM32_USBD_EP_NUM * 8))
 	{
 		return ERROR_FAIL;
 	}
+	EP_Cfg_Ptr -= epsize;
 	
 	stm32_usbd_OUT_epsize[idx] = epsize;
 	SetEPRxCount(idx, epsize);
-	EP_Cfg_Ptr -= epsize;
-	if (EP_Cfg_Ptr < STM32_USBD_EP_NUM * 8)
-	{
-		return ERROR_FAIL;
-	}
 	SetEPRxAddr(idx, EP_Cfg_Ptr);
 	return ERROR_OK;
 }
