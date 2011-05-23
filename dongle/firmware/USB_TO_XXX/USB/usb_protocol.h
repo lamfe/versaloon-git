@@ -7,7 +7,7 @@
 
 #include "stack/usb_device/class/CDC/vsfusbd_CDC.h"
 #include "stack/usb_device/class/HID/vsfusbd_HID.h"
-#include "stack/usb_device/class/MSC/vsfusbd_MSC.h"
+#include "stack/usb_device/class/MSC/vsfusbd_MSC_BOT.h"
 
 extern volatile uint32_t rep_len, cmd_len;
 extern uint8_t buffer_out[USB_DATA_BUFF_SIZE];

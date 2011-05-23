@@ -2207,7 +2207,10 @@
           <group>
             <name>MSC</name>
             <file>
-              <name>$PROJ_DIR$\..\..\..\vsf\stack\usb_device\class\MSC\vsfusbd_MSC.c</name>
+              <name>$PROJ_DIR$\..\..\..\vsf\stack\usb_device\class\MSC\SCSI.c</name>
+            </file>
+            <file>
+              <name>$PROJ_DIR$\..\..\..\vsf\stack\usb_device\class\MSC\vsfusbd_MSC_BOT.c</name>
             </file>
           </group>
         </group>

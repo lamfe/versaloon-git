@@ -262,7 +262,7 @@ static RESULT vsfusbd_CDCMaster_SetControlLineState_prepare(
 		}
 	}
 	
-	return ERROR_OK;
+	return vsfusbd_request_prepare_0(device, buffer);
 }
 static RESULT vsfusbd_CDCMaster_SetControlLineState_process(
 	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
@@ -280,7 +280,7 @@ static RESULT vsfusbd_CDCMaster_SendBreak_prepare(
 		return ERROR_FAIL;
 	}
 	
-	return ERROR_OK;
+	return vsfusbd_request_prepare_0(device, buffer);
 }
 static RESULT vsfusbd_CDCMaster_SendBreak_process(
 	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
