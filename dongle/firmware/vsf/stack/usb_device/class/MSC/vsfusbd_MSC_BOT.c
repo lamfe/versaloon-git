@@ -62,8 +62,8 @@ static RESULT vsfusbd_MSCBOT_SendCSW(struct vsfusbd_device_t *device,
 	SET_LE_U32(&param->CSW_buffer[0], USBMSC_CSW_SIGNATURE);
 	SET_LE_U32(&param->CSW_buffer[4], param->CBW.dCBWTag);
 	SET_LE_U32(&param->CSW_buffer[8], 
-		param->CBW.bCBWCBLength - param->page_size * param->cur_page - 
-		param->tbuffer.position);
+		param->CBW.dCBWDataTransferLength - 
+		(param->page_size * param->cur_page + param->tbuffer.position));
 	param->CSW_buffer[12] = param->dCSWStatus;
 	param->cur_page = param->tbuffer.position = 0;
 	param->page_size = USBMSC_CSW_SIZE;
@@ -214,6 +214,7 @@ static RESULT vsfusbd_MSCBOT_OUT_hanlder(void *p, uint8_t ep)
 		}
 		tmp->page_size = tmp->page_num = 0;
 		tmp->cur_handlers = NULL;
+		tmp->tbuffer.buffer = *vsfusbd_MSCBOT_GetBuffer(tmp);
 		if (ERROR_OK != SCSI_Handle(tmp->cur_handlers, lun_info, 
 					tmp->CBW.CBWCB, &tmp->tbuffer.buffer, &tmp->page_size, 
 					&tmp->page_num))
@@ -252,14 +253,6 @@ static RESULT vsfusbd_MSCBOT_OUT_hanlder(void *p, uint8_t ep)
 			if ((tmp->CBW.bmCBWFlags & USBMSC_CBWFLAGS_DIR_MASK) == 
 						USBMSC_CBWFLAGS_DIR_IN)
 			{
-				tmp->tbuffer.buffer = *vsfusbd_MSCBOT_GetBuffer(tmp);
-				if (ERROR_OK != SCSI_IO(tmp->cur_handlers, lun_info, 
-						tmp->CBW.CBWCB, &tmp->tbuffer.buffer, tmp->cur_page))
-				{
-					enum SCSI_errcode_t errcode = SCSI_GetErrorCode();
-					return vsfusbd_MSCBOT_ErrCode(device, tmp, errcode);
-				}
-				
 				tmp->bot_status = VSFUSBD_MSCBOT_STATUS_IN;
 				return vsfusbd_MSCBOT_IN_hanlder(p, tmp->ep_in);
 			}
@@ -332,7 +325,9 @@ static RESULT vsfusbd_MSCBOT_class_init(uint8_t iface,
 		(ERROR_OK != device->drv->ep.set_IN_state(tmp->ep_in, 
 														USB_EP_STAT_NACK)) || 
 		(ERROR_OK != device->drv->ep.set_OUT_handler(tmp->ep_out, 
-												vsfusbd_MSCBOT_OUT_hanlder)))
+												vsfusbd_MSCBOT_OUT_hanlder)) || 
+		(ERROR_OK != device->drv->ep.set_OUT_state(tmp->ep_out, 
+														USB_EP_STAT_ACK)))
 	{
 		return ERROR_FAIL;
 	}
