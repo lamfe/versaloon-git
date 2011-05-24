@@ -23,10 +23,6 @@ struct USBMSC_CBW_t
 	uint8_t CBWCB[16];
 };
 
-#define USBMSC_CSW_OK					0x00
-#define USBMSC_CSW_FAILED				0x01
-#define USBMSC_CSW_PHASE_ERROR			0x02
-
 #define USBMSC_CSW_SIZE					13
 struct USBMSC_CSW_t
 {
@@ -73,12 +69,13 @@ struct vsfusbd_MSCBOT_param_t
 	struct vsf_buffer_t page_buffer[2];
 	
 	// no need to initialize below by user
-	bool tick_tock;
+	uint8_t tick_tock;
+	struct SCSI_handler_t *cur_handlers;
 	struct USBMSC_CBW_t CBW;
 	uint8_t dCSWStatus;
 	uint8_t CSW_buffer[USBMSC_CSW_SIZE];
 	struct vsf_transaction_buffer_t tbuffer;
-	uint32_t page_size, page_num, cur_size, cur_page;
+	uint32_t page_size, page_num, cur_page;
 	enum vsfusbd_MSCBOT_status_t bot_status;
 	
 	struct sllist list;

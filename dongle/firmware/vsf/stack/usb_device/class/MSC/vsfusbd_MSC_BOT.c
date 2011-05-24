@@ -26,11 +26,11 @@ static struct vsfusbd_MSCBOT_param_t* vsfusbd_MSCBOT_find_param(uint8_t iface)
 }
 
 static RESULT vsfusbd_MSCBOT_SetError(struct vsfusbd_device_t *device, 
-										struct vsfusbd_MSCBOT_param_t *param)
+							struct vsfusbd_MSCBOT_param_t *param, uint8_t error)
 {
 	device->drv->ep.set_IN_state(param->ep_in, USB_EP_STAT_STALL);
 	device->drv->ep.set_OUT_state(param->ep_out, USB_EP_STAT_STALL);
-	param->dCSWStatus = USBMSC_CSW_FAILED;
+	param->dCSWStatus = error;
 	return ERROR_OK;
 }
 
@@ -53,6 +53,39 @@ static uint16_t vsfusbd_MSCBOT_GetInPkgSize(struct interface_usbd_t *drv,
 	{
 		return epsize;
 	}
+}
+
+static RESULT vsfusbd_MSCBOT_IN_hanlder(void *p, uint8_t ep);
+static RESULT vsfusbd_MSCBOT_SendCSW(struct vsfusbd_device_t *device, 
+										struct vsfusbd_MSCBOT_param_t *param)
+{
+	SET_LE_U32(&param->CSW_buffer[0], USBMSC_CSW_SIGNATURE);
+	SET_LE_U32(&param->CSW_buffer[4], param->CBW.dCBWTag);
+	SET_LE_U32(&param->CSW_buffer[8], 
+		param->CBW.bCBWCBLength - param->page_size * param->cur_page - 
+		param->tbuffer.position);
+	param->CSW_buffer[12] = param->dCSWStatus;
+	param->cur_page = param->tbuffer.position = 0;
+	param->page_size = USBMSC_CSW_SIZE;
+	param->page_num = 1;
+	param->tbuffer.buffer.buffer = param->CSW_buffer;
+	param->bot_status = VSFUSBD_MSCBOT_STATUS_CSW;
+	return vsfusbd_MSCBOT_IN_hanlder((void *)device, param->ep_in);
+}
+
+static RESULT vsfusbd_MSCBOT_ErrCode(struct vsfusbd_device_t *device, 
+			struct vsfusbd_MSCBOT_param_t *param, enum SCSI_errcode_t code)
+{
+	switch (code)
+	{
+	case SCSI_ERRCODE_INVALID_PARAM:
+		vsfusbd_MSCBOT_SetError(device, param, USBMSC_CSW_FAIL);
+		break;
+	case SCSI_ERRCODE_FAIL:
+		param->dCSWStatus = USBMSC_CSW_FAIL;
+		return vsfusbd_MSCBOT_SendCSW(device, param);
+	}
+	return ERROR_OK;
 }
 
 static RESULT vsfusbd_MSCBOT_IN_hanlder(void *p, uint8_t ep)
@@ -85,58 +118,40 @@ static RESULT vsfusbd_MSCBOT_IN_hanlder(void *p, uint8_t ep)
 	case VSFUSBD_MSCBOT_STATUS_CSW:
 	case VSFUSBD_MSCBOT_STATUS_IN:
 		lun_info = &tmp->lun_info[tmp->CBW.bCBWLUN];
-		remain_size = tmp->tbuffer.buffer.size - tmp->tbuffer.position;
+		remain_size = tmp->page_size - tmp->tbuffer.position;
+		pkg_size = vsfusbd_MSCBOT_GetInPkgSize(device->drv, ep, remain_size);
 		pbuffer = &tmp->tbuffer.buffer.buffer[tmp->tbuffer.position];
 		if (remain_size)
 		{
-			pkg_size = vsfusbd_MSCBOT_GetInPkgSize(device->drv, ep, 
-													remain_size);
-			device->drv->ep.write_IN_buffer(ep, pbuffer, pkg_size);
-			device->drv->ep.set_IN_state(ep, USB_EP_STAT_ACK);
+			device->drv->ep.write_IN_buffer(tmp->ep_in, pbuffer, pkg_size);
+			device->drv->ep.set_IN_count(tmp->ep_in, pkg_size);
+			device->drv->ep.set_IN_state(tmp->ep_in, USB_EP_STAT_ACK);
 			tmp->tbuffer.position += pkg_size;
-			tmp->cur_size += pkg_size;
-			if (tmp->cur_size >= tmp->page_size)
-			{
-				tmp->tbuffer.position = tmp->cur_size = 0;
-				if (++tmp->cur_page < tmp->page_num)
-				{
-					tmp->tbuffer.buffer = *vsfusbd_MSCBOT_GetBuffer(tmp);
-					if (ERROR_OK != 
-						SCSI_IO(lun_info, tmp->CBW.CBWCB, &tmp->tbuffer.buffer, 
-								tmp->cur_page))
-					{
-						vsfusbd_MSCBOT_SetError(device, tmp);
-						lun_info->status.sense_key = 
-											SCSI_SENSEKEY_ILLEGAL_REQUEST;
-						lun_info->status.asc = 
-											SCSI_ASC_INVALID_FIELED_IN_COMMAND;
-						return ERROR_FAIL;
-					}
-				}
-			}
+			return ERROR_OK;
 		}
-		else
+		
+		tmp->tbuffer.position = 0;
+		if (++tmp->cur_page >= tmp->page_num)
 		{
 			if (VSFUSBD_MSCBOT_STATUS_CSW == tmp->bot_status)
 			{
 				tmp->bot_status = VSFUSBD_MSCBOT_STATUS_IDLE;
 				device->drv->ep.set_OUT_state(tmp->ep_out, USB_EP_STAT_ACK);
+				return ERROR_OK;
 			}
 			else
 			{
-				SET_LE_U32(&tmp->CSW_buffer[0], USBMSC_CSW_SIGNATURE);
-				SET_LE_U32(&tmp->CSW_buffer[4], tmp->CBW.dCBWTag);
-				SET_LE_U32(&tmp->CSW_buffer[8], 
-							tmp->CBW.bCBWCBLength - tmp->tbuffer.position);
-				tmp->CSW_buffer[12] = tmp->dCSWStatus;
-				tmp->tbuffer.position = 0;
-				tmp->tbuffer.buffer.size = USBMSC_CSW_SIZE;
-				tmp->tbuffer.buffer.buffer = tmp->CSW_buffer;
-				tmp->bot_status = VSFUSBD_MSCBOT_STATUS_CSW;
-				return vsfusbd_MSCBOT_IN_hanlder(p, ep);
+				return vsfusbd_MSCBOT_SendCSW(device, tmp);
 			}
 		}
-		break;
+		
+		tmp->tbuffer.buffer = *vsfusbd_MSCBOT_GetBuffer(tmp);
+		if (ERROR_OK != SCSI_IO(tmp->cur_handlers, lun_info, tmp->CBW.CBWCB, 
+					&tmp->tbuffer.buffer, tmp->cur_page))
+		{
+			return vsfusbd_MSCBOT_ErrCode(device, tmp, SCSI_GetErrorCode());
+		}
+		return vsfusbd_MSCBOT_IN_hanlder(p, ep);
 	default:
 		return ERROR_FAIL;
 	}
@@ -184,107 +199,109 @@ static RESULT vsfusbd_MSCBOT_OUT_hanlder(void *p, uint8_t ep)
 		if ((tmp->CBW.dCBWSignature != USBMSC_CBW_SIGNATURE) || 
 			(tmp->CBW.bCBWLUN > tmp->max_lun) || (pkg_size != 31))
 		{
-			vsfusbd_MSCBOT_SetError(device, tmp);
+			vsfusbd_MSCBOT_SetError(device, tmp, USBMSC_CSW_FAIL);
 			return ERROR_FAIL;
 		}
 		lun_info = &tmp->lun_info[tmp->CBW.bCBWLUN];
 		if ((tmp->CBW.bCBWCBLength < 1) || (tmp->CBW.bCBWCBLength > 16))
 		{
-			vsfusbd_MSCBOT_SetError(device, tmp);
+			vsfusbd_MSCBOT_SetError(device, tmp, USBMSC_CSW_FAIL);
 			lun_info->status.sense_key = SCSI_SENSEKEY_ILLEGAL_REQUEST;
 			lun_info->status.asc = SCSI_ASC_INVALID_FIELED_IN_COMMAND;
 			return ERROR_FAIL;
 		}
 		tmp->page_size = tmp->page_num = 0;
-		if ((ERROR_OK != SCSI_Process(lun_info, tmp->CBW.CBWCB, 
-					&tmp->tbuffer.buffer, &tmp->page_size, &tmp->page_num)) || 
-			(SCSI_SENSEKEY_ILLEGAL_REQUEST == lun_info->status.sense_key))
+		tmp->cur_handlers = NULL;
+		if (ERROR_OK != SCSI_Handle(tmp->cur_handlers, lun_info, 
+					tmp->CBW.CBWCB, &tmp->tbuffer.buffer, &tmp->page_size, 
+					&tmp->page_num))
 		{
-			vsfusbd_MSCBOT_SetError(device, tmp);
-			return ERROR_FAIL;
+			enum SCSI_errcode_t errcode = SCSI_GetErrorCode();
+			if (SCSI_ERRCODE_INVALID_COMMAND == errcode)
+			{
+				tmp->cur_handlers = tmp->user_handlers;
+				if (ERROR_OK != SCSI_Handle(tmp->cur_handlers, lun_info, 
+						tmp->CBW.CBWCB, &tmp->tbuffer.buffer, &tmp->page_size, 
+						&tmp->page_num))
+				{
+					errcode = SCSI_GetErrorCode();
+					if (SCSI_ERRCODE_INVALID_COMMAND == errcode)
+					{
+						vsfusbd_MSCBOT_SetError(device, tmp, USBMSC_CSW_FAIL);
+						return ERROR_FAIL;
+					}
+					return vsfusbd_MSCBOT_ErrCode(device, tmp, errcode);
+				}
+			}
+			else
+			{
+				return vsfusbd_MSCBOT_ErrCode(device, tmp, errcode);
+			}
 		}
 		
-		tmp->tbuffer.position = tmp->cur_size = tmp->cur_page = 0;
+		tmp->tbuffer.position = tmp->cur_page = 0;
 		if (tmp->CBW.bCBWCBLength)
 		{
 			if ((tmp->CBW.bmCBWFlags & USBMSC_CBWFLAGS_DIR_MASK) == 
 						USBMSC_CBWFLAGS_DIR_IN)
 			{
 				tmp->tbuffer.buffer = *vsfusbd_MSCBOT_GetBuffer(tmp);
-				if (ERROR_OK != SCSI_IO(lun_info, tmp->CBW.CBWCB, 
-										&tmp->tbuffer.buffer, tmp->cur_page))
+				if (ERROR_OK != SCSI_IO(tmp->cur_handlers, lun_info, 
+						tmp->CBW.CBWCB, &tmp->tbuffer.buffer, tmp->cur_page))
 				{
-					vsfusbd_MSCBOT_SetError(device, tmp);
-					lun_info->status.sense_key = SCSI_SENSEKEY_ILLEGAL_REQUEST;
-					lun_info->status.asc = SCSI_ASC_INVALID_FIELED_IN_COMMAND;
-					return ERROR_FAIL;
+					enum SCSI_errcode_t errcode = SCSI_GetErrorCode();
+					return vsfusbd_MSCBOT_ErrCode(device, tmp, errcode);
 				}
+				
 				tmp->bot_status = VSFUSBD_MSCBOT_STATUS_IN;
 				return vsfusbd_MSCBOT_IN_hanlder(p, tmp->ep_in);
 			}
 			else
 			{
 				tmp->bot_status = VSFUSBD_MSCBOT_STATUS_OUT;
+				device->drv->ep.set_OUT_state(tmp->ep_out, USB_EP_STAT_ACK);
 				return ERROR_OK;
 			}
 		}
 		else
 		{
-			tmp->bot_status = VSFUSBD_MSCBOT_STATUS_CSW;
-			tmp->tbuffer.position = 0;
-			return vsfusbd_MSCBOT_IN_hanlder(p, tmp->ep_in);
+			return vsfusbd_MSCBOT_SendCSW(device, tmp);
 		}
 	case VSFUSBD_MSCBOT_STATUS_OUT:
 		lun_info = &tmp->lun_info[tmp->CBW.bCBWLUN];
 		pbuffer = &tmp->tbuffer.buffer.buffer[tmp->tbuffer.position];
-		if ((pkg_size + tmp->tbuffer.position) <= tmp->tbuffer.buffer.size)
+		if ((pkg_size + tmp->tbuffer.position) <= tmp->page_size)
 		{
 			memcpy(pbuffer, buffer, pkg_size);
 			tmp->tbuffer.position += pkg_size;
-			tmp->cur_size += pkg_size;
-			if (tmp->cur_size >= tmp->page_size)
+			if (tmp->tbuffer.position < tmp->page_size)
 			{
-				tmp->tbuffer.position = tmp->cur_size = 0;
-				if (++tmp->cur_page < tmp->page_num)
-				{
-					tmp->tbuffer.buffer = *vsfusbd_MSCBOT_GetBuffer(tmp);
-					if (ERROR_OK != 
-						SCSI_IO(lun_info, tmp->CBW.CBWCB, &tmp->tbuffer.buffer, 
-								tmp->cur_page))
-					{
-						vsfusbd_MSCBOT_SetError(device, tmp);
-						lun_info->status.sense_key = 
-											SCSI_SENSEKEY_ILLEGAL_REQUEST;
-						lun_info->status.asc = 
-											SCSI_ASC_INVALID_FIELED_IN_COMMAND;
-						return ERROR_FAIL;
-					}
-				}
-				else
-				{
-					SET_LE_U32(&tmp->CSW_buffer[0], USBMSC_CSW_SIGNATURE);
-					SET_LE_U32(&tmp->CSW_buffer[4], tmp->CBW.dCBWTag);
-					SET_LE_U32(&tmp->CSW_buffer[8], 
-								tmp->CBW.bCBWCBLength - tmp->tbuffer.position);
-					tmp->CSW_buffer[12] = tmp->dCSWStatus;
-					tmp->tbuffer.position = 0;
-					tmp->tbuffer.buffer.size = USBMSC_CSW_SIZE;
-					tmp->tbuffer.buffer.buffer = tmp->CSW_buffer;
-					tmp->bot_status = VSFUSBD_MSCBOT_STATUS_CSW;
-					return vsfusbd_MSCBOT_IN_hanlder(p, ep);
-				}
+				device->drv->ep.set_OUT_state(tmp->ep_out, USB_EP_STAT_ACK);
+				return ERROR_OK;
 			}
+			
+			tmp->tbuffer.position = 0;
+			if (ERROR_OK != SCSI_IO(tmp->cur_handlers, lun_info, 
+						tmp->CBW.CBWCB, &tmp->tbuffer.buffer, tmp->cur_page))
+			{
+				return vsfusbd_MSCBOT_ErrCode(device, tmp, SCSI_GetErrorCode());
+			}
+			tmp->tbuffer.buffer = *vsfusbd_MSCBOT_GetBuffer(tmp);
+			if (++tmp->cur_page >= tmp->page_num)
+			{
+				return vsfusbd_MSCBOT_SendCSW(device, tmp);
+			}
+			return device->drv->ep.set_OUT_state(tmp->ep_out, USB_EP_STAT_ACK);
 		}
 		else
 		{
-			vsfusbd_MSCBOT_SetError(device, tmp);
+			vsfusbd_MSCBOT_SetError(device, tmp, USBMSC_CSW_PHASE_ERROR);
 			lun_info->status.sense_key = SCSI_SENSEKEY_ILLEGAL_REQUEST;
 			lun_info->status.asc = SCSI_ASC_INVALID_FIELED_IN_COMMAND;
 			return ERROR_FAIL;
 		}
-		return ERROR_OK;
 	default:
-		vsfusbd_MSCBOT_SetError(device, tmp);
+		vsfusbd_MSCBOT_SetError(device, tmp, USBMSC_CSW_PHASE_ERROR);
 		lun_info->status.sense_key = SCSI_SENSEKEY_ILLEGAL_REQUEST;
 		lun_info->status.asc = SCSI_ASC_INVALID_FIELED_IN_COMMAND;
 		return ERROR_FAIL;
@@ -295,6 +312,7 @@ static RESULT vsfusbd_MSCBOT_class_init(uint8_t iface,
 											struct vsfusbd_device_t *device)
 {
 	struct vsfusbd_MSCBOT_param_t *tmp = vsfusbd_MSCBOT_find_param(iface);
+	uint8_t i;
 	
 	if ((NULL == tmp) || 
 		// minium ep size of MSCBOT is 32 bytes, 
@@ -311,7 +329,13 @@ static RESULT vsfusbd_MSCBOT_class_init(uint8_t iface,
 	{
 		return ERROR_FAIL;
 	}
+	
 	tmp->bot_status = VSFUSBD_MSCBOT_STATUS_IDLE;
+	for (i = 0; i < tmp->max_lun; i++)
+	{
+		tmp->lun_info[i].status.sense_key = SCSI_SENSEKEY_NOT_READY;
+		tmp->lun_info[i].status.asc = SCSI_ASC_MEDIUM_NOT_PRESENT;
+	}
 	
 	return ERROR_OK;
 }
