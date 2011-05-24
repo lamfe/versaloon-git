@@ -9,7 +9,9 @@
 
 #define USBMSC_CBWFLAGS_DIR_OUT			0x00
 #define USBMSC_CBWFLAGS_DIR_IN			0x80
+#define USBMSC_CBWFLAGS_DIR_MASK		0x80
 
+#define USBMSC_CBW_SIZE					31
 struct USBMSC_CBW_t
 {
 	uint32_t dCBWSignature;
@@ -25,6 +27,7 @@ struct USBMSC_CBW_t
 #define USBMSC_CSW_FAILED				0x01
 #define USBMSC_CSW_PHASE_ERROR			0x02
 
+#define USBMSC_CSW_SIZE					13
 struct USBMSC_CSW_t
 {
 	uint32_t dCSWSignature;
@@ -38,6 +41,10 @@ enum usb_MSCBOT_req_t
 	USB_MSCBOTREQ_GET_MAX_LUN	= 0xFE,
 	USB_MSCBOTREQ_RESET			= 0xFF,
 };
+
+#define USBMSC_CSW_OK					0x00
+#define USBMSC_CSW_FAIL					0x01
+#define USBMSC_CSW_PHASE_ERROR			0x02
 
 extern const struct vsfusbd_class_protocol_t vsfusbd_MSCBOT_class;
 
@@ -68,8 +75,11 @@ struct vsfusbd_MSCBOT_param_t
 	// no need to initialize below by user
 	bool tick_tock;
 	struct USBMSC_CBW_t CBW;
-	struct USBMSC_CSW_t CSW;
-	enum vsfusbd_MSCBOT_status_t status;
+	uint8_t dCSWStatus;
+	uint8_t CSW_buffer[USBMSC_CSW_SIZE];
+	struct vsf_transaction_buffer_t tbuffer;
+	uint32_t page_size, page_num, cur_size, cur_page;
+	enum vsfusbd_MSCBOT_status_t bot_status;
 	
 	struct sllist list;
 };

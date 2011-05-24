@@ -70,7 +70,7 @@ struct SCSI_LUN_param_t
 struct SCSI_LUN_status_t
 {
 	uint8_t sense_key;
-	uint8_t secse_code;
+	uint8_t asc;
 	
 	RESULT status;
 };
@@ -90,7 +90,10 @@ struct SCSI_handler_t
 		struct vsf_buffer_t *buffer);
 };
 
-//RESULT SCSI_(struct SCSI_CBW_t *CBW, struct SCSI_CSW_t *CSW);
+RESULT SCSI_Process(struct SCSI_LUN_info_t *info, uint8_t CB[16], 
+		struct vsf_buffer_t *buffer, uint32_t *page_size, uint32_t *page_num);
+RESULT SCSI_IO(struct SCSI_LUN_info_t *info, uint8_t CB[16], 
+		struct vsf_buffer_t *buffer, uint32_t cur_page);
 
 #endif	// __SCSI_H_INCLUDED__
 
