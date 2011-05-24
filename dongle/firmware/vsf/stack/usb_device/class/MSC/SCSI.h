@@ -54,8 +54,8 @@
 
 enum SCSI_PDT_t
 {
-	SCSI_PDT_DIRECT_ACCESS_BLOCK		= 0x00,
-	SCSI_PDT_CD_DVD						= 0x05,
+	SCSI_PDT_DIRECT_ACCESS_BLOCK					= 0x00,
+	SCSI_PDT_CD_DVD									= 0x05,
 };
 
 struct SCSI_LUN_param_t
@@ -81,19 +81,31 @@ struct SCSI_LUN_info_t
 	struct SCSI_LUN_status_t status;
 };
 
+#define SCSI_HANDLER_NULL							{0, NULL, NULL}
 struct SCSI_handler_t
 {
 	uint8_t operation_code;
 	RESULT (*handler)(struct SCSI_LUN_info_t *info, uint8_t CB[16], 
 		struct vsf_buffer_t *buffer, uint32_t *page_size, uint32_t *page_num);
 	RESULT (*io)(struct SCSI_LUN_info_t *info, uint8_t CB[16], 
-		struct vsf_buffer_t *buffer);
+		struct vsf_buffer_t *buffer, uint32_t cur_page);
 };
 
-RESULT SCSI_Process(struct SCSI_LUN_info_t *info, uint8_t CB[16], 
+enum SCSI_errcode_t
+{
+	SCSI_ERRCODE_OK,
+	SCSI_ERRCODE_FAIL,
+	SCSI_ERRCODE_INVALID_PARAM,
+	SCSI_ERRCODE_INVALID_COMMAND,
+};
+
+RESULT SCSI_Handle(struct SCSI_handler_t *handlers, 
+		struct SCSI_LUN_info_t *info, uint8_t CB[16], 
 		struct vsf_buffer_t *buffer, uint32_t *page_size, uint32_t *page_num);
-RESULT SCSI_IO(struct SCSI_LUN_info_t *info, uint8_t CB[16], 
+RESULT SCSI_IO(struct SCSI_handler_t *handlers, 
+		struct SCSI_LUN_info_t *info, uint8_t CB[16], 
 		struct vsf_buffer_t *buffer, uint32_t cur_page);
+enum SCSI_errcode_t SCSI_GetErrorCode(void);
 
 #endif	// __SCSI_H_INCLUDED__
 
