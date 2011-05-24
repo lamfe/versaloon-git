@@ -4,8 +4,40 @@
 
 static enum SCSI_errcode_t SCSI_errcode = SCSI_ERRCODE_OK;
 
-RESULT SCSI_handler_INQUIRY(struct SCSI_LUN_info_t *info, uint8_t CB[16], 
-		struct vsf_buffer_t *buffer, uint32_t *page_size, uint32_t *page_num)
+static RESULT SCSI_handler_TEST_UNIT_READY(struct SCSI_LUN_info_t *info, 
+		uint8_t CB[16], struct vsf_buffer_t *buffer, uint32_t *page_size, 
+		uint32_t *page_num)
+{
+	info->status.sense_key = SCSI_SENSEKEY_NOT_READY;
+	info->status.asc = SCSI_ASC_MEDIUM_NOT_PRESENT;
+	SCSI_errcode = SCSI_ERRCODE_FAIL;
+	return ERROR_FAIL;
+}
+
+static RESULT SCSI_hadler_REQUEST_SENSE(struct SCSI_LUN_info_t *info, 
+		uint8_t CB[16], struct vsf_buffer_t *buffer, uint32_t *page_size, 
+		uint32_t *page_num)
+{
+	uint8_t *pbuffer = buffer->buffer;
+	uint32_t size;
+	
+	memset(pbuffer, 0, 18);
+	pbuffer[0] = 0x70;
+	pbuffer[2] = info->status.sense_key;
+	pbuffer[7] = 0x0A;
+	pbuffer[12] = info->status.asc;
+	size = CB[4] <= 18 ? CB[4] : 18;
+	buffer->size = size;
+	*page_size = size;
+	*page_num = 1;
+	SCSI_errcode = SCSI_ERRCODE_OK;
+	
+	return ERROR_OK;
+}
+
+static RESULT SCSI_handler_INQUIRY(struct SCSI_LUN_info_t *info, 
+		uint8_t CB[16], struct vsf_buffer_t *buffer, uint32_t *page_size, 
+		uint32_t *page_num)
 {
 	uint8_t *pbuffer = buffer->buffer;
 	
@@ -21,6 +53,7 @@ RESULT SCSI_handler_INQUIRY(struct SCSI_LUN_info_t *info, uint8_t CB[16],
 			buffer->size = 5;
 			*page_size = 5;
 			*page_num = 1;
+			SCSI_errcode = SCSI_ERRCODE_OK;
 		}
 	}
 	else
@@ -44,7 +77,8 @@ RESULT SCSI_handler_INQUIRY(struct SCSI_LUN_info_t *info, uint8_t CB[16],
 		{
 			pbuffer[1] = 0x80;
 		}
-		pbuffer[4] = 32;
+		pbuffer[3] = 2;
+		pbuffer[4] = 31;
 		pbuffer += 8;
 		memcpy(pbuffer, info->param.vendor, sizeof(info->param.vendor));
 		pbuffer += sizeof(info->param.vendor);
@@ -54,12 +88,13 @@ RESULT SCSI_handler_INQUIRY(struct SCSI_LUN_info_t *info, uint8_t CB[16],
 		buffer->size = 36;
 		*page_size = 36;
 		*page_num = 1;
+		SCSI_errcode = SCSI_ERRCODE_OK;
 	}
 	
 	return ERROR_OK;
 }
 
-RESULT SCSI_handler_READ_FORMAT_CAPACITIES(struct SCSI_LUN_info_t *info, 
+static RESULT SCSI_handler_MODE_SENSE6(struct SCSI_LUN_info_t *info, 
 		uint8_t CB[16], struct vsf_buffer_t *buffer, uint32_t *page_size, 
 		uint32_t *page_num)
 {
@@ -69,7 +104,37 @@ RESULT SCSI_handler_READ_FORMAT_CAPACITIES(struct SCSI_LUN_info_t *info,
 	return ERROR_FAIL;
 }
 
-RESULT SCSI_handler_READ_CAPACITY10(struct SCSI_LUN_info_t *info, 
+static RESULT SCSI_handler_ALLOW_MEDIUM_REMOVAL(struct SCSI_LUN_info_t *info, 
+		uint8_t CB[16], struct vsf_buffer_t *buffer, uint32_t *page_size, 
+		uint32_t *page_num)
+{
+	info->status.sense_key = SCSI_SENSEKEY_NOT_READY;
+	info->status.asc = SCSI_ASC_MEDIUM_NOT_PRESENT;
+	SCSI_errcode = SCSI_ERRCODE_FAIL;
+	return ERROR_FAIL;
+}
+
+static RESULT SCSI_handler_READ_FORMAT_CAPACITIES(struct SCSI_LUN_info_t *info, 
+		uint8_t CB[16], struct vsf_buffer_t *buffer, uint32_t *page_size, 
+		uint32_t *page_num)
+{
+	info->status.sense_key = SCSI_SENSEKEY_NOT_READY;
+	info->status.asc = SCSI_ASC_MEDIUM_NOT_PRESENT;
+	SCSI_errcode = SCSI_ERRCODE_FAIL;
+	return ERROR_FAIL;
+}
+
+static RESULT SCSI_handler_READ_CAPACITY10(struct SCSI_LUN_info_t *info, 
+		uint8_t CB[16], struct vsf_buffer_t *buffer, uint32_t *page_size, 
+		uint32_t *page_num)
+{
+	info->status.sense_key = SCSI_SENSEKEY_NOT_READY;
+	info->status.asc = SCSI_ASC_MEDIUM_NOT_PRESENT;
+	SCSI_errcode = SCSI_ERRCODE_FAIL;
+	return ERROR_FAIL;
+}
+
+static RESULT SCSI_handler_READ10(struct SCSI_LUN_info_t *info, 
 		uint8_t CB[16], struct vsf_buffer_t *buffer, uint32_t *page_size, 
 		uint32_t *page_num)
 {
@@ -82,8 +147,28 @@ RESULT SCSI_handler_READ_CAPACITY10(struct SCSI_LUN_info_t *info,
 static struct SCSI_handler_t SCSI_handlers[] = 
 {
 	{
+		SCSI_CMD_TEST_UNIT_READY,
+		SCSI_handler_TEST_UNIT_READY,
+		NULL
+	},
+	{
+		SCSI_CMD_REQUEST_SENSE,
+		SCSI_hadler_REQUEST_SENSE,
+		NULL
+	},
+	{
 		SCSI_CMD_INQUIRY,
 		SCSI_handler_INQUIRY,
+		NULL
+	},
+	{
+		SCSI_CMD_MODE_SENSE6,
+		SCSI_handler_MODE_SENSE6,
+		NULL
+	},
+	{
+		SCSI_CMD_ALLOW_MEDIUM_REMOVAL,
+		SCSI_handler_ALLOW_MEDIUM_REMOVAL,
 		NULL
 	},
 	{
@@ -94,6 +179,11 @@ static struct SCSI_handler_t SCSI_handlers[] =
 	{
 		SCSI_CMD_READ_CAPACITY10,
 		SCSI_handler_READ_CAPACITY10,
+		NULL
+	},
+	{
+		SCSI_CMD_READ10,
+		SCSI_handler_READ10,
 		NULL
 	},
 	SCSI_HANDLER_NULL

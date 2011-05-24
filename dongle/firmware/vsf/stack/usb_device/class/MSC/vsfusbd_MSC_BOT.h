@@ -73,7 +73,6 @@ struct vsfusbd_MSCBOT_param_t
 	struct SCSI_handler_t *cur_handlers;
 	struct USBMSC_CBW_t CBW;
 	uint8_t dCSWStatus;
-	uint8_t CSW_buffer[USBMSC_CSW_SIZE];
 	struct vsf_transaction_buffer_t tbuffer;
 	uint32_t page_size, page_num, cur_page;
 	enum vsfusbd_MSCBOT_status_t bot_status;
