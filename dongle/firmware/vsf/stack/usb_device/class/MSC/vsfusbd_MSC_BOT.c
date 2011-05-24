@@ -84,6 +84,8 @@ static RESULT vsfusbd_MSCBOT_ErrCode(struct vsfusbd_device_t *device,
 	case SCSI_ERRCODE_FAIL:
 		param->dCSWStatus = USBMSC_CSW_FAIL;
 		return vsfusbd_MSCBOT_SendCSW(device, param);
+	default:
+		break;
 	}
 	return ERROR_OK;
 }
@@ -220,7 +222,12 @@ static RESULT vsfusbd_MSCBOT_OUT_hanlder(void *p, uint8_t ep)
 			if (SCSI_ERRCODE_INVALID_COMMAND == errcode)
 			{
 				tmp->cur_handlers = tmp->user_handlers;
-				if (ERROR_OK != SCSI_Handle(tmp->cur_handlers, lun_info, 
+				if (NULL == tmp->cur_handlers)
+				{
+					vsfusbd_MSCBOT_SetError(device, tmp, USBMSC_CSW_FAIL);
+					return ERROR_FAIL;
+				}
+				else if (ERROR_OK != SCSI_Handle(tmp->cur_handlers, lun_info, 
 						tmp->CBW.CBWCB, &tmp->tbuffer.buffer, &tmp->page_size, 
 						&tmp->page_num))
 				{
