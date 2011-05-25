@@ -43,19 +43,16 @@ STM32_LIB_DIR = $(STM32_IFACES_DIR)/HW/STM32F10x_Lib
 # add .h header files to USR_INCS
 # add pre-defines to USR_DEFS
 # add library directory to USR_LIBS
-USR_SRCS+= $(SRCDIR)/main.c $(STM32_IFACES_DIR)/HW/stm32f10x_it.c
-USR_SRCS+= $(STM32_IFACES_DIR)/HW/HW.c
-USR_INCS+= -I $(STM32_IFACES_DIR)/HW -I $(PRJDIR)/..
+USR_SRCS+= $(SRCDIR)/main.c $(SRCDIR)/usb_protocol.c
+USR_INCS+= -I $(PRJDIR)/..
+USR_SRCS+= $(STM32_IFACES_DIR)/HW/HW.c $(STM32_IFACES_DIR)/HW/stm32f10x_it.c
+USR_INCS+= -I $(STM32_IFACES_DIR)/HW
 #USR_DEFS+= -DADD_USER_DEFINES_HERE
 #USR_LIBS+= -L./
 
 # myString
 USR_SRCS+= $(STM32_IFACES_DIR)/HW/Port/GCC/myString.c
 USR_INCS+= -I $(STM32_IFACES_DIR)/HW/Port/GCC
-
-# USB
-USR_SRCS+= $(SRCDIR)/USB_TO_XXX/USB/usb_protocol.c
-USR_INCS+= -I $(SRCDIR)/USB_TO_XXX/USB
 
 # Tools
 USR_SRCS+= $(SRCDIR)/Tools/fifo/fifo.c
