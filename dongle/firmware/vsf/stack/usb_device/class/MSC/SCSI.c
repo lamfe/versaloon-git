@@ -35,6 +35,16 @@ static RESULT SCSI_hadler_REQUEST_SENSE(struct SCSI_LUN_info_t *info,
 	return ERROR_OK;
 }
 
+static RESULT SCSI_handler_FORMAT_UNIT(struct SCSI_LUN_info_t *info, 
+		uint8_t CB[16], struct vsf_buffer_t *buffer, uint32_t *page_size, 
+		uint32_t *page_num)
+{
+	info->status.sense_key = SCSI_SENSEKEY_NOT_READY;
+	info->status.asc = SCSI_ASC_MEDIUM_NOT_PRESENT;
+	SCSI_errcode = SCSI_ERRCODE_FAIL;
+	return ERROR_FAIL;
+}
+
 static RESULT SCSI_handler_INQUIRY(struct SCSI_LUN_info_t *info, 
 		uint8_t CB[16], struct vsf_buffer_t *buffer, uint32_t *page_size, 
 		uint32_t *page_num)
@@ -73,6 +83,7 @@ static RESULT SCSI_handler_INQUIRY(struct SCSI_LUN_info_t *info,
 		// If the EVPD bit is set to zero, 
 		// the device server shall return the standard INQUIRY data.
 		memset(pbuffer, 0, 36);
+		pbuffer[0] = info->param.type;
 		if (info->param.removable)
 		{
 			pbuffer[1] = 0x80;
@@ -95,6 +106,16 @@ static RESULT SCSI_handler_INQUIRY(struct SCSI_LUN_info_t *info,
 }
 
 static RESULT SCSI_handler_MODE_SENSE6(struct SCSI_LUN_info_t *info, 
+		uint8_t CB[16], struct vsf_buffer_t *buffer, uint32_t *page_size, 
+		uint32_t *page_num)
+{
+	info->status.sense_key = SCSI_SENSEKEY_NOT_READY;
+	info->status.asc = SCSI_ASC_MEDIUM_NOT_PRESENT;
+	SCSI_errcode = SCSI_ERRCODE_FAIL;
+	return ERROR_FAIL;
+}
+
+static RESULT SCSI_handler_START_STOP_UNIT(struct SCSI_LUN_info_t *info, 
 		uint8_t CB[16], struct vsf_buffer_t *buffer, uint32_t *page_size, 
 		uint32_t *page_num)
 {
@@ -134,6 +155,16 @@ static RESULT SCSI_handler_READ_CAPACITY10(struct SCSI_LUN_info_t *info,
 	return ERROR_FAIL;
 }
 
+static RESULT SCSI_handler_WRITE10(struct SCSI_LUN_info_t *info, 
+		uint8_t CB[16], struct vsf_buffer_t *buffer, uint32_t *page_size, 
+		uint32_t *page_num)
+{
+	info->status.sense_key = SCSI_SENSEKEY_NOT_READY;
+	info->status.asc = SCSI_ASC_MEDIUM_NOT_PRESENT;
+	SCSI_errcode = SCSI_ERRCODE_FAIL;
+	return ERROR_FAIL;
+}
+
 static RESULT SCSI_handler_READ10(struct SCSI_LUN_info_t *info, 
 		uint8_t CB[16], struct vsf_buffer_t *buffer, uint32_t *page_size, 
 		uint32_t *page_num)
@@ -142,6 +173,46 @@ static RESULT SCSI_handler_READ10(struct SCSI_LUN_info_t *info,
 	info->status.asc = SCSI_ASC_MEDIUM_NOT_PRESENT;
 	SCSI_errcode = SCSI_ERRCODE_FAIL;
 	return ERROR_FAIL;
+}
+
+static RESULT SCSI_handler_VERIFY10(struct SCSI_LUN_info_t *info, 
+		uint8_t CB[16], struct vsf_buffer_t *buffer, uint32_t *page_size, 
+		uint32_t *page_num)
+{
+	info->status.sense_key = SCSI_SENSEKEY_NOT_READY;
+	info->status.asc = SCSI_ASC_MEDIUM_NOT_PRESENT;
+	SCSI_errcode = SCSI_ERRCODE_FAIL;
+	return ERROR_FAIL;
+}
+
+static RESULT SCSI_handler_READ_TOC(struct SCSI_LUN_info_t *info, 
+		uint8_t CB[16], struct vsf_buffer_t *buffer, uint32_t *page_size, 
+		uint32_t *page_num)
+{
+	info->status.sense_key = SCSI_SENSEKEY_NOT_READY;
+	info->status.asc = SCSI_ASC_MEDIUM_NOT_PRESENT;
+	SCSI_errcode = SCSI_ERRCODE_OK;
+	return ERROR_OK;
+}
+
+static RESULT SCSI_handler_GET_EVENT_STATUS_NOTIFICATION(
+		struct SCSI_LUN_info_t *info, uint8_t CB[16], 
+		struct vsf_buffer_t *buffer, uint32_t *page_size, uint32_t *page_num)
+{
+	info->status.sense_key = SCSI_SENSEKEY_NOT_READY;
+	info->status.asc = SCSI_ASC_MEDIUM_NOT_PRESENT;
+	SCSI_errcode = SCSI_ERRCODE_OK;
+	return ERROR_OK;
+}
+
+static RESULT SCSI_handler_MODE_SENSE10(struct SCSI_LUN_info_t *info, 
+		uint8_t CB[16], struct vsf_buffer_t *buffer, uint32_t *page_size, 
+		uint32_t *page_num)
+{
+	info->status.sense_key = SCSI_SENSEKEY_NOT_READY;
+	info->status.asc = SCSI_ASC_MEDIUM_NOT_PRESENT;
+	SCSI_errcode = SCSI_ERRCODE_OK;
+	return ERROR_OK;
 }
 
 static struct SCSI_handler_t SCSI_handlers[] = 
@@ -157,6 +228,11 @@ static struct SCSI_handler_t SCSI_handlers[] =
 		NULL
 	},
 	{
+		SCSI_CMD_FORMAT_UNIT,
+		SCSI_handler_FORMAT_UNIT,
+		NULL
+	},
+	{
 		SCSI_CMD_INQUIRY,
 		SCSI_handler_INQUIRY,
 		NULL
@@ -164,6 +240,11 @@ static struct SCSI_handler_t SCSI_handlers[] =
 	{
 		SCSI_CMD_MODE_SENSE6,
 		SCSI_handler_MODE_SENSE6,
+		NULL
+	},
+	{
+		SCSI_CMD_START_STOP_UNIT,
+		SCSI_handler_START_STOP_UNIT,
 		NULL
 	},
 	{
@@ -182,8 +263,33 @@ static struct SCSI_handler_t SCSI_handlers[] =
 		NULL
 	},
 	{
+		SCSI_CMD_WRITE10,
+		SCSI_handler_WRITE10,
+		NULL
+	},
+	{
 		SCSI_CMD_READ10,
 		SCSI_handler_READ10,
+		NULL
+	},
+	{
+		SCSI_CMD_VERIFY10,
+		SCSI_handler_VERIFY10,
+		NULL
+	},
+	{
+		SCSI_CMD_READ_TOC,
+		SCSI_handler_READ_TOC,
+		NULL
+	},
+	{
+		SCSI_CMD_GET_EVENT_STATUS_NOTIFICATION,
+		SCSI_handler_GET_EVENT_STATUS_NOTIFICATION,
+		NULL
+	},
+	{
+		SCSI_CMD_MODE_SENSE10,
+		SCSI_handler_MODE_SENSE10,
 		NULL
 	},
 	SCSI_HANDLER_NULL
