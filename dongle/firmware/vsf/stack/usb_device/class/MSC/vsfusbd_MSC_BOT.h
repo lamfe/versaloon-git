@@ -70,11 +70,14 @@ struct vsfusbd_MSCBOT_param_t
 	
 	// no need to initialize below by user
 	uint8_t tick_tock;
+	volatile bool ready;
+	bool fail;
+	bool usb_win;
 	struct SCSI_handler_t *cur_handlers;
 	struct USBMSC_CBW_t CBW;
 	uint8_t dCSWStatus;
 	struct vsf_transaction_buffer_t tbuffer;
-	uint32_t page_size, page_num, cur_page;
+	uint32_t page_size, page_num, cur_usb_page, cur_scsi_page;
 	enum vsfusbd_MSCBOT_status_t bot_status;
 	
 	struct sllist list;
