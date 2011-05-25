@@ -76,6 +76,47 @@ static RESULT versaloon_init(uint8_t iface, struct vsfusbd_device_t *device)
 	return ERROR_OK;
 }
 
+static RESULT versaloon_idle(uint8_t iface, struct vsfusbd_device_t *device)
+{
+	if(cmd_len & 0x80000000)
+	{
+		// A valid USB package has been received
+		LED_USB_OFF();				// USB LED indicate the USB transmission
+		
+		ProcessCommand(&buffer_out[0], cmd_len & 0xFFFF);
+		if(rep_len > 0)
+		{
+			// indicate reply data is valid
+			rep_len |= 0x80000000;
+		}
+		else
+		{
+			// no data to send, set cmd_len to 0
+			cmd_len = 0;
+		}
+		count_out = 0;				// set USB receive pointer to 0
+	}
+	else
+	{
+		PWREXT_Check(1);
+	}
+	
+	if(rep_len & 0x80000000)		// there is valid data to be sent to PC
+	{
+		struct vsf_buffer_t buffer;
+		
+		buffer.buffer = buffer_out;
+		buffer.size = rep_len & 0xFFFF;
+		vsfusbd_ep_out(&usb_device, 2, &buffer);
+		
+		// reset command length and reply length for next command
+		cmd_len = 0;
+		rep_len = 0;
+	}
+	LED_USB_ON();					// command processed, light USB LED
+	return ERROR_OK;
+}
+
 static const uint8_t Versaloon_DeviceDescriptor[] =
 {
 	0x12,	// bLength
@@ -295,7 +336,7 @@ static const struct vsfusbd_class_protocol_t Versaloon_Protocol =
 {
 	NULL, NULL, NULL, 
 	versaloon_init,
-	NULL, NULL
+	NULL, versaloon_idle
 };
 static const struct vsfusbd_iface_t ifaces[] = 
 {
@@ -342,6 +383,9 @@ struct vsfusbd_CDC_param_t Versaloon_CDC_param =
 
 RESULT usb_protocol_init()
 {
+	LED_GREEN_ON();
+	LED_USB_ON();
+	
 	vsfusbd_CDC_set_param(&Versaloon_CDC_param);
 	return vsfusbd_device_init(&usb_device);
 }
