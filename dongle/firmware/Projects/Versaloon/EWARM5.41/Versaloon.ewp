@@ -295,7 +295,6 @@
           <state>$PROJ_DIR$\..\..\..\Interfaces\APP\PowerExt\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\APP\BDM\</state>
           <state>$PROJ_DIR$\..\..\..\USB_TO_XXX\</state>
-          <state>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB</state>
           <state>$PROJ_DIR$\..\..\..\vsf\</state>
         </option>
         <option>
@@ -1173,7 +1172,6 @@
           <state>$PROJ_DIR$\..\..\..\Interfaces\APP\PowerExt\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\APP\BDM\</state>
           <state>$PROJ_DIR$\..\..\..\USB_TO_XXX\</state>
-          <state>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB</state>
           <state>$PROJ_DIR$\..\..\..\vsf\</state>
         </option>
         <option>
@@ -2111,12 +2109,6 @@
   </group>
   <group>
     <name>USB_TO_XXX</name>
-    <group>
-      <name>USB</name>
-      <file>
-        <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB\usb_protocol.c</name>
-      </file>
-    </group>
     <file>
       <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\CommandProcessor.c</name>
     </file>
@@ -2240,6 +2232,9 @@
   </file>
   <file>
     <name>$PROJ_DIR$\..\..\..\main.c</name>
+  </file>
+  <file>
+    <name>$PROJ_DIR$\..\..\..\usb_protocol.c</name>
   </file>
 </project>
 
