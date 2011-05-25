@@ -396,14 +396,16 @@ static RESULT vsfusbd_MSCBOT_GetMaxLun_process(
 static RESULT vsfusbd_MSCBOT_Reset_prepare(
 	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
 {
+	struct interface_usbd_t *drv = device->drv;
 	struct vsfusbd_ctrl_request_t *request = &device->ctrl_handler.request;
 	struct vsfusbd_MSCBOT_param_t *tmp = 
 									vsfusbd_MSCBOT_find_param(request->index);
 	
 	if ((NULL == tmp) || (request->length != 0) || (request->value != 0) || 
-		(ERROR_OK != device->drv->ep.set_type(tmp->ep_in, USB_EP_TYPE_BULK)) || 
-		(ERROR_OK != device->drv->ep.set_type(tmp->ep_out, USB_EP_TYPE_BULK)) || 
-		(ERROR_OK != vsfusbd_MSCBOT_class_init(tmp->iface, device)))
+		(ERROR_OK != drv->ep.reset_IN_toggle(tmp->ep_in)) || 
+		(ERROR_OK != drv->ep.set_IN_state(tmp->ep_in, USB_EP_STAT_ACK)) || 
+		(ERROR_OK != drv->ep.reset_OUT_toggle(tmp->ep_out)) || 
+		(ERROR_OK != drv->ep.set_OUT_state(tmp->ep_out, USB_EP_STAT_ACK)))
 	{
 		return ERROR_FAIL;
 	}
