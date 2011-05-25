@@ -336,7 +336,6 @@ usb_dev_handle* find_usb_device(uint16_t VID, uint16_t PID, uint8_t interface,
 	struct usb_bus *busses;
 	struct usb_bus *bus;
 	struct usb_device *dev;
-	int config_value;
 
 	usb_init();
 	usb_find_busses();
