@@ -18,7 +18,6 @@
 #define __USB_TO_XXX_H_INCLUDED__
 
 #include "CommandProcessor.h"
-#include "USB/usb_protocol.h"
 
 // USB_TO_XXX USB Commands
 // Page0
@@ -79,6 +78,7 @@ void USB_TO_BDM_ProcessCmd(uint8_t *dat, uint16_t len);
 // Page2
 void USB_TO_POWER_ProcessCmd(uint8_t * dat, uint16_t len);
 extern int8_t USB_TO_POLL_Index;
+extern volatile uint32_t rep_len;
 
 // USB_TO_XXX Masks
 #define USB_TO_XXX_CMDMASK			0xF8

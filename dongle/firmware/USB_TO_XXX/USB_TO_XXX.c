@@ -42,6 +42,7 @@ static const uint8_t *USB_TO_POLL_buffer_reply[USB_TO_POLL_NUM] =
 int8_t USB_TO_POLL_Index;
 
 uint8_t *buffer_reply;
+volatile uint32_t rep_len = 0;
 
 #define USB_TO_XXX_ABILITIES_LEN			\
 	((VERSALOON_USB_TO_XXX_CMD_END + 1 - VERSALOON_USB_TO_XXX_CMD_START) / 8)
