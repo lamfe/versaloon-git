@@ -370,36 +370,7 @@ usb_dev_handle* find_usb_device(uint16_t VID, uint16_t PID, uint8_t interface,
 					dev_handle = NULL;
 					continue;
 				}
-#if !IS_WIN32 && !IS_DARWIN
-				usb_reset(dev_handle);
 				
-				{
-					char driver_name[256];
-					memset(driver_name, 0, sizeof(driver_name));
-					if (usb_get_driver_np(dev_handle, interface, driver_name, 
-											sizeof(driver_name)) == 0)
-					{
-						if (usb_detach_kernel_driver_np(dev_handle, 
-														interface) < 0)
-						{
-							LOG_ERROR("fail to detach form: %s, err: %s", 
-										driver_name, usb_strerror());
-							continue;
-						}
-						usb_set_altinterface(dev_handle, interface);
-					}
-				}
-#endif
-				// usb_set_configuration required under win32
-				config_value = dev->config[0].bConfigurationValue;
-				if (usb_set_configuration(dev_handle, config_value) != 0)
-				{
-					LOG_ERROR(ERRMSG_FAILURE_OPERATION_MESSAGE, 
-								"set configuration", usb_strerror());
-					usb_close(dev_handle);
-					dev_handle = NULL;
-					continue;
-				}
 				if (usb_claim_interface(dev_handle, interface) != 0)
 				{
 					LOG_ERROR(ERRMSG_FAILURE_OPERATION_MESSAGE, 
