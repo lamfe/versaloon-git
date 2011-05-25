@@ -227,6 +227,18 @@ uint16_t stm32_usbd_ep_get_IN_epsize(uint8_t idx)
 	return stm32_usbd_IN_epsize[idx];
 }
 
+RESULT stm32_usbd_ep_reset_IN_toggle(uint8_t idx)
+{
+	ClearDTOG_TX(idx);
+	return ERROR_OK;
+}
+
+RESULT stm32_usbd_ep_toggle_IN_toggle(uint8_t idx)
+{
+	ToggleDTOG_TX(idx);
+	return ERROR_OK;
+}
+
 RESULT stm32_usbd_ep_set_IN_state(uint8_t idx, enum usb_ep_state_t state)
 {
 	switch (state)
@@ -368,6 +380,18 @@ RESULT stm32_usbd_ep_set_OUT_epsize(uint8_t idx, uint16_t epsize)
 uint16_t stm32_usbd_ep_get_OUT_epsize(uint8_t idx)
 {
 	return stm32_usbd_OUT_epsize[idx];
+}
+
+RESULT stm32_usbd_ep_reset_OUT_toggle(uint8_t idx)
+{
+	ClearDTOG_RX(idx);
+	return ERROR_OK;
+}
+
+RESULT stm32_usbd_ep_toggle_OUT_toggle(uint8_t idx)
+{
+	ToggleDTOG_RX(idx);
+	return ERROR_OK;
 }
 
 RESULT stm32_usbd_ep_set_OUT_state(uint8_t idx, enum usb_ep_state_t state)
