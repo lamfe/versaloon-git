@@ -325,6 +325,8 @@ struct interface_usbd_t
 		RESULT (*switch_IN_buffer)(uint8_t idx);
 		RESULT (*set_IN_epsize)(uint8_t idx, uint16_t size);
 		uint16_t (*get_IN_epsize)(uint8_t idx);
+		RESULT (*reset_IN_toggle)(uint8_t idx);
+		RESULT (*toggle_IN_toggle)(uint8_t idx);
 		enum usb_ep_state_t (*get_IN_state)(uint8_t idx);
 		RESULT (*set_IN_state)(uint8_t idx, enum usb_ep_state_t state);
 		RESULT (*set_IN_count)(uint8_t idx, uint16_t size);
@@ -336,6 +338,8 @@ struct interface_usbd_t
 		RESULT (*switch_OUT_buffer)(uint8_t idx);
 		RESULT (*set_OUT_epsize)(uint8_t idx, uint16_t size);
 		uint16_t (*get_OUT_epsize)(uint8_t idx);
+		RESULT (*reset_OUT_toggle)(uint8_t idx);
+		RESULT (*toggle_OUT_toggle)(uint8_t idx);
 		enum usb_ep_state_t (*get_OUT_state)(uint8_t idx);
 		RESULT (*set_OUT_state)(uint8_t idx, enum usb_ep_state_t state);
 		uint16_t (*get_OUT_count)(uint8_t idx);
@@ -450,6 +454,9 @@ extern const struct interfaces_info_t *interfaces;
 										__CONNECT(m, _usbd_ep_switch_IN_buffer)
 #define CORE_USBD_EP_SET_IN_EPSIZE(m)	__CONNECT(m, _usbd_ep_set_IN_epsize)
 #define CORE_USBD_EP_GET_IN_EPSIZE(m)	__CONNECT(m, _usbd_ep_get_IN_epsize)
+#define CORE_USBD_EP_RESET_IN_TOGGLE(m)	__CONNECT(m, _usbd_ep_reset_IN_toggle)
+#define CORE_USBD_EP_TOGGLE_IN_TOGGLE(m)\
+										__CONNECT(m, _usbd_ep_toggle_IN_toggle)
 #define CORE_USBD_EP_GET_IN_STATE(m)	__CONNECT(m, _usbd_ep_get_IN_state)
 #define CORE_USBD_EP_SET_IN_STATE(m)	__CONNECT(m, _usbd_ep_set_IN_state)
 #define CORE_USBD_EP_SET_IN_COUNT(m)	__CONNECT(m, _usbd_ep_set_IN_count)
@@ -461,6 +468,10 @@ extern const struct interfaces_info_t *interfaces;
 										__CONNECT(m, _usbd_ep_switch_OUT_buffer)
 #define CORE_USBD_EP_SET_OUT_EPSIZE(m)	__CONNECT(m, _usbd_ep_set_OUT_epsize)
 #define CORE_USBD_EP_GET_OUT_EPSIZE(m)	__CONNECT(m, _usbd_ep_get_OUT_epsize)
+#define CORE_USBD_EP_RESET_OUT_TOGGLE(m)\
+										__CONNECT(m, _usbd_ep_reset_OUT_toggle)
+#define CORE_USBD_EP_TOGGLE_OUT_TOGGLE(m)\
+										__CONNECT(m, _usbd_ep_toggle_OUT_toggle)
 #define CORE_USBD_EP_GET_OUT_STATE(m)	__CONNECT(m, _usbd_ep_get_OUT_state)
 #define CORE_USBD_EP_SET_OUT_STATE(m)	__CONNECT(m, _usbd_ep_set_OUT_state)
 #define CORE_USBD_EP_GET_OUT_COUNT(m)	__CONNECT(m, _usbd_ep_get_OUT_count)
@@ -502,6 +513,8 @@ bool CORE_USBD_EP_IS_IN_DBUFFER(__TARGET_CHIP__)(uint8_t idx);
 RESULT CORE_USBD_EP_SWITCH_IN_BUFFER(__TARGET_CHIP__)(uint8_t idx);
 RESULT CORE_USBD_EP_SET_IN_EPSIZE(__TARGET_CHIP__)(uint8_t idx, uint16_t size);
 uint16_t CORE_USBD_EP_GET_IN_EPSIZE(__TARGET_CHIP__)(uint8_t idx);
+RESULT CORE_USBD_EP_RESET_IN_TOGGLE(__TARGET_CHIP__)(uint8_t idx);
+RESULT CORE_USBD_EP_TOGGLE_IN_TOGGLE(__TARGET_CHIP__)(uint8_t idx);
 enum usb_ep_state_t CORE_USBD_EP_GET_IN_STATE(__TARGET_CHIP__)(uint8_t idx);
 RESULT CORE_USBD_EP_SET_IN_STATE(__TARGET_CHIP__)(uint8_t idx, 
 		enum usb_ep_state_t state);
@@ -515,6 +528,8 @@ bool CORE_USBD_EP_IS_OUT_DBUFFER(__TARGET_CHIP__)(uint8_t idx);
 RESULT CORE_USBD_EP_SWITCH_OUT_BUFFER(__TARGET_CHIP__)(uint8_t idx);
 RESULT CORE_USBD_EP_SET_OUT_EPSIZE(__TARGET_CHIP__)(uint8_t idx, uint16_t size);
 uint16_t CORE_USBD_EP_GET_OUT_EPSIZE(__TARGET_CHIP__)(uint8_t idx);
+RESULT CORE_USBD_EP_RESET_OUT_TOGGLE(__TARGET_CHIP__)(uint8_t idx);
+RESULT CORE_USBD_EP_TOGGLE_OUT_TOGGLE(__TARGET_CHIP__)(uint8_t idx);
 enum usb_ep_state_t CORE_USBD_EP_GET_OUT_STATE(__TARGET_CHIP__)(uint8_t idx);
 RESULT CORE_USBD_EP_SET_OUT_STATE(__TARGET_CHIP__)(uint8_t idx, 
 		enum usb_ep_state_t state);

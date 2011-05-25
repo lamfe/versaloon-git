@@ -364,10 +364,12 @@ static RESULT vsfusbd_stdreq_clear_endpoint_feature_prepare(
 	
 	if (ep_dir)
 	{
+		device->drv->ep.reset_IN_toggle(ep_num);
 		device->drv->ep.set_IN_state(ep_num, USB_EP_STAT_ACK);
 	}
 	else
 	{
+		device->drv->ep.reset_OUT_toggle(ep_num);
 		device->drv->ep.set_OUT_state(ep_num, USB_EP_STAT_ACK);
 	}
 	return vsfusbd_request_prepare_0(device, buffer);
