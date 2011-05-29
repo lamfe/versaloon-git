@@ -52,51 +52,61 @@
 #define MAL_IDX_SD_SPI						5
 #define MAL_IDX_SD_SDIO						6
 
+struct mal_capacity_t
+{
+	uint64_t block_size;
+	uint64_t block_number;
+};
+
+struct mal_info_t
+{
+	struct mal_capacity_t capacity;
+	void *extra;
+};
+
 struct mal_t
 {
-	RESULT (*config_interface)(uint16_t index, void *ifs);
+	RESULT (*init)(uint16_t index, struct dal_info_t *param);
+	RESULT (*fini)(uint16_t index, struct dal_info_t *param);
+	RESULT (*getinfo)(uint16_t index, struct dal_info_t *param);
+	RESULT (*poll)(uint16_t index, struct dal_info_t *param);
 	
-	RESULT (*init)(uint16_t index, void *param);
-	RESULT (*fini)(uint16_t index);
-	RESULT (*getinfo)(uint16_t index, void *info);
-	RESULT (*getcapacity)(uint16_t index, uint64_t *block_size, 
-							uint64_t *block_number);
-	RESULT (*setcapacity)(uint16_t index, uint64_t block_size, 
-							uint64_t block_number);
-	RESULT (*poll)(uint16_t index);
+	RESULT (*eraseall)(uint16_t index, struct dal_info_t *param);
+	RESULT (*eraseblock)(uint16_t index, struct dal_info_t *param, 
+							uint64_t address, uint64_t count);
+	RESULT (*readblock)(uint16_t index, struct dal_info_t *param, 
+						uint64_t address, uint8_t *buff, uint64_t count);
+	RESULT (*writeblock)(uint16_t index, struct dal_info_t *param, 
+							uint64_t address, uint8_t *buff, uint64_t count);
 	
-	RESULT (*eraseall)(uint16_t index);
-	RESULT (*eraseblock)(uint16_t index, uint64_t address, uint64_t count);
-	RESULT (*readblock)(uint16_t index, uint64_t address, uint8_t *buff, 
-						uint64_t count);
-	RESULT (*writeblock)(uint16_t index, uint64_t address, uint8_t *buff, 
-							uint64_t count);
+	RESULT (*eraseall_nb_start)(uint16_t index, struct dal_info_t *param);
+	RESULT (*eraseall_nb_isready)(uint16_t index, struct dal_info_t *param);
+	RESULT (*eraseall_nb_waitready)(uint16_t index, struct dal_info_t *param);
+	RESULT (*eraseall_nb_end)(uint16_t index, struct dal_info_t *param);
 	
-	RESULT (*eraseall_nb_start)(uint16_t index);
-	RESULT (*eraseall_nb_isready)(uint16_t index);
-	RESULT (*eraseall_nb_waitready)(uint16_t index);
-	RESULT (*eraseall_nb_end)(uint16_t index);
+	RESULT (*eraseblock_nb_start)(uint16_t index, struct dal_info_t *param, 
+									uint64_t address, uint64_t count);
+	RESULT (*eraseblock_nb)(uint16_t index, struct dal_info_t *param, 
+							uint64_t address);
+	RESULT (*eraseblock_nb_isready)(uint16_t index, struct dal_info_t *param);
+	RESULT (*eraseblock_nb_waitready)(uint16_t index, struct dal_info_t *param);
+	RESULT (*eraseblock_nb_end)(uint16_t index, struct dal_info_t *param);
 	
-	RESULT (*eraseblock_nb_start)(uint16_t index, uint64_t address, 
-									uint64_t count);
-	RESULT (*eraseblock_nb)(uint16_t index, uint64_t address);
-	RESULT (*eraseblock_nb_isready)(uint16_t index);
-	RESULT (*eraseblock_nb_waitready)(uint16_t index);
-	RESULT (*eraseblock_nb_end)(uint16_t index);
+	RESULT (*readblock_nb_start)(uint16_t index, struct dal_info_t *param, 
+									uint64_t address, uint64_t count);
+	RESULT (*readblock_nb)(uint16_t index, struct dal_info_t *param, 
+							uint64_t address, uint8_t *buff);
+	RESULT (*readblock_nb_isready)(uint16_t index, struct dal_info_t *param);
+	RESULT (*readblock_nb_waitready)(uint16_t index, struct dal_info_t *param);
+	RESULT (*readblock_nb_end)(uint16_t index, struct dal_info_t *param);
 	
-	RESULT (*readblock_nb_start)(uint16_t index, uint64_t address, 
-									uint64_t count);
-	RESULT (*readblock_nb)(uint16_t index, uint64_t address, uint8_t *buff);
-	RESULT (*readblock_nb_isready)(uint16_t index);
-	RESULT (*readblock_nb_waitready)(uint16_t index);
-	RESULT (*readblock_nb_end)(uint16_t index);
-	
-	RESULT (*writeblock_nb_start)(uint16_t index, uint64_t address, 
-									uint64_t count);
-	RESULT (*writeblock_nb)(uint16_t index, uint64_t address, uint8_t *buff);
-	RESULT (*writeblock_nb_isready)(uint16_t index);
-	RESULT (*writeblock_nb_waitready)(uint16_t index);
-	RESULT (*writeblock_nb_end)(uint16_t index);
+	RESULT (*writeblock_nb_start)(uint16_t index, struct dal_info_t *param, 
+									uint64_t address, uint64_t count);
+	RESULT (*writeblock_nb)(uint16_t index, struct dal_info_t *param, 
+							uint64_t address, uint8_t *buff);
+	RESULT (*writeblock_nb_isready)(uint16_t index, struct dal_info_t *param);
+	RESULT (*writeblock_nb_waitready)(uint16_t index, struct dal_info_t *param);
+	RESULT (*writeblock_nb_end)(uint16_t index, struct dal_info_t *param);
 };
 
 extern struct mal_t mal;

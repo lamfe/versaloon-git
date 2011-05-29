@@ -95,12 +95,25 @@ const struct vss_cmd_t df25xx_notifier[] =
 
 #define commit()					interfaces->peripheral_commit()
 
+static struct df25xx_drv_info_t df25xx_drv_info;
+static struct df25xx_drv_param_t df25xx_drv_param;
+static struct df25xx_drv_interface_t df25xx_drv_ifs;
+static struct mal_info_t df25xx_mal_info = 
+{
+	{0, 0}, NULL
+};
+static struct dal_info_t df25xx_dal_info = 
+{
+	&df25xx_drv_ifs, 
+	&df25xx_drv_param, 
+	&df25xx_drv_info,
+	&df25xx_mal_info,
+};
+
 ENTER_PROGRAM_MODE_HANDLER(df25xx)
 {
 	struct chip_param_t *param = context->param;
 	struct program_info_t *pi = context->pi;
-	struct df25xx_drv_param_t drv_param;
-	struct df25xx_drv_interface_t drv_ifs;
 	
 	if (ERROR_OK != dal_init(context->prog))
 	{
@@ -109,33 +122,28 @@ ENTER_PROGRAM_MODE_HANDLER(df25xx)
 	
 	if (pi->ifs_indexes != NULL)
 	{
-		if (ERROR_OK != dal_config_interface(DF25XX_STRING, pi->ifs_indexes))
+		if (ERROR_OK != dal_config_interface(DF25XX_STRING, pi->ifs_indexes, 
+												&df25xx_dal_info))
 		{
 			return ERROR_FAIL;
 		}
 	}
 	else
 	{
-		drv_ifs.cs_port = 0;
-		drv_ifs.cs_pin = GPIO_SRST;
-		drv_ifs.spi_port = 0;
-		if (ERROR_OK != mal.config_interface(MAL_IDX_DF25XX, &drv_ifs))
-		{
-			return ERROR_FAIL;
-		}
+		df25xx_drv_ifs.cs_port = 0;
+		df25xx_drv_ifs.cs_pin = GPIO_SRST;
+		df25xx_drv_ifs.spi_port = 0;
 	}
 	
-	drv_param.spi_khz = pi->frequency;
-	if (ERROR_OK != mal.init(MAL_IDX_DF25XX, &drv_param))
+	df25xx_drv_param.spi_khz = pi->frequency;
+	if (ERROR_OK != mal.init(MAL_IDX_DF25XX, &df25xx_dal_info))
 	{
 		return ERROR_FAIL;
 	}
-	if (ERROR_OK != mal.setcapacity(MAL_IDX_DF25XX, 
-			param->chip_areas[APPLICATION_IDX].page_size, 
-			param->chip_areas[APPLICATION_IDX].page_num))
-	{
-		return ERROR_FAIL;
-	}
+	df25xx_mal_info.capacity.block_number = 
+								param->chip_areas[APPLICATION_IDX].page_num;
+	df25xx_mal_info.capacity.block_size = 
+								param->chip_areas[APPLICATION_IDX].page_size;
 	
 	return commit();
 }
@@ -145,7 +153,7 @@ LEAVE_PROGRAM_MODE_HANDLER(df25xx)
 	REFERENCE_PARAMETER(context);
 	REFERENCE_PARAMETER(success);
 	
-	mal.fini(MAL_IDX_DF25XX);
+	mal.fini(MAL_IDX_DF25XX, &df25xx_dal_info);
 	return commit();
 }
 
@@ -156,7 +164,7 @@ ERASE_TARGET_HANDLER(df25xx)
 	REFERENCE_PARAMETER(addr);
 	REFERENCE_PARAMETER(size);
 	
-	if (ERROR_OK != mal.eraseall(MAL_IDX_DF25XX))
+	if (ERROR_OK != mal.eraseall(MAL_IDX_DF25XX, &df25xx_dal_info))
 	{
 		return ERROR_FAIL;
 	}
@@ -176,7 +184,8 @@ WRITE_TARGET_HANDLER(df25xx)
 		}
 		size /= param->chip_areas[APPLICATION_IDX].page_size;
 		
-		if (ERROR_OK != mal.writeblock(MAL_IDX_DF25XX, addr, buff, size))
+		if (ERROR_OK != mal.writeblock(MAL_IDX_DF25XX, &df25xx_dal_info, 
+										addr, buff, size))
 		{
 			return ERROR_FAIL;
 		}
@@ -190,17 +199,16 @@ WRITE_TARGET_HANDLER(df25xx)
 READ_TARGET_HANDLER(df25xx)
 {
 	struct chip_param_t *param = context->param;
-	struct df25xx_drv_info_t drv_info;
 	
 	switch (area)
 	{
 	case CHIPID_CHAR:
-		if (ERROR_OK != mal.getinfo(MAL_IDX_DF25XX, &drv_info))
+		if (ERROR_OK != mal.getinfo(MAL_IDX_DF25XX, &df25xx_dal_info))
 		{
 			return ERROR_FAIL;
 		}
-		SET_LE_U16(&buff[0], drv_info.device_id);
-		buff[2] = drv_info.manufacturer_id;
+		SET_LE_U16(&buff[0], df25xx_drv_info.device_id);
+		buff[2] = df25xx_drv_info.manufacturer_id;
 		return ERROR_OK;
 		break;
 	case APPLICATION_CHAR:
@@ -210,7 +218,8 @@ READ_TARGET_HANDLER(df25xx)
 		}
 		size /= param->chip_areas[APPLICATION_IDX].page_size;
 		
-		if (ERROR_OK != mal.readblock(MAL_IDX_DF25XX, addr, buff, size))
+		if (ERROR_OK != mal.readblock(MAL_IDX_DF25XX, &df25xx_dal_info, 
+										addr, buff, size))
 		{
 			return ERROR_FAIL;
 		}

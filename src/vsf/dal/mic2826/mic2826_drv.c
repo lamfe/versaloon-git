@@ -47,8 +47,6 @@
 #define MIC2826_REG_ENABLE_LDO1				0x02
 #define MIC2826_REG_ENABLE_DCDC				0x01
 
-static struct mic2826_drv_interface_t mic2826_drv_ifs;
-
 static uint8_t mic2826_drv_ldo_regmap[] = 
 {
 	0x00, 0x0B, 0x14, 0x1D, 0x25, 0x2E, 0x37, 0x3E, 
@@ -91,7 +89,8 @@ static uint8_t mic2826_ldo_voltage2reg(uint16_t mV)
 	}
 }
 
-static RESULT mic2826_write_reg(uint8_t addr, uint8_t reg)
+static RESULT mic2826_write_reg(struct mic2826_drv_interface_t *ifs, 
+								uint8_t addr, uint8_t reg)
 {
 	uint8_t cmd[2];
 	uint8_t retry;
@@ -103,8 +102,7 @@ static RESULT mic2826_write_reg(uint8_t addr, uint8_t reg)
 	while (retry--)
 	{
 		if (ERROR_OK != 
-			interfaces->i2c.write(mic2826_drv_ifs.iic_port, MIC2826_IIC_ADDR, 
-									cmd, 2, 1))
+			interfaces->i2c.write(ifs->iic_port, MIC2826_IIC_ADDR, cmd, 2, 1))
 		{
 			continue;
 		}
@@ -119,32 +117,32 @@ static RESULT mic2826_write_reg(uint8_t addr, uint8_t reg)
 	return ret;
 }
 
-static RESULT mic2826_drv_config_interface(void *ifs)
+static RESULT mic2826_drv_init(struct dal_info_t *info)
 {
-	if (NULL == ifs)
-	{
-		return ERROR_FAIL;
-	}
-	memcpy(&mic2826_drv_ifs, ifs, sizeof(mic2826_drv_ifs));
-	return ERROR_OK;
-}
-
-static RESULT mic2826_drv_init(uint16_t kHz)
-{
-	interfaces->i2c.init(mic2826_drv_ifs.iic_port);
-	interfaces->i2c.config(mic2826_drv_ifs.iic_port, kHz, 0, 0xFFFF);
+	struct mic2826_drv_interface_t *ifs = 
+								(struct mic2826_drv_interface_t *)info->ifs;
+	struct mic2826_drv_param_t *param = 
+								(struct mic2826_drv_param_t *)info->param;
+	
+	interfaces->i2c.init(ifs->iic_port);
+	interfaces->i2c.config(ifs->iic_port, param->kHz, 0, 0xFFFF);
 	return interfaces->peripheral_commit();
 }
 
-static RESULT mic2826_drv_fini(void)
+static RESULT mic2826_drv_fini(struct dal_info_t *info)
 {
-	interfaces->i2c.fini(mic2826_drv_ifs.iic_port);
+	struct mic2826_drv_interface_t *ifs = 
+								(struct mic2826_drv_interface_t *)info->ifs;
+	
+	interfaces->i2c.fini(ifs->iic_port);
 	return interfaces->peripheral_commit();
 }
 
-static RESULT mic2826_drv_config(uint16_t DCDC_mV, uint16_t LDO1_mV, 
-									uint16_t LDO2_mV, uint16_t LDO3_mV)
+static RESULT mic2826_drv_config(struct dal_info_t *info, uint16_t DCDC_mV, 
+						uint16_t LDO1_mV, uint16_t LDO2_mV, uint16_t LDO3_mV)
 {
+	struct mic2826_drv_interface_t *ifs = 
+								(struct mic2826_drv_interface_t *)info->ifs;
 	uint8_t en_reg;
 	
 	if ((((DCDC_mV != 0) && (DCDC_mV < 800)) || (DCDC_mV > 1200)) || 
@@ -163,17 +161,17 @@ static RESULT mic2826_drv_config(uint16_t DCDC_mV, uint16_t LDO1_mV,
 #endif
 				;
 	
-	if ((ERROR_OK != mic2826_write_reg(MIC2826_REG_DCDC, 
+	if ((ERROR_OK != mic2826_write_reg(ifs, MIC2826_REG_DCDC, 
 							mic2826_dcdc_voltage2reg(DCDC_mV))) 
-		|| (ERROR_OK != mic2826_write_reg(MIC2826_REG_LDO1, 
+		|| (ERROR_OK != mic2826_write_reg(ifs, MIC2826_REG_LDO1, 
 							mic2826_ldo_voltage2reg(LDO1_mV))) 
-		|| (ERROR_OK != mic2826_write_reg(MIC2826_REG_LDO2, 
+		|| (ERROR_OK != mic2826_write_reg(ifs, MIC2826_REG_LDO2, 
 							mic2826_ldo_voltage2reg(LDO2_mV))) 
 #if MIC2826_HAS_LDO3
-		|| (ERROR_OK != mic2826_write_reg(MIC2826_REG_LDO3, 
+		|| (ERROR_OK != mic2826_write_reg(ifs, MIC2826_REG_LDO3, 
 							mic2826_ldo_voltage2reg(LDO3_mV))) 
 #endif
-		|| (ERROR_OK != mic2826_write_reg(MIC2826_REG_ENABLE, en_reg))
+		|| (ERROR_OK != mic2826_write_reg(ifs, MIC2826_REG_ENABLE, en_reg))
 		)
 	{
 		return ERROR_FAIL;
@@ -182,13 +180,13 @@ static RESULT mic2826_drv_config(uint16_t DCDC_mV, uint16_t LDO1_mV,
 }
 
 #if DAL_INTERFACE_PARSER_EN
-static RESULT mic2826_drv_parse_interface(uint8_t *buff)
+static RESULT mic2826_drv_parse_interface(struct dal_info_t *info, 
+											uint8_t *buff)
 {
-	if (NULL == buff)
-	{
-		return ERROR_FAIL;
-	}
-	mic2826_drv_ifs.iic_port = buff[0];
+	struct mic2826_drv_interface_t *ifs = 
+								(struct mic2826_drv_interface_t *)info->ifs;
+	
+	ifs->iic_port = buff[0];
 	return ERROR_OK;
 }
 #endif
@@ -201,7 +199,6 @@ const struct mic2826_drv_t mic2826_drv =
 		"iic:%1d",
 		mic2826_drv_parse_interface,
 #endif
-		mic2826_drv_config_interface,
 	},
 	
 	mic2826_drv_init,

@@ -96,12 +96,24 @@ const struct vss_cmd_t ee24cxx_notifier[] =
 
 #define commit()					interfaces->peripheral_commit()
 
+static struct ee24cxx_drv_param_t ee24cxx_drv_param;
+static struct ee24cxx_drv_interface_t ee24cxx_drv_ifs;
+static struct mal_info_t ee24cxx_mal_info = 
+{
+	{0, 0}, NULL
+};
+static struct dal_info_t ee24cxx_dal_info = 
+{
+	&ee24cxx_drv_ifs, 
+	&ee24cxx_drv_param, 
+	NULL,
+	&ee24cxx_mal_info,
+};
+
 ENTER_PROGRAM_MODE_HANDLER(ee24cxx)
 {
 	struct chip_param_t *param = context->param;
 	struct program_info_t *pi = context->pi;
-	struct ee24cxx_drv_param_t drv_param;
-	struct ee24cxx_drv_interface_t drv_ifs;
 	
 	if (ERROR_OK != dal_init(context->prog))
 	{
@@ -110,32 +122,27 @@ ENTER_PROGRAM_MODE_HANDLER(ee24cxx)
 	
 	if (pi->ifs_indexes != NULL)
 	{
-		if (ERROR_OK != dal_config_interface(EE24CXX_STRING, pi->ifs_indexes))
+		if (ERROR_OK != dal_config_interface(EE24CXX_STRING, pi->ifs_indexes, 
+												&ee24cxx_dal_info))
 		{
 			return ERROR_FAIL;
 		}
 	}
 	else
 	{
-		drv_ifs.iic_port = 0;
-		if (ERROR_OK != mal.config_interface(MAL_IDX_EE24CXX, &drv_ifs))
-		{
-			return ERROR_FAIL;
-		}
+		ee24cxx_drv_ifs.iic_port = 0;
 	}
 	
-	drv_param.iic_addr = 0xAC;
-	drv_param.iic_khz = pi->frequency;
-	if (ERROR_OK != mal.init(MAL_IDX_EE24CXX, &drv_param))
+	ee24cxx_drv_param.iic_addr = 0xAC;
+	ee24cxx_drv_param.iic_khz = pi->frequency;
+	if (ERROR_OK != mal.init(MAL_IDX_EE24CXX, &ee24cxx_dal_info))
 	{
 		return ERROR_FAIL;
 	}
-	if (ERROR_OK != mal.setcapacity(MAL_IDX_EE24CXX, 
-			param->chip_areas[EEPROM_IDX].page_size, 
-			param->chip_areas[EEPROM_IDX].page_num))
-	{
-		return ERROR_FAIL;
-	}
+	ee24cxx_mal_info.capacity.block_size = 
+										param->chip_areas[EEPROM_IDX].page_size;
+	ee24cxx_mal_info.capacity.block_number = 
+										param->chip_areas[EEPROM_IDX].page_num;
 	
 	return commit();
 }
@@ -145,7 +152,7 @@ LEAVE_PROGRAM_MODE_HANDLER(ee24cxx)
 	REFERENCE_PARAMETER(context);
 	REFERENCE_PARAMETER(success);
 	
-	mal.fini(MAL_IDX_EE24CXX);
+	mal.fini(MAL_IDX_EE24CXX, &ee24cxx_dal_info);
 	return commit();
 }
 
@@ -173,7 +180,8 @@ WRITE_TARGET_HANDLER(ee24cxx)
 		}
 		size /= param->chip_areas[EEPROM_IDX].page_size;
 		
-		if (ERROR_OK != mal.writeblock(MAL_IDX_EE24CXX, addr, buff, size))
+		if (ERROR_OK != mal.writeblock(MAL_IDX_EE24CXX, &ee24cxx_dal_info, 
+										addr, buff, size))
 		{
 			return ERROR_FAIL;
 		}
@@ -200,7 +208,8 @@ READ_TARGET_HANDLER(ee24cxx)
 		}
 		size /= param->chip_areas[EEPROM_IDX].page_size;
 		
-		if (ERROR_OK != mal.readblock(MAL_IDX_EE24CXX, addr, buff, size))
+		if (ERROR_OK != mal.readblock(MAL_IDX_EE24CXX, &ee24cxx_dal_info, 
+										addr, buff, size))
 		{
 			return ERROR_FAIL;
 		}

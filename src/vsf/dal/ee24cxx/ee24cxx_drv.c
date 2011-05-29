@@ -32,86 +32,94 @@
 #include "ee24cxx_drv_cfg.h"
 #include "ee24cxx_drv.h"
 
-static struct ee24cxx_drv_interface_t ee24cxx_drv_ifs;
-static struct ee24cxx_drv_param_t ee24cxx_drv_param;
-
-static RESULT ee24cxx_drv_config_interface(void *ifs)
+static RESULT ee24cxx_drv_init(struct dal_info_t *info)
 {
-	if (NULL == ifs)
-	{
-		return ERROR_FAIL;
-	}
+	struct ee24cxx_drv_interface_t *ifs = 
+								(struct ee24cxx_drv_interface_t *)info->ifs;
+	struct ee24cxx_drv_param_t *param = 
+								(struct ee24cxx_drv_param_t *)info->param;
 	
-	memcpy(&ee24cxx_drv_ifs, ifs, sizeof(ee24cxx_drv_ifs));
-	return ERROR_OK;
-}
-
-static RESULT ee24cxx_drv_init(void *param)
-{
-	if (NULL == param)
+	if (!param->iic_khz)
 	{
-		return ERROR_FAIL;
+		param->iic_khz = 100;
 	}
-	memcpy(&ee24cxx_drv_param, param, sizeof(ee24cxx_drv_param));
-	
-	if (!ee24cxx_drv_param.iic_khz)
-	{
-		ee24cxx_drv_param.iic_khz = 100;
-	}
-	interfaces->i2c.init(ee24cxx_drv_ifs.iic_port);
-	interfaces->i2c.config(ee24cxx_drv_ifs.iic_port, ee24cxx_drv_param.iic_khz, 
-							0, 10000);
+	interfaces->i2c.init(ifs->iic_port);
+	interfaces->i2c.config(ifs->iic_port, param->iic_khz, 0, 10000);
 	
 	return ERROR_OK;
 }
 
-static RESULT ee24cxx_drv_fini(void)
+static RESULT ee24cxx_drv_fini(struct dal_info_t *info)
 {
-	interfaces->i2c.fini(ee24cxx_drv_ifs.iic_port);
+	struct ee24cxx_drv_interface_t *ifs = 
+								(struct ee24cxx_drv_interface_t *)info->ifs;
+	
+	interfaces->i2c.fini(ifs->iic_port);
 	return interfaces->peripheral_commit();
 }
 
-static RESULT ee24cxx_drv_readblock_nb_start(uint64_t address, uint64_t count)
+static RESULT ee24cxx_drv_readblock_nb_start(struct dal_info_t *info, 
+											uint64_t address, uint64_t count)
 {
+	REFERENCE_PARAMETER(info);
+	REFERENCE_PARAMETER(address);
+	REFERENCE_PARAMETER(count);
 	return ERROR_OK;
 }
 
-static RESULT ee24cxx_drv_readblock_nb(uint64_t address, uint8_t *buff)
+static RESULT ee24cxx_drv_readblock_nb(struct dal_info_t *info, 
+										uint64_t address, uint8_t *buff)
 {
+	struct ee24cxx_drv_interface_t *ifs = 
+								(struct ee24cxx_drv_interface_t *)info->ifs;
+	struct ee24cxx_drv_param_t *param = 
+								(struct ee24cxx_drv_param_t *)info->param;
+	struct mal_info_t *mal_info = (struct mal_info_t *)info->extra;
 	uint16_t addr_word = (uint16_t)address;
 	
 	addr_word = SYS_TO_BE_U16(addr_word);
-	if ((ERROR_OK != interfaces->i2c.write(ee24cxx_drv_ifs.iic_port, 
-			ee24cxx_drv_param.iic_addr, (uint8_t *)&addr_word, 2, 0)) || 
-		(ERROR_OK != interfaces->i2c.read(ee24cxx_drv_ifs.iic_port, 
-			ee24cxx_drv_param.iic_addr, buff, 
-			(uint16_t)ee24cxx_drv.capacity.block_size, 1, true)))
+	if ((ERROR_OK != interfaces->i2c.write(ifs->iic_port, param->iic_addr, 
+											(uint8_t *)&addr_word, 2, 0)) || 
+		(ERROR_OK != interfaces->i2c.read(ifs->iic_port, param->iic_addr, buff, 
+			(uint16_t)mal_info->capacity.block_size, 1, true)))
 	{
 		return ERROR_FAIL;
 	}
 	return ERROR_OK;
 }
 
-static RESULT ee24cxx_drv_readblock_nb_isready(void)
+static RESULT ee24cxx_drv_readblock_nb_isready(struct dal_info_t *info)
 {
+	REFERENCE_PARAMETER(info);
 	return ERROR_OK;
 }
 
-static RESULT ee24cxx_drv_readblock_nb_end(void)
+static RESULT ee24cxx_drv_readblock_nb_end(struct dal_info_t *info)
 {
+	REFERENCE_PARAMETER(info);
 	return ERROR_OK;
 }
 
-static RESULT ee24cxx_drv_writeblock_nb_start(uint64_t address, uint64_t count)
+static RESULT ee24cxx_drv_writeblock_nb_start(struct dal_info_t *info, 
+											uint64_t address, uint64_t count)
 {
+	REFERENCE_PARAMETER(info);
+	REFERENCE_PARAMETER(address);
+	REFERENCE_PARAMETER(count);
 	return ERROR_OK;
 }
 
-static RESULT ee24cxx_drv_writeblock_nb(uint64_t address, uint8_t *buff)
+static RESULT ee24cxx_drv_writeblock_nb(struct dal_info_t *info, 
+										uint64_t address, uint8_t *buff)
 {
+	struct ee24cxx_drv_interface_t *ifs = 
+								(struct ee24cxx_drv_interface_t *)info->ifs;
+	struct ee24cxx_drv_param_t *param = 
+								(struct ee24cxx_drv_param_t *)info->param;
+	struct mal_info_t *mal_info = (struct mal_info_t *)info->extra;
 	uint8_t buffe_tmp[32 + 2];
 	
-	if (ee24cxx_drv.capacity.block_size != 32)
+	if (mal_info->capacity.block_size != 32)
 	{
 		return ERROR_FAIL;
 	}
@@ -119,8 +127,8 @@ static RESULT ee24cxx_drv_writeblock_nb(uint64_t address, uint8_t *buff)
 	SET_BE_U16(&buffe_tmp[0], (uint16_t)address);
 	memcpy(&buffe_tmp[2], buff, 32);
 	
-	if ((ERROR_OK != interfaces->i2c.write(ee24cxx_drv_ifs.iic_port, 
-			ee24cxx_drv_param.iic_addr, buffe_tmp, 2 + 32, 1)) || 
+	if ((ERROR_OK != interfaces->i2c.write(ifs->iic_port, param->iic_addr, 
+											buffe_tmp, 2 + 32, 1)) || 
 		(ERROR_OK != interfaces->delay.delayms(5)))
 	{
 		return ERROR_FAIL;
@@ -128,29 +136,32 @@ static RESULT ee24cxx_drv_writeblock_nb(uint64_t address, uint8_t *buff)
 	return ERROR_OK;
 }
 
-static RESULT ee24cxx_drv_writeblock_nb_isready(void)
+static RESULT ee24cxx_drv_writeblock_nb_isready(struct dal_info_t *info)
 {
+	REFERENCE_PARAMETER(info);
 	return ERROR_OK;
 }
 
-static RESULT ee24cxx_drv_writeblock_nb_waitready(void)
+static RESULT ee24cxx_drv_writeblock_nb_waitready(struct dal_info_t *info)
 {
+	REFERENCE_PARAMETER(info);
 	return ERROR_OK;
 }
 
-static RESULT ee24cxx_drv_writeblock_nb_end(void)
+static RESULT ee24cxx_drv_writeblock_nb_end(struct dal_info_t *info)
 {
+	REFERENCE_PARAMETER(info);
 	return ERROR_OK;
 }
 
 #if DAL_INTERFACE_PARSER_EN
-static RESULT ee24cxx_drv_parse_interface(uint8_t *buff)
+static RESULT ee24cxx_drv_parse_interface(struct dal_info_t *info, 
+											uint8_t *buff)
 {
-	if (NULL == buff)
-	{
-		return ERROR_FAIL;
-	}
-	ee24cxx_drv_ifs.iic_port = buff[0];
+	struct ee24cxx_drv_interface_t *ifs = 
+								(struct ee24cxx_drv_interface_t *)info->ifs;
+	
+	ifs->iic_port = buff[0];
 	return ERROR_OK;
 }
 #endif
@@ -163,17 +174,17 @@ struct mal_driver_t ee24cxx_drv =
 		"iic:%1d",
 		ee24cxx_drv_parse_interface,
 #endif
-		ee24cxx_drv_config_interface,
 	},
 	
 	MAL_IDX_EE24CXX,
 	MAL_SUPPORT_READBLOCK | MAL_SUPPORT_WRITEBLOCK,
-	{0, 0},
 	
 	ee24cxx_drv_init,
 	ee24cxx_drv_fini,
 	NULL,
 	NULL,
+	
+	NULL, NULL, NULL, NULL,
 	
 	NULL,
 	NULL,

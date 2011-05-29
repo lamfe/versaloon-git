@@ -32,146 +32,164 @@
 #include "df45xx_drv_cfg.h"
 #include "df45xx_drv.h"
 
-static struct df45xx_drv_interface_t df45xx_drv_ifs;
-static struct df45xx_drv_param_t df45xx_drv_param;
-
-static RESULT df45xx_drv_config_interface(void *ifs)
+static RESULT df45xx_drv_init(struct dal_info_t *info)
 {
-	if (NULL == ifs)
-	{
-		return ERROR_FAIL;
-	}
-	
-	memcpy(&df45xx_drv_ifs, ifs, sizeof(df45xx_drv_ifs));
+	REFERENCE_PARAMETER(info);
 	return ERROR_OK;
 }
 
-static RESULT df45xx_drv_init(void *param)
+static RESULT df45xx_drv_fini(struct dal_info_t *info)
 {
-	if (NULL == param)
-	{
-		return ERROR_FAIL;
-	}
-	memcpy(&df45xx_drv_param, param, sizeof(df45xx_drv_param));
-	
+	REFERENCE_PARAMETER(info);
 	return ERROR_OK;
 }
 
-static RESULT df45xx_drv_fini(void)
+static RESULT df45xx_drv_getinfo(struct dal_info_t *info)
 {
+	REFERENCE_PARAMETER(info);
 	return ERROR_OK;
 }
 
-static RESULT df45xx_drv_getinfo(void *info)
+static RESULT df45xx_drv_eraseall_nb_start(struct dal_info_t *info)
 {
+	REFERENCE_PARAMETER(info);
 	return ERROR_OK;
 }
 
-static RESULT df45xx_drv_eraseall_nb_start(void)
+static RESULT df45xx_drv_eraseall_nb_isready(struct dal_info_t *info)
 {
+	REFERENCE_PARAMETER(info);
 	return ERROR_OK;
 }
 
-static RESULT df45xx_drv_eraseall_nb_isready(void)
+static RESULT df45xx_drv_eraseall_nb_waitready(struct dal_info_t *info)
 {
+	REFERENCE_PARAMETER(info);
 	return ERROR_OK;
 }
 
-static RESULT df45xx_drv_eraseall_nb_waitready(void)
+static RESULT df45xx_drv_eraseall_nb_end(struct dal_info_t *info)
 {
+	REFERENCE_PARAMETER(info);
 	return ERROR_OK;
 }
 
-static RESULT df45xx_drv_eraseall_nb_end(void)
+static RESULT df45xx_drv_eraseblock_nb_start(struct dal_info_t *info, 
+											uint64_t address, uint64_t count)
 {
+	REFERENCE_PARAMETER(info);
+	REFERENCE_PARAMETER(address);
+	REFERENCE_PARAMETER(count);
 	return ERROR_OK;
 }
 
-static RESULT df45xx_drv_eraseblock_nb_start(uint64_t address, uint64_t count)
+static RESULT df45xx_drv_eraseblock_nb(struct dal_info_t *info, 
+										uint64_t address)
 {
+	REFERENCE_PARAMETER(info);
+	REFERENCE_PARAMETER(address);
 	return ERROR_OK;
 }
 
-static RESULT df45xx_drv_eraseblock_nb(uint64_t address)
+static RESULT df45xx_drv_eraseblock_nb_isready(struct dal_info_t *info)
 {
+	REFERENCE_PARAMETER(info);
 	return ERROR_OK;
 }
 
-static RESULT df45xx_drv_eraseblock_nb_isready(void)
+static RESULT df45xx_drv_eraseblock_nb_waitready(struct dal_info_t *info)
 {
+	REFERENCE_PARAMETER(info);
 	return ERROR_OK;
 }
 
-static RESULT df45xx_drv_eraseblock_nb_waitready(void)
+static RESULT df45xx_drv_eraseblock_nb_end(struct dal_info_t *info)
 {
+	REFERENCE_PARAMETER(info);
 	return ERROR_OK;
 }
 
-static RESULT df45xx_drv_eraseblock_nb_end(void)
+static RESULT df45xx_drv_readblock_nb_start(struct dal_info_t *info, 
+											uint64_t address, uint64_t count)
 {
+	REFERENCE_PARAMETER(info);
+	REFERENCE_PARAMETER(address);
+	REFERENCE_PARAMETER(count);
 	return ERROR_OK;
 }
 
-static RESULT df45xx_drv_readblock_nb_start(uint64_t address, uint64_t count)
+static RESULT df45xx_drv_readblock_nb(struct dal_info_t *info, 
+										uint64_t address, uint8_t *buff)
 {
+	REFERENCE_PARAMETER(info);
+	REFERENCE_PARAMETER(address);
+	REFERENCE_PARAMETER(buff);
 	return ERROR_OK;
 }
 
-static RESULT df45xx_drv_readblock_nb(uint64_t address, uint8_t *buff)
+static RESULT df45xx_drv_readblock_nb_isready(struct dal_info_t *info)
 {
+	REFERENCE_PARAMETER(info);
 	return ERROR_OK;
 }
 
-static RESULT df45xx_drv_readblock_nb_isready(void)
+static RESULT df45xx_drv_readblock_nb_waitready(struct dal_info_t *info)
 {
+	REFERENCE_PARAMETER(info);
 	return ERROR_OK;
 }
 
-static RESULT df45xx_drv_readblock_nb_waitready(void)
+static RESULT df45xx_drv_readblock_nb_end(struct dal_info_t *info)
 {
+	REFERENCE_PARAMETER(info);
 	return ERROR_OK;
 }
 
-static RESULT df45xx_drv_readblock_nb_end(void)
+static RESULT df45xx_drv_writeblock_nb_start(struct dal_info_t *info, 
+											uint64_t address, uint64_t count)
 {
+	REFERENCE_PARAMETER(info);
+	REFERENCE_PARAMETER(address);
+	REFERENCE_PARAMETER(count);
 	return ERROR_OK;
 }
 
-static RESULT df45xx_drv_writeblock_nb_start(uint64_t address, uint64_t count)
+static RESULT df45xx_drv_writeblock_nb(struct dal_info_t *info, 
+										uint64_t address, uint8_t *buff)
 {
+	REFERENCE_PARAMETER(info);
+	REFERENCE_PARAMETER(address);
+	REFERENCE_PARAMETER(buff);
 	return ERROR_OK;
 }
 
-static RESULT df45xx_drv_writeblock_nb(uint64_t address, uint8_t *buff)
+static RESULT df45xx_drv_writeblock_nb_isready(struct dal_info_t *info)
 {
+	REFERENCE_PARAMETER(info);
 	return ERROR_OK;
 }
 
-static RESULT df45xx_drv_writeblock_nb_isready(void)
+static RESULT df45xx_drv_writeblock_nb_waitready(struct dal_info_t *info)
 {
+	REFERENCE_PARAMETER(info);
 	return ERROR_OK;
 }
 
-static RESULT df45xx_drv_writeblock_nb_waitready(void)
+static RESULT df45xx_drv_writeblock_nb_end(struct dal_info_t *info)
 {
-	return ERROR_OK;
-}
-
-static RESULT df45xx_drv_writeblock_nb_end(void)
-{
+	REFERENCE_PARAMETER(info);
 	return ERROR_OK;
 }
 
 #if DAL_INTERFACE_PARSER_EN
-static RESULT df45xx_drv_parse_interface(uint8_t *buff)
+static RESULT df45xx_drv_parse_interface(struct dal_info_t *info, uint8_t *buff)
 {
-	if (NULL == buff)
-	{
-		return ERROR_FAIL;
-	}
-	df45xx_drv_ifs.spi_port = buff[0];
-	df45xx_drv_ifs.cs_port = buff[1];
-	df45xx_drv_ifs.cs_pin = *(uint32_t *)&buff[2];
+	struct df45xx_drv_interface_t *ifs = 
+									(struct df45xx_drv_interface_t *)info->ifs;
+	
+	ifs->spi_port = buff[0];
+	ifs->cs_port = buff[1];
+	ifs->cs_pin = *(uint32_t *)&buff[2];
 	return ERROR_OK;
 }
 #endif
@@ -184,17 +202,17 @@ struct mal_driver_t df45xx_drv =
 		"spi:%1dcs:%1d,%4x",
 		df45xx_drv_parse_interface,
 #endif
-		df45xx_drv_config_interface,
 	},
 	
 	MAL_IDX_DF45XX,
 	0,
-	{0, 0},
 	
 	df45xx_drv_init,
 	df45xx_drv_fini,
 	df45xx_drv_getinfo,
 	NULL,
+	
+	NULL, NULL, NULL, NULL,
 	
 	df45xx_drv_eraseall_nb_start,
 	df45xx_drv_eraseall_nb_isready,

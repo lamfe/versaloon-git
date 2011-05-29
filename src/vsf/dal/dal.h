@@ -23,18 +23,24 @@
 #include "app_cfg.h"
 #include "app_type.h"
 
+struct dal_info_t
+{
+	void *ifs;
+	void *param;
+	void *info;
+	void *extra;
+};
+
 struct dal_driver_t
 {
 	char *name;
 #if DAL_INTERFACE_PARSER_EN
 	char *ifs_format;
-	RESULT (*parse_interface)(uint8_t *buff);
+	RESULT (*parse_interface)(struct dal_info_t *info, uint8_t *buff);
 #endif
-	RESULT (*config_interface)(void *ifs);
 };
 
 RESULT dal_init(struct interfaces_info_t *ifs);
-RESULT dal_config_interface(char *dal_name, char *ifs);
+RESULT dal_config_interface(char *dal_name, char *ifs, struct dal_info_t *info);
 
 #endif	// __DAL_H_INCLUDED__
-

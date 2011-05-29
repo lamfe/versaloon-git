@@ -34,27 +34,28 @@
 #include "programmer.h"
 #include "mic2826_drv.h"
 
+static struct mic2826_drv_interface_t mic2826_drv_ifs;
+static struct mic2826_drv_param_t mic2826_drv_param;
+static struct dal_info_t mic2826_dal_info = 
+{
+	&mic2826_drv_ifs,
+	&mic2826_drv_param,
+	NULL, NULL
+};
+
 VSS_HANDLER(mic2826_vss_init)
 {
-	struct mic2826_drv_interface_t ifs;
-	uint16_t kHz;
-	
 	VSS_CHECK_ARGC(2);
 	
-	ifs.iic_port = 0;
-	if (ERROR_OK != mic2826_drv.driver.config_interface(&ifs))
-	{
-		return ERROR_FAIL;
-	}
-	
-	kHz = (uint16_t)strtoul(argv[1], NULL, 0);
-	return mic2826_drv.init(kHz);
+	mic2826_drv_ifs.iic_port = 0;
+	mic2826_drv_param.kHz = (uint16_t)strtoul(argv[1], NULL, 0);
+	return mic2826_drv.init(&mic2826_dal_info);
 }
 
 VSS_HANDLER(mic2826_vss_fini)
 {
 	VSS_CHECK_ARGC(1);
-	return mic2826_drv.fini();
+	return mic2826_drv.fini(&mic2826_dal_info);
 }
 
 VSS_HANDLER(mic2826_vss_config)
@@ -71,7 +72,8 @@ VSS_HANDLER(mic2826_vss_config)
 	
 	LOG_PUSH();
 	LOG_MUTE();
-	ret = mic2826_drv.config(DCDC_mV, LDO1_mV, LDO2_mV, LDO3_mV);
+	ret = mic2826_drv.config(&mic2826_dal_info, DCDC_mV, LDO1_mV, LDO2_mV, 
+								LDO3_mV);
 	LOG_POP();
 	
 	return ret;

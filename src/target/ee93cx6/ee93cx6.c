@@ -122,12 +122,24 @@ const struct vss_cmd_t ee93cx6_notifier[] =
 
 #define commit()					interfaces->peripheral_commit()
 
+static struct ee93cx6_drv_param_t ee93cx6_drv_param;
+static struct ee93cx6_drv_interface_t ee93cx6_drv_ifs;
+static struct mal_info_t ee93cx6_mal_info = 
+{
+	{0, 0}, NULL
+};
+static struct dal_info_t ee93cx6_dal_info = 
+{
+	&ee93cx6_drv_ifs, 
+	&ee93cx6_drv_param, 
+	NULL,
+	&ee93cx6_mal_info,
+};
+
 ENTER_PROGRAM_MODE_HANDLER(ee93cx6)
 {
 	struct chip_param_t *param = context->param;
 	struct program_info_t *pi = context->pi;
-	struct ee93cx6_drv_param_t drv_param;
-	struct ee93cx6_drv_interface_t drv_ifs;
 	
 	if (ERROR_OK != dal_init(context->prog))
 	{
@@ -136,41 +148,38 @@ ENTER_PROGRAM_MODE_HANDLER(ee93cx6)
 	
 	if (pi->ifs_indexes != NULL)
 	{
-		if (ERROR_OK != dal_config_interface(EE93CX6_STRING, pi->ifs_indexes))
+		if (ERROR_OK != dal_config_interface(EE93CX6_STRING, pi->ifs_indexes, 
+												&ee93cx6_dal_info))
 		{
 			return ERROR_FAIL;
 		}
 	}
 	else
 	{
-		drv_ifs.mw_port = 0;
-		if (ERROR_OK != mal.config_interface(MAL_IDX_EE93CX6, &drv_ifs))
-		{
-			return ERROR_FAIL;
-		}
+		ee93cx6_drv_ifs.mw_port = 0;
 	}
 	
-	drv_param.addr_bitlen = (uint8_t)param->param[EE93CX6_PARAM_ADDR_BITLEN];
-	drv_param.cmd_bitlen = (uint8_t)param->param[EE93CX6_PARAM_OPCODE_BITLEN];
-	drv_param.iic_khz = pi->frequency;
+	ee93cx6_drv_param.addr_bitlen = 
+							(uint8_t)param->param[EE93CX6_PARAM_ADDR_BITLEN];
+	ee93cx6_drv_param.cmd_bitlen = 
+							(uint8_t)param->param[EE93CX6_PARAM_OPCODE_BITLEN];
+	ee93cx6_drv_param.iic_khz = pi->frequency;
 	if (EE93CX6_MODE_BYTE == ee93cx6_origination_mode)
 	{
-		drv_param.origination_mode = EE93CX6_ORIGINATION_BYTE;
+		ee93cx6_drv_param.origination_mode = EE93CX6_ORIGINATION_BYTE;
 	}
 	else
 	{
-		drv_param.origination_mode = EE93CX6_ORIGINATION_WORD;
+		ee93cx6_drv_param.origination_mode = EE93CX6_ORIGINATION_WORD;
 	}
-	if (ERROR_OK != mal.init(MAL_IDX_EE93CX6, &drv_param))
+	if (ERROR_OK != mal.init(MAL_IDX_EE93CX6, &ee93cx6_dal_info))
 	{
 		return ERROR_FAIL;
 	}
-	if (ERROR_OK != mal.setcapacity(MAL_IDX_EE93CX6, 
-			param->chip_areas[EEPROM_IDX].page_size, 
-			param->chip_areas[EEPROM_IDX].page_num))
-	{
-		return ERROR_FAIL;
-	}
+	ee93cx6_mal_info.capacity.block_size = 
+										param->chip_areas[EEPROM_IDX].page_size;
+	ee93cx6_mal_info.capacity.block_number = 
+										param->chip_areas[EEPROM_IDX].page_num;
 	
 	return commit();
 }
@@ -180,7 +189,7 @@ LEAVE_PROGRAM_MODE_HANDLER(ee93cx6)
 	REFERENCE_PARAMETER(context);
 	REFERENCE_PARAMETER(success);
 	
-	mal.fini(MAL_IDX_EE93CX6);
+	mal.fini(MAL_IDX_EE93CX6, &ee93cx6_dal_info);
 	return commit();
 }
 
@@ -191,7 +200,7 @@ ERASE_TARGET_HANDLER(ee93cx6)
 	REFERENCE_PARAMETER(addr);
 	REFERENCE_PARAMETER(size);
 	
-	if (ERROR_OK != mal.eraseall(MAL_IDX_EE93CX6))
+	if (ERROR_OK != mal.eraseall(MAL_IDX_EE93CX6, &ee93cx6_dal_info))
 	{
 		return ERROR_FAIL;
 	}
@@ -211,7 +220,8 @@ WRITE_TARGET_HANDLER(ee93cx6)
 		}
 		size /= param->chip_areas[EEPROM_IDX].page_size;
 		
-		if (ERROR_OK != mal.writeblock(MAL_IDX_EE93CX6, addr, buff, size))
+		if (ERROR_OK != mal.writeblock(MAL_IDX_EE93CX6, &ee93cx6_dal_info, 
+										addr, buff, size))
 		{
 			return ERROR_FAIL;
 		}
@@ -235,7 +245,8 @@ READ_TARGET_HANDLER(ee93cx6)
 		}
 		size /= param->chip_areas[EEPROM_IDX].page_size;
 		
-		if (ERROR_OK != mal.readblock(MAL_IDX_EE93CX6, addr, buff, size))
+		if (ERROR_OK != mal.readblock(MAL_IDX_EE93CX6, &ee93cx6_dal_info, 
+										addr, buff, size))
 		{
 			return ERROR_FAIL;
 		}
