@@ -66,20 +66,7 @@ static struct mal_driver_t* mal_find_driver(uint16_t index)
 	return NULL;
 }
 
-static RESULT mal_config_interface(uint16_t index, void *ifs)
-{
-	struct mal_driver_t* mal_driver;
-	
-	mal_driver = mal_find_driver(index);
-	if ((NULL == mal_driver) || (NULL == mal_driver->driver.config_interface))
-	{
-		return ERROR_FAIL;
-	}
-	
-	return mal_driver->driver.config_interface(ifs);
-}
-
-static RESULT mal_init(uint16_t index, void *param)
+static RESULT mal_init(uint16_t index, struct dal_info_t *info)
 {
 	struct mal_driver_t* mal_driver;
 	
@@ -89,10 +76,10 @@ static RESULT mal_init(uint16_t index, void *param)
 		return ERROR_FAIL;
 	}
 	
-	return mal_driver->init(param);
+	return mal_driver->init(info);
 }
 
-static RESULT mal_fini(uint16_t index)
+static RESULT mal_fini(uint16_t index, struct dal_info_t *info)
 {
 	struct mal_driver_t* mal_driver;
 	
@@ -102,10 +89,10 @@ static RESULT mal_fini(uint16_t index)
 		return ERROR_FAIL;
 	}
 	
-	return mal_driver->fini();
+	return mal_driver->fini(info);
 }
 
-static RESULT mal_getinfo(uint16_t index, void *info)
+static RESULT mal_getinfo(uint16_t index, struct dal_info_t *info)
 {
 	struct mal_driver_t* mal_driver;
 	
@@ -118,45 +105,7 @@ static RESULT mal_getinfo(uint16_t index, void *info)
 	return mal_driver->getinfo(info);
 }
 
-static RESULT mal_getcapacity(uint16_t index, uint64_t *block_size, 
-								uint64_t *block_number)
-{
-	struct mal_driver_t* mal_driver;
-	
-	mal_driver = mal_find_driver(index);
-	if (NULL == mal_driver)
-	{
-		return ERROR_FAIL;
-	}
-	
-	if (block_size != NULL)
-	{
-		*block_size = mal_driver->capacity.block_size;
-	}
-	if (block_number != NULL)
-	{
-		*block_number = mal_driver->capacity.block_number;
-	}
-	return ERROR_OK;
-}
-
-static RESULT mal_setcapacity(uint16_t index, uint64_t block_size, 
-								uint64_t block_number)
-{
-	struct mal_driver_t* mal_driver;
-	
-	mal_driver = mal_find_driver(index);
-	if (NULL == mal_driver)
-	{
-		return ERROR_FAIL;
-	}
-	
-	mal_driver->capacity.block_size = block_size;
-	mal_driver->capacity.block_number = block_number;
-	return ERROR_OK;
-}
-
-static RESULT mal_poll(uint16_t index)
+static RESULT mal_poll(uint16_t index, struct dal_info_t *info)
 {
 	struct mal_driver_t* mal_driver;
 	RESULT ret = ERROR_OK;
@@ -169,13 +118,13 @@ static RESULT mal_poll(uint16_t index)
 	
 	if (mal_driver->poll != NULL)
 	{
-		ret = mal_driver->poll();
+		ret = mal_driver->poll(info);
 	}
 	return ret;
 }
 
-static RESULT mal_eraseblock_nb_start(uint16_t index, uint64_t address, 
-										uint64_t count)
+static RESULT mal_eraseblock_nb_start(uint16_t index, struct dal_info_t *info, 
+										uint64_t address, uint64_t count)
 {
 	struct mal_driver_t* mal_driver;
 	
@@ -185,10 +134,11 @@ static RESULT mal_eraseblock_nb_start(uint16_t index, uint64_t address,
 		return ERROR_FAIL;
 	}
 	
-	return mal_driver->eraseblock_nb_start(address, count);
+	return mal_driver->eraseblock_nb_start(info, address, count);
 }
 
-static RESULT mal_eraseblock_nb(uint16_t index, uint64_t address)
+static RESULT mal_eraseblock_nb(uint16_t index, struct dal_info_t *info, 
+								uint64_t address)
 {
 	struct mal_driver_t* mal_driver;
 	
@@ -198,10 +148,10 @@ static RESULT mal_eraseblock_nb(uint16_t index, uint64_t address)
 		return ERROR_FAIL;
 	}
 	
-	return mal_driver->eraseblock_nb(address);
+	return mal_driver->eraseblock_nb(info, address);
 }
 
-static RESULT mal_eraseblock_nb_isready(uint16_t index)
+static RESULT mal_eraseblock_nb_isready(uint16_t index, struct dal_info_t *info)
 {
 	struct mal_driver_t* mal_driver;
 	
@@ -211,10 +161,11 @@ static RESULT mal_eraseblock_nb_isready(uint16_t index)
 		return ERROR_FAIL;
 	}
 	
-	return mal_driver->eraseblock_nb_isready();
+	return mal_driver->eraseblock_nb_isready(info);
 }
 
-static RESULT mal_eraseblock_nb_waitready(uint16_t index)
+static RESULT mal_eraseblock_nb_waitready(uint16_t index, 
+											struct dal_info_t *info)
 {
 	struct mal_driver_t* mal_driver;
 	
@@ -226,7 +177,7 @@ static RESULT mal_eraseblock_nb_waitready(uint16_t index)
 	
 	if (mal_driver->eraseblock_nb_waitready != NULL)
 	{
-		return mal_driver->eraseblock_nb_waitready();
+		return mal_driver->eraseblock_nb_waitready(info);
 	}
 	else
 	{
@@ -239,7 +190,7 @@ static RESULT mal_eraseblock_nb_waitready(uint16_t index)
 			ret = ERROR_FAIL;
 			while (dly--)
 			{
-				if (ERROR_OK == mal_eraseblock_nb_isready(index))
+				if (ERROR_OK == mal_eraseblock_nb_isready(index, info))
 				{
 					ret = ERROR_OK;
 					break;
@@ -251,7 +202,7 @@ static RESULT mal_eraseblock_nb_waitready(uint16_t index)
 	}
 }
 
-static RESULT mal_eraseblock_nb_end(uint16_t index)
+static RESULT mal_eraseblock_nb_end(uint16_t index, struct dal_info_t *info)
 {
 	struct mal_driver_t* mal_driver;
 	
@@ -261,10 +212,10 @@ static RESULT mal_eraseblock_nb_end(uint16_t index)
 		return ERROR_FAIL;
 	}
 	
-	return mal_driver->eraseblock_nb_end();
+	return mal_driver->eraseblock_nb_end(info);
 }
 
-static RESULT mal_eraseall_nb_start(uint16_t index)
+static RESULT mal_eraseall_nb_start(uint16_t index, struct dal_info_t *info)
 {
 	struct mal_driver_t* mal_driver;
 	
@@ -274,10 +225,10 @@ static RESULT mal_eraseall_nb_start(uint16_t index)
 		return ERROR_FAIL;
 	}
 	
-	return mal_driver->eraseall_nb_start();
+	return mal_driver->eraseall_nb_start(info);
 }
 
-static RESULT mal_eraseall_nb_isready(uint16_t index)
+static RESULT mal_eraseall_nb_isready(uint16_t index, struct dal_info_t *info)
 {
 	struct mal_driver_t* mal_driver;
 	
@@ -287,10 +238,10 @@ static RESULT mal_eraseall_nb_isready(uint16_t index)
 		return ERROR_FAIL;
 	}
 	
-	return mal_driver->eraseall_nb_isready();
+	return mal_driver->eraseall_nb_isready(info);
 }
 
-static RESULT mal_eraseall_nb_waitready(uint16_t index)
+static RESULT mal_eraseall_nb_waitready(uint16_t index, struct dal_info_t *info)
 {
 	struct mal_driver_t* mal_driver;
 	
@@ -302,7 +253,7 @@ static RESULT mal_eraseall_nb_waitready(uint16_t index)
 	
 	if (mal_driver->eraseall_nb_waitready != NULL)
 	{
-		return mal_driver->eraseall_nb_waitready();
+		return mal_driver->eraseall_nb_waitready(info);
 	}
 	else
 	{
@@ -315,7 +266,7 @@ static RESULT mal_eraseall_nb_waitready(uint16_t index)
 			ret = ERROR_FAIL;
 			while (dly--)
 			{
-				if (ERROR_OK == mal_eraseall_nb_isready(index))
+				if (ERROR_OK == mal_eraseall_nb_isready(index, info))
 				{
 					ret = ERROR_OK;
 					break;
@@ -327,7 +278,7 @@ static RESULT mal_eraseall_nb_waitready(uint16_t index)
 	}
 }
 
-static RESULT mal_eraseall_nb_end(uint16_t index)
+static RESULT mal_eraseall_nb_end(uint16_t index, struct dal_info_t *info)
 {
 	struct mal_driver_t* mal_driver;
 	
@@ -337,11 +288,11 @@ static RESULT mal_eraseall_nb_end(uint16_t index)
 		return ERROR_FAIL;
 	}
 	
-	return mal_driver->eraseall_nb_end();
+	return mal_driver->eraseall_nb_end(info);
 }
 
-static RESULT mal_readblock_nb_start(uint16_t index, uint64_t address, 
-										uint64_t count)
+static RESULT mal_readblock_nb_start(uint16_t index, struct dal_info_t *info, 
+										uint64_t address, uint64_t count)
 {
 	struct mal_driver_t* mal_driver;
 	
@@ -351,10 +302,11 @@ static RESULT mal_readblock_nb_start(uint16_t index, uint64_t address,
 		return ERROR_FAIL;
 	}
 	
-	return mal_driver->readblock_nb_start(address, count);
+	return mal_driver->readblock_nb_start(info, address, count);
 }
 
-static RESULT mal_readblock_nb(uint16_t index, uint64_t address, uint8_t *buff)
+static RESULT mal_readblock_nb(uint16_t index, struct dal_info_t *info, 
+								uint64_t address, uint8_t *buff)
 {
 	struct mal_driver_t* mal_driver;
 	
@@ -364,10 +316,10 @@ static RESULT mal_readblock_nb(uint16_t index, uint64_t address, uint8_t *buff)
 		return ERROR_FAIL;
 	}
 	
-	return mal_driver->readblock_nb(address, buff);
+	return mal_driver->readblock_nb(info, address, buff);
 }
 
-static RESULT mal_readblock_nb_isready(uint16_t index)
+static RESULT mal_readblock_nb_isready(uint16_t index, struct dal_info_t *info)
 {
 	struct mal_driver_t* mal_driver;
 	
@@ -377,10 +329,11 @@ static RESULT mal_readblock_nb_isready(uint16_t index)
 		return ERROR_FAIL;
 	}
 	
-	return mal_driver->readblock_nb_isready();
+	return mal_driver->readblock_nb_isready(info);
 }
 
-static RESULT mal_readblock_nb_waitready(uint16_t index)
+static RESULT mal_readblock_nb_waitready(uint16_t index, 
+											struct dal_info_t *info)
 {
 	struct mal_driver_t* mal_driver;
 	
@@ -392,7 +345,7 @@ static RESULT mal_readblock_nb_waitready(uint16_t index)
 	
 	if (mal_driver->readblock_nb_waitready != NULL)
 	{
-		return mal_driver->readblock_nb_waitready();
+		return mal_driver->readblock_nb_waitready(info);
 	}
 	else
 	{
@@ -405,7 +358,7 @@ static RESULT mal_readblock_nb_waitready(uint16_t index)
 			ret = ERROR_FAIL;
 			while (dly--)
 			{
-				if (ERROR_OK == mal_readblock_nb_isready(index))
+				if (ERROR_OK == mal_readblock_nb_isready(index, info))
 				{
 					ret = ERROR_OK;
 					break;
@@ -417,7 +370,7 @@ static RESULT mal_readblock_nb_waitready(uint16_t index)
 	}
 }
 
-static RESULT mal_readblock_nb_end(uint16_t index)
+static RESULT mal_readblock_nb_end(uint16_t index, struct dal_info_t *info)
 {
 	struct mal_driver_t* mal_driver;
 	
@@ -427,11 +380,11 @@ static RESULT mal_readblock_nb_end(uint16_t index)
 		return ERROR_FAIL;
 	}
 	
-	return mal_driver->readblock_nb_end();
+	return mal_driver->readblock_nb_end(info);
 }
 
-static RESULT mal_writeblock_nb_start(uint16_t index, uint64_t address, 
-										uint64_t count)
+static RESULT mal_writeblock_nb_start(uint16_t index, struct dal_info_t *info, 
+										uint64_t address, uint64_t count)
 {
 	struct mal_driver_t* mal_driver;
 	
@@ -441,10 +394,11 @@ static RESULT mal_writeblock_nb_start(uint16_t index, uint64_t address,
 		return ERROR_FAIL;
 	}
 	
-	return mal_driver->writeblock_nb_start(address, count);
+	return mal_driver->writeblock_nb_start(info, address, count);
 }
 
-static RESULT mal_writeblock_nb(uint16_t index, uint64_t address, uint8_t *buff)
+static RESULT mal_writeblock_nb(uint16_t index, struct dal_info_t *info, 
+								uint64_t address, uint8_t *buff)
 {
 	struct mal_driver_t* mal_driver;
 	
@@ -454,10 +408,10 @@ static RESULT mal_writeblock_nb(uint16_t index, uint64_t address, uint8_t *buff)
 		return ERROR_FAIL;
 	}
 	
-	return mal_driver->writeblock_nb(address, buff);
+	return mal_driver->writeblock_nb(info, address, buff);
 }
 
-static RESULT mal_writeblock_nb_isready(uint16_t index)
+static RESULT mal_writeblock_nb_isready(uint16_t index, struct dal_info_t *info)
 {
 	struct mal_driver_t* mal_driver;
 	
@@ -467,10 +421,11 @@ static RESULT mal_writeblock_nb_isready(uint16_t index)
 		return ERROR_FAIL;
 	}
 	
-	return mal_driver->writeblock_nb_isready();
+	return mal_driver->writeblock_nb_isready(info);
 }
 
-static RESULT mal_writeblock_nb_waitready(uint16_t index)
+static RESULT mal_writeblock_nb_waitready(uint16_t index, 
+											struct dal_info_t *info)
 {
 	struct mal_driver_t* mal_driver;
 	
@@ -482,7 +437,7 @@ static RESULT mal_writeblock_nb_waitready(uint16_t index)
 	
 	if (mal_driver->writeblock_nb_waitready != NULL)
 	{
-		return mal_driver->writeblock_nb_waitready();
+		return mal_driver->writeblock_nb_waitready(info);
 	}
 	else
 	{
@@ -495,7 +450,7 @@ static RESULT mal_writeblock_nb_waitready(uint16_t index)
 			ret = ERROR_FAIL;
 			while (dly--)
 			{
-				if (ERROR_OK == mal_writeblock_nb_isready(index))
+				if (ERROR_OK == mal_writeblock_nb_isready(index, info))
 				{
 					ret = ERROR_OK;
 					break;
@@ -507,7 +462,7 @@ static RESULT mal_writeblock_nb_waitready(uint16_t index)
 	}
 }
 
-static RESULT mal_writeblock_nb_end(uint16_t index)
+static RESULT mal_writeblock_nb_end(uint16_t index, struct dal_info_t *info)
 {
 	struct mal_driver_t* mal_driver;
 	
@@ -517,45 +472,48 @@ static RESULT mal_writeblock_nb_end(uint16_t index)
 		return ERROR_FAIL;
 	}
 	
-	return mal_driver->writeblock_nb_end();
+	return mal_driver->writeblock_nb_end(info);
 }
 
-static RESULT mal_eraseblock(uint16_t index, uint64_t address, uint64_t count)
+static RESULT mal_eraseblock(uint16_t index, struct dal_info_t *info, 
+								uint64_t address, uint64_t count)
 {
-	uint64_t block_size, i;
+	struct mal_info_t *mal_info = (struct mal_info_t *)info->extra;
+	uint64_t block_size = mal_info->capacity.block_size, i;
 	
-	if ((ERROR_OK != mal_getcapacity(index, &block_size, NULL)) || 
-		(ERROR_OK != mal_eraseblock_nb_start(index, address, count)))
+	if (!block_size || 
+		(ERROR_OK != mal_eraseblock_nb_start(index, info, address, count)))
 	{
 		return ERROR_FAIL;
 	}
 	
 	for (i = 0; i < count; i++)
 	{
-		if ((ERROR_OK != mal_eraseblock_nb(index, address)) || 
-			(ERROR_OK != mal_eraseblock_nb_waitready(index)))
+		if ((ERROR_OK != mal_eraseblock_nb(index, info, address)) || 
+			(ERROR_OK != mal_eraseblock_nb_waitready(index, info)))
 		{
 			return ERROR_FAIL;
 		}
 		address += block_size;
 	}
 	
-	if (ERROR_OK != mal_eraseblock_nb_end(index))
+	if (ERROR_OK != mal_eraseblock_nb_end(index, info))
 	{
 		return ERROR_FAIL;
 	}
 	return ERROR_OK;
 }
 
-static RESULT mal_eraseall(uint16_t index)
+static RESULT mal_eraseall(uint16_t index, struct dal_info_t *info)
 {
-	if (ERROR_OK != mal_eraseall_nb_start(index))
+	if (ERROR_OK != mal_eraseall_nb_start(index, info))
 	{
 		// erase all not available, try erase block
-		uint64_t block_number;
+		struct mal_info_t *mal_info = (struct mal_info_t *)info->extra;
+		uint64_t block_number = mal_info->capacity.block_number;
 		
-		if ((ERROR_OK != mal_getcapacity(index, NULL, &block_number)) || 
-			(ERROR_OK != mal_eraseblock(index, 0, block_number)))
+		if (!block_number || 
+			(ERROR_OK != mal_eraseblock(index, info, 0, block_number)))
 		{
 			return ERROR_FAIL;
 		}
@@ -563,8 +521,8 @@ static RESULT mal_eraseall(uint16_t index)
 	}
 	else
 	{
-		if ((ERROR_OK != mal_eraseall_nb_waitready(index)) || 
-			(ERROR_OK != mal_eraseall_nb_end(index)))
+		if ((ERROR_OK != mal_eraseall_nb_waitready(index, info)) || 
+			(ERROR_OK != mal_eraseall_nb_end(index, info)))
 		{
 			return ERROR_FAIL;
 		}
@@ -572,63 +530,61 @@ static RESULT mal_eraseall(uint16_t index)
 	}
 }
 
-static RESULT mal_readblock(uint16_t index, uint64_t address, uint8_t *buff, 
-							uint64_t count)
+static RESULT mal_readblock(uint16_t index, struct dal_info_t *info, 
+							uint64_t address, uint8_t *buff, uint64_t count)
 {
-	uint64_t block_size, i;
+	struct mal_info_t *mal_info = (struct mal_info_t *)info->extra;
+	uint64_t block_size = mal_info->capacity.block_size, i;
 	
-	if ((ERROR_OK != mal_getcapacity(index, &block_size, NULL)) || 
-		(ERROR_OK != mal_readblock_nb_start(index, address, count)))
+	if (!block_size || 
+		(ERROR_OK != mal_readblock_nb_start(index, info, address, count)))
 	{
 		return ERROR_FAIL;
 	}
 	
 	for (i = 0; i < count; i++)
 	{
-		if ((ERROR_OK != mal_readblock_nb(index, address, buff)) || 
-			(ERROR_OK != mal_readblock_nb_waitready(index)))
+		if ((ERROR_OK != mal_readblock_nb(index, info, address, buff)) || 
+			(ERROR_OK != mal_readblock_nb_waitready(index, info)))
 		{
 			return ERROR_FAIL;
 		}
 		buff += block_size;
 	}
 	
-	return mal_readblock_nb_end(index);
+	return mal_readblock_nb_end(index, info);
 }
 
-static RESULT mal_writeblock(uint16_t index, uint64_t address, uint8_t *buff, 
-								uint64_t count)
+static RESULT mal_writeblock(uint16_t index, struct dal_info_t *info, 
+								uint64_t address, uint8_t *buff, uint64_t count)
 {
-	uint64_t block_size, i;
+	struct mal_info_t *mal_info = (struct mal_info_t *)info->extra;
+	uint64_t block_size = mal_info->capacity.block_size, i;
 	
-	if ((ERROR_OK != mal_getcapacity(index, &block_size, NULL)) || 
-		(ERROR_OK != mal_writeblock_nb_start(index, address, count)))
+	if (!block_size || 
+		(ERROR_OK != mal_writeblock_nb_start(index, info, address, count)))
 	{
 		return ERROR_FAIL;
 	}
 	
 	for (i = 0; i < count; i++)
 	{
-		if ((ERROR_OK != mal_writeblock_nb(index, address, buff)) || 
-			(ERROR_OK != mal_writeblock_nb_waitready(index)))
+		if ((ERROR_OK != mal_writeblock_nb(index, info, address, buff)) || 
+			(ERROR_OK != mal_writeblock_nb_waitready(index, info)))
 		{
 			return ERROR_FAIL;
 		}
 		buff += block_size;
 	}
 	
-	return mal_writeblock_nb_end(index);
+	return mal_writeblock_nb_end(index, info);
 }
 
 struct mal_t mal = 
 {
-	mal_config_interface,
-	
 	mal_init,
 	mal_fini,
 	mal_getinfo,
-	mal_getcapacity,
-	mal_setcapacity,
 	mal_poll,
 	
 	mal_eraseall,

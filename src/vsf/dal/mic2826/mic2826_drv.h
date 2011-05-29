@@ -32,15 +32,20 @@
 struct mic2826_drv_t
 {
 	struct dal_driver_t driver;
-	RESULT (*init)(uint16_t kHz);
-	RESULT (*fini)(void);
-	RESULT (*config)(uint16_t DCDC_mV, uint16_t LDO1_mV, 
-						uint16_t LDO2_mV, uint16_t LDO3_mV);
+	RESULT (*init)(struct dal_info_t *info);
+	RESULT (*fini)(struct dal_info_t *info);
+	RESULT (*config)(struct dal_info_t *info, uint16_t DCDC_mV, 
+						uint16_t LDO1_mV, uint16_t LDO2_mV, uint16_t LDO3_mV);
 };
 
 struct mic2826_drv_interface_t
 {
 	uint8_t iic_port;
+};
+
+struct mic2826_drv_param_t
+{
+	uint16_t kHz;
 };
 
 extern const struct mic2826_drv_t mic2826_drv;

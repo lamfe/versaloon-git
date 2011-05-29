@@ -109,7 +109,7 @@ RESULT dal_init(struct interfaces_info_t *ifs)
 }
 #endif
 
-RESULT dal_config_interface(char *dal_name, char *ifs)
+RESULT dal_config_interface(char *dal_name, char *ifs, struct dal_info_t *info)
 {
 	uint32_t i;
 	uint32_t size;
@@ -143,7 +143,7 @@ RESULT dal_config_interface(char *dal_name, char *ifs)
 	}
 	
 	if ((ERROR_OK != strparser_parse(ifs, d->ifs_format, buff, size)) || 
-		(ERROR_OK != d->parse_interface(buff)))
+		(ERROR_OK != d->parse_interface(info, buff)))
 	{
 		ret = ERROR_FAIL;
 	}
