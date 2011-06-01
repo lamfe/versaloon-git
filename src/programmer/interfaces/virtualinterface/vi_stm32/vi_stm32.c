@@ -199,7 +199,7 @@ RESULT vi_stm32_spi_fini(uint8_t interface_index)
 	return ERROR_OK;
 }
 
-RESULT vi_stm32_spi_config(uint8_t interface_index, uint16_t kHz, uint8_t cpol, 
+RESULT vi_stm32_spi_config(uint8_t interface_index, uint32_t kHz, uint8_t cpol, 
 					   uint8_t cpha, uint8_t firstbit)
 {
 	return ERROR_OK;
