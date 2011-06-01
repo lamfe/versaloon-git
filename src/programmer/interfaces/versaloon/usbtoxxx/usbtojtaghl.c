@@ -90,10 +90,10 @@ RESULT usbtojtaghl_fini(uint8_t interface_index)
 	return usbtoxxx_fini_command(USB_TO_JTAG_HL, interface_index);
 }
 
-RESULT usbtojtaghl_config(uint8_t interface_index, uint16_t kHz, uint8_t ub, 
+RESULT usbtojtaghl_config(uint8_t interface_index, uint32_t kHz, uint8_t ub, 
 						  uint8_t ua, uint16_t bb, uint16_t ba)
 {
-	uint8_t cfg_buf[8];
+	uint8_t cfg_buf[10];
 	
 #if PARAM_CHECK
 	if (interface_index > 7)
@@ -103,13 +103,13 @@ RESULT usbtojtaghl_config(uint8_t interface_index, uint16_t kHz, uint8_t ub,
 	}
 #endif
 	
-	SET_LE_U16(&cfg_buf[0], kHz);
-	cfg_buf[2] = ub;
-	cfg_buf[3] = ua;
-	SET_LE_U16(&cfg_buf[4], bb);
-	SET_LE_U16(&cfg_buf[6], ba);
+	SET_LE_U32(&cfg_buf[0], kHz);
+	cfg_buf[4] = ub;
+	cfg_buf[5] = ua;
+	SET_LE_U16(&cfg_buf[6], bb);
+	SET_LE_U16(&cfg_buf[8], ba);
 	
-	return usbtoxxx_conf_command(USB_TO_JTAG_HL, interface_index, cfg_buf, 8);
+	return usbtoxxx_conf_command(USB_TO_JTAG_HL, interface_index, cfg_buf, 10);
 }
 
 RESULT usbtojtaghl_ir(uint8_t interface_index, uint8_t *ir, uint16_t bitlen, 

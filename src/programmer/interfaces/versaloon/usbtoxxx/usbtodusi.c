@@ -38,10 +38,10 @@ RESULT usbtodusi_fini(uint8_t interface_index)
 	return usbtoxxx_fini_command(USB_TO_DUSI, interface_index);
 }
 
-RESULT usbtodusi_config(uint8_t interface_index, uint16_t kHz, uint8_t cpol, 
+RESULT usbtodusi_config(uint8_t interface_index, uint32_t kHz, uint8_t cpol, 
 					   uint8_t cpha, uint8_t firstbit)
 {
-	uint8_t conf[3];
+	uint8_t conf[5];
 	
 #if PARAM_CHECK
 	if (interface_index > 7)
@@ -52,9 +52,9 @@ RESULT usbtodusi_config(uint8_t interface_index, uint16_t kHz, uint8_t cpol,
 #endif
 	
 	conf[0] = cpol | cpha | firstbit;
-	SET_LE_U16(&conf[1], kHz);
+	SET_LE_U32(&conf[1], kHz);
 	
-	return usbtoxxx_conf_command(USB_TO_DUSI, interface_index, conf, 3);
+	return usbtoxxx_conf_command(USB_TO_DUSI, interface_index, conf, 5);
 }
 
 RESULT usbtodusi_io(uint8_t interface_index, uint8_t *mo, uint8_t *mi, 

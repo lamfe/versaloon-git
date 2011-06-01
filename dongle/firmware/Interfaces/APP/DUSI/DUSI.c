@@ -36,7 +36,7 @@ static void DUSI_Fini(void)
 	SPI_I2S_DeInit(JTAG_TAP_HS_SPI_S);
 }
 
-static void DUSI_Init(uint16_t kHz, uint8_t cpol, uint8_t cpha, 
+static void DUSI_Init(uint32_t kHz, uint8_t cpol, uint8_t cpha, 
 						uint8_t first_bit)
 {
 	DUSI_Fini();
@@ -66,7 +66,7 @@ RESULT dusi_fini(uint8_t index)
 	}
 }
 
-RESULT dusi_config(uint8_t index, uint16_t kHz, uint8_t cpol, uint8_t cpha, 
+RESULT dusi_config(uint8_t index, uint32_t kHz, uint8_t cpol, uint8_t cpha, 
 					 uint8_t first_bit)
 {
 	switch (index)

@@ -43,7 +43,7 @@ enum  HEX_TYPE
 };
 
 RESULT read_hex_file(FILE *hex_file, WRITE_MEMORY_CALLBACK callback, 
-					 void *buffer, uint32_t seg_offset, uint32_t addr_offset)
+						void *buffer, uint32_t seg_offset, uint32_t addr_offset)
 {
 	uint8_t line_buf[10 + 0xFF * 2 + 2], checksum;
 	char ch, *ptr, tmp_buff[3];
