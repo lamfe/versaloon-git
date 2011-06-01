@@ -596,7 +596,7 @@ VSS_HANDLER(interface_spi_fini)
 
 VSS_HANDLER(interface_spi_config)
 {
-	uint16_t khz = 0;
+	uint32_t khz = 0;
 	uint8_t cpol, cpha, firstbit;
 	struct interfaces_info_t *ifs = NULL;
 	
@@ -612,7 +612,7 @@ VSS_HANDLER(interface_spi_config)
 		return ERROR_FAIL;
 	}
 	
-	khz = (uint16_t)strtoul(argv[1], NULL, 0);
+	khz = (uint32_t)strtoul(argv[1], NULL, 0);
 	cpol = (uint8_t)strtoul(argv[2], NULL, 0);
 	cpha = (uint8_t)strtoul(argv[3], NULL, 0);
 	firstbit = (uint8_t)strtoul(argv[4], NULL, 0);
