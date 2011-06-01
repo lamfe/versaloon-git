@@ -19,8 +19,6 @@
 #ifndef __USBTOXXX_H_INCLUDED__
 #define __USBTOXXX_H_INCLUDED__
 
-#include "programmer.h"
-
 RESULT usbtoxxx_init(void);
 RESULT usbtoxxx_fini(void);
 RESULT usbtoxxx_execute_command(void);
@@ -52,7 +50,7 @@ RESULT usbtousart_status(uint8_t interface_index,
 // USB_TO_SPI
 RESULT usbtospi_init(uint8_t interface_index);
 RESULT usbtospi_fini(uint8_t interface_index);
-RESULT usbtospi_config(uint8_t interface_index, uint16_t kHz, uint8_t cpol, 
+RESULT usbtospi_config(uint8_t interface_index, uint32_t kHz, uint8_t cpol, 
 					   uint8_t cpha, uint8_t firstbit);
 RESULT usbtospi_io(uint8_t interface_index, uint8_t *out, uint8_t *in, 
 					uint16_t bytelen);
@@ -96,7 +94,7 @@ RESULT usbtolpcicp_poll_ready(uint8_t interface_index, uint8_t data,
 // USB_TO_JTAG_LL
 RESULT usbtojtagll_init(uint8_t interface_index);
 RESULT usbtojtagll_fini(uint8_t interface_index);
-RESULT usbtojtagll_config(uint8_t interface_index, uint16_t kHz);
+RESULT usbtojtagll_config(uint8_t interface_index, uint32_t kHz);
 RESULT usbtojtagll_tms(uint8_t interface_index, uint8_t *tms, uint8_t bytelen);
 RESULT usbtojtagll_tms_clocks(uint8_t interface_index, uint32_t bytelen, 
 								uint8_t tms);
@@ -110,7 +108,7 @@ RESULT usbtojtagll_scan(uint8_t interface_index, uint8_t* data,
 // USB_TO_JTAG_HL
 RESULT usbtojtaghl_init(uint8_t interface_index);
 RESULT usbtojtaghl_fini(uint8_t interface_index);
-RESULT usbtojtaghl_config(uint8_t interface_index, uint16_t kHz, uint8_t ub, 
+RESULT usbtojtaghl_config(uint8_t interface_index, uint32_t kHz, uint8_t ub, 
 						  uint8_t ua, uint16_t bb, uint16_t ba);
 RESULT usbtojtaghl_ir(uint8_t interface_index, uint8_t *ir, uint16_t bitlen, 
 					  uint8_t idle, uint8_t want_ret);
@@ -126,7 +124,7 @@ RESULT usbtojtaghl_register_callback(uint8_t index, jtag_callback_t send_callbac
 // USB_TO_JTAG_RAW
 RESULT usbtojtagraw_init(uint8_t interface_index);
 RESULT usbtojtagraw_fini(uint8_t interface_index);
-RESULT usbtojtagraw_config(uint8_t interface_index, uint16_t kHz);
+RESULT usbtojtagraw_config(uint8_t interface_index, uint32_t kHz);
 RESULT usbtojtagraw_execute(uint8_t interface_index, uint8_t *tdi, 
 							uint8_t *tms, uint8_t *tdo, uint32_t bitlen);
 
@@ -249,7 +247,7 @@ RESULT usbtobdm_transact(uint8_t interface_index, uint8_t *out,
 // USB_TO_DUSI
 RESULT usbtodusi_init(uint8_t interface_index);
 RESULT usbtodusi_fini(uint8_t interface_index);
-RESULT usbtodusi_config(uint8_t interface_index, uint16_t kHz, uint8_t cpol, 
+RESULT usbtodusi_config(uint8_t interface_index, uint32_t kHz, uint8_t cpol, 
 						uint8_t cpha, uint8_t firstbit);
 RESULT usbtodusi_io(uint8_t interface_index, uint8_t *mo, uint8_t *mi, 
 					uint8_t *so, uint8_t *si, uint32_t bitlen);

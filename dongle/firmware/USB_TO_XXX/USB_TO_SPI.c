@@ -26,7 +26,7 @@ void USB_TO_SPI_ProcessCmd(uint8_t *dat, uint16_t len)
 	uint8_t command, device_idx;
 	
 	uint8_t attr;
-	uint16_t frequency;
+	uint32_t frequency;
 	
 	index = 0;
 	while(index < len)
@@ -50,7 +50,7 @@ void USB_TO_SPI_ProcessCmd(uint8_t *dat, uint16_t len)
 			break;
 		case USB_TO_XXX_CONFIG:
 			attr = dat[index];
-			frequency = GET_LE_U16(&dat[index + 1]);
+			frequency = GET_LE_U32(&dat[index + 1]);
 			index += 3;
 			
 			if (ERROR_OK == interfaces->spi.config(device_idx, frequency, 

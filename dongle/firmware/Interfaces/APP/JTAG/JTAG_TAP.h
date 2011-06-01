@@ -19,10 +19,10 @@
 
 RESULT jtaghl_init(uint8_t index);
 RESULT jtaghl_fini(uint8_t index);
-RESULT jtaghl_config_speed(uint8_t index, uint16_t kHz);
+RESULT jtaghl_config_speed(uint8_t index, uint32_t kHz);
 RESULT jtaghl_config_daisychain(uint8_t index, uint8_t ub, uint8_t ua, 
 						uint16_t bb, uint16_t ba);
-RESULT jtaghl_config(uint8_t index, uint16_t kHz, uint8_t ub, uint8_t ua, 
+RESULT jtaghl_config(uint8_t index, uint32_t kHz, uint8_t ub, uint8_t ua, 
 						uint16_t bb, uint16_t ba);
 RESULT jtaghl_tms(uint8_t index, uint8_t* tms, uint16_t bitlen);
 RESULT jtaghl_runtest(uint8_t index, uint32_t cycles);
@@ -35,7 +35,7 @@ RESULT jtaghl_register_callback(uint8_t index, jtag_callback_t send_callback,
 
 RESULT jtagll_init(uint8_t index);
 RESULT jtagll_fini(uint8_t index);
-RESULT jtagll_config(uint8_t index, uint16_t kHz);
+RESULT jtagll_config(uint8_t index, uint32_t kHz);
 RESULT jtagll_tms(uint8_t index, uint8_t *tms, uint8_t bytelen);
 RESULT jtagll_tms_clocks(uint8_t index, uint32_t bytelen, uint8_t tms);
 RESULT jtagll_scan(uint8_t index, uint8_t* data, uint16_t bitlen, 
@@ -44,6 +44,6 @@ RESULT jtagll_scan(uint8_t index, uint8_t* data, uint16_t bitlen,
 
 RESULT jtagraw_init(uint8_t index);
 RESULT jtagraw_fini(uint8_t index);
-RESULT jtagraw_config(uint8_t index, uint16_t kHz);
+RESULT jtagraw_config(uint8_t index, uint32_t kHz);
 RESULT jtagraw_execute(uint8_t index, uint8_t* tdi, uint8_t* tms, 
 						uint8_t *tdo, uint32_t bitlen);

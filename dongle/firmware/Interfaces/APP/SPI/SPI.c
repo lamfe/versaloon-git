@@ -49,7 +49,7 @@ static void SPI_Config(uint32_t freq_hz, uint32_t firstbit, uint32_t cpol, uint3
 	}
 }
 
-uint8_t SPI_GetSCKDiv(uint16_t freq_khz)
+uint8_t SPI_GetSCKDiv(uint32_t freq_khz)
 {
 	// Set Speed
 	if(freq_khz >= _SYS_FREQUENCY * 500 / 2)
@@ -177,7 +177,7 @@ RESULT spi_fini(uint8_t index)
 	}
 }
 
-RESULT spi_config(uint8_t index, uint16_t kHz, uint8_t cpol, uint8_t cpha, 
+RESULT spi_config(uint8_t index, uint32_t kHz, uint8_t cpol, uint8_t cpha, 
 					 uint8_t first_bit)
 {
 	switch (index)

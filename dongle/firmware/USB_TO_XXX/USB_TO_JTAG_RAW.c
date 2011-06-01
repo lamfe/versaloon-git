@@ -48,7 +48,7 @@ void USB_TO_JTAG_RAW_ProcessCmd(uint8_t *dat, uint16_t len)
 			}
 			break;
 		case USB_TO_XXX_CONFIG:
-			if (ERROR_OK == interfaces->jtag_raw.config(device_idx, GET_LE_U16(&dat[index])))
+			if (ERROR_OK == interfaces->jtag_raw.config(device_idx, GET_LE_U32(&dat[index])))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}

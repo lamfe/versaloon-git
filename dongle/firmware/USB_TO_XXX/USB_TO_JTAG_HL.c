@@ -50,9 +50,9 @@ void USB_TO_JTAG_HL_ProcessCmd(uint8_t *dat, uint16_t len)
 			}
 			break;
 		case USB_TO_XXX_CONFIG:
-			if (ERROR_OK == interfaces->jtag_hl.config(device_idx, GET_LE_U16(&dat[index]), 
-								dat[index + 2], dat[index + 3], 
-								GET_LE_U16(&dat[index + 4]), GET_LE_U16(&dat[index + 6])))
+			if (ERROR_OK == interfaces->jtag_hl.config(device_idx, GET_LE_U32(&dat[index]), 
+								dat[index + 4], dat[index + 5], 
+								GET_LE_U16(&dat[index + 6]), GET_LE_U16(&dat[index + 8])))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}

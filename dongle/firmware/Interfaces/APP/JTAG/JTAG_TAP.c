@@ -42,7 +42,7 @@ static uint32_t JTAG_TAP_UnitsBefore, JTAG_TAP_UnitsAfter, JTAG_TAP_BitsBefore, 
 void (*JTAG_TAP_Operate_RAW)(uint32_t bit_len, uint8_t *tdi, uint8_t *tms, uint8_t *tdo);
 uint16_t (*JTAG_TAP_Operate_Asyn)(uint16_t tdi, uint16_t tms);
 
-static int16_t JTAG_kHz = 0xFFFF;
+static int32_t JTAG_kHz = 0xFFFFFFFF;
 
 static void JTAG_TAP_RTCK_Wait(uint8_t signal)
 {
@@ -693,12 +693,12 @@ static void JTAG_TAP_SetDaisyChainPos(uint32_t ub, uint32_t ua, uint32_t bb, uin
 	JTAG_TAP_BitsAfter		= ba;
 }
 
-static uint8_t JTAG_TAP_HS_GetDivFromFreq(uint16_t kHz)
+static uint8_t JTAG_TAP_HS_GetDivFromFreq(uint32_t kHz)
 {
 	return SPI_GetSCKDiv(kHz);
 }
 
-static void JTAG_TAP_SetTCKFreq(uint16_t kHz)
+static void JTAG_TAP_SetTCKFreq(uint32_t kHz)
 {
 	// Set Speed
 	JTAG_kHz = kHz;
@@ -712,14 +712,14 @@ static void JTAG_TAP_Fini(void)
 {
 	JTAG_TAP_HS_DMA_FINI();
 
-	JTAG_kHz = 0xFFFF;
+	JTAG_kHz = 0xFFFFFFFF;
 	JTAG_TAP_HS_PortFini();
 
 	SPI_I2S_DeInit(JTAG_TAP_HS_SPI_M);
 	SPI_I2S_DeInit(JTAG_TAP_HS_SPI_S);
 }
 
-static void JTAG_TAP_Init(uint16_t kHz, uint8_t mode)
+static void JTAG_TAP_Init(uint32_t kHz, uint8_t mode)
 {
 	JTAG_TAP_Fini();
 
@@ -799,7 +799,7 @@ RESULT jtaghl_fini(uint8_t index)
 	}
 }
 
-RESULT jtaghl_config_speed(uint8_t index, uint16_t kHz)
+RESULT jtaghl_config_speed(uint8_t index, uint32_t kHz)
 {
 	switch (index)
 	{
@@ -824,7 +824,7 @@ RESULT jtaghl_config_daisychain(uint8_t index, uint8_t ub, uint8_t ua,
 	}
 }
 
-RESULT jtaghl_config(uint8_t index, uint16_t kHz, uint8_t ub, uint8_t ua, 
+RESULT jtaghl_config(uint8_t index, uint32_t kHz, uint8_t ub, uint8_t ua, 
 						uint16_t bb, uint16_t ba)
 {
 	switch (index)
@@ -1041,7 +1041,7 @@ RESULT jtagll_fini(uint8_t index)
 	}
 }
 
-RESULT jtagll_config(uint8_t index, uint16_t kHz)
+RESULT jtagll_config(uint8_t index, uint32_t kHz)
 {
 	switch (index)
 	{
@@ -1133,7 +1133,7 @@ RESULT jtagraw_fini(uint8_t index)
 	}
 }
 
-RESULT jtagraw_config(uint8_t index, uint16_t kHz)
+RESULT jtagraw_config(uint8_t index, uint32_t kHz)
 {
 	switch (index)
 	{

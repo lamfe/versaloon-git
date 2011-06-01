@@ -57,7 +57,7 @@ struct interface_spi_t
 {
 	RESULT (*init)(uint8_t index);
 	RESULT (*fini)(uint8_t index);
-	RESULT (*config)(uint8_t index, uint16_t kHz, uint8_t cpol, uint8_t cpha, 
+	RESULT (*config)(uint8_t index, uint32_t kHz, uint8_t cpol, uint8_t cpha, 
 						uint8_t first_bit);
 	RESULT (*io)(uint8_t index, uint8_t *out, uint8_t *in, uint16_t bytelen);
 };
@@ -104,7 +104,7 @@ struct interface_jtag_hl_t
 {
 	RESULT (*init)(uint8_t index);
 	RESULT (*fini)(uint8_t index);
-	RESULT (*config)(uint8_t index, uint16_t kHz, uint8_t ub, uint8_t ua, 
+	RESULT (*config)(uint8_t index, uint32_t kHz, uint8_t ub, uint8_t ua, 
 						uint16_t bb, uint16_t ba);
 	RESULT (*tms)(uint8_t index, uint8_t* tms, uint16_t bitlen);
 	RESULT (*runtest)(uint8_t index, uint32_t cycles);
@@ -120,7 +120,7 @@ struct interface_jtag_ll_t
 {
 	RESULT (*init)(uint8_t index);
 	RESULT (*fini)(uint8_t index);
-	RESULT (*config)(uint8_t index, uint16_t kHz);
+	RESULT (*config)(uint8_t index, uint32_t kHz);
 	RESULT (*tms)(uint8_t index, uint8_t *tms, uint8_t bytelen);
 	RESULT (*tms_clocks)(uint8_t index, uint32_t bytelen, uint8_t tms);
 	RESULT (*scan)(uint8_t index, uint8_t* data, uint16_t bitlen, 
@@ -132,7 +132,7 @@ struct interface_jtag_raw_t
 {
 	RESULT (*init)(uint8_t index);
 	RESULT (*fini)(uint8_t index);
-	RESULT (*config)(uint8_t index, uint16_t kHz);
+	RESULT (*config)(uint8_t index, uint32_t kHz);
 	RESULT (*execute)(uint8_t index, uint8_t* tdi, uint8_t* tms, 
 						uint8_t *tdo, uint32_t bitlen);
 };
@@ -227,7 +227,7 @@ struct interface_dusi_t
 {
 	RESULT (*init)(uint8_t index);
 	RESULT (*fini)(uint8_t index);
-	RESULT (*config)(uint8_t index, uint16_t kHz, uint8_t cpol, uint8_t cpha, 
+	RESULT (*config)(uint8_t index, uint32_t kHz, uint8_t cpol, uint8_t cpha, 
 					 uint8_t first_bit);
 	RESULT (*io)(uint8_t index, uint8_t *mo, uint8_t *mi, uint8_t *so, 
 				 uint8_t *si, uint32_t bitlen);

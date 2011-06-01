@@ -103,7 +103,6 @@ static uint8_t iap_code[] = {
 	0x00, 0x24,				// movs		r4, #0
 	0x34, 0x60,				// str		r4, [r6]
 							// call_iap:
-//0xFE, 0xE7,
 	0x90, 0x47,				// blx		r2
 							// increase_iap_cnt:
 	0x3C, 0x68,				// ldr		r4, [r7]
