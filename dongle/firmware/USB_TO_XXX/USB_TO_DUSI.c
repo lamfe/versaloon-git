@@ -53,7 +53,6 @@ void USB_TO_DUSI_ProcessCmd(uint8_t *dat, uint16_t len)
 		case USB_TO_XXX_CONFIG:
 			attr = dat[index];
 			frequency = GET_LE_U32(&dat[index + 1]);
-			index += 3;
 			
 			if (ERROR_OK == interfaces->dusi.config(device_idx, frequency, 
 											attr & USB_TO_DUSI_CPOL_MASK, 
