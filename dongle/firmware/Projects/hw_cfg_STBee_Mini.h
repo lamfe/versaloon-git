@@ -133,10 +133,20 @@
 #define SYNCSWPWM_GPIO_PORT				GPIOB
 #define SYNCSWPWM_GPIO_PIN				GPIO_PIN_6
 
+#define SYNCSWPWM_GPIO_SETINPUT()		GPIO_SetMode(SYNCSWPWM_GPIO_PORT, SYNCSWPWM_GPIO_PIN, GPIO_MODE_IN_FLOATING)
+#define SYNCSWPWM_GPIO_SETINPUT_PU()	GPIO_SetMode(SYNCSWPWM_GPIO_PORT, SYNCSWPWM_GPIO_PIN, GPIO_MODE_IPU)
+#define SYNCSWPWM_GPIO_SETINPUT_PD()	GPIO_SetMode(SYNCSWPWM_GPIO_PORT, SYNCSWPWM_GPIO_PIN, GPIO_MODE_IPD)
+#define SYNCSWPWM_GPIO_SETOUTPUT()		GPIO_SetMode(SYNCSWPWM_GPIO_PORT, SYNCSWPWM_GPIO_PIN, GPIO_MODE_OUT_PP)
+#define SYNCSWPWM_GPIO_SET()			GPIO_SetPins(SYNCSWPWM_GPIO_PORT, SYNCSWPWM_GPIO_PIN)
+#define SYNCSWPWM_GPIO_CLR()			GPIO_ClrPins(SYNCSWPWM_GPIO_PORT, SYNCSWPWM_GPIO_PIN)
+#define SYNCSWPWM_GPIO_GET()			GPIO_GetInPins(SYNCSWPWM_GPIO_PORT, SYNCSWPWM_GPIO_PIN)
+
+#define SYNCSWPWM_OUT_TIMER_MHZ			_SYS_FREQUENCY
 #define SYNCSWPWM_OUT_TIMER				TIM3
 #define SYNCSWPWM_OUT_TIMER_DMA			DMA1_Channel6
 #define SYNCSWPWM_IN_TIMER				TIM4
-#define SYNCSWPWM_IN_TIMER_DMA			DMA1_Channel4
+#define SYNCSWPWM_IN_TIMER_RISE_DMA		DMA1_Channel4
+#define SYNCSWPWM_IN_TIMER_FALL_DMA		DMA1_Channel1
 
 #define SYNCSWPWM_IN_TIMER_INIT()		do{\
 											DMA_InitTypeDef DMA_InitStructure;\
@@ -145,7 +155,7 @@
 											RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, ENABLE);\
 											RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4, ENABLE);\
 											\
-											DMA_DeInit(SYNCSWPWM_IN_TIMER_DMA);\
+											DMA_DeInit(SYNCSWPWM_IN_TIMER_RISE_DMA);\
 											DMA_StructInit(&DMA_InitStructure);\
 											DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)&(SYNCSWPWM_IN_TIMER->CCR2);\
 											DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralSRC;\
@@ -157,8 +167,23 @@
 											DMA_InitStructure.DMA_Mode = DMA_Mode_Normal;\
 											DMA_InitStructure.DMA_Priority = DMA_Priority_High;\
 											DMA_InitStructure.DMA_M2M = DMA_M2M_Disable;\
-											DMA_Init(SYNCSWPWM_IN_TIMER_DMA, &DMA_InitStructure);\
-											DMA_Cmd(SYNCSWPWM_IN_TIMER_DMA, ENABLE);\
+											DMA_Init(SYNCSWPWM_IN_TIMER_RISE_DMA, &DMA_InitStructure);\
+											DMA_Cmd(SYNCSWPWM_IN_TIMER_RISE_DMA, ENABLE);\
+											\
+											DMA_DeInit(SYNCSWPWM_IN_TIMER_FALL_DMA);\
+											DMA_StructInit(&DMA_InitStructure);\
+											DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)&(SYNCSWPWM_IN_TIMER->CCR1);\
+											DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralSRC;\
+											DMA_InitStructure.DMA_BufferSize = 0;\
+											DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;\
+											DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;\
+											DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_HalfWord;\
+											DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_HalfWord;\
+											DMA_InitStructure.DMA_Mode = DMA_Mode_Normal;\
+											DMA_InitStructure.DMA_Priority = DMA_Priority_High;\
+											DMA_InitStructure.DMA_M2M = DMA_M2M_Disable;\
+											DMA_Init(SYNCSWPWM_IN_TIMER_FALL_DMA, &DMA_InitStructure);\
+											DMA_Cmd(SYNCSWPWM_IN_TIMER_FALL_DMA, ENABLE);\
 											\
 											TIM_ICStructInit(&TIM_ICInitStructure);\
 											TIM_ICInitStructure.TIM_Channel = TIM_Channel_2;\
@@ -172,30 +197,57 @@
 											TIM_SelectSlaveMode(SYNCSWPWM_IN_TIMER, TIM_SlaveMode_Reset);\
 											TIM_SelectMasterSlaveMode(SYNCSWPWM_IN_TIMER, TIM_MasterSlaveMode_Enable);\
 											TIM_DMACmd(SYNCSWPWM_IN_TIMER, TIM_DMA_CC2, ENABLE);\
+											TIM_DMACmd(SYNCSWPWM_IN_TIMER, TIM_DMA_CC1, ENABLE);\
+											\
+											TIM_PrescalerConfig(SYNCSWPWM_IN_TIMER, 0, TIM_PSCReloadMode_Immediate);\
 											TIM_Cmd(SYNCSWPWM_IN_TIMER, ENABLE);\
 										}while(0)
 #define SYNCSWPWM_IN_TIMER_FINI()		do{\
 											TIM_DeInit(SYNCSWPWM_IN_TIMER);\
 											RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4, DISABLE);\
-											DMA_DeInit(SYNCSWPWM_IN_TIMER_DMA);\
+											DMA_DeInit(SYNCSWPWM_IN_TIMER_RISE_DMA);\
+											DMA_DeInit(SYNCSWPWM_IN_TIMER_FALL_DMA);\
 											RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, DISABLE);\
 										}while(0)
-#define SYNCSWPWM_IN_TIMER_DMA_INIT(l, a)	do{\
-												SYNCSWPWM_IN_TIMER_DMA->CCR &= ~1;\
-												SYNCSWPWM_IN_TIMER_DMA->CNDTR = (l);\
-												SYNCSWPWM_IN_TIMER_DMA->CMAR = (uint32_t)(a);\
-												SYNCSWPWM_IN_TIMER_DMA->CCR |= 1;\
-											}while(0)
+#define SYNCSWPWM_IN_TIMER_RISE_DMA_INIT(l, a)	do{\
+													SYNCSWPWM_IN_TIMER_RISE_DMA->CCR &= ~1;\
+													SYNCSWPWM_IN_TIMER_RISE_DMA->CNDTR = (l);\
+													SYNCSWPWM_IN_TIMER_RISE_DMA->CMAR = (uint32_t)(a);\
+													SYNCSWPWM_IN_TIMER_RISE_DMA->CCR |= 1;\
+												}while(0)
+#define SYNCSWPWM_IN_TIMER_RISE_DMA_READY()		(DMA1->ISR & DMA1_FLAG_TC4)
+#define SYNCSWPWM_IN_TIMER_RISE_DMA_RESET()		(DMA1->IFCR = DMA1_FLAG_TC4)
+#define SYNCSWPWM_IN_TIMER_RISE_DMA_WAIT(dly)	do{\
+													while((!SYNCSWPWM_IN_TIMER_RISE_DMA_READY()) && --dly);\
+													SYNCSWPWM_IN_TIMER_RISE_DMA_RESET();\
+												}while(0)
+#define SYNCSWPWM_IN_TIMER_FALL_DMA_INIT(l, a)	do{\
+													SYNCSWPWM_IN_TIMER_FALL_DMA->CCR &= ~1;\
+													SYNCSWPWM_IN_TIMER_FALL_DMA->CNDTR = (l);\
+													SYNCSWPWM_IN_TIMER_FALL_DMA->CMAR = (uint32_t)(a);\
+													SYNCSWPWM_IN_TIMER_FALL_DMA->CCR |= 1;\
+												}while(0)
+#define SYNCSWPWM_IN_TIMER_FALL_DMA_READY()		(DMA1->ISR & DMA1_FLAG_TC1)
+#define SYNCSWPWM_IN_TIMER_FALL_DMA_RESET()		(DMA1->IFCR = DMA1_FLAG_TC1)
+#define SYNCSWPWM_IN_TIMER_FALL_DMA_WAIT(dly)	do{\
+													while((!SYNCSWPWM_IN_TIMER_FALL_DMA_READY()) && --dly);\
+													SYNCSWPWM_IN_TIMER_FALL_DMA_RESET();\
+												}while(0)
+#define SYNCSWPWM_IN_TIMER_DMA_INIT(l, a, b)	do{\
+													SYNCSWPWM_IN_TIMER_RISE_DMA_INIT((l), (a));\
+													SYNCSWPWM_IN_TIMER_FALL_DMA_INIT((l), (b));\
+												}while(0)
 #define SYNCSWPWM_IN_TIMER_DMA_WAIT(dly)	do{\
-												while((!(DMA1->ISR & DMA1_FLAG_TC4)) && --dly);\
-												DMA1->IFCR = DMA1_FLAG_TC4;\
+												SYNCSWPWM_IN_TIMER_RISE_DMA_WAIT(dly);\
+												SYNCSWPWM_IN_TIMER_FALL_DMA_WAIT(dly);\
 											}while(0)
 
-#define SYNCSWPWM_OUT_TIMER_INIT()		do{\
+#define SYNCSWPWM_OUT_TIMER_INIT(p)		do{\
 											DMA_InitTypeDef DMA_InitStructure;\
 											TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;\
 											TIM_OCInitTypeDef TIM_OCInitStructure;\
 											\
+											RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, ENABLE);\
 											RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, ENABLE);\
 											\
 											DMA_DeInit(SYNCSWPWM_OUT_TIMER_DMA);\
@@ -225,7 +277,7 @@
 											TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM1;\
 											TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;\
 											TIM_OCInitStructure.TIM_Pulse = 0;\
-											TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_Low;\
+											TIM_OCInitStructure.TIM_OCPolarity = (p) ? TIM_OCPolarity_High : TIM_OCPolarity_Low;\
 											TIM_OC1Init(SYNCSWPWM_OUT_TIMER, &TIM_OCInitStructure);\
 											\
 											TIM_OC1PreloadConfig(SYNCSWPWM_OUT_TIMER, TIM_OCPreload_Enable);\
