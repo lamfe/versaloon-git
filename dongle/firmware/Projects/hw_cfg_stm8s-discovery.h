@@ -290,11 +290,12 @@
 												SYNCSWPWM_IN_TIMER_FALL_DMA_WAIT(dly);\
 											}while(0)
 
-#define SYNCSWPWM_OUT_TIMER_INIT()		do{\
+#define SYNCSWPWM_OUT_TIMER_INIT(p)		do{\
 											DMA_InitTypeDef DMA_InitStructure;\
 											TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;\
 											TIM_OCInitTypeDef TIM_OCInitStructure;\
 											\
+											RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, ENABLE);\
 											RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, ENABLE);\
 											\
 											DMA_DeInit(SYNCSWPWM_OUT_TIMER_DMA);\
@@ -324,7 +325,7 @@
 											TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM1;\
 											TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;\
 											TIM_OCInitStructure.TIM_Pulse = 0;\
-											TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_Low;\
+											TIM_OCInitStructure.TIM_OCPolarity = (p) ? TIM_OCPolarity_High : TIM_OCPolarity_Low;\
 											TIM_OC1Init(SYNCSWPWM_OUT_TIMER, &TIM_OCInitStructure);\
 											\
 											TIM_OC1PreloadConfig(SYNCSWPWM_OUT_TIMER, TIM_OCPreload_Enable);\
