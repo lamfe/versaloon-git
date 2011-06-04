@@ -256,6 +256,7 @@ static RESULT sd_spi_transact(struct sd_spi_drv_interface_t *ifs,
 		uint8_t *data_buff, uint16_t size, uint8_t data_token, 
 		uint8_t *resp, uint8_t *resp_buff)
 {
+	RESULT ret = ERROR_OK;
 	bool ready;
 	
 	if ((ERROR_OK != sd_spi_transact_start(ifs)) || 
@@ -271,12 +272,13 @@ static RESULT sd_spi_transact(struct sd_spi_drv_interface_t *ifs,
 			(ERROR_OK != sd_spi_transact_datablock_waitready(ifs, &ready, 
 													token)) || 
 			(!ready) || 
-			(ERROR_OK != sd_spi_transact_datablock_fini(ifs, token)))) || 
-		(ERROR_OK != sd_spi_transact_end(ifs)))
+			(ERROR_OK != sd_spi_transact_datablock_fini(ifs, token)))))
 	{
-		return ERROR_FAIL;
+		ret = ERROR_FAIL;
 	}
-	return interfaces->peripheral_commit();
+	sd_spi_transact_end(ifs);
+	interfaces->peripheral_commit();
+	return ret;
 }
 
 static RESULT sd_spi_drv_init(struct dal_info_t *info)
