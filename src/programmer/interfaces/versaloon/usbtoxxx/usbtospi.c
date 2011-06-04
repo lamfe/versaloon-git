@@ -73,7 +73,7 @@ RESULT usbtospi_io(uint8_t interface_index, uint8_t *out, uint8_t *in,
 	if (NULL == out)
 	{
 		cmd_ptr = versaloon_cmd_buf;
-		memset(cmd_ptr, 0, bytelen);
+		memset(cmd_ptr, 0xFF, bytelen);
 	}
 	else
 	{
