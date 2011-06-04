@@ -161,19 +161,53 @@
 // RESP
 #define  SD_RESP_EMPTY						0xFF
 
-#define  SD_TOKEN_RESP_ACCEPTED				0x05
-#define  SD_TOKEN_RESP_CRC_REJECTED			0x0B
-#define  SD_TOKEN_RESP_WR_REJECTED			0x0D
-#define  SD_TOKEN_RESP_MASK					0x0F
+#define  SD_DATATOKEN_RESP_ACCEPTED			0x05
+#define  SD_DATATOKEN_RESP_CRC_REJECTED		0x0B
+#define  SD_DATATOKEN_RESP_WR_REJECTED		0x0D
+#define  SD_DATATOKEN_RESP_MASK				0x0F
 
-#define  SD_TOKEN_START_BLK_MULT			0xFC
-#define  SD_TOKEN_STOP_TRAN					0xFD
-#define  SD_TOKEN_START_BLK					0xFE
+#define  SD_DATATOKEN_START_BLK_MULT		0xFC
+#define  SD_DATATOKEN_STOP_TRAN				0xFD
+#define  SD_DATATOKEN_START_BLK				0xFE
 
-#define  SD_TOKEN_ERR_ERROR					0x01
-#define  SD_TOKEN_ERR_CC_ERROR				0x02
-#define  SD_TOKEN_ERR_CARD_ECC_ERROR		0x04
-#define  SD_TOKEN_ERR_OUT_OF_RANGE			0x08
+#define  SD_DATATOKEN_ERR_ERROR				0x01
+#define  SD_DATATOKEN_ERR_CC_ERROR			0x02
+#define  SD_DATATOKEN_ERR_CARD_ECC_ERROR	0x04
+#define  SD_DATATOKEN_ERR_OUT_OF_RANGE		0x08
+
+// Card Status
+#define SD_CS8_NONE							0x00
+#define SD_CS8_IN_IDLE_STATE				0x01
+#define SD_CS8_ERASE_RESET					0x02
+#define SD_CS8_ILLEGAL_COMMAND				0x04
+#define SD_CS8_COM_CRC_ERROR				0x08
+#define SD_CS8_ERASE_SEQUENCE_ERROR			0x10
+#define SD_CS8_ADDRESS_ERROR				0x20
+#define SD_CS8_PARAMETER_ERROR				0x40
+#define SD_CS8_ERROR_MASK					\
+	(SD_CS8_ERASE_RESET | SD_CS8_ILLEGAL_COMMAND | SD_CS8_COM_CRC_ERROR | \
+	SD_CS8_ERASE_SEQUENCE_ERROR | SD_CS8_ADDRESS_ERROR | SD_CS8_PARAMETER_ERROR)
+
+#define SD_TRANSTOKEN_DATA_DIR				0x8000
+#define SD_TRANSTOKEN_DATA_OUT				0x8000
+#define SD_TRANSTOKEN_DATA_IN				0x0000
+
+#define SD_TRANSTOKEN_RESP_MASK				0x00FF
+#define SD_TRANSTOKEN_RESP_CHECKBUSY		0x0080
+#define SD_TRANSTOKEN_RESP_CMD				0x0040
+#define SD_TRANSTOKEN_RESP_CRC7				0x0020
+#define SD_TRANSTOKEN_RESP_LONG				0x0010
+#define SD_TRANSTOKEN_RESP_SHORT			0x0000
+
+#define SD_TRANSTOKEN_RESP_NONE				0x0000
+#define SD_TRANSTOKEN_RESP_R1				0x0061
+#define SD_TRANSTOKEN_RESP_R1B				0x00E1
+#define SD_TRANSTOKEN_RESP_R2				0x0012
+#define SD_TRANSTOKEN_RESP_R3				0x0003
+#define SD_TRANSTOKEN_RESP_R4				0x0004
+#define SD_TRANSTOKEN_RESP_R5				0x0005
+#define SD_TRANSTOKEN_RESP_R6				0x0066
+#define SD_TRANSTOKEN_RESP_R7				0x0067
 
 enum sd_cardtype_t
 {
@@ -192,7 +226,6 @@ struct sd_info_t
 	uint8_t cid[16];
 };
 
-uint8_t sd_spi_calc_chksum(uint8_t *data, uint32_t num);
-RESULT sd_parse_csd(uint8_t *csd, enum sd_cardtype_t cardtype, 
-					struct sd_info_t *info);
+uint8_t sd_spi_cmd_chksum(uint8_t *data, uint32_t num);
+RESULT sd_parse_csd(uint8_t *csd, struct sd_info_t *info);
 
