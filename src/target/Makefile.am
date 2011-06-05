@@ -22,6 +22,7 @@ INCLUDES = \
     -I$(top_srcdir)/src/target/avr32 \
     -I$(top_srcdir)/src/target/avrxmega \
     -I$(top_srcdir)/src/target/lm3s \
+    -I$(top_srcdir)/src/target/sd \
     -I$(top_srcdir)/src/scripts \
     -I$(top_srcdir)/src/vsf
 
@@ -73,6 +74,7 @@ libtgt_a_SOURCES = \
     hcs12/hcs12.c \
     ee93cx6/ee93cx6.c \
     ee24cxx/ee24cxx.c \
-    df25xx/df25xx.c
+    df25xx/df25xx.c \
+    sd/sd.c
 
 MAINTAINERCLEANFILES = Makefile.in

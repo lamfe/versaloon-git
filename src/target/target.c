@@ -65,6 +65,7 @@
 #include "ee24cxx/ee24cxx.h"
 #include "df25xx/df25xx.h"
 #include "stm32f2/stm32f2.h"
+#include "sd/sd.h"
 
 VSS_HANDLER(target_memory_detail);
 VSS_HANDLER(target_parameter_detail);
@@ -497,6 +498,19 @@ struct target_info_t targets_info[] =
 		df25xx_program_mode,				// program_mode
 		&df25xx_program_functions,			// program_functions
 		df25xx_notifier,					// notifier
+		NULL,								// adjust_setting
+		NULL,								// adjust_mapping
+	},
+#endif
+#if TARGET_SD_EN
+	// SD
+	{
+		SD_STRING,							// name
+		AUTO_DETECT,						// feature
+		sd_program_area_map,				// program_area_map
+		sd_program_mode,					// program_mode
+		&sd_program_functions,				// program_functions
+		sd_notifier,						// notifier
 		NULL,								// adjust_setting
 		NULL,								// adjust_mapping
 	},
