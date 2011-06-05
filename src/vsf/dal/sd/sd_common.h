@@ -222,7 +222,8 @@ enum sd_cardtype_t
 struct sd_info_t
 {
 	struct mal_capacity_t capacity;
-	uint16_t frequency_mHz;
+	enum sd_cardtype_t cardtype;
+	uint16_t frequency_kHz;
 	uint8_t cid[16];
 };
 
