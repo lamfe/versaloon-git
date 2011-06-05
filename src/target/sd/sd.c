@@ -50,7 +50,7 @@
 
 struct program_area_map_t sd_program_area_map[] = 
 {
-	{APPLICATION_CHAR, 1, 0, 0, 0, AREA_ATTR_EWR},
+	{APPLICATION_CHAR, 1, 0, 0, 0, AREA_ATTR_WR},
 	{0, 0, 0, 0, 0, 0}
 };
 
@@ -214,16 +214,16 @@ ERASE_TARGET_HANDLER(sd)
 
 WRITE_TARGET_HANDLER(sd)
 {
-	struct chip_param_t *param = context->param;
+	REFERENCE_PARAMETER(context);
 	
 	switch (area)
 	{
 	case APPLICATION_CHAR:
-		if (size % param->chip_areas[APPLICATION_IDX].page_size)
+		if (size % 512)
 		{
 			return ERROR_FAIL;
 		}
-		size /= param->chip_areas[APPLICATION_IDX].page_size;
+		size /= 512;
 		
 		if (ERROR_OK != mal.writeblock(MAL_IDX_SD_SPI, &sd_dal_info, 
 										addr, buff, size))
