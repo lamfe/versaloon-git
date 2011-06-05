@@ -219,6 +219,8 @@ static RESULT sd_spi_transact_datablock_init(
 		struct sd_spi_drv_interface_t *ifs, uint16_t token, uint8_t *buffer, 
 		uint8_t data_token)
 {
+	REFERENCE_PARAMETER(buffer);
+	
 	if ((token & SD_TRANSTOKEN_DATA_DIR) == SD_TRANSTOKEN_DATA_IN)
 	{
 		uint8_t tmp;
@@ -231,6 +233,7 @@ static RESULT sd_spi_transact_datablock_init(
 	}
 	else
 	{
+		interfaces->spi.io(ifs->spi_port, &data_token, NULL, 1);
 	}
 	return ERROR_OK;
 }
@@ -248,6 +251,7 @@ static RESULT sd_spi_transact_datablock(struct sd_spi_drv_interface_t *ifs,
 	else
 	{
 		interfaces->spi.io(ifs->spi_port, buffer, NULL, size);
+		interfaces->spi.io(ifs->spi_port, (uint8_t *)&dummy_crc16, NULL, 2);
 	}
 	return interfaces->peripheral_commit();
 }
@@ -255,7 +259,21 @@ static RESULT sd_spi_transact_datablock(struct sd_spi_drv_interface_t *ifs,
 static RESULT sd_spi_transact_datablock_isready(
 		struct sd_spi_drv_interface_t *ifs, bool *ready, uint16_t token)
 {
-	*ready = true;
+	uint8_t resp;
+	
+	if ((token & SD_TRANSTOKEN_DATA_DIR) == SD_TRANSTOKEN_DATA_IN)
+	{
+		*ready = true;
+	}
+	else
+	{
+		interfaces->spi.io(ifs->spi_port, NULL, &resp, 1);
+		if (ERROR_OK != interfaces->peripheral_commit())
+		{
+			return ERROR_FAIL;
+		}
+		*ready = (resp & SD_DATATOKEN_RESP_MASK) == SD_DATATOKEN_RESP_ACCEPTED;
+	}
 	return ERROR_OK;
 }
 
@@ -280,12 +298,15 @@ static RESULT sd_spi_transact_datablock_waitready(
 static RESULT sd_spi_transact_datablock_fini(
 		struct sd_spi_drv_interface_t *ifs, uint16_t token)
 {
-	if ((token & SD_TRANSTOKEN_DATA_DIR) == SD_TRANSTOKEN_DATA_IN)
+	bool ready;
+	uint8_t resp;
+	
+	if (((token & SD_TRANSTOKEN_DATA_DIR) == SD_TRANSTOKEN_DATA_OUT) && 
+		(	(ERROR_OK != sd_spi_transact_cmd_waitready(ifs, &ready, 
+								SD_TRANSTOKEN_RESP_CHECKBUSY, &resp, NULL)) || 
+			(!ready)))
 	{
-		
-	}
-	else
-	{
+		return ERROR_FAIL;
 	}
 	return ERROR_OK;
 }
@@ -536,9 +557,6 @@ static RESULT sd_spi_drv_readblock_nb_start(struct dal_info_t *info,
 	uint8_t resp;
 	bool ready;
 	
-	REFERENCE_PARAMETER(address);
-	REFERENCE_PARAMETER(count);
-	
 	if (SD_CARDTYPE_SD_V2HC == sd_info->cardtype)
 	{
 		arg = (uint32_t)(address >> 9);
@@ -658,30 +676,128 @@ static RESULT sd_spi_drv_readblock_nb_end(struct dal_info_t *info)
 static RESULT sd_spi_drv_writeblock_nb_start(struct dal_info_t *info, 
 											uint64_t address, uint64_t count)
 {
-	REFERENCE_PARAMETER(info);
-	REFERENCE_PARAMETER(address);
-	REFERENCE_PARAMETER(count);
-	return ERROR_OK;
+	struct sd_spi_drv_interface_t *ifs = 
+								(struct sd_spi_drv_interface_t *)info->ifs;
+	struct mal_info_t *mal_info = (struct mal_info_t *)info->extra;
+	struct sd_info_t *sd_info = (struct sd_info_t *)mal_info->extra;
+	uint16_t token;
+	uint32_t arg;
+	uint8_t resp;
+	bool ready;
+	
+	if (SD_CARDTYPE_SD_V2HC == sd_info->cardtype)
+	{
+		arg = (uint32_t)(address >> 9);
+	}
+	else
+	{
+		arg = (uint32_t)address;
+	}
+	
+	token = SD_TRANSTOKEN_RESP_R1 | SD_TRANSTOKEN_DATA_OUT;
+	if ((ERROR_OK != sd_spi_transact_start(ifs)) || 
+		(ERROR_OK != sd_spi_transact_cmd(ifs, token, 
+						SD_CMD_WRITE_MULTIPLE_BLOCK, arg, (uint32_t)count)) || 
+		(ERROR_OK != sd_spi_transact_cmd_waitready(ifs, &ready, token, &resp, 
+													NULL)) || 
+		(!ready) || (resp != SD_CS8_NONE))
+	{
+		sd_spi_transact_end(ifs);
+		interfaces->peripheral_commit();
+		return ERROR_FAIL;
+	}
+	
+	return interfaces->peripheral_commit();
 }
 
 static RESULT sd_spi_drv_writeblock_nb(struct dal_info_t *info, 
 										uint64_t address, uint8_t *buff)
 {
-	REFERENCE_PARAMETER(info);
+	struct sd_spi_drv_interface_t *ifs = 
+								(struct sd_spi_drv_interface_t *)info->ifs;
+	uint16_t token;
+	
 	REFERENCE_PARAMETER(address);
-	REFERENCE_PARAMETER(buff);
-	return ERROR_OK;
+	
+	token = SD_TRANSTOKEN_RESP_R1 | SD_TRANSTOKEN_DATA_OUT;
+	if ((ERROR_OK != sd_spi_transact_datablock_init(ifs, token, buff, 
+											SD_DATATOKEN_START_BLK_MULT)) || 
+		(ERROR_OK != sd_spi_transact_datablock(ifs, token, buff, 512)))
+	{
+		sd_spi_transact_end(ifs);
+		interfaces->peripheral_commit();
+		return ERROR_FAIL;
+	}
+	
+	return interfaces->peripheral_commit();
 }
 
 static RESULT sd_spi_drv_writeblock_nb_isready(struct dal_info_t *info)
 {
-	REFERENCE_PARAMETER(info);
-	return ERROR_OK;
+	struct sd_spi_drv_interface_t *ifs = 
+								(struct sd_spi_drv_interface_t *)info->ifs;
+	bool ready;
+	uint16_t token;
+	
+	token = SD_TRANSTOKEN_RESP_R1 | SD_TRANSTOKEN_DATA_OUT;
+	if (ERROR_OK != sd_spi_transact_datablock_isready(ifs, &ready, token))
+	{
+		sd_spi_transact_end(ifs);
+		interfaces->peripheral_commit();
+		return ERROR_FAIL;
+	}
+	if (ready)
+	{
+		sd_spi_transact_datablock_fini(ifs, token);
+	}
+	
+	return interfaces->peripheral_commit();
+}
+
+static RESULT sd_spi_drv_writeblock_nb_waitready(struct dal_info_t *info)
+{
+	struct sd_spi_drv_interface_t *ifs = 
+								(struct sd_spi_drv_interface_t *)info->ifs;
+	bool ready;
+	uint16_t token;
+	
+	token = SD_TRANSTOKEN_RESP_R1 | SD_TRANSTOKEN_DATA_OUT;
+	if (ERROR_OK != sd_spi_transact_datablock_waitready(ifs, &ready, token))
+	{
+		sd_spi_transact_end(ifs);
+		interfaces->peripheral_commit();
+		return ERROR_FAIL;
+	}
+	if (ready)
+	{
+		sd_spi_transact_datablock_fini(ifs, token);
+	}
+	
+	return interfaces->peripheral_commit();
 }
 
 static RESULT sd_spi_drv_writeblock_nb_end(struct dal_info_t *info)
 {
-	REFERENCE_PARAMETER(info);
+	struct sd_spi_drv_interface_t *ifs = 
+								(struct sd_spi_drv_interface_t *)info->ifs;
+	uint16_t token;
+	uint8_t resp;
+	bool ready;
+	
+	token = SD_TRANSTOKEN_RESP_R1B;
+	if ((ERROR_OK != sd_spi_transact_cmd(ifs, token, SD_CMD_STOP_TRANSMISSION, 
+											0, 0)) || 
+		(ERROR_OK != sd_spi_transact_cmd_waitready(ifs, &ready, token, &resp, 
+													NULL)) || 
+		(!ready))
+	{
+		sd_spi_transact_end(ifs);
+		interfaces->peripheral_commit();
+		return ERROR_FAIL;
+	}
+	
+	sd_spi_transact_end(ifs);
+	interfaces->peripheral_commit();
 	return ERROR_OK;
 }
 
@@ -738,7 +854,7 @@ struct mal_driver_t sd_spi_drv =
 	sd_spi_drv_writeblock_nb_start,
 	sd_spi_drv_writeblock_nb,
 	sd_spi_drv_writeblock_nb_isready,
-	NULL,
+	sd_spi_drv_writeblock_nb_waitready,
 	sd_spi_drv_writeblock_nb_end
 };
 
