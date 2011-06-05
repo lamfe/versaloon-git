@@ -119,6 +119,7 @@ ENTER_PROGRAM_MODE_HANDLER(sd)
 	struct chip_param_t *param = context->param;
 	struct program_info_t *pi = context->pi;
 	uint64_t capacity;
+	uint32_t page_size;
 	
 	if (ERROR_OK != dal_init(context->prog))
 	{
@@ -148,18 +149,42 @@ ENTER_PROGRAM_MODE_HANDLER(sd)
 	capacity = sd_mal_info.capacity.block_number * 
 				sd_mal_info.capacity.block_size;
 	LOG_INFO("Card capacity: %d MB", (int)(capacity >> 20));
-	param->chip_areas[APPLICATION_IDX].page_size = 
-				(uint32_t)sd_mal_info.capacity.block_size;
+	switch (sd_info.cardtype)
+	{
+	case SD_CARDTYPE_SD_V1:
+		LOG_INFO("Card type: SD V1");
+		break;
+	case SD_CARDTYPE_SD_V2:
+		LOG_INFO("Card type: SD V2");
+		break;
+	case SD_CARDTYPE_SD_V2HC:
+		LOG_INFO("Card type: SD V2HC");
+		break;
+	case SD_CARDTYPE_MMC:
+		LOG_INFO("Card type: MMC");
+		break;
+	case SD_CARDTYPE_MMC_HC:
+		LOG_INFO("Card type: MMC HC");
+		break;
+	default:
+		LOG_INFO("Card type: UNKNOWN");
+		break;
+	}
+	
+	page_size = param->chip_areas[APPLICATION_IDX].page_size = 4 * 1024;
 	if (capacity > (16 << 20))
 	{
 		param->chip_areas[APPLICATION_IDX].page_num = 
-				(uint32_t)((16 << 20) / sd_mal_info.capacity.block_size);
+											(uint32_t)((16 << 20) / page_size);
 	}
 	else
 	{
 		param->chip_areas[APPLICATION_IDX].page_num = 
-				(uint32_t)sd_mal_info.capacity.block_number;
+											(uint32_t)(capacity / page_size);
 	}
+	param->chip_areas[APPLICATION_IDX].size = 
+		param->chip_areas[APPLICATION_IDX].page_num * 
+		param->chip_areas[APPLICATION_IDX].page_size;
 	
 	return commit();
 }
@@ -214,7 +239,7 @@ WRITE_TARGET_HANDLER(sd)
 
 READ_TARGET_HANDLER(sd)
 {
-	struct chip_param_t *param = context->param;
+	REFERENCE_PARAMETER(context);
 	
 	switch (area)
 	{
@@ -223,11 +248,11 @@ READ_TARGET_HANDLER(sd)
 		return ERROR_OK;
 		break;
 	case APPLICATION_CHAR:
-		if (size % param->chip_areas[APPLICATION_IDX].page_size)
+		if (size % 512)
 		{
 			return ERROR_FAIL;
 		}
-		size /= param->chip_areas[APPLICATION_IDX].page_size;
+		size /= 512;
 		
 		if (ERROR_OK != mal.readblock(MAL_IDX_SD_SPI, &sd_dal_info, 
 										addr, buff, size))

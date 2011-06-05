@@ -549,6 +549,7 @@ static RESULT mal_readblock(uint16_t index, struct dal_info_t *info,
 		{
 			return ERROR_FAIL;
 		}
+		address += block_size;
 		buff += block_size;
 	}
 	
@@ -574,6 +575,7 @@ static RESULT mal_writeblock(uint16_t index, struct dal_info_t *info,
 		{
 			return ERROR_FAIL;
 		}
+		address += block_size;
 		buff += block_size;
 	}
 	

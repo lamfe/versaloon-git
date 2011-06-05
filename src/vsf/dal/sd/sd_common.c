@@ -97,7 +97,7 @@ RESULT sd_parse_csd(uint8_t *csd, struct sd_info_t *info)
 	if (info != NULL)
 	{
 		info->capacity = tmp_cap;
-		info->frequency_mHz = 9 * 1000;
+		info->frequency_kHz = 9 * 1000;
 	}
 	return ERROR_OK;
 }
