@@ -44,6 +44,10 @@
 #include "mic2826/mic2826_script.h"
 #endif
 
+#if DAL_NRF24L01_EN
+#include "nrf24l01/nrf24l01_drv.h"
+#endif
+
 VSS_HANDLER(dal_vss_init);
 VSS_HANDLER(dal_vss_fini);
 struct vss_cmd_t dal_cmd[] = 
@@ -91,6 +95,9 @@ struct dal_driver_t *dal_drivers[] =
 #endif
 #if DAL_MIC2826_EN
 	(struct dal_driver_t *)&mic2826_drv,
+#endif
+#if DAL_NRF24L01_EN
+	(struct dal_driver_t *)&nrf24l01_drv,
 #endif
 };
 

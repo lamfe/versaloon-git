@@ -21,7 +21,6 @@
 #endif
 
 #include "app_type.h"
-#include "app_io.h"
 
 #include "mal.h"
 #include "mal_internal.h"

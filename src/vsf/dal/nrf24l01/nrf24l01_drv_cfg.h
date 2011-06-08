@@ -17,15 +17,3 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#define DAL_INTERFACE_PARSER_EN				1
-
-#define DAL_MIC2826_EN						1
-#define DAL_NRF24L01_EN						1
-
-#define DAL_EE93CX6_EN						1
-#define DAL_EE24CXX_EN						1
-#define DAL_DF25XX_EN						1
-#define DAL_DF45XX_EN						1
-#define DAL_SD_SPI_EN						1
-#define DAL_SD_SDIO_EN						0
-
