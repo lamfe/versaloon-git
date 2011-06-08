@@ -336,7 +336,14 @@ static RESULT nrf24l01_drv_tx_fifo_avail(struct dal_info_t *info, bool *avail)
 {
 	struct nrf24l01_drv_interface_t *ifs = 
 								(struct nrf24l01_drv_interface_t *)info->ifs;
+	struct nrf24l01_drv_param_t *param = 
+								(struct nrf24l01_drv_param_t *)info->param;
 	uint8_t status;
+	
+	if (param->dir != NRF24L01_DIR_TX)
+	{
+		return ERROR_FAIL;
+	}
 	
 	if (ERROR_OK != nrf24l01_drv_read_reg(ifs, NRF24L01_REG_STATUS, &status, 1))
 	{
@@ -351,9 +358,12 @@ static RESULT nrf24l01_drv_tx_fifo_write(struct dal_info_t *info,
 {
 	struct nrf24l01_drv_interface_t *ifs = 
 								(struct nrf24l01_drv_interface_t *)info->ifs;
+	struct nrf24l01_drv_param_t *param = 
+								(struct nrf24l01_drv_param_t *)info->param;
 	uint8_t cmd_buff[33];
 	
-	if ((NULL == buffer) || (NULL == buffer->buff) || (buffer->size > 32))
+	if ((NULL == buffer) || (NULL == buffer->buff) || (buffer->size > 32) || 
+		(param->dir != NRF24L01_DIR_TX))
 	{
 		return ERROR_FAIL;
 	}
@@ -436,6 +446,13 @@ static RESULT nrf24l01_drv_send(struct dal_info_t *info)
 {
 	struct nrf24l01_drv_interface_t *ifs = 
 								(struct nrf24l01_drv_interface_t *)info->ifs;
+	struct nrf24l01_drv_param_t *param = 
+								(struct nrf24l01_drv_param_t *)info->param;
+	
+	if (param->dir != NRF24L01_DIR_TX)
+	{
+		return ERROR_FAIL;
+	}
 	
 	interfaces->gpio.out(ifs->ce_port, ifs->ce_pin, ifs->ce_pin);
 	interfaces->delay.delayus(10);
