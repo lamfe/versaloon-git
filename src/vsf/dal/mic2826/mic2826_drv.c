@@ -25,7 +25,6 @@
 
 #include "app_cfg.h"
 #include "app_type.h"
-#include "app_io.h"
 
 #include "mic2826_drv_cfg.h"
 #include "mic2826_drv.h"

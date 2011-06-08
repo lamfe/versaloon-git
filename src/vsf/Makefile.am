@@ -20,6 +20,7 @@ libvsf_a_SOURCES = \
     dal/df25xx/df25xx_drv.c \
     dal/df45xx/df45xx_drv.c \
     dal/sd/sd_spi_drv.c \
-    dal/sd/sd_common.c
+    dal/sd/sd_common.c \
+    dal/nrf24l01/nrf24l01_drv.c
 
 MAINTAINERCLEANFILES = Makefile.in

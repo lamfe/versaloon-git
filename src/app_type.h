@@ -27,6 +27,10 @@
 #	define __CONNECT(a, b)			a ## b
 #endif
 
+#ifndef NULL
+#	define NULL						((void *)0)
+#endif
+
 typedef enum result_s
 {
 	ERROR_OK = 0,

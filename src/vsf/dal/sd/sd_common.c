@@ -25,7 +25,6 @@
 
 #include "app_cfg.h"
 #include "app_type.h"
-#include "app_io.h"
 
 #include "../mal/mal.h"
 #include "../mal/mal_internal.h"
