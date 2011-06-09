@@ -60,18 +60,13 @@ enum nrf24l01_drv_crclen_t
 	NRF24L01_CRCLEN_2		= 1,
 };
 
-typedef RESULT (*nrf24l01_drv_ontx_t)(struct dal_info_t *info);
-typedef RESULT (*nrf24l01_drv_onrx_t)(struct dal_info_t *info, uint8_t channel, 
-										struct vsf_buffer_t *buffer);
-typedef RESULT (*nrf24l01_drv_onto_t)(struct dal_info_t *info);
-typedef RESULT (*nrf24l01_drv_onpoll_t)(struct dal_info_t *info);
-
 struct nrf24l01_drv_user_callback
 {
-	nrf24l01_drv_ontx_t ontx;
-	nrf24l01_drv_onrx_t onrx;
-	nrf24l01_drv_onto_t onto;
-	nrf24l01_drv_onpoll_t onpoll;
+	RESULT (*on_tx)(struct dal_info_t *info);
+	RESULT (*on_rx)(struct dal_info_t *info, uint8_t channel, 
+					struct vsf_buffer_t *buffer);
+	RESULT (*on_to)(struct dal_info_t *info);
+	RESULT (*on_poll)(struct dal_info_t *info);
 };
 
 struct nrf24l01_drv_t
