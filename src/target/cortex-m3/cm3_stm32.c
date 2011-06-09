@@ -47,9 +47,7 @@
 #include "stm32_internal.h"
 #include "cm3_stm32_fl.h"
 
-#define STM32_FL_PAGE_SIZE			1024
 #define	STM32_FL_PAGE0_ADDR			(STM32_SRAM_ADDR + STM32_FL_BUFFER_OFFSET)
-#define STM32_FL_PAGE1_ADDR			(STM32_FL_PAGE0_ADDR + STM32_FL_PAGE_SIZE)
 
 ENTER_PROGRAM_MODE_HANDLER(stm32swj);
 LEAVE_PROGRAM_MODE_HANDLER(stm32swj);
@@ -182,14 +180,13 @@ ERASE_TARGET_HANDLER(stm32swj)
 
 WRITE_TARGET_HANDLER(stm32swj)
 {
+	struct chip_param_t *param = context->param;
 	uint8_t i;
 	uint8_t fuse_buff[STM32_OB_SIZE];
 	static uint8_t tick_tock = 0;
 	RESULT ret = ERROR_OK;
 	struct stm32_fl_cmd_t cmd;
 	struct stm32_fl_result_t result;
-	
-	REFERENCE_PARAMETER(context);
 	
 	cmd.sr_busy_mask = STM32_FLASH_SR_BSY;
 	cmd.sr_err_mask = STM32_FLASH_SR_ERRMSK;
@@ -224,6 +221,11 @@ WRITE_TARGET_HANDLER(stm32swj)
 		}
 		break;
 	case APPLICATION_CHAR:
+		if (size != param->chip_areas[APPLICATION_IDX].page_size)
+		{
+			return ERROR_FAIL;
+		}
+		
 		if (addr >= STM32_FLASH_BANK2_ADDR)
 		{
 			cmd.cr_addr = STM32_FLASH_CR2;
@@ -239,7 +241,7 @@ WRITE_TARGET_HANDLER(stm32swj)
 		cmd.target_addr = addr;
 		if (tick_tock & 1)
 		{
-			cmd.ram_addr = STM32_FL_PAGE1_ADDR;
+			cmd.ram_addr = STM32_FL_PAGE0_ADDR + size;
 		}
 		else
 		{

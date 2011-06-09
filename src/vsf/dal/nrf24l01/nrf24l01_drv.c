@@ -237,8 +237,10 @@ static RESULT nrf24l01_drv_config_channel(struct dal_info_t *info,
 	switch (param->dir)
 	{
 	case NRF24L01_DIR_TX:
-		if (ERROR_OK != nrf24l01_drv_write_reg(ifs, NRF24L01_REG_TX_ADDR, addr, 
-												param->aw))
+		if ((ERROR_OK != nrf24l01_drv_write_reg(ifs, NRF24L01_REG_TX_ADDR, 
+												addr, param->aw)) || 
+			(ERROR_OK != nrf24l01_drv_write_reg(ifs, NRF24L01_REG_RX_ADDR_P(0), 
+												addr, param->aw)))
 		{
 			return ERROR_FAIL;
 		}
@@ -497,9 +499,9 @@ static RESULT nrf24l01_drv_poll(struct dal_info_t *info)
 	struct nrf24l01_drv_param_t *param = 
 								(struct nrf24l01_drv_param_t *)info->param;
 	
-	if (NULL != param->user_callback.onpoll)
+	if (NULL != param->user_callback.on_poll)
 	{
-		return param->user_callback.onpoll(info);
+		return param->user_callback.on_poll(info);
 	}
 	return ERROR_OK;
 }
@@ -521,7 +523,7 @@ static RESULT nrf24l01_drv_on_interrupt(struct dal_info_t *info)
 	if (status & NRF24L01_REG_STATUS_RX_DR)
 	{
 		status &= ~NRF24L01_REG_STATUS_RX_DR;
-		if (param->user_callback.onrx != NULL)
+		if (param->user_callback.on_rx != NULL)
 		{
 			uint8_t cmd_buff[1], size, buff[NRF24L01_DRV_MAX_PKGSIZE];
 			struct vsf_buffer_t buffer;
@@ -538,23 +540,23 @@ static RESULT nrf24l01_drv_on_interrupt(struct dal_info_t *info)
 			
 			buffer.size = size;
 			buffer.buff = buff;
-			return param->user_callback.onrx(info, channel, &buffer);
+			return param->user_callback.on_rx(info, channel, &buffer);
 		}
 	}
 	if (status & NRF24L01_REG_STATUS_TX_DS)
 	{
 		status &= ~NRF24L01_REG_STATUS_TX_DS;
-		if (param->user_callback.ontx != NULL)
+		if (param->user_callback.on_tx != NULL)
 		{
-			return param->user_callback.ontx(info);
+			return param->user_callback.on_tx(info);
 		}
 	}
 	if (status & NRF24L01_REG_STATUS_MAX_RT)
 	{
 		status &= ~NRF24L01_REG_STATUS_MAX_RT;
-		if (param->user_callback.onto != NULL)
+		if (param->user_callback.on_to != NULL)
 		{
-			return param->user_callback.onto(info);
+			return param->user_callback.on_to(info);
 		}
 	}
 	
