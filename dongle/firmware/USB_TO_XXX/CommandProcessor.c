@@ -50,19 +50,19 @@ void ProcessCommand(uint8_t* dat, uint16_t len)
 	uint8_t cmd = 0;
 
 	// first byte of the USB package is the command byte
-	cmd = buffer_out[0];
+	cmd = dat[0];
 	// check command and call corresponding module
 	if(cmd <= VERSALOON_COMMON_CMD_END)
 	{
 		// Common Commands
-		Versaloon_ProcessCommonCmd(buffer_out, cmd_len & 0xFFFF);
+		Versaloon_ProcessCommonCmd(dat, len);
 	}
 #if USB_TO_XXX_EN
 	else if(cmd <= VERSALOON_USB_TO_XXX_CMD_END)
 	{
-		buffer_reply = buffer_out;
+		buffer_reply = dat;
 		USB_TO_POLL_Index = -1;
-		USB_TO_XXX_ProcessCmd(buffer_out, cmd_len & 0xFFFF);
+		USB_TO_XXX_ProcessCmd(dat, len);
 	}
 #endif		// #if USB_TO_XXX_EN
 }
