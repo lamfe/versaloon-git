@@ -2188,6 +2188,18 @@
     </group>
   </group>
   <group>
+    <name>usb_protocol</name>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\usb_protocol_MSC.c</name>
+      <excluded>
+        <configuration>Release</configuration>
+      </excluded>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\usb_protocol_Versaloon.c</name>
+    </file>
+  </group>
+  <group>
     <name>USB_TO_XXX</name>
     <file>
       <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\CommandProcessor.c</name>
@@ -2312,9 +2324,6 @@
   </file>
   <file>
     <name>$PROJ_DIR$\..\..\..\main.c</name>
-  </file>
-  <file>
-    <name>$PROJ_DIR$\..\..\..\usb_protocol.c</name>
   </file>
 </project>
 
