@@ -21,7 +21,7 @@
 #include "app_type.h"
 
 #include "../mal/mal.h"
-#include "../mal/mal_internal.h"
+#include "../mal/mal_driver.h"
 #include "sd_common.h"
 
 uint8_t sd_spi_cmd_chksum(uint8_t *data, uint32_t num)

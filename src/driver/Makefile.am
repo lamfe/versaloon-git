@@ -3,6 +3,7 @@ INCLUDES = \
     -I$(top_srcdir)/src \
     -I$(top_srcdir)/src/driver/timer \
     -I$(top_srcdir)/src/programmer \
+    -I$(top_srcdir)/src/programmer/interfaces \
     -I$(top_srcdir)/src/scripts \
     -I$(top_srcdir)/src/tools/strparser
 

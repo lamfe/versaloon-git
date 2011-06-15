@@ -1,5 +1,5 @@
 #include "app_cfg.h"
-#include "interfaces/interfaces.h"
+#include "interfaces.h"
 
 #include "stack/usb_device/vsf_usbd_const.h"
 #include "stack/usb_device/vsf_usbd.h"

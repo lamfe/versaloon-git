@@ -21,7 +21,7 @@
 #include "app_type.h"
 
 #include "../mal/mal.h"
-#include "../mal/mal_internal.h"
+#include "../mal/mal_driver.h"
 #include "ee24cxx_drv_cfg.h"
 #include "ee24cxx_drv.h"
 

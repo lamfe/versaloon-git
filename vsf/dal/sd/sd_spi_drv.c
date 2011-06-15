@@ -21,7 +21,7 @@
 #include "app_type.h"
 
 #include "../mal/mal.h"
-#include "../mal/mal_internal.h"
+#include "../mal/mal_driver.h"
 #include "sd_common.h"
 #include "sd_spi_drv_cfg.h"
 #include "sd_spi_drv.h"

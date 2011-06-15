@@ -79,6 +79,8 @@ struct SCSI_LUN_status_t
 
 struct SCSI_LUN_info_t
 {
+	struct dal_info_t *dal_info;
+	uint8_t mal_index;
 	const struct SCSI_LUN_param_t param;
 	struct SCSI_LUN_status_t status;
 };

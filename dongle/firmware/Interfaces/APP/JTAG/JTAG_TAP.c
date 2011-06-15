@@ -267,7 +267,7 @@ static void JTAG_TAP_RW(uint8_t *tdo, uint8_t *tdi, uint8_t tms_before, uint8_t 
 	tdo_tmp = JTAG_TAP_Operate_Asyn(0, tms_after1);
 	tdo[ret_len] = tdo_tmp;
 }
-
+/*
 static void JTAG_TAP_R(uint8_t *tdo, uint8_t tms_before, uint8_t tms_after0, uint8_t tms_after1, uint16_t dat_byte_len)
 {
 	uint8_t tdo_tmp;
@@ -321,7 +321,7 @@ static void JTAG_TAP_W(uint8_t *tdi, uint8_t tms_before, uint8_t tms_after0, uin
 	JTAG_TAP_Operate_Asyn(tdi[cur_pos], tms_after0);
 	JTAG_TAP_Operate_Asyn(0, tms_after1);
 }
-
+*/
 
 
 
@@ -562,7 +562,7 @@ static void JTAG_TAP_ProcessDataRW(uint8_t *tdo, uint8_t *tdi, uint8_t tms_befor
 		JTAG_TAP_Operate_Asyn(0, 0);
 	}
 }
-
+/*
 static uint32_t JTAG_TAP_Instr(uint32_t instr, uint8_t bit_len, uint8_t idle)
 {
 	uint32_t ret;
@@ -578,7 +578,7 @@ static uint32_t JTAG_TAP_Instr(uint32_t instr, uint8_t bit_len, uint8_t idle)
 
 	return ret;
 }
-
+*/
 static void JTAG_TAP_InstrPtr(uint8_t *instr, uint8_t *tdo, uint16_t bit_len, uint8_t idle)
 {
 	JTAG_TAP_ProcessDataRW(tdo,
@@ -590,7 +590,7 @@ static void JTAG_TAP_InstrPtr(uint8_t *instr, uint8_t *tdo, uint16_t bit_len, ui
 						   JTAG_TAP_BitsAfter,
 						   idle);
 }
-
+/*
 static void JTAG_TAP_InstrOutPtr(uint8_t *instr, uint16_t bit_len, uint8_t idle)
 {
 	JTAG_TAP_ProcessDataRW((uint8_t*)0,
@@ -626,7 +626,7 @@ static void JTAG_TAP_DataInPtr(uint8_t *tdo, uint16_t bit_len, uint8_t idle)
 						   JTAG_TAP_UnitsAfter,
 						   idle);
 }
-
+*/
 static void JTAG_TAP_DataPtr(uint8_t *tdi, uint8_t *tdo, uint16_t bit_len, uint8_t idle)
 {
 	JTAG_TAP_ProcessDataRW(tdo,
@@ -638,7 +638,7 @@ static void JTAG_TAP_DataPtr(uint8_t *tdi, uint8_t *tdo, uint16_t bit_len, uint8
 						   JTAG_TAP_UnitsAfter,
 						   idle);
 }
-
+/*
 static uint32_t JTAG_TAP_Data(uint32_t tdi, uint16_t bit_len, uint8_t idle)
 {
 	uint32_t tdo;
@@ -682,7 +682,7 @@ static uint32_t JTAG_TAP_DataIn(uint16_t bit_len, uint8_t idle)
 
 	return tdo;
 }
-
+*/
 
 
 static void JTAG_TAP_SetDaisyChainPos(uint32_t ub, uint32_t ua, uint32_t bb, uint32_t ba)

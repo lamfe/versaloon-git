@@ -16,6 +16,7 @@ INCLUDES = \
     -I$(top_srcdir)/src/target \
     -I$(top_srcdir)/src/driver \
     -I$(top_srcdir)/src/programmer \
+    -I$(top_srcdir)/src/programmer/interfaces \
     -I$(top_srcdir)/src/scripts
 
 vsprog_CPPFLAGS = @CPPFLAGS@

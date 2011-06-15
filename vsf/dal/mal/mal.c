@@ -20,9 +20,95 @@
 #include "app_type.h"
 
 #include "mal.h"
-#include "mal_internal.h"
+#include "mal_driver.h"
 
 #define MAL_RETRY_CNT					0xFFFF
+
+#if DAL_MAL_EMPTY_EN
+
+static RESULT mal_empty_dummy_func(struct dal_info_t *param)
+{
+	REFERENCE_PARAMETER(param);
+	return ERROR_OK;
+}
+
+static RESULT mal_empty_dummy_erw_start(struct dal_info_t *param, 
+										uint64_t address, uint64_t count)
+{
+	REFERENCE_PARAMETER(param);
+	REFERENCE_PARAMETER(address);
+	REFERENCE_PARAMETER(count);
+	return ERROR_OK;
+}
+
+static RESULT mal_empty_dummy_e(struct dal_info_t *param, uint64_t address)
+{
+	REFERENCE_PARAMETER(param);
+	REFERENCE_PARAMETER(address);
+	return ERROR_OK;
+}
+
+static RESULT mal_empty_dummy_rw(struct dal_info_t *param, uint64_t address, 
+									uint8_t *buff)
+{
+	REFERENCE_PARAMETER(param);
+	REFERENCE_PARAMETER(address);
+	REFERENCE_PARAMETER(buff);
+	return ERROR_OK;
+}
+
+struct mal_driver_t mal_empty_drv = 
+{
+	{
+		"mal_empty",
+#if DAL_INTERFACE_PARSER_EN
+		"",
+		NULL,
+#endif
+	},
+	
+	MAL_IDX_EMPTY,
+	MAL_SUPPORT_ERASEALL | MAL_SUPPORT_ERASEBLOCK | 
+	MAL_SUPPORT_WRITEBLOCK | MAL_SUPPORT_READBLOCK,
+	
+	mal_empty_dummy_func,
+	mal_empty_dummy_func,
+	mal_empty_dummy_func,
+	mal_empty_dummy_func,
+	
+	mal_empty_dummy_func,
+	mal_empty_dummy_func,
+	mal_empty_dummy_func,
+	mal_empty_dummy_func,
+	
+	mal_empty_dummy_func,
+	mal_empty_dummy_func,
+	mal_empty_dummy_func,
+	mal_empty_dummy_func,
+	
+	mal_empty_dummy_erw_start,
+	mal_empty_dummy_e,
+	mal_empty_dummy_func,
+	mal_empty_dummy_func,
+	mal_empty_dummy_func,
+	
+	mal_empty_dummy_erw_start,
+	mal_empty_dummy_rw,
+	mal_empty_dummy_func,
+	mal_empty_dummy_func,
+	mal_empty_dummy_func,
+	
+	mal_empty_dummy_erw_start,
+	mal_empty_dummy_rw,
+	mal_empty_dummy_func,
+	mal_empty_dummy_func,
+	mal_empty_dummy_func
+};
+#endif
+
+
+
+
 
 static struct mal_driver_t *mal_drivers[] = 
 {
@@ -43,6 +129,9 @@ static struct mal_driver_t *mal_drivers[] =
 #endif
 #if DAL_SD_SDIO_EN
 	&sd_sdio_drv,
+#endif
+#if DAL_MAL_EMPTY_EN
+	&mal_empty_drv,
 #endif
 	NULL
 };
