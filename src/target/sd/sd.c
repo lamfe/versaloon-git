@@ -35,6 +35,7 @@
 #include "programmer.h"
 #include "target.h"
 #include "scripts.h"
+#include "app_scripts.h"
 
 #include "dal/mal/mal.h"
 #include "dal/sd/sd_common.h"
@@ -98,7 +99,6 @@ const struct vss_cmd_t sd_notifier[] =
 
 
 
-#define commit()					interfaces->peripheral_commit()
 
 static struct sd_info_t sd_info;
 static struct sd_spi_drv_interface_t sd_spi_drv_ifs;
@@ -186,7 +186,7 @@ ENTER_PROGRAM_MODE_HANDLER(sd)
 		param->chip_areas[APPLICATION_IDX].page_num * 
 		param->chip_areas[APPLICATION_IDX].page_size;
 	
-	return commit();
+	return dal_commit();
 }
 
 LEAVE_PROGRAM_MODE_HANDLER(sd)
@@ -195,7 +195,7 @@ LEAVE_PROGRAM_MODE_HANDLER(sd)
 	REFERENCE_PARAMETER(success);
 	
 	mal.fini(MAL_IDX_SD_SPI, &sd_dal_info);
-	return commit();
+	return dal_commit();
 }
 
 ERASE_TARGET_HANDLER(sd)
@@ -209,7 +209,7 @@ ERASE_TARGET_HANDLER(sd)
 	{
 		return ERROR_FAIL;
 	}
-	return commit();
+	return dal_commit();
 }
 
 WRITE_TARGET_HANDLER(sd)
@@ -230,7 +230,7 @@ WRITE_TARGET_HANDLER(sd)
 		{
 			return ERROR_FAIL;
 		}
-		return commit();
+		return dal_commit();
 		break;
 	default:
 		return ERROR_FAIL;
