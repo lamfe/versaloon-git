@@ -18,7 +18,7 @@
 #if USB_TO_SWIM_EN
 
 #include "USB_TO_XXX.h"
-#include "interfaces.h"
+#include "app_interfaces.h"
 
 void USB_TO_SWIM_ProcessCmd(uint8_t *dat, uint16_t len)
 {
@@ -39,7 +39,7 @@ void USB_TO_SWIM_ProcessCmd(uint8_t *dat, uint16_t len)
 		switch(command)
 		{
 		case USB_TO_XXX_INIT:
-			if (ERROR_OK == interfaces->swim.init(device_idx))
+			if (ERROR_OK == app_interfaces.swim.init(device_idx))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
@@ -49,7 +49,7 @@ void USB_TO_SWIM_ProcessCmd(uint8_t *dat, uint16_t len)
 			}
 			break;
 		case USB_TO_XXX_CONFIG:
-			if (ERROR_OK == interfaces->swim.config(device_idx, dat[index + 0], 
+			if (ERROR_OK == app_interfaces.swim.config(device_idx, dat[index + 0], 
 								dat[index + 1], dat[index + 2]))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
@@ -60,7 +60,7 @@ void USB_TO_SWIM_ProcessCmd(uint8_t *dat, uint16_t len)
 			}
 			break;
 		case USB_TO_XXX_FINI:
-			if (ERROR_OK == interfaces->swim.fini(device_idx))
+			if (ERROR_OK == app_interfaces.swim.fini(device_idx))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
@@ -73,7 +73,7 @@ void USB_TO_SWIM_ProcessCmd(uint8_t *dat, uint16_t len)
 			swim_len = GET_LE_U16(&dat[index + 0]);
 			swim_addr = GET_LE_U32(&dat[index + 2]);
 			
-			if (ERROR_OK == interfaces->swim.wotf(device_idx, &dat[index + 6], 
+			if (ERROR_OK == app_interfaces.swim.wotf(device_idx, &dat[index + 6], 
 								swim_len, swim_addr))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
@@ -87,7 +87,7 @@ void USB_TO_SWIM_ProcessCmd(uint8_t *dat, uint16_t len)
 			swim_len = GET_LE_U16(&dat[index + 0]);
 			swim_addr = GET_LE_U32(&dat[index + 2]);
 			
-			if (ERROR_OK == interfaces->swim.rotf(device_idx, &buffer_reply[rep_len + 1], 
+			if (ERROR_OK == app_interfaces.swim.rotf(device_idx, &buffer_reply[rep_len + 1], 
 								swim_len, swim_addr))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
@@ -99,7 +99,7 @@ void USB_TO_SWIM_ProcessCmd(uint8_t *dat, uint16_t len)
 			rep_len += swim_len;
 			break;
 		case USB_TO_XXX_RESET:
-			if (ERROR_OK == interfaces->swim.srst(device_idx))
+			if (ERROR_OK == app_interfaces.swim.srst(device_idx))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
@@ -109,7 +109,7 @@ void USB_TO_SWIM_ProcessCmd(uint8_t *dat, uint16_t len)
 			}
 			break;
 		case USB_TO_XXX_SYNC:
-			if (ERROR_OK == interfaces->swim.sync(device_idx, dat[index + 0]))
+			if (ERROR_OK == app_interfaces.swim.sync(device_idx, dat[index + 0]))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
@@ -119,7 +119,7 @@ void USB_TO_SWIM_ProcessCmd(uint8_t *dat, uint16_t len)
 			}
 			break;
 		case USB_TO_XXX_ENABLE:
-			if (ERROR_OK == interfaces->swim.enable(device_idx))
+			if (ERROR_OK == app_interfaces.swim.enable(device_idx))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}

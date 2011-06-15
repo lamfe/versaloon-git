@@ -17,7 +17,7 @@
 #include "app_cfg.h"
 #if INTERFACE_BDM_EN
 
-#include "interfaces.h"
+#include "app_interfaces.h"
 #include "BDM.h"
 
 uint8_t BDM_Inited = 0;

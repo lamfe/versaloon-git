@@ -18,7 +18,7 @@
 #if USB_TO_JTAG_HL_EN
 
 #include "USB_TO_XXX.h"
-#include "interfaces.h"
+#include "app_interfaces.h"
 
 void USB_TO_JTAG_HL_ProcessCmd(uint8_t *dat, uint16_t len)
 {
@@ -40,7 +40,7 @@ void USB_TO_JTAG_HL_ProcessCmd(uint8_t *dat, uint16_t len)
 		switch(command)
 		{
 		case USB_TO_XXX_INIT:
-			if (ERROR_OK == interfaces->jtag_hl.init(device_idx))
+			if (ERROR_OK == app_interfaces.jtag_hl.init(device_idx))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
@@ -50,7 +50,7 @@ void USB_TO_JTAG_HL_ProcessCmd(uint8_t *dat, uint16_t len)
 			}
 			break;
 		case USB_TO_XXX_CONFIG:
-			if (ERROR_OK == interfaces->jtag_hl.config(device_idx, GET_LE_U32(&dat[index]), 
+			if (ERROR_OK == app_interfaces.jtag_hl.config(device_idx, GET_LE_U32(&dat[index]), 
 								dat[index + 4], dat[index + 5], 
 								GET_LE_U16(&dat[index + 6]), GET_LE_U16(&dat[index + 8])))
 			{
@@ -62,7 +62,7 @@ void USB_TO_JTAG_HL_ProcessCmd(uint8_t *dat, uint16_t len)
 			}
 			break;
 		case USB_TO_XXX_FINI:
-			if (ERROR_OK == interfaces->jtag_hl.fini(device_idx))
+			if (ERROR_OK == app_interfaces.jtag_hl.fini(device_idx))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
@@ -83,7 +83,7 @@ void USB_TO_JTAG_HL_ProcessCmd(uint8_t *dat, uint16_t len)
 				
 				if(i & 0x8000)
 				{
-					if (ERROR_OK == interfaces->jtag_hl.ir(device_idx, &dat[index + len_tmp + 3], 
+					if (ERROR_OK == app_interfaces.jtag_hl.ir(device_idx, &dat[index + len_tmp + 3], 
 										cur_dat_len, dat[index + len_tmp + 2], 1))
 					{
 						memcpy(&buffer_reply[rep_len], &dat[index + len_tmp + 3], (cur_dat_len + 7) >> 3);
@@ -96,7 +96,7 @@ void USB_TO_JTAG_HL_ProcessCmd(uint8_t *dat, uint16_t len)
 				}
 				else
 				{
-					if (ERROR_OK == interfaces->jtag_hl.dr(device_idx, &dat[index + len_tmp + 3], 
+					if (ERROR_OK == app_interfaces.jtag_hl.dr(device_idx, &dat[index + len_tmp + 3], 
 										cur_dat_len, dat[index + len_tmp + 2], 1))
 					{
 						memcpy(&buffer_reply[rep_len], &dat[index + len_tmp + 3], (cur_dat_len + 7) >> 3);
@@ -122,7 +122,7 @@ void USB_TO_JTAG_HL_ProcessCmd(uint8_t *dat, uint16_t len)
 			}
 			break;
 		case USB_TO_JTAG_HL_TMS:
-			if (ERROR_OK == interfaces->jtag_hl.tms(device_idx, &dat[index + 1], 
+			if (ERROR_OK == app_interfaces.jtag_hl.tms(device_idx, &dat[index + 1], 
 														dat[index + 0] + 1))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;

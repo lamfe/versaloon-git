@@ -15,6 +15,8 @@
  **************************************************************************/
 
 #include "app_cfg.h"
+#include "app_type.h"
+
 #include "fifo.h"
 
 //#define FIFO_Get_Next_Idx(pos, size)		++(pos) % (size)

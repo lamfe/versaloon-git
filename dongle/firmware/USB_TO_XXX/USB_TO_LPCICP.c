@@ -18,7 +18,7 @@
 #if USB_TO_LPCICP_EN
 
 #include "USB_TO_XXX.h"
-#include "interfaces.h"
+#include "app_interfaces.h"
 
 void USB_TO_LPCICP_ProcessCmd(uint8_t *dat, uint16_t len)
 {
@@ -36,7 +36,7 @@ void USB_TO_LPCICP_ProcessCmd(uint8_t *dat, uint16_t len)
 		switch(command)
 		{
 		case USB_TO_XXX_INIT:
-			if (ERROR_OK == interfaces->lpcicp.init(device_idx))
+			if (ERROR_OK == app_interfaces.lpcicp.init(device_idx))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
@@ -46,7 +46,7 @@ void USB_TO_LPCICP_ProcessCmd(uint8_t *dat, uint16_t len)
 			}
 			break;
 		case USB_TO_XXX_FINI:
-			if (ERROR_OK == interfaces->lpcicp.fini(device_idx))
+			if (ERROR_OK == app_interfaces.lpcicp.fini(device_idx))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
@@ -56,7 +56,7 @@ void USB_TO_LPCICP_ProcessCmd(uint8_t *dat, uint16_t len)
 			}
 			break;
 		case USB_TO_LPCICP_EnterProgMode:
-			if (ERROR_OK == interfaces->lpcicp.enter_program_mode(device_idx))
+			if (ERROR_OK == app_interfaces.lpcicp.enter_program_mode(device_idx))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
@@ -66,7 +66,7 @@ void USB_TO_LPCICP_ProcessCmd(uint8_t *dat, uint16_t len)
 			}
 			break;
 		case USB_TO_LPCICP_In:
-			if (ERROR_OK == interfaces->lpcicp.in(device_idx, &buffer_reply[rep_len + 1], length))
+			if (ERROR_OK == app_interfaces.lpcicp.in(device_idx, &buffer_reply[rep_len + 1], length))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
@@ -77,7 +77,7 @@ void USB_TO_LPCICP_ProcessCmd(uint8_t *dat, uint16_t len)
 			rep_len += length;
 			break;
 		case USB_TO_LPCICP_Out:
-			if (ERROR_OK == interfaces->lpcicp.out(device_idx, &dat[index], length))
+			if (ERROR_OK == app_interfaces.lpcicp.out(device_idx, &dat[index], length))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
@@ -87,7 +87,7 @@ void USB_TO_LPCICP_ProcessCmd(uint8_t *dat, uint16_t len)
 			}
 			break;
 		case USB_TO_LPCICP_PollRdy:
-			if (ERROR_OK == interfaces->lpcicp.poll_ready(device_idx, dat[index + 0], 
+			if (ERROR_OK == app_interfaces.lpcicp.poll_ready(device_idx, dat[index + 0], 
 								&buffer_reply[rep_len + 1], dat[index + 1], 
 								dat[index + 2], GET_LE_U16(&dat[index + 3])))
 			{

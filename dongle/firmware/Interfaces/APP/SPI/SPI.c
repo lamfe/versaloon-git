@@ -17,7 +17,7 @@
 #include "app_cfg.h"
 #if INTERFACE_SPI_EN
 
-#include "interfaces.h"
+#include "app_interfaces.h"
 #include "SPI.h"
 
 uint8_t SPI_Emu = 0;

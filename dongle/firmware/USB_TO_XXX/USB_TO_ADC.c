@@ -18,7 +18,7 @@
 #if USB_TO_ADC_EN
 
 #include "USB_TO_XXX.h"
-#include "interfaces.h"
+#include "app_interfaces.h"
 
 void USB_TO_ADC_ProcessCmd(uint8_t *dat, uint16_t len)
 {
@@ -68,7 +68,7 @@ void USB_TO_ADC_ProcessCmd(uint8_t *dat, uint16_t len)
 			}
 			break;
 		case USB_TO_XXX_IN:
-			if (ERROR_OK == interfaces->target_voltage.get(0, &adc_result))
+			if (ERROR_OK == app_interfaces.target_voltage.get(0, &adc_result))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 				SET_LE_U16(&buffer_reply[rep_len], adc_result);

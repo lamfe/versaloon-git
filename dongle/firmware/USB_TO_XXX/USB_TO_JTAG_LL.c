@@ -18,7 +18,7 @@
 #if USB_TO_JTAG_LL_EN
 
 #include "USB_TO_XXX.h"
-#include "interfaces.h"
+#include "app_interfaces.h"
 
 void USB_TO_JTAG_LL_ProcessCmd(uint8_t *dat, uint16_t len)
 {
@@ -39,7 +39,7 @@ void USB_TO_JTAG_LL_ProcessCmd(uint8_t *dat, uint16_t len)
 		switch(command)
 		{
 		case USB_TO_XXX_INIT:
-			if (ERROR_OK == interfaces->jtag_ll.init(device_idx))
+			if (ERROR_OK == app_interfaces.jtag_ll.init(device_idx))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
@@ -49,7 +49,7 @@ void USB_TO_JTAG_LL_ProcessCmd(uint8_t *dat, uint16_t len)
 			}
 			break;
 		case USB_TO_XXX_CONFIG:
-			if (ERROR_OK == interfaces->jtag_ll.config(device_idx, GET_LE_U32(&dat[index])))
+			if (ERROR_OK == app_interfaces.jtag_ll.config(device_idx, GET_LE_U32(&dat[index])))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
@@ -59,7 +59,7 @@ void USB_TO_JTAG_LL_ProcessCmd(uint8_t *dat, uint16_t len)
 			}
 			break;
 		case USB_TO_XXX_FINI:
-			if (ERROR_OK == interfaces->jtag_ll.fini(device_idx))
+			if (ERROR_OK == app_interfaces.jtag_ll.fini(device_idx))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
@@ -73,7 +73,7 @@ void USB_TO_JTAG_LL_ProcessCmd(uint8_t *dat, uint16_t len)
 			para = cur_dat_len >> 15;
 			cur_dat_len &= 0x7FFF;
 			
-			if (ERROR_OK == interfaces->jtag_ll.scan(device_idx, 
+			if (ERROR_OK == app_interfaces.jtag_ll.scan(device_idx, 
 								&dat[index + 2 + para], cur_dat_len * 8, para, 
 								dat[index + 2], dat[index + 2 + cur_dat_len + para], 
 								dat[index + 2 + cur_dat_len + para + 1]))
@@ -88,7 +88,7 @@ void USB_TO_JTAG_LL_ProcessCmd(uint8_t *dat, uint16_t len)
 			rep_len += cur_dat_len;
 			break;
 		case USB_TO_JTAG_LL_TMS:
-			if (ERROR_OK == interfaces->jtag_ll.tms(device_idx, &dat[index], length))
+			if (ERROR_OK == app_interfaces.jtag_ll.tms(device_idx, &dat[index], length))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
@@ -101,7 +101,7 @@ void USB_TO_JTAG_LL_ProcessCmd(uint8_t *dat, uint16_t len)
 			para = dat[index];
 			cur_dat_len = GET_LE_U32(&dat[index + 1]);
 			
-			if (ERROR_OK == interfaces->jtag_ll.tms_clocks(device_idx, cur_dat_len, para))
+			if (ERROR_OK == app_interfaces.jtag_ll.tms_clocks(device_idx, cur_dat_len, para))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}

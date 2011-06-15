@@ -17,7 +17,7 @@
 #include "app_cfg.h"
 #if INTERFACE_LPC_ICP_EN
 
-#include "interfaces.h"
+#include "app_interfaces.h"
 #include "LPC_ICP.h"
 #if POWER_OUT_EN
 #	include "../PowerExt/PowerExt.h"
@@ -180,7 +180,7 @@ RESULT lpcicp_enter_program_mode(uint8_t index)
 	switch (index)
 	{
 	case 0:
-		if ((ERROR_OK != interfaces->target_voltage.get(0, &voltage)) || 
+		if ((ERROR_OK != app_interfaces.target_voltage.get(0, &voltage)) || 
 			(voltage > TVCC_SAMPLE_MIN_POWER))
 		{
 			// No power should be applied on the target

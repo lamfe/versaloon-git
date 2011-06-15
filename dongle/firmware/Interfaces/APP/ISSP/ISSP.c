@@ -17,7 +17,7 @@
 #include "app_cfg.h"
 #if INTERFACE_ISSP_EN
 
-#include "interfaces.h"
+#include "app_interfaces.h"
 #include "ISSP.h"
 
 #if POWER_OUT_EN

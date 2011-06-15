@@ -18,7 +18,7 @@
 #if USB_TO_DUSI_EN
 
 #include "USB_TO_XXX.h"
-#include "interfaces.h"
+#include "app_interfaces.h"
 
 void USB_TO_DUSI_ProcessCmd(uint8_t *dat, uint16_t len)
 {
@@ -41,7 +41,7 @@ void USB_TO_DUSI_ProcessCmd(uint8_t *dat, uint16_t len)
 		switch(command)
 		{
 		case USB_TO_XXX_INIT:
-			if (ERROR_OK == interfaces->dusi.init(device_idx))
+			if (ERROR_OK == app_interfaces.dusi.init(device_idx))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
@@ -54,7 +54,7 @@ void USB_TO_DUSI_ProcessCmd(uint8_t *dat, uint16_t len)
 			attr = dat[index];
 			frequency = GET_LE_U32(&dat[index + 1]);
 			
-			if (ERROR_OK == interfaces->dusi.config(device_idx, frequency, 
+			if (ERROR_OK == app_interfaces.dusi.config(device_idx, frequency, 
 											attr & USB_TO_DUSI_CPOL_MASK, 
 											attr & USB_TO_DUSI_CPHA_MASK, 
 											attr & USB_TO_DUSI_FIRSTBIT_MASK))
@@ -67,7 +67,7 @@ void USB_TO_DUSI_ProcessCmd(uint8_t *dat, uint16_t len)
 			}
 			break;
 		case USB_TO_XXX_FINI:
-			if (ERROR_OK == interfaces->dusi.fini(device_idx))
+			if (ERROR_OK == app_interfaces.dusi.fini(device_idx))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
@@ -81,7 +81,7 @@ void USB_TO_DUSI_ProcessCmd(uint8_t *dat, uint16_t len)
 			bytelen = (bitlen + 7) / 8;
 			recvpos = rep_len + 1;
 			
-			if (ERROR_OK == interfaces->dusi.io(device_idx, 
+			if (ERROR_OK == app_interfaces.dusi.io(device_idx, 
 					&dat[index + 2], 			&buffer_reply[recvpos], 
 					&dat[index + 2 + bytelen], 	&buffer_reply[recvpos + bytelen], 
 					bitlen))

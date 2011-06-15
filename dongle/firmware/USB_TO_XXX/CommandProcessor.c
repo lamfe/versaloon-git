@@ -16,8 +16,9 @@
 
 #include "app_cfg.h"
 
-#include "interfaces.h"
+#include "app_interfaces.h"
 #include "usb_protocol.h"
+#include "CommandProcessor.h"
 
 #if USB_TO_XXX_EN
 #	include "USB_TO_XXX.h"

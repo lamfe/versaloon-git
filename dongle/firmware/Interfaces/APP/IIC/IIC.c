@@ -17,7 +17,7 @@
 #include "app_cfg.h"
 #if INTERFACE_IIC_EN
 
-#include "interfaces.h"
+#include "app_interfaces.h"
 #include "IIC_MOD_Common.h"
 #include "EMIIC_MOD.h"
 #include "IIC.h"

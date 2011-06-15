@@ -15,8 +15,9 @@
  **************************************************************************/
 
 #include "app_cfg.h"
-#include "interfaces.h"
+#if INTERFACE_GPIO_EN
 
+#include "app_interfaces.h"
 #include "GPIO.h"
 
 RESULT gpio_init(uint8_t index)
@@ -425,3 +426,5 @@ RESULT gpio_in(uint8_t index, uint32_t pin_mask, uint32_t *value)
 		return ERROR_FAIL;
 	}
 }
+
+#endif

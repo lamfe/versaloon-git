@@ -17,7 +17,7 @@
 #include "app_cfg.h"
 #if INTERFACE_SWD_EN
 
-#include "interfaces.h"
+#include "app_interfaces.h"
 #include "SWD.h"
 
 #define SWD_SUCCESS				0x00

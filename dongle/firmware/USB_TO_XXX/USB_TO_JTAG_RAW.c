@@ -18,7 +18,7 @@
 #if USB_TO_JTAG_RAW_EN
 
 #include "USB_TO_XXX.h"
-#include "interfaces.h"
+#include "app_interfaces.h"
 
 void USB_TO_JTAG_RAW_ProcessCmd(uint8_t *dat, uint16_t len)
 {
@@ -38,7 +38,7 @@ void USB_TO_JTAG_RAW_ProcessCmd(uint8_t *dat, uint16_t len)
 		switch(command)
 		{
 		case USB_TO_XXX_INIT:
-			if (ERROR_OK == interfaces->jtag_raw.init(device_idx))
+			if (ERROR_OK == app_interfaces.jtag_raw.init(device_idx))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
@@ -48,7 +48,7 @@ void USB_TO_JTAG_RAW_ProcessCmd(uint8_t *dat, uint16_t len)
 			}
 			break;
 		case USB_TO_XXX_CONFIG:
-			if (ERROR_OK == interfaces->jtag_raw.config(device_idx, GET_LE_U32(&dat[index])))
+			if (ERROR_OK == app_interfaces.jtag_raw.config(device_idx, GET_LE_U32(&dat[index])))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
@@ -58,7 +58,7 @@ void USB_TO_JTAG_RAW_ProcessCmd(uint8_t *dat, uint16_t len)
 			}
 			break;
 		case USB_TO_XXX_FINI:
-			if (ERROR_OK == interfaces->jtag_raw.fini(device_idx))
+			if (ERROR_OK == app_interfaces.jtag_raw.fini(device_idx))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
@@ -71,7 +71,7 @@ void USB_TO_JTAG_RAW_ProcessCmd(uint8_t *dat, uint16_t len)
 			num_of_bits = GET_LE_U32(&dat[index]);
 			num_of_databyte = ((num_of_bits + 7) >> 3);
 			
-			if (ERROR_OK == interfaces->jtag_raw.execute(device_idx, 
+			if (ERROR_OK == app_interfaces.jtag_raw.execute(device_idx, 
 								&dat[index + 4], &dat[index + 4 + num_of_databyte], 
 								&buffer_reply[rep_len + 1], num_of_bits))
 			{

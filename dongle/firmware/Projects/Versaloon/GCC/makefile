@@ -33,10 +33,12 @@ INCLUDE_USB_LIB = yes
 # directory define
 PRJDIR	= ..
 SRCDIR  = ../../..
+VSFDIR  = ../../../../../vsf
 OBJ_DIR = .
+COMPILER_DIR = .
 APP_IFACES_DIR = $(SRCDIR)/Interfaces/APP
-STM32_IFACES_DIR = $(SRCDIR)/Interfaces/CPU/STM32
-STM32_LIB_DIR = $(STM32_IFACES_DIR)/HW/STM32F10x_Lib
+STM32_IFACES_DIR = $(VSFDIR)/interfaces/cpu/stm32
+STM32_LIB_DIR = $(STM32_IFACES_DIR)/hw/STM32F10x_Lib
 
 # User source files/includes/macros
 # add .c source files to USR_SRCS
@@ -45,24 +47,23 @@ STM32_LIB_DIR = $(STM32_IFACES_DIR)/HW/STM32F10x_Lib
 # add library directory to USR_LIBS
 USR_SRCS+= $(SRCDIR)/main.c $(SRCDIR)/usb_protocol_Versaloon.c
 USR_INCS+= -I $(PRJDIR)/..
-USR_SRCS+= $(STM32_IFACES_DIR)/HW/HW.c $(STM32_IFACES_DIR)/HW/stm32f10x_it.c
-USR_INCS+= -I $(STM32_IFACES_DIR)/HW
+USR_SRCS+= $(STM32_IFACES_DIR)/hw/HW.c $(STM32_IFACES_DIR)/hw/stm32f10x_it.c
+USR_INCS+= -I $(STM32_IFACES_DIR)/hw
 #USR_DEFS+= -DADD_USER_DEFINES_HERE
 #USR_LIBS+= -L./
 
-# myString
-USR_SRCS+= $(STM32_IFACES_DIR)/HW/Port/GCC/myString.c
-USR_INCS+= -I $(STM32_IFACES_DIR)/HW/Port/GCC
+# compiler
+USR_SRCS+= $(COMPILER_DIR)/compiler_string.c
+USR_INCS+= -I $(COMPILER_DIR)
 
 # Tools
 USR_SRCS+= $(SRCDIR)/Tools/fifo/fifo.c
 USR_INCS+= -I $(SRCDIR)/Tools/fifo
 
-#interfaces
-USR_SRCS+= $(SRCDIR)/Interfaces/interfaces.c
+#APP interfaces
+USR_SRCS+= $(SRCDIR)/Interfaces/app_interfaces.c
 USR_INCS+= -I $(SRCDIR)/Interfaces
 
-#APP interfaces
 USR_SRCS+= $(APP_IFACES_DIR)/GPIO/GPIO.c $(APP_IFACES_DIR)/USART/USART.c \
   $(APP_IFACES_DIR)/SPI/SPI.c $(APP_IFACES_DIR)/JTAG/JTAG_TAP.c \
   $(APP_IFACES_DIR)/SWD/SWD.c $(APP_IFACES_DIR)/SWIM/SWIM.c \
@@ -82,6 +83,9 @@ USR_INCS+= -I $(APP_IFACES_DIR) -I $(APP_IFACES_DIR)/GPIO \
   -I $(APP_IFACES_DIR)/PWM
 
 #STM32 interfaces
+USR_SRCS+= $(VSFDIR)/interfaces/interfaces.c
+USR_INCS+= -I $(VSFDIR)/interfaces
+
 USR_SRCS+= $(STM32_IFACES_DIR)/GPIO/STM32_GPIO.c $(STM32_IFACES_DIR)/USBD/STM32_USBD.c
 USR_INCS+= -I $(STM32_IFACES_DIR) -I $(STM32_IFACES_DIR)/GPIO \
   -I $(STM32_IFACES_DIR)/USART -I $(STM32_IFACES_DIR)/SPI \
@@ -89,12 +93,12 @@ USR_INCS+= -I $(STM32_IFACES_DIR) -I $(STM32_IFACES_DIR)/GPIO \
   -I $(STM32_IFACES_DIR)/USBD
 
 #VSF
-USR_SRCS+= $(SRCDIR)/vsf/stack/usb_device/vsf_usbd.c \
-  $(SRCDIR)/vsf/stack/usb_device/class/CDC/vsfusbd_CDC.c \
-  $(SRCDIR)/vsf/stack/usb_device/class/HID/vsfusbd_HID.c \
-  $(SRCDIR)/vsf/stack/usb_device/class/MSC/vsfusbd_MSC_BOT.c \
-  $(SRCDIR)/vsf/stack/usb_device/class/MSC/SCSI.c
-USR_INCS+= -I $(SRCDIR)/vsf
+USR_SRCS+= $(VSFDIR)/stack/usb_device/vsf_usbd.c \
+  $(VSFDIR)/stack/usb_device/class/CDC/vsfusbd_CDC.c \
+  $(VSFDIR)/stack/usb_device/class/HID/vsfusbd_HID.c \
+  $(VSFDIR)/stack/usb_device/class/MSC/vsfusbd_MSC_BOT.c \
+  $(VSFDIR)/stack/usb_device/class/MSC/SCSI.c
+USR_INCS+= -I $(VSFDIR)
 
 # USB_TO_XXX
 USR_SRCS+= $(SRCDIR)/USB_TO_XXX/USB_TO_XXX.c $(SRCDIR)/USB_TO_XXX/USB_TO_USART.c

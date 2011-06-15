@@ -1,6 +1,6 @@
 #include "app_cfg.h"
 
-#include "interfaces.h"
+#include "app_interfaces.h"
 #include "GPIO/GPIO.h"
 
 #include "usb_protocol.h"
@@ -10,6 +10,8 @@ uint8_t buffer_out[USB_DATA_BUFF_SIZE], asyn_rx_buf[ASYN_DATA_BUFF_SIZE];
 volatile uint32_t count_out = 0;
 volatile uint32_t usb_ovf = 0;
 volatile uint32_t cmd_len = 0;
+
+volatile uint32_t rep_len = 0;
 
 static RESULT Versaloon_OUT_hanlder(void *p, uint8_t ep)
 {
@@ -37,7 +39,7 @@ static RESULT Versaloon_OUT_hanlder(void *p, uint8_t ep)
 				// Common Commands
 				if(buffer_out[0] == VERSALOON_WRITE_OFFLINE_DATA)
 				{
-					cmd_len = buffer_out[1] + ((u16)buffer_out[2] << 8) + 7;
+					cmd_len = buffer_out[1] + ((uint16_t)buffer_out[2] << 8) + 7;
 				}
 				else
 				{
@@ -48,7 +50,7 @@ static RESULT Versaloon_OUT_hanlder(void *p, uint8_t ep)
 			else if(buffer_out[0] <= VERSALOON_USB_TO_XXX_CMD_END)
 			{
 				// USB_TO_XXX Support
-				cmd_len = buffer_out[1] + ((u16)buffer_out[2] << 8);
+				cmd_len = buffer_out[1] + ((uint16_t)buffer_out[2] << 8);
 			}
 #endif
 		}
@@ -361,6 +363,8 @@ struct vsfusbd_device_t usb_device =
 
 struct vsfusbd_CDC_param_t Versaloon_CDC_param = 
 {
+	(struct interface_usart_t *)&app_interfaces.usart,
+				// usart
 	0,			// usart_port
 	false,		// gpio_rts_enable
 	0,			// gpio_rts_port
@@ -381,11 +385,17 @@ struct vsfusbd_CDC_param_t Versaloon_CDC_param =
 	},
 };
 
-RESULT usb_protocol_init()
+RESULT usb_protocol_init(void)
 {
 	LED_GREEN_ON();
 	LED_USB_ON();
 	
 	vsfusbd_CDC_set_param(&Versaloon_CDC_param);
 	return vsfusbd_device_init(&usb_device);
+}
+
+RESULT usb_protocol_idle(void)
+{
+	ProcessIdle();
+	return ERROR_OK;
 }

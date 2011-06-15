@@ -17,7 +17,7 @@
 #include "app_cfg.h"
 #if INTERFACE_MICROWIRE_EN
 
-#include "interfaces.h"
+#include "app_interfaces.h"
 #include "MicroWire.h"
 
 static uint16_t MicroWire_DelayUS = 0;

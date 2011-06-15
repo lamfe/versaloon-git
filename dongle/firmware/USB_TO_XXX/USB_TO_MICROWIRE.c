@@ -18,7 +18,7 @@
 #if USB_TO_MICROWIRE_EN
 
 #include "USB_TO_XXX.h"
-#include "interfaces.h"
+#include "app_interfaces.h"
 
 void USB_TO_MICROWIRE_ProcessCmd(uint8_t *dat, uint16_t len)
 {
@@ -45,7 +45,7 @@ void USB_TO_MICROWIRE_ProcessCmd(uint8_t *dat, uint16_t len)
 		switch(command)
 		{
 		case USB_TO_XXX_INIT:
-			if (ERROR_OK == interfaces->microwire.init(device_idx))
+			if (ERROR_OK == app_interfaces.microwire.init(device_idx))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
@@ -58,7 +58,7 @@ void USB_TO_MICROWIRE_ProcessCmd(uint8_t *dat, uint16_t len)
 			sel_polarity = dat[index];
 			frequency = GET_LE_U16(&dat[index + 1]);
 			
-			if (ERROR_OK == interfaces->microwire.config(device_idx, frequency, sel_polarity))
+			if (ERROR_OK == app_interfaces.microwire.config(device_idx, frequency, sel_polarity))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
@@ -68,7 +68,7 @@ void USB_TO_MICROWIRE_ProcessCmd(uint8_t *dat, uint16_t len)
 			}
 			break;
 		case USB_TO_XXX_FINI:
-			if (ERROR_OK == interfaces->microwire.fini(device_idx))
+			if (ERROR_OK == app_interfaces.microwire.fini(device_idx))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
@@ -104,7 +104,7 @@ void USB_TO_MICROWIRE_ProcessCmd(uint8_t *dat, uint16_t len)
 					cmd_offset += 4;
 				}
 				
-				if (ERROR_OK != interfaces->microwire.transport(device_idx, 
+				if (ERROR_OK != app_interfaces.microwire.transport(device_idx, 
 						opcode, opcode_bitlen, addr, addr_bitlen, data, data_bitlen, 
 						&buffer_reply[rep_len + 1 + reply_offset], reply_bitlen))
 				{
@@ -127,7 +127,7 @@ void USB_TO_MICROWIRE_ProcessCmd(uint8_t *dat, uint16_t len)
 			interval_us = GET_LE_U16(&dat[index + 0]);
 			retry_cnt = GET_LE_U16(&dat[index + 2]);
 			
-			if (ERROR_OK == interfaces->microwire.poll(device_idx, interval_us, retry_cnt))
+			if (ERROR_OK == app_interfaces.microwire.poll(device_idx, interval_us, retry_cnt))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}

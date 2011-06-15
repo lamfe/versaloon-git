@@ -17,7 +17,7 @@
 #include "app_cfg.h"
 #if INTERFACE_SWIM_EN
 
-#include "interfaces.h"
+#include "app_interfaces.h"
 #include "SWIM.h"
 
 static uint8_t SWIM_Inited = 0;

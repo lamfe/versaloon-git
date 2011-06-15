@@ -18,7 +18,7 @@
 #if USB_TO_IIC_EN
 
 #include "USB_TO_XXX.h"
-#include "interfaces.h"
+#include "app_interfaces.h"
 
 void USB_TO_IIC_ProcessCmd(uint8_t *dat, uint16_t len)
 {
@@ -40,7 +40,7 @@ void USB_TO_IIC_ProcessCmd(uint8_t *dat, uint16_t len)
 		switch(command)
 		{
 		case USB_TO_XXX_INIT:
-			if (ERROR_OK == interfaces->i2c.init(device_idx))
+			if (ERROR_OK == app_interfaces.i2c.init(device_idx))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
@@ -50,7 +50,7 @@ void USB_TO_IIC_ProcessCmd(uint8_t *dat, uint16_t len)
 			}
 			break;
 		case USB_TO_XXX_CONFIG:
-			if (ERROR_OK == interfaces->i2c.config(device_idx, 
+			if (ERROR_OK == app_interfaces.i2c.config(device_idx, 
 								GET_LE_U16(&dat[index + 0]), 
 								GET_LE_U16(&dat[index + 2]), 
 								GET_LE_U16(&dat[index + 4])))
@@ -63,7 +63,7 @@ void USB_TO_IIC_ProcessCmd(uint8_t *dat, uint16_t len)
 			}
 			break;
 		case USB_TO_XXX_FINI:
-			if (ERROR_OK == interfaces->i2c.fini(device_idx))
+			if (ERROR_OK == app_interfaces.i2c.fini(device_idx))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
@@ -78,7 +78,7 @@ void USB_TO_IIC_ProcessCmd(uint8_t *dat, uint16_t len)
 			stop = dat[index + 3];
 			nacklast = dat[index + 4] > 0;
 			
-			if (ERROR_OK == interfaces->i2c.read(device_idx, chip_addr, 
+			if (ERROR_OK == app_interfaces.i2c.read(device_idx, chip_addr, 
 								&buffer_reply[rep_len + 1], data_len, stop, nacklast))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
@@ -90,7 +90,7 @@ void USB_TO_IIC_ProcessCmd(uint8_t *dat, uint16_t len)
 			rep_len += data_len;
 			break;
 		case USB_TO_IIC_Write:
-			if (ERROR_OK == interfaces->i2c.write(device_idx, dat[index + 0], 
+			if (ERROR_OK == app_interfaces.i2c.write(device_idx, dat[index + 0], 
 								&dat[index + 4], GET_LE_U16(&dat[index + 1]), 
 								dat[index + 3]))
 			{

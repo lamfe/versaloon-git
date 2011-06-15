@@ -18,8 +18,8 @@
 #if USB_TO_BDM_EN
 
 #include "USB_TO_XXX.h"
-#include "interfaces.h"
-#include "BDM.h"
+#include "app_interfaces.h"
+#include "BDM/BDM.h"
 
 void USB_TO_BDM_ProcessCmd(uint8_t *dat, uint16_t len)
 {
@@ -42,7 +42,7 @@ void USB_TO_BDM_ProcessCmd(uint8_t *dat, uint16_t len)
 		switch(command)
 		{
 		case USB_TO_XXX_INIT:
-			if (ERROR_OK == interfaces->bdm.init(device_idx))
+			if (ERROR_OK == app_interfaces.bdm.init(device_idx))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
@@ -52,7 +52,7 @@ void USB_TO_BDM_ProcessCmd(uint8_t *dat, uint16_t len)
 			}
 			break;
 		case USB_TO_XXX_FINI:
-			if (ERROR_OK == interfaces->bdm.fini(device_idx))
+			if (ERROR_OK == app_interfaces.bdm.fini(device_idx))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
@@ -71,7 +71,7 @@ void USB_TO_BDM_ProcessCmd(uint8_t *dat, uint16_t len)
 				token = GET_LE_U16(&dat[index + processed_len]);
 				processed_len += 2;
 				
-				if (ERROR_OK == interfaces->bdm.transact(device_idx, 
+				if (ERROR_OK == app_interfaces.bdm.transact(device_idx, 
 									&dat[index + processed_len], BDM_OUT_LEN(token), 
 									&buffer_reply[rep_len], BDM_IN_LEN(token), 
 									BDM_OUT_DLY_CNT(token), BDM_ACK(token)))
@@ -96,7 +96,7 @@ void USB_TO_BDM_ProcessCmd(uint8_t *dat, uint16_t len)
 			}
 			break;
 		case USB_TO_XXX_SYNC:
-			if (ERROR_OK == interfaces->bdm.sync(device_idx, &processed_len))
+			if (ERROR_OK == app_interfaces.bdm.sync(device_idx, &processed_len))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 				SET_LE_U16(&buffer_reply[rep_len], processed_len);
