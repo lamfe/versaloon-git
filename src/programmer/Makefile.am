@@ -5,6 +5,7 @@ INCLUDES = \
     -I$(top_srcdir)/src/driver \
     -I$(top_srcdir)/src/driver/usb \
     -I$(top_srcdir)/src/driver/timer \
+    -I$(top_srcdir)/src/programmer/interfaces \
     -I$(top_srcdir)/src/scripts \
     -I$(top_srcdir)/src/tools/strparser \
     -I$(top_srcdir)/src/target \

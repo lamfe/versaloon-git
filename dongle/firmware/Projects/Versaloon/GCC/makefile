@@ -82,7 +82,7 @@ USR_INCS+= -I $(APP_IFACES_DIR) -I $(APP_IFACES_DIR)/GPIO \
   -I $(APP_IFACES_DIR)/MSP430_JTAG -I $(APP_IFACES_DIR)/BDM \
   -I $(APP_IFACES_DIR)/PWM
 
-#STM32 interfaces
+#VSF interfaces
 USR_SRCS+= $(VSFDIR)/interfaces/interfaces.c
 USR_INCS+= -I $(VSFDIR)/interfaces
 
@@ -92,7 +92,17 @@ USR_INCS+= -I $(STM32_IFACES_DIR) -I $(STM32_IFACES_DIR)/GPIO \
   -I $(STM32_IFACES_DIR)/IIC -I $(STM32_IFACES_DIR)/PWM \
   -I $(STM32_IFACES_DIR)/USBD
 
-#VSF
+#VSF dal
+USR_SRCS+= $(VSFDIR)/dal/dal.c \
+  $(VSFDIR)/dal/df25xx/df25xx_drv.c \
+  $(VSFDIR)/dal/df45xx/df45xx_drv.c \
+  $(VSFDIR)/dal/ee24cxx/ee24cxx_drv.c \
+  $(VSFDIR)/dal/ee93cx6/ee93cx6_drv.c \
+  $(VSFDIR)/dal/mal/mal.c \
+  $(VSFDIR)/dal/mic2826/mic2826_drv.c \
+  $(VSFDIR)/dal/nrf24l01/nrf24l01_drv.c
+
+#VSF stack
 USR_SRCS+= $(VSFDIR)/stack/usb_device/vsf_usbd.c \
   $(VSFDIR)/stack/usb_device/class/CDC/vsfusbd_CDC.c \
   $(VSFDIR)/stack/usb_device/class/HID/vsfusbd_HID.c \

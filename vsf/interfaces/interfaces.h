@@ -85,6 +85,19 @@ struct interface_pwm_t
 	RESULT (*in)(uint8_t index, uint16_t count, uint16_t *rate);
 };
 
+struct interface_microwire_t
+{
+	RESULT (*init)(uint8_t index);
+	RESULT (*fini)(uint8_t index);
+	RESULT (*config)(uint8_t index, uint16_t kHz, uint8_t sel_polarity);
+	RESULT (*transport)(uint8_t index, 
+						uint32_t opcode, uint8_t opcode_bitlen, 
+						uint32_t addr, uint8_t addr_bitlen, 
+						uint32_t data, uint8_t data_bitlen, 
+						uint8_t *reply, uint8_t reply_bitlen);
+	RESULT (*poll)(uint8_t index, uint16_t interval_us, uint16_t retry_cnt);
+};
+
 #include "stack/usb_device/vsf_usbd_const.h"
 #include "stack/usb_device/vsf_usbd_drv_callback.h"
 
@@ -292,8 +305,12 @@ struct interfaces_info_t
 	struct interface_i2c_t i2c;
 	struct interface_usbd_t usbd;
 	struct interface_pwm_t pwm;
+	struct interface_microwire_t microwire;
+	struct interface_delay_t delay;
+	RESULT (*peripheral_commit)(void);
 };
 
-extern const struct interfaces_info_t core_interfaces, *interfaces;
+extern const struct interfaces_info_t core_interfaces;
+extern struct interfaces_info_t *interfaces;
 
 #endif	// __INTERFACES_H_INCLUDED__

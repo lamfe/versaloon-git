@@ -19,7 +19,7 @@
 #ifndef __PROGRAMMER_H_INCLUDED__
 #define __PROGRAMMER_H_INCLUDED__
 
-#include "interfaces/interfaces.h"
+#include "interfaces.h"
 
 #endif /* __PROGRAMMER_H_INCLUDED__ */
 

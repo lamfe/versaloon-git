@@ -30,7 +30,17 @@ typedef enum result_s
 #	define __CONNECT(a, b)			a ## b
 #endif
 
-#define dimof(arr)					(sizeof(arr) / sizeof((arr)[0]))
+#ifndef REFERENCE_PARAMETER
+# define REFERENCE_PARAMETER(a)		(a) = (a)
+#endif
+
+#ifndef NULL
+#	define NULL						((void*)0)
+#endif
+
+#ifndef dimof
+#	define dimof(arr)				(sizeof(arr) / sizeof((arr)[0]))
+#endif
 
 #define GET_U16_MSBFIRST(p)			(	((*((uint8_t *)(p) + 0)) << 8) | \
 										((*((uint8_t *)(p) + 1)) << 0))
@@ -75,8 +85,21 @@ typedef enum result_s
 #define SET_BE_U16(p, v)			SET_U16_MSBFIRST(p, v)
 #define SET_BE_U32(p, v)			SET_U32_MSBFIRST(p, v)
 
-#ifndef NULL
-#	define NULL						((void*)0)
-#endif
+#define SWAP_U16(v)					((((uint16_t)(v) & 0xFF00) >> 8) | \
+										(((uint16_t)(v) & 0x00FF) << 8))
+#define SWAP_U32(v)					((((uint32_t)(v) & 0xFF000000) >> 24) | \
+										(((uint32_t)(v) & 0x00FF0000) >> 8) | \
+										(((uint32_t)(v) & 0x0000FF00) << 8) | \
+										(((uint32_t)(v) & 0x000000FF) << 24))
+
+#	define LE_TO_SYS_U16(v)			((uint16_t)(v))
+#	define LE_TO_SYS_U32(v)			((uint32_t)(v))
+#	define BE_TO_SYS_U16(v)			SWAP_U16(v)
+#	define BE_TO_SYS_U32(v)			SWAP_U32(v)
+
+#	define SYS_TO_LE_U16(v)			((uint16_t)(v))
+#	define SYS_TO_LE_U32(v)			((uint32_t)(v))
+#	define SYS_TO_BE_U16(v)			SWAP_U16(v)
+#	define SYS_TO_BE_U32(v)			SWAP_U32(v)
 
 #endif // __APP_TYPE_H_INCLUDED__

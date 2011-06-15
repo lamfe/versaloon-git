@@ -306,6 +306,7 @@
           <state>$PROJ_DIR$\..\..\..\Interfaces\APP\</state>
           <state>$PROJ_DIR$\..\..\..\USB_TO_XXX\</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\Port\IAR\</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\CMSIS\CM3\CoreSupport</state>
@@ -1219,6 +1220,7 @@
           <state>$PROJ_DIR$\..\..\..\Interfaces\APP\</state>
           <state>$PROJ_DIR$\..\..\..\USB_TO_XXX\</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\Port\IAR\</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\CMSIS\CM3\CoreSupport</state>
@@ -2061,8 +2063,59 @@
     <group>
       <name>dal</name>
       <group>
-        <name>mal</name>
+        <name>df25xx</name>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\vsf\dal\df25xx\df25xx_drv.c</name>
+        </file>
       </group>
+      <group>
+        <name>df45xx</name>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\vsf\dal\df45xx\df45xx_drv.c</name>
+        </file>
+      </group>
+      <group>
+        <name>ee24cxx</name>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\vsf\dal\ee24cxx\ee24cxx_drv.c</name>
+        </file>
+      </group>
+      <group>
+        <name>ee93cx6</name>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\vsf\dal\ee93cx6\ee93cx6_drv.c</name>
+        </file>
+      </group>
+      <group>
+        <name>mal</name>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\vsf\dal\mal\mal.c</name>
+        </file>
+      </group>
+      <group>
+        <name>mic2826</name>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\vsf\dal\mic2826\mic2826_drv.c</name>
+        </file>
+      </group>
+      <group>
+        <name>nrf24l01</name>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\vsf\dal\nrf24l01\nrf24l01_drv.c</name>
+        </file>
+      </group>
+      <group>
+        <name>sd</name>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\vsf\dal\sd\sd_common.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\vsf\dal\sd\sd_spi_drv.c</name>
+        </file>
+      </group>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\..\..\vsf\dal\dal.c</name>
+      </file>
     </group>
     <group>
       <name>interfaces</name>

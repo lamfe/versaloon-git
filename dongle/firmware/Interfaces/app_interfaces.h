@@ -17,7 +17,7 @@
 #ifndef __APP_INTERFACES_H_INCLUDED__
 #define __APP_INTERFACES_H_INCLUDED__
 
-#include "interfaces/interfaces.h"
+#include "interfaces.h"
 #include "app_interfaces_const.h"
 #include "stm32f10x_conf.h"
 #include "HW.h"
@@ -181,19 +181,6 @@ struct interface_target_voltage_t
 {
 	RESULT (*get)(uint8_t index, uint16_t *voltage);
 	RESULT (*set)(uint8_t index, uint16_t voltage);
-};
-
-struct interface_microwire_t
-{
-	RESULT (*init)(uint8_t index);
-	RESULT (*fini)(uint8_t index);
-	RESULT (*config)(uint8_t index, uint16_t kHz, uint8_t sel_polarity);
-	RESULT (*transport)(uint8_t index, 
-						uint32_t opcode, uint8_t opcode_bitlen, 
-						uint32_t addr, uint8_t addr_bitlen, 
-						uint32_t data, uint8_t data_bitlen, 
-						uint8_t *reply, uint8_t reply_bitlen);
-	RESULT (*poll)(uint8_t index, uint16_t interval_us, uint16_t retry_cnt);
 };
 
 enum poll_check_type_t

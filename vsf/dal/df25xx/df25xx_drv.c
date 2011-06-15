@@ -21,7 +21,7 @@
 #include "app_type.h"
 
 #include "../mal/mal.h"
-#include "../mal/mal_internal.h"
+#include "../mal/mal_driver.h"
 #include "df25xx_drv_cfg.h"
 #include "df25xx_drv.h"
 

@@ -15,7 +15,12 @@
  **************************************************************************/
 
 #include "app_cfg.h"
-#include "interfaces/interfaces.h"
+#include "interfaces.h"
+
+RESULT peripheral_commit(void)
+{
+	return ERROR_OK;
+}
 
 const struct interfaces_info_t core_interfaces = 
 {
@@ -32,27 +37,15 @@ const struct interfaces_info_t core_interfaces =
 	},
 	{
 		// usart
-		NULL,
-		NULL,
-		NULL,
-		NULL,
-		NULL,
-		NULL
+		NULL, NULL, NULL, NULL, NULL, NULL
 	},
 	{
 		// spi
-		NULL,
-		NULL,
-		NULL,
-		NULL
+		NULL, NULL, NULL, NULL
 	},
 	{
 		// i2c
-		NULL,
-		NULL,
-		NULL,
-		NULL,
-		NULL
+		NULL, NULL, NULL, NULL, NULL
 	},
 	{
 		// usbd
@@ -104,12 +97,18 @@ const struct interfaces_info_t core_interfaces =
 	},
 	{
 		// pwm
-		NULL,
-		NULL,
-		NULL,
-		NULL,
-		NULL
-	}
+		NULL, NULL, NULL, NULL, NULL
+	},
+	{
+		// microwre
+		NULL, NULL, NULL, NULL, NULL
+	},
+	{
+		// delay
+		NULL, NULL
+	},
+	peripheral_commit
 };
 
-const struct interfaces_info_t *interfaces = &core_interfaces;
+struct interfaces_info_t *interfaces = 
+								(struct interfaces_info_t *)&core_interfaces;

@@ -16,7 +16,7 @@
 
 #include "app_cfg.h"
 
-#include "interfaces/interfaces.h"
+#include "interfaces.h"
 #include "stm32f10x_conf.h"
 #include "HW.h"
 #include "STM32_USBD.h"

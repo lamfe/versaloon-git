@@ -35,8 +35,7 @@
 #include "programmer.h"
 #include "strparser.h"
 
-#include "interfaces/interfaces.h"
-#include "interfaces/versaloon/versaloon.h"
+#include "versaloon/versaloon.h"
 
 #include "timer.h"
 

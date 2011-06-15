@@ -20,7 +20,6 @@
 #include "app_cfg.h"
 #include "app_type.h"
 
-#include "interfaces.h"
 #include "dal.h"
 
 #include "dal/mal/mal.h"

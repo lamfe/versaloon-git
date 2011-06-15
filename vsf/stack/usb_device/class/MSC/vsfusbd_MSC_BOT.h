@@ -62,7 +62,6 @@ struct vsfusbd_MSCBOT_param_t
 	uint8_t max_lun;
 	struct SCSI_LUN_info_t *lun_info;
 	struct SCSI_handler_t *user_handlers;
-	uint8_t *mal_indexes;
 	
 	// tick-tock operation
 	// buffer size should be the largest one of all LUNs

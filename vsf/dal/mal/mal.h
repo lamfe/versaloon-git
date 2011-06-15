@@ -22,7 +22,6 @@
 
 #include "app_type.h"
 
-#include "../dal_cfg.h"
 #include "../dal.h"
 
 #if DAL_EE93CX6_EN
@@ -44,6 +43,7 @@
 #	include "../sd/sd_sdio_drv.h"
 #endif
 
+#define MAL_IDX_EMPTY						0
 #define MAL_IDX_EE93CX6						1
 #define MAL_IDX_EE24CXX						2
 #define MAL_IDX_DF25XX						3

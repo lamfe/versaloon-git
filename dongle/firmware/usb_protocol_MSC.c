@@ -1,7 +1,9 @@
 #include "app_cfg.h"
 
-#include "interfaces/interfaces.h"
+#include "interfaces.h"
 #include "usb_protocol.h"
+
+#include "dal/mal/mal.h"
 
 static const uint8_t MSCBOT_DeviceDescriptor[] =
 {
@@ -131,8 +133,21 @@ struct vsfusbd_device_t usb_device =
 	(struct interface_usbd_t *)&core_interfaces.usbd
 };
 
+struct mal_info_t MSCBOT_LunInfo_mal_info = 
+{
+	{
+		512,
+		2 * 8 * 1024 * 1024
+	},
+	NULL
+};
+struct dal_info_t MSCBOT_LunInfo_dal_info = 
+{
+	NULL, NULL, &MSCBOT_LunInfo_mal_info, NULL
+};
 struct SCSI_LUN_info_t MSCBOT_LunInfo = 
 {
+	&MSCBOT_LunInfo_dal_info, 0, 
 	{
 		true,
 		{'S', 'i', 'm', 'o', 'n', ' ', ' ', ' '},
@@ -142,8 +157,6 @@ struct SCSI_LUN_info_t MSCBOT_LunInfo =
 		SCSI_PDT_DIRECT_ACCESS_BLOCK
 	}
 };
-
-uint8_t MSCBOT_MalIndexes[] = {0};
 uint8_t MSCBOT_Buffer0[512], MSCBOT_Buffer1[512];
 
 struct vsfusbd_MSCBOT_param_t MSCBOT_param = 
@@ -155,7 +168,6 @@ struct vsfusbd_MSCBOT_param_t MSCBOT_param =
 	0,							// uint8_t max_lun;
 	&MSCBOT_LunInfo,			// struct SCSI_LUN_info_t *lun_info;
 	NULL, 						// struct SCSI_handler_t *user_handlers;
-	MSCBOT_MalIndexes,			// uint8_t *mal_indexes;
 	
 	{
 		{MSCBOT_Buffer0, sizeof(MSCBOT_Buffer0)},
