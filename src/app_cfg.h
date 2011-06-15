@@ -19,6 +19,8 @@
 #ifndef __APP_CFG_INCLUDED__
 #define __APP_CFG_INCLUDED__
 
+#include "compiler.h"
+
 #define PARAM_CHECK				1
 
 // Target Support Configuration
