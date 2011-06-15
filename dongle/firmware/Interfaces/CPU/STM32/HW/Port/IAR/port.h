@@ -1,1 +1,0 @@
-#define ROOTFUNC	__root
