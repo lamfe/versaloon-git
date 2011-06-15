@@ -1980,13 +1980,11 @@
       <name>$PROJ_DIR$\..\..\..\usb_protocol_MSC.c</name>
       <excluded>
         <configuration>Debug</configuration>
+        <configuration>Release</configuration>
       </excluded>
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\..\usb_protocol_Versaloon.c</name>
-      <excluded>
-        <configuration>Release</configuration>
-      </excluded>
     </file>
   </group>
   <group>

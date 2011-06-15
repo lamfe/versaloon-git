@@ -1,4 +1,4 @@
-SUBDIRS = driver programmer target tools scripts vsf
+SUBDIRS = driver programmer target tools scripts ../vsf
 
 bin_PROGRAMS = vsprog
 
@@ -7,8 +7,8 @@ vsprog_SOURCES = $(MAINFILE)
 
 INCLUDES = \
     $(all_includes) \
+    -I$(top_srcdir)/vsf/tool/list \
     -I$(top_srcdir)/src \
-    -I$(top_srcdir)/src/vsf/tool/list \
     -I$(top_srcdir)/src/tools/pgbar \
     -I$(top_srcdir)/src/tools/memlist \
     -I$(top_srcdir)/src/tools/filelist \
@@ -35,7 +35,7 @@ vsprog_LDADD = \
     $(top_builddir)/src/target/libtgt.a \
     $(top_builddir)/src/tools/libtool.a \
     $(top_builddir)/src/driver/libdrv.a \
-    $(top_builddir)/src/vsf/libvsf.a \
+    $(top_builddir)/vsf/libvsf.a \
     $(MINGWLDADD) -lusb $(XML_LIBS)
 
 MAINTAINERCLEANFILES = Makefile.in

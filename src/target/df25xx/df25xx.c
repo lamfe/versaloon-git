@@ -35,6 +35,7 @@
 #include "programmer.h"
 #include "target.h"
 #include "scripts.h"
+#include "app_scripts.h"
 
 #include "dal/mal/mal.h"
 #include "dal/df25xx/df25xx_drv.h"
@@ -93,7 +94,6 @@ const struct vss_cmd_t df25xx_notifier[] =
 
 
 
-#define commit()					interfaces->peripheral_commit()
 
 static struct df25xx_drv_info_t df25xx_drv_info;
 static struct df25xx_drv_param_t df25xx_drv_param;
@@ -145,7 +145,7 @@ ENTER_PROGRAM_MODE_HANDLER(df25xx)
 	df25xx_mal_info.capacity.block_size = 
 								param->chip_areas[APPLICATION_IDX].page_size;
 	
-	return commit();
+	return dal_commit();
 }
 
 LEAVE_PROGRAM_MODE_HANDLER(df25xx)
@@ -154,7 +154,7 @@ LEAVE_PROGRAM_MODE_HANDLER(df25xx)
 	REFERENCE_PARAMETER(success);
 	
 	mal.fini(MAL_IDX_DF25XX, &df25xx_dal_info);
-	return commit();
+	return dal_commit();
 }
 
 ERASE_TARGET_HANDLER(df25xx)
@@ -168,7 +168,7 @@ ERASE_TARGET_HANDLER(df25xx)
 	{
 		return ERROR_FAIL;
 	}
-	return commit();
+	return dal_commit();
 }
 
 WRITE_TARGET_HANDLER(df25xx)
@@ -189,7 +189,7 @@ WRITE_TARGET_HANDLER(df25xx)
 		{
 			return ERROR_FAIL;
 		}
-		return commit();
+		return dal_commit();
 		break;
 	default:
 		return ERROR_FAIL;

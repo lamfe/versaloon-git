@@ -35,6 +35,7 @@
 #include "programmer.h"
 #include "target.h"
 #include "scripts.h"
+#include "app_scripts.h"
 
 #include "dal/dal.h"
 #include "dal/mal/mal.h"
@@ -94,7 +95,6 @@ const struct vss_cmd_t ee24cxx_notifier[] =
 
 
 
-#define commit()					interfaces->peripheral_commit()
 
 static struct ee24cxx_drv_param_t ee24cxx_drv_param;
 static struct ee24cxx_drv_interface_t ee24cxx_drv_ifs;
@@ -144,7 +144,7 @@ ENTER_PROGRAM_MODE_HANDLER(ee24cxx)
 	ee24cxx_mal_info.capacity.block_number = 
 										param->chip_areas[EEPROM_IDX].page_num;
 	
-	return commit();
+	return dal_commit();
 }
 
 LEAVE_PROGRAM_MODE_HANDLER(ee24cxx)
@@ -153,7 +153,7 @@ LEAVE_PROGRAM_MODE_HANDLER(ee24cxx)
 	REFERENCE_PARAMETER(success);
 	
 	mal.fini(MAL_IDX_EE24CXX, &ee24cxx_dal_info);
-	return commit();
+	return dal_commit();
 }
 
 ERASE_TARGET_HANDLER(ee24cxx)
@@ -185,7 +185,7 @@ WRITE_TARGET_HANDLER(ee24cxx)
 		{
 			return ERROR_FAIL;
 		}
-		return commit();
+		return dal_commit();
 		break;
 	default:
 		return ERROR_FAIL;
@@ -213,7 +213,7 @@ READ_TARGET_HANDLER(ee24cxx)
 		{
 			return ERROR_FAIL;
 		}
-		return commit();
+		return dal_commit();
 		break;
 	default:
 		return ERROR_FAIL;

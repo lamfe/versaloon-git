@@ -35,6 +35,7 @@
 #include "programmer.h"
 #include "target.h"
 #include "scripts.h"
+#include "app_scripts.h"
 
 #include "dal/dal.h"
 #include "dal/mal/mal.h"
@@ -120,7 +121,6 @@ const struct vss_cmd_t ee93cx6_notifier[] =
 
 
 
-#define commit()					interfaces->peripheral_commit()
 
 static struct ee93cx6_drv_param_t ee93cx6_drv_param;
 static struct ee93cx6_drv_interface_t ee93cx6_drv_ifs;
@@ -181,7 +181,7 @@ ENTER_PROGRAM_MODE_HANDLER(ee93cx6)
 	ee93cx6_mal_info.capacity.block_number = 
 										param->chip_areas[EEPROM_IDX].page_num;
 	
-	return commit();
+	return dal_commit();
 }
 
 LEAVE_PROGRAM_MODE_HANDLER(ee93cx6)
@@ -190,7 +190,7 @@ LEAVE_PROGRAM_MODE_HANDLER(ee93cx6)
 	REFERENCE_PARAMETER(success);
 	
 	mal.fini(MAL_IDX_EE93CX6, &ee93cx6_dal_info);
-	return commit();
+	return dal_commit();
 }
 
 ERASE_TARGET_HANDLER(ee93cx6)
@@ -204,7 +204,7 @@ ERASE_TARGET_HANDLER(ee93cx6)
 	{
 		return ERROR_FAIL;
 	}
-	return commit();
+	return dal_commit();
 }
 
 WRITE_TARGET_HANDLER(ee93cx6)
@@ -225,7 +225,7 @@ WRITE_TARGET_HANDLER(ee93cx6)
 		{
 			return ERROR_FAIL;
 		}
-		return commit();
+		return dal_commit();
 		break;
 	default:
 		return ERROR_FAIL;
@@ -250,7 +250,7 @@ READ_TARGET_HANDLER(ee93cx6)
 		{
 			return ERROR_FAIL;
 		}
-		return commit();
+		return dal_commit();
 		break;
 	default:
 		return ERROR_FAIL;
