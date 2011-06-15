@@ -17,7 +17,7 @@
 #include "app_cfg.h"
 #if INTERFACE_JTAG_EN
 
-#include "interfaces.h"
+#include "app_interfaces.h"
 #include "JTAG_TAP.h"
 #include "../SPI/SPI.h"
 

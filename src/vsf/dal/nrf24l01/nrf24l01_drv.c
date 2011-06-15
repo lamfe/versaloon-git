@@ -29,6 +29,7 @@
 #include "nrf24l01_drv_cfg.h"
 #include "nrf24l01_drv.h"
 
+#define NRF24L01_DRV_BASE_MHZ				2400
 #define NRF24L01_DRV_MAX_PKGSIZE			32
 #define NRF24L01_DRV_MAX_CHANNEL			5
 
@@ -163,8 +164,8 @@ static RESULT nrf24l01_drv_config(struct dal_info_t *info)
 	{
 		return ERROR_FAIL;
 	}
-	if (ERROR_OK != nrf24l01_drv_write_reg(ifs, NRF24L01_REG_RF_CH, 
-													&param->rf_channel_mHz, 1))
+	config = (uint8_t)(param->rf_channel_mHz - NRF24L01_DRV_BASE_MHZ);
+	if (ERROR_OK != nrf24l01_drv_write_reg(ifs, NRF24L01_REG_RF_CH, &config, 1))
 	{
 		return ERROR_FAIL;
 	}

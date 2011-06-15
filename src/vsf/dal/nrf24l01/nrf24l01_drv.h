@@ -118,7 +118,7 @@ struct nrf24l01_drv_param_t
 	enum nrf24l01_drv_dir_t dir;
 	enum nrf24l01_drv_crclen_t crclen;
 	enum nrf24l01_drv_aw_t aw;
-	uint8_t rf_channel_mHz;
+	uint16_t rf_channel_mHz;
 	enum nrf24l01_drv_datarate_t dr;
 	struct nrf24l01_drv_user_callback user_callback;
 	enum nrf24l01_drv_txpwr_t txpwr;

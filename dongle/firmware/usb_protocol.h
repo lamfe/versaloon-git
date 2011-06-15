@@ -10,6 +10,9 @@
 #include "stack/usb_device/class/MSC/vsfusbd_MSC_BOT.h"
 
 extern struct vsfusbd_device_t usb_device;
-RESULT usb_protocol_init();
+extern volatile uint32_t rep_len;
+
+RESULT usb_protocol_init(void);
+RESULT usb_protocol_idle(void);
 
 #endif	// __USB_PROTOCOL_H_INCLUDED__

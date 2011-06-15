@@ -18,7 +18,7 @@
 #if USB_TO_C2_EN
 
 #include "USB_TO_XXX.h"
-#include "interfaces.h"
+#include "app_interfaces.h"
 
 void USB_TO_C2_ProcessCmd(uint8_t *dat, uint16_t len)
 {
@@ -38,7 +38,7 @@ void USB_TO_C2_ProcessCmd(uint8_t *dat, uint16_t len)
 		switch(command)
 		{
 		case USB_TO_XXX_INIT:
-			if (ERROR_OK == interfaces->c2.init(device_idx))
+			if (ERROR_OK == app_interfaces.c2.init(device_idx))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
@@ -48,7 +48,7 @@ void USB_TO_C2_ProcessCmd(uint8_t *dat, uint16_t len)
 			}
 			break;
 		case USB_TO_XXX_FINI:
-			if (ERROR_OK == interfaces->c2.fini(device_idx))
+			if (ERROR_OK == app_interfaces.c2.fini(device_idx))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
@@ -62,7 +62,7 @@ void USB_TO_C2_ProcessCmd(uint8_t *dat, uint16_t len)
 			
 			if(dat[index + 0] & 0x80)
 			{
-				if (ERROR_OK == interfaces->c2.data_read(device_idx, &buffer_reply[rep_len + 1], tmp))
+				if (ERROR_OK == app_interfaces.c2.data_read(device_idx, &buffer_reply[rep_len + 1], tmp))
 				{
 					buffer_reply[rep_len++] = USB_TO_XXX_OK;
 				}
@@ -74,7 +74,7 @@ void USB_TO_C2_ProcessCmd(uint8_t *dat, uint16_t len)
 			}
 			else
 			{
-				if (ERROR_OK == interfaces->c2.data_write(device_idx, &dat[index + 1], tmp))
+				if (ERROR_OK == app_interfaces.c2.data_write(device_idx, &dat[index + 1], tmp))
 				{
 					buffer_reply[rep_len++] = USB_TO_XXX_OK;
 				}
@@ -85,7 +85,7 @@ void USB_TO_C2_ProcessCmd(uint8_t *dat, uint16_t len)
 			}
 			break;
 		case USB_TO_C2_WriteAddr:
-			if (ERROR_OK == interfaces->c2.addr_write(device_idx, dat[index]))
+			if (ERROR_OK == app_interfaces.c2.addr_write(device_idx, dat[index]))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
@@ -95,7 +95,7 @@ void USB_TO_C2_ProcessCmd(uint8_t *dat, uint16_t len)
 			}
 			break;
 		case USB_TO_C2_ReadAddr:
-			if (ERROR_OK == interfaces->c2.addr_read(device_idx, &buffer_reply[rep_len + 1]))
+			if (ERROR_OK == app_interfaces.c2.addr_read(device_idx, &buffer_reply[rep_len + 1]))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}

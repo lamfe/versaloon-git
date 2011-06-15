@@ -55,13 +55,8 @@
 #error "Unknown or missing HW_BOARD definition"
 #endif
 
-
-/*************************** Includes Library ***************************/
-#include "stm32f10x_conf.h"
-#include "app_type.h"
-#include "port.h"
-#include "myString.h"
-#include "CommandProcessor.h"
+// compiler config
+#include "compiler.h"
 
 /************************ What do U want ************************/
 #define __VSF_DEBUG__					1
@@ -126,6 +121,3 @@
 #define INTERFACE_BDM_EN				(USB_TO_XXX_EN && USB_TO_BDM_EN)
 #define INTERFACE_DUSI_EN				(USB_TO_XXX_EN && USB_TO_DUSI_EN)
 #define INTERFACE_MICROWIRE_EN			(USB_TO_XXX_EN && USB_TO_MICROWIRE_EN)
-
-/*************************** Includes Application ***************************/
-#include "HW.h"

@@ -18,7 +18,7 @@
 #if USB_TO_XXX_EN
 
 #include "USB_TO_XXX.h"
-#include "interfaces.h"
+#include "app_interfaces.h"
 
 typedef struct
 {
@@ -42,7 +42,6 @@ static const uint8_t *USB_TO_POLL_buffer_reply[USB_TO_POLL_NUM] =
 int8_t USB_TO_POLL_Index;
 
 uint8_t *buffer_reply;
-volatile uint32_t rep_len = 0;
 
 #define USB_TO_XXX_ABILITIES_LEN			\
 	((VERSALOON_USB_TO_XXX_CMD_END + 1 - VERSALOON_USB_TO_XXX_CMD_START) / 8)
@@ -273,7 +272,7 @@ void USB_TO_XXX_ProcessCmd(uint8_t *dat, uint16_t len)
 
 			if(dly & 0x8000)
 			{
-				interfaces->delay.delayms(dly & 0x7FFF);
+				app_interfaces.delay.delayms(dly & 0x7FFF);
 			}
 			else
 			{

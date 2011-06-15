@@ -17,6 +17,7 @@
 #ifndef __USB_TO_XXX_H_INCLUDED__
 #define __USB_TO_XXX_H_INCLUDED__
 
+#include "app_type.h"
 #include "CommandProcessor.h"
 
 // USB_TO_XXX USB Commands

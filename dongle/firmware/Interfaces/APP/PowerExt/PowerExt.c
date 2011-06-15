@@ -17,7 +17,7 @@
 #include "app_cfg.h"
 #if POWER_OUT_EN
 
-#include "interfaces.h"
+#include "app_interfaces.h"
 #include "PowerExt.h"
 
 static uint8_t PWREXT_EnableCount = 0;

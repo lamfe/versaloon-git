@@ -17,7 +17,7 @@
 #include "app_cfg.h"
 #if INTERFACE_DUSI_EN
 
-#include "interfaces.h"
+#include "app_interfaces.h"
 #include "../SPI/SPI.h"
 #include "DUSI.h"
 

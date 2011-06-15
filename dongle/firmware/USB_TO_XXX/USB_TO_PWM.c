@@ -18,7 +18,7 @@
 #if USB_TO_PWM_EN
 
 #include "USB_TO_XXX.h"
-#include "interfaces.h"
+#include "app_interfaces.h"
 
 void USB_TO_PWM_ProcessCmd(uint8_t *dat, uint16_t len)
 {
@@ -39,7 +39,7 @@ void USB_TO_PWM_ProcessCmd(uint8_t *dat, uint16_t len)
 		switch(command)
 		{
 		case USB_TO_XXX_INIT:
-			if (ERROR_OK == interfaces->pwm.init(device_idx))
+			if (ERROR_OK == app_interfaces.pwm.init(device_idx))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
@@ -53,7 +53,7 @@ void USB_TO_PWM_ProcessCmd(uint8_t *dat, uint16_t len)
 			pushpull = dat[index + 2];
 			polarity = dat[index + 3];
 			
-			if (ERROR_OK == interfaces->pwm.config(device_idx, kHz, pushpull, polarity))
+			if (ERROR_OK == app_interfaces.pwm.config(device_idx, kHz, pushpull, polarity))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
@@ -63,7 +63,7 @@ void USB_TO_PWM_ProcessCmd(uint8_t *dat, uint16_t len)
 			}
 			break;
 		case USB_TO_XXX_FINI:
-			if (ERROR_OK == interfaces->pwm.fini(device_idx))
+			if (ERROR_OK == app_interfaces.pwm.fini(device_idx))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
@@ -75,7 +75,7 @@ void USB_TO_PWM_ProcessCmd(uint8_t *dat, uint16_t len)
 		case USB_TO_XXX_OUT:
 			count = GET_LE_U16(&dat[index + 0]);
 			
-			if (ERROR_OK == interfaces->pwm.out(device_idx, count, (uint16_t *)&dat[index + 2]))
+			if (ERROR_OK == app_interfaces.pwm.out(device_idx, count, (uint16_t *)&dat[index + 2]))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
@@ -87,7 +87,7 @@ void USB_TO_PWM_ProcessCmd(uint8_t *dat, uint16_t len)
 		case USB_TO_XXX_IN:
 			count = GET_LE_U16(&dat[index + 0]);
 			
-			if (ERROR_OK == interfaces->pwm.in(device_idx, count, (uint16_t *)&buffer_reply[rep_len + 1]))
+			if (ERROR_OK == app_interfaces.pwm.in(device_idx, count, (uint16_t *)&buffer_reply[rep_len + 1]))
 			{
 				buffer_reply[rep_len] = USB_TO_XXX_OK;
 			}

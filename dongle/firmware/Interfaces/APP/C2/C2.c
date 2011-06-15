@@ -17,7 +17,7 @@
 #include "app_cfg.h"
 #if INTERFACE_C2_EN
 
-#include "interfaces.h"
+#include "app_interfaces.h"
 #include "C2.h"
 
 #define C2_Delay()						DelayUS(0)

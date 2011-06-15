@@ -17,7 +17,7 @@
 #include "app_cfg.h"
 #if INTERFACE_PWM_EN
 
-#include "interfaces.h"
+#include "app_interfaces.h"
 #include "PWM.h"
 
 static uint16_t pwm0_cycle = 0;

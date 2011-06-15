@@ -16,7 +16,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "app_cfg.h"
-#include "interfaces.h"
+#include "app_interfaces.h"
 
 #include "usb_protocol.h"
 
@@ -29,12 +29,12 @@
 
 int main(void)
 {
-	core_interfaces.init(NULL);
+	interfaces->init(NULL);
 	usb_protocol_init();
 
-	while(1)
+	while (1)
 	{
-		ProcessIdle();
+		usb_protocol_idle();
 	}
 }
 

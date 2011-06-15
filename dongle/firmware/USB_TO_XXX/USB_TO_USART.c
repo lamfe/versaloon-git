@@ -15,11 +15,10 @@
  **************************************************************************/
 
 #include "app_cfg.h"
+#if USB_TO_USART_EN
 
 #include "USB_TO_XXX.h"
-#include "interfaces.h"
-
-#if USB_TO_USART_EN
+#include "app_interfaces.h"
 
 void USB_TO_USART_ProcessCmd(uint8_t *dat, uint16_t len)
 {
@@ -42,7 +41,7 @@ void USB_TO_USART_ProcessCmd(uint8_t *dat, uint16_t len)
 		switch(command)
 		{
 		case USB_TO_XXX_INIT:
-			if (ERROR_OK == interfaces->usart.init(device_idx))
+			if (ERROR_OK == app_interfaces.usart.init(device_idx))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
@@ -57,7 +56,7 @@ void USB_TO_USART_ProcessCmd(uint8_t *dat, uint16_t len)
 			paritybit = dat[index + 5];
 			stopbit = dat[index + 6];
 			
-			if (ERROR_OK == interfaces->usart.config(device_idx, baudrate, 
+			if (ERROR_OK == app_interfaces.usart.config(device_idx, baudrate, 
 								datalength, paritybit, stopbit, 0))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
@@ -68,7 +67,7 @@ void USB_TO_USART_ProcessCmd(uint8_t *dat, uint16_t len)
 			}
 			break;
 		case USB_TO_XXX_FINI:
-			if (ERROR_OK == interfaces->usart.fini(device_idx))
+			if (ERROR_OK == app_interfaces.usart.fini(device_idx))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
@@ -80,7 +79,7 @@ void USB_TO_USART_ProcessCmd(uint8_t *dat, uint16_t len)
 		case USB_TO_XXX_IN:
 			data_len = GET_LE_U16(&dat[index]);
 			
-			if (ERROR_OK == interfaces->usart.receive(device_idx, &buffer_reply[rep_len + 1], data_len))
+			if (ERROR_OK == app_interfaces.usart.receive(device_idx, &buffer_reply[rep_len + 1], data_len))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 				rep_len += data_len;
@@ -93,7 +92,7 @@ void USB_TO_USART_ProcessCmd(uint8_t *dat, uint16_t len)
 		case USB_TO_XXX_OUT:
 			data_len = GET_LE_U16(&dat[index]);
 			
-			if (ERROR_OK == interfaces->usart.send(device_idx, &dat[index + 2], data_len))
+			if (ERROR_OK == app_interfaces.usart.send(device_idx, &dat[index + 2], data_len))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
@@ -103,7 +102,7 @@ void USB_TO_USART_ProcessCmd(uint8_t *dat, uint16_t len)
 			}
 			break;
 		case USB_TO_XXX_STATUS:
-			if (ERROR_OK == interfaces->usart.status(device_idx, &status))
+			if (ERROR_OK == app_interfaces.usart.status(device_idx, &status))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 				

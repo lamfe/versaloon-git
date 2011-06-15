@@ -17,8 +17,7 @@
 #include "app_cfg.h"
 #if INTERFACE_USART_EN
 
-#include "HW/HW.h"
-#include "interfaces.h"
+#include "app_interfaces.h"
 #include "fifo.h"
 
 uint8_t USART_TX_buff[256], USART_RX_buff[256];

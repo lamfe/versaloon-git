@@ -17,7 +17,7 @@
 #include "app_cfg.h"
 #if INTERFACE_MSP430_JTAG_EN
 
-#include "interfaces.h"
+#include "app_interfaces.h"
 #include "MSP430_JTAG.h"
 
 #define MSP430_JTAG_DELAY()				DelayUS(0)
