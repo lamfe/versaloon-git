@@ -159,7 +159,7 @@ static RESULT SCSI_handler_READ_FORMAT_CAPACITIES(struct SCSI_LUN_info_t *info,
 		uint8_t CB[16], struct vsf_buffer_t *buffer, uint32_t *page_size, 
 		uint32_t *page_num)
 {
-	struct mal_info_t *mal_info = (struct mal_info_t *)info->dal_info->info;
+	struct mal_info_t *mal_info = (struct mal_info_t *)info->dal_info->extra;
 	uint32_t block_number = (uint32_t)mal_info->capacity.block_number;
 	uint32_t block_size = (uint32_t)mal_info->capacity.block_size;
 	
@@ -181,7 +181,7 @@ static RESULT SCSI_handler_READ_CAPACITY10(struct SCSI_LUN_info_t *info,
 		uint8_t CB[16], struct vsf_buffer_t *buffer, uint32_t *page_size, 
 		uint32_t *page_num)
 {
-	struct mal_info_t *mal_info = (struct mal_info_t *)info->dal_info->info;
+	struct mal_info_t *mal_info = (struct mal_info_t *)info->dal_info->extra;
 	uint32_t block_number = (uint32_t)mal_info->capacity.block_number;
 	uint32_t block_size = (uint32_t)mal_info->capacity.block_size;
 	
@@ -200,7 +200,7 @@ static RESULT SCSI_handler_READ_CAPACITY10(struct SCSI_LUN_info_t *info,
 static RESULT SCSI_io_WRITE10(struct SCSI_LUN_info_t *info, uint8_t CB[16], 
 		struct vsf_buffer_t *buffer, uint32_t cur_page)
 {
-	struct mal_info_t *mal_info = (struct mal_info_t *)info->dal_info->info;
+	struct mal_info_t *mal_info = (struct mal_info_t *)info->dal_info->extra;
 	uint32_t lba = GET_BE_U32(&CB[2]);
 	uint32_t block_size = (uint32_t)mal_info->capacity.block_size;
 	
@@ -223,7 +223,7 @@ static RESULT SCSI_handler_WRITE10(struct SCSI_LUN_info_t *info,
 		uint8_t CB[16], struct vsf_buffer_t *buffer, uint32_t *page_size, 
 		uint32_t *page_num)
 {
-	struct mal_info_t *mal_info = (struct mal_info_t *)info->dal_info->info;
+	struct mal_info_t *mal_info = (struct mal_info_t *)info->dal_info->extra;
 	uint32_t block_size = (uint32_t)mal_info->capacity.block_size;
 	uint16_t num_of_page = GET_BE_U16(&CB[7]);
 	
@@ -240,7 +240,7 @@ static RESULT SCSI_handler_WRITE10(struct SCSI_LUN_info_t *info,
 static RESULT SCSI_io_READ10(struct SCSI_LUN_info_t *info, uint8_t CB[16], 
 		struct vsf_buffer_t *buffer, uint32_t cur_page)
 {
-	struct mal_info_t *mal_info = (struct mal_info_t *)info->dal_info->info;
+	struct mal_info_t *mal_info = (struct mal_info_t *)info->dal_info->extra;
 	uint32_t lba = GET_BE_U32(&CB[2]);
 	uint32_t block_size = (uint32_t)mal_info->capacity.block_size;
 	
@@ -262,7 +262,7 @@ static RESULT SCSI_handler_READ10(struct SCSI_LUN_info_t *info,
 		uint8_t CB[16], struct vsf_buffer_t *buffer, uint32_t *page_size, 
 		uint32_t *page_num)
 {
-	struct mal_info_t *mal_info = (struct mal_info_t *)info->dal_info->info;
+	struct mal_info_t *mal_info = (struct mal_info_t *)info->dal_info->extra;
 	uint32_t block_size = (uint32_t)mal_info->capacity.block_size;
 	uint16_t num_of_page = GET_BE_U16(&CB[7]);
 	

@@ -143,7 +143,7 @@ struct mal_info_t MSCBOT_LunInfo_mal_info =
 };
 struct dal_info_t MSCBOT_LunInfo_dal_info = 
 {
-	NULL, NULL, &MSCBOT_LunInfo_mal_info, NULL
+	NULL, NULL, NULL, &MSCBOT_LunInfo_mal_info
 };
 struct SCSI_LUN_info_t MSCBOT_LunInfo = 
 {
