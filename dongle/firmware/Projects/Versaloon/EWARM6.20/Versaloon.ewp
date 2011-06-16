@@ -1835,22 +1835,10 @@
   <group>
     <name>hw_cfg</name>
     <file>
-      <name>$PROJ_DIR$\..\..\hw_cfg_MiniRC2.h</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\..\hw_cfg_MiniRC3.h</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\..\hw_cfg_MiniRC4.h</name>
-    </file>
-    <file>
       <name>$PROJ_DIR$\..\..\hw_cfg_MiniRelease1.h</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\hw_cfg_NanoRelease1.h</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\..\hw_cfg_ProRC1.h</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\hw_cfg_STBee_Mini.h</name>

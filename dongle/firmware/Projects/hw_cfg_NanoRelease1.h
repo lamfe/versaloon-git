@@ -45,7 +45,7 @@
 
 /****************************** Init ******************************/
 #define HW_INIT()						do{\
-											GPIO_PinRemapConfig(GPIO_Remap_SWJ_Disable, ENABLE);
+											GPIO_PinRemapConfig(GPIO_Remap_SWJ_Disable, ENABLE);\
 										} while (0)
 
 /****************************** Power ******************************/

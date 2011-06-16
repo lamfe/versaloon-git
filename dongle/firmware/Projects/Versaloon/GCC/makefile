@@ -5,11 +5,7 @@ PROJECT	= Versaloon
 # To select your board , set HW_BOARD to one of the below boards
 # Available boards:
 # NanoRelease1
-# MiniRC2
-# MiniRC3
-# MiniRC4
 # MiniRelease1
-# ProRC1
 # STBee_Mini
 # STM8S_Discovery
 # STM32VL_Discovery
