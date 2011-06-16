@@ -391,6 +391,8 @@ RESULT usb_protocol_init(void)
 	LED_USB_ON();
 	
 	vsfusbd_CDC_set_param(&Versaloon_CDC_param);
+	USB_Pull_Init();
+	USB_Connect();
 	return vsfusbd_device_init(&usb_device);
 }
 
