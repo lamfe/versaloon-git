@@ -24,27 +24,15 @@
 // board_defs.mk (same place where the makefile resides)
 //
 #define NanoRelease1					0x01
-#define MiniRC2							0x12
-#define MiniRC3							0x13
-#define MiniRC4							0x14
 #define MiniRelease1					0x15
-#define ProRC1							0x21
 #define STBee_Mini						0x31
 #define STM8S_Discovery					0x32
 #define STM32VL_Discovery				0x33
 
 #if _HARDWARE_VER == NanoRelease1
 #include "hw_cfg_NanoRelease1.h"
-#elif _HARDWARE_VER == MiniRC2
-#include "hw_cfg_MiniRC2.h"
-#elif _HARDWARE_VER == MiniRC3
-#include "hw_cfg_MiniRC3.h"
-#elif _HARDWARE_VER == MiniRC4
-#include "hw_cfg_MiniRC4.h"
 #elif _HARDWARE_VER == MiniRelease1
 #include "hw_cfg_MiniRelease1.h"
-#elif _HARDWARE_VER == ProRC1
-#include "hw_cfg_ProRC1.h"
 #elif _HARDWARE_VER == STBee_Mini
 #include "hw_cfg_STBee_Mini.h"
 #elif _HARDWARE_VER == STM8S_Discovery
