@@ -8,6 +8,10 @@
 #endif
 #include "fifo.h"
 
+const struct stm32_info_t stm32_info = 
+{
+	12000, 72000
+};
 uint16_t Vtarget = 0;
 
 void GPIO_SetMode(GPIO_TypeDef* GPIOx, uint8_t pin, uint8_t mode)

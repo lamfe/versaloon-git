@@ -1,3 +1,10 @@
+struct stm32_info_t
+{
+	uint32_t quartz_khz;
+	uint32_t kernel_khz;
+};
+extern const struct stm32_info_t stm32_info;
+
 #define GPIO_CNF_IN_ANALOG			(0x00 << 2)
 #define GPIO_CNF_IN_FLOAT			(0x01 << 2)
 #define GPIO_CNF_IN_PULL			(0x02 << 2)
