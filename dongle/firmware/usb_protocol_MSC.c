@@ -1,6 +1,6 @@
 #include "app_cfg.h"
 
-#include "interfaces.h"
+#include "app_interfaces.h"
 #include "usb_protocol.h"
 
 #include "dal/mal/mal.h"
@@ -178,6 +178,8 @@ struct vsfusbd_MSCBOT_param_t MSCBOT_param =
 RESULT usb_protocol_init()
 {
 	vsfusbd_MSCBOT_set_param(&MSCBOT_param);
+	USB_Pull_Init();
+	USB_Connect();
 	return vsfusbd_device_init(&usb_device);
 }
 
