@@ -6,11 +6,7 @@
 
 # Available boards:
 # NanoRelease1
-# MiniRC2
-# MiniRC3
-# MiniRC4
 # MiniRelease1
-# ProRC1
 # STBee_Mini
 # STM8S_Discovery
 # STM32VL_Discovery
@@ -37,49 +33,9 @@ TARGET_CHIP			= stm32
 TARGET_STM32		= MediumDensity
 else
 ########################################################################
-ifeq ($(HW_BOARD),MiniRC2)
-########################################################################
-_HARDWARE_VER		= 0x12
-FLASH_LOAD_OFFSET	= 0x2000
-HSE_VALUE			= 12000000
-LD_FILE				= versaloonSTM32.ld
-TARGET_CHIP			= stm32
-TARGET_STM32		= MediumDensity
-else
-########################################################################
-ifeq ($(HW_BOARD),MiniRC3)
-#########################################################################
-_HARDWARE_VER		= 0x13
-FLASH_LOAD_OFFSET	= 0x2000
-HSE_VALUE			= 12000000
-LD_FILE				= versaloonSTM32.ld
-TARGET_CHIP			= stm32
-TARGET_STM32		= MediumDensity
-else
-########################################################################
-ifeq ($(HW_BOARD),MiniRC4)
-########################################################################
-_HARDWARE_VER		= 0x14
-FLASH_LOAD_OFFSET	= 0x2000
-HSE_VALUE			= 12000000
-LD_FILE				= versaloonSTM32.ld
-TARGET_CHIP			= stm32
-TARGET_STM32		= MediumDensity
-else
-########################################################################
 ifeq ($(HW_BOARD),MiniRelease1)
 ########################################################################
 _HARDWARE_VER		= 0x15
-FLASH_LOAD_OFFSET	= 0x2000
-HSE_VALUE			= 12000000
-LD_FILE				= versaloonSTM32.ld
-TARGET_CHIP			= stm32
-TARGET_STM32		= MediumDensity
-else
-########################################################################
-ifeq ($(HW_BOARD),ProRC1)
-########################################################################
-_HARDWARE_VER		= 0x21
 FLASH_LOAD_OFFSET	= 0x2000
 HSE_VALUE			= 12000000
 LD_FILE				= versaloonSTM32.ld
