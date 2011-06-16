@@ -175,6 +175,8 @@ struct interface_usbd_t
 
 
 
+#define CORE_INFO(m)					__CONNECT(m, _info)
+#define	CORE_INFO_TYPE(m)				__CONNECT(m, _info_t)
 
 #define CORE_INIT(m)					__CONNECT(m, _interface_init)
 #define CORE_FINI(m)					__CONNECT(m, _interface_fini)
@@ -233,6 +235,7 @@ struct interface_usbd_t
 #define CORE_USBD_EP_READ_OUT_BUFFER(m)	__CONNECT(m, _usbd_ep_read_OUT_buffer)
 
 // extern drivers
+extern const struct CORE_INFO_TYPE(__TARGET_CHIP__) CORE_INFO(__TARGET_CHIP__);
 RESULT CORE_INIT(__TARGET_CHIP__)(void *p);
 RESULT CORE_FINI(__TARGET_CHIP__)(void);
 // GPIO
@@ -296,6 +299,8 @@ RESULT CORE_USBD_EP_READ_OUT_BUFFER(__TARGET_CHIP__)(uint8_t idx,
 
 struct interfaces_info_t
 {
+	void *info;
+	
 	RESULT (*init)(void *p);
 	RESULT (*fini)(void);
 	

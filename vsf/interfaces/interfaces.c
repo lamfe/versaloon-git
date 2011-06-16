@@ -24,6 +24,8 @@ RESULT peripheral_commit(void)
 
 const struct interfaces_info_t core_interfaces = 
 {
+	(void *)&CORE_INFO(__TARGET_CHIP__),
+	
 	CORE_INIT(__TARGET_CHIP__),
 	CORE_FINI(__TARGET_CHIP__),
 	
