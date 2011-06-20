@@ -130,7 +130,7 @@ RESULT c8051f_jtag_ind_read(uint8_t addr, uint32_t *value, uint8_t num_bits)
 // *value is SYS endian
 RESULT c8051f_jtag_ind_write(uint8_t addr, uint32_t *value, uint8_t num_bits)
 {
-	uint16_t ir, dr;
+	uint16_t ir;
 	
 #ifdef PARAM_CHECK
 	if ((addr < C8051F_IR_FLASHCON) || (addr > C8051F_IR_FLASHSCL))
@@ -147,7 +147,6 @@ RESULT c8051f_jtag_ind_write(uint8_t addr, uint32_t *value, uint8_t num_bits)
 	*value = SYS_TO_LE_U32(*value);
 	jtag_dr_write(value, num_bits + 2);
 	
-	dr = 0;
 	jtag_poll_busy();
 	
 	return ERROR_OK;

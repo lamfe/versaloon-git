@@ -209,7 +209,7 @@ ENTER_PROGRAM_MODE_HANDLER(lpc1000)
 	uint32_t checksum;
 	uint8_t i;
 	
-	if (NULL == lpc1000_enter_program_mode)
+	if (NULL == lpc1000_enter_program_mode_save)
 	{
 		LOG_BUG(ERRMSG_NOT_INITIALIZED, "lpc1000", "");
 		return ERROR_FAIL;

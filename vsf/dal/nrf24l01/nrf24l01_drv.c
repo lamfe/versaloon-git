@@ -113,7 +113,7 @@ static RESULT nrf24l01_drv_read_reg(struct nrf24l01_drv_interface_t *ifs,
 		return ERROR_FAIL;
 	}
 	
-	cmd_buff[1] = NRF24L01_CMD_R_REGISTER(reg);
+	cmd_buff[0] = NRF24L01_CMD_R_REGISTER(reg);
 	return nrf24l01_drv_transact(ifs, cmd_buff, 1, value, size);
 }
 
