@@ -2112,6 +2112,12 @@
         <group>
           <name>stm32</name>
           <group>
+            <name>eint</name>
+            <file>
+              <name>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\eint\STM32_EINT.c</name>
+            </file>
+          </group>
+          <group>
             <name>gpio</name>
             <file>
               <name>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\gpio\STM32_GPIO.c</name>
@@ -2285,13 +2291,25 @@
                   </file>
                 </group>
               </group>
-              <file>
-                <name>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\HW.c</name>
-              </file>
-              <file>
-                <name>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\stm32f10x_it.c</name>
-              </file>
             </group>
+            <file>
+              <name>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\HW.c</name>
+            </file>
+            <file>
+              <name>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\stm32f10x_it.c</name>
+            </file>
+          </group>
+          <group>
+            <name>spi</name>
+            <file>
+              <name>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\spi\STM32_SPI.c</name>
+            </file>
+          </group>
+          <group>
+            <name>timer</name>
+            <file>
+              <name>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\timer\STM32_TIM.c</name>
+            </file>
           </group>
           <group>
             <name>usbd</name>

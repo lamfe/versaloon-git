@@ -205,7 +205,7 @@ static RESULT SCSI_io_WRITE10(struct SCSI_LUN_info_t *info, uint8_t CB[16],
 	uint32_t block_size = (uint32_t)mal_info->capacity.block_size;
 	
 	if (ERROR_OK != mal.writeblock(info->mal_index, info->dal_info, 
-					lba + cur_page * block_size, buffer->buffer, block_size))
+					(lba + cur_page) * block_size, buffer->buffer, 1))
 	{
 		info->status.sense_key = SCSI_SENSEKEY_HARDWARE_ERROR;
 		info->status.asc = 0;
@@ -245,7 +245,7 @@ static RESULT SCSI_io_READ10(struct SCSI_LUN_info_t *info, uint8_t CB[16],
 	uint32_t block_size = (uint32_t)mal_info->capacity.block_size;
 	
 	if (ERROR_OK != mal.readblock(info->mal_index, info->dal_info, 
-					lba + cur_page * block_size, buffer->buffer, block_size))
+					(lba + cur_page) * block_size, buffer->buffer, 1))
 	{
 		info->status.sense_key = SCSI_SENSEKEY_HARDWARE_ERROR;
 		info->status.asc = 0;

@@ -32,7 +32,7 @@ RESULT stm32_gpio_init(uint8_t index)
 	}
 #endif
 	
-	RCC->APB2RSTR |= RCC_APB2Periph_GPIOA << index;
+	RCC->APB2ENR |= RCC_APB2Periph_GPIOA << index;
 	return ERROR_OK;
 }
 
@@ -45,6 +45,7 @@ RESULT stm32_gpio_fini(uint8_t index)
 	}
 #endif
 	
+	RCC->APB2ENR &= ~(RCC_APB2Periph_GPIOA << index);
 	RCC->APB2RSTR &= ~(RCC_APB2Periph_GPIOA << index);
 	return ERROR_OK;
 }
@@ -71,7 +72,7 @@ RESULT stm32_gpio_config(uint8_t index, uint32_t pin_mask, uint32_t io,
 		mask = (1 << i);
 		if (pin_mask & mask)
 		{
-			tmpregl &= 0x0F << (4 * i);
+			tmpregl &= ~(0x0F << (4 * i));
 			if (io & mask)
 			{
 				tmpregl |= 0x03 << (4 * i);
@@ -85,51 +86,51 @@ RESULT stm32_gpio_config(uint8_t index, uint32_t pin_mask, uint32_t io,
 				if (pull_en_mask & mask)
 				{
 					tmpregl |= 0x10 << (4 * i + 2);
-					if (input_pull_mask & mask)
-					{
-						gpio->BSRR = mask;
-					}
-					else
-					{
-						gpio->BRR = mask;
-					}
 				}
 				else
 				{
 					tmpregl |= 0x01 << (4 * i + 2);
 				}
 			}
+			if (input_pull_mask & mask)
+			{
+				gpio->BSRR = mask;
+			}
+			else
+			{
+				gpio->BRR = mask;
+			}
 		}
 		mask = (1 << (i + 8));
 		if (pin_mask & mask)
 		{
-			tmpregh &= 0x0F << (4 * i);
+			tmpregh &= ~(0x0F << (4 * i));
 			if (io & mask)
 			{
 				tmpregh |= 0x03 << (4 * i);
 				if (pull_en_mask & input_pull_mask & mask)
 				{
-					tmpregh |= 0x01 << (4 * i + 2);
+					tmpregh |= 0x04 << (4 * i);
 				}
 			}
 			else
 			{
 				if (pull_en_mask & mask)
 				{
-					tmpregh |= 0x10 << (4 * i + 2);
-					if (input_pull_mask & mask)
-					{
-						gpio->BSRR = mask;
-					}
-					else
-					{
-						gpio->BRR = mask;
-					}
+					tmpregh |= 0x08 << (4 * i);
 				}
 				else
 				{
-					tmpregh |= 0x01 << (4 * i + 2);
+					tmpregh |= 0x04 << (4 * i);
 				}
+			}
+			if (input_pull_mask & mask)
+			{
+				gpio->BSRR = mask;
+			}
+			else
+			{
+				gpio->BRR = mask;
 			}
 		}
 	}

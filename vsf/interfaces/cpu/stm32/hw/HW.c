@@ -169,6 +169,17 @@ RESULT stm32_interface_init(void *p)
 	return ERROR_OK;
 }
 
+RESULT stm32_delay_delayms(uint16_t ms)
+{
+	DelayMS(ms);
+	return ERROR_OK;
+}
+RESULT stm32_delay_delayus(uint16_t us)
+{
+	DelayUS(us);
+	return ERROR_OK;
+}
+
 /*******************************************************************************
 * Function Name	: RCC_Configuration
 * Description		: Configures the different system clocks.
