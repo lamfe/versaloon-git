@@ -38,12 +38,37 @@ const struct interfaces_info_t core_interfaces =
 		CORE_GPIO_IN(__TARGET_CHIP__)
 	},
 	{
+		// timer
+		CORE_TIMER_INIT(__TARGET_CHIP__),
+		CORE_TIMER_FINI(__TARGET_CHIP__),
+		CORE_TIMER_CONFIG(__TARGET_CHIP__),
+		CORE_TIMER_START(__TARGET_CHIP__),
+		CORE_TIMER_STOP(__TARGET_CHIP__),
+		CORE_TIMER_GET_COUNT(__TARGET_CHIP__),
+		CORE_TIMER_SET_COUNT(__TARGET_CHIP__),
+		CORE_TIMER_CONFIG_CHANNEL(__TARGET_CHIP__),
+		CORE_TIMER_GET_CHANNEL(__TARGET_CHIP__),
+		CORE_TIMER_SET_CHANNEL(__TARGET_CHIP__),
+	},
+	{
+		// eint
+		CORE_EINT_INIT(__TARGET_CHIP__),
+		CORE_EINT_FINI(__TARGET_CHIP__),
+		CORE_EINT_CONFIG(__TARGET_CHIP__),
+		CORE_EINT_ENABLE(__TARGET_CHIP__),
+		CORE_EINT_DISABLE(__TARGET_CHIP__),
+		CORE_EINT_TRIGGER(__TARGET_CHIP__),
+	},
+	{
 		// usart
 		NULL, NULL, NULL, NULL, NULL, NULL
 	},
 	{
 		// spi
-		NULL, NULL, NULL, NULL
+		CORE_SPI_INIT(__TARGET_CHIP__),
+		CORE_SPI_FINI(__TARGET_CHIP__),
+		CORE_SPI_CONFIG(__TARGET_CHIP__),
+		CORE_SPI_IO(__TARGET_CHIP__)
 	},
 	{
 		// i2c
@@ -107,7 +132,8 @@ const struct interfaces_info_t core_interfaces =
 	},
 	{
 		// delay
-		NULL, NULL
+		CORE_DELAY_DELAYMS(__TARGET_CHIP__),
+		CORE_DELAY_DELAYUS(__TARGET_CHIP__)
 	},
 	peripheral_commit
 };

@@ -92,3 +92,5 @@ void USART_IF_RX_Int(uint8_t dat);
 
 RESULT stm32_interface_init(void *p);
 RESULT stm32_interface_fini(void);
+RESULT stm32_delay_delayms(uint16_t ms);
+RESULT stm32_delay_delayus(uint16_t us);

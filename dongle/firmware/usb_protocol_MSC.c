@@ -4,6 +4,8 @@
 #include "usb_protocol.h"
 
 #include "dal/mal/mal.h"
+#include "dal/sd/sd_common.h"
+#include "dal/sd/sd_spi_drv.h"
 
 static const uint8_t MSCBOT_DeviceDescriptor[] =
 {
@@ -133,21 +135,28 @@ struct vsfusbd_device_t usb_device =
 	(struct interface_usbd_t *)&core_interfaces.usbd
 };
 
-struct mal_info_t MSCBOT_LunInfo_mal_info = 
+static struct sd_info_t sd_info;
+static struct sd_spi_drv_interface_t sd_spi_drv_ifs = 
 {
-	{
-		512,
-		2 * 8 * 1024 * 1024
-	},
-	NULL
+	1,			// uint8_t cs_port;
+	(1 << 12),	// uint32_t cs_pin;
+	1,			// uint8_t spi_port;
 };
-struct dal_info_t MSCBOT_LunInfo_dal_info = 
+static struct mal_info_t sd_mal_info = 
 {
-	NULL, NULL, NULL, &MSCBOT_LunInfo_mal_info
+	{0, 0}, &sd_info
 };
+static struct dal_info_t sd_dal_info = 
+{
+	&sd_spi_drv_ifs,
+	NULL,
+	NULL,
+	&sd_mal_info,
+};
+
 struct SCSI_LUN_info_t MSCBOT_LunInfo = 
 {
-	&MSCBOT_LunInfo_dal_info, 0, 
+	&sd_dal_info, MAL_IDX_SD_SPI, 
 	{
 		true,
 		{'S', 'i', 'm', 'o', 'n', ' ', ' ', ' '},
@@ -177,6 +186,16 @@ struct vsfusbd_MSCBOT_param_t MSCBOT_param =
 
 RESULT usb_protocol_init()
 {
+	LED_GREEN_ON();
+	LED_RED_OFF();
+	LED_Init();
+	
+	if (ERROR_OK != mal.init(MAL_IDX_SD_SPI, &sd_dal_info))
+	{
+		LED_RED_ON();
+		return ERROR_FAIL;
+	}
+	
 	vsfusbd_MSCBOT_set_param(&MSCBOT_param);
 	USB_Pull_Init();
 	USB_Connect();

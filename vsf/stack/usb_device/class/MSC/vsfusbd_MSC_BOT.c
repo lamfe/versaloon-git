@@ -390,18 +390,17 @@ static RESULT vsfusbd_MSCBOT_class_poll(uint8_t iface,
 {
 	struct interface_usbd_t *drv = device->drv;
 	struct vsfusbd_MSCBOT_param_t *tmp = vsfusbd_MSCBOT_find_param(iface);
-	struct SCSI_LUN_info_t *lun_info = NULL;
 	
 	if (NULL == tmp)
 	{
 		return ERROR_FAIL;
 	}
-	lun_info = &tmp->lun_info[tmp->CBW.bCBWLUN];
 	
 	if (!tmp->ready)
 	{
 		uint8_t index = (tmp->tick_tock + 1) & 1;
 		struct vsf_buffer_t *buffer = &tmp->page_buffer[index];
+		struct SCSI_LUN_info_t *lun_info = &tmp->lun_info[tmp->CBW.bCBWLUN];
 		
 		if (ERROR_OK != SCSI_IO(tmp->cur_handlers, lun_info, tmp->CBW.CBWCB, 
 								buffer, tmp->cur_scsi_page))
@@ -417,9 +416,9 @@ static RESULT vsfusbd_MSCBOT_class_poll(uint8_t iface,
 			if ((tmp->CBW.bmCBWFlags & USBMSC_CBWFLAGS_DIR_MASK) == 
 						USBMSC_CBWFLAGS_DIR_IN)
 			{
+				tmp->tbuffer.buffer = *vsfusbd_MSCBOT_GetBuffer(tmp);
 				if (!tmp->cur_usb_page)
 				{
-					tmp->tbuffer.buffer = *vsfusbd_MSCBOT_GetBuffer(tmp);
 					vsfusbd_MSCBOT_IN_hanlder((void *)device, tmp->ep_in);
 					if (tmp->page_num > tmp->cur_scsi_page)
 					{
@@ -521,6 +520,7 @@ const struct vsfusbd_class_protocol_t vsfusbd_MSCBOT_class =
 
 RESULT vsfusbd_MSCBOT_set_param(struct vsfusbd_MSCBOT_param_t *param)
 {
+	param->ready = true;
 	if (vsfusbd_MSCBOT_find_param(param->iface) != NULL)
 	{
 		return ERROR_FAIL;

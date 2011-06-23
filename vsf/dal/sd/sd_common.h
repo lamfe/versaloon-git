@@ -127,16 +127,6 @@
 
 #define SD_CMD59_CRC_OPT					0x01
 
-// R1 Response
-#define SD_R1_NONE							0x00
-#define SD_R1_IN_IDLE_STATE					0x01
-#define SD_R1_ERASE_RESET					0x02
-#define SD_R1_ILLEGAL_COMMAND				0x04
-#define SD_R1_COM_CRC_ERROR					0x08
-#define SD_R1_ERASE_SEQUENCE_ERROR			0x10
-#define SD_R1_ADDRESS_ERROR					0x20
-#define SD_R1_PARAMETER_ERROR				0x40
-
 // OCR regist
 #define  SD_OCR_LVR							(1UL << 7)
 #define  SD_OCR_20_21V						(1UL << 8)

@@ -382,13 +382,13 @@ static RESULT sd_spi_drv_init(struct dal_info_t *info)
 			return ERROR_FAIL;
 		}
 		
-		if (SD_R1_IN_IDLE_STATE == resp_r1)
+		if (SD_CS8_IN_IDLE_STATE == resp_r1)
 		{
 			break;
 		}
 		interfaces->delay.delayms(1);
 	}
-	if (resp_r1 != SD_R1_IN_IDLE_STATE)
+	if (resp_r1 != SD_CS8_IN_IDLE_STATE)
 	{
 		sd_info->cardtype = SD_CARDTYPE_NONE;
 		return ERROR_FAIL;
@@ -402,7 +402,7 @@ static RESULT sd_spi_drv_init(struct dal_info_t *info)
 	{
 		return ERROR_FAIL;
 	}
-	if ((resp_r1 == SD_R1_IN_IDLE_STATE) && 
+	if ((resp_r1 == SD_CS8_IN_IDLE_STATE) && 
 		(resp_r7[3] == SD_CMD8_CHK_PATTERN))
 	{
 		sd_info->cardtype = SD_CARDTYPE_SD_V2;
@@ -415,7 +415,7 @@ static RESULT sd_spi_drv_init(struct dal_info_t *info)
 	// send acmd41 to get card status
 	retry = 0;
 	resp_r1 = 0xFF;
-	while (retry++ < SD_SPI_CMD_TIMEOUT)
+	while (retry++ < 1024)
 	{
 		if ((ERROR_OK != sd_spi_transact_start(ifs)) || 
 			(ERROR_OK != sd_spi_transact_do(ifs, SD_TRANSTOKEN_RESP_R1, 
@@ -439,7 +439,7 @@ static RESULT sd_spi_drv_init(struct dal_info_t *info)
 	}
 	
 	// send cmd1 for MMC card
-	if (resp_r1 != SD_R1_NONE)
+	if (resp_r1 != SD_CS8_NONE)
 	{
 		retry = 0;
 		while (retry++ < SD_SPI_CMD_TIMEOUT)
@@ -449,12 +449,12 @@ static RESULT sd_spi_drv_init(struct dal_info_t *info)
 			{
 				return ERROR_FAIL;
 			}
-			if (resp_r1 == SD_R1_NONE)
+			if (resp_r1 == SD_CS8_NONE)
 			{
 			    break;
 			}
 		}
-		if (resp_r1 != SD_R1_NONE)
+		if (resp_r1 != SD_CS8_NONE)
 		{
 			sd_info->cardtype = SD_CARDTYPE_NONE;
 			return ERROR_FAIL;
@@ -472,7 +472,7 @@ static RESULT sd_spi_drv_init(struct dal_info_t *info)
 			return ERROR_FAIL;
 		}
 		ocr = GET_BE_U32(resp_r7);
-		if (SD_R1_NONE == resp_r1)
+		if (SD_CS8_NONE == resp_r1)
 		{
 			if ((ocr & SD_OCR_BUSY) && (ocr & SD_OCR_CCS))
 			{

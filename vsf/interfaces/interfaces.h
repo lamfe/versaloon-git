@@ -98,6 +98,34 @@ struct interface_microwire_t
 	RESULT (*poll)(uint8_t index, uint16_t interval_us, uint16_t retry_cnt);
 };
 
+struct interface_timer_t
+{
+	RESULT (*init)(uint8_t index);
+	RESULT (*fini)(uint8_t index);
+	RESULT (*config)(uint8_t index, uint32_t kHz, uint32_t mode, 
+						void (*overflow)(void));
+	RESULT (*start)(uint8_t index);
+	RESULT (*stop)(uint8_t index);
+	RESULT (*get_count)(uint8_t index, uint32_t *count);
+	RESULT (*set_count)(uint8_t index, uint32_t count);
+	
+	RESULT (*config_channel)(uint8_t index, uint8_t channel, uint32_t mode, 
+								void (*callback)(void));
+	RESULT (*get_channel)(uint8_t index, uint8_t channel, uint32_t *count);
+	RESULT (*set_channel)(uint8_t index, uint8_t channel, uint32_t count);
+};
+
+struct interface_eint_t
+{
+	RESULT (*init)(uint8_t index);
+	RESULT (*fini)(uint8_t index);
+	RESULT (*config)(uint8_t index, bool on_fall, bool on_rise, 
+						void (*callback)(void));
+	RESULT (*enable)(uint8_t index);
+	RESULT (*disable)(uint8_t index);
+	RESULT (*trigger)(uint8_t index);
+};
+
 #include "stack/usb_device/vsf_usbd_const.h"
 #include "stack/usb_device/vsf_usbd_drv_callback.h"
 
@@ -180,12 +208,43 @@ struct interface_usbd_t
 
 #define CORE_INIT(m)					__CONNECT(m, _interface_init)
 #define CORE_FINI(m)					__CONNECT(m, _interface_fini)
+
 // GPIO
 #define CORE_GPIO_INIT(m)				__CONNECT(m, _gpio_init)
 #define CORE_GPIO_FINI(m)				__CONNECT(m, _gpio_fini)
 #define CORE_GPIO_CONFIG(m)				__CONNECT(m, _gpio_config)
 #define CORE_GPIO_IN(m)					__CONNECT(m, _gpio_in)
 #define CORE_GPIO_OUT(m)				__CONNECT(m, _gpio_out)
+
+// SPI
+#define CORE_SPI_INIT(m)				__CONNECT(m, _spi_init)
+#define CORE_SPI_FINI(m)				__CONNECT(m, _spi_fini)
+#define CORE_SPI_CONFIG(m)				__CONNECT(m, _spi_config)
+#define CORE_SPI_IO(m)					__CONNECT(m, _spi_io)
+
+// Delay
+#define CORE_DELAY_DELAYMS(m)			__CONNECT(m, _delay_delayms)
+#define CORE_DELAY_DELAYUS(m)			__CONNECT(m, _delay_delayus)
+
+// TIMER
+#define CORE_TIMER_INIT(m)				__CONNECT(m, _timer_init)
+#define CORE_TIMER_FINI(m)				__CONNECT(m, _timer_fini)
+#define CORE_TIMER_CONFIG(m)			__CONNECT(m, _timer_config)
+#define CORE_TIMER_START(m)				__CONNECT(m, _timer_start)
+#define CORE_TIMER_STOP(m)				__CONNECT(m, _timer_stop)
+#define CORE_TIMER_GET_COUNT(m)			__CONNECT(m, _timer_get_count)
+#define CORE_TIMER_SET_COUNT(m)			__CONNECT(m, _timer_set_count)
+#define CORE_TIMER_CONFIG_CHANNEL(m)	__CONNECT(m, _timer_config_channel)
+#define CORE_TIMER_GET_CHANNEL(m)		__CONNECT(m, _timer_get_channel)
+#define CORE_TIMER_SET_CHANNEL(m)		__CONNECT(m, _timer_set_channel)
+
+// EINT
+#define CORE_EINT_INIT(m)				__CONNECT(m, _eint_init)
+#define CORE_EINT_FINI(m)				__CONNECT(m, _eint_fini)
+#define CORE_EINT_CONFIG(m)				__CONNECT(m, _eint_config)
+#define CORE_EINT_ENABLE(m)				__CONNECT(m, _eint_enable)
+#define CORE_EINT_DISABLE(m)			__CONNECT(m, _eint_disable)
+#define CORE_EINT_TRIGGER(m)			__CONNECT(m, _eint_trigger)
 
 // USB
 #define CORE_USBD_INIT(m)				__CONNECT(m, _usbd_init)
@@ -248,6 +307,43 @@ RESULT CORE_GPIO_IN(__TARGET_CHIP__)(uint8_t index, uint32_t pin_mask,
 RESULT CORE_GPIO_OUT(__TARGET_CHIP__)(uint8_t index, uint32_t pin_mask, 
 		uint32_t value);
 
+// SPI
+RESULT CORE_SPI_INIT(__TARGET_CHIP__)(uint8_t index);
+RESULT CORE_SPI_FINI(__TARGET_CHIP__)(uint8_t index);
+RESULT CORE_SPI_CONFIG(__TARGET_CHIP__)(uint8_t index, uint32_t kHz, 
+								uint8_t cpol, uint8_t cpha, uint8_t first_bit);
+RESULT CORE_SPI_IO(__TARGET_CHIP__)(uint8_t index, uint8_t *out, uint8_t *in, 
+									uint16_t len);
+
+// Delay
+RESULT CORE_DELAY_DELAYMS(__TARGET_CHIP__)(uint16_t ms);
+RESULT CORE_DELAY_DELAYUS(__TARGET_CHIP__)(uint16_t us);
+
+// TIMER
+RESULT CORE_TIMER_INIT(__TARGET_CHIP__)(uint8_t index);
+RESULT CORE_TIMER_FINI(__TARGET_CHIP__)(uint8_t index);
+RESULT CORE_TIMER_CONFIG(__TARGET_CHIP__)(uint8_t index, uint32_t kHz, 
+										uint32_t mode, void (*overflow)(void));
+RESULT CORE_TIMER_START(__TARGET_CHIP__)(uint8_t index);
+RESULT CORE_TIMER_STOP(__TARGET_CHIP__)(uint8_t index);
+RESULT CORE_TIMER_GET_COUNT(__TARGET_CHIP__)(uint8_t index, uint32_t *count);
+RESULT CORE_TIMER_SET_COUNT(__TARGET_CHIP__)(uint8_t index, uint32_t count);
+RESULT CORE_TIMER_CONFIG_CHANNEL(__TARGET_CHIP__)(uint8_t index, 
+						uint8_t channel, uint32_t mode, void (*callback)(void));
+RESULT CORE_TIMER_GET_CHANNEL(__TARGET_CHIP__)(uint8_t index, uint8_t channel, 
+												uint32_t *count);
+RESULT CORE_TIMER_SET_CHANNEL(__TARGET_CHIP__)(uint8_t index, uint8_t channel, 
+												uint32_t count);
+
+// EINT
+RESULT CORE_EINT_INIT(__TARGET_CHIP__)(uint8_t index);
+RESULT CORE_EINT_FINI(__TARGET_CHIP__)(uint8_t index);
+RESULT CORE_EINT_CONFIG(__TARGET_CHIP__)(uint8_t index, bool on_fall, 
+										bool on_rise, void (*callback)(void));
+RESULT CORE_EINT_ENABLE(__TARGET_CHIP__)(uint8_t index);
+RESULT CORE_EINT_DISABLE(__TARGET_CHIP__)(uint8_t index);
+RESULT CORE_EINT_TRIGGER(__TARGET_CHIP__)(uint8_t index);
+
 // USB
 RESULT CORE_USBD_INIT(__TARGET_CHIP__)(void *device);
 RESULT CORE_USBD_FINI(__TARGET_CHIP__)(void);
@@ -305,6 +401,8 @@ struct interfaces_info_t
 	RESULT (*fini)(void);
 	
 	struct interface_gpio_t gpio;
+	struct interface_timer_t timer;
+	struct interface_eint_t eint;
 	struct interface_usart_t usart;
 	struct interface_spi_t spi;
 	struct interface_i2c_t i2c;
