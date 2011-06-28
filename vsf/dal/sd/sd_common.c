@@ -70,7 +70,7 @@ RESULT sd_parse_csd(uint8_t *csd, struct sd_info_t *info)
 	{
 		// csd 2.0
 		tmp_cap.block_number = ((((csd[7] & 0xFC) << 16) | 
-			((csd[8] & 0xFF) <<  8) | ((csd[9] & 0xFF) <<  0)) + 1) * 2;
+			((csd[8] & 0xFF) <<  8) | ((csd[9] & 0xFF) <<  0)) + 1) * 1024;
 	}
 	else
 	{
