@@ -96,7 +96,7 @@ USR_INCS+= -I $(APP_IFACES_DIR) \
 
 #VSF interfaces
 USR_SRCS+= $(VSFDIR)/interfaces/interfaces.c
-USR_INCS+= -I $(VSFDIR)/interfaces
+USR_INCS+= -I $(VSFDIR) -I $(VSFDIR)/interfaces
 
 USR_SRCS+= $(STM32_IFACES_DIR)/gpio/STM32_GPIO.c \
   $(STM32_IFACES_DIR)/usbd/STM32_USBD.c \
@@ -126,7 +126,9 @@ USR_SRCS+= $(VSFDIR)/stack/usb_device/vsf_usbd.c \
   $(VSFDIR)/stack/usb_device/class/HID/vsfusbd_HID.c \
   $(VSFDIR)/stack/usb_device/class/MSC/vsfusbd_MSC_BOT.c \
   $(VSFDIR)/stack/usb_device/class/MSC/SCSI.c
-USR_INCS+= -I $(VSFDIR)
+
+#VSF tool
+USR_SRCS+= $(VSFDIR)/tool/buffer/buffer.c
 
 # USB_TO_XXX
 USR_SRCS+= $(SRCDIR)/USB_TO_XXX/USB_TO_XXX.c \

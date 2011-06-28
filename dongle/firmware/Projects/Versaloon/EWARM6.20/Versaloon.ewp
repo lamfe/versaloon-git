@@ -2361,13 +2361,13 @@
       <group>
         <name>buffer</name>
         <file>
-          <name>$PROJ_DIR$\..\..\..\vsf\tool\buffer\buffer.h</name>
+          <name>$PROJ_DIR$\..\..\..\..\..\vsf\tool\buffer\buffer.c</name>
         </file>
       </group>
       <group>
         <name>list</name>
         <file>
-          <name>$PROJ_DIR$\..\..\..\vsf\tool\list\list.h</name>
+          <name>$PROJ_DIR$\..\..\..\..\..\vsf\tool\list\list.h</name>
         </file>
       </group>
     </group>
