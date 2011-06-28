@@ -280,10 +280,13 @@ static RESULT SCSI_handler_VERIFY10(struct SCSI_LUN_info_t *info,
 		uint8_t CB[16], struct vsf_buffer_t *buffer, uint32_t *page_size, 
 		uint32_t *page_num)
 {
-	info->status.sense_key = SCSI_SENSEKEY_NOT_READY;
-	info->status.asc = SCSI_ASC_MEDIUM_NOT_PRESENT;
-	SCSI_errcode = SCSI_ERRCODE_FAIL;
-	return ERROR_FAIL;
+	buffer->size = 0;
+	*page_size = 0;
+	
+	info->status.sense_key = 0;
+	info->status.asc = 0;
+	SCSI_errcode = SCSI_ERRCODE_OK;
+	return ERROR_OK;
 }
 
 static RESULT SCSI_handler_READ_TOC(struct SCSI_LUN_info_t *info, 

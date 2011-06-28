@@ -23,14 +23,65 @@
 struct vsf_buffer_t
 {
 	uint8_t *buffer;
-	uint16_t size;
+	uint32_t size;
 };
 
 struct vsf_transaction_buffer_t
 {
 	struct vsf_buffer_t buffer;
-	uint16_t position;
+	uint32_t position;
 };
+
+// fifo
+struct vsf_fifo_buffer_t
+{
+	struct vsf_buffer_t buffer;
+	uint32_t head;
+	uint32_t tail;
+	uint32_t length;
+};
+RESULT vsf_fifo_buffer_init(struct vsf_fifo_buffer_t *fbuffer);
+RESULT vsf_fifo_buffer_push(struct vsf_fifo_buffer_t *fbuffer, uint32_t size, 
+							uint8_t *data);
+RESULT vsf_fifo_buffer_pop(struct vsf_fifo_buffer_t *fbuffer, uint32_t size, 
+							uint8_t *data);
+RESULT vsf_fifo_buffer_peek(struct vsf_fifo_buffer_t *fbuffer, uint32_t size, 
+							uint8_t *data);
+RESULT vsf_fifo_buffer_peek_consequent(struct vsf_fifo_buffer_t *fbuffer, 
+										uint32_t size, uint8_t *data);
+RESULT vsf_fifo_buffer_get_data_length(struct vsf_fifo_buffer_t *fbuffer);
+RESULT vsf_fifo_buffer_get_avail_length(struct vsf_fifo_buffer_t *fbuffer);
+
+// multi_buffer
+struct vsf_multi_buffer_t
+{
+	uint16_t count;
+	uint32_t size;
+	uint8_t **buffer_list;
+	
+	uint16_t head;
+	uint16_t tail;
+	uint16_t length;
+};
+
+RESULT vsf_multi_buffer_init(struct vsf_multi_buffer_t *mbuffer);
+RESULT vsf_multi_buffer_get_empty(struct vsf_multi_buffer_t *mbuffer, 
+									struct vsf_buffer_t *buffer);
+RESULT vsf_multi_buffer_push(struct vsf_multi_buffer_t *mbuffer);
+RESULT vsf_multi_buffer_get_payload(struct vsf_multi_buffer_t *mbuffer, 
+									struct vsf_buffer_t *buffer);
+RESULT vsf_multi_buffer_pop(struct vsf_multi_buffer_t *mbuffer);
+
+// buffer_manager
+struct vsf_bufmgr_t
+{
+	struct vsf_buffer_t buffer;
+	uint16_t num_of_buffer;
+};
+void vsf_bufmgr_init(struct vsf_bufmgr_t *bufmgr);
+void* vsf_bufmgr_malloc(struct vsf_bufmgr_t *bufmgr, uint32_t size);
+void vsf_bufmgr_free(struct vsf_bufmgr_t *bufmgr, void *ptr);
+void vsf_bufmgr_optimize(struct vsf_bufmgr_t *bufmgr);
 
 #endif	// __BUFFER_H_INCLUDED__
 

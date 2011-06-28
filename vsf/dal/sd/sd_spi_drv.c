@@ -129,7 +129,8 @@ static RESULT sd_spi_transact_cmd_isready(struct sd_spi_drv_interface_t *ifs,
 	}
 	if (token & SD_TRANSTOKEN_RESP_CHECKBUSY)
 	{
-		if (!(*resp & 0x80))
+//		if (!(*resp & 0x80))
+		if (*resp != 0xFF)
 		{
 			*ready = true;
 		}
@@ -773,16 +774,14 @@ static RESULT sd_spi_drv_writeblock_nb_end(struct dal_info_t *info)
 {
 	struct sd_spi_drv_interface_t *ifs = 
 								(struct sd_spi_drv_interface_t *)info->ifs;
-	uint16_t token;
-	uint8_t resp;
+	uint8_t datatoken, resp;
 	bool ready;
 	
-	token = SD_TRANSTOKEN_RESP_R1B;
-	if ((ERROR_OK != sd_spi_transact_cmd(ifs, token, SD_CMD_STOP_TRANSMISSION, 
-											0, 0)) || 
-		(ERROR_OK != sd_spi_transact_cmd_waitready(ifs, &ready, token, &resp, 
-													NULL)) || 
-		(!ready))
+	datatoken = SD_DATATOKEN_STOP_TRAN;
+	if ((ERROR_OK != interfaces->spi.io(ifs->spi_port, &datatoken, NULL, 1)) || 
+		(	(ERROR_OK != sd_spi_transact_cmd_waitready(ifs, &ready, 
+								SD_TRANSTOKEN_RESP_CHECKBUSY, &resp, NULL)) || 
+			(!ready)))
 	{
 		sd_spi_transact_end(ifs);
 		interfaces->peripheral_commit();
