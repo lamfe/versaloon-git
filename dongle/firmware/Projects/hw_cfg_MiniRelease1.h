@@ -804,8 +804,8 @@
 
 // LED_USB
 #define LED_USB_INIT()					
-#define LED_USB_ON()					Led_RW_OFF()
-#define LED_USB_OFF()					Led_RW_ON()
+#define LED_USB_ON()					Led_RW_ON()
+#define LED_USB_OFF()					Led_RW_OFF()
 
 /****************************** KEY ******************************/
 #define KEY_PORT						GPIOB
