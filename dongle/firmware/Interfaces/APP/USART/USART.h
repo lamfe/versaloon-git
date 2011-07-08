@@ -17,7 +17,7 @@
 RESULT usart_init(uint8_t index);
 RESULT usart_fini(uint8_t index);
 RESULT usart_config(uint8_t index, uint32_t baudrate, uint8_t datalength, 
-					 char paritybit, char stopbit, char handshake);
+					uint8_t mode);
 RESULT usart_send(uint8_t index, uint8_t *buf, uint16_t len);
 RESULT usart_receive(uint8_t index, uint8_t *buf, uint16_t len);
 RESULT usart_status(uint8_t index, struct usart_status_t *status);

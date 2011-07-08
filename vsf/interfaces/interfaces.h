@@ -32,7 +32,7 @@ struct interface_usart_t
 	RESULT (*init)(uint8_t index);
 	RESULT (*fini)(uint8_t index);
 	RESULT (*config)(uint8_t index, uint32_t baudrate, uint8_t datalength, 
-					 char paritybit, char stopbit, char handshake);
+						uint8_t mode);
 	RESULT (*send)(uint8_t index, uint8_t *buf, uint16_t len);
 	RESULT (*receive)(uint8_t index, uint8_t *buf, uint16_t len);
 	RESULT (*status)(uint8_t index, struct usart_status_t *status);
@@ -43,8 +43,7 @@ struct interface_spi_t
 {
 	RESULT (*init)(uint8_t index);
 	RESULT (*fini)(uint8_t index);
-	RESULT (*config)(uint8_t index, uint32_t kHz, uint8_t cpol, uint8_t cpha, 
-						uint8_t first_bit);
+	RESULT (*config)(uint8_t index, uint32_t kHz, uint8_t mode);
 	RESULT (*io)(uint8_t index, uint8_t *out, uint8_t *in, uint16_t len);
 };
 
@@ -80,7 +79,7 @@ struct interface_pwm_t
 {
 	RESULT (*init)(uint8_t index);
 	RESULT (*fini)(uint8_t index);
-	RESULT (*config)(uint8_t index, uint16_t kHz, uint8_t pushpull, uint8_t polarity);
+	RESULT (*config)(uint8_t index, uint16_t kHz, uint8_t mode);
 	RESULT (*out)(uint8_t index, uint16_t count, uint16_t *rate);
 	RESULT (*in)(uint8_t index, uint16_t count, uint16_t *rate);
 };
@@ -311,7 +310,7 @@ RESULT CORE_GPIO_OUT(__TARGET_CHIP__)(uint8_t index, uint32_t pin_mask,
 RESULT CORE_SPI_INIT(__TARGET_CHIP__)(uint8_t index);
 RESULT CORE_SPI_FINI(__TARGET_CHIP__)(uint8_t index);
 RESULT CORE_SPI_CONFIG(__TARGET_CHIP__)(uint8_t index, uint32_t kHz, 
-								uint8_t cpol, uint8_t cpha, uint8_t first_bit);
+								uint8_t mode);
 RESULT CORE_SPI_IO(__TARGET_CHIP__)(uint8_t index, uint8_t *out, uint8_t *in, 
 									uint16_t len);
 

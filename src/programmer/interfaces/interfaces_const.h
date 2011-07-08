@@ -61,6 +61,24 @@
 #define GPIO_RTCK				(1 << 7)
 #define GPIO_TMS				(1 << 8)
 
+// USART
+#define USART_MODE0				0x00
+#define USART_MODE1				0x04
+#define USART_MODE2				0x08
+#define USART_MODE3				0x0C
+#define USART_CLKEN				0x80
+#define USART_STOPBITS_0P5		0x20
+#define USART_STOPBITS_1		0x00
+#define USART_STOPBITS_1P5		0x60
+#define USART_STOPBITS_2		0x40
+#define USART_PARITY_NONE		0x00
+#define USART_PARITY_ODD		0x03
+#define USART_PARITY_EVEN		0x02
+
+// PWM
+#define PWM_OUTPP				0x01
+#define PWM_OUTPOLARITY			0x02
+
 // SWD
 #define SWD_SUCCESS				0x00
 #define SWD_RETRY_OUT			0x01
@@ -73,8 +91,8 @@ struct jtag_pos_t
 {
 	uint8_t ub;		// units before
 	uint8_t ua;		// bits before
-	uint16_t bb;		// units after
-	uint16_t ba;		// bits after
+	uint16_t bb;	// units after
+	uint16_t ba;	// bits after
 };
 
 #define JTAG_SRST				GPIO_SRST
@@ -90,20 +108,12 @@ struct jtag_pos_t
 #define BDM_PIN					GPIO_TMS
 
 // SPI
-#define SPI_CPOL_HIGH			0x20
-#define SPI_CPOL_LOW			0x00
-#define SPI_CPHA_2EDGE			0x40
-#define SPI_CPHA_1EDGE			0x00
+#define SPI_MODE0				0
+#define SPI_MODE1				1
+#define SPI_MODE2				2
+#define SPI_MODE3				3
 #define SPI_MSB_FIRST			0x80
 #define SPI_LSB_FIRST			0x00
-
-// DUSI
-#define DUSI_CPOL_HIGH			0x20
-#define DUSI_CPOL_LOW			0x00
-#define DUSI_CPHA_2EDGE			0x40
-#define DUSI_CPHA_1EDGE			0x00
-#define DUSI_MSB_FIRST			0x80
-#define DUSI_LSB_FIRST			0x00
 
 // ISSP for PSoC
 #define ISSP_PM_RESET			(1 << 0)

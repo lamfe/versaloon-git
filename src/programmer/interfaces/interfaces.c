@@ -31,12 +31,11 @@
 #include "app_log.h"
 #include "app_err.h"
 
-#include "interfaces_const.h"
-#include "target.h"
 #include "scripts.h"
 #include "interfaces.h"
 #include "versaloon/versaloon.h"
 #include "virtualinterface/vi_stm32/vi_stm32.h"
+#include "target.h"
 
 struct interfaces_info_t *interfaces_info[] = 
 {
@@ -106,13 +105,13 @@ struct vss_cmd_t interface_cmd[] =
 				"gpio input, format: gpio.in MASK",
 				interface_gpio_in),
 	VSS_CMD(	"spi.init",
-				"initialize spi, format: spi.init [KHZ CPOL CPHA FIRSTBIT]",
+				"initialize spi, format: spi.init [KHZ MODE FIRSTBIT]",
 				interface_spi_init),
 	VSS_CMD(	"spi.fini",
 				"finalize spi, format: spi.fini",
 				interface_spi_fini),
 	VSS_CMD(	"spi.config",
-				"config spi, format: spi.config KHZ CPOL CPHA FIRSTBIT",
+				"config spi, format: spi.config KHZ MODE FIRSTBIT",
 				interface_spi_config),
 	VSS_CMD(	"spi.io",
 				"spi input and output, format: spi.io DATASIZE DATA...",
@@ -568,7 +567,7 @@ VSS_HANDLER(interface_spi_init)
 		return ERROR_FAIL;
 	}
 	
-	if (5 == argc)
+	if (4 == argc)
 	{
 		return interface_spi_config(argc, argv);
 	}
@@ -597,10 +596,10 @@ VSS_HANDLER(interface_spi_fini)
 VSS_HANDLER(interface_spi_config)
 {
 	uint32_t khz = 0;
-	uint8_t cpol, cpha, firstbit;
+	uint8_t mode, firstbit;
 	struct interfaces_info_t *ifs = NULL;
 	
-	VSS_CHECK_ARGC(5);
+	VSS_CHECK_ARGC(4);
 	if ((ERROR_OK != interface_assert(&ifs)) || (NULL == ifs))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "interface module");
@@ -613,11 +612,16 @@ VSS_HANDLER(interface_spi_config)
 	}
 	
 	khz = (uint32_t)strtoul(argv[1], NULL, 0);
-	cpol = (uint8_t)strtoul(argv[2], NULL, 0);
-	cpha = (uint8_t)strtoul(argv[3], NULL, 0);
-	firstbit = (uint8_t)strtoul(argv[4], NULL, 0);
+	mode = (uint8_t)strtoul(argv[2], NULL, 0);
+	if (mode > SPI_MODE3)
+	{
+		LOG_ERROR(ERRMSG_INVALID_TARGET, "spi mode");
+		return ERROR_FAIL;
+	}
+	firstbit = (uint8_t)strtoul(argv[3], NULL, 0);
+	firstbit = firstbit ? SPI_MSB_FIRST : SPI_LSB_FIRST;
 	
-	return ifs->spi.config(0, khz, cpol, cpha, firstbit);
+	return ifs->spi.config(0, khz, mode | firstbit);
 }
 
 VSS_HANDLER(interface_spi_io)
@@ -992,7 +996,7 @@ VSS_HANDLER(interface_pwm_config)
 {
 	struct interfaces_info_t *ifs = NULL;
 	uint16_t kHz;
-	uint8_t pushpull, polarity;
+	uint8_t pushpull, polarity, mode;
 	
 	VSS_CHECK_ARGC(4);
 	if ((ERROR_OK != interface_assert(&ifs)) || (NULL == ifs))
@@ -1010,7 +1014,16 @@ VSS_HANDLER(interface_pwm_config)
 	pushpull = (uint8_t)strtoul(argv[2], NULL, 0);
 	polarity = (uint8_t)strtoul(argv[3], NULL, 0);
 	
-	return ifs->pwm.config(0, kHz, pushpull, polarity);
+	mode = 0;
+	if (pushpull)
+	{
+		mode |= PWM_OUTPP;
+	}
+	if (polarity)
+	{
+		mode |= PWM_OUTPOLARITY;
+	}
+	return ifs->pwm.config(0, kHz, mode);
 }
 
 VSS_HANDLER(interface_pwm_out)

@@ -53,6 +53,7 @@
 
 // USB_TO_XXX USB Processors
 extern uint8_t *buffer_reply;
+void USB_TO_XXX_Init(uint8_t *poll_buff);
 void USB_TO_XXX_ProcessCmd(uint8_t *dat, uint16_t len);
 // Page0
 void USB_TO_USART_ProcessCmd(uint8_t *dat, uint16_t len);
@@ -168,16 +169,17 @@ extern volatile uint32_t rep_len;
 
 
 // USB_TO_SPI
-#define USB_TO_SPI_CPOL_MASK		SPI_CPOL_MASK
-#define USB_TO_SPI_CPHA_MASK		SPI_CPHA_MASK
+#define USB_TO_SPI_MODE_MASK		0x03
 #define USB_TO_SPI_FIRSTBIT_MASK	SPI_FIRSTBIT_MASK
 
 
 // USB_TO_DUSI
-#define USB_TO_DUSI_CPOL_MASK		SPI_CPOL_MASK
-#define USB_TO_DUSI_CPHA_MASK		SPI_CPHA_MASK
+#define USB_TO_DUSI_MODE_MASK		0x03
 #define USB_TO_DUSI_FIRSTBIT_MASK	SPI_FIRSTBIT_MASK
 
+// USB_TO_PWM
+#define USB_TO_PWM_OUTPP			PWM_OUTPP
+#define USB_TO_PWM_OUTPOLARITY		PWM_OUTPOLARITY
 
 // Number of Interfaces
 #define USB_TO_IIC_NUM				1

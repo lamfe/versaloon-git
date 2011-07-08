@@ -20,6 +20,7 @@
 #include "app_cfg.h"
 #include "app_type.h"
 
+#include "interfaces.h"
 #include "../mal/mal.h"
 #include "../mal/mal_driver.h"
 #include "df25xx_drv_cfg.h"
@@ -75,7 +76,7 @@ static RESULT df25xx_drv_init(struct dal_info_t *info)
 							ifs->cs_pin);
 	interfaces->spi.init(ifs->spi_port);
 	interfaces->spi.config(ifs->spi_port, df25xx_drv_param->spi_khz, 
-							SPI_CPOL_HIGH, SPI_CPHA_2EDGE, SPI_MSB_FIRST);
+							SPI_MODE3 | SPI_MSB_FIRST);
 	
 	return ERROR_OK;
 }

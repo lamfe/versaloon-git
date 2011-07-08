@@ -20,6 +20,7 @@
 #include "app_cfg.h"
 #include "app_type.h"
 
+#include "interfaces.h"
 #include "nrf24l01_drv_cfg.h"
 #include "nrf24l01_drv.h"
 
@@ -149,8 +150,8 @@ static RESULT nrf24l01_drv_config(struct dal_info_t *info)
 								(struct nrf24l01_drv_param_t *)info->param;
 	uint8_t config;
 	
-	interfaces->spi.config(ifs->spi_port, param->kHz, SPI_CPOL_LOW, 
-							SPI_CPHA_1EDGE, SPI_MSB_FIRST);
+	interfaces->spi.config(ifs->spi_port, param->kHz, 
+							SPI_MODE0 | SPI_MSB_FIRST);
 	
 	config = (uint8_t)param->aw;
 	if (ERROR_OK != nrf24l01_drv_write_reg(ifs, NRF24L01_REG_SETUP_AW, &config, 

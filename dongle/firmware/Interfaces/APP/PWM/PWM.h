@@ -16,6 +16,6 @@
 
 RESULT pwm_init(uint8_t index);
 RESULT pwm_fini(uint8_t index);
-RESULT pwm_config(uint8_t index, uint16_t kHz, uint8_t pushpull, uint8_t polarity);
+RESULT pwm_config(uint8_t index, uint16_t kHz, uint8_t mode);
 RESULT pwm_out(uint8_t index, uint16_t count, uint16_t *rate);
 RESULT pwm_in(uint8_t index, uint16_t count, uint16_t *rate);

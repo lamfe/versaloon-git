@@ -167,7 +167,7 @@ RESULT vi_stm32_usart_fini(uint8_t interface_index)
 }
 
 RESULT vi_stm32_usart_config(uint8_t interface_index, uint32_t baudrate, 
-			uint8_t datalength, char paritybit, char stopbit, char handshake)
+								uint8_t datalength, uint8_t mode)
 {
 	return ERROR_OK;
 }
@@ -183,7 +183,7 @@ RESULT vi_stm32_usart_send(uint8_t interface_index, uint8_t *buf, uint16_t len)
 }
 
 RESULT vi_stm32_usart_status(uint8_t interface_index, 
-							struct usart_status_t *status)
+								struct usart_status_t *status)
 {
 	return ERROR_OK;
 }
@@ -199,8 +199,7 @@ RESULT vi_stm32_spi_fini(uint8_t interface_index)
 	return ERROR_OK;
 }
 
-RESULT vi_stm32_spi_config(uint8_t interface_index, uint32_t kHz, uint8_t cpol, 
-					   uint8_t cpha, uint8_t firstbit)
+RESULT vi_stm32_spi_config(uint8_t interface_index, uint32_t kHz, uint8_t mode)
 {
 	return ERROR_OK;
 }
@@ -252,8 +251,7 @@ RESULT vi_stm32_pwm_fini(uint8_t interface_index)
 	return ERROR_OK;
 }
 
-RESULT vi_stm32_pwm_config(uint8_t interface_index, uint16_t kHz, 
-							uint8_t pushpull, uint8_t polarity)
+RESULT vi_stm32_pwm_config(uint8_t interface_index, uint16_t kHz, uint8_t mode)
 {
 	return ERROR_OK;
 }

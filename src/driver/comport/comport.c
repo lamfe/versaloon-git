@@ -522,7 +522,10 @@ RESULT comm_open_usbtocomm(char *comport, uint32_t baudrate,
 			uint8_t datalength, char paritybit, char stopbit, char handshake)
 {
 	struct interfaces_info_t *prog = NULL;
+	uint8_t mode;
+	
 	REFERENCE_PARAMETER(comport);
+	REFERENCE_PARAMETER(handshake);
 	
 	if ((ERROR_OK != interface_assert(&prog)) || (NULL == prog))
 	{
@@ -530,25 +533,22 @@ RESULT comm_open_usbtocomm(char *comport, uint32_t baudrate,
 	}
 	interfaces = prog;
 	
+	mode = 0;
 	// paritybit
 	switch (paritybit)
 	{
 	case COMM_PARITYBIT_NONE:
-		paritybit = 0;
-		
+		mode |= USART_PARITY_NONE;
 		break;
 	case COMM_PARITYBIT_ODD:
-		paritybit = 1;
-		
+		mode |= USART_PARITY_ODD;
 		break;
 	case COMM_PARITYBIT_EVEN:
-		paritybit = 2;
-		
+		mode |= USART_PARITY_EVEN;
 		break;
 	default:
 		LOG_ERROR(ERRMSG_INVALID_VALUE, paritybit, "comm parity");
 		return ERRCODE_INVALID;
-		
 		break;
 	}
 	
@@ -556,16 +556,13 @@ RESULT comm_open_usbtocomm(char *comport, uint32_t baudrate,
 	switch (stopbit)
 	{
 	case COMM_STOPBIT_1:
-		stopbit = 0;
-		
+		mode |= USART_STOPBITS_1;
 		break;
 	case COMM_STOPBIT_1P5:
-		stopbit = 1;
-		
+		mode |= USART_STOPBITS_1P5;
 		break;
 	case COMM_STOPBIT_2:
-		stopbit = 2;
-		
+		mode |= USART_STOPBITS_2;
 		break;
 	default:
 		LOG_ERROR(ERRMSG_INVALID_VALUE, stopbit, "comm stopbit");
@@ -574,13 +571,9 @@ RESULT comm_open_usbtocomm(char *comport, uint32_t baudrate,
 		break;
 	}
 	
-	// handshake
-	handshake = 0;
-	
 	// initialize usbtocomm
 	if ((ERROR_OK != interfaces->usart.init(0))
-		|| (ERROR_OK != interfaces->usart.config(0, baudrate, datalength, 
-												paritybit, stopbit, handshake)) 
+		|| (ERROR_OK != interfaces->usart.config(0, baudrate, datalength, mode))
 		|| (ERROR_OK != interfaces->peripheral_commit()))
 	{
 		return ERROR_FAIL;

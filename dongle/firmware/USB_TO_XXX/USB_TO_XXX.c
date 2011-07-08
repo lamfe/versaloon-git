@@ -30,15 +30,7 @@ typedef struct
 	uint8_t poll_result;
 } USB_TO_POLL_Context_t;
 USB_TO_POLL_Context_t USB_TO_POLL_Context[USB_TO_POLL_NUM];
-static const uint8_t *USB_TO_POLL_buffer_reply[USB_TO_POLL_NUM] = 
-{
-#if USB_TO_POLL_NUM >= 1
-	asyn_rx_buf + 1024 * 2
-#endif
-#if USB_TO_POLL_NUM >= 2
-	,asyn_rx_buf + 1024 * 3
-#endif
-};
+static const uint8_t *USB_TO_POLL_buffer_reply[USB_TO_POLL_NUM];
 int8_t USB_TO_POLL_Index;
 
 uint8_t *buffer_reply;
@@ -56,6 +48,20 @@ static void USB_TO_XXX_AddAbility(uint8_t abilities[USB_TO_XXX_ABILITIES_LEN], u
 
 	cmd -= VERSALOON_USB_TO_XXX_CMD_START;
 	abilities[cmd / 8] |= 1 << (cmd % 8);
+}
+
+void USB_TO_XXX_Init(uint8_t *poll_buff)
+{
+	uint32_t i;
+	
+	memset(USB_TO_POLL_buffer_reply, 0, sizeof(USB_TO_POLL_buffer_reply));
+	if (poll_buff != NULL)
+	{
+		for (i = 0; i < dimof(USB_TO_POLL_buffer_reply); i++)
+		{
+			USB_TO_POLL_buffer_reply[i] = poll_buff + 1024 * i;
+		}
+	}
 }
 
 void USB_TO_XXX_ProcessCmd(uint8_t *dat, uint16_t len)
@@ -151,9 +157,12 @@ void USB_TO_XXX_ProcessCmd(uint8_t *dat, uint16_t len)
 			USB_TO_XXX_AddAbility(USB_TO_XXX_Abilities, USB_TO_POWER);
 #endif
 			USB_TO_XXX_AddAbility(USB_TO_XXX_Abilities, USB_TO_DELAY);
-			USB_TO_XXX_AddAbility(USB_TO_XXX_Abilities, USB_TO_POLL);
 			USB_TO_XXX_AddAbility(USB_TO_XXX_Abilities, USB_TO_INFO);
 			USB_TO_XXX_AddAbility(USB_TO_XXX_Abilities, USB_TO_ALL);
+			if (USB_TO_POLL_buffer_reply[0] != NULL)
+			{
+				USB_TO_XXX_AddAbility(USB_TO_XXX_Abilities, USB_TO_POLL);
+			}
 			memcpy(&buffer_reply[rep_len], USB_TO_XXX_Abilities, USB_TO_XXX_ABILITIES_LEN);
 			rep_len += USB_TO_XXX_ABILITIES_LEN;
 		break;

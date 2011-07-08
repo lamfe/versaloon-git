@@ -51,11 +51,23 @@ RESULT usart_fini(uint8_t index)
 }
 
 RESULT usart_config(uint8_t index, uint32_t baudrate, uint8_t datalength, 
-					 char paritybit, char stopbit, char handshake)
+					uint8_t mode)
 {
+	uint8_t paritybit, stopbit;
+	
 	switch (index)
 	{
 	case 0:
+		paritybit = mode & 0x03;
+		if (0x03 == paritybit)
+		{
+			paritybit = 1;
+		}
+		stopbit = (mode & 0x60) >> 5;
+		if (0x03 == stopbit)
+		{
+			stopbit = 1;
+		}
 		USART_IF_Setup(baudrate, datalength, paritybit, stopbit);
 		return ERROR_OK;
 	default:

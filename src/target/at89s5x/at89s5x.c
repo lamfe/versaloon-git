@@ -93,8 +93,7 @@ static uint16_t s5x_byte_delay_us = 500;
 #define spi_init()				interfaces->spi.init(0)
 #define spi_fini()				interfaces->spi.fini(0)
 #define spi_conf(speed)			\
-	interfaces->spi.config(0, (speed), SPI_CPOL_LOW, SPI_CPHA_1EDGE, \
-							SPI_MSB_FIRST)
+	interfaces->spi.config(0, (speed), SPI_MODE0 | SPI_MSB_FIRST)
 #define spi_io(out, bytelen, in)\
 	interfaces->spi.io(0, (out), (in), (bytelen))
 

@@ -108,6 +108,7 @@ static RESULT vsfusbd_CDCData_class_init(uint8_t iface,
 	struct vsfusbd_CDC_param_t *tmp = vsfusbd_CDC_find_param(iface);
 	uint8_t port;
 	uint32_t pin;
+	uint8_t usart_mode;
 	
 	if ((NULL == tmp) || 
 		(ERROR_OK != device->drv->ep.set_IN_handler(tmp->ep_in, 
@@ -135,11 +136,38 @@ static RESULT vsfusbd_CDCData_class_init(uint8_t iface,
 		interfaces->gpio.init(port);
 		interfaces->gpio.config(port, pin, pin, 0, 0);
 	}
+	
 	port = tmp->usart_port;
 	tmp->usart->init(port);
+	usart_mode = 0;
+	switch (tmp->line_coding.paritytype)
+	{
+	default:
+	case 0:
+		usart_mode |= USART_PARITY_NONE;
+		break;
+	case 1:
+		usart_mode |= USART_PARITY_ODD;
+		break;
+	case 2:
+		usart_mode |= USART_PARITY_EVEN;
+		break;
+	}
+	switch (tmp->line_coding.stopbittype)
+	{
+	default:
+	case 0:
+		usart_mode |= USART_STOPBITS_1;
+		break;
+	case 1:
+		usart_mode |= USART_STOPBITS_1P5;
+		break;
+	case 2:
+		usart_mode |= USART_STOPBITS_2;
+		break;
+	}
 	return tmp->usart->config(port, tmp->line_coding.bitrate, 
-		tmp->line_coding.datatype, tmp->line_coding.paritytype, 
-		tmp->line_coding.stopbittype, 0);
+		tmp->line_coding.datatype, usart_mode);
 }
 
 static RESULT vsfusbd_CDCData_class_poll(uint8_t iface, 
@@ -211,14 +239,42 @@ static RESULT vsfusbd_CDCMaster_SetLineCoding_process(
 {
 	struct vsfusbd_ctrl_request_t *request = &device->ctrl_handler.request;
 	struct vsfusbd_CDC_param_t *tmp = vsfusbd_CDC_find_param(request->index);
+	uint8_t usart_mode;
 	
 	tmp->line_coding.bitrate = GET_LE_U32(&buffer->buffer[0]);
 	tmp->line_coding.stopbittype = buffer->buffer[4];
 	tmp->line_coding.paritytype = buffer->buffer[5];
 	tmp->line_coding.datatype = buffer->buffer[6];
+	
+	usart_mode = 0;
+	switch (tmp->line_coding.paritytype)
+	{
+	default:
+	case 0:
+		usart_mode |= USART_PARITY_NONE;
+		break;
+	case 1:
+		usart_mode |= USART_PARITY_ODD;
+		break;
+	case 2:
+		usart_mode |= USART_PARITY_EVEN;
+		break;
+	}
+	switch (tmp->line_coding.stopbittype)
+	{
+	default:
+	case 0:
+		usart_mode |= USART_STOPBITS_1;
+		break;
+	case 1:
+		usart_mode |= USART_STOPBITS_1P5;
+		break;
+	case 2:
+		usart_mode |= USART_STOPBITS_2;
+		break;
+	}
 	return tmp->usart->config(tmp->usart_port, tmp->line_coding.bitrate, 
-		tmp->line_coding.datatype, tmp->line_coding.paritytype, 
-		tmp->line_coding.stopbittype, 0);
+		tmp->line_coding.datatype, usart_mode);
 }
 
 static RESULT vsfusbd_CDCMaster_SetControlLineState_prepare(
