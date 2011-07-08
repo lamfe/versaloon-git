@@ -83,7 +83,7 @@ static RESULT versaloon_idle(uint8_t iface, struct vsfusbd_device_t *device)
 	if(cmd_len & 0x80000000)
 	{
 		// A valid USB package has been received
-		LED_USB_OFF();
+		LED_USB_ON();
 		
 		ProcessCommand(&buffer_out[0], cmd_len & 0xFFFF);
 		if(rep_len > 0)
@@ -390,7 +390,7 @@ struct vsfusbd_CDC_param_t Versaloon_CDC_param =
 RESULT usb_protocol_init(void)
 {
 	LED_GREEN_ON();
-	LED_USB_ON();
+	LED_USB_OFF();
 	
 	USB_TO_XXX_Init(asyn_rx_buf + 2048);
 	
