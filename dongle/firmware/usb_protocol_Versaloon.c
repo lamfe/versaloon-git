@@ -67,7 +67,7 @@ static RESULT Versaloon_OUT_hanlder(void *p, uint8_t ep)
 	return ERROR_OK;
 }
 
-static RESULT versaloon_init(uint8_t iface, struct vsfusbd_device_t *device)
+static RESULT versaloon_usb_init(uint8_t iface, struct vsfusbd_device_t *device)
 {
 	if ((ERROR_OK != device->drv->ep.set_IN_dbuffer(2)) || 
 		(ERROR_OK != device->drv->ep.set_OUT_dbuffer(3)) || 
@@ -83,7 +83,7 @@ static RESULT versaloon_idle(uint8_t iface, struct vsfusbd_device_t *device)
 	if(cmd_len & 0x80000000)
 	{
 		// A valid USB package has been received
-		LED_USB_OFF();				// USB LED indicate the USB transmission
+		LED_USB_OFF();
 		
 		ProcessCommand(&buffer_out[0], cmd_len & 0xFFFF);
 		if(rep_len > 0)
@@ -97,25 +97,27 @@ static RESULT versaloon_idle(uint8_t iface, struct vsfusbd_device_t *device)
 			cmd_len = 0;
 		}
 		count_out = 0;				// set USB receive pointer to 0
+		
+		if(rep_len & 0x80000000)	// there is valid data to be sent to PC
+		{
+			struct vsf_buffer_t buffer;
+			
+			buffer.buffer = buffer_out;
+			buffer.size = rep_len & 0xFFFF;
+			vsfusbd_ep_out(&usb_device, 2, &buffer);
+			
+			// reset command length and reply length for next command
+			cmd_len = 0;
+			rep_len = 0;
+		}
+		
+		LED_USB_OFF();
 	}
 	else
 	{
 		PWREXT_Check(1);
 	}
 	
-	if(rep_len & 0x80000000)		// there is valid data to be sent to PC
-	{
-		struct vsf_buffer_t buffer;
-		
-		buffer.buffer = buffer_out;
-		buffer.size = rep_len & 0xFFFF;
-		vsfusbd_ep_out(&usb_device, 2, &buffer);
-		
-		// reset command length and reply length for next command
-		cmd_len = 0;
-		rep_len = 0;
-	}
-	LED_USB_ON();					// command processed, light USB LED
 	return ERROR_OK;
 }
 
@@ -337,7 +339,7 @@ static const struct vsfusbd_desc_filter_t descriptors[] =
 static const struct vsfusbd_class_protocol_t Versaloon_Protocol = 
 {
 	NULL, NULL, NULL, 
-	versaloon_init,
+	versaloon_usb_init,
 	NULL, versaloon_idle
 };
 static const struct vsfusbd_iface_t ifaces[] = 
@@ -389,6 +391,8 @@ RESULT usb_protocol_init(void)
 {
 	LED_GREEN_ON();
 	LED_USB_ON();
+	
+	USB_TO_XXX_Init(asyn_rx_buf + 2048);
 	
 	vsfusbd_CDC_set_param(&Versaloon_CDC_param);
 	USB_Pull_Init();

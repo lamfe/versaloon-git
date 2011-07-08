@@ -53,9 +53,7 @@ void USB_TO_SPI_ProcessCmd(uint8_t *dat, uint16_t len)
 			frequency = GET_LE_U32(&dat[index + 1]);
 			
 			if (ERROR_OK == app_interfaces.spi.config(device_idx, frequency, 
-											attr & USB_TO_SPI_CPOL_MASK, 
-											attr & USB_TO_SPI_CPHA_MASK, 
-											attr & USB_TO_SPI_FIRSTBIT_MASK))
+														attr))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}

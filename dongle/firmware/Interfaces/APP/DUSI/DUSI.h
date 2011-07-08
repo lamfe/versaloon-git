@@ -19,6 +19,6 @@
 
 RESULT dusi_init(uint8_t index);
 RESULT dusi_fini(uint8_t index);
-RESULT dusi_io(uint8_t index, uint8_t *mo, uint8_t *mi, uint8_t *so, uint8_t *si, uint32_t bitlen);
-RESULT dusi_config(uint8_t index, uint32_t kHz, uint8_t cpol, uint8_t cpha, 
-					uint8_t first_bit);
+RESULT dusi_io(uint8_t index, uint8_t *mo, uint8_t *mi, uint8_t *so, 
+				uint8_t *si, uint32_t bitlen);
+RESULT dusi_config(uint8_t index, uint32_t kHz, uint8_t mode);

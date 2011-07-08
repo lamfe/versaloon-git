@@ -41,7 +41,7 @@ RESULT usbtodelay_delayus(uint16_t us);
 RESULT usbtousart_init(uint8_t interface_index);
 RESULT usbtousart_fini(uint8_t interface_index);
 RESULT usbtousart_config(uint8_t interface_index, uint32_t baudrate, 
-			uint8_t datalength, char paritybit, char stopbit, char handshake);
+							uint8_t datalength, uint8_t mode);
 RESULT usbtousart_send(uint8_t interface_index, uint8_t *buf, uint16_t len);
 RESULT usbtousart_receive(uint8_t interface_index, uint8_t *buf, uint16_t len);
 RESULT usbtousart_status(uint8_t interface_index, 
@@ -50,8 +50,7 @@ RESULT usbtousart_status(uint8_t interface_index,
 // USB_TO_SPI
 RESULT usbtospi_init(uint8_t interface_index);
 RESULT usbtospi_fini(uint8_t interface_index);
-RESULT usbtospi_config(uint8_t interface_index, uint32_t kHz, uint8_t cpol, 
-					   uint8_t cpha, uint8_t firstbit);
+RESULT usbtospi_config(uint8_t interface_index, uint32_t kHz, uint8_t mode);
 RESULT usbtospi_io(uint8_t interface_index, uint8_t *out, uint8_t *in, 
 					uint16_t bytelen);
 
@@ -247,8 +246,7 @@ RESULT usbtobdm_transact(uint8_t interface_index, uint8_t *out,
 // USB_TO_DUSI
 RESULT usbtodusi_init(uint8_t interface_index);
 RESULT usbtodusi_fini(uint8_t interface_index);
-RESULT usbtodusi_config(uint8_t interface_index, uint32_t kHz, uint8_t cpol, 
-						uint8_t cpha, uint8_t firstbit);
+RESULT usbtodusi_config(uint8_t interface_index, uint32_t kHz, uint8_t mode);
 RESULT usbtodusi_io(uint8_t interface_index, uint8_t *mo, uint8_t *mi, 
 					uint8_t *so, uint8_t *si, uint32_t bitlen);
 
@@ -272,8 +270,7 @@ RESULT usbtomicrowire_poll(uint8_t interface_index, uint16_t interval_us,
 // USB_TO_PWM
 RESULT usbtopwm_init(uint8_t interface_index);
 RESULT usbtopwm_fini(uint8_t interface_index);
-RESULT usbtopwm_config(uint8_t interface_index, uint16_t kHz, uint8_t pushpull, 
-						uint8_t polarity);
+RESULT usbtopwm_config(uint8_t interface_index, uint16_t kHz, uint8_t mode);
 RESULT usbtopwm_out(uint8_t interface_index, uint16_t count, uint16_t *rate);
 RESULT usbtopwm_in(uint8_t interface_index, uint16_t count, uint16_t *rate);
 

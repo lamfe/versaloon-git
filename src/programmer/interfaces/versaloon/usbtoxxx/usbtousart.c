@@ -39,9 +39,9 @@ RESULT usbtousart_fini(uint8_t interface_index)
 }
 
 RESULT usbtousart_config(uint8_t interface_index, uint32_t baudrate, 
-			uint8_t datalength, char paritybit, char stopbit, char handshake)
+							uint8_t datalength, uint8_t mode)
 {
-	uint8_t conf[8];
+	uint8_t conf[6];
 	
 #if PARAM_CHECK
 	if (interface_index > 7)
@@ -53,11 +53,9 @@ RESULT usbtousart_config(uint8_t interface_index, uint32_t baudrate,
 	
 	SET_LE_U32(&conf[0], baudrate);
 	conf[4] = datalength;
-	conf[5] = paritybit;
-	conf[6] = stopbit;
-	conf[7] = handshake;
+	conf[5] = mode;
 	
-	return usbtoxxx_conf_command(USB_TO_USART, interface_index, conf, 8);
+	return usbtoxxx_conf_command(USB_TO_USART, interface_index, conf, 6);
 }
 
 RESULT usbtousart_receive(uint8_t interface_index, uint8_t *buf, uint16_t len)

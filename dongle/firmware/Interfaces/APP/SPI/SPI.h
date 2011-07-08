@@ -24,5 +24,4 @@ uint8_t SPI_GetSCKDiv(uint32_t freq_khz);
 RESULT spi_init(uint8_t index);
 RESULT spi_fini(uint8_t index);
 RESULT spi_io(uint8_t index, uint8_t *out, uint8_t *in, uint16_t len);
-RESULT spi_config(uint8_t index, uint32_t kHz, uint8_t cpol, uint8_t cpha, 
-					 uint8_t first_bit);
+RESULT spi_config(uint8_t index, uint32_t kHz, uint8_t mode);

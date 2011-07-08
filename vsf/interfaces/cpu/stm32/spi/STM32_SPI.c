@@ -114,10 +114,10 @@ RESULT stm32_spi_fini(uint8_t index)
 	return ERROR_OK;
 }
 
-RESULT stm32_spi_config(uint8_t index, uint32_t kHz, uint8_t cpol, 
-						uint8_t cpha, uint8_t first_bit)
+RESULT stm32_spi_config(uint8_t index, uint32_t kHz, uint8_t mode)
 {
 	uint32_t module_khz;
+	uint32_t cpol, cpha, first_bit;
 	
 #if __VSF_DEBUG__
 	if (index >= STM32_SPI_NUM)
@@ -136,32 +136,31 @@ RESULT stm32_spi_config(uint8_t index, uint32_t kHz, uint8_t cpol,
 		module_khz = _SYS_FREQUENCY * 500;
 		break;
 	}
-	if(cpol & SPI_CPOL_MASK)
+	switch (mode & 0x03)
 	{
-		cpol = SPI_CPOL_High;
-	}
-	else
-	{
+	case 0:
 		cpol = SPI_CPOL_Low;
-	}
-	if(cpha & SPI_CPHA_MASK)
-	{
-		// 2 edge
-		cpha = SPI_CPHA_2Edge;
-	}
-	else
-	{
-		// 1 edge
 		cpha = SPI_CPHA_1Edge;
+		break;
+	case 1:
+		cpol = SPI_CPOL_Low;
+		cpha = SPI_CPHA_2Edge;
+		break;
+	case 2:
+		cpol = SPI_CPOL_High;
+		cpha = SPI_CPHA_1Edge;
+		break;
+	case 3:
+		cpol = SPI_CPOL_High;
+		cpha = SPI_CPHA_2Edge;
+		break;
 	}
-	if(first_bit & SPI_FIRSTBIT_MASK)
+	if(mode & SPI_MSB_FIRST)
 	{
-		// msb first
 		first_bit = SPI_FirstBit_MSB;
 	}
 	else
 	{
-		// lsb first
 		first_bit = SPI_FirstBit_LSB;
 	}
 	

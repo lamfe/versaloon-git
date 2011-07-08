@@ -16,7 +16,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "app_cfg.h"
-#include "app_interfaces.h"
+#include "interfaces.h"
 
 #include "usb_protocol.h"
 
@@ -26,12 +26,11 @@
 /* Private variables ---------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
-
 int main(void)
 {
 	interfaces->init(NULL);
 	usb_protocol_init();
-
+	
 	while (1)
 	{
 		usb_protocol_idle();

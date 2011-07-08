@@ -38,10 +38,9 @@ RESULT usbtopwm_fini(uint8_t interface_index)
 	return usbtoxxx_fini_command(USB_TO_PWM, interface_index);
 }
 
-RESULT usbtopwm_config(uint8_t interface_index, uint16_t kHz, uint8_t pushpull, 
-						uint8_t polarity)
+RESULT usbtopwm_config(uint8_t interface_index, uint16_t kHz, uint8_t mode)
 {
-	uint8_t buff[4];
+	uint8_t buff[3];
 	
 #if PARAM_CHECK
 	if (interface_index > 7)
@@ -52,10 +51,9 @@ RESULT usbtopwm_config(uint8_t interface_index, uint16_t kHz, uint8_t pushpull,
 #endif
 	
 	SET_LE_U16(&buff[0], kHz);
-	buff[2] = pushpull;
-	buff[3] = polarity;
+	buff[2] = mode;
 	
-	return usbtoxxx_conf_command(USB_TO_PWM, interface_index, buff, 4);
+	return usbtoxxx_conf_command(USB_TO_PWM, interface_index, buff, 3);
 }
 
 RESULT usbtopwm_out(uint8_t interface_index, uint16_t count, uint16_t *rate)

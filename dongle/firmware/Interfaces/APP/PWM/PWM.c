@@ -53,13 +53,13 @@ RESULT pwm_fini(uint8_t index)
 	}
 }
 
-RESULT pwm_config(uint8_t index, uint16_t kHz, uint8_t pushpull, uint8_t polarity)
+RESULT pwm_config(uint8_t index, uint16_t kHz, uint8_t mode)
 {
 	switch (index)
 	{
 	case 0:
-		SYNCSWPWM_OUT_TIMER_INIT(polarity);
-		if (pushpull)
+		SYNCSWPWM_OUT_TIMER_INIT(mode & PWM_OUTPOLARITY);
+		if (mode & PWM_OUTPP)
 		{
 			SYNCSWPWM_PORT_PP_INIT();
 		}
