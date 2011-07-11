@@ -56,13 +56,13 @@ LEAVE_PROGRAM_MODE_HANDLER(stm32f2swj);
 ERASE_TARGET_HANDLER(stm32f2swj);
 WRITE_TARGET_HANDLER(stm32f2swj);
 READ_TARGET_HANDLER(stm32f2swj);
-const struct program_functions_t stm32f2swj_program_functions = 
+const struct program_functions_t stm32f2swj_program_functions =
 {
-	NULL, 
-	ENTER_PROGRAM_MODE_FUNCNAME(stm32f2swj), 
-	LEAVE_PROGRAM_MODE_FUNCNAME(stm32f2swj), 
-	ERASE_TARGET_FUNCNAME(stm32f2swj), 
-	WRITE_TARGET_FUNCNAME(stm32f2swj), 
+	NULL,
+	ENTER_PROGRAM_MODE_FUNCNAME(stm32f2swj),
+	LEAVE_PROGRAM_MODE_FUNCNAME(stm32f2swj),
+	ERASE_TARGET_FUNCNAME(stm32f2swj),
+	WRITE_TARGET_FUNCNAME(stm32f2swj),
 	READ_TARGET_FUNCNAME(stm32f2swj)
 };
 
@@ -86,7 +86,7 @@ ENTER_PROGRAM_MODE_HANDLER(stm32f2swj)
 	{
 		return ERROR_FAIL;
 	}
-	if (((reg & STM32F2_FLASH_OPT_RDP_MASK) != STM32F2_FLASH_OPT_RDP_LVL0) || 
+	if (((reg & STM32F2_FLASH_OPT_RDP_MASK) != STM32F2_FLASH_OPT_RDP_LVL0) ||
 		((reg & STM32F2_FLASH_OPT_WRP_MASK) != STM32F2_FLASH_OPT_WRP_MASK))
 	{
 		LOG_WARNING("STM32F2 locked, to unlock, run "
@@ -165,7 +165,7 @@ WRITE_TARGET_HANDLER(stm32f2swj)
 		cmd.ram_addr = 0;
 		cmd.data_type = 0;
 		cmd.data_size = 1;
-		if ((ERROR_OK != adi_memap_write_buf(cmd.ram_addr, buff, 4)) || 
+		if ((ERROR_OK != adi_memap_write_buf(cmd.ram_addr, buff, 4)) ||
 			(ERROR_OK != stm32swj_fl_call(&cmd, &result, true)))
 		{
 			ret = ERRCODE_FAILURE_OPERATION;
@@ -191,7 +191,7 @@ WRITE_TARGET_HANDLER(stm32f2swj)
 		cmd.ram_addr = STM32F2_FL_PAGE0_ADDR;
 		cmd.data_type = 4;
 		cmd.data_size = cur_size / 4;
-		if ((ERROR_OK != adi_memap_write_buf(cmd.ram_addr, buff, cur_size)) || 
+		if ((ERROR_OK != adi_memap_write_buf(cmd.ram_addr, buff, cur_size)) ||
 			(ERROR_OK != stm32swj_fl_call(&cmd, &result, last)))
 		{
 			ret = ERRCODE_FAILURE_OPERATION;
@@ -223,8 +223,8 @@ WRITE_TARGET_HANDLER(stm32f2swj)
 			{
 				cmd.ram_addr = STM32F2_FL_PAGE0_ADDR;
 			}
-			if ((ERROR_OK != 
-					adi_memap_write_buf(cmd.ram_addr, buff, cur_size)) || 
+			if ((ERROR_OK !=
+					adi_memap_write_buf(cmd.ram_addr, buff, cur_size)) ||
 				(ERROR_OK != stm32swj_fl_call(&cmd, &result, last)))
 			{
 				ret = ERRCODE_FAILURE_OPERATION;
@@ -289,10 +289,10 @@ READ_TARGET_HANDLER(stm32f2swj)
 			{
 				cur_block_size <<= 2;
 			}
-			if (ERROR_OK != adi_memap_read_buf(addr, buff, 
+			if (ERROR_OK != adi_memap_read_buf(addr, buff,
 												   cur_block_size))
 			{
-				LOG_ERROR(ERRMSG_FAILURE_OPERATION_ADDR, "write flash block", 
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION_ADDR, "write flash block",
 							addr);
 				ret = ERRCODE_FAILURE_OPERATION_ADDR;
 				break;
@@ -305,11 +305,11 @@ READ_TARGET_HANDLER(stm32f2swj)
 		}
 		break;
 	case UNIQUEID_CHAR:
-		if ((ERROR_OK != adi_memap_read_reg32(STM32F2_UID_ADDR + 0, 
-											(((uint32_t *)buff) + 0), 0)) || 
-			(ERROR_OK != adi_memap_read_reg32(STM32F2_UID_ADDR + 4, 
-											(((uint32_t *)buff) + 1), 0)) || 
-			(ERROR_OK != adi_memap_read_reg32(STM32F2_UID_ADDR + 8, 
+		if ((ERROR_OK != adi_memap_read_reg32(STM32F2_UID_ADDR + 0,
+											(((uint32_t *)buff) + 0), 0)) ||
+			(ERROR_OK != adi_memap_read_reg32(STM32F2_UID_ADDR + 4,
+											(((uint32_t *)buff) + 1), 0)) ||
+			(ERROR_OK != adi_memap_read_reg32(STM32F2_UID_ADDR + 8,
 											(((uint32_t *)buff) + 2), 1)))
 		{
 			ret = ERROR_FAIL;

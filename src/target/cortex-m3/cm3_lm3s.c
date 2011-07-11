@@ -53,13 +53,13 @@ LEAVE_PROGRAM_MODE_HANDLER(lm3sswj);
 ERASE_TARGET_HANDLER(lm3sswj);
 WRITE_TARGET_HANDLER(lm3sswj);
 READ_TARGET_HANDLER(lm3sswj);
-const struct program_functions_t lm3sswj_program_functions = 
+const struct program_functions_t lm3sswj_program_functions =
 {
-	NULL, 
-	ENTER_PROGRAM_MODE_FUNCNAME(lm3sswj), 
-	LEAVE_PROGRAM_MODE_FUNCNAME(lm3sswj), 
-	ERASE_TARGET_FUNCNAME(lm3sswj), 
-	WRITE_TARGET_FUNCNAME(lm3sswj), 
+	NULL,
+	ENTER_PROGRAM_MODE_FUNCNAME(lm3sswj),
+	LEAVE_PROGRAM_MODE_FUNCNAME(lm3sswj),
+	ERASE_TARGET_FUNCNAME(lm3sswj),
+	WRITE_TARGET_FUNCNAME(lm3sswj),
 	READ_TARGET_FUNCNAME(lm3sswj)
 };
 
@@ -70,7 +70,7 @@ static uint32_t lm3sswj_iap_cnt = 0;
 #define LM3S_IAP_COMMAND_ADDR	(LM3S_IAP_BASE + LM3S_IAP_COMMAND_OFFSET)
 #define LM3S_IAP_SYNC_ADDR		(LM3S_IAP_BASE + 120)
 #define LM3S_IAP_CNT_ADDR		(LM3S_IAP_BASE + 124)
-static uint8_t iap_code[] = 
+static uint8_t iap_code[] =
 {
 							// wait_start:
 	0x1D, 0x48,				// ldr		r0, [PC, #116]		// load sync
@@ -122,7 +122,7 @@ static uint8_t iap_code[] =
 	0x00, 0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00,
-	0x00, 0x00, 
+	0x00, 0x00,
 	// 100 bytes above
 	// parameters
 	0x00, 0x00, 0x00, 0x00,	// FMA_addr
@@ -284,7 +284,7 @@ static RESULT lm3sswj_iap_run(struct lm3sswj_iap_cmd_t * cmd)
 	
 	// write iap command with sync to target SRAM
 	// sync is 4-byte AFTER command in sram
-	if (ERROR_OK != adi_memap_write_buf(LM3S_IAP_COMMAND_ADDR, 
+	if (ERROR_OK != adi_memap_write_buf(LM3S_IAP_COMMAND_ADDR,
 										(uint8_t*)buff_tmp, sizeof(buff_tmp)))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "load iap cmd to SRAM");
@@ -356,7 +356,7 @@ ENTER_PROGRAM_MODE_HANDLER(lm3sswj)
 	}
 	
 	// write iap_code to target SRAM
-	if (ERROR_OK != adi_memap_write_buf(LM3S_IAP_BASE, (uint8_t*)iap_code, 
+	if (ERROR_OK != adi_memap_write_buf(LM3S_IAP_BASE, (uint8_t*)iap_code,
 											sizeof(iap_code)))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "load iap_code to SRAM");
@@ -364,7 +364,7 @@ ENTER_PROGRAM_MODE_HANDLER(lm3sswj)
 	}
 	// verify iap_code
 	memset(verify_buff, 0, sizeof(iap_code));
-	if (ERROR_OK != adi_memap_read_buf(LM3S_IAP_BASE, verify_buff, 
+	if (ERROR_OK != adi_memap_read_buf(LM3S_IAP_BASE, verify_buff,
 										sizeof(iap_code)))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read flash_loader");
@@ -418,7 +418,7 @@ ERASE_TARGET_HANDLER(lm3sswj)
 		cmd.src_addr = 0;
 		cmd.command = LM3S_FLASHCTL_FMC_MERASE | LM3S_FLASHCTL_FMC_KEY;
 		cmd.cnt = 1;
-		if ((ERROR_OK != lm3sswj_iap_run(&cmd)) || 
+		if ((ERROR_OK != lm3sswj_iap_run(&cmd)) ||
 			(ERROR_OK != lm3sswj_iap_wait_finish(lm3sswj_iap_cnt)))
 		{
 			ret = ERROR_FAIL;
@@ -466,7 +466,7 @@ WRITE_TARGET_HANDLER(lm3sswj)
 			}
 			cmd.tgt_addr = addr;
 			cmd.src_addr = ram_addr;
-			if ((ERROR_OK != adi_memap_write_buf(ram_addr, buff, page_size)) || 
+			if ((ERROR_OK != adi_memap_write_buf(ram_addr, buff, page_size)) ||
 				(ERROR_OK != lm3sswj_iap_run(&cmd)))
 			{
 				ret = ERROR_FAIL;
@@ -497,17 +497,17 @@ READ_TARGET_HANDLER(lm3sswj)
 	switch (area)
 	{
 	case CHIPID_CHAR:
-		if ((ERROR_OK != 
-				adi_memap_read_reg32(LM3S_SYSCTL_DID0, &lm3s_device.did0, 0)) 
-			|| (ERROR_OK != 
-				adi_memap_read_reg32(LM3S_SYSCTL_DID1, &lm3s_device.did1, 0)) 
-			|| (ERROR_OK != 
-				adi_memap_read_reg32(LM3S_SYSCTL_DC0, &lm3s_device.dc0, 0)) 
-			|| (ERROR_OK != 
-				adi_memap_read_reg32(LM3S_SYSCTL_DC1, &lm3s_device.dc1, 0)) 
-			|| (ERROR_OK != 
-				adi_memap_read_reg32(LM3S_SYSCTL_DC2, &lm3s_device.dc2, 0)) 
-			|| (ERROR_OK != 
+		if ((ERROR_OK !=
+				adi_memap_read_reg32(LM3S_SYSCTL_DID0, &lm3s_device.did0, 0))
+			|| (ERROR_OK !=
+				adi_memap_read_reg32(LM3S_SYSCTL_DID1, &lm3s_device.did1, 0))
+			|| (ERROR_OK !=
+				adi_memap_read_reg32(LM3S_SYSCTL_DC0, &lm3s_device.dc0, 0))
+			|| (ERROR_OK !=
+				adi_memap_read_reg32(LM3S_SYSCTL_DC1, &lm3s_device.dc1, 0))
+			|| (ERROR_OK !=
+				adi_memap_read_reg32(LM3S_SYSCTL_DC2, &lm3s_device.dc2, 0))
+			|| (ERROR_OK !=
 				adi_memap_read_reg32(LM3S_SYSCTL_DC3, &lm3s_device.dc3, 1)))
 		{
 			ret = ERRCODE_FAILURE_OPERATION;
@@ -539,10 +539,10 @@ READ_TARGET_HANDLER(lm3sswj)
 			{
 				cur_block_size <<= 2;
 			}
-			if (ERROR_OK != adi_memap_read_buf(addr, buff, 
+			if (ERROR_OK != adi_memap_read_buf(addr, buff,
 												   cur_block_size))
 			{
-				LOG_ERROR(ERRMSG_FAILURE_OPERATION_ADDR, "write flash block", 
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION_ADDR, "write flash block",
 							addr);
 				ret = ERRCODE_FAILURE_OPERATION_ADDR;
 				break;

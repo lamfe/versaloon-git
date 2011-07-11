@@ -43,7 +43,7 @@
 
 #define CUR_TARGET_STRING			STM32F2_STRING
 
-struct program_area_map_t stm32f2_program_area_map[] = 
+struct program_area_map_t stm32f2_program_area_map[] =
 {
 	{APPLICATION_CHAR, 1, 0, 0, 0, AREA_ATTR_EWR | AREA_ATTR_RAE | AREA_ATTR_RAW},
 	{FUSE_CHAR, 0, 0, 0, 0, AREA_ATTR_WR | AREA_ATTR_RAW},
@@ -52,7 +52,7 @@ struct program_area_map_t stm32f2_program_area_map[] =
 	{0, 0, 0, 0, 0, 0}
 };
 
-const struct program_mode_t stm32f2_program_mode[] = 
+const struct program_mode_t stm32f2_program_mode[] =
 {
 	{'j', SET_FREQUENCY, IFS_JTAG_HL},
 	{'s', "", IFS_SWD},
@@ -88,13 +88,13 @@ VSS_HANDLER(stm32f2_mode)
 		stm32f2_program_area_map[0].attr |= AREA_ATTR_NP;
 		cm3_mode_offset = 0;
 		vss_call_notifier(cm3_notifier, "chip", "cm3_stm32f2");
-		memcpy(&stm32f2_program_functions, &cm3_program_functions, 
+		memcpy(&stm32f2_program_functions, &cm3_program_functions,
 				sizeof(stm32f2_program_functions));
 		break;
 	case STM32F2_ISP:
 		stm32f2_program_area_map[0].attr &= ~AREA_ATTR_NP;
 		vss_call_notifier(comisp_notifier, "chip", "comisp_stm32f2");
-		memcpy(&stm32f2_program_functions, &comisp_program_functions, 
+		memcpy(&stm32f2_program_functions, &comisp_program_functions,
 				sizeof(stm32f2_program_functions));
 		break;
 	}
@@ -111,7 +111,7 @@ VSS_HANDLER(stm32f2_extra)
 	return vss_run_script(cmd);
 }
 
-const struct vss_cmd_t stm32f2_notifier[] = 
+const struct vss_cmd_t stm32f2_notifier[] =
 {
 	VSS_CMD(	"help",
 				"print help information of current target for internal call",

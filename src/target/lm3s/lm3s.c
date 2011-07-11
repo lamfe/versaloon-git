@@ -42,13 +42,13 @@
 
 #define CUR_TARGET_STRING			LM3S_STRING
 
-struct program_area_map_t lm3s_program_area_map[] = 
+struct program_area_map_t lm3s_program_area_map[] =
 {
 	{APPLICATION_CHAR, 1, 0, 0, 0, AREA_ATTR_EWR},
 	{0, 0, 0, 0, 0, 0}
 };
 
-const struct program_mode_t lm3s_program_mode[] = 
+const struct program_mode_t lm3s_program_mode[] =
 {
 	{'j', SET_FREQUENCY, IFS_JTAG_HL},
 	{'s', "", IFS_SWD},
@@ -83,7 +83,7 @@ VSS_HANDLER(lm3s_mode)
 		lm3s_program_area_map[0].attr |= AREA_ATTR_RNP;
 		cm3_mode_offset = 0;
 		vss_call_notifier(cm3_notifier, "chip", "cm3_lm3s");
-		memcpy(&lm3s_program_functions, &cm3_program_functions, 
+		memcpy(&lm3s_program_functions, &cm3_program_functions,
 				sizeof(lm3s_program_functions));
 		break;
 	default:
@@ -92,7 +92,7 @@ VSS_HANDLER(lm3s_mode)
 	return ERROR_OK;
 }
 
-const struct vss_cmd_t lm3s_notifier[] = 
+const struct vss_cmd_t lm3s_notifier[] =
 {
 	VSS_CMD(	"help",
 				"print help information of current target for internal call",
@@ -133,7 +133,7 @@ RESULT lm3s_check_device(struct lm3s_device_info_t *device)
 	tmp = (device->did1 >> 24) & 0xF;
 	if (tmp != 0)
 	{
-		LOG_ERROR(ERRMSG_INVALID_VALUE_MESSAGE, tmp, 
+		LOG_ERROR(ERRMSG_INVALID_VALUE_MESSAGE, tmp,
 					"lm3s family", "should be 0");
 		return ERROR_FAIL;
 	}
@@ -156,7 +156,7 @@ RESULT lm3s_check_device(struct lm3s_device_info_t *device)
 		break;
 	}
 	// check revision
-	LOG_INFO("lm3s device: Revision%c.0x%02x(%s)", 
+	LOG_INFO("lm3s device: Revision%c.0x%02x(%s)",
 				((device->did0 >> 8) & 0xFF) + 'A',	// Revision(MAJOR), from A
 				device->did0 & 0xFF, str_tmp);
 	

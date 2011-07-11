@@ -45,7 +45,7 @@
 #define LPC1000_PARAM_SYSMEMREMAP_ADDR		1
 #define LPC1000_PARAM_FLASHREMAP_VALUE		2
 
-uint8_t lpc1000_get_sector_idx_by_addr(struct program_context_t *context, 
+uint8_t lpc1000_get_sector_idx_by_addr(struct program_context_t *context,
 										uint32_t addr);
 
 #endif /* __LPC1000_INTERNAL_H_INCLUDED__ */

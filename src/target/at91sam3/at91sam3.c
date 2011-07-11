@@ -42,7 +42,7 @@
 
 #define CUR_TARGET_STRING			AT91SAM3_STRING
 
-struct program_area_map_t at91sam3_program_area_map[] = 
+struct program_area_map_t at91sam3_program_area_map[] =
 {
 	// flash plane0
 	{APPLICATION_CHAR, 1, 0, 0, 0, AREA_ATTR_EWR/* | AREA_ATTR_RAE*/},
@@ -52,7 +52,7 @@ struct program_area_map_t at91sam3_program_area_map[] =
 	{0, 0, 0, 0, 0, 0}
 };
 
-const struct program_mode_t at91sam3_program_mode[] = 
+const struct program_mode_t at91sam3_program_mode[] =
 {
 	{'j', SET_FREQUENCY, IFS_JTAG_HL},
 	{'s', "", IFS_SWD},
@@ -86,14 +86,14 @@ VSS_HANDLER(at91sam3_mode)
 		at91sam3_program_area_map[0].attr |= AREA_ATTR_RNP;
 		cm3_mode_offset = 0;
 		vss_call_notifier(cm3_notifier, "chip", "cm3_at91sam3");
-		memcpy(&at91sam3_program_functions, &cm3_program_functions, 
+		memcpy(&at91sam3_program_functions, &cm3_program_functions,
 				sizeof(at91sam3_program_functions));
 		break;
 	}
 	return ERROR_OK;
 }
 
-const struct vss_cmd_t at91sam3_notifier[] = 
+const struct vss_cmd_t at91sam3_notifier[] =
 {
 	VSS_CMD(	"help",
 				"print help information of current target for internal call",

@@ -39,7 +39,7 @@
 
 #define CUR_TARGET_STRING			AVR8_STRING
 
-const struct program_area_map_t avr8_program_area_map[] = 
+const struct program_area_map_t avr8_program_area_map[] =
 {
 	{APPLICATION_CHAR, 1, 0, 0, 0, AREA_ATTR_EWR},
 	{EEPROM_CHAR, 1, 2, 0, 256, AREA_ATTR_EWR},
@@ -50,7 +50,7 @@ const struct program_area_map_t avr8_program_area_map[] =
 	{0, 0, 0, 0, 0, 0}
 };
 
-const struct program_mode_t avr8_program_mode[] = 
+const struct program_mode_t avr8_program_mode[] =
 {
 	{'i', SET_FREQUENCY, IFS_SPI | IFS_GPIO},
 	{'j', SET_FREQUENCY, IFS_JTAG_HL},
@@ -67,7 +67,7 @@ VSS_HANDLER(avr8_help)
 	PRINTF("\
 Usage of %s:\n\
   -F,  --frequency <FREQUENCY>              set ISP frequency, in KHz\n\
-  -m,  --mode <MODE>                        set mode<b|p>\n\n", 
+  -m,  --mode <MODE>                        set mode<b|p>\n\n",
 			CUR_TARGET_STRING);
 	return ERROR_OK;
 }
@@ -81,11 +81,11 @@ VSS_HANDLER(avr8_mode)
 	switch (mode)
 	{
 	case AVR8_ISP:
-		memcpy(&avr8_program_functions, &avr8isp_program_functions, 
+		memcpy(&avr8_program_functions, &avr8isp_program_functions,
 				sizeof(avr8_program_functions));
 		break;
 	case AVR8_JTAG:
-		memcpy(&avr8_program_functions, &avr8jtag_program_functions, 
+		memcpy(&avr8_program_functions, &avr8jtag_program_functions,
 				sizeof(avr8_program_functions));
 		break;
 	case AVR8_HVPP:
@@ -96,7 +96,7 @@ VSS_HANDLER(avr8_mode)
 	return ERROR_OK;
 }
 
-const struct vss_cmd_t avr8_notifier[] = 
+const struct vss_cmd_t avr8_notifier[] =
 {
 	VSS_CMD(	"help",
 				"print help information of current target for internal call",

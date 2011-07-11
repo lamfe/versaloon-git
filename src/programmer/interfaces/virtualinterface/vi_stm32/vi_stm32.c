@@ -39,7 +39,7 @@
 
 VSS_HANDLER(vi_stm32_support);
 VSS_HANDLER(vi_stm32_help);
-const struct vss_cmd_t vi_stm32_notifier[] = 
+const struct vss_cmd_t vi_stm32_notifier[] =
 {
 	VSS_CMD(	"support",
 				"print support information, format: support/S",
@@ -58,7 +58,7 @@ const struct vss_cmd_t vi_stm32_notifier[] =
 
 #define VI_STM32_MODE_JTAG					0
 #define VI_STM32_MODE_SWD					1
-const struct program_mode_t vi_stm32_mode[] = 
+const struct program_mode_t vi_stm32_mode[] =
 {
 	{'j', SET_FREQUENCY, IFS_JTAG_HL},
 	{'s', "", IFS_SWD},
@@ -92,23 +92,23 @@ static RESULT vi_stm32_init(void *p)
 	case VI_STM32_MODE_JTAG:
 		// JTAG;
 		dp.type = ADI_DP_JTAG;
-		dp.dpif_setting.dpif_jtag_setting.jtag_khz = 
+		dp.dpif_setting.dpif_jtag_setting.jtag_khz =
 			cm3_chips_param[CM3_PARAM_IDX_STM32].jtag_khz;
-		dp.dpif_setting.dpif_jtag_setting.ub = 
+		dp.dpif_setting.dpif_jtag_setting.ub =
 			cm3_chips_param[CM3_PARAM_IDX_STM32].jtag_pos.ub + pi->jtag_pos.ub;
-		dp.dpif_setting.dpif_jtag_setting.ua = 
+		dp.dpif_setting.dpif_jtag_setting.ua =
 			cm3_chips_param[CM3_PARAM_IDX_STM32].jtag_pos.ua + pi->jtag_pos.ua;
-		dp.dpif_setting.dpif_jtag_setting.bb = 
+		dp.dpif_setting.dpif_jtag_setting.bb =
 			cm3_chips_param[CM3_PARAM_IDX_STM32].jtag_pos.bb + pi->jtag_pos.bb;
-		dp.dpif_setting.dpif_jtag_setting.ba = 
+		dp.dpif_setting.dpif_jtag_setting.ba =
 			cm3_chips_param[CM3_PARAM_IDX_STM32].jtag_pos.ba + pi->jtag_pos.ba;
 		break;
 	case VI_STM32_MODE_SWD:
 		// SWD
 		dp.type = ADI_DP_SWD;
-		dp.dpif_setting.dpif_swd_setting.swd_trn = 
+		dp.dpif_setting.dpif_swd_setting.swd_trn =
 				cm3_chips_param[CM3_PARAM_IDX_STM32].swd_trn;
-		dp.dpif_setting.dpif_swd_setting.swd_dly = 
+		dp.dpif_setting.dpif_swd_setting.swd_dly =
 				cm3_chips_param[CM3_PARAM_IDX_STM32].swd_delay;
 		dp.dpif_setting.dpif_swd_setting.swd_retry = 0;
 		break;
@@ -138,8 +138,8 @@ RESULT vi_stm32_gpio_fini(uint8_t interface_index)
 	return ERROR_OK;
 }
 
-RESULT vi_stm32_gpio_config(uint8_t interface_index, uint32_t mask, 
-							uint32_t dir_mask, uint32_t pull_en_mask, 
+RESULT vi_stm32_gpio_config(uint8_t interface_index, uint32_t mask,
+							uint32_t dir_mask, uint32_t pull_en_mask,
 							uint32_t input_pull_mask)
 {
 	return ERROR_OK;
@@ -166,7 +166,7 @@ RESULT vi_stm32_usart_fini(uint8_t interface_index)
 	return ERROR_OK;
 }
 
-RESULT vi_stm32_usart_config(uint8_t interface_index, uint32_t baudrate, 
+RESULT vi_stm32_usart_config(uint8_t interface_index, uint32_t baudrate,
 								uint8_t datalength, uint8_t mode)
 {
 	return ERROR_OK;
@@ -182,7 +182,7 @@ RESULT vi_stm32_usart_send(uint8_t interface_index, uint8_t *buf, uint16_t len)
 	return ERROR_OK;
 }
 
-RESULT vi_stm32_usart_status(uint8_t interface_index, 
+RESULT vi_stm32_usart_status(uint8_t interface_index,
 								struct usart_status_t *status)
 {
 	return ERROR_OK;
@@ -204,7 +204,7 @@ RESULT vi_stm32_spi_config(uint8_t interface_index, uint32_t kHz, uint8_t mode)
 	return ERROR_OK;
 }
 
-RESULT vi_stm32_spi_io(uint8_t interface_index, uint8_t *out, uint8_t *in, 
+RESULT vi_stm32_spi_io(uint8_t interface_index, uint8_t *out, uint8_t *in,
 						uint16_t bytelen)
 {
 	return ERROR_OK;
@@ -221,20 +221,20 @@ RESULT vi_stm32_iic_fini(uint8_t interface_index)
 	return ERROR_OK;
 }
 
-RESULT vi_stm32_iic_config(uint8_t interface_index, uint16_t kHz, 
+RESULT vi_stm32_iic_config(uint8_t interface_index, uint16_t kHz,
 							uint16_t byte_interval, uint16_t max_dly)
 {
 	return ERROR_OK;
 }
 
-RESULT vi_stm32_iic_read(uint8_t interface_index, uint16_t chip_addr, 
-							uint8_t *data, uint16_t data_len, uint8_t stop, 
+RESULT vi_stm32_iic_read(uint8_t interface_index, uint16_t chip_addr,
+							uint8_t *data, uint16_t data_len, uint8_t stop,
 							bool nacklast)
 {
 	return ERROR_OK;
 }
 
-RESULT vi_stm32_iic_write(uint8_t interface_index, uint16_t chip_addr, 
+RESULT vi_stm32_iic_write(uint8_t interface_index, uint16_t chip_addr,
 							uint8_t *data, uint16_t data_len, uint8_t stop)
 {
 	return ERROR_OK;
@@ -282,7 +282,7 @@ static RESULT vi_stm32_peripheral_commit(void)
 	return ERROR_OK;
 }
 
-struct interfaces_info_t vi_stm32_interfaces = 
+struct interfaces_info_t vi_stm32_interfaces =
 {
 	VI_STM32_STRING,
 	vi_stm32_notifier,

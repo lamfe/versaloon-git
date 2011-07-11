@@ -38,7 +38,7 @@ RESULT usbtousart_fini(uint8_t interface_index)
 	return usbtoxxx_fini_command(USB_TO_USART, interface_index);
 }
 
-RESULT usbtousart_config(uint8_t interface_index, uint32_t baudrate, 
+RESULT usbtousart_config(uint8_t interface_index, uint32_t baudrate,
 							uint8_t datalength, uint8_t mode)
 {
 	uint8_t conf[6];
@@ -71,7 +71,7 @@ RESULT usbtousart_receive(uint8_t interface_index, uint8_t *buf, uint16_t len)
 	SET_LE_U16(&versaloon_cmd_buf[0], len);
 	memset(&versaloon_cmd_buf[2], 0, len);
 	
-	return usbtoxxx_in_command(USB_TO_USART, interface_index, 
+	return usbtoxxx_in_command(USB_TO_USART, interface_index,
 				versaloon_cmd_buf, 2 + len, len, buf, 0, len, 1);
 }
 
@@ -88,11 +88,11 @@ RESULT usbtousart_send(uint8_t interface_index, uint8_t *buf, uint16_t len)
 	SET_LE_U16(&versaloon_cmd_buf[0], len);
 	memcpy(&versaloon_cmd_buf[2], buf, len);
 	
-	return usbtoxxx_out_command(USB_TO_USART, interface_index, 
+	return usbtoxxx_out_command(USB_TO_USART, interface_index,
 										versaloon_cmd_buf, 2 + len, 1);
 }
 
-RESULT usbtousart_status(uint8_t interface_index, 
+RESULT usbtousart_status(uint8_t interface_index,
 							struct usart_status_t *status)
 {
 #if PARAM_CHECK
@@ -103,7 +103,7 @@ RESULT usbtousart_status(uint8_t interface_index,
 	}
 #endif
 	
-	return usbtoxxx_status_command(USB_TO_USART, interface_index, 
-			sizeof(struct usart_status_t), (uint8_t *)status, 0, 
+	return usbtoxxx_status_command(USB_TO_USART, interface_index,
+			sizeof(struct usart_status_t), (uint8_t *)status, 0,
 			sizeof(struct usart_status_t), 0);
 }

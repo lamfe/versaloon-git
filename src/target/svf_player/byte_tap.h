@@ -26,7 +26,7 @@ RESULT jtag_fini(void);
 RESULT jtag_config(uint16_t kHz);
 RESULT jtag_tms(uint8_t *tms, uint8_t bytelen);
 RESULT jtag_tms_clocks(uint32_t bytelen, uint8_t tms);
-RESULT jtag_xr(uint8_t *data, uint16_t bitlen, uint8_t tms_before_valid, 
+RESULT jtag_xr(uint8_t *data, uint16_t bitlen, uint8_t tms_before_valid,
 				uint8_t tms_before, uint8_t tms_after0, uint8_t tms_after1);
 RESULT jtag_commit(void);
 
@@ -70,7 +70,7 @@ uint8_t tap_state_is_valid(enum tap_state_t state);
 RESULT tap_state_move(void);
 RESULT tap_end_state(enum tap_state_t state);
 RESULT tap_path_move(uint32_t num_states, enum tap_state_t *path);
-RESULT tap_runtest(enum tap_state_t run_state, enum tap_state_t end_state, 
+RESULT tap_runtest(enum tap_state_t run_state, enum tap_state_t end_state,
 				   uint32_t num_cycles);
 RESULT tap_scan_ir(uint8_t *buffer, uint32_t bit_size);
 RESULT tap_scan_dr(uint8_t *buffer, uint32_t bit_size);

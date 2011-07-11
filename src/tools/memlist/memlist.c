@@ -34,7 +34,7 @@
 #define MEMLIST_AdjustLen(len, page_size)		\
 						(((len) + (page_size) - 1) / (page_size) * (page_size))
 
-static RESULT MEMLIST_Merge(struct memlist *ml, uint32_t addr, uint32_t len, 
+static RESULT MEMLIST_Merge(struct memlist *ml, uint32_t addr, uint32_t len,
 							uint32_t page_size)
 {
 	struct memlist *ml_tmp = ml;
@@ -67,7 +67,7 @@ static RESULT MEMLIST_Merge(struct memlist *ml, uint32_t addr, uint32_t len,
 	{
 		// merget to ml_tmp
 		ml_tmp->addr = MEMLIST_AdjustAddr(min(head, cur_head), page_size);
-		ml_tmp->len = MEMLIST_AdjustLen(max(tail, cur_tail) - ml_tmp->addr, 
+		ml_tmp->len = MEMLIST_AdjustLen(max(tail, cur_tail) - ml_tmp->addr,
 										page_size);
 		
 		head = ml_tmp->addr;
@@ -87,7 +87,7 @@ static RESULT MEMLIST_Merge(struct memlist *ml, uint32_t addr, uint32_t len,
 			}
 			
 			// merge this ml
-			ml_tmp->len = MEMLIST_AdjustLen(max(tail, cur_tail) - head, 
+			ml_tmp->len = MEMLIST_AdjustLen(max(tail, cur_tail) - head,
 												page_size);
 			// save next ml in the list
 			ml_swap = MEMLIST_GetNext(ml);
@@ -123,7 +123,7 @@ static void MEMLIST_Insert(struct memlist **ml, struct memlist *newitem)
 	
 	sllint_insert(ml_virtual_head.list, (*ml)->list);
 	ml_tmp = &ml_virtual_head;
-	while ((MEMLIST_GetNext(ml_tmp) != NULL) 
+	while ((MEMLIST_GetNext(ml_tmp) != NULL)
 			&& (newitem->addr > MEMLIST_GetNext(ml_tmp)->addr))
 	{
 		ml_tmp = MEMLIST_GetNext(ml_tmp);
@@ -157,7 +157,7 @@ uint32_t MEMLIST_CalcAllSize(struct memlist *ml)
 	return size;
 }
 
-RESULT MEMLIST_Add(struct memlist **ml, uint32_t addr, uint32_t len, 
+RESULT MEMLIST_Add(struct memlist **ml, uint32_t addr, uint32_t len,
 					uint32_t page_size)
 {
 	struct memlist *newitem = NULL;

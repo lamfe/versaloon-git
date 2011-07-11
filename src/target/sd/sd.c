@@ -49,13 +49,13 @@
 #define SD_SPI_STRING				"sd_spi"
 #define SD_SDIO_STRING				"sd_sdio"
 
-struct program_area_map_t sd_program_area_map[] = 
+struct program_area_map_t sd_program_area_map[] =
 {
 	{APPLICATION_CHAR, 1, 0, 0, 0, AREA_ATTR_WR},
 	{0, 0, 0, 0, 0, 0}
 };
 
-const struct program_mode_t sd_program_mode[] = 
+const struct program_mode_t sd_program_mode[] =
 {
 	{'s', SET_FREQUENCY, IFS_SPI | IFS_GPIO},
 	{'d', SET_FREQUENCY, IFS_SDIO},
@@ -67,13 +67,13 @@ LEAVE_PROGRAM_MODE_HANDLER(sd);
 ERASE_TARGET_HANDLER(sd);
 WRITE_TARGET_HANDLER(sd);
 READ_TARGET_HANDLER(sd);
-const struct program_functions_t sd_program_functions = 
+const struct program_functions_t sd_program_functions =
 {
 	NULL,			// execute
-	ENTER_PROGRAM_MODE_FUNCNAME(sd), 
-	LEAVE_PROGRAM_MODE_FUNCNAME(sd), 
-	ERASE_TARGET_FUNCNAME(sd), 
-	WRITE_TARGET_FUNCNAME(sd), 
+	ENTER_PROGRAM_MODE_FUNCNAME(sd),
+	LEAVE_PROGRAM_MODE_FUNCNAME(sd),
+	ERASE_TARGET_FUNCNAME(sd),
+	WRITE_TARGET_FUNCNAME(sd),
 	READ_TARGET_FUNCNAME(sd)
 };
 
@@ -82,12 +82,12 @@ VSS_HANDLER(sd_help)
 	VSS_CHECK_ARGC(1);
 	PRINTF("\
 Usage of %s:\n\
-  -F,  --frequency <FREQUENCY>              set IIC frequency, in KHz\n\n", 
+  -F,  --frequency <FREQUENCY>              set IIC frequency, in KHz\n\n",
 			CUR_TARGET_STRING);
 	return ERROR_OK;
 }
 
-const struct vss_cmd_t sd_notifier[] = 
+const struct vss_cmd_t sd_notifier[] =
 {
 	VSS_CMD(	"help",
 				"print help information of current target for internal call",
@@ -102,11 +102,11 @@ const struct vss_cmd_t sd_notifier[] =
 
 static struct sd_info_t sd_info;
 static struct sd_spi_drv_interface_t sd_spi_drv_ifs;
-static struct mal_info_t sd_mal_info = 
+static struct mal_info_t sd_mal_info =
 {
 	{0, 0}, &sd_info
 };
-static struct dal_info_t sd_dal_info = 
+static struct dal_info_t sd_dal_info =
 {
 	NULL,
 	NULL,
@@ -129,7 +129,7 @@ ENTER_PROGRAM_MODE_HANDLER(sd)
 	sd_dal_info.ifs = &sd_spi_drv_ifs;
 	if (pi->ifs_indexes != NULL)
 	{
-		if (ERROR_OK != dal_config_interface(SD_SPI_STRING, pi->ifs_indexes, 
+		if (ERROR_OK != dal_config_interface(SD_SPI_STRING, pi->ifs_indexes,
 												&sd_dal_info))
 		{
 			return ERROR_FAIL;
@@ -146,7 +146,7 @@ ENTER_PROGRAM_MODE_HANDLER(sd)
 	{
 		return ERROR_FAIL;
 	}
-	capacity = sd_mal_info.capacity.block_number * 
+	capacity = sd_mal_info.capacity.block_number *
 				sd_mal_info.capacity.block_size;
 	LOG_INFO("Card capacity: %d MB", (int)(capacity >> 20));
 	switch (sd_info.cardtype)
@@ -174,16 +174,16 @@ ENTER_PROGRAM_MODE_HANDLER(sd)
 	page_size = param->chip_areas[APPLICATION_IDX].page_size = 4 * 1024;
 	if (capacity > (16 << 20))
 	{
-		param->chip_areas[APPLICATION_IDX].page_num = 
+		param->chip_areas[APPLICATION_IDX].page_num =
 											(uint32_t)((16 << 20) / page_size);
 	}
 	else
 	{
-		param->chip_areas[APPLICATION_IDX].page_num = 
+		param->chip_areas[APPLICATION_IDX].page_num =
 											(uint32_t)(capacity / page_size);
 	}
-	param->chip_areas[APPLICATION_IDX].size = 
-		param->chip_areas[APPLICATION_IDX].page_num * 
+	param->chip_areas[APPLICATION_IDX].size =
+		param->chip_areas[APPLICATION_IDX].page_num *
 		param->chip_areas[APPLICATION_IDX].page_size;
 	
 	return dal_commit();
@@ -225,7 +225,7 @@ WRITE_TARGET_HANDLER(sd)
 		}
 		size /= 512;
 		
-		if (ERROR_OK != mal.writeblock(MAL_IDX_SD_SPI, &sd_dal_info, 
+		if (ERROR_OK != mal.writeblock(MAL_IDX_SD_SPI, &sd_dal_info,
 										addr, buff, size))
 		{
 			return ERROR_FAIL;
@@ -254,7 +254,7 @@ READ_TARGET_HANDLER(sd)
 		}
 		size /= 512;
 		
-		if (ERROR_OK != mal.readblock(MAL_IDX_SD_SPI, &sd_dal_info, 
+		if (ERROR_OK != mal.readblock(MAL_IDX_SD_SPI, &sd_dal_info,
 										addr, buff, size))
 		{
 			return ERROR_FAIL;

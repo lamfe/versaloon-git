@@ -45,7 +45,7 @@ enum  S19_TYPE
 	S19_S9 = 9
 };
 
-RESULT read_s19_file(FILE *s19_file, WRITE_MEMORY_CALLBACK callback, 
+RESULT read_s19_file(FILE *s19_file, WRITE_MEMORY_CALLBACK callback,
 					 void *buffer, uint32_t seg_offset, uint32_t addr_offset)
 {
 	uint8_t line_buf[4 + 0xFF * 2 + 2], checksum, *data;
@@ -87,7 +87,7 @@ RESULT read_s19_file(FILE *s19_file, WRITE_MEMORY_CALLBACK callback,
 		length--;
 		
 		// process line
-		if ((length < 9) || ((length % 2) == 0) 
+		if ((length < 9) || ((length % 2) == 0)
 			|| (line_buf[0] < '0') || (line_buf[0] > '9'))
 		{
 			return ERROR_FAIL;
@@ -100,7 +100,7 @@ RESULT read_s19_file(FILE *s19_file, WRITE_MEMORY_CALLBACK callback,
 		{
 			tmp_buff[0] = line_buf[1 + i];
 			tmp_buff[1] = line_buf[2 + i];
-			line_buf[i >> 1] = (uint8_t)strtoul((const char *)tmp_buff, 
+			line_buf[i >> 1] = (uint8_t)strtoul((const char *)tmp_buff,
 														&ptr, 16);
 			if (ptr != &tmp_buff[2])
 			{
@@ -143,14 +143,14 @@ RESULT read_s19_file(FILE *s19_file, WRITE_MEMORY_CALLBACK callback,
 			length -= 3;
 			goto parse_data;
 		case S19_S3:
-			addr = (line_buf[1] << 24) + (line_buf[2] << 16) 
+			addr = (line_buf[1] << 24) + (line_buf[2] << 16)
 					+ (line_buf[3] << 8) + line_buf[4];
 			data = &line_buf[5];
 			length -= 4;
 			goto parse_data;
 			// data sequence
 parse_data:
-			if (ERROR_OK != callback(fileparser_cur_ext, addr_offset + addr, 
+			if (ERROR_OK != callback(fileparser_cur_ext, addr_offset + addr,
 										seg_offset, data, length, buffer))
 			{
 				return ERROR_FAIL;
@@ -169,7 +169,7 @@ parse_data:
 		case S19_S6:
 			// invalid type, simply ignore
 		default:
-			LOG_WARNING(ERRMSG_INVALID_VALUE_MESSAGE, line_buf[3], 
+			LOG_WARNING(ERRMSG_INVALID_VALUE_MESSAGE, line_buf[3],
 						"s19 type", "current line ignored!!");
 			break;
 		}
@@ -178,7 +178,7 @@ parse_data:
 	return ERROR_FAIL;
 }
 
-static RESULT write_s19_line(FILE *s19_file, uint8_t data_len, 
+static RESULT write_s19_line(FILE *s19_file, uint8_t data_len,
 						uint32_t data_addr, enum S19_TYPE type, uint8_t *data)
 {
 	uint8_t line_buf[4 + 0xFF * 2 + 2], checksum = 0, pos = 0, addr_len;
@@ -270,9 +270,9 @@ static RESULT write_s19_line(FILE *s19_file, uint8_t data_len,
 	}
 }
 
-RESULT write_s19_file(FILE *s19_file, uint32_t file_addr, 
-						uint8_t *buff, uint32_t buff_size, 
-						uint32_t seg_addr, uint32_t start_addr, 
+RESULT write_s19_file(FILE *s19_file, uint32_t file_addr,
+						uint8_t *buff, uint32_t buff_size,
+						uint32_t seg_addr, uint32_t start_addr,
 						ADJUST_MAPPING_CALLBACK remap)
 {
 	uint8_t tmp;

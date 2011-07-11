@@ -37,7 +37,7 @@
 #include "virtualinterface/vi_stm32/vi_stm32.h"
 #include "target.h"
 
-struct interfaces_info_t *interfaces_info[] = 
+struct interfaces_info_t *interfaces_info[] =
 {
 	// real interfaces
 	// versaloon
@@ -81,13 +81,13 @@ VSS_HANDLER(interface_delay_us);
 VSS_HANDLER(interface_delay_ms);
 VSS_HANDLER(interface_commit);
 
-struct vss_cmd_t interface_cmd[] = 
+struct vss_cmd_t interface_cmd[] =
 {
-	VSS_CMD(	"tvcc.get", 
-				"get target voltage, format: tvcc.get", 
+	VSS_CMD(	"tvcc.get",
+				"get target voltage, format: tvcc.get",
 				interface_get_target_voltage),
-	VSS_CMD(	"tvcc.set", 
-				"output power to target, format: tvcc.set VOLTAGE_IN_MV", 
+	VSS_CMD(	"tvcc.set",
+				"output power to target, format: tvcc.set VOLTAGE_IN_MV",
 				interface_set_target_voltage),
 	VSS_CMD(	"gpio.init",
 				"initialize gpio, format: gpio.init [MASK IO PULL]",
@@ -330,7 +330,7 @@ RESULT interface_assert(struct interfaces_info_t **ifs)
 {
 	if (NULL == cur_interface)
 	{
-		if ((ERROR_OK != interface_init(NULL)) 
+		if ((ERROR_OK != interface_init(NULL))
 			|| (NULL == cur_interface))
 		{
 			vss_set_fatal_error();
@@ -878,7 +878,7 @@ VSS_HANDLER(interface_iic_read_buff8)
 	ret = ifs->i2c.write(0, slave_addr, &addr, 1, 0);
 	if (ERROR_OK == ret)
 	{
-		ret = ifs->i2c.read(0, slave_addr, buff, data_size, 1, 
+		ret = ifs->i2c.read(0, slave_addr, buff, data_size, 1,
 										nacklast);
 		if (ERROR_OK == ret)
 		{
@@ -929,7 +929,7 @@ VSS_HANDLER(interface_iic_write_buff8)
 		return ERROR_FAIL;
 	}
 	
-	ret = vss_get_binary_buffer(argc - 3, &argv[3], 1, data_size + 1, 
+	ret = vss_get_binary_buffer(argc - 3, &argv[3], 1, data_size + 1,
 								(void**)&buff);
 	if (ERROR_OK == ret)
 	{

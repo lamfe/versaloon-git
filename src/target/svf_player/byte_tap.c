@@ -33,7 +33,7 @@
 
 #include "byte_tap.h"
 
-const char *tap_state_name[TAP_NUM_OF_STATE] = 
+const char *tap_state_name[TAP_NUM_OF_STATE] =
 {
 	"RESET",
 	"IDLE",
@@ -59,7 +59,7 @@ struct tap_path_info_t
 	enum tap_state_t next_state_by1;
 };
 
-static const struct tap_path_info_t tap_path[TAP_NUM_OF_STATE] = 
+static const struct tap_path_info_t tap_path[TAP_NUM_OF_STATE] =
 {
 	{IDLE, RESET},			// RESET
 	{IDLE, DRSELECT},		// IDLE
@@ -87,7 +87,7 @@ struct tap_move_info_t
 };
 
 // tap_move[from_state][to_state]
-static const struct tap_move_info_t tap_move[6][6] = 
+static const struct tap_move_info_t tap_move[6][6] =
 {
 //	RESET,		IDLE,		DRSHIFT,	DRPAUSE,	IRSHIFT,	IRPAUSE
 {{0xff,0,1},{0x7f,0,1},	{0x2f,0,1},	{0x0a,0,1},	{0x37,0,1},	{0x16,0,1}},// RESET
@@ -125,10 +125,10 @@ RESULT jtag_tms_clocks(uint32_t bytelen, uint8_t tms)
 {
 	return interfaces->jtag_ll.tms_clocks(0, bytelen, tms);
 }
-RESULT jtag_xr(uint8_t *data, uint16_t bitlen, uint8_t tms_before_valid, 
+RESULT jtag_xr(uint8_t *data, uint16_t bitlen, uint8_t tms_before_valid,
 				uint8_t tms_before, uint8_t tms_after0, uint8_t tms_after1)
 {
-	return interfaces->jtag_ll.scan(0, data, bitlen, tms_before_valid, 
+	return interfaces->jtag_ll.scan(0, data, bitlen, tms_before_valid,
 									tms_before, tms_after0, tms_after1);
 }
 RESULT jtag_commit(void)
@@ -146,7 +146,7 @@ RESULT jtag_trst_fini(void)
 }
 RESULT jtag_trst_output(uint8_t value)
 {
-	return interfaces->gpio.config(0, JTAG_TRST, JTAG_TRST, 
+	return interfaces->gpio.config(0, JTAG_TRST, JTAG_TRST,
 									0, value ? JTAG_TRST : 0);
 }
 RESULT jtag_trst_input(void)
@@ -168,7 +168,7 @@ RESULT jtag_trst_0(void)
 
 uint8_t tap_state_is_stable(enum tap_state_t state)
 {
-	return ((RESET == state) || (IDLE == state) 
+	return ((RESET == state) || (IDLE == state)
 			|| (DRPAUSE == state) || (IRPAUSE == state));
 }
 
@@ -214,11 +214,11 @@ RESULT tap_state_move(void)
 	{
 		tm = &tap_move[cur_state][end_state];
 		tms_16bit = ((1 << tap_tms_remain_cycles) - 1) & tap_tms_remain;
-		tms_16bit |= (tm->tms & ((1 << tm->insert_pos) - 1)) 
+		tms_16bit |= (tm->tms & ((1 << tm->insert_pos) - 1))
 						<< tap_tms_remain_cycles;
 		if (tm->insert_value)
 		{
-			tms_16bit |= ((1 << (8 - tap_tms_remain_cycles)) - 1) 
+			tms_16bit |= ((1 << (8 - tap_tms_remain_cycles)) - 1)
 							<< (tap_tms_remain_cycles + tm->insert_pos);
 		}
 		tms_16bit |= (tm->tms >> tm->insert_pos) << (8 + tm->insert_pos);
@@ -229,7 +229,7 @@ RESULT tap_state_move(void)
 	}
 	else
 	{
-		if (ERROR_OK 
+		if (ERROR_OK
 			!= jtag_tms((uint8_t*)&tap_move[cur_state][end_state].tms, 1))
 		{
 			return ERROR_FAIL;
@@ -246,7 +246,7 @@ RESULT tap_path_move(uint32_t num_states, enum tap_state_t *path)
 	uint32_t i;
 	uint8_t remain_cycles;
 	
-	tms = tap_tms_remain_cycles > 0 ? 
+	tms = tap_tms_remain_cycles > 0 ?
 			tap_tms_remain & ((1 << tap_tms_remain_cycles) - 1) : 0;
 	remain_cycles = (tap_tms_remain_cycles + num_states) % 8;
 	
@@ -268,7 +268,7 @@ RESULT tap_path_move(uint32_t num_states, enum tap_state_t *path)
 		}
 		else
 		{
-			LOG_ERROR("can not shift to %s from %s", 
+			LOG_ERROR("can not shift to %s from %s",
 						tap_state_name[cur_state], tap_state_name[path[i]]);
 			return ERROR_FAIL;
 		}
@@ -291,12 +291,12 @@ RESULT tap_path_move(uint32_t num_states, enum tap_state_t *path)
 	return ERROR_OK;
 }
 
-RESULT tap_runtest(enum tap_state_t run_state, enum tap_state_t end_state, 
+RESULT tap_runtest(enum tap_state_t run_state, enum tap_state_t end_state,
 				   uint32_t num_cycles)
 {
 	uint8_t tms;
 	
-	if ((IDLE == run_state) || (DRPAUSE == run_state) 
+	if ((IDLE == run_state) || (DRPAUSE == run_state)
 		|| (IRPAUSE == run_state))
 	{
 		tms = 0;
@@ -374,7 +374,7 @@ RESULT tap_runtest(enum tap_state_t run_state, enum tap_state_t end_state,
 		}
 		else
 		{
-			tap_tms_remain_cycles = 
+			tap_tms_remain_cycles =
 						(uint8_t)(tap_tms_remain_cycles + num_cycles);
 			tap_tms_remain = tms_tmp;
 			num_cycles = 0;
@@ -445,7 +445,7 @@ RESULT tap_scan_ir(uint8_t *buffer, uint32_t bit_size)
 	}
 	if (end_state != IRPAUSE)
 	{
-		ret = jtag_xr(buffer, (uint16_t)bit_size, 0, 0, 
+		ret = jtag_xr(buffer, (uint16_t)bit_size, 0, 0,
 				1 << ((bit_size - 1) % 8), tap_move[IRPAUSE][end_state].tms);
 		if (ret != ERROR_OK)
 		{
@@ -454,7 +454,7 @@ RESULT tap_scan_ir(uint8_t *buffer, uint32_t bit_size)
 	}
 	else
 	{
-		ret = jtag_xr(buffer, (uint16_t)bit_size, 0, 0, 
+		ret = jtag_xr(buffer, (uint16_t)bit_size, 0, 0,
 						1 << ((bit_size - 1) % 8), 0);
 		if (ret != ERROR_OK)
 		{
@@ -486,7 +486,7 @@ RESULT tap_scan_dr(uint8_t *buffer, uint32_t bit_size)
 	}
 	if (end_state != DRPAUSE)
 	{
-		ret = jtag_xr(buffer, (uint16_t)bit_size, 0, 0, 
+		ret = jtag_xr(buffer, (uint16_t)bit_size, 0, 0,
 				1 << ((bit_size - 1) % 8), tap_move[DRPAUSE][end_state].tms);
 		if (ret != ERROR_OK)
 		{
@@ -495,7 +495,7 @@ RESULT tap_scan_dr(uint8_t *buffer, uint32_t bit_size)
 	}
 	else
 	{
-		ret = jtag_xr(buffer, (uint16_t)bit_size, 0, 0, 
+		ret = jtag_xr(buffer, (uint16_t)bit_size, 0, 0,
 						1 << ((bit_size - 1) % 8), 0);
 		if (ret != ERROR_OK)
 		{
@@ -515,7 +515,7 @@ RESULT tap_commit(void)
 		tap_tms_remain &= (1 << tap_tms_remain_cycles) - 1;
 		if (tap_tms_remain & (1 << (tap_tms_remain_cycles - 1)))
 		{
-			tap_tms_remain |= ((1 << (8 - tap_tms_remain_cycles)) - 1) 
+			tap_tms_remain |= ((1 << (8 - tap_tms_remain_cycles)) - 1)
 								<< tap_tms_remain_cycles;
 		}
 		tap_tms_remain_cycles = 0;

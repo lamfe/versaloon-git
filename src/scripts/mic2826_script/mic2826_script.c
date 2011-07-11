@@ -36,7 +36,7 @@
 
 static struct mic2826_drv_interface_t mic2826_drv_ifs;
 static struct mic2826_drv_param_t mic2826_drv_param;
-static struct dal_info_t mic2826_dal_info = 
+static struct dal_info_t mic2826_dal_info =
 {
 	&mic2826_drv_ifs,
 	&mic2826_drv_param,
@@ -72,7 +72,7 @@ VSS_HANDLER(mic2826_vss_config)
 	
 	LOG_PUSH();
 	LOG_MUTE();
-	ret = mic2826_drv.config(&mic2826_dal_info, DCDC_mV, LDO1_mV, LDO2_mV, 
+	ret = mic2826_drv.config(&mic2826_dal_info, DCDC_mV, LDO1_mV, LDO2_mV,
 								LDO3_mV);
 	LOG_POP();
 	

@@ -34,7 +34,7 @@
 
 VSS_HANDLER(filelist_add_inputfile);
 VSS_HANDLER(filelist_add_outputfile);
-struct vss_cmd_t filelist_cmd[] = 
+struct vss_cmd_t filelist_cmd[] =
 {
 	VSS_CMD(	"input-file",
 				"add input file, format: input-file/I FILE[@SEG,ADDR]",
@@ -88,7 +88,7 @@ RESULT FILELIST_Open(struct filelist *fl, char *attr)
 	return ERROR_OK;
 }
 
-RESULT FILELIST_Add(struct filelist **fl, char *path, uint32_t seg_offset, 
+RESULT FILELIST_Add(struct filelist **fl, char *path, uint32_t seg_offset,
 					uint32_t addr_offset)
 {
 	struct filelist *newitem = NULL;
@@ -183,7 +183,7 @@ static RESULT filelist_add_file(struct filelist **fl, char *file)
 		char format[] = "%4d,%4d";
 		
 		file[i] = '\0';
-		if (ERROR_OK != strparser_parse(&file[i + 1], format, 
+		if (ERROR_OK != strparser_parse(&file[i + 1], format,
 											(uint8_t*)buff, sizeof(buff)))
 		{
 			LOG_ERROR(ERRMSG_NOT_SUPPORT_AS, &file[i + 1], format);
@@ -201,7 +201,7 @@ static RESULT filelist_add_file(struct filelist **fl, char *file)
 	return ERROR_OK;
 }
 
-static RESULT filelist_check_collision(struct filelist *fl1, 
+static RESULT filelist_check_collision(struct filelist *fl1,
 										struct filelist *fl2)
 {
 	struct filelist *fl_out_tmp = fl1;

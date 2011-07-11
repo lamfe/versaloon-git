@@ -47,9 +47,9 @@ static uint8_t strparser_is_divider(char div)
 	return 0;
 }
 
-static const uint64_t strparser_maxvalue[] = 
-{0, 
-0xFF, 0xFFFF, 0xFFFFFF, 0xFFFFFFFF, 
+static const uint64_t strparser_maxvalue[] =
+{0,
+0xFF, 0xFFFF, 0xFFFFFF, 0xFFFFFFFF,
 0xFFFFFFFFFF, 0xFFFFFFFFFFFF, 0xFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF};
 
 RESULT strparser_check(char * str, char * format)
@@ -87,7 +87,7 @@ uint32_t strparser_getsize(char * format)
 	return size;
 }
 
-RESULT strparser_parse(char * str, char * format, uint8_t * buff, 
+RESULT strparser_parse(char * str, char * format, uint8_t * buff,
 						uint32_t size)
 {
 	char *ptr_tmp;
@@ -150,7 +150,7 @@ parse_integer:
 				}
 				if (param > 8)
 				{
-					LOG_DEBUG("%d is invalid for integer size, max is %d", 
+					LOG_DEBUG("%d is invalid for integer size, max is %d",
 								(uint32_t)param, 8);
 					return ERROR_FAIL;
 				}
@@ -323,7 +323,7 @@ solve_integer:
 				}
 				if (param > 8)
 				{
-					LOG_DEBUG("%d is invalid for integer size, max is %d", 
+					LOG_DEBUG("%d is invalid for integer size, max is %d",
 								(uint32_t)param, 8);
 					free(ret);
 					ret = NULL;
@@ -367,7 +367,7 @@ solve_integer:
 					}
 					else
 					{
-						sprintf(tmp_format, "0x%%0%d"PRIX64, 
+						sprintf(tmp_format, "0x%%0%d"PRIX64,
 									(uint32_t)(param * 2));
 						sprintf(tmp_str, tmp_format, value);
 					}

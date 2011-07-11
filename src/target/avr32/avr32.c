@@ -43,13 +43,13 @@
 
 #define CUR_TARGET_STRING			AVR32_STRING
 
-struct program_area_map_t avr32_program_area_map[] = 
+struct program_area_map_t avr32_program_area_map[] =
 {
 	{APPLICATION_CHAR, 1, 0, 0, 0, AREA_ATTR_EWR | AREA_ATTR_RNP},
 	{0, 0, 0, 0, 0, 0}
 };
 
-const struct program_mode_t avr32_program_mode[] = 
+const struct program_mode_t avr32_program_mode[] =
 {
 	{'j', SET_FREQUENCY, IFS_JTAG_HL},
 	{0, NULL, 0}
@@ -60,13 +60,13 @@ LEAVE_PROGRAM_MODE_HANDLER(avr32jtag);
 ERASE_TARGET_HANDLER(avr32jtag);
 WRITE_TARGET_HANDLER(avr32jtag);
 READ_TARGET_HANDLER(avr32jtag);
-struct program_functions_t avr32_program_functions = 
+struct program_functions_t avr32_program_functions =
 {
 	NULL,			// execute
-	ENTER_PROGRAM_MODE_FUNCNAME(avr32jtag), 
-	LEAVE_PROGRAM_MODE_FUNCNAME(avr32jtag), 
-	ERASE_TARGET_FUNCNAME(avr32jtag), 
-	WRITE_TARGET_FUNCNAME(avr32jtag), 
+	ENTER_PROGRAM_MODE_FUNCNAME(avr32jtag),
+	LEAVE_PROGRAM_MODE_FUNCNAME(avr32jtag),
+	ERASE_TARGET_FUNCNAME(avr32jtag),
+	WRITE_TARGET_FUNCNAME(avr32jtag),
 	READ_TARGET_FUNCNAME(avr32jtag)
 };
 
@@ -95,7 +95,7 @@ VSS_HANDLER(avr32_mode)
 	return ERROR_OK;
 }
 
-const struct vss_cmd_t avr32_notifier[] = 
+const struct vss_cmd_t avr32_notifier[] =
 {
 	VSS_CMD(	"help",
 				"print help information of current target for internal call",
@@ -142,8 +142,8 @@ const struct vss_cmd_t avr32_notifier[] =
 static struct interfaces_info_t *interfaces = NULL;
 
 static uint8_t pending_4bytes = 0;
-RESULT avr32jtag_receive_callback(uint8_t index, enum jtag_irdr_t cmd, 
-					uint32_t ir, uint8_t *dest_buffer, uint8_t *src_buffer, 
+RESULT avr32jtag_receive_callback(uint8_t index, enum jtag_irdr_t cmd,
+					uint32_t ir, uint8_t *dest_buffer, uint8_t *src_buffer,
 					uint16_t bytelen, uint16_t *processed)
 {
 	REFERENCE_PARAMETER(index);
@@ -159,8 +159,8 @@ RESULT avr32jtag_receive_callback(uint8_t index, enum jtag_irdr_t cmd,
 		return ERROR_OK;
 		break;
 	case JTAG_SCANTYPE_DR:
-		if ((5 == bytelen) 
-			&& ((AVR32_JTAG_INS_MEMORY_WORD_ACCESS == ir) 
+		if ((5 == bytelen)
+			&& ((AVR32_JTAG_INS_MEMORY_WORD_ACCESS == ir)
 				|| (AVR32_JTAG_INS_MEMORY_BLOCK_ACCESS == ir)))
 		{
 			*processed = 1;
@@ -176,7 +176,7 @@ RESULT avr32jtag_receive_callback(uint8_t index, enum jtag_irdr_t cmd,
 	return ERROR_FAIL;
 }
 
-RESULT avr32jtag_send_callback(uint8_t index, enum jtag_irdr_t cmd, 
+RESULT avr32jtag_send_callback(uint8_t index, enum jtag_irdr_t cmd,
 					uint32_t ir, uint8_t *dest_buffer, uint8_t *src_buffer,
 					uint16_t bytelen, uint16_t *processed_len)
 {
@@ -193,9 +193,9 @@ RESULT avr32jtag_send_callback(uint8_t index, enum jtag_irdr_t cmd,
 		return ERROR_OK;
 		break;
 	case JTAG_SCANTYPE_DR:
-		if ((5 == bytelen) 
+		if ((5 == bytelen)
 			&& pending_4bytes
-			&& ((AVR32_JTAG_INS_MEMORY_WORD_ACCESS == ir) 
+			&& ((AVR32_JTAG_INS_MEMORY_WORD_ACCESS == ir)
 				|| (AVR32_JTAG_INS_MEMORY_BLOCK_ACCESS == ir)))
 		{
 			pending_4bytes = 0;
@@ -209,7 +209,7 @@ RESULT avr32jtag_send_callback(uint8_t index, enum jtag_irdr_t cmd,
 	return ERROR_FAIL;
 }
 
-static RESULT avr32jtag_sab_word_access(uint8_t slave_addr, uint32_t addr, 
+static RESULT avr32jtag_sab_word_access(uint8_t slave_addr, uint32_t addr,
 											uint8_t *data, uint8_t read)
 {
 	uint8_t ir;
@@ -276,7 +276,7 @@ static RESULT avr32jtag_sab_word_access(uint8_t slave_addr, uint32_t addr,
 	return ERROR_OK;
 }
 
-static RESULT avr32jtag_sab_access(uint8_t slave_addr, uint32_t addr, 
+static RESULT avr32jtag_sab_access(uint8_t slave_addr, uint32_t addr,
 									uint8_t *data, uint8_t read, uint32_t len)
 {
 	uint8_t ir;
@@ -330,14 +330,14 @@ static RESULT avr32jtag_fcmd_call(uint8_t command, uint16_t pagen)
 	uint32_t start, end;
 	
 	data = command | (pagen << 8) | AVR32_FLASHC_FCMD_KEY;
-	avr32jtag_sab_access(AVR32_SAB_SLAVE_HSB, AVR32_FLASHC_FCR, 
+	avr32jtag_sab_access(AVR32_SAB_SLAVE_HSB, AVR32_FLASHC_FCR,
 								(uint8_t*)&data, AVR32_JTAG_WRITE, 1);
 	
 	start = get_time_in_ms();
 	do
 	{
 		data = 0;
-		avr32jtag_sab_access(AVR32_SAB_SLAVE_HSB, AVR32_FLASHC_FSR, 
+		avr32jtag_sab_access(AVR32_SAB_SLAVE_HSB, AVR32_FLASHC_FSR,
 								(uint8_t*)&data, AVR32_JTAG_READ, 1);
 		if (ERROR_OK != jtag_commit())
 		{
@@ -370,14 +370,14 @@ ENTER_PROGRAM_MODE_HANDLER(avr32jtag)
 	
 	// init
 	jtag_init();
-	jtag_config(pi->frequency, pi->jtag_pos.ub, pi->jtag_pos.ua, 
+	jtag_config(pi->frequency, pi->jtag_pos.ub, pi->jtag_pos.ua,
 					pi->jtag_pos.bb, pi->jtag_pos.ba);
 	if (ERROR_OK != jtag_commit())
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "init jtag");
 		return ERROR_FAIL;
 	}
-	jtag_register_callback(avr32jtag_send_callback, 
+	jtag_register_callback(avr32jtag_send_callback,
 								   avr32jtag_receive_callback);
 	
 	return jtag_commit();
@@ -413,7 +413,7 @@ ERASE_TARGET_HANDLER(avr32jtag)
 	case APPLICATION_CHAR:
 		// read fsr to check lock
 		data = 0;
-		avr32jtag_sab_access(AVR32_SAB_SLAVE_HSB, AVR32_FLASHC_FSR, 
+		avr32jtag_sab_access(AVR32_SAB_SLAVE_HSB, AVR32_FLASHC_FSR,
 								(uint8_t*)&data, AVR32_JTAG_READ, 1);
 		if (ERROR_OK != jtag_commit())
 		{
@@ -441,7 +441,7 @@ ERASE_TARGET_HANDLER(avr32jtag)
 		
 		// check BOOTPROT
 		data = 0;
-		avr32jtag_sab_access(AVR32_SAB_SLAVE_HSB, AVR32_FLASHC_FGPFRHI, 
+		avr32jtag_sab_access(AVR32_SAB_SLAVE_HSB, AVR32_FLASHC_FGPFRHI,
 								(uint8_t*)&data, AVR32_JTAG_READ, 1);
 		if (ERROR_OK != jtag_commit())
 		{
@@ -450,7 +450,7 @@ ERASE_TARGET_HANDLER(avr32jtag)
 		}
 		LOG_DEBUG(INFOMSG_REG_08X, "fusehi", data);
 		data = 0;
-		avr32jtag_sab_access(AVR32_SAB_SLAVE_HSB, AVR32_FLASHC_FGPFRLO, 
+		avr32jtag_sab_access(AVR32_SAB_SLAVE_HSB, AVR32_FLASHC_FGPFRLO,
 								(uint8_t*)&data, AVR32_JTAG_READ, 1);
 		if (ERROR_OK != jtag_commit())
 		{
@@ -481,7 +481,7 @@ WRITE_TARGET_HANDLER(avr32jtag)
 	case APPLICATION_CHAR:
 		pagen = (uint16_t)((addr - flash_info->addr) / flash_info->page_size);
 		avr32jtag_fcmd_call(AVR32_FLASHC_FCMD_CPB, 0);
-		avr32jtag_sab_access(AVR32_SAB_SLAVE_HSB, addr, 
+		avr32jtag_sab_access(AVR32_SAB_SLAVE_HSB, addr,
 								buff, AVR32_JTAG_WRITE, size / 4);
 		jtag_commit();
 		if (ERROR_OK != avr32jtag_fcmd_call(AVR32_FLASHC_FCMD_WP, pagen))
@@ -523,7 +523,7 @@ READ_TARGET_HANDLER(avr32jtag)
 		for (ir = 0; ir < 10; ir++)
 		{
 			dr = 0;
-			avr32jtag_sab_access(AVR32_SAB_SLAVE_HSB, AVR32_FLASHC_FSR, 
+			avr32jtag_sab_access(AVR32_SAB_SLAVE_HSB, AVR32_FLASHC_FSR,
 									(uint8_t*)&dr, AVR32_JTAG_READ, 1);
 			if (ERROR_OK != jtag_commit())
 			{
@@ -532,7 +532,7 @@ READ_TARGET_HANDLER(avr32jtag)
 			LOG_DEBUG(INFOMSG_REG_08X, "FLASHC_FSR", dr);
 			
 			dr = 0;
-			avr32jtag_sab_access(AVR32_SAB_SLAVE_OCD, 0, 
+			avr32jtag_sab_access(AVR32_SAB_SLAVE_OCD, 0,
 									(uint8_t*)&dr, AVR32_JTAG_READ, 1);
 			if (ERROR_OK != jtag_commit())
 			{
@@ -556,7 +556,7 @@ READ_TARGET_HANDLER(avr32jtag)
 		current_size = 0;
 		while (current_size < size)
 		{
-			avr32jtag_sab_access(AVR32_SAB_SLAVE_HSB, addr + current_size, 
+			avr32jtag_sab_access(AVR32_SAB_SLAVE_HSB, addr + current_size,
 						&buff[current_size], AVR32_JTAG_READ, page_size / 4);
 			current_size += page_size;
 			pgbar_update(page_size);

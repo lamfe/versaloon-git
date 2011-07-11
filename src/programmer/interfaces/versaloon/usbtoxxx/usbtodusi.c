@@ -56,7 +56,7 @@ RESULT usbtodusi_config(uint8_t interface_index, uint32_t kHz, uint8_t mode)
 	return usbtoxxx_conf_command(USB_TO_DUSI, interface_index, conf, 5);
 }
 
-RESULT usbtodusi_io(uint8_t interface_index, uint8_t *mo, uint8_t *mi, 
+RESULT usbtodusi_io(uint8_t interface_index, uint8_t *mo, uint8_t *mi,
 					uint8_t *so, uint8_t *si, uint32_t bitlen)
 {
 	uint16_t bytelen = (uint16_t)((bitlen + 7) / 8);
@@ -102,7 +102,7 @@ RESULT usbtodusi_io(uint8_t interface_index, uint8_t *mo, uint8_t *mi,
 		}
 	}
 	
-	return usbtoxxx_inout_command(USB_TO_DUSI, interface_index, 
+	return usbtoxxx_inout_command(USB_TO_DUSI, interface_index,
 		versaloon_cmd_buf, 2 + 2 * bytelen, 2 * bytelen, NULL, 0, 0, 0);
 }
 

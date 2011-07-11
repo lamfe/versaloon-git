@@ -43,14 +43,14 @@
 
 #define CUR_TARGET_STRING			LPC1000_STRING
 
-struct program_area_map_t lpc1000_program_area_map[] = 
+struct program_area_map_t lpc1000_program_area_map[] =
 {
 	{APPLICATION_CHAR, 1, 0, 0, 0, AREA_ATTR_EWR | AREA_ATTR_RAE},
 	{UNIQUEID_CHAR, 0, 0, 0, 0, AREA_ATTR_R},
 	{0, 0, 0, 0, 0, 0}
 };
 
-const struct program_mode_t lpc1000_program_mode[] = 
+const struct program_mode_t lpc1000_program_mode[] =
 {
 	{'j', SET_FREQUENCY, IFS_JTAG_HL},
 	{'s', "", IFS_SWD},
@@ -88,20 +88,20 @@ VSS_HANDLER(lpc1000_mode)
 	case LPC1000_SWD:
 		cm3_mode_offset = 0;
 		vss_call_notifier(cm3_notifier, "chip", "cm3_lpc1000");
-		memcpy(&lpc1000_program_functions, &cm3_program_functions, 
+		memcpy(&lpc1000_program_functions, &cm3_program_functions,
 				sizeof(lpc1000_program_functions));
-		lpc1000_enter_program_mode_save = 
+		lpc1000_enter_program_mode_save =
 								cm3_program_functions.enter_program_mode;
 		break;
 	case LPC1000_ISP:
 		vss_call_notifier(comisp_notifier, "chip", "comisp_lpcarm");
-		memcpy(&lpc1000_program_functions, &comisp_program_functions, 
+		memcpy(&lpc1000_program_functions, &comisp_program_functions,
 				sizeof(lpc1000_program_functions));
-		lpc1000_enter_program_mode_save = 
+		lpc1000_enter_program_mode_save =
 								comisp_program_functions.enter_program_mode;
 		break;
 	}
-	lpc1000_program_functions.enter_program_mode = 
+	lpc1000_program_functions.enter_program_mode =
 								ENTER_PROGRAM_MODE_FUNCNAME(lpc1000);
 	return ERROR_OK;
 }
@@ -116,7 +116,7 @@ VSS_HANDLER(lpc1000_extra)
 	return vss_run_script(cmd);
 }
 
-const struct vss_cmd_t lpc1000_notifier[] = 
+const struct vss_cmd_t lpc1000_notifier[] =
 {
 	VSS_CMD(	"help",
 				"print help information of current target for internal call",
@@ -183,7 +183,7 @@ ADJUST_SETTING_HANDLER(lpc1000)
 	return ERROR_OK;
 }
 
-uint8_t lpc1000_get_sector_idx_by_addr(struct program_context_t *context, 
+uint8_t lpc1000_get_sector_idx_by_addr(struct program_context_t *context,
 										uint32_t addr)
 {
 	REFERENCE_PARAMETER(context);
@@ -215,7 +215,7 @@ ENTER_PROGRAM_MODE_HANDLER(lpc1000)
 		return ERROR_FAIL;
 	}
 	
-	if ((pi->auto_adjust) 
+	if ((pi->auto_adjust)
 		&& (flash_area->buff != NULL) && (flash_area->size > 32))
 	{
 		checksum = 0;

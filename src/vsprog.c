@@ -94,7 +94,7 @@ VSS_HANDLER(vsprog_mass);
 VSS_HANDLER(vsprog_free_all);
 VSS_HANDLER(vsprog_init);
 
-struct vss_cmd_t vsprog_cmd[] = 
+struct vss_cmd_t vsprog_cmd[] =
 {
 	VSS_CMD(	"help",
 				"show help, format: help/h",
@@ -132,7 +132,7 @@ struct vss_cmd_t vsprog_cmd[] =
 	VSS_CMD(	"M",
 				"enable mass product mode, format: mass-product/M",
 				vsprog_mass),
-	VSS_CMD(	"free-all", 
+	VSS_CMD(	"free-all",
 				"free everything, format: free-all",
 				vsprog_free_all),
 	VSS_CMD(	"init",
@@ -149,11 +149,11 @@ static int vsprog_query_cmd = 0;
 static char *program_name = NULL;
 static char *program_dir = NULL;
 char *config_dir = NULL;
-const char *config_dirs[] = 
+const char *config_dirs[] =
 {
-	"/usr/share/vsprog/config/", 
-	"/usr/local/share/vsprog/config/", 
-	"/etc/vsprog/config/", 
+	"/usr/share/vsprog/config/",
+	"/usr/local/share/vsprog/config/",
+	"/etc/vsprog/config/",
 	"./config/"
 };
 
@@ -240,7 +240,7 @@ void vsprog_no_call_operate(void)
 	vsprog_query_cmd = 1;
 }
 
-static RESULT parse_operation(uint32_t *operation, const char *opt, 
+static RESULT parse_operation(uint32_t *operation, const char *opt,
 								uint32_t optlen)
 {
 	uint32_t mask = 0, tmp;
@@ -315,7 +315,7 @@ Usage: %s [OPTION]...\n\
   -t,  --target <TARGET VALUE>              set target value, eg(fuse): -tu0x02\n\
   -L,  --list-programmer                    list programmers available\n\
   -M,  --mass-product                       set mass_product mode\n\
-  -G,  --gui-mode                           set gui_mode\n\n"), 
+  -G,  --gui-mode                           set gui_mode\n\n"),
 			program_name);
 
 	interface_print_help();
@@ -390,7 +390,7 @@ VSS_HANDLER(vsprog_support)
 		{
 			if (!strcmp(interfaces_info[i]->name, argv[1]))
 			{
-				vss_call_notifier(interfaces_info[i]->notifier, 
+				vss_call_notifier(interfaces_info[i]->notifier,
 									"support", NULL);
 				return ERROR_OK;
 			}
@@ -639,7 +639,7 @@ int main(int argc, char* argv[])
 			{
 				lose_argu = 1;
 			}
-			else if (ERROR_OK != vss_run_cmd(vss_argc, 
+			else if (ERROR_OK != vss_run_cmd(vss_argc,
 												(const char **)vss_argv))
 			{
 				free_all_and_exit(EXIT_FAILURE);

@@ -52,13 +52,13 @@
 
 ENTER_PROGRAM_MODE_HANDLER(cm3);
 LEAVE_PROGRAM_MODE_HANDLER(cm3);
-struct program_functions_t cm3_program_functions = 
+struct program_functions_t cm3_program_functions =
 {
 	NULL,			// execute
-	ENTER_PROGRAM_MODE_FUNCNAME(cm3), 
-	LEAVE_PROGRAM_MODE_FUNCNAME(cm3), 
-	NULL, 
-	NULL, 
+	ENTER_PROGRAM_MODE_FUNCNAME(cm3),
+	LEAVE_PROGRAM_MODE_FUNCNAME(cm3),
+	NULL,
+	NULL,
 	NULL
 };
 
@@ -117,12 +117,12 @@ VSS_HANDLER(cm3_chip)
 		if (!strcmp(cm3_chips_param[i].chip_name, argv[1]))
 		{
 			cm3_chip_index = i;
-			memcpy(&cm3_program_functions, 
-					cm3_chips_param[i].program_functions, 
+			memcpy(&cm3_program_functions,
+					cm3_chips_param[i].program_functions,
 					sizeof(cm3_program_functions));
-			cm3_program_functions.enter_program_mode = 
+			cm3_program_functions.enter_program_mode =
 				ENTER_PROGRAM_MODE_FUNCNAME(cm3);
-			cm3_program_functions.leave_program_mode = 
+			cm3_program_functions.leave_program_mode =
 				LEAVE_PROGRAM_MODE_FUNCNAME(cm3);
 			return ERROR_OK;
 		}
@@ -130,7 +130,7 @@ VSS_HANDLER(cm3_chip)
 	return ERROR_FAIL;
 }
 
-const struct vss_cmd_t cm3_notifier[] = 
+const struct vss_cmd_t cm3_notifier[] =
 {
 	VSS_CMD(	"chip",
 				"select target chip for internal call",
@@ -142,7 +142,7 @@ ENTER_PROGRAM_MODE_HANDLER(cm3)
 {
 	struct adi_dpif_t dp;
 	struct program_info_t *pi = context->pi;
-	const struct program_functions_t *pf = 
+	const struct program_functions_t *pf =
 		cm3_chips_param[cm3_chip_index].program_functions;
 	
 	if (cm3_chip_index >= dimof(cm3_chips_param))
@@ -151,7 +151,7 @@ ENTER_PROGRAM_MODE_HANDLER(cm3)
 	}
 	
 	// jtag/swd init
-	if (((context->pi->mode - cm3_mode_offset) != ADI_DP_JTAG) 
+	if (((context->pi->mode - cm3_mode_offset) != ADI_DP_JTAG)
 		&& ((context->pi->mode - cm3_mode_offset) != ADI_DP_SWD))
 	{
 		LOG_WARNING("debug port not defined, use JTAG by default.");
@@ -164,35 +164,35 @@ ENTER_PROGRAM_MODE_HANDLER(cm3)
 	case ADI_DP_JTAG:
 		if (context->pi->frequency)
 		{
-			dp.dpif_setting.dpif_jtag_setting.jtag_khz = 
+			dp.dpif_setting.dpif_jtag_setting.jtag_khz =
 				context->pi->frequency;
 		}
 		else
 		{
-			dp.dpif_setting.dpif_jtag_setting.jtag_khz = 
+			dp.dpif_setting.dpif_jtag_setting.jtag_khz =
 				cm3_chips_param[cm3_chip_index].jtag_khz;
 		}
-		dp.dpif_setting.dpif_jtag_setting.ub = 
+		dp.dpif_setting.dpif_jtag_setting.ub =
 			cm3_chips_param[cm3_chip_index].jtag_pos.ub + pi->jtag_pos.ub;
-		dp.dpif_setting.dpif_jtag_setting.ua = 
+		dp.dpif_setting.dpif_jtag_setting.ua =
 			cm3_chips_param[cm3_chip_index].jtag_pos.ua + pi->jtag_pos.ua;
-		dp.dpif_setting.dpif_jtag_setting.bb = 
+		dp.dpif_setting.dpif_jtag_setting.bb =
 			cm3_chips_param[cm3_chip_index].jtag_pos.bb + pi->jtag_pos.bb;
-		dp.dpif_setting.dpif_jtag_setting.ba = 
+		dp.dpif_setting.dpif_jtag_setting.ba =
 			cm3_chips_param[cm3_chip_index].jtag_pos.ba + pi->jtag_pos.ba;
 		
 		break;
 	case ADI_DP_SWD:
-		dp.dpif_setting.dpif_swd_setting.swd_trn = 
+		dp.dpif_setting.dpif_swd_setting.swd_trn =
 				cm3_chips_param[cm3_chip_index].swd_trn;
 		if (context->pi->wait_state)
 		{
-			dp.dpif_setting.dpif_swd_setting.swd_dly = 
+			dp.dpif_setting.dpif_swd_setting.swd_dly =
 				context->pi->wait_state;
 		}
 		else
 		{
-			dp.dpif_setting.dpif_swd_setting.swd_dly = 
+			dp.dpif_setting.dpif_swd_setting.swd_dly =
 				cm3_chips_param[cm3_chip_index].swd_delay;
 		}
 		dp.dpif_setting.dpif_swd_setting.swd_retry = 0;
@@ -209,7 +209,7 @@ ENTER_PROGRAM_MODE_HANDLER(cm3)
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
-	if ((pf->enter_program_mode != NULL) 
+	if ((pf->enter_program_mode != NULL)
 		&& (ERROR_OK != pf->enter_program_mode(context)))
 	{
 		return ERROR_FAIL;
@@ -220,7 +220,7 @@ ENTER_PROGRAM_MODE_HANDLER(cm3)
 LEAVE_PROGRAM_MODE_HANDLER(cm3)
 {
 	struct program_info_t *pi = context->pi;
-	const struct program_functions_t *pf = 
+	const struct program_functions_t *pf =
 		cm3_chips_param[cm3_chip_index].program_functions;
 	RESULT ret = ERROR_OK;
 	
@@ -234,7 +234,7 @@ LEAVE_PROGRAM_MODE_HANDLER(cm3)
 		ret = pf->leave_program_mode(context, success);
 	}
 	
-	if (pi->execute_flag && success 
+	if (pi->execute_flag && success
 		&& (context->op->write_operations & APPLICATION))
 	{
 		uint32_t reg;
@@ -244,14 +244,14 @@ LEAVE_PROGRAM_MODE_HANDLER(cm3)
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "halt cm3");
 			return ERRCODE_FAILURE_OPERATION;
 		}
-		if (ERROR_OK != 
+		if (ERROR_OK !=
 				cm3_write_core_register(CM3_COREREG_PC, &pi->execute_addr))
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "write PC");
 			return ERRCODE_FAILURE_OPERATION;
 		}
 		reg = 0;
-		if ((ERROR_OK != cm3_read_core_register(CM3_COREREG_PC, &reg)) 
+		if ((ERROR_OK != cm3_read_core_register(CM3_COREREG_PC, &reg))
 			|| (reg != pi->execute_addr))
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "verify written PC");

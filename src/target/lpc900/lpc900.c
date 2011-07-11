@@ -40,13 +40,13 @@
 
 #define CUR_TARGET_STRING			LPC900_STRING
 
-const struct program_area_map_t lpc900_program_area_map[] = 
+const struct program_area_map_t lpc900_program_area_map[] =
 {
 	{APPLICATION_CHAR, 1, 0, 0, 0, AREA_ATTR_EW | AREA_ATTR_V | AREA_ATTR_RNP},
 	{0, 0, 0, 0, 0, 0}
 };
 
-const struct program_mode_t lpc900_program_mode[] = 
+const struct program_mode_t lpc900_program_mode[] =
 {
 	{'*', "", IFS_LPC_ICP},
 	{0, NULL, 0}
@@ -57,13 +57,13 @@ LEAVE_PROGRAM_MODE_HANDLER(lpc900icp);
 ERASE_TARGET_HANDLER(lpc900icp);
 WRITE_TARGET_HANDLER(lpc900icp);
 READ_TARGET_HANDLER(lpc900icp);
-const struct program_functions_t lpc900_program_functions = 
+const struct program_functions_t lpc900_program_functions =
 {
 	NULL,			// execute
-	ENTER_PROGRAM_MODE_FUNCNAME(lpc900icp), 
-	LEAVE_PROGRAM_MODE_FUNCNAME(lpc900icp), 
-	ERASE_TARGET_FUNCNAME(lpc900icp), 
-	WRITE_TARGET_FUNCNAME(lpc900icp), 
+	ENTER_PROGRAM_MODE_FUNCNAME(lpc900icp),
+	LEAVE_PROGRAM_MODE_FUNCNAME(lpc900icp),
+	ERASE_TARGET_FUNCNAME(lpc900icp),
+	WRITE_TARGET_FUNCNAME(lpc900icp),
 	READ_TARGET_FUNCNAME(lpc900icp)
 };
 
@@ -75,7 +75,7 @@ Usage of %s:\n\n", CUR_TARGET_STRING);
 	return ERROR_OK;
 }
 
-const struct vss_cmd_t lpc900_notifier[] = 
+const struct vss_cmd_t lpc900_notifier[] =
 {
 	VSS_CMD(	"help",
 				"print help information of current target for internal call",
@@ -275,9 +275,9 @@ WRITE_TARGET_HANDLER(lpc900icp)
 		tmpbuf[5 + size + 5] = ICP_FMCMD_PROG;
 		
 		icp_out(tmpbuf, (uint16_t)(11 + size));
-		icp_poll(ICP_CMD_READ | ICP_CMD_FMCON, tmpbuf, 
+		icp_poll(ICP_CMD_READ | ICP_CMD_FMCON, tmpbuf,
 					0x0F, 0x80, 10000);
-		if ((ERROR_OK != icp_commit()) 
+		if ((ERROR_OK != icp_commit())
 			|| (tmpbuf[0] != LPCICP_POLL_ON_CLEAR))
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATE_DEVICE, "target chip");
@@ -349,7 +349,7 @@ READ_TARGET_HANDLER(lpc900icp)
 			tmpbuf[1] = ICP_FMCMD_CRC_G;
 			icp_out(tmpbuf, 2);
 			icp_poll(ICP_CMD_READ | ICP_CMD_FMCON, tmpbuf, 0x0F, 0x80, 10000);
-			if ((ERROR_OK != icp_commit()) 
+			if ((ERROR_OK != icp_commit())
 				|| (tmpbuf[0] != LPCICP_POLL_ON_CLEAR))
 			{
 				ret = ERRCODE_FAILURE_OPERATION;

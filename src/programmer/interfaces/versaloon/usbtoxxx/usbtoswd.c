@@ -53,7 +53,7 @@ RESULT usbtoswd_fini(uint8_t interface_index)
 	return usbtoxxx_fini_command(USB_TO_SWD, interface_index);
 }
 
-RESULT usbtoswd_config(uint8_t interface_index, uint8_t trn, uint16_t retry, 
+RESULT usbtoswd_config(uint8_t interface_index, uint8_t trn, uint16_t retry,
 					   uint16_t dly)
 {
 	uint8_t cfg_buf[5];
@@ -88,7 +88,7 @@ RESULT usbtoswd_seqout(uint8_t interface_index, uint8_t *data, uint16_t bitlen)
 	SET_LE_U16(&versaloon_cmd_buf[0], bitlen);
 	memcpy(versaloon_cmd_buf + 2, data, bytelen);
 	
-	return usbtoxxx_out_command(USB_TO_SWD, interface_index, 
+	return usbtoxxx_out_command(USB_TO_SWD, interface_index,
 								versaloon_cmd_buf, bytelen + 2, 0);
 }
 
@@ -107,11 +107,11 @@ RESULT usbtoswd_seqin(uint8_t interface_index, uint8_t *data, uint16_t bitlen)
 	
 	SET_LE_U16(&buff[0], bitlen);
 	
-	return usbtoxxx_in_command(USB_TO_SWD, interface_index, buff, 2, bytelen, 
+	return usbtoxxx_in_command(USB_TO_SWD, interface_index, buff, 2, bytelen,
 								data, 0, bytelen, 0);
 }
 
-RESULT usbtoswd_transact(uint8_t interface_index, uint8_t request, 
+RESULT usbtoswd_transact(uint8_t interface_index, uint8_t request,
 							uint32_t *data, uint8_t *ack)
 {
 	uint8_t parity;
@@ -145,13 +145,13 @@ RESULT usbtoswd_transact(uint8_t interface_index, uint8_t request,
 	if (request & 0x04)
 	{
 		// read
-		return usbtoxxx_inout_command(USB_TO_SWD, interface_index, buff, 5, 5, 
+		return usbtoxxx_inout_command(USB_TO_SWD, interface_index, buff, 5, 5,
 										(uint8_t *)data, 1, 4, 0);
 	}
 	else
 	{
 		// write
-		return usbtoxxx_inout_command(USB_TO_SWD, interface_index, buff, 5, 5, 
+		return usbtoxxx_inout_command(USB_TO_SWD, interface_index, buff, 5, 5,
 										NULL, 0, 0, 0);
 	}
 }

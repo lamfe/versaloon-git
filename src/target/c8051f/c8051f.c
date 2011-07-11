@@ -39,13 +39,13 @@
 
 #define CUR_TARGET_STRING			C8051F_STRING
 
-const struct program_area_map_t c8051f_program_area_map[] = 
+const struct program_area_map_t c8051f_program_area_map[] =
 {
 	{APPLICATION_CHAR, 1, 0, 0, 0, AREA_ATTR_EWR},
 	{0, 0, 0, 0, 0, 0}
 };
 
-const struct program_mode_t c8051f_program_mode[] = 
+const struct program_mode_t c8051f_program_mode[] =
 {
 	{'j', SET_FREQUENCY, IFS_JTAG_HL},
 	{'c', SET_FREQUENCY, IFS_C2 | IFS_GPIO},
@@ -59,7 +59,7 @@ VSS_HANDLER(c8051f_help)
 	VSS_CHECK_ARGC(1);
 	PRINTF("\
 Usage of %s:\n\
-  -m,  --mode <MODE>                        set mode<j|c>\n\n", 
+  -m,  --mode <MODE>                        set mode<j|c>\n\n",
 			CUR_TARGET_STRING);
 	return ERROR_OK;
 }
@@ -73,18 +73,18 @@ VSS_HANDLER(c8051f_mode)
 	switch (mode)
 	{
 	case C8051F_JTAG:
-		memcpy(&c8051f_program_functions, &c8051fjtag_program_functions, 
+		memcpy(&c8051f_program_functions, &c8051fjtag_program_functions,
 				sizeof(c8051f_program_functions));
 		break;
 	case C8051F_C2:
-		memcpy(&c8051f_program_functions, &c8051fc2_program_functions, 
+		memcpy(&c8051f_program_functions, &c8051fc2_program_functions,
 				sizeof(c8051f_program_functions));
 		break;
 	}
 	return ERROR_OK;
 }
 
-const struct vss_cmd_t c8051f_notifier[] = 
+const struct vss_cmd_t c8051f_notifier[] =
 {
 	VSS_CMD(	"help",
 				"print help information of current target for internal call",

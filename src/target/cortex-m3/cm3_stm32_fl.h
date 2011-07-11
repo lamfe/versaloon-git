@@ -48,7 +48,7 @@ RESULT stm32swj_fl_init(uint32_t fl_base);
 RESULT stm32swj_fl_run(struct stm32_fl_cmd_t *cmd);
 RESULT stm32swj_fl_poll_result(struct stm32_fl_result_t *result, bool *failed);
 RESULT stm32swj_fl_wait_ready(struct stm32_fl_result_t *result, bool last);
-RESULT stm32swj_fl_call(struct stm32_fl_cmd_t *cmd, 
+RESULT stm32swj_fl_call(struct stm32_fl_cmd_t *cmd,
 							struct stm32_fl_result_t *result, bool last);
 
 #endif	// __CM3_STM32_FL_H_INCLUDED__

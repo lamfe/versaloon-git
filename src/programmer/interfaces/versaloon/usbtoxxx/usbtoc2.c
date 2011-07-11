@@ -49,12 +49,12 @@ RESULT usbtoc2_readaddr(uint8_t interface_index, uint8_t *data)
 #endif
 	if (data != NULL)
 	{
-		return usbtoxxx_in_command(USB_TO_C2, interface_index, NULL, 0, 1, 
+		return usbtoxxx_in_command(USB_TO_C2, interface_index, NULL, 0, 1,
 									data, 0, 1, 0);
 	}
 	else
 	{
-		return usbtoxxx_in_command(USB_TO_C2, interface_index, NULL, 0, 1, 
+		return usbtoxxx_in_command(USB_TO_C2, interface_index, NULL, 0, 1,
 									NULL, 0, 0, 0);
 	}
 }
@@ -92,7 +92,7 @@ RESULT usbtoc2_readdata(uint8_t interface_index, uint8_t *buf, uint8_t len)
 	cmdbuf[0] = 0x80 | len;
 	memset(cmdbuf + 1, 0, len);
 	
-	return usbtoxxx_inout_command(USB_TO_C2, interface_index, cmdbuf, 
+	return usbtoxxx_inout_command(USB_TO_C2, interface_index, cmdbuf,
 									1 + len, len, buf, 0, len, 0);
 }
 
@@ -116,7 +116,7 @@ RESULT usbtoc2_writedata(uint8_t interface_index, uint8_t *buf, uint8_t len)
 	cmdbuf[0] = len;
 	memcpy(cmdbuf + 1, buf, len);
 	
-	return usbtoxxx_inout_command(USB_TO_C2, interface_index, cmdbuf, 
+	return usbtoxxx_inout_command(USB_TO_C2, interface_index, cmdbuf,
 									1 + len, 0, NULL, 0, 0, 0);
 }
 

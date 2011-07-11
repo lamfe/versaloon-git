@@ -41,13 +41,13 @@
 
 #define CUR_TARGET_STRING			MSP430_STRING
 
-struct program_area_map_t msp430_program_area_map[] = 
+struct program_area_map_t msp430_program_area_map[] =
 {
 	{APPLICATION_CHAR, 1, 0, 0, 0, AREA_ATTR_EW | AREA_ATTR_V},
 	{0, 0, 0, 0, 0, 0}
 };
 
-const struct program_mode_t msp430_program_mode[] = 
+const struct program_mode_t msp430_program_mode[] =
 {
 	{'j', "", IFS_MSP430_JTAG},
 	{'s', "", IFS_MSP430_SBW},
@@ -62,13 +62,13 @@ RESULT (*msp430jtagsbw_init)(uint8_t index);
 RESULT (*msp430jtagsbw_fini)(uint8_t index);
 RESULT (*msp430jtagsbw_config)(uint8_t index, uint8_t has_test);
 RESULT (*msp430jtagsbw_ir)(uint8_t index, uint8_t *ir, uint8_t want_ret);
-RESULT (*msp430jtagsbw_dr)(uint8_t index, uint32_t *dr, uint8_t len, 
+RESULT (*msp430jtagsbw_dr)(uint8_t index, uint32_t *dr, uint8_t len,
 							uint8_t want_ret);
 RESULT (*msp430jtagsbw_tclk)(uint8_t index, uint8_t value);
 RESULT (*msp430jtagsbw_tclk_strobe)(uint8_t index, uint16_t cnt);
 RESULT (*msp430jtagsbw_reset)(uint8_t index);
-RESULT (*msp430jtagsbw_poll)(uint8_t index, uint32_t dr, uint32_t mask, 
-								uint32_t value, uint8_t len, 
+RESULT (*msp430jtagsbw_poll)(uint8_t index, uint32_t dr, uint32_t mask,
+								uint32_t value, uint8_t len,
 								uint16_t poll_cnt, uint8_t toggle_tclk);
 
 VSS_HANDLER(msp430_help)
@@ -76,7 +76,7 @@ VSS_HANDLER(msp430_help)
 	VSS_CHECK_ARGC(1);
 	PRINTF("\
 Usage of %s:\n\
-  -m,  --mode <MODE>                        set mode<j|s|b>\n\n", 
+  -m,  --mode <MODE>                        set mode<j|s|b>\n\n",
 			CUR_TARGET_STRING);
 	return ERROR_OK;
 }
@@ -133,7 +133,7 @@ VSS_HANDLER(msp430_mode)
 	{
 	case MSP430_MODE_JTAG:
 	case MSP430_MODE_SBW:
-		memcpy(&msp430_program_functions, &msp430jtagsbw_program_functions, 
+		memcpy(&msp430_program_functions, &msp430jtagsbw_program_functions,
 				sizeof(msp430_program_functions));
 		enter_program_mode_save = msp430jtagsbw_program_functions.enter_program_mode;
 		msp430_program_functions.enter_program_mode = msp430_enter_program_mode;
@@ -145,7 +145,7 @@ VSS_HANDLER(msp430_mode)
 	return ERROR_OK;
 }
 
-const struct vss_cmd_t msp430_notifier[] = 
+const struct vss_cmd_t msp430_notifier[] =
 {
 	VSS_CMD(	"help",
 				"print help information of current target for internal call",

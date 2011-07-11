@@ -56,7 +56,7 @@ RESULT usbtospi_config(uint8_t interface_index, uint32_t kHz, uint8_t mode)
 	return usbtoxxx_conf_command(USB_TO_SPI, interface_index, conf, 5);
 }
 
-RESULT usbtospi_io(uint8_t interface_index, uint8_t *out, uint8_t *in, 
+RESULT usbtospi_io(uint8_t interface_index, uint8_t *out, uint8_t *in,
 				   uint16_t bytelen)
 {
 	uint8_t *cmd_ptr;
@@ -79,7 +79,7 @@ RESULT usbtospi_io(uint8_t interface_index, uint8_t *out, uint8_t *in,
 		cmd_ptr = out;
 	}
 	
-	return usbtoxxx_inout_command(USB_TO_SPI, interface_index, cmd_ptr, 
+	return usbtoxxx_inout_command(USB_TO_SPI, interface_index, cmd_ptr,
 									bytelen, bytelen, in, 0, bytelen, 1);
 }
 

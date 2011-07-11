@@ -66,7 +66,7 @@ VSS_HANDLER(vss_function_end);
 VSS_HANDLER(vss_function_call);
 VSS_HANDLER(vss_function_free);
 
-struct vss_cmd_t vss_generic_cmd[] = 
+struct vss_cmd_t vss_generic_cmd[] =
 {
 	VSS_CMD(	"param",
 				"set parameters, format: param NAME VALUE",
@@ -135,12 +135,12 @@ extern struct vss_cmd_t comisp_cmd[];
 extern struct vss_cmd_t usbapi_cmd[];
 extern struct vss_cmd_t app_cmd[];
 
-struct vss_param_t *vss_params_list[] = 
+struct vss_param_t *vss_params_list[] =
 {
 	vss_param
 };
 
-struct vss_cmd_t *vss_cmds_list[] = 
+struct vss_cmd_t *vss_cmds_list[] =
 {
 	vss_generic_cmd,
 	vsprog_cmd,
@@ -247,7 +247,7 @@ static RESULT vss_append_function_cmd(struct vss_function_t *func, char * str)
 	}
 	memset(cmd, 0, sizeof(*cmd));
 	
-	if ((str != NULL) && 
+	if ((str != NULL) &&
 		(NULL == bufffunc_malloc_and_copy_str(&cmd->func_cmd, str)))
 	{
 		free(cmd);
@@ -272,14 +272,14 @@ static RESULT vss_append_function_cmd(struct vss_function_t *func, char * str)
 	return ERROR_OK;
 }
 
-RESULT vss_get_binary_buffer(uint16_t argc, const char *argv[], 
+RESULT vss_get_binary_buffer(uint16_t argc, const char *argv[],
 						uint8_t data_size, uint32_t data_num, void **pbuff)
 {
 	uint32_t i;
 	uint64_t value;
 	
 	if ((NULL == argv) || (argc < data_num) || (NULL == pbuff)
-		|| ((data_size != 1) && (data_size != 2) && (data_size != 4) 
+		|| ((data_size != 1) && (data_size != 2) && (data_size != 4)
 			&& (data_size != 8)))
 	{
 		return ERROR_FAIL;
@@ -373,7 +373,7 @@ static struct vss_param_t* mic_search_param(const char *name)
 	return NULL;
 }
 
-static struct vss_cmd_t* vss_search_cmd(struct vss_cmd_t ** cmds_list, 
+static struct vss_cmd_t* vss_search_cmd(struct vss_cmd_t ** cmds_list,
 										uint32_t cmd_size, const char *name)
 {
 	uint32_t i, j;
@@ -405,7 +405,7 @@ static struct vss_cmd_t* vss_search_cmd(struct vss_cmd_t ** cmds_list,
 
 RESULT vss_print_help(const char *name)
 {
-	struct vss_cmd_t *cmd = vss_search_cmd(vss_cmds_list, 
+	struct vss_cmd_t *cmd = vss_search_cmd(vss_cmds_list,
 		dimof(vss_cmds_list), name);
 	
 	if (NULL == cmd)
@@ -491,7 +491,7 @@ static RESULT vss_parse_cmd_line(char *cmd, uint16_t *argc, char **argv)
 	return ERROR_OK;
 }
 
-RESULT vss_cmd_supported_by_notifier(const struct vss_cmd_t *notifier, 
+RESULT vss_cmd_supported_by_notifier(const struct vss_cmd_t *notifier,
 										char *notify_cmd)
 {
 	struct vss_cmd_t *cmds_list[1], *cmd;
@@ -501,7 +501,7 @@ RESULT vss_cmd_supported_by_notifier(const struct vss_cmd_t *notifier,
 		return ERROR_FAIL;
 	}
 	
-	cmd = vss_search_cmd((struct vss_cmd_t **)&notifier, dimof(cmds_list), 
+	cmd = vss_search_cmd((struct vss_cmd_t **)&notifier, dimof(cmds_list),
 							notify_cmd);
 	if (NULL == cmd)
 	{
@@ -510,7 +510,7 @@ RESULT vss_cmd_supported_by_notifier(const struct vss_cmd_t *notifier,
 	return ERROR_OK;
 }
 
-RESULT vss_call_notifier(const struct vss_cmd_t *notifier, 
+RESULT vss_call_notifier(const struct vss_cmd_t *notifier,
 							char *notify_cmd, char *notify_param)
 {
 	struct vss_cmd_t *cmds_list[1], *cmd;
@@ -557,7 +557,7 @@ RESULT vss_call_notifier(const struct vss_cmd_t *notifier,
 
 RESULT vss_cmd_supported(char *name)
 {
-	struct vss_cmd_t *cmd = vss_search_cmd(vss_cmds_list, 
+	struct vss_cmd_t *cmd = vss_search_cmd(vss_cmds_list,
 		dimof(vss_cmds_list), name);
 	
 	if (NULL == cmd)
@@ -572,7 +572,7 @@ RESULT vss_cmd_supported(char *name)
 
 RESULT vss_run_cmd(uint16_t argc, const char *argv[])
 {
-	struct vss_cmd_t *cmd = vss_search_cmd(vss_cmds_list, 
+	struct vss_cmd_t *cmd = vss_search_cmd(vss_cmds_list,
 		dimof(vss_cmds_list), argv[0]);
 	
 	if (NULL == cmd)
@@ -639,8 +639,8 @@ RESULT vss_run_script(char *cmd)
 	for (i = 0; i < run_times; i++)
 	{
 		ret = vss_run_cmd(argc, (const char**)argv);
-		if ((ret != ERROR_OK) 
-			&& (vss_fatal_error 
+		if ((ret != ERROR_OK)
+			&& (vss_fatal_error
 				|| vss_param[PARAM_EXIT_ON_FAIL].value))
 		{
 			if (run_times > 1)
@@ -653,7 +653,7 @@ RESULT vss_run_script(char *cmd)
 	}
 	
 	// commit if required
-	if ((cur_interface != NULL) 
+	if ((cur_interface != NULL)
 		&& (cur_interface->peripheral_commit != NULL))
 	{
 		if (0 == vss_param[PARAM_NO_COMMIT].value)
@@ -743,7 +743,7 @@ static RESULT vss_run_file(FILE *f, char *head, uint8_t quiet)
 				return ERROR_FAIL;
 			}
 		}
-		else if ((ERROR_OK != vss_run_script(cmd_ptr)) && 
+		else if ((ERROR_OK != vss_run_script(cmd_ptr)) &&
 				(vss_fatal_error || vss_param[PARAM_EXIT_ON_FAIL].value))
 		{
 			return ERROR_FAIL;
@@ -795,7 +795,7 @@ VSS_HANDLER(vss_help)
 	
 	if (2 == argc)
 	{
-		cmd = vss_search_cmd(vss_cmds_list, 
+		cmd = vss_search_cmd(vss_cmds_list,
 			dimof(vss_cmds_list), argv[1]);
 		
 		if (NULL == cmd)

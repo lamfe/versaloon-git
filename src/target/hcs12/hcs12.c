@@ -41,13 +41,13 @@
 
 #define CUR_TARGET_STRING			HCS12_STRING
 
-const struct program_area_map_t hcs12_program_area_map[] = 
+const struct program_area_map_t hcs12_program_area_map[] =
 {
 	{APPLICATION_CHAR, 1, 0, 0, 0, AREA_ATTR_EWR},
 	{0, 0, 0, 0, 0, 0}
 };
 
-const struct program_mode_t hcs12_program_mode[] = 
+const struct program_mode_t hcs12_program_mode[] =
 {
 	{'b', "", IFS_BDM},
 	{0, NULL, 0}
@@ -58,13 +58,13 @@ LEAVE_PROGRAM_MODE_HANDLER(hcs12);
 ERASE_TARGET_HANDLER(hcs12);
 WRITE_TARGET_HANDLER(hcs12);
 READ_TARGET_HANDLER(hcs12);
-const struct program_functions_t hcs12_program_functions = 
+const struct program_functions_t hcs12_program_functions =
 {
 	NULL,			// execute
-	ENTER_PROGRAM_MODE_FUNCNAME(hcs12), 
-	LEAVE_PROGRAM_MODE_FUNCNAME(hcs12), 
-	ERASE_TARGET_FUNCNAME(hcs12), 
-	WRITE_TARGET_FUNCNAME(hcs12), 
+	ENTER_PROGRAM_MODE_FUNCNAME(hcs12),
+	LEAVE_PROGRAM_MODE_FUNCNAME(hcs12),
+	ERASE_TARGET_FUNCNAME(hcs12),
+	WRITE_TARGET_FUNCNAME(hcs12),
 	READ_TARGET_FUNCNAME(hcs12)
 };
 
@@ -73,12 +73,12 @@ VSS_HANDLER(hcs12_help)
 	VSS_CHECK_ARGC(1);
 	PRINTF("\
 Usage of %s:\n\
-  -m,  --mode <MODE>                        set mode<r|p>\n\n", 
+  -m,  --mode <MODE>                        set mode<r|p>\n\n",
 			CUR_TARGET_STRING);
 	return ERROR_OK;
 }
 
-const struct vss_cmd_t hcs12_notifier[] = 
+const struct vss_cmd_t hcs12_notifier[] =
 {
 	VSS_CMD(	"help",
 				"print help information of current target for internal call",
@@ -224,7 +224,7 @@ static RESULT hcs12_flash_cmd(uint8_t param_num, uint16_t *param)
 		}
 	}
 	// launch the command
-	ret = hcs12_write_byte(HCS12_FTMR_FSTAT_ADDR, HCS12_FTMR_FSTAT_FPVIOL 
+	ret = hcs12_write_byte(HCS12_FTMR_FSTAT_ADDR, HCS12_FTMR_FSTAT_FPVIOL
 							| HCS12_FTMR_FSTAT_FACCERR | HCS12_FTMR_FSTAT_CCIF);
 	
 	// poll
@@ -277,14 +277,14 @@ ENTER_PROGRAM_MODE_HANDLER(hcs12)
 		hcs12_flash_div |= (kernel_khz / 1000) - 1;
 	}
 	hcs12_write_byte(HCS12_FTMR_FCLKDIV_ADDR, hcs12_flash_div);
-	hcs12_write_byte(HCS12_FTMR_FSTAT_ADDR, 
+	hcs12_write_byte(HCS12_FTMR_FSTAT_ADDR,
 					HCS12_FTMR_FSTAT_FPVIOL | HCS12_FTMR_FSTAT_FACCERR);
 	hcs12_write_byte(HCS12_FTMR_FPROT_ADDR, 0xFF);
 	if (ERROR_OK != commit())
 	{
 		return ERROR_FAIL;
 	}
-	LOG_INFO("flash running at %dkhz", 
+	LOG_INFO("flash running at %dkhz",
 				kernel_khz / (1 + (hcs12_flash_div & HCS12_FTMR_FCDIV_DIVMASK)));
 	return ERROR_OK;
 }
@@ -319,7 +319,7 @@ ERASE_TARGET_HANDLER(hcs12)
 			break;
 		}
 		
-		param[0] = (HCS12_FTMR_FCMD_ProgramPFlash << 8) 
+		param[0] = (HCS12_FTMR_FCMD_ProgramPFlash << 8)
 			| ((HCS12_BDM_BDMGPR_ADDR & 0xFF0000) >> 16);
 		param[1] = HCS12_BDM_BDMGPR_ADDR & 0x00FFFF;
 		param[2] = 0xFFFF;
@@ -356,10 +356,10 @@ WRITE_TARGET_HANDLER(hcs12)
 		
 		for (i = 0; i < size; i += 8)
 		{
-			if ((addr + i < HCS12_BDM_ROM_START) 
+			if ((addr + i < HCS12_BDM_ROM_START)
 				|| (addr + i > HCS12_BDM_ROM_END))
 			{
-				param[0] = (HCS12_FTMR_FCMD_ProgramPFlash << 8) 
+				param[0] = (HCS12_FTMR_FCMD_ProgramPFlash << 8)
 					| (((addr + i) & 0xFF0000) >> 16);
 				param[1] = (addr + i) & 0x00FFFF;
 				param[2] = (buff[i + 0] << 8) + buff[i + 1];
@@ -425,7 +425,7 @@ ADJUST_MAPPING_HANDLER(hcs12)
 		// address:	bit0  .. bit13
 		// PPAGE:	bit14 .. bit21
 		// bit22:	1
-		*address = (*address & 0x3FFF) | ((*address & 0x00FF0000) >> 2) 
+		*address = (*address & 0x3FFF) | ((*address & 0x00FF0000) >> 2)
 					| (1 << 22);
 	}
 	else if (TARGET_MAPPING_TO_FILE == dir)

@@ -29,19 +29,19 @@
 #include "usbtoxxx_internal.h"
 
 #define N_A		"n/a"
-const char* types_name[96] = 
+const char* types_name[96] =
 {
 "usbtousart", "usbtospi", "usbtoi2c", "usbtogpio", "usbtocan", "usbtopwm",
-													"usbtoadc", "usbtodac", 
-"usbtomicrowire", "usbtoswim", "usbtodusi", N_A, N_A, N_A, "usbtopower", "usbtodelay", 
-N_A, N_A, N_A, N_A, N_A, N_A, N_A, N_A, N_A, 
-N_A, N_A, N_A, N_A, N_A, N_A, N_A, 
-"usbtojtagll", "usbtojtaghl", "usbtoissp", "usbtoc2", "usbtosbw", 
-									"usbtolpcicp", "usbtoswd", "usbtojtagraw", 
-"usbtobdm", N_A, N_A, N_A, N_A, N_A, N_A, N_A, 
-N_A, N_A, N_A, N_A, N_A, N_A, N_A, N_A, 
-"usbtomsp430jtag", N_A, N_A, N_A, N_A, N_A, N_A, N_A, 
-"usbtopower", "usbtodelay", "usbtopoll", N_A, N_A, N_A, N_A, N_A, 
+													"usbtoadc", "usbtodac",
+"usbtomicrowire", "usbtoswim", "usbtodusi", N_A, N_A, N_A, "usbtopower", "usbtodelay",
+N_A, N_A, N_A, N_A, N_A, N_A, N_A, N_A, N_A,
+N_A, N_A, N_A, N_A, N_A, N_A, N_A,
+"usbtojtagll", "usbtojtaghl", "usbtoissp", "usbtoc2", "usbtosbw",
+									"usbtolpcicp", "usbtoswd", "usbtojtagraw",
+"usbtobdm", N_A, N_A, N_A, N_A, N_A, N_A, N_A,
+N_A, N_A, N_A, N_A, N_A, N_A, N_A, N_A,
+"usbtomsp430jtag", N_A, N_A, N_A, N_A, N_A, N_A, N_A,
+"usbtopower", "usbtodelay", "usbtopoll", N_A, N_A, N_A, N_A, N_A,
 N_A, N_A, N_A, N_A, N_A, N_A, N_A, "usbtoall"
 };
 
@@ -161,25 +161,25 @@ RESULT usbtoxxx_execute_command(void)
 	for (i = 0; i < versaloon_pending_idx; i++)
 	{
 		// check result
-		if ((0 == i) || !((versaloon_pending[i].collect) 
-							&& (versaloon_pending[i - 1].collect) 
-							&& (versaloon_pending[i].cmd 
+		if ((0 == i) || !((versaloon_pending[i].collect)
+							&& (versaloon_pending[i - 1].collect)
+							&& (versaloon_pending[i].cmd
 								== versaloon_pending[i - 1].cmd)))
 		{
-			if (USB_TO_XXX_CMD_NOT_SUPPORT 
+			if (USB_TO_XXX_CMD_NOT_SUPPORT
 				== versaloon_buf[usbtoxxx_buffer_index])
 			{
-				LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, 
-							usbtoxxx_get_type_name(versaloon_pending[i].type), 
+				LOG_ERROR(ERRMSG_NOT_SUPPORT_BY,
+							usbtoxxx_get_type_name(versaloon_pending[i].type),
 							"current dongle");
 				result = ERROR_FAIL;
 				break;
 			}
 			else if (USB_TO_XXX_OK != versaloon_buf[usbtoxxx_buffer_index])
 			{
-				LOG_ERROR("%s command 0x%02x failed with 0x%02x", 
-					usbtoxxx_get_type_name(versaloon_pending[i].type), 
-					versaloon_pending[i].cmd, 
+				LOG_ERROR("%s command 0x%02x failed with 0x%02x",
+					usbtoxxx_get_type_name(versaloon_pending[i].type),
+					versaloon_pending[i].cmd,
 					versaloon_buf[usbtoxxx_buffer_index]);
 				result = ERROR_FAIL;
 				break;
@@ -194,7 +194,7 @@ RESULT usbtoxxx_execute_command(void)
 			
 			if (versaloon_pending[i].callback != NULL)
 			{
-				versaloon_pending[i].callback(&versaloon_pending[i], 
+				versaloon_pending[i].callback(&versaloon_pending[i],
 							versaloon_buf + usbtoxxx_buffer_index, &processed);
 			}
 			if (!processed)
@@ -206,7 +206,7 @@ RESULT usbtoxxx_execute_command(void)
 				{
 					if ((tmp->buff != NULL) && (tmp->size > 0))
 					{
-						memcpy(tmp->buff, versaloon_buf + usbtoxxx_buffer_index 
+						memcpy(tmp->buff, versaloon_buf + usbtoxxx_buffer_index
 							+ tmp->offset, tmp->size);
 					}
 					free_tmp = tmp;
@@ -216,29 +216,29 @@ RESULT usbtoxxx_execute_command(void)
 				versaloon_pending[i].pos = NULL;
 			}
 		}
-		else if ((versaloon_pending[i].want_data_size > 0) 
+		else if ((versaloon_pending[i].want_data_size > 0)
 			&& (versaloon_pending[i].data_buffer != NULL))
 		{
 			uint8_t processed = 0;
 			
 			if (versaloon_pending[i].callback != NULL)
 			{
-				versaloon_pending[i].callback(&versaloon_pending[i], 
+				versaloon_pending[i].callback(&versaloon_pending[i],
 							versaloon_buf + usbtoxxx_buffer_index, &processed);
 			}
 			if (!processed)
 			{
-				memcpy(versaloon_pending[i].data_buffer, 
-					   versaloon_buf + usbtoxxx_buffer_index 
-							+ versaloon_pending[i].want_data_pos, 
+				memcpy(versaloon_pending[i].data_buffer,
+					   versaloon_buf + usbtoxxx_buffer_index
+							+ versaloon_pending[i].want_data_pos,
 					   versaloon_pending[i].want_data_size);
 			}
 		}
 		usbtoxxx_buffer_index += versaloon_pending[i].actual_data_size;
 		if (usbtoxxx_buffer_index > inlen)
 		{
-			LOG_BUG("%s command 0x%02x process error", 
-					usbtoxxx_get_type_name(versaloon_pending[i].type), 
+			LOG_BUG("%s command 0x%02x process error",
+					usbtoxxx_get_type_name(versaloon_pending[i].type),
 					versaloon_pending[i].cmd);
 			result = ERROR_FAIL;
 			break;
@@ -273,14 +273,14 @@ RESULT usbtoxxx_init(void)
 {
 	versaloon_pending_idx = 0;
 	
-	if ((ERROR_OK != usbtoinfo_get_abilities(usbtoxxx_abilities)) || 
+	if ((ERROR_OK != usbtoinfo_get_abilities(usbtoxxx_abilities)) ||
 		(ERROR_OK != usbtoxxx_execute_command()))
 	{
 		return ERROR_FAIL;
 	}
-	LOG_INFO("USB_TO_XXX abilities: 0x%08X:0x%08X:0x%08X", 
-		GET_LE_U32(&usbtoxxx_abilities[0]), 
-		GET_LE_U32(&usbtoxxx_abilities[4]), 
+	LOG_INFO("USB_TO_XXX abilities: 0x%08X:0x%08X:0x%08X",
+		GET_LE_U32(&usbtoxxx_abilities[0]),
+		GET_LE_U32(&usbtoxxx_abilities[4]),
 		GET_LE_U32(&usbtoxxx_abilities[8]));
 	return ERROR_OK;
 }
@@ -294,7 +294,7 @@ RESULT usbtoxxx_fini(void)
 
 bool usbtoxxx_interface_supported(uint8_t cmd)
 {
-	if ((cmd < VERSALOON_USB_TO_XXX_CMD_START) || 
+	if ((cmd < VERSALOON_USB_TO_XXX_CMD_START) ||
 		(cmd > VERSALOON_USB_TO_XXX_CMD_END))
 	{
 		return false;
@@ -309,7 +309,7 @@ bool usbtoxxx_interface_supported(uint8_t cmd)
 RESULT usbtoxxx_ensure_buffer_size(uint16_t cmdlen)
 {
 	// check free space, commit if not enough
-	if (((usbtoxxx_buffer_index + usbtoxxx_current_cmd_index + cmdlen) 
+	if (((usbtoxxx_buffer_index + usbtoxxx_current_cmd_index + cmdlen)
 			>= versaloon_buf_size)
 		|| (versaloon_pending_idx >= VERSALOON_MAX_PENDING_NUMBER))
 	{
@@ -340,13 +340,13 @@ RESULT usbtoxxx_ensure_buffer_size(uint16_t cmdlen)
 		{
 			uint16_t newlen, oldlen;
 			
-			newlen = context_tmp.versaloon_pending_idx 
+			newlen = context_tmp.versaloon_pending_idx
 									- poll_context.versaloon_pending_idx;
-			memcpy(&versaloon_pending[0], 
-					&versaloon_pending[poll_context.versaloon_pending_idx], 
+			memcpy(&versaloon_pending[0],
+					&versaloon_pending[poll_context.versaloon_pending_idx],
 					sizeof(versaloon_pending[0]) * newlen);
 			context_tmp.versaloon_pending_idx = newlen;
-			oldlen = poll_context.usbtoxxx_buffer_index 
+			oldlen = poll_context.usbtoxxx_buffer_index
 									+ poll_context.usbtoxxx_current_cmd_index;
 			newlen = context_tmp.usbtoxxx_buffer_index
 									+ context_tmp.usbtoxxx_current_cmd_index;
@@ -361,8 +361,8 @@ RESULT usbtoxxx_ensure_buffer_size(uint16_t cmdlen)
 	return ERROR_OK;
 }
 
-RESULT usbtoxxx_add_command(uint8_t type, uint8_t cmd, uint8_t *cmdbuf, 
-							uint16_t cmdlen, uint16_t retlen, uint8_t *wantbuf, 
+RESULT usbtoxxx_add_command(uint8_t type, uint8_t cmd, uint8_t *cmdbuf,
+							uint16_t cmdlen, uint16_t retlen, uint8_t *wantbuf,
 							uint16_t wantpos, uint16_t wantlen, uint8_t collect)
 {
 	uint16_t len_tmp;
@@ -413,7 +413,7 @@ RESULT usbtoxxx_add_command(uint8_t type, uint8_t cmd, uint8_t *cmdbuf,
 		usbtoxxx_current_cmd_index += cmdlen;
 	}
 	
-	return versaloon_add_pending(type, cmd, retlen, wantpos, wantlen, 
+	return versaloon_add_pending(type, cmd, retlen, wantpos, wantlen,
 								 wantbuf, collect);
 }
 
@@ -435,7 +435,7 @@ RESULT usbtoinfo_get_abilities(uint8_t abilities[USB_TO_XXX_ABILITIES_LEN])
 	}
 	type_pre = USB_TO_INFO;
 	
-	return versaloon_add_pending(USB_TO_INFO, 0, USB_TO_XXX_ABILITIES_LEN, 0, 
+	return versaloon_add_pending(USB_TO_INFO, 0, USB_TO_XXX_ABILITIES_LEN, 0,
 									USB_TO_XXX_ABILITIES_LEN, abilities, 0);
 }
 
@@ -496,7 +496,7 @@ RESULT usbtopoll_end(void)
 	return versaloon_add_pending(USB_TO_POLL, 0, 0, 0, 0, NULL, 0);
 }
 
-RESULT usbtopoll_checkok(uint8_t equ, uint16_t offset, uint8_t size, 
+RESULT usbtopoll_checkok(uint8_t equ, uint16_t offset, uint8_t size,
 							uint32_t mask, uint32_t value)
 {
 	uint8_t i;
@@ -541,7 +541,7 @@ RESULT usbtopoll_checkok(uint8_t equ, uint16_t offset, uint8_t size,
 	return ERROR_OK;
 }
 
-RESULT usbtopoll_checkfail(uint8_t equ, uint16_t offset, uint8_t size, 
+RESULT usbtopoll_checkfail(uint8_t equ, uint16_t offset, uint8_t size,
 							uint32_t mask, uint32_t value)
 {
 	uint8_t i;

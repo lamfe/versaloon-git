@@ -33,7 +33,7 @@
 
 struct comm_func_t
 {
-	RESULT (*comm_open)(char *comport, uint32_t baudrate, uint8_t datalength, 
+	RESULT (*comm_open)(char *comport, uint32_t baudrate, uint8_t datalength,
 							char paritybit, char stopbit, char handshake);
 	void (*comm_close)(void);
 	int32_t (*comm_read)(uint8_t *buffer, uint32_t num_of_bytes);
@@ -43,7 +43,7 @@ struct comm_func_t
 };
 
 void comm_close(void);
-RESULT comm_open(char *comport, uint32_t baudrate, uint8_t datalength, 
+RESULT comm_open(char *comport, uint32_t baudrate, uint8_t datalength,
 				 char paritybit, char stopbit, char handshake);
 int32_t comm_read(uint8_t *buffer, uint32_t num_of_bytes);
 int32_t comm_write(uint8_t *buffer, uint32_t num_of_bytes);

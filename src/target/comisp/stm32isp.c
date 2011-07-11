@@ -50,13 +50,13 @@ LEAVE_PROGRAM_MODE_HANDLER(stm32isp);
 ERASE_TARGET_HANDLER(stm32isp);
 WRITE_TARGET_HANDLER(stm32isp);
 READ_TARGET_HANDLER(stm32isp);
-struct program_functions_t stm32isp_program_functions = 
+struct program_functions_t stm32isp_program_functions =
 {
 	NULL,			// execute
-	ENTER_PROGRAM_MODE_FUNCNAME(stm32isp), 
-	LEAVE_PROGRAM_MODE_FUNCNAME(stm32isp), 
-	ERASE_TARGET_FUNCNAME(stm32isp), 
-	WRITE_TARGET_FUNCNAME(stm32isp), 
+	ENTER_PROGRAM_MODE_FUNCNAME(stm32isp),
+	LEAVE_PROGRAM_MODE_FUNCNAME(stm32isp),
+	ERASE_TARGET_FUNCNAME(stm32isp),
+	WRITE_TARGET_FUNCNAME(stm32isp),
 	READ_TARGET_FUNCNAME(stm32isp)
 };
 
@@ -121,13 +121,13 @@ static RESULT stm32isp_sync(void)
 		buffer[0] = 0;
 		if (1 != comm_write(buffer, 1))
 		{
-			LOG_DEBUG(ERRMSG_FAILURE_OPERATION, 
+			LOG_DEBUG(ERRMSG_FAILURE_OPERATION,
 						"send dummy byte to test chip synchronization");
 			return ERRCODE_FAILURE_OPERATION;
 		}
 		if (1 != comm_read(buffer, 1))
 		{
-			LOG_DEBUG(ERRMSG_FAILURE_OPERATION, 
+			LOG_DEBUG(ERRMSG_FAILURE_OPERATION,
 						"read ACK byte from chip (2nd attempt)");
 			return ERRCODE_FAILURE_OPERATION;
 		}
@@ -148,7 +148,7 @@ static RESULT stm32isp_sync(void)
 	}
 }
 
-static RESULT stm32isp_send_command(uint8_t cmd, const char *cmd_name, 
+static RESULT stm32isp_send_command(uint8_t cmd, const char *cmd_name,
 							 uint8_t *test_protect)
 {
 	uint8_t buffer[2];
@@ -181,7 +181,7 @@ static RESULT stm32isp_send_command(uint8_t cmd, const char *cmd_name,
 	return ERROR_OK;
 }
 
-static RESULT stm32isp_get_ack(uint8_t accept_0_as_final_ack, uint8_t *ret, 
+static RESULT stm32isp_get_ack(uint8_t accept_0_as_final_ack, uint8_t *ret,
 							uint8_t quiet)
 {
 	uint8_t buffer[1];
@@ -192,7 +192,7 @@ static RESULT stm32isp_get_ack(uint8_t accept_0_as_final_ack, uint8_t *ret,
 		return ERROR_FAIL;
 	}
 	
-	if ((buffer[0] != STM32ISP_ACK) 
+	if ((buffer[0] != STM32ISP_ACK)
 		&& (!accept_0_as_final_ack || (buffer[0] != 0)))
 	{
 		if (!quiet)
@@ -207,9 +207,9 @@ static RESULT stm32isp_get_ack(uint8_t accept_0_as_final_ack, uint8_t *ret,
 
 #define STM32ISP_SEND				1
 #define STM32ISP_RECEIVE			0
-// data_len_size > 0 means that data_len bytes 
+// data_len_size > 0 means that data_len bytes
 // MUST be send/received first for data_len_size bytes
-static RESULT stm32isp_process_data(uint16_t *data_len, uint8_t data_len_size, 
+static RESULT stm32isp_process_data(uint16_t *data_len, uint8_t data_len_size,
 							 uint8_t *data, uint8_t send1_receive0)
 {
 	uint16_t actual_len = 0;
@@ -252,7 +252,7 @@ static RESULT stm32isp_process_data(uint16_t *data_len, uint8_t data_len_size,
 		{
 			// receive actual_len first
 			// if large than data_len, return with error
-			if (data_len_size 
+			if (data_len_size
 				!= comm_read((uint8_t*)&actual_len, data_len_size))
 			{
 				LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "read data size");
@@ -342,7 +342,7 @@ static RESULT stm32isp_readout_protect(void)
 	uint8_t buffer[1];
 	
 	// send command
-	ret = stm32isp_send_command(STM32ISP_CMD_READOUT_PROTECT, 
+	ret = stm32isp_send_command(STM32ISP_CMD_READOUT_PROTECT,
 								"Readout Protect", NULL);
 	if (ret != ERROR_OK)
 	{
@@ -360,7 +360,7 @@ static RESULT stm32isp_readout_unprotect(void)
 	uint8_t buffer[1];
 	
 	// send command
-	ret = stm32isp_send_command(STM32ISP_CMD_READOUT_UNPROTECT, 
+	ret = stm32isp_send_command(STM32ISP_CMD_READOUT_UNPROTECT,
 								"Readout Unprotect", NULL);
 	if (ret != ERROR_OK)
 	{
@@ -378,7 +378,7 @@ static RESULT stm32isp_write_protect(void)
 	uint8_t buffer[1];
 	
 	// send command
-	ret = stm32isp_send_command(STM32ISP_CMD_WRITE_PROTECT, 
+	ret = stm32isp_send_command(STM32ISP_CMD_WRITE_PROTECT,
 								"Write Protect", NULL);
 	if (ret != ERROR_OK)
 	{
@@ -396,7 +396,7 @@ static RESULT stm32isp_write_unprotect(void)
 	uint8_t buffer[1];
 	
 	// send command
-	ret = stm32isp_send_command(STM32ISP_CMD_WRITE_UNPROTECT, 
+	ret = stm32isp_send_command(STM32ISP_CMD_WRITE_UNPROTECT,
 								"Write Unprotect", NULL);
 	if (ret != ERROR_OK)
 	{
@@ -415,7 +415,7 @@ static RESULT stm32isp_read_memory(uint32_t addr, uint8_t *data, uint16_t *data_
 	int comm_ret;
 	
 	// send command
-	ret = stm32isp_send_command(STM32ISP_CMD_READ_MEMORY, 
+	ret = stm32isp_send_command(STM32ISP_CMD_READ_MEMORY,
 								"Read Memory", &test_protect);
 	if (ret != ERROR_OK)
 	{
@@ -438,7 +438,7 @@ static RESULT stm32isp_read_memory(uint32_t addr, uint8_t *data, uint16_t *data_
 				return ERRCODE_FAILURE_OPERATION;
 			}
 			
-			ret = stm32isp_send_command(STM32ISP_CMD_READ_MEMORY, 
+			ret = stm32isp_send_command(STM32ISP_CMD_READ_MEMORY,
 								"Read Memory", NULL);
 			if (ret != ERROR_OK)
 			{
@@ -491,7 +491,7 @@ static RESULT stm32isp_read_memory(uint32_t addr, uint8_t *data, uint16_t *data_
 		}
 		else
 		{
-			LOG_DEBUG(ERRMSG_FAILURE_OPERATION, 
+			LOG_DEBUG(ERRMSG_FAILURE_OPERATION,
 						"receive data in Read Memroy command");
 			return ERRCODE_FAILURE_OPERATION;
 		}
@@ -507,7 +507,7 @@ static RESULT stm32isp_write_memory(uint32_t addr, uint8_t *data, uint16_t data_
 	RESULT ret;
 	
 	// send command
-	ret = stm32isp_send_command(STM32ISP_CMD_WRITE_MEMORY, 
+	ret = stm32isp_send_command(STM32ISP_CMD_WRITE_MEMORY,
 								"Write Memory", &test_protect);
 	if (ret != ERROR_OK)
 	{
@@ -530,7 +530,7 @@ static RESULT stm32isp_write_memory(uint32_t addr, uint8_t *data, uint16_t data_
 				return ERRCODE_FAILURE_OPERATION;
 			}
 			
-			ret = stm32isp_send_command(STM32ISP_CMD_WRITE_MEMORY, 
+			ret = stm32isp_send_command(STM32ISP_CMD_WRITE_MEMORY,
 								"Write Memory", NULL);
 			if (ret != ERROR_OK)
 			{
@@ -598,7 +598,7 @@ static RESULT stm32isp_write_memory(uint32_t addr, uint8_t *data, uint16_t data_
 	}
 	if (!time_out)
 	{
-		LOG_DEBUG(ERRMSG_FAILURE_OPERATION, 
+		LOG_DEBUG(ERRMSG_FAILURE_OPERATION,
 					"read final ack for Write Memory command");
 		return ERRCODE_FAILURE_OPERATION;
 	}
@@ -663,7 +663,7 @@ static RESULT stm32isp_erase_sector(uint8_t num_of_sector, uint8_t *sector_num)
 		sleep_ms(10);
 		if (!--dly_cnt)
 		{
-			LOG_DEBUG(ERRMSG_FAILURE_OPERATION, 
+			LOG_DEBUG(ERRMSG_FAILURE_OPERATION,
 						"receive final ACK in response to Erase command");
 			return ERRCODE_FAILURE_OPERATION;
 		}
@@ -718,7 +718,7 @@ ENTER_PROGRAM_MODE_HANDLER(stm32isp)
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read bootloader version");
 		return ERRCODE_FAILURE_OPERATION;
 	}
-	LOG_INFO(INFOMSG_BOOTLOADER_VERSION, (bootloader_version & 0xF0) >> 4, 
+	LOG_INFO(INFOMSG_BOOTLOADER_VERSION, (bootloader_version & 0xF0) >> 4,
 				bootloader_version & 0x0F);
 	return ERROR_OK;
 }
@@ -728,12 +728,12 @@ LEAVE_PROGRAM_MODE_HANDLER(stm32isp)
 	struct program_info_t *pi = context->pi;
 	RESULT ret = ERROR_OK;
 	
-	if (pi->execute_flag && success 
+	if (pi->execute_flag && success
 		&& (context->op->write_operations & APPLICATION))
 	{
 		if (ERROR_OK != stm32isp_execute_code(pi->execute_addr))
 		{
-			LOG_ERROR(ERRMSG_FAILURE_OPERATE_ADDRESS, "execute code", 
+			LOG_ERROR(ERRMSG_FAILURE_OPERATE_ADDRESS, "execute code",
 						pi->execute_addr);
 			ret = ERROR_FAIL;
 		}
@@ -776,7 +776,7 @@ WRITE_TARGET_HANDLER(stm32isp)
 		// erase is not defined and erase-on-demand is defined
 		if (!(op->erase_operations & APPLICATION) && pi->erase_on_demand)
 		{
-			page_num = (uint8_t)((addr - STM32_FLASH_ADDR) / 
+			page_num = (uint8_t)((addr - STM32_FLASH_ADDR) /
 									param->chip_areas[APPLICATION_IDX].page_size);
 			ret = stm32isp_erase_sector(1, &page_num);
 			if (ret != ERROR_OK)
@@ -834,7 +834,7 @@ READ_TARGET_HANDLER(stm32isp)
 		
 		// read memory size
 		len = 4;
-		if (ERROR_OK != stm32isp_read_memory(STM32_REG_FLASH_RAM_SIZE, 
+		if (ERROR_OK != stm32isp_read_memory(STM32_REG_FLASH_RAM_SIZE,
 												tmpbuff, &len))
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read memroy size");
@@ -844,14 +844,14 @@ READ_TARGET_HANDLER(stm32isp)
 		flash_kb = GET_LE_U16(&tmpbuff[0]);
 		if ((flash_kb > 0) && (flash_kb <= 512))
 		{
-			pi->program_areas[APPLICATION_IDX].size = 
+			pi->program_areas[APPLICATION_IDX].size =
 			param->chip_areas[APPLICATION_IDX].size = flash_kb * 1024;
 		}
 		else if ((STM32_DEN_VALUELINE == den) && (0xFFFFFFFF == mcu_id))
 		{
 			// FLASH_RAM_SIZE register of STM32 ValueLine devices will be 0xFFFFFFFF
 			// we use 128K by default
-			pi->program_areas[APPLICATION_IDX].size = 
+			pi->program_areas[APPLICATION_IDX].size =
 			param->chip_areas[APPLICATION_IDX].size = 128 * 1024;
 		}
 		else
@@ -877,7 +877,7 @@ READ_TARGET_HANDLER(stm32isp)
 		}
 		if (!param->chip_areas[APPLICATION_IDX].page_num)
 		{
-			struct chip_area_info_t *flash = 
+			struct chip_area_info_t *flash =
 										&param->chip_areas[APPLICATION_IDX];
 			flash->page_num = flash->size / flash->page_size;
 		}

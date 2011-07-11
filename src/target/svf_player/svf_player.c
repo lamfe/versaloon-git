@@ -45,12 +45,12 @@
 
 #define CUR_TARGET_STRING			SVFP_STRING
 
-const struct program_area_map_t svfp_program_area_map[] = 
+const struct program_area_map_t svfp_program_area_map[] =
 {
 	{0, 0, 0, 0, 0, 0}
 };
 
-const struct program_mode_t svfp_program_mode[] = 
+const struct program_mode_t svfp_program_mode[] =
 {
 	{'*', SET_FREQUENCY, IFS_JTAG_LL},
 	{0, NULL, 0}
@@ -71,12 +71,12 @@ VSS_HANDLER(svfp_help)
 	VSS_CHECK_ARGC(1);
 	PRINTF("\
 Usage of %s:\n\
-  -F,  --frequency <FREQUENCY>              set JTAG frequency, in KHz\n\n", 
+  -F,  --frequency <FREQUENCY>              set JTAG frequency, in KHz\n\n",
 		   CUR_TARGET_STRING);
 	return ERROR_OK;
 }
 
-const struct vss_cmd_t svfp_notifier[] = 
+const struct vss_cmd_t svfp_notifier[] =
 {
 	VSS_CMD(	"help",
 				"print help information of current target for internal call",
@@ -105,11 +105,11 @@ EXECUTE_HANDLER(svfp)
 		sprintf(first_command, SVF_SET_FREQ_CMD, (float)pi->frequency * 1000);
 	}
 	
-	if ((NULL == fl_in) || (NULL == fl_in->path) || (NULL == fl_in->file) 
-		|| (strlen(fl_in->path) <= 4) 
-		|| (toupper(fl_in->path[strlen(fl_in->path) - 4]) != '.') 
-		|| (toupper(fl_in->path[strlen(fl_in->path) - 3]) != 'S') 
-		|| (toupper(fl_in->path[strlen(fl_in->path) - 2]) != 'V') 
+	if ((NULL == fl_in) || (NULL == fl_in->path) || (NULL == fl_in->file)
+		|| (strlen(fl_in->path) <= 4)
+		|| (toupper(fl_in->path[strlen(fl_in->path) - 4]) != '.')
+		|| (toupper(fl_in->path[strlen(fl_in->path) - 3]) != 'S')
+		|| (toupper(fl_in->path[strlen(fl_in->path) - 2]) != 'V')
 		|| (toupper(fl_in->path[strlen(fl_in->path) - 1]) != 'F'))
 	{
 		LOG_ERROR(ERRMSG_NOT_DEFINED, "svf file");
@@ -134,7 +134,7 @@ EXECUTE_HANDLER(svfp)
 	{
 		if (ERROR_OK != svf_parser_run_command(first_command))
 		{
-			LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "execute first command", 
+			LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "execute first command",
 						first_command);
 			ret = ERROR_FAIL;
 			goto leave_program_mode;
@@ -143,12 +143,12 @@ EXECUTE_HANDLER(svfp)
 	
 	if (verbosity < DEBUG_LEVEL)
 	{
-		pgbar_init("executing svf |", "|", 0, svf_file_size, 
+		pgbar_init("executing svf |", "|", 0, svf_file_size,
 				   PROGRESS_STEP, '=');
 	}
 	
 	// parse commands and run
-	while (ERROR_OK == svf_parser_get_command(svf_file, &svfp_command_buffer, 
+	while (ERROR_OK == svf_parser_get_command(svf_file, &svfp_command_buffer,
 											  &svfp_command_buffer_len))
 	{
 		if (ERROR_OK != svf_parser_run_command(svfp_command_buffer))

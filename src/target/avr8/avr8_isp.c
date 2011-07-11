@@ -44,13 +44,13 @@ LEAVE_PROGRAM_MODE_HANDLER(avr8isp);
 ERASE_TARGET_HANDLER(avr8isp);
 WRITE_TARGET_HANDLER(avr8isp);
 READ_TARGET_HANDLER(avr8isp);
-struct program_functions_t avr8isp_program_functions = 
+struct program_functions_t avr8isp_program_functions =
 {
 	NULL,			// execute
-	ENTER_PROGRAM_MODE_FUNCNAME(avr8isp), 
-	LEAVE_PROGRAM_MODE_FUNCNAME(avr8isp), 
-	ERASE_TARGET_FUNCNAME(avr8isp), 
-	WRITE_TARGET_FUNCNAME(avr8isp), 
+	ENTER_PROGRAM_MODE_FUNCNAME(avr8isp),
+	LEAVE_PROGRAM_MODE_FUNCNAME(avr8isp),
+	ERASE_TARGET_FUNCNAME(avr8isp),
+	WRITE_TARGET_FUNCNAME(avr8isp),
 	READ_TARGET_FUNCNAME(avr8isp)
 };
 
@@ -341,7 +341,7 @@ WRITE_TARGET_HANDLER(avr8isp)
 		break;
 	case EEPROM_CHAR:
 		ee_page_size = param->chip_areas[EEPROM_IDX].page_size;
-		if ((param->chip_areas[EEPROM_IDX].page_num > 1) 
+		if ((param->chip_areas[EEPROM_IDX].page_num > 1)
 			&& (param->param[AVR8_PARAM_ISP_EERPOM_PAGE_EN]))
 		{
 			while (size > 0)

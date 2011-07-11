@@ -40,7 +40,7 @@
 
 #define TARGET_CONF_FILE_EXT			".xml"
 
-static uint32_t target_xml_get_child_number(xmlNodePtr parentNode, 
+static uint32_t target_xml_get_child_number(xmlNodePtr parentNode,
 												char * child_name)
 {
 	uint32_t result = 0;
@@ -61,7 +61,7 @@ static uint32_t target_xml_get_child_number(xmlNodePtr parentNode,
 	return result;
 }
 
-RESULT target_build_chip_fl(const char *chip_series, 
+RESULT target_build_chip_fl(const char *chip_series,
 				const char *chip_module, char *type, struct chip_fl_t *fl)
 {
 	xmlDocPtr doc = NULL;
@@ -130,9 +130,9 @@ RESULT target_build_chip_fl(const char *chip_series,
 	}
 	
 	// valid check
-	if (xmlStrcmp(curNode->name, BAD_CAST "series") 
-		|| !xmlHasProp(curNode, BAD_CAST "name") 
-		|| xmlStrcmp(xmlGetProp(curNode, BAD_CAST "name"), 
+	if (xmlStrcmp(curNode->name, BAD_CAST "series")
+		|| !xmlHasProp(curNode, BAD_CAST "name")
+		|| xmlStrcmp(xmlGetProp(curNode, BAD_CAST "name"),
 					 (const xmlChar *)chip_series))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read config file");
@@ -153,7 +153,7 @@ RESULT target_build_chip_fl(const char *chip_series,
 	for (i = 0; i < num_of_chips; i++)
 	{
 		// check
-		if ((NULL == curNode) 
+		if ((NULL == curNode)
 			|| xmlStrcmp(curNode->name, BAD_CAST "chip")
 			|| !xmlHasProp(curNode, BAD_CAST "name"))
 		{
@@ -162,7 +162,7 @@ RESULT target_build_chip_fl(const char *chip_series,
 			goto free_and_exit;
 		}
 		
-		if (strcmp((const char *)chip_module, 
+		if (strcmp((const char *)chip_module,
 				   (const char *)xmlGetProp(curNode, BAD_CAST "name")))
 		{
 			// not the chip I want
@@ -195,7 +195,7 @@ RESULT target_build_chip_fl(const char *chip_series,
 	
 	// we found the parameter
 	// valid check
-	if (!xmlHasProp(paramNode, BAD_CAST "init") 
+	if (!xmlHasProp(paramNode, BAD_CAST "init")
 		|| !xmlHasProp(paramNode, BAD_CAST "bytesize"))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read config file");
@@ -217,7 +217,7 @@ RESULT target_build_chip_fl(const char *chip_series,
 	}
 	
 	// read fl number
-	fl->num_of_fl_settings = 
+	fl->num_of_fl_settings =
 		(uint16_t)target_xml_get_child_number(paramNode, "setting");
 	if (0 == fl->num_of_fl_settings)
 	{
@@ -227,7 +227,7 @@ RESULT target_build_chip_fl(const char *chip_series,
 	}
 	
 	// read fl init value
-	if (NULL == bufffunc_malloc_and_copy_str(&fl->init_value, 
+	if (NULL == bufffunc_malloc_and_copy_str(&fl->init_value,
 							(char *)xmlGetProp(paramNode, BAD_CAST "init")))
 	{
 		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
@@ -250,12 +250,12 @@ RESULT target_build_chip_fl(const char *chip_series,
 		ret = ERRCODE_NOT_ENOUGH_MEMORY;
 		goto free_and_exit;
 	}
-	memset(fl->settings, 0, 
+	memset(fl->settings, 0,
 		   fl->num_of_fl_settings * sizeof(struct chip_fl_setting_t));
 	
 	settingNode = paramNode->children->next;
 	// has warning?
-	if ((settingNode != NULL) && 
+	if ((settingNode != NULL) &&
 		!strcmp((const char *)settingNode->name, "warning"))
 	{
 		xmlNodePtr warningNode = settingNode;
@@ -263,7 +263,7 @@ RESULT target_build_chip_fl(const char *chip_series,
 		
 		settingNode = settingNode->next->next;
 		// parse warning
-		fl->num_of_fl_warnings = 
+		fl->num_of_fl_warnings =
 			(uint16_t)target_xml_get_child_number(warningNode, "w");
 		if (fl->num_of_fl_warnings != 0)
 		{
@@ -275,7 +275,7 @@ RESULT target_build_chip_fl(const char *chip_series,
 				ret = ERRCODE_NOT_ENOUGH_MEMORY;
 				goto free_and_exit;
 			}
-			memset(fl->warnings, 0, 
+			memset(fl->warnings, 0,
 				   fl->num_of_fl_warnings * sizeof(struct chip_fl_warning_t));
 			
 			wNode = warningNode->children->next;
@@ -290,7 +290,7 @@ RESULT target_build_chip_fl(const char *chip_series,
 				}
 				
 				if (NULL == bufffunc_malloc_and_copy_str(
-						&fl->warnings[i].mask, 
+						&fl->warnings[i].mask,
 						(char *)xmlGetProp(wNode, BAD_CAST "mask")))
 				{
 					LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
@@ -305,7 +305,7 @@ RESULT target_build_chip_fl(const char *chip_series,
 				}
 				
 				if (NULL == bufffunc_malloc_and_copy_str(
-						&fl->warnings[i].value, 
+						&fl->warnings[i].value,
 						(char *)xmlGetProp(wNode, BAD_CAST "value")))
 				{
 					LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
@@ -320,7 +320,7 @@ RESULT target_build_chip_fl(const char *chip_series,
 				}
 				
 				if (NULL == bufffunc_malloc_and_copy_str(
-						&fl->warnings[i].msg, 
+						&fl->warnings[i].msg,
 						(char *)xmlGetProp(wNode, BAD_CAST "msg")))
 				{
 					LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
@@ -332,7 +332,7 @@ RESULT target_build_chip_fl(const char *chip_series,
 				if (xmlHasProp(wNode, BAD_CAST "ban"))
 				{
 					fl->warnings[i].ban = (uint8_t)strtoul(
-						(const char *)xmlGetProp(wNode, BAD_CAST "ban"), 
+						(const char *)xmlGetProp(wNode, BAD_CAST "ban"),
 						NULL, 0);
 				}
 				
@@ -346,10 +346,10 @@ RESULT target_build_chip_fl(const char *chip_series,
 	{
 		xmlNodePtr choiceNode;
 		
-		fl->settings[i].num_of_choices = 
+		fl->settings[i].num_of_choices =
 			(uint16_t)target_xml_get_child_number(settingNode, "choice");
 		// check
-		if (strcmp((const char *)settingNode->name, "setting") 
+		if (strcmp((const char *)settingNode->name, "setting")
 			|| (!xmlHasProp(settingNode, BAD_CAST "name"))
 			|| (!xmlHasProp(settingNode, BAD_CAST "mask")))
 		{
@@ -359,7 +359,7 @@ RESULT target_build_chip_fl(const char *chip_series,
 		}
 		
 		if (NULL == bufffunc_malloc_and_copy_str(
-						&fl->settings[i].name, 
+						&fl->settings[i].name,
 						(char *)xmlGetProp(settingNode, BAD_CAST "name")))
 		{
 			LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
@@ -368,7 +368,7 @@ RESULT target_build_chip_fl(const char *chip_series,
 		}
 		
 		if (NULL == bufffunc_malloc_and_copy_str(
-						&fl->settings[i].mask, 
+						&fl->settings[i].mask,
 						(char *)xmlGetProp(settingNode, BAD_CAST "mask")))
 		{
 			LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
@@ -385,7 +385,7 @@ RESULT target_build_chip_fl(const char *chip_series,
 		if (xmlHasProp(settingNode, BAD_CAST "ban"))
 		{
 			if (NULL == bufffunc_malloc_and_copy_str(
-						&fl->settings[i].ban, 
+						&fl->settings[i].ban,
 						(char *)xmlGetProp(settingNode, BAD_CAST "ban")))
 			{
 				LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
@@ -398,7 +398,7 @@ RESULT target_build_chip_fl(const char *chip_series,
 		if (xmlHasProp(settingNode, BAD_CAST "info"))
 		{
 			if (NULL == bufffunc_malloc_and_copy_str(
-						&fl->settings[i].info, 
+						&fl->settings[i].info,
 						(char *)xmlGetProp(settingNode, BAD_CAST "info")))
 			{
 				LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
@@ -411,7 +411,7 @@ RESULT target_build_chip_fl(const char *chip_series,
 		if (xmlHasProp(settingNode, BAD_CAST "format"))
 		{
 			if (NULL == bufffunc_malloc_and_copy_str(
-						&fl->settings[i].format, 
+						&fl->settings[i].format,
 						(char *)xmlGetProp(settingNode, BAD_CAST "format")))
 			{
 				LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
@@ -424,7 +424,7 @@ RESULT target_build_chip_fl(const char *chip_series,
 		if (xmlHasProp(settingNode, BAD_CAST "bytelen"))
 		{
 			fl->settings[i].bytelen = (uint8_t)strtoul(
-				(const char *)xmlGetProp(settingNode, BAD_CAST "bytelen"), 
+				(const char *)xmlGetProp(settingNode, BAD_CAST "bytelen"),
 				NULL, 0);
 		}
 		
@@ -432,7 +432,7 @@ RESULT target_build_chip_fl(const char *chip_series,
 		if (xmlHasProp(settingNode, BAD_CAST "radix"))
 		{
 			fl->settings[i].radix = (uint8_t)strtoul(
-				(const char *)xmlGetProp(settingNode, BAD_CAST "radix"), 
+				(const char *)xmlGetProp(settingNode, BAD_CAST "radix"),
 				NULL, 0);
 		}
 		
@@ -440,7 +440,7 @@ RESULT target_build_chip_fl(const char *chip_series,
 		if (xmlHasProp(settingNode, BAD_CAST "shift"))
 		{
 			fl->settings[i].shift = (uint8_t)strtoul(
-				(const char *)xmlGetProp(settingNode, BAD_CAST "shift"), 
+				(const char *)xmlGetProp(settingNode, BAD_CAST "shift"),
 				NULL, 0);
 		}
 		
@@ -448,7 +448,7 @@ RESULT target_build_chip_fl(const char *chip_series,
 		if (xmlHasProp(settingNode, BAD_CAST "checked"))
 		{
 			if (NULL == bufffunc_malloc_and_copy_str(
-						&fl->settings[i].checked, 
+						&fl->settings[i].checked,
 						(char *)xmlGetProp(settingNode, BAD_CAST "checked")))
 			{
 				LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
@@ -472,7 +472,7 @@ RESULT target_build_chip_fl(const char *chip_series,
 					goto free_and_exit;
 				}
 				val_tmp = 0;
-				if (ERROR_OK != strparser_parse(fl->settings[i].checked, 
+				if (ERROR_OK != strparser_parse(fl->settings[i].checked,
 							format, (uint8_t*)&val_tmp, sizeof(val_tmp)))
 				{
 					LOG_ERROR(ERRMSG_FAILURE_OPERATION, "parse checked node");
@@ -480,7 +480,7 @@ RESULT target_build_chip_fl(const char *chip_series,
 					goto free_and_exit;
 				}
 				mask_tmp = 0;
-				if (ERROR_OK != strparser_parse(fl->settings[i].mask, 
+				if (ERROR_OK != strparser_parse(fl->settings[i].mask,
 							format, (uint8_t*)&mask_tmp, sizeof(mask_tmp)))
 				{
 					LOG_ERROR(ERRMSG_FAILURE_OPERATION, "parse mask node");
@@ -488,12 +488,12 @@ RESULT target_build_chip_fl(const char *chip_series,
 					goto free_and_exit;
 				}
 				val_tmp ^= mask_tmp;
-				fl->settings[i].unchecked = 
-					strparser_solve(format, (uint8_t*)&val_tmp, 
+				fl->settings[i].unchecked =
+					strparser_solve(format, (uint8_t*)&val_tmp,
 									sizeof(val_tmp));
 				if (NULL == fl->settings[i].unchecked)
 				{
-					LOG_ERROR(ERRMSG_FAILURE_OPERATION, 
+					LOG_ERROR(ERRMSG_FAILURE_OPERATION,
 								"solve unchecked value");
 					ret = ERRCODE_FAILURE_OPERATION;
 					goto free_and_exit;
@@ -504,7 +504,7 @@ RESULT target_build_chip_fl(const char *chip_series,
 		if (xmlHasProp(settingNode, BAD_CAST "unchecked"))
 		{
 			if (NULL == bufffunc_malloc_and_copy_str(
-						&fl->settings[i].unchecked, 
+						&fl->settings[i].unchecked,
 						(char *)xmlGetProp(settingNode, BAD_CAST "unchecked")))
 			{
 				LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
@@ -528,7 +528,7 @@ RESULT target_build_chip_fl(const char *chip_series,
 					goto free_and_exit;
 				}
 				val_tmp = 0;
-				if (ERROR_OK != strparser_parse(fl->settings[i].unchecked, 
+				if (ERROR_OK != strparser_parse(fl->settings[i].unchecked,
 							format, (uint8_t*)&val_tmp, sizeof(val_tmp)))
 				{
 					LOG_ERROR(ERRMSG_FAILURE_OPERATION, "parse unchecked node");
@@ -536,7 +536,7 @@ RESULT target_build_chip_fl(const char *chip_series,
 					goto free_and_exit;
 				}
 				mask_tmp = 0;
-				if (ERROR_OK != strparser_parse(fl->settings[i].mask, 
+				if (ERROR_OK != strparser_parse(fl->settings[i].mask,
 							format, (uint8_t*)&mask_tmp, sizeof(mask_tmp)))
 				{
 					LOG_ERROR(ERRMSG_FAILURE_OPERATION, "parse mask node");
@@ -544,8 +544,8 @@ RESULT target_build_chip_fl(const char *chip_series,
 					goto free_and_exit;
 				}
 				val_tmp ^= mask_tmp;
-				fl->settings[i].checked = 
-					strparser_solve(format, (uint8_t*)&val_tmp, 
+				fl->settings[i].checked =
+					strparser_solve(format, (uint8_t*)&val_tmp,
 									sizeof(val_tmp));
 				if (NULL == fl->settings[i].checked)
 				{
@@ -557,7 +557,7 @@ RESULT target_build_chip_fl(const char *chip_series,
 			fl->settings[i].use_checkbox = 1;
 		}
 		
-		if (!fl->settings[i].use_checkbox 
+		if (!fl->settings[i].use_checkbox
 			&& (0 == fl->settings[i].num_of_choices))
 		{
 			fl->settings[i].use_edit = 1;
@@ -584,7 +584,7 @@ RESULT target_build_chip_fl(const char *chip_series,
 			ret = ERRCODE_NOT_ENOUGH_MEMORY;
 			goto free_and_exit;
 		}
-		memset(fl->settings[i].choices, 0, 
+		memset(fl->settings[i].choices, 0,
 			fl->settings[i].num_of_choices * sizeof(struct chip_fl_choice_t));
 		
 		choiceNode = settingNode->children->next;
@@ -592,8 +592,8 @@ RESULT target_build_chip_fl(const char *chip_series,
 		for (j = 0; j < fl->settings[i].num_of_choices; j++)
 		{
 			// check
-			if (strcmp((const char *)choiceNode->name, "choice") 
-				|| !xmlHasProp(choiceNode, BAD_CAST "value") 
+			if (strcmp((const char *)choiceNode->name, "choice")
+				|| !xmlHasProp(choiceNode, BAD_CAST "value")
 				|| !xmlHasProp(choiceNode, BAD_CAST "text"))
 			{
 				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read config file");
@@ -603,14 +603,14 @@ RESULT target_build_chip_fl(const char *chip_series,
 			
 			// parse
 			if (NULL == bufffunc_malloc_and_copy_str(
-						&fl->settings[i].choices[j].value, 
+						&fl->settings[i].choices[j].value,
 						(char *)xmlGetProp(choiceNode, BAD_CAST "value")))
 			{
 				LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 				ret = ERRCODE_NOT_ENOUGH_MEMORY;
 				goto free_and_exit;
 			}
-			if (ERROR_OK != strparser_check(fl->settings[i].choices[j].value, 
+			if (ERROR_OK != strparser_check(fl->settings[i].choices[j].value,
 												format))
 			{
 				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "parse value node");
@@ -619,7 +619,7 @@ RESULT target_build_chip_fl(const char *chip_series,
 			}
 			
 			if (NULL == bufffunc_malloc_and_copy_str(
-						&fl->settings[i].choices[j].text, 
+						&fl->settings[i].choices[j].text,
 						(char *)xmlGetProp(choiceNode, BAD_CAST "text")))
 			{
 				LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
@@ -647,7 +647,7 @@ free_and_exit:
 	return ret;
 }
 
-RESULT target_build_chip_series(const char *chip_series, 
+RESULT target_build_chip_series(const char *chip_series,
 		const struct program_mode_t *program_mode, struct chip_series_t *s)
 {
 	xmlDocPtr doc = NULL;
@@ -674,7 +674,7 @@ RESULT target_build_chip_series(const char *chip_series,
 	// release first if necessary
 	target_release_chip_series(s);
 	
-	filename = (char *)malloc(strlen(config_dir)+ strlen(chip_series) 
+	filename = (char *)malloc(strlen(config_dir)+ strlen(chip_series)
 								+ strlen(TARGET_CONF_FILE_EXT) + 1);
 	if (NULL == filename)
 	{
@@ -713,9 +713,9 @@ RESULT target_build_chip_series(const char *chip_series,
 	}
 	
 	// valid check
-	if (xmlStrcmp(curNode->name, BAD_CAST "series") 
-		|| !xmlHasProp(curNode, BAD_CAST "name") 
-		|| xmlStrcmp(xmlGetProp(curNode, BAD_CAST "name"), 
+	if (xmlStrcmp(curNode->name, BAD_CAST "series")
+		|| !xmlHasProp(curNode, BAD_CAST "name")
+		|| xmlStrcmp(xmlGetProp(curNode, BAD_CAST "name"),
 					 (const xmlChar *)chip_series))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read config file");
@@ -730,7 +730,7 @@ RESULT target_build_chip_series(const char *chip_series,
 		ret = ERRCODE_NOT_SUPPORT;
 		goto free_and_exit;
 	}
-	s->chips_param = (struct chip_param_t *)malloc(sizeof(struct chip_param_t) 
+	s->chips_param = (struct chip_param_t *)malloc(sizeof(struct chip_param_t)
 											* s->num_of_chips);
 	if (NULL == s->chips_param)
 	{
@@ -753,7 +753,7 @@ RESULT target_build_chip_series(const char *chip_series,
 		p_param = &(s->chips_param[i]);
 		
 		// check
-		if ((NULL == curNode) 
+		if ((NULL == curNode)
 			|| xmlStrcmp(curNode->name, BAD_CAST "chip")
 			|| !xmlHasProp(curNode, BAD_CAST "name"))
 		{
@@ -763,8 +763,8 @@ RESULT target_build_chip_series(const char *chip_series,
 		}
 		
 		// read name
-		strncpy(p_param->chip_name, 
-				(const char *)xmlGetProp(curNode, BAD_CAST "name"), 
+		strncpy(p_param->chip_name,
+				(const char *)xmlGetProp(curNode, BAD_CAST "name"),
 				sizeof(p_param->chip_name));
 		
 		// read parameters
@@ -795,12 +795,12 @@ RESULT target_build_chip_series(const char *chip_series,
 					goto free_and_exit;
 				}
 				p_param->program_mode = 0;
-				if ((0 != i) 
+				if ((0 != i)
 					|| (strcmp(chip_series, p_param->chip_name)))
 				{
 					for (j = 0; j < strlen(mode_tmp); j++)
 					{
-						mode_idx = 
+						mode_idx =
 								target_mode_get_idx(program_mode, mode_tmp[j]);
 						if (mode_idx >= 0)
 						{
@@ -808,7 +808,7 @@ RESULT target_build_chip_series(const char *chip_series,
 						}
 						else
 						{
-							LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, mode_tmp, 
+							LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, mode_tmp,
 										"current target");
 							ret = ERRCODE_NOT_SUPPORT;
 							goto free_and_exit;
@@ -827,117 +827,117 @@ RESULT target_build_chip_series(const char *chip_series,
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "boot_addr"))
 			{
-				p_param->chip_areas[BOOTLOADER_IDX].addr = 
+				p_param->chip_areas[BOOTLOADER_IDX].addr =
 					(uint32_t)strtoul(
 						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "boot_seg"))
 			{
-				p_param->chip_areas[BOOTLOADER_IDX].seg = 
+				p_param->chip_areas[BOOTLOADER_IDX].seg =
 					(uint32_t)strtoul(
 						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "boot_page_size"))
 			{
-				p_param->chip_areas[BOOTLOADER_IDX].page_size = 
+				p_param->chip_areas[BOOTLOADER_IDX].page_size =
 					(uint32_t)strtoul(
 						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
 				p_param->chip_areas[BOOTLOADER_IDX].size = 0;
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "boot_page_num"))
 			{
-				p_param->chip_areas[BOOTLOADER_IDX].page_num = 
+				p_param->chip_areas[BOOTLOADER_IDX].page_num =
 					(uint32_t)strtoul(
 						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
 				p_param->chip_areas[BOOTLOADER_IDX].size = 0;
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "boot_default"))
 			{
-				p_param->chip_areas[BOOTLOADER_IDX].default_value = 
+				p_param->chip_areas[BOOTLOADER_IDX].default_value =
 					(uint32_t)strtoull(
 						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "sram_addr"))
 			{
-				p_param->chip_areas[SRAM_IDX].addr = 
+				p_param->chip_areas[SRAM_IDX].addr =
 					(uint32_t)strtoul(
 						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "sram_page_size"))
 			{
-				p_param->chip_areas[SRAM_IDX].page_size = 
+				p_param->chip_areas[SRAM_IDX].page_size =
 					(uint32_t)strtoul(
 						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
 				p_param->chip_areas[SRAM_IDX].size = 0;
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "sram_page_num"))
 			{
-				p_param->chip_areas[SRAM_IDX].page_num = 
+				p_param->chip_areas[SRAM_IDX].page_num =
 					(uint32_t)strtoul(
 						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
 				p_param->chip_areas[SRAM_IDX].size = 0;
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "uid_addr"))
 			{
-				p_param->chip_areas[UNIQUEID_IDX].addr = 
+				p_param->chip_areas[UNIQUEID_IDX].addr =
 					(uint32_t)strtoul(
 						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "uid_page_size"))
 			{
-				p_param->chip_areas[UNIQUEID_IDX].page_size = 
+				p_param->chip_areas[UNIQUEID_IDX].page_size =
 					(uint32_t)strtoul(
 						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
 				p_param->chip_areas[UNIQUEID_IDX].size = 0;
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "uid_page_num"))
 			{
-				p_param->chip_areas[UNIQUEID_IDX].page_num = 
+				p_param->chip_areas[UNIQUEID_IDX].page_num =
 					(uint32_t)strtoul(
 						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
 				p_param->chip_areas[UNIQUEID_IDX].size = 0;
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "app_addr"))
 			{
-				p_param->chip_areas[APPLICATION_IDX].addr = 
+				p_param->chip_areas[APPLICATION_IDX].addr =
 					(uint32_t)strtoul(
 						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "app_seg"))
 			{
-				p_param->chip_areas[APPLICATION_IDX].seg = 
+				p_param->chip_areas[APPLICATION_IDX].seg =
 					(uint32_t)strtoul(
 						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "app_page_size"))
 			{
-				p_param->chip_areas[APPLICATION_IDX].page_size = 
+				p_param->chip_areas[APPLICATION_IDX].page_size =
 					(uint32_t)strtoul(
 						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
 				p_param->chip_areas[APPLICATION_IDX].size = 0;
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "app_page_num"))
 			{
-				p_param->chip_areas[APPLICATION_IDX].page_num = 
+				p_param->chip_areas[APPLICATION_IDX].page_num =
 					(uint32_t)strtoul(
 						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
 				p_param->chip_areas[APPLICATION_IDX].size = 0;
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "app_default"))
 			{
-				p_param->chip_areas[APPLICATION_IDX].default_value = 
+				p_param->chip_areas[APPLICATION_IDX].default_value =
 					(uint32_t)strtoull(
 						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "ee_addr"))
 			{
-				p_param->chip_areas[EEPROM_IDX].addr = 
+				p_param->chip_areas[EEPROM_IDX].addr =
 					(uint32_t)strtoul(
 						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "ee_seg"))
 			{
-				p_param->chip_areas[EEPROM_IDX].seg = 
+				p_param->chip_areas[EEPROM_IDX].seg =
 					(uint32_t)strtoul(
 						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
 			}
@@ -955,19 +955,19 @@ RESULT target_build_chip_series(const char *chip_series,
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "ee_default"))
 			{
-				p_param->chip_areas[EEPROM_IDX].default_value = 
+				p_param->chip_areas[EEPROM_IDX].default_value =
 					(uint32_t)strtoull(
 						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "otprom_addr"))
 			{
-				p_param->chip_areas[OTPROM_IDX].addr = 
+				p_param->chip_areas[OTPROM_IDX].addr =
 					(uint32_t)strtoul(
 						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "otprom_seg"))
 			{
-				p_param->chip_areas[OTPROM_IDX].seg = 
+				p_param->chip_areas[OTPROM_IDX].seg =
 					(uint32_t)strtoul(
 						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
 			}
@@ -985,19 +985,19 @@ RESULT target_build_chip_series(const char *chip_series,
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "otprom_default"))
 			{
-				p_param->chip_areas[OTPROM_IDX].default_value = 
+				p_param->chip_areas[OTPROM_IDX].default_value =
 					(uint32_t)strtoull(
 						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "usrsig_addr"))
 			{
-				p_param->chip_areas[USRSIG_IDX].addr = 
+				p_param->chip_areas[USRSIG_IDX].addr =
 					(uint32_t)strtoul(
 						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "usrsig_seg"))
 			{
-				p_param->chip_areas[USRSIG_IDX].seg = 
+				p_param->chip_areas[USRSIG_IDX].seg =
 					(uint32_t)strtoul(
 						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
 			}
@@ -1015,19 +1015,19 @@ RESULT target_build_chip_series(const char *chip_series,
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "usrsig_default"))
 			{
-				p_param->chip_areas[USRSIG_IDX].default_value = 
+				p_param->chip_areas[USRSIG_IDX].default_value =
 					(uint32_t)strtoull(
 						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "fuse_addr"))
 			{
-				p_param->chip_areas[FUSE_IDX].addr = 
+				p_param->chip_areas[FUSE_IDX].addr =
 					(uint32_t)strtoul(
 						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "fuse_seg"))
 			{
-				p_param->chip_areas[FUSE_IDX].seg = 
+				p_param->chip_areas[FUSE_IDX].seg =
 					(uint32_t)strtoul(
 						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
 			}
@@ -1045,19 +1045,19 @@ RESULT target_build_chip_series(const char *chip_series,
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "fuse_default"))
 			{
-				p_param->chip_areas[FUSE_IDX].default_value = 
+				p_param->chip_areas[FUSE_IDX].default_value =
 					(uint32_t)strtoull(
 						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "lock_addr"))
 			{
-				p_param->chip_areas[LOCK_IDX].addr = 
+				p_param->chip_areas[LOCK_IDX].addr =
 					(uint32_t)strtoul(
 						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "lock_seg"))
 			{
-				p_param->chip_areas[LOCK_IDX].seg = 
+				p_param->chip_areas[LOCK_IDX].seg =
 					(uint32_t)strtoul(
 						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
 			}
@@ -1075,7 +1075,7 @@ RESULT target_build_chip_series(const char *chip_series,
 			}
 			else if (!xmlStrcmp(paramNode->name, BAD_CAST "lock_default"))
 			{
-				p_param->chip_areas[LOCK_IDX].default_value = 
+				p_param->chip_areas[LOCK_IDX].default_value =
 					(uint32_t)strtoull(
 						(const char *)xmlNodeGetContent(paramNode), NULL, 0);
 			}
@@ -1137,11 +1137,11 @@ RESULT target_build_chip_series(const char *chip_series,
 			{
 				target_para_size_defined |= UNIQUEID;
 				p_param->chip_areas[UNIQUEID_IDX].size = (uint32_t)strtoul(
-					(const char *)xmlGetProp(paramNode, BAD_CAST "bytesize"), 
+					(const char *)xmlGetProp(paramNode, BAD_CAST "bytesize"),
 					NULL, 0);
 				size = p_param->chip_areas[UNIQUEID_IDX].size;
 				p_param->chip_areas[UNIQUEID_IDX].default_value = strtoull(
-					(const char *)xmlGetProp(paramNode, BAD_CAST "init"), 
+					(const char *)xmlGetProp(paramNode, BAD_CAST "init"),
 					NULL, 0);
 				p_param->chip_areas[UNIQUEID_IDX].cli_format = NULL;
 				p_param->chip_areas[UNIQUEID_IDX].mask = NULL;
@@ -1171,7 +1171,7 @@ RESULT target_build_chip_series(const char *chip_series,
 				str = (char *)xmlGetProp(paramNode, BAD_CAST "mask");
 				if (str != NULL)
 				{
-					p_param->chip_areas[UNIQUEID_IDX].mask = 
+					p_param->chip_areas[UNIQUEID_IDX].mask =
 						(uint8_t *)malloc(size);
 					if (NULL == p_param->chip_areas[UNIQUEID_IDX].mask)
 					{
@@ -1180,7 +1180,7 @@ RESULT target_build_chip_series(const char *chip_series,
 						goto free_and_exit;
 					}
 					buff = p_param->chip_areas[UNIQUEID_IDX].mask;
-					if (ERROR_OK != 
+					if (ERROR_OK !=
 							strparser_parse(str, format, buff, size))
 					{
 						LOG_ERROR(ERRMSG_FAILURE_OPERATION, "parse mask node");
@@ -1193,11 +1193,11 @@ RESULT target_build_chip_series(const char *chip_series,
 			{
 				target_para_size_defined |= FUSE;
 				p_param->chip_areas[FUSE_IDX].size = (uint32_t)strtoul(
-					(const char *)xmlGetProp(paramNode, BAD_CAST "bytesize"), 
+					(const char *)xmlGetProp(paramNode, BAD_CAST "bytesize"),
 					NULL, 0);
 				size = p_param->chip_areas[FUSE_IDX].size;
 				p_param->chip_areas[FUSE_IDX].default_value = strtoull(
-					(const char *)xmlGetProp(paramNode, BAD_CAST "init"), 
+					(const char *)xmlGetProp(paramNode, BAD_CAST "init"),
 					NULL, 0);
 				p_param->chip_areas[FUSE_IDX].cli_format = NULL;
 				p_param->chip_areas[FUSE_IDX].mask = NULL;
@@ -1227,7 +1227,7 @@ RESULT target_build_chip_series(const char *chip_series,
 				str = (char *)xmlGetProp(paramNode, BAD_CAST "mask");
 				if (str != NULL)
 				{
-					p_param->chip_areas[FUSE_IDX].mask = 
+					p_param->chip_areas[FUSE_IDX].mask =
 						(uint8_t *)malloc(size);
 					if (NULL == p_param->chip_areas[FUSE_IDX].mask)
 					{
@@ -1236,7 +1236,7 @@ RESULT target_build_chip_series(const char *chip_series,
 						goto free_and_exit;
 					}
 					buff = p_param->chip_areas[FUSE_IDX].mask;
-					if (ERROR_OK != 
+					if (ERROR_OK !=
 							strparser_parse(str, format, buff, size))
 					{
 						LOG_ERROR(ERRMSG_FAILURE_OPERATION, "parse mask node");
@@ -1249,11 +1249,11 @@ RESULT target_build_chip_series(const char *chip_series,
 			{
 				target_para_size_defined |= LOCK;
 				p_param->chip_areas[LOCK_IDX].size = (uint32_t)strtoul(
-					(const char *)xmlGetProp(paramNode, BAD_CAST "bytesize"), 
+					(const char *)xmlGetProp(paramNode, BAD_CAST "bytesize"),
 					NULL, 0);
 				size = p_param->chip_areas[LOCK_IDX].size;
 				p_param->chip_areas[LOCK_IDX].default_value = strtoull(
-					(const char *)xmlGetProp(paramNode, BAD_CAST "init"), 
+					(const char *)xmlGetProp(paramNode, BAD_CAST "init"),
 					NULL, 0);
 				p_param->chip_areas[LOCK_IDX].cli_format = NULL;
 				p_param->chip_areas[LOCK_IDX].mask = NULL;
@@ -1283,7 +1283,7 @@ RESULT target_build_chip_series(const char *chip_series,
 				str = (char *)xmlGetProp(paramNode, BAD_CAST "mask");
 				if (str != NULL)
 				{
-					p_param->chip_areas[LOCK_IDX].mask = 
+					p_param->chip_areas[LOCK_IDX].mask =
 						(uint8_t *)malloc(size);
 					if (NULL == p_param->chip_areas[LOCK_IDX].mask)
 					{
@@ -1292,7 +1292,7 @@ RESULT target_build_chip_series(const char *chip_series,
 						goto free_and_exit;
 					}
 					buff = p_param->chip_areas[LOCK_IDX].mask;
-					if (ERROR_OK != 
+					if (ERROR_OK !=
 							strparser_parse(str, format, buff, size))
 					{
 						LOG_ERROR(ERRMSG_FAILURE_OPERATION, "parse mask node");
@@ -1309,7 +1309,7 @@ RESULT target_build_chip_series(const char *chip_series,
 					NULL, 0);
 				size = p_param->chip_areas[CALIBRATION_IDX].size;
 				p_param->chip_areas[CALIBRATION_IDX].default_value = strtoull(
-						(const char *)xmlGetProp(paramNode, BAD_CAST "init"), 
+						(const char *)xmlGetProp(paramNode, BAD_CAST "init"),
 						NULL, 0);
 				p_param->chip_areas[CALIBRATION_IDX].cli_format = NULL;
 				p_param->chip_areas[CALIBRATION_IDX].mask = NULL;
@@ -1339,7 +1339,7 @@ RESULT target_build_chip_series(const char *chip_series,
 				str = (char *)xmlGetProp(paramNode, BAD_CAST "mask");
 				if (str != NULL)
 				{
-					p_param->chip_areas[CALIBRATION_IDX].mask = 
+					p_param->chip_areas[CALIBRATION_IDX].mask =
 						(uint8_t *)malloc(size);
 					if (NULL == p_param->chip_areas[CALIBRATION_IDX].mask)
 					{
@@ -1348,7 +1348,7 @@ RESULT target_build_chip_series(const char *chip_series,
 						goto free_and_exit;
 					}
 					buff = p_param->chip_areas[CALIBRATION_IDX].mask;
-					if (ERROR_OK != 
+					if (ERROR_OK !=
 							strparser_parse(str, format, buff, size))
 					{
 						LOG_ERROR(ERRMSG_FAILURE_OPERATION, "parse mask node");
@@ -1361,8 +1361,8 @@ RESULT target_build_chip_series(const char *chip_series,
 			{
 				char *str_tmp = (char *)paramNode->name;
 				
-				if ((strlen(str_tmp) >= 6) 
-					&& ('p' == str_tmp[0]) 
+				if ((strlen(str_tmp) >= 6)
+					&& ('p' == str_tmp[0])
 					&& ('a' == str_tmp[1])
 					&& ('r' == str_tmp[2])
 					&& ('a' == str_tmp[3])
@@ -1376,8 +1376,8 @@ RESULT target_build_chip_series(const char *chip_series,
 				else
 				{
 					// wrong parameter
-					LOG_ERROR(ERRMSG_INVALID, 
-						(const char *)xmlNodeGetContent(paramNode), 
+					LOG_ERROR(ERRMSG_INVALID,
+						(const char *)xmlNodeGetContent(paramNode),
 						chip_series);
 					ret = ERRCODE_INVALID;
 					goto free_and_exit;
@@ -1387,67 +1387,67 @@ RESULT target_build_chip_series(const char *chip_series,
 			paramNode = paramNode->next->next;
 		}
 		
-		if (!(target_para_size_defined & UNIQUEID) 
+		if (!(target_para_size_defined & UNIQUEID)
 			&& !p_param->chip_areas[UNIQUEID_IDX].size)
 		{
-			p_param->chip_areas[UNIQUEID_IDX].size = 
-				p_param->chip_areas[UNIQUEID_IDX].page_size 
+			p_param->chip_areas[UNIQUEID_IDX].size =
+				p_param->chip_areas[UNIQUEID_IDX].page_size
 				* p_param->chip_areas[UNIQUEID_IDX].page_num;
 		}
-		if (!(target_para_size_defined & SRAM) 
+		if (!(target_para_size_defined & SRAM)
 			&& !p_param->chip_areas[SRAM_IDX].size)
 		{
-			p_param->chip_areas[SRAM_IDX].size = 
-				p_param->chip_areas[SRAM_IDX].page_size 
+			p_param->chip_areas[SRAM_IDX].size =
+				p_param->chip_areas[SRAM_IDX].page_size
 				* p_param->chip_areas[SRAM_IDX].page_num;
 		}
-		if (!(target_para_size_defined & APPLICATION) 
+		if (!(target_para_size_defined & APPLICATION)
 			&& !p_param->chip_areas[APPLICATION_IDX].size)
 		{
-			p_param->chip_areas[APPLICATION_IDX].size = 
-				p_param->chip_areas[APPLICATION_IDX].page_size 
+			p_param->chip_areas[APPLICATION_IDX].size =
+				p_param->chip_areas[APPLICATION_IDX].page_size
 				* p_param->chip_areas[APPLICATION_IDX].page_num;
 		}
-		if (!(target_para_size_defined & EEPROM) 
+		if (!(target_para_size_defined & EEPROM)
 			&& !p_param->chip_areas[EEPROM_IDX].size)
 		{
-			p_param->chip_areas[EEPROM_IDX].size = 
-				p_param->chip_areas[EEPROM_IDX].page_size 
+			p_param->chip_areas[EEPROM_IDX].size =
+				p_param->chip_areas[EEPROM_IDX].page_size
 				* p_param->chip_areas[EEPROM_IDX].page_num;
 		}
-		if (!(target_para_size_defined & BOOTLOADER) 
+		if (!(target_para_size_defined & BOOTLOADER)
 			&& !p_param->chip_areas[BOOTLOADER_IDX].size)
 		{
-			p_param->chip_areas[BOOTLOADER_IDX].size = 
-				p_param->chip_areas[BOOTLOADER_IDX].page_size 
+			p_param->chip_areas[BOOTLOADER_IDX].size =
+				p_param->chip_areas[BOOTLOADER_IDX].page_size
 				* p_param->chip_areas[BOOTLOADER_IDX].page_num;
 		}
-		if (!(target_para_size_defined & FUSE) 
+		if (!(target_para_size_defined & FUSE)
 			&& !p_param->chip_areas[FUSE_IDX].size)
 		{
-			p_param->chip_areas[FUSE_IDX].size = 
-				p_param->chip_areas[FUSE_IDX].page_size 
+			p_param->chip_areas[FUSE_IDX].size =
+				p_param->chip_areas[FUSE_IDX].page_size
 				* p_param->chip_areas[FUSE_IDX].page_num;
 		}
-		if (!(target_para_size_defined & LOCK) 
+		if (!(target_para_size_defined & LOCK)
 			&& !p_param->chip_areas[LOCK_IDX].size)
 		{
-			p_param->chip_areas[LOCK_IDX].size = 
-				p_param->chip_areas[LOCK_IDX].page_size 
+			p_param->chip_areas[LOCK_IDX].size =
+				p_param->chip_areas[LOCK_IDX].page_size
 				* p_param->chip_areas[LOCK_IDX].page_num;
 		}
-		if (!(target_para_size_defined & OTPROM) 
+		if (!(target_para_size_defined & OTPROM)
 			&& !p_param->chip_areas[OTPROM_IDX].size)
 		{
-			p_param->chip_areas[OTPROM_IDX].size = 
-				p_param->chip_areas[OTPROM_IDX].page_size 
+			p_param->chip_areas[OTPROM_IDX].size =
+				p_param->chip_areas[OTPROM_IDX].page_size
 				* p_param->chip_areas[OTPROM_IDX].page_num;
 		}
-		if (!(target_para_size_defined & USRSIG) 
+		if (!(target_para_size_defined & USRSIG)
 			&& !p_param->chip_areas[USRSIG_IDX].size)
 		{
-			p_param->chip_areas[USRSIG_IDX].size = 
-				p_param->chip_areas[USRSIG_IDX].page_size 
+			p_param->chip_areas[USRSIG_IDX].size =
+				p_param->chip_areas[USRSIG_IDX].page_size
 				* p_param->chip_areas[USRSIG_IDX].page_num;
 		}
 		
@@ -1456,7 +1456,7 @@ RESULT target_build_chip_series(const char *chip_series,
 			// first chip is used to setting every chip
 			for (j = 1; j < s->num_of_chips; j++)
 			{
-				memcpy(&s->chips_param[j], &s->chips_param[0], 
+				memcpy(&s->chips_param[j], &s->chips_param[0],
 							sizeof(struct chip_param_t));
 				s->chips_param[j].program_mode_str = NULL;
 				for (k = 0; k < dimof(target_area_name); k++)

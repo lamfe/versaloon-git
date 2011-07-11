@@ -40,14 +40,14 @@
 #define CUR_TARGET_STRING			S5X_STRING
 #define CUR_DEFAULT_FREQ			S5X_DEFAULT_FREQ
 
-const struct program_area_map_t s5x_program_area_map[] = 
+const struct program_area_map_t s5x_program_area_map[] =
 {
 	{APPLICATION_CHAR, 1, 0, 0, 0, AREA_ATTR_EWR},
 	{LOCK_CHAR, 0, 0, 0, 0, AREA_ATTR_WR},
 	{0, 0, 0, 0, 0, 0}
 };
 
-const struct program_mode_t s5x_program_mode[] = 
+const struct program_mode_t s5x_program_mode[] =
 {
 	{'p', SET_FREQUENCY, IFS_SPI | IFS_GPIO},
 	{'b', SET_FREQUENCY, IFS_SPI | IFS_GPIO},
@@ -59,13 +59,13 @@ LEAVE_PROGRAM_MODE_HANDLER(s5x);
 ERASE_TARGET_HANDLER(s5x);
 WRITE_TARGET_HANDLER(s5x);
 READ_TARGET_HANDLER(s5x);
-const struct program_functions_t s5x_program_functions = 
+const struct program_functions_t s5x_program_functions =
 {
 	NULL,			// execute
-	ENTER_PROGRAM_MODE_FUNCNAME(s5x), 
-	LEAVE_PROGRAM_MODE_FUNCNAME(s5x), 
-	ERASE_TARGET_FUNCNAME(s5x), 
-	WRITE_TARGET_FUNCNAME(s5x), 
+	ENTER_PROGRAM_MODE_FUNCNAME(s5x),
+	LEAVE_PROGRAM_MODE_FUNCNAME(s5x),
+	ERASE_TARGET_FUNCNAME(s5x),
+	WRITE_TARGET_FUNCNAME(s5x),
 	READ_TARGET_FUNCNAME(s5x)
 };
 
@@ -75,12 +75,12 @@ VSS_HANDLER(s5x_help)
 	PRINTF("\
 Usage of %s:\n\
   -F,  --frequency <FREQUENCY>              set ISP frequency, in KHz\n\
-  -m,  --mode <MODE>                        set program mode<b|p>\n\n", 
+  -m,  --mode <MODE>                        set program mode<b|p>\n\n",
 			CUR_TARGET_STRING);
 	return ERROR_OK;
 }
 
-const struct vss_cmd_t s5x_notifier[] = 
+const struct vss_cmd_t s5x_notifier[] =
 {
 	VSS_CMD(	"help",
 				"print help information of current target for internal call",
