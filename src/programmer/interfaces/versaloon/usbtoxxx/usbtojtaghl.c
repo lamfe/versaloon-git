@@ -46,15 +46,15 @@ RESULT usbtojtaghl_callback(void *p, uint8_t *src, uint8_t *processed)
 	if (cur_pending->id & 0x80000000)
 	{
 		// DR
-		ret = usbtojtaghl_receive_callback(0, JTAG_SCANTYPE_DR, 
-				cur_pending->id & 0x7FFFFFFF, cur_pending->data_buffer, 
+		ret = usbtojtaghl_receive_callback(0, JTAG_SCANTYPE_DR,
+				cur_pending->id & 0x7FFFFFFF, cur_pending->data_buffer,
 				src, cur_pending->actual_data_size, &processed_len);
 	}
 	else
 	{
 		// IR
-		ret = usbtojtaghl_receive_callback(0, JTAG_SCANTYPE_IR, 
-				cur_pending->id & 0x7FFFFFFF, cur_pending->data_buffer, 
+		ret = usbtojtaghl_receive_callback(0, JTAG_SCANTYPE_IR,
+				cur_pending->id & 0x7FFFFFFF, cur_pending->data_buffer,
 				src, cur_pending->actual_data_size, &processed_len);
 	}
 	if (ret != ERROR_OK)
@@ -70,7 +70,7 @@ RESULT usbtojtaghl_callback(void *p, uint8_t *src, uint8_t *processed)
 	return ERROR_OK;
 }
 
-RESULT usbtojtaghl_register_callback(uint8_t index, jtag_callback_t send_callback, 
+RESULT usbtojtaghl_register_callback(uint8_t index, jtag_callback_t send_callback,
 									 jtag_callback_t receive_callback)
 {
 	REFERENCE_PARAMETER(index);
@@ -90,7 +90,7 @@ RESULT usbtojtaghl_fini(uint8_t interface_index)
 	return usbtoxxx_fini_command(USB_TO_JTAG_HL, interface_index);
 }
 
-RESULT usbtojtaghl_config(uint8_t interface_index, uint32_t kHz, uint8_t ub, 
+RESULT usbtojtaghl_config(uint8_t interface_index, uint32_t kHz, uint8_t ub,
 						  uint8_t ua, uint16_t bb, uint16_t ba)
 {
 	uint8_t cfg_buf[10];
@@ -112,7 +112,7 @@ RESULT usbtojtaghl_config(uint8_t interface_index, uint32_t kHz, uint8_t ub,
 	return usbtoxxx_conf_command(USB_TO_JTAG_HL, interface_index, cfg_buf, 10);
 }
 
-RESULT usbtojtaghl_ir(uint8_t interface_index, uint8_t *ir, uint16_t bitlen, 
+RESULT usbtojtaghl_ir(uint8_t interface_index, uint8_t *ir, uint16_t bitlen,
 					  uint8_t idle, uint8_t want_ret)
 {
 	uint16_t bytelen = (bitlen + 7) >> 3;
@@ -145,7 +145,7 @@ RESULT usbtojtaghl_ir(uint8_t interface_index, uint8_t *ir, uint16_t bitlen,
 	
 	if (usbtojtaghl_send_callback != NULL)
 	{
-		usbtojtaghl_send_callback(0, JTAG_SCANTYPE_IR, usbtojtaghl_ir_backup, 
+		usbtojtaghl_send_callback(0, JTAG_SCANTYPE_IR, usbtojtaghl_ir_backup,
 						versaloon_cmd_buf + 3, ir, bytelen, &processed_len);
 	}
 	
@@ -167,17 +167,17 @@ RESULT usbtojtaghl_ir(uint8_t interface_index, uint8_t *ir, uint16_t bitlen,
 	versaloon_set_callback(usbtojtaghl_callback);
 	if (want_ret)
 	{
-		return usbtoxxx_inout_command(USB_TO_JTAG_HL, interface_index, 
+		return usbtoxxx_inout_command(USB_TO_JTAG_HL, interface_index,
 					versaloon_cmd_buf, bytelen + 3, bytelen, ir, 0, bytelen, 1);
 	}
 	else
 	{
-		return usbtoxxx_inout_command(USB_TO_JTAG_HL, interface_index, 
+		return usbtoxxx_inout_command(USB_TO_JTAG_HL, interface_index,
 					versaloon_cmd_buf, bytelen + 3, bytelen, NULL, 0, 0, 1);
 	}
 }
 
-RESULT usbtojtaghl_dr(uint8_t interface_index, uint8_t *dr, uint16_t bitlen, 
+RESULT usbtojtaghl_dr(uint8_t interface_index, uint8_t *dr, uint16_t bitlen,
 					  uint8_t idle, uint8_t want_ret)
 {
 	uint16_t bytelen = (bitlen + 7) >> 3;
@@ -196,7 +196,7 @@ RESULT usbtojtaghl_dr(uint8_t interface_index, uint8_t *dr, uint16_t bitlen,
 	
 	if (usbtojtaghl_send_callback != NULL)
 	{
-		usbtojtaghl_send_callback(0, JTAG_SCANTYPE_DR, usbtojtaghl_ir_backup, 
+		usbtojtaghl_send_callback(0, JTAG_SCANTYPE_DR, usbtojtaghl_ir_backup,
 						versaloon_cmd_buf + 3, dr, bytelen, &processed_len);
 	}
 	
@@ -218,12 +218,12 @@ RESULT usbtojtaghl_dr(uint8_t interface_index, uint8_t *dr, uint16_t bitlen,
 	versaloon_set_callback(usbtojtaghl_callback);
 	if (want_ret)
 	{
-		return usbtoxxx_inout_command(USB_TO_JTAG_HL, interface_index, 
+		return usbtoxxx_inout_command(USB_TO_JTAG_HL, interface_index,
 					versaloon_cmd_buf, bytelen + 3, bytelen, dr, 0, bytelen, 1);
 	}
 	else
 	{
-		return usbtoxxx_inout_command(USB_TO_JTAG_HL, interface_index, 
+		return usbtoxxx_inout_command(USB_TO_JTAG_HL, interface_index,
 					versaloon_cmd_buf, bytelen + 3, bytelen, NULL, 0, 0, 1);
 	}
 }
@@ -246,7 +246,7 @@ RESULT usbtojtaghl_tms(uint8_t interface_index, uint8_t *tms, uint16_t bitlen)
 	versaloon_cmd_buf[0] = (uint8_t)(bitlen - 1);
 	memcpy(versaloon_cmd_buf + 1, tms, bitlen);
 	
-	return usbtoxxx_out_command(USB_TO_JTAG_HL, interface_index, 
+	return usbtoxxx_out_command(USB_TO_JTAG_HL, interface_index,
 							versaloon_cmd_buf, ((bitlen + 7) >> 3) + 1, 0);
 }
 

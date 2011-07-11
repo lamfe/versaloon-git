@@ -67,14 +67,14 @@ RESULT cm3_dp_init(struct interfaces_info_t *ifs, struct adi_dpif_t *dp)
 	{
 		uint32_t reg0 = 0;
 		dcb_dhcsr = (uint32_t)(CM3_DCB_DHCSR_DBGKEY | CM3_DCB_DHCSR_C_DEBUGEN);
-		if ((ERROR_OK != adi_memap_write_reg32(CM3_DCB_DHCSR, &dcb_dhcsr, 0)) || 
+		if ((ERROR_OK != adi_memap_write_reg32(CM3_DCB_DHCSR, &dcb_dhcsr, 0)) ||
 			(ERROR_OK != adi_memap_write_reg32(CM3_DCB_DCRDR, &reg0, 1)))
 		{
 			return ERROR_FAIL;
 		}
 	}
 	
-	if ((ERROR_OK != cm3_dp_halt()) 
+	if ((ERROR_OK != cm3_dp_halt())
 		|| (ERROR_OK != adi_memap_read_reg32(CM3_CPUID, &cpuid, 1)))
 	{
 		return ERROR_FAIL;
@@ -84,12 +84,12 @@ RESULT cm3_dp_init(struct interfaces_info_t *ifs, struct adi_dpif_t *dp)
 	// 0xC20 is for CortexM0
 	if ((((cpuid >> 4) & 0xC3F) == 0xC23) && (ADI_DP_CM3 == tgt_core))
 	{
-		LOG_INFO("CORTEX-M3 r%dp%d processor detected", 
+		LOG_INFO("CORTEX-M3 r%dp%d processor detected",
 					(cpuid >> 20) & 0x0F, (cpuid >> 0) & 0x0F);
 	}
 	else if ((((cpuid >> 4) & 0xC3F) == 0xC20) && (ADI_DP_CM0 == tgt_core))
 	{
-		LOG_INFO("CORTEX-M0 r%dp%d processor detected", 
+		LOG_INFO("CORTEX-M0 r%dp%d processor detected",
 					(cpuid >> 20) & 0x0F, (cpuid >> 0) & 0x0F);
 	}
 	else
@@ -235,7 +235,7 @@ RESULT cm3_dp_halt(void)
 	if (!(dcb_dhcsr & CM3_DCB_DHCSR_S_HALT))
 	{
 		dcb_dhcsr &= ~0xFFFF0000;
-		dcb_dhcsr |= CM3_DCB_DHCSR_DBGKEY | CM3_DCB_DHCSR_C_DEBUGEN | 
+		dcb_dhcsr |= CM3_DCB_DHCSR_DBGKEY | CM3_DCB_DHCSR_C_DEBUGEN |
 						CM3_DCB_DHCSR_C_HALT;
 		adi_memap_write_reg32(CM3_DCB_DHCSR, &dcb_dhcsr, 0);
 		

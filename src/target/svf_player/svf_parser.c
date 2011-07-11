@@ -48,7 +48,7 @@ const char *svf_trst_mode_name[4] =
 	"ABSENT"
 };
 
-const char *svf_command_name[14] = 
+const char *svf_command_name[14] =
 {
 	"ENDDR",
 	"ENDIR",
@@ -82,7 +82,7 @@ static uint8_t svf_parser_mask_buffer[SVF_PARSER_DATA_BUFFER_SIZE];
 static uint32_t svf_parser_buffer_index = 0;
 
 static uint8_t svf_parser_tdi_buffer[SVF_PARSER_DATA_BUFFER_SIZE];
-static struct svf_parser_check_tdo_para_t 
+static struct svf_parser_check_tdo_para_t
 						svf_parser_check[SVF_PARSER_DATA_BUFFER_SIZE];
 static uint32_t svf_parser_check_index = 0;
 
@@ -141,12 +141,12 @@ void svf_parser_fini(void)
 	jtag_fini();
 }
 
-static RESULT svf_parser_adjust_array_length(uint8_t **arr, 
+static RESULT svf_parser_adjust_array_length(uint8_t **arr,
 								uint32_t orig_bit_len, uint32_t new_bit_len)
 {
 	uint32_t new_byte_len = (new_bit_len + 7) >> 3;
 	
-	if ((NULL == *arr) 
+	if ((NULL == *arr)
 		|| (((orig_bit_len + 7) >> 3) < ((new_bit_len + 7) >> 3)))
 	{
 		if (*arr != NULL)
@@ -166,7 +166,7 @@ static RESULT svf_parser_adjust_array_length(uint8_t **arr,
 	return ERROR_OK;
 }
 
-static void svf_parser_append_1s(uint8_t *dest, uint32_t dest_bit_len, 
+static void svf_parser_append_1s(uint8_t *dest, uint32_t dest_bit_len,
 								 uint32_t append_bit_len)
 {
 	uint32_t i;
@@ -181,7 +181,7 @@ static void svf_parser_append_1s(uint8_t *dest, uint32_t dest_bit_len,
 	}
 }
 
-static void svf_parser_append_bit(uint8_t *dest, uint32_t dest_bit_len, 
+static void svf_parser_append_bit(uint8_t *dest, uint32_t dest_bit_len,
 								  uint8_t *src, uint32_t src_bit_len)
 {
 	uint32_t i;
@@ -205,7 +205,7 @@ static void svf_parser_append_bit(uint8_t *dest, uint32_t dest_bit_len,
 	}
 }
 
-static uint8_t svf_parser_find_string_in_array(char *str, char **strs, 
+static uint8_t svf_parser_find_string_in_array(char *str, char **strs,
 											 uint32_t num_of_element)
 {
 	uint8_t i;
@@ -221,7 +221,7 @@ static uint8_t svf_parser_find_string_in_array(char *str, char **strs,
 	return 0xFF;
 }
 
-static RESULT svf_parser_parse_cmd_string(char *str, uint32_t len, 
+static RESULT svf_parser_parse_cmd_string(char *str, uint32_t len,
 											char **argus, uint32_t *num_of_argu)
 {
 	uint32_t pos = 0, num = 0;
@@ -263,7 +263,7 @@ parse_char:
 	return ERROR_OK;
 }
 
-static RESULT svf_parser_copy_hexstring_to_binary(char *str, uint8_t **bin, 
+static RESULT svf_parser_copy_hexstring_to_binary(char *str, uint8_t **bin,
 													uint32_t bit_len)
 {
 	uint32_t i, str_len = strlen(str), str_hbyte_len = (bit_len + 3) >> 2;
@@ -313,7 +313,7 @@ static RESULT svf_parser_copy_hexstring_to_binary(char *str, uint8_t **bin,
 	}
 
 	// consume optional leading '0' or space characters
-	while ((str_len > 0) && 
+	while ((str_len > 0) &&
 			((str[str_len - 1] == '0') || isspace(str[str_len - 1])))
 	{
 		str_len--;
@@ -330,7 +330,7 @@ static RESULT svf_parser_copy_hexstring_to_binary(char *str, uint8_t **bin,
 }
 
 #define SVFP_CMD_INC_CNT			1024
-uint32_t svf_parser_get_command(FILE *file, char **cmd_buffer, 
+uint32_t svf_parser_get_command(FILE *file, char **cmd_buffer,
 									uint32_t *cmd_len)
 {
 	char *tmp_buffer = NULL;
@@ -380,7 +380,7 @@ uint32_t svf_parser_get_command(FILE *file, char **cmd_buffer,
 				if ((cmd_pos + 1) >= *cmd_len)
 				{
 					// 1 more byte for '\0'
-					tmp_buffer = (char*)malloc(*cmd_len 
+					tmp_buffer = (char*)malloc(*cmd_len
 											   + SVFP_CMD_INC_CNT + 1);
 					if (NULL == tmp_buffer)
 					{
@@ -437,9 +437,9 @@ RESULT svf_parser_check_tdo(void)
 			index = svf_parser_check[i].buffer_offset;
 			for (j = 0; j < byte_len; j++)
 			{
-				if ((   svf_parser_tdi_buffer[index + j] 
-						& svf_parser_mask_buffer[index + j]) 
-					!= (svf_parser_tdo_buffer[index + j] 
+				if ((   svf_parser_tdi_buffer[index + j]
+						& svf_parser_mask_buffer[index + j])
+					!= (svf_parser_tdo_buffer[index + j]
 						& svf_parser_mask_buffer[index + j]))
 				{
 					if (svf_parser_check[i].bit_len >= 32)
@@ -452,13 +452,13 @@ RESULT svf_parser_check_tdo(void)
 					}
 					LOG_ERROR(
 							"tdo check error at line %d, read = 0x%X, "
-							"want = 0x%X, mask = 0x%X", 
-							svf_parser_check[i].line_num, 
-							(*(uint32_t*)(svf_parser_tdi_buffer + index)) 
-								& bit_mask, 
-							(*(uint32_t*)(svf_parser_tdo_buffer + index)) 
-								& bit_mask, 
-							(*(uint32_t*)(svf_parser_mask_buffer + index)) 
+							"want = 0x%X, mask = 0x%X",
+							svf_parser_check[i].line_num,
+							(*(uint32_t*)(svf_parser_tdi_buffer + index))
+								& bit_mask,
+							(*(uint32_t*)(svf_parser_tdo_buffer + index))
+								& bit_mask,
+							(*(uint32_t*)(svf_parser_mask_buffer + index))
 								& bit_mask);
 					
 					return ERROR_FAIL;
@@ -473,7 +473,7 @@ RESULT svf_parser_check_tdo(void)
 	return ERROR_OK;
 }
 
-RESULT svf_parser_add_check_para(uint8_t enabled, uint32_t buffer_offset, 
+RESULT svf_parser_add_check_para(uint8_t enabled, uint32_t buffer_offset,
 								 uint32_t bit_len)
 {
 	if (svf_parser_check_index >= SVF_PARSER_DATA_BUFFER_SIZE)
@@ -512,14 +512,14 @@ RESULT svf_parser_run_command(char *cmd_str)
 	
 	LOG_DEBUG("line %d: %s", svf_line_number, cmd_str);
 	
-	ret = svf_parser_parse_cmd_string(cmd_str, (uint32_t)strlen(cmd_str), 
+	ret = svf_parser_parse_cmd_string(cmd_str, (uint32_t)strlen(cmd_str),
 									  argus, &num_of_argu);
 	if (ret != ERROR_OK)
 	{
 		return ERROR_FAIL;
 	}
 	
-	command = svf_parser_find_string_in_array(argus[0], 
+	command = svf_parser_find_string_in_array(argus[0],
 						(char **)svf_command_name, dimof(svf_command_name));
 	
 	switch (command)
@@ -532,7 +532,7 @@ RESULT svf_parser_run_command(char *cmd_str)
 			return ERRCODE_INVALID_PARAMETER;
 		}
 		
-		i_tmp = svf_parser_find_string_in_array(argus[1], 
+		i_tmp = svf_parser_find_string_in_array(argus[1],
 							(char **)tap_state_name, dimof(tap_state_name));
 		if (!tap_state_is_stable(i_tmp))
 		{
@@ -542,13 +542,13 @@ RESULT svf_parser_run_command(char *cmd_str)
 		if (ENDDR == command)
 		{
 			svf_parser_para.dr_end_state = i_tmp;
-			LOG_DEBUG("\tdr_end_state = %s", 
+			LOG_DEBUG("\tdr_end_state = %s",
 					  tap_state_name[svf_parser_para.dr_end_state]);
 		}
 		else
 		{
 			svf_parser_para.ir_end_state = i_tmp;
-			LOG_DEBUG("\tir_end_state = %s", 
+			LOG_DEBUG("\tir_end_state = %s",
 					  tap_state_name[svf_parser_para.ir_end_state]);
 		}
 		break;
@@ -620,13 +620,13 @@ XXR_common:
 			return ERROR_FAIL;
 		}
 		LOG_DEBUG("\tlength = %d", xxr_para_tmp->len);
-		if ((ERROR_OK != svf_parser_adjust_array_length(&xxr_para_tmp->tdi, 
-												i_tmp, xxr_para_tmp->len)) 
-			|| (ERROR_OK != svf_parser_adjust_array_length(&xxr_para_tmp->tdo, 
-												i_tmp, xxr_para_tmp->len)) 
-			|| (ERROR_OK != svf_parser_adjust_array_length(&xxr_para_tmp->mask, 
-												i_tmp, xxr_para_tmp->len)) 
-			|| (ERROR_OK != svf_parser_adjust_array_length(&xxr_para_tmp->smask, 
+		if ((ERROR_OK != svf_parser_adjust_array_length(&xxr_para_tmp->tdi,
+												i_tmp, xxr_para_tmp->len))
+			|| (ERROR_OK != svf_parser_adjust_array_length(&xxr_para_tmp->tdo,
+												i_tmp, xxr_para_tmp->len))
+			|| (ERROR_OK != svf_parser_adjust_array_length(&xxr_para_tmp->mask,
+												i_tmp, xxr_para_tmp->len))
+			|| (ERROR_OK != svf_parser_adjust_array_length(&xxr_para_tmp->smask,
 												i_tmp, xxr_para_tmp->len)))
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "adjust length of array");
@@ -635,7 +635,7 @@ XXR_common:
 		xxr_para_tmp->data_mask = 0;
 		for (i = 2; i < num_of_argu; i += 2)
 		{
-			if ((argus[i + 1][0] != '(') 
+			if ((argus[i + 1][0] != '(')
 				|| (argus[i + 1][strlen(argus[i + 1]) - 1] != ')'))
 			{
 				LOG_ERROR("data section error");
@@ -674,7 +674,7 @@ XXR_common:
 				return ERROR_FAIL;
 			}
 			
-			ret = svf_parser_copy_hexstring_to_binary(&argus[i + 1][1], 
+			ret = svf_parser_copy_hexstring_to_binary(&argus[i + 1][1],
 									pbuffer_tmp, xxr_para_tmp->len);
 			if (ret != ERROR_OK)
 			{
@@ -682,14 +682,14 @@ XXR_common:
 				return ERRCODE_FAILURE_OPERATION;
 			}
 			
-			LOG_DEBUG("\t%s = 0x%X", argus[i], 
-				(uint32_t)((**(uint32_t**)pbuffer_tmp) 
+			LOG_DEBUG("\t%s = 0x%X", argus[i],
+				(uint32_t)((**(uint32_t**)pbuffer_tmp)
 					& (((uint64_t)1 << xxr_para_tmp->len) - 1)));
 		}
 		
-		// If a command changes the length of the last scan of the same type 
+		// If a command changes the length of the last scan of the same type
 		// and the MASK parameter is absent, the mask pattern used is all cares
-		if (!(xxr_para_tmp->data_mask & XXR_MASK) 
+		if (!(xxr_para_tmp->data_mask & XXR_MASK)
 			&& (i_tmp != xxr_para_tmp->len))
 		{
 			// MASK not defined and length changed
@@ -707,18 +707,18 @@ XXR_common:
 			// assemble ir data
 			i = 0;
 			svf_parser_append_bit(
-							&svf_parser_tdi_buffer[svf_parser_buffer_index], 
-							i, svf_parser_para.hdr_para.tdi, 
+							&svf_parser_tdi_buffer[svf_parser_buffer_index],
+							i, svf_parser_para.hdr_para.tdi,
 							svf_parser_para.hdr_para.len);
 			i += svf_parser_para.hdr_para.len;
 			svf_parser_append_bit(
-							&svf_parser_tdi_buffer[svf_parser_buffer_index], 
-							i, svf_parser_para.sdr_para.tdi, 
+							&svf_parser_tdi_buffer[svf_parser_buffer_index],
+							i, svf_parser_para.sdr_para.tdi,
 							svf_parser_para.sdr_para.len);
 			i += svf_parser_para.sdr_para.len;
 			svf_parser_append_bit(
-							&svf_parser_tdi_buffer[svf_parser_buffer_index], 
-							i, svf_parser_para.tdr_para.tdi, 
+							&svf_parser_tdi_buffer[svf_parser_buffer_index],
+							i, svf_parser_para.tdr_para.tdi,
 							svf_parser_para.tdr_para.len);
 			i += svf_parser_para.tdr_para.len;
 			
@@ -728,35 +728,35 @@ XXR_common:
 				// assemble dr mask data
 				i = 0;
 				svf_parser_append_bit(
-							&svf_parser_mask_buffer[svf_parser_buffer_index], 
-							i, svf_parser_para.hdr_para.mask, 
+							&svf_parser_mask_buffer[svf_parser_buffer_index],
+							i, svf_parser_para.hdr_para.mask,
 							svf_parser_para.hdr_para.len);
 				i += svf_parser_para.hdr_para.len;
 				svf_parser_append_bit(
-							&svf_parser_mask_buffer[svf_parser_buffer_index], 
-							i, svf_parser_para.sdr_para.mask, 
+							&svf_parser_mask_buffer[svf_parser_buffer_index],
+							i, svf_parser_para.sdr_para.mask,
 							svf_parser_para.sdr_para.len);
 				i += svf_parser_para.sdr_para.len;
 				svf_parser_append_bit(
-							&svf_parser_mask_buffer[svf_parser_buffer_index], 
-							i, svf_parser_para.tdr_para.mask, 
+							&svf_parser_mask_buffer[svf_parser_buffer_index],
+							i, svf_parser_para.tdr_para.mask,
 							svf_parser_para.tdr_para.len);
 				i += svf_parser_para.tdr_para.len;
 				// assemble dr check data
 				i = 0;
 				svf_parser_append_bit(
-							&svf_parser_tdo_buffer[svf_parser_buffer_index], 
-							i, svf_parser_para.hdr_para.tdo, 
+							&svf_parser_tdo_buffer[svf_parser_buffer_index],
+							i, svf_parser_para.hdr_para.tdo,
 							svf_parser_para.hdr_para.len);
 				i += svf_parser_para.hdr_para.len;
 				svf_parser_append_bit(
-							&svf_parser_tdo_buffer[svf_parser_buffer_index], 
-							i, svf_parser_para.sdr_para.tdo, 
+							&svf_parser_tdo_buffer[svf_parser_buffer_index],
+							i, svf_parser_para.sdr_para.tdo,
 							svf_parser_para.sdr_para.len);
 				i += svf_parser_para.sdr_para.len;
 				svf_parser_append_bit(
-							&svf_parser_tdo_buffer[svf_parser_buffer_index], 
-							i, svf_parser_para.tdr_para.tdo, 
+							&svf_parser_tdo_buffer[svf_parser_buffer_index],
+							i, svf_parser_para.tdr_para.tdo,
 							svf_parser_para.tdr_para.len);
 				i += svf_parser_para.tdr_para.len;
 				
@@ -785,18 +785,18 @@ XXR_common:
 			// assemble dr data
 			i = 0;
 			svf_parser_append_bit(
-							&svf_parser_tdi_buffer[svf_parser_buffer_index], 
-							i, svf_parser_para.hir_para.tdi, 
+							&svf_parser_tdi_buffer[svf_parser_buffer_index],
+							i, svf_parser_para.hir_para.tdi,
 							svf_parser_para.hir_para.len);
 			i += svf_parser_para.hir_para.len;
 			svf_parser_append_bit(
-							&svf_parser_tdi_buffer[svf_parser_buffer_index], 
-							i, svf_parser_para.sir_para.tdi, 
+							&svf_parser_tdi_buffer[svf_parser_buffer_index],
+							i, svf_parser_para.sir_para.tdi,
 							svf_parser_para.sir_para.len);
 			i += svf_parser_para.sir_para.len;
 			svf_parser_append_bit(
-							&svf_parser_tdi_buffer[svf_parser_buffer_index], 
-							i, svf_parser_para.tir_para.tdi, 
+							&svf_parser_tdi_buffer[svf_parser_buffer_index],
+							i, svf_parser_para.tir_para.tdi,
 							svf_parser_para.tir_para.len);
 			i += svf_parser_para.tir_para.len;
 			
@@ -806,36 +806,36 @@ XXR_common:
 				// assemble dr mask data
 				i = 0;
 				svf_parser_append_bit(
-							&svf_parser_mask_buffer[svf_parser_buffer_index], 
-							i, svf_parser_para.hir_para.mask, 
+							&svf_parser_mask_buffer[svf_parser_buffer_index],
+							i, svf_parser_para.hir_para.mask,
 							svf_parser_para.hir_para.len);
 				i += svf_parser_para.hir_para.len;
 				svf_parser_append_bit(
-							&svf_parser_mask_buffer[svf_parser_buffer_index], 
-							i, svf_parser_para.sir_para.mask, 
+							&svf_parser_mask_buffer[svf_parser_buffer_index],
+							i, svf_parser_para.sir_para.mask,
 							svf_parser_para.sir_para.len);
 				i += svf_parser_para.sir_para.len;
 				svf_parser_append_bit(
-							&svf_parser_mask_buffer[svf_parser_buffer_index], 
-							i, svf_parser_para.tir_para.mask, 
+							&svf_parser_mask_buffer[svf_parser_buffer_index],
+							i, svf_parser_para.tir_para.mask,
 							svf_parser_para.tir_para.len);
 				i += svf_parser_para.tir_para.len;
 				
 				// assemble dr check data
 				i = 0;
 				svf_parser_append_bit(
-							&svf_parser_tdo_buffer[svf_parser_buffer_index], 
-							i, svf_parser_para.hir_para.tdo, 
+							&svf_parser_tdo_buffer[svf_parser_buffer_index],
+							i, svf_parser_para.hir_para.tdo,
 							svf_parser_para.hir_para.len);
 				i += svf_parser_para.hir_para.len;
 				svf_parser_append_bit(
-							&svf_parser_tdo_buffer[svf_parser_buffer_index], 
-							i, svf_parser_para.sir_para.tdo, 
+							&svf_parser_tdo_buffer[svf_parser_buffer_index],
+							i, svf_parser_para.sir_para.tdo,
 							svf_parser_para.sir_para.len);
 				i += svf_parser_para.sir_para.len;
 				svf_parser_append_bit(
-							&svf_parser_tdo_buffer[svf_parser_buffer_index], 
-							i, svf_parser_para.tir_para.tdo, 
+							&svf_parser_tdo_buffer[svf_parser_buffer_index],
+							i, svf_parser_para.tir_para.tdo,
 							svf_parser_para.tir_para.len);
 				i += svf_parser_para.tir_para.len;
 				
@@ -879,7 +879,7 @@ XXR_common:
 		i = 1;
 		
 		// run_state
-		i_tmp = svf_parser_find_string_in_array(argus[i], 
+		i_tmp = svf_parser_find_string_in_array(argus[i],
 							(char **)tap_state_name, dimof(tap_state_name));
 		if (tap_state_is_valid(i_tmp))
 		{
@@ -887,10 +887,10 @@ XXR_common:
 			{
 				svf_parser_para.runtest_run_state = i_tmp;
 				
-				// When a run_state is specified, 
+				// When a run_state is specified,
 				// the new  run_state becomes the default end_state
 				svf_parser_para.runtest_end_state = i_tmp;
-				LOG_DEBUG("\trun_state = %s", 
+				LOG_DEBUG("\trun_state = %s",
 						  tap_state_name[svf_parser_para.runtest_run_state]);
 				i++;
 			}
@@ -927,7 +927,7 @@ XXR_common:
 		}
 		
 		// MAXIMUM max_time SEC
-		if (((i + 3) <= num_of_argu) && !strcmp(argus[i], "MAXIMUM") 
+		if (((i + 3) <= num_of_argu) && !strcmp(argus[i], "MAXIMUM")
 			&& !strcmp(argus[i + 2], "SEC"))
 		{
 			max_time = (float)atof(argus[i + 1]);
@@ -937,12 +937,12 @@ XXR_common:
 		// ENDSTATE end_state
 		if (((i + 2) <= num_of_argu) && !strcmp(argus[i], "ENDSTATE"))
 		{
-			i_tmp = svf_parser_find_string_in_array(argus[i + 1], 
+			i_tmp = svf_parser_find_string_in_array(argus[i + 1],
 							(char **)tap_state_name, dimof(tap_state_name));
 			if (tap_state_is_stable(i_tmp))
 			{
 				svf_parser_para.runtest_end_state = i_tmp;
-				LOG_DEBUG("\tend_state = %s", 
+				LOG_DEBUG("\tend_state = %s",
 						  tap_state_name[svf_parser_para.runtest_end_state]);
 			}
 			else
@@ -963,7 +963,7 @@ XXR_common:
 		{
 			if (run_count > 0)
 			{
-				ret = tap_runtest(svf_parser_para.runtest_run_state, 
+				ret = tap_runtest(svf_parser_para.runtest_run_state,
 								svf_parser_para.runtest_end_state, run_count);
 				if (ret != ERROR_OK)
 				{
@@ -994,11 +994,11 @@ XXR_common:
 		}
 		for (i = 1; i < num_of_argu; i++)
 		{
-			path[i - 1] = svf_parser_find_string_in_array(argus[i], 
+			path[i - 1] = svf_parser_find_string_in_array(argus[i],
 						(char **)tap_state_name, dimof(tap_state_name));
 			if (!tap_state_is_valid(path[i - 1]))
 			{
-				LOG_ERROR(ERRMSG_INVALID, tap_state_name[path[i - 1]], 
+				LOG_ERROR(ERRMSG_INVALID, tap_state_name[path[i - 1]],
 							"tap state");
 				free(path);
 				path = NULL;
@@ -1011,7 +1011,7 @@ XXR_common:
 			if (2 == num_of_argu)
 			{
 				// use state_move
-				if ((ERROR_OK != tap_end_state(path[0])) 
+				if ((ERROR_OK != tap_end_state(path[0]))
 					|| (ERROR_OK != tap_state_move()))
 				{
 					LOG_ERROR(ERRMSG_FAILURE_OPERATION, "call tap_state_move");
@@ -1019,7 +1019,7 @@ XXR_common:
 					path = NULL;
 					return ERROR_FAIL;
 				}
-				LOG_DEBUG("\tmove to %s by state_move", 
+				LOG_DEBUG("\tmove to %s by state_move",
 						  tap_state_name[path[num_of_argu - 2]]);
 			}
 			else
@@ -1032,13 +1032,13 @@ XXR_common:
 					path = NULL;
 					return ERROR_FAIL;
 				}
-				LOG_DEBUG("\tmove to %s by path_move", 
+				LOG_DEBUG("\tmove to %s by path_move",
 						  tap_state_name[path[num_of_argu - 2]]);
 			}
 		}
 		else
 		{
-			LOG_ERROR(ERRMSG_INVALID, 
+			LOG_ERROR(ERRMSG_INVALID,
 					tap_state_name[path[num_of_argu - 2]], "tap state");
 			free(path);
 			path = NULL;
@@ -1067,7 +1067,7 @@ XXR_common:
 				return ERRCODE_FAILURE_OPERATION;
 			}
 			
-			i_tmp = svf_parser_find_string_in_array(argus[1], 
+			i_tmp = svf_parser_find_string_in_array(argus[1],
 					(char **)svf_trst_mode_name, dimof(svf_trst_mode_name));
 			switch (i_tmp)
 			{
@@ -1095,7 +1095,7 @@ XXR_common:
 				return ERRCODE_INVALID;
 			}
 			svf_parser_para.trst_mode = i_tmp;
-			LOG_DEBUG("\ttrst_mode = %s", 
+			LOG_DEBUG("\ttrst_mode = %s",
 					  svf_trst_mode_name[svf_parser_para.trst_mode]);
 		}
 		else
@@ -1132,7 +1132,7 @@ XXR_common:
 			case SIR:
 			case SDR:
 				memcpy(&read_value, svf_parser_tdi_buffer, sizeof(read_value));
-				LOG_DEBUG("\tTDO read = 0x%X", 
+				LOG_DEBUG("\tTDO read = 0x%X",
 						read_value & ((1 << svf_parser_check[0].bit_len) - 1));
 				break;
 			default:
@@ -1143,8 +1143,8 @@ XXR_common:
 	else
 	{
 		// half of the space is left for next command
-		if ((svf_parser_buffer_index >= SVF_PARSER_DATA_BUFFER_SIZE / 2) 
-			&& (((command != STATE) && (command != RUNTEST)) 
+		if ((svf_parser_buffer_index >= SVF_PARSER_DATA_BUFFER_SIZE / 2)
+			&& (((command != STATE) && (command != RUNTEST))
 				|| ((command == STATE) && (num_of_argu == 2))))
 		{
 			if (ERROR_OK != tap_commit())

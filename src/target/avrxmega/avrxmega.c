@@ -45,13 +45,13 @@
 
 #define CUR_TARGET_STRING			AVRXMEGA_STRING
 
-struct program_area_map_t avrxmega_program_area_map[] = 
+struct program_area_map_t avrxmega_program_area_map[] =
 {
 	{APPLICATION_CHAR, 1, 0, 0, 0, AREA_ATTR_EWR | AREA_ATTR_RAE | AREA_ATTR_RAW | AREA_ATTR_RNP},
 	{0, 0, 0, 0, 0, 0}
 };
 
-const struct program_mode_t avrxmega_program_mode[] = 
+const struct program_mode_t avrxmega_program_mode[] =
 {
 	{'j', SET_FREQUENCY, IFS_JTAG_HL},
 	{'p', 0, IFS_PDI},
@@ -63,13 +63,13 @@ LEAVE_PROGRAM_MODE_HANDLER(avrxmega);
 ERASE_TARGET_HANDLER(avrxmega);
 WRITE_TARGET_HANDLER(avrxmega);
 READ_TARGET_HANDLER(avrxmega);
-struct program_functions_t avrxmega_program_functions = 
+struct program_functions_t avrxmega_program_functions =
 {
 	NULL,			// execute
-	ENTER_PROGRAM_MODE_FUNCNAME(avrxmega), 
-	LEAVE_PROGRAM_MODE_FUNCNAME(avrxmega), 
-	ERASE_TARGET_FUNCNAME(avrxmega), 
-	WRITE_TARGET_FUNCNAME(avrxmega), 
+	ENTER_PROGRAM_MODE_FUNCNAME(avrxmega),
+	LEAVE_PROGRAM_MODE_FUNCNAME(avrxmega),
+	ERASE_TARGET_FUNCNAME(avrxmega),
+	WRITE_TARGET_FUNCNAME(avrxmega),
 	READ_TARGET_FUNCNAME(avrxmega)
 };
 
@@ -100,7 +100,7 @@ VSS_HANDLER(avrxmega_mode)
 	return ERROR_OK;
 }
 
-const struct vss_cmd_t avrxmega_notifier[] = 
+const struct vss_cmd_t avrxmega_notifier[] =
 {
 	VSS_CMD(	"help",
 				"print help information of current target for internal call",
@@ -171,8 +171,8 @@ static struct program_info_t *pi = NULL;
 static uint8_t pdi_err = 0;
 static uint8_t pdi_append_0 = 0;
 
-static RESULT avrxmegajtag_receive_callback(uint8_t index, enum jtag_irdr_t cmd, 
-						uint32_t ir, uint8_t *dest_buffer, uint8_t *src_buffer, 
+static RESULT avrxmegajtag_receive_callback(uint8_t index, enum jtag_irdr_t cmd,
+						uint32_t ir, uint8_t *dest_buffer, uint8_t *src_buffer,
 						uint16_t bytelen, uint16_t *processed)
 {
 	REFERENCE_PARAMETER(index);
@@ -188,12 +188,12 @@ static RESULT avrxmegajtag_receive_callback(uint8_t index, enum jtag_irdr_t cmd,
 		return ERROR_OK;
 		break;
 	case JTAG_SCANTYPE_DR:
-		if ((AVRXMEGA_JTAG_INS_PDICOM == ir) 
+		if ((AVRXMEGA_JTAG_INS_PDICOM == ir)
 			&& (2 == bytelen))
 		{
 			uint16_t dr = src_buffer[0] + ((src_buffer[1] & 1) << 8);
 			pdi_err = 0;
-			if ((dest_buffer != NULL) 
+			if ((dest_buffer != NULL)
 				&&(dr != pdi_append_parity(src_buffer[0], PDI_PARITY_EVEN)))
 			{
 				pdi_err = 1;
@@ -211,7 +211,7 @@ static RESULT avrxmegajtag_receive_callback(uint8_t index, enum jtag_irdr_t cmd,
 	return ERROR_FAIL;
 }
 
-static RESULT avrxmegajtag_send_callback(uint8_t index, enum jtag_irdr_t cmd, 
+static RESULT avrxmegajtag_send_callback(uint8_t index, enum jtag_irdr_t cmd,
 					uint32_t ir, uint8_t *dest_buffer, uint8_t *src_buffer,
 					uint16_t bytelen, uint16_t *processed_len)
 {
@@ -228,7 +228,7 @@ static RESULT avrxmegajtag_send_callback(uint8_t index, enum jtag_irdr_t cmd,
 		return ERROR_OK;
 		break;
 	case JTAG_SCANTYPE_DR:
-		if ((AVRXMEGA_JTAG_INS_PDICOM == ir) 
+		if ((AVRXMEGA_JTAG_INS_PDICOM == ir)
 			&& (2 == bytelen) && pdi_append_0)
 		{
 			if (NULL == src_buffer)
@@ -371,7 +371,7 @@ static RESULT pdi_init(void)
 			pi->frequency = 4500;
 		}
 		jtag_init();
-		jtag_config(pi->frequency, pi->jtag_pos.ub, pi->jtag_pos.ua, 
+		jtag_config(pi->frequency, pi->jtag_pos.ub, pi->jtag_pos.ua,
 						pi->jtag_pos.bb, pi->jtag_pos.ba);
 		ir = AVRXMEGA_JTAG_INS_IDCODE;
 		avrxmega_jtag_ir(&ir);
@@ -386,7 +386,7 @@ static RESULT pdi_init(void)
 			return ERROR_FAIL;
 		}
 		LOG_INFO(INFOMSG_REG_08X, "JTAGID", id);
-		jtag_register_callback(avrxmegajtag_send_callback, 
+		jtag_register_callback(avrxmegajtag_send_callback,
 								   avrxmegajtag_receive_callback);
 		break;
 	case AVRXMEGA_PDI:
@@ -584,8 +584,8 @@ static RESULT avrxmega_nvm_read(uint32_t addr, uint16_t size, uint8_t *buff)
 	return pdi_read_memory(addr, size, buff);
 }
 
-static RESULT avrxmega_nvm_writepage(uint8_t write_buff_cmd, 
-	uint8_t erase_buff_cmd, uint8_t write_page_cmd, uint32_t addr, 
+static RESULT avrxmega_nvm_writepage(uint8_t write_buff_cmd,
+	uint8_t erase_buff_cmd, uint8_t write_page_cmd, uint32_t addr,
 	uint16_t size, uint8_t *buff)
 {
 	avrxmega_nvm_pollready();
@@ -766,7 +766,7 @@ WRITE_TARGET_HANDLER(avrxmega)
 		write_page_cmd = AVRXMEGA_NVM_CMD_WRITEEEPROMPAGE;
 		addr += AVRXMEGA_PDIBUS_EE_BASE;
 do_write_page:
-		avrxmega_nvm_writepage(write_buff_cmd, erase_buff_cmd, 
+		avrxmega_nvm_writepage(write_buff_cmd, erase_buff_cmd,
 								write_page_cmd, addr, (uint16_t)size, buff);
 		break;
 	default:

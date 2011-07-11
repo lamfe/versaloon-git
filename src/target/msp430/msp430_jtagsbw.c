@@ -43,13 +43,13 @@ LEAVE_PROGRAM_MODE_HANDLER(msp430jtagsbw);
 ERASE_TARGET_HANDLER(msp430jtagsbw);
 WRITE_TARGET_HANDLER(msp430jtagsbw);
 READ_TARGET_HANDLER(msp430jtagsbw);
-const struct program_functions_t msp430jtagsbw_program_functions = 
+const struct program_functions_t msp430jtagsbw_program_functions =
 {
 	NULL,			// execute
-	ENTER_PROGRAM_MODE_FUNCNAME(msp430jtagsbw), 
-	LEAVE_PROGRAM_MODE_FUNCNAME(msp430jtagsbw), 
-	ERASE_TARGET_FUNCNAME(msp430jtagsbw), 
-	WRITE_TARGET_FUNCNAME(msp430jtagsbw), 
+	ENTER_PROGRAM_MODE_FUNCNAME(msp430jtagsbw),
+	LEAVE_PROGRAM_MODE_FUNCNAME(msp430jtagsbw),
+	ERASE_TARGET_FUNCNAME(msp430jtagsbw),
+	WRITE_TARGET_FUNCNAME(msp430jtagsbw),
 	READ_TARGET_FUNCNAME(msp430jtagsbw)
 };
 
@@ -246,7 +246,7 @@ READ_TARGET_HANDLER(msp430jtagsbw)
 			word CRC_check, CRC_calc;
 			
 			CRC_calc = CRC_check = 0;
-			CRC_calc = VerifyMem((word)addr, (word)(size / 2), 
+			CRC_calc = VerifyMem((word)addr, (word)(size / 2),
 									(word*)buff, &CRC_check);
 			if (ERROR_OK != commit())
 			{

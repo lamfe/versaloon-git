@@ -46,13 +46,13 @@
 
 #define CUR_TARGET_STRING			EE24CXX_STRING
 
-struct program_area_map_t ee24cxx_program_area_map[] = 
+struct program_area_map_t ee24cxx_program_area_map[] =
 {
 	{EEPROM_CHAR, 1, 0, 0, 0, AREA_ATTR_EWR | AREA_ATTR_EP},
 	{0, 0, 0, 0, 0, 0}
 };
 
-const struct program_mode_t ee24cxx_program_mode[] = 
+const struct program_mode_t ee24cxx_program_mode[] =
 {
 	{'*', SET_FREQUENCY, IFS_I2C},
 	{0, NULL, 0}
@@ -63,13 +63,13 @@ LEAVE_PROGRAM_MODE_HANDLER(ee24cxx);
 ERASE_TARGET_HANDLER(ee24cxx);
 WRITE_TARGET_HANDLER(ee24cxx);
 READ_TARGET_HANDLER(ee24cxx);
-const struct program_functions_t ee24cxx_program_functions = 
+const struct program_functions_t ee24cxx_program_functions =
 {
 	NULL,			// execute
-	ENTER_PROGRAM_MODE_FUNCNAME(ee24cxx), 
-	LEAVE_PROGRAM_MODE_FUNCNAME(ee24cxx), 
-	ERASE_TARGET_FUNCNAME(ee24cxx), 
-	WRITE_TARGET_FUNCNAME(ee24cxx), 
+	ENTER_PROGRAM_MODE_FUNCNAME(ee24cxx),
+	LEAVE_PROGRAM_MODE_FUNCNAME(ee24cxx),
+	ERASE_TARGET_FUNCNAME(ee24cxx),
+	WRITE_TARGET_FUNCNAME(ee24cxx),
 	READ_TARGET_FUNCNAME(ee24cxx)
 };
 
@@ -78,12 +78,12 @@ VSS_HANDLER(ee24cxx_help)
 	VSS_CHECK_ARGC(1);
 	PRINTF("\
 Usage of %s:\n\
-  -F,  --frequency <FREQUENCY>              set IIC frequency, in KHz\n\n", 
+  -F,  --frequency <FREQUENCY>              set IIC frequency, in KHz\n\n",
 			CUR_TARGET_STRING);
 	return ERROR_OK;
 }
 
-const struct vss_cmd_t ee24cxx_notifier[] = 
+const struct vss_cmd_t ee24cxx_notifier[] =
 {
 	VSS_CMD(	"help",
 				"print help information of current target for internal call",
@@ -98,14 +98,14 @@ const struct vss_cmd_t ee24cxx_notifier[] =
 
 static struct ee24cxx_drv_param_t ee24cxx_drv_param;
 static struct ee24cxx_drv_interface_t ee24cxx_drv_ifs;
-static struct mal_info_t ee24cxx_mal_info = 
+static struct mal_info_t ee24cxx_mal_info =
 {
 	{0, 0}, NULL
 };
-static struct dal_info_t ee24cxx_dal_info = 
+static struct dal_info_t ee24cxx_dal_info =
 {
-	&ee24cxx_drv_ifs, 
-	&ee24cxx_drv_param, 
+	&ee24cxx_drv_ifs,
+	&ee24cxx_drv_param,
 	NULL,
 	&ee24cxx_mal_info,
 };
@@ -122,7 +122,7 @@ ENTER_PROGRAM_MODE_HANDLER(ee24cxx)
 	
 	if (pi->ifs_indexes != NULL)
 	{
-		if (ERROR_OK != dal_config_interface(EE24CXX_STRING, pi->ifs_indexes, 
+		if (ERROR_OK != dal_config_interface(EE24CXX_STRING, pi->ifs_indexes,
 												&ee24cxx_dal_info))
 		{
 			return ERROR_FAIL;
@@ -139,9 +139,9 @@ ENTER_PROGRAM_MODE_HANDLER(ee24cxx)
 	{
 		return ERROR_FAIL;
 	}
-	ee24cxx_mal_info.capacity.block_size = 
+	ee24cxx_mal_info.capacity.block_size =
 										param->chip_areas[EEPROM_IDX].page_size;
-	ee24cxx_mal_info.capacity.block_number = 
+	ee24cxx_mal_info.capacity.block_number =
 										param->chip_areas[EEPROM_IDX].page_num;
 	
 	return dal_commit();
@@ -180,7 +180,7 @@ WRITE_TARGET_HANDLER(ee24cxx)
 		}
 		size /= param->chip_areas[EEPROM_IDX].page_size;
 		
-		if (ERROR_OK != mal.writeblock(MAL_IDX_EE24CXX, &ee24cxx_dal_info, 
+		if (ERROR_OK != mal.writeblock(MAL_IDX_EE24CXX, &ee24cxx_dal_info,
 										addr, buff, size))
 		{
 			return ERROR_FAIL;
@@ -208,7 +208,7 @@ READ_TARGET_HANDLER(ee24cxx)
 		}
 		size /= param->chip_areas[EEPROM_IDX].page_size;
 		
-		if (ERROR_OK != mal.readblock(MAL_IDX_EE24CXX, &ee24cxx_dal_info, 
+		if (ERROR_OK != mal.readblock(MAL_IDX_EE24CXX, &ee24cxx_dal_info,
 										addr, buff, size))
 		{
 			return ERROR_FAIL;

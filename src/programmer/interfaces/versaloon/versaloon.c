@@ -30,7 +30,7 @@
 
 #define VERSALOON_STRING					"versaloon"
 
-const char *versaloon_hardwares[] = 
+const char *versaloon_hardwares[] =
 {
 	"Versaloon_Full",		// 1
 	"Versaloon_Mini",		// 2
@@ -39,7 +39,7 @@ const char *versaloon_hardwares[] =
 
 VSS_HANDLER(versaloon_support);
 VSS_HANDLER(versaloon_help);
-const struct vss_cmd_t versaloon_notifier[] = 
+const struct vss_cmd_t versaloon_notifier[] =
 {
 	VSS_CMD(	"support",
 				"print support information, format: support/S",
@@ -71,7 +71,7 @@ VSS_HANDLER(versaloon_help)
 	VSS_CHECK_ARGC(1);
 	PRINTF("\
 Usage of %s:\n\
-  -U,  --usb <PID_VID_EPIN_EPOUT>           set usb VID, PID, EPIN, EPOUT\n\n", 
+  -U,  --usb <PID_VID_EPIN_EPOUT>           set usb VID, PID, EPIN, EPOUT\n\n",
 		   VERSALOON_STRING);
 	return ERROR_OK;
 }
@@ -166,13 +166,13 @@ RESULT versaloon_add_want_pos(uint16_t offset, uint16_t size, uint8_t *buff)
 	return ERROR_OK;
 }
 
-RESULT versaloon_add_pending(uint8_t type, uint8_t cmd, uint16_t actual_szie, 
+RESULT versaloon_add_pending(uint8_t type, uint8_t cmd, uint16_t actual_szie,
 	uint16_t want_pos, uint16_t want_size, uint8_t *buffer, uint8_t collect)
 {
 #if PARAM_CHECK
 	if (versaloon_pending_idx >= VERSALOON_MAX_PENDING_NUMBER)
 	{
-		LOG_BUG(ERRMSG_INVALID_INDEX, versaloon_pending_idx, 
+		LOG_BUG(ERRMSG_INVALID_INDEX, versaloon_pending_idx,
 					"versaloon pending data");
 		return ERROR_FAIL;
 	}
@@ -215,18 +215,18 @@ RESULT versaloon_send_command(uint16_t out_len, uint16_t *inlen)
 	}
 #endif
 	
-	ret = usb_bulk_write(versaloon_device_handle, usb_param_epout(), 
+	ret = usb_bulk_write(versaloon_device_handle, usb_param_epout(),
 						 (char *)versaloon_buf, out_len, versaloon_to);
 	if (ret != out_len)
 	{
-		LOG_ERROR(ERRMSG_FAILURE_OPERATION_ERRSTRING, "send usb data", 
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION_ERRSTRING, "send usb data",
 					usb_strerror());
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
 	if (inlen != NULL)
 	{
-		ret = usb_bulk_read(versaloon_device_handle, usb_param_epin(), 
+		ret = usb_bulk_read(versaloon_device_handle, usb_param_epin(),
 					(char *)versaloon_buf, versaloon_buf_size, versaloon_to);
 		if (ret > 0)
 		{
@@ -235,7 +235,7 @@ RESULT versaloon_send_command(uint16_t out_len, uint16_t *inlen)
 		}
 		else
 		{
-			LOG_ERROR(ERRMSG_FAILURE_OPERATION_ERRSTRING, "receive usb data", 
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION_ERRSTRING, "receive usb data",
 						usb_strerror());
 			return ERROR_FAIL;
 		}
@@ -336,23 +336,23 @@ static RESULT versaloon_init(void *p)
 	
 	if (!usb_param_valid())
 	{
-		usb_set_param(VERSALOON_VID, VERSALOON_PID, VERSALOON_INP, 
+		usb_set_param(VERSALOON_VID, VERSALOON_PID, VERSALOON_INP,
 						VERSALOON_OUTP, VERSALOON_IFACE);
 	}
-	versaloon_device_handle = find_usb_device(usb_param_vid(), 
-		usb_param_pid(), usb_param_interface(), VERSALOON_SERIALSTRING_INDEX, 
-		usb_param_serial(), VERSALOON_PRODUCTSTRING_INDEX, 
+	versaloon_device_handle = find_usb_device(usb_param_vid(),
+		usb_param_pid(), usb_param_interface(), VERSALOON_SERIALSTRING_INDEX,
+		usb_param_serial(), VERSALOON_PRODUCTSTRING_INDEX,
 						VERSALOON_PRODUCTSTRING);
 	if (NULL == versaloon_device_handle)
 	{
 		if (usb_param_serial() != NULL)
 		{
-			LOG_ERROR("Not found vid=0x%04x,pid = 0x%04x,serial = %s.", 
+			LOG_ERROR("Not found vid=0x%04x,pid = 0x%04x,serial = %s.",
 						usb_param_vid(), usb_param_pid(), usb_param_serial());
 		}
 		else
 		{
-			LOG_ERROR("Not found vid=0x%04x,pid = 0x%04x.", usb_param_vid(), 
+			LOG_ERROR("Not found vid=0x%04x,pid = 0x%04x.", usb_param_vid(),
 						usb_param_pid());
 		}
 		return ERROR_FAIL;
@@ -420,117 +420,117 @@ static RESULT versaloon_init(void *p)
 		return ERROR_FAIL;
 	}
 	// fixes programmer abilities
-	if ((t->support_mask & IFS_POLL) && 
+	if ((t->support_mask & IFS_POLL) &&
 		!usbtoxxx_interface_supported(USB_TO_POLL))
 	{
 		t->support_mask &= ~IFS_POLL;
 	}
-	if ((t->support_mask & IFS_USART) && 
+	if ((t->support_mask & IFS_USART) &&
 		!usbtoxxx_interface_supported(USB_TO_USART))
 	{
 		t->support_mask &= ~IFS_USART;
 	}
-	if ((t->support_mask & IFS_SPI) && 
+	if ((t->support_mask & IFS_SPI) &&
 		!usbtoxxx_interface_supported(USB_TO_SPI))
 	{
 		t->support_mask &= ~IFS_SPI;
 	}
-	if ((t->support_mask & IFS_I2C) && 
+	if ((t->support_mask & IFS_I2C) &&
 		!usbtoxxx_interface_supported(USB_TO_I2C))
 	{
 		t->support_mask &= ~IFS_I2C;
 	}
-	if ((t->support_mask & IFS_GPIO) && 
+	if ((t->support_mask & IFS_GPIO) &&
 		!usbtoxxx_interface_supported(USB_TO_GPIO))
 	{
 		t->support_mask &= ~IFS_GPIO;
 	}
-	if ((t->support_mask & IFS_CAN) && 
+	if ((t->support_mask & IFS_CAN) &&
 		!usbtoxxx_interface_supported(USB_TO_CAN))
 	{
 		t->support_mask &= ~IFS_CAN;
 	}
-	if ((t->support_mask & IFS_ADC) && 
+	if ((t->support_mask & IFS_ADC) &&
 		!usbtoxxx_interface_supported(USB_TO_ADC))
 	{
 		t->support_mask &= ~IFS_ADC;
 	}
-	if ((t->support_mask & IFS_DAC) && 
+	if ((t->support_mask & IFS_DAC) &&
 		!usbtoxxx_interface_supported(USB_TO_DAC))
 	{
 		t->support_mask &= ~IFS_DAC;
 	}
-	if ((t->support_mask & IFS_POWER) && 
+	if ((t->support_mask & IFS_POWER) &&
 		!usbtoxxx_interface_supported(USB_TO_POWER))
 	{
 		t->support_mask &= ~IFS_POWER;
 	}
-	if ((t->support_mask & IFS_ISSP) && 
+	if ((t->support_mask & IFS_ISSP) &&
 		!usbtoxxx_interface_supported(USB_TO_ISSP))
 	{
 		t->support_mask &= ~IFS_ISSP;
 	}
-	if ((t->support_mask & IFS_JTAG_HL) && 
+	if ((t->support_mask & IFS_JTAG_HL) &&
 		!usbtoxxx_interface_supported(USB_TO_JTAG_HL))
 	{
 		t->support_mask &= ~IFS_JTAG_HL;
 	}
-	if ((t->support_mask & IFS_JTAG_LL) && 
+	if ((t->support_mask & IFS_JTAG_LL) &&
 		!usbtoxxx_interface_supported(USB_TO_JTAG_LL))
 	{
 		t->support_mask &= ~IFS_JTAG_LL;
 	}
-	if ((t->support_mask & IFS_MSP430_JTAG) && 
+	if ((t->support_mask & IFS_MSP430_JTAG) &&
 		!usbtoxxx_interface_supported(USB_TO_MSP430_JTAG))
 	{
 		t->support_mask &= ~IFS_MSP430_JTAG;
 	}
-	if ((t->support_mask & IFS_C2) && 
+	if ((t->support_mask & IFS_C2) &&
 		!usbtoxxx_interface_supported(USB_TO_C2))
 	{
 		t->support_mask &= ~IFS_C2;
 	}
-	if ((t->support_mask & IFS_USART) && 
+	if ((t->support_mask & IFS_USART) &&
 		!usbtoxxx_interface_supported(USB_TO_USART))
 	{
 		t->support_mask &= ~IFS_USART;
 	}
-	if ((t->support_mask & IFS_LPC_ICP) && 
+	if ((t->support_mask & IFS_LPC_ICP) &&
 		!usbtoxxx_interface_supported(USB_TO_LPCICP))
 	{
 		t->support_mask &= ~IFS_LPC_ICP;
 	}
-	if ((t->support_mask & IFS_SWD) && 
+	if ((t->support_mask & IFS_SWD) &&
 		!usbtoxxx_interface_supported(USB_TO_SWD))
 	{
 		t->support_mask &= ~IFS_SWD;
 	}
-	if ((t->support_mask & IFS_SWIM) && 
+	if ((t->support_mask & IFS_SWIM) &&
 		!usbtoxxx_interface_supported(USB_TO_SWIM))
 	{
 		t->support_mask &= ~IFS_SWIM;
 	}
-	if ((t->support_mask & IFS_JTAG_RAW) && 
+	if ((t->support_mask & IFS_JTAG_RAW) &&
 		!usbtoxxx_interface_supported(USB_TO_JTAG_RAW))
 	{
 		t->support_mask &= ~IFS_JTAG_RAW;
 	}
-	if ((t->support_mask & IFS_BDM) && 
+	if ((t->support_mask & IFS_BDM) &&
 		!usbtoxxx_interface_supported(USB_TO_BDM))
 	{
 		t->support_mask &= ~IFS_BDM;
 	}
-	if ((t->support_mask & IFS_DUSI) && 
+	if ((t->support_mask & IFS_DUSI) &&
 		!usbtoxxx_interface_supported(USB_TO_DUSI))
 	{
 		t->support_mask &= ~IFS_DUSI;
 	}
-	if ((t->support_mask & IFS_MICROWIRE) && 
+	if ((t->support_mask & IFS_MICROWIRE) &&
 		!usbtoxxx_interface_supported(USB_TO_MICROWIRE))
 	{
 		t->support_mask &= ~IFS_MICROWIRE;
 	}
-	if ((t->support_mask & IFS_PWM) && 
+	if ((t->support_mask & IFS_PWM) &&
 		!usbtoxxx_interface_supported(USB_TO_PWM))
 	{
 		t->support_mask &= ~IFS_PWM;
@@ -578,7 +578,7 @@ RESULT versaloon_get_hardware(uint8_t *hardware)
 	else
 	{
 		*hardware = versaloon_buf[0];
-		LOG_DEBUG("versaloon hardware is %s", 
+		LOG_DEBUG("versaloon hardware is %s",
 					versaloon_get_hardware_name(*hardware));
 		return ERROR_OK;
 	}
@@ -600,7 +600,7 @@ static RESULT versaloon_poll_end(void)
 {
 	return usbtopoll_end();
 }
-static RESULT versaloon_poll_checkok(enum poll_check_type_t type, uint16_t offset, 
+static RESULT versaloon_poll_checkok(enum poll_check_type_t type, uint16_t offset,
 								uint8_t size, uint32_t mask, uint32_t value)
 {
 	uint8_t equ = 0;
@@ -611,7 +611,7 @@ static RESULT versaloon_poll_checkok(enum poll_check_type_t type, uint16_t offse
 	}
 	return usbtopoll_checkok(equ, offset, size, mask, value);
 }
-static RESULT versaloon_poll_checkfail(enum poll_check_type_t type, uint16_t offset, 
+static RESULT versaloon_poll_checkfail(enum poll_check_type_t type, uint16_t offset,
 								uint8_t size, uint32_t mask, uint32_t value)
 {
 	uint8_t equ = 0;
@@ -632,17 +632,17 @@ static uint32_t versaloon_display_programmer(void)
 	// usb parameter
 	if (!usb_param_valid())
 	{
-		usb_set_param(VERSALOON_VID, VERSALOON_PID, VERSALOON_INP, 
+		usb_set_param(VERSALOON_VID, VERSALOON_PID, VERSALOON_INP,
 						VERSALOON_OUTP, 1);
 	}
 	
 	PRINTF(_GETTEXT("Supported Programmer by Versaloon driver:\n"));
-	return print_usb_devices(usb_param_vid(), usb_param_pid(), 
-					VERSALOON_SERIALSTRING_INDEX, usb_param_serial(), 
+	return print_usb_devices(usb_param_vid(), usb_param_pid(),
+					VERSALOON_SERIALSTRING_INDEX, usb_param_serial(),
 					VERSALOON_PRODUCTSTRING_INDEX, VERSALOON_PRODUCTSTRING);
 }
 
-struct interfaces_info_t versaloon_interfaces = 
+struct interfaces_info_t versaloon_interfaces =
 {
 	VERSALOON_STRING,
 	versaloon_notifier,
@@ -654,9 +654,9 @@ struct interfaces_info_t versaloon_interfaces =
 	versaloon_init,
 	versaloon_fini,
 	
-	IFS_USART | IFS_SPI | IFS_I2C | IFS_GPIO | IFS_POWER | IFS_ISSP | 
-	IFS_JTAG_LL | IFS_POLL | IFS_JTAG_HL | IFS_SWIM | IFS_JTAG_RAW | IFS_C2 | 
-	IFS_MSP430_JTAG | IFS_LPC_ICP | IFS_SWD | IFS_BDM | IFS_DUSI | 
+	IFS_USART | IFS_SPI | IFS_I2C | IFS_GPIO | IFS_POWER | IFS_ISSP |
+	IFS_JTAG_LL | IFS_POLL | IFS_JTAG_HL | IFS_SWIM | IFS_JTAG_RAW | IFS_C2 |
+	IFS_MSP430_JTAG | IFS_LPC_ICP | IFS_SWD | IFS_BDM | IFS_DUSI |
 	IFS_MICROWIRE | IFS_PWM,
 	
 	{	// delay

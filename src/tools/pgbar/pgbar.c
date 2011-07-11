@@ -34,7 +34,7 @@
 #include "scripts.h"
 
 VSS_HANDLER(pgbar_gui);
-struct vss_cmd_t pgbar_cmd[] = 
+struct vss_cmd_t pgbar_cmd[] =
 {
 	VSS_CMD(	"gui-mode",
 				"enable GUI mode, format: gui-mode/G",
@@ -132,7 +132,7 @@ void pgbar_update(int32_t step)
 	}
 }
 
-RESULT pgbar_init(char *s, char *e, uint32_t min, uint32_t max, 
+RESULT pgbar_init(char *s, char *e, uint32_t min, uint32_t max,
 				  uint32_t max_chars, char c)
 {
 	// save settings

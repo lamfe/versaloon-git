@@ -44,13 +44,13 @@ LEAVE_PROGRAM_MODE_HANDLER(avr8jtag);
 ERASE_TARGET_HANDLER(avr8jtag);
 WRITE_TARGET_HANDLER(avr8jtag);
 READ_TARGET_HANDLER(avr8jtag);
-struct program_functions_t avr8jtag_program_functions = 
+struct program_functions_t avr8jtag_program_functions =
 {
 	NULL,			// execute
-	ENTER_PROGRAM_MODE_FUNCNAME(avr8jtag), 
-	LEAVE_PROGRAM_MODE_FUNCNAME(avr8jtag), 
-	ERASE_TARGET_FUNCNAME(avr8jtag), 
-	WRITE_TARGET_FUNCNAME(avr8jtag), 
+	ENTER_PROGRAM_MODE_FUNCNAME(avr8jtag),
+	LEAVE_PROGRAM_MODE_FUNCNAME(avr8jtag),
+	ERASE_TARGET_FUNCNAME(avr8jtag),
+	WRITE_TARGET_FUNCNAME(avr8jtag),
 	READ_TARGET_FUNCNAME(avr8jtag)
 };
 
@@ -215,7 +215,7 @@ ENTER_PROGRAM_MODE_HANDLER(avr8jtag)
 	
 	// init
 	jtag_init();
-	jtag_config(pi->frequency, pi->jtag_pos.ub, pi->jtag_pos.ua, 
+	jtag_config(pi->frequency, pi->jtag_pos.ub, pi->jtag_pos.ua,
 					pi->jtag_pos.bb, pi->jtag_pos.ba);
 	
 	// enter program mode
@@ -484,7 +484,7 @@ READ_TARGET_HANDLER(avr8jtag)
 		memset(page_buf, 0, 3);
 		if (param->chip_areas[FUSE_IDX].size > 3)
 		{
-			LOG_ERROR(ERRMSG_INVALID_VALUE, param->chip_areas[FUSE_IDX].size, 
+			LOG_ERROR(ERRMSG_INVALID_VALUE, param->chip_areas[FUSE_IDX].size,
 						"avr8 fuse size");
 			ret = ERRCODE_INVALID;
 			break;
@@ -543,7 +543,7 @@ READ_TARGET_HANDLER(avr8jtag)
 		memset(page_buf, 0, 4);
 		if (param->chip_areas[CALIBRATION_IDX].size > 4)
 		{
-			LOG_ERROR(ERRMSG_INVALID_VALUE, 
+			LOG_ERROR(ERRMSG_INVALID_VALUE,
 				param->chip_areas[CALIBRATION_IDX].size, "avr8 cali size");
 			ret = ERRCODE_INVALID;
 			break;

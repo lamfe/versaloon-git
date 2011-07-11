@@ -90,10 +90,10 @@ enum area_attr_t
 	AREA_ATTR_RAE	= (1 << 7), // Reset After Erase
 	AREA_ATTR_RAW	= (1 << 8), // Reset After Write
 	AREA_ATTR_EWW	= (1 << 9), // Erase While Write
-	AREA_ATTR_WR	= AREA_ATTR_R | AREA_ATTR_W, 
-	AREA_ATTR_ER	= AREA_ATTR_R | AREA_ATTR_E, 
-	AREA_ATTR_EW	= AREA_ATTR_E | AREA_ATTR_W, 
-	AREA_ATTR_EWR	= AREA_ATTR_R | AREA_ATTR_W | AREA_ATTR_E, 
+	AREA_ATTR_WR	= AREA_ATTR_R | AREA_ATTR_W,
+	AREA_ATTR_ER	= AREA_ATTR_R | AREA_ATTR_E,
+	AREA_ATTR_EW	= AREA_ATTR_E | AREA_ATTR_W,
+	AREA_ATTR_EWR	= AREA_ATTR_R | AREA_ATTR_W | AREA_ATTR_E,
 	AREA_ATTR_NP	= AREA_ATTR_WNP | AREA_ATTR_RNP
 };
 
@@ -247,19 +247,19 @@ struct program_functions_t
 {
 	RESULT (*execute)(struct program_context_t *context);
 	RESULT (*enter_program_mode)(struct program_context_t *context);
-	RESULT (*leave_program_mode)(struct program_context_t *context, 
+	RESULT (*leave_program_mode)(struct program_context_t *context,
 									uint8_t success);
 	// erase one page at addr or erase full target
-	RESULT (*erase_target)(struct program_context_t *context, char area, 
+	RESULT (*erase_target)(struct program_context_t *context, char area,
 							uint32_t addr, uint32_t size);
 	// write one page at addr
-	RESULT (*write_target)(struct program_context_t *context, char area, 
+	RESULT (*write_target)(struct program_context_t *context, char area,
 							uint32_t addr, uint8_t *buff, uint32_t size);
 	// read one page at addr
-	RESULT (*read_target)(struct program_context_t *context, char area, 
+	RESULT (*read_target)(struct program_context_t *context, char area,
 							uint32_t addr, uint8_t *buff, uint32_t size);
 	// verify one page at addr
-//	RESULT (*verify_target)(struct program_context_t *context, char area, 
+//	RESULT (*verify_target)(struct program_context_t *context, char area,
 //							uint32_t addr, uint8_t *buff, uint32_t size);
 };
 
@@ -286,7 +286,7 @@ struct target_info_t
 	const struct program_mode_t *program_mode;
 	const struct program_functions_t *program_functions;
 	const struct vss_cmd_t *notifier;
-	RESULT (*adjust_setting)(struct program_info_t *pi, 
+	RESULT (*adjust_setting)(struct program_info_t *pi,
 							struct chip_param_t *param, uint32_t program_mode);
 	RESULT (*adjust_mapping)(uint32_t *address, uint8_t dir);
 };

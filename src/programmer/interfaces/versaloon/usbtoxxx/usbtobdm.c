@@ -48,11 +48,11 @@ RESULT usbtobdm_sync(uint8_t interface_index, uint16_t *khz)
 	}
 #endif
 	
-	return usbtoxxx_sync_command(USB_TO_BDM, interface_index, NULL, 0, 2, 
+	return usbtoxxx_sync_command(USB_TO_BDM, interface_index, NULL, 0, 2,
 									(uint8_t *)khz);
 }
 
-RESULT usbtobdm_transact(uint8_t interface_index, uint8_t *out, 
+RESULT usbtobdm_transact(uint8_t interface_index, uint8_t *out,
 	uint8_t outlen, uint8_t *in, uint8_t inlen, uint8_t delay, uint8_t ack)
 {
 	uint16_t token;
@@ -75,12 +75,12 @@ RESULT usbtobdm_transact(uint8_t interface_index, uint8_t *out,
 	
 	if (NULL == in)
 	{
-		return usbtoxxx_inout_command(USB_TO_BDM, interface_index, 
+		return usbtoxxx_inout_command(USB_TO_BDM, interface_index,
 					versaloon_cmd_buf, 2 + outlen, inlen, NULL, 0, 0, 1);
 	}
 	else
 	{
-		return usbtoxxx_inout_command(USB_TO_BDM, interface_index, 
+		return usbtoxxx_inout_command(USB_TO_BDM, interface_index,
 					versaloon_cmd_buf, 2 + outlen, inlen, in, 0, inlen, 1);
 	}
 }

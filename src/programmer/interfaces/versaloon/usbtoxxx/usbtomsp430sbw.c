@@ -69,17 +69,17 @@ RESULT usbtomsp430sbw_ir(uint8_t interface_index, uint8_t *ir, uint8_t want_ret)
 	
 	if (want_ret)
 	{
-		return usbtoxxx_inout_command(USB_TO_SBW, interface_index, 
+		return usbtoxxx_inout_command(USB_TO_SBW, interface_index,
 									  buff, 2, 1, ir, 0, 1, 1);
 	}
 	else
 	{
-		return usbtoxxx_inout_command(USB_TO_SBW, interface_index, 
+		return usbtoxxx_inout_command(USB_TO_SBW, interface_index,
 									  buff, 2, 1, NULL, 0, 0, 1);
 	}
 }
 
-RESULT usbtomsp430sbw_dr(uint8_t interface_index, uint32_t *dr, 
+RESULT usbtomsp430sbw_dr(uint8_t interface_index, uint32_t *dr,
 							uint8_t bitlen, uint8_t want_ret)
 {
 	uint8_t buff[5], byte_len = (bitlen + 7) >> 3;
@@ -97,12 +97,12 @@ RESULT usbtomsp430sbw_dr(uint8_t interface_index, uint32_t *dr,
 
 	if (want_ret)
 	{
-		return usbtoxxx_inout_command(USB_TO_SBW, interface_index, buff, 
+		return usbtoxxx_inout_command(USB_TO_SBW, interface_index, buff,
 						byte_len + 1, byte_len, (uint8_t*)dr, 0, byte_len, 1);
 	}
 	else
 	{
-		return usbtoxxx_inout_command(USB_TO_SBW, interface_index, buff, 
+		return usbtoxxx_inout_command(USB_TO_SBW, interface_index, buff,
 									  byte_len + 1, byte_len, NULL, 0, 0, 1);
 	}
 }
@@ -130,7 +130,7 @@ RESULT usbtomsp430sbw_tclk_strobe(uint8_t interface_index, uint16_t cnt)
 	}
 #endif
 	
-	return usbtoxxx_special_command(USB_TO_SBW, interface_index, (uint8_t*)&cnt, 
+	return usbtoxxx_special_command(USB_TO_SBW, interface_index, (uint8_t*)&cnt,
 									2, 0, NULL, 0, 0, 0);
 }
 
@@ -147,7 +147,7 @@ RESULT usbtomsp430sbw_reset(uint8_t interface_index)
 	return usbtoxxx_reset_command(USB_TO_SBW, interface_index, NULL, 0);
 }
 
-RESULT usbtomsp430sbw_poll(uint8_t interface_index, uint32_t dr, uint32_t mask, 
+RESULT usbtomsp430sbw_poll(uint8_t interface_index, uint32_t dr, uint32_t mask,
 			uint32_t value, uint8_t len, uint16_t poll_cnt, uint8_t toggle_tclk)
 {
 	uint8_t buff[15];
@@ -170,7 +170,7 @@ RESULT usbtomsp430sbw_poll(uint8_t interface_index, uint32_t dr, uint32_t mask,
 	SET_LE_U32(&buff[7], mask);
 	SET_LE_U32(&buff[11], value);
 	
-	return usbtoxxx_poll_command(USB_TO_SBW, interface_index, buff, 15, 
+	return usbtoxxx_poll_command(USB_TO_SBW, interface_index, buff, 15,
 									NULL, 0);
 }
 

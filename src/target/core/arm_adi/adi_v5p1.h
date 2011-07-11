@@ -22,7 +22,7 @@
 
 enum adi_dpif_type_t
 {
-	ADI_DP_JTAG = 0, 
+	ADI_DP_JTAG = 0,
 	ADI_DP_SWD = 1
 };
 
@@ -55,24 +55,24 @@ struct adi_dpif_t
 	} dpif_setting;
 };
 
-RESULT adi_init(struct interfaces_info_t *ifs, struct adi_dpif_t *interf, 
+RESULT adi_init(struct interfaces_info_t *ifs, struct adi_dpif_t *interf,
 					enum adi_dp_target_core_t *core);
 RESULT adi_fini(void);
 RESULT adi_dp_commit(void);
 
 uint32_t adi_memap_get_max_tar_block_size(uint32_t address);
 
-RESULT adi_memap_read_reg8(uint32_t address, uint8_t *reg, 
+RESULT adi_memap_read_reg8(uint32_t address, uint8_t *reg,
 							uint8_t check_result);
-RESULT adi_memap_write_reg8(uint32_t address, uint8_t *reg, 
+RESULT adi_memap_write_reg8(uint32_t address, uint8_t *reg,
 							uint8_t check_result);
-RESULT adi_memap_read_reg16(uint32_t address, uint16_t *reg, 
+RESULT adi_memap_read_reg16(uint32_t address, uint16_t *reg,
 							uint8_t check_result);
-RESULT adi_memap_write_reg16(uint32_t address, uint16_t *reg, 
+RESULT adi_memap_write_reg16(uint32_t address, uint16_t *reg,
 							uint8_t check_result);
-RESULT adi_memap_read_reg32(uint32_t address, uint32_t *reg, 
+RESULT adi_memap_read_reg32(uint32_t address, uint32_t *reg,
 							uint8_t check_result);
-RESULT adi_memap_write_reg32(uint32_t address, uint32_t *reg, 
+RESULT adi_memap_write_reg32(uint32_t address, uint32_t *reg,
 							uint8_t check_result);
 RESULT adi_memap_read_buf(uint32_t address, uint8_t *buffer, uint32_t len);
 RESULT adi_memap_write_buf(uint32_t address, uint8_t *buffer, uint32_t len);

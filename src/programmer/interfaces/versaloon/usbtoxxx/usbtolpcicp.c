@@ -61,7 +61,7 @@ RESULT usbtolpcicp_enter_program_mode(uint8_t interface_index)
 	}
 #endif
 	
-	return usbtoxxx_inout_command(USB_TO_LPCICP, interface_index, NULL, 
+	return usbtoxxx_inout_command(USB_TO_LPCICP, interface_index, NULL,
 									0, 0, NULL, 0, 0, 0);
 }
 
@@ -75,7 +75,7 @@ RESULT usbtolpcicp_in(uint8_t interface_index, uint8_t *buff, uint16_t len)
 	}
 #endif
 	
-	return usbtoxxx_in_command(USB_TO_LPCICP, interface_index, buff, len, len, 
+	return usbtoxxx_in_command(USB_TO_LPCICP, interface_index, buff, len, len,
 							   buff, 0, len, 0);
 }
 
@@ -92,7 +92,7 @@ RESULT usbtolpcicp_out(uint8_t interface_index, uint8_t *buff, uint16_t len)
 	return usbtoxxx_out_command(USB_TO_LPCICP, interface_index, buff, len, 0);
 }
 
-RESULT usbtolpcicp_poll_ready(uint8_t interface_index, uint8_t data, 
+RESULT usbtolpcicp_poll_ready(uint8_t interface_index, uint8_t data,
 			uint8_t *ret, uint8_t setmask, uint8_t clearmask, uint16_t pollcnt)
 {
 	uint8_t cmdbuf[5];
@@ -110,7 +110,7 @@ RESULT usbtolpcicp_poll_ready(uint8_t interface_index, uint8_t data,
 	cmdbuf[2] = clearmask;
 	SET_LE_U16(&cmdbuf[3], pollcnt);
 	
-	return usbtoxxx_poll_command(USB_TO_LPCICP, interface_index, cmdbuf, 5, 
+	return usbtoxxx_poll_command(USB_TO_LPCICP, interface_index, cmdbuf, 5,
 								 ret, 1);
 }
 

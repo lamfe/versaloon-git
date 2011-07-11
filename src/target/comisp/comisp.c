@@ -54,7 +54,7 @@
 VSS_HANDLER(comisp_comm);
 VSS_HANDLER(comisp_print_cominfo);
 
-struct vss_cmd_t comisp_cmd[] = 
+struct vss_cmd_t comisp_cmd[] =
 {
 	VSS_CMD(	"comport",
 				"set com port, format: "
@@ -82,8 +82,8 @@ const struct comisp_param_t comisp_chips_param[] = {
 };
 static uint8_t comisp_chip_index = 0;
 
-struct com_mode_t com_mode = 
-{"", 115200, 8, COMM_PARITYBIT_NONE, COMM_STOPBIT_1, 
+struct com_mode_t com_mode =
+{"", 115200, 8, COMM_PARITYBIT_NONE, COMM_STOPBIT_1,
 COMM_HANDSHAKE_NONE, COMM_AUXPIN_DISABLE};
 
 VSS_HANDLER(comisp_print_cominfo)
@@ -113,7 +113,7 @@ VSS_HANDLER(comisp_comm)
 	uint8_t comm_setting[256 + 4 + 3 + 2], *ptr;
 	RESULT success;
 	uint8_t i;
-	char* formats[] = 
+	char* formats[] =
 	{
 		// port(s):baudrate(4d):datalength(1d):parity(c):stop(1d)
 		// :handshake(1d):extra(1d)
@@ -136,7 +136,7 @@ VSS_HANDLER(comisp_comm)
 	for (i = 0; i < dimof(formats); i++)
 	{
 		memset(comm_setting, 0, sizeof(comm_setting));
-		success = strparser_parse((char*)argv[1], formats[i], 
+		success = strparser_parse((char*)argv[1], formats[i],
 								comm_setting, sizeof(comm_setting));
 		if (ERROR_OK == success)
 		{
@@ -184,8 +184,8 @@ VSS_HANDLER(comisp_chip)
 		if (!strcmp(comisp_chips_param[i].chip_name, argv[1]))
 		{
 			comisp_chip_index = i;
-			memcpy(&comisp_program_functions, 
-					comisp_chips_param[i].program_functions, 
+			memcpy(&comisp_program_functions,
+					comisp_chips_param[i].program_functions,
 					sizeof(comisp_program_functions));
 			comisp_program_functions.enter_program_mode = \
 					ENTER_PROGRAM_MODE_FUNCNAME(comisp);
@@ -197,7 +197,7 @@ VSS_HANDLER(comisp_chip)
 	return ERROR_FAIL;
 }
 
-const struct vss_cmd_t comisp_notifier[] = 
+const struct vss_cmd_t comisp_notifier[] =
 {
 	VSS_CMD(	"chip",
 				"select target chip for internal call",
@@ -207,7 +207,7 @@ const struct vss_cmd_t comisp_notifier[] =
 
 ENTER_PROGRAM_MODE_HANDLER(comisp)
 {
-	struct program_functions_t *pf = 
+	struct program_functions_t *pf =
 					comisp_chips_param[comisp_chip_index].program_functions;
 	
 	if ((NULL == com_mode.comport) || (0 == strlen(com_mode.comport)))
@@ -216,7 +216,7 @@ ENTER_PROGRAM_MODE_HANDLER(comisp)
 		return ERROR_FAIL;
 	}
 	// comm init
-	if (ERROR_OK != comm_open(com_mode.comport, com_mode.baudrate, 8, 
+	if (ERROR_OK != comm_open(com_mode.comport, com_mode.baudrate, 8,
 		com_mode.paritybit, com_mode.stopbit, com_mode.handshake))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPEN, com_mode.comport);
@@ -232,7 +232,7 @@ ENTER_PROGRAM_MODE_HANDLER(comisp)
 
 LEAVE_PROGRAM_MODE_HANDLER(comisp)
 {
-	struct program_functions_t *pf = 
+	struct program_functions_t *pf =
 					comisp_chips_param[comisp_chip_index].program_functions;
 	RESULT ret = ERROR_OK;
 	

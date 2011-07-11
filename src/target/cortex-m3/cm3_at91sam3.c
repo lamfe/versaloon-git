@@ -55,13 +55,13 @@ LEAVE_PROGRAM_MODE_HANDLER(at91sam3swj);
 ERASE_TARGET_HANDLER(at91sam3swj);
 WRITE_TARGET_HANDLER(at91sam3swj);
 READ_TARGET_HANDLER(at91sam3swj);
-const struct program_functions_t at91sam3swj_program_functions = 
+const struct program_functions_t at91sam3swj_program_functions =
 {
-	NULL, 
-	ENTER_PROGRAM_MODE_FUNCNAME(at91sam3swj), 
-	LEAVE_PROGRAM_MODE_FUNCNAME(at91sam3swj), 
-	ERASE_TARGET_FUNCNAME(at91sam3swj), 
-	WRITE_TARGET_FUNCNAME(at91sam3swj), 
+	NULL,
+	ENTER_PROGRAM_MODE_FUNCNAME(at91sam3swj),
+	LEAVE_PROGRAM_MODE_FUNCNAME(at91sam3swj),
+	ERASE_TARGET_FUNCNAME(at91sam3swj),
+	WRITE_TARGET_FUNCNAME(at91sam3swj),
 	READ_TARGET_FUNCNAME(at91sam3swj)
 };
 
@@ -137,7 +137,7 @@ static uint8_t iap_code[] = {
 	0, 0, 0, 0,
 	0, 0, 0, 0,
 	0, 0, 0, 0,
-	0, 0, 
+	0, 0,
 	// 128 bytes above
 							// parameter
 	0, 0, 0, 0,				// address of sync
@@ -193,7 +193,7 @@ static RESULT at91sam3swj_iap_run(struct at91sam3swj_iap_command_t *cmd)
 	
 	// write iap command with sync to target SRAM
 	// sync is 4-byte AFTER command in sram
-	if (ERROR_OK != adi_memap_write_buf(AT91SAM3_IAP_COMMAND_ADDR, 
+	if (ERROR_OK != adi_memap_write_buf(AT91SAM3_IAP_COMMAND_ADDR,
 										(uint8_t*)buff_tmp, sizeof(buff_tmp)))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "load iap cmd to SRAM");
@@ -203,7 +203,7 @@ static RESULT at91sam3swj_iap_run(struct at91sam3swj_iap_command_t *cmd)
 	return ERROR_OK;
 }
 
-static RESULT at91sam3swj_iap_poll_result(struct at91sam3swj_iap_reply_t *reply, 
+static RESULT at91sam3swj_iap_poll_result(struct at91sam3swj_iap_reply_t *reply,
 											uint8_t *fail)
 {
 	uint32_t buff_tmp[256 + 4];
@@ -230,7 +230,7 @@ static RESULT at91sam3swj_iap_poll_result(struct at91sam3swj_iap_reply_t *reply,
 	
 	// read result and sync
 	// sync is 4-byte BEFORE result
-	if (ERROR_OK != adi_memap_read_buf(AT91SAM3_IAP_SYNC_ADDR, 
+	if (ERROR_OK != adi_memap_read_buf(AT91SAM3_IAP_SYNC_ADDR,
 										(uint8_t *)buff_tmp, data_size))
 	{
 		*fail = 1;
@@ -244,14 +244,14 @@ static RESULT at91sam3swj_iap_poll_result(struct at91sam3swj_iap_reply_t *reply,
 		{
 			*fail = 1;
 			cm3_dump(AT91SAM3_IAP_BASE, sizeof(iap_code) + 256);
-			LOG_ERROR(ERRMSG_FAILURE_OPERATION_ERRCODE, "call iap", 
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION_ERRCODE, "call iap",
 						buff_tmp[1]);
 			return ERRCODE_FAILURE_OPERATION;
 		}
 		
 		if ((reply != NULL) && (reply->data != NULL))
 		{
-			memcpy(reply->data, &buff_tmp[1], 
+			memcpy(reply->data, &buff_tmp[1],
 					reply->data_num * sizeof(uint32_t));
 		}
 		return ERROR_OK;
@@ -296,10 +296,10 @@ static RESULT at91sam3swj_iap_wait_ready(struct at91sam3swj_iap_reply_t *reply)
 	return ERROR_OK;
 }
 
-static RESULT at91sam3swj_iap_call(struct at91sam3swj_iap_command_t *cmd, 
+static RESULT at91sam3swj_iap_call(struct at91sam3swj_iap_command_t *cmd,
 							struct at91sam3swj_iap_reply_t *reply)
 {	
-	if ((ERROR_OK != at91sam3swj_iap_run(cmd)) 
+	if ((ERROR_OK != at91sam3swj_iap_run(cmd))
 		|| (ERROR_OK != at91sam3swj_iap_wait_ready(reply)))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "run iap command");
@@ -309,7 +309,7 @@ static RESULT at91sam3swj_iap_call(struct at91sam3swj_iap_command_t *cmd,
 	return ERROR_OK;
 }
 #else
-static RESULT at91sam3swj_iap_call(struct at91sam3swj_iap_command_t *cmd, 
+static RESULT at91sam3swj_iap_call(struct at91sam3swj_iap_command_t *cmd,
 							struct at91sam3swj_iap_reply_t *reply)
 {
 	uint32_t reg;
@@ -387,7 +387,7 @@ ENTER_PROGRAM_MODE_HANDLER(at91sam3swj)
 	}
 	
 	// write iap_code to target SRAM
-	if (ERROR_OK != adi_memap_write_buf(AT91SAM3_IAP_BASE, (uint8_t*)iap_code, 
+	if (ERROR_OK != adi_memap_write_buf(AT91SAM3_IAP_BASE, (uint8_t*)iap_code,
 											sizeof(iap_code)))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "load iap_code to SRAM");
@@ -395,7 +395,7 @@ ENTER_PROGRAM_MODE_HANDLER(at91sam3swj)
 	}
 	// verify iap_code
 	memset(verify_buff, 0, sizeof(iap_code));
-	if (ERROR_OK != adi_memap_read_buf(AT91SAM3_IAP_BASE, verify_buff, 
+	if (ERROR_OK != adi_memap_read_buf(AT91SAM3_IAP_BASE, verify_buff,
 										sizeof(iap_code)))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read flash_loader");
@@ -551,7 +551,7 @@ WRITE_TARGET_HANDLER(at91sam3swj)
 		target_addr = param->chip_areas[APPLICATION_IDX].addr;
 		eefc_base = param->param[AT91SAM3_PARAM_PLANE0_CONTROL];
 do_write:
-		if ((op->write_operations & LOCK) 
+		if ((op->write_operations & LOCK)
 			&& pi->program_areas[LOCK_IDX].buff[0])
 		{
 			eefc_command = AT91SAM3_EEFC_CMD_EWPL;
@@ -599,7 +599,7 @@ do_write:
 		}
 		
 		// write first buff to target SRAM
-		if (ERROR_OK != adi_memap_write_buf(AT91SAM3_IAP_DATA_ADDR, buff, 
+		if (ERROR_OK != adi_memap_write_buf(AT91SAM3_IAP_DATA_ADDR, buff,
 												page_size))
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "load data to SRAM");
@@ -639,7 +639,7 @@ do_write:
 			}
 			else
 			{
-				if (ERROR_OK != adi_memap_write_buf(AT91SAM3_IAP_DATA_ADDR, 
+				if (ERROR_OK != adi_memap_write_buf(AT91SAM3_IAP_DATA_ADDR,
 														buff, page_size))
 				{
 					LOG_ERROR(ERRMSG_FAILURE_OPERATION, "load data to SRAM");
@@ -706,7 +706,7 @@ READ_TARGET_HANDLER(at91sam3swj)
 	switch (area)
 	{
 	case CHIPID_CHAR:
-		if (ERROR_OK != adi_memap_read_reg32(AT91SAM3_CHIPID_CIDR, 
+		if (ERROR_OK != adi_memap_read_reg32(AT91SAM3_CHIPID_CIDR,
 												(uint32_t*)buff, 1))
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "address of iap_entry");
@@ -728,10 +728,10 @@ READ_TARGET_HANDLER(at91sam3swj)
 			{
 				cur_block_size <<= 2;
 			}
-			if (ERROR_OK != adi_memap_read_buf(addr, buff, 
+			if (ERROR_OK != adi_memap_read_buf(addr, buff,
 												   cur_block_size))
 			{
-				LOG_ERROR(ERRMSG_FAILURE_OPERATION_ADDR, "write flash block", 
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION_ADDR, "write flash block",
 							addr);
 				ret = ERRCODE_FAILURE_OPERATION_ADDR;
 				break;

@@ -99,14 +99,14 @@ struct vss_function_t
 #define VSS_HIDE_CHAR							'@'
 
 void vss_set_fatal_error(void);
-RESULT vss_cmd_supported_by_notifier(const struct vss_cmd_t *notifier, 
+RESULT vss_cmd_supported_by_notifier(const struct vss_cmd_t *notifier,
 										char *notify_cmd);
-RESULT vss_call_notifier(const struct vss_cmd_t *notifier, 
+RESULT vss_call_notifier(const struct vss_cmd_t *notifier,
 							char *notify_cmd, char *notify_param);
 RESULT vss_cmd_supported(char *name);
 RESULT vss_print_help(const char *name);
 RESULT vss_run_script(char *cmd);
 RESULT vss_run_cmd(uint16_t argc, const char *argv[]);
-RESULT vss_get_binary_buffer(uint16_t argc, const char *argv[], 
+RESULT vss_get_binary_buffer(uint16_t argc, const char *argv[],
 						uint8_t data_size, uint32_t data_num, void **pbuff);
 

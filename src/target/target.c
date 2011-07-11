@@ -91,7 +91,7 @@ VSS_HANDLER(target_read);
 VSS_HANDLER(target_verify);
 VSS_HANDLER(target_interface_indexes);
 
-struct vss_cmd_t target_cmd[] = 
+struct vss_cmd_t target_cmd[] =
 {
 	VSS_CMD(	"memory-detail",
 				"show memory detail, format: memory-detail/D TARGET",
@@ -212,7 +212,7 @@ struct vss_cmd_t target_cmd[] =
 	VSS_CMD_END
 };
 
-const struct target_area_name_t target_area_name[NUM_OF_TARGET_AREA] = 
+const struct target_area_name_t target_area_name[NUM_OF_TARGET_AREA] =
 {
 	{CHIPID_CHAR,				CHIPID,				"chipid"},
 	{CHIPID_CHKSUM_CHAR,		CHIPID_CHKSUM,		"chipid_checksum"},
@@ -240,7 +240,7 @@ const struct target_area_name_t target_area_name[NUM_OF_TARGET_AREA] =
 struct chip_series_t target_chips = {0, NULL};
 struct chip_param_t target_chip_param;
 
-struct target_info_t targets_info[] = 
+struct target_info_t targets_info[] =
 {
 	// stm32
 #if TARGET_STM32_EN
@@ -529,9 +529,9 @@ struct target_info_t targets_info[] =
 struct target_info_t *cur_target = NULL;
 struct program_info_t program_info;
 
-RESULT target_build_chip_series(const char *chip_series, 
+RESULT target_build_chip_series(const char *chip_series,
 		const struct program_mode_t *program_mode, struct chip_series_t *s);
-RESULT target_build_chip_fl(const char *chip_series, 
+RESULT target_build_chip_fl(const char *chip_series,
 				const char *chip_module, char *type, struct chip_fl_t *fl);
 
 static RESULT target_parse_cli_string(void)
@@ -553,7 +553,7 @@ static RESULT target_parse_cli_string(void)
 			{
 				// cli_format not defined
 				// simply use %8x as format, which is simple integer input
-				snprintf(format_tmp, sizeof(format_tmp), "%%%dx", 
+				snprintf(format_tmp, sizeof(format_tmp), "%%%dx",
 							target_chip_param.chip_areas[i].size);
 				format = format_tmp;
 			}
@@ -563,12 +563,12 @@ static RESULT target_parse_cli_string(void)
 				return ERROR_FAIL;
 			}
 			
-			ret = strparser_parse(program_info.program_areas[i].cli_str, 
-						format, program_info.program_areas[i].buff, 
+			ret = strparser_parse(program_info.program_areas[i].cli_str,
+						format, program_info.program_areas[i].buff,
 						program_info.program_areas[i].size);
 			if (ret != ERROR_OK)
 			{
-				LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "parse", 
+				LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "parse",
 							target_area_name[i].full_name);
 				return ERROR_FAIL;
 			}
@@ -584,10 +584,10 @@ RESULT target_alloc_data_buffer(void)
 	
 	for (i = 0; i < dimof(program_info.program_areas); i++)
 	{
-		if ((NULL == program_info.program_areas[i].buff) 
+		if ((NULL == program_info.program_areas[i].buff)
 			&& (program_info.program_areas[i].size > 0))
 		{
-			program_info.program_areas[i].buff = 
+			program_info.program_areas[i].buff =
 				(uint8_t *)malloc(program_info.program_areas[i].size);
 			if (NULL == program_info.program_areas[i].buff)
 			{
@@ -595,8 +595,8 @@ RESULT target_alloc_data_buffer(void)
 			}
 			if (strlen(target_chip_param.chip_name) > 0)
 			{
-				memset(program_info.program_areas[i].buff, 
-						(uint8_t)target_chip_param.chip_areas[i].default_value, 
+				memset(program_info.program_areas[i].buff,
+						(uint8_t)target_chip_param.chip_areas[i].default_value,
 						program_info.program_areas[i].size);
 			}
 		}
@@ -950,8 +950,8 @@ int8_t target_mode_get_idx(const struct program_mode_t *mode, char mode_name)
 
 static RESULT target_check_defined(struct operation_t operations)
 {
-	if (ERROR_OK != target_check_single_defined(operations.verify_operations) 
-		|| (ERROR_OK 
+	if (ERROR_OK != target_check_single_defined(operations.verify_operations)
+		|| (ERROR_OK
 			!= target_check_single_defined(operations.write_operations)))
 	{
 		return ERROR_FAIL;
@@ -962,8 +962,8 @@ static RESULT target_check_defined(struct operation_t operations)
 	}
 }
 
-static RESULT target_write_buffer_from_file_callback(char * ext, 
-				uint32_t address, uint32_t seg_addr, uint8_t* data, 
+static RESULT target_write_buffer_from_file_callback(char * ext,
+				uint32_t address, uint32_t seg_addr, uint8_t* data,
 				uint32_t length, void* buffer)
 {
 	uint32_t i;
@@ -976,7 +976,7 @@ static RESULT target_write_buffer_from_file_callback(char * ext,
 	uint32_t mem_addr;
 	RESULT ret;
 	
-	if ((NULL == cur_target) || (0 == strlen(target_chip_param.chip_name)) 
+	if ((NULL == cur_target) || (0 == strlen(target_chip_param.chip_name))
 		|| (NULL == ext))
 	{
 		LOG_BUG(ERRMSG_NOT_INITIALIZED, "target", "");
@@ -984,12 +984,12 @@ static RESULT target_write_buffer_from_file_callback(char * ext,
 	}
 	
 	// remap if adjust_mapping is defined and format is not BIN
-	if ((strcmp(ext, "BIN")) && 
-		(cur_target->adjust_mapping != NULL) && 
-		(ERROR_OK != cur_target->adjust_mapping(&address, 
+	if ((strcmp(ext, "BIN")) &&
+		(cur_target->adjust_mapping != NULL) &&
+		(ERROR_OK != cur_target->adjust_mapping(&address,
 												TARGET_MAPPING_FROM_FILE)))
 	{
-		LOG_BUG(ERRMSG_FAILURE_OPERATE_ADDRESS, "remap target address", 
+		LOG_BUG(ERRMSG_FAILURE_OPERATE_ADDRESS, "remap target address",
 				address);
 		return ERROR_FAIL;
 	}
@@ -1005,9 +1005,9 @@ static RESULT target_write_buffer_from_file_callback(char * ext,
 			i++;
 			continue;
 		}
-		area_seg = target_chip_param.chip_areas[area_idx].seg 
+		area_seg = target_chip_param.chip_areas[area_idx].seg
 						+ cur_target->program_area_map[i].fseg_addr;
-		area_addr = target_chip_param.chip_areas[area_idx].addr 
+		area_addr = target_chip_param.chip_areas[area_idx].addr
 						+ cur_target->program_area_map[i].fstart_addr;
 		area_size = target_chip_param.chip_areas[area_idx].size;
 		area_page_size = target_chip_param.chip_areas[area_idx].page_size;
@@ -1016,7 +1016,7 @@ static RESULT target_write_buffer_from_file_callback(char * ext,
 		area_memlist = &(pi->program_areas[area_idx].memlist);
 		area_exact_memlist = &(pi->program_areas[area_idx].exact_memlist);
 		
-		if ((area_seg != seg_addr) || (area_addr > address) 
+		if ((area_seg != seg_addr) || (area_addr > address)
 			|| ((area_addr + area_size) < (address + length)))
 		{
 			// not this area
@@ -1062,7 +1062,7 @@ static RESULT target_write_buffer_from_file_callback(char * ext,
 	return ERROR_FAIL;
 }
 
-static RESULT MEMLIST_VerifyBuff(struct memlist *ml, uint8_t *buf1, 
+static RESULT MEMLIST_VerifyBuff(struct memlist *ml, uint8_t *buf1,
 				uint8_t *buf2, uint32_t addr, uint32_t len, uint32_t *pos)
 {
 	uint32_t i, len_tmp, offset, verified_len;
@@ -1126,10 +1126,10 @@ static RESULT target_program_check(struct program_context_t *context)
 	struct chip_param_t *param = context->param;
 	uint64_t i;
 	
-	if ((NULL == pf) 
-		|| ((NULL == pf->execute) 
-			&& ((NULL == pf->read_target) 
-				|| (NULL == pf->write_target) 
+	if ((NULL == pf)
+		|| ((NULL == pf->execute)
+			&& ((NULL == pf->read_target)
+				|| (NULL == pf->write_target)
 				|| (NULL == pf->erase_target))))
 	{
 		LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, "current mode", pi->chip_name);
@@ -1137,8 +1137,8 @@ static RESULT target_program_check(struct program_context_t *context)
 	}
 	
 	// check mode
-	if ((target_chips.num_of_chips > 0) 
-		&& (target_chips.chips_param[0].program_mode != 0) 
+	if ((target_chips.num_of_chips > 0)
+		&& (target_chips.chips_param[0].program_mode != 0)
 		&& !(param->program_mode & (1 << pi->mode)))
 	{
 		LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, "current mode", pi->chip_name);
@@ -1149,7 +1149,7 @@ static RESULT target_program_check(struct program_context_t *context)
 	i = cur_target->program_mode[program_info.mode].interface_needed;
 	if (i)
 	{
-		if ((ERROR_OK != interface_assert(&context->prog)) 
+		if ((ERROR_OK != interface_assert(&context->prog))
 			|| (NULL == context->prog))
 		{
 			LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
@@ -1173,7 +1173,7 @@ static RESULT target_enter_progmode(struct program_context_t *context)
 		return ERROR_FAIL;
 	}
 	
-	if ((pf->enter_program_mode != NULL) 
+	if ((pf->enter_program_mode != NULL)
 		&&(pf->enter_program_mode(context) != ERROR_OK))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "enter program mode");
@@ -1182,7 +1182,7 @@ static RESULT target_enter_progmode(struct program_context_t *context)
 	return ERROR_OK;
 }
 
-static RESULT target_leave_progmode(struct program_context_t *context, 
+static RESULT target_leave_progmode(struct program_context_t *context,
 									uint8_t success)
 {
 	const struct program_functions_t *pf = cur_target->program_functions;
@@ -1193,7 +1193,7 @@ static RESULT target_leave_progmode(struct program_context_t *context,
 	}
 	
 	// leave with success
-	if ((pf->leave_program_mode != NULL) 
+	if ((pf->leave_program_mode != NULL)
 		&&(pf->leave_program_mode(context, success) != ERROR_OK))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "leave program mode");
@@ -1241,7 +1241,7 @@ static RESULT target_program(struct program_context_t *context)
 	
 	// read chip id
 	pi->chip_id = 0;
-	if (ERROR_OK != pf->read_target(context, CHIPID_CHAR, 0, 
+	if (ERROR_OK != pf->read_target(context, CHIPID_CHAR, 0,
 									(uint8_t *)&pi->chip_id, 0))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read chip id");
@@ -1265,7 +1265,7 @@ static RESULT target_program(struct program_context_t *context)
 	if (op->erase_operations && param->chip_erase)
 	{
 		LOG_INFO(INFOMSG_ERASING, "chip");
-		pgbar_init("erasing chip |", "|", 0, 1, PROGRESS_STEP, 
+		pgbar_init("erasing chip |", "|", 0, 1, PROGRESS_STEP,
 						PROGRESS_CHAR);
 		
 		if (ERROR_OK != pf->erase_target(context, ALL_CHAR, 0, 0))
@@ -1300,7 +1300,7 @@ static RESULT target_program(struct program_context_t *context)
 		area_info = &(param->chip_areas[area_idx]);
 		page_size = area_info->page_size;
 		start_addr = area_info->addr;
-		if ((p_map[i].fpage_size > page_size) 
+		if ((p_map[i].fpage_size > page_size)
 			&& ((p_map[i].fpage_size % page_size) == 0))
 		{
 			page_size = p_map[i].fpage_size;
@@ -1348,12 +1348,12 @@ static RESULT target_program(struct program_context_t *context)
 		
 		// not chip_erase, required to be erased, erasable
 		// erase while write feature and write operation defined
-		if (!param->chip_erase && (op->erase_operations & area_mask) 
-			&& (area_attr & AREA_ATTR_E) 
-			&& (!(area_attr & AREA_ATTR_EWW) 
+		if (!param->chip_erase && (op->erase_operations & area_mask)
+			&& (area_attr & AREA_ATTR_E)
+			&& (!(area_attr & AREA_ATTR_EWW)
 				|| !(op->write_operations & area_mask)))
 		{
-			uint32_t page_num = 
+			uint32_t page_num =
 				area_info->page_num > 0 ? area_info->page_num : 1;
 			// target erase
 			LOG_INFO(INFOMSG_ERASING, fullname);
@@ -1367,7 +1367,7 @@ static RESULT target_program(struct program_context_t *context)
 				// erase every page
 				for (j = 0; j < area_info->page_num; j++)
 				{
-					if (ERROR_OK != pf->erase_target(context, area_char, 
+					if (ERROR_OK != pf->erase_target(context, area_char,
 							start_addr + j * page_size, page_size))
 					{
 						pgbar_fini();
@@ -1381,7 +1381,7 @@ static RESULT target_program(struct program_context_t *context)
 			else
 			{
 				// erase all in one run
-				if (ERROR_OK != pf->erase_target(context, area_char, 
+				if (ERROR_OK != pf->erase_target(context, area_char,
 													start_addr, 0))
 				{
 					pgbar_fini();
@@ -1402,13 +1402,13 @@ static RESULT target_program(struct program_context_t *context)
 			LOG_INFO(INFOMSG_ERASED, fullname);
 			
 			// Reset After Erase
-			if ((area_attr & AREA_ATTR_RAE) 
-				&& ((op->checksum_operations != 0) 
-					|| (op->read_operations != 0) 
-					|| (op->verify_operations != 0) 
+			if ((area_attr & AREA_ATTR_RAE)
+				&& ((op->checksum_operations != 0)
+					|| (op->read_operations != 0)
+					|| (op->verify_operations != 0)
 					|| (op->write_operations != 0)))
 			{
-				if ((pf->leave_program_mode != NULL) 
+				if ((pf->leave_program_mode != NULL)
 					&& (ERROR_OK != pf->leave_program_mode(context, 0)))
 				{
 					// no need to goto leave_program_mode here
@@ -1443,7 +1443,7 @@ static RESULT target_program(struct program_context_t *context)
 						int32_t tmp_addr = ml_tmp->addr;
 						uint8_t *tmp_buf = &(tbuff[tmp_addr - start_addr]);
 						
-						if (ERROR_OK != pf->write_target(context, area_char, 
+						if (ERROR_OK != pf->write_target(context, area_char,
 								tmp_addr, tmp_buf, ml_tmp->len))
 						{
 							pgbar_fini();
@@ -1459,7 +1459,7 @@ static RESULT target_program(struct program_context_t *context)
 							uint32_t tmp_addr = ml_tmp->addr + j;
 							uint8_t *tmp_buf = &(tbuff[tmp_addr - start_addr]);
 							
-							if (ERROR_OK != pf->write_target(context, 
+							if (ERROR_OK != pf->write_target(context,
 									area_char, tmp_addr, tmp_buf, page_size))
 							{
 								pgbar_fini();
@@ -1481,7 +1481,7 @@ static RESULT target_program(struct program_context_t *context)
 					if (NULL == prog_area->cli_str)
 					{
 						pgbar_fini();
-						LOG_BUG(ERRMSG_INVALID_BUFFER, 
+						LOG_BUG(ERRMSG_INVALID_BUFFER,
 								TO_STR(prog_area->cli_str));
 						ret = ERROR_FAIL;
 						goto target_program_exit;
@@ -1498,7 +1498,7 @@ static RESULT target_program(struct program_context_t *context)
 					ret = ERROR_FAIL;
 					goto target_program_exit;
 				}
-				if (ERROR_OK != pf->write_target(context, area_char, 
+				if (ERROR_OK != pf->write_target(context, area_char,
 											start_addr, buff_tmp, target_size))
 				{
 					pgbar_fini();
@@ -1516,16 +1516,16 @@ static RESULT target_program(struct program_context_t *context)
 			}
 			
 			time_in_ms = pgbar_fini();
-			LOG_INFO(INFOMSG_PROGRAMMED_SIZE, fullname, target_size, 
+			LOG_INFO(INFOMSG_PROGRAMMED_SIZE, fullname, target_size,
 						(target_size / 1024.0) / (time_in_ms / 1000.0));
 			
 			// Reset After Write
-			if ((area_attr & AREA_ATTR_RAW) 
-				&& ((op->checksum_operations != 0) 
-					|| (op->read_operations != 0) 
+			if ((area_attr & AREA_ATTR_RAW)
+				&& ((op->checksum_operations != 0)
+					|| (op->read_operations != 0)
 					|| (op->verify_operations != 0)))
 			{
-				if ((pf->leave_program_mode != NULL) 
+				if ((pf->leave_program_mode != NULL)
 					&& (ERROR_OK != pf->leave_program_mode(context, 0)))
 				{
 					// no need to goto leave_program_mode here
@@ -1541,7 +1541,7 @@ static RESULT target_program(struct program_context_t *context)
 			}
 		}
 		
-		if ((op->verify_operations & area_mask) 
+		if ((op->verify_operations & area_mask)
 			&& (area_attr & AREA_ATTR_V))
 		{
 			// specific verify defined by target
@@ -1554,7 +1554,7 @@ static RESULT target_program(struct program_context_t *context)
 			if ((page_size == 0) || (area_attr & AREA_ATTR_RNP))
 			{
 				// verify whole target area
-				if (ERROR_OK != pf->read_target(context, area_char, 
+				if (ERROR_OK != pf->read_target(context, area_char,
 										start_addr, tbuff, target_size))
 				{
 					pgbar_fini();
@@ -1576,7 +1576,7 @@ static RESULT target_program(struct program_context_t *context)
 						uint32_t tmp_addr = ml_tmp->addr + j;
 						uint8_t *tmp_buf = &(tbuff[tmp_addr - start_addr]);
 						
-						if (ERROR_OK != pf->read_target(context, area_char, 
+						if (ERROR_OK != pf->read_target(context, area_char,
 								tmp_addr, tmp_buf, page_size))
 						{
 							pgbar_fini();
@@ -1598,14 +1598,14 @@ static RESULT target_program(struct program_context_t *context)
 			
 			pgbar_fini();
 		}
-		else if (((op->read_operations & area_mask) 
+		else if (((op->read_operations & area_mask)
 					|| (op->verify_operations & area_mask))
 				&& (area_attr & AREA_ATTR_R))
 		{
-			if ((p_map[i].data_pos) && (op->read_operations & area_mask) && 
+			if ((p_map[i].data_pos) && (op->read_operations & area_mask) &&
 				(NULL == *ml))
 			{
-				if (ERROR_OK != MEMLIST_Add(ml, area_info->addr, 
+				if (ERROR_OK != MEMLIST_Add(ml, area_info->addr,
 											area_info->size, page_size))
 				{
 					LOG_ERROR(ERRMSG_FAILURE_OPERATION, "add memory list");
@@ -1637,7 +1637,7 @@ static RESULT target_program(struct program_context_t *context)
 					uint8_t *read_buf = NULL;
 					uint32_t buf_size;
 					
-					if (!(area_attr & AREA_ATTR_RNP) 
+					if (!(area_attr & AREA_ATTR_RNP)
 						&& (ml_tmp->len % page_size))
 					{
 						buf_size = ((ml_tmp->len / page_size) + 1) * page_size;
@@ -1656,7 +1656,7 @@ static RESULT target_program(struct program_context_t *context)
 					
 					if (area_attr & AREA_ATTR_RNP)
 					{
-						if (ERROR_OK != pf->read_target(context, area_char, 
+						if (ERROR_OK != pf->read_target(context, area_char,
 								ml_tmp->addr, read_buf, ml_tmp->len))
 						{
 							free(read_buf);
@@ -1671,8 +1671,8 @@ static RESULT target_program(struct program_context_t *context)
 					{
 						for (j = 0; j < ml_tmp->len; j += page_size)
 						{
-							if (ERROR_OK != pf->read_target(context, 
-									area_char, ml_tmp->addr + j, 
+							if (ERROR_OK != pf->read_target(context,
+									area_char, ml_tmp->addr + j,
 									read_buf + j, page_size))
 							{
 								free(read_buf);
@@ -1686,7 +1686,7 @@ static RESULT target_program(struct program_context_t *context)
 							pgbar_update(page_size);
 						}
 					}
-					if ((prog != NULL) && 
+					if ((prog != NULL) &&
 						(ERROR_OK != prog->peripheral_commit()))
 					{
 						LOG_ERROR(ERRMSG_FAILURE_READ, fullname);
@@ -1704,15 +1704,15 @@ static RESULT target_program(struct program_context_t *context)
 							goto target_program_exit;
 						}
 						j = 0;
-						if (ERROR_OK != 
-							MEMLIST_VerifyBuff(ml_exact, read_buf, 
-												&tbuff[read_offset], 
-												ml_tmp->addr, 
+						if (ERROR_OK !=
+							MEMLIST_VerifyBuff(ml_exact, read_buf,
+												&tbuff[read_offset],
+												ml_tmp->addr,
 												ml_tmp->len, &j))
 						{
 							pgbar_fini();
-							LOG_ERROR(ERRMSG_FAILURE_VERIFY_AT_02X, 
-										fullname, ml_tmp->addr + j, 
+							LOG_ERROR(ERRMSG_FAILURE_VERIFY_AT_02X,
+										fullname, ml_tmp->addr + j,
 										read_buf[j], tbuff[read_offset + j]);
 							free(read_buf);
 							read_buf = NULL;
@@ -1756,7 +1756,7 @@ static RESULT target_program(struct program_context_t *context)
 					memset(buff_tmp, 0, target_size);
 					alloced = 1;
 				}
-				if (ERROR_OK != pf->read_target(context, area_char, 
+				if (ERROR_OK != pf->read_target(context, area_char,
 							start_addr, buff_tmp, target_size))
 				{
 					pgbar_fini();
@@ -1777,14 +1777,14 @@ static RESULT target_program(struct program_context_t *context)
 				{
 					if (SPECIAL_STRING_CHAR == area_char)
 					{
-						if (!strcmp((const char*)prog_area->cli_str, 
+						if (!strcmp((const char*)prog_area->cli_str,
 									(const char*)special_string))
 						{
 							LOG_INFO(INFOMSG_VERIFIED, fullname);
 						}
 						else
 						{
-							LOG_ERROR(ERRMSG_FAILURE_VERIFY_STR, 
+							LOG_ERROR(ERRMSG_FAILURE_VERIFY_STR,
 								fullname, special_string, prog_area->cli_str);
 							ret = ERRCODE_FAILURE_VERIFY;
 							goto target_program_exit;
@@ -1808,7 +1808,7 @@ static RESULT target_program(struct program_context_t *context)
 							read_str = strparser_solve(format, buff_tmp, 0);
 							if (NULL == read_str)
 							{
-								LOG_ERROR(ERRMSG_FAILURE_OPERATION, 
+								LOG_ERROR(ERRMSG_FAILURE_OPERATION,
 											"solve value");
 								ret = ERRCODE_FAILURE_OPERATION;
 								goto target_program_exit;
@@ -1818,12 +1818,12 @@ static RESULT target_program(struct program_context_t *context)
 							{
 								free(read_str);
 								read_str = NULL;
-								LOG_ERROR(ERRMSG_FAILURE_OPERATION, 
+								LOG_ERROR(ERRMSG_FAILURE_OPERATION,
 											"solve value");
 								ret = ERRCODE_FAILURE_OPERATION;
 								goto target_program_exit;
 							}
-							LOG_ERROR(ERRMSG_FAILURE_VERIFY_STR, 
+							LOG_ERROR(ERRMSG_FAILURE_VERIFY_STR,
 								fullname, read_str, want_str);
 							free(read_str);
 							read_str = NULL;
@@ -1870,12 +1870,12 @@ static RESULT target_program(struct program_context_t *context)
 			
 			if (op->verify_operations & area_mask)
 			{
-				LOG_INFO(INFOMSG_VERIFIED_SIZE, fullname, target_size, 
+				LOG_INFO(INFOMSG_VERIFIED_SIZE, fullname, target_size,
 							(target_size / 1024.0) / (time_in_ms / 1000.0));
 			}
 			else
 			{
-				LOG_INFO(INFOMSG_READ_SIZE, fullname, target_size, 
+				LOG_INFO(INFOMSG_READ_SIZE, fullname, target_size,
 							(target_size / 1024.0) / (time_in_ms / 1000.0));
 			}
 		}
@@ -1906,12 +1906,12 @@ static RESULT target_init(struct program_info_t *pi)
 		}
 		else if (NULL == strchr(cur_target->feature, AUTO_DETECT[0]))
 		{
-			LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, "Auto-detect", 
+			LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, "Auto-detect",
 						cur_target->name);
 			return ERRCODE_NOT_SUPPORT;
 		}
 		// auto detect
-		memcpy(&target_chip_param, &target_chips.chips_param[0], 
+		memcpy(&target_chip_param, &target_chips.chips_param[0],
 					sizeof(target_chip_param));
 		LOG_INFO(INFOMSG_TRY_AUTODETECT);
 		
@@ -1951,7 +1951,7 @@ static RESULT target_init(struct program_info_t *pi)
 			{
 				if (pi->chip_id == target_chips.chips_param[i].chip_id)
 				{
-					if (NULL == bufffunc_malloc_and_copy_str(&pi->chip_name, 
+					if (NULL == bufffunc_malloc_and_copy_str(&pi->chip_name,
 									target_chips.chips_param[i].chip_name))
 					{
 						LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
@@ -1985,13 +1985,13 @@ static RESULT target_init(struct program_info_t *pi)
 		return ERROR_FAIL;
 	}
 Post_Init:
-	if ((cur_target->adjust_setting != NULL) 
-		&&(ERROR_OK != cur_target->adjust_setting(&program_info, 
+	if ((cur_target->adjust_setting != NULL)
+		&&(ERROR_OK != cur_target->adjust_setting(&program_info,
 							&target_chips.chips_param[i], program_info.mode)))
 	{
 		return ERROR_FAIL;
 	}
-	memcpy(&target_chip_param, &target_chips.chips_param[i], 
+	memcpy(&target_chip_param, &target_chips.chips_param[i],
 			sizeof(target_chip_param));
 	
 	i = 0;
@@ -2001,13 +2001,13 @@ Post_Init:
 		if (!pi->program_areas[area_idx].size)
 		{
 			// if size is not detected, copy from record in xml config
-			pi->program_areas[area_idx].size = 
+			pi->program_areas[area_idx].size =
 								target_chip_param.chip_areas[area_idx].size;
 		}
 		else
 		{
 			// if size is detected, overwrite target parameters
-			target_chip_param.chip_areas[area_idx].size = 
+			target_chip_param.chip_areas[area_idx].size =
 								pi->program_areas[area_idx].size;
 		}
 		i++;
@@ -2046,10 +2046,10 @@ static uint32_t target_prepare_operation(uint32_t *operation)
 	return ret;
 }
 
-static RESULT target_prepare_operations(struct operation_t *operations, 
+static RESULT target_prepare_operations(struct operation_t *operations,
 									uint32_t *readfile, uint32_t *writefile)
 {
-	if ((NULL == cur_target) || (NULL == cur_target->program_area_map) 
+	if ((NULL == cur_target) || (NULL == cur_target->program_area_map)
 		|| (NULL == operations))
 	{
 		return ERROR_FAIL;
@@ -2079,7 +2079,7 @@ static void target_print_single_memory(char type)
 	}
 	if (0 == p_map[mapidx].name)
 	{
-		LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, full_type, 
+		LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, full_type,
 					program_info.chip_name);
 		return;
 	}
@@ -2087,7 +2087,7 @@ static void target_print_single_memory(char type)
 	paramidx = target_area_idx(type);
 	if (paramidx < 0 )
 	{
-		LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, full_type, 
+		LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, full_type,
 					program_info.chip_name);
 		return;
 	}
@@ -2095,19 +2095,19 @@ static void target_print_single_memory(char type)
 	PRINTF("%s of %s:\n", full_type, program_info.chip_name);
 	if (p_map[mapidx].data_pos)
 	{
-		PRINTF("%c_seg = 0x%08X, ", type, 
+		PRINTF("%c_seg = 0x%08X, ", type,
 				target_chip_param.chip_areas[paramidx].seg);
-		PRINTF("%c_addr = 0x%08X, ", type, 
+		PRINTF("%c_addr = 0x%08X, ", type,
 				target_chip_param.chip_areas[paramidx].addr);
 	}
 	else if (target_chip_param.chip_areas[paramidx].cli_format != NULL)
 	{
-		PRINTF("%c_format = %s, ", type, 
+		PRINTF("%c_format = %s, ", type,
 				target_chip_param.chip_areas[paramidx].cli_format);
 	}
-	PRINTF("%c_default = 0x%"PRIX64", ", type, 
+	PRINTF("%c_default = 0x%"PRIX64", ", type,
 				target_chip_param.chip_areas[paramidx].default_value);
-	PRINTF("%c_bytelen = %d\n", type, 
+	PRINTF("%c_bytelen = %d\n", type,
 				target_chip_param.chip_areas[paramidx].size);
 }
 
@@ -2162,7 +2162,7 @@ void target_print_setting(char type)
 	}
 	
 	memset(&fl, 0, sizeof(struct chip_fl_t));
-	if (ERROR_OK != target_build_chip_fl(program_info.chip_type, 
+	if (ERROR_OK != target_build_chip_fl(program_info.chip_type,
 									program_info.chip_name, full_type, &fl))
 	{
 		target_release_chip_fl(&fl);
@@ -2228,7 +2228,7 @@ void target_print_target(uint32_t index)
 	struct program_area_map_t *p_map;
 	char area[3];
 	
-	if (ERROR_OK != target_build_chip_series(targets_info[index].name, 
+	if (ERROR_OK != target_build_chip_series(targets_info[index].name,
 						targets_info[index].program_mode, &target_chips))
 	{
 		target_release_chip_series(&target_chips);
@@ -2243,7 +2243,7 @@ void target_print_target(uint32_t index)
 	
 	if (strlen(targets_info[index].feature) > 0)
 	{
-		PRINTF("Support list of %s(%s):", targets_info[index].name, 
+		PRINTF("Support list of %s(%s):", targets_info[index].name,
 				targets_info[index].feature);
 	}
 	else
@@ -2266,7 +2266,7 @@ void target_print_target(uint32_t index)
 		i++;
 	}
 	// extra info from target
-	if (ERROR_OK == 
+	if (ERROR_OK ==
 		vss_cmd_supported_by_notifier(targets_info[index].notifier, "extra"))
 	{
 		vss_call_notifier(targets_info[index].notifier, "extra", NULL);
@@ -2378,7 +2378,7 @@ static RESULT target_info_init(struct program_info_t *pi)
 		// find which series of target contain current chip_name
 		for (i = 0; targets_info[i].name != NULL; i++)
 		{
-			if (ERROR_OK == target_build_chip_series(targets_info[i].name, 
+			if (ERROR_OK == target_build_chip_series(targets_info[i].name,
 								targets_info[i].program_mode, &target_chips))
 			{
 				// configuration file exists, use default probe function
@@ -2393,13 +2393,13 @@ static RESULT target_info_init(struct program_info_t *pi)
 			if (probe_chip(pi->chip_name) == ERROR_OK)
 			{
 				cur_target = &targets_info[i];
-				if (NULL == bufffunc_malloc_and_copy_str(&pi->chip_type, 
+				if (NULL == bufffunc_malloc_and_copy_str(&pi->chip_type,
 									(char *)targets_info[i].name))
 				{
 					LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 					return ERRCODE_NOT_ENOUGH_MEMORY;
 				}
-				LOG_DEBUG("%s initialized for %s.", cur_target->name, 
+				LOG_DEBUG("%s initialized for %s.", cur_target->name,
 							pi->chip_name);
 				
 				return ERROR_OK;
@@ -2416,7 +2416,7 @@ static RESULT target_info_init(struct program_info_t *pi)
 		{
 			if (!strcmp(targets_info[i].name, pi->chip_type))
 			{
-				if (ERROR_OK == target_build_chip_series(targets_info[i].name, 
+				if (ERROR_OK == target_build_chip_series(targets_info[i].name,
 								targets_info[i].program_mode, &target_chips))
 				{
 					// configuration file exists, use default probe function
@@ -2429,15 +2429,15 @@ static RESULT target_info_init(struct program_info_t *pi)
 				}
 				else
 				{
-					LOG_BUG(ERRMSG_NOT_SUPPORT_BY, "probe_chip", 
+					LOG_BUG(ERRMSG_NOT_SUPPORT_BY, "probe_chip",
 							targets_info[i].name);
 					return ERROR_FAIL;
 				}
 				
-				if ((pi->chip_name != NULL) 
+				if ((pi->chip_name != NULL)
 				   && (ERROR_OK != probe_chip(pi->chip_name)))
 				{
-					LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, pi->chip_name, 
+					LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, pi->chip_name,
 								targets_info[i].name);
 					target_release_chip_series(&target_chips);
 					cur_target = NULL;
@@ -2515,8 +2515,8 @@ VSS_HANDLER(target_parameter_detail)
 	vsprog_no_call_operate();
 	VSS_CHECK_ARGC(2);
 	
-	if ((NULL == program_info.chip_name) 
-		|| (NULL == program_info.chip_type) 
+	if ((NULL == program_info.chip_name)
+		|| (NULL == program_info.chip_type)
 		|| (NULL == cur_target))
 	{
 		LOG_ERROR(ERRMSG_NOT_DEFINED, "Target");
@@ -2556,7 +2556,7 @@ VSS_HANDLER(target_series)
 		free(program_info.chip_type);
 		program_info.chip_type = NULL;
 	}
-	if (NULL == bufffunc_malloc_and_copy_str(&program_info.chip_type, 
+	if (NULL == bufffunc_malloc_and_copy_str(&program_info.chip_type,
 												(char *)argv[1]))
 	{
 		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
@@ -2580,7 +2580,7 @@ VSS_HANDLER(target_chip)
 		free(program_info.chip_name);
 		program_info.chip_name = NULL;
 	}
-	if (NULL == bufffunc_malloc_and_copy_str(&program_info.chip_name, 
+	if (NULL == bufffunc_malloc_and_copy_str(&program_info.chip_name,
 												(char *)argv[1]))
 	{
 		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
@@ -2696,7 +2696,7 @@ VSS_HANDLER(target_jtag_dc)
 	char format[] = "%1d%1d%2d%2d";
 	
 	VSS_CHECK_ARGC(2);
-	if (ERROR_OK != 
+	if (ERROR_OK !=
 		strparser_parse((char *)argv[1], format, buff, sizeof(buff)))
 	{
 		LOG_ERROR(ERRMSG_NOT_SUPPORT_AS, argv[1], format);
@@ -2774,15 +2774,15 @@ VSS_HANDLER(target_prepare)
 	}
 	
 	// check file
-	target_prepare_operations(&operations, 
+	target_prepare_operations(&operations,
 					&require_hex_file_for_read, &require_hex_file_for_write);
-	if ((require_hex_file_for_read > 0) 
+	if ((require_hex_file_for_read > 0)
 		&& ((NULL == fl_in) || (NULL == fl_in->path) || (NULL == fl_in->file)))
 	{
 		LOG_ERROR(ERRMSG_NOT_DEFINED, "input file");
 		return ERROR_FAIL;
 	}
-	if ((require_hex_file_for_write > 0) 
+	if ((require_hex_file_for_write > 0)
 		&& ((NULL == fl_out) || (NULL == fl_out->path)))
 	{
 		LOG_ERROR(ERRMSG_NOT_DEFINED, "output file");
@@ -2815,15 +2815,15 @@ VSS_HANDLER(target_prepare)
 	{
 		struct filelist *fl = fl_in;
 		
-		while ((fl != NULL) && (fl->path != NULL) && (fl->file != NULL) 
+		while ((fl != NULL) && (fl->path != NULL) && (fl->file != NULL)
 			&& (strlen(fl->path) > 4))
 		{
-			ret = parse_file(fl->path, fl->file, (void *)&program_info, 
-								&target_write_buffer_from_file_callback, 
+			ret = parse_file(fl->path, fl->file, (void *)&program_info,
+								&target_write_buffer_from_file_callback,
 								fl->seg_offset, fl->addr_offset);
 			if (ret != ERROR_OK)
 			{
-				LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "parse input file", 
+				LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "parse input file",
 							fl->path);
 				return ERROR_FAIL;
 			}
@@ -3058,7 +3058,7 @@ VSS_HANDLER(target_read)
 	byteaddr = strtoul(argv[2], NULL, 0);
 	bytesize = strtoul(argv[3], NULL, 0);
 	
-	if (ERROR_OK != MEMLIST_Add(&ml_tmp, byteaddr, bytesize, 
+	if (ERROR_OK != MEMLIST_Add(&ml_tmp, byteaddr, bytesize,
 			target_chip_param.chip_areas[index].page_size))
 	{
 		return ERROR_FAIL;
@@ -3096,9 +3096,9 @@ VSS_HANDLER(target_operate)
 	}
 	
 	// in system programmer
-	if ((!(operations.checksum_operations || operations.erase_operations 
-			|| operations.read_operations || operations.verify_operations 
-			|| operations.write_operations)) 
+	if ((!(operations.checksum_operations || operations.erase_operations
+			|| operations.read_operations || operations.verify_operations
+			|| operations.write_operations))
 		&& (NULL == strchr(cur_target->feature, NO_TARGET[0])))
 	{
 		// no operation defined
@@ -3120,13 +3120,13 @@ VSS_HANDLER(target_operate)
 	// save contect to file for read operation
 	if (cur_target != NULL)
 	{
-		struct program_area_map_t *p_map = 
+		struct program_area_map_t *p_map =
 				(struct program_area_map_t *)cur_target->program_area_map;
 		
 		while (p_map->name != 0)
 		{
-			if ((p_map->data_pos) 
-				&& (operations.read_operations 
+			if ((p_map->data_pos)
+				&& (operations.read_operations
 					& target_area_mask(p_map->name)))
 			{
 				uint8_t *buff = NULL;
@@ -3144,12 +3144,12 @@ VSS_HANDLER(target_operate)
 				target_get_target_area(p_map->name, &buff, &size);
 				if ((buff != NULL) && (size > 0) && (fl_out != NULL))
 				{
-					if (ERROR_OK != save_target_to_file(fl_out, buff, 
-							size, area->seg, area->addr, p_map->fseg_addr, 
-							p_map->fstart_addr, 
+					if (ERROR_OK != save_target_to_file(fl_out, buff,
+							size, area->seg, area->addr, p_map->fseg_addr,
+							p_map->fstart_addr,
 							cur_target->adjust_mapping))
 					{
-						LOG_ERROR(ERRMSG_FAILURE_OPERATION, 
+						LOG_ERROR(ERRMSG_FAILURE_OPERATION,
 									"write data to file");
 						return ERROR_FAIL;
 					}
@@ -3173,7 +3173,7 @@ VSS_HANDLER(target_interface_indexes)
 		program_info.ifs_indexes = NULL;
 	}
 	
-	if ((2 == argc) && 
+	if ((2 == argc) &&
 		(NULL == bufffunc_malloc_and_copy_str(
 							&program_info.ifs_indexes, (char *)argv[1])))
 	{

@@ -45,13 +45,13 @@ LEAVE_PROGRAM_MODE_HANDLER(c8051fjtag);
 ERASE_TARGET_HANDLER(c8051fjtag);
 WRITE_TARGET_HANDLER(c8051fjtag);
 READ_TARGET_HANDLER(c8051fjtag);
-struct program_functions_t c8051fjtag_program_functions = 
+struct program_functions_t c8051fjtag_program_functions =
 {
 	NULL,			// execute
-	ENTER_PROGRAM_MODE_FUNCNAME(c8051fjtag), 
-	LEAVE_PROGRAM_MODE_FUNCNAME(c8051fjtag), 
-	ERASE_TARGET_FUNCNAME(c8051fjtag), 
-	WRITE_TARGET_FUNCNAME(c8051fjtag), 
+	ENTER_PROGRAM_MODE_FUNCNAME(c8051fjtag),
+	LEAVE_PROGRAM_MODE_FUNCNAME(c8051fjtag),
+	ERASE_TARGET_FUNCNAME(c8051fjtag),
+	WRITE_TARGET_FUNCNAME(c8051fjtag),
 	READ_TARGET_FUNCNAME(c8051fjtag)
 };
 
@@ -176,7 +176,7 @@ ENTER_PROGRAM_MODE_HANDLER(c8051fjtag)
 	interfaces = context->prog;
 	
 	jtag_init();
-	jtag_config(pi->frequency, pi->jtag_pos.ub, pi->jtag_pos.ua, 
+	jtag_config(pi->frequency, pi->jtag_pos.ub, pi->jtag_pos.ua,
 					pi->jtag_pos.bb, pi->jtag_pos.ba);
 	
 	// set FLASHSCL based on SYSCLK (2MHx = 0x86)
@@ -256,22 +256,22 @@ WRITE_TARGET_HANDLER(c8051fjtag)
 	case APPLICATION_CHAR:
 		// set FLASHADR to address to write to
 		dr = addr;
-		c8051f_jtag_ind_write(C8051F_IR_FLASHADR, &dr, 
+		c8051f_jtag_ind_write(C8051F_IR_FLASHADR, &dr,
 								C8051F_DR_FLASHADR_LEN);
 		
 		for (i = 0; i < size; i++)
 		{
 			// set FLASHCON for flash write operation(0x10)
 			dr = 0x10;
-			c8051f_jtag_ind_write(C8051F_IR_FLASHCON, &dr, 
+			c8051f_jtag_ind_write(C8051F_IR_FLASHCON, &dr,
 									C8051F_DR_FLASHCON_LEN);
 			// initiate the write operation
 			dr = buff[i];
-			c8051f_jtag_ind_write(C8051F_IR_FLASHDAT, &dr, 
+			c8051f_jtag_ind_write(C8051F_IR_FLASHDAT, &dr,
 									C8051F_DR_FLASHDAT_WLEN);
 			// set FLASHCON for poll operation
 			dr = 0;
-			c8051f_jtag_ind_write(C8051F_IR_FLASHCON, &dr, 
+			c8051f_jtag_ind_write(C8051F_IR_FLASHCON, &dr,
 									C8051F_DR_FLASHCON_LEN);
 			// poll for FLBusy
 			jtag_poll_flbusy(60, 0);
@@ -288,7 +288,7 @@ WRITE_TARGET_HANDLER(c8051fjtag)
 		{
 			if ((read_buf[i] & 0x06) != 0)
 			{
-				LOG_ERROR(ERRMSG_FAILURE_OPERATION_ADDR, "program flash", 
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION_ADDR, "program flash",
 							addr + i);
 				ret = ERRCODE_FAILURE_OPERATION;
 				break;
@@ -330,25 +330,25 @@ READ_TARGET_HANDLER(c8051fjtag)
 	case APPLICATION_CHAR:
 		// set FLASHADR to address to read from
 		dr = addr;
-		c8051f_jtag_ind_write(C8051F_IR_FLASHADR, &dr, 
+		c8051f_jtag_ind_write(C8051F_IR_FLASHADR, &dr,
 								C8051F_DR_FLASHADR_LEN);
 		
 		for (i = 0; i < size; i++)
 		{
 			// set FLASHCON for flash read operation(0x02)
 			dr = 0x02;
-			c8051f_jtag_ind_write(C8051F_IR_FLASHCON, &dr, 
+			c8051f_jtag_ind_write(C8051F_IR_FLASHCON, &dr,
 									C8051F_DR_FLASHCON_LEN);
 			// initiate the read operation, 0-bit
 			dr = 0;
 			c8051f_jtag_ind_read(C8051F_IR_FLASHDAT, &dr, 0);
 			// set FLASHCON for poll operation
 			dr = 0;
-			c8051f_jtag_ind_write(C8051F_IR_FLASHCON, &dr, 
+			c8051f_jtag_ind_write(C8051F_IR_FLASHCON, &dr,
 									C8051F_DR_FLASHCON_LEN);
 			// poll for FLBusy
 			jtag_poll_flbusy(0, 0);
-			c8051f_jtag_ind_read(C8051F_IR_FLASHDAT, read_buf + i, 
+			c8051f_jtag_ind_read(C8051F_IR_FLASHDAT, read_buf + i,
 									C8051F_DR_FLASHDAT_RLEN);
 		}
 		

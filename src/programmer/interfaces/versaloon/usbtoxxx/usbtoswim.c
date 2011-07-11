@@ -38,7 +38,7 @@ RESULT usbtoswim_fini(uint8_t interface_index)
 	return usbtoxxx_fini_command(USB_TO_SWIM, interface_index);
 }
 
-RESULT usbtoswim_config(uint8_t interface_index, uint8_t mHz, uint8_t cnt0, 
+RESULT usbtoswim_config(uint8_t interface_index, uint8_t mHz, uint8_t cnt0,
 						uint8_t cnt1)
 {
 	uint8_t buff[3];
@@ -71,7 +71,7 @@ RESULT usbtoswim_srst(uint8_t interface_index)
 	return usbtoxxx_reset_command(USB_TO_SWIM, interface_index, NULL, 0);
 }
 
-RESULT usbtoswim_wotf(uint8_t interface_index, uint8_t *data, uint16_t bytelen, 
+RESULT usbtoswim_wotf(uint8_t interface_index, uint8_t *data, uint16_t bytelen,
 						uint32_t addr)
 {
 #if PARAM_CHECK
@@ -86,11 +86,11 @@ RESULT usbtoswim_wotf(uint8_t interface_index, uint8_t *data, uint16_t bytelen,
 	SET_LE_U32(&versaloon_cmd_buf[2], addr);
 	memcpy(&versaloon_cmd_buf[6], data, bytelen);
 	
-	return usbtoxxx_out_command(USB_TO_SWIM, interface_index, 
+	return usbtoxxx_out_command(USB_TO_SWIM, interface_index,
 									versaloon_cmd_buf, bytelen + 6, 0);
 }
 
-RESULT usbtoswim_rotf(uint8_t interface_index, uint8_t *data, uint16_t bytelen, 
+RESULT usbtoswim_rotf(uint8_t interface_index, uint8_t *data, uint16_t bytelen,
 						uint32_t addr)
 {
 #if PARAM_CHECK
@@ -105,7 +105,7 @@ RESULT usbtoswim_rotf(uint8_t interface_index, uint8_t *data, uint16_t bytelen,
 	SET_LE_U32(&versaloon_cmd_buf[2], addr);
 	memset(&versaloon_cmd_buf[6], 0, bytelen);
 	
-	return usbtoxxx_in_command(USB_TO_SWIM, interface_index, 
+	return usbtoxxx_in_command(USB_TO_SWIM, interface_index,
 				versaloon_cmd_buf, bytelen + 6, bytelen, data, 0, bytelen, 0);
 }
 
@@ -123,7 +123,7 @@ RESULT usbtoswim_sync(uint8_t interface_index, uint8_t mHz)
 	
 	buff[0] = mHz;
 	
-	return usbtoxxx_sync_command(USB_TO_SWIM, interface_index, buff, 1, 
+	return usbtoxxx_sync_command(USB_TO_SWIM, interface_index, buff, 1,
 									0, NULL);
 }
 

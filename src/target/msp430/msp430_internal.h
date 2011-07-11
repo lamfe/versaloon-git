@@ -44,13 +44,13 @@ extern RESULT (*msp430jtagsbw_init)(uint8_t index);
 extern RESULT (*msp430jtagsbw_fini)(uint8_t index);
 extern RESULT (*msp430jtagsbw_config)(uint8_t index, uint8_t has_test);
 extern RESULT (*msp430jtagsbw_ir)(uint8_t index, uint8_t *ir, uint8_t want_ret);
-extern RESULT (*msp430jtagsbw_dr)(uint8_t index, uint32_t *dr, uint8_t len, 
+extern RESULT (*msp430jtagsbw_dr)(uint8_t index, uint32_t *dr, uint8_t len,
 									uint8_t want_ret);
 extern RESULT (*msp430jtagsbw_tclk)(uint8_t index, uint8_t value);
 extern RESULT (*msp430jtagsbw_tclk_strobe)(uint8_t index, uint16_t cnt);
 extern RESULT (*msp430jtagsbw_reset)(uint8_t index);
-extern RESULT (*msp430jtagsbw_poll)(uint8_t index, uint32_t dr, uint32_t mask, 
-									uint32_t value, uint8_t len, 
+extern RESULT (*msp430jtagsbw_poll)(uint8_t index, uint32_t dr, uint32_t mask,
+									uint32_t value, uint8_t len,
 									uint16_t poll_cnt, uint8_t toggle_tclk);
 
 // JTAG and SBW

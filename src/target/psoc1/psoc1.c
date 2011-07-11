@@ -41,7 +41,7 @@
 
 #define CUR_TARGET_STRING			PSOC1_STRING
 
-const struct program_area_map_t psoc1_program_area_map[] = 
+const struct program_area_map_t psoc1_program_area_map[] =
 {
 	{APPLICATION_CHAR, 1, 0, 0, 0, AREA_ATTR_EWR | AREA_ATTR_NP},
 	{APPLICATION_CHKSUM_CHAR, 1, 0, 0, 0, AREA_ATTR_R},
@@ -49,7 +49,7 @@ const struct program_area_map_t psoc1_program_area_map[] =
 	{0, 0, 0, 0, 0, 0}
 };
 
-const struct program_mode_t psoc1_program_mode[] = 
+const struct program_mode_t psoc1_program_mode[] =
 {
 	{'r', "", IFS_ISSP},
 	{'p', "", IFS_ISSP},
@@ -61,13 +61,13 @@ LEAVE_PROGRAM_MODE_HANDLER(psoc1);
 ERASE_TARGET_HANDLER(psoc1);
 WRITE_TARGET_HANDLER(psoc1);
 READ_TARGET_HANDLER(psoc1);
-const struct program_functions_t psoc1_program_functions = 
+const struct program_functions_t psoc1_program_functions =
 {
 	NULL,			// execute
-	ENTER_PROGRAM_MODE_FUNCNAME(psoc1), 
-	LEAVE_PROGRAM_MODE_FUNCNAME(psoc1), 
-	ERASE_TARGET_FUNCNAME(psoc1), 
-	WRITE_TARGET_FUNCNAME(psoc1), 
+	ENTER_PROGRAM_MODE_FUNCNAME(psoc1),
+	LEAVE_PROGRAM_MODE_FUNCNAME(psoc1),
+	ERASE_TARGET_FUNCNAME(psoc1),
+	WRITE_TARGET_FUNCNAME(psoc1),
 	READ_TARGET_FUNCNAME(psoc1)
 };
 
@@ -80,12 +80,12 @@ VSS_HANDLER(psoc1_help)
 	VSS_CHECK_ARGC(1);
 	PRINTF("\
 Usage of %s:\n\
-  -m,  --mode <MODE>                        set mode<r|p>\n\n", 
+  -m,  --mode <MODE>                        set mode<r|p>\n\n",
 			CUR_TARGET_STRING);
 	return ERROR_OK;
 }
 
-const struct vss_cmd_t psoc1_notifier[] = 
+const struct vss_cmd_t psoc1_notifier[] =
 {
 	VSS_CMD(	"help",
 				"print help information of current target for internal call",
@@ -214,7 +214,7 @@ RESULT issp_init3_half(uint8_t f9_1, uint8_t f9_2)
 	return ERROR_OK;
 }
 
-RESULT issp_call_ssc(uint8_t cmd, uint8_t id, uint8_t poll_ready, uint8_t * buf, 
+RESULT issp_call_ssc(uint8_t cmd, uint8_t id, uint8_t poll_ready, uint8_t * buf,
 					 uint8_t want_return)
 {
 	issp_sel_reg_bank(0x00);
@@ -405,13 +405,13 @@ WRITE_TARGET_HANDLER(psoc1)
 				// write data into sram
 				for (i = 0; i < page_size; i++)
 				{
-					issp_write_sram(PSOC1_ISSP_SSC_DEFAULT_POINTER + i, 
+					issp_write_sram(PSOC1_ISSP_SSC_DEFAULT_POINTER + i,
 									buff[block_addr + i]);
 				}
 				issp_ssc_set_clock(PSOC1_ISSP_SSC_DEFAULT_CLOCK_FLASH);
 				issp_ssc_set_delay(PSOC1_ISSP_SSC_DEFAULT_DELAY);
 				
-				ret = issp_call_ssc(PSOC1_SSC_CMD_WriteBlock, 
+				ret = issp_call_ssc(PSOC1_SSC_CMD_WriteBlock,
 									(uint8_t)(block & 0xFF), 1, &tmp8, 1);
 				if ((ret != ERROR_OK) || (tmp8 != PSOC1_ISSP_SSC_RETURN_OK))
 				{
@@ -440,7 +440,7 @@ WRITE_TARGET_HANDLER(psoc1)
 			}
 			for (i = 0; i < (page_num >> 2); i++)
 			{
-				issp_write_sram(PSOC1_ISSP_SSC_DEFAULT_POINTER + i, 
+				issp_write_sram(PSOC1_ISSP_SSC_DEFAULT_POINTER + i,
 								buff[lock_bank_addr + i]);
 			}
 			issp_ssc_set_clock(PSOC1_ISSP_SSC_DEFAULT_CLOCK_FLASH);
@@ -509,7 +509,7 @@ READ_TARGET_HANDLER(psoc1)
 				uint32_t block_num = bank * page_num + block;
 				uint32_t block_addr = block_num * page_size;
 				
-				ret = issp_call_ssc(PSOC1_SSC_CMD_ReadBlock, 
+				ret = issp_call_ssc(PSOC1_SSC_CMD_ReadBlock,
 									(uint8_t)(block & 0xFF), 1, &tmp8, 1);
 				if ((ret != ERROR_OK) || (tmp8 != PSOC1_ISSP_SSC_RETURN_OK))
 				{
@@ -519,7 +519,7 @@ READ_TARGET_HANDLER(psoc1)
 				
 				for (i = 0; i < page_size; i++)
 				{
-					issp_read_sram(PSOC1_ISSP_SSC_DEFAULT_POINTER + i, 
+					issp_read_sram(PSOC1_ISSP_SSC_DEFAULT_POINTER + i,
 									buff + block_addr + i);
 				}
 				
@@ -544,7 +544,7 @@ READ_TARGET_HANDLER(psoc1)
 
 ADJUST_SETTING_HANDLER(psoc1)
 {
-	struct chip_area_info_t *flash_checksum_info = 
+	struct chip_area_info_t *flash_checksum_info =
 									&param->chip_areas[APPLICATION_CHKSUM_IDX];
 	
 	REFERENCE_PARAMETER(pi);

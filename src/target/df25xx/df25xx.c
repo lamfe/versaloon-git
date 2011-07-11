@@ -45,13 +45,13 @@
 
 #define CUR_TARGET_STRING			DF25XX_STRING
 
-struct program_area_map_t df25xx_program_area_map[] = 
+struct program_area_map_t df25xx_program_area_map[] =
 {
 	{APPLICATION_CHAR, 1, 0, 0, 0, AREA_ATTR_EWR},
 	{0, 0, 0, 0, 0, 0}
 };
 
-const struct program_mode_t df25xx_program_mode[] = 
+const struct program_mode_t df25xx_program_mode[] =
 {
 	{'*', SET_FREQUENCY, IFS_SPI | IFS_GPIO},
 	{0, NULL, 0}
@@ -62,13 +62,13 @@ LEAVE_PROGRAM_MODE_HANDLER(df25xx);
 ERASE_TARGET_HANDLER(df25xx);
 WRITE_TARGET_HANDLER(df25xx);
 READ_TARGET_HANDLER(df25xx);
-const struct program_functions_t df25xx_program_functions = 
+const struct program_functions_t df25xx_program_functions =
 {
 	NULL,			// execute
-	ENTER_PROGRAM_MODE_FUNCNAME(df25xx), 
-	LEAVE_PROGRAM_MODE_FUNCNAME(df25xx), 
-	ERASE_TARGET_FUNCNAME(df25xx), 
-	WRITE_TARGET_FUNCNAME(df25xx), 
+	ENTER_PROGRAM_MODE_FUNCNAME(df25xx),
+	LEAVE_PROGRAM_MODE_FUNCNAME(df25xx),
+	ERASE_TARGET_FUNCNAME(df25xx),
+	WRITE_TARGET_FUNCNAME(df25xx),
 	READ_TARGET_FUNCNAME(df25xx)
 };
 
@@ -77,12 +77,12 @@ VSS_HANDLER(df25xx_help)
 	VSS_CHECK_ARGC(1);
 	PRINTF("\
 Usage of %s:\n\
-  -F,  --frequency <FREQUENCY>              set IIC frequency, in KHz\n\n", 
+  -F,  --frequency <FREQUENCY>              set IIC frequency, in KHz\n\n",
 			CUR_TARGET_STRING);
 	return ERROR_OK;
 }
 
-const struct vss_cmd_t df25xx_notifier[] = 
+const struct vss_cmd_t df25xx_notifier[] =
 {
 	VSS_CMD(	"help",
 				"print help information of current target for internal call",
@@ -98,14 +98,14 @@ const struct vss_cmd_t df25xx_notifier[] =
 static struct df25xx_drv_info_t df25xx_drv_info;
 static struct df25xx_drv_param_t df25xx_drv_param;
 static struct df25xx_drv_interface_t df25xx_drv_ifs;
-static struct mal_info_t df25xx_mal_info = 
+static struct mal_info_t df25xx_mal_info =
 {
 	{0, 0}, NULL
 };
-static struct dal_info_t df25xx_dal_info = 
+static struct dal_info_t df25xx_dal_info =
 {
-	&df25xx_drv_ifs, 
-	&df25xx_drv_param, 
+	&df25xx_drv_ifs,
+	&df25xx_drv_param,
 	&df25xx_drv_info,
 	&df25xx_mal_info,
 };
@@ -122,7 +122,7 @@ ENTER_PROGRAM_MODE_HANDLER(df25xx)
 	
 	if (pi->ifs_indexes != NULL)
 	{
-		if (ERROR_OK != dal_config_interface(DF25XX_STRING, pi->ifs_indexes, 
+		if (ERROR_OK != dal_config_interface(DF25XX_STRING, pi->ifs_indexes,
 												&df25xx_dal_info))
 		{
 			return ERROR_FAIL;
@@ -140,9 +140,9 @@ ENTER_PROGRAM_MODE_HANDLER(df25xx)
 	{
 		return ERROR_FAIL;
 	}
-	df25xx_mal_info.capacity.block_number = 
+	df25xx_mal_info.capacity.block_number =
 								param->chip_areas[APPLICATION_IDX].page_num;
-	df25xx_mal_info.capacity.block_size = 
+	df25xx_mal_info.capacity.block_size =
 								param->chip_areas[APPLICATION_IDX].page_size;
 	
 	return dal_commit();
@@ -184,7 +184,7 @@ WRITE_TARGET_HANDLER(df25xx)
 		}
 		size /= param->chip_areas[APPLICATION_IDX].page_size;
 		
-		if (ERROR_OK != mal.writeblock(MAL_IDX_DF25XX, &df25xx_dal_info, 
+		if (ERROR_OK != mal.writeblock(MAL_IDX_DF25XX, &df25xx_dal_info,
 										addr, buff, size))
 		{
 			return ERROR_FAIL;
@@ -218,7 +218,7 @@ READ_TARGET_HANDLER(df25xx)
 		}
 		size /= param->chip_areas[APPLICATION_IDX].page_size;
 		
-		if (ERROR_OK != mal.readblock(MAL_IDX_DF25XX, &df25xx_dal_info, 
+		if (ERROR_OK != mal.readblock(MAL_IDX_DF25XX, &df25xx_dal_info,
 										addr, buff, size))
 		{
 			return ERROR_FAIL;

@@ -36,16 +36,16 @@
 #include "hex.h"
 #include "s19.h"
 
-RESULT read_bin_file(FILE *bin_file, WRITE_MEMORY_CALLBACK callback, 
+RESULT read_bin_file(FILE *bin_file, WRITE_MEMORY_CALLBACK callback,
 					void *buffer, uint32_t seg_offset, uint32_t addr_offset);
-RESULT write_bin_file(FILE *bin_file, uint32_t file_addr, uint8_t *buff, 
-					uint32_t buff_size, uint32_t seg_addr, uint32_t start_addr, 
+RESULT write_bin_file(FILE *bin_file, uint32_t file_addr, uint8_t *buff,
+					uint32_t buff_size, uint32_t seg_addr, uint32_t start_addr,
 					ADJUST_MAPPING_CALLBACK remap);
 
 char *fileparser_cur_ext = NULL;
-static struct file_parser_t file_parser[] = 
+static struct file_parser_t file_parser[] =
 {
-	{"HEX", read_hex_file, write_hex_file, write_hex_file_end}, 
+	{"HEX", read_hex_file, write_hex_file, write_hex_file_end},
 	{"BIN", read_bin_file, write_bin_file, NULL},
 	{"S19", read_s19_file, write_s19_file, write_s19_file_end}
 };
@@ -98,13 +98,13 @@ static RESULT get_file_parser(char *file_name, uint8_t *index)
 	return ERROR_OK;
 }
 
-RESULT parse_file(char *file_name, FILE *file, void *para, 
-				  WRITE_MEMORY_CALLBACK callback, 
+RESULT parse_file(char *file_name, FILE *file, void *para,
+				  WRITE_MEMORY_CALLBACK callback,
 				  uint32_t seg_offset, uint32_t addr_offset)
 {
 	uint8_t i;
 	
-	if (ERROR_OK != get_file_parser(file_name, &i) 
+	if (ERROR_OK != get_file_parser(file_name, &i)
 		|| (NULL == file_parser[i].parse_file))
 	{
 		// hope target handler will handle this file
@@ -112,7 +112,7 @@ RESULT parse_file(char *file_name, FILE *file, void *para,
 	}
 	
 	fileparser_cur_ext = file_parser[i].ext;
-	return file_parser[i].parse_file(file, callback, para, 
+	return file_parser[i].parse_file(file, callback, para,
 										seg_offset, addr_offset);
 }
 
@@ -133,7 +133,7 @@ RESULT end_file(struct filelist *fl)
 				continue;
 			}
 			
-			if ((file_parser[i].end_file != NULL) 
+			if ((file_parser[i].end_file != NULL)
 				&& (ERROR_OK != file_parser[i].end_file(fl->file)))
 			{
 				return ERROR_FAIL;
@@ -146,8 +146,8 @@ RESULT end_file(struct filelist *fl)
 	return ERROR_OK;
 }
 
-RESULT save_target_to_file(struct filelist *fl, uint8_t *buff, 
-					uint32_t buff_size, uint32_t seg_addr, uint32_t start_addr, 
+RESULT save_target_to_file(struct filelist *fl, uint8_t *buff,
+					uint32_t buff_size, uint32_t seg_addr, uint32_t start_addr,
 					int32_t fseg, int32_t faddr, ADJUST_MAPPING_CALLBACK remap)
 {
 	uint8_t i;
@@ -160,7 +160,7 @@ RESULT save_target_to_file(struct filelist *fl, uint8_t *buff,
 	
 	// find a most suitable file to write
 	do {
-		if (((seg_addr + fseg) == fl->seg_offset) 
+		if (((seg_addr + fseg) == fl->seg_offset)
 			&& ((start_addr + faddr) >= fl->addr_offset))
 		{
 			target_file = fl;
@@ -189,18 +189,18 @@ RESULT save_target_to_file(struct filelist *fl, uint8_t *buff,
 		}
 	}
 	
-	if (ERROR_OK != get_file_parser(target_file->path, &i) 
+	if (ERROR_OK != get_file_parser(target_file->path, &i)
 		|| (NULL == file_parser[i].save_target_to_file))
 	{
 		return ERROR_FAIL;
 	}
 	
 	target_file->access = 1;
-	return file_parser[i].save_target_to_file(target_file->file, start_addr, 
+	return file_parser[i].save_target_to_file(target_file->file, start_addr,
 								buff, buff_size, seg_addr, start_addr, remap);
 }
 
-RESULT read_bin_file(FILE *bin_file, WRITE_MEMORY_CALLBACK callback, 
+RESULT read_bin_file(FILE *bin_file, WRITE_MEMORY_CALLBACK callback,
 					 void *buffer, uint32_t seg_offset, uint32_t addr_offset)
 {
 	uint8_t cur_buff[8];
@@ -224,7 +224,7 @@ RESULT read_bin_file(FILE *bin_file, WRITE_MEMORY_CALLBACK callback,
 			}
 		}
 		
-		ret = callback(fileparser_cur_ext, addr + addr_offset, seg_offset, 
+		ret = callback(fileparser_cur_ext, addr + addr_offset, seg_offset,
 						cur_buff, cur_len, buffer);
 		if (ret != ERROR_OK)
 		{
@@ -236,9 +236,9 @@ RESULT read_bin_file(FILE *bin_file, WRITE_MEMORY_CALLBACK callback,
 	return ERROR_OK;
 }
 
-RESULT write_bin_file(FILE *bin_file, uint32_t file_addr, 
-						uint8_t *buff, uint32_t buff_size, 
-						uint32_t seg_addr, uint32_t start_addr, 
+RESULT write_bin_file(FILE *bin_file, uint32_t file_addr,
+						uint8_t *buff, uint32_t buff_size,
+						uint32_t seg_addr, uint32_t start_addr,
 						ADJUST_MAPPING_CALLBACK remap)
 {
 	uint32_t file_size = 0;

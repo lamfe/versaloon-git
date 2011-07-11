@@ -41,13 +41,13 @@
 
 #define CUR_TARGET_STRING			HCS08_STRING
 
-const struct program_area_map_t hcs08_program_area_map[] = 
+const struct program_area_map_t hcs08_program_area_map[] =
 {
 	{APPLICATION_CHAR, 1, 0, 0, 0, AREA_ATTR_EWR},
 	{0, 0, 0, 0, 0, 0}
 };
 
-const struct program_mode_t hcs08_program_mode[] = 
+const struct program_mode_t hcs08_program_mode[] =
 {
 	{'b', "", IFS_BDM},
 	{0, NULL, 0}
@@ -58,13 +58,13 @@ LEAVE_PROGRAM_MODE_HANDLER(hcs08);
 ERASE_TARGET_HANDLER(hcs08);
 WRITE_TARGET_HANDLER(hcs08);
 READ_TARGET_HANDLER(hcs08);
-const struct program_functions_t hcs08_program_functions = 
+const struct program_functions_t hcs08_program_functions =
 {
 	NULL,			// execute
-	ENTER_PROGRAM_MODE_FUNCNAME(hcs08), 
-	LEAVE_PROGRAM_MODE_FUNCNAME(hcs08), 
-	ERASE_TARGET_FUNCNAME(hcs08), 
-	WRITE_TARGET_FUNCNAME(hcs08), 
+	ENTER_PROGRAM_MODE_FUNCNAME(hcs08),
+	LEAVE_PROGRAM_MODE_FUNCNAME(hcs08),
+	ERASE_TARGET_FUNCNAME(hcs08),
+	WRITE_TARGET_FUNCNAME(hcs08),
 	READ_TARGET_FUNCNAME(hcs08)
 };
 
@@ -73,12 +73,12 @@ VSS_HANDLER(hcs08_help)
 	VSS_CHECK_ARGC(1);
 	PRINTF("\
 Usage of %s:\n\
-  -m,  --mode <MODE>                        set mode<r|p>\n\n", 
+  -m,  --mode <MODE>                        set mode<r|p>\n\n",
 			CUR_TARGET_STRING);
 	return ERROR_OK;
 }
 
-const struct vss_cmd_t hcs08_notifier[] = 
+const struct vss_cmd_t hcs08_notifier[] =
 {
 	VSS_CMD(	"help",
 				"print help information of current target for internal call",
@@ -199,7 +199,7 @@ static RESULT hcs08_flash_cmd(uint16_t addr, uint8_t value, uint8_t cmd)
 	{
 		return ERROR_FAIL;
 	}
-	if (ERROR_OK != hcs08_write_byte(HCS08_FSTAT_ADDR, 
+	if (ERROR_OK != hcs08_write_byte(HCS08_FSTAT_ADDR,
 				HCS08_FSTAT_FCBEF | HCS08_FSTAT_FPVIOL | HCS08_FSTAT_FACCERR))
 	{
 		return ERROR_FAIL;
@@ -264,14 +264,14 @@ ENTER_PROGRAM_MODE_HANDLER(hcs08)
 		hcs08_flash_div |= (kernel_khz / 175) - 1;
 	}
 	hcs08_write_byte(HCS08_FCDIV_ADDR, hcs08_flash_div);
-	hcs08_write_byte(HCS08_FSTAT_ADDR, 
+	hcs08_write_byte(HCS08_FSTAT_ADDR,
 						HCS08_FSTAT_FPVIOL | HCS08_FSTAT_FACCERR);
 	hcs08_write_byte(HCS08_FPROT_ADDR, 0xFF);
 	if (ERROR_OK != commit())
 	{
 		return ERROR_FAIL;
 	}
-	LOG_INFO("flash running at %dkhz", 
+	LOG_INFO("flash running at %dkhz",
 				kernel_khz / (1 + (hcs08_flash_div & HCS08_FCDIV_DIVMASK)));
 	return ERROR_OK;
 }
@@ -342,10 +342,10 @@ WRITE_TARGET_HANDLER(hcs08)
 	case APPLICATION_CHAR:
 		for (i = 0; i < size; i++)
 		{
-			if ((addr + i < HCS08_NONVIOL_REG_START) 
+			if ((addr + i < HCS08_NONVIOL_REG_START)
 				|| (addr + i > HCS08_NONVIOL_REG_END))
 			{
-				ret = hcs08_flash_cmd((uint16_t)addr + i, buff[i], 
+				ret = hcs08_flash_cmd((uint16_t)addr + i, buff[i],
 										HCS08_FCMD_MBURSTPROG);
 				if (ret != ERROR_OK)
 				{

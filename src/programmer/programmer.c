@@ -43,7 +43,7 @@ VSS_HANDLER(programmer_list);
 VSS_HANDLER(programmer_define);
 VSS_HANDLER(virtualprog_define);
 
-struct vss_cmd_t programmer_cmd[] = 
+struct vss_cmd_t programmer_cmd[] =
 {
 	VSS_CMD(	"display-programmer",
 				"list programmers connected, format: display-programmer/L",
@@ -107,7 +107,7 @@ VSS_HANDLER(virtualprog_define)
 	}
 	if (ERROR_OK != virtual_interface_init(ifs, mode))
 	{
-		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "initialize programmer: ", 
+		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "initialize programmer: ",
 					argv[1]);
 		return ERROR_FAIL;
 	}
@@ -123,7 +123,7 @@ VSS_HANDLER(programmer_define)
 	programmer = (1 == argc) ? NULL : (char *)argv[1];
 	if (ERROR_OK != interface_init(programmer))
 	{
-		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "initialize programmer: ", 
+		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "initialize programmer: ",
 					argv[1]);
 		return ERROR_FAIL;
 	}

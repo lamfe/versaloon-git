@@ -61,7 +61,7 @@ RESULT usbtopwr_output(uint8_t interface_index, uint16_t mV)
 	}
 #endif
 	
-	return usbtoxxx_out_command(USB_TO_POWER, interface_index, (uint8_t *)&mV, 
+	return usbtoxxx_out_command(USB_TO_POWER, interface_index, (uint8_t *)&mV,
 								2, 0);
 }
 

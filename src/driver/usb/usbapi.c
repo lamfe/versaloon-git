@@ -35,7 +35,7 @@
 static struct usbapi_param_t usb_param;
 
 VSS_HANDLER(usbapi_param);
-struct vss_cmd_t usbapi_cmd[] = 
+struct vss_cmd_t usbapi_cmd[] =
 {
 	VSS_CMD(	"usb",
 				"set usb device, format: "
@@ -59,7 +59,7 @@ VSS_HANDLER(usbapi_param)
 	uint8_t usb_setting[2 * 256 + 7], *ptr;
 	RESULT success;
 	uint8_t i;
-	char* formats[] = 
+	char* formats[] =
 	{
 		// VID_PID_EPIN_EPOUT_INTERFACE_SERIALSTRING
 		// vid(2d):pid(2d):epin(1d):epout(1d):interface(1d):serialstring(s)
@@ -78,7 +78,7 @@ VSS_HANDLER(usbapi_param)
 	for (i = 0; i < dimof(formats); i++)
 	{
 		memset(usb_setting, 0, sizeof(usb_setting));
-		success = strparser_parse((char*)argv[1], formats[i], 
+		success = strparser_parse((char*)argv[1], formats[i],
 									usb_setting, sizeof(usb_setting));
 		if (ERROR_OK == success)
 		{
@@ -96,15 +96,15 @@ VSS_HANDLER(usbapi_param)
 	ptr = usb_setting;
 	if (3 == i)
 	{
-		strncpy(usb_param.serialstring, (char*)&ptr[0], 
+		strncpy(usb_param.serialstring, (char*)&ptr[0],
 					sizeof(usb_param.serialstring));
 	}
 	else if (2 == i)
 	{
-		strncpy(usb_param.typestring, (char*)&ptr[0], 
+		strncpy(usb_param.typestring, (char*)&ptr[0],
 					sizeof(usb_param.typestring));
-		strncpy(usb_param.serialstring, 
-					(char*)&ptr[0] + strlen(usb_param.typestring) + 1, 
+		strncpy(usb_param.serialstring,
+					(char*)&ptr[0] + strlen(usb_param.typestring) + 1,
 					sizeof(usb_param.serialstring));
 	}
 	else if (1 == i)
@@ -123,19 +123,19 @@ VSS_HANDLER(usbapi_param)
 		usb_param.epin = ptr[4] | 0x80;
 		usb_param.epout = ptr[5] & 0x7F;
 		usb_param.interface = ptr[6];
-		strncpy(usb_param.serialstring, (char*)&ptr[7], 
+		strncpy(usb_param.serialstring, (char*)&ptr[7],
 					sizeof(usb_param.serialstring));
 	}
 	
 	if (strlen(usb_param.serialstring) > 0)
 	{
-		LOG_DEBUG("usb_device is on 0x%04X:0x%04X(0x%02x_0x%02X):%s.", 
-			usb_param.vid, usb_param.pid, usb_param.epin, usb_param.epout, 
+		LOG_DEBUG("usb_device is on 0x%04X:0x%04X(0x%02x_0x%02X):%s.",
+			usb_param.vid, usb_param.pid, usb_param.epin, usb_param.epout,
 			usb_param.serialstring);
 	}
 	else
 	{
-		LOG_DEBUG("usb_device is on 0x%04X:0x%04X(0x%02x_0x%02X).", 
+		LOG_DEBUG("usb_device is on 0x%04X:0x%04X(0x%02x_0x%02X).",
 			usb_param.vid, usb_param.pid, usb_param.epin, usb_param.epout);
 	}
 	return ERROR_OK;
@@ -144,7 +144,7 @@ VSS_HANDLER(usbapi_param)
 // usb_set_param will not ser serialstring
 // because serialstring can be different for same usb_device type
 // to set serialstring, please use --usb or -U
-void usb_set_param(uint16_t vid, uint16_t pid, uint8_t epin, uint8_t epout, 
+void usb_set_param(uint16_t vid, uint16_t pid, uint8_t epin, uint8_t epout,
 					uint8_t interface)
 {
 	usb_param.vid = vid;
@@ -209,7 +209,7 @@ char *usb_param_serial(void)
 	}
 }
 
-static uint8_t usb_check_string(usb_dev_handle *usb, uint8_t stringidx, 
+static uint8_t usb_check_string(usb_dev_handle *usb, uint8_t stringidx,
 								char * string, char * buff, uint16_t buf_size)
 {
 	int len;
@@ -252,8 +252,8 @@ free_and_return:
 	return ret;
 }
 
-uint32_t print_usb_devices(uint16_t VID, uint16_t PID, int8_t serialindex, 
-							char *serialstring, int8_t productindex, 
+uint32_t print_usb_devices(uint16_t VID, uint16_t PID, int8_t serialindex,
+							char *serialstring, int8_t productindex,
 							char *productstring)
 {
 	usb_dev_handle *dev_handle = NULL;
@@ -273,23 +273,23 @@ uint32_t print_usb_devices(uint16_t VID, uint16_t PID, int8_t serialindex,
 	{
 		for (dev = bus->devices; dev; dev = dev->next)
 		{
-			if ((dev->descriptor.idVendor == VID) 
+			if ((dev->descriptor.idVendor == VID)
 				&& (dev->descriptor.idProduct == PID))
 			{
 				dev_handle = usb_open(dev);
 				if (NULL == dev_handle)
 				{
-					LOG_ERROR("failed to open %04X:%04X, %s", VID, PID, 
+					LOG_ERROR("failed to open %04X:%04X, %s", VID, PID,
 								usb_strerror());
 					continue;
 				}
 				
 				// check description string
-				if (((productstring != NULL) && (productindex >= 0) 
-						&& !usb_check_string(dev_handle, productindex, 
+				if (((productstring != NULL) && (productindex >= 0)
+						&& !usb_check_string(dev_handle, productindex,
 												productstring, NULL, 0))
-				    || ((serialindex >= 0) 
-						&& !usb_check_string(dev_handle, serialindex, serialstring, 
+				    || ((serialindex >= 0)
+						&& !usb_check_string(dev_handle, serialindex, serialstring,
 								 (char*)buf, sizeof(buf))))
 				{
 					usb_close(dev_handle);
@@ -302,12 +302,12 @@ uint32_t print_usb_devices(uint16_t VID, uint16_t PID, int8_t serialindex,
 					// print current device
 					if (strlen((char *)buf) > 0)
 					{
-						PRINTF("%s%d: 0x%04X:0x%04X:%s on %s.\n", 
+						PRINTF("%s%d: 0x%04X:0x%04X:%s on %s.\n",
 								productstring, c, VID, PID, buf, dev->filename);
 					}
 					else
 					{
-						PRINTF("%s%d: 0x%04X:0x%04X on %s.\n", 
+						PRINTF("%s%d: 0x%04X:0x%04X on %s.\n",
 								productstring, c, VID, PID, dev->filename);
 					}
 					c++;
@@ -328,8 +328,8 @@ uint32_t print_usb_devices(uint16_t VID, uint16_t PID, int8_t serialindex,
 	return c;
 }
 
-usb_dev_handle* find_usb_device(uint16_t VID, uint16_t PID, uint8_t interface, 
-								int8_t serialindex, char *serialstring, 
+usb_dev_handle* find_usb_device(uint16_t VID, uint16_t PID, uint8_t interface,
+								int8_t serialindex, char *serialstring,
 								int8_t productindex, char *productstring)
 {
 	usb_dev_handle *dev_handle = NULL;
@@ -346,23 +346,23 @@ usb_dev_handle* find_usb_device(uint16_t VID, uint16_t PID, uint8_t interface,
 	{
 		for (dev = bus->devices; dev; dev = dev->next)
 		{
-			if ((dev->descriptor.idVendor == VID) 
+			if ((dev->descriptor.idVendor == VID)
 				&& (dev->descriptor.idProduct == PID))
 			{
 				dev_handle = usb_open(dev);
 				if (NULL == dev_handle)
 				{
-					LOG_ERROR("failed to open %04X:%04X, %s", VID, PID, 
+					LOG_ERROR("failed to open %04X:%04X, %s", VID, PID,
 								usb_strerror());
 					continue;
 				}
 				
 				// check description string
-				if (((productstring != NULL) && (productindex >= 0) 
-						&& !usb_check_string(dev_handle, productindex, 
+				if (((productstring != NULL) && (productindex >= 0)
+						&& !usb_check_string(dev_handle, productindex,
 												productstring, NULL, 0))
-					|| ((serialstring != NULL) && (serialindex >= 0) 
-						&& !usb_check_string(dev_handle, serialindex, 
+					|| ((serialstring != NULL) && (serialindex >= 0)
+						&& !usb_check_string(dev_handle, serialindex,
 												serialstring, NULL, 0)))
 				{
 					usb_close(dev_handle);
@@ -372,7 +372,7 @@ usb_dev_handle* find_usb_device(uint16_t VID, uint16_t PID, uint8_t interface,
 				
 				if (usb_claim_interface(dev_handle, interface) != 0)
 				{
-					LOG_ERROR(ERRMSG_FAILURE_OPERATION_MESSAGE, 
+					LOG_ERROR(ERRMSG_FAILURE_OPERATION_MESSAGE,
 								"claim interface", usb_strerror());
 					usb_close(dev_handle);
 					dev_handle = NULL;

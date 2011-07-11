@@ -46,13 +46,13 @@
 
 #define CUR_TARGET_STRING			EE93CX6_STRING
 
-struct program_area_map_t ee93cx6_program_area_map[] = 
+struct program_area_map_t ee93cx6_program_area_map[] =
 {
 	{EEPROM_CHAR, 1, 0, 0, 0, AREA_ATTR_EWR | AREA_ATTR_EP},
 	{0, 0, 0, 0, 0, 0}
 };
 
-const struct program_mode_t ee93cx6_program_mode[] = 
+const struct program_mode_t ee93cx6_program_mode[] =
 {
 	{'b', SET_FREQUENCY, IFS_MICROWIRE},
 	{'w', SET_FREQUENCY, IFS_MICROWIRE},
@@ -64,13 +64,13 @@ LEAVE_PROGRAM_MODE_HANDLER(ee93cx6);
 ERASE_TARGET_HANDLER(ee93cx6);
 WRITE_TARGET_HANDLER(ee93cx6);
 READ_TARGET_HANDLER(ee93cx6);
-const struct program_functions_t ee93cx6_program_functions = 
+const struct program_functions_t ee93cx6_program_functions =
 {
 	NULL,			// execute
-	ENTER_PROGRAM_MODE_FUNCNAME(ee93cx6), 
-	LEAVE_PROGRAM_MODE_FUNCNAME(ee93cx6), 
-	ERASE_TARGET_FUNCNAME(ee93cx6), 
-	WRITE_TARGET_FUNCNAME(ee93cx6), 
+	ENTER_PROGRAM_MODE_FUNCNAME(ee93cx6),
+	LEAVE_PROGRAM_MODE_FUNCNAME(ee93cx6),
+	ERASE_TARGET_FUNCNAME(ee93cx6),
+	WRITE_TARGET_FUNCNAME(ee93cx6),
 	READ_TARGET_FUNCNAME(ee93cx6)
 };
 
@@ -82,7 +82,7 @@ VSS_HANDLER(ee93cx6_help)
 	PRINTF("\
 Usage of %s:\n\
   -F,  --frequency <FREQUENCY>              set MicroWire frequency, in KHz\n\
-  -m,  --mode <MODE>                        set mode<b|w>\n\n", 
+  -m,  --mode <MODE>                        set mode<b|w>\n\n",
 			CUR_TARGET_STRING);
 	return ERROR_OK;
 }
@@ -106,7 +106,7 @@ VSS_HANDLER(ee93cx6_mode)
 	return ERROR_OK;
 }
 
-const struct vss_cmd_t ee93cx6_notifier[] = 
+const struct vss_cmd_t ee93cx6_notifier[] =
 {
 	VSS_CMD(	"help",
 				"print help information of current target for internal call",
@@ -124,14 +124,14 @@ const struct vss_cmd_t ee93cx6_notifier[] =
 
 static struct ee93cx6_drv_param_t ee93cx6_drv_param;
 static struct ee93cx6_drv_interface_t ee93cx6_drv_ifs;
-static struct mal_info_t ee93cx6_mal_info = 
+static struct mal_info_t ee93cx6_mal_info =
 {
 	{0, 0}, NULL
 };
-static struct dal_info_t ee93cx6_dal_info = 
+static struct dal_info_t ee93cx6_dal_info =
 {
-	&ee93cx6_drv_ifs, 
-	&ee93cx6_drv_param, 
+	&ee93cx6_drv_ifs,
+	&ee93cx6_drv_param,
 	NULL,
 	&ee93cx6_mal_info,
 };
@@ -148,7 +148,7 @@ ENTER_PROGRAM_MODE_HANDLER(ee93cx6)
 	
 	if (pi->ifs_indexes != NULL)
 	{
-		if (ERROR_OK != dal_config_interface(EE93CX6_STRING, pi->ifs_indexes, 
+		if (ERROR_OK != dal_config_interface(EE93CX6_STRING, pi->ifs_indexes,
 												&ee93cx6_dal_info))
 		{
 			return ERROR_FAIL;
@@ -159,9 +159,9 @@ ENTER_PROGRAM_MODE_HANDLER(ee93cx6)
 		ee93cx6_drv_ifs.mw_port = 0;
 	}
 	
-	ee93cx6_drv_param.addr_bitlen = 
+	ee93cx6_drv_param.addr_bitlen =
 							(uint8_t)param->param[EE93CX6_PARAM_ADDR_BITLEN];
-	ee93cx6_drv_param.cmd_bitlen = 
+	ee93cx6_drv_param.cmd_bitlen =
 							(uint8_t)param->param[EE93CX6_PARAM_OPCODE_BITLEN];
 	ee93cx6_drv_param.iic_khz = pi->frequency;
 	if (EE93CX6_MODE_BYTE == ee93cx6_origination_mode)
@@ -176,9 +176,9 @@ ENTER_PROGRAM_MODE_HANDLER(ee93cx6)
 	{
 		return ERROR_FAIL;
 	}
-	ee93cx6_mal_info.capacity.block_size = 
+	ee93cx6_mal_info.capacity.block_size =
 										param->chip_areas[EEPROM_IDX].page_size;
-	ee93cx6_mal_info.capacity.block_number = 
+	ee93cx6_mal_info.capacity.block_number =
 										param->chip_areas[EEPROM_IDX].page_num;
 	
 	return dal_commit();
@@ -220,7 +220,7 @@ WRITE_TARGET_HANDLER(ee93cx6)
 		}
 		size /= param->chip_areas[EEPROM_IDX].page_size;
 		
-		if (ERROR_OK != mal.writeblock(MAL_IDX_EE93CX6, &ee93cx6_dal_info, 
+		if (ERROR_OK != mal.writeblock(MAL_IDX_EE93CX6, &ee93cx6_dal_info,
 										addr, buff, size))
 		{
 			return ERROR_FAIL;
@@ -245,7 +245,7 @@ READ_TARGET_HANDLER(ee93cx6)
 		}
 		size /= param->chip_areas[EEPROM_IDX].page_size;
 		
-		if (ERROR_OK != mal.readblock(MAL_IDX_EE93CX6, &ee93cx6_dal_info, 
+		if (ERROR_OK != mal.readblock(MAL_IDX_EE93CX6, &ee93cx6_dal_info,
 										addr, buff, size))
 		{
 			return ERROR_FAIL;

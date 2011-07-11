@@ -48,13 +48,13 @@ LEAVE_PROGRAM_MODE_HANDLER(lpcarmisp);
 ERASE_TARGET_HANDLER(lpcarmisp);
 WRITE_TARGET_HANDLER(lpcarmisp);
 READ_TARGET_HANDLER(lpcarmisp);
-struct program_functions_t lpcarmisp_program_functions = 
+struct program_functions_t lpcarmisp_program_functions =
 {
 	NULL,			// execute
-	ENTER_PROGRAM_MODE_FUNCNAME(lpcarmisp), 
-	LEAVE_PROGRAM_MODE_FUNCNAME(lpcarmisp), 
-	ERASE_TARGET_FUNCNAME(lpcarmisp), 
-	WRITE_TARGET_FUNCNAME(lpcarmisp), 
+	ENTER_PROGRAM_MODE_FUNCNAME(lpcarmisp),
+	LEAVE_PROGRAM_MODE_FUNCNAME(lpcarmisp),
+	ERASE_TARGET_FUNCNAME(lpcarmisp),
+	WRITE_TARGET_FUNCNAME(lpcarmisp),
 	READ_TARGET_FUNCNAME(lpcarmisp)
 };
 
@@ -90,7 +90,7 @@ static RESULT uudecode(char *str, uint8_t *data, uint8_t *len)
 	uint32_t value;
 	uint8_t want_len = *len;
 	
-	if ((NULL == str) || (NULL == data) || (NULL == len) || (0 == strlen(str)) 
+	if ((NULL == str) || (NULL == data) || (NULL == len) || (0 == strlen(str))
 		|| (str[0] < 33) || (str[0] > 77))
 	{
 		return ERROR_FAIL;
@@ -108,7 +108,7 @@ static RESULT uudecode(char *str, uint8_t *data, uint8_t *len)
 	loop = (*len + 2) / 3;
 	for (i = 0; i < loop; i++)
 	{
-		value = ((str[0] & 0x3F) << 18) + ((str[1] & 0x3F) << 12) 
+		value = ((str[0] & 0x3F) << 18) + ((str[1] & 0x3F) << 12)
 				+ ((str[2] & 0x3F) << 6) + ((str[3] & 0x3F) << 0);
 		if (want_len)
 		{
@@ -194,7 +194,7 @@ static RESULT uu_send(uint8_t *data, uint32_t size)
 				int32_t comm_ret1;
 				
 				comm_ret1 = comm_read((uint8_t *)&sum[comm_ret], 4);
-				if ((comm_ret1 < 0) || (sum[comm_ret + comm_ret1 - 2] != '\r') 
+				if ((comm_ret1 < 0) || (sum[comm_ret + comm_ret1 - 2] != '\r')
 					|| (sum[comm_ret + comm_ret1 - 1] != '\n'))
 				{
 					return ERROR_FAIL;
@@ -268,7 +268,7 @@ static RESULT uu_recv(uint8_t *data, uint32_t size)
 			int32_t comm_ret1;
 			
 			comm_ret1 = comm_read((uint8_t *)&str[comm_ret], 10);
-			if ((comm_ret1 < 0) || (str[comm_ret + comm_ret1 - 2] != '\r') 
+			if ((comm_ret1 < 0) || (str[comm_ret + comm_ret1 - 2] != '\r')
 				|| (str[comm_ret + comm_ret1 - 1] != '\n'))
 			{
 				return ERROR_FAIL;
@@ -278,7 +278,7 @@ static RESULT uu_recv(uint8_t *data, uint32_t size)
 		// remove \r\n
 		str[comm_data_size - 2] = '\0';
 		len_tmp = cur_size;
-		if ((ERROR_OK != uudecode(str, data, &len_tmp)) 
+		if ((ERROR_OK != uudecode(str, data, &len_tmp))
 			|| (len_tmp != cur_size))
 		{
 			return ERROR_FAIL;
@@ -335,7 +335,7 @@ static RESULT uu_recv(uint8_t *data, uint32_t size)
 #define LPCARMISP_CMD_READSERIAL		"N"
 #define LPCARMISP_RPL_SUCCESS			"0\r\n"
 
-static RESULT lpcarmisp_transact(char *buff, uint8_t echo, char *reply, 
+static RESULT lpcarmisp_transact(char *buff, uint8_t echo, char *reply,
 									uint32_t *reply_size)
 {
 	int32_t comm_ret;
@@ -400,13 +400,13 @@ static uint8_t cmd_argc, reply_argc;
 static char *cmd_argv[4], *reply_argv[4];
 static char reply_buff[64];
 static char cmd_buff[64];
-static RESULT lpcarmisp_process(uint8_t cmd_argc, char **cmd_argv, 
+static RESULT lpcarmisp_process(uint8_t cmd_argc, char **cmd_argv,
 				uint32_t *reply_size, uint8_t *reply_argc, char **reply_argv)
 {
 	uint8_t i, new;
 	uint32_t len;
 	
-	if ((0 == cmd_argc) || (NULL == cmd_argv) || (NULL == reply_size) 
+	if ((0 == cmd_argc) || (NULL == cmd_argv) || (NULL == reply_size)
 		|| (NULL == reply_argc) || (NULL == reply_argv))
 	{
 		return ERROR_FAIL;
@@ -433,7 +433,7 @@ static RESULT lpcarmisp_process(uint8_t cmd_argc, char **cmd_argv,
 	if (strstr(reply_buff, LPCARMISP_RPL_SUCCESS) != reply_buff)
 	{
 		LOG_BYTE_BUF(reply_buff, *reply_size, LOG_DEBUG, "%c", 255);
-		LOG_ERROR(ERRMSG_FAILURE_OPERATION_ERRCODE, "get success sesult", 
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION_ERRCODE, "get success sesult",
 					(int)strtoul(reply_buff, NULL, 0));
 		return ERROR_FAIL;
 	}
@@ -493,10 +493,10 @@ static RESULT lpcarmisp_sync(uint32_t kernel_khz)
 	comm_flush();
 	
 	reply_size = strlen(LPCARMISP_RPL_SYNCED);
-	if (ERROR_OK != lpcarmisp_transact(LPCARMISP_CMD_SYNC, 0, buffer, 
+	if (ERROR_OK != lpcarmisp_transact(LPCARMISP_CMD_SYNC, 0, buffer,
 										&reply_size))
 	{
-//		if (!reply_size && strcmp(buffer, LPCARMISP_RPL_OK) 
+//		if (!reply_size && strcmp(buffer, LPCARMISP_RPL_OK)
 //			&& strcmp(buffer, LPCARMISP_RPL_SUCCESS))
 		{
 			lpcarmisp_abort();
@@ -505,13 +505,13 @@ static RESULT lpcarmisp_sync(uint32_t kernel_khz)
 	}
 	if (strcmp(buffer, LPCARMISP_RPL_SYNCED))
 	{
-		LOG_DEBUG(ERRMSG_FAILURE_OPERATION_ERRSTRING, 
+		LOG_DEBUG(ERRMSG_FAILURE_OPERATION_ERRSTRING,
 					"receive sync reply", buffer);
 		return ERROR_FAIL;
 	}
 	
 	reply_size = strlen(LPCARMISP_RPL_OK);
-	if (ERROR_OK != lpcarmisp_transact(LPCARMISP_CMD_SYNCED, 1, buffer, 
+	if (ERROR_OK != lpcarmisp_transact(LPCARMISP_CMD_SYNCED, 1, buffer,
 										&reply_size))
 	{
 		LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "run synced command");
@@ -519,14 +519,14 @@ static RESULT lpcarmisp_sync(uint32_t kernel_khz)
 	}
 	if (strcmp(buffer, LPCARMISP_RPL_OK))
 	{
-		LOG_DEBUG(ERRMSG_FAILURE_OPERATION_ERRSTRING, 
+		LOG_DEBUG(ERRMSG_FAILURE_OPERATION_ERRSTRING,
 					"receive synced reply", buffer);
 		return ERROR_FAIL;
 	}
 	
 	sprintf(cmd_buff, "%d\r", kernel_khz);
 	reply_size = strlen(LPCARMISP_RPL_OK);
-	if (ERROR_OK != lpcarmisp_transact(cmd_buff, 1, buffer, 
+	if (ERROR_OK != lpcarmisp_transact(cmd_buff, 1, buffer,
 										&reply_size))
 	{
 		LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "run kernel_khz command");
@@ -534,7 +534,7 @@ static RESULT lpcarmisp_sync(uint32_t kernel_khz)
 	}
 	if (strcmp(buffer, LPCARMISP_RPL_OK))
 	{
-		LOG_DEBUG(ERRMSG_FAILURE_OPERATION_ERRSTRING, 
+		LOG_DEBUG(ERRMSG_FAILURE_OPERATION_ERRSTRING,
 					"receive synced reply", buffer);
 		return ERROR_FAIL;
 	}
@@ -550,7 +550,7 @@ static RESULT lpcarmisp_unlock(void)
 	cmd_argv[1] = "23130";
 	cmd_argc = 2;
 	reply_size = strlen(LPCARMISP_RPL_SUCCESS);
-	if (ERROR_OK != lpcarmisp_process(cmd_argc, (char **)cmd_argv, 
+	if (ERROR_OK != lpcarmisp_process(cmd_argc, (char **)cmd_argv,
 							&reply_size, &reply_argc, (char **)reply_argv))
 	{
 		LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "run echo command");
@@ -568,7 +568,7 @@ static RESULT lpcarmisp_echo(uint8_t on)
 	cmd_argv[1] = on ? "1" : "0";
 	cmd_argc = 2;
 	reply_size = strlen(LPCARMISP_RPL_SUCCESS);
-	if (ERROR_OK != lpcarmisp_process(cmd_argc, (char **)cmd_argv, 
+	if (ERROR_OK != lpcarmisp_process(cmd_argc, (char **)cmd_argv,
 							&reply_size, &reply_argc, (char **)reply_argv))
 	{
 		LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "run echo command");
@@ -587,7 +587,7 @@ static RESULT lpcarmisp_echo(uint8_t on)
 	return ERROR_OK;
 }
 
-static RESULT lpcarmisp_write_to_ram(uint32_t addr, uint8_t *buff, 
+static RESULT lpcarmisp_write_to_ram(uint32_t addr, uint8_t *buff,
 										uint32_t size)
 {
 	uint32_t reply_size;
@@ -605,7 +605,7 @@ static RESULT lpcarmisp_write_to_ram(uint32_t addr, uint8_t *buff,
 	cmd_argv[2] = size_str;
 	cmd_argc = 3;
 	reply_size = strlen(LPCARMISP_RPL_SUCCESS);
-	if (ERROR_OK != lpcarmisp_process(cmd_argc, (char **)cmd_argv, 
+	if (ERROR_OK != lpcarmisp_process(cmd_argc, (char **)cmd_argv,
 							&reply_size, &reply_argc, (char **)reply_argv))
 	{
 		LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "run prepare sectors command");
@@ -620,7 +620,7 @@ static RESULT lpcarmisp_write_to_ram(uint32_t addr, uint8_t *buff,
 	return ERROR_OK;
 }
 
-static RESULT lpcarmisp_read_memory(uint32_t addr, uint8_t *buff, 
+static RESULT lpcarmisp_read_memory(uint32_t addr, uint8_t *buff,
 										uint32_t size)
 {
 	uint32_t reply_size;
@@ -638,7 +638,7 @@ static RESULT lpcarmisp_read_memory(uint32_t addr, uint8_t *buff,
 	cmd_argv[2] = size_str;
 	cmd_argc = 3;
 	reply_size = strlen(LPCARMISP_RPL_SUCCESS);
-	if (ERROR_OK != lpcarmisp_process(cmd_argc, (char **)cmd_argv, 
+	if (ERROR_OK != lpcarmisp_process(cmd_argc, (char **)cmd_argv,
 							&reply_size, &reply_argc, (char **)reply_argv))
 	{
 		LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "run prepare sectors command");
@@ -654,7 +654,7 @@ static RESULT lpcarmisp_read_memory(uint32_t addr, uint8_t *buff,
 	return ERROR_OK;
 }
 
-static RESULT lpcarmisp_prepare_sectors(uint8_t start_sector, 
+static RESULT lpcarmisp_prepare_sectors(uint8_t start_sector,
 										uint8_t end_sector)
 {
 	uint32_t reply_size;
@@ -667,7 +667,7 @@ static RESULT lpcarmisp_prepare_sectors(uint8_t start_sector,
 	cmd_argv[2] = end_sector_str;
 	cmd_argc = 3;
 	reply_size = strlen(LPCARMISP_RPL_SUCCESS);
-	if (ERROR_OK != lpcarmisp_process(cmd_argc, (char **)cmd_argv, 
+	if (ERROR_OK != lpcarmisp_process(cmd_argc, (char **)cmd_argv,
 							&reply_size, &reply_argc, (char **)reply_argv))
 	{
 		LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "run prepare sectors command");
@@ -677,13 +677,13 @@ static RESULT lpcarmisp_prepare_sectors(uint8_t start_sector,
 	return ERROR_OK;
 }
 
-static RESULT lpcarmisp_copy_ram_to_flash(uint32_t flash_addr, 
+static RESULT lpcarmisp_copy_ram_to_flash(uint32_t flash_addr,
 					uint32_t ram_addr, uint32_t size)
 {
 	uint32_t reply_size;
 	char flash_addr_str[11], ram_addr_str[11], size_str[11];
 	
-	if ((flash_addr & 0xFF) 
+	if ((flash_addr & 0xFF)
 		|| ((size != 256) && (size != 512) && (size != 1024) && (size != 4096)))
 	{
 		return ERROR_FAIL;
@@ -698,7 +698,7 @@ static RESULT lpcarmisp_copy_ram_to_flash(uint32_t flash_addr,
 	cmd_argv[3] = size_str;
 	cmd_argc = 4;
 	reply_size = strlen(LPCARMISP_RPL_SUCCESS);
-	if (ERROR_OK != lpcarmisp_process(cmd_argc, (char **)cmd_argv, 
+	if (ERROR_OK != lpcarmisp_process(cmd_argc, (char **)cmd_argv,
 							&reply_size, &reply_argc, (char **)reply_argv))
 	{
 		LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "run prepare sectors command");
@@ -708,7 +708,7 @@ static RESULT lpcarmisp_copy_ram_to_flash(uint32_t flash_addr,
 	return ERROR_OK;
 }
 
-static RESULT lpcarmisp_erase_sectors(uint8_t start_sector, 
+static RESULT lpcarmisp_erase_sectors(uint8_t start_sector,
 										uint8_t end_sector)
 {
 	uint32_t reply_size;
@@ -721,7 +721,7 @@ static RESULT lpcarmisp_erase_sectors(uint8_t start_sector,
 	cmd_argv[2] = end_sector_str;
 	cmd_argc = 3;
 	reply_size = strlen(LPCARMISP_RPL_SUCCESS);
-	if (ERROR_OK != lpcarmisp_process(cmd_argc, (char **)cmd_argv, 
+	if (ERROR_OK != lpcarmisp_process(cmd_argc, (char **)cmd_argv,
 							&reply_size, &reply_argc, (char **)reply_argv))
 	{
 		LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "run erase sectors command");
@@ -738,7 +738,7 @@ static RESULT lpcarmisp_read_part_id(uint32_t *id)
 	cmd_argv[0] = LPCARMISP_CMD_READCHIPID;
 	cmd_argc = 1;
 	reply_size = strlen(LPCARMISP_RPL_SUCCESS) + 12;
-	if (ERROR_OK != lpcarmisp_process(cmd_argc, (char **)cmd_argv, 
+	if (ERROR_OK != lpcarmisp_process(cmd_argc, (char **)cmd_argv,
 							&reply_size, &reply_argc, (char **)reply_argv))
 	{
 		LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "run echo command");
@@ -759,7 +759,7 @@ static RESULT lpcarmisp_read_boot_version(uint8_t *major, uint8_t *minor)
 	cmd_argv[0] = LPCARMISP_CMD_READBOOTVER;
 	cmd_argc = 1;
 	reply_size = strlen(LPCARMISP_RPL_SUCCESS) + 6;
-	if (ERROR_OK != lpcarmisp_process(cmd_argc, (char **)cmd_argv, 
+	if (ERROR_OK != lpcarmisp_process(cmd_argc, (char **)cmd_argv,
 							&reply_size, &reply_argc, (char **)reply_argv))
 	{
 		LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "run echo command");
@@ -788,7 +788,7 @@ static RESULT lpcarmisp_read_serial_number(uint32_t serial[4])
 	cmd_argv[0] = LPCARMISP_CMD_READSERIAL;
 	cmd_argc = 1;
 	reply_size = strlen(LPCARMISP_RPL_SUCCESS) + 48;
-	if (ERROR_OK != lpcarmisp_process(cmd_argc, (char **)cmd_argv, 
+	if (ERROR_OK != lpcarmisp_process(cmd_argc, (char **)cmd_argv,
 							&reply_size, &reply_argc, (char **)reply_argv))
 	{
 		LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "run echo command");
@@ -830,7 +830,7 @@ static RESULT lpcarmisp_set_baudrate(uint32_t baudrate)
 	cmd_argv[2] = "1";
 	cmd_argc = 3;
 	reply_size = strlen(LPCARMISP_RPL_SUCCESS);
-	if (ERROR_OK != lpcarmisp_process(cmd_argc, (char **)cmd_argv, 
+	if (ERROR_OK != lpcarmisp_process(cmd_argc, (char **)cmd_argv,
 							&reply_size, &reply_argc, (char **)reply_argv))
 	{
 		LOG_DEBUG(ERRMSG_FAILURE_OPERATION, "run echo command");
@@ -840,7 +840,7 @@ static RESULT lpcarmisp_set_baudrate(uint32_t baudrate)
 	return ERROR_OK;
 }
 
-static RESULT lpcarmisp_blank_check_sectors(uint32_t start_sector, 
+static RESULT lpcarmisp_blank_check_sectors(uint32_t start_sector,
 											uint32_t end_sector)
 {
 	REFERENCE_PARAMETER(start_sector);
@@ -882,7 +882,7 @@ ENTER_PROGRAM_MODE_HANDLER(lpcarmisp)
 					ret = lpcarmisp_read_serial_number(serial);
 					if (ERROR_OK == ret)
 					{
-						LOG_INFO("Serial Number: %08X%08X%08X%08X", 
+						LOG_INFO("Serial Number: %08X%08X%08X%08X",
 							serial[3], serial[2], serial[1], serial[0]);
 //						ret = lpcarmisp_set_baudrate(230400);
 						if (ERROR_OK == ret)
@@ -917,7 +917,7 @@ ERASE_TARGET_HANDLER(lpcarmisp)
 	switch (area)
 	{
 	case APPLICATION_CHAR:
-		end_sector = 
+		end_sector =
 			lpc1000_get_sector_idx_by_addr(context, f->addr + f->size - 1);
 		ret = lpcarmisp_prepare_sectors(0, end_sector);
 		if (ERROR_OK == ret)

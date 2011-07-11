@@ -34,7 +34,7 @@
 #include "programmer.h"
 
 void comm_close_hw(void);
-RESULT comm_open_hw(char *comport, uint32_t baudrate, uint8_t datalength, 
+RESULT comm_open_hw(char *comport, uint32_t baudrate, uint8_t datalength,
 				 char paritybit, char stopbit, char handshake);
 int32_t comm_read_hw(uint8_t *buffer, uint32_t num_of_bytes);
 int32_t comm_write_hw(uint8_t *buffer, uint32_t num_of_bytes);
@@ -42,7 +42,7 @@ int32_t comm_ctrl_hw(uint8_t dtr, uint8_t rts);
 int32_t comm_flush_hw(void);
 
 void comm_close_usbtocomm(void);
-RESULT comm_open_usbtocomm(char *comport, uint32_t baudrate, 
+RESULT comm_open_usbtocomm(char *comport, uint32_t baudrate,
 			uint8_t datalength, char paritybit, char stopbit, char handshake);
 int32_t comm_read_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes);
 int32_t comm_write_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes);
@@ -52,7 +52,7 @@ int32_t comm_flush_usbtocomm(void);
 #define COMM_HW					0
 #define COMM_USBTOCOMM			1
 
-struct comm_func_t comm_func[] = 
+struct comm_func_t comm_func[] =
 {
 	{
 		comm_open_hw,
@@ -86,27 +86,27 @@ void comm_close_hw(void)
 	}
 }
 
-RESULT comm_open_hw(char *comport, uint32_t baudrate, uint8_t datalength, 
+RESULT comm_open_hw(char *comport, uint32_t baudrate, uint8_t datalength,
 						char paritybit, char stopbit, char handshake)
 {
 	DCB dcb; // device control block for serial port
 	COMMTIMEOUTS timeouts; // serial port timeout values
 	
-	if ((NULL == comport) || (datalength < 5) || (datalength > 8) 
-		|| ((paritybit != COMM_PARITYBIT_NONE) 
-			&& (paritybit != COMM_PARITYBIT_ODD) 
-			&& (paritybit != COMM_PARITYBIT_EVEN)) 
-		|| ((stopbit != COMM_STOPBIT_1) && (stopbit != COMM_STOPBIT_1P5) 
-			&& (stopbit != COMM_STOPBIT_2)) 
-		|| ((handshake != COMM_HANDSHAKE_NONE) 
-			&& (handshake != COMM_HANDSHAKE_HARDWARE) 
+	if ((NULL == comport) || (datalength < 5) || (datalength > 8)
+		|| ((paritybit != COMM_PARITYBIT_NONE)
+			&& (paritybit != COMM_PARITYBIT_ODD)
+			&& (paritybit != COMM_PARITYBIT_EVEN))
+		|| ((stopbit != COMM_STOPBIT_1) && (stopbit != COMM_STOPBIT_1P5)
+			&& (stopbit != COMM_STOPBIT_2))
+		|| ((handshake != COMM_HANDSHAKE_NONE)
+			&& (handshake != COMM_HANDSHAKE_HARDWARE)
 			&& (handshake != COMM_HANDSHAKE_SOFTWARE)))
 	{
 		LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
 		return ERRCODE_INVALID_PARAMETER;
 	}
 	
-	hComm = CreateFile(comport, GENERIC_READ | GENERIC_WRITE, 0, 0, 
+	hComm = CreateFile(comport, GENERIC_READ | GENERIC_WRITE, 0, 0,
 					   OPEN_EXISTING, 0, 0);
 	if (hComm == INVALID_HANDLE_VALUE)
 	{
@@ -119,7 +119,7 @@ RESULT comm_open_hw(char *comport, uint32_t baudrate, uint8_t datalength,
 				LOG_ERROR("Access denied.");
 				break;
 			default:
-				LOG_ERROR("Fail to open comport %s: %i", comport, 
+				LOG_ERROR("Fail to open comport %s: %i", comport,
 							(int)GetLastError());
 				break;
 		}
@@ -142,7 +142,7 @@ RESULT comm_open_hw(char *comport, uint32_t baudrate, uint8_t datalength,
 	// configure serial port for correct communication parameters
 	if (!GetCommState(hComm, &dcb))
 	{
-		LOG_ERROR(ERRMSG_FAILURE_OPERATION, 
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION,
 					"get existing communication parameters");
 		return ERRCODE_FAILURE_OPERATION;
 	}
@@ -225,13 +225,13 @@ RESULT comm_open_hw(char *comport, uint32_t baudrate, uint8_t datalength,
 	// configure serial port for correct communication parameters
 	if (!GetCommState(hComm, &dcb))
 	{
-		LOG_ERROR(ERRMSG_FAILURE_OPERATION, 
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION,
 					"get existing communication parameters");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
 	// clear buffer
-	if (!PurgeComm(hComm, PURGE_RXABORT | PURGE_RXCLEAR 
+	if (!PurgeComm(hComm, PURGE_RXABORT | PURGE_RXCLEAR
 						  | PURGE_TXABORT | PURGE_TXCLEAR))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "purge comm port");
@@ -243,7 +243,7 @@ RESULT comm_open_hw(char *comport, uint32_t baudrate, uint8_t datalength,
 
 int32_t comm_flush_hw(void)
 {
-	if (!PurgeComm(hComm, PURGE_RXABORT | PURGE_RXCLEAR 
+	if (!PurgeComm(hComm, PURGE_RXABORT | PURGE_RXCLEAR
 						  | PURGE_TXABORT | PURGE_TXCLEAR))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "purge comm port");
@@ -306,22 +306,22 @@ int32_t comm_ctrl_hw(uint8_t dtr, uint8_t rts)
 
 static int hComm = -1;
 
-const int speed_arr[] = {	B50, B75, B110, B134, B150, B200, B300, B600, 
-							B1200, B1800, B2400, B4800, B9600, B19200, B38400, 
+const int speed_arr[] = {	B50, B75, B110, B134, B150, B200, B300, B600,
+							B1200, B1800, B2400, B4800, B9600, B19200, B38400,
 							B57600, B115200, B230400
 // baudrate above 460800 is not supported under Darwin
 #if !IS_DARWIN
-							, B460800, B500000, 
-							B576000, B921600, B1000000, B1152000, B1500000, 
+							, B460800, B500000,
+							B576000, B921600, B1000000, B1152000, B1500000,
 							B2000000, B2500000, B3000000, B3500000, B4000000
 #endif
 							};
-const uint32_t name_arr[] = {	50, 75, 110, 134, 150, 200, 300, 600, 1200, 1800, 
-							2400, 4800, 9600, 19200, 38400, 57600, 115200, 
+const uint32_t name_arr[] = {	50, 75, 110, 134, 150, 200, 300, 600, 1200, 1800,
+							2400, 4800, 9600, 19200, 38400, 57600, 115200,
 							230400
 #if !IS_DARWIN
-							, 460800, 500000, 576000, 921600, 1000000, 
-							1152000, 1500000, 2000000, 2500000, 3000000, 
+							, 460800, 500000, 576000, 921600, 1000000,
+							1152000, 1500000, 2000000, 2500000, 3000000,
 							3500000, 4000000
 #endif
 							};
@@ -335,20 +335,20 @@ void comm_close_hw(void)
 	}
 }
 
-RESULT comm_open_hw(char *comport, uint32_t baudrate, uint8_t datalength, 
+RESULT comm_open_hw(char *comport, uint32_t baudrate, uint8_t datalength,
 				 char paritybit, char stopbit, char handshake)
 {
 	struct termios opt;
 	uint32_t i;
 	
-	if ((NULL == comport) || (datalength < 5) || (datalength > 8) 
-		|| ((paritybit != COMM_PARITYBIT_NONE) 
-			&& (paritybit != COMM_PARITYBIT_ODD) 
-			&& (paritybit != COMM_PARITYBIT_EVEN)) 
-		|| ((stopbit != COMM_STOPBIT_1) && (stopbit != COMM_STOPBIT_1P5) 
-			&& (stopbit != COMM_STOPBIT_2)) 
-		|| ((handshake != COMM_HANDSHAKE_NONE) 
-			&& (handshake != COMM_HANDSHAKE_HARDWARE) 
+	if ((NULL == comport) || (datalength < 5) || (datalength > 8)
+		|| ((paritybit != COMM_PARITYBIT_NONE)
+			&& (paritybit != COMM_PARITYBIT_ODD)
+			&& (paritybit != COMM_PARITYBIT_EVEN))
+		|| ((stopbit != COMM_STOPBIT_1) && (stopbit != COMM_STOPBIT_1P5)
+			&& (stopbit != COMM_STOPBIT_2))
+		|| ((handshake != COMM_HANDSHAKE_NONE)
+			&& (handshake != COMM_HANDSHAKE_HARDWARE)
 			&& (handshake != COMM_HANDSHAKE_SOFTWARE)))
 	{
 		LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
@@ -366,7 +366,7 @@ RESULT comm_open_hw(char *comport, uint32_t baudrate, uint8_t datalength,
 	// get current settings
 	if (tcgetattr(hComm, &opt) != 0)
 	{
-		LOG_ERROR(ERRMSG_FAILURE_OPERATION, 
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION,
 					"get existing communication parameters");
 		return ERRCODE_FAILURE_OPERATION;
 	}
@@ -518,7 +518,7 @@ void comm_close_usbtocomm(void)
 	usbtocomm_open = 0;
 }
 
-RESULT comm_open_usbtocomm(char *comport, uint32_t baudrate, 
+RESULT comm_open_usbtocomm(char *comport, uint32_t baudrate,
 			uint8_t datalength, char paritybit, char stopbit, char handshake)
 {
 	struct interfaces_info_t *prog = NULL;
@@ -598,7 +598,7 @@ int32_t comm_read_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 	{
 		LOG_PUSH();
 		LOG_MUTE();
-		if ((ERROR_OK != interfaces->usart.receive(0, buffer, (uint16_t)num_of_bytes)) 
+		if ((ERROR_OK != interfaces->usart.receive(0, buffer, (uint16_t)num_of_bytes))
 			|| (ERROR_OK != interfaces->peripheral_commit()))
 		{
 			LOG_POP();
@@ -623,16 +623,16 @@ int32_t comm_read_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 	
 	LOG_PUSH();
 	LOG_MUTE();
-	if ((ERROR_OK != interfaces->usart.status(0, &status)) 
+	if ((ERROR_OK != interfaces->usart.status(0, &status))
 		|| (ERROR_OK != interfaces->peripheral_commit()))
 	{
 		// error
 		LOG_POP();
 		return -1;
 	}
-	else if ((status.rx_buff_size != 0) 
-		&& ((ERROR_OK == interfaces->usart.receive(0, buffer, 
-											(uint16_t)status.rx_buff_size)) 
+	else if ((status.rx_buff_size != 0)
+		&& ((ERROR_OK == interfaces->usart.receive(0, buffer,
+											(uint16_t)status.rx_buff_size))
 			&& (ERROR_OK == interfaces->peripheral_commit())))
 	{
 		LOG_POP();
@@ -655,7 +655,7 @@ int32_t comm_write_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 	}
 	
 	data_sent = 0;
-	if ((ERROR_OK == interfaces->usart.send(0, buffer, (uint16_t)num_of_bytes)) 
+	if ((ERROR_OK == interfaces->usart.send(0, buffer, (uint16_t)num_of_bytes))
 		&& (ERROR_OK == interfaces->peripheral_commit()))
 	{
 		data_sent = (int32_t)num_of_bytes;
@@ -664,7 +664,7 @@ int32_t comm_write_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 #if 0
 	LOG_PUSH();
 	LOG_MUTE();
-	if ((ERROR_OK == interfaces->usart.send(buffer, (uint16_t)num_of_bytes)) 
+	if ((ERROR_OK == interfaces->usart.send(buffer, (uint16_t)num_of_bytes))
 		&& (ERROR_OK == interfaces->peripheral_commit()))
 	{
 		data_sent = num_of_bytes;
@@ -691,7 +691,7 @@ int32_t comm_write_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 		// get buffer_size available for tx
 		LOG_PUSH();
 		LOG_MUTE();
-		if ((ERROR_OK != interfaces->usart.status(&status)) 
+		if ((ERROR_OK != interfaces->usart.status(&status))
 			|| (ERROR_OK != interfaces->peripheral_commit()))
 		{
 			// error
@@ -704,8 +704,8 @@ int32_t comm_write_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 		{
 			LOG_PUSH();
 			LOG_MUTE();
-			if ((ERROR_OK != interfaces->usart.send(buffer, 
-											(uint16_t)(num_of_bytes - data_sent))) 
+			if ((ERROR_OK != interfaces->usart.send(buffer,
+											(uint16_t)(num_of_bytes - data_sent)))
 				|| (ERROR_OK != interfaces->peripheral_commit()))
 			{
 				LOG_POP();
@@ -731,7 +731,7 @@ int32_t comm_write_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 		// get buffer_size for tx
 		LOG_PUSH();
 		LOG_MUTE();
-		if ((ERROR_OK != interfaces->usart.status(&status)) 
+		if ((ERROR_OK != interfaces->usart.status(&status))
 			|| (ERROR_OK != interfaces->peripheral_commit()))
 		{
 			// error
@@ -793,7 +793,7 @@ void comm_close(void)
 	comm_func[comm_idx].comm_close();
 }
 
-RESULT comm_open(char *comport, uint32_t baudrate, uint8_t datalength, 
+RESULT comm_open(char *comport, uint32_t baudrate, uint8_t datalength,
 				 char paritybit, char stopbit, char handshake)
 {
 	if (!strcmp(comport, "usbtocomm"))
@@ -805,7 +805,7 @@ RESULT comm_open(char *comport, uint32_t baudrate, uint8_t datalength,
 		comm_idx = COMM_HW;
 	}
 	
-	return comm_func[comm_idx].comm_open(comport, baudrate, datalength, paritybit, 
+	return comm_func[comm_idx].comm_open(comport, baudrate, datalength, paritybit,
 											stopbit, handshake);
 }
 

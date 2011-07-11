@@ -38,7 +38,7 @@ RESULT usbtoissp_fini(uint8_t interface_index)
 	return usbtoxxx_fini_command(USB_TO_ISSP, interface_index);
 }
 
-RESULT usbtoissp_vector(uint8_t interface_index, uint8_t operate, uint8_t addr, 
+RESULT usbtoissp_vector(uint8_t interface_index, uint8_t operate, uint8_t addr,
 						uint8_t data, uint8_t *buf)
 {
 	uint8_t cmd_buf[3];
@@ -57,12 +57,12 @@ RESULT usbtoissp_vector(uint8_t interface_index, uint8_t operate, uint8_t addr,
 	
 	if (operate & ISSP_VECTOR_ATTR_READ)
 	{
-		return usbtoxxx_inout_command(USB_TO_ISSP, interface_index, cmd_buf, 
+		return usbtoxxx_inout_command(USB_TO_ISSP, interface_index, cmd_buf,
 									  3, 1, buf, 0, 1, 1);
 	}
 	else
 	{
-		return usbtoxxx_inout_command(USB_TO_ISSP, interface_index, cmd_buf, 
+		return usbtoxxx_inout_command(USB_TO_ISSP, interface_index, cmd_buf,
 									  3, 0, NULL, 0, 0, 1);
 	}
 }
@@ -77,7 +77,7 @@ RESULT usbtoissp_enter_program_mode(uint8_t interface_index, uint8_t mode)
 	}
 #endif
 	
-	return usbtoxxx_in_command(USB_TO_ISSP, interface_index, &mode, 1, 0, 
+	return usbtoxxx_in_command(USB_TO_ISSP, interface_index, &mode, 1, 0,
 							   NULL, 0, 0, 0);
 }
 
@@ -104,7 +104,7 @@ RESULT usbtoissp_wait_and_poll(uint8_t interface_index)
 	}
 #endif
 	
-	return usbtoxxx_poll_command(USB_TO_ISSP, interface_index, NULL, 0, NULL, 
+	return usbtoxxx_poll_command(USB_TO_ISSP, interface_index, NULL, 0, NULL,
 								 0);
 }
 

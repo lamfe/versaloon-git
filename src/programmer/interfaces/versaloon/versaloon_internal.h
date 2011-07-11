@@ -105,7 +105,7 @@ void versaloon_set_pending_id(uint32_t id);
 void versaloon_set_callback(versaloon_callback_t callback);
 void versaloon_set_extra_data(void * p);
 RESULT versaloon_add_want_pos(uint16_t offset, uint16_t size, uint8_t *buff);
-RESULT versaloon_add_pending(uint8_t type, uint8_t cmd, uint16_t actual_szie, 
+RESULT versaloon_add_pending(uint8_t type, uint8_t cmd, uint16_t actual_szie,
 	uint16_t want_pos, uint16_t want_size, uint8_t *buffer, uint8_t collect);
 void versaloon_free_want_pos(void);
 

@@ -42,7 +42,7 @@ enum  HEX_TYPE
 	HEX_TYPE_START_LINEAR_ADDR	= 0x05
 };
 
-RESULT read_hex_file(FILE *hex_file, WRITE_MEMORY_CALLBACK callback, 
+RESULT read_hex_file(FILE *hex_file, WRITE_MEMORY_CALLBACK callback,
 						void *buffer, uint32_t seg_offset, uint32_t addr_offset)
 {
 	uint8_t line_buf[10 + 0xFF * 2 + 2], checksum;
@@ -92,7 +92,7 @@ RESULT read_hex_file(FILE *hex_file, WRITE_MEMORY_CALLBACK callback,
 		{
 			tmp_buff[0] = line_buf[i];
 			tmp_buff[1] = line_buf[i + 1];
-			line_buf[i >> 1] = (uint8_t)strtoul((const char *)tmp_buff, 
+			line_buf[i >> 1] = (uint8_t)strtoul((const char *)tmp_buff,
 												&ptr, 16);
 			if (ptr != &tmp_buff[2])
 			{
@@ -123,8 +123,8 @@ RESULT read_hex_file(FILE *hex_file, WRITE_MEMORY_CALLBACK callback,
 		{
 		case HEX_TYPE_DATA: //Type 0
 			// data record
-			if (ERROR_OK != callback(fileparser_cur_ext, 
-					ext_addr0 + ext_addr1 + addr_offset + addr, 
+			if (ERROR_OK != callback(fileparser_cur_ext,
+					ext_addr0 + ext_addr1 + addr_offset + addr,
 					seg_addr + seg_offset, &line_buf[4], length, buffer))
 			{
 				return ERROR_FAIL;
@@ -163,7 +163,7 @@ RESULT read_hex_file(FILE *hex_file, WRITE_MEMORY_CALLBACK callback,
 			//The Start Linear Address Record is used to specify the execution start address for the object file.
 			break;
 		default:
-			LOG_WARNING(ERRMSG_INVALID_VALUE_MESSAGE, line_buf[3], 
+			LOG_WARNING(ERRMSG_INVALID_VALUE_MESSAGE, line_buf[3],
 						"hex type", "current line ignored!!");
 			break;
 		}
@@ -172,7 +172,7 @@ RESULT read_hex_file(FILE *hex_file, WRITE_MEMORY_CALLBACK callback,
 	return ERROR_FAIL;
 }
 
-static RESULT write_hex_line(FILE *hex_file, uint8_t data_len, 
+static RESULT write_hex_line(FILE *hex_file, uint8_t data_len,
 								uint16_t data_addr, uint8_t type, uint8_t *data)
 {
 	uint8_t line_buf[10 + 0xFF * 2 + 2], checksum = 0, pos = 0;
@@ -233,9 +233,9 @@ static RESULT write_hex_line(FILE *hex_file, uint8_t data_len,
 	}
 }
 
-RESULT write_hex_file(FILE *hex_file, uint32_t file_addr, 
-						uint8_t *buff, uint32_t buff_size, 
-						uint32_t seg_addr, uint32_t start_addr, 
+RESULT write_hex_file(FILE *hex_file, uint32_t file_addr,
+						uint8_t *buff, uint32_t buff_size,
+						uint32_t seg_addr, uint32_t start_addr,
 						ADJUST_MAPPING_CALLBACK remap)
 {
 	uint8_t tmp;
@@ -247,7 +247,7 @@ RESULT write_hex_file(FILE *hex_file, uint32_t file_addr,
 	
 	// write seg_addr
 	seg_addr = ((seg_addr >> 8) & 0x000000FF) | ((seg_addr << 8) & 0x0000FF00);
-	ret = write_hex_line(hex_file, 2, (uint16_t)0, HEX_TYPE_START_SEG_ADDR, 
+	ret = write_hex_line(hex_file, 2, (uint16_t)0, HEX_TYPE_START_SEG_ADDR,
 							(uint8_t *)&seg_addr);
 	if (ret != ERROR_OK)
 	{
@@ -256,9 +256,9 @@ RESULT write_hex_file(FILE *hex_file, uint32_t file_addr,
 	
 	// write ext_addr
 	addr_high_orig = start_addr >> 16;
-	addr_tmp_big_endian = ((addr_high_orig >> 8) & 0x000000FF) 
+	addr_tmp_big_endian = ((addr_high_orig >> 8) & 0x000000FF)
 							| ((addr_high_orig << 8) & 0x0000FF00);
-	ret = write_hex_line(hex_file, 2, (uint16_t)0, HEX_TYPE_EXT_LINEAR_ADDR, 
+	ret = write_hex_line(hex_file, 2, (uint16_t)0, HEX_TYPE_EXT_LINEAR_ADDR,
 							(uint8_t *)&addr_tmp_big_endian);
 	if (ret != ERROR_OK)
 	{
@@ -272,9 +272,9 @@ RESULT write_hex_file(FILE *hex_file, uint32_t file_addr,
 		if (addr_high_orig != (start_addr >> 16))
 		{
 			addr_high_orig = start_addr >> 16;
-			addr_tmp_big_endian = ((addr_high_orig >> 8) & 0x000000FF) 
+			addr_tmp_big_endian = ((addr_high_orig >> 8) & 0x000000FF)
 									| ((addr_high_orig << 8) & 0x0000FF00);
-			ret = write_hex_line(hex_file, 2, (uint16_t)0, HEX_TYPE_EXT_LINEAR_ADDR, 
+			ret = write_hex_line(hex_file, 2, (uint16_t)0, HEX_TYPE_EXT_LINEAR_ADDR,
 									(uint8_t *)&addr_tmp_big_endian);
 			if (ret != ERROR_OK)
 			{
@@ -297,7 +297,7 @@ RESULT write_hex_file(FILE *hex_file, uint32_t file_addr,
 		{
 			return ERROR_FAIL;
 		}
-		ret = write_hex_line(hex_file, (uint8_t)tmp, 
+		ret = write_hex_line(hex_file, (uint8_t)tmp,
 						(uint16_t)(tmp_addr & 0xFFFF), HEX_TYPE_DATA, buff);
 		if (ret != ERROR_OK)
 		{
