@@ -14,10 +14,8 @@
  *      2008-11-07:     created(by SimonQian)                             *
  **************************************************************************/
 
-#include "app_cfg.h"
+#include "app_type.h"
 #include "interfaces.h"
-#include "stm32f10x_conf.h"
-#include "HW.h"
 
 #include "STM32_GPIO.h"
 
@@ -50,6 +48,44 @@ RESULT stm32_gpio_fini(uint8_t index)
 	return ERROR_OK;
 }
 
+RESULT stm32_gpio_config_pin(uint8_t index, uint8_t pin_idx, uint8_t mode)
+{
+	GPIO_TypeDef *gpio;
+	uint32_t tmpreg = mode & 0x0F;
+	
+#if __VSF_DEBUG__
+	if (index >= STM32_GPIO_NUM)
+	{
+		return ERROR_FAIL;
+	}
+#endif
+	
+	gpio = (GPIO_TypeDef *)(GPIOA_BASE + ((uint32_t)index << 10));
+	if(pin_idx < 8)
+	{
+		gpio->CRL = (gpio->CRL & ~(((uint32_t)0x0F) << ((pin_idx - 0) * 4))) | 
+						tmpreg << ((pin_idx - 0) * 4);
+	}
+	else
+	{
+		gpio->CRH = (gpio->CRH & ~(((uint32_t)0x0F) << ((pin_idx - 8) * 4))) | 
+						tmpreg << ((pin_idx - 8) * 4);
+	}
+	
+	if(0x08 == tmpreg)
+	{
+		if(mode & 0x80)
+		{
+			gpio->BSRR = (((uint32_t)0x01) << pin_idx);
+		}
+		else
+		{
+			gpio->BRR = (((uint32_t)0x01) << pin_idx);
+		}
+	}
+	return ERROR_OK;
+}
+
 RESULT stm32_gpio_config(uint8_t index, uint32_t pin_mask, uint32_t io, 
 							uint32_t pull_en_mask, uint32_t input_pull_mask)
 {
@@ -64,7 +100,7 @@ RESULT stm32_gpio_config(uint8_t index, uint32_t pin_mask, uint32_t io,
 	}
 #endif
 	
-	gpio = (GPIO_TypeDef *)(GPIOA_BASE + 0x400 * index);
+	gpio = (GPIO_TypeDef *)(GPIOA_BASE + ((uint32_t)index << 10));
 	tmpregl = gpio->CRL;
 	tmpregh = gpio->CRH;
 	for (i = 0; i < 8; i++)
@@ -139,6 +175,38 @@ RESULT stm32_gpio_config(uint8_t index, uint32_t pin_mask, uint32_t io,
 	return ERROR_OK;
 }
 
+RESULT stm32_gpio_set(uint8_t index, uint32_t pin_mask)
+{
+	GPIO_TypeDef *gpio;
+	
+#if __VSF_DEBUG__
+	if (index >= STM32_GPIO_NUM)
+	{
+		return ERROR_FAIL;
+	}
+#endif
+	
+	gpio = (GPIO_TypeDef *)(GPIOA_BASE + ((uint32_t)index << 10));
+	gpio->BSRR = pin_mask;
+	return ERROR_OK;
+}
+
+RESULT stm32_gpio_clear(uint8_t index, uint32_t pin_mask)
+{
+	GPIO_TypeDef *gpio;
+	
+#if __VSF_DEBUG__
+	if (index >= STM32_GPIO_NUM)
+	{
+		return ERROR_FAIL;
+	}
+#endif
+	
+	gpio = (GPIO_TypeDef *)(GPIOA_BASE + ((uint32_t)index << 10));
+	gpio->BRR = pin_mask;
+	return ERROR_OK;
+}
+
 RESULT stm32_gpio_out(uint8_t index, uint32_t pin_mask, uint32_t value)
 {
 	GPIO_TypeDef *gpio;
@@ -150,7 +218,7 @@ RESULT stm32_gpio_out(uint8_t index, uint32_t pin_mask, uint32_t value)
 	}
 #endif
 	
-	gpio = (GPIO_TypeDef *)(GPIOA_BASE + 0x400 * index);
+	gpio = (GPIO_TypeDef *)(GPIOA_BASE + ((uint32_t)index << 10));
 	gpio->BSRR = pin_mask & value;
 	gpio->BRR = pin_mask & ~value;
 	return ERROR_OK;
@@ -167,7 +235,22 @@ RESULT stm32_gpio_in(uint8_t index, uint32_t pin_mask, uint32_t *value)
 	}
 #endif
 	
-	gpio = (GPIO_TypeDef *)(GPIOA_BASE + 0x400 * index);
+	gpio = (GPIO_TypeDef *)(GPIOA_BASE + ((uint32_t)index << 10));
 	*value = gpio->IDR & pin_mask;
 	return ERROR_OK;
+}
+
+uint32_t stm32_gpio_get(uint8_t index, uint32_t pin_mask)
+{
+	GPIO_TypeDef *gpio;
+	
+#if __VSF_DEBUG__
+	if (index >= STM32_GPIO_NUM)
+	{
+		return 0;
+	}
+#endif
+	
+	gpio = (GPIO_TypeDef *)(GPIOA_BASE + ((uint32_t)index << 10));
+	return gpio->IDR & pin_mask;
 }

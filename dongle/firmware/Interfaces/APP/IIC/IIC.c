@@ -22,7 +22,7 @@
 #include "EMIIC_MOD.h"
 #include "IIC.h"
 
-DEFINE_EMIIC_MOD(USBTOXXX, IIC_SCL_CLR, IIC_SCL_SET, IIC_SCL_GET, IIC_SDA_CLR, IIC_SDA_SET, IIC_SDA_GET, DelayUS, uint16_t)
+DEFINE_EMIIC_MOD(USBTOXXX, IIC_SCL_CLR, IIC_SCL_SET, IIC_SCL_GET, IIC_SDA_CLR, IIC_SDA_SET, IIC_SDA_GET, app_interfaces.delay.delayus, uint16_t)
 
 uint16_t IIC_Delay;
 
@@ -31,6 +31,8 @@ RESULT iic_init(uint8_t index)
 	switch (index)
 	{
 	case 0:
+		IIC_SCL_INIT();
+		IIC_SDA_INIT();
 		return ERROR_OK;
 	default:
 		return ERROR_FAIL;
@@ -39,17 +41,22 @@ RESULT iic_init(uint8_t index)
 
 RESULT iic_fini(uint8_t index)
 {
+	RESULT ret;
+	
 	switch (index)
 	{
 	case 0:
 		if (IIC_MOD_ACK == EMIIC_USBTOXXX_DeInit())
 		{
-			return ERROR_OK;
+			ret = ERROR_OK;
 		}
 		else
 		{
-			return ERROR_FAIL;
+			ret = ERROR_FAIL;
 		}
+		IIC_SCL_FINI();
+		IIC_SDA_FINI();
+		return ret;
 	default:
 		return ERROR_FAIL;
 	}

@@ -70,16 +70,52 @@
 RESULT target_voltage_set(uint8_t index, uint16_t voltage);
 RESULT target_voltage_get(uint8_t index, uint16_t *voltage);
 
+
+// GPIO
+void GPIO_SetMode(GPIO_TypeDef* GPIOx, uint8_t pin, uint8_t mode)
+{
+	uint32_t tmp_reg;
+
+	if(pin < 8)
+	{
+		tmp_reg = GPIOx->CRL;
+		tmp_reg &= ~(((uint32_t)0x0F) << ((pin - 0) * 4));
+		tmp_reg |= (uint32_t)(mode & 0x0F) << ((pin - 0) * 4);
+		GPIOx->CRL = tmp_reg;
+	}
+	else
+	{
+		tmp_reg = GPIOx->CRH;
+		tmp_reg &= ~(((uint32_t)0x0F) << ((pin - 8) * 4));
+		tmp_reg |= (uint32_t)(mode & 0x0F) << ((pin - 8) * 4);
+		GPIOx->CRH = tmp_reg;
+	}
+
+	if(mode & 0x20)
+	{
+		if(mode & 0x10)
+		{
+			GPIOx->BSRR = (((uint32_t)0x01) << pin);
+		}
+		else
+		{
+			GPIOx->BRR = (((uint32_t)0x01) << pin);
+		}
+	}
+}
+
 // delay
+static RESULT delay_init(void)
+{
+	return interfaces->delay.init();
+}
 static RESULT delay_delayms(uint16_t ms)
 {
-	DelayMS(ms);
-	return ERROR_OK;
+	return interfaces->delay.delayms(ms);
 }
 static RESULT delay_delayus(uint16_t us)
 {
-	DelayUS(us);
-	return ERROR_OK;
+	return interfaces->delay.delayus(us);
 }
 
 static RESULT app_interface_init(void *p)
@@ -158,9 +194,12 @@ const struct app_interfaces_info_t app_interfaces =
 		// gpio
 		gpio_init,
 		gpio_fini,
+		NULL,
 		gpio_config,
+		NULL, NULL,
 		gpio_out,
-		gpio_in
+		gpio_in,
+		NULL
 	}
 #endif
 #if INTERFACE_USART_EN
@@ -180,8 +219,11 @@ const struct app_interfaces_info_t app_interfaces =
 		// spi
 		spi_init,
 		spi_fini,
+		NULL, NULL, NULL,
 		spi_config,
-		spi_io
+		NULL, NULL, NULL, NULL,
+		spi_io,
+		NULL, NULL, NULL
 	}
 #endif
 #if INTERFACE_IIC_EN
@@ -207,6 +249,7 @@ const struct app_interfaces_info_t app_interfaces =
 // Allways included
 	,{
 		// delay
+		delay_init,
 		delay_delayms,
 		delay_delayus
 	}

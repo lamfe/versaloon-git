@@ -285,7 +285,7 @@ void USB_TO_XXX_ProcessCmd(uint8_t *dat, uint16_t len)
 			}
 			else
 			{
-				DelayUS(dly);
+				app_interfaces.delay.delayus(dly);
 			}
 
 			buffer_reply[rep_len++] = USB_TO_XXX_OK;
@@ -371,11 +371,11 @@ void USB_TO_XXX_ProcessCmd(uint8_t *dat, uint16_t len)
 								dly = USB_TO_POLL_Context[USB_TO_POLL_Index].poll_interval;
 								if(dly & 0x8000)
 								{
-									DelayMS(dly & 0x7FFF);
+									app_interfaces.delay.delayms(dly & 0x7FFF);
 								}
 								else
 								{
-									DelayUS(dly);
+									app_interfaces.delay.delayus(dly);
 								}
 							}
 

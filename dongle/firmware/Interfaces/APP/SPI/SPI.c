@@ -20,77 +20,25 @@
 #include "app_interfaces.h"
 #include "SPI.h"
 
-uint8_t SPI_Emu = 0;
-uint32_t SPI_Dly;
+static uint8_t SPI_Emu = 0;
+static uint32_t SPI_Dly;
 
 static void SPI_Delay(uint8_t dly)
 {
-	DelayUS(dly);
+	app_interfaces.delay.delayus(dly);
 }
 
-static void SPI_Config(uint32_t freq_hz, uint32_t firstbit, uint32_t cpol, uint32_t cpha)
+static RESULT SPI_Config_Emu(uint32_t freq_hz, uint8_t mode)
 {
-	if(freq_hz < SPI_MIN_KHZ * 1000)
-	{
-		SPI_Emu = 1;
-
-		SPI_Dly = 250000 / freq_hz;
-
-		SPI_Disable();
-
-		SPI_SCK_CLR();
-		SPI_AllSPIIO();
-	}
-	else
-	{
-		SPI_Emu = 0;
-		SPI_AllSPIHW();
-		SPI_Conf(SPI_GetSCKDiv(freq_hz / 1000), firstbit, cpol, cpha);
-	}
+	SPI_Dly = 250000 / freq_hz;
+	
+	JTAG_TAP_TCK_CLR();
+	JTAG_TAP_TCK_SETOUTPUT();
+	JTAG_TAP_TDI_SETOUTPUT();
+	JTAG_TAP_TDO_SETINPUT();
+	return ERROR_OK;
 }
 
-uint8_t SPI_GetSCKDiv(uint32_t freq_khz)
-{
-	// Set Speed
-	if(freq_khz >= _SYS_FREQUENCY * 500 / 2)
-	{
-		freq_khz = 0;
-	}
-	else if(freq_khz >= _SYS_FREQUENCY * 500 / 4)
-	{
-		freq_khz = 1;
-	}
-	else if(freq_khz >= _SYS_FREQUENCY * 500 / 8)
-	{
-		freq_khz = 2;
-	}
-	else if(freq_khz >= _SYS_FREQUENCY * 500 / 16)
-	{
-		freq_khz = 3;
-	}
-	else if(freq_khz >= _SYS_FREQUENCY * 500 / 32)
-	{
-		freq_khz = 4;
-	}
-	else if(freq_khz > _SYS_FREQUENCY * 500 / 64)
-	{
-		freq_khz = 5;
-	}
-	else if(freq_khz > _SYS_FREQUENCY * 500 / 128)
-	{
-		freq_khz = 6;
-	}
-	else
-	{
-		freq_khz = 7;
-	}
-
-	return (uint8_t)(freq_khz << 3);
-}
-
-/// spi Read and Write emulated by IO
-/// @param[in]	data	data to write
-/// @return		data read
 #define SPI_DATA_LEN			8
 #define SPI_MSB					(1 << (SPI_DATA_LEN - 1))
 static uint8_t SPI_RW_Emu(uint8_t data)
@@ -101,55 +49,32 @@ static uint8_t SPI_RW_Emu(uint8_t data)
 	{
 		if(data & SPI_MSB)
 		{
-			SPI_MOSI_SET();
+			JTAG_TAP_TDI_SET();
 		}
 		else
 		{
-			SPI_MOSI_CLR();
+			JTAG_TAP_TDI_CLR();
 		}
 		data <<= 1;
 
 		SPI_Delay(SPI_Dly);
 
-		SPI_SCK_SET();
+		JTAG_TAP_TCK_SET();
 
 		SPI_Delay(SPI_Dly);
 
 		ret <<= 1;
-		if(SPI_MISO_GET())
+		if(JTAG_TAP_TDO_GET())
 		{
 			ret |= 1;
 		}
 
 		SPI_Delay(SPI_Dly);
 
-		SPI_SCK_CLR();
+		JTAG_TAP_TCK_CLR();
 
 		SPI_Delay(SPI_Dly);
 	}
-	return ret;
-}
-
-/// spi Read and Write
-/// @param[in]	data	data to write
-/// @return		data read
-static uint8_t SPI_RW(uint8_t data)
-{
-	uint8_t ret;
-
-	if(SPI_Emu)
-	{
-		ret = SPI_RW_Emu(data);
-	}
-	else
-	{
-		SPI_SetData(data);
-
-		SPI_WaitRxReady();
-		ret = SPI_GetData();
-		SPI_WaitReady();
-	}
-
 	return ret;
 }
 
@@ -169,9 +94,7 @@ RESULT spi_fini(uint8_t index)
 	switch (index)
 	{
 	case 0:
-		SPI_I2S_DeInit(SPI_Interface);
-		SPI_AllInput();
-		return ERROR_OK;
+		return interfaces->spi.fini(SPI_Interface_Idx);
 	default:
 		return ERROR_FAIL;
 	}
@@ -179,50 +102,40 @@ RESULT spi_fini(uint8_t index)
 
 RESULT spi_config(uint8_t index, uint32_t kHz, uint8_t mode)
 {
-	uint32_t cpha, cpol, first_bit;
+	struct spi_ability_t spi_ability;
+	uint32_t min_khz;
+	
+	if (ERROR_OK != interfaces->spi.get_ability(SPI_Interface_Idx, 
+												&spi_ability))
+	{
+		return ERROR_FAIL;
+	}
+	min_khz = spi_ability.min_freq_hz / 1000;
 	
 	switch (index)
 	{
 	case 0:
-		switch (mode & 0x03)
+		if(kHz < min_khz)
 		{
-		case 0:
-			cpol = SPI_CPOL_Low;
-			cpha = SPI_CPHA_1Edge;
-			break;
-		case 1:
-			cpol = SPI_CPOL_Low;
-			cpha = SPI_CPHA_2Edge;
-			break;
-		case 2:
-			cpol = SPI_CPOL_High;
-			cpha = SPI_CPHA_1Edge;
-			break;
-		case 3:
-			cpol = SPI_CPOL_High;
-			cpha = SPI_CPHA_2Edge;
-			break;
-		}
-		if(mode & SPI_MSB_FIRST)
-		{
-			// msb first
-			first_bit = SPI_FirstBit_MSB;
+			SPI_Emu = 1;
+			interfaces->spi.fini(SPI_Interface_Idx);
+			return SPI_Config_Emu(kHz * 1000, mode);
 		}
 		else
 		{
-			// lsb first
-			first_bit = SPI_FirstBit_LSB;
+			SPI_Emu = 0;
+			interfaces->spi.init(SPI_Interface_Idx);
+			return interfaces->spi.config(SPI_Interface_Idx, kHz, 
+											mode | SPI_MASTER);
 		}
-		SPI_Config(kHz * 1000, first_bit, cpol, cpha);
-		return ERROR_OK;
 	default:
 		return ERROR_FAIL;
 	}
 }
 
-RESULT spi_io(uint8_t index, uint8_t *out, uint8_t *in, uint16_t len)
+RESULT spi_io(uint8_t index, uint8_t *out, uint8_t *in, uint32_t len)
 {
-	uint16_t i;
+	uint32_t i;
 
 	switch (index)
 	{
@@ -232,9 +145,16 @@ RESULT spi_io(uint8_t index, uint8_t *out, uint8_t *in, uint16_t len)
 			return ERROR_FAIL;
 		}
 		
-		for(i = 0; i < len; i++)
+		if(SPI_Emu)
 		{
-			in[i] = SPI_RW(out[i]);
+			for(i = 0; i < len; i++)
+			{
+				in[i] = SPI_RW_Emu(out[i]);
+			}
+		}
+		else
+		{
+			interfaces->spi.io(SPI_Interface_Idx, out, in, len);
 		}
 		return ERROR_OK;
 	default:

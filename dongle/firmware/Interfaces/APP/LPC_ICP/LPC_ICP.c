@@ -39,14 +39,10 @@ static void LPCICP_Init(void)
 
 	LPCICP_PDA_SET();
 	LPCICP_PDA_SETOUTPUT();
-
-	GLOBAL_OUTPUT_Acquire();
 }
 
 static void LPCICP_Fini(void)
 {
-	GLOBAL_OUTPUT_Release();
-
 	LPCICP_RST_SETINPUT();
 	LPCICP_PDA_SETINPUT();
 	LPCICP_PCL_SETINPUT();
@@ -62,18 +58,18 @@ static void LPCICP_EnterProgMode(void)
 	uint8_t toggle_count;
 
 	PWREXT_Acquire();
-	DelayMS(LPCICP_POWERON_DELAY);
+	app_interfaces.delay.delayms(LPCICP_POWERON_DELAY);
 
 	for (toggle_count = 0; toggle_count < 7; toggle_count++)
 	{
 		LPCICP_RST_SET();
-		DelayUS(LPCICP_RST_TOGGLE_DELAY);		// Trh
+		app_interfaces.delay.delayus(LPCICP_RST_TOGGLE_DELAY);		// Trh
 		LPCICP_RST_CLR();
-		DelayUS(LPCICP_RST_TOGGLE_DELAY);		// Trl
+		app_interfaces.delay.delayus(LPCICP_RST_TOGGLE_DELAY);		// Trl
 	}
 	LPCICP_RST_SET();
 
-	DelayMS(LPCICP_POST_ENTERPROGMODE_DELAY);	// Trp
+	app_interfaces.delay.delayms(LPCICP_POST_ENTERPROGMODE_DELAY);	// Trp
 	LPCICP_PDA_SETINPUT();
 }
 
@@ -84,7 +80,7 @@ static void LPCICP_In(uint8_t *buff, uint16_t len)
 	for (i = 0; i < len * 8; i++)
 	{
 		LPCICP_PCL_CLR();
-		DelayUS(LPCICP_SHIFT_DELAY_SHORT);
+		app_interfaces.delay.delayus(LPCICP_SHIFT_DELAY_SHORT);
 		LPCICP_PCL_SET();
 
 		if (LPCICP_PDA_GET())
@@ -95,7 +91,7 @@ static void LPCICP_In(uint8_t *buff, uint16_t len)
 		{
 			buff[i / 8] &= ~(1 << (i % 8));
 		}
-		DelayUS(LPCICP_SHIFT_DELAY_LONG);
+		app_interfaces.delay.delayus(LPCICP_SHIFT_DELAY_LONG);
 	}
 }
 
@@ -118,9 +114,9 @@ static void LPCICP_Out(uint8_t *buff, uint16_t len)
 			LPCICP_PDA_CLR();
 		}
 
-		DelayUS(LPCICP_SHIFT_DELAY_LONG);
+		app_interfaces.delay.delayus(LPCICP_SHIFT_DELAY_LONG);
 		LPCICP_PCL_SET();
-		DelayUS(LPCICP_SHIFT_DELAY_SHORT);
+		app_interfaces.delay.delayus(LPCICP_SHIFT_DELAY_SHORT);
 	}
 
 	LPCICP_PDA_SETINPUT();

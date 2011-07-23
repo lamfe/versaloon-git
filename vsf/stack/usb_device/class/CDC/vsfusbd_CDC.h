@@ -1,6 +1,7 @@
 #ifndef __VSFUSBD_CDC_H_INCLUDED__
 #define __VSFUSBD_CDC_H_INCLUDED__
 
+#include "dal/usart_stream/usart_stream.h"
 #include "tool/list/list.h"
 
 struct vsfusbd_CDC_line_coding_t
@@ -33,8 +34,7 @@ extern const struct vsfusbd_class_protocol_t vsfusbd_CDCData_class;
 
 struct vsfusbd_CDC_param_t
 {
-	struct interface_usart_t *usart;
-	uint8_t usart_port;
+	struct usart_stream_info_t *usart_stream;
 	bool gpio_rts_enable;
 	uint8_t gpio_rts_port;
 	uint32_t gpio_rts_pin;

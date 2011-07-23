@@ -20,7 +20,7 @@
 #include "app_interfaces.h"
 #include "C2.h"
 
-#define C2_Delay()						DelayUS(0)
+#define C2_Delay()						app_interfaces.delay.delayus(0)
 #define C2_STROKE()						do{ C2_C2CK_CLR(); C2_Delay(); C2_C2CK_SET(); C2_Delay();}while(0)
 #define C2_START()						C2_STROKE()
 #define C2_END()						C2_STROKE()
@@ -31,7 +31,7 @@ void C2_Init(void)
 	// Reset here
 	C2_C2CK_CLR();
 	C2_C2CK_SETOUTPUT();
-	DelayMS(1);
+	app_interfaces.delay.delayms(1);
 	C2_C2CK_SET();
 }
 
@@ -122,7 +122,7 @@ uint8_t C2_ReadData(uint8_t *data)
 	C2_C2D_SETINPUT();
 	do{
 		C2_STROKE();
-		DelayUS(0);
+		C2_Delay();
 	}while(!C2_C2D_GET());
 
 	// DATA

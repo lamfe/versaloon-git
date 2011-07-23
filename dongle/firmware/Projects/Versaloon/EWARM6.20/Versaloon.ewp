@@ -87,7 +87,7 @@
         </option>
         <option>
           <name>OGLastSavedByProductVersion</name>
-          <state>6.20.2.52635</state>
+          <state>6.21.1.52845</state>
         </option>
         <option>
           <name>GeneralEnableMisra</name>
@@ -307,6 +307,7 @@
           <state>$PROJ_DIR$\..\..\..\USB_TO_XXX\</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\Port\IAR\</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\CMSIS\CM3\CoreSupport</state>
@@ -1000,7 +1001,7 @@
         </option>
         <option>
           <name>OGLastSavedByProductVersion</name>
-          <state>6.20.2.52635</state>
+          <state>6.21.1.52845</state>
         </option>
         <option>
           <name>GeneralEnableMisra</name>
@@ -1221,6 +1222,7 @@
           <state>$PROJ_DIR$\..\..\..\USB_TO_XXX\</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\Port\IAR\</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\CMSIS\CM3\CoreSupport</state>
@@ -2101,6 +2103,12 @@
           <name>$PROJ_DIR$\..\..\..\..\..\vsf\dal\sd\sd_spi_drv.c</name>
         </file>
       </group>
+      <group>
+        <name>usart_stream</name>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\vsf\dal\usart_stream\usart_stream.c</name>
+        </file>
+      </group>
       <file>
         <name>$PROJ_DIR$\..\..\..\..\..\vsf\dal\dal.c</name>
       </file>
@@ -2111,6 +2119,12 @@
         <name>cpu</name>
         <group>
           <name>stm32</name>
+          <group>
+            <name>adc</name>
+            <file>
+              <name>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\adc\STM32_ADC.c</name>
+            </file>
+          </group>
           <group>
             <name>eint</name>
             <file>
@@ -2224,58 +2238,13 @@
                     <name>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\misc.c</name>
                   </file>
                   <file>
-                    <name>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_adc.c</name>
-                  </file>
-                  <file>
-                    <name>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_bkp.c</name>
-                  </file>
-                  <file>
-                    <name>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_can.c</name>
-                  </file>
-                  <file>
-                    <name>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_cec.c</name>
-                  </file>
-                  <file>
-                    <name>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_crc.c</name>
-                  </file>
-                  <file>
-                    <name>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_dac.c</name>
-                  </file>
-                  <file>
-                    <name>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_dbgmcu.c</name>
-                  </file>
-                  <file>
                     <name>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_dma.c</name>
-                  </file>
-                  <file>
-                    <name>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_exti.c</name>
-                  </file>
-                  <file>
-                    <name>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_flash.c</name>
-                  </file>
-                  <file>
-                    <name>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_fsmc.c</name>
                   </file>
                   <file>
                     <name>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_gpio.c</name>
                   </file>
                   <file>
-                    <name>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_i2c.c</name>
-                  </file>
-                  <file>
-                    <name>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_iwdg.c</name>
-                  </file>
-                  <file>
-                    <name>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_pwr.c</name>
-                  </file>
-                  <file>
                     <name>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_rcc.c</name>
-                  </file>
-                  <file>
-                    <name>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_rtc.c</name>
-                  </file>
-                  <file>
-                    <name>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_sdio.c</name>
                   </file>
                   <file>
                     <name>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_spi.c</name>
@@ -2283,21 +2252,9 @@
                   <file>
                     <name>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_tim.c</name>
                   </file>
-                  <file>
-                    <name>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_usart.c</name>
-                  </file>
-                  <file>
-                    <name>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_wwdg.c</name>
-                  </file>
                 </group>
               </group>
             </group>
-            <file>
-              <name>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\HW.c</name>
-            </file>
-            <file>
-              <name>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\stm32f10x_it.c</name>
-            </file>
           </group>
           <group>
             <name>spi</name>
@@ -2312,11 +2269,20 @@
             </file>
           </group>
           <group>
+            <name>usart</name>
+            <file>
+              <name>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\usart\STM32_USART.c</name>
+            </file>
+          </group>
+          <group>
             <name>usbd</name>
             <file>
               <name>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\usbd\STM32_USBD.c</name>
             </file>
           </group>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\core.c</name>
+          </file>
         </group>
       </group>
       <file>

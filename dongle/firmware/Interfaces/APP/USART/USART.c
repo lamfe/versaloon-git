@@ -18,21 +18,25 @@
 #if INTERFACE_USART_EN
 
 #include "app_interfaces.h"
-#include "fifo.h"
+#include "tool/buffer/buffer.h"
+#include "dal/usart_stream/usart_stream.h"
 
-uint8_t USART_TX_buff[256], USART_RX_buff[256];
-FIFO USART_TX_fifo = {USART_TX_buff, sizeof(USART_TX_buff), 0, 0};
-FIFO USART_RX_fifo = {USART_RX_buff, sizeof(USART_RX_buff), 0, 0};
+#include "USART.h"
+
+extern uint8_t asyn_rx_buf[ASYN_DATA_BUFF_SIZE];
+struct usart_stream_info_t usart_stream_p0 = 
+{
+	0,								// usart_index
+	{{asyn_rx_buf, 1024}},			// fifo_tx
+	{{asyn_rx_buf + 1024, 1024}}	// fifo_rx
+};
 
 RESULT usart_init(uint8_t index)
 {
 	switch (index)
 	{
 	case 0:
-		FIFO_Reset(&USART_TX_fifo);
-		FIFO_Reset(&USART_RX_fifo);
-		USART_IF_Init();
-		return ERROR_OK;
+		return usart_stream_init(&usart_stream_p0);
 	default:
 		return ERROR_FAIL;
 	}
@@ -43,33 +47,53 @@ RESULT usart_fini(uint8_t index)
 	switch (index)
 	{
 	case 0:
-		USART_IF_Fini();
-		return ERROR_OK;
+		return usart_stream_fini(&usart_stream_p0);
 	default:
 		return ERROR_FAIL;
 	}
 }
 
 RESULT usart_config(uint8_t index, uint32_t baudrate, uint8_t datalength, 
-					uint8_t mode)
+					char paritybit, char stopbit, char handshake)
 {
-	uint8_t paritybit, stopbit;
+	REFERENCE_PARAMETER(handshake);
 	
 	switch (index)
 	{
 	case 0:
-		paritybit = mode & 0x03;
-		if (0x03 == paritybit)
+		usart_stream_p0.usart_info.datalength = datalength;
+		usart_stream_p0.usart_info.baudrate = baudrate;
+		usart_stream_p0.usart_info.mode = 0;
+		switch(stopbit)
 		{
-			paritybit = 1;
+		default:
+		case 0:
+			usart_stream_p0.usart_info.mode |= USART_STOPBITS_1;
+			break;
+		case 1:
+			usart_stream_p0.usart_info.mode |= USART_STOPBITS_1P5;
+			break;
+		case 2:
+			usart_stream_p0.usart_info.mode |= USART_STOPBITS_2;
+			break;
 		}
-		stopbit = (mode & 0x60) >> 5;
-		if (0x03 == stopbit)
+		switch(paritybit)
 		{
-			stopbit = 1;
+		default:
+		case 0:
+			usart_stream_p0.usart_info.mode |= USART_PARITY_NONE;
+			usart_stream_p0.usart_info.datalength = 8;
+			break;
+		case 1:
+			usart_stream_p0.usart_info.mode |= USART_PARITY_ODD;
+			usart_stream_p0.usart_info.datalength = 9;
+			break;
+		case 2:
+			usart_stream_p0.usart_info.mode |= USART_PARITY_EVEN;
+			usart_stream_p0.usart_info.datalength = 9;
+			break;
 		}
-		USART_IF_Setup(baudrate, datalength, paritybit, stopbit);
-		return ERROR_OK;
+		return usart_stream_config(&usart_stream_p0);
 	default:
 		return ERROR_FAIL;
 	}
@@ -77,6 +101,8 @@ RESULT usart_config(uint8_t index, uint32_t baudrate, uint8_t datalength,
 
 RESULT usart_send(uint8_t index, uint8_t *buf, uint16_t len)
 {
+	struct vsf_buffer_t buffer;
+	
 	switch (index)
 	{
 	case 0:
@@ -85,21 +111,9 @@ RESULT usart_send(uint8_t index, uint8_t *buf, uint16_t len)
 			return ERROR_FAIL;
 		}
 		
-		if (FIFO_Get_AvailableLength(&USART_TX_fifo) >= len)
-		{
-			if (len == FIFO_Add_Buffer(&USART_TX_fifo, buf, len))
-			{
-				return ERROR_OK;
-			}
-			else
-			{
-				return ERROR_FAIL;
-			}
-		}
-		else
-		{
-			return ERROR_FAIL;
-		}
+		buffer.buffer = buf;
+		buffer.size = len;
+		return usart_stream_tx(&usart_stream_p0, &buffer);
 	default:
 		return ERROR_FAIL;
 	}
@@ -107,6 +121,8 @@ RESULT usart_send(uint8_t index, uint8_t *buf, uint16_t len)
 
 RESULT usart_receive(uint8_t index, uint8_t *buf, uint16_t len)
 {
+	struct vsf_buffer_t buffer;
+	
 	switch (index)
 	{
 	case 0:
@@ -115,21 +131,9 @@ RESULT usart_receive(uint8_t index, uint8_t *buf, uint16_t len)
 			return ERROR_FAIL;
 		}
 		
-		if (FIFO_Get_Length(&USART_RX_fifo) >= len)
-		{
-			if (len == FIFO_Get_Buffer(&USART_RX_fifo, buf, len))
-			{
-				return ERROR_OK;
-			}
-			else
-			{
-				return ERROR_FAIL;
-			}
-		}
-		else
-		{
-			return ERROR_FAIL;
-		}
+		buffer.buffer = buf;
+		buffer.size = len;
+		return usart_stream_rx(&usart_stream_p0, &buffer);
 	default:
 		return ERROR_FAIL;
 	}
@@ -137,6 +141,8 @@ RESULT usart_receive(uint8_t index, uint8_t *buf, uint16_t len)
 
 RESULT usart_status(uint8_t index, struct usart_status_t *status)
 {
+	struct vsf_fifo_t *fifo_tx, *fifo_rx;
+	
 	switch (index)
 	{
 	case 0:
@@ -145,10 +151,12 @@ RESULT usart_status(uint8_t index, struct usart_status_t *status)
 			return ERROR_FAIL;
 		}
 		
-		status->tx_buff_avail = FIFO_Get_AvailableLength(&USART_TX_fifo);
-		status->tx_buff_size = FIFO_Get_Length(&USART_TX_fifo);
-		status->rx_buff_avail = FIFO_Get_AvailableLength(&USART_RX_fifo);
-		status->rx_buff_size = FIFO_Get_Length(&USART_RX_fifo);
+		fifo_tx = &usart_stream_p0.fifo_tx;
+		fifo_rx = &usart_stream_p0.fifo_rx;
+		status->tx_buff_avail = vsf_fifo_get_avail_length(fifo_tx);
+		status->tx_buff_size = vsf_fifo_get_data_length(fifo_tx);
+		status->rx_buff_avail = vsf_fifo_get_avail_length(fifo_rx);
+		status->rx_buff_size = vsf_fifo_get_data_length(fifo_rx);
 		return ERROR_OK;
 	default:
 		return ERROR_FAIL;
@@ -160,12 +168,7 @@ RESULT usart_poll(uint8_t index)
 	switch (index)
 	{
 	case 0:
-		if ((USART_GetFlagStatus(USART_DEF_PORT, USART_FLAG_TC) == SET) && 
-			FIFO_Get_Length(&USART_TX_fifo))
-		{
-			USART_SendData(USART_DEF_PORT, FIFO_Get_Byte(&USART_TX_fifo));
-		}
-		return ERROR_OK;
+		return usart_stream_poll(&usart_stream_p0);
 	default:
 		return ERROR_FAIL;
 	}

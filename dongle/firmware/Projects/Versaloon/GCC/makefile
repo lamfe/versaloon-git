@@ -43,7 +43,6 @@ STM32_LIB_DIR = $(STM32_IFACES_DIR)/hw/STM32F10x_Lib
 # add library directory to USR_LIBS
 USR_SRCS+= $(SRCDIR)/main.c $(SRCDIR)/usb_protocol_Versaloon.c
 USR_INCS+= -I $(PRJDIR)/..
-USR_SRCS+= $(STM32_IFACES_DIR)/hw/HW.c $(STM32_IFACES_DIR)/hw/stm32f10x_it.c
 USR_INCS+= -I $(STM32_IFACES_DIR)/hw
 #USR_DEFS+= -DADD_USER_DEFINES_HERE
 #USR_LIBS+= -L./
@@ -98,17 +97,22 @@ USR_INCS+= -I $(APP_IFACES_DIR) \
 USR_SRCS+= $(VSFDIR)/interfaces/interfaces.c
 USR_INCS+= -I $(VSFDIR) -I $(VSFDIR)/interfaces
 
-USR_SRCS+= $(STM32_IFACES_DIR)/gpio/STM32_GPIO.c \
+USR_SRCS+= $(STM32_IFACES_DIR)/core.c \
+  $(STM32_IFACES_DIR)/gpio/STM32_GPIO.c \
   $(STM32_IFACES_DIR)/usbd/STM32_USBD.c \
   $(STM32_IFACES_DIR)/spi/STM32_SPI.c \
   $(STM32_IFACES_DIR)/timer/STM32_TIM.c \
-  $(STM32_IFACES_DIR)/eint/STM32_EINT.c
+  $(STM32_IFACES_DIR)/eint/STM32_EINT.c \
+  $(STM32_IFACES_DIR)/adc/STM32_ADC.c \
+  $(STM32_IFACES_DIR)/usart/STM32_USART.c
 USR_INCS+= -I $(STM32_IFACES_DIR) \
   -I $(STM32_IFACES_DIR)/gpio \
   -I $(STM32_IFACES_DIR)/usbd \
   -I $(STM32_IFACES_DIR)/spi \
   -I $(STM32_IFACES_DIR)/timer \
-  -I $(STM32_IFACES_DIR)/eint
+  -I $(STM32_IFACES_DIR)/eint \
+  -I $(STM32_IFACES_DIR)/adc \
+  -I $(STM32_IFACES_DIR)/usart
 
 #VSF dal
 USR_SRCS+= $(VSFDIR)/dal/dal.c \
@@ -118,7 +122,8 @@ USR_SRCS+= $(VSFDIR)/dal/dal.c \
   $(VSFDIR)/dal/ee93cx6/ee93cx6_drv.c \
   $(VSFDIR)/dal/mal/mal.c \
   $(VSFDIR)/dal/mic2826/mic2826_drv.c \
-  $(VSFDIR)/dal/nrf24l01/nrf24l01_drv.c
+  $(VSFDIR)/dal/nrf24l01/nrf24l01_drv.c \
+  $(VSFDIR)/dal/usart_stream/usart_stream.c
 
 #VSF stack
 USR_SRCS+= $(VSFDIR)/stack/usb_device/vsf_usbd.c \
@@ -197,28 +202,11 @@ LIBSTM32_SRCS = \
   $(STM32_LIB_DIR)/Libraries/CMSIS/CM3/CoreSupport/core_cm3.c \
   $(STM32_LIB_DIR)/Libraries/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c \
   $(STM32_LIB_DIR)/Libraries/STM32F10x_StdPeriph_Driver/src/misc.c \
-  $(STM32_LIB_DIR)/Libraries/STM32F10x_StdPeriph_Driver/src/stm32f10x_adc.c \
-  $(STM32_LIB_DIR)/Libraries/STM32F10x_StdPeriph_Driver/src/stm32f10x_bkp.c \
-  $(STM32_LIB_DIR)/Libraries/STM32F10x_StdPeriph_Driver/src/stm32f10x_can.c \
-  $(STM32_LIB_DIR)/Libraries/STM32F10x_StdPeriph_Driver/src/stm32f10x_cec.c \
-  $(STM32_LIB_DIR)/Libraries/STM32F10x_StdPeriph_Driver/src/stm32f10x_crc.c \
-  $(STM32_LIB_DIR)/Libraries/STM32F10x_StdPeriph_Driver/src/stm32f10x_dac.c \
-  $(STM32_LIB_DIR)/Libraries/STM32F10x_StdPeriph_Driver/src/stm32f10x_dbgmcu.c \
   $(STM32_LIB_DIR)/Libraries/STM32F10x_StdPeriph_Driver/src/stm32f10x_dma.c \
-  $(STM32_LIB_DIR)/Libraries/STM32F10x_StdPeriph_Driver/src/stm32f10x_exti.c \
-  $(STM32_LIB_DIR)/Libraries/STM32F10x_StdPeriph_Driver/src/stm32f10x_flash.c \
-  $(STM32_LIB_DIR)/Libraries/STM32F10x_StdPeriph_Driver/src/stm32f10x_fsmc.c \
   $(STM32_LIB_DIR)/Libraries/STM32F10x_StdPeriph_Driver/src/stm32f10x_gpio.c \
-  $(STM32_LIB_DIR)/Libraries/STM32F10x_StdPeriph_Driver/src/stm32f10x_i2c.c \
-  $(STM32_LIB_DIR)/Libraries/STM32F10x_StdPeriph_Driver/src/stm32f10x_iwdg.c \
-  $(STM32_LIB_DIR)/Libraries/STM32F10x_StdPeriph_Driver/src/stm32f10x_pwr.c \
   $(STM32_LIB_DIR)/Libraries/STM32F10x_StdPeriph_Driver/src/stm32f10x_rcc.c \
-  $(STM32_LIB_DIR)/Libraries/STM32F10x_StdPeriph_Driver/src/stm32f10x_rtc.c \
-  $(STM32_LIB_DIR)/Libraries/STM32F10x_StdPeriph_Driver/src/stm32f10x_sdio.c \
   $(STM32_LIB_DIR)/Libraries/STM32F10x_StdPeriph_Driver/src/stm32f10x_spi.c \
-  $(STM32_LIB_DIR)/Libraries/STM32F10x_StdPeriph_Driver/src/stm32f10x_tim.c \
-  $(STM32_LIB_DIR)/Libraries/STM32F10x_StdPeriph_Driver/src/stm32f10x_usart.c \
-  $(STM32_LIB_DIR)/Libraries/STM32F10x_StdPeriph_Driver/src/stm32f10x_wwdg.c
+  $(STM32_LIB_DIR)/Libraries/STM32F10x_StdPeriph_Driver/src/stm32f10x_tim.c
 LIBSTM32_INCS = \
   -I $(STM32_LIB_DIR)/Libraries/STM32F10x_StdPeriph_Driver/inc \
   -I $(STM32_LIB_DIR)/Libraries/CMSIS/CM3/DeviceSupport/ST/STM32F10x \

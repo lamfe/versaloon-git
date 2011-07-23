@@ -14,9 +14,6 @@
  *      2008-11-07:     created(by SimonQian)                             *
  **************************************************************************/
 
-#define JTAG_TAP_HS_MAX_KHZ				(_SYS_FREQUENCY * 500 / 2)		// in KHz
-#define JTAG_TAP_HS_MIN_KHZ				(_SYS_FREQUENCY * 500 / 256)	// in KHz
-
 RESULT jtaghl_init(uint8_t index);
 RESULT jtaghl_fini(uint8_t index);
 RESULT jtaghl_config_speed(uint8_t index, uint32_t kHz);

@@ -20,7 +20,7 @@
 #include "app_interfaces.h"
 #include "MSP430_JTAG.h"
 
-#define MSP430_JTAG_DELAY()				DelayUS(0)
+#define MSP430_JTAG_DELAY()				app_interfaces.delay.delayus(0)
 #define MSP430_JTAG_IR_LEN				8
 
 static void MSP430_JTAG_Init(uint8_t has_test)
@@ -32,7 +32,7 @@ static void MSP430_JTAG_Init(uint8_t has_test)
 	JTAG_TAP_TDO_SETINPUT();
 	JTAG_TAP_TCK_CLR();
 	JTAG_TAP_TCK_SETOUTPUT();
-	DelayMS(50);
+	app_interfaces.delay.delayms(50);
 
 	JTAG_TAP_TMS_SET();
 	JTAG_TAP_TDI_SET();
@@ -50,21 +50,21 @@ static void MSP430_JTAG_Init(uint8_t has_test)
 			MSP430_JTAG_TEST_SETOUTPUT();
 			JTAG_TAP_SRST_SET();
 			JTAG_TAP_SRST_SETOUTPUT();
-			DelayMS(1);		// wait for SRST stable
+			app_interfaces.delay.delayms(1);		// wait for SRST stable
 
 			// now TEST low, SRST high
 			MSP430_JTAG_TEST_SET();	// BSL disabled
-			DelayMS(1);
+			app_interfaces.delay.delayms(1);
 			JTAG_TAP_SRST_CLR();
-			DelayMS(1);
+			app_interfaces.delay.delayms(1);
 			MSP430_JTAG_TEST_CLR();
-			DelayMS(1);
+			app_interfaces.delay.delayms(1);
 			MSP430_JTAG_TEST_SET();
-			DelayMS(1);
+			app_interfaces.delay.delayms(1);
 		}
 
 		JTAG_TAP_SRST_SETINPUT();	// release SRST
-		DelayMS(1);
+		app_interfaces.delay.delayms(1);
 	}
 	else
 	{
@@ -77,7 +77,7 @@ static void MSP430_JTAG_Fini(void)
 {
 #if 1
 	MSP430_JTAG_TEST_CLR();
-	DelayUS(50);
+	app_interfaces.delay.delayus(50);
 	JTAG_TAP_TMS_CLR();
 	JTAG_TAP_TDI_CLR();
 	JTAG_TAP_TCK_CLR();
@@ -248,11 +248,11 @@ static void MSP430_JTAG_Reset(void)
 
 	// check fuse
 	JTAG_TAP_TMS_CLR();
-	DelayMS(1);
+	app_interfaces.delay.delayms(1);
 	JTAG_TAP_TMS_SET();
-	DelayUS(5);
+	app_interfaces.delay.delayus(5);
 	JTAG_TAP_TMS_CLR();
-	DelayMS(1);
+	app_interfaces.delay.delayms(1);
 	JTAG_TAP_TMS_SET();
 
 	for(i = 7; i > 0; i--)

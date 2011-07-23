@@ -115,7 +115,43 @@ static RESULT versaloon_idle(uint8_t iface, struct vsfusbd_device_t *device)
 	}
 	else
 	{
-		PWREXT_Check(1);
+		static uint16_t power_check_state = 0;
+		
+		switch (power_check_state)
+		{
+		case 0:
+			interfaces->adc.start(TVCC_ADC_PORT, TVCC_ADC_CHANNEL);
+			power_check_state++;
+			break;
+		case 1:
+			if (interfaces->adc.isready(TVCC_ADC_PORT, TVCC_ADC_CHANNEL))
+			{
+				PWREXT_Vtarget = 
+					interfaces->adc.get(TVCC_ADC_PORT, TVCC_ADC_CHANNEL) * 
+						TVCC_SAMPLE_DIV * 3300 / 4096;
+				
+				if(PWREXT_Vtarget > TVCC_SAMPLE_MIN_POWER)
+				{
+					LED_RED_ON();
+				}
+				else
+				{
+					LED_RED_OFF();
+				}
+				if((PWREXT_Vtarget < TVCC_SAMPLE_MIN_POWER))
+				{
+					PWREXT_ForceRelease();
+				}
+				power_check_state++;
+			}
+			break;
+		default:
+			if (++power_check_state > 0x3FFF)
+			{
+				power_check_state = 0;
+			}
+			break;
+		}
 	}
 	
 	return ERROR_OK;
@@ -363,11 +399,11 @@ struct vsfusbd_device_t usb_device =
 	(struct interface_usbd_t *)&core_interfaces.usbd
 };
 
+extern struct usart_stream_info_t usart_stream_p0;
 struct vsfusbd_CDC_param_t Versaloon_CDC_param = 
 {
-	(struct interface_usart_t *)&app_interfaces.usart,
-				// usart
-	0,			// usart_port
+	&usart_stream_p0,
+				// usart_stream
 	false,		// gpio_rts_enable
 	0,			// gpio_rts_port
 	GPIO_TDI,	// gpio_rts_pin
@@ -389,9 +425,46 @@ struct vsfusbd_CDC_param_t Versaloon_CDC_param =
 
 RESULT usb_protocol_init(void)
 {
+	NVIC_InitTypeDef NVIC_InitStructure;
+	
+	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
+	
+	NVIC_InitStructure.NVIC_IRQChannel = USART1_IRQn;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+	NVIC_Init(&NVIC_InitStructure);
+	
+	NVIC_InitStructure.NVIC_IRQChannel = USBWakeUp_IRQn;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 2;
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+	NVIC_Init(&NVIC_InitStructure);
+	
+	NVIC_InitStructure.NVIC_IRQChannel = USB_LP_CAN1_RX0_IRQn;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+	NVIC_Init(&NVIC_InitStructure);
+	
+	NVIC_InitStructure.NVIC_IRQChannel = USB_HP_CAN1_TX_IRQn;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+	NVIC_Init(&NVIC_InitStructure);
+	
+	LED_RED_INIT();
+	LED_RED_OFF();
+	LED_GREEN_INIT();
 	LED_GREEN_ON();
+	LED_USB_INIT();
 	LED_USB_OFF();
 	
+	app_interfaces.delay.init();
+	interfaces->adc.init(TVCC_ADC_PORT);
+	interfaces->adc.config(TVCC_ADC_PORT, CORE_APB2_FREQ_HZ / 8, ADC_ALIGNRIGHT);
+	interfaces->adc.config_channel(TVCC_ADC_PORT, TVCC_ADC_CHANNEL, 0xFF);
+	interfaces->adc.calibrate(TVCC_ADC_PORT, TVCC_ADC_CHANNEL);
 	USB_TO_XXX_Init(asyn_rx_buf + 2048);
 	
 	vsfusbd_CDC_set_param(&Versaloon_CDC_param);

@@ -14,15 +14,18 @@
  *      2011-05-09:     created(by SimonQian)                             *
  **************************************************************************/
 
-#include "app_cfg.h"
-
+#include "app_type.h"
+#include "compiler.h"
 #include "interfaces.h"
-#include "stm32f10x_conf.h"
-#include "HW.h"
+
 #include "STM32_USBD.h"
 
 #include "usb_regs.h"
 #include "usb_mem.h"
+
+#define STM32_RCC_CFGR_USBPRE				((uint32_t)1 << 22)
+
+#define STM32_RCC_APB1ENR_USBEN				((uint32_t)1 << 23)
 
 #define STM32_USBD_EP_NUM					8
 
@@ -39,6 +42,8 @@ bool stm32_usbd_OUT_dbuffer[STM32_USBD_EP_NUM];
 
 RESULT stm32_usbd_init(void *device)
 {
+	struct stm32_info_t *stm32_info;
+	
 	memset(stm32_usbd_IN_handlers, 0, sizeof(stm32_usbd_IN_handlers));
 	memset(stm32_usbd_OUT_handlers, 0, sizeof(stm32_usbd_OUT_handlers));
 	memset(stm32_usbd_IN_epsize, 0, sizeof(stm32_usbd_IN_epsize));
@@ -46,6 +51,24 @@ RESULT stm32_usbd_init(void *device)
 	memset(stm32_usbd_IN_dbuffer, 0, sizeof(stm32_usbd_IN_dbuffer));
 	memset(stm32_usbd_OUT_dbuffer, 0, sizeof(stm32_usbd_OUT_dbuffer));
 	USBD_Device = device;
+	
+	if (ERROR_OK != stm32_interface_get_info(&stm32_info))
+	{
+		return ERROR_FAIL;
+	}
+	switch (stm32_info->sys_freq_hz)
+	{
+	case 72 * 1000 * 1000:
+		RCC->CFGR &= ~STM32_RCC_CFGR_USBPRE;
+		break;
+	case 48 * 1000 * 1000:
+		RCC->CFGR |= STM32_RCC_CFGR_USBPRE;
+		break;
+	default:
+		return ERROR_FAIL;
+	}
+	RCC->APB1ENR |= STM32_RCC_APB1ENR_USBEN;
+	
 	// reset
 	SetCNTR(CNTR_FRES);
 	SetCNTR(0);
@@ -608,4 +631,18 @@ void USB_Istr(void)
 	{
 		CTR_LP();
 	}
+}
+
+ROOTFUNC void USB_LP_CAN1_RX0_IRQHandler(void)
+{
+  USB_Istr();
+}
+
+ROOTFUNC void USB_HP_CAN1_TX_IRQHandler(void)
+{
+  CTR_HP();
+}
+
+ROOTFUNC void USBWakeUp_IRQHandler(void)
+{
 }

@@ -36,7 +36,7 @@ uint8_t SWD_Trn = 1;
 uint16_t SWD_Retry = 0;
 uint16_t SWD_Delay = 0;
 
-#define SWD_Delay()		DelayUS(SWD_Delay)
+#define SWD_Delay()		app_interfaces.delay.delayus(SWD_Delay)
 
 uint8_t (*SWD_SeqIn)(uint8_t *seq, uint16_t num_of_bits);
 uint8_t (*SWD_SeqOut)(uint8_t *seq, uint16_t num_of_bits);

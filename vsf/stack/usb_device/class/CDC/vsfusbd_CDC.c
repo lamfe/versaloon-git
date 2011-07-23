@@ -4,6 +4,7 @@
 #include "stack/usb_device/vsf_usbd_const.h"
 #include "stack/usb_device/vsf_usbd.h"
 #include "stack/usb_device/vsf_usbd_drv_callback.h"
+#include "tool/buffer/buffer.h"
 
 #include "vsfusbd_CDC.h"
 
@@ -33,7 +34,7 @@ static RESULT vsfusbd_CDCData_OUT_hanlder(void *p, uint8_t ep)
 	struct vsfusbd_CDC_param_t *tmp = NULL;
 	uint16_t pkg_size;
 	uint8_t buffer[64];
-	struct usart_status_t status;
+	struct vsf_buffer_t tx_buffer;
 	
 	if (iface < 0)
 	{
@@ -56,12 +57,13 @@ static RESULT vsfusbd_CDCData_OUT_hanlder(void *p, uint8_t ep)
 		device->drv->ep.set_OUT_state(ep, USB_EP_STAT_ACK);
 	}
 	
-	tmp->usart->status(tmp->usart_port, &status);
-	if (status.tx_buff_avail < 64)
+	if (vsf_fifo_get_avail_length(&tmp->usart_stream->fifo_tx) < 64)
 	{
 		tmp->cdc_out_enable = false;
 	}
-	return tmp->usart->send(tmp->usart_port, buffer, pkg_size);
+	tx_buffer.buffer= buffer;
+	tx_buffer.size = pkg_size;
+	return usart_stream_tx(tmp->usart_stream, &tx_buffer);
 }
 
 static RESULT vsfusbd_CDCData_IN_hanlder(void *p, uint8_t ep)
@@ -72,7 +74,8 @@ static RESULT vsfusbd_CDCData_IN_hanlder(void *p, uint8_t ep)
 	struct vsfusbd_CDC_param_t *tmp = NULL;
 	uint16_t pkg_size;
 	uint8_t buffer[64];
-	struct usart_status_t status;
+	uint32_t rx_data_length;
+	struct vsf_buffer_t rx_buffer;
 	
 	if (iface < 0)
 	{
@@ -84,12 +87,14 @@ static RESULT vsfusbd_CDCData_IN_hanlder(void *p, uint8_t ep)
 		return ERROR_FAIL;
 	}
 	
-	tmp->usart->status(tmp->usart_port, &status);
-	if (status.rx_buff_size)
+	rx_data_length = vsf_fifo_get_data_length(&tmp->usart_stream->fifo_rx);
+	if (rx_data_length)
 	{
-		pkg_size = (status.rx_buff_size > sizeof(buffer)) ? sizeof(buffer) : 
-				status.rx_buff_size;
-		tmp->usart->receive(tmp->usart_port, buffer, pkg_size);
+		pkg_size = (rx_data_length > sizeof(buffer)) ? 
+						sizeof(buffer) : rx_data_length;
+		rx_buffer.buffer = buffer;
+		rx_buffer.size = pkg_size;
+		usart_stream_rx(tmp->usart_stream, &rx_buffer);
 		device->drv->ep.write_IN_buffer(ep, buffer, pkg_size);
 		device->drv->ep.set_IN_count(ep, pkg_size);
 	}
@@ -108,7 +113,6 @@ static RESULT vsfusbd_CDCData_class_init(uint8_t iface,
 	struct vsfusbd_CDC_param_t *tmp = vsfusbd_CDC_find_param(iface);
 	uint8_t port;
 	uint32_t pin;
-	uint8_t usart_mode;
 	
 	if ((NULL == tmp) || 
 		(ERROR_OK != device->drv->ep.set_IN_handler(tmp->ep_in, 
@@ -137,60 +141,62 @@ static RESULT vsfusbd_CDCData_class_init(uint8_t iface,
 		interfaces->gpio.config(port, pin, pin, 0, 0);
 	}
 	
-	port = tmp->usart_port;
-	tmp->usart->init(port);
-	usart_mode = 0;
-	switch (tmp->line_coding.paritytype)
+	usart_stream_init(tmp->usart_stream);
+	
+	tmp->usart_stream->usart_info.datalength = tmp->line_coding.datatype;
+	tmp->usart_stream->usart_info.baudrate = tmp->line_coding.bitrate;
+	tmp->usart_stream->usart_info.mode = 0;
+	switch(tmp->line_coding.stopbittype)
 	{
 	default:
 	case 0:
-		usart_mode |= USART_PARITY_NONE;
+		tmp->usart_stream->usart_info.mode |= USART_STOPBITS_1;
 		break;
 	case 1:
-		usart_mode |= USART_PARITY_ODD;
+		tmp->usart_stream->usart_info.mode |= USART_STOPBITS_1P5;
 		break;
 	case 2:
-		usart_mode |= USART_PARITY_EVEN;
+		tmp->usart_stream->usart_info.mode |= USART_STOPBITS_2;
 		break;
 	}
-	switch (tmp->line_coding.stopbittype)
+	switch(tmp->line_coding.paritytype)
 	{
 	default:
 	case 0:
-		usart_mode |= USART_STOPBITS_1;
+		tmp->usart_stream->usart_info.mode |= USART_PARITY_NONE;
+		tmp->usart_stream->usart_info.datalength = 8;
 		break;
 	case 1:
-		usart_mode |= USART_STOPBITS_1P5;
+		tmp->usart_stream->usart_info.mode |= USART_PARITY_ODD;
+		tmp->usart_stream->usart_info.datalength = 9;
 		break;
 	case 2:
-		usart_mode |= USART_STOPBITS_2;
+		tmp->usart_stream->usart_info.mode |= USART_PARITY_EVEN;
+		tmp->usart_stream->usart_info.datalength = 9;
 		break;
 	}
-	return tmp->usart->config(port, tmp->line_coding.bitrate, 
-		tmp->line_coding.datatype, usart_mode);
+	return usart_stream_config(tmp->usart_stream);
 }
 
 static RESULT vsfusbd_CDCData_class_poll(uint8_t iface, 
 											struct vsfusbd_device_t *device)
 {
 	struct vsfusbd_CDC_param_t *tmp = vsfusbd_CDC_find_param(iface);
-	struct usart_status_t status;
 	
-	if ((NULL == tmp) || 
-		(ERROR_OK != tmp->usart->status(tmp->usart_port, &status)))
+	if (NULL == tmp)
 	{
 		return ERROR_FAIL;
 	}
 	
 	if (!tmp->cdc_out_enable)
 	{
-		if (status.tx_buff_avail >= 64)
+		if (vsf_fifo_get_avail_length(&tmp->usart_stream->fifo_tx) >= 64)
 		{
 			tmp->cdc_out_enable = true;
 			device->drv->ep.set_OUT_state(tmp->ep_out, USB_EP_STAT_ACK);
 		}
 	}
-	return tmp->usart->poll(tmp->usart_port);
+	return usart_stream_poll(tmp->usart_stream);
 }
 
 static RESULT vsfusbd_CDCMaster_GetLineCoding_prepare(
@@ -239,42 +245,45 @@ static RESULT vsfusbd_CDCMaster_SetLineCoding_process(
 {
 	struct vsfusbd_ctrl_request_t *request = &device->ctrl_handler.request;
 	struct vsfusbd_CDC_param_t *tmp = vsfusbd_CDC_find_param(request->index);
-	uint8_t usart_mode;
 	
 	tmp->line_coding.bitrate = GET_LE_U32(&buffer->buffer[0]);
 	tmp->line_coding.stopbittype = buffer->buffer[4];
 	tmp->line_coding.paritytype = buffer->buffer[5];
 	tmp->line_coding.datatype = buffer->buffer[6];
 	
-	usart_mode = 0;
-	switch (tmp->line_coding.paritytype)
+	tmp->usart_stream->usart_info.datalength = tmp->line_coding.datatype;
+	tmp->usart_stream->usart_info.baudrate = tmp->line_coding.bitrate;
+	tmp->usart_stream->usart_info.mode = 0;
+	switch(tmp->line_coding.stopbittype)
 	{
 	default:
 	case 0:
-		usart_mode |= USART_PARITY_NONE;
+		tmp->usart_stream->usart_info.mode |= USART_STOPBITS_1;
 		break;
 	case 1:
-		usart_mode |= USART_PARITY_ODD;
+		tmp->usart_stream->usart_info.mode |= USART_STOPBITS_1P5;
 		break;
 	case 2:
-		usart_mode |= USART_PARITY_EVEN;
+		tmp->usart_stream->usart_info.mode |= USART_STOPBITS_2;
 		break;
 	}
-	switch (tmp->line_coding.stopbittype)
+	switch(tmp->line_coding.paritytype)
 	{
 	default:
 	case 0:
-		usart_mode |= USART_STOPBITS_1;
+		tmp->usart_stream->usart_info.mode |= USART_PARITY_NONE;
+		tmp->usart_stream->usart_info.datalength = 8;
 		break;
 	case 1:
-		usart_mode |= USART_STOPBITS_1P5;
+		tmp->usart_stream->usart_info.mode |= USART_PARITY_ODD;
+		tmp->usart_stream->usart_info.datalength = 9;
 		break;
 	case 2:
-		usart_mode |= USART_STOPBITS_2;
+		tmp->usart_stream->usart_info.mode |= USART_PARITY_EVEN;
+		tmp->usart_stream->usart_info.datalength = 9;
 		break;
 	}
-	return tmp->usart->config(tmp->usart_port, tmp->line_coding.bitrate, 
-		tmp->line_coding.datatype, usart_mode);
+	return usart_stream_config(tmp->usart_stream);
 }
 
 static RESULT vsfusbd_CDCMaster_SetControlLineState_prepare(

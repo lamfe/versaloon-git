@@ -21,11 +21,11 @@
 #include "PowerExt.h"
 
 static uint8_t PWREXT_EnableCount = 0;
+uint16_t PWREXT_Vtarget = 0;
 
 void PWREXT_Acquire(void)
 {
-	uint16_t vtarget = SampleVtarget();
-	if(vtarget < TVCC_SAMPLE_MIN_POWER)
+	if(PWREXT_Vtarget < TVCC_SAMPLE_MIN_POWER)
 	{
 		if(!PWREXT_EnableCount)
 		{
@@ -60,9 +60,10 @@ uint8_t PWREXT_GetState(void)
 	return PWREXT_EnableCount;
 }
 
-uint8_t power_state = 0;
 RESULT target_voltage_set(uint8_t index, uint16_t voltage)
 {
+	static uint8_t power_state = 0;
+	
 	switch (index)
 	{
 	case 0:
@@ -103,7 +104,7 @@ RESULT target_voltage_get(uint8_t index, uint16_t *voltage)
 {
 	if (voltage != NULL)
 	{
-		*voltage = Vtarget;
+		*voltage = PWREXT_Vtarget;
 	}
 	return ERROR_OK;
 }
