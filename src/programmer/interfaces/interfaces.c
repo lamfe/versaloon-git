@@ -414,7 +414,14 @@ VSS_HANDLER(interface_set_target_voltage)
 	}
 	
 	voltage = (uint16_t)strtoul(argv[1], NULL, 0);
-	return ifs->target_voltage.set(0, voltage);
+	if ((ERROR_OK != ifs->target_voltage.set(0, voltage)) || 
+		(ERROR_OK != ifs->peripheral_commit()))
+	{
+		return ERROR_FAIL;
+	}
+
+	vss_run_script("tvcc.get");
+	return ERROR_OK;
 }
 
 // gpio

@@ -21,7 +21,9 @@
 #include "PowerExt.h"
 
 static uint8_t PWREXT_EnableCount = 0;
-uint16_t PWREXT_Vtarget = 0;
+static uint16_t PWREXT_Vtarget = 0;
+static uint16_t PWREXT_FSMState = 0;
+static uint8_t PWREXT_PowerState = 0;
 
 void PWREXT_Acquire(void)
 {
@@ -62,39 +64,50 @@ uint8_t PWREXT_GetState(void)
 
 RESULT target_voltage_set(uint8_t index, uint16_t voltage)
 {
-	static uint8_t power_state = 0;
+	uint8_t i;
 	
 	switch (index)
 	{
 	case 0:
 		if (!PWREXT_GetState())
 		{
-			power_state = 0;
+			PWREXT_PowerState = 0;
 		}
-
+		
 		if(voltage == 3300)
 		{
 			// only support 3.3V
-			if (!power_state)
+			if (!PWREXT_PowerState)
 			{
-				power_state = 1;
+				PWREXT_PowerState = 1;
 				PWREXT_Acquire();
 			}
-			return ERROR_OK;
 		}
 		else if(voltage == 0)
 		{
-			if (power_state)
+			if (PWREXT_PowerState)
 			{
-				power_state = 0;
+				PWREXT_PowerState = 0;
 				PWREXT_ForceRelease();
 			}
-			return ERROR_OK;
 		}
 		else
 		{
 			return ERROR_FAIL;
 		}
+		
+		app_interfaces.delay.delayms(10);
+		// sample 10 times to ensure 
+		// a valid voltage after change before next operation
+		for (i = 0; i < 10; i++)
+		{
+			PWREXT_FSMState = 0;
+			while (PWREXT_FSMState < 2)
+			{
+				target_voltage_poll(index);
+			}
+		}
+		return ERROR_OK;
 	default:
 		return ERROR_FAIL;
 	}
@@ -102,11 +115,63 @@ RESULT target_voltage_set(uint8_t index, uint16_t voltage)
 
 RESULT target_voltage_get(uint8_t index, uint16_t *voltage)
 {
-	if (voltage != NULL)
+	switch (index)
 	{
-		*voltage = PWREXT_Vtarget;
+	case 0:
+		if (voltage != NULL)
+		{
+			*voltage = PWREXT_Vtarget;
+		}
+		return ERROR_OK;
+	default:
+		return ERROR_FAIL;
 	}
-	return ERROR_OK;
+}
+
+RESULT target_voltage_poll(uint8_t index)
+{
+	switch (index)
+	{
+	case 0:
+		switch (PWREXT_FSMState)
+		{
+		case 0:
+			interfaces->adc.start(TVCC_ADC_PORT, TVCC_ADC_CHANNEL);
+			PWREXT_FSMState++;
+			break;
+		case 1:
+			if (interfaces->adc.isready(TVCC_ADC_PORT, TVCC_ADC_CHANNEL))
+			{
+				PWREXT_Vtarget = 
+					interfaces->adc.get(TVCC_ADC_PORT, TVCC_ADC_CHANNEL) * 
+						TVCC_SAMPLE_DIV * 3300 / 4096;
+				
+				if(PWREXT_Vtarget > TVCC_SAMPLE_MIN_POWER)
+				{
+					LED_RED_ON();
+				}
+				else
+				{
+					LED_RED_OFF();
+				}
+				if((PWREXT_Vtarget < TVCC_SAMPLE_MIN_POWER))
+				{
+					PWREXT_ForceRelease();
+				}
+				PWREXT_FSMState++;
+			}
+			break;
+		default:
+			if (++PWREXT_FSMState > 0x3FFF)
+			{
+				PWREXT_FSMState = 0;
+			}
+			break;
+		}
+		return ERROR_OK;
+	default:
+		return ERROR_FAIL;
+	}
 }
 
 #endif /* USB_TO_POWER_EN || POWER_OUT_EN*/

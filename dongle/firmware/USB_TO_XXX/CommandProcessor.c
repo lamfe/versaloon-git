@@ -28,6 +28,8 @@ uint8_t Versaloon_Ver[] = "Versaloon(" _HARDWARE_VER_STR ")by Simon(compiled on 
 
 static void Versaloon_ProcessCommonCmd(uint8_t *dat, uint16_t len)
 {
+	uint16_t voltage;
+	
 	switch(dat[0])
 	{
 	case VERSALOON_GET_INFO:
@@ -36,7 +38,8 @@ static void Versaloon_ProcessCommonCmd(uint8_t *dat, uint16_t len)
 		rep_len = sizeof(Versaloon_Ver) + 2;
 		break;
 	case VERSALOON_GET_TVCC:
-		SET_LE_U16(&dat[0], PWREXT_Vtarget);
+		app_interfaces.target_voltage.get(0, &voltage);
+		SET_LE_U16(&dat[0], voltage);
 		rep_len = 2;
 		break;
 	case VERSALOON_GET_HARDWARE:

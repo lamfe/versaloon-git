@@ -635,12 +635,12 @@ void USB_Istr(void)
 
 ROOTFUNC void USB_LP_CAN1_RX0_IRQHandler(void)
 {
-  USB_Istr();
+	USB_Istr();
 }
 
 ROOTFUNC void USB_HP_CAN1_TX_IRQHandler(void)
 {
-  CTR_HP();
+	CTR_HP();
 }
 
 ROOTFUNC void USBWakeUp_IRQHandler(void)
