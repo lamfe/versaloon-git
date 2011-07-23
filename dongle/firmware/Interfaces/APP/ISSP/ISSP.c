@@ -152,12 +152,13 @@ void ISSP_Vector_0s(void)
 RESULT issp_enter_program_mode(uint8_t index, uint8_t mode)
 {
 	uint16_t to = 1000;
+	uint16_t voltage;
 
 	switch (index)
 	{
 	case 0:
-		if((mode == ISSP_PM_POWER_ON) && 
-		   (PWREXT_Vtarget > TVCC_SAMPLE_MIN_POWER))
+		if((ERROR_OK != app_interfaces.target_voltage.get(0, &voltage)) || 
+			((mode == ISSP_PM_POWER_ON) && (voltage > TVCC_SAMPLE_MIN_POWER)))
 		{
 			return ERROR_FAIL;
 		}

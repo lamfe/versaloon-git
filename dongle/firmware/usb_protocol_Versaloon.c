@@ -115,43 +115,7 @@ static RESULT versaloon_idle(uint8_t iface, struct vsfusbd_device_t *device)
 	}
 	else
 	{
-		static uint16_t power_check_state = 0;
-		
-		switch (power_check_state)
-		{
-		case 0:
-			interfaces->adc.start(TVCC_ADC_PORT, TVCC_ADC_CHANNEL);
-			power_check_state++;
-			break;
-		case 1:
-			if (interfaces->adc.isready(TVCC_ADC_PORT, TVCC_ADC_CHANNEL))
-			{
-				PWREXT_Vtarget = 
-					interfaces->adc.get(TVCC_ADC_PORT, TVCC_ADC_CHANNEL) * 
-						TVCC_SAMPLE_DIV * 3300 / 4096;
-				
-				if(PWREXT_Vtarget > TVCC_SAMPLE_MIN_POWER)
-				{
-					LED_RED_ON();
-				}
-				else
-				{
-					LED_RED_OFF();
-				}
-				if((PWREXT_Vtarget < TVCC_SAMPLE_MIN_POWER))
-				{
-					PWREXT_ForceRelease();
-				}
-				power_check_state++;
-			}
-			break;
-		default:
-			if (++power_check_state > 0x3FFF)
-			{
-				power_check_state = 0;
-			}
-			break;
-		}
+		app_interfaces.target_voltage.poll(0);
 	}
 	
 	return ERROR_OK;

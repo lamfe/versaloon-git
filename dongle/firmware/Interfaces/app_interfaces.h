@@ -246,6 +246,7 @@ struct interface_target_voltage_t
 {
 	RESULT (*get)(uint8_t index, uint16_t *voltage);
 	RESULT (*set)(uint8_t index, uint16_t voltage);
+	RESULT (*poll)(uint8_t index);
 };
 
 enum poll_check_type_t

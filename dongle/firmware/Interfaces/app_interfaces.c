@@ -66,11 +66,6 @@
 #	include "PWM/PWM.h"
 #endif
 
-// work around, because RESULT is comflict with struct in usb_core.h
-RESULT target_voltage_set(uint8_t index, uint16_t voltage);
-RESULT target_voltage_get(uint8_t index, uint16_t *voltage);
-
-
 // GPIO
 void GPIO_SetMode(GPIO_TypeDef* GPIOx, uint8_t pin, uint8_t mode)
 {
@@ -258,7 +253,8 @@ const struct app_interfaces_info_t app_interfaces =
 	,{
 		// target_voltage
 		target_voltage_get,
-		target_voltage_set
+		target_voltage_set,
+		target_voltage_poll
 	}
 #endif
 #if INTERFACE_ISSP_EN
