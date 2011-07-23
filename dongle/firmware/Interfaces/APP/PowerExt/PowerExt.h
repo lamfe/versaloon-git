@@ -19,5 +19,7 @@ void PWREXT_Release(void);
 void PWREXT_ForceRelease(void);
 uint8_t PWREXT_GetState(void);
 
-//RESULT target_voltage_set(uint8_t index, uint16_t voltage);
-//RESULT target_voltage_get(uint8_t index, uint16_t *voltage);
+extern uint16_t PWREXT_Vtarget;
+
+RESULT target_voltage_set(uint8_t index, uint16_t voltage);
+RESULT target_voltage_get(uint8_t index, uint16_t *voltage);

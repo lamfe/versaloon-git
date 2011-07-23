@@ -19,8 +19,74 @@
 
 #include "interfaces.h"
 #include "app_interfaces_const.h"
-#include "stm32f10x_conf.h"
-#include "HW.h"
+
+#include "PowerExt/PowerExt.h"
+
+#define GPIO_CNF_IN_ANALOG			(0x00 << 2)
+#define GPIO_CNF_IN_FLOAT			(0x01 << 2)
+#define GPIO_CNF_IN_PULL			(0x02 << 2)
+#define GPIO_CNF_OUT_PUSHPULL		(0x00 << 2)
+#define GPIO_CNF_OUT_OPENDRAIN		(0x01 << 2)
+#define GPIO_CNF_OUT_AF_PUSHPULL	(0x02 << 2)
+#define GPIO_CNF_OUT_AF_OPENDRAIN	(0x03 << 2)
+#define GPIO_MODE_IN				(0x00 << 0)
+#define GPIO_MODE_OUT_10M			(0x01 << 0)
+#define GPIO_MODE_OUT_2M			(0x02 << 0)
+#define GPIO_MODE_OUT_50M			(0x03 << 0)
+#define GPIO_INPUT_PULLUP			0x30
+#define GPIO_INPUT_PULLDOWN			0x20
+
+#define GPIO_MODE_IN_FLOATING		(GPIO_MODE_IN | GPIO_CNF_IN_FLOAT)
+#define GPIO_MODE_AIN				(GPIO_MODE_IN | GPIO_CNF_IN_ANALOG)
+#define GPIO_MODE_IPD				(GPIO_MODE_IN | GPIO_CNF_IN_PULL | GPIO_INPUT_PULLDOWN)
+#define GPIO_MODE_IPU				(GPIO_MODE_IN | GPIO_CNF_IN_PULL | GPIO_INPUT_PULLUP)
+#define GPIO_MODE_OUT_OD			(GPIO_CNF_OUT_OPENDRAIN | GPIO_MODE_OUT_50M)
+#define GPIO_MODE_OUT_PP			(GPIO_CNF_OUT_PUSHPULL | GPIO_MODE_OUT_50M)
+#define GPIO_MODE_AF_OD				(GPIO_CNF_OUT_AF_OPENDRAIN | GPIO_MODE_OUT_50M)
+#define GPIO_MODE_AF_PP				(GPIO_CNF_OUT_AF_PUSHPULL | GPIO_MODE_OUT_50M)
+
+#define GPIO_PIN_0					0
+#define GPIO_PIN_1					1
+#define GPIO_PIN_2					2
+#define GPIO_PIN_3					3
+#define GPIO_PIN_4					4
+#define GPIO_PIN_5					5
+#define GPIO_PIN_6					6
+#define GPIO_PIN_7					7
+#define GPIO_PIN_8					8
+#define GPIO_PIN_9					9
+#define GPIO_PIN_10					10
+#define GPIO_PIN_11					11
+#define GPIO_PIN_12					12
+#define GPIO_PIN_13					13
+#define GPIO_PIN_14					14
+#define GPIO_PIN_15					15
+#define GPIO_PIN_GetMask(p)			(((uint32_t)1) << (p))
+
+#define GPIO_SetPins(port, pin)		(port)->BSRR = GPIO_PIN_GetMask(pin)
+#define GPIO_ClrPins(port, pin)		(port)->BRR = GPIO_PIN_GetMask(pin)
+#define GPIO_GetOutPins(port, pin)	((port)->ODR & GPIO_PIN_GetMask(pin))
+#define GPIO_GetInPins(port, pin)	((port)->IDR & GPIO_PIN_GetMask(pin))
+void GPIO_SetMode(GPIO_TypeDef* GPIOx, uint8_t pin, uint8_t mode);
+
+struct usart_status_t
+{
+	uint32_t tx_buff_avail;
+	uint32_t tx_buff_size;
+	uint32_t rx_buff_avail;
+	uint32_t rx_buff_size;
+};
+struct app_interface_usart_t
+{
+	RESULT (*init)(uint8_t index);
+	RESULT (*fini)(uint8_t index);
+	RESULT (*config)(uint8_t index, uint32_t baudrate, uint8_t datalength, 
+					 char paritybit, char stopbit, char handshake);
+	RESULT (*send)(uint8_t index, uint8_t *buf, uint16_t len);
+	RESULT (*receive)(uint8_t index, uint8_t *buf, uint16_t len);
+	RESULT (*status)(uint8_t index, struct usart_status_t *status);
+	RESULT (*poll)(uint8_t index);
+};
 
 struct interface_issp_t
 {
@@ -199,7 +265,7 @@ struct app_interfaces_info_t
 	struct interface_gpio_t gpio;
 #endif
 #if	INTERFACE_USART_EN
-	struct interface_usart_t usart;
+	struct app_interface_usart_t usart;
 #endif
 #if	INTERFACE_SPI_EN
 	struct interface_spi_t spi;

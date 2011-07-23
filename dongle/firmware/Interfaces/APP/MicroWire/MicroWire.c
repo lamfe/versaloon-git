@@ -57,23 +57,23 @@ static void MicroWire_OutBit(uint32_t out)
 	{
 		MICROWIRE_SO_CLR();
 	}
-	DelayUS(MicroWire_DelayUS);
+	app_interfaces.delay.delayus(MicroWire_DelayUS);
 	MICROWIRE_SK_SET();
-	DelayUS(MicroWire_DelayUS * 2);
+	app_interfaces.delay.delayus(MicroWire_DelayUS * 2);
 	MICROWIRE_SK_CLR();
-	DelayUS(MicroWire_DelayUS);
+	app_interfaces.delay.delayus(MicroWire_DelayUS);
 }
 
 static uint8_t MicroWire_InBit(void)
 {
 	uint8_t si;
 	
-	DelayUS(MicroWire_DelayUS);
+	app_interfaces.delay.delayus(MicroWire_DelayUS);
 	MICROWIRE_SK_SET();
-	DelayUS(MicroWire_DelayUS * 2);
+	app_interfaces.delay.delayus(MicroWire_DelayUS * 2);
 	MICROWIRE_SK_CLR();
 	si = MICROWIRE_SI_GET() > 0;
-	DelayUS(MicroWire_DelayUS);
+	app_interfaces.delay.delayus(MicroWire_DelayUS);
 	return si;
 }
 
@@ -113,7 +113,7 @@ static RESULT MicroWire_Poll(uint16_t interval_us, uint16_t retry_cnt)
 	
 	while (!MICROWIRE_SI_GET() && --retry_cnt)
 	{
-		DelayUS(interval_us);
+		app_interfaces.delay.delayus(interval_us);
 	}
 	
 	MicroWire_Release();

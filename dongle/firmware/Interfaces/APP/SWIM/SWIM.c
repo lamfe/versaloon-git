@@ -71,21 +71,21 @@ static uint8_t SWIM_EnterProgMode(void)
 	SYNCSWPWM_IN_TIMER_RISE_DMA_INIT(10, SWIM_DMA_IN_Buffer);
 
 	SWIM_CLR();
-	DelayUS(1000);
+	app_interfaces.delay.delayus(1000);
 
 	for (i = 0; i < 4; i++)
 	{
 		SWIM_SET();
-		DelayUS(500);
+		app_interfaces.delay.delayus(500);
 		SWIM_CLR();
-		DelayUS(500);
+		app_interfaces.delay.delayus(500);
 	}
 	for (i = 0; i < 4; i++)
 	{
 		SWIM_SET();
-		DelayUS(250);
+		app_interfaces.delay.delayus(250);
 		SWIM_CLR();
-		DelayUS(250);
+		app_interfaces.delay.delayus(250);
 	}
 	SWIM_SET();
 

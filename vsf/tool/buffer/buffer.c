@@ -18,91 +18,208 @@
  ***************************************************************************/
 
 #include "app_type.h"
+#include "compiler.h"
+
 #include "buffer.h"
 
-RESULT vsf_fifo_buffer_init(struct vsf_fifo_buffer_t *fbuffer)
+//#define vsf_fifo_get_next_index(pos, size)	(((pos) + 1) % (size))
+static uint32_t vsf_fifo_get_next_index(uint32_t pos, uint32_t size)
+{
+	if (++pos >= size)
+	{
+		pos = 0;
+	}
+	return pos;
+}
+
+RESULT vsf_fifo_init(struct vsf_fifo_t *fifo)
 {
 #if __VSF_DEBUG__
-	if (NULL == fbuffer)
+	if (NULL == fifo)
 	{
 		return ERROR_FAIL;
 	}
 #endif
-	fbuffer->head = fbuffer->tail = fbuffer->length = 0;
+	
+	fifo->head = fifo->tail = 0;
 	return ERROR_OK;
 }
 
-RESULT vsf_fifo_buffer_push(struct vsf_fifo_buffer_t *fbuffer, uint32_t size, 
-							uint8_t *data)
+uint32_t vsf_fifo_get_data_length(struct vsf_fifo_t *fifo)
 {
 #if __VSF_DEBUG__
-	if (NULL == fbuffer)
+	if (NULL == fifo)
 	{
-		return ERROR_FAIL;
+		return 0;
 	}
 #endif
-	if (fbuffer->buffer.size < (fbuffer->length + size))
+	if (fifo->head >= fifo->tail)
 	{
-		return ERROR_FAIL;
+		return fifo->head - fifo->tail;
+	}
+	else
+	{
+		return fifo->buffer.size - (fifo->tail - fifo->head);
+	}
+}
+
+uint32_t vsf_fifo_get_avail_length(struct vsf_fifo_t *fifo)
+{
+#if __VSF_DEBUG__
+	if (NULL == fifo)
+	{
+		return 0;
+	}
+#endif
+	return fifo->buffer.size - vsf_fifo_get_data_length(fifo);
+}
+
+uint32_t vsf_fifo_push8(struct vsf_fifo_t *fifo, uint8_t data)
+{
+	if (vsf_fifo_get_avail_length(fifo) <= 1)
+	{
+		return 0;
 	}
 	
-	return ERROR_OK;
+	fifo->buffer.buffer[fifo->head] = data;
+	fifo->head = vsf_fifo_get_next_index(fifo->head, fifo->buffer.size);
+	return 1;
 }
 
-RESULT vsf_fifo_buffer_pop(struct vsf_fifo_buffer_t *fbuffer, uint32_t size, 
-							uint8_t *data)
+uint8_t vsf_fifo_pop8(struct vsf_fifo_t *fifo)
 {
-#if __VSF_DEBUG__
-	if (NULL == fbuffer)
+	uint8_t data;
+	
+	if (vsf_fifo_get_data_length(fifo) <= 0)
 	{
-		return ERROR_FAIL;
+		return 0;
+	}
+	
+	data = fifo->buffer.buffer[fifo->tail];
+	fifo->tail = vsf_fifo_get_next_index(fifo->tail, fifo->buffer.size);
+	return data;
+}
+
+uint32_t vsf_fifo_push(struct vsf_fifo_t *fifo, uint32_t size, uint8_t *data)
+{
+	uint32_t tmp32;
+	
+#if __VSF_DEBUG__
+	if ((NULL == fifo) || (NULL == data))
+	{
+		return 0;
 	}
 #endif
+	if (size >= vsf_fifo_get_avail_length(fifo))
+	{
+		return 0;
+	}
+	
+	tmp32 = fifo->buffer.size - fifo->head;
+	if (size > tmp32)
+	{
+		memcpy(&fifo->buffer.buffer[fifo->head], &data[0], tmp32);
+		memcpy(&fifo->buffer.buffer[0], &data[tmp32], size - tmp32);
+		fifo->head = size - tmp32;
+	}
+	else
+	{
+		memcpy(&fifo->buffer.buffer[fifo->head], data, size);
+		fifo->head += size;
+		if (fifo->head == fifo->buffer.size)
+		{
+			fifo->head = 0;
+		}
+	}
+	return size;
 }
 
-RESULT vsf_fifo_buffer_peek(struct vsf_fifo_buffer_t *fbuffer, uint32_t size, 
-							uint8_t *data)
+uint32_t vsf_fifo_peek_consequent(struct vsf_fifo_t *fifo, uint32_t size, 
+								uint8_t *data)
 {
+	uint32_t tmp32;
+	uint32_t avail_len = vsf_fifo_get_avail_length(fifo);
+	
 #if __VSF_DEBUG__
-	if (NULL == fbuffer)
+	if (NULL == fifo)
 	{
-		return ERROR_FAIL;
+		return 0;
 	}
 #endif
+	if (size > avail_len)
+	{
+		size = avail_len;
+	}
+	
+	tmp32 = fifo->buffer.size - fifo->tail;
+	if (size > tmp32)
+	{
+		size = tmp32;
+		memcpy(&data[0], &fifo->buffer.buffer[fifo->tail], tmp32);
+	}
+	else
+	{
+		memcpy(data, &fifo->buffer.buffer[fifo->tail], size);
+	}
+	return size;
 }
 
-RESULT vsf_fifo_buffer_peek_consequent(struct vsf_fifo_buffer_t *fbuffer, 
-										uint32_t size, uint8_t *data)
+uint32_t vsf_fifo_peek(struct vsf_fifo_t *fifo, uint32_t size, uint8_t *data)
 {
+	uint32_t tmp32;
+	uint32_t avail_len = vsf_fifo_get_avail_length(fifo);
+	
 #if __VSF_DEBUG__
-	if (NULL == fbuffer)
+	if (NULL == fifo)
 	{
-		return ERROR_FAIL;
+		return 0;
 	}
 #endif
-}
-
-RESULT vsf_fifo_buffer_get_data_length(struct vsf_fifo_buffer_t *fbuffer)
-{
-#if __VSF_DEBUG__
-	if (NULL == fbuffer)
+	if (size > avail_len)
 	{
-		return ERROR_FAIL;
+		size = avail_len;
 	}
-#endif
-}
-
-RESULT vsf_fifo_buffer_get_avail_length(struct vsf_fifo_buffer_t *fbuffer)
-{
-#if __VSF_DEBUG__
-	if (NULL == fbuffer)
+	
+	tmp32 = fifo->buffer.size - fifo->tail;
+	if (size > tmp32)
 	{
-		return ERROR_FAIL;
+		memcpy(&data[0], &fifo->buffer.buffer[fifo->tail], tmp32);
+		memcpy(&data[tmp32], &fifo->buffer.buffer[0], size - tmp32);
 	}
-#endif
+	else
+	{
+		memcpy(data, &fifo->buffer.buffer[fifo->tail], size);
+	}
+	return size;
 }
 
-RESULT vsf_multi_buffer_init(struct vsf_multi_buffer_t *mbuffer)
+uint32_t vsf_fifo_pop(struct vsf_fifo_t *fifo, uint32_t size, uint8_t *data)
+{
+	uint32_t tmp32;
+	uint32_t ret = vsf_fifo_peek(fifo, size, data);
+	
+	if (!ret)
+	{
+		return 0;
+	}
+	
+	tmp32 = fifo->buffer.size - fifo->tail;
+	if (size > tmp32)
+	{
+		fifo->tail = size - tmp32;
+	}
+	else
+	{
+		fifo->tail += size;
+		if (fifo->tail == fifo->buffer.size)
+		{
+			fifo->tail = 0;
+		}
+	}
+	return ret;
+}
+
+RESULT vsf_multibuf_init(struct vsf_multibuf_t *mbuffer)
 {
 #if __VSF_DEBUG__
 	if (NULL == mbuffer)
@@ -111,13 +228,12 @@ RESULT vsf_multi_buffer_init(struct vsf_multi_buffer_t *mbuffer)
 	}
 #endif
 	
-	mbuffer->tail = mbuffer->count - 1;
-	mbuffer->head = 0;
+	mbuffer->tail = mbuffer->head = mbuffer->length = 0;
 	return ERROR_OK;
 }
 
-RESULT vsf_multi_buffer_get_empty(struct vsf_multi_buffer_t *mbuffer, 
-									struct vsf_buffer_t *buffer)
+RESULT vsf_multibuf_get_empty(struct vsf_multibuf_t *mbuffer, 
+								struct vsf_buffer_t *buffer)
 {
 #if __VSF_DEBUG__
 	if (NULL == mbuffer)
@@ -125,17 +241,17 @@ RESULT vsf_multi_buffer_get_empty(struct vsf_multi_buffer_t *mbuffer,
 		return ERROR_FAIL;
 	}
 #endif
-	
-	if (mbuffer->head == mbuffer->tail)
+	if (mbuffer->count <= mbuffer->length)
 	{
 		return ERROR_FAIL;
 	}
+	
 	buffer->buffer = mbuffer->buffer_list[mbuffer->head];
 	buffer->size = mbuffer->size;
 	return ERROR_OK;
 }
 
-RESULT vsf_multi_buffer_push(struct vsf_multi_buffer_t *mbuffer)
+RESULT vsf_multibuf_push(struct vsf_multibuf_t *mbuffer)
 {
 #if __VSF_DEBUG__
 	if (NULL == mbuffer)
@@ -143,17 +259,18 @@ RESULT vsf_multi_buffer_push(struct vsf_multi_buffer_t *mbuffer)
 		return ERROR_FAIL;
 	}
 #endif
-	
-	if (mbuffer->head == mbuffer->tail)
+	if (mbuffer->count <= mbuffer->length)
 	{
 		return ERROR_FAIL;
 	}
-	mbuffer->head = (mbuffer->head + 1) % mbuffer->count;
+	
+	mbuffer->head = vsf_fifo_get_next_index(mbuffer->head, mbuffer->count);
+	mbuffer->length++;
 	return ERROR_OK;
 }
 
-RESULT vsf_multi_buffer_get_payload(struct vsf_multi_buffer_t *mbuffer, 
-									struct vsf_buffer_t *buffer)
+RESULT vsf_multibuf_get_payload(struct vsf_multibuf_t *mbuffer, 
+								struct vsf_buffer_t *buffer)
 {
 #if __VSF_DEBUG__
 	if (NULL == mbuffer)
@@ -161,14 +278,17 @@ RESULT vsf_multi_buffer_get_payload(struct vsf_multi_buffer_t *mbuffer,
 		return ERROR_FAIL;
 	}
 #endif
-	
-	if (mbuffer->head == ((mbuffer->head + 1) % mbuffer->count))
+	if (!mbuffer->length)
 	{
 		return ERROR_FAIL;
 	}
+	
+	buffer->buffer = mbuffer->buffer_list[mbuffer->tail];
+	buffer->size = mbuffer->size;
+	return ERROR_OK;
 }
 
-RESULT vsf_multi_buffer_pop(struct vsf_multi_buffer_t *mbuffer)
+RESULT vsf_multibuf_pop(struct vsf_multibuf_t *mbuffer)
 {
 #if __VSF_DEBUG__
 	if (NULL == mbuffer)
@@ -176,9 +296,21 @@ RESULT vsf_multi_buffer_pop(struct vsf_multi_buffer_t *mbuffer)
 		return ERROR_FAIL;
 	}
 #endif
+	if (!mbuffer->length)
+	{
+		return ERROR_FAIL;
+	}
 	
-	
+	mbuffer->tail = vsf_fifo_get_next_index(mbuffer->tail, mbuffer->count);
+	mbuffer->length--;
+	return ERROR_OK;
 }
+
+struct vsf_bufmgr_record_t
+{
+	uint32_t size;
+	uint8_t *ptr;
+};
 
 void vsf_bufmgr_init(struct vsf_bufmgr_t *bufmgr)
 {
@@ -189,7 +321,7 @@ void vsf_bufmgr_init(struct vsf_bufmgr_t *bufmgr)
 	}
 #endif
 	
-	
+	bufmgr->num_of_buffer = 0;
 }
 
 void* vsf_bufmgr_malloc(struct vsf_bufmgr_t *bufmgr, uint32_t size)
@@ -215,16 +347,3 @@ void vsf_bufmgr_free(struct vsf_bufmgr_t *bufmgr, void *ptr)
 	
 	
 }
-
-void vsf_bufmgr_optimize(struct vsf_bufmgr_t *bufmgr)
-{
-#if __VSF_DEBUG__
-	if (NULL == bufmgr)
-	{
-		return ERROR_FAIL;
-	}
-#endif
-	
-	
-}
-

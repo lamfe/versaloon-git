@@ -19,7 +19,6 @@
 
 #include "app_interfaces.h"
 #include "JTAG_TAP.h"
-#include "../SPI/SPI.h"
 
 #define JTAG_TAP_DR_IR_PREPARE_DLY()	
 
@@ -55,7 +54,7 @@ static void JTAG_TAP_RTCK_Wait(uint8_t signal)
 		{
 			break;
 		}
-		DelayUS(1);
+		app_interfaces.delay.delayus(1);
 	}
 }
 
@@ -94,7 +93,7 @@ static uint16_t JTAG_TAP_GPIO_Operate_Asyn(uint16_t tdi, uint16_t tms)
 
 		if (JTAG_kHz)
 		{
-			DelayUS(500 / JTAG_kHz);
+			app_interfaces.delay.delayus(500 / JTAG_kHz);
 		}
 		JTAG_TAP_TCK_SET();
 		if (JTAG_TAP_TDO_GET())
@@ -103,7 +102,7 @@ static uint16_t JTAG_TAP_GPIO_Operate_Asyn(uint16_t tdi, uint16_t tms)
 		}
 		if (JTAG_kHz)
 		{
-			DelayUS(500 / JTAG_kHz);
+			app_interfaces.delay.delayus(500 / JTAG_kHz);
 		}
 		else
 		{
@@ -157,7 +156,7 @@ static void JTAG_TAP_GPIO_Operate_RAW(uint32_t bit_len, uint8_t *tdi, uint8_t *t
 
 		if (JTAG_kHz)
 		{
-			DelayUS(500 / JTAG_kHz);
+			app_interfaces.delay.delayus(500 / JTAG_kHz);
 		}
 		JTAG_TAP_TCK_SET();
 		if (JTAG_TAP_TDO_GET())
@@ -166,7 +165,7 @@ static void JTAG_TAP_GPIO_Operate_RAW(uint32_t bit_len, uint8_t *tdi, uint8_t *t
 		}
 		if (JTAG_kHz)
 		{
-			DelayUS(500 / JTAG_kHz);
+			app_interfaces.delay.delayus(500 / JTAG_kHz);
 		}
 		else
 		{
@@ -215,7 +214,6 @@ static void JTAG_TAP_HS_Operate_RAW_DMA(uint32_t bit_len, uint8_t *tdi, uint8_t 
 		JTAG_TAP_GPIO_Operate_RAW(bit_len & 7, tdi, tms, tdo);
 
 		JTAG_TAP_HS_SPIS_Enable();
-		SPI_Cmd(JTAG_TAP_HS_SPI_S, ENABLE);
 		JTAG_TAP_HS_PortIOInit();
 	}
 }
@@ -685,7 +683,8 @@ static uint32_t JTAG_TAP_DataIn(uint16_t bit_len, uint8_t idle)
 */
 
 
-static void JTAG_TAP_SetDaisyChainPos(uint32_t ub, uint32_t ua, uint32_t bb, uint32_t ba)
+static void JTAG_TAP_SetDaisyChainPos(uint32_t ub, uint32_t ua, uint32_t bb, 
+										uint32_t ba)
 {
 	JTAG_TAP_UnitsBefore	= ub;
 	JTAG_TAP_UnitsAfter		= ua;
@@ -693,39 +692,38 @@ static void JTAG_TAP_SetDaisyChainPos(uint32_t ub, uint32_t ua, uint32_t bb, uin
 	JTAG_TAP_BitsAfter		= ba;
 }
 
-static uint8_t JTAG_TAP_HS_GetDivFromFreq(uint32_t kHz)
-{
-	return SPI_GetSCKDiv(kHz);
-}
-
-static void JTAG_TAP_SetTCKFreq(uint32_t kHz)
-{
-	// Set Speed
-	JTAG_kHz = kHz;
-	if (JTAG_kHz >= JTAG_TAP_HS_MIN_KHZ)
-	{
-		JTAG_TAP_HS_SetSpeed(JTAG_TAP_HS_GetDivFromFreq(kHz));
-	}
-}
-
-static void JTAG_TAP_Fini(void)
+static RESULT JTAG_TAP_Fini(void)
 {
 	JTAG_TAP_HS_DMA_FINI();
 
 	JTAG_kHz = 0xFFFFFFFF;
-	JTAG_TAP_HS_PortFini();
-
-	SPI_I2S_DeInit(JTAG_TAP_HS_SPI_M);
-	SPI_I2S_DeInit(JTAG_TAP_HS_SPI_S);
+	interfaces->spi.fini(JTAG_TAP_HS_SPI_M_IDX);
+	interfaces->spi.fini(JTAG_TAP_HS_SPI_S_IDX);
+	return ERROR_OK;
 }
 
-static void JTAG_TAP_Init(uint32_t kHz, uint8_t mode)
+static RESULT JTAG_TAP_Init(uint32_t kHz, uint8_t mode)
 {
-	JTAG_TAP_Fini();
-
-	if (kHz >= JTAG_TAP_HS_MIN_KHZ)
+	struct spi_ability_t spis_ability, spim_ability;
+	uint32_t min_khz;
+	
+	if ((ERROR_OK != interfaces->spi.get_ability(JTAG_TAP_HS_SPI_M_IDX, 
+													&spim_ability)) || 
+		(ERROR_OK != interfaces->spi.get_ability(JTAG_TAP_HS_SPI_S_IDX, 
+													&spis_ability)) || 
+		(spis_ability.max_freq_hz < spim_ability.min_freq_hz) || 
+		(spis_ability.min_freq_hz > spim_ability.max_freq_hz))
 	{
-		JTAG_TAP_HS_PortInit();
+		return ERROR_FAIL;
+	}
+	min_khz = (spim_ability.min_freq_hz > spis_ability.min_freq_hz ? 
+				spim_ability.min_freq_hz : spis_ability.min_freq_hz) / 1000;
+	
+	JTAG_TAP_Fini();
+	if (kHz >= min_khz)
+	{
+		interfaces->spi.init(JTAG_TAP_HS_SPI_M_IDX);
+		interfaces->spi.init(JTAG_TAP_HS_SPI_S_IDX);
 	}
 	else
 	{
@@ -736,8 +734,17 @@ static void JTAG_TAP_Init(uint32_t kHz, uint8_t mode)
 		JTAG_TAP_TMS_SETOUTPUT();
 		JTAG_TAP_RTCK_SETINPUT();
 	}
-	JTAG_TAP_SetTCKFreq(kHz);
-	if (!kHz)
+	
+	JTAG_kHz = kHz;
+	if (JTAG_kHz >= min_khz)
+	{
+		interfaces->spi.config(JTAG_TAP_HS_SPI_M_IDX, kHz, 
+								SPI_MODE3 | SPI_LSB_FIRST | SPI_MASTER);
+		interfaces->spi.config(JTAG_TAP_HS_SPI_S_IDX, 
+								spis_ability.max_freq_hz / 1000, 
+								SPI_MODE3 | SPI_LSB_FIRST | SPI_SLAVE);
+	}
+	else if (!JTAG_kHz)
 	{
 		// Wait RTCK
 		JTAG_TAP_RTCK_Wait(1);
@@ -746,7 +753,7 @@ static void JTAG_TAP_Init(uint32_t kHz, uint8_t mode)
 	if(mode == JTAG_TAP_ASYN)
 	{
 		JTAG_TAP_HS_Out(JTAG_TAP_TMS_2RTI, 0);
-		if (kHz >= JTAG_TAP_HS_MIN_KHZ)
+		if (kHz >= min_khz)
 		{
 			JTAG_TAP_Operate_Asyn = JTAG_TAP_HS_Operate_Asyn;
 		}
@@ -757,7 +764,7 @@ static void JTAG_TAP_Init(uint32_t kHz, uint8_t mode)
 	}
 	else if(mode == JTAG_TAP_RAW)
 	{
-		if (kHz >= JTAG_TAP_HS_MIN_KHZ)
+		if (kHz >= min_khz)
 		{
 			// DMA Init
 			JTAG_TAP_HS_DMA_INIT();
@@ -774,6 +781,7 @@ static void JTAG_TAP_Init(uint32_t kHz, uint8_t mode)
 		JTAG_TAP_Operate_RAW = JTAG_TAP_GPIO_Operate_RAW;
 		JTAG_TAP_Operate_Asyn = JTAG_TAP_GPIO_Operate_Asyn;
 	}
+	return ERROR_OK;
 }
 
 RESULT jtaghl_init(uint8_t index)
@@ -804,8 +812,7 @@ RESULT jtaghl_config_speed(uint8_t index, uint32_t kHz)
 	switch (index)
 	{
 	case 0:
-		JTAG_TAP_Init(kHz, JTAG_TAP_ASYN);
-		return ERROR_OK;
+		return JTAG_TAP_Init(kHz, JTAG_TAP_ASYN);
 	default:
 		return ERROR_FAIL;
 	}
@@ -1046,8 +1053,7 @@ RESULT jtagll_config(uint8_t index, uint32_t kHz)
 	switch (index)
 	{
 	case 0:
-		JTAG_TAP_Init(kHz, JTAG_TAP_ASYN);
-		return ERROR_OK;
+		return JTAG_TAP_Init(kHz, JTAG_TAP_ASYN);
 	default:
 		return ERROR_FAIL;
 	}
@@ -1138,8 +1144,7 @@ RESULT jtagraw_config(uint8_t index, uint32_t kHz)
 	switch (index)
 	{
 	case 0:
-		JTAG_TAP_Init(kHz, JTAG_TAP_RAW);
-		return ERROR_OK;
+		return JTAG_TAP_Init(kHz, JTAG_TAP_RAW);
 	default:
 		return ERROR_FAIL;
 	}

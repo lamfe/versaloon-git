@@ -18,47 +18,139 @@
 #define __INTERFACES_H_INCLUDED__
 
 #include "app_type.h"
-#include "interfaces/interfaces_const.h"
+#include "interfaces_cfg.h"
+#include "interfaces_const.h"
 
-struct usart_status_t
-{
-	uint32_t tx_buff_avail;
-	uint32_t tx_buff_size;
-	uint32_t rx_buff_avail;
-	uint32_t rx_buff_size;
-};
+#define CORE_USART_MODE0(m)			__CONNECT(m, _USART_MODE0)
+#define CORE_USART_MODE1(m)			__CONNECT(m, _USART_MODE1)
+#define CORE_USART_MODE2(m)			__CONNECT(m, _USART_MODE2)
+#define CORE_USART_MODE3(m)			__CONNECT(m, _USART_MODE3)
+#define CORE_USART_CLKEN(m)			__CONNECT(m, _USART_CLKEN)
+#define CORE_USART_STOPBITS_0P5(m)	__CONNECT(m, _USART_STOPBITS_0P5)
+#define CORE_USART_STOPBITS_1(m)	__CONNECT(m, _USART_STOPBITS_1)
+#define CORE_USART_STOPBITS_1P5(m)	__CONNECT(m, _USART_STOPBITS_1P5)
+#define CORE_USART_STOPBITS_2(m)	__CONNECT(m, _USART_STOPBITS_2)
+#define CORE_USART_PARITY_NONE(m)	__CONNECT(m, _USART_PARITY_NONE)
+#define CORE_USART_PARITY_ODD(m)	__CONNECT(m, _USART_PARITY_ODD)
+#define CORE_USART_PARITY_EVEN(m)	__CONNECT(m, _USART_PARITY_EVEN)
+#define USART_MODE0					CORE_USART_MODE0(__TARGET_CHIP__)
+#define USART_MODE1					CORE_USART_MODE1(__TARGET_CHIP__)
+#define USART_MODE2					CORE_USART_MODE2(__TARGET_CHIP__)
+#define USART_MODE3					CORE_USART_MODE3(__TARGET_CHIP__)
+#define USART_CLKEN					CORE_USART_CLKEN(__TARGET_CHIP__)
+#define USART_STOPBITS_1			CORE_USART_STOPBITS_1(__TARGET_CHIP__)
+#define USART_STOPBITS_1P5			CORE_USART_STOPBITS_1P5(__TARGET_CHIP__)
+#define USART_STOPBITS_2			CORE_USART_STOPBITS_2(__TARGET_CHIP__)
+#define USART_PARITY_NONE			CORE_USART_PARITY_NONE(__TARGET_CHIP__)
+#define USART_PARITY_ODD			CORE_USART_PARITY_ODD(__TARGET_CHIP__)
+#define USART_PARITY_EVEN			CORE_USART_PARITY_EVEN(__TARGET_CHIP__)
 struct interface_usart_t
 {
 	RESULT (*init)(uint8_t index);
 	RESULT (*fini)(uint8_t index);
 	RESULT (*config)(uint8_t index, uint32_t baudrate, uint8_t datalength, 
-						uint8_t mode);
-	RESULT (*send)(uint8_t index, uint8_t *buf, uint16_t len);
-	RESULT (*receive)(uint8_t index, uint8_t *buf, uint16_t len);
-	RESULT (*status)(uint8_t index, struct usart_status_t *status);
-	RESULT (*poll)(uint8_t index);
+					uint8_t mode);
+	RESULT (*config_callback)(uint8_t index, void *p, void (*ontx)(void *), 
+								void (*onrx)(void *, uint16_t));
+	RESULT (*tx)(uint8_t index, uint16_t data);
+	bool (*tx_isready)(uint8_t index);
+	uint16_t (*rx)(uint8_t index);
+	bool (*rx_isready)(uint8_t index);
+	
+//	RESULT (*dma_tx_start)(uint8_t index, void *data, uint32_t len);
+//	bool (*dma_tx_isready)(uint8_t index);
+//	RESULT (*dma_tx_end)(uint8_t index);
+//	RESULT (*dma_rx_start)(uint8_t index, void *data, uint32_t len);
+//	bool (*dma_rx_isready)(uint8_t index);
+//	RESULT (*dma_rx_end)(uint8_t index);
 };
 
+#define CORE_SPI_MASTER(m)			__CONNECT(m, _SPI_MASTER)
+#define CORE_SPI_SLAVE(m)			__CONNECT(m, _SPI_SLAVE)
+#define CORE_SPI_MODE0(m)			__CONNECT(m, _SPI_MODE0)
+#define CORE_SPI_MODE1(m)			__CONNECT(m, _SPI_MODE1)
+#define CORE_SPI_MODE2(m)			__CONNECT(m, _SPI_MODE2)
+#define CORE_SPI_MODE3(m)			__CONNECT(m, _SPI_MODE3)
+#define CORE_SPI_MSB_FIRST(m)		__CONNECT(m, _SPI_MSB_FIRST)
+#define CORE_SPI_LSB_FIRST(m)		__CONNECT(m, _SPI_LSB_FIRST)
+#define SPI_MASTER					CORE_SPI_MASTER(__TARGET_CHIP__)
+#define SPI_SLAVE					CORE_SPI_SLAVE(__TARGET_CHIP__)
+#define SPI_MODE0					CORE_SPI_MODE0(__TARGET_CHIP__)
+#define SPI_MODE1					CORE_SPI_MODE1(__TARGET_CHIP__)
+#define SPI_MODE2					CORE_SPI_MODE2(__TARGET_CHIP__)
+#define SPI_MODE3					CORE_SPI_MODE3(__TARGET_CHIP__)
+#define SPI_MSB_FIRST				CORE_SPI_MSB_FIRST(__TARGET_CHIP__)
+#define SPI_LSB_FIRST				CORE_SPI_LSB_FIRST(__TARGET_CHIP__)
+struct spi_ability_t
+{
+	uint32_t max_freq_hz;
+	uint32_t min_freq_hz;
+};
 struct interface_spi_t
 {
 	RESULT (*init)(uint8_t index);
 	RESULT (*fini)(uint8_t index);
+	RESULT (*get_ability)(uint8_t index, struct spi_ability_t *ability);
+	RESULT (*enable)(uint8_t index);
+	RESULT (*disable)(uint8_t index);
 	RESULT (*config)(uint8_t index, uint32_t kHz, uint8_t mode);
-	RESULT (*io)(uint8_t index, uint8_t *out, uint8_t *in, uint16_t len);
+	
+	RESULT (*io_tx)(uint8_t index, uint8_t out);
+	bool (*io_tx_isready)(uint8_t index);
+	uint8_t (*io_rx)(uint8_t index);
+	bool (*io_rx_isready)(uint8_t index);
+	
+	RESULT (*io)(uint8_t index, uint8_t *out, uint8_t *in, uint32_t len);
+	
+	RESULT (*io_dma_start)(uint8_t index, uint8_t *out, uint8_t *in, 
+							uint32_t len);
+	bool (*io_dma_isready)(uint8_t index);
+	RESULT (*io_dma_end)(uint8_t index);
 };
 
+#define CORE_ADC_ALIGNLEFT(m)		__CONNECT(m, _ADC_ALIGNLEFT)
+#define CORE_ADC_ALIGNRIGHT(m)		__CONNECT(m, _ADC_ALIGNRIGHT)
+#define ADC_ALIGNLEFT				CORE_ADC_ALIGNLEFT(__TARGET_CHIP__)
+#define ADC_ALIGNRIGHT				CORE_ADC_ALIGNRIGHT(__TARGET_CHIP__)
+struct interface_adc_t
+{
+	RESULT (*init)(uint8_t index);
+	RESULT (*fini)(uint8_t index);
+	RESULT (*config)(uint8_t index, uint32_t clock_hz, uint8_t mode);
+	RESULT (*config_channel)(uint8_t index, uint8_t channel, uint8_t cycles);
+	RESULT (*calibrate)(uint8_t index, uint8_t channel);
+	RESULT (*start)(uint8_t index, uint8_t channel);
+	bool (*isready)(uint8_t index, uint8_t channel);
+	uint32_t (*get)(uint8_t index, uint8_t channel);
+};
+
+#define CORE_GPIO_INFLOAT(m)		__CONNECT(m, _GPIO_INFLOAT)
+#define CORE_GPIO_INPU(m)			__CONNECT(m, _GPIO_INPU)
+#define CORE_GPIO_INPD(m)			__CONNECT(m, _GPIO_INPD)
+#define CORE_GPIO_OUTPP(m)			__CONNECT(m, _GPIO_OUTPP)
+#define CORE_GPIO_OUTOD(m)			__CONNECT(m, _GPIO_OUTOD)
+#define GPIO_INFLOAT				CORE_GPIO_INFLOAT(__TARGET_CHIP__)
+#define GPIO_INPU					CORE_GPIO_INPU(__TARGET_CHIP__)
+#define GPIO_INPD					CORE_GPIO_INPD(__TARGET_CHIP__)
+#define GPIO_OUTPP					CORE_GPIO_OUTPP(__TARGET_CHIP__)
+#define GPIO_OUTOD					CORE_GPIO_OUTOD(__TARGET_CHIP__)
 struct interface_gpio_t
 {
 	RESULT (*init)(uint8_t index);
 	RESULT (*fini)(uint8_t index);
+	RESULT (*config_pin)(uint8_t index, uint8_t pin_idx, uint8_t mode);
 	RESULT (*config)(uint8_t index, uint32_t pin_mask, uint32_t io, 
 						uint32_t pull_en_mask, uint32_t input_pull_mask);
+	RESULT (*set)(uint8_t index, uint32_t pin_mask);
+	RESULT (*clear)(uint8_t index, uint32_t pin_mask);
 	RESULT (*out)(uint8_t index, uint32_t pin_mask, uint32_t value);
 	RESULT (*in)(uint8_t index, uint32_t pin_mask, uint32_t *value);
+	uint32_t (*get)(uint8_t index, uint32_t pin_mask);
 };
 
 struct interface_delay_t
 {
+	RESULT (*init)(void);
 	RESULT (*delayms)(uint16_t ms);
 	RESULT (*delayus)(uint16_t us);
 };
@@ -114,12 +206,19 @@ struct interface_timer_t
 	RESULT (*set_channel)(uint8_t index, uint8_t channel, uint32_t count);
 };
 
+#define CORE_EINT_ONFALL(m)			__CONNECT(m, _EINT_ONFALL)
+#define CORE_EINT_ONRISE(m)			__CONNECT(m, _EINT_ONRISE)
+#define CORE_EINT_INT(m)			__CONNECT(m, _EINT_INT)
+#define CORE_EINT_EVT(m)			__CONNECT(m, _EINT_EVT)
+#define EINT_ONFALL					CORE_EINT_ONFALL(__TARGET_CHIP__)
+#define EINT_ONRISE					CORE_EINT_ONRISE(__TARGET_CHIP__)
+#define EINT_INT					CORE_EINT_INT(__TARGET_CHIP__)
+#define EINT_EVT					CORE_EINT_EVT(__TARGET_CHIP__)
 struct interface_eint_t
 {
 	RESULT (*init)(uint8_t index);
 	RESULT (*fini)(uint8_t index);
-	RESULT (*config)(uint8_t index, bool on_fall, bool on_rise, 
-						void (*callback)(void));
+	RESULT (*config)(uint8_t index, uint8_t type, void (*callback)(void));
 	RESULT (*enable)(uint8_t index);
 	RESULT (*disable)(uint8_t index);
 	RESULT (*trigger)(uint8_t index);
@@ -202,8 +301,6 @@ struct interface_usbd_t
 
 
 
-#define CORE_INFO(m)					__CONNECT(m, _info)
-#define	CORE_INFO_TYPE(m)				__CONNECT(m, _info_t)
 
 #define CORE_INIT(m)					__CONNECT(m, _interface_init)
 #define CORE_FINI(m)					__CONNECT(m, _interface_fini)
@@ -211,17 +308,52 @@ struct interface_usbd_t
 // GPIO
 #define CORE_GPIO_INIT(m)				__CONNECT(m, _gpio_init)
 #define CORE_GPIO_FINI(m)				__CONNECT(m, _gpio_fini)
+#define CORE_GPIO_CONFIG_PIN(m)			__CONNECT(m, _gpio_config_pin)
 #define CORE_GPIO_CONFIG(m)				__CONNECT(m, _gpio_config)
 #define CORE_GPIO_IN(m)					__CONNECT(m, _gpio_in)
 #define CORE_GPIO_OUT(m)				__CONNECT(m, _gpio_out)
+#define CORE_GPIO_SET(m)				__CONNECT(m, _gpio_set)
+#define CORE_GPIO_CLEAR(m)				__CONNECT(m, _gpio_clear)
+#define CORE_GPIO_GET(m)				__CONNECT(m, _gpio_get)
+
+// USART
+#define CORE_USART_INIT(m)				__CONNECT(m, _usart_init)
+#define CORE_USART_FINI(m)				__CONNECT(m, _usart_fini)
+#define CORE_USART_CONFIG(m)			__CONNECT(m, _usart_config)
+#define CORE_USART_CONFIG_CALLBACK(m)	__CONNECT(m, _usart_config_callback)
+#define CORE_USART_RX(m)				__CONNECT(m, _usart_rx)
+#define CORE_USART_RX_ISREADY(m)		__CONNECT(m, _usart_rx_isready)
+#define CORE_USART_TX(m)				__CONNECT(m, _usart_tx)
+#define CORE_USART_TX_ISREADY(m)		__CONNECT(m, _usart_tx_isready)
 
 // SPI
 #define CORE_SPI_INIT(m)				__CONNECT(m, _spi_init)
 #define CORE_SPI_FINI(m)				__CONNECT(m, _spi_fini)
+#define CORE_SPI_GET_ABILITY(m)			__CONNECT(m, _spi_get_ability)
+#define CORE_SPI_ENABLE(m)				__CONNECT(m, _spi_enable)
+#define CORE_SPI_DISABLE(m)				__CONNECT(m, _spi_disable)
 #define CORE_SPI_CONFIG(m)				__CONNECT(m, _spi_config)
+#define CORE_SPI_IO_TX(m)				__CONNECT(m, _spi_io_tx)
+#define CORE_SPI_IO_TX_ISREADY(m)		__CONNECT(m, _spi_io_tx_isready)
+#define CORE_SPI_IO_RX(m)				__CONNECT(m, _spi_io_rx)
+#define CORE_SPI_IO_RX_ISREADY(m)		__CONNECT(m, _spi_io_rx_isready)
 #define CORE_SPI_IO(m)					__CONNECT(m, _spi_io)
+#define CORE_SPI_IO_DMA_START(m)		__CONNECT(m, _spi_io_dma_start)
+#define CORE_SPI_IO_DMA_ISREADY(m)		__CONNECT(m, _spi_io_dma_isready)
+#define CORE_SPI_IO_DMA_END(m)			__CONNECT(m, _spi_io_dma_end)
+
+// ADC
+#define CORE_ADC_INIT(m)				__CONNECT(m, _adc_init)
+#define CORE_ADC_FINI(m)				__CONNECT(m, _adc_fini)
+#define CORE_ADC_CONFIG(m)				__CONNECT(m, _adc_config)
+#define CORE_ADC_CONFIG_CHANNEL(m)		__CONNECT(m, _adc_config_channel)
+#define CORE_ADC_CALIBRATE(m)			__CONNECT(m, _adc_calibrate)
+#define CORE_ADC_START(m)				__CONNECT(m, _adc_start)
+#define CORE_ADC_ISREADY(m)				__CONNECT(m, _adc_isready)
+#define CORE_ADC_GET(m)					__CONNECT(m, _adc_get)
 
 // Delay
+#define CORE_DELAY_INIT(m)				__CONNECT(m, _delay_init)
 #define CORE_DELAY_DELAYMS(m)			__CONNECT(m, _delay_delayms)
 #define CORE_DELAY_DELAYUS(m)			__CONNECT(m, _delay_delayus)
 
@@ -293,28 +425,69 @@ struct interface_usbd_t
 #define CORE_USBD_EP_READ_OUT_BUFFER(m)	__CONNECT(m, _usbd_ep_read_OUT_buffer)
 
 // extern drivers
-extern const struct CORE_INFO_TYPE(__TARGET_CHIP__) CORE_INFO(__TARGET_CHIP__);
 RESULT CORE_INIT(__TARGET_CHIP__)(void *p);
 RESULT CORE_FINI(__TARGET_CHIP__)(void);
 // GPIO
 RESULT CORE_GPIO_INIT(__TARGET_CHIP__)(uint8_t index);
 RESULT CORE_GPIO_FINI(__TARGET_CHIP__)(uint8_t index);
+RESULT CORE_GPIO_CONFIG_PIN(__TARGET_CHIP__)(uint8_t index, uint8_t pin_idx, 
+												uint8_t mode);
 RESULT CORE_GPIO_CONFIG(__TARGET_CHIP__)(uint8_t index, uint32_t pin_mask, 
 		uint32_t io, uint32_t pull_en_mask, uint32_t input_pull_mask);
 RESULT CORE_GPIO_IN(__TARGET_CHIP__)(uint8_t index, uint32_t pin_mask, 
 		uint32_t *value);
 RESULT CORE_GPIO_OUT(__TARGET_CHIP__)(uint8_t index, uint32_t pin_mask, 
 		uint32_t value);
+RESULT CORE_GPIO_SET(__TARGET_CHIP__)(uint8_t index, uint32_t pin_mask);
+RESULT CORE_GPIO_CLEAR(__TARGET_CHIP__)(uint8_t index, uint32_t pin_mask);
+uint32_t CORE_GPIO_GET(__TARGET_CHIP__)(uint8_t index, uint32_t pin_mask);
+
+// USART
+RESULT CORE_USART_INIT(__TARGET_CHIP__)(uint8_t index);
+RESULT CORE_USART_FINI(__TARGET_CHIP__)(uint8_t index);
+RESULT CORE_USART_CONFIG(__TARGET_CHIP__)(uint8_t index, uint32_t baudrate, 
+	uint8_t datalength, uint8_t mode);
+RESULT CORE_USART_CONFIG_CALLBACK(__TARGET_CHIP__)(uint8_t index, 
+	void *p, void (*ontx)(void *), void (*onrx)(void *, uint16_t));
+RESULT CORE_USART_TX(__TARGET_CHIP__)(uint8_t index, uint16_t data);
+bool CORE_USART_TX_ISREADY(__TARGET_CHIP__)(uint8_t index);
+uint16_t CORE_USART_RX(__TARGET_CHIP__)(uint8_t index);
+bool CORE_USART_RX_ISREADY(__TARGET_CHIP__)(uint8_t index);
 
 // SPI
 RESULT CORE_SPI_INIT(__TARGET_CHIP__)(uint8_t index);
 RESULT CORE_SPI_FINI(__TARGET_CHIP__)(uint8_t index);
+RESULT CORE_SPI_GET_ABILITY(__TARGET_CHIP__)(uint8_t index, 
+												struct spi_ability_t *ability);
+RESULT CORE_SPI_ENABLE(__TARGET_CHIP__)(uint8_t index);
+RESULT CORE_SPI_DISABLE(__TARGET_CHIP__)(uint8_t index);
 RESULT CORE_SPI_CONFIG(__TARGET_CHIP__)(uint8_t index, uint32_t kHz, 
-								uint8_t mode);
+										uint8_t mode);
+RESULT CORE_SPI_IO_TX(__TARGET_CHIP__)(uint8_t index, uint8_t out);
+bool CORE_SPI_IO_TX_ISREADY(__TARGET_CHIP__)(uint8_t index);
+uint8_t CORE_SPI_IO_RX(__TARGET_CHIP__)(uint8_t index);
+bool CORE_SPI_IO_RX_ISREADY(__TARGET_CHIP__)(uint8_t index);
 RESULT CORE_SPI_IO(__TARGET_CHIP__)(uint8_t index, uint8_t *out, uint8_t *in, 
-									uint16_t len);
+									uint32_t len);
+RESULT CORE_SPI_IO_DMA_START(__TARGET_CHIP__)(uint8_t index, uint8_t *out, 
+												uint8_t *in, uint32_t len);
+bool CORE_SPI_IO_DMA_ISREADY(__TARGET_CHIP__)(uint8_t index);
+RESULT CORE_SPI_IO_DMA_END(__TARGET_CHIP__)(uint8_t index);
+
+// ADC
+RESULT CORE_ADC_INIT(__TARGET_CHIP__)(uint8_t index);
+RESULT CORE_ADC_FINI(__TARGET_CHIP__)(uint8_t index);
+RESULT CORE_ADC_CONFIG(__TARGET_CHIP__)(uint8_t index, uint32_t clock_hz, 
+										uint8_t mode);
+RESULT CORE_ADC_CONFIG_CHANNEL(__TARGET_CHIP__)(uint8_t index, uint8_t channel, 
+												uint8_t cycles);
+RESULT CORE_ADC_CALIBRATE(__TARGET_CHIP__)(uint8_t index, uint8_t channel);
+RESULT CORE_ADC_START(__TARGET_CHIP__)(uint8_t index, uint8_t channel);
+bool CORE_ADC_ISREADY(__TARGET_CHIP__)(uint8_t index, uint8_t channel);
+uint32_t CORE_ADC_GET(__TARGET_CHIP__)(uint8_t index, uint8_t channel);
 
 // Delay
+RESULT CORE_DELAY_INIT(__TARGET_CHIP__)(void);
 RESULT CORE_DELAY_DELAYMS(__TARGET_CHIP__)(uint16_t ms);
 RESULT CORE_DELAY_DELAYUS(__TARGET_CHIP__)(uint16_t us);
 
@@ -337,8 +510,8 @@ RESULT CORE_TIMER_SET_CHANNEL(__TARGET_CHIP__)(uint8_t index, uint8_t channel,
 // EINT
 RESULT CORE_EINT_INIT(__TARGET_CHIP__)(uint8_t index);
 RESULT CORE_EINT_FINI(__TARGET_CHIP__)(uint8_t index);
-RESULT CORE_EINT_CONFIG(__TARGET_CHIP__)(uint8_t index, bool on_fall, 
-										bool on_rise, void (*callback)(void));
+RESULT CORE_EINT_CONFIG(__TARGET_CHIP__)(uint8_t index, uint8_t type, 
+											void (*callback)(void));
 RESULT CORE_EINT_ENABLE(__TARGET_CHIP__)(uint8_t index);
 RESULT CORE_EINT_DISABLE(__TARGET_CHIP__)(uint8_t index);
 RESULT CORE_EINT_TRIGGER(__TARGET_CHIP__)(uint8_t index);
@@ -394,8 +567,6 @@ RESULT CORE_USBD_EP_READ_OUT_BUFFER(__TARGET_CHIP__)(uint8_t idx,
 
 struct interfaces_info_t
 {
-	void *info;
-	
 	RESULT (*init)(void *p);
 	RESULT (*fini)(void);
 	
@@ -404,6 +575,7 @@ struct interfaces_info_t
 	struct interface_eint_t eint;
 	struct interface_usart_t usart;
 	struct interface_spi_t spi;
+	struct interface_adc_t adc;
 	struct interface_i2c_t i2c;
 	struct interface_usbd_t usbd;
 	struct interface_pwm_t pwm;

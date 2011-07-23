@@ -67,14 +67,14 @@ static uint8_t BDM_Sync(uint16_t *khz)
 	dly = 0;
 	while (!SW_GET())
 	{
-		DelayUS(1);
+		app_interfaces.delay.delayus(1);
 		if (++dly > 0xFFFF)
 		{
 			return 1;
 		}
 	}
 	// more 10ms for stablity
-	DelayMS(10);
+	app_interfaces.delay.delayms(10);
 
 	SYNCSWPWM_IN_TIMER_RISE_DMA_INIT(2, BDM_DMA_IN_Buffer);
 

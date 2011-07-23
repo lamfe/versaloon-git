@@ -21,33 +21,13 @@
 #include "../SPI/SPI.h"
 #include "DUSI.h"
 
-static uint8_t DUSI_GetDivFromFreq(uint16_t kHz)
-{
-	return SPI_GetSCKDiv(kHz);
-}
-
-static void DUSI_Fini(void)
-{
-	JTAG_TAP_HS_DMA_FINI();
-
-	JTAG_TAP_HS_PortFini();
-
-	SPI_I2S_DeInit(JTAG_TAP_HS_SPI_M);
-	SPI_I2S_DeInit(JTAG_TAP_HS_SPI_S);
-}
-
-static void DUSI_Init(uint32_t kHz, uint8_t cpol, uint8_t cpha, 
-						uint8_t first_bit)
-{
-	DUSI_Fini();
-	DUSI_Config(DUSI_GetDivFromFreq(kHz), first_bit, cpol, cpha);
-}
-
 RESULT dusi_init(uint8_t index)
 {
 	switch (index)
 	{
 	case 0:
+		interfaces->spi.init(JTAG_TAP_HS_SPI_M_IDX);
+		interfaces->spi.init(JTAG_TAP_HS_SPI_S_IDX);
 		return ERROR_OK;
 	default:
 		return ERROR_FAIL;
@@ -59,7 +39,8 @@ RESULT dusi_fini(uint8_t index)
 	switch (index)
 	{
 	case 0:
-		DUSI_Fini();
+		interfaces->spi.fini(JTAG_TAP_HS_SPI_M_IDX);
+		interfaces->spi.fini(JTAG_TAP_HS_SPI_S_IDX);
 		return ERROR_OK;
 	default:
 		return ERROR_FAIL;
@@ -68,41 +49,24 @@ RESULT dusi_fini(uint8_t index)
 
 RESULT dusi_config(uint8_t index, uint32_t kHz, uint8_t mode)
 {
-	uint32_t cpha, cpol, first_bit;
+	struct spi_ability_t spis_ability, spim_ability;
 	
 	switch (index)
 	{
 	case 0:
-		switch (mode & 0x03)
+		if ((ERROR_OK != interfaces->spi.get_ability(JTAG_TAP_HS_SPI_M_IDX, 
+															&spim_ability)) || 
+			(ERROR_OK != interfaces->spi.get_ability(JTAG_TAP_HS_SPI_S_IDX, 
+															&spis_ability)) || 
+			(spis_ability.max_freq_hz < spim_ability.min_freq_hz) || 
+			(spis_ability.min_freq_hz > spim_ability.max_freq_hz))
 		{
-		case 0:
-			cpol = SPI_CPOL_Low;
-			cpha = SPI_CPHA_1Edge;
-			break;
-		case 1:
-			cpol = SPI_CPOL_Low;
-			cpha = SPI_CPHA_2Edge;
-			break;
-		case 2:
-			cpol = SPI_CPOL_High;
-			cpha = SPI_CPHA_1Edge;
-			break;
-		case 3:
-			cpol = SPI_CPOL_High;
-			cpha = SPI_CPHA_2Edge;
-			break;
+			return ERROR_FAIL;
 		}
-		if(mode & SPI_MSB_FIRST)
-		{
-			// msb first
-			first_bit = SPI_FirstBit_MSB;
-		}
-		else
-		{
-			// lsb first
-			first_bit = SPI_FirstBit_LSB;
-		}
-		DUSI_Init(kHz, first_bit, cpol, cpha);
+		
+		interfaces->spi.config(JTAG_TAP_HS_SPI_M_IDX, kHz, mode | SPI_MASTER);
+		interfaces->spi.config(JTAG_TAP_HS_SPI_S_IDX, 
+							spis_ability.max_freq_hz / 1000, mode | SPI_SLAVE);
 		return ERROR_OK;
 	default:
 		return ERROR_FAIL;

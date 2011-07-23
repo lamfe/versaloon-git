@@ -47,7 +47,7 @@
 #include "compiler.h"
 
 /************************ What do U want ************************/
-#define __VSF_DEBUG__					1
+#define __VSF_DEBUG__					0
 
 #define USB_TO_XXX_EN					1
 
@@ -79,11 +79,11 @@
 #	define USB_TO_SWIM_EN				(1 && HW_HAS_SWIM)
 #	define USB_TO_BDM_EN				(1 && HW_HAS_BDM)
 // page 2
-#	define USB_TO_POWER_EN				(1 && HW_HAS_POWERCONTROL)
+#	define USB_TO_POWER_EN				(1 && POWER_OUT_EN)
 #endif
 
 /***************************** Buffer ****************************/
-#define USB_DATA_BUFF_SIZE				(12 * 1024)
+#define USB_DATA_BUFF_SIZE				(8 * 1024)
 #define ASYN_DATA_BUFF_SIZE				(4 * 1024)
 
 /**************************** Checks ****************************/

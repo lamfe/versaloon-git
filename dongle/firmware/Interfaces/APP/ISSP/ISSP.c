@@ -42,7 +42,7 @@
 #define ISSP_WAP_OK				0x00
 #define ISSP_WAP_TIMEOUT		0x01
 
-#define ISSP_Delay()			DelayUS(0)
+#define ISSP_Delay()			app_interfaces.delay.delayus(0)
 
 static void ISSP_Out_Bit(uint8_t bit)
 {
@@ -156,22 +156,22 @@ RESULT issp_enter_program_mode(uint8_t index, uint8_t mode)
 	switch (index)
 	{
 	case 0:
-		if((mode == ISSP_PM_POWER_ON) && (Vtarget > TVCC_SAMPLE_MIN_POWER))
+		if((mode == ISSP_PM_POWER_ON) && 
+		   (PWREXT_Vtarget > TVCC_SAMPLE_MIN_POWER))
 		{
 			return ERROR_FAIL;
 		}
 
 		ISSP_SDATA_SETOUTPUT();
 
-		GLOBAL_OUTPUT_Acquire();
 		if(mode == ISSP_PM_RESET)
 		{
 			PWREXT_Acquire();
-			DelayMS(1);
+			app_interfaces.delay.delayms(1);
 
 			ISSP_XRES_SET();
 			ISSP_XRES_SETOUTPUT();
-			DelayMS(1);
+			app_interfaces.delay.delayms(1);
 			ISSP_XRES_CLR();
 		}
 		else if(mode == ISSP_PM_POWER_ON)
@@ -179,13 +179,13 @@ RESULT issp_enter_program_mode(uint8_t index, uint8_t mode)
 			ISSP_SDATA_SETINPUT();
 
 			ISSP_PowerOff();
-			DelayMS(1);
+			app_interfaces.delay.delayms(1);
 			ISSP_PowerOn();
-			DelayMS(5);
+			app_interfaces.delay.delayms(5);
 
 			while(ISSP_SDATA_GET() && --to)
 			{
-				DelayUS(10);
+				app_interfaces.delay.delayus(10);
 			}
 
 			ISSP_SDATA_SETOUTPUT();
@@ -216,12 +216,11 @@ RESULT issp_leave_program_mode(uint8_t index, uint8_t mode)
 		if(mode == ISSP_PM_RESET)
 		{
 			ISSP_XRES_SET();
-			DelayMS(1);
+			app_interfaces.delay.delayms(1);
 			ISSP_XRES_SETINPUT();
 			ISSP_SCLK_SETINPUT();
 
 			PWREXT_Release();
-			GLOBAL_OUTPUT_Release();
 		}
 		else if(mode == ISSP_PM_POWER_ON)
 		{
@@ -247,7 +246,7 @@ RESULT issp_wait_and_poll(uint8_t index)
 		dly = 100;
 		while(!ISSP_SDATA_GET())
 		{
-			DelayUS(10);
+			app_interfaces.delay.delayus(10);
 			if(--dly == 0)
 			{
 				return ERROR_FAIL;
@@ -257,7 +256,7 @@ RESULT issp_wait_and_poll(uint8_t index)
 		dly = 10000;
 		while(ISSP_SDATA_GET())
 		{
-			DelayUS(10);
+			app_interfaces.delay.delayus(10);
 			if(--dly == 0)
 			{
 				return ERROR_FAIL;

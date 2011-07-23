@@ -15,13 +15,7 @@
  **************************************************************************/
 
 // Only Support Master Mode
-
-#define SPI_MAX_KHZ				(_SYS_FREQUENCY * 500 / 2)		// in KHz
-#define SPI_MIN_KHZ				(_SYS_FREQUENCY * 500 / 256)	// in KHz
-
-uint8_t SPI_GetSCKDiv(uint32_t freq_khz);
-
 RESULT spi_init(uint8_t index);
 RESULT spi_fini(uint8_t index);
-RESULT spi_io(uint8_t index, uint8_t *out, uint8_t *in, uint16_t len);
+RESULT spi_io(uint8_t index, uint8_t *out, uint8_t *in, uint32_t len);
 RESULT spi_config(uint8_t index, uint32_t kHz, uint8_t mode);
