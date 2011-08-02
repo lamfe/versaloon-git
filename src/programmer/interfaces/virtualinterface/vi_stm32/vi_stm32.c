@@ -321,6 +321,10 @@ struct interfaces_info_t vi_stm32_interfaces =
 		vi_stm32_spi_config,
 		vi_stm32_spi_io
 	},
+	{
+		// ebi
+		NULL, NULL, NULL, NULL, NULL
+	},
 	{	// i2c
 		vi_stm32_iic_init,
 		vi_stm32_iic_fini,

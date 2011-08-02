@@ -56,6 +56,17 @@ RESULT usbtospi_io(uint8_t interface_index, uint8_t *out, uint8_t *in,
 
 
 
+// USB_TO_EBI
+RESULT usbtoebi_init(uint8_t interface_index);
+RESULT usbtoebi_fini(uint8_t interface_index);
+RESULT usbtoebi_config(uint8_t index, uint8_t target_index, void *param);
+RESULT usbtoebi_read(uint8_t interface_index, uint8_t target_index,
+			uint32_t address, uint8_t data_size, uint8_t *buff, uint32_t count);
+RESULT usbtoebi_write(uint8_t interface_index, uint8_t target_index,
+			uint32_t address, uint8_t data_size, uint8_t *buff, uint32_t count);
+
+
+
 // USB_TO_GPIO
 RESULT usbtogpio_init(uint8_t interface_index);
 RESULT usbtogpio_fini(uint8_t interface_index);

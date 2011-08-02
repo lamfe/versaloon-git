@@ -66,6 +66,7 @@
 #	define USB_TO_DAC_EN				(0 && HW_HAS_DAC)
 #	define USB_TO_MICROWIRE_EN			(1 && HW_HAS_MICROWIRE)
 #	define USB_TO_DUSI_EN				(1 && HW_HAS_DUSI)
+#	define USB_TO_EBI_EN				(1 && HW_HAS_EBI)
 // page 1
 #	define USB_TO_JTAG_LL_EN			(1 && HW_HAS_JTAG)
 #	define USB_TO_JTAG_HL_EN			(1 && HW_HAS_JTAG)
@@ -91,11 +92,12 @@
 #define make_ver(v)						make_str(v)
 #define make_str(s)						# s
 
-#define INTERFACE_IIC_EN				1
-#define INTERFACE_SPI_EN				1
-#define INTERFACE_USART_EN				1
-#define INTERFACE_GPIO_EN				1
-#define INTERFACE_PWM_EN				1
+#define INTERFACE_IIC_EN				HW_HAS_IIC
+#define INTERFACE_SPI_EN				HW_HAS_SPI
+#define INTERFACE_USART_EN				HW_HAS_USART
+#define INTERFACE_GPIO_EN				HW_HAS_GPIO
+#define INTERFACE_PWM_EN				HW_HAS_PWM
+#define INTERFACE_EBI_EN				HW_HAS_EBI
 
 #define INTERFACE_C2_EN					(USB_TO_XXX_EN && USB_TO_C2_EN)
 #define INTERFACE_ISSP_EN				(USB_TO_XXX_EN && USB_TO_ISSP_EN)

@@ -81,9 +81,13 @@ static RESULT ee24cxx_drv_readblock_nb(struct dal_info_t *info,
 	return ERROR_OK;
 }
 
-static RESULT ee24cxx_drv_readblock_nb_isready(struct dal_info_t *info)
+static RESULT ee24cxx_drv_readblock_nb_isready(struct dal_info_t *info, 
+								uint64_t address, uint8_t *buff, bool *ready)
 {
 	REFERENCE_PARAMETER(info);
+	REFERENCE_PARAMETER(address);
+	REFERENCE_PARAMETER(buff);
+	*ready = true;
 	return ERROR_OK;
 }
 
@@ -129,15 +133,22 @@ static RESULT ee24cxx_drv_writeblock_nb(struct dal_info_t *info,
 	return ERROR_OK;
 }
 
-static RESULT ee24cxx_drv_writeblock_nb_isready(struct dal_info_t *info)
+static RESULT ee24cxx_drv_writeblock_nb_isready(struct dal_info_t *info, 
+								uint64_t address, uint8_t *buff, bool *ready)
 {
 	REFERENCE_PARAMETER(info);
+	REFERENCE_PARAMETER(address);
+	REFERENCE_PARAMETER(buff);
+	*ready = true;
 	return ERROR_OK;
 }
 
-static RESULT ee24cxx_drv_writeblock_nb_waitready(struct dal_info_t *info)
+static RESULT ee24cxx_drv_writeblock_nb_waitready(struct dal_info_t *info, 
+												uint64_t address, uint8_t *buff)
 {
 	REFERENCE_PARAMETER(info);
+	REFERENCE_PARAMETER(address);
+	REFERENCE_PARAMETER(buff);
 	return ERROR_OK;
 }
 

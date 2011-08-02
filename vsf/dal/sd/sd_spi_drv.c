@@ -596,21 +596,24 @@ static RESULT sd_spi_drv_readblock_nb(struct dal_info_t *info,
 	return interfaces->peripheral_commit();
 }
 
-static RESULT sd_spi_drv_readblock_nb_isready(struct dal_info_t *info)
+static RESULT sd_spi_drv_readblock_nb_isready(struct dal_info_t *info, 
+								uint64_t address, uint8_t *buff, bool *ready)
 {
 	struct sd_spi_drv_interface_t *ifs = 
 								(struct sd_spi_drv_interface_t *)info->ifs;
-	bool ready;
 	uint16_t token;
 	
+	REFERENCE_PARAMETER(address);
+	REFERENCE_PARAMETER(buff);
+	
 	token = SD_TRANSTOKEN_RESP_R1 | SD_TRANSTOKEN_DATA_IN;
-	if (ERROR_OK != sd_spi_transact_datablock_isready(ifs, &ready, token))
+	if (ERROR_OK != sd_spi_transact_datablock_isready(ifs, ready, token))
 	{
 		sd_spi_transact_end(ifs);
 		interfaces->peripheral_commit();
 		return ERROR_FAIL;
 	}
-	if (ready)
+	if (*ready)
 	{
 		sd_spi_transact_datablock_fini(ifs, token);
 	}
@@ -618,12 +621,16 @@ static RESULT sd_spi_drv_readblock_nb_isready(struct dal_info_t *info)
 	return interfaces->peripheral_commit();
 }
 
-static RESULT sd_spi_drv_readblock_nb_waitready(struct dal_info_t *info)
+static RESULT sd_spi_drv_readblock_nb_waitready(struct dal_info_t *info, 
+												uint64_t address, uint8_t *buff)
 {
 	struct sd_spi_drv_interface_t *ifs = 
 								(struct sd_spi_drv_interface_t *)info->ifs;
 	bool ready;
 	uint16_t token;
+	
+	REFERENCE_PARAMETER(address);
+	REFERENCE_PARAMETER(buff);
 	
 	token = SD_TRANSTOKEN_RESP_R1 | SD_TRANSTOKEN_DATA_IN;
 	if (ERROR_OK != sd_spi_transact_datablock_waitready(ifs, &ready, token))
@@ -724,21 +731,24 @@ static RESULT sd_spi_drv_writeblock_nb(struct dal_info_t *info,
 	return interfaces->peripheral_commit();
 }
 
-static RESULT sd_spi_drv_writeblock_nb_isready(struct dal_info_t *info)
+static RESULT sd_spi_drv_writeblock_nb_isready(struct dal_info_t *info, 
+								uint64_t address, uint8_t *buff, bool *ready)
 {
 	struct sd_spi_drv_interface_t *ifs = 
 								(struct sd_spi_drv_interface_t *)info->ifs;
-	bool ready;
 	uint16_t token;
 	
+	REFERENCE_PARAMETER(address);
+	REFERENCE_PARAMETER(buff);
+	
 	token = SD_TRANSTOKEN_RESP_R1 | SD_TRANSTOKEN_DATA_OUT;
-	if (ERROR_OK != sd_spi_transact_datablock_isready(ifs, &ready, token))
+	if (ERROR_OK != sd_spi_transact_datablock_isready(ifs, ready, token))
 	{
 		sd_spi_transact_end(ifs);
 		interfaces->peripheral_commit();
 		return ERROR_FAIL;
 	}
-	if (ready)
+	if (*ready)
 	{
 		sd_spi_transact_datablock_fini(ifs, token);
 	}
@@ -746,12 +756,16 @@ static RESULT sd_spi_drv_writeblock_nb_isready(struct dal_info_t *info)
 	return interfaces->peripheral_commit();
 }
 
-static RESULT sd_spi_drv_writeblock_nb_waitready(struct dal_info_t *info)
+static RESULT sd_spi_drv_writeblock_nb_waitready(struct dal_info_t *info, 
+												uint64_t address, uint8_t *buff)
 {
 	struct sd_spi_drv_interface_t *ifs = 
 								(struct sd_spi_drv_interface_t *)info->ifs;
 	bool ready;
 	uint16_t token;
+	
+	REFERENCE_PARAMETER(address);
+	REFERENCE_PARAMETER(buff);
 	
 	token = SD_TRANSTOKEN_RESP_R1 | SD_TRANSTOKEN_DATA_OUT;
 	if (ERROR_OK != sd_spi_transact_datablock_waitready(ifs, &ready, token))

@@ -113,6 +113,9 @@ typedef enum result_s
 #	define SYS_TO_LE_U32(v)			SWAP_U32(v)
 #	define SYS_TO_BE_U16(v)			((uint16_t)(v))
 #	define SYS_TO_BE_U32(v)			((uint32_t)(v))
+
+#	define GET_SYS_U16(p)			GET_BE_U16(p)
+#	define GET_SYS_U32(p)			GET_BE_U32(p)
 #else
 #	define LE_TO_SYS_U16(v)			((uint16_t)(v))
 #	define LE_TO_SYS_U32(v)			((uint32_t)(v))
@@ -123,6 +126,9 @@ typedef enum result_s
 #	define SYS_TO_LE_U32(v)			((uint32_t)(v))
 #	define SYS_TO_BE_U16(v)			SWAP_U16(v)
 #	define SYS_TO_BE_U32(v)			SWAP_U32(v)
+
+#	define GET_SYS_U16(p)			GET_LE_U16(p)
+#	define GET_SYS_U32(p)			GET_LE_U32(p)
 #endif
 
 #endif /* __APP_TYPE_H_INCLUDED__ */

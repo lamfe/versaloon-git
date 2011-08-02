@@ -435,6 +435,11 @@ static RESULT versaloon_init(void *p)
 	{
 		t->support_mask &= ~IFS_SPI;
 	}
+	if ((t->support_mask & IFS_EBI) &&
+		!usbtoxxx_interface_supported(USB_TO_EBI))
+	{
+		t->support_mask &= ~IFS_EBI;
+	}
 	if ((t->support_mask & IFS_I2C) &&
 		!usbtoxxx_interface_supported(USB_TO_I2C))
 	{
@@ -654,7 +659,7 @@ struct interfaces_info_t versaloon_interfaces =
 	versaloon_init,
 	versaloon_fini,
 	
-	IFS_USART | IFS_SPI | IFS_I2C | IFS_GPIO | IFS_POWER | IFS_ISSP |
+	IFS_USART | IFS_SPI | IFS_EBI | IFS_I2C | IFS_GPIO | IFS_POWER | IFS_ISSP |
 	IFS_JTAG_LL | IFS_POLL | IFS_JTAG_HL | IFS_SWIM | IFS_JTAG_RAW | IFS_C2 |
 	IFS_MSP430_JTAG | IFS_LPC_ICP | IFS_SWD | IFS_BDM | IFS_DUSI |
 	IFS_MICROWIRE | IFS_PWM,
@@ -683,6 +688,14 @@ struct interfaces_info_t versaloon_interfaces =
 		usbtospi_fini,
 		usbtospi_config,
 		usbtospi_io
+	},
+	{
+		// ebi
+		usbtoebi_init,
+		usbtoebi_fini,
+		usbtoebi_config,
+		usbtoebi_read,
+		usbtoebi_write
 	},
 	{	// i2c
 		usbtoi2c_init,

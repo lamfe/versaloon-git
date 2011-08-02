@@ -66,6 +66,7 @@
 #include "df25xx/df25xx.h"
 #include "stm32f2/stm32f2.h"
 #include "sd/sd.h"
+#include "cfi/cfi.h"
 
 VSS_HANDLER(target_memory_detail);
 VSS_HANDLER(target_parameter_detail);
@@ -511,6 +512,19 @@ struct target_info_t targets_info[] =
 		sd_program_mode,					// program_mode
 		&sd_program_functions,				// program_functions
 		sd_notifier,						// notifier
+		NULL,								// adjust_setting
+		NULL,								// adjust_mapping
+	},
+#endif
+#if TARGET_CFI_EN
+	// CFI
+	{
+		CFI_STRING,							// name
+		AUTO_DETECT,						// feature
+		cfi_program_area_map,				// program_area_map
+		cfi_program_mode,					// program_mode
+		&cfi_program_functions,				// program_functions
+		cfi_notifier,						// notifier
 		NULL,								// adjust_setting
 		NULL,								// adjust_mapping
 	},

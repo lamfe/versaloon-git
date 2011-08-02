@@ -77,6 +77,7 @@ libtgt_a_SOURCES = \
     ee93cx6/ee93cx6.c \
     ee24cxx/ee24cxx.c \
     df25xx/df25xx.c \
-    sd/sd.c
+    sd/sd.c \
+    cfi/cfi.c
 
 MAINTAINERCLEANFILES = Makefile.in

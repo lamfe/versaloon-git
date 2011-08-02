@@ -17,53 +17,27 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "app_cfg.h"
-#include "app_type.h"
+#ifndef __CFI_DRV_H_INCLUDED__
+#define __CFI_DRV_H_INCLUDED__
 
-#include "dal.h"
-
-#include "dal/mal/mal.h"
-
-#if DAL_MIC2826_EN
-#include "dal/mic2826/mic2826_drv.h"
-#endif
-
-#if DAL_NRF24L01_EN
-#include "nrf24l01/nrf24l01_drv.h"
-#endif
-
-struct dal_driver_t *dal_drivers[] = 
+struct cfi_drv_param_t
 {
-#if DAL_EE93CX6_EN
-	(struct dal_driver_t *)&ee93cx6_drv,
-#endif
-#if DAL_EE24CXX_EN
-	(struct dal_driver_t *)&ee24cxx_drv,
-#endif
-#if DAL_DF25XX_EN
-	(struct dal_driver_t *)&df25xx_drv,
-#endif
-#if DAL_DF45XX_EN
-	(struct dal_driver_t *)&df45xx_drv,
-#endif
-#if DAL_SD_SPI_EN
-	(struct dal_driver_t *)&sd_spi_drv,
-#endif
-#if DAL_SD_SDIO_EN
-	(struct dal_driver_t *)&sd_sdio_drv,
-#endif
-#if DAL_MIC2826_EN
-	(struct dal_driver_t *)&mic2826_drv,
-#endif
-#if DAL_NRF24L01_EN
-	(struct dal_driver_t *)&nrf24l01_drv,
-#endif
-#if DAL_CFI_EN
-	(struct dal_driver_t *)&cfi_drv,
-#endif
-#if DAL_NAND_EN
-	(struct dal_driver_t *)&nand_drv,
-#endif
-	NULL
+	struct ebi_nor_info_t nor_info;
 };
+
+struct cfi_drv_info_t
+{
+	uint8_t manufacturer_id;
+	uint16_t device_id[3];
+};
+
+struct cfi_drv_interface_t
+{
+	uint8_t ebi_port;
+	uint8_t nor_index;
+};
+
+extern struct mal_driver_t cfi_drv;
+
+#endif /* __CFI_DRV_H_INCLUDED__ */
 

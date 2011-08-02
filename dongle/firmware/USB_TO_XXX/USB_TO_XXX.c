@@ -99,6 +99,9 @@ void USB_TO_XXX_ProcessCmd(uint8_t *dat, uint16_t len)
 #if USB_TO_SPI_EN
 			USB_TO_XXX_AddAbility(USB_TO_XXX_Abilities, USB_TO_SPI);
 #endif
+#if USB_TO_EBI_EN
+			USB_TO_XXX_AddAbility(USB_TO_XXX_Abilities, USB_TO_EBI);
+#endif
 #if USB_TO_IIC_EN
 			USB_TO_XXX_AddAbility(USB_TO_XXX_Abilities, USB_TO_IIC);
 #endif
@@ -175,6 +178,11 @@ void USB_TO_XXX_ProcessCmd(uint8_t *dat, uint16_t len)
 #if USB_TO_SPI_EN
 		case USB_TO_SPI:
 			USB_TO_SPI_ProcessCmd(dat + USB_TO_XXX_CmdIdx + 3, USB_TO_XXX_CmdLen_tmp);
+			break;
+#endif
+#if USB_TO_EBI_EN
+		case USB_TO_EBI:
+			USB_TO_EBI_ProcessCmd(dat + USB_TO_XXX_CmdIdx + 3, USB_TO_XXX_CmdLen_tmp);
 			break;
 #endif
 #if USB_TO_IIC_EN

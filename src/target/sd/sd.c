@@ -104,7 +104,7 @@ static struct sd_info_t sd_info;
 static struct sd_spi_drv_interface_t sd_spi_drv_ifs;
 static struct mal_info_t sd_mal_info =
 {
-	{0, 0}, &sd_info
+	{0, 0}, &sd_info, 0, 0, 0
 };
 static struct dal_info_t sd_dal_info =
 {

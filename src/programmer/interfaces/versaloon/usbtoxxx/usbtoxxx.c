@@ -33,7 +33,8 @@ const char* types_name[96] =
 {
 "usbtousart", "usbtospi", "usbtoi2c", "usbtogpio", "usbtocan", "usbtopwm",
 													"usbtoadc", "usbtodac",
-"usbtomicrowire", "usbtoswim", "usbtodusi", N_A, N_A, N_A, "usbtopower", "usbtodelay",
+"usbtomicrowire", "usbtoswim", "usbtodusi", "usbtoebi", N_A, N_A, "usbtopower", 
+																"usbtodelay",
 N_A, N_A, N_A, N_A, N_A, N_A, N_A, N_A, N_A,
 N_A, N_A, N_A, N_A, N_A, N_A, N_A,
 "usbtojtagll", "usbtojtaghl", "usbtoissp", "usbtoc2", "usbtosbw",

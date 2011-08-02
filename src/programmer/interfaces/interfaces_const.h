@@ -47,6 +47,7 @@
 #define IFS_MICROWIRE			(1ULL << 31)
 #define IFS_PWM					(1ULL << 32)
 #define IFS_SDIO				(1ULL << 33)
+#define IFS_EBI					(1ULL << 34)
 #define IFS_INVALID_INTERFACE	(1ULL << 63)
 
 
@@ -132,6 +133,10 @@ struct jtag_pos_t
 
 #define ISSP_WAP_OK				0x00
 #define ISSP_WAP_TIMEOUT		0x01
+
+// EBI
+#define EBI_TGTTYP_NOR			0x00
+#define EBI_TGTTYP_NAND			0x10
 
 #endif /* __PROG_INTERFACE_H_INCLUDED__ */
 
