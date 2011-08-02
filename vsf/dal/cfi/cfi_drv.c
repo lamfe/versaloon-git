@@ -27,19 +27,45 @@
 #include "../mal/mal_driver.h"
 #include "cfi_drv.h"
 
+static uint32_t cfi_get_cmd(uint8_t cmd, uint8_t data_width)
+{
+	switch (data_width)
+	{
+	case 1:
+		return (uint32_t)cmd;
+	case 2:
+		return (uint32_t)SYS_TO_LE_U16(cmd);
+	case 4:
+		return SYS_TO_LE_U32(cmd);
+	default:
+		return 0;
+	}
+}
+
+static RESULT cfi_write_cmd(struct cfi_drv_interface_t *ifs, uint8_t cmd, 
+							uint8_t data_width, uint32_t address)
+{
+	uint32_t data = cfi_get_cmd(cmd, data_width);
+	return interfaces->ebi.write(ifs->ebi_port, 
+									ifs->nor_index | EBI_TGTTYP_NOR, address, 
+									data_width, (uint8_t *)&data, 1);
+}
+
 static RESULT cfi_wait_busy(struct dal_info_t *info, uint64_t address)
 {
-	uint16_t cur_status, orig_status;
+	uint32_t cur_status = 0, orig_status = 0;
 	struct cfi_drv_interface_t *ifs = (struct cfi_drv_interface_t *)info->ifs;
+	struct cfi_drv_param_t *param = (struct cfi_drv_param_t *)info->param;
+	uint8_t data_width = param->nor_info.common_info.data_width / 8;
 	
 	REFERENCE_PARAMETER(address);
 	
 	interfaces->ebi.read(ifs->ebi_port, ifs->nor_index | EBI_TGTTYP_NOR, 
-							(uint32_t)address, 2, (uint8_t *)&orig_status, 1);
+					(uint32_t)address, data_width, (uint8_t *)&orig_status, 1);
 	
 	do {
 		interfaces->ebi.read(ifs->ebi_port, ifs->nor_index | EBI_TGTTYP_NOR, 
-								0, 2, (uint8_t *)&cur_status, 1);
+								0, data_width, (uint8_t *)&cur_status, 1);
 		interfaces->peripheral_commit();
 		
 		if ((cur_status ^ orig_status) & 0x0040)
@@ -47,11 +73,11 @@ static RESULT cfi_wait_busy(struct dal_info_t *info, uint64_t address)
 			if (cur_status & 0x0020)
 			{
 				interfaces->ebi.read(ifs->ebi_port, 
-										ifs->nor_index | EBI_TGTTYP_NOR, 0, 2, 
-										(uint8_t *)&orig_status, 1);
+										ifs->nor_index | EBI_TGTTYP_NOR, 0, 
+										data_width, (uint8_t *)&orig_status, 1);
 				interfaces->ebi.read(ifs->ebi_port, 
-										ifs->nor_index | EBI_TGTTYP_NOR, 0, 2, 
-										(uint8_t *)&cur_status, 1);
+										ifs->nor_index | EBI_TGTTYP_NOR, 0, 
+										data_width, (uint8_t *)&cur_status, 1);
 				interfaces->peripheral_commit();
 				if ((cur_status ^ orig_status) & 0x0040)
 				{
@@ -87,31 +113,28 @@ static RESULT cfi_drv_init(struct dal_info_t *info)
 
 static RESULT cfi_drv_getinfo(struct dal_info_t *info)
 {
-	uint16_t cfi_info[128];
-	uint16_t manufacturer_id;
-	uint16_t cmd;
+	uint8_t cfi_info8[256];
+	uint16_t *cfi_info16 = (uint16_t *)cfi_info8;
+	uint32_t *cfi_info32 = (uint32_t *)cfi_info8;
+	uint32_t manufacturer_id = 0;
 	struct cfi_drv_interface_t *ifs = (struct cfi_drv_interface_t *)info->ifs;
 	struct cfi_drv_info_t *pinfo = (struct cfi_drv_info_t *)info->info;
 	struct mal_info_t *cfi_mal_info = (struct mal_info_t *)info->extra;
+	struct cfi_drv_param_t *param = (struct cfi_drv_param_t *)info->param;
+	uint8_t data_width = param->nor_info.common_info.data_width / 8;
 	
-	cmd = SYS_TO_LE_U16(0xAA);
-	interfaces->ebi.write(ifs->ebi_port, ifs->nor_index | EBI_TGTTYP_NOR, 
-							0x0555 << 1, 2, (uint8_t *)&cmd, 1);
-	cmd = SYS_TO_LE_U16(0x55);
-	interfaces->ebi.write(ifs->ebi_port, ifs->nor_index | EBI_TGTTYP_NOR, 
-							0x02AA << 1, 2, (uint8_t *)&cmd, 1);
-	cmd = SYS_TO_LE_U16(0x90);
-	interfaces->ebi.write(ifs->ebi_port, ifs->nor_index | EBI_TGTTYP_NOR, 
-							0x0555 << 1, 2, (uint8_t *)&cmd, 1);
+	cfi_write_cmd(ifs, 0xAA, data_width, 0x0555 << 1);
+	cfi_write_cmd(ifs, 0x55, data_width, 0x02AA << 1);
+	cfi_write_cmd(ifs, 0x90, data_width, 0x0555 << 1);
 	
 	interfaces->ebi.read(ifs->ebi_port, ifs->nor_index | EBI_TGTTYP_NOR, 
-							0x0000 << 1, 2, (uint8_t *)&manufacturer_id, 1);
+					0x0000 << 1, data_width, (uint8_t *)&manufacturer_id, 1);
 	interfaces->ebi.read(ifs->ebi_port, ifs->nor_index | EBI_TGTTYP_NOR, 
-							0x0001 << 1, 2, (uint8_t *)&pinfo->device_id[0], 1);
+				0x0001 << 1, data_width, (uint8_t *)&pinfo->device_id[0], 1);
 	interfaces->ebi.read(ifs->ebi_port, ifs->nor_index | EBI_TGTTYP_NOR, 
-							0x000E << 1, 2, (uint8_t *)&pinfo->device_id[1], 1);
+				0x000E << 1, data_width, (uint8_t *)&pinfo->device_id[1], 1);
 	interfaces->ebi.read(ifs->ebi_port, ifs->nor_index | EBI_TGTTYP_NOR, 
-							0x000F << 1, 2, (uint8_t *)&pinfo->device_id[2], 1);
+				0x000F << 1, data_width, (uint8_t *)&pinfo->device_id[2], 1);
 	interfaces->peripheral_commit();
 	
 	pinfo->manufacturer_id = (uint8_t)manufacturer_id;
@@ -119,46 +142,71 @@ static RESULT cfi_drv_getinfo(struct dal_info_t *info)
 	pinfo->device_id[1] = LE_TO_SYS_U16(pinfo->device_id[1]);
 	pinfo->device_id[2] = LE_TO_SYS_U16(pinfo->device_id[2]);
 	
-	cmd = SYS_TO_LE_U16(0xAA);
-	interfaces->ebi.write(ifs->ebi_port, ifs->nor_index | EBI_TGTTYP_NOR, 
-							0x0555 << 1, 2, (uint8_t *)&cmd, 1);
-	cmd = SYS_TO_LE_U16(0x55);
-	interfaces->ebi.write(ifs->ebi_port, ifs->nor_index | EBI_TGTTYP_NOR, 
-							0x02AA << 1, 2, (uint8_t *)&cmd, 1);
-	cmd = SYS_TO_LE_U16(0xF0);
-	interfaces->ebi.write(ifs->ebi_port, ifs->nor_index | EBI_TGTTYP_NOR, 
-							0, 2, (uint8_t *)&cmd, 1);
+	cfi_write_cmd(ifs, 0xAA, data_width, 0x0555 << 1);
+	cfi_write_cmd(ifs, 0x55, data_width, 0x02AA << 1);
+	cfi_write_cmd(ifs, 0xF0, data_width, 0);
 	
-	cmd = SYS_TO_LE_U16(0x98);
-	interfaces->ebi.write(ifs->ebi_port, ifs->nor_index | EBI_TGTTYP_NOR, 
-							0x0055 << 1, 2, (uint8_t *)&cmd, 1);
+	cfi_write_cmd(ifs, 0x98, data_width, 0x0055 << 1);
 	interfaces->ebi.read(ifs->ebi_port, ifs->nor_index | EBI_TGTTYP_NOR, 
-						0x0010 << 1, 2, (uint8_t *)cfi_info, dimof(cfi_info));
+							0x0010 << 1, data_width, (uint8_t *)cfi_info8, 
+							sizeof(cfi_info8) / data_width);
 	if ((ERROR_OK != interfaces->peripheral_commit()) || 
-		(cfi_info[0] != 'Q') || (cfi_info[1] != 'R') || (cfi_info[2] != 'Y'))
+		((1 == data_width) && 
+			((cfi_info8[0] != 'Q') || (cfi_info8[1] != 'R') || 
+			(cfi_info8[2] != 'Y'))) || 
+		((2 == data_width) && 
+			((cfi_info16[0] != 'Q') || (cfi_info16[1] != 'R') || 
+			(cfi_info16[2] != 'Y'))) || 
+		((4 == data_width) && 
+			((cfi_info32[0] != 'Q') || (cfi_info32[1] != 'R') || 
+			(cfi_info32[2] != 'Y'))))
 	{
 		return ERROR_FAIL;
 	}
 	if (!cfi_mal_info->capacity.block_number || 
 		!cfi_mal_info->capacity.block_size)
 	{
-		cfi_mal_info->capacity.block_number = cfi_info[0x1D] + 1;
-		cfi_mal_info->capacity.block_size = 
-						((uint64_t)1 << cfi_info[0x17]) / (cfi_info[0x1D] + 1);
+		switch (data_width)
+		{
+		case 1:
+			cfi_mal_info->capacity.block_number = cfi_info8[0x1D] + 1;
+			cfi_mal_info->capacity.block_size = 
+						((uint64_t)1 << cfi_info8[0x17]) / (cfi_info8[0x1D] + 1);
+			break;
+		case 2:
+			cfi_mal_info->capacity.block_number = cfi_info16[0x1D] + 1;
+			cfi_mal_info->capacity.block_size = 
+						((uint64_t)1 << cfi_info16[0x17]) / (cfi_info16[0x1D] + 1);
+			break;
+		case 4:
+			cfi_mal_info->capacity.block_number = cfi_info32[0x1D] + 1;
+			cfi_mal_info->capacity.block_size = 
+						((uint64_t)1 << cfi_info32[0x17]) / (cfi_info32[0x1D] + 1);
+			break;
+		default:
+			return ERROR_FAIL;
+		}
 	}
-	cfi_mal_info->write_page_size = 1 << cfi_info[0x1A];
+	switch (data_width)
+	{
+	case 1:
+		cfi_mal_info->write_page_size = 1 << cfi_info8[0x1A];
+		break;
+	case 2:
+		cfi_mal_info->write_page_size = 1 << cfi_info16[0x1A];
+		break;
+	case 4:
+		cfi_mal_info->write_page_size = 1 << cfi_info32[0x1A];
+		break;
+	default:
+		return ERROR_FAIL;
+	}
 	cfi_mal_info->erase_page_size = (uint32_t)cfi_mal_info->capacity.block_size;
 	cfi_mal_info->read_page_size = 0;
 	
-	cmd = SYS_TO_LE_U16(0xAA);
-	interfaces->ebi.write(ifs->ebi_port, ifs->nor_index | EBI_TGTTYP_NOR, 
-							0x0555 << 1, 2, (uint8_t *)&cmd, 1);
-	cmd = SYS_TO_LE_U16(0x55);
-	interfaces->ebi.write(ifs->ebi_port, ifs->nor_index | EBI_TGTTYP_NOR, 
-							0x02AA << 1, 2, (uint8_t *)&cmd, 1);
-	cmd = SYS_TO_LE_U16(0xF0);
-	interfaces->ebi.write(ifs->ebi_port, ifs->nor_index | EBI_TGTTYP_NOR, 
-							0, 2, (uint8_t *)&cmd, 1);
+	cfi_write_cmd(ifs, 0xAA, data_width, 0x0555 << 1);
+	cfi_write_cmd(ifs, 0x55, data_width, 0x02AA << 1);
+	cfi_write_cmd(ifs, 0xF0, data_width, 0);
 	return ERROR_OK;
 }
 
@@ -172,39 +220,30 @@ static RESULT cfi_drv_fini(struct dal_info_t *info)
 
 static RESULT cfi_drv_eraseall_nb_start(struct dal_info_t *info)
 {
-	uint16_t cmd;
 	struct cfi_drv_interface_t *ifs = (struct cfi_drv_interface_t *)info->ifs;
+	struct cfi_drv_param_t *param = (struct cfi_drv_param_t *)info->param;
+	uint8_t data_width = param->nor_info.common_info.data_width / 8;
 	
-	cmd = SYS_TO_LE_U16(0xAA);
-	interfaces->ebi.write(ifs->ebi_port, ifs->nor_index | EBI_TGTTYP_NOR, 
-							0x0555 << 1, 2, (uint8_t *)&cmd, 1);
-	cmd = SYS_TO_LE_U16(0x55);
-	interfaces->ebi.write(ifs->ebi_port, ifs->nor_index | EBI_TGTTYP_NOR, 
-							0x02AA << 1, 2, (uint8_t *)&cmd, 1);
-	cmd = SYS_TO_LE_U16(0x80);
-	interfaces->ebi.write(ifs->ebi_port, ifs->nor_index | EBI_TGTTYP_NOR, 
-							0x0555 << 1, 2, (uint8_t *)&cmd, 1);
-	cmd = SYS_TO_LE_U16(0xAA);
-	interfaces->ebi.write(ifs->ebi_port, ifs->nor_index | EBI_TGTTYP_NOR, 
-							0x0555 << 1, 2, (uint8_t *)&cmd, 1);
-	cmd = SYS_TO_LE_U16(0x55);
-	interfaces->ebi.write(ifs->ebi_port, ifs->nor_index | EBI_TGTTYP_NOR, 
-							0x02AA << 1, 2, (uint8_t *)&cmd, 1);
-	cmd = SYS_TO_LE_U16(0x10);
-	interfaces->ebi.write(ifs->ebi_port, ifs->nor_index | EBI_TGTTYP_NOR, 
-							0x0555 << 1, 2, (uint8_t *)&cmd, 1);
+	cfi_write_cmd(ifs, 0xAA, data_width, 0x0555 << 1);
+	cfi_write_cmd(ifs, 0x55, data_width, 0x02AA << 1);
+	cfi_write_cmd(ifs, 0x80, data_width, 0x0555 << 1);
+	cfi_write_cmd(ifs, 0xAA, data_width, 0x0555 << 1);
+	cfi_write_cmd(ifs, 0x55, data_width, 0x02AA << 1);
+	cfi_write_cmd(ifs, 0x10, data_width, 0x0555 << 1);
 	return ERROR_OK;
 }
 
 static RESULT cfi_drv_eraseall_nb_isready(struct dal_info_t *info, bool *ready)
 {
-	uint16_t val1, val2;
+	uint32_t val1 = 0, val2 = 0;
 	struct cfi_drv_interface_t *ifs = (struct cfi_drv_interface_t *)info->ifs;
+	struct cfi_drv_param_t *param = (struct cfi_drv_param_t *)info->param;
+	uint8_t data_width = param->nor_info.common_info.data_width / 8;
 	
 	interfaces->ebi.read(ifs->ebi_port, ifs->nor_index | EBI_TGTTYP_NOR, 
-							0x0000 << 1, 2, (uint8_t *)&val1, 1);
+							0x0000 << 1, data_width, (uint8_t *)&val1, 1);
 	interfaces->ebi.read(ifs->ebi_port, ifs->nor_index | EBI_TGTTYP_NOR, 
-							0x0000 << 1, 2, (uint8_t *)&val2, 1);
+							0x0000 << 1, data_width, (uint8_t *)&val2, 1);
 	interfaces->peripheral_commit();
 	
 	*ready = ((val1 ^ val2) & 0x0040) == 0;
@@ -233,42 +272,33 @@ static RESULT cfi_drv_eraseblock_nb_start(struct dal_info_t *info,
 
 static RESULT cfi_drv_eraseblock_nb(struct dal_info_t *info, uint64_t address)
 {
-	uint16_t cmd;
 	struct cfi_drv_interface_t *ifs = (struct cfi_drv_interface_t *)info->ifs;
+	struct cfi_drv_param_t *param = (struct cfi_drv_param_t *)info->param;
+	uint8_t data_width = param->nor_info.common_info.data_width / 8;
 	
-	cmd = SYS_TO_LE_U16(0xAA);
-	interfaces->ebi.write(ifs->ebi_port, ifs->nor_index | EBI_TGTTYP_NOR, 
-							0x0555 << 1, 2, (uint8_t *)&cmd, 1);
-	cmd = SYS_TO_LE_U16(0x55);
-	interfaces->ebi.write(ifs->ebi_port, ifs->nor_index | EBI_TGTTYP_NOR, 
-							0x02AA << 1, 2, (uint8_t *)&cmd, 1);
-	cmd = SYS_TO_LE_U16(0x80);
-	interfaces->ebi.write(ifs->ebi_port, ifs->nor_index | EBI_TGTTYP_NOR, 
-							0x0555 << 1, 2, (uint8_t *)&cmd, 1);
-	cmd = SYS_TO_LE_U16(0xAA);
-	interfaces->ebi.write(ifs->ebi_port, ifs->nor_index | EBI_TGTTYP_NOR, 
-							0x0555 << 1, 2, (uint8_t *)&cmd, 1);
-	cmd = SYS_TO_LE_U16(0x55);
-	interfaces->ebi.write(ifs->ebi_port, ifs->nor_index | EBI_TGTTYP_NOR, 
-							0x02AA << 1, 2, (uint8_t *)&cmd, 1);
-	cmd = SYS_TO_LE_U16(0x30);
-	interfaces->ebi.write(ifs->ebi_port, ifs->nor_index | EBI_TGTTYP_NOR, 
-							(uint32_t)address, 2, (uint8_t *)&cmd, 1);
+	cfi_write_cmd(ifs, 0xAA, data_width, 0x0555 << 1);
+	cfi_write_cmd(ifs, 0x55, data_width, 0x02AA << 1);
+	cfi_write_cmd(ifs, 0x80, data_width, 0x0555 << 1);
+	cfi_write_cmd(ifs, 0xAA, data_width, 0x0555 << 1);
+	cfi_write_cmd(ifs, 0x55, data_width, 0x02AA << 1);
+	cfi_write_cmd(ifs, 0x30, data_width, (uint32_t)address);
 	return ERROR_OK;
 }
 
 static RESULT cfi_drv_eraseblock_nb_isready(struct dal_info_t *info, 
 												uint64_t address, bool *ready)
 {
-	uint16_t val1, val2;
+	uint32_t val1 = 0, val2 = 0;
 	struct cfi_drv_interface_t *ifs = (struct cfi_drv_interface_t *)info->ifs;
+	struct cfi_drv_param_t *param = (struct cfi_drv_param_t *)info->param;
+	uint8_t data_width = param->nor_info.common_info.data_width / 8;
 	
 	REFERENCE_PARAMETER(address);
 	
 	interfaces->ebi.read(ifs->ebi_port, ifs->nor_index | EBI_TGTTYP_NOR, 
-							0x0000 << 1, 2, (uint8_t *)&val1, 1);
+							0x0000 << 1, data_width, (uint8_t *)&val1, 1);
 	interfaces->ebi.read(ifs->ebi_port, ifs->nor_index | EBI_TGTTYP_NOR, 
-							0x0000 << 1, 2, (uint8_t *)&val2, 1);
+							0x0000 << 1, data_width, (uint8_t *)&val2, 1);
 	interfaces->peripheral_commit();
 	
 	*ready = ((val1 ^ val2) & 0x0040) == 0;
@@ -284,22 +314,16 @@ static RESULT cfi_drv_eraseblock_nb_end(struct dal_info_t *info)
 static RESULT cfi_drv_readblock_nb_start(struct dal_info_t *info, 
 											uint64_t address, uint64_t count)
 {
-	uint16_t cmd;
 	struct cfi_drv_interface_t *ifs = (struct cfi_drv_interface_t *)info->ifs;
+	struct cfi_drv_param_t *param = (struct cfi_drv_param_t *)info->param;
+	uint8_t data_width = param->nor_info.common_info.data_width / 8;
 	
 	REFERENCE_PARAMETER(address);
 	REFERENCE_PARAMETER(count);
 	
-	cmd = SYS_TO_LE_U16(0xAA);
-	interfaces->ebi.write(ifs->ebi_port, ifs->nor_index | EBI_TGTTYP_NOR, 
-							0x0555 << 1, 2, (uint8_t *)&cmd, 1);
-	cmd = SYS_TO_LE_U16(0x55);
-	interfaces->ebi.write(ifs->ebi_port, ifs->nor_index | EBI_TGTTYP_NOR, 
-							0x02AA << 1, 2, (uint8_t *)&cmd, 1);
-	cmd = SYS_TO_LE_U16(0xF0);
-	interfaces->ebi.write(ifs->ebi_port, ifs->nor_index | EBI_TGTTYP_NOR, 
-							0, 2, (uint8_t *)&cmd, 1);
-	
+	cfi_write_cmd(ifs, 0xAA, data_width, 0x0555 << 1);
+	cfi_write_cmd(ifs, 0x55, data_width, 0x02AA << 1);
+	cfi_write_cmd(ifs, 0xF0, data_width, 0);
 	return ERROR_OK;
 }
 
@@ -307,12 +331,11 @@ static RESULT cfi_drv_readblock_nb(struct dal_info_t *info, uint64_t address,
 									uint8_t *buff)
 {
 	uint32_t count, i, cur_count;
-	uint8_t data_width;
 	struct cfi_drv_param_t *param = (struct cfi_drv_param_t *)info->param;
+	uint8_t data_width = param->nor_info.common_info.data_width / 8;
 	struct cfi_drv_interface_t *ifs = (struct cfi_drv_interface_t *)info->ifs;
 	struct mal_info_t *mal_info = (struct mal_info_t *)info->extra;
 	
-	data_width = param->nor_info.common_info.data_width / 8;
 	count = (uint32_t)mal_info->capacity.block_size / data_width;
 	
 	i = 0;
@@ -356,60 +379,64 @@ static RESULT cfi_drv_writeblock_nb_start(struct dal_info_t *info,
 static RESULT cfi_drv_writeblock_nb(struct dal_info_t *info, uint64_t address, 
 									uint8_t *buff)
 {
-	uint32_t cmd;
-	uint8_t data_width;
 	struct cfi_drv_param_t *param = (struct cfi_drv_param_t *)info->param;
+	uint8_t data_width = param->nor_info.common_info.data_width / 8;
 	struct cfi_drv_interface_t *ifs = (struct cfi_drv_interface_t *)info->ifs;
 	struct mal_info_t *mal_info = (struct mal_info_t *)info->extra;
 	uint32_t write_page_size = mal_info->write_page_size;
 	
-	data_width = param->nor_info.common_info.data_width / 8;
-	
-	cmd = SYS_TO_LE_U16(0xAA);
+	cfi_write_cmd(ifs, 0xAA, data_width, 0x0555 << 1);
+	cfi_write_cmd(ifs, 0x55, data_width, 0x02AA << 1);
+	cfi_write_cmd(ifs, 0x25, data_width, (uint32_t)address);
+	cfi_write_cmd(ifs, (uint8_t)(write_page_size / data_width - 1), data_width, 
+					(uint32_t)address);
 	interfaces->ebi.write(ifs->ebi_port, ifs->nor_index | EBI_TGTTYP_NOR, 
-							0x0555 << 1, 2, (uint8_t *)&cmd, 1);
-	cmd = SYS_TO_LE_U16(0x55);
-	interfaces->ebi.write(ifs->ebi_port, ifs->nor_index | EBI_TGTTYP_NOR, 
-							0x02AA << 1, 2, (uint8_t *)&cmd, 1);
-	cmd = SYS_TO_LE_U16(0x25);
-	interfaces->ebi.write(ifs->ebi_port, ifs->nor_index | EBI_TGTTYP_NOR, 
-							(uint32_t)address, 2, (uint8_t *)&cmd, 1);
-	cmd = SYS_TO_LE_U16(write_page_size / 2 - 1);
-	interfaces->ebi.write(ifs->ebi_port, ifs->nor_index | EBI_TGTTYP_NOR, 
-							(uint32_t)address, 2, (uint8_t *)&cmd, 1);
-	interfaces->ebi.write(ifs->ebi_port, ifs->nor_index | EBI_TGTTYP_NOR, 
-				(uint32_t)address, 2, buff, write_page_size / 2);
-	cmd = SYS_TO_LE_U16(0x29);
-	interfaces->ebi.write(ifs->ebi_port, ifs->nor_index | EBI_TGTTYP_NOR, 
-							(uint32_t)address, 2, (uint8_t *)&cmd, 1);
-	
+			(uint32_t)address, data_width, buff, write_page_size / data_width);
+	cfi_write_cmd(ifs, 0x29, data_width, (uint32_t)address);
 	return ERROR_OK;
 }
 
 static RESULT cfi_drv_writeblock_nb_isready(struct dal_info_t *info, 
 								uint64_t address, uint8_t *buff, bool *ready)
 {
-	uint16_t status;
+	uint32_t status = 0, verify_data;
 	struct cfi_drv_interface_t *ifs = (struct cfi_drv_interface_t *)info->ifs;
 	struct mal_info_t *mal_info = (struct mal_info_t *)info->extra;
+	struct cfi_drv_param_t *param = (struct cfi_drv_param_t *)info->param;
+	uint8_t data_width = param->nor_info.common_info.data_width / 8;
 	uint32_t write_page_size = mal_info->write_page_size;
 	
 	interfaces->ebi.read(ifs->ebi_port, ifs->nor_index | EBI_TGTTYP_NOR, 
-							(uint32_t)address + write_page_size - 2, 
-							2, (uint8_t *)&status, 1);
+							(uint32_t)address + write_page_size - data_width, 
+							data_width, (uint8_t *)&status, 1);
 	interfaces->peripheral_commit();
 	
-	if (((uint16_t *)buff)[write_page_size / 2 - 1] == status)
+	switch (data_width)
+	{
+	case 1:
+		verify_data = buff[write_page_size - 1];
+		break;
+	case 2:
+		verify_data = ((uint16_t *)buff)[write_page_size / 2 - 1];
+		break;
+	case 4:
+		verify_data = ((uint32_t *)buff)[write_page_size / 4 - 1];
+		break;
+	default:
+		return ERROR_FAIL;
+	}
+	
+	if (verify_data == status)
 	{
 		*ready = true;
 	}
 	else if ((status & 0x20) || (status & 0x02))
 	{
 		interfaces->ebi.read(ifs->ebi_port, ifs->nor_index | EBI_TGTTYP_NOR, 
-								(uint32_t)address + write_page_size - 2, 
-								2, (uint8_t *)&status, 1);
+							(uint32_t)address + write_page_size - data_width, 
+							data_width, (uint8_t *)&status, 1);
 		if ((ERROR_OK != interfaces->peripheral_commit()) || 
-			(((uint16_t *)buff)[write_page_size / 2 - 1] != status))
+			(verify_data != status))
 		{
 			return ERROR_FAIL;
 		}
