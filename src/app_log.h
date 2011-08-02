@@ -39,14 +39,14 @@ extern int verbosity_stack[1];
 
 #define LOG_BYTE_BUF(buff, len, func, format, n)	\
 	do{\
-		char line[256], s[4];\
+		char line[256], s[16];\
 		int __i, __j;\
 		for (__i = 0; __i < (int)(len); __i += (n))\
 		{\
 			snprintf(line, 5, "%04X", __i);\
 			for (__j = __i; __j < __i + (n) && __j < (int)(len); __j++)\
 			{\
-				snprintf(s, 4, " " format, (buff)[__j]);\
+				snprintf(s, sizeof(s), " " format, (buff)[__j]);\
 				strncat(line, s, sizeof(s));\
 			}\
 			func("%s", line);\

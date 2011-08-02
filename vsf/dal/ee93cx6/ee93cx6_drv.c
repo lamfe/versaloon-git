@@ -161,11 +161,13 @@ static RESULT ee93cx6_drv_eraseblock_nb(struct dal_info_t *info,
 	return ERROR_OK;
 }
 
-static RESULT ee93cx6_drv_eraseblock_nb_waitready(struct dal_info_t *info)
+static RESULT ee93cx6_drv_eraseblock_nb_waitready(struct dal_info_t *info, 
+													uint64_t address)
 {
 	struct ee93cx6_drv_interface_t *ifs = 
 								(struct ee93cx6_drv_interface_t *)info->ifs;
 	
+	REFERENCE_PARAMETER(address);
 	return ee93cx6_drv_poll(ifs);
 }
 
@@ -229,9 +231,12 @@ static RESULT ee93cx6_drv_readblock_nb(struct dal_info_t *info,
 	return ERROR_OK;
 }
 
-static RESULT ee93cx6_drv_readblock_nb_waitready(struct dal_info_t *info)
+static RESULT ee93cx6_drv_readblock_nb_waitready(struct dal_info_t *info, 
+												uint64_t address, uint8_t *buff)
 {
 	REFERENCE_PARAMETER(info);
+	REFERENCE_PARAMETER(address);
+	REFERENCE_PARAMETER(buff);
 	return ERROR_OK;
 }
 
@@ -297,11 +302,14 @@ static RESULT ee93cx6_drv_writeblock_nb(struct dal_info_t *info,
 	return ERROR_OK;
 }
 
-static RESULT ee93cx6_drv_writeblock_nb_waitready(struct dal_info_t *info)
+static RESULT ee93cx6_drv_writeblock_nb_waitready(struct dal_info_t *info, 
+												uint64_t address, uint8_t *buff)
 {
 	struct ee93cx6_drv_interface_t *ifs = 
 								(struct ee93cx6_drv_interface_t *)info->ifs;
 	
+	REFERENCE_PARAMETER(address);
+	REFERENCE_PARAMETER(buff);
 	return ee93cx6_drv_poll(ifs);
 }
 

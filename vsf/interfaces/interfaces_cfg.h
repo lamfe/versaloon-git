@@ -94,3 +94,7 @@
 #	define USART04_RTS_ENABLE				0
 #	define USART04_TX_ENABLE				0
 #	define USART04_RX_ENABLE				0
+
+// FSMC
+#define FSMC00_ADDR_LEN						26
+#define FSMC00_DATA_LEN						16

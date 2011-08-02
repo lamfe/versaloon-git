@@ -58,6 +58,12 @@ struct dal_driver_t *dal_drivers[] =
 #if DAL_NRF24L01_EN
 	(struct dal_driver_t *)&nrf24l01_drv,
 #endif
+#if DAL_CFI_EN
+	(struct dal_driver_t *)&cfi_drv,
+#endif
+#if DAL_NAND_EN
+	(struct dal_driver_t *)&nand_drv,
+#endif
 	NULL
 };
 

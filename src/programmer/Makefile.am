@@ -40,6 +40,7 @@ libprog_a_SOURCES = \
     interfaces/versaloon/usbtoxxx/usbtodusi.c \
     interfaces/versaloon/usbtoxxx/usbtomicrowire.c \
     interfaces/versaloon/usbtoxxx/usbtopwm.c \
+    interfaces/versaloon/usbtoxxx/usbtoebi.c \
     interfaces/virtualinterface/vi_stm32/vi_stm32.c
 
 #noinst_HEADERS = \

@@ -114,35 +114,37 @@ static RESULT df25xx_drv_eraseall_nb_start(struct dal_info_t *info)
 {
 	struct df25xx_drv_interface_t *ifs = 
 								(struct df25xx_drv_interface_t *)info->ifs;
-	uint8_t buff[2];
+	uint8_t cmd[2];
 	
 	df25xx_drv_cs_assert(ifs);
-	buff[0] = DF25XX_CMD_WREN;
-	interfaces->spi.io(ifs->spi_port, buff, NULL, 1);
+	cmd[0] = DF25XX_CMD_WREN;
+	interfaces->spi.io(ifs->spi_port, cmd, NULL, 1);
 	df25xx_drv_cs_deassert(ifs);
 	
 	df25xx_drv_cs_assert(ifs);
-	buff[0] = DF25XX_CMD_CHER;
-	interfaces->spi.io(ifs->spi_port, buff, NULL, 1);
+	cmd[0] = DF25XX_CMD_CHER;
+	interfaces->spi.io(ifs->spi_port, cmd, NULL, 1);
 	return df25xx_drv_cs_deassert(ifs);
 }
 
-static RESULT df25xx_drv_eraseall_nb_isready(struct dal_info_t *info)
+static RESULT df25xx_drv_eraseall_nb_isready(struct dal_info_t *info, 
+												bool *ready)
 {
 	struct df25xx_drv_interface_t *ifs = 
 								(struct df25xx_drv_interface_t *)info->ifs;
-	uint8_t buff[2];
+	uint8_t cmd[2];
 	
 	df25xx_drv_cs_assert(ifs);
-	buff[0] = DF25XX_CMD_RDSR;
-	interfaces->spi.io(ifs->spi_port, buff, buff, 2);
+	cmd[0] = DF25XX_CMD_RDSR;
+	interfaces->spi.io(ifs->spi_port, cmd, cmd, 2);
 	df25xx_drv_cs_deassert(ifs);
 	
-	if ((ERROR_OK != interfaces->peripheral_commit()) || 
-		(buff[1] & DF25XX_STATE_BUSY))
+	if (ERROR_OK != interfaces->peripheral_commit())
 	{
 		return ERROR_FAIL;
 	}
+	
+	*ready = (cmd[1] & DF25XX_STATE_BUSY) == 0;
 	return ERROR_OK;
 }
 
@@ -150,11 +152,11 @@ static RESULT df25xx_drv_eraseall_nb_end(struct dal_info_t *info)
 {
 	struct df25xx_drv_interface_t *ifs = 
 								(struct df25xx_drv_interface_t *)info->ifs;
-	uint8_t buff[1];
+	uint8_t cmd[1];
 	
 	df25xx_drv_cs_assert(ifs);
-	buff[0] = DF25XX_CMD_WRDI;
-	interfaces->spi.io(ifs->spi_port, buff, NULL, 1);
+	cmd[0] = DF25XX_CMD_WRDI;
+	interfaces->spi.io(ifs->spi_port, cmd, NULL, 1);
 	return df25xx_drv_cs_deassert(ifs);
 }
 
@@ -163,14 +165,14 @@ static RESULT df25xx_drv_eraseblock_nb_start(struct dal_info_t *info,
 {
 	struct df25xx_drv_interface_t *ifs = 
 								(struct df25xx_drv_interface_t *)info->ifs;
-	uint8_t buff[1];
+	uint8_t cmd[1];
 	
 	REFERENCE_PARAMETER(count);
 	REFERENCE_PARAMETER(address);
 	
 	df25xx_drv_cs_assert(ifs);
-	buff[0] = DF25XX_CMD_WREN;
-	interfaces->spi.io(ifs->spi_port, buff, NULL, 1);
+	cmd[0] = DF25XX_CMD_WREN;
+	interfaces->spi.io(ifs->spi_port, cmd, NULL, 1);
 	return df25xx_drv_cs_deassert(ifs);
 }
 
@@ -179,33 +181,37 @@ static RESULT df25xx_drv_eraseblock_nb(struct dal_info_t *info,
 {
 	struct df25xx_drv_interface_t *ifs = 
 								(struct df25xx_drv_interface_t *)info->ifs;
-	uint8_t buff[4];
+	uint8_t cmd[4];
 	
 	df25xx_drv_cs_assert(ifs);
-	buff[0] = DF25XX_CMD_ER4K;
-	buff[1] = (address >> 16) & 0xFF;
-	buff[2] = (address >> 8 ) & 0xFF;
-	buff[3] = (address >> 0 ) & 0xFF;
-	interfaces->spi.io(ifs->spi_port, buff, NULL, 4);
+	cmd[0] = DF25XX_CMD_ER4K;
+	cmd[1] = (address >> 16) & 0xFF;
+	cmd[2] = (address >> 8 ) & 0xFF;
+	cmd[3] = (address >> 0 ) & 0xFF;
+	interfaces->spi.io(ifs->spi_port, cmd, NULL, 4);
 	return df25xx_drv_cs_deassert(ifs);
 }
 
-static RESULT df25xx_drv_eraseblock_nb_isready(struct dal_info_t *info)
+static RESULT df25xx_drv_eraseblock_nb_isready(struct dal_info_t *info, 
+												uint64_t address, bool *ready)
 {
 	struct df25xx_drv_interface_t *ifs = 
 								(struct df25xx_drv_interface_t *)info->ifs;
-	uint8_t buff[2];
+	uint8_t cmd[2];
+	
+	REFERENCE_PARAMETER(address);
 	
 	df25xx_drv_cs_assert(ifs);
-	buff[0] = DF25XX_CMD_RDSR;
-	interfaces->spi.io(ifs->spi_port, buff, buff, 2);
+	cmd[0] = DF25XX_CMD_RDSR;
+	interfaces->spi.io(ifs->spi_port, cmd, cmd, 2);
 	df25xx_drv_cs_deassert(ifs);
 	
-	if ((ERROR_OK != interfaces->peripheral_commit()) || 
-		(buff[1] & DF25XX_STATE_BUSY))
+	if (ERROR_OK != interfaces->peripheral_commit())
 	{
 		return ERROR_FAIL;
 	}
+	
+	*ready = (cmd[1] & DF25XX_STATE_BUSY) == 0;
 	return ERROR_OK;
 }
 
@@ -213,11 +219,11 @@ static RESULT df25xx_drv_eraseblock_nb_end(struct dal_info_t *info)
 {
 	struct df25xx_drv_interface_t *ifs = 
 								(struct df25xx_drv_interface_t *)info->ifs;
-	uint8_t buff[1];
+	uint8_t cmd[1];
 	
 	df25xx_drv_cs_assert(ifs);
-	buff[0] = DF25XX_CMD_WRDI;
-	interfaces->spi.io(ifs->spi_port, buff, NULL, 1);
+	cmd[0] = DF25XX_CMD_WRDI;
+	interfaces->spi.io(ifs->spi_port, cmd, NULL, 1);
 	return df25xx_drv_cs_deassert(ifs);
 }
 
@@ -226,16 +232,16 @@ static RESULT df25xx_drv_readblock_nb_start(struct dal_info_t *info,
 {
 	struct df25xx_drv_interface_t *ifs = 
 								(struct df25xx_drv_interface_t *)info->ifs;
-	uint8_t buff[4];
+	uint8_t cmd[4];
 	
 	REFERENCE_PARAMETER(count);
 	
 	df25xx_drv_cs_assert(ifs);
-	buff[0] = DF25XX_CMD_PGRD;
-	buff[1] = (address >> 16) & 0xFF;
-	buff[2] = (address >> 8 ) & 0xFF;
-	buff[3] = (address >> 0 ) & 0xFF;
-	return interfaces->spi.io(ifs->spi_port, buff, NULL, 4);
+	cmd[0] = DF25XX_CMD_PGRD;
+	cmd[1] = (address >> 16) & 0xFF;
+	cmd[2] = (address >> 8 ) & 0xFF;
+	cmd[3] = (address >> 0 ) & 0xFF;
+	return interfaces->spi.io(ifs->spi_port, cmd, NULL, 4);
 }
 
 static RESULT df25xx_drv_readblock_nb(struct dal_info_t *info, 
@@ -250,9 +256,13 @@ static RESULT df25xx_drv_readblock_nb(struct dal_info_t *info,
 						(uint16_t)mal_info->capacity.block_size);
 }
 
-static RESULT df25xx_drv_readblock_nb_isready(struct dal_info_t *info)
+static RESULT df25xx_drv_readblock_nb_isready(struct dal_info_t *info, 
+								uint64_t address, uint8_t *buff, bool *ready)
 {
 	REFERENCE_PARAMETER(info);
+	REFERENCE_PARAMETER(address);
+	REFERENCE_PARAMETER(buff);
+	*ready = true;
 	return ERROR_OK;
 }
 
@@ -269,14 +279,14 @@ static RESULT df25xx_drv_writeblock_nb_start(struct dal_info_t *info,
 {
 	struct df25xx_drv_interface_t *ifs = 
 								(struct df25xx_drv_interface_t *)info->ifs;
-	uint8_t buff[1];
+	uint8_t cmd[1];
 	
 	REFERENCE_PARAMETER(count);
 	REFERENCE_PARAMETER(address);
 	
 	df25xx_drv_cs_assert(ifs);
-	buff[0] = DF25XX_CMD_WREN;
-	interfaces->spi.io(ifs->spi_port, buff, NULL, 1);
+	cmd[0] = DF25XX_CMD_WREN;
+	interfaces->spi.io(ifs->spi_port, cmd, NULL, 1);
 	return df25xx_drv_cs_deassert(ifs);
 }
 
@@ -299,22 +309,27 @@ static RESULT df25xx_drv_writeblock_nb(struct dal_info_t *info,
 	return df25xx_drv_cs_deassert(ifs);
 }
 
-static RESULT df25xx_drv_writeblock_nb_isready(struct dal_info_t *info)
+static RESULT df25xx_drv_writeblock_nb_isready(struct dal_info_t *info, 
+								uint64_t address, uint8_t *buff, bool *ready)
 {
 	struct df25xx_drv_interface_t *ifs = 
 								(struct df25xx_drv_interface_t *)info->ifs;
-	uint8_t buff[2];
+	uint8_t cmd[2];
+	
+	REFERENCE_PARAMETER(address);
+	REFERENCE_PARAMETER(buff);
 	
 	df25xx_drv_cs_assert(ifs);
-	buff[0] = DF25XX_CMD_RDSR;
-	interfaces->spi.io(ifs->spi_port, buff, buff, 2);
+	cmd[0] = DF25XX_CMD_RDSR;
+	interfaces->spi.io(ifs->spi_port, cmd, cmd, 2);
 	df25xx_drv_cs_deassert(ifs);
 	
-	if ((ERROR_OK != interfaces->peripheral_commit()) || 
-		(buff[1] & DF25XX_STATE_BUSY))
+	if (ERROR_OK != interfaces->peripheral_commit())
 	{
 		return ERROR_FAIL;
 	}
+	
+	*ready = (cmd[1] & DF25XX_STATE_BUSY) == 0;
 	return ERROR_OK;
 }
 
@@ -322,11 +337,11 @@ static RESULT df25xx_drv_writeblock_nb_end(struct dal_info_t *info)
 {
 	struct df25xx_drv_interface_t *ifs = 
 								(struct df25xx_drv_interface_t *)info->ifs;
-	uint8_t buff[1];
+	uint8_t cmd[1];
 	
 	df25xx_drv_cs_assert(ifs);
-	buff[0] = DF25XX_CMD_WRDI;
-	interfaces->spi.io(ifs->spi_port, buff, NULL, 1);
+	cmd[0] = DF25XX_CMD_WRDI;
+	interfaces->spi.io(ifs->spi_port, cmd, NULL, 1);
 	return df25xx_drv_cs_deassert(ifs);
 }
 

@@ -61,6 +61,68 @@ struct interface_spi_t
 	RESULT (*io)(uint8_t index, uint8_t *out, uint8_t *in, uint16_t bytelen);
 };
 
+struct ebi_info_t
+{
+	uint8_t data_width;
+	enum wait_signal_t
+	{
+		EBI_WAIT_NONE = 0,
+		EBI_WAIT_POLHIGH_VI = 1,
+		EBI_WAIT_POLHIGH_VN = 2,
+		EBI_WAIT_POLLOW_VI = 3,
+		EBI_WAIT_POLLOW_VN = 4
+	} wait_signal;
+};
+struct ebi_sram_psram_nor_param_t
+{
+	// A0-15 == D0-15 with ALE
+	bool addr_multiplex;
+	
+	uint16_t address_setup_cycle_r;
+	uint16_t address_hold_cycle_r;
+	uint16_t data_setup_cycle_r;
+	uint32_t clock_hz_r;
+	uint16_t address_setup_cycle_w;
+	uint16_t address_hold_cycle_w;
+	uint16_t data_setup_cycle_w;
+	uint32_t clock_hz_w;
+};
+struct ebi_nor_info_t
+{
+	struct ebi_info_t common_info;
+	struct ebi_sram_psram_nor_param_t param;
+};
+struct ebi_nand_info_t
+{
+	struct ebi_info_t common_info;
+	struct ebi_nand_param_t
+	{
+		uint32_t clock_hz;
+		bool ecc_enable;
+		uint16_t ecc_page_size;
+		uint8_t ale_to_re_cycle;
+		uint8_t cle_to_re_cycle;
+		uint8_t setup_cycle;
+		uint8_t wait_cycle;
+		uint8_t hold_cycle;
+		uint8_t hiz_cycle;
+		uint8_t setup_cycle_attr;
+		uint8_t wait_cycle_attr;
+		uint8_t hold_cycle_attr;
+		uint8_t hiz_cycle_attr;
+	} param;
+};
+struct interface_ebi_t
+{
+	RESULT (*init)(uint8_t index);
+	RESULT (*fini)(uint8_t index);
+	RESULT (*config)(uint8_t index, uint8_t target_index, void *param);
+	RESULT (*read)(uint8_t index, uint8_t target_index, uint32_t address,
+					uint8_t data_size, uint8_t *buff, uint32_t count);
+	RESULT (*write)(uint8_t index, uint8_t target_index, uint32_t address,
+					uint8_t data_size, uint8_t *buff, uint32_t count);
+};
+
 struct interface_gpio_t
 {
 	RESULT (*init)(uint8_t index);
@@ -294,6 +356,7 @@ struct interfaces_info_t
 	struct interface_gpio_t gpio;
 	struct interface_usart_t usart;
 	struct interface_spi_t spi;
+	struct interface_ebi_t ebi;
 	struct interface_i2c_t i2c;
 	struct interface_pwm_t pwm;
 	struct interface_microwire_t microwire;

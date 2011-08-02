@@ -126,7 +126,7 @@ static struct ee93cx6_drv_param_t ee93cx6_drv_param;
 static struct ee93cx6_drv_interface_t ee93cx6_drv_ifs;
 static struct mal_info_t ee93cx6_mal_info =
 {
-	{0, 0}, NULL
+	{0, 0}, NULL, 0, 0, 0
 };
 static struct dal_info_t ee93cx6_dal_info =
 {

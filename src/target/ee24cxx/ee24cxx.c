@@ -100,7 +100,7 @@ static struct ee24cxx_drv_param_t ee24cxx_drv_param;
 static struct ee24cxx_drv_interface_t ee24cxx_drv_ifs;
 static struct mal_info_t ee24cxx_mal_info =
 {
-	{0, 0}, NULL
+	{0, 0}, NULL, 0, 0, 0
 };
 static struct dal_info_t ee24cxx_dal_info =
 {

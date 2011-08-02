@@ -26,6 +26,9 @@
 #if INTERFACE_SPI_EN
 #	include "SPI/SPI.h"
 #endif
+#if INTERFACE_EBI_EN
+#	include "EBI/EBI.h"
+#endif
 #if INTERFACE_GPIO_EN
 #	include "GPIO/GPIO.h"
 #endif
@@ -219,6 +222,17 @@ const struct app_interfaces_info_t app_interfaces =
 		NULL, NULL, NULL, NULL,
 		spi_io,
 		NULL, NULL, NULL
+	}
+#endif
+#if INTERFACE_EBI_EN
+	,{
+		ebi_init,
+		ebi_fini,
+		ebi_config, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+		ebi_read,
+		ebi_write,
+		NULL, NULL, NULL, NULL, NULL, NULL,
+		NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	}
 #endif
 #if INTERFACE_IIC_EN

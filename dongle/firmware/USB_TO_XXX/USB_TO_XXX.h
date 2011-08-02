@@ -33,6 +33,7 @@
 #define USB_TO_MICROWIRE			(VERSALOON_USB_TO_XXX_CMD_START + 0x08)
 #define USB_TO_SWIM					(VERSALOON_USB_TO_XXX_CMD_START + 0x09)
 #define USB_TO_DUSI					(VERSALOON_USB_TO_XXX_CMD_START + 0x0A)
+#define USB_TO_EBI					(VERSALOON_USB_TO_XXX_CMD_START + 0x0B)
 // Page1
 #define USB_TO_JTAG_LL				(VERSALOON_USB_TO_XXX_CMD_START + 0x20)
 #define USB_TO_JTAG_HL				(VERSALOON_USB_TO_XXX_CMD_START + 0x21)
@@ -58,6 +59,7 @@ void USB_TO_XXX_ProcessCmd(uint8_t *dat, uint16_t len);
 // Page0
 void USB_TO_USART_ProcessCmd(uint8_t *dat, uint16_t len);
 void USB_TO_SPI_ProcessCmd(uint8_t *dat, uint16_t len);
+void USB_TO_EBI_ProcessCmd(uint8_t *dat, uint16_t len);
 void USB_TO_IIC_ProcessCmd(uint8_t *dat, uint16_t len);
 void USB_TO_GPIO_ProcessCmd(uint8_t *dat, uint16_t len);
 void USB_TO_CAN_ProcessCmd(uint8_t *dat, uint16_t len);
@@ -202,5 +204,6 @@ extern volatile uint32_t rep_len;
 #define USB_TO_BDM_NUM				1
 #define USB_TO_DUSI_NUM				1
 #define USB_TO_MICROWIRE_NUM		1
+#define USB_TO_EBI_NUM				1
 
 #endif	// __USB_TO_XXX_H_INCLUDED__

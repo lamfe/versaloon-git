@@ -35,36 +35,42 @@ struct mal_driver_t
 	RESULT (*poll)(struct dal_info_t *param);
 
 	RESULT (*format_nb_start)(struct dal_info_t *param);
-	RESULT (*format_nb_isready)(struct dal_info_t *param);
+	RESULT (*format_nb_isready)(struct dal_info_t *param, bool *ready);
 	RESULT (*format_nb_waitready)(struct dal_info_t *param);
 	RESULT (*format_nb_end)(struct dal_info_t *param);
 	
 	RESULT (*eraseall_nb_start)(struct dal_info_t *param);
-	RESULT (*eraseall_nb_isready)(struct dal_info_t *param);
+	RESULT (*eraseall_nb_isready)(struct dal_info_t *param, bool *ready);
 	RESULT (*eraseall_nb_waitready)(struct dal_info_t *param);
 	RESULT (*eraseall_nb_end)(struct dal_info_t *param);
 	
 	RESULT (*eraseblock_nb_start)(struct dal_info_t *param, uint64_t address, 
 									uint64_t count);
 	RESULT (*eraseblock_nb)(struct dal_info_t *param, uint64_t address);
-	RESULT (*eraseblock_nb_isready)(struct dal_info_t *param);
-	RESULT (*eraseblock_nb_waitready)(struct dal_info_t *param);
+	RESULT (*eraseblock_nb_isready)(struct dal_info_t *param, uint64_t address, 
+									bool *ready);
+	RESULT (*eraseblock_nb_waitready)(struct dal_info_t *param, 
+										uint64_t address);
 	RESULT (*eraseblock_nb_end)(struct dal_info_t *param);
 	
 	RESULT (*readblock_nb_start)(struct dal_info_t *param, 
 									uint64_t address, uint64_t count);
 	RESULT (*readblock_nb)(struct dal_info_t *param, uint64_t address, 
 							uint8_t *buff);
-	RESULT (*readblock_nb_isready)(struct dal_info_t *param);
-	RESULT (*readblock_nb_waitready)(struct dal_info_t *param);
+	RESULT (*readblock_nb_isready)(struct dal_info_t *param, uint64_t address, 
+									uint8_t *buff, bool *ready);
+	RESULT (*readblock_nb_waitready)(struct dal_info_t *param, 
+										uint64_t address, uint8_t *buff);
 	RESULT (*readblock_nb_end)(struct dal_info_t *param);
 	
 	RESULT (*writeblock_nb_start)(struct dal_info_t *param, uint64_t address, 
 									uint64_t count);
 	RESULT (*writeblock_nb)(struct dal_info_t *param, uint64_t address, 
 							uint8_t *buff);
-	RESULT (*writeblock_nb_isready)(struct dal_info_t *param);
-	RESULT (*writeblock_nb_waitready)(struct dal_info_t *param);
+	RESULT (*writeblock_nb_isready)(struct dal_info_t *param, uint64_t address, 
+									uint8_t *buff, bool *ready);
+	RESULT (*writeblock_nb_waitready)(struct dal_info_t *param, 
+										uint64_t address, uint8_t *buff);
 	RESULT (*writeblock_nb_end)(struct dal_info_t *param);
 };
 

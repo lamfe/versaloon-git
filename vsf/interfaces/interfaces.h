@@ -224,6 +224,127 @@ struct interface_eint_t
 	RESULT (*trigger)(uint8_t index);
 };
 
+#define EBI_TGTTYP_NOR				0x00
+#define EBI_TGTTYP_NAND				0x10
+struct ebi_info_t
+{
+	uint8_t data_width;
+	enum wait_signal_t
+	{
+		EBI_WAIT_NONE = 0,
+		EBI_WAIT_POLHIGH_VI = 1,
+		EBI_WAIT_POLHIGH_VN = 2,
+		EBI_WAIT_POLLOW_VI = 3,
+		EBI_WAIT_POLLOW_VN = 4
+	} wait_signal;
+};
+struct ebi_sram_psram_nor_param_t
+{
+	// A0-15 == D0-15 with ALE
+	bool addr_multiplex;
+	
+	uint16_t address_setup_cycle_r;
+	uint16_t address_hold_cycle_r;
+	uint16_t data_setup_cycle_r;
+	uint32_t clock_hz_r;
+	uint16_t address_setup_cycle_w;
+	uint16_t address_hold_cycle_w;
+	uint16_t data_setup_cycle_w;
+	uint32_t clock_hz_w;
+};
+struct ebi_sram_info_t
+{
+	struct ebi_info_t common_info;
+	struct ebi_sram_psram_nor_param_t param;
+};
+struct ebi_psram_info_t
+{
+	struct ebi_info_t common_info;
+	struct ebi_sram_psram_nor_param_t param;
+};
+struct ebi_nor_info_t
+{
+	struct ebi_info_t common_info;
+	struct ebi_sram_psram_nor_param_t param;
+};
+struct ebi_nand_info_t
+{
+	struct ebi_info_t common_info;
+	struct ebi_nand_param_t
+	{
+		uint32_t clock_hz;
+		bool ecc_enable;
+		uint16_t ecc_page_size;
+		uint8_t ale_to_re_cycle;
+		uint8_t cle_to_re_cycle;
+		uint8_t setup_cycle;
+		uint8_t wait_cycle;
+		uint8_t hold_cycle;
+		uint8_t hiz_cycle;
+		uint8_t setup_cycle_attr;
+		uint8_t wait_cycle_attr;
+		uint8_t hold_cycle_attr;
+		uint8_t hiz_cycle_attr;
+	} param;
+};
+struct ebi_sdram_info_t
+{
+	struct ebi_info_t common_info;
+};
+struct ebi_ddram_info_t
+{
+	struct ebi_info_t common_info;
+};
+struct ebi_pccard_info_t
+{
+	struct ebi_info_t common_info;
+};
+struct interface_ebi_t
+{
+	RESULT (*init)(uint8_t index);
+	RESULT (*fini)(uint8_t index);
+	
+	RESULT (*config)(uint8_t index, uint8_t target_index, void *param);
+	RESULT (*config_sram)(uint8_t index, struct ebi_sram_info_t *info);
+	RESULT (*config_psram)(uint8_t index, struct ebi_psram_info_t *info);
+	RESULT (*config_nor)(uint8_t index, struct ebi_nor_info_t *info);
+	RESULT (*config_nand)(uint8_t index, struct ebi_nand_info_t *info);
+	RESULT (*config_sdram)(uint8_t index, struct ebi_sdram_info_t *info);
+	RESULT (*config_ddram)(uint8_t index, struct ebi_ddram_info_t *info);
+	RESULT (*config_pccard)(uint8_t index, struct ebi_pccard_info_t *info);
+	
+	RESULT (*read)(uint8_t index, uint8_t target_index, uint32_t address, 
+					uint8_t data_size, uint8_t *buff, uint32_t count);
+	RESULT (*write)(uint8_t index, uint8_t target_index, uint32_t address, 
+					uint8_t data_size, uint8_t *buff, uint32_t count);
+	
+	uint8_t (*read8)(uint8_t index, uint32_t address);
+	void (*write8)(uint8_t index, uint32_t address, uint8_t data);
+	uint16_t (*read16)(uint8_t index, uint32_t address);
+	void (*write16)(uint8_t index, uint32_t address, uint16_t data);
+	uint32_t (*read32)(uint8_t index, uint32_t address);
+	void (*write32)(uint8_t index, uint32_t address, uint32_t data);
+	
+	RESULT (*readp8)(uint8_t index, uint32_t address, uint32_t count, 
+						uint8_t *buff);
+	bool (*readp8_isready)(uint8_t index);
+	RESULT (*writep8)(uint8_t index, uint32_t address, uint32_t count, 
+						uint8_t *buff);
+	bool (*writep8_isready)(uint8_t index);
+	RESULT (*readp16)(uint8_t index, uint32_t address, uint32_t count, 
+						uint16_t *buff);
+	bool (*readp16_isready)(uint8_t index);
+	RESULT (*writep16)(uint8_t index, uint32_t address, uint32_t count, 
+						uint16_t *buff);
+	bool (*writep16_isready)(uint8_t index);
+	RESULT (*readp32)(uint8_t index, uint32_t address, uint32_t count, 
+						uint32_t *buff);
+	bool (*readp32_isready)(uint8_t index);
+	RESULT (*writep32)(uint8_t index, uint32_t address, uint32_t count, 
+						uint32_t *buff);
+	bool (*writep32_isready)(uint8_t index);
+};
+
 #include "stack/usb_device/vsf_usbd_const.h"
 #include "stack/usb_device/vsf_usbd_drv_callback.h"
 
@@ -377,6 +498,26 @@ struct interface_usbd_t
 #define CORE_EINT_DISABLE(m)			__CONNECT(m, _eint_disable)
 #define CORE_EINT_TRIGGER(m)			__CONNECT(m, _eint_trigger)
 
+// EBI
+#define CORE_EBI_INIT(m)				__CONNECT(m, _ebi_init)
+#define CORE_EBI_FINI(m)				__CONNECT(m, _ebi_fini)
+#define CORE_EBI_CONFIG(m)				__CONNECT(m, _ebi_config)
+#define CORE_EBI_CONFIG_SRAM(m)			__CONNECT(m, _ebi_config_sram)
+#define CORE_EBI_CONFIG_PSRAM(m)		__CONNECT(m, _ebi_config_psram)
+#define CORE_EBI_CONFIG_NOR(m)			__CONNECT(m, _ebi_config_nor)
+#define CORE_EBI_CONFIG_NAND(m)			__CONNECT(m, _ebi_config_nand)
+#define CORE_EBI_CONFIG_SDRAM(m)		__CONNECT(m, _ebi_config_sdram)
+#define CORE_EBI_CONFIG_DDRAM(m)		__CONNECT(m, _ebi_config_ddram)
+#define CORE_EBI_CONFIG_PCCARD(m)		__CONNECT(m, _ebi_config_pccard)
+#define CORE_EBI_READ(m)				__CONNECT(m, _ebi_read)
+#define CORE_EBI_WRITE(m)				__CONNECT(m, _ebi_write)
+#define CORE_EBI_READ8(m)				__CONNECT(m, _ebi_read8)
+#define CORE_EBI_WRITE8(m)				__CONNECT(m, _ebi_write8)
+#define CORE_EBI_READ16(m)				__CONNECT(m, _ebi_read16)
+#define CORE_EBI_WRITE16(m)				__CONNECT(m, _ebi_write16)
+#define CORE_EBI_READ32(m)				__CONNECT(m, _ebi_read32)
+#define CORE_EBI_WRITE32(m)				__CONNECT(m, _ebi_write32)
+
 // USB
 #define CORE_USBD_INIT(m)				__CONNECT(m, _usbd_init)
 #define CORE_USBD_FINI(m)				__CONNECT(m, _usbd_fini)
@@ -516,6 +657,40 @@ RESULT CORE_EINT_ENABLE(__TARGET_CHIP__)(uint8_t index);
 RESULT CORE_EINT_DISABLE(__TARGET_CHIP__)(uint8_t index);
 RESULT CORE_EINT_TRIGGER(__TARGET_CHIP__)(uint8_t index);
 
+// EBI
+RESULT CORE_EBI_INIT(__TARGET_CHIP__)(uint8_t index);
+RESULT CORE_EBI_FINI(__TARGET_CHIP__)(uint8_t index);
+RESULT CORE_EBI_CONFIG(__TARGET_CHIP__)(uint8_t index, uint8_t target_index, 
+										void *param);
+RESULT CORE_EBI_CONFIG_SRAM(__TARGET_CHIP__)(uint8_t index, 
+												struct ebi_sram_info_t *info);
+RESULT CORE_EBI_CONFIG_PSRAM(__TARGET_CHIP__)(uint8_t index, 
+												struct ebi_psram_info_t *info);
+RESULT CORE_EBI_CONFIG_NOR(__TARGET_CHIP__)(uint8_t index, 
+												struct ebi_nor_info_t *info);
+RESULT CORE_EBI_CONFIG_NAND(__TARGET_CHIP__)(uint8_t index, 
+												struct ebi_nand_info_t *info);
+RESULT CORE_EBI_CONFIG_SDRAM(__TARGET_CHIP__)(uint8_t index, 
+												struct ebi_sdram_info_t *info);
+RESULT CORE_EBI_CONFIG_DDRAM(__TARGET_CHIP__)(uint8_t index, 
+												struct ebi_ddram_info_t *info);
+RESULT CORE_EBI_CONFIG_PCCARD(__TARGET_CHIP__)(uint8_t index, 
+												struct ebi_pccard_info_t *info);
+RESULT CORE_EBI_READ(__TARGET_CHIP__)(uint8_t index, uint8_t target_index, 
+		uint32_t address, uint8_t data_size, uint8_t *buff, uint32_t count);
+RESULT CORE_EBI_WRITE(__TARGET_CHIP__)(uint8_t index, uint8_t target_index, 
+		uint32_t address, uint8_t data_size, uint8_t *buff, uint32_t count);
+uint8_t CORE_EBI_READ8(__TARGET_CHIP__)(uint8_t index, uint32_t address);
+void CORE_EBI_WRITE8(__TARGET_CHIP__)(uint8_t index, uint32_t address, 
+										uint8_t data);
+uint16_t CORE_EBI_READ16(__TARGET_CHIP__)(uint8_t index, uint32_t address);
+void CORE_EBI_WRITE16(__TARGET_CHIP__)(uint8_t index, uint32_t address, 
+										uint16_t data);
+uint32_t CORE_EBI_READ32(__TARGET_CHIP__)(uint8_t index, uint32_t address);
+void CORE_EBI_WRITE32(__TARGET_CHIP__)(uint8_t index, uint32_t address, 
+										uint32_t data);
+
+
 // USB
 RESULT CORE_USBD_INIT(__TARGET_CHIP__)(void *device);
 RESULT CORE_USBD_FINI(__TARGET_CHIP__)(void);
@@ -581,6 +756,7 @@ struct interfaces_info_t
 	struct interface_pwm_t pwm;
 	struct interface_microwire_t microwire;
 	struct interface_delay_t delay;
+	struct interface_ebi_t ebi;
 	RESULT (*peripheral_commit)(void);
 };
 

@@ -271,6 +271,9 @@ struct app_interfaces_info_t
 #if	INTERFACE_SPI_EN
 	struct interface_spi_t spi;
 #endif
+#if INTERFACE_EBI_EN
+	struct interface_ebi_t ebi;
+#endif
 #if	INTERFACE_IIC_EN
 	struct interface_i2c_t i2c;
 #endif
