@@ -1461,6 +1461,7 @@ RESULT target_build_chip_series(const char *chip_series,
 				s->chips_param[j].program_mode_str = NULL;
 				for (k = 0; k < dimof(target_area_name); k++)
 				{
+					s->chips_param[j].chip_areas[k].mask = NULL;
 					s->chips_param[j].chip_areas[k].cli_format = NULL;
 				}
 			}
