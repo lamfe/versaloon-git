@@ -2489,7 +2489,13 @@ VSS_HANDLER(target_memory_detail)
 	if (((NULL == program_info.chip_name) || (NULL == cur_target))
 		&& (NULL != program_info.chip_type))
 	{
-		program_info.chip_name = program_info.chip_type;
+		if (NULL == bufffunc_malloc_and_copy_str(&program_info.chip_name,
+													program_info.chip_type))
+		{
+			LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
+			return ERRCODE_NOT_ENOUGH_MEMORY;
+		}
+		
 		target_info_init(&program_info);
 		if (NULL == cur_target)
 		{
