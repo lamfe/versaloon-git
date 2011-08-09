@@ -54,7 +54,7 @@ void USB_TO_EBI_ProcessCmd(uint8_t *dat, uint16_t len)
 			break;
 		case USB_TO_XXX_CONFIG:
 			target_index = dat[index + 0];
-			target_type = (target_index >> 4) & 0x0F;
+			target_type = target_index & 0xF0;
 			
 			switch (target_type)
 			{
@@ -63,19 +63,21 @@ void USB_TO_EBI_ProcessCmd(uint8_t *dat, uint16_t len)
 				nor_info.common_info.wait_signal = 
 											(enum wait_signal_t)dat[index + 2];
 				nor_info.param.addr_multiplex = dat[index + 3];
-				nor_info.param.address_setup_cycle_r = 
+				nor_info.param.timing.address_setup_cycle_r = 
 												GET_LE_U16(&dat[index + 4]);
-				nor_info.param.address_hold_cycle_r = 
+				nor_info.param.timing.address_hold_cycle_r = 
 												GET_LE_U16(&dat[index + 6]);
-				nor_info.param.data_setup_cycle_r = GET_LE_U16(&dat[index + 8]);
-				nor_info.param.clock_hz_r = GET_LE_U32(&dat[index + 10]);
-				nor_info.param.address_setup_cycle_w = 
+				nor_info.param.timing.data_setup_cycle_r = 
+												GET_LE_U16(&dat[index + 8]);
+				nor_info.param.timing.clock_hz_r = 
+												GET_LE_U32(&dat[index + 10]);
+				nor_info.param.timing.address_setup_cycle_w = 
 												GET_LE_U16(&dat[index + 14]);
-				nor_info.param.address_hold_cycle_w = 
+				nor_info.param.timing.address_hold_cycle_w = 
 												GET_LE_U16(&dat[index + 16]);
-				nor_info.param.data_setup_cycle_w = 
+				nor_info.param.timing.data_setup_cycle_w = 
 												GET_LE_U16(&dat[index + 18]);
-				nor_info.param.clock_hz_w = GET_LE_U32(&dat[index + 20]);
+				nor_info.param.timing.clock_hz_w = GET_LE_U32(&dat[index + 20]);
 				if (ERROR_OK == app_interfaces.ebi.config(device_idx, 
 						target_index, &nor_info))
 				{
@@ -91,18 +93,22 @@ void USB_TO_EBI_ProcessCmd(uint8_t *dat, uint16_t len)
 				nand_info.common_info.wait_signal = 
 											(enum wait_signal_t)dat[index + 2];
 				nand_info.param.clock_hz = GET_LE_U32(&dat[index + 3]);
-				nand_info.param.ecc_enable = dat[index + 7];
-				nand_info.param.ecc_page_size = GET_LE_U16(&dat[index + 8]);
-				nand_info.param.ale_to_re_cycle = dat[index + 10];
-				nand_info.param.cle_to_re_cycle = dat[index + 11];
-				nand_info.param.setup_cycle = dat[index + 12];
-				nand_info.param.wait_cycle = dat[index + 13];
-				nand_info.param.hold_cycle = dat[index + 14];
-				nand_info.param.hiz_cycle = dat[index + 15];
-				nand_info.param.setup_cycle_attr = dat[index + 16];
-				nand_info.param.wait_cycle_attr = dat[index + 17];
-				nand_info.param.hold_cycle_attr = dat[index + 18];
-				nand_info.param.hiz_cycle_attr = dat[index + 19];
+				nand_info.param.ecc.ecc_enable = dat[index + 7];
+				nand_info.param.ecc.ecc_page_size = GET_LE_U16(&dat[index + 8]);
+				nand_info.param.timing.ale_to_re_cycle = dat[index + 10];
+				nand_info.param.timing.cle_to_re_cycle = dat[index + 11];
+				nand_info.param.timing.setup_cycle = 
+												GET_LE_U16(&dat[index + 12]);
+				nand_info.param.timing.wait_cycle = 
+												GET_LE_U16(&dat[index + 14]);
+				nand_info.param.timing.hold_cycle = dat[index + 16];
+				nand_info.param.timing.hiz_cycle = dat[index + 17];
+				nand_info.param.timing.setup_cycle_attr = 
+												GET_LE_U16(&dat[index + 18]);
+				nand_info.param.timing.wait_cycle_attr = 
+												GET_LE_U16(&dat[index + 20]);
+				nand_info.param.timing.hold_cycle_attr = dat[index + 22];
+				nand_info.param.timing.hiz_cycle_attr = dat[index + 23];
 				if (ERROR_OK == app_interfaces.ebi.config(device_idx, 
 						target_index, &nand_info))
 				{

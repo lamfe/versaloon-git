@@ -67,6 +67,7 @@
 #include "stm32f2/stm32f2.h"
 #include "sd/sd.h"
 #include "cfi/cfi.h"
+#include "nand/nand.h"
 
 VSS_HANDLER(target_memory_detail);
 VSS_HANDLER(target_parameter_detail);
@@ -525,6 +526,19 @@ struct target_info_t targets_info[] =
 		cfi_program_mode,					// program_mode
 		&cfi_program_functions,				// program_functions
 		cfi_notifier,						// notifier
+		NULL,								// adjust_setting
+		NULL,								// adjust_mapping
+	},
+#endif
+#if TARGET_NAND_EN
+	// NAND
+	{
+		NAND_STRING,						// name
+		AUTO_DETECT,						// feature
+		nand_program_area_map,				// program_area_map
+		nand_program_mode,					// program_mode
+		&nand_program_functions,			// program_functions
+		nand_notifier,						// notifier
 		NULL,								// adjust_setting
 		NULL,								// adjust_mapping
 	},
@@ -2783,8 +2797,8 @@ extern struct filelist *fl_in, *fl_out;
 VSS_HANDLER(target_prepare)
 {
 	RESULT ret = ERROR_OK;
-	uint32_t require_hex_file_for_read = 0;
-	uint32_t require_hex_file_for_write = 0;
+	uint32_t require_file_for_read = 0;
+	uint32_t require_file_for_write = 0;
 	
 	VSS_CHECK_ARGC(1);
 	if (NULL == cur_target)
@@ -2795,14 +2809,14 @@ VSS_HANDLER(target_prepare)
 	
 	// check file
 	target_prepare_operations(&operations,
-					&require_hex_file_for_read, &require_hex_file_for_write);
-	if ((require_hex_file_for_read > 0)
+					&require_file_for_read, &require_file_for_write);
+	if ((require_file_for_read > 0)
 		&& ((NULL == fl_in) || (NULL == fl_in->path) || (NULL == fl_in->file)))
 	{
 		LOG_ERROR(ERRMSG_NOT_DEFINED, "input file");
 		return ERROR_FAIL;
 	}
-	if ((require_hex_file_for_write > 0)
+	if ((require_file_for_write > 0)
 		&& ((NULL == fl_out) || (NULL == fl_out->path)))
 	{
 		LOG_ERROR(ERRMSG_NOT_DEFINED, "output file");
@@ -2831,7 +2845,7 @@ VSS_HANDLER(target_prepare)
 		return ERROR_FAIL;
 	}
 	// read file
-	if (require_hex_file_for_read > 0)
+	if (require_file_for_read > 0)
 	{
 		struct filelist *fl = fl_in;
 		

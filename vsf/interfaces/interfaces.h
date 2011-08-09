@@ -243,14 +243,17 @@ struct ebi_sram_psram_nor_param_t
 	// A0-15 == D0-15 with ALE
 	bool addr_multiplex;
 	
-	uint16_t address_setup_cycle_r;
-	uint16_t address_hold_cycle_r;
-	uint16_t data_setup_cycle_r;
-	uint32_t clock_hz_r;
-	uint16_t address_setup_cycle_w;
-	uint16_t address_hold_cycle_w;
-	uint16_t data_setup_cycle_w;
-	uint32_t clock_hz_w;
+	struct ebi_sram_param_nor_timing_t
+	{
+		uint16_t address_setup_cycle_r;
+		uint16_t address_hold_cycle_r;
+		uint16_t data_setup_cycle_r;
+		uint32_t clock_hz_r;
+		uint16_t address_setup_cycle_w;
+		uint16_t address_hold_cycle_w;
+		uint16_t data_setup_cycle_w;
+		uint32_t clock_hz_w;
+	} timing;
 };
 struct ebi_sram_info_t
 {
@@ -273,18 +276,30 @@ struct ebi_nand_info_t
 	struct ebi_nand_param_t
 	{
 		uint32_t clock_hz;
-		bool ecc_enable;
-		uint16_t ecc_page_size;
-		uint8_t ale_to_re_cycle;
-		uint8_t cle_to_re_cycle;
-		uint8_t setup_cycle;
-		uint8_t wait_cycle;
-		uint8_t hold_cycle;
-		uint8_t hiz_cycle;
-		uint8_t setup_cycle_attr;
-		uint8_t wait_cycle_attr;
-		uint8_t hold_cycle_attr;
-		uint8_t hiz_cycle_attr;
+		struct ebi_nand_ecc_t
+		{
+			bool ecc_enable;
+			uint16_t ecc_page_size;
+		} ecc;
+		struct ebi_nand_timing_t
+		{
+			uint8_t ale_to_re_cycle;
+			uint8_t cle_to_re_cycle;
+			uint16_t setup_cycle;
+			uint16_t wait_cycle;
+			uint8_t hold_cycle;
+			uint8_t hiz_cycle;
+			uint16_t setup_cycle_attr;
+			uint16_t wait_cycle_attr;
+			uint8_t hold_cycle_attr;
+			uint8_t hiz_cycle_attr;
+		} timing;
+		struct ebi_nand_addr_t
+		{
+			uint32_t cmd;
+			uint32_t addr;
+			uint32_t data;
+		} addr;
 	} param;
 };
 struct ebi_sdram_info_t

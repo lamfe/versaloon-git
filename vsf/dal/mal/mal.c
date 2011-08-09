@@ -177,6 +177,9 @@ static struct mal_driver_t *mal_drivers[] =
 #if DAL_CFI_EN
 	&cfi_drv,
 #endif
+#if DAL_NAND_EN
+	&nand_drv,
+#endif
 #if DAL_MAL_EMPTY_EN
 	&mal_empty_drv,
 #endif

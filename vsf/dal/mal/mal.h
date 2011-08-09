@@ -57,6 +57,7 @@
 #define MAL_IDX_SD_SPI						5
 #define MAL_IDX_SD_SDIO						6
 #define MAL_IDX_CFI							7
+#define MAL_IDX_NAND						8
 
 struct mal_capacity_t
 {

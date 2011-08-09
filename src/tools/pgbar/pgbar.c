@@ -53,7 +53,8 @@ static uint8_t gui_mode_flag = 0;
 
 static uint32_t pgbar_get_char_num(int32_t pos)
 {
-	return (pos - min_num) * max_num_of_chars / (max_num - min_num);
+	return (uint32_t)((uint64_t)(pos - min_num) * max_num_of_chars / 
+						(max_num - min_num));
 }
 
 VSS_HANDLER(pgbar_gui)

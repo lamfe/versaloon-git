@@ -16,37 +16,14 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#ifndef __APP_CFG_INCLUDED__
-#define __APP_CFG_INCLUDED__
 
-#include "compiler.h"
+#ifndef __NAND_INTERNAL_H_INCLUDED__
+#define __NAND_INTERNAL_H_INCLUDED__
 
-#define PARAM_CHECK				1
+#define NAND_PARAM_SMALL_PAGE			0
+#define NAND_PARAM_READ_PAGE_SIZE		1
+#define NAND_PARAM_WRITE_PAGE_SIZE		2
+#define NAND_PARAM_ERASE_PAGE_SIZE		3
 
-// Target Support Configuration
-#define TARGET_AT89S5X_EN		1
-#define TARGET_AT91SAM3_EN		1
-#define TARGET_AVR32_EN			0
-#define TARGET_AVR8_EN			1
-#define TARGET_AVRXMEGA_EN		0
-#define TARGET_C8051F_EN		1
-#define TARGET_HCS08_EN			1
-#define TARGET_HCS12_EN			1
-#define TARGET_LM3S_EN			1
-#define TARGET_LPC1000_EN		1
-#define TARGET_LPC900_EN		1
-#define TARGET_MSP430_EN		1
-#define TARGET_PSOC1_EN			1
-#define TARGET_STM32_EN			1
-#define TARGET_STM8_EN			1
-#define TARGET_SVF_EN			1
-#define TARGET_EE93CX6_EN		1
-#define TARGET_EE24CXX_EN		1
-#define TARGET_DF25XX_EN		1
-#define TARGET_STM32F2_EN		1
-#define TARGET_SD_EN			1
-#define TARGET_CFI_EN			1
-#define TARGET_NAND_EN			1
-
-#endif /* __APP_CFG_INCLUDED__ */
+#endif /* __NAND_INTERNAL_H_INCLUDED__ */
 

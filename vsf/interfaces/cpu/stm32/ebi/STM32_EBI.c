@@ -76,7 +76,6 @@
 // NCE3       : PG9
 // INT2       : PG6
 // INT3       : PG7
-// nand
 // ALE        : PD11
 // CLE        : PD12
 // pccard
@@ -91,6 +90,8 @@
 
 RESULT stm32_ebi_init(uint8_t index)
 {
+	// common signals
+	// NOE, NWE, DATA, ADDRESS
 	switch (index & 0x0F)
 	{
 	case 0:
@@ -291,7 +292,7 @@ RESULT stm32_ebi_config_nor(uint8_t index, struct ebi_nor_info_t *info)
 			return ERROR_FAIL;
 		}
 		
-		if (info->param.clock_hz_r)
+		if (info->param.timing.clock_hz_r)
 		{
 			GPIOB->CRL = (GPIOB->CRL & ~(0x0F << (7 * 4))) | 
 							(uint32_t)0x0B << (7 * 4);
@@ -342,9 +343,9 @@ RESULT stm32_ebi_config_nor(uint8_t index, struct ebi_nor_info_t *info)
 			return ERROR_FAIL;
 		}
 		
-		if (info->param.clock_hz_r)
+		if (info->param.timing.clock_hz_r)
 		{
-			clkdiv = cpu_info->ahb_freq_hz / info->param.clock_hz_r;
+			clkdiv = cpu_info->ahb_freq_hz / info->param.timing.clock_hz_r;
 			if ((clkdiv < 2) || (clkdiv > 16))
 			{
 				return ERROR_FAIL;
@@ -355,31 +356,31 @@ RESULT stm32_ebi_config_nor(uint8_t index, struct ebi_nor_info_t *info)
 		{
 			clkdiv = 0;
 		}
-		btr |= (((info->param.address_setup_cycle_r - 1) & 0x0F) << 0) | 
-				(((info->param.address_hold_cycle_r - 1) & 0x0F) << 4) | 
-				(((info->param.data_setup_cycle_r - 1) & 0xFF) << 8) | 
+		btr |= (((info->param.timing.address_setup_cycle_r - 1) & 0x0F) << 0) | 
+				(((info->param.timing.address_hold_cycle_r - 1) & 0x0F) << 4) | 
+				(((info->param.timing.data_setup_cycle_r - 1) & 0xFF) << 8) | 
 				((clkdiv & 0x0F) << 20);
 		
-		if ((info->param.clock_hz_w != info->param.clock_hz_r) || 
-			(info->param.address_setup_cycle_w != 
-										info->param.address_setup_cycle_r) || 
-			(info->param.address_hold_cycle_w != 
-			 							info->param.address_hold_cycle_r) || 
-			(info->param.data_setup_cycle_w != 
-			 							info->param.data_setup_cycle_r))
+		if ((info->param.timing.clock_hz_w != info->param.timing.clock_hz_r) || 
+			(info->param.timing.address_setup_cycle_w != 
+								info->param.timing.address_setup_cycle_r) || 
+			(info->param.timing.address_hold_cycle_w != 
+	 							info->param.timing.address_hold_cycle_r) || 
+			(info->param.timing.data_setup_cycle_w != 
+	 							info->param.timing.data_setup_cycle_r))
 		{
 			btr |= STM32_FSMC_BCR_EXTMOD;
-			if (info->param.clock_hz_w)
+			if (info->param.timing.clock_hz_w)
 			{
-				clkdiv = cpu_info->ahb_freq_hz / info->param.clock_hz_w;
+				clkdiv = cpu_info->ahb_freq_hz / info->param.timing.clock_hz_w;
 			}
 			else
 			{
 				clkdiv = 0;
 			}
-			bwtr |= (((info->param.address_setup_cycle_w - 1) & 0x0F) << 0) | 
-					(((info->param.address_hold_cycle_w - 1) & 0x0F) << 4) | 
-					(((info->param.data_setup_cycle_w - 1) & 0xFF) << 8) | 
+			bwtr |= (((info->param.timing.address_setup_cycle_w - 1) & 0x0F) << 0) | 
+					(((info->param.timing.address_hold_cycle_w - 1) & 0x0F) << 4) | 
+					(((info->param.timing.data_setup_cycle_w - 1) & 0xFF) << 8) | 
 					((clkdiv & 0x0F) << 20);
 		}
 		else
@@ -403,7 +404,11 @@ RESULT stm32_ebi_config_nand(uint8_t index, struct ebi_nand_info_t *info)
 	uint32_t pmem = 0, patt = 0;
 	
 #if __VSF_DEBUG__
-	if (NULL == info)
+	if ((NULL == info) || 
+		(info->param.timing.ale_to_re_cycle < 1) || 
+		(info->param.timing.ale_to_re_cycle > 16) || 
+		(info->param.timing.cle_to_re_cycle < 1) || 
+		(info->param.timing.cle_to_re_cycle > 16))
 	{
 		return ERROR_FAIL;
 	}
@@ -412,7 +417,7 @@ RESULT stm32_ebi_config_nand(uint8_t index, struct ebi_nand_info_t *info)
 	switch (index & 0x0F)
 	{
 	case 0:
-		// ALE & CLD
+		// ALE & CLE
 		GPIOD->CRH = (GPIOD->CRH & ~(0xFF << ((11 - 8) * 4))) | 
 						(uint32_t)0xBB << ((11 - 8) * 4);
 		
@@ -430,12 +435,12 @@ RESULT stm32_ebi_config_nand(uint8_t index, struct ebi_nand_info_t *info)
 			return ERROR_FAIL;
 		}
 		
-		pcr |= ((info->param.ale_to_re_cycle & 0x0F) << 13) | 
-				((info->param.cle_to_re_cycle & 0x0F) << 9);
-		if (info->param.ecc_enable)
+		pcr |= (((info->param.timing.ale_to_re_cycle - 1) & 0x0F) << 13) | 
+				(((info->param.timing.cle_to_re_cycle - 1) & 0x0F) << 9);
+		if (info->param.ecc.ecc_enable)
 		{
 			pcr |= STM32_FSMC_PCR_ECCEN;
-			switch (info->param.ecc_page_size)
+			switch (info->param.ecc.ecc_page_size)
 			{
 			case 256:
 				pcr |= STM32_FSMC_PCR_ECCPS_256;
@@ -480,24 +485,26 @@ RESULT stm32_ebi_config_nand(uint8_t index, struct ebi_nand_info_t *info)
 			return ERROR_FAIL;
 		}
 		
-		pmem = (info->param.setup_cycle << 0) | (info->param.wait_cycle << 8) | 
-				(info->param.hold_cycle << 16) | (info->param.hiz_cycle << 24);
-		patt = (info->param.setup_cycle_attr << 0) | 
-				(info->param.wait_cycle_attr << 8) | 
-				(info->param.hold_cycle_attr << 16) | 
-				(info->param.hiz_cycle_attr << 24);
+		pmem = ((info->param.timing.setup_cycle - 1) << 0) | 
+				((info->param.timing.wait_cycle - 1) << 8) | 
+				(info->param.timing.hold_cycle << 16) | 
+				(info->param.timing.hiz_cycle << 24);
+		patt = ((info->param.timing.setup_cycle_attr - 1) << 0) | 
+				((info->param.timing.wait_cycle_attr - 1) << 8) | 
+				(info->param.timing.hold_cycle_attr << 16) | 
+				(info->param.timing.hiz_cycle_attr << 24);
 		
 		switch (bank_index)
 		{
 		case 1:
-			FSMC_Bank2->PCR2 = pcr;
 			FSMC_Bank2->PMEM2 = pmem;
 			FSMC_Bank2->PATT2 = patt;
+			FSMC_Bank2->PCR2 = pcr;
 			break;
 		case 2:
-			FSMC_Bank3->PCR3 = pcr;
 			FSMC_Bank3->PMEM3 = pmem;
 			FSMC_Bank3->PATT3 = patt;
+			FSMC_Bank3->PCR3 = pcr;
 			break;
 		default:
 			return ERROR_FAIL;
@@ -542,7 +549,7 @@ RESULT stm32_ebi_config_pccard(uint8_t index, struct ebi_pccard_info_t *info)
 
 RESULT stm32_ebi_config(uint8_t index, uint8_t target_index, void *param)
 {
-	uint8_t target_type = (target_index >> 4) & 0x0F;
+	uint8_t target_type = target_index & 0xF0;
 	
 	target_index &= 0x0F;
 	switch (index)
@@ -555,7 +562,7 @@ RESULT stm32_ebi_config(uint8_t index, uint8_t target_index, void *param)
 				(target_index & 0x03) << 6, (struct ebi_nor_info_t *)param);
 		case EBI_TGTTYP_NAND:
 			return interfaces->ebi.config_nand(
-				(target_index & 0x03) << 4, (struct ebi_nand_info_t *)param);
+				((target_index + 1) & 0x03) << 4, (struct ebi_nand_info_t *)param);
 		default:
 			return ERROR_FAIL;
 		}
@@ -699,7 +706,7 @@ RESULT stm32_ebi_read(uint8_t index, uint8_t target_index, uint32_t address,
 						uint8_t data_size, uint8_t *buff, uint32_t count)
 {
 	uint32_t i;
-	uint8_t target_type = (target_index >> 4) & 0x0F;
+	uint8_t target_type = target_index & 0xF0;
 	
 	target_index &= 0x0F;
 	switch (index)
@@ -753,7 +760,7 @@ RESULT stm32_ebi_write(uint8_t index, uint8_t target_index, uint32_t address,
 						uint8_t data_size, uint8_t *buff, uint32_t count)
 {
 	uint32_t i;
-	uint8_t target_type = (target_index >> 4) & 0x0F;
+	uint8_t target_type = target_index & 0xF0;
 	
 	target_index &= 0x0F;
 	switch (index)
