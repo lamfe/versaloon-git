@@ -38,51 +38,52 @@
 #include "app_scripts.h"
 
 #include "dal/mal/mal.h"
-#include "dal/cfi/cfi_drv.h"
+#include "dal/nand/nand_drv.h"
 
-#include "cfi.h"
+#include "nand.h"
+#include "nand_internal.h"
 
-#define CUR_TARGET_STRING			CFI_STRING
+#define CUR_TARGET_STRING			NAND_STRING
 
-struct program_area_map_t cfi_program_area_map[] =
+struct program_area_map_t nand_program_area_map[] =
 {
 	{APPLICATION_CHAR, 1, 0, 0, 0, AREA_ATTR_EWR | AREA_ATTR_EP},
 	{0, 0, 0, 0, 0, 0}
 };
 
-const struct program_mode_t cfi_program_mode[] =
+const struct program_mode_t nand_program_mode[] =
 {
 	{'*', "", IFS_EBI},
 	{0, NULL, 0}
 };
 
-ENTER_PROGRAM_MODE_HANDLER(cfi);
-LEAVE_PROGRAM_MODE_HANDLER(cfi);
-ERASE_TARGET_HANDLER(cfi);
-WRITE_TARGET_HANDLER(cfi);
-READ_TARGET_HANDLER(cfi);
-const struct program_functions_t cfi_program_functions =
+ENTER_PROGRAM_MODE_HANDLER(nand);
+LEAVE_PROGRAM_MODE_HANDLER(nand);
+ERASE_TARGET_HANDLER(nand);
+WRITE_TARGET_HANDLER(nand);
+READ_TARGET_HANDLER(nand);
+const struct program_functions_t nand_program_functions =
 {
 	NULL,			// execute
-	ENTER_PROGRAM_MODE_FUNCNAME(cfi),
-	LEAVE_PROGRAM_MODE_FUNCNAME(cfi),
-	ERASE_TARGET_FUNCNAME(cfi),
-	WRITE_TARGET_FUNCNAME(cfi),
-	READ_TARGET_FUNCNAME(cfi)
+	ENTER_PROGRAM_MODE_FUNCNAME(nand),
+	LEAVE_PROGRAM_MODE_FUNCNAME(nand),
+	ERASE_TARGET_FUNCNAME(nand),
+	WRITE_TARGET_FUNCNAME(nand),
+	READ_TARGET_FUNCNAME(nand)
 };
 
-VSS_HANDLER(cfi_help)
+VSS_HANDLER(nand_help)
 {
 	VSS_CHECK_ARGC(1);
 	PRINTF("Usage of %s:\n\n", CUR_TARGET_STRING);
 	return ERROR_OK;
 }
 
-const struct vss_cmd_t cfi_notifier[] =
+const struct vss_cmd_t nand_notifier[] =
 {
 	VSS_CMD(	"help",
 				"print help information of current target for internal call",
-				cfi_help),
+				nand_help),
 	VSS_CMD_END
 };
 
@@ -91,25 +92,25 @@ const struct vss_cmd_t cfi_notifier[] =
 
 
 
-static struct cfi_drv_info_t cfi_drv_info;
-static struct cfi_drv_param_t cfi_drv_param;
-static struct cfi_drv_interface_t cfi_drv_ifs;
-static struct mal_info_t cfi_mal_info =
+static struct nand_drv_info_t nand_drv_info;
+static struct nand_drv_param_t nand_drv_param;
+static struct nand_drv_interface_t nand_drv_ifs;
+static struct mal_info_t nand_mal_info =
 {
 	{0, 0}, NULL, 0, 0, 0
 };
-static struct dal_info_t cfi_dal_info =
+static struct dal_info_t nand_dal_info =
 {
-	&cfi_drv_ifs,
-	&cfi_drv_param,
-	&cfi_drv_info,
-	&cfi_mal_info,
+	&nand_drv_ifs,
+	&nand_drv_param,
+	&nand_drv_info,
+	&nand_mal_info,
 };
 
-ENTER_PROGRAM_MODE_HANDLER(cfi)
+ENTER_PROGRAM_MODE_HANDLER(nand)
 {
-	struct chip_param_t *param = context->param;
 	struct program_info_t *pi = context->pi;
+	struct chip_param_t *param = context->param;
 	
 	if (ERROR_OK != dal_init(context->prog))
 	{
@@ -118,59 +119,64 @@ ENTER_PROGRAM_MODE_HANDLER(cfi)
 	
 	if (pi->ifs_indexes != NULL)
 	{
-		if (ERROR_OK != dal_config_interface(CFI_STRING, pi->ifs_indexes,
-												&cfi_dal_info))
+		if (ERROR_OK != dal_config_interface(NAND_STRING, pi->ifs_indexes,
+												&nand_dal_info))
 		{
 			return ERROR_FAIL;
 		}
 	}
 	else
 	{
-		cfi_drv_ifs.ebi_port = 0;
-		cfi_drv_ifs.nor_index = 1;
+		nand_drv_ifs.ebi_port = 0;
+		nand_drv_ifs.nand_index = 1;
 	}
+	nand_mal_info.capacity.block_number = 
+								param->chip_areas[APPLICATION_IDX].page_num;
+	nand_mal_info.capacity.block_size = 
+								param->chip_areas[APPLICATION_IDX].page_size;
+	nand_mal_info.read_page_size = param->param[NAND_PARAM_READ_PAGE_SIZE];
+	nand_mal_info.write_page_size = param->param[NAND_PARAM_WRITE_PAGE_SIZE];
+	nand_mal_info.erase_page_size = param->param[NAND_PARAM_ERASE_PAGE_SIZE];
 	
-	cfi_drv_param.nor_info.common_info.data_width = 16;
-	cfi_drv_param.nor_info.common_info.wait_signal = EBI_WAIT_NONE;
-	cfi_drv_param.nor_info.param.addr_multiplex = false;
-	cfi_drv_param.nor_info.param.timing.clock_hz_r = 
-		cfi_drv_param.nor_info.param.timing.clock_hz_w = 0;
-	cfi_drv_param.nor_info.param.timing.address_setup_cycle_r = 
-		cfi_drv_param.nor_info.param.timing.address_setup_cycle_w = 2;
-	cfi_drv_param.nor_info.param.timing.address_hold_cycle_r = 
-		cfi_drv_param.nor_info.param.timing.address_hold_cycle_w = 0;
-	cfi_drv_param.nor_info.param.timing.data_setup_cycle_r = 
-		cfi_drv_param.nor_info.param.timing.data_setup_cycle_w = 7;
+	nand_drv_param.nand_info.common_info.data_width = 8;
+	nand_drv_param.nand_info.common_info.wait_signal = EBI_WAIT_NONE;
+	nand_drv_param.nand_info.param.clock_hz = 0;
+	nand_drv_param.nand_info.param.ecc.ecc_enable = true;
+	nand_drv_param.nand_info.param.ecc.ecc_page_size = 512;
+	nand_drv_param.nand_info.param.timing.ale_to_re_cycle = 1;
+	nand_drv_param.nand_info.param.timing.cle_to_re_cycle = 1;
+	nand_drv_param.nand_info.param.timing.setup_cycle = 10;
+	nand_drv_param.nand_info.param.timing.wait_cycle = 10;
+	nand_drv_param.nand_info.param.timing.hold_cycle = 10;
+	nand_drv_param.nand_info.param.timing.hiz_cycle = 10;
+	nand_drv_param.nand_info.param.timing.setup_cycle_attr = 10;
+	nand_drv_param.nand_info.param.timing.wait_cycle_attr = 10;
+	nand_drv_param.nand_info.param.timing.hold_cycle_attr = 10;
+	nand_drv_param.nand_info.param.timing.hiz_cycle_attr = 10;
+	nand_drv_param.nand_info.param.addr.cmd = 0x00010000;
+	nand_drv_param.nand_info.param.addr.addr = 0x00020000;
+	nand_drv_param.nand_info.param.addr.data = 0x00000000;
+	nand_drv_param.small_page = param->param[NAND_PARAM_SMALL_PAGE];
 	
-	if ((ERROR_OK != mal.init(MAL_IDX_CFI, &cfi_dal_info)) || 
-		(ERROR_OK != mal.getinfo(MAL_IDX_CFI, &cfi_dal_info)))
+	if ((ERROR_OK != mal.init(MAL_IDX_NAND, &nand_dal_info)) || 
+		(ERROR_OK != mal.getinfo(MAL_IDX_NAND, &nand_dal_info)))
 	{
 		return ERROR_FAIL;
 	}
 	
-	param->chip_areas[APPLICATION_IDX].page_num = 
-								(uint32_t)cfi_mal_info.capacity.block_number;
-	param->chip_areas[APPLICATION_IDX].page_size = 
-								(uint32_t)cfi_mal_info.capacity.block_size;
-	param->chip_areas[APPLICATION_IDX].size = 
-								param->chip_areas[APPLICATION_IDX].page_num * 
-								param->chip_areas[APPLICATION_IDX].page_size;
-	LOG_INFO("CFI device detected: %dKB(%d blocks)", 
-					param->chip_areas[APPLICATION_IDX].size / 1024, 
-					param->chip_areas[APPLICATION_IDX].page_num);
 	return dal_commit();
 }
 
-LEAVE_PROGRAM_MODE_HANDLER(cfi)
+LEAVE_PROGRAM_MODE_HANDLER(nand)
 {
 	REFERENCE_PARAMETER(context);
 	REFERENCE_PARAMETER(success);
 	
-	mal.fini(MAL_IDX_CFI, &cfi_dal_info);
+	mal.fini(MAL_IDX_NAND, &nand_dal_info);
 	return dal_commit();
 }
 
-ERASE_TARGET_HANDLER(cfi)
+ERASE_TARGET_HANDLER(nand)
 {
 	REFERENCE_PARAMETER(context);
 	REFERENCE_PARAMETER(size);
@@ -178,7 +184,7 @@ ERASE_TARGET_HANDLER(cfi)
 	switch (area)
 	{
 	case APPLICATION_CHAR:
-		if (ERROR_OK != mal.eraseblock(MAL_IDX_CFI, &cfi_dal_info, addr, 1))
+		if (ERROR_OK != mal.eraseblock(MAL_IDX_NAND, &nand_dal_info, addr, 1))
 		{
 			return ERROR_FAIL;
 		}
@@ -188,7 +194,7 @@ ERASE_TARGET_HANDLER(cfi)
 	}
 }
 
-WRITE_TARGET_HANDLER(cfi)
+WRITE_TARGET_HANDLER(nand)
 {
 	struct chip_param_t *param = context->param;
 	
@@ -201,7 +207,7 @@ WRITE_TARGET_HANDLER(cfi)
 		}
 		size /= param->chip_areas[APPLICATION_IDX].page_size;
 		
-		if (ERROR_OK != mal.writeblock(MAL_IDX_CFI, &cfi_dal_info,addr, buff, 
+		if (ERROR_OK != mal.writeblock(MAL_IDX_NAND, &nand_dal_info,addr, buff, 
 										size))
 		{
 			return ERROR_FAIL;
@@ -213,21 +219,21 @@ WRITE_TARGET_HANDLER(cfi)
 	}
 }
 
-READ_TARGET_HANDLER(cfi)
+READ_TARGET_HANDLER(nand)
 {
 	struct chip_param_t *param = context->param;
 	
 	switch (area)
 	{
 	case CHIPID_CHAR:
-		if (ERROR_OK != mal.getinfo(MAL_IDX_CFI, &cfi_dal_info))
+		if (ERROR_OK != mal.getinfo(MAL_IDX_NAND, &nand_dal_info))
 		{
 			return ERROR_FAIL;
 		}
-		buff[3] = cfi_drv_info.manufacturer_id;
-		buff[2] = (uint8_t)cfi_drv_info.device_id[0];
-		buff[1] = (uint8_t)cfi_drv_info.device_id[1];
-		buff[0] = (uint8_t)cfi_drv_info.device_id[2];
+		buff[3] = nand_drv_info.manufacturer_id;
+		buff[2] = (uint8_t)nand_drv_info.device_id[0];
+		buff[1] = (uint8_t)nand_drv_info.device_id[1];
+		buff[0] = (uint8_t)nand_drv_info.device_id[2];
 		return ERROR_OK;
 		break;
 	case APPLICATION_CHAR:
@@ -237,7 +243,7 @@ READ_TARGET_HANDLER(cfi)
 		}
 		size /= param->chip_areas[APPLICATION_IDX].page_size;
 		
-		if (ERROR_OK != mal.readblock(MAL_IDX_CFI, &cfi_dal_info, addr, buff, 
+		if (ERROR_OK != mal.readblock(MAL_IDX_NAND, &nand_dal_info, addr, buff, 
 										size))
 		{
 			return ERROR_FAIL;

@@ -44,7 +44,7 @@ RESULT usbtoebi_fini(uint8_t interface_index)
 RESULT usbtoebi_config(uint8_t interface_index, uint8_t target_index,
 						void *param)
 {
-	uint8_t target_type = (target_index >> 4) & 0x0F;
+	uint8_t target_type = target_index & 0xF0;
 	struct ebi_nor_info_t *nor_info = (struct ebi_nor_info_t *)param;
 	struct ebi_nand_info_t *nand_info = (struct ebi_nand_info_t *)param;
 	
@@ -64,16 +64,20 @@ RESULT usbtoebi_config(uint8_t interface_index, uint8_t target_index,
 		versaloon_cmd_buf[2] = nor_info->common_info.wait_signal;
 		versaloon_cmd_buf[3] = nor_info->param.addr_multiplex ? 1 : 0;
 		SET_LE_U16(&versaloon_cmd_buf[4], 
-										nor_info->param.address_setup_cycle_r);
-		SET_LE_U16(&versaloon_cmd_buf[6], nor_info->param.address_hold_cycle_r);
-		SET_LE_U16(&versaloon_cmd_buf[8], nor_info->param.data_setup_cycle_r);
-		SET_LE_U32(&versaloon_cmd_buf[10], nor_info->param.clock_hz_r);
+								nor_info->param.timing.address_setup_cycle_r);
+		SET_LE_U16(&versaloon_cmd_buf[6], 
+								nor_info->param.timing.address_hold_cycle_r);
+		SET_LE_U16(&versaloon_cmd_buf[8], 
+								nor_info->param.timing.data_setup_cycle_r);
+		SET_LE_U32(&versaloon_cmd_buf[10], 
+								nor_info->param.timing.clock_hz_r);
 		SET_LE_U16(&versaloon_cmd_buf[14], 
-								nor_info->param.address_setup_cycle_w);
+								nor_info->param.timing.address_setup_cycle_w);
 		SET_LE_U16(&versaloon_cmd_buf[16], 
-								nor_info->param.address_hold_cycle_w);
-		SET_LE_U16(&versaloon_cmd_buf[18], nor_info->param.data_setup_cycle_w);
-		SET_LE_U32(&versaloon_cmd_buf[20], nor_info->param.clock_hz_w);
+								nor_info->param.timing.address_hold_cycle_w);
+		SET_LE_U16(&versaloon_cmd_buf[18], 
+								nor_info->param.timing.data_setup_cycle_w);
+		SET_LE_U32(&versaloon_cmd_buf[20], nor_info->param.timing.clock_hz_w);
 		
 		return usbtoxxx_conf_command(USB_TO_EBI, interface_index,
 										versaloon_cmd_buf, 24);
@@ -81,21 +85,23 @@ RESULT usbtoebi_config(uint8_t interface_index, uint8_t target_index,
 		versaloon_cmd_buf[1] = nand_info->common_info.data_width;
 		versaloon_cmd_buf[2] = nand_info->common_info.wait_signal;
 		SET_LE_U32(&versaloon_cmd_buf[3], nand_info->param.clock_hz);
-		versaloon_cmd_buf[7] = nand_info->param.ecc_enable ? 1 : 0;
-		SET_LE_U16(&versaloon_cmd_buf[8], nand_info->param.ecc_page_size);
-		versaloon_cmd_buf[10] = nand_info->param.ale_to_re_cycle;
-		versaloon_cmd_buf[11] = nand_info->param.cle_to_re_cycle;
-		versaloon_cmd_buf[12] = nand_info->param.setup_cycle;
-		versaloon_cmd_buf[13] = nand_info->param.wait_cycle;
-		versaloon_cmd_buf[14] = nand_info->param.hold_cycle;
-		versaloon_cmd_buf[15] = nand_info->param.hiz_cycle;
-		versaloon_cmd_buf[16] = nand_info->param.setup_cycle_attr;
-		versaloon_cmd_buf[17] = nand_info->param.wait_cycle_attr;
-		versaloon_cmd_buf[18] = nand_info->param.hold_cycle_attr;
-		versaloon_cmd_buf[19] = nand_info->param.hiz_cycle_attr;
+		versaloon_cmd_buf[7] = nand_info->param.ecc.ecc_enable ? 1 : 0;
+		SET_LE_U16(&versaloon_cmd_buf[8], nand_info->param.ecc.ecc_page_size);
+		versaloon_cmd_buf[10] = nand_info->param.timing.ale_to_re_cycle;
+		versaloon_cmd_buf[11] = nand_info->param.timing.cle_to_re_cycle;
+		SET_LE_U16(&versaloon_cmd_buf[12], nand_info->param.timing.setup_cycle);
+		SET_LE_U16(&versaloon_cmd_buf[14], nand_info->param.timing.wait_cycle);
+		versaloon_cmd_buf[16] = nand_info->param.timing.hold_cycle;
+		versaloon_cmd_buf[17] = nand_info->param.timing.hiz_cycle;
+		SET_LE_U16(&versaloon_cmd_buf[18], 
+									nand_info->param.timing.setup_cycle_attr);
+		SET_LE_U16(&versaloon_cmd_buf[20], 
+									nand_info->param.timing.wait_cycle_attr);
+		versaloon_cmd_buf[22] = nand_info->param.timing.hold_cycle_attr;
+		versaloon_cmd_buf[23] = nand_info->param.timing.hiz_cycle_attr;
 		
 		return usbtoxxx_conf_command(USB_TO_EBI, interface_index,
-										versaloon_cmd_buf, 20);
+										versaloon_cmd_buf, 24);
 	default:
 		return ERROR_FAIL;
 	}

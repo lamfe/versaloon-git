@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<series name="nand">
+  <chip name="nand">
+    <chip_id>0x00000000</chip_id>
+    <app_default>0xFF</app_default>
+    <app_addr>0</app_addr>
+    <app_seg>0</app_seg>
+  </chip>
+  <chip name="k9f1g08u0m">
+    <chip_id>0xECF18015</chip_id>
+    <app_page_size>131072</app_page_size>
+    <app_page_num>1024</app_page_num>
+    <param0>0</param0>
+    <param1>2048</param1>
+    <param2>2048</param2>
+    <param3>131072</param3>
+  </chip>
+  <chip name="nand512w3a">
+    <chip_id>0x20762076</chip_id>
+    <app_page_size>16384</app_page_size>
+    <app_page_num>4096</app_page_num>
+    <param0>1</param0>
+    <param1>512</param1>
+    <param2>512</param2>
+    <param3>16384</param3>
+  </chip>
+</series>
