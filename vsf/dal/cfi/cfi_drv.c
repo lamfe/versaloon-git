@@ -102,12 +102,11 @@ static RESULT cfi_wait_busy(struct dal_info_t *info, uint64_t address)
 static RESULT cfi_drv_init(struct dal_info_t *info)
 {
 	struct cfi_drv_interface_t *ifs = (struct cfi_drv_interface_t *)info->ifs;
-	struct cfi_drv_param_t *cfi_drv_param = 
-										(struct cfi_drv_param_t *)info->param;
+	struct cfi_drv_param_t *param = (struct cfi_drv_param_t *)info->param;
 	
 	interfaces->ebi.init(ifs->ebi_port);
 	interfaces->ebi.config(ifs->ebi_port, ifs->nor_index | EBI_TGTTYP_NOR, 
-							&cfi_drv_param->nor_info);
+							&param->nor_info);
 	return ERROR_OK;
 }
 
