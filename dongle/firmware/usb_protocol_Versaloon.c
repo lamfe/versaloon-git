@@ -115,7 +115,9 @@ static RESULT versaloon_idle(uint8_t iface, struct vsfusbd_device_t *device)
 	}
 	else
 	{
-		app_interfaces.target_voltage.poll(0);
+#if POWER_OUT_EN
+			app_interfaces.target_voltage.poll(0);
+#endif
 	}
 	
 	return ERROR_OK;
@@ -425,10 +427,12 @@ RESULT usb_protocol_init(void)
 	LED_USB_OFF();
 	
 	app_interfaces.delay.init();
+#if POWER_SAMPLE_EN
 	interfaces->adc.init(TVCC_ADC_PORT);
 	interfaces->adc.config(TVCC_ADC_PORT, CORE_APB2_FREQ_HZ / 8, ADC_ALIGNRIGHT);
 	interfaces->adc.config_channel(TVCC_ADC_PORT, TVCC_ADC_CHANNEL, 0xFF);
 	interfaces->adc.calibrate(TVCC_ADC_PORT, TVCC_ADC_CHANNEL);
+#endif
 	USB_TO_XXX_Init(asyn_rx_buf + 2048);
 	
 	vsfusbd_CDC_set_param(&Versaloon_CDC_param);
