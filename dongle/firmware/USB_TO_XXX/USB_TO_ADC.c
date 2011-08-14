@@ -68,7 +68,11 @@ void USB_TO_ADC_ProcessCmd(uint8_t *dat, uint16_t len)
 			}
 			break;
 		case USB_TO_XXX_IN:
+#if POWER_OUT_EN
 			if (ERROR_OK == app_interfaces.target_voltage.get(0, &adc_result))
+#else
+			adc_result = 0;
+#endif
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 				SET_LE_U16(&buffer_reply[rep_len], adc_result);

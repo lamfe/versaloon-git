@@ -24,12 +24,15 @@
 #define HSE_VALUE						((uint32_t)8000000)
 #endif
 
+#define OSC_HZ							HSE_VALUE
+
 #define _SYS_FREQUENCY					72		// in MHz
 #define _SYS_FLASH_VECTOR_TABLE_SHIFT	FLASH_LOAD_OFFSET // From board_defs.mk
 
 /****************************** Abilities ******************************/
 #define HW_HAS_USART					1
 #define HW_HAS_SPI						0
+#define HW_HAS_EBI						0
 #define HW_HAS_IIC						0
 #define HW_HAS_GPIO						1
 #define HW_HAS_CAN						0
@@ -115,11 +118,6 @@
 											GPIO_SetMode(PWREXT_EN_PORT, PWREXT_EN_PIN, GPIO_MODE_OUT_PP);\
 										}while(0)
 #define PWREXT_DISABLE()				GPIO_SetMode(PWREXT_EN_PORT, PWREXT_EN_PIN, GPIO_MODE_IN_FLOATING)
-
-/****************************** Global Output ******************************/
-#define GLOBAL_OUTPUT_INIT()			
-#define GLOBAL_OUTPUT_ENABLE()			
-#define GLOBAL_OUTPUT_DISABLE()			
 
 /****************************** DelayTimer ******************************/
 #define DELAYTIMER_MAXDELAY_US			200000
@@ -777,10 +775,8 @@
 										}while(0)
 
 /****************************** ADC ******************************/
-#define TVCC_PORT						GPIOB
-#define TVCC_PIN						GPIO_PIN_0
-#define TVCC_ADC_CHANNEL				ADC_Channel_8
-#define TVCC_ADC_PORT					ADC1
+#define TVCC_ADC_CHANNEL				8
+#define TVCC_ADC_PORT					0
 
 #define TVCC_SAMPLE_MIN_POWER			1800
 
@@ -820,23 +816,29 @@
 #define LED_USB_OFF()					Led_RW_ON()
 
 /****************************** KEY ******************************/
-#define KEY_PORT						GPIOB
-#define KEY_PIN							GPIO_PIN_9
-#define KEY_IsDown()						//!GPIO_GetInPins(KEY_PORT, KEY_PIN)
-#define KEY_Init()						//GPIO_SetMode(KEY_PORT, KEY_PIN, GPIO_MODE_IPU)
-#define KEY_Fini()						GPIO_SetMode(KEY_PORT, KEY_PIN, GPIO_MODE_IN_FLOATING)
+#define KEY_PORT						1
+#define KEY_PIN							9
+#define KEY_Init()						do {\
+											interfaces->gpio.init(KEY_PORT);\
+											interfaces->gpio.config_pin(KEY_PORT, KEY_PIN, GPIO_INPU);\
+										} while (0)
+#define KEY_Fini()						interfaces->gpio.config_pin(KEY_PORT, KEY_PIN, GPIO_INFLOAT)
+#define KEY_IsDown()					!(interfaces->gpio.get(KEY_PORT, 1 << KEY_PIN) & (1 << KEY_PIN))
 
 /****************************** USB *****************************/
 // For USB 2.0, use DP
 // For USB 1.1, use DM
-#define USB_DP_PORT						GPIOA
-#define USB_DP_PIN						GPIO_PIN_12
+#define USB_DP_PORT						0
+#define USB_DP_PIN						12
 
 #define USB_Pull_Init()					
 #define USB_Connect()					
 #define USB_Disconnect()				
 
 #define USB_Disable()					PowerOff()
-#define USB_D_SETOUTPUT()				GPIO_SetMode(USB_DP_PORT, USB_DP_PIN, GPIO_MODE_OUT_PP)
-#define USB_D_SET()						GPIO_SetPins(USB_DP_PORT, USB_DP_PIN)
-#define USB_D_CLR()						GPIO_ClrPins(USB_DP_PORT, USB_DP_PIN)
+#define USB_D_SETOUTPUT()				do {\
+											interfaces->gpio.init(USB_DP_PORT);\
+											interfaces->gpio.config_pin(USB_DP_PORT, USB_DP_PIN, GPIO_OUTPP);\
+										} while (0)
+#define USB_D_SET()						interfaces->gpio.set(USB_DP_PORT, 1 << USB_DP_PIN)
+#define USB_D_CLR()						interfaces->gpio.clear(USB_DP_PORT, 1 << USB_DP_PIN)

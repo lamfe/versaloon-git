@@ -38,7 +38,11 @@ static void Versaloon_ProcessCommonCmd(uint8_t *dat, uint16_t len)
 		rep_len = sizeof(Versaloon_Ver) + 2;
 		break;
 	case VERSALOON_GET_TVCC:
+#if POWER_OUT_EN
 		app_interfaces.target_voltage.get(0, &voltage);
+#else
+		voltage = 0;
+#endif
 		SET_LE_U16(&dat[0], voltage);
 		rep_len = 2;
 		break;
