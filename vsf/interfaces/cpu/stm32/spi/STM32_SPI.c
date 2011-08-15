@@ -502,7 +502,8 @@ RESULT stm32_spi_config(uint8_t index, uint32_t kHz, uint8_t mode)
 		return ERROR_FAIL;
 	}
 	
-	spi->CR1 = (spi->CR1 & STM32_SPI_CR1_SPE) | mode | STM32_SPI_CR1_SSM | 
+	spi->CR1 &= ~STM32_SPI_CR1_SPE;
+	spi->CR1 = mode | STM32_SPI_CR1_SSM | 
 				stm32_spi_get_sck_div(module_khz, kHz);
 	if (master)
 	{
