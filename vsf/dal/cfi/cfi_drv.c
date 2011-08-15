@@ -17,10 +17,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "port.h"
 #include "app_type.h"
-#include "app_io.h"
-#include "app_log.h"
 
 #include "interfaces.h"
 #include "../mal/mal.h"
