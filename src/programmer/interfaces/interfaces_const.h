@@ -109,6 +109,8 @@ struct jtag_pos_t
 #define BDM_PIN					GPIO_TMS
 
 // SPI
+#define SPI_MASTER				0x04
+#define SPI_SLAVE				0x00
 #define SPI_MODE0				0
 #define SPI_MODE1				1
 #define SPI_MODE2				2
