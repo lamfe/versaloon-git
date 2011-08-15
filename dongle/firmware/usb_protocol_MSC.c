@@ -186,9 +186,12 @@ struct vsfusbd_MSCBOT_param_t MSCBOT_param =
 
 RESULT usb_protocol_init()
 {
-	LED_GREEN_ON();
+	LED_RED_INIT();
 	LED_RED_OFF();
-	LED_Init();
+	LED_GREEN_INIT();
+	LED_GREEN_ON();
+	LED_USB_INIT();
+	LED_USB_OFF();
 	
 	if (ERROR_OK != mal.init(MAL_IDX_SD_SPI, &sd_dal_info))
 	{
