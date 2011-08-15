@@ -84,7 +84,7 @@ static RESULT sd_spi_transact_init(struct sd_spi_drv_interface_t *ifs)
 	interfaces->spi.init(ifs->spi_port);
 	// use slowest spi speed when initializing
 	interfaces->spi.config(ifs->spi_port, 100, 
-							SPI_MODE3 | SPI_MSB_FIRST);
+							SPI_MODE3 | SPI_MSB_FIRST | SPI_MASTER);
 	return sd_spi_drv_send_empty_bytes(ifs, 20);
 }
 
@@ -495,10 +495,10 @@ static RESULT sd_spi_drv_init(struct dal_info_t *info)
 		(NULL == sd_info) || 
 		(ERROR_OK != sd_spi_drv.getinfo(info)) || 
 		(ERROR_OK != interfaces->spi.config(ifs->spi_port, 
-			sd_info->frequency_kHz, SPI_MODE3 | SPI_MSB_FIRST)) || 
+			sd_info->frequency_kHz, SPI_MODE3 | SPI_MSB_FIRST | SPI_MASTER)) || 
 		(ERROR_OK != interfaces->peripheral_commit()) || 
-		(ERROR_OK != (ERROR_OK != sd_spi_transact(ifs, SD_TRANSTOKEN_RESP_R1, 
-				SD_CMD_SET_BLOCKLEN, 512, 0, NULL, 0, 0, &resp_r1, NULL))))
+		(ERROR_OK != sd_spi_transact(ifs, SD_TRANSTOKEN_RESP_R1, 
+				SD_CMD_SET_BLOCKLEN, 512, 0, NULL, 0, 0, &resp_r1, NULL)))
 	{
 		return ERROR_FAIL;
 	}
