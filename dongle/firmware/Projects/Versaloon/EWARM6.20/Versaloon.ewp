@@ -2147,6 +2147,12 @@
             </file>
           </group>
           <group>
+            <name>flash</name>
+            <file>
+              <name>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\flash\STM32_FLASH.c</name>
+            </file>
+          </group>
+          <group>
             <name>gpio</name>
             <file>
               <name>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\gpio\STM32_GPIO.c</name>

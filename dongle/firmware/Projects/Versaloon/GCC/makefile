@@ -107,7 +107,8 @@ USR_SRCS+= $(STM32_IFACES_DIR)/core.c \
   $(STM32_IFACES_DIR)/eint/STM32_EINT.c \
   $(STM32_IFACES_DIR)/adc/STM32_ADC.c \
   $(STM32_IFACES_DIR)/usart/STM32_USART.c \
-  $(STM32_IFACES_DIR)/ebi/STM32_EBI.c
+  $(STM32_IFACES_DIR)/ebi/STM32_EBI.c \
+  $(STM32_IFACES_DIR)/flash/STM32_FLASH.c
 USR_INCS+= -I $(STM32_IFACES_DIR) \
   -I $(STM32_IFACES_DIR)/gpio \
   -I $(STM32_IFACES_DIR)/usbd \
@@ -116,7 +117,8 @@ USR_INCS+= -I $(STM32_IFACES_DIR) \
   -I $(STM32_IFACES_DIR)/eint \
   -I $(STM32_IFACES_DIR)/adc \
   -I $(STM32_IFACES_DIR)/usart \
-  -I $(STM32_IFACES_DIR)/ebi
+  -I $(STM32_IFACES_DIR)/ebi \
+  -I $(STM32_IFACES_DIR)/flash
 
 #VSF dal
 USR_SRCS+= $(VSFDIR)/dal/dal.c \
