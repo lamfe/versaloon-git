@@ -21,6 +21,28 @@
 #include "interfaces_cfg.h"
 #include "interfaces_const.h"
 
+struct interface_flash_t
+{
+	RESULT (*init)(uint8_t index);
+	RESULT (*fini)(uint8_t index);
+	
+	RESULT (*lock)(uint8_t index);
+	RESULT (*unlock)(uint8_t index);
+	
+	RESULT (*getcapacity)(uint8_t index, uint32_t *pagesize, uint32_t *pagenum);
+	RESULT (*readpage)(uint8_t index, uint32_t offset, uint8_t *buff);
+	RESULT (*readpage_isready)(uint8_t index, uint32_t offset, uint8_t *buff, 
+								bool *ready);
+	RESULT (*erasepage)(uint8_t index, uint32_t offset);
+	RESULT (*erasepage_isready)(uint8_t index, uint32_t offset, bool *ready);
+	RESULT (*writepage)(uint8_t index, uint32_t offset, uint8_t *buff);
+	RESULT (*writepage_isready)(uint8_t index, uint32_t offset, uint8_t *buff, 
+								bool *ready);
+	
+	bool (*isprotected)(uint8_t index);
+	RESULT (*protect)(uint8_t index);
+};
+
 #define CORE_USART_MODE0(m)			__CONNECT(m, _USART_MODE0)
 #define CORE_USART_MODE1(m)			__CONNECT(m, _USART_MODE1)
 #define CORE_USART_MODE2(m)			__CONNECT(m, _USART_MODE2)
@@ -441,6 +463,21 @@ struct interface_usbd_t
 #define CORE_INIT(m)					__CONNECT(m, _interface_init)
 #define CORE_FINI(m)					__CONNECT(m, _interface_fini)
 
+// FLASH
+#define CORE_FLASH_INIT(m)				__CONNECT(m, _flash_init)
+#define CORE_FLASH_FINI(m)				__CONNECT(m, _flash_fini)
+#define CORE_FLASH_LOCK(m)				__CONNECT(m, _flash_lock)
+#define CORE_FLASH_UNLOCK(m)			__CONNECT(m, _flash_unlock)
+#define CORE_FLASH_GETCAPACITY(m)		__CONNECT(m, _flash_getcapacity)
+#define CORE_FLASH_READPAGE(m)			__CONNECT(m, _flash_readpage)
+#define CORE_FLASH_READPAGE_ISREADY(m)	__CONNECT(m, _flash_readpage_isready)
+#define CORE_FLASH_ERASEPAGE(m)			__CONNECT(m, _flash_erasepage)
+#define CORE_FLASH_ERASEPAGE_ISREADY(m)	__CONNECT(m, _flash_erasepage_isready)
+#define CORE_FLASH_WRITEPAGE(m)			__CONNECT(m, _flash_writepage)
+#define CORE_FLASH_WRITEPAGE_ISREADY(m)	__CONNECT(m, _flash_writepage_isready)
+#define CORE_FLASH_ISPROTECTED(m)		__CONNECT(m, _flash_isprotected)
+#define CORE_FLASH_PROTECT(m)			__CONNECT(m, _flash_protect)
+
 // GPIO
 #define CORE_GPIO_INIT(m)				__CONNECT(m, _gpio_init)
 #define CORE_GPIO_FINI(m)				__CONNECT(m, _gpio_fini)
@@ -583,6 +620,26 @@ struct interface_usbd_t
 // extern drivers
 RESULT CORE_INIT(__TARGET_CHIP__)(void *p);
 RESULT CORE_FINI(__TARGET_CHIP__)(void);
+// FLASH
+RESULT CORE_FLASH_INIT(__TARGET_CHIP__)(uint8_t index);
+RESULT CORE_FLASH_FINI(__TARGET_CHIP__)(uint8_t index);
+RESULT CORE_FLASH_LOCK(__TARGET_CHIP__)(uint8_t index);
+RESULT CORE_FLASH_UNLOCK(__TARGET_CHIP__)(uint8_t index);
+RESULT CORE_FLASH_GETCAPACITY(__TARGET_CHIP__)(uint8_t index, 
+									uint32_t *pagesize, uint32_t *pagenum);
+RESULT CORE_FLASH_READPAGE(__TARGET_CHIP__)(uint8_t index, uint32_t offset, 
+								uint8_t *buff);
+RESULT CORE_FLASH_READPAGE_ISREADY(__TARGET_CHIP__)(uint8_t index, 
+								uint32_t offset, uint8_t *buff, bool *ready);
+RESULT CORE_FLASH_ERASEPAGE(__TARGET_CHIP__)(uint8_t index, uint32_t offset);
+RESULT CORE_FLASH_ERASEPAGE_ISREADY(__TARGET_CHIP__)(uint8_t index, 
+												uint32_t offset, bool *ready);
+RESULT CORE_FLASH_WRITEPAGE(__TARGET_CHIP__)(uint8_t index, uint32_t offset, 
+								uint8_t *buff);
+RESULT CORE_FLASH_WRITEPAGE_ISREADY(__TARGET_CHIP__)(uint8_t index, 
+								uint32_t offset, uint8_t *buff, bool *ready);
+RESULT CORE_FLASH_PROTECT(__TARGET_CHIP__)(uint8_t index);
+bool CORE_FLASH_ISPROTECTED(__TARGET_CHIP__)(uint8_t index);
 // GPIO
 RESULT CORE_GPIO_INIT(__TARGET_CHIP__)(uint8_t index);
 RESULT CORE_GPIO_FINI(__TARGET_CHIP__)(uint8_t index);
@@ -760,6 +817,7 @@ struct interfaces_info_t
 	RESULT (*init)(void *p);
 	RESULT (*fini)(void);
 	
+	struct interface_flash_t flash;
 	struct interface_gpio_t gpio;
 	struct interface_timer_t timer;
 	struct interface_eint_t eint;
