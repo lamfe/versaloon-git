@@ -299,6 +299,7 @@
           <name>CCIncludePath2</name>
           <state>$PROJ_DIR$\</state>
           <state>$PROJ_DIR$\..\</state>
+          <state>$PROJ_DIR$\..\vsf_cfg</state>
           <state>$PROJ_DIR$\..\..\</state>
           <state>$PROJ_DIR$\..\..\..\</state>
           <state>$PROJ_DIR$\..\..\..\Tools\fifo\</state>
@@ -1214,6 +1215,7 @@
           <name>CCIncludePath2</name>
           <state>$PROJ_DIR$\</state>
           <state>$PROJ_DIR$\..\</state>
+          <state>$PROJ_DIR$\..\vsf_cfg</state>
           <state>$PROJ_DIR$\..\..\</state>
           <state>$PROJ_DIR$\..\..\..\</state>
           <state>$PROJ_DIR$\..\..\..\Tools\fifo\</state>

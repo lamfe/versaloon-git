@@ -27,10 +27,11 @@ OPT	= s
 INCLUDE_USB_LIB = yes
 
 # directory define
-PRJDIR	= ..
-SRCDIR  = ../../..
-VSFDIR  = ../../../../../vsf
-OBJ_DIR = .
+PRJDIR	    = ..
+SRCDIR      = ../../..
+VSFDIR      = ../../../../../vsf
+VSFCFGDIR   = ../vsf_cfg
+OBJ_DIR     = .
 COMPILER_DIR = .
 APP_IFACES_DIR = $(SRCDIR)/Interfaces/APP
 STM32_IFACES_DIR = $(VSFDIR)/interfaces/cpu/stm32
@@ -94,6 +95,9 @@ USR_INCS+= -I $(APP_IFACES_DIR) \
   -I $(APP_IFACES_DIR)/BDM \
   -I $(APP_IFACES_DIR)/PWM \
   -I $(APP_IFACES_DIR)/EBI
+
+#VSF config
+USR_INCS+= -I $(VSFCFGDIR)
 
 #VSF interfaces
 USR_SRCS+= $(VSFDIR)/interfaces/interfaces.c
