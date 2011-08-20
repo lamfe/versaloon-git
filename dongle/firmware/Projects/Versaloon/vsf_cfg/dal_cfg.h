@@ -17,37 +17,18 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef __MIC2826_DRV_H_INCLUDED__
-#define __MIC2826_DRV_H_INCLUDED__
+#define DAL_INTERFACE_PARSER_EN				0
 
-#include "dal_cfg.h"
-#include "../dal.h"
+#define DAL_MIC2826_EN						0
+#define DAL_NRF24L01_EN						0
 
-#define MIC2826_CHANNEL_DCDC				0
-#define MIC2826_CHANNEL_LDO1				1
-#define MIC2826_CHANNEL_LDO2				2
-#define MIC2826_CHANNEL_LDO3				3
-
-struct mic2826_drv_t
-{
-	struct dal_driver_t driver;
-	RESULT (*init)(struct dal_info_t *info);
-	RESULT (*fini)(struct dal_info_t *info);
-	RESULT (*config)(struct dal_info_t *info, uint16_t DCDC_mV, 
-						uint16_t LDO1_mV, uint16_t LDO2_mV, uint16_t LDO3_mV);
-};
-
-struct mic2826_drv_interface_t
-{
-	uint8_t iic_port;
-};
-
-struct mic2826_drv_param_t
-{
-	uint16_t kHz;
-};
-
-extern const struct mic2826_drv_t mic2826_drv;
-
-#endif	// __MIC2826_DRV_H_INCLUDED__
+#define DAL_EE93CX6_EN						0
+#define DAL_EE24CXX_EN						0
+#define DAL_DF25XX_EN						0
+#define DAL_DF45XX_EN						0
+#define DAL_SD_SPI_EN						0
+#define DAL_SD_SDIO_EN						0
+#define DAL_CFI_EN							0
+#define DAL_NAND_EN							0
+#define DAL_MAL_EMPTY_EN					0
 

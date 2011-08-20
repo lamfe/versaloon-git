@@ -7,6 +7,7 @@ vsprog_SOURCES = $(MAINFILE)
 
 INCLUDES = \
     $(all_includes) \
+    -I$(top_srcdir)/src/vsf_cfg \
     -I$(top_srcdir)/vsf/tool/list \
     -I$(top_srcdir)/src \
     -I$(top_srcdir)/src/tools/pgbar \

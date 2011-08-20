@@ -20,7 +20,7 @@
 #ifndef __NRF24L01_DRV_H_INCLUDED__
 #define __NRF24L01_DRV_H_INCLUDED__
 
-#include "../dal_cfg.h"
+#include "dal_cfg.h"
 #include "../dal.h"
 
 #include "../../tool/buffer/buffer.h"
