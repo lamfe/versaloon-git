@@ -26,81 +26,6 @@
 
 #if DAL_MAL_EMPTY_EN
 
-static RESULT mal_empty_dummy_func(struct dal_info_t *param)
-{
-	REFERENCE_PARAMETER(param);
-	return ERROR_OK;
-}
-
-static RESULT mal_empty_dummy_isready_noaddr(struct dal_info_t *param, 
-												bool *ready)
-{
-	REFERENCE_PARAMETER(param);
-	REFERENCE_PARAMETER(ready);
-	return ERROR_OK;
-}
-
-static RESULT mal_empty_dummy_e_isready(struct dal_info_t *param, 
-										uint64_t address, bool *ready)
-{
-	REFERENCE_PARAMETER(param);
-	REFERENCE_PARAMETER(address);
-	*ready = true;
-	return ERROR_OK;
-}
-
-static RESULT mal_empty_dummy_e_waitready(struct dal_info_t *param, 
-												uint64_t address)
-{
-	REFERENCE_PARAMETER(param);
-	REFERENCE_PARAMETER(address);
-	return ERROR_OK;
-}
-
-static RESULT mal_empty_dummy_rw_isready(struct dal_info_t *param, 
-								uint64_t address, uint8_t *buff, bool *ready)
-{
-	REFERENCE_PARAMETER(param);
-	REFERENCE_PARAMETER(address);
-	REFERENCE_PARAMETER(buff);
-	*ready = true;
-	return ERROR_OK;
-}
-
-static RESULT mal_empty_dummy_rw_waitready(struct dal_info_t *param, 
-												uint64_t address, uint8_t *buff)
-{
-	REFERENCE_PARAMETER(param);
-	REFERENCE_PARAMETER(address);
-	REFERENCE_PARAMETER(buff);
-	return ERROR_OK;
-}
-
-static RESULT mal_empty_dummy_erw_start(struct dal_info_t *param, 
-										uint64_t address, uint64_t count)
-{
-	REFERENCE_PARAMETER(param);
-	REFERENCE_PARAMETER(address);
-	REFERENCE_PARAMETER(count);
-	return ERROR_OK;
-}
-
-static RESULT mal_empty_dummy_e(struct dal_info_t *param, uint64_t address)
-{
-	REFERENCE_PARAMETER(param);
-	REFERENCE_PARAMETER(address);
-	return ERROR_OK;
-}
-
-static RESULT mal_empty_dummy_rw(struct dal_info_t *param, uint64_t address, 
-									uint8_t *buff)
-{
-	REFERENCE_PARAMETER(param);
-	REFERENCE_PARAMETER(address);
-	REFERENCE_PARAMETER(buff);
-	return ERROR_OK;
-}
-
 struct mal_driver_t mal_empty_drv = 
 {
 	{
@@ -112,41 +37,6 @@ struct mal_driver_t mal_empty_drv =
 	},
 	
 	MAL_IDX_EMPTY,
-	MAL_SUPPORT_ERASEALL | MAL_SUPPORT_ERASEBLOCK | 
-	MAL_SUPPORT_WRITEBLOCK | MAL_SUPPORT_READBLOCK,
-	
-	mal_empty_dummy_func,
-	mal_empty_dummy_func,
-	mal_empty_dummy_func,
-	mal_empty_dummy_func,
-	
-	mal_empty_dummy_func,
-	mal_empty_dummy_isready_noaddr,
-	mal_empty_dummy_func,
-	mal_empty_dummy_func,
-	
-	mal_empty_dummy_func,
-	mal_empty_dummy_isready_noaddr,
-	mal_empty_dummy_func,
-	mal_empty_dummy_func,
-	
-	mal_empty_dummy_erw_start,
-	mal_empty_dummy_e,
-	mal_empty_dummy_e_isready,
-	mal_empty_dummy_e_waitready,
-	mal_empty_dummy_func,
-	
-	mal_empty_dummy_erw_start,
-	mal_empty_dummy_rw,
-	mal_empty_dummy_rw_isready,
-	mal_empty_dummy_rw_waitready,
-	mal_empty_dummy_func,
-	
-	mal_empty_dummy_erw_start,
-	mal_empty_dummy_rw,
-	mal_empty_dummy_rw_isready,
-	mal_empty_dummy_rw_waitready,
-	mal_empty_dummy_func
 };
 #endif
 

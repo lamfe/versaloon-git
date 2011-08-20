@@ -127,6 +127,7 @@ struct mal_t
 };
 
 extern struct mal_t mal;
+extern struct mal_driver_t mal_empty_drv;
 
 #endif	// __MAL_H_INCLUDED__
 
