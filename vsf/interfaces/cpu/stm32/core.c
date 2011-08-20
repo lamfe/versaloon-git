@@ -50,6 +50,11 @@ RESULT stm32_interface_fini(void)
 	return ERROR_OK;
 }
 
+void stm32_interface_reset(void)
+{
+	NVIC_SystemReset();
+}
+
 static uint32_t __log2__(uint32_t n)
 {
 	uint32_t i, value = 1;

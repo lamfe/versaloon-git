@@ -53,6 +53,7 @@ struct stm32_info_t
 
 RESULT stm32_interface_init(void *p);
 RESULT stm32_interface_fini(void);
+void stm32_interface_reset(void);
 RESULT stm32_interface_get_info(struct stm32_info_t **info);
 RESULT stm32_delay_delayms(uint16_t ms);
 RESULT stm32_delay_delayus(uint16_t us);
