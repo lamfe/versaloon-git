@@ -37,6 +37,14 @@ struct mal_driver_t mal_empty_drv =
 	},
 	
 	MAL_IDX_EMPTY,
+	0,
+	
+	NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL
 };
 #endif
 
