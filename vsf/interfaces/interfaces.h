@@ -462,6 +462,7 @@ struct interface_usbd_t
 
 #define CORE_INIT(m)					__CONNECT(m, _interface_init)
 #define CORE_FINI(m)					__CONNECT(m, _interface_fini)
+#define CORE_RESET(m)					__CONNECT(m, _interface_reset)
 
 // FLASH
 #define CORE_FLASH_INIT(m)				__CONNECT(m, _flash_init)
@@ -620,6 +621,7 @@ struct interface_usbd_t
 // extern drivers
 RESULT CORE_INIT(__TARGET_CHIP__)(void *p);
 RESULT CORE_FINI(__TARGET_CHIP__)(void);
+void CORE_RESET(__TARGET_CHIP__)(void);
 // FLASH
 RESULT CORE_FLASH_INIT(__TARGET_CHIP__)(uint8_t index);
 RESULT CORE_FLASH_FINI(__TARGET_CHIP__)(uint8_t index);
@@ -816,6 +818,7 @@ struct interfaces_info_t
 {
 	RESULT (*init)(void *p);
 	RESULT (*fini)(void);
+	void (*reset)(void);
 	
 	struct interface_flash_t flash;
 	struct interface_gpio_t gpio;
