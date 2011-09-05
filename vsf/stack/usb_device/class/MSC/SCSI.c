@@ -73,6 +73,13 @@ static RESULT SCSI_handler_INQUIRY(struct SCSI_LUN_info_t *info,
 			*page_num = 1;
 			SCSI_errcode = SCSI_ERRCODE_OK;
 		}
+		else
+		{
+			info->status.sense_key = SCSI_SENSEKEY_ILLEGAL_REQUEST;
+			info->status.asc = SCSI_ASC_INVALID_FIELED_IN_COMMAND;
+			SCSI_errcode = SCSI_ERRCODE_INVALID_PARAM;
+			return ERROR_FAIL;
+		}
 	}
 	else
 	{
