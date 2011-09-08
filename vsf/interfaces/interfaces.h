@@ -30,6 +30,16 @@ struct interface_flash_t
 	RESULT (*unlock)(uint8_t index);
 	
 	RESULT (*getcapacity)(uint8_t index, uint32_t *pagesize, uint32_t *pagenum);
+	
+	RESULT (*read)(uint8_t index, uint32_t offset, uint8_t *buff, 
+					uint32_t size);
+	RESULT (*read_isready)(uint8_t index, uint32_t offset, uint8_t *buff, 
+					uint32_t size, bool *ready);
+	RESULT (*write)(uint8_t index, uint32_t offset, uint8_t *buff, 
+					uint32_t size);
+	RESULT (*write_isready)(uint8_t index, uint32_t offset, uint8_t *buff, 
+					uint32_t size, bool *ready);
+	
 	RESULT (*readpage)(uint8_t index, uint32_t offset, uint8_t *buff);
 	RESULT (*readpage_isready)(uint8_t index, uint32_t offset, uint8_t *buff, 
 								bool *ready);
@@ -470,6 +480,10 @@ struct interface_usbd_t
 #define CORE_FLASH_LOCK(m)				__CONNECT(m, _flash_lock)
 #define CORE_FLASH_UNLOCK(m)			__CONNECT(m, _flash_unlock)
 #define CORE_FLASH_GETCAPACITY(m)		__CONNECT(m, _flash_getcapacity)
+#define CORE_FLASH_READ(m)				__CONNECT(m, _flash_read)
+#define CORE_FLASH_READ_ISREADY(m)		__CONNECT(m, _flash_read_isready)
+#define CORE_FLASH_WRITE(m)				__CONNECT(m, _flash_write)
+#define CORE_FLASH_WRITE_ISREADY(m)		__CONNECT(m, _flash_write_isready)
 #define CORE_FLASH_READPAGE(m)			__CONNECT(m, _flash_readpage)
 #define CORE_FLASH_READPAGE_ISREADY(m)	__CONNECT(m, _flash_readpage_isready)
 #define CORE_FLASH_ERASEPAGE(m)			__CONNECT(m, _flash_erasepage)
@@ -629,6 +643,14 @@ RESULT CORE_FLASH_LOCK(__TARGET_CHIP__)(uint8_t index);
 RESULT CORE_FLASH_UNLOCK(__TARGET_CHIP__)(uint8_t index);
 RESULT CORE_FLASH_GETCAPACITY(__TARGET_CHIP__)(uint8_t index, 
 									uint32_t *pagesize, uint32_t *pagenum);
+RESULT CORE_FLASH_READ(__TARGET_CHIP__)(uint8_t index, uint32_t offset, 
+										uint8_t *buff, uint32_t size);
+RESULT CORE_FLASH_READ_ISREADY(__TARGET_CHIP__)(uint8_t index, uint32_t offset, 
+									uint8_t *buff, uint32_t size, bool *ready);
+RESULT CORE_FLASH_WRITE(__TARGET_CHIP__)(uint8_t index, uint32_t offset, 
+										uint8_t *buff, uint32_t size);
+RESULT CORE_FLASH_WRITE_ISREADY(__TARGET_CHIP__)(uint8_t index, 
+					uint32_t offset, uint8_t *buff, uint32_t size, bool *ready);
 RESULT CORE_FLASH_READPAGE(__TARGET_CHIP__)(uint8_t index, uint32_t offset, 
 								uint8_t *buff);
 RESULT CORE_FLASH_READPAGE_ISREADY(__TARGET_CHIP__)(uint8_t index, 
