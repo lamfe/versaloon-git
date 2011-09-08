@@ -544,7 +544,6 @@ static RESULT mal_eraseblock(uint16_t index, struct dal_info_t *info,
 	
 	erase_block_size = mal_info->erase_page_size ? 
 					mal_info->erase_page_size : mal_info->capacity.block_size;
-	count *= mal_info->capacity.block_size / erase_block_size;
 	if (!erase_block_size || 
 		(ERROR_OK != mal_eraseblock_nb_start(index, info, address, count)))
 	{
@@ -602,7 +601,6 @@ static RESULT mal_readblock(uint16_t index, struct dal_info_t *info,
 	
 	read_block_size = mal_info->read_page_size ? 
 					mal_info->read_page_size : mal_info->capacity.block_size;
-	count *= mal_info->capacity.block_size / read_block_size;
 	if (!read_block_size || 
 		(ERROR_OK != mal_readblock_nb_start(index, info, address, count)))
 	{
@@ -632,7 +630,6 @@ static RESULT mal_writeblock(uint16_t index, struct dal_info_t *info,
 	
 	write_block_size = mal_info->write_page_size ? 
 					mal_info->write_page_size : mal_info->capacity.block_size;
-	count *= mal_info->capacity.block_size / write_block_size;
 	if (!write_block_size || 
 		(ERROR_OK != mal_writeblock_nb_start(index, info, address, count)))
 	{
