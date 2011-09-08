@@ -6,6 +6,16 @@ RESULT stm32_flash_unlock(uint8_t index);
 
 RESULT stm32_flash_getcapacity(uint8_t index, uint32_t *pagesize, 
 									uint32_t *pagenum);
+
+RESULT stm32_flash_read(uint8_t index, uint32_t offset, uint8_t *buff, 
+							uint32_t size);
+RESULT stm32_flash_read_isready(uint8_t index, uint32_t offset, uint8_t *buff, 
+									uint32_t size, bool *ready);
+RESULT stm32_flash_write(uint8_t index, uint32_t offset, uint8_t *buff, 
+							uint32_t size);
+RESULT stm32_flash_write_isready(uint8_t index, uint32_t offset, uint8_t *buff, 
+									uint32_t size, bool *ready);
+
 RESULT stm32_flash_readpage(uint8_t index, uint32_t offset, uint8_t *buff);
 RESULT stm32_flash_readpage_isready(uint8_t index, uint32_t offset, 
 									uint8_t *buff, bool *ready);

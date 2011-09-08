@@ -172,13 +172,25 @@ LEAVE_PROGRAM_MODE_HANDLER(cfi)
 
 ERASE_TARGET_HANDLER(cfi)
 {
-	REFERENCE_PARAMETER(context);
-	REFERENCE_PARAMETER(size);
+	struct chip_param_t *param = context->param;
 	
 	switch (area)
 	{
 	case APPLICATION_CHAR:
-		if (ERROR_OK != mal.eraseblock(MAL_IDX_CFI, &cfi_dal_info, addr, 1))
+		if (size % param->chip_areas[APPLICATION_IDX].page_size)
+		{
+			return ERROR_FAIL;
+		}
+		if (cfi_mal_info.erase_page_size)
+		{
+			size /= cfi_mal_info.erase_page_size;
+		}
+		else
+		{
+			size /= param->chip_areas[APPLICATION_IDX].page_size;
+		}
+		
+		if (ERROR_OK != mal.eraseblock(MAL_IDX_CFI, &cfi_dal_info, addr, size))
 		{
 			return ERROR_FAIL;
 		}
@@ -199,7 +211,14 @@ WRITE_TARGET_HANDLER(cfi)
 		{
 			return ERROR_FAIL;
 		}
-		size /= param->chip_areas[APPLICATION_IDX].page_size;
+		if (cfi_mal_info.write_page_size)
+		{
+			size /= cfi_mal_info.write_page_size;
+		}
+		else
+		{
+			size /= param->chip_areas[APPLICATION_IDX].page_size;
+		}
 		
 		if (ERROR_OK != mal.writeblock(MAL_IDX_CFI, &cfi_dal_info,addr, buff, 
 										size))
@@ -235,7 +254,14 @@ READ_TARGET_HANDLER(cfi)
 		{
 			return ERROR_FAIL;
 		}
-		size /= param->chip_areas[APPLICATION_IDX].page_size;
+		if (cfi_mal_info.read_page_size)
+		{
+			size /= cfi_mal_info.read_page_size;
+		}
+		else
+		{
+			size /= param->chip_areas[APPLICATION_IDX].page_size;
+		}
 		
 		if (ERROR_OK != mal.readblock(MAL_IDX_CFI, &cfi_dal_info, addr, buff, 
 										size))
