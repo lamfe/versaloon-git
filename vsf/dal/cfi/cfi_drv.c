@@ -332,7 +332,14 @@ static RESULT cfi_drv_readblock_nb(struct dal_info_t *info, uint64_t address,
 	struct cfi_drv_interface_t *ifs = (struct cfi_drv_interface_t *)info->ifs;
 	struct mal_info_t *mal_info = (struct mal_info_t *)info->extra;
 	
-	count = (uint32_t)mal_info->capacity.block_size / data_width;
+	if (mal_info->read_page_size)
+	{
+		count = (uint32_t)mal_info->read_page_size / data_width;
+	}
+	else
+	{
+		count = (uint32_t)mal_info->capacity.block_size / data_width;
+	}
 	
 	i = 0;
 	while (i < count)
