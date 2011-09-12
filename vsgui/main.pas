@@ -1616,6 +1616,8 @@ begin
 end;
 
 procedure TFormMain.btnOpenOCDRunClick(Sender: TObject);
+var
+  strTmp: string;
 begin
   if not VSProg_PrepareToRunOpenOCD then
   begin
@@ -1628,18 +1630,21 @@ begin
   end;
   if cbboxOpenOCDInterface.Text <> '' then
   begin
-    VSProg_Caller.AddParameter('f "' + dedtOpenOCD.Directory +
-      cbboxOpenOCDInterface.Text + '"');
+    strTmp := dedtOpenOCD.Directory + cbboxOpenOCDInterface.Text;
+    strTmp := StringReplace(strTmp,'\','/',[rfReplaceAll]);
+    VSProg_Caller.AddParameter('f "' + strTmp + '"');
   end;
   if cbboxOpenOCDTarget.Text <> '' then
   begin
-    VSProg_Caller.AddParameter('f "' + dedtOpenOCD.Directory +
-      cbboxOpenOCDTarget.Text + '"');
+    strTmp := dedtOpenOCD.Directory +cbboxOpenOCDTarget.Text;
+    strTmp := StringReplace(strTmp,'\','/',[rfReplaceAll]);
+    VSProg_Caller.AddParameter('f "' + strTmp + '"');
   end;
   if cbboxOpenOCDScript.Text <> '' then
   begin
-    VSProg_Caller.AddParameter('f "' + dedtOpenOCD.Directory +
-      cbboxOpenOCDScript.Text + '"');
+    strTmp := dedtOpenOCD.Directory +cbboxOpenOCDScript.Text;
+    strTmp := StringReplace(strTmp,'\','/',[rfReplaceAll]);
+    VSProg_Caller.AddParameter('f "' + strTmp + '"');
   end;
 
   LogInfo('Running...');
