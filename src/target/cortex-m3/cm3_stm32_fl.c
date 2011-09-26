@@ -21,6 +21,7 @@
 #endif
 
 #include <string.h>
+#include <time.h>
 
 #include "port.h"
 #include "app_type.h"
@@ -36,8 +37,6 @@
 
 #include "stm32_internal.h"
 #include "cm3_stm32_fl.h"
-
-#include "timer.h"
 
 #define STM32_FL_COMMAND_OFFSET				0x80
 #define STM32_FL_SYNC_OFFSET				0xA4
@@ -276,7 +275,7 @@ RESULT stm32swj_fl_wait_ready(struct stm32_fl_result_t *result, bool last)
 	bool failed;
 	uint32_t start, end;
 	
-	start = get_time_in_ms();
+	start = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
 	while (1)
 	{
 		if ((ERROR_OK != stm32swj_fl_poll_result(result, &failed)) ||
@@ -289,7 +288,7 @@ RESULT stm32swj_fl_wait_ready(struct stm32_fl_result_t *result, bool last)
 			}
 			else
 			{
-				end = get_time_in_ms();
+				end = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
 				// wait 1s at most
 				if ((end - start) > 20000)
 				{

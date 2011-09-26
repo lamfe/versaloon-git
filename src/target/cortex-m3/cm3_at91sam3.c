@@ -22,6 +22,7 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include "port.h"
 #include "app_cfg.h"
@@ -30,7 +31,6 @@
 #include "app_err.h"
 #include "app_log.h"
 
-#include "timer.h"
 #include "pgbar.h"
 
 #include "vsprog.h"
@@ -47,8 +47,6 @@
 
 #include "adi_v5p1.h"
 #include "cm3_common.h"
-
-#include "timer.h"
 
 ENTER_PROGRAM_MODE_HANDLER(at91sam3swj);
 LEAVE_PROGRAM_MODE_HANDLER(at91sam3swj);
@@ -265,7 +263,7 @@ static RESULT at91sam3swj_iap_wait_ready(struct at91sam3swj_iap_reply_t *reply)
 	uint8_t fail = 0;
 	uint32_t start, end;
 	
-	start = get_time_in_ms();
+	start = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
 	while (1)
 	{
 		if (ERROR_OK != at91sam3swj_iap_poll_result(reply, &fail))
@@ -277,7 +275,7 @@ static RESULT at91sam3swj_iap_wait_ready(struct at91sam3swj_iap_reply_t *reply)
 			}
 			else
 			{
-				end = get_time_in_ms();
+				end = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
 				// wait 1s at most
 				if ((end - start) > 1000)
 				{
@@ -324,7 +322,7 @@ static RESULT at91sam3swj_iap_call(struct at91sam3swj_iap_command_t *cmd,
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
-	start = get_time_in_ms();
+	start = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
 	do
 	{
 		reg = 0;
@@ -335,7 +333,7 @@ static RESULT at91sam3swj_iap_call(struct at91sam3swj_iap_command_t *cmd,
 			return ERRCODE_FAILURE_OPERATION;
 		}
 		reg = LE_TO_SYS_U32(reg);
-		end = get_time_in_ms();
+		end = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
 	} while (!(reg & 1) && ((end - start) < 500));
 	
 	if (!(reg & 1) || (reg & 0x60))

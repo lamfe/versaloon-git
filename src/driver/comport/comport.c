@@ -21,6 +21,7 @@
 #endif
 
 #include <string.h>
+#include <time.h>
 
 #include "app_type.h"
 #include "app_io.h"
@@ -29,7 +30,6 @@
 
 #include "port.h"
 #include "comport.h"
-#include "timer.h"
 
 #include "programmer.h"
 
@@ -593,7 +593,7 @@ int32_t comm_read_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 		return -1;
 	}
 	
-	start = get_time_in_ms();
+	start = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
 	do
 	{
 		LOG_PUSH();
@@ -608,7 +608,7 @@ int32_t comm_read_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 			LOG_POP();
 			return (int32_t)num_of_bytes;
 		}
-		end = get_time_in_ms();
+		end = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
 	} while ((end - start) < (100 + 5 * num_of_bytes));
 	
 	// fail to receive data
@@ -687,7 +687,7 @@ int32_t comm_write_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 		uint32_t start, end;
 		
 		// get current time
-		start = get_time_in_ms();
+		start = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
 		// get buffer_size available for tx
 		LOG_PUSH();
 		LOG_MUTE();
@@ -716,7 +716,7 @@ int32_t comm_write_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 				data_sent += num_of_bytes - data_sent;
 				break;
 			}
-			end = get_time_in_ms();
+			end = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
 		} while ((end - start) < 50 + 5 * (num_of_bytes - status.tx_buff_avail));
 		
 		// time out

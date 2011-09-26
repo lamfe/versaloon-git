@@ -22,13 +22,12 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include "app_type.h"
 #include "app_io.h"
 #include "app_log.h"
 #include "app_err.h"
-
-#include "timer.h"
 
 #include "pgbar.h"
 #include "scripts.h"
@@ -165,7 +164,7 @@ RESULT pgbar_init(char *s, char *e, uint32_t min, uint32_t max,
 	}
 	
 	// get start time
-	start_time = get_time_in_ms();
+	start_time = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
 	
 	// flush output
 	fflush(stdout);
@@ -184,7 +183,7 @@ uint32_t pgbar_fini(void)
 	}
 	
 	// get current time and calculate time used
-	end_time = get_time_in_ms();
+	end_time = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
 	PRINTF("%02.02fs used\n", (float)(end_time - start_time) / 1000);
 	
 	// flush output

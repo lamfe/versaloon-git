@@ -22,6 +22,7 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include "port.h"
 #include "app_cfg.h"
@@ -45,8 +46,6 @@
 
 #include "adi_v5p1.h"
 #include "cm3_common.h"
-
-#include "timer.h"
 
 ENTER_PROGRAM_MODE_HANDLER(lm3sswj);
 LEAVE_PROGRAM_MODE_HANDLER(lm3sswj);
@@ -198,7 +197,7 @@ static RESULT lm3sswj_iap_wait_param_taken(void)
 	uint8_t fail = 0;
 	uint32_t start, end;
 	
-	start = get_time_in_ms();
+	start = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
 	while (1)
 	{
 		if (ERROR_OK != lm3sswj_iap_poll_param_taken(&fail))
@@ -210,7 +209,7 @@ static RESULT lm3sswj_iap_wait_param_taken(void)
 			}
 			else
 			{
-				end = get_time_in_ms();
+				end = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
 				// wait 1s at most
 				if ((end - start) > 1000)
 				{
@@ -234,7 +233,7 @@ static RESULT lm3sswj_iap_wait_finish(uint32_t cnt_idx)
 	uint8_t fail = 0;
 	uint32_t start, end;
 	
-	start = get_time_in_ms();
+	start = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
 	while (1)
 	{
 		if (ERROR_OK != lm3sswj_iap_poll_finish(cnt_idx, &fail))
@@ -246,7 +245,7 @@ static RESULT lm3sswj_iap_wait_finish(uint32_t cnt_idx)
 			}
 			else
 			{
-				end = get_time_in_ms();
+				end = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
 				// wait 1s at most
 				if ((end - start) > 1000)
 				{

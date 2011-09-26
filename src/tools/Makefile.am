@@ -3,7 +3,6 @@ INCLUDES = \
     -I$(top_srcdir)/vsf/tool/list \
     -I$(top_srcdir)/src/driver \
     -I$(top_srcdir)/src \
-    -I$(top_srcdir)/src/driver/timer \
     -I$(top_srcdir)/src/tools/filelist \
     -I$(top_srcdir)/src/tools/hex \
     -I$(top_srcdir)/src/tools/s19 \

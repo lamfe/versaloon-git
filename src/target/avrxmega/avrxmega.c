@@ -30,8 +30,6 @@
 #include "app_err.h"
 #include "app_log.h"
 
-#include "timer.h"
-
 #include "memlist.h"
 #include "pgbar.h"
 
