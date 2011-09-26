@@ -22,6 +22,7 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include "port.h"
 #include "app_cfg.h"
@@ -30,7 +31,6 @@
 #include "app_err.h"
 #include "app_log.h"
 
-#include "timer.h"
 #include "pgbar.h"
 
 #include "vsprog.h"
@@ -47,8 +47,6 @@
 
 #include "adi_v5p1.h"
 #include "cm3_common.h"
-
-#include "timer.h"
 
 ENTER_PROGRAM_MODE_HANDLER(lpc1000swj);
 LEAVE_PROGRAM_MODE_HANDLER(lpc1000swj);
@@ -265,7 +263,7 @@ static RESULT lpc1000swj_iap_wait_ready(uint32_t result_table[4], bool last)
 	uint32_t start, end;
 	uint32_t buff_tmp[7];
 	
-	start = get_time_in_ms();
+	start = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
 	while (1)
 	{
 		if ((ERROR_OK != lpc1000swj_iap_poll_result(buff_tmp, &failed)) ||
@@ -278,7 +276,7 @@ static RESULT lpc1000swj_iap_wait_ready(uint32_t result_table[4], bool last)
 			}
 			else
 			{
-				end = get_time_in_ms();
+				end = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
 				// wait 1s at most
 				if ((end - start) > 1000)
 				{

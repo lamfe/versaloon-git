@@ -37,8 +37,6 @@
 
 #include "versaloon/versaloon.h"
 
-#include "timer.h"
-
 VSS_HANDLER(programmer_list);
 VSS_HANDLER(programmer_define);
 VSS_HANDLER(virtualprog_define);

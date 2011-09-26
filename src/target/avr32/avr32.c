@@ -23,6 +23,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <time.h>
 
 #include "app_cfg.h"
 #include "app_type.h"
@@ -30,7 +31,6 @@
 #include "app_err.h"
 #include "app_log.h"
 
-#include "timer.h"
 #include "pgbar.h"
 
 #include "vsprog.h"
@@ -333,7 +333,7 @@ static RESULT avr32jtag_fcmd_call(uint8_t command, uint16_t pagen)
 	avr32jtag_sab_access(AVR32_SAB_SLAVE_HSB, AVR32_FLASHC_FCR,
 								(uint8_t*)&data, AVR32_JTAG_WRITE, 1);
 	
-	start = get_time_in_ms();
+	start = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
 	do
 	{
 		data = 0;
@@ -344,7 +344,7 @@ static RESULT avr32jtag_fcmd_call(uint8_t command, uint16_t pagen)
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read fsr");
 			return ERRCODE_FAILURE_OPERATION;
 		}
-		end = get_time_in_ms();
+		end = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
 	} while (!(data & 1) && ((end - start) < 5000));
 	
 	if (!(data & 1) || (data & 0x0C))
