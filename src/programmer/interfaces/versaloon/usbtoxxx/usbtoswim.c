@@ -28,18 +28,18 @@
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
 
-RESULT usbtoswim_init(uint8_t interface_index)
+vsf_err_t usbtoswim_init(uint8_t interface_index)
 {
 	return usbtoxxx_init_command(USB_TO_SWIM, interface_index);
 }
 
-RESULT usbtoswim_fini(uint8_t interface_index)
+vsf_err_t usbtoswim_fini(uint8_t interface_index)
 {
 	return usbtoxxx_fini_command(USB_TO_SWIM, interface_index);
 }
 
-RESULT usbtoswim_config(uint8_t interface_index, uint8_t mHz, uint8_t cnt0,
-						uint8_t cnt1)
+vsf_err_t usbtoswim_config(uint8_t interface_index, uint8_t mHz, uint8_t cnt0,
+							uint8_t cnt1)
 {
 	uint8_t buff[3];
 	
@@ -47,7 +47,7 @@ RESULT usbtoswim_config(uint8_t interface_index, uint8_t mHz, uint8_t cnt0,
 	if (interface_index > 7)
 	{
 		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 #endif
 	
@@ -58,27 +58,27 @@ RESULT usbtoswim_config(uint8_t interface_index, uint8_t mHz, uint8_t cnt0,
 	return usbtoxxx_conf_command(USB_TO_SWIM, interface_index, buff, 3);
 }
 
-RESULT usbtoswim_srst(uint8_t interface_index)
+vsf_err_t usbtoswim_srst(uint8_t interface_index)
 {
 #if PARAM_CHECK
 	if (interface_index > 7)
 	{
 		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 #endif
 	
 	return usbtoxxx_reset_command(USB_TO_SWIM, interface_index, NULL, 0);
 }
 
-RESULT usbtoswim_wotf(uint8_t interface_index, uint8_t *data, uint16_t bytelen,
+vsf_err_t usbtoswim_wotf(uint8_t interface_index, uint8_t *data, uint16_t bytelen,
 						uint32_t addr)
 {
 #if PARAM_CHECK
 	if (interface_index > 7)
 	{
 		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 #endif
 	
@@ -90,14 +90,14 @@ RESULT usbtoswim_wotf(uint8_t interface_index, uint8_t *data, uint16_t bytelen,
 									versaloon_cmd_buf, bytelen + 6, 0);
 }
 
-RESULT usbtoswim_rotf(uint8_t interface_index, uint8_t *data, uint16_t bytelen,
+vsf_err_t usbtoswim_rotf(uint8_t interface_index, uint8_t *data, uint16_t bytelen,
 						uint32_t addr)
 {
 #if PARAM_CHECK
 	if (interface_index > 7)
 	{
 		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 #endif
 	
@@ -109,7 +109,7 @@ RESULT usbtoswim_rotf(uint8_t interface_index, uint8_t *data, uint16_t bytelen,
 				versaloon_cmd_buf, bytelen + 6, bytelen, data, 0, bytelen, 0);
 }
 
-RESULT usbtoswim_sync(uint8_t interface_index, uint8_t mHz)
+vsf_err_t usbtoswim_sync(uint8_t interface_index, uint8_t mHz)
 {
 	uint8_t buff[1];
 	
@@ -117,7 +117,7 @@ RESULT usbtoswim_sync(uint8_t interface_index, uint8_t mHz)
 	if (interface_index > 7)
 	{
 		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 #endif
 	
@@ -127,13 +127,13 @@ RESULT usbtoswim_sync(uint8_t interface_index, uint8_t mHz)
 									0, NULL);
 }
 
-RESULT usbtoswim_enable(uint8_t interface_index)
+vsf_err_t usbtoswim_enable(uint8_t interface_index)
 {
 #if PARAM_CHECK
 	if (interface_index > 7)
 	{
 		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 #endif
 	return usbtoxxx_enable_command(USB_TO_SWIM, interface_index, NULL, 0);

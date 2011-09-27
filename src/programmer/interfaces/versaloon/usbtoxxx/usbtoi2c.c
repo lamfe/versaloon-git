@@ -28,17 +28,17 @@
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
 
-RESULT usbtoi2c_init(uint8_t interface_index)
+vsf_err_t usbtoi2c_init(uint8_t interface_index)
 {
 	return usbtoxxx_init_command(USB_TO_I2C, interface_index);
 }
 
-RESULT usbtoi2c_fini(uint8_t interface_index)
+vsf_err_t usbtoi2c_fini(uint8_t interface_index)
 {
 	return usbtoxxx_fini_command(USB_TO_I2C, interface_index);
 }
 
-RESULT usbtoi2c_config(uint8_t interface_index, uint16_t kHz,
+vsf_err_t usbtoi2c_config(uint8_t interface_index, uint16_t kHz,
 						uint16_t byte_interval, uint16_t max_dly)
 {
 	uint8_t buff[6];
@@ -47,7 +47,7 @@ RESULT usbtoi2c_config(uint8_t interface_index, uint16_t kHz,
 	if (interface_index > 7)
 	{
 		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 #endif
 	
@@ -59,7 +59,7 @@ RESULT usbtoi2c_config(uint8_t interface_index, uint16_t kHz,
 								 buff, sizeof(buff));
 }
 
-RESULT usbtoi2c_read(uint8_t interface_index, uint16_t chip_addr,
+vsf_err_t usbtoi2c_read(uint8_t interface_index, uint16_t chip_addr,
 						uint8_t *data, uint16_t data_len, uint8_t stop,
 						bool nacklast)
 {
@@ -67,14 +67,14 @@ RESULT usbtoi2c_read(uint8_t interface_index, uint16_t chip_addr,
 	if (interface_index > 7)
 	{
 		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 #endif
 	
 	if (data_len > (versaloon_buf_size - 6 - 4))
 	{
 		LOG_BUG(ERRMSG_INVALID_VALUE, data_len, "I2C data size too large");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	versaloon_cmd_buf[0] = (chip_addr >> 0) & 0xFF;
@@ -87,21 +87,21 @@ RESULT usbtoi2c_read(uint8_t interface_index, uint16_t chip_addr,
 							   data_len + 5, data_len, data, 0, data_len, 0);
 }
 
-RESULT usbtoi2c_write(uint8_t interface_index, uint16_t chip_addr,
+vsf_err_t usbtoi2c_write(uint8_t interface_index, uint16_t chip_addr,
 						uint8_t *data, uint16_t data_len, uint8_t stop)
 {
 #if PARAM_CHECK
 	if (interface_index > 7)
 	{
 		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 #endif
 	
 	if (data_len > (versaloon_buf_size - 6 - 4))
 	{
 		LOG_BUG(ERRMSG_INVALID_VALUE, data_len, "I2C data size too large");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	versaloon_cmd_buf[0] = (chip_addr >> 0) & 0xFF;

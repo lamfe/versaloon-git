@@ -124,10 +124,10 @@ VSS_HANDLER(cm3_chip)
 				ENTER_PROGRAM_MODE_FUNCNAME(cm3);
 			cm3_program_functions.leave_program_mode =
 				LEAVE_PROGRAM_MODE_FUNCNAME(cm3);
-			return ERROR_OK;
+			return VSFERR_NONE;
 		}
 	}
-	return ERROR_FAIL;
+	return VSFERR_FAIL;
 }
 
 const struct vss_cmd_t cm3_notifier[] =
@@ -147,7 +147,7 @@ ENTER_PROGRAM_MODE_HANDLER(cm3)
 	
 	if (cm3_chip_index >= dimof(cm3_chips_param))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	// jtag/swd init
@@ -201,7 +201,7 @@ ENTER_PROGRAM_MODE_HANDLER(cm3)
 	}
 	
 	// mode independent
-	if (ERROR_OK != cm3_dp_init(context->prog, &dp))
+	if (cm3_dp_init(context->prog, &dp))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "initialize cm3");
 		LOG_ERROR("Maybe your last firmware disable the JTAG/SWD port"
@@ -210,11 +210,11 @@ ENTER_PROGRAM_MODE_HANDLER(cm3)
 	}
 	
 	if ((pf->enter_program_mode != NULL)
-		&& (ERROR_OK != pf->enter_program_mode(context)))
+		&& pf->enter_program_mode(context))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 LEAVE_PROGRAM_MODE_HANDLER(cm3)
@@ -222,16 +222,16 @@ LEAVE_PROGRAM_MODE_HANDLER(cm3)
 	struct program_info_t *pi = context->pi;
 	const struct program_functions_t *pf =
 		cm3_chips_param[cm3_chip_index].program_functions;
-	RESULT ret = ERROR_OK;
+	vsf_err_t err = VSFERR_NONE;
 	
 	if (cm3_chip_index >= dimof(cm3_chips_param))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	if (pf->leave_program_mode != NULL)
 	{
-		ret = pf->leave_program_mode(context, success);
+		err = pf->leave_program_mode(context, success);
 	}
 	
 	if (pi->execute_flag && success
@@ -239,25 +239,24 @@ LEAVE_PROGRAM_MODE_HANDLER(cm3)
 	{
 		uint32_t reg;
 		
-		if (ERROR_OK != cm3_dp_halt())
+		if (cm3_dp_halt())
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "halt cm3");
 			return ERRCODE_FAILURE_OPERATION;
 		}
-		if (ERROR_OK !=
-				cm3_write_core_register(CM3_COREREG_PC, &pi->execute_addr))
+		if (cm3_write_core_register(CM3_COREREG_PC, &pi->execute_addr))
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "write PC");
 			return ERRCODE_FAILURE_OPERATION;
 		}
 		reg = 0;
-		if ((ERROR_OK != cm3_read_core_register(CM3_COREREG_PC, &reg))
+		if (cm3_read_core_register(CM3_COREREG_PC, &reg)
 			|| (reg != pi->execute_addr))
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "verify written PC");
 			return ERRCODE_FAILURE_OPERATION;
 		}
-		if (ERROR_OK != cm3_dp_resume())
+		if (cm3_dp_resume())
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "run code");
 			return ERRCODE_FAILURE_OPERATION;
@@ -267,6 +266,6 @@ LEAVE_PROGRAM_MODE_HANDLER(cm3)
 	// jtag/swd fini
 	cm3_reset();
 	cm3_dp_fini();
-	return ret;
+	return err;
 }
 

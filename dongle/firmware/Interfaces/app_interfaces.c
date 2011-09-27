@@ -103,32 +103,32 @@ void GPIO_SetMode(GPIO_TypeDef* GPIOx, uint8_t pin, uint8_t mode)
 }
 
 // delay
-static RESULT delay_init(void)
+static vsf_err_t delay_init(void)
 {
 	return interfaces->delay.init();
 }
-static RESULT delay_delayms(uint16_t ms)
+static vsf_err_t delay_delayms(uint16_t ms)
 {
 	return interfaces->delay.delayms(ms);
 }
-static RESULT delay_delayus(uint16_t us)
+static vsf_err_t delay_delayus(uint16_t us)
 {
 	return interfaces->delay.delayus(us);
 }
 
-static RESULT app_interface_init(void *p)
+static vsf_err_t app_interface_init(void *p)
 {
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT app_interface_fini(void)
+static vsf_err_t app_interface_fini(void)
 {
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT app_peripheral_commit(void)
+static vsf_err_t app_peripheral_commit(void)
 {
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 const struct app_interfaces_info_t app_interfaces = 

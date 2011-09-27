@@ -31,30 +31,30 @@ struct usart_stream_info_t usart_stream_p0 =
 	{{asyn_rx_buf + 1024, 1024}}	// fifo_rx
 };
 
-RESULT usart_init(uint8_t index)
+vsf_err_t usart_init(uint8_t index)
 {
 	switch (index)
 	{
 	case 0:
 		return usart_stream_init(&usart_stream_p0);
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT usart_fini(uint8_t index)
+vsf_err_t usart_fini(uint8_t index)
 {
 	switch (index)
 	{
 	case 0:
 		return usart_stream_fini(&usart_stream_p0);
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT usart_config(uint8_t index, uint32_t baudrate, uint8_t datalength, 
-					char paritybit, char stopbit, char handshake)
+vsf_err_t usart_config(uint8_t index, uint32_t baudrate, uint8_t datalength, 
+						char paritybit, char stopbit, char handshake)
 {
 	REFERENCE_PARAMETER(handshake);
 	
@@ -95,11 +95,11 @@ RESULT usart_config(uint8_t index, uint32_t baudrate, uint8_t datalength,
 		}
 		return usart_stream_config(&usart_stream_p0);
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT usart_send(uint8_t index, uint8_t *buf, uint16_t len)
+vsf_err_t usart_send(uint8_t index, uint8_t *buf, uint16_t len)
 {
 	struct vsf_buffer_t buffer;
 	
@@ -108,18 +108,18 @@ RESULT usart_send(uint8_t index, uint8_t *buf, uint16_t len)
 	case 0:
 		if (NULL == buf)
 		{
-			return ERROR_FAIL;
+			return VSFERR_INVALID_PTR;
 		}
 		
 		buffer.buffer = buf;
 		buffer.size = len;
 		return usart_stream_tx(&usart_stream_p0, &buffer);
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT usart_receive(uint8_t index, uint8_t *buf, uint16_t len)
+vsf_err_t usart_receive(uint8_t index, uint8_t *buf, uint16_t len)
 {
 	struct vsf_buffer_t buffer;
 	
@@ -128,18 +128,18 @@ RESULT usart_receive(uint8_t index, uint8_t *buf, uint16_t len)
 	case 0:
 		if (NULL == buf)
 		{
-			return ERROR_FAIL;
+			return VSFERR_INVALID_PTR;
 		}
 		
 		buffer.buffer = buf;
 		buffer.size = len;
 		return usart_stream_rx(&usart_stream_p0, &buffer);
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT usart_status(uint8_t index, struct usart_status_t *status)
+vsf_err_t usart_status(uint8_t index, struct usart_status_t *status)
 {
 	struct vsf_fifo_t *fifo_tx, *fifo_rx;
 	
@@ -148,7 +148,7 @@ RESULT usart_status(uint8_t index, struct usart_status_t *status)
 	case 0:
 		if (NULL == status)
 		{
-			return ERROR_FAIL;
+			return VSFERR_INVALID_PTR;
 		}
 		
 		fifo_tx = &usart_stream_p0.fifo_tx;
@@ -157,20 +157,20 @@ RESULT usart_status(uint8_t index, struct usart_status_t *status)
 		status->tx_buff_size = vsf_fifo_get_data_length(fifo_tx);
 		status->rx_buff_avail = vsf_fifo_get_avail_length(fifo_rx);
 		status->rx_buff_size = vsf_fifo_get_data_length(fifo_rx);
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT usart_poll(uint8_t index)
+vsf_err_t usart_poll(uint8_t index)
 {
 	switch (index)
 	{
 	case 0:
 		return usart_stream_poll(&usart_stream_p0);
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 

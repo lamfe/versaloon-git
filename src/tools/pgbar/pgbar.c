@@ -24,6 +24,8 @@
 #include <string.h>
 #include <time.h>
 
+#include "vsf_err.h"
+
 #include "app_type.h"
 #include "app_io.h"
 #include "app_log.h"
@@ -60,7 +62,7 @@ VSS_HANDLER(pgbar_gui)
 {
 	VSS_CHECK_ARGC(1);
 	gui_mode_flag = 1;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 void pgbar_update(int32_t step)
@@ -132,8 +134,8 @@ void pgbar_update(int32_t step)
 	}
 }
 
-RESULT pgbar_init(char *s, char *e, uint32_t min, uint32_t max,
-				  uint32_t max_chars, char c)
+vsf_err_t pgbar_init(char *s, char *e, uint32_t min, uint32_t max,
+						uint32_t max_chars, char c)
 {
 	// save settings
 	if (e != NULL)
@@ -168,7 +170,7 @@ RESULT pgbar_init(char *s, char *e, uint32_t min, uint32_t max,
 	
 	// flush output
 	fflush(stdout);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 uint32_t pgbar_fini(void)

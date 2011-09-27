@@ -28,17 +28,17 @@
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
 
-RESULT usbtojtagraw_init(uint8_t interface_index)
+vsf_err_t usbtojtagraw_init(uint8_t interface_index)
 {
 	return usbtoxxx_init_command(USB_TO_JTAG_RAW, interface_index);
 }
 
-RESULT usbtojtagraw_fini(uint8_t interface_index)
+vsf_err_t usbtojtagraw_fini(uint8_t interface_index)
 {
 	return usbtoxxx_fini_command(USB_TO_JTAG_RAW, interface_index);
 }
 
-RESULT usbtojtagraw_config(uint8_t interface_index, uint32_t kHz)
+vsf_err_t usbtojtagraw_config(uint8_t interface_index, uint32_t kHz)
 {
 	uint8_t cfg_buf[4];
 	
@@ -46,7 +46,7 @@ RESULT usbtojtagraw_config(uint8_t interface_index, uint32_t kHz)
 	if (interface_index > 7)
 	{
 		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 #endif
 	
@@ -55,7 +55,7 @@ RESULT usbtojtagraw_config(uint8_t interface_index, uint32_t kHz)
 	return usbtoxxx_conf_command(USB_TO_JTAG_RAW, interface_index, cfg_buf, 4);
 }
 
-RESULT usbtojtagraw_execute(uint8_t interface_index, uint8_t *tdi,
+vsf_err_t usbtojtagraw_execute(uint8_t interface_index, uint8_t *tdi,
 							uint8_t *tms, uint8_t *tdo, uint32_t bitlen)
 {
 	uint16_t bytelen;
@@ -64,13 +64,13 @@ RESULT usbtojtagraw_execute(uint8_t interface_index, uint8_t *tdi,
 	if (interface_index > 7)
 	{
 		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 #endif
 	
 	if (bitlen > 8 * 0xFFFF)
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	bytelen = (uint16_t)((bitlen + 7) >> 3);
 	

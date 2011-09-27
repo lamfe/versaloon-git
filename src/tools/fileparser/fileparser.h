@@ -22,32 +22,32 @@
 
 #include "filelist.h"
 
-typedef RESULT (*WRITE_MEMORY_CALLBACK)(char *, uint32_t, uint32_t, uint8_t*,
+typedef vsf_err_t (*WRITE_MEMORY_CALLBACK)(char *, uint32_t, uint32_t, uint8_t*,
 										uint32_t, void *);
-typedef RESULT (*ADJUST_MAPPING_CALLBACK)(uint32_t *address, uint8_t dir);
+typedef vsf_err_t (*ADJUST_MAPPING_CALLBACK)(uint32_t *address, uint8_t dir);
 
 struct file_parser_t
 {
 	char ext[4];
-	RESULT (*parse_file)(FILE *file, WRITE_MEMORY_CALLBACK callback,
+	vsf_err_t (*parse_file)(FILE *file, WRITE_MEMORY_CALLBACK callback,
 							void *buffer, uint32_t seg_offset,
 							uint32_t addr_offset);
-	RESULT (*save_target_to_file)(FILE *file, uint32_t file_addr,
+	vsf_err_t (*save_target_to_file)(FILE *file, uint32_t file_addr,
 									uint8_t *buff, uint32_t buff_size,
 									uint32_t seg_addr, uint32_t start_addr,
 									ADJUST_MAPPING_CALLBACK remap);
-	RESULT (*end_file)(FILE *file);
+	vsf_err_t (*end_file)(FILE *file);
 };
 
 extern char *fileparser_cur_ext;
 
-RESULT parse_file(char *file_name, FILE *file, void *para,
-					WRITE_MEMORY_CALLBACK callback,
-					uint32_t seg_offset, uint32_t addr_offset);
-RESULT save_target_to_file(struct filelist *fl, uint8_t *buff,
+vsf_err_t parse_file(char *file_name, FILE *file, void *para,
+						WRITE_MEMORY_CALLBACK callback,
+						uint32_t seg_offset, uint32_t addr_offset);
+vsf_err_t save_target_to_file(struct filelist *fl, uint8_t *buff,
 				uint32_t buff_size, uint32_t seg_addr, uint32_t start_addr,
 				int32_t fseg, int32_t faddr, ADJUST_MAPPING_CALLBACK remap);
-RESULT end_file(struct filelist *fl);
+vsf_err_t end_file(struct filelist *fl);
 
 #endif //__FILE_PARSER_H_INCLUDED__
 

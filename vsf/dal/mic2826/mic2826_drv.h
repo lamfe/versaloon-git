@@ -31,9 +31,9 @@
 struct mic2826_drv_t
 {
 	struct dal_driver_t driver;
-	RESULT (*init)(struct dal_info_t *info);
-	RESULT (*fini)(struct dal_info_t *info);
-	RESULT (*config)(struct dal_info_t *info, uint16_t DCDC_mV, 
+	vsf_err_t (*init)(struct dal_info_t *info);
+	vsf_err_t (*fini)(struct dal_info_t *info);
+	vsf_err_t (*config)(struct dal_info_t *info, uint16_t DCDC_mV, 
 						uint16_t LDO1_mV, uint16_t LDO2_mV, uint16_t LDO3_mV);
 };
 

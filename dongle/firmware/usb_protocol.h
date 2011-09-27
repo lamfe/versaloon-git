@@ -12,7 +12,7 @@
 extern struct vsfusbd_device_t usb_device;
 extern volatile uint32_t rep_len;
 
-RESULT usb_protocol_init(void);
-RESULT usb_protocol_idle(void);
+vsf_err_t usb_protocol_init(void);
+vsf_err_t usb_protocol_idle(void);
 
 #endif	// __USB_PROTOCOL_H_INCLUDED__

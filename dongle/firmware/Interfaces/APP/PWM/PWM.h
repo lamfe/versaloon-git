@@ -17,8 +17,8 @@
 #define PWM_OUTPP				0x01
 #define PWM_OUTPOLARITY			0x02
 
-RESULT pwm_init(uint8_t index);
-RESULT pwm_fini(uint8_t index);
-RESULT pwm_config(uint8_t index, uint16_t kHz, uint8_t mode);
-RESULT pwm_out(uint8_t index, uint16_t count, uint16_t *rate);
-RESULT pwm_in(uint8_t index, uint16_t count, uint16_t *rate);
+vsf_err_t pwm_init(uint8_t index);
+vsf_err_t pwm_fini(uint8_t index);
+vsf_err_t pwm_config(uint8_t index, uint16_t kHz, uint8_t mode);
+vsf_err_t pwm_out(uint8_t index, uint16_t count, uint16_t *rate);
+vsf_err_t pwm_in(uint8_t index, uint16_t count, uint16_t *rate);

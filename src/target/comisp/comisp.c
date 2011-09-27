@@ -32,14 +32,11 @@
 #include "app_log.h"
 
 #include "vsprog.h"
-#include "memlist.h"
-#include "pgbar.h"
-#include "strparser.h"
-
-#include "vsprog.h"
 #include "programmer.h"
 #include "target.h"
 #include "scripts.h"
+
+#include "strparser.h"
 
 #include "comisp.h"
 #include "stm32isp.h"
@@ -101,7 +98,7 @@ VSS_HANDLER(comisp_print_cominfo)
 	PRINTF("stopbit = %c, ", comisp_chips_param[i].com_mode.stopbit);
 	PRINTF("handshake = %c, ", comisp_chips_param[i].com_mode.handshake);
 	PRINTF("auxpin = %c",comisp_chips_param[i].com_mode.auxpin);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 VSS_HANDLER(comisp_comm)
@@ -111,7 +108,7 @@ VSS_HANDLER(comisp_comm)
 	// datalength, paritybit, stopbit: 3 bytes
 	// handle, extra: 2 bytes
 	uint8_t comm_setting[256 + 4 + 3 + 2], *ptr;
-	RESULT success;
+	vsf_err_t err;
 	uint8_t i;
 	char* formats[] =
 	{
@@ -132,19 +129,19 @@ VSS_HANDLER(comisp_comm)
 	
 	VSS_CHECK_ARGC(2);
 	
-	success = ERROR_FAIL;
+	err = VSFERR_FAIL;
 	for (i = 0; i < dimof(formats); i++)
 	{
 		memset(comm_setting, 0, sizeof(comm_setting));
-		success = strparser_parse((char*)argv[1], formats[i],
+		err = strparser_parse((char*)argv[1], formats[i],
 								comm_setting, sizeof(comm_setting));
-		if (ERROR_OK == success)
+		if (!err)
 		{
 			break;
 		}
 	}
 	
-	if (success != ERROR_OK)
+	if (err)
 	{
 		LOG_ERROR(ERRMSG_INVALID_CMD, argv[0]);
 		vss_print_help(argv[0]);
@@ -172,7 +169,7 @@ VSS_HANDLER(comisp_comm)
 			}
 		}
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 VSS_HANDLER(comisp_chip)
@@ -191,10 +188,10 @@ VSS_HANDLER(comisp_chip)
 					ENTER_PROGRAM_MODE_FUNCNAME(comisp);
 			comisp_program_functions.leave_program_mode = \
 					LEAVE_PROGRAM_MODE_FUNCNAME(comisp);
-			return ERROR_OK;
+			return VSFERR_NONE;
 		}
 	}
-	return ERROR_FAIL;
+	return VSFERR_FAIL;
 }
 
 const struct vss_cmd_t comisp_notifier[] =
@@ -213,10 +210,10 @@ ENTER_PROGRAM_MODE_HANDLER(comisp)
 	if ((NULL == com_mode.comport) || (0 == strlen(com_mode.comport)))
 	{
 		LOG_ERROR(ERRMSG_NOT_DEFINED, "comport");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	// comm init
-	if (ERROR_OK != comm_open(com_mode.comport, com_mode.baudrate, 8,
+	if (comm_open(com_mode.comport, com_mode.baudrate, 8,
 		com_mode.paritybit, com_mode.stopbit, com_mode.handshake))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPEN, com_mode.comport);
@@ -227,20 +224,20 @@ ENTER_PROGRAM_MODE_HANDLER(comisp)
 	{
 		return pf->enter_program_mode(context);
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 LEAVE_PROGRAM_MODE_HANDLER(comisp)
 {
 	struct program_functions_t *pf =
 					comisp_chips_param[comisp_chip_index].program_functions;
-	RESULT ret = ERROR_OK;
+	vsf_err_t err = VSFERR_NONE;
 	
 	if (pf->leave_program_mode != NULL)
 	{
-		ret = pf->leave_program_mode(context, success);
+		err = pf->leave_program_mode(context, success);
 	}
 	
 	comm_close();
-	return ret;
+	return err;
 }

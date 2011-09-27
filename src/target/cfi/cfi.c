@@ -29,8 +29,6 @@
 #include "app_err.h"
 #include "app_log.h"
 
-#include "pgbar.h"
-
 #include "vsprog.h"
 #include "programmer.h"
 #include "target.h"
@@ -75,7 +73,7 @@ VSS_HANDLER(cfi_help)
 {
 	VSS_CHECK_ARGC(1);
 	PRINTF("Usage of %s:\n\n", CUR_TARGET_STRING);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 const struct vss_cmd_t cfi_notifier[] =
@@ -111,17 +109,16 @@ ENTER_PROGRAM_MODE_HANDLER(cfi)
 	struct chip_param_t *param = context->param;
 	struct program_info_t *pi = context->pi;
 	
-	if (ERROR_OK != dal_init(context->prog))
+	if (dal_init(context->prog))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	if (pi->ifs_indexes != NULL)
 	{
-		if (ERROR_OK != dal_config_interface(CFI_STRING, pi->ifs_indexes,
-												&cfi_dal_info))
+		if (dal_config_interface(CFI_STRING, pi->ifs_indexes, &cfi_dal_info))
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 	}
 	else
@@ -142,10 +139,10 @@ ENTER_PROGRAM_MODE_HANDLER(cfi)
 	cfi_drv_param.nor_info.param.timing.data_setup_cycle_r = 
 		cfi_drv_param.nor_info.param.timing.data_setup_cycle_w = 7;
 	
-	if ((ERROR_OK != mal.init(MAL_IDX_CFI, &cfi_dal_info)) || 
-		(ERROR_OK != mal.getinfo(MAL_IDX_CFI, &cfi_dal_info)))
+	if (mal.init(MAL_IDX_CFI, &cfi_dal_info) || 
+		mal.getinfo(MAL_IDX_CFI, &cfi_dal_info))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	param->chip_areas[APPLICATION_IDX].page_num = 
@@ -179,7 +176,7 @@ ERASE_TARGET_HANDLER(cfi)
 	case APPLICATION_CHAR:
 		if (size % param->chip_areas[APPLICATION_IDX].page_size)
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		if (cfi_mal_info.erase_page_size)
 		{
@@ -190,13 +187,13 @@ ERASE_TARGET_HANDLER(cfi)
 			size /= param->chip_areas[APPLICATION_IDX].page_size;
 		}
 		
-		if (ERROR_OK != mal.eraseblock(MAL_IDX_CFI, &cfi_dal_info, addr, size))
+		if (mal.eraseblock(MAL_IDX_CFI, &cfi_dal_info, addr, size))
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		return dal_commit();
 	default:
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 }
 
@@ -209,7 +206,7 @@ WRITE_TARGET_HANDLER(cfi)
 	case APPLICATION_CHAR:
 		if (size % param->chip_areas[APPLICATION_IDX].page_size)
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		if (cfi_mal_info.write_page_size)
 		{
@@ -220,15 +217,14 @@ WRITE_TARGET_HANDLER(cfi)
 			size /= param->chip_areas[APPLICATION_IDX].page_size;
 		}
 		
-		if (ERROR_OK != mal.writeblock(MAL_IDX_CFI, &cfi_dal_info,addr, buff, 
-										size))
+		if (mal.writeblock(MAL_IDX_CFI, &cfi_dal_info,addr, buff, size))
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		return dal_commit();
 		break;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 }
 
@@ -239,20 +235,20 @@ READ_TARGET_HANDLER(cfi)
 	switch (area)
 	{
 	case CHIPID_CHAR:
-		if (ERROR_OK != mal.getinfo(MAL_IDX_CFI, &cfi_dal_info))
+		if (mal.getinfo(MAL_IDX_CFI, &cfi_dal_info))
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		buff[3] = cfi_drv_info.manufacturer_id;
 		buff[2] = (uint8_t)cfi_drv_info.device_id[0];
 		buff[1] = (uint8_t)cfi_drv_info.device_id[1];
 		buff[0] = (uint8_t)cfi_drv_info.device_id[2];
-		return ERROR_OK;
+		return VSFERR_NONE;
 		break;
 	case APPLICATION_CHAR:
 		if (size % param->chip_areas[APPLICATION_IDX].page_size)
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		if (cfi_mal_info.read_page_size)
 		{
@@ -263,15 +259,14 @@ READ_TARGET_HANDLER(cfi)
 			size /= param->chip_areas[APPLICATION_IDX].page_size;
 		}
 		
-		if (ERROR_OK != mal.readblock(MAL_IDX_CFI, &cfi_dal_info, addr, buff, 
-										size))
+		if (mal.readblock(MAL_IDX_CFI, &cfi_dal_info, addr, buff, size))
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
-		return ERROR_OK;
+		return VSFERR_NONE;
 		break;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 }
 

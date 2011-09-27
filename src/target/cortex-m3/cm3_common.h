@@ -78,19 +78,19 @@
 #define CM3_REG_NVIC_AIRCR_VECTCLRACTIVE	(1 << 1)
 #define CM3_REG_NVIC_AIRCR_VECTRESET		(1 << 0)
 
-RESULT cm3_dp_parameter_init(struct adi_dpif_t *dp);
-RESULT cm3_dp_fini(void);
-RESULT cm3_dp_init(struct interfaces_info_t *ifs, struct adi_dpif_t *interf);
+vsf_err_t cm3_dp_parameter_init(struct adi_dpif_t *dp);
+vsf_err_t cm3_dp_fini(void);
+vsf_err_t cm3_dp_init(struct interfaces_info_t *ifs, struct adi_dpif_t *interf);
 
-RESULT cm3_dp_halt(void);
-RESULT cm3_dp_resume(void);
-RESULT cm3_reset(void);
+vsf_err_t cm3_dp_halt(void);
+vsf_err_t cm3_dp_resume(void);
+vsf_err_t cm3_reset(void);
 
-RESULT cm3_read_core_register(uint8_t reg_idx, uint32_t *value);
-RESULT cm3_write_core_register(uint8_t reg_idx, uint32_t *value);
+vsf_err_t cm3_read_core_register(uint8_t reg_idx, uint32_t *value);
+vsf_err_t cm3_write_core_register(uint8_t reg_idx, uint32_t *value);
 
 uint32_t cm3_get_max_block_size(uint32_t address);
-RESULT cm3_dump(uint32_t addr, uint32_t size);
+vsf_err_t cm3_dump(uint32_t addr, uint32_t size);
 
 #endif	// __CM3_COMMON_H_INCLUDED__
 

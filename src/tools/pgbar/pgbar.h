@@ -23,8 +23,8 @@
 #define PROGRESS_STEP			40
 #define PROGRESS_CHAR			'='
 
-RESULT pgbar_init(char *s, char *e, uint32_t min, uint32_t max,
-					uint32_t max_chars, char c);
+vsf_err_t pgbar_init(char *s, char *e, uint32_t min, uint32_t max,
+						uint32_t max_chars, char c);
 uint32_t pgbar_fini(void);
 void pgbar_set_gui_mode(uint8_t gui_mode);
 void pgbar_update(int32_t step);

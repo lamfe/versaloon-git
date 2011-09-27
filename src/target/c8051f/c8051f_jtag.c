@@ -88,7 +88,7 @@ static struct interfaces_info_t *interfaces = NULL;
 
 #define jtag_commit()				interfaces->peripheral_commit()
 
-RESULT c8051f_jtag_poll_busy(void)
+vsf_err_t c8051f_jtag_poll_busy(void)
 {
 	poll_start(C8051F_JTAG_MAX_POLL_COUNT, 0);
 	
@@ -97,11 +97,11 @@ RESULT c8051f_jtag_poll_busy(void)
 	
 	poll_end();
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 // *value read will be little endian
-RESULT c8051f_jtag_ind_read(uint8_t addr, uint32_t *value, uint8_t num_bits)
+vsf_err_t c8051f_jtag_ind_read(uint8_t addr, uint32_t *value, uint8_t num_bits)
 {
 	uint16_t ir, dr;
 
@@ -124,11 +124,11 @@ RESULT c8051f_jtag_ind_read(uint8_t addr, uint32_t *value, uint8_t num_bits)
 	
 	jtag_dr_read(value, num_bits + 1);
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 // *value is SYS endian
-RESULT c8051f_jtag_ind_write(uint8_t addr, uint32_t *value, uint8_t num_bits)
+vsf_err_t c8051f_jtag_ind_write(uint8_t addr, uint32_t *value, uint8_t num_bits)
 {
 	uint16_t ir;
 	
@@ -149,10 +149,10 @@ RESULT c8051f_jtag_ind_write(uint8_t addr, uint32_t *value, uint8_t num_bits)
 	
 	jtag_poll_busy();
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT c8051f_jtag_poll_flbusy(uint16_t poll_cnt, uint16_t interval)
+vsf_err_t c8051f_jtag_poll_flbusy(uint16_t poll_cnt, uint16_t interval)
 {
 	poll_start(poll_cnt, interval);
 	
@@ -161,7 +161,7 @@ RESULT c8051f_jtag_poll_flbusy(uint16_t poll_cnt, uint16_t interval)
 	
 	poll_end();
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 ENTER_PROGRAM_MODE_HANDLER(c8051fjtag)
@@ -199,7 +199,7 @@ ERASE_TARGET_HANDLER(c8051fjtag)
 {
 	struct chip_param_t *param = context->param;
 	uint32_t dr;
-	RESULT ret = ERROR_OK;
+	vsf_err_t err = VSFERR_NONE;
 	
 	REFERENCE_PARAMETER(size);
 	REFERENCE_PARAMETER(addr);
@@ -221,33 +221,33 @@ ERASE_TARGET_HANDLER(c8051fjtag)
 		c8051f_jtag_ind_write(C8051F_IR_FLASHCON, &dr, C8051F_DR_FLASHCON_LEN);
 		jtag_delay_ms(1500);
 		c8051f_jtag_poll_flbusy(1500, 1000);
-		if (ERROR_OK != jtag_commit())
+		if (jtag_commit())
 		{
-			ret = ERRCODE_FAILURE_OPERATION;
+			err = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
 		
 		// read FLBusy and FLFail
 		c8051f_jtag_ind_read(C8051F_IR_FLASHDAT, &dr, 2);
 		
-		if ((ERROR_OK != jtag_commit()) || (LE_TO_SYS_U32(dr) & 0x02))
+		if (jtag_commit() || (LE_TO_SYS_U32(dr) & 0x02))
 		{
-			ret = ERRCODE_FAILURE_OPERATION;
+			err = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
 		break;
 	default:
-		ret = ERROR_FAIL;
+		err = VSFERR_FAIL;
 		break;
 	}
-	return ret;
+	return err;
 }
 
 WRITE_TARGET_HANDLER(c8051fjtag)
 {
 	uint32_t dr, read_buf[512];
 	uint32_t i;
-	RESULT ret = ERROR_OK;
+	vsf_err_t err = VSFERR_NONE;
 	
 	REFERENCE_PARAMETER(context);
 	
@@ -278,10 +278,10 @@ WRITE_TARGET_HANDLER(c8051fjtag)
 			c8051f_jtag_ind_read(C8051F_IR_FLASHDAT, read_buf + i, 2);
 		}
 		
-		if (ERROR_OK != jtag_commit())
+		if (jtag_commit())
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION_ADDR, "program flash", addr);
-			ret = ERRCODE_FAILURE_OPERATION_ADDR;
+			err = ERRCODE_FAILURE_OPERATION_ADDR;
 			break;
 		}
 		for (i = 0; i < size; i++)
@@ -290,16 +290,16 @@ WRITE_TARGET_HANDLER(c8051fjtag)
 			{
 				LOG_ERROR(ERRMSG_FAILURE_OPERATION_ADDR, "program flash",
 							addr + i);
-				ret = ERRCODE_FAILURE_OPERATION;
+				err = ERRCODE_FAILURE_OPERATION;
 				break;
 			}
 		}
 		break;
 	default:
-		ret = ERROR_FAIL;
+		err = VSFERR_FAIL;
 		break;
 	}
-	return ret;
+	return err;
 }
 
 READ_TARGET_HANDLER(c8051fjtag)
@@ -307,7 +307,7 @@ READ_TARGET_HANDLER(c8051fjtag)
 	uint16_t ir;
 	uint32_t dr, read_buf[512];
 	uint32_t i;
-	RESULT ret = ERROR_OK;
+	vsf_err_t err = VSFERR_NONE;
 	
 	REFERENCE_PARAMETER(context);
 	
@@ -320,9 +320,9 @@ READ_TARGET_HANDLER(c8051fjtag)
 		jtag_ir_write(&ir, C8051F_IR_LEN);
 		dr = SYS_TO_LE_U32(0);
 		jtag_dr_read(&dr, C8051F_DR_IDCODE_LEN);
-		if (ERROR_OK != jtag_commit())
+		if (jtag_commit())
 		{
-			ret = ERRCODE_FAILURE_OPERATION;
+			err = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
 		*(uint32_t*)buff = LE_TO_SYS_U32(dr) & C8051F_JTAG_ID_MASK;
@@ -352,26 +352,26 @@ READ_TARGET_HANDLER(c8051fjtag)
 									C8051F_DR_FLASHDAT_RLEN);
 		}
 		
-		if (ERROR_OK != jtag_commit())
+		if (jtag_commit())
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION_ADDR, "read flash", addr);
-			ret = ERRCODE_FAILURE_OPERATION_ADDR;
+			err = ERRCODE_FAILURE_OPERATION_ADDR;
 			break;
 		}
 		for (i = 0; i < size; i++)
 		{
 			if ((read_buf[i] & 0x06) != 0)
 			{
-				ret = ERRCODE_FAILURE_OPERATION;
+				err = ERRCODE_FAILURE_OPERATION;
 				break;
 			}
 			buff[i] = (read_buf[i] >> 3) & 0xFF;
 		}
 		break;
 	default:
-		ret = ERROR_FAIL;
+		err = VSFERR_FAIL;
 		break;
 	}
-	return ret;
+	return err;
 }
 

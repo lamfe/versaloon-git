@@ -32,8 +32,8 @@ struct memlist
 					sllist_get_container(ml->list.next, struct memlist, list)
 
 uint32_t MEMLIST_CalcAllSize(struct memlist *ml);
-RESULT MEMLIST_Add(struct memlist **ml, uint32_t addr, uint32_t len,
-					uint32_t page_size);
+vsf_err_t MEMLIST_Add(struct memlist **ml, uint32_t addr, uint32_t len,
+						uint32_t page_size);
 void MEMLIST_Free(struct memlist **ml);
 
 #endif /* __MEMLIST_H_INCLUDED__ */

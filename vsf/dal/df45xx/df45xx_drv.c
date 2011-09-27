@@ -25,178 +25,174 @@
 #include "df45xx_drv_cfg.h"
 #include "df45xx_drv.h"
 
-static RESULT df45xx_drv_init(struct dal_info_t *info)
+static vsf_err_t df45xx_drv_init(struct dal_info_t *info)
 {
 	REFERENCE_PARAMETER(info);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT df45xx_drv_fini(struct dal_info_t *info)
+static vsf_err_t df45xx_drv_fini(struct dal_info_t *info)
 {
 	REFERENCE_PARAMETER(info);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT df45xx_drv_getinfo(struct dal_info_t *info)
+static vsf_err_t df45xx_drv_getinfo(struct dal_info_t *info)
 {
 	REFERENCE_PARAMETER(info);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT df45xx_drv_eraseall_nb_start(struct dal_info_t *info)
+static vsf_err_t df45xx_drv_eraseall_nb_start(struct dal_info_t *info)
 {
 	REFERENCE_PARAMETER(info);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT df45xx_drv_eraseall_nb_isready(struct dal_info_t *info, 
-												bool *ready)
+static vsf_err_t df45xx_drv_eraseall_nb_isready(struct dal_info_t *info)
 {
 	REFERENCE_PARAMETER(info);
-	*ready = true;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT df45xx_drv_eraseall_nb_waitready(struct dal_info_t *info)
+static vsf_err_t df45xx_drv_eraseall_nb_waitready(struct dal_info_t *info)
 {
 	REFERENCE_PARAMETER(info);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT df45xx_drv_eraseall_nb_end(struct dal_info_t *info)
+static vsf_err_t df45xx_drv_eraseall_nb_end(struct dal_info_t *info)
 {
 	REFERENCE_PARAMETER(info);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT df45xx_drv_eraseblock_nb_start(struct dal_info_t *info, 
+static vsf_err_t df45xx_drv_eraseblock_nb_start(struct dal_info_t *info, 
 											uint64_t address, uint64_t count)
 {
 	REFERENCE_PARAMETER(info);
 	REFERENCE_PARAMETER(address);
 	REFERENCE_PARAMETER(count);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT df45xx_drv_eraseblock_nb(struct dal_info_t *info, 
+static vsf_err_t df45xx_drv_eraseblock_nb(struct dal_info_t *info, 
 										uint64_t address)
 {
 	REFERENCE_PARAMETER(info);
 	REFERENCE_PARAMETER(address);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT df45xx_drv_eraseblock_nb_isready(struct dal_info_t *info, 
-												uint64_t address, bool *ready)
-{
-	REFERENCE_PARAMETER(info);
-	REFERENCE_PARAMETER(address);
-	*ready = true;
-	return ERROR_OK;
-}
-
-static RESULT df45xx_drv_eraseblock_nb_waitready(struct dal_info_t *info, 
+static vsf_err_t df45xx_drv_eraseblock_nb_isready(struct dal_info_t *info, 
 													uint64_t address)
 {
 	REFERENCE_PARAMETER(info);
 	REFERENCE_PARAMETER(address);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT df45xx_drv_eraseblock_nb_end(struct dal_info_t *info)
+static vsf_err_t df45xx_drv_eraseblock_nb_waitready(struct dal_info_t *info, 
+													uint64_t address)
 {
 	REFERENCE_PARAMETER(info);
-	return ERROR_OK;
+	REFERENCE_PARAMETER(address);
+	return VSFERR_NONE;
 }
 
-static RESULT df45xx_drv_readblock_nb_start(struct dal_info_t *info, 
+static vsf_err_t df45xx_drv_eraseblock_nb_end(struct dal_info_t *info)
+{
+	REFERENCE_PARAMETER(info);
+	return VSFERR_NONE;
+}
+
+static vsf_err_t df45xx_drv_readblock_nb_start(struct dal_info_t *info, 
 											uint64_t address, uint64_t count)
 {
 	REFERENCE_PARAMETER(info);
 	REFERENCE_PARAMETER(address);
 	REFERENCE_PARAMETER(count);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT df45xx_drv_readblock_nb(struct dal_info_t *info, 
+static vsf_err_t df45xx_drv_readblock_nb(struct dal_info_t *info, 
 										uint64_t address, uint8_t *buff)
 {
 	REFERENCE_PARAMETER(info);
 	REFERENCE_PARAMETER(address);
 	REFERENCE_PARAMETER(buff);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT df45xx_drv_readblock_nb_isready(struct dal_info_t *info, 
-								uint64_t address, uint8_t *buff, bool *ready)
-{
-	REFERENCE_PARAMETER(info);
-	REFERENCE_PARAMETER(address);
-	REFERENCE_PARAMETER(buff);
-	*ready = true;
-	return ERROR_OK;
-}
-
-static RESULT df45xx_drv_readblock_nb_waitready(struct dal_info_t *info, 
+static vsf_err_t df45xx_drv_readblock_nb_isready(struct dal_info_t *info, 
 												uint64_t address, uint8_t *buff)
 {
 	REFERENCE_PARAMETER(info);
 	REFERENCE_PARAMETER(address);
 	REFERENCE_PARAMETER(buff);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT df45xx_drv_readblock_nb_end(struct dal_info_t *info)
+static vsf_err_t df45xx_drv_readblock_nb_waitready(struct dal_info_t *info, 
+												uint64_t address, uint8_t *buff)
 {
 	REFERENCE_PARAMETER(info);
-	return ERROR_OK;
+	REFERENCE_PARAMETER(address);
+	REFERENCE_PARAMETER(buff);
+	return VSFERR_NONE;
 }
 
-static RESULT df45xx_drv_writeblock_nb_start(struct dal_info_t *info, 
+static vsf_err_t df45xx_drv_readblock_nb_end(struct dal_info_t *info)
+{
+	REFERENCE_PARAMETER(info);
+	return VSFERR_NONE;
+}
+
+static vsf_err_t df45xx_drv_writeblock_nb_start(struct dal_info_t *info, 
 											uint64_t address, uint64_t count)
 {
 	REFERENCE_PARAMETER(info);
 	REFERENCE_PARAMETER(address);
 	REFERENCE_PARAMETER(count);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT df45xx_drv_writeblock_nb(struct dal_info_t *info, 
+static vsf_err_t df45xx_drv_writeblock_nb(struct dal_info_t *info, 
 										uint64_t address, uint8_t *buff)
 {
 	REFERENCE_PARAMETER(info);
 	REFERENCE_PARAMETER(address);
 	REFERENCE_PARAMETER(buff);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT df45xx_drv_writeblock_nb_isready(struct dal_info_t *info, 
-								uint64_t address, uint8_t *buff, bool *ready)
-{
-	REFERENCE_PARAMETER(info);
-	REFERENCE_PARAMETER(address);
-	REFERENCE_PARAMETER(buff);
-	*ready = true;
-	return ERROR_OK;
-}
-
-static RESULT df45xx_drv_writeblock_nb_waitready(struct dal_info_t *info, 
+static vsf_err_t df45xx_drv_writeblock_nb_isready(struct dal_info_t *info, 
 												uint64_t address, uint8_t *buff)
 {
 	REFERENCE_PARAMETER(info);
 	REFERENCE_PARAMETER(address);
 	REFERENCE_PARAMETER(buff);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT df45xx_drv_writeblock_nb_end(struct dal_info_t *info)
+static vsf_err_t df45xx_drv_writeblock_nb_waitready(struct dal_info_t *info, 
+												uint64_t address, uint8_t *buff)
 {
 	REFERENCE_PARAMETER(info);
-	return ERROR_OK;
+	REFERENCE_PARAMETER(address);
+	REFERENCE_PARAMETER(buff);
+	return VSFERR_NONE;
+}
+
+static vsf_err_t df45xx_drv_writeblock_nb_end(struct dal_info_t *info)
+{
+	REFERENCE_PARAMETER(info);
+	return VSFERR_NONE;
 }
 
 #if DAL_INTERFACE_PARSER_EN
-static RESULT df45xx_drv_parse_interface(struct dal_info_t *info, uint8_t *buff)
+static vsf_err_t df45xx_drv_parse_interface(struct dal_info_t *info,
+											uint8_t *buff)
 {
 	struct df45xx_drv_interface_t *ifs = 
 									(struct df45xx_drv_interface_t *)info->ifs;
@@ -204,7 +200,7 @@ static RESULT df45xx_drv_parse_interface(struct dal_info_t *info, uint8_t *buff)
 	ifs->spi_port = buff[0];
 	ifs->cs_port = buff[1];
 	ifs->cs_pin = *(uint32_t *)&buff[2];
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 #endif
 

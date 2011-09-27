@@ -30,8 +30,8 @@
 #include "app_err.h"
 #include "port.h"
 
-#include "scripts.h"
 #include "programmer.h"
+#include "scripts.h"
 #include "dal/mic2826/mic2826_drv.h"
 
 static struct mic2826_drv_interface_t mic2826_drv_ifs;
@@ -61,7 +61,7 @@ VSS_HANDLER(mic2826_vss_fini)
 VSS_HANDLER(mic2826_vss_config)
 {
 	uint16_t DCDC_mV, LDO1_mV, LDO2_mV, LDO3_mV;
-	RESULT ret;
+	vsf_err_t err;
 	
 	VSS_CHECK_ARGC(5);
 	
@@ -72,10 +72,10 @@ VSS_HANDLER(mic2826_vss_config)
 	
 	LOG_PUSH();
 	LOG_MUTE();
-	ret = mic2826_drv.config(&mic2826_dal_info, DCDC_mV, LDO1_mV, LDO2_mV,
+	err = mic2826_drv.config(&mic2826_dal_info, DCDC_mV, LDO1_mV, LDO2_mV,
 								LDO3_mV);
 	LOG_POP();
 	
-	return ret;
+	return err;
 }
 

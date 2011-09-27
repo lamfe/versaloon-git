@@ -36,14 +36,14 @@
 
 static const ADC_TypeDef *stm32_adcs[STM32_ADC_NUM] = {ADC1, ADC2, ADC3};
 
-RESULT stm32_adc_init(uint8_t index)
+vsf_err_t stm32_adc_init(uint8_t index)
 {
 	ADC_TypeDef *adc;
 	
 #if __VSF_DEBUG__
 	if (index >= STM32_ADC_NUM)
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 #endif
 	adc = (ADC_TypeDef *)stm32_adcs[index];
@@ -61,17 +61,17 @@ RESULT stm32_adc_init(uint8_t index)
 		RCC->APB2ENR |= STM32_RCC_APB2ENR_ADC2EN;
 		break;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 	
 	adc->CR1 = STM32_ADC_CR1_DISCEN;
 	adc->CR2 = 0;
 	adc->SQR1 = 0;
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT stm32_adc_fini(uint8_t index)
+vsf_err_t stm32_adc_fini(uint8_t index)
 {
 	switch (index)
 	{
@@ -82,19 +82,19 @@ RESULT stm32_adc_fini(uint8_t index)
 		RCC->APB2ENR &= ~STM32_RCC_APB2ENR_ADC2EN;
 		break;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT stm32_adc_config(uint8_t index, uint32_t clock_hz, uint8_t mode)
+vsf_err_t stm32_adc_config(uint8_t index, uint32_t clock_hz, uint8_t mode)
 {
 	ADC_TypeDef *adc;
 	struct stm32_info_t *info;
 	
-	if (ERROR_OK != stm32_interface_get_info(&info))
+	if (stm32_interface_get_info(&info))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 #if __VSF_DEBUG__
@@ -104,7 +104,7 @@ RESULT stm32_adc_config(uint8_t index, uint32_t clock_hz, uint8_t mode)
 			((info->apb2_freq_hz / clock_hz) != 6) && 
 			((info->apb2_freq_hz / clock_hz) != 8)))
 	{
-		return ERROR_FAIL;
+		return VSFERR_INVALID_PARAMETER;
 	}
 #endif
 	adc = (ADC_TypeDef *)stm32_adcs[index];
@@ -114,10 +114,10 @@ RESULT stm32_adc_config(uint8_t index, uint32_t clock_hz, uint8_t mode)
 					STM32_RCC_CFGR_ADCPRE_SFT;
 	
 	adc->CR2 = ((uint32_t)mode << 8) | STM32_ADC_CR2_EXTSEL_SWSTART;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT stm32_adc_config_channel(uint8_t index, uint8_t channel, 
+vsf_err_t stm32_adc_config_channel(uint8_t index, uint8_t channel, 
 								uint8_t cycles)
 {
 	ADC_TypeDef *adc;
@@ -126,7 +126,7 @@ RESULT stm32_adc_config_channel(uint8_t index, uint8_t channel,
 #if __VSF_DEBUG__
 	if (index >= STM32_ADC_NUM)
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 #endif
 	adc = (ADC_TypeDef *)stm32_adcs[index];
@@ -168,17 +168,17 @@ RESULT stm32_adc_config_channel(uint8_t index, uint8_t channel,
 		adc->SMPR2 = tmpreg;
 	}
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT stm32_adc_calibrate(uint8_t index, uint8_t channel)
+vsf_err_t stm32_adc_calibrate(uint8_t index, uint8_t channel)
 {
 	ADC_TypeDef *adc;
 	
 #if __VSF_DEBUG__
 	if (index >= STM32_ADC_NUM)
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 #endif
 	adc = (ADC_TypeDef *)stm32_adcs[index];
@@ -191,17 +191,17 @@ RESULT stm32_adc_calibrate(uint8_t index, uint8_t channel)
 	adc->CR2 |= STM32_ADC_CR2_CAL;
 	while (adc->CR2 & STM32_ADC_CR2_CAL);
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT stm32_adc_start(uint8_t index, uint8_t channel)
+vsf_err_t stm32_adc_start(uint8_t index, uint8_t channel)
 {
 	ADC_TypeDef *adc;
 	
 #if __VSF_DEBUG__
 	if (index >= STM32_ADC_NUM)
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 #endif
 	adc = (ADC_TypeDef *)stm32_adcs[index];
@@ -209,10 +209,10 @@ RESULT stm32_adc_start(uint8_t index, uint8_t channel)
 	adc->SQR3 = channel;
 	adc->SR &= ~STM32_ADC_SR_EOC;
 	adc->CR2 |= STM32_ADC_CR2_ADON;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-bool stm32_adc_isready(uint8_t index, uint8_t channel)
+vsf_err_t stm32_adc_isready(uint8_t index, uint8_t channel)
 {
 	ADC_TypeDef *adc;
 	
@@ -220,19 +220,12 @@ bool stm32_adc_isready(uint8_t index, uint8_t channel)
 #if __VSF_DEBUG__
 	if (index >= STM32_ADC_NUM)
 	{
-		return false;
+		return VSFERR_NOT_SUPPORT;
 	}
 #endif
 	adc = (ADC_TypeDef *)stm32_adcs[index];
 	
-	if (adc->SR & STM32_ADC_SR_EOC)
-	{
-		return true;
-	}
-	else
-	{
-		return false;
-	}
+	return (adc->SR & STM32_ADC_SR_EOC) ? VSFERR_NONE : VSFERR_NOT_READY;
 }
 
 uint32_t stm32_adc_get(uint8_t index, uint8_t channel)

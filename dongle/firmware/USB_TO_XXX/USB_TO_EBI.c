@@ -43,13 +43,13 @@ void USB_TO_EBI_ProcessCmd(uint8_t *dat, uint16_t len)
 		switch(command)
 		{
 		case USB_TO_XXX_INIT:
-			if (ERROR_OK == interfaces->ebi.init(device_idx))
+			if (interfaces->ebi.init(device_idx))
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
 			else
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
 			break;
 		case USB_TO_XXX_CONFIG:
@@ -78,14 +78,14 @@ void USB_TO_EBI_ProcessCmd(uint8_t *dat, uint16_t len)
 				nor_info.param.timing.data_setup_cycle_w = 
 												GET_LE_U16(&dat[index + 18]);
 				nor_info.param.timing.clock_hz_w = GET_LE_U32(&dat[index + 20]);
-				if (ERROR_OK == app_interfaces.ebi.config(device_idx, 
-						target_index, &nor_info))
+				if (app_interfaces.ebi.config(device_idx, target_index,
+												&nor_info))
 				{
-					buffer_reply[rep_len++] = USB_TO_XXX_OK;
+					buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 				}
 				else
 				{
-					buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+					buffer_reply[rep_len++] = USB_TO_XXX_OK;
 				}
 				break;
 			case EBI_TGTTYP_NAND:
@@ -109,14 +109,14 @@ void USB_TO_EBI_ProcessCmd(uint8_t *dat, uint16_t len)
 												GET_LE_U16(&dat[index + 20]);
 				nand_info.param.timing.hold_cycle_attr = dat[index + 22];
 				nand_info.param.timing.hiz_cycle_attr = dat[index + 23];
-				if (ERROR_OK == app_interfaces.ebi.config(device_idx, 
-						target_index, &nand_info))
+				if (app_interfaces.ebi.config(device_idx, target_index,
+												&nand_info))
 				{
-					buffer_reply[rep_len++] = USB_TO_XXX_OK;
+					buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 				}
 				else
 				{
-					buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+					buffer_reply[rep_len++] = USB_TO_XXX_OK;
 				}
 				break;
 			default:
@@ -124,13 +124,13 @@ void USB_TO_EBI_ProcessCmd(uint8_t *dat, uint16_t len)
 			}
 			break;
 		case USB_TO_XXX_FINI:
-			if (ERROR_OK == interfaces->ebi.fini(device_idx))
+			if (interfaces->ebi.fini(device_idx))
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
 			else
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
 			break;
 		case USB_TO_XXX_IN:
@@ -138,7 +138,7 @@ void USB_TO_EBI_ProcessCmd(uint8_t *dat, uint16_t len)
 			data_size = dat[index + 1];
 			address = GET_LE_U32(&dat[index + 2]);
 			count = GET_LE_U32(&dat[index + 6]);
-			if (ERROR_OK != app_interfaces.ebi.read(device_idx, target_index, 
+			if (app_interfaces.ebi.read(device_idx, target_index, 
 					address, data_size, &buffer_reply[rep_len + 1], count))
 			{
 				buffer_reply[rep_len] = USB_TO_XXX_FAILED;
@@ -154,7 +154,7 @@ void USB_TO_EBI_ProcessCmd(uint8_t *dat, uint16_t len)
 			data_size = dat[index + 1];
 			address = GET_LE_U32(&dat[index + 2]);
 			count = GET_LE_U32(&dat[index + 6]);
-			if (ERROR_OK != app_interfaces.ebi.write(device_idx, target_index, 
+			if (app_interfaces.ebi.write(device_idx, target_index, 
 					address, data_size, &dat[index + 10], count))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;

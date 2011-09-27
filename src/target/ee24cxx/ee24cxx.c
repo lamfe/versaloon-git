@@ -29,8 +29,6 @@
 #include "app_err.h"
 #include "app_log.h"
 
-#include "pgbar.h"
-
 #include "vsprog.h"
 #include "programmer.h"
 #include "target.h"
@@ -80,7 +78,7 @@ VSS_HANDLER(ee24cxx_help)
 Usage of %s:\n\
   -F,  --frequency <FREQUENCY>              set IIC frequency, in KHz\n\n",
 			CUR_TARGET_STRING);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 const struct vss_cmd_t ee24cxx_notifier[] =
@@ -115,17 +113,17 @@ ENTER_PROGRAM_MODE_HANDLER(ee24cxx)
 	struct chip_param_t *param = context->param;
 	struct program_info_t *pi = context->pi;
 	
-	if (ERROR_OK != dal_init(context->prog))
+	if (dal_init(context->prog))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	if (pi->ifs_indexes != NULL)
 	{
-		if (ERROR_OK != dal_config_interface(EE24CXX_STRING, pi->ifs_indexes,
+		if (dal_config_interface(EE24CXX_STRING, pi->ifs_indexes,
 												&ee24cxx_dal_info))
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 	}
 	else
@@ -135,9 +133,9 @@ ENTER_PROGRAM_MODE_HANDLER(ee24cxx)
 	
 	ee24cxx_drv_param.iic_addr = 0xAC;
 	ee24cxx_drv_param.iic_khz = pi->frequency;
-	if (ERROR_OK != mal.init(MAL_IDX_EE24CXX, &ee24cxx_dal_info))
+	if (mal.init(MAL_IDX_EE24CXX, &ee24cxx_dal_info))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	ee24cxx_mal_info.capacity.block_size =
 										param->chip_areas[EEPROM_IDX].page_size;
@@ -164,7 +162,7 @@ ERASE_TARGET_HANDLER(ee24cxx)
 	REFERENCE_PARAMETER(size);
 	
 	// no need to erase
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 WRITE_TARGET_HANDLER(ee24cxx)
@@ -176,19 +174,19 @@ WRITE_TARGET_HANDLER(ee24cxx)
 	case EEPROM_CHAR:
 		if (size % param->chip_areas[EEPROM_IDX].page_size)
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		size /= param->chip_areas[EEPROM_IDX].page_size;
 		
-		if (ERROR_OK != mal.writeblock(MAL_IDX_EE24CXX, &ee24cxx_dal_info,
+		if (mal.writeblock(MAL_IDX_EE24CXX, &ee24cxx_dal_info,
 										addr, buff, size))
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		return dal_commit();
 		break;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 }
 
@@ -199,24 +197,24 @@ READ_TARGET_HANDLER(ee24cxx)
 	switch (area)
 	{
 	case CHIPID_CHAR:
-		return ERROR_OK;
+		return VSFERR_NONE;
 		break;
 	case EEPROM_CHAR:
 		if (size % param->chip_areas[EEPROM_IDX].page_size)
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		size /= param->chip_areas[EEPROM_IDX].page_size;
 		
-		if (ERROR_OK != mal.readblock(MAL_IDX_EE24CXX, &ee24cxx_dal_info,
+		if (mal.readblock(MAL_IDX_EE24CXX, &ee24cxx_dal_info,
 										addr, buff, size))
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		return dal_commit();
 		break;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 }
 

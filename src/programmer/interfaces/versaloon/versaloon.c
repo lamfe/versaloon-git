@@ -73,7 +73,7 @@ VSS_HANDLER(versaloon_help)
 Usage of %s:\n\
   -U,  --usb <PID_VID_EPIN_EPOUT>           set usb VID, PID, EPIN, EPOUT\n\n",
 		   VERSALOON_STRING);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 VSS_HANDLER(versaloon_support)
@@ -81,7 +81,7 @@ VSS_HANDLER(versaloon_support)
 	VSS_CHECK_ARGC(1);
 	PRINTF("\
 %s: see http://www.SimonQian.com/en/Versaloon\n", VERSALOON_STRING);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 
@@ -133,7 +133,7 @@ void versaloon_free_want_pos(void)
 	}
 }
 
-RESULT versaloon_add_want_pos(uint16_t offset, uint16_t size, uint8_t *buff)
+vsf_err_t versaloon_add_want_pos(uint16_t offset, uint16_t size, uint8_t *buff)
 {
 	struct versaloon_want_pos_t *new_pos = NULL;
 	
@@ -163,10 +163,10 @@ RESULT versaloon_add_want_pos(uint16_t offset, uint16_t size, uint8_t *buff)
 		tmp->next = new_pos;
 	}
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT versaloon_add_pending(uint8_t type, uint8_t cmd, uint16_t actual_szie,
+vsf_err_t versaloon_add_pending(uint8_t type, uint8_t cmd, uint16_t actual_szie,
 	uint16_t want_pos, uint16_t want_size, uint8_t *buffer, uint8_t collect)
 {
 #if PARAM_CHECK
@@ -174,7 +174,7 @@ RESULT versaloon_add_pending(uint8_t type, uint8_t cmd, uint16_t actual_szie,
 	{
 		LOG_BUG(ERRMSG_INVALID_INDEX, versaloon_pending_idx,
 					"versaloon pending data");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 #endif
 	
@@ -195,10 +195,10 @@ RESULT versaloon_add_pending(uint8_t type, uint8_t cmd, uint16_t actual_szie,
 	versaloon_want_pos = NULL;
 	versaloon_pending_idx++;
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT versaloon_send_command(uint16_t out_len, uint16_t *inlen)
+vsf_err_t versaloon_send_command(uint16_t out_len, uint16_t *inlen)
 {
 	int ret;
 	
@@ -231,29 +231,29 @@ RESULT versaloon_send_command(uint16_t out_len, uint16_t *inlen)
 		if (ret > 0)
 		{
 			*inlen = (uint16_t)ret;
-			return ERROR_OK;
+			return VSFERR_NONE;
 		}
 		else
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION_ERRSTRING, "receive usb data",
 						usb_strerror());
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 	}
 	else
 	{
-		return ERROR_OK;
+		return VSFERR_NONE;
 	}
 }
 
-static RESULT versaloon_peripheral_commit(void)
+static vsf_err_t versaloon_peripheral_commit(void)
 {
-	RESULT ret = usbtoxxx_execute_command();
+	vsf_err_t err = usbtoxxx_execute_command();
 	versaloon_to = VERSALOON_TIMEOUT;
-	return ret;
+	return err;
 }
 
-RESULT versaloon_set_target_voltage(uint8_t index, uint16_t voltage)
+vsf_err_t versaloon_set_target_voltage(uint8_t index, uint16_t voltage)
 {
 	REFERENCE_PARAMETER(index);
 	
@@ -265,7 +265,7 @@ RESULT versaloon_set_target_voltage(uint8_t index, uint16_t voltage)
 	return usbtoxxx_execute_command();
 }
 
-RESULT versaloon_get_target_voltage(uint8_t index, uint16_t *voltage)
+vsf_err_t versaloon_get_target_voltage(uint8_t index, uint16_t *voltage)
 {
 	uint16_t inlen;
 	
@@ -286,7 +286,7 @@ RESULT versaloon_get_target_voltage(uint8_t index, uint16_t *voltage)
 	
 	versaloon_buf[0] = VERSALOON_GET_TVCC;
 	
-	if ((ERROR_OK != versaloon_send_command(1, &inlen)) || (inlen != 2))
+	if (versaloon_send_command(1, &inlen) || (inlen != 2))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "communicate with versaloon");
 		return ERRCODE_FAILURE_OPERATION;
@@ -294,11 +294,11 @@ RESULT versaloon_get_target_voltage(uint8_t index, uint16_t *voltage)
 	else
 	{
 		*voltage = GET_LE_U16(&versaloon_buf[0]);
-		return ERROR_OK;
+		return VSFERR_NONE;
 	}
 }
 
-static RESULT versaloon_fini(void)
+static vsf_err_t versaloon_fini(void)
 {
 	if (versaloon_device_handle != NULL)
 	{
@@ -321,11 +321,11 @@ static RESULT versaloon_fini(void)
 		}
 	}
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 #define VERSALOON_RETRY_CNT				10
-static RESULT versaloon_init(void *p)
+static vsf_err_t versaloon_init(void *p)
 {
 	struct interfaces_info_t *t = (struct interfaces_info_t *)p;
 	uint16_t ret = 0;
@@ -355,7 +355,7 @@ static RESULT versaloon_init(void *p)
 			LOG_ERROR("Not found vid=0x%04x,pid = 0x%04x.", usb_param_vid(),
 						usb_param_pid());
 		}
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	// malloc temporary buffer
@@ -378,7 +378,7 @@ static RESULT versaloon_init(void *p)
 	for (retry = 0; retry < VERSALOON_RETRY_CNT; retry++)
 	{
 		versaloon_buf[0] = VERSALOON_GET_INFO;
-		if ((ERROR_OK == versaloon_send_command(1, &ret)) && (ret >= 3))
+		if (!versaloon_send_command(1, &ret) && (ret >= 3))
 		{
 			break;
 		}
@@ -415,9 +415,9 @@ static RESULT versaloon_init(void *p)
 		return ERRCODE_NOT_ENOUGH_MEMORY;
 	}
 	
-	if (ERROR_OK != usbtoxxx_init())
+	if (usbtoxxx_init())
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	// fixes programmer abilities
 	if ((t->support_mask & IFS_POLL) &&
@@ -541,7 +541,7 @@ static RESULT versaloon_init(void *p)
 		t->support_mask &= ~IFS_PWM;
 	}
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 const char* versaloon_get_hardware_name(uint8_t idx)
@@ -556,7 +556,7 @@ const char* versaloon_get_hardware_name(uint8_t idx)
 	}
 }
 
-RESULT versaloon_get_hardware(uint8_t *hardware)
+vsf_err_t versaloon_get_hardware(uint8_t *hardware)
 {
 	uint16_t inlen;
 	
@@ -575,7 +575,7 @@ RESULT versaloon_get_hardware(uint8_t *hardware)
 	
 	versaloon_buf[0] = VERSALOON_GET_HARDWARE;
 	
-	if ((ERROR_OK != versaloon_send_command(1, &inlen)) || (inlen != 1))
+	if (versaloon_send_command(1, &inlen) || (inlen != 1))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "communicate with versaloon");
 		return ERRCODE_FAILURE_OPERATION;
@@ -585,7 +585,7 @@ RESULT versaloon_get_hardware(uint8_t *hardware)
 		*hardware = versaloon_buf[0];
 		LOG_DEBUG("versaloon hardware is %s",
 					versaloon_get_hardware_name(*hardware));
-		return ERROR_OK;
+		return VSFERR_NONE;
 	}
 }
 
@@ -596,16 +596,16 @@ RESULT versaloon_get_hardware(uint8_t *hardware)
 
 // Interfaces:
 // POLL
-static RESULT versaloon_poll_start(uint16_t retry_cnt, uint16_t interval_us)
+static vsf_err_t versaloon_poll_start(uint16_t retry_cnt, uint16_t interval_us)
 {
 	versaloon_to = VERSALOON_TIMEOUT_LONG;
 	return usbtopoll_start(retry_cnt, interval_us);
 }
-static RESULT versaloon_poll_end(void)
+static vsf_err_t versaloon_poll_end(void)
 {
 	return usbtopoll_end();
 }
-static RESULT versaloon_poll_checkok(enum poll_check_type_t type, uint16_t offset,
+static vsf_err_t versaloon_poll_checkok(enum poll_check_type_t type, uint16_t offset,
 								uint8_t size, uint32_t mask, uint32_t value)
 {
 	uint8_t equ = 0;
@@ -616,7 +616,7 @@ static RESULT versaloon_poll_checkok(enum poll_check_type_t type, uint16_t offse
 	}
 	return usbtopoll_checkok(equ, offset, size, mask, value);
 }
-static RESULT versaloon_poll_checkfail(enum poll_check_type_t type, uint16_t offset,
+static vsf_err_t versaloon_poll_checkfail(enum poll_check_type_t type, uint16_t offset,
 								uint8_t size, uint32_t mask, uint32_t value)
 {
 	uint8_t equ = 0;
@@ -627,7 +627,7 @@ static RESULT versaloon_poll_checkfail(enum poll_check_type_t type, uint16_t off
 	}
 	return usbtopoll_checkfail(equ, offset, size, mask, value);
 }
-static RESULT versaloon_poll_verifybuff(uint16_t offset, uint16_t size, uint8_t *buff)
+static vsf_err_t versaloon_poll_verifybuff(uint16_t offset, uint16_t size, uint8_t *buff)
 {
 	return usbtopoll_verifybuff(offset, size, buff);
 }

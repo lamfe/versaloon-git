@@ -14,10 +14,10 @@
  *      2008-11-07:     created(by SimonQian)                             *
  **************************************************************************/
 
-RESULT ebi_init(uint8_t index);
-RESULT ebi_fini(uint8_t index);
-RESULT ebi_config(uint8_t index, uint8_t target_index, void *param);
-RESULT ebi_read(uint8_t index, uint8_t target_index, uint32_t address, 
+vsf_err_t ebi_init(uint8_t index);
+vsf_err_t ebi_fini(uint8_t index);
+vsf_err_t ebi_config(uint8_t index, uint8_t target_index, void *param);
+vsf_err_t ebi_read(uint8_t index, uint8_t target_index, uint32_t address, 
 					uint8_t data_size, uint8_t *buff, uint32_t count);
-RESULT ebi_write(uint8_t index, uint8_t target_index, uint32_t address, 
+vsf_err_t ebi_write(uint8_t index, uint8_t target_index, uint32_t address, 
 					uint8_t data_size, uint8_t *buff, uint32_t count);

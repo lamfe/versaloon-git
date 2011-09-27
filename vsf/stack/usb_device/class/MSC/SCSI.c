@@ -6,7 +6,7 @@
 
 static enum SCSI_errcode_t SCSI_errcode = SCSI_ERRCODE_OK;
 
-static RESULT SCSI_handler_TEST_UNIT_READY(struct SCSI_LUN_info_t *info, 
+static vsf_err_t SCSI_handler_TEST_UNIT_READY(struct SCSI_LUN_info_t *info, 
 		uint8_t CB[16], struct vsf_buffer_t *buffer, uint32_t *page_size, 
 		uint32_t *page_num)
 {
@@ -16,10 +16,10 @@ static RESULT SCSI_handler_TEST_UNIT_READY(struct SCSI_LUN_info_t *info,
 	info->status.sense_key = 0;
 	info->status.asc = 0;
 	SCSI_errcode = SCSI_ERRCODE_OK;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT SCSI_hadler_REQUEST_SENSE(struct SCSI_LUN_info_t *info, 
+static vsf_err_t SCSI_hadler_REQUEST_SENSE(struct SCSI_LUN_info_t *info, 
 		uint8_t CB[16], struct vsf_buffer_t *buffer, uint32_t *page_size, 
 		uint32_t *page_num)
 {
@@ -37,10 +37,10 @@ static RESULT SCSI_hadler_REQUEST_SENSE(struct SCSI_LUN_info_t *info,
 	*page_num = 1;
 	SCSI_errcode = SCSI_ERRCODE_OK;
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT SCSI_handler_FORMAT_UNIT(struct SCSI_LUN_info_t *info, 
+static vsf_err_t SCSI_handler_FORMAT_UNIT(struct SCSI_LUN_info_t *info, 
 		uint8_t CB[16], struct vsf_buffer_t *buffer, uint32_t *page_size, 
 		uint32_t *page_num)
 {
@@ -50,10 +50,10 @@ static RESULT SCSI_handler_FORMAT_UNIT(struct SCSI_LUN_info_t *info,
 	info->status.sense_key = 0;
 	info->status.asc = 0;
 	SCSI_errcode = SCSI_ERRCODE_OK;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT SCSI_handler_INQUIRY(struct SCSI_LUN_info_t *info, 
+static vsf_err_t SCSI_handler_INQUIRY(struct SCSI_LUN_info_t *info, 
 		uint8_t CB[16], struct vsf_buffer_t *buffer, uint32_t *page_size, 
 		uint32_t *page_num)
 {
@@ -78,7 +78,7 @@ static RESULT SCSI_handler_INQUIRY(struct SCSI_LUN_info_t *info,
 			info->status.sense_key = SCSI_SENSEKEY_ILLEGAL_REQUEST;
 			info->status.asc = SCSI_ASC_INVALID_FIELED_IN_COMMAND;
 			SCSI_errcode = SCSI_ERRCODE_INVALID_PARAM;
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 	}
 	else
@@ -93,7 +93,7 @@ static RESULT SCSI_handler_INQUIRY(struct SCSI_LUN_info_t *info,
 			info->status.sense_key = SCSI_SENSEKEY_ILLEGAL_REQUEST;
 			info->status.asc = SCSI_ASC_INVALID_FIELED_IN_COMMAND;
 			SCSI_errcode = SCSI_ERRCODE_INVALID_PARAM;
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		// If the EVPD bit is set to zero, 
 		// the device server shall return the standard INQUIRY data.
@@ -117,10 +117,10 @@ static RESULT SCSI_handler_INQUIRY(struct SCSI_LUN_info_t *info,
 		SCSI_errcode = SCSI_ERRCODE_OK;
 	}
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT SCSI_handler_MODE_SENSE6(struct SCSI_LUN_info_t *info, 
+static vsf_err_t SCSI_handler_MODE_SENSE6(struct SCSI_LUN_info_t *info, 
 		uint8_t CB[16], struct vsf_buffer_t *buffer, uint32_t *page_size, 
 		uint32_t *page_num)
 {
@@ -133,10 +133,10 @@ static RESULT SCSI_handler_MODE_SENSE6(struct SCSI_LUN_info_t *info,
 	info->status.sense_key = 0;
 	info->status.asc = 0;
 	SCSI_errcode = SCSI_ERRCODE_OK;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT SCSI_handler_START_STOP_UNIT(struct SCSI_LUN_info_t *info, 
+static vsf_err_t SCSI_handler_START_STOP_UNIT(struct SCSI_LUN_info_t *info, 
 		uint8_t CB[16], struct vsf_buffer_t *buffer, uint32_t *page_size, 
 		uint32_t *page_num)
 {
@@ -146,10 +146,10 @@ static RESULT SCSI_handler_START_STOP_UNIT(struct SCSI_LUN_info_t *info,
 	info->status.sense_key = 0;
 	info->status.asc = 0;
 	SCSI_errcode = SCSI_ERRCODE_OK;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT SCSI_handler_ALLOW_MEDIUM_REMOVAL(struct SCSI_LUN_info_t *info, 
+static vsf_err_t SCSI_handler_ALLOW_MEDIUM_REMOVAL(struct SCSI_LUN_info_t *info, 
 		uint8_t CB[16], struct vsf_buffer_t *buffer, uint32_t *page_size, 
 		uint32_t *page_num)
 {
@@ -159,10 +159,10 @@ static RESULT SCSI_handler_ALLOW_MEDIUM_REMOVAL(struct SCSI_LUN_info_t *info,
 	info->status.sense_key = 0;
 	info->status.asc = 0;
 	SCSI_errcode = SCSI_ERRCODE_OK;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT SCSI_handler_READ_FORMAT_CAPACITIES(struct SCSI_LUN_info_t *info, 
+static vsf_err_t SCSI_handler_READ_FORMAT_CAPACITIES(struct SCSI_LUN_info_t *info, 
 		uint8_t CB[16], struct vsf_buffer_t *buffer, uint32_t *page_size, 
 		uint32_t *page_num)
 {
@@ -181,10 +181,10 @@ static RESULT SCSI_handler_READ_FORMAT_CAPACITIES(struct SCSI_LUN_info_t *info,
 	info->status.sense_key = 0;
 	info->status.asc = 0;
 	SCSI_errcode = SCSI_ERRCODE_OK;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT SCSI_handler_READ_CAPACITY10(struct SCSI_LUN_info_t *info, 
+static vsf_err_t SCSI_handler_READ_CAPACITY10(struct SCSI_LUN_info_t *info, 
 		uint8_t CB[16], struct vsf_buffer_t *buffer, uint32_t *page_size, 
 		uint32_t *page_num)
 {
@@ -201,32 +201,32 @@ static RESULT SCSI_handler_READ_CAPACITY10(struct SCSI_LUN_info_t *info,
 	info->status.sense_key = 0;
 	info->status.asc = 0;
 	SCSI_errcode = SCSI_ERRCODE_OK;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT SCSI_io_WRITE10(struct SCSI_LUN_info_t *info, uint8_t CB[16], 
+static vsf_err_t SCSI_io_WRITE10(struct SCSI_LUN_info_t *info, uint8_t CB[16], 
 		struct vsf_buffer_t *buffer, uint32_t cur_page)
 {
 	struct mal_info_t *mal_info = (struct mal_info_t *)info->dal_info->extra;
 	uint32_t lba = GET_BE_U32(&CB[2]);
 	uint32_t block_size = (uint32_t)mal_info->capacity.block_size;
 	
-	if (ERROR_OK != mal.writeblock(info->mal_index, info->dal_info, 
+	if (mal.writeblock(info->mal_index, info->dal_info, 
 					(lba + cur_page) * block_size, buffer->buffer, 1))
 	{
 		info->status.sense_key = SCSI_SENSEKEY_HARDWARE_ERROR;
 		info->status.asc = 0;
 		SCSI_errcode = SCSI_ERRCODE_FAIL;
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	info->status.sense_key = 0;
 	info->status.asc = 0;
 	SCSI_errcode = SCSI_ERRCODE_OK;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT SCSI_handler_WRITE10(struct SCSI_LUN_info_t *info, 
+static vsf_err_t SCSI_handler_WRITE10(struct SCSI_LUN_info_t *info, 
 		uint8_t CB[16], struct vsf_buffer_t *buffer, uint32_t *page_size, 
 		uint32_t *page_num)
 {
@@ -241,31 +241,31 @@ static RESULT SCSI_handler_WRITE10(struct SCSI_LUN_info_t *info,
 	info->status.sense_key = 0;
 	info->status.asc = 0;
 	SCSI_errcode = SCSI_ERRCODE_OK;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT SCSI_io_READ10(struct SCSI_LUN_info_t *info, uint8_t CB[16], 
+static vsf_err_t SCSI_io_READ10(struct SCSI_LUN_info_t *info, uint8_t CB[16], 
 		struct vsf_buffer_t *buffer, uint32_t cur_page)
 {
 	struct mal_info_t *mal_info = (struct mal_info_t *)info->dal_info->extra;
 	uint32_t lba = GET_BE_U32(&CB[2]);
 	uint32_t block_size = (uint32_t)mal_info->capacity.block_size;
 	
-	if (ERROR_OK != mal.readblock(info->mal_index, info->dal_info, 
+	if (mal.readblock(info->mal_index, info->dal_info, 
 					(lba + cur_page) * block_size, buffer->buffer, 1))
 	{
 		info->status.sense_key = SCSI_SENSEKEY_HARDWARE_ERROR;
 		info->status.asc = 0;
 		SCSI_errcode = SCSI_ERRCODE_FAIL;
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	info->status.sense_key = 0;
 	info->status.asc = 0;
 	SCSI_errcode = SCSI_ERRCODE_OK;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
-static RESULT SCSI_handler_READ10(struct SCSI_LUN_info_t *info, 
+static vsf_err_t SCSI_handler_READ10(struct SCSI_LUN_info_t *info, 
 		uint8_t CB[16], struct vsf_buffer_t *buffer, uint32_t *page_size, 
 		uint32_t *page_num)
 {
@@ -280,10 +280,10 @@ static RESULT SCSI_handler_READ10(struct SCSI_LUN_info_t *info,
 	info->status.sense_key = 0;
 	info->status.asc = 0;
 	SCSI_errcode = SCSI_ERRCODE_OK;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT SCSI_handler_VERIFY10(struct SCSI_LUN_info_t *info, 
+static vsf_err_t SCSI_handler_VERIFY10(struct SCSI_LUN_info_t *info, 
 		uint8_t CB[16], struct vsf_buffer_t *buffer, uint32_t *page_size, 
 		uint32_t *page_num)
 {
@@ -293,30 +293,30 @@ static RESULT SCSI_handler_VERIFY10(struct SCSI_LUN_info_t *info,
 	info->status.sense_key = 0;
 	info->status.asc = 0;
 	SCSI_errcode = SCSI_ERRCODE_OK;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT SCSI_handler_READ_TOC(struct SCSI_LUN_info_t *info, 
+static vsf_err_t SCSI_handler_READ_TOC(struct SCSI_LUN_info_t *info, 
 		uint8_t CB[16], struct vsf_buffer_t *buffer, uint32_t *page_size, 
 		uint32_t *page_num)
 {
 	info->status.sense_key = SCSI_SENSEKEY_NOT_READY;
 	info->status.asc = SCSI_ASC_MEDIUM_NOT_PRESENT;
 	SCSI_errcode = SCSI_ERRCODE_OK;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT SCSI_handler_GET_EVENT_STATUS_NOTIFICATION(
+static vsf_err_t SCSI_handler_GET_EVENT_STATUS_NOTIFICATION(
 		struct SCSI_LUN_info_t *info, uint8_t CB[16], 
 		struct vsf_buffer_t *buffer, uint32_t *page_size, uint32_t *page_num)
 {
 	info->status.sense_key = SCSI_SENSEKEY_NOT_READY;
 	info->status.asc = SCSI_ASC_MEDIUM_NOT_PRESENT;
 	SCSI_errcode = SCSI_ERRCODE_OK;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT SCSI_handler_MODE_SENSE10(struct SCSI_LUN_info_t *info, 
+static vsf_err_t SCSI_handler_MODE_SENSE10(struct SCSI_LUN_info_t *info, 
 		uint8_t CB[16], struct vsf_buffer_t *buffer, uint32_t *page_size, 
 		uint32_t *page_num)
 {
@@ -329,7 +329,7 @@ static RESULT SCSI_handler_MODE_SENSE10(struct SCSI_LUN_info_t *info,
 	info->status.sense_key = 0;
 	info->status.asc = 0;
 	SCSI_errcode = SCSI_ERRCODE_OK;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 static struct SCSI_handler_t SCSI_handlers[] = 
@@ -426,7 +426,7 @@ static struct SCSI_handler_t* SCSI_get_handler(struct SCSI_handler_t *handlers,
 	return NULL;
 }
 
-RESULT SCSI_Handle(struct SCSI_handler_t *handlers, 
+vsf_err_t SCSI_Handle(struct SCSI_handler_t *handlers, 
 		struct SCSI_LUN_info_t *info, uint8_t CB[16], 
 		struct vsf_buffer_t *buffer, uint32_t *page_size, uint32_t *page_num)
 {
@@ -438,14 +438,14 @@ RESULT SCSI_Handle(struct SCSI_handler_t *handlers,
 	if (NULL == handlers)
 	{
 		SCSI_errcode = SCSI_ERRCODE_INVALID_COMMAND;
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	SCSI_errcode = SCSI_ERRCODE_OK;
 	return handlers->handler(info, CB, buffer, page_size, page_num);
 }
 
-RESULT SCSI_IO(struct SCSI_handler_t *handlers, 
+vsf_err_t SCSI_IO(struct SCSI_handler_t *handlers, 
 		struct SCSI_LUN_info_t *info, uint8_t CB[16], 
 		struct vsf_buffer_t *buffer, uint32_t cur_page)
 {
@@ -457,7 +457,7 @@ RESULT SCSI_IO(struct SCSI_handler_t *handlers,
 	if ((NULL == handlers) || (NULL == handlers->io))
 	{
 		SCSI_errcode = SCSI_ERRCODE_INVALID_COMMAND;
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	SCSI_errcode = SCSI_ERRCODE_OK;

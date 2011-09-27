@@ -62,7 +62,7 @@ uint8_t PWREXT_GetState(void)
 	return PWREXT_EnableCount;
 }
 
-RESULT target_voltage_set(uint8_t index, uint16_t voltage)
+vsf_err_t target_voltage_set(uint8_t index, uint16_t voltage)
 {
 	uint8_t i;
 	
@@ -93,7 +93,7 @@ RESULT target_voltage_set(uint8_t index, uint16_t voltage)
 		}
 		else
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		
 		app_interfaces.delay.delayms(10);
@@ -107,13 +107,13 @@ RESULT target_voltage_set(uint8_t index, uint16_t voltage)
 				target_voltage_poll(index);
 			}
 		}
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT target_voltage_get(uint8_t index, uint16_t *voltage)
+vsf_err_t target_voltage_get(uint8_t index, uint16_t *voltage)
 {
 	switch (index)
 	{
@@ -122,13 +122,13 @@ RESULT target_voltage_get(uint8_t index, uint16_t *voltage)
 		{
 			*voltage = PWREXT_Vtarget;
 		}
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT target_voltage_poll(uint8_t index)
+vsf_err_t target_voltage_poll(uint8_t index)
 {
 	switch (index)
 	{
@@ -168,9 +168,9 @@ RESULT target_voltage_poll(uint8_t index)
 			}
 			break;
 		}
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 

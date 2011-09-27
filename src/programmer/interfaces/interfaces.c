@@ -31,8 +31,8 @@
 #include "app_log.h"
 #include "app_err.h"
 
-#include "scripts.h"
 #include "interfaces.h"
+#include "scripts.h"
 #include "versaloon/versaloon.h"
 #include "virtualinterface/vi_stm32/vi_stm32.h"
 #include "target.h"
@@ -220,14 +220,14 @@ static struct interfaces_info_t *find_interface_by_name(const char *ifs)
 	return interface_tmp;
 }
 
-RESULT virtual_interface_init(const char *vifs, const char mode)
+vsf_err_t virtual_interface_init(const char *vifs, const char mode)
 {
 	struct interfaces_info_t *interface_tmp;
 	
 	interface_tmp = find_interface_by_name(vifs);
 	if ((vifs != NULL) && (NULL == interface_tmp))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	if (NULL == interface_tmp)
@@ -253,15 +253,15 @@ RESULT virtual_interface_init(const char *vifs, const char mode)
 			}
 			if (!interface_tmp->mode[i].name)
 			{
-				return ERROR_FAIL;
+				return VSFERR_FAIL;
 			}
 		}
 		
 		if (NULL == cur_interface)
 		{
-			if (ERROR_OK != interface_init(NULL))
+			if (interface_init(NULL))
 			{
-				return ERROR_FAIL;
+				return VSFERR_FAIL;
 			}
 		}
 		
@@ -278,12 +278,12 @@ RESULT virtual_interface_init(const char *vifs, const char mode)
 	}
 	else
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT interface_init(const char *ifs)
+vsf_err_t interface_init(const char *ifs)
 {
 	struct interfaces_info_t *interface_tmp;
 	
@@ -306,9 +306,9 @@ RESULT interface_init(const char *ifs)
 		cur_interface = NULL;
 		cur_real_interface = NULL;
 		
-		if (ERROR_OK != interface_tmp->init(interface_tmp))
+		if (interface_tmp->init(interface_tmp))
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		cur_interface = interface_tmp;
 		if (cur_interface->support_mask & IFS_POWER)
@@ -317,31 +317,30 @@ RESULT interface_init(const char *ifs)
 		}
 		else
 		{
-			return ERROR_OK;
+			return VSFERR_NONE;
 		}
 	}
 	else
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 }
 
-RESULT interface_assert(struct interfaces_info_t **ifs)
+vsf_err_t interface_assert(struct interfaces_info_t **ifs)
 {
 	if (NULL == cur_interface)
 	{
-		if ((ERROR_OK != interface_init(NULL))
-			|| (NULL == cur_interface))
+		if (interface_init(NULL) || (NULL == cur_interface))
 		{
 			vss_set_fatal_error();
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 	}
 	if (ifs != NULL)
 	{
 		*ifs = cur_interface;
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 void interface_print_list(void)
@@ -370,30 +369,29 @@ void interface_print_help(void)
 VSS_HANDLER(interface_get_target_voltage)
 {
 	uint16_t voltage = 0;
-	RESULT ret = ERROR_OK;
 	struct interfaces_info_t *ifs = NULL;
 	
 	VSS_CHECK_ARGC(1);
-	if ((ERROR_OK != interface_assert(&ifs)) || (NULL == ifs))
+	if (interface_assert(&ifs) || (NULL == ifs))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "interface module");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	if (!(cur_interface->support_mask & IFS_POWER))
 	{
 		LOG_ERROR(ERRMSG_NOT_SUPPORT, "power interface");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
-	if (ERROR_OK != ifs->target_voltage.get(0, &voltage))
+	if (ifs->target_voltage.get(0, &voltage))
 	{
-		ret = ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	else
 	{
 		LOG_INFO(INFOMSG_TARGET_VOLTAGE, voltage / 1000.0);
+		return VSFERR_NONE;
 	}
-	return ret;
 }
 
 VSS_HANDLER(interface_set_target_voltage)
@@ -402,26 +400,25 @@ VSS_HANDLER(interface_set_target_voltage)
 	struct interfaces_info_t *ifs = NULL;
 	
 	VSS_CHECK_ARGC(2);
-	if ((ERROR_OK != interface_assert(&ifs)) || (NULL == ifs))
+	if (interface_assert(&ifs) || (NULL == ifs))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "interface module");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	if (!(cur_interface->support_mask & IFS_POWER))
 	{
 		LOG_ERROR(ERRMSG_NOT_SUPPORT, "power interface");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	voltage = (uint16_t)strtoul(argv[1], NULL, 0);
-	if ((ERROR_OK != ifs->target_voltage.set(0, voltage)) || 
-		(ERROR_OK != ifs->peripheral_commit()))
+	if (ifs->target_voltage.set(0, voltage) || ifs->peripheral_commit())
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 
 	vss_run_script("tvcc.get");
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 // gpio
@@ -430,27 +427,27 @@ VSS_HANDLER(interface_gpio_init)
 	struct interfaces_info_t *ifs = NULL;
 	
 	VSS_CHECK_ARGC_2(1, 4);
-	if ((ERROR_OK != interface_assert(&ifs)) || (NULL == ifs))
+	if (interface_assert(&ifs) || (NULL == ifs))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "interface module");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	if (!(cur_interface->support_mask & IFS_GPIO))
 	{
 		LOG_ERROR(ERRMSG_NOT_SUPPORT, "gpio interface");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
-	if (ERROR_OK != ifs->gpio.init(0))
+	if (ifs->gpio.init(0))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	if (4 == argc)
 	{
 		return interface_gpio_config(argc, argv);
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 VSS_HANDLER(interface_gpio_fini)
@@ -458,15 +455,15 @@ VSS_HANDLER(interface_gpio_fini)
 	struct interfaces_info_t *ifs = NULL;
 	
 	VSS_CHECK_ARGC(1);
-	if ((ERROR_OK != interface_assert(&ifs)) || (NULL == ifs))
+	if (interface_assert(&ifs) || (NULL == ifs))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "interface module");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	if (!(cur_interface->support_mask & IFS_GPIO))
 	{
 		LOG_ERROR(ERRMSG_NOT_SUPPORT, "gpio interface");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	return ifs->gpio.fini(0);
@@ -478,15 +475,15 @@ VSS_HANDLER(interface_gpio_config)
 	struct interfaces_info_t *ifs = NULL;
 	
 	VSS_CHECK_ARGC(5);
-	if ((ERROR_OK != interface_assert(&ifs)) || (NULL == ifs))
+	if (interface_assert(&ifs) || (NULL == ifs))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "interface module");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	if (!(cur_interface->support_mask & IFS_GPIO))
 	{
 		LOG_ERROR(ERRMSG_NOT_SUPPORT, "gpio interface");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	mask = (uint32_t)strtoul(argv[1], NULL, 0);
@@ -503,15 +500,15 @@ VSS_HANDLER(interface_gpio_out)
 	struct interfaces_info_t *ifs = NULL;
 	
 	VSS_CHECK_ARGC(3);
-	if ((ERROR_OK != interface_assert(&ifs)) || (NULL == ifs))
+	if (interface_assert(&ifs) || (NULL == ifs))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "interface module");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	if (!(cur_interface->support_mask & IFS_GPIO))
 	{
 		LOG_ERROR(ERRMSG_NOT_SUPPORT, "gpio interface");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	mask = (uint32_t)strtoul(argv[1], NULL, 0);
@@ -523,33 +520,33 @@ VSS_HANDLER(interface_gpio_out)
 VSS_HANDLER(interface_gpio_in)
 {
 	uint32_t mask, value;
-	RESULT ret = ERROR_OK;
+	vsf_err_t err = VSFERR_NONE;
 	struct interfaces_info_t *ifs = NULL;
 	
 	VSS_CHECK_ARGC(2);
-	if ((ERROR_OK != interface_assert(&ifs)) || (NULL == ifs))
+	if (interface_assert(&ifs) || (NULL == ifs))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "interface module");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	if (!(cur_interface->support_mask & IFS_GPIO))
 	{
 		LOG_ERROR(ERRMSG_NOT_SUPPORT, "gpio interface");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	mask = (uint32_t)strtoul(argv[1], NULL, 0);
 	
-	ret = ifs->gpio.in(0, mask, &value);
-	if (ERROR_OK == ret)
+	err = ifs->gpio.in(0, mask, &value);
+	if (!err)
 	{
-		ret = ifs->peripheral_commit();
-		if (ERROR_OK == ret)
+		err = ifs->peripheral_commit();
+		if (!err)
 		{
 			LOG_INFO(INFOMSG_REG_08X, "GPIO", value);
 		}
 	}
-	return ret;
+	return err;
 }
 
 // spi
@@ -558,27 +555,27 @@ VSS_HANDLER(interface_spi_init)
 	struct interfaces_info_t *ifs = NULL;
 	
 	VSS_CHECK_ARGC_2(1, 5);
-	if ((ERROR_OK != interface_assert(&ifs)) || (NULL == ifs))
+	if (interface_assert(&ifs) || (NULL == ifs))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "interface module");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	if (!(cur_interface->support_mask & IFS_SPI))
 	{
 		LOG_ERROR(ERRMSG_NOT_SUPPORT, "spi interface");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
-	if (ERROR_OK != ifs->spi.init(0))
+	if (ifs->spi.init(0))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	if (4 == argc)
 	{
 		return interface_spi_config(argc, argv);
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 VSS_HANDLER(interface_spi_fini)
@@ -586,15 +583,15 @@ VSS_HANDLER(interface_spi_fini)
 	struct interfaces_info_t *ifs = NULL;
 	
 	VSS_CHECK_ARGC(1);
-	if ((ERROR_OK != interface_assert(&ifs)) || (NULL == ifs))
+	if (interface_assert(&ifs) || (NULL == ifs))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "interface module");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	if (!(cur_interface->support_mask & IFS_SPI))
 	{
 		LOG_ERROR(ERRMSG_NOT_SUPPORT, "spi interface");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	return ifs->spi.fini(0);
@@ -607,15 +604,15 @@ VSS_HANDLER(interface_spi_config)
 	struct interfaces_info_t *ifs = NULL;
 	
 	VSS_CHECK_ARGC(4);
-	if ((ERROR_OK != interface_assert(&ifs)) || (NULL == ifs))
+	if (interface_assert(&ifs) || (NULL == ifs))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "interface module");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	if (!(cur_interface->support_mask & IFS_SPI))
 	{
 		LOG_ERROR(ERRMSG_NOT_SUPPORT, "spi interface");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	khz = (uint32_t)strtoul(argv[1], NULL, 0);
@@ -623,7 +620,7 @@ VSS_HANDLER(interface_spi_config)
 	if (mode > SPI_MODE3)
 	{
 		LOG_ERROR(ERRMSG_INVALID_TARGET, "spi mode");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	firstbit = (uint8_t)strtoul(argv[3], NULL, 0);
 	firstbit = firstbit ? SPI_MSB_FIRST : SPI_LSB_FIRST;
@@ -635,19 +632,19 @@ VSS_HANDLER(interface_spi_io)
 {
 	uint16_t data_size = 0;
 	uint8_t *buff = NULL;
-	RESULT ret = ERROR_OK;
+	vsf_err_t err = VSFERR_NONE;
 	struct interfaces_info_t *ifs = NULL;
 	
 	VSS_CHECK_ARGC_MIN(2);
-	if ((ERROR_OK != interface_assert(&ifs)) || (NULL == ifs))
+	if (interface_assert(&ifs) || (NULL == ifs))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "interface module");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	if (!(cur_interface->support_mask & IFS_SPI))
 	{
 		LOG_ERROR(ERRMSG_NOT_SUPPORT, "spi interface");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	data_size = (uint16_t)strtoul(argv[1], NULL, 0);
@@ -657,17 +654,17 @@ VSS_HANDLER(interface_spi_io)
 	{
 		LOG_ERROR(ERRMSG_INVALID_TARGET, "data_size");
 		vss_print_help(argv[0]);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
-	ret = vss_get_binary_buffer(argc - 2, &argv[2], 1, data_size, (void**)&buff);
-	if (ERROR_OK == ret)
+	err = vss_get_binary_buffer(argc - 2, &argv[2], 1, data_size, (void**)&buff);
+	if (!err)
 	{
-		ret = ifs->spi.io(0, buff, buff, data_size);
-		if (ERROR_OK == ret)
+		err = ifs->spi.io(0, buff, buff, data_size);
+		if (!err)
 		{
-			ret = ifs->peripheral_commit();
-			if (ERROR_OK == ret)
+			err = ifs->peripheral_commit();
+			if (!err)
 			{
 				LOG_BYTE_BUF(buff, data_size, LOG_INFO, "%02X", 16);
 			}
@@ -679,7 +676,7 @@ VSS_HANDLER(interface_spi_io)
 		free(buff);
 		buff = NULL;
 	}
-	return ret;
+	return err;
 }
 
 // iic
@@ -688,27 +685,27 @@ VSS_HANDLER(interface_iic_init)
 	struct interfaces_info_t *ifs = NULL;
 	
 	VSS_CHECK_ARGC_2(1, 3);
-	if ((ERROR_OK != interface_assert(&ifs)) || (NULL == ifs))
+	if (interface_assert(&ifs) || (NULL == ifs))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "interface module");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	if (!(cur_interface->support_mask & IFS_I2C))
 	{
 		LOG_ERROR(ERRMSG_NOT_SUPPORT, "iic interface");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
-	if (ERROR_OK != ifs->i2c.init(0))
+	if (ifs->i2c.init(0))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	if (3 == argc)
 	{
 		return interface_iic_config(argc, argv);
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 VSS_HANDLER(interface_iic_fini)
@@ -716,15 +713,15 @@ VSS_HANDLER(interface_iic_fini)
 	struct interfaces_info_t *ifs = NULL;
 	
 	VSS_CHECK_ARGC(1);
-	if ((ERROR_OK != interface_assert(&ifs)) || (NULL == ifs))
+	if (interface_assert(&ifs) || (NULL == ifs))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "interface module");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	if (!(cur_interface->support_mask & IFS_I2C))
 	{
 		LOG_ERROR(ERRMSG_NOT_SUPPORT, "iic interface");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	return ifs->i2c.fini(0);
@@ -737,15 +734,15 @@ VSS_HANDLER(interface_iic_config)
 	struct interfaces_info_t *ifs = NULL;
 	
 	VSS_CHECK_ARGC(3);
-	if ((ERROR_OK != interface_assert(&ifs)) || (NULL == ifs))
+	if (interface_assert(&ifs) || (NULL == ifs))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "interface module");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	if (!(cur_interface->support_mask & IFS_I2C))
 	{
 		LOG_ERROR(ERRMSG_NOT_SUPPORT, "iic interface");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	khz = (uint16_t)strtoul(argv[1], NULL, 0);
@@ -761,19 +758,19 @@ VSS_HANDLER(interface_iic_read)
 	uint8_t stop = 0;
 	bool nacklast = false;
 	uint8_t *buff = NULL;
-	RESULT ret = ERROR_OK;
+	vsf_err_t err = VSFERR_NONE;
 	struct interfaces_info_t *ifs = NULL;
 	
 	VSS_CHECK_ARGC(5);
-	if ((ERROR_OK != interface_assert(&ifs)) || (NULL == ifs))
+	if (interface_assert(&ifs) || (NULL == ifs))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "interface module");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	if (!(cur_interface->support_mask & IFS_I2C))
 	{
 		LOG_ERROR(ERRMSG_NOT_SUPPORT, "iic interface");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	addr = (uint8_t)strtoul(argv[1], NULL, 0);
@@ -783,14 +780,14 @@ VSS_HANDLER(interface_iic_read)
 	buff = (uint8_t*)malloc(data_size);
 	if (NULL == buff)
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
-	ret = ifs->i2c.read(0, addr, buff, data_size, stop, nacklast);
-	if (ERROR_OK == ret)
+	err = ifs->i2c.read(0, addr, buff, data_size, stop, nacklast);
+	if (!err)
 	{
-		ret = ifs->peripheral_commit();
-		if (ERROR_OK == ret)
+		err = ifs->peripheral_commit();
+		if (!err)
 		{
 			LOG_BYTE_BUF(buff, data_size, LOG_INFO, "%02X", 16);
 		}
@@ -801,7 +798,7 @@ VSS_HANDLER(interface_iic_read)
 		free(buff);
 		buff = NULL;
 	}
-	return ret;
+	return err;
 }
 
 VSS_HANDLER(interface_iic_write)
@@ -810,19 +807,19 @@ VSS_HANDLER(interface_iic_write)
 	uint8_t addr = 0;
 	uint8_t stop = 0;
 	uint8_t *buff = NULL;
-	RESULT ret = ERROR_OK;
+	vsf_err_t err = VSFERR_NONE;
 	struct interfaces_info_t *ifs = NULL;
 	
 	VSS_CHECK_ARGC_MIN(4);
-	if ((ERROR_OK != interface_assert(&ifs)) || (NULL == ifs))
+	if (interface_assert(&ifs) || (NULL == ifs))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "interface module");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	if (!(cur_interface->support_mask & IFS_I2C))
 	{
 		LOG_ERROR(ERRMSG_NOT_SUPPORT, "iic interface");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	addr = (uint8_t)strtoul(argv[1], NULL, 0);
@@ -834,13 +831,13 @@ VSS_HANDLER(interface_iic_write)
 	{
 		LOG_ERROR(ERRMSG_INVALID_TARGET, "data_size");
 		vss_print_help(argv[0]);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
-	ret = vss_get_binary_buffer(argc - 4, &argv[4], 1, data_size, (void**)&buff);
-	if (ERROR_OK == ret)
+	err = vss_get_binary_buffer(argc - 4, &argv[4], 1, data_size, (void**)&buff);
+	if (!err)
 	{
-		ret = ifs->i2c.write(0, addr, buff, data_size, stop);
+		err = ifs->i2c.write(0, addr, buff, data_size, stop);
 	}
 	
 	if (buff != NULL)
@@ -848,7 +845,7 @@ VSS_HANDLER(interface_iic_write)
 		free(buff);
 		buff = NULL;
 	}
-	return ret;
+	return err;
 }
 
 VSS_HANDLER(interface_iic_read_buff8)
@@ -857,19 +854,19 @@ VSS_HANDLER(interface_iic_read_buff8)
 	uint8_t slave_addr = 0, addr;
 	bool nacklast = false;
 	uint8_t *buff = NULL;
-	RESULT ret = ERROR_OK;
+	vsf_err_t err = VSFERR_NONE;
 	struct interfaces_info_t *ifs = NULL;
 	
 	VSS_CHECK_ARGC(5);
-	if ((ERROR_OK != interface_assert(&ifs)) || (NULL == ifs))
+	if (interface_assert(&ifs) || (NULL == ifs))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "interface module");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	if (!(cur_interface->support_mask & IFS_I2C))
 	{
 		LOG_ERROR(ERRMSG_NOT_SUPPORT, "iic interface");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	slave_addr = (uint8_t)strtoul(argv[1], NULL, 0);
@@ -879,18 +876,18 @@ VSS_HANDLER(interface_iic_read_buff8)
 	buff = (uint8_t*)malloc(data_size);
 	if (NULL == buff)
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
-	ret = ifs->i2c.write(0, slave_addr, &addr, 1, 0);
-	if (ERROR_OK == ret)
+	err = ifs->i2c.write(0, slave_addr, &addr, 1, 0);
+	if (!err)
 	{
-		ret = ifs->i2c.read(0, slave_addr, buff, data_size, 1,
+		err = ifs->i2c.read(0, slave_addr, buff, data_size, 1,
 										nacklast);
-		if (ERROR_OK == ret)
+		if (!err)
 		{
-			ret = ifs->peripheral_commit();
-			if (ERROR_OK == ret)
+			err = ifs->peripheral_commit();
+			if (!err)
 			{
 				LOG_BYTE_BUF(buff, data_size, LOG_INFO, "%02X", 16);
 			}
@@ -902,7 +899,7 @@ VSS_HANDLER(interface_iic_read_buff8)
 		free(buff);
 		buff = NULL;
 	}
-	return ret;
+	return err;
 }
 
 VSS_HANDLER(interface_iic_write_buff8)
@@ -910,19 +907,19 @@ VSS_HANDLER(interface_iic_write_buff8)
 	uint8_t data_size = 0;
 	uint8_t slave_addr = 0;
 	uint8_t *buff = NULL;
-	RESULT ret = ERROR_OK;
+	vsf_err_t err = VSFERR_NONE;
 	struct interfaces_info_t *ifs = NULL;
 	
 	VSS_CHECK_ARGC_MIN(4);
-	if ((ERROR_OK != interface_assert(&ifs)) || (NULL == ifs))
+	if (interface_assert(&ifs) || (NULL == ifs))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "interface module");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	if (!(cur_interface->support_mask & IFS_I2C))
 	{
 		LOG_ERROR(ERRMSG_NOT_SUPPORT, "iic interface");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	slave_addr = (uint8_t)strtoul(argv[1], NULL, 0);
@@ -933,14 +930,14 @@ VSS_HANDLER(interface_iic_write_buff8)
 	{
 		LOG_ERROR(ERRMSG_INVALID_TARGET, "data_size");
 		vss_print_help(argv[0]);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
-	ret = vss_get_binary_buffer(argc - 3, &argv[3], 1, data_size + 1,
+	err = vss_get_binary_buffer(argc - 3, &argv[3], 1, data_size + 1,
 								(void**)&buff);
-	if (ERROR_OK == ret)
+	if (!err)
 	{
-		ret = ifs->i2c.write(0, slave_addr, buff, data_size + 1, 1);
+		err = ifs->i2c.write(0, slave_addr, buff, data_size + 1, 1);
 	}
 	
 	if (buff != NULL)
@@ -948,7 +945,7 @@ VSS_HANDLER(interface_iic_write_buff8)
 		free(buff);
 		buff = NULL;
 	}
-	return ret;
+	return err;
 }
 
 // pwm
@@ -957,27 +954,27 @@ VSS_HANDLER(interface_pwm_init)
 	struct interfaces_info_t *ifs = NULL;
 	
 	VSS_CHECK_ARGC_2(1, 4);
-	if ((ERROR_OK != interface_assert(&ifs)) || (NULL == ifs))
+	if (interface_assert(&ifs) || (NULL == ifs))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "interface module");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	if (!(cur_interface->support_mask & IFS_PWM))
 	{
 		LOG_ERROR(ERRMSG_NOT_SUPPORT, "pwm interface");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
-	if (ERROR_OK != ifs->pwm.init(0))
+	if (ifs->pwm.init(0))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	if (4 == argc)
 	{
 		return interface_pwm_config(argc, argv);
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 VSS_HANDLER(interface_pwm_fini)
@@ -985,15 +982,15 @@ VSS_HANDLER(interface_pwm_fini)
 	struct interfaces_info_t *ifs = NULL;
 	
 	VSS_CHECK_ARGC(1);
-	if ((ERROR_OK != interface_assert(&ifs)) || (NULL == ifs))
+	if (interface_assert(&ifs) || (NULL == ifs))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "interface module");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	if (!(cur_interface->support_mask & IFS_PWM))
 	{
 		LOG_ERROR(ERRMSG_NOT_SUPPORT, "pwm interface");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	return ifs->pwm.fini(0);
@@ -1006,15 +1003,15 @@ VSS_HANDLER(interface_pwm_config)
 	uint8_t pushpull, polarity, mode;
 	
 	VSS_CHECK_ARGC(4);
-	if ((ERROR_OK != interface_assert(&ifs)) || (NULL == ifs))
+	if (interface_assert(&ifs) || (NULL == ifs))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "interface module");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	if (!(cur_interface->support_mask & IFS_PWM))
 	{
 		LOG_ERROR(ERRMSG_NOT_SUPPORT, "pwm interface");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	kHz = (uint16_t)strtoul(argv[1], NULL, 0);
@@ -1037,19 +1034,19 @@ VSS_HANDLER(interface_pwm_out)
 {
 	uint16_t count = 0;
 	uint16_t *buff = NULL;
-	RESULT ret = ERROR_OK;
+	vsf_err_t err = VSFERR_NONE;
 	struct interfaces_info_t *ifs = NULL;
 	
 	VSS_CHECK_ARGC_MIN(3);
-	if ((ERROR_OK != interface_assert(&ifs)) || (NULL == ifs))
+	if (interface_assert(&ifs) || (NULL == ifs))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "interface module");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	if (!(cur_interface->support_mask & IFS_PWM))
 	{
 		LOG_ERROR(ERRMSG_NOT_SUPPORT, "pwm interface");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	count = (uint16_t)strtoul(argv[1], NULL, 0);
@@ -1059,13 +1056,13 @@ VSS_HANDLER(interface_pwm_out)
 	{
 		LOG_ERROR(ERRMSG_INVALID_TARGET, "count");
 		vss_print_help(argv[0]);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
-	ret = vss_get_binary_buffer(argc - 2, &argv[2], 2, count, (void**)&buff);
-	if (ERROR_OK == ret)
+	err = vss_get_binary_buffer(argc - 2, &argv[2], 2, count, (void**)&buff);
+	if (!err)
 	{
-		ret = ifs->pwm.out(0, count, buff);
+		err = ifs->pwm.out(0, count, buff);
 	}
 	
 	if (buff != NULL)
@@ -1073,7 +1070,7 @@ VSS_HANDLER(interface_pwm_out)
 		free(buff);
 		buff = NULL;
 	}
-	return ret;
+	return err;
 }
 
 // delay
@@ -1083,10 +1080,10 @@ VSS_HANDLER(interface_delay_us)
 	struct interfaces_info_t *ifs = NULL;
 	
 	VSS_CHECK_ARGC(2);
-	if ((ERROR_OK != interface_assert(&ifs)) || (NULL == ifs))
+	if (interface_assert(&ifs) || (NULL == ifs))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "interface module");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	delay = (uint16_t)strtoul(argv[1], NULL, 0);
@@ -1099,10 +1096,10 @@ VSS_HANDLER(interface_delay_ms)
 	struct interfaces_info_t *ifs = NULL;
 	
 	VSS_CHECK_ARGC(2);
-	if ((ERROR_OK != interface_assert(&ifs)) || (NULL == ifs))
+	if (interface_assert(&ifs) || (NULL == ifs))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "interface module");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	delay = (uint16_t)strtoul(argv[1], NULL, 0);
@@ -1115,10 +1112,10 @@ VSS_HANDLER(interface_commit)
 	struct interfaces_info_t *ifs = NULL;
 	
 	VSS_CHECK_ARGC(1);
-	if ((ERROR_OK != interface_assert(&ifs)) || (NULL == ifs))
+	if (interface_assert(&ifs) || (NULL == ifs))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "interface module");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	return ifs->peripheral_commit();

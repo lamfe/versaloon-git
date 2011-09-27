@@ -31,12 +31,12 @@
 #include "app_err.h"
 #include "app_log.h"
 
-#include "pgbar.h"
-
 #include "vsprog.h"
 #include "programmer.h"
 #include "target.h"
 #include "scripts.h"
+
+#include "pgbar.h"
 
 #include "avr32.h"
 #include "avr32_internal.h"
@@ -78,7 +78,7 @@ Usage of %s:\n\
   -m,  --mode <MODE>                        set mode<j>\n\
   -F,  --frequency <FREQUENCY>              set JTAG frequency, in KHz\n\n",
 			CUR_TARGET_STRING);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 VSS_HANDLER(avr32_mode)
@@ -92,7 +92,7 @@ VSS_HANDLER(avr32_mode)
 	case AVR32_JTAG:
 		break;
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 const struct vss_cmd_t avr32_notifier[] =
@@ -142,7 +142,7 @@ const struct vss_cmd_t avr32_notifier[] =
 static struct interfaces_info_t *interfaces = NULL;
 
 static uint8_t pending_4bytes = 0;
-RESULT avr32jtag_receive_callback(uint8_t index, enum jtag_irdr_t cmd,
+vsf_err_t avr32jtag_receive_callback(uint8_t index, enum jtag_irdr_t cmd,
 					uint32_t ir, uint8_t *dest_buffer, uint8_t *src_buffer,
 					uint16_t bytelen, uint16_t *processed)
 {
@@ -150,13 +150,13 @@ RESULT avr32jtag_receive_callback(uint8_t index, enum jtag_irdr_t cmd,
 	
 	if (NULL == src_buffer)
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	switch(cmd)
 	{
 	case JTAG_SCANTYPE_IR:
-		return ERROR_OK;
+		return VSFERR_NONE;
 		break;
 	case JTAG_SCANTYPE_DR:
 		if ((5 == bytelen)
@@ -169,14 +169,14 @@ RESULT avr32jtag_receive_callback(uint8_t index, enum jtag_irdr_t cmd,
 				memcpy(dest_buffer, src_buffer, 4);
 			}
 		}
-		return ERROR_OK;
+		return VSFERR_NONE;
 		break;
 	}
 	
-	return ERROR_FAIL;
+	return VSFERR_FAIL;
 }
 
-RESULT avr32jtag_send_callback(uint8_t index, enum jtag_irdr_t cmd,
+vsf_err_t avr32jtag_send_callback(uint8_t index, enum jtag_irdr_t cmd,
 					uint32_t ir, uint8_t *dest_buffer, uint8_t *src_buffer,
 					uint16_t bytelen, uint16_t *processed_len)
 {
@@ -184,13 +184,13 @@ RESULT avr32jtag_send_callback(uint8_t index, enum jtag_irdr_t cmd,
 	
 	if ((NULL == src_buffer) || (NULL == dest_buffer))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	switch(cmd)
 	{
 	case JTAG_SCANTYPE_IR:
-		return ERROR_OK;
+		return VSFERR_NONE;
 		break;
 	case JTAG_SCANTYPE_DR:
 		if ((5 == bytelen)
@@ -202,14 +202,14 @@ RESULT avr32jtag_send_callback(uint8_t index, enum jtag_irdr_t cmd,
 			*processed_len = 5;
 			memset(dest_buffer, 0, 5);
 		}
-		return ERROR_OK;
+		return VSFERR_NONE;
 		break;
 	}
 	
-	return ERROR_FAIL;
+	return VSFERR_FAIL;
 }
 
-static RESULT avr32jtag_sab_word_access(uint8_t slave_addr, uint32_t addr,
+static vsf_err_t avr32jtag_sab_word_access(uint8_t slave_addr, uint32_t addr,
 											uint8_t *data, uint8_t read)
 {
 	uint8_t ir;
@@ -221,12 +221,12 @@ static RESULT avr32jtag_sab_word_access(uint8_t slave_addr, uint32_t addr,
 		&& (slave_addr != AVR32_SAB_SLAVE_MSU))
 	{
 		LOG_ERROR(ERRMSG_INVALID_ADDRESS, slave_addr, "sab slave address");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	if (addr & 3)
 	{
 		LOG_ERROR(ERRMSG_INVALID_ADDRESS, addr, "sab word access");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	// Phase 1: Write AVR32_JTAG_INS_MEMORY_WORD_ACCESS to IR
@@ -273,10 +273,10 @@ static RESULT avr32jtag_sab_word_access(uint8_t slave_addr, uint32_t addr,
 		poll_end();
 	}
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT avr32jtag_sab_access(uint8_t slave_addr, uint32_t addr,
+static vsf_err_t avr32jtag_sab_access(uint8_t slave_addr, uint32_t addr,
 									uint8_t *data, uint8_t read, uint32_t len)
 {
 	uint8_t ir;
@@ -284,14 +284,14 @@ static RESULT avr32jtag_sab_access(uint8_t slave_addr, uint32_t addr,
 	
 	if (0 == len)
 	{
-		return ERROR_OK;
+		return VSFERR_NONE;
 	}
 	
 	// Phase 1: Read/Write the first Word
 	avr32jtag_sab_word_access(slave_addr, addr, data, read);
 	if (1 == len)
 	{
-		return ERROR_OK;
+		return VSFERR_NONE;
 	}
 	
 	// Phase 2: Write AVR32_JTAG_INS_MEMORY_BLOCK_ACCESS to IR
@@ -321,10 +321,10 @@ static RESULT avr32jtag_sab_access(uint8_t slave_addr, uint32_t addr,
 		}
 	}
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT avr32jtag_fcmd_call(uint8_t command, uint16_t pagen)
+static vsf_err_t avr32jtag_fcmd_call(uint8_t command, uint16_t pagen)
 {
 	uint32_t data;
 	uint32_t start, end;
@@ -339,7 +339,7 @@ static RESULT avr32jtag_fcmd_call(uint8_t command, uint16_t pagen)
 		data = 0;
 		avr32jtag_sab_access(AVR32_SAB_SLAVE_HSB, AVR32_FLASHC_FSR,
 								(uint8_t*)&data, AVR32_JTAG_READ, 1);
-		if (ERROR_OK != jtag_commit())
+		if (jtag_commit())
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read fsr");
 			return ERRCODE_FAILURE_OPERATION;
@@ -350,10 +350,10 @@ static RESULT avr32jtag_fcmd_call(uint8_t command, uint16_t pagen)
 	if (!(data & 1) || (data & 0x0C))
 	{
 		LOG_DEBUG(INFOMSG_REG_08X, "FLASHC_FSR", data);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 ENTER_PROGRAM_MODE_HANDLER(avr32jtag)
@@ -372,10 +372,10 @@ ENTER_PROGRAM_MODE_HANDLER(avr32jtag)
 	jtag_init();
 	jtag_config(pi->frequency, pi->jtag_pos.ub, pi->jtag_pos.ua,
 					pi->jtag_pos.bb, pi->jtag_pos.ba);
-	if (ERROR_OK != jtag_commit())
+	if (jtag_commit())
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "init jtag");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	jtag_register_callback(avr32jtag_send_callback,
 								   avr32jtag_receive_callback);
@@ -385,21 +385,20 @@ ENTER_PROGRAM_MODE_HANDLER(avr32jtag)
 
 LEAVE_PROGRAM_MODE_HANDLER(avr32jtag)
 {
-	RESULT ret;
+	vsf_err_t err;
 	
 	REFERENCE_PARAMETER(context);
 	REFERENCE_PARAMETER(success);
 	
 	jtag_fini();
-	ret = jtag_commit();
+	err = jtag_commit();
 	jtag_register_callback(NULL, NULL);
-	return ret;
+	return err;
 }
 
 ERASE_TARGET_HANDLER(avr32jtag)
 {
 	struct chip_param_t *param = context->param;
-	RESULT ret = ERROR_OK;
 	uint32_t i;
 	uint32_t data;
 	uint16_t pagen;
@@ -415,9 +414,9 @@ ERASE_TARGET_HANDLER(avr32jtag)
 		data = 0;
 		avr32jtag_sab_access(AVR32_SAB_SLAVE_HSB, AVR32_FLASHC_FSR,
 								(uint8_t*)&data, AVR32_JTAG_READ, 1);
-		if (ERROR_OK != jtag_commit())
+		if (jtag_commit())
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		LOG_DEBUG(INFOMSG_REG_08X, "FLASHC_FSR", data);
 		for (i = 0; i < 16; i++)
@@ -426,8 +425,7 @@ ERASE_TARGET_HANDLER(avr32jtag)
 			{
 				// call AVR32_FLASHC_FCMD_UP
 				pagen = (uint16_t)(param->chip_areas[APPLICATION_IDX].page_num * i / 16);
-				ret = avr32jtag_fcmd_call(AVR32_FLASHC_FCMD_UP, pagen);
-				if (ret != ERROR_OK)
+				if (avr32jtag_fcmd_call(AVR32_FLASHC_FCMD_UP, pagen))
 				{
 					LOG_ERROR(ERRMSG_FAILURE_OPERATION, "unlock flash page");
 					return ERRCODE_FAILURE_OPERATION;
@@ -443,7 +441,7 @@ ERASE_TARGET_HANDLER(avr32jtag)
 		data = 0;
 		avr32jtag_sab_access(AVR32_SAB_SLAVE_HSB, AVR32_FLASHC_FGPFRHI,
 								(uint8_t*)&data, AVR32_JTAG_READ, 1);
-		if (ERROR_OK != jtag_commit())
+		if (jtag_commit())
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read fsr");
 			return ERRCODE_FAILURE_OPERATION;
@@ -452,7 +450,7 @@ ERASE_TARGET_HANDLER(avr32jtag)
 		data = 0;
 		avr32jtag_sab_access(AVR32_SAB_SLAVE_HSB, AVR32_FLASHC_FGPFRLO,
 								(uint8_t*)&data, AVR32_JTAG_READ, 1);
-		if (ERROR_OK != jtag_commit())
+		if (jtag_commit())
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read fsr");
 			return ERRCODE_FAILURE_OPERATION;
@@ -462,7 +460,7 @@ ERASE_TARGET_HANDLER(avr32jtag)
 		return avr32jtag_fcmd_call(AVR32_FLASHC_FCMD_EA, 0);
 		break;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 		break;
 	}
 }
@@ -473,9 +471,6 @@ WRITE_TARGET_HANDLER(avr32jtag)
 	struct chip_area_info_t *flash_info = &param->chip_areas[APPLICATION_IDX];
 	uint16_t pagen;
 	
-	REFERENCE_PARAMETER(addr);
-	REFERENCE_PARAMETER(buff);
-	
 	switch (area)
 	{
 	case APPLICATION_CHAR:
@@ -484,17 +479,17 @@ WRITE_TARGET_HANDLER(avr32jtag)
 		avr32jtag_sab_access(AVR32_SAB_SLAVE_HSB, addr,
 								buff, AVR32_JTAG_WRITE, size / 4);
 		jtag_commit();
-		if (ERROR_OK != avr32jtag_fcmd_call(AVR32_FLASHC_FCMD_WP, pagen))
+		if (avr32jtag_fcmd_call(AVR32_FLASHC_FCMD_WP, pagen))
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		break;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 		break;
 	}
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 READ_TARGET_HANDLER(avr32jtag)
@@ -514,9 +509,9 @@ READ_TARGET_HANDLER(avr32jtag)
 		avr32jtag_Instr(&ir);
 		dr = 0;
 		jtag_dr_read(&dr, 32);
-		if (ERROR_OK != jtag_commit())
+		if (jtag_commit())
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		LOG_DEBUG(INFOMSG_REG_08X, "JTAGID", dr);
 		
@@ -525,18 +520,18 @@ READ_TARGET_HANDLER(avr32jtag)
 			dr = 0;
 			avr32jtag_sab_access(AVR32_SAB_SLAVE_HSB, AVR32_FLASHC_FSR,
 									(uint8_t*)&dr, AVR32_JTAG_READ, 1);
-			if (ERROR_OK != jtag_commit())
+			if (jtag_commit())
 			{
-				return ERROR_FAIL;
+				return VSFERR_FAIL;
 			}
 			LOG_DEBUG(INFOMSG_REG_08X, "FLASHC_FSR", dr);
 			
 			dr = 0;
 			avr32jtag_sab_access(AVR32_SAB_SLAVE_OCD, 0,
 									(uint8_t*)&dr, AVR32_JTAG_READ, 1);
-			if (ERROR_OK != jtag_commit())
+			if (jtag_commit())
 			{
-				return ERROR_FAIL;
+				return VSFERR_FAIL;
 			}
 			LOG_DEBUG(INFOMSG_REG_08X, "OCD_DID", dr);
 		}
@@ -550,7 +545,7 @@ READ_TARGET_HANDLER(avr32jtag)
 		page_size = param->chip_areas[APPLICATION_IDX].page_size;
 		if (size % page_size)
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		
 		current_size = 0;
@@ -564,9 +559,9 @@ READ_TARGET_HANDLER(avr32jtag)
 		return jtag_commit();
 		break;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 		break;
 	}
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }

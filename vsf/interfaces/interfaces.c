@@ -17,9 +17,9 @@
 #include "app_cfg.h"
 #include "interfaces.h"
 
-RESULT peripheral_commit(void)
+vsf_err_t peripheral_commit(void)
 {
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 const struct interfaces_info_t core_interfaces = 

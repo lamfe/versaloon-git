@@ -268,7 +268,8 @@ static void MSP430_JTAG_Reset(void)
 	MSP430_JTAG_DELAY();
 }
 
-static uint8_t MSP430_JTAG_Poll(uint32_t data, uint32_t mask, uint32_t value, uint8_t len, uint16_t poll_cnt)
+static uint8_t MSP430_JTAG_Poll(uint32_t data, uint32_t mask, uint32_t value,
+								uint8_t len, uint16_t poll_cnt)
 {
 	uint8_t toggle_tclk = (poll_cnt & 0x8000) > 0;
 
@@ -288,41 +289,41 @@ static uint8_t MSP430_JTAG_Poll(uint32_t data, uint32_t mask, uint32_t value, ui
 	return 1;
 }
 
-RESULT msp430jtag_init(uint8_t index)
+vsf_err_t msp430jtag_init(uint8_t index)
 {
 	switch (index)
 	{
 	case 0:
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT msp430jtag_fini(uint8_t index)
+vsf_err_t msp430jtag_fini(uint8_t index)
 {
 	switch (index)
 	{
 	case 0:
 		MSP430_JTAG_Fini();
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
-RESULT msp430jtag_config(uint8_t index, uint8_t has_test)
+vsf_err_t msp430jtag_config(uint8_t index, uint8_t has_test)
 {
 	switch (index)
 	{
 	case 0:
 		MSP430_JTAG_Init(has_test);
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT msp430jtag_ir(uint8_t index, uint8_t *ir, uint8_t want_ret)
+vsf_err_t msp430jtag_ir(uint8_t index, uint8_t *ir, uint8_t want_ret)
 {
 	uint8_t ir_tmp;
 	
@@ -331,7 +332,7 @@ RESULT msp430jtag_ir(uint8_t index, uint8_t *ir, uint8_t want_ret)
 	case 0:
 		if (NULL == ir)
 		{
-			return ERROR_FAIL;
+			return VSFERR_INVALID_PTR;
 		}
 		
 		ir_tmp = MSP430_JTAG_IR(*ir, MSP430_JTAG_IR_LEN);
@@ -339,13 +340,14 @@ RESULT msp430jtag_ir(uint8_t index, uint8_t *ir, uint8_t want_ret)
 		{
 			*ir = ir_tmp;
 		}
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT msp430jtag_dr(uint8_t index, uint32_t *dr, uint8_t bitlen, uint8_t want_ret)
+vsf_err_t msp430jtag_dr(uint8_t index, uint32_t *dr, uint8_t bitlen,
+						uint8_t want_ret)
 {
 	uint32_t dr_tmp;
 	
@@ -354,7 +356,7 @@ RESULT msp430jtag_dr(uint8_t index, uint32_t *dr, uint8_t bitlen, uint8_t want_r
 	case 0:
 		if (NULL == dr)
 		{
-			return ERROR_FAIL;
+			return VSFERR_INVALID_PTR;
 		}
 		
 		dr_tmp = MSP430_JTAG_DR(*dr, bitlen);
@@ -362,64 +364,65 @@ RESULT msp430jtag_dr(uint8_t index, uint32_t *dr, uint8_t bitlen, uint8_t want_r
 		{
 			*dr = dr_tmp;
 		}
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT msp430jtag_tclk(uint8_t index, uint8_t value)
+vsf_err_t msp430jtag_tclk(uint8_t index, uint8_t value)
 {
 	switch (index)
 	{
 	case 0:
 		MSP430_JTAG_TCLK(value);
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT msp430jtag_tclk_strobe(uint8_t index, uint16_t cnt)
+vsf_err_t msp430jtag_tclk_strobe(uint8_t index, uint16_t cnt)
 {
 	switch (index)
 	{
 	case 0:
 		MSP430_JTAG_TCLK_STROKE(cnt);
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT msp430jtag_reset(uint8_t index)
+vsf_err_t msp430jtag_reset(uint8_t index)
 {
 	switch (index)
 	{
 	case 0:
 		MSP430_JTAG_Reset();
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT msp430jtag_poll(uint8_t index, uint32_t dr, uint32_t mask, uint32_t value, 
-				uint8_t len, uint16_t poll_cnt, uint8_t toggle_tclk)
+vsf_err_t msp430jtag_poll(uint8_t index, uint32_t dr, uint32_t mask,
+			uint32_t value, uint8_t len, uint16_t poll_cnt, uint8_t toggle_tclk)
 {
 	switch (index)
 	{
 	case 0:
-		if(MSP430_JTAG_Poll(dr, mask, value, len, poll_cnt | (toggle_tclk ? 0x8000 : 0)))
+		if(MSP430_JTAG_Poll(dr, mask, value, len,
+							poll_cnt | (toggle_tclk ? 0x8000 : 0)))
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		else
 		{
-			return ERROR_OK;
+			return VSFERR_NONE;
 		}
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 

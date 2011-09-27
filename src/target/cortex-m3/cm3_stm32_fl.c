@@ -142,30 +142,28 @@ static uint8_t fl_code[] = {
 	0x00, 0x00, 0x00, 0x00,		/* result */
 };
 
-RESULT stm32swj_fl_init(uint32_t fl_base)
+vsf_err_t stm32swj_fl_init(uint32_t fl_base)
 {
 	uint32_t reg;
 	uint8_t verify_buff[sizeof(fl_code)];
 	
 	stm32swj_fl_base = fl_base;
 	// download flash_loader
-	if (ERROR_OK != cm3_dp_halt())
+	if (cm3_dp_halt())
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "halt stm32");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
 	// write code to target SRAM
-	if (ERROR_OK != adi_memap_write_buf(stm32swj_fl_base, fl_code,
-										sizeof(fl_code)))
+	if (adi_memap_write_buf(stm32swj_fl_base, fl_code, sizeof(fl_code)))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "load flash_loader to SRAM");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	// verify fl_code
 	memset(verify_buff, 0, sizeof(fl_code));
-	if (ERROR_OK != adi_memap_read_buf(stm32swj_fl_base, verify_buff,
-										sizeof(fl_code)))
+	if (adi_memap_read_buf(stm32swj_fl_base, verify_buff, sizeof(fl_code)))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read flash_loader");
 		return ERRCODE_FAILURE_OPERATION;
@@ -177,21 +175,21 @@ RESULT stm32swj_fl_init(uint32_t fl_base)
 	}
 	
 	reg = stm32swj_fl_base + 1;
-	if (ERROR_OK != cm3_write_core_register(CM3_COREREG_PC, &reg))
+	if (cm3_write_core_register(CM3_COREREG_PC, &reg))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "write PC");
 		return ERRCODE_FAILURE_OPERATION;
 	}
-	if (ERROR_OK != cm3_dp_resume())
+	if (cm3_dp_resume())
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "run flash_loader");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	stm32swj_fl_cnt = 0;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT stm32swj_fl_run(struct stm32_fl_cmd_t *cmd)
+vsf_err_t stm32swj_fl_run(struct stm32_fl_cmd_t *cmd)
 {
 	uint32_t buff_tmp[10];
 	
@@ -220,15 +218,14 @@ RESULT stm32swj_fl_run(struct stm32_fl_cmd_t *cmd)
 		buff_tmp[7] = STM32_FL_DATATYPE_DWORD;
 		break;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	buff_tmp[8] = SYS_TO_LE_U32(cmd->data_size);
 	buff_tmp[9] = SYS_TO_LE_U32(1);
 	
 	// write fl command with sync to target SRAM
 	// sync is 4-byte AFTER command in sram
-	if (ERROR_OK !=
-		adi_memap_write_buf(stm32swj_fl_base + STM32_FL_COMMAND_OFFSET,
+	if (adi_memap_write_buf(stm32swj_fl_base + STM32_FL_COMMAND_OFFSET,
 							(uint8_t*)buff_tmp, sizeof(buff_tmp)))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "load flashloader cmd to SRAM");
@@ -236,10 +233,10 @@ RESULT stm32swj_fl_run(struct stm32_fl_cmd_t *cmd)
 	}
 	stm32swj_fl_cnt++;
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT stm32swj_fl_poll_result(struct stm32_fl_result_t *result, bool *failed)
+vsf_err_t stm32swj_fl_poll_result(struct stm32_fl_result_t *result, bool *failed)
 {
 	uint32_t buff_tmp[2];
 	uint8_t i;
@@ -248,8 +245,7 @@ RESULT stm32swj_fl_poll_result(struct stm32_fl_result_t *result, bool *failed)
 	
 	// read result and sync
 	// sync is 4-byte BEFORE result
-	if (ERROR_OK !=
-		adi_memap_read_buf(stm32swj_fl_base + STM32_FL_SYNC_OFFSET,
+	if (adi_memap_read_buf(stm32swj_fl_base + STM32_FL_SYNC_OFFSET,
 							(uint8_t *)buff_tmp, sizeof(buff_tmp)))
 	{
 		*failed = true;
@@ -264,13 +260,13 @@ RESULT stm32swj_fl_poll_result(struct stm32_fl_result_t *result, bool *failed)
 	if (0 == buff_tmp[0])
 	{
 		result->result = buff_tmp[1];
-		return ERROR_OK;
+		return VSFERR_NONE;
 	}
 	
-	return ERROR_FAIL;
+	return VSFERR_FAIL;
 }
 
-RESULT stm32swj_fl_wait_ready(struct stm32_fl_result_t *result, bool last)
+vsf_err_t stm32swj_fl_wait_ready(struct stm32_fl_result_t *result, bool last)
 {
 	bool failed;
 	uint32_t start, end;
@@ -278,13 +274,13 @@ RESULT stm32swj_fl_wait_ready(struct stm32_fl_result_t *result, bool last)
 	start = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
 	while (1)
 	{
-		if ((ERROR_OK != stm32swj_fl_poll_result(result, &failed)) ||
+		if (stm32swj_fl_poll_result(result, &failed) ||
 			(last && (result->result != stm32swj_fl_cnt)))
 		{
 			if (failed)
 			{
 				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "poll flashloader result");
-				return ERROR_FAIL;
+				return VSFERR_FAIL;
 			}
 			else
 			{
@@ -304,18 +300,17 @@ RESULT stm32swj_fl_wait_ready(struct stm32_fl_result_t *result, bool last)
 		}
 	}
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT stm32swj_fl_call(struct stm32_fl_cmd_t *cmd,
+vsf_err_t stm32swj_fl_call(struct stm32_fl_cmd_t *cmd,
 							struct stm32_fl_result_t *result, bool last)
 {
-	if ((ERROR_OK != stm32swj_fl_run(cmd))
-		|| (ERROR_OK != stm32swj_fl_wait_ready(result, last)))
+	if (stm32swj_fl_run(cmd) || stm32swj_fl_wait_ready(result, last))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "run flashloader command");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 

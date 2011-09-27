@@ -13,7 +13,7 @@ volatile uint32_t cmd_len = 0;
 
 volatile uint32_t rep_len = 0;
 
-static RESULT Versaloon_OUT_hanlder(void *p, uint8_t ep)
+static vsf_err_t Versaloon_OUT_hanlder(void *p, uint8_t ep)
 {
 	struct vsfusbd_device_t *device = p;
 	uint32_t pkg_len;
@@ -64,21 +64,21 @@ static RESULT Versaloon_OUT_hanlder(void *p, uint8_t ep)
 		}
 	}
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT versaloon_usb_init(uint8_t iface, struct vsfusbd_device_t *device)
+static vsf_err_t versaloon_usb_init(uint8_t iface, struct vsfusbd_device_t *device)
 {
-	if ((ERROR_OK != device->drv->ep.set_IN_dbuffer(2)) || 
-		(ERROR_OK != device->drv->ep.set_OUT_dbuffer(3)) || 
-		(ERROR_OK != device->drv->ep.set_OUT_handler(3, Versaloon_OUT_hanlder)))
+	if (device->drv->ep.set_IN_dbuffer(2) || 
+		device->drv->ep.set_OUT_dbuffer(3) || 
+		device->drv->ep.set_OUT_handler(3, Versaloon_OUT_hanlder))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT versaloon_idle(uint8_t iface, struct vsfusbd_device_t *device)
+static vsf_err_t versaloon_idle(uint8_t iface, struct vsfusbd_device_t *device)
 {
 	if(cmd_len & 0x80000000)
 	{
@@ -120,7 +120,7 @@ static RESULT versaloon_idle(uint8_t iface, struct vsfusbd_device_t *device)
 #endif
 	}
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 static const uint8_t Versaloon_DeviceDescriptor[] =
@@ -389,7 +389,7 @@ struct vsfusbd_CDC_param_t Versaloon_CDC_param =
 	},
 };
 
-RESULT usb_protocol_init(void)
+vsf_err_t usb_protocol_init(void)
 {
 	NVIC_InitTypeDef NVIC_InitStructure;
 	
@@ -441,8 +441,8 @@ RESULT usb_protocol_init(void)
 	return vsfusbd_device_init(&usb_device);
 }
 
-RESULT usb_protocol_idle(void)
+vsf_err_t usb_protocol_idle(void)
 {
 	ProcessIdle();
-	return ERROR_OK;
+	return VSFERR_NONE;
 }

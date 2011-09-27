@@ -41,7 +41,7 @@ struct vsfusbd_HID_report_t
 	uint8_t idle;
 	struct vsf_buffer_t buffer;
 	struct vsf_buffer_t stable_buffer;
-	RESULT (*on_set_get_report)(uint8_t id, struct vsf_buffer_t *buffer);
+	vsf_err_t (*on_set_get_report)(uint8_t id, struct vsf_buffer_t *buffer);
 	// no need to initialize below by user
 	bool lock;
 };
@@ -65,6 +65,6 @@ struct vsfusbd_HID_param_t
 	
 	struct sllist list;
 };
-RESULT vsfusbd_HID_set_param(struct vsfusbd_HID_param_t *param);
+vsf_err_t vsfusbd_HID_set_param(struct vsfusbd_HID_param_t *param);
 
 #endif	// __VSFUSBD_HID_H_INCLUDED__

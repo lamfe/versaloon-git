@@ -28,17 +28,17 @@
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
 
-RESULT usbtospi_init(uint8_t interface_index)
+vsf_err_t usbtospi_init(uint8_t interface_index)
 {
 	return usbtoxxx_init_command(USB_TO_SPI, interface_index);
 }
 
-RESULT usbtospi_fini(uint8_t interface_index)
+vsf_err_t usbtospi_fini(uint8_t interface_index)
 {
 	return usbtoxxx_fini_command(USB_TO_SPI, interface_index);
 }
 
-RESULT usbtospi_config(uint8_t interface_index, uint32_t kHz, uint8_t mode)
+vsf_err_t usbtospi_config(uint8_t interface_index, uint32_t kHz, uint8_t mode)
 {
 	uint8_t conf[5];
 	
@@ -46,7 +46,7 @@ RESULT usbtospi_config(uint8_t interface_index, uint32_t kHz, uint8_t mode)
 	if (interface_index > 7)
 	{
 		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 #endif
 	
@@ -56,7 +56,7 @@ RESULT usbtospi_config(uint8_t interface_index, uint32_t kHz, uint8_t mode)
 	return usbtoxxx_conf_command(USB_TO_SPI, interface_index, conf, 5);
 }
 
-RESULT usbtospi_io(uint8_t interface_index, uint8_t *out, uint8_t *in,
+vsf_err_t usbtospi_io(uint8_t interface_index, uint8_t *out, uint8_t *in,
 				   uint16_t bytelen)
 {
 	uint8_t *cmd_ptr;
@@ -65,7 +65,7 @@ RESULT usbtospi_io(uint8_t interface_index, uint8_t *out, uint8_t *in,
 	if (interface_index > 7)
 	{
 		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 #endif
 	

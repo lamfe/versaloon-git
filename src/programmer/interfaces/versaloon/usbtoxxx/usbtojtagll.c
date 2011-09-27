@@ -28,17 +28,17 @@
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
 
-RESULT usbtojtagll_init(uint8_t interface_index)
+vsf_err_t usbtojtagll_init(uint8_t interface_index)
 {
 	return usbtoxxx_init_command(USB_TO_JTAG_LL, interface_index);
 }
 
-RESULT usbtojtagll_fini(uint8_t interface_index)
+vsf_err_t usbtojtagll_fini(uint8_t interface_index)
 {
 	return usbtoxxx_fini_command(USB_TO_JTAG_LL, interface_index);
 }
 
-RESULT usbtojtagll_config(uint8_t interface_index, uint32_t kHz)
+vsf_err_t usbtojtagll_config(uint8_t interface_index, uint32_t kHz)
 {
 	uint8_t cfg_buf[4];
 	
@@ -46,7 +46,7 @@ RESULT usbtojtagll_config(uint8_t interface_index, uint32_t kHz)
 	if (interface_index > 7)
 	{
 		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 #endif
 	
@@ -55,20 +55,20 @@ RESULT usbtojtagll_config(uint8_t interface_index, uint32_t kHz)
 	return usbtoxxx_conf_command(USB_TO_JTAG_LL, interface_index, cfg_buf, 4);
 }
 
-RESULT usbtojtagll_tms(uint8_t interface_index, uint8_t *tms, uint8_t bytelen)
+vsf_err_t usbtojtagll_tms(uint8_t interface_index, uint8_t *tms, uint8_t bytelen)
 {
 #if PARAM_CHECK
 	if (interface_index > 7)
 	{
 		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 #endif
 	return usbtoxxx_out_command(USB_TO_JTAG_LL, interface_index, tms,
 									bytelen, 1);
 }
 
-RESULT usbtojtagll_tms_clocks(uint8_t interface_index, uint32_t bytelen,
+vsf_err_t usbtojtagll_tms_clocks(uint8_t interface_index, uint32_t bytelen,
 								uint8_t tms)
 {
 	uint8_t buff[5];
@@ -77,7 +77,7 @@ RESULT usbtojtagll_tms_clocks(uint8_t interface_index, uint32_t bytelen,
 	if (interface_index > 7)
 	{
 		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 #endif
 	
@@ -95,7 +95,7 @@ RESULT usbtojtagll_tms_clocks(uint8_t interface_index, uint32_t bytelen,
 									5, NULL, 0);
 }
 
-RESULT usbtojtagll_scan(uint8_t interface_index, uint8_t* data,
+vsf_err_t usbtojtagll_scan(uint8_t interface_index, uint8_t* data,
 						uint16_t bitlen, uint8_t tms_before_valid,
 						uint8_t tms_before, uint8_t tms_after0,
 						uint8_t tms_after1)
@@ -106,7 +106,7 @@ RESULT usbtojtagll_scan(uint8_t interface_index, uint8_t* data,
 	if (interface_index > 7)
 	{
 		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 #endif
 	

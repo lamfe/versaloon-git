@@ -35,7 +35,7 @@ static void usart_stream_onrx(void *p, uint16_t data)
 	}
 }
 
-RESULT usart_stream_init(struct usart_stream_info_t *usart_stream)
+vsf_err_t usart_stream_init(struct usart_stream_info_t *usart_stream)
 {
 	usart_stream->overflow = false;
 	vsf_fifo_init(&usart_stream->fifo_tx);
@@ -43,12 +43,12 @@ RESULT usart_stream_init(struct usart_stream_info_t *usart_stream)
 	return interfaces->usart.init(usart_stream->usart_index);
 }
 
-RESULT usart_stream_fini(struct usart_stream_info_t *usart_stream)
+vsf_err_t usart_stream_fini(struct usart_stream_info_t *usart_stream)
 {
 	return interfaces->usart.fini(usart_stream->usart_index);
 }
 
-RESULT usart_stream_config(struct usart_stream_info_t *usart_stream)
+vsf_err_t usart_stream_config(struct usart_stream_info_t *usart_stream)
 {
 	interfaces->usart.config(usart_stream->usart_index, 
 		usart_stream->usart_info.baudrate, usart_stream->usart_info.datalength, 
@@ -57,7 +57,7 @@ RESULT usart_stream_config(struct usart_stream_info_t *usart_stream)
 				(void *)usart_stream, NULL, usart_stream_onrx);
 }
 
-RESULT usart_stream_rx(struct usart_stream_info_t *usart_stream, 
+vsf_err_t usart_stream_rx(struct usart_stream_info_t *usart_stream, 
 						struct vsf_buffer_t *buffer)
 {
 	uint32_t rx_size;
@@ -65,10 +65,10 @@ RESULT usart_stream_rx(struct usart_stream_info_t *usart_stream,
 	rx_size = vsf_fifo_pop(&usart_stream->fifo_rx, buffer->size, 
 							buffer->buffer);
 	buffer->size = rx_size;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT usart_stream_tx(struct usart_stream_info_t *usart_stream, 
+vsf_err_t usart_stream_tx(struct usart_stream_info_t *usart_stream, 
 						struct vsf_buffer_t *buffer)
 {
 	uint32_t tx_size;
@@ -77,13 +77,13 @@ RESULT usart_stream_tx(struct usart_stream_info_t *usart_stream,
 							buffer->buffer);
 	if (tx_size == buffer->size)
 	{
-		return ERROR_OK;
+		return VSFERR_NONE;
 	}
 	buffer->size = tx_size;
-	return ERROR_FAIL;
+	return VSFERR_FAIL;
 }
 
-RESULT usart_stream_poll(struct usart_stream_info_t *usart_stream)
+vsf_err_t usart_stream_poll(struct usart_stream_info_t *usart_stream)
 {
 	if (interfaces->usart.tx_isready(usart_stream->usart_index) && 
 		vsf_fifo_get_data_length(&usart_stream->fifo_tx))
@@ -91,5 +91,5 @@ RESULT usart_stream_poll(struct usart_stream_info_t *usart_stream)
 		return interfaces->usart.tx(usart_stream->usart_index, 
 							(uint16_t)vsf_fifo_pop8(&usart_stream->fifo_tx));
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }

@@ -39,7 +39,7 @@ struct vsf_fifo_t
 	uint32_t head;
 	uint32_t tail;
 };
-RESULT vsf_fifo_init(struct vsf_fifo_t *fifo);
+vsf_err_t vsf_fifo_init(struct vsf_fifo_t *fifo);
 uint32_t vsf_fifo_push8(struct vsf_fifo_t *fifo, uint8_t data);
 uint8_t vsf_fifo_pop8(struct vsf_fifo_t *fifo);
 uint32_t vsf_fifo_push(struct vsf_fifo_t *fifo, uint32_t size, uint8_t *data);
@@ -62,13 +62,13 @@ struct vsf_multibuf_t
 	uint16_t length;
 };
 
-RESULT vsf_multibuf_init(struct vsf_multibuf_t *mbuffer);
-RESULT vsf_multibuf_get_empty(struct vsf_multibuf_t *mbuffer, 
-								struct vsf_buffer_t *buffer);
-RESULT vsf_multibuf_push(struct vsf_multibuf_t *mbuffer);
-RESULT vsf_multibuf_get_payload(struct vsf_multibuf_t *mbuffer, 
-								struct vsf_buffer_t *buffer);
-RESULT vsf_multibuf_pop(struct vsf_multibuf_t *mbuffer);
+vsf_err_t vsf_multibuf_init(struct vsf_multibuf_t *mbuffer);
+vsf_err_t vsf_multibuf_get_empty(struct vsf_multibuf_t *mbuffer, 
+									struct vsf_buffer_t *buffer);
+vsf_err_t vsf_multibuf_push(struct vsf_multibuf_t *mbuffer);
+vsf_err_t vsf_multibuf_get_payload(struct vsf_multibuf_t *mbuffer, 
+									struct vsf_buffer_t *buffer);
+vsf_err_t vsf_multibuf_pop(struct vsf_multibuf_t *mbuffer);
 
 // buffer_manager
 struct vsf_bufmgr_t

@@ -55,6 +55,6 @@ struct vsfusbd_CDC_param_t
 	
 	struct sllist list;
 };
-RESULT vsfusbd_CDC_set_param(struct vsfusbd_CDC_param_t *param);
+vsf_err_t vsfusbd_CDC_set_param(struct vsfusbd_CDC_param_t *param);
 
 #endif	// __VSFUSBD_CDC_H_INCLUDED__

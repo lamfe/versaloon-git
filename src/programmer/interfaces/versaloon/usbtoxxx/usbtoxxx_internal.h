@@ -94,14 +94,14 @@
 
 
 // USB_TO_XXX
-RESULT usbtoxxx_add_pending(uint8_t type, uint8_t cmd, uint16_t
-							actual_szie, uint16_t want_pos,
-							uint16_t want_size, uint8_t *buffer);
+vsf_err_t usbtoxxx_add_pending(uint8_t type, uint8_t cmd, uint16_t
+								actual_szie, uint16_t want_pos,
+								uint16_t want_size, uint8_t *buffer);
 
-RESULT usbtoxxx_add_command(uint8_t type, uint8_t cmd, uint8_t *cmdbuf,
-							uint16_t cmdlen, uint16_t retlen,
-							uint8_t *wantbuf, uint16_t wantpos,
-							uint16_t wantlen, uint8_t collect);
+vsf_err_t usbtoxxx_add_command(uint8_t type, uint8_t cmd, uint8_t *cmdbuf,
+								uint16_t cmdlen, uint16_t retlen,
+								uint8_t *wantbuf, uint16_t wantpos,
+								uint16_t wantlen, uint8_t collect);
 
 #define usbtoxxx_init_command(type, port)							\
 			usbtoxxx_add_command((type), (USB_TO_XXX_INIT | (port)), \

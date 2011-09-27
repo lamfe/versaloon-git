@@ -61,7 +61,7 @@ VSS_HANDLER(c8051f_help)
 Usage of %s:\n\
   -m,  --mode <MODE>                        set mode<j|c>\n\n",
 			CUR_TARGET_STRING);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 VSS_HANDLER(c8051f_mode)
@@ -81,7 +81,7 @@ VSS_HANDLER(c8051f_mode)
 				sizeof(c8051f_program_functions));
 		break;
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 const struct vss_cmd_t c8051f_notifier[] =

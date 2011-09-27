@@ -72,7 +72,7 @@ VSS_HANDLER(lpc900_help)
 	VSS_CHECK_ARGC(1);
 	PRINTF("\
 Usage of %s:\n\n", CUR_TARGET_STRING);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 const struct vss_cmd_t lpc900_notifier[] =
@@ -151,14 +151,14 @@ ENTER_PROGRAM_MODE_HANDLER(lpc900icp)
 	interfaces = context->prog;
 	// ICP Init
 ProgramStart:
-	if (ERROR_OK != icp_init())
+	if (icp_init())
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "initialize icp");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
 	// enter program mode
-	if (ERROR_OK != icp_enter_program_mode())
+	if (icp_enter_program_mode())
 	{
 		return ERRCODE_FAILURE_OPERATION;
 	}
@@ -191,7 +191,7 @@ ProgramStart:
 	icp_out(tmpbuf, 5);
 	icp_in((uint8_t*)&device_id + 0, 1);
 	
-	if (ERROR_OK != icp_commit())
+	if (icp_commit())
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read chip id");
 		return ERRCODE_FAILURE_OPERATION;
@@ -200,7 +200,7 @@ ProgramStart:
 	if ((device_id & 0x00FF0000) != 0x00150000)
 	{
 		icp_fini();
-		if (ERROR_OK != icp_commit())
+		if (icp_commit())
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATE_DEVICE, "target chip");
 			return ERRCODE_FAILURE_OPERATION;
@@ -215,7 +215,7 @@ ProgramStart:
 		}
 	}
 	pi->chip_id = device_id;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 LEAVE_PROGRAM_MODE_HANDLER(lpc900icp)
@@ -224,11 +224,11 @@ LEAVE_PROGRAM_MODE_HANDLER(lpc900icp)
 	REFERENCE_PARAMETER(success);
 	
 	icp_fini();
-	if (ERROR_OK != icp_commit())
+	if (icp_commit())
 	{
 		return ERRCODE_FAILURE_OPERATION;
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 ERASE_TARGET_HANDLER(lpc900icp)
@@ -244,17 +244,17 @@ ERASE_TARGET_HANDLER(lpc900icp)
 	tmpbuf[1] = ICP_FMCMD_ERS_G;
 	icp_out(tmpbuf, 2);
 	icp_poll(ICP_CMD_READ | ICP_CMD_FMDATA_I, tmpbuf, 0x80, 0x00, 10000);
-	if (ERROR_OK != icp_commit())
+	if (icp_commit())
 	{
 		return ERRCODE_FAILURE_OPERATION;
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 WRITE_TARGET_HANDLER(lpc900icp)
 {
 	uint8_t tmpbuf[256 + 11];
-	RESULT ret = ERROR_OK;
+	vsf_err_t err = VSFERR_NONE;
 	
 	REFERENCE_PARAMETER(context);
 	
@@ -277,26 +277,26 @@ WRITE_TARGET_HANDLER(lpc900icp)
 		icp_out(tmpbuf, (uint16_t)(11 + size));
 		icp_poll(ICP_CMD_READ | ICP_CMD_FMCON, tmpbuf,
 					0x0F, 0x80, 10000);
-		if ((ERROR_OK != icp_commit())
+		if (icp_commit()
 			|| (tmpbuf[0] != LPCICP_POLL_ON_CLEAR))
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATE_DEVICE, "target chip");
-			ret = ERRCODE_FAILURE_OPERATION;
+			err = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
 		break;
 	default:
-		ret = ERROR_FAIL;
+		err = VSFERR_FAIL;
 		break;
 	}
-	return ret;
+	return err;
 }
 
 READ_TARGET_HANDLER(lpc900icp)
 {
 	struct chip_param_t *param = context->param;
 	uint8_t tmpbuf[5];
-	RESULT ret = ERROR_OK;
+	vsf_err_t err = VSFERR_NONE;
 	
 	REFERENCE_PARAMETER(context);
 	REFERENCE_PARAMETER(addr);
@@ -328,7 +328,7 @@ READ_TARGET_HANDLER(lpc900icp)
 		icp_out(tmpbuf, 5);
 		icp_in(&buff[0], 1);
 		
-		if (ERROR_OK != icp_commit())
+		if (icp_commit())
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read chip id");
 			return ERRCODE_FAILURE_OPERATION;
@@ -349,10 +349,10 @@ READ_TARGET_HANDLER(lpc900icp)
 			tmpbuf[1] = ICP_FMCMD_CRC_G;
 			icp_out(tmpbuf, 2);
 			icp_poll(ICP_CMD_READ | ICP_CMD_FMCON, tmpbuf, 0x0F, 0x80, 10000);
-			if ((ERROR_OK != icp_commit())
+			if (icp_commit()
 				|| (tmpbuf[0] != LPCICP_POLL_ON_CLEAR))
 			{
-				ret = ERRCODE_FAILURE_OPERATION;
+				err = ERRCODE_FAILURE_OPERATION;
 				break;
 			}
 			
@@ -368,9 +368,9 @@ READ_TARGET_HANDLER(lpc900icp)
 			tmpbuf[0] = ICP_CMD_READ | ICP_CMD_FMDATA_I;
 			icp_out(tmpbuf, 1);
 			icp_in((uint8_t*)&crc_in_chip + 3, 1);
-			if (ERROR_OK != icp_commit())
+			if (icp_commit())
 			{
-				ret = ERRCODE_FAILURE_OPERATION;
+				err = ERRCODE_FAILURE_OPERATION;
 				break;
 			}
 			crc_in_chip = LE_TO_SYS_U32(crc_in_chip);
@@ -427,19 +427,19 @@ READ_TARGET_HANDLER(lpc900icp)
 			
 			if (crc_in_file != crc_in_chip)
 			{
-				ret = ERROR_FAIL;
+				err = VSFERR_FAIL;
 			}
 		}
 		else
 		{
 			LOG_ERROR(ERRMSG_NOT_SUPPORT, "read lpc900 flash");
-			ret = ERRCODE_NOT_SUPPORT;
+			err = ERRCODE_NOT_SUPPORT;
 		}
 		break;
 	default:
-		ret = ERROR_FAIL;
+		err = VSFERR_FAIL;
 		break;
 	}
-	return ret;
+	return err;
 }
 

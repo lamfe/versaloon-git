@@ -30,13 +30,13 @@
 #include "app_err.h"
 #include "app_log.h"
 
-#include "filelist.h"
-#include "pgbar.h"
-
 #include "vsprog.h"
 #include "programmer.h"
 #include "target.h"
 #include "scripts.h"
+
+#include "filelist.h"
+#include "pgbar.h"
 
 #include "byte_tap.h"
 #include "svf.h"
@@ -73,7 +73,7 @@ VSS_HANDLER(svfp_help)
 Usage of %s:\n\
   -F,  --frequency <FREQUENCY>              set JTAG frequency, in KHz\n\n",
 		   CUR_TARGET_STRING);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 const struct vss_cmd_t svfp_notifier[] =
@@ -97,7 +97,7 @@ EXECUTE_HANDLER(svfp)
 	uint32_t svf_file_size = 0, command_num = 0;
 	char *svfp_command_buffer = NULL;
 	uint32_t svfp_command_buffer_len = 0;
-	RESULT ret = ERROR_OK;
+	vsf_err_t err = VSFERR_NONE;
 	
 	if (pi->frequency)
 	{
@@ -113,7 +113,7 @@ EXECUTE_HANDLER(svfp)
 		|| (toupper(fl_in->path[strlen(fl_in->path) - 1]) != 'F'))
 	{
 		LOG_ERROR(ERRMSG_NOT_DEFINED, "svf file");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	svf_file = fl_in->file;
 	
@@ -123,7 +123,7 @@ EXECUTE_HANDLER(svfp)
 	
 	svf_parser_init();
 	
-	if (ERROR_OK != tap_init(context->prog))
+	if (tap_init(context->prog))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "open jtag");
 		svf_parser_fini();
@@ -132,11 +132,11 @@ EXECUTE_HANDLER(svfp)
 	
 	if (first_command != NULL)
 	{
-		if (ERROR_OK != svf_parser_run_command(first_command))
+		if (svf_parser_run_command(first_command))
 		{
 			LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "execute first command",
 						first_command);
-			ret = ERROR_FAIL;
+			err = VSFERR_FAIL;
 			goto leave_program_mode;
 		}
 	}
@@ -148,17 +148,17 @@ EXECUTE_HANDLER(svfp)
 	}
 	
 	// parse commands and run
-	while (ERROR_OK == svf_parser_get_command(svf_file, &svfp_command_buffer,
+	while (!svf_parser_get_command(svf_file, &svfp_command_buffer,
 											  &svfp_command_buffer_len))
 	{
-		if (ERROR_OK != svf_parser_run_command(svfp_command_buffer))
+		if (svf_parser_run_command(svfp_command_buffer))
 		{
 			if (verbosity < DEBUG_LEVEL)
 			{
 				pgbar_fini();
 			}
 			LOG_ERROR("Command execute failed at line %d", svf_line_number);
-			ret = ERROR_FAIL;
+			err = VSFERR_FAIL;
 			goto leave_program_mode;
 		}
 		if (verbosity < DEBUG_LEVEL)
@@ -173,16 +173,16 @@ EXECUTE_HANDLER(svfp)
 	}
 	
 	// commit last commands
-	if (ERROR_OK != tap_commit())
+	if (tap_commit())
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "do jtag");
-		ret = ERROR_FAIL;
+		err = VSFERR_FAIL;
 		goto leave_program_mode;
 	}
-	else if (ERROR_OK != svf_parser_check_tdo())
+	else if (svf_parser_check_tdo())
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "check tdo data");
-		ret = ERROR_FAIL;
+		err = VSFERR_FAIL;
 		goto leave_program_mode;
 	}
 	
@@ -209,6 +209,6 @@ leave_program_mode:
 		svfp_command_buffer = NULL;
 	}
 	
-	return ret;
+	return err;
 }
 

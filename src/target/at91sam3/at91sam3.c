@@ -70,7 +70,7 @@ Usage of %s:\n\
   -x,  --execute <ADDRESS>                  execute program\n\
   -F,  --frequency <FREQUENCY>              set JTAG frequency, in KHz\n\n",
 			CUR_TARGET_STRING);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 VSS_HANDLER(at91sam3_mode)
@@ -90,7 +90,7 @@ VSS_HANDLER(at91sam3_mode)
 				sizeof(at91sam3_program_functions));
 		break;
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 const struct vss_cmd_t at91sam3_notifier[] =

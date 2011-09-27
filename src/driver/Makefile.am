@@ -1,5 +1,8 @@
 INCLUDES = \
     $(all_includes) \
+    -I$(top_srcdir)/src/vsf_cfg \
+    -I$(top_srcdir)/vsf \
+    -I$(top_srcdir)/vsf/interfaces/cpu/pc \
     -I$(top_srcdir)/src \
     -I$(top_srcdir)/src/programmer \
     -I$(top_srcdir)/src/programmer/interfaces \

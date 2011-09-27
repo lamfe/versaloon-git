@@ -58,7 +58,7 @@ const struct program_mode_t lpc1000_program_mode[] =
 	{0, NULL, 0}
 };
 
-RESULT (*lpc1000_enter_program_mode_save)(struct program_context_t *context);
+vsf_err_t (*lpc1000_enter_program_mode_save)(struct program_context_t *context);
 ENTER_PROGRAM_MODE_HANDLER(lpc1000);
 struct program_functions_t lpc1000_program_functions;
 
@@ -73,7 +73,7 @@ Usage of %s:\n\
   -F,  --frequency <FREQUENCY>              set JTAG frequency, in KHz\n\
   -A,  --auto-adjust                        add checksum for first 7 vectors\n\n",
 			CUR_TARGET_STRING);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 VSS_HANDLER(lpc1000_mode)
@@ -103,7 +103,7 @@ VSS_HANDLER(lpc1000_mode)
 	}
 	lpc1000_program_functions.enter_program_mode =
 								ENTER_PROGRAM_MODE_FUNCNAME(lpc1000);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 VSS_HANDLER(lpc1000_extra)
@@ -180,7 +180,7 @@ ADJUST_SETTING_HANDLER(lpc1000)
 	}
 	flash_info->page_num = flash_info->size / flash_info->page_size;
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 uint8_t lpc1000_get_sector_idx_by_addr(struct program_context_t *context,
@@ -212,7 +212,7 @@ ENTER_PROGRAM_MODE_HANDLER(lpc1000)
 	if (NULL == lpc1000_enter_program_mode_save)
 	{
 		LOG_BUG(ERRMSG_NOT_INITIALIZED, "lpc1000", "");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	if ((pi->auto_adjust)

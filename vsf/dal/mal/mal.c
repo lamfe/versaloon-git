@@ -99,64 +99,64 @@ static struct mal_driver_t* mal_find_driver(uint16_t index)
 	return NULL;
 }
 
-static RESULT mal_init(uint16_t index, struct dal_info_t *info)
+static vsf_err_t mal_init(uint16_t index, struct dal_info_t *info)
 {
 	struct mal_driver_t* mal_driver;
 	
 	mal_driver = mal_find_driver(index);
 	if ((NULL == mal_driver) || (NULL == mal_driver->init))
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 	
 	return mal_driver->init(info);
 }
 
-static RESULT mal_fini(uint16_t index, struct dal_info_t *info)
+static vsf_err_t mal_fini(uint16_t index, struct dal_info_t *info)
 {
 	struct mal_driver_t* mal_driver;
 	
 	mal_driver = mal_find_driver(index);
 	if ((NULL == mal_driver) || (NULL == mal_driver->fini))
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 	
 	return mal_driver->fini(info);
 }
 
-static RESULT mal_getinfo(uint16_t index, struct dal_info_t *info)
+static vsf_err_t mal_getinfo(uint16_t index, struct dal_info_t *info)
 {
 	struct mal_driver_t* mal_driver;
 	
 	mal_driver = mal_find_driver(index);
 	if ((NULL == mal_driver) || (NULL == mal_driver->getinfo))
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 	
 	return mal_driver->getinfo(info);
 }
 
-static RESULT mal_poll(uint16_t index, struct dal_info_t *info)
+static vsf_err_t mal_poll(uint16_t index, struct dal_info_t *info)
 {
 	struct mal_driver_t* mal_driver;
-	RESULT ret = ERROR_OK;
+	vsf_err_t err = VSFERR_NONE;
 	
 	mal_driver = mal_find_driver(index);
 	if (NULL == mal_driver)
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 	
 	if (mal_driver->poll != NULL)
 	{
-		ret = mal_driver->poll(info);
+		err = mal_driver->poll(info);
 	}
-	return ret;
+	return err;
 }
 
-static RESULT mal_eraseblock_nb_start(uint16_t index, struct dal_info_t *info, 
+static vsf_err_t mal_eraseblock_nb_start(uint16_t index, struct dal_info_t *info, 
 										uint64_t address, uint64_t count)
 {
 	struct mal_driver_t* mal_driver;
@@ -164,13 +164,13 @@ static RESULT mal_eraseblock_nb_start(uint16_t index, struct dal_info_t *info,
 	mal_driver = mal_find_driver(index);
 	if ((NULL == mal_driver) || (NULL == mal_driver->eraseblock_nb_start))
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 	
 	return mal_driver->eraseblock_nb_start(info, address, count);
 }
 
-static RESULT mal_eraseblock_nb(uint16_t index, struct dal_info_t *info, 
+static vsf_err_t mal_eraseblock_nb(uint16_t index, struct dal_info_t *info, 
 								uint64_t address)
 {
 	struct mal_driver_t* mal_driver;
@@ -178,27 +178,27 @@ static RESULT mal_eraseblock_nb(uint16_t index, struct dal_info_t *info,
 	mal_driver = mal_find_driver(index);
 	if ((NULL == mal_driver) || (NULL == mal_driver->eraseblock_nb))
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 	
 	return mal_driver->eraseblock_nb(info, address);
 }
 
-static RESULT mal_eraseblock_nb_isready(uint16_t index, 
-						struct dal_info_t *info, uint64_t address, bool *ready)
+static vsf_err_t mal_eraseblock_nb_isready(uint16_t index, 
+									struct dal_info_t *info, uint64_t address)
 {
 	struct mal_driver_t* mal_driver;
 	
 	mal_driver = mal_find_driver(index);
 	if ((NULL == mal_driver) || (NULL == mal_driver->eraseblock_nb_isready))
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 	
-	return mal_driver->eraseblock_nb_isready(info, address, ready);
+	return mal_driver->eraseblock_nb_isready(info, address);
 }
 
-static RESULT mal_eraseblock_nb_waitready(uint16_t index, 
+static vsf_err_t mal_eraseblock_nb_waitready(uint16_t index, 
 									struct dal_info_t *info, uint64_t address)
 {
 	struct mal_driver_t* mal_driver;
@@ -206,7 +206,7 @@ static RESULT mal_eraseblock_nb_waitready(uint16_t index,
 	mal_driver = mal_find_driver(index);
 	if (NULL == mal_driver)
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 	
 	if (mal_driver->eraseblock_nb_waitready != NULL)
@@ -217,80 +217,73 @@ static RESULT mal_eraseblock_nb_waitready(uint16_t index,
 	{
 		if (mal_driver->eraseblock_nb_isready != NULL)
 		{
-			bool ready = false;
 			uint32_t dly;
-			RESULT ret;
+			vsf_err_t err = VSFERR_FAIL;
 			
 			dly = MAL_RETRY_CNT;
-			ret = ERROR_FAIL;
 			while (dly--)
 			{
-				ready = false;
-				if (ERROR_OK != mal_eraseblock_nb_isready(index, info, address, 
-															&ready))
+				err = mal_eraseblock_nb_isready(index, info, address);
+				if (!err || (err && (err != VSFERR_NOT_READY)))
 				{
-					return ERROR_FAIL;
-				}
-				if (ready)
-				{
-					ret = ERROR_OK;
 					break;
 				}
 			}
-			return ret;
+			return err;
 		} 
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 }
 
-static RESULT mal_eraseblock_nb_end(uint16_t index, struct dal_info_t *info)
+static vsf_err_t mal_eraseblock_nb_end(uint16_t index, struct dal_info_t *info)
 {
 	struct mal_driver_t* mal_driver;
 	
 	mal_driver = mal_find_driver(index);
 	if ((NULL == mal_driver) || (NULL == mal_driver->eraseblock_nb_end))
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 	
 	return mal_driver->eraseblock_nb_end(info);
 }
 
-static RESULT mal_eraseall_nb_start(uint16_t index, struct dal_info_t *info)
+static vsf_err_t mal_eraseall_nb_start(uint16_t index, struct dal_info_t *info)
 {
 	struct mal_driver_t* mal_driver;
 	
 	mal_driver = mal_find_driver(index);
 	if ((NULL == mal_driver) || (NULL == mal_driver->eraseall_nb_start))
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 	
 	return mal_driver->eraseall_nb_start(info);
 }
 
-static RESULT mal_eraseall_nb_isready(uint16_t index, struct dal_info_t *info, 
-										bool *ready)
+static vsf_err_t mal_eraseall_nb_isready(uint16_t index,
+											struct dal_info_t *info)
 {
 	struct mal_driver_t* mal_driver;
 	
 	mal_driver = mal_find_driver(index);
 	if ((NULL == mal_driver) || (NULL == mal_driver->eraseall_nb_isready))
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 	
-	return mal_driver->eraseall_nb_isready(info, ready);
+	return mal_driver->eraseall_nb_isready(info);
 }
 
-static RESULT mal_eraseall_nb_waitready(uint16_t index, struct dal_info_t *info)
+static vsf_err_t mal_eraseall_nb_waitready(uint16_t index,
+											struct dal_info_t *info)
 {
 	struct mal_driver_t* mal_driver;
 	
 	mal_driver = mal_find_driver(index);
 	if (NULL == mal_driver)
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 	
 	if (mal_driver->eraseall_nb_waitready != NULL)
@@ -301,44 +294,38 @@ static RESULT mal_eraseall_nb_waitready(uint16_t index, struct dal_info_t *info)
 	{
 		if (mal_driver->eraseall_nb_isready != NULL)
 		{
-			bool ready = false;
 			uint32_t dly;
-			RESULT ret;
+			vsf_err_t err = VSFERR_FAIL;
 			
 			dly = MAL_RETRY_CNT;
-			ret = ERROR_FAIL;
 			while (dly--)
 			{
-				if (ERROR_OK != mal_eraseall_nb_isready(index, info, &ready))
+				err = mal_eraseall_nb_isready(index, info);
+				if (!err || (err && (err != VSFERR_NOT_READY)))
 				{
-					return ERROR_FAIL;
-				}
-				if (ready)
-				{
-					ret = ERROR_OK;
 					break;
 				}
 			}
-			return ret;
+			return err;
 		} 
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 }
 
-static RESULT mal_eraseall_nb_end(uint16_t index, struct dal_info_t *info)
+static vsf_err_t mal_eraseall_nb_end(uint16_t index, struct dal_info_t *info)
 {
 	struct mal_driver_t* mal_driver;
 	
 	mal_driver = mal_find_driver(index);
 	if ((NULL == mal_driver) || (NULL == mal_driver->eraseall_nb_end))
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 	
 	return mal_driver->eraseall_nb_end(info);
 }
 
-static RESULT mal_readblock_nb_start(uint16_t index, struct dal_info_t *info, 
+static vsf_err_t mal_readblock_nb_start(uint16_t index, struct dal_info_t *info, 
 										uint64_t address, uint64_t count)
 {
 	struct mal_driver_t* mal_driver;
@@ -346,13 +333,13 @@ static RESULT mal_readblock_nb_start(uint16_t index, struct dal_info_t *info,
 	mal_driver = mal_find_driver(index);
 	if ((NULL == mal_driver) || (NULL == mal_driver->readblock_nb_start))
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 	
 	return mal_driver->readblock_nb_start(info, address, count);
 }
 
-static RESULT mal_readblock_nb(uint16_t index, struct dal_info_t *info, 
+static vsf_err_t mal_readblock_nb(uint16_t index, struct dal_info_t *info, 
 								uint64_t address, uint8_t *buff)
 {
 	struct mal_driver_t* mal_driver;
@@ -360,27 +347,27 @@ static RESULT mal_readblock_nb(uint16_t index, struct dal_info_t *info,
 	mal_driver = mal_find_driver(index);
 	if ((NULL == mal_driver) || (NULL == mal_driver->readblock_nb))
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 	
 	return mal_driver->readblock_nb(info, address, buff);
 }
 
-static RESULT mal_readblock_nb_isready(uint16_t index, struct dal_info_t *info, 
-								uint64_t address, uint8_t *buff, bool *ready)
+static vsf_err_t mal_readblock_nb_isready(uint16_t index,
+					struct dal_info_t *info, uint64_t address, uint8_t *buff)
 {
 	struct mal_driver_t* mal_driver;
 	
 	mal_driver = mal_find_driver(index);
 	if ((NULL == mal_driver) || (NULL == mal_driver->readblock_nb_isready))
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 	
-	return mal_driver->readblock_nb_isready(info, address, buff, ready);
+	return mal_driver->readblock_nb_isready(info, address, buff);
 }
 
-static RESULT mal_readblock_nb_waitready(uint16_t index, 
+static vsf_err_t mal_readblock_nb_waitready(uint16_t index, 
 					struct dal_info_t *info, uint64_t address, uint8_t *buff)
 {
 	struct mal_driver_t* mal_driver;
@@ -388,7 +375,7 @@ static RESULT mal_readblock_nb_waitready(uint16_t index,
 	mal_driver = mal_find_driver(index);
 	if (NULL == mal_driver)
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 	
 	if (mal_driver->readblock_nb_waitready != NULL)
@@ -399,45 +386,38 @@ static RESULT mal_readblock_nb_waitready(uint16_t index,
 	{
 		if (mal_driver->readblock_nb_isready != NULL)
 		{
-			bool ready = false;
 			uint32_t dly;
-			RESULT ret;
+			vsf_err_t err = VSFERR_FAIL;
 			
 			dly = MAL_RETRY_CNT;
-			ret = ERROR_FAIL;
 			while (dly--)
 			{
-				if (ERROR_OK != mal_readblock_nb_isready(index, info, address, 
-															buff, &ready))
+				err = mal_readblock_nb_isready(index, info, address, buff);
+				if (!err || (err && (err != VSFERR_NOT_READY)))
 				{
-					return ERROR_FAIL;
-				}
-				if (ready)
-				{
-					ret = ERROR_OK;
 					break;
 				}
 			}
-			return ret;
+			return err;
 		} 
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 }
 
-static RESULT mal_readblock_nb_end(uint16_t index, struct dal_info_t *info)
+static vsf_err_t mal_readblock_nb_end(uint16_t index, struct dal_info_t *info)
 {
 	struct mal_driver_t* mal_driver;
 	
 	mal_driver = mal_find_driver(index);
 	if ((NULL == mal_driver) || (NULL == mal_driver->readblock_nb_end))
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 	
 	return mal_driver->readblock_nb_end(info);
 }
 
-static RESULT mal_writeblock_nb_start(uint16_t index, struct dal_info_t *info, 
+static vsf_err_t mal_writeblock_nb_start(uint16_t index, struct dal_info_t *info, 
 										uint64_t address, uint64_t count)
 {
 	struct mal_driver_t* mal_driver;
@@ -445,13 +425,13 @@ static RESULT mal_writeblock_nb_start(uint16_t index, struct dal_info_t *info,
 	mal_driver = mal_find_driver(index);
 	if ((NULL == mal_driver) || (NULL == mal_driver->writeblock_nb_start))
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 	
 	return mal_driver->writeblock_nb_start(info, address, count);
 }
 
-static RESULT mal_writeblock_nb(uint16_t index, struct dal_info_t *info, 
+static vsf_err_t mal_writeblock_nb(uint16_t index, struct dal_info_t *info, 
 								uint64_t address, uint8_t *buff)
 {
 	struct mal_driver_t* mal_driver;
@@ -459,27 +439,27 @@ static RESULT mal_writeblock_nb(uint16_t index, struct dal_info_t *info,
 	mal_driver = mal_find_driver(index);
 	if ((NULL == mal_driver) || (NULL == mal_driver->writeblock_nb))
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 	
 	return mal_driver->writeblock_nb(info, address, buff);
 }
 
-static RESULT mal_writeblock_nb_isready(uint16_t index,	
-		struct dal_info_t *info, uint64_t address, uint8_t *buff, bool *ready)
+static vsf_err_t mal_writeblock_nb_isready(uint16_t index,
+		struct dal_info_t *info, uint64_t address, uint8_t *buff)
 {
 	struct mal_driver_t* mal_driver;
 	
 	mal_driver = mal_find_driver(index);
 	if ((NULL == mal_driver) || (NULL == mal_driver->writeblock_nb_isready))
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 	
-	return mal_driver->writeblock_nb_isready(info, address, buff, ready);
+	return mal_driver->writeblock_nb_isready(info, address, buff);
 }
 
-static RESULT mal_writeblock_nb_waitready(uint16_t index, 
+static vsf_err_t mal_writeblock_nb_waitready(uint16_t index, 
 					struct dal_info_t *info, uint64_t address, uint8_t *buff)
 {
 	struct mal_driver_t* mal_driver;
@@ -487,7 +467,7 @@ static RESULT mal_writeblock_nb_waitready(uint16_t index,
 	mal_driver = mal_find_driver(index);
 	if (NULL == mal_driver)
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 	
 	if (mal_driver->writeblock_nb_waitready != NULL)
@@ -498,45 +478,38 @@ static RESULT mal_writeblock_nb_waitready(uint16_t index,
 	{
 		if (mal_driver->writeblock_nb_isready != NULL)
 		{
-			bool ready = false;
 			uint32_t dly;
-			RESULT ret;
+			vsf_err_t err = VSFERR_FAIL;
 			
 			dly = MAL_RETRY_CNT;
-			ret = ERROR_FAIL;
 			while (dly--)
 			{
-				if (ERROR_OK != mal_writeblock_nb_isready(index, info, address, 
-															buff, &ready))
+				err = mal_writeblock_nb_isready(index, info, address, buff);
+				if (!err || (err && (err != VSFERR_NOT_READY)))
 				{
-					return ERROR_FAIL;
-				}
-				if (ready)
-				{
-					ret = ERROR_OK;
 					break;
 				}
 			}
-			return ret;
+			return err;
 		} 
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 }
 
-static RESULT mal_writeblock_nb_end(uint16_t index, struct dal_info_t *info)
+static vsf_err_t mal_writeblock_nb_end(uint16_t index, struct dal_info_t *info)
 {
 	struct mal_driver_t* mal_driver;
 	
 	mal_driver = mal_find_driver(index);
 	if ((NULL == mal_driver) || (NULL == mal_driver->writeblock_nb_end))
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 	
 	return mal_driver->writeblock_nb_end(info);
 }
 
-static RESULT mal_eraseblock(uint16_t index, struct dal_info_t *info, 
+static vsf_err_t mal_eraseblock(uint16_t index, struct dal_info_t *info, 
 								uint64_t address, uint64_t count)
 {
 	struct mal_info_t *mal_info = (struct mal_info_t *)info->extra;
@@ -545,55 +518,51 @@ static RESULT mal_eraseblock(uint16_t index, struct dal_info_t *info,
 	erase_block_size = mal_info->erase_page_size ? 
 					mal_info->erase_page_size : mal_info->capacity.block_size;
 	if (!erase_block_size || 
-		(ERROR_OK != mal_eraseblock_nb_start(index, info, address, count)))
+		mal_eraseblock_nb_start(index, info, address, count))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	for (i = 0; i < count; i++)
 	{
-		if ((ERROR_OK != mal_eraseblock_nb(index, info, address)) || 
-			(ERROR_OK != mal_eraseblock_nb_waitready(index, info, address)))
+		if (mal_eraseblock_nb(index, info, address) || 
+			mal_eraseblock_nb_waitready(index, info, address))
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		address += erase_block_size;
 	}
 	
-	if (ERROR_OK != mal_eraseblock_nb_end(index, info))
-	{
-		return ERROR_FAIL;
-	}
-	return ERROR_OK;
+	return mal_eraseblock_nb_end(index, info);
 }
 
-static RESULT mal_eraseall(uint16_t index, struct dal_info_t *info)
+static vsf_err_t mal_eraseall(uint16_t index, struct dal_info_t *info)
 {
-	if (ERROR_OK != mal_eraseall_nb_start(index, info))
+	if (mal_eraseall_nb_start(index, info))
 	{
 		// erase all not available, try erase block
 		struct mal_info_t *mal_info = (struct mal_info_t *)info->extra;
 		uint64_t block_number = mal_info->capacity.block_number;
 		
 		if (!block_number || 
-			(ERROR_OK != mal_eraseblock(index, info, 0, block_number)))
+			mal_eraseblock(index, info, 0, block_number))
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
-		return ERROR_OK;
+		return VSFERR_NONE;
 	}
 	else
 	{
-		if ((ERROR_OK != mal_eraseall_nb_waitready(index, info)) || 
-			(ERROR_OK != mal_eraseall_nb_end(index, info)))
+		if (mal_eraseall_nb_waitready(index, info) || 
+			mal_eraseall_nb_end(index, info))
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
-		return ERROR_OK;
+		return VSFERR_NONE;
 	}
 }
 
-static RESULT mal_readblock(uint16_t index, struct dal_info_t *info, 
+static vsf_err_t mal_readblock(uint16_t index, struct dal_info_t *info, 
 							uint64_t address, uint8_t *buff, uint64_t count)
 {
 	struct mal_info_t *mal_info = (struct mal_info_t *)info->extra;
@@ -602,18 +571,17 @@ static RESULT mal_readblock(uint16_t index, struct dal_info_t *info,
 	read_block_size = mal_info->read_page_size ? 
 					mal_info->read_page_size : mal_info->capacity.block_size;
 	if (!read_block_size || 
-		(ERROR_OK != mal_readblock_nb_start(index, info, address, count)))
+		mal_readblock_nb_start(index, info, address, count))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	for (i = 0; i < count; i++)
 	{
-		if ((ERROR_OK != mal_readblock_nb(index, info, address, buff)) || 
-			(ERROR_OK != mal_readblock_nb_waitready(index, info, address, 
-													buff)))
+		if (mal_readblock_nb(index, info, address, buff) || 
+			mal_readblock_nb_waitready(index, info, address, buff))
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		address += read_block_size;
 		buff += read_block_size;
@@ -622,7 +590,7 @@ static RESULT mal_readblock(uint16_t index, struct dal_info_t *info,
 	return mal_readblock_nb_end(index, info);
 }
 
-static RESULT mal_writeblock(uint16_t index, struct dal_info_t *info, 
+static vsf_err_t mal_writeblock(uint16_t index, struct dal_info_t *info, 
 								uint64_t address, uint8_t *buff, uint64_t count)
 {
 	struct mal_info_t *mal_info = (struct mal_info_t *)info->extra;
@@ -631,18 +599,17 @@ static RESULT mal_writeblock(uint16_t index, struct dal_info_t *info,
 	write_block_size = mal_info->write_page_size ? 
 					mal_info->write_page_size : mal_info->capacity.block_size;
 	if (!write_block_size || 
-		(ERROR_OK != mal_writeblock_nb_start(index, info, address, count)))
+		mal_writeblock_nb_start(index, info, address, count))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	for (i = 0; i < count; i++)
 	{
-		if ((ERROR_OK != mal_writeblock_nb(index, info, address, buff)) || 
-			(ERROR_OK != mal_writeblock_nb_waitready(index, info, address, 
-														buff)))
+		if (mal_writeblock_nb(index, info, address, buff) || 
+			mal_writeblock_nb_waitready(index, info, address, buff))
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		address += write_block_size;
 		buff += write_block_size;

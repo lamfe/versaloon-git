@@ -31,8 +31,8 @@
 #include "app_err.h"
 
 #include "vsprog.h"
-#include "scripts.h"
 #include "programmer.h"
+#include "scripts.h"
 #include "strparser.h"
 
 #include "versaloon/versaloon.h"
@@ -87,7 +87,7 @@ VSS_HANDLER(programmer_list)
 	{
 		LOG_INFO("no programmer found.");
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 VSS_HANDLER(virtualprog_define)
@@ -103,13 +103,13 @@ VSS_HANDLER(virtualprog_define)
 		ifs[len - 2] = '\0';
 		mode = argv[1][len - 1];
 	}
-	if (ERROR_OK != virtual_interface_init(ifs, mode))
+	if (virtual_interface_init(ifs, mode))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "initialize programmer: ",
 					argv[1]);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 VSS_HANDLER(programmer_define)
@@ -119,12 +119,12 @@ VSS_HANDLER(programmer_define)
 	VSS_CHECK_ARGC_2(1, 2);
 
 	programmer = (1 == argc) ? NULL : (char *)argv[1];
-	if (ERROR_OK != interface_init(programmer))
+	if (interface_init(programmer))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "initialize programmer: ",
 					argv[1]);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 

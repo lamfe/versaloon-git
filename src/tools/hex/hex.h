@@ -19,12 +19,12 @@
 #ifndef __HEX_H_INCLUDED__
 #define __HEX_H_INCLUDED__
 
-RESULT read_hex_file(FILE *hex_file, WRITE_MEMORY_CALLBACK callback,
+vsf_err_t read_hex_file(FILE *hex_file, WRITE_MEMORY_CALLBACK callback,
 				void *buffer, uint32_t seg_offset, uint32_t addr_offset);
-RESULT write_hex_file(FILE *hex_file, uint32_t file_addr, uint8_t *buff,
+vsf_err_t write_hex_file(FILE *hex_file, uint32_t file_addr, uint8_t *buff,
 				uint32_t buff_size, uint32_t seg_addr, uint32_t start_addr,
 				ADJUST_MAPPING_CALLBACK remap);
-RESULT write_hex_file_end(FILE *hex_file);
+vsf_err_t write_hex_file_end(FILE *hex_file);
 
 #endif /* __HEX_H_INCLUDED__ */
 

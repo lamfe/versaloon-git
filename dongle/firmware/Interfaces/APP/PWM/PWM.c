@@ -23,37 +23,37 @@
 static uint16_t pwm0_cycle = 0;
 static uint16_t pwm_buff[512], pwm0_cur_rate = 0;
 
-RESULT pwm_init(uint8_t index)
+vsf_err_t pwm_init(uint8_t index)
 {
 	switch (index)
 	{
 	case 0:
-		return ERROR_OK;
+		return VSFERR_NONE;
 	case 1:
 		SYNCSWPWM_IN_TIMER_INIT();
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT pwm_fini(uint8_t index)
+vsf_err_t pwm_fini(uint8_t index)
 {
 	switch (index)
 	{
 	case 0:
 		SYNCSWPWM_PORT_ODPP_FINI();
 		SYNCSWPWM_OUT_TIMER_FINI();
-		return ERROR_OK;
+		return VSFERR_NONE;
 	case 1:
 		SYNCSWPWM_IN_TIMER_FINI();
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT pwm_config(uint8_t index, uint16_t kHz, uint8_t mode)
+vsf_err_t pwm_config(uint8_t index, uint16_t kHz, uint8_t mode)
 {
 	switch (index)
 	{
@@ -78,15 +78,15 @@ RESULT pwm_config(uint8_t index, uint16_t kHz, uint8_t mode)
 		{
 			SYNCSWPWM_OUT_TIMER_SetRate(pwm0_cur_rate * pwm0_cycle / 0xFFFF);
 		}
-		return ERROR_OK;
+		return VSFERR_NONE;
 	case 1:
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT pwm_out(uint8_t index, uint16_t count, uint16_t *rate)
+vsf_err_t pwm_out(uint8_t index, uint16_t count, uint16_t *rate)
 {
 	uint16_t i;
 	
@@ -95,7 +95,7 @@ RESULT pwm_out(uint8_t index, uint16_t count, uint16_t *rate)
 	case 0:
 		if ((count > dimof(pwm_buff)) || (NULL == rate))
 		{
-			return ERROR_FAIL;
+			return VSFERR_INVALID_PARAMETER;
 		}
 		
 		pwm0_cur_rate = rate[count - 1];
@@ -105,13 +105,13 @@ RESULT pwm_out(uint8_t index, uint16_t count, uint16_t *rate)
 		}
 		SYNCSWPWM_OUT_TIMER_DMA_INIT(count, pwm_buff);
 		SYNCSWPWM_OUT_TIMER_DMA_WAIT();
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT pwm_in(uint8_t index, uint16_t count, uint16_t *rate)
+vsf_err_t pwm_in(uint8_t index, uint16_t count, uint16_t *rate)
 {
 	uint32_t dly;
 	
@@ -120,7 +120,7 @@ RESULT pwm_in(uint8_t index, uint16_t count, uint16_t *rate)
 	case 1:
 		if ((count > dimof(pwm_buff) / 2) || (NULL == rate))
 		{
-			return ERROR_FAIL;
+			return VSFERR_INVALID_PARAMETER;
 		}
 		
 		SYNCSWPWM_IN_TIMER_DMA_INIT(count, pwm_buff, pwm_buff + count);
@@ -130,9 +130,9 @@ RESULT pwm_in(uint8_t index, uint16_t count, uint16_t *rate)
 		{
 			memcpy(rate, pwm_buff, 4 * count);
 		}
-		return dly ? ERROR_OK : ERROR_FAIL;
+		return dly ? VSFERR_NONE : VSFERR_FAIL;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 

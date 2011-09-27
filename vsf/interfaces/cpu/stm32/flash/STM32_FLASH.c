@@ -28,41 +28,41 @@
 
 #define STM32_FLASH_OBR_RDPRT			((uint32_t)1 << 1)
 
-RESULT stm32_flash_init(uint8_t index)
+vsf_err_t stm32_flash_init(uint8_t index)
 {
 	switch (index)
 	{
 	case 0:
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT stm32_flash_fini(uint8_t index)
+vsf_err_t stm32_flash_fini(uint8_t index)
 {
 	switch (index)
 	{
 	case 0:
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT stm32_flash_lock(uint8_t index)
+vsf_err_t stm32_flash_lock(uint8_t index)
 {
 	switch (index)
 	{
 	case 0:
 		FLASH->CR |= STM32_FLASH_CR_LOCK;
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT stm32_flash_unlock(uint8_t index)
+vsf_err_t stm32_flash_unlock(uint8_t index)
 {
 	switch (index)
 	{
@@ -71,13 +71,13 @@ RESULT stm32_flash_unlock(uint8_t index)
 		FLASH->KEYR = STM32_FLASH_KEYR_KEY2;
 		FLASH->SR |= STM32_FLASH_SR_EOP | STM32_FLASH_SR_BSY | 
 						STM32_FLASH_SR_PGERR | STM32_FLASH_SR_WRPRTERR;
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT stm32_flash_getcapacity(uint8_t index, uint32_t *pagesize, 
+vsf_err_t stm32_flash_getcapacity(uint8_t index, uint32_t *pagesize, 
 									uint32_t *pagenum)
 {
 	uint16_t flash_size = STM32_FLASH_SIZE_KB;
@@ -107,27 +107,27 @@ RESULT stm32_flash_getcapacity(uint8_t index, uint32_t *pagesize,
 				*pagenum = flash_size;
 			}
 		}
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT stm32_flash_read(uint8_t index, uint32_t offset, uint8_t *buff, 
+vsf_err_t stm32_flash_read(uint8_t index, uint32_t offset, uint8_t *buff, 
 						uint32_t size)
 {
 	switch (index)
 	{
 	case 0:
 		memcpy(buff, (uint8_t *)STM32_FLASH_ADDR(offset), size);
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT stm32_flash_read_isready(uint8_t index, uint32_t offset, uint8_t *buff, 
-								uint32_t size, bool *ready)
+vsf_err_t stm32_flash_read_isready(uint8_t index, uint32_t offset,
+									uint8_t *buff, uint32_t size)
 {
 	REFERENCE_PARAMETER(offset);
 	REFERENCE_PARAMETER(buff);
@@ -136,14 +136,13 @@ RESULT stm32_flash_read_isready(uint8_t index, uint32_t offset, uint8_t *buff,
 	switch (index)
 	{
 	case 0:
-		*ready = true;
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT stm32_flash_write(uint8_t index, uint32_t offset, uint8_t *buff, 
+vsf_err_t stm32_flash_write(uint8_t index, uint32_t offset, uint8_t *buff, 
 							uint32_t size)
 {
 	uint32_t i;
@@ -159,20 +158,20 @@ RESULT stm32_flash_write(uint8_t index, uint32_t offset, uint8_t *buff,
 			if (FLASH->SR & (/*STM32_FLASH_SR_PGERR | */STM32_FLASH_SR_WRPRTERR))
 			{
 				FLASH->CR &= ~STM32_FLASH_CR_PG;
-				return ERROR_FAIL;
+				return VSFERR_FAIL;
 			}
 			offset += 2;
 			buff += 2;
 		}
 		FLASH->CR &= ~STM32_FLASH_CR_PG;
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT stm32_flash_write_isready(uint8_t index, uint32_t offset, uint8_t *buff, 
-									uint32_t size, bool *ready)
+vsf_err_t stm32_flash_write_isready(uint8_t index, uint32_t offset,
+									uint8_t *buff, uint32_t size)
 {
 	REFERENCE_PARAMETER(offset);
 	REFERENCE_PARAMETER(buff);
@@ -181,14 +180,13 @@ RESULT stm32_flash_write_isready(uint8_t index, uint32_t offset, uint8_t *buff,
 	switch (index)
 	{
 	case 0:
-		*ready = true;
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT stm32_flash_readpage(uint8_t index, uint32_t offset, uint8_t *buff)
+vsf_err_t stm32_flash_readpage(uint8_t index, uint32_t offset, uint8_t *buff)
 {
 	uint32_t page_size;
 	
@@ -198,29 +196,26 @@ RESULT stm32_flash_readpage(uint8_t index, uint32_t offset, uint8_t *buff)
 		stm32_flash_getcapacity(index, &page_size, NULL);
 		return stm32_flash_read(index, offset, buff, page_size);
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT stm32_flash_readpage_isready(uint8_t index, uint32_t offset, 
-									uint8_t *buff, bool *ready)
+vsf_err_t stm32_flash_readpage_isready(uint8_t index, uint32_t offset,
+										uint8_t *buff)
 {
 	uint32_t page_size;
-	
-	REFERENCE_PARAMETER(offset);
-	REFERENCE_PARAMETER(buff);
 	
 	switch (index)
 	{
 	case 0:
 		stm32_flash_getcapacity(index, &page_size, NULL);
-		return stm32_flash_read_isready(index, offset, buff, page_size, ready);
+		return stm32_flash_read_isready(index, offset, buff, page_size);
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT stm32_flash_erasepage(uint8_t index, uint32_t offset)
+vsf_err_t stm32_flash_erasepage(uint8_t index, uint32_t offset)
 {
 	switch (index)
 	{
@@ -228,32 +223,34 @@ RESULT stm32_flash_erasepage(uint8_t index, uint32_t offset)
 		FLASH->CR |= STM32_FLASH_CR_PER;
 		FLASH->AR = STM32_FLASH_ADDR(offset); 
 		FLASH->CR |= STM32_FLASH_CR_STAT;
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT stm32_flash_erasepage_isready(uint8_t index, uint32_t offset, 
-										bool *ready)
+vsf_err_t stm32_flash_erasepage_isready(uint8_t index, uint32_t offset)
 {
+	vsf_err_t err;
+	
 	REFERENCE_PARAMETER(offset);
 	
 	switch (index)
 	{
 	case 0:
-		*ready = ((FLASH->SR & STM32_FLASH_SR_BSY) == 0);
-		if (*ready)
+		err = ((FLASH->SR & STM32_FLASH_SR_BSY) == 0) ?
+					VSFERR_NONE : VSFERR_NOT_READY;
+		if (!err)
 		{
 			FLASH->CR &= ~STM32_FLASH_CR_PER;
 		}
-		return (FLASH->SR & STM32_FLASH_SR_WRPRTERR) ? ERROR_FAIL : ERROR_OK;
+		return (FLASH->SR & STM32_FLASH_SR_WRPRTERR) ? VSFERR_FAIL : err;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT stm32_flash_writepage(uint8_t index, uint32_t offset, uint8_t *buff)
+vsf_err_t stm32_flash_writepage(uint8_t index, uint32_t offset, uint8_t *buff)
 {
 	uint32_t page_size;
 	
@@ -263,30 +260,26 @@ RESULT stm32_flash_writepage(uint8_t index, uint32_t offset, uint8_t *buff)
 		stm32_flash_getcapacity(index, &page_size, NULL);
 		return stm32_flash_write(index, offset, buff, page_size);
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT stm32_flash_writepage_isready(uint8_t index, uint32_t offset, 
-										uint8_t *buff, bool *ready)
+vsf_err_t stm32_flash_writepage_isready(uint8_t index, uint32_t offset, 
+										uint8_t *buff)
 {
 	uint32_t page_size;
-	
-	REFERENCE_PARAMETER(offset);
-	REFERENCE_PARAMETER(buff);
 	
 	switch (index)
 	{
 	case 0:
 		stm32_flash_getcapacity(index, &page_size, NULL);
-		*ready = true;
-		return stm32_flash_write_isready(index, offset, buff, page_size, ready);
+		return stm32_flash_write_isready(index, offset, buff, page_size);
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT stm32_flash_protect(uint8_t index)
+vsf_err_t stm32_flash_protect(uint8_t index)
 {
 	switch (index)
 	{
@@ -301,9 +294,9 @@ RESULT stm32_flash_protect(uint8_t index)
 		OB->RDP = 0;
 		while (FLASH->SR & STM32_FLASH_SR_BSY);
 		FLASH->CR &= ~STM32_FLASH_CR_OPTPG;
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 

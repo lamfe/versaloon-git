@@ -17,13 +17,13 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-RESULT stm32_usart_init(uint8_t index);
-RESULT stm32_usart_fini(uint8_t index);
-RESULT stm32_usart_config(uint8_t index, uint32_t baudrate, 
-	uint8_t datalength, uint8_t mode);
-RESULT stm32_usart_config_callback(uint8_t index, void *p, 
+vsf_err_t stm32_usart_init(uint8_t index);
+vsf_err_t stm32_usart_fini(uint8_t index);
+vsf_err_t stm32_usart_config(uint8_t index, uint32_t baudrate, 
+								uint8_t datalength, uint8_t mode);
+vsf_err_t stm32_usart_config_callback(uint8_t index, void *p, 
 						void (*ontx)(void *), void (*onrx)(void *, uint16_t));
-RESULT stm32_usart_tx(uint8_t index, uint16_t data);
-bool stm32_usart_tx_isready(uint8_t index);
+vsf_err_t stm32_usart_tx(uint8_t index, uint16_t data);
+vsf_err_t stm32_usart_tx_isready(uint8_t index);
 uint16_t stm32_usart_rx(uint8_t index);
-bool stm32_usart_rx_isready(uint8_t index);
+vsf_err_t stm32_usart_rx_isready(uint8_t index);

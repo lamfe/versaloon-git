@@ -218,5 +218,5 @@ struct sd_info_t
 };
 
 uint8_t sd_spi_cmd_chksum(uint8_t *data, uint32_t num);
-RESULT sd_parse_csd(uint8_t *csd, struct sd_info_t *info);
+vsf_err_t sd_parse_csd(uint8_t *csd, struct sd_info_t *info);
 

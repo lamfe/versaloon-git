@@ -19,10 +19,10 @@
 #define ISSP_OPERATE_APPENDBIT	(1 << 2)
 #define ISSP_OPERATE_0s			(1 << 3)
 
-RESULT issp_vector(uint8_t index, uint8_t operate, uint8_t addr, 
-					 uint8_t data, uint8_t *buf);
-RESULT issp_enter_program_mode(uint8_t index, uint8_t mode);
-RESULT issp_leave_program_mode(uint8_t index, uint8_t mode);
-RESULT issp_wait_and_poll(uint8_t index);
-RESULT issp_init(uint8_t index);
-RESULT issp_fini(uint8_t index);
+vsf_err_t issp_vector(uint8_t index, uint8_t operate, uint8_t addr, 
+						uint8_t data, uint8_t *buf);
+vsf_err_t issp_enter_program_mode(uint8_t index, uint8_t mode);
+vsf_err_t issp_leave_program_mode(uint8_t index, uint8_t mode);
+vsf_err_t issp_wait_and_poll(uint8_t index);
+vsf_err_t issp_init(uint8_t index);
+vsf_err_t issp_fini(uint8_t index);

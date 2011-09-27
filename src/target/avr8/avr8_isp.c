@@ -87,7 +87,7 @@ struct program_functions_t avr8isp_program_functions =
 
 static struct interfaces_info_t *interfaces = NULL;
 
-static RESULT avr8_isp_pollready(void)
+static vsf_err_t avr8_isp_pollready(void)
 {
 	uint8_t cmd_buf[4], ret_buf[4];
 	
@@ -101,7 +101,7 @@ static RESULT avr8_isp_pollready(void)
 		spi_io(cmd_buf, 4, NULL);
 		poll_ok(0, 0x01, 0x00);
 		poll_end();
-		return ERROR_OK;
+		return VSFERR_NONE;
 	}
 	else
 	{
@@ -113,17 +113,17 @@ static RESULT avr8_isp_pollready(void)
 			cmd_buf[2] = 0x00;
 			cmd_buf[3] = 0x00;
 			spi_io(cmd_buf, 4, ret_buf);
-			if (ERROR_OK != commit())
+			if (commit())
 			{
-				return ERROR_FAIL;
+				return VSFERR_FAIL;
 			}
 			if ((ret_buf[3] & 0x01) == 0x00)
 			{
-				return ERROR_OK;
+				return VSFERR_NONE;
 			}
 			delay_us(500);
 		}
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 }
 
@@ -170,7 +170,7 @@ try_frequency:
 		
 		LOG_PUSH();
 		LOG_MUTE();
-		if (ERROR_OK != commit())
+		if (commit())
 		{
 			LOG_POP();
 			if (pi->frequency > 1)
@@ -189,9 +189,9 @@ try_frequency:
 	else
 	{
 		spi_io(cmd_buf, 4, ret_buf);
-		if (ERROR_OK != commit())
+		if (commit())
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		if (ret_buf[2] != 0x53)
 		{
@@ -208,7 +208,7 @@ try_frequency:
 		}
 	}
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 LEAVE_PROGRAM_MODE_HANDLER(avr8isp)
@@ -255,7 +255,7 @@ WRITE_TARGET_HANDLER(avr8isp)
 	uint8_t cmd_buf[4];
 	uint32_t i;
 	uint32_t ee_page_size;
-	RESULT ret = ERROR_OK;
+	vsf_err_t err = VSFERR_NONE;
 	
 	switch (area)
 	{
@@ -297,9 +297,9 @@ WRITE_TARGET_HANDLER(avr8isp)
 				delay_ms(5);
 			}
 			
-			if (ERROR_OK != commit())
+			if (commit())
 			{
-				ret = ERRCODE_FAILURE_OPERATION;
+				err = ERRCODE_FAILURE_OPERATION;
 				break;
 			}
 		}
@@ -332,9 +332,9 @@ WRITE_TARGET_HANDLER(avr8isp)
 				}
 			}
 			
-			if (ERROR_OK != commit())
+			if (commit())
 			{
-				ret = ERRCODE_FAILURE_OPERATION;
+				err = ERRCODE_FAILURE_OPERATION;
 				break;
 			}
 		}
@@ -376,9 +376,9 @@ WRITE_TARGET_HANDLER(avr8isp)
 				buff += ee_page_size;
 			}
 			
-			if (ERROR_OK != commit())
+			if (commit())
 			{
-				ret = ERRCODE_FAILURE_OPERATION;
+				err = ERRCODE_FAILURE_OPERATION;
 				break;
 			}
 		}
@@ -409,9 +409,9 @@ WRITE_TARGET_HANDLER(avr8isp)
 				buff += ee_page_size;
 			}
 			
-			if (ERROR_OK != commit())
+			if (commit())
 			{
-				ret = ERRCODE_FAILURE_OPERATION;
+				err = ERRCODE_FAILURE_OPERATION;
 				break;
 			}
 		}
@@ -473,16 +473,16 @@ WRITE_TARGET_HANDLER(avr8isp)
 		}
 		if (param->chip_areas[FUSE_IDX].size > 0)
 		{
-			if (ERROR_OK != commit())
+			if (commit())
 			{
-				ret = ERRCODE_FAILURE_OPERATION;
+				err = ERRCODE_FAILURE_OPERATION;
 				break;
 			}
 		}
 		else
 		{
 			LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, "fuse", param->chip_name);
-			ret = ERRCODE_NOT_SUPPORT;
+			err = ERRCODE_NOT_SUPPORT;
 			break;
 		}
 		break;
@@ -504,23 +504,24 @@ WRITE_TARGET_HANDLER(avr8isp)
 				delay_ms(5);
 			}
 			
-			if (ERROR_OK != commit())
+			if (commit())
 			{
-				ret = ERRCODE_FAILURE_OPERATION;
+				err = ERRCODE_FAILURE_OPERATION;
 				break;
 			}
 		}
 		else
 		{
 			LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, "lock", param->chip_name);
-			ret = ERRCODE_NOT_SUPPORT;
+			err = ERRCODE_NOT_SUPPORT;
 			break;
 		}
 		break;
 	default:
+		err = VSFERR_NOT_SUPPORT;
 		break;
 	}
-	return ret;
+	return err;
 }
 
 READ_TARGET_HANDLER(avr8isp)
@@ -529,7 +530,7 @@ READ_TARGET_HANDLER(avr8isp)
 	uint8_t cmd_buf[4], ret_buf[256 * 4];
 	uint32_t i, j;
 	uint32_t ee_page_size;
-	RESULT ret = ERROR_OK;
+	vsf_err_t err = VSFERR_NONE;
 	
 	switch (area)
 	{
@@ -549,9 +550,9 @@ READ_TARGET_HANDLER(avr8isp)
 		cmd_buf[2] = 0x02;
 		cmd_buf[3] = 0x00;
 		spi_io(cmd_buf, 4, &ret_buf[8]);
-		if (ERROR_OK != commit())
+		if (commit())
 		{
-			ret = ERRCODE_FAILURE_OPERATION;
+			err = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
 		buff[0] = ret_buf[11];
@@ -561,7 +562,7 @@ READ_TARGET_HANDLER(avr8isp)
 	case APPLICATION_CHAR:
 		if (size > 256)
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		
 		for (i = 0; i < size; i++)
@@ -582,9 +583,9 @@ READ_TARGET_HANDLER(avr8isp)
 			spi_io(cmd_buf, 4, &ret_buf[4 * i]);
 		}
 		
-		if (ERROR_OK != commit())
+		if (commit())
 		{
-			ret = ERRCODE_FAILURE_OPERATION;
+			err = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
 		for (i = 0; i < size; i++)
@@ -595,7 +596,7 @@ READ_TARGET_HANDLER(avr8isp)
 	case EEPROM_CHAR:
 		if (size > 256)
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		
 		ee_page_size = param->chip_areas[EEPROM_IDX].page_size;
@@ -613,9 +614,9 @@ READ_TARGET_HANDLER(avr8isp)
 			addr += ee_page_size;
 		}
 		
-		if (ERROR_OK != commit())
+		if (commit())
 		{
-			ret = ERRCODE_FAILURE_OPERATION;
+			err = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
 		for (i = 0; i < size; i++)
@@ -654,9 +655,9 @@ READ_TARGET_HANDLER(avr8isp)
 		}
 		if (param->chip_areas[FUSE_IDX].size > 0)
 		{
-			if (ERROR_OK != commit())
+			if (commit())
 			{
-				ret = ERRCODE_FAILURE_OPERATION;
+				err = ERRCODE_FAILURE_OPERATION;
 				break;
 			}
 			buff[0] = ret_buf[3];
@@ -666,7 +667,7 @@ READ_TARGET_HANDLER(avr8isp)
 		else
 		{
 			LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, "fuse", param->chip_name);
-			ret = ERRCODE_NOT_SUPPORT;
+			err = ERRCODE_NOT_SUPPORT;
 			break;
 		}
 		break;
@@ -678,9 +679,9 @@ READ_TARGET_HANDLER(avr8isp)
 			cmd_buf[2] = 0x00;
 			cmd_buf[3] = 0x00;
 			spi_io(cmd_buf, 4, &ret_buf[0]);
-			if (ERROR_OK != commit())
+			if (commit())
 			{
-				ret = ERRCODE_FAILURE_OPERATION;
+				err = ERRCODE_FAILURE_OPERATION;
 				break;
 			}
 			buff[0] = ret_buf[3];
@@ -688,7 +689,7 @@ READ_TARGET_HANDLER(avr8isp)
 		else
 		{
 			LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, "lock", param->chip_name);
-			ret = ERRCODE_NOT_SUPPORT;
+			err = ERRCODE_NOT_SUPPORT;
 			break;
 		}
 		break;
@@ -728,9 +729,9 @@ READ_TARGET_HANDLER(avr8isp)
 		}
 		if (param->chip_areas[CALIBRATION_IDX].size > 0)
 		{
-			if (ERROR_OK != commit())
+			if (commit())
 			{
-				ret = ERRCODE_FAILURE_OPERATION;
+				err = ERRCODE_FAILURE_OPERATION;
 				break;
 			}
 			buff[0] = ret_buf[3];
@@ -741,13 +742,14 @@ READ_TARGET_HANDLER(avr8isp)
 		else
 		{
 			LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, "calibration", param->chip_name);
-			ret = ERRCODE_NOT_SUPPORT;
+			err = ERRCODE_NOT_SUPPORT;
 			break;
 		}
 		break;
 	default:
+		err = VSFERR_NOT_SUPPORT;
 		break;
 	}
-	return ret;
+	return err;
 }
 

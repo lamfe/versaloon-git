@@ -1,3 +1,5 @@
+#include "vsf_err.h"
+
 #include "app_cfg.h"
 #include "app_type.h"
 
@@ -39,20 +41,21 @@ static struct stm32_info_t stm32_info =
 	CORE_FLASH_LATENCY, CORE_VECTOR_TABLE, CORE_DEBUG
 };
 
-RESULT stm32_interface_get_info(struct stm32_info_t **info)
+vsf_err_t stm32_interface_get_info(struct stm32_info_t **info)
 {
 	*info = &stm32_info;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT stm32_interface_fini(void)
+vsf_err_t stm32_interface_fini(void)
 {
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-void stm32_interface_reset(void)
+vsf_err_t stm32_interface_reset(void)
 {
 	NVIC_SystemReset();
+	return VSFERR_NONE;
 }
 
 static uint32_t __log2__(uint32_t n)
@@ -70,7 +73,7 @@ static uint32_t __log2__(uint32_t n)
 	return 0;
 }
 
-RESULT stm32_interface_init(void *p)
+vsf_err_t stm32_interface_init(void *p)
 {
 	uint32_t tmp32;
 	
@@ -157,7 +160,7 @@ RESULT stm32_interface_init(void *p)
 #if __VSF_DEBUG__
 		if ((tmp32 < 2) || (tmp32 > 16))
 		{
-			return ERROR_FAIL;
+			return VSFERR_INVALID_PARAMETER;
 		}
 #endif
 		RCC->CFGR |= ((tmp32 - 2) << STM32_RCC_CFGR_PLLMUL_SFT);
@@ -175,7 +178,7 @@ RESULT stm32_interface_init(void *p)
 	AFIO->MAPR |= stm32_info.debug_setting << STM32_AFIO_MAPR_SWJCFG_SFT;
 	
 	SCB->VTOR = stm32_info.vector_table;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 
@@ -184,14 +187,14 @@ RESULT stm32_interface_init(void *p)
 #define CM3_SYSTICK_CLKSOURCE			(1 << 2)
 #define CM3_SYSTICK_COUNTFLAG			(1 << 16)
 
-RESULT stm32_delay_init(void)
+vsf_err_t stm32_delay_init(void)
 {
 	SysTick->CTRL = CM3_SYSTICK_CLKSOURCE;
 	SysTick->VAL = 0;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT stm32_delay_delayus_do(uint32_t tick)
+static vsf_err_t stm32_delay_delayus_do(uint32_t tick)
 {
 	uint32_t dly_tmp;
 	
@@ -204,17 +207,17 @@ static RESULT stm32_delay_delayus_do(uint32_t tick)
 		stm32_delay_init();
 		tick -= dly_tmp;
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT stm32_delay_delayus(uint16_t us)
+vsf_err_t stm32_delay_delayus(uint16_t us)
 {
 	stm32_delay_delayus_do(us * (stm32_info.sys_freq_hz / (1000 * 1000)));
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT stm32_delay_delayms(uint16_t ms)
+vsf_err_t stm32_delay_delayms(uint16_t ms)
 {
 	stm32_delay_delayus_do(ms * (stm32_info.sys_freq_hz / 1000));
-	return ERROR_OK;
+	return VSFERR_NONE;
 }

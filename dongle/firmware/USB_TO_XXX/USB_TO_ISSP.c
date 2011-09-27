@@ -41,23 +41,23 @@ void USB_TO_ISSP_ProcessCmd(uint8_t *dat, uint16_t len)
 		switch(command)
 		{
 		case USB_TO_XXX_INIT:
-			if (ERROR_OK == app_interfaces.issp.init(device_idx))
+			if (app_interfaces.issp.init(device_idx))
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
 			else
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
 			break;
 		case USB_TO_XXX_FINI:
-			if (ERROR_OK == app_interfaces.issp.fini(device_idx))
+			if (app_interfaces.issp.fini(device_idx))
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
 			else
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
 			break;
 		case USB_TO_ISSP_Vector:
@@ -76,15 +76,15 @@ void USB_TO_ISSP_ProcessCmd(uint8_t *dat, uint16_t len)
 				operate = dat[index + i * 3];
 				addr = dat[index + i * 3 + 1];
 				data = dat[index + i * 3 + 2];
-				if (ERROR_OK == app_interfaces.issp.vector(device_idx, operate, 
-									addr, data, &buffer_reply[rep_len + 1 + rlen]))
-				{
-					rlen++;
-				}
-				else
+				if (app_interfaces.issp.vector(device_idx, operate, addr, data,
+											&buffer_reply[rep_len + 1 + rlen]))
 				{
 					fail = true;
 					break;
+				}
+				else
+				{
+					rlen++;
 				}
 			}
 			if (fail)
@@ -98,33 +98,33 @@ void USB_TO_ISSP_ProcessCmd(uint8_t *dat, uint16_t len)
 			rep_len += 1 + rlen;
 			break;
 		case USB_TO_ISSP_EnterProgMode:
-			if (ERROR_OK == app_interfaces.issp.enter_program_mode(device_idx, dat[index]))
+			if (app_interfaces.issp.enter_program_mode(device_idx, dat[index]))
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
 			else
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
 			break;
 		case USB_TO_ISSP_LeaveProgMode:
-			if(ERROR_OK == app_interfaces.issp.leave_program_mode(device_idx, dat[index]))
+			if (app_interfaces.issp.leave_program_mode(device_idx, dat[index]))
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
 			else
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
 			break;
 		case USB_TO_ISSP_WaitAndPoll:
-			if(ERROR_OK == app_interfaces.issp.wait_and_poll(device_idx))
+			if (app_interfaces.issp.wait_and_poll(device_idx))
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
 			else
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
 			break;
 		default:

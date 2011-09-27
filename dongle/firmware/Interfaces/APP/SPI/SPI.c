@@ -28,7 +28,7 @@ static void SPI_Delay(uint8_t dly)
 	app_interfaces.delay.delayus(dly);
 }
 
-static RESULT SPI_Config_Emu(uint32_t freq_hz, uint8_t mode)
+static vsf_err_t SPI_Config_Emu(uint32_t freq_hz, uint8_t mode)
 {
 	SPI_Dly = 250000 / freq_hz;
 	
@@ -36,7 +36,7 @@ static RESULT SPI_Config_Emu(uint32_t freq_hz, uint8_t mode)
 	JTAG_TAP_TCK_SETOUTPUT();
 	JTAG_TAP_TDI_SETOUTPUT();
 	JTAG_TAP_TDO_SETINPUT();
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 #define SPI_DATA_LEN			8
@@ -78,37 +78,36 @@ static uint8_t SPI_RW_Emu(uint8_t data)
 	return ret;
 }
 
-RESULT spi_init(uint8_t index)
+vsf_err_t spi_init(uint8_t index)
 {
 	switch (index)
 	{
 	case 0:
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT spi_fini(uint8_t index)
+vsf_err_t spi_fini(uint8_t index)
 {
 	switch (index)
 	{
 	case 0:
 		return interfaces->spi.fini(SPI_Interface_Idx);
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT spi_config(uint8_t index, uint32_t kHz, uint8_t mode)
+vsf_err_t spi_config(uint8_t index, uint32_t kHz, uint8_t mode)
 {
 	struct spi_ability_t spi_ability;
 	uint32_t min_khz;
 	
-	if (ERROR_OK != interfaces->spi.get_ability(SPI_Interface_Idx, 
-												&spi_ability))
+	if (interfaces->spi.get_ability(SPI_Interface_Idx, &spi_ability))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	min_khz = spi_ability.min_freq_hz / 1000;
 	
@@ -129,11 +128,11 @@ RESULT spi_config(uint8_t index, uint32_t kHz, uint8_t mode)
 											mode | SPI_MASTER);
 		}
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT spi_io(uint8_t index, uint8_t *out, uint8_t *in, uint32_t len)
+vsf_err_t spi_io(uint8_t index, uint8_t *out, uint8_t *in, uint32_t len)
 {
 	uint32_t i;
 
@@ -142,7 +141,7 @@ RESULT spi_io(uint8_t index, uint8_t *out, uint8_t *in, uint32_t len)
 	case 0:
 		if ((NULL == out) || (NULL == in))
 		{
-			return ERROR_FAIL;
+			return VSFERR_INVALID_PTR;
 		}
 		
 		if(SPI_Emu)
@@ -156,9 +155,9 @@ RESULT spi_io(uint8_t index, uint8_t *out, uint8_t *in, uint32_t len)
 		{
 			interfaces->spi.io(SPI_Interface_Idx, out, in, len);
 		}
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 

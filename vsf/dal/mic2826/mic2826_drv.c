@@ -83,35 +83,30 @@ static uint8_t mic2826_ldo_voltage2reg(uint16_t mV)
 	}
 }
 
-static RESULT mic2826_write_reg(struct mic2826_drv_interface_t *ifs, 
-								uint8_t addr, uint8_t reg)
+static vsf_err_t mic2826_write_reg(struct mic2826_drv_interface_t *ifs, 
+									uint8_t addr, uint8_t reg)
 {
 	uint8_t cmd[2];
 	uint8_t retry;
-	RESULT ret = ERROR_FAIL;
+	vsf_err_t err = VSFERR_FAIL;
 	
 	cmd[0] = addr;
 	cmd[1] = reg;
 	retry = MIC2826_IIC_RETRY;
 	while (retry--)
 	{
-		if (ERROR_OK != 
-			interfaces->i2c.write(ifs->iic_port, MIC2826_IIC_ADDR, cmd, 2, 1))
+		if (interfaces->i2c.write(ifs->iic_port, MIC2826_IIC_ADDR, cmd, 2, 1) ||
+			interfaces->peripheral_commit())
 		{
 			continue;
 		}
-		
-		if (ERROR_OK != interfaces->peripheral_commit())
-		{
-			continue;
-		}
-		ret = ERROR_OK;
+		err = VSFERR_NONE;
 		break;
 	}
-	return ret;
+	return err;
 }
 
-static RESULT mic2826_drv_init(struct dal_info_t *info)
+static vsf_err_t mic2826_drv_init(struct dal_info_t *info)
 {
 	struct mic2826_drv_interface_t *ifs = 
 								(struct mic2826_drv_interface_t *)info->ifs;
@@ -123,7 +118,7 @@ static RESULT mic2826_drv_init(struct dal_info_t *info)
 	return interfaces->peripheral_commit();
 }
 
-static RESULT mic2826_drv_fini(struct dal_info_t *info)
+static vsf_err_t mic2826_drv_fini(struct dal_info_t *info)
 {
 	struct mic2826_drv_interface_t *ifs = 
 								(struct mic2826_drv_interface_t *)info->ifs;
@@ -132,7 +127,7 @@ static RESULT mic2826_drv_fini(struct dal_info_t *info)
 	return interfaces->peripheral_commit();
 }
 
-static RESULT mic2826_drv_config(struct dal_info_t *info, uint16_t DCDC_mV, 
+static vsf_err_t mic2826_drv_config(struct dal_info_t *info, uint16_t DCDC_mV, 
 						uint16_t LDO1_mV, uint16_t LDO2_mV, uint16_t LDO3_mV)
 {
 	struct mic2826_drv_interface_t *ifs = 
@@ -144,7 +139,7 @@ static RESULT mic2826_drv_config(struct dal_info_t *info, uint16_t DCDC_mV,
 		(((LDO2_mV != 0) && (LDO2_mV < 800)) || (LDO2_mV > 3300)) || 
 		(((LDO3_mV != 0) && (LDO3_mV < 800)) || (LDO3_mV > 3300)))
 	{
-		return ERROR_FAIL;
+		return VSFERR_INVALID_RANGE;
 	}
 	
 	en_reg = (DCDC_mV ? MIC2826_REG_ENABLE_DCDC : 0) 
@@ -155,33 +150,32 @@ static RESULT mic2826_drv_config(struct dal_info_t *info, uint16_t DCDC_mV,
 #endif
 				;
 	
-	if ((ERROR_OK != mic2826_write_reg(ifs, MIC2826_REG_DCDC, 
-							mic2826_dcdc_voltage2reg(DCDC_mV))) 
-		|| (ERROR_OK != mic2826_write_reg(ifs, MIC2826_REG_LDO1, 
-							mic2826_ldo_voltage2reg(LDO1_mV))) 
-		|| (ERROR_OK != mic2826_write_reg(ifs, MIC2826_REG_LDO2, 
-							mic2826_ldo_voltage2reg(LDO2_mV))) 
+	if (mic2826_write_reg(ifs, MIC2826_REG_DCDC,
+							mic2826_dcdc_voltage2reg(DCDC_mV))
+		|| mic2826_write_reg(ifs, MIC2826_REG_LDO1, 
+							mic2826_ldo_voltage2reg(LDO1_mV))
+		|| mic2826_write_reg(ifs, MIC2826_REG_LDO2, 
+							mic2826_ldo_voltage2reg(LDO2_mV))
 #if MIC2826_HAS_LDO3
-		|| (ERROR_OK != mic2826_write_reg(ifs, MIC2826_REG_LDO3, 
-							mic2826_ldo_voltage2reg(LDO3_mV))) 
+		|| mic2826_write_reg(ifs, MIC2826_REG_LDO3, 
+							mic2826_ldo_voltage2reg(LDO3_mV))
 #endif
-		|| (ERROR_OK != mic2826_write_reg(ifs, MIC2826_REG_ENABLE, en_reg))
-		)
+		|| mic2826_write_reg(ifs, MIC2826_REG_ENABLE, en_reg))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 #if DAL_INTERFACE_PARSER_EN
-static RESULT mic2826_drv_parse_interface(struct dal_info_t *info, 
-											uint8_t *buff)
+static vsf_err_t mic2826_drv_parse_interface(struct dal_info_t *info, 
+												uint8_t *buff)
 {
 	struct mic2826_drv_interface_t *ifs = 
 								(struct mic2826_drv_interface_t *)info->ifs;
 	
 	ifs->iic_port = buff[0];
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 #endif
 

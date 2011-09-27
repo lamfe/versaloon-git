@@ -95,7 +95,7 @@ static uint8_t stm32_spi_get_sck_div(uint32_t module_khz, uint32_t khz)
 	return (uint8_t)(khz << 3);
 }
 
-RESULT stm32_spi_init(uint8_t index)
+vsf_err_t stm32_spi_init(uint8_t index)
 {
 	uint8_t spi_idx = index & 0x0F;
 	uint8_t remap_idx = (index >> 4) & 0x0F;
@@ -103,7 +103,7 @@ RESULT stm32_spi_init(uint8_t index)
 #if __VSF_DEBUG__
 	if (spi_idx >= SPI_NUM)
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 #endif
 	
@@ -127,7 +127,7 @@ RESULT stm32_spi_init(uint8_t index)
 			break;
 		#endif
 		default:
-			return ERROR_FAIL;
+			return VSFERR_NOT_SUPPORT;
 		}
 		break;
 	#endif
@@ -140,7 +140,7 @@ RESULT stm32_spi_init(uint8_t index)
 			RCC->APB2ENR |= STM32_RCC_APB2ENR_IOPBEN;
 			break;
 		default:
-			return ERROR_FAIL;
+			return VSFERR_NOT_SUPPORT;
 		}
 		break;
 	#endif
@@ -153,17 +153,15 @@ RESULT stm32_spi_init(uint8_t index)
 			RCC->APB2ENR |= STM32_RCC_APB2ENR_IOPBEN;
 			break;
 		default:
-			return ERROR_FAIL;
+			return VSFERR_NOT_SUPPORT;
 		}
 		break;
 	#endif
-	default:
-		return ERROR_FAIL;
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT stm32_spi_fini(uint8_t index)
+vsf_err_t stm32_spi_fini(uint8_t index)
 {
 	uint8_t spi_idx = index & 0x0F;
 	uint8_t remap_idx = (index >> 4) & 0x0F;
@@ -171,7 +169,7 @@ RESULT stm32_spi_fini(uint8_t index)
 #if __VSF_DEBUG__
 	if (spi_idx >= SPI_NUM)
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 #endif
 	
@@ -211,7 +209,7 @@ RESULT stm32_spi_fini(uint8_t index)
 			break;
 		#endif
 		default:
-			return ERROR_FAIL;
+			return VSFERR_NOT_SUPPORT;
 		}
 		break;
 	#endif
@@ -233,7 +231,7 @@ RESULT stm32_spi_fini(uint8_t index)
 			#endif
 			break;
 		default:
-			return ERROR_FAIL;
+			return VSFERR_NOT_SUPPORT;
 		}
 		break;
 	#endif
@@ -255,16 +253,16 @@ RESULT stm32_spi_fini(uint8_t index)
 			#endif
 			break;
 		default:
-			return ERROR_FAIL;
+			return VSFERR_NOT_SUPPORT;
 		}
 		break;
 	#endif
 	}
 	SPI_I2S_DeInit((SPI_TypeDef *)stm32_spis[spi_idx]);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT stm32_spi_enable(uint8_t index)
+vsf_err_t stm32_spi_enable(uint8_t index)
 {
 	uint8_t spi_idx = index & 0x0F;
 	SPI_TypeDef *spi;
@@ -272,15 +270,15 @@ RESULT stm32_spi_enable(uint8_t index)
 #if __VSF_DEBUG__
 	if (spi_idx >= SPI_NUM)
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 #endif
 	spi = (SPI_TypeDef *)stm32_spis[spi_idx];
 	spi->CR1 |= STM32_SPI_CR1_SPE;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT stm32_spi_disable(uint8_t index)
+vsf_err_t stm32_spi_disable(uint8_t index)
 {
 	uint8_t spi_idx = index & 0x0F;
 	SPI_TypeDef *spi;
@@ -288,15 +286,15 @@ RESULT stm32_spi_disable(uint8_t index)
 #if __VSF_DEBUG__
 	if (spi_idx >= SPI_NUM)
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 #endif
 	spi = (SPI_TypeDef *)stm32_spis[spi_idx];
 	spi->CR1 &= ~STM32_SPI_CR1_SPE;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT stm32_spi_get_ability(uint8_t index, struct spi_ability_t *ability)
+vsf_err_t stm32_spi_get_ability(uint8_t index, struct spi_ability_t *ability)
 {
 	uint8_t spi_idx = index & 0x0F;
 	struct stm32_info_t *info;
@@ -304,13 +302,13 @@ RESULT stm32_spi_get_ability(uint8_t index, struct spi_ability_t *ability)
 #if __VSF_DEBUG__
 	if (spi_idx >= SPI_NUM)
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 #endif
 	
-	if (ERROR_OK != stm32_interface_get_info(&info))
+	if (stm32_interface_get_info(&info))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	switch (spi_idx)
@@ -325,10 +323,10 @@ RESULT stm32_spi_get_ability(uint8_t index, struct spi_ability_t *ability)
 	}
 	ability->max_freq_hz /= 2;
 	ability->min_freq_hz /= 256;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT stm32_spi_config(uint8_t index, uint32_t kHz, uint8_t mode)
+vsf_err_t stm32_spi_config(uint8_t index, uint32_t kHz, uint8_t mode)
 {
 	uint8_t spi_idx = index & 0x0F;
 	uint8_t remap_idx = (index >> 4) & 0x0F;
@@ -340,14 +338,14 @@ RESULT stm32_spi_config(uint8_t index, uint32_t kHz, uint8_t mode)
 #if __VSF_DEBUG__
 	if (spi_idx >= SPI_NUM)
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 #endif
 	spi = (SPI_TypeDef *)stm32_spis[spi_idx];
 	
-	if (ERROR_OK != stm32_interface_get_info(&info))
+	if (stm32_interface_get_info(&info))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	switch (spi_idx)
@@ -418,7 +416,7 @@ RESULT stm32_spi_config(uint8_t index, uint32_t kHz, uint8_t mode)
 			break;
 		#endif
 		default:
-			return ERROR_FAIL;
+			return VSFERR_NOT_SUPPORT;
 		}
 		break;
 	#endif
@@ -456,7 +454,7 @@ RESULT stm32_spi_config(uint8_t index, uint32_t kHz, uint8_t mode)
 			}
 			break;
 		default:
-			return ERROR_FAIL;
+			return VSFERR_NOT_SUPPORT;
 		}
 		break;
 	#endif
@@ -494,12 +492,12 @@ RESULT stm32_spi_config(uint8_t index, uint32_t kHz, uint8_t mode)
 			}
 			break;
 		default:
-			return ERROR_FAIL;
+			return VSFERR_NOT_SUPPORT;
 		}
 		break;
 	#endif
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 	
 	spi->CR1 &= ~STM32_SPI_CR1_SPE;
@@ -511,10 +509,10 @@ RESULT stm32_spi_config(uint8_t index, uint32_t kHz, uint8_t mode)
 	}
 	spi->I2SCFGR &= ~STM32_SPI_I2SCFGR;
 	spi->CR1 |= STM32_SPI_CR1_SPE;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT stm32_spi_io_tx(uint8_t index, uint8_t out)
+vsf_err_t stm32_spi_io_tx(uint8_t index, uint8_t out)
 {
 	uint8_t spi_idx = index & 0x0F;
 	SPI_TypeDef *spi;
@@ -522,16 +520,16 @@ RESULT stm32_spi_io_tx(uint8_t index, uint8_t out)
 #if __VSF_DEBUG__
 	if (spi_idx >= SPI_NUM)
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 #endif
 	spi = (SPI_TypeDef *)stm32_spis[spi_idx];
 	
 	spi->DR = out;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-bool stm32_spi_io_tx_isready(uint8_t index)
+vsf_err_t stm32_spi_io_tx_isready(uint8_t index)
 {
 	uint8_t spi_idx = index & 0x0F;
 	SPI_TypeDef *spi;
@@ -539,15 +537,15 @@ bool stm32_spi_io_tx_isready(uint8_t index)
 #if __VSF_DEBUG__
 	if (spi_idx >= SPI_NUM)
 	{
-		return false;
+		return VSFERR_NOT_SUPPORT;
 	}
 #endif
 	spi = (SPI_TypeDef *)stm32_spis[spi_idx];
 	
-	return (spi->SR & STM32_SPI_SR_TXE) != 0;
+	return ((spi->SR & STM32_SPI_SR_TXE) != 0) ? VSFERR_NONE : VSFERR_NOT_READY;
 }
 
-bool stm32_spi_io_rx_isready(uint8_t index)
+vsf_err_t stm32_spi_io_rx_isready(uint8_t index)
 {
 	uint8_t spi_idx = index & 0x0F;
 	SPI_TypeDef *spi;
@@ -555,12 +553,13 @@ bool stm32_spi_io_rx_isready(uint8_t index)
 #if __VSF_DEBUG__
 	if (spi_idx >= SPI_NUM)
 	{
-		return false;
+		return VSFERR_NOT_SUPPORT;
 	}
 #endif
 	spi = (SPI_TypeDef *)stm32_spis[spi_idx];
 	
-	return (spi->SR & STM32_SPI_SR_RXNE) != 0;
+	return ((spi->SR & STM32_SPI_SR_RXNE) != 0) ?
+				VSFERR_NONE : VSFERR_NOT_READY;
 }
 
 uint8_t stm32_spi_io_rx(uint8_t index)
@@ -579,7 +578,7 @@ uint8_t stm32_spi_io_rx(uint8_t index)
 	return spi->DR;
 }
 
-RESULT stm32_spi_io(uint8_t index, uint8_t *out, uint8_t *in, uint32_t len)
+vsf_err_t stm32_spi_io(uint8_t index, uint8_t *out, uint8_t *in, uint32_t len)
 {
 	uint8_t spi_idx = index & 0x0F;
 	SPI_TypeDef *spi;
@@ -590,7 +589,7 @@ RESULT stm32_spi_io(uint8_t index, uint8_t *out, uint8_t *in, uint32_t len)
 #if __VSF_DEBUG__
 	if (spi_idx >= SPI_NUM)
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 #endif
 	spi = (SPI_TypeDef *)stm32_spis[spi_idx];
@@ -639,10 +638,10 @@ RESULT stm32_spi_io(uint8_t index, uint8_t *out, uint8_t *in, uint32_t len)
 		}
 	}
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT stm32_spi_io_dma_start(uint8_t index, uint8_t *out, uint8_t *in, 
+vsf_err_t stm32_spi_io_dma_start(uint8_t index, uint8_t *out, uint8_t *in, 
 								uint32_t len)
 {
 	uint8_t spi_idx = index & 0x0F;
@@ -651,7 +650,7 @@ RESULT stm32_spi_io_dma_start(uint8_t index, uint8_t *out, uint8_t *in,
 #if __VSF_DEBUG__
 	if ((spi_idx >= SPI_NUM) || (len > 0xFFFF))
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 #endif
 	spi = (SPI_TypeDef *)stm32_spis[spi_idx];
@@ -691,17 +690,17 @@ RESULT stm32_spi_io_dma_start(uint8_t index, uint8_t *out, uint8_t *in,
 	#endif
 	}
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-bool stm32_spi_io_dma_isready(uint8_t index)
+vsf_err_t stm32_spi_io_dma_isready(uint8_t index)
 {
 	REFERENCE_PARAMETER(index);
-	return true;
+	return VSFERR_NONE;
 }
 
-RESULT stm32_spi_io_dma_end(uint8_t index)
+vsf_err_t stm32_spi_io_dma_end(uint8_t index)
 {
 	REFERENCE_PARAMETER(index);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }

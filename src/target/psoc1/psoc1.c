@@ -29,12 +29,12 @@
 #include "app_err.h"
 #include "app_log.h"
 
-#include "pgbar.h"
-
 #include "vsprog.h"
 #include "programmer.h"
 #include "target.h"
 #include "scripts.h"
+
+#include "pgbar.h"
 
 #include "psoc1.h"
 #include "psoc1_internal.h"
@@ -82,7 +82,7 @@ VSS_HANDLER(psoc1_help)
 Usage of %s:\n\
   -m,  --mode <MODE>                        set mode<r|p>\n\n",
 			CUR_TARGET_STRING);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 const struct vss_cmd_t psoc1_notifier[] =
@@ -156,7 +156,7 @@ static struct interfaces_info_t *interfaces = NULL;
 #define PSOC1_ISSP_SSC_DEFAULT_DELAY		0x56
 #define PSOC1_ISSP_SSC_RETURN_OK			0x00
 
-RESULT issp_wait_and_poll_with_ret(uint8_t *buf, uint8_t want_ssc_return_value)
+vsf_err_t issp_wait_and_poll_with_ret(uint8_t *buf, uint8_t want_ssc_return_value)
 {
 	uint8_t i;
 
@@ -168,27 +168,27 @@ RESULT issp_wait_and_poll_with_ret(uint8_t *buf, uint8_t want_ssc_return_value)
 	}
 #endif
 	
-	if (ERROR_OK != issp_wait_and_poll())
+	if (issp_wait_and_poll())
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	for (i = 0; i < want_ssc_return_value; i++)
 	{
-		if (ERROR_OK != issp_read_sram(0xF8 + i, buf + i))
+		if (issp_read_sram(0xF8 + i, buf + i))
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 	}
-	if (ERROR_OK != issp_commit())
+	if (issp_commit())
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT issp_init3_half(uint8_t f9_1, uint8_t f9_2)
+vsf_err_t issp_init3_half(uint8_t f9_1, uint8_t f9_2)
 {
 	issp_write_reg(0xF7, 0x00);
 	issp_write_reg(0xF4, 0x03);
@@ -211,10 +211,10 @@ RESULT issp_init3_half(uint8_t f9_1, uint8_t f9_2)
 	issp_write_reg(0xFF, 0x12);
 	issp_0s();
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT issp_call_ssc(uint8_t cmd, uint8_t id, uint8_t poll_ready, uint8_t * buf,
+vsf_err_t issp_call_ssc(uint8_t cmd, uint8_t id, uint8_t poll_ready, uint8_t * buf,
 					 uint8_t want_return)
 {
 	issp_sel_reg_bank(0x00);
@@ -248,13 +248,13 @@ ENTER_PROGRAM_MODE_HANDLER(psoc1)
 	
 	interfaces = context->prog;
 	
-	if (ERROR_OK != get_target_voltage(&voltage))
+	if (get_target_voltage(&voltage))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	// ISSP Init
-	if (ERROR_OK != issp_init())
+	if (issp_init())
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "initialize issp");
 		return ERRCODE_FAILURE_OPERATION;
@@ -264,7 +264,7 @@ ENTER_PROGRAM_MODE_HANDLER(psoc1)
 	switch (pi->mode)
 	{
 	case PSOC1_RESET_MODE:
-		if (ERROR_OK != issp_enter_program_mode(ISSP_PM_RESET))
+		if (issp_enter_program_mode(ISSP_PM_RESET))
 		{
 			return ERRCODE_FAILURE_OPERATION;
 		}
@@ -273,27 +273,27 @@ ENTER_PROGRAM_MODE_HANDLER(psoc1)
 		if (voltage > 2000)
 		{
 			LOG_ERROR("Target should power off in power-on mode");
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
-		if (ERROR_OK != issp_enter_program_mode(ISSP_PM_POWER_ON))
+		if (issp_enter_program_mode(ISSP_PM_POWER_ON))
 		{
 			return ERRCODE_FAILURE_OPERATION;
 		}
 		break;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 		break;
 	}
 	
 	// init1 call_calibrate
 	// call calibrate1
-	if (ERROR_OK != issp_call_ssc(PSOC1_SSC_CMD_Calibrate1, 0, 1, NULL, 0))
+	if (issp_call_ssc(PSOC1_SSC_CMD_Calibrate1, 0, 1, NULL, 0))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "call calibrate1");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	// init2 read table no.1
-	if (ERROR_OK != issp_call_ssc(PSOC1_SSC_CMD_TableRead, 1, 1, NULL, 0))
+	if (issp_call_ssc(PSOC1_SSC_CMD_TableRead, 1, 1, NULL, 0))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read table no.1");
 		return ERRCODE_FAILURE_OPERATION;
@@ -327,19 +327,19 @@ LEAVE_PROGRAM_MODE_HANDLER(psoc1)
 	switch (pi->mode)
 	{
 	case PSOC1_RESET_MODE:
-		if (ERROR_OK != issp_leave_program_mode(ISSP_PM_RESET))
+		if (issp_leave_program_mode(ISSP_PM_RESET))
 		{
 			return ERRCODE_FAILURE_OPERATION;
 		}
 		break;
 	case PSOC1_POWERON_MODE:
-		if (ERROR_OK != issp_leave_program_mode(ISSP_PM_POWER_ON))
+		if (issp_leave_program_mode(ISSP_PM_POWER_ON))
 		{
 			return ERRCODE_FAILURE_OPERATION;
 		}
 		break;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 		break;
 	}
 	issp_fini();
@@ -349,7 +349,6 @@ LEAVE_PROGRAM_MODE_HANDLER(psoc1)
 ERASE_TARGET_HANDLER(psoc1)
 {
 	uint8_t tmp8;
-	RESULT ret;
 	
 	REFERENCE_PARAMETER(context);
 	REFERENCE_PARAMETER(area);
@@ -359,12 +358,12 @@ ERASE_TARGET_HANDLER(psoc1)
 	issp_ssc_set_clock(PSOC1_ISSP_SSC_DEFAULT_CLOCK_ERASE);
 	issp_ssc_set_delay(PSOC1_ISSP_SSC_DEFAULT_DELAY);
 	
-	ret = issp_call_ssc(PSOC1_SSC_CMD_EraseAll, 0, 1, &tmp8, 1);
-	if ((ret != ERROR_OK) || (tmp8 != PSOC1_ISSP_SSC_RETURN_OK))
+	if (issp_call_ssc(PSOC1_SSC_CMD_EraseAll, 0, 1, &tmp8, 1) ||
+		(tmp8 != PSOC1_ISSP_SSC_RETURN_OK))
 	{
 		return ERRCODE_FAILURE_OPERATION;
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 WRITE_TARGET_HANDLER(psoc1)
@@ -376,7 +375,7 @@ WRITE_TARGET_HANDLER(psoc1)
 	uint32_t i;
 	uint32_t size_written;
 	uint8_t tmp8;
-	RESULT ret = ERROR_OK;
+	vsf_err_t err = VSFERR_NONE;
 	
 	REFERENCE_PARAMETER(size);
 	REFERENCE_PARAMETER(addr);
@@ -411,16 +410,16 @@ WRITE_TARGET_HANDLER(psoc1)
 				issp_ssc_set_clock(PSOC1_ISSP_SSC_DEFAULT_CLOCK_FLASH);
 				issp_ssc_set_delay(PSOC1_ISSP_SSC_DEFAULT_DELAY);
 				
-				ret = issp_call_ssc(PSOC1_SSC_CMD_WriteBlock,
+				err = issp_call_ssc(PSOC1_SSC_CMD_WriteBlock,
 									(uint8_t)(block & 0xFF), 1, &tmp8, 1);
-				if ((ret != ERROR_OK) || (tmp8 != PSOC1_ISSP_SSC_RETURN_OK))
+				if (err || (tmp8 != PSOC1_ISSP_SSC_RETURN_OK))
 				{
-					ret = ERRCODE_FAILURE_OPERATION;
+					err = ERRCODE_FAILURE_OPERATION;
 					break;
 				}
 				pgbar_update(page_size);
 			}
-			if (ret != ERROR_OK)
+			if (err)
 			{
 				break;
 			}
@@ -446,10 +445,10 @@ WRITE_TARGET_HANDLER(psoc1)
 			issp_ssc_set_clock(PSOC1_ISSP_SSC_DEFAULT_CLOCK_FLASH);
 			issp_ssc_set_delay(PSOC1_ISSP_SSC_DEFAULT_DELAY);
 			
-			ret = issp_call_ssc(PSOC1_SSC_CMD_ProtectBlock, 0, 1, &tmp8, 1);
-			if ((ret != ERROR_OK) || (tmp8 != PSOC1_ISSP_SSC_RETURN_OK))
+			err = issp_call_ssc(PSOC1_SSC_CMD_ProtectBlock, 0, 1, &tmp8, 1);
+			if (err || (tmp8 != PSOC1_ISSP_SSC_RETURN_OK))
 			{
-				ret = ERRCODE_FAILURE_OPERATION;
+				err = ERRCODE_FAILURE_OPERATION;
 				break;
 			}
 			
@@ -462,7 +461,7 @@ WRITE_TARGET_HANDLER(psoc1)
 		}
 		break;
 	}
-	return ret;
+	return err;
 }
 
 READ_TARGET_HANDLER(psoc1)
@@ -473,7 +472,7 @@ READ_TARGET_HANDLER(psoc1)
 	uint32_t page_num, page_size;
 	uint32_t i;
 	uint8_t tmp8;
-	RESULT ret = ERROR_OK;
+	vsf_err_t err = VSFERR_NONE;
 	
 	REFERENCE_PARAMETER(size);
 	REFERENCE_PARAMETER(addr);
@@ -486,10 +485,9 @@ READ_TARGET_HANDLER(psoc1)
 	case CHIPID_CHAR:
 		// call table_read no.0 and read 2 bytes from 0xF8 in sram
 		memset(buff, 0, 2);
-		ret = issp_call_ssc(PSOC1_SSC_CMD_TableRead, 0, 1, buff, 2);
-		if (ret != ERROR_OK)
+		err = issp_call_ssc(PSOC1_SSC_CMD_TableRead, 0, 1, buff, 2);
+		if (err)
 		{
-			ret = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
 		*(uint16_t *)buff = LE_TO_SYS_U16(*(uint16_t *)buff);
@@ -509,11 +507,11 @@ READ_TARGET_HANDLER(psoc1)
 				uint32_t block_num = bank * page_num + block;
 				uint32_t block_addr = block_num * page_size;
 				
-				ret = issp_call_ssc(PSOC1_SSC_CMD_ReadBlock,
+				err = issp_call_ssc(PSOC1_SSC_CMD_ReadBlock,
 									(uint8_t)(block & 0xFF), 1, &tmp8, 1);
-				if ((ret != ERROR_OK) || (tmp8 != PSOC1_ISSP_SSC_RETURN_OK))
+				if (err || (tmp8 != PSOC1_ISSP_SSC_RETURN_OK))
 				{
-					ret = ERRCODE_FAILURE_OPERATION;
+					err = ERRCODE_FAILURE_OPERATION;
 					break;
 				}
 				
@@ -524,22 +522,22 @@ READ_TARGET_HANDLER(psoc1)
 				}
 				
 				// commit
-				if (ERROR_OK != issp_commit())
+				if (issp_commit())
 				{
-					ret = ERROR_FAIL;
+					err = VSFERR_FAIL;
 					break;
 				}
 				
 				pgbar_update(page_size);
 			}
-			if (ret != ERROR_OK)
+			if (err)
 			{
 				break;
 			}
 		}
 		break;
 	}
-	return ret;
+	return err;
 }
 
 ADJUST_SETTING_HANDLER(psoc1)
@@ -556,6 +554,6 @@ ADJUST_SETTING_HANDLER(psoc1)
 	flash_checksum_info->page_size = 1;
 	flash_checksum_info->page_num = flash_checksum_info->size;
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 

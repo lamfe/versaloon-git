@@ -34,9 +34,9 @@ struct filelist
 #define FILELIST_GetNext(fl)						\
 					sllist_get_container(fl->list.next, struct filelist, list)
 
-RESULT FILELIST_Add(struct filelist **fl, char *path, uint32_t seg_offset,
-					uint32_t addr_offset);
-RESULT FILELIST_Open(struct filelist *fl, char *attr);
+vsf_err_t FILELIST_Add(struct filelist **fl, char *path, uint32_t seg_offset,
+						uint32_t addr_offset);
+vsf_err_t FILELIST_Open(struct filelist *fl, char *attr);
 void FILELIST_Free(struct filelist **fl);
 
 #endif /* __FILELIST_H_INCLUDED__ */

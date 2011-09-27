@@ -29,8 +29,6 @@
 #include "app_err.h"
 #include "app_log.h"
 
-#include "pgbar.h"
-
 #include "vsprog.h"
 #include "programmer.h"
 #include "target.h"
@@ -75,7 +73,7 @@ VSS_HANDLER(hcs12_help)
 Usage of %s:\n\
   -m,  --mode <MODE>                        set mode<r|p>\n\n",
 			CUR_TARGET_STRING);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 const struct vss_cmd_t hcs12_notifier[] =
@@ -136,7 +134,7 @@ static uint8_t hcs12_flash_div = 0;
 #define HCS12_BDMCMD_READWORD		0xE8	// NI:E8/AAAA/d/RD16
 #define HCS12_BDMCMD_WRITEWORD		0xC8	// NI:C8/WR16/d
 
-static RESULT hcs12_ack_enable(void)
+static vsf_err_t hcs12_ack_enable(void)
 {
 	uint8_t outbuff[1];
 	
@@ -144,7 +142,7 @@ static RESULT hcs12_ack_enable(void)
 	return bdm_transact(outbuff, 1, NULL, 0, 1, 1);
 }
 /*
-static RESULT hcs12_background(void)
+static vsf_err_t hcs12_background(void)
 {
 	uint8_t outbuff[1];
 	
@@ -152,7 +150,7 @@ static RESULT hcs12_background(void)
 	return bdm_transact(outbuff, 1, NULL, 0, 0, 0);
 }
 */
-static RESULT hcs12_read(uint8_t cmd, uint16_t addr, uint16_t *data)
+static vsf_err_t hcs12_read(uint8_t cmd, uint16_t addr, uint16_t *data)
 {
 	uint8_t outbuff[3];
 	
@@ -161,7 +159,7 @@ static RESULT hcs12_read(uint8_t cmd, uint16_t addr, uint16_t *data)
 	return bdm_transact(outbuff, sizeof(outbuff), (uint8_t *)data, 2, 1, 1);
 }
 
-static RESULT hcs12_write(uint8_t cmd, uint16_t addr, uint16_t data)
+static vsf_err_t hcs12_write(uint8_t cmd, uint16_t addr, uint16_t data)
 {
 	uint8_t outbuff[5];
 	
@@ -171,27 +169,27 @@ static RESULT hcs12_write(uint8_t cmd, uint16_t addr, uint16_t data)
 	return bdm_transact(outbuff, sizeof(outbuff), NULL, 0, 1, 1);
 }
 /*
-static RESULT hcs12_read_bd_word(uint16_t addr, uint16_t *data)
+static vsf_err_t hcs12_read_bd_word(uint16_t addr, uint16_t *data)
 {
 	return hcs12_read(HCS12_BDMCMD_READBDWORD, addr, data);
 }
 
-static RESULT hcs12_write_bd_word(uint16_t addr, uint16_t data)
+static vsf_err_t hcs12_write_bd_word(uint16_t addr, uint16_t data)
 {
 	return hcs12_write(HCS12_BDMCMD_WRITEBDWORD, addr, data);
 }
 */
-static RESULT hcs12_read_word(uint16_t addr, uint16_t *data)
+static vsf_err_t hcs12_read_word(uint16_t addr, uint16_t *data)
 {
 	return hcs12_read(HCS12_BDMCMD_READWORD, addr, data);
 }
 
-static RESULT hcs12_write_word(uint16_t addr, uint16_t data)
+static vsf_err_t hcs12_write_word(uint16_t addr, uint16_t data)
 {
 	return hcs12_write(HCS12_BDMCMD_WRITEWORD, addr, data);
 }
 
-static RESULT hcs12_write_byte(uint16_t addr, uint8_t data)
+static vsf_err_t hcs12_write_byte(uint16_t addr, uint8_t data)
 {
 	uint16_t data16;
 	
@@ -203,29 +201,29 @@ static RESULT hcs12_write_byte(uint16_t addr, uint8_t data)
 	return hcs12_write(HCS12_BDMCMD_WRITEBYTE, addr, data16);
 }
 
-static RESULT hcs12_flash_cmd(uint8_t param_num, uint16_t *param)
+static vsf_err_t hcs12_flash_cmd(uint8_t param_num, uint16_t *param)
 {
-	RESULT ret = ERROR_OK;
 	uint8_t i;
 	
 	for (i = 0; i < param_num; i++)
 	{
-		ret = hcs12_write_byte(HCS12_FTMR_CCOBIX_ADDR, i);
-		if (ret != ERROR_OK)
+		if (hcs12_write_byte(HCS12_FTMR_CCOBIX_ADDR, i))
 		{
-			return ret;
+			return VSFERR_FAIL;
 		}
 		
 		// param is in little endian, change to big endian first
-		ret = hcs12_write_word(HCS12_FTMR_FCCOB_ADDR, param[i]);
-		if (ret != ERROR_OK)
+		if (hcs12_write_word(HCS12_FTMR_FCCOB_ADDR, param[i]))
 		{
-			return ret;
+			return VSFERR_FAIL;
 		}
 	}
 	// launch the command
-	ret = hcs12_write_byte(HCS12_FTMR_FSTAT_ADDR, HCS12_FTMR_FSTAT_FPVIOL
-							| HCS12_FTMR_FSTAT_FACCERR | HCS12_FTMR_FSTAT_CCIF);
+	if (hcs12_write_byte(HCS12_FTMR_FSTAT_ADDR, HCS12_FTMR_FSTAT_FPVIOL
+							| HCS12_FTMR_FSTAT_FACCERR | HCS12_FTMR_FSTAT_CCIF))
+	{
+		return VSFERR_FAIL;
+	}
 	
 	// poll
 	poll_start();
@@ -235,7 +233,7 @@ static RESULT hcs12_flash_cmd(uint8_t param_num, uint16_t *param)
 	poll_ok(1, HCS12_FTMR_FSTAT_CCIF, HCS12_FTMR_FSTAT_CCIF);
 	poll_end();
 	
-	return ret;
+	return VSFERR_NONE;
 }
 
 ENTER_PROGRAM_MODE_HANDLER(hcs12)
@@ -261,9 +259,9 @@ ENTER_PROGRAM_MODE_HANDLER(hcs12)
 	delay_ms(1);
 	hcs12_ack_enable();
 	
-	if (ERROR_OK != commit())
+	if (commit())
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	LOG_INFO("target running at %dkhz", kernel_khz);
 	
@@ -280,13 +278,13 @@ ENTER_PROGRAM_MODE_HANDLER(hcs12)
 	hcs12_write_byte(HCS12_FTMR_FSTAT_ADDR,
 					HCS12_FTMR_FSTAT_FPVIOL | HCS12_FTMR_FSTAT_FACCERR);
 	hcs12_write_byte(HCS12_FTMR_FPROT_ADDR, 0xFF);
-	if (ERROR_OK != commit())
+	if (commit())
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	LOG_INFO("flash running at %dkhz",
 				kernel_khz / (1 + (hcs12_flash_div & HCS12_FTMR_FCDIV_DIVMASK)));
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 LEAVE_PROGRAM_MODE_HANDLER(hcs12)
@@ -302,7 +300,6 @@ LEAVE_PROGRAM_MODE_HANDLER(hcs12)
 
 ERASE_TARGET_HANDLER(hcs12)
 {
-	RESULT ret = ERROR_OK;
 	uint16_t param[8];
 	
 	REFERENCE_PARAMETER(size);
@@ -313,10 +310,9 @@ ERASE_TARGET_HANDLER(hcs12)
 	{
 	case APPLICATION_CHAR:
 		param[0] = HCS12_FTMR_FCMD_EraseAllBlocks << 8;
-		ret = hcs12_flash_cmd(1, param);
-		if (ret != ERROR_OK)
+		if (hcs12_flash_cmd(1, param))
 		{
-			break;
+			return VSFERR_FAIL;
 		}
 		
 		param[0] = (HCS12_FTMR_FCMD_ProgramPFlash << 8)
@@ -326,32 +322,31 @@ ERASE_TARGET_HANDLER(hcs12)
 		param[3] = 0xFFFF;
 		param[4] = 0xFFFF;
 		param[5] = 0xFFFE;
-		ret = hcs12_flash_cmd(6, param);
-		ret = commit();
-		break;
+		if (hcs12_flash_cmd(6, param) ||
+			commit())
+		{
+			return VSFERR_FAIL;
+		}
+		return VSFERR_NONE;
 	default:
-		ret = ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
-	return ret;
 }
 
 WRITE_TARGET_HANDLER(hcs12)
 {
-	RESULT ret = ERROR_OK;
+	vsf_err_t err = VSFERR_NONE;
 	uint16_t i;
 	uint16_t param[8];
 	
-	REFERENCE_PARAMETER(size);
-	REFERENCE_PARAMETER(addr);
 	REFERENCE_PARAMETER(context);
-	REFERENCE_PARAMETER(buff);
 	
 	switch (area)
 	{
 	case APPLICATION_CHAR:
 		if ((addr & 0x07) || (size & 0x07))
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		
 		for (i = 0; i < size; i += 8)
@@ -366,8 +361,8 @@ WRITE_TARGET_HANDLER(hcs12)
 				param[3] = (buff[i + 2] << 8) + buff[i + 3];
 				param[4] = (buff[i + 4] << 8) + buff[i + 5];
 				param[5] = (buff[i + 6] << 8) + buff[i + 7];
-				ret = hcs12_flash_cmd(6, param);
-				if (ret != ERROR_OK)
+				err = hcs12_flash_cmd(6, param);
+				if (err)
 				{
 					break;
 				}
@@ -375,14 +370,14 @@ WRITE_TARGET_HANDLER(hcs12)
 		}
 		break;
 	default:
-		ret = ERROR_FAIL;
+		err = VSFERR_FAIL;
 	}
-	return ret;
+	return err;
 }
 
 READ_TARGET_HANDLER(hcs12)
 {
-	RESULT ret = ERROR_OK;
+	vsf_err_t err = VSFERR_NONE;
 	uint16_t i;
 	uint16_t addr16;
 	uint8_t ppage;
@@ -393,7 +388,7 @@ READ_TARGET_HANDLER(hcs12)
 	{
 	case CHIPID_CHAR:
 		hcs12_read_word(0x001A, (uint16_t *)&buff[0]);
-		ret = commit();
+		err = commit();
 		buff[0] &= 0xF0;
 		buff[1] &= 0xF0;
 		break;
@@ -405,13 +400,13 @@ READ_TARGET_HANDLER(hcs12)
 			addr16 = (uint16_t)((addr + i) & 0x3FFF) + 0x8000;
 			hcs12_read_word(addr16, (uint16_t *)&buff[i]);
 		}
-		ret = commit();
+		err = commit();
 		break;
 	default:
-		ret = ERROR_FAIL;
+		err = VSFERR_FAIL;
 		break;
 	}
-	return ret;
+	return err;
 }
 
 ADJUST_MAPPING_HANDLER(hcs12)
@@ -435,8 +430,8 @@ ADJUST_MAPPING_HANDLER(hcs12)
 	else
 	{
 		LOG_BUG(ERRMSG_INVALID_TARGET, "mapping direction");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 

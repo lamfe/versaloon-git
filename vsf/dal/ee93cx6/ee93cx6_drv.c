@@ -42,13 +42,13 @@
 #define EE93CX6_OPCODE_WRAL_BITLEN			4
 
 
-static RESULT ee93cx6_drv_poll(struct ee93cx6_drv_interface_t *ifs)
+static vsf_err_t ee93cx6_drv_poll(struct ee93cx6_drv_interface_t *ifs)
 {
 	return interfaces->microwire.poll(ifs->mw_port, 
 							EE93CX6_POLL_INTERVAL_US, EE93CX6_POLL_RETRY_CNT);
 }
 
-static RESULT ee93cx6_drv_init(struct dal_info_t *info)
+static vsf_err_t ee93cx6_drv_init(struct dal_info_t *info)
 {
 	struct ee93cx6_drv_interface_t *ifs = 
 								(struct ee93cx6_drv_interface_t *)info->ifs;
@@ -62,7 +62,7 @@ static RESULT ee93cx6_drv_init(struct dal_info_t *info)
 	}
 	if (param->addr_bitlen > 32)
 	{
-		return ERROR_FAIL;
+		return VSFERR_INVALID_PARAMETER;
 	}
 	if (!param->iic_khz)
 	{
@@ -76,10 +76,10 @@ static RESULT ee93cx6_drv_init(struct dal_info_t *info)
 	interfaces->microwire.transport(ifs->mw_port, cmd, param->cmd_bitlen, 0, 0, 
 									0, 0, NULL, 0);
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT ee93cx6_drv_fini(struct dal_info_t *info)
+static vsf_err_t ee93cx6_drv_fini(struct dal_info_t *info)
 {
 	struct ee93cx6_drv_interface_t *ifs = 
 								(struct ee93cx6_drv_interface_t *)info->ifs;
@@ -95,7 +95,7 @@ static RESULT ee93cx6_drv_fini(struct dal_info_t *info)
 	return interfaces->peripheral_commit();
 }
 
-static RESULT ee93cx6_drv_eraseall_nb_start(struct dal_info_t *info)
+static vsf_err_t ee93cx6_drv_eraseall_nb_start(struct dal_info_t *info)
 {
 	struct ee93cx6_drv_interface_t *ifs = 
 								(struct ee93cx6_drv_interface_t *)info->ifs;
@@ -105,13 +105,11 @@ static RESULT ee93cx6_drv_eraseall_nb_start(struct dal_info_t *info)
 	
 	cmd = EE93CX6_OPCODE_ERAL << 
 							(param->cmd_bitlen - EE93CX6_OPCODE_ERAL_BITLEN);
-	interfaces->microwire.transport(ifs->mw_port, cmd, param->cmd_bitlen, 0, 0, 
-									0, 0, NULL, 0);
-	
-	return ERROR_OK;
+	return interfaces->microwire.transport(ifs->mw_port, cmd, param->cmd_bitlen,
+											0, 0, 0, 0, NULL, 0);
 }
 
-static RESULT ee93cx6_drv_eraseall_nb_waitready(struct dal_info_t *info)
+static vsf_err_t ee93cx6_drv_eraseall_nb_waitready(struct dal_info_t *info)
 {
 	struct ee93cx6_drv_interface_t *ifs = 
 								(struct ee93cx6_drv_interface_t *)info->ifs;
@@ -119,22 +117,22 @@ static RESULT ee93cx6_drv_eraseall_nb_waitready(struct dal_info_t *info)
 	return ee93cx6_drv_poll(ifs);
 }
 
-static RESULT ee93cx6_drv_eraseall_nb_end(struct dal_info_t *info)
+static vsf_err_t ee93cx6_drv_eraseall_nb_end(struct dal_info_t *info)
 {
 	REFERENCE_PARAMETER(info);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT ee93cx6_drv_eraseblock_nb_start(struct dal_info_t *info, 
+static vsf_err_t ee93cx6_drv_eraseblock_nb_start(struct dal_info_t *info, 
 											uint64_t address, uint64_t count)
 {
 	REFERENCE_PARAMETER(info);
 	REFERENCE_PARAMETER(address);
 	REFERENCE_PARAMETER(count);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT ee93cx6_drv_eraseblock_nb(struct dal_info_t *info, 
+static vsf_err_t ee93cx6_drv_eraseblock_nb(struct dal_info_t *info, 
 										uint64_t address)
 {
 	struct ee93cx6_drv_interface_t *ifs = 
@@ -144,24 +142,22 @@ static RESULT ee93cx6_drv_eraseblock_nb(struct dal_info_t *info,
 	switch (param->origination_mode)
 	{
 	case EE93CX6_ORIGINATION_BYTE:
-		interfaces->microwire.transport(ifs->mw_port, 
+		return interfaces->microwire.transport(ifs->mw_port, 
 			EE93CX6_OPCODE_ERASE, EE93CX6_OPCODE_ERASE_BITLEN, 
 			(uint32_t)address, param->addr_bitlen, 0, 0, NULL, 0);
 		break;
 	case EE93CX6_ORIGINATION_WORD:
-		interfaces->microwire.transport(ifs->mw_port, 
+		return interfaces->microwire.transport(ifs->mw_port, 
 			EE93CX6_OPCODE_ERASE, EE93CX6_OPCODE_ERASE_BITLEN, 
 			(uint32_t)(address / 2), param->addr_bitlen - 1, 0, 0, 
 			NULL, 0);
 		break;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_INVALID_PARAMETER;
 	}
-	
-	return ERROR_OK;
 }
 
-static RESULT ee93cx6_drv_eraseblock_nb_waitready(struct dal_info_t *info, 
+static vsf_err_t ee93cx6_drv_eraseblock_nb_waitready(struct dal_info_t *info, 
 													uint64_t address)
 {
 	struct ee93cx6_drv_interface_t *ifs = 
@@ -171,22 +167,22 @@ static RESULT ee93cx6_drv_eraseblock_nb_waitready(struct dal_info_t *info,
 	return ee93cx6_drv_poll(ifs);
 }
 
-static RESULT ee93cx6_drv_eraseblock_nb_end(struct dal_info_t *info)
+static vsf_err_t ee93cx6_drv_eraseblock_nb_end(struct dal_info_t *info)
 {
 	REFERENCE_PARAMETER(info);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT ee93cx6_drv_readblock_nb_start(struct dal_info_t *info, 
+static vsf_err_t ee93cx6_drv_readblock_nb_start(struct dal_info_t *info, 
 											uint64_t address, uint64_t count)
 {
 	REFERENCE_PARAMETER(info);
 	REFERENCE_PARAMETER(address);
 	REFERENCE_PARAMETER(count);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT ee93cx6_drv_readblock_nb(struct dal_info_t *info, 
+static vsf_err_t ee93cx6_drv_readblock_nb(struct dal_info_t *info, 
 										uint64_t address, uint8_t *buff)
 {
 	struct ee93cx6_drv_interface_t *ifs = 
@@ -201,61 +197,59 @@ static RESULT ee93cx6_drv_readblock_nb(struct dal_info_t *info,
 	case EE93CX6_ORIGINATION_BYTE:
 		for (i = 0; i < mal_info->capacity.block_size; i++)
 		{
-			if (ERROR_OK != 
-				interfaces->microwire.transport(ifs->mw_port, 
+			if (interfaces->microwire.transport(ifs->mw_port, 
 					EE93CX6_OPCODE_READ, EE93CX6_OPCODE_READ_BITLEN, 
 					(uint32_t)(address + i), param->addr_bitlen, 
 					0, 0, &buff[i], 8))
 			{
-				return ERROR_FAIL;
+				return VSFERR_FAIL;
 			}
 		}
 		break;
 	case EE93CX6_ORIGINATION_WORD:
 		for (i = 0; i < mal_info->capacity.block_size; i += 2)
 		{
-			if (ERROR_OK != 
-				interfaces->microwire.transport(ifs->mw_port, 
+			if (interfaces->microwire.transport(ifs->mw_port, 
 					EE93CX6_OPCODE_READ, EE93CX6_OPCODE_READ_BITLEN, 
 					(uint32_t)((address + i) / 2), param->addr_bitlen - 1, 
 					0, 0, &buff[i], 16))
 			{
-				return ERROR_FAIL;
+				return VSFERR_FAIL;
 			}
 		}
 		break;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_INVALID_PARAMETER;
 	}
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT ee93cx6_drv_readblock_nb_waitready(struct dal_info_t *info, 
+static vsf_err_t ee93cx6_drv_readblock_nb_waitready(struct dal_info_t *info, 
 												uint64_t address, uint8_t *buff)
 {
 	REFERENCE_PARAMETER(info);
 	REFERENCE_PARAMETER(address);
 	REFERENCE_PARAMETER(buff);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT ee93cx6_drv_readblock_nb_end(struct dal_info_t *info)
+static vsf_err_t ee93cx6_drv_readblock_nb_end(struct dal_info_t *info)
 {
 	REFERENCE_PARAMETER(info);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT ee93cx6_drv_writeblock_nb_start(struct dal_info_t *info, 
+static vsf_err_t ee93cx6_drv_writeblock_nb_start(struct dal_info_t *info, 
 											uint64_t address, uint64_t count)
 {
 	REFERENCE_PARAMETER(info);
 	REFERENCE_PARAMETER(address);
 	REFERENCE_PARAMETER(count);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT ee93cx6_drv_writeblock_nb(struct dal_info_t *info, 
+static vsf_err_t ee93cx6_drv_writeblock_nb(struct dal_info_t *info, 
 										uint64_t address, uint8_t *buff)
 {
 	struct ee93cx6_drv_interface_t *ifs = 
@@ -271,13 +265,12 @@ static RESULT ee93cx6_drv_writeblock_nb(struct dal_info_t *info,
 	case EE93CX6_ORIGINATION_BYTE:
 		for (i = 0; i < mal_info->capacity.block_size; i++)
 		{
-			if (ERROR_OK != 
-				interfaces->microwire.transport(ifs->mw_port, 
+			if (interfaces->microwire.transport(ifs->mw_port, 
 					EE93CX6_OPCODE_WRITE, EE93CX6_OPCODE_WRITE_BITLEN, 
 					(uint32_t)(address + i), param->addr_bitlen, 
 					buff[i], 8, NULL, 0))
 			{
-				return ERROR_FAIL;
+				return VSFERR_FAIL;
 			}
 		}
 		break;
@@ -285,24 +278,23 @@ static RESULT ee93cx6_drv_writeblock_nb(struct dal_info_t *info,
 		ptr16 = (uint16_t *)buff;
 		for (i = 0; i < mal_info->capacity.block_size; i += 2)
 		{
-			if (ERROR_OK != 
-				interfaces->microwire.transport(ifs->mw_port, 
+			if (interfaces->microwire.transport(ifs->mw_port, 
 					EE93CX6_OPCODE_WRITE, EE93CX6_OPCODE_WRITE_BITLEN, 
 					(uint32_t)((address + i) / 2), param->addr_bitlen - 1, 
 					SYS_TO_LE_U16(ptr16[i / 2]), 16, NULL, 0))
 			{
-				return ERROR_FAIL;
+				return VSFERR_FAIL;
 			}
 		}
 		break;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_INVALID_PARAMETER;
 	}
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT ee93cx6_drv_writeblock_nb_waitready(struct dal_info_t *info, 
+static vsf_err_t ee93cx6_drv_writeblock_nb_waitready(struct dal_info_t *info, 
 												uint64_t address, uint8_t *buff)
 {
 	struct ee93cx6_drv_interface_t *ifs = 
@@ -313,21 +305,21 @@ static RESULT ee93cx6_drv_writeblock_nb_waitready(struct dal_info_t *info,
 	return ee93cx6_drv_poll(ifs);
 }
 
-static RESULT ee93cx6_drv_writeblock_nb_end(struct dal_info_t *info)
+static vsf_err_t ee93cx6_drv_writeblock_nb_end(struct dal_info_t *info)
 {
 	REFERENCE_PARAMETER(info);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 #if DAL_INTERFACE_PARSER_EN
-static RESULT ee93cx6_drv_parse_interface(struct dal_info_t *info, 
+static vsf_err_t ee93cx6_drv_parse_interface(struct dal_info_t *info, 
 											uint8_t *buff)
 {
 	struct ee93cx6_drv_interface_t *ifs = 
 								(struct ee93cx6_drv_interface_t *)info->ifs;
 	
 	ifs->mw_port = buff[0];
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 #endif
 

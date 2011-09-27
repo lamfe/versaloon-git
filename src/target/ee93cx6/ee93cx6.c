@@ -29,8 +29,6 @@
 #include "app_err.h"
 #include "app_log.h"
 
-#include "pgbar.h"
-
 #include "vsprog.h"
 #include "programmer.h"
 #include "target.h"
@@ -84,7 +82,7 @@ Usage of %s:\n\
   -F,  --frequency <FREQUENCY>              set MicroWire frequency, in KHz\n\
   -m,  --mode <MODE>                        set mode<b|w>\n\n",
 			CUR_TARGET_STRING);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 VSS_HANDLER(ee93cx6_mode)
@@ -100,10 +98,10 @@ VSS_HANDLER(ee93cx6_mode)
 		ee93cx6_origination_mode = mode;
 		break;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 		break;
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 const struct vss_cmd_t ee93cx6_notifier[] =
@@ -141,17 +139,17 @@ ENTER_PROGRAM_MODE_HANDLER(ee93cx6)
 	struct chip_param_t *param = context->param;
 	struct program_info_t *pi = context->pi;
 	
-	if (ERROR_OK != dal_init(context->prog))
+	if (dal_init(context->prog))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	if (pi->ifs_indexes != NULL)
 	{
-		if (ERROR_OK != dal_config_interface(EE93CX6_STRING, pi->ifs_indexes,
+		if (dal_config_interface(EE93CX6_STRING, pi->ifs_indexes,
 												&ee93cx6_dal_info))
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 	}
 	else
@@ -172,9 +170,9 @@ ENTER_PROGRAM_MODE_HANDLER(ee93cx6)
 	{
 		ee93cx6_drv_param.origination_mode = EE93CX6_ORIGINATION_WORD;
 	}
-	if (ERROR_OK != mal.init(MAL_IDX_EE93CX6, &ee93cx6_dal_info))
+	if (mal.init(MAL_IDX_EE93CX6, &ee93cx6_dal_info))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	ee93cx6_mal_info.capacity.block_size =
 										param->chip_areas[EEPROM_IDX].page_size;
@@ -200,9 +198,9 @@ ERASE_TARGET_HANDLER(ee93cx6)
 	REFERENCE_PARAMETER(addr);
 	REFERENCE_PARAMETER(size);
 	
-	if (ERROR_OK != mal.eraseall(MAL_IDX_EE93CX6, &ee93cx6_dal_info))
+	if (mal.eraseall(MAL_IDX_EE93CX6, &ee93cx6_dal_info))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	return dal_commit();
 }
@@ -216,19 +214,19 @@ WRITE_TARGET_HANDLER(ee93cx6)
 	case EEPROM_CHAR:
 		if (size % param->chip_areas[EEPROM_IDX].page_size)
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		size /= param->chip_areas[EEPROM_IDX].page_size;
 		
-		if (ERROR_OK != mal.writeblock(MAL_IDX_EE93CX6, &ee93cx6_dal_info,
+		if (mal.writeblock(MAL_IDX_EE93CX6, &ee93cx6_dal_info,
 										addr, buff, size))
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		return dal_commit();
 		break;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 }
 
@@ -241,19 +239,19 @@ READ_TARGET_HANDLER(ee93cx6)
 	case EEPROM_CHAR:
 		if (size % param->chip_areas[EEPROM_IDX].page_size)
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		size /= param->chip_areas[EEPROM_IDX].page_size;
 		
-		if (ERROR_OK != mal.readblock(MAL_IDX_EE93CX6, &ee93cx6_dal_info,
+		if (mal.readblock(MAL_IDX_EE93CX6, &ee93cx6_dal_info,
 										addr, buff, size))
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		return dal_commit();
 		break;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 }
 

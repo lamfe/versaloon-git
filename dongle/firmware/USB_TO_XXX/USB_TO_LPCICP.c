@@ -36,66 +36,67 @@ void USB_TO_LPCICP_ProcessCmd(uint8_t *dat, uint16_t len)
 		switch(command)
 		{
 		case USB_TO_XXX_INIT:
-			if (ERROR_OK == app_interfaces.lpcicp.init(device_idx))
+			if (app_interfaces.lpcicp.init(device_idx))
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
 			else
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
 			break;
 		case USB_TO_XXX_FINI:
-			if (ERROR_OK == app_interfaces.lpcicp.fini(device_idx))
+			if (app_interfaces.lpcicp.fini(device_idx))
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
 			else
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
 			break;
 		case USB_TO_LPCICP_EnterProgMode:
-			if (ERROR_OK == app_interfaces.lpcicp.enter_program_mode(device_idx))
+			if (app_interfaces.lpcicp.enter_program_mode(device_idx))
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
 			else
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
 			break;
 		case USB_TO_LPCICP_In:
-			if (ERROR_OK == app_interfaces.lpcicp.in(device_idx, &buffer_reply[rep_len + 1], length))
+			if (app_interfaces.lpcicp.in(device_idx, &buffer_reply[rep_len + 1],
+											length))
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
 			else
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
 			rep_len += length;
 			break;
 		case USB_TO_LPCICP_Out:
-			if (ERROR_OK == app_interfaces.lpcicp.out(device_idx, &dat[index], length))
+			if (app_interfaces.lpcicp.out(device_idx, &dat[index], length))
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
 			else
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
 			break;
 		case USB_TO_LPCICP_PollRdy:
-			if (ERROR_OK == app_interfaces.lpcicp.poll_ready(device_idx, dat[index + 0], 
-								&buffer_reply[rep_len + 1], dat[index + 1], 
-								dat[index + 2], GET_LE_U16(&dat[index + 3])))
+			if (app_interfaces.lpcicp.poll_ready(device_idx, dat[index + 0], 
+					&buffer_reply[rep_len + 1], dat[index + 1], 
+					dat[index + 2], GET_LE_U16(&dat[index + 3])))
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
 			else
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
 			rep_len++;
 			break;

@@ -186,87 +186,87 @@ uint8_t C2_WriteData(uint8_t data)
 	return 0;
 }
 
-RESULT c2_init(uint8_t index)
+vsf_err_t c2_init(uint8_t index)
 {
 	switch (index)
 	{
 	case 0:
 		C2_Init();
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT c2_fini(uint8_t index)
+vsf_err_t c2_fini(uint8_t index)
 {
 	switch (index)
 	{
 	case 0:
 		C2_Fini();
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT c2_addr_write(uint8_t index, uint8_t addr)
+vsf_err_t c2_addr_write(uint8_t index, uint8_t addr)
 {
 	switch (index)
 	{
 	case 0:
 		C2_WriteAddr(addr);
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT c2_addr_read(uint8_t index, uint8_t *data)
+vsf_err_t c2_addr_read(uint8_t index, uint8_t *data)
 {
 	switch (index)
 	{
 	case 0:
 		C2_ReadAddr(data);
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT c2_data_read(uint8_t index, uint8_t *data, uint8_t len)
+vsf_err_t c2_data_read(uint8_t index, uint8_t *data, uint8_t len)
 {
 	switch (index)
 	{
 	case 0:
 		if(C2_ReadData(data))
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		else
 		{
-			return ERROR_OK;
+			return VSFERR_NONE;
 		}
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT c2_data_write(uint8_t index, uint8_t *data, uint8_t len)
+vsf_err_t c2_data_write(uint8_t index, uint8_t *data, uint8_t len)
 {
 	switch (index)
 	{
 	case 0:
 		if(C2_WriteData(*data))
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		else
 		{
-			return ERROR_OK;
+			return VSFERR_NONE;
 		}
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 

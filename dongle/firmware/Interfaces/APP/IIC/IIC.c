@@ -26,43 +26,43 @@ DEFINE_EMIIC_MOD(USBTOXXX, IIC_SCL_CLR, IIC_SCL_SET, IIC_SCL_GET, IIC_SDA_CLR, I
 
 uint16_t IIC_Delay;
 
-RESULT iic_init(uint8_t index)
+vsf_err_t iic_init(uint8_t index)
 {
 	switch (index)
 	{
 	case 0:
 		IIC_SCL_INIT();
 		IIC_SDA_INIT();
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT iic_fini(uint8_t index)
+vsf_err_t iic_fini(uint8_t index)
 {
-	RESULT ret;
+	vsf_err_t err;
 	
 	switch (index)
 	{
 	case 0:
 		if (IIC_MOD_ACK == EMIIC_USBTOXXX_DeInit())
 		{
-			ret = ERROR_OK;
+			err = VSFERR_NONE;
 		}
 		else
 		{
-			ret = ERROR_FAIL;
+			err = VSFERR_FAIL;
 		}
 		IIC_SCL_FINI();
 		IIC_SDA_FINI();
-		return ret;
+		return err;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT iic_config(uint8_t index, uint16_t kHz, uint16_t byte_interval, 
+vsf_err_t iic_config(uint8_t index, uint16_t kHz, uint16_t byte_interval, 
 				 uint16_t max_dly)
 {
 	uint16_t clock_cycle = 1000 / kHz;
@@ -75,23 +75,23 @@ RESULT iic_config(uint8_t index, uint16_t kHz, uint16_t byte_interval,
 		{
 			if (IIC_MOD_ACK == EMIIC_USBTOXXX_SetParameter(clock_cycle, max_dly, 1, byte_interval))
 			{
-				return ERROR_OK;
+				return VSFERR_NONE;
 			}
 			else
 			{
-				return ERROR_FAIL;
+				return VSFERR_FAIL;
 			}
 		}
 		else
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT iic_read(uint8_t index, uint16_t chip_addr, uint8_t *data, 
+vsf_err_t iic_read(uint8_t index, uint16_t chip_addr, uint8_t *data, 
 			   uint16_t data_len, uint8_t stop, bool nacklast)
 {
 	IIC_STOP_t iic_stop;
@@ -111,18 +111,18 @@ RESULT iic_read(uint8_t index, uint16_t chip_addr, uint8_t *data,
 		
 		if (IIC_MOD_ACK == EMIIC_USBTOXXX_Receive(chip_addr, data, data_len, iic_stop, nacklast, &actual_len))
 		{
-			return ERROR_OK;
+			return VSFERR_NONE;
 		}
 		else
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT iic_write(uint8_t index, uint16_t chip_addr, uint8_t *data, 
+vsf_err_t iic_write(uint8_t index, uint16_t chip_addr, uint8_t *data, 
 					uint16_t data_len, uint8_t stop)
 {
 	IIC_STOP_t iic_stop;
@@ -142,14 +142,14 @@ RESULT iic_write(uint8_t index, uint16_t chip_addr, uint8_t *data,
 		
 		if (IIC_MOD_ACK == EMIIC_USBTOXXX_Send(chip_addr, data, data_len, iic_stop, &actual_len))
 		{
-			return ERROR_OK;
+			return VSFERR_NONE;
 		}
 		else
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 

@@ -61,43 +61,43 @@ enum nrf24l01_drv_crclen_t
 
 struct nrf24l01_drv_user_callback
 {
-	RESULT (*on_tx)(struct dal_info_t *info);
-	RESULT (*on_rx)(struct dal_info_t *info, uint8_t channel, 
-					struct vsf_buffer_t *buffer);
-	RESULT (*on_to)(struct dal_info_t *info);
-	RESULT (*on_poll)(struct dal_info_t *info);
+	vsf_err_t (*on_tx)(struct dal_info_t *info);
+	vsf_err_t (*on_rx)(struct dal_info_t *info, uint8_t channel, 
+						struct vsf_buffer_t *buffer);
+	vsf_err_t (*on_to)(struct dal_info_t *info);
+	vsf_err_t (*on_poll)(struct dal_info_t *info);
 };
 
 struct nrf24l01_drv_t
 {
 	struct dal_driver_t driver;
-	RESULT (*init)(struct dal_info_t *info);
-	RESULT (*fini)(struct dal_info_t *info);
-	RESULT (*config)(struct dal_info_t *info);
-	RESULT (*config_channel)(struct dal_info_t *info, uint8_t channel, 
+	vsf_err_t (*init)(struct dal_info_t *info);
+	vsf_err_t (*fini)(struct dal_info_t *info);
+	vsf_err_t (*config)(struct dal_info_t *info);
+	vsf_err_t (*config_channel)(struct dal_info_t *info, uint8_t channel, 
 								bool enable, uint8_t *addr, bool enaa);
-	RESULT (*power)(struct dal_info_t *info, bool power_down);
+	vsf_err_t (*power)(struct dal_info_t *info, bool power_down);
 	
-	RESULT (*tx_fifo_avail)(struct dal_info_t *info, bool *avail);
-	RESULT (*tx_fifo_write)(struct dal_info_t *info, 
-							struct vsf_buffer_t *buffer);
-	RESULT (*ack_fifo_avail)(struct dal_info_t *info, bool *avail);
-	RESULT (*ack_fifo_write)(struct dal_info_t *info, uint8_t channel, 
+	vsf_err_t (*tx_fifo_avail)(struct dal_info_t *info);
+	vsf_err_t (*tx_fifo_write)(struct dal_info_t *info, 
 								struct vsf_buffer_t *buffer);
-	RESULT (*rx_fifo_avail)(struct dal_info_t *info, bool *avail);
-	RESULT (*rx_fifo_read)(struct dal_info_t *info, 
-							struct vsf_buffer_t *buffer);
-	RESULT (*send)(struct dal_info_t *info);
+	vsf_err_t (*ack_fifo_avail)(struct dal_info_t *info);
+	vsf_err_t (*ack_fifo_write)(struct dal_info_t *info, uint8_t channel, 
+								struct vsf_buffer_t *buffer);
+	vsf_err_t (*rx_fifo_avail)(struct dal_info_t *info);
+	vsf_err_t (*rx_fifo_read)(struct dal_info_t *info, 
+								struct vsf_buffer_t *buffer);
+	vsf_err_t (*send)(struct dal_info_t *info);
 	
-	RESULT (*tx_flush)(struct dal_info_t *info);
-	RESULT (*rx_flush)(struct dal_info_t *info);
+	vsf_err_t (*tx_flush)(struct dal_info_t *info);
+	vsf_err_t (*rx_flush)(struct dal_info_t *info);
 	
-	RESULT (*get_rx_power)(struct dal_info_t *info, uint8_t *pwr);
-	RESULT (*poll)(struct dal_info_t *info);
+	vsf_err_t (*get_rx_power)(struct dal_info_t *info, uint8_t *pwr);
+	vsf_err_t (*poll)(struct dal_info_t *info);
 	
 	struct nrf24l01_drv_callback_t
 	{
-		RESULT (*on_interrupt)(struct dal_info_t *info);
+		vsf_err_t (*on_interrupt)(struct dal_info_t *info);
 	} callback;
 };
 

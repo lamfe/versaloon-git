@@ -29,7 +29,7 @@
 #define ERRMSG_TIMEOUT						"timeout to %s"
 
 #define ERRMSG_NOT_ENOUGH_MEMORY			"Lack of memory."
-#define ERRCODE_NOT_ENOUGH_MEMORY			ERROR_FAIL
+#define ERRCODE_NOT_ENOUGH_MEMORY			VSFERR_FAIL
 
 #define ERRMSG_INVALID						"%s is invalide for %s."
 #define ERRMSG_INVALID_CHARACTER			"%c is invalide for %s."
@@ -43,26 +43,26 @@
 #define ERRMSG_INVALID_RANGE				"Invalid range for %s."
 #define ERRMSG_INVALID_USAGE				"Invalid usage of %s"
 #define ERRMSG_INVALID_TARGET				"Invalid %s"
-#define ERRCODE_INVALID						ERROR_FAIL
+#define ERRCODE_INVALID						VSFERR_FAIL
 
 #define ERRMSG_INVALID_OPTION				"Invalid option: %c."
 #define ERRMSG_INVALID_OPERATION			"Invalid operation: %c."
 #define ERRMSG_INVALID_CMD					"Invalid cmd: %s."
-#define ERRCODE_INVALID_OPTION				ERROR_FAIL
+#define ERRCODE_INVALID_OPTION				VSFERR_FAIL
 
 #define ERRMSG_INVALID_PARAMETER			"Invalid parameter of %s."
-#define ERRCODE_INVALID_PARAMETER			ERROR_FAIL
+#define ERRCODE_INVALID_PARAMETER			VSFERR_FAIL
 
 #define ERRMSG_NOT_SUPPORT					"%s is not supported."
 #define ERRMSG_NOT_SUPPORT_BY				"%s is not supported by %s."
 #define ERRMSG_NOT_SUPPORT_AS				"%s is not supported as %s."
-#define ERRCODE_NOT_SUPPORT					ERROR_FAIL
+#define ERRCODE_NOT_SUPPORT					VSFERR_FAIL
 
 #define ERRMSG_INVALID_BUFFER				"Buffer %s is not valid."
-#define ERRCODE_INVALID_BUFFER				ERROR_FAIL
+#define ERRCODE_INVALID_BUFFER				VSFERR_FAIL
 
 #define ERRMSG_INVALID_HANDLER				"%s is not valid handler for %s."
-#define ERRCODE_INVALID_HANDLER				ERROR_FAIL
+#define ERRCODE_INVALID_HANDLER				VSFERR_FAIL
 
 #define ERRMSG_FAILURE_OPERATION			"Fail to %s."
 #define ERRMSG_FAILURE_ERASE				"Fail to erase %s."
@@ -76,10 +76,10 @@
 #define ERRMSG_FAILURE_OPERATE_DEVICE		"Fail to operate %s."
 #define ERRMSG_FAILURE_HANDLE_DEVICE		"Fail to %s %s."
 #define ERRMSG_FAILURE_OPERATE_ADDRESS		"Fail to %s at 0x%08X"
-#define ERRCODE_FAILURE_OPERATION			ERROR_FAIL
+#define ERRCODE_FAILURE_OPERATION			VSFERR_FAIL
 
 #define ERRMSG_FAILURE_OPEN					"Fail to open %s."
-#define ERRCODE_FAILURE_OPEN				ERROR_FAIL
+#define ERRCODE_FAILURE_OPEN				VSFERR_FAIL
 
 
 
@@ -89,24 +89,24 @@
 #define ERRMSG_INVALID_INTERFACE_NUM		"invalid inteface %d"
 
 #define ERRMSG_AUTODETECT_FAIL				"%s auto-detect failed."
-#define ERRCODE_AUTODETECT_FAIL				ERROR_FAIL
+#define ERRCODE_AUTODETECT_FAIL				VSFERR_FAIL
 
 #define ERRMSG_INVALID_XML_SETTING			"Invalid setting in config xml file for %s"
 #define ERRMSG_INVALID_PROG_MODE			"Program mode %d is invalid for %s."
-#define ERRCODE_INVALID_PROG_MODE			ERROR_FAIL
+#define ERRCODE_INVALID_PROG_MODE			VSFERR_FAIL
 
 #define ERRMSG_FAILURE_ENTER_PROG_MODE		"Fail to enter into program mode, try slower frequency?"
-#define ERRCODE_FAILURE_ENTER_PROG_MODE		ERROR_FAIL
+#define ERRCODE_FAILURE_ENTER_PROG_MODE		VSFERR_FAIL
 
 #define ERRMSG_INVALID_CHIP_ID				"Chip-id unmatch, read=0x%X, want=0x%X"
-#define ERRCODE_INVALID_CHIP_ID				ERROR_FAIL
+#define ERRCODE_INVALID_CHIP_ID				VSFERR_FAIL
 
 #define ERRMSG_FAILURE_VERIFY_STR			"%s verify failed, read=%s, want=%s."
 #define ERRMSG_FAILURE_VERIFY_AT_02X		"%s verify failed at 0x%X, read=0x%02X, want=0x%02X."
-#define ERRCODE_FAILURE_VERIFY				ERROR_FAIL
+#define ERRCODE_FAILURE_VERIFY				VSFERR_FAIL
 
 #define ERRMSG_FAILURE_OPERATION_ADDR		"Fail to %s at 0x%X."
-#define ERRCODE_FAILURE_OPERATION_ADDR		ERROR_FAIL
+#define ERRCODE_FAILURE_OPERATION_ADDR		VSFERR_FAIL
 
 // User defined information messages
 #define INFOMSG_BOOTLOADER_VERSION			"Bootloader version %d.%d"

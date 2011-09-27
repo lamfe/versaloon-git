@@ -21,34 +21,34 @@
 
 #define STM32_GPIO_NUM					7
 
-RESULT stm32_gpio_init(uint8_t index)
+vsf_err_t stm32_gpio_init(uint8_t index)
 {
 #if __VSF_DEBUG__
 	if (index >= STM32_GPIO_NUM)
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 #endif
 	
 	RCC->APB2ENR |= RCC_APB2Periph_GPIOA << index;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT stm32_gpio_fini(uint8_t index)
+vsf_err_t stm32_gpio_fini(uint8_t index)
 {
 #if __VSF_DEBUG__
 	if (index >= STM32_GPIO_NUM)
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 #endif
 	
 	RCC->APB2ENR &= ~(RCC_APB2Periph_GPIOA << index);
 	RCC->APB2RSTR &= ~(RCC_APB2Periph_GPIOA << index);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT stm32_gpio_config_pin(uint8_t index, uint8_t pin_idx, uint8_t mode)
+vsf_err_t stm32_gpio_config_pin(uint8_t index, uint8_t pin_idx, uint8_t mode)
 {
 	GPIO_TypeDef *gpio;
 	uint32_t tmpreg = mode & 0x0F;
@@ -56,7 +56,7 @@ RESULT stm32_gpio_config_pin(uint8_t index, uint8_t pin_idx, uint8_t mode)
 #if __VSF_DEBUG__
 	if (index >= STM32_GPIO_NUM)
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 #endif
 	
@@ -83,10 +83,10 @@ RESULT stm32_gpio_config_pin(uint8_t index, uint8_t pin_idx, uint8_t mode)
 			gpio->BRR = (((uint32_t)0x01) << pin_idx);
 		}
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT stm32_gpio_config(uint8_t index, uint32_t pin_mask, uint32_t io, 
+vsf_err_t stm32_gpio_config(uint8_t index, uint32_t pin_mask, uint32_t io, 
 							uint32_t pull_en_mask, uint32_t input_pull_mask)
 {
 	GPIO_TypeDef *gpio;
@@ -96,7 +96,7 @@ RESULT stm32_gpio_config(uint8_t index, uint32_t pin_mask, uint32_t io,
 #if __VSF_DEBUG__
 	if (index >= STM32_GPIO_NUM)
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 #endif
 	
@@ -172,72 +172,72 @@ RESULT stm32_gpio_config(uint8_t index, uint32_t pin_mask, uint32_t io,
 	}
 	gpio->CRL = tmpregl;
 	gpio->CRH = tmpregh;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT stm32_gpio_set(uint8_t index, uint32_t pin_mask)
+vsf_err_t stm32_gpio_set(uint8_t index, uint32_t pin_mask)
 {
 	GPIO_TypeDef *gpio;
 	
 #if __VSF_DEBUG__
 	if (index >= STM32_GPIO_NUM)
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 #endif
 	
 	gpio = (GPIO_TypeDef *)(GPIOA_BASE + ((uint32_t)index << 10));
 	gpio->BSRR = pin_mask;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT stm32_gpio_clear(uint8_t index, uint32_t pin_mask)
+vsf_err_t stm32_gpio_clear(uint8_t index, uint32_t pin_mask)
 {
 	GPIO_TypeDef *gpio;
 	
 #if __VSF_DEBUG__
 	if (index >= STM32_GPIO_NUM)
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 #endif
 	
 	gpio = (GPIO_TypeDef *)(GPIOA_BASE + ((uint32_t)index << 10));
 	gpio->BRR = pin_mask;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT stm32_gpio_out(uint8_t index, uint32_t pin_mask, uint32_t value)
+vsf_err_t stm32_gpio_out(uint8_t index, uint32_t pin_mask, uint32_t value)
 {
 	GPIO_TypeDef *gpio;
 	
 #if __VSF_DEBUG__
 	if (index >= STM32_GPIO_NUM)
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 #endif
 	
 	gpio = (GPIO_TypeDef *)(GPIOA_BASE + ((uint32_t)index << 10));
 	gpio->BSRR = pin_mask & value;
 	gpio->BRR = pin_mask & ~value;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT stm32_gpio_in(uint8_t index, uint32_t pin_mask, uint32_t *value)
+vsf_err_t stm32_gpio_in(uint8_t index, uint32_t pin_mask, uint32_t *value)
 {
 	GPIO_TypeDef *gpio;
 	
 #if __VSF_DEBUG__
 	if (index >= STM32_GPIO_NUM)
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 #endif
 	
 	gpio = (GPIO_TypeDef *)(GPIOA_BASE + ((uint32_t)index << 10));
 	*value = gpio->IDR & pin_mask;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 uint32_t stm32_gpio_get(uint8_t index, uint32_t pin_mask)

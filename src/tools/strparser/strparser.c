@@ -25,6 +25,8 @@
 #include <ctype.h>
 #include <inttypes.h>
 
+#include "vsf_err.h"
+
 #include "app_type.h"
 #include "app_io.h"
 #include "app_log.h"
@@ -52,7 +54,7 @@ static const uint64_t strparser_maxvalue[] =
 0xFF, 0xFFFF, 0xFFFFFF, 0xFFFFFFFF,
 0xFFFFFFFFFF, 0xFFFFFFFFFFFF, 0xFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF};
 
-RESULT strparser_check(char * str, char * format)
+vsf_err_t strparser_check(char * str, char * format)
 {
 	uint8_t buff[256];
 	
@@ -68,7 +70,7 @@ uint32_t strparser_getsize(char * format)
 	
 	if (NULL == format)
 	{
-		return ERROR_FAIL;
+		return 0;
 	}
 	
 	size = 0;
@@ -87,7 +89,7 @@ uint32_t strparser_getsize(char * format)
 	return size;
 }
 
-RESULT strparser_parse(char * str, char * format, uint8_t * buff,
+vsf_err_t strparser_parse(char * str, char * format, uint8_t * buff,
 						uint32_t size)
 {
 	char *ptr_tmp;
@@ -100,7 +102,7 @@ RESULT strparser_parse(char * str, char * format, uint8_t * buff,
 	
 	if ((NULL == str) || (NULL == format) || (NULL == buff) || (0 == size))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	cur_index = 0;
@@ -108,7 +110,7 @@ RESULT strparser_parse(char * str, char * format, uint8_t * buff,
 	{
 		if ('\0' == str[0])
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		
 		cur_ch = format[cur_index++];
@@ -146,19 +148,19 @@ parse_integer:
 				if (!has_param)
 				{
 					LOG_DEBUG(ERRMSG_NOT_DEFINED, "integer size");
-					return ERROR_FAIL;
+					return VSFERR_FAIL;
 				}
 				if (param > 8)
 				{
 					LOG_DEBUG("%d is invalid for integer size, max is %d",
 								(uint32_t)param, 8);
-					return ERROR_FAIL;
+					return VSFERR_FAIL;
 				}
 				
 				if ('\0' == str[0])
 				{
 					LOG_DEBUG("get NULL while parsing value");
-					return ERROR_FAIL;
+					return VSFERR_FAIL;
 				}
 				val_tmp = 0;
 				val_tmp = strtoull(str, &ptr_tmp, radix);
@@ -166,7 +168,7 @@ parse_integer:
 				{
 					// parse failed
 					LOG_DEBUG(ERRMSG_FAILURE_HANDLE_DEVICE, "parse", str);
-					return ERROR_FAIL;
+					return VSFERR_FAIL;
 				}
 				str = ptr_tmp;
 				while ((str[0] != '\0') && strparser_is_divider(str[0]))
@@ -177,12 +179,12 @@ parse_integer:
 				if (val_tmp > strparser_maxvalue[param])
 				{
 					LOG_DEBUG("value execeed range!!");
-					return ERROR_FAIL;
+					return VSFERR_FAIL;
 				}
 				if (size && (size_avail < param))
 				{
 					LOG_DEBUG(ERRMSG_BUFFER_OVERFLOW, TO_STR(buff));
-					return ERROR_FAIL;
+					return VSFERR_FAIL;
 				}
 				memcpy(buff, &val_tmp, (size_t)param);
 				buff += param;
@@ -194,7 +196,7 @@ parse_integer:
 				if (size && !size_avail)
 				{
 					LOG_DEBUG(ERRMSG_BUFFER_OVERFLOW, TO_STR(buff));
-					return ERROR_FAIL;
+					return VSFERR_FAIL;
 				}
 				
 				*buff++ = *str++;
@@ -213,7 +215,7 @@ parse_integer:
 					if (size && !size_avail)
 					{
 						LOG_DEBUG(ERRMSG_BUFFER_OVERFLOW, TO_STR(buff));
-						return ERROR_FAIL;
+						return VSFERR_FAIL;
 					}
 					
 					*buff++ = *str++;
@@ -222,7 +224,7 @@ parse_integer:
 				if (size && !size_avail)
 				{
 					LOG_DEBUG(ERRMSG_BUFFER_OVERFLOW, TO_STR(buff));
-					return ERROR_FAIL;
+					return VSFERR_FAIL;
 				}
 				*buff++ = '\0';
 				while ((str[0] != '\0') && strparser_is_divider(str[0]))
@@ -232,7 +234,7 @@ parse_integer:
 				break;
 			default:
 				LOG_DEBUG(ERRMSG_INVALID_OPTION, cur_ch);
-				return ERROR_FAIL;
+				return VSFERR_FAIL;
 				break;
 			}
 			break;
@@ -240,14 +242,14 @@ parse_integer:
 			if (str[0] != cur_ch)
 			{
 				LOG_DEBUG("format error: %s", str);
-				return ERROR_FAIL;
+				return VSFERR_FAIL;
 			}
 			str++;
 			break;
 		}
 	}
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 // this function will alloc buffer and return the pointer to the buffer

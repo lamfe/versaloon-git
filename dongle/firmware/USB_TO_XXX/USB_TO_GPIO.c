@@ -38,13 +38,13 @@ void USB_TO_GPIO_ProcessCmd(uint8_t *dat, uint16_t len)
 		switch(command)
 		{
 		case USB_TO_XXX_INIT:
-			if (ERROR_OK == app_interfaces.gpio.init(device_idx))
+			if (app_interfaces.gpio.init(device_idx))
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
 			else
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
 			break;
 		case USB_TO_XXX_CONFIG:
@@ -54,36 +54,37 @@ void USB_TO_GPIO_ProcessCmd(uint8_t *dat, uint16_t len)
 			port_data = GET_LE_U16(&dat[index + 6]);
 			io_data  &= mask_data;
 			
-			if (ERROR_OK == app_interfaces.gpio.config(device_idx, mask_data, io_data, pull_en_mask, port_data))
+			if (app_interfaces.gpio.config(device_idx, mask_data, io_data,
+											pull_en_mask, port_data))
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
 			else
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
 			break;
 		case USB_TO_XXX_FINI:
-			if (ERROR_OK == app_interfaces.gpio.fini(device_idx))
+			if (app_interfaces.gpio.fini(device_idx))
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
 			else
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
 			break;
 		case USB_TO_XXX_IN:
 			mask_data = GET_LE_U16(&dat[index]);
 			
-			if (ERROR_OK == app_interfaces.gpio.in(device_idx, mask_data, &port_data))
+			if (app_interfaces.gpio.in(device_idx, mask_data, &port_data))
 			{
-				buffer_reply[rep_len] = USB_TO_XXX_OK;
-				SET_LE_U16(&buffer_reply[rep_len + 1], port_data);
+				buffer_reply[rep_len] = USB_TO_XXX_FAILED;
 			}
 			else
 			{
-				buffer_reply[rep_len] = USB_TO_XXX_FAILED;
+				buffer_reply[rep_len] = USB_TO_XXX_OK;
+				SET_LE_U16(&buffer_reply[rep_len + 1], port_data);
 			}
 			rep_len += 3;
 			break;
@@ -91,13 +92,13 @@ void USB_TO_GPIO_ProcessCmd(uint8_t *dat, uint16_t len)
 			mask_data = GET_LE_U16(&dat[index + 0]);
 			port_data = GET_LE_U16(&dat[index + 2]);
 			
-			if (ERROR_OK == app_interfaces.gpio.out(device_idx, mask_data, port_data))
+			if (app_interfaces.gpio.out(device_idx, mask_data, port_data))
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
 			else
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
 			break;
 		default:

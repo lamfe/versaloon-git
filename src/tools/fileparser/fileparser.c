@@ -24,6 +24,8 @@
 #include <string.h>
 #include <ctype.h>
 
+#include "vsf_err.h"
+
 #include "app_type.h"
 #include "app_io.h"
 #include "app_log.h"
@@ -36,9 +38,9 @@
 #include "hex.h"
 #include "s19.h"
 
-RESULT read_bin_file(FILE *bin_file, WRITE_MEMORY_CALLBACK callback,
+vsf_err_t read_bin_file(FILE *bin_file, WRITE_MEMORY_CALLBACK callback,
 					void *buffer, uint32_t seg_offset, uint32_t addr_offset);
-RESULT write_bin_file(FILE *bin_file, uint32_t file_addr, uint8_t *buff,
+vsf_err_t write_bin_file(FILE *bin_file, uint32_t file_addr, uint8_t *buff,
 					uint32_t buff_size, uint32_t seg_addr, uint32_t start_addr,
 					ADJUST_MAPPING_CALLBACK remap);
 
@@ -76,7 +78,7 @@ static uint8_t check_file_ext(char *file_name, char *ext)
 	return 1;
 }
 
-static RESULT get_file_parser(char *file_name, uint8_t *index)
+static vsf_err_t get_file_parser(char *file_name, uint8_t *index)
 {
 	uint8_t i;
 	
@@ -91,24 +93,23 @@ static RESULT get_file_parser(char *file_name, uint8_t *index)
 	if (i >= dimof(file_parser))
 	{
 		// file type not supported
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	*index = i;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT parse_file(char *file_name, FILE *file, void *para,
+vsf_err_t parse_file(char *file_name, FILE *file, void *para,
 				  WRITE_MEMORY_CALLBACK callback,
 				  uint32_t seg_offset, uint32_t addr_offset)
 {
 	uint8_t i;
 	
-	if (ERROR_OK != get_file_parser(file_name, &i)
-		|| (NULL == file_parser[i].parse_file))
+	if (get_file_parser(file_name, &i) || (NULL == file_parser[i].parse_file))
 	{
 		// hope target handler will handle this file
-		return ERROR_OK;
+		return VSFERR_NONE;
 	}
 	
 	fileparser_cur_ext = file_parser[i].ext;
@@ -116,11 +117,11 @@ RESULT parse_file(char *file_name, FILE *file, void *para,
 										seg_offset, addr_offset);
 }
 
-RESULT end_file(struct filelist *fl)
+vsf_err_t end_file(struct filelist *fl)
 {
 	if (NULL == fl)
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	do {
@@ -128,25 +129,25 @@ RESULT end_file(struct filelist *fl)
 		
 		if ((fl->file != NULL) && (fl->path != NULL) && fl->access)
 		{
-			if (ERROR_OK != get_file_parser(fl->path, &i))
+			if (get_file_parser(fl->path, &i))
 			{
 				continue;
 			}
 			
 			if ((file_parser[i].end_file != NULL)
-				&& (ERROR_OK != file_parser[i].end_file(fl->file)))
+				&& file_parser[i].end_file(fl->file))
 			{
-				return ERROR_FAIL;
+				return VSFERR_FAIL;
 			}
 		}
 		
 		fl = FILELIST_GetNext(fl);
 	} while (fl != NULL);
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT save_target_to_file(struct filelist *fl, uint8_t *buff,
+vsf_err_t save_target_to_file(struct filelist *fl, uint8_t *buff,
 					uint32_t buff_size, uint32_t seg_addr, uint32_t start_addr,
 					int32_t fseg, int32_t faddr, ADJUST_MAPPING_CALLBACK remap)
 {
@@ -155,7 +156,7 @@ RESULT save_target_to_file(struct filelist *fl, uint8_t *buff,
 	
 	if (NULL == fl)
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	// find a most suitable file to write
@@ -177,7 +178,7 @@ RESULT save_target_to_file(struct filelist *fl, uint8_t *buff,
 	// write target to file
 	if (NULL == target_file->path)
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	if (NULL == target_file->file)
 	{
@@ -185,14 +186,14 @@ RESULT save_target_to_file(struct filelist *fl, uint8_t *buff,
 		if (NULL == target_file->file)
 		{
 			LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "open", target_file->path);
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 	}
 	
-	if (ERROR_OK != get_file_parser(target_file->path, &i)
+	if (get_file_parser(target_file->path, &i)
 		|| (NULL == file_parser[i].save_target_to_file))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	target_file->access = 1;
@@ -200,12 +201,11 @@ RESULT save_target_to_file(struct filelist *fl, uint8_t *buff,
 								buff, buff_size, seg_addr, start_addr, remap);
 }
 
-RESULT read_bin_file(FILE *bin_file, WRITE_MEMORY_CALLBACK callback,
+vsf_err_t read_bin_file(FILE *bin_file, WRITE_MEMORY_CALLBACK callback,
 					 void *buffer, uint32_t seg_offset, uint32_t addr_offset)
 {
 	uint8_t cur_buff[8];
 	uint32_t addr = 0, cur_len;
-	RESULT ret;
 	
 	rewind(bin_file);
 	while (1)
@@ -224,25 +224,24 @@ RESULT read_bin_file(FILE *bin_file, WRITE_MEMORY_CALLBACK callback,
 			}
 		}
 		
-		ret = callback(fileparser_cur_ext, addr + addr_offset, seg_offset,
-						cur_buff, cur_len, buffer);
-		if (ret != ERROR_OK)
+		if (callback(fileparser_cur_ext, addr + addr_offset, seg_offset,
+						cur_buff, cur_len, buffer))
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		addr += cur_len;
 	}
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT write_bin_file(FILE *bin_file, uint32_t file_addr,
+vsf_err_t write_bin_file(FILE *bin_file, uint32_t file_addr,
 						uint8_t *buff, uint32_t buff_size,
 						uint32_t seg_addr, uint32_t start_addr,
 						ADJUST_MAPPING_CALLBACK remap)
 {
 	uint32_t file_size = 0;
-	RESULT ret = ERROR_OK;
+	vsf_err_t err = VSFERR_NONE;
 	
 	REFERENCE_PARAMETER(remap);
 	
@@ -252,7 +251,7 @@ RESULT write_bin_file(FILE *bin_file, uint32_t file_addr,
 	// check
 	if (start_addr < file_addr)
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	// get file size
@@ -266,27 +265,27 @@ RESULT write_bin_file(FILE *bin_file, uint32_t file_addr,
 		uint8_t *buff_append = (uint8_t *)malloc(append_size);
 		if (NULL == buff_append)
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		memset(buff_append, 0, append_size);
 		
 		if (fwrite(buff_append, 1, append_size, bin_file) != append_size)
 		{
-			ret = ERROR_FAIL;
+			err = VSFERR_FAIL;
 		}
 		free(buff_append);
 		buff_append = NULL;
 	}
-	if (ERROR_FAIL == ret)
+	if (err)
 	{
-		return ret;
+		return err;
 	}
 	
 	// write data
 	if (fwrite(buff, 1, buff_size, bin_file) != buff_size)
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 

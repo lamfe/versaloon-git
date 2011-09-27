@@ -21,7 +21,7 @@ struct vss_cmd_t
 {
 	const char *cmd_name;
 	const char *help_str;
-	RESULT (*processor)(uint16_t argc, const char *argv[]);
+	vsf_err_t (*processor)(uint16_t argc, const char *argv[]);
 };
 struct vss_param_t
 {
@@ -42,7 +42,7 @@ struct vss_function_t
 };
 
 #define VSS_HANDLER(name)						\
-	RESULT (name)(uint16_t argc, const char *argv[])
+	vsf_err_t (name)(uint16_t argc, const char *argv[])
 
 #define VSS_CMD(name, helpstr, handler)			\
 	{\
@@ -64,49 +64,49 @@ struct vss_function_t
 	{\
 		LOG_ERROR(ERRMSG_INVALID_CMD, argv[0]);\
 		vss_print_help(argv[0]);\
-		return ERROR_FAIL;\
+		return VSFERR_FAIL;\
 	}
 #define VSS_CHECK_ARGC_2(n1, n2)				\
 	if ((argc != (n1)) && (argc != (n2)))\
 	{\
 		LOG_ERROR(ERRMSG_INVALID_CMD, argv[0]);\
 		vss_print_help(argv[0]);\
-		return ERROR_FAIL;\
+		return VSFERR_FAIL;\
 	}
 #define VSS_CHECK_ARGC_MIN(n)					\
 	if (argc < (n))\
 	{\
 		LOG_ERROR(ERRMSG_INVALID_CMD, argv[0]);\
 		vss_print_help(argv[0]);\
-		return ERROR_FAIL;\
+		return VSFERR_FAIL;\
 	}
 #define VSS_CHECK_ARGC_MAX(n)					\
 	if (argc > (n))\
 	{\
 		LOG_ERROR(ERRMSG_INVALID_CMD, argv[0]);\
 		vss_print_help(argv[0]);\
-		return ERROR_FAIL;\
+		return VSFERR_FAIL;\
 	}
 #define VSS_CHECK_ARGC_RANGE(min, max)			\
 	if ((argc < (min)) || (argc > (max)))\
 	{\
 		LOG_ERROR(ERRMSG_INVALID_CMD, argv[0]);\
 		vss_print_help(argv[0]);\
-		return ERROR_FAIL;\
+		return VSFERR_FAIL;\
 	}
 
 #define VSS_COMMENT_CHAR						'#'
 #define VSS_HIDE_CHAR							'@'
 
 void vss_set_fatal_error(void);
-RESULT vss_cmd_supported_by_notifier(const struct vss_cmd_t *notifier,
+vsf_err_t vss_cmd_supported_by_notifier(const struct vss_cmd_t *notifier,
 										char *notify_cmd);
-RESULT vss_call_notifier(const struct vss_cmd_t *notifier,
+vsf_err_t vss_call_notifier(const struct vss_cmd_t *notifier,
 							char *notify_cmd, char *notify_param);
-RESULT vss_cmd_supported(char *name);
-RESULT vss_print_help(const char *name);
-RESULT vss_run_script(char *cmd);
-RESULT vss_run_cmd(uint16_t argc, const char *argv[]);
-RESULT vss_get_binary_buffer(uint16_t argc, const char *argv[],
+vsf_err_t vss_cmd_supported(char *name);
+vsf_err_t vss_print_help(const char *name);
+vsf_err_t vss_run_script(char *cmd);
+vsf_err_t vss_run_cmd(uint16_t argc, const char *argv[]);
+vsf_err_t vss_get_binary_buffer(uint16_t argc, const char *argv[],
 						uint8_t data_size, uint32_t data_num, void **pbuff);
 

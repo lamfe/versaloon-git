@@ -28,18 +28,18 @@
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
 
-RESULT usbtoissp_init(uint8_t interface_index)
+vsf_err_t usbtoissp_init(uint8_t interface_index)
 {
 	return usbtoxxx_init_command(USB_TO_ISSP, interface_index);
 }
 
-RESULT usbtoissp_fini(uint8_t interface_index)
+vsf_err_t usbtoissp_fini(uint8_t interface_index)
 {
 	return usbtoxxx_fini_command(USB_TO_ISSP, interface_index);
 }
 
-RESULT usbtoissp_vector(uint8_t interface_index, uint8_t operate, uint8_t addr,
-						uint8_t data, uint8_t *buf)
+vsf_err_t usbtoissp_vector(uint8_t interface_index, uint8_t operate,
+							uint8_t addr, uint8_t data, uint8_t *buf)
 {
 	uint8_t cmd_buf[3];
 	
@@ -47,7 +47,7 @@ RESULT usbtoissp_vector(uint8_t interface_index, uint8_t operate, uint8_t addr,
 	if (interface_index > 7)
 	{
 		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 #endif
 	
@@ -67,13 +67,13 @@ RESULT usbtoissp_vector(uint8_t interface_index, uint8_t operate, uint8_t addr,
 	}
 }
 
-RESULT usbtoissp_enter_program_mode(uint8_t interface_index, uint8_t mode)
+vsf_err_t usbtoissp_enter_program_mode(uint8_t interface_index, uint8_t mode)
 {
 #if PARAM_CHECK
 	if (interface_index > 7)
 	{
 		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 #endif
 	
@@ -81,26 +81,26 @@ RESULT usbtoissp_enter_program_mode(uint8_t interface_index, uint8_t mode)
 							   NULL, 0, 0, 0);
 }
 
-RESULT usbtoissp_leave_program_mode(uint8_t interface_index, uint8_t mode)
+vsf_err_t usbtoissp_leave_program_mode(uint8_t interface_index, uint8_t mode)
 {
 #if PARAM_CHECK
 	if (interface_index > 7)
 	{
 		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 #endif
 	
 	return usbtoxxx_out_command(USB_TO_ISSP, interface_index, &mode, 1, 0);
 }
 
-RESULT usbtoissp_wait_and_poll(uint8_t interface_index)
+vsf_err_t usbtoissp_wait_and_poll(uint8_t interface_index)
 {
 #if PARAM_CHECK
 	if (interface_index > 7)
 	{
 		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 #endif
 	

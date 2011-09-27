@@ -41,37 +41,36 @@ void USB_TO_DUSI_ProcessCmd(uint8_t *dat, uint16_t len)
 		switch(command)
 		{
 		case USB_TO_XXX_INIT:
-			if (ERROR_OK == app_interfaces.dusi.init(device_idx))
+			if (app_interfaces.dusi.init(device_idx))
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
 			else
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
 			break;
 		case USB_TO_XXX_CONFIG:
 			attr = dat[index];
 			frequency = GET_LE_U32(&dat[index + 1]);
 			
-			if (ERROR_OK == app_interfaces.dusi.config(device_idx, frequency, 
-														attr))
+			if (app_interfaces.dusi.config(device_idx, frequency, attr))
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
 			else
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
 			break;
 		case USB_TO_XXX_FINI:
-			if (ERROR_OK == app_interfaces.dusi.fini(device_idx))
+			if (app_interfaces.dusi.fini(device_idx))
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
 			else
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
 			break;
 		case USB_TO_XXX_IN_OUT:
@@ -79,16 +78,15 @@ void USB_TO_DUSI_ProcessCmd(uint8_t *dat, uint16_t len)
 			bytelen = (bitlen + 7) / 8;
 			recvpos = rep_len + 1;
 			
-			if (ERROR_OK == app_interfaces.dusi.io(device_idx, 
-					&dat[index + 2], 			&buffer_reply[recvpos], 
-					&dat[index + 2 + bytelen], 	&buffer_reply[recvpos + bytelen], 
-					bitlen))
+			if (app_interfaces.dusi.io(device_idx, &dat[index + 2],
+					&buffer_reply[recvpos], &dat[index + 2 + bytelen],
+					&buffer_reply[recvpos + bytelen], bitlen))
 			{
-				buffer_reply[rep_len] = USB_TO_XXX_OK;
+				buffer_reply[rep_len] = USB_TO_XXX_FAILED;
 			}
 			else
 			{
-				buffer_reply[rep_len] = USB_TO_XXX_FAILED;
+				buffer_reply[rep_len] = USB_TO_XXX_OK;
 			}
 			rep_len += 1 + bytelen * 2;
 			break;

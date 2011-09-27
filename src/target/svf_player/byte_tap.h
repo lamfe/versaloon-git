@@ -21,21 +21,21 @@
 #ifndef __BYTE_TAP_H_INCLUDED__
 #define __BYTE_TAP_H_INCLUDED__
 
-RESULT jtag_init(void);
-RESULT jtag_fini(void);
-RESULT jtag_config(uint16_t kHz);
-RESULT jtag_tms(uint8_t *tms, uint8_t bytelen);
-RESULT jtag_tms_clocks(uint32_t bytelen, uint8_t tms);
-RESULT jtag_xr(uint8_t *data, uint16_t bitlen, uint8_t tms_before_valid,
+vsf_err_t jtag_init(void);
+vsf_err_t jtag_fini(void);
+vsf_err_t jtag_config(uint16_t kHz);
+vsf_err_t jtag_tms(uint8_t *tms, uint8_t bytelen);
+vsf_err_t jtag_tms_clocks(uint32_t bytelen, uint8_t tms);
+vsf_err_t jtag_xr(uint8_t *data, uint16_t bitlen, uint8_t tms_before_valid,
 				uint8_t tms_before, uint8_t tms_after0, uint8_t tms_after1);
-RESULT jtag_commit(void);
+vsf_err_t jtag_commit(void);
 
-RESULT jtag_trst_init(void);
-RESULT jtag_trst_fini(void);
-RESULT jtag_trst_output(uint8_t value);
-RESULT jtag_trst_input(void);
-RESULT jtag_trst_1(void);
-RESULT jtag_trst_0(void);
+vsf_err_t jtag_trst_init(void);
+vsf_err_t jtag_trst_fini(void);
+vsf_err_t jtag_trst_output(uint8_t value);
+vsf_err_t jtag_trst_input(void);
+vsf_err_t jtag_trst_1(void);
+vsf_err_t jtag_trst_0(void);
 
 
 #define TAP_NUM_OF_STATE		16
@@ -63,18 +63,18 @@ enum tap_state_t
 
 extern const char *tap_state_name[TAP_NUM_OF_STATE];
 
-RESULT tap_init(struct interfaces_info_t *ifs);
-RESULT tap_fini(void);
-uint8_t tap_state_is_stable(enum tap_state_t state);
-uint8_t tap_state_is_valid(enum tap_state_t state);
-RESULT tap_state_move(void);
-RESULT tap_end_state(enum tap_state_t state);
-RESULT tap_path_move(uint32_t num_states, enum tap_state_t *path);
-RESULT tap_runtest(enum tap_state_t run_state, enum tap_state_t end_state,
+vsf_err_t tap_init(struct interfaces_info_t *ifs);
+vsf_err_t tap_fini(void);
+bool tap_state_is_stable(enum tap_state_t state);
+bool tap_state_is_valid(enum tap_state_t state);
+vsf_err_t tap_state_move(void);
+vsf_err_t tap_end_state(enum tap_state_t state);
+vsf_err_t tap_path_move(uint32_t num_states, enum tap_state_t *path);
+vsf_err_t tap_runtest(enum tap_state_t run_state, enum tap_state_t end_state,
 				   uint32_t num_cycles);
-RESULT tap_scan_ir(uint8_t *buffer, uint32_t bit_size);
-RESULT tap_scan_dr(uint8_t *buffer, uint32_t bit_size);
-RESULT tap_commit(void);
+vsf_err_t tap_scan_ir(uint8_t *buffer, uint32_t bit_size);
+vsf_err_t tap_scan_dr(uint8_t *buffer, uint32_t bit_size);
+vsf_err_t tap_commit(void);
 
 #endif /* __BYTE_TAP_H_INCLUDED__ */
 

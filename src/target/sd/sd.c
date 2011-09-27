@@ -29,8 +29,6 @@
 #include "app_err.h"
 #include "app_log.h"
 
-#include "pgbar.h"
-
 #include "vsprog.h"
 #include "programmer.h"
 #include "target.h"
@@ -84,7 +82,7 @@ VSS_HANDLER(sd_help)
 Usage of %s:\n\
   -F,  --frequency <FREQUENCY>              set IIC frequency, in KHz\n\n",
 			CUR_TARGET_STRING);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 const struct vss_cmd_t sd_notifier[] =
@@ -121,18 +119,17 @@ ENTER_PROGRAM_MODE_HANDLER(sd)
 	uint64_t capacity;
 	uint32_t page_size;
 	
-	if (ERROR_OK != dal_init(context->prog))
+	if (dal_init(context->prog))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	sd_dal_info.ifs = &sd_spi_drv_ifs;
 	if (pi->ifs_indexes != NULL)
 	{
-		if (ERROR_OK != dal_config_interface(SD_SPI_STRING, pi->ifs_indexes,
-												&sd_dal_info))
+		if (dal_config_interface(SD_SPI_STRING, pi->ifs_indexes, &sd_dal_info))
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 	}
 	else
@@ -142,9 +139,9 @@ ENTER_PROGRAM_MODE_HANDLER(sd)
 		sd_spi_drv_ifs.spi_port = 0;
 	}
 	
-	if (ERROR_OK != mal.init(MAL_IDX_SD_SPI, &sd_dal_info))
+	if (mal.init(MAL_IDX_SD_SPI, &sd_dal_info))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	capacity = sd_mal_info.capacity.block_number *
 				sd_mal_info.capacity.block_size;
@@ -205,9 +202,9 @@ ERASE_TARGET_HANDLER(sd)
 	REFERENCE_PARAMETER(addr);
 	REFERENCE_PARAMETER(size);
 	
-	if (ERROR_OK != mal.eraseall(MAL_IDX_SD_SPI, &sd_dal_info))
+	if (mal.eraseall(MAL_IDX_SD_SPI, &sd_dal_info))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	return dal_commit();
 }
@@ -221,19 +218,18 @@ WRITE_TARGET_HANDLER(sd)
 	case APPLICATION_CHAR:
 		if (size % 512)
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		size /= 512;
 		
-		if (ERROR_OK != mal.writeblock(MAL_IDX_SD_SPI, &sd_dal_info,
-										addr, buff, size))
+		if (mal.writeblock(MAL_IDX_SD_SPI, &sd_dal_info, addr, buff, size))
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		return dal_commit();
 		break;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 }
 
@@ -245,24 +241,23 @@ READ_TARGET_HANDLER(sd)
 	{
 	case CHIPID_CHAR:
 		memset(buff, 0, size);
-		return ERROR_OK;
+		return VSFERR_NONE;
 		break;
 	case APPLICATION_CHAR:
 		if (size % 512)
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		size /= 512;
 		
-		if (ERROR_OK != mal.readblock(MAL_IDX_SD_SPI, &sd_dal_info,
-										addr, buff, size))
+		if (mal.readblock(MAL_IDX_SD_SPI, &sd_dal_info, addr, buff, size))
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
-		return ERROR_OK;
+		return VSFERR_NONE;
 		break;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 }
 

@@ -28,17 +28,17 @@
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
 
-RESULT usbtousart_init(uint8_t interface_index)
+vsf_err_t usbtousart_init(uint8_t interface_index)
 {
 	return usbtoxxx_init_command(USB_TO_USART, interface_index);
 }
 
-RESULT usbtousart_fini(uint8_t interface_index)
+vsf_err_t usbtousart_fini(uint8_t interface_index)
 {
 	return usbtoxxx_fini_command(USB_TO_USART, interface_index);
 }
 
-RESULT usbtousart_config(uint8_t interface_index, uint32_t baudrate,
+vsf_err_t usbtousart_config(uint8_t interface_index, uint32_t baudrate,
 							uint8_t datalength, uint8_t mode)
 {
 	uint8_t conf[6];
@@ -47,7 +47,7 @@ RESULT usbtousart_config(uint8_t interface_index, uint32_t baudrate,
 	if (interface_index > 7)
 	{
 		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 #endif
 	
@@ -58,13 +58,13 @@ RESULT usbtousart_config(uint8_t interface_index, uint32_t baudrate,
 	return usbtoxxx_conf_command(USB_TO_USART, interface_index, conf, 6);
 }
 
-RESULT usbtousart_receive(uint8_t interface_index, uint8_t *buf, uint16_t len)
+vsf_err_t usbtousart_receive(uint8_t interface_index, uint8_t *buf, uint16_t len)
 {
 #if PARAM_CHECK
 	if ((interface_index > 7) || (0 == len) || (NULL == buf))
 	{
 		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 #endif
 	
@@ -75,13 +75,13 @@ RESULT usbtousart_receive(uint8_t interface_index, uint8_t *buf, uint16_t len)
 				versaloon_cmd_buf, 2 + len, len, buf, 0, len, 1);
 }
 
-RESULT usbtousart_send(uint8_t interface_index, uint8_t *buf, uint16_t len)
+vsf_err_t usbtousart_send(uint8_t interface_index, uint8_t *buf, uint16_t len)
 {
 #if PARAM_CHECK
 	if ((interface_index > 7) || (0 == len) || (NULL == buf))
 	{
 		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 #endif
 	
@@ -92,14 +92,14 @@ RESULT usbtousart_send(uint8_t interface_index, uint8_t *buf, uint16_t len)
 										versaloon_cmd_buf, 2 + len, 1);
 }
 
-RESULT usbtousart_status(uint8_t interface_index,
+vsf_err_t usbtousart_status(uint8_t interface_index,
 							struct usart_status_t *status)
 {
 #if PARAM_CHECK
 	if ((interface_index > 7) || (NULL == status))
 	{
 		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 #endif
 	

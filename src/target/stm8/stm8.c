@@ -29,12 +29,12 @@
 #include "app_err.h"
 #include "app_log.h"
 
-#include "pgbar.h"
-
 #include "vsprog.h"
 #include "programmer.h"
 #include "target.h"
 #include "scripts.h"
+
+#include "pgbar.h"
 
 #include "stm8.h"
 #include "stm8_internal.h"
@@ -79,7 +79,7 @@ VSS_HANDLER(stm8_help)
 Usage of %s:\n\
   -m,  --mode <MODE>                        set mode<s|i>\n\n",
 			CUR_TARGET_STRING);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 VSS_HANDLER(stm8_mode)
@@ -99,10 +99,10 @@ VSS_HANDLER(stm8_mode)
 		stm8_program_area_map[0].attr &= ~(AREA_ATTR_RNP | AREA_ATTR_EWW);
 		memset(&stm8_program_functions, 0, sizeof(stm8_program_functions));
 		// not yet
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 		break;
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 const struct vss_cmd_t stm8_notifier[] =
@@ -287,7 +287,7 @@ static uint8_t stm8_flashloader[] =
 };
 #endif
 
-static RESULT swim_wotf_reg(uint32_t addr, uint32_t value, uint8_t size)
+static vsf_err_t swim_wotf_reg(uint32_t addr, uint32_t value, uint8_t size)
 {
 	value = SYS_TO_LE_U32(value);
 	return swim_wotf(addr, (uint8_t*)&value, size);
@@ -305,79 +305,62 @@ static void stm8_unlock_flash(uint32_t pukr)
 	swim_wotf_reg(pukr, 0xAE, 1);
 }
 
-static RESULT stm8_poll_ready(uint32_t iapsr)
+static vsf_err_t stm8_poll_ready(uint32_t iapsr)
 {
-	RESULT ret;
-	
-	ret = poll_start();
-	if (ret != ERROR_FAIL)
+	if (poll_start() ||
+		swim_rotf(iapsr, NULL, 1) ||
+		poll_fail(0, STM8_FLASH_IAPSR_WRPGDIS, STM8_FLASH_IAPSR_WRPGDIS) ||
+		poll_ok(0, STM8_FLASH_IAPSR_EOP, STM8_FLASH_IAPSR_EOP) ||
+		poll_end())
 	{
-		ret = swim_rotf(iapsr, NULL, 1);
+		return VSFERR_FAIL;
 	}
-	if (ret != ERROR_FAIL)
-	{
-		ret = poll_fail(0, STM8_FLASH_IAPSR_WRPGDIS, STM8_FLASH_IAPSR_WRPGDIS);
-	}
-	if (ret != ERROR_FAIL)
-	{
-		ret = poll_ok(0, STM8_FLASH_IAPSR_EOP, STM8_FLASH_IAPSR_EOP);
-	}
-	if (ret != ERROR_FAIL)
-	{
-		ret = poll_end();
-	}
-	return ret;
+	return VSFERR_NONE;
 }
 
-static RESULT stm8_program_reg(uint32_t cr2, uint32_t ncr2, uint32_t iapsr,
+static vsf_err_t stm8_program_reg(uint32_t cr2, uint32_t ncr2, uint32_t iapsr,
 	uint8_t cmd, uint32_t reg_addr, uint32_t reg_val, uint8_t reg_size)
 {
-	RESULT ret = ERROR_OK;
+	vsf_err_t err = VSFERR_NONE;
 	
 	if (reg_size > 4)
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
-	ret = swim_wotf_reg(cr2, cmd, 1);
-	if ((ERROR_OK == ret) && (ncr2))
+	err = swim_wotf_reg(cr2, cmd, 1);
+	if (!err && ncr2)
 	{
-		ret = swim_wotf_reg(ncr2, ~cmd, 1);
+		err = swim_wotf_reg(ncr2, ~cmd, 1);
 	}
-	if (ERROR_OK == ret)
+	if (err || swim_wotf_reg(reg_addr, reg_val, reg_size) ||
+		stm8_poll_ready(iapsr))
 	{
-		ret = swim_wotf_reg(reg_addr, reg_val, reg_size);
+		return VSFERR_FAIL;
 	}
-	if (ERROR_OK == ret)
-	{
-		ret = stm8_poll_ready(iapsr);
-	}
-	return ret;
+	return VSFERR_NONE;
 }
 
 #ifndef STM8_USE_FLASHLOADER
-static RESULT stm8_program_block(uint32_t cr2, uint32_t ncr2, uint32_t iapsr,
+static vsf_err_t stm8_program_block(uint32_t cr2, uint32_t ncr2, uint32_t iapsr,
 	uint8_t cmd, uint32_t block_addr, uint8_t *block_buff, uint8_t block_size)
 {
-	RESULT ret = ERROR_OK;
+	vsf_err_t err = VSFERR_NONE;
 	
-	ret = swim_wotf_reg(cr2, cmd, 1);
-	if ((ERROR_OK == ret) && (ncr2))
+	err = swim_wotf_reg(cr2, cmd, 1);
+	if (!err && (ncr2))
 	{
-		ret = swim_wotf_reg(ncr2, ~cmd, 1);
+		err = swim_wotf_reg(ncr2, ~cmd, 1);
 	}
-	if (ERROR_OK == ret)
+	if (err || swim_wotf(block_addr, block_buff, block_size) ||
+		stm8_poll_ready(iapsr))
 	{
-		ret = swim_wotf(block_addr, block_buff, block_size);
+		return VSFERR_FAIL;
 	}
-	if (ERROR_OK == ret)
-	{
-		ret = stm8_poll_ready(iapsr);
-	}
-	return ret;
+	return VSFERR_NONE;
 }
 #else
-static RESULT stm8_fl_print_context(void)
+static vsf_err_t stm8_fl_print_context(void)
 {
 	struct
 	{
@@ -391,9 +374,9 @@ static RESULT stm8_fl_print_context(void)
 	uint8_t buff[256];
 	
 	swim_rotf(STM8_REG_DM_CSR2, buff, 1);
-	if (ERROR_OK != commit())
+	if (commit())
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	LOG_INFO(INFOMSG_REG_02X, "DM_CSR2", buff[0]);
 	if (buff[0] & STM8_DM_CSR2_STALL)
@@ -405,9 +388,9 @@ static RESULT stm8_fl_print_context(void)
 		LOG_INFO("CPU running");
 	}
 	swim_rotf(0x007F00, buff, 11);
-	if (ERROR_OK != commit())
+	if (commit())
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	kernel_reg.A = buff[0];
 	kernel_reg.PC = (buff[1] << 16) + (buff[2] << 8) + (buff[3] << 0);
@@ -424,41 +407,28 @@ static RESULT stm8_fl_print_context(void)
 	LOG_INFO(INFOMSG_REG_02X, "CCR", kernel_reg.CCR);
 	
 	swim_rotf(0x000000, buff, sizeof(buff));
-	if (ERROR_OK != commit())
+	if (commit())
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	LOG_BYTE_BUF(buff, sizeof(buff), LOG_INFO, "%02X", 16);
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT stm8_fl_run(struct stm8_fl_param_t *param)
+static vsf_err_t stm8_fl_run(struct stm8_fl_param_t *param)
 {
-	RESULT ret = ERROR_OK;
 	uint8_t buff[STM8_FL_PARAM_SIZE + 1];
 	static uint8_t data[2];
 	
 	// poll
-	if (ret != ERROR_FAIL)
+	if (poll_start() ||
+		swim_rotf(STM8_FL_SYNC_ADDR, (uint8_t*)&data, 2) ||
+		poll_fail(0, 0xFF, 0x01) ||
+		poll_ok(1, 0xFF, 0x00) ||
+		poll_end())
 	{
-		ret = poll_start();
-	}
-	if (ret != ERROR_FAIL)
-	{
-		ret = swim_rotf(STM8_FL_SYNC_ADDR, (uint8_t*)&data, 2);
-	}
-	if (ret != ERROR_FAIL)
-	{
-		ret = poll_fail(0, 0xFF, 0x01);
-	}
-	if (ret != ERROR_FAIL)
-	{
-		ret = poll_ok(1, 0xFF, 0x00);
-	}
-	if (ret != ERROR_FAIL)
-	{
-		ret = poll_end();
+		return VSFERR_FAIL;
 	}
 	
 	SET_BE_U16(&buff[STM8_FL_IAPSR_OFFSET], param->iapsr_addr);
@@ -472,9 +442,7 @@ static RESULT stm8_fl_run(struct stm8_fl_param_t *param)
 	buff[STM8_FL_CMD_OFFSET]			= param->cmd;
 	buff[STM8_FL_CMD_OFFSET + 1]		= 1;
 	
-	ret = swim_wotf(STM8_FL_PARAM_ADDR, buff, sizeof(buff));
-	
-	return ret;
+	return swim_wotf(STM8_FL_PARAM_ADDR, buff, sizeof(buff));
 }
 #endif
 
@@ -484,7 +452,6 @@ static uint8_t stm8_target_mhz = 0;
 ENTER_PROGRAM_MODE_HANDLER(stm8swim)
 {
 	uint8_t test_buf0[7], test_buf1[6];
-	RESULT ret = ERROR_OK;
 	struct chip_param_t *param = context->param;
 	struct program_info_t *pi = context->pi;
 #ifdef STM8_USE_FLASHLOADER
@@ -513,13 +480,13 @@ ENTER_PROGRAM_MODE_HANDLER(stm8swim)
 	delay_ms(10);
 	swim_init();
 	swim_enable();
-	if (ERROR_OK != commit())
+	if (commit())
 	{
 		reset_set();
 		reset_fini();
 		commit();
 		LOG_ERROR("No response on SWIM! Is target connected?");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	stm8_swim_enabled = 1;
@@ -555,9 +522,9 @@ ENTER_PROGRAM_MODE_HANDLER(stm8swim)
 	swim_rotf(0x0067F0, test_buf0, 6);
 	// enable high speed mode if available
 	swim_rotf(STM8_REG_SWIM_CSR, test_buf1, 1);
-	if (ERROR_OK != commit())
+	if (commit())
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	if (test_buf1[0] & STM8_SWIM_CSR_HSIT)
 	{
@@ -577,9 +544,9 @@ ENTER_PROGRAM_MODE_HANDLER(stm8swim)
 	swim_rotf(0x0067F0, test_buf1, 6);
 	stm8_unlock_eeprom_option(param->param[STM8_PARAM_FLASH_DUKR]);
 	stm8_unlock_flash(param->param[STM8_PARAM_FLASH_PUKR]);
-	if ((ERROR_OK != commit()) || memcmp(test_buf0, test_buf1, 6))
+	if (commit() || memcmp(test_buf0, test_buf1, 6))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	else
 	{
@@ -604,14 +571,14 @@ ENTER_PROGRAM_MODE_HANDLER(stm8swim)
 		// flush decode and restart core
 		swim_wotf_reg(STM8_REG_DM_CSR2, STM8_DM_CSR2_FLUSH, 1);
 	}
-	ret = commit();
+	return commit();
+#else
+	return VSFERR_NONE;
 #endif
-	return ret;
 }
 
 LEAVE_PROGRAM_MODE_HANDLER(stm8swim)
 {
-	RESULT ret = ERROR_OK;
 	struct chip_param_t *param = context->param;
 
 	REFERENCE_PARAMETER(success);
@@ -622,9 +589,9 @@ LEAVE_PROGRAM_MODE_HANDLER(stm8swim)
 		uint8_t swim_csr;
 		
 		swim_rotf(STM8_REG_SWIM_CSR, &swim_csr, 1);
-		if (ERROR_OK != commit())
+		if (commit())
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		
 		stm8_swim_enabled = 0;
@@ -637,9 +604,9 @@ LEAVE_PROGRAM_MODE_HANDLER(stm8swim)
 		reset_set();
 		swim_fini();
 		reset_fini();
-		ret = commit();
+		return commit();
 	}
-	return ret;
+	return VSFERR_NONE;
 }
 
 #ifdef STM8_USE_FLASHLOADER
@@ -647,7 +614,7 @@ static uint8_t stm8_fl_ticktock = 0;
 #endif
 ERASE_TARGET_HANDLER(stm8swim)
 {
-	RESULT ret = ERROR_OK;
+	vsf_err_t err = VSFERR_NONE;
 	struct chip_param_t *param = context->param;
 	struct operation_t *op = context->op;
 #ifdef STM8_USE_FLASHLOADER
@@ -681,10 +648,10 @@ do_erase:
 			ram_addr = 0x0180;
 		}
 		stm8_fl_ticktock++;
-		if (ERROR_OK != swim_wotf_reg(ram_addr, 0, 4))
+		if (swim_wotf_reg(ram_addr, 0, 4))
 		{
 			stm8_fl_print_context();
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		
 		fl_param.iapsr_addr	= (uint16_t)param->param[STM8_PARAM_FLASH_IAPSR];
@@ -694,23 +661,23 @@ do_erase:
 		fl_param.data_addr	= (uint16_t)ram_addr;
 		fl_param.target_addr= addr;
 		fl_param.cmd		= STM8_FLASH_CR2_ERASE;
-		if (ERROR_OK != stm8_fl_run(&fl_param))
+		if (stm8_fl_run(&fl_param))
 		{
 			stm8_fl_print_context();
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 #else
-		ret = stm8_program_reg(param->param[STM8_PARAM_FLASH_CR2],
+		err = stm8_program_reg(param->param[STM8_PARAM_FLASH_CR2],
 								param->param[STM8_PARAM_FLASH_NCR2],
 								param->param[STM8_PARAM_FLASH_IAPSR],
 								STM8_FLASH_CR2_ERASE, addr, 0, 4);
 #endif
 		break;
 	default:
-		ret = ERROR_FAIL;
+		err = VSFERR_FAIL;
 		break;
 	}
-	return ret;
+	return err;
 }
 
 // offset 0:		ROP
@@ -757,7 +724,7 @@ static const struct stm8_optionbyte_info_t stm8_optionbyte_info_stm8l[] =
 
 WRITE_TARGET_HANDLER(stm8swim)
 {
-	RESULT ret = ERROR_OK;
+	vsf_err_t err = VSFERR_NONE;
 	struct chip_param_t *param = context->param;
 	struct operation_t *op = context->op;
 	uint8_t cmd;
@@ -796,7 +763,7 @@ do_write_flashee:
 		if ((size != 64) && (size != 128))
 		{
 			LOG_ERROR(ERRMSG_INVALID_VALUE, size, "page_size");
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 #ifdef STM8_USE_FLASHLOADER
 		if (stm8_fl_ticktock & 1)
@@ -808,18 +775,18 @@ do_write_flashee:
 			ram_addr = 0x0180;
 		}
 		stm8_fl_ticktock++;
-		if (ERROR_OK != swim_wotf(ram_addr, buff, (uint16_t)size))
+		if (swim_wotf(ram_addr, buff, (uint16_t)size))
 		{
 			stm8_fl_print_context();
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 // commit should not be called here for faster operation
 // but if commit not called after stm8_fl_run, commit below will fail
 // because there is chances that wotf is issued when MCU is writing flash
-//		if (ERROR_OK != commit())
+//		if (commit())
 //		{
 //			stm8_fl_print_context();
-//			return ERROR_FAIL;
+//			return VSFERR_FAIL;
 //		}
 		
 		fl_param.iapsr_addr	= (uint16_t)param->param[STM8_PARAM_FLASH_IAPSR];
@@ -829,20 +796,20 @@ do_write_flashee:
 		fl_param.data_addr	= (uint16_t)ram_addr;
 		fl_param.target_addr= addr;
 		fl_param.cmd		= cmd;
-		if (ERROR_OK != stm8_fl_run(&fl_param))
+		if (stm8_fl_run(&fl_param))
 		{
 			stm8_fl_print_context();
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 // if commit is not called here
 // there will be chances that wotf is issued when MCU is writing flash
-		if (ERROR_OK != commit())
+		if (commit())
 		{
 			stm8_fl_print_context();
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 #else
-		ret = stm8_program_block(param->param[STM8_PARAM_FLASH_CR2],
+		err = stm8_program_block(param->param[STM8_PARAM_FLASH_CR2],
 									param->param[STM8_PARAM_FLASH_NCR2],
 									param->param[STM8_PARAM_FLASH_IAPSR],
 									cmd, addr, buff, (uint8_t)size);
@@ -852,14 +819,13 @@ do_write_flashee:
 		if ((!size) || (param->chip_areas[FUSE_IDX].size != size))
 		{
 			LOG_ERROR(ERRMSG_INVALID_VALUE, size, "fuse_size");
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		mask = param->chip_areas[FUSE_IDX].mask;
 		if (NULL == mask)
 		{
 			LOG_ERROR(ERRMSG_INVALID_BUFFER, "fuse_mask");
-			ret = ERROR_FAIL;
-			break;
+			return VSFERR_FAIL;
 		}
 		delay_ms(10);
 		
@@ -887,7 +853,7 @@ do_write_fuse:
 					continue;
 				}
 				
-				if ((ERROR_OK == ret) && mask[fuse_offset])
+				if (!err && mask[fuse_offset])
 				{
 					// index 9 to 16 is TMU_KEY
 					// 0x00 and 0xFF is invlid for TMU_KEY
@@ -897,11 +863,11 @@ do_write_fuse:
 					{
 						LOG_ERROR(ERRMSG_INVALID_HEX, buff[fuse_offset],
 									"TMU_KEY");
-						ret = ERROR_FAIL;
+						err = VSFERR_FAIL;
 						break;
 					}
 					
-					ret = stm8_program_reg(
+					err = stm8_program_reg(
 							param->param[STM8_PARAM_FLASH_CR2],
 							param->param[STM8_PARAM_FLASH_NCR2],
 							param->param[STM8_PARAM_FLASH_IAPSR], cmd,
@@ -923,11 +889,10 @@ do_write_fuse:
 					// index 1 to 8 is generic fuse
 					// for STM8S and STM8A a xor'ed byte should be written
 					// at the succeeding address.
-					if ((fuse_offset > 0) && (fuse_offset < 9)
-						&& (ERROR_OK == ret)
-						&& (param->param[STM8_PARAM_TYPE] != STM8_TYPE_STM8L))
+					if ((fuse_offset > 0) && (fuse_offset < 9) && !err &&
+						(param->param[STM8_PARAM_TYPE] != STM8_TYPE_STM8L))
 					{
-						ret = stm8_program_reg(
+						err = stm8_program_reg(
 							param->param[STM8_PARAM_FLASH_CR2],
 							param->param[STM8_PARAM_FLASH_NCR2],
 							param->param[STM8_PARAM_FLASH_IAPSR], cmd,
@@ -938,19 +903,19 @@ do_write_fuse:
 			}
 			break;
 		default:
-			ret = ERROR_FAIL;
+			err = VSFERR_FAIL;
 			break;
 		}
-		if (ERROR_OK == ret)
+		if (!err)
 		{
-			ret = commit();
+			err = commit();
 		}
 		break;
 	default:
-		ret = ERROR_FAIL;
+		err = VSFERR_FAIL;
 		break;
 	}
-	return ret;
+	return err;
 }
 
 READ_TARGET_HANDLER(stm8swim)
@@ -958,7 +923,7 @@ READ_TARGET_HANDLER(stm8swim)
 	struct chip_param_t *param = context->param;
 	uint8_t fuse_page[STM8_FUSEPAGE_SIZE];
 	uint16_t cur_size;
-	RESULT ret = ERROR_OK;
+	vsf_err_t err = VSFERR_NONE;
 	uint8_t i;
 	struct stm8_optionbyte_info_t *optionbyte_info;
 	uint8_t optionbyte_num;
@@ -985,9 +950,9 @@ READ_TARGET_HANDLER(stm8swim)
 				cur_size = (uint16_t)size;
 			}
 			
-			if (ERROR_OK != swim_rotf(addr, buff, cur_size))
+			if (swim_rotf(addr, buff, cur_size))
 			{
-				return ERROR_FAIL;
+				return VSFERR_FAIL;
 			}
 			
 			buff += cur_size;
@@ -995,25 +960,24 @@ READ_TARGET_HANDLER(stm8swim)
 			size -= cur_size;
 			pgbar_update(cur_size);
 		}
-		ret = commit();
+		err = commit();
 		break;
 	case FUSE_CHAR:
 		if ((!size) || (param->chip_areas[FUSE_IDX].size != size))
 		{
 			LOG_ERROR(ERRMSG_INVALID_VALUE, size, "fuse_size");
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		mask = param->chip_areas[FUSE_IDX].mask;
 		if (NULL == mask)
 		{
 			LOG_ERROR(ERRMSG_INVALID_BUFFER, "fuse_mask");
-			ret = ERROR_FAIL;
-			break;
+			return VSFERR_FAIL;
 		}
 		
 		swim_rotf(STM8_FUSEPAGE_ADDR, fuse_page, sizeof(fuse_page));
-		ret = commit();
-		if (ret != ERROR_OK)
+		err = commit();
+		if (err)
 		{
 			break;
 		}
@@ -1043,14 +1007,14 @@ do_read_fuse:
 			}
 			break;
 		default:
-			ret = ERROR_FAIL;
+			err = VSFERR_FAIL;
 			break;
 		}
 		break;
 	default:
-		ret = ERROR_FAIL;
+		err = VSFERR_FAIL;
 		break;
 	}
-	return ret;
+	return err;
 }
 
