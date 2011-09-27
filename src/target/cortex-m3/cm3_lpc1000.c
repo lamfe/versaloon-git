@@ -235,17 +235,14 @@ static vsf_err_t lpc1000swj_iap_run(uint32_t cmd, uint32_t param_table[5])
 	return VSFERR_NONE;
 }
 
-static vsf_err_t lpc1000swj_iap_poll_result(uint32_t result_table[7], bool *failed)
+static vsf_err_t lpc1000swj_iap_poll_result(uint32_t result_table[7])
 {
 	uint8_t i;
-	
-	*failed = false;
 	
 	// read result and sync
 	// sync is 4-byte BEFORE result
 	if (adi_memap_read_buf(LPC1000_IAP_SYNC_ADDR, (uint8_t *)result_table, 28))
 	{
-		*failed = true;
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read iap sync");
 		return ERRCODE_FAILURE_OPERATION;
 	}
@@ -253,47 +250,44 @@ static vsf_err_t lpc1000swj_iap_poll_result(uint32_t result_table[7], bool *fail
 	{
 		result_table[i] = LE_TO_SYS_U32(result_table[i]);
 	}
-	return (0 == result_table[0]) ? VSFERR_NONE : VSFERR_FAIL;
+	return (0 == result_table[0]) ? VSFERR_NONE : VSFERR_NOT_READY;
 }
 
 static vsf_err_t lpc1000swj_iap_wait_ready(uint32_t result_table[4], bool last)
 {
-	bool failed = false;
+	vsf_err_t err;
 	uint32_t start, end;
 	uint32_t buff_tmp[7];
 	
 	start = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
 	while (1)
 	{
-		if (lpc1000swj_iap_poll_result(buff_tmp, &failed) ||
-			(last && (buff_tmp[6] != lpc1000swj_iap_cnt)))
+		err = lpc1000swj_iap_poll_result(buff_tmp);
+		if (!err && (!last || (buff_tmp[6] == lpc1000swj_iap_cnt)))
 		{
-			if (failed)
+			if (buff_tmp[1] != 0)
 			{
-				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "poll iap result");
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION_ERRCODE, "run iap", buff_tmp[1]);
 				return VSFERR_FAIL;
 			}
 			else
 			{
-				end = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
-				// wait 1s at most
-				if ((end - start) > 1000)
-				{
-					cm3_dump(LPC1000_IAP_BASE, sizeof(iap_code));
-					LOG_ERROR(ERRMSG_TIMEOUT, "wait for iap ready");
-					return ERRCODE_FAILURE_OPERATION;
-				}
+				memcpy(result_table, &buff_tmp[2], 16);
 			}
+			break;
 		}
-		else if (buff_tmp[1] != 0)
+		if (err && (err != VSFERR_NOT_READY))
 		{
-			LOG_ERROR(ERRMSG_FAILURE_OPERATION_ERRCODE, "run iap", buff_tmp[1]);
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "poll iap result");
 			return VSFERR_FAIL;
 		}
-		else
+		end = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
+		// wait 1s at most
+		if ((end - start) > 1000)
 		{
-			memcpy(result_table, &buff_tmp[2], 16);
-			break;
+			cm3_dump(LPC1000_IAP_BASE, sizeof(iap_code));
+			LOG_ERROR(ERRMSG_TIMEOUT, "wait for iap ready");
+			return ERRCODE_FAILURE_OPERATION;
 		}
 	}
 	

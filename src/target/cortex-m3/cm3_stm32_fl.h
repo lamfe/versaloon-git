@@ -46,7 +46,7 @@ struct stm32_fl_result_t
 
 vsf_err_t stm32swj_fl_init(uint32_t fl_base);
 vsf_err_t stm32swj_fl_run(struct stm32_fl_cmd_t *cmd);
-vsf_err_t stm32swj_fl_poll_result(struct stm32_fl_result_t *result, bool *failed);
+vsf_err_t stm32swj_fl_poll_result(struct stm32_fl_result_t *result);
 vsf_err_t stm32swj_fl_wait_ready(struct stm32_fl_result_t *result, bool last);
 vsf_err_t stm32swj_fl_call(struct stm32_fl_cmd_t *cmd,
 							struct stm32_fl_result_t *result, bool last);

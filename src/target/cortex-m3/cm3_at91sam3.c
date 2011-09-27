@@ -201,8 +201,7 @@ static vsf_err_t at91sam3swj_iap_run(struct at91sam3swj_iap_command_t *cmd)
 	return VSFERR_NONE;
 }
 
-static vsf_err_t at91sam3swj_iap_poll_result(struct at91sam3swj_iap_reply_t *reply,
-											uint8_t *fail)
+static vsf_err_t at91sam3swj_iap_poll_result(struct at91sam3swj_iap_reply_t *reply)
 {
 	uint32_t buff_tmp[256 + 4];
 	uint32_t data_size;
@@ -219,7 +218,6 @@ static vsf_err_t at91sam3swj_iap_poll_result(struct at91sam3swj_iap_reply_t *rep
 		return VSFERR_FAIL;
 	}
 	
-	*fail = 0;
 	data_size = 4;
 	if (reply != NULL)
 	{
@@ -231,7 +229,6 @@ static vsf_err_t at91sam3swj_iap_poll_result(struct at91sam3swj_iap_reply_t *rep
 	if (adi_memap_read_buf(AT91SAM3_IAP_SYNC_ADDR,
 										(uint8_t *)buff_tmp, data_size))
 	{
-		*fail = 1;
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read iap sync");
 		return ERRCODE_FAILURE_OPERATION;
 	}
@@ -240,7 +237,6 @@ static vsf_err_t at91sam3swj_iap_poll_result(struct at91sam3swj_iap_reply_t *rep
 	{
 		if (buff_tmp[0] != 1)
 		{
-			*fail = 1;
 			cm3_dump(AT91SAM3_IAP_BASE, sizeof(iap_code) + 256);
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION_ERRCODE, "call iap",
 						buff_tmp[1]);
@@ -255,39 +251,34 @@ static vsf_err_t at91sam3swj_iap_poll_result(struct at91sam3swj_iap_reply_t *rep
 		return VSFERR_NONE;
 	}
 	
-	return VSFERR_FAIL;
+	return VSFERR_NOT_READY;
 }
 
 static vsf_err_t at91sam3swj_iap_wait_ready(struct at91sam3swj_iap_reply_t *reply)
 {
-	uint8_t fail = 0;
+	vsf_err_t err;
 	uint32_t start, end;
 	
 	start = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
 	while (1)
 	{
-		if (at91sam3swj_iap_poll_result(reply, &fail))
-		{
-			if (fail)
-			{
-				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "poll iap result");
-				return VSFERR_FAIL;
-			}
-			else
-			{
-				end = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
-				// wait 1s at most
-				if ((end - start) > 1000)
-				{
-					cm3_dump(AT91SAM3_IAP_BASE, sizeof(iap_code) + 256);
-					LOG_ERROR(ERRMSG_TIMEOUT, "wait for iap ready");
-					return ERRCODE_FAILURE_OPERATION;
-				}
-			}
-		}
-		else
+		err = at91sam3swj_iap_poll_result(reply);
+		if (!err)
 		{
 			break;
+		}
+		if (err && (err != VSFERR_NOT_READY))
+		{
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "poll iap result");
+			return VSFERR_FAIL;
+		}
+		end = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
+		// wait 1s at most
+		if ((end - start) > 1000)
+		{
+			cm3_dump(AT91SAM3_IAP_BASE, sizeof(iap_code) + 256);
+			LOG_ERROR(ERRMSG_TIMEOUT, "wait for iap ready");
+			return ERRCODE_FAILURE_OPERATION;
 		}
 	}
 	

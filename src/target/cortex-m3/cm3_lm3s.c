@@ -142,86 +142,64 @@ struct lm3sswj_iap_cmd_t
 	uint32_t cnt;
 };
 
-static vsf_err_t lm3sswj_iap_poll_finish(uint32_t cnt_idx, uint8_t *fail)
+static vsf_err_t lm3sswj_iap_poll_finish(uint32_t cnt_idx)
 {
 	uint32_t iap_cnt;
-	
-	*fail = 0;
 	
 	// read busy
 	if (adi_memap_read_reg32(LM3S_IAP_CNT_ADDR, &iap_cnt, 1))
 	{
-		*fail = 1;
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read iap sync");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	iap_cnt = LE_TO_SYS_U32(iap_cnt);
 	if (iap_cnt > lm3sswj_iap_cnt)
 	{
-		*fail = 1;
 		cm3_dump(LM3S_IAP_BASE, sizeof(iap_code));
 		return VSFERR_FAIL;
 	}
-	if (iap_cnt == cnt_idx)
-	{
-		return VSFERR_NONE;
-	}
-	
-	return VSFERR_FAIL;
+	return (iap_cnt == cnt_idx) ? VSFERR_NONE : VSFERR_NOT_READY;
 }
 
-static vsf_err_t lm3sswj_iap_poll_param_taken(uint8_t *fail)
+static vsf_err_t lm3sswj_iap_poll_param_taken(void)
 {
 	uint32_t sync;
-	
-	*fail = 0;
 	
 	// read sync
 	if (adi_memap_read_reg32(LM3S_IAP_SYNC_ADDR, &sync, 1))
 	{
-		*fail = 1;
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read iap sync");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	sync = LE_TO_SYS_U32(sync);
-	if (0 == sync)
-	{
-		return VSFERR_NONE;
-	}
-	
-	return VSFERR_FAIL;
+	return (0 == sync) ? VSFERR_NONE : VSFERR_NOT_READY;
 }
 
 static vsf_err_t lm3sswj_iap_wait_param_taken(void)
 {
-	uint8_t fail = 0;
+	vsf_err_t err;
 	uint32_t start, end;
 	
 	start = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
 	while (1)
 	{
-		if (lm3sswj_iap_poll_param_taken(&fail))
-		{
-			if (fail)
-			{
-				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "poll iap param taken");
-				return VSFERR_FAIL;
-			}
-			else
-			{
-				end = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
-				// wait 1s at most
-				if ((end - start) > 1000)
-				{
-					cm3_dump(LM3S_IAP_BASE, sizeof(iap_code));
-					LOG_ERROR(ERRMSG_TIMEOUT, "wait for iap param taken");
-					return ERRCODE_FAILURE_OPERATION;
-				}
-			}
-		}
-		else
+		err = lm3sswj_iap_poll_param_taken();
+		if (!err)
 		{
 			break;
+		}
+		if (err && (err != VSFERR_NOT_READY))
+		{
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "poll iap param taken");
+			return err;
+		}
+		end = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
+		// wait 1s at most
+		if ((end - start) > 1000)
+		{
+			cm3_dump(LM3S_IAP_BASE, sizeof(iap_code));
+			LOG_ERROR(ERRMSG_TIMEOUT, "wait for iap param taken");
+			return ERRCODE_FAILURE_OPERATION;
 		}
 	}
 	
@@ -230,34 +208,29 @@ static vsf_err_t lm3sswj_iap_wait_param_taken(void)
 
 static vsf_err_t lm3sswj_iap_wait_finish(uint32_t cnt_idx)
 {
-	uint8_t fail = 0;
+	vsf_err_t err;
 	uint32_t start, end;
 	
 	start = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
 	while (1)
 	{
-		if (lm3sswj_iap_poll_finish(cnt_idx, &fail))
-		{
-			if (fail)
-			{
-				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "poll iap finish");
-				return VSFERR_FAIL;
-			}
-			else
-			{
-				end = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
-				// wait 1s at most
-				if ((end - start) > 1000)
-				{
-					cm3_dump(LM3S_IAP_BASE, sizeof(iap_code));
-					LOG_ERROR(ERRMSG_TIMEOUT, "wait for iap finish");
-					return ERRCODE_FAILURE_OPERATION;
-				}
-			}
-		}
-		else
+		err = lm3sswj_iap_poll_finish(cnt_idx);
+		if (!err)
 		{
 			break;
+		}
+		if (err && (err != VSFERR_NOT_READY))
+		{
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "poll iap finish");
+			return VSFERR_FAIL;
+		}
+		end = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
+		// wait 1s at most
+		if ((end - start) > 1000)
+		{
+			cm3_dump(LM3S_IAP_BASE, sizeof(iap_code));
+			LOG_ERROR(ERRMSG_TIMEOUT, "wait for iap finish");
+			return ERRCODE_FAILURE_OPERATION;
 		}
 	}
 	
