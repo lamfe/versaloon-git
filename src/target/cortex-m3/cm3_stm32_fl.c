@@ -236,19 +236,16 @@ vsf_err_t stm32swj_fl_run(struct stm32_fl_cmd_t *cmd)
 	return VSFERR_NONE;
 }
 
-vsf_err_t stm32swj_fl_poll_result(struct stm32_fl_result_t *result, bool *failed)
+vsf_err_t stm32swj_fl_poll_result(struct stm32_fl_result_t *result)
 {
 	uint32_t buff_tmp[2];
 	uint8_t i;
-	
-	*failed = false;
 	
 	// read result and sync
 	// sync is 4-byte BEFORE result
 	if (adi_memap_read_buf(stm32swj_fl_base + STM32_FL_SYNC_OFFSET,
 							(uint8_t *)buff_tmp, sizeof(buff_tmp)))
 	{
-		*failed = true;
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read flashloader sync");
 		return ERRCODE_FAILURE_OPERATION;
 	}
@@ -263,40 +260,34 @@ vsf_err_t stm32swj_fl_poll_result(struct stm32_fl_result_t *result, bool *failed
 		return VSFERR_NONE;
 	}
 	
-	return VSFERR_FAIL;
+	return VSFERR_NOT_READY;
 }
 
 vsf_err_t stm32swj_fl_wait_ready(struct stm32_fl_result_t *result, bool last)
 {
-	bool failed;
+	vsf_err_t err;
 	uint32_t start, end;
 	
 	start = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
 	while (1)
 	{
-		if (stm32swj_fl_poll_result(result, &failed) ||
-			(last && (result->result != stm32swj_fl_cnt)))
-		{
-			if (failed)
-			{
-				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "poll flashloader result");
-				return VSFERR_FAIL;
-			}
-			else
-			{
-				end = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
-				// wait 1s at most
-				if ((end - start) > 20000)
-				{
-					cm3_dump(stm32swj_fl_base, sizeof(fl_code));
-					LOG_ERROR(ERRMSG_TIMEOUT, "wait for flashloader ready");
-					return ERRCODE_FAILURE_OPERATION;
-				}
-			}
-		}
-		else
+		err = stm32swj_fl_poll_result(result);
+		if (!err && (!last || (result->result == stm32swj_fl_cnt)))
 		{
 			break;
+		}
+		if (err && (err != VSFERR_NOT_READY))
+		{
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "poll flashloader result");
+			return VSFERR_FAIL;
+		}
+		end = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
+		// wait 1s at most
+		if ((end - start) > 20000)
+		{
+			cm3_dump(stm32swj_fl_base, sizeof(fl_code));
+			LOG_ERROR(ERRMSG_TIMEOUT, "wait for flashloader ready");
+			return ERRCODE_FAILURE_OPERATION;
 		}
 	}
 	

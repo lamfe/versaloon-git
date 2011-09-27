@@ -214,8 +214,8 @@ vsf_err_t issp_init3_half(uint8_t f9_1, uint8_t f9_2)
 	return VSFERR_NONE;
 }
 
-vsf_err_t issp_call_ssc(uint8_t cmd, uint8_t id, uint8_t poll_ready, uint8_t * buf,
-					 uint8_t want_return)
+vsf_err_t issp_call_ssc(uint8_t cmd, uint8_t id, uint8_t poll_ready,
+						uint8_t *buf, uint8_t want_return)
 {
 	issp_sel_reg_bank(0x00);
 	issp_set_cup_sp(PSOC1_ISSP_SSC_DEFAULT_SP);
