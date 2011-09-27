@@ -68,26 +68,26 @@ void USB_TO_POWER_ProcessCmd(uint8_t *dat, uint16_t len)
 			}
 			break;
 		case USB_TO_XXX_IN:
-			if (ERROR_OK == app_interfaces.target_voltage.get(device_idx, &voltage))
+			if (app_interfaces.target_voltage.get(device_idx, &voltage))
 			{
-				buffer_reply[rep_len] = USB_TO_XXX_OK;
-				SET_LE_U16(&buffer_reply[rep_len], voltage);
+				buffer_reply[rep_len] = USB_TO_XXX_FAILED;
 			}
 			else
 			{
-				buffer_reply[rep_len] = USB_TO_XXX_FAILED;
+				buffer_reply[rep_len] = USB_TO_XXX_OK;
+				SET_LE_U16(&buffer_reply[rep_len], voltage);
 			}
 			rep_len += 3;
 			break;
 		case USB_TO_XXX_OUT:
 			voltage = GET_LE_U16(&dat[index]);
-			if (ERROR_OK == app_interfaces.target_voltage.set(device_idx, voltage))
+			if (app_interfaces.target_voltage.set(device_idx, voltage))
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
 			else
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
 			break;
 		default:

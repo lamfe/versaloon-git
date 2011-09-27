@@ -23,6 +23,8 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include "vsf_err.h"
+
 #include "app_type.h"
 #include "app_io.h"
 #include "app_err.h"
@@ -45,7 +47,7 @@ enum  S19_TYPE
 	S19_S9 = 9
 };
 
-RESULT read_s19_file(FILE *s19_file, WRITE_MEMORY_CALLBACK callback,
+vsf_err_t read_s19_file(FILE *s19_file, WRITE_MEMORY_CALLBACK callback,
 					 void *buffer, uint32_t seg_offset, uint32_t addr_offset)
 {
 	uint8_t line_buf[4 + 0xFF * 2 + 2], checksum, *data;
@@ -69,13 +71,13 @@ RESULT read_s19_file(FILE *s19_file, WRITE_MEMORY_CALLBACK callback,
 			ch = (char)fgetc(s19_file);
 			if (EOF == ch)
 			{
-				return ERROR_OK;
+				return VSFERR_NONE;
 			}
 		}while (('\n' == ch) || ('\r' == ch));
 		// check first character of a line, which MUST be 'S'
 		if (ch != 'S')
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		
 		length = 0;
@@ -90,7 +92,7 @@ RESULT read_s19_file(FILE *s19_file, WRITE_MEMORY_CALLBACK callback,
 		if ((length < 9) || ((length % 2) == 0)
 			|| (line_buf[0] < '0') || (line_buf[0] > '9'))
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		type = (enum S19_TYPE)(line_buf[0] - '0');
 		length--;
@@ -104,7 +106,7 @@ RESULT read_s19_file(FILE *s19_file, WRITE_MEMORY_CALLBACK callback,
 														&ptr, 16);
 			if (ptr != &tmp_buff[2])
 			{
-				return ERROR_FAIL;
+				return VSFERR_FAIL;
 			}
 		}
 		i >>= 1;
@@ -113,7 +115,7 @@ RESULT read_s19_file(FILE *s19_file, WRITE_MEMORY_CALLBACK callback,
 		length = line_buf[0];
 		if ((length + 1) != i)
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		checksum = 0;
 		for (i = 0; i < length + 1; i++)
@@ -122,7 +124,7 @@ RESULT read_s19_file(FILE *s19_file, WRITE_MEMORY_CALLBACK callback,
 		}
 		if (checksum != 0xFF)
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		length--;
 		
@@ -150,10 +152,10 @@ RESULT read_s19_file(FILE *s19_file, WRITE_MEMORY_CALLBACK callback,
 			goto parse_data;
 			// data sequence
 parse_data:
-			if (ERROR_OK != callback(fileparser_cur_ext, addr_offset + addr,
+			if (callback(fileparser_cur_ext, addr_offset + addr,
 										seg_offset, data, length, buffer))
 			{
-				return ERROR_FAIL;
+				return VSFERR_FAIL;
 			}
 			break;
 		case S19_S5:
@@ -163,7 +165,7 @@ parse_data:
 		case S19_S8:
 		case S19_S9:
 			// end of block
-			return ERROR_OK;
+			return VSFERR_NONE;
 			break;
 		case S19_S4:
 		case S19_S6:
@@ -175,10 +177,10 @@ parse_data:
 		}
 	}
 	
-	return ERROR_FAIL;
+	return VSFERR_FAIL;
 }
 
-static RESULT write_s19_line(FILE *s19_file, uint8_t data_len,
+static vsf_err_t write_s19_line(FILE *s19_file, uint8_t data_len,
 						uint32_t data_addr, enum S19_TYPE type, uint8_t *data)
 {
 	uint8_t line_buf[4 + 0xFF * 2 + 2], checksum = 0, pos = 0, addr_len;
@@ -262,22 +264,21 @@ static RESULT write_s19_line(FILE *s19_file, uint8_t data_len,
 	
 	if (pos == fwrite(line_buf, 1, pos, s19_file))
 	{
-		return ERROR_OK;
+		return VSFERR_NONE;
 	}
 	else
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 }
 
-RESULT write_s19_file(FILE *s19_file, uint32_t file_addr,
+vsf_err_t write_s19_file(FILE *s19_file, uint32_t file_addr,
 						uint8_t *buff, uint32_t buff_size,
 						uint32_t seg_addr, uint32_t start_addr,
 						ADJUST_MAPPING_CALLBACK remap)
 {
 	uint8_t tmp;
 	uint32_t tmp_addr;
-	RESULT ret;
 	
 	REFERENCE_PARAMETER(file_addr);
 	REFERENCE_PARAMETER(seg_addr);
@@ -296,14 +297,13 @@ RESULT write_s19_file(FILE *s19_file, uint32_t file_addr,
 		
 		// write
 		tmp_addr = start_addr;
-		if ((remap != NULL) && (ERROR_OK != remap(&tmp_addr, 0)))
+		if ((remap != NULL) && remap(&tmp_addr, 0))
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
-		ret = write_s19_line(s19_file, (uint8_t)tmp, tmp_addr, S19_S3, buff);
-		if (ret != ERROR_OK)
+		if (write_s19_line(s19_file, (uint8_t)tmp, tmp_addr, S19_S3, buff))
 		{
-			return ret;
+			return VSFERR_FAIL;
 		}
 		
 		start_addr += tmp;
@@ -311,10 +311,10 @@ RESULT write_s19_file(FILE *s19_file, uint32_t file_addr,
 		buff_size -= tmp;
 	}
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT write_s19_file_end(FILE *s19_file)
+vsf_err_t write_s19_file_end(FILE *s19_file)
 {
 	return write_s19_line(s19_file, 0, 0, S19_S7, NULL);
 }

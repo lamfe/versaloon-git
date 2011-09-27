@@ -30,13 +30,12 @@
 #include "app_err.h"
 #include "app_log.h"
 
-#include "memlist.h"
-#include "pgbar.h"
-
 #include "vsprog.h"
 #include "programmer.h"
 #include "target.h"
 #include "scripts.h"
+
+#include "pgbar.h"
 
 #include "avrxmega.h"
 #include "avrxmega_internal.h"
@@ -79,7 +78,7 @@ Usage of %s:\n\
   -m,  --mode <MODE>                        set mode<j>\n\
   -F,  --frequency <FREQUENCY>              set JTAG frequency, in KHz\n\n",
 			CUR_TARGET_STRING);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 VSS_HANDLER(avrxmega_mode)
@@ -95,7 +94,7 @@ VSS_HANDLER(avrxmega_mode)
 	case AVRXMEGA_PDI:
 		break;
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 const struct vss_cmd_t avrxmega_notifier[] =
@@ -169,21 +168,21 @@ static struct program_info_t *pi = NULL;
 static uint8_t pdi_err = 0;
 static uint8_t pdi_append_0 = 0;
 
-static RESULT avrxmegajtag_receive_callback(uint8_t index, enum jtag_irdr_t cmd,
-						uint32_t ir, uint8_t *dest_buffer, uint8_t *src_buffer,
-						uint16_t bytelen, uint16_t *processed)
+static vsf_err_t avrxmegajtag_receive_callback(uint8_t index,
+		enum jtag_irdr_t cmd,uint32_t ir, uint8_t *dest_buffer,
+		uint8_t *src_buffer,uint16_t bytelen, uint16_t *processed)
 {
 	REFERENCE_PARAMETER(index);
 	
 	if (NULL == src_buffer)
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	switch(cmd)
 	{
 	case JTAG_SCANTYPE_IR:
-		return ERROR_OK;
+		return VSFERR_NONE;
 		break;
 	case JTAG_SCANTYPE_DR:
 		if ((AVRXMEGA_JTAG_INS_PDICOM == ir)
@@ -202,14 +201,14 @@ static RESULT avrxmegajtag_receive_callback(uint8_t index, enum jtag_irdr_t cmd,
 				*dest_buffer = *src_buffer;
 			}
 		}
-		return ERROR_OK;
+		return VSFERR_NONE;
 		break;
 	}
 	
-	return ERROR_FAIL;
+	return VSFERR_FAIL;
 }
 
-static RESULT avrxmegajtag_send_callback(uint8_t index, enum jtag_irdr_t cmd,
+static vsf_err_t avrxmegajtag_send_callback(uint8_t index, enum jtag_irdr_t cmd,
 					uint32_t ir, uint8_t *dest_buffer, uint8_t *src_buffer,
 					uint16_t bytelen, uint16_t *processed_len)
 {
@@ -217,13 +216,13 @@ static RESULT avrxmegajtag_send_callback(uint8_t index, enum jtag_irdr_t cmd,
 	
 	if (NULL == dest_buffer)
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	switch(cmd)
 	{
 	case JTAG_SCANTYPE_IR:
-		return ERROR_OK;
+		return VSFERR_NONE;
 		break;
 	case JTAG_SCANTYPE_DR:
 		if ((AVRXMEGA_JTAG_INS_PDICOM == ir)
@@ -240,33 +239,30 @@ static RESULT avrxmegajtag_send_callback(uint8_t index, enum jtag_irdr_t cmd,
 			dest_buffer[1] = 0x00;
 			*processed_len = 2;
 		}
-		return ERROR_OK;
+		return VSFERR_NONE;
 		break;
 	}
 	
-	return ERROR_FAIL;
+	return VSFERR_FAIL;
 }
 
-static RESULT pdi_commit(void)
+static vsf_err_t pdi_commit(void)
 {
-	RESULT ret;
-	
 	switch (avrxmega_progmode)
 	{
 	case AVRXMEGA_JTAG:
 	case AVRXMEGA_PDI:
-		ret = commit();
+		return commit();
 		break;
 	default:
-		ret = ERROR_FAIL;
+		return VSFERR_FAIL;
 		break;
 	}
-	return ret;
 }
 
-static RESULT pdi_poll(void)
+static vsf_err_t pdi_poll(void)
 {
-	RESULT ret = ERROR_OK;
+	vsf_err_t err = VSFERR_NONE;
 	
 	switch (avrxmega_progmode)
 	{
@@ -274,37 +270,37 @@ static RESULT pdi_poll(void)
 		pdi_poll_delay_empty_jtag();
 		break;
 	case AVRXMEGA_PDI:
-		ret = ERROR_FAIL;
+		err = VSFERR_FAIL;
 		break;
 	default:
-		ret = ERROR_FAIL;
+		err = VSFERR_FAIL;
 		break;
 	}
-	return ret;
+	return err;
 }
 
-static RESULT pdi_write(uint16_t data)
+static vsf_err_t pdi_write(uint16_t data)
 {
-	RESULT ret;
+	vsf_err_t err;
 	
 	switch (avrxmega_progmode)
 	{
 	case AVRXMEGA_JTAG:
-		ret = jtag_dr_write(&data, AVRXMEGA_JTAG_DR_PDICOM_LEN);
+		err = jtag_dr_write(&data, AVRXMEGA_JTAG_DR_PDICOM_LEN);
 		break;
 	case AVRXMEGA_PDI:
-		ret = ERROR_FAIL;
+		err = VSFERR_FAIL;
 		break;
 	default:
-		ret = ERROR_FAIL;
+		err = VSFERR_FAIL;
 		break;
 	}
-	return ret;
+	return err;
 }
 
-static RESULT pdi_read(uint8_t *data)
+static vsf_err_t pdi_read(uint8_t *data)
 {
-	RESULT ret;
+	vsf_err_t err;
 	
 	switch (avrxmega_progmode)
 	{
@@ -315,50 +311,50 @@ static RESULT pdi_read(uint8_t *data)
 		}
 		poll_start(1000);
 		pdi_append_0 = 1;
-		ret = jtag_dr_read(data, AVRXMEGA_JTAG_DR_PDICOM_LEN);
+		err = jtag_dr_read(data, AVRXMEGA_JTAG_DR_PDICOM_LEN);
 		pdi_append_0 = 0;
 		pdi_poll();
 		poll_end();
 		break;
 	case AVRXMEGA_PDI:
-		ret = ERROR_FAIL;
+		err = VSFERR_FAIL;
 		break;
 	default:
-		ret = ERROR_FAIL;
+		err = VSFERR_FAIL;
 		break;
 	}
-	return ret;
+	return err;
 }
 
-static RESULT pdi_break(void)
+static vsf_err_t pdi_break(void)
 {
-	RESULT ret;
+	vsf_err_t err;
 	uint16_t dr;
 	
 	switch (avrxmega_progmode)
 	{
 	case AVRXMEGA_JTAG:
 		dr = AVRXMEGA_JTAG_BREAK;
-		ret = pdi_write(dr);
+		err = pdi_write(dr);
 		break;
 	case AVRXMEGA_PDI:
-		ret = ERROR_FAIL;
+		err = VSFERR_FAIL;
 		break;
 	default:
-		ret = ERROR_FAIL;
+		err = VSFERR_FAIL;
 		break;
 	}
-	return ret;
+	return err;
 }
 
-static RESULT pdi_init(void)
+static vsf_err_t pdi_init(void)
 {
 	uint8_t ir;
 	uint32_t id;
 	
 	if (NULL == pi)
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	switch (avrxmega_progmode)
@@ -378,10 +374,10 @@ static RESULT pdi_init(void)
 		avrxmega_jtag_ir(&ir);
 		pdi_break();
 		pdi_break();
-		if (ERROR_OK != pdi_commit())
+		if (pdi_commit())
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "init jtag");
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		LOG_INFO(INFOMSG_REG_08X, "JTAGID", id);
 		jtag_register_callback(avrxmegajtag_send_callback,
@@ -390,31 +386,31 @@ static RESULT pdi_init(void)
 	case AVRXMEGA_PDI:
 		break;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	return pdi_commit();
 }
 
-static RESULT pdi_fini(void)
+static vsf_err_t pdi_fini(void)
 {
-	RESULT ret;
+	vsf_err_t err;
 	
 	switch (avrxmega_progmode)
 	{
 	case AVRXMEGA_JTAG:
 		jtag_fini();
-		ret = pdi_commit();
+		err = pdi_commit();
 		jtag_register_callback(NULL, NULL);
 		break;
 	case AVRXMEGA_PDI:
-		ret = ERROR_FAIL;
+		err = VSFERR_FAIL;
 		break;
 	default:
-		ret = ERROR_FAIL;
+		err = VSFERR_FAIL;
 		break;
 	}
-	return ret;
+	return err;
 }
 
 
@@ -423,7 +419,7 @@ static RESULT pdi_fini(void)
 
 static const uint64_t pdi_en_key = PDI_NVM_KEY;
 
-static RESULT pdi_write_parity(uint8_t *data, uint16_t bytelen)
+static vsf_err_t pdi_write_parity(uint8_t *data, uint16_t bytelen)
 {
 	uint16_t dr;
 	uint16_t i;
@@ -431,53 +427,54 @@ static RESULT pdi_write_parity(uint8_t *data, uint16_t bytelen)
 	for (i = 0; i < bytelen; i++)
 	{
 		dr = pdi_append_parity(data[i], PDI_PARITY_EVEN);
-		if (ERROR_OK != pdi_write(dr))
+		if (pdi_write(dr))
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 	}
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
-static RESULT pdi_write_parity_value(uint32_t data, uint8_t size)
+static vsf_err_t pdi_write_parity_value(uint32_t data, uint8_t size)
 {
 	if (size > 4)
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	return pdi_write_parity((uint8_t*)&data, size);
 }
 
-static RESULT pdi_write_key(uint8_t *key, uint8_t bytelen)
+static vsf_err_t pdi_write_key(uint8_t *key, uint8_t bytelen)
 {
 	pdi_write_parity_value(PDI_INSTR_KEY, 1);
 	pdi_write_parity(key, bytelen);
-	return ERROR_OK;
+	
+	return VSFERR_NONE;
 }
 
-static RESULT pdi_write_reg(uint8_t reg, uint8_t value)
+static vsf_err_t pdi_write_reg(uint8_t reg, uint8_t value)
 {
 	pdi_write_parity_value(PDI_INSTR_STCS(reg), 1);
 	pdi_write_parity_value(value, 1);
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT pdi_read_reg(uint8_t reg, uint8_t *value)
+static vsf_err_t pdi_read_reg(uint8_t reg, uint8_t *value)
 {
 	pdi_write_parity_value(PDI_INSTR_LDCS(reg), 1);
 	pdi_read(value);
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT pdi_read_memory(uint32_t addr, uint16_t size, uint8_t *buff)
+static vsf_err_t pdi_read_memory(uint32_t addr, uint16_t size, uint8_t *buff)
 {
 	uint16_t i;
 	
 	if (size > 256)
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	// write target address on PDIBUS
@@ -496,16 +493,16 @@ static RESULT pdi_read_memory(uint32_t addr, uint16_t size, uint8_t *buff)
 	{
 		pdi_read(buff + i);
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT pdi_write_memory(uint32_t addr, uint16_t size, uint8_t *buff)
+static vsf_err_t pdi_write_memory(uint32_t addr, uint16_t size, uint8_t *buff)
 {
 	uint16_t i;
 	
 	if (size > 256)
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	// write target address on PDIBUS
@@ -524,25 +521,25 @@ static RESULT pdi_write_memory(uint32_t addr, uint16_t size, uint8_t *buff)
 	{
 		pdi_write_parity_value(buff[i], 1);
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT pdi_sts(uint32_t addr, uint8_t data)
+vsf_err_t pdi_sts(uint32_t addr, uint8_t data)
 {
 	pdi_write_parity_value(
 				PDI_INSTR_STS(PDI_DATASIZE_4BYTES, PDI_DATASIZE_1BYTE), 1);
 	pdi_write_parity_value(addr, 4);
 	pdi_write_parity_value(data, 1);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT pdi_lds(uint32_t addr, uint8_t *data)
+vsf_err_t pdi_lds(uint32_t addr, uint8_t *data)
 {
 	pdi_write_parity_value(
 				PDI_INSTR_LDS(PDI_DATASIZE_4BYTES, PDI_DATASIZE_1BYTE), 1);
 	pdi_write_parity_value(addr, 4);
 	pdi_read(data);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 
@@ -557,7 +554,7 @@ RESULT pdi_lds(uint32_t addr, uint8_t *data)
 	do{\
 		poll_ok(POLL_CHECK_EQU, 1, AVRXMEGA_NVM_REG_STATUS_BUSY, 0x00);\
 	} while(0)
-static RESULT avrxmega_nvm_pollready(void)
+static vsf_err_t avrxmega_nvm_pollready(void)
 {
 	poll_start(5000);
 	
@@ -569,10 +566,10 @@ static RESULT avrxmega_nvm_pollready(void)
 	
 	poll_end();
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT avrxmega_nvm_read(uint32_t addr, uint16_t size, uint8_t *buff)
+static vsf_err_t avrxmega_nvm_read(uint32_t addr, uint16_t size, uint8_t *buff)
 {
 	avrxmega_nvm_pollready();
 	
@@ -582,7 +579,7 @@ static RESULT avrxmega_nvm_read(uint32_t addr, uint16_t size, uint8_t *buff)
 	return pdi_read_memory(addr, size, buff);
 }
 
-static RESULT avrxmega_nvm_writepage(uint8_t write_buff_cmd,
+static vsf_err_t avrxmega_nvm_writepage(uint8_t write_buff_cmd,
 	uint8_t erase_buff_cmd, uint8_t write_page_cmd, uint32_t addr,
 	uint16_t size, uint8_t *buff)
 {
@@ -603,11 +600,11 @@ static RESULT avrxmega_nvm_writepage(uint8_t write_buff_cmd,
 	
 //	avrxmega_nvm_pollready();
 	return pdi_commit();
-//	return ERROR_OK;
+//	return VSFERR_NONE;
 }
 
 #if 0
-static RESULT avrxmega_nvm_writebyte(uint8_t cmd, uint32_t addr, uint8_t data)
+static vsf_err_t avrxmega_nvm_writebyte(uint8_t cmd, uint32_t addr, uint8_t data)
 {
 	avrxmega_nvm_pollready();
 	
@@ -617,11 +614,11 @@ static RESULT avrxmega_nvm_writebyte(uint8_t cmd, uint32_t addr, uint8_t data)
 	// write new byte to the target
 	pdi_sts(addr, data);
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 #endif
 
-static RESULT avrxmega_nvm_chip_erase(uint8_t cmd)
+static vsf_err_t avrxmega_nvm_chip_erase(uint8_t cmd)
 {
 	avrxmega_nvm_pollready();
 	
@@ -635,7 +632,7 @@ static RESULT avrxmega_nvm_chip_erase(uint8_t cmd)
 	return pdi_commit();
 }
 
-static RESULT avrxmega_nvm_erase_target(uint8_t cmd, uint32_t addr)
+static vsf_err_t avrxmega_nvm_erase_target(uint8_t cmd, uint32_t addr)
 {
 	avrxmega_nvm_pollready();
 	
@@ -661,9 +658,9 @@ ENTER_PROGRAM_MODE_HANDLER(avrxmega)
 	pdi_err = 0;
 	
 	// init
-	if (ERROR_OK != pdi_init())
+	if (pdi_init())
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	// force reset
@@ -687,9 +684,9 @@ LEAVE_PROGRAM_MODE_HANDLER(avrxmega)
 	
 	pdi_write_reg(PDI_REG_RESET, 0x00);
 	avrxmega_nvm_pollready();
-	if (ERROR_OK != pdi_fini())
+	if (pdi_fini())
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	return pdi_commit();
@@ -698,7 +695,7 @@ LEAVE_PROGRAM_MODE_HANDLER(avrxmega)
 ERASE_TARGET_HANDLER(avrxmega)
 {
 	struct operation_t *op = context->op;
-	RESULT ret = ERROR_OK;
+	vsf_err_t err = VSFERR_NONE;
 	
 	REFERENCE_PARAMETER(context);
 	REFERENCE_PARAMETER(addr);
@@ -707,7 +704,7 @@ ERASE_TARGET_HANDLER(avrxmega)
 	if (op->erase_operations & ALL)
 	{
 		// chip erase
-		ret = avrxmega_nvm_chip_erase(AVRXMEGA_NVM_CMD_CHIPERASE);
+		err = avrxmega_nvm_chip_erase(AVRXMEGA_NVM_CMD_CHIPERASE);
 	}
 	else
 	{
@@ -733,13 +730,13 @@ ERASE_TARGET_HANDLER(avrxmega)
 			addr = 0;
 			break;
 		default:
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 			break;
 		}
-		ret = avrxmega_nvm_erase_target(cmd, addr);
+		err = avrxmega_nvm_erase_target(cmd, addr);
 	}
 	
-	return ret;
+	return err;
 }
 
 WRITE_TARGET_HANDLER(avrxmega)
@@ -768,17 +765,17 @@ do_write_page:
 								write_page_cmd, addr, (uint16_t)size, buff);
 		break;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 		break;
 	}
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 READ_TARGET_HANDLER(avrxmega)
 {
 	struct chip_param_t *param = context->param;
-	RESULT ret = ERROR_OK;
+	vsf_err_t err = VSFERR_NONE;
 	uint16_t cur_size, page_size;
 	uint32_t cur_addr;
 	
@@ -786,7 +783,7 @@ READ_TARGET_HANDLER(avrxmega)
 	{
 	case CHIPID_CHAR:
 		pdi_read_memory(0x01000090, 3, buff);
-		ret = pdi_commit();
+		err = pdi_commit();
 		{
 			uint8_t tmp;
 			tmp = buff[0];
@@ -820,12 +817,12 @@ do_read:
 			buff += cur_size;
 			pgbar_update(cur_size);
 		}
-		ret = pdi_commit();
+		err = pdi_commit();
 		break;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 		break;
 	}
 	
-	return ret;
+	return err;
 }

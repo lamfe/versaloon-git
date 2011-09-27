@@ -76,7 +76,7 @@ struct program_functions_t c8051fc2_program_functions =
 
 static struct interfaces_info_t *interfaces = NULL;
 
-RESULT c8051f_c2_addr_poll(uint8_t mask, uint8_t value, uint16_t poll_cnt)
+vsf_err_t c8051f_c2_addr_poll(uint8_t mask, uint8_t value, uint16_t poll_cnt)
 {
 	poll_start(poll_cnt * 10);
 	
@@ -85,7 +85,7 @@ RESULT c8051f_c2_addr_poll(uint8_t mask, uint8_t value, uint16_t poll_cnt)
 	
 	poll_end();
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 ENTER_PROGRAM_MODE_HANDLER(c8051fc2)
@@ -118,7 +118,7 @@ ERASE_TARGET_HANDLER(c8051fc2)
 {
 	struct chip_param_t *param = context->param;
 	uint8_t dr;
-	RESULT ret = ERROR_OK;
+	vsf_err_t err = VSFERR_NONE;
 	
 	REFERENCE_PARAMETER(addr);
 	REFERENCE_PARAMETER(size);
@@ -133,9 +133,9 @@ ERASE_TARGET_HANDLER(c8051fc2)
 		
 		c2_poll_out_ready();
 		c2_read_dr(&dr);
-		if ((ERROR_OK != commit()) || (dr != C8051F_C2_REP_COMMAND_OK))
+		if (commit() || (dr != C8051F_C2_REP_COMMAND_OK))
 		{
-			ret = ERRCODE_FAILURE_OPERATION;
+			err = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
 		
@@ -150,17 +150,17 @@ ERASE_TARGET_HANDLER(c8051fc2)
 		c2_poll_in_busy();
 		
 		c2_poll_out_ready();
-		if (ERROR_OK != commit())
+		if (commit())
 		{
-			ret = ERRCODE_FAILURE_OPERATION;
+			err = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
 		break;
 	default:
-		ret = ERROR_FAIL;
+		err = VSFERR_FAIL;
 		break;
 	}
-	return ret;
+	return err;
 }
 
 WRITE_TARGET_HANDLER(c8051fc2)
@@ -168,7 +168,7 @@ WRITE_TARGET_HANDLER(c8051fc2)
 	struct chip_param_t *param = context->param;
 	uint8_t dr;
 	uint32_t i;
-	RESULT ret = ERROR_OK;
+	vsf_err_t err = VSFERR_NONE;
 	
 	switch (area)
 	{
@@ -181,10 +181,10 @@ WRITE_TARGET_HANDLER(c8051fc2)
 		
 		c2_poll_out_ready();
 		c2_read_dr(&dr);
-		if ((ERROR_OK != commit()) || (dr != C8051F_C2_REP_COMMAND_OK))
+		if (commit() || (dr != C8051F_C2_REP_COMMAND_OK))
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION_ADDR, "program flash", addr);
-			ret = ERRCODE_FAILURE_OPERATION;
+			err = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
 		
@@ -203,10 +203,10 @@ WRITE_TARGET_HANDLER(c8051fc2)
 		
 		c2_poll_out_ready();
 		c2_read_dr(&dr);
-		if ((ERROR_OK != commit()) || (dr != C8051F_C2_REP_COMMAND_OK))
+		if (commit() || (dr != C8051F_C2_REP_COMMAND_OK))
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION_ADDR, "program flash", addr);
-			ret = ERRCODE_FAILURE_OPERATION;
+			err = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
 		
@@ -217,18 +217,18 @@ WRITE_TARGET_HANDLER(c8051fc2)
 		}
 		
 		c2_poll_out_ready();
-		if (ERROR_OK != commit())
+		if (commit())
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION_ADDR, "program flash", addr);
-			ret = ERRCODE_FAILURE_OPERATION;
+			err = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
 		break;
 	default:
-		ret = ERROR_FAIL;
+		err = VSFERR_FAIL;
 		break;
 	}
-	return ret;
+	return err;
 }
 
 READ_TARGET_HANDLER(c8051fc2)
@@ -236,16 +236,16 @@ READ_TARGET_HANDLER(c8051fc2)
 	struct chip_param_t *param = context->param;
 	uint8_t dr;
 	uint32_t i;
-	RESULT ret = ERROR_OK;
+	vsf_err_t err = VSFERR_NONE;
 	
 	switch (area)
 	{
 	case CHIPID_CHAR:
 		c2_write_ir(C8051F_C2_DEVICEID);
 		c2_read_dr(&dr);
-		if (ERROR_OK != commit())
+		if (commit())
 		{
-			ret = ERRCODE_FAILURE_OPERATION;
+			err = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
 		*(uint8_t *)buff = dr;
@@ -259,10 +259,10 @@ READ_TARGET_HANDLER(c8051fc2)
 		
 		c2_poll_out_ready();
 		c2_read_dr(&dr);
-		if ((ERROR_OK != commit()) || (dr != C8051F_C2_REP_COMMAND_OK))
+		if (commit() || (dr != C8051F_C2_REP_COMMAND_OK))
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION_ADDR, "read flash", addr);
-			ret = ERRCODE_FAILURE_OPERATION;
+			err = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
 		
@@ -280,9 +280,9 @@ READ_TARGET_HANDLER(c8051fc2)
 		
 		c2_poll_out_ready();
 		c2_read_dr(&dr);
-		if ((ERROR_OK != commit()) || (dr != C8051F_C2_REP_COMMAND_OK))
+		if (commit() || (dr != C8051F_C2_REP_COMMAND_OK))
 		{
-			ret = ERRCODE_FAILURE_OPERATION;
+			err = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
 		
@@ -292,16 +292,16 @@ READ_TARGET_HANDLER(c8051fc2)
 			c2_read_dr(&buff[i]);
 		}
 		
-		if (ERROR_OK != commit())
+		if (commit())
 		{
-			ret = ERRCODE_FAILURE_OPERATION;
+			err = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
 		break;
 	default:
-		ret = ERROR_FAIL;
+		err = VSFERR_FAIL;
 		break;
 	}
-	return ret;
+	return err;
 }
 

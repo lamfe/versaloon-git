@@ -401,30 +401,30 @@ static uint8_t SWIM_ROTF(uint32_t addr, uint16_t len, uint8_t *data)
 	return 0;
 }
 
-RESULT swim_init(uint8_t index)
+vsf_err_t swim_init(uint8_t index)
 {
 	switch (index)
 	{
 	case 0:
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT swim_fini(uint8_t index)
+vsf_err_t swim_fini(uint8_t index)
 {
 	switch (index)
 	{
 	case 0:
 		SWIM_Fini();
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT swim_config(uint8_t index, uint8_t mHz, uint8_t cnt0, uint8_t cnt1)
+vsf_err_t swim_config(uint8_t index, uint8_t mHz, uint8_t cnt0, uint8_t cnt1)
 {
 	switch (index)
 	{
@@ -432,90 +432,90 @@ RESULT swim_config(uint8_t index, uint8_t mHz, uint8_t cnt0, uint8_t cnt1)
 		SWIM_Init();
 		if (SWIM_SetClockParam(mHz, cnt0, cnt1))
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		else
 		{
-			return ERROR_OK;
+			return VSFERR_NONE;
 		}
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT swim_srst(uint8_t index)
+vsf_err_t swim_srst(uint8_t index)
 {
 	switch (index)
 	{
 	case 0:
 		if (SWIM_SRST())
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		else
 		{
-			return ERROR_OK;
+			return VSFERR_NONE;
 		}
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT swim_wotf(uint8_t index, uint8_t *data, uint16_t bytelen, uint32_t addr)
+vsf_err_t swim_wotf(uint8_t index, uint8_t *data, uint16_t bytelen, uint32_t addr)
 {
 	switch (index)
 	{
 	case 0:
 		if (SWIM_WOTF(addr, bytelen, data))
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		else
 		{
-			return ERROR_OK;
+			return VSFERR_NONE;
 		}
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT swim_rotf(uint8_t index, uint8_t *data, uint16_t bytelen, uint32_t addr)
+vsf_err_t swim_rotf(uint8_t index, uint8_t *data, uint16_t bytelen, uint32_t addr)
 {
 	switch (index)
 	{
 	case 0:
 		if (SWIM_ROTF(addr, bytelen, data))
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		else
 		{
-			return ERROR_OK;
+			return VSFERR_NONE;
 		}
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT swim_sync(uint8_t index, uint8_t mHz)
+vsf_err_t swim_sync(uint8_t index, uint8_t mHz)
 {
 	switch (index)
 	{
 	case 0:
 		if (SWIM_Sync(mHz))
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		else
 		{
-			return ERROR_OK;
+			return VSFERR_NONE;
 		}
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT swim_enable(uint8_t index)
+vsf_err_t swim_enable(uint8_t index)
 {
 	switch (index)
 	{
@@ -523,14 +523,14 @@ RESULT swim_enable(uint8_t index)
 		SWIM_EnableClockInput();
 		if (SWIM_EnterProgMode())
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		else
 		{
-			return ERROR_OK;
+			return VSFERR_NONE;
 		}
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 

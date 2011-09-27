@@ -18,10 +18,10 @@
 #define LPCICP_POLL_ON_CLEAR		1
 #define LPCICP_POLL_TIME_OUT		2
 
-RESULT lpcicp_init(uint8_t index);
-RESULT lpcicp_fini(uint8_t index);
-RESULT lpcicp_enter_program_mode(uint8_t index);
-RESULT lpcicp_in(uint8_t index, uint8_t *buff, uint16_t len);
-RESULT lpcicp_out(uint8_t index, uint8_t *buff, uint16_t len);
-RESULT lpcicp_poll_ready(uint8_t index, uint8_t data, uint8_t *ret, 
-							uint8_t setmask, uint8_t clearmask, uint16_t pollcnt);
+vsf_err_t lpcicp_init(uint8_t index);
+vsf_err_t lpcicp_fini(uint8_t index);
+vsf_err_t lpcicp_enter_program_mode(uint8_t index);
+vsf_err_t lpcicp_in(uint8_t index, uint8_t *buff, uint16_t len);
+vsf_err_t lpcicp_out(uint8_t index, uint8_t *buff, uint16_t len);
+vsf_err_t lpcicp_poll_ready(uint8_t index, uint8_t data, uint8_t *ret, 
+				uint8_t setmask, uint8_t clearmask, uint16_t pollcnt);

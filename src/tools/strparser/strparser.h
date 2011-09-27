@@ -20,9 +20,9 @@
 #define STRPARSER_DIV_CHARS						"|_:; "
 #define STRPARSER_DIV_CHAR_DEFAULT				':'
 
-RESULT strparser_check(char * str, char * format);
+vsf_err_t strparser_check(char * str, char * format);
 uint32_t strparser_getsize(char * format);
-RESULT strparser_parse(char * str, char * format, uint8_t * buff,
+vsf_err_t strparser_parse(char * str, char * format, uint8_t * buff,
 							uint32_t size);
 char * strparser_solve(char *format, uint8_t *buff, uint32_t size);
 

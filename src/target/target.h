@@ -222,57 +222,57 @@ struct program_context_t
 #define READ_TARGET_FUNCNAME(mod)			ASSEMBLE_FUNCNAME(mod, _read_target)
 
 #define EXECUTE_HANDLER(mod)				\
-			static RESULT EXECUTE_FUNCNAME(mod)\
+			static vsf_err_t EXECUTE_FUNCNAME(mod)\
 						(struct program_context_t *context)
 #define ENTER_PROGRAM_MODE_HANDLER(mod)		\
-			static RESULT ENTER_PROGRAM_MODE_FUNCNAME(mod)\
+			static vsf_err_t ENTER_PROGRAM_MODE_FUNCNAME(mod)\
 						(struct program_context_t *context)
 #define LEAVE_PROGRAM_MODE_HANDLER(mod)		\
-			static RESULT LEAVE_PROGRAM_MODE_FUNCNAME(mod)\
+			static vsf_err_t LEAVE_PROGRAM_MODE_FUNCNAME(mod)\
 						(struct program_context_t *context, uint8_t success)
 #define ERASE_TARGET_HANDLER(mod)			\
-			static RESULT ERASE_TARGET_FUNCNAME(mod)\
+			static vsf_err_t ERASE_TARGET_FUNCNAME(mod)\
 						(struct program_context_t *context, char area, \
 							uint32_t addr, uint32_t size)
 #define WRITE_TARGET_HANDLER(mod)			\
-			static RESULT WRITE_TARGET_FUNCNAME(mod)\
+			static vsf_err_t WRITE_TARGET_FUNCNAME(mod)\
 						(struct program_context_t *context, char area, \
 							uint32_t addr, uint8_t *buff, uint32_t size)
 #define READ_TARGET_HANDLER(mod)			\
-			static RESULT READ_TARGET_FUNCNAME(mod)\
+			static vsf_err_t READ_TARGET_FUNCNAME(mod)\
 						(struct program_context_t *context, char area, \
 							uint32_t addr, uint8_t *buff, uint32_t size)
 
 struct program_functions_t
 {
-	RESULT (*execute)(struct program_context_t *context);
-	RESULT (*enter_program_mode)(struct program_context_t *context);
-	RESULT (*leave_program_mode)(struct program_context_t *context,
+	vsf_err_t (*execute)(struct program_context_t *context);
+	vsf_err_t (*enter_program_mode)(struct program_context_t *context);
+	vsf_err_t (*leave_program_mode)(struct program_context_t *context,
 									uint8_t success);
 	// erase one page at addr or erase full target
-	RESULT (*erase_target)(struct program_context_t *context, char area,
-							uint32_t addr, uint32_t size);
+	vsf_err_t (*erase_target)(struct program_context_t *context, char area,
+								uint32_t addr, uint32_t size);
 	// write one page at addr
-	RESULT (*write_target)(struct program_context_t *context, char area,
-							uint32_t addr, uint8_t *buff, uint32_t size);
+	vsf_err_t (*write_target)(struct program_context_t *context, char area,
+								uint32_t addr, uint8_t *buff, uint32_t size);
 	// read one page at addr
-	RESULT (*read_target)(struct program_context_t *context, char area,
-							uint32_t addr, uint8_t *buff, uint32_t size);
+	vsf_err_t (*read_target)(struct program_context_t *context, char area,
+								uint32_t addr, uint8_t *buff, uint32_t size);
 	// verify one page at addr
-//	RESULT (*verify_target)(struct program_context_t *context, char area,
-//							uint32_t addr, uint8_t *buff, uint32_t size);
+//	vsf_err_t (*verify_target)(struct program_context_t *context, char area,
+//								uint32_t addr, uint8_t *buff, uint32_t size);
 };
 
 #define	PARSE_ARGUMENT_FUNCNAME(mod)		ASSEMBLE_FUNCNAME(mod, _parse_argument)
 #define ADJUST_SETTING_FUNCNAME(mod)		ASSEMBLE_FUNCNAME(mod, _adjust_setting)
 #define ADJUST_SETTING_HANDLER(mod)			\
-			RESULT ADJUST_SETTING_FUNCNAME(mod)\
+			vsf_err_t ADJUST_SETTING_FUNCNAME(mod)\
 					(struct program_info_t *pi, struct chip_param_t *param, \
 						uint32_t program_mode)
 
 #define ADJUST_MAPPING_FUNCNAME(mod)		ASSEMBLE_FUNCNAME(mod, _adjust_mapping)
 #define ADJUST_MAPPING_HANDLER(mod)			\
-			RESULT ADJUST_MAPPING_FUNCNAME(mod)\
+			vsf_err_t ADJUST_MAPPING_FUNCNAME(mod)\
 					(uint32_t *address, uint8_t dir)
 
 #define TARGET_MAPPING_FROM_FILE			1
@@ -286,9 +286,9 @@ struct target_info_t
 	const struct program_mode_t *program_mode;
 	const struct program_functions_t *program_functions;
 	const struct vss_cmd_t *notifier;
-	RESULT (*adjust_setting)(struct program_info_t *pi,
+	vsf_err_t (*adjust_setting)(struct program_info_t *pi,
 							struct chip_param_t *param, uint32_t program_mode);
-	RESULT (*adjust_mapping)(uint32_t *address, uint8_t dir);
+	vsf_err_t (*adjust_mapping)(uint32_t *address, uint8_t dir);
 };
 
 struct chip_series_t
@@ -351,14 +351,14 @@ char* target_area_fullname_by_mask(uint32_t mask);
 
 int8_t target_mode_get_idx(const struct program_mode_t *mode, char mode_name);
 
-RESULT target_release_chip_series(struct chip_series_t *s);
-RESULT target_release_chip_fl(struct chip_fl_t *fl);
+vsf_err_t target_release_chip_series(struct chip_series_t *s);
+vsf_err_t target_release_chip_fl(struct chip_fl_t *fl);
 
 void target_print_target(uint32_t index);
 void target_print_list(void);
 void target_print_help(void);
 
-RESULT target_alloc_data_buffer(void);
+vsf_err_t target_alloc_data_buffer(void);
 void target_free_data_buffer(void);
 
 #endif /* __TARGET_H_INCLUDED__ */

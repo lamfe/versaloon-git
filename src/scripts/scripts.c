@@ -32,8 +32,8 @@
 #include "port.h"
 
 #include "vsprog.h"
-#include "scripts.h"
 #include "programmer.h"
+#include "scripts.h"
 #include "bufffunc.h"
 
 #define PARAM_EXIT_ON_FAIL					0
@@ -177,35 +177,35 @@ static struct vss_function_t *vss_function_search(struct vss_function_t *f, char
 	return NULL;
 }
 
-static RESULT vss_function_run(struct vss_function_t *f)
+static vsf_err_t vss_function_run(struct vss_function_t *f)
 {
 	struct vss_function_cmd_t *cmd;
 	
 	if ((NULL == f) || (NULL == f->cmds))
 	{
-		return ERROR_OK;
+		return VSFERR_NONE;
 	}
 	
 	cmd = f->cmds;
 	while (cmd->func_cmd != NULL)
 	{
-		if (ERROR_OK != vss_run_script(cmd->func_cmd))
+		if (vss_run_script(cmd->func_cmd))
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		cmd = cmd->next;
 	}
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT vss_function_free_node(struct vss_function_t *f)
+static vsf_err_t vss_function_free_node(struct vss_function_t *f)
 {
 	struct vss_function_cmd_t *cmd, *cmd_tmp;
 	
 	if (NULL == f)
 	{
-		return ERROR_OK;
+		return VSFERR_NONE;
 	}
 	
 	cmd = f->cmds;
@@ -228,22 +228,22 @@ static RESULT vss_function_free_node(struct vss_function_t *f)
 	free(f);
 	f = NULL;
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT vss_append_function_cmd(struct vss_function_t *func, char * str)
+static vsf_err_t vss_append_function_cmd(struct vss_function_t *func, char * str)
 {
 	struct vss_function_cmd_t *cmd, *tmp;
 	
 	if (NULL == func)
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	cmd = (struct vss_function_cmd_t *)malloc(sizeof(*cmd));
 	if (NULL == cmd)
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	memset(cmd, 0, sizeof(*cmd));
 	
@@ -252,7 +252,7 @@ static RESULT vss_append_function_cmd(struct vss_function_t *func, char * str)
 	{
 		free(cmd);
 		cmd = NULL;
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	tmp = func->cmds;
@@ -269,10 +269,10 @@ static RESULT vss_append_function_cmd(struct vss_function_t *func, char * str)
 		tmp->next = cmd;
 	}
 	cmd = tmp = NULL;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT vss_get_binary_buffer(uint16_t argc, const char *argv[],
+vsf_err_t vss_get_binary_buffer(uint16_t argc, const char *argv[],
 						uint8_t data_size, uint32_t data_num, void **pbuff)
 {
 	uint32_t i;
@@ -282,7 +282,7 @@ RESULT vss_get_binary_buffer(uint16_t argc, const char *argv[],
 		|| ((data_size != 1) && (data_size != 2) && (data_size != 4)
 			&& (data_size != 8)))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	if (NULL == *pbuff)
@@ -290,7 +290,7 @@ RESULT vss_get_binary_buffer(uint16_t argc, const char *argv[],
 		*pbuff = malloc(data_size * data_num);
 		if (NULL == *pbuff)
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 	}
 	
@@ -312,11 +312,11 @@ RESULT vss_get_binary_buffer(uint16_t argc, const char *argv[],
 			(*(uint64_t **)pbuff)[i] = (uint64_t)value;
 			break;
 		default:
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 			break;
 		}
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 void vss_set_fatal_error(void)
@@ -403,22 +403,22 @@ static struct vss_cmd_t* vss_search_cmd(struct vss_cmd_t ** cmds_list,
 	return NULL;
 }
 
-RESULT vss_print_help(const char *name)
+vsf_err_t vss_print_help(const char *name)
 {
 	struct vss_cmd_t *cmd = vss_search_cmd(vss_cmds_list,
 		dimof(vss_cmds_list), name);
 	
 	if (NULL == cmd)
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	LOG_INFO("%s", cmd->help_str);
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT vss_parse_cmd_line(char *cmd, uint16_t *argc, char **argv)
+static vsf_err_t vss_parse_cmd_line(char *cmd, uint16_t *argc, char **argv)
 {
 	uint32_t i, cmd_len;
 	uint16_t argu_num = 0;
@@ -429,7 +429,7 @@ static RESULT vss_parse_cmd_line(char *cmd, uint16_t *argc, char **argv)
 		
 		if (cmd[strlen(cmd) - 1] != ch)
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		cmd[strlen(cmd) - 1] = '\0';
 		strcpy(cmd, cmd + 1);
@@ -465,7 +465,7 @@ static RESULT vss_parse_cmd_line(char *cmd, uint16_t *argc, char **argv)
 				if ('\0' == cmd[j])
 				{
 					// shouldn't end here too
-					return ERROR_FAIL;
+					return VSFERR_FAIL;
 				}
 				j++;
 			}
@@ -488,29 +488,29 @@ static RESULT vss_parse_cmd_line(char *cmd, uint16_t *argc, char **argv)
 	}
 	*argc = argu_num;
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT vss_cmd_supported_by_notifier(const struct vss_cmd_t *notifier,
+vsf_err_t vss_cmd_supported_by_notifier(const struct vss_cmd_t *notifier,
 										char *notify_cmd)
 {
 	struct vss_cmd_t *cmds_list[1], *cmd;
 	
 	if ((NULL == notifier) || (NULL == notify_cmd))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	cmd = vss_search_cmd((struct vss_cmd_t **)&notifier, dimof(cmds_list),
 							notify_cmd);
 	if (NULL == cmd)
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT vss_call_notifier(const struct vss_cmd_t *notifier,
+vsf_err_t vss_call_notifier(const struct vss_cmd_t *notifier,
 							char *notify_cmd, char *notify_param)
 {
 	struct vss_cmd_t *cmds_list[1], *cmd;
@@ -519,7 +519,7 @@ RESULT vss_call_notifier(const struct vss_cmd_t *notifier,
 	
 	if ((NULL == notifier) || (NULL == notify_cmd))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	argv[0] = notify_cmd;
@@ -538,39 +538,39 @@ RESULT vss_call_notifier(const struct vss_cmd_t *notifier,
 	if (NULL == cmd)
 	{
 		LOG_ERROR(ERRMSG_NOT_SUPPORT, argv[0]);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	if (NULL == cmd->processor)
 	{
 		LOG_ERROR(ERRMSG_INVALID_CMD, argv[0]);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
-	else if (ERROR_OK != cmd->processor(argc, (const char **)argv))
+	else if (cmd->processor(argc, (const char **)argv))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "run", argv[0]);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT vss_cmd_supported(char *name)
+vsf_err_t vss_cmd_supported(char *name)
 {
 	struct vss_cmd_t *cmd = vss_search_cmd(vss_cmds_list,
 		dimof(vss_cmds_list), name);
 	
 	if (NULL == cmd)
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	else
 	{
-		return ERROR_OK;
+		return VSFERR_NONE;
 	}
 }
 
-RESULT vss_run_cmd(uint16_t argc, const char *argv[])
+vsf_err_t vss_run_cmd(uint16_t argc, const char *argv[])
 {
 	struct vss_cmd_t *cmd = vss_search_cmd(vss_cmds_list,
 		dimof(vss_cmds_list), argv[0]);
@@ -578,41 +578,41 @@ RESULT vss_run_cmd(uint16_t argc, const char *argv[])
 	if (NULL == cmd)
 	{
 		LOG_ERROR(ERRMSG_NOT_SUPPORT, argv[0]);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	if (NULL == cmd->processor)
 	{
 		LOG_ERROR(ERRMSG_INVALID_CMD, argv[0]);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
-	else if (ERROR_OK != cmd->processor(argc, argv))
+	else if (cmd->processor(argc, argv))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "run command:", argv[0]);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT vss_run_script(char *cmd)
+vsf_err_t vss_run_script(char *cmd)
 {
 	char *buff_in_memory = NULL;
 	uint16_t argc;
 	char *argv[1024];
-	RESULT ret = ERROR_OK;
+	vsf_err_t err = VSFERR_NONE;
 	uint32_t i, run_times;
 	
 	if (NULL == bufffunc_malloc_and_copy_str(&buff_in_memory, cmd))
 	{
 		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	argc = (uint16_t)dimof(argv);
-	if (ERROR_OK != vss_parse_cmd_line(buff_in_memory, &argc, (char **)argv))
+	if (vss_parse_cmd_line(buff_in_memory, &argc, (char **)argv))
 	{
-		ret = ERROR_FAIL;
+		err = VSFERR_FAIL;
 		goto end;
 	}
 	for (i = 0; i < argc; i++)
@@ -638,10 +638,8 @@ RESULT vss_run_script(char *cmd)
 	}
 	for (i = 0; i < run_times; i++)
 	{
-		ret = vss_run_cmd(argc, (const char**)argv);
-		if ((ret != ERROR_OK)
-			&& (vss_fatal_error
-				|| vss_param[PARAM_EXIT_ON_FAIL].value))
+		err = vss_run_cmd(argc, (const char**)argv);
+		if (err && (vss_fatal_error || vss_param[PARAM_EXIT_ON_FAIL].value))
 		{
 			if (run_times > 1)
 			{
@@ -658,9 +656,9 @@ RESULT vss_run_script(char *cmd)
 	{
 		if (0 == vss_param[PARAM_NO_COMMIT].value)
 		{
-			if (ERROR_OK != cur_interface->peripheral_commit())
+			if (cur_interface->peripheral_commit())
 			{
-				ret = ERROR_FAIL;
+				err = VSFERR_FAIL;
 			}
 		}
 	}
@@ -670,10 +668,10 @@ end:
 		free(buff_in_memory);
 		buff_in_memory = NULL;
 	}
-	return ret;
+	return err;
 }
 
-static RESULT vss_run_file(FILE *f, char *head, uint8_t quiet)
+static vsf_err_t vss_run_file(FILE *f, char *head, uint8_t quiet)
 {
 	char cmd_line[4096], *cmd_ptr;
 	uint8_t cur_cmd_quiet, vss_quiet_mode;
@@ -699,11 +697,11 @@ static RESULT vss_run_file(FILE *f, char *head, uint8_t quiet)
 		{
 			if (!feof(f))
 			{
-				return ERROR_FAIL;
+				return VSFERR_FAIL;
 			}
 			else
 			{
-				return ERROR_OK;
+				return VSFERR_NONE;
 			}
 		}
 		
@@ -736,17 +734,17 @@ static RESULT vss_run_file(FILE *f, char *head, uint8_t quiet)
 			if ((cmd_ptr == strstr(cmd_ptr, "function")) && isspace(cmd_ptr[strlen("function")]))
 			{
 				LOG_ERROR("function nesting not supported");
-				return ERROR_FAIL;
+				return VSFERR_FAIL;
 			}
-			if (ERROR_OK != vss_append_function_cmd(vss_cur_function, cmd_ptr))
+			if (vss_append_function_cmd(vss_cur_function, cmd_ptr))
 			{
-				return ERROR_FAIL;
+				return VSFERR_FAIL;
 			}
 		}
-		else if ((ERROR_OK != vss_run_script(cmd_ptr)) &&
+		else if (vss_run_script(cmd_ptr) &&
 				(vss_fatal_error || vss_param[PARAM_EXIT_ON_FAIL].value))
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		if (!quiet && !vss_quiet_mode && !cur_cmd_quiet)
 		{
@@ -762,7 +760,7 @@ static RESULT vss_run_file(FILE *f, char *head, uint8_t quiet)
 		}
 	}
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 // commands
@@ -778,12 +776,12 @@ VSS_HANDLER(vss_set_parameters)
 	{
 		LOG_ERROR(ERRMSG_NOT_SUPPORT_AS, argv[1], "parameters");
 		vss_print_help(argv[0]);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	param->value = strtoul(argv[2], NULL, 0);
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 // help
@@ -826,7 +824,7 @@ VSS_HANDLER(vss_help)
 			}
 		}
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 // shell
@@ -851,7 +849,7 @@ VSS_HANDLER(vss_run)
 {
 	FILE *f = NULL;
 	uint8_t quiet = 0;
-	RESULT ret = ERROR_OK;
+	vsf_err_t err = VSFERR_NONE;
 	
 	VSS_CHECK_ARGC_2(2, 3);
 	
@@ -864,14 +862,14 @@ VSS_HANDLER(vss_run)
 	if (NULL == f)
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "open script file", argv[1]);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	else
 	{
-		ret = vss_run_file(f, (char*)argv[1], quiet);
+		err = vss_run_file(f, (char*)argv[1], quiet);
 		fclose(f);
 	}
-	return ret;
+	return err;
 }
 
 // loop
@@ -880,7 +878,7 @@ VSS_HANDLER(vss_loop)
 	VSS_CHECK_ARGC(2);
 	
 	vss_loop_cnt = strtoul(argv[1], NULL, 0);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 // exit
@@ -888,7 +886,7 @@ VSS_HANDLER(vss_exit)
 {
 	VSS_CHECK_ARGC(1);
 	vss_exit_mark = 1;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 // close
@@ -896,7 +894,7 @@ VSS_HANDLER(vss_close)
 {
 	VSS_CHECK_ARGC(1);
 	vss_exit_mark = -1;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 VSS_HANDLER(vss_run_command)
@@ -910,14 +908,14 @@ VSS_HANDLER(vss_log_info)
 {
 	VSS_CHECK_ARGC(2);
 	LOG_INFO("%s", argv[1]);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 VSS_HANDLER(vss_getchar)
 {
 	VSS_CHECK_ARGC(1);
 	GETCHAR();
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 VSS_HANDLER(vss_sleep)
@@ -926,7 +924,7 @@ VSS_HANDLER(vss_sleep)
 	VSS_CHECK_ARGC(2);
 	ms = (uint32_t)strtoul(argv[1], NULL, 0);
 	sleep_ms(ms);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 VSS_HANDLER(vss_quiet)
@@ -934,7 +932,7 @@ VSS_HANDLER(vss_quiet)
 	VSS_CHECK_ARGC_RANGE(1, 2);
 	if (NULL == vss_quiet_mode_ptr)
 	{
-		return ERROR_OK;
+		return VSFERR_NONE;
 	}
 	
 	if (1 == argc)
@@ -945,7 +943,7 @@ VSS_HANDLER(vss_quiet)
 	{
 		*vss_quiet_mode_ptr = (uint8_t)strtoul(argv[1], NULL, 0);
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 VSS_HANDLER(vss_function_register)
@@ -957,20 +955,20 @@ VSS_HANDLER(vss_function_register)
 	if (vss_cur_function != NULL)
 	{
 		LOG_ERROR("function nesting");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	if (NULL != vss_function_search(vss_functions, (char *)argv[1]))
 	{
 		LOG_ERROR("function %s already registered!!", argv[1]);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	func = (struct vss_function_t *)malloc(sizeof(struct vss_function_t));
 	if (NULL == func)
 	{
 		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	memset(func, 0, sizeof(*func));
 	
@@ -978,26 +976,26 @@ VSS_HANDLER(vss_function_register)
 	{
 		free(func);
 		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	func->next = vss_functions;
 	vss_cur_function = vss_functions = func;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 VSS_HANDLER(vss_function_end)
 {
-	RESULT ret;
+	vsf_err_t err;
 	VSS_CHECK_ARGC(1);
 	
 	if (NULL == vss_cur_function)
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
-	ret = vss_append_function_cmd(vss_cur_function, NULL);
+	err = vss_append_function_cmd(vss_cur_function, NULL);
 	vss_cur_function = NULL;
-	return ret;
+	return err;
 }
 
 VSS_HANDLER(vss_function_call)
@@ -1007,17 +1005,17 @@ VSS_HANDLER(vss_function_call)
 	VSS_CHECK_ARGC(2);
 	
 	func = vss_function_search(vss_functions, (char *)argv[1]);
-	if ((NULL == func) || (ERROR_OK != vss_function_run(func)))
+	if ((NULL == func) || vss_function_run(func))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 VSS_HANDLER(vss_function_free)
 {
 	struct vss_function_t *func_tmp, *func;
-	RESULT ret = ERROR_FAIL;
+	vsf_err_t err = VSFERR_FAIL;
 	
 	VSS_CHECK_ARGC_MAX(2);
 	
@@ -1027,13 +1025,13 @@ VSS_HANDLER(vss_function_free)
 		if (NULL == vss_function_search(vss_functions, (char *)argv[1]))
 		{
 			LOG_ERROR("function %s not exists!!", argv[1]);
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		
 		if (!strcmp(func->func_name, argv[1]))
 		{
 			vss_functions = func->next;
-			ret = vss_function_free_node(func);
+			err = vss_function_free_node(func);
 			func = NULL;
 		}
 		else
@@ -1045,7 +1043,7 @@ VSS_HANDLER(vss_function_free)
 				if (!strcmp(func->func_name, argv[1]))
 				{
 					func_tmp->next = func->next;
-					ret = vss_function_free_node(func);
+					err = vss_function_free_node(func);
 					func = NULL;
 					break;
 				}
@@ -1057,20 +1055,20 @@ VSS_HANDLER(vss_function_free)
 	else
 	{
 		// free all functions
-		ret = ERROR_OK;
+		err = VSFERR_NONE;
 		while (func != NULL)
 		{
 			func_tmp = func;
 			func = func->next;
-			ret = vss_function_free_node(func_tmp);
+			err = vss_function_free_node(func_tmp);
 			func_tmp = NULL;
-			if (ERROR_OK != ret)
+			if (err)
 			{
 				break;
 			}
 		}
 	}
 	
-	return ret;
+	return err;
 }
 

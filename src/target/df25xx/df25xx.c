@@ -29,8 +29,6 @@
 #include "app_err.h"
 #include "app_log.h"
 
-#include "pgbar.h"
-
 #include "vsprog.h"
 #include "programmer.h"
 #include "target.h"
@@ -79,7 +77,7 @@ VSS_HANDLER(df25xx_help)
 Usage of %s:\n\
   -F,  --frequency <FREQUENCY>              set IIC frequency, in KHz\n\n",
 			CUR_TARGET_STRING);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 const struct vss_cmd_t df25xx_notifier[] =
@@ -115,17 +113,17 @@ ENTER_PROGRAM_MODE_HANDLER(df25xx)
 	struct chip_param_t *param = context->param;
 	struct program_info_t *pi = context->pi;
 	
-	if (ERROR_OK != dal_init(context->prog))
+	if (dal_init(context->prog))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	if (pi->ifs_indexes != NULL)
 	{
-		if (ERROR_OK != dal_config_interface(DF25XX_STRING, pi->ifs_indexes,
-												&df25xx_dal_info))
+		if (dal_config_interface(DF25XX_STRING, pi->ifs_indexes,
+									&df25xx_dal_info))
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 	}
 	else
@@ -136,9 +134,9 @@ ENTER_PROGRAM_MODE_HANDLER(df25xx)
 	}
 	
 	df25xx_drv_param.spi_khz = pi->frequency;
-	if (ERROR_OK != mal.init(MAL_IDX_DF25XX, &df25xx_dal_info))
+	if (mal.init(MAL_IDX_DF25XX, &df25xx_dal_info))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	df25xx_mal_info.capacity.block_number =
 								param->chip_areas[APPLICATION_IDX].page_num;
@@ -164,9 +162,9 @@ ERASE_TARGET_HANDLER(df25xx)
 	REFERENCE_PARAMETER(addr);
 	REFERENCE_PARAMETER(size);
 	
-	if (ERROR_OK != mal.eraseall(MAL_IDX_DF25XX, &df25xx_dal_info))
+	if (mal.eraseall(MAL_IDX_DF25XX, &df25xx_dal_info))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	return dal_commit();
 }
@@ -180,19 +178,19 @@ WRITE_TARGET_HANDLER(df25xx)
 	case APPLICATION_CHAR:
 		if (size % param->chip_areas[APPLICATION_IDX].page_size)
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		size /= param->chip_areas[APPLICATION_IDX].page_size;
 		
-		if (ERROR_OK != mal.writeblock(MAL_IDX_DF25XX, &df25xx_dal_info,
+		if (mal.writeblock(MAL_IDX_DF25XX, &df25xx_dal_info,
 										addr, buff, size))
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		return dal_commit();
 		break;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 }
 
@@ -203,30 +201,30 @@ READ_TARGET_HANDLER(df25xx)
 	switch (area)
 	{
 	case CHIPID_CHAR:
-		if (ERROR_OK != mal.getinfo(MAL_IDX_DF25XX, &df25xx_dal_info))
+		if (mal.getinfo(MAL_IDX_DF25XX, &df25xx_dal_info))
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		SET_LE_U16(&buff[0], df25xx_drv_info.device_id);
 		buff[2] = df25xx_drv_info.manufacturer_id;
-		return ERROR_OK;
+		return VSFERR_NONE;
 		break;
 	case APPLICATION_CHAR:
 		if (size % param->chip_areas[APPLICATION_IDX].page_size)
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		size /= param->chip_areas[APPLICATION_IDX].page_size;
 		
-		if (ERROR_OK != mal.readblock(MAL_IDX_DF25XX, &df25xx_dal_info,
+		if (mal.readblock(MAL_IDX_DF25XX, &df25xx_dal_info,
 										addr, buff, size))
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
-		return ERROR_OK;
+		return VSFERR_NONE;
 		break;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 }
 

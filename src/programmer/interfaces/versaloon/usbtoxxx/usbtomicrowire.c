@@ -28,17 +28,17 @@
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
 
-RESULT usbtomicrowire_init(uint8_t interface_index)
+vsf_err_t usbtomicrowire_init(uint8_t interface_index)
 {
 	return usbtoxxx_init_command(USB_TO_MICROWIRE, interface_index);
 }
 
-RESULT usbtomicrowire_fini(uint8_t interface_index)
+vsf_err_t usbtomicrowire_fini(uint8_t interface_index)
 {
 	return usbtoxxx_fini_command(USB_TO_MICROWIRE, interface_index);
 }
 
-RESULT usbtomicrowire_config(uint8_t interface_index, uint16_t kHz,
+vsf_err_t usbtomicrowire_config(uint8_t interface_index, uint16_t kHz,
 								uint8_t sel_polarity)
 {
 	uint8_t conf[3];
@@ -47,7 +47,7 @@ RESULT usbtomicrowire_config(uint8_t interface_index, uint16_t kHz,
 	if (interface_index > 7)
 	{
 		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 #endif
 	
@@ -57,7 +57,7 @@ RESULT usbtomicrowire_config(uint8_t interface_index, uint16_t kHz,
 	return usbtoxxx_conf_command(USB_TO_MICROWIRE, interface_index, conf, 3);
 }
 
-RESULT usbtomicrowire_transport(uint8_t interface_index,
+vsf_err_t usbtomicrowire_transport(uint8_t interface_index,
 								uint32_t opcode, uint8_t opcode_bitlen,
 								uint32_t addr, uint8_t addr_bitlen,
 								uint32_t data, uint8_t data_bitlen,
@@ -70,12 +70,12 @@ RESULT usbtomicrowire_transport(uint8_t interface_index,
 	if (interface_index > 7)
 	{
 		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	if ((opcode_bitlen > 32) || (addr_bitlen > 32) ||
 		(data_bitlen > 32) || (reply_bitlen > 32))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 #endif
 	
@@ -106,7 +106,7 @@ RESULT usbtomicrowire_transport(uint8_t interface_index,
 		0, reply_bytelen, 1);
 }
 
-RESULT usbtomicrowire_poll(uint8_t interface_index, uint16_t interval_us,
+vsf_err_t usbtomicrowire_poll(uint8_t interface_index, uint16_t interval_us,
 							uint16_t retry_cnt)
 {
 	uint8_t buff[4];
@@ -115,7 +115,7 @@ RESULT usbtomicrowire_poll(uint8_t interface_index, uint16_t interval_us,
 	if (interface_index > 7)
 	{
 		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 #endif
 	

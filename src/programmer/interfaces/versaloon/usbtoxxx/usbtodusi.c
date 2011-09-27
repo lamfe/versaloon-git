@@ -28,17 +28,17 @@
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
 
-RESULT usbtodusi_init(uint8_t interface_index)
+vsf_err_t usbtodusi_init(uint8_t interface_index)
 {
 	return usbtoxxx_init_command(USB_TO_DUSI, interface_index);
 }
 
-RESULT usbtodusi_fini(uint8_t interface_index)
+vsf_err_t usbtodusi_fini(uint8_t interface_index)
 {
 	return usbtoxxx_fini_command(USB_TO_DUSI, interface_index);
 }
 
-RESULT usbtodusi_config(uint8_t interface_index, uint32_t kHz, uint8_t mode)
+vsf_err_t usbtodusi_config(uint8_t interface_index, uint32_t kHz, uint8_t mode)
 {
 	uint8_t conf[5];
 	
@@ -46,7 +46,7 @@ RESULT usbtodusi_config(uint8_t interface_index, uint32_t kHz, uint8_t mode)
 	if (interface_index > 7)
 	{
 		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 #endif
 	
@@ -56,7 +56,7 @@ RESULT usbtodusi_config(uint8_t interface_index, uint32_t kHz, uint8_t mode)
 	return usbtoxxx_conf_command(USB_TO_DUSI, interface_index, conf, 5);
 }
 
-RESULT usbtodusi_io(uint8_t interface_index, uint8_t *mo, uint8_t *mi,
+vsf_err_t usbtodusi_io(uint8_t interface_index, uint8_t *mo, uint8_t *mi,
 					uint8_t *so, uint8_t *si, uint32_t bitlen)
 {
 	uint16_t bytelen = (uint16_t)((bitlen + 7) / 8);
@@ -65,7 +65,7 @@ RESULT usbtodusi_io(uint8_t interface_index, uint8_t *mo, uint8_t *mi,
 	if (interface_index > 7)
 	{
 		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 #endif
 	
@@ -89,16 +89,16 @@ RESULT usbtodusi_io(uint8_t interface_index, uint8_t *mo, uint8_t *mi,
 	
 	if (mi != NULL)
 	{
-		if (ERROR_OK != versaloon_add_want_pos(0, bytelen, mi))
+		if (versaloon_add_want_pos(0, bytelen, mi))
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 	}
 	if (si != NULL)
 	{
-		if (ERROR_OK != versaloon_add_want_pos(bytelen, bytelen, si))
+		if (versaloon_add_want_pos(bytelen, bytelen, si))
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 	}
 	

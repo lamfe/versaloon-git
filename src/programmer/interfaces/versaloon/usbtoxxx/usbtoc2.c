@@ -28,23 +28,23 @@
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
 
-RESULT usbtoc2_init(uint8_t interface_index)
+vsf_err_t usbtoc2_init(uint8_t interface_index)
 {
 	return usbtoxxx_init_command(USB_TO_C2, interface_index);
 }
 
-RESULT usbtoc2_fini(uint8_t interface_index)
+vsf_err_t usbtoc2_fini(uint8_t interface_index)
 {
 	return usbtoxxx_fini_command(USB_TO_C2, interface_index);
 }
 
-RESULT usbtoc2_readaddr(uint8_t interface_index, uint8_t *data)
+vsf_err_t usbtoc2_readaddr(uint8_t interface_index, uint8_t *data)
 {
 #if PARAM_CHECK
 	if (interface_index > 7)
 	{
 		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 #endif
 	if (data != NULL)
@@ -59,20 +59,20 @@ RESULT usbtoc2_readaddr(uint8_t interface_index, uint8_t *data)
 	}
 }
 
-RESULT usbtoc2_writeaddr(uint8_t interface_index, uint8_t addr)
+vsf_err_t usbtoc2_writeaddr(uint8_t interface_index, uint8_t addr)
 {
 #if PARAM_CHECK
 	if (interface_index > 7)
 	{
 		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 #endif
 	
 	return usbtoxxx_out_command(USB_TO_C2, interface_index, &addr, 1, 0);
 }
 
-RESULT usbtoc2_readdata(uint8_t interface_index, uint8_t *buf, uint8_t len)
+vsf_err_t usbtoc2_readdata(uint8_t interface_index, uint8_t *buf, uint8_t len)
 {
 	uint8_t cmdbuf[5];
 	
@@ -80,7 +80,7 @@ RESULT usbtoc2_readdata(uint8_t interface_index, uint8_t *buf, uint8_t len)
 	if (interface_index > 7)
 	{
 		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	if ((len > 4) || (0 == len))
 	{
@@ -96,7 +96,7 @@ RESULT usbtoc2_readdata(uint8_t interface_index, uint8_t *buf, uint8_t len)
 									1 + len, len, buf, 0, len, 0);
 }
 
-RESULT usbtoc2_writedata(uint8_t interface_index, uint8_t *buf, uint8_t len)
+vsf_err_t usbtoc2_writedata(uint8_t interface_index, uint8_t *buf, uint8_t len)
 {
 	uint8_t cmdbuf[5];
 	
@@ -104,7 +104,7 @@ RESULT usbtoc2_writedata(uint8_t interface_index, uint8_t *buf, uint8_t len)
 	if (interface_index > 7)
 	{
 		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	if ((len > 4) || (0 == len))
 	{

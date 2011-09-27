@@ -248,50 +248,50 @@ static uint8_t BDM_Transact(uint16_t token, uint8_t *out, uint8_t *in)
 	return 0;
 }
 
-RESULT bdm_init(uint8_t index)
+vsf_err_t bdm_init(uint8_t index)
 {
 	switch (index)
 	{
 	case 0:
 		BDM_Init();
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT bdm_fini(uint8_t index)
+vsf_err_t bdm_fini(uint8_t index)
 {
 	switch (index)
 	{
 	case 0:
 		BDM_Fini();
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT bdm_sync(uint8_t index, uint16_t *khz)
+vsf_err_t bdm_sync(uint8_t index, uint16_t *khz)
 {
 	switch (index)
 	{
 	case 0:
 		if (BDM_Sync(khz))
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		else
 		{
-			return ERROR_OK;
+			return VSFERR_NONE;
 		}
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT bdm_transact(uint8_t index, uint8_t *out, uint8_t outlen, uint8_t *in, 
-			uint8_t inlen, uint8_t delay, uint8_t ack)
+vsf_err_t bdm_transact(uint8_t index, uint8_t *out, uint8_t outlen, uint8_t *in, 
+						uint8_t inlen, uint8_t delay, uint8_t ack)
 {
 	uint16_t token;
 	
@@ -301,14 +301,14 @@ RESULT bdm_transact(uint8_t index, uint8_t *out, uint8_t outlen, uint8_t *in,
 		token = outlen | (inlen << 8) | (delay << 6) | (ack ? 0x8000 : 0x0000);
 		if (BDM_Transact(token, out, in))
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		else
 		{
-			return ERROR_OK;
+			return VSFERR_NONE;
 		}
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 

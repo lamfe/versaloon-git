@@ -69,7 +69,7 @@ Usage of %s:\n\
   -F,  --frequency <FREQUENCY>              set ISP frequency, in KHz\n\
   -m,  --mode <MODE>                        set mode<b|p>\n\n",
 			CUR_TARGET_STRING);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 VSS_HANDLER(avr8_mode)
@@ -90,10 +90,10 @@ VSS_HANDLER(avr8_mode)
 		break;
 	case AVR8_HVPP:
 	case AVR8_HVSP:
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 		break;
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 const struct vss_cmd_t avr8_notifier[] =

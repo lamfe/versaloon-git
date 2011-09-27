@@ -34,9 +34,9 @@
 #define GPIO_IN_MSK				(GPIO_SRST | GPIO_TRST | GPIO_USR1 | GPIO_USR2 | GPIO_TDO | GPIO_RTCK | GPIO_TMS | GPIO_SYNCSWPWM_GPIO)
 #define GPIO_MSK				(GPIO_OUT_MSK | GPIO_IN_MSK)
 
-RESULT gpio_init(uint8_t index);
-RESULT gpio_fini(uint8_t index);
-RESULT gpio_config(uint8_t index, uint32_t pin_mask, uint32_t io, 
-					uint32_t pull_en_mask, uint32_t input_pull_mask);
-RESULT gpio_out(uint8_t index, uint32_t pin_mask, uint32_t value);
-RESULT gpio_in(uint8_t index, uint32_t pin_mask, uint32_t *value);
+vsf_err_t gpio_init(uint8_t index);
+vsf_err_t gpio_fini(uint8_t index);
+vsf_err_t gpio_config(uint8_t index, uint32_t pin_mask, uint32_t io, 
+						uint32_t pull_en_mask, uint32_t input_pull_mask);
+vsf_err_t gpio_out(uint8_t index, uint32_t pin_mask, uint32_t value);
+vsf_err_t gpio_in(uint8_t index, uint32_t pin_mask, uint32_t *value);

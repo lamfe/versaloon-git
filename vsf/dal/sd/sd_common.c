@@ -60,7 +60,7 @@ uint8_t sd_spi_cmd_chksum(uint8_t *data, uint32_t num)
 	return crc & 0x7F;
 }
 
-RESULT sd_parse_csd(uint8_t *csd, struct sd_info_t *info)
+vsf_err_t sd_parse_csd(uint8_t *csd, struct sd_info_t *info)
 {
 	struct mal_capacity_t tmp_cap;
 	uint32_t c_size, c_size_mult, bl_len;
@@ -92,6 +92,6 @@ RESULT sd_parse_csd(uint8_t *csd, struct sd_info_t *info)
 		info->capacity = tmp_cap;
 		info->frequency_kHz = 9 * 1000;
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 

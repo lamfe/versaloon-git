@@ -69,19 +69,19 @@ VSS_HANDLER(vi_stm32_help)
 {
 	VSS_CHECK_ARGC(1);
 		PRINTF("Usage of %s:\n\n", VI_STM32_STRING);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 VSS_HANDLER(vi_stm32_support)
 {
 	VSS_CHECK_ARGC(1);
 	PRINTF("%s: virtual programmer on stm32.\n", VI_STM32_STRING);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 
 
-static RESULT vi_stm32_init(void *p)
+static vsf_err_t vi_stm32_init(void *p)
 {
 	struct program_info_t *pi = &program_info;
 	uint32_t mode = *(uint32_t *)p;
@@ -113,173 +113,173 @@ static RESULT vi_stm32_init(void *p)
 		dp.dpif_setting.dpif_swd_setting.swd_retry = 0;
 		break;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
-	if (ERROR_OK != cm3_dp_init(cur_real_interface, &dp))
+	if (cm3_dp_init(cur_real_interface, &dp))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT vi_stm32_fini(void)
+static vsf_err_t vi_stm32_fini(void)
 {
 	return cur_real_interface->fini();
 }
 
 // GPIO
-RESULT vi_stm32_gpio_init(uint8_t interface_index)
+vsf_err_t vi_stm32_gpio_init(uint8_t interface_index)
 {
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT vi_stm32_gpio_fini(uint8_t interface_index)
+vsf_err_t vi_stm32_gpio_fini(uint8_t interface_index)
 {
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT vi_stm32_gpio_config(uint8_t interface_index, uint32_t mask,
+vsf_err_t vi_stm32_gpio_config(uint8_t interface_index, uint32_t mask,
 							uint32_t dir_mask, uint32_t pull_en_mask,
 							uint32_t input_pull_mask)
 {
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT vi_stm32_gpio_in(uint8_t interface_index, uint32_t mask, uint32_t *value)
+vsf_err_t vi_stm32_gpio_in(uint8_t interface_index, uint32_t mask, uint32_t *value)
 {
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT vi_stm32_gpio_out(uint8_t interface_index, uint32_t mask, uint32_t value)
+vsf_err_t vi_stm32_gpio_out(uint8_t interface_index, uint32_t mask, uint32_t value)
 {
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 // USART
-RESULT vi_stm32_usart_init(uint8_t interface_index)
+vsf_err_t vi_stm32_usart_init(uint8_t interface_index)
 {
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT vi_stm32_usart_fini(uint8_t interface_index)
+vsf_err_t vi_stm32_usart_fini(uint8_t interface_index)
 {
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT vi_stm32_usart_config(uint8_t interface_index, uint32_t baudrate,
+vsf_err_t vi_stm32_usart_config(uint8_t interface_index, uint32_t baudrate,
 								uint8_t datalength, uint8_t mode)
 {
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT vi_stm32_usart_receive(uint8_t interface_index, uint8_t *buf, uint16_t len)
+vsf_err_t vi_stm32_usart_receive(uint8_t interface_index, uint8_t *buf, uint16_t len)
 {
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT vi_stm32_usart_send(uint8_t interface_index, uint8_t *buf, uint16_t len)
+vsf_err_t vi_stm32_usart_send(uint8_t interface_index, uint8_t *buf, uint16_t len)
 {
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT vi_stm32_usart_status(uint8_t interface_index,
+vsf_err_t vi_stm32_usart_status(uint8_t interface_index,
 								struct usart_status_t *status)
 {
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 // SPI
-RESULT vi_stm32_spi_init(uint8_t interface_index)
+vsf_err_t vi_stm32_spi_init(uint8_t interface_index)
 {
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT vi_stm32_spi_fini(uint8_t interface_index)
+vsf_err_t vi_stm32_spi_fini(uint8_t interface_index)
 {
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT vi_stm32_spi_config(uint8_t interface_index, uint32_t kHz, uint8_t mode)
+vsf_err_t vi_stm32_spi_config(uint8_t interface_index, uint32_t kHz, uint8_t mode)
 {
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT vi_stm32_spi_io(uint8_t interface_index, uint8_t *out, uint8_t *in,
+vsf_err_t vi_stm32_spi_io(uint8_t interface_index, uint8_t *out, uint8_t *in,
 						uint16_t bytelen)
 {
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 // IIC
-RESULT vi_stm32_iic_init(uint8_t interface_index)
+vsf_err_t vi_stm32_iic_init(uint8_t interface_index)
 {
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT vi_stm32_iic_fini(uint8_t interface_index)
+vsf_err_t vi_stm32_iic_fini(uint8_t interface_index)
 {
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT vi_stm32_iic_config(uint8_t interface_index, uint16_t kHz,
+vsf_err_t vi_stm32_iic_config(uint8_t interface_index, uint16_t kHz,
 							uint16_t byte_interval, uint16_t max_dly)
 {
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT vi_stm32_iic_read(uint8_t interface_index, uint16_t chip_addr,
+vsf_err_t vi_stm32_iic_read(uint8_t interface_index, uint16_t chip_addr,
 							uint8_t *data, uint16_t data_len, uint8_t stop,
 							bool nacklast)
 {
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT vi_stm32_iic_write(uint8_t interface_index, uint16_t chip_addr,
+vsf_err_t vi_stm32_iic_write(uint8_t interface_index, uint16_t chip_addr,
 							uint8_t *data, uint16_t data_len, uint8_t stop)
 {
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 // PWM
-RESULT vi_stm32_pwm_init(uint8_t interface_index)
+vsf_err_t vi_stm32_pwm_init(uint8_t interface_index)
 {
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT vi_stm32_pwm_fini(uint8_t interface_index)
+vsf_err_t vi_stm32_pwm_fini(uint8_t interface_index)
 {
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT vi_stm32_pwm_config(uint8_t interface_index, uint16_t kHz, uint8_t mode)
+vsf_err_t vi_stm32_pwm_config(uint8_t interface_index, uint16_t kHz, uint8_t mode)
 {
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT vi_stm32_pwm_out(uint8_t interface_index, uint16_t count, uint16_t *rate)
+vsf_err_t vi_stm32_pwm_out(uint8_t interface_index, uint16_t count, uint16_t *rate)
 {
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT vi_stm32_pwm_in(uint8_t interface_index, uint16_t count, uint16_t *rate)
+vsf_err_t vi_stm32_pwm_in(uint8_t interface_index, uint16_t count, uint16_t *rate)
 {
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 // delay
-RESULT vi_stm32_delayms(uint16_t ms)
+vsf_err_t vi_stm32_delayms(uint16_t ms)
 {
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT vi_stm32_delayus(uint16_t us)
+vsf_err_t vi_stm32_delayus(uint16_t us)
 {
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT vi_stm32_peripheral_commit(void)
+static vsf_err_t vi_stm32_peripheral_commit(void)
 {
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 struct interfaces_info_t vi_stm32_interfaces =

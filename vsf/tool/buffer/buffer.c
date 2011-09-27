@@ -32,17 +32,17 @@ static uint32_t vsf_fifo_get_next_index(uint32_t pos, uint32_t size)
 	return pos;
 }
 
-RESULT vsf_fifo_init(struct vsf_fifo_t *fifo)
+vsf_err_t vsf_fifo_init(struct vsf_fifo_t *fifo)
 {
 #if __VSF_DEBUG__
 	if (NULL == fifo)
 	{
-		return ERROR_FAIL;
+		return VSFERR_INVALID_PARAMETER;
 	}
 #endif
 	
 	fifo->head = fifo->tail = 0;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 uint32_t vsf_fifo_get_data_length(struct vsf_fifo_t *fifo)
@@ -219,91 +219,91 @@ uint32_t vsf_fifo_pop(struct vsf_fifo_t *fifo, uint32_t size, uint8_t *data)
 	return ret;
 }
 
-RESULT vsf_multibuf_init(struct vsf_multibuf_t *mbuffer)
+vsf_err_t vsf_multibuf_init(struct vsf_multibuf_t *mbuffer)
 {
 #if __VSF_DEBUG__
 	if (NULL == mbuffer)
 	{
-		return ERROR_FAIL;
+		return VSFERR_INVALID_PARAMETER;
 	}
 #endif
 	
 	mbuffer->tail = mbuffer->head = mbuffer->length = 0;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT vsf_multibuf_get_empty(struct vsf_multibuf_t *mbuffer, 
+vsf_err_t vsf_multibuf_get_empty(struct vsf_multibuf_t *mbuffer, 
 								struct vsf_buffer_t *buffer)
 {
 #if __VSF_DEBUG__
 	if (NULL == mbuffer)
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 #endif
 	if (mbuffer->count <= mbuffer->length)
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	buffer->buffer = mbuffer->buffer_list[mbuffer->head];
 	buffer->size = mbuffer->size;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT vsf_multibuf_push(struct vsf_multibuf_t *mbuffer)
+vsf_err_t vsf_multibuf_push(struct vsf_multibuf_t *mbuffer)
 {
 #if __VSF_DEBUG__
 	if (NULL == mbuffer)
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 #endif
 	if (mbuffer->count <= mbuffer->length)
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	mbuffer->head = vsf_fifo_get_next_index(mbuffer->head, mbuffer->count);
 	mbuffer->length++;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT vsf_multibuf_get_payload(struct vsf_multibuf_t *mbuffer, 
+vsf_err_t vsf_multibuf_get_payload(struct vsf_multibuf_t *mbuffer, 
 								struct vsf_buffer_t *buffer)
 {
 #if __VSF_DEBUG__
 	if (NULL == mbuffer)
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 #endif
 	if (!mbuffer->length)
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	buffer->buffer = mbuffer->buffer_list[mbuffer->tail];
 	buffer->size = mbuffer->size;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT vsf_multibuf_pop(struct vsf_multibuf_t *mbuffer)
+vsf_err_t vsf_multibuf_pop(struct vsf_multibuf_t *mbuffer)
 {
 #if __VSF_DEBUG__
 	if (NULL == mbuffer)
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 #endif
 	if (!mbuffer->length)
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	mbuffer->tail = vsf_fifo_get_next_index(mbuffer->tail, mbuffer->count);
 	mbuffer->length--;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 struct vsf_bufmgr_record_t
@@ -317,7 +317,7 @@ void vsf_bufmgr_init(struct vsf_bufmgr_t *bufmgr)
 #if __VSF_DEBUG__
 	if (NULL == bufmgr)
 	{
-		return ERROR_FAIL;
+		return;
 	}
 #endif
 	
@@ -329,11 +329,11 @@ void* vsf_bufmgr_malloc(struct vsf_bufmgr_t *bufmgr, uint32_t size)
 #if __VSF_DEBUG__
 	if (NULL == bufmgr)
 	{
-		return ERROR_FAIL;
+		return NULL;
 	}
 #endif
 	
-	
+	return NULL;
 }
 
 void vsf_bufmgr_free(struct vsf_bufmgr_t *bufmgr, void *ptr)
@@ -341,7 +341,7 @@ void vsf_bufmgr_free(struct vsf_bufmgr_t *bufmgr, void *ptr)
 #if __VSF_DEBUG__
 	if (NULL == bufmgr)
 	{
-		return ERROR_FAIL;
+		return;
 	}
 #endif
 	

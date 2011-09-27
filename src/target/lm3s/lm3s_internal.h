@@ -63,7 +63,7 @@ struct lm3s_device_info_t
 	uint32_t dc3;
 };
 
-RESULT lm3s_check_device(struct lm3s_device_info_t *device);
+vsf_err_t lm3s_check_device(struct lm3s_device_info_t *device);
 
 #endif /* __LM3S_INTERNAL_H_INCLUDED__ */
 

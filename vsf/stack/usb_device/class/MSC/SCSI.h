@@ -74,7 +74,7 @@ struct SCSI_LUN_status_t
 	uint8_t sense_key;
 	uint8_t asc;
 	
-	RESULT status;
+	vsf_err_t status;
 };
 
 struct SCSI_LUN_info_t
@@ -89,9 +89,9 @@ struct SCSI_LUN_info_t
 struct SCSI_handler_t
 {
 	uint8_t operation_code;
-	RESULT (*handler)(struct SCSI_LUN_info_t *info, uint8_t CB[16], 
+	vsf_err_t (*handler)(struct SCSI_LUN_info_t *info, uint8_t CB[16], 
 		struct vsf_buffer_t *buffer, uint32_t *page_size, uint32_t *page_num);
-	RESULT (*io)(struct SCSI_LUN_info_t *info, uint8_t CB[16], 
+	vsf_err_t (*io)(struct SCSI_LUN_info_t *info, uint8_t CB[16], 
 		struct vsf_buffer_t *buffer, uint32_t cur_page);
 };
 
@@ -103,10 +103,10 @@ enum SCSI_errcode_t
 	SCSI_ERRCODE_INVALID_COMMAND,
 };
 
-RESULT SCSI_Handle(struct SCSI_handler_t *handlers, 
+vsf_err_t SCSI_Handle(struct SCSI_handler_t *handlers, 
 		struct SCSI_LUN_info_t *info, uint8_t CB[16], 
 		struct vsf_buffer_t *buffer, uint32_t *page_size, uint32_t *page_num);
-RESULT SCSI_IO(struct SCSI_handler_t *handlers, 
+vsf_err_t SCSI_IO(struct SCSI_handler_t *handlers, 
 		struct SCSI_LUN_info_t *info, uint8_t CB[16], 
 		struct vsf_buffer_t *buffer, uint32_t cur_page);
 enum SCSI_errcode_t SCSI_GetErrorCode(void);

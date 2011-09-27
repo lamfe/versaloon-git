@@ -38,23 +38,23 @@ void USB_TO_C2_ProcessCmd(uint8_t *dat, uint16_t len)
 		switch(command)
 		{
 		case USB_TO_XXX_INIT:
-			if (ERROR_OK == app_interfaces.c2.init(device_idx))
+			if (app_interfaces.c2.init(device_idx))
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
 			else
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
 			break;
 		case USB_TO_XXX_FINI:
-			if (ERROR_OK == app_interfaces.c2.fini(device_idx))
+			if (app_interfaces.c2.fini(device_idx))
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
 			else
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
 			break;
 		case USB_TO_C2_Data:
@@ -62,46 +62,49 @@ void USB_TO_C2_ProcessCmd(uint8_t *dat, uint16_t len)
 			
 			if(dat[index + 0] & 0x80)
 			{
-				if (ERROR_OK == app_interfaces.c2.data_read(device_idx, &buffer_reply[rep_len + 1], tmp))
+				if (app_interfaces.c2.data_read(device_idx,
+											&buffer_reply[rep_len + 1], tmp))
 				{
-					buffer_reply[rep_len++] = USB_TO_XXX_OK;
+					buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 				}
 				else
 				{
-					buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+					buffer_reply[rep_len++] = USB_TO_XXX_OK;
 				}
 				rep_len += tmp;
 			}
 			else
 			{
-				if (ERROR_OK == app_interfaces.c2.data_write(device_idx, &dat[index + 1], tmp))
+				if (app_interfaces.c2.data_write(device_idx, &dat[index + 1],
+													tmp))
 				{
-					buffer_reply[rep_len++] = USB_TO_XXX_OK;
+					buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 				}
 				else
 				{
-					buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+					buffer_reply[rep_len++] = USB_TO_XXX_OK;
 				}
 			}
 			break;
 		case USB_TO_C2_WriteAddr:
-			if (ERROR_OK == app_interfaces.c2.addr_write(device_idx, dat[index]))
+			if (app_interfaces.c2.addr_write(device_idx, dat[index]))
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
 			else
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
 			break;
 		case USB_TO_C2_ReadAddr:
-			if (ERROR_OK == app_interfaces.c2.addr_read(device_idx, &buffer_reply[rep_len + 1]))
+			if (app_interfaces.c2.addr_read(device_idx,
+											&buffer_reply[rep_len + 1]))
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
 			else
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
 			rep_len++;
 			break;

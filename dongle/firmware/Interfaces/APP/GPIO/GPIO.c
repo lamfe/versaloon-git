@@ -20,29 +20,29 @@
 #include "app_interfaces.h"
 #include "GPIO.h"
 
-RESULT gpio_init(uint8_t index)
+vsf_err_t gpio_init(uint8_t index)
 {
 	switch (index)
 	{
 	case 0:
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT gpio_fini(uint8_t index)
+vsf_err_t gpio_fini(uint8_t index)
 {
 	switch (index)
 	{
 	case 0:
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT gpio_config(uint8_t index, uint32_t pin_mask, uint32_t io, 
+vsf_err_t gpio_config(uint8_t index, uint32_t pin_mask, uint32_t io, 
 					uint32_t pull_en_mask, uint32_t input_pull_mask)
 {
 	switch (index)
@@ -51,7 +51,7 @@ RESULT gpio_config(uint8_t index, uint32_t pin_mask, uint32_t io,
 		if ((pin_mask & io & ~GPIO_OUT_MSK) 
 			|| (pin_mask & ~io & ~GPIO_IN_MSK))
 		{
-			return ERROR_FAIL;
+			return VSFERR_INVALID_PARAMETER;
 		}
 
 		if (pin_mask & GPIO_SRST)
@@ -230,20 +230,20 @@ RESULT gpio_config(uint8_t index, uint32_t pin_mask, uint32_t io,
 		{
 			JTAG_TAP_RTCK_SETINPUT();
 		}
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT gpio_out(uint8_t index, uint32_t pin_mask, uint32_t value)
+vsf_err_t gpio_out(uint8_t index, uint32_t pin_mask, uint32_t value)
 {
 	switch (index)
 	{
 	case 0:
 		if((pin_mask & ~GPIO_MSK) > 0)
 		{
-			return ERROR_FAIL;
+			return VSFERR_INVALID_PARAMETER;
 		}
 
 		if(pin_mask & GPIO_SRST)
@@ -338,13 +338,13 @@ RESULT gpio_out(uint8_t index, uint32_t pin_mask, uint32_t value)
 				JTAG_TAP_TDI_CLR();
 			}
 		}
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT gpio_in(uint8_t index, uint32_t pin_mask, uint32_t *value)
+vsf_err_t gpio_in(uint8_t index, uint32_t pin_mask, uint32_t *value)
 {
 	uint32_t port_data;
 
@@ -353,7 +353,7 @@ RESULT gpio_in(uint8_t index, uint32_t pin_mask, uint32_t *value)
 	case 0:
 		if(pin_mask & ~GPIO_IN_MSK)
 		{
-			return ERROR_FAIL;
+			return VSFERR_INVALID_PARAMETER;
 		}
 
 		port_data = 0;
@@ -421,9 +421,9 @@ RESULT gpio_in(uint8_t index, uint32_t pin_mask, uint32_t *value)
 		{
 			*value = port_data;
 		}
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 

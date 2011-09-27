@@ -29,8 +29,6 @@
 #include "app_err.h"
 #include "app_log.h"
 
-#include "pgbar.h"
-
 #include "vsprog.h"
 #include "programmer.h"
 #include "target.h"
@@ -75,7 +73,7 @@ VSS_HANDLER(hcs08_help)
 Usage of %s:\n\
   -m,  --mode <MODE>                        set mode<r|p>\n\n",
 			CUR_TARGET_STRING);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 const struct vss_cmd_t hcs08_notifier[] =
@@ -137,7 +135,7 @@ static uint8_t hcs08_flash_div = 0;
 #define HCS08_BDMCMD_READBKPT		0xE2	// NI:E2/RBKP
 #define HCS08_BDMCMD_WRITEBKPT		0xC2	// NI:C2/WBKP
 
-static RESULT hcs08_ack_enable(void)
+static vsf_err_t hcs08_ack_enable(void)
 {
 	uint8_t outbuff[1];
 	
@@ -145,7 +143,7 @@ static RESULT hcs08_ack_enable(void)
 	return bdm_transact(outbuff, sizeof(outbuff), NULL, 0, 1, 1);
 }
 /*
-static RESULT hcs08_background(void)
+static vsf_err_t hcs08_background(void)
 {
 	uint8_t outbuff[1];
 	
@@ -153,7 +151,7 @@ static RESULT hcs08_background(void)
 	return bdm_transact(outbuff, sizeof(outbuff), NULL, 0, 0, 0);
 }
 */
-static RESULT hcs08_read_status(uint8_t *status)
+static vsf_err_t hcs08_read_status(uint8_t *status)
 {
 	uint8_t outbuff[1];
 	
@@ -161,7 +159,7 @@ static RESULT hcs08_read_status(uint8_t *status)
 	return bdm_transact(outbuff, sizeof(outbuff), status, 1, 0, 0);
 }
 /*
-static RESULT hcs08_write_control(uint8_t control)
+static vsf_err_t hcs08_write_control(uint8_t control)
 {
 	uint8_t outbuff[2];
 	
@@ -170,7 +168,7 @@ static RESULT hcs08_write_control(uint8_t control)
 	return bdm_transact(outbuff, sizeof(outbuff), NULL, 0, 0, 0);
 }
 */
-static RESULT hcs08_read_byte(uint16_t addr, uint8_t *value)
+static vsf_err_t hcs08_read_byte(uint16_t addr, uint8_t *value)
 {
 	uint8_t outbuff[3];
 	
@@ -179,7 +177,7 @@ static RESULT hcs08_read_byte(uint16_t addr, uint8_t *value)
 	return bdm_transact(outbuff, sizeof(outbuff), value, 1, 1, 1);
 }
 
-static RESULT hcs08_write_byte(uint16_t addr, uint8_t value)
+static vsf_err_t hcs08_write_byte(uint16_t addr, uint8_t value)
 {
 	uint8_t outbuff[4];
 	
@@ -189,20 +187,14 @@ static RESULT hcs08_write_byte(uint16_t addr, uint8_t value)
 	return bdm_transact(outbuff, sizeof(outbuff), NULL, 0, 1, 1);
 }
 
-static RESULT hcs08_flash_cmd(uint16_t addr, uint8_t value, uint8_t cmd)
+static vsf_err_t hcs08_flash_cmd(uint16_t addr, uint8_t value, uint8_t cmd)
 {
-	if (ERROR_OK != hcs08_write_byte(addr, value))
-	{
-		return ERROR_FAIL;
-	}
-	if (ERROR_OK != hcs08_write_byte(HCS08_FCMD_ADDR, cmd))
-	{
-		return ERROR_FAIL;
-	}
-	if (ERROR_OK != hcs08_write_byte(HCS08_FSTAT_ADDR,
+	if (hcs08_write_byte(addr, value) ||
+		hcs08_write_byte(HCS08_FCMD_ADDR, cmd) ||
+		hcs08_write_byte(HCS08_FSTAT_ADDR,
 				HCS08_FSTAT_FCBEF | HCS08_FSTAT_FPVIOL | HCS08_FSTAT_FACCERR))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	// poll
@@ -213,7 +205,7 @@ static RESULT hcs08_flash_cmd(uint16_t addr, uint8_t value, uint8_t cmd)
 	poll_ok(0, HCS08_FSTAT_FCCF, HCS08_FSTAT_FCCF);
 	poll_end();
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 ENTER_PROGRAM_MODE_HANDLER(hcs08)
@@ -242,9 +234,9 @@ ENTER_PROGRAM_MODE_HANDLER(hcs08)
 	
 	hcs08_read_status(&bdm_status);
 	hcs08_write_byte(HCS08_SOPT_ADDR, HCS08_SOPT_BKGDPE | HCS08_SOPT_RSTPE);
-	if (ERROR_OK != commit())
+	if (commit())
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	LOG_INFO("target running at %dkhz", kernel_khz);
 	LOG_INFO(INFOMSG_REG_02X, "BDCSCR", bdm_status);
@@ -267,13 +259,13 @@ ENTER_PROGRAM_MODE_HANDLER(hcs08)
 	hcs08_write_byte(HCS08_FSTAT_ADDR,
 						HCS08_FSTAT_FPVIOL | HCS08_FSTAT_FACCERR);
 	hcs08_write_byte(HCS08_FPROT_ADDR, 0xFF);
-	if (ERROR_OK != commit())
+	if (commit())
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	LOG_INFO("flash running at %dkhz",
 				kernel_khz / (1 + (hcs08_flash_div & HCS08_FCDIV_DIVMASK)));
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 LEAVE_PROGRAM_MODE_HANDLER(hcs08)
@@ -289,8 +281,6 @@ LEAVE_PROGRAM_MODE_HANDLER(hcs08)
 
 ERASE_TARGET_HANDLER(hcs08)
 {
-	RESULT ret = ERROR_OK;
-	
 	REFERENCE_PARAMETER(size);
 	REFERENCE_PARAMETER(addr);
 	REFERENCE_PARAMETER(context);
@@ -298,38 +288,23 @@ ERASE_TARGET_HANDLER(hcs08)
 	switch (area)
 	{
 	case APPLICATION_CHAR:
-		ret = hcs08_flash_cmd((uint16_t)addr, 0, HCS08_FCMD_MMASSERASE);
-		if (ret != ERROR_OK)
+		if (hcs08_flash_cmd((uint16_t)addr, 0, HCS08_FCMD_MMASSERASE) ||
+			hcs08_flash_cmd((uint16_t)addr, 0, HCS08_FCMD_MBLANK) ||
+			// reprogram security byte to unsecure state
+			hcs08_write_byte(HCS08_FCDIV_ADDR, hcs08_flash_div) ||
+			hcs08_flash_cmd(HCS08_NVFEOPT_ADDR, 0xFE, HCS08_FCMD_MBYTEPROG) ||
+			commit())
 		{
-			break;
+			return VSFERR_FAIL;
 		}
-		ret = hcs08_flash_cmd((uint16_t)addr, 0, HCS08_FCMD_MBLANK);
-		if (ret != ERROR_OK)
-		{
-			break;
-		}
-		// reprogram security byte to unsecure state
-		ret = hcs08_write_byte(HCS08_FCDIV_ADDR, hcs08_flash_div);
-		if (ret != ERROR_OK)
-		{
-			break;
-		}
-		ret = hcs08_flash_cmd(HCS08_NVFEOPT_ADDR, 0xFE, HCS08_FCMD_MBYTEPROG);
-		if (ret != ERROR_OK)
-		{
-			break;
-		}
-		ret = commit();
-		break;
+		return VSFERR_NONE;
 	default:
-		ret = ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
-	return ret;
 }
 
 WRITE_TARGET_HANDLER(hcs08)
 {
-	RESULT ret = ERROR_OK;
 	uint16_t i;
 	
 	REFERENCE_PARAMETER(size);
@@ -345,24 +320,23 @@ WRITE_TARGET_HANDLER(hcs08)
 			if ((addr + i < HCS08_NONVIOL_REG_START)
 				|| (addr + i > HCS08_NONVIOL_REG_END))
 			{
-				ret = hcs08_flash_cmd((uint16_t)addr + i, buff[i],
-										HCS08_FCMD_MBURSTPROG);
-				if (ret != ERROR_OK)
+				if (hcs08_flash_cmd((uint16_t)addr + i, buff[i],
+										HCS08_FCMD_MBURSTPROG))
 				{
-					break;
+					return VSFERR_FAIL;
 				}
 			}
 		}
 		break;
 	default:
-		ret = ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
-	return ret;
+	return VSFERR_NONE;
 }
 
 READ_TARGET_HANDLER(hcs08)
 {
-	RESULT ret = ERROR_OK;
+	vsf_err_t err = VSFERR_NONE;
 	uint16_t i;
 	
 	REFERENCE_PARAMETER(context);
@@ -372,8 +346,8 @@ READ_TARGET_HANDLER(hcs08)
 	case CHIPID_CHAR:
 		hcs08_read_byte(HCS08_DIDH_ADDR, &buff[1]);
 		hcs08_read_byte(HCS08_DIDL_ADDR, &buff[0]);
-		ret = commit();
-		if (ERROR_OK == ret)
+		err = commit();
+		if (!err)
 		{
 			LOG_INFO(INFOMSG_REG_02X, "rev", (buff[1] & 0xF0) >> 4);
 			buff[1] &= 0x0F;
@@ -384,12 +358,12 @@ READ_TARGET_HANDLER(hcs08)
 		{
 			hcs08_read_byte((uint16_t)(addr + i), &buff[i]);
 		}
-		ret = commit();
+		err = commit();
 		break;
 	default:
-		ret = ERROR_FAIL;
+		err = VSFERR_FAIL;
 		break;
 	}
-	return ret;
+	return err;
 }
 

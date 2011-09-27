@@ -144,80 +144,80 @@ static uint8_t LPCICP_Poll(uint8_t out, uint8_t setbit, uint8_t clearbit, uint16
 	return LPCICP_POLL_TIME_OUT;
 }
 
-RESULT lpcicp_init(uint8_t index)
+vsf_err_t lpcicp_init(uint8_t index)
 {
 	switch (index)
 	{
 	case 0:
 		LPCICP_Init();
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT lpcicp_fini(uint8_t index)
+vsf_err_t lpcicp_fini(uint8_t index)
 {
 	switch (index)
 	{
 	case 0:
 		LPCICP_LeavrProgMode();
 		LPCICP_Fini();
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT lpcicp_enter_program_mode(uint8_t index)
+vsf_err_t lpcicp_enter_program_mode(uint8_t index)
 {
 	uint16_t voltage;
 	
 	switch (index)
 	{
 	case 0:
-		if ((ERROR_OK != app_interfaces.target_voltage.get(0, &voltage)) || 
+		if (app_interfaces.target_voltage.get(0, &voltage) || 
 			(voltage > TVCC_SAMPLE_MIN_POWER))
 		{
 			// No power should be applied on the target
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		else
 		{
 			LPCICP_EnterProgMode();
-			return ERROR_OK;
+			return VSFERR_NONE;
 		}
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT lpcicp_in(uint8_t index, uint8_t *buff, uint16_t len)
+vsf_err_t lpcicp_in(uint8_t index, uint8_t *buff, uint16_t len)
 {
 	switch (index)
 	{
 	case 0:
 		LPCICP_In(buff, len);
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT lpcicp_out(uint8_t index, uint8_t *buff, uint16_t len)
+vsf_err_t lpcicp_out(uint8_t index, uint8_t *buff, uint16_t len)
 {
 	switch (index)
 	{
 	case 0:
 		LPCICP_Out(buff, len);
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT lpcicp_poll_ready(uint8_t index, uint8_t data, uint8_t *ret, 
-							uint8_t setmask, uint8_t clearmask, uint16_t pollcnt)
+vsf_err_t lpcicp_poll_ready(uint8_t index, uint8_t data, uint8_t *ret, 
+					uint8_t setmask, uint8_t clearmask, uint16_t pollcnt)
 {
 	uint8_t ret_tmp;
 	
@@ -229,9 +229,9 @@ RESULT lpcicp_poll_ready(uint8_t index, uint8_t data, uint8_t *ret,
 		{
 			*ret = ret_tmp;
 		}
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 

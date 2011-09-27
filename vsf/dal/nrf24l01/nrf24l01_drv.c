@@ -73,7 +73,7 @@
 #define NRF24L01_REG_FEATURE_EN_ACK_PAY		(1 << 1)
 #define NRF24L01_REG_FEATURE_EN_DYN_ACK		(1 << 0)
 
-static RESULT nrf24l01_drv_transact(struct nrf24l01_drv_interface_t *ifs, 
+static vsf_err_t nrf24l01_drv_transact(struct nrf24l01_drv_interface_t *ifs, 
 		uint8_t *out, uint8_t outlen, uint8_t *in, uint8_t inlen)
 {
 	interfaces->gpio.out(ifs->csn_port, ifs->csn_pin, 0);
@@ -89,14 +89,14 @@ static RESULT nrf24l01_drv_transact(struct nrf24l01_drv_interface_t *ifs,
 	return interfaces->peripheral_commit();
 }
 
-static RESULT nrf24l01_drv_write_reg(struct nrf24l01_drv_interface_t *ifs, 
+static vsf_err_t nrf24l01_drv_write_reg(struct nrf24l01_drv_interface_t *ifs, 
 			uint8_t reg, uint8_t *value, uint8_t size)
 {
 	uint8_t cmd_buff[6];
 	
 	if (size > 5)
 	{
-		return ERROR_FAIL;
+		return VSFERR_INVALID_PARAMETER;
 	}
 	
 	cmd_buff[0] = NRF24L01_CMD_W_REGISTER(reg);
@@ -104,21 +104,21 @@ static RESULT nrf24l01_drv_write_reg(struct nrf24l01_drv_interface_t *ifs,
 	return nrf24l01_drv_transact(ifs, cmd_buff, 1 + size, NULL, 0);
 }
 
-static RESULT nrf24l01_drv_read_reg(struct nrf24l01_drv_interface_t *ifs, 
+static vsf_err_t nrf24l01_drv_read_reg(struct nrf24l01_drv_interface_t *ifs, 
 			uint8_t reg, uint8_t *value, uint8_t size)
 {
 	uint8_t cmd_buff[1];
 	
 	if (size > 5)
 	{
-		return ERROR_FAIL;
+		return VSFERR_INVALID_PARAMETER;
 	}
 	
 	cmd_buff[0] = NRF24L01_CMD_R_REGISTER(reg);
 	return nrf24l01_drv_transact(ifs, cmd_buff, 1, value, size);
 }
 
-static RESULT nrf24l01_drv_init(struct dal_info_t *info)
+static vsf_err_t nrf24l01_drv_init(struct dal_info_t *info)
 {
 	struct nrf24l01_drv_interface_t *ifs = 
 								(struct nrf24l01_drv_interface_t *)info->ifs;
@@ -127,22 +127,21 @@ static RESULT nrf24l01_drv_init(struct dal_info_t *info)
 	interfaces->gpio.init(ifs->ce_port);
 	interfaces->gpio.config(ifs->ce_port, ifs->ce_pin, ifs->ce_pin, 0, 0);
 	interfaces->gpio.init(ifs->csn_port);
-	interfaces->gpio.config(ifs->csn_port, ifs->csn_pin, ifs->csn_pin, 0, ifs->csn_pin);
-	return ERROR_OK;
+	return interfaces->gpio.config(ifs->csn_port, ifs->csn_pin, ifs->csn_pin, 0,
+									ifs->csn_pin);
 }
 
-static RESULT nrf24l01_drv_fini(struct dal_info_t *info)
+static vsf_err_t nrf24l01_drv_fini(struct dal_info_t *info)
 {
 	struct nrf24l01_drv_interface_t *ifs = 
 								(struct nrf24l01_drv_interface_t *)info->ifs;
 	
 	interfaces->spi.fini(ifs->spi_port);
 	interfaces->gpio.fini(ifs->ce_port);
-	interfaces->gpio.fini(ifs->csn_port);
-	return ERROR_OK;
+	return interfaces->gpio.fini(ifs->csn_port);
 }
 
-static RESULT nrf24l01_drv_config(struct dal_info_t *info)
+static vsf_err_t nrf24l01_drv_config(struct dal_info_t *info)
 {
 	struct nrf24l01_drv_interface_t *ifs = 
 								(struct nrf24l01_drv_interface_t *)info->ifs;
@@ -154,22 +153,20 @@ static RESULT nrf24l01_drv_config(struct dal_info_t *info)
 							SPI_MODE0 | SPI_MSB_FIRST);
 	
 	config = (uint8_t)param->aw;
-	if (ERROR_OK != nrf24l01_drv_write_reg(ifs, NRF24L01_REG_SETUP_AW, &config, 
-											1))
+	if (nrf24l01_drv_write_reg(ifs, NRF24L01_REG_SETUP_AW, &config, 1))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	config = (uint8_t)(param->rf_channel_mHz - NRF24L01_DRV_BASE_MHZ);
-	if (ERROR_OK != nrf24l01_drv_write_reg(ifs, NRF24L01_REG_RF_CH, &config, 1))
+	if (nrf24l01_drv_write_reg(ifs, NRF24L01_REG_RF_CH, &config, 1))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	config = NRF24L01_REG_FEATURE_EN_DPL | NRF24L01_REG_FEATURE_EN_ACK_PAY | 
 			NRF24L01_REG_FEATURE_EN_DYN_ACK;
-	if (ERROR_OK != nrf24l01_drv_write_reg(ifs, NRF24L01_REG_FEATURE, &config, 
-											1))
+	if (nrf24l01_drv_write_reg(ifs, NRF24L01_REG_FEATURE, &config, 1))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	config = (uint8_t)(param->txpwr << 1);
 	switch (param->dr)
@@ -184,30 +181,27 @@ static RESULT nrf24l01_drv_config(struct dal_info_t *info)
 		config |= NRF24L01_REG_RF_SETUP_2M;
 		break;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_INVALID_PARAMETER;
 	}
-	if (ERROR_OK != nrf24l01_drv_write_reg(ifs, NRF24L01_REG_RF_SETUP, &config, 
-											1))
+	if (nrf24l01_drv_write_reg(ifs, NRF24L01_REG_RF_SETUP, &config, 1))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	if (NRF24L01_DIR_TX == param->dir)
 	{
 		config = param->arc + (uint8_t)(((param->ard_us / 250) - 1) << 4);
-		if (ERROR_OK != nrf24l01_drv_write_reg(ifs, NRF24L01_REG_SETUP_PETR, 
-												&config, 1))
+		if (nrf24l01_drv_write_reg(ifs, NRF24L01_REG_SETUP_PETR, &config, 1))
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 	}
 	config = NRF24L01_REG_CONFIG_MASK_RX_DR | NRF24L01_REG_CONFIG_MASK_TX_DS | 
 			NRF24L01_REG_CONFIG_MASK_MAX_RT | NRF24L01_REG_CONFIG_EN_CRC | 
 			NRF24L01_REG_CONFIG_PWR_UP | (uint8_t)(param->crclen << 2) | 
 			(uint8_t)(param->dir);
-	if (ERROR_OK != nrf24l01_drv_write_reg(ifs, NRF24L01_REG_CONFIG, &config, 
-											1))
+	if (nrf24l01_drv_write_reg(ifs, NRF24L01_REG_CONFIG, &config, 1))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	if (NRF24L01_DIR_RX == param->dir)
 	{
@@ -216,7 +210,7 @@ static RESULT nrf24l01_drv_config(struct dal_info_t *info)
 	return interfaces->peripheral_commit();
 }
 
-static RESULT nrf24l01_drv_config_channel(struct dal_info_t *info, 
+static vsf_err_t nrf24l01_drv_config_channel(struct dal_info_t *info, 
 					uint8_t channel, bool enable, uint8_t *addr, bool enaa)
 {
 	struct nrf24l01_drv_interface_t *ifs = 
@@ -227,65 +221,59 @@ static RESULT nrf24l01_drv_config_channel(struct dal_info_t *info,
 	
 	if (channel > NRF24L01_DRV_MAX_CHANNEL)
 	{
-		return ERROR_FAIL;
+		return VSFERR_INVALID_PARAMETER;
 	}
 	
 	switch (param->dir)
 	{
 	case NRF24L01_DIR_TX:
-		if ((ERROR_OK != nrf24l01_drv_write_reg(ifs, NRF24L01_REG_TX_ADDR, 
-												addr, param->aw)) || 
-			(ERROR_OK != nrf24l01_drv_write_reg(ifs, NRF24L01_REG_RX_ADDR_P(0), 
-												addr, param->aw)))
+		if (nrf24l01_drv_write_reg(ifs, NRF24L01_REG_TX_ADDR, addr,
+									param->aw) || 
+			nrf24l01_drv_write_reg(ifs, NRF24L01_REG_RX_ADDR_P(0), addr,
+									param->aw))
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		break;
 	case NRF24L01_DIR_RX:
-		if (ERROR_OK != nrf24l01_drv_read_reg(ifs, NRF24L01_REG_EN_RXADDR, 
-												&config, 1))
+		if (nrf24l01_drv_read_reg(ifs, NRF24L01_REG_EN_RXADDR, &config, 1))
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		if (enable)
 		{
 			config |= (1 << channel);
 		}
-		if (ERROR_OK != nrf24l01_drv_write_reg(ifs, NRF24L01_REG_EN_RXADDR, 
-												&config, 1))
+		if (nrf24l01_drv_write_reg(ifs, NRF24L01_REG_EN_RXADDR, &config, 1))
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		if (!enable)
 		{
 			break;
 		}
 		
-		if (ERROR_OK != nrf24l01_drv_read_reg(ifs, NRF24L01_REG_DYNPD, &config, 
-												1))
+		if (nrf24l01_drv_read_reg(ifs, NRF24L01_REG_DYNPD, &config, 1))
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		config |= (1 << channel);
-		if (ERROR_OK != nrf24l01_drv_write_reg(ifs, NRF24L01_REG_DYNPD, 
-												&config, 1))
+		if (nrf24l01_drv_write_reg(ifs, NRF24L01_REG_DYNPD, &config, 1))
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		
-		if (ERROR_OK != nrf24l01_drv_read_reg(ifs, NRF24L01_REG_EN_AA, &config, 
-												1))
+		if (nrf24l01_drv_read_reg(ifs, NRF24L01_REG_EN_AA, &config, 1))
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		if (enaa)
 		{
 			config |= (1 << channel);
 		}
-		if (ERROR_OK != nrf24l01_drv_write_reg(ifs, NRF24L01_REG_EN_AA, &config, 
-												1))
+		if (nrf24l01_drv_write_reg(ifs, NRF24L01_REG_EN_AA, &config, 1))
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		
 		if (channel < 2)
@@ -296,27 +284,27 @@ static RESULT nrf24l01_drv_config_channel(struct dal_info_t *info,
 		{
 			size = 1;
 		}
-		if (ERROR_OK != nrf24l01_drv_write_reg(ifs, 
-					NRF24L01_REG_RX_ADDR_P(channel), addr, size))
+		if (nrf24l01_drv_write_reg(ifs, NRF24L01_REG_RX_ADDR_P(channel), addr,
+									size))
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		break;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_INVALID_PARAMETER;
 	}
 	return interfaces->peripheral_commit();
 }
 
-static RESULT nrf24l01_drv_power(struct dal_info_t *info, bool power_down)
+static vsf_err_t nrf24l01_drv_power(struct dal_info_t *info, bool power_down)
 {
 	struct nrf24l01_drv_interface_t *ifs = 
 								(struct nrf24l01_drv_interface_t *)info->ifs;
 	uint8_t config;
 	
-	if (ERROR_OK != nrf24l01_drv_read_reg(ifs, NRF24L01_REG_CONFIG, &config, 1))
+	if (nrf24l01_drv_read_reg(ifs, NRF24L01_REG_CONFIG, &config, 1))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	if (power_down)
@@ -330,7 +318,7 @@ static RESULT nrf24l01_drv_power(struct dal_info_t *info, bool power_down)
 	return nrf24l01_drv_write_reg(ifs, NRF24L01_REG_CONFIG, &config, 1);
 }
 
-static RESULT nrf24l01_drv_tx_fifo_avail(struct dal_info_t *info, bool *avail)
+static vsf_err_t nrf24l01_drv_tx_fifo_avail(struct dal_info_t *info)
 {
 	struct nrf24l01_drv_interface_t *ifs = 
 								(struct nrf24l01_drv_interface_t *)info->ifs;
@@ -340,19 +328,18 @@ static RESULT nrf24l01_drv_tx_fifo_avail(struct dal_info_t *info, bool *avail)
 	
 	if (param->dir != NRF24L01_DIR_TX)
 	{
-		return ERROR_FAIL;
+		return VSFERR_INVALID_PARAMETER;
 	}
 	
-	if (ERROR_OK != nrf24l01_drv_read_reg(ifs, NRF24L01_REG_STATUS, &status, 1))
+	if (nrf24l01_drv_read_reg(ifs, NRF24L01_REG_STATUS, &status, 1))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
-	*avail = !(status & 1);
-	return ERROR_OK;
+	return !(status & 1) ? VSFERR_NONE : VSFERR_NOT_AVAILABLE;
 }
 
-static RESULT nrf24l01_drv_tx_fifo_write(struct dal_info_t *info, 
-						struct vsf_buffer_t *buffer)
+static vsf_err_t nrf24l01_drv_tx_fifo_write(struct dal_info_t *info, 
+											struct vsf_buffer_t *buffer)
 {
 	struct nrf24l01_drv_interface_t *ifs = 
 								(struct nrf24l01_drv_interface_t *)info->ifs;
@@ -363,34 +350,33 @@ static RESULT nrf24l01_drv_tx_fifo_write(struct dal_info_t *info,
 	if ((NULL == buffer) || (NULL == buffer->buffer) || (buffer->size > 32) || 
 		(param->dir != NRF24L01_DIR_TX))
 	{
-		return ERROR_FAIL;
+		return VSFERR_INVALID_PARAMETER;
 	}
 	
 	cmd_buff[0] = NRF24L01_CMD_W_TX_PAYLOAD;
 	memcpy(&cmd_buff[1], buffer->buffer, buffer->size);
-	if (ERROR_OK != nrf24l01_drv_transact(ifs, cmd_buff, 
-										(uint8_t)(1 + buffer->size), NULL, 0))
+	if (nrf24l01_drv_transact(ifs, cmd_buff, (uint8_t)(1 + buffer->size), NULL,
+								0))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	return interfaces->peripheral_commit();
 }
 
-static RESULT nrf24l01_drv_ack_fifo_avail(struct dal_info_t *info, bool *avail)
+static vsf_err_t nrf24l01_drv_ack_fifo_avail(struct dal_info_t *info)
 {
 	struct nrf24l01_drv_interface_t *ifs = 
 								(struct nrf24l01_drv_interface_t *)info->ifs;
 	uint8_t status;
 	
-	if (ERROR_OK != nrf24l01_drv_read_reg(ifs, NRF24L01_REG_STATUS, &status, 1))
+	if (nrf24l01_drv_read_reg(ifs, NRF24L01_REG_STATUS, &status, 1))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
-	*avail = !(status & 1);
-	return ERROR_OK;
+	return !(status & 1) ? VSFERR_NONE : VSFERR_NOT_AVAILABLE;
 }
 
-static RESULT nrf24l01_drv_ack_fifo_write(struct dal_info_t *info, 
+static vsf_err_t nrf24l01_drv_ack_fifo_write(struct dal_info_t *info, 
 								uint8_t channel, struct vsf_buffer_t *buffer)
 {
 	struct nrf24l01_drv_interface_t *ifs = 
@@ -399,7 +385,7 @@ static RESULT nrf24l01_drv_ack_fifo_write(struct dal_info_t *info,
 	
 	if ((NULL == buffer) || (NULL == buffer->buffer) || (buffer->size > 32))
 	{
-		return ERROR_FAIL;
+		return VSFERR_INVALID_PARAMETER;
 	}
 	
 	cmd_buff[0] = NRF24L01_CMD_W_ACK_PAYLOAD(channel);
@@ -408,21 +394,20 @@ static RESULT nrf24l01_drv_ack_fifo_write(struct dal_info_t *info,
 									NULL, 0);
 }
 
-static RESULT nrf24l01_drv_rx_fifo_avail(struct dal_info_t *info, bool *avail)
+static vsf_err_t nrf24l01_drv_rx_fifo_avail(struct dal_info_t *info)
 {
 	struct nrf24l01_drv_interface_t *ifs = 
 								(struct nrf24l01_drv_interface_t *)info->ifs;
 	uint8_t status;
 	
-	if (ERROR_OK != nrf24l01_drv_read_reg(ifs, NRF24L01_REG_STATUS, &status, 1))
+	if (nrf24l01_drv_read_reg(ifs, NRF24L01_REG_STATUS, &status, 1))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
-	*avail = ((status >> 1) & 0x07) != 0x07;
-	return ERROR_OK;
+	return ((status >> 1) & 0x07) != 0x07 ? VSFERR_NONE : VSFERR_NOT_AVAILABLE;
 }
 
-static RESULT nrf24l01_drv_rx_fifo_read(struct dal_info_t *info, 
+static vsf_err_t nrf24l01_drv_rx_fifo_read(struct dal_info_t *info, 
 						struct vsf_buffer_t *buffer)
 {
 	struct nrf24l01_drv_interface_t *ifs = 
@@ -431,7 +416,7 @@ static RESULT nrf24l01_drv_rx_fifo_read(struct dal_info_t *info,
 	
 	if ((NULL == buffer) || (NULL == buffer->buffer) || (buffer->size > 32))
 	{
-		return ERROR_FAIL;
+		return VSFERR_INVALID_PARAMETER;
 	}
 	
 	cmd_buff[0] = NRF24L01_CMD_R_RX_PAYLOAD;
@@ -440,7 +425,7 @@ static RESULT nrf24l01_drv_rx_fifo_read(struct dal_info_t *info,
 									(uint8_t)buffer->size);
 }
 
-static RESULT nrf24l01_drv_send(struct dal_info_t *info)
+static vsf_err_t nrf24l01_drv_send(struct dal_info_t *info)
 {
 	struct nrf24l01_drv_interface_t *ifs = 
 								(struct nrf24l01_drv_interface_t *)info->ifs;
@@ -449,7 +434,7 @@ static RESULT nrf24l01_drv_send(struct dal_info_t *info)
 	
 	if (param->dir != NRF24L01_DIR_TX)
 	{
-		return ERROR_FAIL;
+		return VSFERR_INVALID_PARAMETER;
 	}
 	
 	interfaces->gpio.out(ifs->ce_port, ifs->ce_pin, ifs->ce_pin);
@@ -458,7 +443,7 @@ static RESULT nrf24l01_drv_send(struct dal_info_t *info)
 	return interfaces->peripheral_commit();
 }
 
-static RESULT nrf24l01_drv_tx_flush(struct dal_info_t *info)
+static vsf_err_t nrf24l01_drv_tx_flush(struct dal_info_t *info)
 {
 	struct nrf24l01_drv_interface_t *ifs = 
 								(struct nrf24l01_drv_interface_t *)info->ifs;
@@ -468,7 +453,7 @@ static RESULT nrf24l01_drv_tx_flush(struct dal_info_t *info)
 	return nrf24l01_drv_transact(ifs, cmd_buff, 1, NULL, 0);
 }
 
-static RESULT nrf24l01_drv_rx_flush(struct dal_info_t *info)
+static vsf_err_t nrf24l01_drv_rx_flush(struct dal_info_t *info)
 {
 	struct nrf24l01_drv_interface_t *ifs = 
 								(struct nrf24l01_drv_interface_t *)info->ifs;
@@ -478,31 +463,27 @@ static RESULT nrf24l01_drv_rx_flush(struct dal_info_t *info)
 	return nrf24l01_drv_transact(ifs, cmd_buff, 1, NULL, 0);
 }
 
-static RESULT nrf24l01_drv_get_rx_power(struct dal_info_t *info, uint8_t *pwr)
+static vsf_err_t nrf24l01_drv_get_rx_power(struct dal_info_t *info, uint8_t *pwr)
 {
 	struct nrf24l01_drv_interface_t *ifs = 
 								(struct nrf24l01_drv_interface_t *)info->ifs;
 	
-	if (ERROR_OK != nrf24l01_drv_read_reg(ifs, NRF24L01_REG_RPD, pwr, 1))
-	{
-		return ERROR_FAIL;
-	}
-	return ERROR_OK;
+	return nrf24l01_drv_read_reg(ifs, NRF24L01_REG_RPD, pwr, 1);
 }
 
-static RESULT nrf24l01_drv_poll(struct dal_info_t *info)
+static vsf_err_t nrf24l01_drv_poll(struct dal_info_t *info)
 {
 	struct nrf24l01_drv_param_t *param = 
 								(struct nrf24l01_drv_param_t *)info->param;
 	
-	if (NULL != param->user_callback.on_poll)
+	if (param->user_callback.on_poll != NULL)
 	{
 		return param->user_callback.on_poll(info);
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT nrf24l01_drv_on_interrupt(struct dal_info_t *info)
+static vsf_err_t nrf24l01_drv_on_interrupt(struct dal_info_t *info)
 {
 	struct nrf24l01_drv_interface_t *ifs = 
 								(struct nrf24l01_drv_interface_t *)info->ifs;
@@ -510,9 +491,9 @@ static RESULT nrf24l01_drv_on_interrupt(struct dal_info_t *info)
 								(struct nrf24l01_drv_param_t *)info->param;
 	uint8_t status, channel;
 	
-	if (ERROR_OK != nrf24l01_drv_read_reg(ifs, NRF24L01_REG_STATUS, &status, 1))
+	if (nrf24l01_drv_read_reg(ifs, NRF24L01_REG_STATUS, &status, 1))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	channel = (status >> 1) & 0x07;
@@ -525,13 +506,11 @@ static RESULT nrf24l01_drv_on_interrupt(struct dal_info_t *info)
 			struct vsf_buffer_t buffer;
 			
 			cmd_buff[0] = NRF24L01_CMD_R_RX_PAYLOAD;
-			if ((ERROR_OK != nrf24l01_drv_read_reg(ifs, 
-								NRF24L01_REG_RX_PW_P(channel), &size, 1)) || 
-				(!size) || 
-				(ERROR_OK != nrf24l01_drv_transact(ifs, cmd_buff, 1, buff, 
-													size)))
+			if (nrf24l01_drv_read_reg(ifs, NRF24L01_REG_RX_PW_P(channel),
+										&size, 1) || 
+				(!size) || nrf24l01_drv_transact(ifs, cmd_buff, 1, buff, size))
 			{
-				return ERROR_FAIL;
+				return VSFERR_FAIL;
 			}
 			
 			buffer.size = size;
@@ -560,7 +539,7 @@ static RESULT nrf24l01_drv_on_interrupt(struct dal_info_t *info)
 }
 
 #if DAL_INTERFACE_PARSER_EN
-static RESULT nrf24l01_drv_parse_interface(struct dal_info_t *info, 
+static vsf_err_t nrf24l01_drv_parse_interface(struct dal_info_t *info, 
 											uint8_t *buff)
 {
 	struct nrf24l01_drv_interface_t *ifs = 
@@ -571,7 +550,7 @@ static RESULT nrf24l01_drv_parse_interface(struct dal_info_t *info,
 	ifs->csn_pin = *(uint32_t *)&buff[2];
 	ifs->ce_port = buff[6];
 	ifs->ce_pin = *(uint32_t *)&buff[7];
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 #endif
 

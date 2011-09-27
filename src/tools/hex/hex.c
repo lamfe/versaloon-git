@@ -23,6 +23,8 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include "vsf_err.h"
+
 #include "app_cfg.h"
 #include "app_type.h"
 #include "app_io.h"
@@ -42,7 +44,7 @@ enum  HEX_TYPE
 	HEX_TYPE_START_LINEAR_ADDR	= 0x05
 };
 
-RESULT read_hex_file(FILE *hex_file, WRITE_MEMORY_CALLBACK callback,
+vsf_err_t read_hex_file(FILE *hex_file, WRITE_MEMORY_CALLBACK callback,
 						void *buffer, uint32_t seg_offset, uint32_t addr_offset)
 {
 	uint8_t line_buf[10 + 0xFF * 2 + 2], checksum;
@@ -66,13 +68,13 @@ RESULT read_hex_file(FILE *hex_file, WRITE_MEMORY_CALLBACK callback,
 			ch = (char)fgetc(hex_file);
 			if (EOF == ch)
 			{
-				return ERROR_OK;
+				return VSFERR_NONE;
 			}
 		}while (('\n' == ch) || ('\r' == ch));
 		// check first character of a line, which MUST be ':'
 		if (ch != ':')
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		length = 0;
 		// read line
@@ -85,7 +87,7 @@ RESULT read_hex_file(FILE *hex_file, WRITE_MEMORY_CALLBACK callback,
 		// process line
 		if ((length < 10) || ((length % 2) == 1))
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		tmp_buff[2] = '\0';
 		for (i = 0; i < length; i+=2)
@@ -96,7 +98,7 @@ RESULT read_hex_file(FILE *hex_file, WRITE_MEMORY_CALLBACK callback,
 												&ptr, 16);
 			if (ptr != &tmp_buff[2])
 			{
-				return ERROR_FAIL;
+				return VSFERR_FAIL;
 			}
 		}
 		i >>= 1;
@@ -105,7 +107,7 @@ RESULT read_hex_file(FILE *hex_file, WRITE_MEMORY_CALLBACK callback,
 		length = line_buf[0];
 		if ((length + 5) != i)
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		checksum = 0;
 		while (i > 0)
@@ -114,7 +116,7 @@ RESULT read_hex_file(FILE *hex_file, WRITE_MEMORY_CALLBACK callback,
 		}
 		if (checksum != 0)
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		
 		// process data according to data type
@@ -123,22 +125,22 @@ RESULT read_hex_file(FILE *hex_file, WRITE_MEMORY_CALLBACK callback,
 		{
 		case HEX_TYPE_DATA: //Type 0
 			// data record
-			if (ERROR_OK != callback(fileparser_cur_ext,
+			if (callback(fileparser_cur_ext,
 					ext_addr0 + ext_addr1 + addr_offset + addr,
 					seg_addr + seg_offset, &line_buf[4], length, buffer))
 			{
-				return ERROR_FAIL;
+				return VSFERR_FAIL;
 			}
 			break;
 		case HEX_TYPE_EOF: // Type 1
 			// end of file
-			return ERROR_OK;
+			return VSFERR_NONE;
 			break;
 		case HEX_TYPE_EXT_SEG_ADDR: //Type 2
 			// bit 4-19 of address
 			if ((length != 2) || (addr != 0))
 			{
-				return ERROR_FAIL;
+				return VSFERR_FAIL;
 			}
 			ext_addr0 = (line_buf[4] << 12) | (line_buf[5] << 4);
 			break;
@@ -146,7 +148,7 @@ RESULT read_hex_file(FILE *hex_file, WRITE_MEMORY_CALLBACK callback,
 			// segment address
 			if (addr != 0)
 			{
-				return ERROR_FAIL;
+				return VSFERR_FAIL;
 			}
 			seg_addr = (line_buf[4] << 8) | line_buf[5];
 			break;
@@ -154,7 +156,7 @@ RESULT read_hex_file(FILE *hex_file, WRITE_MEMORY_CALLBACK callback,
 			// high 16 bit of address
 			if ((length != 2) || (addr != 0))
 			{
-				return ERROR_FAIL;
+				return VSFERR_FAIL;
 			}
 			ext_addr1 = (line_buf[4] << 24) | (line_buf[5] << 16);
 			break;
@@ -169,10 +171,10 @@ RESULT read_hex_file(FILE *hex_file, WRITE_MEMORY_CALLBACK callback,
 		}
 	}
 	
-	return ERROR_FAIL;
+	return VSFERR_FAIL;
 }
 
-static RESULT write_hex_line(FILE *hex_file, uint8_t data_len,
+static vsf_err_t write_hex_line(FILE *hex_file, uint8_t data_len,
 								uint16_t data_addr, uint8_t type, uint8_t *data)
 {
 	uint8_t line_buf[10 + 0xFF * 2 + 2], checksum = 0, pos = 0;
@@ -225,44 +227,41 @@ static RESULT write_hex_line(FILE *hex_file, uint8_t data_len,
 	
 	if (pos == fwrite(line_buf, 1, pos, hex_file))
 	{
-		return ERROR_OK;
+		return VSFERR_NONE;
 	}
 	else
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 }
 
-RESULT write_hex_file(FILE *hex_file, uint32_t file_addr,
+vsf_err_t write_hex_file(FILE *hex_file, uint32_t file_addr,
 						uint8_t *buff, uint32_t buff_size,
 						uint32_t seg_addr, uint32_t start_addr,
 						ADJUST_MAPPING_CALLBACK remap)
 {
 	uint8_t tmp;
 	uint16_t addr_high_orig, addr_tmp_big_endian;
-	RESULT ret;
 	uint32_t tmp_addr;
 	
 	file_addr = file_addr;
 	
 	// write seg_addr
 	seg_addr = ((seg_addr >> 8) & 0x000000FF) | ((seg_addr << 8) & 0x0000FF00);
-	ret = write_hex_line(hex_file, 2, (uint16_t)0, HEX_TYPE_START_SEG_ADDR,
-							(uint8_t *)&seg_addr);
-	if (ret != ERROR_OK)
+	if (write_hex_line(hex_file, 2, (uint16_t)0, HEX_TYPE_START_SEG_ADDR,
+							(uint8_t *)&seg_addr))
 	{
-		return ret;
+		return VSFERR_FAIL;
 	}
 	
 	// write ext_addr
 	addr_high_orig = start_addr >> 16;
 	addr_tmp_big_endian = ((addr_high_orig >> 8) & 0x000000FF)
 							| ((addr_high_orig << 8) & 0x0000FF00);
-	ret = write_hex_line(hex_file, 2, (uint16_t)0, HEX_TYPE_EXT_LINEAR_ADDR,
-							(uint8_t *)&addr_tmp_big_endian);
-	if (ret != ERROR_OK)
+	if (write_hex_line(hex_file, 2, (uint16_t)0, HEX_TYPE_EXT_LINEAR_ADDR,
+							(uint8_t *)&addr_tmp_big_endian))
 	{
-		return ret;
+		return VSFERR_FAIL;
 	}
 	
 	// write data
@@ -274,11 +273,10 @@ RESULT write_hex_file(FILE *hex_file, uint32_t file_addr,
 			addr_high_orig = start_addr >> 16;
 			addr_tmp_big_endian = ((addr_high_orig >> 8) & 0x000000FF)
 									| ((addr_high_orig << 8) & 0x0000FF00);
-			ret = write_hex_line(hex_file, 2, (uint16_t)0, HEX_TYPE_EXT_LINEAR_ADDR,
-									(uint8_t *)&addr_tmp_big_endian);
-			if (ret != ERROR_OK)
+			if (write_hex_line(hex_file, 2, (uint16_t)0, HEX_TYPE_EXT_LINEAR_ADDR,
+									(uint8_t *)&addr_tmp_big_endian))
 			{
-				return ret;
+				return VSFERR_FAIL;
 			}
 		}
 		
@@ -293,15 +291,14 @@ RESULT write_hex_file(FILE *hex_file, uint32_t file_addr,
 		
 		// write
 		tmp_addr = start_addr;
-		if ((remap != NULL) && (ERROR_OK != remap(&tmp_addr, 0)))
+		if ((remap != NULL) && remap(&tmp_addr, 0))
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
-		ret = write_hex_line(hex_file, (uint8_t)tmp,
-						(uint16_t)(tmp_addr & 0xFFFF), HEX_TYPE_DATA, buff);
-		if (ret != ERROR_OK)
+		if (write_hex_line(hex_file, (uint8_t)tmp,
+						(uint16_t)(tmp_addr & 0xFFFF), HEX_TYPE_DATA, buff))
 		{
-			return ret;
+			return VSFERR_FAIL;
 		}
 		
 		start_addr += tmp;
@@ -309,18 +306,18 @@ RESULT write_hex_file(FILE *hex_file, uint32_t file_addr,
 		buff_size -= tmp;
 	}
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT write_hex_file_end(FILE *hex_file)
+vsf_err_t write_hex_file_end(FILE *hex_file)
 {
 	if (fwrite(":00000001FF\r\n", 1, 13, hex_file) != 13)
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	else
 	{
-		return ERROR_OK;
+		return VSFERR_NONE;
 	}
 }
 

@@ -77,7 +77,7 @@ Usage of %s:\n\
   -F,  --frequency <FREQUENCY>              set ISP frequency, in KHz\n\
   -m,  --mode <MODE>                        set program mode<b|p>\n\n",
 			CUR_TARGET_STRING);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 const struct vss_cmd_t s5x_notifier[] =
@@ -167,13 +167,13 @@ ENTER_PROGRAM_MODE_HANDLER(s5x)
 		poll_fail_unequ(0, 0xFF, 0x69);
 	}
 	poll_end();
-	if (ERROR_OK != commit())
+	if (commit())
 	{
 		LOG_ERROR(ERRMSG_FAILURE_ENTER_PROG_MODE);
 		return ERRCODE_FAILURE_ENTER_PROG_MODE;
 	}
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 LEAVE_PROGRAM_MODE_HANDLER(s5x)
@@ -184,11 +184,11 @@ LEAVE_PROGRAM_MODE_HANDLER(s5x)
 	reset_input();
 	reset_fini();
 	spi_fini();
-	if (ERROR_OK != commit())
+	if (commit())
 	{
 		return ERRCODE_FAILURE_OPERATION;
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 ERASE_TARGET_HANDLER(s5x)
@@ -206,11 +206,11 @@ ERASE_TARGET_HANDLER(s5x)
 	cmd_buf[3] = 0x00;
 	spi_io(cmd_buf, 4, NULL);
 	delay_ms(500);
-	if (ERROR_OK != commit())
+	if (commit())
 	{
 		return ERRCODE_FAILURE_OPERATION;
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 WRITE_TARGET_HANDLER(s5x)
@@ -218,7 +218,7 @@ WRITE_TARGET_HANDLER(s5x)
 	struct program_info_t *pi = context->pi;
 	uint8_t cmd_buf[4];
 	uint32_t i;
-	RESULT ret = ERROR_OK;
+	vsf_err_t err = VSFERR_NONE;
 	
 	switch (area)
 	{
@@ -244,9 +244,9 @@ WRITE_TARGET_HANDLER(s5x)
 				delay_us(s5x_byte_delay_us);
 			}
 			
-			if (ERROR_OK != commit())
+			if (commit())
 			{
-				ret = ERRCODE_FAILURE_OPERATION;
+				err = ERRCODE_FAILURE_OPERATION;
 				break;
 			}
 			break;
@@ -261,14 +261,14 @@ WRITE_TARGET_HANDLER(s5x)
 				delay_us(s5x_byte_delay_us);
 			}
 			
-			if (ERROR_OK != commit())
+			if (commit())
 			{
-				ret = ERRCODE_FAILURE_OPERATION;
+				err = ERRCODE_FAILURE_OPERATION;
 				break;
 			}
 			break;
 		default:
-			ret = ERROR_FAIL;
+			err = VSFERR_FAIL;
 			break;
 		}
 		break;
@@ -279,9 +279,9 @@ WRITE_TARGET_HANDLER(s5x)
 		cmd_buf[3] = 0x00;
 		spi_io(cmd_buf, 4, NULL);
 		delay_ms(100);
-		if (ERROR_OK != commit())
+		if (commit())
 		{
-			ret = ERRCODE_FAILURE_OPERATION;
+			err = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
 		break;
@@ -289,7 +289,7 @@ WRITE_TARGET_HANDLER(s5x)
 		if ((buff[0] < 1) || (buff[0] > 4))
 		{
 			LOG_ERROR(ERRMSG_INVALID_VALUE, buff[0], "lock_value(1..4)");
-			ret = ERRCODE_INVALID;
+			err = ERRCODE_INVALID;
 			break;
 		}
 		
@@ -308,18 +308,18 @@ WRITE_TARGET_HANDLER(s5x)
 				}
 			}
 			
-			if (ERROR_OK != commit())
+			if (commit())
 			{
-				ret = ERRCODE_FAILURE_OPERATION;
+				err = ERRCODE_FAILURE_OPERATION;
 				break;
 			}
 		}
 		break;
 	default:
-		ret = ERROR_FAIL;
+		err = VSFERR_FAIL;
 		break;
 	}
-	return ret;
+	return err;
 }
 
 READ_TARGET_HANDLER(s5x)
@@ -327,7 +327,7 @@ READ_TARGET_HANDLER(s5x)
 	struct program_info_t *pi = context->pi;
 	uint8_t cmd_buf[4], ret_buf[256 * 4], tmp8, lock;
 	uint32_t i;
-	RESULT ret = ERROR_OK;
+	vsf_err_t err = VSFERR_NONE;
 	
 	switch (area)
 	{
@@ -347,9 +347,9 @@ READ_TARGET_HANDLER(s5x)
 		cmd_buf[2] = 0x00;
 		cmd_buf[3] = 0x00;
 		spi_io(cmd_buf, 4, &ret_buf[8]);
-		if (ERROR_OK != commit())
+		if (commit())
 		{
-			ret = ERRCODE_FAILURE_OPERATION;
+			err = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
 		buff[0] = ret_buf[11];
@@ -374,16 +374,16 @@ READ_TARGET_HANDLER(s5x)
 			
 			spi_io(buff, (uint16_t)size, buff);
 			
-			if (ERROR_OK != commit())
+			if (commit())
 			{
-				ret = ERRCODE_FAILURE_OPERATION;
+				err = ERRCODE_FAILURE_OPERATION;
 				break;
 			}
 			break;
 		case S5X_BYTE_MODE:
 			if (size > 256)
 			{
-				return ERROR_FAIL;
+				return VSFERR_FAIL;
 			}
 			
 			for (i = 0; i < size; i++)
@@ -395,9 +395,9 @@ READ_TARGET_HANDLER(s5x)
 				spi_io(cmd_buf, 4, &ret_buf[4 * i]);
 			}
 			
-			if (ERROR_OK != commit())
+			if (commit())
 			{
-				ret = ERRCODE_FAILURE_OPERATION;
+				err = ERRCODE_FAILURE_OPERATION;
 				break;
 			}
 			for (i = 0; i < size; i++)
@@ -415,9 +415,9 @@ READ_TARGET_HANDLER(s5x)
 		cmd_buf[2] = 0x00;
 		cmd_buf[3] = 0x00;
 		spi_io(cmd_buf, 4, &ret_buf[0]);
-		if (ERROR_OK != commit())
+		if (commit())
 		{
-			ret = ERRCODE_FAILURE_OPERATION;
+			err = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
 		buff[0] = ret_buf[3] & 0x0F;
@@ -428,9 +428,9 @@ READ_TARGET_HANDLER(s5x)
 		cmd_buf[2] = 0x00;
 		cmd_buf[3] = 0x00;
 		spi_io(cmd_buf, 4, &ret_buf[0]);
-		if (ERROR_OK != commit())
+		if (commit())
 		{
-			ret = ERRCODE_FAILURE_OPERATION;
+			err = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
 		
@@ -446,9 +446,9 @@ READ_TARGET_HANDLER(s5x)
 		buff[0] = lock + 1;
 		break;
 	default:
-		ret = ERROR_FAIL;
+		err = VSFERR_FAIL;
 		break;
 	}
-	return ret;
+	return err;
 }
 

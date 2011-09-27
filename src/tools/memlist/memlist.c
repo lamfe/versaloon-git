@@ -22,6 +22,8 @@
 
 #include <stdlib.h>
 
+#include "vsf_err.h"
+
 #include "app_type.h"
 #include "app_io.h"
 #include "app_log.h"
@@ -34,7 +36,7 @@
 #define MEMLIST_AdjustLen(len, page_size)		\
 						(((len) + (page_size) - 1) / (page_size) * (page_size))
 
-static RESULT MEMLIST_Merge(struct memlist *ml, uint32_t addr, uint32_t len,
+static vsf_err_t MEMLIST_Merge(struct memlist *ml, uint32_t addr, uint32_t len,
 							uint32_t page_size)
 {
 	struct memlist *ml_tmp = ml;
@@ -42,7 +44,7 @@ static RESULT MEMLIST_Merge(struct memlist *ml, uint32_t addr, uint32_t len,
 	
 	if (NULL == ml_tmp)
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	head = addr;
@@ -59,7 +61,7 @@ static RESULT MEMLIST_Merge(struct memlist *ml, uint32_t addr, uint32_t len,
 		}
 		if (tail < cur_head)
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		break;
 	}
@@ -106,10 +108,10 @@ static RESULT MEMLIST_Merge(struct memlist *ml, uint32_t addr, uint32_t len,
 			ml = ml_swap;
 		}
 		
-		return ERROR_OK;
+		return VSFERR_NONE;
 	}
 	
-	return ERROR_FAIL;
+	return VSFERR_FAIL;
 }
 
 static void MEMLIST_Insert(struct memlist **ml, struct memlist *newitem)
@@ -157,14 +159,14 @@ uint32_t MEMLIST_CalcAllSize(struct memlist *ml)
 	return size;
 }
 
-RESULT MEMLIST_Add(struct memlist **ml, uint32_t addr, uint32_t len,
+vsf_err_t MEMLIST_Add(struct memlist **ml, uint32_t addr, uint32_t len,
 					uint32_t page_size)
 {
 	struct memlist *newitem = NULL;
 	
 	if (NULL == ml)
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	if (NULL == *ml)
@@ -173,7 +175,7 @@ RESULT MEMLIST_Add(struct memlist **ml, uint32_t addr, uint32_t len,
 		if (NULL == *ml)
 		{
 			LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		
 		(*ml)->addr = MEMLIST_AdjustAddr(addr, page_size);
@@ -182,13 +184,13 @@ RESULT MEMLIST_Add(struct memlist **ml, uint32_t addr, uint32_t len,
 	}
 	else
 	{
-		if (ERROR_OK != MEMLIST_Merge(*ml, addr, len, page_size))
+		if (MEMLIST_Merge(*ml, addr, len, page_size))
 		{
 			newitem = (struct memlist*)malloc(sizeof(struct memlist));
 			if (NULL == newitem)
 			{
 				LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-				return ERROR_FAIL;
+				return VSFERR_FAIL;
 			}
 			
 			newitem->addr = MEMLIST_AdjustAddr(addr, page_size);
@@ -198,7 +200,7 @@ RESULT MEMLIST_Add(struct memlist **ml, uint32_t addr, uint32_t len,
 		}
 	}
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 void MEMLIST_Free(struct memlist **ml)

@@ -14,12 +14,11 @@
  *      2008-11-07:     created(by SimonQian)                             *
  **************************************************************************/
 
-RESULT microwire_init(uint8_t index);
-RESULT microwire_fini(uint8_t index);
-RESULT microwire_config(uint8_t index, uint16_t kHz, uint8_t sel_polarity);
-RESULT microwire_transport(uint8_t index, 
-						   uint32_t opcode, uint8_t opcode_bitlen, 
-						   uint32_t addr, uint8_t addr_bitlen, 
-						   uint32_t data, uint8_t data_bitlen, 
-						   uint8_t *ret, uint8_t ret_bitlen);
-RESULT microwire_poll(uint8_t index, uint16_t interval_us, uint16_t retry_cnt);
+vsf_err_t microwire_init(uint8_t index);
+vsf_err_t microwire_fini(uint8_t index);
+vsf_err_t microwire_config(uint8_t index, uint16_t kHz, uint8_t sel_polarity);
+vsf_err_t microwire_transport(uint8_t index, uint32_t opcode,
+		uint8_t opcode_bitlen, uint32_t addr, uint8_t addr_bitlen, 
+		uint32_t data, uint8_t data_bitlen, uint8_t *ret, uint8_t ret_bitlen);
+vsf_err_t microwire_poll(uint8_t index, uint16_t interval_us,
+							uint16_t retry_cnt);

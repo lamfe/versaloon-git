@@ -67,7 +67,7 @@ Usage of %s:\n\
   -x,  --execute <ADDRESS>                  execute program\n\
   -F,  --frequency <FREQUENCY>              set JTAG frequency, in KHz\n\n",
 			CUR_TARGET_STRING);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 VSS_HANDLER(lm3s_mode)
@@ -87,9 +87,9 @@ VSS_HANDLER(lm3s_mode)
 				sizeof(lm3s_program_functions));
 		break;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 const struct vss_cmd_t lm3s_notifier[] =
@@ -103,7 +103,7 @@ const struct vss_cmd_t lm3s_notifier[] =
 	VSS_CMD_END
 };
 
-RESULT lm3s_check_device(struct lm3s_device_info_t *device)
+vsf_err_t lm3s_check_device(struct lm3s_device_info_t *device)
 {
 	uint32_t tmp;
 	uint16_t sram_size, flash_size;
@@ -135,7 +135,7 @@ RESULT lm3s_check_device(struct lm3s_device_info_t *device)
 	{
 		LOG_ERROR(ERRMSG_INVALID_VALUE_MESSAGE, tmp,
 					"lm3s family", "should be 0");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	// TEMP
@@ -246,6 +246,6 @@ RESULT lm3s_check_device(struct lm3s_device_info_t *device)
 	
 	LOG_INFO("ram_size = %dK, flash_size = %dK", sram_size, flash_size);
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 

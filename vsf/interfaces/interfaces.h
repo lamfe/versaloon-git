@@ -23,34 +23,35 @@
 
 struct interface_flash_t
 {
-	RESULT (*init)(uint8_t index);
-	RESULT (*fini)(uint8_t index);
+	vsf_err_t (*init)(uint8_t index);
+	vsf_err_t (*fini)(uint8_t index);
 	
-	RESULT (*lock)(uint8_t index);
-	RESULT (*unlock)(uint8_t index);
+	vsf_err_t (*lock)(uint8_t index);
+	vsf_err_t (*unlock)(uint8_t index);
 	
-	RESULT (*getcapacity)(uint8_t index, uint32_t *pagesize, uint32_t *pagenum);
+	vsf_err_t (*getcapacity)(uint8_t index, uint32_t *pagesize, 
+								uint32_t *pagenum);
 	
-	RESULT (*read)(uint8_t index, uint32_t offset, uint8_t *buff, 
+	vsf_err_t (*read)(uint8_t index, uint32_t offset, uint8_t *buff, 
 					uint32_t size);
-	RESULT (*read_isready)(uint8_t index, uint32_t offset, uint8_t *buff, 
-					uint32_t size, bool *ready);
-	RESULT (*write)(uint8_t index, uint32_t offset, uint8_t *buff, 
+	vsf_err_t (*read_isready)(uint8_t index, uint32_t offset, uint8_t *buff, 
 					uint32_t size);
-	RESULT (*write_isready)(uint8_t index, uint32_t offset, uint8_t *buff, 
-					uint32_t size, bool *ready);
+	vsf_err_t (*write)(uint8_t index, uint32_t offset, uint8_t *buff, 
+					uint32_t size);
+	vsf_err_t (*write_isready)(uint8_t index, uint32_t offset, uint8_t *buff, 
+					uint32_t size);
 	
-	RESULT (*readpage)(uint8_t index, uint32_t offset, uint8_t *buff);
-	RESULT (*readpage_isready)(uint8_t index, uint32_t offset, uint8_t *buff, 
-								bool *ready);
-	RESULT (*erasepage)(uint8_t index, uint32_t offset);
-	RESULT (*erasepage_isready)(uint8_t index, uint32_t offset, bool *ready);
-	RESULT (*writepage)(uint8_t index, uint32_t offset, uint8_t *buff);
-	RESULT (*writepage_isready)(uint8_t index, uint32_t offset, uint8_t *buff, 
-								bool *ready);
+	vsf_err_t (*readpage)(uint8_t index, uint32_t offset, uint8_t *buff);
+	vsf_err_t (*readpage_isready)(uint8_t index, uint32_t offset, 
+									uint8_t *buff);
+	vsf_err_t (*erasepage)(uint8_t index, uint32_t offset);
+	vsf_err_t (*erasepage_isready)(uint8_t index, uint32_t offset);
+	vsf_err_t (*writepage)(uint8_t index, uint32_t offset, uint8_t *buff);
+	vsf_err_t (*writepage_isready)(uint8_t index, uint32_t offset, 
+									uint8_t *buff);
 	
 	bool (*isprotected)(uint8_t index);
-	RESULT (*protect)(uint8_t index);
+	vsf_err_t (*protect)(uint8_t index);
 };
 
 #define CORE_USART_MODE0(m)			__CONNECT(m, _USART_MODE0)
@@ -78,23 +79,23 @@ struct interface_flash_t
 #define USART_PARITY_EVEN			CORE_USART_PARITY_EVEN(__TARGET_CHIP__)
 struct interface_usart_t
 {
-	RESULT (*init)(uint8_t index);
-	RESULT (*fini)(uint8_t index);
-	RESULT (*config)(uint8_t index, uint32_t baudrate, uint8_t datalength, 
+	vsf_err_t (*init)(uint8_t index);
+	vsf_err_t (*fini)(uint8_t index);
+	vsf_err_t (*config)(uint8_t index, uint32_t baudrate, uint8_t datalength, 
 					uint8_t mode);
-	RESULT (*config_callback)(uint8_t index, void *p, void (*ontx)(void *), 
+	vsf_err_t (*config_callback)(uint8_t index, void *p, void (*ontx)(void *), 
 								void (*onrx)(void *, uint16_t));
-	RESULT (*tx)(uint8_t index, uint16_t data);
-	bool (*tx_isready)(uint8_t index);
+	vsf_err_t (*tx)(uint8_t index, uint16_t data);
+	vsf_err_t (*tx_isready)(uint8_t index);
 	uint16_t (*rx)(uint8_t index);
-	bool (*rx_isready)(uint8_t index);
+	vsf_err_t (*rx_isready)(uint8_t index);
 	
-//	RESULT (*dma_tx_start)(uint8_t index, void *data, uint32_t len);
-//	bool (*dma_tx_isready)(uint8_t index);
-//	RESULT (*dma_tx_end)(uint8_t index);
-//	RESULT (*dma_rx_start)(uint8_t index, void *data, uint32_t len);
-//	bool (*dma_rx_isready)(uint8_t index);
-//	RESULT (*dma_rx_end)(uint8_t index);
+//	vsf_err_t (*dma_tx_start)(uint8_t index, void *data, uint32_t len);
+//	vsf_err_t (*dma_tx_isready)(uint8_t index);
+//	vsf_err_t (*dma_tx_end)(uint8_t index);
+//	vsf_err_t (*dma_rx_start)(uint8_t index, void *data, uint32_t len);
+//	vsf_err_t (*dma_rx_isready)(uint8_t index);
+//	vsf_err_t (*dma_rx_end)(uint8_t index);
 };
 
 #define CORE_SPI_MASTER(m)			__CONNECT(m, _SPI_MASTER)
@@ -120,24 +121,24 @@ struct spi_ability_t
 };
 struct interface_spi_t
 {
-	RESULT (*init)(uint8_t index);
-	RESULT (*fini)(uint8_t index);
-	RESULT (*get_ability)(uint8_t index, struct spi_ability_t *ability);
-	RESULT (*enable)(uint8_t index);
-	RESULT (*disable)(uint8_t index);
-	RESULT (*config)(uint8_t index, uint32_t kHz, uint8_t mode);
+	vsf_err_t (*init)(uint8_t index);
+	vsf_err_t (*fini)(uint8_t index);
+	vsf_err_t (*get_ability)(uint8_t index, struct spi_ability_t *ability);
+	vsf_err_t (*enable)(uint8_t index);
+	vsf_err_t (*disable)(uint8_t index);
+	vsf_err_t (*config)(uint8_t index, uint32_t kHz, uint8_t mode);
 	
-	RESULT (*io_tx)(uint8_t index, uint8_t out);
-	bool (*io_tx_isready)(uint8_t index);
+	vsf_err_t (*io_tx)(uint8_t index, uint8_t out);
+	vsf_err_t (*io_tx_isready)(uint8_t index);
 	uint8_t (*io_rx)(uint8_t index);
-	bool (*io_rx_isready)(uint8_t index);
+	vsf_err_t (*io_rx_isready)(uint8_t index);
 	
-	RESULT (*io)(uint8_t index, uint8_t *out, uint8_t *in, uint32_t len);
+	vsf_err_t (*io)(uint8_t index, uint8_t *out, uint8_t *in, uint32_t len);
 	
-	RESULT (*io_dma_start)(uint8_t index, uint8_t *out, uint8_t *in, 
+	vsf_err_t (*io_dma_start)(uint8_t index, uint8_t *out, uint8_t *in, 
 							uint32_t len);
-	bool (*io_dma_isready)(uint8_t index);
-	RESULT (*io_dma_end)(uint8_t index);
+	vsf_err_t (*io_dma_isready)(uint8_t index);
+	vsf_err_t (*io_dma_end)(uint8_t index);
 };
 
 #define CORE_ADC_ALIGNLEFT(m)		__CONNECT(m, _ADC_ALIGNLEFT)
@@ -146,13 +147,13 @@ struct interface_spi_t
 #define ADC_ALIGNRIGHT				CORE_ADC_ALIGNRIGHT(__TARGET_CHIP__)
 struct interface_adc_t
 {
-	RESULT (*init)(uint8_t index);
-	RESULT (*fini)(uint8_t index);
-	RESULT (*config)(uint8_t index, uint32_t clock_hz, uint8_t mode);
-	RESULT (*config_channel)(uint8_t index, uint8_t channel, uint8_t cycles);
-	RESULT (*calibrate)(uint8_t index, uint8_t channel);
-	RESULT (*start)(uint8_t index, uint8_t channel);
-	bool (*isready)(uint8_t index, uint8_t channel);
+	vsf_err_t (*init)(uint8_t index);
+	vsf_err_t (*fini)(uint8_t index);
+	vsf_err_t (*config)(uint8_t index, uint32_t clock_hz, uint8_t mode);
+	vsf_err_t (*config_channel)(uint8_t index, uint8_t channel, uint8_t cycles);
+	vsf_err_t (*calibrate)(uint8_t index, uint8_t channel);
+	vsf_err_t (*start)(uint8_t index, uint8_t channel);
+	vsf_err_t (*isready)(uint8_t index, uint8_t channel);
 	uint32_t (*get)(uint8_t index, uint8_t channel);
 };
 
@@ -168,74 +169,74 @@ struct interface_adc_t
 #define GPIO_OUTOD					CORE_GPIO_OUTOD(__TARGET_CHIP__)
 struct interface_gpio_t
 {
-	RESULT (*init)(uint8_t index);
-	RESULT (*fini)(uint8_t index);
-	RESULT (*config_pin)(uint8_t index, uint8_t pin_idx, uint8_t mode);
-	RESULT (*config)(uint8_t index, uint32_t pin_mask, uint32_t io, 
+	vsf_err_t (*init)(uint8_t index);
+	vsf_err_t (*fini)(uint8_t index);
+	vsf_err_t (*config_pin)(uint8_t index, uint8_t pin_idx, uint8_t mode);
+	vsf_err_t (*config)(uint8_t index, uint32_t pin_mask, uint32_t io, 
 						uint32_t pull_en_mask, uint32_t input_pull_mask);
-	RESULT (*set)(uint8_t index, uint32_t pin_mask);
-	RESULT (*clear)(uint8_t index, uint32_t pin_mask);
-	RESULT (*out)(uint8_t index, uint32_t pin_mask, uint32_t value);
-	RESULT (*in)(uint8_t index, uint32_t pin_mask, uint32_t *value);
+	vsf_err_t (*set)(uint8_t index, uint32_t pin_mask);
+	vsf_err_t (*clear)(uint8_t index, uint32_t pin_mask);
+	vsf_err_t (*out)(uint8_t index, uint32_t pin_mask, uint32_t value);
+	vsf_err_t (*in)(uint8_t index, uint32_t pin_mask, uint32_t *value);
 	uint32_t (*get)(uint8_t index, uint32_t pin_mask);
 };
 
 struct interface_delay_t
 {
-	RESULT (*init)(void);
-	RESULT (*delayms)(uint16_t ms);
-	RESULT (*delayus)(uint16_t us);
+	vsf_err_t (*init)(void);
+	vsf_err_t (*delayms)(uint16_t ms);
+	vsf_err_t (*delayus)(uint16_t us);
 };
 
 struct interface_i2c_t
 {
-	RESULT (*init)(uint8_t index);
-	RESULT (*fini)(uint8_t index);
-	RESULT (*config)(uint8_t index, uint16_t kHz, uint16_t byte_interval, 
+	vsf_err_t (*init)(uint8_t index);
+	vsf_err_t (*fini)(uint8_t index);
+	vsf_err_t (*config)(uint8_t index, uint16_t kHz, uint16_t byte_interval, 
 					 uint16_t max_dly);
-	RESULT (*read)(uint8_t index, uint16_t chip_addr, uint8_t *data, 
+	vsf_err_t (*read)(uint8_t index, uint16_t chip_addr, uint8_t *data, 
 				   uint16_t data_len, uint8_t stop, bool nacklast);
-	RESULT (*write)(uint8_t index, uint16_t chip_addr, uint8_t *data, 
+	vsf_err_t (*write)(uint8_t index, uint16_t chip_addr, uint8_t *data, 
 					uint16_t data_len, uint8_t stop);
 };
 
 struct interface_pwm_t
 {
-	RESULT (*init)(uint8_t index);
-	RESULT (*fini)(uint8_t index);
-	RESULT (*config)(uint8_t index, uint16_t kHz, uint8_t mode);
-	RESULT (*out)(uint8_t index, uint16_t count, uint16_t *rate);
-	RESULT (*in)(uint8_t index, uint16_t count, uint16_t *rate);
+	vsf_err_t (*init)(uint8_t index);
+	vsf_err_t (*fini)(uint8_t index);
+	vsf_err_t (*config)(uint8_t index, uint16_t kHz, uint8_t mode);
+	vsf_err_t (*out)(uint8_t index, uint16_t count, uint16_t *rate);
+	vsf_err_t (*in)(uint8_t index, uint16_t count, uint16_t *rate);
 };
 
 struct interface_microwire_t
 {
-	RESULT (*init)(uint8_t index);
-	RESULT (*fini)(uint8_t index);
-	RESULT (*config)(uint8_t index, uint16_t kHz, uint8_t sel_polarity);
-	RESULT (*transport)(uint8_t index, 
+	vsf_err_t (*init)(uint8_t index);
+	vsf_err_t (*fini)(uint8_t index);
+	vsf_err_t (*config)(uint8_t index, uint16_t kHz, uint8_t sel_polarity);
+	vsf_err_t (*transport)(uint8_t index, 
 						uint32_t opcode, uint8_t opcode_bitlen, 
 						uint32_t addr, uint8_t addr_bitlen, 
 						uint32_t data, uint8_t data_bitlen, 
 						uint8_t *reply, uint8_t reply_bitlen);
-	RESULT (*poll)(uint8_t index, uint16_t interval_us, uint16_t retry_cnt);
+	vsf_err_t (*poll)(uint8_t index, uint16_t interval_us, uint16_t retry_cnt);
 };
 
 struct interface_timer_t
 {
-	RESULT (*init)(uint8_t index);
-	RESULT (*fini)(uint8_t index);
-	RESULT (*config)(uint8_t index, uint32_t kHz, uint32_t mode, 
+	vsf_err_t (*init)(uint8_t index);
+	vsf_err_t (*fini)(uint8_t index);
+	vsf_err_t (*config)(uint8_t index, uint32_t kHz, uint32_t mode, 
 						void (*overflow)(void));
-	RESULT (*start)(uint8_t index);
-	RESULT (*stop)(uint8_t index);
-	RESULT (*get_count)(uint8_t index, uint32_t *count);
-	RESULT (*set_count)(uint8_t index, uint32_t count);
+	vsf_err_t (*start)(uint8_t index);
+	vsf_err_t (*stop)(uint8_t index);
+	vsf_err_t (*get_count)(uint8_t index, uint32_t *count);
+	vsf_err_t (*set_count)(uint8_t index, uint32_t count);
 	
-	RESULT (*config_channel)(uint8_t index, uint8_t channel, uint32_t mode, 
+	vsf_err_t (*config_channel)(uint8_t index, uint8_t channel, uint32_t mode, 
 								void (*callback)(void));
-	RESULT (*get_channel)(uint8_t index, uint8_t channel, uint32_t *count);
-	RESULT (*set_channel)(uint8_t index, uint8_t channel, uint32_t count);
+	vsf_err_t (*get_channel)(uint8_t index, uint8_t channel, uint32_t *count);
+	vsf_err_t (*set_channel)(uint8_t index, uint8_t channel, uint32_t count);
 };
 
 #define CORE_EINT_ONFALL(m)			__CONNECT(m, _EINT_ONFALL)
@@ -248,12 +249,12 @@ struct interface_timer_t
 #define EINT_EVT					CORE_EINT_EVT(__TARGET_CHIP__)
 struct interface_eint_t
 {
-	RESULT (*init)(uint8_t index);
-	RESULT (*fini)(uint8_t index);
-	RESULT (*config)(uint8_t index, uint8_t type, void (*callback)(void));
-	RESULT (*enable)(uint8_t index);
-	RESULT (*disable)(uint8_t index);
-	RESULT (*trigger)(uint8_t index);
+	vsf_err_t (*init)(uint8_t index);
+	vsf_err_t (*fini)(uint8_t index);
+	vsf_err_t (*config)(uint8_t index, uint8_t type, void (*callback)(void));
+	vsf_err_t (*enable)(uint8_t index);
+	vsf_err_t (*disable)(uint8_t index);
+	vsf_err_t (*trigger)(uint8_t index);
 };
 
 #define EBI_TGTTYP_NOR				0x00
@@ -348,21 +349,21 @@ struct ebi_pccard_info_t
 };
 struct interface_ebi_t
 {
-	RESULT (*init)(uint8_t index);
-	RESULT (*fini)(uint8_t index);
+	vsf_err_t (*init)(uint8_t index);
+	vsf_err_t (*fini)(uint8_t index);
 	
-	RESULT (*config)(uint8_t index, uint8_t target_index, void *param);
-	RESULT (*config_sram)(uint8_t index, struct ebi_sram_info_t *info);
-	RESULT (*config_psram)(uint8_t index, struct ebi_psram_info_t *info);
-	RESULT (*config_nor)(uint8_t index, struct ebi_nor_info_t *info);
-	RESULT (*config_nand)(uint8_t index, struct ebi_nand_info_t *info);
-	RESULT (*config_sdram)(uint8_t index, struct ebi_sdram_info_t *info);
-	RESULT (*config_ddram)(uint8_t index, struct ebi_ddram_info_t *info);
-	RESULT (*config_pccard)(uint8_t index, struct ebi_pccard_info_t *info);
+	vsf_err_t (*config)(uint8_t index, uint8_t target_index, void *param);
+	vsf_err_t (*config_sram)(uint8_t index, struct ebi_sram_info_t *info);
+	vsf_err_t (*config_psram)(uint8_t index, struct ebi_psram_info_t *info);
+	vsf_err_t (*config_nor)(uint8_t index, struct ebi_nor_info_t *info);
+	vsf_err_t (*config_nand)(uint8_t index, struct ebi_nand_info_t *info);
+	vsf_err_t (*config_sdram)(uint8_t index, struct ebi_sdram_info_t *info);
+	vsf_err_t (*config_ddram)(uint8_t index, struct ebi_ddram_info_t *info);
+	vsf_err_t (*config_pccard)(uint8_t index, struct ebi_pccard_info_t *info);
 	
-	RESULT (*read)(uint8_t index, uint8_t target_index, uint32_t address, 
+	vsf_err_t (*read)(uint8_t index, uint8_t target_index, uint32_t address, 
 					uint8_t data_size, uint8_t *buff, uint32_t count);
-	RESULT (*write)(uint8_t index, uint8_t target_index, uint32_t address, 
+	vsf_err_t (*write)(uint8_t index, uint8_t target_index, uint32_t address, 
 					uint8_t data_size, uint8_t *buff, uint32_t count);
 	
 	uint8_t (*read8)(uint8_t index, uint32_t address);
@@ -372,24 +373,24 @@ struct interface_ebi_t
 	uint32_t (*read32)(uint8_t index, uint32_t address);
 	void (*write32)(uint8_t index, uint32_t address, uint32_t data);
 	
-	RESULT (*readp8)(uint8_t index, uint32_t address, uint32_t count, 
+	vsf_err_t (*readp8)(uint8_t index, uint32_t address, uint32_t count, 
 						uint8_t *buff);
-	bool (*readp8_isready)(uint8_t index);
-	RESULT (*writep8)(uint8_t index, uint32_t address, uint32_t count, 
+	vsf_err_t (*readp8_isready)(uint8_t index);
+	vsf_err_t (*writep8)(uint8_t index, uint32_t address, uint32_t count, 
 						uint8_t *buff);
-	bool (*writep8_isready)(uint8_t index);
-	RESULT (*readp16)(uint8_t index, uint32_t address, uint32_t count, 
+	vsf_err_t (*writep8_isready)(uint8_t index);
+	vsf_err_t (*readp16)(uint8_t index, uint32_t address, uint32_t count, 
 						uint16_t *buff);
-	bool (*readp16_isready)(uint8_t index);
-	RESULT (*writep16)(uint8_t index, uint32_t address, uint32_t count, 
+	vsf_err_t (*readp16_isready)(uint8_t index);
+	vsf_err_t (*writep16)(uint8_t index, uint32_t address, uint32_t count, 
 						uint16_t *buff);
-	bool (*writep16_isready)(uint8_t index);
-	RESULT (*readp32)(uint8_t index, uint32_t address, uint32_t count, 
+	vsf_err_t (*writep16_isready)(uint8_t index);
+	vsf_err_t (*readp32)(uint8_t index, uint32_t address, uint32_t count, 
 						uint32_t *buff);
-	bool (*readp32_isready)(uint8_t index);
-	RESULT (*writep32)(uint8_t index, uint32_t address, uint32_t count, 
+	vsf_err_t (*readp32_isready)(uint8_t index);
+	vsf_err_t (*writep32)(uint8_t index, uint32_t address, uint32_t count, 
 						uint32_t *buff);
-	bool (*writep32_isready)(uint8_t index);
+	vsf_err_t (*writep32_isready)(uint8_t index);
 };
 
 #include "stack/usb_device/vsf_usbd_const.h"
@@ -413,20 +414,20 @@ enum usb_ep_type_t
 
 struct interface_usbd_t
 {
-	RESULT (*init)(void *device);
-	RESULT (*fini)(void);
-	RESULT (*reset)(void);
-	RESULT (*poll)(void);
+	vsf_err_t (*init)(void *device);
+	vsf_err_t (*fini)(void);
+	vsf_err_t (*reset)(void);
+	vsf_err_t (*poll)(void);
 	
-	RESULT (*connect)(void);
-	RESULT (*disconnect)(void);
+	vsf_err_t (*connect)(void);
+	vsf_err_t (*disconnect)(void);
 	
-	RESULT (*set_address)(uint8_t addr);
+	vsf_err_t (*set_address)(uint8_t addr);
 	uint8_t (*get_address)(void);
 	
-	RESULT (*suspend)(void);
-	RESULT (*resume)(void);
-	RESULT (*lowpower)(uint8_t level);
+	vsf_err_t (*suspend)(void);
+	vsf_err_t (*resume)(void);
+	vsf_err_t (*lowpower)(uint8_t level);
 	
 	uint32_t (*get_frame_number)(void);
 	
@@ -434,35 +435,38 @@ struct interface_usbd_t
 	{
 		const uint8_t *num_of_ep;
 		
-		RESULT (*reset)(uint8_t idx);
-		RESULT (*set_type)(uint8_t idx, enum usb_ep_type_t type);
+		vsf_err_t (*reset)(uint8_t idx);
+		vsf_err_t (*set_type)(uint8_t idx, enum usb_ep_type_t type);
 		enum usb_ep_type_t (*get_type)(uint8_t idx);
 		
-		RESULT (*set_IN_handler)(uint8_t idx, vsfusbd_IN_hanlder_t handler);
-		RESULT (*set_IN_dbuffer)(uint8_t idx);
+		vsf_err_t (*set_IN_handler)(uint8_t idx, vsfusbd_IN_hanlder_t handler);
+		vsf_err_t (*set_IN_dbuffer)(uint8_t idx);
 		bool (*is_IN_dbuffer)(uint8_t idx);
-		RESULT (*switch_IN_buffer)(uint8_t idx);
-		RESULT (*set_IN_epsize)(uint8_t idx, uint16_t size);
+		vsf_err_t (*switch_IN_buffer)(uint8_t idx);
+		vsf_err_t (*set_IN_epsize)(uint8_t idx, uint16_t size);
 		uint16_t (*get_IN_epsize)(uint8_t idx);
-		RESULT (*reset_IN_toggle)(uint8_t idx);
-		RESULT (*toggle_IN_toggle)(uint8_t idx);
+		vsf_err_t (*reset_IN_toggle)(uint8_t idx);
+		vsf_err_t (*toggle_IN_toggle)(uint8_t idx);
 		enum usb_ep_state_t (*get_IN_state)(uint8_t idx);
-		RESULT (*set_IN_state)(uint8_t idx, enum usb_ep_state_t state);
-		RESULT (*set_IN_count)(uint8_t idx, uint16_t size);
-		RESULT (*write_IN_buffer)(uint8_t idx, uint8_t *buffer, uint16_t size);
+		vsf_err_t (*set_IN_state)(uint8_t idx, enum usb_ep_state_t state);
+		vsf_err_t (*set_IN_count)(uint8_t idx, uint16_t size);
+		vsf_err_t (*write_IN_buffer)(uint8_t idx, uint8_t *buffer, 
+										uint16_t size);
 		
-		RESULT (*set_OUT_handler)(uint8_t idx, vsfusbd_OUT_hanlder_t handler);
-		RESULT (*set_OUT_dbuffer)(uint8_t idx);
+		vsf_err_t (*set_OUT_handler)(uint8_t idx, 
+										vsfusbd_OUT_hanlder_t handler);
+		vsf_err_t (*set_OUT_dbuffer)(uint8_t idx);
 		bool (*is_OUT_dbuffer)(uint8_t idx);
-		RESULT (*switch_OUT_buffer)(uint8_t idx);
-		RESULT (*set_OUT_epsize)(uint8_t idx, uint16_t size);
+		vsf_err_t (*switch_OUT_buffer)(uint8_t idx);
+		vsf_err_t (*set_OUT_epsize)(uint8_t idx, uint16_t size);
 		uint16_t (*get_OUT_epsize)(uint8_t idx);
-		RESULT (*reset_OUT_toggle)(uint8_t idx);
-		RESULT (*toggle_OUT_toggle)(uint8_t idx);
+		vsf_err_t (*reset_OUT_toggle)(uint8_t idx);
+		vsf_err_t (*toggle_OUT_toggle)(uint8_t idx);
 		enum usb_ep_state_t (*get_OUT_state)(uint8_t idx);
-		RESULT (*set_OUT_state)(uint8_t idx, enum usb_ep_state_t state);
+		vsf_err_t (*set_OUT_state)(uint8_t idx, enum usb_ep_state_t state);
 		uint16_t (*get_OUT_count)(uint8_t idx);
-		RESULT (*read_OUT_buffer)(uint8_t idx, uint8_t *buffer, uint16_t size);
+		vsf_err_t (*read_OUT_buffer)(uint8_t idx, uint8_t *buffer, 
+										uint16_t size);
 	} ep;
 };
 
@@ -633,148 +637,148 @@ struct interface_usbd_t
 #define CORE_USBD_EP_READ_OUT_BUFFER(m)	__CONNECT(m, _usbd_ep_read_OUT_buffer)
 
 // extern drivers
-RESULT CORE_INIT(__TARGET_CHIP__)(void *p);
-RESULT CORE_FINI(__TARGET_CHIP__)(void);
-void CORE_RESET(__TARGET_CHIP__)(void);
+vsf_err_t CORE_INIT(__TARGET_CHIP__)(void *p);
+vsf_err_t CORE_FINI(__TARGET_CHIP__)(void);
+vsf_err_t CORE_RESET(__TARGET_CHIP__)(void);
 // FLASH
-RESULT CORE_FLASH_INIT(__TARGET_CHIP__)(uint8_t index);
-RESULT CORE_FLASH_FINI(__TARGET_CHIP__)(uint8_t index);
-RESULT CORE_FLASH_LOCK(__TARGET_CHIP__)(uint8_t index);
-RESULT CORE_FLASH_UNLOCK(__TARGET_CHIP__)(uint8_t index);
-RESULT CORE_FLASH_GETCAPACITY(__TARGET_CHIP__)(uint8_t index, 
+vsf_err_t CORE_FLASH_INIT(__TARGET_CHIP__)(uint8_t index);
+vsf_err_t CORE_FLASH_FINI(__TARGET_CHIP__)(uint8_t index);
+vsf_err_t CORE_FLASH_LOCK(__TARGET_CHIP__)(uint8_t index);
+vsf_err_t CORE_FLASH_UNLOCK(__TARGET_CHIP__)(uint8_t index);
+vsf_err_t CORE_FLASH_GETCAPACITY(__TARGET_CHIP__)(uint8_t index, 
 									uint32_t *pagesize, uint32_t *pagenum);
-RESULT CORE_FLASH_READ(__TARGET_CHIP__)(uint8_t index, uint32_t offset, 
+vsf_err_t CORE_FLASH_READ(__TARGET_CHIP__)(uint8_t index, uint32_t offset, 
 										uint8_t *buff, uint32_t size);
-RESULT CORE_FLASH_READ_ISREADY(__TARGET_CHIP__)(uint8_t index, uint32_t offset, 
-									uint8_t *buff, uint32_t size, bool *ready);
-RESULT CORE_FLASH_WRITE(__TARGET_CHIP__)(uint8_t index, uint32_t offset, 
+vsf_err_t CORE_FLASH_READ_ISREADY(__TARGET_CHIP__)(uint8_t index, 
+								uint32_t offset, uint8_t *buff, uint32_t size);
+vsf_err_t CORE_FLASH_WRITE(__TARGET_CHIP__)(uint8_t index, uint32_t offset, 
 										uint8_t *buff, uint32_t size);
-RESULT CORE_FLASH_WRITE_ISREADY(__TARGET_CHIP__)(uint8_t index, 
-					uint32_t offset, uint8_t *buff, uint32_t size, bool *ready);
-RESULT CORE_FLASH_READPAGE(__TARGET_CHIP__)(uint8_t index, uint32_t offset, 
+vsf_err_t CORE_FLASH_WRITE_ISREADY(__TARGET_CHIP__)(uint8_t index, 
+								uint32_t offset, uint8_t *buff, uint32_t size);
+vsf_err_t CORE_FLASH_READPAGE(__TARGET_CHIP__)(uint8_t index, uint32_t offset, 
 								uint8_t *buff);
-RESULT CORE_FLASH_READPAGE_ISREADY(__TARGET_CHIP__)(uint8_t index, 
-								uint32_t offset, uint8_t *buff, bool *ready);
-RESULT CORE_FLASH_ERASEPAGE(__TARGET_CHIP__)(uint8_t index, uint32_t offset);
-RESULT CORE_FLASH_ERASEPAGE_ISREADY(__TARGET_CHIP__)(uint8_t index, 
-												uint32_t offset, bool *ready);
-RESULT CORE_FLASH_WRITEPAGE(__TARGET_CHIP__)(uint8_t index, uint32_t offset, 
+vsf_err_t CORE_FLASH_READPAGE_ISREADY(__TARGET_CHIP__)(uint8_t index, 
+												uint32_t offset, uint8_t *buff);
+vsf_err_t CORE_FLASH_ERASEPAGE(__TARGET_CHIP__)(uint8_t index, uint32_t offset);
+vsf_err_t CORE_FLASH_ERASEPAGE_ISREADY(__TARGET_CHIP__)(uint8_t index, 
+														uint32_t offset);
+vsf_err_t CORE_FLASH_WRITEPAGE(__TARGET_CHIP__)(uint8_t index, uint32_t offset, 
 								uint8_t *buff);
-RESULT CORE_FLASH_WRITEPAGE_ISREADY(__TARGET_CHIP__)(uint8_t index, 
-								uint32_t offset, uint8_t *buff, bool *ready);
-RESULT CORE_FLASH_PROTECT(__TARGET_CHIP__)(uint8_t index);
+vsf_err_t CORE_FLASH_WRITEPAGE_ISREADY(__TARGET_CHIP__)(uint8_t index, 
+												uint32_t offset, uint8_t *buff);
+vsf_err_t CORE_FLASH_PROTECT(__TARGET_CHIP__)(uint8_t index);
 bool CORE_FLASH_ISPROTECTED(__TARGET_CHIP__)(uint8_t index);
 // GPIO
-RESULT CORE_GPIO_INIT(__TARGET_CHIP__)(uint8_t index);
-RESULT CORE_GPIO_FINI(__TARGET_CHIP__)(uint8_t index);
-RESULT CORE_GPIO_CONFIG_PIN(__TARGET_CHIP__)(uint8_t index, uint8_t pin_idx, 
+vsf_err_t CORE_GPIO_INIT(__TARGET_CHIP__)(uint8_t index);
+vsf_err_t CORE_GPIO_FINI(__TARGET_CHIP__)(uint8_t index);
+vsf_err_t CORE_GPIO_CONFIG_PIN(__TARGET_CHIP__)(uint8_t index, uint8_t pin_idx, 
 												uint8_t mode);
-RESULT CORE_GPIO_CONFIG(__TARGET_CHIP__)(uint8_t index, uint32_t pin_mask, 
+vsf_err_t CORE_GPIO_CONFIG(__TARGET_CHIP__)(uint8_t index, uint32_t pin_mask, 
 		uint32_t io, uint32_t pull_en_mask, uint32_t input_pull_mask);
-RESULT CORE_GPIO_IN(__TARGET_CHIP__)(uint8_t index, uint32_t pin_mask, 
+vsf_err_t CORE_GPIO_IN(__TARGET_CHIP__)(uint8_t index, uint32_t pin_mask, 
 		uint32_t *value);
-RESULT CORE_GPIO_OUT(__TARGET_CHIP__)(uint8_t index, uint32_t pin_mask, 
+vsf_err_t CORE_GPIO_OUT(__TARGET_CHIP__)(uint8_t index, uint32_t pin_mask, 
 		uint32_t value);
-RESULT CORE_GPIO_SET(__TARGET_CHIP__)(uint8_t index, uint32_t pin_mask);
-RESULT CORE_GPIO_CLEAR(__TARGET_CHIP__)(uint8_t index, uint32_t pin_mask);
+vsf_err_t CORE_GPIO_SET(__TARGET_CHIP__)(uint8_t index, uint32_t pin_mask);
+vsf_err_t CORE_GPIO_CLEAR(__TARGET_CHIP__)(uint8_t index, uint32_t pin_mask);
 uint32_t CORE_GPIO_GET(__TARGET_CHIP__)(uint8_t index, uint32_t pin_mask);
 
 // USART
-RESULT CORE_USART_INIT(__TARGET_CHIP__)(uint8_t index);
-RESULT CORE_USART_FINI(__TARGET_CHIP__)(uint8_t index);
-RESULT CORE_USART_CONFIG(__TARGET_CHIP__)(uint8_t index, uint32_t baudrate, 
+vsf_err_t CORE_USART_INIT(__TARGET_CHIP__)(uint8_t index);
+vsf_err_t CORE_USART_FINI(__TARGET_CHIP__)(uint8_t index);
+vsf_err_t CORE_USART_CONFIG(__TARGET_CHIP__)(uint8_t index, uint32_t baudrate, 
 	uint8_t datalength, uint8_t mode);
-RESULT CORE_USART_CONFIG_CALLBACK(__TARGET_CHIP__)(uint8_t index, 
+vsf_err_t CORE_USART_CONFIG_CALLBACK(__TARGET_CHIP__)(uint8_t index, 
 	void *p, void (*ontx)(void *), void (*onrx)(void *, uint16_t));
-RESULT CORE_USART_TX(__TARGET_CHIP__)(uint8_t index, uint16_t data);
-bool CORE_USART_TX_ISREADY(__TARGET_CHIP__)(uint8_t index);
+vsf_err_t CORE_USART_TX(__TARGET_CHIP__)(uint8_t index, uint16_t data);
+vsf_err_t CORE_USART_TX_ISREADY(__TARGET_CHIP__)(uint8_t index);
 uint16_t CORE_USART_RX(__TARGET_CHIP__)(uint8_t index);
-bool CORE_USART_RX_ISREADY(__TARGET_CHIP__)(uint8_t index);
+vsf_err_t CORE_USART_RX_ISREADY(__TARGET_CHIP__)(uint8_t index);
 
 // SPI
-RESULT CORE_SPI_INIT(__TARGET_CHIP__)(uint8_t index);
-RESULT CORE_SPI_FINI(__TARGET_CHIP__)(uint8_t index);
-RESULT CORE_SPI_GET_ABILITY(__TARGET_CHIP__)(uint8_t index, 
+vsf_err_t CORE_SPI_INIT(__TARGET_CHIP__)(uint8_t index);
+vsf_err_t CORE_SPI_FINI(__TARGET_CHIP__)(uint8_t index);
+vsf_err_t CORE_SPI_GET_ABILITY(__TARGET_CHIP__)(uint8_t index, 
 												struct spi_ability_t *ability);
-RESULT CORE_SPI_ENABLE(__TARGET_CHIP__)(uint8_t index);
-RESULT CORE_SPI_DISABLE(__TARGET_CHIP__)(uint8_t index);
-RESULT CORE_SPI_CONFIG(__TARGET_CHIP__)(uint8_t index, uint32_t kHz, 
+vsf_err_t CORE_SPI_ENABLE(__TARGET_CHIP__)(uint8_t index);
+vsf_err_t CORE_SPI_DISABLE(__TARGET_CHIP__)(uint8_t index);
+vsf_err_t CORE_SPI_CONFIG(__TARGET_CHIP__)(uint8_t index, uint32_t kHz, 
 										uint8_t mode);
-RESULT CORE_SPI_IO_TX(__TARGET_CHIP__)(uint8_t index, uint8_t out);
-bool CORE_SPI_IO_TX_ISREADY(__TARGET_CHIP__)(uint8_t index);
+vsf_err_t CORE_SPI_IO_TX(__TARGET_CHIP__)(uint8_t index, uint8_t out);
+vsf_err_t CORE_SPI_IO_TX_ISREADY(__TARGET_CHIP__)(uint8_t index);
 uint8_t CORE_SPI_IO_RX(__TARGET_CHIP__)(uint8_t index);
-bool CORE_SPI_IO_RX_ISREADY(__TARGET_CHIP__)(uint8_t index);
-RESULT CORE_SPI_IO(__TARGET_CHIP__)(uint8_t index, uint8_t *out, uint8_t *in, 
+vsf_err_t CORE_SPI_IO_RX_ISREADY(__TARGET_CHIP__)(uint8_t index);
+vsf_err_t CORE_SPI_IO(__TARGET_CHIP__)(uint8_t index, uint8_t *out, uint8_t *in, 
 									uint32_t len);
-RESULT CORE_SPI_IO_DMA_START(__TARGET_CHIP__)(uint8_t index, uint8_t *out, 
+vsf_err_t CORE_SPI_IO_DMA_START(__TARGET_CHIP__)(uint8_t index, uint8_t *out, 
 												uint8_t *in, uint32_t len);
-bool CORE_SPI_IO_DMA_ISREADY(__TARGET_CHIP__)(uint8_t index);
-RESULT CORE_SPI_IO_DMA_END(__TARGET_CHIP__)(uint8_t index);
+vsf_err_t CORE_SPI_IO_DMA_ISREADY(__TARGET_CHIP__)(uint8_t index);
+vsf_err_t CORE_SPI_IO_DMA_END(__TARGET_CHIP__)(uint8_t index);
 
 // ADC
-RESULT CORE_ADC_INIT(__TARGET_CHIP__)(uint8_t index);
-RESULT CORE_ADC_FINI(__TARGET_CHIP__)(uint8_t index);
-RESULT CORE_ADC_CONFIG(__TARGET_CHIP__)(uint8_t index, uint32_t clock_hz, 
+vsf_err_t CORE_ADC_INIT(__TARGET_CHIP__)(uint8_t index);
+vsf_err_t CORE_ADC_FINI(__TARGET_CHIP__)(uint8_t index);
+vsf_err_t CORE_ADC_CONFIG(__TARGET_CHIP__)(uint8_t index, uint32_t clock_hz, 
 										uint8_t mode);
-RESULT CORE_ADC_CONFIG_CHANNEL(__TARGET_CHIP__)(uint8_t index, uint8_t channel, 
-												uint8_t cycles);
-RESULT CORE_ADC_CALIBRATE(__TARGET_CHIP__)(uint8_t index, uint8_t channel);
-RESULT CORE_ADC_START(__TARGET_CHIP__)(uint8_t index, uint8_t channel);
-bool CORE_ADC_ISREADY(__TARGET_CHIP__)(uint8_t index, uint8_t channel);
+vsf_err_t CORE_ADC_CONFIG_CHANNEL(__TARGET_CHIP__)(uint8_t index, 
+											uint8_t channel, uint8_t cycles);
+vsf_err_t CORE_ADC_CALIBRATE(__TARGET_CHIP__)(uint8_t index, uint8_t channel);
+vsf_err_t CORE_ADC_START(__TARGET_CHIP__)(uint8_t index, uint8_t channel);
+vsf_err_t CORE_ADC_ISREADY(__TARGET_CHIP__)(uint8_t index, uint8_t channel);
 uint32_t CORE_ADC_GET(__TARGET_CHIP__)(uint8_t index, uint8_t channel);
 
 // Delay
-RESULT CORE_DELAY_INIT(__TARGET_CHIP__)(void);
-RESULT CORE_DELAY_DELAYMS(__TARGET_CHIP__)(uint16_t ms);
-RESULT CORE_DELAY_DELAYUS(__TARGET_CHIP__)(uint16_t us);
+vsf_err_t CORE_DELAY_INIT(__TARGET_CHIP__)(void);
+vsf_err_t CORE_DELAY_DELAYMS(__TARGET_CHIP__)(uint16_t ms);
+vsf_err_t CORE_DELAY_DELAYUS(__TARGET_CHIP__)(uint16_t us);
 
 // TIMER
-RESULT CORE_TIMER_INIT(__TARGET_CHIP__)(uint8_t index);
-RESULT CORE_TIMER_FINI(__TARGET_CHIP__)(uint8_t index);
-RESULT CORE_TIMER_CONFIG(__TARGET_CHIP__)(uint8_t index, uint32_t kHz, 
+vsf_err_t CORE_TIMER_INIT(__TARGET_CHIP__)(uint8_t index);
+vsf_err_t CORE_TIMER_FINI(__TARGET_CHIP__)(uint8_t index);
+vsf_err_t CORE_TIMER_CONFIG(__TARGET_CHIP__)(uint8_t index, uint32_t kHz, 
 										uint32_t mode, void (*overflow)(void));
-RESULT CORE_TIMER_START(__TARGET_CHIP__)(uint8_t index);
-RESULT CORE_TIMER_STOP(__TARGET_CHIP__)(uint8_t index);
-RESULT CORE_TIMER_GET_COUNT(__TARGET_CHIP__)(uint8_t index, uint32_t *count);
-RESULT CORE_TIMER_SET_COUNT(__TARGET_CHIP__)(uint8_t index, uint32_t count);
-RESULT CORE_TIMER_CONFIG_CHANNEL(__TARGET_CHIP__)(uint8_t index, 
+vsf_err_t CORE_TIMER_START(__TARGET_CHIP__)(uint8_t index);
+vsf_err_t CORE_TIMER_STOP(__TARGET_CHIP__)(uint8_t index);
+vsf_err_t CORE_TIMER_GET_COUNT(__TARGET_CHIP__)(uint8_t index, uint32_t *count);
+vsf_err_t CORE_TIMER_SET_COUNT(__TARGET_CHIP__)(uint8_t index, uint32_t count);
+vsf_err_t CORE_TIMER_CONFIG_CHANNEL(__TARGET_CHIP__)(uint8_t index, 
 						uint8_t channel, uint32_t mode, void (*callback)(void));
-RESULT CORE_TIMER_GET_CHANNEL(__TARGET_CHIP__)(uint8_t index, uint8_t channel, 
-												uint32_t *count);
-RESULT CORE_TIMER_SET_CHANNEL(__TARGET_CHIP__)(uint8_t index, uint8_t channel, 
-												uint32_t count);
+vsf_err_t CORE_TIMER_GET_CHANNEL(__TARGET_CHIP__)(uint8_t index, 
+											uint8_t channel, uint32_t *count);
+vsf_err_t CORE_TIMER_SET_CHANNEL(__TARGET_CHIP__)(uint8_t index, 
+											uint8_t channel, uint32_t count);
 
 // EINT
-RESULT CORE_EINT_INIT(__TARGET_CHIP__)(uint8_t index);
-RESULT CORE_EINT_FINI(__TARGET_CHIP__)(uint8_t index);
-RESULT CORE_EINT_CONFIG(__TARGET_CHIP__)(uint8_t index, uint8_t type, 
+vsf_err_t CORE_EINT_INIT(__TARGET_CHIP__)(uint8_t index);
+vsf_err_t CORE_EINT_FINI(__TARGET_CHIP__)(uint8_t index);
+vsf_err_t CORE_EINT_CONFIG(__TARGET_CHIP__)(uint8_t index, uint8_t type, 
 											void (*callback)(void));
-RESULT CORE_EINT_ENABLE(__TARGET_CHIP__)(uint8_t index);
-RESULT CORE_EINT_DISABLE(__TARGET_CHIP__)(uint8_t index);
-RESULT CORE_EINT_TRIGGER(__TARGET_CHIP__)(uint8_t index);
+vsf_err_t CORE_EINT_ENABLE(__TARGET_CHIP__)(uint8_t index);
+vsf_err_t CORE_EINT_DISABLE(__TARGET_CHIP__)(uint8_t index);
+vsf_err_t CORE_EINT_TRIGGER(__TARGET_CHIP__)(uint8_t index);
 
 // EBI
-RESULT CORE_EBI_INIT(__TARGET_CHIP__)(uint8_t index);
-RESULT CORE_EBI_FINI(__TARGET_CHIP__)(uint8_t index);
-RESULT CORE_EBI_CONFIG(__TARGET_CHIP__)(uint8_t index, uint8_t target_index, 
+vsf_err_t CORE_EBI_INIT(__TARGET_CHIP__)(uint8_t index);
+vsf_err_t CORE_EBI_FINI(__TARGET_CHIP__)(uint8_t index);
+vsf_err_t CORE_EBI_CONFIG(__TARGET_CHIP__)(uint8_t index, uint8_t target_index, 
 										void *param);
-RESULT CORE_EBI_CONFIG_SRAM(__TARGET_CHIP__)(uint8_t index, 
+vsf_err_t CORE_EBI_CONFIG_SRAM(__TARGET_CHIP__)(uint8_t index, 
 												struct ebi_sram_info_t *info);
-RESULT CORE_EBI_CONFIG_PSRAM(__TARGET_CHIP__)(uint8_t index, 
+vsf_err_t CORE_EBI_CONFIG_PSRAM(__TARGET_CHIP__)(uint8_t index, 
 												struct ebi_psram_info_t *info);
-RESULT CORE_EBI_CONFIG_NOR(__TARGET_CHIP__)(uint8_t index, 
+vsf_err_t CORE_EBI_CONFIG_NOR(__TARGET_CHIP__)(uint8_t index, 
 												struct ebi_nor_info_t *info);
-RESULT CORE_EBI_CONFIG_NAND(__TARGET_CHIP__)(uint8_t index, 
+vsf_err_t CORE_EBI_CONFIG_NAND(__TARGET_CHIP__)(uint8_t index, 
 												struct ebi_nand_info_t *info);
-RESULT CORE_EBI_CONFIG_SDRAM(__TARGET_CHIP__)(uint8_t index, 
+vsf_err_t CORE_EBI_CONFIG_SDRAM(__TARGET_CHIP__)(uint8_t index, 
 												struct ebi_sdram_info_t *info);
-RESULT CORE_EBI_CONFIG_DDRAM(__TARGET_CHIP__)(uint8_t index, 
+vsf_err_t CORE_EBI_CONFIG_DDRAM(__TARGET_CHIP__)(uint8_t index, 
 												struct ebi_ddram_info_t *info);
-RESULT CORE_EBI_CONFIG_PCCARD(__TARGET_CHIP__)(uint8_t index, 
+vsf_err_t CORE_EBI_CONFIG_PCCARD(__TARGET_CHIP__)(uint8_t index, 
 												struct ebi_pccard_info_t *info);
-RESULT CORE_EBI_READ(__TARGET_CHIP__)(uint8_t index, uint8_t target_index, 
+vsf_err_t CORE_EBI_READ(__TARGET_CHIP__)(uint8_t index, uint8_t target_index, 
 		uint32_t address, uint8_t data_size, uint8_t *buff, uint32_t count);
-RESULT CORE_EBI_WRITE(__TARGET_CHIP__)(uint8_t index, uint8_t target_index, 
+vsf_err_t CORE_EBI_WRITE(__TARGET_CHIP__)(uint8_t index, uint8_t target_index, 
 		uint32_t address, uint8_t data_size, uint8_t *buff, uint32_t count);
 uint8_t CORE_EBI_READ8(__TARGET_CHIP__)(uint8_t index, uint32_t address);
 void CORE_EBI_WRITE8(__TARGET_CHIP__)(uint8_t index, uint32_t address, 
@@ -788,59 +792,62 @@ void CORE_EBI_WRITE32(__TARGET_CHIP__)(uint8_t index, uint32_t address,
 
 
 // USB
-RESULT CORE_USBD_INIT(__TARGET_CHIP__)(void *device);
-RESULT CORE_USBD_FINI(__TARGET_CHIP__)(void);
-RESULT CORE_USBD_RESET(__TARGET_CHIP__)(void);
-RESULT CORE_USBD_POLL(__TARGET_CHIP__)(void);
-RESULT CORE_USBD_CONNECT(__TARGET_CHIP__)(void);
-RESULT CORE_USBD_DISCONNECT(__TARGET_CHIP__)(void);
-RESULT CORE_USBD_SET_ADDRESS(__TARGET_CHIP__)(uint8_t addr);
+vsf_err_t CORE_USBD_INIT(__TARGET_CHIP__)(void *device);
+vsf_err_t CORE_USBD_FINI(__TARGET_CHIP__)(void);
+vsf_err_t CORE_USBD_RESET(__TARGET_CHIP__)(void);
+vsf_err_t CORE_USBD_POLL(__TARGET_CHIP__)(void);
+vsf_err_t CORE_USBD_CONNECT(__TARGET_CHIP__)(void);
+vsf_err_t CORE_USBD_DISCONNECT(__TARGET_CHIP__)(void);
+vsf_err_t CORE_USBD_SET_ADDRESS(__TARGET_CHIP__)(uint8_t addr);
 uint8_t CORE_USBD_GET_ADDRESS(__TARGET_CHIP__)(void);
-RESULT CORE_USBD_SUSPEND(__TARGET_CHIP__)(void);
-RESULT CORE_USBD_RESUME(__TARGET_CHIP__)(void);
-RESULT CORE_USBD_LOWPOWER(__TARGET_CHIP__)(uint8_t level);
+vsf_err_t CORE_USBD_SUSPEND(__TARGET_CHIP__)(void);
+vsf_err_t CORE_USBD_RESUME(__TARGET_CHIP__)(void);
+vsf_err_t CORE_USBD_LOWPOWER(__TARGET_CHIP__)(uint8_t level);
 uint32_t CORE_USBD_GET_FRAME_NUM(__TARGET_CHIP__)(void);
 extern const uint8_t CORE_USBD_EP_NUM(__TARGET_CHIP__);
-RESULT CORE_USBD_EP_RESET(__TARGET_CHIP__)(uint8_t idx);
-RESULT CORE_USBD_EP_SET_TYPE(__TARGET_CHIP__)(uint8_t idx, 
+vsf_err_t CORE_USBD_EP_RESET(__TARGET_CHIP__)(uint8_t idx);
+vsf_err_t CORE_USBD_EP_SET_TYPE(__TARGET_CHIP__)(uint8_t idx, 
 		enum usb_ep_type_t type);
 enum usb_ep_type_t CORE_USBD_EP_GET_TYPE(__TARGET_CHIP__)(uint8_t idx);
-RESULT CORE_USBD_EP_SET_IN_HANDLER(__TARGET_CHIP__)(uint8_t idx, 
+vsf_err_t CORE_USBD_EP_SET_IN_HANDLER(__TARGET_CHIP__)(uint8_t idx, 
 		vsfusbd_IN_hanlder_t handler);
-RESULT CORE_USBD_EP_SET_IN_DBUFFER(__TARGET_CHIP__)(uint8_t idx);
+vsf_err_t CORE_USBD_EP_SET_IN_DBUFFER(__TARGET_CHIP__)(uint8_t idx);
 bool CORE_USBD_EP_IS_IN_DBUFFER(__TARGET_CHIP__)(uint8_t idx);
-RESULT CORE_USBD_EP_SWITCH_IN_BUFFER(__TARGET_CHIP__)(uint8_t idx);
-RESULT CORE_USBD_EP_SET_IN_EPSIZE(__TARGET_CHIP__)(uint8_t idx, uint16_t size);
+vsf_err_t CORE_USBD_EP_SWITCH_IN_BUFFER(__TARGET_CHIP__)(uint8_t idx);
+vsf_err_t CORE_USBD_EP_SET_IN_EPSIZE(__TARGET_CHIP__)(uint8_t idx, 
+														uint16_t size);
 uint16_t CORE_USBD_EP_GET_IN_EPSIZE(__TARGET_CHIP__)(uint8_t idx);
-RESULT CORE_USBD_EP_RESET_IN_TOGGLE(__TARGET_CHIP__)(uint8_t idx);
-RESULT CORE_USBD_EP_TOGGLE_IN_TOGGLE(__TARGET_CHIP__)(uint8_t idx);
+vsf_err_t CORE_USBD_EP_RESET_IN_TOGGLE(__TARGET_CHIP__)(uint8_t idx);
+vsf_err_t CORE_USBD_EP_TOGGLE_IN_TOGGLE(__TARGET_CHIP__)(uint8_t idx);
 enum usb_ep_state_t CORE_USBD_EP_GET_IN_STATE(__TARGET_CHIP__)(uint8_t idx);
-RESULT CORE_USBD_EP_SET_IN_STATE(__TARGET_CHIP__)(uint8_t idx, 
+vsf_err_t CORE_USBD_EP_SET_IN_STATE(__TARGET_CHIP__)(uint8_t idx, 
 		enum usb_ep_state_t state);
-RESULT CORE_USBD_EP_SET_IN_COUNT(__TARGET_CHIP__)(uint8_t idx, uint16_t size);
-RESULT CORE_USBD_EP_WRITE_IN_BUFFER(__TARGET_CHIP__)(uint8_t idx, 
+vsf_err_t CORE_USBD_EP_SET_IN_COUNT(__TARGET_CHIP__)(uint8_t idx, 
+														uint16_t size);
+vsf_err_t CORE_USBD_EP_WRITE_IN_BUFFER(__TARGET_CHIP__)(uint8_t idx, 
 		uint8_t *buffer, uint16_t size);
-RESULT CORE_USBD_EP_SET_OUT_HANDLER(__TARGET_CHIP__)(uint8_t idx, 
+vsf_err_t CORE_USBD_EP_SET_OUT_HANDLER(__TARGET_CHIP__)(uint8_t idx, 
 		vsfusbd_OUT_hanlder_t handler);
-RESULT CORE_USBD_EP_SET_OUT_DBUFFER(__TARGET_CHIP__)(uint8_t idx);
+vsf_err_t CORE_USBD_EP_SET_OUT_DBUFFER(__TARGET_CHIP__)(uint8_t idx);
 bool CORE_USBD_EP_IS_OUT_DBUFFER(__TARGET_CHIP__)(uint8_t idx);
-RESULT CORE_USBD_EP_SWITCH_OUT_BUFFER(__TARGET_CHIP__)(uint8_t idx);
-RESULT CORE_USBD_EP_SET_OUT_EPSIZE(__TARGET_CHIP__)(uint8_t idx, uint16_t size);
+vsf_err_t CORE_USBD_EP_SWITCH_OUT_BUFFER(__TARGET_CHIP__)(uint8_t idx);
+vsf_err_t CORE_USBD_EP_SET_OUT_EPSIZE(__TARGET_CHIP__)(uint8_t idx, 
+														uint16_t size);
 uint16_t CORE_USBD_EP_GET_OUT_EPSIZE(__TARGET_CHIP__)(uint8_t idx);
-RESULT CORE_USBD_EP_RESET_OUT_TOGGLE(__TARGET_CHIP__)(uint8_t idx);
-RESULT CORE_USBD_EP_TOGGLE_OUT_TOGGLE(__TARGET_CHIP__)(uint8_t idx);
+vsf_err_t CORE_USBD_EP_RESET_OUT_TOGGLE(__TARGET_CHIP__)(uint8_t idx);
+vsf_err_t CORE_USBD_EP_TOGGLE_OUT_TOGGLE(__TARGET_CHIP__)(uint8_t idx);
 enum usb_ep_state_t CORE_USBD_EP_GET_OUT_STATE(__TARGET_CHIP__)(uint8_t idx);
-RESULT CORE_USBD_EP_SET_OUT_STATE(__TARGET_CHIP__)(uint8_t idx, 
+vsf_err_t CORE_USBD_EP_SET_OUT_STATE(__TARGET_CHIP__)(uint8_t idx, 
 		enum usb_ep_state_t state);
 uint16_t CORE_USBD_EP_GET_OUT_COUNT(__TARGET_CHIP__)(uint8_t idx);
-RESULT CORE_USBD_EP_READ_OUT_BUFFER(__TARGET_CHIP__)(uint8_t idx, 
+vsf_err_t CORE_USBD_EP_READ_OUT_BUFFER(__TARGET_CHIP__)(uint8_t idx, 
 		uint8_t *buffer, uint16_t size);
 
 struct interfaces_info_t
 {
-	RESULT (*init)(void *p);
-	RESULT (*fini)(void);
-	void (*reset)(void);
+	vsf_err_t (*init)(void *p);
+	vsf_err_t (*fini)(void);
+	vsf_err_t (*reset)(void);
 	
 	struct interface_flash_t flash;
 	struct interface_gpio_t gpio;
@@ -855,7 +862,7 @@ struct interfaces_info_t
 	struct interface_microwire_t microwire;
 	struct interface_delay_t delay;
 	struct interface_ebi_t ebi;
-	RESULT (*peripheral_commit)(void);
+	vsf_err_t (*peripheral_commit)(void);
 };
 
 extern const struct interfaces_info_t core_interfaces;

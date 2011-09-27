@@ -71,7 +71,7 @@ Usage of %s:\n\
   -x,  --execute <ADDRESS>                  execute program\n\
   -F,  --frequency <FREQUENCY>              set JTAG frequency, in KHz\n\n",
 			CUR_TARGET_STRING);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 VSS_HANDLER(stm32_mode)
@@ -97,7 +97,7 @@ VSS_HANDLER(stm32_mode)
 				sizeof(stm32_program_functions));
 		break;
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 VSS_HANDLER(stm32_extra)

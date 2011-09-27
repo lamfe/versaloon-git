@@ -25,7 +25,7 @@
 #include "ee24cxx_drv_cfg.h"
 #include "ee24cxx_drv.h"
 
-static RESULT ee24cxx_drv_init(struct dal_info_t *info)
+static vsf_err_t ee24cxx_drv_init(struct dal_info_t *info)
 {
 	struct ee24cxx_drv_interface_t *ifs = 
 								(struct ee24cxx_drv_interface_t *)info->ifs;
@@ -39,10 +39,10 @@ static RESULT ee24cxx_drv_init(struct dal_info_t *info)
 	interfaces->i2c.init(ifs->iic_port);
 	interfaces->i2c.config(ifs->iic_port, param->iic_khz, 0, 10000);
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT ee24cxx_drv_fini(struct dal_info_t *info)
+static vsf_err_t ee24cxx_drv_fini(struct dal_info_t *info)
 {
 	struct ee24cxx_drv_interface_t *ifs = 
 								(struct ee24cxx_drv_interface_t *)info->ifs;
@@ -51,16 +51,16 @@ static RESULT ee24cxx_drv_fini(struct dal_info_t *info)
 	return interfaces->peripheral_commit();
 }
 
-static RESULT ee24cxx_drv_readblock_nb_start(struct dal_info_t *info, 
+static vsf_err_t ee24cxx_drv_readblock_nb_start(struct dal_info_t *info, 
 											uint64_t address, uint64_t count)
 {
 	REFERENCE_PARAMETER(info);
 	REFERENCE_PARAMETER(address);
 	REFERENCE_PARAMETER(count);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT ee24cxx_drv_readblock_nb(struct dal_info_t *info, 
+static vsf_err_t ee24cxx_drv_readblock_nb(struct dal_info_t *info, 
 										uint64_t address, uint8_t *buff)
 {
 	struct ee24cxx_drv_interface_t *ifs = 
@@ -71,42 +71,41 @@ static RESULT ee24cxx_drv_readblock_nb(struct dal_info_t *info,
 	uint16_t addr_word = (uint16_t)address;
 	
 	addr_word = SYS_TO_BE_U16(addr_word);
-	if ((ERROR_OK != interfaces->i2c.write(ifs->iic_port, param->iic_addr, 
-											(uint8_t *)&addr_word, 2, 0)) || 
-		(ERROR_OK != interfaces->i2c.read(ifs->iic_port, param->iic_addr, buff, 
-			(uint16_t)mal_info->capacity.block_size, 1, true)))
+	if (interfaces->i2c.write(ifs->iic_port, param->iic_addr, 
+								(uint8_t *)&addr_word, 2, 0) || 
+		interfaces->i2c.read(ifs->iic_port, param->iic_addr, buff, 
+							(uint16_t)mal_info->capacity.block_size, 1, true))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT ee24cxx_drv_readblock_nb_isready(struct dal_info_t *info, 
-								uint64_t address, uint8_t *buff, bool *ready)
+static vsf_err_t ee24cxx_drv_readblock_nb_isready(struct dal_info_t *info, 
+												uint64_t address, uint8_t *buff)
 {
 	REFERENCE_PARAMETER(info);
 	REFERENCE_PARAMETER(address);
 	REFERENCE_PARAMETER(buff);
-	*ready = true;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT ee24cxx_drv_readblock_nb_end(struct dal_info_t *info)
+static vsf_err_t ee24cxx_drv_readblock_nb_end(struct dal_info_t *info)
 {
 	REFERENCE_PARAMETER(info);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT ee24cxx_drv_writeblock_nb_start(struct dal_info_t *info, 
+static vsf_err_t ee24cxx_drv_writeblock_nb_start(struct dal_info_t *info, 
 											uint64_t address, uint64_t count)
 {
 	REFERENCE_PARAMETER(info);
 	REFERENCE_PARAMETER(address);
 	REFERENCE_PARAMETER(count);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT ee24cxx_drv_writeblock_nb(struct dal_info_t *info, 
+static vsf_err_t ee24cxx_drv_writeblock_nb(struct dal_info_t *info, 
 										uint64_t address, uint8_t *buff)
 {
 	struct ee24cxx_drv_interface_t *ifs = 
@@ -118,55 +117,54 @@ static RESULT ee24cxx_drv_writeblock_nb(struct dal_info_t *info,
 	
 	if (mal_info->capacity.block_size != 32)
 	{
-		return ERROR_FAIL;
+		return VSFERR_INVALID_PARAMETER;
 	}
 	
 	SET_BE_U16(&buffe_tmp[0], (uint16_t)address);
 	memcpy(&buffe_tmp[2], buff, 32);
 	
-	if ((ERROR_OK != interfaces->i2c.write(ifs->iic_port, param->iic_addr, 
-											buffe_tmp, 2 + 32, 1)) || 
-		(ERROR_OK != interfaces->delay.delayms(5)))
+	if (interfaces->i2c.write(ifs->iic_port, param->iic_addr, buffe_tmp,
+								2 + 32, 1) || 
+		interfaces->delay.delayms(5))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT ee24cxx_drv_writeblock_nb_isready(struct dal_info_t *info, 
-								uint64_t address, uint8_t *buff, bool *ready)
-{
-	REFERENCE_PARAMETER(info);
-	REFERENCE_PARAMETER(address);
-	REFERENCE_PARAMETER(buff);
-	*ready = true;
-	return ERROR_OK;
-}
-
-static RESULT ee24cxx_drv_writeblock_nb_waitready(struct dal_info_t *info, 
+static vsf_err_t ee24cxx_drv_writeblock_nb_isready(struct dal_info_t *info, 
 												uint64_t address, uint8_t *buff)
 {
 	REFERENCE_PARAMETER(info);
 	REFERENCE_PARAMETER(address);
 	REFERENCE_PARAMETER(buff);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT ee24cxx_drv_writeblock_nb_end(struct dal_info_t *info)
+static vsf_err_t ee24cxx_drv_writeblock_nb_waitready(struct dal_info_t *info, 
+												uint64_t address, uint8_t *buff)
 {
 	REFERENCE_PARAMETER(info);
-	return ERROR_OK;
+	REFERENCE_PARAMETER(address);
+	REFERENCE_PARAMETER(buff);
+	return VSFERR_NONE;
+}
+
+static vsf_err_t ee24cxx_drv_writeblock_nb_end(struct dal_info_t *info)
+{
+	REFERENCE_PARAMETER(info);
+	return VSFERR_NONE;
 }
 
 #if DAL_INTERFACE_PARSER_EN
-static RESULT ee24cxx_drv_parse_interface(struct dal_info_t *info, 
+static vsf_err_t ee24cxx_drv_parse_interface(struct dal_info_t *info, 
 											uint8_t *buff)
 {
 	struct ee24cxx_drv_interface_t *ifs = 
 								(struct ee24cxx_drv_interface_t *)info->ifs;
 	
 	ifs->iic_port = buff[0];
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 #endif
 

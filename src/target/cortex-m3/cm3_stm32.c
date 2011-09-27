@@ -30,12 +30,12 @@
 #include "app_err.h"
 #include "app_log.h"
 
-#include "pgbar.h"
-
 #include "vsprog.h"
 #include "programmer.h"
 #include "target.h"
 #include "scripts.h"
+
+#include "pgbar.h"
 
 #include "cm3.h"
 #include "cm3_stm32.h"
@@ -81,9 +81,9 @@ ENTER_PROGRAM_MODE_HANDLER(stm32swj)
 	adi_memap_write_reg32(STM32_FLASH_OPTKEYR, &reg, 0);
 	
 	adi_memap_read_reg32(STM32_FLASH_WRPR, &flash_wrpr, 0);
-	if (ERROR_OK != adi_memap_read_reg32(STM32_FLASH_OBR, &flash_obr, 1))
+	if (adi_memap_read_reg32(STM32_FLASH_OBR, &flash_obr, 1))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	LOG_INFO(INFOMSG_REG_08X, "FLASH_OBR", flash_obr);
 	LOG_INFO(INFOMSG_REG_08X, "FLASH_WRPR", flash_wrpr);
@@ -111,7 +111,7 @@ ERASE_TARGET_HANDLER(stm32swj)
 	struct chip_param_t *param = context->param;
 	struct program_info_t *pi = context->pi;
 	struct operation_t *op = context->op;
-	RESULT ret= ERROR_OK;
+	vsf_err_t err = VSFERR_NONE;
 	struct stm32_fl_cmd_t cmd;
 	struct stm32_fl_result_t result;
 	
@@ -129,9 +129,9 @@ ERASE_TARGET_HANDLER(stm32swj)
 		cmd.cr_value2 = cmd.cr_value1 | STM32_FLASH_CR_STRT;
 		cmd.data_type = 0;
 		cmd.data_size = 1;
-		if (ERROR_OK != stm32swj_fl_call(&cmd, &result, true))
+		if (stm32swj_fl_call(&cmd, &result, true))
 		{
-			ret = ERRCODE_FAILURE_OPERATION;
+			err = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
 		
@@ -154,9 +154,9 @@ ERASE_TARGET_HANDLER(stm32swj)
 		cmd.cr_value2 = cmd.cr_value1 | STM32_FLASH_CR_STRT;
 		cmd.data_type = 0;
 		cmd.data_size = 1;
-		if (ERROR_OK != stm32swj_fl_call(&cmd, &result, true))
+		if (stm32swj_fl_call(&cmd, &result, true))
 		{
-			ret = ERRCODE_FAILURE_OPERATION;
+			err = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
 		
@@ -164,18 +164,18 @@ ERASE_TARGET_HANDLER(stm32swj)
 		{
 			cmd.cr_addr = STM32_FLASH_CR2;
 			cmd.sr_addr = STM32_FLASH_SR2;
-			if (ERROR_OK != stm32swj_fl_call(&cmd, &result, true))
+			if (stm32swj_fl_call(&cmd, &result, true))
 			{
-				ret = ERRCODE_FAILURE_OPERATION;
+				err = ERRCODE_FAILURE_OPERATION;
 				break;
 			}
 		}
 		break;
 	default:
-		ret = ERROR_FAIL;
+		err = VSFERR_FAIL;
 		break;
 	}
-	return ret;
+	return err;
 }
 
 WRITE_TARGET_HANDLER(stm32swj)
@@ -184,7 +184,7 @@ WRITE_TARGET_HANDLER(stm32swj)
 	uint8_t i;
 	uint8_t fuse_buff[STM32_OB_SIZE];
 	static uint8_t tick_tock = 0;
-	RESULT ret = ERROR_OK;
+	vsf_err_t err = VSFERR_NONE;
 	struct stm32_fl_cmd_t cmd;
 	struct stm32_fl_result_t result;
 	
@@ -195,7 +195,7 @@ WRITE_TARGET_HANDLER(stm32swj)
 	case FUSE_CHAR:
 		if (size != STM32_OB_SIZE / 2)
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		
 		for (i = 0; i < STM32_OB_SIZE / 2; i++)
@@ -212,18 +212,17 @@ WRITE_TARGET_HANDLER(stm32swj)
 		cmd.ram_addr = STM32_FL_PAGE0_ADDR;
 		cmd.data_type = 2;
 		cmd.data_size = STM32_OB_SIZE / 2;
-		if ((ERROR_OK != adi_memap_write_buf(cmd.ram_addr, fuse_buff,
-												STM32_OB_SIZE)) ||
-			(ERROR_OK != stm32swj_fl_call(&cmd, &result, true)))
+		if (adi_memap_write_buf(cmd.ram_addr, fuse_buff, STM32_OB_SIZE) ||
+			stm32swj_fl_call(&cmd, &result, true))
 		{
-			ret = ERRCODE_FAILURE_OPERATION;
+			err = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
 		break;
 	case APPLICATION_CHAR:
 		if (size != param->chip_areas[APPLICATION_IDX].page_size)
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		
 		if (addr >= STM32_FLASH_BANK2_ADDR)
@@ -249,20 +248,20 @@ WRITE_TARGET_HANDLER(stm32swj)
 		}
 		cmd.data_type = 2;
 		cmd.data_size = size / 2;
-		if ((ERROR_OK != adi_memap_write_buf(cmd.ram_addr, buff, size)) ||
-			(ERROR_OK != stm32swj_fl_call(&cmd, &result, false)))
+		if (adi_memap_write_buf(cmd.ram_addr, buff, size) ||
+			stm32swj_fl_call(&cmd, &result, false))
 		{
-			ret = ERRCODE_FAILURE_OPERATION;
+			err = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
 		tick_tock++;
 		break;
 	default:
-		ret = ERROR_FAIL;
+		err = VSFERR_FAIL;
 		break;
 	}
 	
-	return ret;
+	return err;
 }
 
 READ_TARGET_HANDLER(stm32swj)
@@ -272,15 +271,15 @@ READ_TARGET_HANDLER(stm32swj)
 	uint32_t mcu_id = 0, flash_sram_size, flash_obr;
 	uint32_t cur_block_size;
 	uint16_t flash_size;
-	RESULT ret = ERROR_OK;
+	vsf_err_t err = VSFERR_NONE;
 	
 	switch (area)
 	{
 	case CHIPID_CHAR:
 		// read MCU ID at STM32_REG_MCU_ID
-		if (ERROR_OK != adi_memap_read_reg32(STM32_REG_MCU_ID, &mcu_id, 1))
+		if (adi_memap_read_reg32(STM32_REG_MCU_ID, &mcu_id, 1))
 		{
-			ret = ERRCODE_FAILURE_OPERATION;
+			err = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
 		mcu_id = LE_TO_SYS_U32(mcu_id);
@@ -288,22 +287,21 @@ READ_TARGET_HANDLER(stm32swj)
 		mcu_id &= STM32_DEN_MSK;
 		*(uint32_t *)buff = mcu_id;
 		
-		if (ERROR_OK != adi_memap_read_reg32(STM32_FLASH_OBR, &flash_obr, 1))
+		if (adi_memap_read_reg32(STM32_FLASH_OBR, &flash_obr, 1))
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		if (flash_obr & STM32_FLASH_OBR_RDPRT)
 		{
 			// read protected, flash size and sram size is not readable
-			return ERROR_OK;
+			return VSFERR_NONE;
 		}
 		
 		// read flash and ram size
-		if (ERROR_OK !=
-			adi_memap_read_reg32(STM32_REG_FLASH_RAM_SIZE, &flash_sram_size, 1))
+		if (adi_memap_read_reg32(STM32_REG_FLASH_RAM_SIZE, &flash_sram_size, 1))
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read stm32 flash_ram size");
-			ret = ERRCODE_FAILURE_OPERATION;
+			err = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
 		flash_sram_size = LE_TO_SYS_U32(flash_sram_size);
@@ -317,10 +315,9 @@ READ_TARGET_HANDLER(stm32swj)
 		}
 		break;
 	case FUSE_CHAR:
-		if (ERROR_OK !=
-				adi_memap_read_buf(STM32_OB_ADDR, option_bytes, STM32_OB_SIZE))
+		if (adi_memap_read_buf(STM32_OB_ADDR, option_bytes, STM32_OB_SIZE))
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		for (i = 0; i < size; i++)
 		{
@@ -340,12 +337,11 @@ READ_TARGET_HANDLER(stm32swj)
 			{
 				cur_block_size <<= 2;
 			}
-			if (ERROR_OK != adi_memap_read_buf(addr, buff,
-												   cur_block_size))
+			if (adi_memap_read_buf(addr, buff, cur_block_size))
 			{
 				LOG_ERROR(ERRMSG_FAILURE_OPERATION_ADDR, "write flash block",
 							addr);
-				ret = ERRCODE_FAILURE_OPERATION_ADDR;
+				err = ERRCODE_FAILURE_OPERATION_ADDR;
 				break;
 			}
 			
@@ -356,20 +352,20 @@ READ_TARGET_HANDLER(stm32swj)
 		}
 		break;
 	case UNIQUEID_CHAR:
-		if ((ERROR_OK != adi_memap_read_reg32(STM32_UID_ADDR + 0,
-											(((uint32_t *)buff) + 0), 0)) ||
-			(ERROR_OK != adi_memap_read_reg32(STM32_UID_ADDR + 4,
-											(((uint32_t *)buff) + 1), 0)) ||
-			(ERROR_OK != adi_memap_read_reg32(STM32_UID_ADDR + 8,
-											(((uint32_t *)buff) + 2), 1)))
+		if (adi_memap_read_reg32(STM32_UID_ADDR + 0,
+									(((uint32_t *)buff) + 0), 0) ||
+			adi_memap_read_reg32(STM32_UID_ADDR + 4,
+									(((uint32_t *)buff) + 1), 0) ||
+			adi_memap_read_reg32(STM32_UID_ADDR + 8,
+									(((uint32_t *)buff) + 2), 1))
 		{
-			ret = ERROR_FAIL;
+			err = VSFERR_FAIL;
 		}
 		break;
 	default:
-		ret = ERROR_FAIL;
+		err = VSFERR_FAIL;
 		break;
 	}
-	return ret;
+	return err;
 }
 

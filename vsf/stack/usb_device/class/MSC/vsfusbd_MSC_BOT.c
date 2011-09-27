@@ -30,7 +30,7 @@ static struct vsfusbd_MSCBOT_param_t* vsfusbd_MSCBOT_find_param(uint8_t iface)
 	return tmp;
 }
 
-static RESULT vsfusbd_MSCBOT_SetError(struct vsfusbd_device_t *device, 
+static vsf_err_t vsfusbd_MSCBOT_SetError(struct vsfusbd_device_t *device, 
 		struct vsfusbd_MSCBOT_param_t *param, uint8_t error, uint8_t stall)
 {
 	if (stall & VSFUSBD_MSCBOT_STALL_IN)
@@ -43,7 +43,7 @@ static RESULT vsfusbd_MSCBOT_SetError(struct vsfusbd_device_t *device,
 		device->drv->ep.set_OUT_state(param->ep_out, USB_EP_STAT_STALL);
 	}
 	param->dCSWStatus = error;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 static struct vsf_buffer_t *vsfusbd_MSCBOT_GetBuffer(
@@ -67,8 +67,8 @@ static uint16_t vsfusbd_MSCBOT_GetInPkgSize(struct interface_usbd_t *drv,
 	}
 }
 
-static RESULT vsfusbd_MSCBOT_IN_hanlder(void *p, uint8_t ep);
-static RESULT vsfusbd_MSCBOT_SendCSW(struct vsfusbd_device_t *device, 
+static vsf_err_t vsfusbd_MSCBOT_IN_hanlder(void *p, uint8_t ep);
+static vsf_err_t vsfusbd_MSCBOT_SendCSW(struct vsfusbd_device_t *device, 
 							struct vsfusbd_MSCBOT_param_t *param, bool now)
 {
 	struct interface_usbd_t *drv = device->drv;
@@ -92,10 +92,10 @@ static RESULT vsfusbd_MSCBOT_SendCSW(struct vsfusbd_device_t *device,
 	{
 		drv->ep.set_IN_state(param->ep_in, USB_EP_STAT_ACK);
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT vsfusbd_MSCBOT_ErrCode(struct vsfusbd_device_t *device, 
+static vsf_err_t vsfusbd_MSCBOT_ErrCode(struct vsfusbd_device_t *device, 
 			struct vsfusbd_MSCBOT_param_t *param, enum SCSI_errcode_t code)
 {
 	switch (code)
@@ -112,10 +112,10 @@ static RESULT vsfusbd_MSCBOT_ErrCode(struct vsfusbd_device_t *device,
 	default:
 		break;
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT vsfusbd_MSCBOT_IN_hanlder(void *p, uint8_t ep)
+static vsf_err_t vsfusbd_MSCBOT_IN_hanlder(void *p, uint8_t ep)
 {
 	struct vsfusbd_device_t *device = p;
 	struct interface_usbd_t *drv = device->drv;
@@ -128,12 +128,12 @@ static RESULT vsfusbd_MSCBOT_IN_hanlder(void *p, uint8_t ep)
 	
 	if (iface < 0)
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	tmp = vsfusbd_MSCBOT_find_param(iface);
 	if (NULL == tmp)
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	switch (tmp->bot_status)
@@ -153,7 +153,7 @@ static RESULT vsfusbd_MSCBOT_IN_hanlder(void *p, uint8_t ep)
 			drv->ep.set_IN_count(tmp->ep_in, pkg_size);
 			drv->ep.set_IN_state(tmp->ep_in, USB_EP_STAT_ACK);
 			tmp->tbuffer.position += pkg_size;
-			return ERROR_OK;
+			return VSFERR_NONE;
 		}
 		
 		tmp->tbuffer.position = 0;
@@ -180,12 +180,12 @@ static RESULT vsfusbd_MSCBOT_IN_hanlder(void *p, uint8_t ep)
 		}
 		break;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT vsfusbd_MSCBOT_OUT_hanlder(void *p, uint8_t ep)
+static vsf_err_t vsfusbd_MSCBOT_OUT_hanlder(void *p, uint8_t ep)
 {
 	struct vsfusbd_device_t *device = p;
 	struct interface_usbd_t *drv = device->drv;
@@ -198,18 +198,18 @@ static RESULT vsfusbd_MSCBOT_OUT_hanlder(void *p, uint8_t ep)
 	
 	if (iface < 0)
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	tmp = vsfusbd_MSCBOT_find_param(iface);
 	if (NULL == tmp)
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	pkg_size = drv->ep.get_OUT_count(ep);
 	if (pkg_size > 64)
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	drv->ep.read_OUT_buffer(ep, buffer, pkg_size);
 	
@@ -229,7 +229,7 @@ static RESULT vsfusbd_MSCBOT_OUT_hanlder(void *p, uint8_t ep)
 		{
 			vsfusbd_MSCBOT_SetError(device, tmp, USBMSC_CSW_FAIL, 
 									VSFUSBD_MSCBOT_STALL_BOTH);
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		lun_info = &tmp->lun_info[tmp->CBW.bCBWLUN];
 		if ((tmp->CBW.bCBWCBLength < 1) || (tmp->CBW.bCBWCBLength > 16))
@@ -238,14 +238,14 @@ static RESULT vsfusbd_MSCBOT_OUT_hanlder(void *p, uint8_t ep)
 									VSFUSBD_MSCBOT_STALL_BOTH);
 			lun_info->status.sense_key = SCSI_SENSEKEY_ILLEGAL_REQUEST;
 			lun_info->status.asc = SCSI_ASC_INVALID_FIELED_IN_COMMAND;
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		tmp->page_size = tmp->page_num = 0;
 		tmp->cur_handlers = NULL;
 		tmp->tbuffer.buffer = *vsfusbd_MSCBOT_GetBuffer(tmp);
 		tmp->dCSWStatus = USBMSC_CSW_OK;
 		tmp->fail = false;
-		if (ERROR_OK != SCSI_Handle(tmp->cur_handlers, lun_info, 
+		if (SCSI_Handle(tmp->cur_handlers, lun_info, 
 					tmp->CBW.CBWCB, &tmp->tbuffer.buffer, &tmp->page_size, 
 					&tmp->page_num))
 		{
@@ -257,9 +257,9 @@ static RESULT vsfusbd_MSCBOT_OUT_hanlder(void *p, uint8_t ep)
 				{
 					vsfusbd_MSCBOT_SetError(device, tmp, USBMSC_CSW_FAIL, 
 											VSFUSBD_MSCBOT_STALL_BOTH);
-					return ERROR_FAIL;
+					return VSFERR_FAIL;
 				}
-				else if (ERROR_OK != SCSI_Handle(tmp->cur_handlers, lun_info, 
+				else if (SCSI_Handle(tmp->cur_handlers, lun_info, 
 						tmp->CBW.CBWCB, &tmp->tbuffer.buffer, &tmp->page_size, 
 						&tmp->page_num))
 				{
@@ -268,7 +268,7 @@ static RESULT vsfusbd_MSCBOT_OUT_hanlder(void *p, uint8_t ep)
 					{
 						vsfusbd_MSCBOT_SetError(device, tmp, USBMSC_CSW_FAIL, 
 												VSFUSBD_MSCBOT_STALL_BOTH);
-						return ERROR_FAIL;
+						return VSFERR_FAIL;
 					}
 					return vsfusbd_MSCBOT_ErrCode(device, tmp, errcode);
 				}
@@ -316,7 +316,7 @@ static RESULT vsfusbd_MSCBOT_OUT_hanlder(void *p, uint8_t ep)
 									VSFUSBD_MSCBOT_STALL_BOTH);
 			lun_info->status.sense_key = SCSI_SENSEKEY_ILLEGAL_REQUEST;
 			lun_info->status.asc = SCSI_ASC_INVALID_FIELED_IN_COMMAND;
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		
 		lun_info = &tmp->lun_info[tmp->CBW.bCBWLUN];
@@ -328,7 +328,7 @@ static RESULT vsfusbd_MSCBOT_OUT_hanlder(void *p, uint8_t ep)
 			if (tmp->tbuffer.position < tmp->page_size)
 			{
 				drv->ep.set_OUT_state(tmp->ep_out, USB_EP_STAT_ACK);
-				return ERROR_OK;
+				return VSFERR_NONE;
 			}
 			
 			tmp->tbuffer.position = 0;
@@ -350,7 +350,7 @@ static RESULT vsfusbd_MSCBOT_OUT_hanlder(void *p, uint8_t ep)
 									VSFUSBD_MSCBOT_STALL_BOTH);
 			lun_info->status.sense_key = SCSI_SENSEKEY_ILLEGAL_REQUEST;
 			lun_info->status.asc = SCSI_ASC_INVALID_FIELED_IN_COMMAND;
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		break;
 	default:
@@ -358,12 +358,12 @@ static RESULT vsfusbd_MSCBOT_OUT_hanlder(void *p, uint8_t ep)
 								VSFUSBD_MSCBOT_STALL_BOTH);
 		lun_info->status.sense_key = SCSI_SENSEKEY_ILLEGAL_REQUEST;
 		lun_info->status.asc = SCSI_ASC_INVALID_FIELED_IN_COMMAND;
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT vsfusbd_MSCBOT_class_init(uint8_t iface, 
+static vsf_err_t vsfusbd_MSCBOT_class_init(uint8_t iface, 
 											struct vsfusbd_device_t *device)
 {
 	struct interface_usbd_t *drv = device->drv;
@@ -374,22 +374,20 @@ static RESULT vsfusbd_MSCBOT_class_init(uint8_t iface,
 		// so that CBW and CSW can be transfered in one package
 		(drv->ep.get_IN_epsize(tmp->ep_in) < 32) || 
 		(drv->ep.get_OUT_epsize(tmp->ep_in) < 32) || 
-		(ERROR_OK != drv->ep.set_IN_handler(tmp->ep_in, 
-												vsfusbd_MSCBOT_IN_hanlder)) || 
-		(ERROR_OK != drv->ep.set_IN_count(tmp->ep_in, 0)) || 
-		(ERROR_OK != drv->ep.set_IN_state(tmp->ep_in, USB_EP_STAT_ACK)) || 
-		(ERROR_OK != drv->ep.set_OUT_handler(tmp->ep_out, 
-												vsfusbd_MSCBOT_OUT_hanlder)) || 
-		(ERROR_OK != drv->ep.set_OUT_state(tmp->ep_out, USB_EP_STAT_ACK)))
+		drv->ep.set_IN_handler(tmp->ep_in, vsfusbd_MSCBOT_IN_hanlder) || 
+		drv->ep.set_IN_count(tmp->ep_in, 0) || 
+		drv->ep.set_IN_state(tmp->ep_in, USB_EP_STAT_ACK) || 
+		drv->ep.set_OUT_handler(tmp->ep_out, vsfusbd_MSCBOT_OUT_hanlder) || 
+		drv->ep.set_OUT_state(tmp->ep_out, USB_EP_STAT_ACK))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	tmp->bot_status = VSFUSBD_MSCBOT_STATUS_IDLE;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT vsfusbd_MSCBOT_class_poll(uint8_t iface, 
+static vsf_err_t vsfusbd_MSCBOT_class_poll(uint8_t iface, 
 											struct vsfusbd_device_t *device)
 {
 	struct interface_usbd_t *drv = device->drv;
@@ -398,11 +396,11 @@ static RESULT vsfusbd_MSCBOT_class_poll(uint8_t iface,
 	
 	if (NULL == tmp)
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	if (!tmp->poll)
 	{
-		return ERROR_OK;
+		return VSFERR_NONE;
 	}
 	
 	if (((VSFUSBD_MSCBOT_STATUS_IN == bot_status) && 
@@ -416,8 +414,8 @@ static RESULT vsfusbd_MSCBOT_class_poll(uint8_t iface,
 		uint8_t index = (tmp->tick_tock + 1) & 1;
 		struct vsf_buffer_t *buffer = &tmp->page_buffer[index];
 		
-		if (ERROR_OK != SCSI_IO(tmp->cur_handlers, lun_info, tmp->CBW.CBWCB, 
-								buffer, tmp->cur_scsi_page))
+		if (SCSI_IO(tmp->cur_handlers, lun_info, tmp->CBW.CBWCB, buffer,
+					tmp->cur_scsi_page))
 		{
 			tmp->fail = true;
 			return vsfusbd_MSCBOT_ErrCode(device, tmp, SCSI_GetErrorCode());
@@ -449,10 +447,10 @@ static RESULT vsfusbd_MSCBOT_class_poll(uint8_t iface,
 		}
 	}
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT vsfusbd_MSCBOT_GetMaxLun_prepare(
+static vsf_err_t vsfusbd_MSCBOT_GetMaxLun_prepare(
 	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
 {
 	struct vsfusbd_ctrl_request_t *request = &device->ctrl_handler.request;
@@ -461,21 +459,21 @@ static RESULT vsfusbd_MSCBOT_GetMaxLun_prepare(
 	
 	if ((NULL == tmp) || (request->length != 1) || (request->value != 0))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	buffer->buffer = &tmp->max_lun;
 	buffer->size = 1;
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
-static RESULT vsfusbd_MSCBOT_GetMaxLun_process(
+static vsf_err_t vsfusbd_MSCBOT_GetMaxLun_process(
 	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
 {
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT vsfusbd_MSCBOT_Reset_prepare(
+static vsf_err_t vsfusbd_MSCBOT_Reset_prepare(
 	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
 {
 	struct interface_usbd_t *drv = device->drv;
@@ -484,20 +482,20 @@ static RESULT vsfusbd_MSCBOT_Reset_prepare(
 									vsfusbd_MSCBOT_find_param(request->index);
 	
 	if ((NULL == tmp) || (request->length != 0) || (request->value != 0) || 
-		(ERROR_OK != drv->ep.reset_IN_toggle(tmp->ep_in)) || 
-		(ERROR_OK != drv->ep.set_IN_state(tmp->ep_in, USB_EP_STAT_ACK)) || 
-		(ERROR_OK != drv->ep.reset_OUT_toggle(tmp->ep_out)) || 
-		(ERROR_OK != drv->ep.set_OUT_state(tmp->ep_out, USB_EP_STAT_ACK)))
+		drv->ep.reset_IN_toggle(tmp->ep_in) || 
+		drv->ep.set_IN_state(tmp->ep_in, USB_EP_STAT_ACK) || 
+		drv->ep.reset_OUT_toggle(tmp->ep_out) || 
+		drv->ep.set_OUT_state(tmp->ep_out, USB_EP_STAT_ACK))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	return vsfusbd_request_prepare_0(device, buffer);
 }
-static RESULT vsfusbd_MSCBOT_Reset_process(
+static vsf_err_t vsfusbd_MSCBOT_Reset_process(
 	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
 {
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 static const struct vsfusbd_setup_filter_t vsfusbd_MSCBOT_class_setup[] = 
@@ -524,13 +522,13 @@ const struct vsfusbd_class_protocol_t vsfusbd_MSCBOT_class =
 	vsfusbd_MSCBOT_class_init, NULL, vsfusbd_MSCBOT_class_poll
 };
 
-RESULT vsfusbd_MSCBOT_set_param(struct vsfusbd_MSCBOT_param_t *param)
+vsf_err_t vsfusbd_MSCBOT_set_param(struct vsfusbd_MSCBOT_param_t *param)
 {
 	param->idle = true;
 	param->poll = false;
 	if (vsfusbd_MSCBOT_find_param(param->iface) != NULL)
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	if (NULL == vsfusbd_MSCBOT_param_list)
@@ -543,6 +541,6 @@ RESULT vsfusbd_MSCBOT_set_param(struct vsfusbd_MSCBOT_param_t *param)
 	}
 	vsfusbd_MSCBOT_param_list = param;
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 

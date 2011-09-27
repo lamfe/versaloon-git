@@ -77,7 +77,7 @@ ENTER_PROGRAM_MODE_HANDLER(msp430jtagsbw)
 		ResetTAP();
 		// read ir return value, should be 0x89(MSP430_JTAG_ID)
 		IR_Shift_Read(IR_BYPASS, &tmp8);
-		if (ERROR_OK != commit())
+		if (commit())
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "init chip");
 			return ERRCODE_FAILURE_OPERATION;
@@ -106,7 +106,7 @@ ENTER_PROGRAM_MODE_HANDLER(msp430jtagsbw)
 	if (0 == i)
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "detect target chip");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	ResetTAP();
@@ -116,7 +116,7 @@ ENTER_PROGRAM_MODE_HANDLER(msp430jtagsbw)
 		IR_Shift(IR_CNTRL_SIG_CAPTURE);
 		dr = 0;
 		DR_Shift16_Read(0xAAAA, &dr);
-		if (ERROR_OK != commit())
+		if (commit())
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "init programming");
 			return ERRCODE_FAILURE_OPERATION;
@@ -125,10 +125,10 @@ ENTER_PROGRAM_MODE_HANDLER(msp430jtagsbw)
 		if (0x5555 == dr)
 		{
 			LOG_ERROR("fuse of current chip is blown");
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 LEAVE_PROGRAM_MODE_HANDLER(msp430jtagsbw)
@@ -139,18 +139,18 @@ LEAVE_PROGRAM_MODE_HANDLER(msp430jtagsbw)
 	
 	ReleaseDevice(V_RESET);
 	msp430_jtag_fini();
-	if (ERROR_OK != commit())
+	if (commit())
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "exit program mode");
 		return ERRCODE_FAILURE_OPERATION;
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 ERASE_TARGET_HANDLER(msp430jtagsbw)
 {
 	struct interfaces_info_t *prog = context->prog;
-	RESULT ret = ERROR_OK;
+	vsf_err_t err = VSFERR_NONE;
 	
 	REFERENCE_PARAMETER(size);
 	REFERENCE_PARAMETER(addr);
@@ -173,41 +173,41 @@ ERASE_TARGET_HANDLER(msp430jtagsbw)
 			// For more info See EraseFLASH() in JTAGfunc.c
 		}
 		
-		if (ERROR_OK != commit())
+		if (commit())
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "erase chip");
-			ret = ERRCODE_FAILURE_OPERATION;
+			err = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
 		break;
 	default:
-		ret = ERROR_FAIL;
+		err = VSFERR_FAIL;
 		break;
 	}
-	return ret;
+	return err;
 }
 
 WRITE_TARGET_HANDLER(msp430jtagsbw)
 {
 	struct interfaces_info_t *prog = context->prog;
-	RESULT ret = ERROR_OK;
+	vsf_err_t err = VSFERR_NONE;
 	
 	switch (area)
 	{
 	case APPLICATION_CHAR:
 		WriteFLASH((word)addr, (word)(size / 2), (word*)buff);
-		if (ERROR_OK != commit())
+		if (commit())
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION_ADDR, "write flash", addr);
-			ret = ERRCODE_FAILURE_OPERATION_ADDR;
+			err = ERRCODE_FAILURE_OPERATION_ADDR;
 			break;
 		}
 		break;
 	default:
-		ret = ERROR_FAIL;
+		err = VSFERR_FAIL;
 		break;
 	}
-	return ret;
+	return err;
 }
 
 READ_TARGET_HANDLER(msp430jtagsbw)
@@ -218,7 +218,7 @@ READ_TARGET_HANDLER(msp430jtagsbw)
 	uint16_t chip_id;
 	uint8_t ir;
 	uint32_t dr;
-	RESULT ret = ERROR_OK;
+	vsf_err_t err = VSFERR_NONE;
 	
 	switch (area)
 	{
@@ -232,9 +232,9 @@ READ_TARGET_HANDLER(msp430jtagsbw)
 		ReadMem(F_WORD, 0x0FF0, &chip_id);
 		// perform PUC, includes target watchdog disable
 		ExecutePOR();
-		if (ERROR_OK != commit())
+		if (commit())
 		{
-			ret = ERRCODE_FAILURE_OPERATION;
+			err = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
 		chip_id = LE_TO_SYS_U16(chip_id);
@@ -248,25 +248,25 @@ READ_TARGET_HANDLER(msp430jtagsbw)
 			CRC_calc = CRC_check = 0;
 			CRC_calc = VerifyMem((word)addr, (word)(size / 2),
 									(word*)buff, &CRC_check);
-			if (ERROR_OK != commit())
+			if (commit())
 			{
 				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read crc check");
-				ret = ERRCODE_FAILURE_OPERATION;
+				err = ERRCODE_FAILURE_OPERATION;
 				break;
 			}
 			CRC_check = LE_TO_SYS_U16(CRC_check);
 			if (CRC_calc != CRC_check)
 			{
 				LOG_ERROR(ERRMSG_FAILURE_OPERATION_ADDR, "verify flash", addr);
-				ret = ERRCODE_FAILURE_OPERATION_ADDR;
+				err = ERRCODE_FAILURE_OPERATION_ADDR;
 				break;
 			}
 		}
 		break;
 	default:
-		ret = ERROR_FAIL;
+		err = VSFERR_FAIL;
 		break;
 	}
-	return ret;
+	return err;
 }
 

@@ -20,19 +20,19 @@
 #ifndef __VSF_USBD_DRV_CALLBACK_H_INCLUDED__
 #define __VSF_USBD_DRV_CALLBACK_H_INCLUDED__
 
-typedef RESULT (*vsfusbd_EP_hanlder_t)(void *p, uint8_t ep);
+typedef vsf_err_t (*vsfusbd_EP_hanlder_t)(void *p, uint8_t ep);
 typedef vsfusbd_EP_hanlder_t vsfusbd_IN_hanlder_t;
 typedef vsfusbd_EP_hanlder_t vsfusbd_OUT_hanlder_t;
 
-RESULT vsfusbd_on_SETUP(void *p);
-RESULT vsfusbd_on_UNDERFLOW(void *p, uint8_t ep);
-RESULT vsfusbd_on_OVERFLOW(void *p, uint8_t ep);
-RESULT vsfusbd_on_RESET(void *p);
-RESULT vsfusbd_on_WAKEUP(void *p);
-RESULT vsfusbd_on_SUSPEND(void *p);
-RESULT vsfusbd_on_RESUME(void *p);
-RESULT vsfusbd_on_SOF(void *p);
-RESULT vsfusbd_on_ERROR(void *p, enum usb_err_type_t type);
+vsf_err_t vsfusbd_on_SETUP(void *p);
+vsf_err_t vsfusbd_on_UNDERFLOW(void *p, uint8_t ep);
+vsf_err_t vsfusbd_on_OVERFLOW(void *p, uint8_t ep);
+vsf_err_t vsfusbd_on_RESET(void *p);
+vsf_err_t vsfusbd_on_WAKEUP(void *p);
+vsf_err_t vsfusbd_on_SUSPEND(void *p);
+vsf_err_t vsfusbd_on_RESUME(void *p);
+vsf_err_t vsfusbd_on_SOF(void *p);
+vsf_err_t vsfusbd_on_ERROR(void *p, enum usb_err_type_t type);
 
 #endif	// __VSF_USBD_DRV_CALLBACK_H_INCLUDED__
 

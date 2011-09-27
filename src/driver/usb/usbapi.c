@@ -22,6 +22,8 @@
 
 #include <string.h>
 
+#include "vsf_err.h"
+
 #include "app_type.h"
 #include "app_io.h"
 #include "app_log.h"
@@ -57,7 +59,7 @@ VSS_HANDLER(usbapi_param)
 	// interface: 1 byte
 	// serialstring: 256 bytes
 	uint8_t usb_setting[2 * 256 + 7], *ptr;
-	RESULT success;
+	vsf_err_t err;
 	uint8_t i;
 	char* formats[] =
 	{
@@ -74,19 +76,19 @@ VSS_HANDLER(usbapi_param)
 	
 	VSS_CHECK_ARGC(2);
 	
-	success = ERROR_FAIL;
+	err = VSFERR_FAIL;
 	for (i = 0; i < dimof(formats); i++)
 	{
 		memset(usb_setting, 0, sizeof(usb_setting));
-		success = strparser_parse((char*)argv[1], formats[i],
+		err = strparser_parse((char*)argv[1], formats[i],
 									usb_setting, sizeof(usb_setting));
-		if (ERROR_OK == success)
+		if (!err)
 		{
 			break;
 		}
 	}
 	
-	if (success != ERROR_OK)
+	if (err)
 	{
 		LOG_ERROR(ERRMSG_INVALID_CMD, argv[0]);
 		vss_print_help(argv[0]);
@@ -138,7 +140,7 @@ VSS_HANDLER(usbapi_param)
 		LOG_DEBUG("usb_device is on 0x%04X:0x%04X(0x%02x_0x%02X).",
 			usb_param.vid, usb_param.pid, usb_param.epin, usb_param.epout);
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 // usb_set_param will not ser serialstring

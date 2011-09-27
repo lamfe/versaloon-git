@@ -20,40 +20,40 @@
 #include "app_interfaces.h"
 #include "EBI.h"
 
-RESULT ebi_init(uint8_t index)
+vsf_err_t ebi_init(uint8_t index)
 {
 	switch (index)
 	{
 	case 0:
 		return interfaces->ebi.init(0);
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT ebi_fini(uint8_t index)
+vsf_err_t ebi_fini(uint8_t index)
 {
 	switch (index)
 	{
 	case 0:
 		return interfaces->ebi.fini(0);
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT ebi_config(uint8_t index, uint8_t target_index, void *param)
+vsf_err_t ebi_config(uint8_t index, uint8_t target_index, void *param)
 {
 	switch (index)
 	{
 	case 0:
 		return interfaces->ebi.config(0, target_index, param);
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT ebi_read(uint8_t index, uint8_t target_index, uint32_t address, 
+vsf_err_t ebi_read(uint8_t index, uint8_t target_index, uint32_t address, 
 					uint8_t data_size, uint8_t *buff, uint32_t count)
 {
 	switch (index)
@@ -62,11 +62,11 @@ RESULT ebi_read(uint8_t index, uint8_t target_index, uint32_t address,
 		return interfaces->ebi.read(0, target_index, address, data_size, buff, 
 									count);
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT ebi_write(uint8_t index, uint8_t target_index, uint32_t address, 
+vsf_err_t ebi_write(uint8_t index, uint8_t target_index, uint32_t address, 
 					uint8_t data_size, uint8_t *buff, uint32_t count)
 {
 	switch (index)
@@ -75,7 +75,7 @@ RESULT ebi_write(uint8_t index, uint8_t target_index, uint32_t address,
 		return interfaces->ebi.write(0, target_index, address, data_size, buff, 
 										count);
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 

@@ -28,17 +28,17 @@
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
 
-RESULT usbtogpio_init(uint8_t interface_index)
+vsf_err_t usbtogpio_init(uint8_t interface_index)
 {
 	return usbtoxxx_init_command(USB_TO_GPIO, interface_index);
 }
 
-RESULT usbtogpio_fini(uint8_t interface_index)
+vsf_err_t usbtogpio_fini(uint8_t interface_index)
 {
 	return usbtoxxx_fini_command(USB_TO_GPIO, interface_index);
 }
 
-RESULT usbtogpio_config(uint8_t interface_index, uint32_t mask,
+vsf_err_t usbtogpio_config(uint8_t interface_index, uint32_t mask,
 						uint32_t dir_mask, uint32_t pull_en_mask,
 						uint32_t input_pull_mask)
 {
@@ -48,7 +48,7 @@ RESULT usbtogpio_config(uint8_t interface_index, uint32_t mask,
 	if (interface_index > 7)
 	{
 		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 #endif
 	
@@ -62,7 +62,7 @@ RESULT usbtogpio_config(uint8_t interface_index, uint32_t mask,
 									sizeof(conf));
 }
 
-RESULT usbtogpio_in(uint8_t interface_index, uint32_t mask, uint32_t *value)
+vsf_err_t usbtogpio_in(uint8_t interface_index, uint32_t mask, uint32_t *value)
 {
 	uint8_t buf[2];
 	
@@ -70,7 +70,7 @@ RESULT usbtogpio_in(uint8_t interface_index, uint32_t mask, uint32_t *value)
 	if (interface_index > 7)
 	{
 		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 #endif
 	
@@ -80,7 +80,7 @@ RESULT usbtogpio_in(uint8_t interface_index, uint32_t mask, uint32_t *value)
 							   (uint8_t*)value, 0, 2, 0);
 }
 
-RESULT usbtogpio_out(uint8_t interface_index, uint32_t mask, uint32_t value)
+vsf_err_t usbtogpio_out(uint8_t interface_index, uint32_t mask, uint32_t value)
 {
 	uint8_t buf[4];
 	
@@ -88,7 +88,7 @@ RESULT usbtogpio_out(uint8_t interface_index, uint32_t mask, uint32_t value)
 	if (interface_index > 7)
 	{
 		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 #endif
 	

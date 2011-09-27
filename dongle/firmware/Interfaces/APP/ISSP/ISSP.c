@@ -149,7 +149,7 @@ void ISSP_Vector_0s(void)
 	ISSP_SDATA_SETINPUT();
 }
 
-RESULT issp_enter_program_mode(uint8_t index, uint8_t mode)
+vsf_err_t issp_enter_program_mode(uint8_t index, uint8_t mode)
 {
 	uint16_t to = 1000;
 	uint16_t voltage;
@@ -157,10 +157,10 @@ RESULT issp_enter_program_mode(uint8_t index, uint8_t mode)
 	switch (index)
 	{
 	case 0:
-		if((ERROR_OK != app_interfaces.target_voltage.get(0, &voltage)) || 
+		if(app_interfaces.target_voltage.get(0, &voltage) || 
 			((mode == ISSP_PM_POWER_ON) && (voltage > TVCC_SAMPLE_MIN_POWER)))
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 
 		ISSP_SDATA_SETOUTPUT();
@@ -203,13 +203,13 @@ RESULT issp_enter_program_mode(uint8_t index, uint8_t mode)
 		ISSP_Vector_0s();
 
 		ISSP_SDATA_SETINPUT();
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT issp_leave_program_mode(uint8_t index, uint8_t mode)
+vsf_err_t issp_leave_program_mode(uint8_t index, uint8_t mode)
 {
 	switch (index)
 	{
@@ -228,13 +228,13 @@ RESULT issp_leave_program_mode(uint8_t index, uint8_t mode)
 			ISSP_PowerOff();
 			ISSP_SCLK_SETINPUT();
 		}
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT issp_wait_and_poll(uint8_t index)
+vsf_err_t issp_wait_and_poll(uint8_t index)
 {
 	uint8_t i;
 	uint16_t dly;
@@ -250,7 +250,7 @@ RESULT issp_wait_and_poll(uint8_t index)
 			app_interfaces.delay.delayus(10);
 			if(--dly == 0)
 			{
-				return ERROR_FAIL;
+				return VSFERR_FAIL;
 			}
 		}
 
@@ -260,7 +260,7 @@ RESULT issp_wait_and_poll(uint8_t index)
 			app_interfaces.delay.delayus(10);
 			if(--dly == 0)
 			{
-				return ERROR_FAIL;
+				return VSFERR_FAIL;
 			}
 		}
 
@@ -271,24 +271,24 @@ RESULT issp_wait_and_poll(uint8_t index)
 		{
 			ISSP_Out_Bit(0);
 		}
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT issp_init(uint8_t index)
+vsf_err_t issp_init(uint8_t index)
 {
 	switch (index)
 	{
 	case 0:
 		return issp_fini(index);
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT issp_fini(uint8_t index)
+vsf_err_t issp_fini(uint8_t index)
 {
 	switch (index)
 	{
@@ -297,40 +297,46 @@ RESULT issp_fini(uint8_t index)
 		ISSP_XRES_SETINPUT();
 		ISSP_SDATA_SETINPUT();
 		ISSP_SCLK_SETINPUT();
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT issp_vector(uint8_t index, uint8_t operate, uint8_t addr, 
+vsf_err_t issp_vector(uint8_t index, uint8_t operate, uint8_t addr, 
 					 uint8_t data, uint8_t *buf)
 {
-	if(operate & ISSP_OPERATE_0s)
+	switch (index)
 	{
-		ISSP_Vector_0s();
-	}
-	else
-	{
-		if(operate & ISSP_OPERATE_READ)
+	case 0:
+		if(operate & ISSP_OPERATE_0s)
 		{
-			uint8_t buf_tmp;
-			// Read
-			buf_tmp = ISSP_Vector(operate & ISSP_OPERATE_BANK, addr, data, 1,
-									operate & ISSP_OPERATE_APPENDBIT);
-			if (buf != NULL)
-			{
-				*buf = buf_tmp;
-			}
+			ISSP_Vector_0s();
 		}
 		else
 		{
-			// Write
-			ISSP_Vector(operate & ISSP_OPERATE_BANK, addr, data, 0,
-							operate & ISSP_OPERATE_APPENDBIT);
+			if(operate & ISSP_OPERATE_READ)
+			{
+				uint8_t buf_tmp;
+				// Read
+				buf_tmp = ISSP_Vector(operate & ISSP_OPERATE_BANK, addr, data, 
+										1,operate & ISSP_OPERATE_APPENDBIT);
+				if (buf != NULL)
+				{
+					*buf = buf_tmp;
+				}
+			}
+			else
+			{
+				// Write
+				ISSP_Vector(operate & ISSP_OPERATE_BANK, addr, data, 0,
+								operate & ISSP_OPERATE_APPENDBIT);
+			}
 		}
+		return VSFERR_NONE;
+	default:
+		return VSFERR_NOT_SUPPORT;
 	}
-	return ERROR_OK;
 }
 
 #endif

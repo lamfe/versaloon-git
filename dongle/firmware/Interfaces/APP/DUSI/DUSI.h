@@ -14,11 +14,8 @@
  *      2008-11-07:     created(by SimonQian)                             *
  **************************************************************************/
 
-#define DUSI_MAX_KHZ			(_SYS_FREQUENCY * 500 / 2)		// in KHz
-#define DUSI_MIN_KHZ			(_SYS_FREQUENCY * 500 / 256)	// in KHz
-
-RESULT dusi_init(uint8_t index);
-RESULT dusi_fini(uint8_t index);
-RESULT dusi_io(uint8_t index, uint8_t *mo, uint8_t *mi, uint8_t *so, 
-				uint8_t *si, uint32_t bitlen);
-RESULT dusi_config(uint8_t index, uint32_t kHz, uint8_t mode);
+vsf_err_t dusi_init(uint8_t index);
+vsf_err_t dusi_fini(uint8_t index);
+vsf_err_t dusi_io(uint8_t index, uint8_t *mo, uint8_t *mi, uint8_t *so, 
+					uint8_t *si, uint32_t bitlen);
+vsf_err_t dusi_config(uint8_t index, uint32_t kHz, uint8_t mode);

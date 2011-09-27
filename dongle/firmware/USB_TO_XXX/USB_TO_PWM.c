@@ -39,60 +39,62 @@ void USB_TO_PWM_ProcessCmd(uint8_t *dat, uint16_t len)
 		switch(command)
 		{
 		case USB_TO_XXX_INIT:
-			if (ERROR_OK == app_interfaces.pwm.init(device_idx))
+			if (app_interfaces.pwm.init(device_idx))
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
 			else
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
 			break;
 		case USB_TO_XXX_CONFIG:
 			kHz = GET_LE_U16(&dat[index]);
 			mode = dat[index + 2];
 			
-			if (ERROR_OK == app_interfaces.pwm.config(device_idx, kHz, mode))
+			if (app_interfaces.pwm.config(device_idx, kHz, mode))
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
 			else
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
 			break;
 		case USB_TO_XXX_FINI:
-			if (ERROR_OK == app_interfaces.pwm.fini(device_idx))
+			if (app_interfaces.pwm.fini(device_idx))
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
 			else
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
 			break;
 		case USB_TO_XXX_OUT:
 			count = GET_LE_U16(&dat[index + 0]);
 			
-			if (ERROR_OK == app_interfaces.pwm.out(device_idx, count, (uint16_t *)&dat[index + 2]))
+			if (app_interfaces.pwm.out(device_idx, count,
+										(uint16_t *)&dat[index + 2]))
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
 			else
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
 			break;
 		case USB_TO_XXX_IN:
 			count = GET_LE_U16(&dat[index + 0]);
 			
-			if (ERROR_OK == app_interfaces.pwm.in(device_idx, count, (uint16_t *)&buffer_reply[rep_len + 1]))
+			if (app_interfaces.pwm.in(device_idx, count,
+										(uint16_t *)&buffer_reply[rep_len + 1]))
 			{
-				buffer_reply[rep_len] = USB_TO_XXX_OK;
+				buffer_reply[rep_len] = USB_TO_XXX_FAILED;
 			}
 			else
 			{
-				buffer_reply[rep_len] = USB_TO_XXX_FAILED;
+				buffer_reply[rep_len] = USB_TO_XXX_OK;
 			}
 			rep_len += 1 + 4 * count;
 			break;

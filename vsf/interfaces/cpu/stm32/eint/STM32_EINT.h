@@ -14,9 +14,10 @@
  *      2008-11-07:     created(by SimonQian)                             *
  **************************************************************************/
 
-RESULT stm32_eint_init(uint8_t index);
-RESULT stm32_eint_fini(uint8_t index);
-RESULT stm32_eint_config(uint8_t index, uint8_t type, void (*callback)(void));
-RESULT stm32_eint_enable(uint8_t index);
-RESULT stm32_eint_disable(uint8_t index);
-RESULT stm32_eint_trigger(uint8_t index);
+vsf_err_t stm32_eint_init(uint8_t index);
+vsf_err_t stm32_eint_fini(uint8_t index);
+vsf_err_t stm32_eint_config(uint8_t index, uint8_t type,
+							void (*callback)(void));
+vsf_err_t stm32_eint_enable(uint8_t index);
+vsf_err_t stm32_eint_disable(uint8_t index);
+vsf_err_t stm32_eint_trigger(uint8_t index);

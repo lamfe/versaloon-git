@@ -265,30 +265,30 @@ void SWD_SetRetryCount(uint16_t retry)
 	SWD_Retry = retry;
 }
 
-RESULT swd_init(uint8_t index)
+vsf_err_t swd_init(uint8_t index)
 {
 	switch (index)
 	{
 	case 0:
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT swd_fini(uint8_t index)
+vsf_err_t swd_fini(uint8_t index)
 {
 	switch (index)
 	{
 	case 0:
 		SWD_Fini();
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT swd_config(uint8_t index, uint8_t trn, uint16_t retry, uint16_t dly)
+vsf_err_t swd_config(uint8_t index, uint8_t trn, uint16_t retry, uint16_t dly)
 {
 	switch (index)
 	{
@@ -297,51 +297,51 @@ RESULT swd_config(uint8_t index, uint8_t trn, uint16_t retry, uint16_t dly)
 		SWD_SetRetryCount(retry);
 		SWD_SetDelay(dly);
 		SWD_Init();
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT swd_seqout(uint8_t index, uint8_t *data, uint16_t bitlen)
+vsf_err_t swd_seqout(uint8_t index, uint8_t *data, uint16_t bitlen)
 {
 	switch (index)
 	{
 	case 0:
 		if (data == NULL)
 		{
-			return ERROR_FAIL;
+			return VSFERR_INVALID_PTR;
 		}
 		
 		SWD_SWDIO_SET();
 		SWD_SWDIO_SETOUTPUT();
 		SWD_SeqOut(data, bitlen);
 		SWD_SWDIO_SETINPUT();
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT swd_seqin(uint8_t index, uint8_t *data, uint16_t bitlen)
+vsf_err_t swd_seqin(uint8_t index, uint8_t *data, uint16_t bitlen)
 {
 	switch (index)
 	{
 	case 0:
 		if (data == NULL)
 		{
-			return ERROR_FAIL;
+			return VSFERR_INVALID_PTR;
 		}
 		
 		SWD_SeqIn(data, bitlen);
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT swd_transact(uint8_t index, uint8_t request, uint32_t *data, 
-					   uint8_t *ack)
+vsf_err_t swd_transact(uint8_t index, uint8_t request, uint32_t *data, 
+						uint8_t *ack)
 {
 	uint8_t ack_tmp;
 	switch (index)
@@ -349,7 +349,7 @@ RESULT swd_transact(uint8_t index, uint8_t request, uint32_t *data,
 	case 0:
 		if (data == NULL)
 		{
-			return ERROR_FAIL;
+			return VSFERR_INVALID_PTR;
 		}
 		
 		ack_tmp = SWD_Transaction(request, data);
@@ -357,9 +357,9 @@ RESULT swd_transact(uint8_t index, uint8_t request, uint32_t *data,
 		{
 			*ack = ack_tmp;
 		}
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 

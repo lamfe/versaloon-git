@@ -28,12 +28,12 @@ static TIM_TypeDef * stm32_timers[STM32_TIM_NUM] =
 	TIM13, TIM14, TIM15, TIM16, TIM17
 };
 
-RESULT stm32_timer_init(uint8_t index)
+vsf_err_t stm32_timer_init(uint8_t index)
 {
 #if __VSF_DEBUG__
 	if (index >= STM32_TIM_NUM)
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 #endif
 	
@@ -58,26 +58,26 @@ RESULT stm32_timer_init(uint8_t index)
 		RCC->APB2RSTR |= RCC_APB2Periph_TIM15 << (index - 14);
 		break;
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT stm32_timer_fini(uint8_t index)
+vsf_err_t stm32_timer_fini(uint8_t index)
 {
 	TIM_TypeDef * timer;
 	
 #if __VSF_DEBUG__
 	if (index >= STM32_TIM_NUM)
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 #endif
 	timer = stm32_timers[index];
 	
 	TIM_DeInit(timer);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT stm32_timer_config(uint8_t index, uint32_t kHz, uint32_t mode, 
+vsf_err_t stm32_timer_config(uint8_t index, uint32_t kHz, uint32_t mode, 
 							void (*overflow)(void))
 {
 	TIM_TypeDef * timer;
@@ -85,79 +85,79 @@ RESULT stm32_timer_config(uint8_t index, uint32_t kHz, uint32_t mode,
 #if __VSF_DEBUG__
 	if (index >= STM32_TIM_NUM)
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 #endif
 	timer = stm32_timers[index];
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT stm32_timer_start(uint8_t index)
+vsf_err_t stm32_timer_start(uint8_t index)
 {
 	TIM_TypeDef * timer;
 	
 #if __VSF_DEBUG__
 	if (index >= STM32_TIM_NUM)
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 #endif
 	timer = stm32_timers[index];
 	
 	timer->CR1 |= TIM_CR1_CEN;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT stm32_timer_stop(uint8_t index)
+vsf_err_t stm32_timer_stop(uint8_t index)
 {
 	TIM_TypeDef * timer;
 	
 #if __VSF_DEBUG__
 	if (index >= STM32_TIM_NUM)
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 #endif
 	timer = stm32_timers[index];
 	
 	timer->CR1 &= ~TIM_CR1_CEN;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT stm32_timer_get_count(uint8_t index, uint32_t *count)
+vsf_err_t stm32_timer_get_count(uint8_t index, uint32_t *count)
 {
 	TIM_TypeDef * timer;
 	
 #if __VSF_DEBUG__
 	if (index >= STM32_TIM_NUM)
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 #endif
 	timer = stm32_timers[index];
 	
 	*count = (uint32_t)timer->CNT;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT stm32_timer_set_count(uint8_t index, uint32_t count)
+vsf_err_t stm32_timer_set_count(uint8_t index, uint32_t count)
 {
 	TIM_TypeDef * timer;
 	
 #if __VSF_DEBUG__
 	if (index >= STM32_TIM_NUM)
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 #endif
 	timer = stm32_timers[index];
 	
 	timer->CNT = (uint16_t)count;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT stm32_timer_config_channel(uint8_t index, uint8_t channel, 
+vsf_err_t stm32_timer_config_channel(uint8_t index, uint8_t channel, 
 									uint32_t mode, void (*callback)(void))
 {
 	TIM_TypeDef * timer;
@@ -165,43 +165,45 @@ RESULT stm32_timer_config_channel(uint8_t index, uint8_t channel,
 #if __VSF_DEBUG__
 	if (index >= STM32_TIM_NUM)
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 #endif
 	timer = stm32_timers[index];
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT stm32_timer_get_channel(uint8_t index, uint8_t channel, uint32_t *count)
+vsf_err_t stm32_timer_get_channel(uint8_t index, uint8_t channel,
+									uint32_t *count)
 {
 	TIM_TypeDef * timer;
 	
 #if __VSF_DEBUG__
 	if (index >= STM32_TIM_NUM)
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 #endif
 	timer = stm32_timers[index];
 	
 	*count = (uint32_t)*(uint16_t *)(&timer->CCR1 + channel * 4);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT stm32_timer_set_channel(uint8_t index, uint8_t channel, uint32_t count)
+vsf_err_t stm32_timer_set_channel(uint8_t index, uint8_t channel,
+									uint32_t count)
 {
 	TIM_TypeDef * timer;
 	
 #if __VSF_DEBUG__
 	if (index >= STM32_TIM_NUM)
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 #endif
 	timer = stm32_timers[index];
 	
 	*(uint16_t *)(&timer->CCR1 + channel * 4) = (uint16_t)count;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 

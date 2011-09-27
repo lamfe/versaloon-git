@@ -28,17 +28,17 @@
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
 
-RESULT usbtopwm_init(uint8_t interface_index)
+vsf_err_t usbtopwm_init(uint8_t interface_index)
 {
 	return usbtoxxx_init_command(USB_TO_PWM, interface_index);
 }
 
-RESULT usbtopwm_fini(uint8_t interface_index)
+vsf_err_t usbtopwm_fini(uint8_t interface_index)
 {
 	return usbtoxxx_fini_command(USB_TO_PWM, interface_index);
 }
 
-RESULT usbtopwm_config(uint8_t interface_index, uint16_t kHz, uint8_t mode)
+vsf_err_t usbtopwm_config(uint8_t interface_index, uint16_t kHz, uint8_t mode)
 {
 	uint8_t buff[3];
 	
@@ -46,7 +46,7 @@ RESULT usbtopwm_config(uint8_t interface_index, uint16_t kHz, uint8_t mode)
 	if (interface_index > 7)
 	{
 		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 #endif
 	
@@ -56,7 +56,7 @@ RESULT usbtopwm_config(uint8_t interface_index, uint16_t kHz, uint8_t mode)
 	return usbtoxxx_conf_command(USB_TO_PWM, interface_index, buff, 3);
 }
 
-RESULT usbtopwm_out(uint8_t interface_index, uint16_t count, uint16_t *rate)
+vsf_err_t usbtopwm_out(uint8_t interface_index, uint16_t count, uint16_t *rate)
 {
 	uint16_t i;
 	
@@ -64,11 +64,11 @@ RESULT usbtopwm_out(uint8_t interface_index, uint16_t count, uint16_t *rate)
 	if (interface_index > 7)
 	{
 		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	if (NULL == rate)
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 #endif
 	
@@ -82,17 +82,17 @@ RESULT usbtopwm_out(uint8_t interface_index, uint16_t count, uint16_t *rate)
 								2 + 2 * count, 0);
 }
 
-RESULT usbtopwm_in(uint8_t interface_index, uint16_t count, uint16_t *rate)
+vsf_err_t usbtopwm_in(uint8_t interface_index, uint16_t count, uint16_t *rate)
 {
 #if PARAM_CHECK
 	if (interface_index > 7)
 	{
 		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	if (NULL == rate)
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 #endif
 	

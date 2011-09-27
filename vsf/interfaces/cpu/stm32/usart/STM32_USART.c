@@ -81,7 +81,7 @@ static const USART_TypeDef *stm32_usarts[USART_NUM] =
 #endif
 };
 
-RESULT stm32_usart_init(uint8_t index)
+vsf_err_t stm32_usart_init(uint8_t index)
 {
 	uint8_t usart_idx = index & 0x0F;
 	uint8_t remap_idx = (index >> 4) & 0x0F;
@@ -89,7 +89,7 @@ RESULT stm32_usart_init(uint8_t index)
 #if __VSF_DEBUG__
 	if (usart_idx >= USART_NUM)
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 #endif
 	
@@ -141,7 +141,7 @@ RESULT stm32_usart_init(uint8_t index)
 			break;
 		#endif
 		default:
-			return ERROR_FAIL;
+			return VSFERR_NOT_SUPPORT;
 		}
 		break;
 	#endif
@@ -203,7 +203,7 @@ RESULT stm32_usart_init(uint8_t index)
 			break;
 		#endif
 		default:
-			return ERROR_FAIL;
+			return VSFERR_NOT_SUPPORT;
 		}
 		break;
 	#endif
@@ -293,7 +293,7 @@ RESULT stm32_usart_init(uint8_t index)
 			break;
 		#endif
 		default:
-			return ERROR_FAIL;
+			return VSFERR_NOT_SUPPORT;
 		}
 		break;
 	#endif
@@ -307,13 +307,11 @@ RESULT stm32_usart_init(uint8_t index)
 		RCC->APB1ENR |= STM32_RCC_APB1ENR_USART5EN;
 		break;
 	#endif
-	default:
-		return ERROR_FAIL;
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT stm32_usart_fini(uint8_t index)
+vsf_err_t stm32_usart_fini(uint8_t index)
 {
 	USART_TypeDef *usart;
 	uint8_t usart_idx = index & 0x0F;
@@ -322,7 +320,7 @@ RESULT stm32_usart_fini(uint8_t index)
 #if __VSF_DEBUG__
 	if (usart_idx >= USART_NUM)
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 #endif
 	usart = (USART_TypeDef *)stm32_usarts[usart_idx];
@@ -374,7 +372,7 @@ RESULT stm32_usart_fini(uint8_t index)
 			break;
 		#endif
 		default:
-			return ERROR_FAIL;
+			return VSFERR_NOT_SUPPORT;
 		}
 		break;
 	#endif
@@ -432,10 +430,9 @@ RESULT stm32_usart_fini(uint8_t index)
 							((uint32_t)stm32_GPIO_INFLOAT << (7 * 4));
 			#endif
 			break;
-			break;
 		#endif
 		default:
-			return ERROR_FAIL;
+			return VSFERR_NOT_SUPPORT;
 		}
 		break;
 	#endif
@@ -522,7 +519,7 @@ RESULT stm32_usart_fini(uint8_t index)
 			break;
 		#endif
 		default:
-			return ERROR_FAIL;
+			return VSFERR_NOT_SUPPORT;
 		}
 		break;
 	#endif
@@ -536,13 +533,11 @@ RESULT stm32_usart_fini(uint8_t index)
 		RCC->APB1ENR &= ~STM32_RCC_APB1ENR_USART5EN;
 		break;
 	#endif
-	default:
-		return ERROR_FAIL;
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT stm32_usart_config(uint8_t index, uint32_t baudrate, 
+vsf_err_t stm32_usart_config(uint8_t index, uint32_t baudrate, 
 	uint8_t datalength, uint8_t mode)
 {
 	USART_TypeDef *usart;
@@ -555,14 +550,14 @@ RESULT stm32_usart_config(uint8_t index, uint32_t baudrate,
 #if __VSF_DEBUG__
 	if (usart_idx >= USART_NUM)
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 #endif
 	usart = (USART_TypeDef *)stm32_usarts[usart_idx];
 	
-	if (ERROR_OK != stm32_interface_get_info(&info))
+	if (stm32_interface_get_info(&info))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	cr1 = usart->CR1 & (STM32_USART_CR1_TXEIE | STM32_USART_CR1_RXNEIE);
@@ -671,7 +666,7 @@ RESULT stm32_usart_config(uint8_t index, uint32_t baudrate,
 		break;
 	#endif
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 	
 	switch (datalength)
@@ -682,7 +677,7 @@ RESULT stm32_usart_config(uint8_t index, uint32_t baudrate,
 		cr1 |= STM32_USART_CR1_M;
 		break;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_INVALID_PARAMETER;
 	}
 	// mode:
 	// bit0 - bit1: parity
@@ -701,10 +696,10 @@ RESULT stm32_usart_config(uint8_t index, uint32_t baudrate,
 	usart->CR2 = cr2;
 	usart->CR2 = cr3;
 	usart->CR1 |= STM32_USART_CR1_UE;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT stm32_usart_config_callback(uint8_t index, void *p, 
+vsf_err_t stm32_usart_config_callback(uint8_t index, void *p, 
 						void (*ontx)(void *), void (*onrx)(void *, uint16_t))
 {
 	USART_TypeDef *usart;
@@ -714,7 +709,7 @@ RESULT stm32_usart_config_callback(uint8_t index, void *p,
 #if __VSF_DEBUG__
 	if (usart_idx >= USART_NUM)
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 #endif
 	usart = (USART_TypeDef *)stm32_usarts[usart_idx];
@@ -732,10 +727,10 @@ RESULT stm32_usart_config_callback(uint8_t index, void *p,
 	}
 	usart->CR1 &= ~(STM32_USART_CR1_TXEIE | STM32_USART_CR1_RXNEIE);
 	usart->CR1 |= cr1;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT stm32_usart_tx(uint8_t index, uint16_t data)
+vsf_err_t stm32_usart_tx(uint8_t index, uint16_t data)
 {
 	USART_TypeDef *usart;
 	uint8_t usart_idx = index & 0x0F;
@@ -743,16 +738,16 @@ RESULT stm32_usart_tx(uint8_t index, uint16_t data)
 #if __VSF_DEBUG__
 	if (usart_idx >= USART_NUM)
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 #endif
 	usart = (USART_TypeDef *)stm32_usarts[usart_idx];
 	
 	usart->DR = data;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-bool stm32_usart_tx_isready(uint8_t index)
+vsf_err_t stm32_usart_tx_isready(uint8_t index)
 {
 	USART_TypeDef *usart;
 	uint8_t usart_idx = index & 0x0F;
@@ -760,12 +755,13 @@ bool stm32_usart_tx_isready(uint8_t index)
 #if __VSF_DEBUG__
 	if (usart_idx >= USART_NUM)
 	{
-		return false;
+		return VSFERR_NOT_SUPPORT;
 	}
 #endif
 	usart = (USART_TypeDef *)stm32_usarts[usart_idx];
 	
-	return (usart->SR & STM32_USART_SR_TC) != 0;
+	return ((usart->SR & STM32_USART_SR_TC) != 0) ?
+				VSFERR_NONE : VSFERR_NOT_READY;
 }
 
 uint16_t stm32_usart_rx(uint8_t index)
@@ -784,7 +780,7 @@ uint16_t stm32_usart_rx(uint8_t index)
 	return usart->DR;
 }
 
-bool stm32_usart_rx_isready(uint8_t index)
+vsf_err_t stm32_usart_rx_isready(uint8_t index)
 {
 	USART_TypeDef *usart;
 	uint8_t usart_idx = index & 0x0F;
@@ -792,12 +788,13 @@ bool stm32_usart_rx_isready(uint8_t index)
 #if __VSF_DEBUG__
 	if (usart_idx >= USART_NUM)
 	{
-		return false;
+		return VSFERR_NOT_SUPPORT;
 	}
 #endif
 	usart = (USART_TypeDef *)stm32_usarts[usart_idx];
 	
-	return (usart->SR & STM32_USART_SR_RXNE) != 0;
+	return ((usart->SR & STM32_USART_SR_RXNE) != 0) ?
+				VSFERR_NONE : VSFERR_NOT_READY;
 }
 
 #if USART0_INT_EN && (USART00_ENABLE || USART10_ENABLE)

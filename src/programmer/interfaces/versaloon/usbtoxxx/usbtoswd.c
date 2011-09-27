@@ -29,7 +29,7 @@
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
 
-RESULT usbtoswd_callback(void *p, uint8_t *src, uint8_t *processed)
+vsf_err_t usbtoswd_callback(void *p, uint8_t *src, uint8_t *processed)
 {
 	struct versaloon_pending_t *pending = (struct versaloon_pending_t *)p;
 	
@@ -40,20 +40,20 @@ RESULT usbtoswd_callback(void *p, uint8_t *src, uint8_t *processed)
 		*((uint8_t *)pending->extra_data) = src[0];
 	}
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT usbtoswd_init(uint8_t interface_index)
+vsf_err_t usbtoswd_init(uint8_t interface_index)
 {
 	return usbtoxxx_init_command(USB_TO_SWD, interface_index);
 }
 
-RESULT usbtoswd_fini(uint8_t interface_index)
+vsf_err_t usbtoswd_fini(uint8_t interface_index)
 {
 	return usbtoxxx_fini_command(USB_TO_SWD, interface_index);
 }
 
-RESULT usbtoswd_config(uint8_t interface_index, uint8_t trn, uint16_t retry,
+vsf_err_t usbtoswd_config(uint8_t interface_index, uint8_t trn, uint16_t retry,
 					   uint16_t dly)
 {
 	uint8_t cfg_buf[5];
@@ -62,7 +62,7 @@ RESULT usbtoswd_config(uint8_t interface_index, uint8_t trn, uint16_t retry,
 	if (interface_index > 7)
 	{
 		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 #endif
 	
@@ -73,7 +73,7 @@ RESULT usbtoswd_config(uint8_t interface_index, uint8_t trn, uint16_t retry,
 	return usbtoxxx_conf_command(USB_TO_SWD, interface_index, cfg_buf, 5);
 }
 
-RESULT usbtoswd_seqout(uint8_t interface_index, uint8_t *data, uint16_t bitlen)
+vsf_err_t usbtoswd_seqout(uint8_t interface_index, uint8_t *data, uint16_t bitlen)
 {
 	uint16_t bytelen = (bitlen + 7) >> 3;
 	
@@ -81,7 +81,7 @@ RESULT usbtoswd_seqout(uint8_t interface_index, uint8_t *data, uint16_t bitlen)
 	if (interface_index > 7)
 	{
 		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 #endif
 	
@@ -92,7 +92,7 @@ RESULT usbtoswd_seqout(uint8_t interface_index, uint8_t *data, uint16_t bitlen)
 								versaloon_cmd_buf, bytelen + 2, 0);
 }
 
-RESULT usbtoswd_seqin(uint8_t interface_index, uint8_t *data, uint16_t bitlen)
+vsf_err_t usbtoswd_seqin(uint8_t interface_index, uint8_t *data, uint16_t bitlen)
 {
 	uint16_t bytelen = (bitlen + 7) >> 3;
 	uint8_t buff[2];
@@ -101,7 +101,7 @@ RESULT usbtoswd_seqin(uint8_t interface_index, uint8_t *data, uint16_t bitlen)
 	if (interface_index > 7)
 	{
 		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 #endif
 	
@@ -111,7 +111,7 @@ RESULT usbtoswd_seqin(uint8_t interface_index, uint8_t *data, uint16_t bitlen)
 								data, 0, bytelen, 0);
 }
 
-RESULT usbtoswd_transact(uint8_t interface_index, uint8_t request,
+vsf_err_t usbtoswd_transact(uint8_t interface_index, uint8_t request,
 							uint32_t *data, uint8_t *ack)
 {
 	uint8_t parity;
@@ -121,7 +121,7 @@ RESULT usbtoswd_transact(uint8_t interface_index, uint8_t request,
 	if (interface_index > 7)
 	{
 		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 #endif
 	

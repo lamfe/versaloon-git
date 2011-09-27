@@ -80,7 +80,7 @@ struct vsfusbd_MSCBOT_param_t
 	
 	struct sllist list;
 };
-RESULT vsfusbd_MSCBOT_set_param(struct vsfusbd_MSCBOT_param_t *param);
+vsf_err_t vsfusbd_MSCBOT_set_param(struct vsfusbd_MSCBOT_param_t *param);
 
 #endif	// __VSFUSBD_MSC_H_INCLUDED__
 

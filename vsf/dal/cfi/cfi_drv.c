@@ -39,7 +39,7 @@ static uint32_t cfi_get_cmd(uint8_t cmd, uint8_t data_width)
 	}
 }
 
-static RESULT cfi_write_cmd(struct cfi_drv_interface_t *ifs, uint8_t cmd, 
+static vsf_err_t cfi_write_cmd(struct cfi_drv_interface_t *ifs, uint8_t cmd, 
 							uint8_t data_width, uint32_t address)
 {
 	uint32_t data = cfi_get_cmd(cmd, data_width);
@@ -48,7 +48,7 @@ static RESULT cfi_write_cmd(struct cfi_drv_interface_t *ifs, uint8_t cmd,
 									data_width, (uint8_t *)&data, 1);
 }
 
-static RESULT cfi_wait_busy(struct dal_info_t *info, uint64_t address)
+static vsf_err_t cfi_wait_busy(struct dal_info_t *info, uint64_t address)
 {
 	uint32_t cur_status = 0, orig_status = 0;
 	struct cfi_drv_interface_t *ifs = (struct cfi_drv_interface_t *)info->ifs;
@@ -76,14 +76,8 @@ static RESULT cfi_wait_busy(struct dal_info_t *info, uint64_t address)
 										ifs->nor_index | EBI_TGTTYP_NOR, 0, 
 										data_width, (uint8_t *)&cur_status, 1);
 				interfaces->peripheral_commit();
-				if ((cur_status ^ orig_status) & 0x0040)
-				{
-					return ERROR_FAIL;
-				}
-				else
-				{
-					return ERROR_OK;
-				}
+				return ((cur_status ^ orig_status) & 0x0040) ?
+							VSFERR_FAIL : VSFERR_NONE;
 			}
 		}
 		else
@@ -93,10 +87,10 @@ static RESULT cfi_wait_busy(struct dal_info_t *info, uint64_t address)
 		
 		orig_status = cur_status;
 	} while (1);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT cfi_drv_init(struct dal_info_t *info)
+static vsf_err_t cfi_drv_init(struct dal_info_t *info)
 {
 	struct cfi_drv_interface_t *ifs = (struct cfi_drv_interface_t *)info->ifs;
 	struct cfi_drv_param_t *param = (struct cfi_drv_param_t *)info->param;
@@ -104,10 +98,10 @@ static RESULT cfi_drv_init(struct dal_info_t *info)
 	interfaces->ebi.init(ifs->ebi_port);
 	interfaces->ebi.config(ifs->ebi_port, ifs->nor_index | EBI_TGTTYP_NOR, 
 							&param->nor_info);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT cfi_drv_getinfo(struct dal_info_t *info)
+static vsf_err_t cfi_drv_getinfo(struct dal_info_t *info)
 {
 	uint8_t cfi_info8[256];
 	uint16_t *cfi_info16 = (uint16_t *)cfi_info8;
@@ -146,7 +140,7 @@ static RESULT cfi_drv_getinfo(struct dal_info_t *info)
 	interfaces->ebi.read(ifs->ebi_port, ifs->nor_index | EBI_TGTTYP_NOR, 
 							0x0010 << 1, data_width, (uint8_t *)cfi_info8, 
 							sizeof(cfi_info8) / data_width);
-	if ((ERROR_OK != interfaces->peripheral_commit()) || 
+	if (interfaces->peripheral_commit() || 
 		((1 == data_width) && 
 			((cfi_info8[0] != 'Q') || (cfi_info8[1] != 'R') || 
 			(cfi_info8[2] != 'Y'))) || 
@@ -157,7 +151,7 @@ static RESULT cfi_drv_getinfo(struct dal_info_t *info)
 			((cfi_info32[0] != 'Q') || (cfi_info32[1] != 'R') || 
 			(cfi_info32[2] != 'Y'))))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	if (!cfi_mal_info->capacity.block_number || 
 		!cfi_mal_info->capacity.block_size)
@@ -180,7 +174,7 @@ static RESULT cfi_drv_getinfo(struct dal_info_t *info)
 						((uint64_t)1 << cfi_info32[0x17]) / (cfi_info32[0x1D] + 1);
 			break;
 		default:
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 	}
 	switch (data_width)
@@ -195,7 +189,7 @@ static RESULT cfi_drv_getinfo(struct dal_info_t *info)
 		cfi_mal_info->write_page_size = 1 << cfi_info32[0x1A];
 		break;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	cfi_mal_info->erase_page_size = (uint32_t)cfi_mal_info->capacity.block_size;
 	cfi_mal_info->read_page_size = 0;
@@ -203,18 +197,18 @@ static RESULT cfi_drv_getinfo(struct dal_info_t *info)
 	cfi_write_cmd(ifs, 0xAA, data_width, 0x0555 << 1);
 	cfi_write_cmd(ifs, 0x55, data_width, 0x02AA << 1);
 	cfi_write_cmd(ifs, 0xF0, data_width, 0);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT cfi_drv_fini(struct dal_info_t *info)
+static vsf_err_t cfi_drv_fini(struct dal_info_t *info)
 {
 	struct cfi_drv_interface_t *ifs = (struct cfi_drv_interface_t *)info->ifs;
 	
 	interfaces->ebi.fini(ifs->ebi_port);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT cfi_drv_eraseall_nb_start(struct dal_info_t *info)
+static vsf_err_t cfi_drv_eraseall_nb_start(struct dal_info_t *info)
 {
 	struct cfi_drv_interface_t *ifs = (struct cfi_drv_interface_t *)info->ifs;
 	struct cfi_drv_param_t *param = (struct cfi_drv_param_t *)info->param;
@@ -226,10 +220,10 @@ static RESULT cfi_drv_eraseall_nb_start(struct dal_info_t *info)
 	cfi_write_cmd(ifs, 0xAA, data_width, 0x0555 << 1);
 	cfi_write_cmd(ifs, 0x55, data_width, 0x02AA << 1);
 	cfi_write_cmd(ifs, 0x10, data_width, 0x0555 << 1);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT cfi_drv_eraseall_nb_isready(struct dal_info_t *info, bool *ready)
+static vsf_err_t cfi_drv_eraseall_nb_isready(struct dal_info_t *info)
 {
 	uint32_t val1 = 0, val2 = 0;
 	struct cfi_drv_interface_t *ifs = (struct cfi_drv_interface_t *)info->ifs;
@@ -242,31 +236,30 @@ static RESULT cfi_drv_eraseall_nb_isready(struct dal_info_t *info, bool *ready)
 							0x0000 << 1, data_width, (uint8_t *)&val2, 1);
 	interfaces->peripheral_commit();
 	
-	*ready = ((val1 ^ val2) & 0x0040) == 0;
-	return ERROR_OK;
+	return (((val1 ^ val2) & 0x0040) == 0) ? VSFERR_NONE : VSFERR_NOT_READY;
 }
 
-static RESULT cfi_drv_eraseall_nb_waitready(struct dal_info_t *info)
+static vsf_err_t cfi_drv_eraseall_nb_waitready(struct dal_info_t *info)
 {
 	return cfi_wait_busy(info, 0);
 }
 
-static RESULT cfi_drv_eraseall_nb_end(struct dal_info_t *info)
+static vsf_err_t cfi_drv_eraseall_nb_end(struct dal_info_t *info)
 {
 	REFERENCE_PARAMETER(info);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT cfi_drv_eraseblock_nb_start(struct dal_info_t *info, 
+static vsf_err_t cfi_drv_eraseblock_nb_start(struct dal_info_t *info, 
 											uint64_t address, uint64_t count)
 {
 	REFERENCE_PARAMETER(info);
 	REFERENCE_PARAMETER(address);
 	REFERENCE_PARAMETER(count);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT cfi_drv_eraseblock_nb(struct dal_info_t *info, uint64_t address)
+static vsf_err_t cfi_drv_eraseblock_nb(struct dal_info_t *info, uint64_t address)
 {
 	struct cfi_drv_interface_t *ifs = (struct cfi_drv_interface_t *)info->ifs;
 	struct cfi_drv_param_t *param = (struct cfi_drv_param_t *)info->param;
@@ -278,11 +271,11 @@ static RESULT cfi_drv_eraseblock_nb(struct dal_info_t *info, uint64_t address)
 	cfi_write_cmd(ifs, 0xAA, data_width, 0x0555 << 1);
 	cfi_write_cmd(ifs, 0x55, data_width, 0x02AA << 1);
 	cfi_write_cmd(ifs, 0x30, data_width, (uint32_t)address);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT cfi_drv_eraseblock_nb_isready(struct dal_info_t *info, 
-												uint64_t address, bool *ready)
+static vsf_err_t cfi_drv_eraseblock_nb_isready(struct dal_info_t *info, 
+												uint64_t address)
 {
 	uint32_t val1 = 0, val2 = 0;
 	struct cfi_drv_interface_t *ifs = (struct cfi_drv_interface_t *)info->ifs;
@@ -297,17 +290,16 @@ static RESULT cfi_drv_eraseblock_nb_isready(struct dal_info_t *info,
 							0x0000 << 1, data_width, (uint8_t *)&val2, 1);
 	interfaces->peripheral_commit();
 	
-	*ready = ((val1 ^ val2) & 0x0040) == 0;
-	return ERROR_OK;
+	return (((val1 ^ val2) & 0x0040) == 0) ? VSFERR_NONE : VSFERR_NOT_READY;
 }
 
-static RESULT cfi_drv_eraseblock_nb_end(struct dal_info_t *info)
+static vsf_err_t cfi_drv_eraseblock_nb_end(struct dal_info_t *info)
 {
 	REFERENCE_PARAMETER(info);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT cfi_drv_readblock_nb_start(struct dal_info_t *info, 
+static vsf_err_t cfi_drv_readblock_nb_start(struct dal_info_t *info, 
 											uint64_t address, uint64_t count)
 {
 	struct cfi_drv_interface_t *ifs = (struct cfi_drv_interface_t *)info->ifs;
@@ -320,10 +312,10 @@ static RESULT cfi_drv_readblock_nb_start(struct dal_info_t *info,
 	cfi_write_cmd(ifs, 0xAA, data_width, 0x0555 << 1);
 	cfi_write_cmd(ifs, 0x55, data_width, 0x02AA << 1);
 	cfi_write_cmd(ifs, 0xF0, data_width, 0);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT cfi_drv_readblock_nb(struct dal_info_t *info, uint64_t address, 
+static vsf_err_t cfi_drv_readblock_nb(struct dal_info_t *info, uint64_t address, 
 									uint8_t *buff)
 {
 	uint32_t count, i, cur_count;
@@ -354,33 +346,32 @@ static RESULT cfi_drv_readblock_nb(struct dal_info_t *info, uint64_t address,
 	return interfaces->peripheral_commit();
 }
 
-static RESULT cfi_drv_readblock_nb_isready(struct dal_info_t *info, 
-								uint64_t address, uint8_t *buff, bool *ready)
+static vsf_err_t cfi_drv_readblock_nb_isready(struct dal_info_t *info, 
+											uint64_t address, uint8_t *buff)
 {
 	REFERENCE_PARAMETER(info);
 	REFERENCE_PARAMETER(address);
 	REFERENCE_PARAMETER(buff);
-	*ready = true;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT cfi_drv_readblock_nb_end(struct dal_info_t *info)
+static vsf_err_t cfi_drv_readblock_nb_end(struct dal_info_t *info)
 {
 	REFERENCE_PARAMETER(info);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT cfi_drv_writeblock_nb_start(struct dal_info_t *info, 
+static vsf_err_t cfi_drv_writeblock_nb_start(struct dal_info_t *info, 
 											uint64_t address, uint64_t count)
 {
 	REFERENCE_PARAMETER(info);
 	REFERENCE_PARAMETER(address);
 	REFERENCE_PARAMETER(count);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT cfi_drv_writeblock_nb(struct dal_info_t *info, uint64_t address, 
-									uint8_t *buff)
+static vsf_err_t cfi_drv_writeblock_nb(struct dal_info_t *info, uint64_t address, 
+										uint8_t *buff)
 {
 	struct cfi_drv_param_t *param = (struct cfi_drv_param_t *)info->param;
 	uint8_t data_width = param->nor_info.common_info.data_width / 8;
@@ -396,11 +387,11 @@ static RESULT cfi_drv_writeblock_nb(struct dal_info_t *info, uint64_t address,
 	interfaces->ebi.write(ifs->ebi_port, ifs->nor_index | EBI_TGTTYP_NOR, 
 			(uint32_t)address, data_width, buff, write_page_size / data_width);
 	cfi_write_cmd(ifs, 0x29, data_width, (uint32_t)address);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT cfi_drv_writeblock_nb_isready(struct dal_info_t *info, 
-								uint64_t address, uint8_t *buff, bool *ready)
+static vsf_err_t cfi_drv_writeblock_nb_isready(struct dal_info_t *info, 
+											uint64_t address, uint8_t *buff)
 {
 	uint32_t status = 0, verify_data;
 	struct cfi_drv_interface_t *ifs = (struct cfi_drv_interface_t *)info->ifs;
@@ -426,42 +417,43 @@ static RESULT cfi_drv_writeblock_nb_isready(struct dal_info_t *info,
 		verify_data = ((uint32_t *)buff)[write_page_size / 4 - 1];
 		break;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	if (verify_data == status)
 	{
-		*ready = true;
+		return VSFERR_NONE;
 	}
 	else if ((status & 0x20) || (status & 0x02))
 	{
 		interfaces->ebi.read(ifs->ebi_port, ifs->nor_index | EBI_TGTTYP_NOR, 
 							(uint32_t)address + write_page_size - data_width, 
 							data_width, (uint8_t *)&status, 1);
-		if ((ERROR_OK != interfaces->peripheral_commit()) || 
+		if (interfaces->peripheral_commit() || 
 			(verify_data != status))
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
+		return VSFERR_NONE;
 	}
 	
-	return ERROR_OK;
+	return VSFERR_NOT_READY;
 }
 
-static RESULT cfi_drv_writeblock_nb_end(struct dal_info_t *info)
+static vsf_err_t cfi_drv_writeblock_nb_end(struct dal_info_t *info)
 {
 	REFERENCE_PARAMETER(info);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 #if DAL_INTERFACE_PARSER_EN
-static RESULT cfi_drv_parse_interface(struct dal_info_t *info, uint8_t *buff)
+static vsf_err_t cfi_drv_parse_interface(struct dal_info_t *info, uint8_t *buff)
 {
 	struct cfi_drv_interface_t *ifs = (struct cfi_drv_interface_t *)info->ifs;
 	
 	ifs->ebi_port = buff[0];
 	ifs->nor_index = buff[1];
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 #endif
 

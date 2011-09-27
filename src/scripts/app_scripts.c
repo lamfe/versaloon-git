@@ -30,11 +30,11 @@
 #include "app_log.h"
 #include "app_err.h"
 
-#include "strparser.h"
-
 #include "programmer.h"
 #include "scripts.h"
 #include "app_scripts.h"
+
+#include "strparser.h"
 
 #include "dal/mal/mal.h"
 
@@ -73,24 +73,24 @@ struct vss_cmd_t app_cmd[] =
 };
 
 struct interfaces_info_t *interfaces = NULL;
-RESULT dal_init(struct interfaces_info_t *ifs)
+vsf_err_t dal_init(struct interfaces_info_t *ifs)
 {
 	interfaces = ifs;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT dal_commit(void)
+vsf_err_t dal_commit(void)
 {
 	return interfaces->peripheral_commit();
 }
 
-RESULT dal_config_interface(char *dal_name, char *ifs, struct dal_info_t *info)
+vsf_err_t dal_config_interface(char *dal_name, char *ifs, struct dal_info_t *info)
 {
 	uint32_t i;
 	uint32_t size;
 	struct dal_driver_t *d = NULL;
 	uint8_t *buff = NULL;
-	RESULT ret = ERROR_OK;
+	vsf_err_t err = VSFERR_NONE;
 	
 	i = 0;
 	while (dal_drivers[i] != NULL)
@@ -104,7 +104,7 @@ RESULT dal_config_interface(char *dal_name, char *ifs, struct dal_info_t *info)
 	}
 	if (NULL == d)
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	size = strparser_getsize(d->ifs_format);
@@ -116,17 +116,17 @@ RESULT dal_config_interface(char *dal_name, char *ifs, struct dal_info_t *info)
 	buff = (uint8_t *)malloc(size);
 	if (NULL == buff)
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
-	if ((ERROR_OK != strparser_parse(ifs, d->ifs_format, buff, size)) || 
-		(ERROR_OK != d->parse_interface(info, buff)))
+	if (strparser_parse(ifs, d->ifs_format, buff, size) ||
+		d->parse_interface(info, buff))
 	{
-		ret = ERROR_FAIL;
+		err = VSFERR_FAIL;
 	}
 	free(buff);
 	buff = NULL;
-	return ret;
+	return err;
 }
 
 VSS_HANDLER(dal_vss_init)
@@ -134,10 +134,10 @@ VSS_HANDLER(dal_vss_init)
 	struct interfaces_info_t *ifs = NULL;
 	
 	VSS_CHECK_ARGC(1);
-	if ((ERROR_OK != interface_assert(&ifs)) || (NULL == ifs))
+	if (interface_assert(&ifs) || (NULL == ifs))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "interface module");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	return dal_init(ifs);
@@ -146,6 +146,6 @@ VSS_HANDLER(dal_vss_init)
 VSS_HANDLER(dal_vss_fini)
 {
 	VSS_CHECK_ARGC(1);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 

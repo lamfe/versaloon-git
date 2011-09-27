@@ -39,48 +39,47 @@ void USB_TO_SPI_ProcessCmd(uint8_t *dat, uint16_t len)
 		switch(command)
 		{
 		case USB_TO_XXX_INIT:
-			if (ERROR_OK == app_interfaces.spi.init(device_idx))
+			if (app_interfaces.spi.init(device_idx))
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
 			else
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
 			break;
 		case USB_TO_XXX_CONFIG:
 			attr = dat[index];
 			frequency = GET_LE_U32(&dat[index + 1]);
 			
-			if (ERROR_OK == app_interfaces.spi.config(device_idx, frequency, 
-														attr))
+			if (app_interfaces.spi.config(device_idx, frequency, attr))
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
 			else
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
 			break;
 		case USB_TO_XXX_FINI:
-			if (ERROR_OK == app_interfaces.spi.fini(device_idx))
-			{
-				buffer_reply[rep_len++] = USB_TO_XXX_OK;
-			}
-			else
+			if (app_interfaces.spi.fini(device_idx))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
+			else
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+			}
 			break;
 		case USB_TO_XXX_IN_OUT:
-			if (ERROR_OK == app_interfaces.spi.io(device_idx, &dat[index], 
-								&buffer_reply[rep_len + 1], length))
+			if (app_interfaces.spi.io(device_idx, &dat[index], 
+					&buffer_reply[rep_len + 1], length))
 			{
-				buffer_reply[rep_len] = USB_TO_XXX_OK;
+				buffer_reply[rep_len] = USB_TO_XXX_FAILED;
 			}
 			else
 			{
-				buffer_reply[rep_len] = USB_TO_XXX_FAILED;
+				buffer_reply[rep_len] = USB_TO_XXX_OK;
 			}
 			rep_len += 1 + length;
 			break;

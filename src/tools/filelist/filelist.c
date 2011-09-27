@@ -23,6 +23,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "vsf_err.h"
+
 #include "app_type.h"
 #include "app_io.h"
 #include "app_log.h"
@@ -66,11 +68,11 @@ static void FILELIST_InsertLast(struct filelist *fl, struct filelist *newitem)
 	sllint_insert(fl->list, newitem->list);
 }
 
-RESULT FILELIST_Open(struct filelist *fl, char *attr)
+vsf_err_t FILELIST_Open(struct filelist *fl, char *attr)
 {
 	if (NULL == fl)
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	do{
@@ -79,30 +81,30 @@ RESULT FILELIST_Open(struct filelist *fl, char *attr)
 			fl->file = fopen((const char *)fl->path, (const char *)attr);
 			if (NULL == fl->file)
 			{
-				return ERROR_FAIL;
+				return VSFERR_FAIL;
 			}
 		}
 		fl = FILELIST_GetNext(fl);
 	} while(fl != NULL);
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT FILELIST_Add(struct filelist **fl, char *path, uint32_t seg_offset,
+vsf_err_t FILELIST_Add(struct filelist **fl, char *path, uint32_t seg_offset,
 					uint32_t addr_offset)
 {
 	struct filelist *newitem = NULL;
 	
 	if (NULL == fl)
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	newitem = (struct filelist*)malloc(sizeof(struct filelist));
 	if (NULL == newitem)
 	{
 		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	newitem->path = (char *)malloc(strlen(path) + 1);
 	if (NULL == newitem->path)
@@ -111,7 +113,7 @@ RESULT FILELIST_Add(struct filelist **fl, char *path, uint32_t seg_offset,
 		newitem = NULL;
 		
 		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	strcpy(newitem->path, path);
 	newitem->seg_offset = seg_offset;
@@ -129,7 +131,7 @@ RESULT FILELIST_Add(struct filelist **fl, char *path, uint32_t seg_offset,
 		FILELIST_InsertLast(*fl, newitem);
 	}
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 void FILELIST_Free(struct filelist **fl)
@@ -164,7 +166,7 @@ void FILELIST_Free(struct filelist **fl)
 }
 
 extern struct filelist *fl_in, *fl_out;
-static RESULT filelist_add_file(struct filelist **fl, char *file)
+static vsf_err_t filelist_add_file(struct filelist **fl, char *file)
 {
 	uint32_t seg_offset, addr_offset;
 	uint32_t i;
@@ -183,25 +185,24 @@ static RESULT filelist_add_file(struct filelist **fl, char *file)
 		char format[] = "%4d,%4d";
 		
 		file[i] = '\0';
-		if (ERROR_OK != strparser_parse(&file[i + 1], format,
-											(uint8_t*)buff, sizeof(buff)))
+		if (strparser_parse(&file[i + 1], format, (uint8_t*)buff, sizeof(buff)))
 		{
 			LOG_ERROR(ERRMSG_NOT_SUPPORT_AS, &file[i + 1], format);
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		seg_offset = buff[0];
 		addr_offset = buff[1];
 	}
 	
-	if (ERROR_OK != FILELIST_Add(fl, file, seg_offset, addr_offset))
+	if (FILELIST_Add(fl, file, seg_offset, addr_offset))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "add file: ", file);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT filelist_check_collision(struct filelist *fl1,
+static vsf_err_t filelist_check_collision(struct filelist *fl1,
 										struct filelist *fl2)
 {
 	struct filelist *fl_out_tmp = fl1;
@@ -214,7 +215,7 @@ static RESULT filelist_check_collision(struct filelist *fl1,
 		{
 			if (!strcmp(fl_out_tmp->path, fl_in_tmp->path))
 			{
-				return ERROR_FAIL;
+				return VSFERR_FAIL;
 			}
 			
 			fl_in_tmp = FILELIST_GetNext(fl_in_tmp);
@@ -223,7 +224,7 @@ static RESULT filelist_check_collision(struct filelist *fl1,
 		fl_out_tmp = FILELIST_GetNext(fl_out_tmp);
 	}
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 VSS_HANDLER(filelist_add_inputfile)
@@ -233,26 +234,26 @@ VSS_HANDLER(filelist_add_inputfile)
 	if (1 == argc)
 	{
 		FILELIST_Free(&fl_in);
-		return ERROR_OK;
+		return VSFERR_NONE;
 	}
 	
-	if (ERROR_OK != filelist_add_file(&fl_in, (char *)argv[1]))
+	if (filelist_add_file(&fl_in, (char *)argv[1]))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "add input file");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
-	if (ERROR_OK != filelist_check_collision(fl_in, fl_out))
+	if (filelist_check_collision(fl_in, fl_out))
 	{
 		LOG_ERROR("inputfile CANNOT be meanwhile outputfile!");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
-	if ((fl_in != NULL) && (ERROR_OK != FILELIST_Open(fl_in, "rb")))
+	if ((fl_in != NULL) && FILELIST_Open(fl_in, "rb"))
 	{
 		FILELIST_Free(&fl_in);
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "open input file");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 VSS_HANDLER(filelist_add_outputfile)
@@ -262,19 +263,19 @@ VSS_HANDLER(filelist_add_outputfile)
 	if (1 == argc)
 	{
 		FILELIST_Free(&fl_out);
-		return ERROR_OK;
+		return VSFERR_NONE;
 	}
 	
-	if (ERROR_OK != filelist_add_file(&fl_out, (char *)argv[1]))
+	if (filelist_add_file(&fl_out, (char *)argv[1]))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "add output file");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
-	if (ERROR_OK != filelist_check_collision(fl_in, fl_out))
+	if (filelist_check_collision(fl_in, fl_out))
 	{
 		LOG_ERROR("inputfile CANNOT be meanwhile outputfile!");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 

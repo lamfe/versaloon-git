@@ -21,59 +21,57 @@
 #include "../SPI/SPI.h"
 #include "DUSI.h"
 
-RESULT dusi_init(uint8_t index)
+vsf_err_t dusi_init(uint8_t index)
 {
 	switch (index)
 	{
 	case 0:
 		interfaces->spi.init(JTAG_TAP_HS_SPI_M_IDX);
 		interfaces->spi.init(JTAG_TAP_HS_SPI_S_IDX);
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT dusi_fini(uint8_t index)
+vsf_err_t dusi_fini(uint8_t index)
 {
 	switch (index)
 	{
 	case 0:
 		interfaces->spi.fini(JTAG_TAP_HS_SPI_M_IDX);
 		interfaces->spi.fini(JTAG_TAP_HS_SPI_S_IDX);
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT dusi_config(uint8_t index, uint32_t kHz, uint8_t mode)
+vsf_err_t dusi_config(uint8_t index, uint32_t kHz, uint8_t mode)
 {
 	struct spi_ability_t spis_ability, spim_ability;
 	
 	switch (index)
 	{
 	case 0:
-		if ((ERROR_OK != interfaces->spi.get_ability(JTAG_TAP_HS_SPI_M_IDX, 
-															&spim_ability)) || 
-			(ERROR_OK != interfaces->spi.get_ability(JTAG_TAP_HS_SPI_S_IDX, 
-															&spis_ability)) || 
+		if (interfaces->spi.get_ability(JTAG_TAP_HS_SPI_M_IDX, &spim_ability) || 
+			interfaces->spi.get_ability(JTAG_TAP_HS_SPI_S_IDX, &spis_ability) || 
 			(spis_ability.max_freq_hz < spim_ability.min_freq_hz) || 
 			(spis_ability.min_freq_hz > spim_ability.max_freq_hz))
 		{
-			return ERROR_FAIL;
+			return VSFERR_INVALID_PARAMETER;
 		}
 		
 		interfaces->spi.config(JTAG_TAP_HS_SPI_M_IDX, kHz, mode | SPI_MASTER);
 		interfaces->spi.config(JTAG_TAP_HS_SPI_S_IDX, 
 							spis_ability.max_freq_hz / 1000, mode | SPI_SLAVE);
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT dusi_io(uint8_t index, uint8_t *mo, uint8_t *mi, uint8_t *so, uint8_t *si, 
+vsf_err_t dusi_io(uint8_t index, uint8_t *mo, uint8_t *mi, uint8_t *so, uint8_t *si, 
 			   uint32_t bitlen)
 {
 	uint32_t i;
@@ -115,9 +113,9 @@ RESULT dusi_io(uint8_t index, uint8_t *mo, uint8_t *mi, uint8_t *so, uint8_t *si
 				mi++;
 			}
 		}
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 

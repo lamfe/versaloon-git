@@ -38,14 +38,14 @@
 #include "app_log.h"
 #include "app_err.h"
 
-#include "memlist.h"
-#include "filelist.h"
-#include "strparser.h"
-
 #include "vsprog.h"
 #include "programmer.h"
 #include "target.h"
 #include "scripts.h"
+
+#include "memlist.h"
+#include "filelist.h"
+#include "strparser.h"
 
 #define OPTSTR			"hvS:P:s:c:Mp:U:D:Ld:Go:F:m:x:C:I:O:J:b:V:t:K:W:Aqel:i:Q:"
 static const struct option long_opts[] =
@@ -240,7 +240,7 @@ void vsprog_no_call_operate(void)
 	vsprog_query_cmd = 1;
 }
 
-static RESULT parse_operation(uint32_t *operation, const char *opt,
+static vsf_err_t parse_operation(uint32_t *operation, const char *opt,
 								uint32_t optlen)
 {
 	uint32_t mask = 0, tmp;
@@ -260,13 +260,13 @@ static RESULT parse_operation(uint32_t *operation, const char *opt,
 		if (tmp == 0)
 		{
 			LOG_ERROR(ERRMSG_INVALID_CHARACTER, opt[i], "target area");
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		mask |= tmp;
 	}
 	
 	*operation = mask;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 static void print_title(void)
@@ -321,7 +321,7 @@ Usage: %s [OPTION]...\n\
 	interface_print_help();
 	target_print_help();
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 VSS_HANDLER(vsprog_version)
@@ -334,7 +334,7 @@ This is free software; see the source for copying conditions.\n\
 There is NO warranty; not even for MERCHANTABILITY or FITNESS\n\
 FOR A PARTICULAR PURPOSE.\n"));
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 VSS_HANDLER(vsprog_debug_level)
@@ -347,11 +347,11 @@ VSS_HANDLER(vsprog_debug_level)
 	if ((value < 0) || (value > DEBUG_LEVEL))
 	{
 		vss_print_help(argv[0]);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	verbosity = value;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 VSS_HANDLER(vsprog_support)
@@ -392,7 +392,7 @@ VSS_HANDLER(vsprog_support)
 			{
 				vss_call_notifier(interfaces_info[i]->notifier,
 									"support", NULL);
-				return ERROR_OK;
+				return VSFERR_NONE;
 			}
 		}
 		for (i = 0; targets_info[i].name != NULL; i++)
@@ -400,15 +400,15 @@ VSS_HANDLER(vsprog_support)
 			if (!strcmp(targets_info[i].name, argv[1]))
 			{
 				target_print_target(i);
-				return ERROR_OK;
+				return VSFERR_NONE;
 			}
 		}
 		
 		LOG_ERROR(ERRMSG_NOT_SUPPORT, argv[1]);
 		LOG_ERROR(ERRMSG_TRY_SUPPORT);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 VSS_HANDLER(vsprog_operation)
@@ -421,14 +421,14 @@ VSS_HANDLER(vsprog_operation)
 	if (1 == argc)
 	{
 		memset(&operations, 0, sizeof(operations));
-		return ERROR_OK;
+		return VSFERR_NONE;
 	}
 	
 	argu_num = strlen(argv[1]) - 1;
 	if (NULL == cur_target)
 	{
 		LOG_ERROR(ERRMSG_NOT_DEFINED, "target");
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	switch (argv[1][0])
@@ -452,7 +452,7 @@ Parse_Operation:
 		if (*popt_tmp != 0)
 		{
 			LOG_ERROR(ERRMSG_MUTIPLE_DEFINED, "operation");
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		if (0 == argu_num)
 		{
@@ -460,33 +460,33 @@ Parse_Operation:
 		}
 		else
 		{
-			if (ERROR_OK != parse_operation(popt_tmp, &argv[1][1], argu_num))
+			if (parse_operation(popt_tmp, &argv[1][1], argu_num))
 			{
 				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "parse operation");
-				return ERROR_FAIL;
+				return VSFERR_FAIL;
 			}
 		}
 		break;
 	default:
 		LOG_ERROR(ERRMSG_INVALID_OPERATION, argv[1][0]);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 		break;
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 VSS_HANDLER(vsprog_mass)
 {
 	VSS_CHECK_ARGC(1);
 	LOG_ERROR(ERRMSG_NOT_SUPPORT, "mass product mode");
-	return ERROR_FAIL;
+	return VSFERR_FAIL;
 }
 
 VSS_HANDLER(vsprog_free_all)
 {
 	VSS_CHECK_ARGC(1);
 	free_all();
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 VSS_HANDLER(vsprog_init)
@@ -559,7 +559,7 @@ VSS_HANDLER(vsprog_init)
 		}
 	}
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 int main(int argc, char* argv[])
@@ -576,7 +576,7 @@ int main(int argc, char* argv[])
 	vss_argv[0] = "init";
 	vss_argv[1] = argv[0];
 	vss_argc = 2;
-	if (ERROR_OK != vss_run_cmd(vss_argc, (const char **)vss_argv))
+	if (vss_run_cmd(vss_argc, (const char **)vss_argv))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "initialize");
 		free_all_and_exit(EXIT_SUCCESS);
@@ -635,12 +635,11 @@ int main(int argc, char* argv[])
 				vss_argc = 1;
 			}
 			
-			if (ERROR_OK != vss_cmd_supported(vss_argv[0]))
+			if (vss_cmd_supported(vss_argv[0]))
 			{
 				lose_argu = 1;
 			}
-			else if (ERROR_OK != vss_run_cmd(vss_argc,
-												(const char **)vss_argv))
+			else if (vss_run_cmd(vss_argc, (const char **)vss_argv))
 			{
 				free_all_and_exit(EXIT_FAILURE);
 			}
@@ -657,21 +656,21 @@ int main(int argc, char* argv[])
 	// "prepare" and then "operate" programming if target and operation are both defined
 	if ((cur_target != NULL) && (!vsprog_query_cmd))
 	{
-		if (ERROR_OK != vss_run_script("prepare"))
+		if (vss_run_script("prepare"))
 		{
 			free_all_and_exit(EXIT_FAILURE);
 		}
-		if (ERROR_OK != vss_run_script("enter_program_mode"))
-		{
-			vss_run_script("leave_program_mode 0");
-			free_all_and_exit(EXIT_FAILURE);
-		}
-		if (ERROR_OK != vss_run_script("operate"))
+		if (vss_run_script("enter_program_mode"))
 		{
 			vss_run_script("leave_program_mode 0");
 			free_all_and_exit(EXIT_FAILURE);
 		}
-		if (ERROR_OK != vss_run_script("leave_program_mode 1"))
+		if (vss_run_script("operate"))
+		{
+			vss_run_script("leave_program_mode 0");
+			free_all_and_exit(EXIT_FAILURE);
+		}
+		if (vss_run_script("leave_program_mode 1"))
 		{
 			free_all_and_exit(EXIT_FAILURE);
 		}
@@ -682,7 +681,7 @@ int main(int argc, char* argv[])
 		vss_argv[0] = "run";
 		vss_argv[1] = argv[optind++];
 		vss_argc = 2;
-		if (ERROR_OK != vss_run_cmd(vss_argc, (const char **)vss_argv))
+		if (vss_run_cmd(vss_argc, (const char **)vss_argv))
 		{
 			LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "run", vss_argv[1]);
 			free_all_and_exit(EXIT_SUCCESS);

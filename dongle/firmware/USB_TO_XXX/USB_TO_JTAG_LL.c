@@ -39,33 +39,34 @@ void USB_TO_JTAG_LL_ProcessCmd(uint8_t *dat, uint16_t len)
 		switch(command)
 		{
 		case USB_TO_XXX_INIT:
-			if (ERROR_OK == app_interfaces.jtag_ll.init(device_idx))
+			if (app_interfaces.jtag_ll.init(device_idx))
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
 			else
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
 			break;
 		case USB_TO_XXX_CONFIG:
-			if (ERROR_OK == app_interfaces.jtag_ll.config(device_idx, GET_LE_U32(&dat[index])))
+			if (app_interfaces.jtag_ll.config(device_idx,
+												GET_LE_U32(&dat[index])))
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
 			else
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
 			break;
 		case USB_TO_XXX_FINI:
-			if (ERROR_OK == app_interfaces.jtag_ll.fini(device_idx))
+			if (app_interfaces.jtag_ll.fini(device_idx))
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
 			else
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
 			break;
 		case USB_TO_JTAG_LL_SCAN:
@@ -73,41 +74,43 @@ void USB_TO_JTAG_LL_ProcessCmd(uint8_t *dat, uint16_t len)
 			para = cur_dat_len >> 15;
 			cur_dat_len &= 0x7FFF;
 			
-			if (ERROR_OK == app_interfaces.jtag_ll.scan(device_idx, 
-								&dat[index + 2 + para], cur_dat_len * 8, para, 
-								dat[index + 2], dat[index + 2 + cur_dat_len + para], 
-								dat[index + 2 + cur_dat_len + para + 1]))
+			if (app_interfaces.jtag_ll.scan(device_idx, &dat[index + 2 + para],
+					cur_dat_len * 8, para, dat[index + 2],
+					dat[index + 2 + cur_dat_len + para],
+					dat[index + 2 + cur_dat_len + para + 1]))
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_OK;
-				memcpy(&buffer_reply[rep_len], &dat[index + 2 + para], cur_dat_len);
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
 			else
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+				memcpy(&buffer_reply[rep_len], &dat[index + 2 + para],
+						cur_dat_len);
 			}
 			rep_len += cur_dat_len;
 			break;
 		case USB_TO_JTAG_LL_TMS:
-			if (ERROR_OK == app_interfaces.jtag_ll.tms(device_idx, &dat[index], length))
+			if (app_interfaces.jtag_ll.tms(device_idx, &dat[index], length))
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
 			else
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
 			break;
 		case USB_TO_JTAG_LL_TMS_CLOCKS:
 			para = dat[index];
 			cur_dat_len = GET_LE_U32(&dat[index + 1]);
 			
-			if (ERROR_OK == app_interfaces.jtag_ll.tms_clocks(device_idx, cur_dat_len, para))
+			if (app_interfaces.jtag_ll.tms_clocks(device_idx, cur_dat_len,
+													para))
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
 			else
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
 			break;
 		default:

@@ -38,13 +38,13 @@ struct usart_stream_info_t
 	bool overflow;
 };
 
-RESULT usart_stream_init(struct usart_stream_info_t *usart_stream);
-RESULT usart_stream_fini(struct usart_stream_info_t *usart_stream);
-RESULT usart_stream_config(struct usart_stream_info_t *usart_stream);
-RESULT usart_stream_rx(struct usart_stream_info_t *usart_stream, 
-						struct vsf_buffer_t *buffer);
-RESULT usart_stream_tx(struct usart_stream_info_t *usart_stream, 
-						struct vsf_buffer_t *buffer);
-RESULT usart_stream_poll(struct usart_stream_info_t *usart_stream);
+vsf_err_t usart_stream_init(struct usart_stream_info_t *usart_stream);
+vsf_err_t usart_stream_fini(struct usart_stream_info_t *usart_stream);
+vsf_err_t usart_stream_config(struct usart_stream_info_t *usart_stream);
+vsf_err_t usart_stream_rx(struct usart_stream_info_t *usart_stream, 
+							struct vsf_buffer_t *buffer);
+vsf_err_t usart_stream_tx(struct usart_stream_info_t *usart_stream, 
+							struct vsf_buffer_t *buffer);
+vsf_err_t usart_stream_poll(struct usart_stream_info_t *usart_stream);
 
 #endif	// __USART_STREAM_H_INCLUDED__

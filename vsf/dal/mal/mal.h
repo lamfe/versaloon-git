@@ -76,54 +76,54 @@ struct mal_info_t
 
 struct mal_t
 {
-	RESULT (*init)(uint16_t index, struct dal_info_t *param);
-	RESULT (*fini)(uint16_t index, struct dal_info_t *param);
-	RESULT (*getinfo)(uint16_t index, struct dal_info_t *param);
-	RESULT (*poll)(uint16_t index, struct dal_info_t *param);
+	vsf_err_t (*init)(uint16_t index, struct dal_info_t *param);
+	vsf_err_t (*fini)(uint16_t index, struct dal_info_t *param);
+	vsf_err_t (*getinfo)(uint16_t index, struct dal_info_t *param);
+	vsf_err_t (*poll)(uint16_t index, struct dal_info_t *param);
 	
-	RESULT (*eraseall)(uint16_t index, struct dal_info_t *param);
-	RESULT (*eraseblock)(uint16_t index, struct dal_info_t *param, 
+	vsf_err_t (*eraseall)(uint16_t index, struct dal_info_t *param);
+	vsf_err_t (*eraseblock)(uint16_t index, struct dal_info_t *param, 
 							uint64_t address, uint64_t count);
-	RESULT (*readblock)(uint16_t index, struct dal_info_t *param, 
+	vsf_err_t (*readblock)(uint16_t index, struct dal_info_t *param, 
 						uint64_t address, uint8_t *buff, uint64_t count);
-	RESULT (*writeblock)(uint16_t index, struct dal_info_t *param, 
+	vsf_err_t (*writeblock)(uint16_t index, struct dal_info_t *param, 
 							uint64_t address, uint8_t *buff, uint64_t count);
 	
-	RESULT (*eraseall_nb_start)(uint16_t index, struct dal_info_t *param);
-	RESULT (*eraseall_nb_isready)(uint16_t index, struct dal_info_t *param, 
-									bool *ready);
-	RESULT (*eraseall_nb_waitready)(uint16_t index, struct dal_info_t *param);
-	RESULT (*eraseall_nb_end)(uint16_t index, struct dal_info_t *param);
+	vsf_err_t (*eraseall_nb_start)(uint16_t index, struct dal_info_t *param);
+	vsf_err_t (*eraseall_nb_isready)(uint16_t index, struct dal_info_t *param);
+	vsf_err_t (*eraseall_nb_waitready)(uint16_t index,
+										struct dal_info_t *param);
+	vsf_err_t (*eraseall_nb_end)(uint16_t index, struct dal_info_t *param);
 	
-	RESULT (*eraseblock_nb_start)(uint16_t index, struct dal_info_t *param, 
-									uint64_t address, uint64_t count);
-	RESULT (*eraseblock_nb)(uint16_t index, struct dal_info_t *param, 
-							uint64_t address);
-	RESULT (*eraseblock_nb_isready)(uint16_t index, struct dal_info_t *param, 
-									uint64_t address, bool *ready);
-	RESULT (*eraseblock_nb_waitready)(uint16_t index, struct dal_info_t *param, 
+	vsf_err_t (*eraseblock_nb_start)(uint16_t index, struct dal_info_t *param, 
+										uint64_t address, uint64_t count);
+	vsf_err_t (*eraseblock_nb)(uint16_t index, struct dal_info_t *param, 
+								uint64_t address);
+	vsf_err_t (*eraseblock_nb_isready)(uint16_t index, struct dal_info_t *param, 
 										uint64_t address);
-	RESULT (*eraseblock_nb_end)(uint16_t index, struct dal_info_t *param);
+	vsf_err_t (*eraseblock_nb_waitready)(uint16_t index, struct dal_info_t *param, 
+											uint64_t address);
+	vsf_err_t (*eraseblock_nb_end)(uint16_t index, struct dal_info_t *param);
 	
-	RESULT (*readblock_nb_start)(uint16_t index, struct dal_info_t *param, 
+	vsf_err_t (*readblock_nb_start)(uint16_t index, struct dal_info_t *param, 
 									uint64_t address, uint64_t count);
-	RESULT (*readblock_nb)(uint16_t index, struct dal_info_t *param, 
-							uint64_t address, uint8_t *buff);
-	RESULT (*readblock_nb_isready)(uint16_t index, struct dal_info_t *param, 
-								uint64_t address, uint8_t *buff, bool *ready);
-	RESULT (*readblock_nb_waitready)(uint16_t index, struct dal_info_t *param, 
+	vsf_err_t (*readblock_nb)(uint16_t index, struct dal_info_t *param, 
+								uint64_t address, uint8_t *buff);
+	vsf_err_t (*readblock_nb_isready)(uint16_t index, struct dal_info_t *param, 
 										uint64_t address, uint8_t *buff);
-	RESULT (*readblock_nb_end)(uint16_t index, struct dal_info_t *param);
+	vsf_err_t (*readblock_nb_waitready)(uint16_t index,
+					struct dal_info_t *param, uint64_t address, uint8_t *buff);
+	vsf_err_t (*readblock_nb_end)(uint16_t index, struct dal_info_t *param);
 	
-	RESULT (*writeblock_nb_start)(uint16_t index, struct dal_info_t *param, 
-									uint64_t address, uint64_t count);
-	RESULT (*writeblock_nb)(uint16_t index, struct dal_info_t *param, 
-							uint64_t address, uint8_t *buff);
-	RESULT (*writeblock_nb_isready)(uint16_t index, struct dal_info_t *param, 
-								uint64_t address, uint8_t *buff, bool *ready);
-	RESULT (*writeblock_nb_waitready)(uint16_t index, struct dal_info_t *param, 
+	vsf_err_t (*writeblock_nb_start)(uint16_t index, struct dal_info_t *param, 
+										uint64_t address, uint64_t count);
+	vsf_err_t (*writeblock_nb)(uint16_t index, struct dal_info_t *param, 
+								uint64_t address, uint8_t *buff);
+	vsf_err_t (*writeblock_nb_isready)(uint16_t index, struct dal_info_t *param, 
 										uint64_t address, uint8_t *buff);
-	RESULT (*writeblock_nb_end)(uint16_t index, struct dal_info_t *param);
+	vsf_err_t (*writeblock_nb_waitready)(uint16_t index,
+					struct dal_info_t *param, uint64_t address, uint8_t *buff);
+	vsf_err_t (*writeblock_nb_end)(uint16_t index, struct dal_info_t *param);
 };
 
 extern struct mal_t mal;

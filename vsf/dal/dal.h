@@ -38,7 +38,7 @@ struct dal_driver_t
 	char *name;
 #if DAL_INTERFACE_PARSER_EN
 	char *ifs_format;
-	RESULT (*parse_interface)(struct dal_info_t *info, uint8_t *buff);
+	vsf_err_t (*parse_interface)(struct dal_info_t *info, uint8_t *buff);
 #endif
 };
 

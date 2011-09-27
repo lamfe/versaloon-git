@@ -55,19 +55,19 @@ const struct program_mode_t msp430_program_mode[] =
 	{0, NULL, 0}
 };
 
-RESULT (*enter_program_mode_save)(struct program_context_t *context);
+vsf_err_t (*enter_program_mode_save)(struct program_context_t *context);
 struct program_functions_t msp430_program_functions;
 
-RESULT (*msp430jtagsbw_init)(uint8_t index);
-RESULT (*msp430jtagsbw_fini)(uint8_t index);
-RESULT (*msp430jtagsbw_config)(uint8_t index, uint8_t has_test);
-RESULT (*msp430jtagsbw_ir)(uint8_t index, uint8_t *ir, uint8_t want_ret);
-RESULT (*msp430jtagsbw_dr)(uint8_t index, uint32_t *dr, uint8_t len,
+vsf_err_t (*msp430jtagsbw_init)(uint8_t index);
+vsf_err_t (*msp430jtagsbw_fini)(uint8_t index);
+vsf_err_t (*msp430jtagsbw_config)(uint8_t index, uint8_t has_test);
+vsf_err_t (*msp430jtagsbw_ir)(uint8_t index, uint8_t *ir, uint8_t want_ret);
+vsf_err_t (*msp430jtagsbw_dr)(uint8_t index, uint32_t *dr, uint8_t len,
 							uint8_t want_ret);
-RESULT (*msp430jtagsbw_tclk)(uint8_t index, uint8_t value);
-RESULT (*msp430jtagsbw_tclk_strobe)(uint8_t index, uint16_t cnt);
-RESULT (*msp430jtagsbw_reset)(uint8_t index);
-RESULT (*msp430jtagsbw_poll)(uint8_t index, uint32_t dr, uint32_t mask,
+vsf_err_t (*msp430jtagsbw_tclk)(uint8_t index, uint8_t value);
+vsf_err_t (*msp430jtagsbw_tclk_strobe)(uint8_t index, uint16_t cnt);
+vsf_err_t (*msp430jtagsbw_reset)(uint8_t index);
+vsf_err_t (*msp430jtagsbw_poll)(uint8_t index, uint32_t dr, uint32_t mask,
 								uint32_t value, uint8_t len,
 								uint16_t poll_cnt, uint8_t toggle_tclk);
 
@@ -78,7 +78,7 @@ VSS_HANDLER(msp430_help)
 Usage of %s:\n\
   -m,  --mode <MODE>                        set mode<j|s|b>\n\n",
 			CUR_TARGET_STRING);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 ENTER_PROGRAM_MODE_HANDLER(msp430)
@@ -88,7 +88,7 @@ ENTER_PROGRAM_MODE_HANDLER(msp430)
 	
 	if (NULL == enter_program_mode_save)
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	switch (pi->mode)
@@ -116,7 +116,7 @@ ENTER_PROGRAM_MODE_HANDLER(msp430)
 		msp430jtagsbw_poll = interfaces->msp430sbw.poll;
 		break;
 	case MSP430_MODE_BSL:
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 		break;
 	}
 	
@@ -139,10 +139,10 @@ VSS_HANDLER(msp430_mode)
 		msp430_program_functions.enter_program_mode = msp430_enter_program_mode;
 		break;
 	case MSP430_MODE_BSL:
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 		break;
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 const struct vss_cmd_t msp430_notifier[] =

@@ -28,13 +28,13 @@
 #include "app_log.h"
 #include "app_err.h"
 
+#include "programmer.h"
+
 #include "port.h"
 #include "comport.h"
 
-#include "programmer.h"
-
 void comm_close_hw(void);
-RESULT comm_open_hw(char *comport, uint32_t baudrate, uint8_t datalength,
+vsf_err_t comm_open_hw(char *comport, uint32_t baudrate, uint8_t datalength,
 				 char paritybit, char stopbit, char handshake);
 int32_t comm_read_hw(uint8_t *buffer, uint32_t num_of_bytes);
 int32_t comm_write_hw(uint8_t *buffer, uint32_t num_of_bytes);
@@ -42,7 +42,7 @@ int32_t comm_ctrl_hw(uint8_t dtr, uint8_t rts);
 int32_t comm_flush_hw(void);
 
 void comm_close_usbtocomm(void);
-RESULT comm_open_usbtocomm(char *comport, uint32_t baudrate,
+vsf_err_t comm_open_usbtocomm(char *comport, uint32_t baudrate,
 			uint8_t datalength, char paritybit, char stopbit, char handshake);
 int32_t comm_read_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes);
 int32_t comm_write_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes);
@@ -86,7 +86,7 @@ void comm_close_hw(void)
 	}
 }
 
-RESULT comm_open_hw(char *comport, uint32_t baudrate, uint8_t datalength,
+vsf_err_t comm_open_hw(char *comport, uint32_t baudrate, uint8_t datalength,
 						char paritybit, char stopbit, char handshake)
 {
 	DCB dcb; // device control block for serial port
@@ -123,7 +123,7 @@ RESULT comm_open_hw(char *comport, uint32_t baudrate, uint8_t datalength,
 							(int)GetLastError());
 				break;
 		}
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	// COM port timeout values
@@ -238,7 +238,7 @@ RESULT comm_open_hw(char *comport, uint32_t baudrate, uint8_t datalength,
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 int32_t comm_flush_hw(void)
@@ -335,8 +335,8 @@ void comm_close_hw(void)
 	}
 }
 
-RESULT comm_open_hw(char *comport, uint32_t baudrate, uint8_t datalength,
-				 char paritybit, char stopbit, char handshake)
+vsf_err_t comm_open_hw(char *comport, uint32_t baudrate, uint8_t datalength,
+						char paritybit, char stopbit, char handshake)
 {
 	struct termios opt;
 	uint32_t i;
@@ -455,7 +455,7 @@ RESULT comm_open_hw(char *comport, uint32_t baudrate, uint8_t datalength,
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 int32_t comm_flush_hw(void)
@@ -518,7 +518,7 @@ void comm_close_usbtocomm(void)
 	usbtocomm_open = 0;
 }
 
-RESULT comm_open_usbtocomm(char *comport, uint32_t baudrate,
+vsf_err_t comm_open_usbtocomm(char *comport, uint32_t baudrate,
 			uint8_t datalength, char paritybit, char stopbit, char handshake)
 {
 	struct interfaces_info_t *prog = NULL;
@@ -527,9 +527,9 @@ RESULT comm_open_usbtocomm(char *comport, uint32_t baudrate,
 	REFERENCE_PARAMETER(comport);
 	REFERENCE_PARAMETER(handshake);
 	
-	if ((ERROR_OK != interface_assert(&prog)) || (NULL == prog))
+	if (interface_assert(&prog) || (NULL == prog))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	interfaces = prog;
 	
@@ -572,15 +572,15 @@ RESULT comm_open_usbtocomm(char *comport, uint32_t baudrate,
 	}
 	
 	// initialize usbtocomm
-	if ((ERROR_OK != interfaces->usart.init(0))
-		|| (ERROR_OK != interfaces->usart.config(0, baudrate, datalength, mode))
-		|| (ERROR_OK != interfaces->peripheral_commit()))
+	if (interfaces->usart.init(0)
+		|| interfaces->usart.config(0, baudrate, datalength, mode)
+		|| interfaces->peripheral_commit())
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	usbtocomm_open = 1;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 int32_t comm_read_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
@@ -598,8 +598,8 @@ int32_t comm_read_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 	{
 		LOG_PUSH();
 		LOG_MUTE();
-		if ((ERROR_OK != interfaces->usart.receive(0, buffer, (uint16_t)num_of_bytes))
-			|| (ERROR_OK != interfaces->peripheral_commit()))
+		if (interfaces->usart.receive(0, buffer, (uint16_t)num_of_bytes)
+			|| interfaces->peripheral_commit())
 		{
 			LOG_POP();
 		}
@@ -623,17 +623,16 @@ int32_t comm_read_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 	
 	LOG_PUSH();
 	LOG_MUTE();
-	if ((ERROR_OK != interfaces->usart.status(0, &status))
-		|| (ERROR_OK != interfaces->peripheral_commit()))
+	if (interfaces->usart.status(0, &status)
+		|| interfaces->peripheral_commit())
 	{
 		// error
 		LOG_POP();
 		return -1;
 	}
 	else if ((status.rx_buff_size != 0)
-		&& ((ERROR_OK == interfaces->usart.receive(0, buffer,
-											(uint16_t)status.rx_buff_size))
-			&& (ERROR_OK == interfaces->peripheral_commit())))
+		&& (!interfaces->usart.receive(0, buffer, (uint16_t)status.rx_buff_size)
+			&& !interfaces->peripheral_commit()))
 	{
 		LOG_POP();
 		return (int32_t)status.rx_buff_size;
@@ -655,8 +654,8 @@ int32_t comm_write_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 	}
 	
 	data_sent = 0;
-	if ((ERROR_OK == interfaces->usart.send(0, buffer, (uint16_t)num_of_bytes))
-		&& (ERROR_OK == interfaces->peripheral_commit()))
+	if (!interfaces->usart.send(0, buffer, (uint16_t)num_of_bytes)
+		&& !interfaces->peripheral_commit())
 	{
 		data_sent = (int32_t)num_of_bytes;
 	}
@@ -664,8 +663,8 @@ int32_t comm_write_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 #if 0
 	LOG_PUSH();
 	LOG_MUTE();
-	if ((ERROR_OK == interfaces->usart.send(buffer, (uint16_t)num_of_bytes))
-		&& (ERROR_OK == interfaces->peripheral_commit()))
+	if (!interfaces->usart.send(buffer, (uint16_t)num_of_bytes)
+		&& !interfaces->peripheral_commit())
 	{
 		data_sent = num_of_bytes;
 	}
@@ -685,14 +684,15 @@ int32_t comm_write_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 	{
 		struct usart_status_t status;
 		uint32_t start, end;
+		uint16_t size;
 		
 		// get current time
 		start = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
 		// get buffer_size available for tx
 		LOG_PUSH();
 		LOG_MUTE();
-		if ((ERROR_OK != interfaces->usart.status(&status))
-			|| (ERROR_OK != interfaces->peripheral_commit()))
+		if (interfaces->usart.status(&status)
+			|| interfaces->peripheral_commit())
 		{
 			// error
 			LOG_POP();
@@ -704,9 +704,9 @@ int32_t comm_write_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 		{
 			LOG_PUSH();
 			LOG_MUTE();
-			if ((ERROR_OK != interfaces->usart.send(buffer,
-											(uint16_t)(num_of_bytes - data_sent)))
-				|| (ERROR_OK != interfaces->peripheral_commit()))
+			size = (uint16_t)(num_of_bytes - data_sent);
+			if (interfaces->usart.send(buffer, size)
+				|| interfaces->peripheral_commit())
 			{
 				LOG_POP();
 			}
@@ -731,8 +731,8 @@ int32_t comm_write_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 		// get buffer_size for tx
 		LOG_PUSH();
 		LOG_MUTE();
-		if ((ERROR_OK != interfaces->usart.status(&status))
-			|| (ERROR_OK != interfaces->peripheral_commit()))
+		if (interfaces->usart.status(&status)
+			|| interfaces->peripheral_commit())
 		{
 			// error
 			LOG_POP();
@@ -793,7 +793,7 @@ void comm_close(void)
 	comm_func[comm_idx].comm_close();
 }
 
-RESULT comm_open(char *comport, uint32_t baudrate, uint8_t datalength,
+vsf_err_t comm_open(char *comport, uint32_t baudrate, uint8_t datalength,
 				 char paritybit, char stopbit, char handshake)
 {
 	if (!strcmp(comport, "usbtocomm"))

@@ -107,7 +107,7 @@ static void MicroWire_Config(uint16_t kHz)
 	MicroWire_DelayUS = (1000 / 4) / kHz;
 }
 
-static RESULT MicroWire_Poll(uint16_t interval_us, uint16_t retry_cnt)
+static vsf_err_t MicroWire_Poll(uint16_t interval_us, uint16_t retry_cnt)
 {
 	MicroWire_Select();
 	
@@ -120,18 +120,17 @@ static RESULT MicroWire_Poll(uint16_t interval_us, uint16_t retry_cnt)
 	
 	if (retry_cnt)
 	{
-		return ERROR_OK;
+		return VSFERR_NONE;
 	}
 	else
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 }
 
 static void MicroWire_Transact(uint32_t opcode, uint8_t opcode_bitlen, 
-								uint32_t addr, uint8_t addr_bitlen, 
-								uint32_t data, uint8_t data_bitlen, 
-								uint8_t *ret, uint8_t ret_bitlen)
+					uint32_t addr, uint8_t addr_bitlen, uint32_t data,
+					uint8_t data_bitlen, uint8_t *ret, uint8_t ret_bitlen)
 {
 	uint16_t i;
 	uint32_t reply;
@@ -166,47 +165,45 @@ static void MicroWire_Transact(uint32_t opcode, uint8_t opcode_bitlen,
 	MicroWire_Release();
 }
 
-RESULT microwire_init(uint8_t index)
+vsf_err_t microwire_init(uint8_t index)
 {
 	switch (index)
 	{
 	case 0:
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT microwire_fini(uint8_t index)
+vsf_err_t microwire_fini(uint8_t index)
 {
 	switch (index)
 	{
 	case 0:
 		MicroWire_Fini();
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT microwire_config(uint8_t index, uint16_t kHz, uint8_t sel_polarity)
+vsf_err_t microwire_config(uint8_t index, uint16_t kHz, uint8_t sel_polarity)
 {
 	switch (index)
 	{
 	case 0:
 		MicroWire_Init(sel_polarity);
 		MicroWire_Config(kHz);
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT microwire_transport(uint8_t index, 
-						   uint32_t opcode, uint8_t opcode_bitlen, 
-						   uint32_t addr, uint8_t addr_bitlen, 
-						   uint32_t data, uint8_t data_bitlen, 
-						   uint8_t *ret, uint8_t ret_bitlen)
+vsf_err_t microwire_transport(uint8_t index, uint32_t opcode,
+		uint8_t opcode_bitlen, uint32_t addr, uint8_t addr_bitlen, 
+		uint32_t data, uint8_t data_bitlen, uint8_t *ret, uint8_t ret_bitlen)
 {
 	switch (index)
 	{
@@ -215,20 +212,21 @@ RESULT microwire_transport(uint8_t index,
 						   addr, addr_bitlen, 
 						   data, data_bitlen, 
 						   ret, ret_bitlen);
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT microwire_poll(uint8_t index, uint16_t interval_us, uint16_t retry_cnt)
+vsf_err_t microwire_poll(uint8_t index, uint16_t interval_us,
+							uint16_t retry_cnt)
 {
 	switch (index)
 	{
 	case 0:
 		return MicroWire_Poll(interval_us, retry_cnt);
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 

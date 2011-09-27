@@ -26,7 +26,7 @@ static struct vsfusbd_CDC_param_t* vsfusbd_CDC_find_param(uint8_t iface)
 	return tmp;
 }
 
-static RESULT vsfusbd_CDCData_OUT_hanlder(void *p, uint8_t ep)
+static vsf_err_t vsfusbd_CDCData_OUT_hanlder(void *p, uint8_t ep)
 {
 	struct vsfusbd_device_t *device = p;
 	struct vsfusbd_config_t *config = &device->config[device->configuration];
@@ -38,18 +38,18 @@ static RESULT vsfusbd_CDCData_OUT_hanlder(void *p, uint8_t ep)
 	
 	if (iface < 0)
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	tmp = vsfusbd_CDC_find_param(iface);
 	if (NULL == tmp)
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	pkg_size = device->drv->ep.get_OUT_count(ep);
 	if (pkg_size > 64)
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	device->drv->ep.read_OUT_buffer(ep, buffer, pkg_size);
 	if (tmp->cdc_out_enable)
@@ -66,7 +66,7 @@ static RESULT vsfusbd_CDCData_OUT_hanlder(void *p, uint8_t ep)
 	return usart_stream_tx(tmp->usart_stream, &tx_buffer);
 }
 
-static RESULT vsfusbd_CDCData_IN_hanlder(void *p, uint8_t ep)
+static vsf_err_t vsfusbd_CDCData_IN_hanlder(void *p, uint8_t ep)
 {
 	struct vsfusbd_device_t *device = p;
 	struct vsfusbd_config_t *config = &device->config[device->configuration];
@@ -79,12 +79,12 @@ static RESULT vsfusbd_CDCData_IN_hanlder(void *p, uint8_t ep)
 	
 	if (iface < 0)
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	tmp = vsfusbd_CDC_find_param(iface);
 	if (NULL == tmp)
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	rx_data_length = vsf_fifo_get_data_length(&tmp->usart_stream->fifo_rx);
@@ -104,10 +104,10 @@ static RESULT vsfusbd_CDCData_IN_hanlder(void *p, uint8_t ep)
 	}
 	device->drv->ep.set_IN_state(ep, USB_EP_STAT_ACK);
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT vsfusbd_CDCData_class_init(uint8_t iface, 
+static vsf_err_t vsfusbd_CDCData_class_init(uint8_t iface, 
 											struct vsfusbd_device_t *device)
 {
 	struct vsfusbd_CDC_param_t *tmp = vsfusbd_CDC_find_param(iface);
@@ -115,15 +115,14 @@ static RESULT vsfusbd_CDCData_class_init(uint8_t iface,
 	uint32_t pin;
 	
 	if ((NULL == tmp) || 
-		(ERROR_OK != device->drv->ep.set_IN_handler(tmp->ep_in, 
-												vsfusbd_CDCData_IN_hanlder)) || 
-		(ERROR_OK != device->drv->ep.set_IN_count(tmp->ep_in, 0)) || 
-		(ERROR_OK != device->drv->ep.set_IN_state(tmp->ep_in, 
-														USB_EP_STAT_ACK)) || 
-		(ERROR_OK != device->drv->ep.set_OUT_handler(tmp->ep_out, 
-												vsfusbd_CDCData_OUT_hanlder)))
+		device->drv->ep.set_IN_handler(tmp->ep_in,
+										vsfusbd_CDCData_IN_hanlder) || 
+		device->drv->ep.set_IN_count(tmp->ep_in, 0) || 
+		device->drv->ep.set_IN_state(tmp->ep_in, USB_EP_STAT_ACK) || 
+		device->drv->ep.set_OUT_handler(tmp->ep_out,
+										vsfusbd_CDCData_OUT_hanlder))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	if (tmp->gpio_rts_enable)
@@ -178,14 +177,14 @@ static RESULT vsfusbd_CDCData_class_init(uint8_t iface,
 	return usart_stream_config(tmp->usart_stream);
 }
 
-static RESULT vsfusbd_CDCData_class_poll(uint8_t iface, 
+static vsf_err_t vsfusbd_CDCData_class_poll(uint8_t iface, 
 											struct vsfusbd_device_t *device)
 {
 	struct vsfusbd_CDC_param_t *tmp = vsfusbd_CDC_find_param(iface);
 	
 	if (NULL == tmp)
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	if (!tmp->cdc_out_enable)
@@ -199,7 +198,7 @@ static RESULT vsfusbd_CDCData_class_poll(uint8_t iface,
 	return usart_stream_poll(tmp->usart_stream);
 }
 
-static RESULT vsfusbd_CDCMaster_GetLineCoding_prepare(
+static vsf_err_t vsfusbd_CDCMaster_GetLineCoding_prepare(
 	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
 {
 	struct vsfusbd_ctrl_request_t *request = &device->ctrl_handler.request;
@@ -207,7 +206,7 @@ static RESULT vsfusbd_CDCMaster_GetLineCoding_prepare(
 	
 	if ((NULL == tmp) || (request->length != 7) || (request->value != 0))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	SET_LE_U32(&tmp->line_coding_buffer[0], tmp->line_coding.bitrate);
@@ -217,15 +216,15 @@ static RESULT vsfusbd_CDCMaster_GetLineCoding_prepare(
 	buffer->buffer = tmp->line_coding_buffer;
 	buffer->size = 7;
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
-static RESULT vsfusbd_CDCMaster_GetLineCoding_process(
+static vsf_err_t vsfusbd_CDCMaster_GetLineCoding_process(
 	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
 {
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT vsfusbd_CDCMaster_SetLineCoding_prepare(
+static vsf_err_t vsfusbd_CDCMaster_SetLineCoding_prepare(
 	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
 {
 	struct vsfusbd_ctrl_request_t *request = &device->ctrl_handler.request;
@@ -233,14 +232,14 @@ static RESULT vsfusbd_CDCMaster_SetLineCoding_prepare(
 	
 	if ((NULL == tmp) || (request->length != 7) || (request->value != 0))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	buffer->buffer = tmp->line_coding_buffer;
 	buffer->size = 7;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
-static RESULT vsfusbd_CDCMaster_SetLineCoding_process(
+static vsf_err_t vsfusbd_CDCMaster_SetLineCoding_process(
 	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
 {
 	struct vsfusbd_ctrl_request_t *request = &device->ctrl_handler.request;
@@ -286,7 +285,7 @@ static RESULT vsfusbd_CDCMaster_SetLineCoding_process(
 	return usart_stream_config(tmp->usart_stream);
 }
 
-static RESULT vsfusbd_CDCMaster_SetControlLineState_prepare(
+static vsf_err_t vsfusbd_CDCMaster_SetControlLineState_prepare(
 	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
 {
 	struct vsfusbd_ctrl_request_t *request = &device->ctrl_handler.request;
@@ -297,7 +296,7 @@ static RESULT vsfusbd_CDCMaster_SetControlLineState_prepare(
 	if ((NULL == tmp) || (request->length != 0) || 
 		(request->value & ~USBCDC_CONTROLLINE_MASK))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	if (tmp->gpio_dtr_enable)
@@ -329,28 +328,28 @@ static RESULT vsfusbd_CDCMaster_SetControlLineState_prepare(
 	
 	return vsfusbd_request_prepare_0(device, buffer);
 }
-static RESULT vsfusbd_CDCMaster_SetControlLineState_process(
+static vsf_err_t vsfusbd_CDCMaster_SetControlLineState_process(
 	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
 {
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT vsfusbd_CDCMaster_SendBreak_prepare(
+static vsf_err_t vsfusbd_CDCMaster_SendBreak_prepare(
 	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
 {
 	struct vsfusbd_ctrl_request_t *request = &device->ctrl_handler.request;
 	
 	if (request->length != 0)
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	return vsfusbd_request_prepare_0(device, buffer);
 }
-static RESULT vsfusbd_CDCMaster_SendBreak_process(
+static vsf_err_t vsfusbd_CDCMaster_SendBreak_process(
 	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
 {
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 static const struct vsfusbd_setup_filter_t vsfusbd_CDCMaster_class_setup[] = 
@@ -396,12 +395,12 @@ const struct vsfusbd_class_protocol_t vsfusbd_CDCData_class =
 	vsfusbd_CDCData_class_init, NULL, vsfusbd_CDCData_class_poll
 };
 
-RESULT vsfusbd_CDC_set_param(struct vsfusbd_CDC_param_t *param)
+vsf_err_t vsfusbd_CDC_set_param(struct vsfusbd_CDC_param_t *param)
 {
 	if ((vsfusbd_CDC_find_param(param->master_iface) != NULL) || 
 		(vsfusbd_CDC_find_param(param->slave_iface) != NULL))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	if (NULL == vsfusbd_CDC_param_list)
@@ -414,5 +413,5 @@ RESULT vsfusbd_CDC_set_param(struct vsfusbd_CDC_param_t *param)
 	}
 	vsfusbd_CDC_param_list = param;
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }

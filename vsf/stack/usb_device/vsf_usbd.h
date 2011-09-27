@@ -70,7 +70,7 @@ struct vsfusbd_desc_filter_t
 	uint16_t lanid;
 	
 	struct vsf_buffer_t buffer;
-	RESULT (*read)(struct vsf_buffer_t *buffer);
+	vsf_err_t (*read)(struct vsf_buffer_t *buffer);
 };
 
 struct vsfusbd_device_t;
@@ -80,22 +80,22 @@ struct vsfusbd_setup_filter_t
 	uint8_t type;
 	uint8_t request;
 	
-	RESULT (*prepare)(struct vsfusbd_device_t *device, 
-						struct vsf_buffer_t *buffer);
-	RESULT (*process)(struct vsfusbd_device_t *device, 
-						struct vsf_buffer_t *buffer);
+	vsf_err_t (*prepare)(struct vsfusbd_device_t *device, 
+							struct vsf_buffer_t *buffer);
+	vsf_err_t (*process)(struct vsfusbd_device_t *device, 
+							struct vsf_buffer_t *buffer);
 };
 
 struct vsfusbd_class_protocol_t
 {
-	RESULT (*get_desc)(struct vsfusbd_device_t *device, uint8_t type, 
-			uint8_t index, uint16_t lanid, struct vsf_buffer_t *buffer);
+	vsf_err_t (*get_desc)(struct vsfusbd_device_t *device, uint8_t type, 
+				uint8_t index, uint16_t lanid, struct vsf_buffer_t *buffer);
 	struct vsfusbd_desc_filter_t *desc_filter;
 	struct vsfusbd_setup_filter_t *req_filter;
 	
-	RESULT (*init)(uint8_t iface, struct vsfusbd_device_t *device);
-	RESULT (*fini)(uint8_t iface, struct vsfusbd_device_t *device);
-	RESULT (*poll)(uint8_t iface, struct vsfusbd_device_t *device);
+	vsf_err_t (*init)(uint8_t iface, struct vsfusbd_device_t *device);
+	vsf_err_t (*fini)(uint8_t iface, struct vsfusbd_device_t *device);
+	vsf_err_t (*poll)(uint8_t iface, struct vsfusbd_device_t *device);
 };
 
 struct vsfusbd_iface_t
@@ -106,8 +106,8 @@ struct vsfusbd_iface_t
 
 struct vsfusbd_config_t
 {
-	RESULT (*init)(struct vsfusbd_device_t *device);
-	RESULT (*fini)(struct vsfusbd_device_t *device);
+	vsf_err_t (*init)(struct vsfusbd_device_t *device);
+	vsf_err_t (*fini)(struct vsfusbd_device_t *device);
 	
 	uint8_t num_of_ifaces;
 	struct vsfusbd_iface_t *iface;
@@ -129,9 +129,9 @@ struct vsfusbd_device_t
 	// user callbacks
 	const struct vsfusbd_user_callback_t
 	{
-		RESULT (*init)(void);
-		RESULT (*fini)(void);
-		RESULT (*poll)(void);
+		vsf_err_t (*init)(void);
+		vsf_err_t (*fini)(void);
+		vsf_err_t (*poll)(void);
 		
 		void (*on_RESET)(void);
 		void (*on_ERROR)(enum usb_err_type_t type);
@@ -149,28 +149,28 @@ struct vsfusbd_device_t
 	} callback;
 };
 
-RESULT vsfusbd_request_prepare_0(
+vsf_err_t vsfusbd_request_prepare_0(
 		struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer);
-RESULT vsfusbd_device_get_descriptor(struct vsfusbd_device_t *device, 
+vsf_err_t vsfusbd_device_get_descriptor(struct vsfusbd_device_t *device, 
 		struct vsfusbd_desc_filter_t *filter, uint8_t type, uint8_t index, 
 		uint16_t lanid, struct vsf_buffer_t *buffer);
 
-RESULT vsfusbd_device_init(struct vsfusbd_device_t *device);
-RESULT vsfusbd_device_fini(struct vsfusbd_device_t *device);
-RESULT vsfusbd_device_poll(struct vsfusbd_device_t *device);
+vsf_err_t vsfusbd_device_init(struct vsfusbd_device_t *device);
+vsf_err_t vsfusbd_device_fini(struct vsfusbd_device_t *device);
+vsf_err_t vsfusbd_device_poll(struct vsfusbd_device_t *device);
 
-RESULT vsfusbd_ep_in_nb(struct vsfusbd_device_t *device, uint8_t ep, 
-						struct vsf_buffer_t *buffer);
-RESULT vsfusbd_ep_out_nb_isready(struct vsfusbd_device_t *device, uint8_t ep, 
-									bool *ready);
-RESULT vsfusbd_ep_in(struct vsfusbd_device_t *device, uint8_t ep, 
-						struct vsf_buffer_t *buffer);
-
-RESULT vsfusbd_ep_out_nb(struct vsfusbd_device_t *device, uint8_t ep, 
+vsf_err_t vsfusbd_ep_in_nb(struct vsfusbd_device_t *device, uint8_t ep, 
 							struct vsf_buffer_t *buffer);
-RESULT vsfusbd_ep_out_nb_isready(struct vsfusbd_device_t *device, uint8_t ep, 
-									bool *error);
-RESULT vsfusbd_ep_out(struct vsfusbd_device_t *device, uint8_t ep, 
+vsf_err_t vsfusbd_ep_in_nb_isready(struct vsfusbd_device_t *device,
+									uint8_t ep);
+vsf_err_t vsfusbd_ep_in(struct vsfusbd_device_t *device, uint8_t ep, 
+						struct vsf_buffer_t *buffer);
+
+vsf_err_t vsfusbd_ep_out_nb(struct vsfusbd_device_t *device, uint8_t ep, 
+							struct vsf_buffer_t *buffer);
+vsf_err_t vsfusbd_ep_out_nb_isready(struct vsfusbd_device_t *device,
+									uint8_t ep);
+vsf_err_t vsfusbd_ep_out(struct vsfusbd_device_t *device, uint8_t ep, 
 						struct vsf_buffer_t *buffer);
 
 #endif	// __VSF_USBD_H_INCLUDED__

@@ -28,23 +28,23 @@
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
 
-RESULT usbtomsp430jtag_init(uint8_t interface_index)
+vsf_err_t usbtomsp430jtag_init(uint8_t interface_index)
 {
 	return usbtoxxx_init_command(USB_TO_MSP430_JTAG, interface_index);
 }
 
-RESULT usbtomsp430jtag_fini(uint8_t interface_index)
+vsf_err_t usbtomsp430jtag_fini(uint8_t interface_index)
 {
 	return usbtoxxx_fini_command(USB_TO_MSP430_JTAG, interface_index);
 }
 
-RESULT usbtomsp430jtag_config(uint8_t interface_index, uint8_t has_test)
+vsf_err_t usbtomsp430jtag_config(uint8_t interface_index, uint8_t has_test)
 {
 	return usbtoxxx_conf_command(USB_TO_MSP430_JTAG, interface_index,
 								 &has_test, 1);
 }
 
-RESULT usbtomsp430jtag_ir(uint8_t interface_index, uint8_t *ir,
+vsf_err_t usbtomsp430jtag_ir(uint8_t interface_index, uint8_t *ir,
 							uint8_t want_ret)
 {
 	uint8_t buff[2];
@@ -53,7 +53,7 @@ RESULT usbtomsp430jtag_ir(uint8_t interface_index, uint8_t *ir,
 	if (interface_index > 7)
 	{
 		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 #endif
 	
@@ -72,7 +72,7 @@ RESULT usbtomsp430jtag_ir(uint8_t interface_index, uint8_t *ir,
 	}
 }
 
-RESULT usbtomsp430jtag_dr(uint8_t interface_index, uint32_t *dr,
+vsf_err_t usbtomsp430jtag_dr(uint8_t interface_index, uint32_t *dr,
 							uint8_t bitlen, uint8_t want_ret)
 {
 	uint8_t buff[5], byte_len = (bitlen + 7) >> 3;
@@ -81,7 +81,7 @@ RESULT usbtomsp430jtag_dr(uint8_t interface_index, uint32_t *dr,
 	if (interface_index > 7)
 	{
 		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 #endif
 	
@@ -100,13 +100,13 @@ RESULT usbtomsp430jtag_dr(uint8_t interface_index, uint32_t *dr,
 	}
 }
 
-RESULT usbtomsp430jtag_tclk(uint8_t interface_index, uint8_t value)
+vsf_err_t usbtomsp430jtag_tclk(uint8_t interface_index, uint8_t value)
 {
 #if PARAM_CHECK
 	if (interface_index > 7)
 	{
 		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 #endif
 	
@@ -114,13 +114,13 @@ RESULT usbtomsp430jtag_tclk(uint8_t interface_index, uint8_t value)
 								1, 0);
 }
 
-RESULT usbtomsp430jtag_tclk_strobe(uint8_t interface_index, uint16_t cnt)
+vsf_err_t usbtomsp430jtag_tclk_strobe(uint8_t interface_index, uint16_t cnt)
 {
 #if PARAM_CHECK
 	if (interface_index > 7)
 	{
 		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 #endif
 	
@@ -128,13 +128,13 @@ RESULT usbtomsp430jtag_tclk_strobe(uint8_t interface_index, uint16_t cnt)
 									(uint8_t*)&cnt, 2, 0, NULL, 0, 0, 0);
 }
 
-RESULT usbtomsp430jtag_reset(uint8_t interface_index)
+vsf_err_t usbtomsp430jtag_reset(uint8_t interface_index)
 {
 #if PARAM_CHECK
 	if (interface_index > 7)
 	{
 		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 #endif
 	
@@ -142,7 +142,7 @@ RESULT usbtomsp430jtag_reset(uint8_t interface_index)
 								  NULL, 0);
 }
 
-RESULT usbtomsp430jtag_poll(uint8_t interface_index, uint32_t dr,
+vsf_err_t usbtomsp430jtag_poll(uint8_t interface_index, uint32_t dr,
 							uint32_t mask, uint32_t value, uint8_t len,
 							uint16_t poll_cnt, uint8_t toggle_tclk)
 {
@@ -152,7 +152,7 @@ RESULT usbtomsp430jtag_poll(uint8_t interface_index, uint32_t dr,
 	if (interface_index > 7)
 	{
 		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 #endif
 	

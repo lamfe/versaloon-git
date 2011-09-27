@@ -33,10 +33,11 @@
 #include <libxml/parser.h>
 
 #include "vsprog.h"
-#include "bufffunc.h"
-#include "strparser.h"
 #include "programmer.h"
 #include "target.h"
+
+#include "bufffunc.h"
+#include "strparser.h"
 
 #define TARGET_CONF_FILE_EXT			".xml"
 
@@ -61,7 +62,7 @@ static uint32_t target_xml_get_child_number(xmlNodePtr parentNode,
 	return result;
 }
 
-RESULT target_build_chip_fl(const char *chip_series,
+vsf_err_t target_build_chip_fl(const char *chip_series,
 				const char *chip_module, char *type, struct chip_fl_t *fl)
 {
 	xmlDocPtr doc = NULL;
@@ -69,7 +70,7 @@ RESULT target_build_chip_fl(const char *chip_series,
 	xmlNodePtr paramNode, settingNode;
 	char *filename = NULL;
 	uint32_t i, j, num_of_chips;
-	RESULT ret = ERROR_OK;
+	vsf_err_t err = VSFERR_NONE;
 	FILE *fp;
 	char *format;
 	char format_tmp[32];
@@ -85,7 +86,7 @@ RESULT target_build_chip_fl(const char *chip_series,
 	
 	if (NULL == config_dir)
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	// release first if necessary
@@ -105,7 +106,7 @@ RESULT target_build_chip_fl(const char *chip_series,
 	if (NULL == fp)
 	{
 		// no error message, just return error
-		ret = ERROR_FAIL;
+		err = VSFERR_FAIL;
 		goto free_and_exit;
 	}
 	else
@@ -118,14 +119,14 @@ RESULT target_build_chip_fl(const char *chip_series,
 	if (NULL == doc)
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPEN, filename);
-		ret = ERRCODE_FAILURE_OPEN;
+		err = ERRCODE_FAILURE_OPEN;
 		goto free_and_exit;
 	}
 	curNode = xmlDocGetRootElement(doc);
 	if (NULL == curNode)
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read config file");
-		ret = ERRCODE_FAILURE_OPERATION;
+		err = ERRCODE_FAILURE_OPERATION;
 		goto free_and_exit;
 	}
 	
@@ -136,7 +137,7 @@ RESULT target_build_chip_fl(const char *chip_series,
 					 (const xmlChar *)chip_series))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read config file");
-		ret = ERRCODE_FAILURE_OPERATION;
+		err = ERRCODE_FAILURE_OPERATION;
 		goto free_and_exit;
 	}
 	
@@ -144,7 +145,7 @@ RESULT target_build_chip_fl(const char *chip_series,
 	if (0 == num_of_chips)
 	{
 		LOG_ERROR(ERRMSG_NOT_SUPPORT, chip_series);
-		ret = ERRCODE_NOT_SUPPORT;
+		err = ERRCODE_NOT_SUPPORT;
 		goto free_and_exit;
 	}
 	
@@ -158,7 +159,7 @@ RESULT target_build_chip_fl(const char *chip_series,
 			|| !xmlHasProp(curNode, BAD_CAST "name"))
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read config file");
-			ret = ERRCODE_FAILURE_OPERATION;
+			err = ERRCODE_FAILURE_OPERATION;
 			goto free_and_exit;
 		}
 		
@@ -189,7 +190,7 @@ RESULT target_build_chip_fl(const char *chip_series,
 	if (NULL == paramNode)
 	{
 		LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, type, chip_module);
-		ret = ERRCODE_NOT_SUPPORT;
+		err = ERRCODE_NOT_SUPPORT;
 		goto free_and_exit;
 	}
 	
@@ -199,7 +200,7 @@ RESULT target_build_chip_fl(const char *chip_series,
 		|| !xmlHasProp(paramNode, BAD_CAST "bytesize"))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read config file");
-		ret = ERRCODE_FAILURE_OPERATION;
+		err = ERRCODE_FAILURE_OPERATION;
 		goto free_and_exit;
 	}
 	size = (uint8_t)strtoul((char*)xmlGetProp(paramNode, BAD_CAST "bytesize"), NULL, 0);
@@ -209,7 +210,7 @@ RESULT target_build_chip_fl(const char *chip_series,
 		if (size > 8)
 		{
 			LOG_ERROR(ERRMSG_NOT_DEFINED, "format node");
-			ret = ERROR_FAIL;
+			err = VSFERR_FAIL;
 			goto free_and_exit;
 		}
 		snprintf(format_tmp, sizeof(format_tmp), "%%%dx", size);
@@ -222,7 +223,7 @@ RESULT target_build_chip_fl(const char *chip_series,
 	if (0 == fl->num_of_fl_settings)
 	{
 		LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, type, chip_module);
-		ret = ERRCODE_NOT_SUPPORT;
+		err = ERRCODE_NOT_SUPPORT;
 		goto free_and_exit;
 	}
 	
@@ -231,13 +232,13 @@ RESULT target_build_chip_fl(const char *chip_series,
 							(char *)xmlGetProp(paramNode, BAD_CAST "init")))
 	{
 		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-		ret = ERRCODE_NOT_ENOUGH_MEMORY;
+		err = ERRCODE_NOT_ENOUGH_MEMORY;
 		goto free_and_exit;
 	}
-	if (ERROR_OK != strparser_check(fl->init_value, format))
+	if (strparser_check(fl->init_value, format))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "parse init node");
-		ret = ERRCODE_FAILURE_OPERATION;
+		err = ERRCODE_FAILURE_OPERATION;
 		goto free_and_exit;
 	}
 	
@@ -247,7 +248,7 @@ RESULT target_build_chip_fl(const char *chip_series,
 	if (NULL == fl->settings)
 	{
 		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-		ret = ERRCODE_NOT_ENOUGH_MEMORY;
+		err = ERRCODE_NOT_ENOUGH_MEMORY;
 		goto free_and_exit;
 	}
 	memset(fl->settings, 0,
@@ -272,7 +273,7 @@ RESULT target_build_chip_fl(const char *chip_series,
 			if (NULL == fl->warnings)
 			{
 				LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-				ret = ERRCODE_NOT_ENOUGH_MEMORY;
+				err = ERRCODE_NOT_ENOUGH_MEMORY;
 				goto free_and_exit;
 			}
 			memset(fl->warnings, 0,
@@ -285,7 +286,7 @@ RESULT target_build_chip_fl(const char *chip_series,
 				if (strcmp((const char *)wNode->name, "w"))
 				{
 					LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read config file");
-					ret = ERRCODE_FAILURE_OPERATION;
+					err = ERRCODE_FAILURE_OPERATION;
 					goto free_and_exit;
 				}
 				
@@ -294,13 +295,13 @@ RESULT target_build_chip_fl(const char *chip_series,
 						(char *)xmlGetProp(wNode, BAD_CAST "mask")))
 				{
 					LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-					ret = ERRCODE_NOT_ENOUGH_MEMORY;
+					err = ERRCODE_NOT_ENOUGH_MEMORY;
 					goto free_and_exit;
 				}
-				if (ERROR_OK != strparser_check(fl->warnings[i].mask, format))
+				if (strparser_check(fl->warnings[i].mask, format))
 				{
 					LOG_ERROR(ERRMSG_FAILURE_OPERATION, "parse mask node");
-					ret = ERRCODE_FAILURE_OPERATION;
+					err = ERRCODE_FAILURE_OPERATION;
 					goto free_and_exit;
 				}
 				
@@ -309,13 +310,13 @@ RESULT target_build_chip_fl(const char *chip_series,
 						(char *)xmlGetProp(wNode, BAD_CAST "value")))
 				{
 					LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-					ret = ERRCODE_NOT_ENOUGH_MEMORY;
+					err = ERRCODE_NOT_ENOUGH_MEMORY;
 					goto free_and_exit;
 				}
-				if (ERROR_OK != strparser_check(fl->warnings[i].value, format))
+				if (strparser_check(fl->warnings[i].value, format))
 				{
 					LOG_ERROR(ERRMSG_FAILURE_OPERATION, "parse value node");
-					ret = ERRCODE_FAILURE_OPERATION;
+					err = ERRCODE_FAILURE_OPERATION;
 					goto free_and_exit;
 				}
 				
@@ -324,7 +325,7 @@ RESULT target_build_chip_fl(const char *chip_series,
 						(char *)xmlGetProp(wNode, BAD_CAST "msg")))
 				{
 					LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-					ret = ERRCODE_NOT_ENOUGH_MEMORY;
+					err = ERRCODE_NOT_ENOUGH_MEMORY;
 					goto free_and_exit;
 				}
 				
@@ -354,7 +355,7 @@ RESULT target_build_chip_fl(const char *chip_series,
 			|| (!xmlHasProp(settingNode, BAD_CAST "mask")))
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read config file");
-			ret = ERRCODE_FAILURE_OPERATION;
+			err = ERRCODE_FAILURE_OPERATION;
 			goto free_and_exit;
 		}
 		
@@ -363,7 +364,7 @@ RESULT target_build_chip_fl(const char *chip_series,
 						(char *)xmlGetProp(settingNode, BAD_CAST "name")))
 		{
 			LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-			ret = ERRCODE_NOT_ENOUGH_MEMORY;
+			err = ERRCODE_NOT_ENOUGH_MEMORY;
 			goto free_and_exit;
 		}
 		
@@ -372,13 +373,13 @@ RESULT target_build_chip_fl(const char *chip_series,
 						(char *)xmlGetProp(settingNode, BAD_CAST "mask")))
 		{
 			LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-			ret = ERRCODE_NOT_ENOUGH_MEMORY;
+			err = ERRCODE_NOT_ENOUGH_MEMORY;
 			goto free_and_exit;
 		}
-		if (ERROR_OK != strparser_check(fl->settings[i].mask, format))
+		if (strparser_check(fl->settings[i].mask, format))
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "parse mask node");
-			ret = ERRCODE_FAILURE_OPERATION;
+			err = ERRCODE_FAILURE_OPERATION;
 			goto free_and_exit;
 		}
 		
@@ -389,7 +390,7 @@ RESULT target_build_chip_fl(const char *chip_series,
 						(char *)xmlGetProp(settingNode, BAD_CAST "ban")))
 			{
 				LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-				ret = ERRCODE_NOT_ENOUGH_MEMORY;
+				err = ERRCODE_NOT_ENOUGH_MEMORY;
 				goto free_and_exit;
 			}
 		}
@@ -402,7 +403,7 @@ RESULT target_build_chip_fl(const char *chip_series,
 						(char *)xmlGetProp(settingNode, BAD_CAST "info")))
 			{
 				LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-				ret = ERRCODE_NOT_ENOUGH_MEMORY;
+				err = ERRCODE_NOT_ENOUGH_MEMORY;
 				goto free_and_exit;
 			}
 		}
@@ -415,7 +416,7 @@ RESULT target_build_chip_fl(const char *chip_series,
 						(char *)xmlGetProp(settingNode, BAD_CAST "format")))
 			{
 				LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-				ret = ERRCODE_NOT_ENOUGH_MEMORY;
+				err = ERRCODE_NOT_ENOUGH_MEMORY;
 				goto free_and_exit;
 			}
 		}
@@ -452,13 +453,13 @@ RESULT target_build_chip_fl(const char *chip_series,
 						(char *)xmlGetProp(settingNode, BAD_CAST "checked")))
 			{
 				LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-				ret = ERRCODE_NOT_ENOUGH_MEMORY;
+				err = ERRCODE_NOT_ENOUGH_MEMORY;
 				goto free_and_exit;
 			}
-			if (ERROR_OK != strparser_check(fl->settings[i].checked, format))
+			if (strparser_check(fl->settings[i].checked, format))
 			{
 				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "parse checked node");
-				ret = ERRCODE_FAILURE_OPERATION;
+				err = ERRCODE_FAILURE_OPERATION;
 				goto free_and_exit;
 			}
 			if (!xmlHasProp(settingNode, BAD_CAST "unchecked"))
@@ -468,23 +469,23 @@ RESULT target_build_chip_fl(const char *chip_series,
 				if (size > 8)
 				{
 					LOG_ERROR(ERRMSG_NOT_DEFINED, "unchecked node");
-					ret = ERROR_FAIL;
+					err = VSFERR_FAIL;
 					goto free_and_exit;
 				}
 				val_tmp = 0;
-				if (ERROR_OK != strparser_parse(fl->settings[i].checked,
+				if (strparser_parse(fl->settings[i].checked,
 							format, (uint8_t*)&val_tmp, sizeof(val_tmp)))
 				{
 					LOG_ERROR(ERRMSG_FAILURE_OPERATION, "parse checked node");
-					ret = ERRCODE_FAILURE_OPERATION;
+					err = ERRCODE_FAILURE_OPERATION;
 					goto free_and_exit;
 				}
 				mask_tmp = 0;
-				if (ERROR_OK != strparser_parse(fl->settings[i].mask,
+				if (strparser_parse(fl->settings[i].mask,
 							format, (uint8_t*)&mask_tmp, sizeof(mask_tmp)))
 				{
 					LOG_ERROR(ERRMSG_FAILURE_OPERATION, "parse mask node");
-					ret = ERRCODE_FAILURE_OPERATION;
+					err = ERRCODE_FAILURE_OPERATION;
 					goto free_and_exit;
 				}
 				val_tmp ^= mask_tmp;
@@ -495,7 +496,7 @@ RESULT target_build_chip_fl(const char *chip_series,
 				{
 					LOG_ERROR(ERRMSG_FAILURE_OPERATION,
 								"solve unchecked value");
-					ret = ERRCODE_FAILURE_OPERATION;
+					err = ERRCODE_FAILURE_OPERATION;
 					goto free_and_exit;
 				}
 			}
@@ -508,13 +509,13 @@ RESULT target_build_chip_fl(const char *chip_series,
 						(char *)xmlGetProp(settingNode, BAD_CAST "unchecked")))
 			{
 				LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-				ret = ERRCODE_NOT_ENOUGH_MEMORY;
+				err = ERRCODE_NOT_ENOUGH_MEMORY;
 				goto free_and_exit;
 			}
-			if (ERROR_OK != strparser_check(fl->settings[i].unchecked, format))
+			if (strparser_check(fl->settings[i].unchecked, format))
 			{
 				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "parse unchecked node");
-				ret = ERRCODE_FAILURE_OPERATION;
+				err = ERRCODE_FAILURE_OPERATION;
 				goto free_and_exit;
 			}
 			if (!xmlHasProp(settingNode, BAD_CAST "checked"))
@@ -524,23 +525,23 @@ RESULT target_build_chip_fl(const char *chip_series,
 				if (size > 8)
 				{
 					LOG_ERROR(ERRMSG_NOT_DEFINED, "checked node");
-					ret = ERROR_FAIL;
+					err = VSFERR_FAIL;
 					goto free_and_exit;
 				}
 				val_tmp = 0;
-				if (ERROR_OK != strparser_parse(fl->settings[i].unchecked,
+				if (strparser_parse(fl->settings[i].unchecked,
 							format, (uint8_t*)&val_tmp, sizeof(val_tmp)))
 				{
 					LOG_ERROR(ERRMSG_FAILURE_OPERATION, "parse unchecked node");
-					ret = ERRCODE_FAILURE_OPERATION;
+					err = ERRCODE_FAILURE_OPERATION;
 					goto free_and_exit;
 				}
 				mask_tmp = 0;
-				if (ERROR_OK != strparser_parse(fl->settings[i].mask,
+				if (strparser_parse(fl->settings[i].mask,
 							format, (uint8_t*)&mask_tmp, sizeof(mask_tmp)))
 				{
 					LOG_ERROR(ERRMSG_FAILURE_OPERATION, "parse mask node");
-					ret = ERRCODE_FAILURE_OPERATION;
+					err = ERRCODE_FAILURE_OPERATION;
 					goto free_and_exit;
 				}
 				val_tmp ^= mask_tmp;
@@ -550,7 +551,7 @@ RESULT target_build_chip_fl(const char *chip_series,
 				if (NULL == fl->settings[i].checked)
 				{
 					LOG_ERROR(ERRMSG_FAILURE_OPERATION, "solve checked value");
-					ret = ERRCODE_FAILURE_OPERATION;
+					err = ERRCODE_FAILURE_OPERATION;
 					goto free_and_exit;
 				}
 			}
@@ -581,7 +582,7 @@ RESULT target_build_chip_fl(const char *chip_series,
 		if (NULL == fl->settings[i].choices)
 		{
 			LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-			ret = ERRCODE_NOT_ENOUGH_MEMORY;
+			err = ERRCODE_NOT_ENOUGH_MEMORY;
 			goto free_and_exit;
 		}
 		memset(fl->settings[i].choices, 0,
@@ -597,7 +598,7 @@ RESULT target_build_chip_fl(const char *chip_series,
 				|| !xmlHasProp(choiceNode, BAD_CAST "text"))
 			{
 				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read config file");
-				ret = ERRCODE_FAILURE_OPERATION;
+				err = ERRCODE_FAILURE_OPERATION;
 				goto free_and_exit;
 			}
 			
@@ -607,14 +608,14 @@ RESULT target_build_chip_fl(const char *chip_series,
 						(char *)xmlGetProp(choiceNode, BAD_CAST "value")))
 			{
 				LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-				ret = ERRCODE_NOT_ENOUGH_MEMORY;
+				err = ERRCODE_NOT_ENOUGH_MEMORY;
 				goto free_and_exit;
 			}
-			if (ERROR_OK != strparser_check(fl->settings[i].choices[j].value,
+			if (strparser_check(fl->settings[i].choices[j].value,
 												format))
 			{
 				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "parse value node");
-				ret = ERRCODE_FAILURE_OPERATION;
+				err = ERRCODE_FAILURE_OPERATION;
 				goto free_and_exit;
 			}
 			
@@ -623,7 +624,7 @@ RESULT target_build_chip_fl(const char *chip_series,
 						(char *)xmlGetProp(choiceNode, BAD_CAST "text")))
 			{
 				LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-				ret = ERRCODE_NOT_ENOUGH_MEMORY;
+				err = ERRCODE_NOT_ENOUGH_MEMORY;
 				goto free_and_exit;
 			}
 			
@@ -644,10 +645,10 @@ free_and_exit:
 		doc = NULL;
 	}
 	
-	return ret;
+	return err;
 }
 
-RESULT target_build_chip_series(const char *chip_series,
+vsf_err_t target_build_chip_series(const char *chip_series,
 		const struct program_mode_t *program_mode, struct chip_series_t *s)
 {
 	xmlDocPtr doc = NULL;
@@ -655,7 +656,7 @@ RESULT target_build_chip_series(const char *chip_series,
 	char *filename = NULL;
 	struct chip_param_t *p_param;
 	uint32_t i, j, k, target_para_size_defined;
-	RESULT ret = ERROR_OK;
+	vsf_err_t err = VSFERR_NONE;
 	FILE *fp;
 	
 #if PARAM_CHECK
@@ -668,7 +669,7 @@ RESULT target_build_chip_series(const char *chip_series,
 	
 	if (NULL == config_dir)
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	// release first if necessary
@@ -688,7 +689,7 @@ RESULT target_build_chip_series(const char *chip_series,
 	if (NULL == fp)
 	{
 		// no error message, just return error
-		ret = ERROR_FAIL;
+		err = VSFERR_FAIL;
 		goto free_and_exit;
 	}
 	else
@@ -701,14 +702,14 @@ RESULT target_build_chip_series(const char *chip_series,
 	if (NULL == doc)
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPEN, filename);
-		ret = ERRCODE_FAILURE_OPEN;
+		err = ERRCODE_FAILURE_OPEN;
 		goto free_and_exit;
 	}
 	curNode = xmlDocGetRootElement(doc);
 	if (NULL == curNode)
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read config file");
-		ret = ERRCODE_FAILURE_OPERATION;
+		err = ERRCODE_FAILURE_OPERATION;
 		goto free_and_exit;
 	}
 	
@@ -719,7 +720,7 @@ RESULT target_build_chip_series(const char *chip_series,
 					 (const xmlChar *)chip_series))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read config file");
-		ret = ERRCODE_FAILURE_OPERATION;
+		err = ERRCODE_FAILURE_OPERATION;
 		goto free_and_exit;
 	}
 	
@@ -727,7 +728,7 @@ RESULT target_build_chip_series(const char *chip_series,
 	if (0 == s->num_of_chips)
 	{
 		LOG_ERROR(ERRMSG_NOT_SUPPORT, chip_series);
-		ret = ERRCODE_NOT_SUPPORT;
+		err = ERRCODE_NOT_SUPPORT;
 		goto free_and_exit;
 	}
 	s->chips_param = (struct chip_param_t *)malloc(sizeof(struct chip_param_t)
@@ -735,7 +736,7 @@ RESULT target_build_chip_series(const char *chip_series,
 	if (NULL == s->chips_param)
 	{
 		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-		ret = ERRCODE_NOT_ENOUGH_MEMORY;
+		err = ERRCODE_NOT_ENOUGH_MEMORY;
 		goto free_and_exit;
 	}
 	memset(s->chips_param, 0, sizeof(struct chip_param_t) * s->num_of_chips);
@@ -758,7 +759,7 @@ RESULT target_build_chip_series(const char *chip_series,
 			|| !xmlHasProp(curNode, BAD_CAST "name"))
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read config file");
-			ret = ERRCODE_FAILURE_OPERATION;
+			err = ERRCODE_FAILURE_OPERATION;
 			goto free_and_exit;
 		}
 		
@@ -791,7 +792,7 @@ RESULT target_build_chip_series(const char *chip_series,
 									&p_param->program_mode_str, mode_tmp))
 				{
 					LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-					ret = ERRCODE_NOT_ENOUGH_MEMORY;
+					err = ERRCODE_NOT_ENOUGH_MEMORY;
 					goto free_and_exit;
 				}
 				p_param->program_mode = 0;
@@ -810,7 +811,7 @@ RESULT target_build_chip_series(const char *chip_series,
 						{
 							LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, mode_tmp,
 										"current target");
-							ret = ERRCODE_NOT_SUPPORT;
+							err = ERRCODE_NOT_SUPPORT;
 							goto free_and_exit;
 						}
 					}
@@ -1152,7 +1153,7 @@ RESULT target_build_chip_series(const char *chip_series,
 						&p_param->chip_areas[UNIQUEID_IDX].cli_format, str))
 					{
 						LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-						ret = ERRCODE_NOT_ENOUGH_MEMORY;
+						err = ERRCODE_NOT_ENOUGH_MEMORY;
 						goto free_and_exit;
 					}
 					format = p_param->chip_areas[UNIQUEID_IDX].cli_format;
@@ -1162,7 +1163,7 @@ RESULT target_build_chip_series(const char *chip_series,
 					if (size > 8)
 					{
 						LOG_ERROR(ERRMSG_NOT_DEFINED, "format node");
-						ret = ERROR_FAIL;
+						err = VSFERR_FAIL;
 						goto free_and_exit;
 					}
 					snprintf(format_tmp, sizeof(format_tmp), "%%%dx", size);
@@ -1176,15 +1177,14 @@ RESULT target_build_chip_series(const char *chip_series,
 					if (NULL == p_param->chip_areas[UNIQUEID_IDX].mask)
 					{
 						LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-						ret = ERRCODE_NOT_ENOUGH_MEMORY;
+						err = ERRCODE_NOT_ENOUGH_MEMORY;
 						goto free_and_exit;
 					}
 					buff = p_param->chip_areas[UNIQUEID_IDX].mask;
-					if (ERROR_OK !=
-							strparser_parse(str, format, buff, size))
+					if (strparser_parse(str, format, buff, size))
 					{
 						LOG_ERROR(ERRMSG_FAILURE_OPERATION, "parse mask node");
-						ret = ERRCODE_FAILURE_OPERATION;
+						err = ERRCODE_FAILURE_OPERATION;
 						goto free_and_exit;
 					}
 				}
@@ -1208,7 +1208,7 @@ RESULT target_build_chip_series(const char *chip_series,
 						&p_param->chip_areas[FUSE_IDX].cli_format, str))
 					{
 						LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-						ret = ERRCODE_NOT_ENOUGH_MEMORY;
+						err = ERRCODE_NOT_ENOUGH_MEMORY;
 						goto free_and_exit;
 					}
 					format = p_param->chip_areas[FUSE_IDX].cli_format;
@@ -1218,7 +1218,7 @@ RESULT target_build_chip_series(const char *chip_series,
 					if (size > 8)
 					{
 						LOG_ERROR(ERRMSG_NOT_DEFINED, "format node");
-						ret = ERROR_FAIL;
+						err = VSFERR_FAIL;
 						goto free_and_exit;
 					}
 					snprintf(format_tmp, sizeof(format_tmp), "%%%dx", size);
@@ -1232,15 +1232,14 @@ RESULT target_build_chip_series(const char *chip_series,
 					if (NULL == p_param->chip_areas[FUSE_IDX].mask)
 					{
 						LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-						ret = ERRCODE_NOT_ENOUGH_MEMORY;
+						err = ERRCODE_NOT_ENOUGH_MEMORY;
 						goto free_and_exit;
 					}
 					buff = p_param->chip_areas[FUSE_IDX].mask;
-					if (ERROR_OK !=
-							strparser_parse(str, format, buff, size))
+					if (strparser_parse(str, format, buff, size))
 					{
 						LOG_ERROR(ERRMSG_FAILURE_OPERATION, "parse mask node");
-						ret = ERRCODE_FAILURE_OPERATION;
+						err = ERRCODE_FAILURE_OPERATION;
 						goto free_and_exit;
 					}
 				}
@@ -1264,7 +1263,7 @@ RESULT target_build_chip_series(const char *chip_series,
 						&p_param->chip_areas[LOCK_IDX].cli_format, str))
 					{
 						LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-						ret = ERRCODE_NOT_ENOUGH_MEMORY;
+						err = ERRCODE_NOT_ENOUGH_MEMORY;
 						goto free_and_exit;
 					}
 					format = p_param->chip_areas[LOCK_IDX].cli_format;
@@ -1274,7 +1273,7 @@ RESULT target_build_chip_series(const char *chip_series,
 					if (size > 8)
 					{
 						LOG_ERROR(ERRMSG_NOT_DEFINED, "format node");
-						ret = ERROR_FAIL;
+						err = VSFERR_FAIL;
 						goto free_and_exit;
 					}
 					snprintf(format_tmp, sizeof(format_tmp), "%%%dx", size);
@@ -1288,15 +1287,14 @@ RESULT target_build_chip_series(const char *chip_series,
 					if (NULL == p_param->chip_areas[LOCK_IDX].mask)
 					{
 						LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-						ret = ERRCODE_NOT_ENOUGH_MEMORY;
+						err = ERRCODE_NOT_ENOUGH_MEMORY;
 						goto free_and_exit;
 					}
 					buff = p_param->chip_areas[LOCK_IDX].mask;
-					if (ERROR_OK !=
-							strparser_parse(str, format, buff, size))
+					if (strparser_parse(str, format, buff, size))
 					{
 						LOG_ERROR(ERRMSG_FAILURE_OPERATION, "parse mask node");
-						ret = ERRCODE_FAILURE_OPERATION;
+						err = ERRCODE_FAILURE_OPERATION;
 						goto free_and_exit;
 					}
 				}
@@ -1320,7 +1318,7 @@ RESULT target_build_chip_series(const char *chip_series,
 						&p_param->chip_areas[CALIBRATION_IDX].cli_format, str))
 					{
 						LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-						ret = ERRCODE_NOT_ENOUGH_MEMORY;
+						err = ERRCODE_NOT_ENOUGH_MEMORY;
 						goto free_and_exit;
 					}
 					format = p_param->chip_areas[CALIBRATION_IDX].cli_format;
@@ -1330,7 +1328,7 @@ RESULT target_build_chip_series(const char *chip_series,
 					if (size > 8)
 					{
 						LOG_ERROR(ERRMSG_NOT_DEFINED, "format node");
-						ret = ERROR_FAIL;
+						err = VSFERR_FAIL;
 						goto free_and_exit;
 					}
 					snprintf(format_tmp, sizeof(format_tmp), "%%%dx", size);
@@ -1344,15 +1342,14 @@ RESULT target_build_chip_series(const char *chip_series,
 					if (NULL == p_param->chip_areas[CALIBRATION_IDX].mask)
 					{
 						LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-						ret = ERRCODE_NOT_ENOUGH_MEMORY;
+						err = ERRCODE_NOT_ENOUGH_MEMORY;
 						goto free_and_exit;
 					}
 					buff = p_param->chip_areas[CALIBRATION_IDX].mask;
-					if (ERROR_OK !=
-							strparser_parse(str, format, buff, size))
+					if (strparser_parse(str, format, buff, size))
 					{
 						LOG_ERROR(ERRMSG_FAILURE_OPERATION, "parse mask node");
-						ret = ERRCODE_FAILURE_OPERATION;
+						err = ERRCODE_FAILURE_OPERATION;
 						goto free_and_exit;
 					}
 				}
@@ -1379,7 +1376,7 @@ RESULT target_build_chip_series(const char *chip_series,
 					LOG_ERROR(ERRMSG_INVALID,
 						(const char *)xmlNodeGetContent(paramNode),
 						chip_series);
-					ret = ERRCODE_INVALID;
+					err = ERRCODE_INVALID;
 					goto free_and_exit;
 				}
 			}
@@ -1482,6 +1479,6 @@ free_and_exit:
 		doc = NULL;
 	}
 	
-	return ret;
+	return err;
 }
 

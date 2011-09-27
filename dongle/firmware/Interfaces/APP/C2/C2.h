@@ -14,9 +14,9 @@
  *      2008-11-07:     created(by SimonQian)                             *
  **************************************************************************/
 
-RESULT c2_init(uint8_t index);
-RESULT c2_fini(uint8_t index);
-RESULT c2_addr_write(uint8_t index, uint8_t addr);
-RESULT c2_addr_read(uint8_t index, uint8_t *data);
-RESULT c2_data_read(uint8_t index, uint8_t *data, uint8_t len);
-RESULT c2_data_write(uint8_t index, uint8_t *data, uint8_t len);
+vsf_err_t c2_init(uint8_t index);
+vsf_err_t c2_fini(uint8_t index);
+vsf_err_t c2_addr_write(uint8_t index, uint8_t addr);
+vsf_err_t c2_addr_read(uint8_t index, uint8_t *data);
+vsf_err_t c2_data_read(uint8_t index, uint8_t *data, uint8_t len);
+vsf_err_t c2_data_write(uint8_t index, uint8_t *data, uint8_t len);

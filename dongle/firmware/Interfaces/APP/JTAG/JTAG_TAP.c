@@ -34,11 +34,14 @@
 #define JTAG_TAP_ASYN					0
 #define JTAG_TAP_RAW					1
 
-#define JTAG_TAP_Reset_ASYN()			JTAG_TAP_WriteTMSByte_ASYN(JTAG_TAP_TMS_2RTI)
+#define JTAG_TAP_Reset_ASYN()			\
+	JTAG_TAP_WriteTMSByte_ASYN(JTAG_TAP_TMS_2RTI)
 #define JTAG_TAP_WriteTMSByte_ASYN(tms)	JTAG_TAP_Operate_Asyn(0, tms)
 
-static uint32_t JTAG_TAP_UnitsBefore, JTAG_TAP_UnitsAfter, JTAG_TAP_BitsBefore, JTAG_TAP_BitsAfter;
-void (*JTAG_TAP_Operate_RAW)(uint32_t bit_len, uint8_t *tdi, uint8_t *tms, uint8_t *tdo);
+static uint32_t JTAG_TAP_UnitsBefore, JTAG_TAP_UnitsAfter,
+				JTAG_TAP_BitsBefore, JTAG_TAP_BitsAfter;
+void (*JTAG_TAP_Operate_RAW)(uint32_t bit_len, uint8_t *tdi, uint8_t *tms,
+								uint8_t *tdo);
 uint16_t (*JTAG_TAP_Operate_Asyn)(uint16_t tdi, uint16_t tms);
 
 static int32_t JTAG_kHz = 0xFFFFFFFF;
@@ -116,7 +119,8 @@ static uint16_t JTAG_TAP_GPIO_Operate_Asyn(uint16_t tdi, uint16_t tms)
 	return result;
 }
 
-static void JTAG_TAP_GPIO_Operate_RAW(uint32_t bit_len, uint8_t *tdi, uint8_t *tms, uint8_t *tdo)
+static void JTAG_TAP_GPIO_Operate_RAW(uint32_t bit_len, uint8_t *tdi,
+										uint8_t *tms, uint8_t *tdo)
 {
 	uint32_t offset;
 	uint8_t mask;
@@ -174,7 +178,8 @@ static void JTAG_TAP_GPIO_Operate_RAW(uint32_t bit_len, uint8_t *tdi, uint8_t *t
 	}
 }
 
-static void JTAG_TAP_HS_Operate_RAW_DMA(uint32_t bit_len, uint8_t *tdi, uint8_t *tms, uint8_t *tdo)
+static void JTAG_TAP_HS_Operate_RAW_DMA(uint32_t bit_len, uint8_t *tdi,
+										uint8_t *tms, uint8_t *tdo)
 {
 	uint16_t i, byte_len = bit_len >> 3;
 
@@ -233,7 +238,8 @@ static uint16_t JTAG_TAP_HS_Operate_Asyn(uint16_t tdi, uint16_t tms)
 
 
 
-static void JTAG_TAP_RW(uint8_t *tdo, uint8_t *tdi, uint8_t tms_before, uint8_t tms_after0, uint8_t tms_after1, uint16_t dat_byte_len)
+static void JTAG_TAP_RW(uint8_t *tdo, uint8_t *tdi, uint8_t tms_before,
+				uint8_t tms_after0, uint8_t tms_after1, uint16_t dat_byte_len)
 {
 	uint8_t tdo_tmp;
 	uint16_t ret_len = 0, cur_pos = 0;
@@ -266,7 +272,8 @@ static void JTAG_TAP_RW(uint8_t *tdo, uint8_t *tdi, uint8_t tms_before, uint8_t 
 	tdo[ret_len] = tdo_tmp;
 }
 /*
-static void JTAG_TAP_R(uint8_t *tdo, uint8_t tms_before, uint8_t tms_after0, uint8_t tms_after1, uint16_t dat_byte_len)
+static void JTAG_TAP_R(uint8_t *tdo, uint8_t tms_before, uint8_t tms_after0,
+						uint8_t tms_after1, uint16_t dat_byte_len)
 {
 	uint8_t tdo_tmp;
 	uint16_t ret_len = 0;
@@ -299,7 +306,8 @@ static void JTAG_TAP_R(uint8_t *tdo, uint8_t tms_before, uint8_t tms_after0, uin
 	tdo[ret_len] = tdo_tmp;
 }
 
-static void JTAG_TAP_W(uint8_t *tdi, uint8_t tms_before, uint8_t tms_after0, uint8_t tms_after1, uint16_t dat_byte_len)
+static void JTAG_TAP_W(uint8_t *tdi, uint8_t tms_before, uint8_t tms_after0,
+						uint8_t tms_after1, uint16_t dat_byte_len)
 {
 	uint16_t cur_pos = 0;
 
@@ -349,7 +357,9 @@ static void JTAG_TAP_TMS_Bit(uint8_t* tms, uint8_t bit_len)
 	}
 }
 
-static void JTAG_TAP_ProcessDataRW(uint8_t *tdo, uint8_t *tdi, uint8_t tms_before, uint8_t tms_len_before, uint16_t bit_len, uint8_t len_of_1s_before, uint8_t len_of_1s_after, uint8_t idle)
+static void JTAG_TAP_ProcessDataRW(uint8_t *tdo, uint8_t *tdi,
+	uint8_t tms_before, uint8_t tms_len_before, uint16_t bit_len,
+	uint8_t len_of_1s_before, uint8_t len_of_1s_after, uint8_t idle)
 {
 	uint8_t tdi_tmp, tdo_tmp, tms_tmp, len_tmp;
 	uint8_t offset, Rec_offset;
@@ -577,7 +587,8 @@ static uint32_t JTAG_TAP_Instr(uint32_t instr, uint8_t bit_len, uint8_t idle)
 	return ret;
 }
 */
-static void JTAG_TAP_InstrPtr(uint8_t *instr, uint8_t *tdo, uint16_t bit_len, uint8_t idle)
+static void JTAG_TAP_InstrPtr(uint8_t *instr, uint8_t *tdo, uint16_t bit_len,
+								uint8_t idle)
 {
 	JTAG_TAP_ProcessDataRW(tdo,
 						   instr,
@@ -625,7 +636,8 @@ static void JTAG_TAP_DataInPtr(uint8_t *tdo, uint16_t bit_len, uint8_t idle)
 						   idle);
 }
 */
-static void JTAG_TAP_DataPtr(uint8_t *tdi, uint8_t *tdo, uint16_t bit_len, uint8_t idle)
+static void JTAG_TAP_DataPtr(uint8_t *tdi, uint8_t *tdo, uint16_t bit_len,
+								uint8_t idle)
 {
 	JTAG_TAP_ProcessDataRW(tdo,
 						   tdi,
@@ -683,7 +695,7 @@ static uint32_t JTAG_TAP_DataIn(uint16_t bit_len, uint8_t idle)
 */
 
 
-static void JTAG_TAP_SetDaisyChainPos(uint32_t ub, uint32_t ua, uint32_t bb, 
+static void JTAG_TAP_SetDaisyChainPos(uint32_t ub, uint32_t ua, uint32_t bb,
 										uint32_t ba)
 {
 	JTAG_TAP_UnitsBefore	= ub;
@@ -692,29 +704,27 @@ static void JTAG_TAP_SetDaisyChainPos(uint32_t ub, uint32_t ua, uint32_t bb,
 	JTAG_TAP_BitsAfter		= ba;
 }
 
-static RESULT JTAG_TAP_Fini(void)
+static vsf_err_t JTAG_TAP_Fini(void)
 {
 	JTAG_TAP_HS_DMA_FINI();
 
 	JTAG_kHz = 0xFFFFFFFF;
 	interfaces->spi.fini(JTAG_TAP_HS_SPI_M_IDX);
 	interfaces->spi.fini(JTAG_TAP_HS_SPI_S_IDX);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-static RESULT JTAG_TAP_Init(uint32_t kHz, uint8_t mode)
+static vsf_err_t JTAG_TAP_Init(uint32_t kHz, uint8_t mode)
 {
 	struct spi_ability_t spis_ability, spim_ability;
 	uint32_t min_khz;
 	
-	if ((ERROR_OK != interfaces->spi.get_ability(JTAG_TAP_HS_SPI_M_IDX, 
-													&spim_ability)) || 
-		(ERROR_OK != interfaces->spi.get_ability(JTAG_TAP_HS_SPI_S_IDX, 
-													&spis_ability)) || 
+	if (interfaces->spi.get_ability(JTAG_TAP_HS_SPI_M_IDX, &spim_ability) || 
+		interfaces->spi.get_ability(JTAG_TAP_HS_SPI_S_IDX, &spis_ability) || 
 		(spis_ability.max_freq_hz < spim_ability.min_freq_hz) || 
 		(spis_ability.min_freq_hz > spim_ability.max_freq_hz))
 	{
-		return ERROR_FAIL;
+		return VSFERR_INVALID_PARAMETER;
 	}
 	min_khz = (spim_ability.min_freq_hz > spis_ability.min_freq_hz ? 
 				spim_ability.min_freq_hz : spis_ability.min_freq_hz) / 1000;
@@ -781,89 +791,88 @@ static RESULT JTAG_TAP_Init(uint32_t kHz, uint8_t mode)
 		JTAG_TAP_Operate_RAW = JTAG_TAP_GPIO_Operate_RAW;
 		JTAG_TAP_Operate_Asyn = JTAG_TAP_GPIO_Operate_Asyn;
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT jtaghl_init(uint8_t index)
+vsf_err_t jtaghl_init(uint8_t index)
 {
 	switch (index)
 	{
 	case 0:
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT jtaghl_fini(uint8_t index)
+vsf_err_t jtaghl_fini(uint8_t index)
 {
 	switch (index)
 	{
 	case 0:
-		JTAG_TAP_Fini();
-		return ERROR_OK;
+		return JTAG_TAP_Fini();
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT jtaghl_config_speed(uint8_t index, uint32_t kHz)
+vsf_err_t jtaghl_config_speed(uint8_t index, uint32_t kHz)
 {
 	switch (index)
 	{
 	case 0:
 		return JTAG_TAP_Init(kHz, JTAG_TAP_ASYN);
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT jtaghl_config_daisychain(uint8_t index, uint8_t ub, uint8_t ua, 
-								uint16_t bb, uint16_t ba)
+vsf_err_t jtaghl_config_daisychain(uint8_t index, uint8_t ub, uint8_t ua,
+									uint16_t bb, uint16_t ba)
 {
 	switch (index)
 	{
 	case 0:
 		JTAG_TAP_SetDaisyChainPos(ub, ua, bb, ba);
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT jtaghl_config(uint8_t index, uint32_t kHz, uint8_t ub, uint8_t ua, 
+vsf_err_t jtaghl_config(uint8_t index, uint32_t kHz, uint8_t ub, uint8_t ua,
 						uint16_t bb, uint16_t ba)
 {
 	switch (index)
 	{
 	case 0:
-		if ((ERROR_OK != jtaghl_config_speed(index, kHz)) || 
-			(ERROR_OK != jtaghl_config_daisychain(index, ub, ua, bb, ba)))
+		if (jtaghl_config_speed(index, kHz) || 
+			jtaghl_config_daisychain(index, ub, ua, bb, ba))
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		else
 		{
-			return ERROR_OK;
+			return VSFERR_NONE;
 		}
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT jtaghl_tms(uint8_t index, uint8_t* tms, uint16_t bitlen)
+vsf_err_t jtaghl_tms(uint8_t index, uint8_t* tms, uint16_t bitlen)
 {
 	switch (index)
 	{
 	case 0:
 		JTAG_TAP_TMS_Bit(tms, bitlen);
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT jtaghl_runtest(uint8_t index, uint32_t cycles)
+vsf_err_t jtaghl_runtest(uint8_t index, uint32_t cycles)
 {
 	uint8_t tms[256 / 8];
 	uint16_t cur_cycles;
@@ -882,36 +891,37 @@ RESULT jtaghl_runtest(uint8_t index, uint32_t cycles)
 			{
 				cur_cycles = (uint8_t)cycles;
 			}
-			if (ERROR_OK != jtaghl_tms(index, tms, cur_cycles))
+			if (jtaghl_tms(index, tms, cur_cycles))
 			{
-				return ERROR_FAIL;
+				return VSFERR_FAIL;
 			}
 			cycles -= cur_cycles;
 		}
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
 jtag_callback_t jtaghl_receive_callback = NULL;
 jtag_callback_t jtaghl_send_callback = NULL;
 uint32_t jtaghl_ir_backup;
-RESULT jtaghl_register_callback(uint8_t index, jtag_callback_t send_callback, 
-								 jtag_callback_t receive_callback)
+vsf_err_t jtaghl_register_callback(uint8_t index, jtag_callback_t send_callback,
+									jtag_callback_t receive_callback)
 {
 	switch (index)
 	{
 	case 0:
 		jtaghl_receive_callback = receive_callback;
 		jtaghl_send_callback = send_callback;
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT jtaghl_ir(uint8_t index, uint8_t *ir, uint16_t bitlen, uint8_t idle, uint8_t want_ret)
+vsf_err_t jtaghl_ir(uint8_t index, uint8_t *ir, uint16_t bitlen, uint8_t idle,
+					uint8_t want_ret)
 {
 	uint16_t bytelen = (bitlen + 7) >> 3;
 	uint64_t ir_tmp = 0;
@@ -934,10 +944,11 @@ RESULT jtaghl_ir(uint8_t index, uint8_t *ir, uint16_t bitlen, uint8_t idle, uint
 		processed_len = 0;
 		if (jtaghl_send_callback != NULL)
 		{
-			if (ERROR_OK != jtaghl_send_callback(index, JTAG_SCANTYPE_IR, jtaghl_ir_backup, 
-								(uint8_t *)&ir_tmp, ir, bytelen, &processed_len))
+			if (jtaghl_send_callback(index, JTAG_SCANTYPE_IR, 
+							jtaghl_ir_backup, (uint8_t *)&ir_tmp, ir, bytelen, 
+							&processed_len))
 			{
-				return ERROR_FAIL;
+				return VSFERR_FAIL;
 			}
 		}
 		if (!processed_len)
@@ -956,10 +967,10 @@ RESULT jtaghl_ir(uint8_t index, uint8_t *ir, uint16_t bitlen, uint8_t idle, uint
 			processed_len = 0;
 			if (jtaghl_receive_callback != NULL)
 			{
-				if (ERROR_OK != jtaghl_receive_callback(index, JTAG_SCANTYPE_IR, jtaghl_ir_backup, 
-									ir, pir, bytelen, &processed_len))
+				if (jtaghl_receive_callback(index, JTAG_SCANTYPE_IR, 
+							jtaghl_ir_backup, ir, pir, bytelen, &processed_len))
 				{
-					return ERROR_FAIL;
+					return VSFERR_FAIL;
 				}
 			}
 			if (!processed_len)
@@ -967,13 +978,14 @@ RESULT jtaghl_ir(uint8_t index, uint8_t *ir, uint16_t bitlen, uint8_t idle, uint
 				memcpy(ir, pir, bytelen);
 			}
 		}
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT jtaghl_dr(uint8_t index, uint8_t *dr, uint16_t bitlen, uint8_t idle, uint8_t want_ret)
+vsf_err_t jtaghl_dr(uint8_t index, uint8_t *dr, uint16_t bitlen, uint8_t idle,
+					uint8_t want_ret)
 {
 	uint16_t bytelen = (bitlen + 7) >> 3;
 	uint64_t dr_tmp = 0;
@@ -986,10 +998,11 @@ RESULT jtaghl_dr(uint8_t index, uint8_t *dr, uint16_t bitlen, uint8_t idle, uint
 		processed_len = 0;
 		if (jtaghl_send_callback != NULL)
 		{
-			if (ERROR_OK != jtaghl_send_callback(index, JTAG_SCANTYPE_DR, jtaghl_ir_backup, 
-								(uint8_t *)&dr_tmp, dr, bytelen, &processed_len))
+			if (jtaghl_send_callback(index, JTAG_SCANTYPE_DR, 
+						jtaghl_ir_backup, (uint8_t *)&dr_tmp, dr, bytelen, 
+						&processed_len))
 			{
-				return ERROR_FAIL;
+				return VSFERR_FAIL;
 			}
 		}
 		if (!processed_len)
@@ -1008,10 +1021,10 @@ RESULT jtaghl_dr(uint8_t index, uint8_t *dr, uint16_t bitlen, uint8_t idle, uint
 			processed_len = 0;
 			if (jtaghl_receive_callback != NULL)
 			{
-				if (ERROR_OK != jtaghl_receive_callback(index, JTAG_SCANTYPE_DR, jtaghl_ir_backup, 
-									dr, pdr, bytelen, &processed_len))
+				if (jtaghl_receive_callback(index, JTAG_SCANTYPE_DR, 
+							jtaghl_ir_backup, dr, pdr, bytelen, &processed_len))
 				{
-					return ERROR_FAIL;
+					return VSFERR_FAIL;
 				}
 			}
 			if (!processed_len)
@@ -1019,47 +1032,46 @@ RESULT jtaghl_dr(uint8_t index, uint8_t *dr, uint16_t bitlen, uint8_t idle, uint
 				memcpy(dr, pdr, bytelen);
 			}
 		}
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT jtagll_init(uint8_t index)
+vsf_err_t jtagll_init(uint8_t index)
 {
 	switch (index)
 	{
 	case 0:
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT jtagll_fini(uint8_t index)
+vsf_err_t jtagll_fini(uint8_t index)
 {
 	switch (index)
 	{
 	case 0:
-		JTAG_TAP_Fini();
-		return ERROR_OK;
+		return JTAG_TAP_Fini();
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT jtagll_config(uint8_t index, uint32_t kHz)
+vsf_err_t jtagll_config(uint8_t index, uint32_t kHz)
 {
 	switch (index)
 	{
 	case 0:
 		return JTAG_TAP_Init(kHz, JTAG_TAP_ASYN);
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT jtagll_tms(uint8_t index, uint8_t *tms, uint8_t bytelen)
+vsf_err_t jtagll_tms(uint8_t index, uint8_t *tms, uint8_t bytelen)
 {
 	uint16_t i;
 	
@@ -1070,13 +1082,13 @@ RESULT jtagll_tms(uint8_t index, uint8_t *tms, uint8_t bytelen)
 		{
 			JTAG_TAP_WriteTMSByte_ASYN(tms[i]);
 		}
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT jtagll_tms_clocks(uint8_t index, uint32_t bytelen, uint8_t tms)
+vsf_err_t jtagll_tms_clocks(uint8_t index, uint32_t bytelen, uint8_t tms)
 {
 	switch (index)
 	{
@@ -1085,13 +1097,13 @@ RESULT jtagll_tms_clocks(uint8_t index, uint32_t bytelen, uint8_t tms)
 		{
 			JTAG_TAP_WriteTMSByte_ASYN(tms);
 		}
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT jtagll_scan(uint8_t index, uint8_t* data, uint16_t bitlen, 
+vsf_err_t jtagll_scan(uint8_t index, uint8_t* data, uint16_t bitlen, 
 					uint8_t tms_before_valid, uint8_t tms_before, 
 					uint8_t tms_after0, uint8_t tms_after1)
 {
@@ -1102,7 +1114,7 @@ RESULT jtagll_scan(uint8_t index, uint8_t* data, uint16_t bitlen,
 	case 0:
 		if (NULL == data)
 		{
-			return ERROR_FAIL;
+			return VSFERR_INVALID_PTR;
 		}
 		
 		if (tms_before_valid)
@@ -1110,61 +1122,60 @@ RESULT jtagll_scan(uint8_t index, uint8_t* data, uint16_t bitlen,
 			bytelen |= 0x8000;
 		}
 		JTAG_TAP_RW(data, data, tms_before, tms_after0, tms_after1, bytelen);
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT jtagraw_init(uint8_t index)
+vsf_err_t jtagraw_init(uint8_t index)
 {
 	switch (index)
 	{
 	case 0:
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT jtagraw_fini(uint8_t index)
+vsf_err_t jtagraw_fini(uint8_t index)
 {
 	switch (index)
 	{
 	case 0:
-		JTAG_TAP_Fini();
-		return ERROR_OK;
+		return JTAG_TAP_Fini();
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT jtagraw_config(uint8_t index, uint32_t kHz)
+vsf_err_t jtagraw_config(uint8_t index, uint32_t kHz)
 {
 	switch (index)
 	{
 	case 0:
 		return JTAG_TAP_Init(kHz, JTAG_TAP_RAW);
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT jtagraw_execute(uint8_t index, uint8_t* tdi, uint8_t* tms, 
-						uint8_t *tdo, uint32_t bitlen)
+vsf_err_t jtagraw_execute(uint8_t index, uint8_t* tdi, uint8_t* tms,
+							uint8_t *tdo, uint32_t bitlen)
 {
 	switch (index)
 	{
 	case 0:
 		if ((NULL == tdi) || (NULL == tms) || (NULL == tdo))
 		{
-			return ERROR_FAIL;
+			return VSFERR_INVALID_PTR;
 		}
 		
 		JTAG_TAP_Operate_RAW(bitlen, tdi, tms, tdo);
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 

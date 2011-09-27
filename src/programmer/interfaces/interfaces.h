@@ -20,6 +20,7 @@
 #ifndef __INTERFACES_H_INCLUDED__
 #define __INTERFACES_H_INCLUDED__
 
+#include "vsf_err.h"
 #include "interfaces_const.h"
 
 char* get_interface_name(uint64_t i);
@@ -29,10 +30,10 @@ enum jtag_irdr_t
 	JTAG_SCANTYPE_IR,
 	JTAG_SCANTYPE_DR
 };
-typedef RESULT (*jtag_callback_t)(uint8_t index, enum jtag_irdr_t cmd,
-									uint32_t ir, uint8_t *dest_buffer,
-									uint8_t *src_buffer, uint16_t bytelen,
-									uint16_t *processed);
+typedef vsf_err_t (*jtag_callback_t)(uint8_t index, enum jtag_irdr_t cmd,
+										uint32_t ir, uint8_t *dest_buffer,
+										uint8_t *src_buffer, uint16_t bytelen,
+										uint16_t *processed);
 
 struct usart_status_t
 {
@@ -44,21 +45,21 @@ struct usart_status_t
 
 struct interface_usart_t
 {
-	RESULT (*init)(uint8_t index);
-	RESULT (*fini)(uint8_t index);
-	RESULT (*config)(uint8_t index, uint32_t baudrate, uint8_t datalength,
+	vsf_err_t (*init)(uint8_t index);
+	vsf_err_t (*fini)(uint8_t index);
+	vsf_err_t (*config)(uint8_t index, uint32_t baudrate, uint8_t datalength,
 						uint8_t mode);
-	RESULT (*send)(uint8_t index, uint8_t *buf, uint16_t len);
-	RESULT (*receive)(uint8_t index, uint8_t *buf, uint16_t len);
-	RESULT (*status)(uint8_t index, struct usart_status_t *status);
+	vsf_err_t (*send)(uint8_t index, uint8_t *buf, uint16_t len);
+	vsf_err_t (*receive)(uint8_t index, uint8_t *buf, uint16_t len);
+	vsf_err_t (*status)(uint8_t index, struct usart_status_t *status);
 };
 
 struct interface_spi_t
 {
-	RESULT (*init)(uint8_t index);
-	RESULT (*fini)(uint8_t index);
-	RESULT (*config)(uint8_t index, uint32_t kHz, uint8_t mode);
-	RESULT (*io)(uint8_t index, uint8_t *out, uint8_t *in, uint16_t bytelen);
+	vsf_err_t (*init)(uint8_t index);
+	vsf_err_t (*fini)(uint8_t index);
+	vsf_err_t (*config)(uint8_t index, uint32_t kHz, uint8_t mode);
+	vsf_err_t (*io)(uint8_t index, uint8_t *out, uint8_t *in, uint16_t bytelen);
 };
 
 struct ebi_info_t
@@ -129,211 +130,213 @@ struct ebi_nand_info_t
 };
 struct interface_ebi_t
 {
-	RESULT (*init)(uint8_t index);
-	RESULT (*fini)(uint8_t index);
-	RESULT (*config)(uint8_t index, uint8_t target_index, void *param);
-	RESULT (*read)(uint8_t index, uint8_t target_index, uint32_t address,
-					uint8_t data_size, uint8_t *buff, uint32_t count);
-	RESULT (*write)(uint8_t index, uint8_t target_index, uint32_t address,
-					uint8_t data_size, uint8_t *buff, uint32_t count);
+	vsf_err_t (*init)(uint8_t index);
+	vsf_err_t (*fini)(uint8_t index);
+	vsf_err_t (*config)(uint8_t index, uint8_t target_index, void *param);
+	vsf_err_t (*read)(uint8_t index, uint8_t target_index, uint32_t address,
+						uint8_t data_size, uint8_t *buff, uint32_t count);
+	vsf_err_t (*write)(uint8_t index, uint8_t target_index, uint32_t address,
+						uint8_t data_size, uint8_t *buff, uint32_t count);
 };
 
 struct interface_gpio_t
 {
-	RESULT (*init)(uint8_t index);
-	RESULT (*fini)(uint8_t index);
-	RESULT (*config)(uint8_t index, uint32_t pin_mask, uint32_t io,
+	vsf_err_t (*init)(uint8_t index);
+	vsf_err_t (*fini)(uint8_t index);
+	vsf_err_t (*config)(uint8_t index, uint32_t pin_mask, uint32_t io,
 						uint32_t pull_en_mask, uint32_t input_pull_mask);
-	RESULT (*out)(uint8_t index, uint32_t pin_mask, uint32_t value);
-	RESULT (*in)(uint8_t index, uint32_t pin_mask, uint32_t *value);
+	vsf_err_t (*out)(uint8_t index, uint32_t pin_mask, uint32_t value);
+	vsf_err_t (*in)(uint8_t index, uint32_t pin_mask, uint32_t *value);
 };
 
 struct interface_delay_t
 {
-	RESULT (*delayms)(uint16_t ms);
-	RESULT (*delayus)(uint16_t us);
+	vsf_err_t (*delayms)(uint16_t ms);
+	vsf_err_t (*delayus)(uint16_t us);
 };
 
 struct interface_issp_t
 {
-	RESULT (*init)(uint8_t index);
-	RESULT (*fini)(uint8_t index);
-	RESULT (*enter_program_mode)(uint8_t index, uint8_t mode);
-	RESULT (*leave_program_mode)(uint8_t index, uint8_t mode);
-	RESULT (*wait_and_poll)(uint8_t index);
-	RESULT (*vector)(uint8_t index, uint8_t operate, uint8_t addr,
+	vsf_err_t (*init)(uint8_t index);
+	vsf_err_t (*fini)(uint8_t index);
+	vsf_err_t (*enter_program_mode)(uint8_t index, uint8_t mode);
+	vsf_err_t (*leave_program_mode)(uint8_t index, uint8_t mode);
+	vsf_err_t (*wait_and_poll)(uint8_t index);
+	vsf_err_t (*vector)(uint8_t index, uint8_t operate, uint8_t addr,
 						uint8_t data, uint8_t *buf);
 };
 
 struct interface_swd_t
 {
-	RESULT (*init)(uint8_t index);
-	RESULT (*fini)(uint8_t index);
-	RESULT (*config)(uint8_t index, uint8_t trn, uint16_t retry, uint16_t dly);
-	RESULT (*seqout)(uint8_t index, uint8_t *data, uint16_t bitlen);
-	RESULT (*seqin)(uint8_t index, uint8_t *data, uint16_t bitlen);
-	RESULT (*transact)(uint8_t index, uint8_t request, uint32_t *data,
-						uint8_t *ack);
+	vsf_err_t (*init)(uint8_t index);
+	vsf_err_t (*fini)(uint8_t index);
+	vsf_err_t (*config)(uint8_t index, uint8_t trn, uint16_t retry,
+						uint16_t dly);
+	vsf_err_t (*seqout)(uint8_t index, uint8_t *data, uint16_t bitlen);
+	vsf_err_t (*seqin)(uint8_t index, uint8_t *data, uint16_t bitlen);
+	vsf_err_t (*transact)(uint8_t index, uint8_t request, uint32_t *data,
+							uint8_t *ack);
 };
 
 struct interface_jtag_hl_t
 {
-	RESULT (*init)(uint8_t index);
-	RESULT (*fini)(uint8_t index);
-	RESULT (*config)(uint8_t index, uint32_t kHz, uint8_t ub, uint8_t ua,
+	vsf_err_t (*init)(uint8_t index);
+	vsf_err_t (*fini)(uint8_t index);
+	vsf_err_t (*config)(uint8_t index, uint32_t kHz, uint8_t ub, uint8_t ua,
 						uint16_t bb, uint16_t ba);
-	RESULT (*tms)(uint8_t index, uint8_t* tms, uint16_t bitlen);
-	RESULT (*runtest)(uint8_t index, uint32_t cycles);
-	RESULT (*ir)(uint8_t index, uint8_t *ir, uint16_t bitlen, uint8_t idle,
+	vsf_err_t (*tms)(uint8_t index, uint8_t* tms, uint16_t bitlen);
+	vsf_err_t (*runtest)(uint8_t index, uint32_t cycles);
+	vsf_err_t (*ir)(uint8_t index, uint8_t *ir, uint16_t bitlen, uint8_t idle,
 					uint8_t want_ret);
-	RESULT (*dr)(uint8_t index, uint8_t *dr, uint16_t bitlen, uint8_t idle,
+	vsf_err_t (*dr)(uint8_t index, uint8_t *dr, uint16_t bitlen, uint8_t idle,
 					uint8_t want_ret);
-	RESULT (*register_callback)(uint8_t index, jtag_callback_t send_callback,
-										jtag_callback_t receive_callback);
+	vsf_err_t (*register_callback)(uint8_t index, jtag_callback_t send_callback,
+									jtag_callback_t receive_callback);
 };
 
 struct interface_jtag_ll_t
 {
-	RESULT (*init)(uint8_t index);
-	RESULT (*fini)(uint8_t index);
-	RESULT (*config)(uint8_t index, uint32_t kHz);
-	RESULT (*tms)(uint8_t index, uint8_t *tms, uint8_t bytelen);
-	RESULT (*tms_clocks)(uint8_t index, uint32_t bytelen, uint8_t tms);
-	RESULT (*scan)(uint8_t index, uint8_t* data, uint16_t bitlen,
-					uint8_t tms_before_valid, uint8_t tms_before,
-					uint8_t tms_after0, uint8_t tms_after1);
+	vsf_err_t (*init)(uint8_t index);
+	vsf_err_t (*fini)(uint8_t index);
+	vsf_err_t (*config)(uint8_t index, uint32_t kHz);
+	vsf_err_t (*tms)(uint8_t index, uint8_t *tms, uint8_t bytelen);
+	vsf_err_t (*tms_clocks)(uint8_t index, uint32_t bytelen, uint8_t tms);
+	vsf_err_t (*scan)(uint8_t index, uint8_t* data, uint16_t bitlen,
+						uint8_t tms_before_valid, uint8_t tms_before,
+						uint8_t tms_after0, uint8_t tms_after1);
 };
 
 struct interface_jtag_raw_t
 {
-	RESULT (*init)(uint8_t index);
-	RESULT (*fini)(uint8_t index);
-	RESULT (*config)(uint8_t index, uint32_t kHz);
-	RESULT (*execute)(uint8_t index, uint8_t* tdi, uint8_t* tms,
-						uint8_t *tdo, uint32_t bitlen);
+	vsf_err_t (*init)(uint8_t index);
+	vsf_err_t (*fini)(uint8_t index);
+	vsf_err_t (*config)(uint8_t index, uint32_t kHz);
+	vsf_err_t (*execute)(uint8_t index, uint8_t* tdi, uint8_t* tms,
+							uint8_t *tdo, uint32_t bitlen);
 };
 
 struct interface_msp430jtag_t
 {
-	RESULT (*init)(uint8_t index);
-	RESULT (*fini)(uint8_t index);
-	RESULT (*config)(uint8_t index, uint8_t has_test);
-	RESULT (*ir)(uint8_t index, uint8_t *ir, uint8_t want_ret);
-	RESULT (*dr)(uint8_t index, uint32_t *dr, uint8_t bitlen, uint8_t want_ret);
-	RESULT (*tclk)(uint8_t index, uint8_t value);
-	RESULT (*tclk_strobe)(uint8_t index, uint16_t cnt);
-	RESULT (*reset)(uint8_t index);
-	RESULT (*poll)(uint8_t index, uint32_t dr, uint32_t mask, uint32_t value,
-					uint8_t len, uint16_t poll_cnt, uint8_t toggle_tclk);
+	vsf_err_t (*init)(uint8_t index);
+	vsf_err_t (*fini)(uint8_t index);
+	vsf_err_t (*config)(uint8_t index, uint8_t has_test);
+	vsf_err_t (*ir)(uint8_t index, uint8_t *ir, uint8_t want_ret);
+	vsf_err_t (*dr)(uint8_t index, uint32_t *dr, uint8_t bitlen,
+					uint8_t want_ret);
+	vsf_err_t (*tclk)(uint8_t index, uint8_t value);
+	vsf_err_t (*tclk_strobe)(uint8_t index, uint16_t cnt);
+	vsf_err_t (*reset)(uint8_t index);
+	vsf_err_t (*poll)(uint8_t index, uint32_t dr, uint32_t mask, uint32_t value,
+						uint8_t len, uint16_t poll_cnt, uint8_t toggle_tclk);
 };
 
 struct interface_msp430sbw_t
 {
-	RESULT (*init)(uint8_t index);
-	RESULT (*fini)(uint8_t index);
-	RESULT (*config)(uint8_t index, uint8_t has_test);
-	RESULT (*ir)(uint8_t index, uint8_t *ir, uint8_t want_ret);
-	RESULT (*dr)(uint8_t index, uint32_t *dr, uint8_t len, uint8_t want_ret);
-	RESULT (*tclk)(uint8_t index, uint8_t value);
-	RESULT (*tclk_strobe)(uint8_t index, uint16_t cnt);
-	RESULT (*reset)(uint8_t index);
-	RESULT (*poll)(uint8_t index, uint32_t dr, uint32_t mask, uint32_t value,
-					uint8_t len, uint16_t poll_cnt, uint8_t toggle_tclk);
+	vsf_err_t (*init)(uint8_t index);
+	vsf_err_t (*fini)(uint8_t index);
+	vsf_err_t (*config)(uint8_t index, uint8_t has_test);
+	vsf_err_t (*ir)(uint8_t index, uint8_t *ir, uint8_t want_ret);
+	vsf_err_t (*dr)(uint8_t index, uint32_t *dr, uint8_t len, uint8_t want_ret);
+	vsf_err_t (*tclk)(uint8_t index, uint8_t value);
+	vsf_err_t (*tclk_strobe)(uint8_t index, uint16_t cnt);
+	vsf_err_t (*reset)(uint8_t index);
+	vsf_err_t (*poll)(uint8_t index, uint32_t dr, uint32_t mask, uint32_t value,
+						uint8_t len, uint16_t poll_cnt, uint8_t toggle_tclk);
 };
 
 struct interface_c2_t
 {
-	RESULT (*init)(uint8_t index);
-	RESULT (*fini)(uint8_t index);
-	RESULT (*addr_write)(uint8_t index, uint8_t addr);
-	RESULT (*addr_read)(uint8_t index, uint8_t *data);
-	RESULT (*data_read)(uint8_t index, uint8_t *data, uint8_t len);
-	RESULT (*data_write)(uint8_t index, uint8_t *data, uint8_t len);
+	vsf_err_t (*init)(uint8_t index);
+	vsf_err_t (*fini)(uint8_t index);
+	vsf_err_t (*addr_write)(uint8_t index, uint8_t addr);
+	vsf_err_t (*addr_read)(uint8_t index, uint8_t *data);
+	vsf_err_t (*data_read)(uint8_t index, uint8_t *data, uint8_t len);
+	vsf_err_t (*data_write)(uint8_t index, uint8_t *data, uint8_t len);
 };
 
 struct interface_i2c_t
 {
-	RESULT (*init)(uint8_t index);
-	RESULT (*fini)(uint8_t index);
-	RESULT (*config)(uint8_t index, uint16_t kHz, uint16_t byte_interval,
+	vsf_err_t (*init)(uint8_t index);
+	vsf_err_t (*fini)(uint8_t index);
+	vsf_err_t (*config)(uint8_t index, uint16_t kHz, uint16_t byte_interval,
 						uint16_t max_dly);
-	RESULT (*read)(uint8_t index, uint16_t chip_addr, uint8_t *data,
-					uint16_t data_len, uint8_t stop, bool nacklast);
-	RESULT (*write)(uint8_t index, uint16_t chip_addr, uint8_t *data,
-					uint16_t data_len, uint8_t stop);
+	vsf_err_t (*read)(uint8_t index, uint16_t chip_addr, uint8_t *data,
+						uint16_t data_len, uint8_t stop, bool nacklast);
+	vsf_err_t (*write)(uint8_t index, uint16_t chip_addr, uint8_t *data,
+						uint16_t data_len, uint8_t stop);
 };
 
 struct interface_lpcicp_t
 {
-	RESULT (*init)(uint8_t index);
-	RESULT (*fini)(uint8_t index);
-	RESULT (*enter_program_mode)(uint8_t index);
-	RESULT (*in)(uint8_t index, uint8_t *buff, uint16_t len);
-	RESULT (*out)(uint8_t index, uint8_t *buff, uint16_t len);
-	RESULT (*poll_ready)(uint8_t index, uint8_t data, uint8_t *ret,
+	vsf_err_t (*init)(uint8_t index);
+	vsf_err_t (*fini)(uint8_t index);
+	vsf_err_t (*enter_program_mode)(uint8_t index);
+	vsf_err_t (*in)(uint8_t index, uint8_t *buff, uint16_t len);
+	vsf_err_t (*out)(uint8_t index, uint8_t *buff, uint16_t len);
+	vsf_err_t (*poll_ready)(uint8_t index, uint8_t data, uint8_t *ret,
 							uint8_t setmask, uint8_t clearmask,
 							uint16_t pollcnt);
 };
 
 struct interface_swim_t
 {
-	RESULT (*init)(uint8_t index);
-	RESULT (*fini)(uint8_t index);
-	RESULT (*config)(uint8_t index, uint8_t mHz, uint8_t cnt0, uint8_t cnt1);
-	RESULT (*srst)(uint8_t index);
-	RESULT (*wotf)(uint8_t index, uint8_t *data, uint16_t bytelen,
-					uint32_t addr);
-	RESULT (*rotf)(uint8_t index, uint8_t *data, uint16_t bytelen,
-					uint32_t addr);
-	RESULT (*sync)(uint8_t index, uint8_t mHz);
-	RESULT (*enable)(uint8_t index);
+	vsf_err_t (*init)(uint8_t index);
+	vsf_err_t (*fini)(uint8_t index);
+	vsf_err_t (*config)(uint8_t index, uint8_t mHz, uint8_t cnt0, uint8_t cnt1);
+	vsf_err_t (*srst)(uint8_t index);
+	vsf_err_t (*wotf)(uint8_t index, uint8_t *data, uint16_t bytelen,
+						uint32_t addr);
+	vsf_err_t (*rotf)(uint8_t index, uint8_t *data, uint16_t bytelen,
+						uint32_t addr);
+	vsf_err_t (*sync)(uint8_t index, uint8_t mHz);
+	vsf_err_t (*enable)(uint8_t index);
 };
 
 struct interface_bdm_t
 {
-	RESULT (*init)(uint8_t index);
-	RESULT (*fini)(uint8_t index);
-	RESULT (*sync)(uint8_t index, uint16_t *khz);
-	RESULT (*transact)(uint8_t index, uint8_t *out, uint8_t outlen,
-						uint8_t *in, uint8_t inlen, uint8_t delay,
-						uint8_t ack);
+	vsf_err_t (*init)(uint8_t index);
+	vsf_err_t (*fini)(uint8_t index);
+	vsf_err_t (*sync)(uint8_t index, uint16_t *khz);
+	vsf_err_t (*transact)(uint8_t index, uint8_t *out, uint8_t outlen,
+							uint8_t *in, uint8_t inlen, uint8_t delay,
+							uint8_t ack);
 };
 
 struct interface_dusi_t
 {
-	RESULT (*init)(uint8_t index);
-	RESULT (*fini)(uint8_t index);
-	RESULT (*config)(uint8_t index, uint32_t kHz, uint8_t mode);
-	RESULT (*io)(uint8_t index, uint8_t *mo, uint8_t *mi, uint8_t *so,
-				 uint8_t *si, uint32_t bitlen);
+	vsf_err_t (*init)(uint8_t index);
+	vsf_err_t (*fini)(uint8_t index);
+	vsf_err_t (*config)(uint8_t index, uint32_t kHz, uint8_t mode);
+	vsf_err_t (*io)(uint8_t index, uint8_t *mo, uint8_t *mi, uint8_t *so,
+					 uint8_t *si, uint32_t bitlen);
 };
 
 struct interface_microwire_t
 {
-	RESULT (*init)(uint8_t index);
-	RESULT (*fini)(uint8_t index);
-	RESULT (*config)(uint8_t index, uint16_t kHz, uint8_t sel_polarity);
-	RESULT (*transport)(uint8_t index,
-						uint32_t opcode, uint8_t opcode_bitlen,
-						uint32_t addr, uint8_t addr_bitlen,
-						uint32_t data, uint8_t data_bitlen,
-						uint8_t *reply, uint8_t reply_bitlen);
-	RESULT (*poll)(uint8_t index, uint16_t interval_us, uint16_t retry_cnt);
+	vsf_err_t (*init)(uint8_t index);
+	vsf_err_t (*fini)(uint8_t index);
+	vsf_err_t (*config)(uint8_t index, uint16_t kHz, uint8_t sel_polarity);
+	vsf_err_t (*transport)(uint8_t index,
+							uint32_t opcode, uint8_t opcode_bitlen,
+							uint32_t addr, uint8_t addr_bitlen,
+							uint32_t data, uint8_t data_bitlen,
+							uint8_t *reply, uint8_t reply_bitlen);
+	vsf_err_t (*poll)(uint8_t index, uint16_t interval_us, uint16_t retry_cnt);
 };
 
 struct interface_pwm_t
 {
-	RESULT (*init)(uint8_t index);
-	RESULT (*fini)(uint8_t index);
-	RESULT (*config)(uint8_t index, uint16_t kHz, uint8_t mode);
-	RESULT (*out)(uint8_t index, uint16_t count, uint16_t *rate);
-	RESULT (*in)(uint8_t index, uint16_t count, uint16_t *rate);
+	vsf_err_t (*init)(uint8_t index);
+	vsf_err_t (*fini)(uint8_t index);
+	vsf_err_t (*config)(uint8_t index, uint16_t kHz, uint8_t mode);
+	vsf_err_t (*out)(uint8_t index, uint16_t count, uint16_t *rate);
+	vsf_err_t (*in)(uint8_t index, uint16_t count, uint16_t *rate);
 };
 
 struct interface_target_voltage_t
 {
-	RESULT (*get)(uint8_t index, uint16_t *voltage);
-	RESULT (*set)(uint8_t index, uint16_t voltage);
+	vsf_err_t (*get)(uint8_t index, uint16_t *voltage);
+	vsf_err_t (*set)(uint8_t index, uint16_t voltage);
 };
 
 enum poll_check_type_t
@@ -343,13 +346,13 @@ enum poll_check_type_t
 };
 struct interface_poll_t
 {
-	RESULT (*start)(uint16_t retry, uint16_t interval_us);
-	RESULT (*end)(void);
-	RESULT (*checkok)(enum poll_check_type_t type, uint16_t offset,
-						uint8_t size, uint32_t mask, uint32_t value);
-	RESULT (*checkfail)(enum poll_check_type_t type, uint16_t offset,
-						uint8_t size, uint32_t mask, uint32_t value);
-	RESULT (*verifybuff)(uint16_t offset, uint16_t size, uint8_t *buff);
+	vsf_err_t (*start)(uint16_t retry, uint16_t interval_us);
+	vsf_err_t (*end)(void);
+	vsf_err_t (*checkok)(enum poll_check_type_t type, uint16_t offset,
+							uint8_t size, uint32_t mask, uint32_t value);
+	vsf_err_t (*checkfail)(enum poll_check_type_t type, uint16_t offset,
+							uint8_t size, uint32_t mask, uint32_t value);
+	vsf_err_t (*verifybuff)(uint16_t offset, uint16_t size, uint8_t *buff);
 };
 
 struct interfaces_info_t
@@ -363,8 +366,8 @@ struct interfaces_info_t
 	const struct program_mode_t *mode;
 	
 	// init and fini
-	RESULT (*init)(void *p);
-	RESULT (*fini)(void);
+	vsf_err_t (*init)(void *p);
+	vsf_err_t (*fini)(void);
 	
 	uint64_t support_mask;
 	struct interface_delay_t delay;
@@ -389,7 +392,7 @@ struct interfaces_info_t
 	struct interface_bdm_t bdm;
 	struct interface_dusi_t dusi;
 	struct interface_poll_t poll;
-	RESULT (*peripheral_commit)(void);
+	vsf_err_t (*peripheral_commit)(void);
 };
 
 extern struct interfaces_info_t *cur_interface;
@@ -398,9 +401,9 @@ extern struct interfaces_info_t *interfaces_info[];
 
 void interface_print_list(void);
 void interface_print_help(void);
-RESULT interface_init(const char *ifs);
-RESULT virtual_interface_init(const char *vifs, const char mode);
-RESULT interface_assert(struct interfaces_info_t **ifs);
+vsf_err_t interface_init(const char *ifs);
+vsf_err_t virtual_interface_init(const char *vifs, const char mode);
+vsf_err_t interface_assert(struct interfaces_info_t **ifs);
 
 #endif	// __INTERFACES_H_INCLUDED__
 

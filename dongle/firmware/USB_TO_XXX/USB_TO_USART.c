@@ -41,13 +41,13 @@ void USB_TO_USART_ProcessCmd(uint8_t *dat, uint16_t len)
 		switch(command)
 		{
 		case USB_TO_XXX_INIT:
-			if (ERROR_OK == app_interfaces.usart.init(device_idx))
+			if (app_interfaces.usart.init(device_idx))
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
 			else
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
 			break;
 		case USB_TO_XXX_CONFIG:
@@ -56,53 +56,57 @@ void USB_TO_USART_ProcessCmd(uint8_t *dat, uint16_t len)
 			paritybit = dat[index + 5];
 			stopbit = dat[index + 6];
 			
-			if (ERROR_OK == app_interfaces.usart.config(device_idx, baudrate, 
+			if (app_interfaces.usart.config(device_idx, baudrate, 
 								datalength, paritybit, stopbit, 0))
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
 			else
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
 			break;
 		case USB_TO_XXX_FINI:
-			if (ERROR_OK == app_interfaces.usart.fini(device_idx))
+			if (app_interfaces.usart.fini(device_idx))
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
 			else
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
 			break;
 		case USB_TO_XXX_IN:
 			data_len = GET_LE_U16(&dat[index]);
 			
-			if (ERROR_OK == app_interfaces.usart.receive(device_idx, &buffer_reply[rep_len + 1], data_len))
+			if (app_interfaces.usart.receive(device_idx, &buffer_reply[rep_len + 1], data_len))
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_OK;
-				rep_len += data_len;
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
 			else
 			{
-				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+				rep_len += data_len;
 			}
 			break;
 		case USB_TO_XXX_OUT:
 			data_len = GET_LE_U16(&dat[index]);
 			
-			if (ERROR_OK == app_interfaces.usart.send(device_idx, &dat[index + 2], data_len))
-			{
-				buffer_reply[rep_len++] = USB_TO_XXX_OK;
-			}
-			else
+			if (app_interfaces.usart.send(device_idx, &dat[index + 2], data_len))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
+			else
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+			}
 			break;
 		case USB_TO_XXX_STATUS:
-			if (ERROR_OK == app_interfaces.usart.status(device_idx, &status))
+			if (app_interfaces.usart.status(device_idx, &status))
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+			}
+			else
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 				
@@ -110,10 +114,6 @@ void USB_TO_USART_ProcessCmd(uint8_t *dat, uint16_t len)
 				SET_LE_U32(&buffer_reply[rep_len +  4], status.tx_buff_size);
 				SET_LE_U32(&buffer_reply[rep_len +  8], status.rx_buff_avail);
 				SET_LE_U32(&buffer_reply[rep_len + 12], status.rx_buff_size);
-			}
-			else
-			{
-				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
 			rep_len += 16;
 			break;

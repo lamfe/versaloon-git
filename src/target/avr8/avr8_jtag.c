@@ -265,7 +265,7 @@ WRITE_TARGET_HANDLER(avr8jtag)
 	uint16_t dr;
 	uint32_t i;
 	uint32_t ee_page_size;
-	RESULT ret = ERROR_OK;
+	vsf_err_t err = VSFERR_NONE;
 	
 	switch (area)
 	{
@@ -291,9 +291,9 @@ WRITE_TARGET_HANDLER(avr8jtag)
 		AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
 		AVR_JTAG_PROG_WriteFlashPage();
 		AVR_JTAG_WaitComplete(AVR_JTAG_PROG_WriteFlashPageComplete_CMD);
-		if (ERROR_OK != jtag_commit())
+		if (jtag_commit())
 		{
-			ret = ERRCODE_FAILURE_OPERATION;
+			err = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
 		break;
@@ -321,9 +321,9 @@ WRITE_TARGET_HANDLER(avr8jtag)
 			addr += ee_page_size;
 		}
 		
-		if (ERROR_OK != jtag_commit())
+		if (jtag_commit())
 		{
-			ret = ERRCODE_FAILURE_OPERATION;
+			err = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
 		break;
@@ -353,16 +353,16 @@ WRITE_TARGET_HANDLER(avr8jtag)
 		}
 		if (param->chip_areas[FUSE_IDX].size > 0)
 		{
-			if (ERROR_OK != jtag_commit())
+			if (jtag_commit())
 			{
-				ret = ERRCODE_FAILURE_OPERATION;
+				err = ERRCODE_FAILURE_OPERATION;
 				break;
 			}
 		}
 		else
 		{
 			LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, "fuse", param->chip_name);
-			ret = ERRCODE_NOT_SUPPORT;
+			err = ERRCODE_NOT_SUPPORT;
 			break;
 		}
 		break;
@@ -374,24 +374,24 @@ WRITE_TARGET_HANDLER(avr8jtag)
 			AVR_JTAG_PROG_LoadDataByte(buff[0]);
 			AVR_JTAG_PROG_WriteLockbit();
 			AVR_JTAG_WaitComplete(AVR_JTAG_PROG_WriteLockbitComplete_CMD);
-			if (ERROR_OK != jtag_commit())
+			if (jtag_commit())
 			{
-				ret = ERRCODE_FAILURE_OPERATION;
+				err = ERRCODE_FAILURE_OPERATION;
 				break;
 			}
 		}
 		else
 		{
 			LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, "locks", param->chip_name);
-			ret = ERRCODE_NOT_SUPPORT;
+			err = ERRCODE_NOT_SUPPORT;
 			break;
 		}
 		break;
 	default:
-		ret = ERROR_FAIL;
+		err = VSFERR_NOT_SUPPORT;
 		break;
 	}
-	return ret;
+	return err;
 }
 
 READ_TARGET_HANDLER(avr8jtag)
@@ -402,7 +402,7 @@ READ_TARGET_HANDLER(avr8jtag)
 	uint32_t i, j, k;
 	uint32_t ee_page_size;
 	uint8_t page_buf[256 + 1];
-	RESULT ret = ERROR_OK;
+	vsf_err_t err = VSFERR_NONE;
 	
 	switch (area)
 	{
@@ -416,9 +416,9 @@ READ_TARGET_HANDLER(avr8jtag)
 		AVR_JTAG_PROG_ReadSignByte(buff[1]);
 		AVR_JTAG_PROG_LoadAddrByte(0);
 		AVR_JTAG_PROG_ReadSignByte(buff[2]);
-		if (ERROR_OK != jtag_commit())
+		if (jtag_commit())
 		{
-			ret = ERRCODE_FAILURE_OPERATION;
+			err = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
 		buff[3] = 0;
@@ -445,9 +445,9 @@ READ_TARGET_HANDLER(avr8jtag)
 			}
 		}
 		
-		if (ERROR_OK != jtag_commit())
+		if (jtag_commit())
 		{
-			ret = ERRCODE_FAILURE_OPERATION;
+			err = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
 		memcpy(buff, page_buf, size);
@@ -472,9 +472,9 @@ READ_TARGET_HANDLER(avr8jtag)
 			j += ee_page_size;
 		}
 		
-		if (ERROR_OK != jtag_commit())
+		if (jtag_commit())
 		{
-			ret = ERRCODE_FAILURE_OPERATION;
+			err = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
 		memcpy(buff, page_buf, size);
@@ -486,7 +486,7 @@ READ_TARGET_HANDLER(avr8jtag)
 		{
 			LOG_ERROR(ERRMSG_INVALID_VALUE, param->chip_areas[FUSE_IDX].size,
 						"avr8 fuse size");
-			ret = ERRCODE_INVALID;
+			err = ERRCODE_INVALID;
 			break;
 		}
 		if (param->chip_areas[FUSE_IDX].size > 0)
@@ -498,7 +498,7 @@ READ_TARGET_HANDLER(avr8jtag)
 		else
 		{
 			LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, "fuse", param->chip_name);
-			ret = ERRCODE_NOT_SUPPORT;
+			err = ERRCODE_NOT_SUPPORT;
 			break;
 		}
 		// high bits
@@ -512,9 +512,9 @@ READ_TARGET_HANDLER(avr8jtag)
 			AVR_JTAG_PROG_ReadExtFuseByte(page_buf[2]);
 		}
 		
-		if (ERROR_OK != jtag_commit())
+		if (jtag_commit())
 		{
-			ret = ERRCODE_FAILURE_OPERATION;
+			err = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
 		memcpy(buff, page_buf, param->chip_areas[FUSE_IDX].size);
@@ -525,9 +525,9 @@ READ_TARGET_HANDLER(avr8jtag)
 			AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
 			AVR_JTAG_PROG_EnterFuseLockbitRead();
 			AVR_JTAG_PROG_ReadLockbit(page_buf[0]);
-			if (ERROR_OK != jtag_commit())
+			if (jtag_commit())
 			{
-				ret = ERRCODE_FAILURE_OPERATION;
+				err = ERRCODE_FAILURE_OPERATION;
 				break;
 			}
 			buff[0] = page_buf[0];
@@ -535,7 +535,7 @@ READ_TARGET_HANDLER(avr8jtag)
 		else
 		{
 			LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, "locks", param->chip_name);
-			ret = ERRCODE_NOT_SUPPORT;
+			err = ERRCODE_NOT_SUPPORT;
 			break;
 		}
 		break;
@@ -545,7 +545,7 @@ READ_TARGET_HANDLER(avr8jtag)
 		{
 			LOG_ERROR(ERRMSG_INVALID_VALUE,
 				param->chip_areas[CALIBRATION_IDX].size, "avr8 cali size");
-			ret = ERRCODE_INVALID;
+			err = ERRCODE_INVALID;
 			break;
 		}
 		if (param->chip_areas[CALIBRATION_IDX].size > 0)
@@ -558,7 +558,7 @@ READ_TARGET_HANDLER(avr8jtag)
 		else
 		{
 			LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, "calibration", param->chip_name);
-			ret = ERRCODE_NOT_SUPPORT;
+			err = ERRCODE_NOT_SUPPORT;
 			break;
 		}
 		if (param->chip_areas[CALIBRATION_IDX].size > 1)
@@ -577,17 +577,17 @@ READ_TARGET_HANDLER(avr8jtag)
 			AVR_JTAG_PROG_ReadCaliByte(page_buf[3]);
 		}
 		
-		if (ERROR_OK != jtag_commit())
+		if (jtag_commit())
 		{
-			ret = ERRCODE_FAILURE_OPERATION;
+			err = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
 		memcpy(buff, page_buf, param->chip_areas[CALIBRATION_IDX].size);
 		break;
 	default:
-		ret = ERROR_FAIL;
+		err = VSFERR_NOT_SUPPORT;
 		break;
 	}
-	return ret;
+	return err;
 }
 

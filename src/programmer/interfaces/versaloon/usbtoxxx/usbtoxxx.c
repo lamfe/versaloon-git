@@ -89,7 +89,7 @@ static void usbtoxxx_pop_context(struct usbtoxxx_context_t *c)
 	versaloon_pending_idx = c->versaloon_pending_idx;
 }
 
-RESULT usbtoxxx_validate_current_command_type(void)
+vsf_err_t usbtoxxx_validate_current_command_type(void)
 {
 	if (type_pre > 0)
 	{
@@ -118,25 +118,25 @@ RESULT usbtoxxx_validate_current_command_type(void)
 	collect_index = 0;
 	collect_cmd = 0;
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 
 
-RESULT usbtoxxx_execute_command(void)
+vsf_err_t usbtoxxx_execute_command(void)
 {
 	uint16_t i;
 	uint16_t inlen;
-	RESULT result = ERROR_OK;
+	vsf_err_t err = VSFERR_NONE;
 	
 	if (poll_nesting)
 	{
 		LOG_BUG(ERRMSG_INVALID_USAGE, "USB_TO_POLL");
 		versaloon_free_want_pos();
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
-	if (ERROR_OK != usbtoxxx_validate_current_command_type())
+	if (usbtoxxx_validate_current_command_type())
 	{
 		LOG_BUG(ERRMSG_FAILURE_OPERATION, "validate previous commands");
 		versaloon_free_want_pos();
@@ -145,16 +145,16 @@ RESULT usbtoxxx_execute_command(void)
 	if (3 == usbtoxxx_buffer_index)
 	{
 		versaloon_free_want_pos();
-		return ERROR_OK;
+		return VSFERR_NONE;
 	}
 	
 	versaloon_buf[0] = USB_TO_ALL;
 	SET_LE_U16(&versaloon_buf[1], usbtoxxx_buffer_index);
 	
-	if (ERROR_OK != versaloon_send_command(usbtoxxx_buffer_index, &inlen))
+	if (versaloon_send_command(usbtoxxx_buffer_index, &inlen))
 	{
 		versaloon_free_want_pos();
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	// process return data
@@ -173,7 +173,7 @@ RESULT usbtoxxx_execute_command(void)
 				LOG_ERROR(ERRMSG_NOT_SUPPORT_BY,
 							usbtoxxx_get_type_name(versaloon_pending[i].type),
 							"current dongle");
-				result = ERROR_FAIL;
+				err = VSFERR_FAIL;
 				break;
 			}
 			else if (USB_TO_XXX_OK != versaloon_buf[usbtoxxx_buffer_index])
@@ -182,7 +182,7 @@ RESULT usbtoxxx_execute_command(void)
 					usbtoxxx_get_type_name(versaloon_pending[i].type),
 					versaloon_pending[i].cmd,
 					versaloon_buf[usbtoxxx_buffer_index]);
-				result = ERROR_FAIL;
+				err = VSFERR_FAIL;
 				break;
 			}
 			usbtoxxx_buffer_index++;
@@ -241,7 +241,7 @@ RESULT usbtoxxx_execute_command(void)
 			LOG_BUG("%s command 0x%02x process error",
 					usbtoxxx_get_type_name(versaloon_pending[i].type),
 					versaloon_pending[i].cmd);
-			result = ERROR_FAIL;
+			err = VSFERR_FAIL;
 			break;
 		}
 	}
@@ -250,7 +250,7 @@ RESULT usbtoxxx_execute_command(void)
 	if (inlen != usbtoxxx_buffer_index)
 	{
 		LOG_ERROR(ERRMSG_INVALID_TARGET, "length of return data");
-		result = ERROR_FAIL;
+		err = VSFERR_FAIL;
 	}
 	
 	if (versaloon_pending_idx > 0)
@@ -267,30 +267,30 @@ RESULT usbtoxxx_execute_command(void)
 	collect_cmd = 0;
 	collect_index = 0;
 	versaloon_free_want_pos();
-	return result;
+	return err;
 }
 
-RESULT usbtoxxx_init(void)
+vsf_err_t usbtoxxx_init(void)
 {
 	versaloon_pending_idx = 0;
 	
-	if ((ERROR_OK != usbtoinfo_get_abilities(usbtoxxx_abilities)) ||
-		(ERROR_OK != usbtoxxx_execute_command()))
+	if (usbtoinfo_get_abilities(usbtoxxx_abilities) ||
+		usbtoxxx_execute_command())
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	LOG_INFO("USB_TO_XXX abilities: 0x%08X:0x%08X:0x%08X",
 		GET_LE_U32(&usbtoxxx_abilities[0]),
 		GET_LE_U32(&usbtoxxx_abilities[4]),
 		GET_LE_U32(&usbtoxxx_abilities[8]));
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT usbtoxxx_fini(void)
+vsf_err_t usbtoxxx_fini(void)
 {
 	usbtoxxx_buffer = NULL;
 	type_pre = 0;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 bool usbtoxxx_interface_supported(uint8_t cmd)
@@ -307,7 +307,7 @@ bool usbtoxxx_interface_supported(uint8_t cmd)
 
 
 
-RESULT usbtoxxx_ensure_buffer_size(uint16_t cmdlen)
+vsf_err_t usbtoxxx_ensure_buffer_size(uint16_t cmdlen)
 {
 	// check free space, commit if not enough
 	if (((usbtoxxx_buffer_index + usbtoxxx_current_cmd_index + cmdlen)
@@ -323,7 +323,7 @@ RESULT usbtoxxx_ensure_buffer_size(uint16_t cmdlen)
 			if (0 == poll_context.type_pre)
 			{
 				LOG_BUG("USB_TO_POLL toooooo long");
-				return ERROR_OK;
+				return VSFERR_NONE;
 			}
 			
 			usbtoxxx_save_context(&context_tmp);
@@ -332,9 +332,9 @@ RESULT usbtoxxx_ensure_buffer_size(uint16_t cmdlen)
 			poll_nesting = 0;
 		}
 		
-		if (usbtoxxx_execute_command() != ERROR_OK)
+		if (usbtoxxx_execute_command())
 		{
-			return ERROR_FAIL;
+			return VSFERR_FAIL;
 		}
 		
 		if (poll_nesting_tmp)
@@ -359,10 +359,10 @@ RESULT usbtoxxx_ensure_buffer_size(uint16_t cmdlen)
 			poll_nesting = poll_nesting_tmp;
 		}
 	}
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT usbtoxxx_add_command(uint8_t type, uint8_t cmd, uint8_t *cmdbuf,
+vsf_err_t usbtoxxx_add_command(uint8_t type, uint8_t cmd, uint8_t *cmdbuf,
 							uint16_t cmdlen, uint16_t retlen, uint8_t *wantbuf,
 							uint16_t wantpos, uint16_t wantlen, uint8_t collect)
 {
@@ -370,14 +370,14 @@ RESULT usbtoxxx_add_command(uint8_t type, uint8_t cmd, uint8_t *cmdbuf,
 	
 	// 3 more bytes by usbtoxxx_validate_current_command_type
 	// 3 more bytes when ((0 == collect_index) || (collect_cmd != cmd))
-	if (ERROR_OK != usbtoxxx_ensure_buffer_size(cmdlen + 6))
+	if (usbtoxxx_ensure_buffer_size(cmdlen + 6))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	if ((type_pre != type) || (NULL == usbtoxxx_buffer))
 	{
-		if (ERROR_OK != usbtoxxx_validate_current_command_type())
+		if (usbtoxxx_validate_current_command_type())
 		{
 			LOG_BUG(ERRMSG_FAILURE_OPERATION, "validate previous commands");
 			return ERRCODE_FAILURE_OPERATION;
@@ -422,14 +422,14 @@ RESULT usbtoxxx_add_command(uint8_t type, uint8_t cmd, uint8_t *cmdbuf,
 
 
 
-RESULT usbtoinfo_get_abilities(uint8_t abilities[USB_TO_XXX_ABILITIES_LEN])
+vsf_err_t usbtoinfo_get_abilities(uint8_t abilities[USB_TO_XXX_ABILITIES_LEN])
 {
-	if (ERROR_OK != usbtoxxx_ensure_buffer_size(3))
+	if (usbtoxxx_ensure_buffer_size(3))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
-	if (ERROR_OK != usbtoxxx_validate_current_command_type())
+	if (usbtoxxx_validate_current_command_type())
 	{
 		LOG_BUG(ERRMSG_FAILURE_OPERATION, "validate previous commands");
 		return ERRCODE_FAILURE_OPERATION;
@@ -443,18 +443,18 @@ RESULT usbtoinfo_get_abilities(uint8_t abilities[USB_TO_XXX_ABILITIES_LEN])
 
 
 
-RESULT usbtopoll_start(uint16_t retry_cnt, uint16_t interval_us)
+vsf_err_t usbtopoll_start(uint16_t retry_cnt, uint16_t interval_us)
 {
-	if (ERROR_OK != usbtoxxx_ensure_buffer_size(3 + 5))
+	if (usbtoxxx_ensure_buffer_size(3 + 5))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	if (!poll_nesting)
 	{
 		usbtoxxx_save_context(&poll_context);
 	}
 	
-	if (ERROR_OK != usbtoxxx_validate_current_command_type())
+	if (usbtoxxx_validate_current_command_type())
 	{
 		LOG_BUG(ERRMSG_FAILURE_OPERATION, "validate previous commands");
 		return ERRCODE_FAILURE_OPERATION;
@@ -471,19 +471,19 @@ RESULT usbtopoll_start(uint16_t retry_cnt, uint16_t interval_us)
 	return versaloon_add_pending(USB_TO_POLL, 0, 0, 0, 0, NULL, 0);
 }
 
-RESULT usbtopoll_end(void)
+vsf_err_t usbtopoll_end(void)
 {
 	if (!poll_nesting)
 	{
 		LOG_BUG(ERRMSG_FAILURE_OPERATION, "check poll nesting");
 		return ERRCODE_FAILURE_OPERATION;
 	}
-	if (ERROR_OK != usbtoxxx_ensure_buffer_size(3 + 1))
+	if (usbtoxxx_ensure_buffer_size(3 + 1))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
-	if (ERROR_OK != usbtoxxx_validate_current_command_type())
+	if (usbtoxxx_validate_current_command_type())
 	{
 		LOG_BUG(ERRMSG_FAILURE_OPERATION, "validate previous commands");
 		return ERRCODE_FAILURE_OPERATION;
@@ -497,7 +497,7 @@ RESULT usbtopoll_end(void)
 	return versaloon_add_pending(USB_TO_POLL, 0, 0, 0, 0, NULL, 0);
 }
 
-RESULT usbtopoll_checkok(uint8_t equ, uint16_t offset, uint8_t size,
+vsf_err_t usbtopoll_checkok(uint8_t equ, uint16_t offset, uint8_t size,
 							uint32_t mask, uint32_t value)
 {
 	uint8_t i;
@@ -512,12 +512,12 @@ RESULT usbtopoll_checkok(uint8_t equ, uint16_t offset, uint8_t size,
 		LOG_BUG(ERRMSG_FAILURE_OPERATION, "check poll nesting");
 		return ERRCODE_FAILURE_OPERATION;
 	}
-	if (ERROR_OK != usbtoxxx_ensure_buffer_size(3 + 4 + 2 * size))
+	if (usbtoxxx_ensure_buffer_size(3 + 4 + 2 * size))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
-	if (ERROR_OK != usbtoxxx_validate_current_command_type())
+	if (usbtoxxx_validate_current_command_type())
 	{
 		LOG_BUG(ERRMSG_FAILURE_OPERATION, "validate previous commands");
 		return ERRCODE_FAILURE_OPERATION;
@@ -539,10 +539,10 @@ RESULT usbtopoll_checkok(uint8_t equ, uint16_t offset, uint8_t size,
 		usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = (value >> (8 * i)) & 0xFF;
 	}
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT usbtopoll_checkfail(uint8_t equ, uint16_t offset, uint8_t size,
+vsf_err_t usbtopoll_checkfail(uint8_t equ, uint16_t offset, uint8_t size,
 							uint32_t mask, uint32_t value)
 {
 	uint8_t i;
@@ -557,12 +557,12 @@ RESULT usbtopoll_checkfail(uint8_t equ, uint16_t offset, uint8_t size,
 		LOG_BUG(ERRMSG_FAILURE_OPERATION, "check poll nesting");
 		return ERRCODE_FAILURE_OPERATION;
 	}
-	if (ERROR_OK != usbtoxxx_ensure_buffer_size(3 + 4 + 2 * size))
+	if (usbtoxxx_ensure_buffer_size(3 + 4 + 2 * size))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
-	if (ERROR_OK != usbtoxxx_validate_current_command_type())
+	if (usbtoxxx_validate_current_command_type())
 	{
 		LOG_BUG(ERRMSG_FAILURE_OPERATION, "validate previous commands");
 		return ERRCODE_FAILURE_OPERATION;
@@ -584,22 +584,22 @@ RESULT usbtopoll_checkfail(uint8_t equ, uint16_t offset, uint8_t size,
 		usbtoxxx_buffer[usbtoxxx_current_cmd_index++] = (value >> (8 * i)) & 0xFF;
 	}
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT usbtopoll_verifybuff(uint16_t offset, uint16_t size, uint8_t *buff)
+vsf_err_t usbtopoll_verifybuff(uint16_t offset, uint16_t size, uint8_t *buff)
 {
 	if (!poll_nesting)
 	{
 		LOG_BUG(ERRMSG_FAILURE_OPERATION, "check poll nesting");
 		return ERRCODE_FAILURE_OPERATION;
 	}
-	if (ERROR_OK != usbtoxxx_ensure_buffer_size(3 + 5 + size))
+	if (usbtoxxx_ensure_buffer_size(3 + 5 + size))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
-	if (ERROR_OK != usbtoxxx_validate_current_command_type())
+	if (usbtoxxx_validate_current_command_type())
 	{
 		LOG_BUG(ERRMSG_FAILURE_OPERATION, "validate previous commands");
 		return ERRCODE_FAILURE_OPERATION;
@@ -615,20 +615,20 @@ RESULT usbtopoll_verifybuff(uint16_t offset, uint16_t size, uint8_t *buff)
 	memcpy(&usbtoxxx_buffer[usbtoxxx_current_cmd_index], buff, size);
 	usbtoxxx_current_cmd_index += size;
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 
 
 
-RESULT usbtodelay_delay(uint16_t dly)
+vsf_err_t usbtodelay_delay(uint16_t dly)
 {
-	if (ERROR_OK != usbtoxxx_ensure_buffer_size(3 + 2))
+	if (usbtoxxx_ensure_buffer_size(3 + 2))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
-	if (ERROR_OK != usbtoxxx_validate_current_command_type())
+	if (usbtoxxx_validate_current_command_type())
 	{
 		LOG_BUG(ERRMSG_FAILURE_OPERATION, "validate previous commands");
 		return ERRCODE_FAILURE_OPERATION;
@@ -641,12 +641,12 @@ RESULT usbtodelay_delay(uint16_t dly)
 	return versaloon_add_pending(USB_TO_DELAY, 0, 0, 0, 0, NULL, 0);
 }
 
-RESULT usbtodelay_delayms(uint16_t ms)
+vsf_err_t usbtodelay_delayms(uint16_t ms)
 {
 	return usbtodelay_delay(ms | 0x8000);
 }
 
-RESULT usbtodelay_delayus(uint16_t us)
+vsf_err_t usbtodelay_delayus(uint16_t us)
 {
 	return usbtodelay_delay(us & 0x7FFF);
 }

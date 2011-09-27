@@ -88,7 +88,7 @@
 // NCE4_1     : PG10
 // NCE4_2     : PG11
 
-RESULT stm32_ebi_init(uint8_t index)
+vsf_err_t stm32_ebi_init(uint8_t index)
 {
 	// common signals
 	// NOE, NWE, DATA, ADDRESS
@@ -181,61 +181,61 @@ RESULT stm32_ebi_init(uint8_t index)
 		#else
 		#error "FSMC00_ADDR_LEN MUST be < 27"
 		#endif
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT stm32_ebi_fini(uint8_t index)
+vsf_err_t stm32_ebi_fini(uint8_t index)
 {
 	switch (index & 0x0F)
 	{
 	case 0:
 		RCC->AHBENR &= ~STM32_RCC_AHBENR_FSMC;
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT stm32_ebi_config_sram(uint8_t index, struct ebi_sram_info_t *info)
+vsf_err_t stm32_ebi_config_sram(uint8_t index, struct ebi_sram_info_t *info)
 {
 #if __VSF_DEBUG__
 	if (NULL == info)
 	{
-		return ERROR_FAIL;
+		return VSFERR_INVALID_PARAMETER;
 	}
 #endif
 	
 	switch (index & 0x0F)
 	{
 	case 0:
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT stm32_ebi_config_psram(uint8_t index, struct ebi_psram_info_t *info)
+vsf_err_t stm32_ebi_config_psram(uint8_t index, struct ebi_psram_info_t *info)
 {
 #if __VSF_DEBUG__
 	if (NULL == info)
 	{
-		return ERROR_FAIL;
+		return VSFERR_INVALID_PARAMETER;
 	}
 #endif
 	
 	switch (index & 0x0F)
 	{
 	case 0:
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT stm32_ebi_config_nor(uint8_t index, struct ebi_nor_info_t *info)
+vsf_err_t stm32_ebi_config_nor(uint8_t index, struct ebi_nor_info_t *info)
 {
 	uint8_t target_index = (index >> 6) & 0x0F;
 	uint32_t bcr = STM32_FSMC_BCR_MTYP_NOR | STM32_FSMC_BCR_WREN | 
@@ -259,12 +259,12 @@ RESULT stm32_ebi_config_nor(uint8_t index, struct ebi_nor_info_t *info)
 		(info->param.data_setup_cycle_w < 2) || 
 		(info->param.data_setup_cycle_w > 256))
 	{
-		return ERROR_FAIL;
+		return VSFERR_INVALID_RANGE;
 	}
 #endif
-	if (ERROR_OK != stm32_interface_get_info(&cpu_info))
+	if (stm32_interface_get_info(&cpu_info))
 	{
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	switch (index & 0x0F)
@@ -289,7 +289,7 @@ RESULT stm32_ebi_config_nor(uint8_t index, struct ebi_nor_info_t *info)
 							(uint32_t)0x0B << ((12 - 8) * 4);
 			break;
 		default:
-			return ERROR_FAIL;
+			return VSFERR_NOT_SUPPORT;
 		}
 		
 		if (info->param.timing.clock_hz_r)
@@ -326,7 +326,7 @@ RESULT stm32_ebi_config_nor(uint8_t index, struct ebi_nor_info_t *info)
 				bcr |= STM32_FSMC_BCR_WAITEN;
 				break;
 			default:
-				return ERROR_FAIL;
+				return VSFERR_INVALID_PARAMETER;
 			}
 		}
 		
@@ -340,7 +340,7 @@ RESULT stm32_ebi_config_nor(uint8_t index, struct ebi_nor_info_t *info)
 		}
 		else
 		{
-			return ERROR_FAIL;
+			return VSFERR_INVALID_PARAMETER;
 		}
 		
 		if (info->param.timing.clock_hz_r)
@@ -348,7 +348,7 @@ RESULT stm32_ebi_config_nor(uint8_t index, struct ebi_nor_info_t *info)
 			clkdiv = cpu_info->ahb_freq_hz / info->param.timing.clock_hz_r;
 			if ((clkdiv < 2) || (clkdiv > 16))
 			{
-				return ERROR_FAIL;
+				return VSFERR_INVALID_RANGE;
 			}
 			clkdiv--;
 		}
@@ -391,13 +391,13 @@ RESULT stm32_ebi_config_nor(uint8_t index, struct ebi_nor_info_t *info)
 		FSMC_Bank1->BTCR[(target_index << 1) + 1] = btr;
 		FSMC_Bank1E->BWTR[(target_index << 1) + 0] = bwtr;
 		FSMC_Bank1->BTCR[(target_index << 1) + 0] = bcr;
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT stm32_ebi_config_nand(uint8_t index, struct ebi_nand_info_t *info)
+vsf_err_t stm32_ebi_config_nand(uint8_t index, struct ebi_nand_info_t *info)
 {
 	uint8_t bank_index = (index >> 4) & 0x03;
 	uint32_t pcr = STM32_FSMC_PCR_PTYP_NAND | STM32_FSMC_PCR_PBKEN;
@@ -410,7 +410,7 @@ RESULT stm32_ebi_config_nand(uint8_t index, struct ebi_nand_info_t *info)
 		(info->param.timing.cle_to_re_cycle < 1) || 
 		(info->param.timing.cle_to_re_cycle > 16))
 	{
-		return ERROR_FAIL;
+		return VSFERR_INVALID_PARAMETER;
 	}
 #endif
 	
@@ -432,7 +432,7 @@ RESULT stm32_ebi_config_nand(uint8_t index, struct ebi_nand_info_t *info)
 							(uint32_t)0x0B << ((9 - 8) * 4);
 			break;
 		default:
-			return ERROR_FAIL;
+			return VSFERR_NOT_SUPPORT;
 		}
 		
 		pcr |= (((info->param.timing.ale_to_re_cycle - 1) & 0x0F) << 13) | 
@@ -461,7 +461,7 @@ RESULT stm32_ebi_config_nand(uint8_t index, struct ebi_nand_info_t *info)
 				pcr |= STM32_FSMC_PCR_ECCPS_8192;
 				break;
 			default:
-				return ERROR_FAIL;
+				return VSFERR_INVALID_PARAMETER;
 			}
 		}
 		
@@ -482,7 +482,7 @@ RESULT stm32_ebi_config_nand(uint8_t index, struct ebi_nand_info_t *info)
 		}
 		else
 		{
-			return ERROR_FAIL;
+			return VSFERR_INVALID_PARAMETER;
 		}
 		
 		pmem = ((info->param.timing.setup_cycle - 1) << 0) | 
@@ -507,47 +507,47 @@ RESULT stm32_ebi_config_nand(uint8_t index, struct ebi_nand_info_t *info)
 			FSMC_Bank3->PCR3 = pcr;
 			break;
 		default:
-			return ERROR_FAIL;
+			return VSFERR_NOT_SUPPORT;
 		}
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT stm32_ebi_config_sdram(uint8_t index, struct ebi_sdram_info_t *info)
+vsf_err_t stm32_ebi_config_sdram(uint8_t index, struct ebi_sdram_info_t *info)
 {
 	REFERENCE_PARAMETER(index);
 	REFERENCE_PARAMETER(info);
-	return ERROR_FAIL;
+	return VSFERR_FAIL;
 }
 
-RESULT stm32_ebi_config_ddram(uint8_t index, struct ebi_ddram_info_t *info)
+vsf_err_t stm32_ebi_config_ddram(uint8_t index, struct ebi_ddram_info_t *info)
 {
 	REFERENCE_PARAMETER(index);
 	REFERENCE_PARAMETER(info);
-	return ERROR_FAIL;
+	return VSFERR_FAIL;
 }
 
-RESULT stm32_ebi_config_pccard(uint8_t index, struct ebi_pccard_info_t *info)
+vsf_err_t stm32_ebi_config_pccard(uint8_t index, struct ebi_pccard_info_t *info)
 {
 #if __VSF_DEBUG__
 	if (NULL == info)
 	{
-		return ERROR_FAIL;
+		return VSFERR_INVALID_PARAMETER;
 	}
 #endif
 	
 	switch (index & 0x0F)
 	{
 	case 0:
-		return ERROR_OK;
+		return VSFERR_NONE;
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT stm32_ebi_config(uint8_t index, uint8_t target_index, void *param)
+vsf_err_t stm32_ebi_config(uint8_t index, uint8_t target_index, void *param)
 {
 	uint8_t target_type = target_index & 0xF0;
 	
@@ -564,10 +564,10 @@ RESULT stm32_ebi_config(uint8_t index, uint8_t target_index, void *param)
 			return interfaces->ebi.config_nand(
 				((target_index + 1) & 0x03) << 4, (struct ebi_nand_info_t *)param);
 		default:
-			return ERROR_FAIL;
+			return VSFERR_NOT_SUPPORT;
 		}
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
@@ -657,52 +657,52 @@ void stm32_ebi_write32(uint8_t index, uint32_t address, uint32_t data)
 	REFERENCE_PARAMETER(data);
 }
 
-RESULT stm32_ebi_readp8(uint8_t index, uint32_t address, uint32_t count, 
+vsf_err_t stm32_ebi_readp8(uint8_t index, uint32_t address, uint32_t count, 
 						uint8_t *buff);
-bool stm32_ebi_readp8_isready(uint8_t index);
-RESULT stm32_ebi_writep8(uint8_t index, uint32_t address, uint32_t count, 
+vsf_err_t stm32_ebi_readp8_isready(uint8_t index);
+vsf_err_t stm32_ebi_writep8(uint8_t index, uint32_t address, uint32_t count, 
 							uint8_t *buff);
-bool stm32_ebi_writep8_isready(uint8_t index);
-RESULT stm32_ebi_readp16(uint8_t index, uint32_t address, uint32_t count, 
+vsf_err_t stm32_ebi_writep8_isready(uint8_t index);
+vsf_err_t stm32_ebi_readp16(uint8_t index, uint32_t address, uint32_t count, 
 							uint16_t *buff);
-bool stm32_ebi_readp16_isready(uint8_t index);
-RESULT stm32_ebi_writep16(uint8_t index, uint32_t address, uint32_t count, 
+vsf_err_t stm32_ebi_readp16_isready(uint8_t index);
+vsf_err_t stm32_ebi_writep16(uint8_t index, uint32_t address, uint32_t count, 
 							uint16_t *buff);
-bool stm32_ebi_writep16_isready(uint8_t index);
+vsf_err_t stm32_ebi_writep16_isready(uint8_t index);
 
-RESULT stm32_ebi_readp32(uint8_t index, uint32_t address, uint32_t count, 
+vsf_err_t stm32_ebi_readp32(uint8_t index, uint32_t address, uint32_t count, 
 							uint32_t *buff)
 {
 	REFERENCE_PARAMETER(index);
 	REFERENCE_PARAMETER(address);
 	REFERENCE_PARAMETER(count);
 	REFERENCE_PARAMETER(buff);
-	return ERROR_FAIL;
+	return VSFERR_FAIL;
 }
 
-bool stm32_ebi_readp32_isready(uint8_t index)
+vsf_err_t stm32_ebi_readp32_isready(uint8_t index)
 {
 	REFERENCE_PARAMETER(index);
-	return false;
+	return VSFERR_FAIL;
 }
 
-RESULT stm32_ebi_writep32(uint8_t index, uint32_t address, uint32_t count, 
+vsf_err_t stm32_ebi_writep32(uint8_t index, uint32_t address, uint32_t count, 
 							uint32_t *buff)
 {
 	REFERENCE_PARAMETER(index);
 	REFERENCE_PARAMETER(address);
 	REFERENCE_PARAMETER(count);
 	REFERENCE_PARAMETER(buff);
-	return ERROR_FAIL;
+	return VSFERR_FAIL;
 }
 
-bool stm32_ebi_writep32_isready(uint8_t index)
+vsf_err_t stm32_ebi_writep32_isready(uint8_t index)
 {
 	REFERENCE_PARAMETER(index);
-	return false;
+	return VSFERR_FAIL;
 }
 
-RESULT stm32_ebi_read(uint8_t index, uint8_t target_index, uint32_t address, 
+vsf_err_t stm32_ebi_read(uint8_t index, uint8_t target_index, uint32_t address, 
 						uint8_t data_size, uint8_t *buff, uint32_t count)
 {
 	uint32_t i;
@@ -722,7 +722,7 @@ RESULT stm32_ebi_read(uint8_t index, uint8_t target_index, uint32_t address,
 			address += (1 + (target_index & 0x01)) * 0x10000000;
 			break;
 		default:
-			return ERROR_FAIL;
+			return VSFERR_NOT_SUPPORT;
 		}
 		
 		switch (data_size)
@@ -733,30 +733,30 @@ RESULT stm32_ebi_read(uint8_t index, uint8_t target_index, uint32_t address,
 				buff[i] = *(volatile uint8_t *)address;
 				address += 1;
 			}
-			return ERROR_OK;
+			return VSFERR_NONE;
 		case 2:
 			for (i = 0; i < count; i++)
 			{
 				((uint16_t *)buff)[i] = *(volatile uint16_t *)address;
 				address += 2;
 			}
-			return ERROR_OK;
+			return VSFERR_NONE;
 		case 4:
 			for (i = 0; i < count; i++)
 			{
 				((uint32_t *)buff)[i] = *(volatile uint32_t *)address;
 				address += 4;
 			}
-			return ERROR_OK;
+			return VSFERR_NONE;
 		default:
-			return ERROR_FAIL;
+			return VSFERR_INVALID_PARAMETER;
 		}
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-RESULT stm32_ebi_write(uint8_t index, uint8_t target_index, uint32_t address, 
+vsf_err_t stm32_ebi_write(uint8_t index, uint8_t target_index, uint32_t address, 
 						uint8_t data_size, uint8_t *buff, uint32_t count)
 {
 	uint32_t i;
@@ -776,7 +776,7 @@ RESULT stm32_ebi_write(uint8_t index, uint8_t target_index, uint32_t address,
 			address += (1 + (target_index & 0x01)) * 0x10000000;
 			break;
 		default:
-			return ERROR_FAIL;
+			return VSFERR_NOT_SUPPORT;
 		}
 		
 		switch (data_size)
@@ -787,25 +787,25 @@ RESULT stm32_ebi_write(uint8_t index, uint8_t target_index, uint32_t address,
 				*(volatile uint8_t *)address = buff[i];
 				address += 1;
 			}
-			return ERROR_OK;
+			return VSFERR_NONE;
 		case 2:
 			for (i = 0; i < count; i++)
 			{
 				*(volatile uint16_t *)address = ((uint16_t *)buff)[i];
 				address += 2;
 			}
-			return ERROR_OK;
+			return VSFERR_NONE;
 		case 4:
 			for (i = 0; i < count; i++)
 			{
 				*(volatile uint32_t *)address = ((uint32_t *)buff)[i];
 				address += 4;
 			}
-			return ERROR_OK;
+			return VSFERR_NONE;
 		default:
-			return ERROR_FAIL;
+			return VSFERR_INVALID_PARAMETER;
 		}
 	default:
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }

@@ -184,7 +184,7 @@ struct vsfusbd_MSCBOT_param_t MSCBOT_param =
 	},							// struct vsf_buffer_t page_buffer[2];
 };
 
-RESULT usb_protocol_init()
+vsf_err_t usb_protocol_init()
 {
 	NVIC_InitTypeDef NVIC_InitStructure;
 	
@@ -215,10 +215,10 @@ RESULT usb_protocol_init()
 	LED_USB_INIT();
 	LED_USB_OFF();
 	
-	if (ERROR_OK != mal.init(MAL_IDX_SD_SPI, &sd_dal_info))
+	if (mal.init(MAL_IDX_SD_SPI, &sd_dal_info))
 	{
 		LED_RED_ON();
-		return ERROR_FAIL;
+		return VSFERR_FAIL;
 	}
 	
 	vsfusbd_MSCBOT_set_param(&MSCBOT_param);
@@ -227,7 +227,7 @@ RESULT usb_protocol_init()
 	return vsfusbd_device_init(&usb_device);
 }
 
-RESULT usb_protocol_idle(void)
+vsf_err_t usb_protocol_idle(void)
 {
 	return vsfusbd_device_poll(&usb_device);
 }

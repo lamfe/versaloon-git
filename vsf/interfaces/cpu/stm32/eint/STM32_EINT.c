@@ -23,7 +23,7 @@
 #define STM32_EINT_NUM					16
 static void (*stm32_enit_callback[STM32_EINT_NUM])(void);
 
-RESULT stm32_eint_init(uint8_t index)
+vsf_err_t stm32_eint_init(uint8_t index)
 {
 	uint32_t eint_idx = (index & 0x0F) >> 0;
 	uint32_t port_idx = (index & 0xF0) >> 4;
@@ -31,16 +31,16 @@ RESULT stm32_eint_init(uint8_t index)
 #if __VSF_DEBUG__
 	if (eint_idx >= STM32_EINT_NUM)
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 #endif
 	
 	AFIO->EXTICR[eint_idx >> 2] &= 0x0F << ((eint_idx & 0x03) << 2);
 	AFIO->EXTICR[eint_idx >> 2] |= port_idx << ((eint_idx & 0x03) << 2);
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT stm32_eint_fini(uint8_t index)
+vsf_err_t stm32_eint_fini(uint8_t index)
 {
 	uint8_t eint_idx = index & 0x0F;
 	uint32_t mask = 1 << eint_idx;
@@ -48,17 +48,17 @@ RESULT stm32_eint_fini(uint8_t index)
 #if __VSF_DEBUG__
 	if (eint_idx >= STM32_EINT_NUM)
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 #endif
 	
 	EXTI->IMR &= ~mask;
 	EXTI->EMR &= ~mask;
 	EXTI->PR |= ~mask;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT stm32_eint_config(uint8_t index, uint8_t type, void (*callback)(void))
+vsf_err_t stm32_eint_config(uint8_t index, uint8_t type, void (*callback)(void))
 {
 	uint8_t eint_idx = index & 0x0F;
 	uint32_t mask = 1 << eint_idx;
@@ -70,7 +70,7 @@ RESULT stm32_eint_config(uint8_t index, uint8_t type, void (*callback)(void))
 #if __VSF_DEBUG__
 	if (eint_idx >= STM32_EINT_NUM)
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 #endif
 	
@@ -109,10 +109,10 @@ RESULT stm32_eint_config(uint8_t index, uint8_t type, void (*callback)(void))
 		stm32_enit_callback[eint_idx] = NULL;
 	}
 	
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT stm32_eint_enable(uint8_t index)
+vsf_err_t stm32_eint_enable(uint8_t index)
 {
 	uint8_t eint_idx = index & 0x0F;
 	uint32_t mask = 1 << eint_idx;
@@ -120,15 +120,15 @@ RESULT stm32_eint_enable(uint8_t index)
 #if __VSF_DEBUG__
 	if (eint_idx >= STM32_EINT_NUM)
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 #endif
 	
 	EXTI->IMR |= mask;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT stm32_eint_disable(uint8_t index)
+vsf_err_t stm32_eint_disable(uint8_t index)
 {
 	uint8_t eint_idx = index & 0x0F;
 	uint32_t mask = 1 << eint_idx;
@@ -136,15 +136,15 @@ RESULT stm32_eint_disable(uint8_t index)
 #if __VSF_DEBUG__
 	if (eint_idx >= STM32_EINT_NUM)
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 #endif
 	
 	EXTI->IMR &= ~mask;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
-RESULT stm32_eint_trigger(uint8_t index)
+vsf_err_t stm32_eint_trigger(uint8_t index)
 {
 	uint8_t eint_idx = index & 0x0F;
 	uint32_t mask = 1 << eint_idx;
@@ -152,12 +152,12 @@ RESULT stm32_eint_trigger(uint8_t index)
 #if __VSF_DEBUG__
 	if (eint_idx >= STM32_EINT_NUM)
 	{
-		return ERROR_FAIL;
+		return VSFERR_NOT_SUPPORT;
 	}
 #endif
 	
 	EXTI->SWIER |= mask;
-	return ERROR_OK;
+	return VSFERR_NONE;
 }
 
 static void stm32_eint_call(uint8_t index)
