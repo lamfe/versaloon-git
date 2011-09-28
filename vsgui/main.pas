@@ -1159,7 +1159,13 @@ begin
   memoLog.Clear;
 
   // initialize GUI
-  if pcMain.ActivePage = tsAbout then
+  if pcMain.ActivePage = tsBatchProgrammer then
+  begin
+    HideDebugLog();
+
+    btnBatchProgram.Enabled := VSProg_Exists;
+  end
+  else if pcMain.ActivePage = tsAbout then
   begin
     HideDebugLog();
 
