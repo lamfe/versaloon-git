@@ -32,4 +32,3 @@
 #define VERSALOON_USB_TO_XXX_CMD_END	0x7F
 
 void ProcessCommand(uint8_t *dat, uint16_t len);
-void ProcessIdle(void);

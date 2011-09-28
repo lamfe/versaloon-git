@@ -443,6 +443,5 @@ vsf_err_t usb_protocol_init(void)
 
 vsf_err_t usb_protocol_idle(void)
 {
-	ProcessIdle();
-	return VSFERR_NONE;
+	return vsfusbd_device_poll(&usb_device);
 }
