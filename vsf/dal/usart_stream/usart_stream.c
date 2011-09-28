@@ -85,7 +85,7 @@ vsf_err_t usart_stream_tx(struct usart_stream_info_t *usart_stream,
 
 vsf_err_t usart_stream_poll(struct usart_stream_info_t *usart_stream)
 {
-	if (interfaces->usart.tx_isready(usart_stream->usart_index) && 
+	if (!interfaces->usart.tx_isready(usart_stream->usart_index) && 
 		vsf_fifo_get_data_length(&usart_stream->fifo_tx))
 	{
 		return interfaces->usart.tx(usart_stream->usart_index, 

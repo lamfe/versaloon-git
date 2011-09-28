@@ -140,7 +140,7 @@ vsf_err_t target_voltage_poll(uint8_t index)
 			PWREXT_FSMState++;
 			break;
 		case 1:
-			if (interfaces->adc.isready(TVCC_ADC_PORT, TVCC_ADC_CHANNEL))
+			if (!interfaces->adc.isready(TVCC_ADC_PORT, TVCC_ADC_CHANNEL))
 			{
 				PWREXT_Vtarget = 
 					interfaces->adc.get(TVCC_ADC_PORT, TVCC_ADC_CHANNEL) * 
