@@ -249,6 +249,7 @@ var
   PreviousTargetIndex: integer;
 
 const
+  BATCH_PROGRAM_CMDLINE: string = '';
   DEBUG_LOG_SHOW: boolean = False;
   POLLTHREAD_EN: boolean = True;
   DISPLAY_ALL_COMPORT_WHEN_UPDATE = True;
@@ -1669,7 +1670,22 @@ end;
 
 procedure TFormMain.btnBatchProgramClick(Sender: TObject);
 begin
-  btnWrite.Click;
+  if BATCH_PROGRAM_CMDLINE <> '' then
+  begin
+    if not VSProg_PrepareToRunCLI then
+    begin
+      exit;
+    end;
+
+    VSProg_Caller.AddParametersString(BATCH_PROGRAM_CMDLINE);
+    LogInfo('Running...');
+    VSProg_RunAlgorithm(VSProg_Caller, @VSProg_Parser.OperationParser, 0, False);
+    LogInfo('Idle');
+  end
+  else
+  begin
+    btnWrite.Click;
+  end;
 end;
 
 procedure TFormMain.ShowTargetArea(AreaName: char; var Sender: TObject;
