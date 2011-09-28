@@ -74,8 +74,3 @@ void ProcessCommand(uint8_t* dat, uint16_t len)
 	}
 #endif		// #if USB_TO_XXX_EN
 }
-
-void ProcessIdle(void)
-{
-	vsfusbd_device_poll(&usb_device);
-}
