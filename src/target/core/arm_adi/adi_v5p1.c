@@ -655,7 +655,7 @@ vsf_err_t adi_memap_write_buf(uint32_t address, uint8_t *buffer, uint32_t len)
 	if ((address & 0x03) || (len & 0x03) || (NULL == buffer) || (0 == len))
 	{
 		LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
-		return ERRCODE_INVALID_PARAMETER;
+		return VSFERR_INVALID_PARAMETER;
 	}
 	
 	while (len > 0)
@@ -697,7 +697,7 @@ vsf_err_t adi_memap_read_buf(uint32_t address, uint8_t *buffer, uint32_t len)
 	if ((address & 0x03) || (len & 0x03) || (NULL == buffer) || (0 == len))
 	{
 		LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
-		return ERRCODE_INVALID_PARAMETER;
+		return VSFERR_INVALID_PARAMETER;
 	}
 	
 	while (len > 0)

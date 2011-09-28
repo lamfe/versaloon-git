@@ -158,7 +158,7 @@ static vsf_err_t svf_parser_adjust_array_length(uint8_t **arr,
 		if (NULL == *arr)
 		{
 			LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-			return ERRCODE_NOT_ENOUGH_MEMORY;
+			return VSFERR_NOT_ENOUGH_RESOURCES;
 		}
 		memset(*arr, 0, new_byte_len);
 	}
@@ -385,7 +385,7 @@ vsf_err_t svf_parser_get_command(FILE *file, char **cmd_buffer,
 					if (NULL == tmp_buffer)
 					{
 						LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-						return ERRCODE_NOT_ENOUGH_MEMORY;
+						return VSFERR_NOT_ENOUGH_RESOURCES;
 					}
 					if (*cmd_len > 0)
 					{
@@ -527,7 +527,7 @@ vsf_err_t svf_parser_run_command(char *cmd_str)
 		if (num_of_argu != 2)
 		{
 			LOG_ERROR(ERRMSG_INVALID_PARAMETER, argus[0]);
-			return ERRCODE_INVALID_PARAMETER;
+			return VSFERR_INVALID_PARAMETER;
 		}
 		
 		i_tmp = svf_parser_find_string_in_array(argus[1],
@@ -554,7 +554,7 @@ vsf_err_t svf_parser_run_command(char *cmd_str)
 		if ((num_of_argu != 1) && (num_of_argu != 3))
 		{
 			LOG_ERROR(ERRMSG_INVALID_PARAMETER, argus[0]);
-			return ERRCODE_INVALID_PARAMETER;
+			return VSFERR_INVALID_PARAMETER;
 		}
 		
 		if (1 == num_of_argu)
@@ -607,7 +607,7 @@ XXR_common:
 		if ((num_of_argu > 10) || (num_of_argu % 2))
 		{
 			LOG_ERROR(ERRMSG_INVALID_PARAMETER, argus[0]);
-			return ERRCODE_INVALID_PARAMETER;
+			return VSFERR_INVALID_PARAMETER;
 		}
 		
 		i_tmp = xxr_para_tmp->len;
@@ -864,7 +864,7 @@ XXR_common:
 		if ((num_of_argu < 3) && (num_of_argu > 11))
 		{
 			LOG_ERROR(ERRMSG_INVALID_PARAMETER, argus[0]);
-			return ERRCODE_INVALID_PARAMETER;
+			return VSFERR_INVALID_PARAMETER;
 		}
 		
 		// init
@@ -976,7 +976,7 @@ XXR_common:
 		if (num_of_argu < 2)
 		{
 			LOG_ERROR(ERRMSG_INVALID_PARAMETER, argus[0]);
-			return ERRCODE_INVALID_PARAMETER;
+			return VSFERR_INVALID_PARAMETER;
 		}
 		
 		// STATE pathstate1 ... stable_state
@@ -984,7 +984,7 @@ XXR_common:
 		if (NULL == path)
 		{
 			LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-			return ERRCODE_NOT_ENOUGH_MEMORY;
+			return VSFERR_NOT_ENOUGH_RESOURCES;
 		}
 		for (i = 1; i < num_of_argu; i++)
 		{
@@ -1044,7 +1044,7 @@ XXR_common:
 		if (num_of_argu != 2)
 		{
 			LOG_ERROR(ERRMSG_INVALID_PARAMETER, argus[0]);
-			return ERRCODE_INVALID_PARAMETER;
+			return VSFERR_INVALID_PARAMETER;
 		}
 		
 		if (svf_parser_para.trst_mode != TRST_ABSENT)

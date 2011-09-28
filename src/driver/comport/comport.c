@@ -103,7 +103,7 @@ vsf_err_t comm_open_hw(char *comport, uint32_t baudrate, uint8_t datalength,
 			&& (handshake != COMM_HANDSHAKE_SOFTWARE)))
 	{
 		LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
-		return ERRCODE_INVALID_PARAMETER;
+		return VSFERR_INVALID_PARAMETER;
 	}
 	
 	hComm = CreateFile(comport, GENERIC_READ | GENERIC_WRITE, 0, 0,
@@ -352,7 +352,7 @@ vsf_err_t comm_open_hw(char *comport, uint32_t baudrate, uint8_t datalength,
 			&& (handshake != COMM_HANDSHAKE_SOFTWARE)))
 	{
 		LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
-		return ERRCODE_INVALID_PARAMETER;
+		return VSFERR_INVALID_PARAMETER;
 	}
 	
 	// open comport

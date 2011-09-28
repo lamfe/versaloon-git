@@ -141,7 +141,7 @@ vsf_err_t versaloon_add_want_pos(uint16_t offset, uint16_t size, uint8_t *buff)
 	if (NULL == new_pos)
 	{
 		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-		return ERRCODE_NOT_ENOUGH_MEMORY;
+		return VSFERR_NOT_ENOUGH_RESOURCES;
 	}
 	new_pos->offset = offset;
 	new_pos->size = size;
@@ -211,7 +211,7 @@ vsf_err_t versaloon_send_command(uint16_t out_len, uint16_t *inlen)
 	if ((0 == out_len) || (out_len > versaloon_buf_size))
 	{
 		LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
-		return ERRCODE_INVALID_PARAMETER;
+		return VSFERR_INVALID_PARAMETER;
 	}
 #endif
 	
@@ -280,7 +280,7 @@ vsf_err_t versaloon_get_target_voltage(uint8_t index, uint16_t *voltage)
 	if (NULL == voltage)
 	{
 		LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
-		return ERRCODE_INVALID_PARAMETER;
+		return VSFERR_INVALID_PARAMETER;
 	}
 #endif
 	
@@ -363,7 +363,7 @@ static vsf_err_t versaloon_init(void *p)
 	if (NULL == versaloon_buf)
 	{
 		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-		return ERRCODE_NOT_ENOUGH_MEMORY;
+		return VSFERR_NOT_ENOUGH_RESOURCES;
 	}
 	
 	sleep_ms(100);
@@ -405,14 +405,14 @@ static vsf_err_t versaloon_init(void *p)
 	{
 		versaloon_fini();
 		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-		return ERRCODE_NOT_ENOUGH_MEMORY;
+		return VSFERR_NOT_ENOUGH_RESOURCES;
 	}
 	versaloon_cmd_buf = (uint8_t *)malloc(versaloon_buf_size - 3);
 	if (NULL == versaloon_cmd_buf)
 	{
 		versaloon_fini();
 		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-		return ERRCODE_NOT_ENOUGH_MEMORY;
+		return VSFERR_NOT_ENOUGH_RESOURCES;
 	}
 	
 	if (usbtoxxx_init())
@@ -569,7 +569,7 @@ vsf_err_t versaloon_get_hardware(uint8_t *hardware)
 	if (NULL == hardware)
 	{
 		LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
-		return ERRCODE_INVALID_PARAMETER;
+		return VSFERR_INVALID_PARAMETER;
 	}
 #endif
 	

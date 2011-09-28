@@ -85,7 +85,7 @@ vsf_err_t usbtoc2_readdata(uint8_t interface_index, uint8_t *buf, uint8_t len)
 	if ((len > 4) || (0 == len))
 	{
 		LOG_BUG(ERRMSG_INVALID_VALUE, len, "C2 data length(1..4)");
-		return ERRCODE_INVALID_PARAMETER;
+		return VSFERR_INVALID_PARAMETER;
 	}
 #endif
 	
@@ -109,7 +109,7 @@ vsf_err_t usbtoc2_writedata(uint8_t interface_index, uint8_t *buf, uint8_t len)
 	if ((len > 4) || (0 == len))
 	{
 		LOG_BUG(ERRMSG_INVALID_VALUE, len, "C2 data length(1..4)");
-		return ERRCODE_INVALID_PARAMETER;
+		return VSFERR_INVALID_PARAMETER;
 	}
 #endif
 	

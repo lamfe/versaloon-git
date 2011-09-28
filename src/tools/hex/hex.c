@@ -56,7 +56,7 @@ vsf_err_t read_hex_file(FILE *hex_file, WRITE_MEMORY_CALLBACK callback,
 	if ((NULL == hex_file) || (NULL == callback))
 	{
 		LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
-		return ERRCODE_INVALID_PARAMETER;
+		return VSFERR_INVALID_PARAMETER;
 	}
 #endif
 	
@@ -184,7 +184,7 @@ static vsf_err_t write_hex_line(FILE *hex_file, uint8_t data_len,
 	if ((NULL == hex_file) || ((data_len > 0) && (NULL == data)))
 	{
 		LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
-		return ERRCODE_INVALID_PARAMETER;
+		return VSFERR_INVALID_PARAMETER;
 	}
 #endif
 	

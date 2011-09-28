@@ -59,7 +59,7 @@ vsf_err_t read_s19_file(FILE *s19_file, WRITE_MEMORY_CALLBACK callback,
 	if ((NULL == s19_file) || (NULL == callback))
 	{
 		LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
-		return ERRCODE_INVALID_PARAMETER;
+		return VSFERR_INVALID_PARAMETER;
 	}
 #endif
 	
@@ -190,7 +190,7 @@ static vsf_err_t write_s19_line(FILE *s19_file, uint8_t data_len,
 	if ((NULL == s19_file) || ((data_len > 0) && (NULL == data)))
 	{
 		LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
-		return ERRCODE_INVALID_PARAMETER;
+		return VSFERR_INVALID_PARAMETER;
 	}
 #endif
 	

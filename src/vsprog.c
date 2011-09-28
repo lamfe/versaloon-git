@@ -250,7 +250,7 @@ static vsf_err_t parse_operation(uint32_t *operation, const char *opt,
 	if ((NULL == operation) || (NULL == opt))
 	{
 		LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
-		return ERRCODE_INVALID_PARAMETER;
+		return VSFERR_INVALID_PARAMETER;
 	}
 #endif
 	

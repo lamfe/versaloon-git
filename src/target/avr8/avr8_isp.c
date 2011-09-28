@@ -482,7 +482,7 @@ WRITE_TARGET_HANDLER(avr8isp)
 		else
 		{
 			LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, "fuse", param->chip_name);
-			err = ERRCODE_NOT_SUPPORT;
+			err = VSFERR_NOT_SUPPORT;
 			break;
 		}
 		break;
@@ -513,7 +513,7 @@ WRITE_TARGET_HANDLER(avr8isp)
 		else
 		{
 			LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, "lock", param->chip_name);
-			err = ERRCODE_NOT_SUPPORT;
+			err = VSFERR_NOT_SUPPORT;
 			break;
 		}
 		break;
@@ -667,7 +667,7 @@ READ_TARGET_HANDLER(avr8isp)
 		else
 		{
 			LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, "fuse", param->chip_name);
-			err = ERRCODE_NOT_SUPPORT;
+			err = VSFERR_NOT_SUPPORT;
 			break;
 		}
 		break;
@@ -689,7 +689,7 @@ READ_TARGET_HANDLER(avr8isp)
 		else
 		{
 			LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, "lock", param->chip_name);
-			err = ERRCODE_NOT_SUPPORT;
+			err = VSFERR_NOT_SUPPORT;
 			break;
 		}
 		break;
@@ -742,7 +742,7 @@ READ_TARGET_HANDLER(avr8isp)
 		else
 		{
 			LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, "calibration", param->chip_name);
-			err = ERRCODE_NOT_SUPPORT;
+			err = VSFERR_NOT_SUPPORT;
 			break;
 		}
 		break;

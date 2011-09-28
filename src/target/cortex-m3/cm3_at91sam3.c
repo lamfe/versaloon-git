@@ -209,7 +209,7 @@ static vsf_err_t at91sam3swj_iap_poll_result(struct at91sam3swj_iap_reply_t *rep
 	if (NULL == fail)
 	{
 		LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
-		return ERRCODE_INVALID_PARAMETER;
+		return VSFERR_INVALID_PARAMETER;
 	}
 	
 	if ((reply != NULL) && (reply->data_num > (dimof(buff_tmp) - 1)))

@@ -218,7 +218,7 @@ static vsf_err_t stm32isp_process_data(uint16_t *data_len, uint8_t data_len_size
 	if ((NULL == data_len) || (NULL == data))
 	{
 		LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
-		return ERRCODE_INVALID_PARAMETER;
+		return VSFERR_INVALID_PARAMETER;
 	}
 #endif
 	
