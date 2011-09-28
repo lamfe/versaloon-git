@@ -616,7 +616,7 @@ vsf_err_t target_alloc_data_buffer(void)
 				(uint8_t *)malloc(program_info.program_areas[i].size);
 			if (NULL == program_info.program_areas[i].buff)
 			{
-				return ERRCODE_NOT_ENOUGH_MEMORY;
+				return VSFERR_NOT_ENOUGH_RESOURCES;
 			}
 			if (strlen(target_chip_param.chip_name) > 0)
 			{
@@ -637,7 +637,7 @@ vsf_err_t target_release_chip_fl(struct chip_fl_t *fl)
 	if (NULL == fl)
 	{
 		LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
-		return ERRCODE_INVALID_PARAMETER;
+		return VSFERR_INVALID_PARAMETER;
 	}
 	
 	if (fl->init_value != NULL)
@@ -1667,7 +1667,7 @@ static vsf_err_t target_program(struct program_context_t *context)
 					if (NULL == read_buf)
 					{
 						LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-						err = ERRCODE_NOT_ENOUGH_MEMORY;
+						err = VSFERR_NOT_ENOUGH_RESOURCES;
 						goto target_program_exit;
 					}
 					
@@ -1764,7 +1764,7 @@ static vsf_err_t target_program(struct program_context_t *context)
 					if (NULL == buff_tmp)
 					{
 						LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-						err = ERRCODE_NOT_ENOUGH_MEMORY;
+						err = VSFERR_NOT_ENOUGH_RESOURCES;
 						goto target_program_exit;
 					}
 					memset(buff_tmp, 0, target_size);
@@ -1922,7 +1922,7 @@ static vsf_err_t target_init(struct program_info_t *pi)
 		{
 			LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, "Auto-detect",
 						cur_target->name);
-			return ERRCODE_NOT_SUPPORT;
+			return VSFERR_NOT_SUPPORT;
 		}
 		// auto detect
 		memcpy(&target_chip_param, &target_chips.chips_param[0],
@@ -1969,7 +1969,7 @@ static vsf_err_t target_init(struct program_info_t *pi)
 									target_chips.chips_param[i].chip_name))
 					{
 						LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-						return ERRCODE_NOT_ENOUGH_MEMORY;
+						return VSFERR_NOT_ENOUGH_RESOURCES;
 					}
 					LOG_INFO(INFOMSG_CHIP_FOUND, pi->chip_name);
 					
@@ -2380,7 +2380,7 @@ static vsf_err_t target_info_init(struct program_info_t *pi)
 	if ((NULL == pi) || ((NULL == pi->chip_name) && (NULL == pi->chip_type)))
 	{
 		LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
-		return ERRCODE_INVALID_PARAMETER;
+		return VSFERR_INVALID_PARAMETER;
 	}
 #endif
 	
@@ -2410,7 +2410,7 @@ static vsf_err_t target_info_init(struct program_info_t *pi)
 									(char *)targets_info[i].name))
 				{
 					LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-					return ERRCODE_NOT_ENOUGH_MEMORY;
+					return VSFERR_NOT_ENOUGH_RESOURCES;
 				}
 				LOG_DEBUG("%s initialized for %s.", cur_target->name,
 							pi->chip_name);
@@ -2454,7 +2454,7 @@ static vsf_err_t target_info_init(struct program_info_t *pi)
 								targets_info[i].name);
 					target_release_chip_series(&target_chips);
 					cur_target = NULL;
-					return ERRCODE_NOT_SUPPORT;
+					return VSFERR_NOT_SUPPORT;
 				}
 				else
 				{
@@ -2469,7 +2469,7 @@ static vsf_err_t target_info_init(struct program_info_t *pi)
 	}
 	
 	cur_target = NULL;
-	return ERRCODE_NOT_SUPPORT;
+	return VSFERR_NOT_SUPPORT;
 }
 
 VSS_HANDLER(target_memory_detail)
@@ -2492,7 +2492,7 @@ VSS_HANDLER(target_memory_detail)
 													program_info.chip_type))
 		{
 			LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-			return ERRCODE_NOT_ENOUGH_MEMORY;
+			return VSFERR_NOT_ENOUGH_RESOURCES;
 		}
 		
 		target_info_init(&program_info);
@@ -2579,7 +2579,7 @@ VSS_HANDLER(target_series)
 												(char *)argv[1]))
 	{
 		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-		return ERRCODE_NOT_ENOUGH_MEMORY;
+		return VSFERR_NOT_ENOUGH_RESOURCES;
 	}
 	
 	if (target_info_init(&program_info))
@@ -2603,7 +2603,7 @@ VSS_HANDLER(target_chip)
 												(char *)argv[1]))
 	{
 		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-		return ERRCODE_NOT_ENOUGH_MEMORY;
+		return VSFERR_NOT_ENOUGH_RESOURCES;
 	}
 	
 	if (target_info_init(&program_info))
@@ -3180,7 +3180,7 @@ VSS_HANDLER(target_interface_indexes)
 							&program_info.ifs_indexes, (char *)argv[1])))
 	{
 		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-		return ERRCODE_NOT_ENOUGH_MEMORY;
+		return VSFERR_NOT_ENOUGH_RESOURCES;
 	}
 	return VSFERR_NONE;
 }

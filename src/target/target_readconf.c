@@ -80,7 +80,7 @@ vsf_err_t target_build_chip_fl(const char *chip_series,
 	if ((NULL == chip_series) || (NULL == chip_module) || (NULL == fl))
 	{
 		LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
-		return ERRCODE_INVALID_PARAMETER;
+		return VSFERR_INVALID_PARAMETER;
 	}
 #endif
 	
@@ -97,7 +97,7 @@ vsf_err_t target_build_chip_fl(const char *chip_series,
 	if (NULL == filename)
 	{
 		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-		return ERRCODE_NOT_ENOUGH_MEMORY;
+		return VSFERR_NOT_ENOUGH_RESOURCES;
 	}
 	strcpy(filename, config_dir);
 	strcat(filename, chip_series);
@@ -145,7 +145,7 @@ vsf_err_t target_build_chip_fl(const char *chip_series,
 	if (0 == num_of_chips)
 	{
 		LOG_ERROR(ERRMSG_NOT_SUPPORT, chip_series);
-		err = ERRCODE_NOT_SUPPORT;
+		err = VSFERR_NOT_SUPPORT;
 		goto free_and_exit;
 	}
 	
@@ -190,7 +190,7 @@ vsf_err_t target_build_chip_fl(const char *chip_series,
 	if (NULL == paramNode)
 	{
 		LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, type, chip_module);
-		err = ERRCODE_NOT_SUPPORT;
+		err = VSFERR_NOT_SUPPORT;
 		goto free_and_exit;
 	}
 	
@@ -223,7 +223,7 @@ vsf_err_t target_build_chip_fl(const char *chip_series,
 	if (0 == fl->num_of_fl_settings)
 	{
 		LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, type, chip_module);
-		err = ERRCODE_NOT_SUPPORT;
+		err = VSFERR_NOT_SUPPORT;
 		goto free_and_exit;
 	}
 	
@@ -232,7 +232,7 @@ vsf_err_t target_build_chip_fl(const char *chip_series,
 							(char *)xmlGetProp(paramNode, BAD_CAST "init")))
 	{
 		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-		err = ERRCODE_NOT_ENOUGH_MEMORY;
+		err = VSFERR_NOT_ENOUGH_RESOURCES;
 		goto free_and_exit;
 	}
 	if (strparser_check(fl->init_value, format))
@@ -248,7 +248,7 @@ vsf_err_t target_build_chip_fl(const char *chip_series,
 	if (NULL == fl->settings)
 	{
 		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-		err = ERRCODE_NOT_ENOUGH_MEMORY;
+		err = VSFERR_NOT_ENOUGH_RESOURCES;
 		goto free_and_exit;
 	}
 	memset(fl->settings, 0,
@@ -273,7 +273,7 @@ vsf_err_t target_build_chip_fl(const char *chip_series,
 			if (NULL == fl->warnings)
 			{
 				LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-				err = ERRCODE_NOT_ENOUGH_MEMORY;
+				err = VSFERR_NOT_ENOUGH_RESOURCES;
 				goto free_and_exit;
 			}
 			memset(fl->warnings, 0,
@@ -295,7 +295,7 @@ vsf_err_t target_build_chip_fl(const char *chip_series,
 						(char *)xmlGetProp(wNode, BAD_CAST "mask")))
 				{
 					LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-					err = ERRCODE_NOT_ENOUGH_MEMORY;
+					err = VSFERR_NOT_ENOUGH_RESOURCES;
 					goto free_and_exit;
 				}
 				if (strparser_check(fl->warnings[i].mask, format))
@@ -310,7 +310,7 @@ vsf_err_t target_build_chip_fl(const char *chip_series,
 						(char *)xmlGetProp(wNode, BAD_CAST "value")))
 				{
 					LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-					err = ERRCODE_NOT_ENOUGH_MEMORY;
+					err = VSFERR_NOT_ENOUGH_RESOURCES;
 					goto free_and_exit;
 				}
 				if (strparser_check(fl->warnings[i].value, format))
@@ -325,7 +325,7 @@ vsf_err_t target_build_chip_fl(const char *chip_series,
 						(char *)xmlGetProp(wNode, BAD_CAST "msg")))
 				{
 					LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-					err = ERRCODE_NOT_ENOUGH_MEMORY;
+					err = VSFERR_NOT_ENOUGH_RESOURCES;
 					goto free_and_exit;
 				}
 				
@@ -364,7 +364,7 @@ vsf_err_t target_build_chip_fl(const char *chip_series,
 						(char *)xmlGetProp(settingNode, BAD_CAST "name")))
 		{
 			LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-			err = ERRCODE_NOT_ENOUGH_MEMORY;
+			err = VSFERR_NOT_ENOUGH_RESOURCES;
 			goto free_and_exit;
 		}
 		
@@ -373,7 +373,7 @@ vsf_err_t target_build_chip_fl(const char *chip_series,
 						(char *)xmlGetProp(settingNode, BAD_CAST "mask")))
 		{
 			LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-			err = ERRCODE_NOT_ENOUGH_MEMORY;
+			err = VSFERR_NOT_ENOUGH_RESOURCES;
 			goto free_and_exit;
 		}
 		if (strparser_check(fl->settings[i].mask, format))
@@ -390,7 +390,7 @@ vsf_err_t target_build_chip_fl(const char *chip_series,
 						(char *)xmlGetProp(settingNode, BAD_CAST "ban")))
 			{
 				LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-				err = ERRCODE_NOT_ENOUGH_MEMORY;
+				err = VSFERR_NOT_ENOUGH_RESOURCES;
 				goto free_and_exit;
 			}
 		}
@@ -403,7 +403,7 @@ vsf_err_t target_build_chip_fl(const char *chip_series,
 						(char *)xmlGetProp(settingNode, BAD_CAST "info")))
 			{
 				LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-				err = ERRCODE_NOT_ENOUGH_MEMORY;
+				err = VSFERR_NOT_ENOUGH_RESOURCES;
 				goto free_and_exit;
 			}
 		}
@@ -416,7 +416,7 @@ vsf_err_t target_build_chip_fl(const char *chip_series,
 						(char *)xmlGetProp(settingNode, BAD_CAST "format")))
 			{
 				LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-				err = ERRCODE_NOT_ENOUGH_MEMORY;
+				err = VSFERR_NOT_ENOUGH_RESOURCES;
 				goto free_and_exit;
 			}
 		}
@@ -453,7 +453,7 @@ vsf_err_t target_build_chip_fl(const char *chip_series,
 						(char *)xmlGetProp(settingNode, BAD_CAST "checked")))
 			{
 				LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-				err = ERRCODE_NOT_ENOUGH_MEMORY;
+				err = VSFERR_NOT_ENOUGH_RESOURCES;
 				goto free_and_exit;
 			}
 			if (strparser_check(fl->settings[i].checked, format))
@@ -509,7 +509,7 @@ vsf_err_t target_build_chip_fl(const char *chip_series,
 						(char *)xmlGetProp(settingNode, BAD_CAST "unchecked")))
 			{
 				LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-				err = ERRCODE_NOT_ENOUGH_MEMORY;
+				err = VSFERR_NOT_ENOUGH_RESOURCES;
 				goto free_and_exit;
 			}
 			if (strparser_check(fl->settings[i].unchecked, format))
@@ -582,7 +582,7 @@ vsf_err_t target_build_chip_fl(const char *chip_series,
 		if (NULL == fl->settings[i].choices)
 		{
 			LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-			err = ERRCODE_NOT_ENOUGH_MEMORY;
+			err = VSFERR_NOT_ENOUGH_RESOURCES;
 			goto free_and_exit;
 		}
 		memset(fl->settings[i].choices, 0,
@@ -608,7 +608,7 @@ vsf_err_t target_build_chip_fl(const char *chip_series,
 						(char *)xmlGetProp(choiceNode, BAD_CAST "value")))
 			{
 				LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-				err = ERRCODE_NOT_ENOUGH_MEMORY;
+				err = VSFERR_NOT_ENOUGH_RESOURCES;
 				goto free_and_exit;
 			}
 			if (strparser_check(fl->settings[i].choices[j].value,
@@ -624,7 +624,7 @@ vsf_err_t target_build_chip_fl(const char *chip_series,
 						(char *)xmlGetProp(choiceNode, BAD_CAST "text")))
 			{
 				LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-				err = ERRCODE_NOT_ENOUGH_MEMORY;
+				err = VSFERR_NOT_ENOUGH_RESOURCES;
 				goto free_and_exit;
 			}
 			
@@ -663,7 +663,7 @@ vsf_err_t target_build_chip_series(const char *chip_series,
 	if ((NULL == chip_series) || (NULL == s))
 	{
 		LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
-		return ERRCODE_INVALID_PARAMETER;
+		return VSFERR_INVALID_PARAMETER;
 	}
 #endif
 	
@@ -680,7 +680,7 @@ vsf_err_t target_build_chip_series(const char *chip_series,
 	if (NULL == filename)
 	{
 		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-		return ERRCODE_NOT_ENOUGH_MEMORY;
+		return VSFERR_NOT_ENOUGH_RESOURCES;
 	}
 	strcpy(filename, config_dir);
 	strcat(filename, chip_series);
@@ -728,7 +728,7 @@ vsf_err_t target_build_chip_series(const char *chip_series,
 	if (0 == s->num_of_chips)
 	{
 		LOG_ERROR(ERRMSG_NOT_SUPPORT, chip_series);
-		err = ERRCODE_NOT_SUPPORT;
+		err = VSFERR_NOT_SUPPORT;
 		goto free_and_exit;
 	}
 	s->chips_param = (struct chip_param_t *)malloc(sizeof(struct chip_param_t)
@@ -736,7 +736,7 @@ vsf_err_t target_build_chip_series(const char *chip_series,
 	if (NULL == s->chips_param)
 	{
 		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-		err = ERRCODE_NOT_ENOUGH_MEMORY;
+		err = VSFERR_NOT_ENOUGH_RESOURCES;
 		goto free_and_exit;
 	}
 	memset(s->chips_param, 0, sizeof(struct chip_param_t) * s->num_of_chips);
@@ -792,7 +792,7 @@ vsf_err_t target_build_chip_series(const char *chip_series,
 									&p_param->program_mode_str, mode_tmp))
 				{
 					LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-					err = ERRCODE_NOT_ENOUGH_MEMORY;
+					err = VSFERR_NOT_ENOUGH_RESOURCES;
 					goto free_and_exit;
 				}
 				p_param->program_mode = 0;
@@ -811,7 +811,7 @@ vsf_err_t target_build_chip_series(const char *chip_series,
 						{
 							LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, mode_tmp,
 										"current target");
-							err = ERRCODE_NOT_SUPPORT;
+							err = VSFERR_NOT_SUPPORT;
 							goto free_and_exit;
 						}
 					}
@@ -1153,7 +1153,7 @@ vsf_err_t target_build_chip_series(const char *chip_series,
 						&p_param->chip_areas[UNIQUEID_IDX].cli_format, str))
 					{
 						LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-						err = ERRCODE_NOT_ENOUGH_MEMORY;
+						err = VSFERR_NOT_ENOUGH_RESOURCES;
 						goto free_and_exit;
 					}
 					format = p_param->chip_areas[UNIQUEID_IDX].cli_format;
@@ -1177,7 +1177,7 @@ vsf_err_t target_build_chip_series(const char *chip_series,
 					if (NULL == p_param->chip_areas[UNIQUEID_IDX].mask)
 					{
 						LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-						err = ERRCODE_NOT_ENOUGH_MEMORY;
+						err = VSFERR_NOT_ENOUGH_RESOURCES;
 						goto free_and_exit;
 					}
 					buff = p_param->chip_areas[UNIQUEID_IDX].mask;
@@ -1208,7 +1208,7 @@ vsf_err_t target_build_chip_series(const char *chip_series,
 						&p_param->chip_areas[FUSE_IDX].cli_format, str))
 					{
 						LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-						err = ERRCODE_NOT_ENOUGH_MEMORY;
+						err = VSFERR_NOT_ENOUGH_RESOURCES;
 						goto free_and_exit;
 					}
 					format = p_param->chip_areas[FUSE_IDX].cli_format;
@@ -1232,7 +1232,7 @@ vsf_err_t target_build_chip_series(const char *chip_series,
 					if (NULL == p_param->chip_areas[FUSE_IDX].mask)
 					{
 						LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-						err = ERRCODE_NOT_ENOUGH_MEMORY;
+						err = VSFERR_NOT_ENOUGH_RESOURCES;
 						goto free_and_exit;
 					}
 					buff = p_param->chip_areas[FUSE_IDX].mask;
@@ -1263,7 +1263,7 @@ vsf_err_t target_build_chip_series(const char *chip_series,
 						&p_param->chip_areas[LOCK_IDX].cli_format, str))
 					{
 						LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-						err = ERRCODE_NOT_ENOUGH_MEMORY;
+						err = VSFERR_NOT_ENOUGH_RESOURCES;
 						goto free_and_exit;
 					}
 					format = p_param->chip_areas[LOCK_IDX].cli_format;
@@ -1287,7 +1287,7 @@ vsf_err_t target_build_chip_series(const char *chip_series,
 					if (NULL == p_param->chip_areas[LOCK_IDX].mask)
 					{
 						LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-						err = ERRCODE_NOT_ENOUGH_MEMORY;
+						err = VSFERR_NOT_ENOUGH_RESOURCES;
 						goto free_and_exit;
 					}
 					buff = p_param->chip_areas[LOCK_IDX].mask;
@@ -1318,7 +1318,7 @@ vsf_err_t target_build_chip_series(const char *chip_series,
 						&p_param->chip_areas[CALIBRATION_IDX].cli_format, str))
 					{
 						LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-						err = ERRCODE_NOT_ENOUGH_MEMORY;
+						err = VSFERR_NOT_ENOUGH_RESOURCES;
 						goto free_and_exit;
 					}
 					format = p_param->chip_areas[CALIBRATION_IDX].cli_format;
@@ -1342,7 +1342,7 @@ vsf_err_t target_build_chip_series(const char *chip_series,
 					if (NULL == p_param->chip_areas[CALIBRATION_IDX].mask)
 					{
 						LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-						err = ERRCODE_NOT_ENOUGH_MEMORY;
+						err = VSFERR_NOT_ENOUGH_RESOURCES;
 						goto free_and_exit;
 					}
 					buff = p_param->chip_areas[CALIBRATION_IDX].mask;

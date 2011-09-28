@@ -433,7 +433,7 @@ READ_TARGET_HANDLER(lpc900icp)
 		else
 		{
 			LOG_ERROR(ERRMSG_NOT_SUPPORT, "read lpc900 flash");
-			err = ERRCODE_NOT_SUPPORT;
+			err = VSFERR_NOT_SUPPORT;
 		}
 		break;
 	default:

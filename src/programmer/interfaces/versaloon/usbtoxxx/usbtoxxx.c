@@ -505,7 +505,7 @@ vsf_err_t usbtopoll_checkok(uint8_t equ, uint16_t offset, uint8_t size,
 	if (size > 4)
 	{
 		LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
-		return ERRCODE_INVALID_PARAMETER;
+		return VSFERR_INVALID_PARAMETER;
 	}
 	if (!poll_nesting)
 	{
@@ -550,7 +550,7 @@ vsf_err_t usbtopoll_checkfail(uint8_t equ, uint16_t offset, uint8_t size,
 	if (size > 4)
 	{
 		LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
-		return ERRCODE_INVALID_PARAMETER;
+		return VSFERR_INVALID_PARAMETER;
 	}
 	if (!poll_nesting)
 	{

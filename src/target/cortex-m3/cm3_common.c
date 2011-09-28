@@ -279,7 +279,7 @@ vsf_err_t cm3_dump(uint32_t addr, uint32_t size)
 	if (NULL == buffer)
 	{
 		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-		err = ERRCODE_NOT_ENOUGH_MEMORY;
+		err = VSFERR_NOT_ENOUGH_RESOURCES;
 		goto end;
 	}
 	

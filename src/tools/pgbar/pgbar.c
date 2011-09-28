@@ -144,7 +144,7 @@ vsf_err_t pgbar_init(char *s, char *e, uint32_t min, uint32_t max,
 		if (NULL == end_str)
 		{
 			LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-			return ERRCODE_NOT_ENOUGH_MEMORY;
+			return VSFERR_NOT_ENOUGH_RESOURCES;
 		}
 		strcpy(end_str, (const char *)e);
 	}

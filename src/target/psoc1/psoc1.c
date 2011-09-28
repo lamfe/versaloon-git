@@ -164,7 +164,7 @@ vsf_err_t issp_wait_and_poll_with_ret(uint8_t *buf, uint8_t want_ssc_return_valu
 	if (want_ssc_return_value > 8)
 	{
 		LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
-		return ERRCODE_INVALID_PARAMETER;
+		return VSFERR_INVALID_PARAMETER;
 	}
 #endif
 	

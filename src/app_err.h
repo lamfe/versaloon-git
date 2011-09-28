@@ -29,7 +29,6 @@
 #define ERRMSG_TIMEOUT						"timeout to %s"
 
 #define ERRMSG_NOT_ENOUGH_MEMORY			"Lack of memory."
-#define ERRCODE_NOT_ENOUGH_MEMORY			VSFERR_FAIL
 
 #define ERRMSG_INVALID						"%s is invalide for %s."
 #define ERRMSG_INVALID_CHARACTER			"%c is invalide for %s."
@@ -51,12 +50,10 @@
 #define ERRCODE_INVALID_OPTION				VSFERR_FAIL
 
 #define ERRMSG_INVALID_PARAMETER			"Invalid parameter of %s."
-#define ERRCODE_INVALID_PARAMETER			VSFERR_FAIL
 
 #define ERRMSG_NOT_SUPPORT					"%s is not supported."
 #define ERRMSG_NOT_SUPPORT_BY				"%s is not supported by %s."
 #define ERRMSG_NOT_SUPPORT_AS				"%s is not supported as %s."
-#define ERRCODE_NOT_SUPPORT					VSFERR_FAIL
 
 #define ERRMSG_INVALID_BUFFER				"Buffer %s is not valid."
 #define ERRCODE_INVALID_BUFFER				VSFERR_FAIL
