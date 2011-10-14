@@ -191,7 +191,21 @@ vsf_err_t gpio_config(uint8_t index, uint32_t pin_mask, uint32_t io,
 			}
 			else
 			{
-				JTAG_TAP_USR1_SETINPUT();
+				if (pull_en_mask & GPIO_USR1)
+				{
+					if (input_pull_mask & GPIO_USR1)
+					{
+						JTAG_TAP_USR1_SETINPUT_PU();
+					}
+					else
+					{
+						JTAG_TAP_USR1_SETINPUT_PD();
+					}
+				}
+				else
+				{
+					JTAG_TAP_USR1_SETINPUT();
+				}
 			}
 		}
 		if (pin_mask & GPIO_USR2)
@@ -210,7 +224,21 @@ vsf_err_t gpio_config(uint8_t index, uint32_t pin_mask, uint32_t io,
 			}
 			else
 			{
-				JTAG_TAP_USR2_SETINPUT();
+				if (pull_en_mask & GPIO_USR2)
+				{
+					if (input_pull_mask & GPIO_USR2)
+					{
+						JTAG_TAP_USR2_SETINPUT_PU();
+					}
+					else
+					{
+						JTAG_TAP_USR2_SETINPUT_PD();
+					}
+				}
+				else
+				{
+					JTAG_TAP_USR2_SETINPUT();
+				}
 			}
 		}
 #endif
