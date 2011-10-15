@@ -72,16 +72,17 @@ LEAVE_PROGRAM_MODE_HANDLER(comisp);
 struct program_functions_t comisp_program_functions;
 
 const struct comisp_param_t comisp_chips_param[] = {
-//	chip_name,			com_mode,																											
-//						{comport,	baudrate,	datalength,	paritybit,			stopbit,		handshake,				aux_pin},				program_functions
+//	chip_name,			com_mode,																												program_functions
+//						{comport,	baudrate,	datalength,	paritybit,			stopbit,		handshake,				aux_pin},
 	{"comisp_stm32",	{"",		-1,			8,			COMM_PARITYBIT_EVEN,COMM_STOPBIT_1,	COMM_PARAMETER_UNSURE,	COMM_PARAMETER_UNSURE}, &stm32isp_program_functions},
 	{"comisp_lpcarm",	{"",		-1,			8,			COMM_PARITYBIT_NONE,COMM_STOPBIT_1,	COMM_PARAMETER_UNSURE,	COMM_PARAMETER_UNSURE}, &lpcarmisp_program_functions},
 };
 static uint8_t comisp_chip_index = 0;
 
-struct com_mode_t com_mode =
-{"", 115200, 8, COMM_PARITYBIT_NONE, COMM_STOPBIT_1,
-COMM_HANDSHAKE_NONE, COMM_AUXPIN_DISABLE};
+struct com_mode_t com_mode;
+static const struct com_mode_t com_mode_default = {"", -1, 0,
+		COMM_PARAMETER_UNSURE, COMM_PARAMETER_UNSURE, COMM_PARAMETER_UNSURE,
+		COMM_PARAMETER_UNSURE};
 
 VSS_HANDLER(comisp_print_cominfo)
 {
@@ -149,6 +150,7 @@ VSS_HANDLER(comisp_comm)
 	}
 	
 	ptr = comm_setting;
+	memcpy(&com_mode, &com_mode_default, sizeof(com_mode));
 	strncpy(com_mode.comport, (char*)ptr, sizeof(com_mode.comport));
 	ptr += strlen(com_mode.comport) + 1;
 	if (i < 3)
@@ -181,6 +183,84 @@ VSS_HANDLER(comisp_chip)
 		if (!strcmp(comisp_chips_param[i].chip_name, argv[1]))
 		{
 			comisp_chip_index = i;
+			
+			if ((NULL == com_mode.comport) || !strlen(com_mode.comport))
+			{
+				return VSFERR_FAIL;
+			}
+			if (com_mode.baudrate <= 0)
+			{
+				if (comisp_chips_param[i].com_mode.baudrate <= 0)
+				{
+					com_mode.baudrate = COMM_DEFAULT_BAUDRATE;
+				}
+				else
+				{
+					com_mode.baudrate = comisp_chips_param[i].com_mode.baudrate;
+				}
+			}
+			if (com_mode.datalength <= 0)
+			{
+				if (comisp_chips_param[i].com_mode.datalength <= 0)
+				{
+					com_mode.datalength = COMM_DEFAULT_DATALENGTH;
+				}
+				else
+				{
+					com_mode.datalength =
+						comisp_chips_param[i].com_mode.datalength;
+				}
+			}
+			if (COMM_PARAMETER_UNSURE == com_mode.paritybit)
+			{
+				if (COMM_PARAMETER_UNSURE ==
+					comisp_chips_param[i].com_mode.paritybit)
+				{
+					com_mode.paritybit = COMM_DEFAULT_PARITYBIT;
+				}
+				else
+				{
+					com_mode.paritybit =
+						comisp_chips_param[i].com_mode.paritybit;
+				}
+			}
+			if (COMM_PARAMETER_UNSURE == com_mode.stopbit)
+			{
+				if (COMM_PARAMETER_UNSURE ==
+					comisp_chips_param[i].com_mode.stopbit)
+				{
+					com_mode.stopbit = COMM_DEFAULT_STOPBIT;
+				}
+				else
+				{
+					com_mode.stopbit = comisp_chips_param[i].com_mode.stopbit;
+				}
+			}
+			if (COMM_PARAMETER_UNSURE == com_mode.handshake)
+			{
+				if (COMM_PARAMETER_UNSURE ==
+					comisp_chips_param[i].com_mode.handshake)
+				{
+					com_mode.handshake = COMM_DEFAULT_HANDSHAKE;
+				}
+				else
+				{
+					com_mode.handshake = comisp_chips_param[i].com_mode.handshake;
+				}
+			}
+			if (COMM_PARAMETER_UNSURE == com_mode.auxpin)
+			{
+				if (COMM_PARAMETER_UNSURE ==
+					comisp_chips_param[i].com_mode.auxpin)
+				{
+					com_mode.auxpin = COMM_DEFAULT_AUXPIN;
+				}
+				else
+				{
+					com_mode.auxpin = comisp_chips_param[i].com_mode.auxpin;
+				}
+			}
+			
 			memcpy(&comisp_program_functions,
 					comisp_chips_param[i].program_functions,
 					sizeof(comisp_program_functions));
@@ -207,7 +287,7 @@ ENTER_PROGRAM_MODE_HANDLER(comisp)
 	struct program_functions_t *pf =
 					comisp_chips_param[comisp_chip_index].program_functions;
 	
-	if ((NULL == com_mode.comport) || (0 == strlen(com_mode.comport)))
+	if ((NULL == com_mode.comport) || !strlen(com_mode.comport))
 	{
 		LOG_ERROR(ERRMSG_NOT_DEFINED, "comport");
 		return VSFERR_FAIL;
