@@ -52,10 +52,6 @@
 #define HW_HAS_BDM						0
 #define HW_HAS_POWERCONTROL				0
 
-/****************************** Init ******************************/
-#define HW_INIT()						//No Jtag Remapping
-
-
 /****************************** STM32VL-Discovery Pins ******************************/
 #define STM32VL_SWD_PORT				GPIOB
 #define STM32VL_TCK1_PORT				GPIOA

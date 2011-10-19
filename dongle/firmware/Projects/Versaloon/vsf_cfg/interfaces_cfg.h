@@ -15,18 +15,42 @@
  **************************************************************************/
 
 // Core config for clocks, flash, debug...
-#define OSC0_FREQ_HZ						OSC_HZ
-#define CORE_CLKSRC							STM32_CLKSRC_PLL
-#define CORE_PLLSRC							STM32_PLLSRC_HSE
-#define CORE_RTCSRC							STM32_RTCSRC_LSI
-#define CORE_HSE_TYPE						STM32_HSE_TYPE_CRYSTAL
-#define CORE_PLL_FREQ_HZ					(72 * 1000 * 1000)
-#define CORE_AHB_FREQ_HZ					(72 * 1000 * 1000)
-#define CORE_APB1_FREQ_HZ					(36 * 1000 * 1000)
-#define CORE_APB2_FREQ_HZ					(72 * 1000 * 1000)
-#define CORE_FLASH_LATENCY					2
-#define CORE_DEBUG							STM32_DBG_NONE
-#define CORE_VECTOR_TABLE					(0x08000000 | FLASH_LOAD_OFFSET)
+#ifndef OSC0_FREQ_HZ
+#	define OSC0_FREQ_HZ						OSC_HZ
+#endif
+#ifndef CORE_CLKSRC
+#	define CORE_CLKSRC						STM32_CLKSRC_PLL
+#endif
+#ifndef CORE_PLLSRC
+#	define CORE_PLLSRC						STM32_PLLSRC_HSE
+#endif
+#ifndef CORE_RTCSRC
+#	define CORE_RTCSRC						STM32_RTCSRC_LSI
+#endif
+#ifndef CORE_HSE_TYPE
+#	define CORE_HSE_TYPE					STM32_HSE_TYPE_CRYSTAL
+#endif
+#ifndef CORE_PLL_FREQ_HZ
+#	define CORE_PLL_FREQ_HZ					(72 * 1000 * 1000)
+#endif
+#ifndef CORE_AHB_FREQ_HZ
+#	define CORE_AHB_FREQ_HZ					(72 * 1000 * 1000)
+#endif
+#ifndef CORE_APB1_FREQ_HZ
+#	define CORE_APB1_FREQ_HZ				(36 * 1000 * 1000)
+#endif
+#ifndef CORE_APB2_FREQ_HZ
+#	define CORE_APB2_FREQ_HZ				(72 * 1000 * 1000)
+#endif
+#ifndef CORE_FLASH_LATENCY
+#	define CORE_FLASH_LATENCY				2
+#endif
+#ifndef CORE_DEBUG
+#	define CORE_DEBUG						STM32_DBG_JTAG_SWD
+#endif
+#ifndef CORE_VECTOR_TABLE
+#	define CORE_VECTOR_TABLE				(0x08000000 | FLASH_LOAD_OFFSET)
+#endif
 
 // SPI config
 #define SPI_NUM								2

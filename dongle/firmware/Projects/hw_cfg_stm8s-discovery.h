@@ -51,9 +51,6 @@
 #define HW_HAS_BDM						0
 #define HW_HAS_POWERCONTROL				0
 
-/****************************** Init ******************************/
-#define HW_INIT()			//No JTAG Pin Remap
-
 /****************************** STM8S-Discovery Pins ******************************/
 #define STM8S_SWD_PORT					GPIOB
 
