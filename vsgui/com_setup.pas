@@ -71,14 +71,19 @@ const
   DEFAULT_AUXPIN: integer = 0;
   DEFAULT_AUXPIN_CHAR: char = 'N';
   {$IFDEF UNIX}
-  COMPORTS: array[0..19] of string =
+  COMPORTS: array[0..39] of string =
     ('/dev/ttyS0', '/dev/ttyS1', '/dev/ttyS2', '/dev/ttyS3', '/dev/ttyS4',
      '/dev/ttyS5', '/dev/ttyS6', '/dev/ttyS7', '/dev/ttyS8', '/dev/ttyS9',
+     '/dev/ttyS10', '/dev/ttyS11', '/dev/ttyS12', '/dev/ttyS13', '/dev/ttyS14',
+     '/dev/ttyS15', '/dev/ttyS16', '/dev/ttyS17', '/dev/ttyS18', '/dev/ttyS19',
      '/dev/ttyACM0', '/dev/ttyACM1', '/dev/ttyACM2', '/dev/ttyACM3', '/dev/ttyACM4',
-     '/dev/ttyACM5', '/dev/ttyACM6', '/dev/ttyACM7', '/dev/ttyACM8', '/dev/ttyACM9');
+     '/dev/ttyACM5', '/dev/ttyACM6', '/dev/ttyACM7', '/dev/ttyACM8', '/dev/ttyACM9',
+     '/dev/ttyACM10', '/dev/ttyACM11', '/dev/ttyACM12', '/dev/ttyACM13', '/dev/ttyACM14',
+     '/dev/ttyACM15', '/dev/ttyACM16', '/dev/ttyACM17', '/dev/ttyACM18', '/dev/ttyACM19');
   {$ELSE}{$IFDEF MSWINDOWS}
-  COMPORTS: array[0..8] of string =
-    ('COM1', 'COM2', 'COM3', 'COM4', 'COM5', 'COM6', 'COM7', 'COM8', 'COM9');
+  COMPORTS: array[0..19] of string =
+    ('COM1', 'COM2', 'COM3', 'COM4', 'COM5', 'COM6', 'COM7', 'COM8', 'COM9', 'COM10',
+    'COM11', 'COM12', 'COM13', 'COM14', 'COM15', 'COM16', 'COM17', 'COM18', 'COM19', 'COM20');
   {$ENDIF}{$ENDIF}
 
 implementation
