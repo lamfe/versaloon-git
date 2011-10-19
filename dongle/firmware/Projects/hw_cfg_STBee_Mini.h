@@ -47,11 +47,6 @@
 #define HW_HAS_BDM						0
 #define HW_HAS_POWERCONTROL				0
 
-/****************************** Init ******************************/
-#define HW_INIT()						do{\
-											GPIO_PinRemapConfig(GPIO_Remap_SWJ_Disable, ENABLE);\
-										} while (0)
-
 /****************************** DelayTimer ******************************/
 #define DELAYTIMER_MAXDELAY_US			200000
 

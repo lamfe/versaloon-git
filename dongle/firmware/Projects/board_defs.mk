@@ -31,6 +31,7 @@ HSE_VALUE			= 12000000
 LD_FILE				= versaloonSTM32.ld
 TARGET_CHIP			= stm32
 TARGET_STM32		= MediumDensity
+USR_DEFS+=-DCORE_DEBUG=STM32_DBG_NONE
 else
 ########################################################################
 ifeq ($(HW_BOARD),MiniRelease1)
@@ -41,6 +42,7 @@ HSE_VALUE			= 12000000
 LD_FILE				= versaloonSTM32.ld
 TARGET_CHIP			= stm32
 TARGET_STM32		= MediumDensity
+USR_DEFS+=-DCORE_DEBUG=STM32_DBG_NONE
 else
 ########################################################################
 ifeq ($(HW_BOARD),STBee_Mini)

@@ -46,11 +46,6 @@
 #define HW_HAS_BDM						1
 #define HW_HAS_POWERCONTROL				1
 
-/****************************** Init ******************************/
-#define HW_INIT()						do{\
-											GPIO_PinRemapConfig(GPIO_Remap_SWJ_Disable, ENABLE);\
-										} while (0)
-
 /****************************** Power ******************************/
 #define PWREXT_EN_PORT					GPIOB
 #define PWREXT_EN_PIN					GPIO_PIN_8
