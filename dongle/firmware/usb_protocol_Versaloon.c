@@ -419,6 +419,10 @@ vsf_err_t usb_protocol_init(void)
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&NVIC_InitStructure);
 	
+	interfaces->gpio.init(0);
+	interfaces->gpio.init(1);
+	interfaces->gpio.init(2);
+	
 	LED_RED_INIT();
 	LED_RED_OFF();
 	LED_GREEN_INIT();
