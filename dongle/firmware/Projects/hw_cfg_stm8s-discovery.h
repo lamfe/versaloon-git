@@ -476,7 +476,9 @@
 
 
 #define JTAG_TAP_HS_SPI_M				SPI2
+#define JTAG_TAP_HS_SPI_M_IDX			0x01
 #define JTAG_TAP_HS_SPI_S				SPI1
+#define JTAG_TAP_HS_SPI_S_IDX			0x10
 
 // DMA
 #define JTAG_TAP_HS_SPI_M_TX_DMA		DMA1_Channel5
@@ -586,6 +588,7 @@
 #define JTAG_TAP_HS_WaitReady()			while(JTAG_TAP_HS_SPI_M->SR & SPI_I2S_FLAG_BSY)
 
 /****************************** SPI ******************************/
+#define SPI_Interface_Idx				1
 #define SPI_Interface					SPI2
 
 #define SPI_Conf(br, fb, cpol, cpha)	SPI_Configuration(SPI_Interface,SPI_Mode_Master,\
@@ -716,64 +719,17 @@
 
 #define IIC_PULL_INIT()					
 
-#define IIC_SCL_SETOUTPUT()				GPIO_SetMode(IIC_PORT, IIC_SCL_PIN, GPIO_MODE_OUT_PP)
-#define IIC_SCL_SETINPUT()				GPIO_SetMode(IIC_PORT, IIC_SCL_PIN, GPIO_MODE_IPU)
-#define IIC_SCL_SET()					IIC_SCL_SETINPUT()
-#define IIC_SCL_CLR()					do{\
-											GPIO_ClrPins(IIC_PORT, IIC_SCL_PIN);\
-											IIC_SCL_SETOUTPUT();\
-										}while(0)
+#define IIC_SCL_INIT()					GPIO_SetMode(IIC_PORT, IIC_SCL_PIN, GPIO_MODE_OUT_OD)
+#define IIC_SCL_FINI()					GPIO_SetMode(IIC_PORT, IIC_SCL_PIN, GPIO_MODE_IN_FLOATING)
+#define IIC_SCL_SET()					GPIO_SetPins(IIC_PORT, IIC_SCL_PIN)
+#define IIC_SCL_CLR()					GPIO_ClrPins(IIC_PORT, IIC_SCL_PIN)
 #define IIC_SCL_GET()					GPIO_GetInPins(IIC_PORT, IIC_SCL_PIN)
 
-#define IIC_SDA_SETOUTPUT()				GPIO_SetMode(IIC_PORT, IIC_SDA_PIN, GPIO_MODE_OUT_PP)
-#define IIC_SDA_SETINPUT()				GPIO_SetMode(IIC_PORT, IIC_SDA_PIN, GPIO_MODE_IPU)
-#define IIC_SDA_SET()					IIC_SDA_SETINPUT()
-#define IIC_SDA_CLR()					do{\
-											GPIO_ClrPins(IIC_PORT, IIC_SDA_PIN);\
-											IIC_SDA_SETOUTPUT();\
-										}while(0)
+#define IIC_SDA_INIT()					GPIO_SetMode(IIC_PORT, IIC_SDA_PIN, GPIO_MODE_OUT_OD)
+#define IIC_SDA_FINI()					GPIO_SetMode(IIC_PORT, IIC_SDA_PIN, GPIO_MODE_IN_FLOATING)
+#define IIC_SDA_SET()					GPIO_SetPins(IIC_PORT, IIC_SDA_PIN)
+#define IIC_SDA_CLR()					GPIO_ClrPins(IIC_PORT, IIC_SDA_PIN)
 #define IIC_SDA_GET()					GPIO_GetInPins(IIC_PORT, IIC_SDA_PIN)
-
-/****************************** USART ******************************/
-// to change USART port below, modify the interrupt handler
-#define USART_DEF_PORT					USART1
-#define USART_IRQ						USART1_IRQn
-#define USART_AUX_PORT_EN				0
-
-#define USART_PORT						GPIOA
-#define USART_TXD_PIN					GPIO_PIN_9
-#define USART_RXD_PIN					GPIO_PIN_10
-
-#define USART_AUX_PORT					GPIOB
-#define USART_DTR_PIN					GPIO_PIN_10
-#define USART_RTS_PIN					GPIO_PIN_11
-#define USART_DSR_PIN					
-#define USART_CTS_PIN					
-#define USART_RI_PIN					
-
-#define USART_DTR_SET()					GPIO_SetPins(USART_AUX_PORT, USART_DTR_PIN)
-#define USART_DTR_CLR()					GPIO_ClrPins(USART_AUX_PORT, USART_DTR_PIN)
-#define USART_RTS_SET()					GPIO_SetPins(USART_AUX_PORT, USART_RTS_PIN)
-#define USART_RTS_CLR()					GPIO_ClrPins(USART_AUX_PORT, USART_RTS_PIN)
-
-#define USART_AUX_Port_Init()			do{\
-											GPIO_SetMode(USART_AUX_PORT, USART_DTR_PIN, GPIO_MODE_OUT_PP);\
-											GPIO_SetMode(USART_AUX_PORT, USART_RTS_PIN, GPIO_MODE_OUT_PP);\
-										}while(0)
-#define USART_AUX_Port_Fini()			do{\
-											GPIO_SetMode(USART_AUX_PORT, USART_DTR_PIN, GPIO_MODE_IN_FLOATING);\
-											GPIO_SetMode(USART_AUX_PORT, USART_RTS_PIN, GPIO_MODE_IN_FLOATING);\
-										}while(0)
-#define USART_Port_Init()				do{\
-											RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE);\
-											GPIO_SetMode(USART_PORT, USART_TXD_PIN, GPIO_MODE_AF_PP);\
-											GPIO_SetMode(USART_PORT, USART_RXD_PIN, GPIO_MODE_IN_FLOATING);\
-										}while(0)
-#define USART_Port_Fini()				do{\
-											RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, DISABLE);\
-											GPIO_SetMode(USART_PORT, USART_TXD_PIN, GPIO_MODE_IN_FLOATING);\
-											GPIO_SetMode(USART_PORT, USART_RXD_PIN, GPIO_MODE_IN_FLOATING);\
-										}while(0)
 
 /****************************** ADC ******************************/
 #define TVCC_ADC_CHANNEL				8
@@ -786,35 +742,23 @@
 #define TVCC_SAMPLE_MAXVAL				4096
 
 /****************************** LED ******************************/
-#define LED_RED_PORT					GPIOA
-#define LED_RED_PIN						STM8S_T_JTDI
-#define LED_GREEN_PORT					GPIOA
-#define LED_GREEN_PIN					STM8S_T_JTDO
-#define LED_RED_ON()					GPIO_ClrPins(LED_RED_PORT, LED_RED_PIN)
-#define LED_RED_OFF()					GPIO_SetPins(LED_RED_PORT, LED_RED_PIN)
-#define LED_GREEN_ON()					GPIO_ClrPins(LED_GREEN_PORT, LED_GREEN_PIN)
-#define LED_GREEN_OFF()					GPIO_SetPins(LED_GREEN_PORT, LED_GREEN_PIN)
+#define LED_USB_PORT					0
+#define LED_USB_PIN						8
 
-#define LED_Init()						do{\
-											GPIO_SetMode(LED_RED_PORT, LED_RED_PIN, GPIO_MODE_OUT_PP);\
-											GPIO_SetMode(LED_GREEN_PORT, LED_GREEN_PIN, GPIO_MODE_OUT_PP);\
-										}while(0)
-#define LED_Fini()						do{\
-											GPIO_SetMode(LED_RED_PORT, LED_RED_PIN, GPIO_MODE_IN_FLOATING);\
-											GPIO_SetMode(LED_GREEN_PORT, LED_GREEN_PIN, GPIO_MODE_IN_FLOATING);\
-										}while(0)
-
-// LED_RW
-#define LED_RW_PORT						GPIOA
-#define LED_RW_PIN						GPIO_PIN_8
-#define Led_RW_Init()					GPIO_SetMode(LED_RW_PORT, LED_RW_PIN, GPIO_MODE_OUT_PP)
-#define Led_RW_ON()						GPIO_ClrPins(LED_RW_PORT, LED_RW_PIN)
-#define Led_RW_OFF()					GPIO_SetPins(LED_RW_PORT, LED_RW_PIN)
+#define LED_RED_INIT()					
+#define LED_RED_ON()					
+#define LED_RED_OFF()					
+#define LED_GREEN_INIT()				
+#define LED_GREEN_ON()					
+#define LED_GREEN_OFF()					
 
 // LED_USB
-#define LED_USB_INIT()					
-#define LED_USB_ON()					Led_RW_OFF()
-#define LED_USB_OFF()					Led_RW_ON()
+#define LED_USB_INIT()					do {\
+											interfaces->gpio.init(LED_USB_PORT);\
+											interfaces->gpio.config_pin(LED_USB_PORT, LED_USB_PIN, GPIO_OUTPP);\
+										} while (0)
+#define LED_USB_ON()					interfaces->gpio.out(LED_USB_PORT, 1 << LED_USB_PIN, 0)
+#define LED_USB_OFF()					interfaces->gpio.out(LED_USB_PORT, 1 << LED_USB_PIN, 1 << LED_USB_PIN)
 
 /****************************** KEY ******************************/
 #define KEY_PORT						1
