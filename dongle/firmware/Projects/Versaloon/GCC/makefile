@@ -11,6 +11,8 @@ PROJECT	= Versaloon
 # STM32VL_Discovery
 #
 HW_BOARD = MiniRelease1
+#HW_BOARD = STM32VL_Discovery
+#HW_BOARD = STM8S_Discovery
 #
 
 #
@@ -257,14 +259,14 @@ AS = $(TCHAIN)-gcc
 ASFLAGS = $(COMPILE_OPTS) -c
 
 LD = $(TCHAIN)-gcc
-LDFLAGS = -Wl,--gc-sections,-Map=$(PROJECT).map,-cref,-u,Reset_Handler $(INCLUDE_DIRS) $(LIBRARY_DIRS) -T $(LD_FILE)
+LDFLAGS = -Wl,--gc-sections,-Map=$(MAIN_OUT).map,-cref,-u,Reset_Handler $(INCLUDE_DIRS) $(LIBRARY_DIRS) -T $(LD_FILE)
 
 OBJCP = $(TCHAIN)-objcopy
 
 AR = $(TCHAIN)-ar
 ARFLAGS = cr
 
-MAIN_OUT = $(PROJECT)_GCC
+MAIN_OUT = $(PROJECT)_GCC-$(HW_BOARD)-$(FLASH_LOAD_OFFSET)
 MAIN_OUT_ELF = $(MAIN_OUT).elf
 MAIN_OUT_BIN = $(MAIN_OUT).bin
 MAIN_OUT_HEX = $(MAIN_OUT).hex
@@ -275,7 +277,7 @@ STR_DIV	= ------------------------------------------------------------
 
 # all
 
-all: start gcc-info $(MAIN_OUT_ELF) $(MAIN_OUT_PROG) size flash end
+all: start gcc-info $(MAIN_OUT_ELF) $(MAIN_OUT_PROG) $(MAIN_OUT_BIN) size flash end
 
 # misc
 
@@ -325,4 +327,4 @@ $(USR_OBJS): $(USR_SRCS)
 	$(CC) -c $(CFLAGS) $^
 
 clean:
-	-rm $(USR_OBJS) $(PROJECT).map $(ASM_OBJS) $(LIBSTM32_OBJS) $(MAIN_OUT_ELF) $(MAIN_OUT_PROG)
+	-rm $(USR_OBJS) $(MAIN_OUT).map $(ASM_OBJS) $(LIBSTM32_OBJS) $(MAIN_OUT_ELF) $(MAIN_OUT_PROG) $(MAIN_OUT_BIN)
