@@ -10,6 +10,8 @@
 # STBee_Mini
 # STM8S_Discovery
 # STM32VL_Discovery
+# STM32L_Discovery
+# STM32F4_Discovery
 
 # Available targets:
 # LowDensity
@@ -75,9 +77,31 @@ TARGET_CHIP			= stm32
 TARGET_STM32		= MediumDensity
 else
 ########################################################################
+ifeq ($(HW_BOARD),STM32L_Discovery)
+########################################################################
+_HARDWARE_VER		= 0x34
+FLASH_LOAD_OFFSET	= 0x2000
+HSE_VALUE			= 8000000
+LD_FILE				= st-discovery.ld
+TARGET_CHIP			= stm32
+TARGET_STM32		= MediumDensity
+else
+########################################################################
+ifeq ($(HW_BOARD),STM32F4_Discovery)
+########################################################################
+_HARDWARE_VER		= 0x35
+FLASH_LOAD_OFFSET	= 0x0000
+HSE_VALUE			= 8000000
+LD_FILE				= st-discovery.ld
+TARGET_CHIP			= stm32
+TARGET_STM32		= MediumDensity
+else
+########################################################################
 # Unknown board error
 ########################################################################
 $(error Missing or unknown HW_BOARD defined in makefile)
+endif
+endif
 endif
 endif
 endif

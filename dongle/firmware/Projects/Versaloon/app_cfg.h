@@ -28,6 +28,8 @@
 #define STBee_Mini						0x31
 #define STM8S_Discovery					0x32
 #define STM32VL_Discovery				0x33
+#define STM32L_Discovery				0x34
+#define STM32F4_Discovery				0x35
 
 #if _HARDWARE_VER == NanoRelease1
 #include "hw_cfg_NanoRelease1.h"
@@ -39,6 +41,10 @@
 #include "hw_cfg_stm8s-discovery.h"
 #elif _HARDWARE_VER == STM32VL_Discovery
 #include "hw_cfg_stm32vl-discovery.h"
+#elif _HARDWARE_VER == STM32L_Discovery
+#include "hw_cfg_stm32l-discovery.h"
+#elif _HARDWARE_VER == STM32F4_Discovery
+#include "hw_cfg_stm32f4-discovery.h"
 #else
 #error "Unknown or missing HW_BOARD definition"
 #endif

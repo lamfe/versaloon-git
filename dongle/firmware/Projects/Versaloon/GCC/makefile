@@ -9,9 +9,13 @@ PROJECT	= Versaloon
 # STBee_Mini
 # STM8S_Discovery
 # STM32VL_Discovery
+# STM32L_Discovery
+# STM32F4_Discovery
 #
 HW_BOARD = MiniRelease1
 #HW_BOARD = STM32VL_Discovery
+#HW_BOARD = STM8S_Discovery
+#HW_BOARD = STM32L_Discovery
 #HW_BOARD = STM8S_Discovery
 #
 
