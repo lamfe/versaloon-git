@@ -20,6 +20,7 @@
 #include "STM32_SPI.h"
 
 #define STM32_AFIO_MAPR_SPI1			((uint32_t)1 << 0)
+#define STM32_AFIO_MAPR_SWJCFG			((uint32_t)7 << 24)
 
 #define STM32_RCC_APB1ENR_SPI2EN		((uint32_t)1 << 14)
 #define STM32_RCC_APB1ENR_SPI3EN		((uint32_t)1 << 15)
@@ -116,13 +117,14 @@ vsf_err_t stm32_spi_init(uint8_t index)
 		{
 		#if SPI00_ENABLE
 		case 0:
-			AFIO->MAPR &= ~STM32_AFIO_MAPR_SPI1;
+			AFIO->MAPR = (AFIO->MAPR & ~STM32_AFIO_MAPR_SPI1)
+							| STM32_AFIO_MAPR_SWJCFG;
 			RCC->APB2ENR |= STM32_RCC_APB2ENR_IOPAEN;
 			break;
 		#endif
 		#if SPI10_ENABLE
 		case 1:
-			AFIO->MAPR |= STM32_AFIO_MAPR_SPI1;
+			AFIO->MAPR |= STM32_AFIO_MAPR_SPI1 | STM32_AFIO_MAPR_SWJCFG;
 			RCC->APB2ENR |= STM32_RCC_APB2ENR_IOPBEN;
 			break;
 		#endif

@@ -28,6 +28,7 @@
 #define STM32_AFIO_MAPR_USART3_SFT		((uint32_t)1 << 4)
 #define STM32_AFIO_MAPR_USART3_MSK		((uint32_t)0X03 << \
 											STM32_AFIO_MAPR_USART3_SFT)
+#define STM32_AFIO_MAPR_SWJCFG			((uint32_t)7 << 24)
 
 #define STM32_RCC_APB1ENR_USART2EN		((uint32_t)1 << 17)
 #define STM32_RCC_APB1ENR_USART3EN		((uint32_t)1 << 18)
@@ -102,7 +103,8 @@ vsf_err_t stm32_usart_init(uint8_t index)
 		{
 		#if USART00_ENABLE
 		case 0:
-			AFIO->MAPR &= ~STM32_AFIO_MAPR_USART1;
+			AFIO->MAPR = (AFIO->MAPR & ~STM32_AFIO_MAPR_USART1)
+							| STM32_AFIO_MAPR_SWJCFG;
 			RCC->APB2ENR |= STM32_RCC_APB2ENR_IOPAEN;
 			#if USART00_CTS_ENABLE
 			GPIOA->CRH = (GPIOA->CRH & ~(0x0F << ((11 - 8) * 4))) | 
@@ -128,7 +130,7 @@ vsf_err_t stm32_usart_init(uint8_t index)
 		#endif
 		#if USART10_ENABLE
 		case 1:
-			AFIO->MAPR |= STM32_AFIO_MAPR_USART1;
+			AFIO->MAPR |= STM32_AFIO_MAPR_USART1 | STM32_AFIO_MAPR_SWJCFG;
 			RCC->APB2ENR |= STM32_RCC_APB2ENR_IOPBEN;
 			#if USART10_TX_ENABLE
 			GPIOB->CRL = (GPIOB->CRL & ~(0x0F << (6 * 4))) | 
@@ -152,7 +154,8 @@ vsf_err_t stm32_usart_init(uint8_t index)
 		{
 		#if USART01_ENABLE
 		case 0:
-			AFIO->MAPR &= ~STM32_AFIO_MAPR_USART2;
+			AFIO->MAPR = (AFIO->MAPR & ~STM32_AFIO_MAPR_USART2)
+							| STM32_AFIO_MAPR_SWJCFG;
 			RCC->APB2ENR |= STM32_RCC_APB2ENR_IOPAEN;
 			#if USART00_CTS_ENABLE
 			GPIOA->CRL = (GPIOA->CRL & ~(0x0F << (0 * 4))) | 
@@ -178,7 +181,7 @@ vsf_err_t stm32_usart_init(uint8_t index)
 		#endif
 		#if USART11_ENABLE
 		case 1:
-			AFIO->MAPR |= STM32_AFIO_MAPR_USART2;
+			AFIO->MAPR |= STM32_AFIO_MAPR_USART2 | STM32_AFIO_MAPR_SWJCFG;
 			RCC->APB2ENR |= STM32_RCC_APB2ENR_IOPDEN;
 			#if USART11_CTS_ENABLE
 			GPIOD->CRL = (GPIOD->CRL & ~(0x0F << (3 * 4))) | 
@@ -214,7 +217,8 @@ vsf_err_t stm32_usart_init(uint8_t index)
 		{
 		#if USART02_ENABLE
 		case 0:
-			AFIO->MAPR &= ~STM32_AFIO_MAPR_USART3_MSK;
+			AFIO->MAPR = (AFIO->MAPR & ~STM32_AFIO_MAPR_USART3_MSK)
+							| STM32_AFIO_MAPR_SWJCFG;
 			RCC->APB2ENR |= STM32_RCC_APB2ENR_IOPBEN;
 			#if USART02_CTS_ENABLE
 			GPIOB->CRH = (GPIOB->CRH & ~(0x0F << ((13 - 8) * 4))) | 
@@ -241,7 +245,8 @@ vsf_err_t stm32_usart_init(uint8_t index)
 		#if USART12_ENABLE
 		case 1:
 			AFIO->MAPR = (AFIO->MAPR & ~STM32_AFIO_MAPR_USART3_MSK) | 
-							(remap_idx << STM32_AFIO_MAPR_USART3_SFT);
+							(remap_idx << STM32_AFIO_MAPR_USART3_SFT) | 
+							STM32_AFIO_MAPR_SWJCFG;
 			RCC->APB2ENR |= STM32_RCC_APB2ENR_IOPCEN;
 			#if USART12_CTS_ENABLE
 			GPIOC->CRH = (GPIOC->CRH & ~(0x0F << ((13 - 8) * 4))) | 
@@ -268,7 +273,8 @@ vsf_err_t stm32_usart_init(uint8_t index)
 		#if USART32_ENABLE
 		case 2:
 			AFIO->MAPR = (AFIO->MAPR & ~STM32_AFIO_MAPR_USART3_MSK) | 
-							(remap_idx << STM32_AFIO_MAPR_USART3_SFT);
+							(remap_idx << STM32_AFIO_MAPR_USART3_SFT) | 
+							STM32_AFIO_MAPR_SWJCFG;
 			RCC->APB2ENR |= STM32_RCC_APB2ENR_IOPDEN;
 			#if USART32_CTS_ENABLE
 			GPIOD->CRH = (GPIOD->CRH & ~(0x0F << ((11 - 8) * 4))) | 
@@ -335,7 +341,8 @@ vsf_err_t stm32_usart_fini(uint8_t index)
 		{
 		#if USART00_ENABLE
 		case 0:
-			AFIO->MAPR &= ~STM32_AFIO_MAPR_USART1;
+			AFIO->MAPR = (AFIO->MAPR & ~STM32_AFIO_MAPR_USART1)
+							| STM32_AFIO_MAPR_SWJCFG;
 			#if USART00_CTS_ENABLE
 			GPIOA->CRH = (GPIOA->CRH & ~(0x0F << ((11 - 8) * 4))) | 
 							((uint32_t)stm32_GPIO_INFLOAT << ((13 - 8) * 4));
@@ -360,7 +367,8 @@ vsf_err_t stm32_usart_fini(uint8_t index)
 		#endif
 		#if USART10_ENABLE
 		case 1:
-			AFIO->MAPR &= ~STM32_AFIO_MAPR_USART1;
+			AFIO->MAPR = (AFIO->MAPR & ~STM32_AFIO_MAPR_USART1)
+							| STM32_AFIO_MAPR_SWJCFG;
 			#if USART10_TX_ENABLE
 			GPIOB->CRL = (GPIOB->CRL & ~(0x0F << (6 * 4))) | 
 							((uint32_t)stm32_GPIO_INFLOAT << (6 * 4));
@@ -383,7 +391,8 @@ vsf_err_t stm32_usart_fini(uint8_t index)
 		{
 		#if USART01_ENABLE
 		case 0:
-			AFIO->MAPR &= ~STM32_AFIO_MAPR_USART2;
+			AFIO->MAPR = (AFIO->MAPR & ~STM32_AFIO_MAPR_USART2)
+							| STM32_AFIO_MAPR_SWJCFG;
 			#if USART00_CTS_ENABLE
 			GPIOA->CRL = (GPIOA->CRL & ~(0x0F << (0 * 4))) | 
 							((uint32_t)stm32_GPIO_INFLOAT << (0 * 4));
@@ -408,7 +417,8 @@ vsf_err_t stm32_usart_fini(uint8_t index)
 		#endif
 		#if USART11_ENABLE
 		case 1:
-			AFIO->MAPR &= ~STM32_AFIO_MAPR_USART2;
+			AFIO->MAPR = (AFIO->MAPR & ~STM32_AFIO_MAPR_USART2)
+							| STM32_AFIO_MAPR_SWJCFG;
 			#if USART11_CTS_ENABLE
 			GPIOD->CRL = (GPIOD->CRL & ~(0x0F << (3 * 4))) | 
 							((uint32_t)stm32_GPIO_INFLOAT << (3 * 4));
@@ -443,7 +453,8 @@ vsf_err_t stm32_usart_fini(uint8_t index)
 		{
 		#if USART02_ENABLE
 		case 0:
-			AFIO->MAPR &= ~STM32_AFIO_MAPR_USART3_MSK;
+			AFIO->MAPR = (AFIO->MAPR & ~STM32_AFIO_MAPR_USART3_MSK)
+							| STM32_AFIO_MAPR_SWJCFG;
 			#if USART02_CTS_ENABLE
 			GPIOB->CRH = (GPIOB->CRH & ~(0x0F << ((13 - 8) * 4))) | 
 							((uint32_t)stm32_GPIO_INFLOAT << ((13 - 8) * 4));
@@ -469,7 +480,8 @@ vsf_err_t stm32_usart_fini(uint8_t index)
 		#if USART12_ENABLE
 		case 1:
 			AFIO->MAPR = (AFIO->MAPR & ~STM32_AFIO_MAPR_USART3_MSK) | 
-							(remap_idx << STM32_AFIO_MAPR_USART3_SFT);
+							(remap_idx << STM32_AFIO_MAPR_USART3_SFT) | 
+							STM32_AFIO_MAPR_SWJCFG;
 			#if USART12_CTS_ENABLE
 			GPIOC->CRH = (GPIOC->CRH & ~(0x0F << ((13 - 8) * 4))) | 
 							((uint32_t)stm32_GPIO_INFLOAT << ((13 - 8) * 4));
@@ -495,7 +507,8 @@ vsf_err_t stm32_usart_fini(uint8_t index)
 		#if USART32_ENABLE
 		case 2:
 			AFIO->MAPR = (AFIO->MAPR & ~STM32_AFIO_MAPR_USART3_MSK) | 
-							(remap_idx << STM32_AFIO_MAPR_USART3_SFT);
+							(remap_idx << STM32_AFIO_MAPR_USART3_SFT) | 
+							STM32_AFIO_MAPR_SWJCFG;
 			#if USART32_CTS_ENABLE
 			GPIOD->CRH = (GPIOD->CRH & ~(0x0F << ((11 - 8) * 4))) | 
 							((uint32_t)stm32_GPIO_INFLOAT << ((13 - 8) * 4));
