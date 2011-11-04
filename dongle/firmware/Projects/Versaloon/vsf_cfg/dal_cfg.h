@@ -22,6 +22,7 @@
 #define DAL_MIC2826_EN						0
 #define DAL_NRF24L01_EN						0
 
+#define DAL_MAL_EN							0
 #define DAL_EE93CX6_EN						0
 #define DAL_EE24CXX_EN						0
 #define DAL_DF25XX_EN						0

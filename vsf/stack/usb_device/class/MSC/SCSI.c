@@ -204,6 +204,7 @@ static vsf_err_t SCSI_handler_READ_CAPACITY10(struct SCSI_LUN_info_t *info,
 	return VSFERR_NONE;
 }
 
+// TODO: make SCSI_io_XXXX unblock
 static vsf_err_t SCSI_io_WRITE10(struct SCSI_LUN_info_t *info, uint8_t CB[16], 
 		struct vsf_buffer_t *buffer, uint32_t cur_page)
 {
@@ -244,6 +245,7 @@ static vsf_err_t SCSI_handler_WRITE10(struct SCSI_LUN_info_t *info,
 	return VSFERR_NONE;
 }
 
+// TODO: make SCSI_io_XXXX unblock
 static vsf_err_t SCSI_io_READ10(struct SCSI_LUN_info_t *info, uint8_t CB[16], 
 		struct vsf_buffer_t *buffer, uint32_t cur_page)
 {

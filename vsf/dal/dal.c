@@ -22,7 +22,9 @@
 
 #include "dal.h"
 
+#if DAL_MAL_EN
 #include "dal/mal/mal.h"
+#endif
 
 #if DAL_MIC2826_EN
 #include "dal/mic2826/mic2826_drv.h"
