@@ -413,10 +413,17 @@ static vsf_err_t vsfusbd_MSCBOT_class_poll(uint8_t iface,
 		struct SCSI_LUN_info_t *lun_info = &tmp->lun_info[tmp->CBW.bCBWLUN];
 		uint8_t index = (tmp->tick_tock + 1) & 1;
 		struct vsf_buffer_t *buffer = &tmp->page_buffer[index];
+		vsf_err_t err;
 		
-		if (SCSI_IO(tmp->cur_handlers, lun_info, tmp->CBW.CBWCB, buffer,
-					tmp->cur_scsi_page))
+		err = SCSI_IO(tmp->cur_handlers, lun_info, tmp->CBW.CBWCB, buffer,
+						tmp->cur_scsi_page);
+		if (err != VSFERR_NONE)
 		{
+			if (VSFERR_NOT_READY == err)
+			{
+				return VSFERR_NONE;
+			}
+			// failure
 			tmp->fail = true;
 			return vsfusbd_MSCBOT_ErrCode(device, tmp, SCSI_GetErrorCode());
 		}
