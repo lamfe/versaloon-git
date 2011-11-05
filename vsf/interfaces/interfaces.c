@@ -24,12 +24,15 @@ vsf_err_t peripheral_commit(void)
 
 const struct interfaces_info_t core_interfaces = 
 {
-	CORE_INIT(__TARGET_CHIP__),
-	CORE_FINI(__TARGET_CHIP__),
-	CORE_RESET(__TARGET_CHIP__),
-	
-	// flash
+	// core
 	{
+		CORE_INIT(__TARGET_CHIP__),
+		CORE_FINI(__TARGET_CHIP__),
+		CORE_RESET(__TARGET_CHIP__),
+	}
+#if IFS_FLASH_EN
+	// flash
+	,{
 		CORE_FLASH_INIT(__TARGET_CHIP__),
 		CORE_FLASH_FINI(__TARGET_CHIP__),
 		CORE_FLASH_LOCK(__TARGET_CHIP__),
@@ -47,8 +50,10 @@ const struct interfaces_info_t core_interfaces =
 		CORE_FLASH_WRITEPAGE_ISREADY(__TARGET_CHIP__),
 		CORE_FLASH_ISPROTECTED(__TARGET_CHIP__),
 		CORE_FLASH_PROTECT(__TARGET_CHIP__),
-	},
-	{
+	}
+#endif
+#if IFS_GPIO_EN
+	,{
 		// gpio
 		CORE_GPIO_INIT(__TARGET_CHIP__),
 		CORE_GPIO_FINI(__TARGET_CHIP__),
@@ -59,8 +64,10 @@ const struct interfaces_info_t core_interfaces =
 		CORE_GPIO_OUT(__TARGET_CHIP__),
 		CORE_GPIO_IN(__TARGET_CHIP__),
 		CORE_GPIO_GET(__TARGET_CHIP__)
-	},
-	{
+	}
+#endif
+#if IFS_TIMER_EN
+	,{
 		// timer
 		CORE_TIMER_INIT(__TARGET_CHIP__),
 		CORE_TIMER_FINI(__TARGET_CHIP__),
@@ -72,8 +79,10 @@ const struct interfaces_info_t core_interfaces =
 		CORE_TIMER_CONFIG_CHANNEL(__TARGET_CHIP__),
 		CORE_TIMER_GET_CHANNEL(__TARGET_CHIP__),
 		CORE_TIMER_SET_CHANNEL(__TARGET_CHIP__),
-	},
-	{
+	}
+#endif
+#if IFS_EINT_EN
+	,{
 		// eint
 		CORE_EINT_INIT(__TARGET_CHIP__),
 		CORE_EINT_FINI(__TARGET_CHIP__),
@@ -81,8 +90,10 @@ const struct interfaces_info_t core_interfaces =
 		CORE_EINT_ENABLE(__TARGET_CHIP__),
 		CORE_EINT_DISABLE(__TARGET_CHIP__),
 		CORE_EINT_TRIGGER(__TARGET_CHIP__),
-	},
-	{
+	}
+#endif
+#if IFS_USART_EN
+	,{
 		// usart
 		CORE_USART_INIT(__TARGET_CHIP__),
 		CORE_USART_FINI(__TARGET_CHIP__),
@@ -92,8 +103,10 @@ const struct interfaces_info_t core_interfaces =
 		CORE_USART_TX_ISREADY(__TARGET_CHIP__),
 		CORE_USART_RX(__TARGET_CHIP__),
 		CORE_USART_RX_ISREADY(__TARGET_CHIP__),
-	},
-	{
+	}
+#endif
+#if IFS_SPI_EN
+	,{
 		// spi
 		CORE_SPI_INIT(__TARGET_CHIP__),
 		CORE_SPI_FINI(__TARGET_CHIP__),
@@ -109,8 +122,10 @@ const struct interfaces_info_t core_interfaces =
 		CORE_SPI_IO_DMA_START(__TARGET_CHIP__),
 		CORE_SPI_IO_DMA_ISREADY(__TARGET_CHIP__),
 		CORE_SPI_IO_DMA_END(__TARGET_CHIP__)
-	},
-	{
+	}
+#endif
+#if IFS_ADC_EN
+	,{
 		// adc
 		CORE_ADC_INIT(__TARGET_CHIP__),
 		CORE_ADC_FINI(__TARGET_CHIP__),
@@ -120,12 +135,16 @@ const struct interfaces_info_t core_interfaces =
 		CORE_ADC_START(__TARGET_CHIP__),
 		CORE_ADC_ISREADY(__TARGET_CHIP__),
 		CORE_ADC_GET(__TARGET_CHIP__),
-	},
-	{
+	}
+#endif
+#if IFS_IIC_EN
+	,{
 		// i2c
 		NULL, NULL, NULL, NULL, NULL
-	},
-	{
+	}
+#endif
+#if IFS_USBD_EN
+	,{
 		// usbd
 		CORE_USBD_INIT(__TARGET_CHIP__),
 		CORE_USBD_FINI(__TARGET_CHIP__),
@@ -172,22 +191,28 @@ const struct interfaces_info_t core_interfaces =
 			CORE_USBD_EP_GET_OUT_COUNT(__TARGET_CHIP__),
 			CORE_USBD_EP_READ_OUT_BUFFER(__TARGET_CHIP__),
 		},
-	},
-	{
+	}
+#endif
+#if IFS_PWM_EN
+	,{
 		// pwm
 		NULL, NULL, NULL, NULL, NULL
-	},
-	{
+	}
+#endif
+#if IFS_MICROWIRE_EN
+	,{
 		// microwre
 		NULL, NULL, NULL, NULL, NULL
-	},
-	{
+	}
+#endif
+	,{
 		// delay
 		CORE_DELAY_INIT(__TARGET_CHIP__),
 		CORE_DELAY_DELAYMS(__TARGET_CHIP__),
 		CORE_DELAY_DELAYUS(__TARGET_CHIP__)
-	},
-	{
+	}
+#if IFS_EBI_EN
+	,{
 		// ebi
 		CORE_EBI_INIT(__TARGET_CHIP__),
 		CORE_EBI_FINI(__TARGET_CHIP__),
@@ -211,8 +236,9 @@ const struct interfaces_info_t core_interfaces =
 		CORE_EBI_WRITE32(__TARGET_CHIP__),
 		
 		NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
-	},
-	peripheral_commit
+	}
+#endif
+	,peripheral_commit
 };
 
 struct interfaces_info_t *interfaces = 
