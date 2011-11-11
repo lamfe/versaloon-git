@@ -116,24 +116,6 @@ static const struct vsfusbd_desc_filter_t descriptors[] =
 	VSFUSBD_DESC_STRING(0x0409, 3, MSCBOT_StringSerial, sizeof(MSCBOT_StringSerial), NULL),
 	VSFUSBD_DESC_NULL
 };
-static const struct vsfusbd_iface_t ifaces[] = 
-{
-	{0, (struct vsfusbd_class_protocol_t *)&vsfusbd_MSCBOT_class},
-};
-static const struct vsfusbd_config_t config0[] = 
-{
-	{
-		NULL, NULL, 1, (struct vsfusbd_iface_t *)ifaces,
-		{-1, -1, -1, -1, 0},
-		{-1, -1, -1, -1, 0},
-	}
-};
-struct vsfusbd_device_t usb_device = 
-{
-	1, 0, 0, (struct vsfusbd_config_t *)config0, 
-	(struct vsfusbd_desc_filter_t *)descriptors, 
-	(struct interface_usbd_t *)&core_interfaces.usbd
-};
 
 static struct sd_info_t sd_info;
 static struct sd_spi_drv_interface_t sd_spi_drv_ifs = 
@@ -184,6 +166,23 @@ struct vsfusbd_MSCBOT_param_t MSCBOT_param =
 	},							// struct vsf_buffer_t page_buffer[2];
 };
 
+static const struct vsfusbd_iface_t ifaces[] = 
+{
+	{0, (struct vsfusbd_class_protocol_t *)&vsfusbd_MSCBOT_class, (void *)&MSCBOT_param},
+};
+static struct vsfusbd_config_t config0[] = 
+{
+	{
+		NULL, NULL, 1, (struct vsfusbd_iface_t *)ifaces,
+	}
+};
+struct vsfusbd_device_t usb_device = 
+{
+	1, (struct vsfusbd_config_t *)config0, 
+	(struct vsfusbd_desc_filter_t *)descriptors, 
+	(struct interface_usbd_t *)&core_interfaces.usbd
+};
+
 vsf_err_t usb_protocol_init()
 {
 	NVIC_InitTypeDef NVIC_InitStructure;
@@ -221,7 +220,6 @@ vsf_err_t usb_protocol_init()
 		return VSFERR_FAIL;
 	}
 	
-	vsfusbd_MSCBOT_set_param(&MSCBOT_param);
 	USB_Pull_Init();
 	USB_Connect();
 	return vsfusbd_device_init(&usb_device);

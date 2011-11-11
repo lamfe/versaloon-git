@@ -1,7 +1,6 @@
 #ifndef __VSFUSBD_MSCBOT_H_INCLUDED__
 #define __VSFUSBD_MSCBOT_H_INCLUDED__
 
-#include "tool/list/list.h"
 #include "SCSI.h"
 
 #define USBMSC_CBW_SIGNATURE			0x43425355
@@ -77,10 +76,7 @@ struct vsfusbd_MSCBOT_param_t
 	struct vsf_transaction_buffer_t tbuffer;
 	uint32_t page_size, page_num, cur_usb_page, cur_scsi_page;
 	volatile enum vsfusbd_MSCBOT_status_t bot_status;
-	
-	struct sllist list;
 };
-vsf_err_t vsfusbd_MSCBOT_set_param(struct vsfusbd_MSCBOT_param_t *param);
 
 #endif	// __VSFUSBD_MSC_H_INCLUDED__
 

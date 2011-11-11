@@ -54,6 +54,9 @@ vsf_err_t vsfusbd_device_get_descriptor(struct vsfusbd_device_t *device,
 
 vsf_err_t vsfusbd_device_init(struct vsfusbd_device_t *device)
 {
+	device->configuration = 0;
+	device->feature = 0;
+	
 	if (device->drv->init(device) || device->drv->connect() || 
 		((device->callback.init != NULL) && device->callback.init()))
 	{
@@ -1027,8 +1030,9 @@ vsf_err_t vsfusbd_on_RESET(void *p)
 	struct vsfusbd_config_t *config;
 	uint8_t i;
 #if __VSF_DEBUG__
-	uint8_t num_iface;
+	uint8_t num_iface, num_endpoint;
 #endif
+	int16_t cur_iface;
 	
 	memset(vsfusbd_IN_tbuffer, 0, sizeof(vsfusbd_IN_tbuffer));
 	memset(vsfusbd_OUT_tbuffer, 0, sizeof(vsfusbd_OUT_tbuffer));
@@ -1052,6 +1056,7 @@ vsf_err_t vsfusbd_on_RESET(void *p)
 	}
 	ep_size = desc.buffer[USB_DESC_DEVICE_OFF_EP0SIZE];
 	device->ctrl_handler.ep_size = ep_size;
+	// TODO: move config initialization to set_config processor
 	config = device->config;
 	
 	// config ep0
@@ -1092,7 +1097,11 @@ vsf_err_t vsfusbd_on_RESET(void *p)
 	
 #if __VSF_DEBUG__
 	num_iface = desc.buffer[USB_DESC_CONFIG_OFF_IFNUM];
+	num_endpoint = 0;
 #endif
+	memset(config->ep_OUT_iface_map, -1, sizeof(config->ep_OUT_iface_map));
+	memset(config->ep_IN_iface_map, -1, sizeof(config->ep_OUT_iface_map));
+	cur_iface = -1;
 	pos = USB_DESC_SIZE_CONFIGURATION;
 	while (desc.size > pos)
 	{
@@ -1104,17 +1113,24 @@ vsf_err_t vsfusbd_on_RESET(void *p)
 #endif
 		switch (desc.buffer[pos + 1])
 		{
-#if __VSF_DEBUG__
 		case USB_DESC_TYPE_INTERFACE:
+#if __VSF_DEBUG__
+			if (num_endpoint)
+			{
+				return VSFERR_FAIL;
+			}
+			num_endpoint = desc.buffer[pos + 4];
 			num_iface--;
-			break;
 #endif
+			cur_iface = desc.buffer[pos + 2];
+			break;
 		case USB_DESC_TYPE_ENDPOINT:
 			ep_addr = desc.buffer[pos + USB_DESC_EP_OFF_EPADDR];
 			ep_attr = desc.buffer[pos + USB_DESC_EP_OFF_EPATTR];
 			ep_size = desc.buffer[pos + USB_DESC_EP_OFF_EPSIZE];
 			ep_index = ep_addr & 0x0F;
 #if __VSF_DEBUG__
+			num_endpoint--;
 			if (ep_index > (*device->drv->ep.num_of_ep - 1))
 			{
 				return VSFERR_FAIL;
@@ -1143,19 +1159,21 @@ vsf_err_t vsfusbd_on_RESET(void *p)
 				// IN ep
 				device->drv->ep.set_IN_epsize(ep_index, ep_size);
 				device->drv->ep.set_IN_state(ep_index, USB_EP_STAT_NACK);
+				config->ep_IN_iface_map[ep_index] = cur_iface;
 			}
 			else
 			{
 				// OUT ep
 				device->drv->ep.set_OUT_epsize(ep_index, ep_size);
 				device->drv->ep.set_OUT_state(ep_index, USB_EP_STAT_ACK);
+				config->ep_OUT_iface_map[ep_index] = cur_iface;
 			}
 			break;
 		}
 		pos += desc.buffer[pos];
 	}
 #if __VSF_DEBUG__
-	if (num_iface || (desc.size != pos))
+	if (num_iface || num_endpoint || (desc.size != pos))
 	{
 		return VSFERR_FAIL;
 	}

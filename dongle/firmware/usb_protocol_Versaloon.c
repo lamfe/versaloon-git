@@ -344,27 +344,6 @@ static const struct vsfusbd_class_protocol_t Versaloon_Protocol =
 	versaloon_usb_init,
 	NULL, versaloon_idle
 };
-static const struct vsfusbd_iface_t ifaces[] = 
-{
-	{0, (struct vsfusbd_class_protocol_t *)&Versaloon_Protocol},
-	{0, (struct vsfusbd_class_protocol_t *)&vsfusbd_CDCMaster_class},
-	{0, (struct vsfusbd_class_protocol_t *)&vsfusbd_CDCData_class}
-};
-static const struct vsfusbd_config_t config0[] = 
-{
-	{
-		NULL, NULL, 3, (struct vsfusbd_iface_t *)ifaces,
-		{-1, -1, -1,  0, 2},
-		{-1,  1,  0, -1, 2},
-	}
-};
-struct vsfusbd_device_t usb_device = 
-{
-	1, 0, 0, (struct vsfusbd_config_t *)config0, 
-	(struct vsfusbd_desc_filter_t *)descriptors, 
-	(struct interface_usbd_t *)&core_interfaces.usbd
-};
-
 extern struct usart_stream_info_t usart_stream_p0;
 struct vsfusbd_CDC_param_t Versaloon_CDC_param = 
 {
@@ -387,6 +366,24 @@ struct vsfusbd_CDC_param_t Versaloon_CDC_param =
 		0,		// paritytype
 		8		// datatype
 	},
+};
+static const struct vsfusbd_iface_t ifaces[] = 
+{
+	{0, (struct vsfusbd_class_protocol_t *)&Versaloon_Protocol, NULL},
+	{0, (struct vsfusbd_class_protocol_t *)&vsfusbd_CDCMaster_class, (void *)&Versaloon_CDC_param},
+	{0, (struct vsfusbd_class_protocol_t *)&vsfusbd_CDCData_class, (void *)&Versaloon_CDC_param}
+};
+static struct vsfusbd_config_t config0[] = 
+{
+	{
+		NULL, NULL, 3, (struct vsfusbd_iface_t *)ifaces,
+	}
+};
+struct vsfusbd_device_t usb_device = 
+{
+	1, (struct vsfusbd_config_t *)config0, 
+	(struct vsfusbd_desc_filter_t *)descriptors, 
+	(struct interface_usbd_t *)&core_interfaces.usbd
 };
 
 vsf_err_t usb_protocol_init(void)
@@ -439,7 +436,6 @@ vsf_err_t usb_protocol_init(void)
 #endif
 	USB_TO_XXX_Init(asyn_rx_buf + 2048);
 	
-	vsfusbd_CDC_set_param(&Versaloon_CDC_param);
 	USB_Pull_Init();
 	USB_Connect();
 	return vsfusbd_device_init(&usb_device);

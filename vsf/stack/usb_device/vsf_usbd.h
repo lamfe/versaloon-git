@@ -102,31 +102,31 @@ struct vsfusbd_iface_t
 {
 	uint8_t alternate_setting;
 	struct vsfusbd_class_protocol_t *class_protocol;
+	void *protocol_param;
 };
 
 struct vsfusbd_config_t
 {
+	// public
 	vsf_err_t (*init)(struct vsfusbd_device_t *device);
 	vsf_err_t (*fini)(struct vsfusbd_device_t *device);
 	
 	uint8_t num_of_ifaces;
 	struct vsfusbd_iface_t *iface;
+	
+	// private
 	int8_t ep_OUT_iface_map[16];
 	int8_t ep_IN_iface_map[16];
 };
 
 struct vsfusbd_device_t
 {
+	// public
 	uint8_t num_of_configuration;
-	uint8_t configuration;
-	uint8_t feature;
 	struct vsfusbd_config_t *config;
 	struct vsfusbd_desc_filter_t *desc_filter;
 	struct interface_usbd_t *drv;
 	
-	struct vsfusbd_ctrl_handler_t ctrl_handler;
-	
-	// user callbacks
 	const struct vsfusbd_user_callback_t
 	{
 		vsf_err_t (*init)(void);
@@ -147,6 +147,11 @@ struct vsfusbd_device_t
 		void (*on_SYNC_OVERFLOW)(uint8_t ep);
 #endif
 	} callback;
+	
+	// private
+	uint8_t configuration;
+	uint8_t feature;
+	struct vsfusbd_ctrl_handler_t ctrl_handler;
 };
 
 vsf_err_t vsfusbd_request_prepare_0(
