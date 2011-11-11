@@ -1,8 +1,6 @@
 #ifndef __VSFUSBD_HID_H_INCLUDED__
 #define __VSFUSBD_HID_H_INCLUDED__
 
-#include "tool/list/list.h"
-
 enum usb_HID_description_type_t
 {
 	USB_HIDDESC_TYPE_HID					= 0x21,
@@ -62,9 +60,6 @@ struct vsfusbd_HID_param_t
 	
 	// no need to initialize below by user
 	uint8_t protocol;
-	
-	struct sllist list;
 };
-vsf_err_t vsfusbd_HID_set_param(struct vsfusbd_HID_param_t *param);
 
 #endif	// __VSFUSBD_HID_H_INCLUDED__

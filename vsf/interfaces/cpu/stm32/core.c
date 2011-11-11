@@ -30,7 +30,6 @@
 #define STM32_RCC_APB2ENR_AFIO			(1 << 0)
 
 #define STM32_AFIO_MAPR_SWJCFG_SFT		24
-#define STM32_AFIO_MAPR_SWJCFG_MSK		(0x07 << STM32_AFIO_MAPR_SWJCFG_SFT)
 
 #define STM32_HSI_FREQ_HZ				(8 * 1000 * 1000)
 
@@ -174,7 +173,6 @@ vsf_err_t stm32_interface_init(void *p)
 	while (((RCC->CFGR >> 2) & STM32_RCC_CFGR_SW_MSK) != CORE_CLKSRC);
 	
 	RCC->APB2ENR |= STM32_RCC_APB2ENR_AFIO;
-	AFIO->MAPR &= ~STM32_AFIO_MAPR_SWJCFG_MSK;
 	AFIO->MAPR |= stm32_info.debug_setting << STM32_AFIO_MAPR_SWJCFG_SFT;
 	
 	SCB->VTOR = stm32_info.vector_table;

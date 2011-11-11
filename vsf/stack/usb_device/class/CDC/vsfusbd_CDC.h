@@ -2,7 +2,6 @@
 #define __VSFUSBD_CDC_H_INCLUDED__
 
 #include "dal/usart_stream/usart_stream.h"
-#include "tool/list/list.h"
 
 struct vsfusbd_CDC_line_coding_t
 {
@@ -52,9 +51,6 @@ struct vsfusbd_CDC_param_t
 	// no need to initialize below by user
 	uint8_t line_coding_buffer[7];
 	volatile bool cdc_out_enable;
-	
-	struct sllist list;
 };
-vsf_err_t vsfusbd_CDC_set_param(struct vsfusbd_CDC_param_t *param);
 
 #endif	// __VSFUSBD_CDC_H_INCLUDED__
