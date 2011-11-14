@@ -1196,6 +1196,8 @@ vsf_err_t vsfusbd_on_RESET(void *p)
 	}
 	for (i = 0; i < config->num_of_ifaces; i++)
 	{
+		config->iface[i].alternate_setting = 0;
+		
 		if (((config->iface[i].class_protocol != NULL) && 
 				(config->iface[i].class_protocol->init != NULL) && 
 				config->iface[i].class_protocol->init(i, device)))

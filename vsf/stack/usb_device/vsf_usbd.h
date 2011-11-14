@@ -100,9 +100,12 @@ struct vsfusbd_class_protocol_t
 
 struct vsfusbd_iface_t
 {
-	uint8_t alternate_setting;
+	// public
 	struct vsfusbd_class_protocol_t *class_protocol;
 	void *protocol_param;
+	
+	// private
+	uint8_t alternate_setting;
 };
 
 struct vsfusbd_config_t
