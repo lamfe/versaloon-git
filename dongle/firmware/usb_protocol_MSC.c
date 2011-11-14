@@ -152,7 +152,6 @@ uint8_t MSCBOT_Buffer0[512], MSCBOT_Buffer1[512];
 
 struct vsfusbd_MSCBOT_param_t MSCBOT_param = 
 {
-	0,							// uint8_t iface;
 	4,							// uint8_t ep_out;
 	4,							// uint8_t ep_in;
 	

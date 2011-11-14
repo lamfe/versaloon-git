@@ -184,8 +184,6 @@ struct vsfusbd_CDC_param_t CDC_param =
 	0,			// gpio_dtr_port
 	GPIO_TMS,	// gpio_dtr_pin
 	
-	1,			// iface_master
-	2,			// iface_slave
 	4,			// ep_out
 	4, 			// ep_in
 	{
