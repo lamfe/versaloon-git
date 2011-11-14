@@ -369,9 +369,9 @@ struct vsfusbd_CDC_param_t Versaloon_CDC_param =
 };
 static const struct vsfusbd_iface_t ifaces[] = 
 {
-	{0, (struct vsfusbd_class_protocol_t *)&Versaloon_Protocol, NULL},
-	{0, (struct vsfusbd_class_protocol_t *)&vsfusbd_CDCMaster_class, (void *)&Versaloon_CDC_param},
-	{0, (struct vsfusbd_class_protocol_t *)&vsfusbd_CDCData_class, (void *)&Versaloon_CDC_param}
+	{(struct vsfusbd_class_protocol_t *)&Versaloon_Protocol, NULL},
+	{(struct vsfusbd_class_protocol_t *)&vsfusbd_CDCMaster_class, (void *)&Versaloon_CDC_param},
+	{(struct vsfusbd_class_protocol_t *)&vsfusbd_CDCData_class, (void *)&Versaloon_CDC_param}
 };
 static struct vsfusbd_config_t config0[] = 
 {

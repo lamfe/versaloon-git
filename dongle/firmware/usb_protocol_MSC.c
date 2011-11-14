@@ -168,7 +168,7 @@ struct vsfusbd_MSCBOT_param_t MSCBOT_param =
 
 static const struct vsfusbd_iface_t ifaces[] = 
 {
-	{0, (struct vsfusbd_class_protocol_t *)&vsfusbd_MSCBOT_class, (void *)&MSCBOT_param},
+	{(struct vsfusbd_class_protocol_t *)&vsfusbd_MSCBOT_class, (void *)&MSCBOT_param},
 };
 static struct vsfusbd_config_t config0[] = 
 {

@@ -22,7 +22,7 @@ static const uint8_t CDC_DeviceDescriptor[] =
 	0x83,
 	0x04,	// idVendor = 0x0483
 	0x40,
-	0x57,	// idProduct = 0xA038
+	0x57,	// idProduct = 0x5740
 	0x00,
 	0x02,	// bcdDevice = 2.00
 	1,		// Index of string descriptor describing manufacturer
@@ -197,8 +197,8 @@ struct vsfusbd_CDC_param_t CDC_param =
 };
 static const struct vsfusbd_iface_t ifaces[] = 
 {
-	{0, (struct vsfusbd_class_protocol_t *)&vsfusbd_CDCMaster_class, (void *)&CDC_param},
-	{0, (struct vsfusbd_class_protocol_t *)&vsfusbd_CDCData_class, (void *)&CDC_param}
+	{(struct vsfusbd_class_protocol_t *)&vsfusbd_CDCMaster_class, (void *)&CDC_param},
+	{(struct vsfusbd_class_protocol_t *)&vsfusbd_CDCData_class, (void *)&CDC_param}
 };
 static struct vsfusbd_config_t config0[] = 
 {
