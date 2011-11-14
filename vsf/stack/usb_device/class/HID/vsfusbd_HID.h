@@ -49,7 +49,6 @@ struct vsfusbd_HID_report_t
 
 struct vsfusbd_HID_param_t
 {
-	uint8_t iface;
 	uint8_t ep_out;
 	uint8_t ep_in;
 	

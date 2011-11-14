@@ -54,7 +54,6 @@ enum vsfusbd_MSCBOT_status_t
 
 struct vsfusbd_MSCBOT_param_t
 {
-	uint8_t iface;
 	uint8_t ep_out;
 	uint8_t ep_in;
 	

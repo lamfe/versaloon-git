@@ -41,8 +41,6 @@ struct vsfusbd_CDC_param_t
 	uint8_t gpio_dtr_port;
 	uint32_t gpio_dtr_pin;
 	
-	uint8_t master_iface;
-	uint8_t slave_iface;
 	uint8_t ep_out;
 	uint8_t ep_in;
 	
