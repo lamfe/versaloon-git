@@ -250,7 +250,8 @@ const struct app_interfaces_info_t app_interfaces =
 		// pwm
 		pwm_init,
 		pwm_fini,
-		pwm_config,
+		pwm_config_mode,
+		pwm_config_freq,
 		pwm_out,
 		pwm_in
 	}

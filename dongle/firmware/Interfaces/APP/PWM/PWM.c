@@ -53,7 +53,30 @@ vsf_err_t pwm_fini(uint8_t index)
 	}
 }
 
-vsf_err_t pwm_config(uint8_t index, uint16_t kHz, uint8_t mode)
+vsf_err_t pwm_config_freq(uint8_t index, uint16_t kHz)
+{
+	switch (index)
+	{
+	case 0:
+		pwm0_cycle = SYNCSWPWM_OUT_TIMER_MHZ * 1000 / kHz;
+		if (pwm0_cycle >= 0xFFFF)
+		{
+			pwm0_cycle = 0xFFFE;
+		}
+		SYNCSWPWM_OUT_TIMER_SetCycle(pwm0_cycle);
+		if (pwm0_cur_rate)
+		{
+			SYNCSWPWM_OUT_TIMER_SetRate(pwm0_cur_rate * pwm0_cycle / 0xFFFF);
+		}
+		return VSFERR_NONE;
+	case 1:
+		return VSFERR_NONE;
+	default:
+		return VSFERR_NOT_SUPPORT;
+	}
+}
+
+vsf_err_t pwm_config_mode(uint8_t index, uint8_t mode)
 {
 	switch (index)
 	{
@@ -66,17 +89,6 @@ vsf_err_t pwm_config(uint8_t index, uint16_t kHz, uint8_t mode)
 		else
 		{
 			SYNCSWPWM_PORT_OD_INIT();
-		}
-		
-		pwm0_cycle = SYNCSWPWM_OUT_TIMER_MHZ * 1000 / kHz;
-		if (pwm0_cycle >= 0xFFFF)
-		{
-			pwm0_cycle = 0xFFFE;
-		}
-		SYNCSWPWM_OUT_TIMER_SetCycle(pwm0_cycle);
-		if (pwm0_cur_rate)
-		{
-			SYNCSWPWM_OUT_TIMER_SetRate(pwm0_cur_rate * pwm0_cycle / 0xFFFF);
 		}
 		return VSFERR_NONE;
 	case 1:

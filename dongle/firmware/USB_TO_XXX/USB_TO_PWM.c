@@ -49,10 +49,9 @@ void USB_TO_PWM_ProcessCmd(uint8_t *dat, uint16_t len)
 			}
 			break;
 		case USB_TO_XXX_CONFIG:
-			kHz = GET_LE_U16(&dat[index]);
-			mode = dat[index + 2];
+			mode = dat[index];
 			
-			if (app_interfaces.pwm.config(device_idx, kHz, mode))
+			if (app_interfaces.pwm.config_mode(device_idx, mode))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
@@ -97,6 +96,18 @@ void USB_TO_PWM_ProcessCmd(uint8_t *dat, uint16_t len)
 				buffer_reply[rep_len] = USB_TO_XXX_OK;
 			}
 			rep_len += 1 + 4 * count;
+			break;
+		case USB_TO_XXX_SYNC:
+			kHz = GET_LE_U16(&dat[index]);
+			
+			if (app_interfaces.pwm.config_freq(device_idx, kHz))
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+			}
+			else
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+			}
 			break;
 		default:
 			buffer_reply[rep_len++] = USB_TO_XXX_CMD_NOT_SUPPORT;

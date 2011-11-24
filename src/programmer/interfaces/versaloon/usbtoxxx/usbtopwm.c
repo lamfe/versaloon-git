@@ -38,9 +38,26 @@ vsf_err_t usbtopwm_fini(uint8_t interface_index)
 	return usbtoxxx_fini_command(USB_TO_PWM, interface_index);
 }
 
-vsf_err_t usbtopwm_config(uint8_t interface_index, uint16_t kHz, uint8_t mode)
+vsf_err_t usbtopwm_config_mode(uint8_t interface_index, uint8_t mode)
 {
-	uint8_t buff[3];
+	uint8_t buff[1];
+	
+#if PARAM_CHECK
+	if (interface_index > 7)
+	{
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
+		return VSFERR_FAIL;
+	}
+#endif
+	
+	buff[0] = mode;
+	
+	return usbtoxxx_conf_command(USB_TO_PWM, interface_index, buff, 1);
+}
+
+vsf_err_t usbtopwm_config_freq(uint8_t interface_index, uint16_t kHz)
+{
+	uint8_t buff[2];
 	
 #if PARAM_CHECK
 	if (interface_index > 7)
@@ -51,9 +68,8 @@ vsf_err_t usbtopwm_config(uint8_t interface_index, uint16_t kHz, uint8_t mode)
 #endif
 	
 	SET_LE_U16(&buff[0], kHz);
-	buff[2] = mode;
 	
-	return usbtoxxx_conf_command(USB_TO_PWM, interface_index, buff, 3);
+	return usbtoxxx_sync_command(USB_TO_PWM, interface_index, buff, 2, 0, NULL);
 }
 
 vsf_err_t usbtopwm_out(uint8_t interface_index, uint16_t count, uint16_t *rate)

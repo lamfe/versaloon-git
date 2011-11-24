@@ -397,7 +397,8 @@ struct interface_pwm_t
 {
 	vsf_err_t (*init)(uint8_t index);
 	vsf_err_t (*fini)(uint8_t index);
-	vsf_err_t (*config)(uint8_t index, uint16_t kHz, uint8_t mode);
+	vsf_err_t (*config_mode)(uint8_t index, uint8_t mode);
+	vsf_err_t (*config_freq)(uint8_t index, uint16_t kHz);
 	vsf_err_t (*out)(uint8_t index, uint16_t count, uint16_t *rate);
 	vsf_err_t (*in)(uint8_t index, uint16_t count, uint16_t *rate);
 };
