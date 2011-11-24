@@ -74,7 +74,8 @@ VSS_HANDLER(interface_spi_io);
 
 VSS_HANDLER(interface_pwm_init);
 VSS_HANDLER(interface_pwm_fini);
-VSS_HANDLER(interface_pwm_config);
+VSS_HANDLER(interface_pwm_config_mode);
+VSS_HANDLER(interface_pwm_config_freq);
 VSS_HANDLER(interface_pwm_out);
 
 VSS_HANDLER(interface_delay_us);
@@ -147,9 +148,12 @@ struct vss_cmd_t interface_cmd[] =
 	VSS_CMD(	"pwm.fini",
 				"finialize pwm module, format: pwm.fini",
 				interface_pwm_fini),
-	VSS_CMD(	"pwm.config",
-				"config pwm module, format: pwm.config KHZ PUSHPULL POLARITY",
-				interface_pwm_config),
+	VSS_CMD(	"pwm.config_mode",
+				"config pwm module, format: pwm.config_mode PUSHPULL POLARITY",
+				interface_pwm_config_mode),
+	VSS_CMD(	"pwm.config_freq",
+				"config pwm module, format: pwm.config_freq KHZ",
+				interface_pwm_config_freq),
 	VSS_CMD(	"pwm.out",
 				"output pwm sequence, format: pwm.out CNT RATE0 RATE1 ...",
 				interface_pwm_out),
@@ -953,7 +957,7 @@ VSS_HANDLER(interface_pwm_init)
 {
 	struct interfaces_info_t *ifs = NULL;
 	
-	VSS_CHECK_ARGC_2(1, 4);
+	VSS_CHECK_ARGC_2(1, 3);
 	if (interface_assert(&ifs) || (NULL == ifs))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "interface module");
@@ -970,9 +974,9 @@ VSS_HANDLER(interface_pwm_init)
 		return VSFERR_FAIL;
 	}
 	
-	if (4 == argc)
+	if (3 == argc)
 	{
-		return interface_pwm_config(argc, argv);
+		return interface_pwm_config_mode(argc, argv);
 	}
 	return VSFERR_NONE;
 }
@@ -996,13 +1000,44 @@ VSS_HANDLER(interface_pwm_fini)
 	return ifs->pwm.fini(0);
 }
 
-VSS_HANDLER(interface_pwm_config)
+VSS_HANDLER(interface_pwm_config_mode)
+{
+	struct interfaces_info_t *ifs = NULL;
+	uint8_t pushpull, polarity, mode;
+	
+	VSS_CHECK_ARGC(3);
+	if (interface_assert(&ifs) || (NULL == ifs))
+	{
+		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "interface module");
+		return VSFERR_FAIL;
+	}
+	if (!(cur_interface->support_mask & IFS_PWM))
+	{
+		LOG_ERROR(ERRMSG_NOT_SUPPORT, "pwm interface");
+		return VSFERR_FAIL;
+	}
+	
+	pushpull = (uint8_t)strtoul(argv[1], NULL, 0);
+	polarity = (uint8_t)strtoul(argv[2], NULL, 0);
+	
+	mode = 0;
+	if (pushpull)
+	{
+		mode |= PWM_OUTPP;
+	}
+	if (polarity)
+	{
+		mode |= PWM_OUTPOLARITY;
+	}
+	return ifs->pwm.config_mode(0, mode);
+}
+
+VSS_HANDLER(interface_pwm_config_freq)
 {
 	struct interfaces_info_t *ifs = NULL;
 	uint16_t kHz;
-	uint8_t pushpull, polarity, mode;
 	
-	VSS_CHECK_ARGC(4);
+	VSS_CHECK_ARGC(2);
 	if (interface_assert(&ifs) || (NULL == ifs))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "interface module");
@@ -1015,19 +1050,8 @@ VSS_HANDLER(interface_pwm_config)
 	}
 	
 	kHz = (uint16_t)strtoul(argv[1], NULL, 0);
-	pushpull = (uint8_t)strtoul(argv[2], NULL, 0);
-	polarity = (uint8_t)strtoul(argv[3], NULL, 0);
 	
-	mode = 0;
-	if (pushpull)
-	{
-		mode |= PWM_OUTPP;
-	}
-	if (polarity)
-	{
-		mode |= PWM_OUTPOLARITY;
-	}
-	return ifs->pwm.config(0, kHz, mode);
+	return ifs->pwm.config_freq(0, kHz);
 }
 
 VSS_HANDLER(interface_pwm_out)

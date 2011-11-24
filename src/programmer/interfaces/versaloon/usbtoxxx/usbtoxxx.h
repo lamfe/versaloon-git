@@ -285,7 +285,8 @@ vsf_err_t usbtomicrowire_poll(uint8_t interface_index, uint16_t interval_us,
 // USB_TO_PWM
 vsf_err_t usbtopwm_init(uint8_t interface_index);
 vsf_err_t usbtopwm_fini(uint8_t interface_index);
-vsf_err_t usbtopwm_config(uint8_t interface_index, uint16_t kHz, uint8_t mode);
+vsf_err_t usbtopwm_config_mode(uint8_t interface_index, uint8_t mode);
+vsf_err_t usbtopwm_config_freq(uint8_t interface_index, uint16_t kHz);
 vsf_err_t usbtopwm_out(uint8_t interface_index, uint16_t count, uint16_t *rate);
 vsf_err_t usbtopwm_in(uint8_t interface_index, uint16_t count, uint16_t *rate);
 

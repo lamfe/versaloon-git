@@ -707,7 +707,8 @@ struct interfaces_info_t versaloon_interfaces =
 	{	// pwm
 		usbtopwm_init,
 		usbtopwm_fini,
-		usbtopwm_config,
+		usbtopwm_config_mode,
+		usbtopwm_config_freq,
 		usbtopwm_out,
 		usbtopwm_in
 	},

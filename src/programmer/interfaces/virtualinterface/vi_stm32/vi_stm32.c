@@ -251,7 +251,12 @@ vsf_err_t vi_stm32_pwm_fini(uint8_t interface_index)
 	return VSFERR_NONE;
 }
 
-vsf_err_t vi_stm32_pwm_config(uint8_t interface_index, uint16_t kHz, uint8_t mode)
+vsf_err_t vi_stm32_pwm_config_mode(uint8_t interface_index, uint8_t mode)
+{
+	return VSFERR_NONE;
+}
+
+vsf_err_t vi_stm32_pwm_config_freq(uint8_t interface_index, uint16_t kHz)
 {
 	return VSFERR_NONE;
 }
@@ -335,7 +340,8 @@ struct interfaces_info_t vi_stm32_interfaces =
 	{	// pwm
 		vi_stm32_pwm_init,
 		vi_stm32_pwm_fini,
-		vi_stm32_pwm_config,
+		vi_stm32_pwm_config_mode,
+		vi_stm32_pwm_config_freq,
 		vi_stm32_pwm_out,
 		vi_stm32_pwm_in
 	},
