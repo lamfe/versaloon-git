@@ -365,7 +365,7 @@ struct vsfusbd_CDC_param_t Versaloon_CDC_param =
 		8		// datatype
 	},
 };
-static const struct vsfusbd_iface_t ifaces[] = 
+static struct vsfusbd_iface_t ifaces[] = 
 {
 	{(struct vsfusbd_class_protocol_t *)&Versaloon_Protocol, NULL},
 	{(struct vsfusbd_class_protocol_t *)&vsfusbd_CDCMaster_class, (void *)&Versaloon_CDC_param},

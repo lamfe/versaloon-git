@@ -193,7 +193,7 @@ struct vsfusbd_CDC_param_t CDC_param =
 		8		// datatype
 	},
 };
-static const struct vsfusbd_iface_t ifaces[] = 
+static struct vsfusbd_iface_t ifaces[] = 
 {
 	{(struct vsfusbd_class_protocol_t *)&vsfusbd_CDCMaster_class, (void *)&CDC_param},
 	{(struct vsfusbd_class_protocol_t *)&vsfusbd_CDCData_class, (void *)&CDC_param}

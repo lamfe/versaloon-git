@@ -165,7 +165,7 @@ struct vsfusbd_MSCBOT_param_t MSCBOT_param =
 	},							// struct vsf_buffer_t page_buffer[2];
 };
 
-static const struct vsfusbd_iface_t ifaces[] = 
+static struct vsfusbd_iface_t ifaces[] = 
 {
 	{(struct vsfusbd_class_protocol_t *)&vsfusbd_MSCBOT_class, (void *)&MSCBOT_param},
 };
