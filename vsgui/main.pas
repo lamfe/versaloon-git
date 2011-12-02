@@ -1387,6 +1387,7 @@ begin
 
   VSProg_Caller.AddParameter('s' + cbboxTarget.Items.Strings[0]);
   VSProg_PrepareMiscParameters(VSProg_Caller);
+  VSProg_Caller.AddParameter('oi');
 
   LogInfo('Running...');
   if VSProg_RunAlgorithm(VSProg_Caller, @VSProg_Parser.AutoDetectParser, 1, False) then

@@ -144,7 +144,7 @@ struct vss_cmd_t vsprog_cmd[] =
 int verbosity = LOG_DEFAULT_LEVEL;
 int verbosity_stack[1];
 struct operation_t operations;
-static int vsprog_query_cmd = 0;
+static bool vsprog_query_cmd = true;
 
 static char *program_name = NULL;
 static char *program_dir = NULL;
@@ -235,11 +235,6 @@ static void free_all_and_exit(int exit_code)
 	exit(exit_code);
 }
 
-void vsprog_no_call_operate(void)
-{
-	vsprog_query_cmd = 1;
-}
-
 static vsf_err_t parse_operation(uint32_t *operation, const char *opt,
 								uint32_t optlen)
 {
@@ -285,7 +280,6 @@ static void print_system_info(void)
 
 VSS_HANDLER(vsprog_help)
 {
-	vsprog_query_cmd = 1;
 	VSS_CHECK_ARGC(1);
 	
 	PRINTF(_GETTEXT("\
@@ -326,7 +320,6 @@ Usage: %s [OPTION]...\n\
 
 VSS_HANDLER(vsprog_version)
 {
-	vsprog_query_cmd = 1;
 	VSS_CHECK_ARGC(1);
 	
 	PRINTF(_GETTEXT(VSPROG_VERSION "\n" VSPROG_COPYRIGHT "\n\n\
@@ -356,7 +349,6 @@ VSS_HANDLER(vsprog_debug_level)
 
 VSS_HANDLER(vsprog_support)
 {
-	vsprog_query_cmd = 1;
 	VSS_CHECK_ARGC(2);
 	
 	if (!strcmp(argv[1], "all"))
@@ -414,7 +406,7 @@ VSS_HANDLER(vsprog_support)
 VSS_HANDLER(vsprog_operation)
 {
 	uint32_t argu_num;
-	uint32_t *popt_tmp;
+	uint32_t *popt_tmp = NULL;
 	
 	VSS_CHECK_ARGC_2(1, 2);
 	
@@ -448,22 +440,29 @@ VSS_HANDLER(vsprog_operation)
 	case 'w':
 		// Write
 		popt_tmp = &operations.write_operations;
+		goto Parse_Operation;
+	case 'i':
+		// Information
 Parse_Operation:
-		if (*popt_tmp != 0)
+		vsprog_query_cmd = false;
+		if (popt_tmp != NULL)
 		{
-			LOG_ERROR(ERRMSG_MUTIPLE_DEFINED, "operation");
-			return VSFERR_FAIL;
-		}
-		if (0 == argu_num)
-		{
-			*popt_tmp = ALL;
-		}
-		else
-		{
-			if (parse_operation(popt_tmp, &argv[1][1], argu_num))
+			if (*popt_tmp != 0)
 			{
-				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "parse operation");
+				LOG_ERROR(ERRMSG_MUTIPLE_DEFINED, "operation");
 				return VSFERR_FAIL;
+			}
+			if (0 == argu_num)
+			{
+				*popt_tmp = ALL;
+			}
+			else
+			{
+				if (parse_operation(popt_tmp, &argv[1][1], argu_num))
+				{
+					LOG_ERROR(ERRMSG_FAILURE_OPERATION, "parse operation");
+					return VSFERR_FAIL;
+				}
 			}
 		}
 		break;

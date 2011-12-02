@@ -30,7 +30,6 @@
 #include "app_log.h"
 #include "app_err.h"
 
-#include "vsprog.h"
 #include "programmer.h"
 #include "scripts.h"
 #include "strparser.h"
@@ -73,7 +72,6 @@ VSS_HANDLER(programmer_list)
 {
 	uint32_t i, j = 0;
 	
-	vsprog_no_call_operate();
 	VSS_CHECK_ARGC(1);
 	
 	for (i = 0; interfaces_info[i] != NULL; i++)

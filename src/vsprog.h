@@ -28,7 +28,6 @@ struct operation_t
 	uint32_t checksum_operations;
 };
 
-void vsprog_no_call_operate(void);
 extern char *config_dir;
 
 #endif /* __VSPROG_H_INCLUDED__ */
