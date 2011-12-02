@@ -2476,7 +2476,6 @@ VSS_HANDLER(target_memory_detail)
 {
 	char target_char;
 	
-	vsprog_no_call_operate();
 	VSS_CHECK_ARGC(2);
 	
 	if (((NULL == program_info.chip_name) || (NULL == cur_target))
@@ -2531,7 +2530,6 @@ VSS_HANDLER(target_parameter_detail)
 {
 	char target_char;
 	
-	vsprog_no_call_operate();
 	VSS_CHECK_ARGC(2);
 	
 	if ((NULL == program_info.chip_name)

@@ -31,7 +31,6 @@
 #include "app_err.h"
 #include "port.h"
 
-#include "vsprog.h"
 #include "programmer.h"
 #include "scripts.h"
 #include "bufffunc.h"
@@ -899,7 +898,6 @@ VSS_HANDLER(vss_close)
 
 VSS_HANDLER(vss_run_command)
 {
-	vsprog_no_call_operate();
 	VSS_CHECK_ARGC(2);
 	return vss_run_script((char *)argv[1]);
 }

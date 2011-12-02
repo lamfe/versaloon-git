@@ -31,7 +31,6 @@
 #include "app_err.h"
 #include "app_log.h"
 
-#include "vsprog.h"
 #include "programmer.h"
 #include "target.h"
 #include "scripts.h"
@@ -88,7 +87,6 @@ VSS_HANDLER(comisp_print_cominfo)
 {
 	uint8_t i;
 	
-	vsprog_no_call_operate();
 	VSS_CHECK_ARGC(2);
 	
 	i = (uint8_t)strtoul(argv[1], NULL, 0);
