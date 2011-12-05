@@ -79,9 +79,16 @@ vsf_err_t cm3_dp_init(struct interfaces_info_t *ifs, struct adi_dpif_t *dp)
 		return VSFERR_FAIL;
 	}
 	cpuid = LE_TO_SYS_U32(cpuid);
+	// 0xC24 is for CortexM4
 	// 0xC23 is for CortexM3
 	// 0xC20 is for CortexM0
-	if ((((cpuid >> 4) & 0xC3F) == 0xC23) && (ADI_DP_CM3 == tgt_core))
+	if ((((cpuid >> 4) & 0xC3F) == 0xC24) && (ADI_DP_CM3 == tgt_core))
+	{
+		tgt_core = ADI_DP_CM4;
+		LOG_INFO("CORTEX-M4 r%dp%d processor detected",
+					(cpuid >> 20) & 0x0F, (cpuid >> 0) & 0x0F);
+	}
+	else if ((((cpuid >> 4) & 0xC3F) == 0xC23) && (ADI_DP_CM3 == tgt_core))
 	{
 		LOG_INFO("CORTEX-M3 r%dp%d processor detected",
 					(cpuid >> 20) & 0x0F, (cpuid >> 0) & 0x0F);

@@ -765,7 +765,7 @@ init:
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read cm3 id");
 		return VSFERR_FAIL;
 	}
-	// 0x0BA00477 is for CortexM3
+	// 0x0BA00477 is for CortexM3/4
 	// 0x0BB10477 is for CortexM0
 	if (0x0BA00477 == (adi_dp_info.if_id & 0x0FFFEFFF))
 	{
