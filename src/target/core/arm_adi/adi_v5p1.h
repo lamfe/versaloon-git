@@ -30,7 +30,8 @@ enum adi_dp_target_core_t
 {
 	ADI_DP_INVALID,
 	ADI_DP_CM0,
-	ADI_DP_CM3
+	ADI_DP_CM3,
+	ADI_DP_CM4
 };
 
 struct adi_dpif_t
