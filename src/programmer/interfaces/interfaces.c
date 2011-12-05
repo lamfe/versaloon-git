@@ -315,9 +315,15 @@ vsf_err_t interface_init(const char *ifs)
 			return VSFERR_FAIL;
 		}
 		cur_interface = interface_tmp;
-		if (cur_interface->support_mask & IFS_POWER)
+		if (interface_tmp->support_mask & IFS_POWER)
 		{
-			return vss_run_script("tvcc.get");
+			if (vss_run_script("tvcc.get"))
+			{
+				cur_interface = NULL;
+				interface_tmp->fini();
+				return VSFERR_FAIL;
+			}
+			return VSFERR_NONE;
 		}
 		else
 		{
@@ -336,6 +342,7 @@ vsf_err_t interface_assert(struct interfaces_info_t **ifs)
 	{
 		if (interface_init(NULL) || (NULL == cur_interface))
 		{
+			cur_interface = NULL;
 			vss_set_fatal_error();
 			return VSFERR_FAIL;
 		}
