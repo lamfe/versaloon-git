@@ -79,6 +79,7 @@ VSS_HANDLER(target_quartz_khz);
 VSS_HANDLER(target_erase_on_demand);
 VSS_HANDLER(target_wait_state);
 VSS_HANDLER(target_auto_adjust);
+VSS_HANDLER(target_address);
 VSS_HANDLER(target_jtag_dc);
 VSS_HANDLER(target_interface_mode);
 VSS_HANDLER(target_prepare);
@@ -165,6 +166,12 @@ struct vss_cmd_t target_cmd[] =
 	VSS_CMD(	"jtag-dc",
 				"set JTAG daisy chain, format: jtag-dc/J UB_UA_BB_BA",
 				target_jtag_dc),
+	VSS_CMD(	"address",
+				"set address of target chip, format: address/a ADDRESS",
+				target_address),
+	VSS_CMD(	"a",
+				"set address of target chip, format: address/a ADDRESS",
+				target_address),
 	VSS_CMD(	"J",
 				"set JTAG daisy chain, format: jtag-dc/J UB_UA_BB_BA",
 				target_jtag_dc),
@@ -2703,6 +2710,13 @@ VSS_HANDLER(target_auto_adjust)
 {
 	VSS_CHECK_ARGC(1);
 	program_info.auto_adjust = 1;
+	return VSFERR_NONE;
+}
+
+VSS_HANDLER(target_address)
+{
+	VSS_CHECK_ARGC(2);
+	program_info.chip_address = (uint32_t)strtoul(argv[1], NULL, 0);
 	return VSFERR_NONE;
 }
 

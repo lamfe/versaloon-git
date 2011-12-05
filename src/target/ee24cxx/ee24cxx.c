@@ -131,7 +131,14 @@ ENTER_PROGRAM_MODE_HANDLER(ee24cxx)
 		ee24cxx_drv_ifs.iic_port = 0;
 	}
 	
-	ee24cxx_drv_param.iic_addr = 0xAC;
+	if (pi->chip_address)
+	{
+		ee24cxx_drv_param.iic_addr = (uint8_t)pi->chip_address;
+	}
+	else
+	{
+		ee24cxx_drv_param.iic_addr = (uint8_t)param->param[EE24CXX_PARAM_BASE_ADDR];
+	}
 	ee24cxx_drv_param.iic_khz = pi->frequency;
 	if (mal.init(MAL_IDX_EE24CXX, &ee24cxx_dal_info))
 	{

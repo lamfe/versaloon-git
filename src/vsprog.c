@@ -47,7 +47,7 @@
 #include "filelist.h"
 #include "strparser.h"
 
-#define OPTSTR			"hvS:P:s:c:Mp:U:D:Ld:Go:F:m:x:C:I:O:J:b:V:t:K:W:Aqel:i:Q:"
+#define OPTSTR			"hvS:P:s:c:Mp:U:D:Ld:Go:F:m:x:C:I:O:J:b:V:t:K:W:Aqel:i:Q:a:"
 static const struct option long_opts[] =
 {
 	{"help", no_argument, NULL, 'h'},
@@ -82,6 +82,7 @@ static const struct option long_opts[] =
 	{"vss-cmd", required_argument, NULL, 'V'},
 	{"quiet", no_argument, NULL, 'q'},
 	{"erase-on-demand", no_argument, NULL, 'e'},
+	{"address", required_argument, NULL, 'a'},
 	{NULL, 0, NULL, 0},
 };
 
@@ -309,7 +310,8 @@ Usage: %s [OPTION]...\n\
   -t,  --target <TARGET VALUE>              set target value, eg(fuse): -tu0x02\n\
   -L,  --list-programmer                    list programmers available\n\
   -M,  --mass-product                       set mass_product mode\n\
-  -G,  --gui-mode                           set gui_mode\n\n"),
+  -G,  --gui-mode                           set gui_mode\n\
+  -a,  --address                            set address of target chip\n\n"),
 			program_name);
 
 	interface_print_help();
