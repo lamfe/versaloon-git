@@ -71,20 +71,14 @@ vsf_err_t iic_config(uint8_t index, uint16_t kHz, uint16_t byte_interval,
 	{
 	case 0:
 		IIC_PULL_INIT();
-		if (IIC_MOD_ACK == EMIIC_USBTOXXX_Init())
+		if ((IIC_MOD_ACK != EMIIC_USBTOXXX_SetParameter(clock_cycle, max_dly, 1, byte_interval)) ||
+			(IIC_MOD_ACK != EMIIC_USBTOXXX_Init()))
 		{
-			if (IIC_MOD_ACK == EMIIC_USBTOXXX_SetParameter(clock_cycle, max_dly, 1, byte_interval))
-			{
-				return VSFERR_NONE;
-			}
-			else
-			{
-				return VSFERR_FAIL;
-			}
+			return VSFERR_FAIL;
 		}
 		else
 		{
-			return VSFERR_FAIL;
+			return VSFERR_NONE;
 		}
 	default:
 		return VSFERR_NOT_SUPPORT;
