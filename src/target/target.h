@@ -143,6 +143,7 @@ struct program_info_t
 	char *chip_type;
 	char *chip_name;
 	uint32_t chip_id;
+	uint32_t chip_address;
 	
 	struct program_area_t program_areas[dimof(target_area_name)];
 	uint32_t areas_defined;

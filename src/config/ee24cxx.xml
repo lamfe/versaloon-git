@@ -11,5 +11,6 @@
   <chip name="ee24c64">
     <ee_page_size>32</ee_page_size>
     <ee_page_num>256</ee_page_num>
+    <param0>0xA0</param0>
   </chip>
 </series>
