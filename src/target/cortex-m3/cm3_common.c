@@ -384,7 +384,7 @@ vsf_err_t cm3_dump(uint32_t addr, uint32_t size)
 		err = ERRCODE_FAILURE_OPERATION;
 		goto end;
 	}
-	LOG_BYTE_BUF(buffer, size, LOG_INFO, "%02X", 16);
+	LOG_BUF_STD(1, buffer, size, LOG_INFO);
 	
 end:
 	if (buffer != NULL)

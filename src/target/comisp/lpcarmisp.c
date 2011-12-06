@@ -431,7 +431,7 @@ static vsf_err_t lpcarmisp_process(uint8_t cmd_argc, char **cmd_argv,
 	// result
 	if (strstr(reply_buff, LPCARMISP_RPL_SUCCESS) != reply_buff)
 	{
-		LOG_BYTE_BUF(reply_buff, *reply_size, LOG_DEBUG, "%c", 255);
+		LOG_BUF(reply_buff, *reply_size, LOG_DEBUG, "%c", 255);
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION_ERRCODE, "get success sesult",
 					(int)strtoul(reply_buff, NULL, 0));
 		return VSFERR_FAIL;
