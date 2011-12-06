@@ -20,6 +20,7 @@
 #define __STM32F2_H_INCLUDED__
 
 #define STM32F2_STRING					"stm32f2"
+#define STM32F4_STRING					"stm32f4"
 
 extern struct program_area_map_t stm32f2_program_area_map[];
 extern const struct program_mode_t stm32f2_program_mode[];

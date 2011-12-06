@@ -44,6 +44,7 @@
 #define TARGET_EE24CXX_EN		1
 #define TARGET_DF25XX_EN		1
 #define TARGET_STM32F2_EN		1
+#define TARGET_STM32F4_EN		1
 #define TARGET_SD_EN			1
 #define TARGET_CFI_EN			1
 #define TARGET_NAND_EN			1

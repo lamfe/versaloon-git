@@ -125,6 +125,34 @@ const struct vss_cmd_t stm32f2_notifier[] =
 	VSS_CMD_END
 };
 
+void stm32f4_print_device(uint32_t mcuid)
+{
+	char rev_char = 0;
+	uint16_t den, rev;
+	
+	den = mcuid & STM32F2_DEN_MSK;
+	rev = (mcuid & STM32F2_REV_MSK) >> 16;
+	switch (den)
+	{
+	case STM32F4_DEN_XL:
+		LOG_INFO("STM32F2 type: XL device");
+		switch (rev)
+		{
+		case 0x1000:
+			rev_char = 'A';
+			break;
+		}
+		break;
+	default:
+		LOG_INFO("STM32F4 type: unknown device(%08X)", mcuid);
+		break;
+	}
+	if (rev_char != 0)
+	{
+		LOG_INFO("STM32F2 revision: %c", rev_char);
+	}
+}
+
 void stm32f2_print_device(uint32_t mcuid)
 {
 	char rev_char = 0;

@@ -34,6 +34,8 @@
 #define STM32F2_DEN_MSK					0x00000FFF
 #define STM32F2_DEN_XL					0x0411
 
+#define STM32F4_DEN_XL					0x0413
+
 #define STM32F2_REG_MCU_ID				0xE0042000
 
 #define STM32F2_OB_ADDR					0x1FFFC000
@@ -42,7 +44,7 @@
 #define STM32F2_UID_ADDR				(0x1FFF7A10)
 
 void stm32f2_print_device(uint32_t mcuid);
-uint16_t stm32f2_get_flash_size(uint32_t mcuid, uint32_t flash_sram_reg);
+void stm32f4_print_device(uint32_t mcuid);
 
 #endif /* __STM32F2_INTERNAL_H_INCLUDED__ */
 

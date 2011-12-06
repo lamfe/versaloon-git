@@ -276,6 +276,19 @@ struct target_info_t targets_info[] =
 		NULL,								// adjust_mapping
 	},
 #endif
+	// stm32f4
+#if TARGET_STM32F4_EN
+	{
+		STM32F4_STRING,						// name
+		AUTO_DETECT CAN_EXECUTE,			// feature
+		stm32f2_program_area_map,			// program_area_map
+		stm32f2_program_mode,				// program_mode
+		&stm32f2_program_functions,			// program_functions
+		stm32f2_notifier,					// notifier
+		NULL,								// adjust_setting
+		NULL,								// adjust_mapping
+	},
+#endif
 #if TARGET_LPC1000_EN
 	// lpc1000
 	{
