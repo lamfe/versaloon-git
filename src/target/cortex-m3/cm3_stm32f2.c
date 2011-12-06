@@ -247,6 +247,7 @@ WRITE_TARGET_HANDLER(stm32f2swj)
 
 READ_TARGET_HANDLER(stm32f2swj)
 {
+	struct program_info_t *pi = context->pi;
 	uint32_t reg;
 	uint32_t cur_block_size;
 	vsf_err_t err = VSFERR_NONE;
@@ -263,7 +264,14 @@ READ_TARGET_HANDLER(stm32f2swj)
 			break;
 		}
 		reg = LE_TO_SYS_U32(reg);
-		stm32f2_print_device(reg);
+		if (!strcmp(pi->chip_type, "stm32f2"))
+		{
+			stm32f2_print_device(reg);
+		}
+		else if (!strcmp(pi->chip_type, "stm32f4"))
+		{
+			stm32f4_print_device(reg);
+		}
 		reg &= STM32F2_DEN_MSK;
 		*(uint32_t *)buff = reg;
 		break;
