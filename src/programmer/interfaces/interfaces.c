@@ -708,7 +708,7 @@ VSS_HANDLER(interface_jtag_ir)
 	
 	bitlen = (uint16_t)strtoul(argv[1], NULL, 0);
 	ir = (uint32_t)strtoul(argv[2], NULL, 0);
-	SYS_TO_LE_U32(ir);
+	ir = SYS_TO_LE_U32(ir);
 	
 	LOG_INFO(INFOMSG_REG_08X, "IR_out", ir);
 	if (ifs->jtag_hl.ir(0, (uint8_t *)&ir, bitlen, 1, 1) ||
