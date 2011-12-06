@@ -53,6 +53,13 @@ struct interfaces_info_t *cur_real_interface = NULL;
 VSS_HANDLER(interface_get_target_voltage);
 VSS_HANDLER(interface_set_target_voltage);
 
+VSS_HANDLER(interface_jtag_init);
+VSS_HANDLER(interface_jtag_fini);
+VSS_HANDLER(interface_jtag_config);
+VSS_HANDLER(interface_jtag_runtest);
+VSS_HANDLER(interface_jtag_ir);
+VSS_HANDLER(interface_jtag_dr);
+
 VSS_HANDLER(interface_iic_init);
 VSS_HANDLER(interface_iic_fini);
 VSS_HANDLER(interface_iic_config);
@@ -90,6 +97,24 @@ struct vss_cmd_t interface_cmd[] =
 	VSS_CMD(	"tvcc.set",
 				"output power to target, format: tvcc.set VOLTAGE_IN_MV",
 				interface_set_target_voltage),
+	VSS_CMD(	"jtag.init",
+				"initialize jtag, format: jtag.init [KHZ UB UA BB BA]",
+				interface_jtag_init),
+	VSS_CMD(	"jtag.fini",
+				"finalize jtag, format: jtag.fini",
+				interface_jtag_fini),
+	VSS_CMD(	"jtag.config",
+				"configure jtag, format: jtag.config KHZ [UB UA BB BA]",
+				interface_jtag_config),
+	VSS_CMD(	"jtag.runtest",
+				"jtag runtest, format: jtag.runtest CYCLES",
+				interface_jtag_runtest),
+	VSS_CMD(	"jtag.ir",
+				"jtag ir, format: jtag.ir BITLEN IR",
+				interface_jtag_ir),
+	VSS_CMD(	"jtag.dr",
+				"jtag dr, format: jtag.dr BITLEN DATASIZE DR_DATA...",
+				interface_jtag_dr),
 	VSS_CMD(	"gpio.init",
 				"initialize gpio, format: gpio.init [MASK IO PULL]",
 				interface_gpio_init),
@@ -560,6 +585,199 @@ VSS_HANDLER(interface_gpio_in)
 	return err;
 }
 
+// jtag
+VSS_HANDLER(interface_jtag_init)
+{
+	struct interfaces_info_t *ifs = NULL;
+	
+	VSS_CHECK_ARGC_3(1, 2, 6);
+	if (interface_assert(&ifs) || (NULL == ifs))
+	{
+		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "interface module");
+		return VSFERR_FAIL;
+	}
+	if (!(cur_interface->support_mask & IFS_JTAG_HL))
+	{
+		LOG_ERROR(ERRMSG_NOT_SUPPORT, "jtag interface");
+		return VSFERR_FAIL;
+	}
+	
+	if (ifs->jtag_hl.init(0))
+	{
+		return VSFERR_FAIL;
+	}
+	
+	if (argc > 1)
+	{
+		return interface_jtag_config(argc, argv);
+	}
+	return VSFERR_NONE;
+}
+
+VSS_HANDLER(interface_jtag_fini)
+{
+	struct interfaces_info_t *ifs = NULL;
+	
+	VSS_CHECK_ARGC(1);
+	if (interface_assert(&ifs) || (NULL == ifs))
+	{
+		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "interface module");
+		return VSFERR_FAIL;
+	}
+	if (!(cur_interface->support_mask & IFS_JTAG_HL))
+	{
+		LOG_ERROR(ERRMSG_NOT_SUPPORT, "jtag interface");
+		return VSFERR_FAIL;
+	}
+	
+	return ifs->jtag_hl.fini(0);
+}
+
+VSS_HANDLER(interface_jtag_config)
+{
+	uint32_t khz = 0;
+	uint8_t ub, ua;
+	uint16_t bb, ba;
+	struct interfaces_info_t *ifs = NULL;
+	
+	VSS_CHECK_ARGC_2(2, 6);
+	if (interface_assert(&ifs) || (NULL == ifs))
+	{
+		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "interface module");
+		return VSFERR_FAIL;
+	}
+	if (!(cur_interface->support_mask & IFS_JTAG_HL))
+	{
+		LOG_ERROR(ERRMSG_NOT_SUPPORT, "jtag interface");
+		return VSFERR_FAIL;
+	}
+	
+	khz = (uint32_t)strtoul(argv[1], NULL, 0);
+	ub = ua = 0;
+	bb = ba = 0;
+	if (argc > 2)
+	{
+		ub = (uint8_t)strtoul(argv[2], NULL, 0);
+		ua = (uint8_t)strtoul(argv[3], NULL, 0);
+		bb = (uint16_t)strtoul(argv[4], NULL, 0);
+		ba = (uint16_t)strtoul(argv[5], NULL, 0);
+	}
+	
+	return ifs->jtag_hl.config(0, khz, ub, ua, bb, ba);
+}
+
+VSS_HANDLER(interface_jtag_runtest)
+{
+	uint32_t cycles = 0;
+	struct interfaces_info_t *ifs = NULL;
+	
+	VSS_CHECK_ARGC(2);
+	if (interface_assert(&ifs) || (NULL == ifs))
+	{
+		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "interface module");
+		return VSFERR_FAIL;
+	}
+	if (!(cur_interface->support_mask & IFS_JTAG_HL))
+	{
+		LOG_ERROR(ERRMSG_NOT_SUPPORT, "jtag interface");
+		return VSFERR_FAIL;
+	}
+	
+	cycles = (uint32_t)strtoul(argv[1], NULL, 0);
+	
+	return ifs->jtag_hl.runtest(0, cycles);
+}
+
+VSS_HANDLER(interface_jtag_ir)
+{
+	uint32_t ir;
+	uint16_t bitlen;
+	struct interfaces_info_t *ifs = NULL;
+	
+	VSS_CHECK_ARGC(3);
+	if (interface_assert(&ifs) || (NULL == ifs))
+	{
+		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "interface module");
+		return VSFERR_FAIL;
+	}
+	if (!(cur_interface->support_mask & IFS_JTAG_HL))
+	{
+		LOG_ERROR(ERRMSG_NOT_SUPPORT, "jtag interface");
+		return VSFERR_FAIL;
+	}
+	
+	bitlen = (uint16_t)strtoul(argv[1], NULL, 0);
+	ir = (uint32_t)strtoul(argv[2], NULL, 0);
+	SYS_TO_LE_U32(ir);
+	
+	LOG_INFO(INFOMSG_REG_08X, "IR_out", ir);
+	if (ifs->jtag_hl.ir(0, (uint8_t *)&ir, bitlen, 1, 1) ||
+		ifs->peripheral_commit())
+	{
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "jtag ir");
+		return VSFERR_FAIL;
+	}
+	LOG_INFO(INFOMSG_REG_08X, "IR_in", ir);
+	
+	return VSFERR_NONE;
+}
+
+VSS_HANDLER(interface_jtag_dr)
+{
+	uint16_t bitlen, bytelen;
+	uint8_t *dr = NULL, data_size;
+	uint32_t data_num;
+	struct interfaces_info_t *ifs = NULL;
+	vsf_err_t err;
+	
+	VSS_CHECK_ARGC_MIN(4);
+	if (interface_assert(&ifs) || (NULL == ifs))
+	{
+		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "interface module");
+		return VSFERR_FAIL;
+	}
+	if (!(cur_interface->support_mask & IFS_JTAG_HL))
+	{
+		LOG_ERROR(ERRMSG_NOT_SUPPORT, "jtag interface");
+		return VSFERR_FAIL;
+	}
+	
+	bitlen = (uint16_t)strtoul(argv[1], NULL, 0);
+	bytelen = (bitlen + 7) >> 3;
+	data_size = (uint8_t)strtoul(argv[2], NULL, 0);
+	data_num = (bytelen + data_size - 1) / data_size;
+	
+	VSS_CHECK_ARGC(3 + data_num);
+	if ((data_size != 1) && (data_size != 2) && (data_size != 4))
+	{
+		LOG_ERROR(ERRMSG_INVALID_TARGET, "data_size");
+		vss_print_help(argv[0]);
+		return VSFERR_FAIL;
+	}
+	
+	err = vss_get_binary_buffer(argc - 3, &argv[3], data_size, data_num,
+								(void**)&dr);
+	if (!err)
+	{
+		err = ifs->jtag_hl.dr(0, dr, bitlen, 1, 1);
+		if (!err)
+		{
+			err = ifs->peripheral_commit();
+			if (!err)
+			{
+				LOG_BUF_STD(data_size, dr, data_num, LOG_INFO);
+			}
+		}
+	}
+	
+	if (dr != NULL)
+	{
+		free(dr);
+		dr = NULL;
+	}
+	return VSFERR_NONE;
+}
+
 // spi
 VSS_HANDLER(interface_spi_init)
 {
@@ -677,7 +895,7 @@ VSS_HANDLER(interface_spi_io)
 			err = ifs->peripheral_commit();
 			if (!err)
 			{
-				LOG_BYTE_BUF(buff, data_size, LOG_INFO, "%02X", 16);
+				LOG_BUF_STD(1, buff, data_size, LOG_INFO);
 			}
 		}
 	}
@@ -800,7 +1018,7 @@ VSS_HANDLER(interface_iic_read)
 		err = ifs->peripheral_commit();
 		if (!err)
 		{
-			LOG_BYTE_BUF(buff, data_size, LOG_INFO, "%02X", 16);
+			LOG_BUF_STD(1, buff, data_size, LOG_INFO);
 		}
 	}
 	
@@ -900,7 +1118,7 @@ VSS_HANDLER(interface_iic_read_buff8)
 			err = ifs->peripheral_commit();
 			if (!err)
 			{
-				LOG_BYTE_BUF(buff, data_size, LOG_INFO, "%02X", 16);
+				LOG_BUF_STD(1, buff, data_size, LOG_INFO);
 			}
 		}
 	}

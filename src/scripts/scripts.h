@@ -73,6 +73,13 @@ struct vss_function_t
 		vss_print_help(argv[0]);\
 		return VSFERR_FAIL;\
 	}
+#define VSS_CHECK_ARGC_3(n1, n2, n3)			\
+	if ((argc != (n1)) && (argc != (n2)) && (argc != (n3)))\
+	{\
+		LOG_ERROR(ERRMSG_INVALID_CMD, argv[0]);\
+		vss_print_help(argv[0]);\
+		return VSFERR_FAIL;\
+	}
 #define VSS_CHECK_ARGC_MIN(n)					\
 	if (argc < (n))\
 	{\

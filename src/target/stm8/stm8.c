@@ -411,7 +411,7 @@ static vsf_err_t stm8_fl_print_context(void)
 	{
 		return VSFERR_FAIL;
 	}
-	LOG_BYTE_BUF(buff, sizeof(buff), LOG_INFO, "%02X", 16);
+	LOG_BUF_STD(1, buff, sizeof(buff), LOG_INFO);
 	
 	return VSFERR_NONE;
 }

@@ -37,7 +37,21 @@ extern int verbosity_stack[1];
 
 #define _GETTEXT(STR)		STR
 
-#define LOG_BYTE_BUF(buff, len, func, format, n)	\
+#define LOG_BUF_STD(size, buff, len, func) \
+	switch (size)\
+	{\
+	case 1:\
+		LOG_BUF((uint8_t *)buff, len, func, "%02X", 16);\
+		break;\
+	case 2:\
+		LOG_BUF((uint16_t *)buff, len, func, "%04X", 8);\
+		break;\
+	case 4:\
+		LOG_BUF((uint32_t *)buff, len, func, "%08X", 4);\
+		break;\
+	}
+
+#define LOG_BUF(buff, len, func, format, n)	\
 	do{\
 		char line[256], s[16];\
 		int __i, __j;\
