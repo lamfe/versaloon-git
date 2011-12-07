@@ -600,7 +600,7 @@ VSS_HANDLER(interface_jtag_config)
 VSS_HANDLER(interface_jtag_reset)
 {
 	struct interfaces_info_t *ifs = NULL;
-	uint8_t tms = 0xFF;
+	uint8_t tms = 0x7F;
 	
 	VSS_CHECK_ARGC(1);
 	INTERFACE_ASSERT(IFS_JTAG_HL, "jtag");
