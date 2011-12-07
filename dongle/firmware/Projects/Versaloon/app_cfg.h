@@ -30,6 +30,9 @@
 #define STM32VL_Discovery				0x33
 #define STM32L_Discovery				0x34
 #define STM32F4_Discovery				0x35
+#define STM8L_Discovery					0x36
+#define STM8SVL_Discovery				0x37
+#define ST_Link							0x38
 
 #if _HARDWARE_VER == NanoRelease1
 #include "hw_cfg_NanoRelease1.h"
@@ -37,14 +40,14 @@
 #include "hw_cfg_MiniRelease1.h"
 #elif _HARDWARE_VER == STBee_Mini
 #include "hw_cfg_STBee_Mini.h"
-#elif _HARDWARE_VER == STM8S_Discovery
-#include "hw_cfg_stm8s-discovery.h"
-#elif _HARDWARE_VER == STM32VL_Discovery
-#include "hw_cfg_stm32vl-discovery.h"
-#elif _HARDWARE_VER == STM32L_Discovery
-#include "hw_cfg_stm32l-discovery.h"
-#elif _HARDWARE_VER == STM32F4_Discovery
-#include "hw_cfg_stm32f4-discovery.h"
+#elif (_HARDWARE_VER == ST_Link) ||\
+	(_HARDWARE_VER == STM8S_Discovery) ||\
+	(_HARDWARE_VER == STM8L_Discovery) ||\
+	(_HARDWARE_VER == STM8SVL_Discovery) ||\
+	(_HARDWARE_VER == STM32L_Discovery) ||\
+	(_HARDWARE_VER == STM32VL_Discovery) ||\
+	(_HARDWARE_VER == STM32F4_Discovery)
+#include "hw_cfg_st_link.h"
 #else
 #error "Unknown or missing HW_BOARD definition"
 #endif
