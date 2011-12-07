@@ -67,6 +67,26 @@ TARGET_CHIP			= stm32
 TARGET_STM32		= MediumDensity
 else
 ########################################################################
+ifeq ($(HW_BOARD),STM8L_Discovery)
+########################################################################
+_HARDWARE_VER		= 0x36
+FLASH_LOAD_OFFSET	= 0x0000
+HSE_VALUE			= 8000000
+LD_FILE				= st-discovery.ld
+TARGET_CHIP			= stm32
+TARGET_STM32		= MediumDensity
+else
+########################################################################
+ifeq ($(HW_BOARD),STM8SVL_Discovery)
+########################################################################
+_HARDWARE_VER		= 0x37
+FLASH_LOAD_OFFSET	= 0x0000
+HSE_VALUE			= 8000000
+LD_FILE				= st-discovery.ld
+TARGET_CHIP			= stm32
+TARGET_STM32		= MediumDensity
+else
+########################################################################
 ifeq ($(HW_BOARD),STM32VL_Discovery)
 ########################################################################
 _HARDWARE_VER		= 0x33
@@ -90,6 +110,16 @@ else
 ifeq ($(HW_BOARD),STM32F4_Discovery)
 ########################################################################
 _HARDWARE_VER		= 0x35
+FLASH_LOAD_OFFSET	= 0x0000
+HSE_VALUE			= 8000000
+LD_FILE				= st-discovery.ld
+TARGET_CHIP			= stm32
+TARGET_STM32		= MediumDensity
+else
+########################################################################
+ifeq ($(HW_BOARD),ST_Link)
+########################################################################
+_HARDWARE_VER		= 0x38
 FLASH_LOAD_OFFSET	= 0x0000
 HSE_VALUE			= 8000000
 LD_FILE				= st-discovery.ld
