@@ -32,7 +32,6 @@
 #include "app_log.h"
 #include "app_err.h"
 
-#include "bufffunc.h"
 #include "strparser.h"
 
 static uint8_t strparser_is_divider(char div)
@@ -252,6 +251,29 @@ parse_integer:
 	return VSFERR_NONE;
 }
 
+static uint64_t strparser_get_u64(uint8_t *buff, uint32_t size)
+{
+	uint8_t i;
+	uint64_t ret;
+	
+	if (NULL == buff)
+	{
+		return 0;
+	}
+	
+	if (size > 8)
+	{
+		size = 8;
+	}
+	
+	ret = 0;
+	for (i = 0; i < size; i++)
+	{
+		ret += (uint64_t)buff[i] << (i * 8);
+	}
+	return ret;
+}
+
 // this function will alloc buffer and return the pointer to the buffer
 // caller should free this buffer
 char * strparser_solve(char *format, uint8_t *buff, uint32_t size)
@@ -332,7 +354,7 @@ solve_integer:
 					return ret;
 				}
 				
-				value = bufffunc_get_u64(buff, (uint32_t)param);
+				value = strparser_get_u64(buff, (uint32_t)param);
 				if (10 == radix)
 				{
 					if (param <= 4)

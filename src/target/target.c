@@ -40,7 +40,6 @@
 #include "memlist.h"
 #include "pgbar.h"
 #include "strparser.h"
-#include "bufffunc.h"
 
 #include "at89s5x/at89s5x.h"
 #include "psoc1/psoc1.h"
@@ -1985,8 +1984,8 @@ static vsf_err_t target_init(struct program_info_t *pi)
 			{
 				if (pi->chip_id == target_chips.chips_param[i].chip_id)
 				{
-					if (NULL == bufffunc_malloc_and_copy_str(&pi->chip_name,
-									target_chips.chips_param[i].chip_name))
+					pi->chip_name = strdup(target_chips.chips_param[i].chip_name);
+					if (NULL == pi->chip_name)
 					{
 						LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 						return VSFERR_NOT_ENOUGH_RESOURCES;
@@ -2426,8 +2425,8 @@ static vsf_err_t target_info_init(struct program_info_t *pi)
 			if (!probe_chip(pi->chip_name))
 			{
 				cur_target = &targets_info[i];
-				if (NULL == bufffunc_malloc_and_copy_str(&pi->chip_type,
-									(char *)targets_info[i].name))
+				pi->chip_type = strdup(targets_info[i].name);
+				if (NULL == pi->chip_type)
 				{
 					LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 					return VSFERR_NOT_ENOUGH_RESOURCES;
@@ -2507,8 +2506,8 @@ VSS_HANDLER(target_memory_detail)
 	if (((NULL == program_info.chip_name) || (NULL == cur_target))
 		&& (NULL != program_info.chip_type))
 	{
-		if (NULL == bufffunc_malloc_and_copy_str(&program_info.chip_name,
-													program_info.chip_type))
+		program_info.chip_name = strdup(program_info.chip_type);
+		if (NULL == program_info.chip_name)
 		{
 			LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 			return VSFERR_NOT_ENOUGH_RESOURCES;
@@ -2593,8 +2592,8 @@ VSS_HANDLER(target_series)
 		free(program_info.chip_type);
 		program_info.chip_type = NULL;
 	}
-	if (NULL == bufffunc_malloc_and_copy_str(&program_info.chip_type,
-												(char *)argv[1]))
+	program_info.chip_type = strdup(argv[1]);
+	if (NULL == program_info.chip_type)
 	{
 		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 		return VSFERR_NOT_ENOUGH_RESOURCES;
@@ -2617,8 +2616,8 @@ VSS_HANDLER(target_chip)
 		free(program_info.chip_name);
 		program_info.chip_name = NULL;
 	}
-	if (NULL == bufffunc_malloc_and_copy_str(&program_info.chip_name,
-												(char *)argv[1]))
+	program_info.chip_name = strdup(argv[1]);
+	if (NULL == program_info.chip_name)
 	{
 		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 		return VSFERR_NOT_ENOUGH_RESOURCES;
@@ -2634,7 +2633,7 @@ VSS_HANDLER(target_chip)
 
 VSS_HANDLER(target_value)
 {
-	char *dest;
+	char *dest = NULL;
 	int8_t target_idx;
 	
 	VSS_CHECK_ARGC(2);
@@ -2651,8 +2650,8 @@ VSS_HANDLER(target_value)
 		LOG_ERROR(ERRMSG_INVALID_CHARACTER, argv[1][0], "target");
 		return VSFERR_FAIL;
 	}
-	dest = NULL;
-	if (NULL == bufffunc_malloc_and_copy_str(&dest, (char *)&argv[1][1]))
+	dest = strdup(&argv[1][1]);
+	if (NULL == dest)
 	{
 		return VSFERR_FAIL;
 	}
@@ -3200,12 +3199,14 @@ VSS_HANDLER(target_interface_indexes)
 		program_info.ifs_indexes = NULL;
 	}
 	
-	if ((2 == argc) &&
-		(NULL == bufffunc_malloc_and_copy_str(
-							&program_info.ifs_indexes, (char *)argv[1])))
+	if (2 == argc)
 	{
-		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-		return VSFERR_NOT_ENOUGH_RESOURCES;
+		program_info.ifs_indexes = strdup(argv[1]);
+		if (NULL == program_info.ifs_indexes)
+		{
+			LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
+			return VSFERR_NOT_ENOUGH_RESOURCES;
+		}
 	}
 	return VSFERR_NONE;
 }

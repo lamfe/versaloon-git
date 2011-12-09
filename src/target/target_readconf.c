@@ -36,7 +36,6 @@
 #include "programmer.h"
 #include "target.h"
 
-#include "bufffunc.h"
 #include "strparser.h"
 
 #define TARGET_CONF_FILE_EXT			".xml"
@@ -228,8 +227,8 @@ vsf_err_t target_build_chip_fl(const char *chip_series,
 	}
 	
 	// read fl init value
-	if (NULL == bufffunc_malloc_and_copy_str(&fl->init_value,
-							(char *)xmlGetProp(paramNode, BAD_CAST "init")))
+	fl->init_value = strdup((char *)xmlGetProp(paramNode, BAD_CAST "init"));
+	if (NULL == fl->init_value)
 	{
 		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 		err = VSFERR_NOT_ENOUGH_RESOURCES;
@@ -290,9 +289,9 @@ vsf_err_t target_build_chip_fl(const char *chip_series,
 					goto free_and_exit;
 				}
 				
-				if (NULL == bufffunc_malloc_and_copy_str(
-						&fl->warnings[i].mask,
-						(char *)xmlGetProp(wNode, BAD_CAST "mask")))
+				fl->warnings[i].mask = strdup(
+									(char *)xmlGetProp(wNode, BAD_CAST "mask"));
+				if (NULL == fl->warnings[i].mask)
 				{
 					LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 					err = VSFERR_NOT_ENOUGH_RESOURCES;
@@ -305,9 +304,9 @@ vsf_err_t target_build_chip_fl(const char *chip_series,
 					goto free_and_exit;
 				}
 				
-				if (NULL == bufffunc_malloc_and_copy_str(
-						&fl->warnings[i].value,
-						(char *)xmlGetProp(wNode, BAD_CAST "value")))
+				fl->warnings[i].value = strdup(
+									(char *)xmlGetProp(wNode, BAD_CAST "value"));
+				if (NULL == fl->warnings[i].value)
 				{
 					LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 					err = VSFERR_NOT_ENOUGH_RESOURCES;
@@ -320,9 +319,9 @@ vsf_err_t target_build_chip_fl(const char *chip_series,
 					goto free_and_exit;
 				}
 				
-				if (NULL == bufffunc_malloc_and_copy_str(
-						&fl->warnings[i].msg,
-						(char *)xmlGetProp(wNode, BAD_CAST "msg")))
+				fl->warnings[i].msg = strdup(
+									(char *)xmlGetProp(wNode, BAD_CAST "msg"));
+				if (NULL == fl->warnings[i].msg)
 				{
 					LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 					err = VSFERR_NOT_ENOUGH_RESOURCES;
@@ -359,18 +358,18 @@ vsf_err_t target_build_chip_fl(const char *chip_series,
 			goto free_and_exit;
 		}
 		
-		if (NULL == bufffunc_malloc_and_copy_str(
-						&fl->settings[i].name,
-						(char *)xmlGetProp(settingNode, BAD_CAST "name")))
+		fl->settings[i].name = strdup(
+							(char *)xmlGetProp(settingNode, BAD_CAST "name"));
+		if (NULL == fl->settings[i].name)
 		{
 			LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 			err = VSFERR_NOT_ENOUGH_RESOURCES;
 			goto free_and_exit;
 		}
 		
-		if (NULL == bufffunc_malloc_and_copy_str(
-						&fl->settings[i].mask,
-						(char *)xmlGetProp(settingNode, BAD_CAST "mask")))
+		fl->settings[i].mask = strdup(
+							(char *)xmlGetProp(settingNode, BAD_CAST "mask"));
+		if (NULL == fl->settings[i].mask)
 		{
 			LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 			err = VSFERR_NOT_ENOUGH_RESOURCES;
@@ -385,9 +384,9 @@ vsf_err_t target_build_chip_fl(const char *chip_series,
 		
 		if (xmlHasProp(settingNode, BAD_CAST "ban"))
 		{
-			if (NULL == bufffunc_malloc_and_copy_str(
-						&fl->settings[i].ban,
-						(char *)xmlGetProp(settingNode, BAD_CAST "ban")))
+			fl->settings[i].ban = strdup(
+							(char *)xmlGetProp(settingNode, BAD_CAST "ban"));
+			if (NULL == fl->settings[i].ban)
 			{
 				LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 				err = VSFERR_NOT_ENOUGH_RESOURCES;
@@ -398,9 +397,9 @@ vsf_err_t target_build_chip_fl(const char *chip_series,
 		// parse info if exists
 		if (xmlHasProp(settingNode, BAD_CAST "info"))
 		{
-			if (NULL == bufffunc_malloc_and_copy_str(
-						&fl->settings[i].info,
-						(char *)xmlGetProp(settingNode, BAD_CAST "info")))
+			fl->settings[i].info = strdup(
+							(char *)xmlGetProp(settingNode, BAD_CAST "info"));
+			if (NULL == fl->settings[i].info)
 			{
 				LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 				err = VSFERR_NOT_ENOUGH_RESOURCES;
@@ -411,9 +410,9 @@ vsf_err_t target_build_chip_fl(const char *chip_series,
 		// parse format if exists
 		if (xmlHasProp(settingNode, BAD_CAST "format"))
 		{
-			if (NULL == bufffunc_malloc_and_copy_str(
-						&fl->settings[i].format,
-						(char *)xmlGetProp(settingNode, BAD_CAST "format")))
+			fl->settings[i].format = strdup(
+							(char *)xmlGetProp(settingNode, BAD_CAST "format"));
+			if (NULL == fl->settings[i].format)
 			{
 				LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 				err = VSFERR_NOT_ENOUGH_RESOURCES;
@@ -448,9 +447,9 @@ vsf_err_t target_build_chip_fl(const char *chip_series,
 		// parse checked or unchecked
 		if (xmlHasProp(settingNode, BAD_CAST "checked"))
 		{
-			if (NULL == bufffunc_malloc_and_copy_str(
-						&fl->settings[i].checked,
-						(char *)xmlGetProp(settingNode, BAD_CAST "checked")))
+			fl->settings[i].checked = strdup(
+						(char *)xmlGetProp(settingNode, BAD_CAST "checked"));
+			if (NULL == fl->settings[i].checked)
 			{
 				LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 				err = VSFERR_NOT_ENOUGH_RESOURCES;
@@ -504,9 +503,9 @@ vsf_err_t target_build_chip_fl(const char *chip_series,
 		}
 		if (xmlHasProp(settingNode, BAD_CAST "unchecked"))
 		{
-			if (NULL == bufffunc_malloc_and_copy_str(
-						&fl->settings[i].unchecked,
-						(char *)xmlGetProp(settingNode, BAD_CAST "unchecked")))
+			fl->settings[i].unchecked = strdup(
+						(char *)xmlGetProp(settingNode, BAD_CAST "unchecked"));
+			if (NULL == fl->settings[i].unchecked)
 			{
 				LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 				err = VSFERR_NOT_ENOUGH_RESOURCES;
@@ -603,9 +602,9 @@ vsf_err_t target_build_chip_fl(const char *chip_series,
 			}
 			
 			// parse
-			if (NULL == bufffunc_malloc_and_copy_str(
-						&fl->settings[i].choices[j].value,
-						(char *)xmlGetProp(choiceNode, BAD_CAST "value")))
+			fl->settings[i].choices[j].value = strdup(
+							(char *)xmlGetProp(choiceNode, BAD_CAST "value"));
+			if (NULL == fl->settings[i].choices[j].value)
 			{
 				LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 				err = VSFERR_NOT_ENOUGH_RESOURCES;
@@ -619,9 +618,9 @@ vsf_err_t target_build_chip_fl(const char *chip_series,
 				goto free_and_exit;
 			}
 			
-			if (NULL == bufffunc_malloc_and_copy_str(
-						&fl->settings[i].choices[j].text,
-						(char *)xmlGetProp(choiceNode, BAD_CAST "text")))
+			fl->settings[i].choices[j].text = strdup(
+							(char *)xmlGetProp(choiceNode, BAD_CAST "text"));
+			if (NULL == fl->settings[i].choices[j].text)
 			{
 				LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 				err = VSFERR_NOT_ENOUGH_RESOURCES;
@@ -788,8 +787,8 @@ vsf_err_t target_build_chip_series(const char *chip_series,
 				char *mode_tmp = (char *)xmlNodeGetContent(paramNode);
 				int8_t mode_idx;
 				
-				if (NULL == bufffunc_malloc_and_copy_str(
-									&p_param->program_mode_str, mode_tmp))
+				p_param->program_mode_str = strdup(mode_tmp);
+				if (NULL == p_param->program_mode_str)
 				{
 					LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 					err = VSFERR_NOT_ENOUGH_RESOURCES;
@@ -1149,8 +1148,8 @@ vsf_err_t target_build_chip_series(const char *chip_series,
 				str = (char *)xmlGetProp(paramNode, BAD_CAST "format");
 				if (str != NULL)
 				{
-					if (NULL == bufffunc_malloc_and_copy_str(
-						&p_param->chip_areas[UNIQUEID_IDX].cli_format, str))
+					p_param->chip_areas[UNIQUEID_IDX].cli_format = strdup(str);
+					if (NULL == p_param->chip_areas[UNIQUEID_IDX].cli_format)
 					{
 						LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 						err = VSFERR_NOT_ENOUGH_RESOURCES;
@@ -1204,8 +1203,8 @@ vsf_err_t target_build_chip_series(const char *chip_series,
 				str = (char *)xmlGetProp(paramNode, BAD_CAST "format");
 				if (str != NULL)
 				{
-					if (NULL == bufffunc_malloc_and_copy_str(
-						&p_param->chip_areas[FUSE_IDX].cli_format, str))
+					p_param->chip_areas[FUSE_IDX].cli_format = strdup(str);
+					if (NULL == p_param->chip_areas[FUSE_IDX].cli_format)
 					{
 						LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 						err = VSFERR_NOT_ENOUGH_RESOURCES;
@@ -1259,8 +1258,8 @@ vsf_err_t target_build_chip_series(const char *chip_series,
 				str = (char *)xmlGetProp(paramNode, BAD_CAST "format");
 				if (str != NULL)
 				{
-					if (NULL == bufffunc_malloc_and_copy_str(
-						&p_param->chip_areas[LOCK_IDX].cli_format, str))
+					p_param->chip_areas[LOCK_IDX].cli_format = strdup(str);
+					if (NULL == p_param->chip_areas[LOCK_IDX].cli_format)
 					{
 						LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 						err = VSFERR_NOT_ENOUGH_RESOURCES;
@@ -1314,8 +1313,8 @@ vsf_err_t target_build_chip_series(const char *chip_series,
 				str = (char *)xmlGetProp(paramNode, BAD_CAST "format");
 				if (str != NULL)
 				{
-					if (NULL == bufffunc_malloc_and_copy_str(
-						&p_param->chip_areas[CALIBRATION_IDX].cli_format, str))
+					p_param->chip_areas[CALIBRATION_IDX].cli_format = strdup(str);
+					if (NULL == p_param->chip_areas[CALIBRATION_IDX].cli_format)
 					{
 						LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 						err = VSFERR_NOT_ENOUGH_RESOURCES;

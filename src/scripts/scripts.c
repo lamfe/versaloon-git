@@ -33,7 +33,6 @@
 
 #include "programmer.h"
 #include "scripts.h"
-#include "bufffunc.h"
 
 #define PARAM_EXIT_ON_FAIL					0
 #define PARAM_NO_COMMIT						1
@@ -246,12 +245,15 @@ static vsf_err_t vss_append_function_cmd(struct vss_function_t *func, char * str
 	}
 	memset(cmd, 0, sizeof(*cmd));
 	
-	if ((str != NULL) &&
-		(NULL == bufffunc_malloc_and_copy_str(&cmd->func_cmd, str)))
+	if (str != NULL)
 	{
-		free(cmd);
-		cmd = NULL;
-		return VSFERR_FAIL;
+		cmd->func_cmd = strdup(str);
+		if (NULL == cmd->func_cmd)
+		{
+			free(cmd);
+			cmd = NULL;
+			return VSFERR_FAIL;
+		}
 	}
 	
 	tmp = func->cmds;
@@ -602,7 +604,8 @@ vsf_err_t vss_run_script(char *cmd)
 	vsf_err_t err = VSFERR_NONE;
 	uint32_t i, run_times;
 	
-	if (NULL == bufffunc_malloc_and_copy_str(&buff_in_memory, cmd))
+	buff_in_memory = strdup(cmd);
+	if (NULL == buff_in_memory)
 	{
 		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 		return VSFERR_FAIL;
@@ -970,7 +973,8 @@ VSS_HANDLER(vss_function_register)
 	}
 	memset(func, 0, sizeof(*func));
 	
-	if (NULL == bufffunc_malloc_and_copy_str(&func->func_name, (char *)argv[1]))
+	func->func_name = strdup(argv[1]);
+	if (NULL == func->func_name)
 	{
 		free(func);
 		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
