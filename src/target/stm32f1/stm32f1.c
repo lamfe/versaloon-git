@@ -35,15 +35,15 @@
 #include "target.h"
 #include "scripts.h"
 
-#include "stm32.h"
-#include "stm32_internal.h"
+#include "stm32f1.h"
+#include "stm32f1_internal.h"
 #include "comisp.h"
 #include "cm3.h"
 #include "adi_v5p1.h"
 
-#define CUR_TARGET_STRING			STM32_STRING
+#define CUR_TARGET_STRING			STM32F1_STRING
 
-struct program_area_map_t stm32_program_area_map[] =
+struct program_area_map_t stm32f1_program_area_map[] =
 {
 	{APPLICATION_CHAR, 1, 0, 0, 0, AREA_ATTR_EWR | AREA_ATTR_RAE | AREA_ATTR_RAW},
 	{FUSE_CHAR, 0, 0, 0, 0, AREA_ATTR_EWR | AREA_ATTR_RAW},
@@ -51,7 +51,7 @@ struct program_area_map_t stm32_program_area_map[] =
 	{0, 0, 0, 0, 0, 0}
 };
 
-const struct program_mode_t stm32_program_mode[] =
+const struct program_mode_t stm32f1_program_mode[] =
 {
 	{'j', SET_FREQUENCY, IFS_JTAG_HL},
 	{'s', "", IFS_SWD},
@@ -59,9 +59,9 @@ const struct program_mode_t stm32_program_mode[] =
 	{0, NULL, 0}
 };
 
-struct program_functions_t stm32_program_functions;
+struct program_functions_t stm32f1_program_functions;
 
-VSS_HANDLER(stm32_help)
+VSS_HANDLER(stm32f1_help)
 {
 	VSS_CHECK_ARGC(1);
 	PRINTF("\
@@ -74,7 +74,7 @@ Usage of %s:\n\
 	return VSFERR_NONE;
 }
 
-VSS_HANDLER(stm32_mode)
+VSS_HANDLER(stm32f1_mode)
 {
 	uint8_t mode;
 	
@@ -82,25 +82,25 @@ VSS_HANDLER(stm32_mode)
 	mode = (uint8_t)strtoul(argv[1], NULL,0);
 	switch (mode)
 	{
-	case STM32_JTAG:
-	case STM32_SWD:
-		stm32_program_area_map[0].attr |= AREA_ATTR_RNP;
+	case STM32F1_JTAG:
+	case STM32F1_SWD:
+		stm32f1_program_area_map[0].attr |= AREA_ATTR_RNP;
 		cm3_mode_offset = 0;
-		vss_call_notifier(cm3_notifier, "chip", "cm3_stm32");
-		memcpy(&stm32_program_functions, &cm3_program_functions,
-				sizeof(stm32_program_functions));
+		vss_call_notifier(cm3_notifier, "chip", "cm3_stm32f1");
+		memcpy(&stm32f1_program_functions, &cm3_program_functions,
+				sizeof(stm32f1_program_functions));
 		break;
-	case STM32_ISP:
-		stm32_program_area_map[0].attr &= ~AREA_ATTR_RNP;
+	case STM32F1_ISP:
+		stm32f1_program_area_map[0].attr &= ~AREA_ATTR_RNP;
 		vss_call_notifier(comisp_notifier, "chip", "comisp_stm32");
-		memcpy(&stm32_program_functions, &comisp_program_functions,
-				sizeof(stm32_program_functions));
+		memcpy(&stm32f1_program_functions, &comisp_program_functions,
+				sizeof(stm32f1_program_functions));
 		break;
 	}
 	return VSFERR_NONE;
 }
 
-VSS_HANDLER(stm32_extra)
+VSS_HANDLER(stm32f1_extra)
 {
 	char cmd[4] = "E ";
 	
@@ -110,40 +110,40 @@ VSS_HANDLER(stm32_extra)
 	return vss_run_script(cmd);
 }
 
-const struct vss_cmd_t stm32_notifier[] =
+const struct vss_cmd_t stm32f1_notifier[] =
 {
 	VSS_CMD(	"help",
 				"print help information of current target for internal call",
-				stm32_help),
+				stm32f1_help),
 	VSS_CMD(	"mode",
 				"set programming mode of target for internal call",
-				stm32_mode),
+				stm32f1_mode),
 	VSS_CMD(	"extra",
 				"print extra information for internal call",
-				stm32_extra),
+				stm32f1_extra),
 	VSS_CMD_END
 };
 
-uint16_t stm32_get_flash_size(uint32_t mcuid, uint32_t flash_sram_reg)
+uint16_t stm32f1_get_flash_size(uint32_t mcuid, uint32_t flash_sram_reg)
 {
-	uint16_t den = mcuid & STM32_DEN_MSK;
+	uint16_t den = mcuid & STM32F1_DEN_MSK;
 	uint16_t flash_size = flash_sram_reg & 0xFFFF;
 	
 	if (0xFFFF == flash_size)
 	{
 		switch (den)
 		{
-		case STM32_DEN_LOW:
+		case STM32F1_DEN_LOW:
 			return 32;
-		case STM32_DEN_MEDIUM:
+		case STM32F1_DEN_MEDIUM:
 			return 128;
-		case STM32_DEN_HIGH:
+		case STM32F1_DEN_HIGH:
 			return 512;
-		case STM32_DEN_CONNECTIVITY:
+		case STM32F1_DEN_CONNECTIVITY:
 			return 256;
-		case STM32_DEN_VALUELINE:
+		case STM32F1_DEN_VALUELINE:
 			return 128;
-		case STM32_DEN_XL:
+		case STM32F1_DEN_XL:
 			return 1024;
 		default:
 			return 1024;
@@ -151,7 +151,7 @@ uint16_t stm32_get_flash_size(uint32_t mcuid, uint32_t flash_sram_reg)
 	}
 	else
 	{
-		if ((STM32_DEN_MEDIUM == den) && (flash_size < 128))
+		if ((STM32F1_DEN_MEDIUM == den) && (flash_size < 128))
 		{
 			flash_size = 128;
 		}
@@ -159,17 +159,17 @@ uint16_t stm32_get_flash_size(uint32_t mcuid, uint32_t flash_sram_reg)
 	}
 }
 
-void stm32_print_device(uint32_t mcuid)
+void stm32f1_print_device(uint32_t mcuid)
 {
 	char rev_char = 0;
 	uint16_t den, rev;
 	
-	den = mcuid & STM32_DEN_MSK;
-	rev = (mcuid & STM32_REV_MSK) >> 16;
+	den = mcuid & STM32F1_DEN_MSK;
+	rev = (mcuid & STM32F1_REV_MSK) >> 16;
 	switch (den)
 	{
-	case STM32_DEN_LOW:
-		LOG_INFO("STM32 type: low-density device");
+	case STM32F1_DEN_LOW:
+		LOG_INFO("STM32F1 type: low-density device");
 		switch (rev)
 		{
 		case 0x1000:
@@ -177,8 +177,8 @@ void stm32_print_device(uint32_t mcuid)
 			break;
 		}
 		break;
-	case STM32_DEN_MEDIUM:
-		LOG_INFO("STM32 type: medium-density device");
+	case STM32F1_DEN_MEDIUM:
+		LOG_INFO("STM32F1 type: medium-density device");
 		switch (rev)
 		{
 		case 0x0000:
@@ -195,8 +195,8 @@ void stm32_print_device(uint32_t mcuid)
 			break;
 		}
 		break;
-	case STM32_DEN_HIGH:
-		LOG_INFO("STM32 type: high-density device");
+	case STM32F1_DEN_HIGH:
+		LOG_INFO("STM32F1 type: high-density device");
 		switch (rev)
 		{
 		case 0x1000:
@@ -210,8 +210,8 @@ void stm32_print_device(uint32_t mcuid)
 			break;
 		}
 		break;
-	case STM32_DEN_CONNECTIVITY:
-		LOG_INFO("STM32 type: connectivity device");
+	case STM32F1_DEN_CONNECTIVITY:
+		LOG_INFO("STM32F1 type: connectivity device");
 		switch (rev)
 		{
 		case 0x1000:
@@ -222,8 +222,8 @@ void stm32_print_device(uint32_t mcuid)
 			break;
 		}
 		break;
-	case STM32_DEN_VALUELINE:
-		LOG_INFO("STM32 type: value-line device");
+	case STM32F1_DEN_VALUELINE:
+		LOG_INFO("STM32F1 type: value-line device");
 		switch (rev)
 		{
 		case 0x1000:
@@ -234,8 +234,8 @@ void stm32_print_device(uint32_t mcuid)
 			break;
 		}
 		break;
-	case STM32_DEN_XL:
-		LOG_INFO("STM32 type: XL device");
+	case STM32F1_DEN_XL:
+		LOG_INFO("STM32F1 type: XL device");
 		switch (rev)
 		{
 		case 0x1000:
@@ -244,12 +244,12 @@ void stm32_print_device(uint32_t mcuid)
 		}
 		break;
 	default:
-		LOG_INFO("STM32 type: unknown device(%08X)", mcuid);
+		LOG_INFO("STM32F1 type: unknown device(%08X)", mcuid);
 		break;
 	}
 	if (rev_char != 0)
 	{
-		LOG_INFO("STM32 revision: %c", rev_char);
+		LOG_INFO("STM32F1 revision: %c", rev_char);
 	}
 }
 

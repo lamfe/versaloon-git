@@ -16,15 +16,15 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#ifndef __STM32_H_INCLUDED__
-#define __STM32_H_INCLUDED__
+#ifndef __STM32F1_H_INCLUDED__
+#define __STM32F1_H_INCLUDED__
 
-#define STM32_STRING					"stm32"
+#define STM32F1_STRING					"stm32f1"
 
-extern struct program_area_map_t stm32_program_area_map[];
-extern const struct program_mode_t stm32_program_mode[];
-extern struct program_functions_t stm32_program_functions;
-extern const struct vss_cmd_t stm32_notifier[];
+extern struct program_area_map_t stm32f1_program_area_map[];
+extern const struct program_mode_t stm32f1_program_mode[];
+extern struct program_functions_t stm32f1_program_functions;
+extern const struct vss_cmd_t stm32f1_notifier[];
 
-#endif /* __STM32_H_INCLUDED__ */
+#endif /* __STM32F1_H_INCLUDED__ */
 

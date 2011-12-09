@@ -18,7 +18,7 @@ INCLUDES = \
     -I$(top_srcdir)/src/target/core/arm_adi \
     -I$(top_srcdir)/src/target/comisp \
     -I$(top_srcdir)/src/target/cortex-m3 \
-    -I$(top_srcdir)/src/target/stm32 \
+    -I$(top_srcdir)/src/target/stm32f1 \
     -I$(top_srcdir)/src/target/stm32f2 \
     -I$(top_srcdir)/src/target/lpc1000 \
     -I$(top_srcdir)/src/target/at91sam3 \
@@ -38,7 +38,7 @@ libtgt_a_SOURCES = \
     core/arm_adi/adi_v5p1.c \
     cortex-m3/cm3.c \
     cortex-m3/cm3_stm32_fl.c \
-    cortex-m3/cm3_stm32.c \
+    cortex-m3/cm3_stm32f1.c \
     cortex-m3/cm3_stm32f2.c \
     cortex-m3/cm3_lpc1000.c \
     cortex-m3/cm3_at91sam3.c \
@@ -66,7 +66,7 @@ libtgt_a_SOURCES = \
     svf_player/svf_player.c \
     svf_player/byte_tap.c \
     svf_player/svf_parser.c \
-    stm32/stm32.c \
+    stm32f1/stm32f1.c \
     stm32f2/stm32f2.c \
     lpc1000/lpc1000.c \
     at91sam3/at91sam3.c \
