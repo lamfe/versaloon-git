@@ -39,7 +39,7 @@
 #include "stm32isp.h"
 
 #include "comisp_internal.h"
-#include "stm32_internal.h"
+#include "stm32f1_internal.h"
 
 #include "comport.h"
 
@@ -744,7 +744,7 @@ WRITE_TARGET_HANDLER(stm32isp)
 		// erase is not defined and erase-on-demand is defined
 		if (!(op->erase_operations & APPLICATION) && pi->erase_on_demand)
 		{
-			page_num = (uint8_t)((addr - STM32_FLASH_ADDR) /
+			page_num = (uint8_t)((addr - STM32F1_FLASH_ADDR) /
 									param->chip_areas[APPLICATION_IDX].page_size);
 			err = stm32isp_erase_sector(1, &page_num);
 			if (err)
@@ -795,14 +795,14 @@ READ_TARGET_HANDLER(stm32isp)
 			err = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
-		mcu_id = 0xFFFF0000 | ((mcu_id >> 20) & STM32_DEN_MSK);
-		den = mcu_id & STM32_DEN_MSK;
-		stm32_print_device(mcu_id);
-		*(uint32_t *)buff = mcu_id & STM32_DEN_MSK;
+		mcu_id = 0xFFFF0000 | ((mcu_id >> 20) & STM32F1_DEN_MSK);
+		den = mcu_id & STM32F1_DEN_MSK;
+		stm32f1_print_device(mcu_id);
+		*(uint32_t *)buff = mcu_id & STM32F1_DEN_MSK;
 		
 		// read memory size
 		len = 4;
-		if (stm32isp_read_memory(STM32_REG_FLASH_RAM_SIZE, tmpbuff, &len))
+		if (stm32isp_read_memory(STM32F1_REG_FLASH_RAM_SIZE, tmpbuff, &len))
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read memroy size");
 			err = ERRCODE_FAILURE_OPERATION;
@@ -814,7 +814,7 @@ READ_TARGET_HANDLER(stm32isp)
 			pi->program_areas[APPLICATION_IDX].size =
 			param->chip_areas[APPLICATION_IDX].size = flash_kb * 1024;
 		}
-		else if ((STM32_DEN_VALUELINE == den) && (0xFFFFFFFF == mcu_id))
+		else if ((STM32F1_DEN_VALUELINE == den) && (0xFFFFFFFF == mcu_id))
 		{
 			// FLASH_RAM_SIZE register of STM32 ValueLine devices will be 0xFFFFFFFF
 			// we use 128K by default
@@ -828,16 +828,16 @@ READ_TARGET_HANDLER(stm32isp)
 		}
 		if (!param->chip_areas[APPLICATION_IDX].page_size)
 		{
-			switch (mcu_id & STM32_DEN_MSK)
+			switch (mcu_id & STM32F1_DEN_MSK)
 			{
-			case STM32_DEN_LOW:
-			case STM32_DEN_MEDIUM:
-			case STM32_DEN_VALUELINE:
+			case STM32F1_DEN_LOW:
+			case STM32F1_DEN_MEDIUM:
+			case STM32F1_DEN_VALUELINE:
 			default:
 				param->chip_areas[APPLICATION_IDX].page_size = 1024;
 				break;
-			case STM32_DEN_HIGH:
-			case STM32_DEN_CONNECTIVITY:
+			case STM32F1_DEN_HIGH:
+			case STM32F1_DEN_CONNECTIVITY:
 				param->chip_areas[APPLICATION_IDX].page_size = 2048;
 				break;
 			}

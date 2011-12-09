@@ -35,7 +35,6 @@
 #include "adi_v5p1.h"
 #include "cm3_common.h"
 
-#include "stm32_internal.h"
 #include "cm3_stm32_fl.h"
 
 #define STM32_FL_COMMAND_OFFSET				0x80

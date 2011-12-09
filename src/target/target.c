@@ -50,7 +50,7 @@
 #include "comisp/comisp.h"
 #include "svf_player/svf_player.h"
 #include "cortex-m3/cm3.h"
-#include "stm32/stm32.h"
+#include "stm32f1/stm32f1.h"
 #include "lpc1000/lpc1000.h"
 #include "stm8/stm8.h"
 #include "at91sam3/at91sam3.h"
@@ -249,15 +249,15 @@ struct chip_param_t target_chip_param;
 
 struct target_info_t targets_info[] =
 {
-	// stm32
+	// stm32f1
 #if TARGET_STM32_EN
 	{
-		STM32_STRING,						// name
+		STM32F1_STRING,						// name
 		AUTO_DETECT CAN_EXECUTE,			// feature
-		stm32_program_area_map,				// program_area_map
-		stm32_program_mode,					// program_mode
-		&stm32_program_functions,			// program_functions
-		stm32_notifier,						// notifier
+		stm32f1_program_area_map,			// program_area_map
+		stm32f1_program_mode,				// program_mode
+		&stm32f1_program_functions,			// program_functions
+		stm32f1_notifier,					// notifier
 		NULL,								// adjust_setting
 		NULL,								// adjust_mapping
 	},

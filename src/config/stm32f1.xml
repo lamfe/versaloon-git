@@ -1,13 +1,13 @@
 <?xml version="1.0"?>
-<series name="stm32">
-  <chip name="stm32">
+<series name="stm32f1">
+  <chip name="stm32f1">
     <chip_id>0x0000</chip_id>
     <program_mode>j:JTAG(F)|s:SWD|i:ISP(C)</program_mode>
     <app_default>0xFF</app_default>
     <app_addr>0x08000000</app_addr>
     <app_seg>0</app_seg>
   </chip>
-  <chip name="stm32_ld">
+  <chip name="stm32f1_ld">
     <chip_id>0x0412</chip_id>
     <program_mode>jsi</program_mode>
     <app_page_size>1024</app_page_size>
@@ -36,7 +36,7 @@
     </fuse>
     <uid init="0xFF" bytesize="12" mask="0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF" format="%4x%4x%4x"></uid>
   </chip>
-  <chip name="stm32_md">
+  <chip name="stm32f1_md">
     <chip_id>0x0410</chip_id>
     <program_mode>jsi</program_mode>
     <app_page_size>1024</app_page_size>
@@ -65,7 +65,7 @@
     </fuse>
     <uid init="0xFF" bytesize="12" mask="0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF" format="%4x%4x%4x"></uid>
   </chip>
-  <chip name="stm32_hd">
+  <chip name="stm32f1_hd">
     <chip_id>0x0414</chip_id>
     <program_mode>jsi</program_mode>
     <app_page_size>2048</app_page_size>
@@ -94,7 +94,7 @@
     </fuse>
     <uid init="0xFF" bytesize="12" mask="0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF" format="%4x%4x%4x"></uid>
   </chip>
-  <chip name="stm32_conn">
+  <chip name="stm32f1_conn">
     <chip_id>0x0418</chip_id>
     <program_mode>jsi</program_mode>
     <app_page_size>2048</app_page_size>
@@ -123,7 +123,7 @@
     </fuse>
     <uid init="0xFF" bytesize="12" mask="0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF" format="%4x%4x%4x"></uid>
   </chip>
-  <chip name="stm32_vl">
+  <chip name="stm32f1_vl">
     <chip_id>0x0420</chip_id>
     <program_mode>jsi</program_mode>
     <app_page_size>1024</app_page_size>
@@ -152,7 +152,7 @@
     </fuse>
     <uid init="0xFF" bytesize="12" mask="0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF" format="%4x%4x%4x"></uid>
   </chip>
-  <chip name="stm32_xl">
+  <chip name="stm32f1_xl">
     <chip_id>0x0430</chip_id>
     <program_mode>jsi</program_mode>
     <app_page_size>2048</app_page_size>
