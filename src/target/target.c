@@ -284,7 +284,7 @@ struct target_info_t targets_info[] =
 		stm32f2_program_area_map,			// program_area_map
 		stm32f2_program_mode,				// program_mode
 		&stm32f2_program_functions,			// program_functions
-		stm32f2_notifier,					// notifier
+		stm32f4_notifier,					// notifier
 		NULL,								// adjust_setting
 		NULL,								// adjust_mapping
 	},
