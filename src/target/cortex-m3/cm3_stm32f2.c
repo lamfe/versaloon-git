@@ -48,7 +48,8 @@
 #include "cm3_stm32_fl.h"
 
 #define STM32F2_FL_PAGE_SIZE	1024
-#define	STM32F2_FL_PAGE0_ADDR	(STM32F2_SRAM_ADDR + STM32_FL_BUFFER_OFFSET)
+#define	STM32F2_FL_PAGE0_ADDR	\
+	(param->chip_areas[SRAM_IDX].addr + STM32_FL_BUFFER_OFFSET)
 #define STM32F2_FL_PAGE1_ADDR	(STM32F2_FL_PAGE0_ADDR + STM32F2_FL_PAGE_SIZE)
 
 ENTER_PROGRAM_MODE_HANDLER(stm32f2swj);
@@ -68,9 +69,8 @@ const struct program_functions_t stm32f2swj_program_functions =
 
 ENTER_PROGRAM_MODE_HANDLER(stm32f2swj)
 {
+	struct chip_param_t *param = context->param;
 	uint32_t reg;
-	
-	REFERENCE_PARAMETER(context);
 	
 	// unlock flash and option bytes
 	reg = STM32F2_FLASH_UNLOCK_KEY1;
@@ -93,7 +93,7 @@ ENTER_PROGRAM_MODE_HANDLER(stm32f2swj)
 					"vsprog -cstm32f2_XX -mX -oeu -owu -tu0xFFFFAAFF");
 	}
 	
-	return stm32swj_fl_init(STM32F2_SRAM_ADDR);
+	return stm32swj_fl_init(param->chip_areas[SRAM_IDX].addr);
 }
 
 LEAVE_PROGRAM_MODE_HANDLER(stm32f2swj)
@@ -142,6 +142,7 @@ ERASE_TARGET_HANDLER(stm32f2swj)
 
 WRITE_TARGET_HANDLER(stm32f2swj)
 {
+	struct chip_param_t *param = context->param;
 	uint8_t tick_tock;
 	uint32_t cur_size;
 	vsf_err_t err = VSFERR_NONE;
@@ -149,7 +150,6 @@ WRITE_TARGET_HANDLER(stm32f2swj)
 	struct stm32_fl_result_t result;
 	bool last;
 	
-	REFERENCE_PARAMETER(context);
 	REFERENCE_PARAMETER(size);
 	REFERENCE_PARAMETER(buff);
 	REFERENCE_PARAMETER(addr);

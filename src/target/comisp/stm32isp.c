@@ -744,8 +744,9 @@ WRITE_TARGET_HANDLER(stm32isp)
 		// erase is not defined and erase-on-demand is defined
 		if (!(op->erase_operations & APPLICATION) && pi->erase_on_demand)
 		{
-			page_num = (uint8_t)((addr - STM32F1_FLASH_ADDR) /
-									param->chip_areas[APPLICATION_IDX].page_size);
+			page_num =
+				(uint8_t)((addr - param->chip_areas[APPLICATION_IDX].addr) /
+					param->chip_areas[APPLICATION_IDX].page_size);
 			err = stm32isp_erase_sector(1, &page_num);
 			if (err)
 			{

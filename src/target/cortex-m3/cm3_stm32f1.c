@@ -47,7 +47,8 @@
 #include "stm32f1_internal.h"
 #include "cm3_stm32_fl.h"
 
-#define	STM32F1_FL_PAGE0_ADDR		(STM32F1_SRAM_ADDR + STM32_FL_BUFFER_OFFSET)
+#define	STM32F1_FL_PAGE0_ADDR		\
+	(param->chip_areas[SRAM_IDX].addr + STM32_FL_BUFFER_OFFSET)
 
 ENTER_PROGRAM_MODE_HANDLER(stm32f1swj);
 LEAVE_PROGRAM_MODE_HANDLER(stm32f1swj);
@@ -66,9 +67,8 @@ const struct program_functions_t stm32f1swj_program_functions =
 
 ENTER_PROGRAM_MODE_HANDLER(stm32f1swj)
 {
+	struct chip_param_t *param = context->param;
 	uint32_t reg, flash_obr, flash_wrpr;
-	
-	REFERENCE_PARAMETER(context);
 	
 	// unlock flash and option bytes
 	reg = STM32F1_FLASH_UNLOCK_KEY1;
@@ -94,7 +94,7 @@ ENTER_PROGRAM_MODE_HANDLER(stm32f1swj)
 					"vsprog -cstm32f1_XX -mX -oeu -owu -tu0xFFFFFFFFFFFFFFA5");
 	}
 	
-	return stm32swj_fl_init(STM32F1_SRAM_ADDR);
+	return stm32swj_fl_init(param->chip_areas[SRAM_IDX].addr);
 }
 
 LEAVE_PROGRAM_MODE_HANDLER(stm32f1swj)
@@ -225,7 +225,8 @@ WRITE_TARGET_HANDLER(stm32f1swj)
 			return VSFERR_FAIL;
 		}
 		
-		if (addr >= STM32F1_FLASH_BANK2_ADDR)
+		if (addr >=
+			(param->chip_areas[APPLICATION_IDX].addr + STM32F1_FLASH_BANK_SIZE))
 		{
 			cmd.cr_addr = STM32F1_FLASH_CR2;
 			cmd.sr_addr = STM32F1_FLASH_SR2;

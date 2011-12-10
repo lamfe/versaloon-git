@@ -19,13 +19,14 @@
 #ifndef __CM3_INTERNAL_H_INCLUDED__
 #define __CM3_INTERNAL_H_INCLUDED__
 
-#define CM3_PARAM_IDX_STM32					0
+#define CM3_PARAM_IDX_STM32F1				0
 #define CM3_PARAM_IDX_STM32F2				1
-#define CM3_PARAM_IDX_LPC1000				2
-#define CM3_PARAM_IDX_AT91SAM3				3
-#define CM3_PARAM_IDX_LM3S					4
+#define CM3_PARAM_IDX_STM32L1				2
+#define CM3_PARAM_IDX_LPC1000				3
+#define CM3_PARAM_IDX_AT91SAM3				4
+#define CM3_PARAM_IDX_LM3S					5
 
-#define CM3_PARAM_TARGET_NUM				5
+#define CM3_PARAM_TARGET_NUM				6
 
 struct cm3_param_t
 {
