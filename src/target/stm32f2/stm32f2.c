@@ -41,8 +41,6 @@
 #include "cm3.h"
 #include "adi_v5p1.h"
 
-#define CUR_TARGET_STRING			STM32F2_STRING
-
 struct program_area_map_t stm32f2_program_area_map[] =
 {
 	{APPLICATION_CHAR, 1, 0, 0, 0, AREA_ATTR_EWR | AREA_ATTR_RAE | AREA_ATTR_RAW},
@@ -71,7 +69,20 @@ Usage of %s:\n\
   -m,  --mode <MODE>                        set mode<j|s|i>\n\
   -x,  --execute <ADDRESS>                  execute program\n\
   -F,  --frequency <FREQUENCY>              set JTAG frequency, in KHz\n\n",
-			CUR_TARGET_STRING);
+			STM32F2_STRING);
+	return VSFERR_NONE;
+}
+
+VSS_HANDLER(stm32f4_help)
+{
+	VSS_CHECK_ARGC(1);
+	PRINTF("\
+Usage of %s:\n\
+  -C,  --comport <COMM_ATTRIBUTE>           set com port\n\
+  -m,  --mode <MODE>                        set mode<j|s|i>\n\
+  -x,  --execute <ADDRESS>                  execute program\n\
+  -F,  --frequency <FREQUENCY>              set JTAG frequency, in KHz\n\n",
+			STM32F4_STRING);
 	return VSFERR_NONE;
 }
 
@@ -110,6 +121,20 @@ VSS_HANDLER(stm32f2_extra)
 	cmd[3] = '\0';
 	return vss_run_script(cmd);
 }
+
+const struct vss_cmd_t stm32f4_notifier[] =
+{
+	VSS_CMD(	"help",
+				"print help information of current target for internal call",
+				stm32f4_help),
+	VSS_CMD(	"mode",
+				"set programming mode of target for internal call",
+				stm32f2_mode),
+	VSS_CMD(	"extra",
+				"print extra information for internal call",
+				stm32f2_extra),
+	VSS_CMD_END
+};
 
 const struct vss_cmd_t stm32f2_notifier[] =
 {

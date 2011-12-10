@@ -26,6 +26,7 @@ extern struct program_area_map_t stm32f2_program_area_map[];
 extern const struct program_mode_t stm32f2_program_mode[];
 extern struct program_functions_t stm32f2_program_functions;
 extern const struct vss_cmd_t stm32f2_notifier[];
+extern const struct vss_cmd_t stm32f4_notifier[];
 
 #endif /* __STM32F2_H_INCLUDED__ */
 
