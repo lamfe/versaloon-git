@@ -16,29 +16,15 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
+#ifndef __STM32L1_H_INCLUDED__
+#define __STM32L1_H_INCLUDED__
 
-#ifndef __STM32F2_INTERNAL_H_INCLUDED__
-#define __STM32F2_INTERNAL_H_INCLUDED__
+#define STM32L1_STRING					"stm32l1"
 
-#define STM32F2_JTAG					0
-#define STM32F2_SWD						1
-#define STM32F2_ISP						2
+extern struct program_area_map_t stm32l1_program_area_map[];
+extern const struct program_mode_t stm32l1_program_mode[];
+extern struct program_functions_t stm32l1_program_functions;
+extern const struct vss_cmd_t stm32l1_notifier[];
 
-#define STM32F2_REV_MSK					0xFFFF0000
-#define STM32F2_DEN_MSK					0x00000FFF
-#define STM32F2_DEN_XL					0x0411
-
-#define STM32F4_DEN_XL					0x0413
-
-#define STM32F2_REG_MCU_ID				0xE0042000
-
-#define STM32F2_OB_ADDR					0x1FFFC000
-#define STM32F2_OB_SIZE					16
-
-#define STM32F2_UID_ADDR				(0x1FFF7A10)
-
-void stm32f2_print_device(uint32_t mcuid);
-void stm32f4_print_device(uint32_t mcuid);
-
-#endif /* __STM32F2_INTERNAL_H_INCLUDED__ */
+#endif /* __STM32L1_H_INCLUDED__ */
 

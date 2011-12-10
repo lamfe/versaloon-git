@@ -37,7 +37,7 @@
 #define TARGET_LPC900_EN		1
 #define TARGET_MSP430_EN		1
 #define TARGET_PSOC1_EN			1
-#define TARGET_STM32_EN			1
+#define TARGET_STM32F1_EN		1
 #define TARGET_STM8_EN			1
 #define TARGET_SVF_EN			1
 #define TARGET_EE93CX6_EN		1
@@ -45,6 +45,7 @@
 #define TARGET_DF25XX_EN		1
 #define TARGET_STM32F2_EN		1
 #define TARGET_STM32F4_EN		1
+#define TARGET_STM32L1_EN		1
 #define TARGET_SD_EN			1
 #define TARGET_CFI_EN			1
 #define TARGET_NAND_EN			1

@@ -66,6 +66,7 @@
 #include "sd/sd.h"
 #include "cfi/cfi.h"
 #include "nand/nand.h"
+#include "stm32l1/stm32l1.h"
 
 VSS_HANDLER(target_memory_detail);
 VSS_HANDLER(target_parameter_detail);
@@ -250,7 +251,7 @@ struct chip_param_t target_chip_param;
 struct target_info_t targets_info[] =
 {
 	// stm32f1
-#if TARGET_STM32_EN
+#if TARGET_STM32F1_EN
 	{
 		STM32F1_STRING,						// name
 		AUTO_DETECT CAN_EXECUTE,			// feature
@@ -284,6 +285,19 @@ struct target_info_t targets_info[] =
 		stm32f2_program_mode,				// program_mode
 		&stm32f2_program_functions,			// program_functions
 		stm32f2_notifier,					// notifier
+		NULL,								// adjust_setting
+		NULL,								// adjust_mapping
+	},
+#endif
+	// stm32l1
+#if TARGET_STM32L1_EN
+	{
+		STM32L1_STRING,						// name
+		AUTO_DETECT CAN_EXECUTE,			// feature
+		stm32l1_program_area_map,			// program_area_map
+		stm32l1_program_mode,				// program_mode
+		&stm32l1_program_functions,			// program_functions
+		stm32l1_notifier,					// notifier
 		NULL,								// adjust_setting
 		NULL,								// adjust_mapping
 	},

@@ -20,6 +20,7 @@ INCLUDES = \
     -I$(top_srcdir)/src/target/cortex-m3 \
     -I$(top_srcdir)/src/target/stm32f1 \
     -I$(top_srcdir)/src/target/stm32f2 \
+    -I$(top_srcdir)/src/target/stm32l1 \
     -I$(top_srcdir)/src/target/lpc1000 \
     -I$(top_srcdir)/src/target/at91sam3 \
     -I$(top_srcdir)/src/target/avr32 \
@@ -40,6 +41,7 @@ libtgt_a_SOURCES = \
     cortex-m3/cm3_stm32_fl.c \
     cortex-m3/cm3_stm32f1.c \
     cortex-m3/cm3_stm32f2.c \
+    cortex-m3/cm3_stm32l1.c \
     cortex-m3/cm3_lpc1000.c \
     cortex-m3/cm3_at91sam3.c \
     cortex-m3/cm3_lm3s.c \
@@ -68,6 +70,7 @@ libtgt_a_SOURCES = \
     svf_player/svf_parser.c \
     stm32f1/stm32f1.c \
     stm32f2/stm32f2.c \
+    stm32l1/stm32l1.c \
     lpc1000/lpc1000.c \
     at91sam3/at91sam3.c \
     avr32/avr32.c \
