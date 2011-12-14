@@ -115,8 +115,8 @@ struct jtag_pos_t
 #define SPI_MODE1				1
 #define SPI_MODE2				2
 #define SPI_MODE3				3
-#define SPI_MSB_FIRST			0x80
-#define SPI_LSB_FIRST			0x00
+#define SPI_MSB_FIRST			0x00
+#define SPI_LSB_FIRST			0x80
 
 // ISSP for PSoC
 #define ISSP_PM_RESET			(1 << 0)
