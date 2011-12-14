@@ -120,13 +120,13 @@ struct vss_cmd_t interface_cmd[] =
 				"jtag dr, format: jtag.dr BITLEN DATASIZE DR_DATA...",
 				interface_jtag_dr),
 	VSS_CMD(	"gpio.init",
-				"initialize gpio, format: gpio.init [MASK IO PULL]",
+				"initialize gpio, format: gpio.init [MASK IO PULL_EN PULL]",
 				interface_gpio_init),
 	VSS_CMD(	"gpio.fini",
 				"finalize gpio, format: gpio.fini",
 				interface_gpio_fini),
 	VSS_CMD(	"gpio.config",
-				"config gpio, format: gpio.config MASK IO PULL",
+				"config gpio, format: gpio.config MASK IO PULL_EN PULL",
 				interface_gpio_config),
 	VSS_CMD(	"gpio.out",
 				"gpio output, format: gpio.out MASK VALUE",
@@ -465,7 +465,7 @@ VSS_HANDLER(interface_gpio_init)
 {
 	struct interfaces_info_t *ifs = NULL;
 	
-	VSS_CHECK_ARGC_2(1, 4);
+	VSS_CHECK_ARGC_2(1, 5);
 	INTERFACE_ASSERT(IFS_GPIO, "gpio");
 	
 	if (ifs->gpio.init(0))
@@ -473,7 +473,7 @@ VSS_HANDLER(interface_gpio_init)
 		return VSFERR_FAIL;
 	}
 	
-	if (4 == argc)
+	if (5 == argc)
 	{
 		return interface_gpio_config(argc, argv);
 	}
@@ -698,7 +698,7 @@ VSS_HANDLER(interface_spi_init)
 {
 	struct interfaces_info_t *ifs = NULL;
 	
-	VSS_CHECK_ARGC_2(1, 5);
+	VSS_CHECK_ARGC_2(1, 4);
 	INTERFACE_ASSERT(IFS_SPI, "spi");
 	
 	if (ifs->spi.init(0))
