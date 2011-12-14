@@ -527,7 +527,7 @@ struct target_info_t targets_info[] =
 	// DF25XX
 	{
 		DF25XX_STRING,						// name
-		"",									// feature
+		AUTO_DETECT,						// feature
 		df25xx_program_area_map,			// program_area_map
 		df25xx_program_mode,				// program_mode
 		&df25xx_program_functions,			// program_functions
