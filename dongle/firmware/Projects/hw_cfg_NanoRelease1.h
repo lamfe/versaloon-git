@@ -509,10 +509,6 @@
 
 /****************************** SPI ******************************/
 #define SPI_Interface_Idx				1
-#define SPI_Interface					SPI2
-
-#define SPI_Conf(br, fb, cpol, cpha)	SPI_Configuration(SPI_Interface,SPI_Mode_Master,\
-															(br),(fb),(cpol),(cpha))
 
 #define SPI_MOSI_SET()					JTAG_TAP_TDI_SET()
 #define SPI_MOSI_CLR()					JTAG_TAP_TDI_CLR()
