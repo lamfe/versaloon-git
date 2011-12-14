@@ -51,14 +51,6 @@ static vsf_err_t df25xx_drv_cs_deassert(struct df25xx_drv_interface_t *ifs)
 									ifs->cs_pin);
 }
 
-static vsf_err_t df25xx_drv_io(struct df25xx_drv_interface_t *ifs, uint8_t *out, 
-								uint8_t *in, uint16_t len)
-{
-	df25xx_drv_cs_assert(ifs);
-	interfaces->spi.io(ifs->spi_port, out, in, len);
-	return df25xx_drv_cs_deassert(ifs);
-}
-
 static vsf_err_t df25xx_drv_init(struct dal_info_t *info)
 {
 	struct df25xx_drv_interface_t *ifs = 
@@ -83,17 +75,19 @@ static vsf_err_t df25xx_drv_getinfo(struct dal_info_t *info)
 	struct df25xx_drv_interface_t *ifs = 
 								(struct df25xx_drv_interface_t *)info->ifs;
 	struct df25xx_drv_info_t *pinfo = (struct df25xx_drv_info_t *)info->info;
-	uint8_t out_buff[13], in_buff[13];
+	uint8_t cmd[4];
 	
-	out_buff[0] = DF25XX_CMD_RDID;
-	df25xx_drv_io(ifs, out_buff, in_buff, 4);
+	df25xx_drv_cs_assert(ifs);
+	cmd[0] = DF25XX_CMD_RDID;
+	interfaces->spi.io(ifs->spi_port, cmd, cmd, 4);
+	df25xx_drv_cs_deassert(ifs);
 	if (interfaces->peripheral_commit())
 	{
 		return VSFERR_FAIL;
 	}
 	
-	pinfo->manufacturer_id = in_buff[1];
-	pinfo->device_id = GET_BE_U16(&in_buff[2]);
+	pinfo->manufacturer_id = cmd[1];
+	pinfo->device_id = GET_BE_U16(&cmd[2]);
 	return VSFERR_NONE;
 }
 
