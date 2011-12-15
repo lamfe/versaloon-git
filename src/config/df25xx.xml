@@ -2,8 +2,6 @@
 <series name="df25xx">
   <chip name="df25xx">
     <chip_id>0x00000000</chip_id>
-    <app_page_size>4096</app_page_size>
-    <app_page_num>2048</app_page_num>
     <app_default>0xFF</app_default>
     <app_addr>0</app_addr>
     <app_seg>0</app_seg>
@@ -12,5 +10,15 @@
     <chip_id>0x00EF4016</chip_id>
     <app_page_size>256</app_page_size>
     <app_page_num>16384</app_page_num>
+  </chip>
+  <chip name="df25q16">
+    <chip_id>0x00EF4015</chip_id>
+    <app_page_size>256</app_page_size>
+    <app_page_num>8192</app_page_num>
+  </chip>
+  <chip name="df25q80">
+    <chip_id>0x00EF4014</chip_id>
+    <app_page_size>256</app_page_size>
+    <app_page_num>4096</app_page_num>
   </chip>
 </series>
