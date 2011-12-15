@@ -20,7 +20,7 @@
 #include "app_interfaces.h"
 #include "SPI.h"
 
-static uint8_t SPI_Emu = 0;
+static uint8_t SPI_Emu = 0, SPI_Emu_Mode = 0, SPI_Emu_MSB_First = 0;
 static uint32_t SPI_Dly;
 
 static void SPI_Delay(uint8_t dly)
@@ -31,48 +31,157 @@ static void SPI_Delay(uint8_t dly)
 static vsf_err_t SPI_Config_Emu(uint32_t freq_hz, uint8_t mode)
 {
 	SPI_Dly = 250000 / freq_hz;
+	SPI_Emu_MSB_First = !(mode & SPI_LSB_FIRST);
+	SPI_Emu_Mode = mode & 0x03;
 	
-	JTAG_TAP_TCK_CLR();
-	JTAG_TAP_TCK_SETOUTPUT();
-	JTAG_TAP_TDI_SETOUTPUT();
-	JTAG_TAP_TDO_SETINPUT();
+	if (SPI_Emu_Mode & 0x02)
+	{
+		SPI_SCK_SET();
+	}
+	else
+	{
+		SPI_SCK_CLR();
+	}
+	
+	SPI_SCK_SETOUTPUT();
+	SPI_MOSI_SETOUTPUT();
+	SPI_MISO_SETINPUT();
 	return VSFERR_NONE;
 }
 
 #define SPI_DATA_LEN			8
 #define SPI_MSB					(1 << (SPI_DATA_LEN - 1))
-static uint8_t SPI_RW_Emu(uint8_t data)
-{
-	uint8_t tmp,ret = 0;
+#define SPI_LSB					(1)
 
-	for(tmp = SPI_DATA_LEN; tmp; tmp--)
+static uint8_t SPI_RW_Emu_GetData(uint8_t *data)
+{
+	uint8_t ret;
+	
+	if (SPI_Emu_MSB_First)
 	{
-		if(data & SPI_MSB)
+		ret = *data & SPI_MSB;
+		*data <<= 1;
+	}
+	else
+	{
+		ret = *data & SPI_LSB;
+		*data >>= 1;
+	}
+	return ret;
+}
+
+static void SPI_RW_Emu_OutBit(uint8_t *data)
+{
+	if (SPI_RW_Emu_GetData(data))
+	{
+		SPI_MOSI_SET();
+	}
+	else
+	{
+		SPI_MOSI_CLR();
+	}
+}
+
+static void SPI_RW_Emu_SetData(uint8_t *data, uint8_t bit)
+{
+	if (SPI_Emu_MSB_First)
+	{
+		*data <<= 1;
+		if (bit)
 		{
-			JTAG_TAP_TDI_SET();
+			*data |= SPI_LSB;
 		}
 		else
 		{
-			JTAG_TAP_TDI_CLR();
+			*data &= ~SPI_LSB;
 		}
-		data <<= 1;
-
-		SPI_Delay(SPI_Dly);
-
-		JTAG_TAP_TCK_SET();
-
-		SPI_Delay(SPI_Dly);
-
-		ret <<= 1;
-		if(JTAG_TAP_TDO_GET())
+	}
+	else
+	{
+		*data >>= 1;
+		if (bit)
 		{
-			ret |= 1;
+			*data |= SPI_MSB;
 		}
+		else
+		{
+			*data &= ~SPI_MSB;
+		}
+	}
+}
 
+static void SPI_RW_Emu_InBit(uint8_t *data)
+{
+	if (SPI_MISO_GET())
+	{
+		SPI_RW_Emu_SetData(data, 1);
+	}
+	else
+	{
+		SPI_RW_Emu_SetData(data, 0);
+	}
+}
+
+static uint8_t SPI_RW_Emu(uint8_t data)
+{
+	uint8_t i, ret = 0;
+	
+	for(i = SPI_DATA_LEN; i; i--)
+	{
+		if (!(SPI_Emu_Mode & 1))
+		{
+			// CPHA = 0, sample on first edge
+			// output data first
+			SPI_RW_Emu_OutBit(&data);
+		}
+		
 		SPI_Delay(SPI_Dly);
-
-		JTAG_TAP_TCK_CLR();
-
+		if (SPI_Emu_Mode & 2)
+		{
+			// CPOL = 1, SCK high on idle
+			// fisrt SCK edge is falling edge
+			SPI_SCK_CLR();
+		}
+		else
+		{
+			// CPOL = 0, SCK low on idle
+			// first SCK edge is rising edge
+			SPI_SCK_SET();
+		}
+		if (!(SPI_Emu_Mode & 1))
+		{
+			// CPHA = 0, sample on first edge
+			// input data after first SCK edge
+			SPI_RW_Emu_InBit(&ret);
+		}
+		SPI_Delay(SPI_Dly);
+		
+		if (SPI_Emu_Mode & 1)
+		{
+			// CPHA = 1, sample on seconde edge
+			// output data after first SCK edge
+			SPI_RW_Emu_OutBit(&data);
+		}
+		
+		SPI_Delay(SPI_Dly);
+		if (SPI_Emu_Mode & 2)
+		{
+			// CPOL = 1, SCK high on idle
+			// second SCK edge is rising edge
+			SPI_SCK_SET();
+		}
+		else
+		{
+			// CPOL = 0, SCK low on idle
+			// second SCK edge is falling edge
+			SPI_SCK_CLR();
+		}
+		if (SPI_Emu_Mode & 1)
+		{
+			// CPHA = 1, sample on seconde edge
+			// input data after second SCK edge
+			SPI_RW_Emu_InBit(&ret);
+		}
 		SPI_Delay(SPI_Dly);
 	}
 	return ret;
