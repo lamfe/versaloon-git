@@ -138,6 +138,8 @@ endif
 endif
 endif
 endif
+endif
+endif
 
 #
 USR_DEFS+= -DHSE_VALUE=$(HSE_VALUE)UL -DHW_BOARD=$(HW_BOARD) -D_HARDWARE_VER=$(_HARDWARE_VER)
