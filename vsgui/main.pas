@@ -1755,26 +1755,27 @@ begin
       end;
       VSProg_PrepareBaseParameters(VSProg_Caller);
       VSProg_Caller.AddParameter('or' + AreaName);
-      if VSProg_RunAlgorithm(VSProg_Caller, parser, 1, False) then
+      if not VSProg_RunAlgorithm(VSProg_Caller, parser, 1, False) then
       begin
-        strValue := '';
-        if AreaName = SPECIALSTR_CHAR then
-        begin
-          VSProg_GUIUpdateStr(VSProg_Parser.ResultStrings.Strings[0],TLabeledEdit(Sender));
-        end
-        else if strparser_parse(VSProg_Parser.ResultStrings.Strings[0], format,
-          buffer) and strparser_solve(strValue, format, buffer) then
-        begin
-          TLabeledEdit(Sender).Text := strValue;
-        end
-        else
-        begin
-          // invalid data read
-          Beep();
-          MessageDlg('Error', 'Invalid data: ' + VSProg_Parser.ResultStrings.Strings[0],
-            mtError, [mbOK], 0);
-          exit;
-        end;
+        exit;
+      end;
+      strValue := '';
+      if AreaName = SPECIALSTR_CHAR then
+      begin
+        VSProg_GUIUpdateStr(VSProg_Parser.ResultStrings.Strings[0],TLabeledEdit(Sender));
+      end
+      else if strparser_parse(VSProg_Parser.ResultStrings.Strings[0], format,
+        buffer) and strparser_solve(strValue, format, buffer) then
+      begin
+        TLabeledEdit(Sender).Text := strValue;
+      end
+      else
+      begin
+        // invalid data read
+        Beep();
+        MessageDlg('Error', 'Invalid data: ' + VSProg_Parser.ResultStrings.Strings[0],
+          mtError, [mbOK], 0);
+        exit;
       end;
     end;
 
