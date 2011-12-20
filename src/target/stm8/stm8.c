@@ -573,7 +573,7 @@ ENTER_PROGRAM_MODE_HANDLER(stm8swim)
 	}
 	return commit();
 #else
-	return VSFERR_NONE;
+	return commit();
 #endif
 }
 
@@ -598,10 +598,14 @@ LEAVE_PROGRAM_MODE_HANDLER(stm8swim)
 		if (param->param[STM8_PARAM_CLK_SWIMCCR] != 0)
 		{
 			swim_wotf_reg(param->param[STM8_PARAM_CLK_SWIMCCR], 0x00, 1);
+			reset_clr();
+			delay_ms(20);
+			reset_set();
 		}
-		reset_clr();
-		delay_ms(20);
-		reset_set();
+		else
+		{
+			swim_srst();
+		}
 		swim_fini();
 		reset_fini();
 		return commit();
