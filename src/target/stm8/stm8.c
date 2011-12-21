@@ -515,7 +515,15 @@ ENTER_PROGRAM_MODE_HANDLER(stm8swim)
 	}
 	else
 	{
-		stm8_target_mhz /= 2;
+		uint8_t ckdivr, realdiv;
+		swim_rotf(param->param[STM8_PARAM_CLK_CKDIVR], &ckdivr, 1);
+		if (commit())
+		{
+			return VSFERR_FAIL;
+		}
+		realdiv = 1;
+		while (ckdivr--) realdiv *= 2;
+		stm8_target_mhz /= realdiv * 2;
 	}
 	swim_sync(stm8_target_mhz);
 	swim_config(stm8_target_mhz, 20, 2);

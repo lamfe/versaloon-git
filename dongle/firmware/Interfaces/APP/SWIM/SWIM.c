@@ -30,7 +30,7 @@ static uint16_t SWIM_DMA_OUT_Buffer[12];
 static uint16_t SWIM_clock_div = 0;
 
 #define SWIM_MAX_DLY					0xFFFFF
-#define SWIM_MAX_RESEND_CNT				20
+#define SWIM_MAX_RESEND_CNT				0
 
 #define SWIM_CMD_BITLEN					3
 #define SWIM_CMD_SRST					0x00
@@ -244,7 +244,6 @@ retry:
 
 static uint8_t SWIM_HW_In(uint8_t* data, uint8_t bitlen)
 {
-	uint8_t ret = 0;
 	uint32_t dly;
 
 	dly = SWIM_MAX_DLY;
@@ -265,13 +264,12 @@ static uint8_t SWIM_HW_In(uint8_t* data, uint8_t bitlen)
 		SWIM_DMA_OUT_Buffer[1] = 0;
 		SYNCSWPWM_OUT_TIMER_DMA_INIT(2, SWIM_DMA_OUT_Buffer);
 		SYNCSWPWM_OUT_TIMER_DMA_WAIT();
+		return 0;
 	}
 	else
 	{
-		ret = 1;
+		return 1;
 	}
-
-	return ret;
 }
 
 static uint8_t SWIM_SRST(void)

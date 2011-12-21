@@ -175,7 +175,7 @@
 
 #define SYNCSWPWM_OUT_TIMER_MHZ			_SYS_FREQUENCY
 #define SYNCSWPWM_OUT_TIMER				TIM3
-#define SYNCSWPWM_OUT_TIMER_DMA			DMA1_Channel6
+#define SYNCSWPWM_OUT_TIMER_DMA			DMA1_Channel3
 #define SYNCSWPWM_IN_TIMER				TIM4
 #define SYNCSWPWM_IN_TIMER_RISE_DMA		DMA1_Channel4
 #define SYNCSWPWM_IN_TIMER_FALL_DMA		DMA1_Channel1
@@ -250,7 +250,7 @@
 #define SYNCSWPWM_IN_TIMER_RISE_DMA_READY()		(DMA1->ISR & DMA1_FLAG_TC4)
 #define SYNCSWPWM_IN_TIMER_RISE_DMA_RESET()		(DMA1->IFCR = DMA1_FLAG_TC4)
 #define SYNCSWPWM_IN_TIMER_RISE_DMA_WAIT(dly)	do{\
-													while((!SYNCSWPWM_IN_TIMER_RISE_DMA_READY()) && --dly);\
+													while(!SYNCSWPWM_IN_TIMER_RISE_DMA_READY() && --dly);\
 													SYNCSWPWM_IN_TIMER_RISE_DMA_RESET();\
 												}while(0)
 #define SYNCSWPWM_IN_TIMER_FALL_DMA_INIT(l, a)	do{\
@@ -262,7 +262,7 @@
 #define SYNCSWPWM_IN_TIMER_FALL_DMA_READY()		(DMA1->ISR & DMA1_FLAG_TC1)
 #define SYNCSWPWM_IN_TIMER_FALL_DMA_RESET()		(DMA1->IFCR = DMA1_FLAG_TC1)
 #define SYNCSWPWM_IN_TIMER_FALL_DMA_WAIT(dly)	do{\
-													while((!SYNCSWPWM_IN_TIMER_FALL_DMA_READY()) && --dly);\
+													while(!SYNCSWPWM_IN_TIMER_FALL_DMA_READY() && --dly);\
 													SYNCSWPWM_IN_TIMER_FALL_DMA_RESET();\
 												}while(0)
 #define SYNCSWPWM_IN_TIMER_DMA_INIT(l, a, b)	do{\
@@ -314,7 +314,7 @@
 											\
 											TIM_OC1PreloadConfig(SYNCSWPWM_OUT_TIMER, TIM_OCPreload_Enable);\
 											TIM_ARRPreloadConfig(SYNCSWPWM_OUT_TIMER, ENABLE);\
-											TIM_DMACmd(SYNCSWPWM_OUT_TIMER, TIM_DMA_CC1, ENABLE);\
+											TIM_DMACmd(SYNCSWPWM_OUT_TIMER, TIM_DMA_Update, ENABLE);\
 											TIM_Cmd(SYNCSWPWM_OUT_TIMER, ENABLE);\
 											TIM_CtrlPWMOutputs(SYNCSWPWM_OUT_TIMER, ENABLE);\
 										}while(0)
@@ -338,9 +338,11 @@
 												SYNCSWPWM_OUT_TIMER_DMA->CMAR = (uint32_t)(a);\
 												SYNCSWPWM_OUT_TIMER_DMA->CCR |= 1;\
 											}while(0)
+#define SYNCSWPWM_OUT_TIMER_DMA_READY()	(DMA1->ISR & DMA1_FLAG_TC3)
+#define SYNCSWPWM_OUT_TIMER_DMA_RESET()	(DMA1->IFCR = DMA1_FLAG_TC3)
 #define SYNCSWPWM_OUT_TIMER_DMA_WAIT()	do{\
-											while(!(DMA1->ISR & DMA1_FLAG_TC6));\
-											DMA1->IFCR = DMA1_FLAG_TC6;\
+											while(!SYNCSWPWM_OUT_TIMER_DMA_READY());\
+											SYNCSWPWM_OUT_TIMER_DMA_RESET();\
 										}while(0)
 
 #define SYNCSWPWM_PORT_INIT()			GPIO_PinRemapConfig(GPIO_PartialRemap_TIM3, ENABLE)
