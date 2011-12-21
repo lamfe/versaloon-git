@@ -94,8 +94,10 @@ vsf_err_t stm32_usbd_reset(void)
 	return VSFERR_NONE;
 }
 
+void USB_Istr(void);
 vsf_err_t stm32_usbd_poll(void)
 {
+	USB_Istr();
 	return VSFERR_NONE;
 }
 
