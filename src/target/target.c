@@ -197,7 +197,7 @@ struct vss_cmd_t target_cmd[] =
 				"enter program mode, format: enter_program_mode",
 				target_enter_program_mode),
 	VSS_CMD(	"leave_program_mode",
-				"leave program mode, format: leave_program_mode",
+				"leave program mode, format: leave_program_mode ERROR",
 				target_leave_program_mode),
 	VSS_CMD(	"erase",
 				"erase target area, format: erase [AREA_CHAR]",
