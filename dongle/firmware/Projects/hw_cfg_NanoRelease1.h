@@ -137,7 +137,8 @@
 #define SYNCSWPWM_OUT_TIMER				TIM3
 #define SYNCSWPWM_OUT_TIMER_DMA			DMA1_Channel3
 #define SYNCSWPWM_IN_TIMER				TIM4
-#define SYNCSWPWM_IN_TIMER_RISE_DMA		DMA1_Channel4
+#define SYNCSWPWM_OUT_TIMER_DMA_UPDATE	DMA1_Channel3
+#define SYNCSWPWM_OUT_TIMER_DMA_COMPARE	DMA1_Channel6
 #define SYNCSWPWM_IN_TIMER_FALL_DMA		DMA1_Channel1
 
 #define SYNCSWPWM_IN_TIMER_INIT()		do{\
@@ -234,54 +235,61 @@
 												SYNCSWPWM_IN_TIMER_FALL_DMA_WAIT(dly);\
 											}while(0)
 
-#define SYNCSWPWM_OUT_TIMER_INIT(p)		do{\
-											DMA_InitTypeDef DMA_InitStructure;\
-											TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;\
-											TIM_OCInitTypeDef TIM_OCInitStructure;\
-											\
-											RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, ENABLE);\
-											RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, ENABLE);\
-											\
-											DMA_DeInit(SYNCSWPWM_OUT_TIMER_DMA);\
-											DMA_StructInit(&DMA_InitStructure);\
-											DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)&(SYNCSWPWM_OUT_TIMER->CCR1);\
-											DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralDST;\
-											DMA_InitStructure.DMA_BufferSize = 0;\
-											DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;\
-											DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;\
-											DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_HalfWord;\
-											DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_HalfWord;\
-											DMA_InitStructure.DMA_Mode = DMA_Mode_Normal;\
-											DMA_InitStructure.DMA_Priority = DMA_Priority_Medium;\
-											DMA_InitStructure.DMA_M2M = DMA_M2M_Disable;\
-											DMA_Init(SYNCSWPWM_OUT_TIMER_DMA, &DMA_InitStructure);\
-											DMA_Cmd(SYNCSWPWM_OUT_TIMER_DMA, ENABLE);\
-											\
-											TIM_TimeBaseStructInit(&TIM_TimeBaseStructure);\
-											TIM_TimeBaseStructure.TIM_Prescaler = 0;\
-											TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;\
-											TIM_TimeBaseStructure.TIM_Period = 0;\
-											TIM_TimeBaseStructure.TIM_ClockDivision = 0;\
-											TIM_TimeBaseStructure.TIM_RepetitionCounter = 0;\
-											TIM_TimeBaseInit(SYNCSWPWM_OUT_TIMER, &TIM_TimeBaseStructure);\
-											\
-											TIM_OCStructInit(&TIM_OCInitStructure);\
-											TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM1;\
-											TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;\
-											TIM_OCInitStructure.TIM_Pulse = 0;\
-											TIM_OCInitStructure.TIM_OCPolarity = (p) ? TIM_OCPolarity_High : TIM_OCPolarity_Low;\
-											TIM_OC1Init(SYNCSWPWM_OUT_TIMER, &TIM_OCInitStructure);\
-											\
-											TIM_OC1PreloadConfig(SYNCSWPWM_OUT_TIMER, TIM_OCPreload_Enable);\
-											TIM_ARRPreloadConfig(SYNCSWPWM_OUT_TIMER, ENABLE);\
-											TIM_DMACmd(SYNCSWPWM_OUT_TIMER, TIM_DMA_Update, ENABLE);\
-											TIM_Cmd(SYNCSWPWM_OUT_TIMER, ENABLE);\
-											TIM_CtrlPWMOutputs(SYNCSWPWM_OUT_TIMER, ENABLE);\
-										}while(0)
-#define SYNCSWPWM_OUT_TIMER_FINI()		do{\
+#define SYNCSWPWM_OUT_TIMER_INIT(dma, p)	do{\
+												DMA_InitTypeDef DMA_InitStructure;\
+												TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;\
+												TIM_OCInitTypeDef TIM_OCInitStructure;\
+												\
+												RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, ENABLE);\
+												RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, ENABLE);\
+												\
+												DMA_DeInit(dma);\
+												DMA_StructInit(&DMA_InitStructure);\
+												DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)&(SYNCSWPWM_OUT_TIMER->CCR1);\
+												DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralDST;\
+												DMA_InitStructure.DMA_BufferSize = 0;\
+												DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;\
+												DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;\
+												DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_HalfWord;\
+												DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_HalfWord;\
+												DMA_InitStructure.DMA_Mode = DMA_Mode_Normal;\
+												DMA_InitStructure.DMA_Priority = DMA_Priority_Medium;\
+												DMA_InitStructure.DMA_M2M = DMA_M2M_Disable;\
+												DMA_Init((dma), &DMA_InitStructure);\
+												DMA_Cmd((dma), ENABLE);\
+												\
+												TIM_TimeBaseStructInit(&TIM_TimeBaseStructure);\
+												TIM_TimeBaseStructure.TIM_Prescaler = 0;\
+												TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;\
+												TIM_TimeBaseStructure.TIM_Period = 0;\
+												TIM_TimeBaseStructure.TIM_ClockDivision = 0;\
+												TIM_TimeBaseStructure.TIM_RepetitionCounter = 0;\
+												TIM_TimeBaseInit(SYNCSWPWM_OUT_TIMER, &TIM_TimeBaseStructure);\
+												\
+												TIM_OCStructInit(&TIM_OCInitStructure);\
+												TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM1;\
+												TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;\
+												TIM_OCInitStructure.TIM_Pulse = 0;\
+												TIM_OCInitStructure.TIM_OCPolarity = (p) ? TIM_OCPolarity_High : TIM_OCPolarity_Low;\
+												TIM_OC1Init(SYNCSWPWM_OUT_TIMER, &TIM_OCInitStructure);\
+												\
+												TIM_OC1PreloadConfig(SYNCSWPWM_OUT_TIMER, TIM_OCPreload_Enable);\
+												TIM_ARRPreloadConfig(SYNCSWPWM_OUT_TIMER, ENABLE);\
+												if ((dma) == SYNCSWPWM_OUT_TIMER_DMA_UPDATE)\
+												{\
+													TIM_DMACmd(SYNCSWPWM_OUT_TIMER, TIM_DMA_Update, ENABLE);\
+												}\
+												else if ((dma) == SYNCSWPWM_OUT_TIMER_DMA_COMPARE)\
+												{\
+													TIM_DMACmd(SYNCSWPWM_OUT_TIMER, TIM_DMA_CC1, ENABLE);\
+												}\
+												TIM_Cmd(SYNCSWPWM_OUT_TIMER, ENABLE);\
+												TIM_CtrlPWMOutputs(SYNCSWPWM_OUT_TIMER, ENABLE);\
+											}while(0)
+#define SYNCSWPWM_OUT_TIMER_FINI(dma)	do{\
 											TIM_DeInit(SYNCSWPWM_OUT_TIMER);\
 											RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, DISABLE);\
-											DMA_DeInit(SYNCSWPWM_OUT_TIMER_DMA);\
+											DMA_DeInit(dma);\
 											RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, DISABLE);\
 										}while(0)
 #define SYNCSWPWM_OUT_TIMER_SetCycle(cycle)	do {\
@@ -291,19 +299,25 @@
 #define SYNCSWPWM_OUT_TIMER_GetCycle()	SYNCSWPWM_OUT_TIMER->ARR
 #define SYNCSWPWM_OUT_TIMER_GetRate()	SYNCSWPWM_OUT_TIMER->CCR1
 #define SYNCSWPWM_OUT_TIMER_SetRate(r)	SYNCSWPWM_OUT_TIMER->CCR1 = (r)
-#define SYNCSWPWM_OUT_TIMER_DMA_INIT(l, a)	do{\
-												SYNCSWPWM_OUT_TIMER->EGR = TIM_PSCReloadMode_Immediate;\
-												SYNCSWPWM_OUT_TIMER_DMA->CCR &= ~1;\
-												SYNCSWPWM_OUT_TIMER_DMA->CNDTR = (l);\
-												SYNCSWPWM_OUT_TIMER_DMA->CMAR = (uint32_t)(a);\
-												SYNCSWPWM_OUT_TIMER_DMA->CCR |= 1;\
-											}while(0)
-#define SYNCSWPWM_OUT_TIMER_DMA_READY()	(DMA1->ISR & DMA1_FLAG_TC3)
-#define SYNCSWPWM_OUT_TIMER_DMA_RESET()	(DMA1->IFCR = DMA1_FLAG_TC3)
-#define SYNCSWPWM_OUT_TIMER_DMA_WAIT()	do{\
-											while(!SYNCSWPWM_OUT_TIMER_DMA_READY());\
-											SYNCSWPWM_OUT_TIMER_DMA_RESET();\
-										}while(0)
+#define SYNCSWPWM_OUT_TIMER_DMA_INIT(dma, l, a)	do{\
+													SYNCSWPWM_OUT_TIMER->EGR = TIM_PSCReloadMode_Immediate;\
+													(dma)->CCR &= ~1;\
+													(dma)->CNDTR = (l);\
+													(dma)->CMAR = (uint32_t)(a);\
+													(dma)->CCR |= 1;\
+												}while(0)
+#define SYNCSWPWM_OUT_TIMER_DMA_UPDATE_READY()	(DMA1->ISR & DMA1_FLAG_TC3)
+#define SYNCSWPWM_OUT_TIMER_DMA_UPDATE_RESET()	(DMA1->IFCR = DMA1_FLAG_TC3)
+#define SYNCSWPWM_OUT_TIMER_DMA_UPDATE_WAIT()	do{\
+													while(!SYNCSWPWM_OUT_TIMER_DMA_UPDATE_READY());\
+													SYNCSWPWM_OUT_TIMER_DMA_UPDATE_RESET();\
+												}while(0)
+#define SYNCSWPWM_OUT_TIMER_DMA_COMPARE_READY()	(DMA1->ISR & DMA1_FLAG_TC6)
+#define SYNCSWPWM_OUT_TIMER_DMA_COMPARE_RESET()	(DMA1->IFCR = DMA1_FLAG_TC6)
+#define SYNCSWPWM_OUT_TIMER_DMA_COMPARE_WAIT()	do{\
+													while(!SYNCSWPWM_OUT_TIMER_DMA_COMPARE_READY());\
+													SYNCSWPWM_OUT_TIMER_DMA_COMPARE_RESET();\
+												}while(0)
 
 #define SYNCSWPWM_PORT_INIT()			GPIO_PinRemapConfig(GPIO_PartialRemap_TIM3, ENABLE)
 #define SYNCSWPWM_PORT_FINI()			GPIO_PinRemapConfig(GPIO_PartialRemap_TIM3, DISABLE)
