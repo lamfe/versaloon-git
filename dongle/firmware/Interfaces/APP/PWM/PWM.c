@@ -43,7 +43,7 @@ vsf_err_t pwm_fini(uint8_t index)
 	{
 	case 0:
 		SYNCSWPWM_PORT_ODPP_FINI();
-		SYNCSWPWM_OUT_TIMER_FINI();
+		SYNCSWPWM_OUT_TIMER_FINI(SYNCSWPWM_OUT_TIMER_DMA_COMPARE);
 		return VSFERR_NONE;
 	case 1:
 		SYNCSWPWM_IN_TIMER_FINI();
@@ -81,7 +81,7 @@ vsf_err_t pwm_config_mode(uint8_t index, uint8_t mode)
 	switch (index)
 	{
 	case 0:
-		SYNCSWPWM_OUT_TIMER_INIT(mode & PWM_OUTPOLARITY);
+		SYNCSWPWM_OUT_TIMER_INIT(SYNCSWPWM_OUT_TIMER_DMA_COMPARE, mode & PWM_OUTPOLARITY);
 		if (mode & PWM_OUTPP)
 		{
 			SYNCSWPWM_PORT_PP_INIT();
@@ -115,8 +115,8 @@ vsf_err_t pwm_out(uint8_t index, uint16_t count, uint16_t *rate)
 		{
 			pwm_buff[i] = rate[i] * (pwm0_cycle + 1) / 0xFFFF;
 		}
-		SYNCSWPWM_OUT_TIMER_DMA_INIT(count, pwm_buff);
-		SYNCSWPWM_OUT_TIMER_DMA_WAIT();
+		SYNCSWPWM_OUT_TIMER_DMA_INIT(SYNCSWPWM_OUT_TIMER_DMA_COMPARE, count, pwm_buff);
+		SYNCSWPWM_OUT_TIMER_DMA_COMPARE_WAIT();
 		return VSFERR_NONE;
 	default:
 		return VSFERR_NOT_SUPPORT;
