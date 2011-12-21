@@ -174,6 +174,7 @@ vsf_err_t vsfusbd_ep_in(struct vsfusbd_device_t *device, uint8_t ep,
 	}
 	while (1)
 	{
+		device->drv->poll();
 		err = vsfusbd_ep_in_nb_isready(device, ep);
 		if (!err || (err && (err != VSFERR_NOT_READY)))
 		{
@@ -198,6 +199,7 @@ vsf_err_t vsfusbd_ep_out(struct vsfusbd_device_t *device, uint8_t ep,
 	}
 	while (1)
 	{
+		device->drv->poll();
 		err = vsfusbd_ep_out_nb_isready(device, ep);
 		if (!err || (err && (err != VSFERR_NOT_READY)))
 		{
