@@ -12,7 +12,6 @@
     <ee_page_size>128</ee_page_size>
     <ee_page_num>16</ee_page_num>
     <ee_default>0x00</ee_default>
-    <ee_addr>0x004000</ee_addr>
     <ee_seg>0</ee_seg>
   </chip>
   <chip name="stm8s207mb">
@@ -20,6 +19,7 @@
     <sram_size>6144</sram_size>
     <app_page_size>128</app_page_size>
     <app_page_num>1024</app_page_num>
+    <ee_addr>0x4000</ee_addr>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>16</ee_page_num>
     <fuse init="0x0000000000000000:0x00" bytesize="9" mask="0xFF00FFFFFFFFFFFF:0xFF" format="%8x%1x">
@@ -118,6 +118,7 @@
     <sram_size>6144</sram_size>
     <app_page_size>128</app_page_size>
     <app_page_num>512</app_page_num>
+    <ee_addr>0x4000</ee_addr>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>16</ee_page_num>
     <fuse init="0x0000000000000000:0x00" bytesize="9" mask="0xFF00FFFFFFFFFFFF:0xFF" format="%8x%1x">
@@ -216,6 +217,7 @@
     <sram_size>6144</sram_size>
     <app_page_size>128</app_page_size>
     <app_page_num>1024</app_page_num>
+    <ee_addr>0x4000</ee_addr>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>16</ee_page_num>
     <fuse init="0x0000000000000000:0x00" bytesize="9" mask="0xFF00FFFFFFFFFFFF:0xFF" format="%8x%1x">
@@ -314,6 +316,7 @@
     <sram_size>4096</sram_size>
     <app_page_size>128</app_page_size>
     <app_page_num>512</app_page_num>
+    <ee_addr>0x4000</ee_addr>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>12</ee_page_num>
     <fuse init="0x0000000000000000:0x00" bytesize="9" mask="0xFF00FFFFFFFFFFFF:0xFF" format="%8x%1x">
@@ -412,6 +415,7 @@
     <sram_size>2048</sram_size>
     <app_page_size>128</app_page_size>
     <app_page_num>256</app_page_num>
+    <ee_addr>0x4000</ee_addr>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>8</ee_page_num>
     <fuse init="0x0000000000000000:0x00" bytesize="9" mask="0xFF00FFFFFFFFFFFF:0xFF" format="%8x%1x">
@@ -510,6 +514,7 @@
     <sram_size>6144</sram_size>
     <app_page_size>128</app_page_size>
     <app_page_num>1024</app_page_num>
+    <ee_addr>0x4000</ee_addr>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>16</ee_page_num>
     <fuse init="0x0000000000000000:0x00" bytesize="9" mask="0xFF00FFFFFFFFFFFF:0xFF" format="%8x%1x">
@@ -608,6 +613,7 @@
     <sram_size>4096</sram_size>
     <app_page_size>128</app_page_size>
     <app_page_num>512</app_page_num>
+    <ee_addr>0x4000</ee_addr>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>12</ee_page_num>
     <fuse init="0x0000000000000000:0x00" bytesize="9" mask="0xFF00FFFFFFFFFFFF:0xFF" format="%8x%1x">
@@ -706,6 +712,7 @@
     <sram_size>2048</sram_size>
     <app_page_size>128</app_page_size>
     <app_page_num>256</app_page_num>
+    <ee_addr>0x4000</ee_addr>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>8</ee_page_num>
     <fuse init="0x0000000000000000:0x00" bytesize="9" mask="0xFF00FFFFFFFFFFFF:0xFF" format="%8x%1x">
@@ -804,6 +811,7 @@
     <sram_size>4096</sram_size>
     <app_page_size>128</app_page_size>
     <app_page_num>1024</app_page_num>
+    <ee_addr>0x4000</ee_addr>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>12</ee_page_num>
     <fuse init="0x0000000000000000:0x00" bytesize="9" mask="0xFF00FFFFFFFFFFFF:0xFF" format="%8x%1x">
@@ -902,6 +910,7 @@
     <sram_size>4096</sram_size>
     <app_page_size>128</app_page_size>
     <app_page_num>512</app_page_num>
+    <ee_addr>0x4000</ee_addr>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>12</ee_page_num>
     <fuse init="0x0000000000000000:0x00" bytesize="9" mask="0xFF00FFFFFFFFFFFF:0xFF" format="%8x%1x">
@@ -1000,6 +1009,7 @@
     <sram_size>2048</sram_size>
     <app_page_size>128</app_page_size>
     <app_page_num>256</app_page_num>
+    <ee_addr>0x4000</ee_addr>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>8</ee_page_num>
     <fuse init="0x0000000000000000:0x00" bytesize="9" mask="0xFF00FFFFFFFFFFFF:0xFF" format="%8x%1x">
@@ -1098,6 +1108,7 @@
     <sram_size>2048</sram_size>
     <app_page_size>128</app_page_size>
     <app_page_num>256</app_page_num>
+    <ee_addr>0x4000</ee_addr>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>8</ee_page_num>
     <fuse init="0x0000000000000000:0x00" bytesize="9" mask="0xFF00FFFFFFFFFFFF:0xFF" format="%8x%1x">
@@ -1196,6 +1207,7 @@
     <sram_size>6144</sram_size>
     <app_page_size>128</app_page_size>
     <app_page_num>1024</app_page_num>
+    <ee_addr>0x4000</ee_addr>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>16</ee_page_num>
     <fuse init="0x0000000000000000:0x00" bytesize="9" mask="0xFF00FFFFFFFFFFFF:0xFF" format="%8x%1x">
@@ -1294,6 +1306,7 @@
     <sram_size>6144</sram_size>
     <app_page_size>128</app_page_size>
     <app_page_num>1024</app_page_num>
+    <ee_addr>0x4000</ee_addr>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>16</ee_page_num>
     <fuse init="0x0000000000000000:0x00" bytesize="9" mask="0xFF00FFFFFFFFFFFF:0xFF" format="%8x%1x">
@@ -1392,6 +1405,7 @@
     <sram_size>6144</sram_size>
     <app_page_size>128</app_page_size>
     <app_page_num>512</app_page_num>
+    <ee_addr>0x4000</ee_addr>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>16</ee_page_num>
     <fuse init="0x0000000000000000:0x00" bytesize="9" mask="0xFF00FFFFFFFFFFFF:0xFF" format="%8x%1x">
@@ -1490,6 +1504,7 @@
     <sram_size>6144</sram_size>
     <app_page_size>128</app_page_size>
     <app_page_num>256</app_page_num>
+    <ee_addr>0x4000</ee_addr>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>16</ee_page_num>
     <fuse init="0x0000000000000000:0x00" bytesize="9" mask="0xFF00FFFFFFFFFFFF:0xFF" format="%8x%1x">
@@ -1588,6 +1603,7 @@
     <sram_size>6144</sram_size>
     <app_page_size>128</app_page_size>
     <app_page_num>1024</app_page_num>
+    <ee_addr>0x4000</ee_addr>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>16</ee_page_num>
     <fuse init="0x0000000000000000:0x00" bytesize="9" mask="0xFF00FFFFFFFFFFFF:0xFF" format="%8x%1x">
@@ -1686,6 +1702,7 @@
     <sram_size>6144</sram_size>
     <app_page_size>128</app_page_size>
     <app_page_num>512</app_page_num>
+    <ee_addr>0x4000</ee_addr>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>16</ee_page_num>
     <fuse init="0x0000000000000000:0x00" bytesize="9" mask="0xFF00FFFFFFFFFFFF:0xFF" format="%8x%1x">
@@ -1784,6 +1801,7 @@
     <sram_size>6144</sram_size>
     <app_page_size>128</app_page_size>
     <app_page_num>256</app_page_num>
+    <ee_addr>0x4000</ee_addr>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>16</ee_page_num>
     <fuse init="0x0000000000000000:0x00" bytesize="9" mask="0xFF00FFFFFFFFFFFF:0xFF" format="%8x%1x">
@@ -1882,6 +1900,7 @@
     <sram_size>4096</sram_size>
     <app_page_size>128</app_page_size>
     <app_page_num>1024</app_page_num>
+    <ee_addr>0x4000</ee_addr>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>12</ee_page_num>
     <fuse init="0x0000000000000000:0x00" bytesize="9" mask="0xFF00FFFFFFFFFFFF:0xFF" format="%8x%1x">
@@ -1980,6 +1999,7 @@
     <sram_size>4096</sram_size>
     <app_page_size>128</app_page_size>
     <app_page_num>512</app_page_num>
+    <ee_addr>0x4000</ee_addr>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>12</ee_page_num>
     <fuse init="0x0000000000000000:0x00" bytesize="9" mask="0xFF00FFFFFFFFFFFF:0xFF" format="%8x%1x">
@@ -2078,6 +2098,7 @@
     <sram_size>4096</sram_size>
     <app_page_size>128</app_page_size>
     <app_page_num>256</app_page_num>
+    <ee_addr>0x4000</ee_addr>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>12</ee_page_num>
     <fuse init="0x0000000000000000:0x00" bytesize="9" mask="0xFF00FFFFFFFFFFFF:0xFF" format="%8x%1x">
@@ -2176,6 +2197,7 @@
     <sram_size>1024</sram_size>
     <app_page_size>64</app_page_size>
     <app_page_num>16</app_page_num>
+    <ee_addr>0x4000</ee_addr>
     <ee_page_size>64</ee_page_size>
     <ee_page_num>10</ee_page_num>
     <fuse init="0x0000000000000000" bytesize="8" mask="0x0000FFFFFFFFFFFF">
@@ -2268,6 +2290,7 @@
     <sram_size>2048</sram_size>
     <app_page_size>128</app_page_size>
     <app_page_num>256</app_page_num>
+    <ee_addr>0x4000</ee_addr>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>8</ee_page_num>
     <fuse init="0x0000000000000000:0x00" bytesize="9" mask="0x0000FFFFFFFFFFFF:0xFF" format="%8x%1x">
@@ -2363,6 +2386,7 @@
     <sram_size>2048</sram_size>
     <app_page_size>128</app_page_size>
     <app_page_num>128</app_page_num>
+    <ee_addr>0x4000</ee_addr>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>8</ee_page_num>
     <fuse init="0x0000000000000000:0x00" bytesize="9" mask="0x0000FFFFFFFFFFFF:0xFF" format="%8x%1x">
@@ -2458,6 +2482,7 @@
     <sram_size>2048</sram_size>
     <app_page_size>128</app_page_size>
     <app_page_num>256</app_page_num>
+    <ee_addr>0x4000</ee_addr>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>8</ee_page_num>
     <fuse init="0x0000000000000000:0x00" bytesize="9" mask="0x0000FFFFFFFFFFFF:0xFF" format="%8x%1x">
@@ -2553,6 +2578,7 @@
     <sram_size>2048</sram_size>
     <app_page_size>128</app_page_size>
     <app_page_num>128</app_page_num>
+    <ee_addr>0x4000</ee_addr>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>8</ee_page_num>
     <fuse init="0x0000000000000000:0x00" bytesize="9" mask="0x0000FFFFFFFFFFFF:0xFF" format="%8x%1x">
@@ -2648,6 +2674,7 @@
     <sram_size>2048</sram_size>
     <app_page_size>128</app_page_size>
     <app_page_num>256</app_page_num>
+    <ee_addr>0x4000</ee_addr>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>8</ee_page_num>
     <fuse init="0x0000000000000000:0x00" bytesize="9" mask="0x0000FFFFFFFFFFFF:0xFF" format="%8x%1x">
@@ -2743,6 +2770,7 @@
     <sram_size>2048</sram_size>
     <app_page_size>128</app_page_size>
     <app_page_num>128</app_page_num>
+    <ee_addr>0x4000</ee_addr>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>8</ee_page_num>
     <fuse init="0x0000000000000000:0x00" bytesize="9" mask="0x0000FFFFFFFFFFFF:0xFF" format="%8x%1x">
@@ -2838,6 +2866,7 @@
     <sram_size>1024</sram_size>
     <app_page_size>64</app_page_size>
     <app_page_num>128</app_page_num>
+    <ee_addr>0x4000</ee_addr>
     <ee_page_size>64</ee_page_size>
     <ee_page_num>10</ee_page_num>
     <fuse init="0x0000000000000000" bytesize="8" mask="0x0000FFFFFFFFFFFF">
@@ -2912,6 +2941,7 @@
     <sram_size>1024</sram_size>
     <app_page_size>64</app_page_size>
     <app_page_num>128</app_page_num>
+    <ee_addr>0x4000</ee_addr>
     <ee_page_size>64</ee_page_size>
     <ee_page_num>10</ee_page_num>
     <fuse init="0x0000000000000000" bytesize="8" mask="0x0000FFFFFFFFFFFF">
@@ -2986,6 +3016,7 @@
     <sram_size>1024</sram_size>
     <app_page_size>64</app_page_size>
     <app_page_num>64</app_page_num>
+    <ee_addr>0x4000</ee_addr>
     <ee_page_size>64</ee_page_size>
     <ee_page_num>10</ee_page_num>
     <fuse init="0x0000000000000000" bytesize="8" mask="0x0000FFFFFFFFFFFF">
@@ -3060,6 +3091,7 @@
     <sram_size>1536</sram_size>
     <app_page_size>64</app_page_size>
     <app_page_num>128</app_page_num>
+    <ee_addr>0x9800</ee_addr>
     <ee_page_size>64</ee_page_size>
     <ee_page_num>0</ee_page_num>
     <fuse init="0x0000000000000000" bytesize="8" mask="0x00000000FFFFFFFF">
@@ -3091,6 +3123,7 @@
     <sram_size>1536</sram_size>
     <app_page_size>64</app_page_size>
     <app_page_num>128</app_page_num>
+    <ee_addr>0x9800</ee_addr>
     <ee_page_size>64</ee_page_size>
     <ee_page_num>0</ee_page_num>
     <fuse init="0x0000000000000000" bytesize="8" mask="0x00000000FFFFFFFF">
@@ -3122,6 +3155,7 @@
     <sram_size>1536</sram_size>
     <app_page_size>64</app_page_size>
     <app_page_num>64</app_page_num>
+    <ee_addr>0x9800</ee_addr>
     <ee_page_size>64</ee_page_size>
     <ee_page_num>0</ee_page_num>
     <fuse init="0x0000000000000000" bytesize="8" mask="0x00000000FFFFFFFF">
@@ -3153,6 +3187,7 @@
     <sram_size>1536</sram_size>
     <app_page_size>64</app_page_size>
     <app_page_num>128</app_page_num>
+    <ee_addr>0x9800</ee_addr>
     <ee_page_size>64</ee_page_size>
     <ee_page_num>0</ee_page_num>
     <fuse init="0x0000000000000000" bytesize="8" mask="0x00000000FFFFFFFF">
@@ -3184,6 +3219,7 @@
     <sram_size>1536</sram_size>
     <app_page_size>64</app_page_size>
     <app_page_num>64</app_page_num>
+    <ee_addr>0x9800</ee_addr>
     <ee_page_size>64</ee_page_size>
     <ee_page_num>0</ee_page_num>
     <fuse init="0x0000000000000000" bytesize="8" mask="0x00000000FFFFFFFF">
@@ -3215,6 +3251,7 @@
     <sram_size>2048</sram_size>
     <app_page_size>128</app_page_size>
     <app_page_num>256</app_page_num>
+    <ee_addr>0x1000</ee_addr>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>8</ee_page_num>
     <fuse init="0x0000000000000000:0x00" bytesize="9" mask="0x00FFFF00FF00FFFF:0xFF" format="%8x%1x">
@@ -3274,6 +3311,7 @@
     <sram_size>2048</sram_size>
     <app_page_size>128</app_page_size>
     <app_page_num>128</app_page_num>
+    <ee_addr>0x1000</ee_addr>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>8</ee_page_num>
     <fuse init="0x0000000000000000:0x00" bytesize="9" mask="0x00FFFF00FF00FFFF:0xFF" format="%8x%1x">
@@ -3333,6 +3371,7 @@
     <sram_size>2048</sram_size>
     <app_page_size>128</app_page_size>
     <app_page_num>256</app_page_num>
+    <ee_addr>0x1000</ee_addr>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>8</ee_page_num>
     <fuse init="0x0000000000000000:0x00" bytesize="9" mask="0x00FFFF00FF00FFFF:0xFF" format="%8x%1x">
@@ -3392,6 +3431,7 @@
     <sram_size>2048</sram_size>
     <app_page_size>128</app_page_size>
     <app_page_num>128</app_page_num>
+    <ee_addr>0x1000</ee_addr>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>8</ee_page_num>
     <fuse init="0x0000000000000000:0x00" bytesize="9" mask="0x00FFFF00FF00FFFF:0xFF" format="%8x%1x">
@@ -3451,6 +3491,7 @@
     <sram_size>2048</sram_size>
     <app_page_size>128</app_page_size>
     <app_page_num>256</app_page_num>
+    <ee_addr>0x1000</ee_addr>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>8</ee_page_num>
     <fuse init="0x0000000000000000:0x00" bytesize="9" mask="0x00FFFF00FF00FFFF:0xFF" format="%8x%1x">
@@ -3510,6 +3551,7 @@
     <sram_size>2048</sram_size>
     <app_page_size>128</app_page_size>
     <app_page_num>128</app_page_num>
+    <ee_addr>0x1000</ee_addr>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>8</ee_page_num>
     <fuse init="0x0000000000000000:0x00" bytesize="9" mask="0x00FFFF00FF00FFFF:0xFF" format="%8x%1x">
@@ -3569,6 +3611,7 @@
     <sram_size>2048</sram_size>
     <app_page_size>128</app_page_size>
     <app_page_num>256</app_page_num>
+    <ee_addr>0x1000</ee_addr>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>8</ee_page_num>
     <fuse init="0x0000000000000000:0x00" bytesize="9" mask="0x00FFFF00FF00FFFF:0xFF" format="%8x%1x">
@@ -3628,6 +3671,7 @@
     <sram_size>2048</sram_size>
     <app_page_size>128</app_page_size>
     <app_page_num>128</app_page_num>
+    <ee_addr>0x1000</ee_addr>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>8</ee_page_num>
     <fuse init="0x0000000000000000:0x00" bytesize="9" mask="0x00FFFF00FF00FFFF:0xFF" format="%8x%1x">
@@ -3687,6 +3731,7 @@
     <sram_size>2048</sram_size>
     <app_page_size>128</app_page_size>
     <app_page_num>256</app_page_num>
+    <ee_addr>0x1000</ee_addr>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>8</ee_page_num>
     <fuse init="0x0000000000000000:0x00" bytesize="9" mask="0x00FFFF00FF00FFFF:0xFF" format="%8x%1x">
@@ -3746,6 +3791,7 @@
     <sram_size>2048</sram_size>
     <app_page_size>128</app_page_size>
     <app_page_num>128</app_page_num>
+    <ee_addr>0x1000</ee_addr>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>8</ee_page_num>
     <fuse init="0x0000000000000000:0x00" bytesize="9" mask="0x00FFFF00FF00FFFF:0xFF" format="%8x%1x">
@@ -3805,6 +3851,7 @@
     <sram_size>6144</sram_size>
     <app_page_size>128</app_page_size>
     <app_page_num>1024</app_page_num>
+    <ee_addr>0x4000</ee_addr>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>16</ee_page_num>
     <fuse init="0x0000000000000000:0x00:0x0000000000000000:0x00" bytesize="18" mask="0xFFFFFFFFFFFFFFFF:0xFF:0xFFFFFFFFFFFFFFFF:0xFF" format="%8x%1x%8x%1x">
@@ -3931,6 +3978,7 @@
     <sram_size>6144</sram_size>
     <app_page_size>128</app_page_size>
     <app_page_num>768</app_page_num>
+    <ee_addr>0x4000</ee_addr>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>16</ee_page_num>
     <fuse init="0x0000000000000000:0x00:0x0000000000000000:0x00" bytesize="18" mask="0xFFFFFFFFFFFFFFFF:0xFF:0xFFFFFFFFFFFFFFFF:0xFF" format="%8x%1x%8x%1x">
@@ -4057,6 +4105,7 @@
     <sram_size>6144</sram_size>
     <app_page_size>128</app_page_size>
     <app_page_num>1024</app_page_num>
+    <ee_addr>0x4000</ee_addr>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>16</ee_page_num>
     <fuse init="0x0000000000000000:0x00:0x0000000000000000:0x00" bytesize="18" mask="0xFFFFFFFFFFFFFFFF:0xFF:0xFFFFFFFFFFFFFFFF:0xFF" format="%8x%1x%8x%1x">
@@ -4183,6 +4232,7 @@
     <sram_size>6144</sram_size>
     <app_page_size>128</app_page_size>
     <app_page_num>768</app_page_num>
+    <ee_addr>0x4000</ee_addr>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>16</ee_page_num>
     <fuse init="0x0000000000000000:0x00:0x0000000000000000:0x00" bytesize="18" mask="0xFFFFFFFFFFFFFFFF:0xFF:0xFFFFFFFFFFFFFFFF:0xFF" format="%8x%1x%8x%1x">
@@ -4309,6 +4359,7 @@
     <sram_size>4096</sram_size>
     <app_page_size>128</app_page_size>
     <app_page_num>512</app_page_num>
+    <ee_addr>0x4000</ee_addr>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>12</ee_page_num>
     <fuse init="0x0000000000000000:0x00:0x0000000000000000:0x00" bytesize="18" mask="0xFFFFFFFFFFFFFFFF:0xFF:0xFFFFFFFFFFFFFFFF:0xFF" format="%8x%1x%8x%1x">
@@ -4435,6 +4486,7 @@
     <sram_size>3072</sram_size>
     <app_page_size>128</app_page_size>
     <app_page_num>384</app_page_num>
+    <ee_addr>0x4000</ee_addr>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>12</ee_page_num>
     <fuse init="0x0000000000000000:0x00:0x0000000000000000:0x00" bytesize="18" mask="0xFFFFFFFFFFFFFFFF:0xFF:0xFFFFFFFFFFFFFFFF:0xFF" format="%8x%1x%8x%1x">
@@ -4561,6 +4613,7 @@
     <sram_size>2048</sram_size>
     <app_page_size>128</app_page_size>
     <app_page_num>256</app_page_num>
+    <ee_addr>0x4000</ee_addr>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>8</ee_page_num>
     <fuse init="0x0000000000000000:0x00:0x0000000000000000:0x00" bytesize="18" mask="0xFFFFFFFFFFFFFFFF:0xFF:0xFFFFFFFFFFFFFFFF:0xFF" format="%8x%1x%8x%1x">
@@ -4687,6 +4740,7 @@
     <sram_size>6144</sram_size>
     <app_page_size>128</app_page_size>
     <app_page_num>1024</app_page_num>
+    <ee_addr>0x4000</ee_addr>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>16</ee_page_num>
     <fuse init="0x0000000000000000:0x00:0x0000000000000000:0x00" bytesize="18" mask="0xFFFFFFFFFFFFFFFF:0xFF:0xFFFFFFFFFFFFFFFF:0xFF" format="%8x%1x%8x%1x">
@@ -4813,6 +4867,7 @@
     <sram_size>6144</sram_size>
     <app_page_size>128</app_page_size>
     <app_page_num>768</app_page_num>
+    <ee_addr>0x4000</ee_addr>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>16</ee_page_num>
     <fuse init="0x0000000000000000:0x00:0x0000000000000000:0x00" bytesize="18" mask="0xFFFFFFFFFFFFFFFF:0xFF:0xFFFFFFFFFFFFFFFF:0xFF" format="%8x%1x%8x%1x">
@@ -4939,6 +4994,7 @@
     <sram_size>4096</sram_size>
     <app_page_size>128</app_page_size>
     <app_page_num>512</app_page_num>
+    <ee_addr>0x4000</ee_addr>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>12</ee_page_num>
     <fuse init="0x0000000000000000:0x00:0x0000000000000000:0x00" bytesize="18" mask="0xFFFFFFFFFFFFFFFF:0xFF:0xFFFFFFFFFFFFFFFF:0xFF" format="%8x%1x%8x%1x">
@@ -5065,6 +5121,7 @@
     <sram_size>3072</sram_size>
     <app_page_size>128</app_page_size>
     <app_page_num>384</app_page_num>
+    <ee_addr>0x4000</ee_addr>
     <ee_page_size>128</ee_page_size>
     <ee_page_num>12</ee_page_num>
     <fuse init="0x0000000000000000:0x00:0x0000000000000000:0x00" bytesize="18" mask="0xFFFFFFFFFFFFFFFF:0xFF:0xFFFFFFFFFFFFFFFF:0xFF" format="%8x%1x%8x%1x">
