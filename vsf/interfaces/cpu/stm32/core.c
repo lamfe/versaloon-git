@@ -94,6 +94,7 @@ vsf_err_t stm32_interface_init(void *p)
 		break;
 	}
 	
+	RCC_DeInit();
 	if ((STM32_CLKSRC_HSE == stm32_info.clksrc) || 
 		(STM32_PLLSRC_HSE == stm32_info.pllsrc) || 
 		(STM32_PLLSRC_HSEd2 == stm32_info.pllsrc) || 
