@@ -414,7 +414,9 @@ vsf_err_t usb_protocol_init(void)
 	interfaces->adc.config_channel(TVCC_ADC_PORT, TVCC_ADC_CHANNEL, 0xFF);
 	interfaces->adc.calibrate(TVCC_ADC_PORT, TVCC_ADC_CHANNEL);
 #endif
+#if USB_TO_XXX_EN
 	USB_TO_XXX_Init(asyn_rx_buf + 2048);
+#endif
 	
 	USB_Pull_Init();
 	USB_Connect();
