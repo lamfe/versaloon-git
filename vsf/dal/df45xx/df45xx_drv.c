@@ -22,6 +22,9 @@
 
 #include "../mal/mal.h"
 #include "../mal/mal_driver.h"
+
+#if DAL_DF45XX_EN
+
 #include "df45xx_drv_cfg.h"
 #include "df45xx_drv.h"
 
@@ -248,3 +251,4 @@ struct mal_driver_t df45xx_drv =
 	df45xx_drv_writeblock_nb_end
 };
 
+#endif

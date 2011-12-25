@@ -23,6 +23,9 @@
 #include "interfaces.h"
 #include "../mal/mal.h"
 #include "../mal/mal_driver.h"
+
+#if DAL_SD_SPI_EN
+
 #include "sd_common.h"
 #include "sd_spi_drv_cfg.h"
 #include "sd_spi_drv.h"
@@ -832,3 +835,4 @@ struct mal_driver_t sd_spi_drv =
 	sd_spi_drv_writeblock_nb_end
 };
 
+#endif

@@ -20,7 +20,10 @@
 #include "app_cfg.h"
 #include "app_type.h"
 
-#include "../dal.h"
+#include "dal/dal.h"
+
+#if DAL_MIC2826_EN
+
 #include "mic2826_drv_cfg.h"
 #include "mic2826_drv.h"
 
@@ -194,3 +197,4 @@ const struct mic2826_drv_t mic2826_drv =
 	mic2826_drv_config
 };
 
+#endif

@@ -19,6 +19,8 @@
 
 #include "app_type.h"
 
+#if DAL_MAL_EN
+
 #include "mal.h"
 #include "mal_driver.h"
 
@@ -654,3 +656,4 @@ struct mal_t mal =
 	mal_writeblock_nb_end
 };
 
+#endif

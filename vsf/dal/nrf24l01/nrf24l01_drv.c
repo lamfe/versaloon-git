@@ -21,6 +21,9 @@
 #include "app_type.h"
 
 #include "interfaces.h"
+
+#if DAL_NRF24L01_EN
+
 #include "nrf24l01_drv_cfg.h"
 #include "nrf24l01_drv.h"
 
@@ -588,3 +591,4 @@ const struct nrf24l01_drv_t nrf24l01_drv =
 	}
 };
 
+#endif

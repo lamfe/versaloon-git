@@ -22,6 +22,9 @@
 
 #include "../mal/mal.h"
 #include "../mal/mal_driver.h"
+
+#if DAL_EE24CXX_EN
+
 #include "ee24cxx_drv_cfg.h"
 #include "ee24cxx_drv.h"
 
@@ -212,3 +215,4 @@ struct mal_driver_t ee24cxx_drv =
 	ee24cxx_drv_writeblock_nb_end
 };
 
+#endif
