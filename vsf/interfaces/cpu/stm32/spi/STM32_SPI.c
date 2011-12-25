@@ -17,8 +17,7 @@
 #include "app_type.h"
 #include "interfaces.h"
 
-#include "STM32_SPI.h"
-
+// TODO: remove MACROs below to stm32_reg.h
 #define STM32_AFIO_MAPR_SPI1			((uint32_t)1 << 0)
 #define STM32_AFIO_MAPR_SWJCFG			((uint32_t)7 << 24)
 
@@ -43,6 +42,10 @@
 #define STM32_SPI_I2SCFGR				((uint32_t)1 << 11)
 
 #define STM32_DMA_CCR_EN				((uint32_t)1 << 0)
+
+#if IFS_SPI_EN
+
+#include "STM32_SPI.h"
 
 static const SPI_TypeDef *stm32_spis[SPI_NUM] = 
 {
@@ -706,3 +709,5 @@ vsf_err_t stm32_spi_io_dma_end(uint8_t index)
 	REFERENCE_PARAMETER(index);
 	return VSFERR_NONE;
 }
+
+#endif

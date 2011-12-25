@@ -3,8 +3,7 @@
 #include "app_type.h"
 #include "interfaces.h"
 
-#include "STM32_FLASH.h"
-
+// TODO: remove MACROs below to stm32_reg.h
 #define STM32_FLASH_START_ADDR			0x08000000
 #define STM32_FLASH_ADDR(offset)		(STM32_FLASH_START_ADDR + (offset))
 #define STM32_FLASH_SIZE_KB				(*(uint16_t *)0x1FFFF7E0)
@@ -27,6 +26,10 @@
 #define STM32_FLASH_SR_WRPRTERR			((uint32_t)1 << 4)
 
 #define STM32_FLASH_OBR_RDPRT			((uint32_t)1 << 1)
+
+#if IFS_FLASH_EN
+
+#include "STM32_FLASH.h"
 
 vsf_err_t stm32_flash_init(uint8_t index)
 {
@@ -310,3 +313,5 @@ bool stm32_flash_isprotected(uint8_t index)
 		return false;
 	}
 }
+
+#endif

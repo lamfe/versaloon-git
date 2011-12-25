@@ -18,6 +18,8 @@
 #include "compiler.h"
 #include "interfaces.h"
 
+#if IFS_EINT_EN
+
 #include "STM32_EINT.h"
 
 #define STM32_EINT_NUM					16
@@ -225,3 +227,5 @@ ROOTFUNC void EXTI15_10_IRQHandler(void)
 		}
 	}
 }
+
+#endif
