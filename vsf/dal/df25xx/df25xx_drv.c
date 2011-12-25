@@ -23,6 +23,9 @@
 #include "interfaces.h"
 #include "../mal/mal.h"
 #include "../mal/mal_driver.h"
+
+#if DAL_DF25XX_EN
+
 #include "df25xx_drv_cfg.h"
 #include "df25xx_drv.h"
 
@@ -388,3 +391,4 @@ struct mal_driver_t df25xx_drv =
 	df25xx_drv_writeblock_nb_end
 };
 
+#endif

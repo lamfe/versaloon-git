@@ -22,6 +22,9 @@
 
 #include "../mal/mal.h"
 #include "../mal/mal_driver.h"
+
+#if DAL_SD_SPI_EN || DAL_SD_SDIO_EN
+
 #include "sd_common.h"
 
 uint8_t sd_spi_cmd_chksum(uint8_t *data, uint32_t num)
@@ -95,3 +98,4 @@ vsf_err_t sd_parse_csd(uint8_t *csd, struct sd_info_t *info)
 	return VSFERR_NONE;
 }
 
+#endif

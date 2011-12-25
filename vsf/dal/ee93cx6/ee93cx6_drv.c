@@ -22,6 +22,9 @@
 
 #include "../mal/mal.h"
 #include "../mal/mal_driver.h"
+
+#if DAL_EE93CX6_EN
+
 #include "ee93cx6_drv_cfg.h"
 #include "ee93cx6_drv.h"
 
@@ -368,3 +371,4 @@ struct mal_driver_t ee93cx6_drv =
 	ee93cx6_drv_writeblock_nb_end
 };
 
+#endif
