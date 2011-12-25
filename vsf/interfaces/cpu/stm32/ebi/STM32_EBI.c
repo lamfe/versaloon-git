@@ -1,8 +1,7 @@
 #include "app_type.h"
 #include "interfaces.h"
 
-#include "STM32_EBI.h"
-
+// TODO: remove MACROs below to stm32_reg.h
 #define STM32_RCC_APB2ENR_IOPDEN		((uint32_t)1 << 5)
 #define STM32_RCC_APB2ENR_IOPEEN		((uint32_t)1 << 6)
 #define STM32_RCC_APB2ENR_IOPFEN		((uint32_t)1 << 7)
@@ -46,6 +45,10 @@
 #define STM32_FSMC_PCR_ECCPS_2048		((uint32_t)3 << 17)
 #define STM32_FSMC_PCR_ECCPS_4096		((uint32_t)4 << 17)
 #define STM32_FSMC_PCR_ECCPS_8192		((uint32_t)5 << 17)
+
+#if IFS_EBI_EN
+
+#include "STM32_EBI.h"
 
 // stm32_ebi connection
 // A00 -- A05 : PF0  -- PF5
@@ -809,3 +812,5 @@ vsf_err_t stm32_ebi_write(uint8_t index, uint8_t target_index, uint32_t address,
 		return VSFERR_NOT_SUPPORT;
 	}
 }
+
+#endif
