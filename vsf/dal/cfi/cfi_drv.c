@@ -22,6 +22,9 @@
 #include "interfaces.h"
 #include "../mal/mal.h"
 #include "../mal/mal_driver.h"
+
+#if DAL_CFI_EN
+
 #include "cfi_drv.h"
 
 static uint32_t cfi_get_cmd(uint8_t cmd, uint8_t data_width)
@@ -501,3 +504,4 @@ struct mal_driver_t cfi_drv =
 	cfi_drv_writeblock_nb_end
 };
 
+#endif
