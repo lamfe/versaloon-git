@@ -423,7 +423,7 @@ vsf_err_t usb_protocol_init(void)
 	return vsfusbd_device_init(&usb_device);
 }
 
-vsf_err_t usb_protocol_idle(void)
+vsf_err_t usb_protocol_poll(void)
 {
 	return vsfusbd_device_poll(&usb_device);
 }

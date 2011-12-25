@@ -33,7 +33,7 @@ int main(void)
 	
 	while (1)
 	{
-		usb_protocol_idle();
+		usb_protocol_poll();
 	}
 }
 
