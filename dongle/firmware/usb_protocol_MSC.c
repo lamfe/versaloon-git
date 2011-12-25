@@ -182,7 +182,7 @@ struct vsfusbd_device_t usb_device =
 	(struct interface_usbd_t *)&core_interfaces.usbd
 };
 
-vsf_err_t usb_protocol_init()
+vsf_err_t usb_protocol_init(void)
 {
 	LED_RED_INIT();
 	LED_RED_OFF();
@@ -202,7 +202,7 @@ vsf_err_t usb_protocol_init()
 	return vsfusbd_device_init(&usb_device);
 }
 
-vsf_err_t usb_protocol_idle(void)
+vsf_err_t usb_protocol_poll(void)
 {
 	return vsfusbd_device_poll(&usb_device);
 }
