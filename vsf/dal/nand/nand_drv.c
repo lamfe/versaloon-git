@@ -22,6 +22,9 @@
 #include "interfaces.h"
 #include "../mal/mal.h"
 #include "../mal/mal_driver.h"
+
+#if DAL_NAND_EN
+
 #include "nand_drv.h"
 
 static vsf_err_t nand_drv_write_command8(struct dal_info_t *info, uint8_t cmd)
@@ -453,3 +456,4 @@ struct mal_driver_t nand_drv =
 	nand_drv_writeblock_nb_end
 };
 
+#endif
