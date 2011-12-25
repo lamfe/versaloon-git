@@ -17,6 +17,8 @@
 #include "app_type.h"
 #include "interfaces.h"
 
+#if IFS_TIMER_EN
+
 #include "STM32_TIM.h"
 
 #define STM32_TIM_NUM					17
@@ -207,3 +209,4 @@ vsf_err_t stm32_timer_set_channel(uint8_t index, uint8_t channel,
 	return VSFERR_NONE;
 }
 
+#endif

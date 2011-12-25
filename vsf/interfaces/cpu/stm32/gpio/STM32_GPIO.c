@@ -17,6 +17,8 @@
 #include "app_type.h"
 #include "interfaces.h"
 
+#if IFS_GPIO_EN
+
 #include "STM32_GPIO.h"
 
 #define STM32_GPIO_NUM					7
@@ -254,3 +256,5 @@ uint32_t stm32_gpio_get(uint8_t index, uint32_t pin_mask)
 	gpio = (GPIO_TypeDef *)(GPIOA_BASE + ((uint32_t)index << 10));
 	return gpio->IDR & pin_mask;
 }
+
+#endif

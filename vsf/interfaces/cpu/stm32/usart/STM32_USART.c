@@ -21,8 +21,7 @@
 #include "compiler.h"
 #include "interfaces.h"
 
-#include "STM32_USART.h"
-
+// TODO: remove MACROs below to stm32_reg.h
 #define STM32_AFIO_MAPR_USART1			((uint32_t)1 << 2)
 #define STM32_AFIO_MAPR_USART2			((uint32_t)1 << 3)
 #define STM32_AFIO_MAPR_USART3_SFT		((uint32_t)1 << 4)
@@ -59,6 +58,10 @@
 #define STM32_USART_CR3_CTSE			((uint32_t)1 << 9)
 #define STM32_USART_CR3_RTSE			((uint32_t)1 << 8)
 #define STM32_USART_CR3_HDSEL			((uint32_t)1 << 3)
+
+#if IFS_USART_EN
+
+#include "STM32_USART.h"
 
 static void (*stm32_usart_ontx[USART_NUM])(void *);
 static void (*stm32_usart_onrx[USART_NUM])(void *, uint16_t data);
@@ -852,3 +855,4 @@ ROOTFUNC void USART3_IRQHandler(void)
 }
 #endif
 
+#endif

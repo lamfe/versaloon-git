@@ -2,8 +2,7 @@
 #include "app_type.h"
 #include "interfaces.h"
 
-#include "STM32_ADC.h"
-
+// TODO: remove MACROs below to stm32_reg.h
 #define STM32_RCC_APB2RSTR_ADC1RST		((uint32_t)1 << 9)
 #define STM32_RCC_APB2RSTR_ADC2RST		((uint32_t)1 << 10)
 
@@ -31,6 +30,10 @@
 
 #define STM32_ADC_SQR1_L_SFT			20
 #define STM32_ADC_SQR1_L_MASK			((uint32_t)0x0F << STM32_ADC_SQR1_L_SFT)
+
+#if IFS_ADC_EN
+
+#include "STM32_ADC.h"
 
 #define STM32_ADC_NUM					3
 
@@ -243,3 +246,5 @@ uint32_t stm32_adc_get(uint8_t index, uint8_t channel)
 	
 	return adc->DR;
 }
+
+#endif

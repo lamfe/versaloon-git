@@ -18,14 +18,17 @@
 #include "compiler.h"
 #include "interfaces.h"
 
+// TODO: remove MACROs below to stm32_reg.h
+#define STM32_RCC_CFGR_USBPRE				((uint32_t)1 << 22)
+
+#define STM32_RCC_APB1ENR_USBEN				((uint32_t)1 << 23)
+
+#if IFS_USBD_EN
+
 #include "STM32_USBD.h"
 
 #include "usb_regs.h"
 #include "usb_mem.h"
-
-#define STM32_RCC_CFGR_USBPRE				((uint32_t)1 << 22)
-
-#define STM32_RCC_APB1ENR_USBEN				((uint32_t)1 << 23)
 
 #define STM32_USBD_EP_NUM					8
 
@@ -648,3 +651,5 @@ ROOTFUNC void USB_HP_CAN1_TX_IRQHandler(void)
 ROOTFUNC void USBWakeUp_IRQHandler(void)
 {
 }
+
+#endif

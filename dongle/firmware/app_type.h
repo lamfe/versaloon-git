@@ -27,7 +27,7 @@
 #endif
 
 #ifndef REFERENCE_PARAMETER
-# define REFERENCE_PARAMETER(a)		(a) = (a)
+#	define REFERENCE_PARAMETER(a)	(a) = (a)
 #endif
 
 #ifndef NULL
