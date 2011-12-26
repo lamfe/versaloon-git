@@ -40,20 +40,20 @@ vsf_err_t usart_stream_init(struct usart_stream_info_t *usart_stream)
 	usart_stream->overflow = false;
 	vsf_fifo_init(&usart_stream->fifo_tx);
 	vsf_fifo_init(&usart_stream->fifo_rx);
-	return interfaces->usart.init(usart_stream->usart_index);
+	return core_interfaces.usart.init(usart_stream->usart_index);
 }
 
 vsf_err_t usart_stream_fini(struct usart_stream_info_t *usart_stream)
 {
-	return interfaces->usart.fini(usart_stream->usart_index);
+	return core_interfaces.usart.fini(usart_stream->usart_index);
 }
 
 vsf_err_t usart_stream_config(struct usart_stream_info_t *usart_stream)
 {
-	interfaces->usart.config(usart_stream->usart_index, 
+	core_interfaces.usart.config(usart_stream->usart_index, 
 		usart_stream->usart_info.baudrate, usart_stream->usart_info.datalength, 
 		usart_stream->usart_info.mode);
-	return interfaces->usart.config_callback(usart_stream->usart_index, 
+	return core_interfaces.usart.config_callback(usart_stream->usart_index, 
 				(void *)usart_stream, NULL, usart_stream_onrx);
 }
 
@@ -85,10 +85,10 @@ vsf_err_t usart_stream_tx(struct usart_stream_info_t *usart_stream,
 
 vsf_err_t usart_stream_poll(struct usart_stream_info_t *usart_stream)
 {
-	if (!interfaces->usart.tx_isready(usart_stream->usart_index) && 
+	if (!core_interfaces.usart.tx_isready(usart_stream->usart_index) && 
 		vsf_fifo_get_data_length(&usart_stream->fifo_tx))
 	{
-		return interfaces->usart.tx(usart_stream->usart_index, 
+		return core_interfaces.usart.tx(usart_stream->usart_index, 
 							(uint16_t)vsf_fifo_pop8(&usart_stream->fifo_tx));
 	}
 	return VSFERR_NONE;

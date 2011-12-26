@@ -388,21 +388,21 @@
 
 // LED_USB
 #define LED_USB_INIT()					do {\
-											interfaces->gpio.init(LED_USB_PORT);\
-											interfaces->gpio.config_pin(LED_USB_PORT, LED_USB_PIN, GPIO_OUTPP);\
+											core_interfaces.gpio.init(LED_USB_PORT);\
+											core_interfaces.gpio.config_pin(LED_USB_PORT, LED_USB_PIN, GPIO_OUTPP);\
 										} while (0)
-#define LED_USB_ON()					interfaces->gpio.out(LED_USB_PORT, 1 << LED_USB_PIN, 0)
-#define LED_USB_OFF()					interfaces->gpio.out(LED_USB_PORT, 1 << LED_USB_PIN, 1 << LED_USB_PIN)
+#define LED_USB_ON()					core_interfaces.gpio.out(LED_USB_PORT, 1 << LED_USB_PIN, 0)
+#define LED_USB_OFF()					core_interfaces.gpio.out(LED_USB_PORT, 1 << LED_USB_PIN, 1 << LED_USB_PIN)
 
 /****************************** KEY ******************************/
 #define KEY_PORT						1
 #define KEY_PIN							9
 #define KEY_Init()						do {\
-											interfaces->gpio.init(KEY_PORT);\
-											interfaces->gpio.config_pin(KEY_PORT, KEY_PIN, GPIO_INPU);\
+											core_interfaces.gpio.init(KEY_PORT);\
+											core_interfaces.gpio.config_pin(KEY_PORT, KEY_PIN, GPIO_INPU);\
 										} while (0)
-#define KEY_Fini()						interfaces->gpio.config_pin(KEY_PORT, KEY_PIN, GPIO_INFLOAT)
-#define KEY_IsDown()					!(interfaces->gpio.get(KEY_PORT, 1 << KEY_PIN) & (1 << KEY_PIN))
+#define KEY_Fini()						core_interfaces.gpio.config_pin(KEY_PORT, KEY_PIN, GPIO_INFLOAT)
+#define KEY_IsDown()					!(core_interfaces.gpio.get(KEY_PORT, 1 << KEY_PIN) & (1 << KEY_PIN))
 
 /****************************** USB *****************************/
 // For USB 2.0, use DP
@@ -416,8 +416,8 @@
 
 #define USB_Disable()					PowerOff()
 #define USB_D_SETOUTPUT()				do {\
-											interfaces->gpio.init(USB_DP_PORT);\
-											interfaces->gpio.config_pin(USB_DP_PORT, USB_DP_PIN, GPIO_OUTPP);\
+											core_interfaces.gpio.init(USB_DP_PORT);\
+											core_interfaces.gpio.config_pin(USB_DP_PORT, USB_DP_PIN, GPIO_OUTPP);\
 										} while (0)
-#define USB_D_SET()						interfaces->gpio.set(USB_DP_PORT, 1 << USB_DP_PIN)
-#define USB_D_CLR()						interfaces->gpio.clear(USB_DP_PORT, 1 << USB_DP_PIN)
+#define USB_D_SET()						core_interfaces.gpio.set(USB_DP_PORT, 1 << USB_DP_PIN)
+#define USB_D_CLR()						core_interfaces.gpio.clear(USB_DP_PORT, 1 << USB_DP_PIN)

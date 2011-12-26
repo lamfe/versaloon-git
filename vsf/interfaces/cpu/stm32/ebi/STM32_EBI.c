@@ -561,10 +561,10 @@ vsf_err_t stm32_ebi_config(uint8_t index, uint8_t target_index, void *param)
 		switch (target_type)
 		{
 		case EBI_TGTTYP_NOR:
-			return interfaces->ebi.config_nor(
+			return stm32_ebi_config_nor(
 				(target_index & 0x03) << 6, (struct ebi_nor_info_t *)param);
 		case EBI_TGTTYP_NAND:
-			return interfaces->ebi.config_nand(
+			return stm32_ebi_config_nand(
 				((target_index + 1) & 0x03) << 4, (struct ebi_nand_info_t *)param);
 		default:
 			return VSFERR_NOT_SUPPORT;

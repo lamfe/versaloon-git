@@ -28,7 +28,7 @@
 /* Private functions ---------------------------------------------------------*/
 int main(void)
 {
-	interfaces->core.init(NULL);
+	core_interfaces.core.init(NULL);
 	usb_protocol_init();
 	
 	while (1)

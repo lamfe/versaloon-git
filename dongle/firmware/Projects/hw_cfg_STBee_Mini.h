@@ -355,16 +355,16 @@
 #define USB_DISC_PIN					14
 
 #define USB_Pull_Init()					do {\
-											interfaces->gpio.init(USB_DISC_PORT);\
-											interfaces->gpio.config_pin(USB_DISC_PORT, USB_DISC_PIN, GPIO_OUTPP);\
+											core_interfaces.gpio.init(USB_DISC_PORT);\
+											core_interfaces.gpio.config_pin(USB_DISC_PORT, USB_DISC_PIN, GPIO_OUTPP);\
 										} while (0)
-#define USB_Connect()					interfaces->gpio.set(USB_DISC_PORT, 1 << USB_DISC_PIN);
-#define USB_Disconnect()				interfaces->gpio.clear(USB_DISC_PORT, 1 << USB_DISC_PIN);
+#define USB_Connect()					core_interfaces.gpio.set(USB_DISC_PORT, 1 << USB_DISC_PIN);
+#define USB_Disconnect()				core_interfaces.gpio.clear(USB_DISC_PORT, 1 << USB_DISC_PIN);
 
 #define USB_Disable()					PowerOff()
 #define USB_D_SETOUTPUT()				do {\
-											interfaces->gpio.init(USB_DP_PORT);\
-											interfaces->gpio.config_pin(USB_DP_PORT, USB_DP_PIN, GPIO_OUTPP);\
+											core_interfaces.gpio.init(USB_DP_PORT);\
+											core_interfaces.gpio.config_pin(USB_DP_PORT, USB_DP_PIN, GPIO_OUTPP);\
 										} while (0)
-#define USB_D_SET()						interfaces->gpio.set(USB_DP_PORT, 1 << USB_DP_PIN)
-#define USB_D_CLR()						interfaces->gpio.clear(USB_DP_PORT, 1 << USB_DP_PIN)
+#define USB_D_SET()						core_interfaces.gpio.set(USB_DP_PORT, 1 << USB_DP_PIN)
+#define USB_D_CLR()						core_interfaces.gpio.clear(USB_DP_PORT, 1 << USB_DP_PIN)

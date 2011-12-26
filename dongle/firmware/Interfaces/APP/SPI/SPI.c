@@ -203,7 +203,7 @@ vsf_err_t spi_fini(uint8_t index)
 	switch (index)
 	{
 	case 0:
-		return interfaces->spi.fini(SPI_Interface_Idx);
+		return core_interfaces.spi.fini(SPI_Interface_Idx);
 	default:
 		return VSFERR_NOT_SUPPORT;
 	}
@@ -214,7 +214,7 @@ vsf_err_t spi_config(uint8_t index, uint32_t kHz, uint8_t mode)
 	struct spi_ability_t spi_ability;
 	uint32_t min_khz;
 	
-	if (interfaces->spi.get_ability(SPI_Interface_Idx, &spi_ability))
+	if (core_interfaces.spi.get_ability(SPI_Interface_Idx, &spi_ability))
 	{
 		return VSFERR_FAIL;
 	}
@@ -226,14 +226,14 @@ vsf_err_t spi_config(uint8_t index, uint32_t kHz, uint8_t mode)
 		if(kHz < min_khz)
 		{
 			SPI_Emu = 1;
-			interfaces->spi.fini(SPI_Interface_Idx);
+			core_interfaces.spi.fini(SPI_Interface_Idx);
 			return SPI_Config_Emu(kHz * 1000, mode);
 		}
 		else
 		{
 			SPI_Emu = 0;
-			interfaces->spi.init(SPI_Interface_Idx);
-			return interfaces->spi.config(SPI_Interface_Idx, kHz, 
+			core_interfaces.spi.init(SPI_Interface_Idx);
+			return core_interfaces.spi.config(SPI_Interface_Idx, kHz, 
 											mode | SPI_MASTER);
 		}
 	default:
@@ -262,7 +262,7 @@ vsf_err_t spi_io(uint8_t index, uint8_t *out, uint8_t *in, uint32_t len)
 		}
 		else
 		{
-			interfaces->spi.io(SPI_Interface_Idx, out, in, len);
+			core_interfaces.spi.io(SPI_Interface_Idx, out, in, len);
 		}
 		return VSFERR_NONE;
 	default:

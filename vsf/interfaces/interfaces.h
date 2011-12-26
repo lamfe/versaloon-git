@@ -919,6 +919,5 @@ struct interfaces_info_t
 };
 
 extern const struct interfaces_info_t core_interfaces;
-extern struct interfaces_info_t *interfaces;
 
 #endif	// __INTERFACES_H_INCLUDED__
