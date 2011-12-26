@@ -20,7 +20,7 @@
 #include "app_cfg.h"
 #include "app_type.h"
 
-#include "dal/dal.h"
+#include "../dal.h"
 
 #if DAL_MIC2826_EN
 

@@ -19,9 +19,10 @@
 
 #include "app_type.h"
 
+#include "mal.h"
+
 #if DAL_MAL_EN
 
-#include "mal.h"
 #include "mal_driver.h"
 
 #define MAL_RETRY_CNT					0xFFFF

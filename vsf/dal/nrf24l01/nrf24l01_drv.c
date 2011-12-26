@@ -21,6 +21,7 @@
 #include "app_type.h"
 
 #include "interfaces.h"
+#include "../dal.h"
 
 #if DAL_NRF24L01_EN
 
