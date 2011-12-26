@@ -113,15 +113,15 @@ static vsf_err_t vsfusbd_CDCData_class_init(uint8_t iface,
 	{
 		port = param->gpio_rts_port;
 		pin = param->gpio_rts_pin;
-		interfaces->gpio.init(port);
-		interfaces->gpio.config(port, pin, pin, 0, 0);
+		core_interfaces.gpio.init(port);
+		core_interfaces.gpio.config(port, pin, pin, 0, 0);
 	}
 	if (param->gpio_dtr_enable)
 	{
 		port = param->gpio_dtr_port;
 		pin = param->gpio_dtr_pin;
-		interfaces->gpio.init(port);
-		interfaces->gpio.config(port, pin, pin, 0, 0);
+		core_interfaces.gpio.init(port);
+		core_interfaces.gpio.config(port, pin, pin, 0, 0);
 	}
 	
 	usart_stream_init(param->usart_stream);
@@ -303,11 +303,11 @@ static vsf_err_t vsfusbd_CDCMaster_SetControlLineState_prepare(
 		pin = param->gpio_dtr_pin;
 		if (request->value & USBCDC_CONTROLLINE_DTR)
 		{
-			interfaces->gpio.out(port, pin, pin);
+			core_interfaces.gpio.out(port, pin, pin);
 		}
 		else
 		{
-			interfaces->gpio.out(port, pin, 0);
+			core_interfaces.gpio.out(port, pin, 0);
 		}
 	}
 	if (param->gpio_rts_enable)
@@ -316,11 +316,11 @@ static vsf_err_t vsfusbd_CDCMaster_SetControlLineState_prepare(
 		pin = param->gpio_rts_pin;
 		if (request->value & USBCDC_CONTROLLINE_RTS)
 		{
-			interfaces->gpio.out(port, pin, pin);
+			core_interfaces.gpio.out(port, pin, pin);
 		}
 		else
 		{
-			interfaces->gpio.out(port, pin, 0);
+			core_interfaces.gpio.out(port, pin, 0);
 		}
 	}
 	

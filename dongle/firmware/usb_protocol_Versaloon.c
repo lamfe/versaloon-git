@@ -396,9 +396,9 @@ vsf_err_t usb_protocol_init(void)
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&NVIC_InitStructure);
 	
-	interfaces->gpio.init(0);
-	interfaces->gpio.init(1);
-	interfaces->gpio.init(2);
+	core_interfaces.gpio.init(0);
+	core_interfaces.gpio.init(1);
+	core_interfaces.gpio.init(2);
 	
 	LED_RED_INIT();
 	LED_RED_OFF();
@@ -409,10 +409,10 @@ vsf_err_t usb_protocol_init(void)
 	
 	app_interfaces.delay.init();
 #if POWER_SAMPLE_EN
-	interfaces->adc.init(TVCC_ADC_PORT);
-	interfaces->adc.config(TVCC_ADC_PORT, CORE_APB2_FREQ_HZ / 8, ADC_ALIGNRIGHT);
-	interfaces->adc.config_channel(TVCC_ADC_PORT, TVCC_ADC_CHANNEL, 0xFF);
-	interfaces->adc.calibrate(TVCC_ADC_PORT, TVCC_ADC_CHANNEL);
+	core_interfaces.adc.init(TVCC_ADC_PORT);
+	core_interfaces.adc.config(TVCC_ADC_PORT, CORE_APB2_FREQ_HZ / 8, ADC_ALIGNRIGHT);
+	core_interfaces.adc.config_channel(TVCC_ADC_PORT, TVCC_ADC_CHANNEL, 0xFF);
+	core_interfaces.adc.calibrate(TVCC_ADC_PORT, TVCC_ADC_CHANNEL);
 #endif
 #if USB_TO_XXX_EN
 	USB_TO_XXX_Init(asyn_rx_buf + 2048);

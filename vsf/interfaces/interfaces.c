@@ -240,6 +240,3 @@ const struct interfaces_info_t core_interfaces =
 #endif
 	,peripheral_commit
 };
-
-struct interfaces_info_t *interfaces = 
-								(struct interfaces_info_t *)&core_interfaces;

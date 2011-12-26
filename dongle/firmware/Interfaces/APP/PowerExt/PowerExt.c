@@ -136,14 +136,14 @@ vsf_err_t target_voltage_poll(uint8_t index)
 		switch (PWREXT_FSMState)
 		{
 		case 0:
-			interfaces->adc.start(TVCC_ADC_PORT, TVCC_ADC_CHANNEL);
+			core_interfaces.adc.start(TVCC_ADC_PORT, TVCC_ADC_CHANNEL);
 			PWREXT_FSMState++;
 			break;
 		case 1:
-			if (!interfaces->adc.isready(TVCC_ADC_PORT, TVCC_ADC_CHANNEL))
+			if (!core_interfaces.adc.isready(TVCC_ADC_PORT, TVCC_ADC_CHANNEL))
 			{
 				PWREXT_Vtarget = 
-					interfaces->adc.get(TVCC_ADC_PORT, TVCC_ADC_CHANNEL) * 
+					core_interfaces.adc.get(TVCC_ADC_PORT, TVCC_ADC_CHANNEL) * 
 						TVCC_SAMPLE_DIV * 3300 / 4096;
 				
 				if(PWREXT_Vtarget > TVCC_SAMPLE_MIN_POWER)

@@ -105,15 +105,15 @@ void GPIO_SetMode(GPIO_TypeDef* GPIOx, uint8_t pin, uint8_t mode)
 // delay
 static vsf_err_t delay_init(void)
 {
-	return interfaces->delay.init();
+	return core_interfaces.delay.init();
 }
 static vsf_err_t delay_delayms(uint16_t ms)
 {
-	return interfaces->delay.delayms(ms);
+	return core_interfaces.delay.delayms(ms);
 }
 static vsf_err_t delay_delayus(uint16_t us)
 {
-	return interfaces->delay.delayus(us);
+	return core_interfaces.delay.delayus(us);
 }
 
 static vsf_err_t app_interface_init(void *p)
