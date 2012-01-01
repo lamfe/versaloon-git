@@ -103,63 +103,63 @@ static enum tap_state_t cur_state = IDLE;
 static uint8_t tap_tms_remain_cycles = 0;
 static uint8_t tap_tms_remain;
 
-static struct interfaces_info_t *interfaces = NULL;
+static struct interfaces_info_t *prog = NULL;
 
 vsf_err_t jtag_init(void)
 {
-	return interfaces->jtag_ll.init(0);
+	return prog->jtag_ll.init(0);
 }
 vsf_err_t jtag_fini(void)
 {
-	return interfaces->jtag_ll.fini(0);
+	return prog->jtag_ll.fini(0);
 }
 vsf_err_t jtag_config(uint16_t kHz)
 {
-	return interfaces->jtag_ll.config(0, kHz);
+	return prog->jtag_ll.config(0, kHz);
 }
 vsf_err_t jtag_tms(uint8_t *tms, uint8_t bytelen)
 {
-	return interfaces->jtag_ll.tms(0, tms, bytelen);
+	return prog->jtag_ll.tms(0, tms, bytelen);
 }
 vsf_err_t jtag_tms_clocks(uint32_t bytelen, uint8_t tms)
 {
-	return interfaces->jtag_ll.tms_clocks(0, bytelen, tms);
+	return prog->jtag_ll.tms_clocks(0, bytelen, tms);
 }
 vsf_err_t jtag_xr(uint8_t *data, uint16_t bitlen, uint8_t tms_before_valid,
 				uint8_t tms_before, uint8_t tms_after0, uint8_t tms_after1)
 {
-	return interfaces->jtag_ll.scan(0, data, bitlen, tms_before_valid,
+	return prog->jtag_ll.scan(0, data, bitlen, tms_before_valid,
 									tms_before, tms_after0, tms_after1);
 }
 vsf_err_t jtag_commit(void)
 {
-	return interfaces->peripheral_commit();
+	return prog->peripheral_commit();
 }
 
 vsf_err_t jtag_trst_init(void)
 {
-	return interfaces->gpio.init(0);
+	return prog->gpio.init(0);
 }
 vsf_err_t jtag_trst_fini(void)
 {
-	return interfaces->gpio.fini(0);
+	return prog->gpio.fini(0);
 }
 vsf_err_t jtag_trst_output(uint8_t value)
 {
-	return interfaces->gpio.config(0, JTAG_TRST, JTAG_TRST,
+	return prog->gpio.config(0, JTAG_TRST, JTAG_TRST,
 									0, value ? JTAG_TRST : 0);
 }
 vsf_err_t jtag_trst_input(void)
 {
-	return interfaces->gpio.config(0, JTAG_TRST, 0, JTAG_TRST, JTAG_TRST);
+	return prog->gpio.config(0, JTAG_TRST, 0, JTAG_TRST, JTAG_TRST);
 }
 vsf_err_t jtag_trst_1(void)
 {
-	return interfaces->gpio.out(0, JTAG_TRST, JTAG_TRST);
+	return prog->gpio.out(0, JTAG_TRST, JTAG_TRST);
 }
 vsf_err_t jtag_trst_0(void)
 {
-	return interfaces->gpio.out(0, JTAG_TRST, 0);
+	return prog->gpio.out(0, JTAG_TRST, 0);
 }
 
 
@@ -504,7 +504,7 @@ vsf_err_t tap_commit(void)
 
 vsf_err_t tap_init(struct interfaces_info_t *ifs)
 {
-	interfaces = ifs;
+	prog = ifs;
 	
 	if (jtag_init() || jtag_config(1000) || jtag_trst_init() ||
 		tap_end_state(RESET) || tap_state_move() || jtag_commit())

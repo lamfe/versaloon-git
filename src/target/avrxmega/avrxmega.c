@@ -108,31 +108,31 @@ const struct vss_cmd_t avrxmega_notifier[] =
 	VSS_CMD_END
 };
 
-#define jtag_init()					interfaces->jtag_hl.init(0)
-#define jtag_fini()					interfaces->jtag_hl.fini(0)
+#define jtag_init()					prog->jtag_hl.init(0)
+#define jtag_fini()					prog->jtag_hl.fini(0)
 #define jtag_config(kHz,a,b,c,d)	\
-	interfaces->jtag_hl.config(0, (kHz), (a), (b), (c), (d))
-#define jtag_runtest(len)			interfaces->jtag_hl.runtest(0, len)
+	prog->jtag_hl.config(0, (kHz), (a), (b), (c), (d))
+#define jtag_runtest(len)			prog->jtag_hl.runtest(0, len)
 #define jtag_ir_write(i, len)		\
-	interfaces->jtag_hl.ir(0, (uint8_t*)(i), (len), AVRXMEGA_JTAG_RTI_CYCLE, 0)
+	prog->jtag_hl.ir(0, (uint8_t*)(i), (len), AVRXMEGA_JTAG_RTI_CYCLE, 0)
 #define jtag_dr_write(d, len)		\
-	interfaces->jtag_hl.dr(0, (uint8_t*)(d), (len), AVRXMEGA_JTAG_RTI_CYCLE, 0)
+	prog->jtag_hl.dr(0, (uint8_t*)(d), (len), AVRXMEGA_JTAG_RTI_CYCLE, 0)
 #define jtag_dr_read(d, len)		\
-	interfaces->jtag_hl.dr(0, (uint8_t*)(d), (len), AVRXMEGA_JTAG_RTI_CYCLE, 1)
+	prog->jtag_hl.dr(0, (uint8_t*)(d), (len), AVRXMEGA_JTAG_RTI_CYCLE, 1)
 #define jtag_register_callback(s,r)	\
-	interfaces->jtag_hl.register_callback(0, (s), (r))
+	prog->jtag_hl.register_callback(0, (s), (r))
 
 // retry 4000 times with 1us interval
-#define poll_start(ten_us)			interfaces->poll.start((ten_us), 10)
-#define poll_end()					interfaces->poll.end()
+#define poll_start(ten_us)			prog->poll.start((ten_us), 10)
+#define poll_end()					prog->poll.end()
 #define poll_ok(t, s, m, v)			\
-	interfaces->poll.checkok((t), 1, (s), (m), (v))
+	prog->poll.checkok((t), 1, (s), (m), (v))
 #define poll_fail(t, s, m, v)		\
-	interfaces->poll.checkfail((t), 1, (s), (m), (v))
+	prog->poll.checkfail((t), 1, (s), (m), (v))
 
-#define delay_ms(ms)				interfaces->delay.delayms((ms) | 0x8000)
-#define delay_us(us)				interfaces->delay.delayus((us) & 0x7FFF)
-#define commit()					interfaces->peripheral_commit()
+#define delay_ms(ms)				prog->delay.delayms((ms) | 0x8000)
+#define delay_us(us)				prog->delay.delayus((us) & 0x7FFF)
+#define commit()					prog->peripheral_commit()
 
 #define avrxmega_jtag_ir(ir)		jtag_ir_write((ir), AVRXMEGA_JTAG_INS_Len)
 
@@ -162,7 +162,7 @@ static uint16_t pdi_append_parity(uint8_t data, enum pdi_parity_t parity)
 	return (p << 8) | data;
 }
 
-static struct interfaces_info_t *interfaces = NULL;
+static struct interfaces_info_t *prog = NULL;
 static uint8_t avrxmega_progmode = 0;
 static struct program_info_t *pi = NULL;
 static uint8_t pdi_err = 0;
@@ -651,7 +651,7 @@ static vsf_err_t avrxmega_nvm_erase_target(uint8_t cmd, uint32_t addr)
 
 ENTER_PROGRAM_MODE_HANDLER(avrxmega)
 {
-	interfaces = context->prog;
+	prog = context->prog;
 	avrxmega_progmode = context->pi->mode;
 	pi = context->pi;
 	pdi_append_0 = 0;

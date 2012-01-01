@@ -84,7 +84,7 @@ Usage of %s:\n\
 ENTER_PROGRAM_MODE_HANDLER(msp430)
 {
 	struct program_info_t *pi = context->pi;
-	struct interfaces_info_t *interfaces = context->prog;
+	struct interfaces_info_t *prog = context->prog;
 	
 	if (NULL == enter_program_mode_save)
 	{
@@ -94,26 +94,26 @@ ENTER_PROGRAM_MODE_HANDLER(msp430)
 	switch (pi->mode)
 	{
 	case MSP430_MODE_JTAG:
-		msp430jtagsbw_init = interfaces->msp430jtag.init;
-		msp430jtagsbw_fini = interfaces->msp430jtag.fini;
-		msp430jtagsbw_config = interfaces->msp430jtag.config;
-		msp430jtagsbw_ir = interfaces->msp430jtag.ir;
-		msp430jtagsbw_dr = interfaces->msp430jtag.dr;
-		msp430jtagsbw_tclk = interfaces->msp430jtag.tclk;
-		msp430jtagsbw_tclk_strobe = interfaces->msp430jtag.tclk_strobe;
-		msp430jtagsbw_reset = interfaces->msp430jtag.reset;
-		msp430jtagsbw_poll = interfaces->msp430jtag.poll;
+		msp430jtagsbw_init = prog->msp430jtag.init;
+		msp430jtagsbw_fini = prog->msp430jtag.fini;
+		msp430jtagsbw_config = prog->msp430jtag.config;
+		msp430jtagsbw_ir = prog->msp430jtag.ir;
+		msp430jtagsbw_dr = prog->msp430jtag.dr;
+		msp430jtagsbw_tclk = prog->msp430jtag.tclk;
+		msp430jtagsbw_tclk_strobe = prog->msp430jtag.tclk_strobe;
+		msp430jtagsbw_reset = prog->msp430jtag.reset;
+		msp430jtagsbw_poll = prog->msp430jtag.poll;
 		break;
 	case MSP430_MODE_SBW:
-		msp430jtagsbw_init = interfaces->msp430sbw.init;
-		msp430jtagsbw_fini = interfaces->msp430sbw.fini;
-		msp430jtagsbw_config = interfaces->msp430sbw.config;
-		msp430jtagsbw_ir = interfaces->msp430sbw.ir;
-		msp430jtagsbw_dr = interfaces->msp430sbw.dr;
-		msp430jtagsbw_tclk = interfaces->msp430sbw.tclk;
-		msp430jtagsbw_tclk_strobe = interfaces->msp430sbw.tclk_strobe;
-		msp430jtagsbw_reset = interfaces->msp430sbw.reset;
-		msp430jtagsbw_poll = interfaces->msp430sbw.poll;
+		msp430jtagsbw_init = prog->msp430sbw.init;
+		msp430jtagsbw_fini = prog->msp430sbw.fini;
+		msp430jtagsbw_config = prog->msp430sbw.config;
+		msp430jtagsbw_ir = prog->msp430sbw.ir;
+		msp430jtagsbw_dr = prog->msp430sbw.dr;
+		msp430jtagsbw_tclk = prog->msp430sbw.tclk;
+		msp430jtagsbw_tclk_strobe = prog->msp430sbw.tclk_strobe;
+		msp430jtagsbw_reset = prog->msp430sbw.reset;
+		msp430jtagsbw_poll = prog->msp430sbw.poll;
 		break;
 	case MSP430_MODE_BSL:
 		return VSFERR_FAIL;
