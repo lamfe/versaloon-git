@@ -17,6 +17,7 @@
 #ifndef __APP_INTERFACES_H_INCLUDED__
 #define __APP_INTERFACES_H_INCLUDED__
 
+#include "app_cfg.h"
 #include "interfaces.h"
 #include "app_interfaces_const.h"
 
