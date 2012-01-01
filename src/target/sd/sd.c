@@ -119,11 +119,6 @@ ENTER_PROGRAM_MODE_HANDLER(sd)
 	uint64_t capacity;
 	uint32_t page_size;
 	
-	if (dal_init(context->prog))
-	{
-		return VSFERR_FAIL;
-	}
-	
 	sd_dal_info.ifs = &sd_spi_drv_ifs;
 	if (pi->ifs_indexes != NULL)
 	{

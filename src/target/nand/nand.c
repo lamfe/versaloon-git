@@ -110,11 +110,6 @@ ENTER_PROGRAM_MODE_HANDLER(nand)
 	struct program_info_t *pi = context->pi;
 	struct chip_param_t *param = context->param;
 	
-	if (dal_init(context->prog))
-	{
-		return VSFERR_FAIL;
-	}
-	
 	if (pi->ifs_indexes != NULL)
 	{
 		if (dal_config_interface(NAND_STRING, pi->ifs_indexes, &nand_dal_info))

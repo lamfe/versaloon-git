@@ -72,13 +72,6 @@ struct vss_cmd_t app_cmd[] =
 	VSS_CMD_END
 };
 
-struct interfaces_info_t *interfaces = NULL;
-vsf_err_t dal_init(struct interfaces_info_t *ifs)
-{
-	interfaces = ifs;
-	return VSFERR_NONE;
-}
-
 vsf_err_t dal_commit(void)
 {
 	return interfaces->peripheral_commit();
@@ -140,7 +133,7 @@ VSS_HANDLER(dal_vss_init)
 		return VSFERR_FAIL;
 	}
 	
-	return dal_init(ifs);
+	return VSFERR_NONE;
 }
 
 VSS_HANDLER(dal_vss_fini)
