@@ -88,14 +88,6 @@
 #define SWD_PARITY_ERROR		0x04
 
 // JTAG
-struct jtag_pos_t
-{
-	uint8_t ub;		// units before
-	uint8_t ua;		// bits before
-	uint16_t bb;	// units after
-	uint16_t ba;	// bits after
-};
-
 #define JTAG_SRST				GPIO_SRST
 #define JTAG_TRST				GPIO_TRST
 #define JTAG_USR1				GPIO_USR1

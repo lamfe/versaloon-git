@@ -413,3 +413,6 @@ const struct app_interfaces_info_t app_interfaces =
 	}
 #endif
 };
+
+struct app_interfaces_info_t *interfaces = 
+								(struct app_interfaces_info_t *)&app_interfaces;

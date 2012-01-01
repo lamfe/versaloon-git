@@ -120,8 +120,8 @@ vsf_err_t usbtojtagll_scan(uint8_t interface_index, uint8_t* data,
 // USB_TO_JTAG_HL
 vsf_err_t usbtojtaghl_init(uint8_t interface_index);
 vsf_err_t usbtojtaghl_fini(uint8_t interface_index);
-vsf_err_t usbtojtaghl_config(uint8_t interface_index, uint32_t kHz, uint8_t ub,
-							  uint8_t ua, uint16_t bb, uint16_t ba);
+vsf_err_t usbtojtaghl_config(uint8_t interface_index, uint32_t kHz,
+								struct jtag_pos_t *pos);
 vsf_err_t usbtojtaghl_ir(uint8_t interface_index, uint8_t *ir, uint16_t bitlen,
 						  uint8_t idle, uint8_t want_ret);
 vsf_err_t usbtojtaghl_dr(uint8_t interface_index, uint8_t *dr, uint16_t bitlen,

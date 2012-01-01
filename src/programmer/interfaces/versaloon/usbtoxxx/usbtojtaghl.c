@@ -90,13 +90,13 @@ vsf_err_t usbtojtaghl_fini(uint8_t interface_index)
 	return usbtoxxx_fini_command(USB_TO_JTAG_HL, interface_index);
 }
 
-vsf_err_t usbtojtaghl_config(uint8_t interface_index, uint32_t kHz, uint8_t ub,
-						  uint8_t ua, uint16_t bb, uint16_t ba)
+vsf_err_t usbtojtaghl_config(uint8_t interface_index, uint32_t kHz,
+								struct jtag_pos_t *pos)
 {
 	uint8_t cfg_buf[10];
 	
 #if PARAM_CHECK
-	if (interface_index > 7)
+	if ((interface_index > 7) || (NULL == pos))
 	{
 		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
 		return VSFERR_FAIL;
@@ -104,10 +104,10 @@ vsf_err_t usbtojtaghl_config(uint8_t interface_index, uint32_t kHz, uint8_t ub,
 #endif
 	
 	SET_LE_U32(&cfg_buf[0], kHz);
-	cfg_buf[4] = ub;
-	cfg_buf[5] = ua;
-	SET_LE_U16(&cfg_buf[6], bb);
-	SET_LE_U16(&cfg_buf[8], ba);
+	cfg_buf[4] = pos->ub;
+	cfg_buf[5] = pos->ua;
+	SET_LE_U16(&cfg_buf[6], pos->bb);
+	SET_LE_U16(&cfg_buf[8], pos->ba);
 	
 	return usbtoxxx_conf_command(USB_TO_JTAG_HL, interface_index, cfg_buf, 10);
 }

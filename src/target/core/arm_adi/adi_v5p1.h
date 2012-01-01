@@ -41,11 +41,8 @@ struct adi_dpif_t
 	{
 		struct
 		{
-			uint8_t ub;
-			uint8_t ua;
-			uint16_t bb;
-			uint16_t ba;
 			uint16_t jtag_khz;
+			struct jtag_pos_t jtag_pos;
 		} dpif_jtag_setting;
 		struct
 		{

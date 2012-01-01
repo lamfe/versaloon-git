@@ -160,8 +160,7 @@ struct program_functions_t avr8jtag_program_functions =
 
 #define jtag_init()					prog->jtag_hl.init(0)
 #define jtag_fini()					prog->jtag_hl.fini(0)
-#define jtag_config(kHz,a,b,c,d)	\
-	prog->jtag_hl.config(0, (kHz), (a), (b), (c), (d))
+#define jtag_config(kHz,pos)		prog->jtag_hl.config(0, (kHz), (pos))
 #define jtag_runtest(len)			prog->jtag_hl.runtest(0, len)
 #define jtag_ir_write(i, len)		\
 	prog->jtag_hl.ir(0, (uint8_t*)(i), (len), 1, 0)
@@ -215,8 +214,7 @@ ENTER_PROGRAM_MODE_HANDLER(avr8jtag)
 	
 	// init
 	jtag_init();
-	jtag_config(pi->frequency, pi->jtag_pos.ub, pi->jtag_pos.ua,
-					pi->jtag_pos.bb, pi->jtag_pos.ba);
+	jtag_config(pi->frequency, &pi->jtag_pos);
 	
 	// enter program mode
 	AVR_JTAG_Reset(1);
