@@ -920,4 +920,6 @@ struct interfaces_info_t
 
 extern const struct interfaces_info_t core_interfaces;
 
+#include "app_interfaces.h"
+
 #endif	// __INTERFACES_H_INCLUDED__

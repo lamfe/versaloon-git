@@ -178,12 +178,19 @@ struct interface_swd_t
 							uint8_t *ack);
 };
 
+struct jtag_pos_t
+{
+	uint8_t ub;		// units before
+	uint8_t ua;		// bits before
+	uint16_t bb;	// units after
+	uint16_t ba;	// bits after
+};
+
 struct interface_jtag_hl_t
 {
 	vsf_err_t (*init)(uint8_t index);
 	vsf_err_t (*fini)(uint8_t index);
-	vsf_err_t (*config)(uint8_t index, uint32_t kHz, uint8_t ub, uint8_t ua,
-						uint16_t bb, uint16_t ba);
+	vsf_err_t (*config)(uint8_t index, uint32_t kHz, struct jtag_pos_t *pos);
 	vsf_err_t (*tms)(uint8_t index, uint8_t* tms, uint16_t bitlen);
 	vsf_err_t (*runtest)(uint8_t index, uint32_t cycles);
 	vsf_err_t (*ir)(uint8_t index, uint8_t *ir, uint16_t bitlen, uint8_t idle,

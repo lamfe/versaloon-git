@@ -181,13 +181,13 @@ ENTER_PROGRAM_MODE_HANDLER(cm3)
 			dp.dpif_setting.dpif_jtag_setting.jtag_khz =
 				cm3_chips_param[cm3_chip_index].jtag_khz;
 		}
-		dp.dpif_setting.dpif_jtag_setting.ub =
+		dp.dpif_setting.dpif_jtag_setting.jtag_pos.ub =
 			cm3_chips_param[cm3_chip_index].jtag_pos.ub + pi->jtag_pos.ub;
-		dp.dpif_setting.dpif_jtag_setting.ua =
+		dp.dpif_setting.dpif_jtag_setting.jtag_pos.ua =
 			cm3_chips_param[cm3_chip_index].jtag_pos.ua + pi->jtag_pos.ua;
-		dp.dpif_setting.dpif_jtag_setting.bb =
+		dp.dpif_setting.dpif_jtag_setting.jtag_pos.bb =
 			cm3_chips_param[cm3_chip_index].jtag_pos.bb + pi->jtag_pos.bb;
-		dp.dpif_setting.dpif_jtag_setting.ba =
+		dp.dpif_setting.dpif_jtag_setting.jtag_pos.ba =
 			cm3_chips_param[cm3_chip_index].jtag_pos.ba + pi->jtag_pos.ba;
 		
 		break;

@@ -576,25 +576,24 @@ VSS_HANDLER(interface_jtag_fini)
 VSS_HANDLER(interface_jtag_config)
 {
 	uint32_t khz = 0;
-	uint8_t ub, ua;
-	uint16_t bb, ba;
+	struct jtag_pos_t pos;
 	struct interfaces_info_t *ifs = NULL;
 	
 	VSS_CHECK_ARGC_2(2, 6);
 	INTERFACE_ASSERT(IFS_JTAG_HL, "jtag");
 	
 	khz = (uint32_t)strtoul(argv[1], NULL, 0);
-	ub = ua = 0;
-	bb = ba = 0;
+	pos.ub = pos.ua = 0;
+	pos.bb = pos.ba = 0;
 	if (argc > 2)
 	{
-		ub = (uint8_t)strtoul(argv[2], NULL, 0);
-		ua = (uint8_t)strtoul(argv[3], NULL, 0);
-		bb = (uint16_t)strtoul(argv[4], NULL, 0);
-		ba = (uint16_t)strtoul(argv[5], NULL, 0);
+		pos.ub = (uint8_t)strtoul(argv[2], NULL, 0);
+		pos.ua = (uint8_t)strtoul(argv[3], NULL, 0);
+		pos.bb = (uint16_t)strtoul(argv[4], NULL, 0);
+		pos.ba = (uint16_t)strtoul(argv[5], NULL, 0);
 	}
 	
-	return ifs->jtag_hl.config(0, khz, ub, ua, bb, ba);
+	return ifs->jtag_hl.config(0, khz, &pos);
 }
 
 VSS_HANDLER(interface_jtag_reset)

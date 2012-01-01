@@ -62,8 +62,7 @@ struct adi_dp_info_t adi_dp_info;
 // JTAG
 #define jtag_init()				adi_prog->jtag_hl.init(0)
 #define jtag_fini()				adi_prog->jtag_hl.fini(0)
-#define jtag_config(kHz,a,b,c,d)	\
-	adi_prog->jtag_hl.config(0, (kHz), (a), (b), (c), (d))
+#define jtag_config(kHz,pos)	adi_prog->jtag_hl.config(0, (kHz), (pos))
 #define jtag_tms(m, len)		adi_prog->jtag_hl.tms(0, (m), (len))
 #define jtag_runtest(len)		adi_prog->jtag_hl.runtest(0, len)
 #define jtag_ir_w(i, len)		\
@@ -270,10 +269,7 @@ static vsf_err_t adi_dpif_init(struct interfaces_info_t *ifs, struct adi_dpif_t 
 		jtag_init();
 		jtag_config(
 			adi_dp_if->dpif_setting.dpif_jtag_setting.jtag_khz,
-			adi_dp_if->dpif_setting.dpif_jtag_setting.ub,
-			adi_dp_if->dpif_setting.dpif_jtag_setting.ua,
-			adi_dp_if->dpif_setting.dpif_jtag_setting.bb,
-			adi_dp_if->dpif_setting.dpif_jtag_setting.ba);
+			&adi_dp_if->dpif_setting.dpif_jtag_setting.jtag_pos);
 		jtag_tms((uint8_t*)adi_swd_to_jtag_seq,
 					sizeof(adi_swd_to_jtag_seq) * 8);
 		if (adi_dp_commit())

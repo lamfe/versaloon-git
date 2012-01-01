@@ -827,27 +827,25 @@ vsf_err_t jtaghl_config_speed(uint8_t index, uint32_t kHz)
 	}
 }
 
-vsf_err_t jtaghl_config_daisychain(uint8_t index, uint8_t ub, uint8_t ua,
-									uint16_t bb, uint16_t ba)
+vsf_err_t jtaghl_config_daisychain(uint8_t index, struct jtag_pos_t *jtag_pos)
 {
 	switch (index)
 	{
 	case 0:
-		JTAG_TAP_SetDaisyChainPos(ub, ua, bb, ba);
+		JTAG_TAP_SetDaisyChainPos(jtag_pos->ub, jtag_pos->ua, jtag_pos->bb, jtag_pos->ba);
 		return VSFERR_NONE;
 	default:
 		return VSFERR_NOT_SUPPORT;
 	}
 }
 
-vsf_err_t jtaghl_config(uint8_t index, uint32_t kHz, uint8_t ub, uint8_t ua,
-						uint16_t bb, uint16_t ba)
+vsf_err_t jtaghl_config(uint8_t index, uint32_t kHz, struct jtag_pos_t *jtag_pos)
 {
 	switch (index)
 	{
 	case 0:
 		if (jtaghl_config_speed(index, kHz) || 
-			jtaghl_config_daisychain(index, ub, ua, bb, ba))
+			jtaghl_config_daisychain(index, jtag_pos))
 		{
 			return VSFERR_FAIL;
 		}

@@ -94,13 +94,13 @@ static vsf_err_t vi_stm32_init(void *p)
 		dp.type = ADI_DP_JTAG;
 		dp.dpif_setting.dpif_jtag_setting.jtag_khz =
 			cm3_chips_param[CM3_PARAM_IDX_STM32F1].jtag_khz;
-		dp.dpif_setting.dpif_jtag_setting.ub =
+		dp.dpif_setting.dpif_jtag_setting.jtag_pos.ub =
 			cm3_chips_param[CM3_PARAM_IDX_STM32F1].jtag_pos.ub + pi->jtag_pos.ub;
-		dp.dpif_setting.dpif_jtag_setting.ua =
+		dp.dpif_setting.dpif_jtag_setting.jtag_pos.ua =
 			cm3_chips_param[CM3_PARAM_IDX_STM32F1].jtag_pos.ua + pi->jtag_pos.ua;
-		dp.dpif_setting.dpif_jtag_setting.bb =
+		dp.dpif_setting.dpif_jtag_setting.jtag_pos.bb =
 			cm3_chips_param[CM3_PARAM_IDX_STM32F1].jtag_pos.bb + pi->jtag_pos.bb;
-		dp.dpif_setting.dpif_jtag_setting.ba =
+		dp.dpif_setting.dpif_jtag_setting.jtag_pos.ba =
 			cm3_chips_param[CM3_PARAM_IDX_STM32F1].jtag_pos.ba + pi->jtag_pos.ba;
 		break;
 	case VI_STM32_MODE_SWD:

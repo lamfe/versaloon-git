@@ -25,6 +25,8 @@ void USB_TO_JTAG_HL_ProcessCmd(uint8_t *dat, uint16_t len)
 	uint16_t index, length;
 	uint8_t command, device_idx;
 	
+	struct jtag_pos_t jtag_pos;
+	uint32_t jtag_khz;
 	uint16_t cur_dat_len, i, len_tmp;
 	uint16_t rindex;
 	bool fail;
@@ -50,9 +52,12 @@ void USB_TO_JTAG_HL_ProcessCmd(uint8_t *dat, uint16_t len)
 			}
 			break;
 		case USB_TO_XXX_CONFIG:
-			if (app_interfaces.jtag_hl.config(device_idx,
-					GET_LE_U32(&dat[index]), dat[index + 4], dat[index + 5],
-					GET_LE_U16(&dat[index + 6]), GET_LE_U16(&dat[index + 8])))
+			jtag_khz = GET_LE_U32(&dat[index]);
+			jtag_pos.ub = dat[index + 4];
+			jtag_pos.ua = dat[index + 5];
+			jtag_pos.bb = GET_LE_U16(&dat[index + 6]);
+			jtag_pos.ba = GET_LE_U16(&dat[index + 8]);
+			if (app_interfaces.jtag_hl.config(device_idx, jtag_khz, &jtag_pos))
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}

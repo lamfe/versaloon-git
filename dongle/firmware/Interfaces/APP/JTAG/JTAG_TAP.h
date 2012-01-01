@@ -17,10 +17,8 @@
 vsf_err_t jtaghl_init(uint8_t index);
 vsf_err_t jtaghl_fini(uint8_t index);
 vsf_err_t jtaghl_config_speed(uint8_t index, uint32_t kHz);
-vsf_err_t jtaghl_config_daisychain(uint8_t index, uint8_t ub, uint8_t ua, 
-									uint16_t bb, uint16_t ba);
-vsf_err_t jtaghl_config(uint8_t index, uint32_t kHz, uint8_t ub, uint8_t ua, 
-						uint16_t bb, uint16_t ba);
+vsf_err_t jtaghl_config_daisychain(uint8_t index, struct jtag_pos_t *jtag_pos);
+vsf_err_t jtaghl_config(uint8_t index, uint32_t kHz, struct jtag_pos_t *jtag_pos);
 vsf_err_t jtaghl_tms(uint8_t index, uint8_t* tms, uint16_t bitlen);
 vsf_err_t jtaghl_runtest(uint8_t index, uint32_t cycles);
 vsf_err_t jtaghl_ir(uint8_t index, uint8_t *ir, uint16_t bitlen, uint8_t idle, 
