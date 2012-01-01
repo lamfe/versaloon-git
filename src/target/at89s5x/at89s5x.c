@@ -90,33 +90,33 @@ const struct vss_cmd_t s5x_notifier[] =
 
 static uint16_t s5x_byte_delay_us = 500;
 
-#define spi_init()				interfaces->spi.init(0)
-#define spi_fini()				interfaces->spi.fini(0)
+#define spi_init()				prog->spi.init(0)
+#define spi_fini()				prog->spi.fini(0)
 #define spi_conf(speed)			\
-	interfaces->spi.config(0, (speed), SPI_MODE0 | SPI_MSB_FIRST)
+	prog->spi.config(0, (speed), SPI_MODE0 | SPI_MSB_FIRST)
 #define spi_io(out, bytelen, in)\
-	interfaces->spi.io(0, (out), (in), (bytelen))
+	prog->spi.io(0, (out), (in), (bytelen))
 
-#define reset_init()			interfaces->gpio.init(0)
-#define reset_fini()			interfaces->gpio.fini(0)
+#define reset_init()			prog->gpio.init(0)
+#define reset_fini()			prog->gpio.fini(0)
 #define reset_output()			\
-	interfaces->gpio.config(0, GPIO_SRST, GPIO_SRST, 0, GPIO_SRST)
+	prog->gpio.config(0, GPIO_SRST, GPIO_SRST, 0, GPIO_SRST)
 #define reset_input()			\
-	interfaces->gpio.config(0, GPIO_SRST, 0, GPIO_SRST, GPIO_SRST)
+	prog->gpio.config(0, GPIO_SRST, 0, GPIO_SRST, GPIO_SRST)
 #define reset_set()				reset_output()
 #define reset_clr()				reset_input()
 
-#define delay_ms(ms)			interfaces->delay.delayms((ms) | 0x8000)
-#define delay_us(us)			interfaces->delay.delayus((us) & 0x7FFF)
+#define delay_ms(ms)			prog->delay.delayms((ms) | 0x8000)
+#define delay_us(us)			prog->delay.delayus((us) & 0x7FFF)
 
-#define poll_start_once()		interfaces->poll.start(0, 0)
-#define poll_end()				interfaces->poll.end()
+#define poll_start_once()		prog->poll.start(0, 0)
+#define poll_end()				prog->poll.end()
 #define poll_fail_unequ(o, m, v)\
-	interfaces->poll.checkfail(POLL_CHECK_UNEQU, (o), 1, (m), (v))
+	prog->poll.checkfail(POLL_CHECK_UNEQU, (o), 1, (m), (v))
 
-#define commit()				interfaces->peripheral_commit()
+#define commit()				prog->peripheral_commit()
 
-static struct interfaces_info_t *interfaces = NULL;
+static struct interfaces_info_t *prog = NULL;
 
 ENTER_PROGRAM_MODE_HANDLER(s5x)
 {
@@ -124,7 +124,7 @@ ENTER_PROGRAM_MODE_HANDLER(s5x)
 	struct chip_param_t *param = context->param;
 	uint8_t cmd_buf[4];
 	
-	interfaces = context->prog;
+	prog = context->prog;
 	if (!context->pi->frequency)
 	{
 		context->pi->frequency = CUR_DEFAULT_FREQ;

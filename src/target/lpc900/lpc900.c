@@ -89,17 +89,17 @@ const struct vss_cmd_t lpc900_notifier[] =
 
 
 
-static struct interfaces_info_t *interfaces = NULL;
+static struct interfaces_info_t *prog = NULL;
 
-#define icp_init()					interfaces->lpcicp.init(0)
-#define icp_fini()					interfaces->lpcicp.fini(0)
-#define icp_enter_program_mode()	interfaces->lpcicp.enter_program_mode(0)
-#define icp_leave_program_mode()	interfaces->lpcicp.leave_program_mode(0)
-#define icp_in(buf, len)			interfaces->lpcicp.in(0, (buf), (len))
-#define icp_out(buf, len)			interfaces->lpcicp.out(0, (buf), (len))
+#define icp_init()					prog->lpcicp.init(0)
+#define icp_fini()					prog->lpcicp.fini(0)
+#define icp_enter_program_mode()	prog->lpcicp.enter_program_mode(0)
+#define icp_leave_program_mode()	prog->lpcicp.leave_program_mode(0)
+#define icp_in(buf, len)			prog->lpcicp.in(0, (buf), (len))
+#define icp_out(buf, len)			prog->lpcicp.out(0, (buf), (len))
 #define icp_poll(dat, ptr, set, clear, cnt)	\
-	interfaces->lpcicp.poll_ready(0, (dat), (ptr), (set), (clear), (cnt))
-#define icp_commit()				interfaces->peripheral_commit()
+	prog->lpcicp.poll_ready(0, (dat), (ptr), (set), (clear), (cnt))
+#define icp_commit()				prog->peripheral_commit()
 
 #define LPCICP_POLL_ON_SET			0
 #define LPCICP_POLL_ON_CLEAR		1
@@ -148,7 +148,7 @@ ENTER_PROGRAM_MODE_HANDLER(lpc900icp)
 	uint32_t device_id;	
 	uint8_t tmpbuf[5], retry = 0;
 	
-	interfaces = context->prog;
+	prog = context->prog;
 	// ICP Init
 ProgramStart:
 	if (icp_init())

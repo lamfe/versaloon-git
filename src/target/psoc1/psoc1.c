@@ -98,7 +98,7 @@ const struct vss_cmd_t psoc1_notifier[] =
 
 
 
-static struct interfaces_info_t *interfaces = NULL;
+static struct interfaces_info_t *prog = NULL;
 
 #define PSOC1_SSC_CMD_SWBootReset			0x00
 #define PSOC1_SSC_CMD_ReadBlock				0x01
@@ -111,26 +111,26 @@ static struct interfaces_info_t *interfaces = NULL;
 #define PSOC1_SSC_CMD_Calibrate0			0x08
 #define PSOC1_SSC_CMD_Calibrate1			0x09
 
-#define get_target_voltage(v)				interfaces->target_voltage.get(0, v)
+#define get_target_voltage(v)				prog->target_voltage.get(0, v)
 
-#define issp_init()							interfaces->issp.init(0)
-#define issp_fini()							interfaces->issp.fini(0)
+#define issp_init()							prog->issp.init(0)
+#define issp_fini()							prog->issp.fini(0)
 #define issp_enter_program_mode(mode)		\
-	interfaces->issp.enter_program_mode(0, mode)
+	prog->issp.enter_program_mode(0, mode)
 #define issp_leave_program_mode(mode)		\
-	interfaces->issp.leave_program_mode(0, mode)
-#define issp_wait_and_poll()				interfaces->issp.wait_and_poll(0)
-#define issp_commit()						interfaces->peripheral_commit()
+	prog->issp.leave_program_mode(0, mode)
+#define issp_wait_and_poll()				prog->issp.wait_and_poll(0)
+#define issp_commit()						prog->peripheral_commit()
 
 #define issp_0s()							\
-	interfaces->issp.vector(0, ISSP_VECTOR_0S, 0x00, 0x00, NULL)
+	prog->issp.vector(0, ISSP_VECTOR_0S, 0x00, 0x00, NULL)
 #define issp_read_sram(addr, buf)			\
-	interfaces->issp.vector(0, ISSP_VECTOR_READ_SRAM, (uint8_t)(addr), 0x00, (buf))
+	prog->issp.vector(0, ISSP_VECTOR_READ_SRAM, (uint8_t)(addr), 0x00, (buf))
 #define issp_write_sram(addr, data)			\
-	interfaces->issp.vector(0, ISSP_VECTOR_WRITE_SRAM, (uint8_t)(addr), \
+	prog->issp.vector(0, ISSP_VECTOR_WRITE_SRAM, (uint8_t)(addr), \
 							(uint8_t)(data),NULL)
 #define issp_write_reg(addr, data)			\
-	interfaces->issp.vector(0, ISSP_VECTOR_WRITE_REG, (uint8_t)(addr), \
+	prog->issp.vector(0, ISSP_VECTOR_WRITE_REG, (uint8_t)(addr), \
 							(uint8_t)(data),NULL)
 
 #define issp_set_cup_a(cmd)					issp_write_reg(0xF0, (cmd))
@@ -246,7 +246,7 @@ ENTER_PROGRAM_MODE_HANDLER(psoc1)
 	struct program_info_t *pi = context->pi;
 	uint16_t voltage;
 	
-	interfaces = context->prog;
+	prog = context->prog;
 	
 	if (get_target_voltage(&voltage))
 	{

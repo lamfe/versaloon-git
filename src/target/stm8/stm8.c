@@ -120,37 +120,37 @@ const struct vss_cmd_t stm8_notifier[] =
 
 
 
-#define reset_init()			interfaces->gpio.init(0)
-#define reset_fini()			interfaces->gpio.fini(0)
+#define reset_init()			prog->gpio.init(0)
+#define reset_fini()			prog->gpio.fini(0)
 #define reset_output()			\
-	interfaces->gpio.config(0, SWIM_RST_PIN, SWIM_RST_PIN, 0, 0)
+	prog->gpio.config(0, SWIM_RST_PIN, SWIM_RST_PIN, 0, 0)
 #define reset_input()			\
-	interfaces->gpio.config(0, SWIM_RST_PIN, 0, SWIM_RST_PIN, SWIM_RST_PIN)
+	prog->gpio.config(0, SWIM_RST_PIN, 0, SWIM_RST_PIN, SWIM_RST_PIN)
 #define reset_set()				reset_input()
 #define reset_clr()				reset_output()
 
-#define swim_init()				interfaces->swim.init(0)
-#define swim_fini()				interfaces->swim.fini(0)
-#define swim_config(m,c0,c1)	interfaces->swim.config(0, (m), (c0), (c1))
-#define swim_srst()				interfaces->swim.srst(0)
-#define swim_wotf(a, b, l)		interfaces->swim.wotf(0, (b), (l), (a))
-#define swim_rotf(a, b, l)		interfaces->swim.rotf(0, (b), (l), (a))
-#define swim_sync(m)			interfaces->swim.sync(0, m)
-#define swim_enable()			interfaces->swim.enable(0)
+#define swim_init()				prog->swim.init(0)
+#define swim_fini()				prog->swim.fini(0)
+#define swim_config(m,c0,c1)	prog->swim.config(0, (m), (c0), (c1))
+#define swim_srst()				prog->swim.srst(0)
+#define swim_wotf(a, b, l)		prog->swim.wotf(0, (b), (l), (a))
+#define swim_rotf(a, b, l)		prog->swim.rotf(0, (b), (l), (a))
+#define swim_sync(m)			prog->swim.sync(0, m)
+#define swim_enable()			prog->swim.enable(0)
 
-#define delay_ms(ms)			interfaces->delay.delayms((ms) | 0x8000)
-#define delay_us(us)			interfaces->delay.delayus((us) & 0x7FFF)
+#define delay_ms(ms)			prog->delay.delayms((ms) | 0x8000)
+#define delay_us(us)			prog->delay.delayus((us) & 0x7FFF)
 
-#define poll_start()			interfaces->poll.start(100, 100)
-#define poll_end()				interfaces->poll.end()
+#define poll_start()			prog->poll.start(100, 100)
+#define poll_end()				prog->poll.end()
 #define poll_ok(o, m, v)		\
-	interfaces->poll.checkok(POLL_CHECK_EQU, (o), 1, (m), (v))
+	prog->poll.checkok(POLL_CHECK_EQU, (o), 1, (m), (v))
 #define poll_fail(o, m, v)		\
-	interfaces->poll.checkfail(POLL_CHECK_EQU, (o), 1, (m), (v))
+	prog->poll.checkfail(POLL_CHECK_EQU, (o), 1, (m), (v))
 
-#define commit()				interfaces->peripheral_commit()
+#define commit()				prog->peripheral_commit()
 
-static struct interfaces_info_t *interfaces = NULL;
+static struct interfaces_info_t *prog = NULL;
 
 // 0x0000 ---- 0x007F: flash loader code
 // 0x0080 ---- 0x00BF: param_bk + loopcnt
@@ -459,7 +459,7 @@ ENTER_PROGRAM_MODE_HANDLER(stm8swim)
 #endif
 	
 	stm8_target_mhz = (uint8_t)param->param[STM8_PARAM_IRC];
-	interfaces = context->prog;
+	prog = context->prog;
 	
 	if ((pi->wait_state) && (param->param[STM8_PARAM_CLK_SWIMCCR] != 0))
 	{
@@ -590,7 +590,7 @@ LEAVE_PROGRAM_MODE_HANDLER(stm8swim)
 	struct chip_param_t *param = context->param;
 
 	REFERENCE_PARAMETER(success);
-	interfaces = context->prog;
+	prog = context->prog;
 	
 	if (stm8_swim_enabled)
 	{

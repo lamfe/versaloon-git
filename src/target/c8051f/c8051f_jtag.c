@@ -55,38 +55,38 @@ struct program_functions_t c8051fjtag_program_functions =
 	READ_TARGET_FUNCNAME(c8051fjtag)
 };
 
-static struct interfaces_info_t *interfaces = NULL;
+static struct interfaces_info_t *prog = NULL;
 
 
-#define jtag_init()					interfaces->jtag_hl.init(0)
-#define jtag_fini()					interfaces->jtag_hl.fini(0)
+#define jtag_init()					prog->jtag_hl.init(0)
+#define jtag_fini()					prog->jtag_hl.fini(0)
 #define jtag_config(kHz,a,b,c,d)	\
-	interfaces->jtag_hl.config(0, (kHz), (a), (b), (c), (d))
-#define jtag_runtest(len)			interfaces->jtag_hl.runtest(0, len)
+	prog->jtag_hl.config(0, (kHz), (a), (b), (c), (d))
+#define jtag_runtest(len)			prog->jtag_hl.runtest(0, len)
 #define jtag_ir_write(i, len)		\
-	interfaces->jtag_hl.ir(0, (uint8_t*)(i), (len), 1, 0)
+	prog->jtag_hl.ir(0, (uint8_t*)(i), (len), 1, 0)
 #define jtag_dr_write(d, len)		\
-	interfaces->jtag_hl.dr(0, (uint8_t*)(d), (len), 1, 0)
+	prog->jtag_hl.dr(0, (uint8_t*)(d), (len), 1, 0)
 #define jtag_dr_read(d, len)		\
-	interfaces->jtag_hl.dr(0, (uint8_t*)(d), (len), 1, 1)
+	prog->jtag_hl.dr(0, (uint8_t*)(d), (len), 1, 1)
 
 #if 0
 #define jtag_poll_busy()			c8051f_jtag_poll_busy()
 #define jtag_poll_flbusy(dly, int)	c8051f_jtag_poll_flbusy((dly), (int))
 #else
-#define jtag_poll_busy()			interfaces->delay.delayus(20)
+#define jtag_poll_busy()			prog->delay.delayus(20)
 #define jtag_poll_flbusy(dly, int)	jtag_delay_us((dly) * ((int) + 1))
 #endif
 
-#define jtag_delay_us(us)			interfaces->delay.delayus((us))
-#define jtag_delay_ms(ms)			interfaces->delay.delayms((ms))
+#define jtag_delay_us(us)			prog->delay.delayus((us))
+#define jtag_delay_ms(ms)			prog->delay.delayms((ms))
 
-#define poll_start(cnt, int)		interfaces->poll.start((cnt), (int))
-#define poll_end()					interfaces->poll.end()
+#define poll_start(cnt, int)		prog->poll.start((cnt), (int))
+#define poll_end()					prog->poll.end()
 #define poll_ok(o, m, v)			\
-	interfaces->poll.checkok(POLL_CHECK_EQU, (o), 1, (m), (v))
+	prog->poll.checkok(POLL_CHECK_EQU, (o), 1, (m), (v))
 
-#define jtag_commit()				interfaces->peripheral_commit()
+#define jtag_commit()				prog->peripheral_commit()
 
 vsf_err_t c8051f_jtag_poll_busy(void)
 {
@@ -173,7 +173,7 @@ ENTER_PROGRAM_MODE_HANDLER(c8051fjtag)
 	{
 		context->pi->frequency = CUR_DEFAULT_FREQ;
 	}
-	interfaces = context->prog;
+	prog = context->prog;
 	
 	jtag_init();
 	jtag_config(pi->frequency, pi->jtag_pos.ub, pi->jtag_pos.ua,

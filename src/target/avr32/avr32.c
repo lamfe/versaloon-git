@@ -109,37 +109,37 @@ const struct vss_cmd_t avr32_notifier[] =
 
 
 
-#define jtag_init()					interfaces->jtag_hl.init(0)
-#define jtag_fini()					interfaces->jtag_hl.fini(0)
+#define jtag_init()					prog->jtag_hl.init(0)
+#define jtag_fini()					prog->jtag_hl.fini(0)
 #define jtag_config(kHz,a,b,c,d)	\
-	interfaces->jtag_hl.config(0, (kHz), (a), (b), (c), (d))
-#define jtag_runtest(len)			interfaces->jtag_hl.runtest(0, len)
+	prog->jtag_hl.config(0, (kHz), (a), (b), (c), (d))
+#define jtag_runtest(len)			prog->jtag_hl.runtest(0, len)
 #define jtag_ir_write(i, len)		\
-	interfaces->jtag_hl.ir(0, (uint8_t*)(i), (len), AVR32_JTAG_RTI_CYCLE, 0)
+	prog->jtag_hl.ir(0, (uint8_t*)(i), (len), AVR32_JTAG_RTI_CYCLE, 0)
 #define jtag_dr_write(d, len)		\
-	interfaces->jtag_hl.dr(0, (uint8_t*)(d), (len), AVR32_JTAG_RTI_CYCLE, 0)
+	prog->jtag_hl.dr(0, (uint8_t*)(d), (len), AVR32_JTAG_RTI_CYCLE, 0)
 #define jtag_dr_read(d, len)		\
-	interfaces->jtag_hl.dr(0, (uint8_t*)(d), (len), AVR32_JTAG_RTI_CYCLE, 1)
+	prog->jtag_hl.dr(0, (uint8_t*)(d), (len), AVR32_JTAG_RTI_CYCLE, 1)
 #define jtag_register_callback(s,r)	\
-	interfaces->jtag_hl.register_callback(0, (s), (r))
+	prog->jtag_hl.register_callback(0, (s), (r))
 
 // retry 1000 times with 0 interval
-#define poll_start()				interfaces->poll.start(1000, 0)
-#define poll_end()					interfaces->poll.end()
+#define poll_start()				prog->poll.start(1000, 0)
+#define poll_end()					prog->poll.end()
 #define poll_ok(o, m, v)			\
-	interfaces->poll.checkok(POLL_CHECK_EQU, (o), 1, (m), (v))
+	prog->poll.checkok(POLL_CHECK_EQU, (o), 1, (m), (v))
 #define poll_fail(o, m, v)		\
-	interfaces->poll.checkfail(POLL_CHECK_EQU, (o), 1, (m), (v))
+	prog->poll.checkfail(POLL_CHECK_EQU, (o), 1, (m), (v))
 
-#define delay_ms(ms)				interfaces->delay.delayms((ms) | 0x8000)
-#define delay_us(us)				interfaces->delay.delayus((us) & 0x7FFF)
-#define jtag_commit()				interfaces->peripheral_commit()
+#define delay_ms(ms)				prog->delay.delayms((ms) | 0x8000)
+#define delay_us(us)				prog->delay.delayus((us) & 0x7FFF)
+#define jtag_commit()				prog->peripheral_commit()
 
 #define avr32jtag_Instr(ir)			jtag_ir_write((ir), AVR32_JTAG_INS_Len)
 #define avr32jtag_DataW				jtag_dr_write
 #define avr32jtag_DataR				jtag_dr_read
 
-static struct interfaces_info_t *interfaces = NULL;
+static struct interfaces_info_t *prog = NULL;
 
 static uint8_t pending_4bytes = 0;
 vsf_err_t avr32jtag_receive_callback(uint8_t index, enum jtag_irdr_t cmd,
@@ -361,7 +361,7 @@ ENTER_PROGRAM_MODE_HANDLER(avr32jtag)
 	struct program_info_t *pi = context->pi;
 	
 	pending_4bytes = 0;
-	interfaces = context->prog;
+	prog = context->prog;
 	
 	if (!pi->frequency)
 	{

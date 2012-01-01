@@ -86,40 +86,40 @@ const struct vss_cmd_t hcs08_notifier[] =
 
 
 
-#define reset_init()			interfaces->gpio.init(0)
-#define reset_fini()			interfaces->gpio.fini(0)
+#define reset_init()			prog->gpio.init(0)
+#define reset_fini()			prog->gpio.fini(0)
 #define reset_output()			\
-	interfaces->gpio.config(0, SWIM_RST_PIN, SWIM_RST_PIN, 0, 0)
+	prog->gpio.config(0, SWIM_RST_PIN, SWIM_RST_PIN, 0, 0)
 #define reset_input()			\
-	interfaces->gpio.config(0, SWIM_RST_PIN, 0, SWIM_RST_PIN, SWIM_RST_PIN)
+	prog->gpio.config(0, SWIM_RST_PIN, 0, SWIM_RST_PIN, SWIM_RST_PIN)
 #define reset_set()				reset_input()
 #define reset_clr()				reset_output()
 #define bdm_output()			\
-	interfaces->gpio.config(0, BDM_PIN, BDM_PIN, 0, 0)
+	prog->gpio.config(0, BDM_PIN, BDM_PIN, 0, 0)
 #define bdm_input()			\
-	interfaces->gpio.config(0, BDM_PIN, 0, BDM_PIN, BDM_PIN)
+	prog->gpio.config(0, BDM_PIN, 0, BDM_PIN, BDM_PIN)
 #define bdm_set()				bdm_input()
 #define bdm_clr()				bdm_output()
 
-#define bdm_init()				interfaces->bdm.init(0)
-#define bdm_fini()				interfaces->bdm.fini(0)
-#define bdm_sync(khz)			interfaces->bdm.sync(0, khz)
+#define bdm_init()				prog->bdm.init(0)
+#define bdm_fini()				prog->bdm.fini(0)
+#define bdm_sync(khz)			prog->bdm.sync(0, khz)
 #define bdm_transact(bo, so, bi, si, d, a)		\
-	interfaces->bdm.transact(0, (bo), (so), (bi), (si), (d), (a))
+	prog->bdm.transact(0, (bo), (so), (bi), (si), (d), (a))
 
-#define delay_ms(ms)			interfaces->delay.delayms((ms) | 0x8000)
-#define delay_us(us)			interfaces->delay.delayus((us) & 0x7FFF)
+#define delay_ms(ms)			prog->delay.delayms((ms) | 0x8000)
+#define delay_us(us)			prog->delay.delayus((us) & 0x7FFF)
 
-#define poll_start()			interfaces->poll.start(5000, 100)
-#define poll_end()				interfaces->poll.end()
+#define poll_start()			prog->poll.start(5000, 100)
+#define poll_end()				prog->poll.end()
 #define poll_ok(o, m, v)		\
-	interfaces->poll.checkok(POLL_CHECK_EQU, (o), 1, (m), (v))
+	prog->poll.checkok(POLL_CHECK_EQU, (o), 1, (m), (v))
 #define poll_fail(o, m, v)		\
-	interfaces->poll.checkfail(POLL_CHECK_EQU, (o), 1, (m), (v))
+	prog->poll.checkfail(POLL_CHECK_EQU, (o), 1, (m), (v))
 
-#define commit()				interfaces->peripheral_commit()
+#define commit()				prog->peripheral_commit()
 
-static struct interfaces_info_t *interfaces = NULL;
+static struct interfaces_info_t *prog = NULL;
 static uint8_t hcs08_flash_div = 0;
 
 #define HCS08_BDMCMD_ACKENABLE		0xD5	// NI:D5/d
@@ -213,7 +213,7 @@ ENTER_PROGRAM_MODE_HANDLER(hcs08)
 	uint16_t kernel_khz;
 	uint8_t bdm_status;
 	
-	interfaces = context->prog;
+	prog = context->prog;
 	
 	reset_init();
 	reset_set();
