@@ -113,11 +113,6 @@ ENTER_PROGRAM_MODE_HANDLER(df25xx)
 	struct chip_param_t *param = context->param;
 	struct program_info_t *pi = context->pi;
 	
-	if (dal_init(context->prog))
-	{
-		return VSFERR_FAIL;
-	}
-	
 	if (pi->ifs_indexes != NULL)
 	{
 		if (dal_config_interface(DF25XX_STRING, pi->ifs_indexes,

@@ -396,6 +396,7 @@ struct interfaces_info_t
 	vsf_err_t (*peripheral_commit)(void);
 };
 
+#define interfaces				cur_interface
 extern struct interfaces_info_t *cur_interface;
 extern struct interfaces_info_t *cur_real_interface;
 extern struct interfaces_info_t *interfaces_info[];

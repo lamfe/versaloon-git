@@ -19,7 +19,6 @@
 
 #include "dal/dal.h"
 
-vsf_err_t dal_init(struct interfaces_info_t *ifs);
 vsf_err_t dal_commit(void);
 vsf_err_t dal_config_interface(char *dal_name, char *ifs, struct dal_info_t *info);
 

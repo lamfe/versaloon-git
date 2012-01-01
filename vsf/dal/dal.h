@@ -43,6 +43,5 @@ struct dal_driver_t
 };
 
 extern struct dal_driver_t *dal_drivers[];
-extern struct interfaces_info_t *interfaces;
 
 #endif	// __DAL_H_INCLUDED__
