@@ -265,6 +265,8 @@ enum poll_check_type_t
 
 struct app_interfaces_info_t
 {
+	char *name;
+	
 	vsf_err_t (*init)(void *p);
 	vsf_err_t (*fini)(void);
 	vsf_err_t (*peripheral_commit)(void);
