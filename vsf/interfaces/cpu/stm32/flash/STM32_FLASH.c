@@ -1,5 +1,3 @@
-#include <string.h>
-
 #include "app_type.h"
 #include "interfaces.h"
 
