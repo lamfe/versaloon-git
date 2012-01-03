@@ -21,7 +21,6 @@
 #endif
 
 #include <stdlib.h>
-#include <string.h>
 #include <ctype.h>
 
 #include "app_cfg.h"
@@ -31,7 +30,7 @@
 #include "app_err.h"
 #include "port.h"
 
-#include "programmer.h"
+#include "interfaces.h"
 #include "scripts.h"
 
 #define PARAM_EXIT_ON_FAIL					0
@@ -653,12 +652,12 @@ vsf_err_t vss_run_script(char *cmd)
 	}
 	
 	// commit if required
-	if ((cur_interface != NULL)
-		&& (cur_interface->peripheral_commit != NULL))
+	if ((interfaces != NULL)
+		&& (interfaces->peripheral_commit != NULL))
 	{
 		if (0 == vss_param[PARAM_NO_COMMIT].value)
 		{
-			if (cur_interface->peripheral_commit())
+			if (interfaces->peripheral_commit())
 			{
 				err = VSFERR_FAIL;
 			}
@@ -836,9 +835,9 @@ VSS_HANDLER(vss_shell)
 	
 	LOG_INFO("enter shell mode.");
 	
-	if (cur_interface != NULL)
+	if (interfaces != NULL)
 	{
-		return vss_run_file(stdin, cur_interface->name, 0);
+		return vss_run_file(stdin, interfaces->name, 0);
 	}
 	else
 	{

@@ -133,6 +133,8 @@ static vsf_err_t app_peripheral_commit(void)
 
 const struct app_interfaces_info_t app_interfaces = 
 {
+	"versaloon",
+	
 	app_interface_init,
 	app_interface_fini,
 	app_peripheral_commit,

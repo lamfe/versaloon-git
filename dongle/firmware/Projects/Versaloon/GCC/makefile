@@ -34,6 +34,7 @@ INCLUDE_USB_LIB = yes
 PRJDIR	    = ..
 SRCDIR      = ../../..
 VSFDIR      = ../../../../../vsf
+VSPROGDIR	= ../../../../../src
 VSFCFGDIR   = ../vsf_cfg
 OBJ_DIR     = .
 COMPILER_DIR = .
@@ -55,10 +56,6 @@ USR_INCS+= -I $(STM32_IFACES_DIR)/hw
 # compiler
 USR_SRCS+= $(COMPILER_DIR)/compiler_string.c
 USR_INCS+= -I $(COMPILER_DIR)
-
-# Tools
-USR_SRCS+= $(SRCDIR)/Tools/fifo/fifo.c
-USR_INCS+= -I $(SRCDIR)/Tools/fifo
 
 #APP interfaces
 USR_SRCS+= $(SRCDIR)/Interfaces/app_interfaces.c

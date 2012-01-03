@@ -70,16 +70,16 @@
         <option>
           <name>GRuntimeLibSelect</name>
           <version>0</version>
-          <state>1</state>
+          <state>2</state>
         </option>
         <option>
           <name>GRuntimeLibSelectSlave</name>
           <version>0</version>
-          <state>1</state>
+          <state>2</state>
         </option>
         <option>
           <name>RTDescription</name>
-          <state>Use the normal configuration of the C/C++ runtime library. No locale interface, C locale, no file descriptor support, no multibytes in printf and scanf, and no hex floats in strtod.</state>
+          <state>Use the full configuration of the C/C++ runtime library. Full locale interface, C locale, file descriptor support, multibytes in printf and scanf, and hex floats in strtod.</state>
         </option>
         <option>
           <name>OGProductVersion</name>
@@ -133,7 +133,7 @@
         </option>
         <option>
           <name>RTConfigPath2</name>
-          <state>$TOOLKIT_DIR$\INC\c\DLib_Config_Normal.h</state>
+          <state>$TOOLKIT_DIR$\INC\c\DLib_Config_Full.h</state>
         </option>
         <option>
           <name>GFPUCoreSlave</name>
@@ -303,7 +303,6 @@
           <state>$PROJ_DIR$\..\vsf_cfg</state>
           <state>$PROJ_DIR$\..\..\</state>
           <state>$PROJ_DIR$\..\..\..\</state>
-          <state>$PROJ_DIR$\..\..\..\Tools\fifo\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\APP\</state>
           <state>$PROJ_DIR$\..\..\..\USB_TO_XXX\</state>
@@ -316,6 +315,7 @@
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\STM32_USB-FS-Device_Driver\inc</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\inc</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\src</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -998,16 +998,16 @@
         <option>
           <name>GRuntimeLibSelect</name>
           <version>0</version>
-          <state>1</state>
+          <state>2</state>
         </option>
         <option>
           <name>GRuntimeLibSelectSlave</name>
           <version>0</version>
-          <state>1</state>
+          <state>2</state>
         </option>
         <option>
           <name>RTDescription</name>
-          <state>Use the normal configuration of the C/C++ runtime library. No locale interface, C locale, no file descriptor support, no multibytes in printf and scanf, and no hex floats in strtod.</state>
+          <state>Use the full configuration of the C/C++ runtime library. Full locale interface, C locale, file descriptor support, multibytes in printf and scanf, and hex floats in strtod.</state>
         </option>
         <option>
           <name>OGProductVersion</name>
@@ -1061,7 +1061,7 @@
         </option>
         <option>
           <name>RTConfigPath2</name>
-          <state>$TOOLKIT_DIR$\INC\c\DLib_Config_Normal.h</state>
+          <state>$TOOLKIT_DIR$\INC\c\DLib_Config_Full.h</state>
         </option>
         <option>
           <name>GFPUCoreSlave</name>
@@ -1232,7 +1232,6 @@
           <state>$PROJ_DIR$\..\vsf_cfg</state>
           <state>$PROJ_DIR$\..\..\</state>
           <state>$PROJ_DIR$\..\..\..\</state>
-          <state>$PROJ_DIR$\..\..\..\Tools\fifo\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\APP\</state>
           <state>$PROJ_DIR$\..\..\..\USB_TO_XXX\</state>
@@ -1245,6 +1244,7 @@
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\STM32_USB-FS-Device_Driver\inc</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\inc</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\src</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -1989,13 +1989,10 @@
     </file>
   </group>
   <group>
-    <name>Tools</name>
-    <group>
-      <name>fifo</name>
-      <file>
-        <name>$PROJ_DIR$\..\..\..\Tools\fifo\fifo.c</name>
-      </file>
-    </group>
+    <name>scripts</name>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\..\..\src\scripts\scripts.c</name>
+    </file>
   </group>
   <group>
     <name>usb_protocol</name>
@@ -2408,6 +2405,9 @@
   </file>
   <file>
     <name>$PROJ_DIR$\..\..\..\main.c</name>
+  </file>
+  <file>
+    <name>$PROJ_DIR$\..\port.c</name>
   </file>
 </project>
 
