@@ -174,9 +174,34 @@ static struct vss_function_t *vss_function_search(struct vss_function_t *f, char
 	return NULL;
 }
 
-static vsf_err_t vss_function_run(struct vss_function_t *f)
+static void vss_format_cmd(char **cmd_str, char *param_str, char *replace_str)
+{
+	char *str_temp = NULL, *new_str = NULL;
+	uint32_t pos;
+	
+	do {
+		str_temp = strstr(*cmd_str, param_str);
+		if (str_temp != NULL)
+		{
+			pos = str_temp - *cmd_str;
+			new_str = (char *)malloc(strlen(*cmd_str) + strlen(replace_str) +
+										1 - strlen(param_str));
+			strncpy(new_str, &(*cmd_str)[0], pos);
+			new_str[pos] = '\0';
+			strcat(new_str, replace_str);
+			strcat(new_str, &(*cmd_str)[pos + strlen(param_str)]);
+			free(*cmd_str);
+			*cmd_str = new_str;
+		}
+	} while (str_temp != NULL);
+}
+
+static vsf_err_t vss_function_run(struct vss_function_t *f, uint16_t argc,
+									const char *argv[])
 {
 	struct vss_function_cmd_t *cmd;
+	char param_str[9], *cmd_str;
+	uint16_t i;
 	
 	if ((NULL == f) || (NULL == f->cmds))
 	{
@@ -186,10 +211,33 @@ static vsf_err_t vss_function_run(struct vss_function_t *f)
 	cmd = f->cmds;
 	while (cmd->func_cmd != NULL)
 	{
-		if (vss_run_script(cmd->func_cmd))
+		cmd_str = strdup(cmd->func_cmd);
+		if (NULL == cmd_str)
 		{
 			return VSFERR_FAIL;
 		}
+		
+		for (i = 0; i < argc; i++)
+		{
+			strcpy(param_str, "${");
+			itoa(i, &param_str[2], 10);
+			strcat(param_str, "}");
+			
+			vss_format_cmd(&cmd_str, param_str, (char *)argv[i]);
+			if (NULL == cmd_str)
+			{
+				return VSFERR_FAIL;
+			}
+		}
+		
+		if (vss_run_script(cmd_str))
+		{
+			free(cmd_str);
+			cmd_str = NULL;
+			return VSFERR_FAIL;
+		}
+		free(cmd_str);
+		cmd_str = NULL;
 		cmd = cmd->next;
 	}
 	
@@ -1003,10 +1051,10 @@ VSS_HANDLER(vss_function_call)
 {
 	struct vss_function_t *func;
 	
-	VSS_CHECK_ARGC(2);
+	VSS_CHECK_ARGC_MIN(2);
 	
 	func = vss_function_search(vss_functions, (char *)argv[1]);
-	if ((NULL == func) || vss_function_run(func))
+	if ((NULL == func) || vss_function_run(func, argc - 1, &argv[1]))
 	{
 		return VSFERR_FAIL;
 	}
