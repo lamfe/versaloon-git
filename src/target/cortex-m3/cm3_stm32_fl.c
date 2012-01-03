@@ -20,7 +20,6 @@
 #include "config.h"
 #endif
 
-#include <string.h>
 #include <time.h>
 
 #include "port.h"

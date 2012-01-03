@@ -20,66 +20,7 @@
 #include "config.h"
 #endif
 
-#include "compiler.h"
+#include "app_type.h"
 
-#include "../versaloon_include.h"
-#include "../versaloon.h"
-#include "../versaloon_internal.h"
-#include "usbtoxxx.h"
-#include "usbtoxxx_internal.h"
-
-vsf_err_t usbtospi_init(uint8_t interface_index)
-{
-	return usbtoxxx_init_command(USB_TO_SPI, interface_index);
-}
-
-vsf_err_t usbtospi_fini(uint8_t interface_index)
-{
-	return usbtoxxx_fini_command(USB_TO_SPI, interface_index);
-}
-
-vsf_err_t usbtospi_config(uint8_t interface_index, uint32_t kHz, uint8_t mode)
-{
-	uint8_t conf[5];
-	
-#if PARAM_CHECK
-	if (interface_index > 7)
-	{
-		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
-		return VSFERR_FAIL;
-	}
-#endif
-	
-	conf[0] = mode;
-	SET_LE_U32(&conf[1], kHz);
-	
-	return usbtoxxx_conf_command(USB_TO_SPI, interface_index, conf, 5);
-}
-
-vsf_err_t usbtospi_io(uint8_t interface_index, uint8_t *out, uint8_t *in,
-				   uint16_t bytelen)
-{
-	uint8_t *cmd_ptr;
-	
-#if PARAM_CHECK
-	if (interface_index > 7)
-	{
-		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
-		return VSFERR_FAIL;
-	}
-#endif
-	
-	if (NULL == out)
-	{
-		cmd_ptr = versaloon_cmd_buf;
-		memset(cmd_ptr, 0xFF, bytelen);
-	}
-	else
-	{
-		cmd_ptr = out;
-	}
-	
-	return usbtoxxx_inout_command(USB_TO_SPI, interface_index, cmd_ptr,
-									bytelen, bytelen, in, 0, bytelen, 1);
-}
+#include "port.h"
 
