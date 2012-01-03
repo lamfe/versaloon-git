@@ -20,12 +20,12 @@
 #include "config.h"
 #endif
 
-#include <string.h>
 #include <stdlib.h>
+
+#include "compiler.h"
 
 #include "vsf_err.h"
 
-#include "app_cfg.h"
 #include "app_type.h"
 #include "app_io.h"
 #include "app_err.h"

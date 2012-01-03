@@ -21,8 +21,9 @@
 #endif
 
 #include <stdlib.h>
-#include <string.h>
 #include <time.h>
+
+#include "compiler.h"
 
 #include "vsf_err.h"
 

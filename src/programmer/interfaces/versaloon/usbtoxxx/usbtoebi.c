@@ -20,7 +20,7 @@
 #include "config.h"
 #endif
 
-#include <string.h>
+#include "compiler.h"
 
 #include "app_type.h"
 #include "interfaces.h"

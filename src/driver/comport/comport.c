@@ -20,8 +20,9 @@
 #include "config.h"
 #endif
 
-#include <string.h>
 #include <time.h>
+
+#include "compiler.h"
 
 #include "app_type.h"
 #include "app_io.h"

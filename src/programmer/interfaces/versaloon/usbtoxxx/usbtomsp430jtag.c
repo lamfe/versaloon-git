@@ -20,7 +20,7 @@
 #include "config.h"
 #endif
 
-#include <string.h>
+#include "compiler.h"
 
 #include "../versaloon_include.h"
 #include "../versaloon.h"

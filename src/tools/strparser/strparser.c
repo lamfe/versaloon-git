@@ -21,9 +21,10 @@
 #endif
 
 #include <stdlib.h>
-#include <string.h>
 #include <ctype.h>
 #include <inttypes.h>
+
+#include "compiler.h"
 
 #include "vsf_err.h"
 
