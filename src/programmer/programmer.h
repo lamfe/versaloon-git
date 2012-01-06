@@ -21,5 +21,7 @@
 
 #include "interfaces.h"
 
+extern struct vss_cmd_list_t programmer_cmd_list;
+
 #endif /* __PROGRAMMER_H_INCLUDED__ */
 

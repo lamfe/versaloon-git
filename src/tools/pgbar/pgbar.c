@@ -36,7 +36,7 @@
 #include "scripts.h"
 
 VSS_HANDLER(pgbar_gui);
-struct vss_cmd_t pgbar_cmd[] =
+static struct vss_cmd_t pgbar_cmd[] =
 {
 	VSS_CMD(	"gui-mode",
 				"enable GUI mode, format: gui-mode/G",
@@ -46,6 +46,7 @@ struct vss_cmd_t pgbar_cmd[] =
 				pgbar_gui),
 	VSS_CMD_END
 };
+struct vss_cmd_list_t pgbar_cmd_list = VSS_CMD_LIST("pgbar", pgbar_cmd);
 
 static char *end_str = NULL, disp_char = 0;
 static int32_t min_num = 0, max_num = 0, position = 0;

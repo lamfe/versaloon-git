@@ -23,6 +23,8 @@
 #define PROGRESS_STEP			40
 #define PROGRESS_CHAR			'='
 
+extern struct vss_cmd_list_t pgbar_cmd_list;
+
 vsf_err_t pgbar_init(char *s, char *e, uint32_t min, uint32_t max,
 						uint32_t max_chars, char c);
 uint32_t pgbar_fini(void);

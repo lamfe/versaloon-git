@@ -31,6 +31,8 @@ struct filelist
 	struct sllist list;
 };
 
+extern struct vss_cmd_list_t filelist_cmd_list;
+
 #define FILELIST_GetNext(fl)						\
 					sllist_get_container(fl->list.next, struct filelist, list)
 

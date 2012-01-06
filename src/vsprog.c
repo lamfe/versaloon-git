@@ -41,10 +41,14 @@
 #include "programmer.h"
 #include "target.h"
 #include "scripts.h"
+#include "app_scripts.h"
 
+#include "pgbar.h"
 #include "memlist.h"
 #include "filelist.h"
 #include "strparser.h"
+#include "comisp/comisp.h"
+#include "usb/usbapi.h"
 
 #define OPTSTR			"hvS:P:s:c:Mp:U:D:Ld:Go:F:m:x:C:I:O:J:b:V:t:K:W:Aqel:i:Q:a:"
 static const struct option long_opts[] =
@@ -94,7 +98,7 @@ VSS_HANDLER(vsprog_mass);
 VSS_HANDLER(vsprog_free_all);
 VSS_HANDLER(vsprog_init);
 
-struct vss_cmd_t vsprog_cmd[] =
+static struct vss_cmd_t vsprog_cmd[] =
 {
 	VSS_CMD(	"help",
 				"show help, format: help/h",
@@ -140,6 +144,7 @@ struct vss_cmd_t vsprog_cmd[] =
 				vsprog_init),
 	VSS_CMD_END
 };
+struct vss_cmd_list_t vsprog_cmd_list = VSS_CMD_LIST("vsprog", vsprog_cmd);
 
 int verbosity = LOG_DEFAULT_LEVEL;
 int verbosity_stack[1];
@@ -231,6 +236,7 @@ static void free_all_and_exit(int exit_code)
 {
 	vss_run_script("free-all");
 	vss_run_script("function_free");
+	vss_fini();
 	free_vsprog_system();
 	exit(exit_code);
 }
@@ -559,6 +565,14 @@ VSS_HANDLER(vsprog_init)
 		}
 	}
 	
+	vss_register_cmd_list(&target_cmd_list);
+	vss_register_cmd_list(&pgbar_cmd_list);
+	vss_register_cmd_list(&filelist_cmd_list);
+	vss_register_cmd_list(&programmer_cmd_list);
+	vss_register_cmd_list(&interface_cmd_list);
+	vss_register_cmd_list(&comisp_cmd_list);
+	vss_register_cmd_list(&usbapi_cmd_list);
+	vss_register_cmd_list(&app_cmd_list);
 	return VSFERR_NONE;
 }
 
@@ -572,6 +586,9 @@ int main(int argc, char* argv[])
 	
 	APP_IO_INIT();
 	print_title();
+	
+	vss_init();
+	vss_register_cmd_list(&vsprog_cmd_list);
 	
 	vss_argv[0] = "init";
 	vss_argv[1] = argv[0];

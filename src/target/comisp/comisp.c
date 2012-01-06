@@ -49,7 +49,7 @@
 VSS_HANDLER(comisp_comm);
 VSS_HANDLER(comisp_print_cominfo);
 
-struct vss_cmd_t comisp_cmd[] =
+static struct vss_cmd_t comisp_cmd[] =
 {
 	VSS_CMD(	"comport",
 				"set com port, format: "
@@ -64,6 +64,7 @@ struct vss_cmd_t comisp_cmd[] =
 				comisp_print_cominfo),
 	VSS_CMD_END
 };
+struct vss_cmd_list_t comisp_cmd_list = VSS_CMD_LIST("comisp", comisp_cmd);
 
 ENTER_PROGRAM_MODE_HANDLER(comisp);
 LEAVE_PROGRAM_MODE_HANDLER(comisp);

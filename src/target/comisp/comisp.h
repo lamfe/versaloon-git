@@ -19,6 +19,8 @@
 #ifndef __COMISP_H_INCLUDED__
 #define __COMISP_H_INCLUDED__
 
+extern struct vss_cmd_list_t comisp_cmd_list;
+
 #define COMISP_STRING					"comisp"
 #define COMISP_STM32					0
 #define COMISP_LPCARM					1

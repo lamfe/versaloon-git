@@ -39,7 +39,7 @@ VSS_HANDLER(programmer_list);
 VSS_HANDLER(programmer_define);
 VSS_HANDLER(virtualprog_define);
 
-struct vss_cmd_t programmer_cmd[] =
+static struct vss_cmd_t programmer_cmd[] =
 {
 	VSS_CMD(	"display-programmer",
 				"list programmers connected, format: display-programmer/L",
@@ -61,6 +61,8 @@ struct vss_cmd_t programmer_cmd[] =
 				programmer_define),
 	VSS_CMD_END
 };
+struct vss_cmd_list_t programmer_cmd_list = 
+						VSS_CMD_LIST("programmer", programmer_cmd);
 
 
 

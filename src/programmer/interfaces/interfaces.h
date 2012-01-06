@@ -23,6 +23,7 @@
 #include "vsf_err.h"
 #include "interfaces_const.h"
 
+extern struct vss_cmd_list_t interface_cmd_list;
 char* get_interface_name(uint64_t i);
 
 enum jtag_irdr_t

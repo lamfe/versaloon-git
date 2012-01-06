@@ -27,9 +27,9 @@ struct sllist
 
 #define sllist_init_node(node)		((node).next = NULL)
 #define sllint_insert(node, new)	((node).next = &(new))
-#define sllist_get_container(node, type, member)	\
-	(node ? \
-		((type *)((char *)(node)-(unsigned long)&(((type *)0)->member))) \
+#define sllist_get_container(pnode, type, member)	\
+	(pnode ? \
+		((type *)((char *)(pnode)-(unsigned long)&(((type *)0)->member))) \
 		: NULL)
 
 #endif // __LIST_H_INCLUDED__

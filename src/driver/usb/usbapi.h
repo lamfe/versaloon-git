@@ -21,6 +21,8 @@
 
 #include "usb.h"
 
+extern struct vss_cmd_list_t usbapi_cmd_list;
+
 struct usbapi_param_t
 {
 	uint8_t valid;

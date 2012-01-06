@@ -339,6 +339,8 @@ struct chip_fl_t
 	struct chip_fl_setting_t *settings;
 };
 
+extern struct vss_cmd_list_t target_cmd_list;
+
 extern struct target_info_t *cur_target;
 extern struct target_info_t targets_info[];
 extern struct program_info_t program_info;
