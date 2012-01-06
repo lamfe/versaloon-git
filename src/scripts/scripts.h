@@ -17,29 +17,41 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#ifndef __SCRIPTS_H_INCLUDED__
+#define __SCRIPTS_H_INCLUDED__
+
+#include "tool/list/list.h"
+
 struct vss_cmd_t
 {
 	const char *cmd_name;
 	const char *help_str;
 	vsf_err_t (*processor)(uint16_t argc, const char *argv[]);
 };
+struct vss_cmd_list_t
+{
+	char *list_name;
+	struct vss_cmd_t *cmd;
+	struct sllist list;
+};
+
 struct vss_param_t
 {
 	const char *param_name;
 	const char *help_str;
 	uint32_t value;
 };
-struct vss_function_cmd_t
+struct vss_param_list_t
 {
-	char *func_cmd;
-	struct vss_function_cmd_t *next;
+	char *list_name;
+	struct vss_param_t *param;
+	struct sllist list;
 };
-struct vss_function_t
-{
-	char *func_name;
-	struct vss_function_cmd_t *cmds;
-	struct vss_function_t *next;
-};
+
+#define VSS_CMD_LIST(str_name, cmd_array)		\
+			{(str_name), (cmd_array), {NULL}}
+#define VSS_PARAM_LIST(str_name, param_array)	\
+			{(str_name), (param_array), {NULL}}
 
 #define VSS_HANDLER(name)						\
 	vsf_err_t (name)(uint16_t argc, const char *argv[])
@@ -105,6 +117,10 @@ struct vss_function_t
 #define VSS_COMMENT_CHAR						'#'
 #define VSS_HIDE_CHAR							'@'
 
+vsf_err_t vss_init(void);
+vsf_err_t vss_fini(void);
+vsf_err_t vss_register_cmd_list(struct vss_cmd_list_t *cmdlist);
+vsf_err_t vss_register_param_list(struct vss_param_list_t *paramlist);
 void vss_set_fatal_error(void);
 vsf_err_t vss_cmd_supported_by_notifier(const struct vss_cmd_t *notifier,
 										char *notify_cmd);
@@ -117,3 +133,4 @@ vsf_err_t vss_run_cmd(uint16_t argc, const char *argv[]);
 vsf_err_t vss_get_binary_buffer(uint16_t argc, const char *argv[],
 						uint8_t data_size, uint32_t data_num, void **pbuff);
 
+#endif		// __SCRIPTS_H_INCLUDED__

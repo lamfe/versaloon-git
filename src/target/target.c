@@ -92,7 +92,7 @@ VSS_HANDLER(target_read);
 VSS_HANDLER(target_verify);
 VSS_HANDLER(target_interface_indexes);
 
-struct vss_cmd_t target_cmd[] =
+static struct vss_cmd_t target_cmd[] =
 {
 	VSS_CMD(	"memory-detail",
 				"show memory detail, format: memory-detail/D TARGET",
@@ -218,6 +218,7 @@ struct vss_cmd_t target_cmd[] =
 				target_interface_indexes),
 	VSS_CMD_END
 };
+struct vss_cmd_list_t target_cmd_list = VSS_CMD_LIST("target", target_cmd);
 
 const struct target_area_name_t target_area_name[NUM_OF_TARGET_AREA] =
 {

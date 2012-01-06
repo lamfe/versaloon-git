@@ -48,7 +48,7 @@
 
 VSS_HANDLER(dal_vss_init);
 VSS_HANDLER(dal_vss_fini);
-struct vss_cmd_t app_cmd[] = 
+static struct vss_cmd_t app_cmd[] = 
 {
 	VSS_CMD(	"dal.init",
 				"initialize driver abstraction layer, format: dal.init KHZ",
@@ -70,6 +70,7 @@ struct vss_cmd_t app_cmd[] =
 #endif
 	VSS_CMD_END
 };
+struct vss_cmd_list_t app_cmd_list = VSS_CMD_LIST("app", app_cmd);
 
 vsf_err_t dal_commit(void)
 {

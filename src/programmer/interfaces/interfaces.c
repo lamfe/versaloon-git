@@ -89,7 +89,7 @@ VSS_HANDLER(interface_delay_us);
 VSS_HANDLER(interface_delay_ms);
 VSS_HANDLER(interface_commit);
 
-struct vss_cmd_t interface_cmd[] =
+static struct vss_cmd_t interface_cmd[] =
 {
 	VSS_CMD(	"tvcc.get",
 				"get target voltage, format: tvcc.get",
@@ -196,6 +196,8 @@ struct vss_cmd_t interface_cmd[] =
 				interface_commit),
 	VSS_CMD_END
 };
+struct vss_cmd_list_t interface_cmd_list =
+							VSS_CMD_LIST("interface", interface_cmd);
 
 char* get_interface_name(uint64_t i)
 {

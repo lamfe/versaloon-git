@@ -33,9 +33,21 @@
 #include "interfaces.h"
 #include "scripts.h"
 
+struct vss_function_cmd_t
+{
+	char *func_cmd;
+	struct vss_function_cmd_t *next;
+};
+struct vss_function_t
+{
+	char *func_name;
+	struct vss_function_cmd_t *cmds;
+	struct vss_function_t *next;
+};
+
 #define PARAM_EXIT_ON_FAIL					0
 #define PARAM_NO_COMMIT						1
-struct vss_param_t vss_param[] =
+static struct vss_param_t vss_param[] =
 {
 	VSS_PARAM(	"exit_on_fail",
 				"whether to exit when execute fail",
@@ -45,6 +57,7 @@ struct vss_param_t vss_param[] =
 				0),
 	VSS_PARAM_END
 };
+static struct vss_param_list_t vss_param_list = VSS_PARAM_LIST("vss", vss_param);
 
 VSS_HANDLER(vss_set_parameters);
 VSS_HANDLER(vss_help);
@@ -63,7 +76,7 @@ VSS_HANDLER(vss_function_end);
 VSS_HANDLER(vss_function_call);
 VSS_HANDLER(vss_function_free);
 
-struct vss_cmd_t vss_generic_cmd[] =
+static struct vss_cmd_t vss_generic_cmd[] =
 {
 	VSS_CMD(	"param",
 				"set parameters, format: param NAME VALUE",
@@ -121,35 +134,70 @@ struct vss_cmd_t vss_generic_cmd[] =
 				vss_function_free),
 	VSS_CMD_END
 };
+static struct vss_cmd_list_t vss_generic_cmd_list = VSS_CMD_LIST("vss", vss_generic_cmd);
 
-extern struct vss_cmd_t interface_cmd[];
-extern struct vss_cmd_t programmer_cmd[];
-extern struct vss_cmd_t pgbar_cmd[];
-extern struct vss_cmd_t vsprog_cmd[];
-extern struct vss_cmd_t target_cmd[];
-extern struct vss_cmd_t filelist_cmd[];
-extern struct vss_cmd_t comisp_cmd[];
-extern struct vss_cmd_t usbapi_cmd[];
-extern struct vss_cmd_t app_cmd[];
+struct vss_param_list_t *vss_param_list_head = NULL;
+struct vss_cmd_list_t *vss_cmd_list_head = NULL;
 
-struct vss_param_t *vss_params_list[] =
+vsf_err_t vss_register_cmd_list(struct vss_cmd_list_t *cmdlist)
 {
-	vss_param
-};
+	struct vss_cmd_list_t *temp;
+	
+	if (NULL == vss_cmd_list_head)
+	{
+		vss_cmd_list_head = cmdlist;
+		sllist_init_node(vss_cmd_list_head->list);
+	}
+	else
+	{
+		temp = vss_cmd_list_head;
+		while (temp->list.next != NULL)
+		{
+			temp = sllist_get_container(temp->list.next,
+						struct vss_cmd_list_t, list);
+		}
+		sllint_insert(temp->list, cmdlist->list);
+	}
+	return VSFERR_NONE;
+}
 
-struct vss_cmd_t *vss_cmds_list[] =
+vsf_err_t vss_register_param_list(struct vss_param_list_t *paramlist)
 {
-	vss_generic_cmd,
-	vsprog_cmd,
-	target_cmd,
-	pgbar_cmd,
-	filelist_cmd,
-	programmer_cmd,
-	interface_cmd,
-	comisp_cmd,
-	usbapi_cmd,
-	app_cmd
-};
+	struct vss_param_list_t *temp;
+	
+	if (NULL == vss_param_list_head)
+	{
+		vss_param_list_head = paramlist;
+		sllist_init_node(vss_param_list_head->list);
+	}
+	else
+	{
+		temp = vss_param_list_head;
+		while (temp->list.next != NULL)
+		{
+			temp = sllist_get_container(temp->list.next,
+						struct vss_param_list_t, list);
+		}
+		sllint_insert(temp->list, paramlist->list);
+	}
+	return VSFERR_NONE;
+}
+
+vsf_err_t vss_init(void)
+{
+	vss_param_list_head = NULL;
+	vss_cmd_list_head = NULL;
+	vss_register_cmd_list(&vss_generic_cmd_list);
+	vss_register_param_list(&vss_param_list);
+	return VSFERR_NONE;
+}
+
+vsf_err_t vss_fini(void)
+{
+	vss_param_list_head = NULL;
+	vss_cmd_list_head = NULL;
+	return VSFERR_NONE;
+}
 
 static int8_t vss_exit_mark = 0;
 static uint32_t vss_loop_cnt = 0;
@@ -392,60 +440,65 @@ static char vss_get_first_non_space_char(char *cmd, uint32_t *idx)
 	return result;
 }
 
-static struct vss_param_t* mic_search_param(const char *name)
+static struct vss_param_t* vss_search_param(struct vss_param_list_t *param_list,
+											const char *name)
 {
-	int i, j;
+	int i;
 	struct vss_param_t *param = NULL;
+	struct vss_param_list_t *temp = param_list;
 	
 	if (NULL == name)
 	{
 		return NULL;
 	}
 	
-	for (i = 0; i < (int)dimof(vss_params_list); i++)
+	while (temp != NULL)
 	{
-		param = vss_params_list[i];
-		
-		j= 0;
-		while ((param != NULL) && (param[j].param_name != NULL))
+		param = temp->param;
+		i = 0;
+		while ((param != NULL) && (param[i].param_name != NULL))
 		{
-			if (!strcmp(param[j].param_name, name))
+			if (!strcmp(param[i].param_name, name))
 			{
-				return &param[j];
+				return &param[i];
 			}
-			
-			j++;
+			i++;
 		}
+		
+		temp = sllist_get_container(temp->list.next, struct vss_param_list_t,
+									list);
 	}
 	
 	return NULL;
 }
 
-static struct vss_cmd_t* vss_search_cmd(struct vss_cmd_t ** cmds_list,
-										uint32_t cmd_size, const char *name)
+static struct vss_cmd_t* vss_search_cmd(struct vss_cmd_list_t *cmd_list,
+										const char *name)
 {
-	uint32_t i, j;
+	uint32_t i;
 	struct vss_cmd_t *cmd = NULL;
+	struct vss_cmd_list_t *temp = cmd_list;
 	
 	if (NULL == name)
 	{
 		return NULL;
 	}
 	
-	for (i = 0; i < cmd_size; i++)
+	while (temp != NULL)
 	{
-		cmd = cmds_list[i];
-		
-		j= 0;
-		while ((cmd != NULL) && (cmd[j].cmd_name != NULL))
+		cmd = temp->cmd;
+		i = 0;
+		while ((cmd != NULL) && (cmd[i].cmd_name != NULL))
 		{
-			if (!strcmp(cmd[j].cmd_name, name))
+			if (!strcmp(cmd[i].cmd_name, name))
 			{
-				return &cmd[j];
+				return &cmd[i];
 			}
-			
-			j++;
+			i++;
 		}
+		
+		temp = sllist_get_container(temp->list.next, struct vss_cmd_list_t,
+									list);
 	}
 	
 	return NULL;
@@ -453,8 +506,7 @@ static struct vss_cmd_t* vss_search_cmd(struct vss_cmd_t ** cmds_list,
 
 vsf_err_t vss_print_help(const char *name)
 {
-	struct vss_cmd_t *cmd = vss_search_cmd(vss_cmds_list,
-		dimof(vss_cmds_list), name);
+	struct vss_cmd_t *cmd = vss_search_cmd(vss_cmd_list_head, name);
 	
 	if (NULL == cmd)
 	{
@@ -542,15 +594,17 @@ static vsf_err_t vss_parse_cmd_line(char *cmd, uint16_t *argc, char **argv)
 vsf_err_t vss_cmd_supported_by_notifier(const struct vss_cmd_t *notifier,
 										char *notify_cmd)
 {
-	struct vss_cmd_t *cmds_list[1], *cmd;
+	struct vss_cmd_list_t cmd_list;
+	struct vss_cmd_t *cmd;
 	
 	if ((NULL == notifier) || (NULL == notify_cmd))
 	{
 		return VSFERR_FAIL;
 	}
 	
-	cmd = vss_search_cmd((struct vss_cmd_t **)&notifier, dimof(cmds_list),
-							notify_cmd);
+	sllist_init_node(cmd_list.list);
+	cmd_list.cmd = (struct vss_cmd_t *)notifier;
+	cmd = vss_search_cmd(&cmd_list, notify_cmd);
 	if (NULL == cmd)
 	{
 		return VSFERR_FAIL;
@@ -561,6 +615,7 @@ vsf_err_t vss_cmd_supported_by_notifier(const struct vss_cmd_t *notifier,
 vsf_err_t vss_call_notifier(const struct vss_cmd_t *notifier,
 							char *notify_cmd, char *notify_param)
 {
+	struct vss_cmd_list_t cmd_list;
 	struct vss_cmd_t *cmds_list[1], *cmd;
 	char *argv[2];
 	uint16_t argc;
@@ -582,7 +637,9 @@ vsf_err_t vss_call_notifier(const struct vss_cmd_t *notifier,
 		argc = 1;
 	}
 	
-	cmd = vss_search_cmd(cmds_list, dimof(cmds_list), argv[0]);
+	sllist_init_node(cmd_list.list);
+	cmd_list.cmd = (struct vss_cmd_t *)notifier;
+	cmd = vss_search_cmd(&cmd_list, argv[0]);
 	if (NULL == cmd)
 	{
 		LOG_ERROR(ERRMSG_NOT_SUPPORT, argv[0]);
@@ -605,8 +662,7 @@ vsf_err_t vss_call_notifier(const struct vss_cmd_t *notifier,
 
 vsf_err_t vss_cmd_supported(char *name)
 {
-	struct vss_cmd_t *cmd = vss_search_cmd(vss_cmds_list,
-		dimof(vss_cmds_list), name);
+	struct vss_cmd_t *cmd = vss_search_cmd(vss_cmd_list_head, name);
 	
 	if (NULL == cmd)
 	{
@@ -620,8 +676,7 @@ vsf_err_t vss_cmd_supported(char *name)
 
 vsf_err_t vss_run_cmd(uint16_t argc, const char *argv[])
 {
-	struct vss_cmd_t *cmd = vss_search_cmd(vss_cmds_list,
-		dimof(vss_cmds_list), argv[0]);
+	struct vss_cmd_t *cmd = vss_search_cmd(vss_cmd_list_head, argv[0]);
 	
 	if (NULL == cmd)
 	{
@@ -820,7 +875,7 @@ VSS_HANDLER(vss_set_parameters)
 	
 	VSS_CHECK_ARGC(3);
 	
-	param = mic_search_param(argv[1]);
+	param = vss_search_param(vss_param_list_head, argv[1]);
 	if (NULL == param)
 	{
 		LOG_ERROR(ERRMSG_NOT_SUPPORT_AS, argv[1], "parameters");
@@ -836,14 +891,14 @@ VSS_HANDLER(vss_set_parameters)
 // help
 VSS_HANDLER(vss_help)
 {
+	struct vss_cmd_list_t *temp = NULL;
 	struct vss_cmd_t *cmd = NULL;
 	
 	VSS_CHECK_ARGC_2(1, 2);
 	
 	if (2 == argc)
 	{
-		cmd = vss_search_cmd(vss_cmds_list,
-			dimof(vss_cmds_list), argv[1]);
+		cmd = vss_search_cmd(vss_cmd_list_head, argv[1]);
 		
 		if (NULL == cmd)
 		{
@@ -857,20 +912,23 @@ VSS_HANDLER(vss_help)
 	}
 	else if (1 == argc)
 	{
-		int i, j;
+		int i;
 		
 		LOG_INFO("command list:");
 		
-		for (i = 0; i < (int)dimof(vss_cmds_list); i++)
+		temp = vss_cmd_list_head;
+		while (temp != NULL)
 		{
-			cmd = vss_cmds_list[i];
+			cmd = temp->cmd;
 			
-			j = 0;
-			while (cmd[j].cmd_name != NULL)
+			i = 0;
+			while (cmd[i].cmd_name != NULL)
 			{
-				LOG_INFO("  %s: %s", cmd[j].cmd_name, cmd[j].help_str);
-				j++;
+				LOG_INFO("  %s: %s", cmd[i].cmd_name, cmd[i].help_str);
+				i++;
 			}
+			temp = sllist_get_container(temp->list.next, struct vss_cmd_list_t,
+										list);
 		}
 	}
 	return VSFERR_NONE;

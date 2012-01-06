@@ -37,7 +37,7 @@
 
 VSS_HANDLER(filelist_add_inputfile);
 VSS_HANDLER(filelist_add_outputfile);
-struct vss_cmd_t filelist_cmd[] =
+static struct vss_cmd_t filelist_cmd[] =
 {
 	VSS_CMD(	"input-file",
 				"add input file, format: input-file/I FILE[@SEG,ADDR]",
@@ -53,6 +53,7 @@ struct vss_cmd_t filelist_cmd[] =
 				filelist_add_outputfile),
 	VSS_CMD_END
 };
+struct vss_cmd_list_t filelist_cmd_list = VSS_CMD_LIST("filelist", filelist_cmd);
 
 static void FILELIST_InsertLast(struct filelist *fl, struct filelist *newitem)
 {
