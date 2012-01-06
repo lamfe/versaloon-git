@@ -427,7 +427,7 @@ static char vss_get_first_non_space_char(char *cmd, uint32_t *idx)
 	
 	for (i = 0; i < strlen(cmd); i++)
 	{
-		if (!isspace(cmd[i]))
+		if (!isspace((int)cmd[i]))
 		{
 			result = cmd[i];
 			break;
@@ -542,7 +542,7 @@ static vsf_err_t vss_parse_cmd_line(char *cmd, uint16_t *argc, char **argv)
 	cmd_len = strlen(cmd);
 	while (i < cmd_len)
 	{
-		while (isspace(cmd[i]))
+		while (isspace((int)cmd[i]))
 		{
 			i++;
 		}
@@ -574,7 +574,7 @@ static vsf_err_t vss_parse_cmd_line(char *cmd, uint16_t *argc, char **argv)
 		else
 		{
 			argv[argu_num++] = &cmd[i];
-			while (!isspace(cmd[i]) && (cmd[i] != '\0'))
+			while (!isspace((int)cmd[i]) && (cmd[i] != '\0'))
 			{
 				i++;
 			}
@@ -746,7 +746,7 @@ vsf_err_t vss_run_script(char *cmd)
 		{
 			if (run_times > 1)
 			{
-				LOG_ERROR("fail to run the %dth times", i + 1);
+				LOG_ERROR("fail to run the %dth times", (int)(i + 1));
 			}
 			vss_exit_mark = -1;
 			goto end;
@@ -834,7 +834,7 @@ static vsf_err_t vss_run_file(FILE *f, char *head, uint8_t quiet)
 		
 		if ((vss_cur_function != NULL) && (cmd_ptr != strstr(cmd_ptr, "end_function")))
 		{
-			if ((cmd_ptr == strstr(cmd_ptr, "function")) && isspace(cmd_ptr[strlen("function")]))
+			if ((cmd_ptr == strstr(cmd_ptr, "function")) && isspace((int)cmd_ptr[strlen("function")]))
 			{
 				LOG_ERROR("function nesting not supported");
 				return VSFERR_FAIL;
