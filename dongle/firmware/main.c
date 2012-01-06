@@ -16,9 +16,17 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "app_cfg.h"
+#include "app_log.h"
 #include "interfaces.h"
 
 #include "usb_protocol.h"
+
+#if SCRIPTS_EN
+#include "scripts.h"
+
+int verbosity = LOG_DEFAULT_LEVEL;
+int verbosity_stack[1];
+#endif
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -30,6 +38,9 @@ int main(void)
 {
 	core_interfaces.core.init(NULL);
 	usb_protocol_init();
+#if SCRIPTS_EN
+	vss_init();
+#endif
 	
 	while (1)
 	{

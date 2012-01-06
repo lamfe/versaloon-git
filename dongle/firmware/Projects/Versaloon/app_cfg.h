@@ -58,6 +58,8 @@
 /************************ What do U want ************************/
 #define __VSF_DEBUG__					0
 
+#define SCRIPTS_EN						0
+
 #define USB_TO_XXX_EN					1
 
 #define POWER_OUT_EN					(1 && HW_HAS_POWERCONTROL)
