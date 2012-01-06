@@ -268,7 +268,7 @@ static vsf_err_t vss_function_run(struct vss_function_t *f, uint16_t argc,
 		for (i = 0; i < argc; i++)
 		{
 			strcpy(param_str, "${");
-			itoa(i, &param_str[2], 10);
+			snprintf(&param_str[2], 5, "%d", (int)i);
 			strcat(param_str, "}");
 			
 			vss_format_cmd(&cmd_str, param_str, (char *)argv[i]);
