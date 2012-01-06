@@ -616,7 +616,7 @@ vsf_err_t vss_call_notifier(const struct vss_cmd_t *notifier,
 							char *notify_cmd, char *notify_param)
 {
 	struct vss_cmd_list_t cmd_list;
-	struct vss_cmd_t *cmds_list[1], *cmd;
+	struct vss_cmd_t *cmd;
 	char *argv[2];
 	uint16_t argc;
 	
@@ -627,7 +627,6 @@ vsf_err_t vss_call_notifier(const struct vss_cmd_t *notifier,
 	
 	argv[0] = notify_cmd;
 	argv[1] = notify_param;
-	cmds_list[0] = (struct vss_cmd_t *)notifier;
 	if (notify_param != NULL)
 	{
 		argc = dimof(argv);
