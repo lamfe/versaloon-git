@@ -17,6 +17,7 @@ noinst_LIBRARIES = libscripts.a
 libscripts_a_SOURCES = \
     scripts.c \
     app_scripts.c \
+    interfaces_script.c \
     mic2826_script/mic2826_script.c
 
 #noinst_HEADERS = \

@@ -1991,6 +1991,9 @@
   <group>
     <name>scripts</name>
     <file>
+      <name>$PROJ_DIR$\..\..\..\..\..\src\scripts\interfaces_script.c</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\..\..\..\..\..\src\scripts\scripts.c</name>
     </file>
   </group>

@@ -14,9 +14,6 @@
  *      2011-03-06:     created(by SimonQian)                             *
  **************************************************************************/
 
-#define PWM_OUTPP				0x01
-#define PWM_OUTPOLARITY			0x02
-
 vsf_err_t pwm_init(uint8_t index);
 vsf_err_t pwm_fini(uint8_t index);
 vsf_err_t pwm_config_mode(uint8_t index, uint8_t mode);

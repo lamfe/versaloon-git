@@ -43,6 +43,7 @@
 #include "scripts.h"
 #include "app_scripts.h"
 
+#include "interfaces_script.h"
 #include "pgbar.h"
 #include "memlist.h"
 #include "filelist.h"

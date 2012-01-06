@@ -131,6 +131,15 @@ static vsf_err_t app_peripheral_commit(void)
 	return VSFERR_NONE;
 }
 
+vsf_err_t interface_assert(struct app_interfaces_info_t **ifs)
+{
+	if (ifs != NULL)
+	{
+		*ifs = (struct app_interfaces_info_t *)&app_interfaces;
+	}
+	return VSFERR_NONE;
+}
+
 const struct app_interfaces_info_t app_interfaces = 
 {
 	"versaloon",
