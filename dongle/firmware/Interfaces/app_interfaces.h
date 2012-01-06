@@ -340,4 +340,6 @@ struct app_interfaces_info_t
 extern const struct app_interfaces_info_t app_interfaces;
 extern struct app_interfaces_info_t *interfaces;
 
+vsf_err_t interface_assert(struct app_interfaces_info_t **ifs);
+
 #endif	// __APP_INTERFACES_H_INCLUDED__

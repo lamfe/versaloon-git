@@ -393,6 +393,9 @@ struct interface_i2c_t
 
 #if IFS_PWM_EN
 
+#define PWM_OUTPP				0x01
+#define PWM_OUTPOLARITY			0x02
+
 struct interface_pwm_t
 {
 	vsf_err_t (*init)(uint8_t index);

@@ -23,6 +23,7 @@
 
 #if SCRIPTS_EN
 #include "scripts.h"
+#include "interfaces_script.h"
 
 int verbosity = LOG_DEFAULT_LEVEL;
 int verbosity_stack[1];
@@ -40,6 +41,7 @@ int main(void)
 	usb_protocol_init();
 #if SCRIPTS_EN
 	vss_init();
+	vss_register_cmd_list(&interface_cmd_list);
 #endif
 	
 	while (1)

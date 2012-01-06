@@ -58,7 +58,8 @@
 /************************ What do U want ************************/
 #define __VSF_DEBUG__					0
 
-#define SCRIPTS_EN						0
+#define SCRIPTS_EN						1
+#define INTERFACES_INFO_T				app_interfaces_info_t
 
 #define USB_TO_XXX_EN					1
 
