@@ -701,7 +701,7 @@ vsf_err_t vss_run_script(char *cmd)
 {
 	char *buff_in_memory = NULL;
 	uint16_t argc;
-	char *argv[1024];
+	char *argv[VSS_CFG_MAX_ARGC];
 	vsf_err_t err = VSFERR_NONE;
 	uint32_t i, run_times;
 	
@@ -776,7 +776,7 @@ end:
 
 static vsf_err_t vss_run_file(FILE *f, char *head, uint8_t quiet)
 {
-	char cmd_line[4096], *cmd_ptr;
+	char cmd_line[VSS_CFG_MAX_LINE_LENGTH], *cmd_ptr;
 	uint8_t cur_cmd_quiet, vss_quiet_mode;
 	uint32_t i;
 	
