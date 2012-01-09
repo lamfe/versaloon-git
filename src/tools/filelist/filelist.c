@@ -67,7 +67,7 @@ static void FILELIST_InsertLast(struct filelist *fl, struct filelist *newitem)
 		fl = FILELIST_GetNext(fl);
 	}
 	
-	sllint_insert(fl->list, newitem->list);
+	sllist_insert(fl->list, newitem->list);
 }
 
 vsf_err_t FILELIST_Open(struct filelist *fl, char *attr)

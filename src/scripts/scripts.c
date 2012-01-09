@@ -156,7 +156,8 @@ vsf_err_t vss_register_cmd_list(struct vss_cmd_list_t *cmdlist)
 			temp = sllist_get_container(temp->list.next,
 						struct vss_cmd_list_t, list);
 		}
-		sllint_insert(temp->list, cmdlist->list);
+		sllist_init_node(cmdlist->list);
+		sllist_insert(temp->list, cmdlist->list);
 	}
 	return VSFERR_NONE;
 }
@@ -178,7 +179,8 @@ vsf_err_t vss_register_param_list(struct vss_param_list_t *paramlist)
 			temp = sllist_get_container(temp->list.next,
 						struct vss_param_list_t, list);
 		}
-		sllint_insert(temp->list, paramlist->list);
+		sllist_init_node(paramlist->list);
+		sllist_insert(temp->list, paramlist->list);
 	}
 	return VSFERR_NONE;
 }

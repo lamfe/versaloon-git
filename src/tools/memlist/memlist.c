@@ -100,7 +100,7 @@ static vsf_err_t MEMLIST_Merge(struct memlist *ml, uint32_t addr, uint32_t len,
 			}
 			else
 			{
-				sllint_insert(ml_tmp->list, ml_swap->list);
+				sllist_insert(ml_tmp->list, ml_swap->list);
 			}
 			// free this ml
 			free(ml);
@@ -123,7 +123,7 @@ static void MEMLIST_Insert(struct memlist **ml, struct memlist *newitem)
 		return;
 	}
 	
-	sllint_insert(ml_virtual_head.list, (*ml)->list);
+	sllist_insert(ml_virtual_head.list, (*ml)->list);
 	ml_tmp = &ml_virtual_head;
 	while ((MEMLIST_GetNext(ml_tmp) != NULL)
 			&& (newitem->addr > MEMLIST_GetNext(ml_tmp)->addr))
@@ -133,8 +133,8 @@ static void MEMLIST_Insert(struct memlist **ml, struct memlist *newitem)
 	
 	if (MEMLIST_GetNext(ml_tmp) != NULL)
 	{
-		sllint_insert(newitem->list, MEMLIST_GetNext(ml_tmp)->list);
-		sllint_insert(ml_tmp->list, newitem->list);
+		sllist_insert(newitem->list, MEMLIST_GetNext(ml_tmp)->list);
+		sllist_insert(ml_tmp->list, newitem->list);
 		if (ml_tmp == &ml_virtual_head)
 		{
 			*ml = newitem;
@@ -142,7 +142,7 @@ static void MEMLIST_Insert(struct memlist **ml, struct memlist *newitem)
 	}
 	else
 	{
-		sllint_insert(ml_tmp->list, newitem->list);
+		sllist_insert(ml_tmp->list, newitem->list);
 	}
 }
 
