@@ -3,10 +3,10 @@
  *  SimonQian@SimonQian.com                                               *
  *                                                                        *
  *  Project:    Versaloon                                                 *
- *  File:       hw_cfg_NanoRelease1.h                                     *
+ *  File:       hw_cfg_MiniRelease1.h                                     *
  *  Author:     SimonQian                                                 *
  *  Versaion:   See changelog                                             *
- *  Purpose:    hardware configuration file for Nano Version Release1     *
+ *  Purpose:    hardware configuration file for Mini Version Release1     *
  *  License:    See license                                               *
  *------------------------------------------------------------------------*
  *  Change Log:                                                           *
@@ -18,7 +18,6 @@
 #ifndef HSE_VALUE
 #define HSE_VALUE						((uint32_t)12000000)
 #endif
-
 #define OSC_HZ							HSE_VALUE
 
 #define _SYS_FREQUENCY					72		// in MHz
@@ -34,7 +33,8 @@
 #define HW_HAS_PWM						1
 #define HW_HAS_ADC						1
 #define HW_HAS_DAC						0
-#define HW_HAS_MICROWIRE				0
+#define HW_HAS_MICROWIRE				1
+#define HW_HAS_DUSI						1
 #define HW_HAS_JTAG						1
 #define HW_HAS_ISSP						1
 #define HW_HAS_C2						1
@@ -48,7 +48,7 @@
 
 /****************************** Power ******************************/
 #define PWREXT_EN_PORT					1
-#define PWREXT_EN_PIN					8
+#define PWREXT_EN_PIN					1
 
 #define PWREXT_INIT()					do {\
 											core_interfaces.gpio.init(PWREXT_EN_PORT);\
@@ -87,10 +87,10 @@
 										} while (0)
 
 /****************************** SW ******************************/
-#define SW_PORT							GPIOA
-#define SW_PIN							GPIO_PIN_10
-#define SW_RST_PORT						GPIOA
-#define SW_RST_PIN						GPIO_PIN_9
+#define SW_PORT							GPIOB
+#define SW_PIN							GPIO_PIN_11
+#define SW_RST_PORT						GPIOB
+#define SW_RST_PIN						GPIO_PIN_10
 #define SYNCSW_IN_PORT					GPIOB
 #define SYNCSW_IN_PIN					GPIO_PIN_6
 #define SYNCSW_OUT_PORT					GPIOB
@@ -138,10 +138,9 @@
 
 #define SYNCSWPWM_OUT_TIMER_MHZ			_SYS_FREQUENCY
 #define SYNCSWPWM_OUT_TIMER				TIM3
-#define SYNCSWPWM_OUT_TIMER_DMA			DMA1_Channel3
-#define SYNCSWPWM_IN_TIMER				TIM4
 #define SYNCSWPWM_OUT_TIMER_DMA_UPDATE	DMA1_Channel3
 #define SYNCSWPWM_OUT_TIMER_DMA_COMPARE	DMA1_Channel6
+#define SYNCSWPWM_IN_TIMER				TIM4
 #define SYNCSWPWM_IN_TIMER_RISE_DMA		DMA1_Channel4
 #define SYNCSWPWM_IN_TIMER_FALL_DMA		DMA1_Channel1
 
@@ -366,6 +365,33 @@
 #define SWD_SWCLK_SET()					JTAG_TAP_TCK_SET()
 #define SWD_SWCLK_CLR()					JTAG_TAP_TCK_CLR()
 
+/***************************** DUSI ******************************/
+#define DUSI_Config(d, fb, cpol, cpha)	do{\
+											SPI_Configuration(JTAG_TAP_HS_SPI_M, SPI_Mode_Master, (d),\
+																(fb), (cpol), (cpha));\
+											SPI_Configuration(JTAG_TAP_HS_SPI_S, SPI_Mode_Slave,SPI_BaudRatePrescaler_2, \
+																(fb), (cpol), (cpha));\
+										} while (0)
+
+#define DUSI_MasterOutByte(mo)			JTAG_TAP_HS_SPI_M->DR = (mo)
+#define DUSI_SlaveOutByte(so)			JTAG_TAP_HS_SPI_S->DR = (so)
+#define DUSI_MasterOutBytePtr(pmo)		DUSI_MasterOutByte(*(uint8_t *)(pmo))
+#define DUSI_SlaveOutBytePtr(pso)		DUSI_SlaveOutByte(*(uint8_t *)(pso))
+#define DUSI_OutByte(mo, so)			do{\
+											DUSI_SlaveOutByte(so);\
+											DUSI_MasterOutByte(mo);\
+										} while (0)
+#define DUSI_OutBytePtr(pmo, pso)		DUSI_OutByte(*(uint8_t*)pmo, *(uint8_t *)pso)
+
+#define DUSI_MasterInByte(mi)			JTAG_TAP_HS_SPI_M->DR
+#define DUSI_SlaveInByte(si)			JTAG_TAP_HS_SPI_S->DR
+#define DUSI_MasterInBytePtr(pmi)		*(uint8_t *)(pmi) = JTAG_TAP_HS_SPI_M->DR
+#define DUSI_SlaveInBytePtr(psi)		*(uint8_t *)(psi) = JTAG_TAP_HS_SPI_S->DR
+#define DUSI_InBytePtr(pmi, psi)		do {\
+											*(uint8_t *)(psi) = JTAG_TAP_HS_SPI_S->DR;\
+											*(uint8_t *)(pmi) = JTAG_TAP_HS_SPI_M->DR;\
+										} while (0)
+
 /***************************** JTAG ******************************/
 #define JTAG_TAP_PORT					GPIOB
 #define JTAG_TAP_TCK_PIN				GPIO_PIN_13
@@ -374,7 +400,27 @@
 #define JTAG_TAP_RTCK_PORT				GPIOA
 #define JTAG_TAP_RTCK_PIN				GPIO_PIN_8
 
-#define JTAG_HAS_USER_PIN				0
+#define JTAG_HAS_USER_PIN				1
+
+#define JTAG_TAP_USR_PORT				GPIOA
+#define JTAG_TAP_USR1_PIN				GPIO_PIN_9
+#define JTAG_TAP_USR2_PIN				GPIO_PIN_10
+
+#define JTAG_TAP_USR1_SETOUTPUT()		GPIO_SetMode(JTAG_TAP_USR_PORT, JTAG_TAP_USR1_PIN, GPIO_MODE_OUT_PP)
+#define JTAG_TAP_USR1_SETINPUT()		GPIO_SetMode(JTAG_TAP_USR_PORT, JTAG_TAP_USR1_PIN, GPIO_MODE_IN_FLOATING)
+#define JTAG_TAP_USR1_SETINPUT_PU()		GPIO_SetMode(JTAG_TAP_USR_PORT, JTAG_TAP_USR1_PIN, GPIO_MODE_IPU)
+#define JTAG_TAP_USR1_SETINPUT_PD()		GPIO_SetMode(JTAG_TAP_USR_PORT, JTAG_TAP_USR1_PIN, GPIO_MODE_IPD)
+#define JTAG_TAP_USR1_SET()				GPIO_SetPins(JTAG_TAP_USR_PORT, JTAG_TAP_USR1_PIN)
+#define JTAG_TAP_USR1_CLR()				GPIO_ClrPins(JTAG_TAP_USR_PORT, JTAG_TAP_USR1_PIN)
+#define JTAG_TAP_USR1_GET()				GPIO_GetInPins(JTAG_TAP_USR_PORT, JTAG_TAP_USR1_PIN)
+
+#define JTAG_TAP_USR2_SETOUTPUT()		GPIO_SetMode(JTAG_TAP_USR_PORT, JTAG_TAP_USR2_PIN, GPIO_MODE_OUT_PP)
+#define JTAG_TAP_USR2_SETINPUT()		GPIO_SetMode(JTAG_TAP_USR_PORT, JTAG_TAP_USR2_PIN, GPIO_MODE_IN_FLOATING)
+#define JTAG_TAP_USR2_SETINPUT_PU()		GPIO_SetMode(JTAG_TAP_USR_PORT, JTAG_TAP_USR2_PIN, GPIO_MODE_IPU)
+#define JTAG_TAP_USR2_SETINPUT_PD()		GPIO_SetMode(JTAG_TAP_USR_PORT, JTAG_TAP_USR2_PIN, GPIO_MODE_IPD)
+#define JTAG_TAP_USR2_SET()				GPIO_SetPins(JTAG_TAP_USR_PORT, JTAG_TAP_USR2_PIN)
+#define JTAG_TAP_USR2_CLR()				GPIO_ClrPins(JTAG_TAP_USR_PORT, JTAG_TAP_USR2_PIN)
+#define JTAG_TAP_USR2_GET()				GPIO_GetInPins(JTAG_TAP_USR_PORT, JTAG_TAP_USR2_PIN)
 
 #define JTAG_TAP_TMS_SETOUTPUT()		SYNCSW_SETOUTPUT()
 #define JTAG_TAP_TMS_SETINPUT()			SYNCSW_SETINPUT()
@@ -511,12 +557,7 @@
 											GPIO_PinRemapConfig(GPIO_Remap_SPI1, DISABLE);\
 										}while(0)
 
-#define JTAG_TAP_HS_SetSpeed(div)		do{\
-											SPI_Configuration(JTAG_TAP_HS_SPI_M, SPI_Mode_Master, (div),\
-																SPI_FirstBit_LSB, SPI_CPOL_High, SPI_CPHA_2Edge);\
-											SPI_Configuration(JTAG_TAP_HS_SPI_S, SPI_Mode_Slave,SPI_BaudRatePrescaler_2, \
-																SPI_FirstBit_LSB, SPI_CPOL_High, SPI_CPHA_2Edge);\
-										}while(0)
+#define JTAG_TAP_HS_SetSpeed(div)		DUSI_Config(div, SPI_FirstBit_LSB, SPI_CPOL_High, SPI_CPHA_2Edge)
 
 #define JTAG_TAP_HS_TMS_Out(tms)		JTAG_TAP_HS_SPI_S->DR = (tms)
 #define JTAG_TAP_HS_TDI_Out(tdi)		JTAG_TAP_HS_SPI_M->DR = (tdi)
@@ -546,6 +587,11 @@
 #define SPI_SCK_SETOUTPUT()				JTAG_TAP_TCK_SETOUTPUT()
 #define SPI_SCK_SETINPUT()				JTAG_TAP_TCK_SETINPUT()
 
+#define SPI_SS_SETOUTPUT()				SW_RST_SETOUTPUT()
+#define SPI_SS_SETINPUT()				SW_RST_SETINPUT()
+#define SPI_SS_SET()					SW_RST_SET()
+#define SPI_SS_CLR()					SW_RST_CLR()
+
 #define SPI_Disable()					SPI_I2S_DeInit(SPI_Interface)
 #define SPI_SetData(d)					SPI_Interface->DR = (d)
 #define SPI_GetData()					SPI_Interface->DR
@@ -571,6 +617,24 @@
 											GPIO_SetMode(JTAG_TAP_PORT, JTAG_TAP_TDI_PIN, GPIO_MODE_AF_PP);\
 										}while(0)
 
+/****************************** MicroWire ******************************/
+#define MICROWIRE_SEL_SETOUTPUT()		SPI_SS_SETOUTPUT()
+#define MICROWIRE_SEL_SETINPUT()		SPI_SS_SETINPUT()
+#define MICROWIRE_SEL_SET()				SPI_SS_SET()
+#define MICROWIRE_SEL_CLR()				SPI_SS_CLR()
+
+#define MICROWIRE_SO_SETOUTPUT()		SPI_MOSI_SETOUTPUT()
+#define MICROWIRE_SO_SETINPUT()			SPI_MOSI_SETINPUT()
+#define MICROWIRE_SO_SET()				SPI_MOSI_SET()
+#define MICROWIRE_SO_CLR()				SPI_MOSI_CLR()
+
+#define MICROWIRE_SI_SETINPUT()			SPI_MISO_SETINPUT()
+#define MICROWIRE_SI_GET()				SPI_MISO_GET()
+
+#define MICROWIRE_SK_SETOUTPUT()		SPI_SCK_SETOUTPUT()
+#define MICROWIRE_SK_SETINPUT()			SPI_SCK_SETINPUT()
+#define MICROWIRE_SK_SET()				SPI_SCK_SET()
+#define MICROWIRE_SK_CLR()				SPI_SCK_CLR()
 
 /****************************** Reset ******************************/
 #define RST_SET()						SW_SET()
@@ -677,13 +741,37 @@
 #define TVCC_SAMPLE_VREF				3300
 #define TVCC_SAMPLE_MAXVAL				4096
 
+/****************************** Beeper ******************************/
+#define BEEPER_PORT						2
+#define BEEPER_PIN						5
+
+#define BEEPER_INIT()					do {\
+											core_interfaces.gpio.init(BEEPER_PORT);\
+											core_interfaces.gpio.config_pin(BEEPER_PORT, BEEPER_PIN, GPIO_OUTPP);\
+										} while (0)
+#define BEEPER_ON()						core_interfaces.gpio.out(BEEPER_PORT, 1 << BEEPER_PIN, 0)
+#define BEEPER_OFF()					core_interfaces.gpio.out(BEEPER_PORT, 1 << BEEPER_PIN, 1 << BEEPER_PIN)
+
 /****************************** LED ******************************/
-#define LED_RED_PORT					0
-#define LED_RED_PIN						15
-#define LED_GREEN_PORT					1
-#define LED_GREEN_PIN					5
-#define LED_USB_PORT					0
-#define LED_USB_PIN						3
+#define LED_RED_PORT					2
+#define LED_RED_PIN						3
+#define LED_GREEN_PORT					2
+#define LED_GREEN_PIN					2
+#define LED_BLUE_PORT					2
+#define LED_BLUE_PIN					1
+#define LED_USB_PORT					2
+#define LED_USB_PIN						0
+
+#define LED_ARRAY_PORT					0
+#define LED_ARRAY_LSPIN					0
+#define LED_ARRAY_PINCOUNT				8
+#define LED_ARRAY_PINMASK				(((1 << LED_ARRAY_PINCOUNT) - 1) << LED_ARRAY_LSPIN)
+
+#define LED_ARRAY_INIT()				do {\
+											core_interfaces.gpio.init(LED_ARRAY_PORT);\
+											core_interfaces.gpio.config(LED_ARRAY_PORT, LED_ARRAY_PINMASK, LED_ARRAY_PINMASK, 0, LED_ARRAY_PINMASK);\
+										} while (0)
+#define LED_ARRAY_SET(val8)				core_interfaces.gpio.out(LED_ARRAY_PORT, LED_ARRAY_PINMASK, ((~(val8)) >> LED_ARRAY_LSPIN) & LED_ARRAY_PINMASK)
 
 #define LED_RED_INIT()					do {\
 											core_interfaces.gpio.init(LED_RED_PORT);\
@@ -699,6 +787,13 @@
 #define LED_GREEN_ON()					core_interfaces.gpio.out(LED_GREEN_PORT, 1 << LED_GREEN_PIN, 0)
 #define LED_GREEN_OFF()					core_interfaces.gpio.out(LED_GREEN_PORT, 1 << LED_GREEN_PIN, 1 << LED_GREEN_PIN)
 
+#define LED_BLUE_INIT()					do {\
+											core_interfaces.gpio.init(LED_BLUE_PORT);\
+											core_interfaces.gpio.config_pin(LED_BLUE_PORT, LED_BLUE_PIN, GPIO_OUTPP);\
+										} while (0)
+#define LED_BLUE_ON()					core_interfaces.gpio.out(LED_BLUE_PORT, 1 << LED_BLUE_PIN, 0)
+#define LED_BLUE_OFF()					core_interfaces.gpio.out(LED_BLUE_PORT, 1 << LED_BLUE_PIN, 1 << LED_BLUE_PIN)
+
 #define LED_USB_INIT()					do {\
 											core_interfaces.gpio.init(LED_USB_PORT);\
 											core_interfaces.gpio.config_pin(LED_USB_PORT, LED_USB_PIN, GPIO_OUTPP);\
@@ -707,17 +802,15 @@
 #define LED_USB_OFF()					core_interfaces.gpio.out(LED_USB_PORT, 1 << LED_USB_PIN, 1 << LED_USB_PIN)
 
 /****************************** KEY ******************************/
-#define ADC_PORT						1
-#define ADC_PIN							0
+#define KEY_PORT						2
+#define KEY_PIN							4
 
-#define KEY_PORT						1
-#define KEY_PIN							9
 #define KEY_Init()						do {\
 											core_interfaces.gpio.init(KEY_PORT);\
-											core_interfaces.gpio.config_pin(KEY_PORT, KEY_PIN, GPIO_INPD);\
+											core_interfaces.gpio.config_pin(KEY_PORT, KEY_PIN, GPIO_INPU);\
 										} while (0)
 #define KEY_Fini()						core_interfaces.gpio.config_pin(KEY_PORT, KEY_PIN, GPIO_INFLOAT)
-#define KEY_IsDown()					(core_interfaces.gpio.get(KEY_PORT, 1 << KEY_PIN) & (1 << KEY_PIN))
+#define KEY_IsDown()					!(core_interfaces.gpio.get(KEY_PORT, 1 << KEY_PIN) & (1 << KEY_PIN))
 
 /****************************** USB *****************************/
 // For USB 2.0, use DP
