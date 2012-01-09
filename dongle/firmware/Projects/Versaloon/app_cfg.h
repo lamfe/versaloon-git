@@ -25,6 +25,7 @@
 //
 #define NanoRelease1					0x01
 #define MiniRelease1					0x15
+#define ProRelease1						0x21
 #define STBee_Mini						0x31
 #define STM8S_Discovery					0x32
 #define STM32VL_Discovery				0x33
@@ -38,6 +39,8 @@
 #include "hw_cfg_NanoRelease1.h"
 #elif _HARDWARE_VER == MiniRelease1
 #include "hw_cfg_MiniRelease1.h"
+#elif _HARDWARE_VER == ProRelease1
+#include "hw_cfg_ProRelease1.h"
 #elif _HARDWARE_VER == STBee_Mini
 #include "hw_cfg_STBee_Mini.h"
 #elif (_HARDWARE_VER == ST_Link) ||\

@@ -47,15 +47,18 @@
 #define HW_HAS_POWERCONTROL				1
 
 /****************************** Power ******************************/
-#define PWREXT_EN_PORT					GPIOB
-#define PWREXT_EN_PIN					GPIO_PIN_8
+#define PWREXT_EN_PORT					1
+#define PWREXT_EN_PIN					8
 
-#define PWREXT_INIT()					PWREXT_DISABLE()
-#define PWREXT_ENABLE()					do{\
-											GPIO_ClrPins(PWREXT_EN_PORT, PWREXT_EN_PIN);\
-											GPIO_SetMode(PWREXT_EN_PORT, PWREXT_EN_PIN, GPIO_MODE_OUT_PP);\
-										}while(0)
-#define PWREXT_DISABLE()				GPIO_SetMode(PWREXT_EN_PORT, PWREXT_EN_PIN, GPIO_MODE_IN_FLOATING)
+#define PWREXT_INIT()					do {\
+											core_interfaces.gpio.init(PWREXT_EN_PORT);\
+											PWREXT_DISABLE();\
+										} while (0)
+#define PWREXT_ENABLE()					do {\
+											core_interfaces.gpio.out(PWREXT_EN_PORT, 1 << PWREXT_EN_PIN, 0);\
+											core_interfaces.gpio.config_pin(PWREXT_EN_PORT, PWREXT_EN_PIN, GPIO_OUTPP);\
+										} while (0)
+#define PWREXT_DISABLE()				core_interfaces.gpio.config_pin(PWREXT_EN_PORT, PWREXT_EN_PIN, GPIO_INFLOAT)
 
 /****************************** DelayTimer ******************************/
 #define DELAYTIMER_MAXDELAY_US			200000

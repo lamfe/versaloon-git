@@ -1871,6 +1871,9 @@
       <name>$PROJ_DIR$\..\..\hw_cfg_NanoRelease1.h</name>
     </file>
     <file>
+      <name>$PROJ_DIR$\..\..\hw_cfg_ProRelease1.h</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\..\..\hw_cfg_st_link.h</name>
     </file>
     <file>

@@ -6,6 +6,7 @@ PROJECT	= Versaloon
 # Available boards:
 # NanoRelease1
 # MiniRelease1
+# ProRelease1
 # STBee_Mini
 # STM8S_Discovery
 # STM8L_Discovery
