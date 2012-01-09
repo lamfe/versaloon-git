@@ -58,6 +58,11 @@ USR_INCS+= -I $(STM32_IFACES_DIR)/hw
 USR_SRCS+= $(COMPILER_DIR)/compiler_string.c
 USR_INCS+= -I $(COMPILER_DIR)
 
+#scripts
+#USR_SRCS+= $(VSPROGDIR)/scripts/scripts.c \
+#  $(VSPROGDIR)/scripts/interfaces_script.c
+#USR_INCS+= -I $(VSPROGDIR)/scripts
+
 #APP interfaces
 USR_SRCS+= $(SRCDIR)/Interfaces/app_interfaces.c
 USR_INCS+= -I $(SRCDIR)/Interfaces
