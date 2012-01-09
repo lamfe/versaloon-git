@@ -1,6 +1,5 @@
-EESchema Schematic File Version 2  date 03/02/2011 06:28:57
+EESchema Schematic File Version 2  date 09/01/2012 15:46:58
 LIBS:power
-LIBS:elec-unifil
 LIBS:simonqian
 LIBS:stm32
 LIBS:device
@@ -30,9 +29,10 @@ LIBS:cypress
 LIBS:siliconi
 LIBS:contrib
 LIBS:valves
-EELAYER 24  0
+EELAYER 25  0
 EELAYER END
 $Descr User 6000 7000
+encoding utf-8
 Sheet 1 1
 Title ""
 Date "2 feb 2011"
