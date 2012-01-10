@@ -270,7 +270,7 @@ static vsf_err_t vss_function_run(struct vss_function_t *f, uint16_t argc,
 		for (i = 0; i < argc; i++)
 		{
 			strcpy(param_str, "${");
-			snprintf(&param_str[2], 5, "%d", (int)i);
+			SNPRINTF(&param_str[2], 5, "%d", (int)i);
 			strcat(param_str, "}");
 			
 			vss_format_cmd(&cmd_str, param_str, (char *)argv[i]);
@@ -785,7 +785,7 @@ static vsf_err_t vss_run_file(FILE *f, char *head, uint8_t quiet)
 	vss_quiet_mode = 0;
 	vss_quiet_mode_ptr = &vss_quiet_mode;
 	
-	rewind(f);
+	REWIND(f);
 	while (1)
 	{
 		if ((f == stdin) && !quiet && !vss_quiet_mode)
@@ -800,7 +800,7 @@ static vsf_err_t vss_run_file(FILE *f, char *head, uint8_t quiet)
 		// get a line
 		if (NULL == FGETS(cmd_line, sizeof(cmd_line), f))
 		{
-			if (!feof(f))
+			if (!FEOF(f))
 			{
 				return VSFERR_FAIL;
 			}
@@ -966,7 +966,7 @@ VSS_HANDLER(vss_run)
 		quiet = 1;
 	}
 	
-	f = fopen(argv[1], "rt");
+	f = FOPEN(argv[1], "rt");
 	if (NULL == f)
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "open script file", argv[1]);
@@ -975,7 +975,7 @@ VSS_HANDLER(vss_run)
 	else
 	{
 		err = vss_run_file(f, (char*)argv[1], quiet);
-		fclose(f);
+		FCLOSE(f);
 	}
 	return err;
 }

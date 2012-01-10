@@ -23,9 +23,15 @@
 
 #define APP_IO_INIT()					
 
+#define FOPEN							fopen
+#define FCLOSE							fclose
+#define FEOF							feof
+#define REWIND							rewind
+#define FFLUSH							fflush
+
 #define FPRINTF							fprintf
 #define PRINTF							printf
-#define FFLUSH							fflush
+#define SNPRINTF						snprintf
 
 #define FGETS							fgets
 #define GETCHAR							getchar
