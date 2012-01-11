@@ -749,8 +749,8 @@
 											core_interfaces.gpio.init(BEEPER_PORT);\
 											core_interfaces.gpio.config_pin(BEEPER_PORT, BEEPER_PIN, GPIO_OUTPP);\
 										} while (0)
-#define BEEPER_ON()						core_interfaces.gpio.out(BEEPER_PORT, 1 << BEEPER_PIN, 0)
-#define BEEPER_OFF()					core_interfaces.gpio.out(BEEPER_PORT, 1 << BEEPER_PIN, 1 << BEEPER_PIN)
+#define BEEPER_ON()						core_interfaces.gpio.out(BEEPER_PORT, 1 << BEEPER_PIN, 1 << BEEPER_PIN)
+#define BEEPER_OFF()					core_interfaces.gpio.out(BEEPER_PORT, 1 << BEEPER_PIN, 0)
 
 /****************************** LED ******************************/
 #define LED_RED_PORT					2

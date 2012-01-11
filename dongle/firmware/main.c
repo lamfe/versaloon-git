@@ -37,6 +37,10 @@ int verbosity_stack[1];
 /* Private functions ---------------------------------------------------------*/
 int main(void)
 {
+#ifdef BEEPER_INIT
+	uint16_t start_beeper_cnt = 0x8000;
+#endif
+	
 	core_interfaces.core.init(NULL);
 	usb_protocol_init();
 #if SCRIPTS_EN
@@ -44,9 +48,23 @@ int main(void)
 	vss_register_cmd_list(&interface_cmd_list);
 #endif
 	
+#ifdef BEEPER_INIT
+	BEEPER_INIT();
+	BEEPER_ON();
+#endif
 	while (1)
 	{
 		usb_protocol_poll();
+#ifdef BEEPER_INIT
+		if (start_beeper_cnt)
+		{
+			start_beeper_cnt--;
+			if (!start_beeper_cnt)
+			{
+				BEEPER_OFF();
+			}
+		}
+#endif
 	}
 }
 
