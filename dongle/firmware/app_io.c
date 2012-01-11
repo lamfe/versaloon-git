@@ -205,7 +205,3 @@ int PRINTF(const char *format, ...)
 	app_io_out_sync();
 	return number;
 }
-
-int SNPRINTF(char *destbuf, int max_count, const char *format, ...)
-{
-}
