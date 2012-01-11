@@ -940,7 +940,7 @@ static vsf_err_t vss_run_file(FILE *f, char *head, uint8_t quiet)
 		}
 		if (!quiet && !vss_quiet_mode && !cur_cmd_quiet)
 		{
-			PRINTF("\n");
+			PRINTF(LOG_LINE_END);
 		}
 		if (vss_exit_mark != 0)
 		{

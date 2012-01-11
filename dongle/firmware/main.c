@@ -16,12 +16,13 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "app_cfg.h"
-#include "app_log.h"
 #include "interfaces.h"
 
 #include "usb_protocol.h"
 
 #if SCRIPTS_EN
+#include "app_io.h"
+#include "app_log.h"
 #include "scripts.h"
 #include "interfaces_script.h"
 
@@ -37,8 +38,12 @@ int verbosity_stack[1];
 /* Private functions ---------------------------------------------------------*/
 int main(void)
 {
+#if SCRIPTS_EN
+	uint8_t i;
+#else
 #ifdef BEEPER_INIT
 	uint16_t start_beeper_cnt = 0x8000;
+#endif
 #endif
 	
 	core_interfaces.core.init(NULL);
@@ -46,8 +51,20 @@ int main(void)
 #if SCRIPTS_EN
 	vss_init();
 	vss_register_cmd_list(&interface_cmd_list);
-#endif
 	
+	KEY_Init();
+	while (!KEY_IsDown())
+	{
+		usb_protocol_poll();
+	}
+	
+	for (i = 0; i < 80; i++)
+	{
+		PRINTF(LOG_LINE_END);
+	}
+	vss_run_script("shell");
+#else	// if SCRIPTS_EN
+
 #ifdef BEEPER_INIT
 	BEEPER_INIT();
 	BEEPER_ON();
@@ -66,6 +83,7 @@ int main(void)
 		}
 #endif
 	}
+#endif
 }
 
 /******************* (C) COPYRIGHT 2007 STMicroelectronics *****END OF FILE****/
