@@ -27,6 +27,7 @@ struct vss_cmd_t
 	const char *cmd_name;
 	const char *help_str;
 	vsf_err_t (*processor)(uint16_t argc, const char *argv[]);
+	struct vss_cmd_t *subcmd;
 };
 struct vss_cmd_list_t
 {
@@ -40,6 +41,7 @@ struct vss_param_t
 	const char *param_name;
 	const char *help_str;
 	uint32_t value;
+	struct vss_param_t *subparam;
 };
 struct vss_param_list_t
 {
@@ -56,20 +58,22 @@ struct vss_param_list_t
 #define VSS_HANDLER(name)						\
 	vsf_err_t (name)(uint16_t argc, const char *argv[])
 
-#define VSS_CMD(name, helpstr, handler)			\
+#define VSS_CMD(name, helpstr, handler, sub)	\
 	{\
 		(name),\
 		(helpstr),\
-		(handler)\
+		(handler),\
+		(sub)\
 	}
-#define VSS_CMD_END								VSS_CMD(NULL, NULL, NULL)
-#define VSS_PARAM(name, helpstr, default)		\
+#define VSS_CMD_END								VSS_CMD(NULL, NULL, NULL, NULL)
+#define VSS_PARAM(name, helpstr, default, sub)	\
 	{\
 		(name),\
 		(helpstr),\
-		(default)\
+		(default),\
+		(sub)\
 	}
-#define VSS_PARAM_END							VSS_PARAM(NULL, NULL, 0)
+#define VSS_PARAM_END							VSS_PARAM(NULL, NULL, 0, NULL)
 
 #define VSS_CHECK_ARGC(n)						\
 	if (argc != (n))\

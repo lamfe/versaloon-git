@@ -107,10 +107,12 @@ const struct vss_cmd_t ee93cx6_notifier[] =
 {
 	VSS_CMD(	"help",
 				"print help information of current target for internal call",
-				ee93cx6_help),
+				ee93cx6_help,
+				NULL),
 	VSS_CMD(	"mode",
 				"set programming mode of target for internal call",
-				ee93cx6_mode),
+				ee93cx6_mode,
+				NULL),
 	VSS_CMD_END
 };
 

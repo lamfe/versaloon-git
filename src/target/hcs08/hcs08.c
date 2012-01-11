@@ -79,7 +79,8 @@ const struct vss_cmd_t hcs08_notifier[] =
 {
 	VSS_CMD(	"help",
 				"print help information of current target for internal call",
-				hcs08_help),
+				hcs08_help,
+				NULL),
 	VSS_CMD_END
 };
 

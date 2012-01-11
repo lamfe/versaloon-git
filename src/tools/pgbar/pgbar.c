@@ -40,10 +40,12 @@ static struct vss_cmd_t pgbar_cmd[] =
 {
 	VSS_CMD(	"gui-mode",
 				"enable GUI mode, format: gui-mode/G",
-				pgbar_gui),
+				pgbar_gui,
+				NULL),
 	VSS_CMD(	"G",
 				"enable GUI mode, format: gui-mode/G",
-				pgbar_gui),
+				pgbar_gui,
+				NULL),
 	VSS_CMD_END
 };
 struct vss_cmd_list_t pgbar_cmd_list = VSS_CMD_LIST("pgbar", pgbar_cmd);

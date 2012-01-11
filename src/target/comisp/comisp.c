@@ -54,14 +54,17 @@ static struct vss_cmd_t comisp_cmd[] =
 	VSS_CMD(	"comport",
 				"set com port, format: "
 				"comport/C COM_BAUDRATE_DATALEN_PARITY_STOP_HANDSHAKE_EXTRA",
-				comisp_comm),
+				comisp_comm,
+				NULL),
 	VSS_CMD(	"C",
 				"set com port, format: "
 				"comport/C COM_BAUDRATE_DATALEN_PARITY_STOP_HANDSHAKE_EXTRA",
-				comisp_comm),
+				comisp_comm,
+				NULL),
 	VSS_CMD(	"E",
 				"print com info, format: E",
-				comisp_print_cominfo),
+				comisp_print_cominfo,
+				NULL),
 	VSS_CMD_END
 };
 struct vss_cmd_list_t comisp_cmd_list = VSS_CMD_LIST("comisp", comisp_cmd);
@@ -276,7 +279,8 @@ const struct vss_cmd_t comisp_notifier[] =
 {
 	VSS_CMD(	"chip",
 				"select target chip for internal call",
-				comisp_chip),
+				comisp_chip,
+				NULL),
 	VSS_CMD_END
 };
 

@@ -80,7 +80,8 @@ const struct vss_cmd_t nand_notifier[] =
 {
 	VSS_CMD(	"help",
 				"print help information of current target for internal call",
-				nand_help),
+				nand_help,
+				NULL),
 	VSS_CMD_END
 };
 

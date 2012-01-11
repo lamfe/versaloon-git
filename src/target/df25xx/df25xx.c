@@ -83,7 +83,8 @@ const struct vss_cmd_t df25xx_notifier[] =
 {
 	VSS_CMD(	"help",
 				"print help information of current target for internal call",
-				df25xx_help),
+				df25xx_help,
+				NULL),
 	VSS_CMD_END
 };
 

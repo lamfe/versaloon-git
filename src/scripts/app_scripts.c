@@ -48,25 +48,51 @@
 
 VSS_HANDLER(dal_vss_init);
 VSS_HANDLER(dal_vss_fini);
-static struct vss_cmd_t app_cmd[] = 
+
+static struct vss_cmd_t dal_cmd[] =
 {
-	VSS_CMD(	"dal.init",
+	VSS_CMD(	"init",
 				"initialize driver abstraction layer, format: dal.init KHZ",
-				dal_vss_init),
-	VSS_CMD(	"dal.fini",
+				dal_vss_init,
+				NULL),
+	VSS_CMD(	"fini",
 				"finialize driver abstraction layer, format: dal.fini",
-				dal_vss_fini),
+				dal_vss_fini,
+				NULL),
+	VSS_CMD_END
+};
+
 #if DAL_MIC2826_EN
-	VSS_CMD(	"mic2826.init",
+static struct vss_cmd_t mic2826_cmd[] =
+{
+	VSS_CMD(	"init",
 				"initialize mic2826 through IIC, format: mic2826.init",
-				mic2826_vss_init),
-	VSS_CMD(	"mic2826.fini",
+				mic2826_vss_init,
+				NULL),
+	VSS_CMD(	"fini",
 				"finalize mic2826 through IIC, format: mic2826.fini",
-				mic2826_vss_fini),
-	VSS_CMD(	"mic2826.config",
+				mic2826_vss_fini,
+				NULL),
+	VSS_CMD(	"config",
 				"config mic2826 through IIC, format: "
 				"mic2826.config DCDC LDO1 LOD2 LDO3",
-				mic2826_vss_config),
+				mic2826_vss_config,
+				NULL),
+	VSS_CMD_END
+};
+#endif
+
+static struct vss_cmd_t app_cmd[] = 
+{
+	VSS_CMD(	"dal",
+				"dal processors",
+				dal_vss_init,
+				dal_cmd),
+#if DAL_MIC2826_EN
+	VSS_CMD(	"mic2826",
+				"mic2826 driver tester",
+				mic2826_vss_init,
+				mic2826_cmd),
 #endif
 	VSS_CMD_END
 };

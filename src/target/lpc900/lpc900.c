@@ -78,7 +78,8 @@ const struct vss_cmd_t lpc900_notifier[] =
 {
 	VSS_CMD(	"help",
 				"print help information of current target for internal call",
-				lpc900_help),
+				lpc900_help,
+				NULL),
 	VSS_CMD_END
 };
 

@@ -79,7 +79,8 @@ const struct vss_cmd_t cfi_notifier[] =
 {
 	VSS_CMD(	"help",
 				"print help information of current target for internal call",
-				cfi_help),
+				cfi_help,
+				NULL),
 	VSS_CMD_END
 };
 
