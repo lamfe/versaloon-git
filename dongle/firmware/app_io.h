@@ -20,21 +20,23 @@
 #define __APP_IO_H_INCLUDED__
 
 #include <stdio.h>
+#include "app_type.h"
 
-#define APP_IO_INIT()					
+void APP_IO_INIT(void);
 
-#define FOPEN							fopen
-#define FCLOSE							fclose
-#define FEOF							feof
-#define REWIND							rewind
-#define FFLUSH							fflush
+FILE *FOPEN(const char *filename, const char *mode);
+int FCLOSE(FILE *f);
+int FEOF(FILE *f);
+void REWIND(FILE *f);
+int FFLUSH(FILE *f);
 
-#define FPRINTF							fprintf
-#define PRINTF							printf
-#define SNPRINTF						snprintf
+int FGETC(FILE *f);
+int GETCHAR(void);
+char* FGETS(char *buf, int count, FILE *f);
 
-#define FGETS							fgets
-#define GETCHAR							getchar
+int FPRINTF(FILE *f, const char *format, ...);
+int PRINTF(const char *format, ...);
+int SNPRINTF(char *destbuf, int max_count, const char *format, ...);
 
 #endif	// __APP_IO_H_INCLUDED__
 

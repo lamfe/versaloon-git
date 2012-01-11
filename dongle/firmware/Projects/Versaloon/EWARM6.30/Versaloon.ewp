@@ -2410,6 +2410,9 @@
     <name>$PROJ_DIR$\..\app_cfg.h</name>
   </file>
   <file>
+    <name>$PROJ_DIR$\..\..\..\app_io.c</name>
+  </file>
+  <file>
     <name>$PROJ_DIR$\..\..\..\main.c</name>
   </file>
   <file>

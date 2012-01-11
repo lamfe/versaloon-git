@@ -19,7 +19,7 @@
 #ifndef __APP_LOG_H_INCLUDED__
 #define __APP_LOG_H_INCLUDED__
 
-#define LOG_LINE_END		"\n"
+#define LOG_LINE_END		"\r\n"
 
 #define ERROR_LEVEL			0
 #define WARNING_LEVEL		0
@@ -57,10 +57,10 @@ extern int verbosity_stack[1];
 		int __i, __j;\
 		for (__i = 0; __i < (int)(len); __i += (n))\
 		{\
-			snprintf(line, 5, "%04X", __i);\
+			SNPRINTF(line, 5, "%04X", __i);\
 			for (__j = __i; __j < __i + (n) && __j < (int)(len); __j++)\
 			{\
-				snprintf(s, sizeof(s), " " format, (buff)[__j]);\
+				SNPRINTF(s, sizeof(s), " " format, (buff)[__j]);\
 				strncat(line, s, sizeof(s));\
 			}\
 			func("%s", line);\
