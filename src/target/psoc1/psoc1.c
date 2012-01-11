@@ -88,7 +88,8 @@ const struct vss_cmd_t psoc1_notifier[] =
 {
 	VSS_CMD(	"help",
 				"print help information of current target for internal call",
-				psoc1_help),
+				psoc1_help,
+				NULL),
 	VSS_CMD_END
 };
 

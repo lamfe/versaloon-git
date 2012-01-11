@@ -87,10 +87,12 @@ const struct vss_cmd_t c8051f_notifier[] =
 {
 	VSS_CMD(	"help",
 				"print help information of current target for internal call",
-				c8051f_help),
+				c8051f_help,
+				NULL),
 	VSS_CMD(	"mode",
 				"set programming mode of target for internal call",
-				c8051f_mode),
+				c8051f_mode,
+				NULL),
 	VSS_CMD_END
 };
 

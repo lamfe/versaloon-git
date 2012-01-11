@@ -142,7 +142,8 @@ const struct vss_cmd_t cm3_notifier[] =
 {
 	VSS_CMD(	"chip",
 				"select target chip for internal call",
-				cm3_chip),
+				cm3_chip,
+				NULL),
 	VSS_CMD_END
 };
 

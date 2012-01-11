@@ -43,16 +43,20 @@ const struct vss_cmd_t vi_stm32_notifier[] =
 {
 	VSS_CMD(	"support",
 				"print support information, format: support/S",
-				vi_stm32_support),
+				vi_stm32_support,
+				NULL),
 	VSS_CMD(	"S",
 				"print support information, format: support/S",
-				vi_stm32_support),
+				vi_stm32_support,
+				NULL),
 	VSS_CMD(	"help",
 				"print help information, format: help/h",
-				vi_stm32_help),
+				vi_stm32_help,
+				NULL),
 	VSS_CMD(	"h",
 				"print help information, format: help/h",
-				vi_stm32_help),
+				vi_stm32_help,
+				NULL),
 	VSS_CMD_END
 };
 

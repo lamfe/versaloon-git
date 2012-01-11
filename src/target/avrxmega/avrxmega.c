@@ -100,10 +100,12 @@ const struct vss_cmd_t avrxmega_notifier[] =
 {
 	VSS_CMD(	"help",
 				"print help information of current target for internal call",
-				avrxmega_help),
+				avrxmega_help,
+				NULL),
 	VSS_CMD(	"mode",
 				"set programming mode of target for internal call",
-				avrxmega_mode),
+				avrxmega_mode,
+				NULL),
 	VSS_CMD_END
 };
 

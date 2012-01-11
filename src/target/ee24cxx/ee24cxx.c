@@ -84,7 +84,8 @@ const struct vss_cmd_t ee24cxx_notifier[] =
 {
 	VSS_CMD(	"help",
 				"print help information of current target for internal call",
-				ee24cxx_help),
+				ee24cxx_help,
+				NULL),
 	VSS_CMD_END
 };
 

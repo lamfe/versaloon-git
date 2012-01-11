@@ -148,10 +148,12 @@ const struct vss_cmd_t msp430_notifier[] =
 {
 	VSS_CMD(	"help",
 				"print help information of current target for internal call",
-				msp430_help),
+				msp430_help,
+				NULL),
 	VSS_CMD(	"mode",
 				"set programming mode of target for internal call",
-				msp430_mode),
+				msp430_mode,
+				NULL),
 	VSS_CMD_END
 };
 

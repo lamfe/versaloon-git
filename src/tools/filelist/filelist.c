@@ -41,16 +41,20 @@ static struct vss_cmd_t filelist_cmd[] =
 {
 	VSS_CMD(	"input-file",
 				"add input file, format: input-file/I FILE[@SEG,ADDR]",
-				filelist_add_inputfile),
+				filelist_add_inputfile,
+				NULL),
 	VSS_CMD(	"I",
 				"add input file, format: input-file/I FILE[@SEG,ADDR]",
-				filelist_add_inputfile),
+				filelist_add_inputfile,
+				NULL),
 	VSS_CMD(	"output-file",
 				"add output file, format: output-file/O FILE[@SEG,ADDR]",
-				filelist_add_outputfile),
+				filelist_add_outputfile,
+				NULL),
 	VSS_CMD(	"O",
 				"add output file, format: output-file/O FILE[@SEG,ADDR]",
-				filelist_add_outputfile),
+				filelist_add_outputfile,
+				NULL),
 	VSS_CMD_END
 };
 struct vss_cmd_list_t filelist_cmd_list = VSS_CMD_LIST("filelist", filelist_cmd);

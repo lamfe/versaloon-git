@@ -43,16 +43,20 @@ const struct vss_cmd_t versaloon_notifier[] =
 {
 	VSS_CMD(	"support",
 				"print support information, format: support/S",
-				versaloon_support),
+				versaloon_support,
+				NULL),
 	VSS_CMD(	"S",
 				"print support information, format: support/S",
-				versaloon_support),
+				versaloon_support,
+				NULL),
 	VSS_CMD(	"help",
 				"print help information, format: help/h",
-				versaloon_help),
+				versaloon_help,
+				NULL),
 	VSS_CMD(	"h",
 				"print help information, format: help/h",
-				versaloon_help),
+				versaloon_help,
+				NULL),
 	VSS_CMD_END
 };
 

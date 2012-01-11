@@ -42,11 +42,13 @@ static struct vss_cmd_t usbapi_cmd[] =
 	VSS_CMD(	"usb",
 				"set usb device, format: "
 				"usb/U [VID_PID_EPIN_EPOUT_INTERFACE|TYPESTRING]SERIALSTRING",
-				usbapi_param),
+				usbapi_param,
+				NULL),
 	VSS_CMD(	"U",
 				"set usb device, format: "
 				"usb/U [VID_PID_EPIN_EPOUT_INTERFACE|TYPESTRING]SERIALSTRING",
-				usbapi_param),
+				usbapi_param,
+				NULL),
 	VSS_CMD_END
 };
 struct vss_cmd_list_t usbapi_cmd_list = VSS_CMD_LIST("usbapi", usbapi_cmd);

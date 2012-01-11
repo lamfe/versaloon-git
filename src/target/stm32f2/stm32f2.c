@@ -125,13 +125,16 @@ const struct vss_cmd_t stm32f4_notifier[] =
 {
 	VSS_CMD(	"help",
 				"print help information of current target for internal call",
-				stm32f4_help),
+				stm32f4_help,
+				NULL),
 	VSS_CMD(	"mode",
 				"set programming mode of target for internal call",
-				stm32f2_mode),
+				stm32f2_mode,
+				NULL),
 	VSS_CMD(	"extra",
 				"print extra information for internal call",
-				stm32f2_extra),
+				stm32f2_extra,
+				NULL),
 	VSS_CMD_END
 };
 
@@ -139,13 +142,16 @@ const struct vss_cmd_t stm32f2_notifier[] =
 {
 	VSS_CMD(	"help",
 				"print help information of current target for internal call",
-				stm32f2_help),
+				stm32f2_help,
+				NULL),
 	VSS_CMD(	"mode",
 				"set programming mode of target for internal call",
-				stm32f2_mode),
+				stm32f2_mode,
+				NULL),
 	VSS_CMD(	"extra",
 				"print extra information for internal call",
-				stm32f2_extra),
+				stm32f2_extra,
+				NULL),
 	VSS_CMD_END
 };
 
