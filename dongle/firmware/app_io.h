@@ -36,7 +36,7 @@ char* FGETS(char *buf, int count, FILE *f);
 
 int FPRINTF(FILE *f, const char *format, ...);
 int PRINTF(const char *format, ...);
-int SNPRINTF(char *destbuf, int max_count, const char *format, ...);
+#define SNPRINTF						snprintf
 
 #endif	// __APP_IO_H_INCLUDED__
 
