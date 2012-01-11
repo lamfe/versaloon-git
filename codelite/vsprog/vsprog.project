@@ -281,7 +281,6 @@
     <Configuration Name="Debug" CompilerType="gnu gcc" DebuggerType="GNU gdb debugger" Type="Executable" BuildCmpWithGlobalSettings="append" BuildLnkWithGlobalSettings="append" BuildResWithGlobalSettings="append">
       <Compiler Options="-g;-O0;-Wall" C_Options="-g;-O0;-Wall" Required="yes" PreCompiledHeader="" PCHInCommandLine="no" UseDifferentPCHFlags="no" PCHFlags="">
         <IncludePath Value="."/>
-        <IncludePath Value="include"/>
         <IncludePath Value="../../src/vsf_cfg"/>
         <IncludePath Value="../../vsf"/>
         <IncludePath Value="../../vsf/interfaces/cpu/pc"/>
@@ -312,9 +311,7 @@
         <IncludePath Value="../../src/target/lm3s"/>
         <Preprocessor Value="HAVE_CONFIG_H"/>
       </Compiler>
-      <Linker Options="-lusb -lxml2 -lm" Required="yes">
-        <LibraryPath Value="./lib"/>
-      </Linker>
+      <Linker Options="-lusb -lxml2 -lm" Required="yes"/>
       <ResourceCompiler Options="" Required="no"/>
       <General OutputFile="$(IntermediateDirectory)/$(ProjectName)" IntermediateDirectory="./Debug" Command="./$(ProjectName)" CommandArguments="" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="$(IntermediateDirectory)" PauseExecWhenProcTerminates="yes"/>
       <Environment EnvVarSetName="&lt;Use Defaults&gt;" DbgSetName="&lt;Use Defaults&gt;">
