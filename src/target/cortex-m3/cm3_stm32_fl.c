@@ -22,6 +22,7 @@
 
 #include <time.h>
 
+#include "compiler.h"
 #include "port.h"
 #include "app_type.h"
 #include "app_io.h"
