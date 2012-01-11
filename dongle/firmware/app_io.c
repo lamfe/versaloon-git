@@ -113,11 +113,8 @@ char* FGETS(char *buf, int count, FILE *f)
 			}
 			vsf_fifo_push8(&usart_stream_p0.fifo_rx, (uint8_t)cur_char);
 			
-			if (cur_char != 'r')
-			{
-				buf[pos++] = cur_char;
-				size++;
-			}
+			buf[pos++] = cur_char;
+			size++;
 			cur_size--;
 		}
 	}
