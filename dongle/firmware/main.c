@@ -63,7 +63,7 @@ int main(void)
 		PRINTF(LOG_LINE_END);
 	}
 	vss_run_script("shell");
-#else	// if SCRIPTS_EN
+#endif	// if SCRIPTS_EN
 
 #ifdef BEEPER_INIT
 	BEEPER_INIT();
@@ -83,7 +83,6 @@ int main(void)
 		}
 #endif
 	}
-#endif
 }
 
 /******************* (C) COPYRIGHT 2007 STMicroelectronics *****END OF FILE****/
