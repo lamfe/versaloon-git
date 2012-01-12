@@ -2100,7 +2100,7 @@ Post_Init:
 		area_idx = target_area_idx(cur_target->program_area_map[i].name);
 		if (!pi->program_areas[area_idx].size)
 		{
-			// if size is not detected, copy from record in xml config
+			// if size is not detected, copy from record in config
 			pi->program_areas[area_idx].size =
 								target_chip_param.chip_areas[area_idx].size;
 		}
@@ -2268,7 +2268,7 @@ void target_print_setting(char type)
 									program_info.chip_name, full_type, &fl))
 	{
 		target_release_chip_fl(&fl);
-		LOG_ERROR(ERRMSG_INVALID_XML_SETTING, program_info.chip_name);
+		LOG_ERROR(ERRMSG_INVALID_TGTCFG_SETTING, program_info.chip_name);
 		return;
 	}
 	
@@ -2334,7 +2334,7 @@ void target_print_target(uint32_t index)
 						targets_info[index].program_mode, &target_chips))
 	{
 		target_release_chip_series(&target_chips);
-		LOG_ERROR(ERRMSG_INVALID_XML_SETTING, targets_info[index].name);
+		LOG_ERROR(ERRMSG_INVALID_TGTCFG_SETTING, targets_info[index].name);
 		return;
 	}
 	
