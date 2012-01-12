@@ -37,7 +37,7 @@
 
 VSS_HANDLER(filelist_add_inputfile);
 VSS_HANDLER(filelist_add_outputfile);
-static struct vss_cmd_t filelist_cmd[] =
+static const struct vss_cmd_t filelist_cmd[] =
 {
 	VSS_CMD(	"input-file",
 				"add input file, format: input-file/I FILE[@SEG,ADDR]",

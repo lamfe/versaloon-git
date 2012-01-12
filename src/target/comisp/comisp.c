@@ -49,7 +49,7 @@
 VSS_HANDLER(comisp_comm);
 VSS_HANDLER(comisp_print_cominfo);
 
-static struct vss_cmd_t comisp_cmd[] =
+static const struct vss_cmd_t comisp_cmd[] =
 {
 	VSS_CMD(	"comport",
 				"set com port, format: "

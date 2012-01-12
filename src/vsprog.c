@@ -99,7 +99,7 @@ VSS_HANDLER(vsprog_mass);
 VSS_HANDLER(vsprog_free_all);
 VSS_HANDLER(vsprog_init);
 
-static struct vss_cmd_t vsprog_cmd[] =
+static const struct vss_cmd_t vsprog_cmd[] =
 {
 	VSS_CMD(	"help",
 				"show help, format: help/h",

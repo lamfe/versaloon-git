@@ -51,9 +51,9 @@ struct vss_param_list_t
 };
 
 #define VSS_CMD_LIST(str_name, cmd_array)		\
-			{(str_name), (cmd_array), {NULL}}
+			{(str_name), (struct vss_cmd_t *)(cmd_array), {NULL}}
 #define VSS_PARAM_LIST(str_name, param_array)	\
-			{(str_name), (param_array), {NULL}}
+			{(str_name), (struct vss_param_t *)(param_array), {NULL}}
 
 #define VSS_HANDLER(name)						\
 	vsf_err_t (name)(uint16_t argc, const char *argv[])
@@ -63,7 +63,7 @@ struct vss_param_list_t
 		(name),\
 		(helpstr),\
 		(handler),\
-		(sub)\
+		(struct vss_cmd_t *)(sub)\
 	}
 #define VSS_CMD_END								VSS_CMD(NULL, NULL, NULL, NULL)
 #define VSS_PARAM(name, helpstr, default, sub)	\
@@ -71,7 +71,7 @@ struct vss_param_list_t
 		(name),\
 		(helpstr),\
 		(default),\
-		(sub)\
+		(struct vss_param_t *)(sub)\
 	}
 #define VSS_PARAM_END							VSS_PARAM(NULL, NULL, 0, NULL)
 
