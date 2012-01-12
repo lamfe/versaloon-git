@@ -180,7 +180,7 @@ int FPRINTF(FILE *f, const char *format, ...)
 	char *pbuff = app_io_local_buff;
 	va_list ap;
 	
-	if ((NULL == f) || (stdout == f) || (stderr == f))
+	if ((NULL == f) || (stdin == f))
 	{
 		return 0;
 	}
@@ -189,7 +189,7 @@ int FPRINTF(FILE *f, const char *format, ...)
 	number = vsprintf(app_io_local_buff, format, ap);
 	va_end(ap);
 	
-	if (stdin == f)
+	if ((stdout == f) || (stderr == f))
 	{
 		i = number;
 		while (i > 0)
