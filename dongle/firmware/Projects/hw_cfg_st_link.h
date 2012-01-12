@@ -51,6 +51,9 @@
 #define HW_HAS_BDM						0
 #define HW_HAS_POWERCONTROL				0
 
+#define HW_HAS_BEEPER					0
+#define HW_HAS_LEDARRAY					0
+
 /****************************** ST_LINK Pins ******************************/
 #define ST_LINK_SWD_PORT				GPIOB
 

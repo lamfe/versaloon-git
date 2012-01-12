@@ -25,6 +25,7 @@
 #include "app_log.h"
 #include "scripts.h"
 #include "interfaces_script.h"
+#include "app_script.h"
 
 int verbosity = LOG_DEFAULT_LEVEL;
 int verbosity_stack[1];
@@ -41,7 +42,7 @@ int main(void)
 #if SCRIPTS_EN
 	uint8_t i;
 #endif
-#ifdef BEEPER_INIT
+#if HW_HAS_BEEPER
 	uint16_t start_beeper_cnt = 0x8000;
 #endif
 	
@@ -50,6 +51,7 @@ int main(void)
 #if SCRIPTS_EN
 	vss_init();
 	vss_register_cmd_list(&interface_cmd_list);
+	vss_register_cmd_list(&app_cmd_list);
 	
 	KEY_Init();
 	while (!KEY_IsDown())
@@ -64,14 +66,14 @@ int main(void)
 	vss_run_script("shell");
 #endif	// if SCRIPTS_EN
 
-#ifdef BEEPER_INIT
+#if HW_HAS_BEEPER
 	BEEPER_INIT();
 	BEEPER_ON();
 #endif
 	while (1)
 	{
 		usb_protocol_poll();
-#ifdef BEEPER_INIT
+#if HW_HAS_BEEPER
 		if (start_beeper_cnt)
 		{
 			start_beeper_cnt--;

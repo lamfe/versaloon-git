@@ -46,6 +46,9 @@
 #define HW_HAS_BDM						1
 #define HW_HAS_POWERCONTROL				1
 
+#define HW_HAS_BEEPER					1
+#define HW_HAS_LEDARRAY					1
+
 /****************************** Power ******************************/
 #define PWREXT_EN_PORT					1
 #define PWREXT_EN_PIN					1
