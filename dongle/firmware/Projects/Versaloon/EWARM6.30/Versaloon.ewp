@@ -2430,6 +2430,24 @@
     <name>vsprog</name>
     <group>
       <name>target</name>
+      <group>
+        <name>avr8</name>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\target\avr8\avr8.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\target\avr8\avr8_hvpp.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\target\avr8\avr8_hvsp.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\target\avr8\avr8_isp.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\target\avr8\avr8_jtag.c</name>
+        </file>
+      </group>
       <file>
         <name>$PROJ_DIR$\..\..\..\..\..\src\target\target.c</name>
       </file>

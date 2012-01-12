@@ -29,7 +29,7 @@
 #include "app_log.h"
 
 #include "vsprog.h"
-#include "programmer.h"
+#include "interfaces.h"
 #include "target.h"
 #include "scripts.h"
 
@@ -43,7 +43,7 @@
 struct program_area_map_t msp430_program_area_map[] =
 {
 	{APPLICATION_CHAR, 1, 0, 0, 0, AREA_ATTR_EW | AREA_ATTR_V},
-	{0, 0, 0, 0, 0, 0}
+	{0, 0, 0, 0, 0, AREA_ATTR_NONE}
 };
 
 const struct program_mode_t msp430_program_mode[] =
@@ -83,7 +83,7 @@ Usage of %s:\n\
 ENTER_PROGRAM_MODE_HANDLER(msp430)
 {
 	struct program_info_t *pi = context->pi;
-	struct interfaces_info_t *prog = context->prog;
+	struct INTERFACES_INFO_T *prog = context->prog;
 	
 	if (NULL == enter_program_mode_save)
 	{

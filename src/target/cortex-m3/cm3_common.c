@@ -29,7 +29,7 @@
 #include "app_err.h"
 #include "app_log.h"
 
-#include "programmer.h"
+#include "interfaces.h"
 
 #include "adi_v5p1.h"
 #include "cm3_common.h"
@@ -41,7 +41,7 @@ vsf_err_t cm3_dp_fini(void)
 	return adi_fini();
 }
 
-vsf_err_t cm3_dp_init(struct interfaces_info_t *ifs, struct adi_dpif_t *dp)
+vsf_err_t cm3_dp_init(struct INTERFACES_INFO_T *ifs, struct adi_dpif_t *dp)
 {
 	uint32_t cpuid, dcb_dhcsr;
 	enum adi_dp_target_core_t tgt_core = ADI_DP_INVALID;

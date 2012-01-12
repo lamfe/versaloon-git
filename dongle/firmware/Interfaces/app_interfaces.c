@@ -456,6 +456,10 @@ const struct app_interfaces_info_t app_interfaces =
 		microwire_poll
 	}
 #endif
+	,{
+		// poll
+		NULL, NULL, NULL, NULL, NULL
+	}
 };
 
 struct app_interfaces_info_t *interfaces = 

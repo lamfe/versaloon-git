@@ -29,7 +29,7 @@
 #include "app_log.h"
 
 #include "vsprog.h"
-#include "programmer.h"
+#include "interfaces.h"
 #include "target.h"
 #include "scripts.h"
 
@@ -177,7 +177,7 @@ struct program_functions_t avr8jtag_program_functions =
 #define delay_us(us)				prog->delay.delayus((us) & 0x7FFF)
 #define jtag_commit()				prog->peripheral_commit()
 
-static struct interfaces_info_t *prog = NULL;
+static struct INTERFACES_INFO_T *prog = NULL;
 
 #define AVR_JTAG_SendIns(i)			(ir = (i), \
 									 jtag_ir_write(&ir, AVR_JTAG_INS_LEN))

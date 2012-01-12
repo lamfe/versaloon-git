@@ -80,6 +80,7 @@
 
 enum area_attr_t
 {
+	AREA_ATTR_NONE	= 0,
 	AREA_ATTR_E		= (1 << 0), // Erasable
 	AREA_ATTR_W		= (1 << 1), // Writable
 	AREA_ATTR_R		= (1 << 2), // Readable

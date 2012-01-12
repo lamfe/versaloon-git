@@ -29,7 +29,7 @@
 #include "app_err.h"
 #include "app_log.h"
 
-#include "programmer.h"
+#include "interfaces.h"
 #include "target.h"
 
 #include "adi_v5p1.h"

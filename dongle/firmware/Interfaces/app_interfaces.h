@@ -262,6 +262,18 @@ enum poll_check_type_t
 	POLL_CHECK_EQU,
 	POLL_CHECK_UNEQU
 };
+struct interface_poll_t
+{
+	vsf_err_t (*start)(uint16_t retry, uint16_t interval_us);
+	vsf_err_t (*end)(void);
+	vsf_err_t (*checkok)(enum poll_check_type_t type, uint16_t offset,
+
+							uint8_t size, uint32_t mask, uint32_t value);
+	vsf_err_t (*checkfail)(enum poll_check_type_t type, uint16_t offset,
+
+							uint8_t size, uint32_t mask, uint32_t value);
+	vsf_err_t (*verifybuff)(uint16_t offset, uint16_t size, uint8_t *buff);
+};
 
 struct app_interfaces_info_t
 {
@@ -335,6 +347,7 @@ struct app_interfaces_info_t
 #if INTERFACE_MICROWIRE_EN
 	struct interface_microwire_t microwire;
 #endif
+	struct interface_poll_t poll;
 };
 
 extern const struct app_interfaces_info_t app_interfaces;

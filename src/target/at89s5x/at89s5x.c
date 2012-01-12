@@ -29,7 +29,7 @@
 #include "app_log.h"
 
 #include "vsprog.h"
-#include "programmer.h"
+#include "interfaces.h"
 #include "target.h"
 #include "scripts.h"
 
@@ -43,7 +43,7 @@ const struct program_area_map_t s5x_program_area_map[] =
 {
 	{APPLICATION_CHAR, 1, 0, 0, 0, AREA_ATTR_EWR},
 	{LOCK_CHAR, 0, 0, 0, 0, AREA_ATTR_WR},
-	{0, 0, 0, 0, 0, 0}
+	{0, 0, 0, 0, 0, AREA_ATTR_NONE}
 };
 
 const struct program_mode_t s5x_program_mode[] =
@@ -116,7 +116,7 @@ static uint16_t s5x_byte_delay_us = 500;
 
 #define commit()				prog->peripheral_commit()
 
-static struct interfaces_info_t *prog = NULL;
+static struct INTERFACES_INFO_T *prog = NULL;
 
 ENTER_PROGRAM_MODE_HANDLER(s5x)
 {

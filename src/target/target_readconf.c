@@ -32,7 +32,7 @@
 #include <libxml/parser.h>
 
 #include "vsprog.h"
-#include "programmer.h"
+#include "interfaces.h"
 #include "target.h"
 
 #include "strparser.h"

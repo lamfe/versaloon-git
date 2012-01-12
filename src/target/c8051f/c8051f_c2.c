@@ -29,7 +29,7 @@
 #include "app_log.h"
 
 #include "vsprog.h"
-#include "programmer.h"
+#include "interfaces.h"
 #include "target.h"
 #include "scripts.h"
 
@@ -73,7 +73,7 @@ struct program_functions_t c8051fc2_program_functions =
 
 #define commit()				prog->peripheral_commit()
 
-static struct interfaces_info_t *prog = NULL;
+static struct INTERFACES_INFO_T *prog = NULL;
 
 vsf_err_t c8051f_c2_addr_poll(uint8_t mask, uint8_t value, uint16_t poll_cnt)
 {

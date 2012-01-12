@@ -29,7 +29,7 @@
 #include "app_log.h"
 #include "app_err.h"
 
-#include "programmer.h"
+#include "interfaces.h"
 
 #include "port.h"
 #include "comport.h"
@@ -503,7 +503,7 @@ int32_t comm_ctrl_hw(uint8_t dtr, uint8_t rts)
 #endif
 
 static uint8_t usbtocomm_open = 0;
-static struct interfaces_info_t *prog = NULL;
+static struct INTERFACES_INFO_T *prog = NULL;
 void comm_close_usbtocomm(void)
 {
 	if (!usbtocomm_open)
@@ -522,7 +522,7 @@ void comm_close_usbtocomm(void)
 vsf_err_t comm_open_usbtocomm(char *comport, uint32_t baudrate,
 			uint8_t datalength, char paritybit, char stopbit, char handshake)
 {
-	struct interfaces_info_t *prog_temp = NULL;
+	struct INTERFACES_INFO_T *prog_temp = NULL;
 	uint8_t mode;
 	
 	REFERENCE_PARAMETER(comport);

@@ -29,7 +29,7 @@
 #include "app_err.h"
 #include "app_log.h"
 
-#include "programmer.h"
+#include "interfaces.h"
 
 #include "byte_tap.h"
 
@@ -103,7 +103,7 @@ static enum tap_state_t cur_state = IDLE;
 static uint8_t tap_tms_remain_cycles = 0;
 static uint8_t tap_tms_remain;
 
-static struct interfaces_info_t *prog = NULL;
+static struct INTERFACES_INFO_T *prog = NULL;
 
 vsf_err_t jtag_init(void)
 {
@@ -502,7 +502,7 @@ vsf_err_t tap_commit(void)
 	return VSFERR_NONE;
 }
 
-vsf_err_t tap_init(struct interfaces_info_t *ifs)
+vsf_err_t tap_init(struct INTERFACES_INFO_T *ifs)
 {
 	prog = ifs;
 	

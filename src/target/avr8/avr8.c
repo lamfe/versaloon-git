@@ -29,7 +29,7 @@
 #include "app_log.h"
 
 #include "vsprog.h"
-#include "programmer.h"
+#include "interfaces.h"
 #include "target.h"
 #include "scripts.h"
 
@@ -46,7 +46,7 @@ const struct program_area_map_t avr8_program_area_map[] =
 	{LOCK_CHAR, 0, 0, 0, 0, AREA_ATTR_WR},
 	{CALIBRATION_CHAR, 0, 0, 0, 0, AREA_ATTR_R},
 	{UNIQUEID_CHAR, 0, 0, 0, 0, AREA_ATTR_R},
-	{0, 0, 0, 0, 0, 0}
+	{0, 0, 0, 0, 0, AREA_ATTR_NONE}
 };
 
 const struct program_mode_t avr8_program_mode[] =

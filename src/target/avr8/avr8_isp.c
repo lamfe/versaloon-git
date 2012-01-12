@@ -29,7 +29,7 @@
 #include "app_log.h"
 
 #include "vsprog.h"
-#include "programmer.h"
+#include "interfaces.h"
 #include "target.h"
 #include "scripts.h"
 
@@ -84,7 +84,7 @@ struct program_functions_t avr8isp_program_functions =
 
 #define commit()				prog->peripheral_commit()
 
-static struct interfaces_info_t *prog = NULL;
+static struct INTERFACES_INFO_T *prog = NULL;
 
 static vsf_err_t avr8_isp_pollready(void)
 {

@@ -29,7 +29,7 @@
 #include "app_log.h"
 
 #include "vsprog.h"
-#include "programmer.h"
+#include "interfaces.h"
 #include "target.h"
 #include "scripts.h"
 
@@ -45,7 +45,7 @@ struct program_area_map_t stm8_program_area_map[] =
 	{APPLICATION_CHAR, 1, 0, 0, 0, AREA_ATTR_EWR | AREA_ATTR_EP},
 	{EEPROM_CHAR, 1, 0, 0, 0, AREA_ATTR_EWR | AREA_ATTR_EP},
 	{FUSE_CHAR, 0, 0, 0, 0, AREA_ATTR_WR},
-	{0, 0, 0, 0, 0, 0}
+	{0, 0, 0, 0, 0, AREA_ATTR_NONE}
 };
 
 const struct program_mode_t stm8_program_mode[] =
@@ -151,7 +151,7 @@ const struct vss_cmd_t stm8_notifier[] =
 
 #define commit()				prog->peripheral_commit()
 
-static struct interfaces_info_t *prog = NULL;
+static struct INTERFACES_INFO_T *prog = NULL;
 
 // 0x0000 ---- 0x007F: flash loader code
 // 0x0080 ---- 0x00BF: param_bk + loopcnt

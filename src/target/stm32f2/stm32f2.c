@@ -30,7 +30,7 @@
 #include "app_log.h"
 
 #include "vsprog.h"
-#include "programmer.h"
+#include "interfaces.h"
 #include "target.h"
 #include "scripts.h"
 
@@ -46,7 +46,7 @@ struct program_area_map_t stm32f2_program_area_map[] =
 	{FUSE_CHAR, 0, 0, 0, 0, AREA_ATTR_WR | AREA_ATTR_RAW},
 	{UNIQUEID_CHAR, 0, 0, 0, 0, AREA_ATTR_R},
 	{OTPROM_CHAR, 1, 0, 0, 0, AREA_ATTR_WR},
-	{0, 0, 0, 0, 0, 0}
+	{0, 0, 0, 0, 0, AREA_ATTR_NONE}
 };
 
 const struct program_mode_t stm32f2_program_mode[] =

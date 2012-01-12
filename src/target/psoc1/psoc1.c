@@ -29,7 +29,7 @@
 #include "app_log.h"
 
 #include "vsprog.h"
-#include "programmer.h"
+#include "interfaces.h"
 #include "target.h"
 #include "scripts.h"
 
@@ -45,7 +45,7 @@ const struct program_area_map_t psoc1_program_area_map[] =
 	{APPLICATION_CHAR, 1, 0, 0, 0, AREA_ATTR_EWR | AREA_ATTR_NP},
 	{APPLICATION_CHKSUM_CHAR, 1, 0, 0, 0, AREA_ATTR_R},
 	{LOCK_CHAR, 1, 0, 0, 0, AREA_ATTR_W | AREA_ATTR_NP},
-	{0, 0, 0, 0, 0, 0}
+	{0, 0, 0, 0, 0, AREA_ATTR_NONE}
 };
 
 const struct program_mode_t psoc1_program_mode[] =
@@ -98,7 +98,7 @@ const struct vss_cmd_t psoc1_notifier[] =
 
 
 
-static struct interfaces_info_t *prog = NULL;
+static struct INTERFACES_INFO_T *prog = NULL;
 
 #define PSOC1_SSC_CMD_SWBootReset			0x00
 #define PSOC1_SSC_CMD_ReadBlock				0x01

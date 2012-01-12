@@ -29,7 +29,7 @@
 #include "app_log.h"
 
 #include "vsprog.h"
-#include "programmer.h"
+#include "interfaces.h"
 #include "target.h"
 #include "scripts.h"
 
@@ -54,7 +54,7 @@ const struct program_functions_t msp430jtagsbw_program_functions =
 
 ENTER_PROGRAM_MODE_HANDLER(msp430jtagsbw)
 {
-	struct interfaces_info_t *prog = context->prog;
+	struct INTERFACES_INFO_T *prog = context->prog;
 	uint8_t tmp8, i;
 	uint8_t ir;
 	uint32_t dr;
@@ -132,7 +132,7 @@ ENTER_PROGRAM_MODE_HANDLER(msp430jtagsbw)
 
 LEAVE_PROGRAM_MODE_HANDLER(msp430jtagsbw)
 {
-	struct interfaces_info_t *prog = context->prog;
+	struct INTERFACES_INFO_T *prog = context->prog;
 	
 	REFERENCE_PARAMETER(success);
 	
@@ -148,7 +148,7 @@ LEAVE_PROGRAM_MODE_HANDLER(msp430jtagsbw)
 
 ERASE_TARGET_HANDLER(msp430jtagsbw)
 {
-	struct interfaces_info_t *prog = context->prog;
+	struct INTERFACES_INFO_T *prog = context->prog;
 	vsf_err_t err = VSFERR_NONE;
 	
 	REFERENCE_PARAMETER(size);
@@ -188,7 +188,7 @@ ERASE_TARGET_HANDLER(msp430jtagsbw)
 
 WRITE_TARGET_HANDLER(msp430jtagsbw)
 {
-	struct interfaces_info_t *prog = context->prog;
+	struct INTERFACES_INFO_T *prog = context->prog;
 	vsf_err_t err = VSFERR_NONE;
 	
 	switch (area)
@@ -211,7 +211,7 @@ WRITE_TARGET_HANDLER(msp430jtagsbw)
 
 READ_TARGET_HANDLER(msp430jtagsbw)
 {
-	struct interfaces_info_t *prog = context->prog;
+	struct INTERFACES_INFO_T *prog = context->prog;
 	struct operation_t *op = context->op;
 	
 	uint16_t chip_id;
