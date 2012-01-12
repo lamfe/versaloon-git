@@ -40,10 +40,9 @@ int main(void)
 {
 #if SCRIPTS_EN
 	uint8_t i;
-#else
+#endif
 #ifdef BEEPER_INIT
 	uint16_t start_beeper_cnt = 0x8000;
-#endif
 #endif
 	
 	core_interfaces.core.init(NULL);
