@@ -175,6 +175,7 @@ static const struct vsfusbd_desc_filter_t descriptors[] =
 extern struct usart_stream_info_t usart_stream_p0;
 struct vsfusbd_CDC_param_t CDC_param = 
 {
+	true,
 	&usart_stream_p0,
 				// usart_stream
 	false,		// gpio_rts_enable
