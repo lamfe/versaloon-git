@@ -815,10 +815,21 @@ vsf_err_t target_release_chip_series(struct chip_series_t *s)
 {
 	uint32_t i, j;
 	
+	if (s->series_name != NULL)
+	{
+		free(s->series_name);
+		s->series_name = NULL;
+	}
+	
 	if ((s != NULL) && ((s->num_of_chips > 0) || (s->chips_param != NULL)))
 	{
 		for (i = 0; i < s->num_of_chips; i++)
 		{
+			if (s->chips_param[i].chip_name != NULL)
+			{
+				free(s->chips_param[i].chip_name);
+				s->chips_param[i].chip_name = NULL;
+			}
 			if (s->chips_param[i].program_mode_str != NULL)
 			{
 				free(s->chips_param[i].program_mode_str);
