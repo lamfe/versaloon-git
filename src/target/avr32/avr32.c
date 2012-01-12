@@ -31,7 +31,7 @@
 #include "app_log.h"
 
 #include "vsprog.h"
-#include "programmer.h"
+#include "interfaces.h"
 #include "target.h"
 #include "scripts.h"
 
@@ -45,7 +45,7 @@
 struct program_area_map_t avr32_program_area_map[] =
 {
 	{APPLICATION_CHAR, 1, 0, 0, 0, AREA_ATTR_EWR | AREA_ATTR_RNP},
-	{0, 0, 0, 0, 0, 0}
+	{0, 0, 0, 0, 0, AREA_ATTR_NONE}
 };
 
 const struct program_mode_t avr32_program_mode[] =
@@ -139,7 +139,7 @@ const struct vss_cmd_t avr32_notifier[] =
 #define avr32jtag_DataW				jtag_dr_write
 #define avr32jtag_DataR				jtag_dr_read
 
-static struct interfaces_info_t *prog = NULL;
+static struct INTERFACES_INFO_T *prog = NULL;
 
 static uint8_t pending_4bytes = 0;
 vsf_err_t avr32jtag_receive_callback(uint8_t index, enum jtag_irdr_t cmd,

@@ -29,7 +29,7 @@
 #include "app_log.h"
 
 #include "vsprog.h"
-#include "programmer.h"
+#include "interfaces.h"
 #include "target.h"
 #include "scripts.h"
 
@@ -41,7 +41,7 @@
 const struct program_area_map_t hcs08_program_area_map[] =
 {
 	{APPLICATION_CHAR, 1, 0, 0, 0, AREA_ATTR_EWR},
-	{0, 0, 0, 0, 0, 0}
+	{0, 0, 0, 0, 0, AREA_ATTR_NONE}
 };
 
 const struct program_mode_t hcs08_program_mode[] =
@@ -119,7 +119,7 @@ const struct vss_cmd_t hcs08_notifier[] =
 
 #define commit()				prog->peripheral_commit()
 
-static struct interfaces_info_t *prog = NULL;
+static struct INTERFACES_INFO_T *prog = NULL;
 static uint8_t hcs08_flash_div = 0;
 
 #define HCS08_BDMCMD_ACKENABLE		0xD5	// NI:D5/d

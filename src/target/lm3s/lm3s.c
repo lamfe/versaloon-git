@@ -30,7 +30,7 @@
 #include "app_log.h"
 
 #include "vsprog.h"
-#include "programmer.h"
+#include "interfaces.h"
 #include "target.h"
 #include "scripts.h"
 
@@ -44,7 +44,7 @@
 struct program_area_map_t lm3s_program_area_map[] =
 {
 	{APPLICATION_CHAR, 1, 0, 0, 0, AREA_ATTR_EWR},
-	{0, 0, 0, 0, 0, 0}
+	{0, 0, 0, 0, 0, AREA_ATTR_NONE}
 };
 
 const struct program_mode_t lm3s_program_mode[] =

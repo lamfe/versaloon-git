@@ -30,7 +30,7 @@
 #include "app_log.h"
 
 #include "vsprog.h"
-#include "programmer.h"
+#include "interfaces.h"
 #include "target.h"
 #include "scripts.h"
 
@@ -42,7 +42,7 @@
 const struct program_area_map_t lpc900_program_area_map[] =
 {
 	{APPLICATION_CHAR, 1, 0, 0, 0, AREA_ATTR_EW | AREA_ATTR_V | AREA_ATTR_RNP},
-	{0, 0, 0, 0, 0, 0}
+	{0, 0, 0, 0, 0, AREA_ATTR_NONE}
 };
 
 const struct program_mode_t lpc900_program_mode[] =
@@ -89,7 +89,7 @@ const struct vss_cmd_t lpc900_notifier[] =
 
 
 
-static struct interfaces_info_t *prog = NULL;
+static struct INTERFACES_INFO_T *prog = NULL;
 
 #define icp_init()					prog->lpcicp.init(0)
 #define icp_fini()					prog->lpcicp.fini(0)

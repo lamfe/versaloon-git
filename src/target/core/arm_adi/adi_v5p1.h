@@ -53,7 +53,7 @@ struct adi_dpif_t
 	} dpif_setting;
 };
 
-vsf_err_t adi_init(struct interfaces_info_t *ifs, struct adi_dpif_t *interf,
+vsf_err_t adi_init(struct INTERFACES_INFO_T *ifs, struct adi_dpif_t *interf,
 					enum adi_dp_target_core_t *core);
 vsf_err_t adi_fini(void);
 vsf_err_t adi_dp_commit(void);

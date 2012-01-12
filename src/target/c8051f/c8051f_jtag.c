@@ -29,7 +29,7 @@
 #include "app_log.h"
 
 #include "vsprog.h"
-#include "programmer.h"
+#include "interfaces.h"
 #include "target.h"
 #include "scripts.h"
 
@@ -54,7 +54,7 @@ struct program_functions_t c8051fjtag_program_functions =
 	READ_TARGET_FUNCNAME(c8051fjtag)
 };
 
-static struct interfaces_info_t *prog = NULL;
+static struct INTERFACES_INFO_T *prog = NULL;
 
 
 #define jtag_init()					prog->jtag_hl.init(0)

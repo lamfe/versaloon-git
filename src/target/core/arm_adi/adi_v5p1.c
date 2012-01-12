@@ -28,12 +28,12 @@
 #include "app_err.h"
 #include "app_log.h"
 
-#include "programmer.h"
+#include "interfaces.h"
 
 #include "adi_v5p1.h"
 #include "adi_v5p1_internal.h"
 
-static struct interfaces_info_t *adi_prog = NULL;
+static struct INTERFACES_INFO_T *adi_prog = NULL;
 static struct adi_dpif_t *adi_dp_if;
 static struct adi_dp_t adi_dp;
 static uint8_t ack_value;
@@ -245,7 +245,7 @@ static vsf_err_t adi_dpif_fini(void)
 	return VSFERR_NONE;
 }
 
-static vsf_err_t adi_dpif_init(struct interfaces_info_t *ifs, struct adi_dpif_t *interf)
+static vsf_err_t adi_dpif_init(struct INTERFACES_INFO_T *ifs, struct adi_dpif_t *interf)
 {
 	if ((NULL == ifs) || (NULL == interf)
 		|| ((interf->type != ADI_DP_JTAG) && (interf->type != ADI_DP_SWD)))
@@ -738,7 +738,7 @@ vsf_err_t adi_fini(void)
 	return adi_dpif_fini();
 }
 
-vsf_err_t adi_init(struct interfaces_info_t *ifs, struct adi_dpif_t *interf,
+vsf_err_t adi_init(struct INTERFACES_INFO_T *ifs, struct adi_dpif_t *interf,
 					enum adi_dp_target_core_t *core)
 {
 	uint32_t tmp;

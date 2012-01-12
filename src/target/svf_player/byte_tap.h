@@ -63,7 +63,7 @@ enum tap_state_t
 
 extern const char *tap_state_name[TAP_NUM_OF_STATE];
 
-vsf_err_t tap_init(struct interfaces_info_t *ifs);
+vsf_err_t tap_init(struct INTERFACES_INFO_T *ifs);
 vsf_err_t tap_fini(void);
 bool tap_state_is_stable(enum tap_state_t state);
 bool tap_state_is_valid(enum tap_state_t state);

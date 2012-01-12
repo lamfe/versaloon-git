@@ -30,7 +30,7 @@
 #include "app_log.h"
 
 #include "vsprog.h"
-#include "programmer.h"
+#include "interfaces.h"
 #include "target.h"
 #include "scripts.h"
 
@@ -44,7 +44,7 @@
 struct program_area_map_t avrxmega_program_area_map[] =
 {
 	{APPLICATION_CHAR, 1, 0, 0, 0, AREA_ATTR_EWR | AREA_ATTR_RAE | AREA_ATTR_RAW | AREA_ATTR_RNP},
-	{0, 0, 0, 0, 0, 0}
+	{0, 0, 0, 0, 0, AREA_ATTR_NONE}
 };
 
 const struct program_mode_t avrxmega_program_mode[] =
@@ -162,7 +162,7 @@ static uint16_t pdi_append_parity(uint8_t data, enum pdi_parity_t parity)
 	return (p << 8) | data;
 }
 
-static struct interfaces_info_t *prog = NULL;
+static struct INTERFACES_INFO_T *prog = NULL;
 static uint8_t avrxmega_progmode = 0;
 static struct program_info_t *pi = NULL;
 static uint8_t pdi_err = 0;

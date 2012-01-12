@@ -30,7 +30,7 @@
 #include "app_err.h"
 #include "port.h"
 
-#include "programmer.h"
+#include "interfaces.h"
 #include "scripts.h"
 #include "dal/mic2826/mic2826_drv.h"
 

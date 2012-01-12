@@ -51,9 +51,16 @@
 								 | LPC_ICP | MSP430_SBW | SWD | SWIM | HV | BDM\
 								 | MICROWIRE | USBD)
 
-// EBI
-#define EBI_TGTTYP_NOR				0x00
-#define EBI_TGTTYP_NAND				0x10
+// GPIO
+#define GPIO_SRST				(1 << 0)
+#define GPIO_TRST				(1 << 1)
+#define GPIO_USR1				(1 << 2)
+#define GPIO_USR2				(1 << 3)
+#define GPIO_TCK				(1 << 4)
+#define GPIO_TDO				(1 << 5)
+#define GPIO_TDI				(1 << 6)
+#define GPIO_RTCK				(1 << 7)
+#define GPIO_TMS				(1 << 8)
 
 #endif /* __APP_INTERFACE_CONST_H_INCLUDED__ */
 

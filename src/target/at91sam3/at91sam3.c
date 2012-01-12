@@ -30,7 +30,7 @@
 #include "app_log.h"
 
 #include "vsprog.h"
-#include "programmer.h"
+#include "interfaces.h"
 #include "target.h"
 #include "scripts.h"
 
@@ -47,8 +47,8 @@ struct program_area_map_t at91sam3_program_area_map[] =
 	{APPLICATION_CHAR, 1, 0, 0, 0, AREA_ATTR_EWR/* | AREA_ATTR_RAE*/},
 	// eeprom is used to emulate flash plane1
 	{EEPROM_CHAR, 1, 0, 0, 0, AREA_ATTR_EWR/* | AREA_ATTR_RAE*/},
-	{LOCK_CHAR, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0}
+	{LOCK_CHAR, 0, 0, 0, 0, AREA_ATTR_NONE},
+	{0, 0, 0, 0, 0, AREA_ATTR_NONE}
 };
 
 const struct program_mode_t at91sam3_program_mode[] =
