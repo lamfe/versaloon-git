@@ -37,7 +37,7 @@
 static struct usbapi_param_t usb_param;
 
 VSS_HANDLER(usbapi_param);
-static struct vss_cmd_t usbapi_cmd[] =
+static const struct vss_cmd_t usbapi_cmd[] =
 {
 	VSS_CMD(	"usb",
 				"set usb device, format: "

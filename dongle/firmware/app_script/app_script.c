@@ -17,7 +17,7 @@ VSS_HANDLER(app_beeper_init);
 VSS_HANDLER(app_beeper_on);
 VSS_HANDLER(app_beeper_off);
 
-static struct vss_cmd_t beeper_cmd[] =
+static const struct vss_cmd_t beeper_cmd[] =
 {
 	VSS_CMD(	"init",
 				"initialize beeper, format: beeper.init",
@@ -38,7 +38,7 @@ static struct vss_cmd_t beeper_cmd[] =
 VSS_HANDLER(app_ledarr_init);
 VSS_HANDLER(app_ledarr_set);
 
-static struct vss_cmd_t ledarr_cmd[] =
+static const struct vss_cmd_t ledarr_cmd[] =
 {
 	VSS_CMD(	"init",
 				"initialize led array, format: ledarr.init",
@@ -51,7 +51,7 @@ static struct vss_cmd_t ledarr_cmd[] =
 };
 #endif
 
-static struct vss_cmd_t app_cmd[] =
+static const struct vss_cmd_t app_cmd[] =
 {
 #if HW_HAS_BEEPER
 	VSS_CMD(	"beeper",

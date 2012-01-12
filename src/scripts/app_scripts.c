@@ -49,7 +49,7 @@
 VSS_HANDLER(dal_vss_init);
 VSS_HANDLER(dal_vss_fini);
 
-static struct vss_cmd_t dal_cmd[] =
+static const struct vss_cmd_t dal_cmd[] =
 {
 	VSS_CMD(	"init",
 				"initialize driver abstraction layer, format: dal.init KHZ",
@@ -63,7 +63,7 @@ static struct vss_cmd_t dal_cmd[] =
 };
 
 #if DAL_MIC2826_EN
-static struct vss_cmd_t mic2826_cmd[] =
+static const struct vss_cmd_t mic2826_cmd[] =
 {
 	VSS_CMD(	"init",
 				"initialize mic2826 through IIC, format: mic2826.init",
@@ -82,7 +82,7 @@ static struct vss_cmd_t mic2826_cmd[] =
 };
 #endif
 
-static struct vss_cmd_t app_cmd[] = 
+static const struct vss_cmd_t app_cmd[] = 
 {
 	VSS_CMD(	"dal",
 				"dal processors",

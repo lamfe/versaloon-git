@@ -92,7 +92,7 @@ VSS_HANDLER(target_read);
 VSS_HANDLER(target_verify);
 VSS_HANDLER(target_interface_indexes);
 
-static struct vss_cmd_t target_cmd[] =
+static const struct vss_cmd_t target_cmd[] =
 {
 	VSS_CMD(	"memory-detail",
 				"show memory detail, format: memory-detail/D TARGET",
@@ -288,7 +288,7 @@ const struct target_area_name_t target_area_name[NUM_OF_TARGET_AREA] =
 struct chip_series_t target_chips = {NULL, 0, NULL};
 struct chip_param_t target_chip_param;
 
-struct target_info_t targets_info[] =
+const struct target_info_t targets_info[] =
 {
 	// stm32f1
 #if TARGET_STM32F1_EN
@@ -2493,7 +2493,7 @@ static vsf_err_t target_info_init(struct program_info_t *pi)
 			
 			if (!probe_chip(pi->chip_name))
 			{
-				cur_target = &targets_info[i];
+				cur_target = (struct target_info_t *)&targets_info[i];
 				pi->chip_type = strdup(targets_info[i].name);
 				if (NULL == pi->chip_type)
 				{
@@ -2525,7 +2525,7 @@ static vsf_err_t target_info_init(struct program_info_t *pi)
 				}
 				else if (strchr(targets_info[i].feature, NO_TARGET[0]) != NULL)
 				{
-					cur_target = &targets_info[i];
+					cur_target = (struct target_info_t *)&targets_info[i];
 					return VSFERR_NONE;
 				}
 				else
@@ -2546,7 +2546,7 @@ static vsf_err_t target_info_init(struct program_info_t *pi)
 				}
 				else
 				{
-					cur_target = &targets_info[i];
+					cur_target = (struct target_info_t *)&targets_info[i];
 					LOG_DEBUG("%s initialized.", cur_target->name);
 					return VSFERR_NONE;
 				}

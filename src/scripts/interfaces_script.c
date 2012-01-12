@@ -74,7 +74,7 @@ VSS_HANDLER(interface_delay_us);
 VSS_HANDLER(interface_delay_ms);
 VSS_HANDLER(interface_commit);
 
-static struct vss_cmd_t tvcc_cmd[] =
+static const struct vss_cmd_t tvcc_cmd[] =
 {
 	VSS_CMD(	"get",
 				"get target voltage, format: tvcc.get",
@@ -87,7 +87,7 @@ static struct vss_cmd_t tvcc_cmd[] =
 	VSS_CMD_END
 };
 
-static struct vss_cmd_t jtag_cmd[] =
+static const struct vss_cmd_t jtag_cmd[] =
 {
 	VSS_CMD(	"init",
 				"initialize jtag, format: jtag.init [KHZ UB UA BB BA]",
@@ -120,7 +120,7 @@ static struct vss_cmd_t jtag_cmd[] =
 	VSS_CMD_END
 };
 
-static struct vss_cmd_t gpio_cmd[] =
+static const struct vss_cmd_t gpio_cmd[] =
 {
 	VSS_CMD(	"init",
 				"initialize gpio, format: gpio.init [MASK IO PULL_EN PULL]",
@@ -145,7 +145,7 @@ static struct vss_cmd_t gpio_cmd[] =
 	VSS_CMD_END
 };
 
-static struct vss_cmd_t spi_cmd[] =
+static const struct vss_cmd_t spi_cmd[] =
 {
 	VSS_CMD(	"init",
 				"initialize spi, format: spi.init [KHZ MODE FIRSTBIT]",
@@ -166,7 +166,7 @@ static struct vss_cmd_t spi_cmd[] =
 	VSS_CMD_END
 };
 
-static struct vss_cmd_t iic_cmd[] =
+static const struct vss_cmd_t iic_cmd[] =
 {
 	VSS_CMD(	"init",
 				"initialize iic, format: iic.init [KHZ MAX_DLY_US]",
@@ -203,7 +203,7 @@ static struct vss_cmd_t iic_cmd[] =
 	VSS_CMD_END
 };
 
-static struct vss_cmd_t pwm_cmd[] =
+static const struct vss_cmd_t pwm_cmd[] =
 {
 	VSS_CMD(	"init",
 				"initialize pwm module, format: pwm.init [KHZ PUSHPULL POLARITY]",
@@ -228,7 +228,7 @@ static struct vss_cmd_t pwm_cmd[] =
 	VSS_CMD_END
 };
 
-static struct vss_cmd_t delay_cmd[] =
+static const struct vss_cmd_t delay_cmd[] =
 {
 	VSS_CMD(	"delayus",
 				"delay us, format: delay.delayus US",
@@ -240,7 +240,7 @@ static struct vss_cmd_t delay_cmd[] =
 				NULL),
 };
 
-static struct vss_cmd_t interface_cmd[] =
+static const struct vss_cmd_t interface_cmd[] =
 {
 	VSS_CMD(	"tvcc",
 				"adjust target voltge",
