@@ -285,7 +285,7 @@ const struct target_area_name_t target_area_name[NUM_OF_TARGET_AREA] =
 	{UNIQUEID_CHAR,				UNIQUEID,			"uniqueid"}
 };
 
-struct chip_series_t target_chips = {0, NULL};
+struct chip_series_t target_chips = {NULL, 0, NULL};
 struct chip_param_t target_chip_param;
 
 struct target_info_t targets_info[] =
