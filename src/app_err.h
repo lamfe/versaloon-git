@@ -88,7 +88,7 @@
 #define ERRMSG_AUTODETECT_FAIL				"%s auto-detect failed."
 #define ERRCODE_AUTODETECT_FAIL				VSFERR_FAIL
 
-#define ERRMSG_INVALID_XML_SETTING			"Invalid setting in config xml file for %s"
+#define ERRMSG_INVALID_TGTCFG_SETTING		"Invalid setting in config file for %s"
 #define ERRMSG_INVALID_PROG_MODE			"Program mode %d is invalid for %s."
 #define ERRCODE_INVALID_PROG_MODE			VSFERR_FAIL
 
