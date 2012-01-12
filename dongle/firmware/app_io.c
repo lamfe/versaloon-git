@@ -49,28 +49,74 @@ FILE *FOPEN(const char *filename, const char *mode)
 
 int FCLOSE(FILE *f)
 {
+	if ((f != stdin) && (f != stdout) && (f != stderr))
+	{
+	}
 }
 
 int FEOF(FILE *f)
 {
-	f = f;
-	return 0;
+	if ((stdin == f) || (stdout == f) || (stderr == f))
+	{
+		return 0;
+	}
+	else
+	{
+	}
 }
 
 void REWIND(FILE *f)
 {
+	if ((f != stdin) && (f != stdout) && (f != stderr))
+	{
+	}
 }
 
 int FFLUSH(FILE *f)
 {
+	if ((stdout == f) || (stderr == f))
+	{
+		app_io_out_sync();
+		return 0;
+	}
+	else if (stdin == f)
+	{
+		uint32_t i, size = vsf_fifo_get_data_length(&usart_stream_p0.fifo_tx);
+		for (i = 0; i < size; i++)
+		{
+			vsf_fifo_pop8(&usart_stream_p0.fifo_tx);
+		}
+		return 0;
+	}
+	else
+	{
+	}
 }
 
 int FGETC(FILE *f)
 {
+	if ((stdout == f) || (stderr == f))
+	{
+		return 0;
+	}
+	else if (stdin == f)
+	{
+		uint32_t size;
+		do
+		{
+			usb_protocol_poll();
+			size = vsf_fifo_get_data_length(&usart_stream_p0.fifo_tx);
+		} while (!size);
+		return vsf_fifo_pop8(&usart_stream_p0.fifo_tx);
+	}
+	else
+	{
+	}
 }
 
 int GETCHAR(void)
 {
+	return FGETC(stdin);
 }
 
 char* FGETS(char *buf, int count, FILE *f)
@@ -78,48 +124,52 @@ char* FGETS(char *buf, int count, FILE *f)
 	char cur_char, *result = buf;
 	int size = 0, cur_size, pos;
 	
-	f = f;
-	
-	if (NULL == buf)
+	if ((NULL == buf) || (NULL == f) || (stdout == f) || (stderr == f))
 	{
 		return NULL;
 	}
 	
-	pos = 0;
-	cur_char = '\0';
-	while ((size < count) && (cur_char != '\r'))
+	if (stdin == f)
 	{
-		usb_protocol_poll();
-		cur_size = vsf_fifo_get_data_length(&usart_stream_p0.fifo_tx);
-		
-		while (cur_size && (size < count) && (cur_char != '\r'))
+		pos = 0;
+		cur_char = '\0';
+		while ((size < count) && (cur_char != '\r'))
 		{
-			cur_char = (char)vsf_fifo_pop8(&usart_stream_p0.fifo_tx);
-			if ('\r' == cur_char)
-			{
-				vsf_fifo_push8(&usart_stream_p0.fifo_rx, '\n');
-			}
-			else if ('\b' == cur_char)
-			{
-				if (pos)
-				{
-					vsf_fifo_push8(&usart_stream_p0.fifo_rx, '\b');
-					vsf_fifo_push8(&usart_stream_p0.fifo_rx, ' ');
-					vsf_fifo_push8(&usart_stream_p0.fifo_rx, '\b');
-					pos--;
-				}
-				cur_size--;
-				continue;
-			}
-			vsf_fifo_push8(&usart_stream_p0.fifo_rx, (uint8_t)cur_char);
+			usb_protocol_poll();
+			cur_size = vsf_fifo_get_data_length(&usart_stream_p0.fifo_tx);
 			
-			buf[pos++] = cur_char;
-			size++;
-			cur_size--;
+			while (cur_size && (size < count) && (cur_char != '\r'))
+			{
+				cur_char = (char)vsf_fifo_pop8(&usart_stream_p0.fifo_tx);
+				if ('\r' == cur_char)
+				{
+					vsf_fifo_push8(&usart_stream_p0.fifo_rx, '\n');
+				}
+				else if ('\b' == cur_char)
+				{
+					if (pos)
+					{
+						vsf_fifo_push8(&usart_stream_p0.fifo_rx, '\b');
+						vsf_fifo_push8(&usart_stream_p0.fifo_rx, ' ');
+						vsf_fifo_push8(&usart_stream_p0.fifo_rx, '\b');
+						pos--;
+					}
+					cur_size--;
+					continue;
+				}
+				vsf_fifo_push8(&usart_stream_p0.fifo_rx, (uint8_t)cur_char);
+				
+				buf[pos++] = cur_char;
+				size++;
+				cur_size--;
+			}
 		}
+		buf[pos] = '\0';
+		app_io_out_sync();
 	}
-	buf[pos] = '\0';
-	app_io_out_sync();
+	else
+	{
+	}
 	return result;
 }
 
@@ -130,37 +180,46 @@ int FPRINTF(FILE *f, const char *format, ...)
 	char *pbuff = app_io_local_buff;
 	va_list ap;
 	
-	f = f;
+	if ((NULL == f) || (stdout == f) || (stderr == f))
+	{
+		return 0;
+	}
 	
 	va_start(ap, format);
 	number = vsprintf(app_io_local_buff, format, ap);
 	va_end(ap);
 	
-	i = number;
-	while (i > 0)
+	if (stdin == f)
 	{
-		do
+		i = number;
+		while (i > 0)
 		{
-			usb_protocol_poll();
-			free_space = vsf_fifo_get_avail_length(&usart_stream_p0.fifo_rx);
-		} while (!free_space);
-		
-		if (free_space > i)
-		{
-			cur_size = i;
+			do
+			{
+				usb_protocol_poll();
+				free_space = vsf_fifo_get_avail_length(&usart_stream_p0.fifo_rx);
+			} while (!free_space);
+			
+			if (free_space > i)
+			{
+				cur_size = i;
+			}
+			else
+			{
+				cur_size = free_space;
+			}
+			
+			vsf_fifo_push(&usart_stream_p0.fifo_rx, cur_size, (uint8_t *)pbuff);
+			
+			i -= cur_size;
+			pbuff += cur_size;
 		}
-		else
-		{
-			cur_size = free_space;
-		}
 		
-		vsf_fifo_push(&usart_stream_p0.fifo_rx, cur_size, (uint8_t *)pbuff);
-		
-		i -= cur_size;
-		pbuff += cur_size;
+		app_io_out_sync();
 	}
-	
-	app_io_out_sync();
+	else
+	{
+	}
 	return number;
 }
 
