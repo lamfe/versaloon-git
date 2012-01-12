@@ -21,14 +21,10 @@
 #include "usb_protocol.h"
 
 #if SCRIPTS_EN
-#include "app_io.h"
-#include "app_log.h"
-#include "scripts.h"
-#include "interfaces_script.h"
-#include "app_script.h"
-
-int verbosity = LOG_DEFAULT_LEVEL;
-int verbosity_stack[1];
+#	include "app_io.h"
+#	include "app_log.h"
+#	include "scripts.h"
+#	include "vsprog.h"
 #endif
 
 /* Private typedef -----------------------------------------------------------*/
@@ -49,9 +45,9 @@ int main(void)
 	core_interfaces.core.init(NULL);
 	usb_protocol_init();
 #if SCRIPTS_EN
+	APP_IO_INIT();
 	vss_init();
-	vss_register_cmd_list(&interface_cmd_list);
-	vss_register_cmd_list(&app_cmd_list);
+	vss_register_cmd_list(&vsprog_cmd_list);
 	
 	KEY_Init();
 	while (!KEY_IsDown())
@@ -63,6 +59,7 @@ int main(void)
 	{
 		PRINTF(LOG_LINE_END);
 	}
+	vss_run_script("init");
 	vss_run_script("shell");
 #endif	// if SCRIPTS_EN
 

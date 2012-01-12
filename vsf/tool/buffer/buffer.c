@@ -71,12 +71,12 @@ uint32_t vsf_fifo_get_avail_length(struct vsf_fifo_t *fifo)
 		return 0;
 	}
 #endif
-	return fifo->buffer.size - vsf_fifo_get_data_length(fifo);
+	return fifo->buffer.size - vsf_fifo_get_data_length(fifo) - 1;
 }
 
 uint32_t vsf_fifo_push8(struct vsf_fifo_t *fifo, uint8_t data)
 {
-	if (vsf_fifo_get_avail_length(fifo) <= 1)
+	if (vsf_fifo_get_avail_length(fifo) < 1)
 	{
 		return 0;
 	}
@@ -110,7 +110,7 @@ uint32_t vsf_fifo_push(struct vsf_fifo_t *fifo, uint32_t size, uint8_t *data)
 		return 0;
 	}
 #endif
-	if (size >= vsf_fifo_get_avail_length(fifo))
+	if (size > vsf_fifo_get_avail_length(fifo))
 	{
 		return 0;
 	}
@@ -138,7 +138,7 @@ uint32_t vsf_fifo_peek_consequent(struct vsf_fifo_t *fifo, uint32_t size,
 								uint8_t *data)
 {
 	uint32_t tmp32;
-	uint32_t avail_len = vsf_fifo_get_avail_length(fifo);
+	uint32_t avail_len = vsf_fifo_get_data_length(fifo);
 	
 #if __VSF_DEBUG__
 	if (NULL == fifo)
@@ -167,7 +167,7 @@ uint32_t vsf_fifo_peek_consequent(struct vsf_fifo_t *fifo, uint32_t size,
 uint32_t vsf_fifo_peek(struct vsf_fifo_t *fifo, uint32_t size, uint8_t *data)
 {
 	uint32_t tmp32;
-	uint32_t avail_len = vsf_fifo_get_avail_length(fifo);
+	uint32_t avail_len = vsf_fifo_get_data_length(fifo);
 	
 #if __VSF_DEBUG__
 	if (NULL == fifo)

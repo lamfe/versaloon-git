@@ -65,6 +65,36 @@
 #define VSS_CFG_MAX_ARGC				8
 #define VSS_CFG_MAX_LINE_LENGTH			128
 #define INTERFACES_INFO_T				app_interfaces_info_t
+#define APPIO_BUFFER_SIZE				4096
+
+#define PARAM_CHECK						1
+
+// Target Support Configuration
+#define TARGET_AT89S5X_EN				0
+#define TARGET_AT91SAM3_EN				0
+#define TARGET_AVR32_EN					0
+#define TARGET_AVR8_EN					0
+#define TARGET_AVRXMEGA_EN				0
+#define TARGET_C8051F_EN				0
+#define TARGET_HCS08_EN					0
+#define TARGET_HCS12_EN					0
+#define TARGET_LM3S_EN					0
+#define TARGET_LPC1000_EN				0
+#define TARGET_LPC900_EN				0
+#define TARGET_MSP430_EN				0
+#define TARGET_PSOC1_EN					0
+#define TARGET_STM32F1_EN				0
+#define TARGET_STM8_EN					0
+#define TARGET_SVF_EN					0
+#define TARGET_EE93CX6_EN				0
+#define TARGET_EE24CXX_EN				0
+#define TARGET_DF25XX_EN				0
+#define TARGET_STM32F2_EN				0
+#define TARGET_STM32F4_EN				0
+#define TARGET_STM32L1_EN				0
+#define TARGET_SD_EN					0
+#define TARGET_CFI_EN					0
+#define TARGET_NAND_EN					0
 
 #define USB_TO_XXX_EN					1
 

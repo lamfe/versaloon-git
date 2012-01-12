@@ -16,46 +16,20 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#ifndef __APP_CFG_INCLUDED__
-#define __APP_CFG_INCLUDED__
 
-#include "compiler.h"
+#ifndef __PGBAR_H_INCLUDED__
+#define __PGBAR_H_INCLUDED__
 
-// vss config
-#define	VSS_CFG_MAX_LINE_LENGTH				4096
-#define VSS_CFG_MAX_ARGC					1024
+#define PROGRESS_STEP			40
+#define PROGRESS_CHAR			'='
 
-// target config
-#define TARGET_CFG_FILE_SUPPORT				1
+extern struct vss_cmd_list_t pgbar_cmd_list;
 
-#define PARAM_CHECK							1
+vsf_err_t pgbar_init(char *s, char *e, uint32_t min, uint32_t max,
+						uint32_t max_chars, char c);
+uint32_t pgbar_fini(void);
+void pgbar_set_gui_mode(uint8_t gui_mode);
+void pgbar_update(int32_t step);
 
-// Target Support Configuration
-#define TARGET_AT89S5X_EN					1
-#define TARGET_AT91SAM3_EN					1
-#define TARGET_AVR32_EN						0
-#define TARGET_AVR8_EN						1
-#define TARGET_AVRXMEGA_EN					0
-#define TARGET_C8051F_EN					1
-#define TARGET_HCS08_EN						1
-#define TARGET_HCS12_EN						1
-#define TARGET_LM3S_EN						1
-#define TARGET_LPC1000_EN					1
-#define TARGET_LPC900_EN					1
-#define TARGET_MSP430_EN					1
-#define TARGET_PSOC1_EN						1
-#define TARGET_STM32F1_EN					1
-#define TARGET_STM8_EN						1
-#define TARGET_SVF_EN						1
-#define TARGET_EE93CX6_EN					1
-#define TARGET_EE24CXX_EN					1
-#define TARGET_DF25XX_EN					1
-#define TARGET_STM32F2_EN					1
-#define TARGET_STM32F4_EN					1
-#define TARGET_STM32L1_EN					1
-#define TARGET_SD_EN						1
-#define TARGET_CFI_EN						1
-#define TARGET_NAND_EN						1
-
-#endif /* __APP_CFG_INCLUDED__ */
+#endif /* __PGBAR_H_INCLUDED__ */
 

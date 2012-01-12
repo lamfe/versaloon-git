@@ -341,5 +341,6 @@ extern const struct app_interfaces_info_t app_interfaces;
 extern struct app_interfaces_info_t *interfaces;
 
 vsf_err_t interface_assert(struct app_interfaces_info_t **ifs);
+char* get_interface_name(uint64_t i);
 
 #endif	// __APP_INTERFACES_H_INCLUDED__

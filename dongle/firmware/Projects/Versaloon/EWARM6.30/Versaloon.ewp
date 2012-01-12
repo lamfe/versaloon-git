@@ -307,6 +307,7 @@
           <state>$PROJ_DIR$\..\..\..\Interfaces\APP\</state>
           <state>$PROJ_DIR$\..\..\..\USB_TO_XXX\</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\vsf\tool\list</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\</state>
@@ -316,7 +317,12 @@
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\STM32_USB-FS-Device_Driver\inc</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\inc</state>
           <state>$PROJ_DIR$\..\..\..\..\..\src\scripts</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\src\target</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\src\tools\memlist</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\src\tools\strparser</state>
           <state>$PROJ_DIR$\..\..\..\app_script</state>
+          <state>$PROJ_DIR$\..\..\..\vsprog</state>
+          <state>$PROJ_DIR$\..\..\..\vsprog\tools\pgbar</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -1237,6 +1243,7 @@
           <state>$PROJ_DIR$\..\..\..\Interfaces\APP\</state>
           <state>$PROJ_DIR$\..\..\..\USB_TO_XXX\</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\vsf\tool\list</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\</state>
@@ -1246,7 +1253,12 @@
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\STM32_USB-FS-Device_Driver\inc</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\inc</state>
           <state>$PROJ_DIR$\..\..\..\..\..\src\scripts</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\src\target</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\src\tools\memlist</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\src\tools\strparser</state>
           <state>$PROJ_DIR$\..\..\..\app_script</state>
+          <state>$PROJ_DIR$\..\..\..\vsprog</state>
+          <state>$PROJ_DIR$\..\..\..\vsprog\tools\pgbar</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -2412,6 +2424,45 @@
     </file>
     <file>
       <name>$PROJ_DIR$\..\vsf_cfg\vsf_usbd_cfg.h</name>
+    </file>
+  </group>
+  <group>
+    <name>vsprog</name>
+    <group>
+      <name>target</name>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\..\..\src\target\target.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\vsprog\target\target_readconf.c</name>
+      </file>
+    </group>
+    <group>
+      <name>tools</name>
+      <group>
+        <name>memlist</name>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\tools\memlist\memlist.c</name>
+        </file>
+      </group>
+      <group>
+        <name>pgbar</name>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\vsprog\tools\pgbar\pgbar.c</name>
+        </file>
+      </group>
+      <group>
+        <name>strparser</name>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\tools\strparser\strparser.c</name>
+        </file>
+      </group>
+    </group>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\vsprog\config.h</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\vsprog\vsprog.c</name>
     </file>
   </group>
   <file>
