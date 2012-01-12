@@ -316,6 +316,7 @@
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\STM32_USB-FS-Device_Driver\inc</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\inc</state>
           <state>$PROJ_DIR$\..\..\..\..\..\src\scripts</state>
+          <state>$PROJ_DIR$\..\..\..\app_script</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -1245,6 +1246,7 @@
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\STM32_USB-FS-Device_Driver\inc</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\inc</state>
           <state>$PROJ_DIR$\..\..\..\..\..\src\scripts</state>
+          <state>$PROJ_DIR$\..\..\..\app_script</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -1993,6 +1995,12 @@
   </group>
   <group>
     <name>scripts</name>
+    <group>
+      <name>app_script</name>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\app_script\app_script.c</name>
+      </file>
+    </group>
     <file>
       <name>$PROJ_DIR$\..\..\..\..\..\src\scripts\interfaces_script.c</name>
     </file>
