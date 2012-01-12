@@ -25,7 +25,7 @@
 
 extern struct usart_stream_info_t usart_stream_p0;
 
-static char app_io_local_buff[256];
+static char app_io_local_buff[APPIO_BUFFER_SIZE];
 
 static void app_io_out_sync(void)
 {
@@ -34,8 +34,8 @@ static void app_io_out_sync(void)
 	do
 	{
 		usb_protocol_poll();
-		free_space = vsf_fifo_get_avail_length(&usart_stream_p0.fifo_rx);
-	} while (free_space < usart_stream_p0.fifo_rx.buffer.size);
+		free_space = vsf_fifo_get_data_length(&usart_stream_p0.fifo_rx);
+	} while (free_space);
 }
 
 void APP_IO_INIT(void)

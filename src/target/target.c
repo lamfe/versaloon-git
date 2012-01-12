@@ -32,7 +32,7 @@
 #include "app_log.h"
 
 #include "vsprog.h"
-#include "programmer.h"
+#include "interfaces.h"
 #include "target.h"
 #include "scripts.h"
 
@@ -1059,6 +1059,7 @@ static vsf_err_t target_check_defined(struct operation_t operations)
 	}
 }
 
+#if TARGET_CFG_FILE_SUPPORT
 static vsf_err_t target_write_buffer_from_file_callback(char * ext,
 				uint32_t address, uint32_t seg_addr, uint8_t* data,
 				uint32_t length, void* buffer)
@@ -1154,6 +1155,7 @@ static vsf_err_t target_write_buffer_from_file_callback(char * ext,
 	// not found
 	return VSFERR_FAIL;
 }
+#endif
 
 static vsf_err_t MEMLIST_VerifyBuff(struct memlist *ml, uint8_t *buf1,
 				uint8_t *buf2, uint32_t addr, uint32_t len, uint32_t *pos)
@@ -1301,7 +1303,7 @@ static vsf_err_t target_program(struct program_context_t *context)
 	struct program_info_t *pi = context->pi;
 	struct operation_t *op = context->op;
 	struct chip_param_t *param = context->param;
-	struct interfaces_info_t *prog = context->prog;
+	struct INTERFACES_INFO_T *prog = context->prog;
 	
 	struct chip_area_info_t *area_info;
 	struct program_area_t *prog_area;
@@ -2012,7 +2014,7 @@ static vsf_err_t target_init(struct program_info_t *pi)
 			context.op = &opt_tmp;
 			context.param = &target_chip_param;
 			context.pi = pi;
-			context.prog = cur_interface;
+			context.prog = interfaces;
 			if (target_enter_progmode(&context))
 			{
 				LOG_ERROR(ERRMSG_AUTODETECT_FAIL, pi->chip_type);
@@ -2133,6 +2135,7 @@ static uint32_t target_prepare_operation(uint32_t *operation)
 	return ret;
 }
 
+#if TARGET_CFG_FILE_SUPPORT
 static vsf_err_t target_prepare_operations(struct operation_t *operations,
 									uint32_t *readfile, uint32_t *writefile)
 {
@@ -2150,6 +2153,7 @@ static vsf_err_t target_prepare_operations(struct operation_t *operations,
 	
 	return VSFERR_NONE;
 }
+#endif
 
 static void target_print_single_memory(char type)
 {
@@ -2851,15 +2855,19 @@ VSS_HANDLER(target_execute_addr)
 	return VSFERR_NONE;
 }
 
+#if TARGET_CFG_FILE_SUPPORT
 #include "filelist.h"
 #include "fileparser.h"
+extern struct filelist *fl_in, *fl_out;
+#endif
 
 extern struct operation_t operations;
-extern struct filelist *fl_in, *fl_out;
 VSS_HANDLER(target_prepare)
 {
+#if TARGET_CFG_FILE_SUPPORT
 	uint32_t require_file_for_read = 0;
 	uint32_t require_file_for_write = 0;
+#endif
 	
 	VSS_CHECK_ARGC(1);
 	if (NULL == cur_target)
@@ -2868,6 +2876,7 @@ VSS_HANDLER(target_prepare)
 		return VSFERR_FAIL;
 	}
 	
+#if TARGET_CFG_FILE_SUPPORT
 	// check file
 	target_prepare_operations(&operations,
 					&require_file_for_read, &require_file_for_write);
@@ -2883,6 +2892,7 @@ VSS_HANDLER(target_prepare)
 		LOG_ERROR(ERRMSG_NOT_DEFINED, "output file");
 		return VSFERR_FAIL;
 	}
+#endif
 	
 	// init target
 	if (target_init(&program_info))
@@ -2902,6 +2912,7 @@ VSS_HANDLER(target_prepare)
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "parse cli_string");
 		return VSFERR_FAIL;
 	}
+#if TARGET_CFG_FILE_SUPPORT
 	// read file
 	if (require_file_for_read > 0)
 	{
@@ -2922,6 +2933,7 @@ VSS_HANDLER(target_prepare)
 			fl = FILELIST_GetNext(fl);
 		}
 	}
+#endif
 	if (target_check_defined(operations))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "check target defined content");
@@ -2945,7 +2957,7 @@ VSS_HANDLER(target_enter_program_mode)
 	context.op = &operations;
 	context.param = &target_chip_param;
 	context.pi = &program_info;
-	context.prog = cur_interface;
+	context.prog = interfaces;
 	if (target_enter_progmode(&context))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATE_DEVICE, cur_target->name);
@@ -2970,7 +2982,7 @@ VSS_HANDLER(target_leave_program_mode)
 	context.op = &operations;
 	context.param = &target_chip_param;
 	context.pi = &program_info;
-	context.prog = cur_interface;
+	context.prog = interfaces;
 	if (target_leave_progmode(&context, success))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATE_DEVICE, cur_target->name);
@@ -3012,7 +3024,7 @@ VSS_HANDLER(target_erase)
 	context.op = &operations;
 	context.param = &target_chip_param;
 	context.pi = &program_info;
-	context.prog = cur_interface;
+	context.prog = interfaces;
 	if (target_program(&context))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATE_DEVICE, cur_target->name);
@@ -3056,7 +3068,7 @@ VSS_HANDLER(target_write)
 	context.op = &operations;
 	context.param = &target_chip_param;
 	context.pi = &program_info;
-	context.prog = cur_interface;
+	context.prog = interfaces;
 	err = target_program(&context);
 	operations = operations_tmp;
 	if (err)
@@ -3101,7 +3113,7 @@ VSS_HANDLER(target_verify)
 	context.op = &operations;
 	context.param = &target_chip_param;
 	context.pi = &program_info;
-	context.prog = cur_interface;
+	context.prog = interfaces;
 	err = target_program(&context);
 	operations = operations_tmp;
 	if (err)
@@ -3152,7 +3164,7 @@ VSS_HANDLER(target_read)
 	context.op = &operations;
 	context.param = &target_chip_param;
 	context.pi = &program_info;
-	context.prog = cur_interface;
+	context.prog = interfaces;
 	err = target_program(&context);
 	program_info.program_areas[index].memlist = pml_save;
 	MEMLIST_Free(&ml_tmp);
@@ -3190,13 +3202,14 @@ VSS_HANDLER(target_operate)
 	context.op = &operations;
 	context.param = &target_chip_param;
 	context.pi = &program_info;
-	context.prog = cur_interface;
+	context.prog = interfaces;
 	if (target_program(&context))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATE_DEVICE, cur_target->name);
 		return VSFERR_FAIL;
 	}
 	
+#if TARGET_CFG_FILE_SUPPORT
 	// save contect to file for read operation
 	if (cur_target != NULL)
 	{
@@ -3240,6 +3253,7 @@ VSS_HANDLER(target_operate)
 		}
 		end_file(fl_out);
 	}
+#endif
 	return VSFERR_NONE;
 }
 

@@ -26,8 +26,19 @@
 #	define __CONNECT(a, b)			a ## b
 #endif
 
+#ifndef min
+#	define min(a, b)				(((a) < (b)) ? (a) : (b))
+#endif
+#ifndef max
+#	define max(a, b)				(((a) > (b)) ? (a) : (b))
+#endif
+
 #ifndef REFERENCE_PARAMETER
 #	define REFERENCE_PARAMETER(a)	(a) = (a)
+#endif
+
+#ifndef TO_STR
+#	define TO_STR(name)				#name
 #endif
 
 #ifndef NULL
