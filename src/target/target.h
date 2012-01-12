@@ -182,8 +182,6 @@ struct program_mode_t
 	uint64_t interface_needed;
 };
 
-#define TARGET_MAX_CHIP_NAME_LEN	32
-
 struct chip_area_info_t
 {
 	uint32_t seg;
@@ -198,7 +196,7 @@ struct chip_area_info_t
 
 struct chip_param_t
 {
-	char chip_name[TARGET_MAX_CHIP_NAME_LEN];
+	char *chip_name;
 	uint32_t chip_id;
 	char *program_mode_str;
 	uint32_t program_mode;
@@ -295,6 +293,7 @@ struct target_info_t
 
 struct chip_series_t
 {
+	char *series_name;
 	uint32_t num_of_chips;
 	struct chip_param_t *chips_param;
 };

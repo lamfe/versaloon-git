@@ -722,6 +722,13 @@ vsf_err_t target_build_chip_series(const char *chip_series,
 		goto free_and_exit;
 	}
 	
+	s->series_name = strdup(chip_series);
+	if (NULL == s->series_name)
+	{
+		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
+		err = VSFERR_NOT_ENOUGH_RESOURCES;
+		goto free_and_exit;
+	}
 	s->num_of_chips = target_xml_get_child_number(curNode, "chip");
 	if (0 == s->num_of_chips)
 	{
@@ -762,9 +769,14 @@ vsf_err_t target_build_chip_series(const char *chip_series,
 		}
 		
 		// read name
-		strncpy(p_param->chip_name,
-				(const char *)xmlGetProp(curNode, BAD_CAST "name"),
-				sizeof(p_param->chip_name));
+		p_param->chip_name = 
+					strdup((const char *)xmlGetProp(curNode, BAD_CAST "name"));
+		if (NULL == p_param->chip_name)
+		{
+			LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
+			err = VSFERR_NOT_ENOUGH_RESOURCES;
+			goto free_and_exit;
+		}
 		
 		// read parameters
 		target_para_size_defined = 0;
