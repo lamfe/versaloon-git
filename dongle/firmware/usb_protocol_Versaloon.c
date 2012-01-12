@@ -347,6 +347,11 @@ static const struct vsfusbd_class_protocol_t Versaloon_Protocol =
 extern struct usart_stream_info_t usart_stream_p0;
 struct vsfusbd_CDC_param_t Versaloon_CDC_param = 
 {
+#if SCRIPTS_EN
+	false,
+#else
+	true,
+#endif
 	&usart_stream_p0,
 				// usart_stream
 	false,		// gpio_rts_enable
@@ -386,6 +391,7 @@ struct vsfusbd_device_t usb_device =
 
 vsf_err_t usb_protocol_init(void)
 {
+#if !SCRIPTS_EN
 	NVIC_InitTypeDef NVIC_InitStructure;
 	
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
@@ -395,6 +401,7 @@ vsf_err_t usb_protocol_init(void)
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&NVIC_InitStructure);
+#endif
 	
 	core_interfaces.gpio.init(0);
 	core_interfaces.gpio.init(1);

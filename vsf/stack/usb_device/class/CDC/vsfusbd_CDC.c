@@ -181,7 +181,11 @@ static vsf_err_t vsfusbd_CDCData_class_poll(uint8_t iface,
 			device->drv->ep.set_OUT_state(param->ep_out, USB_EP_STAT_ACK);
 		}
 	}
-	return usart_stream_poll(param->usart_stream);
+	if (param->usart_enable)
+	{
+		return usart_stream_poll(param->usart_stream);
+	}
+	return VSFERR_NONE;
 }
 
 static vsf_err_t vsfusbd_CDCMaster_GetLineCoding_prepare(
