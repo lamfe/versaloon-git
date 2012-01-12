@@ -35,7 +35,7 @@ noinst_LIBRARIES = libtgt.a
 
 libtgt_a_SOURCES = \
     target.c \
-    target_readconf.c \
+    target_conf.c \
     core/arm_adi/adi_v5p1.c \
     cortex-m3/cm3.c \
     cortex-m3/cm3_stm32_fl.c \
