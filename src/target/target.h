@@ -201,9 +201,9 @@ struct chip_param_t
 	char *program_mode_str;
 	uint32_t program_mode;
 	
-	struct chip_area_info_t chip_areas[dimof(target_area_name)];
-	uint8_t chip_erase;
+	uint32_t chip_erase;
 	uint32_t param[32];
+	struct chip_area_info_t chip_areas[dimof(target_area_name)];
 };
 
 struct program_context_t
@@ -294,6 +294,7 @@ struct target_info_t
 struct chip_series_t
 {
 	char *series_name;
+	uint32_t size;
 	uint32_t num_of_chips;
 	struct chip_param_t *chips_param;
 };
@@ -354,6 +355,15 @@ char* target_area_fullname_by_mask(uint32_t mask);
 
 int8_t target_mode_get_idx(const struct program_mode_t *mode, char mode_name);
 
+struct target_cfg_data_info_t
+{
+	uint32_t addr;
+	bool little_endian;
+	uint8_t addr_width;
+	uint8_t align;
+};
+vsf_err_t target_generate_cfg_data(struct target_cfg_data_info_t *cfg_data_info,
+									char *filename);
 vsf_err_t target_release_chip_series(struct chip_series_t *s);
 vsf_err_t target_release_chip_fl(struct chip_fl_t *fl);
 

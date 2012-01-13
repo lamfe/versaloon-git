@@ -71,6 +71,14 @@
 										((*((uint8_t *)(p) + 1)) << 16) | \
 										((*((uint8_t *)(p) + 2)) << 8) | \
 										((*((uint8_t *)(p) + 3)) << 0))
+#define GET_U64_MSBFIRST(p)			(	((*((uint8_t *)(p) + 0)) << 56) | \
+										((*((uint8_t *)(p) + 1)) << 48) | \
+										((*((uint8_t *)(p) + 2)) << 40) | \
+										((*((uint8_t *)(p) + 3)) << 32) |\
+										((*((uint8_t *)(p) + 4)) << 24) | \
+										((*((uint8_t *)(p) + 5)) << 16) | \
+										((*((uint8_t *)(p) + 6)) << 8) | \
+										((*((uint8_t *)(p) + 7)) << 0))
 #define GET_U16_LSBFIRST(p)			(	((*((uint8_t *)(p) + 0)) << 0) | \
 										((*((uint8_t *)(p) + 1)) << 8))
 #define GET_U24_LSBFIRST(p)			(	((*((uint8_t *)(p) + 0)) << 0) | \
@@ -80,6 +88,14 @@
 										((*((uint8_t *)(p) + 1)) << 8) | \
 										((*((uint8_t *)(p) + 2)) << 16) | \
 										((*((uint8_t *)(p) + 3)) << 24))
+#define GET_U64_LSBFIRST(p)			(	((*((uint8_t *)(p) + 0)) << 0) | \
+										((*((uint8_t *)(p) + 1)) << 8) | \
+										((*((uint8_t *)(p) + 2)) << 16) | \
+										((*((uint8_t *)(p) + 3)) << 24) |\
+										((*((uint8_t *)(p) + 4)) << 32) | \
+										((*((uint8_t *)(p) + 5)) << 40) | \
+										((*((uint8_t *)(p) + 6)) << 48) | \
+										((*((uint8_t *)(p) + 7)) << 56))
 
 #define SET_U16_MSBFIRST(p, v)		\
 	do{\
@@ -99,6 +115,17 @@
 		*((uint8_t *)(p) + 2) = (((uint32_t)(v)) >> 8) & 0xFF;\
 		*((uint8_t *)(p) + 3) = (((uint32_t)(v)) >> 0) & 0xFF;\
 	} while (0)
+#define SET_U64_MSBFIRST(p, v)		\
+	do{\
+		*((uint8_t *)(p) + 0) = (((uint64_t)(v)) >> 56) & 0xFF;\
+		*((uint8_t *)(p) + 1) = (((uint64_t)(v)) >> 48) & 0xFF;\
+		*((uint8_t *)(p) + 2) = (((uint64_t)(v)) >> 40) & 0xFF;\
+		*((uint8_t *)(p) + 3) = (((uint64_t)(v)) >> 32) & 0xFF;\
+		*((uint8_t *)(p) + 4) = (((uint64_t)(v)) >> 24) & 0xFF;\
+		*((uint8_t *)(p) + 5) = (((uint64_t)(v)) >> 16) & 0xFF;\
+		*((uint8_t *)(p) + 6) = (((uint64_t)(v)) >> 8) & 0xFF;\
+		*((uint8_t *)(p) + 7) = (((uint64_t)(v)) >> 0) & 0xFF;\
+	} while (0)
 #define SET_U16_LSBFIRST(p, v)		\
 	do{\
 		*((uint8_t *)(p) + 0) = (((uint16_t)(v)) >> 0) & 0xFF;\
@@ -117,19 +144,34 @@
 		*((uint8_t *)(p) + 2) = (((uint32_t)(v)) >> 16) & 0xFF;\
 		*((uint8_t *)(p) + 3) = (((uint32_t)(v)) >> 24) & 0xFF;\
 	} while (0)
+#define SET_U64_LSBFIRST(p, v)		\
+	do{\
+		*((uint8_t *)(p) + 0) = (((uint64_t)(v)) >> 0) & 0xFF;\
+		*((uint8_t *)(p) + 1) = (((uint64_t)(v)) >> 8) & 0xFF;\
+		*((uint8_t *)(p) + 2) = (((uint64_t)(v)) >> 16) & 0xFF;\
+		*((uint8_t *)(p) + 3) = (((uint64_t)(v)) >> 24) & 0xFF;\
+		*((uint8_t *)(p) + 4) = (((uint64_t)(v)) >> 32) & 0xFF;\
+		*((uint8_t *)(p) + 5) = (((uint64_t)(v)) >> 40) & 0xFF;\
+		*((uint8_t *)(p) + 6) = (((uint64_t)(v)) >> 48) & 0xFF;\
+		*((uint8_t *)(p) + 7) = (((uint64_t)(v)) >> 56) & 0xFF;\
+	} while (0)
 
 #define GET_LE_U16(p)				GET_U16_LSBFIRST(p)
 #define GET_LE_U24(p)				GET_U24_LSBFIRST(p)
 #define GET_LE_U32(p)				GET_U32_LSBFIRST(p)
+#define GET_LE_U64(p)				GET_U64_LSBFIRST(p)
 #define GET_BE_U16(p)				GET_U16_MSBFIRST(p)
 #define GET_BE_U24(p)				GET_U24_MSBFIRST(p)
 #define GET_BE_U32(p)				GET_U32_MSBFIRST(p)
+#define GET_BE_U64(p)				GET_U64_MSBFIRST(p)
 #define SET_LE_U16(p, v)			SET_U16_LSBFIRST(p, v)
 #define SET_LE_U24(p, v)			SET_U24_LSBFIRST(p, v)
 #define SET_LE_U32(p, v)			SET_U32_LSBFIRST(p, v)
+#define SET_LE_U64(p, v)			SET_U64_LSBFIRST(p, v)
 #define SET_BE_U16(p, v)			SET_U16_MSBFIRST(p, v)
 #define SET_BE_U24(p, v)			SET_U24_MSBFIRST(p, v)
 #define SET_BE_U32(p, v)			SET_U32_MSBFIRST(p, v)
+#define SET_BE_U64(p, v)			SET_U64_MSBFIRST(p, v)
 
 #define SWAP_U16(v)					((((uint16_t)(v) & 0xFF00) >> 8) | \
 										(((uint16_t)(v) & 0x00FF) << 8))
