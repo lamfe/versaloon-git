@@ -51,7 +51,7 @@
 #include "comisp/comisp.h"
 #include "usb/usbapi.h"
 
-#define OPTSTR			"hvS:P:s:c:Mp:U:D:Ld:Go:F:m:x:C:I:O:J:b:V:t:K:W:Aqel:i:Q:a:"
+#define OPTSTR			"hvS:P:s:c:Mp:U:D:Ld:Go:F:m:x:C:I:O:J:b:V:t:K:W:Aqel:i:Q:a:E:"
 static const struct option long_opts[] =
 {
 	{"help", no_argument, NULL, 'h'},
@@ -87,6 +87,7 @@ static const struct option long_opts[] =
 	{"quiet", no_argument, NULL, 'q'},
 	{"erase-on-demand", no_argument, NULL, 'e'},
 	{"address", required_argument, NULL, 'a'},
+	{"embedded-vsprog-config", required_argument, NULL, 'E'},
 	{NULL, 0, NULL, 0},
 };
 
@@ -98,6 +99,7 @@ VSS_HANDLER(vsprog_operation);
 VSS_HANDLER(vsprog_mass);
 VSS_HANDLER(vsprog_free_all);
 VSS_HANDLER(vsprog_init);
+VSS_HANDLER(embedded_vsprog_config);
 
 static const struct vss_cmd_t vsprog_cmd[] =
 {
@@ -156,6 +158,16 @@ static const struct vss_cmd_t vsprog_cmd[] =
 	VSS_CMD(	"init",
 				"vsprog initialization, format: init",
 				vsprog_init,
+				NULL),
+	VSS_CMD(	"embedded-vsprog-config",
+				"generate config data for embedded vsprog, "
+				"format: embedded-vsprog-config/E ADDR",
+				embedded_vsprog_config,
+				NULL),
+	VSS_CMD(	"E",
+				"generate config data for embedded vsprog, "
+				"format: embedded-vsprog-config/E ADDR",
+				embedded_vsprog_config,
 				NULL),
 	VSS_CMD_END
 };
@@ -589,6 +601,19 @@ VSS_HANDLER(vsprog_init)
 	vss_register_cmd_list(&usbapi_cmd_list);
 	vss_register_cmd_list(&app_cmd_list);
 	return VSFERR_NONE;
+}
+
+VSS_HANDLER(embedded_vsprog_config)
+{
+	struct target_cfg_data_info_t cfg_data_info;
+	
+	VSS_CHECK_ARGC(2);
+	
+	cfg_data_info.addr = program_info.chip_address;
+	cfg_data_info.addr_width = 32;
+	cfg_data_info.little_endian = true;
+	cfg_data_info.align = 4;
+	return target_generate_cfg_data(&cfg_data_info, (char *)argv[1]);
 }
 
 int main(int argc, char* argv[])
