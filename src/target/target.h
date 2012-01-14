@@ -19,6 +19,8 @@
 #ifndef __TARGET_H_INCLUDED__
 #define __TARGET_H_INCLUDED__
 
+#include "list.h"
+
 #define ASSEMBLE_FUNCNAME(mod, name)	mod ## name
 
 // Target Feature
@@ -184,6 +186,7 @@ struct program_mode_t
 
 struct chip_area_info_t
 {
+	uint32_t index;
 	uint32_t seg;
 	uint32_t addr;
 	uint32_t page_size;
@@ -192,6 +195,8 @@ struct chip_area_info_t
 	uint32_t size;
 	uint8_t *mask;
 	char *cli_format;
+	
+	struct sllist list;
 };
 
 struct chip_param_t
@@ -203,7 +208,8 @@ struct chip_param_t
 	
 	uint32_t chip_erase;
 	uint32_t param[32];
-	struct chip_area_info_t chip_areas[dimof(target_area_name)];
+	
+	struct chip_area_info_t *chip_areas;
 };
 
 struct program_context_t
@@ -354,6 +360,11 @@ char target_area_char_by_fullname(char *fullname);
 char* target_area_fullname_by_mask(uint32_t mask);
 
 int8_t target_mode_get_idx(const struct program_mode_t *mode, char mode_name);
+
+struct chip_area_info_t* target_get_chip_area(struct chip_param_t *param,
+												uint32_t area_idx);
+struct program_area_t* target_get_program_area(struct program_info_t *pi,
+												uint32_t area_idx);
 
 struct target_cfg_data_info_t
 {

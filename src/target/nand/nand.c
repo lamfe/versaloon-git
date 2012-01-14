@@ -109,6 +109,13 @@ ENTER_PROGRAM_MODE_HANDLER(nand)
 {
 	struct program_info_t *pi = context->pi;
 	struct chip_param_t *param = context->param;
+	struct chip_area_info_t *flash_info = NULL;
+	
+	flash_info = target_get_chip_area(param, APPLICATION_IDX);
+	if (NULL == flash_info)
+	{
+		return VSFERR_FAIL;
+	}
 	
 	if (pi->ifs_indexes != NULL)
 	{
@@ -122,10 +129,8 @@ ENTER_PROGRAM_MODE_HANDLER(nand)
 		nand_drv_ifs.ebi_port = 0;
 		nand_drv_ifs.nand_index = 1;
 	}
-	nand_mal_info.capacity.block_number = 
-								param->chip_areas[APPLICATION_IDX].page_num;
-	nand_mal_info.capacity.block_size = 
-								param->chip_areas[APPLICATION_IDX].page_size;
+	nand_mal_info.capacity.block_number = flash_info->page_num;
+	nand_mal_info.capacity.block_size = flash_info->page_size;
 	nand_mal_info.read_page_size = param->param[NAND_PARAM_READ_PAGE_SIZE];
 	nand_mal_info.write_page_size = param->param[NAND_PARAM_WRITE_PAGE_SIZE];
 	nand_mal_info.erase_page_size = param->param[NAND_PARAM_ERASE_PAGE_SIZE];
@@ -188,16 +193,17 @@ ERASE_TARGET_HANDLER(nand)
 
 WRITE_TARGET_HANDLER(nand)
 {
-	struct chip_param_t *param = context->param;
+	struct chip_area_info_t *flash_info = NULL;
 	
 	switch (area)
 	{
 	case APPLICATION_CHAR:
-		if (size % param->chip_areas[APPLICATION_IDX].page_size)
+		flash_info = target_get_chip_area(context->param, APPLICATION_IDX);
+		if ((NULL == flash_info) || (size % flash_info->page_size))
 		{
 			return VSFERR_FAIL;
 		}
-		size /= param->chip_areas[APPLICATION_IDX].page_size;
+		size /= flash_info->page_size;
 		
 		if (mal.writeblock(MAL_IDX_NAND, &nand_dal_info,addr, buff, size))
 		{
@@ -212,7 +218,7 @@ WRITE_TARGET_HANDLER(nand)
 
 READ_TARGET_HANDLER(nand)
 {
-	struct chip_param_t *param = context->param;
+	struct chip_area_info_t *flash_info = NULL;
 	
 	switch (area)
 	{
@@ -228,11 +234,12 @@ READ_TARGET_HANDLER(nand)
 		return VSFERR_NONE;
 		break;
 	case APPLICATION_CHAR:
-		if (size % param->chip_areas[APPLICATION_IDX].page_size)
+		flash_info = target_get_chip_area(context->param, APPLICATION_IDX);
+		if ((NULL == flash_info) || (size % flash_info->page_size))
 		{
 			return VSFERR_FAIL;
 		}
-		size /= param->chip_areas[APPLICATION_IDX].page_size;
+		size /= flash_info->page_size;
 		
 		if (mal.readblock(MAL_IDX_NAND, &nand_dal_info, addr, buff, size))
 		{

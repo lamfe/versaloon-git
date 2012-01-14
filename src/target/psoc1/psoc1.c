@@ -369,6 +369,7 @@ ERASE_TARGET_HANDLER(psoc1)
 WRITE_TARGET_HANDLER(psoc1)
 {
 	struct chip_param_t *param = context->param;
+	struct chip_area_info_t *flash_info = NULL;
 	uint8_t bank, bank_num;
 	uint16_t block;
 	uint32_t page_num, page_size;
@@ -380,8 +381,14 @@ WRITE_TARGET_HANDLER(psoc1)
 	REFERENCE_PARAMETER(size);
 	REFERENCE_PARAMETER(addr);
 	
-	page_size = param->chip_areas[APPLICATION_IDX].page_size;
-	page_num = param->chip_areas[APPLICATION_IDX].page_num;
+	flash_info = target_get_chip_area(param, APPLICATION_IDX);
+	if (NULL == flash_info)
+	{
+		return VSFERR_FAIL;
+	}
+	
+	page_size = flash_info->page_size;
+	page_num = flash_info->page_num;
 	bank_num = (uint8_t)param->param[PSOC1_PARAM_BANK_NUM];
 	switch (area)
 	{
@@ -467,6 +474,7 @@ WRITE_TARGET_HANDLER(psoc1)
 READ_TARGET_HANDLER(psoc1)
 {
 	struct chip_param_t *param = context->param;
+	struct chip_area_info_t *flash_info = NULL;
 	uint8_t bank, bank_num;
 	uint16_t block;
 	uint32_t page_num, page_size;
@@ -477,8 +485,14 @@ READ_TARGET_HANDLER(psoc1)
 	REFERENCE_PARAMETER(size);
 	REFERENCE_PARAMETER(addr);
 	
-	page_size = param->chip_areas[APPLICATION_IDX].page_size;
-	page_num = param->chip_areas[APPLICATION_IDX].page_num;
+	flash_info = target_get_chip_area(param, APPLICATION_IDX);
+	if (NULL == flash_info)
+	{
+		return VSFERR_FAIL;
+	}
+	
+	page_size = flash_info->page_size;
+	page_num = flash_info->page_num;
 	bank_num = (uint8_t)param->param[PSOC1_PARAM_BANK_NUM];
 	switch (area)
 	{
@@ -542,11 +556,16 @@ READ_TARGET_HANDLER(psoc1)
 
 ADJUST_SETTING_HANDLER(psoc1)
 {
-	struct chip_area_info_t *flash_checksum_info =
-									&param->chip_areas[APPLICATION_CHKSUM_IDX];
+	struct chip_area_info_t *flash_checksum_info = NULL;
 	
 	REFERENCE_PARAMETER(pi);
 	REFERENCE_PARAMETER(program_mode);
+	
+	flash_checksum_info = target_get_chip_area(param, APPLICATION_CHKSUM_IDX);
+	if (NULL == flash_checksum_info)
+	{
+		return VSFERR_FAIL;
+	}
 	
 	// flash checksum of psoc1 is 2 bytes length
 	flash_checksum_info->size = 2;

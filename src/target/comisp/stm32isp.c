@@ -732,7 +732,7 @@ WRITE_TARGET_HANDLER(stm32isp)
 {
 	struct operation_t *op = context->op;
 	struct program_info_t *pi = context->pi;
-	struct chip_param_t *param = context->param;
+	struct chip_area_info_t *flash_info = NULL;
 	vsf_err_t err = VSFERR_NONE;
 	uint8_t page_num;
 	uint16_t page_size;
@@ -740,12 +740,17 @@ WRITE_TARGET_HANDLER(stm32isp)
 	switch (area)
 	{
 	case APPLICATION_CHAR:
+		flash_info = target_get_chip_area(context->param, APPLICATION_IDX);
+		if (NULL == flash_info)
+		{
+			return VSFERR_FAIL;
+		}
+		
 		// erase is not defined and erase-on-demand is defined
 		if (!(op->erase_operations & APPLICATION) && pi->erase_on_demand)
 		{
 			page_num =
-				(uint8_t)((addr - param->chip_areas[APPLICATION_IDX].addr) /
-					param->chip_areas[APPLICATION_IDX].page_size);
+				(uint8_t)((addr - flash_info->addr) / flash_info->page_size);
 			err = stm32isp_erase_sector(1, &page_num);
 			if (err)
 			{
@@ -777,7 +782,8 @@ WRITE_TARGET_HANDLER(stm32isp)
 
 READ_TARGET_HANDLER(stm32isp)
 {
-	struct chip_param_t *param = context->param;
+	struct chip_area_info_t *flash_info = NULL;
+	struct program_area_t *flash_area = NULL;
 	struct program_info_t *pi = context->pi;
 	uint32_t mcu_id = 0;
 	uint16_t len;
@@ -789,6 +795,12 @@ READ_TARGET_HANDLER(stm32isp)
 	switch (area)
 	{
 	case CHIPID_CHAR:
+		flash_info = target_get_chip_area(context->param, APPLICATION_IDX);
+		if (NULL == flash_info)
+		{
+			return VSFERR_FAIL;
+		}
+		
 		// Get ID command returns chip ID (same as JTAG ID)
 		if (stm32isp_read_product_id(&mcu_id))
 		{
@@ -811,22 +823,26 @@ READ_TARGET_HANDLER(stm32isp)
 		flash_kb = GET_LE_U16(&tmpbuff[0]);
 		if ((flash_kb > 0) && (flash_kb <= 512))
 		{
-			pi->program_areas[APPLICATION_IDX].size =
-			param->chip_areas[APPLICATION_IDX].size = flash_kb * 1024;
+			flash_info->size = flash_kb * 1024;
 		}
 		else if ((STM32F1_DEN_VALUELINE == den) && (0xFFFFFFFF == mcu_id))
 		{
 			// FLASH_RAM_SIZE register of STM32 ValueLine devices will be 0xFFFFFFFF
 			// we use 128K by default
-			pi->program_areas[APPLICATION_IDX].size =
-			param->chip_areas[APPLICATION_IDX].size = 128 * 1024;
+			flash_info->size = 128 * 1024;
 		}
 		else
 		{
 			LOG_ERROR(ERRMSG_INVALID_VALUE, flash_kb, "stm32 flash size");
 			return ERRCODE_INVALID;
 		}
-		if (!param->chip_areas[APPLICATION_IDX].page_size)
+		flash_area = target_get_program_area(pi, APPLICATION_IDX);
+		if (flash_area != NULL)
+		{
+			flash_area->size = flash_info->size;
+		}
+		
+		if (!flash_info->page_size)
 		{
 			switch (mcu_id & STM32F1_DEN_MSK)
 			{
@@ -834,19 +850,17 @@ READ_TARGET_HANDLER(stm32isp)
 			case STM32F1_DEN_MEDIUM:
 			case STM32F1_DEN_VALUELINE:
 			default:
-				param->chip_areas[APPLICATION_IDX].page_size = 1024;
+				flash_info->page_size = 1024;
 				break;
 			case STM32F1_DEN_HIGH:
 			case STM32F1_DEN_CONNECTIVITY:
-				param->chip_areas[APPLICATION_IDX].page_size = 2048;
+				flash_info->page_size = 2048;
 				break;
 			}
 		}
-		if (!param->chip_areas[APPLICATION_IDX].page_num)
+		if (!flash_info->page_num)
 		{
-			struct chip_area_info_t *flash =
-										&param->chip_areas[APPLICATION_IDX];
-			flash->page_num = flash->size / flash->page_size;
+			flash_info->page_num = flash_info->size / flash_info->page_size;
 		}
 		LOG_INFO("Flash memory size: %i KB", flash_kb);
 		sram_kb = GET_LE_U16(&tmpbuff[2]);

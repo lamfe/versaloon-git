@@ -636,24 +636,29 @@ vsf_err_t target_build_chip_fl(const char *chip_series,
 
 static vsf_err_t target_parse_cli_string(void)
 {
+	struct program_area_t *prog_area = NULL;
+	struct chip_area_info_t *area_info = NULL;
 	uint8_t i;
 	char *format;
 	char format_tmp[32];
 	
-	for (i = 0; i < dimof(program_info.program_areas); i++)
+	for (i = 0; i < dimof(target_area_name); i++)
 	{
-		if (program_info.program_areas[i].cli_str != NULL)
+		prog_area = target_get_program_area(&program_info, i);
+		area_info = target_get_chip_area(&target_chip_param, i);
+		if ((prog_area != NULL) && (area_info != NULL) &&
+			(prog_area->cli_str != NULL))
 		{
-			if (target_chip_param.chip_areas[i].cli_format != NULL)
+			if (area_info->cli_format != NULL)
 			{
-				format = target_chip_param.chip_areas[i].cli_format;
+				format = area_info->cli_format;
 			}
-			else if (target_chip_param.chip_areas[i].size <= 8)
+			else if (area_info->size <= 8)
 			{
 				// cli_format not defined
-				// simply use %8x as format, which is simple integer input
+				// simply use %nx as format, which is simple integer input
 				snprintf(format_tmp, sizeof(format_tmp), "%%%dx",
-							target_chip_param.chip_areas[i].size);
+							area_info->size);
 				format = format_tmp;
 			}
 			else
@@ -662,9 +667,8 @@ static vsf_err_t target_parse_cli_string(void)
 				return VSFERR_FAIL;
 			}
 			
-			if (strparser_parse(program_info.program_areas[i].cli_str,
-						format, program_info.program_areas[i].buff,
-						program_info.program_areas[i].size))
+			if (strparser_parse(prog_area->cli_str, format, prog_area->buff,
+								prog_area->size))
 			{
 				LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "parse",
 							target_area_name[i].full_name);
@@ -678,24 +682,28 @@ static vsf_err_t target_parse_cli_string(void)
 
 vsf_err_t target_alloc_data_buffer(void)
 {
+	struct program_area_t *prog_area = NULL;
+	struct chip_area_info_t *area_info = NULL;
 	uint8_t i;
 	
-	for (i = 0; i < dimof(program_info.program_areas); i++)
+	for (i = 0; i < dimof(target_area_name); i++)
 	{
-		if ((NULL == program_info.program_areas[i].buff)
-			&& (program_info.program_areas[i].size > 0))
+		prog_area = target_get_program_area(&program_info, i);
+		if ((prog_area != NULL) && (NULL == prog_area->buff) &&
+			(prog_area->size > 0))
 		{
-			program_info.program_areas[i].buff =
-				(uint8_t *)malloc(program_info.program_areas[i].size);
-			if (NULL == program_info.program_areas[i].buff)
+			prog_area->buff = (uint8_t *)malloc(prog_area->size);
+			if (NULL == prog_area->buff)
 			{
 				return VSFERR_NOT_ENOUGH_RESOURCES;
 			}
-			if (strlen(target_chip_param.chip_name) > 0)
+			
+			area_info = target_get_chip_area(&target_chip_param, i);
+			if ((strlen(target_chip_param.chip_name) > 0) &&
+				(area_info != NULL))
 			{
-				memset(program_info.program_areas[i].buff,
-						(uint8_t)target_chip_param.chip_areas[i].default_value,
-						program_info.program_areas[i].size);
+				memset(prog_area->buff, (uint8_t)area_info->default_value,
+						prog_area->size);
 			}
 		}
 	}
@@ -811,9 +819,38 @@ vsf_err_t target_release_chip_fl(struct chip_fl_t *fl)
 	return VSFERR_NONE;
 }
 
+struct program_area_t* target_get_program_area(struct program_info_t *pi,
+												uint32_t area_idx)
+{
+	if (area_idx < dimof(target_area_name))
+	{
+		return &pi->program_areas[area_idx];
+	}
+	return NULL;
+}
+
+struct chip_area_info_t* target_get_chip_area(struct chip_param_t *param,
+												uint32_t area_idx)
+{
+	struct chip_area_info_t *area_info = NULL;
+	
+	area_info = param->chip_areas;
+	while (area_info != NULL)
+	{
+		if (area_info->index == area_idx)
+		{
+			break;
+		}
+		area_info = sllist_get_container(area_info->list.next,
+											struct chip_area_info_t, list);
+	}
+	return area_info;
+}
+
 vsf_err_t target_release_chip_series(struct chip_series_t *s)
 {
-	uint32_t i, j;
+	struct chip_area_info_t *area_info = NULL, *temp = NULL;
+	uint32_t i;
 	
 	if (s->series_name != NULL)
 	{
@@ -835,18 +872,24 @@ vsf_err_t target_release_chip_series(struct chip_series_t *s)
 				free(s->chips_param[i].program_mode_str);
 				s->chips_param[i].program_mode_str = NULL;
 			}
-			for (j = 0; j < dimof(s->chips_param[i].chip_areas); j++)
+			
+			area_info = s->chips_param[i].chip_areas;
+			while (area_info != NULL)
 			{
-				if (s->chips_param[i].chip_areas[j].mask != NULL)
+				temp = area_info;
+				if (area_info->mask != NULL)
 				{
-					free(s->chips_param[i].chip_areas[j].mask);
-					s->chips_param[i].chip_areas[j].mask = NULL;
+					free(area_info->mask);
+					area_info->mask = NULL;
 				}
-				if (s->chips_param[i].chip_areas[j].cli_format != NULL)
+				if (area_info->cli_format != NULL)
 				{
-					free(s->chips_param[i].chip_areas[j].cli_format);
-					s->chips_param[i].chip_areas[j].cli_format = NULL;
+					free(area_info->cli_format);
+					area_info->cli_format = NULL;
 				}
+				area_info = sllist_get_container(area_info->list.next,
+												struct chip_area_info_t, list);
+				free(temp);
 			}
 		}
 		free(s->chips_param);
@@ -860,45 +903,59 @@ vsf_err_t target_release_chip_series(struct chip_series_t *s)
 
 void target_free_data_buffer(void)
 {
+	struct program_area_t *prog_area = NULL;
 	uint8_t i;
-	struct program_area_t *area;
 	
 	target_release_chip_series(&target_chips);
 	
-	for (i = 0; i < dimof(program_info.program_areas); i++)
+	for (i = 0; i < dimof(target_area_name); i++)
 	{
 		// special_string cannot be freed
 		if (SPECIAL_STRING_CHAR == target_area_name[i].name)
 		{
 			continue;
 		}
-		area = &program_info.program_areas[i];
-		if (area->buff != NULL)
+		
+		prog_area = target_get_program_area(&program_info, i);
+		if (prog_area != NULL)
 		{
-			free(area->buff);
-			area->buff = NULL;
-		}
-		area->size = 0;
-		if (area->memlist != NULL)
-		{
-			MEMLIST_Free(&area->memlist);
-		}
-		if (area->exact_memlist != NULL)
-		{
-			MEMLIST_Free(&area->exact_memlist);
+			if (prog_area->buff != NULL)
+			{
+				free(prog_area->buff);
+				prog_area->buff = NULL;
+			}
+			prog_area->size = 0;
+			if (prog_area->memlist != NULL)
+			{
+				MEMLIST_Free(&prog_area->memlist);
+			}
+			if (prog_area->exact_memlist != NULL)
+			{
+				MEMLIST_Free(&prog_area->exact_memlist);
+			}
 		}
 	}
 }
 
 static void target_get_target_area(char area, uint8_t **buff, uint32_t *size)
 {
+	struct program_area_t *prog_area = NULL;
 	int8_t i;
 	
 	i = target_area_idx(area);
 	if (i >= 0)
 	{
-		*buff = program_info.program_areas[i].buff;
-		*size = program_info.program_areas[i].size;
+		prog_area = target_get_program_area(&program_info, i);
+		if (NULL == prog_area)
+		{
+			*buff = NULL;
+			*size = 0;
+		}
+		else
+		{
+			*buff = prog_area->buff;
+			*size = prog_area->size;
+		}
 	}
 	else
 	{
@@ -1082,6 +1139,8 @@ static vsf_err_t target_write_buffer_from_file_callback(char * ext,
 	struct memlist **area_memlist, **area_exact_memlist;
 	uint32_t area_seg, area_addr, area_size, area_page_size;
 	struct program_info_t *pi = (struct program_info_t *)buffer;
+	struct chip_area_info_t *area_info = NULL;
+	struct program_area_t *prog_area = NULL;
 	uint32_t mem_addr;
 	
 	if ((NULL == cur_target) || (0 == strlen(target_chip_param.chip_name))
@@ -1112,16 +1171,22 @@ static vsf_err_t target_write_buffer_from_file_callback(char * ext,
 			i++;
 			continue;
 		}
-		area_seg = target_chip_param.chip_areas[area_idx].seg
-						+ cur_target->program_area_map[i].fseg_addr;
-		area_addr = target_chip_param.chip_areas[area_idx].addr
-						+ cur_target->program_area_map[i].fstart_addr;
-		area_size = target_chip_param.chip_areas[area_idx].size;
-		area_page_size = target_chip_param.chip_areas[area_idx].page_size;
+		area_info = target_get_chip_area(&target_chip_param, (uint32_t)area_idx);
+		prog_area = target_get_program_area(pi, (uint32_t)area_idx);
+		if ((NULL == area_info) || (NULL == prog_area))
+		{
+			i++;
+			continue;
+		}
 		
-		area_buff = pi->program_areas[area_idx].buff;
-		area_memlist = &(pi->program_areas[area_idx].memlist);
-		area_exact_memlist = &(pi->program_areas[area_idx].exact_memlist);
+		area_seg = area_info->seg + cur_target->program_area_map[i].fseg_addr;
+		area_addr = area_info->addr + cur_target->program_area_map[i].fstart_addr;
+		area_size = area_info->size;
+		area_page_size = area_info->page_size;
+		
+		area_buff = prog_area->buff;
+		area_memlist = &(prog_area->memlist);
+		area_exact_memlist = &(prog_area->exact_memlist);
 		
 		if ((area_seg != seg_addr) || (area_addr > address)
 			|| ((area_addr + area_size) < (address + length)))
@@ -1316,8 +1381,8 @@ static vsf_err_t target_program(struct program_context_t *context)
 	struct chip_param_t *param = context->param;
 	struct INTERFACES_INFO_T *prog = context->prog;
 	
-	struct chip_area_info_t *area_info;
-	struct program_area_t *prog_area;
+	struct chip_area_info_t *area_info = NULL;
+	struct program_area_t *prog_area = NULL;
 	vsf_err_t err = VSFERR_NONE;
 	uint32_t i, j;
 	int8_t area_idx;
@@ -1401,7 +1466,14 @@ static vsf_err_t target_program(struct program_context_t *context)
 			continue;
 		}
 		
-		area_info = &(param->chip_areas[area_idx]);
+		area_info = target_get_chip_area(param, (uint32_t)area_idx);
+		prog_area = target_get_program_area(pi, (uint32_t)area_idx);
+		if ((NULL == area_info) || (NULL == prog_area))
+		{
+			i++;
+			continue;
+		}
+		
 		page_size = area_info->page_size;
 		start_addr = area_info->addr;
 		if ((p_map[i].fpage_size > page_size)
@@ -1410,7 +1482,6 @@ static vsf_err_t target_program(struct program_context_t *context)
 			page_size = p_map[i].fpage_size;
 		}
 		
-		prog_area = &(pi->program_areas[area_idx]);
 		if (area_info->size > prog_area->size)
 		{
 			area_info->size = prog_area->size;
@@ -1989,8 +2060,10 @@ target_program_exit:
 static vsf_err_t target_init(struct program_info_t *pi)
 {
 	uint16_t i;
-	uint8_t area_idx;
+	int8_t area_idx;
 	char mode_buff[4];
+	struct chip_area_info_t *area_info = NULL;
+	struct program_area_t *prog_area = NULL;
 	
 	LOG_PUSH();
 	LOG_MUTE();
@@ -2098,17 +2171,26 @@ Post_Init:
 	while (cur_target->program_area_map[i].name != 0)
 	{
 		area_idx = target_area_idx(cur_target->program_area_map[i].name);
-		if (!pi->program_areas[area_idx].size)
+		if (area_idx < 0)
+		{
+			return VSFERR_FAIL;
+		}
+		area_info = target_get_chip_area(&target_chip_param, (uint32_t)area_idx);
+		prog_area= target_get_program_area(pi, (uint32_t)area_idx);
+		if ((NULL == area_info) || (NULL == prog_area))
+		{
+			return VSFERR_FAIL;
+		}
+		
+		if (!prog_area->size)
 		{
 			// if size is not detected, copy from record in config
-			pi->program_areas[area_idx].size =
-								target_chip_param.chip_areas[area_idx].size;
+			prog_area->size = area_info->size;
 		}
 		else
 		{
 			// if size is detected, overwrite target parameters
-			target_chip_param.chip_areas[area_idx].size =
-								pi->program_areas[area_idx].size;
+			area_info->size = prog_area->size;
 		}
 		i++;
 	}
@@ -2172,6 +2254,7 @@ static void target_print_single_memory(char type)
 	int8_t paramidx;
 	char *full_type = target_area_fullname(type);
 	struct program_area_map_t *p_map;
+	struct chip_area_info_t *area_info = NULL;
 	
 	p_map = (struct program_area_map_t *)cur_target->program_area_map;
 	mapidx = 0;
@@ -2187,7 +2270,14 @@ static void target_print_single_memory(char type)
 	}
 	
 	paramidx = target_area_idx(type);
-	if (paramidx < 0 )
+	if (paramidx < 0)
+	{
+		LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, full_type,
+					program_info.chip_name);
+		return;
+	}
+	area_info = target_get_chip_area(&target_chip_param, (uint32_t)paramidx);
+	if (NULL == area_info)
 	{
 		LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, full_type,
 					program_info.chip_name);
@@ -2197,20 +2287,15 @@ static void target_print_single_memory(char type)
 	PRINTF("%s of %s:\n", full_type, program_info.chip_name);
 	if (p_map[mapidx].data_pos)
 	{
-		PRINTF("%c_seg = 0x%08X, ", type,
-				target_chip_param.chip_areas[paramidx].seg);
-		PRINTF("%c_addr = 0x%08X, ", type,
-				target_chip_param.chip_areas[paramidx].addr);
+		PRINTF("%c_seg = 0x%08X, ", type, area_info->seg);
+		PRINTF("%c_addr = 0x%08X, ", type, area_info->addr);
 	}
-	else if (target_chip_param.chip_areas[paramidx].cli_format != NULL)
+	else if (area_info->cli_format != NULL)
 	{
-		PRINTF("%c_format = %s, ", type,
-				target_chip_param.chip_areas[paramidx].cli_format);
+		PRINTF("%c_format = %s, ", type, area_info->cli_format);
 	}
-	PRINTF("%c_default = 0x%"PRIX64", ", type,
-				target_chip_param.chip_areas[paramidx].default_value);
-	PRINTF("%c_bytelen = %d\n", type,
-				target_chip_param.chip_areas[paramidx].size);
+	PRINTF("%c_default = 0x%"PRIX64", ", type, area_info->default_value);
+	PRINTF("%c_bytelen = %d\n", type, area_info->size);
 }
 
 void target_print_memory(char type)
@@ -2702,6 +2787,7 @@ VSS_HANDLER(target_chip)
 
 VSS_HANDLER(target_value)
 {
+	struct program_area_t *prog_area = NULL;
 	char *dest = NULL;
 	int8_t target_idx;
 	
@@ -2719,17 +2805,23 @@ VSS_HANDLER(target_value)
 		LOG_ERROR(ERRMSG_INVALID_CHARACTER, argv[1][0], "target");
 		return VSFERR_FAIL;
 	}
+	prog_area = target_get_program_area(&program_info, (uint32_t)target_idx);
+	if (NULL == prog_area)
+	{
+		LOG_ERROR(ERRMSG_INVALID_CHARACTER, argv[1][0], "target");
+		return VSFERR_FAIL;
+	}
 	dest = strdup(&argv[1][1]);
 	if (NULL == dest)
 	{
 		return VSFERR_FAIL;
 	}
-	if (NULL != program_info.program_areas[target_idx].cli_str)
+	if (NULL != prog_area->cli_str)
 	{
-		free(program_info.program_areas[target_idx].cli_str);
-		program_info.program_areas[target_idx].cli_str = NULL;
+		free(prog_area->cli_str);
+		prog_area->cli_str = NULL;
 	}
-	program_info.program_areas[target_idx].cli_str = dest;
+	prog_area->cli_str = dest;
 	program_info.areas_defined |= target_area_name[target_idx].mask;
 	return VSFERR_NONE;
 }
@@ -3138,6 +3230,8 @@ VSS_HANDLER(target_read)
 {
 	struct operation_t operations_tmp;
 	struct program_context_t context;
+	struct chip_area_info_t *area_info = NULL;
+	struct program_area_t *prog_area = NULL;
 	struct memlist *ml_tmp = NULL, *pml_save = NULL;
 	vsf_err_t err;
 	uint32_t byteaddr, bytesize;
@@ -3156,6 +3250,13 @@ VSS_HANDLER(target_read)
 		LOG_ERROR(ERRMSG_INVALID_TARGET, "target area");
 		return VSFERR_FAIL;
 	}
+	area_info = target_get_chip_area(&target_chip_param, (uint32_t)index);
+	prog_area = target_get_program_area(&program_info, (uint32_t)index);
+	if ((NULL == area_info) || (NULL == prog_area))
+	{
+		LOG_ERROR(ERRMSG_INVALID_TARGET, "target area");
+		return VSFERR_FAIL;
+	}
 	
 	operations_tmp = operations;
 	memset(&operations, 0, sizeof(operations));
@@ -3164,20 +3265,19 @@ VSS_HANDLER(target_read)
 	byteaddr = strtoul(argv[2], NULL, 0);
 	bytesize = strtoul(argv[3], NULL, 0);
 	
-	if (MEMLIST_Add(&ml_tmp, byteaddr, bytesize,
-			target_chip_param.chip_areas[index].page_size))
+	if (MEMLIST_Add(&ml_tmp, byteaddr, bytesize, area_info->page_size))
 	{
 		return VSFERR_FAIL;
 	}
-	pml_save = program_info.program_areas[index].memlist;
-	program_info.program_areas[index].memlist = ml_tmp;
+	pml_save = prog_area->memlist;
+	prog_area->memlist = ml_tmp;
 	
 	context.op = &operations;
 	context.param = &target_chip_param;
 	context.pi = &program_info;
 	context.prog = interfaces;
 	err = target_program(&context);
-	program_info.program_areas[index].memlist = pml_save;
+	prog_area->memlist = pml_save;
 	MEMLIST_Free(&ml_tmp);
 	operations = operations_tmp;
 	if (err)
@@ -3244,7 +3344,12 @@ VSS_HANDLER(target_operate)
 					p_map++;
 					continue;
 				}
-				area = &target_chip_param.chip_areas[area_idx];
+				area = target_get_chip_area(&target_chip_param, (uint32_t)area_idx);
+				if (NULL == area)
+				{
+					LOG_ERROR(ERRMSG_INVALID_TARGET, "area");
+					return VSFERR_FAIL;
+				}
 				target_get_target_area(p_map->name, &buff, &size);
 				if ((buff != NULL) && (size > 0) && (fl_out != NULL))
 				{

@@ -294,7 +294,7 @@ WRITE_TARGET_HANDLER(lpc900icp)
 
 READ_TARGET_HANDLER(lpc900icp)
 {
-	struct chip_param_t *param = context->param;
+	struct chip_area_info_t *flash_info = NULL;
 	uint8_t tmpbuf[5];
 	vsf_err_t err = VSFERR_NONE;
 	
@@ -377,7 +377,12 @@ READ_TARGET_HANDLER(lpc900icp)
 			
 			// calculate crc in file
 			crc_in_file = 0;
-			size = param->chip_areas[APPLICATION_IDX].size;
+			flash_info = target_get_chip_area(context->param, APPLICATION_IDX);
+			if (NULL == flash_info)
+			{
+				return VSFERR_FAIL;
+			}
+			size = flash_info->size;
 			for (loop = 0; loop < size; loop++)
 			{
 				uint8_t byte = buff[loop];

@@ -740,6 +740,7 @@ WRITE_TARGET_HANDLER(stm8swim)
 	vsf_err_t err = VSFERR_NONE;
 	struct chip_param_t *param = context->param;
 	struct operation_t *op = context->op;
+	struct chip_area_info_t *fuse_info = NULL;
 	uint8_t cmd;
 	uint8_t i;
 	struct stm8_optionbyte_info_t *optionbyte_info;
@@ -829,12 +830,18 @@ do_write_flashee:
 #endif
 		break;
 	case FUSE_CHAR:
-		if ((!size) || (param->chip_areas[FUSE_IDX].size != size))
+		fuse_info = target_get_chip_area(param, FUSE_IDX);
+		if (NULL == fuse_info)
+		{
+			return VSFERR_FAIL;
+		}
+		
+		if (!size || (fuse_info->size != size))
 		{
 			LOG_ERROR(ERRMSG_INVALID_VALUE, size, "fuse_size");
 			return VSFERR_FAIL;
 		}
-		mask = param->chip_areas[FUSE_IDX].mask;
+		mask = fuse_info->mask;
 		if (NULL == mask)
 		{
 			LOG_ERROR(ERRMSG_INVALID_BUFFER, "fuse_mask");
@@ -934,6 +941,7 @@ do_write_fuse:
 READ_TARGET_HANDLER(stm8swim)
 {
 	struct chip_param_t *param = context->param;
+	struct chip_area_info_t *fuse_info = NULL;
 	uint8_t fuse_page[STM8_FUSEPAGE_SIZE];
 	uint16_t cur_size;
 	vsf_err_t err = VSFERR_NONE;
@@ -976,12 +984,18 @@ READ_TARGET_HANDLER(stm8swim)
 		err = commit();
 		break;
 	case FUSE_CHAR:
-		if ((!size) || (param->chip_areas[FUSE_IDX].size != size))
+		fuse_info = target_get_chip_area(param, FUSE_IDX);
+		if (NULL == fuse_info)
+		{
+			return VSFERR_FAIL;
+		}
+		
+		if (!size || (fuse_info->size != size))
 		{
 			LOG_ERROR(ERRMSG_INVALID_VALUE, size, "fuse_size");
 			return VSFERR_FAIL;
 		}
-		mask = param->chip_areas[FUSE_IDX].mask;
+		mask = fuse_info->mask;
 		if (NULL == mask)
 		{
 			LOG_ERROR(ERRMSG_INVALID_BUFFER, "fuse_mask");

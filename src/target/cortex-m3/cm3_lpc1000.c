@@ -344,10 +344,10 @@ LEAVE_PROGRAM_MODE_HANDLER(lpc1000swj)
 ERASE_TARGET_HANDLER(lpc1000swj)
 {
 	struct program_info_t *pi = context->pi;
+	struct program_area_t *flash_area = NULL;
 	vsf_err_t err = VSFERR_NONE;
 	uint32_t iap_cmd_param[5], iap_reply[4];
-	uint32_t sector = lpc1000_get_sector_idx_by_addr(context,
-								pi->program_areas[APPLICATION_IDX].size - 1);
+	uint32_t sector;
 	
 	REFERENCE_PARAMETER(size);
 	REFERENCE_PARAMETER(addr);
@@ -355,6 +355,13 @@ ERASE_TARGET_HANDLER(lpc1000swj)
 	switch (area)
 	{
 	case APPLICATION_CHAR:
+		flash_area = target_get_program_area(pi, APPLICATION_IDX);
+		if (NULL == flash_area)
+		{
+			return VSFERR_FAIL;
+		}
+		sector = lpc1000_get_sector_idx_by_addr(context, flash_area->size - 1);
+		
 		memset(iap_cmd_param, 0, sizeof(iap_cmd_param));
 		memset(iap_reply, 0, sizeof(iap_reply));
 		iap_cmd_param[0] = 0;				// Start Sector Number
@@ -391,16 +398,23 @@ ERASE_TARGET_HANDLER(lpc1000swj)
 WRITE_TARGET_HANDLER(lpc1000swj)
 {
 	struct program_info_t *pi = context->pi;
-	struct chip_param_t *param = context->param;
+	struct chip_area_info_t *flash_info = NULL;
 	uint32_t iap_cmd_param[5], iap_reply[4];
 	uint32_t start_sector;
 	static uint8_t ticktock = 0;
 	uint32_t buff_addr;
-	uint16_t page_size = (uint16_t)param->chip_areas[APPLICATION_IDX].page_size;
+	uint16_t page_size;
 	
 	switch (area)
 	{
 	case APPLICATION_CHAR:
+		flash_info = target_get_chip_area(context->param, APPLICATION_IDX);
+		if (NULL == flash_info)
+		{
+			return VSFERR_FAIL;
+		}
+		
+		page_size = (uint16_t)flash_info->page_size;
 		if (size != page_size)
 		{
 			return VSFERR_FAIL;

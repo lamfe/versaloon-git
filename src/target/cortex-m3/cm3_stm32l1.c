@@ -164,7 +164,7 @@ ERASE_TARGET_HANDLER(stm32l1swj)
 
 WRITE_TARGET_HANDLER(stm32l1swj)
 {
-	struct chip_param_t *param = context->param;
+	struct chip_area_info_t *flash_info = NULL;
 	vsf_err_t err = VSFERR_NONE;
 	uint32_t reg;
 	
@@ -173,7 +173,8 @@ WRITE_TARGET_HANDLER(stm32l1swj)
 	case FUSE_CHAR:
 		break;
 	case APPLICATION_CHAR:
-		if (size != param->chip_areas[APPLICATION_IDX].page_size)
+		flash_info = target_get_chip_area(context->param, APPLICATION_IDX);
+		if ((NULL == flash_info) || (size != flash_info->page_size))
 		{
 			return VSFERR_FAIL;
 		}
@@ -235,6 +236,7 @@ WRITE_TARGET_HANDLER(stm32l1swj)
 READ_TARGET_HANDLER(stm32l1swj)
 {
 	struct program_info_t *pi = context->pi;
+	struct program_area_t *flash_area = NULL;
 	uint32_t mcu_id = 0, flash_sram_size, flash_obr;
 	uint32_t cur_block_size;
 	uint16_t flash_size, sram_size;
@@ -275,7 +277,11 @@ READ_TARGET_HANDLER(stm32l1swj)
 		flash_sram_size = LE_TO_SYS_U32(flash_sram_size);
 		flash_size = stm32l1_get_flash_size(mcu_id, flash_sram_size);
 		sram_size = flash_sram_size >> 16;
-		pi->program_areas[APPLICATION_IDX].size = flash_size * 1024;
+		flash_area = target_get_program_area(pi, APPLICATION_IDX);
+		if (flash_area != NULL)
+		{
+			flash_area->size = flash_size * 1024;
+		}
 		
 		LOG_INFO("Flash memory size: %i KB", flash_size);
 		if ((sram_size != 0xFFFF) && (sram_size != 0))
