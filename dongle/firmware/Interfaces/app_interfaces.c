@@ -142,10 +142,12 @@ static vsf_err_t delay_init(void)
 }
 static vsf_err_t delay_delayms(uint16_t ms)
 {
+	ms &= 0x7FFF;
 	return core_interfaces.delay.delayms(ms);
 }
 static vsf_err_t delay_delayus(uint16_t us)
 {
+	us &= 0x7FFF;
 	return core_interfaces.delay.delayus(us);
 }
 

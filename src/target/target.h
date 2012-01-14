@@ -361,6 +361,9 @@ char* target_area_fullname_by_mask(uint32_t mask);
 
 int8_t target_mode_get_idx(const struct program_mode_t *mode, char mode_name);
 
+void target_chip_area_free(struct chip_area_info_t *area_info);
+struct chip_area_info_t* target_chip_area_dup(
+										struct chip_area_info_t *area_info);
 struct chip_area_info_t* target_get_chip_area(struct chip_param_t *param,
 												uint32_t area_idx);
 struct program_area_t* target_get_program_area(struct program_info_t *pi,
