@@ -23,6 +23,8 @@
 #include <stdlib.h>
 
 #include "app_cfg.h"
+#if TARGET_MSP430_EN
+
 #include "app_type.h"
 #include "app_io.h"
 #include "app_err.h"
@@ -269,3 +271,4 @@ READ_TARGET_HANDLER(msp430jtagsbw)
 	return err;
 }
 
+#endif

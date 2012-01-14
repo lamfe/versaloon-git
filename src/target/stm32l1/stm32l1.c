@@ -24,6 +24,8 @@
 #include <ctype.h>
 
 #include "app_cfg.h"
+#if TARGET_STM32L1_EN
+
 #include "app_type.h"
 #include "app_io.h"
 #include "app_err.h"
@@ -175,3 +177,4 @@ void stm32l1_print_device(uint32_t mcuid)
 	}
 }
 
+#endif

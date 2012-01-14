@@ -23,6 +23,8 @@
 #include <stdlib.h>
 
 #include "app_cfg.h"
+#if TARGET_DF25XX_EN
+
 #include "app_type.h"
 #include "app_io.h"
 #include "app_err.h"
@@ -229,3 +231,4 @@ READ_TARGET_HANDLER(df25xx)
 	}
 }
 
+#endif

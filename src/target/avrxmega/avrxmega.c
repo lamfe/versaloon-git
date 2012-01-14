@@ -24,6 +24,8 @@
 #include <ctype.h>
 
 #include "app_cfg.h"
+#if TARGET_AVRXMEGA_EN
+
 #include "app_type.h"
 #include "app_io.h"
 #include "app_err.h"
@@ -836,3 +838,5 @@ do_read:
 	
 	return err;
 }
+
+#endif

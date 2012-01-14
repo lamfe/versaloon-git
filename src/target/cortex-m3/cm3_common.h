@@ -80,7 +80,7 @@
 
 vsf_err_t cm3_dp_parameter_init(struct adi_dpif_t *dp);
 vsf_err_t cm3_dp_fini(void);
-vsf_err_t cm3_dp_init(struct interfaces_info_t *ifs, struct adi_dpif_t *interf);
+vsf_err_t cm3_dp_init(struct INTERFACES_INFO_T *ifs, struct adi_dpif_t *interf);
 
 vsf_err_t cm3_dp_halt(void);
 vsf_err_t cm3_dp_resume(void);

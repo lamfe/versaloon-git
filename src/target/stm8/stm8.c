@@ -23,6 +23,8 @@
 #include <stdlib.h>
 
 #include "app_cfg.h"
+#if TARGET_STM8_EN
+
 #include "app_type.h"
 #include "app_io.h"
 #include "app_err.h"
@@ -1045,3 +1047,4 @@ do_read_fuse:
 	return err;
 }
 
+#endif

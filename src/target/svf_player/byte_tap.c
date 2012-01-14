@@ -24,6 +24,9 @@
 
 #include "compiler.h"
 
+#include "app_cfg.h"
+#if TARGET_SVF_EN
+
 #include "app_type.h"
 #include "app_io.h"
 #include "app_err.h"
@@ -525,3 +528,4 @@ vsf_err_t tap_fini(void)
 	return VSFERR_NONE;
 }
 
+#endif

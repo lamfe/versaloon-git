@@ -24,6 +24,8 @@
 #include <ctype.h>
 
 #include "app_cfg.h"
+#if TARGET_LM3S_EN
+
 #include "app_type.h"
 #include "app_io.h"
 #include "app_err.h"
@@ -250,3 +252,4 @@ vsf_err_t lm3s_check_device(struct lm3s_device_info_t *device)
 	return VSFERR_NONE;
 }
 
+#endif

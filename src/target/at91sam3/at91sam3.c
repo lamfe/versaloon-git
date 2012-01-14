@@ -24,6 +24,8 @@
 #include <ctype.h>
 
 #include "app_cfg.h"
+#if TARGET_AT91SAM3_EN
+
 #include "app_type.h"
 #include "app_io.h"
 #include "app_err.h"
@@ -105,3 +107,4 @@ const struct vss_cmd_t at91sam3_notifier[] =
 	VSS_CMD_END
 };
 
+#endif

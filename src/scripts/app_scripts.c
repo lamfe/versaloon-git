@@ -150,7 +150,7 @@ vsf_err_t dal_config_interface(char *dal_name, char *ifs, struct dal_info_t *inf
 
 VSS_HANDLER(dal_vss_init)
 {
-	struct interfaces_info_t *ifs = NULL;
+	struct INTERFACES_INFO_T *ifs = NULL;
 	
 	VSS_CHECK_ARGC(1);
 	if (interface_assert(&ifs) || (NULL == ifs))
