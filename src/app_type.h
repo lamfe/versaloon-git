@@ -61,6 +61,14 @@
 										(v32) = (((v32) >> 8) & 0x00ff00ff) | (((v32) << 8) & 0xff00ff00);\
 										(v32) = (((v32) >> 16)& 0x0000ffff) | (((v32) << 16)& 0xffff0000);\
 									} while (0)
+#define BIT_REVERSE_U64(v64)		do {\
+										(v64) = (((v64) >> 1) & 0x5555555555555555) | (((v64) << 1) & 0xaaaaaaaaaaaaaaaa);\
+										(v64) = (((v64) >> 2) & 0x3333333333333333) | (((v64) << 2) & 0xcccccccccccccccc);\
+										(v64) = (((v64) >> 4) & 0x0f0f0f0f0f0f0f0f) | (((v64) << 4) & 0xf0f0f0f0f0f0f0f0);\
+										(v64) = (((v64) >> 8) & 0x00ff00ff00ff00ff) | (((v64) << 8) & 0xff00ff00ff00ff00);\
+										(v64) = (((v64) >> 16)& 0x0000ffff0000ffff) | (((v64) << 16)& 0xffff0000ffff0000);\
+										(v64) = (((v64) >> 1) & 0x00000000ffffffff) | (((v64) << 1) & 0xffffffff00000000);\
+									} while (0)
 
 #define GET_U16_MSBFIRST(p)			(	((*((uint8_t *)(p) + 0)) << 8) | \
 										((*((uint8_t *)(p) + 1)) << 0))
@@ -173,52 +181,78 @@
 #define SET_BE_U32(p, v)			SET_U32_MSBFIRST(p, v)
 #define SET_BE_U64(p, v)			SET_U64_MSBFIRST(p, v)
 
-#define SWAP_U16(v)					((((uint16_t)(v) & 0xFF00) >> 8) | \
+#define SWAP_U16(v)					(	(((uint16_t)(v) & 0xFF00) >> 8) | \
 										(((uint16_t)(v) & 0x00FF) << 8))
-#define SWAP_U24(v)					((((uint32_t)(v) & 0x00FF0000) >> 16) | \
+#define SWAP_U24(v)					(	(((uint32_t)(v) & 0x00FF0000) >> 16) | \
 										(((uint32_t)(v) & 0x0000FF00) << 0) | \
 										(((uint32_t)(v) & 0x000000FF) << 16))
-#define SWAP_U32(v)					((((uint32_t)(v) & 0xFF000000) >> 24) | \
+#define SWAP_U32(v)					(	(((uint32_t)(v) & 0xFF000000) >> 24) | \
 										(((uint32_t)(v) & 0x00FF0000) >> 8) | \
 										(((uint32_t)(v) & 0x0000FF00) << 8) | \
 										(((uint32_t)(v) & 0x000000FF) << 24))
+#define SWAP_U64(v)					(	(((uint64_t)(v) & 0xFF00000000000000) >> 56) | \
+										(((uint64_t)(v) & 0x00FF000000000000) >> 40) | \
+										(((uint64_t)(v) & 0x0000FF0000000000) >> 24) | \
+										(((uint64_t)(v) & 0x000000FF00000000) >> 8) | \
+										(((uint64_t)(v) & 0x00000000FF000000) << 8) | \
+										(((uint64_t)(v) & 0x0000000000FF0000) << 24) | \
+										(((uint64_t)(v) & 0x000000000000FF00) << 40) | \
+										(((uint64_t)(v) & 0x00000000000000FF) << 56) | )
 
 #if defined(__BIG_ENDIAN__) && (__BIG_ENDIAN__ == 1)
 #	define LE_TO_SYS_U16(v)			SWAP_U16(v)
 #	define LE_TO_SYS_U24(v)			SWAP_U24(v)
 #	define LE_TO_SYS_U32(v)			SWAP_U32(v)
+#	define LE_TO_SYS_U64(v)			SWAP_U64(v)
 #	define BE_TO_SYS_U16(v)			((uint16_t)(v))
 #	define BE_TO_SYS_U24(v)			((uint32_t)(v))
 #	define BE_TO_SYS_U32(v)			((uint32_t)(v))
+#	define BE_TO_SYS_U64(v)			((uint64_t)(v))
 
 #	define SYS_TO_LE_U16(v)			SWAP_U16(v)
 #	define SYS_TO_LE_U24(v)			SWAP_U24(v)
 #	define SYS_TO_LE_U32(v)			SWAP_U32(v)
+#	define SYS_TO_LE_U64(v)			SWAP_U64(v)
 #	define SYS_TO_BE_U16(v)			((uint16_t)(v))
 #	define SYS_TO_BE_U24(v)			((uint32_t)(v))
 #	define SYS_TO_BE_U32(v)			((uint32_t)(v))
+#	define SYS_TO_BE_U64(v)			((uint64_t)(v))
 
+#	define SET_SYS_U16(p, v)		SET_BE_U16(p, v)
+#	define SET_SYS_U24(p, v)		SET_BE_U24(p, v)
+#	define SET_SYS_U32(p, v)		SET_BE_U32(p, v)
+#	define SET_SYS_U64(p, v)		SET_BE_U64(p, v)
 #	define GET_SYS_U16(p)			GET_BE_U16(p)
 #	define GET_SYS_U24(p)			GET_BE_U24(p)
 #	define GET_SYS_U32(p)			GET_BE_U32(p)
+#	define GET_SYS_U64(p)			GET_BE_U64(p)
 #else
 #	define LE_TO_SYS_U16(v)			((uint16_t)(v))
 #	define LE_TO_SYS_U24(v)			((uint32_t)(v))
 #	define LE_TO_SYS_U32(v)			((uint32_t)(v))
+#	define LE_TO_SYS_U64(v)			((uint64_t)(v))
 #	define BE_TO_SYS_U16(v)			SWAP_U16(v)
 #	define BE_TO_SYS_U24(v)			SWAP_U24(v)
 #	define BE_TO_SYS_U32(v)			SWAP_U32(v)
+#	define BE_TO_SYS_U64(v)			SWAP_U64(v)
 
 #	define SYS_TO_LE_U16(v)			((uint16_t)(v))
 #	define SYS_TO_LE_U24(v)			((uint32_t)(v))
 #	define SYS_TO_LE_U32(v)			((uint32_t)(v))
+#	define SYS_TO_LE_U64(v)			((uint64_t)(v))
 #	define SYS_TO_BE_U16(v)			SWAP_U16(v)
 #	define SYS_TO_BE_U24(v)			SWAP_U24(v)
 #	define SYS_TO_BE_U32(v)			SWAP_U32(v)
+#	define SYS_TO_BE_U64(v)			SWAP_U64(v)
 
+#	define SET_SYS_U16(p, v)		SET_LE_U16(p, v)
+#	define SET_SYS_U24(p, v)		SET_LE_U24(p, v)
+#	define SET_SYS_U32(p, v)		SET_LE_U32(p, v)
+#	define SET_SYS_U64(p, v)		SET_LE_U64(p, v)
 #	define GET_SYS_U16(p)			GET_LE_U16(p)
 #	define GET_SYS_U24(p)			GET_LE_U24(p)
 #	define GET_SYS_U32(p)			GET_LE_U32(p)
+#	define GET_SYS_U64(p)			GET_LE_U64(p)
 #endif
 
 #endif /* __APP_TYPE_H_INCLUDED__ */
