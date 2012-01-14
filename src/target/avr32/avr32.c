@@ -397,18 +397,23 @@ LEAVE_PROGRAM_MODE_HANDLER(avr32jtag)
 
 ERASE_TARGET_HANDLER(avr32jtag)
 {
-	struct chip_param_t *param = context->param;
+	struct chip_area_info_t *flash_info = NULL;
 	uint32_t i;
 	uint32_t data;
 	uint16_t pagen;
 	
-	REFERENCE_PARAMETER(context);
 	REFERENCE_PARAMETER(addr);
 	REFERENCE_PARAMETER(size);
 	
 	switch (area)
 	{
 	case APPLICATION_CHAR:
+		flash_info = target_get_chip_area(context->param, APPLICATION_IDX);
+		if (NULL == flash_info)
+		{
+			return VSFERR_FAIL;
+		}
+		
 		// read fsr to check lock
 		data = 0;
 		avr32jtag_sab_access(AVR32_SAB_SLAVE_HSB, AVR32_FLASHC_FSR,
@@ -423,7 +428,7 @@ ERASE_TARGET_HANDLER(avr32jtag)
 			if (data & (1 << (16 + i)))
 			{
 				// call AVR32_FLASHC_FCMD_UP
-				pagen = (uint16_t)(param->chip_areas[APPLICATION_IDX].page_num * i / 16);
+				pagen = (uint16_t)(flash_info->page_num * i / 16);
 				if (avr32jtag_fcmd_call(AVR32_FLASHC_FCMD_UP, pagen))
 				{
 					LOG_ERROR(ERRMSG_FAILURE_OPERATION, "unlock flash page");
@@ -466,13 +471,18 @@ ERASE_TARGET_HANDLER(avr32jtag)
 
 WRITE_TARGET_HANDLER(avr32jtag)
 {
-	struct chip_param_t *param = context->param;
-	struct chip_area_info_t *flash_info = &param->chip_areas[APPLICATION_IDX];
+	struct chip_area_info_t *flash_info = NULL;
 	uint16_t pagen;
 	
 	switch (area)
 	{
 	case APPLICATION_CHAR:
+		flash_info = target_get_chip_area(context->param, APPLICATION_IDX);
+		if (NULL == flash_info)
+		{
+			return VSFERR_FAIL;
+		}
+		
 		pagen = (uint16_t)((addr - flash_info->addr) / flash_info->page_size);
 		avr32jtag_fcmd_call(AVR32_FLASHC_FCMD_CPB, 0);
 		avr32jtag_sab_access(AVR32_SAB_SLAVE_HSB, addr,
@@ -493,8 +503,7 @@ WRITE_TARGET_HANDLER(avr32jtag)
 
 READ_TARGET_HANDLER(avr32jtag)
 {
-	struct chip_param_t *param = context->param;
-	uint32_t page_size;
+	struct chip_area_info_t *flash_info = NULL;
 	uint32_t current_size;
 	uint8_t ir;
 	uint32_t dr;
@@ -541,8 +550,8 @@ READ_TARGET_HANDLER(avr32jtag)
 		break;
 	case APPLICATION_CHAR:
 		// check
-		page_size = param->chip_areas[APPLICATION_IDX].page_size;
-		if (size % page_size)
+		flash_info = target_get_chip_area(context->param, APPLICATION_IDX);
+		if ((NULL == flash_info) || (size % flash_info->page_size))
 		{
 			return VSFERR_FAIL;
 		}
@@ -551,9 +560,10 @@ READ_TARGET_HANDLER(avr32jtag)
 		while (current_size < size)
 		{
 			avr32jtag_sab_access(AVR32_SAB_SLAVE_HSB, addr + current_size,
-						&buff[current_size], AVR32_JTAG_READ, page_size / 4);
-			current_size += page_size;
-			pgbar_update(page_size);
+									&buff[current_size], AVR32_JTAG_READ,
+									flash_info->page_size / 4);
+			current_size += flash_info->page_size;
+			pgbar_update(flash_info->page_size);
 		}
 		return jtag_commit();
 		break;

@@ -112,6 +112,13 @@ ENTER_PROGRAM_MODE_HANDLER(ee24cxx)
 {
 	struct chip_param_t *param = context->param;
 	struct program_info_t *pi = context->pi;
+	struct chip_area_info_t *eeprom_info = NULL;
+	
+	eeprom_info = target_get_chip_area(param, EEPROM_IDX);
+	if (NULL == eeprom_info)
+	{
+		return VSFERR_FAIL;
+	}
 	
 	if (pi->ifs_indexes != NULL)
 	{
@@ -139,10 +146,8 @@ ENTER_PROGRAM_MODE_HANDLER(ee24cxx)
 	{
 		return VSFERR_FAIL;
 	}
-	ee24cxx_mal_info.capacity.block_size =
-										param->chip_areas[EEPROM_IDX].page_size;
-	ee24cxx_mal_info.capacity.block_number =
-										param->chip_areas[EEPROM_IDX].page_num;
+	ee24cxx_mal_info.capacity.block_size = eeprom_info->page_size;
+	ee24cxx_mal_info.capacity.block_number = eeprom_info->page_num;
 	
 	return dal_commit();
 }
@@ -169,16 +174,17 @@ ERASE_TARGET_HANDLER(ee24cxx)
 
 WRITE_TARGET_HANDLER(ee24cxx)
 {
-	struct chip_param_t *param = context->param;
+	struct chip_area_info_t *eeprom_info = NULL;
 	
 	switch (area)
 	{
 	case EEPROM_CHAR:
-		if (size % param->chip_areas[EEPROM_IDX].page_size)
+		eeprom_info = target_get_chip_area(context->param, EEPROM_IDX);
+		if ((NULL == eeprom_info) || (size % eeprom_info->page_size))
 		{
 			return VSFERR_FAIL;
 		}
-		size /= param->chip_areas[EEPROM_IDX].page_size;
+		size /= eeprom_info->page_size;
 		
 		if (mal.writeblock(MAL_IDX_EE24CXX, &ee24cxx_dal_info,
 										addr, buff, size))
@@ -194,7 +200,7 @@ WRITE_TARGET_HANDLER(ee24cxx)
 
 READ_TARGET_HANDLER(ee24cxx)
 {
-	struct chip_param_t *param = context->param;
+	struct chip_area_info_t *eeprom_info = NULL;
 	
 	switch (area)
 	{
@@ -202,11 +208,12 @@ READ_TARGET_HANDLER(ee24cxx)
 		return VSFERR_NONE;
 		break;
 	case EEPROM_CHAR:
-		if (size % param->chip_areas[EEPROM_IDX].page_size)
+		eeprom_info = target_get_chip_area(context->param, EEPROM_IDX);
+		if ((NULL == eeprom_info) || (size % eeprom_info->page_size))
 		{
 			return VSFERR_FAIL;
 		}
-		size /= param->chip_areas[EEPROM_IDX].page_size;
+		size /= eeprom_info->page_size;
 		
 		if (mal.readblock(MAL_IDX_EE24CXX, &ee24cxx_dal_info,
 										addr, buff, size))

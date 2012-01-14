@@ -520,6 +520,9 @@ WRITE_TARGET_HANDLER(at91sam3swj)
 	struct operation_t *op = context->op;
 	struct program_info_t *pi = context->pi;
 	struct chip_param_t *param = context->param;
+	struct chip_area_info_t *area_info = NULL;
+	struct program_area_t *lock_area = NULL;
+	int8_t area_idx;
 	uint16_t page_size;
 	uint32_t target_addr;
 	uint16_t page_num;
@@ -528,17 +531,32 @@ WRITE_TARGET_HANDLER(at91sam3swj)
 	switch (area)
 	{
 	case EEPROM_CHAR:
-		page_size = (uint16_t)param->chip_areas[EEPROM_IDX].page_size;
-		target_addr = param->chip_areas[EEPROM_IDX].addr;
 		eefc_base = param->param[AT91SAM3_PARAM_PLANE1_CONTROL];
 		goto do_write;
 	case APPLICATION_CHAR:
-		page_size = (uint16_t)param->chip_areas[APPLICATION_IDX].page_size;
-		target_addr = param->chip_areas[APPLICATION_IDX].addr;
 		eefc_base = param->param[AT91SAM3_PARAM_PLANE0_CONTROL];
 do_write:
-		if ((op->write_operations & LOCK)
-			&& pi->program_areas[LOCK_IDX].buff[0])
+		area_idx = target_area_idx(area);
+		if (area_idx < 0)
+		{
+			return VSFERR_FAIL;
+		}
+		area_info = target_get_chip_area(param, (uint32_t)area_idx);
+		if (NULL == area_info)
+		{
+			return VSFERR_FAIL;
+		}
+		
+		page_size = (uint16_t)area_info->page_size;
+		target_addr = area_info->addr;
+		
+		lock_area = target_get_program_area(pi, LOCK_IDX);
+		if ((op->write_operations & LOCK) &&
+			((NULL == lock_area) || (NULL == lock_area->buff)))
+		{
+			return VSFERR_FAIL;
+		}
+		if ((op->write_operations & LOCK) && lock_area->buff[0])
 		{
 			eefc_command = AT91SAM3_EEFC_CMD_EWPL;
 		}

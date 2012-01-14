@@ -251,6 +251,7 @@ ERASE_TARGET_HANDLER(avr8isp)
 WRITE_TARGET_HANDLER(avr8isp)
 {
 	struct chip_param_t *param = context->param;
+	struct chip_area_info_t *area_info = NULL;
 	uint8_t cmd_buf[4];
 	uint32_t i;
 	uint32_t ee_page_size;
@@ -259,7 +260,13 @@ WRITE_TARGET_HANDLER(avr8isp)
 	switch (area)
 	{
 	case APPLICATION_CHAR:
-		if (param->chip_areas[APPLICATION_IDX].page_num > 1)
+		area_info = target_get_chip_area(param, APPLICATION_IDX);
+		if (NULL == area_info)
+		{
+			return VSFERR_FAIL;
+		}
+		
+		if (area_info->page_num > 1)
 		{
 			// page mode
 			for (i = 0; i < size; i++)
@@ -339,8 +346,14 @@ WRITE_TARGET_HANDLER(avr8isp)
 		}
 		break;
 	case EEPROM_CHAR:
-		ee_page_size = param->chip_areas[EEPROM_IDX].page_size;
-		if ((param->chip_areas[EEPROM_IDX].page_num > 1)
+		area_info = target_get_chip_area(param, EEPROM_IDX);
+		if (NULL == area_info)
+		{
+			return VSFERR_FAIL;
+		}
+		
+		ee_page_size = area_info->page_size;
+		if ((area_info->page_num > 1)
 			&& (param->param[AVR8_PARAM_ISP_EERPOM_PAGE_EN]))
 		{
 			while (size > 0)
@@ -416,8 +429,14 @@ WRITE_TARGET_HANDLER(avr8isp)
 		}
 		break;
 	case FUSE_CHAR:
+		area_info = target_get_chip_area(param, FUSE_IDX);
+		if (NULL == area_info)
+		{
+			return VSFERR_FAIL;
+		}
+		
 		// low bits
-		if (param->chip_areas[FUSE_IDX].size > 0)
+		if (area_info->size > 0)
 		{
 			cmd_buf[0] = 0xAC;
 			cmd_buf[1] = 0xA0;
@@ -435,7 +454,7 @@ WRITE_TARGET_HANDLER(avr8isp)
 			}
 		}
 		// high bits
-		if (param->chip_areas[FUSE_IDX].size > 1)
+		if (area_info->size > 1)
 		{
 			cmd_buf[0] = 0xAC;
 			cmd_buf[1] = 0xA8;
@@ -453,7 +472,7 @@ WRITE_TARGET_HANDLER(avr8isp)
 			}
 		}
 		// extended bits
-		if (param->chip_areas[FUSE_IDX].size > 2)
+		if (area_info->size > 2)
 		{
 			cmd_buf[0] = 0xAC;
 			cmd_buf[1] = 0xA4;
@@ -470,7 +489,7 @@ WRITE_TARGET_HANDLER(avr8isp)
 				delay_ms(5);
 			}
 		}
-		if (param->chip_areas[FUSE_IDX].size > 0)
+		if (area_info->size > 0)
 		{
 			if (commit())
 			{
@@ -486,7 +505,13 @@ WRITE_TARGET_HANDLER(avr8isp)
 		}
 		break;
 	case LOCK_CHAR:
-		if (param->chip_areas[LOCK_IDX].size > 0)
+		area_info = target_get_chip_area(param, LOCK_IDX);
+		if (NULL == area_info)
+		{
+			return VSFERR_FAIL;
+		}
+		
+		if (area_info->size > 0)
 		{
 			cmd_buf[0] = 0xAC;
 			cmd_buf[1] = 0xE0;
@@ -526,6 +551,7 @@ WRITE_TARGET_HANDLER(avr8isp)
 READ_TARGET_HANDLER(avr8isp)
 {
 	struct chip_param_t *param = context->param;
+	struct chip_area_info_t *area_info = NULL;
 	uint8_t cmd_buf[4], ret_buf[256 * 4];
 	uint32_t i, j;
 	uint32_t ee_page_size;
@@ -593,12 +619,13 @@ READ_TARGET_HANDLER(avr8isp)
 		}
 		break;
 	case EEPROM_CHAR:
-		if (size > 256)
+		area_info = target_get_chip_area(param, EEPROM_IDX);
+		if ((NULL == area_info) || (size > 256))
 		{
 			return VSFERR_FAIL;
 		}
 		
-		ee_page_size = param->chip_areas[EEPROM_IDX].page_size;
+		ee_page_size = area_info->page_size;
 		for (j = 0; j < size;)
 		{
 			for (i = 0; i < ee_page_size; i++)
@@ -624,9 +651,15 @@ READ_TARGET_HANDLER(avr8isp)
 		}
 		break;
 	case FUSE_CHAR:
+		area_info = target_get_chip_area(param, FUSE_IDX);
+		if (NULL == area_info)
+		{
+			return VSFERR_FAIL;
+		}
+		
 		memset(ret_buf, 0, 3);
 		// low bits
-		if (param->chip_areas[FUSE_IDX].size > 0)
+		if (area_info->size > 0)
 		{
 			cmd_buf[0] = 0x50;
 			cmd_buf[1] = 0x00;
@@ -635,7 +668,7 @@ READ_TARGET_HANDLER(avr8isp)
 			spi_io(cmd_buf, 4, &ret_buf[0]);
 		}
 		// high bits
-		if (param->chip_areas[FUSE_IDX].size > 1)
+		if (area_info->size > 1)
 		{
 			cmd_buf[0] = 0x58;
 			cmd_buf[1] = 0x08;
@@ -644,7 +677,7 @@ READ_TARGET_HANDLER(avr8isp)
 			spi_io(cmd_buf, 4, &ret_buf[4]);
 		}
 		// extended bits
-		if (param->chip_areas[FUSE_IDX].size > 2)
+		if (area_info->size > 2)
 		{
 			cmd_buf[0] = 0x50;
 			cmd_buf[1] = 0x08;
@@ -652,7 +685,7 @@ READ_TARGET_HANDLER(avr8isp)
 			cmd_buf[3] = 0x00;
 			spi_io(cmd_buf, 4, &ret_buf[8]);
 		}
-		if (param->chip_areas[FUSE_IDX].size > 0)
+		if (area_info->size > 0)
 		{
 			if (commit())
 			{
@@ -671,7 +704,13 @@ READ_TARGET_HANDLER(avr8isp)
 		}
 		break;
 	case LOCK_CHAR:
-		if (param->chip_areas[LOCK_IDX].size > 0)
+		area_info = target_get_chip_area(param, LOCK_IDX);
+		if (NULL == area_info)
+		{
+			return VSFERR_FAIL;
+		}
+		
+		if (area_info->size > 0)
 		{
 			cmd_buf[0] = 0x58;
 			cmd_buf[1] = 0x00;
@@ -693,8 +732,14 @@ READ_TARGET_HANDLER(avr8isp)
 		}
 		break;
 	case CALIBRATION_CHAR:
+		area_info = target_get_chip_area(param, CALIBRATION_IDX);
+		if (NULL == area_info)
+		{
+			return VSFERR_FAIL;
+		}
+		
 		memset(ret_buf, 0, 4);
-		if (param->chip_areas[CALIBRATION_IDX].size > 0)
+		if (area_info->size > 0)
 		{
 			cmd_buf[0] = 0x38;
 			cmd_buf[1] = 0x00;
@@ -702,7 +747,7 @@ READ_TARGET_HANDLER(avr8isp)
 			cmd_buf[3] = 0x00;
 			spi_io(cmd_buf, 4, &ret_buf[0]);
 		}
-		if (param->chip_areas[CALIBRATION_IDX].size > 1)
+		if (area_info->size > 1)
 		{
 			cmd_buf[0] = 0x38;
 			cmd_buf[1] = 0x00;
@@ -710,7 +755,7 @@ READ_TARGET_HANDLER(avr8isp)
 			cmd_buf[3] = 0x00;
 			spi_io(cmd_buf, 4, &ret_buf[4]);
 		}
-		if (param->chip_areas[CALIBRATION_IDX].size > 2)
+		if (area_info->size > 2)
 		{
 			cmd_buf[0] = 0x38;
 			cmd_buf[1] = 0x00;
@@ -718,7 +763,7 @@ READ_TARGET_HANDLER(avr8isp)
 			cmd_buf[3] = 0x00;
 			spi_io(cmd_buf, 4, &ret_buf[8]);
 		}
-		if (param->chip_areas[CALIBRATION_IDX].size > 3)
+		if (area_info->size > 3)
 		{
 			cmd_buf[0] = 0x38;
 			cmd_buf[1] = 0x00;
@@ -726,7 +771,7 @@ READ_TARGET_HANDLER(avr8isp)
 			cmd_buf[3] = 0x00;
 			spi_io(cmd_buf, 4, &ret_buf[12]);
 		}
-		if (param->chip_areas[CALIBRATION_IDX].size > 0)
+		if (area_info->size > 0)
 		{
 			if (commit())
 			{

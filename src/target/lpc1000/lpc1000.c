@@ -134,8 +134,14 @@ const struct vss_cmd_t lpc1000_notifier[] =
 
 ADJUST_SETTING_HANDLER(lpc1000)
 {
-	struct chip_area_info_t *flash_info = &param->chip_areas[APPLICATION_IDX];
-	struct chip_area_info_t *sram_info = &param->chip_areas[SRAM_IDX];
+	struct chip_area_info_t *flash_info = NULL, *sram_info = NULL;
+	
+	flash_info = target_get_chip_area(param, APPLICATION_IDX);
+	sram_info = target_get_chip_area(param, SRAM_IDX);
+	if ((NULL == flash_info) || (NULL == sram_info))
+	{
+		return VSFERR_FAIL;
+	}
 	
 	if (!pi->kernel_khz)
 	{
@@ -207,7 +213,7 @@ uint8_t lpc1000_get_sector_idx_by_addr(struct program_context_t *context,
 ENTER_PROGRAM_MODE_HANDLER(lpc1000)
 {
 	struct program_info_t *pi = context->pi;
-	struct program_area_t *flash_area = &pi->program_areas[APPLICATION_IDX];
+	struct program_area_t *flash_area = NULL;
 	uint32_t checksum;
 	uint8_t i;
 	
@@ -217,8 +223,9 @@ ENTER_PROGRAM_MODE_HANDLER(lpc1000)
 		return VSFERR_FAIL;
 	}
 	
-	if ((pi->auto_adjust)
-		&& (flash_area->buff != NULL) && (flash_area->size > 32))
+	flash_area = target_get_program_area(pi, APPLICATION_IDX);
+	if ((pi->auto_adjust) && (flash_area != NULL) &&
+		(flash_area->buff != NULL) && (flash_area->size > 32))
 	{
 		checksum = 0;
 		for (i = 0; i < 7; i++)

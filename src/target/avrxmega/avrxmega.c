@@ -773,7 +773,8 @@ do_write_page:
 
 READ_TARGET_HANDLER(avrxmega)
 {
-	struct chip_param_t *param = context->param;
+	struct chip_area_info_t *area_info = NULL;
+	int8_t area_idx = 0;
 	vsf_err_t err = VSFERR_NONE;
 	uint16_t cur_size, page_size;
 	uint32_t cur_addr;
@@ -792,12 +793,22 @@ READ_TARGET_HANDLER(avrxmega)
 		break;
 	case EEPROM_CHAR:
 		cur_addr = addr + AVRXMEGA_PDIBUS_EE_BASE;
-		page_size =(uint16_t)param->chip_areas[EEPROM_IDX].page_size;
 		goto do_read;
 	case APPLICATION_CHAR:
 		cur_addr = addr + AVRXMEGA_PDIBUS_APP_BASE;
-		page_size =(uint16_t)param->chip_areas[APPLICATION_IDX].page_size;
 do_read:
+		area_idx = target_area_idx(area);
+		if (area_idx < 0)
+		{
+			return VSFERR_FAIL;
+		}
+		area_info = target_get_chip_area(context->param, (uint32_t)area_idx);
+		if (NULL == area_info)
+		{
+			return VSFERR_FAIL;
+		}
+		
+		page_size =(uint16_t)area_info->page_size;
 		while (size > 0)
 		{
 			if (size > page_size)

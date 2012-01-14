@@ -902,7 +902,7 @@ LEAVE_PROGRAM_MODE_HANDLER(lpcarmisp)
 
 ERASE_TARGET_HANDLER(lpcarmisp)
 {
-	struct chip_area_info_t *f = &context->param->chip_areas[APPLICATION_IDX];
+	struct chip_area_info_t *flash_info = NULL;
 	uint8_t end_sector;
 	vsf_err_t err = VSFERR_NONE;
 	
@@ -912,8 +912,14 @@ ERASE_TARGET_HANDLER(lpcarmisp)
 	switch (area)
 	{
 	case APPLICATION_CHAR:
-		end_sector =
-			lpc1000_get_sector_idx_by_addr(context, f->addr + f->size - 1);
+		flash_info = target_get_chip_area(context->param, APPLICATION_IDX);
+		if (NULL == flash_info)
+		{
+			return VSFERR_FAIL;
+		}
+		
+		end_sector = lpc1000_get_sector_idx_by_addr(context,
+							flash_info->addr + flash_info->size - 1);
 		err = lpcarmisp_prepare_sectors(0, end_sector);
 		if (!err)
 		{

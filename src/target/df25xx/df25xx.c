@@ -110,8 +110,14 @@ static struct dal_info_t df25xx_dal_info =
 
 ENTER_PROGRAM_MODE_HANDLER(df25xx)
 {
-	struct chip_param_t *param = context->param;
 	struct program_info_t *pi = context->pi;
+	struct chip_area_info_t *flash_info = NULL;
+	
+	flash_info = target_get_chip_area(context->param, APPLICATION_IDX);
+	if (NULL == flash_info)
+	{
+		return VSFERR_FAIL;
+	}
 	
 	if (pi->ifs_indexes != NULL)
 	{
@@ -133,10 +139,8 @@ ENTER_PROGRAM_MODE_HANDLER(df25xx)
 	{
 		return VSFERR_FAIL;
 	}
-	df25xx_mal_info.capacity.block_number =
-								param->chip_areas[APPLICATION_IDX].page_num;
-	df25xx_mal_info.capacity.block_size =
-								param->chip_areas[APPLICATION_IDX].page_size;
+	df25xx_mal_info.capacity.block_number = flash_info->page_num;
+	df25xx_mal_info.capacity.block_size = flash_info->page_size;
 	
 	return dal_commit();
 }
@@ -166,16 +170,17 @@ ERASE_TARGET_HANDLER(df25xx)
 
 WRITE_TARGET_HANDLER(df25xx)
 {
-	struct chip_param_t *param = context->param;
+	struct chip_area_info_t *flash_info = NULL;
 	
 	switch (area)
 	{
 	case APPLICATION_CHAR:
-		if (size % param->chip_areas[APPLICATION_IDX].page_size)
+		flash_info = target_get_chip_area(context->param, APPLICATION_IDX);
+		if ((NULL == flash_info) || (size % flash_info->page_size))
 		{
 			return VSFERR_FAIL;
 		}
-		size /= param->chip_areas[APPLICATION_IDX].page_size;
+		size /= flash_info->page_size;
 		
 		if (mal.writeblock(MAL_IDX_DF25XX, &df25xx_dal_info,
 										addr, buff, size))
@@ -191,7 +196,7 @@ WRITE_TARGET_HANDLER(df25xx)
 
 READ_TARGET_HANDLER(df25xx)
 {
-	struct chip_param_t *param = context->param;
+	struct chip_area_info_t *flash_info = NULL;
 	
 	switch (area)
 	{
@@ -205,11 +210,12 @@ READ_TARGET_HANDLER(df25xx)
 		return VSFERR_NONE;
 		break;
 	case APPLICATION_CHAR:
-		if (size % param->chip_areas[APPLICATION_IDX].page_size)
+		flash_info = target_get_chip_area(context->param, APPLICATION_IDX);
+		if ((NULL == flash_info) || (size % flash_info->page_size))
 		{
 			return VSFERR_FAIL;
 		}
-		size /= param->chip_areas[APPLICATION_IDX].page_size;
+		size /= flash_info->page_size;
 		
 		if (mal.readblock(MAL_IDX_DF25XX, &df25xx_dal_info,
 										addr, buff, size))

@@ -114,10 +114,16 @@ static struct dal_info_t sd_dal_info =
 
 ENTER_PROGRAM_MODE_HANDLER(sd)
 {
-	struct chip_param_t *param = context->param;
 	struct program_info_t *pi = context->pi;
+	struct chip_area_info_t *flash_info = NULL;
 	uint64_t capacity;
 	uint32_t page_size;
+	
+	flash_info = target_get_chip_area(context->param, APPLICATION_IDX);
+	if (NULL == flash_info)
+	{
+		return VSFERR_FAIL;
+	}
 	
 	sd_dal_info.ifs = &sd_spi_drv_ifs;
 	if (pi->ifs_indexes != NULL)
@@ -163,20 +169,16 @@ ENTER_PROGRAM_MODE_HANDLER(sd)
 		break;
 	}
 	
-	page_size = param->chip_areas[APPLICATION_IDX].page_size = 4 * 1024;
+	page_size = flash_info->page_size = 4 * 1024;
 	if (capacity > (16 << 20))
 	{
-		param->chip_areas[APPLICATION_IDX].page_num =
-											(uint32_t)((16 << 20) / page_size);
+		flash_info->page_num = (uint32_t)((16 << 20) / page_size);
 	}
 	else
 	{
-		param->chip_areas[APPLICATION_IDX].page_num =
-											(uint32_t)(capacity / page_size);
+		flash_info->page_num = (uint32_t)(capacity / page_size);
 	}
-	param->chip_areas[APPLICATION_IDX].size =
-		param->chip_areas[APPLICATION_IDX].page_num *
-		param->chip_areas[APPLICATION_IDX].page_size;
+	flash_info->size = flash_info->page_num * flash_info->page_size;
 	
 	return dal_commit();
 }

@@ -46,8 +46,7 @@
 #include "stm32f1_internal.h"
 #include "cm3_stm32_fl.h"
 
-#define	STM32F1_FL_PAGE0_ADDR		\
-	(param->chip_areas[SRAM_IDX].addr + STM32_FL_BUFFER_OFFSET)
+static uint32_t STM32F1_FL_PAGE0_ADDR;
 
 ENTER_PROGRAM_MODE_HANDLER(stm32f1swj);
 LEAVE_PROGRAM_MODE_HANDLER(stm32f1swj);
@@ -66,8 +65,15 @@ const struct program_functions_t stm32f1swj_program_functions =
 
 ENTER_PROGRAM_MODE_HANDLER(stm32f1swj)
 {
-	struct chip_param_t *param = context->param;
+	struct chip_area_info_t *sram_info = NULL;
 	uint32_t reg, flash_obr, flash_wrpr;
+	
+	sram_info = target_get_chip_area(context->param, SRAM_IDX);
+	if (NULL == sram_info)
+	{
+		return VSFERR_FAIL;
+	}
+	STM32F1_FL_PAGE0_ADDR = sram_info->addr + STM32_FL_BUFFER_OFFSET;
 	
 	// unlock flash and option bytes
 	reg = STM32F1_FLASH_UNLOCK_KEY1;
@@ -93,7 +99,7 @@ ENTER_PROGRAM_MODE_HANDLER(stm32f1swj)
 					"vsprog -cstm32f1_XX -mX -oeu -owu -tu0xFFFFFFFFFFFFFFA5");
 	}
 	
-	return stm32swj_fl_init(param->chip_areas[SRAM_IDX].addr);
+	return stm32swj_fl_init(sram_info->addr);
 }
 
 LEAVE_PROGRAM_MODE_HANDLER(stm32f1swj)
@@ -107,9 +113,10 @@ LEAVE_PROGRAM_MODE_HANDLER(stm32f1swj)
 
 ERASE_TARGET_HANDLER(stm32f1swj)
 {
-	struct chip_param_t *param = context->param;
 	struct program_info_t *pi = context->pi;
 	struct operation_t *op = context->op;
+	struct chip_area_info_t *flash_info = NULL;
+	struct program_area_t *fuse_area = NULL;
 	vsf_err_t err = VSFERR_NONE;
 	struct stm32_fl_cmd_t cmd;
 	struct stm32_fl_result_t result;
@@ -134,19 +141,27 @@ ERASE_TARGET_HANDLER(stm32f1swj)
 			break;
 		}
 		
-		// if fuse write will not be performed,
 		// we MUST write a default non-lock value(0xFFFFFFFFFFFFFFA5) to fuse,
-		// or STM32 will be locked
+		// or STM32 will be locked after fuse erase
 		if (!(op->write_operations & FUSE))
 		{
-			uint64_t fuse = 0xFFFFFFFFFFFFFFA5;
+			fuse_area = target_get_program_area(pi, FUSE_IDX);
+			if ((NULL == fuse_area) || (NULL == fuse_area->buff))
+			{
+				return VSFERR_FAIL;
+			}
 			
-			// TODO: fix here for big-endian
-			memcpy(pi->program_areas[FUSE_IDX].buff, &fuse, 8);
+			SET_LE_U64(fuse_area->buff, 0xFFFFFFFFFFFFFFA5);
 			op->write_operations |= FUSE;
 		}
 		break;
 	case APPLICATION_CHAR:
+		flash_info = target_get_chip_area(context->param, APPLICATION_IDX);
+		if (NULL == flash_info)
+		{
+			return VSFERR_FAIL;
+		}
+		
 		cmd.cr_addr = STM32F1_FLASH_CR;
 		cmd.sr_addr = STM32F1_FLASH_SR;
 		cmd.cr_value1 = STM32F1_FLASH_CR_MER;
@@ -159,7 +174,7 @@ ERASE_TARGET_HANDLER(stm32f1swj)
 			break;
 		}
 		
-		if (param->chip_areas[APPLICATION_IDX].size > STM32F1_FLASH_BANK_SIZE)
+		if (flash_info->size > STM32F1_FLASH_BANK_SIZE)
 		{
 			cmd.cr_addr = STM32F1_FLASH_CR2;
 			cmd.sr_addr = STM32F1_FLASH_SR2;
@@ -179,7 +194,7 @@ ERASE_TARGET_HANDLER(stm32f1swj)
 
 WRITE_TARGET_HANDLER(stm32f1swj)
 {
-	struct chip_param_t *param = context->param;
+	struct chip_area_info_t *flash_info = NULL;
 	uint8_t i;
 	uint8_t fuse_buff[STM32F1_OB_SIZE];
 	static uint8_t tick_tock = 0;
@@ -219,13 +234,13 @@ WRITE_TARGET_HANDLER(stm32f1swj)
 		}
 		break;
 	case APPLICATION_CHAR:
-		if (size != param->chip_areas[APPLICATION_IDX].page_size)
+		flash_info = target_get_chip_area(context->param, APPLICATION_IDX);
+		if ((NULL == flash_info) || (size != flash_info->page_size))
 		{
 			return VSFERR_FAIL;
 		}
 		
-		if (addr >=
-			(param->chip_areas[APPLICATION_IDX].addr + STM32F1_FLASH_BANK_SIZE))
+		if (addr >= (flash_info->addr + STM32F1_FLASH_BANK_SIZE))
 		{
 			cmd.cr_addr = STM32F1_FLASH_CR2;
 			cmd.sr_addr = STM32F1_FLASH_SR2;
@@ -267,6 +282,7 @@ WRITE_TARGET_HANDLER(stm32f1swj)
 READ_TARGET_HANDLER(stm32f1swj)
 {
 	struct program_info_t *pi = context->pi;
+	struct program_area_t *flash_area = NULL;
 	uint8_t option_bytes[STM32F1_OB_SIZE], i;
 	uint32_t mcu_id = 0, flash_sram_size, flash_obr;
 	uint32_t cur_block_size;
@@ -306,7 +322,11 @@ READ_TARGET_HANDLER(stm32f1swj)
 		}
 		flash_sram_size = LE_TO_SYS_U32(flash_sram_size);
 		flash_size = stm32f1_get_flash_size(mcu_id, flash_sram_size);
-		pi->program_areas[APPLICATION_IDX].size = flash_size * 1024;
+		flash_area = target_get_program_area(pi, APPLICATION_IDX);
+		if (flash_area != NULL)
+		{
+			flash_area->size = flash_size * 1024;
+		}
 		
 		LOG_INFO("Flash memory size: %i KB", flash_size);
 		if ((flash_sram_size >> 16) != 0xFFFF)

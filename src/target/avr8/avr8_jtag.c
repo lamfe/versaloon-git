@@ -258,6 +258,7 @@ ERASE_TARGET_HANDLER(avr8jtag)
 WRITE_TARGET_HANDLER(avr8jtag)
 {
 	struct chip_param_t *param = context->param;
+	struct chip_area_info_t *area_info = NULL;
 	uint8_t ir;
 	uint16_t dr;
 	uint32_t i;
@@ -295,7 +296,13 @@ WRITE_TARGET_HANDLER(avr8jtag)
 		}
 		break;
 	case EEPROM_CHAR:
-		ee_page_size = param->chip_areas[EEPROM_IDX].page_size;
+		area_info = target_get_chip_area(param, EEPROM_IDX);
+		if (NULL == area_info)
+		{
+			return VSFERR_FAIL;
+		}
+		
+		ee_page_size = area_info->page_size;
 		AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
 		AVR_JTAG_PROG_EnterEEPROMWrite();
 		
@@ -325,8 +332,14 @@ WRITE_TARGET_HANDLER(avr8jtag)
 		}
 		break;
 	case FUSE_CHAR:
+		area_info = target_get_chip_area(param, FUSE_IDX);
+		if (NULL == area_info)
+		{
+			return VSFERR_FAIL;
+		}
+		
 		// low bits
-		if (param->chip_areas[FUSE_IDX].size > 0)
+		if (area_info->size > 0)
 		{
 			AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
 			AVR_JTAG_PROG_EnterFuseWrite();
@@ -335,20 +348,20 @@ WRITE_TARGET_HANDLER(avr8jtag)
 			AVR_JTAG_WaitComplete(AVR_JTAG_PROG_WriteFuseLowByteComplete_CMD);
 		}
 		// high bits
-		if (param->chip_areas[FUSE_IDX].size > 1)
+		if (area_info->size > 1)
 		{
 			AVR_JTAG_PROG_LoadDataLowByte(buff[1]);
 			AVR_JTAG_PROG_WriteFuseHighByte();
 			AVR_JTAG_WaitComplete(AVR_JTAG_PROG_WriteFuseHighByteComplete_CMD);
 		}
 		// extended bits
-		if (param->chip_areas[FUSE_IDX].size > 2)
+		if (area_info->size > 2)
 		{
 			AVR_JTAG_PROG_LoadDataLowByte(buff[2]);
 			AVR_JTAG_PROG_WriteFuseExtByte();
 			AVR_JTAG_WaitComplete(AVR_JTAG_PROG_WriteFuseExtByteComplete_CMD);
 		}
-		if (param->chip_areas[FUSE_IDX].size > 0)
+		if (area_info->size > 0)
 		{
 			if (jtag_commit())
 			{
@@ -364,7 +377,13 @@ WRITE_TARGET_HANDLER(avr8jtag)
 		}
 		break;
 	case LOCK_CHAR:
-		if (param->chip_areas[LOCK_IDX].size > 0)
+		area_info = target_get_chip_area(param, LOCK_IDX);
+		if (NULL == area_info)
+		{
+			return VSFERR_FAIL;
+		}
+		
+		if (area_info->size > 0)
 		{
 			AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
 			AVR_JTAG_PROG_EnterLockbitWrite();
@@ -394,6 +413,7 @@ WRITE_TARGET_HANDLER(avr8jtag)
 READ_TARGET_HANDLER(avr8jtag)
 {
 	struct chip_param_t *param = context->param;
+	struct chip_area_info_t *area_info = NULL;
 	uint8_t ir;
 	uint16_t dr;
 	uint32_t i, j, k;
@@ -450,7 +470,13 @@ READ_TARGET_HANDLER(avr8jtag)
 		memcpy(buff, page_buf, size);
 		break;
 	case EEPROM_CHAR:
-		ee_page_size = param->chip_areas[EEPROM_IDX].page_size;
+		area_info = target_get_chip_area(param, EEPROM_IDX);
+		if (NULL == area_info)
+		{
+			return VSFERR_FAIL;
+		}
+		
+		ee_page_size = area_info->page_size;
 		AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
 		AVR_JTAG_PROG_EnterEEPROMRead();
 		
@@ -477,16 +503,22 @@ READ_TARGET_HANDLER(avr8jtag)
 		memcpy(buff, page_buf, size);
 		break;
 	case FUSE_CHAR:
+		area_info = target_get_chip_area(param, FUSE_IDX);
+		if (NULL == area_info)
+		{
+			return VSFERR_FAIL;
+		}
+		
 		// low bits
 		memset(page_buf, 0, 3);
-		if (param->chip_areas[FUSE_IDX].size > 3)
+		if (area_info->size > 3)
 		{
-			LOG_ERROR(ERRMSG_INVALID_VALUE, param->chip_areas[FUSE_IDX].size,
+			LOG_ERROR(ERRMSG_INVALID_VALUE, area_info->size,
 						"avr8 fuse size");
 			err = ERRCODE_INVALID;
 			break;
 		}
-		if (param->chip_areas[FUSE_IDX].size > 0)
+		if (area_info->size > 0)
 		{
 			AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
 			AVR_JTAG_PROG_EnterFuseLockbitRead();
@@ -499,12 +531,12 @@ READ_TARGET_HANDLER(avr8jtag)
 			break;
 		}
 		// high bits
-		if (param->chip_areas[FUSE_IDX].size > 1)
+		if (area_info->size > 1)
 		{
 			AVR_JTAG_PROG_ReadFuseHighByte(page_buf[1]);
 		}
 		// extended bits
-		if (param->chip_areas[FUSE_IDX].size > 2)
+		if (area_info->size > 2)
 		{
 			AVR_JTAG_PROG_ReadExtFuseByte(page_buf[2]);
 		}
@@ -514,10 +546,16 @@ READ_TARGET_HANDLER(avr8jtag)
 			err = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
-		memcpy(buff, page_buf, param->chip_areas[FUSE_IDX].size);
+		memcpy(buff, page_buf, area_info->size);
 		break;
 	case LOCK_CHAR:
-		if (param->chip_areas[LOCK_IDX].size > 0)
+		area_info = target_get_chip_area(param, LOCK_IDX);
+		if (NULL == area_info)
+		{
+			return VSFERR_FAIL;
+		}
+		
+		if (area_info->size > 0)
 		{
 			AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
 			AVR_JTAG_PROG_EnterFuseLockbitRead();
@@ -537,15 +575,21 @@ READ_TARGET_HANDLER(avr8jtag)
 		}
 		break;
 	case CALIBRATION_CHAR:
+		area_info = target_get_chip_area(param, CALIBRATION_IDX);
+		if (NULL == area_info)
+		{
+			return VSFERR_FAIL;
+		}
+		
 		memset(page_buf, 0, 4);
-		if (param->chip_areas[CALIBRATION_IDX].size > 4)
+		if (area_info->size > 4)
 		{
 			LOG_ERROR(ERRMSG_INVALID_VALUE,
-				param->chip_areas[CALIBRATION_IDX].size, "avr8 cali size");
+				area_info->size, "avr8 cali size");
 			err = ERRCODE_INVALID;
 			break;
 		}
-		if (param->chip_areas[CALIBRATION_IDX].size > 0)
+		if (area_info->size > 0)
 		{
 			AVR_JTAG_SendIns(AVR_JTAG_INS_PROG_COMMANDS);
 			AVR_JTAG_PROG_EnterCaliByteRead();
@@ -558,17 +602,17 @@ READ_TARGET_HANDLER(avr8jtag)
 			err = VSFERR_NOT_SUPPORT;
 			break;
 		}
-		if (param->chip_areas[CALIBRATION_IDX].size > 1)
+		if (area_info->size > 1)
 		{
 			AVR_JTAG_PROG_LoadAddrByte(1);
 			AVR_JTAG_PROG_ReadCaliByte(page_buf[1]);
 		}
-		if (param->chip_areas[CALIBRATION_IDX].size > 2)
+		if (area_info->size > 2)
 		{
 			AVR_JTAG_PROG_LoadAddrByte(2);
 			AVR_JTAG_PROG_ReadCaliByte(page_buf[2]);
 		}
-		if (param->chip_areas[CALIBRATION_IDX].size > 3)
+		if (area_info->size > 3)
 		{
 			AVR_JTAG_PROG_LoadAddrByte(3);
 			AVR_JTAG_PROG_ReadCaliByte(page_buf[3]);
@@ -579,7 +623,7 @@ READ_TARGET_HANDLER(avr8jtag)
 			err = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
-		memcpy(buff, page_buf, param->chip_areas[CALIBRATION_IDX].size);
+		memcpy(buff, page_buf, area_info->size);
 		break;
 	default:
 		err = VSFERR_NOT_SUPPORT;

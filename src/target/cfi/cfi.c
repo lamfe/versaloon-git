@@ -106,8 +106,8 @@ static struct dal_info_t cfi_dal_info =
 
 ENTER_PROGRAM_MODE_HANDLER(cfi)
 {
-	struct chip_param_t *param = context->param;
 	struct program_info_t *pi = context->pi;
+	struct chip_area_info_t *flash_info = NULL;
 	
 	if (pi->ifs_indexes != NULL)
 	{
@@ -140,16 +140,17 @@ ENTER_PROGRAM_MODE_HANDLER(cfi)
 		return VSFERR_FAIL;
 	}
 	
-	param->chip_areas[APPLICATION_IDX].page_num = 
-								(uint32_t)cfi_mal_info.capacity.block_number;
-	param->chip_areas[APPLICATION_IDX].page_size = 
-								(uint32_t)cfi_mal_info.capacity.block_size;
-	param->chip_areas[APPLICATION_IDX].size = 
-								param->chip_areas[APPLICATION_IDX].page_num * 
-								param->chip_areas[APPLICATION_IDX].page_size;
+	flash_info = target_get_chip_area(context->param, APPLICATION_IDX);
+	if (NULL == flash_info)
+	{
+		return VSFERR_FAIL;
+	}
+	
+	flash_info->page_num = (uint32_t)cfi_mal_info.capacity.block_number;
+	flash_info->page_size = (uint32_t)cfi_mal_info.capacity.block_size;
+	flash_info->size = flash_info->page_num * flash_info->page_size;
 	LOG_INFO("CFI device detected: %dKB(%d blocks)", 
-					param->chip_areas[APPLICATION_IDX].size / 1024, 
-					param->chip_areas[APPLICATION_IDX].page_num);
+				flash_info->size / 1024, flash_info->page_num);
 	return dal_commit();
 }
 
@@ -164,12 +165,13 @@ LEAVE_PROGRAM_MODE_HANDLER(cfi)
 
 ERASE_TARGET_HANDLER(cfi)
 {
-	struct chip_param_t *param = context->param;
+	struct chip_area_info_t *flash_info = NULL;
 	
 	switch (area)
 	{
 	case APPLICATION_CHAR:
-		if (size % param->chip_areas[APPLICATION_IDX].page_size)
+		flash_info = target_get_chip_area(context->param, APPLICATION_IDX);
+		if ((NULL == flash_info) || (size % flash_info->page_size))
 		{
 			return VSFERR_FAIL;
 		}
@@ -179,7 +181,7 @@ ERASE_TARGET_HANDLER(cfi)
 		}
 		else
 		{
-			size /= param->chip_areas[APPLICATION_IDX].page_size;
+			size /= flash_info->page_size;
 		}
 		
 		if (mal.eraseblock(MAL_IDX_CFI, &cfi_dal_info, addr, size))
@@ -194,12 +196,13 @@ ERASE_TARGET_HANDLER(cfi)
 
 WRITE_TARGET_HANDLER(cfi)
 {
-	struct chip_param_t *param = context->param;
+	struct chip_area_info_t *flash_info = NULL;
 	
 	switch (area)
 	{
 	case APPLICATION_CHAR:
-		if (size % param->chip_areas[APPLICATION_IDX].page_size)
+		flash_info = target_get_chip_area(context->param, APPLICATION_IDX);
+		if ((NULL == flash_info) || (size % flash_info->page_size))
 		{
 			return VSFERR_FAIL;
 		}
@@ -209,7 +212,7 @@ WRITE_TARGET_HANDLER(cfi)
 		}
 		else
 		{
-			size /= param->chip_areas[APPLICATION_IDX].page_size;
+			size /= flash_info->page_size;
 		}
 		
 		if (mal.writeblock(MAL_IDX_CFI, &cfi_dal_info,addr, buff, size))
@@ -225,7 +228,7 @@ WRITE_TARGET_HANDLER(cfi)
 
 READ_TARGET_HANDLER(cfi)
 {
-	struct chip_param_t *param = context->param;
+	struct chip_area_info_t *flash_info = NULL;
 	
 	switch (area)
 	{
@@ -241,7 +244,8 @@ READ_TARGET_HANDLER(cfi)
 		return VSFERR_NONE;
 		break;
 	case APPLICATION_CHAR:
-		if (size % param->chip_areas[APPLICATION_IDX].page_size)
+		flash_info = target_get_chip_area(context->param, APPLICATION_IDX);
+		if ((NULL == flash_info) || (size % flash_info->page_size))
 		{
 			return VSFERR_FAIL;
 		}
@@ -251,7 +255,7 @@ READ_TARGET_HANDLER(cfi)
 		}
 		else
 		{
-			size /= param->chip_areas[APPLICATION_IDX].page_size;
+			size /= flash_info->page_size;
 		}
 		
 		if (mal.readblock(MAL_IDX_CFI, &cfi_dal_info, addr, buff, size))
