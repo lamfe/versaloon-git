@@ -119,6 +119,9 @@ struct operation_t operations;
 
 static void free_all(void)
 {
+	struct program_area_t *prog_area = NULL;
+	uint32_t i;
+	
 	if (cur_target != NULL)
 	{
 		cur_target = NULL;
@@ -139,6 +142,18 @@ static void free_all(void)
 	{
 		free(program_info.ifs_indexes);
 		program_info.ifs_indexes = NULL;
+	}
+	for (i = 0; i < dimof(target_area_name); i++)
+	{
+		prog_area = target_get_program_area(&program_info, i);
+		if (prog_area != NULL)
+		{
+			if (prog_area->cli_str != NULL)
+			{
+				free(prog_area->cli_str);
+				prog_area->cli_str = NULL;
+			}
+		}
 	}
 	memset(&program_info, 0, sizeof(program_info));
 	memset(&target_chip_param, 0, sizeof(target_chip_param));

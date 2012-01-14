@@ -21,6 +21,7 @@
 #include "config.h"
 #endif
 
+#include "app_cfg.h"
 #include "app_type.h"
 #include "app_io.h"
 #include "app_err.h"
@@ -29,15 +30,52 @@
 #include "interfaces.h"
 #include "target.h"
 
+vsf_err_t target_release_chip_fl(struct chip_fl_t *fl)
+{
+	LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, "chip_fl_t", "embedded vsprog");
+	return VSFERR_FAIL;
+}
+
 vsf_err_t target_build_chip_fl(const char *chip_series,
 				const char *chip_module, char *type, struct chip_fl_t *fl)
 {
+	LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, "chip_fl_t", "embedded vsprog");
 	return VSFERR_FAIL;
+}
+
+vsf_err_t target_release_chip_series(struct chip_series_t *s)
+{
+	return VSFERR_NONE;
 }
 
 vsf_err_t target_build_chip_series(const char *chip_series,
 		const struct program_mode_t *program_mode, struct chip_series_t *s)
 {
-	return VSFERR_FAIL;
+	uint32_t pos = TARGET_CFG_ADDR, cur_pos = TARGET_CFG_ADDR;
+	char *series_name = NULL;
+	
+	do {
+		series_name = *(char **)pos;
+		cur_pos = pos;
+		pos += *(uint32_t *)(pos + sizeof(char *));
+		if (!strcmp(series_name, chip_series))
+		{
+			break;
+		}
+	} while (series_name != NULL);
+	if (NULL == series_name)
+	{
+		return VSFERR_FAIL;
+	}
+	
+	s->series_name = *(char **)cur_pos;
+	cur_pos += sizeof(char *);
+	s->size = *(uint32_t *)cur_pos;
+	cur_pos += sizeof(uint32_t);
+	s->num_of_chips = *(uint32_t *)cur_pos;
+	cur_pos += sizeof(uint32_t);
+	s->chips_param = *(struct chip_param_t **)cur_pos;
+	
+	return VSFERR_NONE;
 }
 

@@ -657,7 +657,7 @@ static vsf_err_t target_parse_cli_string(void)
 			{
 				// cli_format not defined
 				// simply use %nx as format, which is simple integer input
-				snprintf(format_tmp, sizeof(format_tmp), "%%%dx",
+				SNPRINTF(format_tmp, sizeof(format_tmp), "%%%dx",
 							area_info->size);
 				format = format_tmp;
 			}
@@ -711,114 +711,6 @@ vsf_err_t target_alloc_data_buffer(void)
 	return VSFERR_NONE;
 }
 
-vsf_err_t target_release_chip_fl(struct chip_fl_t *fl)
-{
-	uint32_t i, j;
-	
-	if (NULL == fl)
-	{
-		LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
-		return VSFERR_INVALID_PARAMETER;
-	}
-	
-	if (fl->init_value != NULL)
-	{
-		free(fl->init_value);
-		fl->init_value = NULL;
-	}
-	
-	// free warnings
-	if (fl->warnings != NULL)
-	{
-		for (i = 0; i < fl->num_of_fl_warnings; i++)
-		{
-			if (fl->warnings[i].mask != NULL)
-			{
-				free(fl->warnings[i].mask);
-				fl->warnings[i].mask = NULL;
-			}
-			if (fl->warnings[i].value != NULL)
-			{
-				free(fl->warnings[i].value);
-				fl->warnings[i].value = NULL;
-			}
-			if (fl->warnings[i].msg != NULL)
-			{
-				free(fl->warnings[i].msg);
-				fl->warnings[i].msg = NULL;
-			}
-		}
-		free(fl->warnings);
-		fl->warnings = NULL;
-	}
-	
-	// free settings
-	if (fl->settings != NULL)
-	{
-		for (i = 0; i < fl->num_of_fl_settings; i++)
-		{
-			if (fl->settings[i].name != NULL)
-			{
-				free(fl->settings[i].name);
-				fl->settings[i].name = NULL;
-			}
-			if (fl->settings[i].ban != NULL)
-			{
-				free(fl->settings[i].ban);
-				fl->settings[i].ban = NULL;
-			}
-			if (fl->settings[i].info != NULL)
-			{
-				free(fl->settings[i].info);
-				fl->settings[i].info = NULL;
-			}
-			if (fl->settings[i].format != NULL)
-			{
-				free(fl->settings[i].format);
-				fl->settings[i].format = NULL;
-			}
-			if (fl->settings[i].mask != NULL)
-			{
-				free(fl->settings[i].mask);
-				fl->settings[i].mask = NULL;
-			}
-			if (fl->settings[i].checked != NULL)
-			{
-				free(fl->settings[i].checked);
-				fl->settings[i].checked = NULL;
-			}
-			if (fl->settings[i].unchecked != NULL)
-			{
-				free(fl->settings[i].unchecked);
-				fl->settings[i].unchecked = NULL;
-			}
-			if (fl->settings[i].choices != NULL)
-			{
-				for (j = 0; j < fl->settings[i].num_of_choices; j++)
-				{
-					if (fl->settings[i].choices[j].value != NULL)
-					{
-						free(fl->settings[i].choices[j].value);
-						fl->settings[i].choices[j].value = NULL;
-					}
-					if (fl->settings[i].choices[j].text != NULL)
-					{
-						free(fl->settings[i].choices[j].text);
-						fl->settings[i].choices[j].text = NULL;
-					}
-				}
-				free(fl->settings[i].choices);
-				fl->settings[i].choices = NULL;
-			}
-		}
-		free(fl->settings);
-		fl->settings = NULL;
-	}
-	memset(fl, 0, sizeof(struct chip_fl_t));
-	
-	return VSFERR_NONE;
-}
-
 struct program_area_t* target_get_program_area(struct program_info_t *pi,
 												uint32_t area_idx)
 {
@@ -845,60 +737,6 @@ struct chip_area_info_t* target_get_chip_area(struct chip_param_t *param,
 											struct chip_area_info_t, list);
 	}
 	return area_info;
-}
-
-vsf_err_t target_release_chip_series(struct chip_series_t *s)
-{
-	struct chip_area_info_t *area_info = NULL, *temp = NULL;
-	uint32_t i;
-	
-	if (s->series_name != NULL)
-	{
-		free(s->series_name);
-		s->series_name = NULL;
-	}
-	
-	if ((s != NULL) && ((s->num_of_chips > 0) || (s->chips_param != NULL)))
-	{
-		for (i = 0; i < s->num_of_chips; i++)
-		{
-			if (s->chips_param[i].chip_name != NULL)
-			{
-				free(s->chips_param[i].chip_name);
-				s->chips_param[i].chip_name = NULL;
-			}
-			if (s->chips_param[i].program_mode_str != NULL)
-			{
-				free(s->chips_param[i].program_mode_str);
-				s->chips_param[i].program_mode_str = NULL;
-			}
-			
-			area_info = s->chips_param[i].chip_areas;
-			while (area_info != NULL)
-			{
-				temp = area_info;
-				if (area_info->mask != NULL)
-				{
-					free(area_info->mask);
-					area_info->mask = NULL;
-				}
-				if (area_info->cli_format != NULL)
-				{
-					free(area_info->cli_format);
-					area_info->cli_format = NULL;
-				}
-				area_info = sllist_get_container(area_info->list.next,
-												struct chip_area_info_t, list);
-				free(temp);
-			}
-		}
-		free(s->chips_param);
-		s->chips_param = NULL;
-		s->num_of_chips = 0;
-	}
-	memset(s, 0, sizeof(struct chip_series_t));
-	
-	return VSFERR_NONE;
 }
 
 void target_free_data_buffer(void)
@@ -1507,7 +1345,7 @@ static vsf_err_t target_program(struct program_context_t *context)
 					goto target_program_exit;
 				}
 				// default type is hex value with 16-bit length
-				snprintf(format_tmp, sizeof(format_tmp), "%%%dx", target_size);
+				SNPRINTF(format_tmp, sizeof(format_tmp), "%%%dx", target_size);
 				format = format_tmp;
 			}
 			if ((0 == target_size) && (SPECIAL_STRING_CHAR == area_char))
@@ -2284,7 +2122,7 @@ static void target_print_single_memory(char type)
 		return;
 	}
 	
-	PRINTF("%s of %s:\n", full_type, program_info.chip_name);
+	PRINTF("%s of %s:" LOG_LINE_END, full_type, program_info.chip_name);
 	if (p_map[mapidx].data_pos)
 	{
 		PRINTF("%c_seg = 0x%08X, ", type, area_info->seg);
@@ -2295,7 +2133,7 @@ static void target_print_single_memory(char type)
 		PRINTF("%c_format = %s, ", type, area_info->cli_format);
 	}
 	PRINTF("%c_default = 0x%"PRIX64", ", type, area_info->default_value);
-	PRINTF("%c_bytelen = %d\n", type, area_info->size);
+	PRINTF("%c_bytelen = %d" LOG_LINE_END, type, area_info->size);
 }
 
 void target_print_memory(char type)
@@ -2358,16 +2196,16 @@ void target_print_setting(char type)
 	}
 	
 	// print fl
-	PRINTF("%s of %s:\n", full_type, program_info.chip_name);
+	PRINTF("%s of %s:" LOG_LINE_END, full_type, program_info.chip_name);
 	PRINTF("init = %s, ", fl.init_value);
 	PRINTF("num_of_warnings = %d, ", fl.num_of_fl_warnings);
-	PRINTF("num_of_settings = %d\n", fl.num_of_fl_settings);
+	PRINTF("num_of_settings = %d" LOG_LINE_END, fl.num_of_fl_settings);
 	for (i = 0; i < fl.num_of_fl_warnings; i++)
 	{
 		PRINTF("warning: mask = %s, ", fl.warnings[i].mask);
 		PRINTF("value = %s, ", fl.warnings[i].value);
 		PRINTF("msg = %s, ", fl.warnings[i].msg);
-		PRINTF("ban = %d\n", fl.warnings[i].ban);
+		PRINTF("ban = %d" LOG_LINE_END, fl.warnings[i].ban);
 	}
 	for (i = 0; i < fl.num_of_fl_settings; i++)
 	{
@@ -2397,11 +2235,11 @@ void target_print_setting(char type)
 			PRINTF(", shift = %d", fl.settings[i].shift);
 			PRINTF(", bytelen = %d", fl.settings[i].bytelen);
 		}
-		PRINTF("\n");
+		PRINTF(LOG_LINE_END);
 		for (j = 0; j < fl.settings[i].num_of_choices; j++)
 		{
 			PRINTF("choice: value = %s, ", fl.settings[i].choices[j].value);
-			PRINTF("text = %s\n", fl.settings[i].choices[j].text);
+			PRINTF("text = %s" LOG_LINE_END, fl.settings[i].choices[j].text);
 		}
 	}
 	
@@ -2457,7 +2295,7 @@ void target_print_target(uint32_t index)
 	{
 		vss_call_notifier(targets_info[index].notifier, "extra", NULL);
 	}
-	PRINTF("\n");
+	PRINTF(LOG_LINE_END);
 	
 	// Targets based on ComPort outputs there special COM settings
 	if (strchr(targets_info[index].feature, 'C') != NULL)
@@ -2490,9 +2328,9 @@ void target_print_target(uint32_t index)
 				PRINTF("%s", area);
 				j++;
 			}
-			PRINTF("\n");
+			PRINTF(LOG_LINE_END);
 		}
-		PRINTF("\n");
+		PRINTF(LOG_LINE_END);
 	}
 	
 	target_release_chip_series(&target_chips);
@@ -2502,7 +2340,7 @@ void target_print_list(void)
 {
 	uint32_t i;
 	
-	PRINTF(_GETTEXT("Supported targets:\n"));
+	PRINTF(_GETTEXT("Supported targets:" LOG_LINE_END));
 	for (i = 0; targets_info[i].name != NULL; i++)
 	{
 		target_print_target(i);

@@ -60,6 +60,114 @@ static uint32_t target_xml_get_child_number(xmlNodePtr parentNode,
 	return result;
 }
 
+vsf_err_t target_release_chip_fl(struct chip_fl_t *fl)
+{
+	uint32_t i, j;
+	
+	if (NULL == fl)
+	{
+		LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
+		return VSFERR_INVALID_PARAMETER;
+	}
+	
+	if (fl->init_value != NULL)
+	{
+		free(fl->init_value);
+		fl->init_value = NULL;
+	}
+	
+	// free warnings
+	if (fl->warnings != NULL)
+	{
+		for (i = 0; i < fl->num_of_fl_warnings; i++)
+		{
+			if (fl->warnings[i].mask != NULL)
+			{
+				free(fl->warnings[i].mask);
+				fl->warnings[i].mask = NULL;
+			}
+			if (fl->warnings[i].value != NULL)
+			{
+				free(fl->warnings[i].value);
+				fl->warnings[i].value = NULL;
+			}
+			if (fl->warnings[i].msg != NULL)
+			{
+				free(fl->warnings[i].msg);
+				fl->warnings[i].msg = NULL;
+			}
+		}
+		free(fl->warnings);
+		fl->warnings = NULL;
+	}
+	
+	// free settings
+	if (fl->settings != NULL)
+	{
+		for (i = 0; i < fl->num_of_fl_settings; i++)
+		{
+			if (fl->settings[i].name != NULL)
+			{
+				free(fl->settings[i].name);
+				fl->settings[i].name = NULL;
+			}
+			if (fl->settings[i].ban != NULL)
+			{
+				free(fl->settings[i].ban);
+				fl->settings[i].ban = NULL;
+			}
+			if (fl->settings[i].info != NULL)
+			{
+				free(fl->settings[i].info);
+				fl->settings[i].info = NULL;
+			}
+			if (fl->settings[i].format != NULL)
+			{
+				free(fl->settings[i].format);
+				fl->settings[i].format = NULL;
+			}
+			if (fl->settings[i].mask != NULL)
+			{
+				free(fl->settings[i].mask);
+				fl->settings[i].mask = NULL;
+			}
+			if (fl->settings[i].checked != NULL)
+			{
+				free(fl->settings[i].checked);
+				fl->settings[i].checked = NULL;
+			}
+			if (fl->settings[i].unchecked != NULL)
+			{
+				free(fl->settings[i].unchecked);
+				fl->settings[i].unchecked = NULL;
+			}
+			if (fl->settings[i].choices != NULL)
+			{
+				for (j = 0; j < fl->settings[i].num_of_choices; j++)
+				{
+					if (fl->settings[i].choices[j].value != NULL)
+					{
+						free(fl->settings[i].choices[j].value);
+						fl->settings[i].choices[j].value = NULL;
+					}
+					if (fl->settings[i].choices[j].text != NULL)
+					{
+						free(fl->settings[i].choices[j].text);
+						fl->settings[i].choices[j].text = NULL;
+					}
+				}
+				free(fl->settings[i].choices);
+				fl->settings[i].choices = NULL;
+			}
+		}
+		free(fl->settings);
+		fl->settings = NULL;
+	}
+	memset(fl, 0, sizeof(struct chip_fl_t));
+	
+	return VSFERR_NONE;
+}
+
 vsf_err_t target_build_chip_fl(const char *chip_series,
 				const char *chip_module, char *type, struct chip_fl_t *fl)
 {
@@ -718,6 +826,60 @@ static struct chip_area_info_t* target_assert_chip_area(
 	}
 	
 	return area_info;
+}
+
+vsf_err_t target_release_chip_series(struct chip_series_t *s)
+{
+	struct chip_area_info_t *area_info = NULL, *temp = NULL;
+	uint32_t i;
+	
+	if (s->series_name != NULL)
+	{
+		free(s->series_name);
+		s->series_name = NULL;
+	}
+	
+	if ((s != NULL) && ((s->num_of_chips > 0) || (s->chips_param != NULL)))
+	{
+		for (i = 0; i < s->num_of_chips; i++)
+		{
+			if (s->chips_param[i].chip_name != NULL)
+			{
+				free(s->chips_param[i].chip_name);
+				s->chips_param[i].chip_name = NULL;
+			}
+			if (s->chips_param[i].program_mode_str != NULL)
+			{
+				free(s->chips_param[i].program_mode_str);
+				s->chips_param[i].program_mode_str = NULL;
+			}
+			
+			area_info = s->chips_param[i].chip_areas;
+			while (area_info != NULL)
+			{
+				temp = area_info;
+				if (area_info->mask != NULL)
+				{
+					free(area_info->mask);
+					area_info->mask = NULL;
+				}
+				if (area_info->cli_format != NULL)
+				{
+					free(area_info->cli_format);
+					area_info->cli_format = NULL;
+				}
+				area_info = sllist_get_container(area_info->list.next,
+												struct chip_area_info_t, list);
+				free(temp);
+			}
+		}
+		free(s->chips_param);
+		s->chips_param = NULL;
+		s->num_of_chips = 0;
+	}
+	memset(s, 0, sizeof(struct chip_series_t));
+	
+	return VSFERR_NONE;
 }
 
 vsf_err_t target_build_chip_series(const char *chip_series,
@@ -1612,10 +1774,11 @@ vsf_err_t target_generate_cfg_data(struct target_cfg_data_info_t *cfg_data_info,
 	uint8_t align;
 	uint32_t offset, addrwidth;
 	uint32_t info_size, data_size, all_size;
-	uint32_t param_size, area_size, series_size, temp_len;
-	uint32_t pos, data_pos;
+	uint32_t param_size, area_size, series_size, chip_area_size, temp_len;
+	uint32_t chip_area_pos, data_pos, temp_pos;
 	uint32_t i, j, k;
-	uint8_t *buff = NULL;
+	uint8_t *buff = NULL, *buff_ptr = NULL;
+	uint8_t *chip_area_ptr = NULL, *data_ptr = NULL;
 	
 	if ((NULL == cfg_data_info) || (NULL == filename) ||
 		(cfg_data_info->align != 4) || (cfg_data_info->addr_width != 32))
@@ -1635,6 +1798,13 @@ vsf_err_t target_generate_cfg_data(struct target_cfg_data_info_t *cfg_data_info,
 		return VSFERR_FAIL;
 	}
 	
+	// struct chip_series_t
+	series_size = 2 * addrwidth + 2 * 4;
+	// struct chip_param_t
+	param_size = 3 * addrwidth + 35 * 4;
+	// struct chip_area_info_t
+	area_size = 3 * addrwidth + 8 * 4;
+
 	for (i = 0; targets_info[i].name != NULL; i++)
 	{
 		target_chips.series_name = NULL;
@@ -1648,21 +1818,15 @@ vsf_err_t target_generate_cfg_data(struct target_cfg_data_info_t *cfg_data_info,
 			continue;
 		}
 		
-		// struct chip_series_t
-		series_size = 2 * addrwidth + 2 * 4;
-		// struct chip_param_t
-		param_size = 2 * addrwidth + 35 * 4;
-		// struct chip_area_info_t
-		area_size = 3 * addrwidth + 8 * 4;
-		
-		info_size = series_size + target_chips.num_of_chips * param_size;
-		
 		#define DATASIZE(len)	(((len) + align - 1) / align) * align
 		if (NULL == target_chips.series_name)
 		{
 			target_release_chip_series(&target_chips);
 			continue;
 		}
+		
+		info_size = series_size + target_chips.num_of_chips * param_size;
+		chip_area_pos = info_size;
 		temp_len = strlen(target_chips.series_name) + 1;
 		data_size = DATASIZE(temp_len);
 		for (j = 0; j < target_chips.num_of_chips; j++)
@@ -1679,11 +1843,18 @@ vsf_err_t target_generate_cfg_data(struct target_cfg_data_info_t *cfg_data_info,
 				temp_len = strlen(target_chips.chips_param[j].program_mode_str) + 1;
 				data_size += DATASIZE(temp_len);
 			}
+		}
+		for (j = 0; j < target_chips.num_of_chips; j++)
+		{
+			uint32_t default_value_addr;
 			
 			area_info = target_chips.chips_param[j].chip_areas;
 			while (area_info != NULL)
 			{
-				info_size += area_size;
+				default_value_addr = info_size + 5 * sizeof(uint32_t);
+				info_size += area_size +
+					(((default_value_addr + 7) & ~7) - default_value_addr);
+				
 				if (area_info->cli_format != NULL)
 				{
 					temp_len = 1 + strlen(area_info->cli_format);
@@ -1711,11 +1882,12 @@ vsf_err_t target_generate_cfg_data(struct target_cfg_data_info_t *cfg_data_info,
 			return VSFERR_NOT_ENOUGH_RESOURCES;
 		}
 		memset(buff, 0, all_size);
+		buff_ptr = buff;
 		
 		#define SET_U8(p, v)					\
 			do {\
 				*(uint8_t *)(p) = (uint8_t)(v);\
-				pos += 1;\
+				(p) += 1;\
 			} while (0)
 		#define SET_U16(p, v)					\
 			do {\
@@ -1727,7 +1899,7 @@ vsf_err_t target_generate_cfg_data(struct target_cfg_data_info_t *cfg_data_info,
 				{\
 					SET_BE_U16((p), (v));\
 				}\
-				pos += 2;\
+				(p) += 2;\
 			} while (0)
 		#define SET_U32(p, v)					\
 			do {\
@@ -1739,7 +1911,7 @@ vsf_err_t target_generate_cfg_data(struct target_cfg_data_info_t *cfg_data_info,
 				{\
 					SET_BE_U32((p), (v));\
 				}\
-				pos += 4;\
+				(p) += 4;\
 			} while (0)
 		#define SET_U64(p, v)					\
 			do {\
@@ -1751,46 +1923,46 @@ vsf_err_t target_generate_cfg_data(struct target_cfg_data_info_t *cfg_data_info,
 				{\
 					SET_BE_U64((p), (v));\
 				}\
-				pos += 8;\
+				(p) += 8;\
 			} while (0)
 		#define SET_PTR(p, v)					\
 			do {\
 				switch (addrwidth)\
 				{\
 				case 1:\
-					SET_U8(p, v);\
+					SET_U8((p), offset + (v));\
 					break;\
 				case 2:\
-					SET_U16(p, v);\
+					SET_U16((p),offset + (v));\
 					break;\
 				case 4:\
-					SET_U32(p, v);\
+					SET_U32((p),offset + (v));\
 					break;\
 				case 8:\
-					SET_U64(p, v);\
+					SET_U64((p),offset + (v));\
 					break;\
 				}\
 			} while (0)
 		#define SET_DATA_PTR(p, v, size)		\
 			do {\
-				SET_PTR((p), offset + (v));\
+				SET_PTR((p), (v));\
 				data_pos += size;\
 			} while (0)
 		
-		pos = 0;
 		data_pos = info_size;
+		chip_area_ptr = &buff[chip_area_pos];
 		//	struct chip_series_t
 		//	{
 		//		char *series_name;
 		temp_len = DATASIZE(strlen(target_chips.series_name) + 1);
-		SET_DATA_PTR(&buff[pos], data_pos, temp_len);
+		SET_DATA_PTR(buff_ptr, data_pos, temp_len);
 		//		uint32_t size;
-		SET_U32(&buff[pos], all_size);
+		SET_U32(buff_ptr, all_size);
 		//		uint32_t num_of_chips;
-		SET_U32(&buff[pos], target_chips.num_of_chips);
+		SET_U32(buff_ptr, target_chips.num_of_chips);
 		//		struct chip_param_t *chips_param;
 		//	}
-		SET_PTR(&buff[pos], series_size);
+		SET_PTR(buff_ptr, series_size);
 		
 		for (j = 0; j < target_chips.num_of_chips; j++)
 		{
@@ -1798,96 +1970,113 @@ vsf_err_t target_generate_cfg_data(struct target_cfg_data_info_t *cfg_data_info,
 			//	{
 			//		char *chip_name;
 			temp_len = DATASIZE(strlen(target_chips.chips_param[j].chip_name) + 1);
-			SET_DATA_PTR(&buff[pos], data_pos, temp_len);
+			SET_DATA_PTR(buff_ptr, data_pos, temp_len);
 			//		uint32_t chip_id;
-			SET_U32(&buff[pos], target_chips.chips_param[j].chip_id);
+			SET_U32(buff_ptr, target_chips.chips_param[j].chip_id);
 			//		char *program_mode_str;
 			if (target_chips.chips_param[j].program_mode_str != NULL)
 			{
 				temp_len = DATASIZE(strlen(target_chips.chips_param[j].program_mode_str) + 1);
-				SET_DATA_PTR(&buff[pos], data_pos, temp_len);
+				SET_DATA_PTR(buff_ptr, data_pos, temp_len);
 			}
 			else
 			{
-				SET_U32(&buff[pos], 0);
+				SET_PTR(buff_ptr, 0);
 			}
 			//		uint32_t program_mode;
-			SET_U32(&buff[pos], target_chips.chips_param[j].program_mode);
+			SET_U32(buff_ptr, target_chips.chips_param[j].program_mode);
 			//		uint32_t chip_erase;
-			SET_U32(&buff[pos], target_chips.chips_param[j].chip_erase);
+			SET_U32(buff_ptr, target_chips.chips_param[j].chip_erase);
 			//		uint32_t param[32];
 			for (k = 0; k < dimof(target_chips.chips_param[j].param); k++)
 			{
-				SET_U32(&buff[pos], target_chips.chips_param[j].param[k]);
+				SET_U32(buff_ptr, target_chips.chips_param[j].param[k]);
 			}
-			
 			//		struct chip_area_info_t *chip_areas;
+			SET_PTR(buff_ptr, chip_area_ptr - buff);
+			
 			area_info = target_chips.chips_param[j].chip_areas;
 			while (area_info != NULL)
 			{
 				//	struct chip_area_info_t
 				//	{
 				//		uint32_t index;
-				SET_U32(&buff[pos], area_info->index);
+				SET_U32(chip_area_ptr, area_info->index);
 				//		uint32_t seg;
-				SET_U32(&buff[pos], area_info->seg);
+				SET_U32(chip_area_ptr, area_info->seg);
 				//		uint32_t addr;
-				SET_U32(&buff[pos], area_info->addr);
+				SET_U32(chip_area_ptr, area_info->addr);
 				//		uint32_t page_size;
-				SET_U32(&buff[pos], area_info->page_size);
+				SET_U32(chip_area_ptr, area_info->page_size);
 				//		uint32_t page_num;
-				SET_U32(&buff[pos], area_info->page_num);
+				SET_U32(chip_area_ptr, area_info->page_num);
 				//		uint64_t default_value;
-				SET_U64(&buff[pos], area_info->default_value);
+				//		should be 64-bit aligned
+				temp_pos = chip_area_ptr - buff;
+				temp_pos = ((temp_pos + 7) & ~7) - temp_pos;
+				chip_area_ptr += temp_pos;
+				SET_U64(chip_area_ptr, area_info->default_value);
 				//		uint32_t size;
-				SET_U32(&buff[pos], area_info->size);
+				SET_U32(chip_area_ptr, area_info->size);
 				//		uint8_t *mask;
 				if (area_info->mask != NULL)
 				{
 					temp_len = DATASIZE(area_info->size);
-					SET_DATA_PTR(&buff[pos], data_pos, temp_len);
+					SET_DATA_PTR(chip_area_ptr, data_pos, temp_len);
 				}
 				else
 				{
-					SET_U32(&buff[pos], 0);
+					SET_PTR(chip_area_ptr, 0);
 				}
 				//		char *cli_format;
 				if (area_info->cli_format != NULL)
 				{
 					temp_len = DATASIZE(strlen(area_info->cli_format) + 1);
-					SET_DATA_PTR(&buff[pos], data_pos, temp_len);
+					SET_DATA_PTR(chip_area_ptr, data_pos, temp_len);
 				}
 				else
 				{
-					SET_U32(&buff[pos], 0);
+					SET_PTR(chip_area_ptr, 0);
 				}
-				//		struct sllist list;
-				SET_PTR(&buff[pos], pos + area_size);
 				
 				area_info = sllist_get_container(area_info->list.next,
 												struct chip_area_info_t, list);
+				if (area_info != NULL)
+				{
+					//		struct sllist list;
+					temp_pos = chip_area_ptr - buff;
+					temp_pos += addrwidth + 5 * sizeof(uint32_t);
+					temp_pos = (temp_pos + 7) & ~7;
+					SET_PTR(chip_area_ptr, temp_pos);
+				}
+				else
+				{
+					//		struct sllist list;
+					SET_PTR(chip_area_ptr, 0);
+				}
 			}
 		}
 		
 		#define SET_DATA(p, src, copy_len, len)	\
 			do {\
 				memcpy((p), (src), (copy_len));\
-				pos += (len);\
+				(p) += (len);\
 			} while (0)
-		data_pos = info_size;
+		
+		buff_ptr = &buff[info_size];
 		//		chip_series_t.series_name
 		temp_len = strlen(target_chips.series_name) + 1;
-		SET_DATA(&buff[pos], target_chips.series_name, temp_len, DATASIZE(temp_len));
+		SET_DATA(buff_ptr, target_chips.series_name, temp_len, DATASIZE(temp_len));
 		for (j = 0; j < target_chips.num_of_chips; j++)
 		{
 			//		chip_param_t.chip_name
 			temp_len = strlen(target_chips.chips_param[j].chip_name) + 1;
-			SET_DATA(&buff[pos], target_chips.chips_param[j].chip_name, temp_len, DATASIZE(temp_len));
+			SET_DATA(buff_ptr, target_chips.chips_param[j].chip_name, temp_len, DATASIZE(temp_len));
 			//		char *program_mode_str;
 			if (target_chips.chips_param[j].program_mode_str != NULL)
 			{
 				temp_len = strlen(target_chips.chips_param[j].program_mode_str) + 1;
-				SET_DATA(&buff[pos], target_chips.chips_param[j].program_mode_str, temp_len, DATASIZE(temp_len));
+				SET_DATA(buff_ptr, target_chips.chips_param[j].program_mode_str, temp_len, DATASIZE(temp_len));
 			}
 			
 			//		struct chip_area_info_t *chip_areas
@@ -1898,13 +2087,13 @@ vsf_err_t target_generate_cfg_data(struct target_cfg_data_info_t *cfg_data_info,
 				if (area_info->mask != NULL)
 				{
 					temp_len = area_info->size;
-					SET_DATA(&buff[pos], area_info->mask, temp_len, DATASIZE(temp_len));
+					SET_DATA(buff_ptr, area_info->mask, temp_len, DATASIZE(temp_len));
 				}
 				//		char *cli_format;
 				if (area_info->cli_format != NULL)
 				{
 					temp_len = strlen(area_info->cli_format) + 1;
-					SET_DATA(&buff[pos], area_info->cli_format, temp_len, DATASIZE(temp_len));
+					SET_DATA(buff_ptr, area_info->cli_format, temp_len, DATASIZE(temp_len));
 				}
 				
 				area_info = sllist_get_container(area_info->list.next,
@@ -1926,7 +2115,27 @@ vsf_err_t target_generate_cfg_data(struct target_cfg_data_info_t *cfg_data_info,
 		free(buff);
 		buff = NULL;
 		target_release_chip_series(&target_chips);
+		offset += all_size;
 	}
+	
+	// write dummy series as end
+	series_size = (series_size + 1023) & ~0x3FF;
+	buff = (uint8_t *)malloc(series_size);
+	if (NULL == buff)
+	{
+		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
+		return VSFERR_NOT_ENOUGH_RESOURCES;
+	}
+	memset(buff, 0, series_size);
+	if (fwrite(buff, 1, series_size, cfgfile) != series_size)
+	{
+		free(buff);
+		buff = NULL;
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "write data to file");
+		return VSFERR_FAIL;
+	}
+	free(buff);
+	buff = NULL;
 	
 	fclose(cfgfile);
 	cfgfile = NULL;
