@@ -239,6 +239,10 @@ static void free_all(void)
 		}
 	}
 	memset(&program_info, 0, sizeof(program_info));
+	if (target_chip_param.chip_areas != NULL)
+	{
+		target_chip_area_free(target_chip_param.chip_areas);
+	}
 	memset(&target_chip_param, 0, sizeof(target_chip_param));
 	
 	// free program buffer

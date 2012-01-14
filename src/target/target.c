@@ -286,7 +286,7 @@ const struct target_area_name_t target_area_name[NUM_OF_TARGET_AREA] =
 };
 
 static struct chip_series_t target_chips = {NULL, 0, 0, NULL};
-struct chip_param_t target_chip_param;
+struct chip_param_t target_chip_param = {NULL, 0, NULL, 0, 0, {0}, NULL};
 
 const struct target_info_t targets_info[] =
 {
@@ -633,6 +633,52 @@ vsf_err_t target_build_chip_series(const char *chip_series,
 		const struct program_mode_t *program_mode, struct chip_series_t *s);
 vsf_err_t target_build_chip_fl(const char *chip_series,
 				const char *chip_module, char *type, struct chip_fl_t *fl);
+
+void target_chip_area_free(struct chip_area_info_t *area_info)
+{
+	struct chip_area_info_t *temp = NULL;
+	
+	while (area_info != NULL)
+	{
+		temp = area_info;
+		area_info = sllist_get_container(area_info->list.next,
+											struct chip_area_info_t, list);
+		free(temp);
+	}
+}
+
+struct chip_area_info_t* target_chip_area_dup(
+										struct chip_area_info_t *area_info)
+{
+	struct chip_area_info_t *result = NULL, *temp = NULL, *last = NULL;
+	
+	while (area_info != NULL)
+	{
+		temp = (struct chip_area_info_t *)malloc(sizeof(*temp));
+		if (NULL == temp)
+		{
+			return NULL;
+		}
+		memset(temp, 0, sizeof(*temp));
+		*temp = *area_info;
+		sllist_init_node(temp->list);
+		
+		if (NULL == result)
+		{
+			result = temp;
+			last = result;
+		}
+		else
+		{
+			sllist_insert(last->list, temp->list);
+			last = temp;
+		}
+		
+		area_info = sllist_get_container(area_info->list.next,
+											struct chip_area_info_t, list);
+	}
+	return result;
+}
 
 static vsf_err_t target_parse_cli_string(void)
 {
@@ -1921,9 +1967,17 @@ static vsf_err_t target_init(struct program_info_t *pi)
 						cur_target->name);
 			return VSFERR_NOT_SUPPORT;
 		}
+		
 		// auto detect
+		if (target_chip_param.chip_areas != NULL)
+		{
+			target_chip_area_free(target_chip_param.chip_areas);
+			target_chip_param.chip_areas = NULL;
+		}
 		memcpy(&target_chip_param, &target_chips.chips_param[0],
 					sizeof(target_chip_param));
+		target_chip_param.chip_areas =
+			target_chip_area_dup(target_chips.chips_param[0].chip_areas);
 		LOG_INFO(INFOMSG_TRY_AUTODETECT);
 		
 		if (target_chips.num_of_chips > 1)
@@ -2002,8 +2056,16 @@ Post_Init:
 	{
 		return VSFERR_FAIL;
 	}
+	
+	if (target_chip_param.chip_areas != NULL)
+	{
+		target_chip_area_free(target_chip_param.chip_areas);
+		target_chip_param.chip_areas = NULL;
+	}
 	memcpy(&target_chip_param, &target_chips.chips_param[i],
 			sizeof(target_chip_param));
+	target_chip_param.chip_areas =
+			target_chip_area_dup(target_chips.chips_param[0].chip_areas);
 	
 	i = 0;
 	while (cur_target->program_area_map[i].name != 0)
@@ -2017,7 +2079,8 @@ Post_Init:
 		prog_area= target_get_program_area(pi, (uint32_t)area_idx);
 		if ((NULL == area_info) || (NULL == prog_area))
 		{
-			return VSFERR_FAIL;
+			i++;
+			continue;
 		}
 		
 		if (!prog_area->size)

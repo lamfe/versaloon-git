@@ -754,38 +754,6 @@ free_and_exit:
 	return err;
 }
 
-static struct chip_area_info_t* target_chip_area_dup(
-										struct chip_area_info_t *area_info)
-{
-	struct chip_area_info_t *result = NULL, *temp = NULL, *last = NULL;
-	
-	while (area_info != NULL)
-	{
-		temp = (struct chip_area_info_t *)malloc(sizeof(struct chip_area_info_t));
-		if (NULL == temp)
-		{
-			return NULL;
-		}
-		*temp = *area_info;
-		sllist_init_node(temp->list);
-		
-		if (NULL == result)
-		{
-			result = temp;
-			last = result;
-		}
-		else
-		{
-			sllist_insert(last->list, temp->list);
-			last = temp;
-		}
-		
-		area_info = sllist_get_container(area_info->list.next,
-											struct chip_area_info_t, list);
-	}
-	return result;
-}
-
 static struct chip_area_info_t* target_assert_chip_area(
 								struct chip_param_t *param, uint32_t area_idx)
 {
@@ -1925,24 +1893,25 @@ vsf_err_t target_generate_cfg_data(struct target_cfg_data_info_t *cfg_data_info,
 				}\
 				(p) += 8;\
 			} while (0)
-		#define SET_PTR(p, v)					\
+		#define SET_ABS_PTR(p, v)				\
 			do {\
 				switch (addrwidth)\
 				{\
 				case 1:\
-					SET_U8((p), offset + (v));\
+					SET_U8((p), (v));\
 					break;\
 				case 2:\
-					SET_U16((p),offset + (v));\
+					SET_U16((p), (v));\
 					break;\
 				case 4:\
-					SET_U32((p),offset + (v));\
+					SET_U32((p), (v));\
 					break;\
 				case 8:\
-					SET_U64((p),offset + (v));\
+					SET_U64((p), (v));\
 					break;\
 				}\
 			} while (0)
+		#define SET_PTR(p, v)					SET_ABS_PTR((p), offset + (v))
 		#define SET_DATA_PTR(p, v, size)		\
 			do {\
 				SET_PTR((p), (v));\
@@ -1981,7 +1950,7 @@ vsf_err_t target_generate_cfg_data(struct target_cfg_data_info_t *cfg_data_info,
 			}
 			else
 			{
-				SET_PTR(buff_ptr, 0);
+				SET_ABS_PTR(buff_ptr, 0);
 			}
 			//		uint32_t program_mode;
 			SET_U32(buff_ptr, target_chips.chips_param[j].program_mode);
@@ -2026,7 +1995,7 @@ vsf_err_t target_generate_cfg_data(struct target_cfg_data_info_t *cfg_data_info,
 				}
 				else
 				{
-					SET_PTR(chip_area_ptr, 0);
+					SET_ABS_PTR(chip_area_ptr, 0);
 				}
 				//		char *cli_format;
 				if (area_info->cli_format != NULL)
@@ -2036,7 +2005,7 @@ vsf_err_t target_generate_cfg_data(struct target_cfg_data_info_t *cfg_data_info,
 				}
 				else
 				{
-					SET_PTR(chip_area_ptr, 0);
+					SET_ABS_PTR(chip_area_ptr, 0);
 				}
 				
 				area_info = sllist_get_container(area_info->list.next,
@@ -2047,12 +2016,14 @@ vsf_err_t target_generate_cfg_data(struct target_cfg_data_info_t *cfg_data_info,
 					temp_pos = chip_area_ptr - buff;
 					temp_pos += addrwidth + 5 * sizeof(uint32_t);
 					temp_pos = (temp_pos + 7) & ~7;
+					temp_pos += 2 * addrwidth + sizeof(uint32_t) +
+								sizeof(uint64_t);
 					SET_PTR(chip_area_ptr, temp_pos);
 				}
 				else
 				{
 					//		struct sllist list;
-					SET_PTR(chip_area_ptr, 0);
+					SET_ABS_PTR(chip_area_ptr, 0);
 				}
 			}
 		}
