@@ -24,6 +24,8 @@
 #include <ctype.h>
 
 #include "app_cfg.h"
+#if TARGET_SVF_EN
+
 #include "app_type.h"
 #include "app_io.h"
 #include "app_err.h"
@@ -212,3 +214,4 @@ leave_program_mode:
 	return err;
 }
 
+#endif

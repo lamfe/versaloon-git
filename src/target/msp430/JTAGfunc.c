@@ -6,6 +6,8 @@
 #include <stdlib.h>
 
 #include "app_cfg.h"
+#if TARGET_MSP430_EN
+
 #include "app_type.h"
 #include "app_io.h"
 #include "app_err.h"
@@ -545,3 +547,4 @@ word BlowFuse(void)
 	return 0;
 }
 
+#endif

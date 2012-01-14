@@ -23,6 +23,8 @@
 #include <stdlib.h>
 
 #include "app_cfg.h"
+#if TARGET_PSOC1_EN
+
 #include "app_type.h"
 #include "app_io.h"
 #include "app_err.h"
@@ -576,3 +578,4 @@ ADJUST_SETTING_HANDLER(psoc1)
 	return VSFERR_NONE;
 }
 
+#endif

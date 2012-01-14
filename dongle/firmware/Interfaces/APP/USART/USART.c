@@ -54,45 +54,14 @@ vsf_err_t usart_fini(uint8_t index)
 }
 
 vsf_err_t usart_config(uint8_t index, uint32_t baudrate, uint8_t datalength, 
-						char paritybit, char stopbit, char handshake)
+						uint8_t mode)
 {
-	REFERENCE_PARAMETER(handshake);
-	
 	switch (index)
 	{
 	case 0:
 		usart_stream_p0.usart_info.datalength = datalength;
 		usart_stream_p0.usart_info.baudrate = baudrate;
-		usart_stream_p0.usart_info.mode = 0;
-		switch(stopbit)
-		{
-		default:
-		case 0:
-			usart_stream_p0.usart_info.mode |= USART_STOPBITS_1;
-			break;
-		case 1:
-			usart_stream_p0.usart_info.mode |= USART_STOPBITS_1P5;
-			break;
-		case 2:
-			usart_stream_p0.usart_info.mode |= USART_STOPBITS_2;
-			break;
-		}
-		switch(paritybit)
-		{
-		default:
-		case 0:
-			usart_stream_p0.usart_info.mode |= USART_PARITY_NONE;
-			usart_stream_p0.usart_info.datalength = 8;
-			break;
-		case 1:
-			usart_stream_p0.usart_info.mode |= USART_PARITY_ODD;
-			usart_stream_p0.usart_info.datalength = 9;
-			break;
-		case 2:
-			usart_stream_p0.usart_info.mode |= USART_PARITY_EVEN;
-			usart_stream_p0.usart_info.datalength = 9;
-			break;
-		}
+		usart_stream_p0.usart_info.mode = mode;
 		return usart_stream_config(&usart_stream_p0);
 	default:
 		return VSFERR_NOT_SUPPORT;

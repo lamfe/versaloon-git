@@ -323,6 +323,16 @@
           <state>$PROJ_DIR$\..\..\..\app_script</state>
           <state>$PROJ_DIR$\..\..\..\vsprog</state>
           <state>$PROJ_DIR$\..\..\..\vsprog\tools\pgbar</state>
+          <state>$PROJ_DIR$\..\..\..\vsprog\driver\comport</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\src\target\core\arm_adi</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\src\target\comisp</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\src\target\cortex-m3</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\src\target\at91sam3</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\src\target\lm3s</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\src\target\lpc1000</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\src\target\stm32f1</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\src\target\stm32f2</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\src\target\stm32l1</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -1259,6 +1269,16 @@
           <state>$PROJ_DIR$\..\..\..\app_script</state>
           <state>$PROJ_DIR$\..\..\..\vsprog</state>
           <state>$PROJ_DIR$\..\..\..\vsprog\tools\pgbar</state>
+          <state>$PROJ_DIR$\..\..\..\vsprog\driver\comport</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\src\target\core\arm_adi</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\src\target\comisp</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\src\target\cortex-m3</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\src\target\at91sam3</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\src\target\lm3s</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\src\target\lpc1000</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\src\target\stm32f1</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\src\target\stm32f2</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\src\target\stm32l1</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -2429,7 +2449,34 @@
   <group>
     <name>vsprog</name>
     <group>
+      <name>driver</name>
+      <group>
+        <name>comport</name>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\vsprog\driver\comport\comport.c</name>
+        </file>
+      </group>
+    </group>
+    <group>
       <name>target</name>
+      <group>
+        <name>at89s5x</name>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\target\at89s5x\at89s5x.c</name>
+        </file>
+      </group>
+      <group>
+        <name>at91sam3</name>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\target\at91sam3\at91sam3.c</name>
+        </file>
+      </group>
+      <group>
+        <name>avr32</name>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\target\avr32\avr32.c</name>
+        </file>
+      </group>
       <group>
         <name>avr8</name>
         <file>
@@ -2446,6 +2493,198 @@
         </file>
         <file>
           <name>$PROJ_DIR$\..\..\..\..\..\src\target\avr8\avr8_jtag.c</name>
+        </file>
+      </group>
+      <group>
+        <name>avrxmega</name>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\target\avrxmega\avrxmega.c</name>
+        </file>
+      </group>
+      <group>
+        <name>c8051f</name>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\target\c8051f\c8051f.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\target\c8051f\c8051f_c2.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\target\c8051f\c8051f_jtag.c</name>
+        </file>
+      </group>
+      <group>
+        <name>cfi</name>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\target\cfi\cfi.c</name>
+        </file>
+      </group>
+      <group>
+        <name>comisp</name>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\target\comisp\comisp.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\target\comisp\lpcarmisp.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\target\comisp\stm32isp.c</name>
+        </file>
+      </group>
+      <group>
+        <name>core</name>
+        <group>
+          <name>arm_adi</name>
+          <file>
+            <name>$PROJ_DIR$\..\..\..\..\..\src\target\core\arm_adi\adi_v5p1.c</name>
+          </file>
+        </group>
+      </group>
+      <group>
+        <name>cortex-m3</name>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\target\cortex-m3\cm3.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\target\cortex-m3\cm3_at91sam3.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\target\cortex-m3\cm3_common.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\target\cortex-m3\cm3_lm3s.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\target\cortex-m3\cm3_lpc1000.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\target\cortex-m3\cm3_stm32_fl.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\target\cortex-m3\cm3_stm32f1.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\target\cortex-m3\cm3_stm32f2.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\target\cortex-m3\cm3_stm32l1.c</name>
+        </file>
+      </group>
+      <group>
+        <name>df25xx</name>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\target\df25xx\df25xx.c</name>
+        </file>
+      </group>
+      <group>
+        <name>ee24cxx</name>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\target\ee24cxx\ee24cxx.c</name>
+        </file>
+      </group>
+      <group>
+        <name>ee93cx6</name>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\target\ee93cx6\ee93cx6.c</name>
+        </file>
+      </group>
+      <group>
+        <name>hcs08</name>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\target\hcs08\hcs08.c</name>
+        </file>
+      </group>
+      <group>
+        <name>hcs12</name>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\target\hcs12\hcs12.c</name>
+        </file>
+      </group>
+      <group>
+        <name>lm3s</name>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\target\lm3s\lm3s.c</name>
+        </file>
+      </group>
+      <group>
+        <name>lpc1000</name>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\target\lpc1000\lpc1000.c</name>
+        </file>
+      </group>
+      <group>
+        <name>lpc900</name>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\target\lpc900\lpc900.c</name>
+        </file>
+      </group>
+      <group>
+        <name>msp430</name>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\target\msp430\JTAGfunc.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\target\msp430\msp430.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\target\msp430\msp430_bsl.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\target\msp430\msp430_jtagsbw.c</name>
+        </file>
+      </group>
+      <group>
+        <name>nand</name>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\target\nand\nand.c</name>
+        </file>
+      </group>
+      <group>
+        <name>psoc1</name>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\target\psoc1\psoc1.c</name>
+        </file>
+      </group>
+      <group>
+        <name>sd</name>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\target\sd\sd.c</name>
+        </file>
+      </group>
+      <group>
+        <name>stm32f1</name>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\target\stm32f1\stm32f1.c</name>
+        </file>
+      </group>
+      <group>
+        <name>stm32f2</name>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\target\stm32f2\stm32f2.c</name>
+        </file>
+      </group>
+      <group>
+        <name>stm32l1</name>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\target\stm32l1\stm32l1.c</name>
+        </file>
+      </group>
+      <group>
+        <name>stm8</name>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\target\stm8\stm8.c</name>
+        </file>
+      </group>
+      <group>
+        <name>svf_player</name>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\target\svf_player\byte_tap.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\target\svf_player\svf_parser.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\target\svf_player\svf_player.c</name>
         </file>
       </group>
       <file>

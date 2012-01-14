@@ -23,6 +23,8 @@
 #include <stdlib.h>
 
 #include "app_cfg.h"
+#if TARGET_AVR8_EN
+
 #include "app_type.h"
 #include "app_io.h"
 #include "app_err.h"
@@ -37,3 +39,5 @@
 #include "avr8_internal.h"
 
 #define CUR_TARGET_STRING		AVR8_STRING
+
+#endif

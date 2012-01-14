@@ -24,6 +24,8 @@
 #include <ctype.h>
 
 #include "app_cfg.h"
+#if TARGET_LPC1000_EN
+
 #include "app_type.h"
 #include "app_io.h"
 #include "app_err.h"
@@ -237,3 +239,5 @@ ENTER_PROGRAM_MODE_HANDLER(lpc1000)
 	
 	return lpc1000_enter_program_mode_save(context);
 }
+
+#endif

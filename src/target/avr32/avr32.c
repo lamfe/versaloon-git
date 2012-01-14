@@ -25,6 +25,8 @@
 #include <time.h>
 
 #include "app_cfg.h"
+#if TARGET_AVR32_EN
+
 #include "app_type.h"
 #include "app_io.h"
 #include "app_err.h"
@@ -574,3 +576,5 @@ READ_TARGET_HANDLER(avr32jtag)
 	
 	return VSFERR_NONE;
 }
+
+#endif

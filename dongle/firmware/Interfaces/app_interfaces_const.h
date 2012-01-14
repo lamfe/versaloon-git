@@ -43,7 +43,7 @@
 #define IFS_DUSI				(1ULL << 30)
 #define IFS_MICROWIRE			(1ULL << 31)
 #define IFS_PWM					(1ULL << 32)
-#define IFS_USBD				(1ULL << 33)
+#define IFS_SDIO				(1ULL << 33)
 #define IFS_EBI					(1ULL << 34)
 #define IFS_INVALID_INTERFACE	(1ULL << 63)
 #define IFS_MASK				(USART | SPI | I2C | GPIO | CAN | CLOCK | ADC \
@@ -61,6 +61,37 @@
 #define GPIO_TDI				(1 << 6)
 #define GPIO_RTCK				(1 << 7)
 #define GPIO_TMS				(1 << 8)
+
+// JTAG
+#define JTAG_SRST				GPIO_SRST
+#define JTAG_TRST				GPIO_TRST
+#define JTAG_USR1				GPIO_USR1
+#define JTAG_USR2				GPIO_USR2
+
+// SWIM
+#define SWIM_PIN				GPIO_TMS
+#define SWIM_RST_PIN			GPIO_SRST
+
+// BDM
+#define BDM_PIN					GPIO_TMS
+
+// ISSP for PSoC
+#define ISSP_PM_RESET			(1 << 0)
+#define ISSP_PM_POWER_ON		(0 << 0)
+
+#define ISSP_VECTOR_END_BIT_1	0x04
+#define ISSP_VECTOR_END_BIT_0	0x00
+#define ISSP_VECTOR_ATTR_BANK	(1 << 0)
+#define ISSP_VECTOR_ATTR_READ	(1 << 1)
+#define ISSP_VECTOR_ATTR_0s		(1 << 3)
+
+#define ISSP_VECTOR_0S			(ISSP_VECTOR_ATTR_0s | ISSP_VECTOR_END_BIT_0)
+#define ISSP_VECTOR_READ_SRAM	(ISSP_VECTOR_ATTR_READ | ISSP_VECTOR_END_BIT_1)
+#define ISSP_VECTOR_WRITE_SRAM	(ISSP_VECTOR_END_BIT_1)
+#define ISSP_VECTOR_WRITE_REG	(ISSP_VECTOR_ATTR_BANK | ISSP_VECTOR_END_BIT_1)
+
+#define ISSP_WAP_OK				0x00
+#define ISSP_WAP_TIMEOUT		0x01
 
 #endif /* __APP_INTERFACE_CONST_H_INCLUDED__ */
 

@@ -24,6 +24,8 @@
 #include <ctype.h>
 
 #include "app_cfg.h"
+#if TARGET_STM32F2_EN || TARGET_STM32F4_EN
+
 #include "app_type.h"
 #include "app_io.h"
 #include "app_err.h"
@@ -220,3 +222,4 @@ void stm32f2_print_device(uint32_t mcuid)
 	}
 }
 
+#endif

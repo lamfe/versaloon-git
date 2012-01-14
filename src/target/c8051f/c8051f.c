@@ -23,6 +23,8 @@
 #include <stdlib.h>
 
 #include "app_cfg.h"
+#if TARGET_C8051F_EN
+
 #include "app_type.h"
 #include "app_io.h"
 #include "app_err.h"
@@ -96,3 +98,4 @@ const struct vss_cmd_t c8051f_notifier[] =
 	VSS_CMD_END
 };
 
+#endif

@@ -23,6 +23,8 @@
 #include <stdlib.h>
 
 #include "app_cfg.h"
+#if TARGET_HCS12_EN
+
 #include "app_type.h"
 #include "app_io.h"
 #include "app_err.h"
@@ -435,3 +437,4 @@ ADJUST_MAPPING_HANDLER(hcs12)
 	return VSFERR_NONE;
 }
 
+#endif

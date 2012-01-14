@@ -149,7 +149,7 @@ struct interface_usart_t
 	vsf_err_t (*init)(uint8_t index);
 	vsf_err_t (*fini)(uint8_t index);
 	vsf_err_t (*config)(uint8_t index, uint32_t baudrate, uint8_t datalength, 
-					uint8_t mode);
+						uint8_t mode);
 	vsf_err_t (*config_callback)(uint8_t index, void *p, void (*ontx)(void *), 
 								void (*onrx)(void *, uint16_t));
 	vsf_err_t (*tx)(uint8_t index, uint16_t data);
