@@ -99,7 +99,7 @@
         </option>
         <option>
           <name>OGChipSelectEditMenu</name>
-          <state>STM32F10xx8	ST STM32F10xx8</state>
+          <state>STM32F10xxE	ST STM32F10xxE</state>
         </option>
         <option>
           <name>GenLowLevelInterface</name>
@@ -166,10 +166,10 @@
           <name>CCDefines</name>
           <state>USE_STDPERIPH_DRIVER</state>
           <state>STM32F10X_MD</state>
-          <state>_HARDWARE_VER=0x15</state>
+          <state>_HARDWARE_VER=0x21</state>
           <state>__TARGET_CHIP__=stm32</state>
           <state>FLASH_LOAD_OFFSET=0x2000</state>
-          <state>CORE_DEBUG=STM32_DBG_NONE</state>
+          <state>CORE_DEBUG=STM32_DBG_SWD</state>
         </option>
         <option>
           <name>CCPreprocFile</name>
@@ -715,7 +715,7 @@
         </option>
         <option>
           <name>IlinkIcfFile</name>
-          <state>$PROJ_DIR$\..\..\Versaloon.icf</state>
+          <state>$PROJ_DIR$\..\..\VersaloonPro.icf</state>
         </option>
         <option>
           <name>IlinkIcfFileSlave</name>
