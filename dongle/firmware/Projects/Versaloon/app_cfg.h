@@ -61,7 +61,7 @@
 /************************ What do U want ************************/
 #define __VSF_DEBUG__					0
 
-#define SCRIPTS_EN						0
+#define SCRIPTS_EN						1
 #define VSS_CFG_MAX_ARGC				8
 #define VSS_CFG_MAX_LINE_LENGTH			128
 #define INTERFACES_INFO_T				app_interfaces_info_t
