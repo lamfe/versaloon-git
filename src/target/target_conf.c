@@ -1774,11 +1774,11 @@ vsf_err_t target_generate_cfg_data(struct target_cfg_data_info_t *cfg_data_info,
 	uint8_t align;
 	uint32_t offset, addrwidth;
 	uint32_t info_size, data_size, all_size;
-	uint32_t param_size, area_size, series_size, chip_area_size, temp_len;
+	uint32_t param_size, area_size, series_size, temp_len;
 	uint32_t chip_area_pos, data_pos, temp_pos;
 	uint32_t i, j, k;
 	uint8_t *buff = NULL, *buff_ptr = NULL;
-	uint8_t *chip_area_ptr = NULL, *data_ptr = NULL;
+	uint8_t *chip_area_ptr = NULL;
 	
 	if ((NULL == cfg_data_info) || (NULL == filename) ||
 		(cfg_data_info->align != 4) || (cfg_data_info->addr_width != 32))
