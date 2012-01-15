@@ -61,7 +61,7 @@ vsf_err_t target_data_free(struct program_context_t *context)
 			continue;
 		}
 		
-		if ((NULL == prog_area->buff) && !p_map->data_pos)
+		if ((prog_area->buff != NULL) && !p_map->data_pos)
 		{
 			free(prog_area->buff);
 			prog_area->buff = NULL;
