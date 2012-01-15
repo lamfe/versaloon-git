@@ -1894,7 +1894,7 @@ Post_Init:
 	memcpy(&target_chip_param, &target_chips.chips_param[i],
 			sizeof(target_chip_param));
 	target_chip_param.chip_areas =
-			target_chip_area_dup(target_chips.chips_param[0].chip_areas);
+			target_chip_area_dup(target_chips.chips_param[i].chip_areas);
 	
 	i = 0;
 	while (cur_target->program_area_map[i].name != 0)
