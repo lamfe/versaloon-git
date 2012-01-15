@@ -193,8 +193,16 @@ struct filelist *fl_in = NULL, *fl_out = NULL;
 
 static void free_all(void)
 {
+	struct program_context_t context;
 	struct program_area_t *prog_area = NULL;
 	uint32_t i;
+	
+	// free program buffer
+	context.op = &operations;
+	context.param = &target_chip_param;
+	context.pi = &program_info;
+	context.prog = interfaces;
+	target_data_free(&context);
 	
 	FILELIST_Free(&fl_in);
 	FILELIST_Free(&fl_out);
@@ -244,9 +252,7 @@ static void free_all(void)
 		target_chip_area_free(target_chip_param.chip_areas);
 	}
 	memset(&target_chip_param, 0, sizeof(target_chip_param));
-	
-	// free program buffer
-	target_free_data_buffer();
+	target_release_chip_series(&target_chips);
 }
 
 static void free_vsprog_system(void)

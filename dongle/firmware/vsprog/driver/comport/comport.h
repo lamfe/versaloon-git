@@ -16,20 +16,39 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#ifndef __VSPROG_H_INCLUDED__
-#define __VSPROG_H_INCLUDED__
+#ifndef __COMPORT_H_INCLUDED__
+#define __COMPORT_H_INCLUDED__
 
-struct operation_t
+#define COMM_STOPBIT_1					'1'
+#define COMM_STOPBIT_1P5				'P'
+#define COMM_STOPBIT_2					'2'
+
+#define COMM_PARITYBIT_NONE				'N'
+#define COMM_PARITYBIT_ODD				'O'
+#define COMM_PARITYBIT_EVEN				'E'
+
+#define COMM_HANDSHAKE_NONE				'N'
+#define COMM_HANDSHAKE_SOFTWARE			'S'
+#define COMM_HANDSHAKE_HARDWARE			'H'
+
+struct comm_func_t
 {
-	uint32_t erase_operations;
-	uint32_t write_operations;
-	uint32_t read_operations;
-	uint32_t verify_operations;
-	uint32_t checksum_operations;
+	vsf_err_t (*comm_open)(char *comport, uint32_t baudrate, uint8_t datalength,
+							char paritybit, char stopbit, char handshake);
+	void (*comm_close)(void);
+	int32_t (*comm_read)(uint8_t *buffer, uint32_t num_of_bytes);
+	int32_t (*comm_write)(uint8_t *buffer, uint32_t num_of_bytes);
+	int32_t (*comm_ctrl)(uint8_t dtr, uint8_t rts);
+	int32_t (*comm_flush)(void);
 };
 
-extern struct vss_cmd_list_t vsprog_cmd_list;
-extern struct operation_t operations;
+void comm_close(void);
+vsf_err_t comm_open(char *comport, uint32_t baudrate, uint8_t datalength,
+				 char paritybit, char stopbit, char handshake);
+int32_t comm_read(uint8_t *buffer, uint32_t num_of_bytes);
+int32_t comm_write(uint8_t *buffer, uint32_t num_of_bytes);
+int32_t comm_ctrl(uint8_t dtr, uint8_t rts);
+int32_t comm_flush(void);
 
-#endif /* __VSPROG_H_INCLUDED__ */
+#endif /* __COMPORT_H_INCLUDED__ */
 

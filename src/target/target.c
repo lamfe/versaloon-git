@@ -285,7 +285,7 @@ const struct target_area_name_t target_area_name[NUM_OF_TARGET_AREA] =
 	{UNIQUEID_CHAR,				UNIQUEID,			"uniqueid"}
 };
 
-static struct chip_series_t target_chips = {NULL, 0, 0, NULL};
+struct chip_series_t target_chips = {NULL, 0, 0, NULL};
 struct chip_param_t target_chip_param = {NULL, 0, NULL, 0, 0, {0}, NULL};
 
 const struct target_info_t targets_info[] =
@@ -626,6 +626,7 @@ const struct target_info_t targets_info[] =
 		NULL,								// adjust_mapping
 	}
 };
+
 struct target_info_t *cur_target = NULL;
 struct program_info_t program_info;
 
@@ -726,37 +727,6 @@ static vsf_err_t target_parse_cli_string(void)
 	return VSFERR_NONE;
 }
 
-vsf_err_t target_alloc_data_buffer(void)
-{
-	struct program_area_t *prog_area = NULL;
-	struct chip_area_info_t *area_info = NULL;
-	uint8_t i;
-	
-	for (i = 0; i < dimof(target_area_name); i++)
-	{
-		prog_area = target_get_program_area(&program_info, i);
-		if ((prog_area != NULL) && (NULL == prog_area->buff) &&
-			(prog_area->size > 0))
-		{
-			prog_area->buff = (uint8_t *)malloc(prog_area->size);
-			if (NULL == prog_area->buff)
-			{
-				return VSFERR_NOT_ENOUGH_RESOURCES;
-			}
-			
-			area_info = target_get_chip_area(&target_chip_param, i);
-			if ((strlen(target_chip_param.chip_name) > 0) &&
-				(area_info != NULL))
-			{
-				memset(prog_area->buff, (uint8_t)area_info->default_value,
-						prog_area->size);
-			}
-		}
-	}
-	
-	return VSFERR_NONE;
-}
-
 struct program_area_t* target_get_program_area(struct program_info_t *pi,
 												uint32_t area_idx)
 {
@@ -785,43 +755,7 @@ struct chip_area_info_t* target_get_chip_area(struct chip_param_t *param,
 	return area_info;
 }
 
-void target_free_data_buffer(void)
-{
-	struct program_area_t *prog_area = NULL;
-	uint8_t i;
-	
-	target_release_chip_series(&target_chips);
-	
-	for (i = 0; i < dimof(target_area_name); i++)
-	{
-		// special_string cannot be freed
-		if (SPECIAL_STRING_CHAR == target_area_name[i].name)
-		{
-			continue;
-		}
-		
-		prog_area = target_get_program_area(&program_info, i);
-		if (prog_area != NULL)
-		{
-			if (prog_area->buff != NULL)
-			{
-				free(prog_area->buff);
-				prog_area->buff = NULL;
-			}
-			prog_area->size = 0;
-			if (prog_area->memlist != NULL)
-			{
-				MEMLIST_Free(&prog_area->memlist);
-			}
-			if (prog_area->exact_memlist != NULL)
-			{
-				MEMLIST_Free(&prog_area->exact_memlist);
-			}
-		}
-	}
-}
-
-static void target_get_target_area(char area, uint8_t **buff, uint32_t *size)
+void target_get_target_area(char area, uint8_t **buff, uint32_t *size)
 {
 	struct program_area_t *prog_area = NULL;
 	int8_t i;
@@ -1010,112 +944,6 @@ static vsf_err_t target_check_defined(struct operation_t operations)
 		return VSFERR_NONE;
 	}
 }
-
-#if TARGET_CFG_FILE_SUPPORT
-static vsf_err_t target_write_buffer_from_file_callback(char * ext,
-				uint32_t address, uint32_t seg_addr, uint8_t* data,
-				uint32_t length, void* buffer)
-{
-	uint32_t i;
-	int8_t area_idx;
-	char area_name;
-	uint8_t *area_buff;
-	struct memlist **area_memlist, **area_exact_memlist;
-	uint32_t area_seg, area_addr, area_size, area_page_size;
-	struct program_info_t *pi = (struct program_info_t *)buffer;
-	struct chip_area_info_t *area_info = NULL;
-	struct program_area_t *prog_area = NULL;
-	uint32_t mem_addr;
-	
-	if ((NULL == cur_target) || (0 == strlen(target_chip_param.chip_name))
-		|| (NULL == ext))
-	{
-		LOG_BUG(ERRMSG_NOT_INITIALIZED, "target", "");
-		return VSFERR_FAIL;
-	}
-	
-	// remap if adjust_mapping is defined and format is not BIN
-	if ((strcmp(ext, "BIN")) &&
-		(cur_target->adjust_mapping != NULL) &&
-		cur_target->adjust_mapping(&address, TARGET_MAPPING_FROM_FILE))
-	{
-		LOG_BUG(ERRMSG_FAILURE_OPERATE_ADDRESS, "remap target address",
-				address);
-		return VSFERR_FAIL;
-	}
-	
-	// find a right target to fill the memory
-	i = 0;
-	while (cur_target->program_area_map[i].name != 0)
-	{
-		area_name = cur_target->program_area_map[i].name;
-		area_idx = target_area_idx(area_name);
-		if (area_idx < 0)
-		{
-			i++;
-			continue;
-		}
-		area_info = target_get_chip_area(&target_chip_param, (uint32_t)area_idx);
-		prog_area = target_get_program_area(pi, (uint32_t)area_idx);
-		if ((NULL == area_info) || (NULL == prog_area))
-		{
-			i++;
-			continue;
-		}
-		
-		area_seg = area_info->seg + cur_target->program_area_map[i].fseg_addr;
-		area_addr = area_info->addr + cur_target->program_area_map[i].fstart_addr;
-		area_size = area_info->size;
-		area_page_size = area_info->page_size;
-		
-		area_buff = prog_area->buff;
-		area_memlist = &(prog_area->memlist);
-		area_exact_memlist = &(prog_area->exact_memlist);
-		
-		if ((area_seg != seg_addr) || (area_addr > address)
-			|| ((area_addr + area_size) < (address + length)))
-		{
-			// not this area
-			i++;
-			continue;
-		}
-		
-		// found
-		if (0 == area_page_size)
-		{
-			// default page size is 256 bytes
-			area_page_size = 256;
-		}
-		pi->areas_defined |= target_area_mask(area_name);
-		mem_addr = address - area_addr;
-		if (area_buff != NULL)
-		{
-			// put in area_buff
-			memcpy(area_buff + mem_addr, data, length);
-			if (MEMLIST_Add(area_memlist, address, length, area_page_size))
-			{
-				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "add memory list");
-				return ERRCODE_FAILURE_OPERATION;
-			}
-			if (MEMLIST_Add(area_exact_memlist, address, length, 1))
-			{
-				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "add memory list");
-				return ERRCODE_FAILURE_OPERATION;
-			}
-		}
-		else
-		{
-			LOG_ERROR(ERRMSG_INVALID_BUFFER, "area_buff");
-			return VSFERR_FAIL;
-		}
-		
-		return VSFERR_NONE;
-	}
-	
-	// not found
-	return VSFERR_FAIL;
-}
-#endif
 
 static vsf_err_t MEMLIST_VerifyBuff(struct memlist *ml, uint8_t *buf1,
 				uint8_t *buf2, uint32_t addr, uint32_t len, uint32_t *pos)
@@ -1988,6 +1816,7 @@ static vsf_err_t target_init(struct program_info_t *pi)
 			memset(&opt_tmp, 0, sizeof(opt_tmp));
 			opt_tmp.read_operations = CHIPID;
 			context.op = &opt_tmp;
+			context.target = cur_target;
 			context.param = &target_chip_param;
 			context.pi = pi;
 			context.prog = interfaces;
@@ -2129,25 +1958,34 @@ static uint32_t target_prepare_operation(uint32_t *operation)
 	return ret;
 }
 
-#if TARGET_CFG_FILE_SUPPORT
-static vsf_err_t target_prepare_operations(struct operation_t *operations,
+vsf_err_t target_prepare_operations(struct program_context_t *context,
 									uint32_t *readfile, uint32_t *writefile)
 {
-	if ((NULL == cur_target) || (NULL == cur_target->program_area_map)
-		|| (NULL == operations))
+	uint32_t readfile_local, writefile_local;
+	
+	if ((NULL == context) || (NULL == context->target) ||
+		(NULL == context->target->program_area_map) || (NULL == context->op))
 	{
 		return VSFERR_FAIL;
 	}
 	
-	*readfile = *writefile = 0;
-	target_prepare_operation(&operations->erase_operations);
-	*readfile += target_prepare_operation(&operations->write_operations);
-	*readfile += target_prepare_operation(&operations->verify_operations);
-	*writefile += target_prepare_operation(&operations->read_operations);
+	readfile_local = writefile_local = 0;
+	target_prepare_operation(&context->op->erase_operations);
+	readfile_local += target_prepare_operation(&context->op->write_operations);
+	readfile_local += target_prepare_operation(&context->op->verify_operations);
+	writefile_local += target_prepare_operation(&context->op->read_operations);
+	
+	if (readfile != NULL)
+	{
+		*readfile = readfile_local;
+	}
+	if (writefile != NULL)
+	{
+		*writefile = writefile_local;
+	}
 	
 	return VSFERR_NONE;
 }
-#endif
 
 static void target_print_single_memory(char type)
 {
@@ -2859,19 +2697,9 @@ VSS_HANDLER(target_execute_addr)
 	return VSFERR_NONE;
 }
 
-#if TARGET_CFG_FILE_SUPPORT
-#include "filelist.h"
-#include "fileparser.h"
-extern struct filelist *fl_in, *fl_out;
-#endif
-
-extern struct operation_t operations;
 VSS_HANDLER(target_prepare)
 {
-#if TARGET_CFG_FILE_SUPPORT
-	uint32_t require_file_for_read = 0;
-	uint32_t require_file_for_write = 0;
-#endif
+	struct program_context_t context;
 	
 	VSS_CHECK_ARGC(1);
 	if (NULL == cur_target)
@@ -2880,24 +2708,6 @@ VSS_HANDLER(target_prepare)
 		return VSFERR_FAIL;
 	}
 	
-#if TARGET_CFG_FILE_SUPPORT
-	// check file
-	target_prepare_operations(&operations,
-					&require_file_for_read, &require_file_for_write);
-	if ((require_file_for_read > 0)
-		&& ((NULL == fl_in) || (NULL == fl_in->path) || (NULL == fl_in->file)))
-	{
-		LOG_ERROR(ERRMSG_NOT_DEFINED, "input file");
-		return VSFERR_FAIL;
-	}
-	if ((require_file_for_write > 0)
-		&& ((NULL == fl_out) || (NULL == fl_out->path)))
-	{
-		LOG_ERROR(ERRMSG_NOT_DEFINED, "output file");
-		return VSFERR_FAIL;
-	}
-#endif
-	
 	// init target
 	if (target_init(&program_info))
 	{
@@ -2905,39 +2715,23 @@ VSS_HANDLER(target_prepare)
 		return VSFERR_FAIL;
 	}
 	
-	// malloc buffer
-	if (target_alloc_data_buffer())
-	{
-		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-		return VSFERR_FAIL;
-	}
 	if (target_parse_cli_string())
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "parse cli_string");
 		return VSFERR_FAIL;
 	}
-#if TARGET_CFG_FILE_SUPPORT
-	// read file
-	if (require_file_for_read > 0)
+	
+	context.op = &operations;
+	context.target = cur_target;
+	context.param = &target_chip_param;
+	context.pi = &program_info;
+	context.prog = interfaces;
+	if (target_data_read(&context))
 	{
-		struct filelist *fl = fl_in;
-		
-		while ((fl != NULL) && (fl->path != NULL) && (fl->file != NULL)
-			&& (strlen(fl->path) > 4))
-		{
-			if (parse_file(fl->path, fl->file, (void *)&program_info,
-								&target_write_buffer_from_file_callback,
-								fl->seg_offset, fl->addr_offset))
-			{
-				LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "parse input file",
-							fl->path);
-				return VSFERR_FAIL;
-			}
-			
-			fl = FILELIST_GetNext(fl);
-		}
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "initialize target data");
+		return VSFERR_FAIL;
 	}
-#endif
+	
 	if (target_check_defined(operations))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "check target defined content");
@@ -2959,6 +2753,7 @@ VSS_HANDLER(target_enter_program_mode)
 	}
 	
 	context.op = &operations;
+	context.target = cur_target;
 	context.param = &target_chip_param;
 	context.pi = &program_info;
 	context.prog = interfaces;
@@ -2984,6 +2779,7 @@ VSS_HANDLER(target_leave_program_mode)
 	success = (uint8_t)strtoul(argv[1], NULL, 0);
 	
 	context.op = &operations;
+	context.target = cur_target;
 	context.param = &target_chip_param;
 	context.pi = &program_info;
 	context.prog = interfaces;
@@ -3026,6 +2822,7 @@ VSS_HANDLER(target_erase)
 	}
 	
 	context.op = &operations;
+	context.target = cur_target;
 	context.param = &target_chip_param;
 	context.pi = &program_info;
 	context.prog = interfaces;
@@ -3070,6 +2867,7 @@ VSS_HANDLER(target_write)
 	}
 	
 	context.op = &operations;
+	context.target = cur_target;
 	context.param = &target_chip_param;
 	context.pi = &program_info;
 	context.prog = interfaces;
@@ -3115,6 +2913,7 @@ VSS_HANDLER(target_verify)
 	}
 	
 	context.op = &operations;
+	context.target = cur_target;
 	context.param = &target_chip_param;
 	context.pi = &program_info;
 	context.prog = interfaces;
@@ -3174,6 +2973,7 @@ VSS_HANDLER(target_read)
 	prog_area->memlist = ml_tmp;
 	
 	context.op = &operations;
+	context.target = cur_target;
 	context.param = &target_chip_param;
 	context.pi = &program_info;
 	context.prog = interfaces;
@@ -3212,6 +3012,7 @@ VSS_HANDLER(target_operate)
 	}
 	
 	context.op = &operations;
+	context.target = cur_target;
 	context.param = &target_chip_param;
 	context.pi = &program_info;
 	context.prog = interfaces;
@@ -3221,57 +3022,7 @@ VSS_HANDLER(target_operate)
 		return VSFERR_FAIL;
 	}
 	
-#if TARGET_CFG_FILE_SUPPORT
-	// save contect to file for read operation
-	if (cur_target != NULL)
-	{
-		struct program_area_map_t *p_map =
-				(struct program_area_map_t *)cur_target->program_area_map;
-		
-		while (p_map->name != 0)
-		{
-			if ((p_map->data_pos)
-				&& (operations.read_operations
-					& target_area_mask(p_map->name)))
-			{
-				uint8_t *buff = NULL;
-				uint32_t size = 0;
-				struct chip_area_info_t *area;
-				int8_t area_idx;
-				
-				area_idx = target_area_idx(p_map->name);
-				if (area_idx < 0)
-				{
-					p_map++;
-					continue;
-				}
-				area = target_get_chip_area(&target_chip_param, (uint32_t)area_idx);
-				if (NULL == area)
-				{
-					LOG_ERROR(ERRMSG_INVALID_TARGET, "area");
-					return VSFERR_FAIL;
-				}
-				target_get_target_area(p_map->name, &buff, &size);
-				if ((buff != NULL) && (size > 0) && (fl_out != NULL))
-				{
-					if (save_target_to_file(fl_out, buff,
-							size, area->seg, area->addr, p_map->fseg_addr,
-							p_map->fstart_addr,
-							cur_target->adjust_mapping))
-					{
-						LOG_ERROR(ERRMSG_FAILURE_OPERATION,
-									"write data to file");
-						return VSFERR_FAIL;
-					}
-				}
-			}
-			
-			p_map++;
-		}
-		end_file(fl_out);
-	}
-#endif
-	return VSFERR_NONE;
+	return target_data_save(&context);
 }
 
 VSS_HANDLER(target_interface_indexes)

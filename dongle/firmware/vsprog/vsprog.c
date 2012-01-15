@@ -119,8 +119,16 @@ struct operation_t operations;
 
 static void free_all(void)
 {
+	struct program_context_t context;
 	struct program_area_t *prog_area = NULL;
 	uint32_t i;
+	
+	// free program buffer
+	context.op = &operations;
+	context.param = &target_chip_param;
+	context.pi = &program_info;
+	context.prog = interfaces;
+	target_data_free(&context);
 	
 	if (cur_target != NULL)
 	{
@@ -156,7 +164,12 @@ static void free_all(void)
 		}
 	}
 	memset(&program_info, 0, sizeof(program_info));
+	if (target_chip_param.chip_areas != NULL)
+	{
+		target_chip_area_free(target_chip_param.chip_areas);
+	}
 	memset(&target_chip_param, 0, sizeof(target_chip_param));
+	target_release_chip_series(&target_chips);
 }
 
 static void free_all_and_exit(int exit_code)
