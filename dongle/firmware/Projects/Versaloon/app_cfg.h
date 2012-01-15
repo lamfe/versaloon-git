@@ -67,7 +67,7 @@
 #define INTERFACES_INFO_T				app_interfaces_info_t
 #define APPIO_BUFFER_SIZE				4096
 #define TARGET_CFG_ADDR					0x08040000
-#define TARGET_DATA_ADDR				0x08070000
+#define TARGET_DATA_ADDR				0x08068000
 
 #define PARAM_CHECK						1
 

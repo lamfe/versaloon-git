@@ -75,6 +75,7 @@ vsf_err_t target_data_free(struct program_context_t *context)
 
 vsf_err_t target_data_read(struct program_context_t *context)
 {
+	uint32_t pos;
 	struct program_area_map_t *p_map;
 	struct program_area_t *prog_area = NULL;
 	struct chip_area_info_t *area_info = NULL;
@@ -127,7 +128,21 @@ vsf_err_t target_data_read(struct program_context_t *context)
 			}
 			else
 			{
-				// TODO: read target data in flash
+				pos = TARGET_DATA_ADDR +
+						area_idx * sizeof(struct program_area_t);
+				
+				prog_area->cli_str = *(char **)pos;
+				pos += sizeof(char *);
+				prog_area->buff = *(uint8_t **)pos;
+				pos += sizeof(uint8_t *);
+				prog_area->size = *(uint32_t *)pos;
+				pos += sizeof(uint32_t);
+				prog_area->memlist = *(struct memlist **)pos;
+				pos += sizeof(struct memlsit *);
+				prog_area->exact_memlist = *(struct memlist **)pos;
+				pos += sizeof(struct memlist *);
+				
+				context->pi->areas_defined = 1 << area_idx;
 			}
 		}
 		

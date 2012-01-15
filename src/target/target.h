@@ -353,7 +353,7 @@ extern struct target_info_t *cur_target;
 extern const struct target_info_t targets_info[];
 extern struct program_info_t program_info;
 extern struct chip_param_t target_chip_param;
-struct chip_series_t target_chips;
+extern struct chip_series_t target_chips;
 
 uint32_t target_area_mask(char area_name);
 char* target_area_fullname(char area_name);
@@ -383,7 +383,10 @@ struct target_cfg_data_info_t
 	uint8_t align;
 };
 vsf_err_t target_generate_cfg_data(struct target_cfg_data_info_t *cfg_data_info,
-									char *filename);
+									const char *filename);
+vsf_err_t target_generate_data(struct target_cfg_data_info_t *cfg_data_info,
+					struct program_context_t *context, const char *filename);
+
 vsf_err_t target_release_chip_series(struct chip_series_t *s);
 vsf_err_t target_release_chip_fl(struct chip_fl_t *fl);
 

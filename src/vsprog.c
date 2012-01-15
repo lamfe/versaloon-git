@@ -51,7 +51,7 @@
 #include "comisp/comisp.h"
 #include "usb/usbapi.h"
 
-#define OPTSTR			"hvS:P:s:c:Mp:U:D:Ld:Go:F:m:x:C:I:O:J:b:V:t:K:W:Aqel:i:Q:a:E:"
+#define OPTSTR			"hvS:P:s:c:Mp:U:D:Ld:Go:F:m:x:C:I:O:J:b:V:t:K:W:Aqel:i:Q:a:E:Z:"
 static const struct option long_opts[] =
 {
 	{"help", no_argument, NULL, 'h'},
@@ -88,6 +88,7 @@ static const struct option long_opts[] =
 	{"erase-on-demand", no_argument, NULL, 'e'},
 	{"address", required_argument, NULL, 'a'},
 	{"embedded-vsprog-config", required_argument, NULL, 'E'},
+	{"embedded-vsprog-data", required_argument, NULL, 'Z'},
 	{NULL, 0, NULL, 0},
 };
 
@@ -100,6 +101,7 @@ VSS_HANDLER(vsprog_mass);
 VSS_HANDLER(vsprog_free_all);
 VSS_HANDLER(vsprog_init);
 VSS_HANDLER(embedded_vsprog_config);
+VSS_HANDLER(embedded_vsprog_data);
 
 static const struct vss_cmd_t vsprog_cmd[] =
 {
@@ -161,13 +163,23 @@ static const struct vss_cmd_t vsprog_cmd[] =
 				NULL),
 	VSS_CMD(	"embedded-vsprog-config",
 				"generate config data for embedded vsprog, "
-				"format: embedded-vsprog-config/E ADDR",
+				"format: embedded-vsprog-config/E FILE",
 				embedded_vsprog_config,
 				NULL),
 	VSS_CMD(	"E",
 				"generate config data for embedded vsprog, "
-				"format: embedded-vsprog-config/E ADDR",
+				"format: embedded-vsprog-config/E FILE",
 				embedded_vsprog_config,
+				NULL),
+	VSS_CMD(	"embedded-vsprog-data",
+				"generate target data for embedded vsprog, "
+				"format: embedded-vsprog-data/Z FILE",
+				embedded_vsprog_data,
+				NULL),
+	VSS_CMD(	"Z",
+				"generate target data for embedded vsprog, "
+				"format: embedded-vsprog-data/Z FILE",
+				embedded_vsprog_data,
 				NULL),
 	VSS_CMD_END
 };
@@ -199,6 +211,7 @@ static void free_all(void)
 	
 	// free program buffer
 	context.op = &operations;
+	context.target = cur_target;
 	context.param = &target_chip_param;
 	context.pi = &program_info;
 	context.prog = interfaces;
@@ -616,6 +629,35 @@ VSS_HANDLER(vsprog_init)
 	vss_register_cmd_list(&usbapi_cmd_list);
 	vss_register_cmd_list(&app_cmd_list);
 	return VSFERR_NONE;
+}
+
+VSS_HANDLER(embedded_vsprog_data)
+{
+	vsf_err_t ret;
+	struct target_cfg_data_info_t cfg_data_info;
+	struct program_context_t context;
+	
+	VSS_CHECK_ARGC(2);
+	
+	if (vss_run_script("prepare"))
+	{
+		return VSFERR_FAIL;
+	}
+	
+	cfg_data_info.addr = program_info.chip_address;
+	cfg_data_info.addr_width = 32;
+	cfg_data_info.little_endian = true;
+	cfg_data_info.align = 4;
+	
+	context.op = &operations;
+	context.target = cur_target;
+	context.param = &target_chip_param;
+	context.pi = &program_info;
+	context.prog = interfaces;
+	ret = target_generate_data(&cfg_data_info, &context, (char *)argv[1]);
+	
+	vsprog_query_cmd = true;
+	return ret;
 }
 
 VSS_HANDLER(embedded_vsprog_config)

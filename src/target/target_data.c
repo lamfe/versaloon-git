@@ -341,3 +341,314 @@ vsf_err_t target_data_save(struct program_context_t *context)
 	
 	return VSFERR_NONE;
 }
+
+static uint32_t target_get_memlist_count(struct memlist *list)
+{
+	uint32_t count = 0;
+	
+	while (list != NULL)
+	{
+		count++;
+		list = MEMLIST_GetNext(list);
+	}
+	return count;
+}
+
+vsf_err_t target_generate_data(struct target_cfg_data_info_t *cfg_data_info,
+					struct program_context_t *context, const char *filename)
+{
+	FILE *datafile;
+	bool little;
+	uint8_t align;
+	uint32_t offset, addrwidth;
+	uint32_t pa_size, data_size, memlist_size;
+	uint32_t data_pos;
+	uint32_t temp_len;
+	struct program_area_t *prog_area = NULL;
+	struct memlist *temp_list = NULL;
+	uint32_t i;
+	uint8_t *buff, *buff_ptr;
+	
+	if ((NULL == cfg_data_info) || (NULL == filename) || (NULL == context) ||
+		(NULL == context->target) || (NULL == context->pi) ||
+		(NULL == context->target->program_area_map) ||
+		(cfg_data_info->align != 4) || (cfg_data_info->addr_width != 32))
+	{
+		return VSFERR_INVALID_PARAMETER;
+	}
+	
+	offset = cfg_data_info->addr;
+	addrwidth = cfg_data_info->addr_width / 8;
+	align = cfg_data_info->align;
+	little = cfg_data_info->little_endian;
+	
+	datafile = fopen(filename, "wb");
+	if (NULL == datafile)
+	{
+		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "open", filename);
+		return VSFERR_FAIL;
+	}
+	
+	#define DATASIZE(len)	(((len) + align - 1) / align) * align
+	
+	memlist_size = 2 * sizeof(uint32_t) + addrwidth;
+	pa_size = dimof(target_area_name) * (4 * addrwidth + sizeof(uint32_t));
+	pa_size = DATASIZE(pa_size);
+	buff = (uint8_t *)malloc(pa_size);
+	if (NULL == buff)
+	{
+		fclose(datafile);
+		datafile = NULL;
+		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
+		return VSFERR_FAIL;
+	}
+	memset(buff, 0, pa_size);
+	
+	#define SET_U8(p, v)					\
+		do {\
+			*(uint8_t *)(p) = (uint8_t)(v);\
+			(p) += 1;\
+		} while (0)
+	#define SET_U16(p, v)					\
+		do {\
+			if (little)\
+			{\
+				SET_LE_U16((p), (v));\
+			}\
+			else\
+			{\
+				SET_BE_U16((p), (v));\
+			}\
+			(p) += 2;\
+		} while (0)
+	#define SET_U32(p, v)					\
+		do {\
+			if (little)\
+			{\
+				SET_LE_U32((p), (v));\
+			}\
+			else\
+			{\
+				SET_BE_U32((p), (v));\
+			}\
+			(p) += 4;\
+		} while (0)
+	#define SET_U64(p, v)					\
+		do {\
+			if (little)\
+			{\
+				SET_LE_U64((p), (v));\
+			}\
+			else\
+			{\
+				SET_BE_U64((p), (v));\
+			}\
+			(p) += 8;\
+		} while (0)
+	#define SET_U32(p, v)					\
+		do {\
+			if (little)\
+			{\
+				SET_LE_U32((p), (v));\
+			}\
+			else\
+			{\
+				SET_BE_U32((p), (v));\
+			}\
+			(p) += 4;\
+		} while (0)
+	#define SET_ABS_PTR(p, v)				\
+		do {\
+			switch (addrwidth)\
+			{\
+			case 1:\
+				SET_U8((p), (v));\
+				break;\
+			case 2:\
+				SET_U16((p), (v));\
+				break;\
+			case 4:\
+				SET_U32((p), (v));\
+				break;\
+			case 8:\
+				SET_U64((p), (v));\
+				break;\
+			}\
+		} while (0)
+	#define SET_PTR(p, v)					SET_ABS_PTR((p), offset + (v))
+	#define SET_DATA_PTR(p, v, size)		\
+		do {\
+			SET_PTR((p), (v));\
+			data_pos += size;\
+		} while (0)
+	#define SET_DATA(p, src, copy_len, len)	\
+			do {\
+				memcpy((p), (src), (copy_len));\
+				(p) += (len);\
+			} while (0)
+	
+	data_pos = pa_size;
+	buff_ptr = buff;
+	for (i = 0; i < dimof(target_area_name); i++)
+	{
+		prog_area = target_get_program_area(context->pi, i);
+		if (NULL == prog_area)
+		{
+			fclose(datafile);
+			datafile = NULL;
+			free(buff);
+			buff = NULL;
+			return VSFERR_FAIL;
+		}
+		
+		if ((prog_area->buff != NULL) && (prog_area->size > 0) &&
+			(prog_area->memlist != NULL) && (prog_area->exact_memlist != NULL))
+		{
+			//	struct program_area_t
+			//	{
+			//		char *cli_str;
+			if (prog_area->cli_str != NULL)
+			{
+				SET_PTR(buff_ptr, data_pos);
+				data_pos += DATASIZE(strlen(prog_area->cli_str) + 1);
+			}
+			else
+			{
+				SET_ABS_PTR(buff_ptr, 0);
+			}
+			//		uint8_t *buff;
+			SET_PTR(buff_ptr, data_pos);
+			data_pos += DATASIZE(prog_area->size);
+			//		uint32_t size;
+			SET_U32(buff_ptr, prog_area->size);
+			//		struct memlist *memlist;
+			SET_PTR(buff_ptr, data_pos);
+			temp_len = DATASIZE(memlist_size);
+			data_pos += temp_len * target_get_memlist_count(prog_area->memlist);
+			//		struct memlist *exact_memlist;
+			SET_PTR(buff_ptr, data_pos);
+			temp_len = DATASIZE(memlist_size);
+			data_pos += temp_len *
+							target_get_memlist_count(prog_area->exact_memlist);
+			//	}
+		}
+		else
+		{
+			// defined in command line, simply set to 0 here
+			//	struct program_area_t
+			//	{
+			//		char *cli_str;
+			SET_ABS_PTR(buff_ptr, 0);
+			//		uint8_t *buff;
+			SET_ABS_PTR(buff_ptr, 0);
+			//		uint32_t size;
+			SET_U32(buff_ptr, 0);
+			//		struct memlist *memlist;
+			SET_ABS_PTR(buff_ptr, 0);
+			//		struct memlist *exact_memlist;
+			SET_ABS_PTR(buff_ptr, 0);
+			//	}
+		}
+	}
+	if (fwrite(buff, 1, pa_size, datafile) != pa_size)
+	{
+		free(buff);
+		buff = NULL;
+		fclose(datafile);
+		datafile = NULL;
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "write data to file");
+		return VSFERR_FAIL;
+	}
+	free(buff);
+	buff = NULL;
+	
+	data_size = data_pos - pa_size;
+	buff = (uint8_t *)malloc(data_size);
+	if (NULL == buff)
+	{
+		fclose(datafile);
+		datafile = NULL;
+		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
+		return VSFERR_FAIL;
+	}
+	memset(buff, 0, data_size);
+	buff_ptr = buff;
+	for (i = 0; i < dimof(target_area_name); i++)
+	{
+		prog_area = target_get_program_area(context->pi, i);
+		if (NULL == prog_area)
+		{
+			fclose(datafile);
+			datafile = NULL;
+			free(buff);
+			buff = NULL;
+			return VSFERR_FAIL;
+		}
+		
+		if ((prog_area->buff != NULL) && (prog_area->size > 0) &&
+			(prog_area->memlist != NULL) && (prog_area->exact_memlist != NULL))
+		{
+			//	struct program_area_t
+			//	{
+			//		char *cli_str;
+			if (prog_area->cli_str != NULL)
+			{
+				temp_len = strlen(prog_area->cli_str) + 1;
+				SET_DATA(buff_ptr, prog_area->cli_str, temp_len,
+							DATASIZE(temp_len));
+			}
+			//		uint8_t *buff;
+			temp_len = prog_area->size;
+			SET_DATA(buff_ptr, prog_area->buff, temp_len, DATASIZE(temp_len));
+			//		uint32_t size;
+			//		struct memlist *memlist;
+			temp_list = prog_area->memlist;
+			while (temp_list != NULL)
+			{
+				SET_U32(buff_ptr, temp_list->addr);
+				SET_U32(buff_ptr, temp_list->len);
+				temp_list = MEMLIST_GetNext(temp_list);
+				if (temp_list != NULL)
+				{
+					SET_PTR(buff_ptr, 4 + buff_ptr - buff);
+				}
+				else
+				{
+					SET_ABS_PTR(buff_ptr, 0);
+				}
+			}
+			//		struct memlist *exact_memlist;
+			temp_list = prog_area->exact_memlist;
+			while (temp_list != NULL)
+			{
+				SET_U32(buff_ptr, temp_list->addr);
+				SET_U32(buff_ptr, temp_list->len);
+				temp_list = MEMLIST_GetNext(temp_list);
+				if (temp_list != NULL)
+				{
+					SET_PTR(buff_ptr, addrwidth + buff_ptr - buff);
+				}
+				else
+				{
+					SET_ABS_PTR(buff_ptr, 0);
+				}
+			}
+			//	}
+		}
+	}
+	if (fwrite(buff, 1, data_size, datafile) != data_size)
+	{
+		free(buff);
+		buff = NULL;
+		fclose(datafile);
+		datafile = NULL;
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "write data to file");
+		return VSFERR_FAIL;
+	}
+	free(buff);
+	buff = NULL;
+	
+	fclose(datafile);
+	datafile = NULL;
+	return VSFERR_NONE;
+}

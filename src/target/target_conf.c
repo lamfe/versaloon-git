@@ -1746,7 +1746,7 @@ free_and_exit:
 }
 
 vsf_err_t target_generate_cfg_data(struct target_cfg_data_info_t *cfg_data_info,
-									char *filename)
+									const char *filename)
 {
 	struct chip_area_info_t *area_info = NULL;
 	struct chip_series_t target_chips = {NULL, 0, 0, NULL};
@@ -2116,6 +2116,8 @@ vsf_err_t target_generate_cfg_data(struct target_cfg_data_info_t *cfg_data_info,
 	{
 		free(buff);
 		buff = NULL;
+		fclose(cfgfile);
+		cfgfile = NULL;
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "write data to file");
 		return VSFERR_FAIL;
 	}
