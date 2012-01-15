@@ -168,7 +168,7 @@
           <state>STM32F10X_MD</state>
           <state>_HARDWARE_VER=0x21</state>
           <state>__TARGET_CHIP__=stm32</state>
-          <state>FLASH_LOAD_OFFSET=0x2000</state>
+          <state>FLASH_LOAD_OFFSET=0x0000</state>
           <state>CORE_DEBUG=STM32_DBG_SWD</state>
         </option>
         <option>

@@ -23,6 +23,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "vsf_err.h"
+
 #ifndef __CONNECT
 #	define __CONNECT(a, b)			a ## b
 #endif
