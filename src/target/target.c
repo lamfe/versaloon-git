@@ -2715,12 +2715,6 @@ VSS_HANDLER(target_prepare)
 		return VSFERR_FAIL;
 	}
 	
-	if (target_parse_cli_string())
-	{
-		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "parse cli_string");
-		return VSFERR_FAIL;
-	}
-	
 	context.op = &operations;
 	context.target = cur_target;
 	context.param = &target_chip_param;
@@ -2729,6 +2723,11 @@ VSS_HANDLER(target_prepare)
 	if (target_data_read(&context))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "initialize target data");
+		return VSFERR_FAIL;
+	}
+	if (target_parse_cli_string())
+	{
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "parse cli_string");
 		return VSFERR_FAIL;
 	}
 	
