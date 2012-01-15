@@ -29,6 +29,7 @@
 #include "app_err.h"
 #include "app_log.h"
 
+#include "vsprog.h"
 #include "interfaces.h"
 #include "target.h"
 
@@ -154,6 +155,28 @@ vsf_err_t target_data_read(struct program_context_t *context)
 
 vsf_err_t target_data_save(struct program_context_t *context)
 {
-	// not supported in embedded vsprog
-	return VSFERR_FAIL;
+	struct program_area_map_t *p_map;
+	
+	if ((NULL == context) || (NULL == context->op) ||
+		(NULL == context->target) ||
+		(NULL == context->target->program_area_map))
+	{
+		return VSFERR_FAIL;
+	}
+	p_map = (struct program_area_map_t *)context->target->program_area_map;
+	
+	while (p_map->name != 0)
+	{
+		if ((p_map->data_pos) &&
+			(context->op->read_operations & target_area_mask(p_map->name)))
+		{
+			LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, "save target data",
+						"embedded vsprog");
+			return VSFERR_FAIL;
+		}
+		
+		p_map++;
+	}
+	
+	return VSFERR_NONE;
 }
