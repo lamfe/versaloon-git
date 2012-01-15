@@ -38,8 +38,6 @@ vsf_err_t target_data_free(struct program_context_t *context)
 
 vsf_err_t target_data_read(struct program_context_t *context)
 {
-	uint32_t reafile, writefile;
-	
 	// target data is in flash
 	target_prepare_operations(context, NULL, NULL);
 	return VSFERR_NONE;
