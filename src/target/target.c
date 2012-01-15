@@ -630,9 +630,9 @@ const struct target_info_t targets_info[] =
 struct target_info_t *cur_target = NULL;
 struct program_info_t program_info;
 
-vsf_err_t target_build_chip_series(const char *chip_series,
+vsf_err_t target_build_chip_series(struct target_info_t *target,
 		const struct program_mode_t *program_mode, struct chip_series_t *s);
-vsf_err_t target_build_chip_fl(const char *chip_series,
+vsf_err_t target_build_chip_fl(struct target_info_t *target,
 				const char *chip_module, char *type, struct chip_fl_t *fl);
 
 void target_chip_area_free(struct chip_area_info_t *area_info)
@@ -2088,8 +2088,8 @@ void target_print_setting(char type)
 	}
 	
 	memset(&fl, 0, sizeof(struct chip_fl_t));
-	if (target_build_chip_fl(program_info.chip_type,
-									program_info.chip_name, full_type, &fl))
+	if (target_build_chip_fl(cur_target, program_info.chip_name,
+								full_type, &fl))
 	{
 		target_release_chip_fl(&fl);
 		LOG_ERROR(ERRMSG_INVALID_TGTCFG_SETTING, program_info.chip_name);
@@ -2154,8 +2154,8 @@ void target_print_target(uint32_t index)
 	struct program_area_map_t *p_map;
 	char area[3];
 	
-	if (target_build_chip_series(targets_info[index].name,
-						targets_info[index].program_mode, &target_chips))
+	if (target_build_chip_series((struct target_info_t *)&targets_info[index],
+			targets_info[index].program_mode, &target_chips))
 	{
 		target_release_chip_series(&target_chips);
 		LOG_ERROR(ERRMSG_INVALID_TGTCFG_SETTING, targets_info[index].name);
@@ -2303,8 +2303,9 @@ static vsf_err_t target_info_init(struct program_info_t *pi)
 		// find which series of target contain current chip_name
 		for (i = 0; targets_info[i].name != NULL; i++)
 		{
-			if (!target_build_chip_series(targets_info[i].name,
-								targets_info[i].program_mode, &target_chips))
+			if (!target_build_chip_series(
+					(struct target_info_t *)&targets_info[i],
+					targets_info[i].program_mode, &target_chips))
 			{
 				// configuration file exists, use default probe function
 				probe_chip = target_probe_chip;
@@ -2341,8 +2342,9 @@ static vsf_err_t target_info_init(struct program_info_t *pi)
 		{
 			if (!strcmp(targets_info[i].name, pi->chip_type))
 			{
-				if (!target_build_chip_series(targets_info[i].name,
-								targets_info[i].program_mode, &target_chips))
+				if (!target_build_chip_series(
+						(struct target_info_t *)&targets_info[i],
+						targets_info[i].program_mode, &target_chips))
 				{
 					// configuration file exists, use default probe function
 					probe_chip = target_probe_chip;

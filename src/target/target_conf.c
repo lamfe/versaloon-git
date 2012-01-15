@@ -168,7 +168,7 @@ vsf_err_t target_release_chip_fl(struct chip_fl_t *fl)
 	return VSFERR_NONE;
 }
 
-vsf_err_t target_build_chip_fl(const char *chip_series,
+vsf_err_t target_build_chip_fl(struct target_info_t *target,
 				const char *chip_module, char *type, struct chip_fl_t *fl)
 {
 	xmlDocPtr doc = NULL;
@@ -182,15 +182,8 @@ vsf_err_t target_build_chip_fl(const char *chip_series,
 	char format_tmp[32];
 	uint8_t size;
 	
-#if PARAM_CHECK
-	if ((NULL == chip_series) || (NULL == chip_module) || (NULL == fl))
-	{
-		LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
-		return VSFERR_INVALID_PARAMETER;
-	}
-#endif
-	
-	if (NULL == config_dir)
+	if ((NULL == config_dir) || (NULL == target) || (NULL == target->name) ||
+		(NULL == fl) || (NULL == chip_module))
 	{
 		return VSFERR_FAIL;
 	}
@@ -199,14 +192,14 @@ vsf_err_t target_build_chip_fl(const char *chip_series,
 	target_release_chip_fl(fl);
 	
 	filename = (char *)malloc(strlen(config_dir)
-					+ strlen(chip_series) + strlen(TARGET_CONF_FILE_EXT) + 1);
+					+ strlen(target->name) + strlen(TARGET_CONF_FILE_EXT) + 1);
 	if (NULL == filename)
 	{
 		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 		return VSFERR_NOT_ENOUGH_RESOURCES;
 	}
 	strcpy(filename, config_dir);
-	strcat(filename, chip_series);
+	strcat(filename, target->name);
 	strcat(filename, TARGET_CONF_FILE_EXT);
 	fp = fopen(filename, "r");
 	if (NULL == fp)
@@ -240,7 +233,7 @@ vsf_err_t target_build_chip_fl(const char *chip_series,
 	if (xmlStrcmp(curNode->name, BAD_CAST "series")
 		|| !xmlHasProp(curNode, BAD_CAST "name")
 		|| xmlStrcmp(xmlGetProp(curNode, BAD_CAST "name"),
-					 (const xmlChar *)chip_series))
+					 (const xmlChar *)target->name))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read config file");
 		err = ERRCODE_FAILURE_OPERATION;
@@ -250,7 +243,7 @@ vsf_err_t target_build_chip_fl(const char *chip_series,
 	num_of_chips = target_xml_get_child_number(curNode, "chip");
 	if (0 == num_of_chips)
 	{
-		LOG_ERROR(ERRMSG_NOT_SUPPORT, chip_series);
+		LOG_ERROR(ERRMSG_NOT_SUPPORT, target->name);
 		err = VSFERR_NOT_SUPPORT;
 		goto free_and_exit;
 	}
@@ -850,7 +843,7 @@ vsf_err_t target_release_chip_series(struct chip_series_t *s)
 	return VSFERR_NONE;
 }
 
-vsf_err_t target_build_chip_series(const char *chip_series,
+vsf_err_t target_build_chip_series(struct target_info_t *target,
 		const struct program_mode_t *program_mode, struct chip_series_t *s)
 {
 	xmlDocPtr doc = NULL;
@@ -862,15 +855,8 @@ vsf_err_t target_build_chip_series(const char *chip_series,
 	vsf_err_t err = VSFERR_NONE;
 	FILE *fp;
 	
-#if PARAM_CHECK
-	if ((NULL == chip_series) || (NULL == s))
-	{
-		LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
-		return VSFERR_INVALID_PARAMETER;
-	}
-#endif
-	
-	if (NULL == config_dir)
+	if ((NULL == config_dir) || (NULL == target) || (NULL == target->name) ||
+		(NULL == target->program_area_map) || (NULL == s))
 	{
 		return VSFERR_FAIL;
 	}
@@ -878,7 +864,7 @@ vsf_err_t target_build_chip_series(const char *chip_series,
 	// release first if necessary
 	target_release_chip_series(s);
 	
-	filename = (char *)malloc(strlen(config_dir)+ strlen(chip_series)
+	filename = (char *)malloc(strlen(config_dir)+ strlen(target->name)
 								+ strlen(TARGET_CONF_FILE_EXT) + 1);
 	if (NULL == filename)
 	{
@@ -886,7 +872,7 @@ vsf_err_t target_build_chip_series(const char *chip_series,
 		return VSFERR_NOT_ENOUGH_RESOURCES;
 	}
 	strcpy(filename, config_dir);
-	strcat(filename, chip_series);
+	strcat(filename, target->name);
 	strcat(filename, TARGET_CONF_FILE_EXT);
 	fp = fopen(filename, "r");
 	if (NULL == fp)
@@ -920,14 +906,14 @@ vsf_err_t target_build_chip_series(const char *chip_series,
 	if (xmlStrcmp(curNode->name, BAD_CAST "series")
 		|| !xmlHasProp(curNode, BAD_CAST "name")
 		|| xmlStrcmp(xmlGetProp(curNode, BAD_CAST "name"),
-					 (const xmlChar *)chip_series))
+					 (const xmlChar *)target->name))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read config file");
 		err = ERRCODE_FAILURE_OPERATION;
 		goto free_and_exit;
 	}
 	
-	s->series_name = strdup(chip_series);
+	s->series_name = strdup(target->name);
 	if (NULL == s->series_name)
 	{
 		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
@@ -937,7 +923,7 @@ vsf_err_t target_build_chip_series(const char *chip_series,
 	s->num_of_chips = target_xml_get_child_number(curNode, "chip");
 	if (0 == s->num_of_chips)
 	{
-		LOG_ERROR(ERRMSG_NOT_SUPPORT, chip_series);
+		LOG_ERROR(ERRMSG_NOT_SUPPORT, target->name);
 		err = VSFERR_NOT_SUPPORT;
 		goto free_and_exit;
 	}
@@ -950,6 +936,33 @@ vsf_err_t target_build_chip_series(const char *chip_series,
 		goto free_and_exit;
 	}
 	memset(s->chips_param, 0, sizeof(struct chip_param_t) * s->num_of_chips);
+	
+#if 0
+	// generate chip_areas according to program_area_map first
+	{
+		struct program_area_map_t *p_map;
+		int8_t area_idx;
+		
+		for (i = 0; i < s->num_of_chips; i++)
+		{
+			p_param = &(s->chips_param[i]);
+			p_map = (struct program_area_map_t *)target->program_area_map;
+			
+			while (p_map->name != 0)
+			{
+				area_idx = target_area_idx(p_map->name);
+				if (area_idx < 0)
+				{
+					continue;
+				}
+				
+				target_assert_chip_area(p_param, (uint32_t)area_idx);
+				
+				p_map++;
+			}
+		}
+	}
+#endif
 	
 	// read data
 	curNode = curNode->children->next;
@@ -1012,7 +1025,7 @@ vsf_err_t target_build_chip_series(const char *chip_series,
 				}
 				p_param->program_mode = 0;
 				if ((0 != i)
-					|| (strcmp(chip_series, p_param->chip_name)))
+					|| (strcmp(target->name, p_param->chip_name)))
 				{
 					for (j = 0; j < strlen(mode_tmp); j++)
 					{
@@ -1669,7 +1682,7 @@ vsf_err_t target_build_chip_series(const char *chip_series,
 					// wrong parameter
 					LOG_ERROR(ERRMSG_INVALID,
 						(const char *)xmlNodeGetContent(paramNode),
-						chip_series);
+						target->name);
 					err = ERRCODE_INVALID;
 					goto free_and_exit;
 				}
@@ -1779,8 +1792,9 @@ vsf_err_t target_generate_cfg_data(struct target_cfg_data_info_t *cfg_data_info,
 		target_chips.size = 0;
 		target_chips.num_of_chips = 0;
 		target_chips.chips_param = NULL;
-		if (target_build_chip_series(targets_info[i].name,
-							targets_info[i].program_mode, &target_chips))
+		if (target_build_chip_series(
+				(struct target_info_t *)&targets_info[i],
+				targets_info[i].program_mode, &target_chips))
 		{
 			target_release_chip_series(&target_chips);
 			continue;
