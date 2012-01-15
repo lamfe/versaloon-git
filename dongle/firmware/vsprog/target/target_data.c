@@ -21,6 +21,8 @@
 #include "config.h"
 #endif
 
+#include <stdlib.h>
+
 #include "app_cfg.h"
 #include "app_type.h"
 #include "app_io.h"
@@ -32,14 +34,102 @@
 
 vsf_err_t target_data_free(struct program_context_t *context)
 {
-	// target data is in flash, can not be freed
+	struct program_area_map_t *p_map;
+	struct program_area_t *prog_area = NULL;
+	int8_t area_idx;
+	
+	if ((NULL == context) || (NULL == context->target) ||
+		(NULL == context->pi) || (NULL == context->param) ||
+		(NULL == context->target->program_area_map))
+	{
+		return VSFERR_FAIL;
+	}
+	p_map = (struct program_area_map_t *)context->target->program_area_map;
+	
+	while (p_map->name != 0)
+	{
+		area_idx = target_area_idx(p_map->name);
+		if (area_idx < 0)
+		{
+			p_map++;
+			continue;
+		}
+		prog_area = target_get_program_area(context->pi, (uint32_t)area_idx);
+		if (NULL == prog_area)
+		{
+			p_map++;
+			continue;
+		}
+		
+		if ((NULL == prog_area->buff) && !p_map->data_pos)
+		{
+			free(prog_area->buff);
+			prog_area->buff = NULL;
+		}
+	}
+	
 	return VSFERR_NONE;
 }
 
 vsf_err_t target_data_read(struct program_context_t *context)
 {
+	struct program_area_map_t *p_map;
+	struct program_area_t *prog_area = NULL;
+	struct chip_area_info_t *area_info = NULL;
+	int8_t area_idx;
+	
+	if ((NULL == context) || (NULL == context->target) ||
+		(NULL == context->pi) || (NULL == context->param) ||
+		(NULL == context->target->program_area_map))
+	{
+		return VSFERR_FAIL;
+	}
+	p_map = (struct program_area_map_t *)context->target->program_area_map;
+	
 	// target data is in flash
 	target_prepare_operations(context, NULL, NULL);
+	
+	while (p_map->name != 0)
+	{
+		area_idx = target_area_idx(p_map->name);
+		if (area_idx < 0)
+		{
+			p_map++;
+			continue;
+		}
+		prog_area = target_get_program_area(context->pi, (uint32_t)area_idx);
+		if (NULL == prog_area)
+		{
+			p_map++;
+			continue;
+		}
+		
+		if ((NULL == prog_area->buff) && (prog_area->size > 0))
+		{
+			if (!p_map->data_pos)
+			{
+				prog_area->buff = (uint8_t *)malloc(prog_area->size);
+				if (NULL == prog_area->buff)
+				{
+					return VSFERR_NOT_ENOUGH_RESOURCES;
+				}
+				
+				area_info = target_get_chip_area(context->param,
+													(uint32_t)area_idx);
+				if ((strlen(context->param->chip_name) > 0) &&
+					(area_info != NULL))
+				{
+					memset(prog_area->buff, (uint8_t)area_info->default_value,
+							prog_area->size);
+				}
+			}
+			else
+			{
+				// TODO: read target data in flash
+			}
+		}
+	}
+	
 	return VSFERR_NONE;
 }
 

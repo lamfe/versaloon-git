@@ -102,8 +102,7 @@ static vsf_err_t target_alloc_data_buffer(struct program_context_t *context)
 			}
 			
 			area_info = target_get_chip_area(context->param, i);
-			if ((strlen(context->param->chip_name) > 0) &&
-				(area_info != NULL))
+			if ((strlen(context->param->chip_name) > 0) && (area_info != NULL))
 			{
 				memset(prog_area->buff, (uint8_t)area_info->default_value,
 						prog_area->size);
@@ -293,7 +292,8 @@ vsf_err_t target_data_save(struct program_context_t *context)
 	struct program_area_map_t *p_map;
 	
 	if ((NULL == context) || (NULL == context->op) || (NULL == context->pi) ||
-		(NULL == context->param) || (NULL == context->target))
+		(NULL == context->param) || (NULL == context->target) ||
+		(NULL == context->target->program_area_map))
 	{
 		return VSFERR_FAIL;
 	}
