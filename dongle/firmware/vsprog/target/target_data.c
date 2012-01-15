@@ -66,6 +66,8 @@ vsf_err_t target_data_free(struct program_context_t *context)
 			free(prog_area->buff);
 			prog_area->buff = NULL;
 		}
+		
+		p_map++;
 	}
 	
 	return VSFERR_NONE;
@@ -128,6 +130,8 @@ vsf_err_t target_data_read(struct program_context_t *context)
 				// TODO: read target data in flash
 			}
 		}
+		
+		p_map++;
 	}
 	
 	return VSFERR_NONE;
