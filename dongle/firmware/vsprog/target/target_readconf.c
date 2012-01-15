@@ -36,7 +36,7 @@ vsf_err_t target_release_chip_fl(struct chip_fl_t *fl)
 	return VSFERR_FAIL;
 }
 
-vsf_err_t target_build_chip_fl(const char *chip_series,
+vsf_err_t target_build_chip_fl(struct target_info_t *target,
 				const char *chip_module, char *type, struct chip_fl_t *fl)
 {
 	LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, "chip_fl_t", "embedded vsprog");
@@ -48,7 +48,7 @@ vsf_err_t target_release_chip_series(struct chip_series_t *s)
 	return VSFERR_NONE;
 }
 
-vsf_err_t target_build_chip_series(const char *chip_series,
+vsf_err_t target_build_chip_series(struct target_info_t *target,
 		const struct program_mode_t *program_mode, struct chip_series_t *s)
 {
 	uint32_t pos = TARGET_CFG_ADDR, cur_pos = TARGET_CFG_ADDR;
@@ -58,7 +58,7 @@ vsf_err_t target_build_chip_series(const char *chip_series,
 		series_name = *(char **)pos;
 		cur_pos = pos;
 		pos += *(uint32_t *)(pos + sizeof(char *));
-		if (!strcmp(series_name, chip_series))
+		if (!strcmp(series_name, target->name))
 		{
 			break;
 		}
