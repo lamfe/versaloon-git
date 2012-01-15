@@ -235,8 +235,7 @@ vsf_err_t target_data_read(struct program_context_t *context)
 {
 	uint32_t file_for_read = 0, file_for_write = 0;
 	
-	if ((NULL == context) || (NULL == context->pi) || (NULL == context->op) ||
-		target_data_free(context))
+	if ((NULL == context) || (NULL == context->pi) || (NULL == context->op))
 	{
 		return VSFERR_FAIL;
 	}
