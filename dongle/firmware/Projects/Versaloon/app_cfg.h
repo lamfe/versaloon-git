@@ -61,6 +61,7 @@
 /************************ What do U want ************************/
 #define __VSF_DEBUG__					0
 
+#define SYS_CFG_LARGE_MEMORY			0
 #define SCRIPTS_EN						0
 #define VSS_CFG_MAX_ARGC				8
 #define VSS_CFG_MAX_LINE_LENGTH			128

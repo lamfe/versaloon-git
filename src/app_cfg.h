@@ -25,6 +25,9 @@
 #define	VSS_CFG_MAX_LINE_LENGTH				4096
 #define VSS_CFG_MAX_ARGC					1024
 
+// system config
+#define SYS_CFG_LARGE_MEMORY				1
+
 #define PARAM_CHECK							1
 
 // Target Support Configuration

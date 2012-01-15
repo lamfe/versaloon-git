@@ -967,7 +967,7 @@ static vsf_err_t MEMLIST_VerifyBuff(struct memlist *ml, uint8_t *buf1,
 			}
 			else
 			{
-				len_tmp = len;
+				len_tmp = len - offset;
 			}
 		}
 		else if ((addr >= ml->addr) && (addr < (ml->addr + ml->len)))
@@ -1522,7 +1522,9 @@ static vsf_err_t target_program(struct program_context_t *context)
 					uint32_t read_offset = ml_tmp->addr - start_addr;
 					uint8_t *read_buf = NULL;
 					uint32_t buf_size;
+					uint32_t err_pos;
 					
+#if SYS_CFG_LARGE_MEMORY
 					if (!(area_attr & AREA_ATTR_RNP)
 						&& (ml_tmp->len % page_size))
 					{
@@ -1532,14 +1534,19 @@ static vsf_err_t target_program(struct program_context_t *context)
 					{
 						buf_size = ml_tmp->len;
 					}
+#else
+					buf_size = page_size;
+#endif
 					read_buf = (uint8_t*)malloc(buf_size);
 					if (NULL == read_buf)
 					{
+						pgbar_fini();
 						LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 						err = VSFERR_NOT_ENOUGH_RESOURCES;
 						goto target_program_exit;
 					}
 					
+#if SYS_CFG_LARGE_MEMORY
 					if (area_attr & AREA_ATTR_RNP)
 					{
 						if (pf->read_target(context, area_char,
@@ -1554,12 +1561,13 @@ static vsf_err_t target_program(struct program_context_t *context)
 						}
 					}
 					else
+#endif
 					{
 						for (j = 0; j < ml_tmp->len; j += page_size)
 						{
 							if (pf->read_target(context,
 									area_char, ml_tmp->addr + j,
-									read_buf + j, page_size))
+									read_buf, page_size))
 							{
 								free(read_buf);
 								read_buf = NULL;
@@ -1568,10 +1576,53 @@ static vsf_err_t target_program(struct program_context_t *context)
 								err = ERRCODE_FAILURE_OPERATION;
 								goto target_program_exit;
 							}
+#if !SYS_CFG_LARGE_MEMORY
+							if ((prog != NULL) && prog->peripheral_commit())
+							{
+								pgbar_fini();
+								LOG_ERROR(ERRMSG_FAILURE_READ, fullname);
+								err = ERRCODE_FAILURE_OPERATION;
+								goto target_program_exit;
+							}
 							
+							if (op->verify_operations & area_mask)
+							{
+								// verify according to ml_exact
+								if (NULL == ml_exact)
+								{
+									pgbar_fini();
+									LOG_BUG(ERRMSG_INVALID_BUFFER, "ml_exact");
+									err = VSFERR_FAIL;
+									goto target_program_exit;
+								}
+								err_pos = 0;
+								if (MEMLIST_VerifyBuff(ml_exact, read_buf,
+											&tbuff[read_offset + j],
+											ml_tmp->addr + j,
+											page_size, &err_pos))
+								{
+									pgbar_fini();
+									LOG_ERROR(ERRMSG_FAILURE_VERIFY_AT_02X,
+											fullname,
+											ml_tmp->addr + j + err_pos,
+											read_buf[err_pos],
+											tbuff[read_offset + j + err_pos]);
+									free(read_buf);
+									read_buf = NULL;
+									err = ERRCODE_FAILURE_VERIFY;
+									goto target_program_exit;
+								}
+							}
+							else
+							{
+								memcpy(&tbuff[read_offset + j], read_buf,
+										page_size);
+							}
+#endif
 							pgbar_update(page_size);
 						}
 					}
+#if SYS_CFG_LARGE_MEMORY
 					if ((prog != NULL) && prog->peripheral_commit())
 					{
 						LOG_ERROR(ERRMSG_FAILURE_READ, fullname);
@@ -1584,19 +1635,21 @@ static vsf_err_t target_program(struct program_context_t *context)
 						// verify according to ml_exact
 						if (NULL == ml_exact)
 						{
+							pgbar_fini();
 							LOG_BUG(ERRMSG_INVALID_BUFFER, "ml_exact");
 							err = VSFERR_FAIL;
 							goto target_program_exit;
 						}
-						j = 0;
+						err_pos = 0;
 						if (MEMLIST_VerifyBuff(ml_exact, read_buf,
 									&tbuff[read_offset], ml_tmp->addr,
-									ml_tmp->len, &j))
+									ml_tmp->len, &err_pos))
 						{
 							pgbar_fini();
 							LOG_ERROR(ERRMSG_FAILURE_VERIFY_AT_02X,
-										fullname, ml_tmp->addr + j,
-										read_buf[j], tbuff[read_offset + j]);
+										fullname, ml_tmp->addr + err_pos,
+										read_buf[err_pos],
+										tbuff[read_offset + err_pos]);
 							free(read_buf);
 							read_buf = NULL;
 							err = ERRCODE_FAILURE_VERIFY;
@@ -1607,6 +1660,7 @@ static vsf_err_t target_program(struct program_context_t *context)
 					{
 						memcpy(&tbuff[read_offset], read_buf, ml_tmp->len);
 					}
+#endif
 					free(read_buf);
 					read_buf = NULL;
 					
