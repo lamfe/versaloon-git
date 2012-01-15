@@ -29,6 +29,7 @@ struct operation_t
 };
 
 extern char *config_dir;
+extern struct operation_t operations;
 
 #endif /* __VSPROG_H_INCLUDED__ */
 

@@ -16,43 +16,39 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#ifndef __APP_CFG_INCLUDED__
-#define __APP_CFG_INCLUDED__
+#ifndef __COMPORT_H_INCLUDED__
+#define __COMPORT_H_INCLUDED__
 
-#include "compiler.h"
+#define COMM_STOPBIT_1					'1'
+#define COMM_STOPBIT_1P5				'P'
+#define COMM_STOPBIT_2					'2'
 
-// vss config
-#define	VSS_CFG_MAX_LINE_LENGTH				4096
-#define VSS_CFG_MAX_ARGC					1024
+#define COMM_PARITYBIT_NONE				'N'
+#define COMM_PARITYBIT_ODD				'O'
+#define COMM_PARITYBIT_EVEN				'E'
 
-#define PARAM_CHECK							1
+#define COMM_HANDSHAKE_NONE				'N'
+#define COMM_HANDSHAKE_SOFTWARE			'S'
+#define COMM_HANDSHAKE_HARDWARE			'H'
 
-// Target Support Configuration
-#define TARGET_AT89S5X_EN					1
-#define TARGET_AT91SAM3_EN					1
-#define TARGET_AVR32_EN						0
-#define TARGET_AVR8_EN						1
-#define TARGET_AVRXMEGA_EN					0
-#define TARGET_C8051F_EN					1
-#define TARGET_HCS08_EN						1
-#define TARGET_HCS12_EN						1
-#define TARGET_LM3S_EN						1
-#define TARGET_LPC1000_EN					1
-#define TARGET_LPC900_EN					1
-#define TARGET_MSP430_EN					1
-#define TARGET_PSOC1_EN						1
-#define TARGET_STM32F1_EN					1
-#define TARGET_STM8_EN						1
-#define TARGET_SVF_EN						1
-#define TARGET_EE93CX6_EN					1
-#define TARGET_EE24CXX_EN					1
-#define TARGET_DF25XX_EN					1
-#define TARGET_STM32F2_EN					1
-#define TARGET_STM32F4_EN					1
-#define TARGET_STM32L1_EN					1
-#define TARGET_SD_EN						1
-#define TARGET_CFI_EN						1
-#define TARGET_NAND_EN						1
+struct comm_func_t
+{
+	vsf_err_t (*comm_open)(char *comport, uint32_t baudrate, uint8_t datalength,
+							char paritybit, char stopbit, char handshake);
+	void (*comm_close)(void);
+	int32_t (*comm_read)(uint8_t *buffer, uint32_t num_of_bytes);
+	int32_t (*comm_write)(uint8_t *buffer, uint32_t num_of_bytes);
+	int32_t (*comm_ctrl)(uint8_t dtr, uint8_t rts);
+	int32_t (*comm_flush)(void);
+};
 
-#endif /* __APP_CFG_INCLUDED__ */
+void comm_close(void);
+vsf_err_t comm_open(char *comport, uint32_t baudrate, uint8_t datalength,
+				 char paritybit, char stopbit, char handshake);
+int32_t comm_read(uint8_t *buffer, uint32_t num_of_bytes);
+int32_t comm_write(uint8_t *buffer, uint32_t num_of_bytes);
+int32_t comm_ctrl(uint8_t dtr, uint8_t rts);
+int32_t comm_flush(void);
+
+#endif /* __COMPORT_H_INCLUDED__ */
 

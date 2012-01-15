@@ -194,6 +194,7 @@
         <File Name="../../src/target/svf_player/svf_player.c"/>
       </VirtualDirectory>
       <File Name="../../src/target/target_conf.c"/>
+      <File Name="../../src/target/target_data.c"/>
     </VirtualDirectory>
     <VirtualDirectory Name="config">
       <File Name="../../src/config/at89s5x.xml"/>

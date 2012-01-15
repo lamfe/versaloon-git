@@ -2691,6 +2691,9 @@
         <name>$PROJ_DIR$\..\..\..\..\..\src\target\target.c</name>
       </file>
       <file>
+        <name>$PROJ_DIR$\..\..\..\vsprog\target\target_data.c</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$\..\..\..\vsprog\target\target_readconf.c</name>
       </file>
     </group>

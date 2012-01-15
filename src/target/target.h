@@ -212,14 +212,6 @@ struct chip_param_t
 	struct chip_area_info_t *chip_areas;
 };
 
-struct program_context_t
-{
-	struct operation_t *op;
-	struct program_info_t *pi;
-	struct chip_param_t *param;
-	struct INTERFACES_INFO_T *prog;
-};
-
 #define	EXECUTE_FUNCNAME(mod)				ASSEMBLE_FUNCNAME(mod, _execute)
 #define ENTER_PROGRAM_MODE_FUNCNAME(mod)	ASSEMBLE_FUNCNAME(mod, _enter_program_mode)
 #define LEAVE_PROGRAM_MODE_FUNCNAME(mod)	ASSEMBLE_FUNCNAME(mod, _leave_program_mode)
@@ -249,26 +241,6 @@ struct program_context_t
 						(struct program_context_t *context, char area, \
 							uint32_t addr, uint8_t *buff, uint32_t size)
 
-struct program_functions_t
-{
-	vsf_err_t (*execute)(struct program_context_t *context);
-	vsf_err_t (*enter_program_mode)(struct program_context_t *context);
-	vsf_err_t (*leave_program_mode)(struct program_context_t *context,
-									uint8_t success);
-	// erase one page at addr or erase full target
-	vsf_err_t (*erase_target)(struct program_context_t *context, char area,
-								uint32_t addr, uint32_t size);
-	// write one page at addr
-	vsf_err_t (*write_target)(struct program_context_t *context, char area,
-								uint32_t addr, uint8_t *buff, uint32_t size);
-	// read one page at addr
-	vsf_err_t (*read_target)(struct program_context_t *context, char area,
-								uint32_t addr, uint8_t *buff, uint32_t size);
-	// verify one page at addr
-//	vsf_err_t (*verify_target)(struct program_context_t *context, char area,
-//								uint32_t addr, uint8_t *buff, uint32_t size);
-};
-
 #define	PARSE_ARGUMENT_FUNCNAME(mod)		ASSEMBLE_FUNCNAME(mod, _parse_argument)
 #define ADJUST_SETTING_FUNCNAME(mod)		ASSEMBLE_FUNCNAME(mod, _adjust_setting)
 #define ADJUST_SETTING_HANDLER(mod)			\
@@ -295,6 +267,35 @@ struct target_info_t
 	vsf_err_t (*adjust_setting)(struct program_info_t *pi,
 							struct chip_param_t *param, uint32_t program_mode);
 	vsf_err_t (*adjust_mapping)(uint32_t *address, uint8_t dir);
+};
+
+struct program_context_t
+{
+	struct operation_t *op;
+	struct target_info_t *target;
+	struct program_info_t *pi;
+	struct chip_param_t *param;
+	struct INTERFACES_INFO_T *prog;
+};
+
+struct program_functions_t
+{
+	vsf_err_t (*execute)(struct program_context_t *context);
+	vsf_err_t (*enter_program_mode)(struct program_context_t *context);
+	vsf_err_t (*leave_program_mode)(struct program_context_t *context,
+									uint8_t success);
+	// erase one page at addr or erase full target
+	vsf_err_t (*erase_target)(struct program_context_t *context, char area,
+								uint32_t addr, uint32_t size);
+	// write one page at addr
+	vsf_err_t (*write_target)(struct program_context_t *context, char area,
+								uint32_t addr, uint8_t *buff, uint32_t size);
+	// read one page at addr
+	vsf_err_t (*read_target)(struct program_context_t *context, char area,
+								uint32_t addr, uint8_t *buff, uint32_t size);
+	// verify one page at addr
+//	vsf_err_t (*verify_target)(struct program_context_t *context, char area,
+//								uint32_t addr, uint8_t *buff, uint32_t size);
 };
 
 struct chip_series_t
@@ -352,6 +353,7 @@ extern struct target_info_t *cur_target;
 extern const struct target_info_t targets_info[];
 extern struct program_info_t program_info;
 extern struct chip_param_t target_chip_param;
+struct chip_series_t target_chips;
 
 uint32_t target_area_mask(char area_name);
 char* target_area_fullname(char area_name);
@@ -361,6 +363,9 @@ char* target_area_fullname_by_mask(uint32_t mask);
 
 int8_t target_mode_get_idx(const struct program_mode_t *mode, char mode_name);
 
+vsf_err_t target_prepare_operations(struct program_context_t *context,
+									uint32_t *readfile, uint32_t *writefile);
+
 void target_chip_area_free(struct chip_area_info_t *area_info);
 struct chip_area_info_t* target_chip_area_dup(
 										struct chip_area_info_t *area_info);
@@ -368,6 +373,7 @@ struct chip_area_info_t* target_get_chip_area(struct chip_param_t *param,
 												uint32_t area_idx);
 struct program_area_t* target_get_program_area(struct program_info_t *pi,
 												uint32_t area_idx);
+void target_get_target_area(char area, uint8_t **buff, uint32_t *size);
 
 struct target_cfg_data_info_t
 {
@@ -385,8 +391,9 @@ void target_print_target(uint32_t index);
 void target_print_list(void);
 void target_print_help(void);
 
-vsf_err_t target_alloc_data_buffer(void);
-void target_free_data_buffer(void);
+vsf_err_t target_data_free(struct program_context_t *context);
+vsf_err_t target_data_read(struct program_context_t *context);
+vsf_err_t target_data_save(struct program_context_t *context);
 
 #endif /* __TARGET_H_INCLUDED__ */
 

@@ -16,20 +16,37 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#ifndef __VSPROG_H_INCLUDED__
-#define __VSPROG_H_INCLUDED__
 
-struct operation_t
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+#include "app_cfg.h"
+#include "app_type.h"
+#include "app_io.h"
+#include "app_err.h"
+#include "app_log.h"
+
+#include "interfaces.h"
+#include "target.h"
+
+vsf_err_t target_data_free(struct program_context_t *context)
 {
-	uint32_t erase_operations;
-	uint32_t write_operations;
-	uint32_t read_operations;
-	uint32_t verify_operations;
-	uint32_t checksum_operations;
-};
+	// target data is in flash, can not be freed
+	return VSFERR_NONE;
+}
 
-extern struct vss_cmd_list_t vsprog_cmd_list;
-extern struct operation_t operations;
+vsf_err_t target_data_read(struct program_context_t *context)
+{
+	uint32_t reafile, writefile;
+	
+	// target data is in flash
+	target_prepare_operations(context, NULL, NULL);
+	return VSFERR_NONE;
+}
 
-#endif /* __VSPROG_H_INCLUDED__ */
-
+vsf_err_t target_data_save(struct program_context_t *context)
+{
+	// not supported in embedded vsprog
+	return VSFERR_FAIL;
+}
