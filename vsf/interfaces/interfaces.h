@@ -375,6 +375,27 @@ vsf_err_t CORE_DELAY_INIT(__TARGET_CHIP__)(void);
 vsf_err_t CORE_DELAY_DELAYMS(__TARGET_CHIP__)(uint16_t ms);
 vsf_err_t CORE_DELAY_DELAYUS(__TARGET_CHIP__)(uint16_t us);
 
+struct interface_tickclk_t
+{
+	vsf_err_t (*init)(void);
+	vsf_err_t (*fini)(void);
+	vsf_err_t (*start)(void);
+	vsf_err_t (*stop)(void);
+	bool (*is_trigger)(void);
+};
+
+#define CORE_TICKCLK_INIT(m)			__CONNECT(m, _tickclk_init)
+#define CORE_TICKCLK_FINI(m)			__CONNECT(m, _tickclk_fini)
+#define CORE_TICKCLK_START(m)			__CONNECT(m, _tickclk_start)
+#define CORE_TICKCLK_STOP(m)			__CONNECT(m, _tickclk_stop)
+#define CORE_TICKCLK_IS_TRIGGER(m)		__CONNECT(m, _tickclk_is_trigger)
+
+vsf_err_t CORE_TICKCLK_INIT(__TARGET_CHIP__)(void);
+vsf_err_t CORE_TICKCLK_FINI(__TARGET_CHIP__)(void);
+vsf_err_t CORE_TICKCLK_START(__TARGET_CHIP__)(void);
+vsf_err_t CORE_TICKCLK_STOP(__TARGET_CHIP__)(void);
+bool CORE_TICKCLK_IS_TRIGGER(__TARGET_CHIP__)(void);
+
 #if IFS_IIC_EN
 
 struct interface_i2c_t
@@ -914,10 +935,11 @@ struct interfaces_info_t
 #if IFS_MICROWIRE_EN
 	struct interface_microwire_t microwire;
 #endif
-	struct interface_delay_t delay;
 #if IFS_EBI_EN
 	struct interface_ebi_t ebi;
 #endif
+	struct interface_tickclk_t tickclk;
+	struct interface_delay_t delay;
 	vsf_err_t (*peripheral_commit)(void);
 };
 

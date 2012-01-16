@@ -205,12 +205,6 @@ const struct interfaces_info_t core_interfaces =
 		NULL, NULL, NULL, NULL, NULL
 	}
 #endif
-	,{
-		// delay
-		CORE_DELAY_INIT(__TARGET_CHIP__),
-		CORE_DELAY_DELAYMS(__TARGET_CHIP__),
-		CORE_DELAY_DELAYUS(__TARGET_CHIP__)
-	}
 #if IFS_EBI_EN
 	,{
 		// ebi
@@ -238,5 +232,18 @@ const struct interfaces_info_t core_interfaces =
 		NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
 	}
 #endif
+	,{	// tickclk
+		CORE_TICKCLK_INIT(__TARGET_CHIP__),
+		CORE_TICKCLK_FINI(__TARGET_CHIP__),
+		CORE_TICKCLK_START(__TARGET_CHIP__),
+		CORE_TICKCLK_STOP(__TARGET_CHIP__),
+		CORE_TICKCLK_IS_TRIGGER(__TARGET_CHIP__),
+	}
+	,{
+		// delay
+		CORE_DELAY_INIT(__TARGET_CHIP__),
+		CORE_DELAY_DELAYMS(__TARGET_CHIP__),
+		CORE_DELAY_DELAYUS(__TARGET_CHIP__)
+	}
 	,peripheral_commit
 };
