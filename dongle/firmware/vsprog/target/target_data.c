@@ -43,7 +43,7 @@ vsf_err_t target_data_free(struct program_context_t *context)
 		(NULL == context->pi) || (NULL == context->param) ||
 		(NULL == context->target->program_area_map))
 	{
-		return VSFERR_FAIL;
+		return VSFERR_NONE;
 	}
 	p_map = (struct program_area_map_t *)context->target->program_area_map;
 	

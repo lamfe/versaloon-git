@@ -125,6 +125,7 @@ static void free_all(void)
 	
 	// free program buffer
 	context.op = &operations;
+	context.target = cur_target;
 	context.param = &target_chip_param;
 	context.pi = &program_info;
 	context.prog = interfaces;
@@ -426,6 +427,7 @@ VSS_HANDLER(vsprog_init)
 	vss_register_cmd_list(&pgbar_cmd_list);
 	vss_register_cmd_list(&interface_cmd_list);
 	vss_register_cmd_list(&app_cmd_list);
-	return VSFERR_NONE;
+	
+	return vss_run_script("free-all");
 }
 
