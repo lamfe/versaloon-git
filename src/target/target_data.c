@@ -222,11 +222,6 @@ static vsf_err_t target_write_buffer_from_file_callback(char * ext,
 
 vsf_err_t target_data_free(struct program_context_t *context)
 {
-	if ((NULL == context) || (NULL == context->pi))
-	{
-		return VSFERR_FAIL;
-	}
-	
 	target_free_data_buffer(context);
 	return VSFERR_NONE;
 }

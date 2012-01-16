@@ -27,6 +27,7 @@ extern struct usart_stream_info_t usart_stream_p0;
 
 static char app_io_local_buff[APPIO_BUFFER_SIZE];
 
+#if !APPIO_DUMMY
 static void app_io_out_sync(void)
 {
 	int free_space;
@@ -37,6 +38,7 @@ static void app_io_out_sync(void)
 		free_space = vsf_fifo_get_data_length(&usart_stream_p0.fifo_rx);
 	} while (free_space);
 }
+#endif
 
 void APP_IO_INIT(void)
 {
@@ -81,16 +83,20 @@ int FFLUSH(FILE *f)
 {
 	if ((stdout == f) || (stderr == f))
 	{
+#if !APPIO_DUMMY
 		app_io_out_sync();
+#endif
 		return 0;
 	}
 	else if (stdin == f)
 	{
+#if !APPIO_DUMMY
 		uint32_t i, size = vsf_fifo_get_data_length(&usart_stream_p0.fifo_tx);
 		for (i = 0; i < size; i++)
 		{
 			vsf_fifo_pop8(&usart_stream_p0.fifo_tx);
 		}
+#endif
 		return 0;
 	}
 	else
@@ -108,6 +114,7 @@ int FGETC(FILE *f)
 	}
 	else if (stdin == f)
 	{
+#if !APPIO_DUMMY
 		uint32_t size;
 		do
 		{
@@ -115,6 +122,7 @@ int FGETC(FILE *f)
 			size = vsf_fifo_get_data_length(&usart_stream_p0.fifo_tx);
 		} while (!size);
 		return vsf_fifo_pop8(&usart_stream_p0.fifo_tx);
+#endif
 	}
 	else
 	{
@@ -140,6 +148,7 @@ char* FGETS(char *buf, int count, FILE *f)
 	
 	if (stdin == f)
 	{
+#if !APPIO_DUMMY
 		pos = 0;
 		cur_char = '\0';
 		while ((size < count) && (cur_char != '\r'))
@@ -175,6 +184,9 @@ char* FGETS(char *buf, int count, FILE *f)
 		}
 		buf[pos] = '\0';
 		app_io_out_sync();
+#else
+		return NULL;
+#endif
 	}
 	else
 	{
@@ -184,7 +196,7 @@ char* FGETS(char *buf, int count, FILE *f)
 
 int FPRINTF(FILE *f, const char *format, ...)
 {
-	int number, i;
+	int number = 0, i;
 	int free_space, cur_size;
 	char *pbuff = app_io_local_buff;
 	va_list ap;
@@ -200,6 +212,7 @@ int FPRINTF(FILE *f, const char *format, ...)
 	
 	if ((stdout == f) || (stderr == f))
 	{
+#if !APPIO_DUMMY
 		i = number;
 		while (i > 0)
 		{
@@ -225,6 +238,7 @@ int FPRINTF(FILE *f, const char *format, ...)
 		}
 		
 		app_io_out_sync();
+#endif
 	}
 	else
 	{
@@ -234,11 +248,12 @@ int FPRINTF(FILE *f, const char *format, ...)
 
 int PRINTF(const char *format, ...)
 {
-	int number, i;
+	int number = 0, i;
 	int free_space, cur_size;
 	char *pbuff = app_io_local_buff;
 	va_list ap;
 	
+#if !APPIO_DUMMY
 	va_start(ap, format);
 	number = vsprintf(app_io_local_buff, format, ap);
 	va_end(ap);
@@ -268,5 +283,6 @@ int PRINTF(const char *format, ...)
 	}
 	
 	app_io_out_sync();
+#endif
 	return number;
 }
