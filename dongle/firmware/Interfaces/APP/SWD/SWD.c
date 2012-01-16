@@ -193,7 +193,10 @@ SWD_RETRY:
 	// set swdio input after clock is stopped
 	SWD_SWDIO_SETINPUT();
 
-	*buff = GET_LE_U32(&data);
+	if (read)
+	{
+		*buff = GET_LE_U32(&data);
+	}
 
 	reply &= 0x07; 
 	switch (reply)

@@ -328,7 +328,6 @@ static vsf_err_t adi_dp_scan(uint8_t instr, uint8_t reg_addr, uint8_t RnW,
 			jtag_ir_w(&instr, ADI_JTAGDP_IRLEN);
 		}
 		
-		*value = SYS_TO_LE_U32(*value);
 		// scan dr
 		adi_dp_first3bits = ((reg_addr >> 1) & 0x06) | (RnW & 1);
 		if (RnW)
@@ -339,7 +338,8 @@ static vsf_err_t adi_dp_scan(uint8_t instr, uint8_t reg_addr, uint8_t RnW,
 		else
 		{
 			// write
-			jtag_dr_w(value, ADI_JTAGDP_IR_APDPACC_LEN);
+			uint32_t value_temp = SYS_TO_LE_U32(*value);
+			jtag_dr_w(&value_temp, ADI_JTAGDP_IR_APDPACC_LEN);
 		}
 		
 		// memory access tck clocks
