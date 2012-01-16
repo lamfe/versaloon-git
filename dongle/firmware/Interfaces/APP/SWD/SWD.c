@@ -343,7 +343,9 @@ vsf_err_t swd_seqin(uint8_t index, uint8_t *data, uint16_t bitlen)
 vsf_err_t swd_transact(uint8_t index, uint8_t request, uint32_t *data, 
 						uint8_t *ack)
 {
+	uint8_t parity;
 	uint8_t ack_tmp;
+	
 	switch (index)
 	{
 	case 0:
@@ -352,6 +354,12 @@ vsf_err_t swd_transact(uint8_t index, uint8_t request, uint32_t *data,
 			return VSFERR_INVALID_PTR;
 		}
 		
+		parity = (request >> 1) & 1;
+		parity += (request >> 2) & 1;
+		parity += (request >> 3) & 1;
+		parity += (request >> 4) & 1;
+		parity &= 1;
+		request = (request | 0x81 | (parity << 5)) & ~0x40;
 		ack_tmp = SWD_Transaction(request, data);
 		if (ack != NULL)
 		{
