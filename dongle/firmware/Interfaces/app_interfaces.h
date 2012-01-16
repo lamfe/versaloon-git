@@ -302,9 +302,6 @@ struct app_interfaces_info_t
 #if INTERFACE_PWM_EN
 	struct interface_pwm_t pwm;
 #endif
-// 	Allways included
-	struct interface_delay_t delay;
-//
 #if POWER_OUT_EN
 	struct interface_target_voltage_t target_voltage;
 #endif
@@ -347,6 +344,8 @@ struct app_interfaces_info_t
 #if INTERFACE_MICROWIRE_EN
 	struct interface_microwire_t microwire;
 #endif
+	struct interface_tickclk_t tickclk;
+	struct interface_delay_t delay;
 	struct interface_poll_t poll;
 };
 

@@ -151,6 +151,27 @@ static vsf_err_t delay_delayus(uint16_t us)
 	return core_interfaces.delay.delayus(us);
 }
 
+static vsf_err_t tickclk_init(void)
+{
+	return core_interfaces.tickclk.init();
+}
+static vsf_err_t tickclk_fini(void)
+{
+	return core_interfaces.tickclk.fini();
+}
+static vsf_err_t tickclk_start(void)
+{
+	return core_interfaces.tickclk.start();
+}
+static vsf_err_t tickclk_stop(void)
+{
+	return core_interfaces.tickclk.stop();
+}
+static bool tickclk_is_trigger(void)
+{
+	return core_interfaces.tickclk.is_trigger();
+}
+
 static vsf_err_t app_interface_init(void *p)
 {
 	return VSFERR_NONE;
@@ -302,14 +323,6 @@ const struct app_interfaces_info_t app_interfaces =
 		pwm_in
 	}
 #endif
-// Allways included
-	,{
-		// delay
-		delay_init,
-		delay_delayms,
-		delay_delayus
-	}
-//
 #if POWER_OUT_EN
 	,{
 		// target_voltage
@@ -458,6 +471,20 @@ const struct app_interfaces_info_t app_interfaces =
 		microwire_poll
 	}
 #endif
+	,{
+		// tickclk
+		tickclk_init,
+		tickclk_fini,
+		tickclk_start,
+		tickclk_stop,
+		tickclk_is_trigger
+	}
+	,{
+		// delay
+		delay_init,
+		delay_delayms,
+		delay_delayus
+	}
 	,{
 		// poll
 		NULL, NULL, NULL, NULL, NULL

@@ -197,6 +197,7 @@ static vsf_err_t stm32_delay_delayus_do(uint32_t tick)
 {
 	uint32_t dly_tmp;
 	
+	stm32_delay_init();
 	while (tick)
 	{
 		dly_tmp = (tick > ((1 << 24) - 1)) ? ((1 << 24) - 1) : tick;
@@ -219,4 +220,40 @@ vsf_err_t stm32_delay_delayms(uint16_t ms)
 {
 	stm32_delay_delayus_do(ms * (stm32_info.sys_freq_hz / 1000));
 	return VSFERR_NONE;
+}
+
+vsf_err_t stm32_tickclk_start(void)
+{
+	SysTick->CTRL |= CM3_SYSTICK_ENABLE;
+	return VSFERR_NONE;
+}
+
+vsf_err_t stm32_tickclk_stop(void)
+{
+	SysTick->CTRL &= ~CM3_SYSTICK_ENABLE;
+	return VSFERR_NONE;
+}
+
+bool stm32_tickclk_is_trigger(void)
+{
+	bool result = SysTick->CTRL & CM3_SYSTICK_COUNTFLAG;
+	
+	if (result)
+	{
+		SysTick->CTRL &= ~CM3_SYSTICK_COUNTFLAG;
+	}
+	return result;
+}
+
+vsf_err_t stm32_tickclk_init(void)
+{
+	SysTick->CTRL = CM3_SYSTICK_CLKSOURCE;
+	SysTick->VAL = 0;
+	SysTick->LOAD = stm32_info.sys_freq_hz / 1000;
+	return VSFERR_NONE;
+}
+
+vsf_err_t stm32_tickclk_fini(void)
+{
+	return stm32_tickclk_stop();
 }
