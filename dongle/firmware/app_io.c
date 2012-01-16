@@ -45,6 +45,7 @@ void APP_IO_INIT(void)
 
 FILE *FOPEN(const char *filename, const char *mode)
 {
+	return NULL;
 }
 
 int FCLOSE(FILE *f)
@@ -52,6 +53,8 @@ int FCLOSE(FILE *f)
 	if ((f != stdin) && (f != stdout) && (f != stderr))
 	{
 	}
+	
+	return 0;
 }
 
 int FEOF(FILE *f)
@@ -63,6 +66,8 @@ int FEOF(FILE *f)
 	else
 	{
 	}
+	
+	return 0;
 }
 
 void REWIND(FILE *f)
@@ -91,6 +96,8 @@ int FFLUSH(FILE *f)
 	else
 	{
 	}
+	
+	return 0;
 }
 
 int FGETC(FILE *f)
@@ -112,6 +119,8 @@ int FGETC(FILE *f)
 	else
 	{
 	}
+	
+	return 0;
 }
 
 int GETCHAR(void)
