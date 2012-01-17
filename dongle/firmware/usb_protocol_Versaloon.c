@@ -152,9 +152,17 @@ const uint8_t Versaloon_ConfigDescriptor[] =
 	0x09,	// bLength: Configuation Descriptor size
 	USB_DESC_TYPE_CONFIGURATION,
 			// bDescriptorType: Configuration
-	98,		// wTotalLength:no of returned bytes
+	98
+#if SCRIPTS_EN
+	+ 66
+#endif
+	,		// wTotalLength:no of returned bytes
 	0x00,
-	0x03,	// bNumInterfaces: 3 interfaces
+	0x03
+#if SCRIPTS_EN
+	+ 2
+#endif
+	,	// bNumInterfaces: 1 interfaces for Versaloon + 2 interfaces for COM + 2 interfaces for Shell
 	0x01,	// bConfigurationValue: Configuration value
 	0x00,	// iConfiguration: Index of string descriptor describing the configuration
 	0x80,	// bmAttributes: bus powered
@@ -270,7 +278,7 @@ const uint8_t Versaloon_ConfigDescriptor[] =
 			// bDescriptorType: Endpoint
 	0x04,	// bEndpointAddress: (OUT4)
 	0x02,	// bmAttributes: Bulk
-	64,		// wMaxPacketSize:
+	32,		// wMaxPacketSize:
 	0x00,
 	0x00,	// bInterval: ignore for Bulk transfer
 	
@@ -280,9 +288,118 @@ const uint8_t Versaloon_ConfigDescriptor[] =
 			// bDescriptorType: Endpoint
 	0x84,	// bEndpointAddress: (IN4)
 	0x02,	// bmAttributes: Bulk
-	64,		// wMaxPacketSize:
+	32,		// wMaxPacketSize:
 	0x00,
 	0x00	// bInterval
+	
+#if SCRIPTS_EN
+	,
+	// IAD
+	0x08,	// bLength: IAD Descriptor size
+	USB_DESC_TYPE_IAD,
+			// bDescriptorType: IAD
+	3,		// bFirstInterface
+	2,		// bInterfaceCount
+	0x02,	// bFunctionClass
+	0x02,	// bFunctionSubClass
+	0x01,	// bFunctionProtocol
+	0x05,	// iFunction
+
+	// Interface Descriptor
+	0x09,	// bLength: Interface Descriptor size
+	USB_DESC_TYPE_INTERFACE,
+			// bDescriptorType: Interface
+	3,		// bInterfaceNumber: Number of Interface
+	0x00,	// bAlternateSetting: Alternate setting
+	0x01,	// bNumEndpoints: One endpoints used
+	0x02,	// bInterfaceClass: Communication Interface Class
+	0x02,	// bInterfaceSubClass: Abstract Control Model
+	0x01,	// bInterfaceProtocol: Common AT commands
+	0x05,	// iInterface:
+	
+	// Header Functional Descriptor
+	0x05,	// bLength: Endpoint Descriptor size
+	0x24,	// bDescriptorType: CS_INTERFACE
+	0x00,	// bDescriptorSubtype: Header Func Desc
+	0x10,	// bcdCDC: spec release number
+	0x01,
+	
+	// Call Managment Functional Descriptor
+	0x05,	// bFunctionLength
+	0x24,	// bDescriptorType: CS_INTERFACE
+	0x01,	// bDescriptorSubtype: Call Management Func Desc
+	0x00,	// bmCapabilities: D0+D1
+	0x01,	// bDataInterface: 1
+	
+	// ACM Functional Descriptor
+	0x04,	// bFunctionLength
+	0x24,	// bDescriptorType: CS_INTERFACE
+	0x02,	// bDescriptorSubtype: Abstract Control Management desc
+	0x02,	// bmCapabilities
+	
+	// Union Functional Descriptor
+	0x05,	// bFunctionLength
+	0x24,	// bDescriptorType: CS_INTERFACE
+	0x06,	// bDescriptorSubtype: Union func desc
+	3,		// bMasterInterface: Communication class interface
+	4,		// bSlaveInterface0: Data Class Interface
+	
+	// Endpoint 5 Descriptor
+	0x07,	// bLength: Endpoint Descriptor size
+	USB_DESC_TYPE_ENDPOINT,
+			// bDescriptorType: Endpoint
+	0x85,	// bEndpointAddress: (IN5)
+	0x03,	// bmAttributes: Interrupt
+	8,		// wMaxPacketSize:
+	0x00,
+	0xFF,	// bInterval:
+	
+	// Data class interface descriptor
+	0x09,	// bLength: Endpoint Descriptor size
+	USB_DESC_TYPE_INTERFACE,
+			// bDescriptorType: Interface
+	4,		// bInterfaceNumber: Number of Interface
+	0x00,	// bAlternateSetting: Alternate setting
+	0x02,	// bNumEndpoints: Two endpoints used
+	0x0A,	// bInterfaceClass: CDC
+	0x00,	// bInterfaceSubClass:
+	0x00,	// bInterfaceProtocol:
+	0x00,	// iInterface:
+	
+	// Endpoint 6 Descriptor
+	0x07,	// bLength: Endpoint Descriptor size
+	USB_DESC_TYPE_ENDPOINT,
+			// bDescriptorType: Endpoint
+	0x06,	// bEndpointAddress: (OUT6)
+	0x02,	// bmAttributes: Bulk
+	8,		// wMaxPacketSize:
+	0x00,
+	0x00,	// bInterval: ignore for Bulk transfer
+	
+	// Endpoint 4 Descriptor
+	0x07,	// bLength: Endpoint Descriptor size
+	USB_DESC_TYPE_ENDPOINT,
+			// bDescriptorType: Endpoint
+	0x86,	// bEndpointAddress: (IN6)
+	0x02,	// bmAttributes: Bulk
+	8,		// wMaxPacketSize:
+	0x00,
+	0x00	// bInterval
+#endif
+
+#if MSC_ON_VERSALOON_EN
+,
+	// IAD
+	0x08,	// bLength: IAD Descriptor size
+	USB_DESC_TYPE_IAD,
+			// bDescriptorType: IAD
+	1,		// bFirstInterface
+	2,		// bInterfaceCount
+	0x02,	// bFunctionClass
+	0x02,	// bFunctionSubClass
+	0x01,	// bFunctionProtocol
+	0x04,	// iFunction
+#endif
 };
 
 static const uint8_t Versaloon_StringLangID[] =
@@ -310,13 +427,33 @@ static const uint8_t Versaloon_StringProduct[] =
 	'n', 0
 };
 
-static const uint8_t CDC_StringProduct[] =
+static const uint8_t CDConVersaloon_StringProduct[] =
 {
 	30,
 	USB_DESC_TYPE_STRING,
 	'C', 0, 'O', 0, 'M', 0, 'o', 0, 'n', 0, 'V', 0, 'e', 0, 'r', 0,
-	's', 0, 'a', 0, 'l', 0, 'o', 0, 'o', 0,'n', 0
+	's', 0, 'a', 0, 'l', 0, 'o', 0, 'o', 0, 'n', 0
 };
+
+#if SCRIPTS_EN
+static const uint8_t ShellOnVersaloon_StringProduct[] =
+{
+	34,
+	USB_DESC_TYPE_STRING,
+	'S', 0, 'h', 0, 'e', 0, 'l', 0, 'l', 0, 'o', 0, 'n', 0, 'V', 0,
+	'e', 0, 'r', 0, 's', 0, 'a', 0, 'l', 0, 'o', 0, 'o', 0, 'n', 0
+};
+#endif
+
+#if MSC_ON_VERSALOON_EN
+static const uint8_t MSConVersaloon_StringProduct[] =
+{
+	30,
+	USB_DESC_TYPE_STRING,
+	'M', 0, 'S', 0, 'C', 0, 'o', 0, 'n', 0, 'V', 0, 'e', 0, 'r', 0,
+	's', 0, 'a', 0, 'l', 0, 'o', 0, 'o', 0, 'n', 0
+};
+#endif
 
 static const uint8_t Versaloon_StringSerial[50] =
 {
@@ -335,7 +472,13 @@ static const struct vsfusbd_desc_filter_t descriptors[] =
 	VSFUSBD_DESC_STRING(0x0409, 1, Versaloon_StringVendor, sizeof(Versaloon_StringVendor), NULL),
 	VSFUSBD_DESC_STRING(0x0409, 2, Versaloon_StringProduct, sizeof(Versaloon_StringProduct), NULL),
 	VSFUSBD_DESC_STRING(0x0409, 3, Versaloon_StringSerial, sizeof(Versaloon_StringSerial), NULL),
-	VSFUSBD_DESC_STRING(0x0409, 4, CDC_StringProduct, sizeof(CDC_StringProduct), NULL),
+	VSFUSBD_DESC_STRING(0x0409, 4, CDConVersaloon_StringProduct, sizeof(CDConVersaloon_StringProduct), NULL),
+#if SCRIPTS_EN
+	VSFUSBD_DESC_STRING(0x0409, 5, ShellOnVersaloon_StringProduct, sizeof(ShellOnVersaloon_StringProduct), NULL),
+#endif
+#if MSC_ON_VERSALOON_EN
+	VSFUSBD_DESC_STRING(0x0409, 6, MSConVersaloon_StringProduct, sizeof(MSConVersaloon_StringProduct), NULL),
+#endif
 	VSFUSBD_DESC_NULL
 };
 static const struct vsfusbd_class_protocol_t Versaloon_Protocol = 
@@ -344,14 +487,32 @@ static const struct vsfusbd_class_protocol_t Versaloon_Protocol =
 	versaloon_usb_init,
 	NULL, versaloon_idle
 };
+
+extern struct usart_stream_info_t shell_stream;
+struct vsfusbd_CDC_param_t Versaloon_Shell_param = 
+{
+	&shell_stream,
+				// usart_stream
+	false,		// gpio_rts_enable
+	0,			// gpio_rts_port
+	0,			// gpio_rts_pin
+	false,		// gpio_dtr_enable
+	0,			// gpio_dtr_port
+	0,			// gpio_dtr_pin
+	
+	6,			// ep_out
+	6, 			// ep_in
+	{
+		115200,	// bitrate
+		0,		// stopbittype
+		0,		// paritytype
+		8		// datatype
+	},
+};
+
 extern struct usart_stream_info_t usart_stream_p0;
 struct vsfusbd_CDC_param_t Versaloon_CDC_param = 
 {
-#if SCRIPTS_EN
-	false,
-#else
-	true,
-#endif
 	&usart_stream_p0,
 				// usart_stream
 	false,		// gpio_rts_enable
@@ -374,12 +535,18 @@ static struct vsfusbd_iface_t ifaces[] =
 {
 	{(struct vsfusbd_class_protocol_t *)&Versaloon_Protocol, NULL},
 	{(struct vsfusbd_class_protocol_t *)&vsfusbd_CDCMaster_class, (void *)&Versaloon_CDC_param},
-	{(struct vsfusbd_class_protocol_t *)&vsfusbd_CDCData_class, (void *)&Versaloon_CDC_param}
+	{(struct vsfusbd_class_protocol_t *)&vsfusbd_CDCData_class, (void *)&Versaloon_CDC_param},
+#if SCRIPTS_EN
+	{(struct vsfusbd_class_protocol_t *)&vsfusbd_CDCMaster_class, (void *)&Versaloon_Shell_param},
+	{(struct vsfusbd_class_protocol_t *)&vsfusbd_CDCData_class, (void *)&Versaloon_Shell_param}
+#endif
+#if MSC_ON_VERSALOON_EN
+#endif
 };
 static struct vsfusbd_config_t config0[] = 
 {
 	{
-		NULL, NULL, 3, (struct vsfusbd_iface_t *)ifaces,
+		NULL, NULL, dimof(ifaces), (struct vsfusbd_iface_t *)ifaces,
 	}
 };
 struct vsfusbd_device_t usb_device = 
@@ -391,7 +558,6 @@ struct vsfusbd_device_t usb_device =
 
 vsf_err_t usb_protocol_init(void)
 {
-#if !SCRIPTS_EN
 	NVIC_InitTypeDef NVIC_InitStructure;
 	
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
@@ -401,7 +567,6 @@ vsf_err_t usb_protocol_init(void)
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&NVIC_InitStructure);
-#endif
 	
 	core_interfaces.gpio.init(0);
 	core_interfaces.gpio.init(1);

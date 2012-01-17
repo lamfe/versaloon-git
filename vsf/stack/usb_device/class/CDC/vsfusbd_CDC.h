@@ -33,7 +33,6 @@ extern const struct vsfusbd_class_protocol_t vsfusbd_CDCData_class;
 
 struct vsfusbd_CDC_param_t
 {
-	bool usart_enable;
 	struct usart_stream_info_t *usart_stream;
 	bool gpio_rts_enable;
 	uint8_t gpio_rts_port;

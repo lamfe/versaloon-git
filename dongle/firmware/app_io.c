@@ -23,7 +23,13 @@
 
 #include "usb_protocol.h"
 
-extern struct usart_stream_info_t usart_stream_p0;
+static uint8_t shell_buff_tx[512], shell_buff_rx[512];
+struct usart_stream_info_t shell_stream =
+{
+	IFS_DUMMY_PORT,								// usart_index
+	{{shell_buff_tx, sizeof(shell_buff_tx)}},	// fifo_tx
+	{{shell_buff_rx, sizeof(shell_buff_rx)}}	// fifo_rx
+};
 
 static char app_io_local_buff[APPIO_BUFFER_SIZE];
 
@@ -35,7 +41,7 @@ static void app_io_out_sync(void)
 	do
 	{
 		usb_protocol_poll();
-		free_space = vsf_fifo_get_data_length(&usart_stream_p0.fifo_rx);
+		free_space = vsf_fifo_get_data_length(&shell_stream.fifo_rx);
 	} while (free_space);
 }
 #endif
@@ -91,10 +97,10 @@ int FFLUSH(FILE *f)
 	else if (stdin == f)
 	{
 #if !APPIO_DUMMY
-		uint32_t i, size = vsf_fifo_get_data_length(&usart_stream_p0.fifo_tx);
+		uint32_t i, size = vsf_fifo_get_data_length(&shell_stream.fifo_tx);
 		for (i = 0; i < size; i++)
 		{
-			vsf_fifo_pop8(&usart_stream_p0.fifo_tx);
+			vsf_fifo_pop8(&shell_stream.fifo_tx);
 		}
 #endif
 		return 0;
@@ -119,9 +125,9 @@ int FGETC(FILE *f)
 		do
 		{
 			usb_protocol_poll();
-			size = vsf_fifo_get_data_length(&usart_stream_p0.fifo_tx);
+			size = vsf_fifo_get_data_length(&shell_stream.fifo_tx);
 		} while (!size);
-		return vsf_fifo_pop8(&usart_stream_p0.fifo_tx);
+		return vsf_fifo_pop8(&shell_stream.fifo_tx);
 #endif
 	}
 	else
@@ -154,28 +160,28 @@ char* FGETS(char *buf, int count, FILE *f)
 		while ((size < count) && (cur_char != '\r'))
 		{
 			usb_protocol_poll();
-			cur_size = vsf_fifo_get_data_length(&usart_stream_p0.fifo_tx);
+			cur_size = vsf_fifo_get_data_length(&shell_stream.fifo_tx);
 			
 			while (cur_size && (size < count) && (cur_char != '\r'))
 			{
-				cur_char = (char)vsf_fifo_pop8(&usart_stream_p0.fifo_tx);
+				cur_char = (char)vsf_fifo_pop8(&shell_stream.fifo_tx);
 				if ('\r' == cur_char)
 				{
-					vsf_fifo_push8(&usart_stream_p0.fifo_rx, '\n');
+					vsf_fifo_push8(&shell_stream.fifo_rx, '\n');
 				}
 				else if ('\b' == cur_char)
 				{
 					if (pos)
 					{
-						vsf_fifo_push8(&usart_stream_p0.fifo_rx, '\b');
-						vsf_fifo_push8(&usart_stream_p0.fifo_rx, ' ');
-						vsf_fifo_push8(&usart_stream_p0.fifo_rx, '\b');
+						vsf_fifo_push8(&shell_stream.fifo_rx, '\b');
+						vsf_fifo_push8(&shell_stream.fifo_rx, ' ');
+						vsf_fifo_push8(&shell_stream.fifo_rx, '\b');
 						pos--;
 					}
 					cur_size--;
 					continue;
 				}
-				vsf_fifo_push8(&usart_stream_p0.fifo_rx, (uint8_t)cur_char);
+				vsf_fifo_push8(&shell_stream.fifo_rx, (uint8_t)cur_char);
 				
 				buf[pos++] = cur_char;
 				size++;
@@ -194,10 +200,39 @@ char* FGETS(char *buf, int count, FILE *f)
 	return result;
 }
 
+static void APPIO_OUTBUFF(uint8_t *buff, uint32_t size)
+{
+	uint32_t free_space, cur_size;
+	
+	while (size > 0)
+	{
+		do
+		{
+			usb_protocol_poll();
+			free_space = vsf_fifo_get_avail_length(&shell_stream.fifo_rx);
+		} while (!free_space);
+		
+		if (free_space > size)
+		{
+			cur_size = size;
+		}
+		else
+		{
+			cur_size = free_space;
+		}
+		
+		vsf_fifo_push(&shell_stream.fifo_rx, cur_size, buff);
+		
+		size -= cur_size;
+		buff += cur_size;
+	}
+	
+	app_io_out_sync();
+}
+
 int FPRINTF(FILE *f, const char *format, ...)
 {
-	int number = 0, i;
-	int free_space, cur_size;
+	int number = 0;
 	char *pbuff = app_io_local_buff;
 	va_list ap;
 	
@@ -213,31 +248,7 @@ int FPRINTF(FILE *f, const char *format, ...)
 	if ((stdout == f) || (stderr == f))
 	{
 #if !APPIO_DUMMY
-		i = number;
-		while (i > 0)
-		{
-			do
-			{
-				usb_protocol_poll();
-				free_space = vsf_fifo_get_avail_length(&usart_stream_p0.fifo_rx);
-			} while (!free_space);
-			
-			if (free_space > i)
-			{
-				cur_size = i;
-			}
-			else
-			{
-				cur_size = free_space;
-			}
-			
-			vsf_fifo_push(&usart_stream_p0.fifo_rx, cur_size, (uint8_t *)pbuff);
-			
-			i -= cur_size;
-			pbuff += cur_size;
-		}
-		
-		app_io_out_sync();
+		APPIO_OUTBUFF((uint8_t *)pbuff, (uint32_t)number);
 #endif
 	}
 	else
@@ -248,8 +259,7 @@ int FPRINTF(FILE *f, const char *format, ...)
 
 int PRINTF(const char *format, ...)
 {
-	int number = 0, i;
-	int free_space, cur_size;
+	int number = 0;
 	char *pbuff = app_io_local_buff;
 	va_list ap;
 	
@@ -258,31 +268,7 @@ int PRINTF(const char *format, ...)
 	number = vsprintf(app_io_local_buff, format, ap);
 	va_end(ap);
 	
-	i = number;
-	while (i > 0)
-	{
-		do
-		{
-			usb_protocol_poll();
-			free_space = vsf_fifo_get_avail_length(&usart_stream_p0.fifo_rx);
-		} while (!free_space);
-		
-		if (free_space > i)
-		{
-			cur_size = i;
-		}
-		else
-		{
-			cur_size = free_space;
-		}
-		
-		vsf_fifo_push(&usart_stream_p0.fifo_rx, cur_size, (uint8_t *)pbuff);
-		
-		i -= cur_size;
-		pbuff += cur_size;
-	}
-	
-	app_io_out_sync();
+	APPIO_OUTBUFF((uint8_t *)pbuff, (uint32_t)number);
 #endif
 	return number;
 }

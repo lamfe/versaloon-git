@@ -72,8 +72,8 @@ static vsf_err_t vsfusbd_CDCData_IN_hanlder(void *p, uint8_t ep)
 	rx_data_length = vsf_fifo_get_data_length(&param->usart_stream->fifo_rx);
 	if (rx_data_length)
 	{
-		pkg_size = (rx_data_length > sizeof(buffer)) ? 
-						sizeof(buffer) : rx_data_length;
+		pkg_size = device->drv->ep.get_IN_epsize(ep);
+		pkg_size = (rx_data_length > pkg_size) ? pkg_size : rx_data_length;
 		rx_buffer.buffer = buffer;
 		rx_buffer.size = pkg_size;
 		usart_stream_rx(param->usart_stream, &rx_buffer);
@@ -181,7 +181,7 @@ static vsf_err_t vsfusbd_CDCData_class_poll(uint8_t iface,
 			device->drv->ep.set_OUT_state(param->ep_out, USB_EP_STAT_ACK);
 		}
 	}
-	if (param->usart_enable)
+	if (param->usart_stream->usart_index != IFS_DUMMY_PORT)
 	{
 		return usart_stream_poll(param->usart_stream);
 	}

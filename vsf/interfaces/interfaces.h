@@ -21,6 +21,8 @@
 #include "interfaces_cfg.h"
 #include "interfaces_const.h"
 
+#define IFS_DUMMY_PORT					0xFF
+
 struct interface_core_t
 {
 	vsf_err_t (*init)(void *p);
