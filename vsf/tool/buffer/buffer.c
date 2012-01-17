@@ -204,13 +204,13 @@ uint32_t vsf_fifo_pop(struct vsf_fifo_t *fifo, uint32_t size, uint8_t *data)
 	}
 	
 	tmp32 = fifo->buffer.size - fifo->tail;
-	if (size > tmp32)
+	if (ret > tmp32)
 	{
-		fifo->tail = size - tmp32;
+		fifo->tail = ret - tmp32;
 	}
 	else
 	{
-		fifo->tail += size;
+		fifo->tail += ret;
 		if (fifo->tail == fifo->buffer.size)
 		{
 			fifo->tail = 0;
