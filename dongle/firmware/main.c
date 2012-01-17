@@ -25,6 +25,8 @@
 #	include "app_log.h"
 #	include "scripts.h"
 #	include "vsprog.h"
+
+#	include "interfaces.h"
 #endif
 
 /* Private typedef -----------------------------------------------------------*/
@@ -33,6 +35,7 @@
 /* Private variables ---------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
+extern struct usart_stream_info_t usart_stream_p0;
 int main(void)
 {
 #if SCRIPTS_EN
@@ -55,12 +58,18 @@ int main(void)
 		usb_protocol_poll();
 	}
 	
+	// disable CDC
+	usart_stream_p0.usart_index = IFS_DUMMY_PORT;
+	
 	for (i = 0; i < 80; i++)
 	{
 		PRINTF(LOG_LINE_END);
 	}
 	vss_run_script("init");
 	vss_run_script("shell");
+	
+	// enable CDC again
+	usart_stream_p0.usart_index = 0;
 #endif	// if SCRIPTS_EN
 
 #if HW_HAS_BEEPER
