@@ -58,10 +58,84 @@ USR_INCS+= -I $(STM32_IFACES_DIR)/hw
 USR_SRCS+= $(COMPILER_DIR)/compiler_string.c
 USR_INCS+= -I $(COMPILER_DIR)
 
-#scripts
-#USR_SRCS+= $(VSPROGDIR)/scripts/scripts.c \
-#  $(VSPROGDIR)/scripts/interfaces_script.c
-#USR_INCS+= -I $(VSPROGDIR)/scripts
+#vsprog
+USR_SRCS+= $(SRCDIR)/app_io.c \
+  $(VSPROGDIR)/scripts/scripts.c \
+  $(VSPROGDIR)/scripts/interfaces_script.c \
+  $(SRCDIR)/app_script/app_script.c \
+  $(SRCDIR)/vsprog/vsprog.c \
+  $(SRCDIR)/vsprog/driver/comport/comport.c \
+  $(SRCDIR)/vsprog/tools/pgbar/pgbar.c \
+  $(VSPROGDIR)/tools/memlist/memlist.c \
+  $(VSPROGDIR)/tools/strparser/strparser.c \
+  $(VSPROGDIR)/target/target.c \
+  $(SRCDIR)/vsprog/target/target_data.c \
+  $(SRCDIR)/vsprog/target/target_readconf.c \
+  $(VSPROGDIR)/target/at89s5x/at89s5x.c \
+  $(VSPROGDIR)/target/at91sam3/at91sam3.c \
+  $(VSPROGDIR)/target/avr32/avr32.c \
+  $(VSPROGDIR)/target/avr8/avr8.c \
+  $(VSPROGDIR)/target/avr8/avr8_hvpp.c \
+  $(VSPROGDIR)/target/avr8/avr8_hvsp.c \
+  $(VSPROGDIR)/target/avr8/avr8_isp.c \
+  $(VSPROGDIR)/target/avr8/avr8_jtag.c \
+  $(VSPROGDIR)/target/avrxmega/avrxmega.c \
+  $(VSPROGDIR)/target/c8051f/c8051f.c \
+  $(VSPROGDIR)/target/c8051f/c8051f_c2.c \
+  $(VSPROGDIR)/target/c8051f/c8051f_jtag.c \
+  $(VSPROGDIR)/target/cfi/cfi.c \
+  $(VSPROGDIR)/target/comisp/comisp.c \
+  $(VSPROGDIR)/target/comisp/lpcarmisp.c \
+  $(VSPROGDIR)/target/comisp/stm32isp.c \
+  $(VSPROGDIR)/target/core/arm_adi/adi_v5p1.c \
+  $(VSPROGDIR)/target/cortex-m3/cm3.c \
+  $(VSPROGDIR)/target/cortex-m3/cm3_common.c \
+  $(VSPROGDIR)/target/cortex-m3/cm3_at91sam3.c \
+  $(VSPROGDIR)/target/cortex-m3/cm3_lm3s.c \
+  $(VSPROGDIR)/target/cortex-m3/cm3_lpc1000.c \
+  $(VSPROGDIR)/target/cortex-m3/cm3_stm32_fl.c \
+  $(VSPROGDIR)/target/cortex-m3/cm3_stm32f1.c \
+  $(VSPROGDIR)/target/cortex-m3/cm3_stm32f2.c \
+  $(VSPROGDIR)/target/cortex-m3/cm3_stm32l1.c \
+  $(VSPROGDIR)/target/df25xx/df25xx.c \
+  $(VSPROGDIR)/target/ee24cxx/ee24cxx.c \
+  $(VSPROGDIR)/target/ee93cx6/ee93cx6.c \
+  $(VSPROGDIR)/target/hcs08/hcs08.c \
+  $(VSPROGDIR)/target/hcs12/hcs12.c \
+  $(VSPROGDIR)/target/lm3s/lm3s.c \
+  $(VSPROGDIR)/target/lpc1000/lpc1000.c \
+  $(VSPROGDIR)/target/lpc900/lpc900.c \
+  $(VSPROGDIR)/target/msp430/JTAGfunc.c \
+  $(VSPROGDIR)/target/msp430/msp430.c \
+  $(VSPROGDIR)/target/msp430/msp430_bsl.c \
+  $(VSPROGDIR)/target/msp430/msp430_jtagsbw.c \
+  $(VSPROGDIR)/target/nand/nand.c \
+  $(VSPROGDIR)/target/psoc1/psoc1.c \
+  $(VSPROGDIR)/target/sd/sd.c \
+  $(VSPROGDIR)/target/stm32f1/stm32f1.c \
+  $(VSPROGDIR)/target/stm32f2/stm32f2.c \
+  $(VSPROGDIR)/target/stm32l1/stm32l1.c \
+  $(VSPROGDIR)/target/stm8/stm8.c \
+  $(VSPROGDIR)/target/svf_player/byte_tap.c \
+  $(VSPROGDIR)/target/svf_player/svf_parser.c \
+  $(VSPROGDIR)/target/svf_player/svf_player.c
+USR_INCS+= -I $(VSPROGDIR)/scripts \
+  -I $(SRCDIR)/app_script \
+  -I $(SRCDIR)/vsprog \
+  -I $(SRCDIR)/vsprog/driver/comport \
+  -I $(SRCDIR)/vsprog/tools/pgbar \
+  -I $(VSPROGDIR)/tools/memlist \
+  -I $(VSPROGDIR)/tools/strparser \
+  -I $(VSPROGDIR)/target \
+  -I $(VSPROGDIR)/target/core/arm_adi \
+  -I $(VSPROGDIR)/target/comisp \
+  -I $(VSPROGDIR)/target/cortex-m3 \
+  -I $(VSPROGDIR)/target/at91sam3 \
+  -I $(VSPROGDIR)/target/lm3s \
+  -I $(VSPROGDIR)/target/lpc1000 \
+  -I $(VSPROGDIR)/target/stm32f1 \
+  -I $(VSPROGDIR)/target/stm32f2 \
+  -I $(VSPROGDIR)/target/stm32l1
 
 #APP interfaces
 USR_SRCS+= $(SRCDIR)/Interfaces/app_interfaces.c
@@ -137,6 +211,8 @@ USR_SRCS+= $(VSFDIR)/dal/dal.c \
   $(VSFDIR)/dal/df45xx/df45xx_drv.c \
   $(VSFDIR)/dal/ee24cxx/ee24cxx_drv.c \
   $(VSFDIR)/dal/ee93cx6/ee93cx6_drv.c \
+  $(VSFDIR)/dal/sd/sd_common.c \
+  $(VSFDIR)/dal/sd/sd_spi_drv.c \
   $(VSFDIR)/dal/mal/mal.c \
   $(VSFDIR)/dal/mic2826/mic2826_drv.c \
   $(VSFDIR)/dal/nrf24l01/nrf24l01_drv.c \
@@ -151,6 +227,7 @@ USR_SRCS+= $(VSFDIR)/stack/usb_device/vsf_usbd.c \
 
 #VSF tool
 USR_SRCS+= $(VSFDIR)/tool/buffer/buffer.c
+USR_INCS+= -I $(VSFDIR)/tool/list
 
 # USB_TO_XXX
 USR_SRCS+= $(SRCDIR)/USB_TO_XXX/USB_TO_XXX.c \

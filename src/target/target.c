@@ -705,7 +705,7 @@ static vsf_err_t target_parse_cli_string(void)
 				// cli_format not defined
 				// simply use %nx as format, which is simple integer input
 				SNPRINTF(format_tmp, sizeof(format_tmp), "%%%dx",
-							area_info->size);
+							(int)area_info->size);
 				format = format_tmp;
 			}
 			else
@@ -1219,7 +1219,8 @@ static vsf_err_t target_program(struct program_context_t *context)
 					goto target_program_exit;
 				}
 				// default type is hex value with 16-bit length
-				SNPRINTF(format_tmp, sizeof(format_tmp), "%%%dx", target_size);
+				SNPRINTF(format_tmp, sizeof(format_tmp), "%%%dx",
+							(int)target_size);
 				format = format_tmp;
 			}
 			if ((0 == target_size) && (SPECIAL_STRING_CHAR == area_char))
@@ -2093,7 +2094,7 @@ static void target_print_single_memory(char type)
 		PRINTF("%c_format = %s, ", type, area_info->cli_format);
 	}
 	PRINTF("%c_default = 0x%"PRIX64", ", type, area_info->default_value);
-	PRINTF("%c_bytelen = %d" LOG_LINE_END, type, area_info->size);
+	PRINTF("%c_bytelen = %d" LOG_LINE_END, type, (int)area_info->size);
 }
 
 void target_print_memory(char type)
