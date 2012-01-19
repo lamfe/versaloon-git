@@ -174,14 +174,6 @@ static void free_all(void)
 	target_release_chip_series(&target_chips);
 }
 
-static void free_all_and_exit(int exit_code)
-{
-	vss_run_script("free-all");
-	vss_run_script("function_free");
-	vss_run_script("exit");
-	vss_fini();
-}
-
 static vsf_err_t parse_operation(uint32_t *operation, const char *opt,
 									uint32_t optlen)
 {

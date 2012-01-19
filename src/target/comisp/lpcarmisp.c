@@ -168,7 +168,7 @@ static vsf_err_t uu_send(uint8_t *data, uint32_t size)
 		if (!size || (++line_num >= 20))
 		{
 			sum_reply = 1;
-			snprintf(sum, sizeof(sum), "%d", checksum);
+			snprintf(sum, sizeof(sum), "%d", (int)checksum);
 			strcat(str, sum);
 			strcat(str, "\r");
 		}
@@ -254,7 +254,7 @@ static vsf_err_t uu_recv(uint8_t *data, uint32_t size)
 		comm_sum_size = 0;
 		if (!size || (++line_num >= 20))
 		{
-			snprintf(sum, sizeof(sum), "%d", checksum);
+			snprintf(sum, sizeof(sum), "%d", (int)checksum);
 			comm_sum_size = 2 + strlen(sum);
 		}
 		comm_ret = comm_read((uint8_t *)str, comm_data_size + comm_sum_size);
@@ -520,7 +520,7 @@ static vsf_err_t lpcarmisp_sync(uint32_t kernel_khz)
 		return VSFERR_FAIL;
 	}
 	
-	sprintf(cmd_buff, "%d\r", kernel_khz);
+	sprintf(cmd_buff, "%d\r", (int)kernel_khz);
 	reply_size = strlen(LPCARMISP_RPL_OK);
 	if (lpcarmisp_transact(cmd_buff, 1, buffer, &reply_size))
 	{
@@ -594,8 +594,8 @@ static vsf_err_t lpcarmisp_write_to_ram(uint32_t addr, uint8_t *buff,
 	}
 	
 	cmd_argv[0] = LPCARMISP_CMD_WRITE2RAM;
-	snprintf(addr_str, sizeof(addr_str), "%d", addr);
-	snprintf(size_str, sizeof(size_str), "%d", size);
+	snprintf(addr_str, sizeof(addr_str), "%d", (int)addr);
+	snprintf(size_str, sizeof(size_str), "%d", (int)size);
 	cmd_argv[1] = addr_str;
 	cmd_argv[2] = size_str;
 	cmd_argc = 3;
@@ -627,8 +627,8 @@ static vsf_err_t lpcarmisp_read_memory(uint32_t addr, uint8_t *buff,
 	}
 	
 	cmd_argv[0] = LPCARMISP_CMD_READMEMORY;
-	snprintf(addr_str, sizeof(addr_str), "%d", addr);
-	snprintf(size_str, sizeof(size_str), "%d", size);
+	snprintf(addr_str, sizeof(addr_str), "%d", (int)addr);
+	snprintf(size_str, sizeof(size_str), "%d", (int)size);
 	cmd_argv[1] = addr_str;
 	cmd_argv[2] = size_str;
 	cmd_argc = 3;
@@ -685,9 +685,9 @@ static vsf_err_t lpcarmisp_copy_ram_to_flash(uint32_t flash_addr,
 	}
 	
 	cmd_argv[0] = LPCARMISP_CMD_RAM2FLASH;
-	snprintf(flash_addr_str, sizeof(flash_addr_str), "%d", flash_addr);
-	snprintf(ram_addr_str, sizeof(ram_addr_str), "%d", ram_addr);
-	snprintf(size_str, sizeof(size_str), "%d", size);
+	snprintf(flash_addr_str, sizeof(flash_addr_str), "%d", (int)flash_addr);
+	snprintf(ram_addr_str, sizeof(ram_addr_str), "%d", (int)ram_addr);
+	snprintf(size_str, sizeof(size_str), "%d", (int)size);
 	cmd_argv[1] = flash_addr_str;
 	cmd_argv[2] = ram_addr_str;
 	cmd_argv[3] = size_str;

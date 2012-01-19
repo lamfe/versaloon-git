@@ -387,13 +387,12 @@ solve_integer:
 				{
 					if (param < 4)
 					{
-						sprintf(tmp_format, "0x%%0%dX", (uint32_t)(param * 2));
+						sprintf(tmp_format, "0x%%0%dX", (int)(param * 2));
 						sprintf(tmp_str, tmp_format, (uint32_t)value);
 					}
 					else
 					{
-						sprintf(tmp_format, "0x%%0%d"PRIX64,
-									(uint32_t)(param * 2));
+						sprintf(tmp_format, "0x%%0%d"PRIX64, (int)(param * 2));
 						sprintf(tmp_str, tmp_format, value);
 					}
 				}

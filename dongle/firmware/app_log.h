@@ -47,7 +47,7 @@ extern int verbosity_stack[1];
 		LOG_BUF((uint16_t *)buff, len, func, "%04X", 8);\
 		break;\
 	case 4:\
-		LOG_BUF((uint32_t *)buff, len, func, "%08X", 4);\
+		LOG_BUF((unsigned int *)buff, len, func, "%08X", 4);\
 		break;\
 	}
 
