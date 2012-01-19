@@ -1567,7 +1567,12 @@ static vsf_err_t target_program(struct program_context_t *context)
 						{
 							if (pf->read_target(context,
 									area_char, ml_tmp->addr + j,
-									read_buf, page_size))
+#if SYS_CFG_LARGE_MEMORY
+									read_buf + j,
+#else
+									read_buf,
+#endif
+									page_size))
 							{
 								free(read_buf);
 								read_buf = NULL;
