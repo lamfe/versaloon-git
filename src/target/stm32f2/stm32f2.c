@@ -115,12 +115,12 @@ VSS_HANDLER(stm32f2_mode)
 
 VSS_HANDLER(stm32f2_extra)
 {
-	char cmd[4] = "E ";
+	char cmd[2];
 	
 	VSS_CHECK_ARGC(1);
-	cmd[2] = '0' + COMISP_STM32F2;
-	cmd[3] = '\0';
-	return vss_run_script(cmd);
+	cmd[0] = '0' + COMISP_STM32F2;
+	cmd[1] = '\0';
+	return vss_call_notifier(comisp_notifier, "E", cmd);
 }
 
 const struct vss_cmd_t stm32f4_notifier[] =
