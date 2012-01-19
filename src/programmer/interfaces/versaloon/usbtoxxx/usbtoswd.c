@@ -125,6 +125,7 @@ vsf_err_t usbtoswd_transact(uint8_t interface_index, uint8_t request,
 	}
 #endif
 	
+	buff[0] = request;
 	if (data != NULL)
 	{
 		SET_LE_U32(&buff[1], *data);
