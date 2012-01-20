@@ -22,6 +22,8 @@
 #include <stdio.h>
 #include "app_type.h"
 
+extern struct vss_cmd_list_t appio_cmd_list;
+
 void APP_IO_INIT(void);
 
 FILE *FOPEN(const char *filename, const char *mode);

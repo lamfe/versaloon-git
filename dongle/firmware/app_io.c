@@ -14,14 +14,41 @@
  *      2008-11-07:     created(by SimonQian)                             *
  **************************************************************************/
 
+#include <stdlib.h>
 #include <stdarg.h>
-#include "app_io.h"
 
+#include "app_io.h"
+#include "app_err.h"
+#include "app_log.h"
+
+#include "scripts.h"
 #include "interfaces.h"
 #include "tool/buffer/buffer.h"
 #include "dal/usart_stream/usart_stream.h"
 
 #include "usb_protocol.h"
+
+VSS_HANDLER(appio_set_dummy);
+
+static const struct vss_cmd_t appio_cmd[] =
+{
+	VSS_CMD(	"dummy",
+				"set dummy mode of appio, format: appio.dummy DUMMY",
+				appio_set_dummy,
+				NULL),
+	VSS_CMD_END
+};
+struct vss_cmd_list_t appio_cmd_list =
+							VSS_CMD_LIST("appio", appio_cmd);
+
+static bool appio_dummy = false;
+VSS_HANDLER(appio_set_dummy)
+{
+	VSS_CHECK_ARGC(2);
+	
+	appio_dummy = (strtoul(argv[1], NULL, 0) != 0);
+	return VSFERR_NONE;
+}
 
 static uint8_t shell_buff_tx[512], shell_buff_rx[512];
 struct usart_stream_info_t shell_stream =
@@ -90,17 +117,23 @@ int FFLUSH(FILE *f)
 	if ((stdout == f) || (stderr == f))
 	{
 #if !APPIO_DUMMY
-		app_io_out_sync();
+		if (!appio_dummy)
+		{
+			app_io_out_sync();
+		}
 #endif
 		return 0;
 	}
 	else if (stdin == f)
 	{
 #if !APPIO_DUMMY
-		uint32_t i, size = vsf_fifo_get_data_length(&shell_stream.fifo_tx);
-		for (i = 0; i < size; i++)
+		if (!appio_dummy)
 		{
-			vsf_fifo_pop8(&shell_stream.fifo_tx);
+			uint32_t i, size = vsf_fifo_get_data_length(&shell_stream.fifo_tx);
+			for (i = 0; i < size; i++)
+			{
+				vsf_fifo_pop8(&shell_stream.fifo_tx);
+			}
 		}
 #endif
 		return 0;
@@ -121,13 +154,16 @@ int FGETC(FILE *f)
 	else if (stdin == f)
 	{
 #if !APPIO_DUMMY
-		uint32_t size;
-		do
+		if (!appio_dummy)
 		{
-			usb_protocol_poll();
-			size = vsf_fifo_get_data_length(&shell_stream.fifo_tx);
-		} while (!size);
-		return vsf_fifo_pop8(&shell_stream.fifo_tx);
+			uint32_t size;
+			do
+			{
+				usb_protocol_poll();
+				size = vsf_fifo_get_data_length(&shell_stream.fifo_tx);
+			} while (!size);
+			return vsf_fifo_pop8(&shell_stream.fifo_tx);
+		}
 #endif
 	}
 	else
@@ -155,41 +191,44 @@ char* FGETS(char *buf, int count, FILE *f)
 	if (stdin == f)
 	{
 #if !APPIO_DUMMY
-		pos = 0;
-		cur_char = '\0';
-		while ((size < count) && (cur_char != '\r'))
+		if (!appio_dummy)
 		{
-			usb_protocol_poll();
-			cur_size = vsf_fifo_get_data_length(&shell_stream.fifo_tx);
-			
-			while (cur_size && (size < count) && (cur_char != '\r'))
+			pos = 0;
+			cur_char = '\0';
+			while ((size < count) && (cur_char != '\r'))
 			{
-				cur_char = (char)vsf_fifo_pop8(&shell_stream.fifo_tx);
-				if ('\r' == cur_char)
-				{
-					vsf_fifo_push8(&shell_stream.fifo_rx, '\n');
-				}
-				else if ('\b' == cur_char)
-				{
-					if (pos)
-					{
-						vsf_fifo_push8(&shell_stream.fifo_rx, '\b');
-						vsf_fifo_push8(&shell_stream.fifo_rx, ' ');
-						vsf_fifo_push8(&shell_stream.fifo_rx, '\b');
-						pos--;
-					}
-					cur_size--;
-					continue;
-				}
-				vsf_fifo_push8(&shell_stream.fifo_rx, (uint8_t)cur_char);
+				usb_protocol_poll();
+				cur_size = vsf_fifo_get_data_length(&shell_stream.fifo_tx);
 				
-				buf[pos++] = cur_char;
-				size++;
-				cur_size--;
+				while (cur_size && (size < count) && (cur_char != '\r'))
+				{
+					cur_char = (char)vsf_fifo_pop8(&shell_stream.fifo_tx);
+					if ('\r' == cur_char)
+					{
+						vsf_fifo_push8(&shell_stream.fifo_rx, '\n');
+					}
+					else if ('\b' == cur_char)
+					{
+						if (pos)
+						{
+							vsf_fifo_push8(&shell_stream.fifo_rx, '\b');
+							vsf_fifo_push8(&shell_stream.fifo_rx, ' ');
+							vsf_fifo_push8(&shell_stream.fifo_rx, '\b');
+							pos--;
+						}
+						cur_size--;
+						continue;
+					}
+					vsf_fifo_push8(&shell_stream.fifo_rx, (uint8_t)cur_char);
+					
+					buf[pos++] = cur_char;
+					size++;
+					cur_size--;
+				}
 			}
+			buf[pos] = '\0';
+			app_io_out_sync();
 		}
-		buf[pos] = '\0';
-		app_io_out_sync();
 #else
 		return NULL;
 #endif
@@ -248,7 +287,10 @@ int FPRINTF(FILE *f, const char *format, ...)
 	if ((stdout == f) || (stderr == f))
 	{
 #if !APPIO_DUMMY
-		APPIO_OUTBUFF((uint8_t *)pbuff, (uint32_t)number);
+		if (!appio_dummy)
+		{
+			APPIO_OUTBUFF((uint8_t *)pbuff, (uint32_t)number);
+		}
 #endif
 	}
 	else
@@ -264,11 +306,14 @@ int PRINTF(const char *format, ...)
 	va_list ap;
 	
 #if !APPIO_DUMMY
-	va_start(ap, format);
-	number = vsprintf(app_io_local_buff, format, ap);
-	va_end(ap);
+	if (!appio_dummy)
+	{
+		va_start(ap, format);
+		number = vsprintf(app_io_local_buff, format, ap);
+		va_end(ap);
 	
-	APPIO_OUTBUFF((uint8_t *)pbuff, (uint32_t)number);
+		APPIO_OUTBUFF((uint8_t *)pbuff, (uint32_t)number);
+	}
 #endif
 	return number;
 }
