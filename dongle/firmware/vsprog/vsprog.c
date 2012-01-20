@@ -210,9 +210,10 @@ static vsf_err_t parse_operation(uint32_t *operation, const char *opt,
 
 static void print_title(void)
 {
-	PRINTF(_GETTEXT(VSPROG_VERSION LOG_LINE_END VSPROG_COPYRIGHT LOG_LINE_END LOG_LINE_END "\
-URL: http://www.SimonQian.com/en/Versaloon"LOG_LINE_END"\
-mail: SimonQian@SimonQian.com" LOG_LINE_END LOG_LINE_END));
+	PRINTF(_GETTEXT(VSPROG_VERSION LOG_LINE_END VSPROG_COPYRIGHT LOG_LINE_END
+LOG_LINE_END
+"URL: http://www.SimonQian.com/en/Versaloon"LOG_LINE_END
+"mail: SimonQian@SimonQian.com" LOG_LINE_END LOG_LINE_END));
 }
 
 static void print_system_info(void)
@@ -225,36 +226,36 @@ VSS_HANDLER(vsprog_help)
 {
 	VSS_CHECK_ARGC(1);
 	
-	PRINTF(_GETTEXT("\
-Usage: %s [OPTION]..."LOG_LINE_END"\
-  -h,  --help                               display this help"LOG_LINE_END"\
-  -v,  --version                            display vsprog version"LOG_LINE_END"\
-  -S,  --support <TARGET>                   display support information"LOG_LINE_END"\
-  -V,  --vss-cmd \"<CMD PARA>\"              run programmer defined command"LOG_LINE_END"\
-  -P,  --parameter <AREA>                   display parameter for target area"LOG_LINE_END"\
-  -D,  --memory-detail <AREA>               display memory info for target area"LOG_LINE_END"\
-  -J,  --jtag-dc <UB UA BB BA>              set JTAG Daisy Chain"LOG_LINE_END"\
-  -d,  --debug <LEVEL>                      set debug level <0-2>"LOG_LINE_END"\
-  -s,  --target-series <SERIES>             set target series"LOG_LINE_END"\
-  -c,  --target-module <MODULE>             set target module"LOG_LINE_END"\
-  -p,  --programmer <PROGRAMMER>            set programmer"LOG_LINE_END"\
-  -l,  --virtualprog <VIRTUAL_PROGRAMMER>   set virtual programmer"LOG_LINE_END"\
-  -i,  --indexes <INDEX_STR>                configure indexes of virtual programmer"LOG_LINE_END"\
-  -o,  --operation <OPERATIONS>             set programming operation"LOG_LINE_END"\
-  -e,  --erase-on-demand                    erase target according to demand"LOG_LINE_END"\
-  -I,  --input-file \"<FILE>[@SEG,ADDR]\"     set input file"LOG_LINE_END"\
-  -O,  --output-file \"<FILE>[@SEG,ADDR]\"    set output file"LOG_LINE_END"\
-  -F,  --frequency <FREQUENCY_KHZ>          set programming frequency"LOG_LINE_END"\
-  -K,  --kernel-khz <KERNEL_KHZ>            set kernel frequency"LOG_LINE_END"\
-  -Q,  --quartz-khz <QUARTZ_KHZ>            set quartz frequency"LOG_LINE_END"\
-  -A,  --auto-adjust                        enable auto-adjust feature"LOG_LINE_END"\
-  -m,  --mode <MODE>                        set programming mode"LOG_LINE_END"\
-  -t,  --target <TARGET VALUE>              set target value, eg(fuse): -tu0x02"LOG_LINE_END"\
-  -L,  --list-programmer                    list programmers available"LOG_LINE_END"\
-  -M,  --mass-product                       set mass_product mode"LOG_LINE_END"\
-  -G,  --gui-mode                           set gui_mode"LOG_LINE_END"\
-  -a,  --address                            set address of target chip" LOG_LINE_END LOG_LINE_END),
-			"vsprog");
+	PRINTF(_GETTEXT(
+"Usage: %s [OPTION]..."LOG_LINE_END
+"  -h,  --help                               display this help"LOG_LINE_END
+"  -v,  --version                            display vsprog version"LOG_LINE_END
+"  -S,  --support <TARGET>                   display support information"LOG_LINE_END
+"  -V,  --vss-cmd \"<CMD PARA>\"              run programmer defined command"LOG_LINE_END
+"  -P,  --parameter <AREA>                   display parameter for target area"LOG_LINE_END
+"  -D,  --memory-detail <AREA>               display memory info for target area"LOG_LINE_END
+"  -J,  --jtag-dc <UB UA BB BA>              set JTAG Daisy Chain"LOG_LINE_END
+"  -d,  --debug <LEVEL>                      set debug level <0-2>"LOG_LINE_END
+"  -s,  --target-series <SERIES>             set target series"LOG_LINE_END
+"  -c,  --target-module <MODULE>             set target module"LOG_LINE_END
+"  -p,  --programmer <PROGRAMMER>            set programmer"LOG_LINE_END
+"  -l,  --virtualprog <VIRTUAL_PROGRAMMER>   set virtual programmer"LOG_LINE_END
+"  -i,  --indexes <INDEX_STR>                configure indexes of virtual programmer"LOG_LINE_END
+"  -o,  --operation <OPERATIONS>             set programming operation"LOG_LINE_END
+"  -e,  --erase-on-demand                    erase target according to demand"LOG_LINE_END
+"  -I,  --input-file \"<FILE>[@SEG,ADDR]\"     set input file"LOG_LINE_END
+"  -O,  --output-file \"<FILE>[@SEG,ADDR]\"    set output file"LOG_LINE_END
+"  -F,  --frequency <FREQUENCY_KHZ>          set programming frequency"LOG_LINE_END
+"  -K,  --kernel-khz <KERNEL_KHZ>            set kernel frequency"LOG_LINE_END
+"  -Q,  --quartz-khz <QUARTZ_KHZ>            set quartz frequency"LOG_LINE_END
+"  -A,  --auto-adjust                        enable auto-adjust feature"LOG_LINE_END
+"  -m,  --mode <MODE>                        set programming mode"LOG_LINE_END
+"  -t,  --target <TARGET VALUE>              set target value, eg(fuse): -tu0x02"LOG_LINE_END
+"  -L,  --list-programmer                    list programmers available"LOG_LINE_END
+"  -M,  --mass-product                       set mass_product mode"LOG_LINE_END
+"  -G,  --gui-mode                           set gui_mode"LOG_LINE_END
+"  -a,  --address                            set address of target chip" LOG_LINE_END
+LOG_LINE_END), "vsprog");
 
 	target_print_help();
 	
