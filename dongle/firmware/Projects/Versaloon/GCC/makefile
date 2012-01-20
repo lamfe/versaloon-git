@@ -55,7 +55,7 @@ USR_INCS+= -I $(STM32_IFACES_DIR)/hw
 #USR_LIBS+= -L./
 
 # compiler
-USR_SRCS+= $(COMPILER_DIR)/compiler_string.c
+USR_SRCS+= $(COMPILER_DIR)/compiler_string.c $(COMPILER_DIR)/syscall.c
 USR_INCS+= -I $(COMPILER_DIR)
 
 #vsprog

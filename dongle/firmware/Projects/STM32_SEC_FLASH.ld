@@ -80,7 +80,7 @@ SECTIONS
         
 	    . = ALIGN(4);
 	    /* This is used by the startup in order to initialize the .bss secion */
-   	 _ebss = . ;
+        _ebss = . ;
     } >RAM
     
     PROVIDE ( end = _ebss );
@@ -90,16 +90,15 @@ SECTIONS
     This is just to check that there is enough RAM left for the User mode stack
     It should generate an error if it's full.
      */
-    ._usrstack :
+    ._user_heap_stack :
     {
 	    . = ALIGN(4);
-        _susrstack = . ;
-        
-        . = . + _Minimum_Stack_Size ;
-        
+        . = . + _Heap_Size ;
+        . = . + _Stack_Size ;
 	    . = ALIGN(4);
-        _eusrstack = . ;
     } >RAM
+    
+    PROVIDE(__HEAP_START = _end );
     
 
    
