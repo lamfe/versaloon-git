@@ -78,8 +78,23 @@ void APP_IO_INIT(void)
 	
 }
 
+static FILE evsprog_script_file;
+static uint32_t evsprog_script_pos = 0;
 FILE *FOPEN(const char *filename, const char *mode)
 {
+	if (!strcmp(filename, EVSPROG_SCRIPT_FILE))
+	{
+		if ((*(char *)EVSPROG_SCRIPT_ADDR != '\0') &&
+			(*(uint8_t *)EVSPROG_SCRIPT_ADDR != 0xFF))
+		{
+			evsprog_script_pos = 0;
+			return &evsprog_script_file;
+		}
+	}
+	else
+	{
+		
+	}
 	return NULL;
 }
 
@@ -87,6 +102,15 @@ int FCLOSE(FILE *f)
 {
 	if ((f != stdin) && (f != stdout) && (f != stderr))
 	{
+		if (&evsprog_script_file == f)
+		{
+			evsprog_script_pos = 0;
+			return 0;
+		}
+		else
+		{
+			
+		}
 	}
 	
 	return 0;
@@ -98,17 +122,30 @@ int FEOF(FILE *f)
 	{
 		return 0;
 	}
+	else if (&evsprog_script_file == f)
+	{
+		if ((((char *)EVSPROG_SCRIPT_ADDR)[evsprog_script_pos] != '\0') &&
+			(((uint8_t *)EVSPROG_SCRIPT_ADDR)[evsprog_script_pos] != 0xFF))
+		{
+			return 0;
+		}
+		return 1;
+	}
 	else
 	{
 	}
 	
-	return 0;
+	return 1;
 }
 
 void REWIND(FILE *f)
 {
 	if ((f != stdin) && (f != stdout) && (f != stderr))
 	{
+	}
+	else if (&evsprog_script_file == f)
+	{
+		evsprog_script_pos = 0;
 	}
 }
 
@@ -138,6 +175,9 @@ int FFLUSH(FILE *f)
 #endif
 		return 0;
 	}
+	else if (&evsprog_script_file == f)
+	{
+	}
 	else
 	{
 	}
@@ -165,6 +205,9 @@ int FGETC(FILE *f)
 			return vsf_fifo_pop8(&shell_stream.fifo_tx);
 		}
 #endif
+	}
+	else if (&evsprog_script_file == f)
+	{
 	}
 	else
 	{
@@ -233,6 +276,37 @@ char* FGETS(char *buf, int count, FILE *f)
 		return NULL;
 #endif
 	}
+	else if (&evsprog_script_file == f)
+	{
+		if (count < 3)
+		{
+			return NULL;
+		}
+		count -= 3;
+		
+		while ((((char *)EVSPROG_SCRIPT_ADDR)[evsprog_script_pos] != '\0') &&
+			(((uint8_t *)EVSPROG_SCRIPT_ADDR)[evsprog_script_pos] != 0xFF) &&
+			((((char *)EVSPROG_SCRIPT_ADDR)[evsprog_script_pos] == '\n') ||
+				(((char *)EVSPROG_SCRIPT_ADDR)[evsprog_script_pos] == '\r')))
+		{
+			evsprog_script_pos++;
+		}
+		while (count-- && 
+			(((char *)EVSPROG_SCRIPT_ADDR)[evsprog_script_pos] != '\0') &&
+			(((char *)EVSPROG_SCRIPT_ADDR)[evsprog_script_pos] != '\n') &&
+			(((char *)EVSPROG_SCRIPT_ADDR)[evsprog_script_pos] != '\r') &&
+			(((uint8_t *)EVSPROG_SCRIPT_ADDR)[evsprog_script_pos] != 0xFF))
+		{
+			*buf++ = ((char *)EVSPROG_SCRIPT_ADDR)[evsprog_script_pos++];
+		}
+		if (result == buf)
+		{
+			return NULL;
+		}
+		*buf++ = '\n';
+		*buf++ = '\r';
+		*buf++ = '\0';
+	}
 	else
 	{
 	}
@@ -275,7 +349,7 @@ int FPRINTF(FILE *f, const char *format, ...)
 	char *pbuff = app_io_local_buff;
 	va_list ap;
 	
-	if ((NULL == f) || (stdin == f))
+	if ((NULL == f) || (stdin == f) || (&evsprog_script_file == f))
 	{
 		return 0;
 	}
