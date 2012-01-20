@@ -38,7 +38,7 @@ static uint32_t TARGET_DATA_ADDR = TARGET_DATA_BASE;
 
 VSS_HANDLER(target_data_set_base);
 
-const struct vss_cmd_t target_data_cmd[] =
+static const struct vss_cmd_t target_data_cmd[] =
 {
 	VSS_CMD(	"set_base",
 				"set base of target data, format: set_base ADDR",
