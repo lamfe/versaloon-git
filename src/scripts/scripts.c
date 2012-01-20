@@ -982,6 +982,38 @@ VSS_HANDLER(vss_set_parameters)
 }
 
 // help
+static void vss_print_cmd_help(struct vss_cmd_t *cmd, char *prefix)
+{
+	char *cur_prefix;
+	
+	while (cmd->cmd_name != NULL)
+	{
+		if (cmd->subcmd != NULL)
+		{
+			cur_prefix =
+				(char *)malloc(strlen(prefix) + strlen(cmd->cmd_name) + 2);
+			if (NULL == cur_prefix)
+			{
+				return;
+			}
+			
+			LOG_INFO("  %s.%s: %s", prefix, cmd->cmd_name, cmd->help_str);
+			
+			strcpy(cur_prefix, prefix);
+			strcat(cur_prefix, ".");
+			strcat(cur_prefix, cmd->cmd_name);
+			vss_print_cmd_help(cmd->subcmd, cur_prefix);
+			free(cur_prefix);
+			cur_prefix = NULL;
+		}
+		else
+		{
+			LOG_INFO("  %s.%s: %s", prefix, cmd->cmd_name, cmd->help_str);
+		}
+		cmd++;
+	}
+}
+
 VSS_HANDLER(vss_help)
 {
 	struct vss_cmd_list_t *temp = NULL;
@@ -1005,21 +1037,12 @@ VSS_HANDLER(vss_help)
 	}
 	else if (1 == argc)
 	{
-		int i;
-		
 		LOG_INFO("command list:");
 		
 		temp = vss_cmd_list_head;
 		while (temp != NULL)
 		{
-			cmd = temp->cmd;
-			
-			i = 0;
-			while (cmd[i].cmd_name != NULL)
-			{
-				LOG_INFO("  %s: %s", cmd[i].cmd_name, cmd[i].help_str);
-				i++;
-			}
+			vss_print_cmd_help(temp->cmd, temp->list_name);
 			temp = sllist_get_container(temp->list.next, struct vss_cmd_list_t,
 										list);
 		}

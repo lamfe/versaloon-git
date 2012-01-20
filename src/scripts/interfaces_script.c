@@ -238,6 +238,7 @@ static const struct vss_cmd_t delay_cmd[] =
 				"delay ms, format: delay.delayus MS",
 				interface_delay_ms,
 				NULL),
+	VSS_CMD_END
 };
 
 static const struct vss_cmd_t interface_cmd[] =
