@@ -32,6 +32,38 @@
 #include "vsprog.h"
 #include "interfaces.h"
 #include "target.h"
+#include "scripts.h"
+
+static uint32_t TARGET_DATA_ADDR = TARGET_DATA_BASE;
+
+VSS_HANDLER(target_data_set_base);
+
+const struct vss_cmd_t target_data_cmd[] =
+{
+	VSS_CMD(	"set_base",
+				"set base of target data, format: set_base ADDR",
+				target_data_set_base,
+				NULL),
+	VSS_CMD_END
+};
+struct vss_cmd_list_t target_data_cmd_list =
+							VSS_CMD_LIST("target_datat", target_data_cmd);
+
+VSS_HANDLER(target_data_set_base)
+{
+	uint32_t temp_addr;
+	
+	VSS_CHECK_ARGC(2);
+	
+	temp_addr = (uint32_t)strtoul(argv[1], NULL, 0);
+	if (temp_addr >= TARGET_DATA_SIZE)
+	{
+		return VSFERR_FAIL;
+	}
+	
+	TARGET_DATA_ADDR = temp_addr + TARGET_DATA_BASE;
+	return VSFERR_NONE;
+}
 
 vsf_err_t target_data_free(struct program_context_t *context)
 {

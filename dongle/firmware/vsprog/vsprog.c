@@ -412,11 +412,14 @@ VSS_HANDLER(vsprog_free_all)
 
 VSS_HANDLER(vsprog_init)
 {
+	extern struct vss_cmd_list_t target_data_cmd_list;
+	
 	VSS_CHECK_ARGC(1);
 	
 	print_title();
 	
 	vss_register_cmd_list(&target_cmd_list);
+	vss_register_cmd_list(&target_data_cmd_list);
 	vss_register_cmd_list(&pgbar_cmd_list);
 	vss_register_cmd_list(&interface_cmd_list);
 	vss_register_cmd_list(&app_cmd_list);
