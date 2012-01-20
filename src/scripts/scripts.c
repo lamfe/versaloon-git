@@ -77,6 +77,7 @@ VSS_HANDLER(vss_function_register);
 VSS_HANDLER(vss_function_end);
 VSS_HANDLER(vss_function_call);
 VSS_HANDLER(vss_function_free);
+VSS_HANDLER(vss_out);
 
 static struct vss_cmd_t vss_generic_cmd[] =
 {
@@ -115,6 +116,10 @@ static struct vss_cmd_t vss_generic_cmd[] =
 	VSS_CMD(	"V",
 				"run vss command, format: vss-cmd/V COMMAND",
 				vss_run_command,
+				NULL),
+	VSS_CMD(	"out",
+				"display information, format: out [INFO]",
+				vss_out,
 				NULL),
 	VSS_CMD(	"log_info",
 				"display information, format: log_info INFO",
@@ -1096,6 +1101,20 @@ VSS_HANDLER(vss_run_command)
 {
 	VSS_CHECK_ARGC(2);
 	return vss_run_script((char *)argv[1]);
+}
+
+VSS_HANDLER(vss_out)
+{
+	VSS_CHECK_ARGC_MAX(2);
+	if (1 == argc)
+	{
+		PRINTF(LOG_LINE_END);
+	}
+	else
+	{
+		PRINTF("%s" LOG_LINE_END, argv[1]);
+	}
+	return VSFERR_NONE;
 }
 
 VSS_HANDLER(vss_log_info)

@@ -38,9 +38,6 @@
 extern struct usart_stream_info_t usart_stream_p0;
 int main(void)
 {
-#if SCRIPTS_EN
-	uint8_t i;
-#endif
 #if HW_HAS_BEEPER
 	uint16_t start_beeper_cnt = 0x8000;
 #endif
@@ -61,12 +58,7 @@ int main(void)
 	// disable CDC
 	usart_stream_p0.usart_index = IFS_DUMMY_PORT;
 	
-	for (i = 0; i < 80; i++)
-	{
-		PRINTF(LOG_LINE_END);
-	}
-	vss_run_script("init");
-	vss_run_script("shell");
+	vss_run_script("run " EVSPROG_SCRIPT_FILE);
 	
 	// enable CDC again
 	usart_stream_p0.usart_index = 0;
