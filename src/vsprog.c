@@ -775,12 +775,8 @@ int main(int argc, char* argv[])
 		{
 			free_all_and_exit(EXIT_FAILURE);
 		}
-		if (vss_run_script("enter_program_mode"))
-		{
-			vss_run_script("leave_program_mode 0");
-			free_all_and_exit(EXIT_FAILURE);
-		}
-		if (vss_run_script("operate"))
+		if (vss_run_script("enter_program_mode") ||
+			vss_run_script("operate"))
 		{
 			vss_run_script("leave_program_mode 0");
 			free_all_and_exit(EXIT_FAILURE);

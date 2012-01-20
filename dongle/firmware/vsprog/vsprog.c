@@ -52,6 +52,7 @@ VSS_HANDLER(vsprog_mass);
 VSS_HANDLER(vsprog_free_all);
 VSS_HANDLER(vsprog_init);
 VSS_HANDLER(vsprog_wait_key);
+VSS_HANDLER(vsprog_program);
 
 static const struct vss_cmd_t vsprog_cmd[] =
 {
@@ -114,6 +115,10 @@ static const struct vss_cmd_t vsprog_cmd[] =
 	VSS_CMD(	"wait_key",
 				"wait key press, format: wait_key",
 				vsprog_wait_key,
+				NULL),
+	VSS_CMD(	"program",
+				"program target chip, format: program",
+				vsprog_program,
 				NULL),
 	VSS_CMD_END
 };
@@ -455,5 +460,25 @@ VSS_HANDLER(vsprog_wait_key)
 			key_count = 0;
 		}
 	}
+	return VSFERR_NONE;
+}
+
+VSS_HANDLER(vsprog_program)
+{
+	LED_RED_OFF();
+	LED_GREEN_OFF();
+	if (vss_run_script("enter_program_mode") ||
+		vss_run_script("operate"))
+	{
+		LED_RED_ON();
+		vss_run_script("leave_program_mode 0");
+		return VSFERR_FAIL;
+	}
+	if (vss_run_script("leave_program_mode 1"))
+	{
+		LED_RED_ON();
+		return VSFERR_FAIL;
+	}
+	LED_GREEN_ON();
 	return VSFERR_NONE;
 }

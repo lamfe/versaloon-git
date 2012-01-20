@@ -229,7 +229,7 @@ static const struct vss_cmd_t target_cmd[] =
 				target_enter_program_mode,
 				NULL),
 	VSS_CMD(	"leave_program_mode",
-				"leave program mode, format: leave_program_mode ERROR",
+				"leave program mode, format: leave_program_mode SUCCESS",
 				target_leave_program_mode,
 				NULL),
 	VSS_CMD(	"erase",
