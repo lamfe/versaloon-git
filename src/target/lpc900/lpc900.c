@@ -71,8 +71,7 @@ const struct program_functions_t lpc900_program_functions =
 VSS_HANDLER(lpc900_help)
 {
 	VSS_CHECK_ARGC(1);
-	PRINTF("\
-Usage of %s:\n\n", CUR_TARGET_STRING);
+	PRINTF("Usage of %s:"LOG_LINE_END LOG_LINE_END, CUR_TARGET_STRING);
 	return VSFERR_NONE;
 }
 
