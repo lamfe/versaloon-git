@@ -5,6 +5,13 @@ You can use, copy and distribute this file freely, but without any waranty.
 Configure memory sizes, end of stack and boot mode for your project here.
 */
 
+/* default stack sizes and heap sizes. 
+
+These are used by the startup in order to allocate stacks for the different modes.
+*/
+
+_Stack_Size = 16K ;
+_Heap_Size = 16K ;
 
 /* include the common STM32F10x sub-script */
 INCLUDE "STM32_COMMON.ld"
@@ -23,7 +30,7 @@ MEMORY
 }
 
 /* highest address of the user mode stack */
-_estack = 0x20005000;
+_estack = 0x20010000;
 
 /* include the section management sub-script */
 /* (either "STM32_SEC_FLASH.ld" or "STM32_SEC_RAM.ld") */
