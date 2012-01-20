@@ -75,10 +75,10 @@ vsf_err_t (*msp430jtagsbw_poll)(uint8_t index, uint32_t dr, uint32_t mask,
 VSS_HANDLER(msp430_help)
 {
 	VSS_CHECK_ARGC(1);
-	PRINTF("\
-Usage of %s:\n\
-  -m,  --mode <MODE>                        set mode<j|s|b>\n\n",
-			CUR_TARGET_STRING);
+	PRINTF(
+"Usage of %s:"LOG_LINE_END
+"  -m,  --mode <MODE>                        set mode<j|s|b>"LOG_LINE_END
+LOG_LINE_END, CUR_TARGET_STRING);
 	return VSFERR_NONE;
 }
 

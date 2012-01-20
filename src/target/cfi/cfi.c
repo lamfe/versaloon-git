@@ -73,7 +73,7 @@ const struct program_functions_t cfi_program_functions =
 VSS_HANDLER(cfi_help)
 {
 	VSS_CHECK_ARGC(1);
-	PRINTF("Usage of %s:\n\n", CUR_TARGET_STRING);
+	PRINTF("Usage of %s:"LOG_LINE_END LOG_LINE_END, CUR_TARGET_STRING);
 	return VSFERR_NONE;
 }
 

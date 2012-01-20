@@ -64,26 +64,26 @@ struct program_functions_t stm32f2_program_functions;
 VSS_HANDLER(stm32f2_help)
 {
 	VSS_CHECK_ARGC(1);
-	PRINTF("\
-Usage of %s:\n\
-  -C,  --comport <COMM_ATTRIBUTE>           set com port\n\
-  -m,  --mode <MODE>                        set mode<j|s|i>\n\
-  -x,  --execute <ADDRESS>                  execute program\n\
-  -F,  --frequency <FREQUENCY>              set JTAG frequency, in KHz\n\n",
-			STM32F2_STRING);
+	PRINTF(
+"Usage of %s:"LOG_LINE_END
+"  -C,  --comport <COMM_ATTRIBUTE>           set com port"LOG_LINE_END
+"  -m,  --mode <MODE>                        set mode<j|s|i>"LOG_LINE_END
+"  -x,  --execute <ADDRESS>                  execute program"LOG_LINE_END
+"  -F,  --frequency <FREQUENCY>              set JTAG frequency, in KHz"LOG_LINE_END
+LOG_LINE_END, STM32F2_STRING);
 	return VSFERR_NONE;
 }
 
 VSS_HANDLER(stm32f4_help)
 {
 	VSS_CHECK_ARGC(1);
-	PRINTF("\
-Usage of %s:\n\
-  -C,  --comport <COMM_ATTRIBUTE>           set com port\n\
-  -m,  --mode <MODE>                        set mode<j|s|i>\n\
-  -x,  --execute <ADDRESS>                  execute program\n\
-  -F,  --frequency <FREQUENCY>              set JTAG frequency, in KHz\n\n",
-			STM32F4_STRING);
+	PRINTF(
+"Usage of %s:"LOG_LINE_END
+"  -C,  --comport <COMM_ATTRIBUTE>           set com port"LOG_LINE_END
+"  -m,  --mode <MODE>                        set mode<j|s|i>"LOG_LINE_END
+"  -x,  --execute <ADDRESS>                  execute program"LOG_LINE_END
+"  -F,  --frequency <FREQUENCY>              set JTAG frequency, in KHz"LOG_LINE_END
+LOG_LINE_END, STM32F4_STRING);
 	return VSFERR_NONE;
 }
 

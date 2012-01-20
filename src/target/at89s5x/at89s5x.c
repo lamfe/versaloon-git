@@ -73,11 +73,11 @@ const struct program_functions_t s5x_program_functions =
 VSS_HANDLER(s5x_help)
 {
 	VSS_CHECK_ARGC(1);
-	PRINTF("\
-Usage of %s:\n\
-  -F,  --frequency <FREQUENCY>              set ISP frequency, in KHz\n\
-  -m,  --mode <MODE>                        set program mode<b|p>\n\n",
-			CUR_TARGET_STRING);
+	PRINTF(
+"Usage of %s:"LOG_LINE_END
+"  -F,  --frequency <FREQUENCY>              set ISP frequency, in KHz"LOG_LINE_END
+"  -m,  --mode <MODE>                        set program mode<b|p>"LOG_LINE_END
+LOG_LINE_END, CUR_TARGET_STRING);
 	return VSFERR_NONE;
 }
 
