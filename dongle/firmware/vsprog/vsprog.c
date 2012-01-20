@@ -51,6 +51,7 @@ VSS_HANDLER(vsprog_operation);
 VSS_HANDLER(vsprog_mass);
 VSS_HANDLER(vsprog_free_all);
 VSS_HANDLER(vsprog_init);
+VSS_HANDLER(vsprog_wait_key);
 
 static const struct vss_cmd_t vsprog_cmd[] =
 {
@@ -109,6 +110,10 @@ static const struct vss_cmd_t vsprog_cmd[] =
 	VSS_CMD(	"init",
 				"vsprog initialization, format: init",
 				vsprog_init,
+				NULL),
+	VSS_CMD(	"wait_key",
+				"wait key press, format: wait_key",
+				vsprog_wait_key,
 				NULL),
 	VSS_CMD_END
 };
@@ -429,3 +434,25 @@ VSS_HANDLER(vsprog_init)
 	return vss_run_script("free-all");
 }
 
+VSS_HANDLER(vsprog_wait_key)
+{
+	uint32_t key_count = 0;
+	
+	VSS_CHECK_ARGC(1);
+	
+	while (1)
+	{
+		if (KEY_IsDown())
+		{
+			if (++key_count > 0x1000)
+			{
+				break;
+			}
+		}
+		else
+		{
+			key_count = 0;
+		}
+	}
+	return VSFERR_NONE;
+}

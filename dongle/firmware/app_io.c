@@ -41,7 +41,12 @@ static const struct vss_cmd_t appio_cmd[] =
 struct vss_cmd_list_t appio_cmd_list =
 							VSS_CMD_LIST("appio", appio_cmd);
 
+#if APPIO_DUMMY
+static bool appio_dummy = true;
+#else
 static bool appio_dummy = false;
+#endif
+
 VSS_HANDLER(appio_set_dummy)
 {
 	VSS_CHECK_ARGC(2);
@@ -60,7 +65,6 @@ struct usart_stream_info_t shell_stream =
 
 static char app_io_local_buff[APPIO_BUFFER_SIZE];
 
-#if !APPIO_DUMMY
 static void app_io_out_sync(void)
 {
 	int free_space;
@@ -71,7 +75,6 @@ static void app_io_out_sync(void)
 		free_space = vsf_fifo_get_data_length(&shell_stream.fifo_rx);
 	} while (free_space);
 }
-#endif
 
 void APP_IO_INIT(void)
 {
@@ -153,17 +156,14 @@ int FFLUSH(FILE *f)
 {
 	if ((stdout == f) || (stderr == f))
 	{
-#if !APPIO_DUMMY
 		if (!appio_dummy)
 		{
 			app_io_out_sync();
 		}
-#endif
 		return 0;
 	}
 	else if (stdin == f)
 	{
-#if !APPIO_DUMMY
 		if (!appio_dummy)
 		{
 			uint32_t i, size = vsf_fifo_get_data_length(&shell_stream.fifo_tx);
@@ -172,7 +172,6 @@ int FFLUSH(FILE *f)
 				vsf_fifo_pop8(&shell_stream.fifo_tx);
 			}
 		}
-#endif
 		return 0;
 	}
 	else if (&evsprog_script_file == f)
@@ -193,7 +192,6 @@ int FGETC(FILE *f)
 	}
 	else if (stdin == f)
 	{
-#if !APPIO_DUMMY
 		if (!appio_dummy)
 		{
 			uint32_t size;
@@ -204,7 +202,6 @@ int FGETC(FILE *f)
 			} while (!size);
 			return vsf_fifo_pop8(&shell_stream.fifo_tx);
 		}
-#endif
 	}
 	else if (&evsprog_script_file == f)
 	{
@@ -233,7 +230,6 @@ char* FGETS(char *buf, int count, FILE *f)
 	
 	if (stdin == f)
 	{
-#if !APPIO_DUMMY
 		if (!appio_dummy)
 		{
 			pos = 0;
@@ -272,9 +268,10 @@ char* FGETS(char *buf, int count, FILE *f)
 			buf[pos] = '\0';
 			app_io_out_sync();
 		}
-#else
-		return NULL;
-#endif
+		else
+		{
+			return NULL;
+		}
 	}
 	else if (&evsprog_script_file == f)
 	{
@@ -360,12 +357,10 @@ int FPRINTF(FILE *f, const char *format, ...)
 	
 	if ((stdout == f) || (stderr == f))
 	{
-#if !APPIO_DUMMY
 		if (!appio_dummy)
 		{
 			APPIO_OUTBUFF((uint8_t *)pbuff, (uint32_t)number);
 		}
-#endif
 	}
 	else
 	{
@@ -379,7 +374,6 @@ int PRINTF(const char *format, ...)
 	char *pbuff = app_io_local_buff;
 	va_list ap;
 	
-#if !APPIO_DUMMY
 	if (!appio_dummy)
 	{
 		va_start(ap, format);
@@ -388,6 +382,5 @@ int PRINTF(const char *format, ...)
 	
 		APPIO_OUTBUFF((uint8_t *)pbuff, (uint32_t)number);
 	}
-#endif
 	return number;
 }
