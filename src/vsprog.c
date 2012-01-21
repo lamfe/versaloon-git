@@ -102,6 +102,7 @@ VSS_HANDLER(vsprog_free_all);
 VSS_HANDLER(vsprog_init);
 VSS_HANDLER(embedded_vsprog_config);
 VSS_HANDLER(embedded_vsprog_data);
+VSS_HANDLER(vsprog_program);
 
 static const struct vss_cmd_t vsprog_cmd[] =
 {
@@ -180,6 +181,10 @@ static const struct vss_cmd_t vsprog_cmd[] =
 				"generate target data for embedded vsprog, "
 				"format: embedded-vsprog-data/Z FILE",
 				embedded_vsprog_data,
+				NULL),
+	VSS_CMD(	"program",
+				"run program procedure, format: program",
+				vsprog_program,
 				NULL),
 	VSS_CMD_END
 };
@@ -674,6 +679,23 @@ VSS_HANDLER(embedded_vsprog_config)
 	return target_generate_cfg_data(&cfg_data_info, (char *)argv[1]);
 }
 
+VSS_HANDLER(vsprog_program)
+{
+	VSS_CHECK_ARGC(1);
+	
+	if (vss_run_script("enter_program_mode") ||
+		vss_run_script("operate"))
+	{
+		vss_run_script("leave_program_mode 0");
+		return VSFERR_FAIL;
+	}
+	if (vss_run_script("leave_program_mode 1"))
+	{
+		return VSFERR_FAIL;
+	}
+	return VSFERR_NONE;
+}
+
 int main(int argc, char* argv[])
 {
 	int optc;
@@ -771,17 +793,8 @@ int main(int argc, char* argv[])
 	// "prepare" and then "operate" programming if target and operation are both defined
 	if ((cur_target != NULL) && (!vsprog_query_cmd))
 	{
-		if (vss_run_script("prepare"))
-		{
-			free_all_and_exit(EXIT_FAILURE);
-		}
-		if (vss_run_script("enter_program_mode") ||
-			vss_run_script("operate"))
-		{
-			vss_run_script("leave_program_mode 0");
-			free_all_and_exit(EXIT_FAILURE);
-		}
-		if (vss_run_script("leave_program_mode 1"))
+		if (vss_run_script("prepare") ||
+			vss_run_script("program"))
 		{
 			free_all_and_exit(EXIT_FAILURE);
 		}
