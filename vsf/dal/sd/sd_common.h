@@ -17,6 +17,9 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#ifndef __SD_COMMON_H_INCLUDED__
+#define __SD_COMMON_H_INCLUDED__
+
 // 7-bit checksum polynomial: x7 + x3 + 1.
 #define SD_CRC7_POLY						0x09
 
@@ -220,3 +223,4 @@ struct sd_info_t
 uint8_t sd_spi_cmd_chksum(uint8_t *data, uint32_t num);
 vsf_err_t sd_parse_csd(uint8_t *csd, struct sd_info_t *info);
 
+#endif	// __SD_COMMON_H_INCLUDED__
