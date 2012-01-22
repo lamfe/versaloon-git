@@ -64,9 +64,9 @@
 #define SYS_CFG_LARGE_MEMORY			0
 #define SYS_CFG_HAS_TIME_H				0
 
+#define SCRIPTS_EN						0
 #define MSC_ON_VERSALOON_EN				0
 
-#define SCRIPTS_EN						0
 #define VSS_CFG_MAX_ARGC				8
 #define VSS_CFG_MAX_LINE_LENGTH			128
 #define INTERFACES_INFO_T				app_interfaces_info_t
