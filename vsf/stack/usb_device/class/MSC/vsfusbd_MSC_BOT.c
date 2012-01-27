@@ -357,7 +357,6 @@ static vsf_err_t vsfusbd_MSCBOT_class_init(uint8_t iface,
 	struct vsfusbd_config_t *config = &device->config[device->configuration];
 	struct vsfusbd_MSCBOT_param_t *param = 
 		(struct vsfusbd_MSCBOT_param_t *)config->iface[iface].protocol_param;
-	uint8_t i;
 	
 	if ((NULL == param) || 
 		// minium ep size of MSCBOT is 32 bytes, 
@@ -376,10 +375,6 @@ static vsf_err_t vsfusbd_MSCBOT_class_init(uint8_t iface,
 	param->idle = true;
 	param->poll = false;
 	param->bot_status = VSFUSBD_MSCBOT_STATUS_IDLE;
-	for (i = 0; i < param->max_lun; i++)
-	{
-		param->lun_info[i].memstat = SCSI_MEMSTAT_NOINIT;
-	}
 	return VSFERR_NONE;
 }
 
@@ -398,12 +393,8 @@ static vsf_err_t vsfusbd_MSCBOT_class_poll(uint8_t iface,
 	{
 		return VSFERR_FAIL;
 	}
-	if (!param->poll)
-	{
-		return VSFERR_NONE;
-	}
 	
-	for (i = 0; i < param->max_lun; i++)
+	for (i = 0; i <= param->max_lun; i++)
 	{
 		switch (param->lun_info[i].memstat)
 		{
@@ -430,6 +421,10 @@ static vsf_err_t vsfusbd_MSCBOT_class_poll(uint8_t iface,
 		}
 	}
 	
+	if (!param->poll)
+	{
+		return VSFERR_NONE;
+	}
 	if (((VSFUSBD_MSCBOT_STATUS_IN == bot_status) && 
 			(param->cur_scsi_page < param->page_num) && 
 			((param->cur_scsi_page - param->cur_usb_page) < 2)) || 

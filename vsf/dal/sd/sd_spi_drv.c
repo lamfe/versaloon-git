@@ -423,8 +423,6 @@ static vsf_err_t sd_spi_drv_init(struct dal_info_t *info)
 	struct mal_info_t *mal_info = (struct mal_info_t *)info->extra;
 	struct sd_info_t *sd_info = (struct sd_info_t *)mal_info->extra;
 	uint8_t resp_r1 = 0xFF, resp_r7[4];
-	uint16_t retry;
-	uint32_t ocr;
 	
 	if (sd_spi_transact_init(ifs))
 	{
@@ -433,27 +431,8 @@ static vsf_err_t sd_spi_drv_init(struct dal_info_t *info)
 	
 	// SD Init
 	sd_info->cardtype = SD_CARDTYPE_NONE;
-	
-	retry = 0;
-	while (retry++ < SD_SPI_CMD_TIMEOUT)
-	{
-		if (sd_spi_transact(ifs, SD_TRANSTOKEN_RESP_R1, 
-					SD_CMD_GO_IDLE_STATE, 0, 0, NULL, 0, 0, &resp_r1, NULL))
-		{
-			return VSFERR_FAIL;
-		}
-		
-		if (SD_CS8_IN_IDLE_STATE == resp_r1)
-		{
-			break;
-		}
-		interfaces->delay.delayms(1);
-	}
-	if (resp_r1 != SD_CS8_IN_IDLE_STATE)
-	{
-		sd_info->cardtype = SD_CARDTYPE_NONE;
-		return VSFERR_FAIL;
-	}
+	sd_spi_transact(ifs, SD_TRANSTOKEN_RESP_R1, 
+				SD_CMD_GO_IDLE_STATE, 0, 0, NULL, 0, 0, &resp_r1, NULL);
 	
 	// detect card type
 	// send CMD8 to get card op
