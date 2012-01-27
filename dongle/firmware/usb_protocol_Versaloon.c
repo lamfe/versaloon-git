@@ -531,6 +531,7 @@ static const struct vsfusbd_class_protocol_t Versaloon_Protocol =
 	NULL, versaloon_idle
 };
 
+#if SCRIPTS_EN
 // CDC for vss
 extern struct usart_stream_info_t shell_stream;
 struct vsfusbd_CDC_param_t Versaloon_Shell_param = 
@@ -554,13 +555,14 @@ struct vsfusbd_CDC_param_t Versaloon_Shell_param =
 	},
 };
 
+#if MSC_ON_VERSALOON_EN
 // MSC
 static struct sd_info_t sd_info;
 static struct sd_spi_drv_interface_t sd_spi_drv_ifs = 
 {
-	1,			// uint8_t cs_port;
-	(1 << 12),	// uint32_t cs_pin;
-	1,			// uint8_t spi_port;
+	0,			// uint8_t cs_port;
+	GPIO_SRST,	// uint32_t cs_pin;
+	0,			// uint8_t spi_port;
 };
 static struct mal_info_t sd_mal_info = 
 {
@@ -600,6 +602,8 @@ struct vsfusbd_MSCBOT_param_t MSCBOT_param =
 		{MSCBOT_Buffer1, sizeof(MSCBOT_Buffer1)}
 	},							// struct vsf_buffer_t page_buffer[2];
 };
+#endif
+#endif
 
 // CDC
 extern struct usart_stream_info_t usart_stream_p0;
