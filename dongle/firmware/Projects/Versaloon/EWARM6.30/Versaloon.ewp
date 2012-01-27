@@ -2137,6 +2137,12 @@
     <group>
       <name>dal</name>
       <group>
+        <name>cfi</name>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\vsf\dal\cfi\cfi_drv.c</name>
+        </file>
+      </group>
+      <group>
         <name>df25xx</name>
         <file>
           <name>$PROJ_DIR$\..\..\..\..\..\vsf\dal\df25xx\df25xx_drv.c</name>
@@ -2170,6 +2176,12 @@
         <name>mic2826</name>
         <file>
           <name>$PROJ_DIR$\..\..\..\..\..\vsf\dal\mic2826\mic2826_drv.c</name>
+        </file>
+      </group>
+      <group>
+        <name>nand</name>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\vsf\dal\nand\nand_drv.c</name>
         </file>
       </group>
       <group>

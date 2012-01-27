@@ -474,6 +474,7 @@ struct mal_driver_t cfi_drv =
 	MAL_SUPPORT_READBLOCK | MAL_SUPPORT_WRITEBLOCK | MAL_SUPPORT_ERASEBLOCK,
 	
 	cfi_drv_init,
+	NULL,
 	cfi_drv_fini,
 	cfi_drv_getinfo,
 	NULL,

@@ -52,6 +52,7 @@ struct mal_info_t
 struct mal_t
 {
 	vsf_err_t (*init)(uint16_t index, struct dal_info_t *param);
+	vsf_err_t (*init_isready)(uint16_t index, struct dal_info_t *param);
 	vsf_err_t (*fini)(uint16_t index, struct dal_info_t *param);
 	vsf_err_t (*getinfo)(uint16_t index, struct dal_info_t *param);
 	vsf_err_t (*poll)(uint16_t index, struct dal_info_t *param);

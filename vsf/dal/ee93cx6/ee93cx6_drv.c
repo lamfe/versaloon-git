@@ -142,6 +142,7 @@ static vsf_err_t ee93cx6_drv_eraseblock_nb(struct dal_info_t *info,
 								(struct ee93cx6_drv_interface_t *)info->ifs;
 	struct ee93cx6_drv_param_t *param = 
 								(struct ee93cx6_drv_param_t *)info->param;
+	
 	switch (param->origination_mode)
 	{
 	case EE93CX6_ORIGINATION_BYTE:
@@ -341,6 +342,7 @@ struct mal_driver_t ee93cx6_drv =
 	MAL_SUPPORT_WRITEBLOCK | MAL_SUPPORT_READBLOCK,
 	
 	ee93cx6_drv_init,
+	NULL,
 	ee93cx6_drv_fini,
 	NULL,
 	NULL,

@@ -42,7 +42,7 @@ struct mal_driver_t mal_empty_drv =
 	MAL_IDX_EMPTY,
 	0,
 	
-	NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL,
@@ -113,6 +113,23 @@ static vsf_err_t mal_init(uint16_t index, struct dal_info_t *info)
 	}
 	
 	return mal_driver->init(info);
+}
+
+static vsf_err_t mal_init_isready(uint16_t index, struct dal_info_t *info)
+{
+	struct mal_driver_t* mal_driver;
+	
+	mal_driver = mal_find_driver(index);
+	if (NULL == mal_driver)
+	{
+		return VSFERR_NOT_SUPPORT;
+	}
+	
+	if (mal_driver->init_isready != NULL)
+	{
+		return mal_driver->init_isready(info);
+	}
+	return VSFERR_NONE;
 }
 
 static vsf_err_t mal_fini(uint16_t index, struct dal_info_t *info)
@@ -581,8 +598,8 @@ static vsf_err_t mal_readblock(uint16_t index, struct dal_info_t *info,
 	
 	for (i = 0; i < count; i++)
 	{
-		if (mal_readblock_nb(index, info, address, buff) || 
-			mal_readblock_nb_waitready(index, info, address, buff))
+		if (mal_readblock_nb_waitready(index, info, address, buff) || 
+			mal_readblock_nb(index, info, address, buff))
 		{
 			return VSFERR_FAIL;
 		}
@@ -624,6 +641,7 @@ static vsf_err_t mal_writeblock(uint16_t index, struct dal_info_t *info,
 struct mal_t mal = 
 {
 	mal_init,
+	mal_init_isready,
 	mal_fini,
 	mal_getinfo,
 	mal_poll,
