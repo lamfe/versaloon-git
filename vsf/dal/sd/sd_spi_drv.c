@@ -32,14 +32,26 @@
 
 static vsf_err_t sd_spi_drv_cs_assert(struct sd_spi_drv_interface_t *ifs)
 {
-	return interfaces->gpio.config(ifs->cs_port, ifs->cs_pin, ifs->cs_pin, 0, 
-									0);
+	if (ifs->cs_port != IFS_DUMMY_PORT)
+	{
+		return interfaces->gpio.clear(ifs->cs_port, ifs->cs_pin);
+	}
+	else
+	{
+//		return interfaces->spi.select(ifs->spi_port, ifs->cs_pin);
+	}
 }
 
 static vsf_err_t sd_spi_drv_cs_deassert(struct sd_spi_drv_interface_t *ifs)
 {
-	return interfaces->gpio.config(ifs->cs_port, ifs->cs_pin, 0, ifs->cs_pin, 
-									ifs->cs_pin);
+	if (ifs->cs_port != IFS_DUMMY_PORT)
+	{
+		return interfaces->gpio.set(ifs->cs_port, ifs->cs_pin);
+	}
+	else
+	{
+//		return interfaces->spi.deselect(ifs->spi_port, ifs->cs_pin);
+	}
 }
 
 static vsf_err_t sd_spi_wait_datatoken(struct sd_spi_drv_interface_t *ifs, 
@@ -77,19 +89,34 @@ static vsf_err_t sd_spi_drv_send_empty_bytes(struct sd_spi_drv_interface_t *ifs,
 
 static vsf_err_t sd_spi_transact_init(struct sd_spi_drv_interface_t *ifs)
 {
-	interfaces->gpio.init(ifs->cs_port);
-	interfaces->gpio.config(ifs->cs_port, ifs->cs_pin, 0, ifs->cs_pin, 
-							ifs->cs_pin);
 	interfaces->spi.init(ifs->spi_port);
+	if (ifs->cs_port != IFS_DUMMY_PORT)
+	{
+		interfaces->gpio.init(ifs->cs_port);
+		interfaces->gpio.config(ifs->cs_port, ifs->cs_pin, ifs->cs_pin,
+								ifs->cs_pin, ifs->cs_pin);
+	}
+	else
+	{
+//		interfaces->spi.cs_init(ifs->spi_port, ifs->cs_pin);
+	}
 	// use slowest spi speed when initializing
-	interfaces->spi.config(ifs->spi_port, 100, 
+	interfaces->spi.config(ifs->spi_port, 400, 
 							SPI_MODE3 | SPI_MSB_FIRST | SPI_MASTER);
 	return sd_spi_drv_send_empty_bytes(ifs, 20);
 }
 
 static vsf_err_t sd_spi_transact_fini(struct sd_spi_drv_interface_t *ifs)
 {
-	interfaces->gpio.fini(ifs->cs_port);
+	if (ifs->cs_port != IFS_DUMMY_PORT)
+	{
+		interfaces->gpio.config(ifs->cs_port, ifs->cs_pin, 0, 0, 0);
+		interfaces->gpio.fini(ifs->cs_port);
+	}
+	else
+	{
+//		interfaces->spi.cs_fini(ifs->spi_port, ifs->cs_pin);
+	}
 	return interfaces->spi.fini(ifs->spi_port);
 }
 
