@@ -248,16 +248,41 @@ vsf_err_t spi_io(uint8_t index, uint8_t *out, uint8_t *in, uint32_t len)
 	switch (index)
 	{
 	case 0:
-		if ((NULL == out) || (NULL == in))
-		{
-			return VSFERR_INVALID_PTR;
-		}
-		
 		if(SPI_Emu)
 		{
-			for(i = 0; i < len; i++)
+			if (NULL == out)
 			{
-				in[i] = SPI_RW_Emu(out[i]);
+				if (NULL == in)
+				{
+					for(i = 0; i < len; i++)
+					{
+						SPI_RW_Emu(0xFF);
+					}
+				}
+				else
+				{
+					for(i = 0; i < len; i++)
+					{
+						in[i] = SPI_RW_Emu(0xFF);
+					}
+				}
+			}
+			else
+			{
+				if (NULL == in)
+				{
+					for(i = 0; i < len; i++)
+					{
+						SPI_RW_Emu(out[i]);
+					}
+				}
+				else
+				{
+					for(i = 0; i < len; i++)
+					{
+						in[i] = SPI_RW_Emu(out[i]);
+					}
+				}
 			}
 		}
 		else
