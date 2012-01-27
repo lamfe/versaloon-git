@@ -58,15 +58,30 @@ vsf_err_t gpio_config(uint8_t index, uint32_t pin_mask, uint32_t io,
 		{
 			if (io & GPIO_SRST)
 			{
-				if(input_pull_mask & GPIO_SRST)
+				if (pull_en_mask & GPIO_SRST)
 				{
-					SW_SET();
+					SW_SETOUTPUT_OD();
+					if(input_pull_mask & GPIO_SRST)
+					{
+						SW_SET();
+					}
+					else
+					{
+						SW_CLR();
+					}
 				}
 				else
 				{
-					SW_CLR();
+					if(input_pull_mask & GPIO_SRST)
+					{
+						SW_SET();
+					}
+					else
+					{
+						SW_CLR();
+					}
+					SW_SETOUTPUT();
 				}
-				SW_SETOUTPUT();
 			}
 			else
 			{
@@ -259,6 +274,98 @@ vsf_err_t gpio_config(uint8_t index, uint32_t pin_mask, uint32_t io,
 			JTAG_TAP_RTCK_SETINPUT();
 		}
 		return VSFERR_NONE;
+	default:
+		return VSFERR_NOT_SUPPORT;
+	}
+}
+
+vsf_err_t gpio_clear(uint8_t index, uint32_t pin_mask)
+{
+	switch (index)
+	{
+	case 0:
+		if (pin_mask & GPIO_SRST)
+		{
+			SW_CLR();
+		}
+		if(pin_mask & GPIO_TRST)
+		{
+			SW_RST_CLR();
+		}
+#if INTERFACE_BDM_EN
+		if(pin_mask & GPIO_SYNCSWPWM_GPIO)
+		{
+			SYNCSWPWM_GPIO_CLR();
+		}
+#endif
+		if(pin_mask & GPIO_TMS)
+		{
+			JTAG_TAP_TMS_CLR();
+		}
+#if JTAG_HAS_USER_PIN
+		if(pin_mask & GPIO_USR1)
+		{
+			JTAG_TAP_USR1_CLR();
+		}
+		if(pin_mask & GPIO_USR2)
+		{
+			JTAG_TAP_USR2_CLR();
+		}
+#endif
+		if(pin_mask & GPIO_TCK)
+		{
+			JTAG_TAP_TCK_CLR();
+		}
+		if(pin_mask & GPIO_TDI)
+		{
+			JTAG_TAP_TDI_CLR();
+		}
+	default:
+		return VSFERR_NOT_SUPPORT;
+	}
+}
+
+vsf_err_t gpio_set(uint8_t index, uint32_t pin_mask)
+{
+	switch (index)
+	{
+	case 0:
+		if (pin_mask & GPIO_SRST)
+		{
+			SW_SET();
+		}
+		if(pin_mask & GPIO_TRST)
+		{
+			SW_RST_SET();
+		}
+#if INTERFACE_BDM_EN
+		if(pin_mask & GPIO_SYNCSWPWM_GPIO)
+		{
+			SYNCSWPWM_GPIO_SET();
+		}
+#endif
+		if(pin_mask & GPIO_TMS)
+		{
+			JTAG_TAP_TMS_SET();
+		}
+#if JTAG_HAS_USER_PIN
+		if(pin_mask & GPIO_USR1)
+		{
+			JTAG_TAP_USR1_SET();
+		}
+		if(pin_mask & GPIO_USR2)
+		{
+			JTAG_TAP_USR2_SET();
+		}
+#endif
+		if(pin_mask & GPIO_TCK)
+		{
+			JTAG_TAP_TCK_SET();
+		}
+		if(pin_mask & GPIO_TDI)
+		{
+			JTAG_TAP_TDI_SET();
+		}
 	default:
 		return VSFERR_NOT_SUPPORT;
 	}

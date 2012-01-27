@@ -261,7 +261,8 @@ const struct app_interfaces_info_t app_interfaces =
 		gpio_fini,
 		NULL,
 		gpio_config,
-		NULL, NULL,
+		gpio_set,
+		gpio_clear,
 		gpio_out,
 		gpio_in,
 		NULL
