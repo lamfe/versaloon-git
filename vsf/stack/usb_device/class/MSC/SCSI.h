@@ -83,6 +83,12 @@ struct SCSI_LUN_info_t
 	uint8_t mal_index;
 	const struct SCSI_LUN_param_t param;
 	struct SCSI_LUN_status_t status;
+	enum SCSI_memstat_t
+	{
+		SCSI_MEMSTAT_NOINIT = 0,
+		SCSI_MEMSTAT_WAITINIT,
+		SCSI_MEMSTAT_POLL,
+	} memstat;
 };
 
 #define SCSI_HANDLER_NULL							{0, NULL, NULL}
@@ -101,6 +107,7 @@ enum SCSI_errcode_t
 	SCSI_ERRCODE_FAIL,
 	SCSI_ERRCODE_INVALID_PARAM,
 	SCSI_ERRCODE_INVALID_COMMAND,
+	SCSI_ERRCODE_NOT_READY,
 };
 
 vsf_err_t SCSI_Handle(struct SCSI_handler_t *handlers, 
