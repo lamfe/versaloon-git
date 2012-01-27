@@ -144,15 +144,6 @@ static vsf_err_t ee24cxx_drv_writeblock_nb_isready(struct dal_info_t *info,
 	return VSFERR_NONE;
 }
 
-static vsf_err_t ee24cxx_drv_writeblock_nb_waitready(struct dal_info_t *info, 
-												uint64_t address, uint8_t *buff)
-{
-	REFERENCE_PARAMETER(info);
-	REFERENCE_PARAMETER(address);
-	REFERENCE_PARAMETER(buff);
-	return VSFERR_NONE;
-}
-
 static vsf_err_t ee24cxx_drv_writeblock_nb_end(struct dal_info_t *info)
 {
 	REFERENCE_PARAMETER(info);
@@ -185,6 +176,7 @@ struct mal_driver_t ee24cxx_drv =
 	MAL_SUPPORT_READBLOCK | MAL_SUPPORT_WRITEBLOCK,
 	
 	ee24cxx_drv_init,
+	NULL,
 	ee24cxx_drv_fini,
 	NULL,
 	NULL,
@@ -211,7 +203,7 @@ struct mal_driver_t ee24cxx_drv =
 	ee24cxx_drv_writeblock_nb_start,
 	ee24cxx_drv_writeblock_nb,
 	ee24cxx_drv_writeblock_nb_isready,
-	ee24cxx_drv_writeblock_nb_waitready,
+	NULL,
 	ee24cxx_drv_writeblock_nb_end
 };
 

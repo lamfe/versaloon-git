@@ -221,6 +221,7 @@ struct mal_driver_t df45xx_drv =
 	0,
 	
 	df45xx_drv_init,
+	NULL,
 	df45xx_drv_fini,
 	df45xx_drv_getinfo,
 	NULL,

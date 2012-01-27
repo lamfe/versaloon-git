@@ -30,6 +30,57 @@
 #include "sd_spi_drv_cfg.h"
 #include "sd_spi_drv.h"
 
+// RESP
+#define  SD_RESP_EMPTY						0xFF
+
+#define  SD_DATATOKEN_RESP_ACCEPTED			0x05
+#define  SD_DATATOKEN_RESP_CRC_REJECTED		0x0B
+#define  SD_DATATOKEN_RESP_WR_REJECTED		0x0D
+#define  SD_DATATOKEN_RESP_MASK				0x1F
+
+#define  SD_DATATOKEN_START_BLK_MULT		0xFC
+#define  SD_DATATOKEN_STOP_TRAN				0xFD
+#define  SD_DATATOKEN_START_BLK				0xFE
+
+#define  SD_DATATOKEN_ERR_ERROR				0x01
+#define  SD_DATATOKEN_ERR_CC_ERROR			0x02
+#define  SD_DATATOKEN_ERR_CARD_ECC_ERROR	0x04
+#define  SD_DATATOKEN_ERR_OUT_OF_RANGE		0x08
+
+// Card Status
+#define SD_CS8_NONE							0x00
+#define SD_CS8_IN_IDLE_STATE				0x01
+#define SD_CS8_ERASE_RESET					0x02
+#define SD_CS8_ILLEGAL_COMMAND				0x04
+#define SD_CS8_COM_CRC_ERROR				0x08
+#define SD_CS8_ERASE_SEQUENCE_ERROR			0x10
+#define SD_CS8_ADDRESS_ERROR				0x20
+#define SD_CS8_PARAMETER_ERROR				0x40
+#define SD_CS8_ERROR_MASK					\
+	(SD_CS8_ERASE_RESET | SD_CS8_ILLEGAL_COMMAND | SD_CS8_COM_CRC_ERROR | \
+	SD_CS8_ERASE_SEQUENCE_ERROR | SD_CS8_ADDRESS_ERROR | SD_CS8_PARAMETER_ERROR)
+
+#define SD_TRANSTOKEN_DATA_DIR				0x8000
+#define SD_TRANSTOKEN_DATA_OUT				0x8000
+#define SD_TRANSTOKEN_DATA_IN				0x0000
+
+#define SD_TRANSTOKEN_RESP_MASK				0x00FF
+#define SD_TRANSTOKEN_RESP_CHECKBUSY		0x0080
+#define SD_TRANSTOKEN_RESP_CMD				0x0040
+#define SD_TRANSTOKEN_RESP_CRC7				0x0020
+#define SD_TRANSTOKEN_RESP_LONG				0x0010
+#define SD_TRANSTOKEN_RESP_SHORT			0x0000
+
+#define SD_TRANSTOKEN_RESP_NONE				0x0000
+#define SD_TRANSTOKEN_RESP_R1				0x0061
+#define SD_TRANSTOKEN_RESP_R1B				0x00E1
+#define SD_TRANSTOKEN_RESP_R2				0x0012
+#define SD_TRANSTOKEN_RESP_R3				0x0003
+#define SD_TRANSTOKEN_RESP_R4				0x0004
+#define SD_TRANSTOKEN_RESP_R5				0x0005
+#define SD_TRANSTOKEN_RESP_R6				0x0066
+#define SD_TRANSTOKEN_RESP_R7				0x0067
+
 static vsf_err_t sd_spi_drv_cs_assert(struct sd_spi_drv_interface_t *ifs)
 {
 	if (ifs->cs_port != IFS_DUMMY_PORT)
@@ -421,81 +472,50 @@ static vsf_err_t sd_spi_drv_init(struct dal_info_t *info)
 	{
 		sd_info->cardtype = SD_CARDTYPE_SD_V1;
 	}
+	return VSFERR_NONE;
+}
+
+static vsf_err_t sd_spi_drv_init_isready(struct dal_info_t *info)
+{
+	struct sd_spi_drv_interface_t *ifs = 
+								(struct sd_spi_drv_interface_t *)info->ifs;
+	struct mal_info_t *mal_info = (struct mal_info_t *)info->extra;
+	struct sd_info_t *sd_info = (struct sd_info_t *)mal_info->extra;
+	uint8_t resp_r1, resp_r7[4];
+	uint32_t ocr;
 	
 	// send acmd41 to get card status
-	retry = 0;
-	resp_r1 = 0xFF;
-	while (retry++ < 1024)
+	if (sd_spi_transact(ifs, SD_TRANSTOKEN_RESP_R1, 
+			SD_CMD_APP_CMD, 0, 0, NULL, 0, 0, &resp_r1, NULL) || 
+		sd_spi_transact(ifs, SD_TRANSTOKEN_RESP_R1, 
+			SD_ACMD_SD_SEND_OP_COND, SD_ACMD41_HCS, 0, NULL, 0, 0, &resp_r1, NULL))
 	{
-		if (sd_spi_transact_start(ifs) || 
-			sd_spi_transact_do(ifs, SD_TRANSTOKEN_RESP_R1, 
-				SD_CMD_APP_CMD, 0, 0, NULL, 0, 0, &resp_r1, NULL) || 
-			sd_spi_drv_send_empty_bytes(ifs, 1) || 
-			sd_spi_transact_do(ifs, SD_TRANSTOKEN_RESP_R1, 
-				SD_ACMD_SD_SEND_OP_COND, SD_ACMD41_HCS, 0, NULL, 0, 0, 
-				&resp_r1, NULL))
-		{
-			sd_spi_transact_end(ifs);
-			interfaces->peripheral_commit();
-			return VSFERR_FAIL;
-		}
-		sd_spi_transact_end(ifs);
-		interfaces->peripheral_commit();
-		if (SD_CS8_NONE == resp_r1)
-		{
-			break;
-		}
-		interfaces->delay.delayms(1);
+		return VSFERR_FAIL;
 	}
-	
-	// send cmd1 for MMC card
 	if (resp_r1 != SD_CS8_NONE)
 	{
-		retry = 0;
-		while (retry++ < SD_SPI_CMD_TIMEOUT)
-		{
-			if (sd_spi_transact(ifs, SD_TRANSTOKEN_RESP_R1, 
-					SD_CMD_SEND_OP_COND, 0, 0, NULL, 0, 0, &resp_r1, resp_r7))
-			{
-				return VSFERR_FAIL;
-			}
-			if (resp_r1 == SD_CS8_NONE)
-			{
-			    break;
-			}
-		}
-		if (resp_r1 != SD_CS8_NONE)
-		{
-			sd_info->cardtype = SD_CARDTYPE_NONE;
-			return VSFERR_FAIL;
-		}
-		sd_info->cardtype = SD_CARDTYPE_MMC;
+		return VSFERR_NOT_READY;
 	}
 	
 	// send cmd58 to get card ocr
-	retry = 0;
-	while (retry++ < SD_SPI_CMD_TIMEOUT)
+	if (sd_spi_transact(ifs, SD_TRANSTOKEN_RESP_R7, 
+			SD_CMD_READ_OCR, 0x40000000, 0, NULL, 0, 0, &resp_r1, resp_r7))
 	{
-		if (sd_spi_transact(ifs, SD_TRANSTOKEN_RESP_R7, 
-				SD_CMD_READ_OCR, 0x40000000, 0, NULL, 0, 0, &resp_r1, resp_r7))
+		return VSFERR_FAIL;
+	}
+	ocr = GET_BE_U32(resp_r7);
+	if (SD_CS8_NONE == resp_r1)
+	{
+		if ((ocr & SD_OCR_BUSY) && (ocr & SD_OCR_CCS))
 		{
-			return VSFERR_FAIL;
-		}
-		ocr = GET_BE_U32(resp_r7);
-		if (SD_CS8_NONE == resp_r1)
-		{
-			if ((ocr & SD_OCR_BUSY) && (ocr & SD_OCR_CCS))
+			if (SD_CARDTYPE_SD_V2 == sd_info->cardtype)
 			{
-				if (SD_CARDTYPE_SD_V2 == sd_info->cardtype)
-				{
-					sd_info->cardtype = SD_CARDTYPE_SD_V2HC;
-				}
-				else
-				{
-					sd_info->cardtype = SD_CARDTYPE_MMC_HC;
-				}
+				sd_info->cardtype = SD_CARDTYPE_SD_V2HC;
 			}
-			break;
+			else
+			{
+				sd_info->cardtype = SD_CARDTYPE_MMC_HC;
+			}
 		}
 	}
 	
@@ -832,6 +852,7 @@ struct mal_driver_t sd_spi_drv =
 	MAL_SUPPORT_READBLOCK | MAL_SUPPORT_WRITEBLOCK,
 	
 	sd_spi_drv_init,
+	sd_spi_drv_init_isready,
 	sd_spi_drv_fini,
 	sd_spi_getinfo,
 	NULL,
