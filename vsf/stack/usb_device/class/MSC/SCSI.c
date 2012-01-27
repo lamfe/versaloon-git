@@ -10,6 +10,14 @@ static vsf_err_t SCSI_handler_TEST_UNIT_READY(struct SCSI_LUN_info_t *info,
 		uint8_t CB[16], struct vsf_buffer_t *buffer, uint32_t *page_size, 
 		uint32_t *page_num)
 {
+	if (info->memstat != SCSI_MEMSTAT_POLL)
+	{
+		info->status.sense_key = 0;
+		info->status.asc = 0;
+		SCSI_errcode = SCSI_ERRCODE_NOT_READY;
+		return VSFERR_FAIL;
+	}
+	
 	buffer->size = 0;
 	*page_size = 0;
 	
@@ -124,6 +132,14 @@ static vsf_err_t SCSI_handler_MODE_SENSE6(struct SCSI_LUN_info_t *info,
 		uint8_t CB[16], struct vsf_buffer_t *buffer, uint32_t *page_size, 
 		uint32_t *page_num)
 {
+	if (info->memstat != SCSI_MEMSTAT_POLL)
+	{
+		info->status.sense_key = SCSI_SENSEKEY_NOT_READY;
+		info->status.asc = 0;
+		SCSI_errcode = SCSI_ERRCODE_FAIL;
+		return VSFERR_FAIL;
+	}
+	
 	memset(buffer->buffer, 0, 4);
 	buffer->buffer[0] = 3;
 	buffer->size = 4;
@@ -170,6 +186,14 @@ static vsf_err_t SCSI_handler_READ_FORMAT_CAPACITIES(struct SCSI_LUN_info_t *inf
 	uint32_t block_number = (uint32_t)mal_info->capacity.block_number;
 	uint32_t block_size = (uint32_t)mal_info->capacity.block_size;
 	
+	if (info->memstat != SCSI_MEMSTAT_POLL)
+	{
+		info->status.sense_key = SCSI_SENSEKEY_NOT_READY;
+		info->status.asc = 0;
+		SCSI_errcode = SCSI_ERRCODE_FAIL;
+		return VSFERR_FAIL;
+	}
+	
 	buffer->buffer[3] = 8;
 	SET_BE_U32(&buffer->buffer[4], block_number);
 	SET_BE_U32(&buffer->buffer[8], block_size);
@@ -191,6 +215,14 @@ static vsf_err_t SCSI_handler_READ_CAPACITY10(struct SCSI_LUN_info_t *info,
 	struct mal_info_t *mal_info = (struct mal_info_t *)info->dal_info->extra;
 	uint32_t block_number = (uint32_t)mal_info->capacity.block_number;
 	uint32_t block_size = (uint32_t)mal_info->capacity.block_size;
+	
+	if (info->memstat != SCSI_MEMSTAT_POLL)
+	{
+		info->status.sense_key = SCSI_SENSEKEY_NOT_READY;
+		info->status.asc = 0;
+		SCSI_errcode = SCSI_ERRCODE_FAIL;
+		return VSFERR_FAIL;
+	}
 	
 	SET_BE_U32(&buffer->buffer[0], block_number - 1);
 	SET_BE_U32(&buffer->buffer[4], block_size);
@@ -215,6 +247,7 @@ static vsf_err_t SCSI_io_WRITE10(struct SCSI_LUN_info_t *info, uint8_t CB[16],
 	if (mal.writeblock(info->mal_index, info->dal_info, 
 					(lba + cur_page) * block_size, buffer->buffer, 1))
 	{
+		info->memstat = SCSI_MEMSTAT_NOINIT;
 		info->status.sense_key = SCSI_SENSEKEY_HARDWARE_ERROR;
 		info->status.asc = 0;
 		SCSI_errcode = SCSI_ERRCODE_FAIL;
@@ -234,6 +267,14 @@ static vsf_err_t SCSI_handler_WRITE10(struct SCSI_LUN_info_t *info,
 	struct mal_info_t *mal_info = (struct mal_info_t *)info->dal_info->extra;
 	uint32_t block_size = (uint32_t)mal_info->capacity.block_size;
 	uint16_t num_of_page = GET_BE_U16(&CB[7]);
+	
+	if (info->memstat != SCSI_MEMSTAT_POLL)
+	{
+		info->status.sense_key = SCSI_SENSEKEY_NOT_READY;
+		info->status.asc = 0;
+		SCSI_errcode = SCSI_ERRCODE_FAIL;
+		return VSFERR_FAIL;
+	}
 	
 	buffer->size = 0;
 	*page_size = block_size;
@@ -256,6 +297,7 @@ static vsf_err_t SCSI_io_READ10(struct SCSI_LUN_info_t *info, uint8_t CB[16],
 	if (mal.readblock(info->mal_index, info->dal_info, 
 					(lba + cur_page) * block_size, buffer->buffer, 1))
 	{
+		info->memstat = SCSI_MEMSTAT_NOINIT;
 		info->status.sense_key = SCSI_SENSEKEY_HARDWARE_ERROR;
 		info->status.asc = 0;
 		SCSI_errcode = SCSI_ERRCODE_FAIL;
@@ -274,6 +316,14 @@ static vsf_err_t SCSI_handler_READ10(struct SCSI_LUN_info_t *info,
 	struct mal_info_t *mal_info = (struct mal_info_t *)info->dal_info->extra;
 	uint32_t block_size = (uint32_t)mal_info->capacity.block_size;
 	uint16_t num_of_page = GET_BE_U16(&CB[7]);
+	
+	if (info->memstat != SCSI_MEMSTAT_POLL)
+	{
+		info->status.sense_key = SCSI_SENSEKEY_NOT_READY;
+		info->status.asc = 0;
+		SCSI_errcode = SCSI_ERRCODE_FAIL;
+		return VSFERR_FAIL;
+	}
 	
 	buffer->size = 0;
 	*page_size = block_size;

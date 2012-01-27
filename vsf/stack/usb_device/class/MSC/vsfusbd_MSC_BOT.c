@@ -5,6 +5,7 @@
 #include "stack/usb_device/vsf_usbd.h"
 #include "stack/usb_device/vsf_usbd_drv_callback.h"
 
+#include "dal/mal/mal.h"
 #include "vsfusbd_MSC_BOT.h"
 
 #define VSFUSBD_MSCBOT_STALL_IN					(1 << 0)
@@ -85,6 +86,10 @@ static vsf_err_t vsfusbd_MSCBOT_ErrCode(struct vsfusbd_device_t *device,
 	case SCSI_ERRCODE_INVALID_PARAM:
 		vsfusbd_MSCBOT_SetError(device, param, USBMSC_CSW_FAIL, 
 								VSFUSBD_MSCBOT_STALL_BOTH);
+		break;
+	case SCSI_ERRCODE_NOT_READY:
+		vsfusbd_MSCBOT_SetError(device, param, USBMSC_CSW_FAIL, 0);
+		vsfusbd_MSCBOT_SendCSW(device, param, true);
 		break;
 	case SCSI_ERRCODE_FAIL:
 		vsfusbd_MSCBOT_SetError(device, param, USBMSC_CSW_FAIL, 
@@ -352,6 +357,7 @@ static vsf_err_t vsfusbd_MSCBOT_class_init(uint8_t iface,
 	struct vsfusbd_config_t *config = &device->config[device->configuration];
 	struct vsfusbd_MSCBOT_param_t *param = 
 		(struct vsfusbd_MSCBOT_param_t *)config->iface[iface].protocol_param;
+	uint8_t i;
 	
 	if ((NULL == param) || 
 		// minium ep size of MSCBOT is 32 bytes, 
@@ -370,6 +376,10 @@ static vsf_err_t vsfusbd_MSCBOT_class_init(uint8_t iface,
 	param->idle = true;
 	param->poll = false;
 	param->bot_status = VSFUSBD_MSCBOT_STATUS_IDLE;
+	for (i = 0; i < param->max_lun; i++)
+	{
+		param->lun_info[i].memstat = SCSI_MEMSTAT_NOINIT;
+	}
 	return VSFERR_NONE;
 }
 
@@ -381,6 +391,8 @@ static vsf_err_t vsfusbd_MSCBOT_class_poll(uint8_t iface,
 	struct vsfusbd_MSCBOT_param_t *param = 
 		(struct vsfusbd_MSCBOT_param_t *)config->iface[iface].protocol_param;
 	enum vsfusbd_MSCBOT_status_t bot_status = param->bot_status;
+	uint8_t i;
+	vsf_err_t err;
 	
 	if (NULL == param)
 	{
@@ -389,6 +401,33 @@ static vsf_err_t vsfusbd_MSCBOT_class_poll(uint8_t iface,
 	if (!param->poll)
 	{
 		return VSFERR_NONE;
+	}
+	
+	for (i = 0; i < param->max_lun; i++)
+	{
+		switch (param->lun_info[i].memstat)
+		{
+		case SCSI_MEMSTAT_NOINIT:
+			err = mal.init(param->lun_info[i].mal_index,
+							param->lun_info[i].dal_info);
+			if (!err)
+			{
+				param->lun_info[i].memstat = SCSI_MEMSTAT_WAITINIT;
+			}
+			break;
+		case SCSI_MEMSTAT_WAITINIT:
+			err = mal.init_isready(param->lun_info[i].mal_index,
+									param->lun_info[i].dal_info);
+			if (!err)
+			{
+				param->lun_info[i].memstat = SCSI_MEMSTAT_POLL;
+			}
+			else if (err != VSFERR_NOT_READY)
+			{
+				param->lun_info[i].memstat = SCSI_MEMSTAT_NOINIT;
+			}
+			break;
+		}
 	}
 	
 	if (((VSFUSBD_MSCBOT_STATUS_IN == bot_status) && 
