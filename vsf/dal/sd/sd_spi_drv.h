@@ -27,6 +27,20 @@ struct sd_spi_drv_interface_t
 	uint8_t spi_port;
 };
 
+struct sd_spi_drv_info_t
+{
+	enum sd_spi_drv_state_t
+	{
+		SD_SPI_DRV_WAITRESP,
+		SD_SPI_DRV_WAITBUSY,
+		SD_SPI_DRV_WAITDATATOK,
+		SD_SPI_DRV_WAITDATALASTBUSY,
+	} state;
+	uint32_t retry;
+	uint64_t cur_block;
+	uint64_t total_block;
+};
+
 extern struct mal_driver_t sd_spi_drv;
 
 #endif /*  __SD_SPI_DRV_H_INCLUDED__ */

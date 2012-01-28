@@ -101,6 +101,7 @@ const struct vss_cmd_t sd_notifier[] =
 
 
 static struct sd_info_t sd_info;
+static struct sd_spi_drv_info_t sd_spi_drv_info;
 static struct sd_spi_drv_interface_t sd_spi_drv_ifs;
 static struct mal_info_t sd_mal_info =
 {
@@ -128,6 +129,7 @@ ENTER_PROGRAM_MODE_HANDLER(sd)
 	}
 	
 	sd_dal_info.ifs = &sd_spi_drv_ifs;
+	sd_dal_info.info = &sd_spi_drv_info;
 	if (pi->ifs_indexes != NULL)
 	{
 		if (dal_config_interface(SD_SPI_STRING, pi->ifs_indexes, &sd_dal_info))

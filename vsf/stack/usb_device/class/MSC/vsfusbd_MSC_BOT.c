@@ -356,6 +356,7 @@ static vsf_err_t vsfusbd_MSCBOT_class_init(uint8_t iface,
 	struct vsfusbd_config_t *config = &device->config[device->configuration];
 	struct vsfusbd_MSCBOT_param_t *param = 
 		(struct vsfusbd_MSCBOT_param_t *)config->iface[iface].protocol_param;
+	uint8_t i;
 	
 	if ((NULL == param) || 
 		// minium ep size of MSCBOT is 32 bytes, 
@@ -374,6 +375,10 @@ static vsf_err_t vsfusbd_MSCBOT_class_init(uint8_t iface,
 	param->idle = true;
 	param->poll = false;
 	param->bot_status = VSFUSBD_MSCBOT_STATUS_IDLE;
+	for (i = 0; i <= param->max_lun; i++)
+	{
+		param->lun_info[i].status.block_num = 0;
+	}
 	return VSFERR_NONE;
 }
 

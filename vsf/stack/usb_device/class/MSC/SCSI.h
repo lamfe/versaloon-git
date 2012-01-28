@@ -75,20 +75,30 @@ struct SCSI_LUN_status_t
 	uint8_t asc;
 	
 	vsf_err_t status;
-};
-
-struct SCSI_LUN_info_t
-{
-	struct dal_info_t *dal_info;
-	uint8_t mal_index;
-	const struct SCSI_LUN_param_t param;
-	struct SCSI_LUN_status_t status;
+	
 	enum SCSI_memstat_t
 	{
 		SCSI_MEMSTAT_NOINIT = 0,
 		SCSI_MEMSTAT_WAITINIT,
 		SCSI_MEMSTAT_POLL,
 	} memstat;
+	uint64_t block_num;
+	uint64_t cur_block;
+	enum SCSI_MAL_opt_t
+	{
+		SCSI_MAL_OPT_INIT,
+		SCSI_MAL_OPT_IO,
+		SCSI_MAL_OPPT_WAITREADY,
+	} mal_opt;
+};
+
+struct SCSI_LUN_info_t
+{
+	struct dal_info_t *dal_info;
+	uint8_t mal_index;
+	
+	const struct SCSI_LUN_param_t param;
+	struct SCSI_LUN_status_t status;
 };
 
 #define SCSI_HANDLER_NULL							{0, NULL, NULL}
