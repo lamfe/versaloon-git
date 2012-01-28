@@ -110,6 +110,8 @@ enum SCSI_errcode_t
 	SCSI_ERRCODE_NOT_READY,
 };
 
+vsf_err_t SCSI_Poll(struct SCSI_handler_t *handlers, 
+						struct SCSI_LUN_info_t *info);
 vsf_err_t SCSI_Handle(struct SCSI_handler_t *handlers, 
 		struct SCSI_LUN_info_t *info, uint8_t CB[16], 
 		struct vsf_buffer_t *buffer, uint32_t *page_size, uint32_t *page_num);
