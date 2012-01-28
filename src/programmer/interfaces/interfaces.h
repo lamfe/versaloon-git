@@ -23,6 +23,8 @@
 #include "vsf_err.h"
 #include "interfaces_const.h"
 
+#define IFS_DUMMY_PORT						0xFF
+
 char* get_interface_name(uint64_t i);
 
 enum jtag_irdr_t
@@ -145,6 +147,8 @@ struct interface_gpio_t
 	vsf_err_t (*fini)(uint8_t index);
 	vsf_err_t (*config)(uint8_t index, uint32_t pin_mask, uint32_t io,
 						uint32_t pull_en_mask, uint32_t input_pull_mask);
+	vsf_err_t (*set)(uint8_t index, uint32_t pin_mask);
+	vsf_err_t (*clear)(uint8_t index, uint32_t pin_mask);
 	vsf_err_t (*out)(uint8_t index, uint32_t pin_mask, uint32_t value);
 	vsf_err_t (*in)(uint8_t index, uint32_t pin_mask, uint32_t *value);
 };

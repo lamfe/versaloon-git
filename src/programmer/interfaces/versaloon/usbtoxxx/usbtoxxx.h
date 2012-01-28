@@ -74,6 +74,8 @@ vsf_err_t usbtogpio_fini(uint8_t interface_index);
 vsf_err_t usbtogpio_config(uint8_t interface_index, uint32_t mask,
 							uint32_t dir_mask, uint32_t pull_en_mask,
 							uint32_t input_pull_mask);
+vsf_err_t usbtogpio_set(uint8_t interface_index, uint32_t mask);
+vsf_err_t usbtogpio_clear(uint8_t interface_index, uint32_t mask);
 vsf_err_t usbtogpio_in(uint8_t interface_index, uint32_t mask, uint32_t *value);
 vsf_err_t usbtogpio_out(uint8_t interface_index, uint32_t mask, uint32_t value);
 
