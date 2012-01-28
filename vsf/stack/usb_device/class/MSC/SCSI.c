@@ -478,6 +478,38 @@ static struct SCSI_handler_t* SCSI_get_handler(struct SCSI_handler_t *handlers,
 	return NULL;
 }
 
+vsf_err_t SCSI_Poll(struct SCSI_handler_t *handlers, 
+						struct SCSI_LUN_info_t *info)
+{
+	vsf_err_t err;
+	
+	switch (info->memstat)
+	{
+	case SCSI_MEMSTAT_NOINIT:
+		err = mal.init(info->mal_index, info->dal_info);
+		if (!err)
+		{
+			info->memstat = SCSI_MEMSTAT_WAITINIT;
+		}
+		break;
+	case SCSI_MEMSTAT_WAITINIT:
+		err = mal.init_isready(info->mal_index, info->dal_info);
+		if (!err)
+		{
+			info->memstat = SCSI_MEMSTAT_POLL;
+		}
+		else if (err != VSFERR_NOT_READY)
+		{
+			info->memstat = SCSI_MEMSTAT_NOINIT;
+		}
+		break;
+	case SCSI_MEMSTAT_POLL:
+		// poll if no transaction
+		break;
+	}
+	return VSFERR_NONE;
+}
+
 vsf_err_t SCSI_Handle(struct SCSI_handler_t *handlers, 
 		struct SCSI_LUN_info_t *info, uint8_t CB[16], 
 		struct vsf_buffer_t *buffer, uint32_t *page_size, uint32_t *page_num)
