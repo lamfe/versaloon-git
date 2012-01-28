@@ -84,27 +84,6 @@ static vsf_err_t sd_spi_drv_cs_deassert(struct sd_spi_drv_interface_t *ifs)
 	}
 }
 
-static vsf_err_t sd_spi_wait_datatoken(struct sd_spi_drv_interface_t *ifs, 
-									uint8_t *datatoken)
-{
-	uint32_t retry = 0;
-	uint8_t tmp_0xFF = 0xFF;
-	
-	while (retry < 312500)
-	{
-		interfaces->spi.io(ifs->spi_port, &tmp_0xFF, datatoken, 1);
-		if (interfaces->peripheral_commit())
-		{
-			return VSFERR_FAIL;
-		}
-		if (*datatoken != 0xFF)
-		{
-			return VSFERR_NONE;
-		}
-	}
-	return (retry == 312500) ? VSFERR_FAIL : VSFERR_NONE;
-}
-
 static vsf_err_t sd_spi_drv_send_empty_bytes(struct sd_spi_drv_interface_t *ifs, 
 											uint8_t cnt)
 {
@@ -156,13 +135,25 @@ static vsf_err_t sd_spi_transact_start(struct sd_spi_drv_interface_t *ifs)
 	return sd_spi_drv_send_empty_bytes(ifs, 1);
 }
 
-static vsf_err_t sd_spi_transact_cmd(struct sd_spi_drv_interface_t *ifs, 
-		uint16_t token, uint8_t cmd, uint32_t arg, uint32_t block_num)
+static vsf_err_t sd_spi_transact_cmd(struct sd_spi_drv_interface_t *ifs,
+	struct sd_spi_drv_info_t *drv_info, uint16_t token,
+	uint8_t cmd, uint32_t arg)
 {
 	uint8_t cmd_pkt[6];
 	
-	REFERENCE_PARAMETER(block_num);
 	REFERENCE_PARAMETER(token);
+	
+	if (token & SD_TRANSTOKEN_RESP_CHECKBUSY)
+	{
+		drv_info->state = SD_SPI_DRV_WAITBUSY;
+		drv_info->retry = 312500;
+	}
+	else
+	{
+		drv_info->state = SD_SPI_DRV_WAITRESP;
+		drv_info->retry = 32;
+	}
+	drv_info->cur_block = 0;
 	
 	cmd_pkt[0] = cmd | 0x40;
 	cmd_pkt[1] = (arg >> 24) & 0xFF;
@@ -173,171 +164,221 @@ static vsf_err_t sd_spi_transact_cmd(struct sd_spi_drv_interface_t *ifs,
 	return interfaces->spi.io(ifs->spi_port, cmd_pkt, NULL, 6);
 }
 
-static vsf_err_t sd_spi_transact_cmd_isready(struct sd_spi_drv_interface_t *ifs, 
-		uint16_t token, uint8_t *resp, uint8_t *resp_buff)
+static vsf_err_t sd_spi_transact_cmd_isready(struct sd_spi_drv_interface_t *ifs,
+	struct sd_spi_drv_info_t *drv_info, uint16_t token,
+	uint8_t *resp1, uint8_t *resp)
 {
-	uint8_t tmp_0xFF = 0xFF;
+	uint8_t tmp8 = 0xFF;
 	
-	interfaces->spi.io(ifs->spi_port, &tmp_0xFF, resp, 1);
+	interfaces->spi.io(ifs->spi_port, &tmp8, &tmp8, 1);
 	if (interfaces->peripheral_commit())
 	{
 		return VSFERR_FAIL;
 	}
-	if (token & SD_TRANSTOKEN_RESP_CHECKBUSY)
+	
+	if (SD_SPI_DRV_WAITRESP == drv_info->state)
 	{
-		return (*resp != 0xFF) ? VSFERR_NONE : VSFERR_NOT_READY;
-	}
-	if (!(*resp & 0x80))
-	{
-		uint8_t len;
-		
-		if (*resp & SD_CS8_ERROR_MASK)
+		if (!(tmp8 & 0x80))
+		{
+			uint8_t len;
+			
+			*resp1 = tmp8;
+			if (!(token & SD_TRANSTOKEN_RESP_CHECKBUSY) &&
+				(tmp8 & SD_CS8_ERROR_MASK))
+			{
+				return VSFERR_FAIL;
+			}
+			
+			len = token & SD_TRANSTOKEN_RESP_SPI_LENMSK;
+			if (len > 1)
+			{
+				interfaces->spi.io(ifs->spi_port, NULL, resp, len - 1);
+			}
+			
+			if (!(token & SD_TRANSTOKEN_RESP_CHECKBUSY))
+			{
+				return VSFERR_NONE;
+			}
+			drv_info->state = SD_SPI_DRV_WAITBUSY;
+			drv_info->retry = 312500;
+		}
+		else if (!--drv_info->retry)
 		{
 			return VSFERR_FAIL;
 		}
-		
-		len = token & SD_TRANSTOKEN_RESP_SPI_LENMSK;
-		if (len > 1)
+	}
+	else if (SD_SPI_DRV_WAITBUSY == drv_info->state)
+	{
+		if (tmp8 != 0)
 		{
-			interfaces->spi.io(ifs->spi_port, NULL, resp_buff, len - 1);
+			return VSFERR_NONE;
 		}
-		return VSFERR_NONE;
+		else if (!--drv_info->retry)
+		{
+			return VSFERR_FAIL;
+		}
 	}
 	return VSFERR_NOT_READY;
 }
 
-static vsf_err_t sd_spi_transact_cmd_waitready(struct sd_spi_drv_interface_t *ifs, 
-		uint16_t token, uint8_t *resp, uint8_t *resp_buff)
+static vsf_err_t sd_spi_transact_cmd_waitready(
+	struct sd_spi_drv_interface_t *ifs, struct sd_spi_drv_info_t *drv_info,
+	uint16_t token, uint8_t *resp1, uint8_t *resp)
 {
 	vsf_err_t err;
-	uint32_t retry;
 	
-	retry = 32;
 	do {
-		err = sd_spi_transact_cmd_isready(ifs, token, resp, resp_buff);
-		if ((err && (err != VSFERR_NOT_READY)) || (!--retry))
-		{
-			return VSFERR_FAIL;
-		}
-	} while (err);
-	
-	if (token & SD_TRANSTOKEN_RESP_CHECKBUSY)
-	{
-		uint8_t tmp_0xFF = 0xFF, tmp;
-		
-		retry = 0;
-		while (retry < 312500)
-		{
-			interfaces->spi.io(ifs->spi_port, &tmp_0xFF, &tmp, 1);
-			if (interfaces->peripheral_commit())
-			{
-				return VSFERR_FAIL;
-			}
-			if (0xFF == tmp)
-			{
-				return VSFERR_NONE;
-			}
-		}
-		if (retry == 312500)
-		{
-			return VSFERR_FAIL;
-		}
-	}
-	
-	return VSFERR_NONE;
+		err = sd_spi_transact_cmd_isready(ifs, drv_info, token, resp1, resp);
+	} while (err && (VSFERR_NOT_READY == err));
+	return err;
 }
 
 static vsf_err_t sd_spi_transact_datablock_init(
-		struct sd_spi_drv_interface_t *ifs, uint16_t token, uint8_t *buffer, 
-		uint8_t data_token)
+	struct sd_spi_drv_interface_t *ifs, struct sd_spi_drv_info_t *drv_info,
+	uint16_t token, uint32_t block_num, uint32_t block_size)
 {
-	REFERENCE_PARAMETER(buffer);
+	REFERENCE_PARAMETER(block_size);
 	
 	if (token & SD_TRANSTOKEN_DATA_IN)
 	{
-		uint8_t tmp;
-		
-		if (sd_spi_wait_datatoken(ifs, &tmp) || 
-			(tmp != data_token))
-		{
-			return VSFERR_FAIL;
-		}
+		drv_info->retry = 312500;
+		return VSFERR_NONE;
 	}
-	else if (token & SD_TRANSTOKEN_DATA_OUT)
+	else
 	{
+		uint8_t data_token;
+		
+		if (block_num > 1)
+		{
+			data_token = SD_DATATOKEN_START_BLK_MULT;
+		}
+		else
+		{
+			data_token = SD_DATATOKEN_START_BLK;
+		}
 		interfaces->spi.io(ifs->spi_port, &data_token, NULL, 1);
 	}
 	return VSFERR_NONE;
 }
 
-static vsf_err_t sd_spi_transact_datablock(struct sd_spi_drv_interface_t *ifs, 
-		uint16_t token, uint8_t *buffer, uint16_t size)
+static vsf_err_t sd_spi_transact_datablock(
+	struct sd_spi_drv_interface_t *ifs, struct sd_spi_drv_info_t *drv_info,
+	uint16_t token, uint8_t *buffer, uint32_t block_size)
 {
 	uint16_t dummy_crc16;
 	
 	if (token & SD_TRANSTOKEN_DATA_IN)
 	{
-		interfaces->spi.io(ifs->spi_port, NULL, buffer, size);
+		interfaces->spi.io(ifs->spi_port, NULL, buffer, block_size);
 		interfaces->spi.io(ifs->spi_port, NULL, (uint8_t *)&dummy_crc16, 2);
+		drv_info->cur_block++;
 	}
-	else if (token & SD_TRANSTOKEN_DATA_OUT)
+	else
 	{
-		interfaces->spi.io(ifs->spi_port, buffer, NULL, size);
+		interfaces->spi.io(ifs->spi_port, buffer, NULL, block_size);
 		interfaces->spi.io(ifs->spi_port, (uint8_t *)&dummy_crc16, NULL, 2);
+		drv_info->state = SD_SPI_DRV_WAITDATATOK;
 	}
 	return interfaces->peripheral_commit();
 }
 
 static vsf_err_t sd_spi_transact_datablock_isready(
-		struct sd_spi_drv_interface_t *ifs, uint16_t token)
+	struct sd_spi_drv_interface_t *ifs, struct sd_spi_drv_info_t *drv_info,
+	uint16_t token)
 {
 	uint8_t resp;
 	
-	if (token & SD_TRANSTOKEN_DATA_IN)
-	{
-		return VSFERR_NONE;
-	}
-	else if (token & SD_TRANSTOKEN_DATA_OUT)
-	{
-		interfaces->spi.io(ifs->spi_port, NULL, &resp, 1);
-		if (interfaces->peripheral_commit())
-		{
-			return VSFERR_FAIL;
-		}
-		return ((resp & SD_DATATOKEN_RESP_MASK) == SD_DATATOKEN_RESP_ACCEPTED) ?
-					VSFERR_NONE : VSFERR_NOT_READY;
-	}
-	return VSFERR_NONE;
-}
-
-static vsf_err_t sd_spi_transact_datablock_waitready(
-		struct sd_spi_drv_interface_t *ifs, uint16_t token)
-{
-	vsf_err_t err;
-	uint32_t retry;
-	
-	retry = 312500;
-	do {
-		err = sd_spi_transact_datablock_isready(ifs, token);
-		if ((err && (err != VSFERR_NOT_READY)) || (!--retry))
-		{
-			return VSFERR_FAIL;
-		}
-	} while (err);
-	return VSFERR_NONE;
-}
-
-static vsf_err_t sd_spi_transact_datablock_fini(
-		struct sd_spi_drv_interface_t *ifs, uint16_t token)
-{
-	uint8_t resp;
-	
-	if ((token & SD_TRANSTOKEN_DATA_OUT) && 
-		sd_spi_transact_cmd_waitready(ifs, SD_TRANSTOKEN_RESP_CHECKBUSY,
-											&resp, NULL))
+	resp = 0xFF;
+	interfaces->spi.io(ifs->spi_port, &resp, &resp, 1);
+	if (interfaces->peripheral_commit())
 	{
 		return VSFERR_FAIL;
 	}
+	
+	if (token & SD_TRANSTOKEN_DATA_IN)
+	{
+		if (resp != 0xFF)
+		{
+			if (SD_DATATOKEN_START_BLK == resp)
+			{
+				return VSFERR_NONE;
+			}
+			return VSFERR_FAIL;
+		}
+		else if (!--drv_info->retry)
+		{
+			return VSFERR_FAIL;
+		}
+		else
+		{
+			return VSFERR_NOT_READY;
+		}
+	}
+	else
+	{
+		if (SD_SPI_DRV_WAITDATATOK == drv_info->state)
+		{
+			if ((resp & SD_DATATOKEN_RESP_MASK) != SD_DATATOKEN_RESP_ACCEPTED)
+			{
+				return VSFERR_FAIL;
+			}
+			drv_info->state = SD_SPI_DRV_WAITBUSY;
+			drv_info->retry = 312500;
+			return VSFERR_NOT_READY;
+		}
+		else if (SD_SPI_DRV_WAITBUSY == drv_info->state)
+		{
+			if (0xFF == resp)
+			{
+				drv_info->cur_block++;
+				if (drv_info->cur_block >= drv_info->total_block)
+				{
+					resp = SD_DATATOKEN_STOP_TRAN;
+					interfaces->spi.io(ifs->spi_port, &resp, NULL, 1);
+					drv_info->state = SD_SPI_DRV_WAITDATALASTBUSY;
+					drv_info->retry = 312500;
+					return VSFERR_NOT_READY;
+				}
+				return VSFERR_NONE;
+			}
+			else if (!--drv_info->retry)
+			{
+				return VSFERR_FAIL;
+			}
+			return VSFERR_NOT_READY;
+		}
+		else if (SD_SPI_DRV_WAITDATALASTBUSY == drv_info->state)
+		{
+			if (0xFF == resp)
+			{
+				return VSFERR_NONE;
+			}
+			else if (!--drv_info->retry)
+			{
+				return VSFERR_FAIL;
+			}
+			return VSFERR_NOT_READY;
+		}
+		return VSFERR_FAIL;
+	}
+}
+
+static vsf_err_t sd_spi_transact_datablock_waitready(
+	struct sd_spi_drv_interface_t *ifs, struct sd_spi_drv_info_t *drv_info,
+	uint16_t token)
+{
+	vsf_err_t err;
+	
+	do {
+		err = sd_spi_transact_datablock_isready(ifs, drv_info, token);
+	} while (err && (VSFERR_NOT_READY == err));
+	return err;
+}
+
+static vsf_err_t sd_spi_transact_datablock_fini(
+	struct sd_spi_drv_interface_t *ifs, struct sd_spi_drv_info_t *drv_info,
+	uint16_t token)
+{
 	return VSFERR_NONE;
 }
 
@@ -347,47 +388,75 @@ static vsf_err_t sd_spi_transact_end(struct sd_spi_drv_interface_t *ifs)
 	return sd_spi_drv_send_empty_bytes(ifs, 1);
 }
 
-static vsf_err_t sd_spi_transact_do(struct sd_spi_drv_interface_t *ifs, 
-		uint16_t token, uint8_t cmd, uint32_t arg, uint32_t block_num, 
-		uint8_t *data_buff, uint16_t size, uint8_t data_token, 
-		uint8_t *resp, uint8_t *resp_buff)
+static vsf_err_t sd_spi_transact_do(
+	struct sd_spi_drv_interface_t *ifs, struct sd_spi_drv_info_t *drv_info,
+	uint16_t token, uint8_t cmd, uint32_t arg, uint8_t *resp1, uint8_t *resp,
+	uint8_t *data, uint32_t block_num, uint32_t block_size)
 {
-	if (sd_spi_transact_cmd(ifs, token, cmd, arg, block_num) || 
-		sd_spi_transact_cmd_waitready(ifs, token, resp, resp_buff) || 
-		(((data_buff != NULL) && size &&
-		 (token & (SD_TRANSTOKEN_DATA_OUT | SD_TRANSTOKEN_DATA_IN))) &&
-			(sd_spi_transact_datablock_init(ifs, token, data_buff,
-											data_token) || 
-			sd_spi_transact_datablock(ifs, token, data_buff, size) || 
-			sd_spi_transact_datablock_waitready(ifs, token) || 
-			sd_spi_transact_datablock_fini(ifs, token))))
+	if (sd_spi_transact_cmd(ifs, drv_info, token, cmd, arg) ||
+		sd_spi_transact_cmd_waitready(ifs, drv_info, token, resp1, resp))
 	{
 		return VSFERR_FAIL;
+	}
+	
+	if ((token & (SD_TRANSTOKEN_DATA_OUT | SD_TRANSTOKEN_DATA_IN)) &&
+		(data != NULL) && (block_size))
+	{
+		if (sd_spi_transact_datablock_init(ifs, drv_info, token,
+											block_num, block_size))
+		{
+			return VSFERR_FAIL;
+		}
+		
+		if (token & SD_TRANSTOKEN_DATA_IN)
+		{
+			if (sd_spi_transact_datablock_waitready(ifs, drv_info, token) ||
+				sd_spi_transact_datablock(ifs, drv_info, token, data,
+											block_size))
+			{
+				return VSFERR_FAIL;
+			}
+		}
+		else
+		{
+			if (sd_spi_transact_datablock(ifs, drv_info, token, data,
+											block_size) ||
+				sd_spi_transact_datablock_waitready(ifs, drv_info, token))
+			{
+				return VSFERR_FAIL;
+			}
+		}
+		
+		if (sd_spi_transact_datablock_fini(ifs, drv_info, token))
+		{
+			return VSFERR_FAIL;
+		}
 	}
 	return VSFERR_NONE;
 }
 
-static vsf_err_t sd_spi_transact(struct sd_spi_drv_interface_t *ifs, 
-		uint16_t token, uint8_t cmd, uint32_t arg, uint32_t block_num, 
-		uint8_t *data_buff, uint16_t size, uint8_t data_token, 
-		uint8_t *resp, uint8_t *resp_buff)
+static vsf_err_t sd_spi_transact(
+	struct sd_spi_drv_interface_t *ifs, struct sd_spi_drv_info_t *drv_info,
+	uint16_t token, uint8_t cmd, uint32_t arg, uint8_t *resp1, uint8_t *resp,
+	uint8_t *data, uint32_t block_num, uint32_t block_size)
 {
 	vsf_err_t err = VSFERR_NONE;
 	
 	if (sd_spi_transact_start(ifs) || 
-		sd_spi_transact_do(ifs, token, cmd, arg, block_num, 
-							data_buff, size, data_token, resp, resp_buff) || 
-		sd_spi_transact_end(ifs))
+		sd_spi_transact_do(ifs, drv_info, token, cmd, arg, resp1, resp,
+							data, block_num, block_size))
 	{
 		err = VSFERR_FAIL;
 	}
+	sd_spi_transact_end(ifs);
 	interfaces->peripheral_commit();
 	return err;
 }
 
 static vsf_err_t sd_spi_drv_init(struct dal_info_t *info)
 {
-	struct sd_spi_drv_interface_t *ifs = 
+	struct sd_spi_drv_info_t *drv_info = (struct sd_spi_drv_info_t *)info->info;
+	struct sd_spi_drv_interface_t *ifs =
 								(struct sd_spi_drv_interface_t *)info->ifs;
 	struct mal_info_t *mal_info = (struct mal_info_t *)info->extra;
 	struct sd_info_t *sd_info = (struct sd_info_t *)mal_info->extra;
@@ -400,14 +469,14 @@ static vsf_err_t sd_spi_drv_init(struct dal_info_t *info)
 	
 	// SD Init
 	sd_info->cardtype = SD_CARDTYPE_NONE;
-	sd_spi_transact(ifs, SD_TRANSTOKEN_RESP_R1, 
-				SD_CMD_GO_IDLE_STATE, 0, 0, NULL, 0, 0, &resp_r1, NULL);
+	sd_spi_transact(ifs, drv_info, SD_TRANSTOKEN_RESP_R1,
+				SD_CMD_GO_IDLE_STATE, 0, &resp_r1, NULL, NULL, 0, 0);
 	
 	// detect card type
 	// send CMD8 to get card op
-	if (sd_spi_transact(ifs, SD_TRANSTOKEN_RESP_R7, 
-				SD_CMD_SEND_IF_COND, SD_CMD8_VHS_27_36_V | SD_CMD8_CHK_PATTERN, 
-				0, NULL, 0, 0, &resp_r1, resp_r7))
+	if (sd_spi_transact(ifs, drv_info, SD_TRANSTOKEN_RESP_R7,
+				SD_CMD_SEND_IF_COND, SD_CMD8_VHS_27_36_V | SD_CMD8_CHK_PATTERN,
+				&resp_r1, resp_r7, NULL, 0, 0))
 	{
 		return VSFERR_FAIL;
 	}
@@ -420,11 +489,14 @@ static vsf_err_t sd_spi_drv_init(struct dal_info_t *info)
 	{
 		sd_info->cardtype = SD_CARDTYPE_SD_V1;
 	}
+	
+	drv_info->retry = 1000;
 	return VSFERR_NONE;
 }
 
 static vsf_err_t sd_spi_drv_init_isready(struct dal_info_t *info)
 {
+	struct sd_spi_drv_info_t *drv_info = (struct sd_spi_drv_info_t *)info->info;
 	struct sd_spi_drv_interface_t *ifs = 
 								(struct sd_spi_drv_interface_t *)info->ifs;
 	struct mal_info_t *mal_info = (struct mal_info_t *)info->extra;
@@ -433,21 +505,20 @@ static vsf_err_t sd_spi_drv_init_isready(struct dal_info_t *info)
 	uint32_t ocr;
 	
 	// send acmd41 to get card status
-	if (sd_spi_transact(ifs, SD_TRANSTOKEN_RESP_R1, 
-			SD_CMD_APP_CMD, 0, 0, NULL, 0, 0, &resp_r1, NULL) || 
-		sd_spi_transact(ifs, SD_TRANSTOKEN_RESP_R1, 
-			SD_ACMD_SD_SEND_OP_COND, SD_ACMD41_HCS, 0, NULL, 0, 0, &resp_r1, NULL))
+	if (sd_spi_transact(ifs, drv_info, SD_TRANSTOKEN_RESP_R1, 
+			SD_CMD_APP_CMD, 0, &resp_r1, NULL, NULL, 0, 0) || 
+		sd_spi_transact(ifs, drv_info, SD_TRANSTOKEN_RESP_R1, 
+			SD_ACMD_SD_SEND_OP_COND, SD_ACMD41_HCS, &resp_r1, NULL, NULL, 0, 0))
 	{
 		return VSFERR_FAIL;
 	}
 	if (resp_r1 != SD_CS8_NONE)
 	{
-		return VSFERR_NOT_READY;
+		return !--drv_info->retry ? VSFERR_FAIL : VSFERR_NOT_READY;
 	}
 	
-	// send cmd58 to get card ocr
-	if (sd_spi_transact(ifs, SD_TRANSTOKEN_RESP_R7, 
-			SD_CMD_READ_OCR, 0x40000000, 0, NULL, 0, 0, &resp_r1, resp_r7))
+	if (sd_spi_transact(ifs, drv_info, SD_TRANSTOKEN_RESP_R7,
+			SD_CMD_READ_OCR, 0x40000000, &resp_r1, resp_r7, NULL, 0, 0))
 	{
 		return VSFERR_FAIL;
 	}
@@ -473,8 +544,8 @@ static vsf_err_t sd_spi_drv_init_isready(struct dal_info_t *info)
 		interfaces->spi.config(ifs->spi_port, 
 			sd_info->frequency_kHz, SPI_MODE3 | SPI_MSB_FIRST | SPI_MASTER) || 
 		interfaces->peripheral_commit() || 
-		sd_spi_transact(ifs, SD_TRANSTOKEN_RESP_R1, 
-				SD_CMD_SET_BLOCKLEN, 512, 0, NULL, 0, 0, &resp_r1, NULL))
+		sd_spi_transact(ifs, drv_info, SD_TRANSTOKEN_RESP_R1,
+				SD_CMD_SET_BLOCKLEN, 512, &resp_r1, NULL, NULL, 0, 0))
 	{
 		return VSFERR_FAIL;
 	}
@@ -492,6 +563,7 @@ static vsf_err_t sd_spi_drv_fini(struct dal_info_t *info)
 
 static vsf_err_t sd_spi_getinfo(struct dal_info_t *info)
 {
+	struct sd_spi_drv_info_t *drv_info = (struct sd_spi_drv_info_t *)info->info;
 	struct sd_spi_drv_interface_t *ifs = 
 								(struct sd_spi_drv_interface_t *)info->ifs;
 	struct mal_info_t *mal_info = (struct mal_info_t *)info->extra;
@@ -500,13 +572,14 @@ static vsf_err_t sd_spi_getinfo(struct dal_info_t *info)
 	uint8_t csd[16];
 	uint8_t resp_r1, resp_r7[4];
 	
+	drv_info->total_block = 1;
 	token = SD_TRANSTOKEN_RESP_R1 | SD_TRANSTOKEN_DATA_IN;
 	if ((NULL == sd_info) || 
-		sd_spi_transact(ifs, token, SD_CMD_SEND_CSD, 0, 0, 
-				csd, 16, SD_DATATOKEN_START_BLK, &resp_r1, resp_r7) || 
+		sd_spi_transact(ifs, drv_info, token, SD_CMD_SEND_CSD, 0,
+						&resp_r1, resp_r7, csd, 1, 16) || 
 		sd_parse_csd(csd, sd_info) || 
-		sd_spi_transact(ifs, token, SD_CMD_SEND_CID, 0, 0, 
-				sd_info->cid, 16, SD_DATATOKEN_START_BLK, &resp_r1, resp_r7))
+		sd_spi_transact(ifs, drv_info, token, SD_CMD_SEND_CID, 0,
+						&resp_r1, resp_r7, sd_info->cid, 1, 16))
 	{
 		return VSFERR_FAIL;
 	}
@@ -516,6 +589,7 @@ static vsf_err_t sd_spi_getinfo(struct dal_info_t *info)
 static vsf_err_t sd_spi_drv_readblock_nb_start(struct dal_info_t *info, 
 											uint64_t address, uint64_t count)
 {
+	struct sd_spi_drv_info_t *drv_info = (struct sd_spi_drv_info_t *)info->info;
 	struct sd_spi_drv_interface_t *ifs = 
 								(struct sd_spi_drv_interface_t *)info->ifs;
 	struct mal_info_t *mal_info = (struct mal_info_t *)info->extra;
@@ -533,11 +607,12 @@ static vsf_err_t sd_spi_drv_readblock_nb_start(struct dal_info_t *info,
 		arg = (uint32_t)address;
 	}
 	
+	drv_info->total_block = count;
 	token = SD_TRANSTOKEN_RESP_R1 | SD_TRANSTOKEN_DATA_IN;
 	if (sd_spi_transact_start(ifs) || 
-		sd_spi_transact_cmd(ifs, token, 
-						SD_CMD_READ_MULTIPLE_BLOCK, arg, (uint32_t)count) || 
-		sd_spi_transact_cmd_waitready(ifs, token, &resp, NULL) || 
+		sd_spi_transact_cmd(ifs, drv_info, token, SD_CMD_READ_MULTIPLE_BLOCK,
+							arg) || 
+		sd_spi_transact_cmd_waitready(ifs, drv_info, token, &resp, NULL) || 
 		(resp != SD_CS8_NONE))
 	{
 		sd_spi_transact_end(ifs);
@@ -545,12 +620,13 @@ static vsf_err_t sd_spi_drv_readblock_nb_start(struct dal_info_t *info,
 		return VSFERR_FAIL;
 	}
 	
-	return interfaces->peripheral_commit();
+	return sd_spi_transact_datablock_init(ifs, drv_info, token, drv_info->total_block, 512);
 }
 
 static vsf_err_t sd_spi_drv_readblock_nb(struct dal_info_t *info, 
 										uint64_t address, uint8_t *buff)
 {
+	struct sd_spi_drv_info_t *drv_info = (struct sd_spi_drv_info_t *)info->info;
 	struct sd_spi_drv_interface_t *ifs = 
 								(struct sd_spi_drv_interface_t *)info->ifs;
 	uint16_t token;
@@ -558,80 +634,57 @@ static vsf_err_t sd_spi_drv_readblock_nb(struct dal_info_t *info,
 	REFERENCE_PARAMETER(address);
 	
 	token = SD_TRANSTOKEN_RESP_R1 | SD_TRANSTOKEN_DATA_IN;
-	if (sd_spi_transact_datablock_init(ifs, token, buff,
-										SD_DATATOKEN_START_BLK) || 
-		sd_spi_transact_datablock(ifs, token, buff, 512))
+	if (sd_spi_transact_datablock(ifs, drv_info, token, buff, 512) ||
+		sd_spi_transact_datablock_fini(ifs, drv_info, token))
 	{
 		sd_spi_transact_end(ifs);
 		interfaces->peripheral_commit();
 		return VSFERR_FAIL;
 	}
 	
+	if (drv_info->cur_block < drv_info->total_block)
+	{
+		sd_spi_transact_datablock_init(ifs, drv_info, token, drv_info->total_block, 512);
+	}
 	return interfaces->peripheral_commit();
 }
 
 static vsf_err_t sd_spi_drv_readblock_nb_isready(struct dal_info_t *info, 
 												uint64_t address, uint8_t *buff)
 {
-	vsf_err_t err;
+	struct sd_spi_drv_info_t *drv_info = (struct sd_spi_drv_info_t *)info->info;
 	struct sd_spi_drv_interface_t *ifs = 
 								(struct sd_spi_drv_interface_t *)info->ifs;
 	uint16_t token;
+	vsf_err_t err;
 	
 	REFERENCE_PARAMETER(address);
 	REFERENCE_PARAMETER(buff);
 	
 	token = SD_TRANSTOKEN_RESP_R1 | SD_TRANSTOKEN_DATA_IN;
-	err = sd_spi_transact_datablock_isready(ifs, token);
+	err = sd_spi_transact_datablock_isready(ifs, drv_info, token);
 	if (err && (err != VSFERR_NOT_READY))
 	{
 		sd_spi_transact_end(ifs);
 		interfaces->peripheral_commit();
 		return err;
 	}
-	if (!err)
-	{
-		sd_spi_transact_datablock_fini(ifs, token);
-	}
 	
-	return interfaces->peripheral_commit();
-}
-
-static vsf_err_t sd_spi_drv_readblock_nb_waitready(struct dal_info_t *info, 
-												uint64_t address, uint8_t *buff)
-{
-	struct sd_spi_drv_interface_t *ifs = 
-								(struct sd_spi_drv_interface_t *)info->ifs;
-	uint16_t token;
-	
-	REFERENCE_PARAMETER(address);
-	REFERENCE_PARAMETER(buff);
-	
-	token = SD_TRANSTOKEN_RESP_R1 | SD_TRANSTOKEN_DATA_IN;
-	if (sd_spi_transact_datablock_waitready(ifs, token))
-	{
-		sd_spi_transact_end(ifs);
-		interfaces->peripheral_commit();
-		return VSFERR_FAIL;
-	}
-	else
-	{
-		sd_spi_transact_datablock_fini(ifs, token);
-	}
-	
-	return interfaces->peripheral_commit();
+	return err;
 }
 
 static vsf_err_t sd_spi_drv_readblock_nb_end(struct dal_info_t *info)
 {
+	struct sd_spi_drv_info_t *drv_info = (struct sd_spi_drv_info_t *)info->info;
 	struct sd_spi_drv_interface_t *ifs = 
 								(struct sd_spi_drv_interface_t *)info->ifs;
 	uint16_t token;
 	uint8_t resp;
 	
 	token = SD_TRANSTOKEN_RESP_R1B;
-	if (sd_spi_transact_cmd(ifs, token, SD_CMD_STOP_TRANSMISSION, 0, 0) || 
-		sd_spi_transact_cmd_waitready(ifs, token, &resp, NULL))
+	if (sd_spi_transact_cmd(ifs, drv_info, token, SD_CMD_STOP_TRANSMISSION,
+							0) || 
+		sd_spi_transact_cmd_waitready(ifs, drv_info, token, &resp, NULL))
 	{
 		sd_spi_transact_end(ifs);
 		interfaces->peripheral_commit();
@@ -646,6 +699,7 @@ static vsf_err_t sd_spi_drv_readblock_nb_end(struct dal_info_t *info)
 static vsf_err_t sd_spi_drv_writeblock_nb_start(struct dal_info_t *info, 
 											uint64_t address, uint64_t count)
 {
+	struct sd_spi_drv_info_t *drv_info = (struct sd_spi_drv_info_t *)info->info;
 	struct sd_spi_drv_interface_t *ifs = 
 								(struct sd_spi_drv_interface_t *)info->ifs;
 	struct mal_info_t *mal_info = (struct mal_info_t *)info->extra;
@@ -663,11 +717,12 @@ static vsf_err_t sd_spi_drv_writeblock_nb_start(struct dal_info_t *info,
 		arg = (uint32_t)address;
 	}
 	
+	drv_info->total_block = count;
 	token = SD_TRANSTOKEN_RESP_R1 | SD_TRANSTOKEN_DATA_OUT;
 	if (sd_spi_transact_start(ifs) || 
-		sd_spi_transact_cmd(ifs, token, SD_CMD_WRITE_MULTIPLE_BLOCK, arg,
-							(uint32_t)count) || 
-		sd_spi_transact_cmd_waitready(ifs, token, &resp, NULL) || 
+		sd_spi_transact_cmd(ifs, drv_info, token, SD_CMD_WRITE_MULTIPLE_BLOCK,
+							arg) || 
+		sd_spi_transact_cmd_waitready(ifs, drv_info, token, &resp, NULL) || 
 		(resp != SD_CS8_NONE))
 	{
 		sd_spi_transact_end(ifs);
@@ -681,6 +736,7 @@ static vsf_err_t sd_spi_drv_writeblock_nb_start(struct dal_info_t *info,
 static vsf_err_t sd_spi_drv_writeblock_nb(struct dal_info_t *info, 
 										uint64_t address, uint8_t *buff)
 {
+	struct sd_spi_drv_info_t *drv_info = (struct sd_spi_drv_info_t *)info->info;
 	struct sd_spi_drv_interface_t *ifs = 
 								(struct sd_spi_drv_interface_t *)info->ifs;
 	uint16_t token;
@@ -688,9 +744,9 @@ static vsf_err_t sd_spi_drv_writeblock_nb(struct dal_info_t *info,
 	REFERENCE_PARAMETER(address);
 	
 	token = SD_TRANSTOKEN_RESP_R1 | SD_TRANSTOKEN_DATA_OUT;
-	if (sd_spi_transact_datablock_init(ifs, token, buff, 
-											SD_DATATOKEN_START_BLK_MULT) || 
-		sd_spi_transact_datablock(ifs, token, buff, 512))
+	// force using 2 as block_num, because SD_CMD_WRITE_MULTIPLE_BLOCK is used
+	if (sd_spi_transact_datablock_init(ifs, drv_info, token, 2, 512) || 
+		sd_spi_transact_datablock(ifs, drv_info, token, buff, 512))
 	{
 		sd_spi_transact_end(ifs);
 		interfaces->peripheral_commit();
@@ -703,16 +759,17 @@ static vsf_err_t sd_spi_drv_writeblock_nb(struct dal_info_t *info,
 static vsf_err_t sd_spi_drv_writeblock_nb_isready(struct dal_info_t *info, 
 												uint64_t address, uint8_t *buff)
 {
-	vsf_err_t err;
+	struct sd_spi_drv_info_t *drv_info = (struct sd_spi_drv_info_t *)info->info;
 	struct sd_spi_drv_interface_t *ifs = 
 								(struct sd_spi_drv_interface_t *)info->ifs;
 	uint16_t token;
+	vsf_err_t err;
 	
 	REFERENCE_PARAMETER(address);
 	REFERENCE_PARAMETER(buff);
 	
 	token = SD_TRANSTOKEN_RESP_R1 | SD_TRANSTOKEN_DATA_OUT;
-	err = sd_spi_transact_datablock_isready(ifs, token);
+	err = sd_spi_transact_datablock_isready(ifs, drv_info, token);
 	if (err && (err != VSFERR_NOT_READY))
 	{
 		sd_spi_transact_end(ifs);
@@ -721,52 +778,16 @@ static vsf_err_t sd_spi_drv_writeblock_nb_isready(struct dal_info_t *info,
 	}
 	if (!err)
 	{
-		sd_spi_transact_datablock_fini(ifs, token);
+		sd_spi_transact_datablock_fini(ifs, drv_info, token);
 	}
 	
-	return interfaces->peripheral_commit();
-}
-
-static vsf_err_t sd_spi_drv_writeblock_nb_waitready(struct dal_info_t *info, 
-												uint64_t address, uint8_t *buff)
-{
-	struct sd_spi_drv_interface_t *ifs = 
-								(struct sd_spi_drv_interface_t *)info->ifs;
-	uint16_t token;
-	
-	REFERENCE_PARAMETER(address);
-	REFERENCE_PARAMETER(buff);
-	
-	token = SD_TRANSTOKEN_RESP_R1 | SD_TRANSTOKEN_DATA_OUT;
-	if (sd_spi_transact_datablock_waitready(ifs, token))
-	{
-		sd_spi_transact_end(ifs);
-		interfaces->peripheral_commit();
-		return VSFERR_FAIL;
-	}
-	else
-	{
-		sd_spi_transact_datablock_fini(ifs, token);
-	}
-	
-	return interfaces->peripheral_commit();
+	return err;
 }
 
 static vsf_err_t sd_spi_drv_writeblock_nb_end(struct dal_info_t *info)
 {
 	struct sd_spi_drv_interface_t *ifs = 
 								(struct sd_spi_drv_interface_t *)info->ifs;
-	uint8_t datatoken, resp;
-	
-	datatoken = SD_DATATOKEN_STOP_TRAN;
-	if (interfaces->spi.io(ifs->spi_port, &datatoken, NULL, 1) || 
-		sd_spi_transact_cmd_waitready(ifs, SD_TRANSTOKEN_RESP_CHECKBUSY,
-											&resp, NULL))
-	{
-		sd_spi_transact_end(ifs);
-		interfaces->peripheral_commit();
-		return VSFERR_FAIL;
-	}
 	
 	sd_spi_transact_end(ifs);
 	interfaces->peripheral_commit();
@@ -821,13 +842,13 @@ struct mal_driver_t sd_spi_drv =
 	sd_spi_drv_readblock_nb_start,
 	sd_spi_drv_readblock_nb,
 	sd_spi_drv_readblock_nb_isready,
-	sd_spi_drv_readblock_nb_waitready,
+	NULL,
 	sd_spi_drv_readblock_nb_end,
 	
 	sd_spi_drv_writeblock_nb_start,
 	sd_spi_drv_writeblock_nb,
 	sd_spi_drv_writeblock_nb_isready,
-	sd_spi_drv_writeblock_nb_waitready,
+	NULL,
 	sd_spi_drv_writeblock_nb_end
 };
 

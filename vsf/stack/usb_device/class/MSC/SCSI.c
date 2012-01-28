@@ -10,7 +10,7 @@ static vsf_err_t SCSI_handler_TEST_UNIT_READY(struct SCSI_LUN_info_t *info,
 		uint8_t CB[16], struct vsf_buffer_t *buffer, uint32_t *page_size, 
 		uint32_t *page_num)
 {
-	if (info->memstat != SCSI_MEMSTAT_POLL)
+	if (info->status.memstat != SCSI_MEMSTAT_POLL)
 	{
 		info->status.sense_key = 0;
 		info->status.asc = 0;
@@ -132,7 +132,7 @@ static vsf_err_t SCSI_handler_MODE_SENSE6(struct SCSI_LUN_info_t *info,
 		uint8_t CB[16], struct vsf_buffer_t *buffer, uint32_t *page_size, 
 		uint32_t *page_num)
 {
-	if (info->memstat != SCSI_MEMSTAT_POLL)
+	if (info->status.memstat != SCSI_MEMSTAT_POLL)
 	{
 		info->status.sense_key = SCSI_SENSEKEY_NOT_READY;
 		info->status.asc = 0;
@@ -186,7 +186,7 @@ static vsf_err_t SCSI_handler_READ_FORMAT_CAPACITIES(struct SCSI_LUN_info_t *inf
 	uint32_t block_number = (uint32_t)mal_info->capacity.block_number;
 	uint32_t block_size = (uint32_t)mal_info->capacity.block_size;
 	
-	if (info->memstat != SCSI_MEMSTAT_POLL)
+	if (info->status.memstat != SCSI_MEMSTAT_POLL)
 	{
 		info->status.sense_key = SCSI_SENSEKEY_NOT_READY;
 		info->status.asc = 0;
@@ -216,7 +216,7 @@ static vsf_err_t SCSI_handler_READ_CAPACITY10(struct SCSI_LUN_info_t *info,
 	uint32_t block_number = (uint32_t)mal_info->capacity.block_number;
 	uint32_t block_size = (uint32_t)mal_info->capacity.block_size;
 	
-	if (info->memstat != SCSI_MEMSTAT_POLL)
+	if (info->status.memstat != SCSI_MEMSTAT_POLL)
 	{
 		info->status.sense_key = SCSI_SENSEKEY_NOT_READY;
 		info->status.asc = 0;
@@ -247,7 +247,7 @@ static vsf_err_t SCSI_io_WRITE10(struct SCSI_LUN_info_t *info, uint8_t CB[16],
 	if (mal.writeblock(info->mal_index, info->dal_info, 
 					(lba + cur_page) * block_size, buffer->buffer, 1))
 	{
-		info->memstat = SCSI_MEMSTAT_NOINIT;
+		info->status.memstat = SCSI_MEMSTAT_NOINIT;
 		info->status.sense_key = SCSI_SENSEKEY_HARDWARE_ERROR;
 		info->status.asc = 0;
 		SCSI_errcode = SCSI_ERRCODE_FAIL;
@@ -268,7 +268,7 @@ static vsf_err_t SCSI_handler_WRITE10(struct SCSI_LUN_info_t *info,
 	uint32_t block_size = (uint32_t)mal_info->capacity.block_size;
 	uint16_t num_of_page = GET_BE_U16(&CB[7]);
 	
-	if (info->memstat != SCSI_MEMSTAT_POLL)
+	if (info->status.memstat != SCSI_MEMSTAT_POLL)
 	{
 		info->status.sense_key = SCSI_SENSEKEY_NOT_READY;
 		info->status.asc = 0;
@@ -279,6 +279,10 @@ static vsf_err_t SCSI_handler_WRITE10(struct SCSI_LUN_info_t *info,
 	buffer->size = 0;
 	*page_size = block_size;
 	*page_num = num_of_page;
+	
+	info->status.block_num = num_of_page;
+	info->status.cur_block = 0;
+	info->status.mal_opt = SCSI_MAL_OPT_INIT;
 	
 	info->status.sense_key = 0;
 	info->status.asc = 0;
@@ -297,7 +301,7 @@ static vsf_err_t SCSI_io_READ10(struct SCSI_LUN_info_t *info, uint8_t CB[16],
 	if (mal.readblock(info->mal_index, info->dal_info, 
 					(lba + cur_page) * block_size, buffer->buffer, 1))
 	{
-		info->memstat = SCSI_MEMSTAT_NOINIT;
+		info->status.memstat = SCSI_MEMSTAT_NOINIT;
 		info->status.sense_key = SCSI_SENSEKEY_HARDWARE_ERROR;
 		info->status.asc = 0;
 		SCSI_errcode = SCSI_ERRCODE_FAIL;
@@ -317,7 +321,7 @@ static vsf_err_t SCSI_handler_READ10(struct SCSI_LUN_info_t *info,
 	uint32_t block_size = (uint32_t)mal_info->capacity.block_size;
 	uint16_t num_of_page = GET_BE_U16(&CB[7]);
 	
-	if (info->memstat != SCSI_MEMSTAT_POLL)
+	if (info->status.memstat != SCSI_MEMSTAT_POLL)
 	{
 		info->status.sense_key = SCSI_SENSEKEY_NOT_READY;
 		info->status.asc = 0;
@@ -328,6 +332,10 @@ static vsf_err_t SCSI_handler_READ10(struct SCSI_LUN_info_t *info,
 	buffer->size = 0;
 	*page_size = block_size;
 	*page_num = num_of_page;
+	
+	info->status.block_num = num_of_page;
+	info->status.cur_block = 0;
+	info->status.mal_opt = SCSI_MAL_OPT_INIT;
 	
 	info->status.sense_key = 0;
 	info->status.asc = 0;
@@ -483,28 +491,32 @@ vsf_err_t SCSI_Poll(struct SCSI_handler_t *handlers,
 {
 	vsf_err_t err;
 	
-	switch (info->memstat)
+	switch (info->status.memstat)
 	{
 	case SCSI_MEMSTAT_NOINIT:
 		err = mal.init(info->mal_index, info->dal_info);
 		if (!err)
 		{
-			info->memstat = SCSI_MEMSTAT_WAITINIT;
+			info->status.memstat = SCSI_MEMSTAT_WAITINIT;
 		}
 		break;
 	case SCSI_MEMSTAT_WAITINIT:
 		err = mal.init_isready(info->mal_index, info->dal_info);
 		if (!err)
 		{
-			info->memstat = SCSI_MEMSTAT_POLL;
+			info->status.memstat = SCSI_MEMSTAT_POLL;
 		}
 		else if (err != VSFERR_NOT_READY)
 		{
-			info->memstat = SCSI_MEMSTAT_NOINIT;
+			info->status.memstat = SCSI_MEMSTAT_NOINIT;
 		}
 		break;
 	case SCSI_MEMSTAT_POLL:
 		// poll if no transaction
+		if (!info->status.block_num)
+		{
+			
+		}
 		break;
 	}
 	return VSFERR_NONE;
