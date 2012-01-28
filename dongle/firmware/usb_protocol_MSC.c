@@ -120,9 +120,9 @@ static const struct vsfusbd_desc_filter_t descriptors[] =
 static struct sd_info_t sd_info;
 static struct sd_spi_drv_interface_t sd_spi_drv_ifs = 
 {
-	1,			// uint8_t cs_port;
-	(1 << 12),	// uint32_t cs_pin;
-	1,			// uint8_t spi_port;
+	0,			// uint8_t cs_port;
+	GPIO_SRST,	// uint32_t cs_pin;
+	0,			// uint8_t spi_port;
 };
 static struct mal_info_t sd_mal_info = 
 {
@@ -190,12 +190,6 @@ vsf_err_t usb_protocol_init(void)
 	LED_GREEN_ON();
 	LED_USB_INIT();
 	LED_USB_OFF();
-	
-	if (mal.init(MAL_IDX_SD_SPI, &sd_dal_info))
-	{
-		LED_RED_ON();
-		return VSFERR_FAIL;
-	}
 	
 	USB_Pull_Init();
 	USB_Connect();
