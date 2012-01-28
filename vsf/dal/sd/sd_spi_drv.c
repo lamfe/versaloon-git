@@ -60,27 +60,6 @@
 	(SD_CS8_ERASE_RESET | SD_CS8_ILLEGAL_COMMAND | SD_CS8_COM_CRC_ERROR | \
 	SD_CS8_ERASE_SEQUENCE_ERROR | SD_CS8_ADDRESS_ERROR | SD_CS8_PARAMETER_ERROR)
 
-#define SD_TRANSTOKEN_DATA_DIR				0x8000
-#define SD_TRANSTOKEN_DATA_OUT				0x8000
-#define SD_TRANSTOKEN_DATA_IN				0x0000
-
-#define SD_TRANSTOKEN_RESP_MASK				0x00FF
-#define SD_TRANSTOKEN_RESP_CHECKBUSY		0x0080
-#define SD_TRANSTOKEN_RESP_CMD				0x0040
-#define SD_TRANSTOKEN_RESP_CRC7				0x0020
-#define SD_TRANSTOKEN_RESP_LONG				0x0010
-#define SD_TRANSTOKEN_RESP_SHORT			0x0000
-
-#define SD_TRANSTOKEN_RESP_NONE				0x0000
-#define SD_TRANSTOKEN_RESP_R1				0x0061
-#define SD_TRANSTOKEN_RESP_R1B				0x00E1
-#define SD_TRANSTOKEN_RESP_R2				0x0012
-#define SD_TRANSTOKEN_RESP_R3				0x0003
-#define SD_TRANSTOKEN_RESP_R4				0x0004
-#define SD_TRANSTOKEN_RESP_R5				0x0005
-#define SD_TRANSTOKEN_RESP_R6				0x0066
-#define SD_TRANSTOKEN_RESP_R7				0x0067
-
 static vsf_err_t sd_spi_drv_cs_assert(struct sd_spi_drv_interface_t *ifs)
 {
 	if (ifs->cs_port != IFS_DUMMY_PORT)
@@ -217,22 +196,10 @@ static vsf_err_t sd_spi_transact_cmd_isready(struct sd_spi_drv_interface_t *ifs,
 			return VSFERR_FAIL;
 		}
 		
-		switch (token & SD_TRANSTOKEN_RESP_MASK)
+		len = token & SD_TRANSTOKEN_RESP_SPI_LENMSK;
+		if (len > 1)
 		{
-		case SD_TRANSTOKEN_RESP_R2:
-			len = 1;
-			break;
-		case SD_TRANSTOKEN_RESP_R3:
-		case SD_TRANSTOKEN_RESP_R7:
-			len = 4;
-			break;
-		default:
-			len = 0;
-			break;
-		}
-		if (len)
-		{
-			interfaces->spi.io(ifs->spi_port, NULL, resp_buff, len);
+			interfaces->spi.io(ifs->spi_port, NULL, resp_buff, len - 1);
 		}
 		return VSFERR_NONE;
 	}
@@ -286,7 +253,7 @@ static vsf_err_t sd_spi_transact_datablock_init(
 {
 	REFERENCE_PARAMETER(buffer);
 	
-	if ((token & SD_TRANSTOKEN_DATA_DIR) == SD_TRANSTOKEN_DATA_IN)
+	if (token & SD_TRANSTOKEN_DATA_IN)
 	{
 		uint8_t tmp;
 		
@@ -296,7 +263,7 @@ static vsf_err_t sd_spi_transact_datablock_init(
 			return VSFERR_FAIL;
 		}
 	}
-	else
+	else if (token & SD_TRANSTOKEN_DATA_OUT)
 	{
 		interfaces->spi.io(ifs->spi_port, &data_token, NULL, 1);
 	}
@@ -308,12 +275,12 @@ static vsf_err_t sd_spi_transact_datablock(struct sd_spi_drv_interface_t *ifs,
 {
 	uint16_t dummy_crc16;
 	
-	if ((token & SD_TRANSTOKEN_DATA_DIR) == SD_TRANSTOKEN_DATA_IN)
+	if (token & SD_TRANSTOKEN_DATA_IN)
 	{
 		interfaces->spi.io(ifs->spi_port, NULL, buffer, size);
 		interfaces->spi.io(ifs->spi_port, NULL, (uint8_t *)&dummy_crc16, 2);
 	}
-	else
+	else if (token & SD_TRANSTOKEN_DATA_OUT)
 	{
 		interfaces->spi.io(ifs->spi_port, buffer, NULL, size);
 		interfaces->spi.io(ifs->spi_port, (uint8_t *)&dummy_crc16, NULL, 2);
@@ -326,11 +293,11 @@ static vsf_err_t sd_spi_transact_datablock_isready(
 {
 	uint8_t resp;
 	
-	if ((token & SD_TRANSTOKEN_DATA_DIR) == SD_TRANSTOKEN_DATA_IN)
+	if (token & SD_TRANSTOKEN_DATA_IN)
 	{
 		return VSFERR_NONE;
 	}
-	else
+	else if (token & SD_TRANSTOKEN_DATA_OUT)
 	{
 		interfaces->spi.io(ifs->spi_port, NULL, &resp, 1);
 		if (interfaces->peripheral_commit())
@@ -340,6 +307,7 @@ static vsf_err_t sd_spi_transact_datablock_isready(
 		return ((resp & SD_DATATOKEN_RESP_MASK) == SD_DATATOKEN_RESP_ACCEPTED) ?
 					VSFERR_NONE : VSFERR_NOT_READY;
 	}
+	return VSFERR_NONE;
 }
 
 static vsf_err_t sd_spi_transact_datablock_waitready(
@@ -364,7 +332,7 @@ static vsf_err_t sd_spi_transact_datablock_fini(
 {
 	uint8_t resp;
 	
-	if (((token & SD_TRANSTOKEN_DATA_DIR) == SD_TRANSTOKEN_DATA_OUT) && 
+	if ((token & SD_TRANSTOKEN_DATA_OUT) && 
 		sd_spi_transact_cmd_waitready(ifs, SD_TRANSTOKEN_RESP_CHECKBUSY,
 											&resp, NULL))
 	{
@@ -386,7 +354,8 @@ static vsf_err_t sd_spi_transact_do(struct sd_spi_drv_interface_t *ifs,
 {
 	if (sd_spi_transact_cmd(ifs, token, cmd, arg, block_num) || 
 		sd_spi_transact_cmd_waitready(ifs, token, resp, resp_buff) || 
-		(((data_buff != NULL) && size) &&
+		(((data_buff != NULL) && size &&
+		 (token & (SD_TRANSTOKEN_DATA_OUT | SD_TRANSTOKEN_DATA_IN))) &&
 			(sd_spi_transact_datablock_init(ifs, token, data_buff,
 											data_token) || 
 			sd_spi_transact_datablock(ifs, token, data_buff, size) || 
@@ -531,7 +500,7 @@ static vsf_err_t sd_spi_getinfo(struct dal_info_t *info)
 	uint8_t csd[16];
 	uint8_t resp_r1, resp_r7[4];
 	
-	token = SD_TRANSTOKEN_RESP_R1;
+	token = SD_TRANSTOKEN_RESP_R1 | SD_TRANSTOKEN_DATA_IN;
 	if ((NULL == sd_info) || 
 		sd_spi_transact(ifs, token, SD_CMD_SEND_CSD, 0, 0, 
 				csd, 16, SD_DATATOKEN_START_BLK, &resp_r1, resp_r7) || 
