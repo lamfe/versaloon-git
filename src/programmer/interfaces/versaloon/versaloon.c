@@ -676,6 +676,8 @@ struct interfaces_info_t versaloon_interfaces =
 		usbtogpio_init,
 		usbtogpio_fini,
 		usbtogpio_config,
+		usbtogpio_set,
+		usbtogpio_clear,
 		usbtogpio_out,
 		usbtogpio_in
 	},

@@ -98,3 +98,12 @@ vsf_err_t usbtogpio_out(uint8_t interface_index, uint32_t mask, uint32_t value)
 	return usbtoxxx_out_command(USB_TO_GPIO, interface_index, buf, 4, 0);
 }
 
+vsf_err_t usbtogpio_set(uint8_t interface_index, uint32_t pin_mask)
+{
+	return usbtogpio_out(interface_index, pin_mask, pin_mask);
+}
+
+vsf_err_t usbtogpio_clear(uint8_t interface_index, uint32_t pin_mask)
+{
+	return usbtogpio_out(interface_index, pin_mask, 0);
+}
