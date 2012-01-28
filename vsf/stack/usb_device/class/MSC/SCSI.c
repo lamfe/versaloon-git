@@ -236,22 +236,74 @@ static vsf_err_t SCSI_handler_READ_CAPACITY10(struct SCSI_LUN_info_t *info,
 	return VSFERR_NONE;
 }
 
-// TODO: make SCSI_io_XXXX unblock
 static vsf_err_t SCSI_io_WRITE10(struct SCSI_LUN_info_t *info, uint8_t CB[16], 
 		struct vsf_buffer_t *buffer, uint32_t cur_page)
 {
 	struct mal_info_t *mal_info = (struct mal_info_t *)info->dal_info->extra;
 	uint32_t lba = GET_BE_U32(&CB[2]);
 	uint32_t block_size = (uint32_t)mal_info->capacity.block_size;
+	vsf_err_t err;
 	
-	if (mal.writeblock(info->mal_index, info->dal_info, 
-					(lba + cur_page) * block_size, buffer->buffer, 1))
+	switch (info->status.mal_opt)
 	{
-		info->status.memstat = SCSI_MEMSTAT_NOINIT;
-		info->status.sense_key = SCSI_SENSEKEY_HARDWARE_ERROR;
-		info->status.asc = 0;
-		SCSI_errcode = SCSI_ERRCODE_FAIL;
-		return VSFERR_FAIL;
+	case SCSI_MAL_OPT_INIT:
+		if (mal.writeblock_nb_start(info->mal_index, info->dal_info,
+									lba * block_size, info->status.page_num))
+		{
+			info->status.page_num = 0;
+			info->status.memstat = SCSI_MEMSTAT_NOINIT;
+			info->status.sense_key = SCSI_SENSEKEY_HARDWARE_ERROR;
+			info->status.asc = 0;
+			SCSI_errcode = SCSI_ERRCODE_FAIL;
+			return VSFERR_FAIL;
+		}
+		info->status.mal_opt = SCSI_MAL_OPT_IO;
+	case SCSI_MAL_OPT_IO:
+		if (mal.writeblock_nb(info->mal_index, info->dal_info,
+								(lba + cur_page) * block_size, buffer->buffer))
+		{
+			info->status.page_num = 0;
+			info->status.memstat = SCSI_MEMSTAT_NOINIT;
+			info->status.sense_key = SCSI_SENSEKEY_HARDWARE_ERROR;
+			info->status.asc = 0;
+			SCSI_errcode = SCSI_ERRCODE_FAIL;
+			return VSFERR_FAIL;
+		}
+		info->status.mal_opt = SCSI_MAL_OPT_CHECKREADY;
+	case SCSI_MAL_OPT_CHECKREADY:
+		err = mal.writeblock_nb_isready(info->mal_index, info->dal_info,
+								(lba + cur_page) * block_size, buffer->buffer);
+		if (err)
+		{
+			if (err != VSFERR_NOT_READY)
+			{
+				info->status.page_num = 0;
+				info->status.memstat = SCSI_MEMSTAT_NOINIT;
+				info->status.sense_key = SCSI_SENSEKEY_HARDWARE_ERROR;
+				info->status.asc = 0;
+				SCSI_errcode = SCSI_ERRCODE_FAIL;
+				return VSFERR_FAIL;
+			}
+			return err;
+		}
+		if (cur_page >= (info->status.page_num - 1))
+		{
+			info->status.page_num = 0;
+			if (mal.writeblock_nb_end(info->mal_index, info->dal_info))
+			{
+				info->status.page_num = 0;
+				info->status.memstat = SCSI_MEMSTAT_NOINIT;
+				info->status.sense_key = SCSI_SENSEKEY_HARDWARE_ERROR;
+				info->status.asc = 0;
+				SCSI_errcode = SCSI_ERRCODE_FAIL;
+				return VSFERR_FAIL;
+			}
+		}
+		else
+		{
+			info->status.mal_opt = SCSI_MAL_OPT_IO;
+		}
+		break;
 	}
 	
 	info->status.sense_key = 0;
@@ -280,8 +332,7 @@ static vsf_err_t SCSI_handler_WRITE10(struct SCSI_LUN_info_t *info,
 	*page_size = block_size;
 	*page_num = num_of_page;
 	
-	info->status.block_num = num_of_page;
-	info->status.cur_block = 0;
+	info->status.page_num = num_of_page;
 	info->status.mal_opt = SCSI_MAL_OPT_INIT;
 	
 	info->status.sense_key = 0;
@@ -290,22 +341,74 @@ static vsf_err_t SCSI_handler_WRITE10(struct SCSI_LUN_info_t *info,
 	return VSFERR_NONE;
 }
 
-// TODO: make SCSI_io_XXXX unblock
 static vsf_err_t SCSI_io_READ10(struct SCSI_LUN_info_t *info, uint8_t CB[16], 
 		struct vsf_buffer_t *buffer, uint32_t cur_page)
 {
 	struct mal_info_t *mal_info = (struct mal_info_t *)info->dal_info->extra;
 	uint32_t lba = GET_BE_U32(&CB[2]);
 	uint32_t block_size = (uint32_t)mal_info->capacity.block_size;
+	vsf_err_t err;
 	
-	if (mal.readblock(info->mal_index, info->dal_info, 
-					(lba + cur_page) * block_size, buffer->buffer, 1))
+	switch (info->status.mal_opt)
 	{
-		info->status.memstat = SCSI_MEMSTAT_NOINIT;
-		info->status.sense_key = SCSI_SENSEKEY_HARDWARE_ERROR;
-		info->status.asc = 0;
-		SCSI_errcode = SCSI_ERRCODE_FAIL;
-		return VSFERR_FAIL;
+	case SCSI_MAL_OPT_INIT:
+		if (mal.readblock_nb_start(info->mal_index, info->dal_info,
+									lba * block_size, info->status.page_num))
+		{
+			info->status.page_num = 0;
+			info->status.memstat = SCSI_MEMSTAT_NOINIT;
+			info->status.sense_key = SCSI_SENSEKEY_HARDWARE_ERROR;
+			info->status.asc = 0;
+			SCSI_errcode = SCSI_ERRCODE_FAIL;
+			return VSFERR_FAIL;
+		}
+		info->status.mal_opt = SCSI_MAL_OPT_CHECKREADY;
+	case SCSI_MAL_OPT_CHECKREADY:
+		err = mal.readblock_nb_isready(info->mal_index, info->dal_info,
+								(lba + cur_page) * block_size, buffer->buffer);
+		if (err)
+		{
+			if (err != VSFERR_NOT_READY)
+			{
+				info->status.page_num = 0;
+				info->status.memstat = SCSI_MEMSTAT_NOINIT;
+				info->status.sense_key = SCSI_SENSEKEY_HARDWARE_ERROR;
+				info->status.asc = 0;
+				SCSI_errcode = SCSI_ERRCODE_FAIL;
+				return VSFERR_FAIL;
+			}
+			return err;
+		}
+		info->status.mal_opt = SCSI_MAL_OPT_IO;
+	case SCSI_MAL_OPT_IO:
+		if (mal.readblock_nb(info->mal_index, info->dal_info,
+								(lba + cur_page) * block_size, buffer->buffer))
+		{
+			info->status.page_num = 0;
+			info->status.memstat = SCSI_MEMSTAT_NOINIT;
+			info->status.sense_key = SCSI_SENSEKEY_HARDWARE_ERROR;
+			info->status.asc = 0;
+			SCSI_errcode = SCSI_ERRCODE_FAIL;
+			return VSFERR_FAIL;
+		}
+		if (cur_page >= (info->status.page_num - 1))
+		{
+			info->status.page_num = 0;
+			if (mal.readblock_nb_end(info->mal_index, info->dal_info))
+			{
+				info->status.page_num = 0;
+				info->status.memstat = SCSI_MEMSTAT_NOINIT;
+				info->status.sense_key = SCSI_SENSEKEY_HARDWARE_ERROR;
+				info->status.asc = 0;
+				SCSI_errcode = SCSI_ERRCODE_FAIL;
+				return VSFERR_FAIL;
+			}
+		}
+		else
+		{
+			info->status.mal_opt = SCSI_MAL_OPT_CHECKREADY;
+		}
+		break;
 	}
 	
 	info->status.sense_key = 0;
@@ -333,8 +436,7 @@ static vsf_err_t SCSI_handler_READ10(struct SCSI_LUN_info_t *info,
 	*page_size = block_size;
 	*page_num = num_of_page;
 	
-	info->status.block_num = num_of_page;
-	info->status.cur_block = 0;
+	info->status.page_num = num_of_page;
 	info->status.mal_opt = SCSI_MAL_OPT_INIT;
 	
 	info->status.sense_key = 0;
@@ -513,7 +615,7 @@ vsf_err_t SCSI_Poll(struct SCSI_handler_t *handlers,
 		break;
 	case SCSI_MEMSTAT_POLL:
 		// poll if no transaction
-		if (!info->status.block_num)
+		if (!info->status.page_num)
 		{
 			
 		}

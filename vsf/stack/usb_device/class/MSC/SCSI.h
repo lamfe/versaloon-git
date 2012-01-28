@@ -82,13 +82,12 @@ struct SCSI_LUN_status_t
 		SCSI_MEMSTAT_WAITINIT,
 		SCSI_MEMSTAT_POLL,
 	} memstat;
-	uint64_t block_num;
-	uint64_t cur_block;
+	uint64_t page_num;
 	enum SCSI_MAL_opt_t
 	{
-		SCSI_MAL_OPT_INIT,
+		SCSI_MAL_OPT_INIT = 0,
 		SCSI_MAL_OPT_IO,
-		SCSI_MAL_OPPT_WAITREADY,
+		SCSI_MAL_OPT_CHECKREADY,
 	} mal_opt;
 };
 

@@ -377,7 +377,7 @@ static vsf_err_t vsfusbd_MSCBOT_class_init(uint8_t iface,
 	param->bot_status = VSFUSBD_MSCBOT_STATUS_IDLE;
 	for (i = 0; i <= param->max_lun; i++)
 	{
-		param->lun_info[i].status.block_num = 0;
+		param->lun_info[i].status.page_num = 0;
 	}
 	return VSFERR_NONE;
 }
