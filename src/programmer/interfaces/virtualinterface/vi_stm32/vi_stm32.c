@@ -154,6 +154,16 @@ vsf_err_t vi_stm32_gpio_in(uint8_t interface_index, uint32_t mask, uint32_t *val
 	return VSFERR_NONE;
 }
 
+vsf_err_t vi_stm32_gpio_set(uint8_t interface_index, uint32_t mask)
+{
+	return VSFERR_NONE;
+}
+
+vsf_err_t vi_stm32_gpio_clear(uint8_t interface_index, uint32_t mask)
+{
+	return VSFERR_NONE;
+}
+
 vsf_err_t vi_stm32_gpio_out(uint8_t interface_index, uint32_t mask, uint32_t value)
 {
 	return VSFERR_NONE;
@@ -313,6 +323,8 @@ struct interfaces_info_t vi_stm32_interfaces =
 		vi_stm32_gpio_init,
 		vi_stm32_gpio_fini,
 		vi_stm32_gpio_config,
+		vi_stm32_gpio_set,
+		vi_stm32_gpio_clear,
 		vi_stm32_gpio_out,
 		vi_stm32_gpio_in
 	},
