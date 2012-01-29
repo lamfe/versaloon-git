@@ -588,8 +588,13 @@ static struct SCSI_handler_t* SCSI_get_handler(struct SCSI_handler_t *handlers,
 	return NULL;
 }
 
-vsf_err_t SCSI_Poll(struct SCSI_handler_t *handlers, 
-						struct SCSI_LUN_info_t *info)
+vsf_err_t SCSI_Init(struct SCSI_LUN_info_t *info)
+{
+	info->status.page_num = 0;
+	return VSFERR_NONE;
+}
+
+vsf_err_t SCSI_Poll(struct SCSI_LUN_info_t *info)
 {
 	vsf_err_t err;
 	

@@ -377,7 +377,7 @@ static vsf_err_t vsfusbd_MSCBOT_class_init(uint8_t iface,
 	param->bot_status = VSFUSBD_MSCBOT_STATUS_IDLE;
 	for (i = 0; i <= param->max_lun; i++)
 	{
-		param->lun_info[i].status.page_num = 0;
+		SCSI_Init(&param->lun_info[i]);
 	}
 	return VSFERR_NONE;
 }
@@ -399,7 +399,7 @@ static vsf_err_t vsfusbd_MSCBOT_class_poll(uint8_t iface,
 	
 	for (i = 0; i <= param->max_lun; i++)
 	{
-		SCSI_Poll(param->cur_handlers, &param->lun_info[i]);
+		SCSI_Poll(&param->lun_info[i]);
 	}
 	
 	if (!param->poll)
