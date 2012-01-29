@@ -17,19 +17,30 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#define DAL_INTERFACE_PARSER_EN				1
+#ifndef __SD_SDIO_DRV_H_INCLUDED__
+#define __SD_SDIO_DRV_H_INCLUDED__
 
-#define DAL_MIC2826_EN						0
-#define DAL_NRF24L01_EN						0
+struct sd_sdio_drv_interface_t
+{
+	uint8_t sdio_port;
+	uint8_t sdio_bus_width;
+};
 
-#define DAL_MAL_EN							1
-#define DAL_EE93CX6_EN						1
-#define DAL_EE24CXX_EN						1
-#define DAL_DF25XX_EN						1
-#define DAL_DF45XX_EN						1
-#define DAL_SD_SPI_EN						1
-#define DAL_SD_SDIO_EN						1
-#define DAL_CFI_EN							0
-#define DAL_NAND_EN							0
-#define DAL_MAL_EMPTY_EN					0
+struct sd_sdio_drv_info_t
+{
+	enum sd_sdio_drv_state_t
+	{
+		SD_SDIO_DRV_WAITRESP,
+		SD_SDIO_DRV_WAITBUSY,
+		SD_SDIO_DRV_WAITDATATOK,
+		SD_SDIO_DRV_WAITDATALASTBUSY,
+	} state;
+	uint32_t retry;
+	uint64_t cur_block;
+	uint64_t total_block;
+};
+
+extern struct mal_driver_t sd_sdio_drv;
+
+#endif /*  __SD_SDIO_DRV_H_INCLUDED__ */
 

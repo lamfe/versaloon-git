@@ -68,4 +68,8 @@
 #define stm32_EINT_INT				0x04
 #define stm32_EINT_EVT				0x08
 
+#define stm32_SDIO_RESP_NONE		0x00
+#define stm32_SDIO_RESP_SHORT		0x40
+#define stm32_SDIO_RESP_LONG		0xC0
+
 #endif	// __STM32_INTERFACE_CONST_H_INCLUDED__

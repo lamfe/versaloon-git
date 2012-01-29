@@ -1997,6 +1997,12 @@
         </file>
       </group>
       <group>
+        <name>SDIO</name>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\Interfaces\APP\SDIO\SDIO.c</name>
+        </file>
+      </group>
+      <group>
         <name>SPI</name>
         <file>
           <name>$PROJ_DIR$\..\..\..\Interfaces\APP\SPI\SPI.c</name>
@@ -2196,6 +2202,9 @@
           <name>$PROJ_DIR$\..\..\..\..\..\vsf\dal\sd\sd_common.c</name>
         </file>
         <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\vsf\dal\sd\sd_sdio_drv.c</name>
+        </file>
+        <file>
           <name>$PROJ_DIR$\..\..\..\..\..\vsf\dal\sd\sd_spi_drv.c</name>
         </file>
       </group>
@@ -2355,6 +2364,9 @@
                     <name>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_rcc.c</name>
                   </file>
                   <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_sdio.c</name>
+                  </file>
+                  <file>
                     <name>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_spi.c</name>
                   </file>
                   <file>
@@ -2363,6 +2375,12 @@
                 </group>
               </group>
             </group>
+          </group>
+          <group>
+            <name>sdio</name>
+            <file>
+              <name>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\sdio\STM32_SDIO.c</name>
+            </file>
           </group>
           <group>
             <name>spi</name>

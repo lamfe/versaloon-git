@@ -101,6 +101,7 @@ const struct vss_cmd_t sd_notifier[] =
 
 
 static struct sd_info_t sd_info;
+static struct sd_param_t sd_param;
 static struct sd_spi_drv_info_t sd_spi_drv_info;
 static struct sd_spi_drv_interface_t sd_spi_drv_ifs;
 static struct mal_info_t sd_mal_info =
@@ -110,7 +111,7 @@ static struct mal_info_t sd_mal_info =
 static struct dal_info_t sd_dal_info =
 {
 	NULL,
-	NULL,
+	&sd_param,
 	NULL,
 	&sd_mal_info,
 };
@@ -144,6 +145,7 @@ ENTER_PROGRAM_MODE_HANDLER(sd)
 		sd_spi_drv_ifs.spi_port = 0;
 	}
 	
+	sd_param.kHz = pi->frequency;
 	if (mal.init(MAL_IDX_SD_SPI, &sd_dal_info))
 	{
 		return VSFERR_FAIL;

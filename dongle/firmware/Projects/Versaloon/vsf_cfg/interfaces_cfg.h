@@ -26,6 +26,7 @@
 #define IFS_PWM_EN							1
 #define IFS_MICROWIRE_EN					1
 #define IFS_EBI_EN							1
+#define IFS_SDIO_EN							1
 
 // Core config for clocks, flash, debug...
 #ifndef OSC0_FREQ_HZ

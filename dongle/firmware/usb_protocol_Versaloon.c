@@ -558,7 +558,11 @@ struct vsfusbd_CDC_param_t Versaloon_Shell_param =
 #if MSC_ON_VERSALOON_EN
 // MSC
 static struct sd_info_t sd_info;
-struct sd_spi_drv_info_t sd_spi_drv_info;
+static struct sd_param_t sd_param =
+{
+	9000		// uint16_t kHz;
+};
+static struct sd_spi_drv_info_t sd_spi_drv_info;
 static struct sd_spi_drv_interface_t sd_spi_drv_ifs = 
 {
 	0,			// uint8_t cs_port;
@@ -572,7 +576,7 @@ static struct mal_info_t sd_mal_info =
 static struct dal_info_t sd_dal_info = 
 {
 	&sd_spi_drv_ifs,
-	NULL,
+	&sd_param,
 	&sd_spi_drv_info,
 	&sd_mal_info,
 };
