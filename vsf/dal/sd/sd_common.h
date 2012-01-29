@@ -130,26 +130,30 @@
 
 #define SD_CMD59_CRC_OPT					0x01
 
-// OCR regist
-#define  SD_OCR_LVR							(1UL << 7)
-#define  SD_OCR_20_21V						(1UL << 8)
-#define  SD_OCR_21_22V						(1UL << 9)
-#define  SD_OCR_22_33V						(1UL << 10)
-#define  SD_OCR_23_24V						(1UL << 11)
-#define  SD_OCR_24_25V						(1UL << 12)
-#define  SD_OCR_25_26V						(1UL << 13)
-#define  SD_OCR_26_27V						(1UL << 14)
-#define  SD_OCR_27_28V						(1UL << 15)
-#define  SD_OCR_28_29V						(1UL << 16)
-#define  SD_OCR_29_30V						(1UL << 17)
-#define  SD_OCR_30_31V						(1UL << 18)
-#define  SD_OCR_31_32V						(1UL << 19)
-#define  SD_OCR_32_33V						(1UL << 20)
-#define  SD_OCR_33_34V						(1UL << 21)
-#define  SD_OCR_34_35V						(1UL << 22)
-#define  SD_OCR_35_36V						(1UL << 23)
-#define  SD_OCR_CCS							(1UL << 30)
-#define  SD_OCR_BUSY						(1UL << 31)
+// OCR register
+#define  SD_OCR_LVR							((uint32_t)1 << 7)
+#define  SD_OCR_20_21V						((uint32_t)1 << 8)
+#define  SD_OCR_21_22V						((uint32_t)1 << 9)
+#define  SD_OCR_22_33V						((uint32_t)1 << 10)
+#define  SD_OCR_23_24V						((uint32_t)1 << 11)
+#define  SD_OCR_24_25V						((uint32_t)1 << 12)
+#define  SD_OCR_25_26V						((uint32_t)1 << 13)
+#define  SD_OCR_26_27V						((uint32_t)1 << 14)
+#define  SD_OCR_27_28V						((uint32_t)1 << 15)
+#define  SD_OCR_28_29V						((uint32_t)1 << 16)
+#define  SD_OCR_29_30V						((uint32_t)1 << 17)
+#define  SD_OCR_30_31V						((uint32_t)1 << 18)
+#define  SD_OCR_31_32V						((uint32_t)1 << 19)
+#define  SD_OCR_32_33V						((uint32_t)1 << 20)
+#define  SD_OCR_33_34V						((uint32_t)1 << 21)
+#define  SD_OCR_34_35V						((uint32_t)1 << 22)
+#define  SD_OCR_35_36V						((uint32_t)1 << 23)
+#define  SD_OCR_CCS							((uint32_t)1 << 30)
+#define  SD_OCR_BUSY						((uint32_t)1 << 31)
+
+// SCR register
+#define SD_SCR_BUSWIDTH_4BIT				((uint64_t)1 << 50)
+#define SD_SCR_BUSWIDTH_1BIT				((uint64_t)1 << 48)
 
 #define SD_TRANSTOKEN_DATA_OUT				0x8000
 #define SD_TRANSTOKEN_DATA_IN				0x4000

@@ -34,12 +34,13 @@ static vsf_err_t sd_sdio_transact_init(struct sd_sdio_drv_interface_t *ifs)
 {
 	interfaces->sdio.init(ifs->sdio_port);
 	// use slowest sdio speed when initializing
-	interfaces->sdio.config(ifs->sdio_port, 400, ifs->sdio_bus_width);
-	return interfaces->sdio.enable(ifs->sdio_port);
+	interfaces->sdio.config(ifs->sdio_port, 400, 1);
+	return interfaces->sdio.start(ifs->sdio_port);
 }
 
 static vsf_err_t sd_sdio_transact_fini(struct sd_sdio_drv_interface_t *ifs)
 {
+	interfaces->sdio.stop(ifs->sdio_port);
 	return interfaces->sdio.fini(ifs->sdio_port);
 }
 
@@ -112,31 +113,47 @@ static vsf_err_t sd_sdio_transact_datablock_init(
 	struct sd_sdio_drv_interface_t *ifs, struct sd_sdio_drv_info_t *drv_info,
 	uint16_t token, uint32_t block_num, uint32_t block_size)
 {
-	return VSFERR_NONE;
-}
-
-static vsf_err_t sd_sdio_transact_datablock(
-	struct sd_sdio_drv_interface_t *ifs, struct sd_sdio_drv_info_t *drv_info,
-	uint16_t token, uint8_t *buffer, uint32_t block_size)
-{
+	if (token & SD_TRANSTOKEN_DATA_IN)
+	{
+		return interfaces->sdio.data_rx(ifs->sdio_port, 1000,
+							block_num * block_size, block_size);
+	}
+	else if (token & SD_TRANSTOKEN_DATA_OUT)
+	{
+		return interfaces->sdio.data_tx(ifs->sdio_port, 1000,
+							block_num * block_size, block_size);
+	}
+	
 	return VSFERR_NONE;
 }
 
 static vsf_err_t sd_sdio_transact_datablock_isready(
 	struct sd_sdio_drv_interface_t *ifs, struct sd_sdio_drv_info_t *drv_info,
-	uint16_t token)
+	uint16_t token, uint32_t size, uint8_t *buffer)
 {
-	return VSFERR_NONE;
+	if (token & SD_TRANSTOKEN_DATA_IN)
+	{
+		return interfaces->sdio.data_rx_isready(ifs->sdio_port, size, buffer);
+	}
+	else if (token & SD_TRANSTOKEN_DATA_OUT)
+	{
+		return interfaces->sdio.data_tx_isready(ifs->sdio_port, size, buffer);
+	}
+	else
+	{
+		return VSFERR_FAIL;
+	}
 }
 
 static vsf_err_t sd_sdio_transact_datablock_waitready(
 	struct sd_sdio_drv_interface_t *ifs, struct sd_sdio_drv_info_t *drv_info,
-	uint16_t token)
+	uint16_t token, uint32_t size, uint8_t *buffer)
 {
 	vsf_err_t err;
 	
 	do {
-		err = sd_sdio_transact_datablock_isready(ifs, drv_info, token);
+		err = sd_sdio_transact_datablock_isready(ifs, drv_info, token,
+													size, buffer);
 	} while (err && (VSFERR_NOT_READY == err));
 	return err;
 }
@@ -158,6 +175,16 @@ static vsf_err_t sd_sdio_transact_do(
 	uint16_t token, uint8_t cmd, uint32_t arg, uint32_t *resp,
 	uint8_t *data, uint32_t block_num, uint32_t block_size)
 {
+	if ((token & (SD_TRANSTOKEN_DATA_OUT | SD_TRANSTOKEN_DATA_IN)) &&
+		(data != NULL) && (block_size))
+	{
+		if (sd_sdio_transact_datablock_init(ifs, drv_info, token,
+											block_num, block_size))
+		{
+			return VSFERR_FAIL;
+		}
+	}
+	
 	if (sd_sdio_transact_cmd(ifs, drv_info, token, cmd, arg) ||
 		sd_sdio_transact_cmd_waitready(ifs, drv_info, token, cmd, resp))
 	{
@@ -167,32 +194,9 @@ static vsf_err_t sd_sdio_transact_do(
 	if ((token & (SD_TRANSTOKEN_DATA_OUT | SD_TRANSTOKEN_DATA_IN)) &&
 		(data != NULL) && (block_size))
 	{
-		if (sd_sdio_transact_datablock_init(ifs, drv_info, token,
-											block_num, block_size))
-		{
-			return VSFERR_FAIL;
-		}
-		
-		if (token & SD_TRANSTOKEN_DATA_IN)
-		{
-			if (sd_sdio_transact_datablock_waitready(ifs, drv_info, token) ||
-				sd_sdio_transact_datablock(ifs, drv_info, token, data,
-											block_size))
-			{
-				return VSFERR_FAIL;
-			}
-		}
-		else
-		{
-			if (sd_sdio_transact_datablock(ifs, drv_info, token, data,
-											block_size) ||
-				sd_sdio_transact_datablock_waitready(ifs, drv_info, token))
-			{
-				return VSFERR_FAIL;
-			}
-		}
-		
-		if (sd_sdio_transact_datablock_fini(ifs, drv_info, token))
+		if (sd_sdio_transact_datablock_waitready(ifs, drv_info, token,
+												block_num * block_size, data) ||
+			sd_sdio_transact_datablock_fini(ifs, drv_info, token))
 		{
 			return VSFERR_FAIL;
 		}
@@ -297,12 +301,73 @@ static vsf_err_t sd_sdio_drv_init_isready(struct dal_info_t *info)
 	if ((NULL == sd_sdio_drv.getinfo) ||
 		(NULL == sd_info) ||
 		sd_sdio_drv.getinfo(info) ||
-		interfaces->sdio.config(ifs->sdio_port, param->kHz,
-								ifs->sdio_bus_width) ||
-//		interfaces->peripheral_commit() ||
-//		sd_sdio_transact(ifs, drv_info, SD_TRANSTOKEN_RESP_R1,
-//				SD_CMD_SET_BLOCKLEN, 512, NULL, NULL, 0, 0)
-		0)
+		interfaces->sdio.config(ifs->sdio_port, param->kHz, 1) ||
+		interfaces->peripheral_commit() ||
+		// select card
+		sd_sdio_transact(ifs, drv_info, SD_TRANSTOKEN_RESP_R1,
+				SD_CMD_SEL_DESEL_CARD, drv_info->rca << 16, NULL, NULL, 0, 0))
+	{
+		return VSFERR_FAIL;
+	}
+	
+	// read scr
+	if (sd_sdio_transact(ifs, drv_info, SD_TRANSTOKEN_RESP_R1,
+				SD_CMD_SET_BLOCKLEN, 8, NULL, NULL, 0, 0) ||
+		sd_sdio_transact(ifs, drv_info, SD_TRANSTOKEN_RESP_R1,
+				SD_CMD_APP_CMD, drv_info->rca << 16, NULL, NULL, 0, 0) ||
+		sd_sdio_transact(ifs, drv_info,
+				SD_TRANSTOKEN_RESP_R1 | SD_TRANSTOKEN_DATA_IN,
+				SD_ACMD_SEND_SCR, 0, NULL, (uint8_t *)&drv_info->scr, 1, 8))
+	{
+		return VSFERR_FAIL;
+	}
+	drv_info->scr = GET_BE_U64(&drv_info->scr);
+	
+	// enable wide bus
+	if ((sd_info->cardtype != SD_CARDTYPE_MMC) &&
+		(sd_info->cardtype != SD_CARDTYPE_MMC_HC))
+	{
+		if (8 == ifs->sdio_bus_width)
+		{
+		}
+		if (4 == ifs->sdio_bus_width)
+		{
+			if (drv_info->scr & SD_SCR_BUSWIDTH_4BIT)
+			{
+				if (sd_sdio_transact(ifs, drv_info, SD_TRANSTOKEN_RESP_R1,
+						SD_CMD_APP_CMD, drv_info->rca << 16, NULL, NULL, 0, 0) ||
+					sd_sdio_transact(ifs, drv_info, SD_TRANSTOKEN_RESP_R1,
+						SD_ACMD_BUS_WIDTH, 0x02, NULL, NULL, 0, 0))
+				{
+					return VSFERR_FAIL;
+				}
+			}
+			else
+			{
+				ifs->sdio_bus_width = 1;
+			}
+		}
+		if (1 == ifs->sdio_bus_width)
+		{
+			if (drv_info->scr & SD_SCR_BUSWIDTH_1BIT)
+			{
+				if (sd_sdio_transact(ifs, drv_info, SD_TRANSTOKEN_RESP_R1,
+						SD_CMD_APP_CMD, drv_info->rca << 16, NULL, NULL, 0, 0) ||
+					sd_sdio_transact(ifs, drv_info, SD_TRANSTOKEN_RESP_R1,
+						SD_ACMD_BUS_WIDTH, 0x00, NULL, NULL, 0, 0))
+				{
+					return VSFERR_FAIL;
+				}
+			}
+			else
+			{
+				return VSFERR_FAIL;
+			}
+		}
+	}
+	
+	if (sd_sdio_transact(ifs, drv_info, SD_TRANSTOKEN_RESP_R1,
+							SD_CMD_SET_BLOCKLEN, 512, NULL, NULL, 0, 0))
 	{
 		return VSFERR_FAIL;
 	}
@@ -340,6 +405,7 @@ static vsf_err_t sd_sdio_getinfo(struct dal_info_t *info)
 		return VSFERR_FAIL;
 	}
 	
+	drv_info->rca = rca >> 16;
 	SET_LE_U32(&sd_info->cid[0], GET_BE_U32(&sd_info->cid[0]));
 	SET_LE_U32(&sd_info->cid[4], GET_BE_U32(&sd_info->cid[4]));
 	SET_LE_U32(&sd_info->cid[8], GET_BE_U32(&sd_info->cid[8]));
