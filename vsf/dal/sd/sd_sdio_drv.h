@@ -41,6 +41,7 @@ struct sd_sdio_drv_info_t
 	uint32_t retry;
 	uint64_t cur_block;
 	uint64_t total_block;
+	uint32_t total_size;
 };
 
 extern struct mal_driver_t sd_sdio_drv;

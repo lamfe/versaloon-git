@@ -29,6 +29,7 @@
 #define STM32_SDIO_CLKCR_4B				((uint32_t)1 << 11)
 #define STM32_SDIO_CLKCR_8B				((uint32_t)1 << 12)
 #define STM32_SDIO_CLKCR_CLKEN			((uint32_t)1 << 8)
+#define STM32_SDIO_CLKCR_HWFC_EN		((uint32_t)1 << 14)
 
 #define STM32_SDIO_POWER_PWROFF			0
 #define STM32_SDIO_POWER_PWRON			0x03
@@ -143,7 +144,7 @@ vsf_err_t stm32_sdio_config(uint8_t index, uint16_t kHz, uint8_t buswidth)
 		}
 		temp_reg |= (clk_div - 2);
 	}
-	SDIO->CLKCR = temp_reg | STM32_SDIO_CLKCR_CLKEN;
+	SDIO->CLKCR = temp_reg | STM32_SDIO_CLKCR_CLKEN | STM32_SDIO_CLKCR_HWFC_EN;
 	
 	return VSFERR_NONE;
 }
@@ -394,22 +395,21 @@ vsf_err_t stm32_sdio_data_rx_isready(uint8_t index, uint32_t size,
 		if (status & (STM32_SDIO_STA_DBCKEND | STM32_SDIO_STA_DATAEND))
 		{
 			SDIO->ICR = STM32_SDIO_STA_DBCKEND | STM32_SDIO_STA_DATAEND;
-			return VSFERR_NONE;
 		}
-		else
-		{
-			return VSFERR_NOT_READY;
-		}
+		stm32_sdio_data_rx_pos = 0;
+		return VSFERR_NONE;
 	}
 	if (status & (STM32_SDIO_STA_DBCKEND | STM32_SDIO_STA_DATAEND))
 	{
-		if (status & STM32_SDIO_STA_RXDAVL)
+		while ((status & STM32_SDIO_STA_RXDAVL) &&
+			   (stm32_sdio_data_rx_pos < size))
 		{
 			*(uint32_t *)&buffer[stm32_sdio_data_rx_pos] = SDIO->FIFO;
 			stm32_sdio_data_rx_pos += 4;
 		}
 		SDIO->ICR = STM32_SDIO_STA_DBCKEND | STM32_SDIO_STA_DATAEND;
-		return (stm32_sdio_data_rx_pos == size) ? VSFERR_NONE : VSFERR_FAIL;
+		stm32_sdio_data_rx_pos = 0;
+		return (stm32_sdio_data_rx_pos >= size) ? VSFERR_NONE : VSFERR_FAIL;
 	}
 	return VSFERR_NOT_READY;
 }
