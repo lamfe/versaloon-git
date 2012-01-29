@@ -144,6 +144,7 @@ USR_INCS+= -I $(SRCDIR)/Interfaces
 USR_SRCS+= $(APP_IFACES_DIR)/GPIO/GPIO.c \
   $(APP_IFACES_DIR)/USART/USART.c \
   $(APP_IFACES_DIR)/SPI/SPI.c \
+  $(APP_IFACES_DIR)/SDIO/SDIO.c \
   $(APP_IFACES_DIR)/JTAG/JTAG_TAP.c \
   $(APP_IFACES_DIR)/SWD/SWD.c \
   $(APP_IFACES_DIR)/SWIM/SWIM.c \
@@ -193,7 +194,8 @@ USR_SRCS+= $(STM32_IFACES_DIR)/core.c \
   $(STM32_IFACES_DIR)/adc/STM32_ADC.c \
   $(STM32_IFACES_DIR)/usart/STM32_USART.c \
   $(STM32_IFACES_DIR)/ebi/STM32_EBI.c \
-  $(STM32_IFACES_DIR)/flash/STM32_FLASH.c
+  $(STM32_IFACES_DIR)/flash/STM32_FLASH.c \
+  $(STM32_IFACES_DIR)/sdio/STM32_SDIO.c
 USR_INCS+= -I $(STM32_IFACES_DIR) \
   -I $(STM32_IFACES_DIR)/gpio \
   -I $(STM32_IFACES_DIR)/usbd \
@@ -203,7 +205,8 @@ USR_INCS+= -I $(STM32_IFACES_DIR) \
   -I $(STM32_IFACES_DIR)/adc \
   -I $(STM32_IFACES_DIR)/usart \
   -I $(STM32_IFACES_DIR)/ebi \
-  -I $(STM32_IFACES_DIR)/flash
+  -I $(STM32_IFACES_DIR)/flash \
+  -I $(STM32_IFACES_DIR)/sdio
 
 #VSF dal
 USR_SRCS+= $(VSFDIR)/dal/dal.c \
@@ -213,6 +216,7 @@ USR_SRCS+= $(VSFDIR)/dal/dal.c \
   $(VSFDIR)/dal/ee93cx6/ee93cx6_drv.c \
   $(VSFDIR)/dal/sd/sd_common.c \
   $(VSFDIR)/dal/sd/sd_spi_drv.c \
+  $(VSFDIR)/dal/sd/sd_sdio_drv.c \
   $(VSFDIR)/dal/mal/mal.c \
   $(VSFDIR)/dal/mic2826/mic2826_drv.c \
   $(VSFDIR)/dal/nrf24l01/nrf24l01_drv.c \
