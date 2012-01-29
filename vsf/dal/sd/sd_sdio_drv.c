@@ -158,13 +158,6 @@ static vsf_err_t sd_sdio_transact_datablock_waitready(
 	return err;
 }
 
-static vsf_err_t sd_sdio_transact_datablock_fini(
-	struct sd_sdio_drv_interface_t *ifs, struct sd_sdio_drv_info_t *drv_info,
-	uint16_t token)
-{
-	return VSFERR_NONE;
-}
-
 static vsf_err_t sd_sdio_transact_end(struct sd_sdio_drv_interface_t *ifs)
 {
 	return VSFERR_NONE;
@@ -195,8 +188,7 @@ static vsf_err_t sd_sdio_transact_do(
 		(data != NULL) && (block_size))
 	{
 		if (sd_sdio_transact_datablock_waitready(ifs, drv_info, token,
-												block_num * block_size, data) ||
-			sd_sdio_transact_datablock_fini(ifs, drv_info, token))
+												block_num * block_size, data))
 		{
 			return VSFERR_FAIL;
 		}
@@ -337,7 +329,8 @@ static vsf_err_t sd_sdio_drv_init_isready(struct dal_info_t *info)
 				if (sd_sdio_transact(ifs, drv_info, SD_TRANSTOKEN_RESP_R1,
 						SD_CMD_APP_CMD, drv_info->rca << 16, NULL, NULL, 0, 0) ||
 					sd_sdio_transact(ifs, drv_info, SD_TRANSTOKEN_RESP_R1,
-						SD_ACMD_BUS_WIDTH, 0x02, NULL, NULL, 0, 0))
+						SD_ACMD_BUS_WIDTH, 0x02, NULL, NULL, 0, 0) ||
+					interfaces->sdio.config(ifs->sdio_port, param->kHz, 4))
 				{
 					return VSFERR_FAIL;
 				}
@@ -354,7 +347,8 @@ static vsf_err_t sd_sdio_drv_init_isready(struct dal_info_t *info)
 				if (sd_sdio_transact(ifs, drv_info, SD_TRANSTOKEN_RESP_R1,
 						SD_CMD_APP_CMD, drv_info->rca << 16, NULL, NULL, 0, 0) ||
 					sd_sdio_transact(ifs, drv_info, SD_TRANSTOKEN_RESP_R1,
-						SD_ACMD_BUS_WIDTH, 0x00, NULL, NULL, 0, 0))
+						SD_ACMD_BUS_WIDTH, 0x00, NULL, NULL, 0, 0) ||
+					interfaces->sdio.config(ifs->sdio_port, param->kHz, 1))
 				{
 					return VSFERR_FAIL;
 				}
@@ -418,17 +412,18 @@ static vsf_err_t sd_sdio_getinfo(struct dal_info_t *info)
 	sd_parse_csd((uint8_t *)csd, sd_info);
 	return VSFERR_NONE;
 }
-/*
+
 static vsf_err_t sd_sdio_drv_readblock_nb_start(struct dal_info_t *info, 
 											uint64_t address, uint64_t count)
 {
-	struct sd_sdio_drv_interface_t *ifs = 
+	struct sd_sdio_drv_info_t *drv_info =
+								(struct sd_sdio_drv_info_t *)info->info;
+	struct sd_sdio_drv_interface_t *ifs =
 								(struct sd_sdio_drv_interface_t *)info->ifs;
 	struct mal_info_t *mal_info = (struct mal_info_t *)info->extra;
 	struct sd_info_t *sd_info = (struct sd_info_t *)mal_info->extra;
 	uint16_t token;
 	uint32_t arg;
-	uint8_t resp;
 	
 	if (SD_CARDTYPE_SD_V2HC == sd_info->cardtype)
 	{
@@ -440,104 +435,69 @@ static vsf_err_t sd_sdio_drv_readblock_nb_start(struct dal_info_t *info,
 	}
 	
 	token = SD_TRANSTOKEN_RESP_R1 | SD_TRANSTOKEN_DATA_IN;
-	if (sd_sdio_transact_start(ifs) || 
-		sd_sdio_transact_cmd(ifs, token, 
-						SD_CMD_READ_MULTIPLE_BLOCK, arg, (uint32_t)count) || 
-		sd_sdio_transact_cmd_waitready(ifs, token, &resp, NULL) || 
-		(resp != SD_CS8_NONE))
+	if (sd_sdio_transact_start(ifs) ||
+		sd_sdio_transact_datablock_init(ifs, drv_info, token, count, 512) ||
+		sd_sdio_transact_cmd(ifs, drv_info, token,
+											SD_CMD_READ_MULTIPLE_BLOCK, arg) ||
+		sd_sdio_transact_cmd_waitready(ifs, drv_info, token,
+											SD_CMD_READ_MULTIPLE_BLOCK, NULL))
 	{
 		sd_sdio_transact_end(ifs);
 		interfaces->peripheral_commit();
 		return VSFERR_FAIL;
 	}
 	
+	drv_info->total_size = count * 512;
 	return interfaces->peripheral_commit();
 }
 
 static vsf_err_t sd_sdio_drv_readblock_nb(struct dal_info_t *info, 
 										uint64_t address, uint8_t *buff)
 {
-	struct sd_sdio_drv_interface_t *ifs = 
-								(struct sd_sdio_drv_interface_t *)info->ifs;
-	uint16_t token;
-	
+	REFERENCE_PARAMETER(info);
 	REFERENCE_PARAMETER(address);
-	
-	token = SD_TRANSTOKEN_RESP_R1 | SD_TRANSTOKEN_DATA_IN;
-	if (sd_sdio_transact_datablock_init(ifs, token, buff,
-										SD_DATATOKEN_START_BLK) || 
-		sd_sdio_transact_datablock(ifs, token, buff, 512))
-	{
-		sd_sdio_transact_end(ifs);
-		interfaces->peripheral_commit();
-		return VSFERR_FAIL;
-	}
-	
-	return interfaces->peripheral_commit();
+	REFERENCE_PARAMETER(buff);
+	return VSFERR_NONE;
 }
 
 static vsf_err_t sd_sdio_drv_readblock_nb_isready(struct dal_info_t *info, 
 												uint64_t address, uint8_t *buff)
 {
-	vsf_err_t err;
-	struct sd_sdio_drv_interface_t *ifs = 
+	struct sd_sdio_drv_info_t *drv_info =
+								(struct sd_sdio_drv_info_t *)info->info;
+	struct sd_sdio_drv_interface_t *ifs =
 								(struct sd_sdio_drv_interface_t *)info->ifs;
 	uint16_t token;
+	vsf_err_t err;
 	
 	REFERENCE_PARAMETER(address);
 	REFERENCE_PARAMETER(buff);
 	
 	token = SD_TRANSTOKEN_RESP_R1 | SD_TRANSTOKEN_DATA_IN;
-	err = sd_sdio_transact_datablock_isready(ifs, token);
+	err = sd_sdio_transact_datablock_isready(ifs, drv_info, token, 512, buff);
 	if (err && (err != VSFERR_NOT_READY))
 	{
 		sd_sdio_transact_end(ifs);
 		interfaces->peripheral_commit();
 		return err;
 	}
-	if (!err)
-	{
-		sd_sdio_transact_datablock_fini(ifs, token);
-	}
 	
-	return interfaces->peripheral_commit();
-}
-
-static vsf_err_t sd_sdio_drv_readblock_nb_waitready(struct dal_info_t *info, 
-												uint64_t address, uint8_t *buff)
-{
-	struct sd_sdio_drv_interface_t *ifs = 
-								(struct sd_sdio_drv_interface_t *)info->ifs;
-	uint16_t token;
-	
-	REFERENCE_PARAMETER(address);
-	REFERENCE_PARAMETER(buff);
-	
-	token = SD_TRANSTOKEN_RESP_R1 | SD_TRANSTOKEN_DATA_IN;
-	if (sd_sdio_transact_datablock_waitready(ifs, token))
-	{
-		sd_sdio_transact_end(ifs);
-		interfaces->peripheral_commit();
-		return VSFERR_FAIL;
-	}
-	else
-	{
-		sd_sdio_transact_datablock_fini(ifs, token);
-	}
-	
-	return interfaces->peripheral_commit();
+	return err;
 }
 
 static vsf_err_t sd_sdio_drv_readblock_nb_end(struct dal_info_t *info)
 {
-	struct sd_sdio_drv_interface_t *ifs = 
+	struct sd_sdio_drv_info_t *drv_info =
+								(struct sd_sdio_drv_info_t *)info->info;
+	struct sd_sdio_drv_interface_t *ifs =
 								(struct sd_sdio_drv_interface_t *)info->ifs;
 	uint16_t token;
-	uint8_t resp;
 	
 	token = SD_TRANSTOKEN_RESP_R1B;
-	if (sd_sdio_transact_cmd(ifs, token, SD_CMD_STOP_TRANSMISSION, 0, 0) || 
-		sd_sdio_transact_cmd_waitready(ifs, token, &resp, NULL))
+	if (sd_sdio_transact_cmd(ifs, drv_info, token,
+											SD_CMD_STOP_TRANSMISSION, 0) || 
+		sd_sdio_transact_cmd_waitready(ifs, drv_info, token,
+											SD_CMD_STOP_TRANSMISSION, NULL))
 	{
 		sd_sdio_transact_end(ifs);
 		interfaces->peripheral_commit();
@@ -548,11 +508,13 @@ static vsf_err_t sd_sdio_drv_readblock_nb_end(struct dal_info_t *info)
 	interfaces->peripheral_commit();
 	return VSFERR_NONE;
 }
-
+/*
 static vsf_err_t sd_sdio_drv_writeblock_nb_start(struct dal_info_t *info, 
 											uint64_t address, uint64_t count)
 {
-	struct sd_sdio_drv_interface_t *ifs = 
+	struct sd_sdio_drv_info_t *drv_info =
+								(struct sd_sdio_drv_info_t *)info->info;
+	struct sd_sdio_drv_interface_t *ifs =
 								(struct sd_sdio_drv_interface_t *)info->ifs;
 	struct mal_info_t *mal_info = (struct mal_info_t *)info->extra;
 	struct sd_info_t *sd_info = (struct sd_info_t *)mal_info->extra;
@@ -587,7 +549,9 @@ static vsf_err_t sd_sdio_drv_writeblock_nb_start(struct dal_info_t *info,
 static vsf_err_t sd_sdio_drv_writeblock_nb(struct dal_info_t *info, 
 										uint64_t address, uint8_t *buff)
 {
-	struct sd_sdio_drv_interface_t *ifs = 
+	struct sd_sdio_drv_info_t *drv_info =
+								(struct sd_sdio_drv_info_t *)info->info;
+	struct sd_sdio_drv_interface_t *ifs =
 								(struct sd_sdio_drv_interface_t *)info->ifs;
 	uint16_t token;
 	
@@ -609,10 +573,12 @@ static vsf_err_t sd_sdio_drv_writeblock_nb(struct dal_info_t *info,
 static vsf_err_t sd_sdio_drv_writeblock_nb_isready(struct dal_info_t *info, 
 												uint64_t address, uint8_t *buff)
 {
-	vsf_err_t err;
-	struct sd_sdio_drv_interface_t *ifs = 
+	struct sd_sdio_drv_info_t *drv_info =
+								(struct sd_sdio_drv_info_t *)info->info;
+	struct sd_sdio_drv_interface_t *ifs =
 								(struct sd_sdio_drv_interface_t *)info->ifs;
 	uint16_t token;
+	vsf_err_t err;
 	
 	REFERENCE_PARAMETER(address);
 	REFERENCE_PARAMETER(buff);
@@ -625,42 +591,15 @@ static vsf_err_t sd_sdio_drv_writeblock_nb_isready(struct dal_info_t *info,
 		interfaces->peripheral_commit();
 		return err;
 	}
-	if (!err)
-	{
-		sd_sdio_transact_datablock_fini(ifs, token);
-	}
 	
-	return interfaces->peripheral_commit();
-}
-
-static vsf_err_t sd_sdio_drv_writeblock_nb_waitready(struct dal_info_t *info, 
-												uint64_t address, uint8_t *buff)
-{
-	struct sd_sdio_drv_interface_t *ifs = 
-								(struct sd_sdio_drv_interface_t *)info->ifs;
-	uint16_t token;
-	
-	REFERENCE_PARAMETER(address);
-	REFERENCE_PARAMETER(buff);
-	
-	token = SD_TRANSTOKEN_RESP_R1 | SD_TRANSTOKEN_DATA_OUT;
-	if (sd_sdio_transact_datablock_waitready(ifs, token))
-	{
-		sd_sdio_transact_end(ifs);
-		interfaces->peripheral_commit();
-		return VSFERR_FAIL;
-	}
-	else
-	{
-		sd_sdio_transact_datablock_fini(ifs, token);
-	}
-	
-	return interfaces->peripheral_commit();
+	return err;
 }
 
 static vsf_err_t sd_sdio_drv_writeblock_nb_end(struct dal_info_t *info)
 {
-	struct sd_sdio_drv_interface_t *ifs = 
+	struct sd_sdio_drv_info_t *drv_info =
+								(struct sd_sdio_drv_info_t *)info->info;
+	struct sd_sdio_drv_interface_t *ifs =
 								(struct sd_sdio_drv_interface_t *)info->ifs;
 	uint8_t datatoken, resp;
 	
@@ -723,16 +662,16 @@ struct mal_driver_t sd_sdio_drv =
 	NULL,
 	NULL,
 	
-//	sd_sdio_drv_readblock_nb_start,
-//	sd_sdio_drv_readblock_nb,
-//	sd_sdio_drv_readblock_nb_isready,
-//	sd_sdio_drv_readblock_nb_waitready,
-//	sd_sdio_drv_readblock_nb_end,
+	sd_sdio_drv_readblock_nb_start,
+	sd_sdio_drv_readblock_nb,
+	sd_sdio_drv_readblock_nb_isready,
+	NULL,
+	sd_sdio_drv_readblock_nb_end,
 	
 //	sd_sdio_drv_writeblock_nb_start,
 //	sd_sdio_drv_writeblock_nb,
 //	sd_sdio_drv_writeblock_nb_isready,
-//	sd_sdio_drv_writeblock_nb_waitready,
+	NULL,
 //	sd_sdio_drv_writeblock_nb_end
 };
 
