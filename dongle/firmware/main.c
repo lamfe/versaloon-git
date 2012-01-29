@@ -55,13 +55,7 @@ int main(void)
 		usb_protocol_poll();
 	}
 	
-	// disable CDC
-	usart_stream_p0.usart_index = IFS_DUMMY_PORT;
-	
 	vss_run_script("run " EVSPROG_SCRIPT_FILE);
-	
-	// enable CDC again
-	usart_stream_p0.usart_index = 0;
 #endif	// if SCRIPTS_EN
 
 #if HW_HAS_BEEPER
