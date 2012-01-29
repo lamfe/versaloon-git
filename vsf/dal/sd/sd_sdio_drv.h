@@ -28,6 +28,9 @@ struct sd_sdio_drv_interface_t
 
 struct sd_sdio_drv_info_t
 {
+	uint16_t rca;
+	uint64_t scr;
+	
 	enum sd_sdio_drv_state_t
 	{
 		SD_SDIO_DRV_WAITRESP,

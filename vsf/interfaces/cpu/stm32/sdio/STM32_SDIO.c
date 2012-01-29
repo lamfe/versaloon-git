@@ -44,6 +44,16 @@
 #define STM32_SDIO_STA_CTIMEOUT			((uint32_t)1 << 2)
 #define STM32_SDIO_STA_DCRCFAIL			((uint32_t)1 << 1)
 #define STM32_SDIO_STA_CCRCFAIL			((uint32_t)1 << 0)
+#define STM32_SDIO_STA_RXOVERR			((uint32_t)1 << 5)
+#define STM32_SDIO_STA_DBCKEND			((uint32_t)1 << 10)
+#define STM32_SDIO_STA_STBITERR			((uint32_t)1 << 9)
+#define STM32_SDIO_STA_RXDAVL			((uint32_t)1 << 21)
+#define STM32_SDIO_STA_TXDAVL			((uint32_t)1 << 20)
+#define STM32_SDIO_STA_DATAEND			((uint32_t)1 << 8)
+
+#define STM32_SDIO_DCTRL_DTEN			((uint32_t)1 << 0)
+#define STM32_SDIO_DCTRL_TOCARD			((uint32_t)0 << 1)
+#define STM32_SDIO_DCTRL_FROMCARD		((uint32_t)1 << 1)
 
 #define STM32_SDIO_NUM					1
 
@@ -133,12 +143,12 @@ vsf_err_t stm32_sdio_config(uint8_t index, uint16_t kHz, uint8_t buswidth)
 		}
 		temp_reg |= (clk_div - 2);
 	}
-	SDIO->CLKCR = temp_reg;
+	SDIO->CLKCR = temp_reg | STM32_SDIO_CLKCR_CLKEN;
 	
 	return VSFERR_NONE;
 }
 
-vsf_err_t stm32_sdio_enable(uint8_t index)
+vsf_err_t stm32_sdio_start(uint8_t index)
 {
 #if __VSF_DEBUG__
 	if (spi_idx >= STM32_SDIO_NUM)
@@ -148,11 +158,10 @@ vsf_err_t stm32_sdio_enable(uint8_t index)
 #endif
 	
 	SDIO->POWER = STM32_SDIO_POWER_PWRON;
-	SDIO->CLKCR |= STM32_SDIO_CLKCR_CLKEN;
 	return VSFERR_NONE;
 }
 
-vsf_err_t stm32_sdio_disable(uint8_t index)
+vsf_err_t stm32_sdio_stop(uint8_t index)
 {
 #if __VSF_DEBUG__
 	if (spi_idx >= STM32_SDIO_NUM)
@@ -161,12 +170,10 @@ vsf_err_t stm32_sdio_disable(uint8_t index)
 	}
 #endif
 	
-	SDIO->CLKCR &= ~STM32_SDIO_CLKCR_CLKEN;
 	SDIO->POWER = STM32_SDIO_POWER_PWROFF;
 	return VSFERR_NONE;
 }
 
-static uint32_t stm32_sdio_cmd_to[STM32_SDIO_NUM];
 vsf_err_t stm32_sdio_send_cmd(uint8_t index, uint8_t cmd, uint32_t arg,
 								uint8_t resp)
 {
@@ -181,7 +188,6 @@ vsf_err_t stm32_sdio_send_cmd(uint8_t index, uint8_t cmd, uint32_t arg,
 	
 	SDIO->ARG = arg;
 	SDIO->CMD = cmd | STM32_SDIO_CMD_CPSMEN | resp;
-	stm32_sdio_cmd_to[index] = 0;
 	return VSFERR_NONE;
 }
 
@@ -189,6 +195,12 @@ vsf_err_t stm32_sdio_send_cmd_isready(uint8_t index, uint8_t resp)
 {
 	uint32_t status = SDIO->STA;
 	
+#if __VSF_DEBUG__
+	if (spi_idx >= STM32_SDIO_NUM)
+	{
+		return VSFERR_NOT_SUPPORT;
+	}
+#endif
 	if (status & STM32_SDIO_STA_CTIMEOUT)
 	{
 		SDIO->ICR = STM32_SDIO_STA_CTIMEOUT;
@@ -246,24 +258,160 @@ vsf_err_t stm32_sdio_get_resp(uint8_t index, uint8_t *cresp, uint32_t *resp,
 	return VSFERR_NONE;
 }
 
-vsf_err_t stm32_sdio_data_tx(uint8_t index, uint32_t timeout, uint32_t size,
-								uint32_t block_size, uint8_t *buffer)
+static uint32_t stm32_sdio_data_rx_pos = 0, stm32_sdio_data_tx_pos = 0;
+vsf_err_t stm32_sdio_data_tx(uint8_t index, uint32_t to_ms, uint32_t size,
+								uint32_t block_size)
 {
+	struct stm32_info_t *info;
+	uint32_t dtimer;
+	uint8_t i;
+	
+#if __VSF_DEBUG__
+	if (spi_idx >= STM32_SDIO_NUM)
+	{
+		return VSFERR_NOT_SUPPORT;
+	}
+#endif
+	if (size > 0x01FFFFFF)
+	{
+		return VSFERR_FAIL;
+	}
+	for (i = 0; i <= 14; i++)
+	{
+		if (block_size == ((uint32_t)1 << i))
+		{
+			break;
+		}
+	}
+	if (i > 14)
+	{
+		return VSFERR_FAIL;
+	}
+	
+	if (stm32_interface_get_info(&info))
+	{
+		return VSFERR_FAIL;
+	}
+	dtimer = info->ahb_freq_hz;
+	if (!(SDIO->CLKCR & STM32_SDIO_CLKCR_BYPASS))
+	{
+		dtimer /= (SDIO->CLKCR & 0xFF) + 2;
+	}
+	
+	SDIO->DTIMER = (dtimer / 1000) * to_ms;
+	SDIO->DLEN = size;
+	SDIO->DCTRL = (i << 4) | STM32_SDIO_DCTRL_TOCARD | STM32_SDIO_DCTRL_DTEN;
+	stm32_sdio_data_tx_pos = 0;
+	return VSFERR_NONE;
 }
 
-vsf_err_t stm32_sdio_data_tx_isready(uint8_t index, uint32_t timeout,
-							uint32_t size, uint32_t block_size, uint8_t *buffer)
+vsf_err_t stm32_sdio_data_tx_isready(uint8_t index, uint32_t size,
+										uint8_t *buffer)
 {
+	uint32_t status = SDIO->STA;
+	
+#if __VSF_DEBUG__
+	if (spi_idx >= STM32_SDIO_NUM)
+	{
+		return VSFERR_NOT_SUPPORT;
+	}
+#endif
 }
 
-vsf_err_t stm32_sdio_data_rx(uint8_t index, uint32_t timeout, uint32_t size,
-								uint32_t block_size, uint8_t *buff)
+vsf_err_t stm32_sdio_data_rx(uint8_t index, uint32_t to_ms, uint32_t size,
+								uint32_t block_size)
 {
+	struct stm32_info_t *info;
+	uint32_t dtimer;
+	uint8_t i;
+	
+#if __VSF_DEBUG__
+	if (spi_idx >= STM32_SDIO_NUM)
+	{
+		return VSFERR_NOT_SUPPORT;
+	}
+#endif
+	if (size > 0x01FFFFFF)
+	{
+		return VSFERR_FAIL;
+	}
+	for (i = 0; i <= 14; i++)
+	{
+		if (block_size == ((uint32_t)1 << i))
+		{
+			break;
+		}
+	}
+	if (i > 14)
+	{
+		return VSFERR_FAIL;
+	}
+	
+	if (stm32_interface_get_info(&info))
+	{
+		return VSFERR_FAIL;
+	}
+	dtimer = info->ahb_freq_hz;
+	if (!(SDIO->CLKCR & STM32_SDIO_CLKCR_BYPASS))
+	{
+		dtimer /= (SDIO->CLKCR & 0xFF) + 2;
+	}
+	
+	SDIO->DTIMER = (dtimer / 1000) * to_ms;
+	SDIO->DLEN = size;
+	SDIO->DCTRL = (i << 4) | STM32_SDIO_DCTRL_FROMCARD | STM32_SDIO_DCTRL_DTEN;
+	stm32_sdio_data_rx_pos = 0;
+	return VSFERR_NONE;
 }
 
-vsf_err_t stm32_sdio_data_rx_isready(uint8_t index, uint32_t timeout,
-							uint32_t size, uint32_t block_size, uint8_t *buffer)
+vsf_err_t stm32_sdio_data_rx_isready(uint8_t index, uint32_t size,
+										uint8_t *buffer)
 {
+	uint32_t status = SDIO->STA;
+	
+#if __VSF_DEBUG__
+	if (spi_idx >= STM32_SDIO_NUM)
+	{
+		return VSFERR_NOT_SUPPORT;
+	}
+#endif
+	
+	if (status & (STM32_SDIO_STA_DTIMEOUT | STM32_SDIO_STA_DCRCFAIL |
+					STM32_SDIO_STA_RXOVERR | STM32_SDIO_STA_STBITERR))
+	{
+		SDIO->ICR = STM32_SDIO_STA_DTIMEOUT | STM32_SDIO_STA_DCRCFAIL |
+					STM32_SDIO_STA_RXOVERR | STM32_SDIO_STA_STBITERR |
+					STM32_SDIO_STA_DBCKEND | STM32_SDIO_STA_DATAEND;
+		return VSFERR_FAIL;
+	}
+	while ((status & STM32_SDIO_STA_RXDAVL) && (stm32_sdio_data_rx_pos < size))
+	{
+		*(uint32_t *)&buffer[stm32_sdio_data_rx_pos] = SDIO->FIFO;
+		stm32_sdio_data_rx_pos += 4;
+	}
+	if (stm32_sdio_data_rx_pos >= size)
+	{
+		if (status & (STM32_SDIO_STA_DBCKEND | STM32_SDIO_STA_DATAEND))
+		{
+			SDIO->ICR = STM32_SDIO_STA_DBCKEND | STM32_SDIO_STA_DATAEND;
+			return VSFERR_NONE;
+		}
+		else
+		{
+			return VSFERR_NOT_READY;
+		}
+	}
+	if (status & (STM32_SDIO_STA_DBCKEND | STM32_SDIO_STA_DATAEND))
+	{
+		if (status & STM32_SDIO_STA_RXDAVL)
+		{
+			*(uint32_t *)&buffer[stm32_sdio_data_rx_pos] = SDIO->FIFO;
+			stm32_sdio_data_rx_pos += 4;
+		}
+		SDIO->ICR = STM32_SDIO_STA_DBCKEND | STM32_SDIO_STA_DATAEND;
+		return (stm32_sdio_data_rx_pos == size) ? VSFERR_NONE : VSFERR_FAIL;
+	}
+	return VSFERR_NOT_READY;
 }
 
 #endif

@@ -481,11 +481,15 @@ const struct app_interfaces_info_t app_interfaces =
 		sdio_init,
 		sdio_fini,
 		sdio_config,
-		sdio_enable,
-		sdio_disable,
+		sdio_start,
+		sdio_stop,
 		sdio_send_cmd,
 		sdio_send_cmd_isready,
 		sdio_get_resp,
+		sdio_data_tx,
+		sdio_data_tx_isready,
+		sdio_data_rx,
+		sdio_data_rx_isready,
 	}
 #endif
 	,{
