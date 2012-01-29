@@ -344,6 +344,9 @@ struct app_interfaces_info_t
 #if INTERFACE_MICROWIRE_EN
 	struct interface_microwire_t microwire;
 #endif
+#if INTERFACE_SDIO_EN
+	struct interface_sdio_t sdio;
+#endif
 	struct interface_tickclk_t tickclk;
 	struct interface_delay_t delay;
 	struct interface_poll_t poll;

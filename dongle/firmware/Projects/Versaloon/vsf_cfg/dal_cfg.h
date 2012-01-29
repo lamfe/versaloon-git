@@ -28,7 +28,7 @@
 #define DAL_DF25XX_EN						1
 #define DAL_DF45XX_EN						1
 #define DAL_SD_SPI_EN						1
-#define DAL_SD_SDIO_EN						0
+#define DAL_SD_SDIO_EN						1
 #define DAL_CFI_EN							0
 #define DAL_NAND_EN							0
 #define DAL_MAL_EMPTY_EN					0

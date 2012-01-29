@@ -723,6 +723,73 @@ void CORE_EBI_WRITE32(__TARGET_CHIP__)(uint8_t index, uint32_t address,
 
 #endif
 
+#if IFS_SDIO_EN
+
+#define CORE_SDIO_RESP_NONE(m)			__CONNECT(m, _SDIO_RESP_NONE)
+#define CORE_SDIO_RESP_SHORT(m)			__CONNECT(m, _SDIO_RESP_SHORT)
+#define CORE_SDIO_RESP_LONG(m)			__CONNECT(m, _SDIO_RESP_LONG)
+#define SDIO_RESP_NONE					CORE_SDIO_RESP_NONE(__TARGET_CHIP__)
+#define SDIO_RESP_SHORT					CORE_SDIO_RESP_SHORT(__TARGET_CHIP__)
+#define SDIO_RESP_LONG					CORE_SDIO_RESP_LONG(__TARGET_CHIP__)
+
+struct interface_sdio_t
+{
+	vsf_err_t (*init)(uint8_t index);
+	vsf_err_t (*fini)(uint8_t index);
+	vsf_err_t (*config)(uint8_t index, uint16_t kHz, uint8_t buswidth);
+	vsf_err_t (*enable)(uint8_t index);
+	vsf_err_t (*disable)(uint8_t index);
+	vsf_err_t (*send_cmd)(uint8_t index, uint8_t cmd, uint32_t arg,
+							uint8_t resp);
+	vsf_err_t (*send_cmd_isready)(uint8_t index, uint8_t resp);
+	vsf_err_t (*get_resp)(uint8_t index, uint8_t *cresp, uint32_t *resp,
+							uint8_t resp_num);
+	vsf_err_t (*data_tx)(uint8_t index, uint32_t timeout, uint32_t size,
+							uint32_t block_size, uint8_t *buffer);
+	vsf_err_t (*data_tx_isready)(uint8_t index, uint32_t timeout, uint32_t size,
+							uint32_t block_size, uint8_t *buffer);
+	vsf_err_t (*data_rx)(uint8_t index, uint32_t timeout, uint32_t size,
+							uint32_t block_size, uint8_t *buff);
+	vsf_err_t (*data_rx_isready)(uint8_t index, uint32_t timeout, uint32_t size,
+							uint32_t block_size, uint8_t *buffer);
+};
+
+#define CORE_SDIO_INIT(m)				__CONNECT(m, _sdio_init)
+#define CORE_SDIO_FINI(m)				__CONNECT(m, _sdio_fini)
+#define CORE_SDIO_CONFIG(m)				__CONNECT(m, _sdio_config)
+#define CORE_SDIO_ENABLE(m)				__CONNECT(m, _sdio_enable)
+#define CORE_SDIO_DISABLE(m)			__CONNECT(m, _sdio_disable)
+#define CORE_SDIO_SEND_CMD(m)			__CONNECT(m, _sdio_send_cmd)
+#define CORE_SDIO_SEND_CMD_ISREADY(m)	__CONNECT(m, _sdio_send_cmd_isready)
+#define CORE_SDIO_GET_RESP(m)			__CONNECT(m, _sdio_get_resp)
+#define CORE_SDIO_DATA_TX(m)			__CONNECT(m, _sdio_data_tx)
+#define CORE_SDIO_DATA_TX_ISREADY(m)	__CONNECT(m, _sdio_data_tx_isready)
+#define CORE_SDIO_DATA_RX(m)			__CONNECT(m, _sdio_data_rx)
+#define CORE_SDIO_DATA_RX_ISREADY(m)	__CONNECT(m, _sdio_data_rx_isready)
+
+vsf_err_t CORE_SDIO_INIT(__TARGET_CHIP__)(uint8_t index);
+vsf_err_t CORE_SDIO_FINI(__TARGET_CHIP__)(uint8_t index);
+vsf_err_t CORE_SDIO_CONFIG(__TARGET_CHIP__)(uint8_t index, uint16_t kHz,
+											uint8_t buswide);
+vsf_err_t CORE_SDIO_ENABLE(__TARGET_CHIP__)(uint8_t index);
+vsf_err_t CORE_SDIO_DISABLE(__TARGET_CHIP__)(uint8_t index);
+vsf_err_t CORE_SDIO_SEND_CMD(__TARGET_CHIP__)(uint8_t index, uint8_t cmd,
+												uint32_t arg, uint8_t resp);
+vsf_err_t CORE_SDIO_SEND_CMD_ISREADY(__TARGET_CHIP__)(uint8_t index,
+														uint8_t resp);
+vsf_err_t CORE_SDIO_GET_RESP(__TARGET_CHIP__)(uint8_t index, uint8_t *cresp,
+											uint32_t *resp, uint8_t resp_num);
+vsf_err_t CORE_SDIO_DATA_TX(__TARGET_CHIP__)(uint8_t index,
+		uint32_t timeout, uint32_t size, uint32_t block_size, uint8_t *buffer);
+vsf_err_t CORE_SDIO_DATA_TX_ISREADY(__TARGET_CHIP__)(uint8_t index,
+		uint32_t timeout, uint32_t size, uint32_t block_size, uint8_t *buffer);
+vsf_err_t CORE_SDIO_DATA_RX(__TARGET_CHIP__)(uint8_t index,
+		uint32_t timeout, uint32_t size, uint32_t block_size, uint8_t *buffer);
+vsf_err_t CORE_SDIO_DATA_RX_ISREADY(__TARGET_CHIP__)(uint8_t index,
+		uint32_t timeout, uint32_t size, uint32_t block_size, uint8_t *buffer);
+
+#endif
+
 #if IFS_USBD_EN
 
 #include "stack/usb_device/vsf_usbd_const.h"
@@ -939,6 +1006,9 @@ struct interfaces_info_t
 #endif
 #if IFS_EBI_EN
 	struct interface_ebi_t ebi;
+#endif
+#if IFS_SDIO_EN
+	struct interface_sdio_t sdio;
 #endif
 	struct interface_tickclk_t tickclk;
 	struct interface_delay_t delay;

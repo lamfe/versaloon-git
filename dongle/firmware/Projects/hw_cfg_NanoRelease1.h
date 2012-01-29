@@ -27,6 +27,7 @@
 /****************************** Abilities ******************************/
 #define HW_HAS_USART					1
 #define HW_HAS_SPI						1
+#define HW_HAS_SDIO						0
 #define HW_HAS_EBI						0
 #define HW_HAS_IIC						1
 #define HW_HAS_GPIO						1

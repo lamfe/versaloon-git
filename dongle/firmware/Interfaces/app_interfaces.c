@@ -68,6 +68,9 @@
 #if INTERFACE_PWM_EN
 #	include "PWM/PWM.h"
 #endif
+#if INTERFACE_SDIO_EN
+#	include "SDIO/SDIO.h"
+#endif
 
 char* get_interface_name(uint64_t i)
 {
@@ -470,6 +473,19 @@ const struct app_interfaces_info_t app_interfaces =
 		microwire_config,
 		microwire_transport,
 		microwire_poll
+	}
+#endif
+#if INTERFACE_SDIO_EN
+	,{
+		// sdio
+		sdio_init,
+		sdio_fini,
+		sdio_config,
+		sdio_enable,
+		sdio_disable,
+		sdio_send_cmd,
+		sdio_send_cmd_isready,
+		sdio_get_resp,
 	}
 #endif
 	,{
