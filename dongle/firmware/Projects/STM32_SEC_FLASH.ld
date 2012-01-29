@@ -98,8 +98,6 @@ SECTIONS
 	    . = ALIGN(4);
     } >RAM
     
-    PROVIDE(__HEAP_START = _end );
-    
 
    
     /* this is the FLASH Bank1 */
