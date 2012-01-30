@@ -115,6 +115,7 @@ vsf_err_t usbtoswd_seqin(uint8_t interface_index, uint8_t *data, uint16_t bitlen
 vsf_err_t usbtoswd_transact(uint8_t interface_index, uint8_t request,
 							uint32_t *data, uint8_t *ack)
 {
+	uint8_t parity;
 	uint8_t buff[5];
 	
 #if PARAM_CHECK
@@ -125,7 +126,12 @@ vsf_err_t usbtoswd_transact(uint8_t interface_index, uint8_t request,
 	}
 #endif
 	
-	buff[0] = request;
+	parity = (request >> 1) & 1;
+	parity += (request >> 2) & 1;
+	parity += (request >> 3) & 1;
+	parity += (request >> 4) & 1;
+	parity &= 1;
+	buff[0] = (request | 0x81 | (parity << 5)) & ~0x40;
 	if (data != NULL)
 	{
 		SET_LE_U32(&buff[1], *data);
