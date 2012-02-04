@@ -51,8 +51,28 @@ VSS_HANDLER(vsprog_operation);
 VSS_HANDLER(vsprog_mass);
 VSS_HANDLER(vsprog_free_all);
 VSS_HANDLER(vsprog_init);
-VSS_HANDLER(vsprog_wait_key);
 VSS_HANDLER(vsprog_program);
+
+VSS_HANDLER(vsprog_wait_key_down);
+VSS_HANDLER(vsprog_wait_key_up);
+VSS_HANDLER(vsprog_wait_key_press);
+
+static const struct vss_cmd_t vsprog_key_cmd[] =
+{
+	VSS_CMD(	"wait_down",
+				"wait key pushed down, format: key.wait_down",
+				vsprog_wait_key_down,
+				NULL),
+	VSS_CMD(	"wait_up",
+				"wait key released, format: key.wait_up",
+				vsprog_wait_key_up,
+				NULL),
+	VSS_CMD(	"wait_press",
+				"wait key pressed, format: key.wait_press",
+				vsprog_wait_key_press,
+				NULL),
+	VSS_CMD_END
+};
 
 static const struct vss_cmd_t vsprog_cmd[] =
 {
@@ -112,10 +132,10 @@ static const struct vss_cmd_t vsprog_cmd[] =
 				"vsprog initialization, format: init",
 				vsprog_init,
 				NULL),
-	VSS_CMD(	"wait_key",
-				"wait key press, format: wait_key",
-				vsprog_wait_key,
-				NULL),
+	VSS_CMD(	"key",
+				"key functions",
+				NULL,
+				vsprog_key_cmd),
 	VSS_CMD(	"program",
 				"program target chip, format: program",
 				vsprog_program,
@@ -439,7 +459,7 @@ VSS_HANDLER(vsprog_init)
 	return vss_run_script("free-all");
 }
 
-VSS_HANDLER(vsprog_wait_key)
+VSS_HANDLER(vsprog_wait_key_down)
 {
 	uint32_t key_count = 0;
 	
@@ -458,6 +478,41 @@ VSS_HANDLER(vsprog_wait_key)
 		{
 			key_count = 0;
 		}
+	}
+	return VSFERR_NONE;
+}
+
+VSS_HANDLER(vsprog_wait_key_up)
+{
+	uint32_t key_count = 0;
+	
+	VSS_CHECK_ARGC(1);
+	
+	while (1)
+	{
+		if (!KEY_IsDown())
+		{
+			if (++key_count > 0x1000)
+			{
+				break;
+			}
+		}
+		else
+		{
+			key_count = 0;
+		}
+	}
+	return VSFERR_NONE;
+}
+
+VSS_HANDLER(vsprog_wait_key_press)
+{
+	VSS_CHECK_ARGC(1);
+	
+	if (vss_run_script("vsprog.key.wait_key_down") ||
+		vss_run_script("vsprog.key.wait_key_up"))
+	{
+		return VSFERR_FAIL;
 	}
 	return VSFERR_NONE;
 }
