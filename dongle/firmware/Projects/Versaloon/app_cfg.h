@@ -66,7 +66,7 @@
 
 #if _HARDWARE_VER == ProRelease1
 #define SCRIPTS_EN						1
-#define MSC_ON_VERSALOON_EN				1
+#define MSC_ON_VERSALOON_EN				0
 #else
 #define SCRIPTS_EN						0
 #define MSC_ON_VERSALOON_EN				0
