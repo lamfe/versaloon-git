@@ -429,7 +429,6 @@ VSS_HANDLER(vsprog_init)
 	
 	print_title();
 	
-	vss_register_cmd_list(&appio_cmd_list);
 	vss_register_cmd_list(&target_cmd_list);
 	vss_register_cmd_list(&target_data_cmd_list);
 	vss_register_cmd_list(&pgbar_cmd_list);

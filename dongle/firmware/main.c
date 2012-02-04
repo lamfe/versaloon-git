@@ -41,12 +41,16 @@ int main(void)
 #if HW_HAS_BEEPER
 	uint16_t start_beeper_cnt = 0x8000;
 #endif
+#if SCRIPTS_EN
+	FILE *script_file = NULL;
+#endif
 	
 	core_interfaces.core.init(NULL);
 	usb_protocol_init();
 #if SCRIPTS_EN
 	APP_IO_INIT();
 	vss_init();
+	vss_register_cmd_list(&appio_cmd_list);
 	vss_register_cmd_list(&vsprog_cmd_list);
 	
 	KEY_Init();
@@ -55,7 +59,17 @@ int main(void)
 		usb_protocol_poll();
 	}
 	
-	vss_run_script("run " EVSPROG_SCRIPT_FILE);
+	script_file = FOPEN(EVSPROG_SCRIPT_FILE, "rt");
+	if (script_file != NULL)
+	{
+		FCLOSE(script_file);
+		script_file = NULL;
+		vss_run_script("run " EVSPROG_SCRIPT_FILE);
+	}
+	else
+	{
+		vss_run_script("shell");
+	}
 #endif	// if SCRIPTS_EN
 
 #if HW_HAS_BEEPER
