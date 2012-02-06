@@ -680,6 +680,10 @@ vsf_err_t usb_protocol_init(void)
 	LED_STATE_G_ON();
 	LED_USB_INIT();
 	
+#if SCRIPTS_EN
+	LED_ARRAY_INIT();
+#endif
+	
 	app_interfaces.delay.init();
 #if POWER_SAMPLE_EN
 	core_interfaces.adc.init(TVCC_ADC_PORT);
