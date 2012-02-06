@@ -675,12 +675,10 @@ vsf_err_t usb_protocol_init(void)
 	core_interfaces.gpio.init(1);
 	core_interfaces.gpio.init(2);
 	
-	LED_RED_INIT();
-	LED_RED_OFF();
-	LED_GREEN_INIT();
-	LED_GREEN_ON();
+	LED_POWER_INIT();
+	LED_STATE_INIT();
+	LED_STATE_G_ON();
 	LED_USB_INIT();
-	LED_USB_OFF();
 	
 	app_interfaces.delay.init();
 #if POWER_SAMPLE_EN

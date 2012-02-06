@@ -519,20 +519,20 @@ VSS_HANDLER(vsprog_wait_key_press)
 
 VSS_HANDLER(vsprog_program)
 {
-	LED_RED_OFF();
-	LED_GREEN_OFF();
+	LED_STATE_R_OFF();
+	LED_STATE_G_OFF();
 	if (vss_run_script("enter_program_mode") ||
 		vss_run_script("operate"))
 	{
-		LED_RED_ON();
+		LED_STATE_R_ON();
 		vss_run_script("leave_program_mode 0");
 		return VSFERR_FAIL;
 	}
 	if (vss_run_script("leave_program_mode 1"))
 	{
-		LED_RED_ON();
+		LED_STATE_R_ON();
 		return VSFERR_FAIL;
 	}
-	LED_GREEN_ON();
+	LED_STATE_G_ON();
 	return VSFERR_NONE;
 }

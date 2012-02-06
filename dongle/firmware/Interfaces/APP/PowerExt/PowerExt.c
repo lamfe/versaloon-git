@@ -148,11 +148,11 @@ vsf_err_t target_voltage_poll(uint8_t index)
 				
 				if(PWREXT_Vtarget > TVCC_SAMPLE_MIN_POWER)
 				{
-					LED_RED_ON();
+					LED_POWER_ON();
 				}
 				else
 				{
-					LED_RED_OFF();
+					LED_POWER_OFF();
 				}
 				if((PWREXT_Vtarget < TVCC_SAMPLE_MIN_POWER))
 				{
