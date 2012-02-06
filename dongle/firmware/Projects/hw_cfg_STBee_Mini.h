@@ -330,13 +330,13 @@
 #define TVCC_SAMPLE_MAXVAL				4096
 
 /****************************** LED ******************************/
-#define LED_RED_INIT()					
-#define LED_RED_ON()					
-#define LED_RED_OFF()					
+#define LED_POWER_INIT()				
+#define LED_POWER_ON()					
+#define LED_POWER_OFF()					
 
-#define LED_GREEN_INIT()				
-#define LED_GREEN_ON()					
-#define LED_GREEN_OFF()					
+#define LED_STATE_INIT()				
+#define LED_STATE_G_ON()				
+#define LED_STATE_G_OFF()				
 
 #define LED_USB_INIT()					
 #define LED_USB_ON()					

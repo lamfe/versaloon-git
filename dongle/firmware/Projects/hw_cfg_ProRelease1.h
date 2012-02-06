@@ -763,6 +763,7 @@
 #define LED_GREEN_PIN					2
 #define LED_BLUE_PORT					2
 #define LED_BLUE_PIN					1
+
 #define LED_USB_PORT					2
 #define LED_USB_PIN						0
 
@@ -771,34 +772,38 @@
 #define LED_ARRAY_PINCOUNT				8
 #define LED_ARRAY_PINMASK				(((1 << LED_ARRAY_PINCOUNT) - 1) << LED_ARRAY_LSPIN)
 
+#define LED_POWER_INIT()				
+#define LED_POWER_ON()					
+#define LED_POWER_OFF()					
+
 #define LED_ARRAY_INIT()				do {\
+											LED_ARRAY_SET(0);\
 											core_interfaces.gpio.init(LED_ARRAY_PORT);\
 											core_interfaces.gpio.config(LED_ARRAY_PORT, LED_ARRAY_PINMASK, LED_ARRAY_PINMASK, 0, LED_ARRAY_PINMASK);\
 										} while (0)
 #define LED_ARRAY_SET(val8)				core_interfaces.gpio.out(LED_ARRAY_PORT, LED_ARRAY_PINMASK, ((~(val8)) >> LED_ARRAY_LSPIN) & LED_ARRAY_PINMASK)
 
-#define LED_RED_INIT()					do {\
-											core_interfaces.gpio.init(LED_RED_PORT);\
-											core_interfaces.gpio.config_pin(LED_RED_PORT, LED_RED_PIN, GPIO_OUTPP);\
-										} while (0)
-#define LED_RED_ON()					core_interfaces.gpio.out(LED_RED_PORT, 1 << LED_RED_PIN, 0)
-#define LED_RED_OFF()					core_interfaces.gpio.out(LED_RED_PORT, 1 << LED_RED_PIN, 1 << LED_RED_PIN)
 
-#define LED_GREEN_INIT()				do {\
+#define LED_STATE_INIT()				do {\
+											LED_STATE_G_OFF();\
 											core_interfaces.gpio.init(LED_GREEN_PORT);\
 											core_interfaces.gpio.config_pin(LED_GREEN_PORT, LED_GREEN_PIN, GPIO_OUTPP);\
-										} while (0)
-#define LED_GREEN_ON()					core_interfaces.gpio.out(LED_GREEN_PORT, 1 << LED_GREEN_PIN, 0)
-#define LED_GREEN_OFF()					core_interfaces.gpio.out(LED_GREEN_PORT, 1 << LED_GREEN_PIN, 1 << LED_GREEN_PIN)
-
-#define LED_BLUE_INIT()					do {\
+											LED_STATE_R_OFF();\
+											core_interfaces.gpio.init(LED_RED_PORT);\
+											core_interfaces.gpio.config_pin(LED_RED_PORT, LED_RED_PIN, GPIO_OUTPP);\
+											LED_STATE_B_OFF();\
 											core_interfaces.gpio.init(LED_BLUE_PORT);\
 											core_interfaces.gpio.config_pin(LED_BLUE_PORT, LED_BLUE_PIN, GPIO_OUTPP);\
 										} while (0)
-#define LED_BLUE_ON()					core_interfaces.gpio.out(LED_BLUE_PORT, 1 << LED_BLUE_PIN, 0)
-#define LED_BLUE_OFF()					core_interfaces.gpio.out(LED_BLUE_PORT, 1 << LED_BLUE_PIN, 1 << LED_BLUE_PIN)
+#define LED_STATE_R_ON()				core_interfaces.gpio.out(LED_RED_PORT, 1 << LED_RED_PIN, 0)
+#define LED_STATE_R_OFF()				core_interfaces.gpio.out(LED_RED_PORT, 1 << LED_RED_PIN, 1 << LED_RED_PIN)
+#define LED_STATE_G_ON()				core_interfaces.gpio.out(LED_GREEN_PORT, 1 << LED_GREEN_PIN, 0)
+#define LED_STATE_G_OFF()				core_interfaces.gpio.out(LED_GREEN_PORT, 1 << LED_GREEN_PIN, 1 << LED_GREEN_PIN)
+#define LED_STATE_B_ON()				core_interfaces.gpio.out(LED_BLUE_PORT, 1 << LED_BLUE_PIN, 0)
+#define LED_STATE_B_OFF()				core_interfaces.gpio.out(LED_BLUE_PORT, 1 << LED_BLUE_PIN, 1 << LED_BLUE_PIN)
 
 #define LED_USB_INIT()					do {\
+											LED_USB_OFF();\
 											core_interfaces.gpio.init(LED_USB_PORT);\
 											core_interfaces.gpio.config_pin(LED_USB_PORT, LED_USB_PIN, GPIO_OUTPP);\
 										} while (0)

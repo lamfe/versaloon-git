@@ -718,8 +718,8 @@
 
 /****************************** IIC ******************************/
 #define IIC_PORT						JTAG_TAP_PORT
-#define IIC_SCL_PIN						JTAG_TAP_TCK_PIN
-#define IIC_SDA_PIN						JTAG_TAP_TDI_PIN
+#define IIC_SCL_PIN						JTAG_TAP_TMS_PIN
+#define IIC_SDA_PIN						JTAG_TAP_TDO_PIN
 
 #define IIC_PULL_INIT()					
 
@@ -746,28 +746,31 @@
 #define TVCC_SAMPLE_MAXVAL				4096
 
 /****************************** LED ******************************/
-#define LED_RED_PORT					0
-#define LED_RED_PIN						15
+#define LED_POWER_PORT					0
+#define LED_POWER_PIN					15
 #define LED_GREEN_PORT					1
 #define LED_GREEN_PIN					5
 #define LED_USB_PORT					0
 #define LED_USB_PIN						14
 
-#define LED_RED_INIT()					do {\
-											core_interfaces.gpio.init(LED_RED_PORT);\
-											core_interfaces.gpio.config_pin(LED_RED_PORT, LED_RED_PIN, GPIO_OUTPP);\
+#define LED_POWER_INIT()				do {\
+											LED_POWER_OFF();\
+											core_interfaces.gpio.init(LED_POWER_PORT);\
+											core_interfaces.gpio.config_pin(LED_POWER_PORT, LED_POWER_PIN, GPIO_OUTPP);\
 										} while (0)
-#define LED_RED_ON()					core_interfaces.gpio.out(LED_RED_PORT, 1 << LED_RED_PIN, 0)
-#define LED_RED_OFF()					core_interfaces.gpio.out(LED_RED_PORT, 1 << LED_RED_PIN, 1 << LED_RED_PIN)
+#define LED_POWER_ON()					core_interfaces.gpio.out(LED_POWER_PORT, 1 << LED_POWER_PIN, 0)
+#define LED_POWER_OFF()					core_interfaces.gpio.out(LED_POWER_PORT, 1 << LED_POWER_PIN, 1 << LED_POWER_PIN)
 
-#define LED_GREEN_INIT()				do {\
+#define LED_STATE_INIT()				do {\
+											LED_STATE_G_OFF();\
 											core_interfaces.gpio.init(LED_GREEN_PORT);\
 											core_interfaces.gpio.config_pin(LED_GREEN_PORT, LED_GREEN_PIN, GPIO_OUTPP);\
 										} while (0)
-#define LED_GREEN_ON()					core_interfaces.gpio.out(LED_GREEN_PORT, 1 << LED_GREEN_PIN, 0)
-#define LED_GREEN_OFF()					core_interfaces.gpio.out(LED_GREEN_PORT, 1 << LED_GREEN_PIN, 1 << LED_GREEN_PIN)
+#define LED_STATE_G_ON()				core_interfaces.gpio.out(LED_GREEN_PORT, 1 << LED_GREEN_PIN, 0)
+#define LED_STATE_G_OFF()				core_interfaces.gpio.out(LED_GREEN_PORT, 1 << LED_GREEN_PIN, 1 << LED_GREEN_PIN)
 
 #define LED_USB_INIT()					do {\
+											LED_USB_OFF();\
 											core_interfaces.gpio.init(LED_USB_PORT);\
 											core_interfaces.gpio.config_pin(LED_USB_PORT, LED_USB_PIN, GPIO_OUTPP);\
 										} while (0)

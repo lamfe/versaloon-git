@@ -383,15 +383,17 @@
 #define LED_USB_PORT					0
 #define LED_USB_PIN						ST_LINK_ST_LINK_LED
 
-#define LED_RED_INIT()					
-#define LED_RED_ON()					
-#define LED_RED_OFF()					
-#define LED_GREEN_INIT()				
-#define LED_GREEN_ON()					
-#define LED_GREEN_OFF()					
+#define LED_POWER_INIT()				
+#define LED_POWER_ON()					
+#define LED_POWER_OFF()					
+
+#define LED_STATE_INIT()				
+#define LED_STATE_G_ON()				
+#define LED_STATE_G_OFF()				
 
 // LED_USB
 #define LED_USB_INIT()					do {\
+											LED_USB_OFF();\
 											core_interfaces.gpio.init(LED_USB_PORT);\
 											core_interfaces.gpio.config_pin(LED_USB_PORT, LED_USB_PIN, GPIO_OUTPP);\
 										} while (0)
