@@ -718,8 +718,8 @@
 
 /****************************** IIC ******************************/
 #define IIC_PORT						JTAG_TAP_PORT
-#define IIC_SCL_PIN						JTAG_TAP_TCK_PIN
-#define IIC_SDA_PIN						JTAG_TAP_TDI_PIN
+#define IIC_SCL_PIN						JTAG_TAP_TMS_PIN
+#define IIC_SDA_PIN						JTAG_TAP_TDO_PIN
 
 #define IIC_PULL_INIT()					
 
