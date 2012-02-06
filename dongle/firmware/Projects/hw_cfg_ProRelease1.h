@@ -781,7 +781,11 @@
 											core_interfaces.gpio.init(LED_ARRAY_PORT);\
 											core_interfaces.gpio.config(LED_ARRAY_PORT, LED_ARRAY_PINMASK, LED_ARRAY_PINMASK, 0, LED_ARRAY_PINMASK);\
 										} while (0)
-#define LED_ARRAY_SET(val8)				core_interfaces.gpio.out(LED_ARRAY_PORT, LED_ARRAY_PINMASK, ((~(val8)) >> LED_ARRAY_LSPIN) & LED_ARRAY_PINMASK)
+#define LED_ARRAY_SET(val8)				do{\
+											uint8_t ________i = val8;\
+											BIT_REVERSE_U8(________i);\
+											core_interfaces.gpio.out(LED_ARRAY_PORT, LED_ARRAY_PINMASK, ((~(________i)) >> LED_ARRAY_LSPIN) & LED_ARRAY_PINMASK);\
+										} while (0)
 
 
 #define LED_STATE_INIT()				do {\

@@ -129,7 +129,6 @@ void pgbar_update(int32_t step)
 		PRINTF("%%%02d", pgbar_get_char_num(position) * 100 / max_num_of_chars);
 		led_mask = pgbar_get_char_num(position) * 8 / max_num_of_chars;
 		led_mask = (1 << led_mask) - 1;
-		BIT_REVERSE_U8(led_mask);
 		LED_ARRAY_SET(led_mask);
 		
 		if (gui_mode_flag)
@@ -168,8 +167,6 @@ vsf_err_t pgbar_init(char *s, char *e, uint32_t min, uint32_t max,
 	}
 	// print initial percentage
 	PRINTF("%%00");
-	LED_ARRAY_INIT();
-	LED_ARRAY_SET(0);
 	if (gui_mode_flag)
 	{
 		PRINTF("\n");
