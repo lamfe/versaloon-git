@@ -176,7 +176,8 @@ static vsf_err_t vsfusbd_CDCData_class_poll(uint8_t iface,
 	
 	if (!param->cdc_out_enable)
 	{
-		if (vsf_fifo_get_avail_length(&param->usart_stream->fifo_tx) >= 64)
+		uint16_t ep_size = device->drv->ep.get_OUT_epsize(param->ep_out);
+		if (vsf_fifo_get_avail_length(&param->usart_stream->fifo_tx) >= ep_size)
 		{
 			param->cdc_out_enable = true;
 			device->drv->ep.set_OUT_state(param->ep_out, USB_EP_STAT_ACK);
