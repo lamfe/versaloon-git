@@ -80,7 +80,7 @@ static vsf_err_t versaloon_usb_init(uint8_t iface, struct vsfusbd_device_t *devi
 	return VSFERR_NONE;
 }
 
-static vsf_err_t versaloon_idle(uint8_t iface, struct vsfusbd_device_t *device)
+static vsf_err_t versaloon_poll(uint8_t iface, struct vsfusbd_device_t *device)
 {
 	if(cmd_len & 0x80000000)
 	{
@@ -528,7 +528,7 @@ static const struct vsfusbd_class_protocol_t Versaloon_Protocol =
 {
 	NULL, NULL, NULL, 
 	versaloon_usb_init,
-	NULL, versaloon_idle
+	NULL, versaloon_poll
 };
 
 #if SCRIPTS_EN
