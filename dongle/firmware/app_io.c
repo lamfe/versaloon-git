@@ -258,6 +258,11 @@ char* FGETS(char *buf, int count, FILE *f)
 						cur_size--;
 						continue;
 					}
+					else if (!((cur_char >= ' ') && (cur_char <= '~')))
+					{
+						cur_size--;
+						continue;
+					}
 					vsf_fifo_push8(&shell_stream.fifo_rx, (uint8_t)cur_char);
 					
 					buf[pos++] = cur_char;
