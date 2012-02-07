@@ -14,7 +14,7 @@ static vsf_err_t vsfusbd_CDCData_OUT_hanlder(void *p, uint8_t ep)
 	struct vsfusbd_config_t *config = &device->config[device->configuration];
 	int8_t iface = config->ep_OUT_iface_map[ep];
 	struct vsfusbd_CDC_param_t *param = NULL;
-	uint16_t pkg_size;
+	uint16_t pkg_size, ep_size;
 	uint8_t buffer[64];
 	struct vsf_buffer_t tx_buffer;
 	
@@ -28,8 +28,9 @@ static vsf_err_t vsfusbd_CDCData_OUT_hanlder(void *p, uint8_t ep)
 		return VSFERR_FAIL;
 	}
 	
+	ep_size = device->drv->ep.get_OUT_epsize(ep);
 	pkg_size = device->drv->ep.get_OUT_count(ep);
-	if (pkg_size > 64)
+	if (pkg_size > ep_size)
 	{
 		return VSFERR_FAIL;
 	}
@@ -39,7 +40,7 @@ static vsf_err_t vsfusbd_CDCData_OUT_hanlder(void *p, uint8_t ep)
 		device->drv->ep.set_OUT_state(ep, USB_EP_STAT_ACK);
 	}
 	
-	if (vsf_fifo_get_avail_length(&param->usart_stream->fifo_tx) < 64)
+	if (vsf_fifo_get_avail_length(&param->usart_stream->fifo_tx) < ep_size)
 	{
 		param->cdc_out_enable = false;
 	}
