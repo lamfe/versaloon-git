@@ -54,6 +54,7 @@ vsf_err_t vsfusbd_device_get_descriptor(struct vsfusbd_device_t *device,
 
 vsf_err_t vsfusbd_device_init(struct vsfusbd_device_t *device)
 {
+	device->configured = false;
 	device->configuration = 0;
 	device->feature = 0;
 	
@@ -85,13 +86,16 @@ vsf_err_t vsfusbd_device_poll(struct vsfusbd_device_t *device)
 	{
 		return VSFERR_FAIL;
 	}
-	for (i = 0; i < config->num_of_ifaces; i++)
+	if (device->configured)
 	{
-		if ((config->iface[i].class_protocol != NULL) && 
-			(config->iface[i].class_protocol->poll != NULL) && 
-			config->iface[i].class_protocol->poll(i, device))
+		for (i = 0; i < config->num_of_ifaces; i++)
 		{
-			return VSFERR_FAIL;
+			if ((config->iface[i].class_protocol != NULL) && 
+				(config->iface[i].class_protocol->poll != NULL) && 
+				config->iface[i].class_protocol->poll(i, device))
+			{
+				return VSFERR_FAIL;
+			}
 		}
 	}
 	return VSFERR_NONE;
@@ -530,6 +534,7 @@ static vsf_err_t vsfusbd_stdreq_set_configuration_process(
 	struct vsfusbd_ctrl_request_t *request = &device->ctrl_handler.request;
 	
 	device->configuration = request->value - 1;
+	device->configured = true;
 	return VSFERR_NONE;
 }
 
@@ -1040,6 +1045,7 @@ vsf_err_t vsfusbd_on_RESET(void *p)
 	memset(vsfusbd_OUT_tbuffer, 0, sizeof(vsfusbd_OUT_tbuffer));
 	memset(vsfusbd_IN_PkgNum, 0, sizeof(vsfusbd_IN_PkgNum));
 	
+	device->configured = false;
 	device->configuration = 0;
 	device->ctrl_handler.state = USB_CTRL_STAT_WAIT_SETUP;
 	
