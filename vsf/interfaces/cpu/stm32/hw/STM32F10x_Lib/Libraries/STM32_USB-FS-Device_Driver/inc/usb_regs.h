@@ -390,9 +390,9 @@ enum EP_BUF_NUM
 * Return         : None.
 *******************************************************************************/
 #define _ClearEP_CTR_RX(bEpNum)   (_SetENDPOINT(bEpNum,\
-                                   _GetENDPOINT(bEpNum) & 0x7FFF & EPREG_MASK))
+                                   (_GetENDPOINT(bEpNum) & 0x7FFF & EPREG_MASK) | EP_CTR_TX))
 #define _ClearEP_CTR_TX(bEpNum)   (_SetENDPOINT(bEpNum,\
-                                   _GetENDPOINT(bEpNum) & 0xFF7F & EPREG_MASK))
+                                   (_GetENDPOINT(bEpNum) & 0xFF7F & EPREG_MASK) | EP_CTR_RX))
 
 /*******************************************************************************
 * Macro Name     : ToggleDTOG_RX / ToggleDTOG_TX .
