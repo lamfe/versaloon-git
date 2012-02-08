@@ -109,6 +109,7 @@ static vsf_err_t vsfusbd_CDCData_class_init(uint8_t iface,
 	{
 		return VSFERR_FAIL;
 	}
+	param->cdc_out_enable = false;
 	
 	if (param->gpio_rts_enable)
 	{
