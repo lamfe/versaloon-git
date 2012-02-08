@@ -152,6 +152,7 @@ struct vsfusbd_device_t
 	} callback;
 	
 	// private
+	bool configured;
 	uint8_t configuration;
 	uint8_t feature;
 	struct vsfusbd_ctrl_handler_t ctrl_handler;
