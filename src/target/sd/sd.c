@@ -81,7 +81,7 @@ VSS_HANDLER(sd_help)
 	VSS_CHECK_ARGC(1);
 	PRINTF(
 "Usage of %s:"LOG_LINE_END
-"  -F,  --frequency <FREQUENCY>              set IIC frequency, in KHz"LOG_LINE_END
+"  -F,  --frequency <FREQUENCY>              set SPI frequency, in KHz"LOG_LINE_END
 LOG_LINE_END, CUR_TARGET_STRING);
 	return VSFERR_NONE;
 }

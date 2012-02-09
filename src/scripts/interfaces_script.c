@@ -173,7 +173,7 @@ static const struct vss_cmd_t iic_cmd[] =
 				interface_iic_init,
 				NULL),
 	VSS_CMD(	"fini",
-				"finalize iic, format: iic.fini [KHZ MAX_DLY_US]",
+				"finalize iic, format: iic.fini",
 				interface_iic_fini,
 				NULL),
 	VSS_CMD(	"config",
@@ -206,7 +206,7 @@ static const struct vss_cmd_t iic_cmd[] =
 static const struct vss_cmd_t pwm_cmd[] =
 {
 	VSS_CMD(	"init",
-				"initialize pwm module, format: pwm.init [KHZ PUSHPULL POLARITY]",
+				"initialize pwm module, format: pwm.init [PUSHPULL POLARITY]",
 				interface_pwm_init,
 				NULL),
 	VSS_CMD(	"fini",
