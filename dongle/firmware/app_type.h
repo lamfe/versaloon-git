@@ -63,19 +63,19 @@
 										(v16) = (((v16) >> 8) & 0x00ff) | (((v16) << 8) & 0xff00);\
 									} while (0)
 #define BIT_REVERSE_U32(v32)		do {\
-										(v32) = (((v32) >> 1) & 0x55555555) | (((v32) << 1) & 0xaaaaaaaa);\
-										(v32) = (((v32) >> 2) & 0x33333333) | (((v32) << 2) & 0xcccccccc);\
-										(v32) = (((v32) >> 4) & 0x0f0f0f0f) | (((v32) << 4) & 0xf0f0f0f0);\
-										(v32) = (((v32) >> 8) & 0x00ff00ff) | (((v32) << 8) & 0xff00ff00);\
-										(v32) = (((v32) >> 16)& 0x0000ffff) | (((v32) << 16)& 0xffff0000);\
+										(v32) = (((v32) >> 1) & 0x55555555ul) | (((v32) << 1) & 0xaaaaaaaaul);\
+										(v32) = (((v32) >> 2) & 0x33333333ul) | (((v32) << 2) & 0xccccccccul);\
+										(v32) = (((v32) >> 4) & 0x0f0f0f0ful) | (((v32) << 4) & 0xf0f0f0f0ul);\
+										(v32) = (((v32) >> 8) & 0x00ff00fful) | (((v32) << 8) & 0xff00ff00ul);\
+										(v32) = (((v32) >> 16)& 0x0000fffful) | (((v32) << 16)& 0xffff0000ul);\
 									} while (0)
 #define BIT_REVERSE_U64(v64)		do {\
-										(v64) = (((v64) >> 1) & 0x5555555555555555) | (((v64) << 1) & 0xaaaaaaaaaaaaaaaa);\
-										(v64) = (((v64) >> 2) & 0x3333333333333333) | (((v64) << 2) & 0xcccccccccccccccc);\
-										(v64) = (((v64) >> 4) & 0x0f0f0f0f0f0f0f0f) | (((v64) << 4) & 0xf0f0f0f0f0f0f0f0);\
-										(v64) = (((v64) >> 8) & 0x00ff00ff00ff00ff) | (((v64) << 8) & 0xff00ff00ff00ff00);\
-										(v64) = (((v64) >> 16)& 0x0000ffff0000ffff) | (((v64) << 16)& 0xffff0000ffff0000);\
-										(v64) = (((v64) >> 1) & 0x00000000ffffffff) | (((v64) << 1) & 0xffffffff00000000);\
+										(v64) = (((v64) >> 1) & 0x5555555555555555ull) | (((v64) << 1) & 0xaaaaaaaaaaaaaaaaull);\
+										(v64) = (((v64) >> 2) & 0x3333333333333333ull) | (((v64) << 2) & 0xccccccccccccccccull);\
+										(v64) = (((v64) >> 4) & 0x0f0f0f0f0f0f0f0full) | (((v64) << 4) & 0xf0f0f0f0f0f0f0f0ull);\
+										(v64) = (((v64) >> 8) & 0x00ff00ff00ff00ffull) | (((v64) << 8) & 0xff00ff00ff00ff00ull);\
+										(v64) = (((v64) >> 16)& 0x0000ffff0000ffffull) | (((v64) << 16)& 0xffff0000ffff0000ull);\
+										(v64) = (((v64) >> 1) & 0x00000000ffffffffull) | (((v64) << 1) & 0xffffffff00000000ull);\
 									} while (0)
 
 #define GET_U16_MSBFIRST(p)			(	((uint16_t)(*((uint8_t *)(p) + 0)) << 8) | \
@@ -191,21 +191,21 @@
 
 #define SWAP_U16(v)					(	(((uint16_t)(v) & 0xFF00) >> 8) | \
 										(((uint16_t)(v) & 0x00FF) << 8))
-#define SWAP_U24(v)					(	(((uint32_t)(v) & 0x00FF0000) >> 16) | \
-										(((uint32_t)(v) & 0x0000FF00) << 0) | \
-										(((uint32_t)(v) & 0x000000FF) << 16))
-#define SWAP_U32(v)					(	(((uint32_t)(v) & 0xFF000000) >> 24) | \
-										(((uint32_t)(v) & 0x00FF0000) >> 8) | \
-										(((uint32_t)(v) & 0x0000FF00) << 8) | \
-										(((uint32_t)(v) & 0x000000FF) << 24))
-#define SWAP_U64(v)					(	(((uint64_t)(v) & 0xFF00000000000000) >> 56) | \
-										(((uint64_t)(v) & 0x00FF000000000000) >> 40) | \
-										(((uint64_t)(v) & 0x0000FF0000000000) >> 24) | \
-										(((uint64_t)(v) & 0x000000FF00000000) >> 8) | \
-										(((uint64_t)(v) & 0x00000000FF000000) << 8) | \
-										(((uint64_t)(v) & 0x0000000000FF0000) << 24) | \
-										(((uint64_t)(v) & 0x000000000000FF00) << 40) | \
-										(((uint64_t)(v) & 0x00000000000000FF) << 56) | )
+#define SWAP_U24(v)					(	(((uint32_t)(v) & 0x00FF0000ul) >> 16) | \
+										(((uint32_t)(v) & 0x0000FF00ul) << 0) | \
+										(((uint32_t)(v) & 0x000000FFul) << 16))
+#define SWAP_U32(v)					(	(((uint32_t)(v) & 0xFF000000ul) >> 24) | \
+										(((uint32_t)(v) & 0x00FF0000ul) >> 8) | \
+										(((uint32_t)(v) & 0x0000FF00ul) << 8) | \
+										(((uint32_t)(v) & 0x000000FFul) << 24))
+#define SWAP_U64(v)					(	(((uint64_t)(v) & 0xFF00000000000000ull) >> 56) | \
+										(((uint64_t)(v) & 0x00FF000000000000ull) >> 40) | \
+										(((uint64_t)(v) & 0x0000FF0000000000ull) >> 24) | \
+										(((uint64_t)(v) & 0x000000FF00000000ull) >> 8) | \
+										(((uint64_t)(v) & 0x00000000FF000000ull) << 8) | \
+										(((uint64_t)(v) & 0x0000000000FF0000ull) << 24) | \
+										(((uint64_t)(v) & 0x000000000000FF00ull) << 40) | \
+										(((uint64_t)(v) & 0x00000000000000FFull) << 56))
 
 #if defined(__BIG_ENDIAN__) && (__BIG_ENDIAN__ == 1)
 #	define LE_TO_SYS_U16(v)			SWAP_U16(v)

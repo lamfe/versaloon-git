@@ -519,6 +519,8 @@ VSS_HANDLER(vsprog_wait_key_press)
 
 VSS_HANDLER(vsprog_program)
 {
+	VSS_CHECK_ARGC(1);
+	
 	LED_STATE_R_OFF();
 	LED_STATE_G_OFF();
 	if (vss_run_script("enter_program_mode") ||
