@@ -760,9 +760,9 @@
 #define LED_RED_PORT					2
 #define LED_RED_PIN						3
 #define LED_GREEN_PORT					2
-#define LED_GREEN_PIN					2
+#define LED_GREEN_PIN					1
 #define LED_BLUE_PORT					2
-#define LED_BLUE_PIN					1
+#define LED_BLUE_PIN					2
 
 #define LED_USB_PORT					2
 #define LED_USB_PIN						0
