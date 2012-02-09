@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date 12/01/2012 15:26:18
+EESchema Schematic File Version 2  date 10/02/2012 02:45:08
 LIBS:power
 LIBS:simonqian
 LIBS:stm32
@@ -30,14 +30,13 @@ LIBS:siliconi
 LIBS:contrib
 LIBS:valves
 LIBS:versaloon
-LIBS:Versaloon-cache
 EELAYER 25  0
 EELAYER END
 $Descr User 8000 8000
 encoding utf-8
 Sheet 1 1
 Title ""
-Date "12 jan 2012"
+Date "9 feb 2012"
 Rev ""
 Comp ""
 Comment1 ""
@@ -2208,7 +2207,7 @@ L R R11
 U 1 1 4817F1C3
 P 6900 2350
 F 0 "R11" V 6800 2350 50  0000 C CNN
-F 1 "3.3K" V 6900 2350 50  0000 C CNN
+F 1 "470" V 6900 2350 50  0000 C CNN
 F 4 "" H 6900 2350 60  0001 C CNN "域1"
 F 5 "" H 6900 2350 60  0001 C CNN "域2"
 F 6 "" H 6900 2350 60  0001 C CNN "域3"
