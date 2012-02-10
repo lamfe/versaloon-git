@@ -37,6 +37,23 @@ static const struct vss_cmd_t beeper_cmd[] =
 };
 #endif
 
+#if HW_HAS_7COLOR_LED
+VSS_HANDLER(app_led7c_init);
+VSS_HANDLER(app_led7c_set);
+
+static const struct vss_cmd_t led7c_cmd[] =
+{
+	VSS_CMD(	"init",
+				"initialize 7-color led, format: led7c.init",
+				app_led7c_init,
+				NULL),
+	VSS_CMD(	"set",
+				"set 7-color led, format: led7c.set COLOR",
+				app_led7c_set,
+				NULL),
+};
+#endif
+
 #if HW_HAS_LEDARRAY
 VSS_HANDLER(app_ledarr_init);
 VSS_HANDLER(app_ledarr_set);
@@ -87,6 +104,12 @@ static const struct vss_cmd_t app_cmd[] =
 				"led array handler",
 				app_ledarr_init,
 				ledarr_cmd),
+#endif
+#if HW_HAS_7COLOR_LED
+	VSS_CMD(	"led7c",
+				"7-color led handler",
+				app_led7c_init,
+				led7c_cmd),
 #endif
 	VSS_CMD_END
 };
@@ -182,6 +205,61 @@ VSS_HANDLER(app_beeper_off)
 {
 	VSS_CHECK_ARGC(1);
 	BEEPER_OFF();
+	return VSFERR_NONE;
+}
+#endif
+
+#if HW_HAS_7COLOR_LED
+VSS_HANDLER(app_led7c_init)
+{
+	VSS_CHECK_ARGC(1);
+	LED_STATE_INIT();
+	return VSFERR_NONE;
+}
+
+VSS_HANDLER(app_led7c_set)
+{
+	VSS_CHECK_ARGC(2);
+	LED_STATE_R_OFF();
+	LED_STATE_G_OFF();
+	LED_STATE_B_OFF();
+	if (!strcmp(argv[1], "red"))
+	{
+		LED_STATE_R_ON();
+	}
+	else if (!strcmp(argv[1], "green"))
+	{
+		LED_STATE_G_ON();
+	}
+	else if (!strcmp(argv[1], "blue"))
+	{
+		LED_STATE_B_ON();
+	}
+	else if (!strcmp(argv[1], "yellow"))
+	{
+		LED_STATE_R_ON();
+		LED_STATE_G_ON();
+	}
+	else if (!strcmp(argv[1], "purple"))
+	{
+		LED_STATE_R_ON();
+		LED_STATE_B_ON();
+	}
+	else if (!strcmp(argv[1], "unk"))
+	{
+		LED_STATE_B_ON();
+		LED_STATE_G_ON();
+	}
+	else if (!strcmp(argv[1], "white"))
+	{
+		LED_STATE_R_ON();
+		LED_STATE_G_ON();
+		LED_STATE_B_ON();
+	}
+	else
+	{
+		return VSFERR_FAIL;
+	}
 	return VSFERR_NONE;
 }
 #endif

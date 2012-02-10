@@ -679,6 +679,9 @@ vsf_err_t usb_protocol_init(void)
 	LED_STATE_INIT();
 	LED_STATE_G_ON();
 	LED_USB_INIT();
+#if HW_HAS_LEDARRAY
+	LED_ARRAY_INIT();
+#endif
 	
 #if SCRIPTS_EN
 	LED_ARRAY_INIT();

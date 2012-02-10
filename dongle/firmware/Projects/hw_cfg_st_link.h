@@ -54,6 +54,7 @@
 
 #define HW_HAS_BEEPER					0
 #define HW_HAS_LEDARRAY					0
+#define HW_HAS_7COLOR_LED				0
 
 /****************************** ST_LINK Pins ******************************/
 #define ST_LINK_SWD_PORT				GPIOB
