@@ -49,6 +49,7 @@
 
 #define HW_HAS_BEEPER					0
 #define HW_HAS_LEDARRAY					0
+#define HW_HAS_7COLOR_LED				0
 
 /****************************** Power ******************************/
 #define PWREXT_EN_PORT					1

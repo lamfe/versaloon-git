@@ -50,6 +50,7 @@
 
 #define HW_HAS_BEEPER					0
 #define HW_HAS_LEDARRAY					0
+#define HW_HAS_7COLOR_LED				0
 
 /****************************** DelayTimer ******************************/
 #define DELAYTIMER_MAXDELAY_US			200000
