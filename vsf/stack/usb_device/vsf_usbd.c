@@ -793,7 +793,7 @@ static vsf_err_t vsfusbd_on_IN0(struct vsfusbd_device_t *device)
 									USB_EP_STAT_ACK);
 	case USB_CTRL_STAT_LAST_IN_DATA:
 		ctrl_handler->state = USB_CTRL_STAT_WAIT_STATUS_OUT;
-		return vsfusbd_config_ep(device->drv, 0, USB_EP_STAT_STALL, 
+		return vsfusbd_config_ep(device->drv, 0, USB_EP_STAT_NACK, 
 									USB_EP_STAT_ACK);
 	case USB_CTRL_STAT_WAIT_STATUS_IN:
 		if (ctrl_handler->filter->process(device, &tbuffer->buffer))
@@ -802,7 +802,7 @@ static vsf_err_t vsfusbd_on_IN0(struct vsfusbd_device_t *device)
 			break;
 		}
 		ctrl_handler->state = USB_CTRL_STAT_WAIT_SETUP;
-		return vsfusbd_config_ep(device->drv, 0, USB_EP_STAT_STALL, 
+		return vsfusbd_config_ep(device->drv, 0, USB_EP_STAT_NACK, 
 									USB_EP_STAT_ACK);
 	default:
 		break;
@@ -854,7 +854,7 @@ static vsf_err_t vsfusbd_on_OUT0(struct vsfusbd_device_t *device)
 			break;
 		}
 		ctrl_handler->state = USB_CTRL_STAT_WAIT_SETUP;
-		return vsfusbd_config_ep(device->drv, 0, USB_EP_STAT_STALL, 
+		return vsfusbd_config_ep(device->drv, 0, USB_EP_STAT_NACK, 
 									USB_EP_STAT_ACK);
 	default:
 		err = VSFERR_FAIL;
@@ -916,14 +916,14 @@ vsf_err_t vsfusbd_on_SETUP(void *p)
 			goto exit;
 		}
 		return vsfusbd_config_ep(device->drv, 0, USB_EP_STAT_ACK, 
-										USB_EP_STAT_STALL);
+										USB_EP_STAT_NACK);
 	}
 	else
 	{
 		if (USB_REQ_GET_DIR(request->type) == USB_REQ_DIR_HTOD)
 		{
 			ctrl_handler->state = USB_CTRL_STAT_OUT_DATA;
-			return vsfusbd_config_ep(device->drv, 0, USB_EP_STAT_STALL, 
+			return vsfusbd_config_ep(device->drv, 0, USB_EP_STAT_NACK, 
 										USB_EP_STAT_ACK);
 		}
 		else
@@ -1071,7 +1071,7 @@ vsf_err_t vsfusbd_on_RESET(void *p)
 	if (device->drv->ep.set_type(0, USB_EP_TYPE_CONTROL) || 
 		device->drv->ep.set_IN_epsize(0, ep_size) || 
 		device->drv->ep.set_OUT_epsize(0, ep_size) || 
-		vsfusbd_config_ep(device->drv, 0, USB_EP_STAT_STALL, USB_EP_STAT_ACK))
+		vsfusbd_config_ep(device->drv, 0, USB_EP_STAT_NACK, USB_EP_STAT_ACK))
 	{
 		return VSFERR_FAIL;
 	}
