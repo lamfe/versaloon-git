@@ -748,14 +748,54 @@
 
 /****************************** Beeper ******************************/
 #define BEEPER_PORT						2
-#define BEEPER_PIN						5
+#define BEEPER_PIN						6
+#define BEEPER_TIMER					TIM8
 
 #define BEEPER_INIT()					do {\
+											TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;\
+											TIM_OCInitTypeDef TIM_OCInitStructure;\
+											\
+											RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM8, ENABLE);\
 											core_interfaces.gpio.init(BEEPER_PORT);\
-											core_interfaces.gpio.config_pin(BEEPER_PORT, BEEPER_PIN, GPIO_OUTPP);\
+											core_interfaces.gpio.config_pin(BEEPER_PORT, BEEPER_PIN, stm32_GPIO_AFPP);\
+											\
+											TIM_DeInit(BEEPER_TIMER);\
+											\
+											TIM_TimeBaseStructInit(&TIM_TimeBaseStructure);\
+											TIM_TimeBaseStructure.TIM_Prescaler = 0;\
+											TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;\
+											TIM_TimeBaseStructure.TIM_Period = 0;\
+											TIM_TimeBaseStructure.TIM_ClockDivision = 0;\
+											TIM_TimeBaseStructure.TIM_RepetitionCounter = 0;\
+											TIM_TimeBaseInit(BEEPER_TIMER, &TIM_TimeBaseStructure);\
+											\
+											TIM_OCStructInit(&TIM_OCInitStructure);\
+											TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM1;\
+											TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;\
+											TIM_OCInitStructure.TIM_Pulse = 0;\
+											TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_High;\
+											TIM_OC1Init(BEEPER_TIMER, &TIM_OCInitStructure);\
+											\
+											TIM_OC1PreloadConfig(BEEPER_TIMER, TIM_OCPreload_Enable);\
+											TIM_ARRPreloadConfig(BEEPER_TIMER, ENABLE);\
+											TIM_Cmd(BEEPER_TIMER, ENABLE);\
+											TIM_CtrlPWMOutputs(BEEPER_TIMER, ENABLE);\
 										} while (0)
-#define BEEPER_ON()						core_interfaces.gpio.out(BEEPER_PORT, 1 << BEEPER_PIN, 1 << BEEPER_PIN)
-#define BEEPER_OFF()					core_interfaces.gpio.out(BEEPER_PORT, 1 << BEEPER_PIN, 0)
+#define BEEPER_ON()						do {\
+											struct stm32_info_t *stm32_info;\
+											\
+											if (!stm32_interface_get_info(&stm32_info) &&\
+												(stm32_info != NULL))\
+											{\
+												BEEPER_TIMER->ARR = stm32_info->apb2_freq_hz / 4000;\
+												BEEPER_TIMER->CCR1 = BEEPER_TIMER->ARR / 2;\
+												BEEPER_TIMER->EGR = TIM_PSCReloadMode_Immediate;\
+											}\
+										} while (0)
+#define BEEPER_OFF()					do {\
+											BEEPER_TIMER->ARR = 0;\
+											BEEPER_TIMER->EGR = TIM_PSCReloadMode_Immediate;\
+										} while (0)
 
 /****************************** LED ******************************/
 #define LED_RED_PORT					2
