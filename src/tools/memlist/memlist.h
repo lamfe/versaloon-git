@@ -25,6 +25,7 @@ struct memlist
 {
 	uint32_t addr;
 	uint32_t len;
+	uint8_t *buff;
 	struct sllist list;
 };
 
@@ -33,7 +34,7 @@ struct memlist
 
 uint32_t MEMLIST_CalcAllSize(struct memlist *ml);
 vsf_err_t MEMLIST_Add(struct memlist **ml, uint32_t addr, uint32_t len,
-						uint32_t page_size);
+						uint32_t page_size, uint8_t *buff);
 void MEMLIST_Free(struct memlist **ml);
 
 #endif /* __MEMLIST_H_INCLUDED__ */

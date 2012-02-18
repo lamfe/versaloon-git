@@ -196,12 +196,13 @@ static vsf_err_t target_write_buffer_from_file_callback(char * ext,
 		{
 			// put in area_buff
 			memcpy(area_buff + mem_addr, data, length);
-			if (MEMLIST_Add(area_memlist, address, length, area_page_size))
+			if (MEMLIST_Add(area_memlist, address, length, area_page_size,
+							area_buff + mem_addr))
 			{
 				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "add memory list");
 				return ERRCODE_FAILURE_OPERATION;
 			}
-			if (MEMLIST_Add(area_exact_memlist, address, length, 1))
+			if (MEMLIST_Add(area_exact_memlist, address, length, 1, NULL))
 			{
 				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "add memory list");
 				return ERRCODE_FAILURE_OPERATION;
@@ -349,6 +350,18 @@ static uint32_t target_get_memlist_count(struct memlist *list)
 	return count;
 }
 
+static uint32_t target_get_memlist_size(struct memlist *list)
+{
+	uint32_t size = 0;
+	
+	while (list != NULL)
+	{
+		size += list->len;
+		list = MEMLIST_GetNext(list);
+	}
+	return size;
+}
+
 vsf_err_t target_generate_data(struct target_cfg_data_info_t *cfg_data_info,
 					struct program_context_t *context, const char *filename)
 {
@@ -386,7 +399,7 @@ vsf_err_t target_generate_data(struct target_cfg_data_info_t *cfg_data_info,
 	
 	#define DATASIZE(len)	(((len) + align - 1) / align) * align
 	
-	memlist_size = 2 * sizeof(uint32_t) + addrwidth;
+	memlist_size = 2 * sizeof(uint32_t) + 2 * addrwidth;
 	pa_size = dimof(target_area_name) * (4 * addrwidth + sizeof(uint32_t));
 	pa_size = DATASIZE(pa_size);
 	buff = (uint8_t *)malloc(pa_size);
@@ -496,8 +509,8 @@ vsf_err_t target_generate_data(struct target_cfg_data_info_t *cfg_data_info,
 			return VSFERR_FAIL;
 		}
 		
-		if ((prog_area->buff != NULL) && (prog_area->size > 0) &&
-			(prog_area->memlist != NULL) && (prog_area->exact_memlist != NULL))
+		if ((prog_area->size > 0) && (prog_area->memlist != NULL) &&
+			(prog_area->exact_memlist != NULL))
 		{
 			//	struct program_area_t
 			//	{
@@ -512,14 +525,14 @@ vsf_err_t target_generate_data(struct target_cfg_data_info_t *cfg_data_info,
 				SET_ABS_PTR(buff_ptr, 0);
 			}
 			//		uint8_t *buff;
-			SET_PTR(buff_ptr, data_pos);
-			data_pos += DATASIZE(prog_area->size);
+			SET_ABS_PTR(buff_ptr, 0);
 			//		uint32_t size;
 			SET_U32(buff_ptr, prog_area->size);
 			//		struct memlist *memlist;
 			SET_PTR(buff_ptr, data_pos);
 			temp_len = DATASIZE(memlist_size);
 			data_pos += temp_len * target_get_memlist_count(prog_area->memlist);
+			data_pos += DATASIZE(target_get_memlist_size(prog_area->memlist));
 			//		struct memlist *exact_memlist;
 			SET_PTR(buff_ptr, data_pos);
 			temp_len = DATASIZE(memlist_size);
@@ -580,8 +593,8 @@ vsf_err_t target_generate_data(struct target_cfg_data_info_t *cfg_data_info,
 			return VSFERR_FAIL;
 		}
 		
-		if ((prog_area->buff != NULL) && (prog_area->size > 0) &&
-			(prog_area->memlist != NULL) && (prog_area->exact_memlist != NULL))
+		if ((prog_area->size > 0) && (prog_area->memlist != NULL) &&
+			(prog_area->exact_memlist != NULL))
 		{
 			//	struct program_area_t
 			//	{
@@ -593,8 +606,6 @@ vsf_err_t target_generate_data(struct target_cfg_data_info_t *cfg_data_info,
 							DATASIZE(temp_len));
 			}
 			//		uint8_t *buff;
-			temp_len = prog_area->size;
-			SET_DATA(buff_ptr, prog_area->buff, temp_len, DATASIZE(temp_len));
 			//		uint32_t size;
 			//		struct memlist *memlist;
 			temp_list = prog_area->memlist;
@@ -602,6 +613,8 @@ vsf_err_t target_generate_data(struct target_cfg_data_info_t *cfg_data_info,
 			{
 				SET_U32(buff_ptr, temp_list->addr);
 				SET_U32(buff_ptr, temp_list->len);
+				SET_DATA(buff_ptr, temp_list->buff, temp_list->len,
+							DATASIZE(temp_list->len));
 				temp_list = MEMLIST_GetNext(temp_list);
 				if (temp_list != NULL)
 				{
@@ -618,6 +631,7 @@ vsf_err_t target_generate_data(struct target_cfg_data_info_t *cfg_data_info,
 			{
 				SET_U32(buff_ptr, temp_list->addr);
 				SET_U32(buff_ptr, temp_list->len);
+				SET_ABS_PTR(buff_ptr, 0);
 				temp_list = MEMLIST_GetNext(temp_list);
 				if (temp_list != NULL)
 				{

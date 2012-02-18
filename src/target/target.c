@@ -1104,7 +1104,6 @@ static vsf_err_t target_program(struct program_context_t *context)
 	uint32_t target_size, page_size, start_addr;
 	char *format = NULL;
 	char format_tmp[32];
-	uint8_t *tbuff;
 	char *fullname, str_tmp[256];
 	struct memlist **ml, *ml_tmp, *ml_exact = NULL;
 	uint32_t time_in_ms = 1000;
@@ -1198,7 +1197,6 @@ static vsf_err_t target_program(struct program_context_t *context)
 		{
 			area_info->size = prog_area->size;
 		}
-		tbuff = prog_area->buff;
 		if (p_map[i].data_pos)
 		{
 			ml = &(prog_area->memlist);
@@ -1320,15 +1318,15 @@ static vsf_err_t target_program(struct program_context_t *context)
 			strcat(str_tmp, " |");
 			pgbar_init(str_tmp, "|", 0, target_size, PROGRESS_STEP, '=');
 			
-			if ((tbuff != NULL) && (ml != NULL))
+			if (ml != NULL)
 			{
 				ml_tmp = *ml;
 				while(ml_tmp != NULL)
 				{
 					if (area_attr & AREA_ATTR_WNP)
 					{
-						int32_t tmp_addr = ml_tmp->addr;
-						uint8_t *tmp_buf = &(tbuff[tmp_addr - start_addr]);
+						uint32_t tmp_addr = ml_tmp->addr;
+						uint8_t *tmp_buf = ml_tmp->buff;
 						
 						if (pf->write_target(context, area_char,
 								tmp_addr, tmp_buf, ml_tmp->len))
@@ -1344,7 +1342,7 @@ static vsf_err_t target_program(struct program_context_t *context)
 						for (j = 0; j < ml_tmp->len; j += page_size)
 						{
 							uint32_t tmp_addr = ml_tmp->addr + j;
-							uint8_t *tmp_buf = &(tbuff[tmp_addr - start_addr]);
+							uint8_t *tmp_buf = &ml_tmp->buff[j];
 							
 							if (pf->write_target(context,
 									area_char, tmp_addr, tmp_buf, page_size))
@@ -1375,13 +1373,13 @@ static vsf_err_t target_program(struct program_context_t *context)
 					}
 					buff_tmp = (uint8_t *)prog_area->cli_str;
 				}
-				else if (tbuff != NULL)
+				else if (prog_area->buff != NULL)
 				{
-					buff_tmp = tbuff;
+					buff_tmp = prog_area->buff;
 				}
 				else
 				{
-					LOG_ERROR(ERRMSG_INVALID_BUFFER, "tbuff(prog_area->buff)");
+					LOG_ERROR(ERRMSG_INVALID_BUFFER, "prog_area->buff");
 					err = VSFERR_FAIL;
 					goto target_program_exit;
 				}
@@ -1438,11 +1436,12 @@ static vsf_err_t target_program(struct program_context_t *context)
 			strcat(str_tmp, " |");
 			pgbar_init(str_tmp, "|", 0, target_size, PROGRESS_STEP, '=');
 			
-			if ((page_size == 0) || (area_attr & AREA_ATTR_RNP))
+			if (((page_size == 0) || (area_attr & AREA_ATTR_RNP)) &&
+				(prog_area->buff != NULL))
 			{
 				// verify whole target area
-				if (pf->read_target(context, area_char,
-										start_addr, tbuff, target_size))
+				if (pf->read_target(context, area_char, start_addr,
+										prog_area->buff, target_size))
 				{
 					pgbar_fini();
 					LOG_ERROR(ERRMSG_FAILURE_VERIFY, fullname);
@@ -1452,7 +1451,7 @@ static vsf_err_t target_program(struct program_context_t *context)
 				
 				pgbar_update(target_size);
 			}
-			else if ((tbuff != NULL) && (ml != NULL))
+			else if (ml != NULL)
 			{
 				// verify target area page by page
 				ml_tmp = *ml;
@@ -1461,7 +1460,7 @@ static vsf_err_t target_program(struct program_context_t *context)
 					for (j = 0; j < ml_tmp->len; j += page_size)
 					{
 						uint32_t tmp_addr = ml_tmp->addr + j;
-						uint8_t *tmp_buf = &(tbuff[tmp_addr - start_addr]);
+						uint8_t *tmp_buf = &ml_tmp->buff[j];
 						
 						if (pf->read_target(context, area_char,
 								tmp_addr, tmp_buf, page_size))
@@ -1475,6 +1474,10 @@ static vsf_err_t target_program(struct program_context_t *context)
 					}
 					ml_tmp = MEMLIST_GetNext(ml_tmp);
 				}
+			}
+			else
+			{
+				return VSFERR_FAIL;
 			}
 			if ((prog != NULL) && prog->peripheral_commit())
 			{
@@ -1493,7 +1496,7 @@ static vsf_err_t target_program(struct program_context_t *context)
 				(NULL == *ml))
 			{
 				if (MEMLIST_Add(ml, area_info->addr, area_info->size,
-								page_size))
+								page_size, prog_area->buff))
 				{
 					LOG_ERROR(ERRMSG_FAILURE_OPERATION, "add memory list");
 					err = ERRCODE_FAILURE_OPERATION;
@@ -1515,13 +1518,12 @@ static vsf_err_t target_program(struct program_context_t *context)
 			strcat(str_tmp, " |");
 			pgbar_init(str_tmp, "|", 0, target_size, PROGRESS_STEP, '=');
 			
-			if ((tbuff != NULL) && (ml != NULL))
+			if (ml != NULL)
 			{
 				ml_tmp = *ml;
 				while(ml_tmp != NULL)
 				{
-					uint32_t read_offset = ml_tmp->addr - start_addr;
-					uint8_t *read_buf = NULL;
+					uint8_t *read_buf = NULL, *buff_tmp = ml_tmp->buff;
 					uint32_t buf_size;
 					uint32_t err_pos;
 					
@@ -1603,8 +1605,7 @@ static vsf_err_t target_program(struct program_context_t *context)
 								}
 								err_pos = 0;
 								if (MEMLIST_VerifyBuff(ml_exact, read_buf,
-											&tbuff[read_offset + j],
-											ml_tmp->addr + j,
+											&buff_tmp[j], ml_tmp->addr + j,
 											page_size, &err_pos))
 								{
 									pgbar_fini();
@@ -1612,7 +1613,7 @@ static vsf_err_t target_program(struct program_context_t *context)
 											fullname,
 											ml_tmp->addr + j + err_pos,
 											read_buf[err_pos],
-											tbuff[read_offset + j + err_pos]);
+											buff_tmp[j + err_pos]);
 									free(read_buf);
 									read_buf = NULL;
 									err = ERRCODE_FAILURE_VERIFY;
@@ -1621,8 +1622,7 @@ static vsf_err_t target_program(struct program_context_t *context)
 							}
 							else
 							{
-								memcpy(&tbuff[read_offset + j], read_buf,
-										page_size);
+								memcpy(&buff_tmp[j], read_buf, page_size);
 							}
 #endif
 							pgbar_update(page_size);
@@ -1648,14 +1648,14 @@ static vsf_err_t target_program(struct program_context_t *context)
 						}
 						err_pos = 0;
 						if (MEMLIST_VerifyBuff(ml_exact, read_buf,
-									&tbuff[read_offset], ml_tmp->addr,
+									buff_tmp, ml_tmp->addr,
 									ml_tmp->len, &err_pos))
 						{
 							pgbar_fini();
 							LOG_ERROR(ERRMSG_FAILURE_VERIFY_AT_02X,
 										fullname, ml_tmp->addr + err_pos,
 										read_buf[err_pos],
-										tbuff[read_offset + err_pos]);
+										buff_tmp[err_pos]);
 							free(read_buf);
 							read_buf = NULL;
 							err = ERRCODE_FAILURE_VERIFY;
@@ -1664,7 +1664,7 @@ static vsf_err_t target_program(struct program_context_t *context)
 					}
 					else
 					{
-						memcpy(&tbuff[read_offset], read_buf, ml_tmp->len);
+						memcpy(buff_tmp, read_buf, ml_tmp->len);
 					}
 #endif
 					free(read_buf);
@@ -1683,9 +1683,9 @@ static vsf_err_t target_program(struct program_context_t *context)
 				{
 					buff_tmp = special_string;
 				}
-				else if (tbuff != NULL)
+				else if (prog_area->buff != NULL)
 				{
-					buff_tmp = tbuff;
+					buff_tmp = prog_area->buff;
 				}
 				else
 				{
@@ -1735,7 +1735,7 @@ static vsf_err_t target_program(struct program_context_t *context)
 					}
 					else
 					{
-						if (!memcmp(buff_tmp, tbuff, target_size))
+						if (!memcmp(buff_tmp, prog_area->buff, target_size))
 						{
 							LOG_INFO(INFOMSG_VERIFIED, fullname);
 						}
@@ -1756,7 +1756,8 @@ static vsf_err_t target_program(struct program_context_t *context)
 								err = ERRCODE_FAILURE_OPERATION;
 								goto target_program_exit;
 							}
-							want_str = strparser_solve(format, tbuff, 0);
+							want_str = strparser_solve(format, prog_area->buff,
+														0);
 							if (NULL == want_str)
 							{
 								free(read_str);
@@ -3013,7 +3014,7 @@ VSS_HANDLER(target_read)
 	}
 	area_info = target_get_chip_area(&target_chip_param, (uint32_t)index);
 	prog_area = target_get_program_area(&program_info, (uint32_t)index);
-	if ((NULL == area_info) || (NULL == prog_area))
+	if ((NULL == area_info) || (NULL == prog_area) || (NULL == prog_area->buff))
 	{
 		LOG_ERROR(ERRMSG_INVALID_TARGET, "target area");
 		return VSFERR_FAIL;
@@ -3026,7 +3027,15 @@ VSS_HANDLER(target_read)
 	byteaddr = strtoul(argv[2], NULL, 0);
 	bytesize = strtoul(argv[3], NULL, 0);
 	
-	if (MEMLIST_Add(&ml_tmp, byteaddr, bytesize, area_info->page_size))
+	if ((byteaddr < area_info->addr) ||
+		((byteaddr + bytesize) >= (area_info->addr + area_info->size)))
+	{
+		LOG_ERROR(ERRMSG_INVALID_TARGET, "target addr/size");
+		return VSFERR_FAIL;
+	}
+	
+	if (MEMLIST_Add(&ml_tmp, byteaddr, bytesize, area_info->page_size,
+					&prog_area->buff[byteaddr - area_info->addr]))
 	{
 		return VSFERR_FAIL;
 	}
