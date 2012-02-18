@@ -350,18 +350,6 @@ static uint32_t target_get_memlist_count(struct memlist *list)
 	return count;
 }
 
-static uint32_t target_get_memlist_size(struct memlist *list)
-{
-	uint32_t size = 0;
-	
-	while (list != NULL)
-	{
-		size += list->len;
-		list = MEMLIST_GetNext(list);
-	}
-	return size;
-}
-
 vsf_err_t target_generate_data(struct target_cfg_data_info_t *cfg_data_info,
 					struct program_context_t *context, const char *filename)
 {
@@ -370,7 +358,7 @@ vsf_err_t target_generate_data(struct target_cfg_data_info_t *cfg_data_info,
 	uint8_t align;
 	uint32_t offset, addrwidth;
 	uint32_t pa_size, data_size, memlist_size;
-	uint32_t data_pos;
+	uint32_t data_pos, target_data_pos;
 	uint32_t temp_len;
 	struct program_area_t *prog_area = NULL;
 	struct memlist *temp_list = NULL;
@@ -495,6 +483,7 @@ vsf_err_t target_generate_data(struct target_cfg_data_info_t *cfg_data_info,
 				(p) += (len);\
 			} while (0)
 	
+	target_data_pos = 0;
 	data_pos = pa_size;
 	buff_ptr = buff;
 	for (i = 0; i < dimof(target_area_name); i++)
@@ -532,7 +521,12 @@ vsf_err_t target_generate_data(struct target_cfg_data_info_t *cfg_data_info,
 			SET_PTR(buff_ptr, data_pos);
 			temp_len = DATASIZE(memlist_size);
 			data_pos += temp_len * target_get_memlist_count(prog_area->memlist);
-			data_pos += DATASIZE(target_get_memlist_size(prog_area->memlist));
+			temp_list = prog_area->memlist;
+			while (temp_list != NULL)
+			{
+				target_data_pos += DATASIZE(temp_list->len);
+				temp_list = MEMLIST_GetNext(temp_list);
+			}
 			//		struct memlist *exact_memlist;
 			SET_PTR(buff_ptr, data_pos);
 			temp_len = DATASIZE(memlist_size);
@@ -570,7 +564,8 @@ vsf_err_t target_generate_data(struct target_cfg_data_info_t *cfg_data_info,
 	free(buff);
 	buff = NULL;
 	
-	data_size = data_pos - pa_size;
+	data_size = target_data_pos + data_pos - pa_size;
+	target_data_pos = data_pos;
 	buff = (uint8_t *)malloc(data_size);
 	if (NULL == buff)
 	{
@@ -611,28 +606,41 @@ vsf_err_t target_generate_data(struct target_cfg_data_info_t *cfg_data_info,
 			temp_list = prog_area->memlist;
 			while (temp_list != NULL)
 			{
+				//	struct memlist
+				//	{
+				// 		uint32_t addr;
 				SET_U32(buff_ptr, temp_list->addr);
+				// 		uint32_t len;
 				SET_U32(buff_ptr, temp_list->len);
-				SET_DATA(buff_ptr, temp_list->buff, temp_list->len,
-							DATASIZE(temp_list->len));
+				// 		uint8_t *buff;
+				SET_PTR(buff_ptr, data_pos);
+				data_pos += DATASIZE(temp_list->len);
 				temp_list = MEMLIST_GetNext(temp_list);
+				//		struct sllist list;
 				if (temp_list != NULL)
 				{
-					SET_PTR(buff_ptr, 4 + buff_ptr - buff);
+					SET_PTR(buff_ptr, pa_size + 4 + buff_ptr - buff);
 				}
 				else
 				{
 					SET_ABS_PTR(buff_ptr, 0);
 				}
+				//	}
 			}
 			//		struct memlist *exact_memlist;
 			temp_list = prog_area->exact_memlist;
 			while (temp_list != NULL)
 			{
+				//	struct memlist
+				//	{
+				// 		uint32_t addr;
 				SET_U32(buff_ptr, temp_list->addr);
+				// 		uint32_t len;
 				SET_U32(buff_ptr, temp_list->len);
+				// 		uint8_t *buff;
 				SET_ABS_PTR(buff_ptr, 0);
 				temp_list = MEMLIST_GetNext(temp_list);
+				//		struct sllist list;
 				if (temp_list != NULL)
 				{
 					SET_PTR(buff_ptr, addrwidth + buff_ptr - buff);
@@ -641,8 +649,33 @@ vsf_err_t target_generate_data(struct target_cfg_data_info_t *cfg_data_info,
 				{
 					SET_ABS_PTR(buff_ptr, 0);
 				}
+				//	}
 			}
 			//	}
+		}
+	}
+	for (i = 0; i < dimof(target_area_name); i++)
+	{
+		prog_area = target_get_program_area(context->pi, i);
+		if (NULL == prog_area)
+		{
+			fclose(datafile);
+			datafile = NULL;
+			free(buff);
+			buff = NULL;
+			return VSFERR_FAIL;
+		}
+		
+		if ((prog_area->size > 0) && (prog_area->memlist != NULL) &&
+			(prog_area->exact_memlist != NULL))
+		{
+			temp_list = prog_area->memlist;
+			while (temp_list != NULL)
+			{
+				SET_DATA(buff_ptr, temp_list->buff, temp_list->len,
+							DATASIZE(temp_list->len));
+				temp_list = MEMLIST_GetNext(temp_list);
+			}
 		}
 	}
 	if (fwrite(buff, 1, data_size, datafile) != data_size)
