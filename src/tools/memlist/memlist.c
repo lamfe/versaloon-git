@@ -160,7 +160,7 @@ uint32_t MEMLIST_CalcAllSize(struct memlist *ml)
 }
 
 vsf_err_t MEMLIST_Add(struct memlist **ml, uint32_t addr, uint32_t len,
-					uint32_t page_size)
+					uint32_t page_size, uint8_t *buff)
 {
 	struct memlist *newitem = NULL;
 	
@@ -180,6 +180,7 @@ vsf_err_t MEMLIST_Add(struct memlist **ml, uint32_t addr, uint32_t len,
 		
 		(*ml)->addr = MEMLIST_AdjustAddr(addr, page_size);
 		(*ml)->len = MEMLIST_AdjustLen(len, page_size);
+		(*ml)->buff = buff;
 		sllist_init_node((*ml)->list);
 	}
 	else
@@ -195,6 +196,7 @@ vsf_err_t MEMLIST_Add(struct memlist **ml, uint32_t addr, uint32_t len,
 			
 			newitem->addr = MEMLIST_AdjustAddr(addr, page_size);
 			newitem->len = MEMLIST_AdjustLen(len, page_size);
+			newitem->buff = buff;
 			sllist_init_node(newitem->list);
 			MEMLIST_Insert(ml, newitem);
 		}
