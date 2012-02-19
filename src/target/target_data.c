@@ -619,7 +619,8 @@ vsf_err_t target_generate_data(struct target_cfg_data_info_t *cfg_data_info,
 				//		struct sllist list;
 				if (temp_list != NULL)
 				{
-					SET_PTR(buff_ptr, pa_size + 4 + buff_ptr - buff);
+					SET_PTR(buff_ptr,
+						pa_size + buff_ptr - buff + DATASIZE(memlist_size));
 				}
 				else
 				{
@@ -643,7 +644,8 @@ vsf_err_t target_generate_data(struct target_cfg_data_info_t *cfg_data_info,
 				//		struct sllist list;
 				if (temp_list != NULL)
 				{
-					SET_PTR(buff_ptr, addrwidth + buff_ptr - buff);
+					SET_PTR(buff_ptr,
+						pa_size + buff_ptr - buff + DATASIZE(memlist_size));
 				}
 				else
 				{

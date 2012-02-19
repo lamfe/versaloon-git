@@ -1966,7 +1966,7 @@ Post_Init:
 			return VSFERR_FAIL;
 		}
 		area_info = target_get_chip_area(&target_chip_param, (uint32_t)area_idx);
-		prog_area= target_get_program_area(pi, (uint32_t)area_idx);
+		prog_area = target_get_program_area(pi, (uint32_t)area_idx);
 		if ((NULL == area_info) || (NULL == prog_area))
 		{
 			i++;
