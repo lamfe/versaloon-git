@@ -5,6 +5,13 @@ You can use, copy and distribute this file freely, but without any waranty.
 Configure memory sizes, end of stack and boot mode for your project here.
 */
 
+/* default stack sizes and heap sizes. 
+
+These are used by the startup in order to allocate stacks for the different modes.
+*/
+
+_Stack_Size = 1K ;
+_Heap_Size = 0 ;
 
 /* include the common STM32F10x sub-script */
 INCLUDE "STM32_COMMON.ld"
