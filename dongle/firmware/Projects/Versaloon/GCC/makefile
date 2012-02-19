@@ -1,5 +1,6 @@
 # options and settings
 PROJECT	= Versaloon
+EMBEDDED_VSPROG_EN = no
 
 # 
 # To select your board , set HW_BOARD to one of the below boards
@@ -59,6 +60,7 @@ USR_SRCS+= $(COMPILER_DIR)/compiler_string.c $(COMPILER_DIR)/syscall.c
 USR_INCS+= -I $(COMPILER_DIR)
 
 #vsprog
+ifeq (${EMBEDDED_VSPROG_EN},yes)
 USR_SRCS+= $(SRCDIR)/app_io.c \
   $(VSPROGDIR)/scripts/scripts.c \
   $(VSPROGDIR)/scripts/interfaces_script.c \
@@ -136,6 +138,7 @@ USR_INCS+= -I $(VSPROGDIR)/scripts \
   -I $(VSPROGDIR)/target/stm32f1 \
   -I $(VSPROGDIR)/target/stm32f2 \
   -I $(VSPROGDIR)/target/stm32l1
+endif
 
 #APP interfaces
 USR_SRCS+= $(SRCDIR)/Interfaces/app_interfaces.c
@@ -209,6 +212,7 @@ USR_INCS+= -I $(STM32_IFACES_DIR) \
   -I $(STM32_IFACES_DIR)/sdio
 
 #VSF dal
+ifeq (${EMBEDDED_VSPROG_EN},yes)
 USR_SRCS+= $(VSFDIR)/dal/dal.c \
   $(VSFDIR)/dal/df25xx/df25xx_drv.c \
   $(VSFDIR)/dal/df45xx/df45xx_drv.c \
@@ -221,6 +225,9 @@ USR_SRCS+= $(VSFDIR)/dal/dal.c \
   $(VSFDIR)/dal/mic2826/mic2826_drv.c \
   $(VSFDIR)/dal/nrf24l01/nrf24l01_drv.c \
   $(VSFDIR)/dal/usart_stream/usart_stream.c
+else
+USR_SRCS+= $(VSFDIR)/dal/usart_stream/usart_stream.c
+endif
 
 #VSF stack
 USR_SRCS+= $(VSFDIR)/stack/usb_device/vsf_usbd.c \
