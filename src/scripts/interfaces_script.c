@@ -34,45 +34,9 @@
 #include "interfaces_script.h"
 #include "scripts.h"
 
+#if POWER_OUT_EN
 VSS_HANDLER(interface_get_target_voltage);
 VSS_HANDLER(interface_set_target_voltage);
-
-VSS_HANDLER(interface_jtag_init);
-VSS_HANDLER(interface_jtag_fini);
-VSS_HANDLER(interface_jtag_config);
-VSS_HANDLER(interface_jtag_reset);
-VSS_HANDLER(interface_jtag_runtest);
-VSS_HANDLER(interface_jtag_ir);
-VSS_HANDLER(interface_jtag_dr);
-
-VSS_HANDLER(interface_iic_init);
-VSS_HANDLER(interface_iic_fini);
-VSS_HANDLER(interface_iic_config);
-VSS_HANDLER(interface_iic_read);
-VSS_HANDLER(interface_iic_write);
-VSS_HANDLER(interface_iic_read_buff8);
-VSS_HANDLER(interface_iic_write_buff8);
-
-VSS_HANDLER(interface_gpio_init);
-VSS_HANDLER(interface_gpio_fini);
-VSS_HANDLER(interface_gpio_config);
-VSS_HANDLER(interface_gpio_out);
-VSS_HANDLER(interface_gpio_in);
-
-VSS_HANDLER(interface_spi_init);
-VSS_HANDLER(interface_spi_fini);
-VSS_HANDLER(interface_spi_config);
-VSS_HANDLER(interface_spi_io);
-
-VSS_HANDLER(interface_pwm_init);
-VSS_HANDLER(interface_pwm_fini);
-VSS_HANDLER(interface_pwm_config_mode);
-VSS_HANDLER(interface_pwm_config_freq);
-VSS_HANDLER(interface_pwm_out);
-
-VSS_HANDLER(interface_delay_us);
-VSS_HANDLER(interface_delay_ms);
-VSS_HANDLER(interface_commit);
 
 static const struct vss_cmd_t tvcc_cmd[] =
 {
@@ -86,6 +50,16 @@ static const struct vss_cmd_t tvcc_cmd[] =
 				NULL),
 	VSS_CMD_END
 };
+#endif
+
+#if INTERFACE_JTAG_EN
+VSS_HANDLER(interface_jtag_init);
+VSS_HANDLER(interface_jtag_fini);
+VSS_HANDLER(interface_jtag_config);
+VSS_HANDLER(interface_jtag_reset);
+VSS_HANDLER(interface_jtag_runtest);
+VSS_HANDLER(interface_jtag_ir);
+VSS_HANDLER(interface_jtag_dr);
 
 static const struct vss_cmd_t jtag_cmd[] =
 {
@@ -119,52 +93,16 @@ static const struct vss_cmd_t jtag_cmd[] =
 				NULL),
 	VSS_CMD_END
 };
+#endif
 
-static const struct vss_cmd_t gpio_cmd[] =
-{
-	VSS_CMD(	"init",
-				"initialize gpio, format: gpio.init [MASK IO PULL_EN PULL]",
-				interface_gpio_init,
-				NULL),
-	VSS_CMD(	"fini",
-				"finalize gpio, format: gpio.fini",
-				interface_gpio_fini,
-				NULL),
-	VSS_CMD(	"config",
-				"config gpio, format: gpio.config MASK IO PULL_EN PULL",
-				interface_gpio_config,
-				NULL),
-	VSS_CMD(	"out",
-				"gpio output, format: gpio.out MASK VALUE",
-				interface_gpio_out,
-				NULL),
-	VSS_CMD(	"in",
-				"gpio input, format: gpio.in MASK",
-				interface_gpio_in,
-				NULL),
-	VSS_CMD_END
-};
-
-static const struct vss_cmd_t spi_cmd[] =
-{
-	VSS_CMD(	"init",
-				"initialize spi, format: spi.init [KHZ MODE FIRSTBIT]",
-				interface_spi_init,
-				NULL),
-	VSS_CMD(	"fini",
-				"finalize spi, format: spi.fini",
-				interface_spi_fini,
-				NULL),
-	VSS_CMD(	"config",
-				"config spi, format: spi.config KHZ MODE FIRSTBIT",
-				interface_spi_config,
-				NULL),
-	VSS_CMD(	"io",
-				"spi input and output, format: spi.io DATASIZE DATA...",
-				interface_spi_io,
-				NULL),
-	VSS_CMD_END
-};
+#if INTERFACE_IIC_EN
+VSS_HANDLER(interface_iic_init);
+VSS_HANDLER(interface_iic_fini);
+VSS_HANDLER(interface_iic_config);
+VSS_HANDLER(interface_iic_read);
+VSS_HANDLER(interface_iic_write);
+VSS_HANDLER(interface_iic_read_buff8);
+VSS_HANDLER(interface_iic_write_buff8);
 
 static const struct vss_cmd_t iic_cmd[] =
 {
@@ -202,6 +140,75 @@ static const struct vss_cmd_t iic_cmd[] =
 				NULL),
 	VSS_CMD_END
 };
+#endif
+
+#if INTERFACE_GPIO_EN
+VSS_HANDLER(interface_gpio_init);
+VSS_HANDLER(interface_gpio_fini);
+VSS_HANDLER(interface_gpio_config);
+VSS_HANDLER(interface_gpio_out);
+VSS_HANDLER(interface_gpio_in);
+
+static const struct vss_cmd_t gpio_cmd[] =
+{
+	VSS_CMD(	"init",
+				"initialize gpio, format: gpio.init [MASK IO PULL_EN PULL]",
+				interface_gpio_init,
+				NULL),
+	VSS_CMD(	"fini",
+				"finalize gpio, format: gpio.fini",
+				interface_gpio_fini,
+				NULL),
+	VSS_CMD(	"config",
+				"config gpio, format: gpio.config MASK IO PULL_EN PULL",
+				interface_gpio_config,
+				NULL),
+	VSS_CMD(	"out",
+				"gpio output, format: gpio.out MASK VALUE",
+				interface_gpio_out,
+				NULL),
+	VSS_CMD(	"in",
+				"gpio input, format: gpio.in MASK",
+				interface_gpio_in,
+				NULL),
+	VSS_CMD_END
+};
+#endif
+
+#if INTERFACE_SPI_EN
+VSS_HANDLER(interface_spi_init);
+VSS_HANDLER(interface_spi_fini);
+VSS_HANDLER(interface_spi_config);
+VSS_HANDLER(interface_spi_io);
+
+static const struct vss_cmd_t spi_cmd[] =
+{
+	VSS_CMD(	"init",
+				"initialize spi, format: spi.init [KHZ MODE FIRSTBIT]",
+				interface_spi_init,
+				NULL),
+	VSS_CMD(	"fini",
+				"finalize spi, format: spi.fini",
+				interface_spi_fini,
+				NULL),
+	VSS_CMD(	"config",
+				"config spi, format: spi.config KHZ MODE FIRSTBIT",
+				interface_spi_config,
+				NULL),
+	VSS_CMD(	"io",
+				"spi input and output, format: spi.io DATASIZE DATA...",
+				interface_spi_io,
+				NULL),
+	VSS_CMD_END
+};
+#endif
+
+#if INTERFACE_PWM_EN
+VSS_HANDLER(interface_pwm_init);
+VSS_HANDLER(interface_pwm_fini);
+VSS_HANDLER(interface_pwm_config_mode);
+VSS_HANDLER(interface_pwm_config_freq);
+VSS_HANDLER(interface_pwm_out);
 
 static const struct vss_cmd_t pwm_cmd[] =
 {
@@ -227,6 +234,11 @@ static const struct vss_cmd_t pwm_cmd[] =
 				NULL),
 	VSS_CMD_END
 };
+#endif
+
+VSS_HANDLER(interface_delay_us);
+VSS_HANDLER(interface_delay_ms);
+VSS_HANDLER(interface_commit);
 
 static const struct vss_cmd_t delay_cmd[] =
 {
@@ -243,30 +255,42 @@ static const struct vss_cmd_t delay_cmd[] =
 
 static const struct vss_cmd_t interface_cmd[] =
 {
+#if POWER_OUT_EN
 	VSS_CMD(	"tvcc",
 				"adjust target voltge",
 				NULL,
 				tvcc_cmd),
+#endif
+#if INTERFACE_JTAG_EN
 	VSS_CMD(	"jtag",
 				"jtag interface handler",
 				interface_jtag_init,
 				jtag_cmd),
+#endif
+#if INTERFACE_GPIO_EN
 	VSS_CMD(	"gpio",
 				"gpio interface handler",
 				interface_gpio_init,
 				gpio_cmd),
+#endif
+#if INTERFACE_SPI_EN
 	VSS_CMD(	"spi",
 				"spi interface handler",
 				interface_spi_init,
 				spi_cmd),
+#endif
+#if INTERFACE_IIC_EN
 	VSS_CMD(	"iic",
 				"iic interface handler",
 				interface_iic_init,
 				iic_cmd),
+#endif
+#if INTERFACE_PWM_EN
 	VSS_CMD(	"pwm",
 				"pwm interface handler",
 				interface_pwm_init,
 				pwm_cmd),
+#endif
 	VSS_CMD(	"delay",
 				"delay interface handler",
 				NULL,
@@ -295,7 +319,7 @@ struct vss_cmd_list_t interface_cmd_list =
 		}\
 	} while (0)
 
-// tvcc
+#if POWER_OUT_EN
 VSS_HANDLER(interface_get_target_voltage)
 {
 	uint16_t voltage = 0;
@@ -332,8 +356,9 @@ VSS_HANDLER(interface_set_target_voltage)
 	vss_run_script("tvcc.get");
 	return VSFERR_NONE;
 }
+#endif
 
-// gpio
+#if INTERFACE_GPIO_EN
 VSS_HANDLER(interface_gpio_init)
 {
 	struct INTERFACES_INFO_T *ifs = NULL;
@@ -415,8 +440,9 @@ VSS_HANDLER(interface_gpio_in)
 	}
 	return err;
 }
+#endif
 
-// jtag
+#if INTERFACE_JTAG_EN
 VSS_HANDLER(interface_jtag_init)
 {
 	struct INTERFACES_INFO_T *ifs = NULL;
@@ -564,8 +590,9 @@ VSS_HANDLER(interface_jtag_dr)
 	}
 	return VSFERR_NONE;
 }
+#endif
 
-// spi
+#if INTERFACE_SPI_EN
 VSS_HANDLER(interface_spi_init)
 {
 	struct INTERFACES_INFO_T *ifs = NULL;
@@ -658,8 +685,9 @@ VSS_HANDLER(interface_spi_io)
 	}
 	return err;
 }
+#endif
 
-// iic
+#if INTERFACE_IIC_EN
 VSS_HANDLER(interface_iic_init)
 {
 	struct INTERFACES_INFO_T *ifs = NULL;
@@ -864,8 +892,9 @@ VSS_HANDLER(interface_iic_write_buff8)
 	}
 	return err;
 }
+#endif
 
-// pwm
+#if INTERFACE_PWM_EN
 VSS_HANDLER(interface_pwm_init)
 {
 	struct INTERFACES_INFO_T *ifs = NULL;
@@ -964,6 +993,7 @@ VSS_HANDLER(interface_pwm_out)
 	}
 	return err;
 }
+#endif
 
 // delay
 VSS_HANDLER(interface_delay_us)
