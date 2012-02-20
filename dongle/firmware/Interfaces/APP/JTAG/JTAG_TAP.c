@@ -901,9 +901,12 @@ vsf_err_t jtaghl_runtest(uint8_t index, uint32_t cycles)
 	}
 }
 
-jtag_callback_t jtaghl_receive_callback = NULL;
-jtag_callback_t jtaghl_send_callback = NULL;
-uint32_t jtaghl_ir_backup;
+static jtag_callback_t jtaghl_receive_callback = NULL;
+static jtag_callback_t jtaghl_send_callback = NULL;
+static uint32_t jtaghl_ir_backup;
+// IMP: if callback function is used, sizeof(jtaghl_temp_buff) should be large
+// enough to hold the temperory ir/dr data
+static uint8_t jtaghl_temp_buff[128];
 vsf_err_t jtaghl_register_callback(uint8_t index, jtag_callback_t send_callback,
 									jtag_callback_t receive_callback)
 {
@@ -922,7 +925,6 @@ vsf_err_t jtaghl_ir(uint8_t index, uint8_t *ir, uint16_t bitlen, uint8_t idle,
 					uint8_t want_ret)
 {
 	uint16_t bytelen = (bitlen + 7) >> 3;
-	uint64_t ir_tmp = 0;
 	uint8_t *pir;
 	uint16_t processed_len;
 	
@@ -943,7 +945,7 @@ vsf_err_t jtaghl_ir(uint8_t index, uint8_t *ir, uint16_t bitlen, uint8_t idle,
 		if (jtaghl_send_callback != NULL)
 		{
 			if (jtaghl_send_callback(index, JTAG_SCANTYPE_IR, 
-							jtaghl_ir_backup, (uint8_t *)&ir_tmp, ir, bytelen, 
+							jtaghl_ir_backup, jtaghl_temp_buff, ir, bytelen, 
 							&processed_len))
 			{
 				return VSFERR_FAIL;
@@ -955,7 +957,7 @@ vsf_err_t jtaghl_ir(uint8_t index, uint8_t *ir, uint16_t bitlen, uint8_t idle,
 		}
 		else
 		{
-			pir = (uint8_t *)&ir_tmp;
+			pir = jtaghl_temp_buff;
 		}
 		
 		JTAG_TAP_InstrPtr(pir, pir, bitlen, idle);
@@ -986,7 +988,6 @@ vsf_err_t jtaghl_dr(uint8_t index, uint8_t *dr, uint16_t bitlen, uint8_t idle,
 					uint8_t want_ret)
 {
 	uint16_t bytelen = (bitlen + 7) >> 3;
-	uint64_t dr_tmp = 0;
 	uint8_t *pdr;
 	uint16_t processed_len;
 	
@@ -997,7 +998,7 @@ vsf_err_t jtaghl_dr(uint8_t index, uint8_t *dr, uint16_t bitlen, uint8_t idle,
 		if (jtaghl_send_callback != NULL)
 		{
 			if (jtaghl_send_callback(index, JTAG_SCANTYPE_DR, 
-						jtaghl_ir_backup, (uint8_t *)&dr_tmp, dr, bytelen, 
+						jtaghl_ir_backup, jtaghl_temp_buff, dr, bytelen, 
 						&processed_len))
 			{
 				return VSFERR_FAIL;
@@ -1009,7 +1010,7 @@ vsf_err_t jtaghl_dr(uint8_t index, uint8_t *dr, uint16_t bitlen, uint8_t idle,
 		}
 		else
 		{
-			pdr = (uint8_t *)&dr_tmp;
+			pdr = jtaghl_temp_buff;
 		}
 		
 		JTAG_TAP_DataPtr(pdr, pdr, bitlen, idle);
