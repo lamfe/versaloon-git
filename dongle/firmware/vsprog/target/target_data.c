@@ -175,7 +175,7 @@ vsf_err_t target_data_read(struct program_context_t *context)
 				prog_area->exact_memlist = *(struct memlist **)pos;
 				pos += sizeof(struct memlist *);
 				
-				context->pi->areas_defined = 1 << area_idx;
+				context->pi->areas_defined |= 1 << area_idx;
 			}
 		}
 		
