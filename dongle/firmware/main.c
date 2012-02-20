@@ -64,6 +64,10 @@ int main(void)
 	{
 		FCLOSE(script_file);
 		script_file = NULL;
+		if (!usb_device.configured)
+		{
+			vss_run_script("dummy 1");
+		}
 		vss_run_script("run " EVSPROG_SCRIPT_FILE);
 	}
 	else
