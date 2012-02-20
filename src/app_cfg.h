@@ -58,5 +58,26 @@
 #define TARGET_CFI_EN						1
 #define TARGET_NAND_EN						1
 
+#define POWER_OUT_EN						1
+#define INTERFACE_JTAG_EN					1
+#define INTERFACE_IIC_EN					1
+#define INTERFACE_GPIO_EN					1
+#define INTERFACE_SPI_EN					1
+#define INTERFACE_PWM_EN					1
+#define INTERFACE_SDIO_EN					1
+#define INTERFACE_USART_EN					1
+#define INTERFACE_EBI_EN					1
+#define INTERFACE_MICROWIRE_EN				1
+
+#define INTERFACE_C2_EN						1
+#define INTERFACE_ISSP_EN					1
+#define INTERFACE_LPC_ICP_EN				1
+#define INTERFACE_MSP430_JTAG_EN			1
+#define INTERFACE_MSP430_SBW_EN				1
+#define INTERFACE_SWIM_EN					1
+#define INTERFACE_SWD_EN					1
+#define INTERFACE_BDM_EN					1
+#define INTERFACE_DUSI_EN					1
+
 #endif /* __APP_CFG_INCLUDED__ */
 
