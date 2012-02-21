@@ -1487,6 +1487,17 @@ static vsf_err_t target_program(struct program_context_t *context)
 			}
 			
 			pgbar_fini();
+			
+			if (op->verify_operations & area_mask)
+			{
+				LOG_INFO(INFOMSG_VERIFIED_SIZE, fullname, target_size,
+							(target_size / 1024.0) / (time_in_ms / 1000.0));
+			}
+			else
+			{
+				LOG_INFO(INFOMSG_READ_SIZE, fullname, target_size,
+							(target_size / 1024.0) / (time_in_ms / 1000.0));
+			}
 		}
 		else if (((op->read_operations & area_mask)
 					|| (op->verify_operations & area_mask))
