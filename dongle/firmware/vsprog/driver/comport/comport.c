@@ -67,9 +67,7 @@ void comm_close_usbtocomm(void)
 		return;
 	}
 	
-	usart_stream_p0.usart_index = 0;
 	usart_stream_fini(&usart_stream_p0);
-	usart_stream_p0.usart_index = IFS_DUMMY_PORT;
 	usbtocomm_open = 0;
 }
 
@@ -115,14 +113,11 @@ vsf_err_t comm_open_usbtocomm(char *comport, uint32_t baudrate,
 	}
 	
 	// initialize usbtocomm
-	usart_stream_p0.usart_index = 0;
 	if (usart_stream_init(&usart_stream_p0) ||
 		usart_stream_config(&usart_stream_p0))
 	{
-		usart_stream_p0.usart_index = IFS_DUMMY_PORT;
 		return -1;
 	}
-	usart_stream_p0.usart_index = IFS_DUMMY_PORT;
 	
 	usbtocomm_open = 1;
 	return VSFERR_NONE;
@@ -140,7 +135,6 @@ int32_t comm_read_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 	}
 	
 	data_read = 0;
-	usart_stream_p0.usart_index = 0;
 	dly_cnt = 0;
 	while (data_read < num_of_bytes)
 	{
@@ -149,7 +143,6 @@ int32_t comm_read_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 		usart_stream_poll(&usart_stream_p0);
 		if (usart_stream_rx(&usart_stream_p0, &sbuffer))
 		{
-			usart_stream_p0.usart_index = IFS_DUMMY_PORT;
 			return -1;
 		}
 		if (sbuffer.size)
@@ -162,7 +155,6 @@ int32_t comm_read_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 			break;
 		}
 	}
-	usart_stream_p0.usart_index = IFS_DUMMY_PORT;
 	
 	return data_read;
 }
@@ -178,7 +170,6 @@ int32_t comm_write_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 	}
 	
 	data_write = 0;
-	usart_stream_p0.usart_index = 0;
 	while (data_write < num_of_bytes)
 	{
 		sbuffer.size = num_of_bytes - data_write;
@@ -186,7 +177,6 @@ int32_t comm_write_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 		usart_stream_poll(&usart_stream_p0);
 		if (usart_stream_tx(&usart_stream_p0, &sbuffer))
 		{
-			usart_stream_p0.usart_index = IFS_DUMMY_PORT;
 			return -1;
 		}
 		if (sbuffer.size)
@@ -198,32 +188,25 @@ int32_t comm_write_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 	{
 		usart_stream_poll(&usart_stream_p0);
 	}
-	usart_stream_p0.usart_index = IFS_DUMMY_PORT;
 	
 	return data_write;
 }
 
 int32_t comm_flush_usbtocomm(void)
 {
-	uint8_t buff;
-	int32_t result;
-	
 	if (!usbtocomm_open)
 	{
 		return -1;
 	}
 	
-	while (1)
+	while (vsf_fifo_get_data_length(&usart_stream_p0.fifo_tx) > 0)
 	{
-		result = comm_read_usbtocomm(&buff, 1);
-		if (result < 0)
-		{
-			return result;
-		}
-		if (0 == result)
-		{
-			break;
-		}
+		usart_stream_poll(&usart_stream_p0);
+	}
+	while (vsf_fifo_get_data_length(&usart_stream_p0.fifo_rx) > 0)
+	{
+		usart_stream_poll(&usart_stream_p0);
+		vsf_fifo_pop8(&usart_stream_p0.fifo_rx);
 	}
 	return 0;
 }
