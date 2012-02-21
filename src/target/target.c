@@ -1867,12 +1867,13 @@ static vsf_err_t target_init(struct program_info_t *pi)
 					sizeof(target_chip_param));
 		target_chip_param.chip_areas =
 			target_chip_area_dup(target_chips.chips_param[0].chip_areas);
-		LOG_INFO(INFOMSG_TRY_AUTODETECT);
 		
 		if (target_chips.num_of_chips > 1)
 		{
 			struct program_context_t context;
 			struct operation_t opt_tmp;
+			
+			LOG_INFO(INFOMSG_TRY_AUTODETECT);
 			
 			memset(&opt_tmp, 0, sizeof(opt_tmp));
 			opt_tmp.read_operations = CHIPID;
