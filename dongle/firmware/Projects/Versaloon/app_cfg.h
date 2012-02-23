@@ -62,7 +62,6 @@
 #define __VSF_DEBUG__					0
 
 #define SYS_CFG_LARGE_MEMORY			0
-#define SYS_CFG_HAS_TIME_H				0
 
 #if _HARDWARE_VER == ProRelease1
 #define SCRIPTS_EN						1

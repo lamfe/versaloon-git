@@ -36,10 +36,6 @@
 
 #include "cm3_stm32_fl.h"
 
-#if SYS_CFG_HAS_TIME_H
-#include <time.h>
-#endif
-
 #define STM32_FL_COMMAND_OFFSET				0x80
 #define STM32_FL_SYNC_OFFSET				0xA4
 
@@ -270,13 +266,7 @@ vsf_err_t stm32swj_fl_wait_ready(struct stm32_fl_result_t *result, bool last)
 	vsf_err_t err;
 	uint32_t start, end;
 	
-#if SYS_CFG_HAS_TIME_H
 	start = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
-#else
-	interfaces->tickclk.init();
-	interfaces->tickclk.start();
-	end = start = 0;
-#endif
 	while (1)
 	{
 		err = stm32swj_fl_poll_result(result);
@@ -286,37 +276,18 @@ vsf_err_t stm32swj_fl_wait_ready(struct stm32_fl_result_t *result, bool last)
 		}
 		if (err && (err != VSFERR_NOT_READY))
 		{
-#if !SYS_CFG_HAS_TIME_H
-			interfaces->tickclk.stop();
-			interfaces->tickclk.fini();
-#endif
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "poll flashloader result");
 			return VSFERR_FAIL;
 		}
-#if SYS_CFG_HAS_TIME_H
 		end = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
-#else
-		if (interfaces->tickclk.is_trigger())
-		{
-			end++;
-		}
-#endif
 		// wait 20s at most
 		if ((end - start) > 20000)
 		{
-#if !SYS_CFG_HAS_TIME_H
-			interfaces->tickclk.stop();
-			interfaces->tickclk.fini();
-#endif
 			cm3_dump(stm32swj_fl_base, sizeof(fl_code));
 			LOG_ERROR(ERRMSG_TIMEOUT, "wait for flashloader ready");
 			return ERRCODE_FAILURE_OPERATION;
 		}
 	}
-#if !SYS_CFG_HAS_TIME_H
-	interfaces->tickclk.stop();
-	interfaces->tickclk.fini();
-#endif
 	
 	return VSFERR_NONE;
 }

@@ -27,7 +27,6 @@
 
 // system config
 #define SYS_CFG_LARGE_MEMORY				1
-#define SYS_CFG_HAS_TIME_H					1
 
 #define PARAM_CHECK							1
 

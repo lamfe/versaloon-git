@@ -24,6 +24,8 @@
 #endif
 
 #define sleep_ms(ms)			interfaces->delay.delayms(ms)
+#define clock()					interfaces->tickclk.get_count()
+#define CLOCKS_PER_SEC			1000
 
 #ifndef MAX_PATH
 #	define MAX_PATH				260

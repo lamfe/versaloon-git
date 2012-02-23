@@ -63,6 +63,6 @@ vsf_err_t stm32_tickclk_init(void);
 vsf_err_t stm32_tickclk_fini(void);
 vsf_err_t stm32_tickclk_start(void);
 vsf_err_t stm32_tickclk_stop(void);
-bool stm32_tickclk_is_trigger(void);
+uint32_t stm32_tickclk_get_count(void);
 
 #endif	// __STM32_CORE_H_INCLUDED__
