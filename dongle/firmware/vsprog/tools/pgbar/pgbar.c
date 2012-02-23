@@ -134,7 +134,7 @@ void pgbar_update(int32_t step)
 		
 		if (gui_mode_flag)
 		{
-			PRINTF("\n");
+			PRINTF(LOG_LINE_END);
 		}
 		
 		// flush output
@@ -170,7 +170,7 @@ vsf_err_t pgbar_init(char *s, char *e, uint32_t min, uint32_t max,
 	PRINTF("%%00");
 	if (gui_mode_flag)
 	{
-		PRINTF("\n");
+		PRINTF(LOG_LINE_END);
 	}
 	
 	// get start time
@@ -195,7 +195,7 @@ uint32_t pgbar_fini(void)
 	
 	// get current time and calculate time used
 	end_time = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
-	PRINTF("%02.02fs used\n", (float)(end_time - start_time) / 1000);
+	PRINTF("%02.02fs used" LOG_LINE_END, (float)(end_time - start_time) / 1000);
 	
 	// flush output
 	fflush(stdout);
