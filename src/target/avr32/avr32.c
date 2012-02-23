@@ -22,11 +22,12 @@
 
 #include <stdlib.h>
 #include <ctype.h>
-#include <time.h>
 
 #include "app_cfg.h"
 #if TARGET_AVR32_EN
 
+#include "compiler.h"
+#include "port.h"
 #include "app_type.h"
 #include "app_io.h"
 #include "app_err.h"
