@@ -170,9 +170,9 @@ static vsf_err_t tickclk_stop(void)
 {
 	return core_interfaces.tickclk.stop();
 }
-static bool tickclk_is_trigger(void)
+static uint32_t tickclk_get_count(void)
 {
-	return core_interfaces.tickclk.is_trigger();
+	return core_interfaces.tickclk.get_count();
 }
 
 static vsf_err_t app_interface_init(void *p)
@@ -498,7 +498,7 @@ const struct app_interfaces_info_t app_interfaces =
 		tickclk_fini,
 		tickclk_start,
 		tickclk_stop,
-		tickclk_is_trigger
+		tickclk_get_count
 	}
 	,{
 		// delay

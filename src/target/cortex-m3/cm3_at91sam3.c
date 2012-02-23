@@ -46,10 +46,6 @@
 #include "adi_v5p1.h"
 #include "cm3_common.h"
 
-#if SYS_CFG_HAS_TIME_H
-#include <time.h>
-#endif
-
 ENTER_PROGRAM_MODE_HANDLER(at91sam3swj);
 LEAVE_PROGRAM_MODE_HANDLER(at91sam3swj);
 ERASE_TARGET_HANDLER(at91sam3swj);
@@ -261,13 +257,7 @@ static vsf_err_t at91sam3swj_iap_wait_ready(struct at91sam3swj_iap_reply_t *repl
 	vsf_err_t err;
 	uint32_t start, end;
 	
-#if SYS_CFG_HAS_TIME_H
 	start = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
-#else
-	interfaces->tickclk.init();
-	interfaces->tickclk.start();
-	end = start = 0;
-#endif
 	while (1)
 	{
 		err = at91sam3swj_iap_poll_result(reply);
@@ -277,37 +267,19 @@ static vsf_err_t at91sam3swj_iap_wait_ready(struct at91sam3swj_iap_reply_t *repl
 		}
 		if (err && (err != VSFERR_NOT_READY))
 		{
-#if !SYS_CFG_HAS_TIME_H
-			interfaces->tickclk.stop();
-			interfaces->tickclk.fini();
-#endif
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "poll iap result");
 			return VSFERR_FAIL;
 		}
-#if SYS_CFG_HAS_TIME_H
 		end = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
-#else
-		if (interfaces->tickclk.is_trigger())
-		{
-			end++;
-		}
-#endif
+		
 		// wait 1s at most
 		if ((end - start) > 1000)
 		{
-#if !SYS_CFG_HAS_TIME_H
-			interfaces->tickclk.stop();
-			interfaces->tickclk.fini();
-#endif
 			cm3_dump(AT91SAM3_IAP_BASE, sizeof(iap_code) + 256);
 			LOG_ERROR(ERRMSG_TIMEOUT, "wait for iap ready");
 			return ERRCODE_FAILURE_OPERATION;
 		}
 	}
-#if !SYS_CFG_HAS_TIME_H
-	interfaces->tickclk.stop();
-	interfaces->tickclk.fini();
-#endif
 	
 	return VSFERR_NONE;
 }
@@ -339,40 +311,19 @@ static vsf_err_t at91sam3swj_iap_call(struct at91sam3swj_iap_command_t *cmd,
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	
-#if SYS_CFG_HAS_TIME_H
 	start = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
-#else
-	interfaces->tickclk.init();
-	interfaces->tickclk.start();
-	end = start = 0;
-#endif
 	do
 	{
 		reg = 0;
 		if (adi_memap_read_reg32(cmd->eefc_base + AT91SAM3_EEFC_FSR_OFFSET,
 									&reg, 1))
 		{
-#if !SYS_CFG_HAS_TIME_H
-			interfaces->tickclk.stop();
-			interfaces->tickclk.fini();
-#endif
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read fsr");
 			return ERRCODE_FAILURE_OPERATION;
 		}
 		reg = LE_TO_SYS_U32(reg);
-#if SYS_CFG_HAS_TIME_H
 		end = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
-#else
-		if (interfaces->tickclk.is_trigger())
-		{
-			end++;
-		}
-#endif
 	} while (!(reg & 1) && ((end - start) < 500));
-#if !SYS_CFG_HAS_TIME_H
-	interfaces->tickclk.stop();
-	interfaces->tickclk.fini();
-#endif
 	if (!(reg & 1) || (reg & 0x60))
 	{
 		return VSFERR_FAIL;

@@ -224,36 +224,76 @@ vsf_err_t stm32_delay_delayms(uint16_t ms)
 
 vsf_err_t stm32_tickclk_start(void)
 {
-	SysTick->CTRL |= CM3_SYSTICK_ENABLE;
+	TIM_Cmd(TIM1, ENABLE);
 	return VSFERR_NONE;
 }
 
 vsf_err_t stm32_tickclk_stop(void)
 {
-	SysTick->CTRL &= ~CM3_SYSTICK_ENABLE;
+	TIM_Cmd(TIM1, DISABLE);
 	return VSFERR_NONE;
 }
 
-bool stm32_tickclk_is_trigger(void)
+uint32_t stm32_tickclk_get_count(void)
 {
-	bool result = SysTick->CTRL & CM3_SYSTICK_COUNTFLAG;
-	
-	if (result)
-	{
-		SysTick->CTRL &= ~CM3_SYSTICK_COUNTFLAG;
-	}
-	return result;
+	return TIM2->CNT | ((uint32_t)TIM5->CNT << 16);
 }
 
 vsf_err_t stm32_tickclk_init(void)
 {
-	SysTick->CTRL = CM3_SYSTICK_CLKSOURCE;
-	SysTick->VAL = 0;
-	SysTick->LOAD = stm32_info.sys_freq_hz / 1000;
+	TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
+	
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM1, ENABLE);
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM5, ENABLE);
+	TIM_DeInit(TIM1);
+	TIM_DeInit(TIM2);
+	TIM_DeInit(TIM5);
+	
+	// TIM1 generate 1ms event
+	TIM_TimeBaseStructInit(&TIM_TimeBaseStructure);
+	TIM_TimeBaseStructure.TIM_Prescaler = 2;
+	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
+	TIM_TimeBaseStructure.TIM_Period = stm32_info.apb2_freq_hz / 2 / 1000;
+	TIM_TimeBaseStructure.TIM_ClockDivision = 0;
+	TIM_TimeBaseStructure.TIM_RepetitionCounter = 0;
+	TIM_TimeBaseInit(TIM1, &TIM_TimeBaseStructure);
+	TIM_SelectOutputTrigger(TIM1, TIM_TRGOSource_Update);
+	TIM_SelectMasterSlaveMode(TIM1, TIM_MasterSlaveMode_Enable);
+	
+	// TIM2 accept 1ms clock from TIM1
+	TIM_TimeBaseStructInit(&TIM_TimeBaseStructure);
+	TIM_TimeBaseStructure.TIM_Prescaler = 0;
+	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
+	TIM_TimeBaseStructure.TIM_Period = 0xFFFF;
+	TIM_TimeBaseStructure.TIM_ClockDivision = 0;
+	TIM_TimeBaseStructure.TIM_RepetitionCounter = 0;
+	TIM_TimeBaseInit(TIM2, &TIM_TimeBaseStructure);
+	TIM_SelectSlaveMode(TIM2, TIM_SlaveMode_External1);
+	TIM_ITRxExternalClockConfig(TIM2, TIM_TS_ITR0);
+	TIM_SelectOutputTrigger(TIM2, TIM_TRGOSource_Update);
+	TIM_SelectMasterSlaveMode(TIM2, TIM_MasterSlaveMode_Enable);
+	TIM_Cmd(TIM2, ENABLE);
+	
+	// TIM5 accept 65536ms clock from TIM2
+	TIM_TimeBaseStructInit(&TIM_TimeBaseStructure);
+	TIM_TimeBaseStructure.TIM_Prescaler = 0;
+	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
+	TIM_TimeBaseStructure.TIM_Period = 0xFFFF;
+	TIM_TimeBaseStructure.TIM_ClockDivision = 0;
+	TIM_TimeBaseStructure.TIM_RepetitionCounter = 0;
+	TIM_TimeBaseInit(TIM5, &TIM_TimeBaseStructure);
+	TIM_SelectSlaveMode(TIM5, TIM_SlaveMode_External1);
+	TIM_ITRxExternalClockConfig(TIM5, TIM_TS_ITR0);
+	TIM_Cmd(TIM5, ENABLE);
+	
 	return VSFERR_NONE;
 }
 
 vsf_err_t stm32_tickclk_fini(void)
 {
-	return stm32_tickclk_stop();
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM1, DISABLE);
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, DISABLE);
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM5, DISABLE);
+	return VSFERR_NONE;
 }

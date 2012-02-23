@@ -383,20 +383,20 @@ struct interface_tickclk_t
 	vsf_err_t (*fini)(void);
 	vsf_err_t (*start)(void);
 	vsf_err_t (*stop)(void);
-	bool (*is_trigger)(void);
+	uint32_t (*get_count)(void);
 };
 
 #define CORE_TICKCLK_INIT(m)			__CONNECT(m, _tickclk_init)
 #define CORE_TICKCLK_FINI(m)			__CONNECT(m, _tickclk_fini)
 #define CORE_TICKCLK_START(m)			__CONNECT(m, _tickclk_start)
 #define CORE_TICKCLK_STOP(m)			__CONNECT(m, _tickclk_stop)
-#define CORE_TICKCLK_IS_TRIGGER(m)		__CONNECT(m, _tickclk_is_trigger)
+#define CORE_TICKCLK_GET_COUNT(m)		__CONNECT(m, _tickclk_get_count)
 
 vsf_err_t CORE_TICKCLK_INIT(__TARGET_CHIP__)(void);
 vsf_err_t CORE_TICKCLK_FINI(__TARGET_CHIP__)(void);
 vsf_err_t CORE_TICKCLK_START(__TARGET_CHIP__)(void);
 vsf_err_t CORE_TICKCLK_STOP(__TARGET_CHIP__)(void);
-bool CORE_TICKCLK_IS_TRIGGER(__TARGET_CHIP__)(void);
+uint32_t CORE_TICKCLK_GET_COUNT(__TARGET_CHIP__)(void);
 
 #if IFS_IIC_EN
 

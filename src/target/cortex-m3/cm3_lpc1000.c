@@ -46,10 +46,6 @@
 #include "adi_v5p1.h"
 #include "cm3_common.h"
 
-#if SYS_CFG_HAS_TIME_H
-#include <time.h>
-#endif
-
 ENTER_PROGRAM_MODE_HANDLER(lpc1000swj);
 LEAVE_PROGRAM_MODE_HANDLER(lpc1000swj);
 ERASE_TARGET_HANDLER(lpc1000swj);
@@ -261,13 +257,7 @@ static vsf_err_t lpc1000swj_iap_wait_ready(uint32_t result_table[4], bool last)
 	uint32_t start, end;
 	uint32_t buff_tmp[7];
 	
-#if SYS_CFG_HAS_TIME_H
 	start = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
-#else
-	interfaces->tickclk.init();
-	interfaces->tickclk.start();
-	end = start = 0;
-#endif
 	while (1)
 	{
 		err = lpc1000swj_iap_poll_result(buff_tmp);
@@ -275,10 +265,6 @@ static vsf_err_t lpc1000swj_iap_wait_ready(uint32_t result_table[4], bool last)
 		{
 			if (buff_tmp[1] != 0)
 			{
-#if !SYS_CFG_HAS_TIME_H
-				interfaces->tickclk.stop();
-				interfaces->tickclk.fini();
-#endif
 				LOG_ERROR(ERRMSG_FAILURE_OPERATION_ERRCODE, "run iap", buff_tmp[1]);
 				return VSFERR_FAIL;
 			}
@@ -290,37 +276,18 @@ static vsf_err_t lpc1000swj_iap_wait_ready(uint32_t result_table[4], bool last)
 		}
 		if (err && (err != VSFERR_NOT_READY))
 		{
-#if !SYS_CFG_HAS_TIME_H
-			interfaces->tickclk.stop();
-			interfaces->tickclk.fini();
-#endif
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "poll iap result");
 			return VSFERR_FAIL;
 		}
-#if SYS_CFG_HAS_TIME_H
 		end = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
-#else
-		if (interfaces->tickclk.is_trigger())
-		{
-			end++;
-		}
-#endif
 		// wait 1s at most
 		if ((end - start) > 1000)
 		{
-#if !SYS_CFG_HAS_TIME_H
-			interfaces->tickclk.stop();
-			interfaces->tickclk.fini();
-#endif
 			cm3_dump(LPC1000_IAP_BASE, sizeof(iap_code));
 			LOG_ERROR(ERRMSG_TIMEOUT, "wait for iap ready");
 			return ERRCODE_FAILURE_OPERATION;
 		}
 	}
-#if !SYS_CFG_HAS_TIME_H
-	interfaces->tickclk.stop();
-	interfaces->tickclk.fini();
-#endif
 	
 	return VSFERR_NONE;
 }

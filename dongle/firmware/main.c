@@ -46,6 +46,8 @@ int main(void)
 #endif
 	
 	core_interfaces.core.init(NULL);
+	interfaces->tickclk.init();
+	interfaces->tickclk.start();
 	usb_protocol_init();
 #if SCRIPTS_EN
 	APP_IO_INIT();

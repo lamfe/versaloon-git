@@ -45,10 +45,6 @@
 #include "adi_v5p1.h"
 #include "cm3_common.h"
 
-#if SYS_CFG_HAS_TIME_H
-#include <time.h>
-#endif
-
 ENTER_PROGRAM_MODE_HANDLER(lm3sswj);
 LEAVE_PROGRAM_MODE_HANDLER(lm3sswj);
 ERASE_TARGET_HANDLER(lm3sswj);
@@ -182,13 +178,7 @@ static vsf_err_t lm3sswj_iap_wait_param_taken(void)
 	vsf_err_t err;
 	uint32_t start, end;
 	
-#if SYS_CFG_HAS_TIME_H
 	start = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
-#else
-	interfaces->tickclk.init();
-	interfaces->tickclk.start();
-	end = start = 0;
-#endif
 	while (1)
 	{
 		err = lm3sswj_iap_poll_param_taken();
@@ -198,37 +188,18 @@ static vsf_err_t lm3sswj_iap_wait_param_taken(void)
 		}
 		if (err && (err != VSFERR_NOT_READY))
 		{
-#if !SYS_CFG_HAS_TIME_H
-			interfaces->tickclk.stop();
-			interfaces->tickclk.fini();
-#endif
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "poll iap param taken");
 			return err;
 		}
-#if SYS_CFG_HAS_TIME_H
 		end = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
-#else
-		if (interfaces->tickclk.is_trigger())
-		{
-			end++;
-		}
-#endif
 		// wait 1s at most
 		if ((end - start) > 1000)
 		{
-#if !SYS_CFG_HAS_TIME_H
-			interfaces->tickclk.stop();
-			interfaces->tickclk.fini();
-#endif
 			cm3_dump(LM3S_IAP_BASE, sizeof(iap_code));
 			LOG_ERROR(ERRMSG_TIMEOUT, "wait for iap param taken");
 			return ERRCODE_FAILURE_OPERATION;
 		}
 	}
-#if !SYS_CFG_HAS_TIME_H
-	interfaces->tickclk.stop();
-	interfaces->tickclk.fini();
-#endif
 	
 	return VSFERR_NONE;
 }
@@ -238,13 +209,7 @@ static vsf_err_t lm3sswj_iap_wait_finish(uint32_t cnt_idx)
 	vsf_err_t err;
 	uint32_t start, end;
 	
-#if SYS_CFG_HAS_TIME_H
 	start = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
-#else
-	interfaces->tickclk.init();
-	interfaces->tickclk.start();
-	end = start = 0;
-#endif
 	while (1)
 	{
 		err = lm3sswj_iap_poll_finish(cnt_idx);
@@ -254,37 +219,18 @@ static vsf_err_t lm3sswj_iap_wait_finish(uint32_t cnt_idx)
 		}
 		if (err && (err != VSFERR_NOT_READY))
 		{
-#if !SYS_CFG_HAS_TIME_H
-			interfaces->tickclk.stop();
-			interfaces->tickclk.fini();
-#endif
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "poll iap finish");
 			return VSFERR_FAIL;
 		}
-#if SYS_CFG_HAS_TIME_H
 		end = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
-#else
-		if (interfaces->tickclk.is_trigger())
-		{
-			end++;
-		}
-#endif
 		// wait 1s at most
 		if ((end - start) > 1000)
 		{
-#if !SYS_CFG_HAS_TIME_H
-			interfaces->tickclk.stop();
-			interfaces->tickclk.fini();
-#endif
 			cm3_dump(LM3S_IAP_BASE, sizeof(iap_code));
 			LOG_ERROR(ERRMSG_TIMEOUT, "wait for iap finish");
 			return ERRCODE_FAILURE_OPERATION;
 		}
 	}
-#if !SYS_CFG_HAS_TIME_H
-	interfaces->tickclk.stop();
-	interfaces->tickclk.fini();
-#endif
 	
 	return VSFERR_NONE;
 }

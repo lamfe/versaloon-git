@@ -33,10 +33,6 @@
 #include "port.h"
 #include "comport.h"
 
-#if SYS_CFG_HAS_TIME_H
-#include <time.h>
-#endif
-
 void comm_close_hw(void);
 vsf_err_t comm_open_hw(char *comport, uint32_t baudrate, uint8_t datalength,
 				 char paritybit, char stopbit, char handshake);
@@ -597,13 +593,7 @@ int32_t comm_read_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 		return -1;
 	}
 	
-#if SYS_CFG_HAS_TIME_H
 	start = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
-#else
-	interfaces->tickclk.init();
-	interfaces->tickclk.start();
-	end = start = 0;
-#endif
 	do
 	{
 		LOG_PUSH();
@@ -616,25 +606,10 @@ int32_t comm_read_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 		else
 		{
 			LOG_POP();
-#if !SYS_CFG_HAS_TIME_H
-			interfaces->tickclk.stop();
-			interfaces->tickclk.fini();
-#endif
 			return (int32_t)num_of_bytes;
 		}
-#if SYS_CFG_HAS_TIME_H
 		end = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
-#else
-		if (interfaces->tickclk.is_trigger())
-		{
-			end++;
-		}
-#endif
 	} while ((end - start) < (100 + 5 * num_of_bytes));
-#if !SYS_CFG_HAS_TIME_H
-	interfaces->tickclk.stop();
-	interfaces->tickclk.fini();
-#endif
 	
 	// fail to receive data
 	// if usart_status is available
@@ -724,13 +699,7 @@ int32_t comm_write_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 		LOG_POP();
 		
 		// get current time
-#if SYS_CFG_HAS_TIME_H
 		start = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
-#else
-		interfaces->tickclk.init();
-		interfaces->tickclk.start();
-		end = start = 0;
-#endif
 		do
 		{
 			LOG_PUSH();
@@ -747,19 +716,8 @@ int32_t comm_write_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 				data_sent += num_of_bytes - data_sent;
 				break;
 			}
-#if SYS_CFG_HAS_TIME_H
 			end = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
-#else
-			if (interfaces->tickclk.is_trigger())
-			{
-				end++;
-			}
-#endif
 		} while ((end - start) < 50 + 5 * (num_of_bytes - status.tx_buff_avail));
-#if !SYS_CFG_HAS_TIME_H
-		interfaces->tickclk.stop();
-		interfaces->tickclk.fini();
-#endif
 		
 		// time out
 		return 0;
