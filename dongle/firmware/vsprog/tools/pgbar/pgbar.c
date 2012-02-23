@@ -30,6 +30,7 @@
 #include "app_log.h"
 #include "app_err.h"
 
+#include "port.h"
 #include "interfaces.h"
 #include "pgbar.h"
 #include "scripts.h"
@@ -52,7 +53,7 @@ struct vss_cmd_list_t pgbar_cmd_list = VSS_CMD_LIST("pgbar", pgbar_cmd);
 static char *end_str = NULL, disp_char = 0;
 static int32_t min_num = 0, max_num = 0, position = 0;
 static uint32_t max_num_of_chars = 0;
-//static uint32_t start_time, end_time;
+static uint32_t start_time, end_time;
 static uint8_t gui_mode_flag = 0;
 
 static uint32_t pgbar_get_char_num(int32_t pos)
@@ -173,7 +174,7 @@ vsf_err_t pgbar_init(char *s, char *e, uint32_t min, uint32_t max,
 	}
 	
 	// get start time
-//	start_time = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
+	start_time = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
 	
 	// flush output
 	fflush(stdout);
@@ -193,13 +194,12 @@ uint32_t pgbar_fini(void)
 	}
 	
 	// get current time and calculate time used
-//	end_time = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
-//	PRINTF("%02.02fs used\n", (float)(end_time - start_time) / 1000);
+	end_time = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
+	PRINTF("%02.02fs used\n", (float)(end_time - start_time) / 1000);
 	
 	// flush output
 	fflush(stdout);
 	
-//	return end_time - start_time;
-	return 0;
+	return end_time - start_time;
 }
 

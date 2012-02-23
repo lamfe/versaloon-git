@@ -21,7 +21,6 @@
 #endif
 
 #include <stdlib.h>
-#include <time.h>
 
 #include "compiler.h"
 
@@ -32,6 +31,7 @@
 #include "app_log.h"
 #include "app_err.h"
 
+#include "port.h"
 #include "pgbar.h"
 #include "scripts.h"
 
