@@ -87,8 +87,13 @@ static const struct vss_cmd_t dal_cmd[] =
 	VSS_CMD_END
 };
 
+VSS_HANDLER(app_show_tickcount);
 static const struct vss_cmd_t app_cmd[] =
 {
+	VSS_CMD(	"time",
+				"show ms passed after power-on",
+				app_show_tickcount,
+				NULL),
 	VSS_CMD(	"dal",
 				"dal processors",
 				dal_vss_init,
@@ -115,6 +120,13 @@ static const struct vss_cmd_t app_cmd[] =
 };
 
 struct vss_cmd_list_t app_cmd_list = VSS_CMD_LIST("app", app_cmd);
+
+VSS_HANDLER(app_show_tickcount)
+{
+	VSS_CHECK_ARGC(1);
+	PRINTF("%dMS" LOG_LINE_END, interfaces->tickclk.get_count());
+	return VSFERR_NONE;
+}
 
 vsf_err_t dal_commit(void)
 {
