@@ -254,7 +254,7 @@ vsf_err_t stm32_tickclk_init(void)
 	TIM_TimeBaseStructInit(&TIM_TimeBaseStructure);
 	TIM_TimeBaseStructure.TIM_Prescaler = 2;
 	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
-	TIM_TimeBaseStructure.TIM_Period = stm32_info.apb2_freq_hz / 2 / 1000;
+	TIM_TimeBaseStructure.TIM_Period = (stm32_info.apb2_freq_hz / 2000) * 4 / 3;
 	TIM_TimeBaseStructure.TIM_ClockDivision = 0;
 	TIM_TimeBaseStructure.TIM_RepetitionCounter = 0;
 	TIM_TimeBaseInit(TIM1, &TIM_TimeBaseStructure);
