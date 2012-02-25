@@ -126,7 +126,7 @@ vsf_err_t comm_open_usbtocomm(char *comport, uint32_t baudrate,
 int32_t comm_read_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 {
 	struct vsf_buffer_t sbuffer;
-	uint32_t dly_cnt;
+	uint32_t start, end;
 	int32_t data_read;
 	
 	if (!usbtocomm_open)
@@ -135,7 +135,7 @@ int32_t comm_read_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 	}
 	
 	data_read = 0;
-	dly_cnt = 0;
+	start = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
 	while (data_read < num_of_bytes)
 	{
 		sbuffer.size = num_of_bytes - data_read;
@@ -145,12 +145,13 @@ int32_t comm_read_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 		{
 			return -1;
 		}
+		end = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
 		if (sbuffer.size)
 		{
 			data_read += sbuffer.size;
-			dly_cnt = 0;
+			start = end;
 		}
-		else if (++dly_cnt > 0x10000)
+		else if ((end - start) > 3000)
 		{
 			break;
 		}
@@ -205,8 +206,8 @@ int32_t comm_flush_usbtocomm(void)
 	}
 	while (vsf_fifo_get_data_length(&usart_stream_p0.fifo_rx) > 0)
 	{
-		usart_stream_poll(&usart_stream_p0);
 		vsf_fifo_pop8(&usart_stream_p0.fifo_rx);
+		usart_stream_poll(&usart_stream_p0);
 	}
 	return 0;
 }
