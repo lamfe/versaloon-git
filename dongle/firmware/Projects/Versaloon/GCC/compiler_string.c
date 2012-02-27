@@ -25,7 +25,7 @@ char* strcpy(char *dest, const char *source)
 	
 	if (*source)
 	{
-		while (*p++ = *source++);
+		while ((*p++ = *source++));
 		*p = '\0';
 	}
 	return dest;
@@ -74,7 +74,7 @@ char* strcat(char *dest, const char *source)
 	while (*p++);
 	if (*source)
 	{
-		while (*p++ = *source++);
+		while ((*p++ = *source++));
 		*p = '\0';
 	}
 	return dest;
