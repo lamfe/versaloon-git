@@ -56,9 +56,35 @@ vsf_err_t vsfusbd_device_get_descriptor(struct vsfusbd_device_t *device,
 
 vsf_err_t vsfusbd_device_init(struct vsfusbd_device_t *device)
 {
+#if VSFUSBD_CFG_AUTOSETUP
+	struct vsf_buffer_t desc = {NULL, 0};
+	uint8_t i;
+#endif
+	
 	device->configured = false;
 	device->configuration = 0;
 	device->feature = 0;
+	
+#if VSFUSBD_CFG_AUTOSETUP
+	for (i = 0; i < device->num_of_configuration; i++)
+	{
+		if (vsfusbd_device_get_descriptor(device, device->desc_filter, 
+									USB_DESC_TYPE_CONFIGURATION, i, 0, &desc)
+#if __VSF_DEBUG__
+			|| (NULL == desc.buffer) 
+			|| (desc.size <= USB_DESC_SIZE_CONFIGURATION)
+			|| (desc.buffer[0] != USB_DESC_SIZE_CONFIGURATION)
+			|| (desc.buffer[1] != USB_DESC_TYPE_CONFIGURATION)
+			|| (config->num_of_ifaces != desc.buffer[USB_DESC_CONFIG_OFF_IFNUM])
+#endif
+			)
+		{
+			return VSFERR_FAIL;
+		}
+		device->config[i].configuration_value = 
+									desc.buffer[USB_DESC_CONFIG_OFF_CFGVAL];
+	}
+#endif	// VSFUSBD_CFG_AUTOSETUP
 	
 	if (device->drv->init(device) || device->drv->connect() || 
 		((device->callback.init != NULL) && device->callback.init()))
@@ -506,7 +532,8 @@ static vsf_err_t vsfusbd_stdreq_get_configuration_prepare(
 		return VSFERR_FAIL;
 	}
 	
-	ctrl_handler->ctrl_reply_buffer[0] = device->configuration;
+	ctrl_handler->ctrl_reply_buffer[0] = 
+					device->config[device->configuration].configuration_value;
 	buffer->buffer = ctrl_handler->ctrl_reply_buffer;
 	buffer->size = USB_CONFIGURATION_SIZE;
 	return VSFERR_NONE;
@@ -517,13 +544,28 @@ static vsf_err_t vsfusbd_stdreq_get_configuration_process(
 	return VSFERR_NONE;
 }
 
+static int16_t vsfusbd_get_config(struct vsfusbd_device_t *device,
+									uint8_t value)
+{
+	uint8_t i;
+	
+	for (i = 0; i < device->num_of_configuration; i++)
+	{
+		if (value == device->config[i].configuration_value)
+		{
+			return i;
+		}
+	}
+	return -1;
+}
+
 static vsf_err_t vsfusbd_stdreq_set_configuration_prepare(
 		struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
 {
 	struct vsfusbd_ctrl_request_t *request = &device->ctrl_handler.request;
 	
 	if ((request->index != 0) || 
-		(request->value > device->num_of_configuration))
+		(vsfusbd_get_config(device, request->value) < 0))
 	{
 		return VSFERR_FAIL;
 	}
@@ -535,6 +577,7 @@ static vsf_err_t vsfusbd_stdreq_set_configuration_process(
 {
 	struct vsfusbd_ctrl_request_t *request = &device->ctrl_handler.request;
 	struct vsfusbd_config_t *config;
+	int16_t config_idx;
 	uint8_t i;
 #if VSFUSBD_CFG_AUTOSETUP
 	struct vsf_buffer_t desc = {NULL, 0};
@@ -548,11 +591,12 @@ static vsf_err_t vsfusbd_stdreq_set_configuration_process(
 	uint8_t num_iface, num_endpoint;
 #endif
 	
-	device->configuration = request->value - 1;
-	if (device->configuration >= device->num_of_configuration)
+	config_idx = vsfusbd_get_config(device, request->value);
+	if (config_idx < 0)
 	{
 		return VSFERR_FAIL;
 	}
+	device->configuration = (uint8_t)config_idx;
 	config = &device->config[device->configuration];
 	
 #if VSFUSBD_CFG_AUTOSETUP
