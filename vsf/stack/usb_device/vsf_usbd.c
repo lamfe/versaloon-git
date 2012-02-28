@@ -21,6 +21,8 @@
 #include "interfaces.h"
 
 #include "tool/buffer/buffer.h"
+
+#include "vsf_usbd_cfg.h"
 #include "vsf_usbd_const.h"
 #include "vsf_usbd.h"
 #include "vsf_usbd_drv_callback.h"
@@ -532,8 +534,180 @@ static vsf_err_t vsfusbd_stdreq_set_configuration_process(
 		struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
 {
 	struct vsfusbd_ctrl_request_t *request = &device->ctrl_handler.request;
+	struct vsfusbd_config_t *config;
+	uint8_t i;
+#if VSFUSBD_CFG_AUTOSETUP
+	struct vsf_buffer_t desc = {NULL, 0};
+	enum usb_ep_type_t ep_type;
+	uint16_t pos;
+	uint8_t attr, feature;
+	uint16_t ep_size, ep_addr, ep_index, ep_attr;
+	int16_t cur_iface;
+#endif
+#if __VSF_DEBUG__
+	uint8_t num_iface, num_endpoint;
+#endif
 	
 	device->configuration = request->value - 1;
+	if (device->configuration >= device->num_of_configuration)
+	{
+		return VSFERR_FAIL;
+	}
+	config = &device->config[device->configuration];
+	
+#if VSFUSBD_CFG_AUTOSETUP
+	if (vsfusbd_device_get_descriptor(device, device->desc_filter, 
+											USB_DESC_TYPE_DEVICE, 0, 0, &desc)
+#if __VSF_DEBUG__
+		|| (NULL == desc.buffer) || (desc.size != USB_DESC_SIZE_DEVICE)
+		|| (desc.buffer[0] != desc.size) 
+		|| (desc.buffer[1] != USB_DESC_TYPE_DEVICE)
+		|| (device->num_of_configuration != 
+										desc.buffer[USB_DESC_DEVICE_OFF_CFGNUM])
+#endif
+		)
+	{
+		return VSFERR_FAIL;
+	}
+	
+	// config ep0
+	ep_size = desc.buffer[USB_DESC_DEVICE_OFF_EP0SIZE];
+	if (device->drv->prepare_buffer() || 
+		device->drv->ep.set_IN_epsize(0, ep_size) || 
+		device->drv->ep.set_OUT_epsize(0, ep_size))
+	{
+		return VSFERR_FAIL;
+	}
+	
+	// config other eps according to descriptors
+	if (vsfusbd_device_get_descriptor(device, device->desc_filter, 
+				USB_DESC_TYPE_CONFIGURATION, device->configuration, 0, &desc)
+#if __VSF_DEBUG__
+		|| (NULL == desc.buffer) || (desc.size <= USB_DESC_SIZE_CONFIGURATION)
+		|| (desc.buffer[0] != USB_DESC_SIZE_CONFIGURATION)
+		|| (desc.buffer[1] != USB_DESC_TYPE_CONFIGURATION)
+		|| (config->num_of_ifaces != desc.buffer[USB_DESC_CONFIG_OFF_IFNUM])
+#endif
+		)
+	{
+		return VSFERR_FAIL;
+	}
+	
+	// initialize device feature according to 
+	// bmAttributes field in configuration descriptor
+	attr = desc.buffer[USB_DESC_CONFIG_OFF_BMATTR];
+	feature = 0;
+	if (attr & USB_CFGATTR_SELFPOWERED)
+	{
+		feature |= USB_DEV_FEATURE_SELFPOWERED;
+	}
+	if (attr & USB_CFGATTR_REMOTE_WEAKUP)
+	{
+		feature |= USB_DEV_FEATURE_REMOTE_WEAKUP;
+	}
+	
+#if __VSF_DEBUG__
+	num_iface = desc.buffer[USB_DESC_CONFIG_OFF_IFNUM];
+	num_endpoint = 0;
+#endif
+	
+	cur_iface = -1;
+	pos = USB_DESC_SIZE_CONFIGURATION;
+	while (desc.size > pos)
+	{
+#if __VSF_DEBUG__
+		if ((desc.buffer[pos] < 2) || (desc.size < (pos + desc.buffer[pos])))
+		{
+			return VSFERR_FAIL;
+		}
+#endif
+		switch (desc.buffer[pos + 1])
+		{
+		case USB_DESC_TYPE_INTERFACE:
+#if __VSF_DEBUG__
+			if (num_endpoint)
+			{
+				return VSFERR_FAIL;
+			}
+			num_endpoint = desc.buffer[pos + 4];
+			num_iface--;
+#endif
+			cur_iface = desc.buffer[pos + 2];
+			break;
+		case USB_DESC_TYPE_ENDPOINT:
+			ep_addr = desc.buffer[pos + USB_DESC_EP_OFF_EPADDR];
+			ep_attr = desc.buffer[pos + USB_DESC_EP_OFF_EPATTR];
+			ep_size = desc.buffer[pos + USB_DESC_EP_OFF_EPSIZE];
+			ep_index = ep_addr & 0x0F;
+#if __VSF_DEBUG__
+			num_endpoint--;
+			if (ep_index > (*device->drv->ep.num_of_ep - 1))
+			{
+				return VSFERR_FAIL;
+			}
+#endif
+			switch (ep_attr & 0x03)
+			{
+			case 0x00:
+				ep_type = USB_EP_TYPE_CONTROL;
+				break;
+			case 0x01:
+				ep_type = USB_EP_TYPE_ISO;
+				break;
+			case 0x02:
+				ep_type = USB_EP_TYPE_BULK;
+				break;
+			case 0x03:
+				ep_type = USB_EP_TYPE_INTERRUPT;
+				break;
+			default:
+				return VSFERR_FAIL;
+			}
+			device->drv->ep.set_type(ep_index, ep_type);
+			if (ep_addr & 0x80)
+			{
+				// IN ep
+				device->drv->ep.set_IN_epsize(ep_index, ep_size);
+				device->drv->ep.set_IN_state(ep_index, USB_EP_STAT_NACK);
+				config->ep_IN_iface_map[ep_index] = cur_iface;
+			}
+			else
+			{
+				// OUT ep
+				device->drv->ep.set_OUT_epsize(ep_index, ep_size);
+				device->drv->ep.set_OUT_state(ep_index, USB_EP_STAT_ACK);
+				config->ep_OUT_iface_map[ep_index] = cur_iface;
+			}
+			break;
+		}
+		pos += desc.buffer[pos];
+	}
+#if __VSF_DEBUG__
+	if (num_iface || num_endpoint || (desc.size != pos))
+	{
+		return VSFERR_FAIL;
+	}
+#endif
+#endif	// VSFUSBD_CFG_AUTOSETUP
+	
+	// call user initialization
+	if ((config->init != NULL) && config->init(device))
+	{
+		return VSFERR_FAIL;
+	}
+	
+	for (i = 0; i < config->num_of_ifaces; i++)
+	{
+		config->iface[i].alternate_setting = 0;
+		
+		if (((config->iface[i].class_protocol != NULL) && 
+				(config->iface[i].class_protocol->init != NULL) && 
+				config->iface[i].class_protocol->init(i, device)))
+		{
+			return VSFERR_FAIL;
+		}
+	}
+	
 	device->configured = true;
 	return VSFERR_NONE;
 }
@@ -1029,17 +1203,12 @@ vsf_err_t vsfusbd_on_OVERFLOW(void *p, uint8_t ep)
 vsf_err_t vsfusbd_on_RESET(void *p)
 {
 	struct vsfusbd_device_t *device = p;
-	struct vsf_buffer_t desc = {NULL, 0};
-	uint16_t pos;
-	uint16_t ep_size, ep_addr, ep_index, ep_attr;
-	enum usb_ep_type_t ep_type;
-	uint8_t attr, feature;
 	struct vsfusbd_config_t *config;
 	uint8_t i;
-#if __VSF_DEBUG__
-	uint8_t num_iface, num_endpoint;
+#if VSFUSBD_CFG_AUTOSETUP
+	struct vsf_buffer_t desc = {NULL, 0};
+	uint16_t ep_size;
 #endif
-	int16_t cur_iface;
 	
 	memset(vsfusbd_IN_tbuffer, 0, sizeof(vsfusbd_IN_tbuffer));
 	memset(vsfusbd_OUT_tbuffer, 0, sizeof(vsfusbd_OUT_tbuffer));
@@ -1049,6 +1218,14 @@ vsf_err_t vsfusbd_on_RESET(void *p)
 	device->configuration = 0;
 	device->ctrl_handler.state = USB_CTRL_STAT_WAIT_SETUP;
 	
+	for (i = 0; i < device->num_of_configuration; i++)
+	{
+		config = &device->config[i];
+		memset(config->ep_OUT_iface_map, -1, sizeof(config->ep_OUT_iface_map));
+		memset(config->ep_IN_iface_map, -1, sizeof(config->ep_OUT_iface_map));
+	}
+	
+#if VSFUSBD_CFG_AUTOSETUP
 	if (vsfusbd_device_get_descriptor(device, device->desc_filter, 
 											USB_DESC_TYPE_DEVICE, 0, 0, &desc)
 #if __VSF_DEBUG__
@@ -1064,151 +1241,23 @@ vsf_err_t vsfusbd_on_RESET(void *p)
 	}
 	ep_size = desc.buffer[USB_DESC_DEVICE_OFF_EP0SIZE];
 	device->ctrl_handler.ep_size = ep_size;
-	// TODO: move config initialization to set_config processor
-	config = device->config;
 	
 	// config ep0
-	if (device->drv->ep.set_type(0, USB_EP_TYPE_CONTROL) || 
+	if (device->drv->prepare_buffer() || 
+		device->drv->ep.set_type(0, USB_EP_TYPE_CONTROL) || 
 		device->drv->ep.set_IN_epsize(0, ep_size) || 
 		device->drv->ep.set_OUT_epsize(0, ep_size) || 
 		vsfusbd_config_ep(device->drv, 0, USB_EP_STAT_NACK, USB_EP_STAT_ACK))
 	{
 		return VSFERR_FAIL;
 	}
-	
-	// config other eps according to descriptors
-	if (vsfusbd_device_get_descriptor(device, device->desc_filter, 
-				USB_DESC_TYPE_CONFIGURATION, device->configuration, 0, &desc)
-#if __VSF_DEBUG__
-		|| (NULL == desc.buffer) || (desc.size <= USB_DESC_SIZE_CONFIGURATION)
-		|| (desc.buffer[0] != USB_DESC_SIZE_CONFIGURATION)
-		|| (desc.buffer[1] != USB_DESC_TYPE_CONFIGURATION)
-		|| (config->num_of_ifaces != desc.buffer[USB_DESC_CONFIG_OFF_IFNUM])
-#endif
-		)
-	{
-		return VSFERR_FAIL;
-	}
-	
-	// initialize device feature according to 
-	// bmAttributes field in configuration descriptor
-	attr = desc.buffer[USB_DESC_CONFIG_OFF_BMATTR];
-	feature = 0;
-	if (attr & USB_CFGATTR_SELFPOWERED)
-	{
-		feature |= USB_DEV_FEATURE_SELFPOWERED;
-	}
-	if (attr & USB_CFGATTR_REMOTE_WEAKUP)
-	{
-		feature |= USB_DEV_FEATURE_REMOTE_WEAKUP;
-	}
-	
-#if __VSF_DEBUG__
-	num_iface = desc.buffer[USB_DESC_CONFIG_OFF_IFNUM];
-	num_endpoint = 0;
-#endif
-	memset(config->ep_OUT_iface_map, -1, sizeof(config->ep_OUT_iface_map));
-	memset(config->ep_IN_iface_map, -1, sizeof(config->ep_OUT_iface_map));
-	cur_iface = -1;
-	pos = USB_DESC_SIZE_CONFIGURATION;
-	while (desc.size > pos)
-	{
-#if __VSF_DEBUG__
-		if ((desc.buffer[pos] < 2) || (desc.size < (pos + desc.buffer[pos])))
-		{
-			return VSFERR_FAIL;
-		}
-#endif
-		switch (desc.buffer[pos + 1])
-		{
-		case USB_DESC_TYPE_INTERFACE:
-#if __VSF_DEBUG__
-			if (num_endpoint)
-			{
-				return VSFERR_FAIL;
-			}
-			num_endpoint = desc.buffer[pos + 4];
-			num_iface--;
-#endif
-			cur_iface = desc.buffer[pos + 2];
-			break;
-		case USB_DESC_TYPE_ENDPOINT:
-			ep_addr = desc.buffer[pos + USB_DESC_EP_OFF_EPADDR];
-			ep_attr = desc.buffer[pos + USB_DESC_EP_OFF_EPATTR];
-			ep_size = desc.buffer[pos + USB_DESC_EP_OFF_EPSIZE];
-			ep_index = ep_addr & 0x0F;
-#if __VSF_DEBUG__
-			num_endpoint--;
-			if (ep_index > (*device->drv->ep.num_of_ep - 1))
-			{
-				return VSFERR_FAIL;
-			}
-#endif
-			switch (ep_attr & 0x03)
-			{
-			case 0x00:
-				ep_type = USB_EP_TYPE_CONTROL;
-				break;
-			case 0x01:
-				ep_type = USB_EP_TYPE_ISO;
-				break;
-			case 0x02:
-				ep_type = USB_EP_TYPE_BULK;
-				break;
-			case 0x03:
-				ep_type = USB_EP_TYPE_INTERRUPT;
-				break;
-			default:
-				return VSFERR_FAIL;
-			}
-			device->drv->ep.set_type(ep_index, ep_type);
-			if (ep_addr & 0x80)
-			{
-				// IN ep
-				device->drv->ep.set_IN_epsize(ep_index, ep_size);
-				device->drv->ep.set_IN_state(ep_index, USB_EP_STAT_NACK);
-				config->ep_IN_iface_map[ep_index] = cur_iface;
-			}
-			else
-			{
-				// OUT ep
-				device->drv->ep.set_OUT_epsize(ep_index, ep_size);
-				device->drv->ep.set_OUT_state(ep_index, USB_EP_STAT_ACK);
-				config->ep_OUT_iface_map[ep_index] = cur_iface;
-			}
-			break;
-		}
-		pos += desc.buffer[pos];
-	}
-#if __VSF_DEBUG__
-	if (num_iface || num_endpoint || (desc.size != pos))
-	{
-		return VSFERR_FAIL;
-	}
-#endif
+#endif	// VSFUSBD_CFG_AUTOSETUP
 	
 	// call ep handler initialization
 	for (i = 0; i < *device->drv->ep.num_of_ep; i++)
 	{
 		if (device->drv->ep.set_IN_handler(i, vsfusbd_on_IN) || 
 			device->drv->ep.set_OUT_handler(i, vsfusbd_on_OUT))
-		{
-			return VSFERR_FAIL;
-		}
-	}
-	
-	// call user initialization
-	if ((config->init != NULL) && config->init(device))
-	{
-		return VSFERR_FAIL;
-	}
-	for (i = 0; i < config->num_of_ifaces; i++)
-	{
-		config->iface[i].alternate_setting = 0;
-		
-		if (((config->iface[i].class_protocol != NULL) && 
-				(config->iface[i].class_protocol->init != NULL) && 
-				config->iface[i].class_protocol->init(i, device)))
 		{
 			return VSFERR_FAIL;
 		}
