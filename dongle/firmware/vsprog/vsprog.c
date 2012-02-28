@@ -31,6 +31,8 @@
 #include "app_log.h"
 #include "app_err.h"
 
+#include "usb_protocol.h"
+
 #include "interfaces.h"
 #include "vsprog.h"
 #include "target.h"
@@ -467,6 +469,7 @@ VSS_HANDLER(vsprog_wait_key_down)
 	
 	while (1)
 	{
+		usb_protocol_poll();
 		if (KEY_IsDown())
 		{
 			if (++key_count > 0x1000)
@@ -490,6 +493,7 @@ VSS_HANDLER(vsprog_wait_key_up)
 	
 	while (1)
 	{
+		usb_protocol_poll();
 		if (!KEY_IsDown())
 		{
 			if (++key_count > 0x1000)
@@ -509,8 +513,8 @@ VSS_HANDLER(vsprog_wait_key_press)
 {
 	VSS_CHECK_ARGC(1);
 	
-	if (vss_run_script("vsprog.key.wait_key_down") ||
-		vss_run_script("vsprog.key.wait_key_up"))
+	if (vss_run_script("vsprog.key.wait_down") ||
+		vss_run_script("vsprog.key.wait_up"))
 	{
 		return VSFERR_FAIL;
 	}
