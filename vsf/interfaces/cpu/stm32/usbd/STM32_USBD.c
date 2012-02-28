@@ -151,6 +151,12 @@ uint32_t stm32_usbd_get_frame_number(void)
 	return GetFNR() & 0x7FF;
 }
 
+vsf_err_t stm32_usbd_prepare_buffer(void)
+{
+	EP_Cfg_Ptr = 0x200;
+	return VSFERR_NONE;
+}
+
 vsf_err_t stm32_usbd_ep_reset(uint8_t idx)
 {
 	return VSFERR_NONE;
@@ -600,7 +606,6 @@ void USB_Istr(void)
 	if (wIstr & ISTR_RESET)
 	{
 		_SetISTR((uint16_t)CLR_RESET);
-		EP_Cfg_Ptr = 0x200;
 		vsfusbd_on_RESET(USBD_Device);
 	}
 	if (wIstr & ISTR_DOVR)

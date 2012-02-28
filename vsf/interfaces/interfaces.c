@@ -158,6 +158,7 @@ const struct interfaces_info_t core_interfaces =
 		CORE_USBD_RESUME(__TARGET_CHIP__),
 		CORE_USBD_LOWPOWER(__TARGET_CHIP__),
 		CORE_USBD_GET_FRAME_NUM(__TARGET_CHIP__),
+		CORE_USBD_PREPARE_BUFFER(__TARGET_CHIP__),
 		// ep
 		{
 			&CORE_USBD_EP_NUM(__TARGET_CHIP__),
