@@ -118,6 +118,7 @@ struct vsfusbd_config_t
 	struct vsfusbd_iface_t *iface;
 	
 	// private
+	uint8_t configuration_value;
 	int8_t ep_OUT_iface_map[16];
 	int8_t ep_IN_iface_map[16];
 };
