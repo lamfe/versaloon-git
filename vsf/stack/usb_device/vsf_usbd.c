@@ -572,6 +572,8 @@ static vsf_err_t vsfusbd_stdreq_set_configuration_prepare(
 	
 	return vsfusbd_request_prepare_0(device, buffer);
 }
+static vsf_err_t vsfusbd_on_OUT(void *p, uint8_t ep);
+static vsf_err_t vsfusbd_on_IN(void *p, uint8_t ep);
 static vsf_err_t vsfusbd_stdreq_set_configuration_process(
 		struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
 {
@@ -713,6 +715,7 @@ static vsf_err_t vsfusbd_stdreq_set_configuration_process(
 				// IN ep
 				device->drv->ep.set_IN_epsize(ep_index, ep_size);
 				device->drv->ep.set_IN_state(ep_index, USB_EP_STAT_NACK);
+				device->drv->ep.set_IN_handler(ep_index, vsfusbd_on_IN);
 				config->ep_IN_iface_map[ep_index] = cur_iface;
 			}
 			else
@@ -720,6 +723,7 @@ static vsf_err_t vsfusbd_stdreq_set_configuration_process(
 				// OUT ep
 				device->drv->ep.set_OUT_epsize(ep_index, ep_size);
 				device->drv->ep.set_OUT_state(ep_index, USB_EP_STAT_ACK);
+				device->drv->ep.set_OUT_handler(ep_index, vsfusbd_on_OUT);
 				config->ep_OUT_iface_map[ep_index] = cur_iface;
 			}
 			break;
@@ -1297,19 +1301,15 @@ vsf_err_t vsfusbd_on_RESET(void *p)
 	}
 #endif	// VSFUSBD_CFG_AUTOSETUP
 	
-	// call ep handler initialization
-	for (i = 0; i < *device->drv->ep.num_of_ep; i++)
-	{
-		if (device->drv->ep.set_IN_handler(i, vsfusbd_on_IN) || 
-			device->drv->ep.set_OUT_handler(i, vsfusbd_on_OUT))
-		{
-			return VSFERR_FAIL;
-		}
-	}
-	
 	if (device->callback.on_RESET != NULL)
 	{
 		device->callback.on_RESET();
+	}
+	
+	if (device->drv->ep.set_IN_handler(0, vsfusbd_on_IN) || 
+		device->drv->ep.set_OUT_handler(0, vsfusbd_on_OUT))
+	{
+		return VSFERR_FAIL;
 	}
 	return device->drv->set_address(0);
 }
