@@ -234,9 +234,23 @@ vsf_err_t stm32_tickclk_stop(void)
 	return VSFERR_NONE;
 }
 
+static uint32_t stm32_tickclk_get_count_local(void)
+{
+	uint32_t count;
+	count = TIM2->CNT;
+	count |= (uint32_t)TIM5->CNT << 16;
+	return count;
+}
+
 uint32_t stm32_tickclk_get_count(void)
 {
-	return TIM2->CNT | ((uint32_t)TIM5->CNT << 16);
+	uint32_t count1, count2;
+	
+	do {
+		count1 = stm32_tickclk_get_count_local();
+		count2 = stm32_tickclk_get_count_local();
+	} while (count1 != count2);
+	return count1;
 }
 
 vsf_err_t stm32_tickclk_init(void)
