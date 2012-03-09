@@ -2,7 +2,7 @@
 <CodeLite_Project Name="versaloon" InternalType="STM32 Target Image">
   <Plugins>
     <Plugin Name="qmake">
-      <![CDATA[00010001N0005Debug000000000000]]>
+      <![CDATA[00020001N0005Debug0000000000000001N0007Release000000000000]]>
     </Plugin>
   </Plugins>
   <Description/>
@@ -378,13 +378,6 @@
     <File Name="../../dongle/firmware/app_io.c"/>
     <File Name="../../dongle/firmware/main.c"/>
   </VirtualDirectory>
-  <VirtualDirectory Name="zMiscFiles">
-    <File Name="./Projects/openocd/gdb_vsllink_jtag.cfg"/>
-    <File Name="./Projects/openocd/gdb_vsllink_swd.cfg"/>
-    <File Name="./Projects/openocd/program_vsllink_jtag.cfg"/>
-    <File Name="./Projects/openocd/program_vsllink_swd.cfg"/>
-    <File Name="./linker.ld"/>
-  </VirtualDirectory>
   <Settings Type="Executable">
     <GlobalSettings>
       <Compiler Options="" C_Options="">
@@ -395,7 +388,7 @@
       </Linker>
       <ResourceCompiler Options=""/>
     </GlobalSettings>
-    <Configuration Name="Debug" CompilerType="arm-none-eabi-gcc" DebuggerType="ARM gdb CM3" Type="Executable" BuildCmpWithGlobalSettings="append" BuildLnkWithGlobalSettings="append" BuildResWithGlobalSettings="append">
+    <Configuration Name="Debug" CompilerType="arm-none-eabi-gcc" DebuggerType="ARM gdb CM3" Type="Executable" BuildCmpWithGlobalSettings="overwrite" BuildLnkWithGlobalSettings="overwrite" BuildResWithGlobalSettings="append">
       <Compiler Options="-g;-Wall;-mcpu=cortex-m3;-mthumb;-ffunction-sections;-fsigned-char;-mlittle-endian" C_Options="-g;-Wall;-mcpu=cortex-m3;-mthumb;-ffunction-sections;-fsigned-char;-mlittle-endian" Required="yes" PreCompiledHeader="" PCHInCommandLine="no" UseDifferentPCHFlags="no" PCHFlags="">
         <IncludePath Value="."/>
         <IncludePath Value="../../dongle/firmware/Projects/Versaloon/GCC"/>
@@ -477,28 +470,59 @@
         <SearchPaths/>
       </Completion>
     </Configuration>
-    <Configuration Name="Release" CompilerType="arm-none-eabi-gcc" DebuggerType="GNU gdb debugger" Type="Executable" BuildCmpWithGlobalSettings="append" BuildLnkWithGlobalSettings="append" BuildResWithGlobalSettings="append">
-      <Compiler Options="-Os;-Wall;-mcpu=cortex-m3;-mthumb;-ffunction-sections;-D STM32F10X_MD;-D USE_STDPERIPH_DRIVER;-D USE_STM3210B_EVAL;-fsigned-char;-mlittle-endian" C_Options="-Os;-Wall;-mcpu=cortex-m3;-mthumb;-ffunction-sections;-D STM32F10X_MD;-D USE_STDPERIPH_DRIVER;-D USE_STM3210B_EVAL;-fsigned-char;-mlittle-endian" Required="yes" PreCompiledHeader="" PCHInCommandLine="no" UseDifferentPCHFlags="no" PCHFlags="">
+    <Configuration Name="Release" CompilerType="arm-none-eabi-gcc" DebuggerType="ARM gdb CM3" Type="Executable" BuildCmpWithGlobalSettings="overwrite" BuildLnkWithGlobalSettings="overwrite" BuildResWithGlobalSettings="append">
+      <Compiler Options="-Os;-Wall;-mcpu=cortex-m3;-mthumb;-ffunction-sections;-fsigned-char;-mlittle-endian" C_Options="-Os;-Wall;-mcpu=cortex-m3;-mthumb;-ffunction-sections;-fsigned-char;-mlittle-endian" Required="yes" PreCompiledHeader="" PCHInCommandLine="no" UseDifferentPCHFlags="no" PCHFlags="">
         <IncludePath Value="."/>
-        <IncludePath Value="../../Projects/ProjectName/inc"/>
-        <IncludePath Value="../../libs/libStm32/cmsis_device/inc"/>
-        <IncludePath Value="../../libs/libStm32/cmsis_core/inc"/>
-        <IncludePath Value="../../libs/libStm32/stdPeriph_driver/inc"/>
-        <IncludePath Value="../../libs/libStm32/USBFS_driver/inc"/>
-        <IncludePath Value="../../libs/libEval/inc"/>
-        <IncludePath Value="../../Projects/ProjectName/src"/>
+        <IncludePath Value="../../dongle/firmware/Projects/Versaloon/GCC"/>
+        <IncludePath Value="../../dongle/firmware/Projects/Versaloon"/>
+        <IncludePath Value="../../dongle/firmware/Projects/Versaloon/vsf_cfg"/>
+        <IncludePath Value="../../dongle/firmware/Projects"/>
+        <IncludePath Value="../../dongle/firmware"/>
+        <IncludePath Value="../../dongle/firmware/Interfaces"/>
+        <IncludePath Value="../../dongle/firmware/Interfaces/APP"/>
+        <IncludePath Value="../../dongle/firmware/USB_TO_XXX"/>
+        <IncludePath Value="../../vsf"/>
+        <IncludePath Value="../../vsf/tool/list"/>
+        <IncludePath Value="../../vsf/interfaces"/>
+        <IncludePath Value="../../vsf/interfaces/cpu/stm32"/>
+        <IncludePath Value="../../vsf/interfaces/cpu/stm32/hw"/>
+        <IncludePath Value="../../vsf/interfaces/cpu/stm32/hw/STM32F10x_Lib/Libraries/STM32_USB-FS-Device_Driver/inc"/>
+        <IncludePath Value="../../vsf/interfaces/cpu/stm32/hw/STM32F10x_Lib/Libraries/STM32F10x_StdPeriph_Driver/inc"/>
+        <IncludePath Value="../../vsf/interfaces/cpu/stm32/hw/STM32F10x_Lib/Libraries/CMSIS/CM3/DeviceSupport/ST/STM32F10x"/>
+        <IncludePath Value="../../vsf/interfaces/cpu/stm32/hw/STM32F10x_Lib/Libraries/CMSIS/CM3/CoreSupport"/>
+        <IncludePath Value="../../src/scripts"/>
+        <IncludePath Value="../../src/target"/>
+        <IncludePath Value="../../src/tools/memlist"/>
+        <IncludePath Value="../../src/tools/strparser"/>
+        <IncludePath Value="../../dongle/firmware/app_script"/>
+        <IncludePath Value="../../dongle/firmware/vsprog"/>
+        <IncludePath Value="../../dongle/firmware/vsprog/tools/pgbar"/>
+        <IncludePath Value="../../dongle/firmware/vsprog/driver/comport"/>
+        <IncludePath Value="../../src/target/core/arm_adi"/>
+        <IncludePath Value="../../src/target/comisp"/>
+        <IncludePath Value="../../src/target/cortex-m3"/>
+        <IncludePath Value="../../src/target/at91sam3"/>
+        <IncludePath Value="../../src/target/lm3s"/>
+        <IncludePath Value="../../src/target/lpc1000"/>
+        <IncludePath Value="../../src/target/stm32f1"/>
+        <IncludePath Value="../../src/target/stm32f2"/>
+        <IncludePath Value="../../src/target/stm32l1"/>
+        <Preprocessor Value="USE_STDPERIPH_DRIVER"/>
+        <Preprocessor Value="STM32F10X_MD"/>
+        <Preprocessor Value="_HARDWARE_VER=0x21"/>
+        <Preprocessor Value="__TARGET_CHIP__=stm32"/>
+        <Preprocessor Value="FLASH_LOAD_OFFSET=0x2000"/>
+        <Preprocessor Value="CORE_DEBUG=STM32_DBG_NONE"/>
       </Compiler>
-      <Linker Options="-O3;-mcpu=cortex-m3;-nostartfiles;-mthumb;-static;-Wl,-cref,-u,Reset_Handler;-Wl,-Map=./$(IntermediateDirectory)/$(ProjectName).map;-Wl,--gc-sections,-Tlinker.ld" Required="yes">
-        <LibraryPath Value="../../libs"/>
-        <Library Value="libEval.a"/>
-        <Library Value="libStm32.a"/>
+      <Linker Options="-s;-O3;-mcpu=cortex-m3;-nostartfiles;-mthumb;-static;-Wl,-cref,-u,Reset_Handler;-Wl,-Map=./$(IntermediateDirectory)/$(ProjectName).map;-Wl,--gc-sections,-T../../dongle/firmware/Projects/versaloonProSTM32.ld" Required="yes">
+        <LibraryPath Value="../../dongle/firmware/Projects"/>
       </Linker>
       <ResourceCompiler Options="" Required="no"/>
-      <General OutputFile="$(IntermediateDirectory)/$(ProjectName).elf" IntermediateDirectory="./Release" Command="./$(ProjectName)" CommandArguments="" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="$(IntermediateDirectory)" PauseExecWhenProcTerminates="yes"/>
+      <General OutputFile="$(IntermediateDirectory)/$(ProjectName).elf" IntermediateDirectory="./Release" Command="./$(ProjectName).elf" CommandArguments="" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="$(IntermediateDirectory)" PauseExecWhenProcTerminates="yes"/>
       <Environment EnvVarSetName="&lt;Use Defaults&gt;" DbgSetName="&lt;Use Defaults&gt;">
         <![CDATA[]]>
       </Environment>
-      <Debugger IsRemote="yes" RemoteHostName="localhost" RemoteHostPort="3333" DebuggerPath="H:\msys-tnd\bin\Codesourcery\bin\arm-none-eabi-gdb.exe">
+      <Debugger IsRemote="yes" RemoteHostName="localhost" RemoteHostPort="3333" DebuggerPath="arm-none-eabi-gdb.exe">
         <PostConnectCommands/>
         <StartupCommands/>
       </Debugger>
