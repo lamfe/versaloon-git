@@ -34,6 +34,7 @@ static const struct vss_cmd_t beeper_cmd[] =
 				"set beeper off, format: beeper.off",
 				app_beeper_off,
 				NULL),
+	VSS_CMD_END
 };
 #endif
 
@@ -51,6 +52,7 @@ static const struct vss_cmd_t led7c_cmd[] =
 				"set 7-color led, format: led7c.set COLOR",
 				app_led7c_set,
 				NULL),
+	VSS_CMD_END
 };
 #endif
 
@@ -68,6 +70,7 @@ static const struct vss_cmd_t ledarr_cmd[] =
 				"set led array value, format: ledarr.set VALUE",
 				app_ledarr_set,
 				NULL),
+	VSS_CMD_END
 };
 #endif
 
