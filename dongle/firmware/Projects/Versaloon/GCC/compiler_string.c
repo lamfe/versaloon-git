@@ -9,8 +9,8 @@ int strlen(const char *str)
 {
 	const char *p = str;
 	
-	while (*p++);
-	return (int)(p - str - 1);
+	while (*p)p++;
+	return (int)(p - str);
 }
 
 int strcmp(const char *str0, const char *str1)
@@ -71,12 +71,8 @@ char* strcat(char *dest, const char *source)
 {
 	char *p = dest;
 	
-	while (*p++);
-	if (*source)
-	{
-		while ((*p++ = *source++));
-		*p = '\0';
-	}
+	while (*p)p++;
+	while ((*p++ = *source++));
 	return dest;
 }
 
@@ -84,9 +80,8 @@ char* strncat(char *dest, const char *source, int len)
 {
 	char *p = dest;
 	
-	while (*p++);
+	while (*p)p++;
 	while (len-- && (*p++ = *source++));
-	*p = '\0';
 	return dest;
 }
 
