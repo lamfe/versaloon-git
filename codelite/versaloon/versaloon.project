@@ -432,7 +432,7 @@
         <Preprocessor Value="FLASH_LOAD_OFFSET=0x0000"/>
         <Preprocessor Value="CORE_DEBUG=STM32_DBG_SWD"/>
       </Compiler>
-      <Linker Options="-g;-ggdb;-mcpu=cortex-m3;-nostartfiles;-mthumb;-static;-Wl,-cref,-u,Reset_Handler;-Wl,-Map=./$(IntermediateDirectory)/$(ProjectName).map;-Wl,--gc-sections,-T../../dongle/firmware/Projects/versaloonProSTM32.ld" Required="yes">
+      <Linker Options="-g;-ggdb;-mcpu=cortex-m3;-nostartfiles;-mthumb;-static;-Wl,-cref,-u,Reset_Handler;-Wl,-Map=./$(IntermediateDirectory)/$(ProjectName).map;-Wl,--gc-sections,-T../../dongle/firmware/Projects/versaloonProSTM32_debug.ld" Required="yes">
         <LibraryPath Value="../../dongle/firmware/Projects"/>
       </Linker>
       <ResourceCompiler Options="" Required="no"/>
