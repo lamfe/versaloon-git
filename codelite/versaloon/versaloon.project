@@ -529,7 +529,7 @@
       <PreBuild/>
       <PostBuild>
         <Command Enabled="yes">arm-none-eabi-objcopy -O ihex $(IntermediateDirectory)/$(ProjectName).elf $(IntermediateDirectory)/$(ProjectName).hex</Command>
-        <Command Enabled="yes">arm-none-eabi-objcopy -O ihex $(IntermediateDirectory)/$(ProjectName).elf $(IntermediateDirectory)/$(ProjectName).bin</Command>
+        <Command Enabled="yes">arm-none-eabi-objcopy -O binary $(IntermediateDirectory)/$(ProjectName).elf $(IntermediateDirectory)/$(ProjectName).bin</Command>
         <Command Enabled="yes">size -A $(IntermediateDirectory)/$(ProjectName).elf</Command>
       </PostBuild>
       <CustomBuild Enabled="no">
