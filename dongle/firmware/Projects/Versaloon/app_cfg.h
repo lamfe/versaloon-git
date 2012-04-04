@@ -34,6 +34,7 @@
 #define STM8L_Discovery					0x36
 #define STM8SVL_Discovery				0x37
 #define ST_Link							0x38
+#define STM32F0_Discovery				0x39
 
 #if _HARDWARE_VER == NanoRelease1
 #include "hw_cfg_NanoRelease1.h"

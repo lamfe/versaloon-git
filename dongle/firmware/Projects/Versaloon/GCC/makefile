@@ -16,6 +16,7 @@ EMBEDDED_VSPROG_EN = no
 # STM32L_Discovery
 # STM32F4_Discovery
 # ST_Link
+# STM32F0_Discovery
 #
 HW_BOARD = MiniRelease1
 
