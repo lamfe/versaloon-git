@@ -139,9 +139,20 @@ TARGET_CHIP			= stm32
 TARGET_STM32		= MediumDensity
 else
 ########################################################################
+ifeq ($(HW_BOARD),STM32F0_Discovery)
+########################################################################
+_HARDWARE_VER		= 0x39
+FLASH_LOAD_OFFSET	= 0x0000
+HSE_VALUE			= 8000000
+LD_FILE				= st-discovery.ld
+TARGET_CHIP			= stm32
+TARGET_STM32		= MediumDensity
+else
+########################################################################
 # Unknown board error
 ########################################################################
 $(error Missing or unknown HW_BOARD defined in makefile)
+endif
 endif
 endif
 endif

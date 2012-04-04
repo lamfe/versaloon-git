@@ -80,7 +80,8 @@
 #define	ST_LINK_U1_TX					PA9
 
 #if (_HARDWARE_VER == STM32F4_Discovery) ||\
-	(_HARDWARE_VER == STM32L_Discovery)
+	(_HARDWARE_VER == STM32L_Discovery) ||\
+	(_HARDWARE_VER == STM32F0_Discovery)
 #define	ST_LINK_ST_LINK_LED				9			//GPIOA
 #elif (_HARDWARE_VER == STM32VL_Discovery) ||\
 	(_HARDWARE_VER == STM8L_Discovery) ||\
