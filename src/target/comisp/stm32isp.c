@@ -821,7 +821,7 @@ READ_TARGET_HANDLER(stm32isp)
 			break;
 		}
 		flash_kb = GET_LE_U16(&tmpbuff[0]);
-		if ((flash_kb > 0) && (flash_kb <= 512))
+		if ((flash_kb > 0) && (flash_kb <= 1024))
 		{
 			flash_info->size = flash_kb * 1024;
 		}
