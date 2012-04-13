@@ -3726,6 +3726,66 @@
     <param7>0x000000</param7>
     <param8>1</param8>
   </chip>
+  <chip name="stm8l151c8">
+    <program_mode>si</program_mode>
+    <sram_size>4096</sram_size>
+    <app_page_size>256</app_page_size>
+    <app_page_num>256</app_page_num>
+    <ee_addr>0x1000</ee_addr>
+    <ee_page_size>256</ee_page_size>
+    <ee_page_num>8</ee_page_num>
+    <fuse init="0x0000000000000000:0x00" bytesize="9" mask="0x00FFFF00FF00FFFF:0xFF" format="%8x%1x">
+      <setting name="ROP" mask="0x00000000000000FF:0x00" info="Read-out protection" checked="0x00000000000000AA:0x00" unchecked="0x0000000000000000:0x00" />
+      <setting name="UBC" mask="0x000000000000FF00:0x00" info="User boot code" radix="16" shift="8" bytelen="1"/>
+      <setting name="IWDG_HW" mask="0x0000000001000000:0x00" info="Independent watchdog">
+        <choice value="0x0000000001000000:0x00" text="Independent watchdog activated by hardware" />
+        <choice value="0x0000000000000000:0x00" text="Independent watchdog activated by software" />
+      </setting>
+      <setting name="IWDG_HALT" mask="0x0000000002000000:0x00" info="Independent window watchdog reset on Halt/Active-halt">
+        <choice value="0x0000000002000000:0x00" text="Independent watchdog stopped in Halt/Active-halt mode" />
+        <choice value="0x0000000000000000:0x00" text="Independent watchdog continues running in Halt/Active-halt mode" />
+      </setting>
+      <setting name="WWDG_HW" mask="0x0000000004000000:0x00" info="Window watchdog">
+        <choice value="0x0000000004000000:0x00" text="Window watchdog activated by hardware" />
+        <choice value="0x0000000000000000:0x00" text="Window watchdog activated by software" />
+      </setting>
+      <setting name="WWDG_HALT" mask="0x0000000008000000:0x00" info="Window window watchdog reset on Halt/Active-halt">
+        <choice value="0x0000000008000000:0x00" text="Window watchdog generates a reset when MCU enters Halt mode" />
+        <choice value="0x0000000000000000:0x00" text="Window watchdog stopped in Halt mode" />
+      </setting>
+      <setting name="HSECNT" mask="0x0000030000000000:0x00" info="Number of HSE oscillator stabilization clock cycles">
+        <choice value="0x0000000000000000:0x00" text="1 clock cycle" />
+        <choice value="0x0000010000000000:0x00" text="16 clock cycles" />
+        <choice value="0x0000020000000000:0x00" text="512 clock cycles" />
+        <choice value="0x0000030000000000:0x00" text="4096 clock cycles" />
+      </setting>
+      <setting name="LSECNT" mask="0x00000C0000000000:0x00" info="Number of LSE oscillator stabilization clock cycles">
+        <choice value="0x0000000000000000:0x00" text="1 clock cycle" />
+        <choice value="0x0000040000000000:0x00" text="16 clock cycles" />
+        <choice value="0x0000080000000000:0x00" text="512 clock cycles" />
+        <choice value="0x00000C0000000000:0x00" text="4096 clock cycles" />
+      </setting>
+      <setting name="BOR_ON" mask="0x0001000000000000:0x00" info="Brownout enable" checked="0x0001000000000000:0x00" unchecked="0x0000000000000000:0x00" />
+      <setting name="BOR_TH" mask="0x000E000000000000:0x00" info="Brownout reset thresholds">
+        <choice value="0x0000000000000000:0x00" text="1.7V/1.75V" />
+        <choice value="0x0002000000000000:0x00" text="1.93V/2.04V" />
+        <choice value="0x0004000000000000:0x00" text="2.3V/2.41V" />
+        <choice value="0x0006000000000000:0x00" text="2.55V/2.66V" />
+        <choice value="0x0008000000000000:0x00" text="2.80V/2.90V" />
+      </setting>
+      <setting name="OPTBL" mask="0x0000000000000000:0xFF" info="Bootloader option byte" checked="0x0000000000000000:0xAA" unchecked="0x0000000000000000:0x00"/>
+      <setting name="ALL" mask="0x00FFFF00FF00FFFF:0xFF" info="Option bytes" radix="16" shift="0" bytelen="9" />
+    </fuse>
+    <param0>16</param0>
+    <param1>0x005053</param1>
+    <param2>0x005052</param2>
+    <param3>0x005054</param3>
+    <param4>0x005051</param4>
+    <param5>0x000000</param5>
+    <param6>0x0050C0</param6>
+    <param7>0x000000</param7>
+    <param8>1</param8>
+  </chip>
   <chip name="stm8l151c6">
     <program_mode>si</program_mode>
     <sram_size>2048</sram_size>
