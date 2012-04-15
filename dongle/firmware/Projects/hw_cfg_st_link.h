@@ -102,6 +102,13 @@
 #define ST_LINK_U2_RX					GPIO_PIN_3	//GPIOA
 #define ST_LINK_U2_TX					GPIO_PIN_2	//GPIOA	
 
+/****************************** USART ******************************/
+#define USART_PORT						0
+#define USART_RTS_PORT					0
+#define USART_RTS_PIN					GPIO_TDI
+#define USART_DTR_PORT					0
+#define USART_DTR_PIN					GPIO_TMS
+
 /****************************** SW ******************************/
 #define SW_PORT							GPIOB
 #define SW_PIN							ST_LINK_T_JRST

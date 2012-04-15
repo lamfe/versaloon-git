@@ -52,6 +52,13 @@
 #define HW_HAS_LEDARRAY					0
 #define HW_HAS_7COLOR_LED				0
 
+/****************************** USART ******************************/
+#define USART_PORT						0
+#define USART_RTS_PORT					0
+#define USART_RTS_PIN					GPIO_TDI
+#define USART_DTR_PORT					0
+#define USART_DTR_PIN					GPIO_TMS
+
 /****************************** SW ******************************/
 #define SW_PORT							GPIOB
 #define SW_PIN							GPIO_PIN_11
