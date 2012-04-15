@@ -617,11 +617,15 @@ struct vsfusbd_CDC_param_t Versaloon_CDC_param =
 	&usart_stream_p0,
 				// usart_stream
 	false,		// gpio_rts_enable
-	0,			// gpio_rts_port
-	GPIO_TDI,	// gpio_rts_pin
+	USART_RTS_PORT,
+				// gpio_rts_port
+	USART_RTS_PIN,
+				// gpio_rts_pin
 	false,		// gpio_dtr_enable
-	0,			// gpio_dtr_port
-	GPIO_TMS,	// gpio_dtr_pin
+	USART_DTR_PORT,
+				// gpio_dtr_port
+	USART_DTR_PORT,
+				// gpio_dtr_pin
 	
 	4,			// ep_out
 	4, 			// ep_in

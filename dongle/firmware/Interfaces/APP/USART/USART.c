@@ -26,7 +26,7 @@
 extern uint8_t asyn_rx_buf[ASYN_DATA_BUFF_SIZE];
 struct usart_stream_info_t usart_stream_p0 = 
 {
-	0,								// usart_index
+	USART_PORT,						// usart_index
 	{{asyn_rx_buf, 1024}},			// fifo_tx
 	{{asyn_rx_buf + 1024, 1024}}	// fifo_rx
 };

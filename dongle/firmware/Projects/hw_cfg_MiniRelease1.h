@@ -65,6 +65,13 @@
 										} while (0)
 #define PWREXT_DISABLE()				core_interfaces.gpio.config_pin(PWREXT_EN_PORT, PWREXT_EN_PIN, GPIO_INFLOAT)
 
+/****************************** USART ******************************/
+#define USART_PORT						0
+#define USART_RTS_PORT					0
+#define USART_RTS_PIN					GPIO_TDI
+#define USART_DTR_PORT					0
+#define USART_DTR_PIN					GPIO_TMS
+
 /****************************** SW ******************************/
 #define SW_PORT							GPIOB
 #define SW_PIN							GPIO_PIN_11
