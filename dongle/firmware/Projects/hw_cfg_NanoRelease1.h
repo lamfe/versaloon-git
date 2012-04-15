@@ -65,32 +65,6 @@
 										} while (0)
 #define PWREXT_DISABLE()				core_interfaces.gpio.config_pin(PWREXT_EN_PORT, PWREXT_EN_PIN, GPIO_INFLOAT)
 
-/****************************** DelayTimer ******************************/
-#define DELAYTIMER_MAXDELAY_US			200000
-
-#define DELAYTIMER_INIT()				do{\
-											SysTick->CTRL &= ~SysTick_CTRL_TICKINT_Msk;\
-											SysTick->CTRL |= SysTick_CLKSource_HCLK;\
-											SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;\
-											SysTick->VAL = 0;\
-										} while (0)
-
-#define DELAYTIMER_DelayUS_Start(us)	do{\
-											SysTick->LOAD = (us) * _SYS_FREQUENCY;\
-											SysTick->CTRL |= SysTick_CTRL_ENABLE_Msk;\
-										} while (0)
-#define DELAYTIMER_DelayUS_IsReady()	(SysTick->CTRL & SysTick_CTRL_COUNTFLAG_Msk)
-#define DELAYTIMER_DelayUS_End()		do{\
-											SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;\
-											SysTick->VAL = 0;\
-										} while (0)
-
-#define DELAYTIMER_DelayUS(us)			do{\
-											DELAYTIMER_DelayUS_Start(us);\
-											while (!DELAYTIMER_DelayUS_IsReady());\
-											DELAYTIMER_DelayUS_End();\
-										} while (0)
-
 /****************************** SW ******************************/
 #define SW_PORT							GPIOA
 #define SW_PIN							GPIO_PIN_10
