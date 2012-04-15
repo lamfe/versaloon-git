@@ -102,32 +102,6 @@
 #define ST_LINK_U2_RX					GPIO_PIN_3	//GPIOA
 #define ST_LINK_U2_TX					GPIO_PIN_2	//GPIOA	
 
-/****************************** DelayTimer ******************************/
-#define DELAYTIMER_MAXDELAY_US			200000
-
-#define DELAYTIMER_INIT()				do{\
-											SysTick->CTRL &= ~SysTick_CTRL_TICKINT_Msk;\
-											SysTick->CTRL |= SysTick_CLKSource_HCLK;\
-											SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;\
-											SysTick->VAL = 0;\
-										} while (0)
-
-#define DELAYTIMER_DelayUS_Start(us)	do{\
-											SysTick->LOAD = (us) * _SYS_FREQUENCY;\
-											SysTick->CTRL |= SysTick_CTRL_ENABLE_Msk;\
-										} while (0)
-#define DELAYTIMER_DelayUS_IsReady()	(SysTick->CTRL & SysTick_CTRL_COUNTFLAG_Msk)
-#define DELAYTIMER_DelayUS_End()		do{\
-											SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;\
-											SysTick->VAL = 0;\
-										} while (0)
-
-#define DELAYTIMER_DelayUS(us)			do{\
-											DELAYTIMER_DelayUS_Start(us);\
-											while (!DELAYTIMER_DelayUS_IsReady());\
-											DELAYTIMER_DelayUS_End();\
-										} while (0)
-
 /****************************** SW ******************************/
 #define SW_PORT							GPIOB
 #define SW_PIN							ST_LINK_T_JRST

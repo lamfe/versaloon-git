@@ -320,6 +320,7 @@ vsf_err_t gpio_clear(uint8_t index, uint32_t pin_mask)
 		{
 			JTAG_TAP_TDI_CLR();
 		}
+		return VSFERR_NONE;
 	default:
 		return VSFERR_NOT_SUPPORT;
 	}
@@ -366,6 +367,7 @@ vsf_err_t gpio_set(uint8_t index, uint32_t pin_mask)
 		{
 			JTAG_TAP_TDI_SET();
 		}
+		return VSFERR_NONE;
 	default:
 		return VSFERR_NOT_SUPPORT;
 	}

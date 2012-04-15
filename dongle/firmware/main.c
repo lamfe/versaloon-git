@@ -25,8 +25,6 @@
 #	include "app_log.h"
 #	include "scripts.h"
 #	include "vsprog.h"
-
-#	include "interfaces.h"
 #endif
 
 /* Private typedef -----------------------------------------------------------*/
@@ -35,7 +33,6 @@
 /* Private variables ---------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
-extern struct usart_stream_info_t usart_stream_p0;
 int main(void)
 {
 #if HW_HAS_BEEPER
