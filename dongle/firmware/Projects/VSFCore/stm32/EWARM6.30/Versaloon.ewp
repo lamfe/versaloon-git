@@ -300,39 +300,21 @@
           <name>CCIncludePath2</name>
           <state>$PROJ_DIR$\</state>
           <state>$PROJ_DIR$\..\</state>
-          <state>$PROJ_DIR$\..\vsf_cfg</state>
           <state>$PROJ_DIR$\..\..\</state>
-          <state>$PROJ_DIR$\..\..\..\</state>
-          <state>$PROJ_DIR$\..\..\..\Interfaces\</state>
-          <state>$PROJ_DIR$\..\..\..\Interfaces\APP\</state>
-          <state>$PROJ_DIR$\..\..\..\USB_TO_XXX\</state>
-          <state>$PROJ_DIR$\..\..\..\..\..\vsf\</state>
-          <state>$PROJ_DIR$\..\..\..\..\..\vsf\tool\list</state>
-          <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\</state>
-          <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\</state>
-          <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\</state>
-          <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\Port\IAR\</state>
-          <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\CMSIS\CM3\CoreSupport</state>
-          <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x</state>
-          <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\STM32_USB-FS-Device_Driver\inc</state>
-          <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\inc</state>
-          <state>$PROJ_DIR$\..\..\..\..\..\src\scripts</state>
-          <state>$PROJ_DIR$\..\..\..\..\..\src\target</state>
-          <state>$PROJ_DIR$\..\..\..\..\..\src\tools\memlist</state>
-          <state>$PROJ_DIR$\..\..\..\..\..\src\tools\strparser</state>
-          <state>$PROJ_DIR$\..\..\..\app_script</state>
-          <state>$PROJ_DIR$\..\..\..\vsprog</state>
-          <state>$PROJ_DIR$\..\..\..\vsprog\tools\pgbar</state>
-          <state>$PROJ_DIR$\..\..\..\vsprog\driver\comport</state>
-          <state>$PROJ_DIR$\..\..\..\..\..\src\target\core\arm_adi</state>
-          <state>$PROJ_DIR$\..\..\..\..\..\src\target\comisp</state>
-          <state>$PROJ_DIR$\..\..\..\..\..\src\target\cortex-m3</state>
-          <state>$PROJ_DIR$\..\..\..\..\..\src\target\at91sam3</state>
-          <state>$PROJ_DIR$\..\..\..\..\..\src\target\lm3s</state>
-          <state>$PROJ_DIR$\..\..\..\..\..\src\target\lpc1000</state>
-          <state>$PROJ_DIR$\..\..\..\..\..\src\target\stm32f1</state>
-          <state>$PROJ_DIR$\..\..\..\..\..\src\target\stm32f2</state>
-          <state>$PROJ_DIR$\..\..\..\..\..\src\target\stm32l1</state>
+          <state>$PROJ_DIR$\..\..\..\..\</state>
+          <state>$PROJ_DIR$\..\vsf_cfg</state>
+          <state>$PROJ_DIR$\..\Interfaces\</state>
+          <state>$PROJ_DIR$\..\Interfaces\APP\</state>
+          <state>$PROJ_DIR$\..\..\..\..\USB_TO_XXX\</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\..\vsf\</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\..\vsf\interfaces\</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\..\vsf\interfaces\cpu\stm32\</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\Port\IAR\</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\CMSIS\CM3\CoreSupport</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\STM32_USB-FS-Device_Driver\inc</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\inc</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -725,7 +707,7 @@
         </option>
         <option>
           <name>IlinkIcfFile</name>
-          <state>$PROJ_DIR$\..\..\VersaloonPro.icf</state>
+          <state>$PROJ_DIR$\..\..\..\VSFCore_STM32.icf</state>
         </option>
         <option>
           <name>IlinkIcfFileSlave</name>
@@ -1253,7 +1235,6 @@
           <state>$PROJ_DIR$\..\Interfaces\APP\</state>
           <state>$PROJ_DIR$\..\..\..\..\USB_TO_XXX\</state>
           <state>$PROJ_DIR$\..\..\..\..\..\..\vsf\</state>
-          <state>$PROJ_DIR$\..\..\..\..\..\..\vsf\tool\list</state>
           <state>$PROJ_DIR$\..\..\..\..\..\..\vsf\interfaces\</state>
           <state>$PROJ_DIR$\..\..\..\..\..\..\vsf\interfaces\cpu\stm32\</state>
           <state>$PROJ_DIR$\..\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\</state>
@@ -1262,8 +1243,6 @@
           <state>$PROJ_DIR$\..\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x</state>
           <state>$PROJ_DIR$\..\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\STM32_USB-FS-Device_Driver\inc</state>
           <state>$PROJ_DIR$\..\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\inc</state>
-          <state>$PROJ_DIR$\..\..\..\..\..\..\src\scripts</state>
-          <state>$PROJ_DIR$\..\..\..\..\app_script</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -1656,7 +1635,7 @@
         </option>
         <option>
           <name>IlinkIcfFile</name>
-          <state>$PROJ_DIR$\..\..\..\VersaloonPro.icf</state>
+          <state>$PROJ_DIR$\..\..\..\VSFCore_STM32.icf</state>
         </option>
         <option>
           <name>IlinkIcfFileSlave</name>
