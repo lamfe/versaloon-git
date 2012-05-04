@@ -776,7 +776,7 @@ WRITE_TARGET_HANDLER(stm8swim)
 			cmd = STM8_FLASH_CR2_FPRG;
 		}
 do_write_flashee:
-		if ((size != 64) && (size != 128))
+		if ((size != 64) && (size != 128) && (size != 256))
 		{
 			LOG_ERROR(ERRMSG_INVALID_VALUE, size, "page_size");
 			return VSFERR_FAIL;
