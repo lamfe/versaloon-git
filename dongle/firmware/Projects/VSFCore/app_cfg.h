@@ -48,3 +48,4 @@
 #define INTERFACE_GPIO_EN				1
 #define INTERFACE_PWM_EN				0
 #define INTERFACE_EBI_EN				1
+#define INTERFACE_ADC_EN				1

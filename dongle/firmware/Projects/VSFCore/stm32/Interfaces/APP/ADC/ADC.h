@@ -3,10 +3,10 @@
  *  SimonQian@SimonQian.com                                               *
  *                                                                        *
  *  Project:    Versaloon                                                 *
- *  File:       EBI.h                                                     *
+ *  File:       ADC.h                                                     *
  *  Author:     SimonQian                                                 *
  *  Versaion:   See changelog                                             *
- *  Purpose:    EBI interface header file                                 *
+ *  Purpose:    ADC interface header file                                 *
  *  License:    See license                                               *
  *------------------------------------------------------------------------*
  *  Change Log:                                                           *
@@ -14,10 +14,12 @@
  *      2008-11-07:     created(by SimonQian)                             *
  **************************************************************************/
 
-vsf_err_t ebi_init(uint8_t index);
-vsf_err_t ebi_fini(uint8_t index);
-vsf_err_t ebi_config(uint8_t index, uint8_t target_index, void *param);
-vsf_err_t ebi_read(uint8_t index, uint8_t target_index, uint32_t address, 
-					uint8_t data_size, uint8_t *buff, uint32_t count);
-vsf_err_t ebi_write(uint8_t index, uint8_t target_index, uint32_t address, 
-					uint8_t data_size, uint8_t *buff, uint32_t count);
+vsf_err_t adc_init(uint8_t index);
+vsf_err_t adc_fini(uint8_t index);
+vsf_err_t adc_config(uint8_t index, uint32_t clock_hz, uint8_t mode);
+vsf_err_t adc_config_channel(uint8_t index, uint8_t channel, uint8_t cycles);
+vsf_err_t adc_calibrate(uint8_t index, uint8_t channel);
+vsf_err_t adc_start(uint8_t index, uint8_t channel);
+vsf_err_t adc_isready(uint8_t index, uint8_t channel);
+uint32_t adc_get(uint8_t index, uint8_t channel);
+vsf_err_t adc_sample(uint8_t index, uint8_t channel, uint32_t *voltage);
