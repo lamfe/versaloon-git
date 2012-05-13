@@ -37,6 +37,19 @@ vsf_err_t usbtodelay_delayus(uint16_t us);
 
 
 
+// ADC
+vsf_err_t usbtoadc_init(uint8_t interface_index);
+vsf_err_t usbtoadc_fini(uint8_t interface_index);
+vsf_err_t usbtoadc_config(uint8_t interface_index, uint32_t clock_hz,
+							uint8_t mode);
+vsf_err_t usbtoadc_config_channel(uint8_t interface_index, uint8_t channel,
+									uint8_t cycles);
+vsf_err_t usbtoadc_calibrate(uint8_t interface_index, uint8_t channel);
+vsf_err_t usbtoadc_sample(uint8_t interface_index, uint8_t channel,
+							uint32_t *voltage);
+
+
+
 // USB_TO_USART
 vsf_err_t usbtousart_init(uint8_t interface_index);
 vsf_err_t usbtousart_fini(uint8_t interface_index);

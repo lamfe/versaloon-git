@@ -367,6 +367,10 @@ struct interfaces_info_t vi_stm32_interfaces =
 	{	// target_voltage
 		NULL, NULL
 	},
+	{
+		// adc
+		NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
+	},
 	{	// issp
 		NULL, NULL, NULL, NULL, NULL, NULL
 	},

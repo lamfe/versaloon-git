@@ -58,6 +58,7 @@
 #define TARGET_NAND_EN						1
 
 #define POWER_OUT_EN						1
+#define INTERFACE_ADC_EN					1
 #define INTERFACE_JTAG_EN					1
 #define INTERFACE_IIC_EN					1
 #define INTERFACE_GPIO_EN					1
