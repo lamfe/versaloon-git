@@ -132,5 +132,9 @@
 #define EBI_TGTTYP_NOR			0x00
 #define EBI_TGTTYP_NAND			0x10
 
+// ADC
+#define ADC_ALIGNLEFT			0x08
+#define ADC_ALIGNRIGHT			0x00
+
 #endif /* __PROG_INTERFACE_H_INCLUDED__ */
 

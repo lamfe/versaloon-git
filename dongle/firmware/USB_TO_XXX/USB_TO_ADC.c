@@ -25,7 +25,11 @@ void USB_TO_ADC_ProcessCmd(uint8_t *dat, uint16_t len)
 	uint16_t index, length;
 	uint8_t command, device_idx;
 	
-	uint16_t adc_result;
+	uint32_t clock_hz;
+	uint8_t mode;
+	uint8_t channel;
+	uint8_t cycles;
+	uint32_t adc_result;
 	
 	index = 0;
 	while(index < len)
@@ -40,6 +44,7 @@ void USB_TO_ADC_ProcessCmd(uint8_t *dat, uint16_t len)
 		case USB_TO_XXX_INIT:
 			if (0 == device_idx)
 			{
+				interfaces->adc.init(0);
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
 			else
@@ -50,6 +55,9 @@ void USB_TO_ADC_ProcessCmd(uint8_t *dat, uint16_t len)
 		case USB_TO_XXX_CONFIG:
 			if (0 == device_idx)
 			{
+				clock_hz = GET_LE_U32(&dat[index]);
+				mode = dat[index + 4];
+				interfaces->adc.config(0, clock_hz, mode);
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
 			else
@@ -60,6 +68,7 @@ void USB_TO_ADC_ProcessCmd(uint8_t *dat, uint16_t len)
 		case USB_TO_XXX_FINI:
 			if (0 == device_idx)
 			{
+				interfaces->adc.fini(0);
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
 			else
@@ -67,21 +76,44 @@ void USB_TO_ADC_ProcessCmd(uint8_t *dat, uint16_t len)
 				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
 			break;
-		case USB_TO_XXX_IN:
-#if POWER_OUT_EN
-			if (app_interfaces.target_voltage.get(0, &adc_result))
+		case USB_TO_XXX_IN_OUT:
+			if (0 == device_idx)
+			{
+				channel = dat[index + 0];
+				interfaces->adc.sample(0, channel, &adc_result);
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+				SET_LE_U32(&buffer_reply[rep_len], adc_result);
+			}
+			else
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
-			else
-#else
-			adc_result = 0;
-#endif
+			rep_len += 4;
+			break;
+		case USB_TO_XXX_OUT:
+			if (0 == device_idx)
 			{
+				channel = dat[index + 0];
+				cycles = dat[index + 1];
+				interfaces->adc.config_channel(0, channel, cycles);
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
-				SET_LE_U16(&buffer_reply[rep_len], adc_result);
 			}
-			rep_len += 2;
+			else
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+			}
+			break;
+		case USB_TO_XXX_SPECIAL:
+			if (0 == device_idx)
+			{
+				channel = dat[index + 0];
+				interfaces->adc.calibrate(0, channel);
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+			}
+			else
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+			}
 			break;
 		default:
 			buffer_reply[rep_len++] = USB_TO_XXX_CMD_NOT_SUPPORT;

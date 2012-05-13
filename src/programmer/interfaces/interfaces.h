@@ -345,6 +345,19 @@ struct interface_pwm_t
 	vsf_err_t (*in)(uint8_t index, uint16_t count, uint16_t *rate);
 };
 
+struct interface_adc_t
+{
+	vsf_err_t (*init)(uint8_t index);
+	vsf_err_t (*fini)(uint8_t index);
+	vsf_err_t (*config)(uint8_t index, uint32_t clock_hz, uint8_t mode);
+	vsf_err_t (*config_channel)(uint8_t index, uint8_t channel, uint8_t cycles);
+	vsf_err_t (*calibrate)(uint8_t index, uint8_t channel);
+	vsf_err_t (*start)(uint8_t index, uint8_t channel);
+	vsf_err_t (*isready)(uint8_t index, uint8_t channel);
+	uint32_t (*get)(uint8_t index, uint8_t channel);
+	vsf_err_t (*sample)(uint8_t index, uint8_t channel, uint32_t *voltage);
+};
+
 struct interface_target_voltage_t
 {
 	vsf_err_t (*get)(uint8_t index, uint16_t *voltage);
@@ -391,6 +404,7 @@ struct interfaces_info_t
 	struct interface_pwm_t pwm;
 	struct interface_microwire_t microwire;
 	struct interface_target_voltage_t target_voltage;
+	struct interface_adc_t adc;
 	struct interface_issp_t issp;
 	struct interface_swd_t swd;
 	struct interface_jtag_hl_t jtag_hl;

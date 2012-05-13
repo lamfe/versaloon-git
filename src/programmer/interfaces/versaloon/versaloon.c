@@ -666,7 +666,7 @@ struct interfaces_info_t versaloon_interfaces =
 	IFS_USART | IFS_SPI | IFS_EBI | IFS_I2C | IFS_GPIO | IFS_POWER | IFS_ISSP |
 	IFS_JTAG_LL | IFS_POLL | IFS_JTAG_HL | IFS_SWIM | IFS_JTAG_RAW | IFS_C2 |
 	IFS_MSP430_JTAG | IFS_LPC_ICP | IFS_SWD | IFS_BDM | IFS_DUSI |
-	IFS_MICROWIRE | IFS_PWM,
+	IFS_MICROWIRE | IFS_PWM | IFS_ADC,
 	
 	{	// delay
 		usbtodelay_delayms,
@@ -728,6 +728,16 @@ struct interfaces_info_t versaloon_interfaces =
 	{	// target_voltage
 		versaloon_get_target_voltage,
 		versaloon_set_target_voltage
+	},
+	{
+		// adc
+		usbtoadc_init,
+		usbtoadc_fini,
+		usbtoadc_config,
+		usbtoadc_config_channel,
+		usbtoadc_calibrate,
+		NULL, NULL, NULL,
+		usbtoadc_sample
 	},
 	{	// issp
 		usbtoissp_init,

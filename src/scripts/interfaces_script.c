@@ -52,6 +52,34 @@ static const struct vss_cmd_t tvcc_cmd[] =
 };
 #endif
 
+#if INTERFACE_ADC_EN
+VSS_HANDLER(interface_adc_init);
+VSS_HANDLER(interface_adc_fini);
+VSS_HANDLER(interface_adc_config);
+VSS_HANDLER(interface_adc_get);
+
+static const struct vss_cmd_t adc_cmd[] =
+{
+	VSS_CMD(	"init",
+				"initialize adc, format: adc.init",
+				interface_adc_init,
+				NULL),
+	VSS_CMD(	"fini",
+				"finalize adc, format: adc.fini",
+				interface_adc_fini,
+				NULL),
+	VSS_CMD(	"config",
+				"configure adc, format: adc.config CHANNEL RATE[0x00 .. 0xFF]",
+				interface_adc_config,
+				NULL),
+	VSS_CMD(	"sample",
+				"sample adc result, format: adc.sample CHANNEL",
+				interface_adc_get,
+				NULL),
+	VSS_CMD_END
+};
+#endif
+
 #if INTERFACE_JTAG_EN
 VSS_HANDLER(interface_jtag_init);
 VSS_HANDLER(interface_jtag_fini);
@@ -261,6 +289,12 @@ static const struct vss_cmd_t interface_cmd[] =
 				NULL,
 				tvcc_cmd),
 #endif
+#if INTERFACE_ADC_EN
+	VSS_CMD(	"adc",
+				"analog to digital",
+				interface_adc_init,
+				adc_cmd),
+#endif
 #if INTERFACE_JTAG_EN
 	VSS_CMD(	"jtag",
 				"jtag interface handler",
@@ -354,6 +388,78 @@ VSS_HANDLER(interface_set_target_voltage)
 	}
 
 	vss_run_script("tvcc.get");
+	return VSFERR_NONE;
+}
+#endif
+
+#if INTERFACE_ADC_EN
+VSS_HANDLER(interface_adc_init)
+{
+	uint32_t clock_hz;
+	struct INTERFACES_INFO_T *ifs = NULL;
+	
+	VSS_CHECK_ARGC(2);
+	INTERFACE_ASSERT(IFS_ADC, "adc");
+	
+	clock_hz = (uint32_t)strtoul(argv[1], NULL, 0);
+	if (ifs->adc.init(0) || 
+		ifs->adc.config(0, clock_hz, ADC_ALIGNRIGHT) || 
+		ifs->peripheral_commit())
+	{
+		return VSFERR_FAIL;
+	}
+	return VSFERR_NONE;
+}
+
+VSS_HANDLER(interface_adc_fini)
+{
+	struct INTERFACES_INFO_T *ifs = NULL;
+	
+	VSS_CHECK_ARGC(1);
+	INTERFACE_ASSERT(IFS_ADC, "adc");
+	
+	if (ifs->adc.fini(0) || ifs->peripheral_commit())
+	{
+		return VSFERR_FAIL;
+	}
+	return VSFERR_NONE;
+}
+
+VSS_HANDLER(interface_adc_config)
+{
+	uint8_t channel;
+	uint8_t rate;
+	struct INTERFACES_INFO_T *ifs = NULL;
+	
+	VSS_CHECK_ARGC(3);
+	INTERFACE_ASSERT(IFS_ADC, "adc");
+	
+	channel = (uint8_t)strtoul(argv[1], NULL, 0);
+	rate = (uint8_t)strtoul(argv[2], NULL, 0);
+	if (ifs->adc.config_channel(0, channel, rate) || 
+		ifs->adc.calibrate(0, channel) || 
+		ifs->peripheral_commit())
+	{
+		return VSFERR_FAIL;
+	}
+	return VSFERR_NONE;
+}
+
+VSS_HANDLER(interface_adc_get)
+{
+	uint8_t channel;
+	uint32_t voltage;
+	struct INTERFACES_INFO_T *ifs = NULL;
+	
+	VSS_CHECK_ARGC(2);
+	INTERFACE_ASSERT(IFS_ADC, "adc");
+	
+	channel = (uint8_t)strtoul(argv[1], NULL, 0);
+	if (ifs->adc.sample(0, channel, &voltage) || ifs->peripheral_commit())
+	{
+		return VSFERR_FAIL;
+	}
+	LOG_INFO(INFOMSG_VOLTAGE, "ADC result", voltage * 3.3 / 0xFFF);
 	return VSFERR_NONE;
 }
 #endif
