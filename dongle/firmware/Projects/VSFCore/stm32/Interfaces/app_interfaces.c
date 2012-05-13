@@ -38,6 +38,9 @@
 #if INTERFACE_SDIO_EN
 #	include "SDIO/SDIO.h"
 #endif
+#if INTERFACE_ADC_EN
+#	include "ADC/ADC.h"
+#endif
 
 // GPIO
 void GPIO_SetMode(GPIO_TypeDef* GPIOx, uint8_t pin, uint8_t mode)
@@ -148,6 +151,9 @@ const struct app_interfaces_info_t app_interfaces =
 #if INTERFACE_PWM_EN
 	| IFS_PWM
 #endif
+#if INTERFACE_ADC_EN
+	| IFS_ADC
+#endif
 	
 #if INTERFACE_GPIO_EN
 	,{
@@ -234,6 +240,19 @@ const struct app_interfaces_info_t app_interfaces =
 		sdio_data_tx_isready,
 		sdio_data_rx,
 		sdio_data_rx_isready,
+	}
+#endif
+#if INTERFACE_ADC_EN
+	,{
+		adc_init,
+		adc_fini,
+		adc_config,
+		adc_config_channel,
+		adc_calibrate,
+		adc_start,
+		adc_isready,
+		adc_get,
+		adc_sample
 	}
 #endif
 	,{

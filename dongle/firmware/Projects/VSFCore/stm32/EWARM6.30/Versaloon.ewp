@@ -99,7 +99,7 @@
         </option>
         <option>
           <name>OGChipSelectEditMenu</name>
-          <state>STM32F10xxE	ST STM32F10xxE</state>
+          <state>STM32F10xxC	ST STM32F10xxC</state>
         </option>
         <option>
           <name>GenLowLevelInterface</name>
@@ -1864,6 +1864,12 @@
     <name>Interfaces</name>
     <group>
       <name>APP</name>
+      <group>
+        <name>ADC</name>
+        <file>
+          <name>$PROJ_DIR$\..\Interfaces\APP\ADC\ADC.c</name>
+        </file>
+      </group>
       <group>
         <name>EBI</name>
         <file>

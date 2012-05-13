@@ -3,10 +3,10 @@
  *  SimonQian@SimonQian.com                                               *
  *                                                                        *
  *  Project:    Versaloon                                                 *
- *  File:       SPI.c                                                     *
+ *  File:       EBI.c                                                     *
  *  Author:     SimonQian                                                 *
  *  Versaion:   See changelog                                             *
- *  Purpose:    SPI interface implementation file                         *
+ *  Purpose:    EBI interface implementation file                         *
  *  License:    See license                                               *
  *------------------------------------------------------------------------*
  *  Change Log:                                                           *
