@@ -5,13 +5,16 @@
 // TODO: remove MACROs below to stm32_reg.h
 #define STM32_RCC_APB2RSTR_ADC1RST		((uint32_t)1 << 9)
 #define STM32_RCC_APB2RSTR_ADC2RST		((uint32_t)1 << 10)
+#define STM32_RCC_APB2RSTR_ADC3RST		((uint32_t)1 << 15)
 
 #define STM32_RCC_APB2ENR_ADC1EN		((uint32_t)1 << 9)
 #define STM32_RCC_APB2ENR_ADC2EN		((uint32_t)1 << 10)
+#define STM32_RCC_APB2ENR_ADC3EN		((uint32_t)1 << 15)
 #define STM32_RCC_APB2ENR_IOPAEN		((uint32_t)1 << 2)
 #define STM32_RCC_APB2ENR_IOPBEN		((uint32_t)1 << 3)
 #define STM32_RCC_APB2ENR_IOPCEN		((uint32_t)1 << 4)
 #define STM32_RCC_APB2ENR_IOPDEN		((uint32_t)1 << 5)
+#define STM32_RCC_APB2ENR_IOPFEN		((uint32_t)1 << 7)
 
 #define STM32_RCC_CFGR_ADCPRE_SFT		14
 #define STM32_RCC_CFGR_ADCPRE_MSK		((uint32_t)0x03 << \
@@ -62,6 +65,11 @@ vsf_err_t stm32_adc_init(uint8_t index)
 		RCC->APB2RSTR |= STM32_RCC_APB2RSTR_ADC2RST;
 		RCC->APB2RSTR &= ~STM32_RCC_APB2RSTR_ADC2RST;
 		RCC->APB2ENR |= STM32_RCC_APB2ENR_ADC2EN;
+		break;
+	case 2:
+		RCC->APB2RSTR |= STM32_RCC_APB2RSTR_ADC3RST;
+		RCC->APB2RSTR &= ~STM32_RCC_APB2RSTR_ADC3RST;
+		RCC->APB2ENR |= STM32_RCC_APB2ENR_ADC3EN;
 		break;
 	default:
 		return VSFERR_NOT_SUPPORT;
@@ -134,26 +142,47 @@ vsf_err_t stm32_adc_config_channel(uint8_t index, uint8_t channel,
 #endif
 	adc = (ADC_TypeDef *)stm32_adcs[index];
 	
-	// channel 0  --  7 : PA0 -- PA7
-	// channel 8  --  9 : PB0 -- PB1
-	// channel 10 --  15: PC0 -- PC5
-	if (channel <= 7)
+	// common channel for all adc:
+	// channel 0  -- 3  : PA0 -- PA3
+	// channel 10 -- 13 : PC0 -- PC3
+	// common channel for adc1 and adc2
+	// channel 4  -- 7  : PA4 -- PA7
+	// channel 8  -- 9  : PB0 -- PB1
+	// channel 14 -- 15 : PC4 -- PC5
+	// channel for adc3
+	// channel 4  -- 8  : PF6 -- PF10
+	if ((channel <= 3) || ((channel <= 7) && (index <= 1)))
 	{
 		RCC->APB2ENR |= STM32_RCC_APB2ENR_IOPAEN;
 		GPIOA->CRL = (GPIOA->CRL & ~(0x0F << (channel * 4))) | 
 						(uint32_t)stm32_GPIO_ANALOG << (channel * 4);
 	}
-	else if (channel <= 9)
+	else if (((channel >= 10) && (channel <= 13)) || 
+			 (((channel >= 14) && (channel <= 15)) && (index <= 1)))
+	{
+		RCC->APB2ENR |= STM32_RCC_APB2ENR_IOPCEN;
+		GPIOC->CRL = (GPIOC->CRL & ~(0x0F << ((channel - 10) * 4))) | 
+						(uint32_t)stm32_GPIO_ANALOG << ((channel - 10) * 4);
+	}
+	else if ((channel >= 8) && (channel <= 9) && (index <= 1))
 	{
 		RCC->APB2ENR |= STM32_RCC_APB2ENR_IOPBEN;
 		GPIOB->CRL = (GPIOB->CRL & ~(0x0F << ((channel - 8) * 4))) | 
 						(uint32_t)stm32_GPIO_ANALOG << ((channel - 8) * 4);
 	}
-	else if (channel <= 15)
+	else if ((channel >= 4) && (channel <= 8) && (2 == index))
 	{
-		RCC->APB2ENR |= STM32_RCC_APB2ENR_IOPCEN;
-		GPIOC->CRL = (GPIOC->CRL & ~(0x0F << ((channel - 10) * 4))) | 
-						(uint32_t)stm32_GPIO_ANALOG << ((channel - 10) * 4);
+		RCC->APB2ENR |= STM32_RCC_APB2ENR_IOPFEN;
+		if (channel <= 5)
+		{
+			GPIOF->CRL = (GPIOF->CRL & ~(0x0F << ((channel + 2) * 4))) | 
+							(uint32_t)stm32_GPIO_ANALOG << ((channel + 2) * 4);
+		}
+		else
+		{
+			GPIOF->CRH = (GPIOF->CRH & ~(0x0F << ((channel - 6) * 4))) | 
+							(uint32_t)stm32_GPIO_ANALOG << ((channel - 6) * 4);
+		}
 	}
 	
 	if (channel > 9)
@@ -245,6 +274,20 @@ uint32_t stm32_adc_get(uint8_t index, uint8_t channel)
 	adc = (ADC_TypeDef *)stm32_adcs[index];
 	
 	return adc->DR;
+}
+
+vsf_err_t stm32_adc_sample(uint8_t index, uint8_t channel, uint32_t *voltage)
+{
+#if __VSF_DEBUG__
+	if (index >= STM32_ADC_NUM)
+	{
+		return 0;
+	}
+#endif
+	stm32_adc_start(index, channel);
+	while (VSFERR_NONE != stm32_adc_isready(index, channel));
+	*voltage = stm32_adc_get(index, channel);
+	return VSFERR_NONE;
 }
 
 #endif

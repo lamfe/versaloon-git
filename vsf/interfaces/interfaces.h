@@ -286,6 +286,7 @@ struct interface_adc_t
 	vsf_err_t (*start)(uint8_t index, uint8_t channel);
 	vsf_err_t (*isready)(uint8_t index, uint8_t channel);
 	uint32_t (*get)(uint8_t index, uint8_t channel);
+	vsf_err_t (*sample)(uint8_t index, uint8_t channel, uint32_t *voltage);
 };
 
 #define CORE_ADC_INIT(m)				__CONNECT(m, _adc_init)
@@ -296,6 +297,7 @@ struct interface_adc_t
 #define CORE_ADC_START(m)				__CONNECT(m, _adc_start)
 #define CORE_ADC_ISREADY(m)				__CONNECT(m, _adc_isready)
 #define CORE_ADC_GET(m)					__CONNECT(m, _adc_get)
+#define CORE_ADC_SAMPLE(m)				__CONNECT(m, _adc_sample)
 
 vsf_err_t CORE_ADC_INIT(__TARGET_CHIP__)(uint8_t index);
 vsf_err_t CORE_ADC_FINI(__TARGET_CHIP__)(uint8_t index);
@@ -307,6 +309,8 @@ vsf_err_t CORE_ADC_CALIBRATE(__TARGET_CHIP__)(uint8_t index, uint8_t channel);
 vsf_err_t CORE_ADC_START(__TARGET_CHIP__)(uint8_t index, uint8_t channel);
 vsf_err_t CORE_ADC_ISREADY(__TARGET_CHIP__)(uint8_t index, uint8_t channel);
 uint32_t CORE_ADC_GET(__TARGET_CHIP__)(uint8_t index, uint8_t channel);
+vsf_err_t CORE_ADC_SAMPLE(__TARGET_CHIP__)(uint8_t index, uint8_t channel, 
+											uint32_t *voltage);
 
 #endif
 
