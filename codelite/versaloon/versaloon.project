@@ -81,6 +81,9 @@
         <VirtualDirectory Name="USART">
           <File Name="../../dongle/firmware/Interfaces/APP/USART/USART.c"/>
         </VirtualDirectory>
+        <VirtualDirectory Name="ADC">
+          <File Name="../../dongle/firmware/Interfaces/APP/ADC/ADC.c"/>
+        </VirtualDirectory>
       </VirtualDirectory>
       <File Name="../../dongle/firmware/Interfaces/app_interfaces.c"/>
     </VirtualDirectory>
