@@ -1919,6 +1919,12 @@
     <group>
       <name>APP</name>
       <group>
+        <name>ADC</name>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\Interfaces\APP\ADC\ADC.c</name>
+        </file>
+      </group>
+      <group>
         <name>BDM</name>
         <file>
           <name>$PROJ_DIR$\..\..\..\Interfaces\APP\BDM\BDM.c</name>
