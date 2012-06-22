@@ -425,7 +425,6 @@ struct mal_driver_t nand_drv =
 #endif
 	},
 	
-	MAL_IDX_NAND,
 	MAL_SUPPORT_READBLOCK | MAL_SUPPORT_WRITEBLOCK | MAL_SUPPORT_ERASEBLOCK,
 	
 	nand_drv_init,

@@ -100,7 +100,7 @@ static struct ee24cxx_drv_param_t ee24cxx_drv_param;
 static struct ee24cxx_drv_interface_t ee24cxx_drv_ifs;
 static struct mal_info_t ee24cxx_mal_info =
 {
-	{0, 0}, NULL, 0, 0, 0
+	{0, 0}, NULL, 0, 0, 0, &ee24cxx_drv
 };
 static struct dal_info_t ee24cxx_dal_info =
 {
@@ -144,7 +144,7 @@ ENTER_PROGRAM_MODE_HANDLER(ee24cxx)
 		ee24cxx_drv_param.iic_addr = (uint8_t)param->param[EE24CXX_PARAM_BASE_ADDR];
 	}
 	ee24cxx_drv_param.iic_khz = pi->frequency;
-	if (mal.init(MAL_IDX_EE24CXX, &ee24cxx_dal_info))
+	if (mal.init(&ee24cxx_dal_info))
 	{
 		return VSFERR_FAIL;
 	}
@@ -159,7 +159,7 @@ LEAVE_PROGRAM_MODE_HANDLER(ee24cxx)
 	REFERENCE_PARAMETER(context);
 	REFERENCE_PARAMETER(success);
 	
-	mal.fini(MAL_IDX_EE24CXX, &ee24cxx_dal_info);
+	mal.fini(&ee24cxx_dal_info);
 	return dal_commit();
 }
 
@@ -188,8 +188,7 @@ WRITE_TARGET_HANDLER(ee24cxx)
 		}
 		size /= eeprom_info->page_size;
 		
-		if (mal.writeblock(MAL_IDX_EE24CXX, &ee24cxx_dal_info,
-										addr, buff, size))
+		if (mal.writeblock(&ee24cxx_dal_info, addr, buff, size))
 		{
 			return VSFERR_FAIL;
 		}
@@ -217,8 +216,7 @@ READ_TARGET_HANDLER(ee24cxx)
 		}
 		size /= eeprom_info->page_size;
 		
-		if (mal.readblock(MAL_IDX_EE24CXX, &ee24cxx_dal_info,
-										addr, buff, size))
+		if (mal.readblock(&ee24cxx_dal_info, addr, buff, size))
 		{
 			return VSFERR_FAIL;
 		}

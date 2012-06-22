@@ -97,7 +97,7 @@ static struct nand_drv_param_t nand_drv_param;
 static struct nand_drv_interface_t nand_drv_ifs;
 static struct mal_info_t nand_mal_info =
 {
-	{0, 0}, NULL, 0, 0, 0
+	{0, 0}, NULL, 0, 0, 0, &nand_drv
 };
 static struct dal_info_t nand_dal_info =
 {
@@ -157,8 +157,7 @@ ENTER_PROGRAM_MODE_HANDLER(nand)
 	nand_drv_param.nand_info.param.addr.data = 0x00000000;
 	nand_drv_param.small_page = param->param[NAND_PARAM_SMALL_PAGE];
 	
-	if (mal.init(MAL_IDX_NAND, &nand_dal_info) || 
-		mal.getinfo(MAL_IDX_NAND, &nand_dal_info))
+	if (mal.init(&nand_dal_info) || mal.getinfo(&nand_dal_info))
 	{
 		return VSFERR_FAIL;
 	}
@@ -171,7 +170,7 @@ LEAVE_PROGRAM_MODE_HANDLER(nand)
 	REFERENCE_PARAMETER(context);
 	REFERENCE_PARAMETER(success);
 	
-	mal.fini(MAL_IDX_NAND, &nand_dal_info);
+	mal.fini(&nand_dal_info);
 	return dal_commit();
 }
 
@@ -183,7 +182,7 @@ ERASE_TARGET_HANDLER(nand)
 	switch (area)
 	{
 	case APPLICATION_CHAR:
-		if (mal.eraseblock(MAL_IDX_NAND, &nand_dal_info, addr, 1))
+		if (mal.eraseblock(&nand_dal_info, addr, 1))
 		{
 			return VSFERR_FAIL;
 		}
@@ -207,7 +206,7 @@ WRITE_TARGET_HANDLER(nand)
 		}
 		size /= flash_info->page_size;
 		
-		if (mal.writeblock(MAL_IDX_NAND, &nand_dal_info,addr, buff, size))
+		if (mal.writeblock(&nand_dal_info,addr, buff, size))
 		{
 			return VSFERR_FAIL;
 		}
@@ -225,7 +224,7 @@ READ_TARGET_HANDLER(nand)
 	switch (area)
 	{
 	case CHIPID_CHAR:
-		if (mal.getinfo(MAL_IDX_NAND, &nand_dal_info))
+		if (mal.getinfo(&nand_dal_info))
 		{
 			return VSFERR_FAIL;
 		}
@@ -243,7 +242,7 @@ READ_TARGET_HANDLER(nand)
 		}
 		size /= flash_info->page_size;
 		
-		if (mal.readblock(MAL_IDX_NAND, &nand_dal_info, addr, buff, size))
+		if (mal.readblock(&nand_dal_info, addr, buff, size))
 		{
 			return VSFERR_FAIL;
 		}

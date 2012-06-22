@@ -357,7 +357,6 @@ struct mal_driver_t df25xx_drv =
 #endif
 	},
 	
-	MAL_IDX_DF25XX,
 	MAL_SUPPORT_READBLOCK | MAL_SUPPORT_WRITEBLOCK | MAL_SUPPORT_ERASEBLOCK,
 	
 	df25xx_drv_init,

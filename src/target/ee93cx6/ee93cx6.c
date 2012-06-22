@@ -127,7 +127,7 @@ static struct ee93cx6_drv_param_t ee93cx6_drv_param;
 static struct ee93cx6_drv_interface_t ee93cx6_drv_ifs;
 static struct mal_info_t ee93cx6_mal_info =
 {
-	{0, 0}, NULL, 0, 0, 0
+	{0, 0}, NULL, 0, 0, 0, &ee93cx6_drv
 };
 static struct dal_info_t ee93cx6_dal_info =
 {
@@ -175,7 +175,7 @@ ENTER_PROGRAM_MODE_HANDLER(ee93cx6)
 	{
 		ee93cx6_drv_param.origination_mode = EE93CX6_ORIGINATION_WORD;
 	}
-	if (mal.init(MAL_IDX_EE93CX6, &ee93cx6_dal_info))
+	if (mal.init(&ee93cx6_dal_info))
 	{
 		return VSFERR_FAIL;
 	}
@@ -190,7 +190,7 @@ LEAVE_PROGRAM_MODE_HANDLER(ee93cx6)
 	REFERENCE_PARAMETER(context);
 	REFERENCE_PARAMETER(success);
 	
-	mal.fini(MAL_IDX_EE93CX6, &ee93cx6_dal_info);
+	mal.fini(&ee93cx6_dal_info);
 	return dal_commit();
 }
 
@@ -201,7 +201,7 @@ ERASE_TARGET_HANDLER(ee93cx6)
 	REFERENCE_PARAMETER(addr);
 	REFERENCE_PARAMETER(size);
 	
-	if (mal.eraseall(MAL_IDX_EE93CX6, &ee93cx6_dal_info))
+	if (mal.eraseall(&ee93cx6_dal_info))
 	{
 		return VSFERR_FAIL;
 	}
@@ -222,8 +222,7 @@ WRITE_TARGET_HANDLER(ee93cx6)
 		}
 		size /= eeprom_info->page_size;
 		
-		if (mal.writeblock(MAL_IDX_EE93CX6, &ee93cx6_dal_info,
-										addr, buff, size))
+		if (mal.writeblock(&ee93cx6_dal_info, addr, buff, size))
 		{
 			return VSFERR_FAIL;
 		}
@@ -248,8 +247,7 @@ READ_TARGET_HANDLER(ee93cx6)
 		}
 		size /= eeprom_info->page_size;
 		
-		if (mal.readblock(MAL_IDX_EE93CX6, &ee93cx6_dal_info,
-										addr, buff, size))
+		if (mal.readblock(&ee93cx6_dal_info, addr, buff, size))
 		{
 			return VSFERR_FAIL;
 		}

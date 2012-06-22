@@ -106,7 +106,7 @@ static struct sd_spi_drv_info_t sd_spi_drv_info;
 static struct sd_spi_drv_interface_t sd_spi_drv_ifs;
 static struct mal_info_t sd_mal_info =
 {
-	{0, 0}, &sd_info, 0, 0, 0
+	{0, 0}, &sd_info, 0, 0, 0, &sd_spi_drv
 };
 static struct dal_info_t sd_dal_info =
 {
@@ -146,7 +146,7 @@ ENTER_PROGRAM_MODE_HANDLER(sd)
 	}
 	
 	sd_param.kHz = pi->frequency;
-	if (mal.init(MAL_IDX_SD_SPI, &sd_dal_info))
+	if (mal.init(&sd_dal_info))
 	{
 		return VSFERR_FAIL;
 	}
@@ -194,7 +194,7 @@ LEAVE_PROGRAM_MODE_HANDLER(sd)
 	REFERENCE_PARAMETER(context);
 	REFERENCE_PARAMETER(success);
 	
-	mal.fini(MAL_IDX_SD_SPI, &sd_dal_info);
+	mal.fini(&sd_dal_info);
 	return dal_commit();
 }
 
@@ -205,7 +205,7 @@ ERASE_TARGET_HANDLER(sd)
 	REFERENCE_PARAMETER(addr);
 	REFERENCE_PARAMETER(size);
 	
-	if (mal.eraseall(MAL_IDX_SD_SPI, &sd_dal_info))
+	if (mal.eraseall(&sd_dal_info))
 	{
 		return VSFERR_FAIL;
 	}
@@ -225,7 +225,7 @@ WRITE_TARGET_HANDLER(sd)
 		}
 		size /= 512;
 		
-		if (mal.writeblock(MAL_IDX_SD_SPI, &sd_dal_info, addr, buff, size))
+		if (mal.writeblock(&sd_dal_info, addr, buff, size))
 		{
 			return VSFERR_FAIL;
 		}
@@ -253,7 +253,7 @@ READ_TARGET_HANDLER(sd)
 		}
 		size /= 512;
 		
-		if (mal.readblock(MAL_IDX_SD_SPI, &sd_dal_info, addr, buff, size))
+		if (mal.readblock(&sd_dal_info, addr, buff, size))
 		{
 			return VSFERR_FAIL;
 		}
