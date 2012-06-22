@@ -38,7 +38,7 @@ vsf_err_t usbtoswd_callback(void *p, uint8_t *src, uint8_t *processed)
 	
 	if (pending->extra_data != NULL)
 	{
-		*((uint8_t *)pending->extra_data) = src[0];
+		*((uint8_t *)pending->extra_data) = src[0] & 7;
 	}
 	
 	return VSFERR_NONE;
