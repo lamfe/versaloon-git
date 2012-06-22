@@ -825,7 +825,6 @@ struct mal_driver_t sd_spi_drv =
 #endif
 	},
 	
-	MAL_IDX_SD_SPI,
 	MAL_SUPPORT_READBLOCK | MAL_SUPPORT_WRITEBLOCK,
 	
 	sd_spi_drv_init,

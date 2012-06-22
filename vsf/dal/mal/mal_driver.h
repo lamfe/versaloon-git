@@ -26,7 +26,6 @@ struct mal_driver_t
 {
 	struct dal_driver_t driver;
 	
-	uint16_t index;
 	uint8_t support;
 	
 	vsf_err_t (*init)(struct dal_info_t *param);

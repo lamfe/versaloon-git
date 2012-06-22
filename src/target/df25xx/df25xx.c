@@ -100,7 +100,7 @@ static struct df25xx_drv_param_t df25xx_drv_param;
 static struct df25xx_drv_interface_t df25xx_drv_ifs;
 static struct mal_info_t df25xx_mal_info =
 {
-	{0, 0}, NULL, 0, 0, 0
+	{0, 0}, NULL, 0, 0, 0, &df25xx_drv
 };
 static struct dal_info_t df25xx_dal_info =
 {
@@ -137,7 +137,7 @@ ENTER_PROGRAM_MODE_HANDLER(df25xx)
 	}
 	
 	df25xx_drv_param.spi_khz = pi->frequency;
-	if (mal.init(MAL_IDX_DF25XX, &df25xx_dal_info))
+	if (mal.init(&df25xx_dal_info))
 	{
 		return VSFERR_FAIL;
 	}
@@ -152,7 +152,7 @@ LEAVE_PROGRAM_MODE_HANDLER(df25xx)
 	REFERENCE_PARAMETER(context);
 	REFERENCE_PARAMETER(success);
 	
-	mal.fini(MAL_IDX_DF25XX, &df25xx_dal_info);
+	mal.fini(&df25xx_dal_info);
 	return dal_commit();
 }
 
@@ -163,7 +163,7 @@ ERASE_TARGET_HANDLER(df25xx)
 	REFERENCE_PARAMETER(addr);
 	REFERENCE_PARAMETER(size);
 	
-	if (mal.eraseall(MAL_IDX_DF25XX, &df25xx_dal_info))
+	if (mal.eraseall(&df25xx_dal_info))
 	{
 		return VSFERR_FAIL;
 	}
@@ -184,8 +184,7 @@ WRITE_TARGET_HANDLER(df25xx)
 		}
 		size /= flash_info->page_size;
 		
-		if (mal.writeblock(MAL_IDX_DF25XX, &df25xx_dal_info,
-										addr, buff, size))
+		if (mal.writeblock(&df25xx_dal_info, addr, buff, size))
 		{
 			return VSFERR_FAIL;
 		}
@@ -203,7 +202,7 @@ READ_TARGET_HANDLER(df25xx)
 	switch (area)
 	{
 	case CHIPID_CHAR:
-		if (mal.getinfo(MAL_IDX_DF25XX, &df25xx_dal_info))
+		if (mal.getinfo(&df25xx_dal_info))
 		{
 			return VSFERR_FAIL;
 		}
@@ -219,8 +218,7 @@ READ_TARGET_HANDLER(df25xx)
 		}
 		size /= flash_info->page_size;
 		
-		if (mal.readblock(MAL_IDX_DF25XX, &df25xx_dal_info,
-										addr, buff, size))
+		if (mal.readblock(&df25xx_dal_info, addr, buff, size))
 		{
 			return VSFERR_FAIL;
 		}

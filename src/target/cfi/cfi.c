@@ -96,7 +96,7 @@ static struct cfi_drv_param_t cfi_drv_param;
 static struct cfi_drv_interface_t cfi_drv_ifs;
 static struct mal_info_t cfi_mal_info =
 {
-	{0, 0}, NULL, 0, 0, 0
+	{0, 0}, NULL, 0, 0, 0, &cfi_drv
 };
 static struct dal_info_t cfi_dal_info =
 {
@@ -136,8 +136,8 @@ ENTER_PROGRAM_MODE_HANDLER(cfi)
 	cfi_drv_param.nor_info.param.timing.data_setup_cycle_r = 
 		cfi_drv_param.nor_info.param.timing.data_setup_cycle_w = 7;
 	
-	if (mal.init(MAL_IDX_CFI, &cfi_dal_info) || 
-		mal.getinfo(MAL_IDX_CFI, &cfi_dal_info))
+	if (mal.init(&cfi_dal_info) || 
+		mal.getinfo(&cfi_dal_info))
 	{
 		return VSFERR_FAIL;
 	}
@@ -161,7 +161,7 @@ LEAVE_PROGRAM_MODE_HANDLER(cfi)
 	REFERENCE_PARAMETER(context);
 	REFERENCE_PARAMETER(success);
 	
-	mal.fini(MAL_IDX_CFI, &cfi_dal_info);
+	mal.fini(&cfi_dal_info);
 	return dal_commit();
 }
 
@@ -186,7 +186,7 @@ ERASE_TARGET_HANDLER(cfi)
 			size /= flash_info->page_size;
 		}
 		
-		if (mal.eraseblock(MAL_IDX_CFI, &cfi_dal_info, addr, size))
+		if (mal.eraseblock(&cfi_dal_info, addr, size))
 		{
 			return VSFERR_FAIL;
 		}
@@ -217,7 +217,7 @@ WRITE_TARGET_HANDLER(cfi)
 			size /= flash_info->page_size;
 		}
 		
-		if (mal.writeblock(MAL_IDX_CFI, &cfi_dal_info,addr, buff, size))
+		if (mal.writeblock(&cfi_dal_info,addr, buff, size))
 		{
 			return VSFERR_FAIL;
 		}
@@ -235,7 +235,7 @@ READ_TARGET_HANDLER(cfi)
 	switch (area)
 	{
 	case CHIPID_CHAR:
-		if (mal.getinfo(MAL_IDX_CFI, &cfi_dal_info))
+		if (mal.getinfo(&cfi_dal_info))
 		{
 			return VSFERR_FAIL;
 		}
@@ -260,7 +260,7 @@ READ_TARGET_HANDLER(cfi)
 			size /= flash_info->page_size;
 		}
 		
-		if (mal.readblock(MAL_IDX_CFI, &cfi_dal_info, addr, buff, size))
+		if (mal.readblock(&cfi_dal_info, addr, buff, size))
 		{
 			return VSFERR_FAIL;
 		}

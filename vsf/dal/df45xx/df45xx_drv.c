@@ -217,7 +217,6 @@ struct mal_driver_t df45xx_drv =
 #endif
 	},
 	
-	MAL_IDX_DF45XX,
 	0,
 	
 	df45xx_drv_init,

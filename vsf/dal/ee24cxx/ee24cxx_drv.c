@@ -172,7 +172,6 @@ struct mal_driver_t ee24cxx_drv =
 #endif
 	},
 	
-	MAL_IDX_EE24CXX,
 	MAL_SUPPORT_READBLOCK | MAL_SUPPORT_WRITEBLOCK,
 	
 	ee24cxx_drv_init,

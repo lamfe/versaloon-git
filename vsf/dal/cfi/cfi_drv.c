@@ -470,7 +470,6 @@ struct mal_driver_t cfi_drv =
 #endif
 	},
 	
-	MAL_IDX_CFI,
 	MAL_SUPPORT_READBLOCK | MAL_SUPPORT_WRITEBLOCK | MAL_SUPPORT_ERASEBLOCK,
 	
 	cfi_drv_init,
