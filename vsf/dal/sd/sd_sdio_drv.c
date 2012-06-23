@@ -640,7 +640,6 @@ struct mal_driver_t sd_sdio_drv =
 #endif
 	},
 	
-	MAL_IDX_SD_SDIO,
 	MAL_SUPPORT_READBLOCK | MAL_SUPPORT_WRITEBLOCK,
 	
 	sd_sdio_drv_init,

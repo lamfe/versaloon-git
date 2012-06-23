@@ -247,8 +247,8 @@ static vsf_err_t SCSI_io_WRITE10(struct SCSI_LUN_info_t *info, uint8_t CB[16],
 	switch (info->status.mal_opt)
 	{
 	case SCSI_MAL_OPT_INIT:
-		if (mal.writeblock_nb_start(info->mal_index, info->dal_info,
-									lba * block_size, info->status.page_num))
+		if (mal.writeblock_nb_start(info->dal_info, lba * block_size,
+									info->status.page_num))
 		{
 			info->status.page_num = 0;
 			info->status.memstat = SCSI_MEMSTAT_NOINIT;
@@ -259,8 +259,8 @@ static vsf_err_t SCSI_io_WRITE10(struct SCSI_LUN_info_t *info, uint8_t CB[16],
 		}
 		info->status.mal_opt = SCSI_MAL_OPT_IO;
 	case SCSI_MAL_OPT_IO:
-		if (mal.writeblock_nb(info->mal_index, info->dal_info,
-								(lba + cur_page) * block_size, buffer->buffer))
+		if (mal.writeblock_nb(info->dal_info, (lba + cur_page) * block_size,
+								buffer->buffer))
 		{
 			info->status.page_num = 0;
 			info->status.memstat = SCSI_MEMSTAT_NOINIT;
@@ -271,7 +271,7 @@ static vsf_err_t SCSI_io_WRITE10(struct SCSI_LUN_info_t *info, uint8_t CB[16],
 		}
 		info->status.mal_opt = SCSI_MAL_OPT_CHECKREADY;
 	case SCSI_MAL_OPT_CHECKREADY:
-		err = mal.writeblock_nb_isready(info->mal_index, info->dal_info,
+		err = mal.writeblock_nb_isready(info->dal_info,
 								(lba + cur_page) * block_size, buffer->buffer);
 		if (err)
 		{
@@ -289,7 +289,7 @@ static vsf_err_t SCSI_io_WRITE10(struct SCSI_LUN_info_t *info, uint8_t CB[16],
 		if (cur_page >= (info->status.page_num - 1))
 		{
 			info->status.page_num = 0;
-			if (mal.writeblock_nb_end(info->mal_index, info->dal_info))
+			if (mal.writeblock_nb_end(info->dal_info))
 			{
 				info->status.page_num = 0;
 				info->status.memstat = SCSI_MEMSTAT_NOINIT;
@@ -352,8 +352,8 @@ static vsf_err_t SCSI_io_READ10(struct SCSI_LUN_info_t *info, uint8_t CB[16],
 	switch (info->status.mal_opt)
 	{
 	case SCSI_MAL_OPT_INIT:
-		if (mal.readblock_nb_start(info->mal_index, info->dal_info,
-									lba * block_size, info->status.page_num))
+		if (mal.readblock_nb_start(info->dal_info, lba * block_size,
+									info->status.page_num))
 		{
 			info->status.page_num = 0;
 			info->status.memstat = SCSI_MEMSTAT_NOINIT;
@@ -364,7 +364,7 @@ static vsf_err_t SCSI_io_READ10(struct SCSI_LUN_info_t *info, uint8_t CB[16],
 		}
 		info->status.mal_opt = SCSI_MAL_OPT_CHECKREADY;
 	case SCSI_MAL_OPT_CHECKREADY:
-		err = mal.readblock_nb_isready(info->mal_index, info->dal_info,
+		err = mal.readblock_nb_isready(info->dal_info,
 								(lba + cur_page) * block_size, buffer->buffer);
 		if (err)
 		{
@@ -381,8 +381,8 @@ static vsf_err_t SCSI_io_READ10(struct SCSI_LUN_info_t *info, uint8_t CB[16],
 		}
 		info->status.mal_opt = SCSI_MAL_OPT_IO;
 	case SCSI_MAL_OPT_IO:
-		if (mal.readblock_nb(info->mal_index, info->dal_info,
-								(lba + cur_page) * block_size, buffer->buffer))
+		if (mal.readblock_nb(info->dal_info, (lba + cur_page) * block_size,
+								buffer->buffer))
 		{
 			info->status.page_num = 0;
 			info->status.memstat = SCSI_MEMSTAT_NOINIT;
@@ -394,7 +394,7 @@ static vsf_err_t SCSI_io_READ10(struct SCSI_LUN_info_t *info, uint8_t CB[16],
 		if (cur_page >= (info->status.page_num - 1))
 		{
 			info->status.page_num = 0;
-			if (mal.readblock_nb_end(info->mal_index, info->dal_info))
+			if (mal.readblock_nb_end(info->dal_info))
 			{
 				info->status.page_num = 0;
 				info->status.memstat = SCSI_MEMSTAT_NOINIT;
@@ -601,14 +601,14 @@ vsf_err_t SCSI_Poll(struct SCSI_LUN_info_t *info)
 	switch (info->status.memstat)
 	{
 	case SCSI_MEMSTAT_NOINIT:
-		err = mal.init(info->mal_index, info->dal_info);
+		err = mal.init(info->dal_info);
 		if (!err)
 		{
 			info->status.memstat = SCSI_MEMSTAT_WAITINIT;
 		}
 		break;
 	case SCSI_MEMSTAT_WAITINIT:
-		err = mal.init_isready(info->mal_index, info->dal_info);
+		err = mal.init_isready(info->dal_info);
 		if (!err)
 		{
 			info->status.memstat = SCSI_MEMSTAT_POLL;
