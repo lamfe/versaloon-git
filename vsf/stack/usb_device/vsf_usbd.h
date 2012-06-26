@@ -52,6 +52,7 @@ struct vsfusbd_ctrl_handler_t
 	struct vsfusbd_ctrl_request_t request;
 	struct vsf_transaction_buffer_t tbuffer;
 	struct vsfusbd_setup_filter_t *filter;
+	int8_t iface;
 	uint8_t ctrl_reply_buffer[2];
 };
 
@@ -129,6 +130,7 @@ struct vsfusbd_device_t
 	uint8_t num_of_configuration;
 	struct vsfusbd_config_t *config;
 	struct vsfusbd_desc_filter_t *desc_filter;
+	uint8_t device_class_iface;
 	struct interface_usbd_t *drv;
 	
 	const struct vsfusbd_user_callback_t
@@ -153,6 +155,7 @@ struct vsfusbd_device_t
 	} callback;
 	
 	// private
+	uint8_t address;
 	bool configured;
 	uint8_t configuration;
 	uint8_t feature;
@@ -166,6 +169,7 @@ vsf_err_t vsfusbd_device_get_descriptor(struct vsfusbd_device_t *device,
 		uint16_t lanid, struct vsf_buffer_t *buffer);
 
 vsf_err_t vsfusbd_device_init(struct vsfusbd_device_t *device);
+vsf_err_t vsfusbd_auto_init(struct vsfusbd_device_t *device);
 vsf_err_t vsfusbd_device_fini(struct vsfusbd_device_t *device);
 vsf_err_t vsfusbd_device_poll(struct vsfusbd_device_t *device);
 
