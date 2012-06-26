@@ -23,6 +23,7 @@ INCLUDES = \
     -I$(top_srcdir)/src/target/stm32l1 \
     -I$(top_srcdir)/src/target/lpc1000 \
     -I$(top_srcdir)/src/target/at91sam3 \
+    -I$(top_srcdir)/src/target/nuc100 \
     -I$(top_srcdir)/src/target/avr32 \
     -I$(top_srcdir)/src/target/avrxmega \
     -I$(top_srcdir)/src/target/lm3s \
@@ -74,6 +75,7 @@ libtgt_a_SOURCES = \
     stm32l1/stm32l1.c \
     lpc1000/lpc1000.c \
     at91sam3/at91sam3.c \
+    nuc100/nuc100.c \
     avr32/avr32.c \
     avrxmega/avrxmega.c \
     lm3s/lm3s.c \

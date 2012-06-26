@@ -48,7 +48,7 @@
 #include "avr8/avr8.h"
 #include "comisp/comisp.h"
 #include "svf_player/svf_player.h"
-#include "cortex-m3/cm3.h"
+#include "cortex-m/cm.h"
 #include "stm32f1/stm32f1.h"
 #include "lpc1000/lpc1000.h"
 #include "stm8/stm8.h"
@@ -66,6 +66,7 @@
 #include "cfi/cfi.h"
 #include "nand/nand.h"
 #include "stm32l1/stm32l1.h"
+#include "nuc100/nuc100.h"
 
 VSS_HANDLER(target_memory_detail);
 VSS_HANDLER(target_parameter_detail);
@@ -377,6 +378,19 @@ const struct target_info_t targets_info[] =
 		at91sam3_program_mode,				// program_mode
 		&at91sam3_program_functions,		// program_functions
 		at91sam3_notifier,					// notifier
+		NULL,								// adjust_setting
+		NULL,								// adjust_mapping
+	},
+#endif
+#if	TARGET_NUC100_EN
+	// nuc100
+	{
+		NUC100_STRING,						// name
+		AUTO_DETECT CAN_EXECUTE,			// feature
+		nuc100_program_area_map,			// program_area_map
+		nuc100_program_mode,				// program_mode
+		&nuc100_program_functions,			// program_functions
+		nuc100_notifier,					// notifier
 		NULL,								// adjust_setting
 		NULL,								// adjust_mapping
 	},
