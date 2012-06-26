@@ -90,30 +90,34 @@ static vsf_err_t vi_stm32_init(void *p)
 	struct program_info_t *pi = &program_info;
 	uint32_t mode = *(uint32_t *)p;
 	struct adi_dpif_t dp;
+	struct cm_param_t *param;
+	
+	param = cm_get_param("cm_stm32f1");
+	if (NULL == param)
+	{
+		return VSFERR_FAIL;
+	}
 	
 	switch (mode)
 	{
 	case VI_STM32_MODE_JTAG:
 		// JTAG;
 		dp.type = ADI_DP_JTAG;
-		dp.dpif_setting.dpif_jtag_setting.jtag_khz =
-			cm_chips_param[CM_PARAM_IDX_STM32F1].jtag_khz;
+		dp.dpif_setting.dpif_jtag_setting.jtag_khz = param->jtag_khz;
 		dp.dpif_setting.dpif_jtag_setting.jtag_pos.ub =
-			cm_chips_param[CM_PARAM_IDX_STM32F1].jtag_pos.ub + pi->jtag_pos.ub;
+								param->jtag_pos.ub + pi->jtag_pos.ub;
 		dp.dpif_setting.dpif_jtag_setting.jtag_pos.ua =
-			cm_chips_param[CM_PARAM_IDX_STM32F1].jtag_pos.ua + pi->jtag_pos.ua;
+								param->jtag_pos.ua + pi->jtag_pos.ua;
 		dp.dpif_setting.dpif_jtag_setting.jtag_pos.bb =
-			cm_chips_param[CM_PARAM_IDX_STM32F1].jtag_pos.bb + pi->jtag_pos.bb;
+								param->jtag_pos.bb + pi->jtag_pos.bb;
 		dp.dpif_setting.dpif_jtag_setting.jtag_pos.ba =
-			cm_chips_param[CM_PARAM_IDX_STM32F1].jtag_pos.ba + pi->jtag_pos.ba;
+								param->jtag_pos.ba + pi->jtag_pos.ba;
 		break;
 	case VI_STM32_MODE_SWD:
 		// SWD
 		dp.type = ADI_DP_SWD;
-		dp.dpif_setting.dpif_swd_setting.swd_trn =
-				cm_chips_param[CM_PARAM_IDX_STM32F1].swd_trn;
-		dp.dpif_setting.dpif_swd_setting.swd_dly =
-				cm_chips_param[CM_PARAM_IDX_STM32F1].swd_delay;
+		dp.dpif_setting.dpif_swd_setting.swd_trn = param->swd_trn;
+		dp.dpif_setting.dpif_swd_setting.swd_dly = param->swd_delay;
 		dp.dpif_setting.dpif_swd_setting.swd_retry = 0;
 		break;
 	default:

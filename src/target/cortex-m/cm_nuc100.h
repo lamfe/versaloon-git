@@ -16,12 +16,12 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#ifndef __CM_AT91SAM3_H_INCLUDED__
-#define __CM_AT91SAM3_H_INCLUDED__
+#ifndef __CM_NUC100_H_INCLUDED__
+#define __CM_NUC100_H_INCLUDED__
 
-#define AT91SAM3_IRC_KHZ			4000
+#define NUC100_IRC_KHZ				22000
 
-extern const struct program_functions_t at91sam3swj_program_functions;
+extern const struct program_functions_t nuc100swj_program_functions;
 
-#endif /* __CM_AT91SAM3_H_INCLUDED__ */
+#endif /* __CM_NUC100_H_INCLUDED__ */
 
