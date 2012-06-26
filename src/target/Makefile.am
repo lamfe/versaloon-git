@@ -47,6 +47,7 @@ libtgt_a_SOURCES = \
     cortex-m/cm_lpc1000.c \
     cortex-m/cm_at91sam3.c \
     cortex-m/cm_lm3s.c \
+    cortex-m/cm_nuc100.c \
     cortex-m/cm_common.c \
     at89s5x/at89s5x.c \
     avr8/avr8.c \
