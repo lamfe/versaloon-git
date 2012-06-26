@@ -35,7 +35,8 @@ vsf_err_t vsfusbd_device_get_descriptor(struct vsfusbd_device_t *device,
 		struct vsfusbd_desc_filter_t *filter, uint8_t type, uint8_t index, 
 		uint16_t lanid, struct vsf_buffer_t *buffer)
 {
-	while ((filter->buffer.buffer != NULL) && (filter->buffer.size != 0))
+	while (((filter->buffer.buffer != NULL) && (filter->buffer.size != 0)) || 
+			(filter->read != NULL))
 	{
 		if ((filter->type == type) && (filter->index == index) && 
 			(filter->lanid == lanid))
@@ -471,7 +472,8 @@ static vsf_err_t vsfusbd_stdreq_set_address_process(
 {
 	struct vsfusbd_ctrl_request_t *request = &device->ctrl_handler.request;
 	
-	return device->drv->set_address((uint8_t)request->value);
+	device->address = (uint8_t)request->value;
+	return device->drv->set_address(device->address);
 }
 
 static vsf_err_t vsfusbd_stdreq_get_device_descriptor_prepare(
@@ -572,36 +574,23 @@ static vsf_err_t vsfusbd_stdreq_set_configuration_prepare(
 	
 	return vsfusbd_request_prepare_0(device, buffer);
 }
+
+#if VSFUSBD_CFG_AUTOSETUP
 static vsf_err_t vsfusbd_on_OUT(void *p, uint8_t ep);
 static vsf_err_t vsfusbd_on_IN(void *p, uint8_t ep);
-static vsf_err_t vsfusbd_stdreq_set_configuration_process(
-		struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
+
+vsf_err_t vsfusbd_auto_init(struct vsfusbd_device_t *device)
 {
-	struct vsfusbd_ctrl_request_t *request = &device->ctrl_handler.request;
 	struct vsfusbd_config_t *config;
-	int16_t config_idx;
-	uint8_t i;
-#if VSFUSBD_CFG_AUTOSETUP
 	struct vsf_buffer_t desc = {NULL, 0};
 	enum usb_ep_type_t ep_type;
 	uint16_t pos;
 	uint8_t attr, feature;
 	uint16_t ep_size, ep_addr, ep_index, ep_attr;
 	int16_t cur_iface;
-#endif
-#if __VSF_DEBUG__
-	uint8_t num_iface, num_endpoint;
-#endif
 	
-	config_idx = vsfusbd_get_config(device, request->value);
-	if (config_idx < 0)
-	{
-		return VSFERR_FAIL;
-	}
-	device->configuration = (uint8_t)config_idx;
 	config = &device->config[device->configuration];
 	
-#if VSFUSBD_CFG_AUTOSETUP
 	if (vsfusbd_device_get_descriptor(device, device->desc_filter, 
 											USB_DESC_TYPE_DEVICE, 0, 0, &desc)
 #if __VSF_DEBUG__
@@ -736,7 +725,35 @@ static vsf_err_t vsfusbd_stdreq_set_configuration_process(
 		return VSFERR_FAIL;
 	}
 #endif
-#endif	// VSFUSBD_CFG_AUTOSETUP
+	return VSFERR_NONE;
+}
+#endif
+
+static vsf_err_t vsfusbd_stdreq_set_configuration_process(
+		struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
+{
+	struct vsfusbd_ctrl_request_t *request = &device->ctrl_handler.request;
+	struct vsfusbd_config_t *config;
+	int16_t config_idx;
+	uint8_t i;
+#if __VSF_DEBUG__
+	uint8_t num_iface, num_endpoint;
+#endif
+	
+	config_idx = vsfusbd_get_config(device, request->value);
+	if (config_idx < 0)
+	{
+		return VSFERR_FAIL;
+	}
+	device->configuration = (uint8_t)config_idx;
+	config = &device->config[device->configuration];
+	
+#if VSFUSBD_CFG_AUTOSETUP
+	if (vsfusbd_auto_init(device))
+	{
+		return VSFERR_FAIL;
+	}
+#endif
 	
 	// call user initialization
 	if ((config->init != NULL) && config->init(device))
@@ -936,31 +953,45 @@ static struct vsfusbd_setup_filter_t *vsfusbd_get_request_filter_do(
 }
 
 static struct vsfusbd_setup_filter_t *vsfusbd_get_request_filter(
-		struct vsfusbd_device_t *device)
+		struct vsfusbd_device_t *device, int8_t *iface)
 {
 	struct vsfusbd_ctrl_request_t *request = &device->ctrl_handler.request;
 	
 	if (USB_REQ_GET_TYPE(request->type) == USB_REQ_TYPE_STANDARD)
 	{
+		*iface = -1;
 		return vsfusbd_get_request_filter_do(device, 
 				(struct vsfusbd_setup_filter_t *)vsfusbd_standard_req_filter);
 	}
-	
-	if (USB_REQ_GET_RECP(request->type) == USB_REQ_RECP_INTERFACE)
+	else
 	{
-		uint8_t iface = request->index;
 		struct vsfusbd_config_t *config = 
 										&device->config[device->configuration];
 		
-		if ((iface >= config->num_of_ifaces) || 
-			(NULL == config->iface[iface].class_protocol))
+		if (USB_REQ_GET_RECP(request->type) == USB_REQ_RECP_INTERFACE)
 		{
+			*iface = (int8_t)request->index;
+		}
+		else if ((USB_REQ_GET_RECP(request->type) == USB_REQ_RECP_DEVICE) && 
+				(USB_REQ_GET_TYPE(request->type) == USB_REQ_TYPE_CLASS))
+		{
+			*iface = (int8_t)device->device_class_iface;
+		}
+		else
+		{
+			*iface = -1;
+			return NULL;
+		}
+		
+		if ((*iface >= config->num_of_ifaces) || 
+			(NULL == config->iface[*iface].class_protocol))
+		{
+			*iface = -1;
 			return NULL;
 		}
 		return vsfusbd_get_request_filter_do(device, 
-							config->iface[iface].class_protocol->req_filter);
+							config->iface[*iface].class_protocol->req_filter);
 	}
-	return NULL;
 }
 
 // Event handlers
@@ -1113,7 +1144,8 @@ vsf_err_t vsfusbd_on_SETUP(void *p)
 	request->index					= GET_LE_U16(&buff[4]);
 	request->length					= GET_LE_U16(&buff[6]);
 	ctrl_handler->state				= USB_CTRL_STAT_SETTING_UP;
-	ctrl_handler->filter			= vsfusbd_get_request_filter(device);
+	ctrl_handler->filter			= vsfusbd_get_request_filter(device, 
+														&ctrl_handler->iface);
 	ctrl_handler->tbuffer.position	= 0;
 	
 	if ((NULL == ctrl_handler->filter) || 

@@ -81,6 +81,7 @@ enum usb_stdreq_t
 #define USB_REQ_RECP_DEVICE			0x00
 #define USB_REQ_RECP_INTERFACE		0x01
 #define USB_REQ_RECP_ENDPOINT		0x02
+#define USB_REQ_RECP_OTHER			0x03
 #define USB_REQ_RECP_MASK			0x1F
 #define USB_REQ_GET_RECP(req)		((req) & USB_REQ_RECP_MASK)
 

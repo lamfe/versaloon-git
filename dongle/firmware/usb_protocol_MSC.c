@@ -183,7 +183,7 @@ static struct vsfusbd_config_t config0[] =
 struct vsfusbd_device_t usb_device = 
 {
 	1, (struct vsfusbd_config_t *)config0, 
-	(struct vsfusbd_desc_filter_t *)descriptors, 
+	(struct vsfusbd_desc_filter_t *)descriptors, 0, 
 	(struct interface_usbd_t *)&core_interfaces.usbd
 };
 
