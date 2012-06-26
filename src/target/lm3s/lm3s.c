@@ -38,7 +38,7 @@
 
 #include "lm3s.h"
 #include "lm3s_internal.h"
-#include "cm3.h"
+#include "cm.h"
 #include "adi_v5p1.h"
 
 #define CUR_TARGET_STRING			LM3S_STRING
@@ -82,9 +82,9 @@ VSS_HANDLER(lm3s_mode)
 	case LM3S_JTAG:
 	case LM3S_SWD:
 		lm3s_program_area_map[0].attr |= AREA_ATTR_RNP;
-		cm3_mode_offset = 0;
-		vss_call_notifier(cm3_notifier, "chip", "cm3_lm3s");
-		memcpy(&lm3s_program_functions, &cm3_program_functions,
+		cm_mode_offset = 0;
+		vss_call_notifier(cm_notifier, "chip", "cm_lm3s");
+		memcpy(&lm3s_program_functions, &cm_program_functions,
 				sizeof(lm3s_program_functions));
 		break;
 	default:

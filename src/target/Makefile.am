@@ -17,7 +17,7 @@ INCLUDES = \
     -I$(top_srcdir)/src/driver/comport \
     -I$(top_srcdir)/src/target/core/arm_adi \
     -I$(top_srcdir)/src/target/comisp \
-    -I$(top_srcdir)/src/target/cortex-m3 \
+    -I$(top_srcdir)/src/target/cortex-m \
     -I$(top_srcdir)/src/target/stm32f1 \
     -I$(top_srcdir)/src/target/stm32f2 \
     -I$(top_srcdir)/src/target/stm32l1 \
@@ -38,15 +38,15 @@ libtgt_a_SOURCES = \
     target_conf.c \
     target_data.c \
     core/arm_adi/adi_v5p1.c \
-    cortex-m3/cm3.c \
-    cortex-m3/cm3_stm32_fl.c \
-    cortex-m3/cm3_stm32f1.c \
-    cortex-m3/cm3_stm32f2.c \
-    cortex-m3/cm3_stm32l1.c \
-    cortex-m3/cm3_lpc1000.c \
-    cortex-m3/cm3_at91sam3.c \
-    cortex-m3/cm3_lm3s.c \
-    cortex-m3/cm3_common.c \
+    cortex-m/cm.c \
+    cortex-m/cm_stm32_fl.c \
+    cortex-m/cm_stm32f1.c \
+    cortex-m/cm_stm32f2.c \
+    cortex-m/cm_stm32l1.c \
+    cortex-m/cm_lpc1000.c \
+    cortex-m/cm_at91sam3.c \
+    cortex-m/cm_lm3s.c \
+    cortex-m/cm_common.c \
     at89s5x/at89s5x.c \
     avr8/avr8.c \
     avr8/avr8_hvpp.c \

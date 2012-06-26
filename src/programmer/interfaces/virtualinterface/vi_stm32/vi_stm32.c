@@ -32,8 +32,8 @@
 #include "scripts.h"
 
 #include "adi_v5p1.h"
-#include "cm3_common.h"
-#include "cm3_internal.h"
+#include "cm_common.h"
+#include "cm_internal.h"
 
 #define VI_STM32_STRING						"vi_stm32"
 
@@ -97,29 +97,29 @@ static vsf_err_t vi_stm32_init(void *p)
 		// JTAG;
 		dp.type = ADI_DP_JTAG;
 		dp.dpif_setting.dpif_jtag_setting.jtag_khz =
-			cm3_chips_param[CM3_PARAM_IDX_STM32F1].jtag_khz;
+			cm_chips_param[CM_PARAM_IDX_STM32F1].jtag_khz;
 		dp.dpif_setting.dpif_jtag_setting.jtag_pos.ub =
-			cm3_chips_param[CM3_PARAM_IDX_STM32F1].jtag_pos.ub + pi->jtag_pos.ub;
+			cm_chips_param[CM_PARAM_IDX_STM32F1].jtag_pos.ub + pi->jtag_pos.ub;
 		dp.dpif_setting.dpif_jtag_setting.jtag_pos.ua =
-			cm3_chips_param[CM3_PARAM_IDX_STM32F1].jtag_pos.ua + pi->jtag_pos.ua;
+			cm_chips_param[CM_PARAM_IDX_STM32F1].jtag_pos.ua + pi->jtag_pos.ua;
 		dp.dpif_setting.dpif_jtag_setting.jtag_pos.bb =
-			cm3_chips_param[CM3_PARAM_IDX_STM32F1].jtag_pos.bb + pi->jtag_pos.bb;
+			cm_chips_param[CM_PARAM_IDX_STM32F1].jtag_pos.bb + pi->jtag_pos.bb;
 		dp.dpif_setting.dpif_jtag_setting.jtag_pos.ba =
-			cm3_chips_param[CM3_PARAM_IDX_STM32F1].jtag_pos.ba + pi->jtag_pos.ba;
+			cm_chips_param[CM_PARAM_IDX_STM32F1].jtag_pos.ba + pi->jtag_pos.ba;
 		break;
 	case VI_STM32_MODE_SWD:
 		// SWD
 		dp.type = ADI_DP_SWD;
 		dp.dpif_setting.dpif_swd_setting.swd_trn =
-				cm3_chips_param[CM3_PARAM_IDX_STM32F1].swd_trn;
+				cm_chips_param[CM_PARAM_IDX_STM32F1].swd_trn;
 		dp.dpif_setting.dpif_swd_setting.swd_dly =
-				cm3_chips_param[CM3_PARAM_IDX_STM32F1].swd_delay;
+				cm_chips_param[CM_PARAM_IDX_STM32F1].swd_delay;
 		dp.dpif_setting.dpif_swd_setting.swd_retry = 0;
 		break;
 	default:
 		return VSFERR_FAIL;
 	}
-	if (cm3_dp_init(cur_real_interface, &dp))
+	if (cm_dp_init(cur_real_interface, &dp))
 	{
 		return VSFERR_FAIL;
 	}

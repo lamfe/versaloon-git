@@ -38,7 +38,7 @@
 
 #include "at91sam3.h"
 #include "at91sam3_internal.h"
-#include "cm3.h"
+#include "cm.h"
 #include "adi_v5p1.h"
 
 #define CUR_TARGET_STRING			AT91SAM3_STRING
@@ -85,9 +85,9 @@ VSS_HANDLER(at91sam3_mode)
 	case AT91SAM3_JTAG:
 	case AT91SAM3_SWD:
 		at91sam3_program_area_map[0].attr |= AREA_ATTR_RNP;
-		cm3_mode_offset = 0;
-		vss_call_notifier(cm3_notifier, "chip", "cm3_at91sam3");
-		memcpy(&at91sam3_program_functions, &cm3_program_functions,
+		cm_mode_offset = 0;
+		vss_call_notifier(cm_notifier, "chip", "cm_at91sam3");
+		memcpy(&at91sam3_program_functions, &cm_program_functions,
 				sizeof(at91sam3_program_functions));
 		break;
 	}
