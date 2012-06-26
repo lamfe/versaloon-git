@@ -326,13 +326,14 @@
           <state>$PROJ_DIR$\..\..\..\vsprog\driver\comport</state>
           <state>$PROJ_DIR$\..\..\..\..\..\src\target\core\arm_adi</state>
           <state>$PROJ_DIR$\..\..\..\..\..\src\target\comisp</state>
-          <state>$PROJ_DIR$\..\..\..\..\..\src\target\cortex-m3</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\src\target\cortex-m</state>
           <state>$PROJ_DIR$\..\..\..\..\..\src\target\at91sam3</state>
           <state>$PROJ_DIR$\..\..\..\..\..\src\target\lm3s</state>
           <state>$PROJ_DIR$\..\..\..\..\..\src\target\lpc1000</state>
           <state>$PROJ_DIR$\..\..\..\..\..\src\target\stm32f1</state>
           <state>$PROJ_DIR$\..\..\..\..\..\src\target\stm32f2</state>
           <state>$PROJ_DIR$\..\..\..\..\..\src\target\stm32l1</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\src\target\nuc100</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -1272,13 +1273,14 @@
           <state>$PROJ_DIR$\..\..\..\vsprog\driver\comport</state>
           <state>$PROJ_DIR$\..\..\..\..\..\src\target\core\arm_adi</state>
           <state>$PROJ_DIR$\..\..\..\..\..\src\target\comisp</state>
-          <state>$PROJ_DIR$\..\..\..\..\..\src\target\cortex-m3</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\src\target\cortex-m</state>
           <state>$PROJ_DIR$\..\..\..\..\..\src\target\at91sam3</state>
           <state>$PROJ_DIR$\..\..\..\..\..\src\target\lm3s</state>
           <state>$PROJ_DIR$\..\..\..\..\..\src\target\lpc1000</state>
           <state>$PROJ_DIR$\..\..\..\..\..\src\target\stm32f1</state>
           <state>$PROJ_DIR$\..\..\..\..\..\src\target\stm32f2</state>
           <state>$PROJ_DIR$\..\..\..\..\..\src\target\stm32l1</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\src\target\nuc100</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -2577,33 +2579,36 @@
         </group>
       </group>
       <group>
-        <name>cortex-m3</name>
+        <name>cortex-m</name>
         <file>
-          <name>$PROJ_DIR$\..\..\..\..\..\src\target\cortex-m3\cm3.c</name>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\target\cortex-m\cm.c</name>
         </file>
         <file>
-          <name>$PROJ_DIR$\..\..\..\..\..\src\target\cortex-m3\cm3_at91sam3.c</name>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\target\cortex-m\cm_at91sam3.c</name>
         </file>
         <file>
-          <name>$PROJ_DIR$\..\..\..\..\..\src\target\cortex-m3\cm3_common.c</name>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\target\cortex-m\cm_common.c</name>
         </file>
         <file>
-          <name>$PROJ_DIR$\..\..\..\..\..\src\target\cortex-m3\cm3_lm3s.c</name>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\target\cortex-m\cm_lm3s.c</name>
         </file>
         <file>
-          <name>$PROJ_DIR$\..\..\..\..\..\src\target\cortex-m3\cm3_lpc1000.c</name>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\target\cortex-m\cm_lpc1000.c</name>
         </file>
         <file>
-          <name>$PROJ_DIR$\..\..\..\..\..\src\target\cortex-m3\cm3_stm32_fl.c</name>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\target\cortex-m\cm_nuc100.c</name>
         </file>
         <file>
-          <name>$PROJ_DIR$\..\..\..\..\..\src\target\cortex-m3\cm3_stm32f1.c</name>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\target\cortex-m\cm_stm32_fl.c</name>
         </file>
         <file>
-          <name>$PROJ_DIR$\..\..\..\..\..\src\target\cortex-m3\cm3_stm32f2.c</name>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\target\cortex-m\cm_stm32f1.c</name>
         </file>
         <file>
-          <name>$PROJ_DIR$\..\..\..\..\..\src\target\cortex-m3\cm3_stm32l1.c</name>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\target\cortex-m\cm_stm32f2.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\target\cortex-m\cm_stm32l1.c</name>
         </file>
       </group>
       <group>
@@ -2673,6 +2678,12 @@
         <name>nand</name>
         <file>
           <name>$PROJ_DIR$\..\..\..\..\..\src\target\nand\nand.c</name>
+        </file>
+      </group>
+      <group>
+        <name>nuc100</name>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\target\nuc100\nuc100.c</name>
         </file>
       </group>
       <group>

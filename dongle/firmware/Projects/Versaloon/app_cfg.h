@@ -110,6 +110,7 @@
 #define TARGET_STM32F2_EN				1
 #define TARGET_STM32F4_EN				1
 #define TARGET_STM32L1_EN				1
+#define TARGET_NUC100_EN				1
 #define TARGET_SD_EN					1
 #define TARGET_CFI_EN					0
 #define TARGET_NAND_EN					0
