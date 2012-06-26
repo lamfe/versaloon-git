@@ -45,6 +45,7 @@
 #define TARGET_MSP430_EN					1
 #define TARGET_PSOC1_EN						1
 #define TARGET_STM32F1_EN					1
+#define TARGET_NUC100_EN					1
 #define TARGET_STM8_EN						1
 #define TARGET_SVF_EN						1
 #define TARGET_EE93CX6_EN					1
