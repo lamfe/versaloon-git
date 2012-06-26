@@ -42,6 +42,7 @@
 #include "cm_at91sam3.h"
 #include "cm_lm3s.h"
 #include "cm_stm32f2.h"
+#include "cm_nuc100.h"
 
 #include "cm_internal.h"
 
@@ -62,7 +63,7 @@ struct program_functions_t cm_program_functions =
 	NULL
 };
 
-const struct cm_param_t cm_chips_param[CM_PARAM_TARGET_NUM] = {
+const struct cm_param_t cm_chips_param[] = {
 	{
 		"cm_stm32f1",					// chip_name
 		STM32F1_IRC_KHZ / 6,			// jtag_khz
@@ -110,11 +111,33 @@ const struct cm_param_t cm_chips_param[CM_PARAM_TARGET_NUM] = {
 		2,								// swd_trn
 		0,								// swd_delay
 		&lm3sswj_program_functions		// program_functions
+	},
+	{
+		"cm_nuc100",					// chip_name
+		NUC100_IRC_KHZ / 6,				// jtag_khz
+		{0,0,0,0},						// jtag_pos
+		2,								// swd_trn
+		0,								// swd_delay
+		&nuc100swj_program_functions	// program_functions
 	}
 };
 static uint8_t cm_chip_index = 0;
 
 uint8_t cm_mode_offset = 0;
+
+struct cm_param_t * cm_get_param(char *chip_name)
+{
+	uint8_t i;
+	
+	for (i = 0; i < dimof(cm_chips_param); i++)
+	{
+		if (!strcmp(cm_chips_param[i].chip_name, chip_name))
+		{
+			return (struct cm_param_t *)&cm_chips_param[i];
+		}
+	}
+	return NULL;
+}
 
 VSS_HANDLER(cm_chip)
 {

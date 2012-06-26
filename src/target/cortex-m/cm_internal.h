@@ -19,15 +19,6 @@
 #ifndef __CM_INTERNAL_H_INCLUDED__
 #define __CM_INTERNAL_H_INCLUDED__
 
-#define CM_PARAM_IDX_STM32F1				0
-#define CM_PARAM_IDX_STM32F2				1
-#define CM_PARAM_IDX_STM32L1				2
-#define CM_PARAM_IDX_LPC1000				3
-#define CM_PARAM_IDX_AT91SAM3				4
-#define CM_PARAM_IDX_LM3S					5
-
-#define CM_PARAM_TARGET_NUM					6
-
 struct cm_param_t
 {
 	const char *chip_name;
@@ -38,9 +29,11 @@ struct cm_param_t
 	const struct program_functions_t *program_functions;
 };
 
-extern const struct cm_param_t cm_chips_param[CM_PARAM_TARGET_NUM];
+extern const struct cm_param_t cm_chips_param[];
 extern uint8_t cm_execute_flag;
 extern uint32_t cm_execute_addr;
+
+struct cm_param_t * cm_get_param(char *chip_name);
 
 #endif /* __CM_INTERNAL_H_INCLUDED__ */
 

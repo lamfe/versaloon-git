@@ -16,12 +16,12 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#ifndef __CM3_LPC1000_H_INCLUDED__
-#define __CM3_LPC1000_H_INCLUDED__
+#ifndef __CM_LPC1000_H_INCLUDED__
+#define __CM_LPC1000_H_INCLUDED__
 
 #define LPC1000_IRC_KHZ				4000
 
 extern const struct program_functions_t lpc1000swj_program_functions;
 
-#endif /* __CM3_LPC1000_H_INCLUDED__ */
+#endif /* __CM_LPC1000_H_INCLUDED__ */
 

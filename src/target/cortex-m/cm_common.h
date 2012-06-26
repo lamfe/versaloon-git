@@ -19,6 +19,8 @@
 #ifndef __CM_COMMON_H_INCLUDED__
 #define __CM_COMMON_H_INCLUDED__
 
+#define CM_SRAM_ADDR						0x20000000
+
 #define CM_CPUID							0xE000ED00
 
 #define CM_COREREG_R0						0

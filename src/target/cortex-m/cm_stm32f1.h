@@ -16,8 +16,8 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#ifndef __CM3_STM32F1_H_INCLUDED__
-#define __CM3_STM32F1_H_INCLUDED__
+#ifndef __CM_STM32F1_H_INCLUDED__
+#define __CM_STM32F1_H_INCLUDED__
 
 #define STM32F1_IRC_KHZ				8000
 
@@ -63,5 +63,5 @@
 
 extern const struct program_functions_t stm32f1swj_program_functions;
 
-#endif /* __CM3_STM32F1_H_INCLUDED__ */
+#endif /* __CM_STM32F1_H_INCLUDED__ */
 
