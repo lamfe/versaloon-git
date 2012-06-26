@@ -39,7 +39,7 @@
 #include "stm32f2.h"
 #include "stm32f2_internal.h"
 #include "comisp.h"
-#include "cm3.h"
+#include "cm.h"
 #include "adi_v5p1.h"
 
 struct program_area_map_t stm32f2_program_area_map[] =
@@ -98,9 +98,9 @@ VSS_HANDLER(stm32f2_mode)
 	case STM32F2_JTAG:
 	case STM32F2_SWD:
 		stm32f2_program_area_map[0].attr |= AREA_ATTR_NP;
-		cm3_mode_offset = 0;
-		vss_call_notifier(cm3_notifier, "chip", "cm3_stm32f2");
-		memcpy(&stm32f2_program_functions, &cm3_program_functions,
+		cm_mode_offset = 0;
+		vss_call_notifier(cm_notifier, "chip", "cm_stm32f2");
+		memcpy(&stm32f2_program_functions, &cm_program_functions,
 				sizeof(stm32f2_program_functions));
 		break;
 	case STM32F2_ISP:

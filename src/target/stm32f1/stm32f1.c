@@ -39,7 +39,7 @@
 #include "stm32f1.h"
 #include "stm32f1_internal.h"
 #include "comisp.h"
-#include "cm3.h"
+#include "cm.h"
 #include "adi_v5p1.h"
 
 #define CUR_TARGET_STRING			STM32F1_STRING
@@ -86,9 +86,9 @@ VSS_HANDLER(stm32f1_mode)
 	case STM32F1_JTAG:
 	case STM32F1_SWD:
 		stm32f1_program_area_map[0].attr |= AREA_ATTR_RNP;
-		cm3_mode_offset = 0;
-		vss_call_notifier(cm3_notifier, "chip", "cm3_stm32f1");
-		memcpy(&stm32f1_program_functions, &cm3_program_functions,
+		cm_mode_offset = 0;
+		vss_call_notifier(cm_notifier, "chip", "cm_stm32f1");
+		memcpy(&stm32f1_program_functions, &cm_program_functions,
 				sizeof(stm32f1_program_functions));
 		break;
 	case STM32F1_ISP:

@@ -14,7 +14,7 @@ INCLUDES = \
     -I$(top_srcdir)/src/tools/strparser \
     -I$(top_srcdir)/src/target \
     -I$(top_srcdir)/src/target/core/arm_adi \
-    -I$(top_srcdir)/src/target/cortex-m3
+    -I$(top_srcdir)/src/target/cortex-m
 
 METASOURCES = AUTO
 noinst_LIBRARIES = libprog.a

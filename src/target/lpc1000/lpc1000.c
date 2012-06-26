@@ -39,7 +39,7 @@
 #include "lpc1000.h"
 #include "lpc1000_internal.h"
 #include "comisp.h"
-#include "cm3.h"
+#include "cm.h"
 #include "adi_v5p1.h"
 
 #define CUR_TARGET_STRING			LPC1000_STRING
@@ -87,12 +87,12 @@ VSS_HANDLER(lpc1000_mode)
 	{
 	case LPC1000_JTAG:
 	case LPC1000_SWD:
-		cm3_mode_offset = 0;
-		vss_call_notifier(cm3_notifier, "chip", "cm3_lpc1000");
-		memcpy(&lpc1000_program_functions, &cm3_program_functions,
+		cm_mode_offset = 0;
+		vss_call_notifier(cm_notifier, "chip", "cm_lpc1000");
+		memcpy(&lpc1000_program_functions, &cm_program_functions,
 				sizeof(lpc1000_program_functions));
 		lpc1000_enter_program_mode_save =
-								cm3_program_functions.enter_program_mode;
+								cm_program_functions.enter_program_mode;
 		break;
 	case LPC1000_ISP:
 		vss_call_notifier(comisp_notifier, "chip", "comisp_lpcarm");

@@ -294,16 +294,16 @@
             <File Name="../../src/target/core/arm_adi/adi_v5p1.c"/>
           </VirtualDirectory>
         </VirtualDirectory>
-        <VirtualDirectory Name="cortex-m3">
-          <File Name="../../src/target/cortex-m3/cm3.c"/>
-          <File Name="../../src/target/cortex-m3/cm3_at91sam3.c"/>
-          <File Name="../../src/target/cortex-m3/cm3_common.c"/>
-          <File Name="../../src/target/cortex-m3/cm3_lm3s.c"/>
-          <File Name="../../src/target/cortex-m3/cm3_lpc1000.c"/>
-          <File Name="../../src/target/cortex-m3/cm3_stm32_fl.c"/>
-          <File Name="../../src/target/cortex-m3/cm3_stm32f1.c"/>
-          <File Name="../../src/target/cortex-m3/cm3_stm32f2.c"/>
-          <File Name="../../src/target/cortex-m3/cm3_stm32l1.c"/>
+        <VirtualDirectory Name="cortex-m">
+          <File Name="../../src/target/cortex-m/cm.c"/>
+          <File Name="../../src/target/cortex-m/cm_at91sam3.c"/>
+          <File Name="../../src/target/cortex-m/cm_common.c"/>
+          <File Name="../../src/target/cortex-m/cm_lm3s.c"/>
+          <File Name="../../src/target/cortex-m/cm_lpc1000.c"/>
+          <File Name="../../src/target/cortex-m/cm_stm32_fl.c"/>
+          <File Name="../../src/target/cortex-m/cm_stm32f1.c"/>
+          <File Name="../../src/target/cortex-m/cm_stm32f2.c"/>
+          <File Name="../../src/target/cortex-m/cm_stm32l1.c"/>
         </VirtualDirectory>
         <VirtualDirectory Name="df25xx">
           <File Name="../../src/target/df25xx/df25xx.c"/>
@@ -503,7 +503,7 @@
         <IncludePath Value="../../dongle/firmware/vsprog/driver/comport"/>
         <IncludePath Value="../../src/target/core/arm_adi"/>
         <IncludePath Value="../../src/target/comisp"/>
-        <IncludePath Value="../../src/target/cortex-m3"/>
+        <IncludePath Value="../../src/target/cortex-m"/>
         <IncludePath Value="../../src/target/at91sam3"/>
         <IncludePath Value="../../src/target/lm3s"/>
         <IncludePath Value="../../src/target/lpc1000"/>
