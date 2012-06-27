@@ -7,6 +7,8 @@
 #include "dal/sd/sd_common.h"
 #include "dal/sd/sd_spi_drv.h"
 
+uint8_t asyn_rx_buf[ASYN_DATA_BUFF_SIZE];
+
 static const uint8_t MSCBOT_DeviceDescriptor[] =
 {
 	0x12,	// bLength
@@ -131,7 +133,7 @@ static struct sd_spi_drv_interface_t sd_spi_drv_ifs =
 };
 static struct mal_info_t sd_mal_info = 
 {
-	{0, 0}, &sd_info
+	{0, 0}, &sd_info, 0, 0, 0, &sd_spi_drv
 };
 static struct dal_info_t sd_dal_info = 
 {
@@ -143,7 +145,7 @@ static struct dal_info_t sd_dal_info =
 
 struct SCSI_LUN_info_t MSCBOT_LunInfo = 
 {
-	&sd_dal_info, MAL_IDX_SD_SPI, 
+	&sd_dal_info, 
 	{
 		true,
 		{'S', 'i', 'm', 'o', 'n', ' ', ' ', ' '},
