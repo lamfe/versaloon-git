@@ -493,6 +493,18 @@ WRITE_TARGET_HANDLER(nuc100swj)
 	switch (area)
 	{
 	case APPLICATION_CHAR:
+		if (!nuc100swj_apmode)
+		{
+			if (nuc100swj_unlock() || nuc100swj_reset_to_ldrom() ||
+				nuc100swj_unlock() || nuc100swj_init_iap())
+			{
+				return VSFERR_FAIL;
+			}
+			
+			nuc100swj_apmode = true;
+			nuc100swj_ldmode = false;
+		}
+		
 		// check alignment
 		if ((size % 4) || (addr % 4))
 		{
