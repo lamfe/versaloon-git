@@ -158,11 +158,6 @@ static vsf_err_t vsfusbd_HID_GetReport_prepare(
 	}
 	return VSFERR_NONE;
 }
-static vsf_err_t vsfusbd_HID_GetReport_process(
-	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
-{
-	return VSFERR_NONE;
-}
 
 static vsf_err_t vsfusbd_HID_GetIdle_prepare(
 	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
@@ -185,11 +180,6 @@ static vsf_err_t vsfusbd_HID_GetIdle_prepare(
 	buffer->buffer = &report->idle;
 	return VSFERR_NONE;
 }
-static vsf_err_t vsfusbd_HID_GetIdle_process(
-	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
-{
-	return VSFERR_NONE;
-}
 
 static vsf_err_t vsfusbd_HID_GetProtocol_prepare(
 	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
@@ -207,11 +197,6 @@ static vsf_err_t vsfusbd_HID_GetProtocol_prepare(
 	
 	buffer->size = 1;
 	buffer->buffer = &param->protocol;
-	return VSFERR_NONE;
-}
-static vsf_err_t vsfusbd_HID_GetProtocol_process(
-	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
-{
 	return VSFERR_NONE;
 }
 
@@ -281,11 +266,6 @@ static vsf_err_t vsfusbd_HID_SetIdle_prepare(
 	buffer->buffer = &report->idle;
 	return VSFERR_NONE;
 }
-static vsf_err_t vsfusbd_HID_SetIdle_process(
-	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
-{
-	return VSFERR_NONE;
-}
 
 static vsf_err_t vsfusbd_HID_SetProtocol_prepare(
 	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
@@ -304,11 +284,6 @@ static vsf_err_t vsfusbd_HID_SetProtocol_prepare(
 	}
 	
 	param->protocol = request->value;
-	return vsfusbd_request_prepare_0(device, buffer);
-}
-static vsf_err_t vsfusbd_HID_SetProtocol_process(
-	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
-{
 	return VSFERR_NONE;
 }
 
@@ -318,19 +293,19 @@ static const struct vsfusbd_setup_filter_t vsfusbd_HID_class_setup[] =
 		USB_REQ_DIR_DTOH | USB_REQ_TYPE_CLASS | USB_REQ_RECP_INTERFACE,
 		USB_HIDREQ_GET_REPORT,
 		vsfusbd_HID_GetReport_prepare,
-		vsfusbd_HID_GetReport_process
+		NULL
 	},
 	{
 		USB_REQ_DIR_DTOH | USB_REQ_TYPE_CLASS | USB_REQ_RECP_INTERFACE,
 		USB_HIDREQ_GET_IDLE,
 		vsfusbd_HID_GetIdle_prepare,
-		vsfusbd_HID_GetIdle_process
+		NULL
 	},
 	{
 		USB_REQ_DIR_DTOH | USB_REQ_TYPE_CLASS | USB_REQ_RECP_INTERFACE,
 		USB_HIDREQ_GET_PROTOCOL,
 		vsfusbd_HID_GetProtocol_prepare,
-		vsfusbd_HID_GetProtocol_process
+		NULL
 	},
 	{
 		USB_REQ_DIR_HTOD | USB_REQ_TYPE_CLASS | USB_REQ_RECP_INTERFACE,
@@ -342,13 +317,13 @@ static const struct vsfusbd_setup_filter_t vsfusbd_HID_class_setup[] =
 		USB_REQ_DIR_HTOD | USB_REQ_TYPE_CLASS | USB_REQ_RECP_INTERFACE,
 		USB_HIDREQ_SET_IDLE,
 		vsfusbd_HID_SetIdle_prepare,
-		vsfusbd_HID_SetIdle_process
+		NULL
 	},
 	{
 		USB_REQ_DIR_HTOD | USB_REQ_TYPE_CLASS | USB_REQ_RECP_INTERFACE,
 		USB_HIDREQ_SET_PROTOCOL,
 		vsfusbd_HID_SetProtocol_prepare,
-		vsfusbd_HID_SetProtocol_process
+		NULL
 	},
 	{0, 0, NULL, NULL}
 };

@@ -480,11 +480,6 @@ static vsf_err_t vsfusbd_MSCBOT_GetMaxLun_prepare(
 	
 	return VSFERR_NONE;
 }
-static vsf_err_t vsfusbd_MSCBOT_GetMaxLun_process(
-	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
-{
-	return VSFERR_NONE;
-}
 
 static vsf_err_t vsfusbd_MSCBOT_Reset_prepare(
 	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
@@ -505,11 +500,6 @@ static vsf_err_t vsfusbd_MSCBOT_Reset_prepare(
 		return VSFERR_FAIL;
 	}
 	
-	return vsfusbd_request_prepare_0(device, buffer);
-}
-static vsf_err_t vsfusbd_MSCBOT_Reset_process(
-	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
-{
 	return VSFERR_NONE;
 }
 
@@ -519,13 +509,13 @@ static const struct vsfusbd_setup_filter_t vsfusbd_MSCBOT_class_setup[] =
 		USB_REQ_DIR_DTOH | USB_REQ_TYPE_CLASS | USB_REQ_RECP_INTERFACE,
 		USB_MSCBOTREQ_GET_MAX_LUN,
 		vsfusbd_MSCBOT_GetMaxLun_prepare,
-		vsfusbd_MSCBOT_GetMaxLun_process
+		NULL
 	},
 	{
 		USB_REQ_DIR_HTOD | USB_REQ_TYPE_CLASS | USB_REQ_RECP_INTERFACE,
 		USB_MSCBOTREQ_RESET,
 		vsfusbd_MSCBOT_Reset_prepare,
-		vsfusbd_MSCBOT_Reset_process
+		NULL
 	}
 };
 

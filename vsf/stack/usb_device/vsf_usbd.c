@@ -250,15 +250,6 @@ vsf_err_t vsfusbd_ep_out(struct vsfusbd_device_t *device, uint8_t ep,
 
 
 
-// standard request handler
-vsf_err_t vsfusbd_request_prepare_0(
-		struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
-{
-	buffer->buffer = NULL;
-	buffer->size = 0;
-	return VSFERR_NONE;
-}
-
 static vsf_err_t vsfusbd_stdreq_get_device_status_prepare(
 		struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
 {
@@ -274,11 +265,6 @@ static vsf_err_t vsfusbd_stdreq_get_device_status_prepare(
 	ctrl_handler->ctrl_reply_buffer[1] = 0;
 	buffer->buffer = ctrl_handler->ctrl_reply_buffer;
 	buffer->size = USB_STATUS_SIZE;
-	return VSFERR_NONE;
-}
-static vsf_err_t vsfusbd_stdreq_get_device_status_process(
-		struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
-{
 	return VSFERR_NONE;
 }
 
@@ -299,11 +285,6 @@ static vsf_err_t vsfusbd_stdreq_get_interface_status_prepare(
 	ctrl_handler->ctrl_reply_buffer[1] = 0;
 	buffer->buffer = ctrl_handler->ctrl_reply_buffer;
 	buffer->size = USB_STATUS_SIZE;
-	return VSFERR_NONE;
-}
-static vsf_err_t vsfusbd_stdreq_get_interface_status_process(
-		struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
-{
 	return VSFERR_NONE;
 }
 
@@ -344,11 +325,6 @@ static vsf_err_t vsfusbd_stdreq_get_endpoint_status_prepare(
 	buffer->size = USB_STATUS_SIZE;
 	return VSFERR_NONE;
 }
-static vsf_err_t vsfusbd_stdreq_get_endpoint_status_process(
-		struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
-{
-	return VSFERR_FAIL;
-}
 
 static vsf_err_t vsfusbd_stdreq_clear_device_feature_prepare(
 		struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
@@ -362,20 +338,10 @@ static vsf_err_t vsfusbd_stdreq_clear_device_feature_prepare(
 	}
 	
 	device->feature &= ~USB_CFGATTR_REMOTE_WEAKUP;
-	return vsfusbd_request_prepare_0(device, buffer);
-}
-static vsf_err_t vsfusbd_stdreq_clear_device_feature_process(
-		struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
-{	
 	return VSFERR_NONE;
 }
 
 static vsf_err_t vsfusbd_stdreq_clear_interface_feature_prepare(
-		struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
-{
-	return vsfusbd_request_prepare_0(device, buffer);
-}
-static vsf_err_t vsfusbd_stdreq_clear_interface_feature_process(
 		struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
 {
 	return VSFERR_NONE;
@@ -404,11 +370,6 @@ static vsf_err_t vsfusbd_stdreq_clear_endpoint_feature_prepare(
 		device->drv->ep.reset_OUT_toggle(ep_num);
 		device->drv->ep.set_OUT_state(ep_num, USB_EP_STAT_ACK);
 	}
-	return vsfusbd_request_prepare_0(device, buffer);
-}
-static vsf_err_t vsfusbd_stdreq_clear_endpoint_feature_process(
-		struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
-{
 	return VSFERR_NONE;
 }
 
@@ -424,31 +385,16 @@ static vsf_err_t vsfusbd_stdreq_set_device_feature_prepare(
 	}
 	
 	device->feature |= USB_CFGATTR_REMOTE_WEAKUP;
-	return vsfusbd_request_prepare_0(device, buffer);
-}
-static vsf_err_t vsfusbd_stdreq_set_device_feature_process(
-		struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
-{
 	return VSFERR_NONE;
 }
 
 static vsf_err_t vsfusbd_stdreq_set_interface_feature_prepare(
 		struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
 {
-	return vsfusbd_request_prepare_0(device, buffer);
-}
-static vsf_err_t vsfusbd_stdreq_set_interface_feature_process(
-		struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
-{
 	return VSFERR_NONE;
 }
 
 static vsf_err_t vsfusbd_stdreq_set_endpoint_feature_prepare(
-		struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
-{
-	return VSFERR_FAIL;
-}
-static vsf_err_t vsfusbd_stdreq_set_endpoint_feature_process(
 		struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
 {
 	return VSFERR_FAIL;
@@ -465,7 +411,7 @@ static vsf_err_t vsfusbd_stdreq_set_address_prepare(
 		return VSFERR_FAIL;
 	}
 	
-	return vsfusbd_request_prepare_0(device, buffer);
+	return VSFERR_NONE;
 }
 static vsf_err_t vsfusbd_stdreq_set_address_process(
 		struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
@@ -485,11 +431,6 @@ static vsf_err_t vsfusbd_stdreq_get_device_descriptor_prepare(
 	
 	return vsfusbd_device_get_descriptor(device, device->desc_filter, type, 
 											index, lanid, buffer);
-}
-static vsf_err_t vsfusbd_stdreq_get_device_descriptor_process(
-		struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
-{
-	return VSFERR_NONE;
 }
 
 static vsf_err_t vsfusbd_stdreq_get_interface_descriptor_prepare(
@@ -517,11 +458,6 @@ static vsf_err_t vsfusbd_stdreq_get_interface_descriptor_prepare(
 	}
 	return VSFERR_NONE;
 }
-static vsf_err_t vsfusbd_stdreq_get_interface_descriptor_process(
-		struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
-{
-	return VSFERR_NONE;
-}
 
 static vsf_err_t vsfusbd_stdreq_get_configuration_prepare(
 		struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
@@ -538,11 +474,6 @@ static vsf_err_t vsfusbd_stdreq_get_configuration_prepare(
 					device->config[device->configuration].configuration_value;
 	buffer->buffer = ctrl_handler->ctrl_reply_buffer;
 	buffer->size = USB_CONFIGURATION_SIZE;
-	return VSFERR_NONE;
-}
-static vsf_err_t vsfusbd_stdreq_get_configuration_process(
-		struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
-{
 	return VSFERR_NONE;
 }
 
@@ -572,7 +503,7 @@ static vsf_err_t vsfusbd_stdreq_set_configuration_prepare(
 		return VSFERR_FAIL;
 	}
 	
-	return vsfusbd_request_prepare_0(device, buffer);
+	return VSFERR_NONE;
 }
 
 #if VSFUSBD_CFG_AUTOSETUP
@@ -796,11 +727,6 @@ static vsf_err_t vsfusbd_stdreq_get_interface_prepare(
 	buffer->size = USB_ALTERNATE_SETTING_SIZE;
 	return VSFERR_NONE;
 }
-static vsf_err_t vsfusbd_stdreq_get_interface_process(
-		struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
-{
-	return VSFERR_NONE;
-}
 
 static vsf_err_t vsfusbd_stdreq_set_interface_prepare(
 		struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
@@ -816,11 +742,6 @@ static vsf_err_t vsfusbd_stdreq_set_interface_prepare(
 	}
 	
 	config->iface[iface_idx].alternate_setting = alternate_setting;
-	return vsfusbd_request_prepare_0(device, buffer);
-}
-static vsf_err_t vsfusbd_stdreq_set_interface_process(
-		struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
-{
 	return VSFERR_NONE;
 }
 
@@ -831,57 +752,57 @@ static const struct vsfusbd_setup_filter_t vsfusbd_standard_req_filter[] =
 		USB_REQ_DIR_DTOH | USB_REQ_TYPE_STANDARD | USB_REQ_RECP_DEVICE,
 		USB_REQ_GET_STATUS,
 		vsfusbd_stdreq_get_device_status_prepare,
-		vsfusbd_stdreq_get_device_status_process
+		NULL
 	},
 	{
 		USB_REQ_DIR_DTOH | USB_REQ_TYPE_STANDARD | USB_REQ_RECP_INTERFACE,
 		USB_REQ_GET_STATUS,
 		vsfusbd_stdreq_get_interface_status_prepare,
-		vsfusbd_stdreq_get_interface_status_process
+		NULL
 	},
 	{
 		USB_REQ_DIR_DTOH | USB_REQ_TYPE_STANDARD | USB_REQ_RECP_ENDPOINT,
 		USB_REQ_GET_STATUS,
 		vsfusbd_stdreq_get_endpoint_status_prepare,
-		vsfusbd_stdreq_get_endpoint_status_process
+		NULL
 	},
 	// USB_REQ_CLEAR_FEATURE
 	{
 		USB_REQ_DIR_HTOD | USB_REQ_TYPE_STANDARD | USB_REQ_RECP_DEVICE,
 		USB_REQ_CLEAR_FEATURE,
 		vsfusbd_stdreq_clear_device_feature_prepare,
-		vsfusbd_stdreq_clear_device_feature_process
+		NULL
 	},
 	{
 		USB_REQ_DIR_HTOD | USB_REQ_TYPE_STANDARD | USB_REQ_RECP_INTERFACE,
 		USB_REQ_CLEAR_FEATURE,
 		vsfusbd_stdreq_clear_interface_feature_prepare,
-		vsfusbd_stdreq_clear_interface_feature_process
+		NULL
 	},
 	{
 		USB_REQ_DIR_HTOD | USB_REQ_TYPE_STANDARD | USB_REQ_RECP_ENDPOINT,
 		USB_REQ_CLEAR_FEATURE,
 		vsfusbd_stdreq_clear_endpoint_feature_prepare,
-		vsfusbd_stdreq_clear_endpoint_feature_process
+		NULL
 	},
 	// USB_REQ_SET_FEATURE
 	{
 		USB_REQ_DIR_HTOD | USB_REQ_TYPE_STANDARD | USB_REQ_RECP_DEVICE,
 		USB_REQ_SET_FEATURE,
 		vsfusbd_stdreq_set_device_feature_prepare,
-		vsfusbd_stdreq_set_device_feature_process
+		NULL
 	},
 	{
 		USB_REQ_DIR_HTOD | USB_REQ_TYPE_STANDARD | USB_REQ_RECP_INTERFACE,
 		USB_REQ_SET_FEATURE,
 		vsfusbd_stdreq_set_interface_feature_prepare,
-		vsfusbd_stdreq_set_interface_feature_process
+		NULL
 	},
 	{
 		USB_REQ_DIR_HTOD | USB_REQ_TYPE_STANDARD | USB_REQ_RECP_ENDPOINT,
 		USB_REQ_SET_FEATURE,
 		vsfusbd_stdreq_set_endpoint_feature_prepare,
-		vsfusbd_stdreq_set_endpoint_feature_process
+		NULL
 	},
 	// USB_REQ_SET_ADDRESS
 	{
@@ -895,13 +816,13 @@ static const struct vsfusbd_setup_filter_t vsfusbd_standard_req_filter[] =
 		USB_REQ_DIR_DTOH | USB_REQ_TYPE_STANDARD | USB_REQ_RECP_DEVICE,
 		USB_REQ_GET_DESCRIPTOR,
 		vsfusbd_stdreq_get_device_descriptor_prepare,
-		vsfusbd_stdreq_get_device_descriptor_process
+		NULL
 	},
 	{
 		USB_REQ_DIR_DTOH | USB_REQ_TYPE_STANDARD | USB_REQ_RECP_INTERFACE,
 		USB_REQ_GET_DESCRIPTOR,
 		vsfusbd_stdreq_get_interface_descriptor_prepare,
-		vsfusbd_stdreq_get_interface_descriptor_process
+		NULL
 	},
 	// USB_REQ_SET_DESCRIPTOR, not supported
 	// USB_REQ_GET_CONFIGURATION
@@ -909,7 +830,7 @@ static const struct vsfusbd_setup_filter_t vsfusbd_standard_req_filter[] =
 		USB_REQ_DIR_DTOH | USB_REQ_TYPE_STANDARD | USB_REQ_RECP_DEVICE,
 		USB_REQ_GET_CONFIGURATION,
 		vsfusbd_stdreq_get_configuration_prepare,
-		vsfusbd_stdreq_get_configuration_process
+		NULL
 	},
 	// USB_REQ_SET_CONFIGURATION
 	{
@@ -923,14 +844,14 @@ static const struct vsfusbd_setup_filter_t vsfusbd_standard_req_filter[] =
 		USB_REQ_DIR_DTOH | USB_REQ_TYPE_STANDARD | USB_REQ_RECP_INTERFACE,
 		USB_REQ_GET_INTERFACE,
 		vsfusbd_stdreq_get_interface_prepare,
-		vsfusbd_stdreq_get_interface_process
+		NULL
 	},
 	// USB_REQ_SET_INTERFACE
 	{
 		USB_REQ_DIR_HTOD | USB_REQ_TYPE_STANDARD | USB_REQ_RECP_INTERFACE,
 		USB_REQ_SET_INTERFACE,
 		vsfusbd_stdreq_set_interface_prepare,
-		vsfusbd_stdreq_set_interface_process
+		NULL
 	},
 	{0, 0, NULL, NULL}
 };
@@ -940,7 +861,7 @@ static struct vsfusbd_setup_filter_t *vsfusbd_get_request_filter_do(
 {
 	struct vsfusbd_ctrl_request_t *request = &device->ctrl_handler.request;
 	
-	while (list->process != NULL)
+	while ((list->prepare != NULL) || (list->process != NULL))
 	{
 		if ((list->type == request->type) && 
 			(list->request == request->request))
@@ -1049,7 +970,8 @@ static vsf_err_t vsfusbd_on_IN0(struct vsfusbd_device_t *device)
 		return vsfusbd_config_ep(device->drv, 0, USB_EP_STAT_NACK, 
 									USB_EP_STAT_ACK);
 	case USB_CTRL_STAT_WAIT_STATUS_IN:
-		if (ctrl_handler->filter->process(device, &tbuffer->buffer))
+		if ((ctrl_handler->filter->process != NULL) && 
+			ctrl_handler->filter->process(device, &tbuffer->buffer))
 		{
 			err = VSFERR_FAIL;
 			break;
@@ -1101,7 +1023,8 @@ static vsf_err_t vsfusbd_on_OUT0(struct vsfusbd_device_t *device)
 	case USB_CTRL_STAT_WAIT_STATUS_OUT:
 		cur_pkg_size = device->drv->ep.get_OUT_count(0);
 		if ((cur_pkg_size != 0) || 
-			(ctrl_handler->filter->process(device, &tbuffer->buffer)))
+			((ctrl_handler->filter->process != NULL) && 
+			 (ctrl_handler->filter->process(device, &tbuffer->buffer))))
 		{
 			err = VSFERR_FAIL;
 			break;
@@ -1147,10 +1070,12 @@ vsf_err_t vsfusbd_on_SETUP(void *p)
 	ctrl_handler->filter			= vsfusbd_get_request_filter(device, 
 														&ctrl_handler->iface);
 	ctrl_handler->tbuffer.position	= 0;
+	buffer->size					= 0;
+	buffer->buffer					= 0;
 	
 	if ((NULL == ctrl_handler->filter) || 
-		(NULL == ctrl_handler->filter->prepare) || 
-		ctrl_handler->filter->prepare(device, buffer) || 
+		((ctrl_handler->filter->prepare != NULL) && 
+			ctrl_handler->filter->prepare(device, buffer)) || 
 		(buffer->size && (NULL == buffer->buffer)))
 	{
 		err = VSFERR_FAIL;
