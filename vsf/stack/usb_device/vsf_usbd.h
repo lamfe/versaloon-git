@@ -162,8 +162,6 @@ struct vsfusbd_device_t
 	struct vsfusbd_ctrl_handler_t ctrl_handler;
 };
 
-vsf_err_t vsfusbd_request_prepare_0(
-		struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer);
 vsf_err_t vsfusbd_device_get_descriptor(struct vsfusbd_device_t *device, 
 		struct vsfusbd_desc_filter_t *filter, uint8_t type, uint8_t index, 
 		uint16_t lanid, struct vsf_buffer_t *buffer);
