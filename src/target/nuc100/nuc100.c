@@ -54,7 +54,6 @@ struct program_area_map_t nuc100_program_area_map[] =
 
 const struct program_mode_t nuc100_program_mode[] =
 {
-	{'j', SET_FREQUENCY, IFS_JTAG_HL},
 	{'s', "", IFS_SWD},
 	{0, NULL, 0}
 };
@@ -81,7 +80,6 @@ VSS_HANDLER(nuc100_mode)
 	mode = (uint8_t)strtoul(argv[1], NULL,0);
 	switch (mode)
 	{
-	case NUC100_JTAG:
 	case NUC100_SWD:
 		nuc100_program_area_map[0].attr |= AREA_ATTR_RNP;
 		cm_mode_offset = 0;
