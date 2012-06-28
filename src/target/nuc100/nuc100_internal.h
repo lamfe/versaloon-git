@@ -20,8 +20,7 @@
 #ifndef __NUC100_INTERNAL_H_INCLUDED__
 #define __NUC100_INTERNAL_H_INCLUDED__
 
-#define NUC100_JTAG						0
-#define NUC100_SWD						1
+#define NUC100_SWD						0
 
 #define NUC100_REG_GCR_BA				0x50000000
 #define NUC100_REG_PDID					(NUC100_REG_GCR_BA + 0x00)
