@@ -94,35 +94,6 @@ struct mal_t
 };
 
 extern struct mal_t mal;
-extern struct mal_driver_t mal_empty_drv;
-
-#if DAL_EE93CX6_EN
-#	include "../ee93cx6/ee93cx6_drv.h"
-#endif
-#if DAL_EE24CXX_EN
-#	include "../ee24cxx/ee24cxx_drv.h"
-#endif
-#if DAL_DF25XX_EN
-#	include "../df25xx/df25xx_drv.h"
-#endif
-#if DAL_DF45XX_EN
-#	include "../df45xx/df45xx_drv.h"
-#endif
-#if DAL_SD_SPI_EN || DAL_SD_SDIO_EN
-#	include "../sd/sd_common.h"
-#endif
-#if DAL_SD_SPI_EN
-#	include "../sd/sd_spi_drv.h"
-#endif
-#if DAL_SD_SDIO_EN
-#	include "../sd/sd_sdio_drv.h"
-#endif
-#if DAL_CFI_EN
-#	include "../cfi/cfi_drv.h"
-#endif
-#if DAL_NAND_EN
-#	include "../nand/nand_drv.h"
-#endif
 
 #endif	// __MAL_H_INCLUDED__
 
