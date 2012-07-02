@@ -147,6 +147,16 @@ uint32_t stm32_usbd_get_frame_number(void)
 	return GetFNR() & 0x7FF;
 }
 
+vsf_err_t stm32_usbd_get_setup(uint8_t *buffer)
+{
+	if (USB_SETUP_PKG_SIZE != stm32_usbd_ep_get_OUT_count(0))
+	{
+		return VSFERR_FAIL;
+	}
+	
+	return stm32_usbd_ep_read_OUT_buffer(0, buffer, USB_SETUP_PKG_SIZE);
+}
+
 vsf_err_t stm32_usbd_prepare_buffer(void)
 {
 	EP_Cfg_Ptr = 0x200;
