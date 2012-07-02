@@ -139,6 +139,8 @@ struct vsfusbd_device_t
 		vsf_err_t (*fini)(void);
 		vsf_err_t (*poll)(void);
 		
+		void (*on_ATTACH)(void);
+		void (*on_DETACH)(void);
 		void (*on_RESET)(void);
 		void (*on_ERROR)(enum usb_err_type_t type);
 		void (*on_WAKEUP)(void);

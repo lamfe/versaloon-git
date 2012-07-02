@@ -915,7 +915,6 @@ static struct vsfusbd_setup_filter_t *vsfusbd_get_request_filter(
 	}
 }
 
-// Event handlers
 static vsf_err_t vsfusbd_config_ep(struct interface_usbd_t *drv, uint8_t ep, 
 		enum usb_ep_state_t in_state, enum usb_ep_state_t out_state)
 {
@@ -1055,8 +1054,7 @@ vsf_err_t vsfusbd_on_SETUP(void *p)
 	
 	if (vsfusbd_config_ep(device->drv, 0, USB_EP_STAT_NACK,
 							USB_EP_STAT_NACK) || 
-		(USB_SETUP_PKG_SIZE != device->drv->ep.get_OUT_count(0)) || 
-		device->drv->ep.read_OUT_buffer(0, buff, USB_SETUP_PKG_SIZE))
+		device->drv->get_setup(buff))
 	{
 		err = VSFERR_FAIL;
 		goto exit;
@@ -1311,6 +1309,28 @@ vsf_err_t vsfusbd_on_SOF(void *p)
 	if (device->callback.on_SOF != NULL)
 	{
 		device->callback.on_SOF();
+	}
+	return VSFERR_NONE;
+}
+
+vsf_err_t vsfusbd_on_ATTACH(void *p)
+{
+	struct vsfusbd_device_t *device = p;
+	
+	if (device->callback.on_ATTACH != NULL)
+	{
+		device->callback.on_ATTACH();
+	}
+	return VSFERR_NONE;
+}
+
+vsf_err_t vsfusbd_on_DETACH(void *p)
+{
+	struct vsfusbd_device_t *device = p;
+	
+	if (device->callback.on_DETACH != NULL)
+	{
+		device->callback.on_DETACH();
 	}
 	return VSFERR_NONE;
 }

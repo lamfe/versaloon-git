@@ -24,6 +24,8 @@ typedef vsf_err_t (*vsfusbd_EP_hanlder_t)(void *p, uint8_t ep);
 typedef vsfusbd_EP_hanlder_t vsfusbd_IN_hanlder_t;
 typedef vsfusbd_EP_hanlder_t vsfusbd_OUT_hanlder_t;
 
+vsf_err_t vsfusbd_on_ATTACH(void *p);
+vsf_err_t vsfusbd_on_DETACH(void *p);
 vsf_err_t vsfusbd_on_SETUP(void *p);
 vsf_err_t vsfusbd_on_UNDERFLOW(void *p, uint8_t ep);
 vsf_err_t vsfusbd_on_OVERFLOW(void *p, uint8_t ep);
