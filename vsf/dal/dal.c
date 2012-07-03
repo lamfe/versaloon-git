@@ -59,7 +59,7 @@
 #endif
 
 #if DAL_CFI_EN
-#include "dal/cfi/cfg_drv.h"
+#include "dal/cfi/cfi_drv.h"
 #endif
 
 #if DAL_NAND_EN
