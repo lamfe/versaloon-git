@@ -34,6 +34,38 @@
 #include "nrf24l01/nrf24l01_drv.h"
 #endif
 
+#if DAL_EE93CX6_EN
+#include "dal/ee93cx6/ee93cx6_drv.h"
+#endif
+
+#if DAL_EE24CXX_EN
+#include "dal/ee24cxx/ee24cxx_drv.h"
+#endif
+
+#if DAL_DF25XX_EN
+#include "dal/df25xx/df25xx_drv.h"
+#endif
+
+#if DAL_DF45XX_EN
+#include "dal/df45xx/df45xx_drv.h"
+#endif
+
+#if DAL_SD_SPI_EN
+#include "dal/sd/sd_spi_drv.h"
+#endif
+
+#if DAL_SD_SDIO_EN
+#include "dal/sd/sd_sdio_drv.h"
+#endif
+
+#if DAL_CFI_EN
+#include "dal/cfi/cfg_drv.h"
+#endif
+
+#if DAL_NAND_EN
+#include "dal/nand/nand_drv.h"
+#endif
+
 struct dal_driver_t *dal_drivers[] = 
 {
 #if DAL_EE93CX6_EN
