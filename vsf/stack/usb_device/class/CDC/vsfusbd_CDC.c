@@ -37,7 +37,7 @@ static vsf_err_t vsfusbd_CDCData_OUT_hanlder(void *p, uint8_t ep)
 	device->drv->ep.read_OUT_buffer(ep, buffer, pkg_size);
 	if (param->cdc_out_enable)
 	{
-		device->drv->ep.set_OUT_state(ep, USB_EP_STAT_ACK);
+		device->drv->ep.enable_OUT(ep);
 	}
 	
 	if (vsf_fifo_get_avail_length(&param->usart_stream->fifo_tx) < ep_size)
@@ -85,7 +85,6 @@ static vsf_err_t vsfusbd_CDCData_IN_hanlder(void *p, uint8_t ep)
 	{
 		device->drv->ep.set_IN_count(ep, 0);
 	}
-	device->drv->ep.set_IN_state(ep, USB_EP_STAT_ACK);
 	
 	return VSFERR_NONE;
 }
@@ -103,7 +102,6 @@ static vsf_err_t vsfusbd_CDCData_class_init(uint8_t iface,
 		device->drv->ep.set_IN_handler(param->ep_in,
 										vsfusbd_CDCData_IN_hanlder) || 
 		device->drv->ep.set_IN_count(param->ep_in, 0) || 
-		device->drv->ep.set_IN_state(param->ep_in, USB_EP_STAT_ACK) || 
 		device->drv->ep.set_OUT_handler(param->ep_out,
 										vsfusbd_CDCData_OUT_hanlder))
 	{
@@ -181,7 +179,7 @@ static vsf_err_t vsfusbd_CDCData_class_poll(uint8_t iface,
 		if (vsf_fifo_get_avail_length(&param->usart_stream->fifo_tx) >= ep_size)
 		{
 			param->cdc_out_enable = true;
-			device->drv->ep.set_OUT_state(param->ep_out, USB_EP_STAT_ACK);
+			device->drv->ep.enable_OUT(param->ep_out);
 		}
 	}
 	if (param->usart_stream->usart_index != IFS_DUMMY_PORT)

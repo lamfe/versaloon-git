@@ -29,7 +29,7 @@ static vsf_err_t Versaloon_OUT_hanlder(void *p, uint8_t ep)
 	device->drv->ep.switch_OUT_buffer(ep);
 	pkg_len = device->drv->ep.get_OUT_count(ep);
 	device->drv->ep.read_OUT_buffer(ep, buffer_out + count_out, pkg_len);
-	device->drv->ep.set_OUT_state(ep, USB_EP_STAT_ACK);
+	device->drv->ep.enable_OUT(ep);
 	
 	if(pkg_len)
 	{
