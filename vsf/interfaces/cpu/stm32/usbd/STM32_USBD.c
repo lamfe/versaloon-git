@@ -40,8 +40,10 @@ vsfusbd_IN_hanlder_t stm32_usbd_IN_handlers[STM32_USBD_EP_NUM];
 vsfusbd_OUT_hanlder_t stm32_usbd_OUT_handlers[STM32_USBD_EP_NUM];
 uint16_t stm32_usbd_IN_epsize[STM32_USBD_EP_NUM];
 uint16_t stm32_usbd_OUT_epsize[STM32_USBD_EP_NUM];
+#if VSFUSBD_CFG_DBUFFER_EN
 bool stm32_usbd_IN_dbuffer[STM32_USBD_EP_NUM];
 bool stm32_usbd_OUT_dbuffer[STM32_USBD_EP_NUM];
+#endif
 int8_t stm32_usbd_epaddr[STM32_USBD_EP_NUM];
 
 vsf_err_t stm32_usbd_init(void *device)
@@ -52,8 +54,10 @@ vsf_err_t stm32_usbd_init(void *device)
 	memset(stm32_usbd_OUT_handlers, 0, sizeof(stm32_usbd_OUT_handlers));
 	memset(stm32_usbd_IN_epsize, 0, sizeof(stm32_usbd_IN_epsize));
 	memset(stm32_usbd_OUT_epsize, 0, sizeof(stm32_usbd_OUT_epsize));
+#if VSFUSBD_CFG_DBUFFER_EN
 	memset(stm32_usbd_IN_dbuffer, 0, sizeof(stm32_usbd_IN_dbuffer));
 	memset(stm32_usbd_OUT_dbuffer, 0, sizeof(stm32_usbd_OUT_dbuffer));
+#endif
 	memset(stm32_usbd_epaddr, -1, sizeof(stm32_usbd_epaddr));
 	USBD_Device = device;
 	
@@ -237,31 +241,6 @@ vsf_err_t stm32_usbd_ep_set_type(uint8_t idx, enum usb_ep_type_t type)
 	return VSFERR_NONE;
 }
 
-enum usb_ep_type_t stm32_usbd_ep_get_type(uint8_t idx)
-{
-	int8_t index;
-	
-	index = stm32_usbd_ep(idx);
-	if (index < 0)
-	{
-		return USB_EP_TYPE_CONTROL;
-	}
-	idx = (uint8_t)index;
-	
-	switch (GetEPType(idx))
-	{
-	default:
-	case EP_CONTROL:
-		return USB_EP_TYPE_CONTROL;
-	case EP_INTERRUPT:
-		return USB_EP_TYPE_INTERRUPT;
-	case EP_BULK:
-		return USB_EP_TYPE_BULK;
-	case EP_ISOCHRONOUS:
-		return USB_EP_TYPE_ISO;
-	}
-}
-
 vsf_err_t stm32_usbd_ep_set_IN_handler(uint8_t idx, vsfusbd_IN_hanlder_t handler)
 {
 	int8_t index;
@@ -276,6 +255,7 @@ vsf_err_t stm32_usbd_ep_set_IN_handler(uint8_t idx, vsfusbd_IN_hanlder_t handler
 	return VSFERR_NONE;
 }
 
+#if VSFUSBD_CFG_DBUFFER_EN
 vsf_err_t stm32_usbd_ep_set_IN_dbuffer(uint8_t idx)
 {
 	uint16_t epsize = stm32_usbd_ep_get_IN_epsize(idx);
@@ -312,7 +292,7 @@ bool stm32_usbd_ep_is_IN_dbuffer(uint8_t idx)
 	index = stm32_usbd_ep(idx);
 	if (index < 0)
 	{
-		return VSFERR_FAIL;
+		return false;
 	}
 	idx = (uint8_t)index;
 	return stm32_usbd_IN_dbuffer[idx];
@@ -331,6 +311,7 @@ vsf_err_t stm32_usbd_ep_switch_IN_buffer(uint8_t idx)
 	FreeUserBuffer(idx, EP_DBUF_IN);
 	return VSFERR_NONE;
 }
+#endif
 
 vsf_err_t stm32_usbd_ep_set_IN_epsize(uint8_t idx, uint16_t epsize)
 {
@@ -352,6 +333,7 @@ vsf_err_t stm32_usbd_ep_set_IN_epsize(uint8_t idx, uint16_t epsize)
 	stm32_usbd_IN_epsize[idx] = epsize;
 	SetEPTxCount(idx, epsize);
 	SetEPTxAddr(idx, EP_Cfg_Ptr);
+	SetEPTxStatus(idx, EP_TX_NAK);
 	return VSFERR_NONE;
 }
 
@@ -368,6 +350,49 @@ uint16_t stm32_usbd_ep_get_IN_epsize(uint8_t idx)
 	return stm32_usbd_IN_epsize[idx];
 }
 
+vsf_err_t stm32_usbd_ep_set_IN_stall(uint8_t idx)
+{
+	int8_t index;
+	
+	index = stm32_usbd_ep(idx);
+	if (index < 0)
+	{
+		return VSFERR_FAIL;
+	}
+	idx = (uint8_t)index;
+	SetEPTxStatus(idx, EP_TX_STALL);
+	return VSFERR_NONE;
+}
+
+vsf_err_t stm32_usbd_ep_clear_IN_stall(uint8_t idx)
+{
+	int8_t index;
+	
+	index = stm32_usbd_ep(idx);
+	if (index < 0)
+	{
+		return VSFERR_FAIL;
+	}
+	idx = (uint8_t)index;
+	SetEPTxStatus(idx, EP_TX_NAK);
+	return VSFERR_NONE;
+}
+
+bool stm32_usbd_ep_is_IN_stall(uint8_t idx)
+{
+	int8_t index;
+	
+	index = stm32_usbd_ep(idx);
+	if (index < 0)
+	{
+		return false;
+	}
+	idx = (uint8_t)index;
+	
+	return (EP_TX_STALL == GetEPTxStatus(idx));
+}
+
+#if VSFUSBD_CFG_DATATOGGLE_CTRL
 vsf_err_t stm32_usbd_ep_reset_IN_toggle(uint8_t idx)
 {
 	int8_t index;
@@ -395,62 +420,8 @@ vsf_err_t stm32_usbd_ep_toggle_IN_toggle(uint8_t idx)
 	ToggleDTOG_TX(idx);
 	return VSFERR_NONE;
 }
+#endif
 
-vsf_err_t stm32_usbd_ep_set_IN_state(uint8_t idx, enum usb_ep_state_t state)
-{
-	int8_t index;
-	
-	index = stm32_usbd_ep(idx);
-	if (index < 0)
-	{
-		return VSFERR_FAIL;
-	}
-	idx = (uint8_t)index;
-	
-	switch (state)
-	{
-	case USB_EP_STAT_STALL:
-		SetEPTxStatus(idx, EP_TX_STALL);
-		break;
-	case USB_EP_STAT_ACK:
-		SetEPTxStatus(idx, EP_TX_VALID);
-		break;
-	case USB_EP_STAT_NACK:
-		SetEPTxStatus(idx, EP_TX_NAK);
-		break;
-	case USB_EP_STAT_DIS:
-		SetEPTxStatus(idx, EP_TX_DIS);
-		break;
-	default:
-		return VSFERR_INVALID_PARAMETER;
-	}
-	return VSFERR_NONE;
-}
-
-enum usb_ep_state_t stm32_usbd_ep_get_IN_state(uint8_t idx)
-{
-	int8_t index;
-	
-	index = stm32_usbd_ep(idx);
-	if (index < 0)
-	{
-		return USB_EP_STAT_STALL;
-	}
-	idx = (uint8_t)index;
-	
-	switch (GetEPTxStatus(idx))
-	{
-	default:
-	case EP_TX_DIS:
-		return USB_EP_STAT_DIS;
-	case EP_TX_NAK:
-		return USB_EP_STAT_NACK;
-	case EP_TX_VALID:
-		return USB_EP_STAT_ACK;
-	case EP_TX_STALL:
-		return USB_EP_STAT_STALL;
-	}
-}
 
 vsf_err_t stm32_usbd_ep_set_IN_count(uint8_t idx, uint16_t size)
 {
@@ -463,6 +434,7 @@ vsf_err_t stm32_usbd_ep_set_IN_count(uint8_t idx, uint16_t size)
 	}
 	idx = (uint8_t)index;
 	
+#if VSFUSBD_CFG_DBUFFER_EN
 	if (stm32_usbd_IN_dbuffer[idx])
 	{
 		if(GetENDPOINT(idx) & EP_DTOG_RX)
@@ -475,9 +447,11 @@ vsf_err_t stm32_usbd_ep_set_IN_count(uint8_t idx, uint16_t size)
 		}
 	}
 	else
+#endif
 	{
 		SetEPTxCount(idx, size);
 	}
+	SetEPTxStatus(idx, EP_TX_VALID);
 	return VSFERR_NONE;
 }
 
@@ -493,6 +467,7 @@ vsf_err_t stm32_usbd_ep_write_IN_buffer(uint8_t idx, uint8_t *buffer, uint16_t s
 	}
 	idx = (uint8_t)index;
 	
+#if VSFUSBD_CFG_DBUFFER_EN
 	if (stm32_usbd_IN_dbuffer[idx])
 	{
 		if(GetENDPOINT(idx) & EP_DTOG_RX)
@@ -505,6 +480,7 @@ vsf_err_t stm32_usbd_ep_write_IN_buffer(uint8_t idx, uint8_t *buffer, uint16_t s
 		}
 	}
 	else
+#endif
 	{
 		PMA_ptr = GetEPTxAddr(idx);
 	}
@@ -526,6 +502,7 @@ vsf_err_t stm32_usbd_ep_set_OUT_handler(uint8_t idx, vsfusbd_OUT_hanlder_t handl
 	return VSFERR_NONE;
 }
 
+#if VSFUSBD_CFG_DBUFFER_EN
 vsf_err_t stm32_usbd_ep_set_OUT_dbuffer(uint8_t idx)
 {
 	uint16_t epsize = stm32_usbd_ep_get_OUT_epsize(idx);
@@ -563,7 +540,7 @@ bool stm32_usbd_ep_is_OUT_dbuffer(uint8_t idx)
 	index = stm32_usbd_ep(idx);
 	if (index < 0)
 	{
-		return VSFERR_FAIL;
+		return false;
 	}
 	idx = (uint8_t)index;
 	return stm32_usbd_OUT_dbuffer[idx];
@@ -582,9 +559,11 @@ vsf_err_t stm32_usbd_ep_switch_OUT_buffer(uint8_t idx)
 	FreeUserBuffer(idx, EP_DBUF_OUT);
 	return VSFERR_NONE;
 }
+#endif
 
 vsf_err_t stm32_usbd_ep_set_OUT_epsize(uint8_t idx, uint16_t epsize)
 {
+	bool ep0;
 	int8_t index;
 	
 	index = stm32_usbd_ep(idx);
@@ -592,6 +571,7 @@ vsf_err_t stm32_usbd_ep_set_OUT_epsize(uint8_t idx, uint16_t epsize)
 	{
 		return VSFERR_FAIL;
 	}
+	ep0 = 0 == idx;
 	idx = (uint8_t)index;
 	
 	if ((epsize & 0x0007) || ((EP_Cfg_Ptr - epsize) < STM32_USBD_EP_NUM * 8))
@@ -603,6 +583,14 @@ vsf_err_t stm32_usbd_ep_set_OUT_epsize(uint8_t idx, uint16_t epsize)
 	stm32_usbd_OUT_epsize[idx] = epsize;
 	SetEPRxCount(idx, epsize);
 	SetEPRxAddr(idx, EP_Cfg_Ptr);
+	if (ep0)
+	{
+		SetEPRxStatus(idx, EP_RX_VALID);
+	}
+	else
+	{
+		SetEPRxStatus(idx, EP_RX_NAK);
+	}
 	return VSFERR_NONE;
 }
 
@@ -619,6 +607,58 @@ uint16_t stm32_usbd_ep_get_OUT_epsize(uint8_t idx)
 	return stm32_usbd_OUT_epsize[idx];
 }
 
+vsf_err_t stm32_usbd_ep_set_OUT_stall(uint8_t idx)
+{
+	int8_t index;
+	
+	index = stm32_usbd_ep(idx);
+	if (index < 0)
+	{
+		return VSFERR_FAIL;
+	}
+	idx = (uint8_t)index;
+	SetEPRxStatus(idx, EP_RX_STALL);
+	return VSFERR_NONE;
+}
+
+vsf_err_t stm32_usbd_ep_clear_OUT_stall(uint8_t idx)
+{
+	int8_t index;
+	bool ep0;
+	
+	index = stm32_usbd_ep(idx);
+	ep0 = 0 == idx;
+	if (index < 0)
+	{
+		return VSFERR_FAIL;
+	}
+	idx = (uint8_t)index;
+	if (ep0)
+	{
+		SetEPRxStatus(idx, EP_RX_VALID);
+	}
+	else
+	{
+		SetEPRxStatus(idx, EP_RX_NAK);
+	}
+	return VSFERR_NONE;
+}
+
+bool stm32_usbd_ep_is_OUT_stall(uint8_t idx)
+{
+	int8_t index;
+	
+	index = stm32_usbd_ep(idx);
+	if (index < 0)
+	{
+		return false;
+	}
+	idx = (uint8_t)index;
+	
+	return (EP_RX_STALL == GetEPRxStatus(idx));
+}
+
+#if VSFUSBD_CFG_DATATOGGLE_CTRL
 vsf_err_t stm32_usbd_ep_reset_OUT_toggle(uint8_t idx)
 {
 	int8_t index;
@@ -646,62 +686,7 @@ vsf_err_t stm32_usbd_ep_toggle_OUT_toggle(uint8_t idx)
 	ToggleDTOG_RX(idx);
 	return VSFERR_NONE;
 }
-
-vsf_err_t stm32_usbd_ep_set_OUT_state(uint8_t idx, enum usb_ep_state_t state)
-{
-	int8_t index;
-	
-	index = stm32_usbd_ep(idx);
-	if (index < 0)
-	{
-		return VSFERR_FAIL;
-	}
-	idx = (uint8_t)index;
-	
-	switch (state)
-	{
-	case USB_EP_STAT_STALL:
-		SetEPRxStatus(idx, EP_RX_STALL);
-		break;
-	case USB_EP_STAT_ACK:
-		SetEPRxStatus(idx, EP_RX_VALID);
-		break;
-	case USB_EP_STAT_NACK:
-		SetEPRxStatus(idx, EP_RX_NAK);
-		break;
-	case USB_EP_STAT_DIS:
-		SetEPRxStatus(idx, EP_RX_DIS);
-		break;
-	default:
-		return VSFERR_INVALID_PARAMETER;
-	}
-	return VSFERR_NONE;
-}
-
-enum usb_ep_state_t stm32_usbd_ep_get_OUT_state(uint8_t idx)
-{
-	int8_t index;
-	
-	index = stm32_usbd_ep(idx);
-	if (index < 0)
-	{
-		return USB_EP_STAT_STALL;
-	}
-	idx = (uint8_t)index;
-	
-	switch (GetEPRxStatus(idx))
-	{
-	default:
-	case EP_RX_DIS:
-		return USB_EP_STAT_DIS;
-	case EP_RX_NAK:
-		return USB_EP_STAT_NACK;
-	case EP_RX_VALID:
-		return USB_EP_STAT_ACK;
-	case EP_RX_STALL:
-		return USB_EP_STAT_STALL;
-	}
-}
+#endif
 
 uint16_t stm32_usbd_ep_get_OUT_count(uint8_t idx)
 {
@@ -714,6 +699,7 @@ uint16_t stm32_usbd_ep_get_OUT_count(uint8_t idx)
 	}
 	idx = (uint8_t)index;
 	
+#if VSFUSBD_CFG_DBUFFER_EN
 	if (stm32_usbd_OUT_dbuffer[idx])
 	{
 		if(GetENDPOINT(idx) & EP_DTOG_TX)
@@ -726,6 +712,7 @@ uint16_t stm32_usbd_ep_get_OUT_count(uint8_t idx)
 		}
 	}
 	else
+#endif
 	{
 		return GetEPRxCount(idx);
 	}
@@ -742,6 +729,7 @@ vsf_err_t stm32_usbd_ep_read_OUT_buffer(uint8_t idx, uint8_t *buffer, uint16_t s
 	}
 	idx = (uint8_t)index;
 	
+#if VSFUSBD_CFG_DBUFFER_EN
 	if (stm32_usbd_OUT_dbuffer[idx])
 	{
 		if(GetENDPOINT(idx) & EP_DTOG_TX)
@@ -754,12 +742,27 @@ vsf_err_t stm32_usbd_ep_read_OUT_buffer(uint8_t idx, uint8_t *buffer, uint16_t s
 		}
 	}
 	else
+#endif
 	{
 		PMAToUserBufferCopy(buffer, GetEPRxAddr(idx), size);
 	}
 	return VSFERR_NONE;
 }
 
+vsf_err_t stm32_usbd_ep_enable_OUT(uint8_t idx)
+{
+	int8_t index;
+	
+	index = stm32_usbd_ep(idx);
+	if (index < 0)
+	{
+		return VSFERR_FAIL;
+	}
+	idx = (uint8_t)index;
+	
+	SetEPRxStatus(idx, EP_RX_VALID);
+	return VSFERR_NONE;
+}
 
 
 
