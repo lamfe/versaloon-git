@@ -6,14 +6,14 @@
 #include "stack/usb_device/vsf_usbd_drv_callback.h"
 #include "tool/buffer/buffer.h"
 
-#include "vsfusbd_CDC.h"
+#include "vsfusbd_CDCACM.h"
 
-static vsf_err_t vsfusbd_CDCData_OUT_hanlder(void *p, uint8_t ep)
+static vsf_err_t vsfusbd_CDCACMData_OUT_hanlder(void *p, uint8_t ep)
 {
 	struct vsfusbd_device_t *device = p;
 	struct vsfusbd_config_t *config = &device->config[device->configuration];
 	int8_t iface = config->ep_OUT_iface_map[ep];
-	struct vsfusbd_CDC_param_t *param = NULL;
+	struct vsfusbd_CDCACM_param_t *param = NULL;
 	uint16_t pkg_size, ep_size;
 	uint8_t buffer[64];
 	struct vsf_buffer_t tx_buffer;
@@ -22,7 +22,7 @@ static vsf_err_t vsfusbd_CDCData_OUT_hanlder(void *p, uint8_t ep)
 	{
 		return VSFERR_FAIL;
 	}
-	param = (struct vsfusbd_CDC_param_t *)config->iface[iface].protocol_param;
+	param = (struct vsfusbd_CDCACM_param_t *)config->iface[iface].protocol_param;
 	if (NULL == param)
 	{
 		return VSFERR_FAIL;
@@ -35,26 +35,26 @@ static vsf_err_t vsfusbd_CDCData_OUT_hanlder(void *p, uint8_t ep)
 		return VSFERR_FAIL;
 	}
 	device->drv->ep.read_OUT_buffer(ep, buffer, pkg_size);
-	if (param->cdc_out_enable)
+	if (param->cdcacm_out_enable)
 	{
 		device->drv->ep.enable_OUT(ep);
 	}
 	
 	if (vsf_fifo_get_avail_length(&param->usart_stream->fifo_tx) < ep_size)
 	{
-		param->cdc_out_enable = false;
+		param->cdcacm_out_enable = false;
 	}
 	tx_buffer.buffer= buffer;
 	tx_buffer.size = pkg_size;
 	return usart_stream_tx(param->usart_stream, &tx_buffer);
 }
 
-static vsf_err_t vsfusbd_CDCData_IN_hanlder(void *p, uint8_t ep)
+static vsf_err_t vsfusbd_CDCACMData_IN_hanlder(void *p, uint8_t ep)
 {
 	struct vsfusbd_device_t *device = p;
 	struct vsfusbd_config_t *config = &device->config[device->configuration];
 	int8_t iface = config->ep_IN_iface_map[ep];
-	struct vsfusbd_CDC_param_t *param = NULL;
+	struct vsfusbd_CDCACM_param_t *param = NULL;
 	uint16_t pkg_size;
 	uint8_t buffer[64];
 	uint32_t rx_data_length;
@@ -64,7 +64,7 @@ static vsf_err_t vsfusbd_CDCData_IN_hanlder(void *p, uint8_t ep)
 	{
 		return VSFERR_FAIL;
 	}
-	param = (struct vsfusbd_CDC_param_t *)config->iface[iface].protocol_param;
+	param = (struct vsfusbd_CDCACM_param_t *)config->iface[iface].protocol_param;
 	if (NULL == param)
 	{
 		return VSFERR_FAIL;
@@ -89,25 +89,25 @@ static vsf_err_t vsfusbd_CDCData_IN_hanlder(void *p, uint8_t ep)
 	return VSFERR_NONE;
 }
 
-static vsf_err_t vsfusbd_CDCData_class_init(uint8_t iface, 
+static vsf_err_t vsfusbd_CDCACMData_class_init(uint8_t iface, 
 											struct vsfusbd_device_t *device)
 {
 	struct vsfusbd_config_t *config = &device->config[device->configuration];
-	struct vsfusbd_CDC_param_t *param = 
-			(struct vsfusbd_CDC_param_t *)config->iface[iface].protocol_param;
+	struct vsfusbd_CDCACM_param_t *param = 
+			(struct vsfusbd_CDCACM_param_t *)config->iface[iface].protocol_param;
 	uint8_t port;
 	uint32_t pin;
 	
 	if ((NULL == param) || 
 		device->drv->ep.set_IN_handler(param->ep_in,
-										vsfusbd_CDCData_IN_hanlder) || 
+										vsfusbd_CDCACMData_IN_hanlder) || 
 		device->drv->ep.set_IN_count(param->ep_in, 0) || 
 		device->drv->ep.set_OUT_handler(param->ep_out,
-										vsfusbd_CDCData_OUT_hanlder))
+										vsfusbd_CDCACMData_OUT_hanlder))
 	{
 		return VSFERR_FAIL;
 	}
-	param->cdc_out_enable = false;
+	param->cdcacm_out_enable = false;
 	
 	if (param->gpio_rts_enable)
 	{
@@ -161,24 +161,24 @@ static vsf_err_t vsfusbd_CDCData_class_init(uint8_t iface,
 	return usart_stream_config(param->usart_stream);
 }
 
-static vsf_err_t vsfusbd_CDCData_class_poll(uint8_t iface, 
+static vsf_err_t vsfusbd_CDCACMData_class_poll(uint8_t iface, 
 											struct vsfusbd_device_t *device)
 {
 	struct vsfusbd_config_t *config = &device->config[device->configuration];
-	struct vsfusbd_CDC_param_t *param = 
-			(struct vsfusbd_CDC_param_t *)config->iface[iface].protocol_param;
+	struct vsfusbd_CDCACM_param_t *param = 
+			(struct vsfusbd_CDCACM_param_t *)config->iface[iface].protocol_param;
 	
 	if (NULL == param)
 	{
 		return VSFERR_FAIL;
 	}
 	
-	if (!param->cdc_out_enable)
+	if (!param->cdcacm_out_enable)
 	{
 		uint16_t ep_size = device->drv->ep.get_OUT_epsize(param->ep_out);
 		if (vsf_fifo_get_avail_length(&param->usart_stream->fifo_tx) >= ep_size)
 		{
-			param->cdc_out_enable = true;
+			param->cdcacm_out_enable = true;
 			device->drv->ep.enable_OUT(param->ep_out);
 		}
 	}
@@ -189,14 +189,14 @@ static vsf_err_t vsfusbd_CDCData_class_poll(uint8_t iface,
 	return VSFERR_NONE;
 }
 
-static vsf_err_t vsfusbd_CDCMaster_GetLineCoding_prepare(
+static vsf_err_t vsfusbd_CDCACMMaster_GetLineCoding_prepare(
 	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
 {
 	struct vsfusbd_ctrl_request_t *request = &device->ctrl_handler.request;
 	uint8_t iface = request->index;
 	struct vsfusbd_config_t *config = &device->config[device->configuration];
-	struct vsfusbd_CDC_param_t *param = 
-			(struct vsfusbd_CDC_param_t *)config->iface[iface].protocol_param;
+	struct vsfusbd_CDCACM_param_t *param = 
+			(struct vsfusbd_CDCACM_param_t *)config->iface[iface].protocol_param;
 	
 	if ((NULL == param) || (request->length != 7) || (request->value != 0))
 	{
@@ -213,14 +213,14 @@ static vsf_err_t vsfusbd_CDCMaster_GetLineCoding_prepare(
 	return VSFERR_NONE;
 }
 
-static vsf_err_t vsfusbd_CDCMaster_SetLineCoding_prepare(
+static vsf_err_t vsfusbd_CDCACMMaster_SetLineCoding_prepare(
 	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
 {
 	struct vsfusbd_ctrl_request_t *request = &device->ctrl_handler.request;
 	uint8_t iface = request->index;
 	struct vsfusbd_config_t *config = &device->config[device->configuration];
-	struct vsfusbd_CDC_param_t *param = 
-			(struct vsfusbd_CDC_param_t *)config->iface[iface].protocol_param;
+	struct vsfusbd_CDCACM_param_t *param = 
+			(struct vsfusbd_CDCACM_param_t *)config->iface[iface].protocol_param;
 	
 	if ((NULL == param) || (request->length != 7) || (request->value != 0))
 	{
@@ -231,14 +231,14 @@ static vsf_err_t vsfusbd_CDCMaster_SetLineCoding_prepare(
 	buffer->size = 7;
 	return VSFERR_NONE;
 }
-static vsf_err_t vsfusbd_CDCMaster_SetLineCoding_process(
+static vsf_err_t vsfusbd_CDCACMMaster_SetLineCoding_process(
 	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
 {
 	struct vsfusbd_ctrl_request_t *request = &device->ctrl_handler.request;
 	uint8_t iface = request->index;
 	struct vsfusbd_config_t *config = &device->config[device->configuration];
-	struct vsfusbd_CDC_param_t *param = 
-			(struct vsfusbd_CDC_param_t *)config->iface[iface].protocol_param;
+	struct vsfusbd_CDCACM_param_t *param = 
+			(struct vsfusbd_CDCACM_param_t *)config->iface[iface].protocol_param;
 	
 	param->line_coding.bitrate = GET_LE_U32(&buffer->buffer[0]);
 	param->line_coding.stopbittype = buffer->buffer[4];
@@ -280,19 +280,19 @@ static vsf_err_t vsfusbd_CDCMaster_SetLineCoding_process(
 	return usart_stream_config(param->usart_stream);
 }
 
-static vsf_err_t vsfusbd_CDCMaster_SetControlLineState_prepare(
+static vsf_err_t vsfusbd_CDCACMMaster_SetControlLineState_prepare(
 	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
 {
 	struct vsfusbd_ctrl_request_t *request = &device->ctrl_handler.request;
 	uint8_t iface = request->index;
 	struct vsfusbd_config_t *config = &device->config[device->configuration];
-	struct vsfusbd_CDC_param_t *param = 
-			(struct vsfusbd_CDC_param_t *)config->iface[iface].protocol_param;
+	struct vsfusbd_CDCACM_param_t *param = 
+			(struct vsfusbd_CDCACM_param_t *)config->iface[iface].protocol_param;
 	uint8_t port;
 	uint32_t pin;
 	
 	if ((NULL == param) || (request->length != 0) || 
-		(request->value & ~USBCDC_CONTROLLINE_MASK))
+		(request->value & ~USBCDCACM_CONTROLLINE_MASK))
 	{
 		return VSFERR_FAIL;
 	}
@@ -301,7 +301,7 @@ static vsf_err_t vsfusbd_CDCMaster_SetControlLineState_prepare(
 	{
 		port = param->gpio_dtr_port;
 		pin = param->gpio_dtr_pin;
-		if (request->value & USBCDC_CONTROLLINE_DTR)
+		if (request->value & USBCDCACM_CONTROLLINE_DTR)
 		{
 			core_interfaces.gpio.out(port, pin, pin);
 		}
@@ -314,7 +314,7 @@ static vsf_err_t vsfusbd_CDCMaster_SetControlLineState_prepare(
 	{
 		port = param->gpio_rts_port;
 		pin = param->gpio_rts_pin;
-		if (request->value & USBCDC_CONTROLLINE_RTS)
+		if (request->value & USBCDCACM_CONTROLLINE_RTS)
 		{
 			core_interfaces.gpio.out(port, pin, pin);
 		}
@@ -327,7 +327,7 @@ static vsf_err_t vsfusbd_CDCMaster_SetControlLineState_prepare(
 	return VSFERR_NONE;
 }
 
-static vsf_err_t vsfusbd_CDCMaster_SendBreak_prepare(
+static vsf_err_t vsfusbd_CDCACMMaster_SendBreak_prepare(
 	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
 {
 	struct vsfusbd_ctrl_request_t *request = &device->ctrl_handler.request;
@@ -340,45 +340,45 @@ static vsf_err_t vsfusbd_CDCMaster_SendBreak_prepare(
 	return VSFERR_NONE;
 }
 
-static const struct vsfusbd_setup_filter_t vsfusbd_CDCMaster_class_setup[] = 
+static const struct vsfusbd_setup_filter_t vsfusbd_CDCACMMaster_class_setup[] = 
 {
 	{
 		USB_REQ_DIR_DTOH | USB_REQ_TYPE_CLASS | USB_REQ_RECP_INTERFACE,
-		USB_CDCREQ_GET_LINE_CODING,
-		vsfusbd_CDCMaster_GetLineCoding_prepare,
+		USB_CDCACMREQ_GET_LINE_CODING,
+		vsfusbd_CDCACMMaster_GetLineCoding_prepare,
 		NULL
 	},
 	{
 		USB_REQ_DIR_HTOD | USB_REQ_TYPE_CLASS | USB_REQ_RECP_INTERFACE,
-		USB_CDCREQ_SET_LINE_CODING,
-		vsfusbd_CDCMaster_SetLineCoding_prepare,
-		vsfusbd_CDCMaster_SetLineCoding_process
+		USB_CDCACMREQ_SET_LINE_CODING,
+		vsfusbd_CDCACMMaster_SetLineCoding_prepare,
+		vsfusbd_CDCACMMaster_SetLineCoding_process
 	},
 	{
 		USB_REQ_DIR_HTOD | USB_REQ_TYPE_CLASS | USB_REQ_RECP_INTERFACE,
-		USB_CDCREQ_SET_CONTROL_LINE_STATE,
-		vsfusbd_CDCMaster_SetControlLineState_prepare,
+		USB_CDCACMREQ_SET_CONTROL_LINE_STATE,
+		vsfusbd_CDCACMMaster_SetControlLineState_prepare,
 		NULL
 	},
 	{
 		USB_REQ_DIR_HTOD | USB_REQ_TYPE_CLASS | USB_REQ_RECP_INTERFACE,
-		USB_CDCREQ_SEND_BREAK,
-		vsfusbd_CDCMaster_SendBreak_prepare,
+		USB_CDCACMREQ_SEND_BREAK,
+		vsfusbd_CDCACMMaster_SendBreak_prepare,
 		NULL
 	}
 };
 
-const struct vsfusbd_class_protocol_t vsfusbd_CDCMaster_class = 
+const struct vsfusbd_class_protocol_t vsfusbd_CDCACMMaster_class = 
 {
 	NULL, NULL,
-	(struct vsfusbd_setup_filter_t *)vsfusbd_CDCMaster_class_setup,
+	(struct vsfusbd_setup_filter_t *)vsfusbd_CDCACMMaster_class_setup,
 	
 	NULL, NULL, NULL
 };
 
-const struct vsfusbd_class_protocol_t vsfusbd_CDCData_class = 
+const struct vsfusbd_class_protocol_t vsfusbd_CDCACMData_class = 
 {
 	NULL, NULL, NULL,
 	
-	vsfusbd_CDCData_class_init, NULL, vsfusbd_CDCData_class_poll
+	vsfusbd_CDCACMData_class_init, NULL, vsfusbd_CDCACMData_class_poll
 };

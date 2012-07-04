@@ -2057,7 +2057,7 @@
   <group>
     <name>usb_protocol</name>
     <file>
-      <name>$PROJ_DIR$\..\..\..\usb_protocol_CDC.c</name>
+      <name>$PROJ_DIR$\..\..\..\usb_protocol_CDCACM.c</name>
       <excluded>
         <configuration>Debug</configuration>
         <configuration>Release</configuration>
@@ -2432,7 +2432,7 @@
           <group>
             <name>CDC</name>
             <file>
-              <name>$PROJ_DIR$\..\..\..\..\..\vsf\stack\usb_device\class\CDC\vsfusbd_CDC.c</name>
+              <name>$PROJ_DIR$\..\..\..\..\..\vsf\stack\usb_device\class\CDC\vsfusbd_CDCACM.c</name>
             </file>
           </group>
           <group>
