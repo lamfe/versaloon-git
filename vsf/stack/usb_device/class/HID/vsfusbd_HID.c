@@ -52,9 +52,14 @@ static struct vsfusbd_HID_report_t* vsfusbd_HID_find_report_by_type_id(
 }
 
 static vsf_err_t vsfusbd_HID_class_update_report(
-		struct vsfusbd_HID_report_t *report)
+		struct vsfusbd_HID_report_t *report, struct vsf_buffer_t *temp_buffer)
 {
-	if (report->type == USB_HID_REPORT_TYPE_OUTPUT)
+	if ((NULL == report) || (NULL == temp_buffer))
+	{
+		return VSFERR_FAIL;
+	}
+	
+	if (report->type == USB_HID_REPORT_TYPE_INPUT)
 	{
 		uint32_t size = report->buffer.size;
 		
@@ -63,6 +68,7 @@ static vsf_err_t vsfusbd_HID_class_update_report(
 			return VSFERR_FAIL;
 		}
 		
+		memcpy(temp_buffer->buffer, report->buffer.buffer, size);
 		report->lock = true;
 		if (report->on_set_get_report(report->type, &report->buffer))
 		{
@@ -70,7 +76,6 @@ static vsf_err_t vsfusbd_HID_class_update_report(
 			return VSFERR_FAIL;
 		}
 		report->lock = false;
-		memcpy(report->stable_buffer.buffer, report->buffer.buffer, size);
 	}
 	return VSFERR_NONE;
 }
@@ -95,10 +100,8 @@ static vsf_err_t vsfusbd_HID_class_poll(uint8_t iface,
 		uint8_t ep = param->ep_in;
 		struct vsf_buffer_t *buffer = &report->buffer;
 		
-		if ((param->reports[i].type == USB_HID_REPORT_TYPE_OUTPUT) && 
-			((	(NULL == report->on_set_get_report) || 
-				(report->buffer.size != report->stable_buffer.size) || 
-				vsfusbd_HID_class_update_report(report))))
+		if ((report->type == USB_HID_REPORT_TYPE_INPUT) && 
+			(vsfusbd_HID_class_update_report(report, &param->temp_buffer)))
 		{
 			return VSFERR_FAIL;
 		}
@@ -146,14 +149,13 @@ static vsf_err_t vsfusbd_HID_GetReport_prepare(
 		return VSFERR_FAIL;
 	}
 	
+	buffer->size = report->buffer.size;
 	if (report->lock)
 	{
-		buffer->size = report->stable_buffer.size;
-		buffer->buffer = report->stable_buffer.buffer;
+		buffer->buffer = param->temp_buffer.buffer;
 	}
 	else
 	{
-		buffer->size = report->buffer.size;
 		buffer->buffer = report->buffer.buffer;
 	}
 	return VSFERR_NONE;
