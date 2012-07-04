@@ -31,21 +31,30 @@ enum usb_HID_report_type_t
 {
 	USB_HID_REPORT_OUTPUT,
 	USB_HID_REPORT_INPUT,
+	USB_HID_REPORT_FEATURE,
 };
 
 struct vsfusbd_HID_report_t
 {
-	uint8_t type;
+	enum usb_HID_report_type_t type;
 	uint8_t id;
 	uint8_t idle;
 	struct vsf_buffer_t buffer;
-	vsf_err_t (*on_set_get_report)(uint8_t id, struct vsf_buffer_t *buffer);
+	vsf_err_t (*on_set_get_report)(struct vsfusbd_HID_report_t *report);
 	// no need to initialize below by user
 	bool lock;
+	uint32_t pos;
+	uint8_t idle_cnt;
 };
 
 #define VSFUSBD_DESC_HID_REPORT(ptr, size, func)			\
 	{USB_HIDDESC_TYPE_REPORT, 0, 0, {(uint8_t*)(ptr), (size)}, (func)}
+
+enum vsfusbd_HID_output_state_t
+{
+	HID_OUTPUT_STATE_WAIT,
+	HID_OUTPUT_STATE_RECEIVING,
+};
 
 struct vsfusbd_HID_param_t
 {
@@ -60,6 +69,12 @@ struct vsfusbd_HID_param_t
 	struct vsf_buffer_t temp_buffer;
 	// no need to initialize below by user
 	uint8_t protocol;
+	enum vsfusbd_HID_output_state_t output_state;
+	uint8_t num_of_INPUT_report;
+	uint8_t num_of_OUTPUT_report;
+	uint8_t num_of_FEATURE_report;
+	uint8_t current_output_report_id;
+	uint8_t poll_report_idx;
 };
 
 #endif	// __VSFUSBD_HID_H_INCLUDED__
