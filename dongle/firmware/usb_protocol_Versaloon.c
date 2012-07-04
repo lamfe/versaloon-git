@@ -532,9 +532,9 @@ static const struct vsfusbd_class_protocol_t Versaloon_Protocol =
 };
 
 #if SCRIPTS_EN
-// CDC for vss
+// CDCACM for vss
 extern struct usart_stream_info_t shell_stream;
-struct vsfusbd_CDC_param_t Versaloon_Shell_param = 
+struct vsfusbd_CDCACM_param_t Versaloon_Shell_param = 
 {
 	&shell_stream,
 				// usart_stream
@@ -610,9 +610,9 @@ struct vsfusbd_MSCBOT_param_t MSCBOT_param =
 #endif
 #endif
 
-// CDC
+// CDCACM
 extern struct usart_stream_info_t usart_stream_p0;
-struct vsfusbd_CDC_param_t Versaloon_CDC_param = 
+struct vsfusbd_CDCACM_param_t Versaloon_CDCACM_param = 
 {
 	&usart_stream_p0,
 				// usart_stream
@@ -640,11 +640,11 @@ struct vsfusbd_CDC_param_t Versaloon_CDC_param =
 static struct vsfusbd_iface_t ifaces[] = 
 {
 	{(struct vsfusbd_class_protocol_t *)&Versaloon_Protocol, NULL},
-	{(struct vsfusbd_class_protocol_t *)&vsfusbd_CDCMaster_class, (void *)&Versaloon_CDC_param},
-	{(struct vsfusbd_class_protocol_t *)&vsfusbd_CDCData_class, (void *)&Versaloon_CDC_param},
+	{(struct vsfusbd_class_protocol_t *)&vsfusbd_CDCACMMaster_class, (void *)&Versaloon_CDCACM_param},
+	{(struct vsfusbd_class_protocol_t *)&vsfusbd_CDCACMData_class, (void *)&Versaloon_CDCACM_param},
 #if SCRIPTS_EN
-	{(struct vsfusbd_class_protocol_t *)&vsfusbd_CDCMaster_class, (void *)&Versaloon_Shell_param},
-	{(struct vsfusbd_class_protocol_t *)&vsfusbd_CDCData_class, (void *)&Versaloon_Shell_param},
+	{(struct vsfusbd_class_protocol_t *)&vsfusbd_CDCACMMaster_class, (void *)&Versaloon_Shell_param},
+	{(struct vsfusbd_class_protocol_t *)&vsfusbd_CDCACMData_class, (void *)&Versaloon_Shell_param},
 #if MSC_ON_VERSALOON_EN
 	{(struct vsfusbd_class_protocol_t *)&vsfusbd_MSCBOT_class, (void *)&MSCBOT_param},
 #endif

@@ -2230,7 +2230,7 @@
           <group>
             <name>CDC</name>
             <file>
-              <name>$PROJ_DIR$\..\..\..\..\..\..\vsf\stack\usb_device\class\CDC\vsfusbd_CDC.c</name>
+              <name>$PROJ_DIR$\..\..\..\..\..\..\vsf\stack\usb_device\class\CDC\vsfusbd_CDCACM.c</name>
             </file>
           </group>
           <group>

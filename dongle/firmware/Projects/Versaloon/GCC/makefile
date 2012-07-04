@@ -234,7 +234,7 @@ endif
 
 #VSF stack
 USR_SRCS+= $(VSFDIR)/stack/usb_device/vsf_usbd.c \
-  $(VSFDIR)/stack/usb_device/class/CDC/vsfusbd_CDC.c \
+  $(VSFDIR)/stack/usb_device/class/CDC/vsfusbd_CDCACM.c \
   $(VSFDIR)/stack/usb_device/class/HID/vsfusbd_HID.c \
   $(VSFDIR)/stack/usb_device/class/MSC/vsfusbd_MSC_BOT.c \
   $(VSFDIR)/stack/usb_device/class/MSC/SCSI.c

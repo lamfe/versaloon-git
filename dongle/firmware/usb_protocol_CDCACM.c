@@ -8,7 +8,7 @@
 
 uint8_t asyn_rx_buf[ASYN_DATA_BUFF_SIZE];
 
-static const uint8_t CDC_DeviceDescriptor[] =
+static const uint8_t CDCACM_DeviceDescriptor[] =
 {
 	0x12,	// bLength
 	USB_DESC_TYPE_DEVICE,
@@ -31,7 +31,7 @@ static const uint8_t CDC_DeviceDescriptor[] =
 	0x01	// bNumConfigurations
 };
 
-const uint8_t CDC_ConfigDescriptor[] =
+const uint8_t CDCACM_ConfigDescriptor[] =
 {
 	// Configuation Descriptor
 	0x09,	// bLength: Configuation Descriptor size
@@ -101,7 +101,7 @@ const uint8_t CDC_ConfigDescriptor[] =
 	1,		// bInterfaceNumber: Number of Interface
 	0x00,	// bAlternateSetting: Alternate setting
 	0x02,	// bNumEndpoints: Two endpoints used
-	0x0A,	// bInterfaceClass: CDC
+	0x0A,	// bInterfaceClass: CDCACM
 	0x00,	// bInterfaceSubClass:
 	0x00,	// bInterfaceProtocol:
 	0x00,	// iInterface:
@@ -127,7 +127,7 @@ const uint8_t CDC_ConfigDescriptor[] =
 	0x00	// bInterval
 };
 
-static const uint8_t CDC_StringLangID[] =
+static const uint8_t CDCACM_StringLangID[] =
 {
 	4,
 	USB_DESC_TYPE_STRING,
@@ -135,7 +135,7 @@ static const uint8_t CDC_StringLangID[] =
 	0x04
 };
 
-static const uint8_t CDC_StringVendor[] =
+static const uint8_t CDCACM_StringVendor[] =
 {
 	38,
 	USB_DESC_TYPE_STRING,
@@ -144,7 +144,7 @@ static const uint8_t CDC_StringVendor[] =
 	'c', 0, 's', 0
 };
 
-static const uint8_t CDC_StringProduct[] =
+static const uint8_t CDCACM_StringProduct[] =
 {
 	30,
 	USB_DESC_TYPE_STRING,
@@ -152,7 +152,7 @@ static const uint8_t CDC_StringProduct[] =
 	's', 0, 'a', 0, 'l', 0, 'o', 0, 'o', 0,'n', 0
 };
 
-static const uint8_t CDC_StringSerial[50] =
+static const uint8_t CDCACM_StringSerial[50] =
 {
 	50,
 	USB_DESC_TYPE_STRING,
@@ -163,17 +163,17 @@ static const uint8_t CDC_StringSerial[50] =
 
 static const struct vsfusbd_desc_filter_t descriptors[] = 
 {
-	VSFUSBD_DESC_DEVICE(0, CDC_DeviceDescriptor, sizeof(CDC_DeviceDescriptor), NULL),
-	VSFUSBD_DESC_CONFIG(0, 0, CDC_ConfigDescriptor, sizeof(CDC_ConfigDescriptor), NULL),
-	VSFUSBD_DESC_STRING(0, 0, CDC_StringLangID, sizeof(CDC_StringLangID), NULL),
-	VSFUSBD_DESC_STRING(0x0409, 1, CDC_StringVendor, sizeof(CDC_StringVendor), NULL),
-	VSFUSBD_DESC_STRING(0x0409, 2, CDC_StringProduct, sizeof(CDC_StringProduct), NULL),
-	VSFUSBD_DESC_STRING(0x0409, 3, CDC_StringSerial, sizeof(CDC_StringSerial), NULL),
+	VSFUSBD_DESC_DEVICE(0, CDCACM_DeviceDescriptor, sizeof(CDCACM_DeviceDescriptor), NULL),
+	VSFUSBD_DESC_CONFIG(0, 0, CDCACM_ConfigDescriptor, sizeof(CDCACM_ConfigDescriptor), NULL),
+	VSFUSBD_DESC_STRING(0, 0, CDCACM_StringLangID, sizeof(CDCACM_StringLangID), NULL),
+	VSFUSBD_DESC_STRING(0x0409, 1, CDCACM_StringVendor, sizeof(CDCACM_StringVendor), NULL),
+	VSFUSBD_DESC_STRING(0x0409, 2, CDCACM_StringProduct, sizeof(CDCACM_StringProduct), NULL),
+	VSFUSBD_DESC_STRING(0x0409, 3, CDCACM_StringSerial, sizeof(CDCACM_StringSerial), NULL),
 	VSFUSBD_DESC_NULL
 };
 
 extern struct usart_stream_info_t usart_stream_p0;
-struct vsfusbd_CDC_param_t CDC_param = 
+struct vsfusbd_CDCACM_param_t CDCACM_param = 
 {
 	&usart_stream_p0,
 				// usart_stream
@@ -195,8 +195,8 @@ struct vsfusbd_CDC_param_t CDC_param =
 };
 static struct vsfusbd_iface_t ifaces[] = 
 {
-	{(struct vsfusbd_class_protocol_t *)&vsfusbd_CDCMaster_class, (void *)&CDC_param},
-	{(struct vsfusbd_class_protocol_t *)&vsfusbd_CDCData_class, (void *)&CDC_param}
+	{(struct vsfusbd_class_protocol_t *)&vsfusbd_CDCACMMaster_class, (void *)&CDCACM_param},
+	{(struct vsfusbd_class_protocol_t *)&vsfusbd_CDCACMData_class, (void *)&CDCACM_param}
 };
 static struct vsfusbd_config_t config0[] = 
 {
