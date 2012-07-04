@@ -5,6 +5,7 @@ enum usb_HID_description_type_t
 {
 	USB_HIDDESC_TYPE_HID					= 0x21,
 	USB_HIDDESC_TYPE_REPORT					= 0x22,
+	USB_HIDDESC_TYPE_PHYSICAL				= 0x23,
 };
 
 enum usb_HID_req_t
@@ -38,7 +39,6 @@ struct vsfusbd_HID_report_t
 	uint8_t id;
 	uint8_t idle;
 	struct vsf_buffer_t buffer;
-	struct vsf_buffer_t stable_buffer;
 	vsf_err_t (*on_set_get_report)(uint8_t id, struct vsf_buffer_t *buffer);
 	// no need to initialize below by user
 	bool lock;
@@ -57,6 +57,7 @@ struct vsfusbd_HID_param_t
 	uint8_t num_of_report;
 	struct vsfusbd_HID_report_t *reports;
 	
+	struct vsf_buffer_t temp_buffer;
 	// no need to initialize below by user
 	uint8_t protocol;
 };
