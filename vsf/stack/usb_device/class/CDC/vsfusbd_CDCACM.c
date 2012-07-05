@@ -365,7 +365,8 @@ static const struct vsfusbd_setup_filter_t vsfusbd_CDCACMMaster_class_setup[] =
 		USB_CDCACMREQ_SEND_BREAK,
 		vsfusbd_CDCACMMaster_SendBreak_prepare,
 		NULL
-	}
+	},
+	VSFUSBD_SETUP_NULL
 };
 
 const struct vsfusbd_class_protocol_t vsfusbd_CDCACMMaster_class = 

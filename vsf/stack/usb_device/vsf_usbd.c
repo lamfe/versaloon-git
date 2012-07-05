@@ -841,7 +841,7 @@ static const struct vsfusbd_setup_filter_t vsfusbd_standard_req_filter[] =
 		vsfusbd_stdreq_set_interface_prepare,
 		NULL
 	},
-	{0, 0, NULL, NULL}
+	VSFUSBD_SETUP_NULL
 };
 
 static struct vsfusbd_setup_filter_t *vsfusbd_get_request_filter_do(
@@ -849,7 +849,7 @@ static struct vsfusbd_setup_filter_t *vsfusbd_get_request_filter_do(
 {
 	struct vsfusbd_ctrl_request_t *request = &device->ctrl_handler.request;
 	
-	while ((list->prepare != NULL) || (list->process != NULL))
+	while (list->type != VSFUSBD_SETUP_INVALID_TYPE)
 	{
 		if ((list->type == request->type) && 
 			(list->request == request->request))

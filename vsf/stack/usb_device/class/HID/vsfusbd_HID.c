@@ -433,7 +433,7 @@ static const struct vsfusbd_setup_filter_t vsfusbd_HID_class_setup[] =
 		vsfusbd_HID_SetProtocol_prepare,
 		NULL
 	},
-	{0, 0, NULL, NULL}
+	VSFUSBD_SETUP_NULL
 };
 
 vsf_err_t vsfusbd_HID_get_desc(struct vsfusbd_device_t *device, uint8_t type, 

@@ -76,6 +76,9 @@ struct vsfusbd_desc_filter_t
 
 struct vsfusbd_device_t;
 
+#define VSFUSBD_SETUP_INVALID_TYPE	0xFF
+#define VSFUSBD_SETUP_NULL			{VSFUSBD_SETUP_INVALID_TYPE, 0, NULL, NULL}
+
 struct vsfusbd_setup_filter_t
 {
 	uint8_t type;
