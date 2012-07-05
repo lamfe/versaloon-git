@@ -8,6 +8,8 @@
 #include "usb_protocol.h"
 #include "USB_TO_XXX.h"
 
+#include "dal/usart_stream/usart_stream.h"
+
 uint8_t buffer_out[USB_DATA_BUFF_SIZE], asyn_rx_buf[ASYN_DATA_BUFF_SIZE];
 volatile uint32_t count_out = 0;
 volatile uint32_t usb_ovf = 0;
@@ -536,17 +538,15 @@ static const struct vsfusbd_class_protocol_t Versaloon_Protocol =
 extern struct usart_stream_info_t shell_stream;
 struct vsfusbd_CDCACM_param_t Versaloon_Shell_param = 
 {
-	&shell_stream,
-				// usart_stream
-	false,		// gpio_rts_enable
-	0,			// gpio_rts_port
-	0,			// gpio_rts_pin
-	false,		// gpio_dtr_enable
-	0,			// gpio_dtr_port
-	0,			// gpio_dtr_pin
-	
 	6,			// ep_out
 	6, 			// ep_in
+	
+	NULL, NULL,
+	
+	{
+		NULL, NULL, NULL, NULL, NULL
+	},
+	
 	{
 		115200,	// bitrate
 		0,		// stopbittype
@@ -612,23 +612,55 @@ struct vsfusbd_MSCBOT_param_t MSCBOT_param =
 
 // CDCACM
 extern struct usart_stream_info_t usart_stream_p0;
+
+vsf_err_t VOM_set_line_coding(struct vsfusbd_CDCACM_line_coding_t *line_coding)
+{
+	usart_stream_p0.usart_info.datalength = line_coding->datatype;
+	usart_stream_p0.usart_info.baudrate = line_coding->bitrate;
+	usart_stream_p0.usart_info.mode = 0;
+	switch(line_coding->stopbittype)
+	{
+	default:
+	case 0:
+		usart_stream_p0.usart_info.mode |= USART_STOPBITS_1;
+		break;
+	case 1:
+		usart_stream_p0.usart_info.mode |= USART_STOPBITS_1P5;
+		break;
+	case 2:
+		usart_stream_p0.usart_info.mode |= USART_STOPBITS_2;
+		break;
+	}
+	switch(line_coding->paritytype)
+	{
+	default:
+	case 0:
+		usart_stream_p0.usart_info.mode |= USART_PARITY_NONE;
+		usart_stream_p0.usart_info.datalength = 8;
+		break;
+	case 1:
+		usart_stream_p0.usart_info.mode |= USART_PARITY_ODD;
+		usart_stream_p0.usart_info.datalength = 9;
+		break;
+	case 2:
+		usart_stream_p0.usart_info.mode |= USART_PARITY_EVEN;
+		usart_stream_p0.usart_info.datalength = 9;
+		break;
+	}
+	return usart_stream_config(&usart_stream_p0);
+}
+
 struct vsfusbd_CDCACM_param_t Versaloon_CDCACM_param = 
 {
-	&usart_stream_p0,
-				// usart_stream
-	false,		// gpio_rts_enable
-	USART_RTS_PORT,
-				// gpio_rts_port
-	USART_RTS_PIN,
-				// gpio_rts_pin
-	false,		// gpio_dtr_enable
-	USART_DTR_PORT,
-				// gpio_dtr_port
-	USART_DTR_PORT,
-				// gpio_dtr_pin
-	
 	4,			// ep_out
 	4, 			// ep_in
+	
+	NULL, NULL,
+	
+	{
+		VOM_set_line_coding, NULL, NULL, NULL, NULL
+	},
+	
 	{
 		115200,	// bitrate
 		0,		// stopbittype
@@ -704,10 +736,22 @@ vsf_err_t usb_protocol_init(void)
 	
 	USB_Pull_Init();
 	USB_Connect();
+	Versaloon_CDCACM_param.stream_tx = &usart_stream_p0.stream_tx;
+	Versaloon_CDCACM_param.stream_rx = &usart_stream_p0.stream_rx;
+	usart_stream_init(&usart_stream_p0);
+#if SCRIPTS_EN
+	Versaloon_Shell_param.stream_tx = &shell_stream.stream_tx;
+	Versaloon_Shell_param.stream_rx = &shell_stream.stream_rx;
+	usart_stream_init(&shell_stream);
+#endif
 	return vsfusbd_device_init(&usb_device);
 }
 
 vsf_err_t usb_protocol_poll(void)
 {
+	usart_stream_poll(&usart_stream_p0);
+#if SCRIPTS_EN
+	usart_stream_poll(&shell_stream);
+#endif
 	return vsfusbd_device_poll(&usb_device);
 }

@@ -27,8 +27,12 @@ extern uint8_t asyn_rx_buf[ASYN_DATA_BUFF_SIZE];
 struct usart_stream_info_t usart_stream_p0 = 
 {
 	USART_PORT,						// usart_index
-	{{asyn_rx_buf, 1024}},			// fifo_tx
-	{{asyn_rx_buf + 1024, 1024}}	// fifo_rx
+	{
+		{asyn_rx_buf, 1024},		// fifo
+	},								// struct vsf_stream_t stream_tx;
+	{
+		{asyn_rx_buf + 1024, 1024},	// fifo
+	}								// struct vsf_stream_t stream_rx;
 };
 
 vsf_err_t usart_init(uint8_t index)
@@ -120,8 +124,8 @@ vsf_err_t usart_status(uint8_t index, struct usart_status_t *status)
 			return VSFERR_INVALID_PTR;
 		}
 		
-		fifo_tx = &usart_stream_p0.fifo_tx;
-		fifo_rx = &usart_stream_p0.fifo_rx;
+		fifo_tx = &usart_stream_p0.stream_tx.fifo;
+		fifo_rx = &usart_stream_p0.stream_rx.fifo;
 		status->tx_buff_avail = vsf_fifo_get_avail_length(fifo_tx);
 		status->tx_buff_size = vsf_fifo_get_data_length(fifo_tx);
 		status->rx_buff_avail = vsf_fifo_get_avail_length(fifo_rx);

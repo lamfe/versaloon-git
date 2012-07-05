@@ -1,7 +1,7 @@
 #ifndef __VSFUSBD_CDCACM_H_INCLUDED__
 #define __VSFUSBD_CDCACM_H_INCLUDED__
 
-#include "dal/usart_stream/usart_stream.h"
+#include "dal/stream/stream.h"
 
 struct vsfusbd_CDCACM_line_coding_t
 {
@@ -33,20 +33,25 @@ extern const struct vsfusbd_class_protocol_t vsfusbd_CDCACMData_class;
 
 struct vsfusbd_CDCACM_param_t
 {
-	struct usart_stream_info_t *usart_stream;
-	bool gpio_rts_enable;
-	uint8_t gpio_rts_port;
-	uint32_t gpio_rts_pin;
-	bool gpio_dtr_enable;
-	uint8_t gpio_dtr_port;
-	uint32_t gpio_dtr_pin;
-	
 	uint8_t ep_out;
 	uint8_t ep_in;
+	
+	struct vsf_stream_t *stream_tx;
+	struct vsf_stream_t *stream_rx;
+	
+	struct
+	{
+		vsf_err_t (*set_line_coding)(struct vsfusbd_CDCACM_line_coding_t *line_coding);
+		vsf_err_t (*set_control_line)(uint8_t control_line);
+		vsf_err_t (*get_control_line)(uint8_t *control_line);
+		vsf_err_t (*send_encapsulated_command)(struct vsf_buffer_t *buffer);
+		vsf_err_t (*get_encapsulated_command)(struct vsf_buffer_t *buffer);
+	} callback;
 	
 	struct vsfusbd_CDCACM_line_coding_t line_coding;
 	
 	// no need to initialize below by user
+	uint8_t control_line;
 	uint8_t line_coding_buffer[7];
 	volatile bool cdcacm_out_enable;
 };

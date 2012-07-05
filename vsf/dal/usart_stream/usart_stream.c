@@ -20,37 +20,38 @@
 #include "app_cfg.h"
 #include "app_type.h"
 
-#include "tool/buffer/buffer.h"
-
 #include "interfaces.h"
 #include "usart_stream.h"
 
 static void usart_stream_onrx(void *p, uint16_t data)
 {
 	struct usart_stream_info_t *usart_stream = (struct usart_stream_info_t *)p;
+	struct vsf_buffer_t buffer;
+	uint8_t byte = (uint8_t)data;
 	
-	if (vsf_fifo_push8(&usart_stream->fifo_rx, (uint8_t)data) != 1)
-	{
-		usart_stream->overflow = true;
-	}
+	buffer.buffer = &byte;
+	buffer.size = 1;
+	stream_tx(&usart_stream->stream_rx, &buffer);
 }
 
 vsf_err_t usart_stream_init(struct usart_stream_info_t *usart_stream)
 {
-	usart_stream->overflow = false;
-	vsf_fifo_init(&usart_stream->fifo_tx);
-	vsf_fifo_init(&usart_stream->fifo_rx);
+	stream_init(&usart_stream->stream_tx);
+	stream_init(&usart_stream->stream_rx);
 	if (usart_stream->usart_index != IFS_DUMMY_PORT)
 	{
 		return core_interfaces.usart.init(usart_stream->usart_index);
 	}
-	return VSFERR_NONE;
+	return core_interfaces.usart.config_callback(usart_stream->usart_index,
+					(void *)usart_stream, NULL, usart_stream_onrx);
 }
 
 vsf_err_t usart_stream_fini(struct usart_stream_info_t *usart_stream)
 {
 	if (usart_stream->usart_index != IFS_DUMMY_PORT)
 	{
+		core_interfaces.usart.config_callback(usart_stream->usart_index,
+												NULL, NULL, NULL);
 		return core_interfaces.usart.fini(usart_stream->usart_index);
 	}
 	return VSFERR_NONE;
@@ -64,45 +65,39 @@ vsf_err_t usart_stream_config(struct usart_stream_info_t *usart_stream)
 										usart_stream->usart_info.baudrate,
 										usart_stream->usart_info.datalength, 
 										usart_stream->usart_info.mode);
-		return core_interfaces.usart.config_callback(usart_stream->usart_index,
-					(void *)usart_stream, NULL, usart_stream_onrx);
 	}
 	return VSFERR_NONE;
 }
 
-vsf_err_t usart_stream_rx(struct usart_stream_info_t *usart_stream, 
-						struct vsf_buffer_t *buffer)
+uint32_t usart_stream_rx(struct usart_stream_info_t *usart_stream, 
+							struct vsf_buffer_t *buffer)
 {
-	uint32_t rx_size;
-	
-	rx_size = vsf_fifo_pop(&usart_stream->fifo_rx, buffer->size, 
-							buffer->buffer);
-	buffer->size = rx_size;
-	return VSFERR_NONE;
+	return stream_rx(&usart_stream->stream_rx, buffer);
 }
 
-vsf_err_t usart_stream_tx(struct usart_stream_info_t *usart_stream, 
-						struct vsf_buffer_t *buffer)
+uint32_t usart_stream_tx(struct usart_stream_info_t *usart_stream, 
+							struct vsf_buffer_t *buffer)
 {
-	uint32_t tx_size;
-	
-	tx_size = vsf_fifo_push(&usart_stream->fifo_tx, buffer->size, 
-							buffer->buffer);
-	if (tx_size != buffer->size)
-	{
-		buffer->size = tx_size;
-	}
-	return VSFERR_NONE;
+	return stream_tx(&usart_stream->stream_tx, buffer);
 }
 
 vsf_err_t usart_stream_poll(struct usart_stream_info_t *usart_stream)
 {
 	if ((usart_stream->usart_index != IFS_DUMMY_PORT) &&
 		!core_interfaces.usart.tx_isready(usart_stream->usart_index) && 
-		vsf_fifo_get_data_length(&usart_stream->fifo_tx))
+		stream_get_data_size(&usart_stream->stream_tx))
 	{
-		return core_interfaces.usart.tx(usart_stream->usart_index, 
-							(uint16_t)vsf_fifo_pop8(&usart_stream->fifo_tx));
+		uint8_t data;
+		struct vsf_buffer_t buffer;
+		
+		buffer.buffer = &data;
+		buffer.size = 1;
+		if (stream_rx(&usart_stream->stream_tx, &buffer) == buffer.size)
+		{
+//			return core_interfaces.usart.tx(usart_stream->usart_index, 
+//											(uint16_t)data);
+			usart_stream_onrx(usart_stream, (uint16_t)data);
+		}
 	}
 	return VSFERR_NONE;
 }

@@ -227,9 +227,11 @@ USR_SRCS+= $(VSFDIR)/dal/dal.c \
   $(VSFDIR)/dal/mal/mal.c \
   $(VSFDIR)/dal/mic2826/mic2826_drv.c \
   $(VSFDIR)/dal/nrf24l01/nrf24l01_drv.c \
+  $(VSFDIR)/dal/stream/stream.c \
   $(VSFDIR)/dal/usart_stream/usart_stream.c
 else
-USR_SRCS+= $(VSFDIR)/dal/usart_stream/usart_stream.c
+USR_SRCS+= $(VSFDIR)/dal/usart_stream/usart_stream.c $(VSFDIR)/dal/stream/stream.c
+USR_SRCS+= $(VSFDIR)/dal/mal/mal.c
 endif
 
 #VSF stack
@@ -242,6 +244,10 @@ USR_SRCS+= $(VSFDIR)/stack/usb_device/vsf_usbd.c \
 #VSF tool
 USR_SRCS+= $(VSFDIR)/tool/buffer/buffer.c
 USR_INCS+= -I $(VSFDIR)/tool/list
+
+# fakefat
+USR_SRCS+= $(SRCDIR)/fakefat/fakefat.c
+USR_INCS+= -I $(SRCDIR)/fakefat
 
 # USB_TO_XXX
 USR_SRCS+= $(SRCDIR)/USB_TO_XXX/USB_TO_XXX.c \
