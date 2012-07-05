@@ -17,33 +17,47 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef __USART_STREAM_H_INCLUDED__
-#define __USART_STREAM_H_INCLUDED__
+#include "app_cfg.h"
+#include "app_type.h"
 
-#include "dal/stream/stream.h"
+#include "stream.h"
 
-struct usart_info_t
+vsf_err_t stream_init(struct vsf_stream_t *stream)
 {
-	uint32_t baudrate;
-	uint8_t datalength;
-	uint8_t mode;
-};
+	stream->overflow = false;
+	vsf_fifo_init(&stream->fifo);
+	return VSFERR_NONE;
+}
 
-struct usart_stream_info_t
+vsf_err_t stream_fini(struct vsf_stream_t *stream)
 {
-	uint8_t usart_index;
-	struct vsf_stream_t stream_tx;
-	struct vsf_stream_t stream_rx;
-	struct usart_info_t usart_info;
-};
+	REFERENCE_PARAMETER(stream);
+	return VSFERR_NONE;
+}
 
-vsf_err_t usart_stream_init(struct usart_stream_info_t *usart_stream);
-vsf_err_t usart_stream_fini(struct usart_stream_info_t *usart_stream);
-vsf_err_t usart_stream_config(struct usart_stream_info_t *usart_stream);
-uint32_t usart_stream_rx(struct usart_stream_info_t *usart_stream, 
-							struct vsf_buffer_t *buffer);
-uint32_t usart_stream_tx(struct usart_stream_info_t *usart_stream, 
-							struct vsf_buffer_t *buffer);
-vsf_err_t usart_stream_poll(struct usart_stream_info_t *usart_stream);
+uint32_t stream_rx(struct vsf_stream_t *stream, struct vsf_buffer_t *buffer)
+{
+	return vsf_fifo_pop(&stream->fifo, buffer->size, buffer->buffer);
+}
 
-#endif	// __USART_STREAM_H_INCLUDED__
+uint32_t stream_tx(struct vsf_stream_t *stream, struct vsf_buffer_t *buffer)
+{
+	uint32_t tx_size;
+	
+	tx_size = vsf_fifo_push(&stream->fifo, buffer->size, buffer->buffer);
+	if (tx_size < buffer->size)
+	{
+		stream->overflow = true;
+	}
+	return tx_size;
+}
+
+uint32_t stream_get_data_size(struct vsf_stream_t *stream)
+{
+	return vsf_fifo_get_data_length(&stream->fifo);
+}
+
+uint32_t stream_get_free_size(struct vsf_stream_t *stream)
+{
+	return vsf_fifo_get_avail_length(&stream->fifo);
+}

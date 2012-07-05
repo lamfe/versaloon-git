@@ -2073,6 +2073,13 @@
     <file>
       <name>$PROJ_DIR$\..\..\..\usb_protocol_Versaloon.c</name>
     </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\usb_protocol_VersaloonSuper.c</name>
+      <excluded>
+        <configuration>Debug</configuration>
+        <configuration>Release</configuration>
+      </excluded>
+    </file>
   </group>
   <group>
     <name>USB_TO_XXX</name>
@@ -2214,6 +2221,12 @@
         </file>
         <file>
           <name>$PROJ_DIR$\..\..\..\..\..\vsf\dal\sd\sd_spi_drv.c</name>
+        </file>
+      </group>
+      <group>
+        <name>stream</name>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\vsf\dal\stream\stream.c</name>
         </file>
       </group>
       <group>
