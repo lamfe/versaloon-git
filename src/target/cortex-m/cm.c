@@ -117,7 +117,7 @@ const struct cm_param_t cm_chips_param[] = {
 		0,								// jtag_khz
 		{0,0,0,0},						// jtag_pos
 		2,								// swd_trn
-		0,								// swd_delay
+		1,								// swd_delay
 		&nuc100swj_program_functions	// program_functions
 	}
 };
@@ -186,13 +186,12 @@ ENTER_PROGRAM_MODE_HANDLER(cm)
 	default:
 		LOG_WARNING("debug port not defined, use JTAG by default.");
 	case ADI_MODE_CHAR_JTAG:
-		context->pi->mode = ADI_DP_JTAG;
+		dp.type = ADI_DP_JTAG;
 		break;
 	case ADI_MODE_CHAR_SWD:
-		context->pi->mode = ADI_DP_SWD;
+		dp.type = ADI_DP_SWD;
 		break;
 	}
-	dp.type = context->pi->mode;
 	
 	switch(dp.type)
 	{
