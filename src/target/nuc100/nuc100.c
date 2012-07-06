@@ -82,7 +82,6 @@ VSS_HANDLER(nuc100_mode)
 	{
 	case NUC100_SWD:
 		nuc100_program_area_map[0].attr |= AREA_ATTR_RNP;
-		cm_mode_offset = 0;
 		vss_call_notifier(cm_notifier, "chip", "cm_nuc100");
 		memcpy(&nuc100_program_functions, &cm_program_functions,
 				sizeof(nuc100_program_functions));

@@ -20,6 +20,9 @@
 #ifndef __ADI_V5P1_H_INCLUDED__
 #define __ADI_V5P1_H_INCLUDED__
 
+#define ADI_MODE_CHAR_JTAG					'j'
+#define ADI_MODE_CHAR_SWD					's'
+
 enum adi_dpif_type_t
 {
 	ADI_DP_JTAG = 0,

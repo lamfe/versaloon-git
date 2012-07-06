@@ -87,7 +87,6 @@ VSS_HANDLER(lpc1000_mode)
 	{
 	case LPC1000_JTAG:
 	case LPC1000_SWD:
-		cm_mode_offset = 0;
 		vss_call_notifier(cm_notifier, "chip", "cm_lpc1000");
 		memcpy(&lpc1000_program_functions, &cm_program_functions,
 				sizeof(lpc1000_program_functions));

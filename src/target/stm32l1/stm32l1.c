@@ -86,7 +86,6 @@ VSS_HANDLER(stm32l1_mode)
 	case STM32L1_JTAG:
 	case STM32L1_SWD:
 		stm32l1_program_area_map[0].attr |= AREA_ATTR_RNP;
-		cm_mode_offset = 0;
 		vss_call_notifier(cm_notifier, "chip", "cm_stm32l1");
 		memcpy(&stm32l1_program_functions, &cm_program_functions,
 				sizeof(stm32l1_program_functions));

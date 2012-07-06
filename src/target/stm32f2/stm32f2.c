@@ -98,7 +98,6 @@ VSS_HANDLER(stm32f2_mode)
 	case STM32F2_JTAG:
 	case STM32F2_SWD:
 		stm32f2_program_area_map[0].attr |= AREA_ATTR_NP;
-		cm_mode_offset = 0;
 		vss_call_notifier(cm_notifier, "chip", "cm_stm32f2");
 		memcpy(&stm32f2_program_functions, &cm_program_functions,
 				sizeof(stm32f2_program_functions));

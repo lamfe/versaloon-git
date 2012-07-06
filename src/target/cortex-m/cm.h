@@ -24,7 +24,5 @@
 extern struct program_functions_t cm_program_functions;
 extern const struct vss_cmd_t cm_notifier[];
 
-extern uint8_t cm_mode_offset;
-
 #endif /* __CM_H_INCLUDED__ */
 

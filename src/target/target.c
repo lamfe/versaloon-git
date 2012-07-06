@@ -1868,6 +1868,7 @@ static vsf_err_t target_init(struct program_info_t *pi)
 	sprintf(mode_buff, "%d", pi->mode);
 	vss_call_notifier(cur_target->notifier, "mode", mode_buff);
 	LOG_POP();
+	pi->mode_char = cur_target->program_mode[pi->mode].name;
 	
 	if (NULL == pi->chip_name)
 	{
