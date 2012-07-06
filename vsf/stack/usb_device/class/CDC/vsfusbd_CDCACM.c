@@ -354,7 +354,7 @@ static const struct vsfusbd_setup_filter_t vsfusbd_CDCACMMaster_class_setup[] =
 		USB_CDCACMREQ_GET_ENCAPSULATED_RESPONSE,
 		vsfusbd_CDCACMMaster_GetEncapsulatedResponse_prepare,
 		NULL,
-	}
+	},
 	VSFUSBD_SETUP_NULL
 };
 
