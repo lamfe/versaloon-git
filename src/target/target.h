@@ -152,6 +152,8 @@ struct program_info_t
 	uint32_t areas_defined;
 	
 	uint8_t mode;
+	char mode_char;
+	
 	uint8_t auto_adjust;
 	uint16_t frequency;
 	uint32_t kernel_khz;

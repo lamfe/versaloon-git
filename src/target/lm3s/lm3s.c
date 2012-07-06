@@ -82,7 +82,6 @@ VSS_HANDLER(lm3s_mode)
 	case LM3S_JTAG:
 	case LM3S_SWD:
 		lm3s_program_area_map[0].attr |= AREA_ATTR_RNP;
-		cm_mode_offset = 0;
 		vss_call_notifier(cm_notifier, "chip", "cm_lm3s");
 		memcpy(&lm3s_program_functions, &cm_program_functions,
 				sizeof(lm3s_program_functions));

@@ -85,7 +85,6 @@ VSS_HANDLER(at91sam3_mode)
 	case AT91SAM3_JTAG:
 	case AT91SAM3_SWD:
 		at91sam3_program_area_map[0].attr |= AREA_ATTR_RNP;
-		cm_mode_offset = 0;
 		vss_call_notifier(cm_notifier, "chip", "cm_at91sam3");
 		memcpy(&at91sam3_program_functions, &cm_program_functions,
 				sizeof(at91sam3_program_functions));

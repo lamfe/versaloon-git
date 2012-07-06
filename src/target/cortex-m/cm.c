@@ -114,7 +114,7 @@ const struct cm_param_t cm_chips_param[] = {
 	},
 	{
 		"cm_nuc100",					// chip_name
-		NUC100_IRC_KHZ / 6,				// jtag_khz
+		0,								// jtag_khz
 		{0,0,0,0},						// jtag_pos
 		2,								// swd_trn
 		0,								// swd_delay
@@ -122,8 +122,6 @@ const struct cm_param_t cm_chips_param[] = {
 	}
 };
 static uint8_t cm_chip_index = 0;
-
-uint8_t cm_mode_offset = 0;
 
 struct cm_param_t * cm_get_param(char *chip_name)
 {
@@ -183,13 +181,18 @@ ENTER_PROGRAM_MODE_HANDLER(cm)
 	}
 	
 	// jtag/swd init
-	if (((context->pi->mode - cm_mode_offset) != ADI_DP_JTAG)
-		&& ((context->pi->mode - cm_mode_offset) != ADI_DP_SWD))
+	switch (context->pi->mode_char)
 	{
+	default:
 		LOG_WARNING("debug port not defined, use JTAG by default.");
-		context->pi->mode = ADI_DP_JTAG + cm_mode_offset;
+	case ADI_MODE_CHAR_JTAG:
+		context->pi->mode = ADI_DP_JTAG;
+		break;
+	case ADI_MODE_CHAR_SWD:
+		context->pi->mode = ADI_DP_SWD;
+		break;
 	}
-	dp.type = context->pi->mode - cm_mode_offset;
+	dp.type = context->pi->mode;
 	
 	switch(dp.type)
 	{
