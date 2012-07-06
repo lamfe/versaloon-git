@@ -50,8 +50,8 @@ STM32_LIB_DIR = $(STM32_IFACES_DIR)/hw/STM32F10x_Lib
 # add .h header files to USR_INCS
 # add pre-defines to USR_DEFS
 # add library directory to USR_LIBS
-USR_SRCS+= $(SRCDIR)/main.c $(SRCDIR)/usb_protocol_Versaloon.c
-USR_INCS+= -I $(PRJDIR)/..
+USR_SRCS+= $(SRCDIR)/main.c $(SRCDIR)/usb_protocol_Versaloon.c $(SRCDIR)/versaloon_usb/vsfusbd_Versaloon.c
+USR_INCS+= -I $(PRJDIR)/.. -I $(SRCDIR)/versaloon_usb
 USR_INCS+= -I $(STM32_IFACES_DIR)/hw
 #USR_DEFS+= -DADD_USER_DEFINES_HERE
 #USR_LIBS+= -L./

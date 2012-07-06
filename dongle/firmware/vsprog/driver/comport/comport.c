@@ -185,7 +185,7 @@ int32_t comm_write_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 			data_write += sbuffer.size;
 		}
 	}
-	while (vsf_fifo_get_data_length(&usart_stream_p0.fifo_tx) > 0)
+	while (vsf_fifo_get_data_length(&usart_stream_p0.stream_tx.fifo) > 0)
 	{
 		usart_stream_poll(&usart_stream_p0);
 	}
@@ -200,13 +200,13 @@ int32_t comm_flush_usbtocomm(void)
 		return -1;
 	}
 	
-	while (vsf_fifo_get_data_length(&usart_stream_p0.fifo_tx) > 0)
+	while (vsf_fifo_get_data_length(&usart_stream_p0.stream_tx.fifo) > 0)
 	{
 		usart_stream_poll(&usart_stream_p0);
 	}
-	while (vsf_fifo_get_data_length(&usart_stream_p0.fifo_rx) > 0)
+	while (vsf_fifo_get_data_length(&usart_stream_p0.stream_rx.fifo) > 0)
 	{
-		vsf_fifo_pop8(&usart_stream_p0.fifo_rx);
+		vsf_fifo_pop8(&usart_stream_p0.stream_rx.fifo);
 		usart_stream_poll(&usart_stream_p0);
 	}
 	return 0;

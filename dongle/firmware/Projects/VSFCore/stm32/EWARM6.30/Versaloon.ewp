@@ -306,6 +306,7 @@
           <state>$PROJ_DIR$\..\Interfaces\</state>
           <state>$PROJ_DIR$\..\Interfaces\APP\</state>
           <state>$PROJ_DIR$\..\..\..\..\USB_TO_XXX\</state>
+          <state>$PROJ_DIR$\..\..\..\..\versaloon_usb\</state>
           <state>$PROJ_DIR$\..\..\..\..\..\..\vsf\</state>
           <state>$PROJ_DIR$\..\..\..\..\..\..\vsf\interfaces\</state>
           <state>$PROJ_DIR$\..\..\..\..\..\..\vsf\interfaces\cpu\stm32\</state>
@@ -1234,6 +1235,7 @@
           <state>$PROJ_DIR$\..\Interfaces\</state>
           <state>$PROJ_DIR$\..\Interfaces\APP\</state>
           <state>$PROJ_DIR$\..\..\..\..\USB_TO_XXX\</state>
+          <state>$PROJ_DIR$\..\..\..\..\versaloon_usb\</state>
           <state>$PROJ_DIR$\..\..\..\..\..\..\vsf\</state>
           <state>$PROJ_DIR$\..\..\..\..\..\..\vsf\interfaces\</state>
           <state>$PROJ_DIR$\..\..\..\..\..\..\vsf\interfaces\cpu\stm32\</state>
@@ -1945,6 +1947,12 @@
     </file>
   </group>
   <group>
+    <name>versaloon_usb</name>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\..\versaloon_usb\vsfusbd_Versaloon.c</name>
+    </file>
+  </group>
+  <group>
     <name>vsf</name>
     <group>
       <name>dal</name>
@@ -2012,6 +2020,12 @@
         </file>
         <file>
           <name>$PROJ_DIR$\..\..\..\..\..\..\vsf\dal\sd\sd_spi_drv.c</name>
+        </file>
+      </group>
+      <group>
+        <name>stream</name>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\..\vsf\dal\stream\stream.c</name>
         </file>
       </group>
       <group>
