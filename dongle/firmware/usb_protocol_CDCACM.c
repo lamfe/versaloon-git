@@ -4,7 +4,8 @@
 #include "GPIO/GPIO.h"
 
 #include "usb_protocol.h"
-#include "USB_TO_XXX.h"
+
+#include "dal/usart_stream/usart_stream.h"
 
 static const uint8_t CDCACM_DeviceDescriptor[] =
 {
@@ -171,19 +172,55 @@ static const struct vsfusbd_desc_filter_t descriptors[] =
 };
 
 extern struct usart_stream_info_t usart_stream_p0;
+
+vsf_err_t VOM_set_line_coding(struct vsfusbd_CDCACM_line_coding_t *line_coding)
+{
+	usart_stream_p0.usart_info.datalength = line_coding->datatype;
+	usart_stream_p0.usart_info.baudrate = line_coding->bitrate;
+	usart_stream_p0.usart_info.mode = 0;
+	switch(line_coding->stopbittype)
+	{
+	default:
+	case 0:
+		usart_stream_p0.usart_info.mode |= USART_STOPBITS_1;
+		break;
+	case 1:
+		usart_stream_p0.usart_info.mode |= USART_STOPBITS_1P5;
+		break;
+	case 2:
+		usart_stream_p0.usart_info.mode |= USART_STOPBITS_2;
+		break;
+	}
+	switch(line_coding->paritytype)
+	{
+	default:
+	case 0:
+		usart_stream_p0.usart_info.mode |= USART_PARITY_NONE;
+		usart_stream_p0.usart_info.datalength = 8;
+		break;
+	case 1:
+		usart_stream_p0.usart_info.mode |= USART_PARITY_ODD;
+		usart_stream_p0.usart_info.datalength = 9;
+		break;
+	case 2:
+		usart_stream_p0.usart_info.mode |= USART_PARITY_EVEN;
+		usart_stream_p0.usart_info.datalength = 9;
+		break;
+	}
+	return usart_stream_config(&usart_stream_p0);
+}
+
 struct vsfusbd_CDCACM_param_t CDCACM_param = 
 {
-	&usart_stream_p0,
-				// usart_stream
-	false,		// gpio_rts_enable
-	0,			// gpio_rts_port
-	GPIO_TDI,	// gpio_rts_pin
-	false,		// gpio_dtr_enable
-	0,			// gpio_dtr_port
-	GPIO_TMS,	// gpio_dtr_pin
-	
 	4,			// ep_out
 	4, 			// ep_in
+	
+	NULL, NULL,
+	
+	{
+		VOM_set_line_coding
+	},
+	
 	{
 		115200,	// bitrate
 		0,		// stopbittype
@@ -229,6 +266,10 @@ vsf_err_t usb_protocol_init(void)
 	LED_STATE_INIT();
 	LED_STATE_G_ON();
 	LED_USB_INIT();
+	
+	Versaloon_CDCACM_param.stream_tx = &usart_stream_p0.stream_tx;
+	Versaloon_CDCACM_param.stream_rx = &usart_stream_p0.stream_rx;
+	usart_stream_init(&usart_stream_p0);
 	
 	USB_Pull_Init();
 	USB_Connect();

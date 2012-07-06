@@ -427,7 +427,7 @@ struct vsfusbd_CDCACM_param_t Versaloon_Shell_param =
 	NULL, NULL,
 	
 	{
-		NULL, NULL, NULL, NULL, NULL
+		NULL
 	},
 	
 	{
@@ -541,7 +541,7 @@ struct vsfusbd_CDCACM_param_t Versaloon_CDCACM_param =
 	NULL, NULL,
 	
 	{
-		VOM_set_line_coding, NULL, NULL, NULL, NULL
+		VOM_set_line_coding
 	},
 	
 	{
@@ -602,8 +602,6 @@ vsf_err_t usb_protocol_init(void)
 	LED_ARRAY_INIT();
 #endif
 	
-	USB_Pull_Init();
-	USB_Connect();
 	Versaloon_CDCACM_param.stream_tx = &usart_stream_p0.stream_tx;
 	Versaloon_CDCACM_param.stream_rx = &usart_stream_p0.stream_rx;
 	usart_stream_init(&usart_stream_p0);
@@ -612,6 +610,9 @@ vsf_err_t usb_protocol_init(void)
 	Versaloon_Shell_param.stream_rx = &shell_stream.stream_rx;
 	usart_stream_init(&shell_stream);
 #endif
+	
+	USB_Pull_Init();
+	USB_Connect();
 	return vsfusbd_device_init(&usb_device);
 }
 

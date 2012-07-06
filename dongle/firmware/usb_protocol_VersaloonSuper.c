@@ -632,7 +632,7 @@ struct vsfusbd_CDCACM_param_t CDCACM_param =
 	NULL, NULL,
 	
 	{
-		VOM_set_line_coding, NULL, NULL, NULL, NULL
+		VOM_set_line_coding
 	},			// callback
 	
 	{
@@ -718,12 +718,13 @@ vsf_err_t usb_protocol_init(void)
 	LED_STATE_G_ON();
 	LED_USB_INIT();
 	
-	USB_Pull_Init();
-	USB_Connect();
 	mal.init(&fakefat_dal_info);
 	CDCACM_param.stream_tx = &usart_stream_p0.stream_tx;
 	CDCACM_param.stream_rx = &usart_stream_p0.stream_rx;
 	usart_stream_init(&usart_stream_p0);
+	
+	USB_Pull_Init();
+	USB_Connect();
 	return vsfusbd_device_init(&usb_device);
 }
 
