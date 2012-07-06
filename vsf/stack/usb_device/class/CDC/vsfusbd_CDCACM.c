@@ -93,7 +93,7 @@ static vsf_err_t vsfusbd_CDCACMData_class_init(uint8_t iface,
 {
 	struct vsfusbd_config_t *config = &device->config[device->configuration];
 	struct vsfusbd_CDCACM_param_t *param = 
-			(struct vsfusbd_CDCACM_param_t *)config->iface[iface].protocol_param;
+		(struct vsfusbd_CDCACM_param_t *)config->iface[iface].protocol_param;
 	
 	if ((NULL == param) || 
 		(NULL == param->stream_tx) || (NULL == param->stream_rx) || 
@@ -148,7 +148,7 @@ static vsf_err_t vsfusbd_CDCACMMaster_GetLineCoding_prepare(
 	uint8_t iface = request->index;
 	struct vsfusbd_config_t *config = &device->config[device->configuration];
 	struct vsfusbd_CDCACM_param_t *param = 
-			(struct vsfusbd_CDCACM_param_t *)config->iface[iface].protocol_param;
+		(struct vsfusbd_CDCACM_param_t *)config->iface[iface].protocol_param;
 	struct vsfusbd_CDCACM_line_coding_t *line_coding = &param->line_coding;
 	
 	if ((NULL == param) || (request->length != 7) || (request->value != 0))
@@ -173,7 +173,7 @@ static vsf_err_t vsfusbd_CDCACMMaster_SetLineCoding_prepare(
 	uint8_t iface = request->index;
 	struct vsfusbd_config_t *config = &device->config[device->configuration];
 	struct vsfusbd_CDCACM_param_t *param = 
-			(struct vsfusbd_CDCACM_param_t *)config->iface[iface].protocol_param;
+		(struct vsfusbd_CDCACM_param_t *)config->iface[iface].protocol_param;
 	
 	if ((NULL == param) || (request->length != 7) || (request->value != 0))
 	{
@@ -191,7 +191,7 @@ static vsf_err_t vsfusbd_CDCACMMaster_SetLineCoding_process(
 	uint8_t iface = request->index;
 	struct vsfusbd_config_t *config = &device->config[device->configuration];
 	struct vsfusbd_CDCACM_param_t *param = 
-			(struct vsfusbd_CDCACM_param_t *)config->iface[iface].protocol_param;
+		(struct vsfusbd_CDCACM_param_t *)config->iface[iface].protocol_param;
 	struct vsfusbd_CDCACM_line_coding_t *line_coding = &param->line_coding;
 	
 	line_coding->bitrate = GET_LE_U32(&buffer->buffer[0]);
@@ -214,7 +214,7 @@ static vsf_err_t vsfusbd_CDCACMMaster_SetControlLineState_prepare(
 	uint8_t iface = request->index;
 	struct vsfusbd_config_t *config = &device->config[device->configuration];
 	struct vsfusbd_CDCACM_param_t *param = 
-			(struct vsfusbd_CDCACM_param_t *)config->iface[iface].protocol_param;
+		(struct vsfusbd_CDCACM_param_t *)config->iface[iface].protocol_param;
 	
 	if ((NULL == param) || (request->length != 0) || 
 		(request->value & ~USBCDCACM_CONTROLLINE_MASK))
@@ -244,6 +244,61 @@ static vsf_err_t vsfusbd_CDCACMMaster_SendBreak_prepare(
 	return VSFERR_NONE;
 }
 
+static vsf_err_t vsfusbd_CDCACMMaster_SendEncapsulatedCommand_prepare(
+	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
+{
+	struct vsfusbd_ctrl_request_t *request = &device->ctrl_handler.request;
+	uint8_t iface = request->index;
+	struct vsfusbd_config_t *config = &device->config[device->configuration];
+	struct vsfusbd_CDCACM_param_t *param = 
+		(struct vsfusbd_CDCACM_param_t *)config->iface[iface].protocol_param;
+	
+	if (request->length > param->callback.encapsulated_data_buffer.size)
+	{
+		return VSFERR_FAIL;
+	}
+	
+	buffer->buffer = param->callback.encapsulated_data_buffer.buffer;
+	buffer->size = request->length;
+	return VSFERR_NONE;
+}
+
+static vsf_err_t vsfusbd_CDCACMMaster_SendEncapsulatedCommand_process(
+	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
+{
+	struct vsfusbd_ctrl_request_t *request = &device->ctrl_handler.request;
+	uint8_t iface = request->index;
+	struct vsfusbd_config_t *config = &device->config[device->configuration];
+	struct vsfusbd_CDCACM_param_t *param = 
+		(struct vsfusbd_CDCACM_param_t *)config->iface[iface].protocol_param;
+	
+	if ((param->callback.send_encapsulated_command != NULL) &&
+		param->callback.send_encapsulated_command(buffer))
+	{
+		return VSFERR_FAIL;
+	}
+	return VSFERR_NONE;
+}
+
+static vsf_err_t vsfusbd_CDCACMMaster_GetEncapsulatedResponse_prepare(
+	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
+{
+	struct vsfusbd_ctrl_request_t *request = &device->ctrl_handler.request;
+	uint8_t iface = request->index;
+	struct vsfusbd_config_t *config = &device->config[device->configuration];
+	struct vsfusbd_CDCACM_param_t *param = 
+		(struct vsfusbd_CDCACM_param_t *)config->iface[iface].protocol_param;
+	
+	if (request->length > param->callback.encapsulated_data_buffer.size)
+	{
+		return VSFERR_FAIL;
+	}
+	
+	buffer->buffer = param->callback.encapsulated_data_buffer.buffer;
+	buffer->size = request->length;
+	return VSFERR_NONE;
+}
+
 static const struct vsfusbd_setup_filter_t vsfusbd_CDCACMMaster_class_setup[] = 
 {
 	{
@@ -270,6 +325,36 @@ static const struct vsfusbd_setup_filter_t vsfusbd_CDCACMMaster_class_setup[] =
 		vsfusbd_CDCACMMaster_SendBreak_prepare,
 		NULL
 	},
+/*	{
+		USB_REQ_DIR_HTOD | USB_REQ_TYPE_CLASS | USB_REQ_RECP_INTERFACE,
+		USB_CDCACMREQ_SET_COMM_FEATURE,
+		vsfusbd_CDCACMMaster_SetCommFeature_prepare,
+		NULL
+	},
+	{
+		USB_REQ_DIR_DTOH | USB_REQ_TYPE_CLASS | USB_REQ_RECP_INTERFACE,
+		USB_CDCACMREQ_GET_COMM_FEATURE,
+		vsfusbd_CDCACMMaster_GetCommFeature_prepare,
+		NULL
+	},
+	{
+		USB_REQ_DIR_HTOD | USB_REQ_TYPE_CLASS | USB_REQ_RECP_INTERFACE,
+		USB_CDCACMREQ_CLEAR_COMM_FEATURE,
+		vsfusbd_CDCACMMaster_ClearCommFeature_prepare,
+		NULL
+	},
+*/	{
+		USB_REQ_DIR_HTOD | USB_REQ_TYPE_CLASS | USB_REQ_RECP_INTERFACE,
+		USB_CDCACMREQ_SEND_ENCAPSULATED_COMMAND,
+		vsfusbd_CDCACMMaster_SendEncapsulatedCommand_prepare,
+		vsfusbd_CDCACMMaster_SendEncapsulatedCommand_process,
+	},
+	{
+		USB_REQ_DIR_DTOH | USB_REQ_TYPE_CLASS | USB_REQ_RECP_INTERFACE,
+		USB_CDCACMREQ_GET_ENCAPSULATED_RESPONSE,
+		vsfusbd_CDCACMMaster_GetEncapsulatedResponse_prepare,
+		NULL,
+	}
 	VSFUSBD_SETUP_NULL
 };
 
