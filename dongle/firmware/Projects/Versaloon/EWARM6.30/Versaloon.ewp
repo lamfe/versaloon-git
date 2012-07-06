@@ -306,6 +306,7 @@
           <state>$PROJ_DIR$\..\..\..\Interfaces\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\APP\</state>
           <state>$PROJ_DIR$\..\..\..\USB_TO_XXX\</state>
+          <state>$PROJ_DIR$\..\..\..\versaloon_usb\</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\tool\list</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\</state>
@@ -1253,6 +1254,7 @@
           <state>$PROJ_DIR$\..\..\..\Interfaces\</state>
           <state>$PROJ_DIR$\..\..\..\Interfaces\APP\</state>
           <state>$PROJ_DIR$\..\..\..\USB_TO_XXX\</state>
+          <state>$PROJ_DIR$\..\..\..\versaloon_usb\</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\tool\list</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\</state>
@@ -2151,6 +2153,12 @@
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB_TO_XXX.c</name>
+    </file>
+  </group>
+  <group>
+    <name>versaloon_usb</name>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\versaloon_usb\vsfusbd_Versaloon.c</name>
     </file>
   </group>
   <group>

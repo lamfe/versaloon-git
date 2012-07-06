@@ -6,8 +6,6 @@
 #include "usb_protocol.h"
 #include "USB_TO_XXX.h"
 
-uint8_t asyn_rx_buf[ASYN_DATA_BUFF_SIZE];
-
 static const uint8_t CDCACM_DeviceDescriptor[] =
 {
 	0x12,	// bLength

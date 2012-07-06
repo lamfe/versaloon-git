@@ -6,126 +6,8 @@
 #include "dal/mal/mal.h"
 
 #include "usb_protocol.h"
-#include "USB_TO_XXX.h"
 
 #include "dal/usart_stream/usart_stream.h"
-
-uint8_t buffer_out[USB_DATA_BUFF_SIZE], asyn_rx_buf[ASYN_DATA_BUFF_SIZE];
-volatile uint32_t count_out = 0;
-volatile uint32_t usb_ovf = 0;
-volatile uint32_t cmd_len = 0;
-
-volatile uint32_t rep_len = 0;
-
-static vsf_err_t Versaloon_OUT_hanlder(void *p, uint8_t ep)
-{
-	struct vsfusbd_device_t *device = p;
-	uint32_t pkg_len;
-
-	if(cmd_len & 0x80000000)
-	{
-		usb_ovf = 1;
-		count_out = 0;
-	}
-	
-	device->drv->ep.switch_OUT_buffer(ep);
-	pkg_len = device->drv->ep.get_OUT_count(ep);
-	device->drv->ep.read_OUT_buffer(ep, buffer_out + count_out, pkg_len);
-	device->drv->ep.enable_OUT(ep);
-	
-	if(pkg_len)
-	{
-		if(!count_out)
-		{
-			// first package
-			if(buffer_out[0] <= VERSALOON_COMMON_CMD_END)
-			{
-				// Common Commands
-				if(buffer_out[0] == VERSALOON_WRITE_OFFLINE_DATA)
-				{
-					cmd_len = buffer_out[1] + ((uint16_t)buffer_out[2] << 8) + 7;
-				}
-				else
-				{
-					cmd_len = pkg_len;
-				}
-			}
-#if USB_TO_XXX_EN
-			else if(buffer_out[0] <= VERSALOON_USB_TO_XXX_CMD_END)
-			{
-				// USB_TO_XXX Support
-				cmd_len = buffer_out[1] + ((uint16_t)buffer_out[2] << 8);
-			}
-#endif
-		}
-		count_out += pkg_len;
-		
-		// all data received?
-		pkg_len = cmd_len;
-		if(count_out >= pkg_len)
-		{
-			cmd_len |= 0x80000000;
-		}
-	}
-	
-	return VSFERR_NONE;
-}
-
-static vsf_err_t versaloon_usb_init(uint8_t iface, struct vsfusbd_device_t *device)
-{
-	if (device->drv->ep.set_IN_dbuffer(2) || 
-		device->drv->ep.set_OUT_dbuffer(3) || 
-		device->drv->ep.set_OUT_handler(3, Versaloon_OUT_hanlder))
-	{
-		return VSFERR_FAIL;
-	}
-	return VSFERR_NONE;
-}
-
-static vsf_err_t versaloon_poll(uint8_t iface, struct vsfusbd_device_t *device)
-{
-	if(cmd_len & 0x80000000)
-	{
-		// A valid USB package has been received
-		LED_USB_ON();
-		
-		ProcessCommand(&buffer_out[0], cmd_len & 0xFFFF);
-		if(rep_len > 0)
-		{
-			// indicate reply data is valid
-			rep_len |= 0x80000000;
-		}
-		else
-		{
-			// no data to send, set cmd_len to 0
-			cmd_len = 0;
-		}
-		count_out = 0;				// set USB receive pointer to 0
-		
-		if(rep_len & 0x80000000)	// there is valid data to be sent to PC
-		{
-			struct vsf_buffer_t buffer;
-			
-			buffer.buffer = buffer_out;
-			buffer.size = rep_len & 0xFFFF;
-			vsfusbd_ep_out(&usb_device, 2, &buffer);
-			
-			// reset command length and reply length for next command
-			cmd_len = 0;
-			rep_len = 0;
-		}
-		
-		LED_USB_OFF();
-	}
-	else
-	{
-#if POWER_OUT_EN
-			app_interfaces.target_voltage.poll(0);
-#endif
-	}
-	
-	return VSFERR_NONE;
-}
 
 static const uint8_t Versaloon_DeviceDescriptor[] =
 {
@@ -526,11 +408,12 @@ static const struct vsfusbd_desc_filter_t descriptors[] =
 };
 
 // Versaloon
-static const struct vsfusbd_class_protocol_t Versaloon_Protocol = 
+struct vsfusbd_Versaloon_param_t Versaloon_param = 
 {
-	NULL, NULL, NULL, 
-	versaloon_usb_init,
-	NULL, versaloon_poll
+	3,				// uint8_t ep_out;
+	2,				// uint8_t ep_in;
+	
+	true,			// bool dbuffer_en;
 };
 
 #if SCRIPTS_EN
@@ -671,7 +554,7 @@ struct vsfusbd_CDCACM_param_t Versaloon_CDCACM_param =
 
 static struct vsfusbd_iface_t ifaces[] = 
 {
-	{(struct vsfusbd_class_protocol_t *)&Versaloon_Protocol, NULL},
+	{(struct vsfusbd_class_protocol_t *)&vsfusbd_Versaloon_class, (void *)&Versaloon_param},
 	{(struct vsfusbd_class_protocol_t *)&vsfusbd_CDCACMMaster_class, (void *)&Versaloon_CDCACM_param},
 	{(struct vsfusbd_class_protocol_t *)&vsfusbd_CDCACMData_class, (void *)&Versaloon_CDCACM_param},
 #if SCRIPTS_EN
@@ -717,21 +600,6 @@ vsf_err_t usb_protocol_init(void)
 	LED_USB_INIT();
 #if HW_HAS_LEDARRAY
 	LED_ARRAY_INIT();
-#endif
-	
-#if SCRIPTS_EN
-	LED_ARRAY_INIT();
-#endif
-	
-	app_interfaces.delay.init();
-#if POWER_SAMPLE_EN
-	core_interfaces.adc.init(TVCC_ADC_PORT);
-	core_interfaces.adc.config(TVCC_ADC_PORT, CORE_APB2_FREQ_HZ / 8, ADC_ALIGNRIGHT);
-	core_interfaces.adc.config_channel(TVCC_ADC_PORT, TVCC_ADC_CHANNEL, 0xFF);
-	core_interfaces.adc.calibrate(TVCC_ADC_PORT, TVCC_ADC_CHANNEL);
-#endif
-#if USB_TO_XXX_EN
-	USB_TO_XXX_Init(asyn_rx_buf + 2048);
 #endif
 	
 	USB_Pull_Init();

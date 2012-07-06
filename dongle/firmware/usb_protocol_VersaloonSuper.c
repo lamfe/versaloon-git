@@ -11,8 +11,6 @@
 
 #include "dal/usart_stream/usart_stream.h"
 
-uint8_t asyn_rx_buf[ASYN_DATA_BUFF_SIZE];
-
 static const uint8_t VersaloonSuper_DeviceDescriptor[] =
 {
 	0x12,	// bLength
@@ -557,6 +555,15 @@ struct vsfusbd_MSCBOT_param_t MSCBOT_param =
 	},							// struct vsf_buffer_t page_buffer[2];
 };
 
+// Versaloon
+struct vsfusbd_Versaloon_param_t Versaloon_param = 
+{
+	2,				// uint8_t ep_out;
+	2,				// uint8_t ep_in;
+	
+	false,			// bool dbuffer_en;
+};
+
 // RNDIS
 struct vsfusbd_CDCACM_param_t RNDIS_param = 
 {
@@ -666,7 +673,7 @@ static struct vsfusbd_iface_t ifaces[] =
 	// MSC
 	{(struct vsfusbd_class_protocol_t *)&vsfusbd_MSCBOT_class, (void *)&MSCBOT_param},
 	// Versaloon
-	{(struct vsfusbd_class_protocol_t *)NULL, NULL},
+	{(struct vsfusbd_class_protocol_t *)&vsfusbd_Versaloon_class, (void *)&Versaloon_param},
 	// RNDIS
 	{(struct vsfusbd_class_protocol_t *)&vsfusbd_CDCACMMaster_class, (void *)&CDCACM_param},
 	{(struct vsfusbd_class_protocol_t *)&vsfusbd_CDCACMData_class, (void *)&CDCACM_param},

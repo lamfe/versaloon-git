@@ -7,8 +7,6 @@
 #include "dal/sd/sd_common.h"
 #include "dal/sd/sd_spi_drv.h"
 
-uint8_t asyn_rx_buf[ASYN_DATA_BUFF_SIZE];
-
 static const uint8_t MSCBOT_DeviceDescriptor[] =
 {
 	0x12,	// bLength
