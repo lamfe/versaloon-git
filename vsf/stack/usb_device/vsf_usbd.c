@@ -46,7 +46,7 @@ vsf_err_t vsfusbd_device_get_descriptor(struct vsfusbd_device_t *device,
 			
 			if (filter->read != NULL)
 			{
-				return filter->read(buffer);
+				return filter->read(device, buffer);
 			}
 			return VSFERR_NONE;
 		}

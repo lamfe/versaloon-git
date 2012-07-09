@@ -22,6 +22,8 @@
 
 #include "tool/buffer/buffer.h"
 
+struct vsfusbd_device_t;
+
 enum vsfusbd_ctrl_state_t
 {
 	USB_CTRL_STAT_WAIT_SETUP,
@@ -71,10 +73,9 @@ struct vsfusbd_desc_filter_t
 	uint16_t lanid;
 	
 	struct vsf_buffer_t buffer;
-	vsf_err_t (*read)(struct vsf_buffer_t *buffer);
+	vsf_err_t (*read)(struct vsfusbd_device_t *device, 
+						struct vsf_buffer_t *buffer);
 };
-
-struct vsfusbd_device_t;
 
 #define VSFUSBD_SETUP_INVALID_TYPE	0xFF
 #define VSFUSBD_SETUP_NULL			{VSFUSBD_SETUP_INVALID_TYPE, 0, NULL, NULL}
