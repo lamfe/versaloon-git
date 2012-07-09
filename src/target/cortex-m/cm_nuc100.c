@@ -242,11 +242,6 @@ static vsf_err_t nuc100swj_iap_wait_finish(uint32_t cnt_idx)
 		if (err && (err != VSFERR_NOT_READY))
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "poll iap finish");
-{
-	uint32_t reg;
-	adi_memap_read_reg32(NUC100_REG_ISPCON, &reg, 1);
-	LOG_INFO("ISPCON = 0x%08X", reg);
-}
 			return VSFERR_FAIL;
 		}
 		end = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
