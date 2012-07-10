@@ -324,14 +324,15 @@ vsf_err_t stm32_usbd_ep_set_IN_epsize(uint8_t idx, uint16_t epsize)
 	}
 	idx = (uint8_t)index;
 	
-	if ((epsize & 0x0007) || ((EP_Cfg_Ptr - epsize) < STM32_USBD_EP_NUM * 8))
+	if ((EP_Cfg_Ptr - epsize) < STM32_USBD_EP_NUM * 8)
 	{
 		return VSFERR_NOT_ENOUGH_RESOURCES;
 	}
-	EP_Cfg_Ptr -= epsize;
 	
 	stm32_usbd_IN_epsize[idx] = epsize;
 	SetEPTxCount(idx, epsize);
+	// fix for 16-bit aligned memory
+	EP_Cfg_Ptr -= epsize & 1 ? epsize + 1 : epsize;
 	SetEPTxAddr(idx, EP_Cfg_Ptr);
 	SetEPTxStatus(idx, EP_TX_NAK);
 	return VSFERR_NONE;
@@ -574,14 +575,15 @@ vsf_err_t stm32_usbd_ep_set_OUT_epsize(uint8_t idx, uint16_t epsize)
 	ep0 = 0 == idx;
 	idx = (uint8_t)index;
 	
-	if ((epsize & 0x0007) || ((EP_Cfg_Ptr - epsize) < STM32_USBD_EP_NUM * 8))
+	if ((EP_Cfg_Ptr - epsize) < STM32_USBD_EP_NUM * 8)
 	{
 		return VSFERR_NOT_ENOUGH_RESOURCES;
 	}
-	EP_Cfg_Ptr -= epsize;
 	
 	stm32_usbd_OUT_epsize[idx] = epsize;
 	SetEPRxCount(idx, epsize);
+	// fix for 16-bit aligned memory
+	EP_Cfg_Ptr -= epsize & 1 ? epsize + 1 : epsize;
 	SetEPRxAddr(idx, EP_Cfg_Ptr);
 	if (ep0)
 	{

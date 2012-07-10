@@ -881,6 +881,25 @@ static struct vsfusbd_setup_filter_t *vsfusbd_get_request_filter(
 		{
 			*iface = (int8_t)request->index;
 		}
+		else if (USB_REQ_GET_RECP(request->type) == USB_REQ_RECP_OTHER)
+		{
+			// find an interface which will claim this request
+			struct vsfusbd_setup_filter_t *setup_filter;
+			uint8_t i;
+			
+			for (i = 0; i < config->num_of_ifaces; i++)
+			{
+				setup_filter = vsfusbd_get_request_filter_do(device, 
+								config->iface[i].class_protocol->req_filter);
+				if (setup_filter != NULL)
+				{
+					*iface = i;
+					return setup_filter;
+				}
+			}
+			*iface = -1;
+			return NULL;
+		}
 		else if ((USB_REQ_GET_RECP(request->type) == USB_REQ_RECP_DEVICE) && 
 				(USB_REQ_GET_TYPE(request->type) == USB_REQ_TYPE_CLASS))
 		{
