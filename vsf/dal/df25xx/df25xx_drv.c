@@ -70,7 +70,7 @@ static vsf_err_t df25xx_drv_init(struct dal_info_t *info)
 							ifs->cs_pin);
 	interfaces->spi.init(ifs->spi_port);
 	return interfaces->spi.config(ifs->spi_port, df25xx_drv_param->spi_khz, 
-									SPI_MODE3 | SPI_MSB_FIRST);
+									SPI_MODE3 | SPI_MSB_FIRST | SPI_MASTER);
 }
 
 static vsf_err_t df25xx_drv_getinfo(struct dal_info_t *info)

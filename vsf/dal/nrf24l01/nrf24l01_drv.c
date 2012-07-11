@@ -154,7 +154,7 @@ static vsf_err_t nrf24l01_drv_config(struct dal_info_t *info)
 	uint8_t config;
 	
 	interfaces->spi.config(ifs->spi_port, param->kHz, 
-							SPI_MODE0 | SPI_MSB_FIRST);
+							SPI_MODE0 | SPI_MSB_FIRST | SPI_MASTER);
 	
 	config = (uint8_t)param->aw;
 	if (nrf24l01_drv_write_reg(ifs, NRF24L01_REG_SETUP_AW, &config, 1))
