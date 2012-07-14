@@ -1,3 +1,4 @@
+#include "compiler.h"
 #include "app_type.h"
 
 #include "fakefat.h"

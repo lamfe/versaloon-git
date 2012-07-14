@@ -236,7 +236,7 @@ static struct vsfusbd_iface_t ifaces[] =
 static struct vsfusbd_config_t config0[] = 
 {
 	{
-		NULL, NULL, 2, (struct vsfusbd_iface_t *)ifaces
+		NULL, NULL, dimof(ifaces), (struct vsfusbd_iface_t *)ifaces
 	}
 };
 struct vsfusbd_device_t usb_device = 

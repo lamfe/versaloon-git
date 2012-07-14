@@ -1,4 +1,4 @@
-#include "app_cfg.h"
+#include "compiler.h"
 #include "app_type.h"
 
 #include "dal/mal/mal.h"
