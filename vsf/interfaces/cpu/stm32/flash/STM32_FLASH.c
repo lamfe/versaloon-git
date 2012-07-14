@@ -1,4 +1,5 @@
 #include "app_type.h"
+#include "compiler.h"
 #include "interfaces.h"
 
 // TODO: remove MACROs below to stm32_reg.h

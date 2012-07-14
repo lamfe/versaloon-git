@@ -1,4 +1,4 @@
-#include "app_cfg.h"
+#include "compiler.h"
 #include "interfaces.h"
 
 #include "stack/usb_device/vsf_usbd_const.h"
