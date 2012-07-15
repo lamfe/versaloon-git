@@ -128,9 +128,9 @@ const struct vss_cmd_t avrxmega_notifier[] =
 #define poll_start(ten_us)			prog->poll.start((ten_us), 10)
 #define poll_end()					prog->poll.end()
 #define poll_ok(t, s, m, v)			\
-	prog->poll.checkok((t), 1, (s), (m), (v))
+	prog->poll.checkok((t), 2, (s), (m), (v))
 #define poll_fail(t, s, m, v)		\
-	prog->poll.checkfail((t), 1, (s), (m), (v))
+	prog->poll.checkfail((t), 2, (s), (m), (v))
 
 #define delay_ms(ms)				prog->delay.delayms((ms) | 0x8000)
 #define delay_us(us)				prog->delay.delayus((us) & 0x7FFF)
@@ -562,9 +562,6 @@ static vsf_err_t avrxmega_nvm_pollready(void)
 	pdi_read_reg(PDI_REG_STATUS, NULL);
 	nvm_poll_bus_ready();
 	
-	pdi_lds(AVRXMEGA_NVM_REG_STATUS, NULL);
-	nvm_poll_control_ready();
-	
 	poll_end();
 	
 	return VSFERR_NONE;
@@ -594,7 +591,7 @@ static vsf_err_t avrxmega_nvm_writepage(uint8_t write_buff_cmd,
 	pdi_sts(AVRXMEGA_NVM_REG_CMD, write_buff_cmd);
 	pdi_write_memory(addr, size, buff);
 	
-//	avrxmega_nvm_pollready();
+	avrxmega_nvm_pollready();
 	
 	pdi_sts(AVRXMEGA_NVM_REG_CMD, write_page_cmd);
 	pdi_sts(addr, 0x00);
@@ -720,7 +717,7 @@ ERASE_TARGET_HANDLER(avrxmega)
 			break;
 		case APPLICATION_CHAR:
 			cmd = AVRXMEGA_NVM_CMD_ERASEAPPSEC;
-			addr = 0;
+			addr = AVRXMEGA_PDIBUS_APP_BASE;
 			break;
 		case EEPROM_CHAR:
 			cmd = AVRXMEGA_NVM_CMD_ERASEEEPROM;
@@ -753,7 +750,7 @@ WRITE_TARGET_HANDLER(avrxmega)
 	case APPLICATION_CHAR:
 		write_buff_cmd = AVRXMEGA_NVM_CMD_LOADFLASHPAGEBUFF;
 		erase_buff_cmd = AVRXMEGA_NVM_CMD_ERASEFLASHPAGEBUFF;
-		write_page_cmd = AVRXMEGA_NVM_CMD_WRITEFLASHPAGE;
+		write_page_cmd = AVRXMEGA_NVM_CMD_WRITEAPPSECPAGE;
 		addr += AVRXMEGA_PDIBUS_APP_BASE;
 		goto do_write_page;
 	case EEPROM_CHAR:
