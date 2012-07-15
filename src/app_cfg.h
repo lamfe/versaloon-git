@@ -35,7 +35,7 @@
 #define TARGET_AT91SAM3_EN					1
 #define TARGET_AVR32_EN						0
 #define TARGET_AVR8_EN						1
-#define TARGET_AVRXMEGA_EN					0
+#define TARGET_AVRXMEGA_EN					1
 #define TARGET_C8051F_EN					1
 #define TARGET_HCS08_EN						1
 #define TARGET_HCS12_EN						1
