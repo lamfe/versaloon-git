@@ -1821,7 +1821,7 @@ end;
 
 procedure TFormMain.btnEditCaliClick(Sender: TObject);
 begin
-  ShowTargetArea(CALI_CHAR, lbledtCali, @VSProg_Parser.CaliDataParser,
+  ShowTargetArea(CALI_CHAR, TObject(lbledtCali), @VSProg_Parser.CaliDataParser,
     TargetAreaData.CaliData);
 end;
 
@@ -1832,7 +1832,7 @@ end;
 
 procedure TFormMain.btnEditFuseClick(Sender: TObject);
 begin
-  ShowTargetArea(FUSE_CHAR, lbledtFuse, @VSProg_Parser.FuseDataParser,
+  ShowTargetArea(FUSE_CHAR, TObject(lbledtFuse), @VSProg_Parser.FuseDataParser,
     TargetAreaData.FuseData);
 end;
 
@@ -1844,7 +1844,7 @@ end;
 
 procedure TFormMain.btnEditLockClick(Sender: TObject);
 begin
-  ShowTargetArea(LOCK_CHAR, lbledtLock, @VSProg_Parser.LockDataParser,
+  ShowTargetArea(LOCK_CHAR, TObject(lbledtLock), @VSProg_Parser.LockDataParser,
     TargetAreaData.LockData);
 end;
 
@@ -1862,7 +1862,7 @@ end;
 
 procedure TFormMain.btnEditUsrSigClick(Sender: TObject);
 begin
-  ShowTargetArea(USRSIG_CHAR, lbledtUsrsig, @VSProg_Parser.UsrsigDataParser,
+  ShowTargetArea(USRSIG_CHAR, TObject(lbledtUsrsig), @VSProg_Parser.UsrsigDataParser,
     TargetAreaData.UsrsigData);
 end;
 
@@ -1911,7 +1911,7 @@ end;
 
 procedure TFormMain.btnEditSpecialStrClick(Sender: TObject);
 begin
-  ShowTargetArea(SPECIALSTR_CHAR, lbledtSpecialStr,
+  ShowTargetArea(SPECIALSTR_CHAR, TObject(lbledtSpecialStr),
     @VSProg_Parser.SpecialStrParser, TargetAreaData.FuseData);
 end;
 
