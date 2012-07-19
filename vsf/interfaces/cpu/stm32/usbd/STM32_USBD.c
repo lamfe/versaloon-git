@@ -82,6 +82,15 @@ vsf_err_t stm32_usbd_init(void *device)
 	SetCNTR(CNTR_FRES);
 	SetCNTR(0);
 	
+	// It seems that there MUST be at least 8 clock cycles
+	// between clear FRES and clear ISTR, or RESET flash can't be cleared
+	__asm("nop");
+	__asm("nop");
+	__asm("nop");
+	__asm("nop");
+	__asm("nop");
+	__asm("nop");
+	__asm("nop");
 	SetISTR(0);
 	SetCNTR(CNTR_CTRM | CNTR_WKUPM | CNTR_SUSPM | CNTR_ERRM | CNTR_RESETM);
 	SetBTABLE(0);
