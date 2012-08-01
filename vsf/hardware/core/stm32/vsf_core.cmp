@@ -1,4 +1,4 @@
-Cmp-Mod V01 Created by CvPcb (2012-01-19 BZR 3256)-stable date = 11/04/2012 19:57:31
+Cmp-Mod V01 Created by CvPcb (2012-01-19 BZR 3256)-stable date = 01/08/2012 13:28:37
 
 BeginCmp
 TimeStamp = /4F65E579;
@@ -25,13 +25,6 @@ BeginCmp
 TimeStamp = /4F65A34C;
 Reference = C3;
 ValeurCmp = 10uF;
-IdModule  = SM0805L;
-EndCmp
-
-BeginCmp
-TimeStamp = /4F65A365;
-Reference = C4;
-ValeurCmp = 10nF;
 IdModule  = SM0805L;
 EndCmp
 
@@ -190,66 +183,17 @@ IdModule  = PIN_ARRAY_10x2;
 EndCmp
 
 BeginCmp
-TimeStamp = /4F69974C;
+TimeStamp = /50177D65;
 Reference = P20;
-ValeurCmp = CONN_32X2;
-IdModule  = DIN264;
+ValeurCmp = CONN_30X2;
+IdModule  = PIN_ARRAY_30X2;
 EndCmp
 
 BeginCmp
-TimeStamp = /4F6C0AB3;
-Reference = P21;
-ValeurCmp = CONN_32X2;
-IdModule  = DIN264;
-EndCmp
-
-BeginCmp
-TimeStamp = /4F699859;
+TimeStamp = /50177D78;
 Reference = P30;
-ValeurCmp = CONN_32X2;
-IdModule  = DIN264;
-EndCmp
-
-BeginCmp
-TimeStamp = /4F6C0ABA;
-Reference = P31;
-ValeurCmp = CONN_32X2;
-IdModule  = DIN264;
-EndCmp
-
-BeginCmp
-TimeStamp = /4F69983F;
-Reference = P40;
-ValeurCmp = CONN_16X2;
-IdModule  = DIN232;
-EndCmp
-
-BeginCmp
-TimeStamp = /4F6C0AD9;
-Reference = P41;
-ValeurCmp = CONN_16X2;
-IdModule  = DIN232;
-EndCmp
-
-BeginCmp
-TimeStamp = /4F699864;
-Reference = P50;
-ValeurCmp = CONN_16X2;
-IdModule  = DIN232;
-EndCmp
-
-BeginCmp
-TimeStamp = /4F6C0ADD;
-Reference = P51;
-ValeurCmp = CONN_16X2;
-IdModule  = DIN232;
-EndCmp
-
-BeginCmp
-TimeStamp = /4F65A35C;
-Reference = R0;
-ValeurCmp = 47;
-IdModule  = SM0805L;
+ValeurCmp = CONN_30X2;
+IdModule  = PIN_ARRAY_30X2;
 EndCmp
 
 BeginCmp
@@ -327,6 +271,27 @@ TimeStamp = /4F65E4A4;
 Reference = U1;
 ValeurCmp = LM1117-3.3;
 IdModule  = SOT223;
+EndCmp
+
+BeginCmp
+TimeStamp = /5018B48D;
+Reference = U10;
+ValeurCmp = STM32-100PIN;
+IdModule  = TQFP_100;
+EndCmp
+
+BeginCmp
+TimeStamp = /5018B49F;
+Reference = U11;
+ValeurCmp = STM32-64PIN;
+IdModule  = TQFP_64;
+EndCmp
+
+BeginCmp
+TimeStamp = /5018B4D6;
+Reference = U12;
+ValeurCmp = STM32-48PIN;
+IdModule  = LQFP48B;
 EndCmp
 
 BeginCmp
