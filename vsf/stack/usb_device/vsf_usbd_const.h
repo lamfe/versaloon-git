@@ -48,7 +48,7 @@ enum usb_description_type_t
 	USB_DESC_TYPE_STRING			= 0x03,
 	USB_DESC_TYPE_INTERFACE			= 0x04,
 	USB_DESC_TYPE_ENDPOINT			= 0x05,
-	USB_DESC_TYPE_IAD				= 0X0B,
+	USB_DESC_TYPE_IAD				= 0x0B,
 };
 
 // request

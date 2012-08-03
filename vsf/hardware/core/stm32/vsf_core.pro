@@ -1,12 +1,7 @@
-update=22/03/2012 13:24:46
-last_client=eeschema
+update=03/08/2012 15:44:02
+last_client=cvpcb
 [general]
 version=1
-[cvpcb]
-version=1
-NetIExt=net
-[cvpcb/libraries]
-EquName1=devcms
 [pcbnew]
 version=1
 PadDrlX=320
@@ -25,7 +20,6 @@ TxtLar=120
 MSegLar=150
 LastNetListRead=vsf_core.net
 [pcbnew/libraries]
-LibDir=
 LibName1=sockets
 LibName2=connect
 LibName3=discret
@@ -37,6 +31,8 @@ LibName8=valves
 LibName9=led
 LibName10=dip_sockets
 LibName11=simonqian
+LibName12=versaloon
+LibDir=
 [eeschema]
 version=1
 LibDir=
@@ -101,3 +97,9 @@ LibName29=contrib
 LibName30=valves
 LibName31=stm32
 LibName32=simonqian
+LibName33=versaloon
+[cvpcb]
+version=1
+NetIExt=net
+[cvpcb/libraries]
+EquName1=devcms

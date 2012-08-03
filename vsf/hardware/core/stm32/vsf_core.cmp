@@ -1,4 +1,4 @@
-Cmp-Mod V01 Created by CvPcb (2012-01-19 BZR 3256)-stable date = 01/08/2012 13:28:37
+Cmp-Mod V01 Created by CvPcb (2012-01-19 BZR 3256)-stable date = 03/08/2012 15:44:24
 
 BeginCmp
 TimeStamp = /4F65E579;
@@ -162,9 +162,16 @@ IdModule  = SM0805L;
 EndCmp
 
 BeginCmp
+TimeStamp = /501B80A4;
+Reference = G0;
+ValeurCmp = LOGO;
+IdModule  = LOGO;
+EndCmp
+
+BeginCmp
 TimeStamp = /4F65A32D;
 Reference = L1;
-ValeurCmp = 100mH;
+ValeurCmp = 10mH;
 IdModule  = SM0805L;
 EndCmp
 
