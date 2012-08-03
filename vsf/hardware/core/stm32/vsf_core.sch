@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date 01/08/2012 17:44:54
+EESchema Schematic File Version 2  date 03/08/2012 15:43:33
 LIBS:power
 LIBS:device
 LIBS:transistors
@@ -31,6 +31,7 @@ LIBS:contrib
 LIBS:valves
 LIBS:stm32
 LIBS:simonqian
+LIBS:versaloon
 LIBS:vsf_core-cache
 EELAYER 25  0
 EELAYER END
@@ -38,7 +39,7 @@ $Descr User 13000 13000
 encoding utf-8
 Sheet 1 1
 Title ""
-Date "1 aug 2012"
+Date "3 aug 2012"
 Rev ""
 Comp ""
 Comment1 ""
@@ -46,6 +47,15 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+$Comp
+L LOGO G0
+U 1 1 501B80A4
+P 7550 950
+F 0 "G0" H 7550 874 60  0001 C CNN
+F 1 "LOGO" H 7550 1026 60  0001 C CNN
+	1    7550 950 
+	1    0    0    -1  
+$EndComp
 Text Label 10000 8600 1    60   ~ 0
 VCC
 Text Label 10100 8600 1    60   ~ 0

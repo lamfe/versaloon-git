@@ -1,4 +1,4 @@
-# EESchema Netlist Version 1.1 created  01/08/2012 13:28:37
+# EESchema Netlist Version 1.1 created  03/08/2012 15:44:24
 (
  ( /4F65E579 SM1210L C0 100uF
   ( 1 /5V_OUT )
@@ -92,7 +92,9 @@
   ( 1 N-000146 )
   ( 2 /5V_OUT )
  )
- ( /4F65A32D SM0805L L1 100mH
+ ( /501B80A4 LOGO G0 LOGO
+ )
+ ( /4F65A32D SM0805L L1 10mH
   ( 1 VCC )
   ( 2 /AVCC )
  )
