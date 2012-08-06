@@ -730,6 +730,10 @@ static vsf_err_t vsfusbd_stdreq_set_interface_prepare(
 	}
 	
 	config->iface[iface_idx].alternate_setting = alternate_setting;
+	if (device->callback.on_set_interface != NULL)
+	{
+		return device->callback.on_set_interface(iface_idx, alternate_setting);
+	}
 	return VSFERR_NONE;
 }
 
