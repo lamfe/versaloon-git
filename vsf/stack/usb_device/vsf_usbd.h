@@ -142,6 +142,8 @@ struct vsfusbd_device_t
 		vsf_err_t (*init)(void);
 		vsf_err_t (*fini)(void);
 		vsf_err_t (*poll)(void);
+		vsf_err_t (*on_set_interface)(uint8_t iface,
+										uint8_t alternate_setting);
 		
 		void (*on_ATTACH)(void);
 		void (*on_DETACH)(void);
