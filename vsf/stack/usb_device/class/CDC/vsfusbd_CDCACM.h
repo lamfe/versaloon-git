@@ -45,6 +45,7 @@ struct vsfusbd_CDCACM_param_t
 		vsf_err_t (*set_line_coding)(struct vsfusbd_CDCACM_line_coding_t *line_coding);
 		vsf_err_t (*set_control_line)(uint8_t control_line);
 		vsf_err_t (*get_control_line)(uint8_t *control_line);
+		vsf_err_t (*send_break)(void);
 		
 		vsf_err_t (*send_encapsulated_command)(struct vsf_buffer_t *buffer);
 		struct vsf_buffer_t encapsulated_data_buffer;
