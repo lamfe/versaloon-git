@@ -25,7 +25,7 @@ static const uint8_t VersaloonSuper_DeviceDescriptor[] =
 	0x83,
 	0x04,	// idVendor = 0x0483
 	0x39,
-	0xA0,	// idProduct = 0xA038
+	0xA0,	// idProduct = 0xA039
 	0x00,
 	0x02,	// bcdDevice = 2.00
 	1,		// Index of string descriptor describing manufacturer
@@ -565,21 +565,23 @@ struct vsfusbd_Versaloon_param_t Versaloon_param =
 };
 
 // RNDIS
+static uint8_t vsfusbd_CDCACM_RNDIS_encapsulated_buffer[512];
 struct vsfusbd_CDCACM_param_t RNDIS_param = 
 {
 	4,			// ep_out
 	4, 			// ep_in
 	
-/*	{
-		
-	},			// stream_tx;
+	NULL, NULL,
+	
 	{
-		
-	},			// stream_rx;
-	{
-		
-	}			// callback
-*/
+		NULL, NULL, NULL,
+		NULL,	// seng_break;
+		NULL,	// send_encapsulated_command
+		{
+			vsfusbd_CDCACM_RNDIS_encapsulated_buffer,
+			sizeof(vsfusbd_CDCACM_RNDIS_encapsulated_buffer)
+		}		// encapsulated_data_buffer
+	},			// callback
 };
 
 // VCOM

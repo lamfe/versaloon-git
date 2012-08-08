@@ -235,8 +235,13 @@ static vsf_err_t vsfusbd_CDCACMMaster_SendBreak_prepare(
 	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
 {
 	struct vsfusbd_ctrl_request_t *request = &device->ctrl_handler.request;
+	uint8_t iface = request->index;
+	struct vsfusbd_config_t *config = &device->config[device->configuration];
+	struct vsfusbd_CDCACM_param_t *param = 
+		(struct vsfusbd_CDCACM_param_t *)config->iface[iface].protocol_param;
 	
-	if (request->length != 0)
+	if ((request->length != 0) ||
+		((param->callback.send_break != NULL) && param->callback.send_break()))
 	{
 		return VSFERR_FAIL;
 	}
