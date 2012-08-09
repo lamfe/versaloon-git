@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date 08/08/2012 10:28:46
+EESchema Schematic File Version 2  date 09/08/2012 09:33:35
 LIBS:power
 LIBS:device
 LIBS:transistors
@@ -32,13 +32,14 @@ LIBS:valves
 LIBS:stm32
 LIBS:simonqian
 LIBS:versaloon
+LIBS:vsf_core-cache
 EELAYER 25  0
 EELAYER END
 $Descr User 13000 13000
 encoding utf-8
 Sheet 1 1
 Title ""
-Date "8 aug 2012"
+Date "9 aug 2012"
 Rev ""
 Comp ""
 Comment1 ""
@@ -46,14 +47,10 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
-Text Label 11650 9550 0    60   ~ 0
-FUNSEL0
-Text Label 8250 9500 0    60   ~ 0
-FUNSEL0
-Text Label 4450 9250 0    60   ~ 0
-FUNSEL0
-Text Label 6500 3000 0    60   ~ 0
-FUNSEL0
+Text Label 8800 2100 2    60   ~ 0
+I2S_SD_I
+Wire Wire Line
+	9950 2100 9600 2100
 Wire Wire Line
 	7150 2900 7500 2900
 Wire Wire Line
@@ -316,10 +313,6 @@ Wire Wire Line
 	11250 7500 11250 7050
 Wire Wire Line
 	9950 3700 9600 3700
-Wire Wire Line
-	8450 2600 8800 2600
-Wire Wire Line
-	9950 2600 9600 2600
 Wire Wire Line
 	12100 3500 11750 3500
 Connection ~ 8900 4100
@@ -627,21 +620,21 @@ Wire Wire Line
 Wire Wire Line
 	8450 3200 8800 3200
 Wire Wire Line
-	9950 2400 9600 2400
-Wire Wire Line
 	9950 2500 9600 2500
 Wire Wire Line
-	9950 2300 9600 2300
+	9950 2600 9600 2600
 Wire Wire Line
-	8450 2400 8800 2400
+	9950 2400 9600 2400
 Wire Wire Line
 	8450 2500 8800 2500
 Wire Wire Line
-	8450 2300 8800 2300
+	8450 2600 8800 2600
+Wire Wire Line
+	8450 2400 8800 2400
+Wire Wire Line
+	9950 2300 9600 2300
 Wire Wire Line
 	9950 2200 9600 2200
-Wire Wire Line
-	9950 2100 9600 2100
 Wire Wire Line
 	9950 1900 9600 1900
 Wire Wire Line
@@ -695,9 +688,9 @@ Wire Wire Line
 Wire Wire Line
 	8450 1900 8800 1900
 Wire Wire Line
-	8450 2100 8800 2100
-Wire Wire Line
 	8450 2200 8800 2200
+Wire Wire Line
+	8450 2300 8800 2300
 Wire Wire Line
 	8450 3400 8800 3400
 Wire Wire Line
@@ -1127,6 +1120,16 @@ Wire Wire Line
 	10800 8250 10800 8600
 Wire Wire Line
 	7050 3100 7500 3100
+Wire Wire Line
+	8450 2100 8800 2100
+Text Label 11650 9550 0    60   ~ 0
+FUNSEL0
+Text Label 8250 9500 0    60   ~ 0
+FUNSEL0
+Text Label 4450 9250 0    60   ~ 0
+FUNSEL0
+Text Label 6500 3000 0    60   ~ 0
+FUNSEL0
 $Comp
 L CONN_3 K0
 U 1 1 5021C9C6
@@ -1671,8 +1674,6 @@ F 1 "STM32-144PIN" H 3950 4200 60  0000 C CNN
 	1    3950 4250
 	1    0    0    -1  
 $EndComp
-Text Label 9600 2600 0    60   ~ 0
-GND
 Text Label 9600 3700 0    60   ~ 0
 AC0-
 Text Label 9600 3600 0    60   ~ 0
@@ -1710,9 +1711,7 @@ F 1 "RED" H 11050 7400 50  0000 C CNN
 $EndComp
 Text Label 11500 6950 0    60   ~ 0
 3V3_OUT
-Text Label 9600 2700 0    60   ~ 0
-GND
-Text Label 8800 2600 2    60   ~ 0
+Text Label 8800 2700 2    60   ~ 0
 5V_OUT
 Text Label 10350 7050 2    60   ~ 0
 VCC
@@ -1726,7 +1725,7 @@ Text Label 4100 1700 1    60   ~ 0
 EBI_CE0
 Text Label 10950 1500 2    60   ~ 0
 EBI_A14
-Text Label 8800 2700 2    60   ~ 0
+Text Label 9600 2700 0    60   ~ 0
 3V3_OUT
 $Comp
 L CRYSTAL X0
@@ -2059,7 +2058,7 @@ I2S_MCK
 Text Label 3300 1200 1    60   ~ 0
 I2S_CK
 Text Label 3100 1200 1    60   ~ 0
-I2S_SD
+I2S_SD_O
 Text Label 3300 1700 1    60   ~ 0
 SPI1_SCK
 Text Label 3200 1700 1    60   ~ 0
@@ -2591,29 +2590,29 @@ Text Label 8800 3400 2    60   ~ 0
 DA0
 Text Label 8800 3500 2    60   ~ 0
 AD0
-Text Label 9600 2400 0    60   ~ 0
-GPIO_P5
 Text Label 9600 2500 0    60   ~ 0
+GPIO_P5
+Text Label 9600 2600 0    60   ~ 0
 GPIO_P7
-Text Label 9600 2300 0    60   ~ 0
+Text Label 9600 2400 0    60   ~ 0
 GPIO_P3
-Text Label 8800 2400 2    60   ~ 0
-GPIO_P4
 Text Label 8800 2500 2    60   ~ 0
+GPIO_P4
+Text Label 8800 2600 2    60   ~ 0
 GPIO_P6
-Text Label 8800 2300 2    60   ~ 0
+Text Label 8800 2400 2    60   ~ 0
 GPIO_P2
-Text Label 9600 2200 0    60   ~ 0
+Text Label 9600 2300 0    60   ~ 0
 GPIO_P1
-Text Label 8800 2200 2    60   ~ 0
+Text Label 8800 2300 2    60   ~ 0
 GPIO_P0
-Text Label 9600 2100 0    60   ~ 0
+Text Label 9600 2200 0    60   ~ 0
 CAN0_RX
-Text Label 8800 2100 2    60   ~ 0
+Text Label 8800 2200 2    60   ~ 0
 CAN0_TX
 Text Label 9600 1900 0    60   ~ 0
 I2S_MCK
-Text Label 9600 2000 0    60   ~ 0
+Text Label 8800 2000 2    60   ~ 0
 I2S_WS
 Text Label 9600 1800 0    60   ~ 0
 SDIO_D3
@@ -2621,8 +2620,8 @@ Text Label 9600 1700 0    60   ~ 0
 SDIO_D1
 Text Label 8800 1900 2    60   ~ 0
 I2S_CK
-Text Label 8800 2000 2    60   ~ 0
-I2S_SD
+Text Label 9600 2000 0    60   ~ 0
+I2S_SD_O
 Text Label 8800 1800 2    60   ~ 0
 SDIO_D2
 Text Label 8800 1700 2    60   ~ 0
