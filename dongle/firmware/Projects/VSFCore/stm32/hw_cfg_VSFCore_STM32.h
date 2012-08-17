@@ -36,7 +36,7 @@
 #define HW_HAS_DAC						1
 
 /****************************** USART ******************************/
-#define USART_PORT						2
+#define USART_PORT						1
 #define USART_RTS_PORT					IFS_DUMMY_PORT
 #define USART_RTS_PIN					0
 #define USART_DTR_PORT					IFS_DUMMY_PORT
