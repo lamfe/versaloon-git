@@ -25,6 +25,7 @@ vsf_err_t spi_init(uint8_t index)
 	switch (index)
 	{
 	case 0:
+	case 1:
 		return VSFERR_NONE;
 	default:
 		return VSFERR_NOT_SUPPORT;
@@ -36,7 +37,9 @@ vsf_err_t spi_fini(uint8_t index)
 	switch (index)
 	{
 	case 0:
-		return core_interfaces.spi.fini(SPI_Interface_Idx);
+		return core_interfaces.spi.fini(SPI0_PORT);
+	case 1:
+		return core_interfaces.spi.fini(SPI1_PORT);
 	default:
 		return VSFERR_NOT_SUPPORT;
 	}
@@ -47,9 +50,11 @@ vsf_err_t spi_config(uint8_t index, uint32_t kHz, uint8_t mode)
 	switch (index)
 	{
 	case 0:
-		core_interfaces.spi.init(SPI_Interface_Idx);
-		return core_interfaces.spi.config(SPI_Interface_Idx, kHz, 
-											mode | SPI_MASTER);
+		core_interfaces.spi.init(SPI0_PORT);
+		return core_interfaces.spi.config(SPI0_PORT, kHz, mode | SPI_MASTER);
+	case 1:
+		core_interfaces.spi.init(SPI1_PORT);
+		return core_interfaces.spi.config(SPI1_PORT, kHz, mode | SPI_MASTER);
 	default:
 		return VSFERR_NOT_SUPPORT;
 	}
@@ -60,7 +65,10 @@ vsf_err_t spi_io(uint8_t index, uint8_t *out, uint8_t *in, uint32_t len)
 	switch (index)
 	{
 	case 0:
-		core_interfaces.spi.io(SPI_Interface_Idx, out, in, len);
+		core_interfaces.spi.io(SPI0_PORT, out, in, len);
+		return VSFERR_NONE;
+	case 1:
+		core_interfaces.spi.io(SPI1_PORT, out, in, len);
 		return VSFERR_NONE;
 	default:
 		return VSFERR_NOT_SUPPORT;

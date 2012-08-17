@@ -448,9 +448,9 @@
 
 
 #define JTAG_TAP_HS_SPI_M				SPI2
-#define JTAG_TAP_HS_SPI_M_IDX			0x01
+#define JTAG_TAP_HS_SPI_M_PORT			0x01
 #define JTAG_TAP_HS_SPI_S				SPI1
-#define JTAG_TAP_HS_SPI_S_IDX			0x10
+#define JTAG_TAP_HS_SPI_S_PORT			0x10
 
 // DMA
 #define JTAG_TAP_HS_SPI_M_TX_DMA		DMA1_Channel5
@@ -555,7 +555,7 @@
 #define JTAG_TAP_HS_WaitReady()			while(JTAG_TAP_HS_SPI_M->SR & SPI_I2S_FLAG_BSY)
 
 /****************************** SPI ******************************/
-#define SPI_Interface_Idx				1
+#define SPI_PORT						1
 
 #define SPI_MOSI_SET()					JTAG_TAP_TDI_SET()
 #define SPI_MOSI_CLR()					JTAG_TAP_TDI_CLR()

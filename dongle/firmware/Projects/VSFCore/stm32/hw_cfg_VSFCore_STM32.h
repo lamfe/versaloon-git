@@ -37,13 +37,18 @@
 
 /****************************** USART ******************************/
 #define USART_PORT						2
-#define USART_RTS_PORT					0
+#define USART_RTS_PORT					IFS_DUMMY_PORT
 #define USART_RTS_PIN					0
-#define USART_DTR_PORT					0
+#define USART_DTR_PORT					IFS_DUMMY_PORT
 #define USART_DTR_PIN					0
 
 /****************************** SPI ******************************/
-#define SPI_Interface_Idx				1
+#define SPI0_PORT						1
+#define SPI0_CS_PORT					IFS_DUMMY_PORT
+#define SPI0_CS_PIN						0
+#define SPI1_PORT						0
+#define SPI1_CS_PORT					IFS_DUMMY_PORT
+#define SPI1_CS_PIN						0
 
 /****************************** IIC ******************************/
 #define IIC_PORT						GPIOB
@@ -79,8 +84,8 @@
 // For USB 1.1, use DM
 #define USB_DP_PORT						0
 #define USB_DP_PIN						12
-#define USB_PULL_PORT					6
-#define USB_PULL_PIN					11
+#define USB_PULL_PORT					2
+#define USB_PULL_PIN					13
 
 #define USB_Pull_Init()					do{\
 											core_interfaces.gpio.init(USB_PULL_PORT);\
