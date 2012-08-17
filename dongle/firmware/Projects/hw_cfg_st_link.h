@@ -242,9 +242,9 @@
 
 
 #define JTAG_TAP_HS_SPI_M				SPI2
-#define JTAG_TAP_HS_SPI_M_IDX			0x01
+#define JTAG_TAP_HS_SPI_M_PORT			0x01
 #define JTAG_TAP_HS_SPI_S				SPI1
-#define JTAG_TAP_HS_SPI_S_IDX			0x10
+#define JTAG_TAP_HS_SPI_S_PORT			0x10
 
 // DMA
 #define JTAG_TAP_HS_SPI_M_TX_DMA		DMA1_Channel5

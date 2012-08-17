@@ -709,8 +709,8 @@ static vsf_err_t JTAG_TAP_Fini(void)
 	JTAG_TAP_HS_DMA_FINI();
 
 	JTAG_kHz = 0xFFFFFFFF;
-	core_interfaces.spi.fini(JTAG_TAP_HS_SPI_M_IDX);
-	core_interfaces.spi.fini(JTAG_TAP_HS_SPI_S_IDX);
+	core_interfaces.spi.fini(JTAG_TAP_HS_SPI_M_PORT);
+	core_interfaces.spi.fini(JTAG_TAP_HS_SPI_S_PORT);
 	return VSFERR_NONE;
 }
 
@@ -719,8 +719,8 @@ static vsf_err_t JTAG_TAP_Init(uint32_t kHz, uint8_t mode)
 	struct spi_ability_t spis_ability, spim_ability;
 	uint32_t min_khz;
 	
-	if (core_interfaces.spi.get_ability(JTAG_TAP_HS_SPI_M_IDX, &spim_ability) || 
-		core_interfaces.spi.get_ability(JTAG_TAP_HS_SPI_S_IDX, &spis_ability) || 
+	if (core_interfaces.spi.get_ability(JTAG_TAP_HS_SPI_M_PORT, &spim_ability) || 
+		core_interfaces.spi.get_ability(JTAG_TAP_HS_SPI_S_PORT, &spis_ability) || 
 		(spis_ability.max_freq_hz < spim_ability.min_freq_hz) || 
 		(spis_ability.min_freq_hz > spim_ability.max_freq_hz))
 	{
@@ -732,8 +732,8 @@ static vsf_err_t JTAG_TAP_Init(uint32_t kHz, uint8_t mode)
 	JTAG_TAP_Fini();
 	if (kHz >= min_khz)
 	{
-		core_interfaces.spi.init(JTAG_TAP_HS_SPI_M_IDX);
-		core_interfaces.spi.init(JTAG_TAP_HS_SPI_S_IDX);
+		core_interfaces.spi.init(JTAG_TAP_HS_SPI_M_PORT);
+		core_interfaces.spi.init(JTAG_TAP_HS_SPI_S_PORT);
 	}
 	else
 	{
@@ -748,9 +748,9 @@ static vsf_err_t JTAG_TAP_Init(uint32_t kHz, uint8_t mode)
 	JTAG_kHz = kHz;
 	if (JTAG_kHz >= min_khz)
 	{
-		core_interfaces.spi.config(JTAG_TAP_HS_SPI_M_IDX, kHz, 
+		core_interfaces.spi.config(JTAG_TAP_HS_SPI_M_PORT, kHz, 
 								SPI_MODE3 | SPI_LSB_FIRST | SPI_MASTER);
-		core_interfaces.spi.config(JTAG_TAP_HS_SPI_S_IDX, 
+		core_interfaces.spi.config(JTAG_TAP_HS_SPI_S_PORT, 
 								spis_ability.max_freq_hz / 1000, 
 								SPI_MODE3 | SPI_LSB_FIRST | SPI_SLAVE);
 	}

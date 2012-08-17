@@ -26,8 +26,8 @@ vsf_err_t dusi_init(uint8_t index)
 	switch (index)
 	{
 	case 0:
-		core_interfaces.spi.init(JTAG_TAP_HS_SPI_M_IDX);
-		core_interfaces.spi.init(JTAG_TAP_HS_SPI_S_IDX);
+		core_interfaces.spi.init(JTAG_TAP_HS_SPI_M_PORT);
+		core_interfaces.spi.init(JTAG_TAP_HS_SPI_S_PORT);
 		return VSFERR_NONE;
 	default:
 		return VSFERR_NOT_SUPPORT;
@@ -39,8 +39,8 @@ vsf_err_t dusi_fini(uint8_t index)
 	switch (index)
 	{
 	case 0:
-		core_interfaces.spi.fini(JTAG_TAP_HS_SPI_M_IDX);
-		core_interfaces.spi.fini(JTAG_TAP_HS_SPI_S_IDX);
+		core_interfaces.spi.fini(JTAG_TAP_HS_SPI_M_PORT);
+		core_interfaces.spi.fini(JTAG_TAP_HS_SPI_S_PORT);
 		return VSFERR_NONE;
 	default:
 		return VSFERR_NOT_SUPPORT;
@@ -54,16 +54,16 @@ vsf_err_t dusi_config(uint8_t index, uint32_t kHz, uint8_t mode)
 	switch (index)
 	{
 	case 0:
-		if (core_interfaces.spi.get_ability(JTAG_TAP_HS_SPI_M_IDX, &spim_ability) || 
-			core_interfaces.spi.get_ability(JTAG_TAP_HS_SPI_S_IDX, &spis_ability) || 
+		if (core_interfaces.spi.get_ability(JTAG_TAP_HS_SPI_M_PORT, &spim_ability) || 
+			core_interfaces.spi.get_ability(JTAG_TAP_HS_SPI_S_PORT, &spis_ability) || 
 			(spis_ability.max_freq_hz < spim_ability.min_freq_hz) || 
 			(spis_ability.min_freq_hz > spim_ability.max_freq_hz))
 		{
 			return VSFERR_INVALID_PARAMETER;
 		}
 		
-		core_interfaces.spi.config(JTAG_TAP_HS_SPI_M_IDX, kHz, mode | SPI_MASTER);
-		core_interfaces.spi.config(JTAG_TAP_HS_SPI_S_IDX, 
+		core_interfaces.spi.config(JTAG_TAP_HS_SPI_M_PORT, kHz, mode | SPI_MASTER);
+		core_interfaces.spi.config(JTAG_TAP_HS_SPI_S_PORT, 
 							spis_ability.max_freq_hz / 1000, mode | SPI_SLAVE);
 		return VSFERR_NONE;
 	default:
