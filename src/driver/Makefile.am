@@ -13,7 +13,8 @@ METASOURCES = AUTO
 noinst_LIBRARIES = libdrv.a
 libdrv_a_SOURCES = \
     comport/comport.c \
-    usb/usbapi.c
+    usb/usbapi.c \
+    usb/usbapi_scripts.c
 noinst_HEADERS = \
     comport/comport.h \
     usb/usbapi.h
