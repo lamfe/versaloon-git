@@ -60,16 +60,6 @@ const struct vss_cmd_t versaloon_notifier[] =
 	VSS_CMD_END
 };
 
-uint8_t *versaloon_buf = NULL;
-uint8_t *versaloon_cmd_buf = NULL;
-uint16_t versaloon_buf_size = 256;
-
-struct versaloon_pending_t versaloon_pending[VERSALOON_MAX_PENDING_NUMBER];
-uint16_t versaloon_pending_idx = 0;
-
-static usb_dev_handle *versaloon_device_handle = NULL;
-static uint32_t versaloon_to = VERSALOON_TIMEOUT;
-
 VSS_HANDLER(versaloon_help)
 {
 	VSS_CHECK_ARGC(1);
@@ -87,6 +77,16 @@ VSS_HANDLER(versaloon_support)
 %s: see http://www.SimonQian.com/en/Versaloon\n", VERSALOON_STRING);
 	return VSFERR_NONE;
 }
+
+uint8_t *versaloon_buf = NULL;
+uint8_t *versaloon_cmd_buf = NULL;
+uint16_t versaloon_buf_size = 256;
+
+struct versaloon_pending_t versaloon_pending[VERSALOON_MAX_PENDING_NUMBER];
+uint16_t versaloon_pending_idx = 0;
+
+static usb_dev_handle *versaloon_device_handle = NULL;
+static uint32_t versaloon_to = VERSALOON_TIMEOUT;
 
 
 
@@ -170,38 +170,6 @@ vsf_err_t versaloon_add_want_pos(uint16_t offset, uint16_t size, uint8_t *buff)
 	return VSFERR_NONE;
 }
 
-vsf_err_t versaloon_add_pending(uint8_t type, uint8_t cmd, uint16_t actual_szie,
-	uint16_t want_pos, uint16_t want_size, uint8_t *buffer, uint8_t collect)
-{
-#if PARAM_CHECK
-	if (versaloon_pending_idx >= VERSALOON_MAX_PENDING_NUMBER)
-	{
-		LOG_BUG(ERRMSG_INVALID_INDEX, versaloon_pending_idx,
-					"versaloon pending data");
-		return VSFERR_FAIL;
-	}
-#endif
-	
-	versaloon_pending[versaloon_pending_idx].type = type;
-	versaloon_pending[versaloon_pending_idx].cmd = cmd;
-	versaloon_pending[versaloon_pending_idx].actual_data_size = actual_szie;
-	versaloon_pending[versaloon_pending_idx].want_data_pos = want_pos;
-	versaloon_pending[versaloon_pending_idx].want_data_size = want_size;
-	versaloon_pending[versaloon_pending_idx].data_buffer = buffer;
-	versaloon_pending[versaloon_pending_idx].collect = collect;
-	versaloon_pending[versaloon_pending_idx].id = versaloon_pending_id;
-	versaloon_pending_id = 0;
-	versaloon_pending[versaloon_pending_idx].extra_data = versaloon_extra_data;
-	versaloon_extra_data = NULL;
-	versaloon_pending[versaloon_pending_idx].callback = versaloon_callback;
-	versaloon_callback = NULL;
-	versaloon_pending[versaloon_pending_idx].pos = versaloon_want_pos;
-	versaloon_want_pos = NULL;
-	versaloon_pending_idx++;
-	
-	return VSFERR_NONE;
-}
-
 vsf_err_t versaloon_send_command(uint16_t out_len, uint16_t *inlen)
 {
 	int ret;
@@ -255,6 +223,42 @@ static vsf_err_t versaloon_peripheral_commit(void)
 	vsf_err_t err = usbtoxxx_execute_command();
 	versaloon_to = VERSALOON_TIMEOUT;
 	return err;
+}
+
+vsf_err_t versaloon_add_pending(uint8_t type, uint8_t cmd, uint16_t actual_szie,
+	uint16_t want_pos, uint16_t want_size, uint8_t *buffer, uint8_t collect)
+{
+#if PARAM_CHECK
+	if (versaloon_pending_idx >= VERSALOON_MAX_PENDING_NUMBER)
+	{
+		LOG_BUG(ERRMSG_INVALID_INDEX, versaloon_pending_idx,
+					"versaloon pending data");
+		return VSFERR_FAIL;
+	}
+#endif
+	
+	versaloon_pending[versaloon_pending_idx].type = type;
+	versaloon_pending[versaloon_pending_idx].cmd = cmd;
+	versaloon_pending[versaloon_pending_idx].actual_data_size = actual_szie;
+	versaloon_pending[versaloon_pending_idx].want_data_pos = want_pos;
+	versaloon_pending[versaloon_pending_idx].want_data_size = want_size;
+	versaloon_pending[versaloon_pending_idx].data_buffer = buffer;
+	versaloon_pending[versaloon_pending_idx].collect = collect;
+	versaloon_pending[versaloon_pending_idx].id = versaloon_pending_id;
+	versaloon_pending_id = 0;
+	versaloon_pending[versaloon_pending_idx].extra_data = versaloon_extra_data;
+	versaloon_extra_data = NULL;
+	versaloon_pending[versaloon_pending_idx].callback = versaloon_callback;
+	versaloon_callback = NULL;
+	versaloon_pending[versaloon_pending_idx].pos = versaloon_want_pos;
+	versaloon_want_pos = NULL;
+	versaloon_pending_idx++;
+	
+#ifdef IFS_CFG_NO_BUFFER
+	return versaloon_peripheral_commit();
+#else
+	return VSFERR_NONE;
+#endif
 }
 
 vsf_err_t versaloon_set_target_voltage(uint8_t index, uint16_t voltage)
@@ -424,125 +428,128 @@ static vsf_err_t versaloon_init(void *p)
 		return VSFERR_FAIL;
 	}
 	// fixes programmer abilities
-	if ((t->support_mask & IFS_POLL) &&
-		!usbtoxxx_interface_supported(USB_TO_POLL))
+	if (t != NULL)
 	{
-		t->support_mask &= ~IFS_POLL;
-	}
-	if ((t->support_mask & IFS_USART) &&
-		!usbtoxxx_interface_supported(USB_TO_USART))
-	{
-		t->support_mask &= ~IFS_USART;
-	}
-	if ((t->support_mask & IFS_SPI) &&
-		!usbtoxxx_interface_supported(USB_TO_SPI))
-	{
-		t->support_mask &= ~IFS_SPI;
-	}
-	if ((t->support_mask & IFS_EBI) &&
-		!usbtoxxx_interface_supported(USB_TO_EBI))
-	{
-		t->support_mask &= ~IFS_EBI;
-	}
-	if ((t->support_mask & IFS_I2C) &&
-		!usbtoxxx_interface_supported(USB_TO_I2C))
-	{
-		t->support_mask &= ~IFS_I2C;
-	}
-	if ((t->support_mask & IFS_GPIO) &&
-		!usbtoxxx_interface_supported(USB_TO_GPIO))
-	{
-		t->support_mask &= ~IFS_GPIO;
-	}
-	if ((t->support_mask & IFS_CAN) &&
-		!usbtoxxx_interface_supported(USB_TO_CAN))
-	{
-		t->support_mask &= ~IFS_CAN;
-	}
-	if ((t->support_mask & IFS_ADC) &&
-		!usbtoxxx_interface_supported(USB_TO_ADC))
-	{
-		t->support_mask &= ~IFS_ADC;
-	}
-	if ((t->support_mask & IFS_DAC) &&
-		!usbtoxxx_interface_supported(USB_TO_DAC))
-	{
-		t->support_mask &= ~IFS_DAC;
-	}
-	if ((t->support_mask & IFS_POWER) &&
-		!usbtoxxx_interface_supported(USB_TO_POWER))
-	{
-		t->support_mask &= ~IFS_POWER;
-	}
-	if ((t->support_mask & IFS_ISSP) &&
-		!usbtoxxx_interface_supported(USB_TO_ISSP))
-	{
-		t->support_mask &= ~IFS_ISSP;
-	}
-	if ((t->support_mask & IFS_JTAG_HL) &&
-		!usbtoxxx_interface_supported(USB_TO_JTAG_HL))
-	{
-		t->support_mask &= ~IFS_JTAG_HL;
-	}
-	if ((t->support_mask & IFS_JTAG_LL) &&
-		!usbtoxxx_interface_supported(USB_TO_JTAG_LL))
-	{
-		t->support_mask &= ~IFS_JTAG_LL;
-	}
-	if ((t->support_mask & IFS_MSP430_JTAG) &&
-		!usbtoxxx_interface_supported(USB_TO_MSP430_JTAG))
-	{
-		t->support_mask &= ~IFS_MSP430_JTAG;
-	}
-	if ((t->support_mask & IFS_C2) &&
-		!usbtoxxx_interface_supported(USB_TO_C2))
-	{
-		t->support_mask &= ~IFS_C2;
-	}
-	if ((t->support_mask & IFS_USART) &&
-		!usbtoxxx_interface_supported(USB_TO_USART))
-	{
-		t->support_mask &= ~IFS_USART;
-	}
-	if ((t->support_mask & IFS_LPC_ICP) &&
-		!usbtoxxx_interface_supported(USB_TO_LPCICP))
-	{
-		t->support_mask &= ~IFS_LPC_ICP;
-	}
-	if ((t->support_mask & IFS_SWD) &&
-		!usbtoxxx_interface_supported(USB_TO_SWD))
-	{
-		t->support_mask &= ~IFS_SWD;
-	}
-	if ((t->support_mask & IFS_SWIM) &&
-		!usbtoxxx_interface_supported(USB_TO_SWIM))
-	{
-		t->support_mask &= ~IFS_SWIM;
-	}
-	if ((t->support_mask & IFS_JTAG_RAW) &&
-		!usbtoxxx_interface_supported(USB_TO_JTAG_RAW))
-	{
-		t->support_mask &= ~IFS_JTAG_RAW;
-	}
-	if ((t->support_mask & IFS_BDM) &&
-		!usbtoxxx_interface_supported(USB_TO_BDM))
-	{
-		t->support_mask &= ~IFS_BDM;
-	}
-	if ((t->support_mask & IFS_DUSI) &&
-		!usbtoxxx_interface_supported(USB_TO_DUSI))
-	{
-		t->support_mask &= ~IFS_DUSI;
-	}
-	if ((t->support_mask & IFS_MICROWIRE) &&
-		!usbtoxxx_interface_supported(USB_TO_MICROWIRE))
-	{
-		t->support_mask &= ~IFS_MICROWIRE;
-	}
-	if ((t->support_mask & IFS_PWM) &&
-		!usbtoxxx_interface_supported(USB_TO_PWM))
-	{
-		t->support_mask &= ~IFS_PWM;
+		if ((t->support_mask & IFS_POLL) &&
+			!usbtoxxx_interface_supported(USB_TO_POLL))
+		{
+			t->support_mask &= ~IFS_POLL;
+		}
+		if ((t->support_mask & IFS_USART) &&
+			!usbtoxxx_interface_supported(USB_TO_USART))
+		{
+			t->support_mask &= ~IFS_USART;
+		}
+		if ((t->support_mask & IFS_SPI) &&
+			!usbtoxxx_interface_supported(USB_TO_SPI))
+		{
+			t->support_mask &= ~IFS_SPI;
+		}
+		if ((t->support_mask & IFS_EBI) &&
+			!usbtoxxx_interface_supported(USB_TO_EBI))
+		{
+			t->support_mask &= ~IFS_EBI;
+		}
+		if ((t->support_mask & IFS_I2C) &&
+			!usbtoxxx_interface_supported(USB_TO_I2C))
+		{
+			t->support_mask &= ~IFS_I2C;
+		}
+		if ((t->support_mask & IFS_GPIO) &&
+			!usbtoxxx_interface_supported(USB_TO_GPIO))
+		{
+			t->support_mask &= ~IFS_GPIO;
+		}
+		if ((t->support_mask & IFS_CAN) &&
+			!usbtoxxx_interface_supported(USB_TO_CAN))
+		{
+			t->support_mask &= ~IFS_CAN;
+		}
+		if ((t->support_mask & IFS_ADC) &&
+			!usbtoxxx_interface_supported(USB_TO_ADC))
+		{
+			t->support_mask &= ~IFS_ADC;
+		}
+		if ((t->support_mask & IFS_DAC) &&
+			!usbtoxxx_interface_supported(USB_TO_DAC))
+		{
+			t->support_mask &= ~IFS_DAC;
+		}
+		if ((t->support_mask & IFS_POWER) &&
+			!usbtoxxx_interface_supported(USB_TO_POWER))
+		{
+			t->support_mask &= ~IFS_POWER;
+		}
+		if ((t->support_mask & IFS_ISSP) &&
+			!usbtoxxx_interface_supported(USB_TO_ISSP))
+		{
+			t->support_mask &= ~IFS_ISSP;
+		}
+		if ((t->support_mask & IFS_JTAG_HL) &&
+			!usbtoxxx_interface_supported(USB_TO_JTAG_HL))
+		{
+			t->support_mask &= ~IFS_JTAG_HL;
+		}
+		if ((t->support_mask & IFS_JTAG_LL) &&
+			!usbtoxxx_interface_supported(USB_TO_JTAG_LL))
+		{
+			t->support_mask &= ~IFS_JTAG_LL;
+		}
+		if ((t->support_mask & IFS_MSP430_JTAG) &&
+			!usbtoxxx_interface_supported(USB_TO_MSP430_JTAG))
+		{
+			t->support_mask &= ~IFS_MSP430_JTAG;
+		}
+		if ((t->support_mask & IFS_C2) &&
+			!usbtoxxx_interface_supported(USB_TO_C2))
+		{
+			t->support_mask &= ~IFS_C2;
+		}
+		if ((t->support_mask & IFS_USART) &&
+			!usbtoxxx_interface_supported(USB_TO_USART))
+		{
+			t->support_mask &= ~IFS_USART;
+		}
+		if ((t->support_mask & IFS_LPC_ICP) &&
+			!usbtoxxx_interface_supported(USB_TO_LPCICP))
+		{
+			t->support_mask &= ~IFS_LPC_ICP;
+		}
+		if ((t->support_mask & IFS_SWD) &&
+			!usbtoxxx_interface_supported(USB_TO_SWD))
+		{
+			t->support_mask &= ~IFS_SWD;
+		}
+		if ((t->support_mask & IFS_SWIM) &&
+			!usbtoxxx_interface_supported(USB_TO_SWIM))
+		{
+			t->support_mask &= ~IFS_SWIM;
+		}
+		if ((t->support_mask & IFS_JTAG_RAW) &&
+			!usbtoxxx_interface_supported(USB_TO_JTAG_RAW))
+		{
+			t->support_mask &= ~IFS_JTAG_RAW;
+		}
+		if ((t->support_mask & IFS_BDM) &&
+			!usbtoxxx_interface_supported(USB_TO_BDM))
+		{
+			t->support_mask &= ~IFS_BDM;
+		}
+		if ((t->support_mask & IFS_DUSI) &&
+			!usbtoxxx_interface_supported(USB_TO_DUSI))
+		{
+			t->support_mask &= ~IFS_DUSI;
+		}
+		if ((t->support_mask & IFS_MICROWIRE) &&
+			!usbtoxxx_interface_supported(USB_TO_MICROWIRE))
+		{
+			t->support_mask &= ~IFS_MICROWIRE;
+		}
+		if ((t->support_mask & IFS_PWM) &&
+			!usbtoxxx_interface_supported(USB_TO_PWM))
+		{
+			t->support_mask &= ~IFS_PWM;
+		}
 	}
 	
 	return VSFERR_NONE;

@@ -20,8 +20,14 @@
 #ifndef __INTERFACES_H_INCLUDED__
 #define __INTERFACES_H_INCLUDED__
 
+#if HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include "vsf_err.h"
 #include "interfaces_const.h"
+#include "versaloon/versaloon.h"
+#include "virtualinterface/vi_stm32/vi_stm32.h"
 
 #define IFS_DUMMY_PORT						0xFF
 
@@ -421,7 +427,11 @@ struct interfaces_info_t
 	vsf_err_t (*peripheral_commit)(void);
 };
 
-#define interfaces				cur_interface
+#ifdef DEFAULT_INTERFACES
+#	define interfaces				(&DEFAULT_INTERFACES)
+#else
+#	define interfaces				cur_interface
+#endif
 #define INTERFACES_INFO_T		interfaces_info_t
 extern struct interfaces_info_t *cur_interface;
 extern struct interfaces_info_t *cur_real_interface;

@@ -19,6 +19,8 @@
 #ifndef __USBTOXXX_H_INCLUDED__
 #define __USBTOXXX_H_INCLUDED__
 
+#include "interfaces.h"
+
 vsf_err_t usbtoxxx_init(void);
 vsf_err_t usbtoxxx_fini(void);
 vsf_err_t usbtoxxx_execute_command(void);

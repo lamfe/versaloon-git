@@ -32,8 +32,6 @@
 
 #include "interfaces.h"
 #include "scripts.h"
-#include "versaloon/versaloon.h"
-#include "virtualinterface/vi_stm32/vi_stm32.h"
 #include "target.h"
 
 struct interfaces_info_t *interfaces_info[] =

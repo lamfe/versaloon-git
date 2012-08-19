@@ -26,13 +26,13 @@
 extern uint8_t asyn_rx_buf[ASYN_DATA_BUFF_SIZE];
 struct usart_stream_info_t usart_stream_p0 = 
 {
-	USART_PORT,						// usart_index
+	USART_PORT,							// usart_index
 	{
-		{asyn_rx_buf, 1024},		// fifo
-	},								// struct vsf_stream_t stream_tx;
+		{{asyn_rx_buf, 1024}},			// fifo
+	},									// struct vsf_stream_t stream_tx;
 	{
-		{asyn_rx_buf + 1024, 1024},	// fifo
-	}								// struct vsf_stream_t stream_rx;
+		{{asyn_rx_buf + 1024, 1024}},	// fifo
+	}									// struct vsf_stream_t stream_rx;
 };
 
 vsf_err_t usart_init(uint8_t index)

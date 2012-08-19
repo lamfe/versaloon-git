@@ -264,7 +264,7 @@ vsf_err_t vsf_multibuf_push(struct vsf_multibuf_t *mbuffer)
 		return VSFERR_FAIL;
 	}
 	
-	mbuffer->head = vsf_fifo_get_next_index(mbuffer->head, mbuffer->count);
+	mbuffer->head = (uint16_t)vsf_fifo_get_next_index(mbuffer->head, mbuffer->count);
 	mbuffer->length++;
 	return VSFERR_NONE;
 }
@@ -301,7 +301,7 @@ vsf_err_t vsf_multibuf_pop(struct vsf_multibuf_t *mbuffer)
 		return VSFERR_FAIL;
 	}
 	
-	mbuffer->tail = vsf_fifo_get_next_index(mbuffer->tail, mbuffer->count);
+	mbuffer->tail = (uint16_t)vsf_fifo_get_next_index(mbuffer->tail, mbuffer->count);
 	mbuffer->length--;
 	return VSFERR_NONE;
 }
@@ -326,6 +326,9 @@ void vsf_bufmgr_init(struct vsf_bufmgr_t *bufmgr)
 
 void* vsf_bufmgr_malloc(struct vsf_bufmgr_t *bufmgr, uint32_t size)
 {
+	REFERENCE_PARAMETER(bufmgr);
+	REFERENCE_PARAMETER(size);
+	
 #if __VSF_DEBUG__
 	if (NULL == bufmgr)
 	{
@@ -338,6 +341,9 @@ void* vsf_bufmgr_malloc(struct vsf_bufmgr_t *bufmgr, uint32_t size)
 
 void vsf_bufmgr_free(struct vsf_bufmgr_t *bufmgr, void *ptr)
 {
+	REFERENCE_PARAMETER(bufmgr);
+	REFERENCE_PARAMETER(ptr);
+	
 #if __VSF_DEBUG__
 	if (NULL == bufmgr)
 	{

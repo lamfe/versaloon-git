@@ -19,7 +19,7 @@
 #ifndef __TARGET_H_INCLUDED__
 #define __TARGET_H_INCLUDED__
 
-#include "list.h"
+#include "tool/list/list.h"
 
 #define ASSEMBLE_FUNCNAME(mod, name)	mod ## name
 
