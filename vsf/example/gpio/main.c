@@ -11,7 +11,7 @@
 
 int main(void)
 {
-	interfaces->init(NULL);
+	interfaces->core.init(NULL);
 	interfaces->gpio.init(GPIO_PORT);
 	interfaces->gpio.config(GPIO_PORT, GPIO_PIN, GPIO_PIN, 0, 0);
 	while (1)

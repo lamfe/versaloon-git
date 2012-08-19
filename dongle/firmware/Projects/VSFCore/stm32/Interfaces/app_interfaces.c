@@ -114,12 +114,17 @@ static uint32_t tickclk_get_count(void)
 
 static vsf_err_t app_interface_init(void *p)
 {
-	return VSFERR_NONE;
+	return core_interfaces.core.init(p);
 }
 
 static vsf_err_t app_interface_fini(void)
 {
-	return VSFERR_NONE;
+	return core_interfaces.core.fini();
+}
+
+static vsf_err_t app_interface_reset(void)
+{
+	return core_interfaces.core.reset();
 }
 
 static vsf_err_t app_peripheral_commit(void)
@@ -131,8 +136,6 @@ const struct app_interfaces_info_t app_interfaces =
 {
 	"versaloon",
 	
-	app_interface_init,
-	app_interface_fini,
 	app_peripheral_commit,
 	
 	0
@@ -154,6 +157,13 @@ const struct app_interfaces_info_t app_interfaces =
 #if INTERFACE_ADC_EN
 	| IFS_ADC
 #endif
+	
+	,{
+		// core
+		app_interface_init,
+		app_interface_fini,
+		app_interface_reset
+	}
 	
 #if INTERFACE_GPIO_EN
 	,{

@@ -156,7 +156,7 @@ vsf_err_t virtual_interface_init(const char *vifs, const char mode)
 			cur_real_interface = cur_interface;
 			cur_interface = interface_tmp;
 		}
-		cur_interface->init(&i);
+		cur_interface->core.init(&i);
 	}
 	else
 	{
@@ -188,7 +188,7 @@ vsf_err_t interface_init(const char *ifs)
 		cur_interface = NULL;
 		cur_real_interface = NULL;
 		
-		if (interface_tmp->init(interface_tmp))
+		if (interface_tmp->core.init(interface_tmp))
 		{
 			return VSFERR_FAIL;
 		}

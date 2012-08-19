@@ -33,6 +33,13 @@
 
 char* get_interface_name(uint64_t i);
 
+struct interface_core_t
+{
+	vsf_err_t (*init)(void *p);
+	vsf_err_t (*fini)(void);
+	vsf_err_t (*reset)(void);
+};
+
 enum jtag_irdr_t
 {
 	JTAG_SCANTYPE_IR,
@@ -396,11 +403,8 @@ struct interfaces_info_t
 	bool is_virtual;
 	const struct program_mode_t *mode;
 	
-	// init and fini
-	vsf_err_t (*init)(void *p);
-	vsf_err_t (*fini)(void);
-	
 	uint64_t support_mask;
+	struct interface_core_t core;
 	struct interface_delay_t delay;
 	struct interface_gpio_t gpio;
 	struct interface_usart_t usart;

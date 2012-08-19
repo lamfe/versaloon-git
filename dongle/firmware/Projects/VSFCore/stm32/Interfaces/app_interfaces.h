@@ -91,11 +91,10 @@ struct app_interfaces_info_t
 {
 	char *name;
 	
-	vsf_err_t (*init)(void *p);
-	vsf_err_t (*fini)(void);
 	vsf_err_t (*peripheral_commit)(void);
 	
 	uint64_t support_mask;
+	struct interface_core_t core;
 #if	INTERFACE_GPIO_EN
 	struct interface_gpio_t gpio;
 #endif
