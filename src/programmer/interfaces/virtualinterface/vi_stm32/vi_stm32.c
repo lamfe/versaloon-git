@@ -135,6 +135,11 @@ static vsf_err_t vi_stm32_fini(void)
 	return cur_real_interface->fini();
 }
 
+static vsf_err_t vi_stm32_reset(void)
+{
+	return VSFERR_NONE;
+}
+
 // GPIO
 vsf_err_t vi_stm32_gpio_init(uint8_t interface_index)
 {
@@ -314,11 +319,13 @@ struct interfaces_info_t vi_stm32_interfaces =
 	true,
 	vi_stm32_mode,
 	
-	vi_stm32_init,
-	vi_stm32_fini,
-	
 	IFS_GPIO | IFS_USART | IFS_SPI | IFS_I2C | IFS_PWM,
 	
+	{	// core
+		vi_stm32_init,
+		vi_stm32_fini,
+		vi_stm32_reset
+	},
 	{	// delay
 		vi_stm32_delayms,
 		vi_stm32_delayus

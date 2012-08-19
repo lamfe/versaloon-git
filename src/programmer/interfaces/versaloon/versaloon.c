@@ -306,6 +306,11 @@ vsf_err_t versaloon_get_target_voltage(uint8_t index, uint16_t *voltage)
 	}
 }
 
+static vsf_err_t versaloon_reset(void)
+{
+	return VSFERR_NONE;
+}
+
 static vsf_err_t versaloon_fini(void)
 {
 	if (versaloon_device_handle != NULL)
@@ -667,14 +672,16 @@ struct interfaces_info_t versaloon_interfaces =
 	false,
 	NULL,
 	
-	versaloon_init,
-	versaloon_fini,
-	
 	IFS_USART | IFS_SPI | IFS_EBI | IFS_I2C | IFS_GPIO | IFS_POWER | IFS_ISSP |
 	IFS_JTAG_LL | IFS_POLL | IFS_JTAG_HL | IFS_SWIM | IFS_JTAG_RAW | IFS_C2 |
 	IFS_MSP430_JTAG | IFS_LPC_ICP | IFS_SWD | IFS_BDM | IFS_DUSI |
 	IFS_MICROWIRE | IFS_PWM | IFS_ADC,
 	
+	{	// core
+		versaloon_init,
+		versaloon_fini,
+		versaloon_reset
+	},
 	{	// delay
 		usbtodelay_delayms,
 		usbtodelay_delayus
