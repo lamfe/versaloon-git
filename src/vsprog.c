@@ -228,9 +228,9 @@ static void free_all(void)
 		cur_target = NULL;
 	}
 	
-	if ((cur_interface != NULL) && (cur_interface->fini != NULL))
+	if ((cur_interface != NULL) && (cur_interface->core.fini != NULL))
 	{
-		cur_interface->fini();
+		cur_interface->core.fini();
 		cur_interface = NULL;
 	}
 	
