@@ -34,6 +34,7 @@ struct usbapi_param_t
 	char typestring[256];
 	char serialstring[256];
 };
+extern struct usbapi_param_t usb_param;
 
 uint8_t usb_param_valid(void);
 uint16_t usb_param_vid(void);
