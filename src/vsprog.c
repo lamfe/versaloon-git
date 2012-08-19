@@ -190,7 +190,6 @@ static const struct vss_cmd_t vsprog_cmd[] =
 };
 struct vss_cmd_list_t vsprog_cmd_list = VSS_CMD_LIST("vsprog", vsprog_cmd);
 
-int verbosity = LOG_DEFAULT_LEVEL, verbosity_stack[1];
 struct operation_t operations;
 static bool vsprog_query_cmd = true;
 
