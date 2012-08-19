@@ -2,7 +2,7 @@ SUBDIRS = driver programmer target tools scripts ../vsf
 
 bin_PROGRAMS = vsprog
 
-MAINFILE = vsprog.c
+MAINFILE = vsprog.c app_log.c
 vsprog_SOURCES = $(MAINFILE)
 
 INCLUDES = \
