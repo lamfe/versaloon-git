@@ -132,7 +132,7 @@ static vsf_err_t vi_stm32_init(void *p)
 
 static vsf_err_t vi_stm32_fini(void)
 {
-	return cur_real_interface->fini();
+	return cur_real_interface->core.fini();
 }
 
 static vsf_err_t vi_stm32_reset(void)
