@@ -23,15 +23,25 @@
 
 #include "USART.h"
 
-extern uint8_t asyn_rx_buf[ASYN_DATA_BUFF_SIZE];
+static uint8_t usart_rx_buff[1024], usart_tx_buff[1024];
 struct usart_stream_info_t usart_stream_p0 = 
 {
 	USART_PORT,						// usart_index
 	{
-		{asyn_rx_buf, 1024},		// fifo
+		{
+			{
+				usart_tx_buff,
+				sizeof(usart_tx_buff)
+			}
+		},							// fifo
 	},								// struct vsf_stream_t stream_tx;
 	{
-		{asyn_rx_buf + 1024, 1024},	// fifo
+		{
+			{
+				usart_rx_buff,
+				sizeof(usart_rx_buff)
+			}
+		},							// fifo
 	}								// struct vsf_stream_t stream_rx;
 };
 

@@ -16,18 +16,11 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-// This file is used to include different header and macros
-// according to different platform
-#include "port.h"
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 
-#include "app_cfg.h"
-#include "app_type.h"
-#include "app_io.h"
-#include "app_err.h"
 #include "app_log.h"
 
-#include "scripts.h"
-
-#include "usb.h"
-#include "usbapi.h"
+int verbosity = LOG_DEFAULT_LEVEL, verbosity_stack[1];
 
