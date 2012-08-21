@@ -23,30 +23,31 @@
 #include "compiler.h"
 
 #include "../versaloon_include.h"
+#include "interfaces.h"
 #include "../versaloon.h"
 #include "../versaloon_internal.h"
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
 
-vsf_err_t usbtoissp_init(uint8_t interface_index)
+vsf_err_t usbtoissp_init(uint8_t index)
 {
-	return usbtoxxx_init_command(USB_TO_ISSP, interface_index);
+	return usbtoxxx_init_command(USB_TO_ISSP, index);
 }
 
-vsf_err_t usbtoissp_fini(uint8_t interface_index)
+vsf_err_t usbtoissp_fini(uint8_t index)
 {
-	return usbtoxxx_fini_command(USB_TO_ISSP, interface_index);
+	return usbtoxxx_fini_command(USB_TO_ISSP, index);
 }
 
-vsf_err_t usbtoissp_vector(uint8_t interface_index, uint8_t operate,
+vsf_err_t usbtoissp_vector(uint8_t index, uint8_t operate,
 							uint8_t addr, uint8_t data, uint8_t *buf)
 {
 	uint8_t cmd_buf[3];
 	
 #if PARAM_CHECK
-	if (interface_index > 7)
+	if (index > 7)
 	{
-		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, index);
 		return VSFERR_FAIL;
 	}
 #endif
@@ -57,54 +58,54 @@ vsf_err_t usbtoissp_vector(uint8_t interface_index, uint8_t operate,
 	
 	if (operate & ISSP_VECTOR_ATTR_READ)
 	{
-		return usbtoxxx_inout_command(USB_TO_ISSP, interface_index, cmd_buf,
+		return usbtoxxx_inout_command(USB_TO_ISSP, index, cmd_buf,
 									  3, 1, buf, 0, 1, 1);
 	}
 	else
 	{
-		return usbtoxxx_inout_command(USB_TO_ISSP, interface_index, cmd_buf,
+		return usbtoxxx_inout_command(USB_TO_ISSP, index, cmd_buf,
 									  3, 0, NULL, 0, 0, 1);
 	}
 }
 
-vsf_err_t usbtoissp_enter_program_mode(uint8_t interface_index, uint8_t mode)
+vsf_err_t usbtoissp_enter_program_mode(uint8_t index, uint8_t mode)
 {
 #if PARAM_CHECK
-	if (interface_index > 7)
+	if (index > 7)
 	{
-		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, index);
 		return VSFERR_FAIL;
 	}
 #endif
 	
-	return usbtoxxx_in_command(USB_TO_ISSP, interface_index, &mode, 1, 0,
+	return usbtoxxx_in_command(USB_TO_ISSP, index, &mode, 1, 0,
 							   NULL, 0, 0, 0);
 }
 
-vsf_err_t usbtoissp_leave_program_mode(uint8_t interface_index, uint8_t mode)
+vsf_err_t usbtoissp_leave_program_mode(uint8_t index, uint8_t mode)
 {
 #if PARAM_CHECK
-	if (interface_index > 7)
+	if (index > 7)
 	{
-		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, index);
 		return VSFERR_FAIL;
 	}
 #endif
 	
-	return usbtoxxx_out_command(USB_TO_ISSP, interface_index, &mode, 1, 0);
+	return usbtoxxx_out_command(USB_TO_ISSP, index, &mode, 1, 0);
 }
 
-vsf_err_t usbtoissp_wait_and_poll(uint8_t interface_index)
+vsf_err_t usbtoissp_wait_and_poll(uint8_t index)
 {
 #if PARAM_CHECK
-	if (interface_index > 7)
+	if (index > 7)
 	{
-		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, index);
 		return VSFERR_FAIL;
 	}
 #endif
 	
-	return usbtoxxx_poll_command(USB_TO_ISSP, interface_index, NULL, 0, NULL,
+	return usbtoxxx_poll_command(USB_TO_ISSP, index, NULL, 0, NULL,
 								 0);
 }
 

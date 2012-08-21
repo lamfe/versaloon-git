@@ -23,30 +23,31 @@
 #include "compiler.h"
 
 #include "../versaloon_include.h"
+#include "interfaces.h"
 #include "../versaloon.h"
 #include "../versaloon_internal.h"
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
 
-vsf_err_t usbtoswim_init(uint8_t interface_index)
+vsf_err_t usbtoswim_init(uint8_t index)
 {
-	return usbtoxxx_init_command(USB_TO_SWIM, interface_index);
+	return usbtoxxx_init_command(USB_TO_SWIM, index);
 }
 
-vsf_err_t usbtoswim_fini(uint8_t interface_index)
+vsf_err_t usbtoswim_fini(uint8_t index)
 {
-	return usbtoxxx_fini_command(USB_TO_SWIM, interface_index);
+	return usbtoxxx_fini_command(USB_TO_SWIM, index);
 }
 
-vsf_err_t usbtoswim_config(uint8_t interface_index, uint8_t mHz, uint8_t cnt0,
+vsf_err_t usbtoswim_config(uint8_t index, uint8_t mHz, uint8_t cnt0,
 							uint8_t cnt1)
 {
 	uint8_t buff[3];
 	
 #if PARAM_CHECK
-	if (interface_index > 7)
+	if (index > 7)
 	{
-		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, index);
 		return VSFERR_FAIL;
 	}
 #endif
@@ -55,29 +56,29 @@ vsf_err_t usbtoswim_config(uint8_t interface_index, uint8_t mHz, uint8_t cnt0,
 	buff[1] = cnt0;
 	buff[2] = cnt1;
 	
-	return usbtoxxx_conf_command(USB_TO_SWIM, interface_index, buff, 3);
+	return usbtoxxx_conf_command(USB_TO_SWIM, index, buff, 3);
 }
 
-vsf_err_t usbtoswim_srst(uint8_t interface_index)
+vsf_err_t usbtoswim_srst(uint8_t index)
 {
 #if PARAM_CHECK
-	if (interface_index > 7)
+	if (index > 7)
 	{
-		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, index);
 		return VSFERR_FAIL;
 	}
 #endif
 	
-	return usbtoxxx_reset_command(USB_TO_SWIM, interface_index, NULL, 0);
+	return usbtoxxx_reset_command(USB_TO_SWIM, index, NULL, 0);
 }
 
-vsf_err_t usbtoswim_wotf(uint8_t interface_index, uint8_t *data, uint16_t bytelen,
+vsf_err_t usbtoswim_wotf(uint8_t index, uint8_t *data, uint16_t bytelen,
 						uint32_t addr)
 {
 #if PARAM_CHECK
-	if (interface_index > 7)
+	if (index > 7)
 	{
-		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, index);
 		return VSFERR_FAIL;
 	}
 #endif
@@ -86,17 +87,17 @@ vsf_err_t usbtoswim_wotf(uint8_t interface_index, uint8_t *data, uint16_t bytele
 	SET_LE_U32(&versaloon_cmd_buf[2], addr);
 	memcpy(&versaloon_cmd_buf[6], data, bytelen);
 	
-	return usbtoxxx_out_command(USB_TO_SWIM, interface_index,
+	return usbtoxxx_out_command(USB_TO_SWIM, index,
 									versaloon_cmd_buf, bytelen + 6, 0);
 }
 
-vsf_err_t usbtoswim_rotf(uint8_t interface_index, uint8_t *data, uint16_t bytelen,
+vsf_err_t usbtoswim_rotf(uint8_t index, uint8_t *data, uint16_t bytelen,
 						uint32_t addr)
 {
 #if PARAM_CHECK
-	if (interface_index > 7)
+	if (index > 7)
 	{
-		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, index);
 		return VSFERR_FAIL;
 	}
 #endif
@@ -105,37 +106,37 @@ vsf_err_t usbtoswim_rotf(uint8_t interface_index, uint8_t *data, uint16_t bytele
 	SET_LE_U32(&versaloon_cmd_buf[2], addr);
 	memset(&versaloon_cmd_buf[6], 0, bytelen);
 	
-	return usbtoxxx_in_command(USB_TO_SWIM, interface_index,
+	return usbtoxxx_in_command(USB_TO_SWIM, index,
 				versaloon_cmd_buf, bytelen + 6, bytelen, data, 0, bytelen, 0);
 }
 
-vsf_err_t usbtoswim_sync(uint8_t interface_index, uint8_t mHz)
+vsf_err_t usbtoswim_sync(uint8_t index, uint8_t mHz)
 {
 	uint8_t buff[1];
 	
 #if PARAM_CHECK
-	if (interface_index > 7)
+	if (index > 7)
 	{
-		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, index);
 		return VSFERR_FAIL;
 	}
 #endif
 	
 	buff[0] = mHz;
 	
-	return usbtoxxx_sync_command(USB_TO_SWIM, interface_index, buff, 1,
+	return usbtoxxx_sync_command(USB_TO_SWIM, index, buff, 1,
 									0, NULL);
 }
 
-vsf_err_t usbtoswim_enable(uint8_t interface_index)
+vsf_err_t usbtoswim_enable(uint8_t index)
 {
 #if PARAM_CHECK
-	if (interface_index > 7)
+	if (index > 7)
 	{
-		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, index);
 		return VSFERR_FAIL;
 	}
 #endif
-	return usbtoxxx_enable_command(USB_TO_SWIM, interface_index, NULL, 0);
+	return usbtoxxx_enable_command(USB_TO_SWIM, index, NULL, 0);
 }
 

@@ -23,31 +23,74 @@
 #include "compiler.h"
 
 #include "../versaloon_include.h"
+#include "interfaces.h"
 #include "../versaloon.h"
 #include "../versaloon_internal.h"
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
 
-vsf_err_t usbtogpio_init(uint8_t interface_index)
+vsf_err_t usbtogpio_init(uint8_t index)
 {
-	return usbtoxxx_init_command(USB_TO_GPIO, interface_index);
+	return usbtoxxx_init_command(USB_TO_GPIO, index);
 }
 
-vsf_err_t usbtogpio_fini(uint8_t interface_index)
+vsf_err_t usbtogpio_fini(uint8_t index)
 {
-	return usbtoxxx_fini_command(USB_TO_GPIO, interface_index);
+	return usbtoxxx_fini_command(USB_TO_GPIO, index);
 }
 
-vsf_err_t usbtogpio_config(uint8_t interface_index, uint32_t mask,
-						uint32_t dir_mask, uint32_t pull_en_mask,
-						uint32_t input_pull_mask)
+vsf_err_t usbtogpio_config_pin(uint8_t index, uint8_t pin_idx,
+								uint8_t mode)
+{
+	uint8_t conf[8];
+	uint32_t mask = 0, dir_mask = 0, pull_en_mask = 0, out_mask = 0;
+	
+#if PARAM_CHECK
+	if (index > 7)
+	{
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, index);
+		return VSFERR_FAIL;
+	}
+	if (pin_idx >= 32)
+	{
+		return VSFERR_FAIL;
+	}
+#endif
+	
+	mask = 1 << pin_idx;
+	if ((mode & USB_TO_GPIO_DIR_MSK) == USB_TO_GPIO_OUT)
+	{
+		dir_mask = mask;
+	}
+	if ((mode & USB_TO_GPIO_PULLEN_MSK) == USB_TO_GPIO_PULLEN)
+	{
+		pull_en_mask = mask;
+	}
+	if ((mode & USB_TO_GPIO_OUT_MSK) == USB_TO_GPIO_OUT1)
+	{
+		out_mask = mask;
+	}
+	
+	dir_mask &= mask;
+	SET_LE_U16(&conf[0], mask);
+	SET_LE_U16(&conf[2], dir_mask);
+	SET_LE_U16(&conf[4], pull_en_mask);
+	SET_LE_U16(&conf[6], out_mask);
+	
+	return usbtoxxx_conf_command(USB_TO_GPIO, index, conf,
+									sizeof(conf));
+}
+
+vsf_err_t usbtogpio_config(uint8_t index, uint32_t mask,
+							uint32_t dir_mask, uint32_t pull_en_mask,
+							uint32_t input_pull_mask)
 {
 	uint8_t conf[8];
 	
 #if PARAM_CHECK
-	if (interface_index > 7)
+	if (index > 7)
 	{
-		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, index);
 		return VSFERR_FAIL;
 	}
 #endif
@@ -58,36 +101,36 @@ vsf_err_t usbtogpio_config(uint8_t interface_index, uint32_t mask,
 	SET_LE_U16(&conf[4], pull_en_mask);
 	SET_LE_U16(&conf[6], input_pull_mask);
 	
-	return usbtoxxx_conf_command(USB_TO_GPIO, interface_index, conf,
+	return usbtoxxx_conf_command(USB_TO_GPIO, index, conf,
 									sizeof(conf));
 }
 
-vsf_err_t usbtogpio_in(uint8_t interface_index, uint32_t mask, uint32_t *value)
+vsf_err_t usbtogpio_in(uint8_t index, uint32_t mask, uint32_t *value)
 {
 	uint8_t buf[2];
 	
 #if PARAM_CHECK
-	if (interface_index > 7)
+	if (index > 7)
 	{
-		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, index);
 		return VSFERR_FAIL;
 	}
 #endif
 	
 	SET_LE_U16(&buf[0], mask);
 	
-	return usbtoxxx_in_command(USB_TO_GPIO, interface_index, buf, 2, 2,
+	return usbtoxxx_in_command(USB_TO_GPIO, index, buf, 2, 2,
 							   (uint8_t*)value, 0, 2, 0);
 }
 
-vsf_err_t usbtogpio_out(uint8_t interface_index, uint32_t mask, uint32_t value)
+vsf_err_t usbtogpio_out(uint8_t index, uint32_t mask, uint32_t value)
 {
 	uint8_t buf[4];
 	
 #if PARAM_CHECK
-	if (interface_index > 7)
+	if (index > 7)
 	{
-		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, index);
 		return VSFERR_FAIL;
 	}
 #endif
@@ -95,15 +138,15 @@ vsf_err_t usbtogpio_out(uint8_t interface_index, uint32_t mask, uint32_t value)
 	SET_LE_U16(&buf[0], mask);
 	SET_LE_U16(&buf[2], value);
 	
-	return usbtoxxx_out_command(USB_TO_GPIO, interface_index, buf, 4, 0);
+	return usbtoxxx_out_command(USB_TO_GPIO, index, buf, 4, 0);
 }
 
-vsf_err_t usbtogpio_set(uint8_t interface_index, uint32_t pin_mask)
+vsf_err_t usbtogpio_set(uint8_t index, uint32_t pin_mask)
 {
-	return usbtogpio_out(interface_index, pin_mask, pin_mask);
+	return usbtogpio_out(index, pin_mask, pin_mask);
 }
 
-vsf_err_t usbtogpio_clear(uint8_t interface_index, uint32_t pin_mask)
+vsf_err_t usbtogpio_clear(uint8_t index, uint32_t pin_mask)
 {
-	return usbtogpio_out(interface_index, pin_mask, 0);
+	return usbtogpio_out(index, pin_mask, 0);
 }

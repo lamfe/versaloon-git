@@ -23,43 +23,44 @@
 #include "compiler.h"
 
 #include "../versaloon_include.h"
+#include "interfaces.h"
 #include "../versaloon.h"
 #include "../versaloon_internal.h"
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
 
-vsf_err_t usbtomsp430sbw_init(uint8_t interface_index)
+vsf_err_t usbtomsp430sbw_init(uint8_t index)
 {
-	return usbtoxxx_init_command(USB_TO_SBW, interface_index);
+	return usbtoxxx_init_command(USB_TO_SBW, index);
 }
 
-vsf_err_t usbtomsp430sbw_fini(uint8_t interface_index)
+vsf_err_t usbtomsp430sbw_fini(uint8_t index)
 {
-	return usbtoxxx_fini_command(USB_TO_SBW, interface_index);
+	return usbtoxxx_fini_command(USB_TO_SBW, index);
 }
 
-vsf_err_t usbtomsp430sbw_config(uint8_t interface_index, uint8_t has_test)
+vsf_err_t usbtomsp430sbw_config(uint8_t index, uint8_t has_test)
 {
 	REFERENCE_PARAMETER(has_test);
 #if PARAM_CHECK
-	if (interface_index > 7)
+	if (index > 7)
 	{
-		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, index);
 		return VSFERR_FAIL;
 	}
 #endif
 	
-	return usbtoxxx_conf_command(USB_TO_SBW, interface_index, NULL, 0);
+	return usbtoxxx_conf_command(USB_TO_SBW, index, NULL, 0);
 }
 
-vsf_err_t usbtomsp430sbw_ir(uint8_t interface_index, uint8_t *ir, uint8_t want_ret)
+vsf_err_t usbtomsp430sbw_ir(uint8_t index, uint8_t *ir, uint8_t want_ret)
 {
 	uint8_t buff[2];
 	
 #if PARAM_CHECK
-	if (interface_index > 7)
+	if (index > 7)
 	{
-		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, index);
 		return VSFERR_FAIL;
 	}
 #endif
@@ -69,25 +70,25 @@ vsf_err_t usbtomsp430sbw_ir(uint8_t interface_index, uint8_t *ir, uint8_t want_r
 	
 	if (want_ret)
 	{
-		return usbtoxxx_inout_command(USB_TO_SBW, interface_index,
+		return usbtoxxx_inout_command(USB_TO_SBW, index,
 									  buff, 2, 1, ir, 0, 1, 1);
 	}
 	else
 	{
-		return usbtoxxx_inout_command(USB_TO_SBW, interface_index,
+		return usbtoxxx_inout_command(USB_TO_SBW, index,
 									  buff, 2, 1, NULL, 0, 0, 1);
 	}
 }
 
-vsf_err_t usbtomsp430sbw_dr(uint8_t interface_index, uint32_t *dr,
+vsf_err_t usbtomsp430sbw_dr(uint8_t index, uint32_t *dr,
 							uint8_t bitlen, uint8_t want_ret)
 {
 	uint8_t buff[5], byte_len = (bitlen + 7) >> 3;
 	
 #if PARAM_CHECK
-	if (interface_index > 7)
+	if (index > 7)
 	{
-		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, index);
 		return VSFERR_FAIL;
 	}
 #endif
@@ -97,65 +98,65 @@ vsf_err_t usbtomsp430sbw_dr(uint8_t interface_index, uint32_t *dr,
 
 	if (want_ret)
 	{
-		return usbtoxxx_inout_command(USB_TO_SBW, interface_index, buff,
+		return usbtoxxx_inout_command(USB_TO_SBW, index, buff,
 						byte_len + 1, byte_len, (uint8_t*)dr, 0, byte_len, 1);
 	}
 	else
 	{
-		return usbtoxxx_inout_command(USB_TO_SBW, interface_index, buff,
+		return usbtoxxx_inout_command(USB_TO_SBW, index, buff,
 									  byte_len + 1, byte_len, NULL, 0, 0, 1);
 	}
 }
 
-vsf_err_t usbtomsp430sbw_tclk(uint8_t interface_index, uint8_t value)
+vsf_err_t usbtomsp430sbw_tclk(uint8_t index, uint8_t value)
 {
 #if PARAM_CHECK
-	if (interface_index > 7)
+	if (index > 7)
 	{
-		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, index);
 		return VSFERR_FAIL;
 	}
 #endif
 	
-	return usbtoxxx_out_command(USB_TO_SBW, interface_index, &value, 1, 0);
+	return usbtoxxx_out_command(USB_TO_SBW, index, &value, 1, 0);
 }
 
-vsf_err_t usbtomsp430sbw_tclk_strobe(uint8_t interface_index, uint16_t cnt)
+vsf_err_t usbtomsp430sbw_tclk_strobe(uint8_t index, uint16_t cnt)
 {
 #if PARAM_CHECK
-	if (interface_index > 7)
+	if (index > 7)
 	{
-		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, index);
 		return VSFERR_FAIL;
 	}
 #endif
 	
-	return usbtoxxx_special_command(USB_TO_SBW, interface_index, (uint8_t*)&cnt,
+	return usbtoxxx_special_command(USB_TO_SBW, index, (uint8_t*)&cnt,
 									2, 0, NULL, 0, 0, 0);
 }
 
-vsf_err_t usbtomsp430sbw_reset(uint8_t interface_index)
+vsf_err_t usbtomsp430sbw_reset(uint8_t index)
 {
 #if PARAM_CHECK
-	if (interface_index > 7)
+	if (index > 7)
 	{
-		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, index);
 		return VSFERR_FAIL;
 	}
 #endif
 	
-	return usbtoxxx_reset_command(USB_TO_SBW, interface_index, NULL, 0);
+	return usbtoxxx_reset_command(USB_TO_SBW, index, NULL, 0);
 }
 
-vsf_err_t usbtomsp430sbw_poll(uint8_t interface_index, uint32_t dr, uint32_t mask,
+vsf_err_t usbtomsp430sbw_poll(uint8_t index, uint32_t dr, uint32_t mask,
 			uint32_t value, uint8_t len, uint16_t poll_cnt, uint8_t toggle_tclk)
 {
 	uint8_t buff[15];
 	
 #if PARAM_CHECK
-	if (interface_index > 7)
+	if (index > 7)
 	{
-		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, index);
 		return VSFERR_FAIL;
 	}
 #endif
@@ -170,7 +171,7 @@ vsf_err_t usbtomsp430sbw_poll(uint8_t interface_index, uint32_t dr, uint32_t mas
 	SET_LE_U32(&buff[7], mask);
 	SET_LE_U32(&buff[11], value);
 	
-	return usbtoxxx_poll_command(USB_TO_SBW, interface_index, buff, 15,
+	return usbtoxxx_poll_command(USB_TO_SBW, index, buff, 15,
 									NULL, 0);
 }
 

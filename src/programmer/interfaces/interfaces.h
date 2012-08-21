@@ -69,12 +69,20 @@ struct interface_usart_t
 	vsf_err_t (*status)(uint8_t index, struct usart_status_t *status);
 };
 
+struct spi_ability_t
+{
+	uint32_t max_freq_hz;
+	uint32_t min_freq_hz;
+};
 struct interface_spi_t
 {
 	vsf_err_t (*init)(uint8_t index);
 	vsf_err_t (*fini)(uint8_t index);
+	vsf_err_t (*get_ability)(uint8_t index, struct spi_ability_t *ability);
+	vsf_err_t (*enable)(uint8_t index);
+	vsf_err_t (*disable)(uint8_t index);
 	vsf_err_t (*config)(uint8_t index, uint32_t kHz, uint8_t mode);
-	vsf_err_t (*io)(uint8_t index, uint8_t *out, uint8_t *in, uint16_t bytelen);
+	vsf_err_t (*io)(uint8_t index, uint8_t *out, uint8_t *in, uint32_t bytelen);
 };
 
 struct ebi_info_t

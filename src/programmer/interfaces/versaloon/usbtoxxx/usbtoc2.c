@@ -23,63 +23,64 @@
 #include "compiler.h"
 
 #include "../versaloon_include.h"
+#include "interfaces.h"
 #include "../versaloon.h"
 #include "../versaloon_internal.h"
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
 
-vsf_err_t usbtoc2_init(uint8_t interface_index)
+vsf_err_t usbtoc2_init(uint8_t index)
 {
-	return usbtoxxx_init_command(USB_TO_C2, interface_index);
+	return usbtoxxx_init_command(USB_TO_C2, index);
 }
 
-vsf_err_t usbtoc2_fini(uint8_t interface_index)
+vsf_err_t usbtoc2_fini(uint8_t index)
 {
-	return usbtoxxx_fini_command(USB_TO_C2, interface_index);
+	return usbtoxxx_fini_command(USB_TO_C2, index);
 }
 
-vsf_err_t usbtoc2_readaddr(uint8_t interface_index, uint8_t *data)
+vsf_err_t usbtoc2_readaddr(uint8_t index, uint8_t *data)
 {
 #if PARAM_CHECK
-	if (interface_index > 7)
+	if (index > 7)
 	{
-		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, index);
 		return VSFERR_FAIL;
 	}
 #endif
 	if (data != NULL)
 	{
-		return usbtoxxx_in_command(USB_TO_C2, interface_index, NULL, 0, 1,
+		return usbtoxxx_in_command(USB_TO_C2, index, NULL, 0, 1,
 									data, 0, 1, 0);
 	}
 	else
 	{
-		return usbtoxxx_in_command(USB_TO_C2, interface_index, NULL, 0, 1,
+		return usbtoxxx_in_command(USB_TO_C2, index, NULL, 0, 1,
 									NULL, 0, 0, 0);
 	}
 }
 
-vsf_err_t usbtoc2_writeaddr(uint8_t interface_index, uint8_t addr)
+vsf_err_t usbtoc2_writeaddr(uint8_t index, uint8_t addr)
 {
 #if PARAM_CHECK
-	if (interface_index > 7)
+	if (index > 7)
 	{
-		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, index);
 		return VSFERR_FAIL;
 	}
 #endif
 	
-	return usbtoxxx_out_command(USB_TO_C2, interface_index, &addr, 1, 0);
+	return usbtoxxx_out_command(USB_TO_C2, index, &addr, 1, 0);
 }
 
-vsf_err_t usbtoc2_readdata(uint8_t interface_index, uint8_t *buf, uint8_t len)
+vsf_err_t usbtoc2_readdata(uint8_t index, uint8_t *buf, uint8_t len)
 {
 	uint8_t cmdbuf[5];
 	
 #if PARAM_CHECK
-	if (interface_index > 7)
+	if (index > 7)
 	{
-		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, index);
 		return VSFERR_FAIL;
 	}
 	if ((len > 4) || (0 == len))
@@ -92,18 +93,18 @@ vsf_err_t usbtoc2_readdata(uint8_t interface_index, uint8_t *buf, uint8_t len)
 	cmdbuf[0] = 0x80 | len;
 	memset(cmdbuf + 1, 0, len);
 	
-	return usbtoxxx_inout_command(USB_TO_C2, interface_index, cmdbuf,
+	return usbtoxxx_inout_command(USB_TO_C2, index, cmdbuf,
 									1 + len, len, buf, 0, len, 0);
 }
 
-vsf_err_t usbtoc2_writedata(uint8_t interface_index, uint8_t *buf, uint8_t len)
+vsf_err_t usbtoc2_writedata(uint8_t index, uint8_t *buf, uint8_t len)
 {
 	uint8_t cmdbuf[5];
 	
 #if PARAM_CHECK
-	if (interface_index > 7)
+	if (index > 7)
 	{
-		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, index);
 		return VSFERR_FAIL;
 	}
 	if ((len > 4) || (0 == len))
@@ -116,7 +117,7 @@ vsf_err_t usbtoc2_writedata(uint8_t interface_index, uint8_t *buf, uint8_t len)
 	cmdbuf[0] = len;
 	memcpy(cmdbuf + 1, buf, len);
 	
-	return usbtoxxx_inout_command(USB_TO_C2, interface_index, cmdbuf,
+	return usbtoxxx_inout_command(USB_TO_C2, index, cmdbuf,
 									1 + len, 0, NULL, 0, 0, 0);
 }
 

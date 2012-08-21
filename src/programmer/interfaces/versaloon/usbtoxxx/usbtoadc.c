@@ -23,56 +23,57 @@
 #include "compiler.h"
 
 #include "../versaloon_include.h"
+#include "interfaces.h"
 #include "../versaloon.h"
 #include "../versaloon_internal.h"
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
 
-vsf_err_t usbtoadc_init(uint8_t interface_index)
+vsf_err_t usbtoadc_init(uint8_t index)
 {
-	return usbtoxxx_init_command(USB_TO_ADC, interface_index);
+	return usbtoxxx_init_command(USB_TO_ADC, index);
 }
 
-vsf_err_t usbtoadc_fini(uint8_t interface_index)
+vsf_err_t usbtoadc_fini(uint8_t index)
 {
-	return usbtoxxx_fini_command(USB_TO_ADC, interface_index);
+	return usbtoxxx_fini_command(USB_TO_ADC, index);
 }
 
-vsf_err_t usbtoadc_config(uint8_t interface_index, uint32_t clock_hz,
+vsf_err_t usbtoadc_config(uint8_t index, uint32_t clock_hz,
 							uint8_t mode)
 {
 	uint8_t cmdbuf[5];
 	
 	SET_LE_U32(cmdbuf, clock_hz);
 	cmdbuf[4] = mode;
-	return usbtoxxx_conf_command(USB_TO_ADC, interface_index, cmdbuf, 5);
+	return usbtoxxx_conf_command(USB_TO_ADC, index, cmdbuf, 5);
 }
 
-vsf_err_t usbtoadc_config_channel(uint8_t interface_index, uint8_t channel,
+vsf_err_t usbtoadc_config_channel(uint8_t index, uint8_t channel,
 									uint8_t cycles)
 {
 	uint8_t cmdbuf[2];
 	
 	cmdbuf[0] = channel;
 	cmdbuf[1] = cycles;
-	return usbtoxxx_out_command(USB_TO_ADC, interface_index, cmdbuf, 2, 0);
+	return usbtoxxx_out_command(USB_TO_ADC, index, cmdbuf, 2, 0);
 }
 
-vsf_err_t usbtoadc_calibrate(uint8_t interface_index, uint8_t channel)
+vsf_err_t usbtoadc_calibrate(uint8_t index, uint8_t channel)
 {
 	uint8_t cmdbuf[1];
 	
 	cmdbuf[0] = channel;
-	return usbtoxxx_special_command(USB_TO_ADC, interface_index, cmdbuf, 1, 0, 
+	return usbtoxxx_special_command(USB_TO_ADC, index, cmdbuf, 1, 0, 
 									NULL, 0, 0, 0);
 }
 
-vsf_err_t usbtoadc_sample(uint8_t interface_index, uint8_t channel,
+vsf_err_t usbtoadc_sample(uint8_t index, uint8_t channel,
 							uint32_t *voltage)
 {
 	uint8_t cmdbuf[1];
 	
 	cmdbuf[0] = channel;
-	return usbtoxxx_inout_command(USB_TO_ADC, interface_index, cmdbuf, 1, 4, 
+	return usbtoxxx_inout_command(USB_TO_ADC, index, cmdbuf, 1, 4, 
 									(uint8_t *)voltage, 0, 4, 0);
 }

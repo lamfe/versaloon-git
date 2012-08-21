@@ -25,6 +25,7 @@
 #include "compiler.h"
 
 #include "../versaloon_include.h"
+#include "interfaces.h"
 #include "../versaloon.h"
 #include "../versaloon_internal.h"
 #include "usbtoxxx.h"
@@ -44,25 +45,25 @@ vsf_err_t usbtoswd_callback(void *p, uint8_t *src, uint8_t *processed)
 	return VSFERR_NONE;
 }
 
-vsf_err_t usbtoswd_init(uint8_t interface_index)
+vsf_err_t usbtoswd_init(uint8_t index)
 {
-	return usbtoxxx_init_command(USB_TO_SWD, interface_index);
+	return usbtoxxx_init_command(USB_TO_SWD, index);
 }
 
-vsf_err_t usbtoswd_fini(uint8_t interface_index)
+vsf_err_t usbtoswd_fini(uint8_t index)
 {
-	return usbtoxxx_fini_command(USB_TO_SWD, interface_index);
+	return usbtoxxx_fini_command(USB_TO_SWD, index);
 }
 
-vsf_err_t usbtoswd_config(uint8_t interface_index, uint8_t trn, uint16_t retry,
+vsf_err_t usbtoswd_config(uint8_t index, uint8_t trn, uint16_t retry,
 					   uint16_t dly)
 {
 	uint8_t cfg_buf[5];
 	
 #if PARAM_CHECK
-	if (interface_index > 7)
+	if (index > 7)
 	{
-		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, index);
 		return VSFERR_FAIL;
 	}
 #endif
@@ -71,17 +72,17 @@ vsf_err_t usbtoswd_config(uint8_t interface_index, uint8_t trn, uint16_t retry,
 	SET_LE_U16(&cfg_buf[1], retry);
 	SET_LE_U16(&cfg_buf[3], dly);
 	
-	return usbtoxxx_conf_command(USB_TO_SWD, interface_index, cfg_buf, 5);
+	return usbtoxxx_conf_command(USB_TO_SWD, index, cfg_buf, 5);
 }
 
-vsf_err_t usbtoswd_seqout(uint8_t interface_index, uint8_t *data, uint16_t bitlen)
+vsf_err_t usbtoswd_seqout(uint8_t index, uint8_t *data, uint16_t bitlen)
 {
 	uint16_t bytelen = (bitlen + 7) >> 3;
 	
 #if PARAM_CHECK
-	if (interface_index > 7)
+	if (index > 7)
 	{
-		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, index);
 		return VSFERR_FAIL;
 	}
 #endif
@@ -89,39 +90,39 @@ vsf_err_t usbtoswd_seqout(uint8_t interface_index, uint8_t *data, uint16_t bitle
 	SET_LE_U16(&versaloon_cmd_buf[0], bitlen);
 	memcpy(versaloon_cmd_buf + 2, data, bytelen);
 	
-	return usbtoxxx_out_command(USB_TO_SWD, interface_index,
+	return usbtoxxx_out_command(USB_TO_SWD, index,
 								versaloon_cmd_buf, bytelen + 2, 0);
 }
 
-vsf_err_t usbtoswd_seqin(uint8_t interface_index, uint8_t *data, uint16_t bitlen)
+vsf_err_t usbtoswd_seqin(uint8_t index, uint8_t *data, uint16_t bitlen)
 {
 	uint16_t bytelen = (bitlen + 7) >> 3;
 	uint8_t buff[2];
 	
 #if PARAM_CHECK
-	if (interface_index > 7)
+	if (index > 7)
 	{
-		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, index);
 		return VSFERR_FAIL;
 	}
 #endif
 	
 	SET_LE_U16(&buff[0], bitlen);
 	
-	return usbtoxxx_in_command(USB_TO_SWD, interface_index, buff, 2, bytelen,
+	return usbtoxxx_in_command(USB_TO_SWD, index, buff, 2, bytelen,
 								data, 0, bytelen, 0);
 }
 
-vsf_err_t usbtoswd_transact(uint8_t interface_index, uint8_t request,
+vsf_err_t usbtoswd_transact(uint8_t index, uint8_t request,
 							uint32_t *data, uint8_t *ack)
 {
 	uint8_t parity;
 	uint8_t buff[5];
 	
 #if PARAM_CHECK
-	if (interface_index > 7)
+	if (index > 7)
 	{
-		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, index);
 		return VSFERR_FAIL;
 	}
 #endif
@@ -146,13 +147,13 @@ vsf_err_t usbtoswd_transact(uint8_t interface_index, uint8_t request,
 	if (request & 0x04)
 	{
 		// read
-		return usbtoxxx_inout_command(USB_TO_SWD, interface_index, buff, 5, 5,
+		return usbtoxxx_inout_command(USB_TO_SWD, index, buff, 5, 5,
 										(uint8_t *)data, 1, 4, 0);
 	}
 	else
 	{
 		// write
-		return usbtoxxx_inout_command(USB_TO_SWD, interface_index, buff, 5, 5,
+		return usbtoxxx_inout_command(USB_TO_SWD, index, buff, 5, 5,
 										NULL, 0, 0, 0);
 	}
 }

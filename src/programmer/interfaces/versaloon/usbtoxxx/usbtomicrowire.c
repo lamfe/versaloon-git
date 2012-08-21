@@ -23,30 +23,31 @@
 #include "compiler.h"
 
 #include "../versaloon_include.h"
+#include "interfaces.h"
 #include "../versaloon.h"
 #include "../versaloon_internal.h"
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
 
-vsf_err_t usbtomicrowire_init(uint8_t interface_index)
+vsf_err_t usbtomicrowire_init(uint8_t index)
 {
-	return usbtoxxx_init_command(USB_TO_MICROWIRE, interface_index);
+	return usbtoxxx_init_command(USB_TO_MICROWIRE, index);
 }
 
-vsf_err_t usbtomicrowire_fini(uint8_t interface_index)
+vsf_err_t usbtomicrowire_fini(uint8_t index)
 {
-	return usbtoxxx_fini_command(USB_TO_MICROWIRE, interface_index);
+	return usbtoxxx_fini_command(USB_TO_MICROWIRE, index);
 }
 
-vsf_err_t usbtomicrowire_config(uint8_t interface_index, uint16_t kHz,
+vsf_err_t usbtomicrowire_config(uint8_t index, uint16_t kHz,
 								uint8_t sel_polarity)
 {
 	uint8_t conf[3];
 	
 #if PARAM_CHECK
-	if (interface_index > 7)
+	if (index > 7)
 	{
-		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, index);
 		return VSFERR_FAIL;
 	}
 #endif
@@ -54,10 +55,10 @@ vsf_err_t usbtomicrowire_config(uint8_t interface_index, uint16_t kHz,
 	conf[0] = sel_polarity;
 	SET_LE_U16(&conf[1], kHz);
 	
-	return usbtoxxx_conf_command(USB_TO_MICROWIRE, interface_index, conf, 3);
+	return usbtoxxx_conf_command(USB_TO_MICROWIRE, index, conf, 3);
 }
 
-vsf_err_t usbtomicrowire_transport(uint8_t interface_index,
+vsf_err_t usbtomicrowire_transport(uint8_t index,
 								uint32_t opcode, uint8_t opcode_bitlen,
 								uint32_t addr, uint8_t addr_bitlen,
 								uint32_t data, uint8_t data_bitlen,
@@ -67,9 +68,9 @@ vsf_err_t usbtomicrowire_transport(uint8_t interface_index,
 	uint16_t offset;
 	
 #if PARAM_CHECK
-	if (interface_index > 7)
+	if (index > 7)
 	{
-		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, index);
 		return VSFERR_FAIL;
 	}
 	if ((opcode_bitlen > 32) || (addr_bitlen > 32) ||
@@ -101,20 +102,20 @@ vsf_err_t usbtomicrowire_transport(uint8_t interface_index,
 		offset += 4;
 	}
 	
-	return usbtoxxx_inout_command(USB_TO_MICROWIRE, interface_index,
+	return usbtoxxx_inout_command(USB_TO_MICROWIRE, index,
 		versaloon_cmd_buf, offset, reply_bytelen, reply,
 		0, reply_bytelen, 1);
 }
 
-vsf_err_t usbtomicrowire_poll(uint8_t interface_index, uint16_t interval_us,
+vsf_err_t usbtomicrowire_poll(uint8_t index, uint16_t interval_us,
 							uint16_t retry_cnt)
 {
 	uint8_t buff[4];
 	
 #if PARAM_CHECK
-	if (interface_index > 7)
+	if (index > 7)
 	{
-		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, index);
 		return VSFERR_FAIL;
 	}
 #endif
@@ -122,7 +123,7 @@ vsf_err_t usbtomicrowire_poll(uint8_t interface_index, uint16_t interval_us,
 	SET_LE_U16(&buff[0], interval_us);
 	SET_LE_U16(&buff[2], retry_cnt);
 	
-	return usbtoxxx_poll_command(USB_TO_MICROWIRE, interface_index, buff, 4,
+	return usbtoxxx_poll_command(USB_TO_MICROWIRE, index, buff, 4,
 									NULL, 0);
 }
 

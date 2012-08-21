@@ -23,6 +23,7 @@
 #include "compiler.h"
 
 #include "../versaloon_include.h"
+#include "interfaces.h"
 #include "../versaloon.h"
 #include "../versaloon_internal.h"
 #include "usbtoxxx.h"
@@ -623,7 +624,7 @@ vsf_err_t usbtopoll_verifybuff(uint16_t offset, uint16_t size, uint8_t *buff)
 
 
 
-vsf_err_t usbtodelay_delay(uint16_t dly)
+static vsf_err_t usbtodelay_delay(uint16_t dly)
 {
 	if (usbtoxxx_ensure_buffer_size(3 + 2))
 	{
@@ -641,6 +642,11 @@ vsf_err_t usbtodelay_delay(uint16_t dly)
 	usbtoxxx_current_cmd_index += 2;
 	
 	return versaloon_add_pending(USB_TO_DELAY, 0, 0, 0, 0, NULL, 0);
+}
+
+vsf_err_t usbtodelay_init(void)
+{
+	return VSFERR_NONE;
 }
 
 vsf_err_t usbtodelay_delayms(uint16_t ms)
