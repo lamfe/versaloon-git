@@ -13,20 +13,6 @@
  *      YYYY-MM-DD:     What(by Who)                                      *
  *      2008-11-07:     created(by SimonQian)                             *
  **************************************************************************/
- 
-#define IFS_FLASH_EN						1
-#define IFS_GPIO_EN							1
-#define IFS_TIMER_EN						1
-#define IFS_EINT_EN							1
-#define IFS_USART_EN						1
-#define IFS_SPI_EN							1
-#define IFS_ADC_EN							1
-#define IFS_IIC_EN							1
-#define IFS_USBD_EN							1
-#define IFS_PWM_EN							1
-#define IFS_MICROWIRE_EN					1
-#define IFS_EBI_EN							1
-#define IFS_SDIO_EN							1
 
 // Core config for clocks, flash, debug...
 #ifndef OSC0_FREQ_HZ
@@ -83,25 +69,25 @@
 
 // USART config
 #define USART_NUM							3
-#define USART0_INT_EN						0
-#define USART1_INT_EN						1
+#define USART0_INT_EN						1
+#define USART1_INT_EN						0
 #define USART2_INT_EN						0
-#define USART00_ENABLE						0
+#define USART00_ENABLE						1
 #	define USART00_CTS_ENABLE				0
 #	define USART00_RTS_ENABLE				0
-#	define USART00_TX_ENABLE				0
-#	define USART00_RX_ENABLE				0
+#	define USART00_TX_ENABLE				1
+#	define USART00_RX_ENABLE				1
 #	define USART00_CK_ENABLE				0
 #define USART10_ENABLE						0
 #	define USART10_CTS_ENABLE				0
 #	define USART10_RTS_ENABLE				0
 #	define USART10_TX_ENABLE				0
 #	define USART10_RX_ENABLE				0
-#define USART01_ENABLE						1
-#	define USART01_CTS_ENABLE				1
-#	define USART01_RTS_ENABLE				1
-#	define USART01_TX_ENABLE				1
-#	define USART01_RX_ENABLE				1
+#define USART01_ENABLE						0
+#	define USART01_CTS_ENABLE				0
+#	define USART01_RTS_ENABLE				0
+#	define USART01_TX_ENABLE				0
+#	define USART01_RX_ENABLE				0
 #define USART11_ENABLE						0
 #	define USART11_CTS_ENABLE				0
 #	define USART11_RTS_ENABLE				0
@@ -136,3 +122,20 @@
 // FSMC
 #define FSMC00_ADDR_LEN						26
 #define FSMC00_DATA_LEN						16
+
+
+
+#define IFS_FLASH_EN						1
+#define IFS_USART_EN						1
+#define IFS_SPI_EN							1
+#define IFS_ADC_EN							1
+#define IFS_GPIO_EN							1
+#define IFS_IIC_EN							1
+#define IFS_PWM_EN							1
+#define IFS_MICROWIRE_EN					1
+#define IFS_TIMER_EN						1
+#define IFS_EINT_EN							1
+#define IFS_EBI_EN							1
+#define IFS_SDIO_EN							1
+#define IFS_USBD_EN							1
+
