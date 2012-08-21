@@ -106,7 +106,7 @@ vsf_err_t gpio_in(uint8_t index, uint32_t pin_mask, uint32_t *value)
 	{
 	case 0:
 		core_interfaces.gpio.in(2, pin_mask & GPIO_PORTC_MASK, &port_data);
-		*value = port_data;
+		*value = port_data & GPIO_PORTC_MASK;
 		return VSFERR_NONE;
 	default:
 		return VSFERR_NOT_SUPPORT;

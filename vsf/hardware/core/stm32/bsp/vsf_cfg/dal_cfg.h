@@ -19,17 +19,16 @@
 
 #define DAL_INTERFACE_PARSER_EN				1
 
-#define DAL_MIC2826_EN						0
-#define DAL_NRF24L01_EN						0
+#define DAL_MIC2826_EN						1
+#define DAL_NRF24L01_EN						1
 
 #define DAL_MAL_EN							1
-#define DAL_EE93CX6_EN						0
+#define DAL_EE93CX6_EN						1
 #define DAL_EE24CXX_EN						1
 #define DAL_DF25XX_EN						1
 #define DAL_DF45XX_EN						1
 #define DAL_SD_SPI_EN						1
-#define DAL_SD_SDIO_EN						INTERFACE_SDIO_EN
+#define DAL_SD_SDIO_EN						0
 #define DAL_CFI_EN							1
 #define DAL_NAND_EN							1
-#define DAL_MAL_EMPTY_EN					0
 

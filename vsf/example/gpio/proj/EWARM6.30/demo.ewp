@@ -298,20 +298,19 @@
         <option>
           <name>CCIncludePath2</name>
           <state>$PROJ_DIR$\</state>
-          <state>$PROJ_DIR$\..\..\..\..\..\dongle\firmware\Projects\VSFCore\stm32\vsf_cfg\</state>
-          <state>$PROJ_DIR$\..\..\..\..\..\dongle\firmware\Projects\VSFCore\stm32\</state>
-          <state>$PROJ_DIR$\..\..\..\..\..\dongle\firmware\Projects\VSFCore\stm32\Interfaces\</state>
-          <state>$PROJ_DIR$\..\..\..\..\..\dongle\firmware\Projects\VSFCore\stm32\Interfaces\APP\</state>
-          <state>$PROJ_DIR$\..\..\..\..\..\vsf\</state>
-          <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\</state>
-          <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\</state>
-          <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\</state>
-          <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\Port\IAR\</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\vsf</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\Port\IAR</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\CMSIS\CM3\CoreSupport</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\STM32_USB-FS-Device_Driver\inc</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\inc</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\example</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\vsf\hardware\core\stm32\bsp</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\vsf\hardware\core\stm32\bsp\vsf_cfg</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\vsf\hardware\core\stm32\bsp\APP</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -1223,20 +1222,19 @@
         <option>
           <name>CCIncludePath2</name>
           <state>$PROJ_DIR$\</state>
-          <state>$PROJ_DIR$\..\..\..\..\..\dongle\firmware\Projects\VSFCore\stm32\vsf_cfg\</state>
-          <state>$PROJ_DIR$\..\..\..\..\..\dongle\firmware\Projects\VSFCore\stm32\</state>
-          <state>$PROJ_DIR$\..\..\..\..\..\dongle\firmware\Projects\VSFCore\stm32\Interfaces\</state>
-          <state>$PROJ_DIR$\..\..\..\..\..\dongle\firmware\Projects\VSFCore\stm32\Interfaces\APP\</state>
-          <state>$PROJ_DIR$\..\..\..\..\..\vsf\</state>
-          <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\</state>
-          <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\</state>
-          <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\</state>
-          <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\Port\IAR\</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\vsf</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\Port\IAR</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\CMSIS\CM3\CoreSupport</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\STM32_USB-FS-Device_Driver\inc</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\hw\STM32F10x_Lib\Libraries\STM32F10x_StdPeriph_Driver\inc</state>
-          <state>$PROJ_DIR$\..\..\..\..\..\src\</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\vsf\example</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\vsf\hardware\core\stm32\bsp</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\vsf\hardware\core\stm32\bsp\vsf_cfg</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\vsf\hardware\core\stm32\bsp\APP</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -1861,48 +1859,48 @@
       <group>
         <name>ADC</name>
         <file>
-          <name>$PROJ_DIR$\..\..\..\..\..\dongle\firmware\Projects\VSFCore\stm32\Interfaces\APP\ADC\ADC.c</name>
+          <name>$PROJ_DIR$\..\..\..\..\hardware\core\stm32\bsp\APP\ADC\ADC.c</name>
         </file>
       </group>
       <group>
         <name>EBI</name>
         <file>
-          <name>$PROJ_DIR$\..\..\..\..\..\dongle\firmware\Projects\VSFCore\stm32\Interfaces\APP\EBI\EBI.c</name>
+          <name>$PROJ_DIR$\..\..\..\..\hardware\core\stm32\bsp\APP\EBI\EBI.c</name>
         </file>
       </group>
       <group>
         <name>GPIO</name>
         <file>
-          <name>$PROJ_DIR$\..\..\..\..\..\dongle\firmware\Projects\VSFCore\stm32\Interfaces\APP\GPIO\GPIO.c</name>
+          <name>$PROJ_DIR$\..\..\..\..\hardware\core\stm32\bsp\APP\GPIO\GPIO.c</name>
         </file>
       </group>
       <group>
         <name>IIC</name>
         <file>
-          <name>$PROJ_DIR$\..\..\..\..\..\dongle\firmware\Projects\VSFCore\stm32\Interfaces\APP\IIC\IIC.c</name>
+          <name>$PROJ_DIR$\..\..\..\..\hardware\core\stm32\bsp\APP\IIC\IIC.c</name>
         </file>
       </group>
       <group>
         <name>SDIO</name>
         <file>
-          <name>$PROJ_DIR$\..\..\..\..\..\dongle\firmware\Projects\VSFCore\stm32\Interfaces\APP\SDIO\SDIO.c</name>
+          <name>$PROJ_DIR$\..\..\..\..\hardware\core\stm32\bsp\APP\SDIO\SDIO.c</name>
         </file>
       </group>
       <group>
         <name>SPI</name>
         <file>
-          <name>$PROJ_DIR$\..\..\..\..\..\dongle\firmware\Projects\VSFCore\stm32\Interfaces\APP\SPI\SPI.c</name>
+          <name>$PROJ_DIR$\..\..\..\..\hardware\core\stm32\bsp\APP\SPI\SPI.c</name>
         </file>
       </group>
       <group>
         <name>USART</name>
         <file>
-          <name>$PROJ_DIR$\..\..\..\..\..\dongle\firmware\Projects\VSFCore\stm32\Interfaces\APP\USART\USART.c</name>
+          <name>$PROJ_DIR$\..\..\..\..\hardware\core\stm32\bsp\APP\USART\USART.c</name>
         </file>
       </group>
     </group>
     <file>
-      <name>$PROJ_DIR$\..\..\..\..\..\dongle\firmware\Projects\VSFCore\stm32\Interfaces\app_interfaces.c</name>
+      <name>$PROJ_DIR$\..\..\..\..\hardware\core\stm32\bsp\app_interfaces.c</name>
     </file>
   </group>
   <group>
@@ -1937,6 +1935,10 @@
         <name>ee93cx6</name>
         <file>
           <name>$PROJ_DIR$\..\..\..\..\dal\ee93cx6\ee93cx6_drv.c</name>
+          <excluded>
+            <configuration>Debug</configuration>
+            <configuration>Release</configuration>
+          </excluded>
         </file>
       </group>
       <group>

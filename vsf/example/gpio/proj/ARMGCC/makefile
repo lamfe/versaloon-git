@@ -18,12 +18,11 @@ TARGET_STM32 = HighDensity
 # directory define
 PRJDIR	    = ..
 SRCDIR      = ../..
-HWCFGDIR    = ../../../../../dongle/firmware/Projects/VSFCore/stm32
 VSFDIR      = ../../../../../vsf
-VSFCFGDIR   = ../../../../../dongle/firmware/Projects/VSFCore/stm32/vsf_cfg
+BSPDIR      = $(VSFDIR)/hardware/core/stm32/bsp
+VSFCFGDIR   = $(BSPDIR)/vsf_cfg
 OBJ_DIR     = .
 COMPILER_DIR = .
-APP_IFACES_DIR = ../../../../../dongle/firmware/Projects/VSFCore/stm32/Interfaces
 STM32_IFACES_DIR = $(VSFDIR)/interfaces/cpu/stm32
 STM32_LIB_DIR = $(STM32_IFACES_DIR)/hw/STM32F10x_Lib
 
@@ -34,7 +33,7 @@ STM32_LIB_DIR = $(STM32_IFACES_DIR)/hw/STM32F10x_Lib
 # add library directory to USR_LIBS
 USR_SRCS+= $(SRCDIR)/main.c
 USR_INCS+= -I $(SRCDIR)
-USR_INCS+= -I $(HWCFGDIR) -I $(STM32_IFACES_DIR)/hw
+USR_INCS+= -I $(STM32_IFACES_DIR)/hw
 USR_DEFS+= -D__TARGET_CHIP__=$(TARGET_CHIP) -DFLASH_LOAD_OFFSET=$(FLASH_LOAD_OFFSET) -DCORE_DEBUG=STM32_DBG_SWD -DHSE_VALUE=$(HSE_VALUE)
 #USR_LIBS+= -L
 
@@ -43,23 +42,23 @@ USR_SRCS+= $(COMPILER_DIR)/compiler_string.c $(COMPILER_DIR)/syscall.c
 USR_INCS+= -I $(COMPILER_DIR)
 
 #APP interfaces
-USR_SRCS+= $(APP_IFACES_DIR)/app_interfaces.c
-USR_INCS+= -I $(APP_IFACES_DIR) -I $(APP_IFACES_DIR)/APP
+USR_SRCS+= $(BSPDIR)/app_interfaces.c
+USR_INCS+= -I $(BSPDIR) -I $(BSPDIR)/APP
 
-USR_SRCS+= $(APP_IFACES_DIR)/APP/GPIO/GPIO.c \
-  $(APP_IFACES_DIR)/APP/USART/USART.c \
-  $(APP_IFACES_DIR)/APP/SPI/SPI.c \
-  $(APP_IFACES_DIR)/APP/SDIO/SDIO.c \
-  $(APP_IFACES_DIR)/APP/IIC/IIC.c \
-  $(APP_IFACES_DIR)/APP/EBI/EBI.c \
-  $(APP_IFACES_DIR)/APP/ADC/ADC.c
-USR_INCS+= -I $(APP_IFACES_DIR) \
-  -I $(APP_IFACES_DIR)/APP/GPIO \
-  -I $(APP_IFACES_DIR)/APP/USART \
-  -I $(APP_IFACES_DIR)/APP/SPI \
-  -I $(APP_IFACES_DIR)/APP/IIC \
-  -I $(APP_IFACES_DIR)/APP/EBI \
-  -I $(APP_IFACES_DIR)/APP/ADC
+USR_SRCS+= $(BSPDIR)/APP/GPIO/GPIO.c \
+  $(BSPDIR)/APP/USART/USART.c \
+  $(BSPDIR)/APP/SPI/SPI.c \
+  $(BSPDIR)/APP/SDIO/SDIO.c \
+  $(BSPDIR)/APP/IIC/IIC.c \
+  $(BSPDIR)/APP/EBI/EBI.c \
+  $(BSPDIR)/APP/ADC/ADC.c
+USR_INCS+= -I $(BSPDIR) \
+  -I $(BSPDIR)/APP/GPIO \
+  -I $(BSPDIR)/APP/USART \
+  -I $(BSPDIR)/APP/SPI \
+  -I $(BSPDIR)/APP/IIC \
+  -I $(BSPDIR)/APP/EBI \
+  -I $(BSPDIR)/APP/ADC
 
 #VSF config
 USR_INCS+= -I $(VSFCFGDIR)
@@ -96,7 +95,6 @@ USR_SRCS+= $(VSFDIR)/dal/dal.c \
   $(VSFDIR)/dal/df25xx/df25xx_drv.c \
   $(VSFDIR)/dal/df45xx/df45xx_drv.c \
   $(VSFDIR)/dal/ee24cxx/ee24cxx_drv.c \
-  $(VSFDIR)/dal/ee93cx6/ee93cx6_drv.c \
   $(VSFDIR)/dal/sd/sd_common.c \
   $(VSFDIR)/dal/sd/sd_spi_drv.c \
   $(VSFDIR)/dal/sd/sd_sdio_drv.c \
@@ -104,7 +102,9 @@ USR_SRCS+= $(VSFDIR)/dal/dal.c \
   $(VSFDIR)/dal/mic2826/mic2826_drv.c \
   $(VSFDIR)/dal/nrf24l01/nrf24l01_drv.c \
   $(VSFDIR)/dal/stream/stream.c \
-  $(VSFDIR)/dal/usart_stream/usart_stream.c
+  $(VSFDIR)/dal/usart_stream/usart_stream.c \
+# MicroWire is not supported, so no ee93cx6 support
+#  $(VSFDIR)/dal/ee93cx6/ee93cx6_drv.c
 
 #VSF stack
 USR_SRCS+= $(VSFDIR)/stack/usb_device/vsf_usbd.c \
