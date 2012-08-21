@@ -98,3 +98,20 @@
 // FSMC
 #define FSMC00_ADDR_LEN						26
 #define FSMC00_DATA_LEN						16
+
+
+
+#define IFS_FLASH_EN						0
+#define IFS_USART_EN						0
+#define IFS_SPI_EN							1
+#define IFS_ADC_EN							1
+#define IFS_GPIO_EN							1
+#define IFS_IIC_EN							1
+#define IFS_PWM_EN							1
+#define IFS_MICROWIRE_EN					1
+#define IFS_TIMER_EN						0
+#define IFS_EINT_EN							0
+#define IFS_EBI_EN							1
+#define IFS_SDIO_EN							0
+#define IFS_USBD_EN							0
+

@@ -10,10 +10,9 @@ OPT	= s
 # directory define
 PRJDIR	    = ..
 SRCDIR      = ../..
-VSPROGDIR   = ../../../../../src
 VSFDIR      = ../../../../../vsf
-VSFCFGDIR   = ../../../../../src/vsf_cfg
-VersaloonDIR= ../../../../../src/programmer/interfaces/versaloon
+VSFCFGDIR   = $(VSFDIR)/example/vsf_cfg
+VersaloonDIR= $(VSFDIR)/interfaces/cpu/pc
 USBTOXXXDIR = $(VersaloonDIR)/usbtoxxx
 OBJ_DIR     = .
 COMPILER_DIR = .
@@ -30,37 +29,23 @@ USR_INCS+= -I $(SRCDIR)
 
 
 #vsprog
-USR_SRCS+= ../../../../../src/driver/usb/usbapi.c $(VSPROGDIR)/app_log.c $(VSPROGDIR)/scripts/scripts.c
-USR_INCS+= -I ../../../../../src/driver -I ../../../../../src/driver/usb -I $(COMPILER_DIR) -I $(VSPROGDIR)/scripts -I $(VSPROGDIR) -I $(VSFCFGDIR) -I $(VSFDIR) -I $(VSFDIR)/interfaces/cpu/pc
-USR_DEFS+= -DHAVE_CONFIG_H
+USR_SRCS+= $(VersaloonDIR)/driver/usb/usbapi.c $(VersaloonDIR)/app_log.c
+USR_INCS+= -I $(VersaloonDIR)/driver -I $(VersaloonDIR)/driver/usb -I $(VSFDIR)/example -I $(COMPILER_DIR) -I $(VSFCFGDIR) -I $(VSFDIR) -I $(VSFDIR)/interfaces/cpu/pc
+USR_DEFS+= -DHAVE_CONFIG_H -D__TARGET_CHIP__=usbtoxxx
 USR_LIBS+= -lusb
 
 #interfaces
 USR_SRCS+= $(VersaloonDIR)/versaloon.c \
   $(USBTOXXXDIR)/usbtoadc.c \
-  $(USBTOXXXDIR)/usbtobdm.c \
-  $(USBTOXXXDIR)/usbtoc2.c \
-  $(USBTOXXXDIR)/usbtodusi.c \
   $(USBTOXXXDIR)/usbtoebi.c \
   $(USBTOXXXDIR)/usbtogpio.c \
   $(USBTOXXXDIR)/usbtoi2c.c \
-  $(USBTOXXXDIR)/usbtoissp.c \
-  $(USBTOXXXDIR)/usbtojtaghl.c \
-  $(USBTOXXXDIR)/usbtojtagll.c \
-  $(USBTOXXXDIR)/usbtojtagraw.c \
-  $(USBTOXXXDIR)/usbtolpcicp.c \
   $(USBTOXXXDIR)/usbtomicrowire.c \
-  $(USBTOXXXDIR)/usbtomsp430jtag.c \
-  $(USBTOXXXDIR)/usbtomsp430sbw.c \
   $(USBTOXXXDIR)/usbtopwm.c \
-  $(USBTOXXXDIR)/usbtopwr.c \
   $(USBTOXXXDIR)/usbtospi.c \
-  $(USBTOXXXDIR)/usbtoswd.c \
-  $(USBTOXXXDIR)/usbtoswim.c \
   $(USBTOXXXDIR)/usbtousart.c \
   $(USBTOXXXDIR)/usbtoxxx.c
-USR_INCS+= -I $(VersaloonDIR) -I $(USBTOXXXDIR) \
-        -I ../../../../../src/programmer/interfaces
+USR_INCS+= -I $(VersaloonDIR) -I $(USBTOXXXDIR) -I $(VSFDIR)/interfaces
 
 #VSF dal
 USR_SRCS+= $(VSFDIR)/dal/dal.c \
