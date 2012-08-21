@@ -2,7 +2,7 @@
 
 <workspace>
   <project>
-    <path>$WS_DIR$\gpio.ewp</path>
+    <path>$WS_DIR$\demo.ewp</path>
   </project>
   <batchBuild/>
 </workspace>
