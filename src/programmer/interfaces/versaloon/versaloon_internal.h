@@ -30,10 +30,6 @@
 #define VERSALOON_OUTP					0x03
 #define VERSALOON_IFACE					0x00
 
-#define VERSALOON_FULL					1
-#define VERSALOON_MINI					2
-#define VERSALOON_NANO					3
-
 #define VERSALOON_TIMEOUT				5000
 #define VERSALOON_TIMEOUT_LONG			60000
 
@@ -63,14 +59,6 @@
 // VSLLink Command
 #define VERSALOON_VSLLINK_CMD_START		0x80
 #define VERSALOON_VSLLINK_CMD_END		0xFF
-
-
-
-// Mass-product
-#define MP_OK							0x00
-#define MP_FAIL							0x01
-
-#define MP_ISSP							0x11
 
 
 
