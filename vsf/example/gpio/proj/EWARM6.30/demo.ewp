@@ -586,7 +586,7 @@
         </option>
         <option>
           <name>OOCOutputFile</name>
-          <state>gpio_IAR.hex</state>
+          <state>demo.hex</state>
         </option>
         <option>
           <name>OOCCommandLineProducer</name>
@@ -628,7 +628,7 @@
         <debug>1</debug>
         <option>
           <name>IlinkOutputFile</name>
-          <state>gpio.out</state>
+          <state>demo.out</state>
         </option>
         <option>
           <name>IlinkLibIOConfig</name>
@@ -1511,7 +1511,7 @@
         </option>
         <option>
           <name>OOCOutputFile</name>
-          <state>gpio_IAR.hex</state>
+          <state>demo.hex</state>
         </option>
         <option>
           <name>OOCCommandLineProducer</name>
@@ -1553,7 +1553,7 @@
         <debug>0</debug>
         <option>
           <name>IlinkOutputFile</name>
-          <state>gpio.out</state>
+          <state>demo.out</state>
         </option>
         <option>
           <name>IlinkLibIOConfig</name>

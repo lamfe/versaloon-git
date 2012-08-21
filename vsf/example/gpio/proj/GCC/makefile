@@ -1,5 +1,5 @@
 # options and settings
-PROJECT	= VSF_demo_gpio
+PROJECT	= demo
 
 #
 # available OPT:
