@@ -23,30 +23,31 @@
 #include "compiler.h"
 
 #include "../versaloon_include.h"
+#include "interfaces.h"
 #include "../versaloon.h"
 #include "../versaloon_internal.h"
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
 
-vsf_err_t usbtoi2c_init(uint8_t interface_index)
+vsf_err_t usbtoi2c_init(uint8_t index)
 {
-	return usbtoxxx_init_command(USB_TO_I2C, interface_index);
+	return usbtoxxx_init_command(USB_TO_I2C, index);
 }
 
-vsf_err_t usbtoi2c_fini(uint8_t interface_index)
+vsf_err_t usbtoi2c_fini(uint8_t index)
 {
-	return usbtoxxx_fini_command(USB_TO_I2C, interface_index);
+	return usbtoxxx_fini_command(USB_TO_I2C, index);
 }
 
-vsf_err_t usbtoi2c_config(uint8_t interface_index, uint16_t kHz,
+vsf_err_t usbtoi2c_config(uint8_t index, uint16_t kHz,
 						uint16_t byte_interval, uint16_t max_dly)
 {
 	uint8_t buff[6];
 	
 #if PARAM_CHECK
-	if (interface_index > 7)
+	if (index > 7)
 	{
-		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, index);
 		return VSFERR_FAIL;
 	}
 #endif
@@ -55,18 +56,18 @@ vsf_err_t usbtoi2c_config(uint8_t interface_index, uint16_t kHz,
 	SET_LE_U16(&buff[2], byte_interval);
 	SET_LE_U16(&buff[4], max_dly);
 	
-	return usbtoxxx_conf_command(USB_TO_I2C, interface_index,
+	return usbtoxxx_conf_command(USB_TO_I2C, index,
 								 buff, sizeof(buff));
 }
 
-vsf_err_t usbtoi2c_read(uint8_t interface_index, uint16_t chip_addr,
+vsf_err_t usbtoi2c_read(uint8_t index, uint16_t chip_addr,
 						uint8_t *data, uint16_t data_len, uint8_t stop,
 						bool nacklast)
 {
 #if PARAM_CHECK
-	if (interface_index > 7)
+	if (index > 7)
 	{
-		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, index);
 		return VSFERR_FAIL;
 	}
 #endif
@@ -83,17 +84,17 @@ vsf_err_t usbtoi2c_read(uint8_t interface_index, uint16_t chip_addr,
 	versaloon_cmd_buf[4] = nacklast ? 1 : 0;
 	memset(&versaloon_cmd_buf[5], 0, data_len);
 	
-	return usbtoxxx_in_command(USB_TO_I2C, interface_index, versaloon_cmd_buf,
+	return usbtoxxx_in_command(USB_TO_I2C, index, versaloon_cmd_buf,
 							   data_len + 5, data_len, data, 0, data_len, 0);
 }
 
-vsf_err_t usbtoi2c_write(uint8_t interface_index, uint16_t chip_addr,
+vsf_err_t usbtoi2c_write(uint8_t index, uint16_t chip_addr,
 						uint8_t *data, uint16_t data_len, uint8_t stop)
 {
 #if PARAM_CHECK
-	if (interface_index > 7)
+	if (index > 7)
 	{
-		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, index);
 		return VSFERR_FAIL;
 	}
 #endif
@@ -109,7 +110,7 @@ vsf_err_t usbtoi2c_write(uint8_t interface_index, uint16_t chip_addr,
 	versaloon_cmd_buf[3] = stop;
 	memcpy(&versaloon_cmd_buf[4], data, data_len);
 	
-	return usbtoxxx_out_command(USB_TO_I2C, interface_index, versaloon_cmd_buf,
+	return usbtoxxx_out_command(USB_TO_I2C, index, versaloon_cmd_buf,
 								data_len + 4, 0);
 }
 

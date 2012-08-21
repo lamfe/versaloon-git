@@ -23,29 +23,30 @@
 #include "compiler.h"
 
 #include "../versaloon_include.h"
+#include "interfaces.h"
 #include "../versaloon.h"
 #include "../versaloon_internal.h"
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
 
-vsf_err_t usbtodusi_init(uint8_t interface_index)
+vsf_err_t usbtodusi_init(uint8_t index)
 {
-	return usbtoxxx_init_command(USB_TO_DUSI, interface_index);
+	return usbtoxxx_init_command(USB_TO_DUSI, index);
 }
 
-vsf_err_t usbtodusi_fini(uint8_t interface_index)
+vsf_err_t usbtodusi_fini(uint8_t index)
 {
-	return usbtoxxx_fini_command(USB_TO_DUSI, interface_index);
+	return usbtoxxx_fini_command(USB_TO_DUSI, index);
 }
 
-vsf_err_t usbtodusi_config(uint8_t interface_index, uint32_t kHz, uint8_t mode)
+vsf_err_t usbtodusi_config(uint8_t index, uint32_t kHz, uint8_t mode)
 {
 	uint8_t conf[5];
 	
 #if PARAM_CHECK
-	if (interface_index > 7)
+	if (index > 7)
 	{
-		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, index);
 		return VSFERR_FAIL;
 	}
 #endif
@@ -53,18 +54,18 @@ vsf_err_t usbtodusi_config(uint8_t interface_index, uint32_t kHz, uint8_t mode)
 	conf[0] = mode;
 	SET_LE_U32(&conf[1], kHz);
 	
-	return usbtoxxx_conf_command(USB_TO_DUSI, interface_index, conf, 5);
+	return usbtoxxx_conf_command(USB_TO_DUSI, index, conf, 5);
 }
 
-vsf_err_t usbtodusi_io(uint8_t interface_index, uint8_t *mo, uint8_t *mi,
+vsf_err_t usbtodusi_io(uint8_t index, uint8_t *mo, uint8_t *mi,
 					uint8_t *so, uint8_t *si, uint32_t bitlen)
 {
 	uint16_t bytelen = (uint16_t)((bitlen + 7) / 8);
 	
 #if PARAM_CHECK
-	if (interface_index > 7)
+	if (index > 7)
 	{
-		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, index);
 		return VSFERR_FAIL;
 	}
 #endif
@@ -102,7 +103,7 @@ vsf_err_t usbtodusi_io(uint8_t interface_index, uint8_t *mo, uint8_t *mi,
 		}
 	}
 	
-	return usbtoxxx_inout_command(USB_TO_DUSI, interface_index,
+	return usbtoxxx_inout_command(USB_TO_DUSI, index,
 		versaloon_cmd_buf, 2 + 2 * bytelen, 2 * bytelen, NULL, 0, 0, 0);
 }
 

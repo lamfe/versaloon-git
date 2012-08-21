@@ -165,6 +165,14 @@ vsf_err_t usbtoxxx_add_command(uint8_t type, uint8_t cmd, uint8_t *cmdbuf,
 
 // USB_TO_GPIO
 #define USB_TO_GPIO_DIR_MSK			0x01
+#define USB_TO_GPIO_OUT				USB_TO_GPIO_DIR_MSK
+#define USB_TO_GPIO_IN				0
+#define USB_TO_GPIO_PULLEN_MSK		0x02
+#define USB_TO_GPIO_PULLEN			USB_TO_GPIO_PULLEN_MSK
+#define USB_TO_GPIO_PULLDIS			0x00
+#define USB_TO_GPIO_OUT_MSK			0x04
+#define USB_TO_GPIO_OUT1			USB_TO_GPIO_OUT_MSK
+#define USB_TO_GPIO_OUT0			0x00
 
 #endif /* __USBTOXXX_INTERNAL_H_INCLUDED__ */
 

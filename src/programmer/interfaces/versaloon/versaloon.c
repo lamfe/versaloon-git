@@ -706,6 +706,9 @@ struct interfaces_info_t versaloon_interfaces =
 	{	// spi
 		usbtospi_init,
 		usbtospi_fini,
+		usbtospi_get_ability,
+		usbtospi_enable,
+		usbtospi_disable,
 		usbtospi_config,
 		usbtospi_io
 	},

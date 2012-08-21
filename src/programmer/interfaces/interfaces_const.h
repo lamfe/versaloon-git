@@ -51,7 +51,13 @@
 #define IFS_INVALID_INTERFACE	(1ULL << 63)
 
 
-// GPIO pins
+// GPIO
+#define GPIO_INFLOAT			0x00
+#define GPIO_INPU				0x06
+#define GPIO_INPD				0x02
+#define GPIO_OUTPP				0x01
+#define GPIO_OUTOD				0x05
+
 #define GPIO_SRST				(1 << 0)
 #define GPIO_TRST				(1 << 1)
 #define GPIO_USR1				(1 << 2)

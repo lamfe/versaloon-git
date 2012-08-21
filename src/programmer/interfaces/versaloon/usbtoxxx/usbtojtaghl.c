@@ -23,6 +23,7 @@
 #include "compiler.h"
 
 #include "../versaloon_include.h"
+#include "interfaces.h"
 #include "../versaloon.h"
 #include "../versaloon_internal.h"
 #include "usbtoxxx.h"
@@ -80,25 +81,25 @@ vsf_err_t usbtojtaghl_register_callback(uint8_t index, jtag_callback_t send_call
 	return VSFERR_NONE;
 }
 
-vsf_err_t usbtojtaghl_init(uint8_t interface_index)
+vsf_err_t usbtojtaghl_init(uint8_t index)
 {
-	return usbtoxxx_init_command(USB_TO_JTAG_HL, interface_index);
+	return usbtoxxx_init_command(USB_TO_JTAG_HL, index);
 }
 
-vsf_err_t usbtojtaghl_fini(uint8_t interface_index)
+vsf_err_t usbtojtaghl_fini(uint8_t index)
 {
-	return usbtoxxx_fini_command(USB_TO_JTAG_HL, interface_index);
+	return usbtoxxx_fini_command(USB_TO_JTAG_HL, index);
 }
 
-vsf_err_t usbtojtaghl_config(uint8_t interface_index, uint32_t kHz,
+vsf_err_t usbtojtaghl_config(uint8_t index, uint32_t kHz,
 								struct jtag_pos_t *pos)
 {
 	uint8_t cfg_buf[10];
 	
 #if PARAM_CHECK
-	if ((interface_index > 7) || (NULL == pos))
+	if ((index > 7) || (NULL == pos))
 	{
-		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, index);
 		return VSFERR_FAIL;
 	}
 #endif
@@ -109,19 +110,19 @@ vsf_err_t usbtojtaghl_config(uint8_t interface_index, uint32_t kHz,
 	SET_LE_U16(&cfg_buf[6], pos->bb);
 	SET_LE_U16(&cfg_buf[8], pos->ba);
 	
-	return usbtoxxx_conf_command(USB_TO_JTAG_HL, interface_index, cfg_buf, 10);
+	return usbtoxxx_conf_command(USB_TO_JTAG_HL, index, cfg_buf, 10);
 }
 
-vsf_err_t usbtojtaghl_ir(uint8_t interface_index, uint8_t *ir, uint16_t bitlen,
+vsf_err_t usbtojtaghl_ir(uint8_t index, uint8_t *ir, uint16_t bitlen,
 					  uint8_t idle, uint8_t want_ret)
 {
 	uint16_t bytelen = (bitlen + 7) >> 3;
 	uint16_t processed_len = 0;
 	
 #if PARAM_CHECK
-	if (interface_index > 7)
+	if (index > 7)
 	{
-		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, index);
 		return VSFERR_FAIL;
 	}
 #endif
@@ -167,26 +168,26 @@ vsf_err_t usbtojtaghl_ir(uint8_t interface_index, uint8_t *ir, uint16_t bitlen,
 	versaloon_set_callback(usbtojtaghl_callback);
 	if (want_ret)
 	{
-		return usbtoxxx_inout_command(USB_TO_JTAG_HL, interface_index,
+		return usbtoxxx_inout_command(USB_TO_JTAG_HL, index,
 					versaloon_cmd_buf, bytelen + 3, bytelen, ir, 0, bytelen, 1);
 	}
 	else
 	{
-		return usbtoxxx_inout_command(USB_TO_JTAG_HL, interface_index,
+		return usbtoxxx_inout_command(USB_TO_JTAG_HL, index,
 					versaloon_cmd_buf, bytelen + 3, bytelen, NULL, 0, 0, 1);
 	}
 }
 
-vsf_err_t usbtojtaghl_dr(uint8_t interface_index, uint8_t *dr, uint16_t bitlen,
+vsf_err_t usbtojtaghl_dr(uint8_t index, uint8_t *dr, uint16_t bitlen,
 					  uint8_t idle, uint8_t want_ret)
 {
 	uint16_t bytelen = (bitlen + 7) >> 3;
 	uint16_t processed_len = 0;
 	
 #if PARAM_CHECK
-	if (interface_index > 7)
+	if (index > 7)
 	{
-		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, index);
 		return VSFERR_FAIL;
 	}
 #endif
@@ -218,22 +219,22 @@ vsf_err_t usbtojtaghl_dr(uint8_t interface_index, uint8_t *dr, uint16_t bitlen,
 	versaloon_set_callback(usbtojtaghl_callback);
 	if (want_ret)
 	{
-		return usbtoxxx_inout_command(USB_TO_JTAG_HL, interface_index,
+		return usbtoxxx_inout_command(USB_TO_JTAG_HL, index,
 					versaloon_cmd_buf, bytelen + 3, bytelen, dr, 0, bytelen, 1);
 	}
 	else
 	{
-		return usbtoxxx_inout_command(USB_TO_JTAG_HL, interface_index,
+		return usbtoxxx_inout_command(USB_TO_JTAG_HL, index,
 					versaloon_cmd_buf, bytelen + 3, bytelen, NULL, 0, 0, 1);
 	}
 }
 
-vsf_err_t usbtojtaghl_tms(uint8_t interface_index, uint8_t *tms, uint16_t bitlen)
+vsf_err_t usbtojtaghl_tms(uint8_t index, uint8_t *tms, uint16_t bitlen)
 {
 #if PARAM_CHECK
-	if (interface_index > 7)
+	if (index > 7)
 	{
-		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, index);
 		return VSFERR_FAIL;
 	}
 	if (bitlen > 256)
@@ -246,19 +247,19 @@ vsf_err_t usbtojtaghl_tms(uint8_t interface_index, uint8_t *tms, uint16_t bitlen
 	versaloon_cmd_buf[0] = (uint8_t)(bitlen - 1);
 	memcpy(versaloon_cmd_buf + 1, tms, bitlen);
 	
-	return usbtoxxx_out_command(USB_TO_JTAG_HL, interface_index,
+	return usbtoxxx_out_command(USB_TO_JTAG_HL, index,
 							versaloon_cmd_buf, ((bitlen + 7) >> 3) + 1, 0);
 }
 
-vsf_err_t usbtojtaghl_runtest(uint8_t interface_index, uint32_t cycles)
+vsf_err_t usbtojtaghl_runtest(uint8_t index, uint32_t cycles)
 {
 	uint8_t tms[256 / 8];
 	uint16_t cur_cycles;
 	
 #if PARAM_CHECK
-	if (interface_index > 7)
+	if (index > 7)
 	{
-		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, index);
 		return VSFERR_FAIL;
 	}
 #endif
@@ -275,7 +276,7 @@ vsf_err_t usbtojtaghl_runtest(uint8_t interface_index, uint32_t cycles)
 			cur_cycles = (uint8_t)cycles;
 		}
 		
-		if (usbtojtaghl_tms(interface_index, tms, cur_cycles))
+		if (usbtojtaghl_tms(index, tms, cur_cycles))
 		{
 			return VSFERR_FAIL;
 		}

@@ -23,84 +23,85 @@
 #include "compiler.h"
 
 #include "../versaloon_include.h"
+#include "interfaces.h"
 #include "../versaloon.h"
 #include "../versaloon_internal.h"
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
 
-vsf_err_t usbtolpcicp_init(uint8_t interface_index)
+vsf_err_t usbtolpcicp_init(uint8_t index)
 {
-	return usbtoxxx_init_command(USB_TO_LPCICP, interface_index);
+	return usbtoxxx_init_command(USB_TO_LPCICP, index);
 }
 
-vsf_err_t usbtolpcicp_fini(uint8_t interface_index)
+vsf_err_t usbtolpcicp_fini(uint8_t index)
 {
-	return usbtoxxx_fini_command(USB_TO_LPCICP, interface_index);
+	return usbtoxxx_fini_command(USB_TO_LPCICP, index);
 }
 
-vsf_err_t usbtolpcicp_config(uint8_t interface_index)
+vsf_err_t usbtolpcicp_config(uint8_t index)
 {
 #if PARAM_CHECK
-	if (interface_index > 7)
+	if (index > 7)
 	{
-		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, index);
 		return VSFERR_FAIL;
 	}
 #endif
 	
-	return usbtoxxx_conf_command(USB_TO_LPCICP, interface_index, NULL, 0);
+	return usbtoxxx_conf_command(USB_TO_LPCICP, index, NULL, 0);
 }
 
-vsf_err_t usbtolpcicp_enter_program_mode(uint8_t interface_index)
+vsf_err_t usbtolpcicp_enter_program_mode(uint8_t index)
 {
 #if PARAM_CHECK
-	if (interface_index > 7)
+	if (index > 7)
 	{
-		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, index);
 		return VSFERR_FAIL;
 	}
 #endif
 	
-	return usbtoxxx_inout_command(USB_TO_LPCICP, interface_index, NULL,
+	return usbtoxxx_inout_command(USB_TO_LPCICP, index, NULL,
 									0, 0, NULL, 0, 0, 0);
 }
 
-vsf_err_t usbtolpcicp_in(uint8_t interface_index, uint8_t *buff, uint16_t len)
+vsf_err_t usbtolpcicp_in(uint8_t index, uint8_t *buff, uint16_t len)
 {
 #if PARAM_CHECK
-	if (interface_index > 7)
+	if (index > 7)
 	{
-		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, index);
 		return VSFERR_FAIL;
 	}
 #endif
 	
-	return usbtoxxx_in_command(USB_TO_LPCICP, interface_index, buff, len, len,
+	return usbtoxxx_in_command(USB_TO_LPCICP, index, buff, len, len,
 							   buff, 0, len, 0);
 }
 
-vsf_err_t usbtolpcicp_out(uint8_t interface_index, uint8_t *buff, uint16_t len)
+vsf_err_t usbtolpcicp_out(uint8_t index, uint8_t *buff, uint16_t len)
 {
 #if PARAM_CHECK
-	if (interface_index > 7)
+	if (index > 7)
 	{
-		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, index);
 		return VSFERR_FAIL;
 	}
 #endif
 	
-	return usbtoxxx_out_command(USB_TO_LPCICP, interface_index, buff, len, 0);
+	return usbtoxxx_out_command(USB_TO_LPCICP, index, buff, len, 0);
 }
 
-vsf_err_t usbtolpcicp_poll_ready(uint8_t interface_index, uint8_t data,
+vsf_err_t usbtolpcicp_poll_ready(uint8_t index, uint8_t data,
 			uint8_t *ret, uint8_t setmask, uint8_t clearmask, uint16_t pollcnt)
 {
 	uint8_t cmdbuf[5];
 	
 #if PARAM_CHECK
-	if (interface_index > 7)
+	if (index > 7)
 	{
-		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, index);
 		return VSFERR_FAIL;
 	}
 #endif
@@ -110,7 +111,7 @@ vsf_err_t usbtolpcicp_poll_ready(uint8_t interface_index, uint8_t data,
 	cmdbuf[2] = clearmask;
 	SET_LE_U16(&cmdbuf[3], pollcnt);
 	
-	return usbtoxxx_poll_command(USB_TO_LPCICP, interface_index, cmdbuf, 5,
+	return usbtoxxx_poll_command(USB_TO_LPCICP, index, cmdbuf, 5,
 								 ret, 1);
 }
 

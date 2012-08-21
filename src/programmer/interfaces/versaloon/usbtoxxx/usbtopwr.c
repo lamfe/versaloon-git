@@ -23,45 +23,46 @@
 #include "compiler.h"
 
 #include "../versaloon_include.h"
+#include "interfaces.h"
 #include "../versaloon.h"
 #include "../versaloon_internal.h"
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
 
-vsf_err_t usbtopwr_init(uint8_t interface_index)
+vsf_err_t usbtopwr_init(uint8_t index)
 {
-	return usbtoxxx_init_command(USB_TO_POWER, interface_index);
+	return usbtoxxx_init_command(USB_TO_POWER, index);
 }
 
-vsf_err_t usbtopwr_fini(uint8_t interface_index)
+vsf_err_t usbtopwr_fini(uint8_t index)
 {
-	return usbtoxxx_fini_command(USB_TO_POWER, interface_index);
+	return usbtoxxx_fini_command(USB_TO_POWER, index);
 }
 
-vsf_err_t usbtopwr_config(uint8_t interface_index)
+vsf_err_t usbtopwr_config(uint8_t index)
 {
 #if PARAM_CHECK
-	if (interface_index > 7)
+	if (index > 7)
 	{
-		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, index);
 		return VSFERR_FAIL;
 	}
 #endif
 	
-	return usbtoxxx_conf_command(USB_TO_POWER, interface_index, NULL, 0);
+	return usbtoxxx_conf_command(USB_TO_POWER, index, NULL, 0);
 }
 
-vsf_err_t usbtopwr_output(uint8_t interface_index, uint16_t mV)
+vsf_err_t usbtopwr_output(uint8_t index, uint16_t mV)
 {
 #if PARAM_CHECK
-	if (interface_index > 7)
+	if (index > 7)
 	{
-		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, interface_index);
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, index);
 		return VSFERR_FAIL;
 	}
 #endif
 	
-	return usbtoxxx_out_command(USB_TO_POWER, interface_index, (uint8_t *)&mV,
+	return usbtoxxx_out_command(USB_TO_POWER, index, (uint8_t *)&mV,
 								2, 0);
 }
 
