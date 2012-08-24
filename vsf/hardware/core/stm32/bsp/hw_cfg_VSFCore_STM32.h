@@ -43,10 +43,10 @@
 #define USART_DTR_PIN					0
 
 /****************************** SPI ******************************/
-#define SPI0_PORT						1
+#define SPI0_PORT						0x01
 #define SPI0_CS_PORT					IFS_DUMMY_PORT
 #define SPI0_CS_PIN						0
-#define SPI1_PORT						0
+#define SPI1_PORT						0x10
 #define SPI1_CS_PORT					IFS_DUMMY_PORT
 #define SPI1_CS_PIN						0
 

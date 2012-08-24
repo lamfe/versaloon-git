@@ -59,7 +59,7 @@
 #	define SPI00_MOSI_ENABLE				0
 #define SPI10_ENABLE						1
 #	define SPI10_MISO_ENABLE				1
-#	define SPI10_MOSI_ENABLE				0
+#	define SPI10_MOSI_ENABLE				1
 #define SPI01_ENABLE						1
 #	define SPI01_MISO_ENABLE				1
 #	define SPI01_MOSI_ENABLE				1
@@ -69,25 +69,25 @@
 
 // USART config
 #define USART_NUM							3
-#define USART0_INT_EN						1
-#define USART1_INT_EN						0
+#define USART0_INT_EN						0
+#define USART1_INT_EN						1
 #define USART2_INT_EN						0
-#define USART00_ENABLE						1
+#define USART00_ENABLE						0
 #	define USART00_CTS_ENABLE				0
 #	define USART00_RTS_ENABLE				0
-#	define USART00_TX_ENABLE				1
-#	define USART00_RX_ENABLE				1
+#	define USART00_TX_ENABLE				0
+#	define USART00_RX_ENABLE				0
 #	define USART00_CK_ENABLE				0
 #define USART10_ENABLE						0
 #	define USART10_CTS_ENABLE				0
 #	define USART10_RTS_ENABLE				0
 #	define USART10_TX_ENABLE				0
 #	define USART10_RX_ENABLE				0
-#define USART01_ENABLE						0
-#	define USART01_CTS_ENABLE				0
-#	define USART01_RTS_ENABLE				0
-#	define USART01_TX_ENABLE				0
-#	define USART01_RX_ENABLE				0
+#define USART01_ENABLE						1
+#	define USART01_CTS_ENABLE				1
+#	define USART01_RTS_ENABLE				1
+#	define USART01_TX_ENABLE				1
+#	define USART01_RX_ENABLE				1
 #define USART11_ENABLE						0
 #	define USART11_CTS_ENABLE				0
 #	define USART11_RTS_ENABLE				0

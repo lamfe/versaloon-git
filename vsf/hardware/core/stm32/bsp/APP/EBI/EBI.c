@@ -25,7 +25,7 @@ vsf_err_t ebi_init(uint8_t index)
 	switch (index)
 	{
 	case 0:
-		return interfaces->ebi.init(0);
+		return core_interfaces.ebi.init(0);
 	default:
 		return VSFERR_NOT_SUPPORT;
 	}
@@ -36,7 +36,7 @@ vsf_err_t ebi_fini(uint8_t index)
 	switch (index)
 	{
 	case 0:
-		return interfaces->ebi.fini(0);
+		return core_interfaces.ebi.fini(0);
 	default:
 		return VSFERR_NOT_SUPPORT;
 	}
@@ -47,7 +47,7 @@ vsf_err_t ebi_config(uint8_t index, uint8_t target_index, void *param)
 	switch (index)
 	{
 	case 0:
-		return interfaces->ebi.config(0, target_index, param);
+		return core_interfaces.ebi.config(0, target_index, param);
 	default:
 		return VSFERR_NOT_SUPPORT;
 	}
@@ -59,7 +59,7 @@ vsf_err_t ebi_read(uint8_t index, uint8_t target_index, uint32_t address,
 	switch (index)
 	{
 	case 0:
-		return interfaces->ebi.read(0, target_index, address, data_size, buff, 
+		return core_interfaces.ebi.read(0, target_index, address, data_size, buff, 
 									count);
 	default:
 		return VSFERR_NOT_SUPPORT;
@@ -72,7 +72,7 @@ vsf_err_t ebi_write(uint8_t index, uint8_t target_index, uint32_t address,
 	switch (index)
 	{
 	case 0:
-		return interfaces->ebi.write(0, target_index, address, data_size, buff, 
+		return core_interfaces.ebi.write(0, target_index, address, data_size, buff, 
 										count);
 	default:
 		return VSFERR_NOT_SUPPORT;
