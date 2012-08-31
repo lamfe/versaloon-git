@@ -44,14 +44,26 @@
 
 static vsf_err_t df25xx_drv_cs_assert(struct df25xx_drv_interface_t *ifs)
 {
-	return interfaces->gpio.config(ifs->cs_port, ifs->cs_pin, ifs->cs_pin, 0, 
-									0);
+	if (ifs->cs_port != IFS_DUMMY_PORT)
+	{
+		return interfaces->gpio.clear(ifs->cs_port, ifs->cs_pin);
+	}
+	else
+	{
+		return interfaces->spi.select(ifs->spi_port, (uint8_t)ifs->cs_pin);
+	}
 }
 
 static vsf_err_t df25xx_drv_cs_deassert(struct df25xx_drv_interface_t *ifs)
 {
-	return interfaces->gpio.config(ifs->cs_port, ifs->cs_pin, 0, ifs->cs_pin, 
-									ifs->cs_pin);
+	if (ifs->cs_port != IFS_DUMMY_PORT)
+	{
+		return interfaces->gpio.set(ifs->cs_port, ifs->cs_pin);
+	}
+	else
+	{
+		return interfaces->spi.deselect(ifs->spi_port, (uint8_t)ifs->cs_pin);
+	}
 }
 
 static vsf_err_t df25xx_drv_init(struct dal_info_t *info)
@@ -65,9 +77,12 @@ static vsf_err_t df25xx_drv_init(struct dal_info_t *info)
 	{
 		df25xx_drv_param->spi_khz = 9000;
 	}
-	interfaces->gpio.init(ifs->cs_port);
-	interfaces->gpio.config(ifs->cs_port, ifs->cs_pin, 0, ifs->cs_pin, 
-							ifs->cs_pin);
+	if (ifs->cs_port != IFS_DUMMY_PORT)
+	{
+		interfaces->gpio.init(ifs->cs_port);
+		interfaces->gpio.config(ifs->cs_port, ifs->cs_pin, ifs->cs_pin,
+								ifs->cs_pin, ifs->cs_pin);
+	}
 	interfaces->spi.init(ifs->spi_port);
 	return interfaces->spi.config(ifs->spi_port, df25xx_drv_param->spi_khz, 
 									SPI_MODE3 | SPI_MSB_FIRST | SPI_MASTER);
@@ -99,7 +114,11 @@ static vsf_err_t df25xx_drv_fini(struct dal_info_t *info)
 	struct df25xx_drv_interface_t *ifs = 
 								(struct df25xx_drv_interface_t *)info->ifs;
 	
-	interfaces->gpio.fini(ifs->cs_port);
+	if (ifs->cs_port != IFS_DUMMY_PORT)
+	{
+		interfaces->gpio.config(ifs->cs_port, ifs->cs_pin, 0, 0, 0);
+		interfaces->gpio.fini(ifs->cs_port);
+	}
 	return interfaces->spi.fini(ifs->spi_port);
 }
 

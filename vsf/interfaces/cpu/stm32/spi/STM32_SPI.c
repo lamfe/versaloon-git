@@ -128,7 +128,11 @@ vsf_err_t stm32_spi_init(uint8_t index)
 		#if SPI10_ENABLE
 		case 1:
 			AFIO->MAPR |= STM32_AFIO_MAPR_SPI1 | STM32_AFIO_MAPR_SWJCFG;
-			RCC->APB2ENR |= STM32_RCC_APB2ENR_IOPBEN;
+			RCC->APB2ENR |= STM32_RCC_APB2ENR_IOPBEN
+			#if SPI10_NSS_ENABLE
+							| STM32_RCC_APB2ENR_IOPAEN
+			#endif
+							;
 			break;
 		#endif
 		default:
@@ -155,7 +159,11 @@ vsf_err_t stm32_spi_init(uint8_t index)
 		switch (remap_idx)
 		{
 		case 0:
-			RCC->APB2ENR |= STM32_RCC_APB2ENR_IOPBEN;
+			RCC->APB2ENR |= STM32_RCC_APB2ENR_IOPBEN
+			#if SPI02_NSS_ENABLE
+							| STM32_RCC_APB2ENR_IOPAEN
+			#endif
+							;
 			break;
 		default:
 			return VSFERR_NOT_SUPPORT;
@@ -197,6 +205,10 @@ vsf_err_t stm32_spi_fini(uint8_t index)
 			GPIOA->CRL = (GPIOA->CRL & ~(0x0F << (7 * 4))) | 
 							(uint32_t)stm32_GPIO_INFLOAT << (7 * 4);
 			#endif
+			#if SPI00_NSS_ENABLE
+			GPIOA->CRL = (GPIOA->CRL & ~(0x0F << (4 * 4))) | 
+							(uint32_t)stm32_GPIO_INFLOAT << (4 * 4);
+			#endif
 			break;
 		#endif
 		#if SPI10_ENABLE
@@ -210,6 +222,10 @@ vsf_err_t stm32_spi_fini(uint8_t index)
 			#if SPI10_MOSI_ENABLE
 			GPIOB->CRL = (GPIOB->CRL & ~(0x0F << (5 * 4))) | 
 							(uint32_t)stm32_GPIO_INFLOAT << (5 * 4);
+			#endif
+			#if SPI10_NSS_ENABLE
+			GPIOA->CRH = (GPIOA->CRH & ~(0x0F << ((15 - 8) * 4))) | 
+							(uint32_t)stm32_GPIO_INFLOAT << ((15 - 8) * 4);
 			#endif
 			break;
 		#endif
@@ -234,6 +250,10 @@ vsf_err_t stm32_spi_fini(uint8_t index)
 			GPIOB->CRH = (GPIOB->CRH & ~(0x0F << ((15 - 8) * 4))) | 
 							(uint32_t)stm32_GPIO_INFLOAT << ((15 - 8) * 4);
 			#endif
+			#if SPI01_NSS_ENABLE
+			GPIOB->CRH = (GPIOB->CRH & ~(0x0F << ((12 - 8) * 4))) | 
+							(uint32_t)stm32_GPIO_INFLOAT << ((12 - 8) * 4);
+			#endif
 			break;
 		default:
 			return VSFERR_NOT_SUPPORT;
@@ -255,6 +275,10 @@ vsf_err_t stm32_spi_fini(uint8_t index)
 			#if SPI01_MOSI_ENABLE
 			GPIOB->CRL = (GPIOB->CRL & ~(0x0F << (5 * 4))) | 
 							(uint32_t)stm32_GPIO_INFLOAT << (5 * 4);
+			#endif
+			#if SPI02_NSS_ENABLE
+			GPIOA->CRH = (GPIOA->CRH & ~(0x0F << ((15 - 8) * 4))) | 
+							(uint32_t)stm32_GPIO_INFLOAT << ((15 - 8) * 4);
 			#endif
 			break;
 		default:
@@ -374,6 +398,11 @@ vsf_err_t stm32_spi_config(uint8_t index, uint32_t kHz, uint8_t mode)
 				GPIOA->CRL = (GPIOA->CRL & ~(0x0F << (7 * 4))) | 
 								(uint32_t)stm32_GPIO_AFPP << (7 * 4);
 				#endif
+				#if SPI00_NSS_ENABLE
+				GPIOA->CRL = (GPIOA->CRL & ~(0x0F << (4 * 4))) | 
+								(uint32_t)stm32_GPIO_OUTOD << (4 * 4);
+				GPIOA->BSRR = 1UL << 4;
+				#endif
 			}
 			else
 			{
@@ -386,6 +415,10 @@ vsf_err_t stm32_spi_config(uint8_t index, uint32_t kHz, uint8_t mode)
 				#if SPI00_MOSI_ENABLE
 				GPIOA->CRL = (GPIOA->CRL & ~(0x0F << (7 * 4))) | 
 								(uint32_t)stm32_GPIO_INFLOAT << (7 * 4);
+				#endif
+				#if SPI00_NSS_ENABLE
+				GPIOA->CRL = (GPIOA->CRL & ~(0x0F << (4 * 4))) | 
+								(uint32_t)stm32_GPIO_INPU << (4 * 4);
 				#endif
 			}
 			break;
@@ -404,6 +437,11 @@ vsf_err_t stm32_spi_config(uint8_t index, uint32_t kHz, uint8_t mode)
 				GPIOB->CRL = (GPIOB->CRL & ~(0x0F << (5 * 4))) | 
 								(uint32_t)stm32_GPIO_AFPP << (5 * 4);
 				#endif
+				#if SPI10_NSS_ENABLE
+				GPIOA->CRH = (GPIOA->CRH & ~(0x0F << ((15 - 8) * 4))) | 
+								(uint32_t)stm32_GPIO_OUTOD << ((15 - 8) * 4);
+				GPIOA->BSRR = 1UL << 15;
+				#endif
 			}
 			else
 			{
@@ -416,6 +454,10 @@ vsf_err_t stm32_spi_config(uint8_t index, uint32_t kHz, uint8_t mode)
 				#if SPI10_MOSI_ENABLE
 				GPIOB->CRL = (GPIOB->CRL & ~(0x0F << (5 * 4))) | 
 								(uint32_t)stm32_GPIO_INFLOAT << (5 * 4);
+				#endif
+				#if SPI10_NSS_ENABLE
+				GPIOA->CRH = (GPIOA->CRH & ~(0x0F << ((15 - 8) * 4))) | 
+								(uint32_t)stm32_GPIO_INPU << ((15 - 8) * 4);
 				#endif
 			}
 			break;
@@ -443,6 +485,11 @@ vsf_err_t stm32_spi_config(uint8_t index, uint32_t kHz, uint8_t mode)
 				GPIOB->CRH = (GPIOB->CRH & ~(0x0F << ((15 - 8) * 4))) | 
 								(uint32_t)stm32_GPIO_AFPP << ((15 - 8) * 4);
 				#endif
+				#if SPI01_NSS_ENABLE
+				GPIOB->CRH = (GPIOB->CRH & ~(0x0F << ((12 - 8) * 4))) | 
+								(uint32_t)stm32_GPIO_OUTOD << ((12 - 8) * 4);
+				GPIOB->BSRR = 1UL << 12;
+				#endif
 			}
 			else
 			{
@@ -455,6 +502,10 @@ vsf_err_t stm32_spi_config(uint8_t index, uint32_t kHz, uint8_t mode)
 				#if SPI01_MOSI_ENABLE
 				GPIOB->CRH = (GPIOB->CRH & ~(0x0F << ((15 - 8) * 4))) | 
 								(uint32_t)stm32_GPIO_INFLOAT << ((15 - 8) * 4);
+				#endif
+				#if SPI01_NSS_ENABLE
+				GPIOB->CRH = (GPIOB->CRH & ~(0x0F << ((12 - 8) * 4))) | 
+								(uint32_t)stm32_GPIO_INPU << ((12 - 8) * 4);
 				#endif
 			}
 			break;
@@ -481,6 +532,11 @@ vsf_err_t stm32_spi_config(uint8_t index, uint32_t kHz, uint8_t mode)
 				GPIOB->CRL = (GPIOB->CRL & ~(0x0F << (5 * 4))) | 
 								(uint32_t)stm32_GPIO_AFPP << (5 * 4);
 				#endif
+				#if SPI02_NSS_ENABLE
+				GPIOA->CRH = (GPIOA->CRH & ~(0x0F << ((15 - 8) * 4))) | 
+								(uint32_t)stm32_GPIO_OUTOD << ((15 - 8) * 4);
+				GPIOA->BSRR = 1UL << 15;
+				#endif
 			}
 			else
 			{
@@ -493,6 +549,10 @@ vsf_err_t stm32_spi_config(uint8_t index, uint32_t kHz, uint8_t mode)
 				#if SPI02_MOSI_ENABLE
 				GPIOB->CRL = (GPIOB->CRL & ~(0x0F << (5 * 4))) | 
 								(uint32_t)stm32_GPIO_INFLOAT << (5 * 4);
+				#endif
+				#if SPI02_NSS_ENABLE
+				GPIOA->CRH = (GPIOA->CRH & ~(0x0F << ((15 - 8) * 4))) | 
+								(uint32_t)stm32_GPIO_INPU << ((15 - 8) * 4);
 				#endif
 			}
 			break;
@@ -514,6 +574,132 @@ vsf_err_t stm32_spi_config(uint8_t index, uint32_t kHz, uint8_t mode)
 	}
 	spi->I2SCFGR &= ~STM32_SPI_I2SCFGR;
 	spi->CR1 |= STM32_SPI_CR1_SPE;
+	return VSFERR_NONE;
+}
+
+vsf_err_t stm32_spi_select(uint8_t index, uint8_t cs)
+{
+	uint8_t spi_idx = index & 0x0F;
+	uint8_t remap_idx = (index >> 4) & 0x0F;
+	
+#if __VSF_DEBUG__
+	if ((spi_idx >= SPI_NUM) || (cs > 0))
+	{
+		return VSFERR_NOT_SUPPORT;
+	}
+#endif
+	
+	switch (spi_idx)
+	{
+	#if (SPI00_ENABLE && SPI00_NSS_ENABLE) || (SPI10_ENABLE && SPI10_NSS_ENABLE)
+	case 0:
+		switch (remap_idx)
+		{
+		#if SPI00_ENABLE && SPI00_NSS_ENABLE
+		case 0:
+			GPIOA->BRR = 1UL << 4;
+			break;
+		#endif
+		#if SPI10_ENABLE && SPI10_NSS_ENABLE
+		case 1:
+			GPIOA->BRR = 1UL << 15;
+			break;
+		#endif
+		default:
+			return VSFERR_NOT_SUPPORT;
+		}
+		break;
+	#endif
+	#if SPI01_ENABLE && SPI01_NSS_ENABLE
+	case 1:
+		switch (remap_idx)
+		{
+		case 0:
+			GPIOB->BRR = 1UL << 12;
+			break;
+		default:
+			return VSFERR_NOT_SUPPORT;
+		}
+		break;
+	#endif
+	#if SPI02_ENABLE && SPI02_NSS_ENABLE
+	case 2:
+		switch (remap_idx)
+		{
+		case 0:
+			GPIOA->BRR = 1UL << 15;
+			break;
+		default:
+			return VSFERR_NOT_SUPPORT;
+		}
+		break;
+	#endif
+	default:
+		return VSFERR_NOT_SUPPORT;
+	}
+	return VSFERR_NONE;
+}
+
+vsf_err_t stm32_spi_deselect(uint8_t index, uint8_t cs)
+{
+	uint8_t spi_idx = index & 0x0F;
+	uint8_t remap_idx = (index >> 4) & 0x0F;
+	
+#if __VSF_DEBUG__
+	if ((spi_idx >= SPI_NUM) || (cs > 0))
+	{
+		return VSFERR_NOT_SUPPORT;
+	}
+#endif
+	
+	switch (spi_idx)
+	{
+	#if (SPI00_ENABLE && SPI00_NSS_ENABLE) || (SPI10_ENABLE && SPI10_NSS_ENABLE)
+	case 0:
+		switch (remap_idx)
+		{
+		#if SPI00_ENABLE && SPI00_NSS_ENABLE
+		case 0:
+			GPIOA->BSRR = 1UL << 4;
+			break;
+		#endif
+		#if SPI10_ENABLE && SPI10_NSS_ENABLE
+		case 1:
+			GPIOA->BSRR = 1UL << 15;
+			break;
+		#endif
+		default:
+			return VSFERR_NOT_SUPPORT;
+		}
+		break;
+	#endif
+	#if SPI01_ENABLE && SPI01_NSS_ENABLE
+	case 1:
+		switch (remap_idx)
+		{
+		case 0:
+			GPIOB->BSRR = 1UL << 12;
+			break;
+		default:
+			return VSFERR_NOT_SUPPORT;
+		}
+		break;
+	#endif
+	#if SPI02_ENABLE && SPI02_NSS_ENABLE
+	case 2:
+		switch (remap_idx)
+		{
+		case 0:
+			GPIOA->BSRR = 1UL << 15;
+			break;
+		default:
+			return VSFERR_NOT_SUPPORT;
+		}
+		break;
+	#endif
+	default:
+		return VSFERR_NOT_SUPPORT;
+	}
 	return VSFERR_NONE;
 }
 

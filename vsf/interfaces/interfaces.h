@@ -221,6 +221,9 @@ struct interface_spi_t
 	vsf_err_t (*disable)(uint8_t index);
 	vsf_err_t (*config)(uint8_t index, uint32_t kHz, uint8_t mode);
 	
+	vsf_err_t (*select)(uint8_t index, uint8_t cs);
+	vsf_err_t (*deselect)(uint8_t index, uint8_t cs);
+	
 	vsf_err_t (*io_tx)(uint8_t index, uint8_t out);
 	vsf_err_t (*io_tx_isready)(uint8_t index);
 	uint8_t (*io_rx)(uint8_t index);
@@ -240,6 +243,8 @@ struct interface_spi_t
 #define CORE_SPI_ENABLE(m)				__CONNECT(m, _spi_enable)
 #define CORE_SPI_DISABLE(m)				__CONNECT(m, _spi_disable)
 #define CORE_SPI_CONFIG(m)				__CONNECT(m, _spi_config)
+#define CORE_SPI_SELECT(m)				__CONNECT(m, _spi_select)
+#define CORE_SPI_DESELECT(m)			__CONNECT(m, _spi_deselect)
 #define CORE_SPI_IO_TX(m)				__CONNECT(m, _spi_io_tx)
 #define CORE_SPI_IO_TX_ISREADY(m)		__CONNECT(m, _spi_io_tx_isready)
 #define CORE_SPI_IO_RX(m)				__CONNECT(m, _spi_io_rx)
@@ -257,6 +262,8 @@ vsf_err_t CORE_SPI_ENABLE(__TARGET_CHIP__)(uint8_t index);
 vsf_err_t CORE_SPI_DISABLE(__TARGET_CHIP__)(uint8_t index);
 vsf_err_t CORE_SPI_CONFIG(__TARGET_CHIP__)(uint8_t index, uint32_t kHz, 
 										uint8_t mode);
+vsf_err_t CORE_SPI_SELECT(__TARGET_CHIP__)(uint8_t index, uint8_t cs);
+vsf_err_t CORE_SPI_DESELECT(__TARGET_CHIP__)(uint8_t index, uint8_t cs);
 vsf_err_t CORE_SPI_IO_TX(__TARGET_CHIP__)(uint8_t index, uint8_t out);
 vsf_err_t CORE_SPI_IO_TX_ISREADY(__TARGET_CHIP__)(uint8_t index);
 uint8_t CORE_SPI_IO_RX(__TARGET_CHIP__)(uint8_t index);

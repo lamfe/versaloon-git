@@ -240,6 +240,28 @@ vsf_err_t spi_config(uint8_t index, uint32_t kHz, uint8_t mode)
 	}
 }
 
+vsf_err_t spi_select(uint8_t index, uint8_t cs)
+{
+	switch (index)
+	{
+	case 0:
+		return core_interfaces.spi.select(SPI_PORT, cs);
+	default:
+		return VSFERR_NOT_SUPPORT;
+	}
+}
+
+vsf_err_t spi_deselect(uint8_t index, uint8_t cs)
+{
+	switch (index)
+	{
+	case 0:
+		return core_interfaces.spi.deselect(SPI_PORT, cs);
+	default:
+		return VSFERR_NOT_SUPPORT;
+	}
+}
+
 vsf_err_t spi_io(uint8_t index, uint8_t *out, uint8_t *in, uint32_t len)
 {
 	uint32_t i;
