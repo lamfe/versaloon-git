@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date 09/08/2012 10:54:51
+EESchema Schematic File Version 2  date 31/08/2012 13:53:15
 LIBS:power
 LIBS:device
 LIBS:transistors
@@ -39,7 +39,7 @@ $Descr User 13000 13000
 encoding utf-8
 Sheet 1 1
 Title ""
-Date "9 aug 2012"
+Date "31 aug 2012"
 Rev ""
 Comp ""
 Comment1 ""
@@ -47,6 +47,20 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+Text Label 10950 3700 2    60   ~ 0
+3V3_OUT
+Text Label 6500 4100 0    60   ~ 0
+EBI_NWAIT1
+Text Label 6500 4200 0    60   ~ 0
+EBI_NWAIT0
+Text Label 11750 3600 0    60   ~ 0
+EBI_NWAIT3
+Text Label 10950 3600 2    60   ~ 0
+EBI_NWAIT2
+Text Label 11750 3500 0    60   ~ 0
+EBI_NWAIT1
+Text Label 10950 3500 2    60   ~ 0
+EBI_NWAIT0
 Text Label 11650 9450 0    60   ~ 0
 FUNSEL1
 Text Label 8250 9400 0    60   ~ 0
@@ -1741,9 +1755,9 @@ AC0+
 Text Label 2900 1700 1    60   ~ 0
 EBI_NADV
 Text Label 3900 1700 1    60   ~ 0
-EBI_CE1
+EBI_NCS3
 Text Label 4100 1700 1    60   ~ 0
-EBI_CE0
+EBI_NCS2
 Text Label 10950 1500 2    60   ~ 0
 EBI_A14
 Text Label 9600 2700 0    60   ~ 0
@@ -2106,10 +2120,10 @@ $Comp
 L SW_PUSH SW2
 U 1 1 4F65AC35
 P 9200 6500
-F 0 "SW2" H 9350 6610 50  0000 C CNN
+F 0 "SW2" H 9050 6600 50  0000 C CNN
 F 1 "SW_PUSH" H 9200 6400 50  0000 C CNN
 	1    9200 6500
-	1    0    0    -1  
+	-1   0    0    -1  
 $EndComp
 $Comp
 L GND #PWR07
@@ -2143,13 +2157,13 @@ BOOT0
 Text Label 2800 1700 1    60   ~ 0
 BOOT0
 Text Label 2500 1700 1    60   ~ 0
-EBI_NBL0
+EBI_NLB
 Text Label 2400 1700 1    60   ~ 0
-EBI_NBL1
+EBI_NUB
 Text Label 4300 1700 1    60   ~ 0
-EBI_NCE0
+EBI_NCS0
 Text Label 4200 1700 1    60   ~ 0
-EBI_NCE1
+EBI_NCS1
 Text Label 4400 1700 1    60   ~ 0
 EBI_NWAIT
 Text Label 8700 5600 2    60   ~ 0
@@ -2480,25 +2494,25 @@ $Comp
 L SW_PUSH SW0
 U 1 1 4F659F47
 P 9200 6150
-F 0 "SW0" H 9350 6260 50  0000 C CNN
+F 0 "SW0" H 9050 6250 50  0000 C CNN
 F 1 "SW_PUSH" H 9200 6050 50  0000 C CNN
 	1    9200 6150
-	1    0    0    -1  
+	-1   0    0    -1  
 $EndComp
 Text Label 11750 3700 0    60   ~ 0
 GND
+Text Label 11750 3400 0    60   ~ 0
+EBI_NCS3
 Text Label 10950 3400 2    60   ~ 0
-EBI_NCE1
+EBI_NCS2
 Text Label 11750 3300 0    60   ~ 0
-EBI_NCE0
+EBI_NCS1
 Text Label 10950 3300 2    60   ~ 0
-EBI_CE1
-Text Label 11750 3200 0    60   ~ 0
-EBI_CE0
+EBI_NCS0
 Text Label 10950 3200 2    60   ~ 0
-EBI_NBL1
+EBI_NUB
 Text Label 11750 3100 0    60   ~ 0
-EBI_NBL0
+EBI_NLB
 Text Label 10950 2900 2    60   ~ 0
 EBI_CLK
 Text Label 11750 3000 0    60   ~ 0

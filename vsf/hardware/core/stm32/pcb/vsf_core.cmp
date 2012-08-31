@@ -1,4 +1,4 @@
-Cmp-Mod V01 Created by CvPcb (2012-01-19 BZR 3256)-stable date = 09/08/2012 10:31:24
+Cmp-Mod V01 Created by CvPcb (2012-01-19 BZR 3256)-stable date = 29/08/2012 22:05:25
 
 BeginCmp
 TimeStamp = /4F65E579;
@@ -270,14 +270,14 @@ BeginCmp
 TimeStamp = /4F659F47;
 Reference = SW0;
 ValeurCmp = SW_PUSH;
-IdModule  = KEY_6x6_2Pin;
+IdModule  = KEY_SP_6x6_2Pin;
 EndCmp
 
 BeginCmp
 TimeStamp = /4F65AC35;
 Reference = SW2;
 ValeurCmp = SW_PUSH;
-IdModule  = KEY_6x6_2Pin;
+IdModule  = KEY_SP_6x6_2Pin;
 EndCmp
 
 BeginCmp
