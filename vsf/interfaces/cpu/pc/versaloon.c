@@ -389,6 +389,8 @@ struct interfaces_info_t versaloon_interfaces =
 		usbtospi_enable,
 		usbtospi_disable,
 		usbtospi_config,
+		usbtospi_select,
+		usbtospi_deselect,
 		NULL, NULL, NULL, NULL,
 		usbtospi_io,
 		NULL, NULL, NULL

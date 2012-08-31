@@ -73,6 +73,8 @@
 #define USB_TO_XXX_SYNC				(0x0B << USB_TO_XXX_CMDSHIFT)
 #define USB_TO_XXX_ENABLE			(0x0C << USB_TO_XXX_CMDSHIFT)
 #define USB_TO_XXX_DISABLE			(0x0D << USB_TO_XXX_CMDSHIFT)
+#define USB_TO_XXX_SET				(0x0E << USB_TO_XXX_CMDSHIFT)
+#define USB_TO_XXX_CLEAR			(0x0F << USB_TO_XXX_CMDSHIFT)
 // USB_TO_POLL
 #define USB_TO_POLL_START			0x00
 #define USB_TO_POLL_END				0x01
@@ -149,6 +151,12 @@ vsf_err_t usbtoxxx_add_command(uint8_t type, uint8_t cmd, uint8_t *cmdbuf,
 								 (cmdbuf), (cmdlen), 0, NULL, 0, 0, 0)
 #define usbtoxxx_disable_command(type, port, cmdbuf, cmdlen)				\
 			usbtoxxx_add_command((type), (USB_TO_XXX_DISABLE | (port)), \
+								 (cmdbuf), (cmdlen), 0, NULL, 0, 0, 0)
+#define usbtoxxx_set_command(type, port, cmdbuf, cmdlen)						\
+			usbtoxxx_add_command((type), (USB_TO_XXX_SET | (port)), \
+								 (cmdbuf), (cmdlen), 0, NULL, 0, 0, 0)
+#define usbtoxxx_clear_command(type, port, cmdbuf, cmdlen)					\
+			usbtoxxx_add_command((type), (USB_TO_XXX_CLEAR | (port)), \
 								 (cmdbuf), (cmdlen), 0, NULL, 0, 0, 0)
 
 // USB_TO_SPI

@@ -61,6 +61,26 @@ void USB_TO_SPI_ProcessCmd(uint8_t *dat, uint16_t len)
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
 			break;
+		case USB_TO_XXX_SET:
+			if (app_interfaces.spi.select(device_idx, dat[index]))
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+			}
+			else
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+			}
+			break;
+		case USB_TO_XXX_CLEAR:
+			if (app_interfaces.spi.deselect(device_idx, dat[index]))
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+			}
+			else
+			{
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
+			}
+			break;
 		case USB_TO_XXX_FINI:
 			if (app_interfaces.spi.fini(device_idx))
 			{

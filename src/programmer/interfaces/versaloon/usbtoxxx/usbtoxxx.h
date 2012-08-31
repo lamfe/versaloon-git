@@ -70,6 +70,8 @@ vsf_err_t usbtospi_get_ability(uint8_t index, struct spi_ability_t *ability);
 vsf_err_t usbtospi_enable(uint8_t index);
 vsf_err_t usbtospi_disable(uint8_t index);
 vsf_err_t usbtospi_config(uint8_t index, uint32_t kHz, uint8_t mode);
+vsf_err_t usbtospi_select(uint8_t index, uint8_t cs);
+vsf_err_t usbtospi_deselect(uint8_t index, uint8_t cs);
 vsf_err_t usbtospi_io(uint8_t index, uint8_t *out, uint8_t *in,
 						uint32_t bytelen);
 

@@ -240,6 +240,16 @@ vsf_err_t vi_stm32_spi_config(uint8_t index, uint32_t kHz, uint8_t mode)
 	return VSFERR_NONE;
 }
 
+vsf_err_t vi_stm32_spi_select(uint8_t index, uint8_t cs)
+{
+	return VSFERR_NONE;
+}
+
+vsf_err_t vi_stm32_spi_deselect(uint8_t index, uint8_t cs)
+{
+	return VSFERR_NONE;
+}
+
 vsf_err_t vi_stm32_spi_io(uint8_t index, uint8_t *out, uint8_t *in,
 							uint32_t bytelen)
 {
@@ -367,6 +377,8 @@ struct interfaces_info_t vi_stm32_interfaces =
 		vi_stm32_spi_enable,
 		vs_stm32_spi_disable,
 		vi_stm32_spi_config,
+		vi_stm32_spi_select,
+		vi_stm32_spi_deselect,
 		vi_stm32_spi_io
 	},
 	{

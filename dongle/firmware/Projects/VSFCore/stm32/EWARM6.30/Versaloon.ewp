@@ -2289,13 +2289,13 @@
   <group>
     <name>vsf_cfg</name>
     <file>
-      <name>$PROJ_DIR$\..\vsf_cfg\dal_cfg.h</name>
+      <name>$PROJ_DIR$\..\..\..\..\..\..\vsf\hardware\core\stm32\bsp\vsf_cfg\dal_cfg.h</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\vsf_cfg\interfaces_cfg.h</name>
+      <name>$PROJ_DIR$\..\..\..\..\..\..\vsf\hardware\core\stm32\bsp\vsf_cfg\interfaces_cfg.h</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\vsf_cfg\vsf_usbd_cfg.h</name>
+      <name>$PROJ_DIR$\..\..\..\..\..\..\vsf\hardware\core\stm32\bsp\vsf_cfg\vsf_usbd_cfg.h</name>
     </file>
   </group>
   <file>

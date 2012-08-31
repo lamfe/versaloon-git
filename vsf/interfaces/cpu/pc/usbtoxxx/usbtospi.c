@@ -99,6 +99,32 @@ vsf_err_t usbtospi_config(uint8_t index, uint32_t kHz, uint8_t mode)
 	return usbtoxxx_conf_command(USB_TO_SPI, index, conf, 5);
 }
 
+vsf_err_t usbtospi_select(uint8_t index, uint8_t cs)
+{
+#if PARAM_CHECK
+	if (index > 7)
+	{
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, index);
+		return VSFERR_FAIL;
+	}
+#endif
+	
+	return usbtoxxx_set_command(USB_TO_SPI, index, &cs, 1);
+}
+
+vsf_err_t usbtospi_deselect(uint8_t index, uint8_t cs)
+{
+#if PARAM_CHECK
+	if (index > 7)
+	{
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, index);
+		return VSFERR_FAIL;
+	}
+#endif
+	
+	return usbtoxxx_clear_command(USB_TO_SPI, index, &cs, 1);
+}
+
 vsf_err_t usbtospi_io(uint8_t index, uint8_t *out, uint8_t *in,
 						uint32_t bytelen)
 {

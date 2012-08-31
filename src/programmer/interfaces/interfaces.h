@@ -82,6 +82,8 @@ struct interface_spi_t
 	vsf_err_t (*enable)(uint8_t index);
 	vsf_err_t (*disable)(uint8_t index);
 	vsf_err_t (*config)(uint8_t index, uint32_t kHz, uint8_t mode);
+	vsf_err_t (*select)(uint8_t index, uint8_t cs);
+	vsf_err_t (*deselect)(uint8_t index, uint8_t cs);
 	vsf_err_t (*io)(uint8_t index, uint8_t *out, uint8_t *in, uint32_t bytelen);
 };
 

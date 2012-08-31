@@ -198,6 +198,8 @@ const struct app_interfaces_info_t app_interfaces =
 		spi_fini,
 		NULL, NULL, NULL,
 		spi_config,
+		spi_select,
+		spi_deselect,
 		NULL, NULL, NULL, NULL,
 		spi_io,
 		NULL, NULL, NULL
