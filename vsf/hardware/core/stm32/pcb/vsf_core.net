@@ -1,4 +1,4 @@
-# EESchema Netlist Version 1.1 created  09/08/2012 10:55:01
+# EESchema Netlist Version 1.1 created  31/08/2012 13:53:11
 (
  ( /502320C4 $noname  K1 CONN_3 {Lib=CONN_3}
   (    1 /USB_DP )
@@ -216,7 +216,7 @@
   (   85 /EBI_NOE )
   (   86 /EBI_NWE )
   (   87 /EBI_NWAIT )
-  (   88 /EBI_NCE0 )
+  (   88 ? )
   (   89 /I2S_CK )
   (   90 /SPI1_MISO )
   (   91 /I2S_SD_O )
@@ -225,8 +225,8 @@
   (   94 /BOOT0 )
   (   95 /CAN0_RX )
   (   96 /CAN0_TX )
-  (   97 /EBI_NBL0 )
-  (   98 /EBI_NBL1 )
+  (   97 ? )
+  (   98 ? )
   (   99 GND )
   (  100 VCC )
  )
@@ -286,18 +286,18 @@
   (   45 /EBI_NOE )
   (   46 /EBI_NADV )
   (   47 /EBI_NWAIT )
-  (   48 /EBI_NBL0 )
-  (   49 /EBI_NBL1 )
-  (   50 /EBI_CE0 )
-  (   51 /EBI_CE1 )
-  (   52 /EBI_NCE0 )
-  (   53 /EBI_NCE1 )
-  (   54 ? )
-  (   55 ? )
-  (   56 ? )
+  (   48 /EBI_NLB )
+  (   49 /EBI_NUB )
+  (   50 ? )
+  (   51 /EBI_NCS0 )
+  (   52 /EBI_NCS1 )
+  (   53 /EBI_NCS2 )
+  (   54 /EBI_NCS3 )
+  (   55 /EBI_NWAIT0 )
+  (   56 /EBI_NWAIT1 )
   (   57 ? )
   (   58 ? )
-  (   59 ? )
+  (   59 VCC )
   (   60 GND )
  )
  ( /50177D65 $noname  P20 CONN_30X2 {Lib=CONN_30X2}
@@ -453,8 +453,8 @@
   (   88 /EBI_A13 )
   (   89 /EBI_A14 )
   (   90 /EBI_A15 )
-  (   91 ? )
-  (   92 ? )
+  (   91 /EBI_NWAIT0 )
+  (   92 /EBI_NWAIT1 )
   (   93 ? )
   (   94 GND )
   (   95 VCC )
@@ -485,11 +485,11 @@
   (  120 GND )
   (  121 VCC )
   (  122 /EBI_NWAIT )
-  (  123 /EBI_NCE0 )
-  (  124 /EBI_NCE1 )
-  (  125 /EBI_CE0 )
+  (  123 /EBI_NCS0 )
+  (  124 /EBI_NCS1 )
+  (  125 /EBI_NCS2 )
   (  126 ? )
-  (  127 /EBI_CE1 )
+  (  127 /EBI_NCS3 )
   (  128 /EBI_A24 )
   (  129 /EBI_A25 )
   (  130 GND )
@@ -503,8 +503,8 @@
   (  138 /BOOT0 )
   (  139 /CAN0_RX )
   (  140 /CAN0_TX )
-  (  141 /EBI_NBL0 )
-  (  142 /EBI_NBL1 )
+  (  141 /EBI_NLB )
+  (  142 /EBI_NUB )
   (  143 GND )
   (  144 VCC )
  )
@@ -591,31 +591,31 @@
   (    4 VCC )
  )
  ( /4F65E2AC $noname  R4 1.5K {Lib=R}
-  (    1 N-000149 )
+  (    1 N-000148 )
   (    2 /USB_PU )
  )
  ( /4F65E253 $noname  F0 500mA {Lib=FUSE}
-  (    1 N-000145 )
+  (    1 N-000144 )
   (    2 /5V_OUT )
  )
  ( /4F65E220 $noname  R3 22 {Lib=R}
-  (    1 N-000149 )
+  (    1 N-000148 )
   (    2 /USB_DP )
  )
  ( /4F65E219 $noname  R2 22 {Lib=R}
-  (    1 N-000147 )
+  (    1 N-000146 )
   (    2 /USB_DM )
  )
  ( /4F65E20C $noname  P0 USBMINI-B {Lib=USBMINI-B}
-  (    1 N-000145 )
-  (    2 N-000147 )
-  (    3 N-000149 )
+  (    1 N-000144 )
+  (    2 N-000146 )
+  (    3 N-000148 )
   (    4 ? )
   (    5 GND )
  )
  ( /4F65AC35 $noname  SW2 SW_PUSH {Lib=SW_PUSH}
-  (    1 /BOOT0 )
-  (    2 VCC )
+  (    1 VCC )
+  (    2 /BOOT0 )
  )
  ( /4F65AC31 $noname  R7 10K {Lib=R}
   (    1 GND )
@@ -672,8 +672,8 @@
   (    2 /AVCC )
  )
  ( /4F659F47 $noname  SW0 SW_PUSH {Lib=SW_PUSH}
-  (    1 /NRST )
-  (    2 GND )
+  (    1 GND )
+  (    2 /NRST )
  )
 )
 *
@@ -847,678 +847,682 @@ $endlist
 $endfootprintlist
 }
 { Pin List by Nets
-Net 1 "/PWM0_CH4" "PWM0_CH4"
- P20 47
- K0 3
-Net 2 "/GPIO_P6" "GPIO_P6"
- U10 63
- U11 37
- U0 96
- P20 37
-Net 4 "/AD1" "AD1"
+Net 1 "/GPIO_P3" "GPIO_P3"
+ P20 34
+ U0 29
+ U10 18
+ U11 11
+Net 2 "/AD1" "AD1"
  P20 56
  U0 19
-Net 5 "/PWM0_CH3N" "PWM0_CH3N"
- U10 36
- U11 27
+Net 3 "/PWM0_CH3N" "PWM0_CH3N"
  U12 19
  U0 47
+ U10 36
  P20 46
-Net 6 "/GPIO_P5" "GPIO_P5"
- U0 45
- U10 34
+ U11 27
+Net 4 "/GPIO_P5" "GPIO_P5"
  P20 36
+ U0 45
  U11 25
-Net 7 "/I2S_SD_O" "I2S_SD_O"
+ U10 34
+Net 5 "/I2S_SD_O" "I2S_SD_O"
  U11 57
- P20 26
  U10 91
  U12 41
- P20 6
  U0 135
-Net 9 "/AD0" "AD0"
- P20 55
+ P20 26
+ P20 6
+Net 7 "/AD0" "AD0"
  U0 18
-Net 10 "/PWM0_CH3" "PWM0_CH3"
- P20 45
- U11 43
- U0 102
+ P20 55
+Net 8 "/PWM0_CH3" "PWM0_CH3"
  U12 31
+ U11 43
  U10 69
-Net 11 "/GPIO_P4" "GPIO_P4"
- U11 24
- P20 35
- U10 33
+ P20 45
+ U0 102
+Net 9 "/GPIO_P4" "GPIO_P4"
  U0 44
-Net 12 "/I2S_WS" "I2S_WS"
- U11 50
+ U11 24
+ U10 33
+ P20 35
+Net 10 "/I2S_WS" "I2S_WS"
  U0 110
- U12 38
  P20 25
- P20 8
+ U12 38
  U10 77
-Net 13 "/AD2" "AD2"
- P20 57
- U0 20
-Net 15 "/PWM0_CH2N" "PWM0_CH2N"
- U0 46
- P20 44
+ P20 8
+ U11 50
+Net 12 "/PWM0_CH2N" "PWM0_CH2N"
  U11 26
  U10 35
  U12 18
-Net 16 "/GPIO_P3" "GPIO_P3"
- U11 11
- U10 18
- P20 34
- U0 29
-Net 17 "/GPIO_P7" "GPIO_P7"
- P20 24
+ P20 44
+ U0 46
+Net 14 "/GPIO_P7" "GPIO_P7"
  P20 38
- U11 38
+ P20 24
  U10 64
  U0 97
-Net 18 "/DA0" "DA0"
- U10 30
- P20 53
- U11 21
+ U11 38
+Net 15 "/DA0" "DA0"
  U0 41
+ U10 30
+ U11 21
  U12 15
-Net 19 "/PWM0_CH2" "PWM0_CH2"
- U0 101
- P20 43
+ P20 53
+Net 16 "/PWM0_CH2" "PWM0_CH2"
  U11 42
  U12 30
+ U0 101
  U10 68
-Net 20 "/GPIO_P2" "GPIO_P2"
+ P20 43
+Net 17 "/GPIO_P2" "GPIO_P2"
+ P20 33
+ U0 28
  U11 10
  U10 17
- U0 28
- P20 33
-Net 21 "/I2S_CK" "I2S_CK"
- U12 39
- U10 89
- U0 133
- P20 5
- U11 55
+Net 18 "/I2S_CK" "I2S_CK"
  P20 23
-Net 22 "/USART0_CK" "USART0_CK"
- U0 40
- U10 29
- P20 13
+ U11 55
+ U10 89
+ U12 39
+ P20 5
+ U0 133
+Net 19 "/USART0_CK" "USART0_CK"
  U12 14
+ U0 40
+ P20 13
+ U10 29
  U11 20
-Net 23 "GND" "GND"
- C16 1
- C15 1
- U1 1
- C0 2
- C1 2
- P30 60
- P1 6
- P1 8
- P1 18
+Net 20 "GND" "GND"
  P1 16
- P1 14
- P1 12
- P1 20
- P1 10
+ P1 18
+ P1 8
  U12 23
- P1 4
- U12 35
- U12 47
- C7 1
- C8 2
- C5 1
- C6 2
- U12 20
- C17 1
- C21 1
- C20 1
  C19 1
- C18 1
+ P20 52
+ U12 35
+ U10 27
+ U10 37
+ P20 51
  U10 74
+ C6 2
+ C5 1
+ C8 2
+ C7 1
+ U12 20
+ P1 4
+ P1 6
+ P1 10
+ P1 20
+ P1 12
+ P1 14
+ R7 1
+ R8 1
+ U0 143
+ P0 5
+ C14 1
+ C17 1
  C10 1
  C11 1
  C12 1
  C13 1
- C14 1
+ C18 1
+ SW0 1
+ U0 107
+ C15 1
+ C16 1
+ C1 2
+ U1 1
+ C0 2
  C22 1
- U10 37
- SW0 2
- U10 27
- U0 61
- U0 71
- U0 51
+ C21 1
+ C20 1
+ U12 47
  U0 94
- U10 49
- U0 83
- P0 5
- U10 10
- U11 28
- U11 18
- U11 47
- P20 52
- P20 51
- U0 48
- U0 38
- U0 16
+ U10 99
  U0 120
  U0 130
- U11 63
- U11 31
- R7 1
- R8 1
- U0 143
+ U11 47
+ U0 83
+ U11 18
+ U10 10
+ U10 49
  R1 2
- U0 107
- U10 99
-Net 25 "/PWM0_CH1N" "PWM0_CH1N"
- P20 42
+ U0 71
+ U0 61
+ U0 51
+ U11 63
+ P30 60
+ U11 31
+ U0 38
+ U0 48
+ U11 28
+ U0 16
+Net 21 "/PWM0_CH1N" "PWM0_CH1N"
  U12 17
- U10 32
  U11 23
  U0 43
-Net 27 "/PWM_OUT0" "PWM_OUT0"
+ U10 32
+ P20 42
+Net 22 "/GPIO_P1" "GPIO_P1"
+ U0 27
+ P20 32
+ U11 9
+ U10 16
+Net 25 "/USART0_RXD" "USART0_RXD"
+ U11 17
+ U12 13
+ U0 37
+ P20 12
+ U10 26
+Net 26 "/PWM_OUT0" "PWM_OUT0"
  U11 22
  U0 42
  U12 16
  U10 31
  P20 49
-Net 28 "/CAN0_TX" "CAN0_TX"
+Net 27 "/CAN0_TX" "CAN0_TX"
+ U10 96
+ U11 62
  P20 29
  U0 140
- U10 96
  U12 46
- U11 62
-Net 29 "/AD3" "AD3"
- P20 58
+Net 28 "/AD3" "AD3"
  U0 21
-Net 30 "/PWM0_TRG" "PWM0_TRG"
+ P20 58
+Net 29 "/PWM0_TRG" "PWM0_TRG"
  P20 48
  K1 3
-Net 34 "/EBI_NBL0" "EBI_NBL0"
- U10 97
+Net 31 "/AD2" "AD2"
+ U0 20
+ P20 57
+Net 32 "/PWM0_CH4" "PWM0_CH4"
+ K0 3
+ P20 47
+Net 33 "/GPIO_P6" "GPIO_P6"
+ U0 96
+ U10 63
+ P20 37
+ U11 37
+Net 34 "/EBI_NLB" "EBI_NLB"
  P30 48
  U0 141
 Net 36 "/EBI_NWAIT" "EBI_NWAIT"
  P30 47
- U10 87
  U0 122
-Net 37 "/EBI_NADV" "EBI_NADV"
- P30 46
- U12 43
- U0 137
+ U10 87
+Net 37 "/EBI_NWAIT1" "EBI_NWAIT1"
+ P30 56
+ U0 92
+Net 38 "/EBI_NADV" "EBI_NADV"
  U10 93
+ U12 43
+ P30 46
  U11 59
-Net 40 "/GPIO_P1" "GPIO_P1"
- U10 16
- U11 9
- U0 27
- P20 32
-Net 41 "/USART0_RXD" "USART0_RXD"
- U12 13
- U10 26
- U11 17
- U0 37
- P20 12
-Net 42 "/PWM0_CH1" "PWM0_CH1"
- U10 67
+ U0 137
+Net 40 "/EBI_NWAIT0" "EBI_NWAIT0"
+ U0 91
+ P30 55
+Net 41 "/EBI_NCS3" "EBI_NCS3"
+ U0 127
+ P30 54
+Net 42 "/EBI_NCS2" "EBI_NCS2"
+ U0 125
+ P30 53
+Net 43 "/PWM0_CH1" "PWM0_CH1"
  U0 100
- U12 29
- U11 41
  P20 41
-Net 43 "/GPIO_P0" "GPIO_P0"
- P20 31
+ U11 41
+ U12 29
+ U10 67
+Net 44 "/GPIO_P0" "GPIO_P0"
  U11 8
  U0 26
+ P20 31
  U10 15
-Net 44 "/USART0_TXD" "USART0_TXD"
+Net 45 "/USART0_TXD" "USART0_TXD"
  P20 11
- U11 16
  U10 25
- U0 36
+ U11 16
  U12 12
-Net 46 "/PWM_IN0" "PWM_IN0"
- U0 136
- U11 58
+ U0 36
+Net 47 "/PWM_IN0" "PWM_IN0"
  P20 50
- U12 42
  U10 92
-Net 47 "VCC" "VCC"
- U10 11
- R5 1
- U11 1
- U10 50
- U11 32
- U11 64
- U12 48
- SW2 2
- P20 40
+ U11 58
+ U0 136
+ U12 42
+Net 48 "VCC" "VCC"
  U0 6
- U11 48
- U11 19
- U10 6
+ U11 64
  U0 84
+ U0 121
  U0 52
  U0 62
- U0 72
  U0 39
- U0 95
- U0 121
- U0 131
- U0 17
- C12 2
- C17 2
- C1 1
- U10 28
- C16 2
- C13 2
- C15 2
- P1 1
- U12 1
- U12 24
- C10 2
- U1 2
- C11 2
- U1 4
  U10 100
- L1 1
- U0 144
- C21 2
- U0 108
- C20 2
- C19 2
- C18 2
+ SW2 1
+ U12 1
+ U0 72
+ U11 32
+ R5 1
+ P1 1
+ U12 24
  U10 75
  U12 36
+ U0 131
+ C17 2
+ C13 2
+ C12 2
+ C11 2
+ C10 2
+ C18 2
+ C19 2
+ C20 2
  C22 2
+ U1 4
+ U1 2
+ P30 59
+ U10 11
+ L1 1
+ C21 2
+ U10 50
+ U0 17
+ P20 40
+ U0 95
+ U10 6
+ C16 2
+ U11 1
+ C15 2
+ U0 108
  C14 2
-Net 48 "/CAN0_RX" "CAN0_RX"
- P20 30
+ U0 144
+ U12 48
+ C1 1
+ U11 19
+ U11 48
+ U10 28
+Net 49 "/CAN0_RX" "CAN0_RX"
  U0 139
- U10 95
  U12 45
+ U10 95
+ P20 30
  U11 61
-Net 49 "/I2C0_SDA" "I2C0_SDA"
- U10 48
- U0 70
+Net 50 "/I2C0_SDA" "I2C0_SDA"
  P20 10
  U12 22
+ U0 70
+ U10 48
  U11 30
-Net 50 "/I2C0_SCL" "I2C0_SCL"
- P20 9
+Net 51 "/I2C0_SCL" "I2C0_SCL"
  U11 29
  U0 69
  U12 21
+ P20 9
  U10 47
-Net 51 "/SPI1_MISO" "SPI1_MISO"
- P20 7
- U12 40
+Net 52 "/SPI1_MISO" "SPI1_MISO"
+ U10 90
  U11 56
  U0 134
- U10 90
-Net 52 "/SPI0_NSS" "SPI0_NSS"
+ U12 40
+ P20 7
+Net 53 "/SPI0_NSS" "SPI0_NSS"
  U0 73
  U10 51
- U12 25
- U11 33
  P20 4
-Net 53 "/SPI0_MISO" "SPI0_MISO"
+ U11 33
+ U12 25
+Net 54 "/SPI0_MISO" "SPI0_MISO"
  U11 35
+ U12 27
  U0 75
  P20 3
  U10 53
- U12 27
-Net 54 "/SPI0_MOSI" "SPI0_MOSI"
+Net 55 "/SPI0_MOSI" "SPI0_MOSI"
  U0 76
+ P20 2
  U10 54
  U11 36
  U12 28
- P20 2
-Net 55 "/SPI0_SCK" "SPI0_SCK"
- U0 74
- P20 1
+Net 56 "/SPI0_SCK" "SPI0_SCK"
  U11 34
+ U0 74
  U12 26
+ P20 1
  U10 52
-Net 57 "/EBI_NBL1" "EBI_NBL1"
- U0 142
+Net 57 "/EBI_NUB" "EBI_NUB"
  P30 49
- U10 98
-Net 58 "/EBI_D14" "EBI_D14"
- U0 78
- P30 41
- U10 56
-Net 59 "/EBI_D12" "EBI_D12"
- U0 68
- P30 39
- U10 46
-Net 60 "/EBI_D4" "EBI_D4"
- U0 58
+ U0 142
+Net 58 "/EBI_D4" "EBI_D4"
  U10 38
  P30 31
-Net 61 "/EBI_A12" "EBI_A12"
+ U0 58
+Net 59 "/EBI_A12" "EBI_A12"
  P30 13
  U0 87
-Net 62 "/EBI_D13" "EBI_D13"
- U10 55
- P30 40
+Net 60 "/EBI_D13" "EBI_D13"
  U0 77
-Net 63 "/EBI_D11" "EBI_D11"
- P30 38
- U0 67
+ P30 40
+ U10 55
+Net 61 "/EBI_D11" "EBI_D11"
  U10 45
-Net 64 "/EBI_A11" "EBI_A11"
- P30 12
+ U0 67
+ P30 38
+Net 62 "/EBI_A11" "EBI_A11"
  U0 57
-Net 65 "/EBI_A13" "EBI_A13"
- U0 88
- P30 14
-Net 66 "/EBI_D1" "EBI_D1"
+ P30 12
+Net 63 "/EBI_D12" "EBI_D12"
+ U10 46
+ P30 39
+ U0 68
+Net 64 "/EBI_D1" "EBI_D1"
  U10 62
- U0 86
  P30 28
-Net 67 "/EBI_D10" "EBI_D10"
- U10 44
+ U0 86
+Net 65 "/EBI_D10" "EBI_D10"
  P30 37
+ U10 44
  U0 66
-Net 68 "/EBI_A10" "EBI_A10"
- P30 11
+Net 66 "/EBI_A10" "EBI_A10"
  U0 56
-Net 70 "/SDIO_D3" "SDIO_D3"
+ P30 11
+Net 67 "/EBI_D0" "EBI_D0"
+ P30 27
+ U10 61
+ U0 85
+Net 68 "/SDIO_D3" "SDIO_D3"
+ U10 79
  U0 112
  U11 52
- U10 79
  P20 22
-Net 71 "/SDIO_D2" "SDIO_D2"
- U0 111
- U11 51
+Net 69 "/SDIO_D2" "SDIO_D2"
  P20 21
+ U11 51
+ U0 111
  U10 78
-Net 72 "/SDIO_D1" "SDIO_D1"
- U11 40
- U0 99
+Net 70 "/EBI_D9" "EBI_D9"
+ P30 36
+ U0 65
+ U10 43
+Net 71 "/SDIO_D1" "SDIO_D1"
  U10 66
  P20 20
-Net 73 "/EBI_A14" "EBI_A14"
- U0 89
+ U0 99
+ U11 40
+Net 72 "/EBI_A14" "EBI_A14"
  P30 15
-Net 74 "/EBI_D15" "EBI_D15"
+ U0 89
+Net 73 "/EBI_D15" "EBI_D15"
  U0 79
- U10 57
  P30 42
-Net 75 "/EBI_D5" "EBI_D5"
+ U10 57
+Net 74 "/EBI_D5" "EBI_D5"
+ U10 39
  U0 59
  P30 32
- U10 39
-Net 77 "/SDIO_D0" "SDIO_D0"
- U11 39
- U10 65
+Net 76 "/SDIO_D0" "SDIO_D0"
  U0 98
  P20 19
-Net 79 "/EBI_A18" "EBI_A18"
- U10 60
- P30 19
- U0 82
-Net 82 "/EBI_A17" "EBI_A17"
- U0 81
- U10 59
+ U10 65
+ U11 39
+Net 77 "/EBI_A13" "EBI_A13"
+ P30 14
+ U0 88
+Net 78 "/EBI_D14" "EBI_D14"
+ P30 41
+ U10 56
+ U0 78
+Net 80 "/EBI_A17" "EBI_A17"
  P30 18
-Net 83 "/EBI_A15" "EBI_A15"
+ U10 59
+ U0 81
+Net 81 "/EBI_A15" "EBI_A15"
  P30 16
  U0 90
-Net 84 "/EBI_A16" "EBI_A16"
+Net 82 "/EBI_A16" "EBI_A16"
  U10 58
  U0 80
  P30 17
-Net 85 "/EBI_D6" "EBI_D6"
- U0 60
+Net 83 "/EBI_D6" "EBI_D6"
  P30 33
+ U0 60
  U10 40
-Net 86 "/EBI_A6" "EBI_A6"
- P30 7
+Net 84 "/EBI_A6" "EBI_A6"
  U0 50
-Net 87 "/EBI_A8" "EBI_A8"
- U0 54
- P30 9
-Net 88 "/EBI_D0" "EBI_D0"
- U0 85
- P30 27
- U10 61
-Net 89 "/EBI_D9" "EBI_D9"
- P30 36
- U10 43
- U0 65
-Net 90 "/EBI_A9" "EBI_A9"
+ P30 7
+Net 85 "/EBI_A9" "EBI_A9"
  U0 55
  P30 10
-Net 91 "/EBI_D8" "EBI_D8"
+Net 86 "/EBI_D8" "EBI_D8"
  U0 64
  U10 42
  P30 35
-Net 93 "/EBI_D7" "EBI_D7"
- P30 34
+Net 87 "/EBI_A8" "EBI_A8"
+ P30 9
+ U0 54
+Net 89 "/EBI_D7" "EBI_D7"
  U0 63
  U10 41
-Net 94 "/EBI_A7" "EBI_A7"
+ P30 34
+Net 90 "/EBI_A7" "EBI_A7"
  U0 53
  P30 8
-Net 95 "/OSC32_OUT" "OSC32_OUT"
- U10 9
- U12 4
- U0 9
- U11 4
- X1 2
- C8 1
-Net 96 "/OSC32_IN" "OSC32_IN"
- X1 1
- C7 2
- U10 8
- U11 3
- U0 8
- U12 3
-Net 97 "/EBI_A22" "EBI_A22"
+Net 91 "/EBI_A18" "EBI_A18"
+ U10 60
+ U0 82
+ P30 19
+Net 92 "/EBI_A22" "EBI_A22"
  U10 5
- U0 5
  P30 23
-Net 98 "/EBI_A21" "EBI_A21"
- U10 4
+ U0 5
+Net 93 "/EBI_A21" "EBI_A21"
  U0 4
+ U10 4
  P30 22
-Net 99 "/EBI_A20" "EBI_A20"
+Net 94 "/EBI_A20" "EBI_A20"
  U0 3
  P30 21
  U10 3
-Net 100 "/EBI_A19" "EBI_A19"
+Net 95 "/EBI_A19" "EBI_A19"
  U10 2
  P30 20
  U0 2
-Net 101 "/EBI_A23" "EBI_A23"
- U10 1
- U0 1
+Net 96 "/EBI_A23" "EBI_A23"
  P30 24
-Net 102 "/AVCC" "AVCC"
- U10 22
- L1 2
- U0 32
- U0 33
- C3 1
- U10 21
+ U0 1
+ U10 1
+Net 97 "/AVCC" "AVCC"
  U12 9
  C2 1
+ L1 2
+ C3 1
  U11 13
-Net 103 "/OSC_IN" "OSC_IN"
- X0 1
- U11 5
+ U10 22
+ U10 21
+ U0 32
+ U0 33
+Net 98 "/OSC_IN" "OSC_IN"
+ U10 12
  U12 5
  U0 23
+ U11 5
+ X0 1
  C5 2
- U10 12
-Net 104 "/FUNSEL1" "FUNSEL1"
- U10 71
- K1 2
+Net 99 "/FUNSEL1" "FUNSEL1"
  U11 45
  U12 33
+ U10 71
  U0 104
-Net 105 "/AGND" "AGND"
+ K1 2
+Net 100 "/AGND" "AGND"
+ U10 20
  U12 8
  C2 2
- R1 1
- C3 2
- U10 19
- U0 30
  U0 31
- U10 20
+ U10 19
  U11 12
-Net 106 "/EBI_A5" "EBI_A5"
- P30 6
- U0 15
-Net 107 "/EBI_A4" "EBI_A4"
- P30 5
- U0 14
-Net 108 "/EBI_A3" "EBI_A3"
- P30 4
- U0 13
-Net 109 "/EBI_A2" "EBI_A2"
- P30 3
+ C3 2
+ R1 1
+ U0 30
+Net 101 "/OSC32_OUT" "OSC32_OUT"
+ U0 9
+ U12 4
+ X1 2
+ C8 1
+ U11 4
+ U10 9
+Net 102 "/OSC32_IN" "OSC32_IN"
+ C7 2
+ U0 8
+ U12 3
+ X1 1
+ U11 3
+ U10 8
+Net 103 "/EBI_A2" "EBI_A2"
  U0 12
-Net 110 "/EBI_A1" "EBI_A1"
- P30 2
+ P30 3
+Net 104 "/EBI_A1" "EBI_A1"
  U0 11
-Net 111 "/EBI_A0" "EBI_A0"
+ P30 2
+Net 105 "/EBI_A0" "EBI_A0"
  P30 1
  U0 10
-Net 112 "/EBI_CE1" "EBI_CE1"
- P30 51
- U0 127
-Net 113 "/EBI_NCE1" "EBI_NCE1"
- P30 53
+Net 106 "/EBI_A3" "EBI_A3"
+ P30 4
+ U0 13
+Net 109 "/EBI_NCS1" "EBI_NCS1"
  U0 124
-Net 114 "/EBI_NCE0" "EBI_NCE0"
  P30 52
- U10 88
+Net 110 "/EBI_NCS0" "EBI_NCS0"
+ P30 51
  U0 123
-Net 115 "/EBI_CE0" "EBI_CE0"
- P30 50
- U0 125
-Net 116 "/USART0_RTS" "USART0_RTS"
+Net 112 "/EBI_A5" "EBI_A5"
+ U0 15
+ P30 6
+Net 113 "/EBI_A4" "EBI_A4"
+ U0 14
+ P30 5
+Net 114 "/USART0_RTS" "USART0_RTS"
+ P20 15
  U11 15
  U0 35
- U12 11
  U10 24
- P20 15
-Net 118 "/USART0_CTS" "USART0_CTS"
- U12 10
- P20 14
+ U12 11
+Net 116 "/USART0_CTS" "USART0_CTS"
  U10 23
- U11 14
  U0 34
-Net 119 "/OSC_OUT" "OSC_OUT"
+ U12 10
+ U11 14
+ P20 14
+Net 117 "/OSC_OUT" "OSC_OUT"
  U10 13
  U11 6
  X0 2
- U0 24
  U12 6
+ U0 24
  C6 1
 Net 122 "/NRST" "NRST"
- U0 25
- SW0 1
- R5 2
- U10 14
  U12 7
  P1 15
+ SW0 2
+ U10 14
+ R5 2
  U11 7
+ U0 25
 Net 125 "/SWD_CLK" "SWD_CLK"
- U11 49
- P1 9
- U10 76
- U12 37
  U0 109
+ U11 49
+ U12 37
+ U10 76
+ P1 9
 Net 126 "/SWD_IO" "SWD_IO"
- P1 7
+ U10 72
+ U11 46
  U0 105
  U12 34
- U11 46
- U10 72
-Net 130 "/EBI_A24" "EBI_A24"
- P30 25
- U0 128
-Net 131 "/EBI_NOE" "EBI_NOE"
- U0 118
- U10 85
- P30 45
-Net 132 "/EBI_CLK" "EBI_CLK"
- U10 84
- U0 117
- P30 43
-Net 134 "/SDIO_CMD" "SDIO_CMD"
- P20 18
- U11 54
- U0 116
- U10 83
-Net 135 "/EBI_D3" "EBI_D3"
+ P1 7
+Net 130 "/EBI_D3" "EBI_D3"
  P30 30
  U0 115
  U10 82
+Net 131 "/EBI_NOE" "EBI_NOE"
+ U10 85
+ U0 118
+ P30 45
+Net 132 "/EBI_CLK" "EBI_CLK"
+ U0 117
+ P30 43
+ U10 84
+Net 134 "/SDIO_CMD" "SDIO_CMD"
+ P20 18
+ U0 116
+ U11 54
+ U10 83
+Net 135 "/EBI_A24" "EBI_A24"
+ U0 128
+ P30 25
 Net 136 "/EBI_D2" "EBI_D2"
- U0 114
  U10 81
  P30 29
+ U0 114
 Net 137 "/SDIO_CLK" "SDIO_CLK"
- P20 17
  U11 53
- U10 80
  U0 113
+ U10 80
+ P20 17
 Net 138 "" ""
- D0 2
  R8 2
-Net 139 "/USB_PU" "USB_PU"
- U11 2
- U12 2
- U0 7
- R4 2
- U10 7
-Net 140 "/5V_OUT" "5V_OUT"
- D0 1
- P20 39
+ D0 2
+Net 139 "/5V_OUT" "5V_OUT"
  F0 2
  C0 1
+ P20 39
  U1 3
-Net 141 "/EBI_A25" "EBI_A25"
+ D0 1
+Net 140 "/EBI_A25" "EBI_A25"
  U0 129
  P30 26
-Net 142 "/EBI_NWE" "EBI_NWE"
- U10 86
- P30 44
+Net 141 "/EBI_NWE" "EBI_NWE"
  U0 119
-Net 143 "/BOOT0" "BOOT0"
- U11 60
- U10 94
- SW2 1
- R7 2
- U0 138
+ P30 44
+ U10 86
+Net 142 "/BOOT0" "BOOT0"
  U12 44
-Net 145 "" ""
+ U10 94
+ U11 60
+ U0 138
+ R7 2
+ SW2 2
+Net 144 "" ""
  F0 1
  P0 1
-Net 146 "/USB_DM" "USB_DM"
- K0 1
+Net 145 "/USB_DM" "USB_DM"
  R2 2
-Net 147 "" ""
- R2 1
+ K0 1
+Net 146 "" ""
  P0 2
-Net 148 "/USB_DP" "USB_DP"
+ R2 1
+Net 147 "/USB_DP" "USB_DP"
  R3 2
  K1 1
-Net 149 "" ""
- R4 1
+Net 148 "" ""
  P0 3
+ R4 1
  R3 1
+Net 149 "/USB_PU" "USB_PU"
+ U10 7
+ U12 2
+ U11 2
+ R4 2
+ U0 7
 Net 150 "/FUNSEL0" "FUNSEL0"
  U11 44
  U12 32
- U10 70
  U0 103
  K0 2
+ U10 70
 }
 #End
