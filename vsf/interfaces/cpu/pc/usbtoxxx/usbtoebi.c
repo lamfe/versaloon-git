@@ -105,6 +105,20 @@ vsf_err_t usbtoebi_config(uint8_t index, uint8_t target_index,
 	}
 }
 
+vsf_err_t usbtoebi_isready(uint8_t index, uint8_t target_index)
+{
+	int8_t ret;
+	
+	if (usbtoxxx_status_command(USB_TO_EBI, index, &target_index, 1, 1,
+									(uint8_t *)&ret, 0, 1, 0) ||
+		interfaces->peripheral_commit())
+	{
+		return VSFERR_FAIL;
+	}
+	
+	return (vsf_err_t)ret;
+}
+
 vsf_err_t usbtoebi_read(uint8_t index, uint8_t target_index,
 			uint32_t address,uint8_t data_size, uint8_t *buff, uint32_t count)
 {

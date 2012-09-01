@@ -31,6 +31,7 @@ void USB_TO_EBI_ProcessCmd(uint8_t *dat, uint16_t len)
 	uint32_t address, count;
 	struct ebi_nor_info_t nor_info;
 	struct ebi_nand_info_t nand_info;
+	vsf_err_t ret;
 	
 	index = 0;
 	while(index < len)
@@ -132,6 +133,23 @@ void USB_TO_EBI_ProcessCmd(uint8_t *dat, uint16_t len)
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
+			break;
+		case USB_TO_XXX_STATUS:
+			target_index = dat[index + 0];
+			ret = app_interfaces.ebi.isready(device_idx, target_index);
+			switch (ret)
+			{
+			case VSFERR_NONE:
+			case VSFERR_NOT_READY:
+				buffer_reply[rep_len] = USB_TO_XXX_OK;
+				break;
+			case VSFERR_FAIL:
+			default:
+				buffer_reply[rep_len] = USB_TO_XXX_FAILED;
+				break;
+			}
+			buffer_reply[rep_len + 1] = (int8_t)ret;
+			rep_len += 2;
 			break;
 		case USB_TO_XXX_IN:
 			target_index = dat[index + 0];

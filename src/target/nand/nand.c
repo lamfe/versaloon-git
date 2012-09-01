@@ -155,7 +155,10 @@ ENTER_PROGRAM_MODE_HANDLER(nand)
 	nand_drv_param.nand_info.param.addr.cmd = 0x00010000;
 	nand_drv_param.nand_info.param.addr.addr = 0x00020000;
 	nand_drv_param.nand_info.param.addr.data = 0x00000000;
-	nand_drv_param.small_page = param->param[NAND_PARAM_SMALL_PAGE];
+	nand_drv_param.col_addr_size = param->param[NAND_PARAM_COL_ADDR_SIZE];
+	nand_drv_param.col_addr_msb = param->param[NAND_PARAM_COL_ADDR_MSB];
+	nand_drv_param.row_addr_size = param->param[NAND_PARAM_ROW_ADDR_SIZE];
+	nand_drv_param.row_addr_lsb = param->param[NAND_PARAM_ROW_ADDR_LSB];
 	
 	if (mal.init(&nand_dal_info) || mal.getinfo(&nand_dal_info))
 	{
@@ -204,7 +207,7 @@ WRITE_TARGET_HANDLER(nand)
 		{
 			return VSFERR_FAIL;
 		}
-		size /= flash_info->page_size;
+		size /= nand_mal_info.write_page_size;
 		
 		if (mal.writeblock(&nand_dal_info,addr, buff, size))
 		{
@@ -240,7 +243,7 @@ READ_TARGET_HANDLER(nand)
 		{
 			return VSFERR_FAIL;
 		}
-		size /= flash_info->page_size;
+		size /= nand_mal_info.read_page_size;
 		
 		if (mal.readblock(&nand_dal_info, addr, buff, size))
 		{

@@ -23,7 +23,10 @@
 struct nand_drv_param_t
 {
 	struct ebi_nand_info_t nand_info;
-	bool small_page;
+	uint8_t col_addr_size;
+	uint8_t col_addr_msb;
+	uint8_t row_addr_lsb;
+	uint8_t row_addr_size;
 };
 
 struct nand_drv_info_t

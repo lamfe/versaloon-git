@@ -17,6 +17,8 @@
 vsf_err_t ebi_init(uint8_t index);
 vsf_err_t ebi_fini(uint8_t index);
 vsf_err_t ebi_config(uint8_t index, uint8_t target_index, void *param);
+void* ebi_get_base_addr(uint8_t index, uint8_t target_index);
+vsf_err_t ebi_isready(uint8_t index, uint8_t target_index);
 vsf_err_t ebi_read(uint8_t index, uint8_t target_index, uint32_t address, 
 					uint8_t data_size, uint8_t *buff, uint32_t count);
 vsf_err_t ebi_write(uint8_t index, uint8_t target_index, uint32_t address, 
