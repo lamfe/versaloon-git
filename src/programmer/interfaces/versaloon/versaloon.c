@@ -719,6 +719,7 @@ struct interfaces_info_t versaloon_interfaces =
 		usbtoebi_init,
 		usbtoebi_fini,
 		usbtoebi_config,
+		usbtoebi_isready,
 		usbtoebi_read,
 		usbtoebi_write
 	},

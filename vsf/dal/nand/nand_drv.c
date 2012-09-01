@@ -27,6 +27,16 @@
 
 #include "nand_drv.h"
 
+#define NAND_RESET						0xFF
+#define NAND_READ_ID					0x90
+#define NAND_READ_STATUS				0x70
+#define NAND_READ_SETUP					0x00
+#define NAND_READ_CONFIRM				0x30
+#define NAND_PROGRAM_SETUP				0x80
+#define NAND_PROGRAM_CONFIRM			0x10
+#define NAND_ERASE_SETUP				0x60
+#define NAND_ERASE_CONFIRM				0xD0
+
 static vsf_err_t nand_drv_write_command8(struct dal_info_t *info, uint8_t cmd)
 {
 	struct nand_drv_interface_t *ifs = (struct nand_drv_interface_t *)info->ifs;
@@ -45,39 +55,6 @@ static vsf_err_t nand_drv_write_address8(struct dal_info_t *info, uint8_t addr)
 	return interfaces->ebi.write(ifs->ebi_port, 
 				ifs->nand_index | EBI_TGTTYP_NAND, 
 				param->nand_info.param.addr.addr, 1, &addr, 1);
-}
-
-static vsf_err_t nand_drv_write_address16(struct dal_info_t *info, uint16_t addr)
-{
-	struct nand_drv_interface_t *ifs = (struct nand_drv_interface_t *)info->ifs;
-	struct nand_drv_param_t *param = (struct nand_drv_param_t *)info->param;
-	
-	addr = SYS_TO_LE_U32(addr);
-	return interfaces->ebi.write(ifs->ebi_port, 
-				ifs->nand_index | EBI_TGTTYP_NAND, 
-				param->nand_info.param.addr.addr, 1, (uint8_t *)&addr, 2);
-}
-
-static vsf_err_t nand_drv_write_address24(struct dal_info_t *info, uint32_t addr)
-{
-	struct nand_drv_interface_t *ifs = (struct nand_drv_interface_t *)info->ifs;
-	struct nand_drv_param_t *param = (struct nand_drv_param_t *)info->param;
-	
-	addr = SYS_TO_LE_U32(addr);
-	return interfaces->ebi.write(ifs->ebi_port, 
-				ifs->nand_index | EBI_TGTTYP_NAND, 
-				param->nand_info.param.addr.addr, 1, (uint8_t *)&addr, 3);
-}
-
-static vsf_err_t nand_drv_write_address32(struct dal_info_t *info, uint32_t addr)
-{
-	struct nand_drv_interface_t *ifs = (struct nand_drv_interface_t *)info->ifs;
-	struct nand_drv_param_t *param = (struct nand_drv_param_t *)info->param;
-	
-	addr = SYS_TO_LE_U32(addr);
-	return interfaces->ebi.write(ifs->ebi_port, 
-				ifs->nand_index | EBI_TGTTYP_NAND, 
-				param->nand_info.param.addr.addr, 1, (uint8_t *)&addr, 4);
 }
 
 static vsf_err_t nand_drv_write_data8(struct dal_info_t *info, uint8_t *buff, 
@@ -126,28 +103,16 @@ static vsf_err_t nand_drv_read_data16(struct dal_info_t *info, uint16_t *buff,
 
 static vsf_err_t nand_drv_read_status(struct dal_info_t *info, uint8_t *status)
 {
-	nand_drv_write_command8(info, 0x70);
+	nand_drv_write_command8(info, NAND_READ_STATUS);
 	return nand_drv_read_data8(info, status, 1);
 }
 
-static vsf_err_t nand_drv_waitready(struct dal_info_t *info, uint8_t *status)
+static vsf_err_t nand_drv_isready(struct dal_info_t *info)
 {
-	uint8_t tmp_status;
+	struct nand_drv_interface_t *ifs = (struct nand_drv_interface_t *)info->ifs;
 	
-	nand_drv_write_command8(info, 0x70);
-	do {
-		nand_drv_read_data8(info, &tmp_status, 1);
-		if (interfaces->peripheral_commit())
-		{
-			return VSFERR_FAIL;
-		}
-	} while (!(tmp_status & 0x40));
-	
-	if (status != NULL)
-	{
-		*status = tmp_status;
-	}
-	return VSFERR_NONE;
+	return interfaces->ebi.isready(ifs->ebi_port,
+									ifs->nand_index | EBI_TGTTYP_NAND);
 }
 
 static vsf_err_t nand_drv_init(struct dal_info_t *info)
@@ -160,8 +125,7 @@ static vsf_err_t nand_drv_init(struct dal_info_t *info)
 	interfaces->ebi.config(ifs->ebi_port, ifs->nand_index | EBI_TGTTYP_NAND, 
 							&nand_drv_param->nand_info);
 	
-	nand_drv_write_command8(info, 0xFF);
-	return nand_drv_waitready(info, NULL);
+	return nand_drv_write_command8(info, NAND_RESET);
 }
 
 static vsf_err_t nand_drv_getinfo(struct dal_info_t *info)
@@ -169,7 +133,7 @@ static vsf_err_t nand_drv_getinfo(struct dal_info_t *info)
 	uint8_t id[4];
 	struct nand_drv_info_t *pinfo = (struct nand_drv_info_t *)info->info;
 	
-	nand_drv_write_command8(info, 0x90);
+	nand_drv_write_command8(info, NAND_READ_ID);
 	nand_drv_write_address8(info, 0x00);
 	nand_drv_read_data8(info, id, 4);
 	if (interfaces->peripheral_commit())
@@ -188,8 +152,7 @@ static vsf_err_t nand_drv_fini(struct dal_info_t *info)
 {
 	struct nand_drv_interface_t *ifs = (struct nand_drv_interface_t *)info->ifs;
 	
-	interfaces->ebi.fini(ifs->ebi_port);
-	return VSFERR_NONE;
+	return interfaces->ebi.fini(ifs->ebi_port);
 }
 
 static vsf_err_t nand_drv_eraseblock_nb_start(struct dal_info_t *info, 
@@ -204,22 +167,17 @@ static vsf_err_t nand_drv_eraseblock_nb_start(struct dal_info_t *info,
 static vsf_err_t nand_drv_eraseblock_nb(struct dal_info_t *info, uint64_t address)
 {
 	struct nand_drv_param_t *param = (struct nand_drv_param_t *)info->param;
-	uint32_t address32;
+	uint8_t data_width = param->nand_info.common_info.data_width / 8;
+	uint32_t block_address = (uint32_t)(address >> param->row_addr_lsb);
+	uint8_t i;
 	
-	if (param->small_page)
+	nand_drv_write_command8(info, NAND_ERASE_SETUP);
+	for (i = 0; i < param->row_addr_size; i += data_width)
 	{
-		address32 = (address & 0xFFFFFE00) >> 9;
-		nand_drv_write_command8(info, 0x60);
-		nand_drv_write_address24(info, address32);
-		nand_drv_write_command8(info, 0xD0);
+		nand_drv_write_address8(info, block_address & 0xFF);
+		block_address >>= 8;
 	}
-	else
-	{
-		address32 = (address & 0x0FFF) | ((address << 4) & 0xFFFF0000);
-		nand_drv_write_command8(info, 0x60);
-		nand_drv_write_address16(info, (uint16_t)(address32 >> 16));
-		nand_drv_write_command8(info, 0xD0);
-	}
+	nand_drv_write_command8(info, NAND_ERASE_CONFIRM);
 	return VSFERR_NONE;
 }
 
@@ -227,15 +185,28 @@ static vsf_err_t nand_drv_eraseblock_nb_isready(struct dal_info_t *info,
 												uint64_t address)
 {
 	uint8_t status;
+	vsf_err_t ret;
 	
 	REFERENCE_PARAMETER(address);
-	if (nand_drv_read_status(info, &status) || interfaces->peripheral_commit())
+	ret = nand_drv_isready(info);
+	if (VSFERR_NONE == ret)
+	{
+		if (nand_drv_read_status(info, &status) ||
+				interfaces->peripheral_commit() ||
+				status & 1)
+		{
+			return VSFERR_FAIL;
+		}
+		return VSFERR_NONE;
+	}
+	else if (VSFERR_NOT_READY == ret)
+	{
+		return ret;
+	}
+	else
 	{
 		return VSFERR_FAIL;
 	}
-	
-	return (status & 1) ? VSFERR_FAIL :
-			((status & 0x40) == 0x40) ? VSFERR_NONE : VSFERR_NOT_READY;
 }
 
 static vsf_err_t nand_drv_eraseblock_nb_end(struct dal_info_t *info)
@@ -244,75 +215,59 @@ static vsf_err_t nand_drv_eraseblock_nb_end(struct dal_info_t *info)
 	return VSFERR_NONE;
 }
 
+static vsf_err_t nand_drv_readblock_nb(struct dal_info_t *info, uint64_t address, 
+										uint8_t *buff)
+{
+	struct nand_drv_param_t *param = (struct nand_drv_param_t *)info->param;
+	uint32_t address32;
+	uint8_t cmd, i;
+	
+	REFERENCE_PARAMETER(buff);
+	address32 =
+			(uint32_t)((address & ((1UL << (param->col_addr_msb + 1)) - 1)) |
+			((address >> param->row_addr_lsb) << (8 * param->col_addr_size)));
+	cmd = NAND_READ_SETUP + ((address >> (param->col_addr_msb + 1)) &
+			((1UL << (param->row_addr_lsb - param->col_addr_msb - 1)) - 1));
+	nand_drv_write_command8(info, cmd);
+	for (i = 0; i < (param->col_addr_size + param->row_addr_size); i++)
+	{
+		nand_drv_write_address8(info, address32 & 0xFF);
+		address32 >>= 8;
+	}
+	return nand_drv_write_command8(info, NAND_READ_CONFIRM);
+}
+
 static vsf_err_t nand_drv_readblock_nb_start(struct dal_info_t *info, 
 											uint64_t address, uint64_t count)
 {
-	REFERENCE_PARAMETER(info);
-	REFERENCE_PARAMETER(address);
 	REFERENCE_PARAMETER(count);
-	return VSFERR_NONE;
-}
-
-static vsf_err_t nand_drv_readblock_nb(struct dal_info_t *info, uint64_t address, 
-									uint8_t *buff)
-{
-	struct nand_drv_param_t *param = (struct nand_drv_param_t *)info->param;
-	uint8_t data_width = param->nand_info.common_info.data_width / 8;
-	struct mal_info_t *mal_info = (struct mal_info_t *)info->extra;
-	uint32_t read_page_size = mal_info->read_page_size;
-	uint32_t address32;
-	uint64_t capacity = 
-				mal_info->capacity.block_number * mal_info->capacity.block_size;
-	
-	if ((data_width != 1) && (data_width != 2))
-	{
-		return VSFERR_FAIL;
-	}
-	
-	if (param->small_page)
-	{
-		address32 = (address & 0xFFFFFE00) >> 1;
-	}
-	else
-	{
-		if (2 == data_width)
-		{
-			address >>= 1;
-		}
-		address32 = (address & 0x0FFF) | ((address << 4) & 0xFFFF0000);
-	}
-	nand_drv_write_command8(info, 0x00);
-	if (capacity >= 64 * 1024 * 1024)
-	{
-		nand_drv_write_address32(info, address32);
-	}
-	else
-	{
-		nand_drv_write_address24(info, address32);
-	}
-	nand_drv_write_command8(info, 0x30);
-	interfaces->delay.delayus(0);
-	switch (data_width)
-	{
-	case 1:
-		nand_drv_read_data8(info, buff, read_page_size);
-		break;
-	case 2:
-		nand_drv_read_data16(info, (uint16_t *)buff, read_page_size / 2);
-		break;
-	default:
-		return VSFERR_FAIL;
-	}
-	return VSFERR_NONE;
+	return nand_drv_readblock_nb(info, address, (uint8_t *)NULL);
 }
 
 static vsf_err_t nand_drv_readblock_nb_isready(struct dal_info_t *info, 
 											uint64_t address, uint8_t *buff)
 {
-	REFERENCE_PARAMETER(info);
+	struct nand_drv_param_t *param = (struct nand_drv_param_t *)info->param;
+	uint8_t data_width = param->nand_info.common_info.data_width / 8;
+	struct mal_info_t *mal_info = (struct mal_info_t *)info->extra;
+	uint32_t read_page_size = mal_info->read_page_size;
+	vsf_err_t ret = nand_drv_isready(info);
+	
 	REFERENCE_PARAMETER(address);
-	REFERENCE_PARAMETER(buff);
-	return VSFERR_NONE;
+	if (VSFERR_NONE == ret)
+	{
+		switch (data_width)
+		{
+		case 1:
+			return nand_drv_read_data8(info, buff, read_page_size);
+		case 2:
+			read_page_size >>= 1;
+			return nand_drv_read_data16(info, (uint16_t *)buff, read_page_size);
+		default:
+			return VSFERR_FAIL;
+		}
+	}
+	return ret;
 }
 
 static vsf_err_t nand_drv_readblock_nb_end(struct dal_info_t *info)
@@ -338,34 +293,16 @@ static vsf_err_t nand_drv_writeblock_nb(struct dal_info_t *info, uint64_t addres
 	struct mal_info_t *mal_info = (struct mal_info_t *)info->extra;
 	uint32_t write_page_size = mal_info->write_page_size;
 	uint32_t address32;
-	uint64_t capacity = 
-				mal_info->capacity.block_number * mal_info->capacity.block_size;
+	uint8_t i;
 	
-	if ((data_width != 1) && (data_width != 2))
+	address32 =
+			(uint32_t)((address & ((1UL << (param->col_addr_msb + 1)) - 1)) |
+			((address >> param->row_addr_lsb) << (8 * param->col_addr_size)));
+	nand_drv_write_command8(info, NAND_PROGRAM_SETUP);
+	for (i = 0; i < (param->col_addr_size + param->row_addr_size); i++)
 	{
-		return VSFERR_FAIL;
-	}
-	
-	if (param->small_page)
-	{
-		address32 = (address & 0xFFFFFE00) >> 1;
-	}
-	else
-	{
-		if (2 == data_width)
-		{
-			address >>= 1;
-		}
-		address32 = (address & 0x0FFF) | ((address << 4) & 0xFFFF0000);
-	}
-	nand_drv_write_command8(info, 0x80);
-	if (capacity >= 64 * 1024 * 1024)
-	{
-		nand_drv_write_address32(info, address32);
-	}
-	else
-	{
-		nand_drv_write_address24(info, address32);
+		nand_drv_write_address8(info, address32 & 0xFF);
+		address32 >>= 8;
 	}
 	switch (data_width)
 	{
@@ -378,24 +315,36 @@ static vsf_err_t nand_drv_writeblock_nb(struct dal_info_t *info, uint64_t addres
 	default:
 		return VSFERR_FAIL;
 	}
-	return nand_drv_write_command8(info, 0x10);
+	return nand_drv_write_command8(info, NAND_PROGRAM_CONFIRM);
 }
 
 static vsf_err_t nand_drv_writeblock_nb_isready(struct dal_info_t *info, 
 												uint64_t address, uint8_t *buff)
 {
 	uint8_t status;
+	vsf_err_t ret;
 	
 	REFERENCE_PARAMETER(address);
 	REFERENCE_PARAMETER(buff);
-	
-	if (nand_drv_read_status(info, &status) || interfaces->peripheral_commit())
+	ret = nand_drv_isready(info);
+	if (VSFERR_NONE == ret)
+	{
+		if (nand_drv_read_status(info, &status) ||
+				interfaces->peripheral_commit() ||
+				status & 1)
+		{
+			return VSFERR_FAIL;
+		}
+		return VSFERR_NONE;
+	}
+	else if (VSFERR_NOT_READY == ret)
+	{
+		return ret;
+	}
+	else
 	{
 		return VSFERR_FAIL;
 	}
-	
-	return (status & 1) ? VSFERR_FAIL :
-			((status & 0x40) == 0x40) ? VSFERR_NONE : VSFERR_NOT_READY;
 }
 
 static vsf_err_t nand_drv_writeblock_nb_end(struct dal_info_t *info)

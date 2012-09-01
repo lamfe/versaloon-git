@@ -277,19 +277,19 @@ vsf_err_t stm32_ebi_config_nor(uint8_t index, struct ebi_nor_info_t *info)
 		{
 		case 0:
 			GPIOD->CRL = (GPIOD->CRL & ~(0x0F << (7 * 4))) | 
-							(uint32_t)0x0B << (7 * 4);
+							(uint32_t)stm32_GPIO_AFPP << (7 * 4);
 			break;
 		case 1:
 			GPIOG->CRH = (GPIOG->CRH & ~(0x0F << ((9 - 8) * 4))) | 
-							(uint32_t)0x0B << ((9 - 8) * 4);
+							(uint32_t)stm32_GPIO_AFPP << ((9 - 8) * 4);
 			break;
 		case 2:
 			GPIOG->CRH = (GPIOG->CRH & ~(0x0F << ((10 - 8) * 4))) | 
-							(uint32_t)0x0B << ((10 - 8) * 4);
+							(uint32_t)stm32_GPIO_AFPP << ((10 - 8) * 4);
 			break;
 		case 3:
 			GPIOG->CRH = (GPIOG->CRH & ~(0x0F << ((12 - 8) * 4))) | 
-							(uint32_t)0x0B << ((12 - 8) * 4);
+							(uint32_t)stm32_GPIO_AFPP << ((12 - 8) * 4);
 			break;
 		default:
 			return VSFERR_NOT_SUPPORT;
@@ -298,20 +298,20 @@ vsf_err_t stm32_ebi_config_nor(uint8_t index, struct ebi_nor_info_t *info)
 		if (info->param.timing.clock_hz_r)
 		{
 			GPIOB->CRL = (GPIOB->CRL & ~(0x0F << (7 * 4))) | 
-							(uint32_t)0x0B << (7 * 4);
+							(uint32_t)stm32_GPIO_AFPP << (7 * 4);
 		}
 		
 		if (info->param.addr_multiplex)
 		{
 			GPIOD->CRL = (GPIOD->CRL & ~(0x0F << (3 * 4))) | 
-							(uint32_t)0x0B << (3 * 4);
+							(uint32_t)stm32_GPIO_AFPP << (3 * 4);
 			bcr |= STM32_FSMC_BCR_MUXEN;
 		}
 		
 		if (info->common_info.wait_signal != EBI_WAIT_NONE)
 		{
 			GPIOD->CRL = (GPIOD->CRL & ~(0x0F << (6 * 4))) | 
-							(uint32_t)0x0B << (6 * 4);
+							(uint32_t)stm32_GPIO_AFPP << (6 * 4);
 			
 			switch (info->common_info.wait_signal)
 			{
@@ -428,11 +428,15 @@ vsf_err_t stm32_ebi_config_nand(uint8_t index, struct ebi_nand_info_t *info)
 		{
 		case 1:
 			GPIOD->CRL = (GPIOD->CRL & ~(0x0F << (7 * 4))) | 
-							(uint32_t)0x0B << (7 * 4);
+							(uint32_t)stm32_GPIO_AFPP << (7 * 4);
+			GPIOG->CRL = (GPIOD->CRL & ~(0x0F << (6 * 4))) | 
+							(uint32_t)stm32_GPIO_INPU << (6 * 4);
 			break;
 		case 2:
 			GPIOG->CRH = (GPIOG->CRH & ~(0x0F << ((9 - 8) * 4))) | 
-							(uint32_t)0x0B << ((9 - 8) * 4);
+							(uint32_t)stm32_GPIO_AFPP << ((9 - 8) * 4);
+			GPIOG->CRL = (GPIOD->CRL & ~(0x0F << (7 * 4))) | 
+							(uint32_t)stm32_GPIO_INPU << (7 * 4);
 			break;
 		default:
 			return VSFERR_NOT_SUPPORT;
@@ -566,6 +570,70 @@ vsf_err_t stm32_ebi_config(uint8_t index, uint8_t target_index, void *param)
 		case EBI_TGTTYP_NAND:
 			return stm32_ebi_config_nand(
 				((target_index + 1) & 0x03) << 4, (struct ebi_nand_info_t *)param);
+		default:
+			return VSFERR_NOT_SUPPORT;
+		}
+	default:
+		return VSFERR_NOT_SUPPORT;
+	}
+}
+
+void* stm32_ebi_get_base_addr(uint8_t index, uint8_t target_index)
+{
+	uint8_t target_type = target_index & 0xF0;
+	
+	target_index &= 0x0F;
+	switch (index)
+	{
+	case 0:
+		switch (target_type)
+		{
+		case EBI_TGTTYP_NOR:
+			if (target_index > 3)
+			{
+				return NULL;
+			}
+			return (void *)(0x60000000 + target_index * 0x4000000);
+		case EBI_TGTTYP_NAND:
+			if (target_index > 1)
+			{
+				return NULL;
+			}
+			return (void *)(0x60000000 + (1 + target_index) * 0x10000000);
+		default:
+			return NULL;
+		}
+	default:
+		return NULL;
+	}
+}
+
+vsf_err_t stm32_ebi_isready(uint8_t index, uint8_t target_index)
+{
+	uint8_t target_type = target_index & 0xF0;
+	
+	target_index &= 0x0F;
+	switch (index)
+	{
+	case 0:
+		switch (target_type)
+		{
+		case EBI_TGTTYP_NOR:
+			if (target_index > 3)
+			{
+				return VSFERR_NOT_SUPPORT;
+			}
+			return VSFERR_NONE;
+		case EBI_TGTTYP_NAND:
+			switch (target_index)
+			{
+			case 0:
+				return GPIOG->IDR & (1UL << 6) ? VSFERR_NONE : VSFERR_NOT_READY;
+			case 1:
+				return GPIOG->IDR & (1UL << 7) ? VSFERR_NONE : VSFERR_NOT_READY;
+			default:
+				return VSFERR_NOT_SUPPORT;
+			}
 		default:
 			return VSFERR_NOT_SUPPORT;
 		}

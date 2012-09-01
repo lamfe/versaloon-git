@@ -8,6 +8,9 @@ vsf_err_t stm32_ebi_config_sdram(uint8_t index, struct ebi_sdram_info_t *info);
 vsf_err_t stm32_ebi_config_ddram(uint8_t index, struct ebi_ddram_info_t *info);
 vsf_err_t stm32_ebi_config_pccard(uint8_t index, struct ebi_pccard_info_t *info);
 
+void* stm32_ebi_get_base_addr(uint8_t index, uint8_t target_index);
+vsf_err_t stm32_ebi_isready(uint8_t index, uint8_t target_index);
+
 uint8_t stm32_ebi_read8(uint8_t index, uint32_t address);
 void stm32_ebi_write8(uint8_t index, uint32_t address, uint8_t data);
 uint16_t stm32_ebi_read16(uint8_t index, uint32_t address);

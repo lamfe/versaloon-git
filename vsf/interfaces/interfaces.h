@@ -649,6 +649,9 @@ struct interface_ebi_t
 	vsf_err_t (*config_ddram)(uint8_t index, struct ebi_ddram_info_t *info);
 	vsf_err_t (*config_pccard)(uint8_t index, struct ebi_pccard_info_t *info);
 	
+	void* (*get_base_addr)(uint8_t index, uint8_t target_index);
+	vsf_err_t (*isready)(uint8_t index, uint8_t target_index);
+	
 	vsf_err_t (*read)(uint8_t index, uint8_t target_index, uint32_t address, 
 					uint8_t data_size, uint8_t *buff, uint32_t count);
 	vsf_err_t (*write)(uint8_t index, uint8_t target_index, uint32_t address, 
@@ -691,6 +694,8 @@ struct interface_ebi_t
 #define CORE_EBI_CONFIG_SDRAM(m)		__CONNECT(m, _ebi_config_sdram)
 #define CORE_EBI_CONFIG_DDRAM(m)		__CONNECT(m, _ebi_config_ddram)
 #define CORE_EBI_CONFIG_PCCARD(m)		__CONNECT(m, _ebi_config_pccard)
+#define CORE_EBI_GET_BASE_ADDR(m)		__CONNECT(m, _ebi_get_base_addr)
+#define CORE_EBI_ISREADY(m)				__CONNECT(m, _ebi_isready)
 #define CORE_EBI_READ(m)				__CONNECT(m, _ebi_read)
 #define CORE_EBI_WRITE(m)				__CONNECT(m, _ebi_write)
 #define CORE_EBI_READ8(m)				__CONNECT(m, _ebi_read8)
@@ -718,6 +723,10 @@ vsf_err_t CORE_EBI_CONFIG_DDRAM(__TARGET_CHIP__)(uint8_t index,
 												struct ebi_ddram_info_t *info);
 vsf_err_t CORE_EBI_CONFIG_PCCARD(__TARGET_CHIP__)(uint8_t index, 
 												struct ebi_pccard_info_t *info);
+void* CORE_EBI_GET_BASE_ADDR(__TARGET_CHIP__)(uint8_t index,
+												uint8_t target_index);
+vsf_err_t CORE_EBI_ISREADY(__TARGET_CHIP__)(uint8_t index,
+												uint8_t target_index);
 vsf_err_t CORE_EBI_READ(__TARGET_CHIP__)(uint8_t index, uint8_t target_index, 
 		uint32_t address, uint8_t data_size, uint8_t *buff, uint32_t count);
 vsf_err_t CORE_EBI_WRITE(__TARGET_CHIP__)(uint8_t index, uint8_t target_index, 

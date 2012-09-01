@@ -158,6 +158,7 @@ struct interface_ebi_t
 	vsf_err_t (*init)(uint8_t index);
 	vsf_err_t (*fini)(uint8_t index);
 	vsf_err_t (*config)(uint8_t index, uint8_t target_index, void *param);
+	vsf_err_t (*isready)(uint8_t index, uint8_t target_index);
 	vsf_err_t (*read)(uint8_t index, uint8_t target_index, uint32_t address,
 						uint8_t data_size, uint8_t *buff, uint32_t count);
 	vsf_err_t (*write)(uint8_t index, uint8_t target_index, uint32_t address,

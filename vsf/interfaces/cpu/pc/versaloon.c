@@ -447,6 +447,7 @@ struct interfaces_info_t versaloon_interfaces =
 		usbtoebi_fini,
 		usbtoebi_config,
 		NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+		usbtoebi_isready,
 		usbtoebi_read,
 		usbtoebi_write,
 		NULL, NULL, NULL, NULL, NULL, NULL,
