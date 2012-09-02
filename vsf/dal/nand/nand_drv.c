@@ -219,21 +219,12 @@ static vsf_err_t nand_drv_readblock_nb_start(struct dal_info_t *info,
 											uint64_t address, uint64_t count)
 {
 	struct nand_drv_param_t *param = (struct nand_drv_param_t *)info->param;
-	uint32_t address32 =
-			(uint32_t)((address & ((1UL << (param->col_addr_msb + 1)) - 1)) |
-			((address >> param->row_addr_lsb) << (8 * param->col_addr_size)));
-	uint8_t cmd, i;
 	
+	REFERENCE_PARAMETER(address);
 	REFERENCE_PARAMETER(count);
-	cmd = NAND_READ_SETUP + ((address >> (param->col_addr_msb + 1)) &
-			((1UL << (param->row_addr_lsb - param->col_addr_msb - 1)) - 1));
-	nand_drv_write_command8(info, cmd);
-	for (i = 0; i < (param->col_addr_size + param->row_addr_size); i++)
-	{
-		nand_drv_write_address8(info, address32 & 0xFF);
-		address32 >>= 8;
-	}
-	return nand_drv_write_command8(info, NAND_READ_CONFIRM);
+	
+	param->addr_loadded = false;
+	return VSFERR_NONE;
 }
 
 static vsf_err_t nand_drv_readblock_nb(struct dal_info_t *info, uint64_t address, 
@@ -252,22 +243,31 @@ static vsf_err_t nand_drv_readblock_nb(struct dal_info_t *info, uint64_t address
 	{
 	case 1:
 		ret = nand_drv_read_data8(info, buff, read_page_size);
+#if NAND_DRV_ECC_EN
 		if (!ret)
 		{
-			ret = nand_drv_read_data8(info, ecc_buff, ecc_size);
+			nand_drv_read_data8(info, ecc_buff, ecc_size);
+			ret = interfaces->peripheral_commit();
 		}
+#endif
 		break;
 	case 2:
 		read_page_size >>= 1;
 		ret = nand_drv_read_data16(info, (uint16_t *)buff, read_page_size);
+#if NAND_DRV_ECC_EN
 		if (!ret)
 		{
-			ret = nand_drv_read_data16(info, (uint16_t *)ecc_buff,
-										ecc_size / 2);
+			nand_drv_read_data16(info, (uint16_t *)ecc_buff, ecc_size / 2);
+			ret = interfaces->peripheral_commit();
 		}
+#endif
 		break;
 	default:
 		return VSFERR_FAIL;
+	}
+	if (!param->block_read_en)
+	{
+		param->addr_loadded = false;
 	}
 	return ret;
 }
@@ -275,8 +275,28 @@ static vsf_err_t nand_drv_readblock_nb(struct dal_info_t *info, uint64_t address
 static vsf_err_t nand_drv_readblock_nb_isready(struct dal_info_t *info, 
 											uint64_t address, uint8_t *buff)
 {
+	struct nand_drv_param_t *param = (struct nand_drv_param_t *)info->param;
+	
 	REFERENCE_PARAMETER(address);
 	REFERENCE_PARAMETER(buff);
+	if (!param->addr_loadded)
+	{
+		uint32_t address32 =
+			(uint32_t)((address & ((1UL << (param->col_addr_msb + 1)) - 1)) |
+			((address >> param->row_addr_lsb) << (8 * param->col_addr_size)));
+		uint8_t cmd, i;
+		
+		cmd = NAND_READ_SETUP + ((address >> (param->col_addr_msb + 1)) &
+				((1UL << (param->row_addr_lsb - param->col_addr_msb - 1)) - 1));
+		nand_drv_write_command8(info, cmd);
+		for (i = 0; i < (param->col_addr_size + param->row_addr_size); i++)
+		{
+			nand_drv_write_address8(info, address32 & 0xFF);
+			address32 >>= 8;
+		}
+		param->addr_loadded = true;
+		nand_drv_write_command8(info, NAND_READ_CONFIRM);
+	}
 	return nand_drv_isready(info);
 }
 

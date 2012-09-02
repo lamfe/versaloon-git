@@ -429,13 +429,13 @@ vsf_err_t stm32_ebi_config_nand(uint8_t index, struct ebi_nand_info_t *info)
 		case 1:
 			GPIOD->CRL = (GPIOD->CRL & ~(0x0F << (7 * 4))) | 
 							(uint32_t)stm32_GPIO_AFPP << (7 * 4);
-			GPIOG->CRL = (GPIOD->CRL & ~(0x0F << (6 * 4))) | 
+			GPIOG->CRL = (GPIOG->CRL & ~(0x0F << (6 * 4))) | 
 							(uint32_t)stm32_GPIO_INPU << (6 * 4);
 			break;
 		case 2:
 			GPIOG->CRH = (GPIOG->CRH & ~(0x0F << ((9 - 8) * 4))) | 
 							(uint32_t)stm32_GPIO_AFPP << ((9 - 8) * 4);
-			GPIOG->CRL = (GPIOD->CRL & ~(0x0F << (7 * 4))) | 
+			GPIOG->CRL = (GPIOG->CRL & ~(0x0F << (7 * 4))) | 
 							(uint32_t)stm32_GPIO_INPU << (7 * 4);
 			break;
 		default:

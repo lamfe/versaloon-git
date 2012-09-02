@@ -157,6 +157,7 @@ ENTER_PROGRAM_MODE_HANDLER(nand)
 	nand_drv_param.nand_info.param.addr.cmd = 0x00010000;
 	nand_drv_param.nand_info.param.addr.addr = 0x00020000;
 	nand_drv_param.nand_info.param.addr.data = 0x00000000;
+	nand_drv_param.block_read_en = (bool)param->param[NAND_PARAM_BLOCK_READ_EN];
 	nand_drv_param.col_addr_size =
 							(uint8_t)param->param[NAND_PARAM_COL_ADDR_SIZE];
 	nand_drv_param.col_addr_msb =
