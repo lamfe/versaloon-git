@@ -10,18 +10,20 @@
     <chip_id>0xECF18015</chip_id>
     <app_page_size>131072</app_page_size>
     <app_page_num>1024</app_page_num>
+    <param0>0</param0>
     <param1>2048</param1>
     <param2>2048</param2>
     <param3>131072</param3>
     <param4>2</param4>
-    <param5>11</param5>
+    <param5>10</param5>
     <param6>2</param6>
-    <param7>12</param7>
+    <param7>11</param7>
   </chip>
   <chip name="nand512w3a">
     <chip_id>0x20762076</chip_id>
     <app_page_size>16384</app_page_size>
     <app_page_num>4096</app_page_num>
+    <param0>1</param0>
     <param1>512</param1>
     <param2>512</param2>
     <param3>16384</param3>

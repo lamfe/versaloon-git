@@ -23,10 +23,13 @@
 struct nand_drv_param_t
 {
 	struct ebi_nand_info_t nand_info;
+	bool block_read_en;
 	uint8_t col_addr_size;
 	uint8_t col_addr_msb;
 	uint8_t row_addr_lsb;
 	uint8_t row_addr_size;
+	// private
+	bool addr_loadded;
 };
 
 struct nand_drv_info_t
