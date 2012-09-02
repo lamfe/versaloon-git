@@ -141,7 +141,9 @@ ENTER_PROGRAM_MODE_HANDLER(nand)
 	nand_drv_param.nand_info.common_info.wait_signal = EBI_WAIT_NONE;
 	nand_drv_param.nand_info.param.clock_hz = 0;
 	nand_drv_param.nand_info.param.ecc.ecc_enable = true;
-	nand_drv_param.nand_info.param.ecc.ecc_page_size = 512;
+	nand_drv_param.nand_info.param.ecc.ecc_page_size =
+								(uint16_t)nand_mal_info.read_page_size ?
+								(uint16_t)nand_mal_info.read_page_size : 512;
 	nand_drv_param.nand_info.param.timing.ale_to_re_cycle = 1;
 	nand_drv_param.nand_info.param.timing.cle_to_re_cycle = 1;
 	nand_drv_param.nand_info.param.timing.setup_cycle = 10;
@@ -155,10 +157,14 @@ ENTER_PROGRAM_MODE_HANDLER(nand)
 	nand_drv_param.nand_info.param.addr.cmd = 0x00010000;
 	nand_drv_param.nand_info.param.addr.addr = 0x00020000;
 	nand_drv_param.nand_info.param.addr.data = 0x00000000;
-	nand_drv_param.col_addr_size = param->param[NAND_PARAM_COL_ADDR_SIZE];
-	nand_drv_param.col_addr_msb = param->param[NAND_PARAM_COL_ADDR_MSB];
-	nand_drv_param.row_addr_size = param->param[NAND_PARAM_ROW_ADDR_SIZE];
-	nand_drv_param.row_addr_lsb = param->param[NAND_PARAM_ROW_ADDR_LSB];
+	nand_drv_param.col_addr_size =
+							(uint8_t)param->param[NAND_PARAM_COL_ADDR_SIZE];
+	nand_drv_param.col_addr_msb =
+							(uint8_t)param->param[NAND_PARAM_COL_ADDR_MSB];
+	nand_drv_param.row_addr_size =
+							(uint8_t)param->param[NAND_PARAM_ROW_ADDR_SIZE];
+	nand_drv_param.row_addr_lsb =
+							(uint8_t)param->param[NAND_PARAM_ROW_ADDR_LSB];
 	
 	if (mal.init(&nand_dal_info) || mal.getinfo(&nand_dal_info))
 	{

@@ -215,17 +215,16 @@ static vsf_err_t nand_drv_eraseblock_nb_end(struct dal_info_t *info)
 	return VSFERR_NONE;
 }
 
-static vsf_err_t nand_drv_readblock_nb(struct dal_info_t *info, uint64_t address, 
-										uint8_t *buff)
+static vsf_err_t nand_drv_readblock_nb_start(struct dal_info_t *info, 
+											uint64_t address, uint64_t count)
 {
 	struct nand_drv_param_t *param = (struct nand_drv_param_t *)info->param;
-	uint32_t address32;
-	uint8_t cmd, i;
-	
-	REFERENCE_PARAMETER(buff);
-	address32 =
+	uint32_t address32 =
 			(uint32_t)((address & ((1UL << (param->col_addr_msb + 1)) - 1)) |
 			((address >> param->row_addr_lsb) << (8 * param->col_addr_size)));
+	uint8_t cmd, i;
+	
+	REFERENCE_PARAMETER(count);
 	cmd = NAND_READ_SETUP + ((address >> (param->col_addr_msb + 1)) &
 			((1UL << (param->row_addr_lsb - param->col_addr_msb - 1)) - 1));
 	nand_drv_write_command8(info, cmd);
@@ -237,37 +236,48 @@ static vsf_err_t nand_drv_readblock_nb(struct dal_info_t *info, uint64_t address
 	return nand_drv_write_command8(info, NAND_READ_CONFIRM);
 }
 
-static vsf_err_t nand_drv_readblock_nb_start(struct dal_info_t *info, 
-											uint64_t address, uint64_t count)
-{
-	REFERENCE_PARAMETER(count);
-	return nand_drv_readblock_nb(info, address, (uint8_t *)NULL);
-}
-
-static vsf_err_t nand_drv_readblock_nb_isready(struct dal_info_t *info, 
-											uint64_t address, uint8_t *buff)
+static vsf_err_t nand_drv_readblock_nb(struct dal_info_t *info, uint64_t address, 
+										uint8_t *buff)
 {
 	struct nand_drv_param_t *param = (struct nand_drv_param_t *)info->param;
 	uint8_t data_width = param->nand_info.common_info.data_width / 8;
 	struct mal_info_t *mal_info = (struct mal_info_t *)info->extra;
 	uint32_t read_page_size = mal_info->read_page_size;
-	vsf_err_t ret = nand_drv_isready(info);
+	uint32_t ecc_size = 16 * read_page_size / 512;
+	uint8_t ecc_buff[64];
+	vsf_err_t ret;
 	
 	REFERENCE_PARAMETER(address);
-	if (VSFERR_NONE == ret)
+	switch (data_width)
 	{
-		switch (data_width)
+	case 1:
+		ret = nand_drv_read_data8(info, buff, read_page_size);
+		if (!ret)
 		{
-		case 1:
-			return nand_drv_read_data8(info, buff, read_page_size);
-		case 2:
-			read_page_size >>= 1;
-			return nand_drv_read_data16(info, (uint16_t *)buff, read_page_size);
-		default:
-			return VSFERR_FAIL;
+			ret = nand_drv_read_data8(info, ecc_buff, ecc_size);
 		}
+		break;
+	case 2:
+		read_page_size >>= 1;
+		ret = nand_drv_read_data16(info, (uint16_t *)buff, read_page_size);
+		if (!ret)
+		{
+			ret = nand_drv_read_data16(info, (uint16_t *)ecc_buff,
+										ecc_size / 2);
+		}
+		break;
+	default:
+		return VSFERR_FAIL;
 	}
 	return ret;
+}
+
+static vsf_err_t nand_drv_readblock_nb_isready(struct dal_info_t *info, 
+											uint64_t address, uint8_t *buff)
+{
+	REFERENCE_PARAMETER(address);
+	REFERENCE_PARAMETER(buff);
+	return nand_drv_isready(info);
 }
 
 static vsf_err_t nand_drv_readblock_nb_end(struct dal_info_t *info)
@@ -292,12 +302,13 @@ static vsf_err_t nand_drv_writeblock_nb(struct dal_info_t *info, uint64_t addres
 	uint8_t data_width = param->nand_info.common_info.data_width / 8;
 	struct mal_info_t *mal_info = (struct mal_info_t *)info->extra;
 	uint32_t write_page_size = mal_info->write_page_size;
-	uint32_t address32;
-	uint8_t i;
-	
-	address32 =
+	uint32_t ecc_size = 16 * write_page_size / 512;
+	uint8_t ecc_buff[64];
+	uint32_t address32 =
 			(uint32_t)((address & ((1UL << (param->col_addr_msb + 1)) - 1)) |
 			((address >> param->row_addr_lsb) << (8 * param->col_addr_size)));
+	uint8_t i;
+	
 	nand_drv_write_command8(info, NAND_PROGRAM_SETUP);
 	for (i = 0; i < (param->col_addr_size + param->row_addr_size); i++)
 	{
@@ -308,9 +319,15 @@ static vsf_err_t nand_drv_writeblock_nb(struct dal_info_t *info, uint64_t addres
 	{
 	case 1:
 		nand_drv_write_data8(info, buff, write_page_size);
+		// TODO: get ecc into ecc_buff
+		memset(ecc_buff, 0, ecc_size);
+		nand_drv_write_data8(info, ecc_buff, ecc_size);
 		break;
 	case 2:
 		nand_drv_write_data16(info, (uint16_t *)buff, write_page_size / 2);
+		// TODO: get ecc into ecc_buff
+		memset(ecc_buff, 0, ecc_size);
+		nand_drv_write_data16(info, (uint16_t *)ecc_buff, ecc_size / 2);
 		break;
 	default:
 		return VSFERR_FAIL;
