@@ -22,5 +22,8 @@ char* strdup(const char *source);
 #endif
 
 #define ROOTFUNC	
+#define PACKED_HEAD	
+#define PACKED_MID	__attribute__ ((packed))
+#define PACKED_TAIL	
 
 #endif	// __COMPILER_H_INCLUDED__

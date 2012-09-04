@@ -24,6 +24,8 @@ COMPILER_DIR = .
 # add library directory to USR_LIBS
 USR_SRCS+= $(SRCDIR)/main.c
 USR_INCS+= -I $(SRCDIR)
+# compiler.h
+USR_INCS+= -I $(VSFDIR)\compiler\GCC
 #USR_DEFS+= -DADD_USER_DEFINES_HERE
 #USR_LIBS+= -L./
 
