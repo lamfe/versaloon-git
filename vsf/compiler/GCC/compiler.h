@@ -16,5 +16,15 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
- 
- #include <string.h>
+
+#ifndef __COMPILER_H_INCLUDED__
+#define __COMPILER_H_INCLUDED__
+
+#include <string.h>
+
+#define ROOTFUNC	
+#define PACKED_HEAD	
+#define PACKED_MID	__attribute__ ((packed))
+#define PACKED_TAIL	
+
+#endif	// __COMPILER_H_INCLUDED__

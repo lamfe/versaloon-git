@@ -4,5 +4,8 @@
 #include <string.h>
 
 #define ROOTFUNC	__root
+#define PACKED_HEAD	__packed
+#define PACKED_MID	
+#define PACKED_TAIL	
 
 #endif	// __COMPILER_H_INCLUDED__

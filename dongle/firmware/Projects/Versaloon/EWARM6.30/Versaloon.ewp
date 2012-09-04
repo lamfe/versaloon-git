@@ -308,6 +308,7 @@
           <state>$PROJ_DIR$\..\..\..\USB_TO_XXX\</state>
           <state>$PROJ_DIR$\..\..\..\versaloon_usb\</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\vsf\compiler\IAR\</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\tool\list</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\</state>
@@ -1256,6 +1257,7 @@
           <state>$PROJ_DIR$\..\..\..\USB_TO_XXX\</state>
           <state>$PROJ_DIR$\..\..\..\versaloon_usb\</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\vsf\compiler\IAR\</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\tool\list</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\</state>

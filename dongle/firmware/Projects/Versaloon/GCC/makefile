@@ -53,6 +53,8 @@ STM32_LIB_DIR = $(STM32_IFACES_DIR)/hw/STM32F10x_Lib
 USR_SRCS+= $(SRCDIR)/main.c $(SRCDIR)/usb_protocol_Versaloon.c $(SRCDIR)/versaloon_usb/vsfusbd_Versaloon.c
 USR_INCS+= -I $(PRJDIR)/.. -I $(SRCDIR)/versaloon_usb
 USR_INCS+= -I $(STM32_IFACES_DIR)/hw
+# compiler.h
+USR_INCS+= -I $(VSFDIR)/compiler/ARMGCC
 #USR_DEFS+= -DADD_USER_DEFINES_HERE
 #USR_LIBS+= -L./
 
