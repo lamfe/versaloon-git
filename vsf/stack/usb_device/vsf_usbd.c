@@ -27,9 +27,9 @@
 #include "vsf_usbd.h"
 #include "vsf_usbd_drv_callback.h"
 
-struct vsf_transaction_buffer_t vsfusbd_IN_tbuffer[16];
-struct vsf_transaction_buffer_t vsfusbd_OUT_tbuffer[16];
-uint32_t vsfusbd_IN_PkgNum[16];
+static struct vsf_transaction_buffer_t vsfusbd_IN_tbuffer[VSFUSBD_CFG_MAX_IN_EP + 1];
+static uint32_t vsfusbd_IN_PkgNum[VSFUSBD_CFG_MAX_IN_EP + 1];
+static struct vsf_transaction_buffer_t vsfusbd_OUT_tbuffer[VSFUSBD_CFG_MAX_OUT_EP + 1];
 
 vsf_err_t vsfusbd_device_get_descriptor(struct vsfusbd_device_t *device, 
 		struct vsfusbd_desc_filter_t *filter, uint8_t type, uint8_t index, 

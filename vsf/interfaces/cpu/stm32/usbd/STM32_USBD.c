@@ -30,7 +30,11 @@
 #include "usb_regs.h"
 #include "usb_mem.h"
 
-#define STM32_USBD_EP_NUM					8
+#if VSFUSBD_CFG_MAX_IN_EP > VSFUSBD_CFG_MAX_OUT_EP
+#define STM32_USBD_EP_NUM					(VSFUSBD_CFG_MAX_IN_EP + 1)
+#else
+#define STM32_USBD_EP_NUM					(VSFUSBD_CFG_MAX_OUT_EP + 1)
+#endif
 
 const uint8_t stm32_usbd_ep_num = STM32_USBD_EP_NUM;
 static void *USBD_Device = NULL;
