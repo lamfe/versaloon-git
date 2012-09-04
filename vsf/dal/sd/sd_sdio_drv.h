@@ -44,7 +44,7 @@ struct sd_sdio_drv_info_t
 	uint32_t total_size;
 };
 
-extern struct mal_driver_t sd_sdio_drv;
+extern const struct mal_driver_t sd_sdio_drv;
 
 #endif /*  __SD_SDIO_DRV_H_INCLUDED__ */
 

@@ -630,7 +630,7 @@ static vsf_err_t sd_sdio_drv_parse_interface(struct dal_info_t *info, uint8_t *b
 }
 #endif
 
-struct mal_driver_t sd_sdio_drv = 
+const struct mal_driver_t sd_sdio_drv = 
 {
 	{
 		"sd_sdio",

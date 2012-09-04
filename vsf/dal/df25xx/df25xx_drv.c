@@ -366,7 +366,7 @@ static vsf_err_t df25xx_drv_parse_interface(struct dal_info_t *info,
 }
 #endif
 
-struct mal_driver_t df25xx_drv = 
+const struct mal_driver_t df25xx_drv = 
 {
 	{
 		"df25xx",

@@ -340,13 +340,13 @@ static vsf_err_t nand_drv_writeblock_nb(struct dal_info_t *info, uint64_t addres
 	case 1:
 		nand_drv_write_data8(info, buff, write_page_size);
 		// TODO: get ecc into ecc_buff
-		memset(ecc_buff, 0, ecc_size);
+		memset(ecc_buff, 0xFF, ecc_size);
 		nand_drv_write_data8(info, ecc_buff, ecc_size);
 		break;
 	case 2:
 		nand_drv_write_data16(info, (uint16_t *)buff, write_page_size / 2);
 		// TODO: get ecc into ecc_buff
-		memset(ecc_buff, 0, ecc_size);
+		memset(ecc_buff, 0xFF, ecc_size);
 		nand_drv_write_data16(info, (uint16_t *)ecc_buff, ecc_size / 2);
 		break;
 	default:
@@ -401,7 +401,7 @@ static vsf_err_t nand_drv_parse_interface(struct dal_info_t *info, uint8_t *buff
 }
 #endif
 
-struct mal_driver_t nand_drv = 
+const struct mal_driver_t nand_drv = 
 {
 	{
 		"nand",

@@ -37,7 +37,7 @@ struct cfi_drv_interface_t
 	uint8_t nor_index;
 };
 
-extern struct mal_driver_t cfi_drv;
+extern const struct mal_driver_t cfi_drv;
 
 #endif /* __CFI_DRV_H_INCLUDED__ */
 

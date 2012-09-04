@@ -93,7 +93,7 @@ struct mal_t
 	vsf_err_t (*writeblock_nb_end)(struct dal_info_t *param);
 };
 
-extern struct mal_t mal;
+extern const struct mal_t mal;
 
 #endif	// __MAL_H_INCLUDED__
 

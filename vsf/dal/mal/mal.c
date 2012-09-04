@@ -536,7 +536,7 @@ static vsf_err_t mal_writeblock(struct dal_info_t *info,
 	return mal_writeblock_nb_end(info);
 }
 
-struct mal_t mal = 
+const struct mal_t mal = 
 {
 	mal_init,
 	mal_init_isready,

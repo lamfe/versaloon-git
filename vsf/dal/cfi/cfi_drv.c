@@ -460,7 +460,7 @@ static vsf_err_t cfi_drv_parse_interface(struct dal_info_t *info, uint8_t *buff)
 }
 #endif
 
-struct mal_driver_t cfi_drv = 
+const struct mal_driver_t cfi_drv = 
 {
 	{
 		"cfi",
