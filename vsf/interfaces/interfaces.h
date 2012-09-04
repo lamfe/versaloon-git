@@ -347,6 +347,12 @@ struct interface_gpio_t
 	uint32_t (*get)(uint8_t index, uint32_t pin_mask);
 };
 
+struct interface_gpio_pin_t
+{
+	uint8_t port;
+	uint32_t pin;
+};
+
 #define CORE_GPIO_INIT(m)				__CONNECT(m, _gpio_init)
 #define CORE_GPIO_FINI(m)				__CONNECT(m, _gpio_fini)
 #define CORE_GPIO_CONFIG_PIN(m)			__CONNECT(m, _gpio_config_pin)
