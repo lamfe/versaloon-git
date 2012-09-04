@@ -1054,11 +1054,7 @@ vsf_err_t vsfusbd_on_SETUP(void *p)
 		err = VSFERR_FAIL;
 		goto exit;
 	}
-	request->type 					= buff[0];
-	request->request				= buff[1];
-	request->value					= GET_LE_U16(&buff[2]);
-	request->index					= GET_LE_U16(&buff[4]);
-	request->length					= GET_LE_U16(&buff[6]);
+	memcpy(request, buff, USB_SETUP_PKG_SIZE);
 	ctrl_handler->state				= USB_CTRL_STAT_SETTING_UP;
 	ctrl_handler->filter			= vsfusbd_get_request_filter(device, 
 														&ctrl_handler->iface);

@@ -38,14 +38,14 @@ enum vsfusbd_ctrl_state_t
 	USB_CTRL_STAT_PAUSE,
 };
 
-struct vsfusbd_ctrl_request_t
+PACKED_HEAD struct PACKED_MID vsfusbd_ctrl_request_t
 {
 	uint8_t type;
 	uint8_t request;
 	uint16_t value;
 	uint16_t index;
 	uint16_t length;
-};
+}; PACKED_TAIL
 
 struct vsfusbd_ctrl_handler_t
 {
