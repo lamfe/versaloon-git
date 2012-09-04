@@ -124,8 +124,8 @@ struct vsfusbd_config_t
 	
 	// private
 	uint8_t configuration_value;
-	int8_t ep_OUT_iface_map[16];
-	int8_t ep_IN_iface_map[16];
+	int8_t ep_OUT_iface_map[VSFUSBD_CFG_MAX_OUT_EP + 1];
+	int8_t ep_IN_iface_map[VSFUSBD_CFG_MAX_IN_EP + 1];
 };
 
 struct vsfusbd_device_t
