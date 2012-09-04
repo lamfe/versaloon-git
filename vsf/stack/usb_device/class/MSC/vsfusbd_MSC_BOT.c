@@ -199,13 +199,7 @@ static vsf_err_t vsfusbd_MSCBOT_OUT_hanlder(void *p, uint8_t ep)
 	switch (param->bot_status)
 	{
 	case VSFUSBD_MSCBOT_STATUS_IDLE:
-		param->CBW.dCBWSignature = GET_LE_U32(&buffer[0]);
-		param->CBW.dCBWTag = GET_LE_U32(&buffer[4]);
-		param->CBW.dCBWDataTransferLength = GET_LE_U32(&buffer[8]);
-		param->CBW.bmCBWFlags = buffer[12];
-		param->CBW.bCBWLUN = buffer[13] & 0x0F;
-		param->CBW.bCBWCBLength = buffer[14] & 0x1F;
-		memcpy(param->CBW.CBWCB, &buffer[15], 16);
+		memcpy(&param->CBW, buffer, sizeof(param->CBW));
 		
 		if ((param->CBW.dCBWSignature != USBMSC_CBW_SIGNATURE) || 
 			(param->CBW.bCBWLUN > param->max_lun) || (pkg_size != 31))

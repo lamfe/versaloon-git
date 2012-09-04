@@ -11,7 +11,7 @@
 #define USBMSC_CBWFLAGS_DIR_MASK		0x80
 
 #define USBMSC_CBW_SIZE					31
-struct USBMSC_CBW_t
+PACKED_HEAD struct PACKED_MID USBMSC_CBW_t
 {
 	uint32_t dCBWSignature;
 	uint32_t dCBWTag;
@@ -20,16 +20,16 @@ struct USBMSC_CBW_t
 	uint8_t bCBWLUN;
 	uint8_t bCBWCBLength;
 	uint8_t CBWCB[16];
-};
+}; PACKED_TAIL
 
 #define USBMSC_CSW_SIZE					13
-struct USBMSC_CSW_t
+PACKED_HEAD struct PACKED_MID USBMSC_CSW_t
 {
 	uint32_t dCSWSignature;
 	uint32_t dCSWTag;
 	uint32_t dCSWDataResidue;
 	uint8_t dCSWStatus;
-};
+}; PACKED_TAIL
 
 enum usb_MSCBOT_req_t
 {
