@@ -1,6 +1,8 @@
 #ifndef __USB_PROTOCOL_H_INCLUDED__
 #define __USB_PROTOCOL_H_INCLUDED__
 
+#include "vsf_usbd_cfg.h"
+
 #include "stack/usb_device/vsf_usbd_const.h"
 #include "stack/usb_device/vsf_usbd.h"
 #include "stack/usb_device/vsf_usbd_drv_callback.h"
