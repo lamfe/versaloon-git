@@ -29,7 +29,8 @@
 
 static vsf_err_t mal_init(struct dal_info_t *info)
 {
-	struct mal_driver_t* mal_driver = ((struct mal_info_t*)info->extra)->driver;
+	struct mal_driver_t* mal_driver =
+			(struct mal_driver_t *)(((struct mal_info_t*)info->extra)->driver);
 	
 	if ((NULL == mal_driver) || (NULL == mal_driver->init))
 	{
@@ -41,7 +42,8 @@ static vsf_err_t mal_init(struct dal_info_t *info)
 
 static vsf_err_t mal_init_isready(struct dal_info_t *info)
 {
-	struct mal_driver_t* mal_driver = ((struct mal_info_t*)info->extra)->driver;
+	struct mal_driver_t* mal_driver =
+			(struct mal_driver_t *)(((struct mal_info_t*)info->extra)->driver);
 	
 	if (NULL == mal_driver)
 	{
@@ -57,7 +59,8 @@ static vsf_err_t mal_init_isready(struct dal_info_t *info)
 
 static vsf_err_t mal_fini(struct dal_info_t *info)
 {
-	struct mal_driver_t* mal_driver = ((struct mal_info_t*)info->extra)->driver;
+	struct mal_driver_t* mal_driver =
+			(struct mal_driver_t *)(((struct mal_info_t*)info->extra)->driver);
 	
 	if ((NULL == mal_driver) || (NULL == mal_driver->fini))
 	{
@@ -69,7 +72,8 @@ static vsf_err_t mal_fini(struct dal_info_t *info)
 
 static vsf_err_t mal_getinfo(struct dal_info_t *info)
 {
-	struct mal_driver_t* mal_driver = ((struct mal_info_t*)info->extra)->driver;
+	struct mal_driver_t* mal_driver =
+			(struct mal_driver_t *)(((struct mal_info_t*)info->extra)->driver);
 	
 	if ((NULL == mal_driver) || (NULL == mal_driver->getinfo))
 	{
@@ -81,7 +85,8 @@ static vsf_err_t mal_getinfo(struct dal_info_t *info)
 
 static vsf_err_t mal_poll(struct dal_info_t *info)
 {
-	struct mal_driver_t* mal_driver = ((struct mal_info_t*)info->extra)->driver;
+	struct mal_driver_t* mal_driver =
+			(struct mal_driver_t *)(((struct mal_info_t*)info->extra)->driver);
 	vsf_err_t err = VSFERR_NONE;
 	
 	if (NULL == mal_driver)
@@ -99,7 +104,8 @@ static vsf_err_t mal_poll(struct dal_info_t *info)
 static vsf_err_t mal_eraseblock_nb_start(struct dal_info_t *info, 
 										uint64_t address, uint64_t count)
 {
-	struct mal_driver_t* mal_driver = ((struct mal_info_t*)info->extra)->driver;
+	struct mal_driver_t* mal_driver =
+			(struct mal_driver_t *)(((struct mal_info_t*)info->extra)->driver);
 	
 	if ((NULL == mal_driver) || (NULL == mal_driver->eraseblock_nb_start))
 	{
@@ -111,7 +117,8 @@ static vsf_err_t mal_eraseblock_nb_start(struct dal_info_t *info,
 
 static vsf_err_t mal_eraseblock_nb(struct dal_info_t *info, uint64_t address)
 {
-	struct mal_driver_t* mal_driver = ((struct mal_info_t*)info->extra)->driver;
+	struct mal_driver_t* mal_driver =
+			(struct mal_driver_t *)(((struct mal_info_t*)info->extra)->driver);
 	
 	if ((NULL == mal_driver) || (NULL == mal_driver->eraseblock_nb))
 	{
@@ -124,7 +131,8 @@ static vsf_err_t mal_eraseblock_nb(struct dal_info_t *info, uint64_t address)
 static vsf_err_t mal_eraseblock_nb_isready(struct dal_info_t *info, 
 											uint64_t address)
 {
-	struct mal_driver_t* mal_driver = ((struct mal_info_t*)info->extra)->driver;
+	struct mal_driver_t* mal_driver =
+			(struct mal_driver_t *)(((struct mal_info_t*)info->extra)->driver);
 	
 	if ((NULL == mal_driver) || (NULL == mal_driver->eraseblock_nb_isready))
 	{
@@ -137,7 +145,8 @@ static vsf_err_t mal_eraseblock_nb_isready(struct dal_info_t *info,
 static vsf_err_t mal_eraseblock_nb_waitready(struct dal_info_t *info, 
 												uint64_t address)
 {
-	struct mal_driver_t* mal_driver = ((struct mal_info_t*)info->extra)->driver;
+	struct mal_driver_t* mal_driver =
+			(struct mal_driver_t *)(((struct mal_info_t*)info->extra)->driver);
 	
 	if (NULL == mal_driver)
 	{
@@ -172,7 +181,8 @@ static vsf_err_t mal_eraseblock_nb_waitready(struct dal_info_t *info,
 
 static vsf_err_t mal_eraseblock_nb_end(struct dal_info_t *info)
 {
-	struct mal_driver_t* mal_driver = ((struct mal_info_t*)info->extra)->driver;
+	struct mal_driver_t* mal_driver =
+			(struct mal_driver_t *)(((struct mal_info_t*)info->extra)->driver);
 	
 	if ((NULL == mal_driver) || (NULL == mal_driver->eraseblock_nb_end))
 	{
@@ -184,7 +194,8 @@ static vsf_err_t mal_eraseblock_nb_end(struct dal_info_t *info)
 
 static vsf_err_t mal_eraseall_nb_start(struct dal_info_t *info)
 {
-	struct mal_driver_t* mal_driver = ((struct mal_info_t*)info->extra)->driver;
+	struct mal_driver_t* mal_driver =
+			(struct mal_driver_t *)(((struct mal_info_t*)info->extra)->driver);
 	
 	if ((NULL == mal_driver) || (NULL == mal_driver->eraseall_nb_start))
 	{
@@ -196,7 +207,8 @@ static vsf_err_t mal_eraseall_nb_start(struct dal_info_t *info)
 
 static vsf_err_t mal_eraseall_nb_isready(struct dal_info_t *info)
 {
-	struct mal_driver_t* mal_driver = ((struct mal_info_t*)info->extra)->driver;
+	struct mal_driver_t* mal_driver =
+			(struct mal_driver_t *)(((struct mal_info_t*)info->extra)->driver);
 	
 	if ((NULL == mal_driver) || (NULL == mal_driver->eraseall_nb_isready))
 	{
@@ -208,7 +220,8 @@ static vsf_err_t mal_eraseall_nb_isready(struct dal_info_t *info)
 
 static vsf_err_t mal_eraseall_nb_waitready(struct dal_info_t *info)
 {
-	struct mal_driver_t* mal_driver = ((struct mal_info_t*)info->extra)->driver;
+	struct mal_driver_t* mal_driver =
+			(struct mal_driver_t *)(((struct mal_info_t*)info->extra)->driver);
 	
 	if (NULL == mal_driver)
 	{
@@ -243,7 +256,8 @@ static vsf_err_t mal_eraseall_nb_waitready(struct dal_info_t *info)
 
 static vsf_err_t mal_eraseall_nb_end(struct dal_info_t *info)
 {
-	struct mal_driver_t* mal_driver = ((struct mal_info_t*)info->extra)->driver;
+	struct mal_driver_t* mal_driver =
+			(struct mal_driver_t *)(((struct mal_info_t*)info->extra)->driver);
 	
 	if ((NULL == mal_driver) || (NULL == mal_driver->eraseall_nb_end))
 	{
@@ -256,7 +270,8 @@ static vsf_err_t mal_eraseall_nb_end(struct dal_info_t *info)
 static vsf_err_t mal_readblock_nb_start(struct dal_info_t *info, 
 										uint64_t address, uint64_t count)
 {
-	struct mal_driver_t* mal_driver = ((struct mal_info_t*)info->extra)->driver;
+	struct mal_driver_t* mal_driver =
+			(struct mal_driver_t *)(((struct mal_info_t*)info->extra)->driver);
 	
 	if ((NULL == mal_driver) || (NULL == mal_driver->readblock_nb_start))
 	{
@@ -269,7 +284,8 @@ static vsf_err_t mal_readblock_nb_start(struct dal_info_t *info,
 static vsf_err_t mal_readblock_nb(struct dal_info_t *info, 
 									uint64_t address, uint8_t *buff)
 {
-	struct mal_driver_t* mal_driver = ((struct mal_info_t*)info->extra)->driver;
+	struct mal_driver_t* mal_driver =
+			(struct mal_driver_t *)(((struct mal_info_t*)info->extra)->driver);
 	
 	if ((NULL == mal_driver) || (NULL == mal_driver->readblock_nb))
 	{
@@ -282,7 +298,8 @@ static vsf_err_t mal_readblock_nb(struct dal_info_t *info,
 static vsf_err_t mal_readblock_nb_isready(struct dal_info_t *info, 
 											uint64_t address, uint8_t *buff)
 {
-	struct mal_driver_t* mal_driver = ((struct mal_info_t*)info->extra)->driver;
+	struct mal_driver_t* mal_driver =
+			(struct mal_driver_t *)(((struct mal_info_t*)info->extra)->driver);
 	
 	if ((NULL == mal_driver) || (NULL == mal_driver->readblock_nb_isready))
 	{
@@ -295,7 +312,8 @@ static vsf_err_t mal_readblock_nb_isready(struct dal_info_t *info,
 static vsf_err_t mal_readblock_nb_waitready(struct dal_info_t *info, 
 											uint64_t address, uint8_t *buff)
 {
-	struct mal_driver_t* mal_driver = ((struct mal_info_t*)info->extra)->driver;
+	struct mal_driver_t* mal_driver =
+			(struct mal_driver_t *)(((struct mal_info_t*)info->extra)->driver);
 	
 	if (NULL == mal_driver)
 	{
@@ -330,7 +348,8 @@ static vsf_err_t mal_readblock_nb_waitready(struct dal_info_t *info,
 
 static vsf_err_t mal_readblock_nb_end(struct dal_info_t *info)
 {
-	struct mal_driver_t* mal_driver = ((struct mal_info_t*)info->extra)->driver;
+	struct mal_driver_t* mal_driver =
+			(struct mal_driver_t *)(((struct mal_info_t*)info->extra)->driver);
 	
 	if ((NULL == mal_driver) || (NULL == mal_driver->readblock_nb_end))
 	{
@@ -343,7 +362,8 @@ static vsf_err_t mal_readblock_nb_end(struct dal_info_t *info)
 static vsf_err_t mal_writeblock_nb_start(struct dal_info_t *info, 
 											uint64_t address, uint64_t count)
 {
-	struct mal_driver_t* mal_driver = ((struct mal_info_t*)info->extra)->driver;
+	struct mal_driver_t* mal_driver =
+			(struct mal_driver_t *)(((struct mal_info_t*)info->extra)->driver);
 	
 	if ((NULL == mal_driver) || (NULL == mal_driver->writeblock_nb_start))
 	{
@@ -356,7 +376,8 @@ static vsf_err_t mal_writeblock_nb_start(struct dal_info_t *info,
 static vsf_err_t mal_writeblock_nb(struct dal_info_t *info, 
 									uint64_t address, uint8_t *buff)
 {
-	struct mal_driver_t* mal_driver = ((struct mal_info_t*)info->extra)->driver;
+	struct mal_driver_t* mal_driver =
+			(struct mal_driver_t *)(((struct mal_info_t*)info->extra)->driver);
 	
 	if ((NULL == mal_driver) || (NULL == mal_driver->writeblock_nb))
 	{
@@ -369,7 +390,8 @@ static vsf_err_t mal_writeblock_nb(struct dal_info_t *info,
 static vsf_err_t mal_writeblock_nb_isready(struct dal_info_t *info, 
 											uint64_t address, uint8_t *buff)
 {
-	struct mal_driver_t* mal_driver = ((struct mal_info_t*)info->extra)->driver;
+	struct mal_driver_t* mal_driver =
+			(struct mal_driver_t *)(((struct mal_info_t*)info->extra)->driver);
 	
 	if ((NULL == mal_driver) || (NULL == mal_driver->writeblock_nb_isready))
 	{
@@ -382,7 +404,8 @@ static vsf_err_t mal_writeblock_nb_isready(struct dal_info_t *info,
 static vsf_err_t mal_writeblock_nb_waitready(struct dal_info_t *info, 
 												uint64_t address, uint8_t *buff)
 {
-	struct mal_driver_t* mal_driver = ((struct mal_info_t*)info->extra)->driver;
+	struct mal_driver_t* mal_driver =
+			(struct mal_driver_t *)(((struct mal_info_t*)info->extra)->driver);
 	
 	if (NULL == mal_driver)
 	{
@@ -417,7 +440,8 @@ static vsf_err_t mal_writeblock_nb_waitready(struct dal_info_t *info,
 
 static vsf_err_t mal_writeblock_nb_end(struct dal_info_t *info)
 {
-	struct mal_driver_t* mal_driver = ((struct mal_info_t*)info->extra)->driver;
+	struct mal_driver_t* mal_driver =
+			(struct mal_driver_t *)(((struct mal_info_t*)info->extra)->driver);
 	
 	if ((NULL == mal_driver) || (NULL == mal_driver->writeblock_nb_end))
 	{

@@ -38,7 +38,7 @@ struct mal_info_t
 	uint32_t write_page_size;
 	uint32_t read_page_size;
 	
-	struct mal_driver_t *driver;
+	const struct mal_driver_t *driver;
 };
 
 struct mal_t
