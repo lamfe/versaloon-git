@@ -44,7 +44,7 @@ struct nand_drv_interface_t
 	uint8_t nand_index;
 };
 
-extern struct mal_driver_t nand_drv;
+extern const struct mal_driver_t nand_drv;
 
 #endif /* __NAND_DRV_H_INCLUDED__ */
 

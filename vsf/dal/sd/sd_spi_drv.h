@@ -41,7 +41,7 @@ struct sd_spi_drv_info_t
 	uint64_t total_block;
 };
 
-extern struct mal_driver_t sd_spi_drv;
+extern const struct mal_driver_t sd_spi_drv;
 
 #endif /*  __SD_SPI_DRV_H_INCLUDED__ */
 

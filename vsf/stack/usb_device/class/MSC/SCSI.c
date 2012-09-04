@@ -494,7 +494,7 @@ static vsf_err_t SCSI_handler_MODE_SENSE10(struct SCSI_LUN_info_t *info,
 	return VSFERR_NONE;
 }
 
-static struct SCSI_handler_t SCSI_handlers[] = 
+static const struct SCSI_handler_t SCSI_handlers[] = 
 {
 	{
 		SCSI_CMD_TEST_UNIT_READY,
@@ -635,7 +635,7 @@ vsf_err_t SCSI_Handle(struct SCSI_handler_t *handlers,
 {
 	if (NULL == handlers)
 	{
-		handlers = SCSI_handlers;
+		handlers = (struct SCSI_handler_t *)SCSI_handlers;
 	}
 	handlers = SCSI_get_handler(handlers, CB[0]);
 	if (NULL == handlers)
@@ -654,7 +654,7 @@ vsf_err_t SCSI_IO(struct SCSI_handler_t *handlers,
 {
 	if (NULL == handlers)
 	{
-		handlers = SCSI_handlers;
+		handlers = (struct SCSI_handler_t *)SCSI_handlers;
 	}
 	handlers = SCSI_get_handler(handlers, CB[0]);
 	if ((NULL == handlers) || (NULL == handlers->io))

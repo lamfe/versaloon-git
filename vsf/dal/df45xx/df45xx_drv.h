@@ -32,7 +32,7 @@ struct df45xx_drv_interface_t
 	uint8_t spi_port;
 };
 
-extern struct mal_driver_t df45xx_drv;
+extern const struct mal_driver_t df45xx_drv;
 
 #endif	// __DF45XX_DRV_H_INCLUDED__
 

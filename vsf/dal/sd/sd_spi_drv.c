@@ -805,7 +805,7 @@ static vsf_err_t sd_spi_drv_parse_interface(struct dal_info_t *info, uint8_t *bu
 }
 #endif
 
-struct mal_driver_t sd_spi_drv = 
+const struct mal_driver_t sd_spi_drv = 
 {
 	{
 		"sd_spi",

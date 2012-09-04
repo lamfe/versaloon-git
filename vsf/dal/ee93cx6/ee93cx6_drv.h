@@ -36,7 +36,7 @@ struct ee93cx6_drv_interface_t
 	uint8_t mw_port;
 };
 
-extern struct mal_driver_t ee93cx6_drv;
+extern const struct mal_driver_t ee93cx6_drv;
 
 #endif /* __EE93CX6_DRV_H_INCLUDED__ */
 
