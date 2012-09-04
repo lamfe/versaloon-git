@@ -177,6 +177,12 @@ struct interface_gpio_t
 	vsf_err_t (*in)(uint8_t index, uint32_t pin_mask, uint32_t *value);
 };
 
+struct interface_gpio_pin_t
+{
+	uint8_t port;
+	uint32_t pin;
+};
+
 struct interface_delay_t
 {
 	vsf_err_t (*delayms)(uint16_t ms);
