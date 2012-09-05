@@ -149,11 +149,15 @@ static vsf_err_t versaloon_poll(uint8_t iface, struct vsfusbd_device_t *device)
 		
 		if(rep_len & 0x80000000)	// there is valid data to be sent to PC
 		{
-			struct vsf_buffer_t buffer;
+			struct vsfusbd_transact_t *transact =
+											&vsfusbd_IN_transact[param->ep_in];
+			struct vsf_buffer_t *buffer = &transact->tbuffer.buffer;
 			
-			buffer.buffer = buffer_out;
-			buffer.size = rep_len & 0xFFFF;
-			vsfusbd_ep_out(device, param->ep_in, &buffer);
+			buffer->buffer = buffer_out;
+			buffer->size = rep_len & 0xFFFF;
+			transact->pkt.in.zlp = true;
+			transact->callback.callback = NULL;
+			vsfusbd_ep_send(device, param->ep_in);
 			
 			// reset command length and reply length for next command
 			cmd_len = 0;
