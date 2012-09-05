@@ -234,8 +234,10 @@ static vsf_err_t nand_drv_readblock_nb(struct dal_info_t *info, uint64_t address
 	uint8_t data_width = param->nand_info.common_info.data_width / 8;
 	struct mal_info_t *mal_info = (struct mal_info_t *)info->extra;
 	uint32_t read_page_size = mal_info->read_page_size;
+#if NAND_DRV_ECC_EN
 	uint32_t ecc_size = 16 * read_page_size / 512;
 	uint8_t ecc_buff[64];
+#endif
 	vsf_err_t ret;
 	
 	REFERENCE_PARAMETER(address);
