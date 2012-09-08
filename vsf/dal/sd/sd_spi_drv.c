@@ -448,7 +448,7 @@ static vsf_err_t sd_spi_transact(
 	return err;
 }
 
-static vsf_err_t sd_spi_drv_init(struct dal_info_t *info)
+static vsf_err_t sd_spi_drv_init_nb(struct dal_info_t *info)
 {
 	struct sd_spi_drv_info_t *drv_info = (struct sd_spi_drv_info_t *)info->info;
 	struct sd_spi_drv_interface_t *ifs =
@@ -489,7 +489,7 @@ static vsf_err_t sd_spi_drv_init(struct dal_info_t *info)
 	return VSFERR_NONE;
 }
 
-static vsf_err_t sd_spi_drv_init_isready(struct dal_info_t *info)
+static vsf_err_t sd_spi_drv_init_nb_isready(struct dal_info_t *info)
 {
 	struct sd_spi_drv_info_t *drv_info = (struct sd_spi_drv_info_t *)info->info;
 	struct sd_spi_drv_interface_t *ifs = 
@@ -817,8 +817,8 @@ const struct mal_driver_t sd_spi_drv =
 	
 	MAL_SUPPORT_READBLOCK | MAL_SUPPORT_WRITEBLOCK,
 	
-	sd_spi_drv_init,
-	sd_spi_drv_init_isready,
+	sd_spi_drv_init_nb,
+	sd_spi_drv_init_nb_isready,
 	sd_spi_drv_fini,
 	sd_spi_getinfo,
 	NULL,

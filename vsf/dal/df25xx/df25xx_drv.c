@@ -66,7 +66,7 @@ static vsf_err_t df25xx_drv_cs_deassert(struct df25xx_drv_interface_t *ifs)
 	}
 }
 
-static vsf_err_t df25xx_drv_init(struct dal_info_t *info)
+static vsf_err_t df25xx_drv_init_nb(struct dal_info_t *info)
 {
 	struct df25xx_drv_interface_t *ifs = 
 								(struct df25xx_drv_interface_t *)info->ifs;
@@ -378,7 +378,7 @@ const struct mal_driver_t df25xx_drv =
 	
 	MAL_SUPPORT_READBLOCK | MAL_SUPPORT_WRITEBLOCK | MAL_SUPPORT_ERASEBLOCK,
 	
-	df25xx_drv_init,
+	df25xx_drv_init_nb,
 	NULL,
 	df25xx_drv_fini,
 	df25xx_drv_getinfo,
