@@ -32,12 +32,12 @@ static vsf_err_t mal_init_nb(struct dal_info_t *info)
 	struct mal_driver_t* mal_driver =
 			(struct mal_driver_t *)(((struct mal_info_t*)info->extra)->driver);
 	
-	if ((NULL == mal_driver) || (NULL == mal_driver->init))
+	if ((NULL == mal_driver) || (NULL == mal_driver->init_nb))
 	{
 		return VSFERR_NOT_SUPPORT;
 	}
 	
-	return mal_driver->init(info);
+	return mal_driver->init_nb(info);
 }
 
 static vsf_err_t mal_init_nb_isready(struct dal_info_t *info)
@@ -50,9 +50,9 @@ static vsf_err_t mal_init_nb_isready(struct dal_info_t *info)
 		return VSFERR_NOT_SUPPORT;
 	}
 	
-	if (mal_driver->init_isready != NULL)
+	if (mal_driver->init_nb_isready != NULL)
 	{
-		return mal_driver->init_isready(info);
+		return mal_driver->init_nb_isready(info);
 	}
 	return VSFERR_NONE;
 }

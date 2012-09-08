@@ -51,7 +51,7 @@ static vsf_err_t ee93cx6_drv_poll(struct ee93cx6_drv_interface_t *ifs)
 							EE93CX6_POLL_INTERVAL_US, EE93CX6_POLL_RETRY_CNT);
 }
 
-static vsf_err_t ee93cx6_drv_init(struct dal_info_t *info)
+static vsf_err_t ee93cx6_drv_init_nb(struct dal_info_t *info)
 {
 	struct ee93cx6_drv_interface_t *ifs = 
 								(struct ee93cx6_drv_interface_t *)info->ifs;
@@ -340,7 +340,7 @@ const struct mal_driver_t ee93cx6_drv =
 	MAL_SUPPORT_ERASEALL | MAL_SUPPORT_ERASEBLOCK | 
 	MAL_SUPPORT_WRITEBLOCK | MAL_SUPPORT_READBLOCK,
 	
-	ee93cx6_drv_init,
+	ee93cx6_drv_init_nb,
 	NULL,
 	ee93cx6_drv_fini,
 	NULL,

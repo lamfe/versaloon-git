@@ -115,7 +115,7 @@ static vsf_err_t nand_drv_isready(struct dal_info_t *info)
 									ifs->nand_index | EBI_TGTTYP_NAND);
 }
 
-static vsf_err_t nand_drv_init(struct dal_info_t *info)
+static vsf_err_t nand_drv_init_nb(struct dal_info_t *info)
 {
 	struct nand_drv_interface_t *ifs = (struct nand_drv_interface_t *)info->ifs;
 	struct nand_drv_param_t *nand_drv_param = 
@@ -415,7 +415,7 @@ const struct mal_driver_t nand_drv =
 	
 	MAL_SUPPORT_READBLOCK | MAL_SUPPORT_WRITEBLOCK | MAL_SUPPORT_ERASEBLOCK,
 	
-	nand_drv_init,
+	nand_drv_init_nb,
 	NULL,
 	nand_drv_fini,
 	nand_drv_getinfo,

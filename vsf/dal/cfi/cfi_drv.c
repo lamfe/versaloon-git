@@ -93,7 +93,7 @@ static vsf_err_t cfi_wait_busy(struct dal_info_t *info, uint64_t address)
 	return VSFERR_NONE;
 }
 
-static vsf_err_t cfi_drv_init(struct dal_info_t *info)
+static vsf_err_t cfi_drv_init_nb(struct dal_info_t *info)
 {
 	struct cfi_drv_interface_t *ifs = (struct cfi_drv_interface_t *)info->ifs;
 	struct cfi_drv_param_t *param = (struct cfi_drv_param_t *)info->param;
@@ -472,7 +472,7 @@ const struct mal_driver_t cfi_drv =
 	
 	MAL_SUPPORT_READBLOCK | MAL_SUPPORT_WRITEBLOCK | MAL_SUPPORT_ERASEBLOCK,
 	
-	cfi_drv_init,
+	cfi_drv_init_nb,
 	NULL,
 	cfi_drv_fini,
 	cfi_drv_getinfo,

@@ -28,7 +28,7 @@
 #include "df45xx_drv_cfg.h"
 #include "df45xx_drv.h"
 
-static vsf_err_t df45xx_drv_init(struct dal_info_t *info)
+static vsf_err_t df45xx_drv_init_nb(struct dal_info_t *info)
 {
 	REFERENCE_PARAMETER(info);
 	return VSFERR_NONE;
@@ -219,7 +219,7 @@ const struct mal_driver_t df45xx_drv =
 	
 	0,
 	
-	df45xx_drv_init,
+	df45xx_drv_init_nb,
 	NULL,
 	df45xx_drv_fini,
 	df45xx_drv_getinfo,

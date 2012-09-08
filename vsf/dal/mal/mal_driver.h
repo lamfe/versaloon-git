@@ -28,8 +28,8 @@ struct mal_driver_t
 	
 	uint8_t support;
 	
-	vsf_err_t (*init)(struct dal_info_t *param);
-	vsf_err_t (*init_isready)(struct dal_info_t *param);
+	vsf_err_t (*init_nb)(struct dal_info_t *param);
+	vsf_err_t (*init_nb_isready)(struct dal_info_t *param);
 	vsf_err_t (*fini)(struct dal_info_t *param);
 	vsf_err_t (*getinfo)(struct dal_info_t *param);
 	vsf_err_t (*poll)(struct dal_info_t *param);

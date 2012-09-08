@@ -28,7 +28,7 @@
 #include "ee24cxx_drv_cfg.h"
 #include "ee24cxx_drv.h"
 
-static vsf_err_t ee24cxx_drv_init(struct dal_info_t *info)
+static vsf_err_t ee24cxx_drv_init_nb(struct dal_info_t *info)
 {
 	struct ee24cxx_drv_interface_t *ifs = 
 								(struct ee24cxx_drv_interface_t *)info->ifs;
@@ -174,7 +174,7 @@ const struct mal_driver_t ee24cxx_drv =
 	
 	MAL_SUPPORT_READBLOCK | MAL_SUPPORT_WRITEBLOCK,
 	
-	ee24cxx_drv_init,
+	ee24cxx_drv_init_nb,
 	NULL,
 	ee24cxx_drv_fini,
 	NULL,
