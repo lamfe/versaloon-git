@@ -27,7 +27,7 @@
 
 #define MAL_RETRY_CNT					0xFFFF
 
-static vsf_err_t mal_init(struct dal_info_t *info)
+static vsf_err_t mal_init_nb(struct dal_info_t *info)
 {
 	struct mal_driver_t* mal_driver =
 			(struct mal_driver_t *)(((struct mal_info_t*)info->extra)->driver);
@@ -40,7 +40,7 @@ static vsf_err_t mal_init(struct dal_info_t *info)
 	return mal_driver->init(info);
 }
 
-static vsf_err_t mal_init_isready(struct dal_info_t *info)
+static vsf_err_t mal_init_nb_isready(struct dal_info_t *info)
 {
 	struct mal_driver_t* mal_driver =
 			(struct mal_driver_t *)(((struct mal_info_t*)info->extra)->driver);
@@ -451,6 +451,20 @@ static vsf_err_t mal_writeblock_nb_end(struct dal_info_t *info)
 	return mal_driver->writeblock_nb_end(info);
 }
 
+static vsf_err_t mal_init(struct dal_info_t *info)
+{
+	vsf_err_t err;
+	
+	err = mal_init_nb(info);
+	if (!err)
+	{
+		do {
+			err = mal_init_nb_isready(info);
+		} while (err && (VSFERR_NOT_READY == err));
+	}
+	return err;
+}
+
 static vsf_err_t mal_eraseblock(struct dal_info_t *info, 
 								uint64_t address, uint64_t count)
 {
@@ -563,7 +577,6 @@ static vsf_err_t mal_writeblock(struct dal_info_t *info,
 const struct mal_t mal = 
 {
 	mal_init,
-	mal_init_isready,
 	mal_fini,
 	mal_getinfo,
 	mal_poll,
@@ -572,6 +585,9 @@ const struct mal_t mal =
 	mal_eraseblock,
 	mal_readblock,
 	mal_writeblock,
+	
+	mal_init_nb,
+	mal_init_nb_isready,
 	
 	mal_eraseall_nb_start,
 	mal_eraseall_nb_isready,

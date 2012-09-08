@@ -601,14 +601,14 @@ vsf_err_t SCSI_Poll(struct SCSI_LUN_info_t *info)
 	switch (info->status.memstat)
 	{
 	case SCSI_MEMSTAT_NOINIT:
-		err = mal.init(info->dal_info);
+		err = mal.init_nb(info->dal_info);
 		if (!err)
 		{
 			info->status.memstat = SCSI_MEMSTAT_WAITINIT;
 		}
 		break;
 	case SCSI_MEMSTAT_WAITINIT:
-		err = mal.init_isready(info->dal_info);
+		err = mal.init_nb_isready(info->dal_info);
 		if (!err)
 		{
 			info->status.memstat = SCSI_MEMSTAT_POLL;

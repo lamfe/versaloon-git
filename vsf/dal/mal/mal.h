@@ -44,7 +44,6 @@ struct mal_info_t
 struct mal_t
 {
 	vsf_err_t (*init)(struct dal_info_t *param);
-	vsf_err_t (*init_isready)(struct dal_info_t *param);
 	vsf_err_t (*fini)(struct dal_info_t *param);
 	vsf_err_t (*getinfo)(struct dal_info_t *param);
 	vsf_err_t (*poll)(struct dal_info_t *param);
@@ -56,6 +55,9 @@ struct mal_t
 						uint64_t address, uint8_t *buff, uint64_t count);
 	vsf_err_t (*writeblock)(struct dal_info_t *param, 
 							uint64_t address, uint8_t *buff, uint64_t count);
+	
+	vsf_err_t (*init_nb)(struct dal_info_t *param);
+	vsf_err_t (*init_nb_isready)(struct dal_info_t *param);
 	
 	vsf_err_t (*eraseall_nb_start)(struct dal_info_t *param);
 	vsf_err_t (*eraseall_nb_isready)(struct dal_info_t *param);
