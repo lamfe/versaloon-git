@@ -185,8 +185,18 @@ struct interface_gpio_pin_t
 
 struct interface_delay_t
 {
+	vsf_err_t (*init)(void);
 	vsf_err_t (*delayms)(uint16_t ms);
 	vsf_err_t (*delayus)(uint16_t us);
+};
+
+struct interface_tickclk_t
+{
+	vsf_err_t (*init)(void);
+	vsf_err_t (*fini)(void);
+	vsf_err_t (*start)(void);
+	vsf_err_t (*stop)(void);
+	uint32_t (*get_count)(void);
 };
 
 struct interface_issp_t
@@ -422,6 +432,7 @@ struct interfaces_info_t
 	
 	uint64_t support_mask;
 	struct interface_core_t core;
+	struct interface_tickclk_t tickclk;
 	struct interface_delay_t delay;
 	struct interface_gpio_t gpio;
 	struct interface_usart_t usart;

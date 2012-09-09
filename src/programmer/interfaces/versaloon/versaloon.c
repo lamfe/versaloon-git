@@ -20,6 +20,7 @@
 #include "config.h"
 #endif
 
+#include <time.h>
 #include "compiler.h"
 
 #include "versaloon_include.h"
@@ -663,6 +664,33 @@ static uint32_t versaloon_display_programmer(void)
 					VERSALOON_PRODUCTSTRING_INDEX, VERSALOON_PRODUCTSTRING);
 }
 
+// tick clock
+vsf_err_t versaloon_tickclk_init(void)
+{
+	return VSFERR_NONE;
+}
+
+vsf_err_t versaloon_tickclk_fini(void)
+{
+	return VSFERR_NONE;
+}
+
+vsf_err_t versaloon_tickclk_start(void)
+{
+	return VSFERR_NONE;
+}
+
+vsf_err_t versaloon_tickclk_stop(void)
+{
+	// not supported
+	return VSFERR_FAIL;
+}
+
+uint32_t versaloon_tickclk_get_count(void)
+{
+	return (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
+}
+
 struct interfaces_info_t versaloon_interfaces =
 {
 	VERSALOON_STRING,
@@ -682,7 +710,15 @@ struct interfaces_info_t versaloon_interfaces =
 		versaloon_fini,
 		versaloon_reset
 	},
+	{	// tickclk
+		versaloon_tickclk_init,
+		versaloon_tickclk_fini,
+		versaloon_tickclk_start,
+		versaloon_tickclk_stop,
+		versaloon_tickclk_get_count,
+	},
 	{	// delay
+		usbtodelay_init,
 		usbtodelay_delayms,
 		usbtodelay_delayus
 	},
