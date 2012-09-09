@@ -317,7 +317,38 @@ vsf_err_t vi_stm32_pwm_in(uint8_t index, uint16_t count, uint16_t *rate)
 	return VSFERR_NONE;
 }
 
+// tickclk
+vsf_err_t vi_stm32_tickclk_init(void)
+{
+	return VSFERR_NONE;
+}
+
+vsf_err_t vi_stm32_tickclk_fini(void)
+{
+	return VSFERR_NONE;
+}
+
+vsf_err_t vi_stm32_tickclk_start(void)
+{
+	return VSFERR_NONE;
+}
+
+vsf_err_t vi_stm32_tickclk_stop(void)
+{
+	return VSFERR_NONE;
+}
+
+uint32_t vi_stm32_tickclk_get_count(void)
+{
+	return 0;
+}
+
 // delay
+vsf_err_t vi_stm32_delayinit(void)
+{
+	return VSFERR_NONE;
+}
+
 vsf_err_t vi_stm32_delayms(uint16_t ms)
 {
 	return VSFERR_NONE;
@@ -349,7 +380,15 @@ struct interfaces_info_t vi_stm32_interfaces =
 		vi_stm32_fini,
 		vi_stm32_reset
 	},
+	{
+		vi_stm32_tickclk_init,
+		vi_stm32_tickclk_fini,
+		vi_stm32_tickclk_start,
+		vi_stm32_tickclk_stop,
+		vi_stm32_tickclk_get_count
+	},
 	{	// delay
+		vi_stm32_delayinit,
 		vi_stm32_delayms,
 		vi_stm32_delayus
 	},
