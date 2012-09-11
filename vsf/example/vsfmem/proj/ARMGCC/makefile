@@ -31,7 +31,7 @@ STM32_LIB_DIR = $(STM32_IFACES_DIR)/hw/STM32F10x_Lib
 # add .h header files to USR_INCS
 # add pre-defines to USR_DEFS
 # add library directory to USR_LIBS
-USR_SRCS+= $(SRCDIR)/main.c
+USR_SRCS+= $(SRCDIR)/main.c $(SRCDIR)/app_log.c
 USR_INCS+= -I $(SRCDIR)
 USR_INCS+= -I $(STM32_IFACES_DIR)/hw
 USR_DEFS+= -D__TARGET_CHIP__=$(TARGET_CHIP) -DFLASH_LOAD_OFFSET=$(FLASH_LOAD_OFFSET) -DCORE_DEBUG=STM32_DBG_SWD -DHSE_VALUE=$(HSE_VALUE)

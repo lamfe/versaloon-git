@@ -2262,6 +2262,9 @@
     </file>
   </group>
   <file>
+    <name>$PROJ_DIR$\..\..\app_log.c</name>
+  </file>
+  <file>
     <name>$PROJ_DIR$\..\..\main.c</name>
   </file>
 </project>

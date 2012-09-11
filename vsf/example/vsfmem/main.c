@@ -3,8 +3,8 @@
 #include <stdio.h>
 
 #include "app_cfg.h"
-//#include "app_io.h"
-//#include "app_log.h"
+#include "app_io.h"
+#include "app_log.h"
 
 #include "interfaces.h"
 #include "vsfmem.h"
@@ -48,8 +48,8 @@ int main(void)
 	if (!mal.init(&vsfmem.sd.sd_handle) && !mal.getinfo(&vsfmem.sd.sd_handle))
 	{
 		LOG_INFO("SD detected: %d MBytes",
-			vsfmem.sd.sd_mal_info.capacity.block_size *
-			vsfmem.sd.sd_mal_info.capacity.block_number / (1024 * 1024));
+			(uint32_t)(vsfmem.sd.sd_mal_info.capacity.block_size *
+			vsfmem.sd.sd_mal_info.capacity.block_number / (1024 * 1024)));
 	}
 	else
 	{
