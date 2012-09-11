@@ -71,7 +71,7 @@ vsf_err_t ebi_isready(uint8_t index, uint8_t target_index)
 	case 0:
 		return core_interfaces.ebi.isready(index, target_index);
 	default:
-		return NULL;
+		return VSFERR_NOT_SUPPORT;
 	}
 }
 

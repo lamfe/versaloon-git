@@ -37,9 +37,13 @@ USR_INCS+= -I $(STM32_IFACES_DIR)/hw
 USR_DEFS+= -D__TARGET_CHIP__=$(TARGET_CHIP) -DFLASH_LOAD_OFFSET=$(FLASH_LOAD_OFFSET) -DCORE_DEBUG=STM32_DBG_SWD -DHSE_VALUE=$(HSE_VALUE)
 #USR_LIBS+= -L
 
-# compiler.h
+# vsfmem ext board
+USR_SRCS+= $(VSFDIR)/hardware/ext/memory/bsp/vsfmem.c
+USR_INCS+= -I $(VSFDIR)/hardware/ext/memory/bsp/
+
+# compiler
 USR_SRCS+= $(COMPILER_DIR)/compiler_string.c $(COMPILER_DIR)/syscall.c
-USR_INCS+= -I $(COMPILER_DIR)
+USR_INCS+= -I $(COMPILER_DIR) -I .
 
 #APP interfaces
 USR_SRCS+= $(BSPDIR)/app_interfaces.c
@@ -103,6 +107,8 @@ USR_SRCS+= $(VSFDIR)/dal/dal.c \
   $(VSFDIR)/dal/nrf24l01/nrf24l01_drv.c \
   $(VSFDIR)/dal/stream/stream.c \
   $(VSFDIR)/dal/usart_stream/usart_stream.c \
+  $(VSFDIR)/dal/cfi/cfi_drv.c \
+  $(VSFDIR)/dal/nand/nand_drv.c \
 # MicroWire is not supported, so no ee93cx6 support
 #  $(VSFDIR)/dal/ee93cx6/ee93cx6_drv.c
 
