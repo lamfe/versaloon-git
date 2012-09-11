@@ -65,12 +65,12 @@ struct vsfmem_info_t
 		struct df25xx_drv_info_t df25xx_drv_info;
 	} df25xx;
 	
-	vsf_err_t (*init)(struct vsfmem_info_t *vsfmem);
-	
 	// private
 };
 
-extern struct vsfmem_info_t vsfmem;
+vsf_err_t vsfmem_init(struct vsfmem_info_t *vsfmem);
+vsf_err_t vsfmem_config(struct vsfmem_info_t *vsfmem, uint8_t cfi_port,
+				uint8_t nand_port, uint8_t sd_spi_port, uint8_t df_spi_port);
 
 #endif		// __VSFMEM_H_INCLUDED__
 

@@ -2,39 +2,7 @@
 
 #include "vsfmem.h"
 
-static vsf_err_t vsfmem_init(struct vsfmem_info_t *vsfmem)
-{
-	if (vsfmem != NULL)
-	{
-		// CFI
-		vsfmem->cfi.cfi_handle.ifs = &vsfmem->cfi.cfi_drv_ifs;
-		vsfmem->cfi.cfi_handle.param = &vsfmem->cfi.cfi_drv_param;
-		vsfmem->cfi.cfi_handle.info = &vsfmem->cfi.cfi_drv_info;
-		vsfmem->cfi.cfi_handle.extra = &vsfmem->cfi.cfi_mal_info;
-		
-		// Nand
-		vsfmem->nand.nand_handle.ifs = &vsfmem->nand.nand_drv_ifs;
-		vsfmem->nand.nand_handle.param = &vsfmem->nand.nand_drv_param;
-		vsfmem->nand.nand_handle.info = &vsfmem->nand.nand_drv_info;
-		vsfmem->nand.nand_handle.extra = &vsfmem->nand.nand_mal_info;
-		
-		// SD
-		vsfmem->sd.sd_handle.ifs = &vsfmem->sd.sd_spi_drv_ifs;
-		vsfmem->sd.sd_handle.param = &vsfmem->sd.sd_param;
-		vsfmem->sd.sd_handle.info = &vsfmem->sd.sd_spi_drv_info;
-		vsfmem->sd.sd_mal_info.extra = &vsfmem->sd.sd_info;
-		vsfmem->sd.sd_handle.extra = &vsfmem->sd.sd_mal_info;
-		
-		// Dataflash
-		vsfmem->df25xx.df25xx_handle.ifs = &vsfmem->df25xx.df25xx_drv_ifs;
-		vsfmem->df25xx.df25xx_handle.param = &vsfmem->df25xx.df25xx_drv_param;
-		vsfmem->df25xx.df25xx_handle.info = &vsfmem->df25xx.df25xx_drv_info;
-		vsfmem->df25xx.df25xx_handle.extra = &vsfmem->df25xx.df25xx_mal_info;
-	}
-	return VSFERR_NONE;
-}
-
-struct vsfmem_info_t vsfmem =
+static struct vsfmem_info_t vsfmem_template =
 {
 	// public
 	// CFI
@@ -64,7 +32,7 @@ struct vsfmem_info_t vsfmem =
 		},							// struct cfi_drv_param_t cfi_drv_param;
 		{
 			0,						// uint8_t ebi_port;
-			3,						// uint8_t nor_index;
+			0,						// uint8_t nor_index;
 		},							// struct cfi_drv_interface_t cfi_drv_ifs;
 		{
 			{
@@ -175,7 +143,7 @@ struct vsfmem_info_t vsfmem =
 		{
 			0xFF,					// uint8_t cs_port;
 			0,						// uint32_t cs_pin;
-			1,						// uint8_t spi_port;
+			0,						// uint8_t spi_port;
 		},							// struct df25xx_drv_interface_t df25xx_drv_ifs;
 		{
 			{
@@ -192,7 +160,53 @@ struct vsfmem_info_t vsfmem =
 			NULL, NULL, NULL, NULL
 		},							// struct dal_info_t df25xx_handle;
 	},								// struct df25xx_t df25xx;
-	
-	vsfmem_init,					// vsf_err_t (*init)(struct vsfmem_info_t *vsfmem);
 };
+
+vsf_err_t vsfmem_init(struct vsfmem_info_t *vsfmem)
+{
+	if (vsfmem != NULL)
+	{
+		*vsfmem = vsfmem_template;
+		
+		// CFI
+		vsfmem->cfi.cfi_handle.ifs = &vsfmem->cfi.cfi_drv_ifs;
+		vsfmem->cfi.cfi_handle.param = &vsfmem->cfi.cfi_drv_param;
+		vsfmem->cfi.cfi_handle.info = &vsfmem->cfi.cfi_drv_info;
+		vsfmem->cfi.cfi_handle.extra = &vsfmem->cfi.cfi_mal_info;
+		
+		// Nand
+		vsfmem->nand.nand_handle.ifs = &vsfmem->nand.nand_drv_ifs;
+		vsfmem->nand.nand_handle.param = &vsfmem->nand.nand_drv_param;
+		vsfmem->nand.nand_handle.info = &vsfmem->nand.nand_drv_info;
+		vsfmem->nand.nand_handle.extra = &vsfmem->nand.nand_mal_info;
+		
+		// SD
+		vsfmem->sd.sd_handle.ifs = &vsfmem->sd.sd_spi_drv_ifs;
+		vsfmem->sd.sd_handle.param = &vsfmem->sd.sd_param;
+		vsfmem->sd.sd_handle.info = &vsfmem->sd.sd_spi_drv_info;
+		vsfmem->sd.sd_mal_info.extra = &vsfmem->sd.sd_info;
+		vsfmem->sd.sd_handle.extra = &vsfmem->sd.sd_mal_info;
+		
+		// Dataflash
+		vsfmem->df25xx.df25xx_handle.ifs = &vsfmem->df25xx.df25xx_drv_ifs;
+		vsfmem->df25xx.df25xx_handle.param = &vsfmem->df25xx.df25xx_drv_param;
+		vsfmem->df25xx.df25xx_handle.info = &vsfmem->df25xx.df25xx_drv_info;
+		vsfmem->df25xx.df25xx_handle.extra = &vsfmem->df25xx.df25xx_mal_info;
+	}
+	return VSFERR_NONE;
+}
+
+vsf_err_t vsfmem_config(struct vsfmem_info_t *vsfmem, uint8_t cfi_port,
+					uint8_t nand_port, uint8_t sd_spi_port, uint8_t df_spi_port)
+{
+	if (vsfmem != NULL)
+	{
+		vsfmem->cfi.cfi_drv_ifs.nor_index = cfi_port;
+		vsfmem->nand.nand_drv_ifs.nand_index = nand_port;
+		vsfmem->sd.sd_spi_drv_ifs.spi_port = sd_spi_port;
+		vsfmem->df25xx.df25xx_drv_ifs.spi_port = df_spi_port;
+	}
+	
+	return VSFERR_NONE;
+}
 
