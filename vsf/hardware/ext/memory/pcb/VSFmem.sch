@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date 11/09/2012 16:13:27
+EESchema Schematic File Version 2  date 12/09/2012 13:19:46
 LIBS:power
 LIBS:device
 LIBS:transistors
@@ -37,7 +37,7 @@ $Descr A4 11700 8267
 encoding utf-8
 Sheet 1 1
 Title ""
-Date "11 sep 2012"
+Date "12 sep 2012"
 Rev ""
 Comp ""
 Comment1 ""
@@ -45,6 +45,38 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+Text Label 3150 7650 2    60   ~ 0
+VCC
+$Comp
+L CONN_32X2 P30
+U 1 1 50501B47
+P 3550 6100
+F 0 "P30" H 3650 7750 60  0000 C CNN
+F 1 "CONN_32X2" V 3550 6050 50  0000 C CNN
+	1    3550 6100
+	1    0    0    -1  
+$EndComp
+$Comp
+L CONN_32X2 P2
+U 1 1 50501B3F
+P 3550 6100
+F 0 "P2" H 3450 7750 60  0000 C CNN
+F 1 "CONN_32X2" V 3550 6050 50  0000 C CNN
+	1    3550 6100
+	1    0    0    -1  
+$EndComp
+Text Label 1150 5450 2    60   ~ 0
+USART0_CD
+Text Label 1950 5350 0    60   ~ 0
+USART0_RI
+Text Label 1150 5350 2    60   ~ 0
+USART0_DSR
+Text Label 1950 5250 0    60   ~ 0
+USART0_DTR
+Wire Wire Line
+	2300 5450 1950 5450
+Wire Wire Line
+	800  5450 1150 5450
 Connection ~ 8900 3300
 Wire Wire Line
 	8900 3350 8900 3250
@@ -381,245 +413,245 @@ Wire Wire Line
 Wire Wire Line
 	800  850  1150 850 
 Wire Wire Line
-	2800 5150 3150 5150
+	2800 5050 3150 5050
+Wire Wire Line
+	2800 4550 3150 4550
 Wire Wire Line
 	2800 4650 3150 4650
+Wire Wire Line
+	2800 4850 3150 4850
 Wire Wire Line
 	2800 4750 3150 4750
 Wire Wire Line
 	2800 4950 3150 4950
 Wire Wire Line
-	2800 4850 3150 4850
-Wire Wire Line
-	2800 5050 3150 5050
+	2800 5350 3150 5350
 Wire Wire Line
 	2800 5450 3150 5450
 Wire Wire Line
-	2800 5550 3150 5550
-Wire Wire Line
-	2800 5350 3150 5350
-Wire Wire Line
 	2800 5250 3150 5250
+Wire Wire Line
+	2800 5150 3150 5150
+Wire Wire Line
+	2800 5550 3150 5550
 Wire Wire Line
 	2800 5650 3150 5650
 Wire Wire Line
-	2800 5750 3150 5750
-Wire Wire Line
-	2800 5950 3150 5950
-Wire Wire Line
 	2800 5850 3150 5850
 Wire Wire Line
-	2800 6650 3150 6650
-Wire Wire Line
-	2800 6750 3150 6750
+	2800 5750 3150 5750
 Wire Wire Line
 	2800 6550 3150 6550
 Wire Wire Line
+	2800 6650 3150 6650
+Wire Wire Line
 	2800 6450 3150 6450
-Wire Wire Line
-	2800 6050 3150 6050
-Wire Wire Line
-	2800 6150 3150 6150
 Wire Wire Line
 	2800 6350 3150 6350
 Wire Wire Line
+	2800 5950 3150 5950
+Wire Wire Line
+	2800 6050 3150 6050
+Wire Wire Line
 	2800 6250 3150 6250
 Wire Wire Line
-	2800 6950 3150 6950
-Wire Wire Line
-	2800 7050 3150 7050
+	2800 6150 3150 6150
 Wire Wire Line
 	2800 6850 3150 6850
 Wire Wire Line
+	2800 6950 3150 6950
+Wire Wire Line
+	2800 6750 3150 6750
+Wire Wire Line
+	2800 7050 3150 7050
+Wire Wire Line
 	2800 7150 3150 7150
-Wire Wire Line
-	2800 7250 3150 7250
-Wire Wire Line
-	2800 7450 3150 7450
 Wire Wire Line
 	2800 7350 3150 7350
 Wire Wire Line
-	2800 7550 3150 7550
+	2800 7250 3150 7250
 Wire Wire Line
-	3950 7550 4300 7550
+	2800 7650 3150 7650
 Wire Wire Line
-	3950 7350 4300 7350
-Wire Wire Line
-	3950 7450 4300 7450
+	3950 7650 4300 7650
 Wire Wire Line
 	3950 7250 4300 7250
 Wire Wire Line
-	3950 7150 4300 7150
+	3950 7350 4300 7350
 Wire Wire Line
-	3950 6850 4300 6850
+	3950 7150 4300 7150
 Wire Wire Line
 	3950 7050 4300 7050
 Wire Wire Line
+	3950 6750 4300 6750
+Wire Wire Line
 	3950 6950 4300 6950
 Wire Wire Line
-	3950 6250 4300 6250
-Wire Wire Line
-	3950 6350 4300 6350
+	3950 6850 4300 6850
 Wire Wire Line
 	3950 6150 4300 6150
 Wire Wire Line
+	3950 6250 4300 6250
+Wire Wire Line
 	3950 6050 4300 6050
-Wire Wire Line
-	3950 6450 4300 6450
-Wire Wire Line
-	3950 6550 4300 6550
-Wire Wire Line
-	3950 6750 4300 6750
-Wire Wire Line
-	3950 6650 4300 6650
-Wire Wire Line
-	3950 5850 4300 5850
 Wire Wire Line
 	3950 5950 4300 5950
 Wire Wire Line
+	3950 6350 4300 6350
+Wire Wire Line
+	3950 6450 4300 6450
+Wire Wire Line
+	3950 6650 4300 6650
+Wire Wire Line
+	3950 6550 4300 6550
+Wire Wire Line
 	3950 5750 4300 5750
+Wire Wire Line
+	3950 5850 4300 5850
 Wire Wire Line
 	3950 5650 4300 5650
 Wire Wire Line
-	3950 5350 4300 5350
-Wire Wire Line
 	3950 5550 4300 5550
-Wire Wire Line
-	3950 5450 4300 5450
-Wire Wire Line
-	3950 4750 4300 4750
-Wire Wire Line
-	3950 4850 4300 4850
-Wire Wire Line
-	3950 4650 4300 4650
-Wire Wire Line
-	3950 4950 4300 4950
-Wire Wire Line
-	3950 5050 4300 5050
 Wire Wire Line
 	3950 5250 4300 5250
 Wire Wire Line
+	3950 5450 4300 5450
+Wire Wire Line
+	3950 5350 4300 5350
+Wire Wire Line
+	3950 4650 4300 4650
+Wire Wire Line
+	3950 4750 4300 4750
+Wire Wire Line
+	3950 4550 4300 4550
+Wire Wire Line
+	3950 4850 4300 4850
+Wire Wire Line
+	3950 4950 4300 4950
+Wire Wire Line
 	3950 5150 4300 5150
 Wire Wire Line
-	1950 5150 2300 5150
-Wire Wire Line
-	1950 5250 2300 5250
+	3950 5050 4300 5050
 Wire Wire Line
 	1950 5050 2300 5050
 Wire Wire Line
-	1950 4950 2300 4950
+	1950 5150 2300 5150
 Wire Wire Line
-	1950 4650 2300 4650
+	1950 4950 2300 4950
 Wire Wire Line
 	1950 4850 2300 4850
 Wire Wire Line
+	1950 4550 2300 4550
+Wire Wire Line
 	1950 4750 2300 4750
 Wire Wire Line
-	1950 5450 2300 5450
+	1950 4650 2300 4650
 Wire Wire Line
 	1950 5550 2300 5550
 Wire Wire Line
-	1950 5350 2300 5350
-Wire Wire Line
 	1950 5650 2300 5650
+Wire Wire Line
+	1950 5250 2300 5250
 Wire Wire Line
 	1950 5750 2300 5750
 Wire Wire Line
-	1950 5950 2300 5950
-Wire Wire Line
 	1950 5850 2300 5850
-Wire Wire Line
-	1950 6650 2300 6650
-Wire Wire Line
-	1950 6750 2300 6750
-Wire Wire Line
-	1950 6550 2300 6550
-Wire Wire Line
-	1950 6450 2300 6450
 Wire Wire Line
 	1950 6050 2300 6050
 Wire Wire Line
-	1950 6150 2300 6150
+	1950 5950 2300 5950
 Wire Wire Line
-	1950 6350 2300 6350
-Wire Wire Line
-	1950 6250 2300 6250
-Wire Wire Line
-	1950 6950 2300 6950
-Wire Wire Line
-	1950 7050 2300 7050
+	1950 6750 2300 6750
 Wire Wire Line
 	1950 6850 2300 6850
 Wire Wire Line
+	1950 6650 2300 6650
+Wire Wire Line
+	1950 6550 2300 6550
+Wire Wire Line
+	1950 6150 2300 6150
+Wire Wire Line
+	1950 6250 2300 6250
+Wire Wire Line
+	1950 6450 2300 6450
+Wire Wire Line
+	1950 6350 2300 6350
+Wire Wire Line
+	1950 7050 2300 7050
+Wire Wire Line
 	1950 7150 2300 7150
 Wire Wire Line
-	1950 7250 2300 7250
+	1950 6950 2300 6950
 Wire Wire Line
-	1950 7450 2300 7450
+	1950 7250 2300 7250
 Wire Wire Line
 	1950 7350 2300 7350
 Wire Wire Line
 	1950 7550 2300 7550
 Wire Wire Line
+	1950 7450 2300 7450
+Wire Wire Line
+	1950 7650 2300 7650
+Wire Wire Line
+	800  7650 1150 7650
+Wire Wire Line
+	800  7450 1150 7450
+Wire Wire Line
 	800  7550 1150 7550
 Wire Wire Line
 	800  7350 1150 7350
 Wire Wire Line
-	800  7450 1150 7450
-Wire Wire Line
 	800  7250 1150 7250
-Wire Wire Line
-	800  7150 1150 7150
-Wire Wire Line
-	800  6850 1150 6850
-Wire Wire Line
-	800  7050 1150 7050
 Wire Wire Line
 	800  6950 1150 6950
 Wire Wire Line
-	800  6250 1150 6250
+	800  7150 1150 7150
+Wire Wire Line
+	800  7050 1150 7050
 Wire Wire Line
 	800  6350 1150 6350
 Wire Wire Line
-	800  6150 1150 6150
-Wire Wire Line
-	800  6050 1150 6050
-Wire Wire Line
 	800  6450 1150 6450
+Wire Wire Line
+	800  6250 1150 6250
+Wire Wire Line
+	800  6150 1150 6150
 Wire Wire Line
 	800  6550 1150 6550
 Wire Wire Line
-	800  6750 1150 6750
-Wire Wire Line
 	800  6650 1150 6650
 Wire Wire Line
-	800  5850 1150 5850
+	800  6850 1150 6850
+Wire Wire Line
+	800  6750 1150 6750
 Wire Wire Line
 	800  5950 1150 5950
 Wire Wire Line
+	800  6050 1150 6050
+Wire Wire Line
+	800  5850 1150 5850
+Wire Wire Line
 	800  5750 1150 5750
 Wire Wire Line
-	800  5650 1150 5650
+	800  5150 1150 5150
 Wire Wire Line
 	800  5250 1150 5250
 Wire Wire Line
-	800  5350 1150 5350
+	800  5650 1150 5650
 Wire Wire Line
 	800  5550 1150 5550
-Wire Wire Line
-	800  5450 1150 5450
-Wire Wire Line
-	800  5050 1150 5050
-Wire Wire Line
-	800  4850 1150 4850
 Wire Wire Line
 	800  4950 1150 4950
 Wire Wire Line
 	800  4750 1150 4750
 Wire Wire Line
+	800  4850 1150 4850
+Wire Wire Line
 	800  4650 1150 4650
 Wire Wire Line
-	800  5150 1150 5150
+	800  4550 1150 4550
+Wire Wire Line
+	800  5050 1150 5050
 Wire Wire Line
 	2250 3950 2750 3950
 Wire Wire Line
@@ -786,6 +818,28 @@ Wire Wire Line
 Wire Wire Line
 	1150 4200 1150 4150
 Connection ~ 650  4050
+Wire Wire Line
+	800  5350 1150 5350
+Wire Wire Line
+	2300 5350 1950 5350
+$Comp
+L CONN_32X2 P20
+U 1 1 50501AD5
+P 1550 6100
+F 0 "P20" H 1650 7750 60  0000 C CNN
+F 1 "CONN_32X2" V 1550 6050 50  0000 C CNN
+	1    1550 6100
+	1    0    0    -1  
+$EndComp
+$Comp
+L CONN_32X2 P1
+U 1 1 50501ABF
+P 1550 6100
+F 0 "P1" H 1450 7750 60  0000 C CNN
+F 1 "CONN_32X2" V 1550 6050 50  0000 C CNN
+	1    1550 6100
+	1    0    0    -1  
+$EndComp
 $Comp
 L VCC #PWR?
 U 1 1 504EF26F
@@ -857,13 +911,13 @@ Text Label 6250 5950 0    60   ~ 0
 EBI_NWAIT1
 Text Label 6250 6050 0    60   ~ 0
 EBI_NWAIT0
-Text Label 3950 7450 0    60   ~ 0
-EBI_NWAIT3
-Text Label 3150 7450 2    60   ~ 0
-EBI_NWAIT2
 Text Label 3950 7350 0    60   ~ 0
-EBI_NWAIT1
+EBI_NWAIT3
 Text Label 3150 7350 2    60   ~ 0
+EBI_NWAIT2
+Text Label 3950 7250 0    60   ~ 0
+EBI_NWAIT1
+Text Label 3150 7250 2    60   ~ 0
 EBI_NWAIT0
 Text Label 6250 6150 0    60   ~ 0
 EBI_NCS1
@@ -1329,24 +1383,6 @@ F 1 "PARA_SRAM" H 4300 4000 70  0000 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L CONN_30X2 P2
-U 1 1 50249BB8
-P 3550 6100
-F 0 "P2" H 3450 7650 60  0000 C CNN
-F 1 "CONN_30X2" V 3550 6100 50  0000 C CNN
-	1    3550 6100
-	1    0    0    -1  
-$EndComp
-$Comp
-L CONN_30X2 P1
-U 1 1 50249B9F
-P 1550 6100
-F 0 "P1" H 1450 7650 60  0000 C CNN
-F 1 "CONN_30X2" V 1550 6100 50  0000 C CNN
-	1    1550 6100
-	1    0    0    -1  
-$EndComp
-$Comp
 L LOGO G1
 U 1 1 5024802A
 P 10800 2300
@@ -1722,248 +1758,230 @@ Text Label 1150 950  2    60   ~ 0
 EBI_A1
 Text Label 1150 850  2    60   ~ 0
 EBI_A0
-Text Label 3950 7550 0    60   ~ 0
+Text Label 3950 7650 0    60   ~ 0
 GND
-Text Label 3950 7250 0    60   ~ 0
-EBI_NCS3
-Text Label 3150 7250 2    60   ~ 0
-EBI_NCS2
 Text Label 3950 7150 0    60   ~ 0
-EBI_NCS1
+EBI_NCS3
 Text Label 3150 7150 2    60   ~ 0
-EBI_NCS0
+EBI_NCS2
+Text Label 3950 7050 0    60   ~ 0
+EBI_NCS1
 Text Label 3150 7050 2    60   ~ 0
-EBI_NUB
-Text Label 3950 6950 0    60   ~ 0
-EBI_NLB
+EBI_NCS0
 Text Label 3150 6950 2    60   ~ 0
-EBI_NWAIT
+EBI_NUB
 Text Label 3950 6850 0    60   ~ 0
-EBI_NADV
+EBI_NLB
 Text Label 3150 6850 2    60   ~ 0
-EBI_NOE
+EBI_NWAIT
 Text Label 3950 6750 0    60   ~ 0
-EBI_NWE
+EBI_NADV
 Text Label 3150 6750 2    60   ~ 0
-EBI_CLK
+EBI_NOE
 Text Label 3950 6650 0    60   ~ 0
-EBI_D15
+EBI_NWE
 Text Label 3150 6650 2    60   ~ 0
-EBI_D14
+EBI_CLK
 Text Label 3950 6550 0    60   ~ 0
-EBI_D13
+EBI_D15
 Text Label 3150 6550 2    60   ~ 0
-EBI_D12
+EBI_D14
 Text Label 3950 6450 0    60   ~ 0
-EBI_D11
+EBI_D13
 Text Label 3150 6450 2    60   ~ 0
-EBI_D10
+EBI_D12
 Text Label 3950 6350 0    60   ~ 0
-EBI_D9
+EBI_D11
 Text Label 3150 6350 2    60   ~ 0
-EBI_D8
+EBI_D10
 Text Label 3950 6250 0    60   ~ 0
-EBI_D7
+EBI_D9
 Text Label 3150 6250 2    60   ~ 0
-EBI_D6
+EBI_D8
 Text Label 3950 6150 0    60   ~ 0
-EBI_D5
+EBI_D7
 Text Label 3150 6150 2    60   ~ 0
-EBI_D4
+EBI_D6
 Text Label 3950 6050 0    60   ~ 0
-EBI_D3
+EBI_D5
 Text Label 3150 6050 2    60   ~ 0
-EBI_D2
+EBI_D4
 Text Label 3950 5950 0    60   ~ 0
-EBI_D1
+EBI_D3
 Text Label 3150 5950 2    60   ~ 0
-EBI_D0
+EBI_D2
 Text Label 3950 5850 0    60   ~ 0
-EBI_A25
+EBI_D1
 Text Label 3150 5850 2    60   ~ 0
-EBI_A24
+EBI_D0
 Text Label 3950 5750 0    60   ~ 0
-EBI_A23
+EBI_A25
 Text Label 3150 5750 2    60   ~ 0
-EBI_A22
+EBI_A24
 Text Label 3950 5650 0    60   ~ 0
-EBI_A21
+EBI_A23
 Text Label 3150 5650 2    60   ~ 0
-EBI_A20
+EBI_A22
 Text Label 3950 5550 0    60   ~ 0
-EBI_A19
+EBI_A21
 Text Label 3150 5550 2    60   ~ 0
-EBI_A18
+EBI_A20
 Text Label 3950 5450 0    60   ~ 0
-EBI_A17
+EBI_A19
 Text Label 3150 5450 2    60   ~ 0
-EBI_A16
+EBI_A18
 Text Label 3950 5350 0    60   ~ 0
-EBI_A15
+EBI_A17
 Text Label 3150 5350 2    60   ~ 0
-EBI_A14
+EBI_A16
 Text Label 3950 5250 0    60   ~ 0
-EBI_A13
+EBI_A15
 Text Label 3150 5250 2    60   ~ 0
-EBI_A12
+EBI_A14
 Text Label 3950 5150 0    60   ~ 0
-EBI_A11
+EBI_A13
 Text Label 3150 5150 2    60   ~ 0
-EBI_A10
+EBI_A12
 Text Label 3950 5050 0    60   ~ 0
-EBI_A9
+EBI_A11
 Text Label 3150 5050 2    60   ~ 0
-EBI_A8
+EBI_A10
 Text Label 3950 4950 0    60   ~ 0
-EBI_A7
+EBI_A9
 Text Label 3150 4950 2    60   ~ 0
-EBI_A6
+EBI_A8
 Text Label 3950 4850 0    60   ~ 0
-EBI_A5
+EBI_A7
 Text Label 3150 4850 2    60   ~ 0
-EBI_A4
+EBI_A6
 Text Label 3950 4750 0    60   ~ 0
-EBI_A3
+EBI_A5
 Text Label 3150 4750 2    60   ~ 0
-EBI_A2
+EBI_A4
 Text Label 3950 4650 0    60   ~ 0
-EBI_A1
-Text Label 1950 7550 0    60   ~ 0
-AC0-
-Text Label 1150 7550 2    60   ~ 0
-AC0+
-Text Label 1950 7450 0    60   ~ 0
-AD3
-Text Label 1150 7450 2    60   ~ 0
-AD2
-Text Label 1950 7350 0    60   ~ 0
-AD1
-Text Label 1150 7350 2    60   ~ 0
-AD0
-Text Label 1950 7250 0    60   ~ 0
-DA1
-Text Label 1150 7250 2    60   ~ 0
-DA0
-Text Label 1950 7150 0    60   ~ 0
-GND
-Text Label 1150 7150 2    60   ~ 0
-GND
-Text Label 1950 7050 0    60   ~ 0
-PWM0_IN0
-Text Label 1150 7050 2    60   ~ 0
-PWM0_OUT0
-Text Label 1950 6950 0    60   ~ 0
-PWM0_TRG
-Text Label 1950 6850 0    60   ~ 0
-PWM0_CH3N
-Text Label 1950 6750 0    60   ~ 0
-PWM0_CH2N
-Text Label 1150 6950 2    60   ~ 0
-PWM0_CH4
-Text Label 1150 6850 2    60   ~ 0
-PWM0_CH3
-Text Label 1150 6750 2    60   ~ 0
-PWM0_CH2
-Text Label 1950 6650 0    60   ~ 0
-PWM0_CH1N
-Text Label 1150 6650 2    60   ~ 0
-PWM0_CH1
-Text Label 1950 6550 0    60   ~ 0
-VCC
-Text Label 1150 6550 2    60   ~ 0
-5V_OUT
-Text Label 1950 6450 0    60   ~ 0
-GPIO_P7
-Text Label 1150 6450 2    60   ~ 0
-GPIO_P6
-Text Label 1950 6350 0    60   ~ 0
-GPIO_P5
-Text Label 1150 6350 2    60   ~ 0
-GPIO_P4
-Text Label 1950 6250 0    60   ~ 0
-GPIO_P3
-Text Label 1150 6250 2    60   ~ 0
-GPIO_P2
-Text Label 1950 6150 0    60   ~ 0
-GPIO_P1
-Text Label 1150 6150 2    60   ~ 0
-GPIO_P0
-Text Label 1950 6050 0    60   ~ 0
-CAN0_RX
-Text Label 1150 6050 2    60   ~ 0
-CAN0_TX
-Text Label 1150 5950 2    60   ~ 0
-I2S_SD_I
-Text Label 1950 5850 0    60   ~ 0
-I2S_SD_O
-Text Label 1150 5850 2    60   ~ 0
-I2S_WS
-Text Label 1950 5750 0    60   ~ 0
-I2S_MCK
-Text Label 1150 5750 2    60   ~ 0
-I2S_CK
-Text Label 1950 5650 0    60   ~ 0
-SDIO_D3
-Text Label 1150 5650 2    60   ~ 0
-SDIO_D2
-Text Label 1950 5550 0    60   ~ 0
-SDIO_D1
-Text Label 1150 5550 2    60   ~ 0
-SDIO_D0
-Text Label 1950 5450 0    60   ~ 0
-SDIO_CMD
-Text Label 1150 5450 2    60   ~ 0
-SDIO_CLK
-Text Label 1150 5350 2    60   ~ 0
-USART0_RTS
-Text Label 1950 5250 0    60   ~ 0
-USART0_CTS
-Text Label 1150 5250 2    60   ~ 0
-USART0_CK
-Text Label 1950 5150 0    60   ~ 0
-USART0_RXD
-Text Label 1950 5050 0    60   ~ 0
-I2C0_SDA
-Text Label 1150 5050 2    60   ~ 0
-I2C0_SCL
-Text Label 1950 4950 0    60   ~ 0
-SPI1_NSS
-Text Label 1950 4850 0    60   ~ 0
-SPI1_MOSI
-Text Label 1950 4750 0    60   ~ 0
-SPI0_NSS
-Text Label 1950 4650 0    60   ~ 0
-SPI0_MOSI
-Text Label 1150 4950 2    60   ~ 0
-SPI1_MISO
-Text Label 1150 4850 2    60   ~ 0
-SPI1_SCK
-Text Label 1150 4750 2    60   ~ 0
-SPI0_MISO
-Text Label 1150 4650 2    60   ~ 0
-SPI0_SCK
-$Comp
-L CONN_30X2 P30
-U 1 1 5024732D
-P 3550 6100
-F 0 "P30" H 3650 7650 60  0000 C CNN
-F 1 "CONN_30X2" V 3550 6100 50  0000 C CNN
-	1    3550 6100
-	1    0    0    -1  
-$EndComp
+EBI_A3
 Text Label 3150 4650 2    60   ~ 0
-EBI_A0
+EBI_A2
+Text Label 3950 4550 0    60   ~ 0
+EBI_A1
+Text Label 1950 7650 0    60   ~ 0
+AC0-
+Text Label 1150 7650 2    60   ~ 0
+AC0+
+Text Label 1950 7550 0    60   ~ 0
+AD3
+Text Label 1150 7550 2    60   ~ 0
+AD2
+Text Label 1950 7450 0    60   ~ 0
+AD1
+Text Label 1150 7450 2    60   ~ 0
+AD0
+Text Label 1950 7350 0    60   ~ 0
+DA1
+Text Label 1150 7350 2    60   ~ 0
+DA0
+Text Label 1950 7250 0    60   ~ 0
+GND
+Text Label 1150 7250 2    60   ~ 0
+GND
+Text Label 1950 7150 0    60   ~ 0
+PWM0_IN0
+Text Label 1150 7150 2    60   ~ 0
+PWM0_OUT0
+Text Label 1950 7050 0    60   ~ 0
+PWM0_TRG
+Text Label 1950 6950 0    60   ~ 0
+PWM0_CH3N
+Text Label 1950 6850 0    60   ~ 0
+PWM0_CH2N
+Text Label 1150 7050 2    60   ~ 0
+PWM0_CH4
+Text Label 1150 6950 2    60   ~ 0
+PWM0_CH3
+Text Label 1150 6850 2    60   ~ 0
+PWM0_CH2
+Text Label 1950 6750 0    60   ~ 0
+PWM0_CH1N
+Text Label 1150 6750 2    60   ~ 0
+PWM0_CH1
+Text Label 1950 6650 0    60   ~ 0
+VCC
+Text Label 1150 6650 2    60   ~ 0
+5V_OUT
+Text Label 1950 6550 0    60   ~ 0
+GPIO_P7
+Text Label 1150 6550 2    60   ~ 0
+GPIO_P6
+Text Label 1950 6450 0    60   ~ 0
+GPIO_P5
+Text Label 1150 6450 2    60   ~ 0
+GPIO_P4
+Text Label 1950 6350 0    60   ~ 0
+GPIO_P3
+Text Label 1150 6350 2    60   ~ 0
+GPIO_P2
+Text Label 1950 6250 0    60   ~ 0
+GPIO_P1
+Text Label 1150 6250 2    60   ~ 0
+GPIO_P0
+Text Label 1950 6150 0    60   ~ 0
+CAN0_RX
+Text Label 1150 6150 2    60   ~ 0
+CAN0_TX
+Text Label 1150 6050 2    60   ~ 0
+I2S_SD_I
+Text Label 1950 5950 0    60   ~ 0
+I2S_SD_O
+Text Label 1150 5950 2    60   ~ 0
+I2S_WS
+Text Label 1950 5850 0    60   ~ 0
+I2S_MCK
+Text Label 1150 5850 2    60   ~ 0
+I2S_CK
+Text Label 1950 5750 0    60   ~ 0
+SDIO_D3
+Text Label 1150 5750 2    60   ~ 0
+SDIO_D2
+Text Label 1950 5650 0    60   ~ 0
+SDIO_D1
+Text Label 1150 5650 2    60   ~ 0
+SDIO_D0
+Text Label 1950 5550 0    60   ~ 0
+SDIO_CMD
+Text Label 1150 5550 2    60   ~ 0
+SDIO_CLK
+Text Label 1150 5250 2    60   ~ 0
+USART0_RTS
+Text Label 1950 5150 0    60   ~ 0
+USART0_CTS
 Text Label 1150 5150 2    60   ~ 0
+USART0_CK
+Text Label 1950 5050 0    60   ~ 0
+USART0_RXD
+Text Label 1950 4950 0    60   ~ 0
+I2C0_SDA
+Text Label 1150 4950 2    60   ~ 0
+I2C0_SCL
+Text Label 1950 4850 0    60   ~ 0
+SPI1_NSS
+Text Label 1950 4750 0    60   ~ 0
+SPI1_MOSI
+Text Label 1950 4650 0    60   ~ 0
+SPI0_NSS
+Text Label 1950 4550 0    60   ~ 0
+SPI0_MOSI
+Text Label 1150 4850 2    60   ~ 0
+SPI1_MISO
+Text Label 1150 4750 2    60   ~ 0
+SPI1_SCK
+Text Label 1150 4650 2    60   ~ 0
+SPI0_MISO
+Text Label 1150 4550 2    60   ~ 0
+SPI0_SCK
+Text Label 3150 4550 2    60   ~ 0
+EBI_A0
+Text Label 1150 5050 2    60   ~ 0
 USART0_TXD
-$Comp
-L CONN_30X2 P20
-U 1 1 502471BB
-P 1550 6100
-F 0 "P20" H 1650 7650 60  0000 C CNN
-F 1 "CONN_30X2" V 1550 6100 50  0000 C CNN
-	1    1550 6100
-	1    0    0    -1  
-$EndComp
 $Comp
 L TFCARD P0
 U 1 1 502471A6
