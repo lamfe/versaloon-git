@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date 13/09/2012 22:30:46
+EESchema Schematic File Version 2  date 14/09/2012 00:19:43
 LIBS:power
 LIBS:device
 LIBS:transistors
@@ -46,10 +46,6 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
-Text Label 3950 7550 0    60   ~ 0
-EBI_NWAIT5
-Text Label 3150 7550 2    60   ~ 0
-EBI_NWAIT4
 Text Label 3950 7250 0    60   ~ 0
 EBI_NCS5
 Text Label 3150 7250 2    60   ~ 0
@@ -910,10 +906,6 @@ Text Label 6250 5950 0    60   ~ 0
 EBI_NWAIT1
 Text Label 6250 6050 0    60   ~ 0
 EBI_NWAIT0
-Text Label 3950 7450 0    60   ~ 0
-EBI_NWAIT3
-Text Label 3150 7450 2    60   ~ 0
-EBI_NWAIT2
 Text Label 3950 7350 0    60   ~ 0
 EBI_NWAIT1
 Text Label 3150 7350 2    60   ~ 0
