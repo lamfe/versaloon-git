@@ -1,4 +1,4 @@
-Cmp-Mod V01 Created by CvPcb (2012-01-19 BZR 3256)-stable date = 12/09/2012 13:20:21
+Cmp-Mod V01 Created by CvPcb (2012-01-19 BZR 3256)-stable date = 13/09/2012 22:31:08
 
 BeginCmp
 TimeStamp = /50247930;
@@ -72,7 +72,7 @@ EndCmp
 
 BeginCmp
 TimeStamp = /5024802A;
-Reference = G1;
+Reference = G0;
 ValeurCmp = LOGO;
 IdModule  = LOGO;
 EndCmp
@@ -82,13 +82,6 @@ TimeStamp = /502471A6;
 Reference = P0;
 ValeurCmp = TFCARD;
 IdModule  = TF_PP;
-EndCmp
-
-BeginCmp
-TimeStamp = /50501ABF;
-Reference = P1;
-ValeurCmp = CONN_32X2;
-IdModule  = PIN_ARRAY_32x2;
 EndCmp
 
 BeginCmp
@@ -103,13 +96,6 @@ TimeStamp = /5039BD14;
 Reference = P02;
 ValeurCmp = CONN_4X2;
 IdModule  = pin_array_4x2;
-EndCmp
-
-BeginCmp
-TimeStamp = /50501B3F;
-Reference = P2;
-ValeurCmp = CONN_32X2;
-IdModule  = PIN_ARRAY_32x2;
 EndCmp
 
 BeginCmp

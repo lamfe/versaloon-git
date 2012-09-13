@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date 12/09/2012 13:08:12
+EESchema Schematic File Version 2  date 13/09/2012 22:41:42
 LIBS:power
 LIBS:device
 LIBS:transistors
@@ -32,13 +32,14 @@ LIBS:valves
 LIBS:stm32
 LIBS:simonqian
 LIBS:versaloon
+LIBS:vsf_core-cache
 EELAYER 25  0
 EELAYER END
 $Descr User 13000 13000
 encoding utf-8
 Sheet 1 1
 Title ""
-Date "12 sep 2012"
+Date "13 sep 2012"
 Rev ""
 Comp ""
 Comment1 ""
@@ -46,33 +47,14 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
-$Comp
-L CONN_2X2 P10
-U 1 1 5050189E
-P 6650 7650
-F 0 "P10" H 6650 7800 50  0000 C CNN
-F 1 "CONN_2X2" H 6660 7520 40  0000 C CNN
-	1    6650 7650
-	1    0    0    -1  
-$EndComp
-$Comp
-L R R10
-U 1 1 50501677
-P 7300 7600
-F 0 "R10" V 7350 7850 50  0000 C CNN
-F 1 "10K" V 7300 7600 50  0000 C CNN
-	1    7300 7600
-	0    -1   -1   0   
-$EndComp
-$Comp
-L R R11
-U 1 1 50501697
-P 7300 7700
-F 0 "R11" V 7350 7950 50  0000 C CNN
-F 1 "10K" V 7300 7700 50  0000 C CNN
-	1    7300 7700
-	0    -1   -1   0   
-$EndComp
+Wire Wire Line
+	11750 3500 12250 3500
+Wire Wire Line
+	12250 3500 12250 2000
+Wire Wire Line
+	12250 2000 11750 2000
+Wire Wire Line
+	10600 3800 10950 3800
 Wire Wire Line
 	7950 7700 7550 7700
 Wire Wire Line
@@ -330,7 +312,7 @@ Wire Wire Line
 Wire Wire Line
 	9950 2900 9600 2900
 Wire Wire Line
-	10600 3500 10950 3500
+	10600 3600 10950 3600
 Connection ~ 8900 4700
 Wire Wire Line
 	11750 4700 8650 4700
@@ -479,7 +461,7 @@ Wire Wire Line
 Wire Wire Line
 	700  9250 1050 9250
 Wire Wire Line
-	10600 3600 10950 3600
+	10600 3700 10950 3700
 Wire Wire Line
 	10950 3400 10600 3400
 Wire Wire Line
@@ -609,8 +591,6 @@ Wire Wire Line
 Wire Wire Line
 	10600 1200 10950 1200
 Wire Wire Line
-	10600 2000 10950 2000
-Wire Wire Line
 	10600 2200 10950 2200
 Wire Wire Line
 	10600 2100 10950 2100
@@ -659,8 +639,6 @@ Wire Wire Line
 Wire Wire Line
 	11750 2200 12100 2200
 Wire Wire Line
-	11750 2000 12100 2000
-Wire Wire Line
 	11750 1200 12100 1200
 Wire Wire Line
 	11750 1300 12100 1300
@@ -689,7 +667,7 @@ Wire Wire Line
 Wire Wire Line
 	12100 3400 11750 3400
 Wire Wire Line
-	12100 3600 11750 3600
+	12100 3700 11750 3700
 Wire Wire Line
 	700  8750 1050 8750
 Wire Wire Line
@@ -893,7 +871,7 @@ Wire Wire Line
 	11750 4300 8650 4300
 Connection ~ 8900 4300
 Wire Wire Line
-	12100 3500 11750 3500
+	12100 3600 11750 3600
 Wire Wire Line
 	9950 3900 9600 3900
 Wire Wire Line
@@ -1166,6 +1144,49 @@ Wire Wire Line
 	9950 1700 9600 1700
 Wire Wire Line
 	7950 7600 7550 7600
+Wire Wire Line
+	12100 3800 11750 3800
+Wire Wire Line
+	10950 2000 10450 2000
+Wire Wire Line
+	10450 2000 10450 3500
+Wire Wire Line
+	10450 3500 10950 3500
+Text Label 11750 3800 0    60   ~ 0
+EBI_NWAIT5
+Text Label 10950 3800 2    60   ~ 0
+EBI_NWAIT4
+Text Label 11750 3500 0    60   ~ 0
+EBI_NCS5
+Text Label 10950 3500 2    60   ~ 0
+EBI_NCS4
+$Comp
+L CONN_2X2 P10
+U 1 1 5050189E
+P 6650 7650
+F 0 "P10" H 6650 7800 50  0000 C CNN
+F 1 "CONN_2X2" H 6660 7520 40  0000 C CNN
+	1    6650 7650
+	1    0    0    -1  
+$EndComp
+$Comp
+L R R10
+U 1 1 50501677
+P 7300 7600
+F 0 "R10" V 7350 7850 50  0000 C CNN
+F 1 "10K" V 7300 7600 50  0000 C CNN
+	1    7300 7600
+	0    -1   -1   0   
+$EndComp
+$Comp
+L R R11
+U 1 1 50501697
+P 7300 7700
+F 0 "R11" V 7350 7950 50  0000 C CNN
+F 1 "10K" V 7300 7700 50  0000 C CNN
+	1    7300 7700
+	0    -1   -1   0   
+$EndComp
 Text Label 7550 7700 0    60   ~ 0
 I2C0_SDA
 Text Label 7550 7600 0    60   ~ 0
@@ -1220,13 +1241,13 @@ Text Label 6500 4100 0    60   ~ 0
 EBI_NWAIT1
 Text Label 6500 4200 0    60   ~ 0
 EBI_NWAIT0
-Text Label 11750 3600 0    60   ~ 0
+Text Label 11750 3700 0    60   ~ 0
 EBI_NWAIT3
-Text Label 10950 3600 2    60   ~ 0
+Text Label 10950 3700 2    60   ~ 0
 EBI_NWAIT2
-Text Label 11750 3500 0    60   ~ 0
+Text Label 11750 3600 0    60   ~ 0
 EBI_NWAIT1
-Text Label 10950 3500 2    60   ~ 0
+Text Label 10950 3600 2    60   ~ 0
 EBI_NWAIT0
 Text Label 11650 9450 0    60   ~ 0
 FUNSEL1
