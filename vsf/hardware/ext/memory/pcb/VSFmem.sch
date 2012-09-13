@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date 13/09/2012 15:35:14
+EESchema Schematic File Version 2  date 13/09/2012 22:30:46
 LIBS:power
 LIBS:device
 LIBS:transistors
@@ -46,34 +46,18 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
-$Comp
-L IIC_EEPROM U4
-U 1 1 50518C9D
-P 9350 1300
-F 0 "U4" H 9350 1050 60  0000 C CNN
-F 1 "IIC_EEPROM" H 9350 1550 60  0000 C CNN
-	1    9350 1300
-	1    0    0    -1  
-$EndComp
-Text Label 3150 7650 2    60   ~ 0
-VCC
-$Comp
-L CONN_32X2 P30
-U 1 1 50501B47
-P 3550 6100
-F 0 "P30" H 3550 7750 60  0000 C CNN
-F 1 "CONN_32X2" V 3550 6050 50  0000 C CNN
-	1    3550 6100
-	1    0    0    -1  
-$EndComp
-Text Label 1150 5450 2    60   ~ 0
-USART0_CD
-Text Label 1950 5350 0    60   ~ 0
-USART0_RI
-Text Label 1150 5350 2    60   ~ 0
-USART0_DSR
-Text Label 1950 5250 0    60   ~ 0
-USART0_DTR
+Text Label 3950 7550 0    60   ~ 0
+EBI_NWAIT5
+Text Label 3150 7550 2    60   ~ 0
+EBI_NWAIT4
+Text Label 3950 7250 0    60   ~ 0
+EBI_NCS5
+Text Label 3150 7250 2    60   ~ 0
+EBI_NCS4
+Wire Wire Line
+	2800 7550 3150 7550
+Wire Wire Line
+	4300 7250 3950 7250
 Wire Wire Line
 	2300 5450 1950 5450
 Wire Wire Line
@@ -468,17 +452,17 @@ Wire Wire Line
 Wire Wire Line
 	2800 7150 3150 7150
 Wire Wire Line
-	2800 7350 3150 7350
+	2800 7450 3150 7450
 Wire Wire Line
-	2800 7250 3150 7250
+	2800 7350 3150 7350
 Wire Wire Line
 	2800 7650 3150 7650
 Wire Wire Line
 	3950 7650 4300 7650
 Wire Wire Line
-	3950 7250 4300 7250
-Wire Wire Line
 	3950 7350 4300 7350
+Wire Wire Line
+	3950 7450 4300 7450
 Wire Wire Line
 	3950 7150 4300 7150
 Wire Wire Line
@@ -823,6 +807,29 @@ Wire Wire Line
 	800  5350 1150 5350
 Wire Wire Line
 	2300 5350 1950 5350
+Wire Wire Line
+	2800 7250 3150 7250
+Wire Wire Line
+	4300 7550 3950 7550
+Text Label 3150 7650 2    60   ~ 0
+VCC
+$Comp
+L CONN_32X2 P30
+U 1 1 50501B47
+P 3550 6100
+F 0 "P30" H 3550 7750 60  0000 C CNN
+F 1 "CONN_32X2" V 3550 6050 50  0000 C CNN
+	1    3550 6100
+	1    0    0    -1  
+$EndComp
+Text Label 1150 5450 2    60   ~ 0
+USART0_CD
+Text Label 1950 5350 0    60   ~ 0
+USART0_RI
+Text Label 1150 5350 2    60   ~ 0
+USART0_DSR
+Text Label 1950 5250 0    60   ~ 0
+USART0_DTR
 $Comp
 L CONN_32X2 P20
 U 1 1 50501AD5
@@ -903,13 +910,13 @@ Text Label 6250 5950 0    60   ~ 0
 EBI_NWAIT1
 Text Label 6250 6050 0    60   ~ 0
 EBI_NWAIT0
-Text Label 3950 7350 0    60   ~ 0
+Text Label 3950 7450 0    60   ~ 0
 EBI_NWAIT3
-Text Label 3150 7350 2    60   ~ 0
+Text Label 3150 7450 2    60   ~ 0
 EBI_NWAIT2
-Text Label 3950 7250 0    60   ~ 0
+Text Label 3950 7350 0    60   ~ 0
 EBI_NWAIT1
-Text Label 3150 7250 2    60   ~ 0
+Text Label 3150 7350 2    60   ~ 0
 EBI_NWAIT0
 Text Label 6250 6150 0    60   ~ 0
 EBI_NCS1
@@ -1375,10 +1382,10 @@ F 1 "PARA_SRAM" H 4300 4000 70  0000 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L LOGO G1
+L LOGO G0
 U 1 1 5024802A
 P 10800 2300
-F 0 "G1" H 10800 2224 60  0001 C CNN
+F 0 "G0" H 10800 2224 60  0001 C CNN
 F 1 "LOGO" H 10800 2376 60  0001 C CNN
 	1    10800 2300
 	1    0    0    -1  
