@@ -1,4 +1,4 @@
-# EESchema Netlist Version 1.1 created  14/09/2012 00:31:12
+# EESchema Netlist Version 1.1 created  14/09/2012 12:24:04
 (
  ( /4F65E579 SM1210L C0 100uF
   ( 1 /5V_OUT )
@@ -86,13 +86,17 @@
  )
  ( /4F85709C DSM0805L D0 RED
   ( 1 /5V_OUT )
-  ( 2 N-000126 )
+  ( 2 N-000127 )
  )
  ( /4F65E253 SM0805L F0 500mA
   ( 1 N-000136 )
   ( 2 /5V_OUT )
  )
  ( /501B80A4 LOGO G0 LOGO
+ )
+ ( /5052B10A SM0402 JP0 JUMPER
+  ( 1 /EBI_NCS3_I )
+  ( 2 /EBI_NCS3 )
  )
  ( /5021C9C6 PIN_ARRAY_3X1 K0 CONN_3
   ( 1 /USB_DM )
@@ -110,8 +114,8 @@
  )
  ( /4F65E20C MINIUSB_A P0 USBMINI-B
   ( 1 N-000136 )
-  ( 2 N-000138 )
-  ( 3 N-000140 )
+  ( 2 N-000139 )
+  ( 3 N-000141 )
   ( 4 ? )
   ( 5 GND )
  )
@@ -139,9 +143,9 @@
  )
  ( /5050189E PIN_ARRAY_2X2 P10 CONN_2X2
   ( 1 VCC )
-  ( 2 N-000160 )
+  ( 2 N-000161 )
   ( 3 VCC )
-  ( 4 N-000159 )
+  ( 4 N-000160 )
  )
  ( /505005F3 PIN_ARRAY_32x2 P20 CONN_32X2
   ( 1 /SPI0_SCK )
@@ -280,15 +284,15 @@
   ( 2 GND )
  )
  ( /4F65E219 SM0805L R2 22
-  ( 1 N-000138 )
+  ( 1 N-000139 )
   ( 2 /USB_DM )
  )
  ( /4F65E220 SM0805L R3 22
-  ( 1 N-000140 )
+  ( 1 N-000141 )
   ( 2 /USB_DP )
  )
  ( /4F65E2AC SM0805L R4 1.5K
-  ( 1 N-000140 )
+  ( 1 N-000141 )
   ( 2 /USB_PU )
  )
  ( /4F65A915 SM0805L R5 10K
@@ -301,14 +305,14 @@
  )
  ( /4F8570B9 SM0805L R8 22
   ( 1 GND )
-  ( 2 N-000126 )
+  ( 2 N-000127 )
  )
  ( /50501677 SM0805L R10 10K
-  ( 1 N-000160 )
+  ( 1 N-000161 )
   ( 2 /I2C0_SCL )
  )
  ( /50501697 SM0805L R11 10K
-  ( 1 N-000159 )
+  ( 1 N-000160 )
   ( 2 /I2C0_SDA )
  )
  ( /4F659F47 KEY_SP_6x6_2Pin SW0 SW_PUSH
