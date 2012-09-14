@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date 14/09/2012 00:30:43
+EESchema Schematic File Version 2  date 14/09/2012 12:23:23
 LIBS:power
 LIBS:device
 LIBS:transistors
@@ -39,7 +39,7 @@ $Descr User 13000 13000
 encoding utf-8
 Sheet 1 1
 Title ""
-Date "13 sep 2012"
+Date "14 sep 2012"
 Rev ""
 Comp ""
 Comment1 ""
@@ -47,6 +47,8 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+Wire Wire Line
+	8000 1950 7650 1950
 Wire Wire Line
 	8100 950  7700 950 
 Wire Wire Line
@@ -1160,6 +1162,21 @@ Wire Wire Line
 	6100 950  6500 950 
 Wire Wire Line
 	8100 850  7700 850 
+Wire Wire Line
+	6750 1950 7050 1950
+Text Label 7650 1950 0    60   ~ 0
+EBI_NCS3
+Text Label 7050 1950 2    60   ~ 0
+EBI_NCS3_I
+$Comp
+L JUMPER JP0
+U 1 1 5052B10A
+P 7350 1950
+F 0 "JP0" H 7350 2100 60  0000 C CNN
+F 1 "JUMPER" H 7350 1870 40  0000 C CNN
+	1    7350 1950
+	1    0    0    -1  
+$EndComp
 Text Label 7700 950  0    60   ~ 0
 EBI_NCS5
 Text Label 7700 850  0    60   ~ 0
