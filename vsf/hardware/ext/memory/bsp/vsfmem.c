@@ -77,9 +77,9 @@ static struct vsfmem_info_t vsfmem_template =
 						10,			// uint8_t hiz_cycle_attr;
 					},				// struct ebi_nand_timing_t timing;
 					{
-						0x00010000,	// uint32_t cmd;
-						0x00020000,	// uint32_t addr;
-						0x00000000	// uint32_t data;
+						0,			// uint32_t cmd;
+						0,			// uint32_t addr;
+						0			// uint32_t data;
 					},				// struct ebi_nand_addr_t addr;
 				},					// struct ebi_nand_param_t param;
 			},						//struct ebi_nand_info_t nand_info;
@@ -160,6 +160,31 @@ static struct vsfmem_info_t vsfmem_template =
 			NULL, NULL, NULL, NULL
 		},							// struct dal_info_t df25xx_handle;
 	},								// struct df25xx_t df25xx;
+	
+	// EEPROM
+	{
+		{
+			100,					// uint16_t iic_khz;
+			0,						// uint8_t iic_addr;
+		},							// struct ee24cxx_drv_param_t ee24cxx_drv_param;
+		{
+			0,						// uint8_t iic_port;
+		},							// struct ee24cxx_drv_interface_t ee24cxx_drv_ifs;
+		{
+			{
+				128,				// uint64_t block_size;
+				64 * 1024 / 128		// uint64_t block_number;
+			},						// struct mal_capacity_t;
+			NULL,					// void *extra;
+			0,						// uint32_t erase_page_size;
+			0,						// uint32_t write_page_size;
+			0,						// uint32_t read_page_size;
+			&ee24cxx_drv			// const struct mal_driver_t *driver;
+		},							// struct mal_info_t ee24cxx_mal_info;
+		{
+			NULL, NULL, NULL, NULL
+		},							// struct dal_info_t ee24cxx_handle;
+	},								// struct ee24cxx_t
 };
 
 vsf_err_t vsfmem_init(struct vsfmem_info_t *vsfmem)
@@ -192,12 +217,18 @@ vsf_err_t vsfmem_init(struct vsfmem_info_t *vsfmem)
 		vsfmem->df25xx.df25xx_handle.param = &vsfmem->df25xx.df25xx_drv_param;
 		vsfmem->df25xx.df25xx_handle.info = &vsfmem->df25xx.df25xx_drv_info;
 		vsfmem->df25xx.df25xx_handle.extra = &vsfmem->df25xx.df25xx_mal_info;
+		
+		// EEPROM
+		vsfmem->ee24cxx.ee24cxx_handle.ifs = &vsfmem->ee24cxx.ee24cxx_drv_ifs;
+		vsfmem->ee24cxx.ee24cxx_handle.param = &vsfmem->ee24cxx.ee24cxx_drv_param;
+		vsfmem->ee24cxx.ee24cxx_handle.extra = &vsfmem->ee24cxx.ee24cxx_mal_info;
 	}
 	return VSFERR_NONE;
 }
 
 vsf_err_t vsfmem_config(struct vsfmem_info_t *vsfmem, uint8_t cfi_port,
-					uint8_t nand_port, uint8_t sd_spi_port, uint8_t df_spi_port)
+					uint8_t nand_port, uint8_t sd_spi_port, uint8_t df_spi_port,
+					uint8_t cle, uint8_t ale, uint8_t eeprom_addr)
 {
 	if (vsfmem != NULL)
 	{
@@ -205,6 +236,13 @@ vsf_err_t vsfmem_config(struct vsfmem_info_t *vsfmem, uint8_t cfi_port,
 		vsfmem->nand.nand_drv_ifs.nand_index = nand_port;
 		vsfmem->sd.sd_spi_drv_ifs.spi_port = sd_spi_port;
 		vsfmem->df25xx.df25xx_drv_ifs.spi_port = df_spi_port;
+		
+		vsfmem->nand.nand_drv_param.nand_info.param.addr.cmd = 1UL << cle;
+		vsfmem->nand.nand_drv_param.nand_info.param.addr.addr = 1UL << ale;
+		vsfmem->nand.nand_drv_param.nand_info.param.addr.data = 0;
+		
+		vsfmem->ee24cxx.ee24cxx_drv_param.iic_addr =
+										((eeprom_addr & 0x03) << 1) | 0xA0;
 	}
 	
 	return VSFERR_NONE;

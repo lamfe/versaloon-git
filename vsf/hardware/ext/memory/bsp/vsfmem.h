@@ -8,6 +8,7 @@
 #include "dal/sd/sd_common.h"
 #include "dal/sd/sd_spi_drv.h"
 #include "dal/sd/sd_sdio_drv.h"
+#include "dal/ee24cxx/ee24cxx_drv.h"
 
 struct vsfmem_info_t
 {
@@ -65,12 +66,23 @@ struct vsfmem_info_t
 		struct df25xx_drv_info_t df25xx_drv_info;
 	} df25xx;
 	
+	// EEPROM
+	struct ee24cxx_t
+	{
+		// public
+		struct ee24cxx_drv_param_t ee24cxx_drv_param;
+		struct ee24cxx_drv_interface_t ee24cxx_drv_ifs;
+		struct mal_info_t ee24cxx_mal_info;
+		struct dal_info_t ee24cxx_handle;
+	} ee24cxx;
+	
 	// private
 };
 
 vsf_err_t vsfmem_init(struct vsfmem_info_t *vsfmem);
 vsf_err_t vsfmem_config(struct vsfmem_info_t *vsfmem, uint8_t cfi_port,
-				uint8_t nand_port, uint8_t sd_spi_port, uint8_t df_spi_port);
+				uint8_t nand_port, uint8_t sd_spi_port, uint8_t df_spi_port,
+				uint8_t cle, uint8_t ale, uint8_t eeprom_addr);
 
 #endif		// __VSFMEM_H_INCLUDED__
 

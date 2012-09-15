@@ -15,7 +15,7 @@ int main(void)
 {
 	interfaces->core.init(NULL);
 	vsfmem_init(&vsfmem);
-	vsfmem_config(&vsfmem, 3, 0, 0, 1);
+	vsfmem_config(&vsfmem, 3, 0, 0, 1, 23, 22, 0);
 	
 	if (!mal.init(&vsfmem.cfi.cfi_handle) &&
 		!mal.getinfo(&vsfmem.cfi.cfi_handle))
