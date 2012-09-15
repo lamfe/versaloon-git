@@ -1,4 +1,4 @@
-Cmp-Mod V01 Created by CvPcb (2012-01-19 BZR 3256)-stable date = 13/09/2012 22:31:08
+Cmp-Mod V01 Created by CvPcb (2012-01-19 BZR 3256)-stable date = 15/09/2012 23:06:46
 
 BeginCmp
 TimeStamp = /50247930;
@@ -45,6 +45,13 @@ EndCmp
 BeginCmp
 TimeStamp = /5039C063;
 Reference = C6;
+ValeurCmp = 100nF;
+IdModule  = SM0805L;
+EndCmp
+
+BeginCmp
+TimeStamp = /5054989F;
+Reference = C7;
 ValeurCmp = 100nF;
 IdModule  = SM0805L;
 EndCmp
@@ -152,6 +159,13 @@ TimeStamp = /5039C0FF;
 Reference = P22;
 ValeurCmp = CONN_4X2;
 IdModule  = pin_array_4x2;
+EndCmp
+
+BeginCmp
+TimeStamp = /50549752;
+Reference = P23;
+ValeurCmp = CONN_5X2;
+IdModule  = PIN_ARRAY_5x2;
 EndCmp
 
 BeginCmp
@@ -295,10 +309,10 @@ IdModule  = TSOP56;
 EndCmp
 
 BeginCmp
-TimeStamp = /5024D2CE;
+TimeStamp = /50542BDF;
 Reference = U1;
-ValeurCmp = PARA_SRAM;
-IdModule  = TSOP48;
+ValeurCmp = PARA_SRAM_TSOPII;
+IdModule  = TSOP44;
 EndCmp
 
 BeginCmp
@@ -320,6 +334,13 @@ TimeStamp = /5024D521;
 Reference = U4;
 ValeurCmp = LM1117;
 IdModule  = SOT223;
+EndCmp
+
+BeginCmp
+TimeStamp = /50549599;
+Reference = U5;
+ValeurCmp = IIC_EEPROM;
+IdModule  = SO8L;
 EndCmp
 
 EndListe

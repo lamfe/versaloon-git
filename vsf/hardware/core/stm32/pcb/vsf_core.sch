@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date 14/09/2012 12:23:23
+EESchema Schematic File Version 2  date 16/09/2012 01:03:30
 LIBS:power
 LIBS:device
 LIBS:transistors
@@ -32,14 +32,13 @@ LIBS:valves
 LIBS:stm32
 LIBS:simonqian
 LIBS:versaloon
-LIBS:vsf_core-cache
 EELAYER 25  0
 EELAYER END
 $Descr User 13000 13000
 encoding utf-8
 Sheet 1 1
 Title ""
-Date "14 sep 2012"
+Date "15 sep 2012"
 Rev ""
 Comp ""
 Comment1 ""
@@ -47,8 +46,6 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
-Wire Wire Line
-	8000 1950 7650 1950
 Wire Wire Line
 	8100 950  7700 950 
 Wire Wire Line
@@ -1162,27 +1159,12 @@ Wire Wire Line
 	6100 950  6500 950 
 Wire Wire Line
 	8100 850  7700 850 
-Wire Wire Line
-	6750 1950 7050 1950
-Text Label 7650 1950 0    60   ~ 0
-EBI_NCS3
-Text Label 7050 1950 2    60   ~ 0
-EBI_NCS3_I
-$Comp
-L JUMPER JP0
-U 1 1 5052B10A
-P 7350 1950
-F 0 "JP0" H 7350 2100 60  0000 C CNN
-F 1 "JUMPER" H 7350 1870 40  0000 C CNN
-	1    7350 1950
-	1    0    0    -1  
-$EndComp
 Text Label 7700 950  0    60   ~ 0
 EBI_NCS5
 Text Label 7700 850  0    60   ~ 0
 EBI_NCS4
 Text Label 7700 750  0    60   ~ 0
-EBI_NCS3
+EBI_NCS0
 $Comp
 L GND #PWR01
 U 1 1 50520929
@@ -1215,13 +1197,13 @@ EBI_A25
 Text Label 6500 750  2    60   ~ 0
 EBI_A24
 Text Label 6500 950  2    60   ~ 0
-EBI_NCS3_I
+EBI_NCS0_I
 $Comp
 L 74LS138 U2
 U 1 1 50520889
 P 7100 1100
-F 0 "U2" H 7200 1600 60  0000 C CNN
-F 1 "74LS138" H 7250 551 60  0000 C CNN
+F 0 "U2" H 6850 1600 60  0000 C CNN
+F 1 "74LS138" H 7200 1600 60  0000 C CNN
 	1    7100 1100
 	1    0    0    -1  
 $EndComp
@@ -1909,7 +1891,7 @@ AC0+
 Text Label 2900 1700 1    60   ~ 0
 EBI_NADV
 Text Label 3900 1700 1    60   ~ 0
-EBI_NCS3_I
+EBI_NCS3
 Text Label 4100 1700 1    60   ~ 0
 EBI_NCS2
 Text Label 10950 1500 2    60   ~ 0
@@ -2315,7 +2297,7 @@ EBI_NLB
 Text Label 2400 1700 1    60   ~ 0
 EBI_NUB
 Text Label 4300 1700 1    60   ~ 0
-EBI_NCS0
+EBI_NCS0_I
 Text Label 4200 1700 1    60   ~ 0
 EBI_NCS1
 Text Label 4400 1700 1    60   ~ 0
