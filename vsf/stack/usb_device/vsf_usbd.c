@@ -965,12 +965,6 @@ static void vsfusbd_setup_status_callback(void *param)
 		vsfusbd_IN_transact[0].callback.callback = vsfusbd_setup_end_callback;
 		vsfusbd_ep_send_nb(device, 0);
 	}
-	else
-	{
-		vsfusbd_OUT_transact[0].callback.param = device;
-		vsfusbd_OUT_transact[0].callback.callback = vsfusbd_setup_end_callback;
-		vsfusbd_ep_receive_nb(device, 0);
-	}
 }
 
 vsf_err_t vsfusbd_on_SETUP(void *p)
@@ -1030,6 +1024,12 @@ vsf_err_t vsfusbd_on_SETUP(void *p)
 			vsfusbd_IN_transact[0].callback.callback =
 												vsfusbd_setup_status_callback;
 			err = vsfusbd_ep_send_nb(device, 0);
+			if (!err)
+			{
+				vsfusbd_OUT_transact[0].callback.param = device;
+				vsfusbd_OUT_transact[0].callback.callback = vsfusbd_setup_end_callback;
+				err = vsfusbd_ep_receive_nb(device, 0);
+			}
 		}
 	}
 	
