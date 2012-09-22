@@ -262,7 +262,7 @@ static vsf_err_t df25xx_drv_readblock_nb(struct dal_info_t *info,
 	
 	REFERENCE_PARAMETER(address);
 	return interfaces->spi.io(ifs->spi_port, NULL, buff, 
-								(uint16_t)mal_info->capacity.block_size);
+								(uint16_t)mal_info->read_page_size);
 }
 
 static vsf_err_t df25xx_drv_readblock_nb_isready(struct dal_info_t *info, 
@@ -313,7 +313,7 @@ static vsf_err_t df25xx_drv_writeblock_nb(struct dal_info_t *info,
 	cmd[3] = (address >> 0 ) & 0xFF;
 	interfaces->spi.io(ifs->spi_port, cmd, NULL, 4);
 	interfaces->spi.io(ifs->spi_port, buff, NULL, 
-						(uint16_t)mal_info->capacity.block_size);
+						(uint16_t)mal_info->write_page_size);
 	return df25xx_drv_cs_deassert(ifs);
 }
 

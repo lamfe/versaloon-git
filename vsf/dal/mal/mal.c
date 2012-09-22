@@ -29,15 +29,29 @@
 
 static vsf_err_t mal_init_nb(struct dal_info_t *info)
 {
-	struct mal_driver_t* mal_driver =
-			(struct mal_driver_t *)(((struct mal_info_t*)info->extra)->driver);
+	struct mal_info_t *mal_info = (struct mal_info_t *)info->extra;
+	struct mal_driver_t* mal_driver = (struct mal_driver_t *)mal_info->driver;
+	vsf_err_t ret;
 	
 	if ((NULL == mal_driver) || (NULL == mal_driver->init_nb))
 	{
 		return VSFERR_NOT_SUPPORT;
 	}
 	
-	return mal_driver->init_nb(info);
+	ret = mal_driver->init_nb(info);
+	if (!mal_info->erase_page_size)
+	{
+		mal_info->erase_page_size = (uint32_t)mal_info->capacity.block_size;
+	}
+	if (!mal_info->read_page_size)
+	{
+		mal_info->read_page_size = (uint32_t)mal_info->capacity.block_size;
+	}
+	if (!mal_info->write_page_size)
+	{
+		mal_info->write_page_size = (uint32_t)mal_info->capacity.block_size;
+	}
+	return ret;
 }
 
 static vsf_err_t mal_init_nb_isready(struct dal_info_t *info)
@@ -469,11 +483,9 @@ static vsf_err_t mal_eraseblock(struct dal_info_t *info,
 								uint64_t address, uint64_t count)
 {
 	struct mal_info_t *mal_info = (struct mal_info_t *)info->extra;
-	uint64_t erase_block_size, i;
+	uint64_t i;
 	
-	erase_block_size = mal_info->erase_page_size ? 
-					mal_info->erase_page_size : mal_info->capacity.block_size;
-	if (!erase_block_size || 
+	if (!mal_info->erase_page_size || 
 		mal_eraseblock_nb_start(info, address, count))
 	{
 		return VSFERR_FAIL;
@@ -486,7 +498,7 @@ static vsf_err_t mal_eraseblock(struct dal_info_t *info,
 		{
 			return VSFERR_FAIL;
 		}
-		address += erase_block_size;
+		address += mal_info->erase_page_size;
 	}
 	
 	return mal_eraseblock_nb_end(info);
@@ -522,11 +534,9 @@ static vsf_err_t mal_readblock(struct dal_info_t *info,
 								uint64_t address, uint8_t *buff, uint64_t count)
 {
 	struct mal_info_t *mal_info = (struct mal_info_t *)info->extra;
-	uint64_t read_block_size, i;
+	uint64_t i;
 	
-	read_block_size = mal_info->read_page_size ? 
-					mal_info->read_page_size : mal_info->capacity.block_size;
-	if (!read_block_size || 
+	if (!mal_info->read_page_size || 
 		mal_readblock_nb_start(info, address, count))
 	{
 		return VSFERR_FAIL;
@@ -539,8 +549,8 @@ static vsf_err_t mal_readblock(struct dal_info_t *info,
 		{
 			return VSFERR_FAIL;
 		}
-		address += read_block_size;
-		buff += read_block_size;
+		address += mal_info->read_page_size;
+		buff += mal_info->read_page_size;
 	}
 	
 	return mal_readblock_nb_end(info);
@@ -550,11 +560,9 @@ static vsf_err_t mal_writeblock(struct dal_info_t *info,
 								uint64_t address, uint8_t *buff, uint64_t count)
 {
 	struct mal_info_t *mal_info = (struct mal_info_t *)info->extra;
-	uint64_t write_block_size, i;
+	uint64_t i;
 	
-	write_block_size = mal_info->write_page_size ? 
-					mal_info->write_page_size : mal_info->capacity.block_size;
-	if (!write_block_size || 
+	if (!mal_info->write_page_size || 
 		mal_writeblock_nb_start(info, address, count))
 	{
 		return VSFERR_FAIL;
@@ -567,8 +575,8 @@ static vsf_err_t mal_writeblock(struct dal_info_t *info,
 		{
 			return VSFERR_FAIL;
 		}
-		address += write_block_size;
-		buff += write_block_size;
+		address += mal_info->write_page_size;
+		buff += mal_info->write_page_size;
 	}
 	
 	return mal_writeblock_nb_end(info);
