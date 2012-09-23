@@ -29,16 +29,32 @@
 
 static vsf_err_t mal_init_nb(struct dal_info_t *info)
 {
-	struct mal_info_t *mal_info = (struct mal_info_t *)info->extra;
-	struct mal_driver_t* mal_driver = (struct mal_driver_t *)mal_info->driver;
-	vsf_err_t ret;
+	struct mal_driver_t* mal_driver =
+			(struct mal_driver_t *)(((struct mal_info_t*)info->extra)->driver);
 	
 	if ((NULL == mal_driver) || (NULL == mal_driver->init_nb))
 	{
 		return VSFERR_NOT_SUPPORT;
 	}
 	
-	ret = mal_driver->init_nb(info);
+	return mal_driver->init_nb(info);
+}
+
+static vsf_err_t mal_init_nb_isready(struct dal_info_t *info)
+{
+	struct mal_info_t *mal_info = (struct mal_info_t *)info->extra;
+	struct mal_driver_t* mal_driver = (struct mal_driver_t *)mal_info->driver;
+	vsf_err_t ret = VSFERR_NONE;
+	
+	if (NULL == mal_driver)
+	{
+		return VSFERR_NOT_SUPPORT;
+	}
+	
+	if (mal_driver->init_nb_isready != NULL)
+	{
+		ret = mal_driver->init_nb_isready(info);
+	}
 	if (!mal_info->erase_page_size)
 	{
 		mal_info->erase_page_size = (uint32_t)mal_info->capacity.block_size;
@@ -52,23 +68,6 @@ static vsf_err_t mal_init_nb(struct dal_info_t *info)
 		mal_info->write_page_size = (uint32_t)mal_info->capacity.block_size;
 	}
 	return ret;
-}
-
-static vsf_err_t mal_init_nb_isready(struct dal_info_t *info)
-{
-	struct mal_driver_t* mal_driver =
-			(struct mal_driver_t *)(((struct mal_info_t*)info->extra)->driver);
-	
-	if (NULL == mal_driver)
-	{
-		return VSFERR_NOT_SUPPORT;
-	}
-	
-	if (mal_driver->init_nb_isready != NULL)
-	{
-		return mal_driver->init_nb_isready(info);
-	}
-	return VSFERR_NONE;
 }
 
 static vsf_err_t mal_fini(struct dal_info_t *info)
