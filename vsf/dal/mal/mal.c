@@ -55,17 +55,20 @@ static vsf_err_t mal_init_nb_isready(struct dal_info_t *info)
 	{
 		ret = mal_driver->init_nb_isready(info);
 	}
-	if (!mal_info->erase_page_size)
+	if (!ret)
 	{
-		mal_info->erase_page_size = (uint32_t)mal_info->capacity.block_size;
-	}
-	if (!mal_info->read_page_size)
-	{
-		mal_info->read_page_size = (uint32_t)mal_info->capacity.block_size;
-	}
-	if (!mal_info->write_page_size)
-	{
-		mal_info->write_page_size = (uint32_t)mal_info->capacity.block_size;
+		if (!mal_info->erase_page_size)
+		{
+			mal_info->erase_page_size = (uint32_t)mal_info->capacity.block_size;
+		}
+		if (!mal_info->read_page_size)
+		{
+			mal_info->read_page_size = (uint32_t)mal_info->capacity.block_size;
+		}
+		if (!mal_info->write_page_size)
+		{
+			mal_info->write_page_size = (uint32_t)mal_info->capacity.block_size;
+		}
 	}
 	return ret;
 }
