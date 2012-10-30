@@ -110,13 +110,14 @@ static vsf_err_t versaloon_usb_init(uint8_t iface, struct vsfusbd_device_t *devi
 	USB_TO_XXX_Init(asyn_rx_buf + 2048);
 #endif
 	
-	if (
+	if (device->drv->ep.set_OUT_handler(param->ep_out, Versaloon_OUT_hanlder) ||
 #if VSFUSBD_CFG_DBUFFER_EN
 		(param->dbuffer_en && 
 		(	device->drv->ep.set_IN_dbuffer(param->ep_in) || 
-			device->drv->ep.set_OUT_dbuffer(param->ep_out))) || 
+			device->drv->ep.set_OUT_dbuffer(param->ep_out))) ||
 #endif
-		device->drv->ep.set_OUT_handler(param->ep_out, Versaloon_OUT_hanlder))
+		device->drv->ep.enable_OUT(param->ep_out)
+		)
 	{
 		return VSFERR_FAIL;
 	}
