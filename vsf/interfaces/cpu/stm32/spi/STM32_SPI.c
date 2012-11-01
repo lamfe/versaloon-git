@@ -418,7 +418,8 @@ vsf_err_t stm32_spi_config(uint8_t index, uint32_t kHz, uint8_t mode)
 				#endif
 				#if SPI00_NSS_ENABLE
 				GPIOA->CRL = (GPIOA->CRL & ~(0x0F << (4 * 4))) | 
-								(uint32_t)stm32_GPIO_INPU << (4 * 4);
+								(uint32_t)stm32_GPIO_INP << (4 * 4);
+				GPIOA->BSRR = 1 << 4;
 				#endif
 			}
 			break;
@@ -457,7 +458,8 @@ vsf_err_t stm32_spi_config(uint8_t index, uint32_t kHz, uint8_t mode)
 				#endif
 				#if SPI10_NSS_ENABLE
 				GPIOA->CRH = (GPIOA->CRH & ~(0x0F << ((15 - 8) * 4))) | 
-								(uint32_t)stm32_GPIO_INPU << ((15 - 8) * 4);
+								(uint32_t)stm32_GPIO_INP << ((15 - 8) * 4);
+				GPIOA->BSRR = 1 << 15;
 				#endif
 			}
 			break;
@@ -505,7 +507,8 @@ vsf_err_t stm32_spi_config(uint8_t index, uint32_t kHz, uint8_t mode)
 				#endif
 				#if SPI01_NSS_ENABLE
 				GPIOB->CRH = (GPIOB->CRH & ~(0x0F << ((12 - 8) * 4))) | 
-								(uint32_t)stm32_GPIO_INPU << ((12 - 8) * 4);
+								(uint32_t)stm32_GPIO_INP << ((12 - 8) * 4);
+				GPIOB->BSRR = 1 << 12;
 				#endif
 			}
 			break;
@@ -552,7 +555,8 @@ vsf_err_t stm32_spi_config(uint8_t index, uint32_t kHz, uint8_t mode)
 				#endif
 				#if SPI02_NSS_ENABLE
 				GPIOA->CRH = (GPIOA->CRH & ~(0x0F << ((15 - 8) * 4))) | 
-								(uint32_t)stm32_GPIO_INPU << ((15 - 8) * 4);
+								(uint32_t)stm32_GPIO_INP << ((15 - 8) * 4);
+				GPIOA->BSRR = 1 << 15;
 				#endif
 			}
 			break;
