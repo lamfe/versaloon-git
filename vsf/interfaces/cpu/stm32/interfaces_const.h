@@ -57,6 +57,7 @@
 #define stm32_GPIO_INFLOAT			0x04
 #define stm32_GPIO_INPU				0x88
 #define stm32_GPIO_INPD				0x08
+#define stm32_GPIO_INP				0x08
 #define stm32_GPIO_OUTPP			0x01
 #define stm32_GPIO_OUTOD			0x05
 #define stm32_GPIO_ANALOG			0x00
