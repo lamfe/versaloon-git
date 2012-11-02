@@ -116,6 +116,8 @@ vsf_err_t stm32_spi_init(uint8_t index)
 	#if SPI00_ENABLE || SPI10_ENABLE
 	case 0:
 		RCC->APB2ENR |= STM32_RCC_APB2ENR_SPI1EN;
+		RCC->APB2RSTR |= STM32_RCC_APB2ENR_SPI1EN;
+		RCC->APB2RSTR &= ~STM32_RCC_APB2ENR_SPI1EN;
 		switch (remap_idx)
 		{
 		#if SPI00_ENABLE
@@ -143,6 +145,8 @@ vsf_err_t stm32_spi_init(uint8_t index)
 	#if SPI01_ENABLE
 	case 1:
 		RCC->APB1ENR |= STM32_RCC_APB1ENR_SPI2EN;
+		RCC->APB1RSTR |= STM32_RCC_APB1ENR_SPI2EN;
+		RCC->APB1RSTR &= ~STM32_RCC_APB1ENR_SPI2EN;
 		switch (remap_idx)
 		{
 		case 0:
@@ -156,6 +160,8 @@ vsf_err_t stm32_spi_init(uint8_t index)
 	#if SPI02_ENABLE
 	case 2:
 		RCC->APB1ENR |= STM32_RCC_APB1ENR_SPI3EN;
+		RCC->APB1RSTR |= STM32_RCC_APB1ENR_SPI3EN;
+		RCC->APB1RSTR &= ~STM32_RCC_APB1ENR_SPI3EN;
 		switch (remap_idx)
 		{
 		case 0:
