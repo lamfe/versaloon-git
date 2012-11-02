@@ -53,7 +53,7 @@
 #endif
 
 // SPI config
-#define SPI_NUM								2
+#define SPI_NUM								3
 #define SPI00_ENABLE						0
 #	define SPI00_MISO_ENABLE				0
 #	define SPI00_MOSI_ENABLE				0
@@ -66,10 +66,10 @@
 #	define SPI01_MISO_ENABLE				1
 #	define SPI01_MOSI_ENABLE				1
 #	define SPI01_NSS_ENABLE					1
-#define SPI02_ENABLE						0
-#	define SPI02_MISO_ENABLE				0
-#	define SPI02_MOSI_ENABLE				0
-#	define SPI02_NSS_ENABLE					0
+#define SPI02_ENABLE						1
+#	define SPI02_MISO_ENABLE				1
+#	define SPI02_MOSI_ENABLE				1
+#	define SPI02_NSS_ENABLE					1
 
 // USART config
 #define USART_NUM							3
