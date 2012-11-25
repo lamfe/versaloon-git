@@ -58,6 +58,7 @@ vsf_err_t stm32_flash_lock(uint8_t index)
 	{
 	case 0:
 		FLASH->CR |= STM32_FLASH_CR_LOCK;
+		FLASH->CR2 |= STM32_FLASH_CR_LOCK;
 		return VSFERR_NONE;
 	default:
 		return VSFERR_NOT_SUPPORT;
@@ -72,6 +73,10 @@ vsf_err_t stm32_flash_unlock(uint8_t index)
 		FLASH->KEYR = STM32_FLASH_KEYR_KEY1;
 		FLASH->KEYR = STM32_FLASH_KEYR_KEY2;
 		FLASH->SR |= STM32_FLASH_SR_EOP | STM32_FLASH_SR_BSY | 
+						STM32_FLASH_SR_PGERR | STM32_FLASH_SR_WRPRTERR;
+		FLASH->KEYR2 = STM32_FLASH_KEYR_KEY1;
+		FLASH->KEYR2 = STM32_FLASH_KEYR_KEY2;
+		FLASH->SR2 |= STM32_FLASH_SR_EOP | STM32_FLASH_SR_BSY | 
 						STM32_FLASH_SR_PGERR | STM32_FLASH_SR_WRPRTERR;
 		return VSFERR_NONE;
 	default:
@@ -148,24 +153,35 @@ vsf_err_t stm32_flash_write(uint8_t index, uint32_t offset, uint8_t *buff,
 							uint32_t size)
 {
 	uint32_t i;
+	volatile uint32_t *CR, *SR;
 	
 	switch (index)
 	{
 	case 0:
-		FLASH->CR |= STM32_FLASH_CR_PG;
+		if (offset < 512 * 1024)
+		{
+			CR = &FLASH->CR;
+			SR = &FLASH->SR;
+		}
+		else
+		{
+			CR = &FLASH->CR2;
+			SR = &FLASH->SR2;
+		}
+		*CR |= STM32_FLASH_CR_PG;
 		for (i = 0; i < size / 2; i++)
 		{
 			*(uint16_t *)STM32_FLASH_ADDR(offset) = *(uint16_t *)buff;
-			while (FLASH->SR & STM32_FLASH_SR_BSY);
-			if (FLASH->SR & (/*STM32_FLASH_SR_PGERR | */STM32_FLASH_SR_WRPRTERR))
+			while (*SR & STM32_FLASH_SR_BSY);
+			if (*SR & (/*STM32_FLASH_SR_PGERR | */STM32_FLASH_SR_WRPRTERR))
 			{
-				FLASH->CR &= ~STM32_FLASH_CR_PG;
+				*CR &= ~STM32_FLASH_CR_PG;
 				return VSFERR_FAIL;
 			}
 			offset += 2;
 			buff += 2;
 		}
-		FLASH->CR &= ~STM32_FLASH_CR_PG;
+		*CR &= ~STM32_FLASH_CR_PG;
 		return VSFERR_NONE;
 	default:
 		return VSFERR_NOT_SUPPORT;
@@ -219,12 +235,24 @@ vsf_err_t stm32_flash_readpage_isready(uint8_t index, uint32_t offset,
 
 vsf_err_t stm32_flash_erasepage(uint8_t index, uint32_t offset)
 {
+	volatile uint32_t *CR, *AR;
+	
 	switch (index)
 	{
 	case 0:
-		FLASH->CR |= STM32_FLASH_CR_PER;
-		FLASH->AR = STM32_FLASH_ADDR(offset); 
-		FLASH->CR |= STM32_FLASH_CR_STAT;
+		if (offset < 512 * 1024)
+		{
+			CR = &FLASH->CR;
+			AR = &FLASH->AR;
+		}
+		else
+		{
+			CR = &FLASH->CR2;
+			AR = &FLASH->AR2;
+		}
+		*CR |= STM32_FLASH_CR_PER;
+		*AR = STM32_FLASH_ADDR(offset); 
+		*CR |= STM32_FLASH_CR_STAT;
 		return VSFERR_NONE;
 	default:
 		return VSFERR_NOT_SUPPORT;
@@ -233,6 +261,7 @@ vsf_err_t stm32_flash_erasepage(uint8_t index, uint32_t offset)
 
 vsf_err_t stm32_flash_erasepage_isready(uint8_t index, uint32_t offset)
 {
+	volatile uint32_t *SR, *CR;
 	vsf_err_t err;
 	
 	REFERENCE_PARAMETER(offset);
@@ -240,13 +269,23 @@ vsf_err_t stm32_flash_erasepage_isready(uint8_t index, uint32_t offset)
 	switch (index)
 	{
 	case 0:
-		err = ((FLASH->SR & STM32_FLASH_SR_BSY) == 0) ?
+		if (offset < 512 * 1024)
+		{
+			CR = &FLASH->CR;
+			SR = &FLASH->SR;
+		}
+		else
+		{
+			CR = &FLASH->CR2;
+			SR = &FLASH->SR2;
+		}
+		err = ((*SR & STM32_FLASH_SR_BSY) == 0) ?
 					VSFERR_NONE : VSFERR_NOT_READY;
 		if (!err)
 		{
-			FLASH->CR &= ~STM32_FLASH_CR_PER;
+			*CR &= ~STM32_FLASH_CR_PER;
 		}
-		return (FLASH->SR & STM32_FLASH_SR_WRPRTERR) ? VSFERR_FAIL : err;
+		return (*SR & STM32_FLASH_SR_WRPRTERR) ? VSFERR_FAIL : err;
 	default:
 		return VSFERR_NOT_SUPPORT;
 	}
