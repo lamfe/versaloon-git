@@ -306,7 +306,7 @@ READ_TARGET_HANDLER(stm32l1swj)
 			}
 			if (adi_memap_read_buf(addr, buff, cur_block_size))
 			{
-				LOG_ERROR(ERRMSG_FAILURE_OPERATION_ADDR, "write flash block",
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION_ADDR, "read flash block",
 							addr);
 				err = ERRCODE_FAILURE_OPERATION_ADDR;
 				break;
