@@ -65,13 +65,20 @@ uint32_t vsf_fifo_get_data_length(struct vsf_fifo_t *fifo)
 
 uint32_t vsf_fifo_get_avail_length(struct vsf_fifo_t *fifo)
 {
+	uint32_t len;
+	
 #if __VSF_DEBUG__
 	if (NULL == fifo)
 	{
 		return 0;
 	}
 #endif
-	return fifo->buffer.size - vsf_fifo_get_data_length(fifo) - 1;
+	len = fifo->buffer.size - vsf_fifo_get_data_length(fifo);
+	if (len > 0)
+	{
+		len--;
+	}
+	return len;
 }
 
 uint32_t vsf_fifo_push8(struct vsf_fifo_t *fifo, uint8_t data)
