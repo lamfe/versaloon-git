@@ -960,6 +960,8 @@ static void vsfusbd_setup_status_callback(void *param)
 	
 	if (USB_REQ_GET_DIR(request->type) == USB_REQ_DIR_HTOD)
 	{
+		vsfusbd_IN_transact[0].tbuffer.buffer.buffer = NULL;
+		vsfusbd_IN_transact[0].tbuffer.buffer.size = 0;
 		vsfusbd_IN_transact[0].pkt.in.zlp = true;
 		vsfusbd_IN_transact[0].callback.param = device;
 		vsfusbd_IN_transact[0].callback.callback = vsfusbd_setup_end_callback;
@@ -972,7 +974,7 @@ vsf_err_t vsfusbd_on_SETUP(void *p)
 	struct vsfusbd_device_t *device = p;
 	struct vsfusbd_ctrl_handler_t *ctrl_handler = &device->ctrl_handler;
 	struct vsfusbd_ctrl_request_t *request = &ctrl_handler->request;
-	struct vsf_buffer_t *buffer = &vsfusbd_IN_transact[0].tbuffer.buffer;
+	struct vsf_buffer_t buffer;
 	uint8_t buff[USB_SETUP_PKG_SIZE];
 	vsf_err_t err = VSFERR_NONE;
 	
@@ -982,27 +984,29 @@ vsf_err_t vsfusbd_on_SETUP(void *p)
 		goto exit;
 	}
 	memcpy(request, buff, USB_SETUP_PKG_SIZE);
-	ctrl_handler->state				= USB_CTRL_STAT_SETTING_UP;
-	ctrl_handler->filter			= vsfusbd_get_request_filter(device, 
+	ctrl_handler->state		= USB_CTRL_STAT_SETTING_UP;
+	ctrl_handler->filter	= vsfusbd_get_request_filter(device, 
 														&ctrl_handler->iface);
-	buffer->size					= 0;
-	buffer->buffer					= NULL;
+	buffer.size				= 0;
+	buffer.buffer			= NULL;
 	
 	if ((NULL == ctrl_handler->filter) || 
 		((ctrl_handler->filter->prepare != NULL) && 
-			ctrl_handler->filter->prepare(device, buffer)) || 
-		(buffer->size && (NULL == buffer->buffer)))
+			ctrl_handler->filter->prepare(device, &buffer)) || 
+		(buffer.size && (NULL == buffer.buffer)))
 	{
 		err = VSFERR_FAIL;
 		goto exit;
 	}
-	if (buffer->size > request->length)
+	if (buffer.size > request->length)
 	{
-		buffer->size = request->length;
+		buffer.size = request->length;
 	}
 	
 	if (0 == request->length)
 	{
+		vsfusbd_IN_transact[0].tbuffer.buffer.buffer = NULL;
+		vsfusbd_IN_transact[0].tbuffer.buffer.size = 0;
 		vsfusbd_IN_transact[0].pkt.in.zlp = true;
 		vsfusbd_IN_transact[0].callback.param = device;
 		vsfusbd_IN_transact[0].callback.callback = vsfusbd_setup_end_callback;
@@ -1012,6 +1016,7 @@ vsf_err_t vsfusbd_on_SETUP(void *p)
 	{
 		if (USB_REQ_GET_DIR(request->type) == USB_REQ_DIR_HTOD)
 		{
+			vsfusbd_OUT_transact[0].tbuffer.buffer = buffer;
 			vsfusbd_OUT_transact[0].callback.param = device;
 			vsfusbd_OUT_transact[0].callback.callback =
 												vsfusbd_setup_status_callback;
@@ -1019,7 +1024,8 @@ vsf_err_t vsfusbd_on_SETUP(void *p)
 		}
 		else
 		{
-			vsfusbd_IN_transact[0].pkt.in.zlp = buffer->size < request->length;
+			vsfusbd_IN_transact[0].tbuffer.buffer = buffer;
+			vsfusbd_IN_transact[0].pkt.in.zlp = buffer.size < request->length;
 			vsfusbd_IN_transact[0].callback.param = device;
 			vsfusbd_IN_transact[0].callback.callback =
 												vsfusbd_setup_status_callback;
@@ -1115,7 +1121,7 @@ static vsf_err_t vsfusbd_on_OUT(void *p, uint8_t ep)
 #endif
 	pkg_size = device->drv->ep.get_OUT_count(ep);
 	if ((tbuffer->position < tbuffer->buffer.size) && 
-		((tbuffer->position + pkg_size) < tbuffer->buffer.size))
+		((tbuffer->position + pkg_size) <= tbuffer->buffer.size))
 	{
 		device->drv->ep.read_OUT_buffer(ep, 
 						&tbuffer->buffer.buffer[tbuffer->position], pkg_size);
@@ -1130,7 +1136,7 @@ static vsf_err_t vsfusbd_on_OUT(void *p, uint8_t ep)
 			(tbuffer->position >= tbuffer->buffer.size))
 		{
 			struct vsfusbd_transact_callback_t *callback =
-											&vsfusbd_IN_transact[ep].callback;
+											&vsfusbd_OUT_transact[ep].callback;
 		
 			if (callback->callback != NULL)
 			{
