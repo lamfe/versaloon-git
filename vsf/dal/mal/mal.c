@@ -184,7 +184,7 @@ static vsf_err_t mal_eraseblock_nb_waitready(struct dal_info_t *info,
 			while (dly--)
 			{
 				err = mal_eraseblock_nb_isready(info, address);
-				if (!err || (err && (err != VSFERR_NOT_READY)))
+				if (err <= 0)
 				{
 					break;
 				}
@@ -259,7 +259,7 @@ static vsf_err_t mal_eraseall_nb_waitready(struct dal_info_t *info)
 			while (dly--)
 			{
 				err = mal_eraseall_nb_isready(info);
-				if (!err || (err && (err != VSFERR_NOT_READY)))
+				if (err <= 0)
 				{
 					break;
 				}
@@ -351,7 +351,7 @@ static vsf_err_t mal_readblock_nb_waitready(struct dal_info_t *info,
 			while (dly--)
 			{
 				err = mal_readblock_nb_isready(info, address, buff);
-				if (!err || (err && (err != VSFERR_NOT_READY)))
+				if (err <= 0)
 				{
 					break;
 				}
@@ -443,7 +443,7 @@ static vsf_err_t mal_writeblock_nb_waitready(struct dal_info_t *info,
 			while (dly--)
 			{
 				err = mal_writeblock_nb_isready(info, address, buff);
-				if (!err || (err && (err != VSFERR_NOT_READY)))
+				if (err <= 0)
 				{
 					break;
 				}
@@ -476,7 +476,7 @@ static vsf_err_t mal_init(struct dal_info_t *info)
 	{
 		do {
 			err = mal_init_nb_isready(info);
-		} while (err && (VSFERR_NOT_READY == err));
+		} while (err > 0);
 	}
 	return err;
 }
