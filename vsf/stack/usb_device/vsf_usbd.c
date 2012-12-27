@@ -169,7 +169,7 @@ vsf_err_t vsfusbd_ep_receive(struct vsfusbd_device_t *device, uint8_t ep)
 	{
 		device->drv->poll();
 		err = vsfusbd_ep_receive_nb_isready(device, ep, &tbuffer->buffer.size);
-		if (!err || (err && (err != VSFERR_NOT_READY)))
+		if (err <= 0)
 		{
 			break;
 		}
@@ -243,7 +243,7 @@ vsf_err_t vsfusbd_ep_send(struct vsfusbd_device_t *device, uint8_t ep)
 	{
 		device->drv->poll();
 		err = vsfusbd_ep_send_nb_isready(device, ep);
-		if (!err || (err && (err != VSFERR_NOT_READY)))
+		if (err <= 0)
 		{
 			break;
 		}

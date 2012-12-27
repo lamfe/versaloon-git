@@ -408,9 +408,9 @@ static vsf_err_t vsfusbd_MSCBOT_class_poll(uint8_t iface,
 						param->cur_scsi_page);
 		if (err != VSFERR_NONE)
 		{
-			if (VSFERR_NOT_READY == err)
+			if (err > 0)
 			{
-				return VSFERR_NONE;
+				return err;
 			}
 			// failure
 			param->fail = true;

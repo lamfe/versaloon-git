@@ -6,9 +6,9 @@
 
 typedef vsf_int_t vsf_err_t;
 
+#define VSFERR_NOT_READY				1
 #define VSFERR_NONE						0
 #define VSFERR_NOT_SUPPORT				-1
-#define VSFERR_NOT_READY				-2
 #define VSFERR_NOT_AVAILABLE			-3
 #define VSFERR_NOT_ACCESSABLE			-4
 #define VSFERR_NOT_ENOUGH_RESOURCES		-5
