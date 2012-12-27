@@ -386,7 +386,7 @@ static vsf_err_t sd_sdio_getinfo(struct dal_info_t *info)
 	struct mal_info_t *mal_info = (struct mal_info_t *)info->extra;
 	struct sd_info_t *sd_info = (struct sd_info_t *)mal_info->extra;
 	uint32_t csd[4];
-	uint32_t rca = 1;
+	uint32_t rca = 1, tmp32;
 	
 	if ((NULL == sd_info) ||
 		sd_sdio_transact(ifs, drv_info, SD_TRANSTOKEN_RESP_R2 | 4,
@@ -400,15 +400,24 @@ static vsf_err_t sd_sdio_getinfo(struct dal_info_t *info)
 	}
 	
 	drv_info->rca = rca >> 16;
-	SET_LE_U32(&sd_info->cid[0], GET_BE_U32(&sd_info->cid[0]));
-	SET_LE_U32(&sd_info->cid[4], GET_BE_U32(&sd_info->cid[4]));
-	SET_LE_U32(&sd_info->cid[8], GET_BE_U32(&sd_info->cid[8]));
-	SET_LE_U32(&sd_info->cid[12], GET_BE_U32(&sd_info->cid[12]));
 	
-	SET_LE_U32(&csd[0], GET_BE_U32(&csd[0]));
-	SET_LE_U32(&csd[1], GET_BE_U32(&csd[1]));
-	SET_LE_U32(&csd[2], GET_BE_U32(&csd[2]));
-	SET_LE_U32(&csd[3], GET_BE_U32(&csd[3]));
+	tmp32 = GET_BE_U32(&sd_info->cid[0]);
+	SET_LE_U32(&sd_info->cid[0], tmp32);
+	tmp32 = GET_BE_U32(&sd_info->cid[4]);
+	SET_LE_U32(&sd_info->cid[4], tmp32);
+	tmp32 = GET_BE_U32(&sd_info->cid[8]);
+	SET_LE_U32(&sd_info->cid[8], tmp32);
+	tmp32 = GET_BE_U32(&sd_info->cid[12]);
+	SET_LE_U32(&sd_info->cid[12], tmp32);
+	
+	tmp32 = GET_BE_U32(&csd[0]);
+	SET_LE_U32(&csd[0], tmp32);
+	tmp32 = GET_BE_U32(&csd[1]);
+	SET_LE_U32(&csd[1], tmp32);
+	tmp32 = GET_BE_U32(&csd[2]);
+	SET_LE_U32(&csd[2], tmp32);
+	tmp32 = GET_BE_U32(&csd[3]);
+	SET_LE_U32(&csd[3], tmp32);
 	sd_parse_csd((uint8_t *)csd, sd_info);
 	return VSFERR_NONE;
 }
