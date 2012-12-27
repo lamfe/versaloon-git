@@ -58,12 +58,6 @@ static vsf_err_t df45xx_drv_eraseall_nb_isready(struct dal_info_t *info)
 	return VSFERR_NONE;
 }
 
-static vsf_err_t df45xx_drv_eraseall_nb_waitready(struct dal_info_t *info)
-{
-	REFERENCE_PARAMETER(info);
-	return VSFERR_NONE;
-}
-
 static vsf_err_t df45xx_drv_eraseall_nb_end(struct dal_info_t *info)
 {
 	REFERENCE_PARAMETER(info);
@@ -88,14 +82,6 @@ static vsf_err_t df45xx_drv_eraseblock_nb(struct dal_info_t *info,
 }
 
 static vsf_err_t df45xx_drv_eraseblock_nb_isready(struct dal_info_t *info, 
-													uint64_t address)
-{
-	REFERENCE_PARAMETER(info);
-	REFERENCE_PARAMETER(address);
-	return VSFERR_NONE;
-}
-
-static vsf_err_t df45xx_drv_eraseblock_nb_waitready(struct dal_info_t *info, 
 													uint64_t address)
 {
 	REFERENCE_PARAMETER(info);
@@ -136,15 +122,6 @@ static vsf_err_t df45xx_drv_readblock_nb_isready(struct dal_info_t *info,
 	return VSFERR_NONE;
 }
 
-static vsf_err_t df45xx_drv_readblock_nb_waitready(struct dal_info_t *info, 
-												uint64_t address, uint8_t *buff)
-{
-	REFERENCE_PARAMETER(info);
-	REFERENCE_PARAMETER(address);
-	REFERENCE_PARAMETER(buff);
-	return VSFERR_NONE;
-}
-
 static vsf_err_t df45xx_drv_readblock_nb_end(struct dal_info_t *info)
 {
 	REFERENCE_PARAMETER(info);
@@ -170,15 +147,6 @@ static vsf_err_t df45xx_drv_writeblock_nb(struct dal_info_t *info,
 }
 
 static vsf_err_t df45xx_drv_writeblock_nb_isready(struct dal_info_t *info, 
-												uint64_t address, uint8_t *buff)
-{
-	REFERENCE_PARAMETER(info);
-	REFERENCE_PARAMETER(address);
-	REFERENCE_PARAMETER(buff);
-	return VSFERR_NONE;
-}
-
-static vsf_err_t df45xx_drv_writeblock_nb_waitready(struct dal_info_t *info, 
 												uint64_t address, uint8_t *buff)
 {
 	REFERENCE_PARAMETER(info);
@@ -229,25 +197,25 @@ const struct mal_driver_t df45xx_drv =
 	
 	df45xx_drv_eraseall_nb_start,
 	df45xx_drv_eraseall_nb_isready,
-	df45xx_drv_eraseall_nb_waitready,
+	NULL,
 	df45xx_drv_eraseall_nb_end,
 	
 	df45xx_drv_eraseblock_nb_start,
 	df45xx_drv_eraseblock_nb,
 	df45xx_drv_eraseblock_nb_isready,
-	df45xx_drv_eraseblock_nb_waitready,
+	NULL,
 	df45xx_drv_eraseblock_nb_end,
 	
 	df45xx_drv_readblock_nb_start,
 	df45xx_drv_readblock_nb,
 	df45xx_drv_readblock_nb_isready,
-	df45xx_drv_readblock_nb_waitready,
+	NULL,
 	df45xx_drv_readblock_nb_end,
 	
 	df45xx_drv_writeblock_nb_start,
 	df45xx_drv_writeblock_nb,
 	df45xx_drv_writeblock_nb_isready,
-	df45xx_drv_writeblock_nb_waitready,
+	NULL,
 	df45xx_drv_writeblock_nb_end
 };
 

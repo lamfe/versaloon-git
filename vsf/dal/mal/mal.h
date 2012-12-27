@@ -61,7 +61,7 @@ struct mal_t
 	
 	vsf_err_t (*eraseall_nb_start)(struct dal_info_t *param);
 	vsf_err_t (*eraseall_nb_isready)(struct dal_info_t *param);
-	vsf_err_t (*eraseall_nb_waitready)(struct dal_info_t *param);
+	vsf_err_t (*eraseall_waitready)(struct dal_info_t *param);
 	vsf_err_t (*eraseall_nb_end)(struct dal_info_t *param);
 	
 	vsf_err_t (*eraseblock_nb_start)(struct dal_info_t *param, 
@@ -70,7 +70,7 @@ struct mal_t
 								uint64_t address);
 	vsf_err_t (*eraseblock_nb_isready)(struct dal_info_t *param, 
 										uint64_t address);
-	vsf_err_t (*eraseblock_nb_waitready)(struct dal_info_t *param, 
+	vsf_err_t (*eraseblock_waitready)(struct dal_info_t *param, 
 											uint64_t address);
 	vsf_err_t (*eraseblock_nb_end)(struct dal_info_t *param);
 	
@@ -80,7 +80,7 @@ struct mal_t
 								uint64_t address, uint8_t *buff);
 	vsf_err_t (*readblock_nb_isready)(struct dal_info_t *param, 
 										uint64_t address, uint8_t *buff);
-	vsf_err_t (*readblock_nb_waitready)(struct dal_info_t *param, 
+	vsf_err_t (*readblock_waitready)(struct dal_info_t *param, 
 										uint64_t address, uint8_t *buff);
 	vsf_err_t (*readblock_nb_end)(struct dal_info_t *param);
 	
@@ -90,7 +90,7 @@ struct mal_t
 								uint64_t address, uint8_t *buff);
 	vsf_err_t (*writeblock_nb_isready)(struct dal_info_t *param, 
 										uint64_t address, uint8_t *buff);
-	vsf_err_t (*writeblock_nb_waitready)(struct dal_info_t *param, 
+	vsf_err_t (*writeblock_waitready)(struct dal_info_t *param, 
 										uint64_t address, uint8_t *buff);
 	vsf_err_t (*writeblock_nb_end)(struct dal_info_t *param);
 };
