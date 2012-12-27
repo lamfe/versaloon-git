@@ -112,7 +112,7 @@ static vsf_err_t ee93cx6_drv_eraseall_nb_start(struct dal_info_t *info)
 											0, 0, 0, 0, NULL, 0);
 }
 
-static vsf_err_t ee93cx6_drv_eraseall_nb_waitready(struct dal_info_t *info)
+static vsf_err_t ee93cx6_drv_eraseall_waitready(struct dal_info_t *info)
 {
 	struct ee93cx6_drv_interface_t *ifs = 
 								(struct ee93cx6_drv_interface_t *)info->ifs;
@@ -161,7 +161,7 @@ static vsf_err_t ee93cx6_drv_eraseblock_nb(struct dal_info_t *info,
 	}
 }
 
-static vsf_err_t ee93cx6_drv_eraseblock_nb_waitready(struct dal_info_t *info, 
+static vsf_err_t ee93cx6_drv_eraseblock_waitready(struct dal_info_t *info, 
 													uint64_t address)
 {
 	struct ee93cx6_drv_interface_t *ifs = 
@@ -229,7 +229,7 @@ static vsf_err_t ee93cx6_drv_readblock_nb(struct dal_info_t *info,
 	return VSFERR_NONE;
 }
 
-static vsf_err_t ee93cx6_drv_readblock_nb_waitready(struct dal_info_t *info, 
+static vsf_err_t ee93cx6_drv_readblock_waitready(struct dal_info_t *info, 
 												uint64_t address, uint8_t *buff)
 {
 	REFERENCE_PARAMETER(info);
@@ -298,7 +298,7 @@ static vsf_err_t ee93cx6_drv_writeblock_nb(struct dal_info_t *info,
 	return VSFERR_NONE;
 }
 
-static vsf_err_t ee93cx6_drv_writeblock_nb_waitready(struct dal_info_t *info, 
+static vsf_err_t ee93cx6_drv_writeblock_waitready(struct dal_info_t *info, 
 												uint64_t address, uint8_t *buff)
 {
 	struct ee93cx6_drv_interface_t *ifs = 
@@ -350,25 +350,25 @@ const struct mal_driver_t ee93cx6_drv =
 	
 	ee93cx6_drv_eraseall_nb_start,
 	NULL,
-	ee93cx6_drv_eraseall_nb_waitready,
+	ee93cx6_drv_eraseall_waitready,
 	ee93cx6_drv_eraseall_nb_end,
 	
 	ee93cx6_drv_eraseblock_nb_start,
 	ee93cx6_drv_eraseblock_nb,
 	NULL,
-	ee93cx6_drv_eraseblock_nb_waitready,
+	ee93cx6_drv_eraseblock_waitready,
 	ee93cx6_drv_eraseblock_nb_end,
 	
 	ee93cx6_drv_readblock_nb_start,
 	ee93cx6_drv_readblock_nb,
 	NULL,
-	ee93cx6_drv_readblock_nb_waitready,
+	ee93cx6_drv_readblock_waitready,
 	ee93cx6_drv_readblock_nb_end,
 	
 	ee93cx6_drv_writeblock_nb_start,
 	ee93cx6_drv_writeblock_nb,
 	NULL,
-	ee93cx6_drv_writeblock_nb_waitready,
+	ee93cx6_drv_writeblock_waitready,
 	ee93cx6_drv_writeblock_nb_end
 };
 

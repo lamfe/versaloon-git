@@ -242,7 +242,7 @@ static vsf_err_t cfi_drv_eraseall_nb_isready(struct dal_info_t *info)
 	return (((val1 ^ val2) & 0x0040) == 0) ? VSFERR_NONE : VSFERR_NOT_READY;
 }
 
-static vsf_err_t cfi_drv_eraseall_nb_waitready(struct dal_info_t *info)
+static vsf_err_t cfi_drv_eraseall_waitready(struct dal_info_t *info)
 {
 	return cfi_wait_busy(info, 0);
 }
@@ -482,7 +482,7 @@ const struct mal_driver_t cfi_drv =
 	
 	cfi_drv_eraseall_nb_start,
 	cfi_drv_eraseall_nb_isready,
-	cfi_drv_eraseall_nb_waitready,
+	cfi_drv_eraseall_waitready,
 	cfi_drv_eraseall_nb_end,
 	
 	cfi_drv_eraseblock_nb_start,

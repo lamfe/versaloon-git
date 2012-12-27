@@ -158,7 +158,7 @@ static vsf_err_t mal_eraseblock_nb_isready(struct dal_info_t *info,
 	return mal_driver->eraseblock_nb_isready(info, address);
 }
 
-static vsf_err_t mal_eraseblock_nb_waitready(struct dal_info_t *info, 
+static vsf_err_t mal_eraseblock_waitready(struct dal_info_t *info, 
 												uint64_t address)
 {
 	struct mal_driver_t* mal_driver =
@@ -169,9 +169,9 @@ static vsf_err_t mal_eraseblock_nb_waitready(struct dal_info_t *info,
 		return VSFERR_NOT_SUPPORT;
 	}
 	
-	if (mal_driver->eraseblock_nb_waitready != NULL)
+	if (mal_driver->eraseblock_waitready != NULL)
 	{
-		return mal_driver->eraseblock_nb_waitready(info, address);
+		return mal_driver->eraseblock_waitready(info, address);
 	}
 	else
 	{
@@ -234,7 +234,7 @@ static vsf_err_t mal_eraseall_nb_isready(struct dal_info_t *info)
 	return mal_driver->eraseall_nb_isready(info);
 }
 
-static vsf_err_t mal_eraseall_nb_waitready(struct dal_info_t *info)
+static vsf_err_t mal_eraseall_waitready(struct dal_info_t *info)
 {
 	struct mal_driver_t* mal_driver =
 			(struct mal_driver_t *)(((struct mal_info_t*)info->extra)->driver);
@@ -244,9 +244,9 @@ static vsf_err_t mal_eraseall_nb_waitready(struct dal_info_t *info)
 		return VSFERR_NOT_SUPPORT;
 	}
 	
-	if (mal_driver->eraseall_nb_waitready != NULL)
+	if (mal_driver->eraseall_waitready != NULL)
 	{
-		return mal_driver->eraseall_nb_waitready(info);
+		return mal_driver->eraseall_waitready(info);
 	}
 	else
 	{
@@ -325,7 +325,7 @@ static vsf_err_t mal_readblock_nb_isready(struct dal_info_t *info,
 	return mal_driver->readblock_nb_isready(info, address, buff);
 }
 
-static vsf_err_t mal_readblock_nb_waitready(struct dal_info_t *info, 
+static vsf_err_t mal_readblock_waitready(struct dal_info_t *info, 
 											uint64_t address, uint8_t *buff)
 {
 	struct mal_driver_t* mal_driver =
@@ -336,9 +336,9 @@ static vsf_err_t mal_readblock_nb_waitready(struct dal_info_t *info,
 		return VSFERR_NOT_SUPPORT;
 	}
 	
-	if (mal_driver->readblock_nb_waitready != NULL)
+	if (mal_driver->readblock_waitready != NULL)
 	{
-		return mal_driver->readblock_nb_waitready(info, address, buff);
+		return mal_driver->readblock_waitready(info, address, buff);
 	}
 	else
 	{
@@ -417,7 +417,7 @@ static vsf_err_t mal_writeblock_nb_isready(struct dal_info_t *info,
 	return mal_driver->writeblock_nb_isready(info, address, buff);
 }
 
-static vsf_err_t mal_writeblock_nb_waitready(struct dal_info_t *info, 
+static vsf_err_t mal_writeblock_waitready(struct dal_info_t *info, 
 												uint64_t address, uint8_t *buff)
 {
 	struct mal_driver_t* mal_driver =
@@ -428,9 +428,9 @@ static vsf_err_t mal_writeblock_nb_waitready(struct dal_info_t *info,
 		return VSFERR_NOT_SUPPORT;
 	}
 	
-	if (mal_driver->writeblock_nb_waitready != NULL)
+	if (mal_driver->writeblock_waitready != NULL)
 	{
-		return mal_driver->writeblock_nb_waitready(info, address, buff);
+		return mal_driver->writeblock_waitready(info, address, buff);
 	}
 	else
 	{
@@ -496,7 +496,7 @@ static vsf_err_t mal_eraseblock(struct dal_info_t *info,
 	for (i = 0; i < count; i++)
 	{
 		if (mal_eraseblock_nb(info, address) || 
-			mal_eraseblock_nb_waitready(info, address))
+			mal_eraseblock_waitready(info, address))
 		{
 			return VSFERR_FAIL;
 		}
@@ -523,7 +523,7 @@ static vsf_err_t mal_eraseall(struct dal_info_t *info)
 	}
 	else
 	{
-		if (mal_eraseall_nb_waitready(info) || 
+		if (mal_eraseall_waitready(info) || 
 			mal_eraseall_nb_end(info))
 		{
 			return VSFERR_FAIL;
@@ -546,7 +546,7 @@ static vsf_err_t mal_readblock(struct dal_info_t *info,
 	
 	for (i = 0; i < count; i++)
 	{
-		if (mal_readblock_nb_waitready(info, address, buff) || 
+		if (mal_readblock_waitready(info, address, buff) || 
 			mal_readblock_nb(info, address, buff))
 		{
 			return VSFERR_FAIL;
@@ -573,7 +573,7 @@ static vsf_err_t mal_writeblock(struct dal_info_t *info,
 	for (i = 0; i < count; i++)
 	{
 		if (mal_writeblock_nb(info, address, buff) || 
-			mal_writeblock_nb_waitready(info, address, buff))
+			mal_writeblock_waitready(info, address, buff))
 		{
 			return VSFERR_FAIL;
 		}
@@ -601,25 +601,25 @@ const struct mal_t mal =
 	
 	mal_eraseall_nb_start,
 	mal_eraseall_nb_isready,
-	mal_eraseall_nb_waitready,
+	mal_eraseall_waitready,
 	mal_eraseall_nb_end,
 	
 	mal_eraseblock_nb_start,
 	mal_eraseblock_nb,
 	mal_eraseblock_nb_isready,
-	mal_eraseblock_nb_waitready,
+	mal_eraseblock_waitready,
 	mal_eraseblock_nb_end,
 	
 	mal_readblock_nb_start,
 	mal_readblock_nb,
 	mal_readblock_nb_isready,
-	mal_readblock_nb_waitready,
+	mal_readblock_waitready,
 	mal_readblock_nb_end,
 	
 	mal_writeblock_nb_start,
 	mal_writeblock_nb,
 	mal_writeblock_nb_isready,
-	mal_writeblock_nb_waitready,
+	mal_writeblock_waitready,
 	mal_writeblock_nb_end
 };
 
