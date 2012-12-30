@@ -274,7 +274,7 @@ static vsf_err_t lpc1000swj_iap_wait_ready(uint32_t result_table[4], bool last)
 			}
 			break;
 		}
-		if (err && (err != VSFERR_NOT_READY))
+		if (err < 0)
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "poll iap result");
 			return VSFERR_FAIL;

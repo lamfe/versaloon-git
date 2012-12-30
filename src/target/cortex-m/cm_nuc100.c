@@ -203,7 +203,7 @@ static vsf_err_t nuc100swj_iap_wait_param_taken(void)
 		{
 			break;
 		}
-		if (err && (err != VSFERR_NOT_READY))
+		if (err < 0)
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "poll iap param taken");
 			return err;
@@ -239,7 +239,7 @@ static vsf_err_t nuc100swj_iap_wait_finish(uint32_t cnt_idx)
 		{
 			break;
 		}
-		if (err && (err != VSFERR_NOT_READY))
+		if (err < 0)
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "poll iap finish");
 			return VSFERR_FAIL;

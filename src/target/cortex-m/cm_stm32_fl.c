@@ -274,7 +274,7 @@ vsf_err_t stm32swj_fl_wait_ready(struct stm32_fl_result_t *result, bool last)
 		{
 			break;
 		}
-		if (err && (err != VSFERR_NOT_READY))
+		if (err < 0)
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "poll flashloader result");
 			return VSFERR_FAIL;

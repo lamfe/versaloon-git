@@ -105,7 +105,7 @@ static vsf_err_t sd_sdio_transact_cmd_waitready(
 	
 	do {
 		err = sd_sdio_transact_cmd_isready(ifs, drv_info, token, cmd, resp);
-	} while (err && (VSFERR_NOT_READY == err));
+	} while (err > 0);
 	return err;
 }
 
@@ -154,7 +154,7 @@ static vsf_err_t sd_sdio_transact_datablock_waitready(
 	do {
 		err = sd_sdio_transact_datablock_isready(ifs, drv_info, token,
 													size, buffer);
-	} while (err && (VSFERR_NOT_READY == err));
+	} while (err > 0);
 	return err;
 }
 
@@ -484,7 +484,7 @@ static vsf_err_t sd_sdio_drv_readblock_nb_isready(struct dal_info_t *info,
 	
 	token = SD_TRANSTOKEN_RESP_R1 | SD_TRANSTOKEN_DATA_IN;
 	err = sd_sdio_transact_datablock_isready(ifs, drv_info, token, 512, buff);
-	if (err && (err != VSFERR_NOT_READY))
+	if (err < 0)
 	{
 		sd_sdio_transact_end(ifs);
 		interfaces->peripheral_commit();
@@ -594,7 +594,7 @@ static vsf_err_t sd_sdio_drv_writeblock_nb_isready(struct dal_info_t *info,
 	
 	token = SD_TRANSTOKEN_RESP_R1 | SD_TRANSTOKEN_DATA_OUT;
 	err = sd_sdio_transact_datablock_isready(ifs, token);
-	if (err && (err != VSFERR_NOT_READY))
+	if (err < 0)
 	{
 		sd_sdio_transact_end(ifs);
 		interfaces->peripheral_commit();

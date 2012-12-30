@@ -151,7 +151,6 @@ static vsf_err_t vsfusbd_HID_OUT_hanlder(void *p, uint8_t ep)
 static vsf_err_t vsfusbd_HID_class_poll(uint8_t iface, 
 										struct vsfusbd_device_t *device)
 {
-	vsf_err_t err;
 	struct vsfusbd_config_t *config = &device->config[device->configuration];
 	struct vsfusbd_HID_param_t *param = 
 		(struct vsfusbd_HID_param_t *)config->iface[iface].protocol_param;
@@ -184,9 +183,8 @@ static vsf_err_t vsfusbd_HID_class_poll(uint8_t iface,
 		}
 		
 		// TODO: process multi-report and idle, need 1 ms systick module
-		err = vsfusbd_ep_send_nb_isready(device, ep);
-		if ((err && (err != VSFERR_NOT_READY)) || 
-			(!err && vsfusbd_ep_send_nb(device, ep)))
+		if ((vsfusbd_ep_send_nb_isready(device, ep) < 0) ||
+			vsfusbd_ep_send_nb(device, ep))
 		{
 			return VSFERR_FAIL;
 		}
