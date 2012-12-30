@@ -144,7 +144,7 @@ vsf_err_t stm32_sdio_config(uint8_t index, uint16_t kHz, uint8_t buswidth)
 		}
 		temp_reg |= (clk_div - 2);
 	}
-	SDIO->CLKCR = temp_reg | STM32_SDIO_CLKCR_CLKEN | STM32_SDIO_CLKCR_HWFC_EN;
+	SDIO->CLKCR = temp_reg | STM32_SDIO_CLKCR_CLKEN/* | STM32_SDIO_CLKCR_HWFC_EN*/;
 	
 	return VSFERR_NONE;
 }
@@ -185,10 +185,8 @@ vsf_err_t stm32_sdio_send_cmd(uint8_t index, uint8_t cmd, uint32_t arg,
 	}
 #endif
 	
-	cmd &= 0x3F;
-	
 	SDIO->ARG = arg;
-	SDIO->CMD = cmd | STM32_SDIO_CMD_CPSMEN | resp;
+	SDIO->CMD = (cmd & 0x3F) | STM32_SDIO_CMD_CPSMEN | resp;
 	return VSFERR_NONE;
 }
 
@@ -368,7 +366,7 @@ vsf_err_t stm32_sdio_data_rx(uint8_t index, uint32_t to_ms, uint32_t size,
 vsf_err_t stm32_sdio_data_rx_isready(uint8_t index, uint32_t size,
 										uint8_t *buffer)
 {
-	uint32_t status = SDIO->STA;
+	// Due to failure in hw flow control of stm32, these code MUST be block
 	
 #if __VSF_DEBUG__
 	if (spi_idx >= STM32_SDIO_NUM)
@@ -377,7 +375,25 @@ vsf_err_t stm32_sdio_data_rx_isready(uint8_t index, uint32_t size,
 	}
 #endif
 	
-	if (status & (STM32_SDIO_STA_DTIMEOUT | STM32_SDIO_STA_DCRCFAIL |
+	// poll for all data
+	while ((stm32_sdio_data_rx_pos < size) &&
+		   !(SDIO->STA & (STM32_SDIO_STA_DTIMEOUT | STM32_SDIO_STA_DCRCFAIL |
+					STM32_SDIO_STA_RXOVERR | STM32_SDIO_STA_STBITERR)))
+	{
+		if (SDIO->STA & STM32_SDIO_STA_RXDAVL)
+		{
+			*(uint32_t *)&buffer[stm32_sdio_data_rx_pos] = SDIO->FIFO;
+			stm32_sdio_data_rx_pos += 4;
+		}
+	}
+	// poll for end
+	while (!(SDIO->STA & (STM32_SDIO_STA_DBCKEND | STM32_SDIO_STA_DATAEND |
+				STM32_SDIO_STA_DTIMEOUT | STM32_SDIO_STA_DCRCFAIL |
+				STM32_SDIO_STA_RXOVERR | STM32_SDIO_STA_STBITERR)));
+	SDIO->ICR = STM32_SDIO_STA_DBCKEND | STM32_SDIO_STA_DATAEND;
+	stm32_sdio_data_rx_pos = 0;
+	
+	if (SDIO->STA & (STM32_SDIO_STA_DTIMEOUT | STM32_SDIO_STA_DCRCFAIL |
 					STM32_SDIO_STA_RXOVERR | STM32_SDIO_STA_STBITERR))
 	{
 		SDIO->ICR = STM32_SDIO_STA_DTIMEOUT | STM32_SDIO_STA_DCRCFAIL |
@@ -385,33 +401,7 @@ vsf_err_t stm32_sdio_data_rx_isready(uint8_t index, uint32_t size,
 					STM32_SDIO_STA_DBCKEND | STM32_SDIO_STA_DATAEND;
 		return VSFERR_FAIL;
 	}
-	while ((status & STM32_SDIO_STA_RXDAVL) && (stm32_sdio_data_rx_pos < size))
-	{
-		*(uint32_t *)&buffer[stm32_sdio_data_rx_pos] = SDIO->FIFO;
-		stm32_sdio_data_rx_pos += 4;
-	}
-	if (stm32_sdio_data_rx_pos >= size)
-	{
-		if (status & (STM32_SDIO_STA_DBCKEND | STM32_SDIO_STA_DATAEND))
-		{
-			SDIO->ICR = STM32_SDIO_STA_DBCKEND | STM32_SDIO_STA_DATAEND;
-		}
-		stm32_sdio_data_rx_pos = 0;
-		return VSFERR_NONE;
-	}
-	if (status & (STM32_SDIO_STA_DBCKEND | STM32_SDIO_STA_DATAEND))
-	{
-		while ((status & STM32_SDIO_STA_RXDAVL) &&
-			   (stm32_sdio_data_rx_pos < size))
-		{
-			*(uint32_t *)&buffer[stm32_sdio_data_rx_pos] = SDIO->FIFO;
-			stm32_sdio_data_rx_pos += 4;
-		}
-		SDIO->ICR = STM32_SDIO_STA_DBCKEND | STM32_SDIO_STA_DATAEND;
-		stm32_sdio_data_rx_pos = 0;
-		return (stm32_sdio_data_rx_pos >= size) ? VSFERR_NONE : VSFERR_FAIL;
-	}
-	return VSFERR_NOT_READY;
+	return VSFERR_NONE;
 }
 
 #endif
