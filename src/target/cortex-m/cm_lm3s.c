@@ -186,7 +186,7 @@ static vsf_err_t lm3sswj_iap_wait_param_taken(void)
 		{
 			break;
 		}
-		if (err && (err != VSFERR_NOT_READY))
+		if (err < 0)
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "poll iap param taken");
 			return err;

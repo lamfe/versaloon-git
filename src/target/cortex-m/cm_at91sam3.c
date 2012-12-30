@@ -265,7 +265,7 @@ static vsf_err_t at91sam3swj_iap_wait_ready(struct at91sam3swj_iap_reply_t *repl
 		{
 			break;
 		}
-		if (err && (err != VSFERR_NOT_READY))
+		if (err < 0)
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "poll iap result");
 			return VSFERR_FAIL;

@@ -275,14 +275,13 @@ static vsf_err_t SCSI_io_WRITE10(struct SCSI_LUN_info_t *info, uint8_t CB[16],
 								(lba + cur_page) * block_size, buffer->buffer);
 		if (err)
 		{
-			if (err != VSFERR_NOT_READY)
+			if (err < 0)
 			{
 				info->status.page_num = 0;
 				info->status.memstat = SCSI_MEMSTAT_NOINIT;
 				info->status.sense_key = SCSI_SENSEKEY_HARDWARE_ERROR;
 				info->status.asc = 0;
 				SCSI_errcode = SCSI_ERRCODE_FAIL;
-				return VSFERR_FAIL;
 			}
 			return err;
 		}
@@ -368,14 +367,13 @@ static vsf_err_t SCSI_io_READ10(struct SCSI_LUN_info_t *info, uint8_t CB[16],
 								(lba + cur_page) * block_size, buffer->buffer);
 		if (err)
 		{
-			if (err != VSFERR_NOT_READY)
+			if (err < 0)
 			{
 				info->status.page_num = 0;
 				info->status.memstat = SCSI_MEMSTAT_NOINIT;
 				info->status.sense_key = SCSI_SENSEKEY_HARDWARE_ERROR;
 				info->status.asc = 0;
 				SCSI_errcode = SCSI_ERRCODE_FAIL;
-				return VSFERR_FAIL;
 			}
 			return err;
 		}
@@ -613,7 +611,7 @@ vsf_err_t SCSI_Poll(struct SCSI_LUN_info_t *info)
 		{
 			info->status.memstat = SCSI_MEMSTAT_POLL;
 		}
-		else if (err != VSFERR_NOT_READY)
+		else if (err < 0)
 		{
 			info->status.memstat = SCSI_MEMSTAT_NOINIT;
 		}
