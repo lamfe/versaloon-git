@@ -22,10 +22,7 @@
 
 #include "compiler.h"
 
-#include "../versaloon_include.h"
 #include "interfaces.h"
-#include "../versaloon.h"
-#include "../versaloon_internal.h"
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
 
@@ -70,40 +67,41 @@ vsf_err_t usbtodusi_io(uint8_t index, uint8_t *mo, uint8_t *mi,
 	}
 #endif
 	
-	SET_LE_U32(&versaloon_cmd_buf[0], bitlen);
+	SET_LE_U32(&usbtoxxx_info->cmd_buff[0], bitlen);
 	if (mo != NULL)
 	{
-		memcpy(&versaloon_cmd_buf[2], mo, bytelen);
+		memcpy(&usbtoxxx_info->cmd_buff[2], mo, bytelen);
 	}
 	else
 	{
-		memset(&versaloon_cmd_buf[2], 0xFF, bytelen);
+		memset(&usbtoxxx_info->cmd_buff[2], 0xFF, bytelen);
 	}
 	if (so != NULL)
 	{
-		memcpy(&versaloon_cmd_buf[2 + bytelen], so, bytelen);
+		memcpy(&usbtoxxx_info->cmd_buff[2 + bytelen], so, bytelen);
 	}
 	else
 	{
-		memset(&versaloon_cmd_buf[2 + bytelen], 0xFF, bytelen);
+		memset(&usbtoxxx_info->cmd_buff[2 + bytelen], 0xFF, bytelen);
 	}
 	
 	if (mi != NULL)
 	{
-		if (versaloon_add_want_pos(0, bytelen, mi))
+		if (usbtoxxx_add_want_pos(0, bytelen, mi))
 		{
 			return VSFERR_FAIL;
 		}
 	}
 	if (si != NULL)
 	{
-		if (versaloon_add_want_pos(bytelen, bytelen, si))
+		if (usbtoxxx_add_want_pos(bytelen, bytelen, si))
 		{
 			return VSFERR_FAIL;
 		}
 	}
 	
 	return usbtoxxx_inout_command(USB_TO_DUSI, index,
-		versaloon_cmd_buf, 2 + 2 * bytelen, 2 * bytelen, NULL, 0, 0, 0);
+		usbtoxxx_info->cmd_buff, 2 + 2 * bytelen, 2 * bytelen,
+		NULL, 0, 0, 0);
 }
 

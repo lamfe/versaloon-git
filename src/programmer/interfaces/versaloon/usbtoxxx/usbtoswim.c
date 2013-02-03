@@ -22,10 +22,7 @@
 
 #include "compiler.h"
 
-#include "../versaloon_include.h"
 #include "interfaces.h"
-#include "../versaloon.h"
-#include "../versaloon_internal.h"
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
 
@@ -83,12 +80,12 @@ vsf_err_t usbtoswim_wotf(uint8_t index, uint8_t *data, uint16_t bytelen,
 	}
 #endif
 	
-	SET_LE_U16(&versaloon_cmd_buf[0], bytelen);
-	SET_LE_U32(&versaloon_cmd_buf[2], addr);
-	memcpy(&versaloon_cmd_buf[6], data, bytelen);
+	SET_LE_U16(&usbtoxxx_info->cmd_buff[0], bytelen);
+	SET_LE_U32(&usbtoxxx_info->cmd_buff[2], addr);
+	memcpy(&usbtoxxx_info->cmd_buff[6], data, bytelen);
 	
 	return usbtoxxx_out_command(USB_TO_SWIM, index,
-									versaloon_cmd_buf, bytelen + 6, 0);
+								usbtoxxx_info->cmd_buff, bytelen + 6, 0);
 }
 
 vsf_err_t usbtoswim_rotf(uint8_t index, uint8_t *data, uint16_t bytelen,
@@ -102,12 +99,13 @@ vsf_err_t usbtoswim_rotf(uint8_t index, uint8_t *data, uint16_t bytelen,
 	}
 #endif
 	
-	SET_LE_U16(&versaloon_cmd_buf[0], bytelen);
-	SET_LE_U32(&versaloon_cmd_buf[2], addr);
-	memset(&versaloon_cmd_buf[6], 0, bytelen);
+	SET_LE_U16(&usbtoxxx_info->cmd_buff[0], bytelen);
+	SET_LE_U32(&usbtoxxx_info->cmd_buff[2], addr);
+	memset(&usbtoxxx_info->cmd_buff[6], 0, bytelen);
 	
 	return usbtoxxx_in_command(USB_TO_SWIM, index,
-				versaloon_cmd_buf, bytelen + 6, bytelen, data, 0, bytelen, 0);
+			usbtoxxx_info->cmd_buff, bytelen + 6, bytelen, data, 0,
+			bytelen, 0);
 }
 
 vsf_err_t usbtoswim_sync(uint8_t index, uint8_t mHz)

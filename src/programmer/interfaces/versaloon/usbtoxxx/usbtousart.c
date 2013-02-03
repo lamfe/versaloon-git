@@ -22,10 +22,7 @@
 
 #include "compiler.h"
 
-#include "../versaloon_include.h"
 #include "interfaces.h"
-#include "../versaloon.h"
-#include "../versaloon_internal.h"
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
 
@@ -69,11 +66,11 @@ vsf_err_t usbtousart_receive(uint8_t index, uint8_t *buf, uint16_t len)
 	}
 #endif
 	
-	SET_LE_U16(&versaloon_cmd_buf[0], len);
-	memset(&versaloon_cmd_buf[2], 0, len);
+	SET_LE_U16(&usbtoxxx_info->cmd_buff[0], len);
+	memset(&usbtoxxx_info->cmd_buff[2], 0, len);
 	
 	return usbtoxxx_in_command(USB_TO_USART, index,
-				versaloon_cmd_buf, 2 + len, len, buf, 0, len, 1);
+				usbtoxxx_info->cmd_buff, 2 + len, len, buf, 0, len, 1);
 }
 
 vsf_err_t usbtousart_send(uint8_t index, uint8_t *buf, uint16_t len)
@@ -86,11 +83,11 @@ vsf_err_t usbtousart_send(uint8_t index, uint8_t *buf, uint16_t len)
 	}
 #endif
 	
-	SET_LE_U16(&versaloon_cmd_buf[0], len);
-	memcpy(&versaloon_cmd_buf[2], buf, len);
+	SET_LE_U16(&usbtoxxx_info->cmd_buff[0], len);
+	memcpy(&usbtoxxx_info->cmd_buff[2], buf, len);
 	
 	return usbtoxxx_out_command(USB_TO_USART, index,
-										versaloon_cmd_buf, 2 + len, 1);
+								usbtoxxx_info->cmd_buff, 2 + len, 1);
 }
 
 vsf_err_t usbtousart_status(uint8_t index,
@@ -104,7 +101,7 @@ vsf_err_t usbtousart_status(uint8_t index,
 	}
 #endif
 	
-	return usbtoxxx_status_command(USB_TO_USART, index,
+	return usbtoxxx_status_command(USB_TO_USART, index, NULL, 0,
 			sizeof(struct usart_status_t), (uint8_t *)status, 0,
 			sizeof(struct usart_status_t), 0);
 }

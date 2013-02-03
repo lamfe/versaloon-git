@@ -22,10 +22,7 @@
 
 #include "compiler.h"
 
-#include "../versaloon_include.h"
 #include "interfaces.h"
-#include "../versaloon.h"
-#include "../versaloon_internal.h"
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
 
@@ -75,11 +72,12 @@ vsf_err_t usbtojtagraw_execute(uint8_t index, uint8_t *tdi,
 	}
 	bytelen = (uint16_t)((bitlen + 7) >> 3);
 	
-	SET_LE_U32(&versaloon_cmd_buf[0], bitlen);
-	memcpy(versaloon_cmd_buf + 4, tdi, bytelen);
-	memcpy(versaloon_cmd_buf + 4 + bytelen, tms, bytelen);
+	SET_LE_U32(&usbtoxxx_info->cmd_buff[0], bitlen);
+	memcpy(usbtoxxx_info->cmd_buff + 4, tdi, bytelen);
+	memcpy(usbtoxxx_info->cmd_buff + 4 + bytelen, tms, bytelen);
 	
 	return usbtoxxx_inout_command(USB_TO_JTAG_RAW, index,
-			versaloon_cmd_buf, 4 + bytelen * 2, bytelen, tdo, 0, bytelen, 0);
+			usbtoxxx_info->cmd_buff, 4 + bytelen * 2, bytelen, tdo, 0,
+			bytelen, 0);
 }
 

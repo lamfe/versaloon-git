@@ -22,10 +22,7 @@
 
 #include "compiler.h"
 
-#include "../versaloon_include.h"
 #include "interfaces.h"
-#include "../versaloon.h"
-#include "../versaloon_internal.h"
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
 
@@ -71,18 +68,18 @@ vsf_err_t usbtobdm_transact(uint8_t index, uint8_t *out,
 #endif
 	
 	token = outlen | (inlen << 8) | (delay << 6) | (ack ? 0x8000 : 0x0000);
-	SET_LE_U16(&versaloon_cmd_buf[0], token);
-	memcpy(&versaloon_cmd_buf[2], out, outlen);
+	SET_LE_U16(&usbtoxxx_info->cmd_buff[0], token);
+	memcpy(&usbtoxxx_info->cmd_buff[2], out, outlen);
 	
 	if (NULL == in)
 	{
 		return usbtoxxx_inout_command(USB_TO_BDM, index,
-					versaloon_cmd_buf, 2 + outlen, inlen, NULL, 0, 0, 1);
+				usbtoxxx_info->cmd_buff, 2 + outlen, inlen, NULL, 0, 0, 1);
 	}
 	else
 	{
 		return usbtoxxx_inout_command(USB_TO_BDM, index,
-					versaloon_cmd_buf, 2 + outlen, inlen, in, 0, inlen, 1);
+				usbtoxxx_info->cmd_buff, 2 + outlen, inlen, in, 0, inlen, 1);
 	}
 }
 

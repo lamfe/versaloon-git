@@ -39,68 +39,12 @@
 #define VERSALOON_COMMON_CMD_END		0x0F
 
 #define VERSALOON_GET_INFO				0x00
-#define VERSALOON_GET_TVCC				0x01
-#define VERSALOON_GET_HARDWARE			0x02
-#define VERSALOON_GET_OFFLINE_SIZE		0x08
-#define VERSALOON_ERASE_OFFLINE_DATA	0x09
-#define VERSALOON_WRITE_OFFLINE_DATA	0x0A
-#define VERSALOON_GET_OFFLINE_CHECKSUM	0x0B
 #define VERSALOON_FW_UPDATE				0x0F
 #define VERSALOON_FW_UPDATE_KEY			0xAA
-
-// MCU Command
-#define VERSALOON_MCU_CMD_START			0x10
-#define VERSALOON_MCU_CMD_END			0x1F
 
 // USB_TO_XXX Command
 #define VERSALOON_USB_TO_XXX_CMD_START	0x20
 #define VERSALOON_USB_TO_XXX_CMD_END	0x7F
-
-// VSLLink Command
-#define VERSALOON_VSLLINK_CMD_START		0x80
-#define VERSALOON_VSLLINK_CMD_END		0xFF
-
-
-
-// pending struct
-#define VERSALOON_MAX_PENDING_NUMBER	4096
-typedef vsf_err_t (*versaloon_callback_t)(void *, uint8_t *, uint8_t *);
-struct versaloon_want_pos_t
-{
-	uint16_t offset;
-	uint16_t size;
-	uint8_t *buff;
-	struct versaloon_want_pos_t *next;
-};
-struct versaloon_pending_t
-{
-	uint8_t type;
-	uint8_t cmd;
-	uint16_t want_data_pos;
-	uint16_t want_data_size;
-	uint16_t actual_data_size;
-	uint8_t *data_buffer;
-	uint8_t collect;
-	uint32_t id;
-	struct versaloon_want_pos_t *pos;
-	void *extra_data;
-	versaloon_callback_t callback;
-};
-extern struct versaloon_pending_t \
-							versaloon_pending[VERSALOON_MAX_PENDING_NUMBER];
-extern uint16_t versaloon_pending_idx;
-void versaloon_set_pending_id(uint32_t id);
-void versaloon_set_callback(versaloon_callback_t callback);
-void versaloon_set_extra_data(void * p);
-vsf_err_t versaloon_add_want_pos(uint16_t offset, uint16_t size, uint8_t *buff);
-vsf_err_t versaloon_add_pending(uint8_t type, uint8_t cmd, uint16_t actual_szie,
-	uint16_t want_pos, uint16_t want_size, uint8_t *buffer, uint8_t collect);
-void versaloon_free_want_pos(void);
-
-vsf_err_t versaloon_send_command(uint16_t out_len, uint16_t *inlen);
-extern uint8_t *versaloon_buf;
-extern uint8_t *versaloon_cmd_buf;
-extern uint16_t versaloon_buf_size;
 
 #endif /* __VERSALOON_INTERNAL_H_INCLUDED__ */
 

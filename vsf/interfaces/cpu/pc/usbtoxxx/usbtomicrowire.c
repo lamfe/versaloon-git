@@ -22,10 +22,7 @@
 
 #include "compiler.h"
 
-#include "../versaloon_include.h"
 #include "interfaces.h"
-#include "../versaloon.h"
-#include "../versaloon_internal.h"
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
 
@@ -80,30 +77,30 @@ vsf_err_t usbtomicrowire_transport(uint8_t index,
 	}
 #endif
 	
-	versaloon_cmd_buf[0] = opcode_bitlen;
-	versaloon_cmd_buf[1] = addr_bitlen;
-	versaloon_cmd_buf[2] = data_bitlen;
-	versaloon_cmd_buf[3] = reply_bitlen;
+	usbtoxxx_info->cmd_buff[0] = opcode_bitlen;
+	usbtoxxx_info->cmd_buff[1] = addr_bitlen;
+	usbtoxxx_info->cmd_buff[2] = data_bitlen;
+	usbtoxxx_info->cmd_buff[3] = reply_bitlen;
 	
 	offset = 4;
 	if (opcode_bitlen)
 	{
-		SET_LE_U32(&versaloon_cmd_buf[offset], opcode);
+		SET_LE_U32(&usbtoxxx_info->cmd_buff[offset], opcode);
 		offset += 4;
 	}
 	if (addr_bitlen)
 	{
-		SET_LE_U32(&versaloon_cmd_buf[offset], addr);
+		SET_LE_U32(&usbtoxxx_info->cmd_buff[offset], addr);
 		offset += 4;
 	}
 	if (data_bitlen)
 	{
-		SET_LE_U32(&versaloon_cmd_buf[offset], data);
+		SET_LE_U32(&usbtoxxx_info->cmd_buff[offset], data);
 		offset += 4;
 	}
 	
 	return usbtoxxx_inout_command(USB_TO_MICROWIRE, index,
-		versaloon_cmd_buf, offset, reply_bytelen, reply,
+		usbtoxxx_info->cmd_buff, offset, reply_bytelen, reply,
 		0, reply_bytelen, 1);
 }
 

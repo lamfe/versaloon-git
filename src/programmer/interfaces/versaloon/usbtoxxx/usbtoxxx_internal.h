@@ -20,36 +20,37 @@
 #define __USBTOXXX_INTERNAL_H_INCLUDED__
 
 // USB_TO_XXX USB Commands
+#define USBTOXXX_CMD_NUM			0x60
 // Page0
-#define USB_TO_USART				(VERSALOON_USB_TO_XXX_CMD_START + 0x00)
-#define USB_TO_SPI					(VERSALOON_USB_TO_XXX_CMD_START + 0x01)
-#define USB_TO_I2C					(VERSALOON_USB_TO_XXX_CMD_START + 0x02)
-#define USB_TO_GPIO					(VERSALOON_USB_TO_XXX_CMD_START + 0x03)
-#define USB_TO_CAN					(VERSALOON_USB_TO_XXX_CMD_START + 0x04)
-#define USB_TO_PWM					(VERSALOON_USB_TO_XXX_CMD_START + 0x05)
-#define USB_TO_ADC					(VERSALOON_USB_TO_XXX_CMD_START + 0x06)
-#define USB_TO_DAC					(VERSALOON_USB_TO_XXX_CMD_START + 0x07)
-#define USB_TO_MICROWIRE			(VERSALOON_USB_TO_XXX_CMD_START + 0x08)
-#define USB_TO_SWIM					(VERSALOON_USB_TO_XXX_CMD_START + 0x09)
-#define USB_TO_DUSI					(VERSALOON_USB_TO_XXX_CMD_START + 0x0A)
-#define USB_TO_EBI					(VERSALOON_USB_TO_XXX_CMD_START + 0x0B)
+#define USB_TO_USART				(USBTOXXX_CFG_CMD_START + 0x00)
+#define USB_TO_SPI					(USBTOXXX_CFG_CMD_START + 0x01)
+#define USB_TO_I2C					(USBTOXXX_CFG_CMD_START + 0x02)
+#define USB_TO_GPIO					(USBTOXXX_CFG_CMD_START + 0x03)
+#define USB_TO_CAN					(USBTOXXX_CFG_CMD_START + 0x04)
+#define USB_TO_PWM					(USBTOXXX_CFG_CMD_START + 0x05)
+#define USB_TO_ADC					(USBTOXXX_CFG_CMD_START + 0x06)
+#define USB_TO_DAC					(USBTOXXX_CFG_CMD_START + 0x07)
+#define USB_TO_MICROWIRE			(USBTOXXX_CFG_CMD_START + 0x08)
+#define USB_TO_SWIM					(USBTOXXX_CFG_CMD_START + 0x09)
+#define USB_TO_DUSI					(USBTOXXX_CFG_CMD_START + 0x0A)
+#define USB_TO_EBI					(USBTOXXX_CFG_CMD_START + 0x0B)
 // Page1
-#define USB_TO_JTAG_LL				(VERSALOON_USB_TO_XXX_CMD_START + 0x20)
-#define USB_TO_JTAG_HL				(VERSALOON_USB_TO_XXX_CMD_START + 0x21)
-#define USB_TO_ISSP					(VERSALOON_USB_TO_XXX_CMD_START + 0x22)
-#define USB_TO_C2					(VERSALOON_USB_TO_XXX_CMD_START + 0x23)
-#define USB_TO_SBW					(VERSALOON_USB_TO_XXX_CMD_START + 0x24)
-#define USB_TO_LPCICP				(VERSALOON_USB_TO_XXX_CMD_START + 0x25)
-#define USB_TO_SWD					(VERSALOON_USB_TO_XXX_CMD_START + 0x26)
-#define USB_TO_JTAG_RAW				(VERSALOON_USB_TO_XXX_CMD_START + 0x27)
-#define USB_TO_BDM					(VERSALOON_USB_TO_XXX_CMD_START + 0x28)
-#define USB_TO_MSP430_JTAG			(VERSALOON_USB_TO_XXX_CMD_START + 0x38)
+#define USB_TO_JTAG_LL				(USBTOXXX_CFG_CMD_START + 0x20)
+#define USB_TO_JTAG_HL				(USBTOXXX_CFG_CMD_START + 0x21)
+#define USB_TO_ISSP					(USBTOXXX_CFG_CMD_START + 0x22)
+#define USB_TO_C2					(USBTOXXX_CFG_CMD_START + 0x23)
+#define USB_TO_SBW					(USBTOXXX_CFG_CMD_START + 0x24)
+#define USB_TO_LPCICP				(USBTOXXX_CFG_CMD_START + 0x25)
+#define USB_TO_SWD					(USBTOXXX_CFG_CMD_START + 0x26)
+#define USB_TO_JTAG_RAW				(USBTOXXX_CFG_CMD_START + 0x27)
+#define USB_TO_BDM					(USBTOXXX_CFG_CMD_START + 0x28)
+#define USB_TO_MSP430_JTAG			(USBTOXXX_CFG_CMD_START + 0x38)
 // Page2
-#define USB_TO_POWER				(VERSALOON_USB_TO_XXX_CMD_START + 0x40)
-#define USB_TO_DELAY				(VERSALOON_USB_TO_XXX_CMD_START + 0x41)
-#define USB_TO_POLL					(VERSALOON_USB_TO_XXX_CMD_START + 0x42)
-#define USB_TO_INFO					(VERSALOON_USB_TO_XXX_CMD_START + 0x5E)
-#define USB_TO_ALL					(VERSALOON_USB_TO_XXX_CMD_START + 0x5F)
+#define USB_TO_POWER				(USBTOXXX_CFG_CMD_START + 0x40)
+#define USB_TO_DELAY				(USBTOXXX_CFG_CMD_START + 0x41)
+#define USB_TO_POLL					(USBTOXXX_CFG_CMD_START + 0x42)
+#define USB_TO_INFO					(USBTOXXX_CFG_CMD_START + 0x5E)
+#define USB_TO_ALL					(USBTOXXX_CFG_CMD_START + 0x5F)
 
 
 
@@ -73,6 +74,8 @@
 #define USB_TO_XXX_SYNC				(0x0B << USB_TO_XXX_CMDSHIFT)
 #define USB_TO_XXX_ENABLE			(0x0C << USB_TO_XXX_CMDSHIFT)
 #define USB_TO_XXX_DISABLE			(0x0D << USB_TO_XXX_CMDSHIFT)
+#define USB_TO_XXX_SET				(0x0E << USB_TO_XXX_CMDSHIFT)
+#define USB_TO_XXX_CLEAR			(0x0F << USB_TO_XXX_CMDSHIFT)
 // USB_TO_POLL
 #define USB_TO_POLL_START			0x00
 #define USB_TO_POLL_END				0x01
@@ -94,10 +97,6 @@
 
 
 // USB_TO_XXX
-vsf_err_t usbtoxxx_add_pending(uint8_t type, uint8_t cmd, uint16_t
-								actual_szie, uint16_t want_pos,
-								uint16_t want_size, uint8_t *buffer);
-
 vsf_err_t usbtoxxx_add_command(uint8_t type, uint8_t cmd, uint8_t *cmdbuf,
 								uint16_t cmdlen, uint16_t retlen,
 								uint8_t *wantbuf, uint16_t wantpos,
@@ -128,10 +127,11 @@ vsf_err_t usbtoxxx_add_command(uint8_t type, uint8_t cmd, uint8_t *cmdbuf,
 #define usbtoxxx_poll_command(type, port, cmdbuf, cmdlen, retbuf, retlen)	\
 			usbtoxxx_add_command((type), (USB_TO_XXX_POLL | (port)), (cmdbuf),\
 								 (cmdlen), (retlen), (retbuf), 0, (retlen), 0)
-#define usbtoxxx_status_command(type, port, retlen, wantbuf, wantpos, wantlen, c)\
+#define usbtoxxx_status_command(type, port, cmdbuf, cmdlen, retlen, wantbuf, \
+								wantpos, wantlen, c)\
 			usbtoxxx_add_command((type), (USB_TO_XXX_STATUS | (port)), \
-								 NULL, 0, (retlen), (wantbuf), (wantpos), \
-								 (wantlen), (c))
+								 (cmdbuf), (cmdlen), retlen, wantbuf, \
+								 wantpos, wantlen, (c))
 #define usbtoxxx_special_command(type, port, cmdbuf, cmdlen, retlen, wantbuf, \
 								 wantpos, wantlen, c)						\
 			usbtoxxx_add_command((type), (USB_TO_XXX_SPECIAL | (port)), \
@@ -149,6 +149,12 @@ vsf_err_t usbtoxxx_add_command(uint8_t type, uint8_t cmd, uint8_t *cmdbuf,
 								 (cmdbuf), (cmdlen), 0, NULL, 0, 0, 0)
 #define usbtoxxx_disable_command(type, port, cmdbuf, cmdlen)				\
 			usbtoxxx_add_command((type), (USB_TO_XXX_DISABLE | (port)), \
+								 (cmdbuf), (cmdlen), 0, NULL, 0, 0, 0)
+#define usbtoxxx_set_command(type, port, cmdbuf, cmdlen)						\
+			usbtoxxx_add_command((type), (USB_TO_XXX_SET | (port)), \
+								 (cmdbuf), (cmdlen), 0, NULL, 0, 0, 0)
+#define usbtoxxx_clear_command(type, port, cmdbuf, cmdlen)					\
+			usbtoxxx_add_command((type), (USB_TO_XXX_CLEAR | (port)), \
 								 (cmdbuf), (cmdlen), 0, NULL, 0, 0, 0)
 
 // USB_TO_SPI
@@ -173,6 +179,12 @@ vsf_err_t usbtoxxx_add_command(uint8_t type, uint8_t cmd, uint8_t *cmdbuf,
 #define USB_TO_GPIO_OUT_MSK			0x04
 #define USB_TO_GPIO_OUT1			USB_TO_GPIO_OUT_MSK
 #define USB_TO_GPIO_OUT0			0x00
+
+void usbtoxxx_set_pending_id(uint32_t id);
+void usbtoxxx_set_callback(usbtoxxx_callback_t callback);
+void usbtoxxx_set_extra_data(void * p);
+vsf_err_t usbtoxxx_add_want_pos(uint16_t offset, uint16_t size,
+										uint8_t *buff);
 
 #endif /* __USBTOXXX_INTERNAL_H_INCLUDED__ */
 

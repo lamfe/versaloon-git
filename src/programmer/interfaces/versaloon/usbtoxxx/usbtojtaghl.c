@@ -22,10 +22,7 @@
 
 #include "compiler.h"
 
-#include "../versaloon_include.h"
 #include "interfaces.h"
-#include "../versaloon.h"
-#include "../versaloon_internal.h"
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
 
@@ -35,7 +32,7 @@ uint32_t usbtojtaghl_ir_backup = 0;
 
 vsf_err_t usbtojtaghl_callback(void *p, uint8_t *src, uint8_t *processed)
 {
-	struct versaloon_pending_t *cur_pending = (struct versaloon_pending_t *)p;
+	struct usbtoxxx_pending_t *cur_pending = (struct usbtoxxx_pending_t *)p;
 	uint16_t processed_len = 0;
 	vsf_err_t err;
 	
@@ -141,13 +138,13 @@ vsf_err_t usbtojtaghl_ir(uint8_t index, uint8_t *ir, uint16_t bitlen,
 	}
 	
 	bitlen |= 0x8000;		// indicate ir
-	SET_LE_U16(&versaloon_cmd_buf[0], bitlen);
-	versaloon_cmd_buf[2] = idle;
+	SET_LE_U16(&usbtoxxx_info->cmd_buff[0], bitlen);
+	usbtoxxx_info->cmd_buff[2] = idle;
 	
 	if (usbtojtaghl_send_callback != NULL)
 	{
 		usbtojtaghl_send_callback(0, JTAG_SCANTYPE_IR, usbtojtaghl_ir_backup,
-						versaloon_cmd_buf + 3, ir, bytelen, &processed_len);
+				usbtoxxx_info->cmd_buff + 3, ir, bytelen, &processed_len);
 	}
 	
 	if (processed_len)
@@ -156,25 +153,26 @@ vsf_err_t usbtojtaghl_ir(uint8_t index, uint8_t *ir, uint16_t bitlen,
 	}
 	else if (ir != NULL)
 	{
-		memcpy(versaloon_cmd_buf + 3, ir, bytelen);
+		memcpy(usbtoxxx_info->cmd_buff + 3, ir, bytelen);
 	}
 	else
 	{
-		memset(versaloon_cmd_buf + 3, 0, bytelen);
+		memset(usbtoxxx_info->cmd_buff + 3, 0, bytelen);
 	}
 	
 	// clear MSB to indicate IR
-	versaloon_set_pending_id(usbtojtaghl_ir_backup & 0x7FFFFFFF);
-	versaloon_set_callback(usbtojtaghl_callback);
+	usbtoxxx_set_pending_id(usbtojtaghl_ir_backup & 0x7FFFFFFF);
+	usbtoxxx_set_callback(usbtojtaghl_callback);
 	if (want_ret)
 	{
 		return usbtoxxx_inout_command(USB_TO_JTAG_HL, index,
-					versaloon_cmd_buf, bytelen + 3, bytelen, ir, 0, bytelen, 1);
+			usbtoxxx_info->cmd_buff, bytelen + 3, bytelen, ir, 0, bytelen,
+			1);
 	}
 	else
 	{
 		return usbtoxxx_inout_command(USB_TO_JTAG_HL, index,
-					versaloon_cmd_buf, bytelen + 3, bytelen, NULL, 0, 0, 1);
+			usbtoxxx_info->cmd_buff, bytelen + 3, bytelen, NULL, 0, 0, 1);
 	}
 }
 
@@ -192,13 +190,13 @@ vsf_err_t usbtojtaghl_dr(uint8_t index, uint8_t *dr, uint16_t bitlen,
 	}
 #endif
 	
-	SET_LE_U16(&versaloon_cmd_buf[0], bitlen);
-	versaloon_cmd_buf[2] = idle;
+	SET_LE_U16(&usbtoxxx_info->cmd_buff[0], bitlen);
+	usbtoxxx_info->cmd_buff[2] = idle;
 	
 	if (usbtojtaghl_send_callback != NULL)
 	{
 		usbtojtaghl_send_callback(0, JTAG_SCANTYPE_DR, usbtojtaghl_ir_backup,
-						versaloon_cmd_buf + 3, dr, bytelen, &processed_len);
+			usbtoxxx_info->cmd_buff + 3, dr, bytelen, &processed_len);
 	}
 	
 	if (processed_len)
@@ -207,25 +205,26 @@ vsf_err_t usbtojtaghl_dr(uint8_t index, uint8_t *dr, uint16_t bitlen,
 	}
 	else if (dr != NULL)
 	{
-		memcpy(versaloon_cmd_buf + 3, dr, bytelen);
+		memcpy(usbtoxxx_info->cmd_buff + 3, dr, bytelen);
 	}
 	else
 	{
-		memset(versaloon_cmd_buf + 3, 0, bytelen);
+		memset(usbtoxxx_info->cmd_buff + 3, 0, bytelen);
 	}
 	
 	// set MSB to indicate DR
-	versaloon_set_pending_id(usbtojtaghl_ir_backup | 0x80000000);
-	versaloon_set_callback(usbtojtaghl_callback);
+	usbtoxxx_set_pending_id(usbtojtaghl_ir_backup | 0x80000000);
+	usbtoxxx_set_callback(usbtojtaghl_callback);
 	if (want_ret)
 	{
 		return usbtoxxx_inout_command(USB_TO_JTAG_HL, index,
-					versaloon_cmd_buf, bytelen + 3, bytelen, dr, 0, bytelen, 1);
+			usbtoxxx_info->cmd_buff, bytelen + 3, bytelen, dr, 0, bytelen,
+			1);
 	}
 	else
 	{
 		return usbtoxxx_inout_command(USB_TO_JTAG_HL, index,
-					versaloon_cmd_buf, bytelen + 3, bytelen, NULL, 0, 0, 1);
+			usbtoxxx_info->cmd_buff, bytelen + 3, bytelen, NULL, 0, 0, 1);
 	}
 }
 
@@ -244,11 +243,11 @@ vsf_err_t usbtojtaghl_tms(uint8_t index, uint8_t *tms, uint16_t bitlen)
 	}
 #endif
 	
-	versaloon_cmd_buf[0] = (uint8_t)(bitlen - 1);
-	memcpy(versaloon_cmd_buf + 1, tms, bitlen);
+	usbtoxxx_info->cmd_buff[0] = (uint8_t)(bitlen - 1);
+	memcpy(usbtoxxx_info->cmd_buff + 1, tms, bitlen);
 	
 	return usbtoxxx_out_command(USB_TO_JTAG_HL, index,
-							versaloon_cmd_buf, ((bitlen + 7) >> 3) + 1, 0);
+					usbtoxxx_info->cmd_buff, ((bitlen + 7) >> 3) + 1, 0);
 }
 
 vsf_err_t usbtojtaghl_runtest(uint8_t index, uint32_t cycles)

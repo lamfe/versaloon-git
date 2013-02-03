@@ -22,10 +22,7 @@
 
 #include "compiler.h"
 
-#include "../versaloon_include.h"
 #include "interfaces.h"
-#include "../versaloon.h"
-#include "../versaloon_internal.h"
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
 
@@ -52,7 +49,7 @@ vsf_err_t usbtopwr_config(uint8_t index)
 	return usbtoxxx_conf_command(USB_TO_POWER, index, NULL, 0);
 }
 
-vsf_err_t usbtopwr_output(uint8_t index, uint16_t mV)
+vsf_err_t usbtopwr_set(uint8_t index, uint16_t mV)
 {
 #if PARAM_CHECK
 	if (index > 7)
@@ -64,5 +61,19 @@ vsf_err_t usbtopwr_output(uint8_t index, uint16_t mV)
 	
 	return usbtoxxx_out_command(USB_TO_POWER, index, (uint8_t *)&mV,
 								2, 0);
+}
+
+vsf_err_t usbtopwr_get(uint8_t index, uint16_t *mV)
+{
+#if PARAM_CHECK
+	if (index > 7)
+	{
+		LOG_BUG(ERRMSG_INVALID_INTERFACE_NUM, index);
+		return VSFERR_FAIL;
+	}
+#endif
+	
+	return usbtoxxx_in_command(USB_TO_POWER, index, NULL, 0, 2, (uint8_t *)&mV,
+								0, 2, 0);
 }
 
