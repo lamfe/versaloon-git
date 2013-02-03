@@ -21,8 +21,11 @@
 # MediumDensityValueLine
 # HighDensity
 # ConnectivityLine
+# XLDensity
 #
 # This is selected per board by TARGET_STM32 = <target>
+# Because vsf library use XLDensity as default, MUST be set to XLDensity
+# and the firmware will be compatible
 #
 
 ########################################################################
@@ -33,7 +36,7 @@ FLASH_LOAD_OFFSET	= 0x2000
 HSE_VALUE			= 12000000
 LD_FILE				= versaloonSTM32.ld
 TARGET_CHIP			= stm32
-TARGET_STM32		= MediumDensity
+TARGET_STM32		= XLDensity
 USR_DEFS+=-DCORE_DEBUG=STM32_DBG_NONE
 else
 ########################################################################
@@ -44,7 +47,7 @@ FLASH_LOAD_OFFSET	= 0x2000
 HSE_VALUE			= 12000000
 LD_FILE				= versaloonSTM32.ld
 TARGET_CHIP			= stm32
-TARGET_STM32		= MediumDensity
+TARGET_STM32		= XLDensity
 USR_DEFS+=-DCORE_DEBUG=STM32_DBG_NONE
 else
 ########################################################################
@@ -55,7 +58,7 @@ FLASH_LOAD_OFFSET	= 0x2000
 HSE_VALUE			= 12000000
 LD_FILE				= versaloonProSTM32.ld
 TARGET_CHIP			= stm32
-TARGET_STM32		= MediumDensity
+TARGET_STM32		= XLDensity
 USR_DEFS+=-DCORE_DEBUG=STM32_DBG_NONE
 else
 ########################################################################
@@ -66,7 +69,7 @@ FLASH_LOAD_OFFSET	= 0x3000
 HSE_VALUE			= 12000000
 LD_FILE				= stbee.ld
 TARGET_CHIP			= stm32
-TARGET_STM32		= MediumDensity
+TARGET_STM32		= XLDensity
 else
 ########################################################################
 ifeq ($(HW_BOARD),STM8S_Discovery)
@@ -76,7 +79,7 @@ FLASH_LOAD_OFFSET	= 0x0000
 HSE_VALUE			= 8000000
 LD_FILE				= st-discovery.ld
 TARGET_CHIP			= stm32
-TARGET_STM32		= MediumDensity
+TARGET_STM32		= XLDensity
 else
 ########################################################################
 ifeq ($(HW_BOARD),STM8L_Discovery)
@@ -86,7 +89,7 @@ FLASH_LOAD_OFFSET	= 0x0000
 HSE_VALUE			= 8000000
 LD_FILE				= st-discovery.ld
 TARGET_CHIP			= stm32
-TARGET_STM32		= MediumDensity
+TARGET_STM32		= XLDensity
 else
 ########################################################################
 ifeq ($(HW_BOARD),STM8SVL_Discovery)
@@ -96,7 +99,7 @@ FLASH_LOAD_OFFSET	= 0x0000
 HSE_VALUE			= 8000000
 LD_FILE				= st-discovery.ld
 TARGET_CHIP			= stm32
-TARGET_STM32		= MediumDensity
+TARGET_STM32		= XLDensity
 else
 ########################################################################
 ifeq ($(HW_BOARD),STM32VL_Discovery)
@@ -106,7 +109,7 @@ FLASH_LOAD_OFFSET	= 0x0000
 HSE_VALUE			= 8000000
 LD_FILE				= st-discovery.ld
 TARGET_CHIP			= stm32
-TARGET_STM32		= MediumDensity
+TARGET_STM32		= XLDensity
 else
 ########################################################################
 ifeq ($(HW_BOARD),STM32L_Discovery)
@@ -116,7 +119,7 @@ FLASH_LOAD_OFFSET	= 0x2000
 HSE_VALUE			= 8000000
 LD_FILE				= st-discovery.ld
 TARGET_CHIP			= stm32
-TARGET_STM32		= MediumDensity
+TARGET_STM32		= XLDensity
 else
 ########################################################################
 ifeq ($(HW_BOARD),STM32F4_Discovery)
@@ -126,7 +129,7 @@ FLASH_LOAD_OFFSET	= 0x0000
 HSE_VALUE			= 8000000
 LD_FILE				= st-discovery.ld
 TARGET_CHIP			= stm32
-TARGET_STM32		= MediumDensity
+TARGET_STM32		= XLDensity
 else
 ########################################################################
 ifeq ($(HW_BOARD),ST_Link)
@@ -136,7 +139,7 @@ FLASH_LOAD_OFFSET	= 0x0000
 HSE_VALUE			= 8000000
 LD_FILE				= st-discovery.ld
 TARGET_CHIP			= stm32
-TARGET_STM32		= MediumDensity
+TARGET_STM32		= XLDensity
 else
 ########################################################################
 ifeq ($(HW_BOARD),STM32F0_Discovery)
@@ -146,7 +149,7 @@ FLASH_LOAD_OFFSET	= 0x0000
 HSE_VALUE			= 8000000
 LD_FILE				= st-discovery.ld
 TARGET_CHIP			= stm32
-TARGET_STM32		= MediumDensity
+TARGET_STM32		= XLDensity
 else
 ########################################################################
 # Unknown board error
