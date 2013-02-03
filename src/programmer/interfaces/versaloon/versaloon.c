@@ -146,17 +146,6 @@ static vsf_err_t versaloon_fini(void)
 		usb_release_interface(versaloon_device_handle, usb_param_interface());
 		usb_close(versaloon_device_handle);
 		versaloon_device_handle = NULL;
-		
-		if (usbtoxxx_info->buff != NULL)
-		{
-			free(usbtoxxx_info->buff);
-			usbtoxxx_info->buff = NULL;
-		}
-		if (usbtoxxx_info->cmd_buff != NULL)
-		{
-			free(usbtoxxx_info->cmd_buff);
-			usbtoxxx_info->cmd_buff = NULL;
-		}
 	}
 	
 	return VSFERR_NONE;
@@ -242,21 +231,6 @@ static vsf_err_t versaloon_init(void *p)
 	// free temporary buffer
 	free(usbtoxxx_info->buff);
 	usbtoxxx_info->buff = NULL;
-	
-	usbtoxxx_info->buff = (uint8_t *)malloc(usbtoxxx_info->buff_len);
-	if (NULL == usbtoxxx_info->buff)
-	{
-		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-		err = VSFERR_NOT_ENOUGH_RESOURCES;
-		goto versaloon_init_fail;
-	}
-	usbtoxxx_info->cmd_buff = (uint8_t *)malloc(usbtoxxx_info->buff_len - 3);
-	if (NULL == usbtoxxx_info->cmd_buff)
-	{
-		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-		err = VSFERR_NOT_ENOUGH_RESOURCES;
-		goto versaloon_init_fail;
-	}
 	
 	if (usbtoxxx_init())
 	{
