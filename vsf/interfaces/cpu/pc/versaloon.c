@@ -32,17 +32,25 @@
 static usb_dev_handle *versaloon_device_handle = NULL;
 static uint32_t versaloon_to = VERSALOON_TIMEOUT;
 
+// usbtoxxx transact structure
+static vsf_err_t versaloon_transact(uint16_t out_len, uint16_t *inlen);
+static struct usbtoxxx_info_t versaloon_usbtoxxx_info =
+{
+	NULL, NULL, 0,
+	versaloon_transact
+};
+
 static vsf_err_t versaloon_transact(uint16_t out_len, uint16_t *inlen)
 {
 	int ret;
 	
 #if PARAM_CHECK
-	if (NULL == usbtoxxx_info->buff)
+	if (NULL == versaloon_usbtoxxx_info.buff)
 	{
-		LOG_BUG(ERRMSG_INVALID_BUFFER, TO_STR(usbtoxxx_info->buff));
+		LOG_BUG(ERRMSG_INVALID_BUFFER, TO_STR(versaloon_usbtoxxx_info.buff));
 		return ERRCODE_INVALID_BUFFER;
 	}
-	if ((0 == out_len) || (out_len > usbtoxxx_info->buff_len))
+	if ((0 == out_len) || (out_len > versaloon_usbtoxxx_info.buff_len))
 	{
 		LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
 		return VSFERR_INVALID_PARAMETER;
@@ -50,7 +58,7 @@ static vsf_err_t versaloon_transact(uint16_t out_len, uint16_t *inlen)
 #endif
 	
 	ret = usb_bulk_write(versaloon_device_handle, usb_param_epout(),
-						 (char *)usbtoxxx_info->buff, out_len, versaloon_to);
+				(char *)versaloon_usbtoxxx_info.buff, out_len, versaloon_to);
 	if (ret != out_len)
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION_ERRSTRING, "send usb data",
@@ -61,7 +69,8 @@ static vsf_err_t versaloon_transact(uint16_t out_len, uint16_t *inlen)
 	if (inlen != NULL)
 	{
 		ret = usb_bulk_read(versaloon_device_handle, usb_param_epin(),
-			(char *)usbtoxxx_info->buff, usbtoxxx_info->buff_len, versaloon_to);
+							(char *)versaloon_usbtoxxx_info.buff,
+							versaloon_usbtoxxx_info.buff_len, versaloon_to);
 		if (ret > 0)
 		{
 			*inlen = (uint16_t)ret;
@@ -80,13 +89,6 @@ static vsf_err_t versaloon_transact(uint16_t out_len, uint16_t *inlen)
 	}
 }
 
-// usbtoxxx transact structure
-static struct usbtoxxx_info_t versaloon_usbtoxxx_info =
-{
-	NULL, NULL, 0,
-	versaloon_transact
-};
-
 
 
 
@@ -99,6 +101,7 @@ static vsf_err_t versaloon_fini(void)
 	if (versaloon_device_handle != NULL)
 	{
 		usbtoxxx_fini();
+		usbtoxxx_info = NULL;
 		
 		usb_release_interface(versaloon_device_handle, usb_param_interface());
 		usb_close(versaloon_device_handle);
@@ -115,8 +118,6 @@ static vsf_err_t versaloon_init(void *p)
 	uint8_t retry;
 	uint32_t timeout_tmp;
 	vsf_err_t err = VSFERR_NONE;
-	
-	usbtoxxx_info = &versaloon_usbtoxxx_info;
 	
 	if (!usb_param_valid())
 	{
@@ -143,12 +144,13 @@ static vsf_err_t versaloon_init(void *p)
 	}
 	
 	// malloc temporary buffer
-	if (!usbtoxxx_info->buff_len)
+	if (!versaloon_usbtoxxx_info.buff_len)
 	{
-		usbtoxxx_info->buff_len = 256;
+		versaloon_usbtoxxx_info.buff_len = 256;
 	}
-	usbtoxxx_info->buff = (uint8_t *)malloc(usbtoxxx_info->buff_len);
-	if (NULL == usbtoxxx_info->buff)
+	versaloon_usbtoxxx_info.buff =
+						(uint8_t *)malloc(versaloon_usbtoxxx_info.buff_len);
+	if (NULL == versaloon_usbtoxxx_info.buff)
 	{
 		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 		return VSFERR_NOT_ENOUGH_RESOURCES;
@@ -165,7 +167,7 @@ static vsf_err_t versaloon_init(void *p)
 	versaloon_to = 100;
 	for (retry = 0; retry < VERSALOON_RETRY_CNT; retry++)
 	{
-		usbtoxxx_info->buff[0] = VERSALOON_GET_INFO;
+		versaloon_usbtoxxx_info.buff[0] = VERSALOON_GET_INFO;
 		if (!versaloon_transact(1, &ret) && (ret >= 3))
 		{
 			break;
@@ -180,14 +182,16 @@ static vsf_err_t versaloon_init(void *p)
 		goto versaloon_init_fail;
 	}
 	
-	usbtoxxx_info->buff[ret] = 0;
-	usbtoxxx_info->buff_len = GET_LE_U16(&usbtoxxx_info->buff[0]);
-	LOG_INFO("%s", usbtoxxx_info->buff + 2);
+	versaloon_usbtoxxx_info.buff[ret] = 0;
+	versaloon_usbtoxxx_info.buff_len =
+								GET_LE_U16(&versaloon_usbtoxxx_info.buff[0]);
+	LOG_INFO("%s", &versaloon_usbtoxxx_info.buff[2]);
 	
 	// free temporary buffer
-	free(usbtoxxx_info->buff);
-	usbtoxxx_info->buff = NULL;
+	free(versaloon_usbtoxxx_info.buff);
+	versaloon_usbtoxxx_info.buff = NULL;
 	
+	usbtoxxx_info = &versaloon_usbtoxxx_info;
 	if (usbtoxxx_init())
 	{
 		err = VSFERR_FAIL;
