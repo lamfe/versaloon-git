@@ -73,7 +73,7 @@ vsf_err_t usbtopwr_get(uint8_t index, uint16_t *mV)
 	}
 #endif
 	
-	return usbtoxxx_in_command(USB_TO_POWER, index, NULL, 0, 2, (uint8_t *)&mV,
+	return usbtoxxx_in_command(USB_TO_POWER, index, NULL, 0, 2, (uint8_t *)mV,
 								0, 2, 0);
 }
 
