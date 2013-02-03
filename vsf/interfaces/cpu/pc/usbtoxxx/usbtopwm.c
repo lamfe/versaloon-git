@@ -22,10 +22,7 @@
 
 #include "compiler.h"
 
-#include "../versaloon_include.h"
 #include "interfaces.h"
-#include "../versaloon.h"
-#include "../versaloon_internal.h"
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
 
@@ -89,13 +86,13 @@ vsf_err_t usbtopwm_out(uint8_t index, uint16_t count, uint16_t *rate)
 	}
 #endif
 	
-	SET_LE_U16(&versaloon_cmd_buf[0], count);
+	SET_LE_U16(&usbtoxxx_info->cmd_buff[0], count);
 	for (i = 0; i < count; i++)
 	{
-		SET_LE_U16(&versaloon_cmd_buf[2 + i * 2], rate[i]);
+		SET_LE_U16(&usbtoxxx_info->cmd_buff[2 + i * 2], rate[i]);
 	}
 	
-	return usbtoxxx_out_command(USB_TO_PWM, index, versaloon_cmd_buf,
+	return usbtoxxx_out_command(USB_TO_PWM, index, usbtoxxx_info->cmd_buff,
 								2 + 2 * count, 0);
 }
 
@@ -113,10 +110,10 @@ vsf_err_t usbtopwm_in(uint8_t index, uint16_t count, uint16_t *rate)
 	}
 #endif
 	
-	SET_LE_U16(&versaloon_cmd_buf[0], count);
-	memset(&versaloon_cmd_buf[2], 0, 4 * count);
+	SET_LE_U16(&usbtoxxx_info->cmd_buff[0], count);
+	memset(&usbtoxxx_info->cmd_buff[2], 0, 4 * count);
 	
-	return usbtoxxx_in_command(USB_TO_PWM, index, versaloon_cmd_buf,
+	return usbtoxxx_in_command(USB_TO_PWM, index, usbtoxxx_info->cmd_buff,
 					2 + 4 * count, 4 * count, (uint8_t *)rate, 0, 4 * count, 0);
 }
 

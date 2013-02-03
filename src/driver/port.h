@@ -29,8 +29,6 @@
 
 #include <windows.h>
 
-#define DEFAULT_COMPORT			"COM1"
-
 #define FILE_SEPARATOR			'\\'
 #define sleep_ms(ms)			Sleep(ms)
 
@@ -39,8 +37,6 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <termios.h>
-
-#define DEFAULT_COMPORT			"/dev/ttyS0"
 
 #define FILE_SEPARATOR			'/'
 #define sleep_ms(ms)			usleep((ms) * 1000)

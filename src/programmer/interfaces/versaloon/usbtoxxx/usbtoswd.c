@@ -24,16 +24,13 @@
 
 #include "compiler.h"
 
-#include "../versaloon_include.h"
 #include "interfaces.h"
-#include "../versaloon.h"
-#include "../versaloon_internal.h"
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
 
 vsf_err_t usbtoswd_callback(void *p, uint8_t *src, uint8_t *processed)
 {
-	struct versaloon_pending_t *pending = (struct versaloon_pending_t *)p;
+	struct usbtoxxx_pending_t *pending = (struct usbtoxxx_pending_t *)p;
 	
 	processed = processed;
 	
@@ -87,11 +84,11 @@ vsf_err_t usbtoswd_seqout(uint8_t index, uint8_t *data, uint16_t bitlen)
 	}
 #endif
 	
-	SET_LE_U16(&versaloon_cmd_buf[0], bitlen);
-	memcpy(versaloon_cmd_buf + 2, data, bytelen);
+	SET_LE_U16(&usbtoxxx_info->cmd_buff[0], bitlen);
+	memcpy(usbtoxxx_info->cmd_buff + 2, data, bytelen);
 	
 	return usbtoxxx_out_command(USB_TO_SWD, index,
-								versaloon_cmd_buf, bytelen + 2, 0);
+								usbtoxxx_info->cmd_buff, bytelen + 2, 0);
 }
 
 vsf_err_t usbtoswd_seqin(uint8_t index, uint8_t *data, uint16_t bitlen)
@@ -142,8 +139,8 @@ vsf_err_t usbtoswd_transact(uint8_t index, uint8_t request,
 		memset(buff + 1, 0, 4);
 	}
 	
-	versaloon_set_extra_data(ack);
-	versaloon_set_callback(usbtoswd_callback);
+	usbtoxxx_set_extra_data(ack);
+	usbtoxxx_set_callback(usbtoswd_callback);
 	if (request & 0x04)
 	{
 		// read

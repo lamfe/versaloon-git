@@ -22,10 +22,7 @@
 
 #include "compiler.h"
 
-#include "../versaloon_include.h"
 #include "interfaces.h"
-#include "../versaloon.h"
-#include "../versaloon_internal.h"
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
 
@@ -72,19 +69,19 @@ vsf_err_t usbtoi2c_read(uint8_t index, uint16_t chip_addr,
 	}
 #endif
 	
-	if (data_len > (versaloon_buf_size - 6 - 4))
+	if (data_len > (usbtoxxx_info->buff_len - 6 - 4))
 	{
 		LOG_BUG(ERRMSG_INVALID_VALUE, data_len, "I2C data size too large");
 		return VSFERR_FAIL;
 	}
 	
-	versaloon_cmd_buf[0] = (chip_addr >> 0) & 0xFF;
-	SET_LE_U16(&versaloon_cmd_buf[1], data_len);
-	versaloon_cmd_buf[3] = stop;
-	versaloon_cmd_buf[4] = nacklast ? 1 : 0;
-	memset(&versaloon_cmd_buf[5], 0, data_len);
+	usbtoxxx_info->cmd_buff[0] = (chip_addr >> 0) & 0xFF;
+	SET_LE_U16(&usbtoxxx_info->cmd_buff[1], data_len);
+	usbtoxxx_info->cmd_buff[3] = stop;
+	usbtoxxx_info->cmd_buff[4] = nacklast ? 1 : 0;
+	memset(&usbtoxxx_info->cmd_buff[5], 0, data_len);
 	
-	return usbtoxxx_in_command(USB_TO_I2C, index, versaloon_cmd_buf,
+	return usbtoxxx_in_command(USB_TO_I2C, index, usbtoxxx_info->cmd_buff,
 							   data_len + 5, data_len, data, 0, data_len, 0);
 }
 
@@ -99,18 +96,18 @@ vsf_err_t usbtoi2c_write(uint8_t index, uint16_t chip_addr,
 	}
 #endif
 	
-	if (data_len > (versaloon_buf_size - 6 - 4))
+	if (data_len > (usbtoxxx_info->buff_len - 6 - 4))
 	{
 		LOG_BUG(ERRMSG_INVALID_VALUE, data_len, "I2C data size too large");
 		return VSFERR_FAIL;
 	}
 	
-	versaloon_cmd_buf[0] = (chip_addr >> 0) & 0xFF;
-	SET_LE_U16(&versaloon_cmd_buf[1], data_len);
-	versaloon_cmd_buf[3] = stop;
-	memcpy(&versaloon_cmd_buf[4], data, data_len);
+	usbtoxxx_info->cmd_buff[0] = (chip_addr >> 0) & 0xFF;
+	SET_LE_U16(&usbtoxxx_info->cmd_buff[1], data_len);
+	usbtoxxx_info->cmd_buff[3] = stop;
+	memcpy(&usbtoxxx_info->cmd_buff[4], data, data_len);
 	
-	return usbtoxxx_out_command(USB_TO_I2C, index, versaloon_cmd_buf,
+	return usbtoxxx_out_command(USB_TO_I2C, index, usbtoxxx_info->cmd_buff,
 								data_len + 4, 0);
 }
 

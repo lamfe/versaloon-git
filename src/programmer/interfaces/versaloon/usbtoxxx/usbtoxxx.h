@@ -19,14 +19,79 @@
 #ifndef __USBTOXXX_H_INCLUDED__
 #define __USBTOXXX_H_INCLUDED__
 
+#include "usbtoxxx_cfg.h"
 #include "interfaces.h"
+
+#define USB_TO_XXX_ABILITIES_LEN			12
+
+typedef vsf_err_t (*usbtoxxx_callback_t)(void *, uint8_t *, uint8_t *);
+struct usbtoxxx_want_pos_t
+{
+	uint16_t offset;
+	uint16_t size;
+	uint8_t *buff;
+	struct usbtoxxx_want_pos_t *next;
+};
+struct usbtoxxx_pending_t
+{
+	uint8_t type;
+	uint8_t cmd;
+	uint16_t want_data_pos;
+	uint16_t want_data_size;
+	uint16_t actual_data_size;
+	uint8_t *data_buffer;
+	uint8_t collect;
+	uint32_t id;
+	struct usbtoxxx_want_pos_t *pos;
+	void *extra_data;
+	usbtoxxx_callback_t callback;
+};
+
+struct usbtoxxx_context_t
+{
+	uint8_t type_pre;
+	uint8_t *usbtoxxx_buffer;
+	uint16_t usbtoxxx_current_cmd_index;
+	uint16_t usbtoxxx_buffer_index;
+	uint16_t usbtoxxx_pending_idx;
+};
+
+struct usbtoxxx_info_t
+{
+	// buffer
+	uint8_t *buff;
+	uint8_t *cmd_buff;
+	uint16_t buff_len;
+	
+	// transact
+	vsf_err_t (*transact)(uint16_t out_len, uint16_t *inlen);
+	
+	// private
+	uint8_t abilities[USB_TO_XXX_ABILITIES_LEN];
+	uint8_t type_pre;
+	uint16_t buffer_index;
+	uint16_t current_cmd_index;
+	uint8_t *usbtoxxx_buffer;
+	
+	uint16_t collect_index;
+	uint8_t collect_cmd;
+	uint8_t poll_nesting;
+	
+	struct usbtoxxx_context_t poll_context;
+	
+	struct usbtoxxx_pending_t pending[USBTOXXX_CFG_MAX_PENDING_NUMBER];
+	uint16_t pending_idx;
+	
+	uint32_t pending_id;
+	usbtoxxx_callback_t callback;
+	void *extra_data;
+	struct usbtoxxx_want_pos_t *want_pos;
+} *usbtoxxx_info;
 
 vsf_err_t usbtoxxx_init(void);
 vsf_err_t usbtoxxx_fini(void);
 vsf_err_t usbtoxxx_execute_command(void);
 
-#define USB_TO_XXX_ABILITIES_LEN			12
-extern uint8_t usbtoxxx_abilities[USB_TO_XXX_ABILITIES_LEN];
 bool usbtoxxx_interface_supported(uint8_t cmd);
 
 // USB_TO_INFO
@@ -228,7 +293,8 @@ vsf_err_t usbtomsp430sbw_poll(uint8_t index, uint32_t dr,
 vsf_err_t usbtopwr_init(uint8_t index);
 vsf_err_t usbtopwr_fini(uint8_t index);
 vsf_err_t usbtopwr_config(uint8_t index);
-vsf_err_t usbtopwr_output(uint8_t index, uint16_t mV);
+vsf_err_t usbtopwr_set(uint8_t index, uint16_t mV);
+vsf_err_t usbtopwr_get(uint8_t index, uint16_t *mV);
 
 
 

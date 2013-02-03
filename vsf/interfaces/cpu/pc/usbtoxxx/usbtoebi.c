@@ -22,10 +22,7 @@
 
 #include "compiler.h"
 
-#include "../versaloon_include.h"
 #include "interfaces.h"
-#include "../versaloon.h"
-#include "../versaloon_internal.h"
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
 
@@ -54,52 +51,52 @@ vsf_err_t usbtoebi_config(uint8_t index, uint8_t target_index,
 	}
 #endif
 	
-	versaloon_cmd_buf[0] = target_index;
+	usbtoxxx_info->cmd_buff[0] = target_index;
 	switch (target_type)
 	{
 	case EBI_TGTTYP_NOR:
-		versaloon_cmd_buf[1] = nor_info->common_info.data_width;
-		versaloon_cmd_buf[2] = nor_info->common_info.wait_signal;
-		versaloon_cmd_buf[3] = nor_info->param.addr_multiplex ? 1 : 0;
-		SET_LE_U16(&versaloon_cmd_buf[4], 
+		usbtoxxx_info->cmd_buff[1] = nor_info->common_info.data_width;
+		usbtoxxx_info->cmd_buff[2] = nor_info->common_info.wait_signal;
+		usbtoxxx_info->cmd_buff[3] = nor_info->param.addr_multiplex ? 1 : 0;
+		SET_LE_U16(&usbtoxxx_info->cmd_buff[4], 
 								nor_info->param.timing.address_setup_cycle_r);
-		SET_LE_U16(&versaloon_cmd_buf[6], 
+		SET_LE_U16(&usbtoxxx_info->cmd_buff[6], 
 								nor_info->param.timing.address_hold_cycle_r);
-		SET_LE_U16(&versaloon_cmd_buf[8], 
+		SET_LE_U16(&usbtoxxx_info->cmd_buff[8], 
 								nor_info->param.timing.data_setup_cycle_r);
-		SET_LE_U32(&versaloon_cmd_buf[10], 
+		SET_LE_U32(&usbtoxxx_info->cmd_buff[10], 
 								nor_info->param.timing.clock_hz_r);
-		SET_LE_U16(&versaloon_cmd_buf[14], 
+		SET_LE_U16(&usbtoxxx_info->cmd_buff[14], 
 								nor_info->param.timing.address_setup_cycle_w);
-		SET_LE_U16(&versaloon_cmd_buf[16], 
+		SET_LE_U16(&usbtoxxx_info->cmd_buff[16], 
 								nor_info->param.timing.address_hold_cycle_w);
-		SET_LE_U16(&versaloon_cmd_buf[18], 
+		SET_LE_U16(&usbtoxxx_info->cmd_buff[18], 
 								nor_info->param.timing.data_setup_cycle_w);
-		SET_LE_U32(&versaloon_cmd_buf[20], nor_info->param.timing.clock_hz_w);
+		SET_LE_U32(&usbtoxxx_info->cmd_buff[20], nor_info->param.timing.clock_hz_w);
 		
 		return usbtoxxx_conf_command(USB_TO_EBI, index,
-										versaloon_cmd_buf, 24);
+										usbtoxxx_info->cmd_buff, 24);
 	case EBI_TGTTYP_NAND:
-		versaloon_cmd_buf[1] = nand_info->common_info.data_width;
-		versaloon_cmd_buf[2] = nand_info->common_info.wait_signal;
-		SET_LE_U32(&versaloon_cmd_buf[3], nand_info->param.clock_hz);
-		versaloon_cmd_buf[7] = nand_info->param.ecc.ecc_enable ? 1 : 0;
-		SET_LE_U16(&versaloon_cmd_buf[8], nand_info->param.ecc.ecc_page_size);
-		versaloon_cmd_buf[10] = nand_info->param.timing.ale_to_re_cycle;
-		versaloon_cmd_buf[11] = nand_info->param.timing.cle_to_re_cycle;
-		SET_LE_U16(&versaloon_cmd_buf[12], nand_info->param.timing.setup_cycle);
-		SET_LE_U16(&versaloon_cmd_buf[14], nand_info->param.timing.wait_cycle);
-		versaloon_cmd_buf[16] = nand_info->param.timing.hold_cycle;
-		versaloon_cmd_buf[17] = nand_info->param.timing.hiz_cycle;
-		SET_LE_U16(&versaloon_cmd_buf[18], 
+		usbtoxxx_info->cmd_buff[1] = nand_info->common_info.data_width;
+		usbtoxxx_info->cmd_buff[2] = nand_info->common_info.wait_signal;
+		SET_LE_U32(&usbtoxxx_info->cmd_buff[3], nand_info->param.clock_hz);
+		usbtoxxx_info->cmd_buff[7] = nand_info->param.ecc.ecc_enable ? 1 : 0;
+		SET_LE_U16(&usbtoxxx_info->cmd_buff[8], nand_info->param.ecc.ecc_page_size);
+		usbtoxxx_info->cmd_buff[10] = nand_info->param.timing.ale_to_re_cycle;
+		usbtoxxx_info->cmd_buff[11] = nand_info->param.timing.cle_to_re_cycle;
+		SET_LE_U16(&usbtoxxx_info->cmd_buff[12], nand_info->param.timing.setup_cycle);
+		SET_LE_U16(&usbtoxxx_info->cmd_buff[14], nand_info->param.timing.wait_cycle);
+		usbtoxxx_info->cmd_buff[16] = nand_info->param.timing.hold_cycle;
+		usbtoxxx_info->cmd_buff[17] = nand_info->param.timing.hiz_cycle;
+		SET_LE_U16(&usbtoxxx_info->cmd_buff[18], 
 									nand_info->param.timing.setup_cycle_attr);
-		SET_LE_U16(&versaloon_cmd_buf[20], 
+		SET_LE_U16(&usbtoxxx_info->cmd_buff[20], 
 									nand_info->param.timing.wait_cycle_attr);
-		versaloon_cmd_buf[22] = nand_info->param.timing.hold_cycle_attr;
-		versaloon_cmd_buf[23] = nand_info->param.timing.hiz_cycle_attr;
+		usbtoxxx_info->cmd_buff[22] = nand_info->param.timing.hold_cycle_attr;
+		usbtoxxx_info->cmd_buff[23] = nand_info->param.timing.hiz_cycle_attr;
 		
 		return usbtoxxx_conf_command(USB_TO_EBI, index,
-										versaloon_cmd_buf, 24);
+										usbtoxxx_info->cmd_buff, 24);
 	default:
 		return VSFERR_FAIL;
 	}
@@ -130,11 +127,11 @@ vsf_err_t usbtoebi_read(uint8_t index, uint8_t target_index,
 	}
 #endif
 	
-	versaloon_cmd_buf[0] = target_index;
-	versaloon_cmd_buf[1] = data_size;
-	SET_LE_U32(&versaloon_cmd_buf[2], address);
-	SET_LE_U32(&versaloon_cmd_buf[6], count);
-	return usbtoxxx_in_command(USB_TO_EBI, index, versaloon_cmd_buf,
+	usbtoxxx_info->cmd_buff[0] = target_index;
+	usbtoxxx_info->cmd_buff[1] = data_size;
+	SET_LE_U32(&usbtoxxx_info->cmd_buff[2], address);
+	SET_LE_U32(&usbtoxxx_info->cmd_buff[6], count);
+	return usbtoxxx_in_command(USB_TO_EBI, index, usbtoxxx_info->cmd_buff,
 				(uint16_t)(10 + count * data_size), 
 				(uint16_t)(count * data_size), buff, 0, 
 				(uint16_t)(count * data_size), 0);
@@ -153,32 +150,32 @@ vsf_err_t usbtoebi_write(uint8_t index, uint8_t target_index,
 	}
 #endif
 	
-	versaloon_cmd_buf[0] = target_index;
-	versaloon_cmd_buf[1] = data_size;
-	SET_LE_U32(&versaloon_cmd_buf[2], address);
-	SET_LE_U32(&versaloon_cmd_buf[6], count);
+	usbtoxxx_info->cmd_buff[0] = target_index;
+	usbtoxxx_info->cmd_buff[1] = data_size;
+	SET_LE_U32(&usbtoxxx_info->cmd_buff[2], address);
+	SET_LE_U32(&usbtoxxx_info->cmd_buff[6], count);
 	switch (data_size)
 	{
 	case 1:
-		memcpy(&versaloon_cmd_buf[10], buff, data_size * count);
+		memcpy(&usbtoxxx_info->cmd_buff[10], buff, data_size * count);
 		break;
 	case 2:
 		for (i = 0; i < count; i++)
 		{
-			SET_LE_U16(&versaloon_cmd_buf[10 + i * 2], 
+			SET_LE_U16(&usbtoxxx_info->cmd_buff[10 + i * 2], 
 						GET_SYS_U16(&buff[i * 2]));
 		}
 		break;
 	case 4:
 		for (i = 0; i < count; i++)
 		{
-			SET_LE_U32(&versaloon_cmd_buf[10 + i * 4], 
+			SET_LE_U32(&usbtoxxx_info->cmd_buff[10 + i * 4], 
 						GET_SYS_U32(&buff[i * 4]));
 		}
 		break;
 	default:
 		return VSFERR_FAIL;
 	}
-	return usbtoxxx_out_command(USB_TO_EBI, index, versaloon_cmd_buf,
+	return usbtoxxx_out_command(USB_TO_EBI, index, usbtoxxx_info->cmd_buff,
 									(uint16_t)(10 + count * data_size), 0);
 }

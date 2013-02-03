@@ -22,10 +22,7 @@
 
 #include "compiler.h"
 
-#include "../versaloon_include.h"
 #include "interfaces.h"
-#include "../versaloon.h"
-#include "../versaloon_internal.h"
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
 
@@ -140,7 +137,7 @@ vsf_err_t usbtospi_io(uint8_t index, uint8_t *out, uint8_t *in,
 	
 	if (NULL == out)
 	{
-		cmd_ptr = versaloon_cmd_buf;
+		cmd_ptr = usbtoxxx_info->cmd_buff;
 		memset(cmd_ptr, 0xFF, bytelen);
 	}
 	else

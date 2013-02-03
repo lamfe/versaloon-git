@@ -22,10 +22,7 @@
 
 #include "compiler.h"
 
-#include "../versaloon_include.h"
 #include "interfaces.h"
-#include "../versaloon.h"
-#include "../versaloon_internal.h"
 #include "usbtoxxx.h"
 #include "usbtoxxx_internal.h"
 
@@ -115,17 +112,17 @@ vsf_err_t usbtojtagll_scan(uint8_t index, uint8_t* data,
 	{
 		tms_before_valid = 1;
 		bytelen |= 0x8000;
-		versaloon_cmd_buf[2] = tms_before;
+		usbtoxxx_info->cmd_buff[2] = tms_before;
 	}
-	SET_LE_U16(&versaloon_cmd_buf[0], bytelen);
+	SET_LE_U16(&usbtoxxx_info->cmd_buff[0], bytelen);
 	bytelen &= 0x7FFF;
 	
-	memcpy(&versaloon_cmd_buf[2 + tms_before_valid], data, bytelen);
-	versaloon_cmd_buf[2 + tms_before_valid + bytelen + 0] = tms_after0;
-	versaloon_cmd_buf[2 + tms_before_valid + bytelen + 1] = tms_after1;
+	memcpy(&usbtoxxx_info->cmd_buff[2 + tms_before_valid], data, bytelen);
+	usbtoxxx_info->cmd_buff[2 + tms_before_valid + bytelen + 0] = tms_after0;
+	usbtoxxx_info->cmd_buff[2 + tms_before_valid + bytelen + 1] = tms_after1;
 	
 	return usbtoxxx_inout_command(USB_TO_JTAG_LL, index,
-							versaloon_cmd_buf, bytelen + tms_before_valid + 4,
-							bytelen, data, 0, bytelen, 0);
+				usbtoxxx_info->cmd_buff, bytelen + tms_before_valid + 4,
+				bytelen, data, 0, bytelen, 0);
 }
 

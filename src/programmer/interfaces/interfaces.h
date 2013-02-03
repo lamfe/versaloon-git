@@ -24,6 +24,9 @@
 #include "config.h"
 #endif
 
+#include <stdint.h>
+
+#include "app_type.h"
 #include "vsf_err.h"
 #include "interfaces_const.h"
 #include "versaloon/versaloon.h"
@@ -169,6 +172,7 @@ struct interface_gpio_t
 {
 	vsf_err_t (*init)(uint8_t index);
 	vsf_err_t (*fini)(uint8_t index);
+	vsf_err_t (*config_pin)(uint8_t index, uint8_t pin_idx, uint8_t mode);
 	vsf_err_t (*config)(uint8_t index, uint32_t pin_mask, uint32_t io,
 						uint32_t pull_en_mask, uint32_t input_pull_mask);
 	vsf_err_t (*set)(uint8_t index, uint32_t pin_mask);
