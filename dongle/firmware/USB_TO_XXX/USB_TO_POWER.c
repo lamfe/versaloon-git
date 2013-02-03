@@ -70,14 +70,15 @@ void USB_TO_POWER_ProcessCmd(uint8_t *dat, uint16_t len)
 		case USB_TO_XXX_IN:
 			if (app_interfaces.target_voltage.get(device_idx, &voltage))
 			{
-				buffer_reply[rep_len] = USB_TO_XXX_FAILED;
+				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
+				voltage = 0;
 			}
 			else
 			{
-				buffer_reply[rep_len] = USB_TO_XXX_OK;
-				SET_LE_U16(&buffer_reply[rep_len], voltage);
+				buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			}
-			rep_len += 3;
+			SET_LE_U16(&buffer_reply[rep_len], voltage);
+			rep_len += 2;
 			break;
 		case USB_TO_XXX_OUT:
 			voltage = GET_LE_U16(&dat[index]);
