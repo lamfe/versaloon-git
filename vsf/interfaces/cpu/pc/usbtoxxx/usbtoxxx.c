@@ -364,8 +364,30 @@ vsf_err_t usbtoxxx_execute_command(void)
 
 vsf_err_t usbtoxxx_init(void)
 {
+	if (0 == usbtoxxx_info->buff_len)
+	{
+		return VSFERR_INVALID_PARAMETER;
+	}
+	
 	memset(usbtoxxx_info->pending, 0, sizeof(usbtoxxx_info->pending));
 	usbtoxxx_info->pending_idx = 0;
+	
+	if (NULL == usbtoxxx_info->buff)
+	{
+		usbtoxxx_info->buff = (uint8_t *)malloc(usbtoxxx_info->buff_len);
+		if (NULL == usbtoxxx_info->buff)
+		{
+			return VSFERR_NOT_ENOUGH_RESOURCES;
+		}
+	}
+	if (NULL == usbtoxxx_info->cmd_buff)
+	{
+		usbtoxxx_info->cmd_buff = (uint8_t *)malloc(usbtoxxx_info->buff_len);
+		if (NULL == usbtoxxx_info->cmd_buff)
+		{
+			return VSFERR_NOT_ENOUGH_RESOURCES;
+		}
+	}
 	
 	if (usbtoinfo_get_abilities(usbtoxxx_info->abilities) ||
 		usbtoxxx_execute_command())
@@ -381,6 +403,16 @@ vsf_err_t usbtoxxx_init(void)
 
 vsf_err_t usbtoxxx_fini(void)
 {
+	if (usbtoxxx_info->buff != NULL)
+	{
+		free(usbtoxxx_info->buff);
+		usbtoxxx_info->buff = NULL;
+	}
+	if (usbtoxxx_info->cmd_buff != NULL)
+	{
+		free(usbtoxxx_info->cmd_buff);
+		usbtoxxx_info->cmd_buff = NULL;
+	}
 	usbtoxxx_free_want_pos();
 	usbtoxxx_info->usbtoxxx_buffer = NULL;
 	usbtoxxx_info->type_pre = 0;
