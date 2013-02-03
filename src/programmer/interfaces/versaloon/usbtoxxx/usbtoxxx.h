@@ -86,6 +86,9 @@ struct usbtoxxx_info_t
 	usbtoxxx_callback_t callback;
 	void *extra_data;
 	struct usbtoxxx_want_pos_t *want_pos;
+	
+	bool buff_allocated;
+	bool cmd_buff_allocated;
 } *usbtoxxx_info;
 
 vsf_err_t usbtoxxx_init(void);
