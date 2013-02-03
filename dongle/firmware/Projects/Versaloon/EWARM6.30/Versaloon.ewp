@@ -29,8 +29,8 @@
         </option>
         <option>
           <name>Variant</name>
-          <version>19</version>
-          <state>37</state>
+          <version>20</version>
+          <state>38</state>
         </option>
         <option>
           <name>GEndianMode</name>
@@ -87,7 +87,7 @@
         </option>
         <option>
           <name>OGLastSavedByProductVersion</name>
-          <state>6.30.3.53229</state>
+          <state>6.40.5.54273</state>
         </option>
         <option>
           <name>GeneralEnableMisra</name>
@@ -99,7 +99,7 @@
         </option>
         <option>
           <name>OGChipSelectEditMenu</name>
-          <state>STM32F10xxE	ST STM32F10xxE</state>
+          <state>STM32F103xE	ST STM32F103xE</state>
         </option>
         <option>
           <name>GenLowLevelInterface</name>
@@ -137,13 +137,13 @@
         </option>
         <option>
           <name>GFPUCoreSlave</name>
-          <version>19</version>
-          <state>37</state>
+          <version>20</version>
+          <state>38</state>
         </option>
         <option>
           <name>GBECoreSlave</name>
-          <version>19</version>
-          <state>37</state>
+          <version>20</version>
+          <state>38</state>
         </option>
         <option>
           <name>OGUseCmsis</name>
@@ -163,10 +163,14 @@
         <wantNonLocal>1</wantNonLocal>
         <debug>1</debug>
         <option>
+          <name>CCOptimizationNoSizeConstraints</name>
+          <state>0</state>
+        </option>
+        <option>
           <name>CCDefines</name>
           <state>USE_STDPERIPH_DRIVER</state>
-          <state>STM32F10X_MD</state>
-          <state>_HARDWARE_VER=0x21</state>
+          <state>STM32F10X_XD</state>
+          <state>_HARDWARE_VER=0x15</state>
           <state>__TARGET_CHIP__=stm32</state>
           <state>FLASH_LOAD_OFFSET=0x0000</state>
           <state>CORE_DEBUG=STM32_DBG_SWD</state>
@@ -647,7 +651,7 @@
       <name>ILINK</name>
       <archiveVersion>0</archiveVersion>
       <data>
-        <version>14</version>
+        <version>15</version>
         <wantNonLocal>1</wantNonLocal>
         <debug>1</debug>
         <option>
@@ -728,7 +732,7 @@
         </option>
         <option>
           <name>IlinkIcfFile</name>
-          <state>$PROJ_DIR$\..\..\VersaloonPro.icf</state>
+          <state>$PROJ_DIR$\..\..\Versaloon.icf</state>
         </option>
         <option>
           <name>IlinkIcfFileSlave</name>
@@ -813,10 +817,6 @@
         </option>
         <option>
           <name>CrcAlign</name>
-          <state>1</state>
-        </option>
-        <option>
-          <name>CrcAlgo</name>
           <state>1</state>
         </option>
         <option>
@@ -921,6 +921,16 @@
           <name>IlinkStackCallGraphFile</name>
           <state></state>
         </option>
+        <option>
+          <name>CrcAlgorithm</name>
+          <version>0</version>
+          <state>1</state>
+        </option>
+        <option>
+          <name>CrcUnitSize</name>
+          <version>0</version>
+          <state>0</state>
+        </option>
       </data>
     </settings>
     <settings>
@@ -977,8 +987,8 @@
         </option>
         <option>
           <name>Variant</name>
-          <version>19</version>
-          <state>37</state>
+          <version>20</version>
+          <state>38</state>
         </option>
         <option>
           <name>GEndianMode</name>
@@ -1035,7 +1045,7 @@
         </option>
         <option>
           <name>OGLastSavedByProductVersion</name>
-          <state>6.30.3.53229</state>
+          <state>6.40.5.54273</state>
         </option>
         <option>
           <name>GeneralEnableMisra</name>
@@ -1047,7 +1057,7 @@
         </option>
         <option>
           <name>OGChipSelectEditMenu</name>
-          <state>STM32F10xxB	ST STM32F10xxB</state>
+          <state>STM32F103xB	ST STM32F103xB</state>
         </option>
         <option>
           <name>GenLowLevelInterface</name>
@@ -1085,13 +1095,13 @@
         </option>
         <option>
           <name>GFPUCoreSlave</name>
-          <version>19</version>
-          <state>37</state>
+          <version>20</version>
+          <state>38</state>
         </option>
         <option>
           <name>GBECoreSlave</name>
-          <version>19</version>
-          <state>37</state>
+          <version>20</version>
+          <state>38</state>
         </option>
         <option>
           <name>OGUseCmsis</name>
@@ -1111,11 +1121,15 @@
         <wantNonLocal>1</wantNonLocal>
         <debug>0</debug>
         <option>
+          <name>CCOptimizationNoSizeConstraints</name>
+          <state>0</state>
+        </option>
+        <option>
           <name>CCDefines</name>
           <state>NDEBUG</state>
           <state>USE_STDPERIPH_DRIVER</state>
-          <state>STM32F10X_MD</state>
-          <state>_HARDWARE_VER=0x21</state>
+          <state>STM32F10X_XD</state>
+          <state>_HARDWARE_VER=0x15</state>
           <state>__TARGET_CHIP__=stm32</state>
           <state>FLASH_LOAD_OFFSET=0x2000</state>
           <state>CORE_DEBUG=STM32_DBG_NONE</state>
@@ -1596,7 +1610,7 @@
       <name>ILINK</name>
       <archiveVersion>0</archiveVersion>
       <data>
-        <version>14</version>
+        <version>15</version>
         <wantNonLocal>1</wantNonLocal>
         <debug>0</debug>
         <option>
@@ -1677,7 +1691,7 @@
         </option>
         <option>
           <name>IlinkIcfFile</name>
-          <state>$PROJ_DIR$\..\..\VersaloonPro.icf</state>
+          <state>$PROJ_DIR$\..\..\Versaloon.icf</state>
         </option>
         <option>
           <name>IlinkIcfFileSlave</name>
@@ -1762,10 +1776,6 @@
         </option>
         <option>
           <name>CrcAlign</name>
-          <state>1</state>
-        </option>
-        <option>
-          <name>CrcAlgo</name>
           <state>1</state>
         </option>
         <option>
@@ -1869,6 +1879,16 @@
         <option>
           <name>IlinkStackCallGraphFile</name>
           <state></state>
+        </option>
+        <option>
+          <name>CrcAlgorithm</name>
+          <version>0</version>
+          <state>1</state>
+        </option>
+        <option>
+          <name>CrcUnitSize</name>
+          <version>0</version>
+          <state>0</state>
         </option>
       </data>
     </settings>
