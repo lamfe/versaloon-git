@@ -65,6 +65,8 @@ vsf_err_t usbtopwr_set(uint8_t index, uint16_t mV)
 
 vsf_err_t usbtopwr_get(uint8_t index, uint16_t *mV)
 {
+	uint8_t cmd[2];
+	
 #if PARAM_CHECK
 	if (index > 7)
 	{
@@ -73,7 +75,8 @@ vsf_err_t usbtopwr_get(uint8_t index, uint16_t *mV)
 	}
 #endif
 	
-	return usbtoxxx_in_command(USB_TO_POWER, index, NULL, 0, 2, (uint8_t *)mV,
+	cmd[0] = cmd[1] = 0;
+	return usbtoxxx_in_command(USB_TO_POWER, index, cmd, 2, 2, (uint8_t *)mV,
 								0, 2, 0);
 }
 
