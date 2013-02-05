@@ -68,7 +68,6 @@ struct vsfusbd_MSCBOT_param_t
 	// no need to initialize below by user
 	uint8_t tick_tock;
 	volatile bool idle, poll;
-	bool fail;
 	struct SCSI_handler_t *cur_handlers;
 	struct USBMSC_CBW_t CBW;
 	uint8_t dCSWStatus;
