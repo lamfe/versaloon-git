@@ -54,11 +54,22 @@ vsf_err_t stm32_flash_fini(uint8_t index)
 
 vsf_err_t stm32_flash_lock(uint8_t index)
 {
+	uint32_t pagesize, pagenum, size;
+	
+	if (stm32_flash_getcapacity(index, &pagesize, &pagenum))
+	{
+		return VSFERR_FAIL;
+	}
+	size = pagesize * pagenum;
+	
 	switch (index)
 	{
 	case 0:
 		FLASH->CR |= STM32_FLASH_CR_LOCK;
-		FLASH->CR2 |= STM32_FLASH_CR_LOCK;
+		if (size > 512 * 1024)
+		{
+			FLASH->CR2 |= STM32_FLASH_CR_LOCK;
+		}
 		return VSFERR_NONE;
 	default:
 		return VSFERR_NOT_SUPPORT;
@@ -67,6 +78,14 @@ vsf_err_t stm32_flash_lock(uint8_t index)
 
 vsf_err_t stm32_flash_unlock(uint8_t index)
 {
+	uint32_t pagesize, pagenum, size;
+	
+	if (stm32_flash_getcapacity(index, &pagesize, &pagenum))
+	{
+		return VSFERR_FAIL;
+	}
+	size = pagesize * pagenum;
+	
 	switch (index)
 	{
 	case 0:
@@ -74,10 +93,13 @@ vsf_err_t stm32_flash_unlock(uint8_t index)
 		FLASH->KEYR = STM32_FLASH_KEYR_KEY2;
 		FLASH->SR |= STM32_FLASH_SR_EOP | STM32_FLASH_SR_BSY | 
 						STM32_FLASH_SR_PGERR | STM32_FLASH_SR_WRPRTERR;
-		FLASH->KEYR2 = STM32_FLASH_KEYR_KEY1;
-		FLASH->KEYR2 = STM32_FLASH_KEYR_KEY2;
-		FLASH->SR2 |= STM32_FLASH_SR_EOP | STM32_FLASH_SR_BSY | 
+		if (size > 512 * 1024)
+		{
+			FLASH->KEYR2 = STM32_FLASH_KEYR_KEY1;
+			FLASH->KEYR2 = STM32_FLASH_KEYR_KEY2;
+			FLASH->SR2 |= STM32_FLASH_SR_EOP | STM32_FLASH_SR_BSY | 
 						STM32_FLASH_SR_PGERR | STM32_FLASH_SR_WRPRTERR;
+		}
 		return VSFERR_NONE;
 	default:
 		return VSFERR_NOT_SUPPORT;
