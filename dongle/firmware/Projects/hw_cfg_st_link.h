@@ -394,19 +394,6 @@
 #define KEY_IsDown()					!(core_interfaces.gpio.get(KEY_PORT, 1 << KEY_PIN) & (1 << KEY_PIN))
 
 /****************************** USB *****************************/
-// For USB 2.0, use DP
-// For USB 1.1, use DM
-#define USB_DP_PORT						0
-#define USB_DP_PIN						12
-
 #define USB_Pull_Init()					
 #define USB_Connect()					
 #define USB_Disconnect()				
-
-#define USB_Disable()					PowerOff()
-#define USB_D_SETOUTPUT()				do {\
-											core_interfaces.gpio.init(USB_DP_PORT);\
-											core_interfaces.gpio.config_pin(USB_DP_PORT, USB_DP_PIN, GPIO_OUTPP);\
-										} while (0)
-#define USB_D_SET()						core_interfaces.gpio.set(USB_DP_PORT, 1 << USB_DP_PIN)
-#define USB_D_CLR()						core_interfaces.gpio.clear(USB_DP_PORT, 1 << USB_DP_PIN)

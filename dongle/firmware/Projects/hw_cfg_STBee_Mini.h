@@ -334,11 +334,6 @@
 #define KEY_Fini()						GPIO_SetMode(KEY_PORT, KEY_PIN, GPIO_MODE_IN_FLOATING)
 
 /****************************** USB *****************************/
-// For USB 2.0, use DP
-// For USB 1.1, use DM
-#define USB_DP_PORT						0
-#define USB_DP_PIN						12
-
 #define USB_DISC_PORT					0
 #define USB_DISC_PIN					14
 
@@ -348,11 +343,3 @@
 										} while (0)
 #define USB_Connect()					core_interfaces.gpio.set(USB_DISC_PORT, 1 << USB_DISC_PIN);
 #define USB_Disconnect()				core_interfaces.gpio.clear(USB_DISC_PORT, 1 << USB_DISC_PIN);
-
-#define USB_Disable()					PowerOff()
-#define USB_D_SETOUTPUT()				do {\
-											core_interfaces.gpio.init(USB_DP_PORT);\
-											core_interfaces.gpio.config_pin(USB_DP_PORT, USB_DP_PIN, GPIO_OUTPP);\
-										} while (0)
-#define USB_D_SET()						core_interfaces.gpio.set(USB_DP_PORT, 1 << USB_DP_PIN)
-#define USB_D_CLR()						core_interfaces.gpio.clear(USB_DP_PORT, 1 << USB_DP_PIN)

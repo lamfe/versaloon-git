@@ -43,7 +43,7 @@ else
 ifeq ($(HW_BOARD),MiniRelease1)
 ########################################################################
 _HARDWARE_VER		= 0x15
-FLASH_LOAD_OFFSET	= 0x2000
+FLASH_LOAD_OFFSET	= 0x8000
 HSE_VALUE			= 12000000
 LD_FILE				= versaloonSTM32.ld
 TARGET_CHIP			= stm32
