@@ -97,7 +97,7 @@ static char find_first_alphabet(const char *str)
 	return *str;
 }
 
-static char* strncpy_fill(char *dst, const char *src, char fill, size_t n)
+static char* strncpy_fill(char *dst, const char *src, char fill, uint32_t n)
 {
 	if (n != 0)
 	{
@@ -127,7 +127,7 @@ static char* strncpy_fill(char *dst, const char *src, char fill, size_t n)
 	return (dst);
 }
 
-static char* strncpy_toupper_fill(char *dst, const char *src, char fill, size_t n)
+static char* strncpy_toupper_fill(char *dst, const char *src, char fill, uint32_t n)
 {
 	if (n != 0)
 	{

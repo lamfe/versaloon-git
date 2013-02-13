@@ -8,6 +8,18 @@
 #include "usb_protocol.h"
 
 #include "dal/usart_stream/usart_stream.h"
+#if MSC_ON_VERSALOON_EN
+#include "tool/fakefat32/fakefat32.h"
+#endif
+
+#if SCRIPTS_EN
+#	define SCRIPTS_FIRST_IF				3
+#	if MSC_ON_VERSALOON_EN
+#		define MSC_FIRST_IF				5
+#	endif
+#elif MSC_ON_VERSALOON_EN
+#	define MSC_FIRST_IF					3
+#endif
 
 static const uint8_t Versaloon_DeviceDescriptor[] =
 {
@@ -38,21 +50,21 @@ const uint8_t Versaloon_ConfigDescriptor[] =
 	0x09,	// bLength: Configuation Descriptor size
 	USB_DESC_TYPE_CONFIGURATION,
 			// bDescriptorType: Configuration
-	98
+	106
 #if SCRIPTS_EN
 	+ 66
+#endif
 #if MSC_ON_VERSALOON_EN
 	+ 31
-#endif
 #endif
 	,		// wTotalLength:no of returned bytes
 	0x00,
 	0x03
 #if SCRIPTS_EN
 	+ 2
+#endif
 #if MSC_ON_VERSALOON_EN
 	+ 1
-#endif
 #endif
 	,	// bNumInterfaces:
 		// 1 interfaces for Versaloon
@@ -63,6 +75,17 @@ const uint8_t Versaloon_ConfigDescriptor[] =
 	0x00,	// iConfiguration: Index of string descriptor describing the configuration
 	0x80,	// bmAttributes: bus powered
 	0x64,	// MaxPower 200 mA
+	
+	// IAD
+	0x08,	// bLength: IAD Descriptor size
+	USB_DESC_TYPE_IAD,
+			// bDescriptorType: IAD
+	0,		// bFirstInterface
+	1,		// bInterfaceCount
+	0xFF,	// bFunctionClass
+	0x00,	// bFunctionSubClass
+	0x00,	// bFunctionProtocol
+	0x00,	// iFunction
 	
 	// interface descriptor
 	0x09,	// bLength: Interface Descriptor size
@@ -194,7 +217,8 @@ const uint8_t Versaloon_ConfigDescriptor[] =
 	0x08,	// bLength: IAD Descriptor size
 	USB_DESC_TYPE_IAD,
 			// bDescriptorType: IAD
-	3,		// bFirstInterface
+	SCRIPTS_FIRST_IF,
+			// bFirstInterface
 	2,		// bInterfaceCount
 	0x02,	// bFunctionClass
 	0x02,	// bFunctionSubClass
@@ -205,7 +229,8 @@ const uint8_t Versaloon_ConfigDescriptor[] =
 	0x09,	// bLength: Interface Descriptor size
 	USB_DESC_TYPE_INTERFACE,
 			// bDescriptorType: Interface
-	3,		// bInterfaceNumber: Number of Interface
+	SCRIPTS_FIRST_IF,
+			// bInterfaceNumber: Number of Interface
 	0x00,	// bAlternateSetting: Alternate setting
 	0x01,	// bNumEndpoints: One endpoints used
 	0x02,	// bInterfaceClass: Communication Interface Class
@@ -254,7 +279,8 @@ const uint8_t Versaloon_ConfigDescriptor[] =
 	0x09,	// bLength: Endpoint Descriptor size
 	USB_DESC_TYPE_INTERFACE,
 			// bDescriptorType: Interface
-	4,		// bInterfaceNumber: Number of Interface
+	SCRIPTS_FIRST_IF + 1,
+			// bInterfaceNumber: Number of Interface
 	0x00,	// bAlternateSetting: Alternate setting
 	0x02,	// bNumEndpoints: Two endpoints used
 	0x0A,	// bInterfaceClass: CDC
@@ -281,14 +307,15 @@ const uint8_t Versaloon_ConfigDescriptor[] =
 	8,		// wMaxPacketSize:
 	0x00,
 	0x00	// bInterval
-	
+#endif
 #if MSC_ON_VERSALOON_EN
 	,
 	// IAD
 	0x08,	// bLength: IAD Descriptor size
 	USB_DESC_TYPE_IAD,
 			// bDescriptorType: IAD
-	5,		// bFirstInterface
+	MSC_FIRST_IF,
+			// bFirstInterface
 	1,		// bInterfaceCount
 	0x08,	// bFunctionClass
 	0x06,	// bFunctionSubClass
@@ -297,8 +324,10 @@ const uint8_t Versaloon_ConfigDescriptor[] =
 	
 	// Interface Descriptor
 	0x09,	// bLength: Interface Descriptor size
-	0x04,	// bDescriptorType:
-	0x05,	// bInterfaceNumber: Number of Interface
+	USB_DESC_TYPE_INTERFACE,
+			// bDescriptorType: Interface
+	MSC_FIRST_IF,
+			// bInterfaceNumber: Number of Interface
 	0x00,	// bAlternateSetting: Alternate setting
 	0x02,	// bNumEndpoints
 	0x08,	// bInterfaceClass: MASS STORAGE Class
@@ -323,7 +352,6 @@ const uint8_t Versaloon_ConfigDescriptor[] =
 	32,		// Maximum packet size
 	0x00,
 	0x00,	// Polling interval in milliseconds
-#endif
 #endif
 };
 
@@ -368,6 +396,7 @@ static const uint8_t ShellOnVersaloon_StringProduct[] =
 	'S', 0, 'h', 0, 'e', 0, 'l', 0, 'l', 0, 'o', 0, 'n', 0, 'V', 0,
 	'e', 0, 'r', 0, 's', 0, 'a', 0, 'l', 0, 'o', 0, 'o', 0, 'n', 0
 };
+#endif
 
 #if MSC_ON_VERSALOON_EN
 static const uint8_t MSConVersaloon_StringProduct[] =
@@ -377,7 +406,6 @@ static const uint8_t MSConVersaloon_StringProduct[] =
 	'M', 0, 'S', 0, 'C', 0, 'o', 0, 'n', 0, 'V', 0, 'e', 0, 'r', 0,
 	's', 0, 'a', 0, 'l', 0, 'o', 0, 'o', 0, 'n', 0
 };
-#endif
 #endif
 
 static const uint8_t Versaloon_StringSerial[50] =
@@ -400,9 +428,9 @@ static const struct vsfusbd_desc_filter_t descriptors[] =
 	VSFUSBD_DESC_STRING(0x0409, 4, CDConVersaloon_StringProduct, sizeof(CDConVersaloon_StringProduct), NULL),
 #if SCRIPTS_EN
 	VSFUSBD_DESC_STRING(0x0409, 5, ShellOnVersaloon_StringProduct, sizeof(ShellOnVersaloon_StringProduct), NULL),
+#endif
 #if MSC_ON_VERSALOON_EN
 	VSFUSBD_DESC_STRING(0x0409, 6, MSConVersaloon_StringProduct, sizeof(MSConVersaloon_StringProduct), NULL),
-#endif
 #endif
 	VSFUSBD_DESC_NULL
 };
@@ -437,45 +465,200 @@ struct vsfusbd_CDCACM_param_t Versaloon_Shell_param =
 		8		// datatype
 	},
 };
+#endif
 
 #if MSC_ON_VERSALOON_EN
 // MSC
-static struct sd_info_t sd_info;
-static struct sd_param_t sd_param =
+#define MSC_BLOCK_SIZE				1024
+static struct fakefat32_file_t empty_dir_under_root[] =
 {
-	9000		// uint16_t kHz;
+	{
+		".", NULL,
+		FAKEFAT32_FILEATTR_DIRECTORY,
+	},
+	{
+		"..", NULL,
+		FAKEFAT32_FILEATTR_DIRECTORY,
+	},
+	{
+		NULL,
+	}
 };
-static struct sd_spi_drv_info_t sd_spi_drv_info;
-static struct sd_spi_drv_interface_t sd_spi_drv_ifs = 
+
+extern uint8_t buffer_out[USB_DATA_BUFF_SIZE];
+void ProcessCommand(uint8_t *dat, uint16_t len);
+static vsf_err_t usbtoxxx_command_write(struct fakefat32_file_t*file, uint32_t addr,
+										uint8_t *buff, uint32_t page_size)
 {
-	0,			// uint8_t cs_port;
-	GPIO_SRST,	// uint32_t cs_pin;
-	0,			// uint8_t spi_port;
-};
-static struct mal_info_t sd_mal_info = 
+	if (addr != 0)
+	{
+		return VSFERR_FAIL;
+	}
+	
+	LED_USB_ON();
+	memcpy(buffer_out, buff, page_size);
+	ProcessCommand(&buffer_out[0], GET_LE_U16(&buffer_out[1]));
+	return VSFERR_NONE;
+}
+static vsf_err_t usbtoxxx_command_read(struct fakefat32_file_t*file, uint32_t addr,
+										uint8_t *buff, uint32_t page_size)
 {
-	{0, 0}, &sd_info
-};
-static struct dal_info_t sd_dal_info = 
+	if (addr != 0)
+	{
+		return VSFERR_FAIL;
+	}
+	
+	memset(buff, 0, page_size);
+	return VSFERR_NONE;
+}
+static vsf_err_t usbtoxxx_reply_read(struct fakefat32_file_t*file, uint32_t addr,
+										uint8_t *buff, uint32_t page_size)
 {
-	&sd_spi_drv_ifs,
-	&sd_param,
-	&sd_spi_drv_info,
-	&sd_mal_info,
+	if (addr != 0)
+	{
+		return VSFERR_FAIL;
+	}
+	
+	memcpy(buff, buffer_out, page_size);
+	return VSFERR_NONE;
+}
+static struct fakefat32_file_t usbtoxxx_dir[] =
+{
+	{
+		".", NULL,
+		FAKEFAT32_FILEATTR_DIRECTORY,
+	},
+	{
+		"..", NULL,
+		FAKEFAT32_FILEATTR_DIRECTORY,
+	},
+	{
+		"command", NULL,
+		FAKEFAT32_FILEATTR_ARCHIVE,
+		0,
+		{usbtoxxx_command_read, NULL, usbtoxxx_command_write, NULL},
+	},
+	{
+		"reply", NULL,
+		FAKEFAT32_FILEATTR_ARCHIVE | FAKEFAT32_FILEATTR_READONLY,
+		0,
+		{usbtoxxx_reply_read, NULL, NULL, NULL},
+	},
+	{
+		NULL,
+	}
 };
+static struct fakefat32_file_t versaloon_dir[] =
+{
+	{
+		".", NULL,
+		FAKEFAT32_FILEATTR_DIRECTORY,
+	},
+	{
+		"..", NULL,
+		FAKEFAT32_FILEATTR_DIRECTORY,
+	},
+	{
+		"usbtoxxx", "",
+		FAKEFAT32_FILEATTR_DIRECTORY,
+		0,
+		{fakefat32_dir_read, NULL, fakefat32_dir_write, NULL},
+		usbtoxxx_dir
+	},
+	{
+		NULL,
+	}
+};
+static struct fakefat32_file_t sys_dir[] =
+{
+	{
+		".", NULL,
+		FAKEFAT32_FILEATTR_DIRECTORY,
+	},
+	{
+		"..", NULL,
+		FAKEFAT32_FILEATTR_DIRECTORY,
+	},
+	{
+		"versaloon", NULL,
+		FAKEFAT32_FILEATTR_DIRECTORY,
+		0,
+		{fakefat32_dir_read, NULL, fakefat32_dir_write, NULL},
+		versaloon_dir
+	},
+	{
+		NULL,
+	}
+};
+static struct fakefat32_file_t root_dir[] =
+{
+	{
+		"VersaloonFS", NULL,
+		FKAEFAT32_FILEATTR_VOLUMEID,
+	},
+	{
+		"sys", NULL,
+		FAKEFAT32_FILEATTR_DIRECTORY,
+		0,
+		{fakefat32_dir_read, NULL, fakefat32_dir_write, NULL},
+		sys_dir
+	},
+	{
+		"LOST", "DIR",
+		FAKEFAT32_FILEATTR_DIRECTORY,
+		0,
+		{fakefat32_dir_read, NULL, fakefat32_dir_write, NULL},
+		empty_dir_under_root
+	},
+	{
+		NULL,
+	}
+};
+
+static struct fakefat32_param_t fakefat32_param =
+{
+	MSC_BLOCK_SIZE,	// uint16_t sector_size;
+	0x00760000,		// uint32_t sector_number;
+	8,				// uint8_t sectors_per_cluster;
+	
+	0x0CA93E47,		// uint32_t volume_id;
+	0x12345678,		// uint32_t disk_id;
+	{				// struct fakefat32_file_t root;
+		{
+			"ROOT", NULL,
+			0,
+			0,
+			{fakefat32_dir_read, NULL, fakefat32_dir_write, NULL},
+			root_dir
+		}
+	}
+};
+static struct mal_info_t fakefat32_mal_info = 
+{
+	{0, 0}, NULL, 0, 0, 0, &fakefat32_drv
+};
+static struct dal_info_t fakefat32_dal_info = 
+{
+	NULL,
+	&fakefat32_param,
+	NULL,
+	&fakefat32_mal_info,
+};
+
 struct SCSI_LUN_info_t MSCBOT_LunInfo = 
 {
-	&sd_dal_info, MAL_IDX_SD_SPI, 
+	&fakefat32_dal_info, 
 	{
 		true,
 		{'S', 'i', 'm', 'o', 'n', ' ', ' ', ' '},
-		{'M', 'S', 'C', 'o', 'n', 'V', 'e', 'r', 
-		's', 'a', 'l', 'o', 'o', 'n', ' ', ' '},
+		{'V', 'e', 'r', 's', 'a', 'l', 'o', 'o', 
+		'n', 'F', 'S', ' ', ' ', ' ', ' ', ' '},
 		{'1', '.', '0', '0'},
 		SCSI_PDT_DIRECT_ACCESS_BLOCK
 	}
 };
-uint8_t MSCBOT_Buffer0[512], MSCBOT_Buffer1[512];
+uint8_t MSCBOT_Buffer0[MSC_BLOCK_SIZE], MSCBOT_Buffer1[MSC_BLOCK_SIZE];
+
 struct vsfusbd_MSCBOT_param_t MSCBOT_param = 
 {
 	7,							// uint8_t ep_out;
@@ -490,7 +673,6 @@ struct vsfusbd_MSCBOT_param_t MSCBOT_param =
 		{MSCBOT_Buffer1, sizeof(MSCBOT_Buffer1)}
 	},							// struct vsf_buffer_t page_buffer[2];
 };
-#endif
 #endif
 
 // CDCACM
@@ -560,9 +742,9 @@ static struct vsfusbd_iface_t ifaces[] =
 #if SCRIPTS_EN
 	{(struct vsfusbd_class_protocol_t *)&vsfusbd_CDCACMMaster_class, (void *)&Versaloon_Shell_param},
 	{(struct vsfusbd_class_protocol_t *)&vsfusbd_CDCACMData_class, (void *)&Versaloon_Shell_param},
+#endif
 #if MSC_ON_VERSALOON_EN
 	{(struct vsfusbd_class_protocol_t *)&vsfusbd_MSCBOT_class, (void *)&MSCBOT_param},
-#endif
 #endif
 };
 static struct vsfusbd_config_t config0[] = 
@@ -609,6 +791,12 @@ vsf_err_t usb_protocol_init(void)
 	Versaloon_Shell_param.stream_tx = &shell_stream.stream_tx;
 	Versaloon_Shell_param.stream_rx = &shell_stream.stream_rx;
 	usart_stream_init(&shell_stream);
+#endif
+#if MSC_ON_VERSALOON_EN
+	fakefat32_param.sector_size = MSC_BLOCK_SIZE;
+	fakefat32_param.sector_number = 128 * 1024 * 1024 / fakefat32_param.sector_size;
+	fakefat32_param.sectors_per_cluster = 1;
+	usbtoxxx_dir[2].size = usbtoxxx_dir[3].size = fakefat32_param.sector_size;
 #endif
 	
 	USB_Pull_Init();

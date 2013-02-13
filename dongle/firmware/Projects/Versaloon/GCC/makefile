@@ -244,7 +244,7 @@ USR_SRCS+= $(VSFDIR)/stack/usb_device/vsf_usbd.c \
   $(VSFDIR)/stack/usb_device/class/MSC/SCSI.c
 
 #VSF tool
-USR_SRCS+= $(VSFDIR)/tool/buffer/buffer.c
+USR_SRCS+= $(VSFDIR)/tool/buffer/buffer.c $(VSFDIR)/tool/fakefat32/fakefat32.c
 USR_INCS+= -I $(VSFDIR)/tool/list
 
 # fakefat
