@@ -543,9 +543,13 @@ static vsf_err_t versaloon_tvcc_voltage_read(struct fakefat32_file_t*file,
 static vsf_err_t versaloon_tvcc_control_read(struct fakefat32_file_t*file,
 							uint32_t addr, uint8_t *buff, uint32_t page_size)
 {
+#if POWER_OUT_EN
 	extern uint8_t PWREXT_PowerState;
 	
 	buff[0] = PWREXT_PowerState + '0';
+#else
+	buff[0] = '0';
+#endif
 	return VSFERR_NONE;
 }
 static vsf_err_t versaloon_tvcc_control_write(struct fakefat32_file_t*file,
@@ -553,11 +557,15 @@ static vsf_err_t versaloon_tvcc_control_write(struct fakefat32_file_t*file,
 {
 	if (buff[0] == '0')
 	{
+#if POWER_OUT_EN
 		interfaces->target_voltage.set(0, 0);
+#endif
 	}
 	else if (buff[0] == '1')
 	{
+#if POWER_OUT_EN
 		interfaces->target_voltage.set(0, 3300);
+#endif
 	}
 	else
 	{
