@@ -23,7 +23,7 @@
 static uint8_t PWREXT_EnableCount = 0;
 static uint16_t PWREXT_Vtarget = 0;
 static uint16_t PWREXT_FSMState = 0;
-static uint8_t PWREXT_PowerState = 0;
+uint8_t PWREXT_PowerState = 0;
 
 void PWREXT_Acquire(void)
 {

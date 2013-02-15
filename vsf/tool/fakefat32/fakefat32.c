@@ -250,7 +250,7 @@ static uint32_t fakefat32_calc_longname_len(struct fakefat32_file_t *file)
 	if (file->name != NULL)
 	{
 		return strlen(file->name) +
-			(((file->ext == NULL) || (strlen(file->ext) > 0)) ? 0 : 1 + strlen(file->ext));
+			(((file->ext == NULL) || (strlen(file->ext) == 0)) ? 0 : 1 + strlen(file->ext));
 	}
 	return 0;
 }
@@ -337,17 +337,19 @@ static vsf_err_t fakefat32_init(struct fakefat32_param_t *param,
 static void fakefat32_get_shortname(struct fakefat32_file_t* file,
 											char shortname[11])
 {
-	if (strlen(file->name) <= 8)
+	if (!fakefat32_file_is_longname(file))
 	{
 		strncpy_toupper_fill((char *)&shortname[0], file->name, ' ', 8);
 	}
 	else
 	{
-		strncpy_toupper_fill((char *)&shortname[0], file->name, ' ', 6);
-		shortname[6] = '~';
+		uint32_t n = strlen(file->name);
+		
+		strncpy_toupper_fill((char *)&shortname[0], file->name, ' ', 8);
+		shortname[n] = '~';
 		// TODO: fix file index here, now use 1
 		// BUG here if multiple same short names under one directory
-		shortname[7] = '1';
+		shortname[n + 1] = '1';
 	}
 	strncpy_toupper_fill((char *)&shortname[8], file->ext, ' ', 3);
 }
@@ -457,7 +459,7 @@ vsf_err_t fakefat32_dir_read(struct fakefat32_file_t* file, uint32_t addr,
 					if (i < strlen(file->name))
 					{
 						buff[j] = file->name[i];
-					} else if (i == (strlen(file->name) + 1))
+					} else if (i == strlen(file->name))
 					{
 						buff[j] = '.';
 					} else
@@ -554,7 +556,8 @@ vsf_err_t fakefat32_dir_write(struct fakefat32_file_t*file, uint32_t addr,
 									uint8_t *buff, uint32_t page_size)
 {
 	struct fakefat32_file_t *file_temp, *file_match;
-	uint32_t size;
+	uint32_t size, want_size;
+	uint16_t want_first_cluster;
 	char short_filename[11];
 	
 	file = file->filelist;
@@ -606,11 +609,20 @@ vsf_err_t fakefat32_dir_write(struct fakefat32_file_t*file, uint32_t addr,
 		{
 			size = file_match->size;
 		}
-		if ((size != GET_LE_U32(&buff[28])) ||
+		
+		want_size = GET_LE_U32(&buff[28]);
+		want_first_cluster =
+				GET_LE_U16(&buff[26]) + (GET_LE_U16(&buff[20]) << 16);
+		
+		// want_size and want_first_cluster can be set to 0.
+		// it's dangerous, but some systems will really do this.
+		// and after this, they will also allocate the same size and first_cluster
+		if ((want_size && ((size + page_size - 1) / page_size !=
+			 	(want_size + page_size - 1) / page_size)) ||
 			(file_match->attr != buff[11]) ||
 			(strcmp(file_match->name, ".") && strcmp(file_match->name, "..") &&
-				(file_match->first_cluster !=
-					(GET_LE_U16(&buff[26]) + (GET_LE_U16(&buff[20]) << 16)))))
+				want_first_cluster &&
+				(file_match->first_cluster != want_first_cluster)))
 		{
 			return VSFERR_FAIL;
 		}

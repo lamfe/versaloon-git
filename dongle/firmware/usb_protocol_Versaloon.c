@@ -522,6 +522,50 @@ static vsf_err_t usbtoxxx_reply_read(struct fakefat32_file_t*file, uint32_t addr
 	memcpy(buff, buffer_out, page_size);
 	return VSFERR_NONE;
 }
+static vsf_err_t versaloon_tvcc_voltage_read(struct fakefat32_file_t*file,
+							uint32_t addr, uint8_t *buff, uint32_t page_size)
+{
+	uint16_t voltage;
+	
+#if POWER_OUT_EN
+	app_interfaces.target_voltage.get(0, &voltage);
+#else
+	voltage = 0;
+#endif
+	
+	buff[0] = voltage / 1000 + '0';
+	buff[1] = '.';
+	buff[2] = (voltage % 1000) / 100 + '0';
+	buff[3] = (voltage % 100) / 10 + '0';
+	buff[4] = 'V';
+	return VSFERR_NONE;
+}
+static vsf_err_t versaloon_tvcc_control_read(struct fakefat32_file_t*file,
+							uint32_t addr, uint8_t *buff, uint32_t page_size)
+{
+	extern uint8_t PWREXT_PowerState;
+	
+	buff[0] = PWREXT_PowerState + '0';
+	return VSFERR_NONE;
+}
+static vsf_err_t versaloon_tvcc_control_write(struct fakefat32_file_t*file,
+							uint32_t addr, uint8_t *buff, uint32_t page_size)
+{
+	if (buff[0] == '0')
+	{
+		interfaces->target_voltage.set(0, 0);
+	}
+	else if (buff[0] == '1')
+	{
+		interfaces->target_voltage.set(0, 3300);
+	}
+	else
+	{
+		// not supported value
+		return VSFERR_FAIL;
+	}
+	return VSFERR_NONE;
+}
 static struct fakefat32_file_t usbtoxxx_dir[] =
 {
 	{
@@ -564,6 +608,18 @@ static struct fakefat32_file_t versaloon_dir[] =
 		0,
 		{fakefat32_dir_read, NULL, fakefat32_dir_write, NULL},
 		usbtoxxx_dir
+	},
+	{
+		"tvcc", "voltage",
+		FAKEFAT32_FILEATTR_ARCHIVE | FAKEFAT32_FILEATTR_READONLY,
+		5,
+		{versaloon_tvcc_voltage_read, NULL, NULL, NULL},
+	},
+	{
+		"tvcc", "control",
+		FAKEFAT32_FILEATTR_ARCHIVE,
+		1,
+		{versaloon_tvcc_control_read, NULL, versaloon_tvcc_control_write, NULL},
 	},
 	{
 		NULL,
