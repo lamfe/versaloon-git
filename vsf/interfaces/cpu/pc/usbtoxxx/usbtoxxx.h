@@ -89,8 +89,9 @@ struct usbtoxxx_info_t
 	
 	bool buff_allocated;
 	bool cmd_buff_allocated;
-} *usbtoxxx_info;
+};
 
+extern struct usbtoxxx_info_t *usbtoxxx_info;
 vsf_err_t usbtoxxx_init(void);
 vsf_err_t usbtoxxx_fini(void);
 vsf_err_t usbtoxxx_execute_command(void);
