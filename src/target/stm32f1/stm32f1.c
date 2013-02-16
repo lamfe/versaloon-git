@@ -65,13 +65,12 @@ struct program_functions_t stm32f1_program_functions;
 VSS_HANDLER(stm32f1_help)
 {
 	VSS_CHECK_ARGC(1);
-	PRINTF(
-"Usage of %s:"LOG_LINE_END
-"  -C,  --comport <COMM_ATTRIBUTE>           set com port"LOG_LINE_END
-"  -m,  --mode <MODE>                        set mode<j|s|i>"LOG_LINE_END
-"  -x,  --execute <ADDRESS>                  execute program"LOG_LINE_END
-"  -F,  --frequency <FREQUENCY>              set JTAG frequency, in KHz"LOG_LINE_END
-LOG_LINE_END, CUR_TARGET_STRING);
+	PRINTF("Usage of %s:"LOG_LINE_END, CUR_TARGET_STRING);
+	PRINTF("  -C,  --comport <COMM_ATTRIBUTE>           set com port"LOG_LINE_END);
+	PRINTF("  -m,  --mode <MODE>                        set mode<j|s|i>"LOG_LINE_END);
+	PRINTF("  -x,  --execute <ADDRESS>                  execute program"LOG_LINE_END);
+	PRINTF("  -F,  --frequency <FREQUENCY>              set JTAG frequency, in KHz"LOG_LINE_END);
+	PRINTF(LOG_LINE_END);
 	return VSFERR_NONE;
 }
 

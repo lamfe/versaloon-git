@@ -79,10 +79,9 @@ const struct program_functions_t sd_program_functions =
 VSS_HANDLER(sd_help)
 {
 	VSS_CHECK_ARGC(1);
-	PRINTF(
-"Usage of %s:"LOG_LINE_END
-"  -F,  --frequency <FREQUENCY>              set SPI frequency, in KHz"LOG_LINE_END
-LOG_LINE_END, CUR_TARGET_STRING);
+	PRINTF("Usage of %s:"LOG_LINE_END, CUR_TARGET_STRING);
+	PRINTF("  -F,  --frequency <FREQUENCY>              set SPI frequency, in KHz"LOG_LINE_END);
+	PRINTF(LOG_LINE_END);
 	return VSFERR_NONE;
 }
 

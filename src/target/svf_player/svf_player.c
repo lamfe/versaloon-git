@@ -70,10 +70,9 @@ const struct program_functions_t svfp_program_functions =
 VSS_HANDLER(svfp_help)
 {
 	VSS_CHECK_ARGC(1);
-	PRINTF(
-"Usage of %s:"LOG_LINE_END
-"  -F,  --frequency <FREQUENCY>              set JTAG frequency, in KHz"LOG_LINE_END
-LOG_LINE_END, CUR_TARGET_STRING);
+	PRINTF("Usage of %s:"LOG_LINE_END, CUR_TARGET_STRING);
+	PRINTF("  -F,  --frequency <FREQUENCY>              set JTAG frequency, in KHz"LOG_LINE_END);
+	PRINTF(LOG_LINE_END);
 	return VSFERR_NONE;
 }
 

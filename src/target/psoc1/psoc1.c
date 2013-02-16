@@ -79,10 +79,9 @@ const struct program_functions_t psoc1_program_functions =
 VSS_HANDLER(psoc1_help)
 {
 	VSS_CHECK_ARGC(1);
-	PRINTF(
-"Usage of %s:"LOG_LINE_END
-"  -m,  --mode <MODE>                        set mode<r|p>"LOG_LINE_END
-LOG_LINE_END, CUR_TARGET_STRING);
+	PRINTF("Usage of %s:"LOG_LINE_END, CUR_TARGET_STRING);
+	PRINTF("  -m,  --mode <MODE>                        set mode<r|p>"LOG_LINE_END);
+	PRINTF(LOG_LINE_END);
 	return VSFERR_NONE;
 }
 
