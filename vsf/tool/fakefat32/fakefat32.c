@@ -621,7 +621,7 @@ vsf_err_t fakefat32_dir_write(struct fakefat32_file_t*file, uint32_t addr,
 		
 		// want_size and want_first_cluster can be set to 0.
 		// it's dangerous, but some systems will really do this.
-		// and after this, they will also allocate the same size and first_cluster
+		// and after this, they will allocate the new size and first_cluster
 		if ((want_size && ((size + page_size - 1) / page_size !=
 			 	(want_size + page_size - 1) / page_size)) ||
 			(file_match->attr != buff[11])/* ||
