@@ -613,16 +613,21 @@ vsf_err_t fakefat32_dir_write(struct fakefat32_file_t*file, uint32_t addr,
 		want_size = GET_LE_U32(&buff[28]);
 		want_first_cluster =
 				GET_LE_U16(&buff[26]) + (GET_LE_U16(&buff[20]) << 16);
+		// assume host will do good
+		if (want_first_cluster >= FAT32_ROOT_CLUSTER)
+		{
+			file_match->first_cluster = want_first_cluster;
+		}
 		
 		// want_size and want_first_cluster can be set to 0.
 		// it's dangerous, but some systems will really do this.
 		// and after this, they will also allocate the same size and first_cluster
 		if ((want_size && ((size + page_size - 1) / page_size !=
 			 	(want_size + page_size - 1) / page_size)) ||
-			(file_match->attr != buff[11]) ||
+			(file_match->attr != buff[11])/* ||
 			(strcmp(file_match->name, ".") && strcmp(file_match->name, "..") &&
 				want_first_cluster &&
-				(file_match->first_cluster != want_first_cluster)))
+				(file_match->first_cluster != want_first_cluster))*/)
 		{
 			return VSFERR_FAIL;
 		}
@@ -794,7 +799,8 @@ static vsf_err_t fakefat32_drv_readblock_nb(struct dal_info_t *info,
 			if (NULL == file)
 			{
 				// file not found
-				remain_size = 0;
+				remain_size -= 4;
+				cluster_index++;
 			}
 			else
 			{
@@ -814,6 +820,7 @@ static vsf_err_t fakefat32_drv_readblock_nb(struct dal_info_t *info,
 					{
 						*buff32++ = cluster_index + 1;
 					}
+					
 					remain_size -= 4;
 					cluster_offset++;
 					cluster_index++;
