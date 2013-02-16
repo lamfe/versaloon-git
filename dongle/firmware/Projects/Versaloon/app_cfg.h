@@ -74,7 +74,7 @@
 #define VSS_CFG_MAX_ARGC				8
 #define VSS_CFG_MAX_LINE_LENGTH			128
 #define INTERFACES_INFO_T				app_interfaces_info_t
-#define APPIO_BUFFER_SIZE				4096
+#define APPIO_BUFFER_SIZE				256
 #define APPIO_DUMMY						0
 #define EVSPROG_SCRIPT_FILE				"evsprog.vts"
 

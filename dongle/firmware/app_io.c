@@ -55,7 +55,7 @@ VSS_HANDLER(appio_set_dummy)
 	return VSFERR_NONE;
 }
 
-static uint8_t shell_buff_tx[512], shell_buff_rx[512];
+static uint8_t shell_buff_tx[64], shell_buff_rx[64];
 struct usart_stream_info_t shell_stream =
 {
 	IFS_DUMMY_PORT,								// usart_index
@@ -361,7 +361,7 @@ int FPRINTF(FILE *f, const char *format, ...)
 	}
 	
 	va_start(ap, format);
-	number = vsprintf(app_io_local_buff, format, ap);
+	number = vsnprintf(app_io_local_buff, sizeof(app_io_local_buff), format, ap);
 	va_end(ap);
 	
 	if ((stdout == f) || (stderr == f))
@@ -386,7 +386,7 @@ int PRINTF(const char *format, ...)
 	if (!appio_dummy)
 	{
 		va_start(ap, format);
-		number = vsprintf(app_io_local_buff, format, ap);
+		number = vsnprintf(app_io_local_buff, sizeof(app_io_local_buff), format, ap);
 		va_end(ap);
 	
 		APPIO_OUTBUFF((uint8_t *)pbuff, (uint32_t)number);

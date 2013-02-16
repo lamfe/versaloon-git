@@ -44,7 +44,7 @@ static const uint8_t Versaloon_DeviceDescriptor[] =
 	0x01	// bNumConfigurations
 };
 
-const uint8_t Versaloon_ConfigDescriptor[] =
+static const uint8_t Versaloon_ConfigDescriptor[] =
 {
 	// Configuation Descriptor
 	0x09,	// bLength: Configuation Descriptor size
