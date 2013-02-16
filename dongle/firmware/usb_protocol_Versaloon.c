@@ -469,7 +469,7 @@ struct vsfusbd_CDCACM_param_t Versaloon_Shell_param =
 
 #if MSC_ON_VERSALOON_EN
 // MSC
-#define MSC_BLOCK_SIZE				1024
+#define MSC_BLOCK_SIZE				512
 static struct fakefat32_file_t empty_dir_under_root[] =
 {
 	{
@@ -538,6 +538,7 @@ static vsf_err_t versaloon_tvcc_voltage_read(struct fakefat32_file_t*file,
 	buff[2] = (voltage % 1000) / 100 + '0';
 	buff[3] = (voltage % 100) / 10 + '0';
 	buff[4] = 'V';
+	buff[5] = '\n';
 	return VSFERR_NONE;
 }
 static vsf_err_t versaloon_tvcc_control_read(struct fakefat32_file_t*file,
@@ -550,6 +551,7 @@ static vsf_err_t versaloon_tvcc_control_read(struct fakefat32_file_t*file,
 #else
 	buff[0] = '0';
 #endif
+	buff[1] = '\n';
 	return VSFERR_NONE;
 }
 static vsf_err_t versaloon_tvcc_control_write(struct fakefat32_file_t*file,
@@ -620,13 +622,13 @@ static struct fakefat32_file_t versaloon_dir[] =
 	{
 		"tvcc", "voltage",
 		FAKEFAT32_FILEATTR_ARCHIVE | FAKEFAT32_FILEATTR_READONLY,
-		5,
+		6,
 		{versaloon_tvcc_voltage_read, NULL, NULL, NULL},
 	},
 	{
 		"tvcc", "control",
 		FAKEFAT32_FILEATTR_ARCHIVE,
-		1,
+		2,
 		{versaloon_tvcc_control_read, NULL, versaloon_tvcc_control_write, NULL},
 	},
 	{

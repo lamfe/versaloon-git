@@ -50,8 +50,7 @@ struct fakefat32_file_t
 	struct fakefat32_file_t *filelist;
 	
 	// can be private
-#pragma pack(push,1)
-	struct
+	PACKED_HEAD struct PACKED_MID
 	{
 		uint8_t CrtTimeTenth;
 		uint16_t CrtTime;
@@ -61,8 +60,7 @@ struct fakefat32_file_t
 		uint16_t WrtTime;
 		uint16_t WrtData;
 		uint16_t FstClusLO;
-	} record;
-#pragma pack(pop)
+	} record; PACKED_TAIL
 	
 	// private
 	uint32_t first_cluster;
