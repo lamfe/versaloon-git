@@ -257,7 +257,7 @@ VSS_HANDLER(vsprog_help)
 	PRINTF(_GETTEXT("  -h,  --help                               display this help"LOG_LINE_END));
 	PRINTF(_GETTEXT("  -v,  --version                            display vsprog version"LOG_LINE_END));
 	PRINTF(_GETTEXT("  -S,  --support <TARGET>                   display support information"LOG_LINE_END));
-	PRINTF(_GETTEXT("  -V,  --vss-cmd \"<CMD PARA>\"              run programmer defined command"LOG_LINE_END));
+	PRINTF(_GETTEXT("  -V,  --vss-cmd \"<CMD PARA>\"               run programmer defined command"LOG_LINE_END));
 	PRINTF(_GETTEXT("  -P,  --parameter <AREA>                   display parameter for target area"LOG_LINE_END));
 	PRINTF(_GETTEXT("  -D,  --memory-detail <AREA>               display memory info for target area"LOG_LINE_END));
 	PRINTF(_GETTEXT("  -J,  --jtag-dc <UB UA BB BA>              set JTAG Daisy Chain"LOG_LINE_END));
