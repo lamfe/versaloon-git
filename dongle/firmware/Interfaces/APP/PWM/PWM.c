@@ -21,7 +21,7 @@
 #include "PWM.h"
 
 static uint16_t pwm0_cycle = 0;
-static uint16_t pwm_buff[512], pwm0_cur_rate = 0;
+static uint16_t pwm0_cur_rate = 0;
 
 vsf_err_t pwm_init(uint8_t index)
 {
@@ -105,7 +105,7 @@ vsf_err_t pwm_out(uint8_t index, uint16_t count, uint16_t *rate)
 	switch (index)
 	{
 	case 0:
-		if ((count > dimof(pwm_buff)) || (NULL == rate))
+		if (NULL == rate)
 		{
 			return VSFERR_INVALID_PARAMETER;
 		}
@@ -113,9 +113,9 @@ vsf_err_t pwm_out(uint8_t index, uint16_t count, uint16_t *rate)
 		pwm0_cur_rate = rate[count - 1];
 		for (i = 0; i < count; i++)
 		{
-			pwm_buff[i] = rate[i] * (pwm0_cycle + 1) / 0xFFFF;
+			rate[i] = rate[i] * (pwm0_cycle + 1) / 0xFFFF;
 		}
-		SYNCSWPWM_OUT_TIMER_DMA_INIT(SYNCSWPWM_OUT_TIMER_DMA_COMPARE, count, pwm_buff);
+		SYNCSWPWM_OUT_TIMER_DMA_INIT(SYNCSWPWM_OUT_TIMER_DMA_COMPARE, count, rate);
 		SYNCSWPWM_OUT_TIMER_DMA_COMPARE_WAIT();
 		return VSFERR_NONE;
 	default:
@@ -130,18 +130,14 @@ vsf_err_t pwm_in(uint8_t index, uint16_t count, uint16_t *rate)
 	switch (index)
 	{
 	case 1:
-		if ((count > dimof(pwm_buff) / 2) || (NULL == rate))
+		if (NULL == rate)
 		{
 			return VSFERR_INVALID_PARAMETER;
 		}
 		
-		SYNCSWPWM_IN_TIMER_DMA_INIT(count, pwm_buff, pwm_buff + count);
+		SYNCSWPWM_IN_TIMER_DMA_INIT(count, rate, rate + count);
 		dly = 0xFFFFFFFF;
 		SYNCSWPWM_IN_TIMER_RISE_DMA_WAIT(dly);
-		if (dly)
-		{
-			memcpy(rate, pwm_buff, 4 * count);
-		}
 		return dly ? VSFERR_NONE : VSFERR_FAIL;
 	default:
 		return VSFERR_NOT_SUPPORT;
