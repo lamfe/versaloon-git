@@ -29,7 +29,7 @@ which is not supported by MSCBoot.\r\n\
 \r\n\
 By default, the bootloader will take 32KB from the start address of flash.\r\n\
 So, your application should start after the bootloader, and flash.bin should \r\n\
-fill all other spaces available.\r\n\
+not exceed flash space of the target chip.\r\n\
 \r\n\
 Note: For VersaloonMini shipped with STM32F103CBT6, this bootloader is \r\n\
 recommended. You can find the bootloader binary under:\r\n\
@@ -144,6 +144,12 @@ static vsf_err_t WriteFlash(struct fakefat32_file_t* file, uint32_t addr,
 	
 	interfaces->flash.unlock(0);
 	interfaces->flash.getcapacity(0, &pagesize, &pagenum);
+	if (addr > (pagenum - 1) * pagesize)
+	{
+		// location not valid, ignore
+		return VSFERR_NONE;
+	}
+	
 	if (!(addr % pagesize))
 	{
 		interfaces->flash.erasepage(0, addr + APP_CFG_BOOTSIZE);
@@ -198,6 +204,14 @@ static vsf_err_t ReadFlash(struct fakefat32_file_t* file, uint32_t addr,
 	memset(buff, 0xFF, page_size);
 	return VSFERR_NONE;
 #else
+	uint32_t pagesize, pagenum;
+	
+	interfaces->flash.getcapacity(0, &pagesize, &pagenum);
+	if (addr > (pagenum - 1) * pagesize)
+	{
+		// location not valid, ignore
+		return VSFERR_NONE;
+	}
 	return interfaces->flash.read(0, addr + APP_CFG_BOOTSIZE, buff, page_size);
 #endif
 }
@@ -208,6 +222,14 @@ static vsf_err_t ReadFlash_isready(struct fakefat32_file_t* file, uint32_t addr,
 #if APP_CFG_MSC_WRITEONLY
 	return VSFERR_NONE;
 #else
+	uint32_t pagesize, pagenum;
+	
+	interfaces->flash.getcapacity(0, &pagesize, &pagenum);
+	if (addr > (pagenum - 1) * pagesize)
+	{
+		// location not valid, ignore
+		return VSFERR_NONE;
+	}
 	return interfaces->flash.read_isready(0, addr + APP_CFG_BOOTSIZE, buff, page_size);
 #endif
 }

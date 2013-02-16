@@ -556,7 +556,7 @@ vsf_err_t fakefat32_dir_write(struct fakefat32_file_t*file, uint32_t addr,
 									uint8_t *buff, uint32_t page_size)
 {
 	struct fakefat32_file_t *file_temp, *file_match;
-	uint32_t size, want_size;
+	uint32_t want_size;
 	uint16_t want_first_cluster;
 	char short_filename[11];
 	
@@ -600,39 +600,24 @@ vsf_err_t fakefat32_dir_write(struct fakefat32_file_t*file, uint32_t addr,
 			return VSFERR_FAIL;
 		}
 		
-		// CANNOT change file attribute, size and location
-		if (file_match->attr & FAKEFAT32_FILEATTR_DIRECTORY)
-		{
-			size = 0;
-		}
-		else
-		{
-			size = file_match->size;
-		}
-		
 		want_size = GET_LE_U32(&buff[28]);
 		want_first_cluster =
 				GET_LE_U16(&buff[26]) + (GET_LE_U16(&buff[20]) << 16);
-		// assume host will do good
-		if (want_first_cluster >= FAT32_ROOT_CLUSTER)
-		{
-			file_match->first_cluster = want_first_cluster;
-		}
 		
-		// want_size and want_first_cluster can be set to 0.
-		// it's dangerous, but some systems will really do this.
-		// and after this, they will allocate the new size and first_cluster
-		if ((want_size && ((size + page_size - 1) / page_size !=
-			 	(want_size + page_size - 1) / page_size)) ||
-			(file_match->attr != buff[11])/* ||
-			(strcmp(file_match->name, ".") && strcmp(file_match->name, "..") &&
-				want_first_cluster &&
-				(file_match->first_cluster != want_first_cluster))*/)
+		// CANNOT change file attribute
+		if (file_match->attr != buff[11])
 		{
 			return VSFERR_FAIL;
 		}
 		
-		memcpy(&file_match->record, &buff[12], sizeof(file_match->record));
+		// host can change the size and first_cluster
+		// ONLY one limitation: host MUST guarantee that the space is continuous
+		if (!(file_match->attr & FAKEFAT32_FILEATTR_DIRECTORY))
+		{
+			file_match->size = want_size;
+		}
+		file_match->first_cluster = want_first_cluster;
+		memcpy(&file_match->record, &buff[13], sizeof(file_match->record));
 		
 	fakefat32_dir_write_next:
 		buff += 0x20;
@@ -799,6 +784,7 @@ static vsf_err_t fakefat32_drv_readblock_nb(struct dal_info_t *info,
 			if (NULL == file)
 			{
 				// file not found
+				*buff32++ = 0;
 				remain_size -= 4;
 				cluster_index++;
 			}
