@@ -763,13 +763,15 @@ init:
 	}
 	// 0x0BA00477 is for CortexM3/4
 	// 0x0BB10477 is for CortexM0
+	// 0x0BC11477 is for CortexM0+
 	if (0x0BA00477 == (adi_dp_info.if_id & 0x0FFFEFFF))
 	{
 		adi_dp_info.memaccess_tck = 8;
 		adi_dp_info.tar_autoincr_block = (1 << 12);
 		adi_dp_info.core = ADI_DP_CM3;
 	}
-	else if (0x0BB10477 == (adi_dp_info.if_id & 0x0FFFEFFF))
+	else if ((0x0BB10477 == (adi_dp_info.if_id & 0x0FFFEFFF))  ||
+			(0x0BC11477 == (adi_dp_info.if_id & 0x0FFFEFFF)))
 	{
 		adi_dp_info.memaccess_tck = 8;
 		adi_dp_info.tar_autoincr_block = (1 << 10);

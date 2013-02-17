@@ -153,17 +153,25 @@ ADJUST_SETTING_HANDLER(lpc1000)
 	case LPC1000_JTAG:
 	case LPC1000_SWD:
 		lpc1000_program_area_map[0].attr |= AREA_ATTR_RNP;
-		if (sram_info->size >= 9 * 1024)
+		
+		if((param->chip_id & 0xFFFFFF00) == 0x00008100)
 		{
-			flash_info->page_size = 4 * 1024;
-		}
-		else if (sram_info->size >= 3 * 1024)
-		{
-			flash_info->page_size = 1 * 1024;
+			flash_info->page_size = 64;
 		}
 		else
 		{
-			flash_info->page_size = 512;
+			if (sram_info->size >= 9 * 1024)
+			{
+				flash_info->page_size = 4 * 1024;
+			}
+			else if (sram_info->size >= 3 * 1024)
+			{
+				flash_info->page_size = 1 * 1024;
+			}
+			else
+			{
+				flash_info->page_size = 512;
+			}
 		}
 		break;
 	case LPC1000_ISP:
@@ -194,19 +202,28 @@ ADJUST_SETTING_HANDLER(lpc1000)
 uint8_t lpc1000_get_sector_idx_by_addr(struct program_context_t *context,
 										uint32_t addr)
 {
+	struct chip_param_t *param = context->param;
+	
 	REFERENCE_PARAMETER(context);
 	
-	if (addr < (4 * 1024 * 16))
+	if((param->chip_id & 0xFFFFFF00) == 0x00008100)
 	{
-		return (uint8_t)(addr / (4 * 1024));
-	}
-	else if (addr < (512 * 1024))
-	{
-		return (uint8_t)(16 + (addr - (4 * 1024 * 16)) / (32 * 1024));
+		return (uint8_t)(addr / (1 * 1024));
 	}
 	else
 	{
-		return 0;
+		if (addr < (4 * 1024 * 16))
+		{
+			return (uint8_t)(addr / (4 * 1024));
+		}
+		else if (addr < (512 * 1024))
+		{
+			return (uint8_t)(16 + (addr - (4 * 1024 * 16)) / (32 * 1024));
+		}
+		else
+		{
+			return 0;
+		}
 	}
 }
 

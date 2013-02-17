@@ -11,6 +11,56 @@
     <app_seg>0</app_seg>
     <param0>4000</param0>
   </chip>
+  <chip name="lpc810m021fn8">
+    <chip_id>0x00008100</chip_id>
+    <program_mode>si</program_mode>
+    <sram_size>1</sram_size>
+    <app_page_num>4</app_page_num>
+    <uid init="0xFF" bytesize="16" mask="0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF" format="%4x%4x%4x%4x"></uid>
+    <param0>12000</param0>
+    <param1>0x40048000</param1>
+    <param2>2</param2>
+  </chip>
+  <chip name="lpc811m001fdh16">
+    <chip_id>0x00008110</chip_id>
+    <program_mode>si</program_mode>
+    <sram_size>2</sram_size>
+    <app_page_num>8</app_page_num>
+    <uid init="0xFF" bytesize="16" mask="0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF" format="%4x%4x%4x%4x"></uid>
+    <param0>12000</param0>
+    <param1>0x40048000</param1>
+    <param2>2</param2>
+  </chip>
+  <chip name="lpc812m101fdh16">
+    <chip_id>0x00008120</chip_id>
+    <program_mode>si</program_mode>
+    <sram_size>4096</sram_size>
+    <app_page_num>16</app_page_num>
+    <uid init="0xFF" bytesize="16" mask="0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF" format="%4x%4x%4x%4x"></uid>
+    <param0>12000</param0>
+    <param1>0x40048000</param1>
+    <param2>2</param2>
+  </chip>
+  <chip name="lpc812m101fd20">
+    <chip_id>0x00008121</chip_id>
+    <program_mode>si</program_mode>
+    <sram_size>4096</sram_size>
+    <app_page_num>16</app_page_num>
+    <uid init="0xFF" bytesize="16" mask="0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF" format="%4x%4x%4x%4x"></uid>
+    <param0>12000</param0>
+    <param1>0x40048000</param1>
+    <param2>2</param2>
+  </chip>
+  <chip name="lpc812m101fdh20">
+    <chip_id>0x00008122</chip_id>
+    <program_mode>si</program_mode>
+    <sram_size>4096</sram_size>
+    <app_page_num>16</app_page_num>
+    <uid init="0xFF" bytesize="16" mask="0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF:0xFFFFFFFF" format="%4x%4x%4x%4x"></uid>
+    <param0>12000</param0>
+    <param1>0x40048000</param1>
+    <param2>2</param2>
+  </chip>
   <chip name="lpc1111fhn33/101">
     <chip_id>0x041E502B</chip_id>
     <program_mode>si</program_mode>
