@@ -175,7 +175,7 @@ const uint16_t KINETIS_PINID[] =
 
 void kinetis_print_device(uint32_t mcuid, uint32_t fcfg1)
 {
-	uint8_t FAMID, SUBFAMID, SERIESID, REVID, DIEID, PINID;
+	uint8_t FAMID, SUBFAMID, REVID, DIEID, PINID;
 	uint16_t pin_number;
 	char *series = "unknown";
 	uint32_t sram_size = 0;
@@ -186,7 +186,6 @@ void kinetis_print_device(uint32_t mcuid, uint32_t fcfg1)
 		// CortexM0P series
 		FAMID = (mcuid >> 28) & 0x0F;
 		SUBFAMID = (mcuid >> 24) & 0x0F;
-		SERIESID = (mcuid >> 20) & 0x0F;
 		REVID = (mcuid >> 12) & 0x0F;
 		DIEID = (mcuid >> 7) & 0x1F;
 		PINID = (mcuid >> 0) & 0x0F;
