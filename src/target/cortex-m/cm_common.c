@@ -80,7 +80,7 @@ vsf_err_t cm_dp_init(struct INTERFACES_INFO_T *ifs, struct adi_dpif_t *dp)
 	cpuid = LE_TO_SYS_U32(cpuid);
 	// 0xC24 is for CortexM4
 	// 0xC23 is for CortexM3
-	// 0xC20 is for CortexM0
+	// 0xC20 is for CortexM0/CortexM0+
 	if ((((cpuid >> 4) & 0xC3F) == 0xC24) && (ADI_DP_CM3 == tgt_core))
 	{
 		tgt_core = ADI_DP_CM4;
@@ -94,7 +94,7 @@ vsf_err_t cm_dp_init(struct INTERFACES_INFO_T *ifs, struct adi_dpif_t *dp)
 	}
 	else if ((((cpuid >> 4) & 0xC3F) == 0xC20) && (ADI_DP_CM0 == tgt_core))
 	{
-		LOG_INFO("CORTEX-M0 r%dp%d processor detected",
+		LOG_INFO("CORTEX-M0(+) r%dp%d processor detected",
 					(cpuid >> 20) & 0x0F, (cpuid >> 0) & 0x0F);
 	}
 	else
