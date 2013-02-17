@@ -15,7 +15,7 @@ define symbol __ICFEDIT_size_irqstack__ = 0;
 define symbol __ICFEDIT_size_fiqstack__ = 0;
 define symbol __ICFEDIT_size_undstack__ = 0;
 define symbol __ICFEDIT_size_abtstack__ = 0;
-define symbol __ICFEDIT_size_heap__     = 0x400;
+define symbol __ICFEDIT_size_heap__     = 0;
 /**** End of ICF editor section. ###ICF###*/
 
 

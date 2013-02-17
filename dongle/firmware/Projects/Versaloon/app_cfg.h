@@ -79,7 +79,7 @@
 #define EVSPROG_SCRIPT_FILE				"evsprog.vts"
 
 #define TARGET_CFG_ADDR					0x08040000
-#define EVSPROG_SCRIPT_ADDR				0x08068000
+#define EVSPROG_SCRIPT_ADDR				0x0807C000
 #define EVSPROG_SCRIPT_SIZE				(16 * 1024)
 #define TARGET_DATA_BASE				(EVSPROG_SCRIPT_ADDR + EVSPROG_SCRIPT_SIZE)
 #define TARGET_DATA_SIZE				(0x08080000 - TARGET_DATA_BASE)
@@ -146,6 +146,7 @@
 #	define USB_TO_BDM_EN				(1 && HW_HAS_BDM)
 // page 2
 #	define USB_TO_POWER_EN				(1 && POWER_OUT_EN)
+#	define USB_TO_POLL_EN				1
 #endif
 
 /***************************** Buffer ****************************/

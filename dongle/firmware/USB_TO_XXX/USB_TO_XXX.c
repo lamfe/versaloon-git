@@ -20,6 +20,7 @@
 #include "USB_TO_XXX.h"
 #include "app_interfaces.h"
 
+#if USB_TO_POLL_EN
 typedef struct
 {
 	uint8_t *buffer_reply_save;
@@ -32,6 +33,7 @@ typedef struct
 USB_TO_POLL_Context_t USB_TO_POLL_Context[USB_TO_POLL_NUM];
 static const uint8_t *USB_TO_POLL_buffer_reply[USB_TO_POLL_NUM];
 int8_t USB_TO_POLL_Index;
+#endif
 
 uint8_t *buffer_reply;
 
@@ -52,6 +54,7 @@ static void USB_TO_XXX_AddAbility(uint8_t abilities[USB_TO_XXX_ABILITIES_LEN], u
 
 void USB_TO_XXX_Init(uint8_t *poll_buff)
 {
+#if USB_TO_POLL_EN
 	uint32_t i;
 	
 	memset(USB_TO_POLL_buffer_reply, 0, sizeof(USB_TO_POLL_buffer_reply));
@@ -62,6 +65,7 @@ void USB_TO_XXX_Init(uint8_t *poll_buff)
 			USB_TO_POLL_buffer_reply[i] = poll_buff + 1024 * i;
 		}
 	}
+#endif
 }
 
 void USB_TO_XXX_ProcessCmd(uint8_t *dat, uint16_t len)
@@ -162,10 +166,12 @@ void USB_TO_XXX_ProcessCmd(uint8_t *dat, uint16_t len)
 			USB_TO_XXX_AddAbility(USB_TO_XXX_Abilities, USB_TO_DELAY);
 			USB_TO_XXX_AddAbility(USB_TO_XXX_Abilities, USB_TO_INFO);
 			USB_TO_XXX_AddAbility(USB_TO_XXX_Abilities, USB_TO_ALL);
+#if USB_TO_POLL_EN
 			if (USB_TO_POLL_buffer_reply[0] != NULL)
 			{
 				USB_TO_XXX_AddAbility(USB_TO_XXX_Abilities, USB_TO_POLL);
 			}
+#endif
 			memcpy(&buffer_reply[rep_len], USB_TO_XXX_Abilities, USB_TO_XXX_ABILITIES_LEN);
 			rep_len += USB_TO_XXX_ABILITIES_LEN;
 		break;
@@ -298,6 +304,7 @@ void USB_TO_XXX_ProcessCmd(uint8_t *dat, uint16_t len)
 
 			buffer_reply[rep_len++] = USB_TO_XXX_OK;
 			break;
+#if USB_TO_POLL_EN
 		case USB_TO_POLL:
 			switch(dat[USB_TO_XXX_CmdIdx + 3])
 			{
@@ -482,6 +489,7 @@ void USB_TO_XXX_ProcessCmd(uint8_t *dat, uint16_t len)
 				break;
 			}
 			break;
+#endif
 		default:
 			buffer_reply[rep_len++] = USB_TO_XXX_CMD_NOT_SUPPORT;
 			break;
