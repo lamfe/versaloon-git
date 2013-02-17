@@ -43,6 +43,7 @@
 #include "cm_lm3s.h"
 #include "cm_stm32f2.h"
 #include "cm_nuc100.h"
+#include "cm_kinetis.h"
 
 #include "cm_internal.h"
 
@@ -119,6 +120,14 @@ const struct cm_param_t cm_chips_param[] = {
 		2,								// swd_trn
 		1,								// swd_delay
 		&nuc100swj_program_functions	// program_functions
+	},
+	{
+		"cm_kinetis",					// chip_name
+		KINETIS_IRC_KHZ / 6,			// jtag_khz
+		{0,0,0,0},						// jtag_pos
+		2,								// swd_trn
+		0,								// swd_delay
+		&kinetisswj_program_functions	// program_functions
 	}
 };
 static uint8_t cm_chip_index = 0;

@@ -340,6 +340,7 @@
           <state>$PROJ_DIR$\..\..\..\..\..\src\target\stm32f2</state>
           <state>$PROJ_DIR$\..\..\..\..\..\src\target\stm32l1</state>
           <state>$PROJ_DIR$\..\..\..\..\..\src\target\nuc100</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\src\target\kinetis</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -1299,6 +1300,7 @@
           <state>$PROJ_DIR$\..\..\..\..\..\src\target\stm32f2</state>
           <state>$PROJ_DIR$\..\..\..\..\..\src\target\stm32l1</state>
           <state>$PROJ_DIR$\..\..\..\..\..\src\target\nuc100</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\src\target\kinetis</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -2639,6 +2641,9 @@
           <name>$PROJ_DIR$\..\..\..\..\..\src\target\cortex-m\cm_common.c</name>
         </file>
         <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\target\cortex-m\cm_kinetis.c</name>
+        </file>
+        <file>
           <name>$PROJ_DIR$\..\..\..\..\..\src\target\cortex-m\cm_lm3s.c</name>
         </file>
         <file>
@@ -2688,6 +2693,12 @@
         <name>hcs12</name>
         <file>
           <name>$PROJ_DIR$\..\..\..\..\..\src\target\hcs12\hcs12.c</name>
+        </file>
+      </group>
+      <group>
+        <name>kinetis</name>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\target\kinetis\kinetis.c</name>
         </file>
       </group>
       <group>

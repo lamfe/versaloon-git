@@ -67,6 +67,7 @@
 #include "nand/nand.h"
 #include "stm32l1/stm32l1.h"
 #include "nuc100/nuc100.h"
+#include "kinetis/kinetis.h"
 
 VSS_HANDLER(target_memory_detail);
 VSS_HANDLER(target_parameter_detail);
@@ -165,6 +166,10 @@ static const struct vss_cmd_t target_cmd[] =
 				"set target wait state, format: wait-state/W WAIT",
 				target_wait_state,
 				NULL),
+	VSS_CMD(	"W",
+				"set target wait state, format: wait-state/W WAIT",
+				target_wait_state,
+				NULL),
 	VSS_CMD(	"e",
 				"erase on demand feature, format: e/erase-on-demand",
 				target_erase_on_demand,
@@ -172,10 +177,6 @@ static const struct vss_cmd_t target_cmd[] =
 	VSS_CMD(	"erase-on-demand",
 				"erase on demand feature, format: e/erase-on-demand",
 				target_erase_on_demand,
-				NULL),
-	VSS_CMD(	"W",
-				"set target wait state, format: wait-state/W WAIT",
-				target_wait_state,
 				NULL),
 	VSS_CMD(	"auto-adjust",
 				"set target auto adjust, format: auto-adjust/A",
@@ -391,6 +392,19 @@ const struct target_info_t targets_info[] =
 		nuc100_program_mode,				// program_mode
 		&nuc100_program_functions,			// program_functions
 		nuc100_notifier,					// notifier
+		NULL,								// adjust_setting
+		NULL,								// adjust_mapping
+	},
+#endif
+#if	TARGET_KINETIS_EN
+	// kinetis
+	{
+		KINETIS_STRING,						// name
+		AUTO_DETECT CAN_EXECUTE,			// feature
+		kinetis_program_area_map,			// program_area_map
+		kinetis_program_mode,				// program_mode
+		&kinetis_program_functions,			// program_functions
+		kinetis_notifier,					// notifier
 		NULL,								// adjust_setting
 		NULL,								// adjust_mapping
 	},
