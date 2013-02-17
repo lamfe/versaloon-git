@@ -17,14 +17,13 @@
 #include "app_cfg.h"
 
 #include "app_interfaces.h"
-#include "usb_protocol.h"
 #include "CommandProcessor.h"
 
 #if USB_TO_XXX_EN
 #	include "USB_TO_XXX.h"
 #endif
 
-uint8_t Versaloon_Ver[] = "Versaloon(" _HARDWARE_VER_STR ")by Simon(compiled on " __DATE__ ")";
+const uint8_t Versaloon_Ver[] = "Versaloon(" _HARDWARE_VER_STR ")by Simon(compiled on " __DATE__ ")";
 
 static void Versaloon_ProcessCommonCmd(uint8_t *dat, uint16_t len)
 {
@@ -69,7 +68,9 @@ void ProcessCommand(uint8_t* dat, uint16_t len)
 	else if(cmd <= VERSALOON_USB_TO_XXX_CMD_END)
 	{
 		buffer_reply = dat;
+#if USB_TO_POLL_EN
 		USB_TO_POLL_Index = -1;
+#endif
 		USB_TO_XXX_ProcessCmd(dat, len);
 	}
 #endif		// #if USB_TO_XXX_EN
