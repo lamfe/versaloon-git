@@ -247,10 +247,6 @@ USR_SRCS+= $(VSFDIR)/stack/usb_device/vsf_usbd.c \
 USR_SRCS+= $(VSFDIR)/tool/buffer/buffer.c $(VSFDIR)/tool/fakefat32/fakefat32.c
 USR_INCS+= -I $(VSFDIR)/tool/list
 
-# fakefat
-USR_SRCS+= $(SRCDIR)/fakefat/fakefat.c
-USR_INCS+= -I $(SRCDIR)/fakefat
-
 # USB_TO_XXX
 USR_SRCS+= $(SRCDIR)/USB_TO_XXX/USB_TO_XXX.c \
   $(SRCDIR)/USB_TO_XXX/USB_TO_USART.c \
