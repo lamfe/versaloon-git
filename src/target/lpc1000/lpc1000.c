@@ -227,29 +227,14 @@ uint8_t lpc1000_get_sector_idx_by_addr(struct program_context_t *context,
 	}
 }
 
+
+
 ENTER_PROGRAM_MODE_HANDLER(lpc1000)
 {
-	struct program_info_t *pi = context->pi;
-	struct program_area_t *flash_area = NULL;
-	uint32_t checksum;
-	uint8_t i;
-	
 	if (NULL == lpc1000_enter_program_mode_save)
 	{
 		LOG_BUG(ERRMSG_NOT_INITIALIZED, "lpc1000", "");
 		return VSFERR_FAIL;
-	}
-	
-	flash_area = target_get_program_area(pi, APPLICATION_IDX);
-	if ((pi->auto_adjust) && (flash_area != NULL) &&
-		(flash_area->buff != NULL) && (flash_area->size > 32))
-	{
-		checksum = 0;
-		for (i = 0; i < 7; i++)
-		{
-			checksum += ((uint32_t*)flash_area->buff)[i];
-		}
-		((uint32_t*)flash_area->buff)[i] = (checksum ^ 0xFFFFFFFF) + 1;
 	}
 	
 	return lpc1000_enter_program_mode_save(context);

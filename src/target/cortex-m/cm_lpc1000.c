@@ -403,6 +403,7 @@ WRITE_TARGET_HANDLER(lpc1000swj)
 	static uint8_t ticktock = 0;
 	uint32_t buff_addr;
 	uint16_t page_size;
+	uint32_t vectors[8];
 	
 	switch (area)
 	{
@@ -445,8 +446,31 @@ WRITE_TARGET_HANDLER(lpc1000swj)
 		iap_cmd_param[1] = buff_addr;		// Source RAM address
 		iap_cmd_param[2] = page_size;		// Number of bytes to be written
 		iap_cmd_param[3] = pi->kernel_khz;	// CPU Clock Frequency(in kHz)
-		if (adi_memap_write_buf(buff_addr, buff, page_size) ||
-			lpc1000swj_iap_call(LPC1000_IAPCMD_RAM_TO_FLASH,
+		if (pi->auto_adjust && !addr)
+		{
+			uint32_t checksum = 0;
+			uint8_t i;
+			
+			memcpy(vectors, buff, 32);
+			for (i = 0; i < 7; i++)
+			{
+				checksum += GET_LE_U32(&buff[i << 2]);
+			}
+			SET_LE_U32(&vectors[7], -checksum);
+			
+			if (adi_memap_write_buf(buff_addr, (uint8_t *)vectors, 32) ||
+				adi_memap_write_buf(buff_addr + 32, buff + 32, page_size - 32))
+			{
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "run iap");
+				return ERRCODE_FAILURE_OPERATION;
+			}
+		}
+		else if (adi_memap_write_buf(buff_addr, buff, page_size))
+		{
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "run iap");
+			return ERRCODE_FAILURE_OPERATION;
+		}
+		if (lpc1000swj_iap_call(LPC1000_IAPCMD_RAM_TO_FLASH,
 											iap_cmd_param, iap_reply, false))
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "run iap");
