@@ -62,23 +62,36 @@ const struct program_functions_t stm32l1swj_program_functions =
 
 ENTER_PROGRAM_MODE_HANDLER(stm32l1swj)
 {
-	uint32_t reg, flash_obr, flash_wrpr;
+	uint32_t reg, flash_obr, flash_wrpr, flash_pecr;
 	
 	REFERENCE_PARAMETER(context);
 	
 	// unlock flash and option bytes
-	reg = STM32L1_EE_PECR_UNLOCK_KEY1;
-	adi_memap_write_reg32(STM32L1_FLASH_PEKEYR, &reg, 0);
-	reg = STM32L1_EE_PECR_UNLOCK_KEY2;
-	adi_memap_write_reg32(STM32L1_FLASH_PEKEYR, &reg, 0);
-	reg = STM32L1_FLASH_UNLOCK_KEY1;
-	adi_memap_write_reg32(STM32L1_FLASH_PRGKEYR, &reg, 0);
-	reg = STM32L1_FLASH_UNLOCK_KEY2;
-	adi_memap_write_reg32(STM32L1_FLASH_PRGKEYR, &reg, 0);
-	reg = STM32L1_OPT_UNLOCK_KEY1;
-	adi_memap_write_reg32(STM32L1_FLASH_OPTKEYR, &reg, 0);
-	reg = STM32L1_OPT_UNLOCK_KEY2;
-	adi_memap_write_reg32(STM32L1_FLASH_OPTKEYR, &reg, 0);
+	if (adi_memap_read_reg32(STM32L1_FLASH_PECR, &flash_pecr, 1))
+	{
+		return VSFERR_FAIL;
+	}
+	if (flash_pecr & STM32L1_FLASH_PECR_PELOCK)
+	{
+		reg = STM32L1_EE_PECR_UNLOCK_KEY1;
+		adi_memap_write_reg32(STM32L1_FLASH_PEKEYR, &reg, 0);
+		reg = STM32L1_EE_PECR_UNLOCK_KEY2;
+		adi_memap_write_reg32(STM32L1_FLASH_PEKEYR, &reg, 0);
+	}
+	if (flash_pecr & STM32L1_FLASH_PECR_PRGLOCK)
+	{
+		reg = STM32L1_FLASH_UNLOCK_KEY1;
+		adi_memap_write_reg32(STM32L1_FLASH_PRGKEYR, &reg, 0);
+		reg = STM32L1_FLASH_UNLOCK_KEY2;
+		adi_memap_write_reg32(STM32L1_FLASH_PRGKEYR, &reg, 0);
+	}
+	if (flash_pecr & STM32L1_FLASH_PECR_OPTLOCK)
+	{
+		reg = STM32L1_OPT_UNLOCK_KEY1;
+		adi_memap_write_reg32(STM32L1_FLASH_OPTKEYR, &reg, 0);
+		reg = STM32L1_OPT_UNLOCK_KEY2;
+		adi_memap_write_reg32(STM32L1_FLASH_OPTKEYR, &reg, 0);
+	}
 	
 	adi_memap_read_reg32(STM32L1_FLASH_WRPR, &flash_wrpr, 0);
 	if (adi_memap_read_reg32(STM32L1_FLASH_OBR, &flash_obr, 1))
