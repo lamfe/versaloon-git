@@ -47,6 +47,7 @@
 #include "cm_stm32_fl.h"
 
 static uint32_t STM32F1_FL_PAGE0_ADDR;
+static uint8_t stm32f1_tick_tock = 0;
 
 ENTER_PROGRAM_MODE_HANDLER(stm32f1swj);
 LEAVE_PROGRAM_MODE_HANDLER(stm32f1swj);
@@ -124,6 +125,7 @@ ERASE_TARGET_HANDLER(stm32f1swj)
 	REFERENCE_PARAMETER(size);
 	REFERENCE_PARAMETER(addr);
 	
+	cmd.data_unit_round = 1;
 	cmd.sr_busy_mask = STM32F1_FLASH_SR_BSY;
 	cmd.sr_err_mask = STM32F1_FLASH_SR_ERRMSK;
 	switch (area)
@@ -134,7 +136,7 @@ ERASE_TARGET_HANDLER(stm32f1swj)
 		cmd.cr_value1 = STM32F1_FLASH_CR_OPTER | STM32F1_FLASH_CR_OPTWRE;
 		cmd.cr_value2 = cmd.cr_value1 | STM32F1_FLASH_CR_STRT;
 		cmd.data_type = 0;
-		cmd.data_size = 1;
+		cmd.data_round = 1;
 		if (stm32swj_fl_call(&cmd, &result, true))
 		{
 			err = ERRCODE_FAILURE_OPERATION;
@@ -167,7 +169,7 @@ ERASE_TARGET_HANDLER(stm32f1swj)
 		cmd.cr_value1 = STM32F1_FLASH_CR_MER;
 		cmd.cr_value2 = cmd.cr_value1 | STM32F1_FLASH_CR_STRT;
 		cmd.data_type = 0;
-		cmd.data_size = 1;
+		cmd.data_round = 1;
 		if (stm32swj_fl_call(&cmd, &result, true))
 		{
 			err = ERRCODE_FAILURE_OPERATION;
@@ -197,11 +199,11 @@ WRITE_TARGET_HANDLER(stm32f1swj)
 	struct chip_area_info_t *flash_info = NULL;
 	uint8_t i;
 	uint8_t fuse_buff[STM32F1_OB_SIZE];
-	static uint8_t tick_tock = 0;
 	vsf_err_t err = VSFERR_NONE;
 	struct stm32_fl_cmd_t cmd;
 	struct stm32_fl_result_t result;
 	
+	cmd.data_unit_round = 1;
 	cmd.sr_busy_mask = STM32F1_FLASH_SR_BSY;
 	cmd.sr_err_mask = STM32F1_FLASH_SR_ERRMSK;
 	switch (area)
@@ -225,7 +227,7 @@ WRITE_TARGET_HANDLER(stm32f1swj)
 		cmd.target_addr = STM32F1_OB_ADDR;
 		cmd.ram_addr = STM32F1_FL_PAGE0_ADDR;
 		cmd.data_type = 2;
-		cmd.data_size = STM32F1_OB_SIZE / 2;
+		cmd.data_round = STM32F1_OB_SIZE / 2;
 		if (adi_memap_write_buf(cmd.ram_addr, fuse_buff, STM32F1_OB_SIZE) ||
 			stm32swj_fl_call(&cmd, &result, true))
 		{
@@ -253,7 +255,7 @@ WRITE_TARGET_HANDLER(stm32f1swj)
 		cmd.cr_value1 = STM32F1_FLASH_CR_PG;
 		cmd.cr_value2 = 0;
 		cmd.target_addr = addr;
-		if (tick_tock & 1)
+		if (stm32f1_tick_tock++ & 1)
 		{
 			cmd.ram_addr = STM32F1_FL_PAGE0_ADDR + size;
 		}
@@ -262,14 +264,13 @@ WRITE_TARGET_HANDLER(stm32f1swj)
 			cmd.ram_addr = STM32F1_FL_PAGE0_ADDR;
 		}
 		cmd.data_type = 2;
-		cmd.data_size = size / 2;
+		cmd.data_round = (uint16_t)(size / 2);
 		if (adi_memap_write_buf(cmd.ram_addr, buff, size) ||
 			stm32swj_fl_call(&cmd, &result, false))
 		{
 			err = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
-		tick_tock++;
 		break;
 	default:
 		err = VSFERR_FAIL;

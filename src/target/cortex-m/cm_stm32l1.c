@@ -44,6 +44,14 @@
 
 #include "cm_internal.h"
 #include "stm32l1_internal.h"
+#include "cm_stm32_fl.h"
+
+#define STM32L1_USE_FLASHLOADER					0
+
+#if STM32L1_USE_FLASHLOADER
+static uint32_t STM32L1_FL_PAGE0_ADDR;
+static uint8_t stm32l1_tick_tock = 0;
+#endif
 
 ENTER_PROGRAM_MODE_HANDLER(stm32l1swj);
 LEAVE_PROGRAM_MODE_HANDLER(stm32l1swj);
@@ -60,11 +68,36 @@ const struct program_functions_t stm32l1swj_program_functions =
 	READ_TARGET_FUNCNAME(stm32l1swj)
 };
 
+#if !STM32L1_USE_FLASHLOADER
+static vsf_err_t stm32l1swj_wait_busy(void)
+{
+	uint32_t reg;
+	
+	do {
+		if (adi_memap_read_reg32(STM32L1_FLASH_SR, &reg, 1))
+		{
+			return VSFERR_FAIL;
+		}
+	} while (reg & STM32L1_FLASH_SR_BSY);
+	return (reg & STM32L1_FLASH_SR_ERRMSK) ? VSFERR_FAIL : VSFERR_NONE;
+}
+#endif
+
 ENTER_PROGRAM_MODE_HANDLER(stm32l1swj)
 {
 	uint32_t reg, flash_obr, flash_wrpr, flash_pecr;
-	
+
+#if STM32L1_USE_FLASHLOADER
+	struct chip_area_info_t *sram_info = NULL;
+	sram_info = target_get_chip_area(context->param, SRAM_IDX);
+	if (NULL == sram_info)
+	{
+		return VSFERR_FAIL;
+	}
+	STM32L1_FL_PAGE0_ADDR = sram_info->addr + STM32_FL_BUFFER_OFFSET;
+#else
 	REFERENCE_PARAMETER(context);
+#endif
 	
 	// unlock flash and option bytes
 	if (adi_memap_read_reg32(STM32L1_FLASH_PECR, &flash_pecr, 1))
@@ -107,80 +140,47 @@ ENTER_PROGRAM_MODE_HANDLER(stm32l1swj)
 		LOG_WARNING("STM32L1 locked");
 	}
 	
+#if STM32L1_USE_FLASHLOADER
+	return stm32swj_fl_init(sram_info->addr);
+#else
 	return VSFERR_NONE;
+#endif
 }
 
 LEAVE_PROGRAM_MODE_HANDLER(stm32l1swj)
 {
-	uint32_t reg;
+#if STM32L1_USE_FLASHLOADER
+	struct stm32_fl_result_t result;
+#endif
 	
 	REFERENCE_PARAMETER(context);
 	REFERENCE_PARAMETER(success);
 	
-	// wait busy
-	do {
-		if (adi_memap_read_reg32(STM32L1_FLASH_SR, &reg, 1))
-		{
-			return VSFERR_FAIL;
-		}
-	} while (reg & STM32L1_FLASH_SR_BSY);
-	if (reg & STM32L1_FLASH_SR_ERRMSK)
-	{
-		return VSFERR_FAIL;
-	}
-	
-	return VSFERR_NONE;
+#if STM32L1_USE_FLASHLOADER
+	return stm32swj_fl_wait_ready(&result, true);
+#else
+	return stm32l1swj_wait_busy();
+#endif
 }
 
 ERASE_TARGET_HANDLER(stm32l1swj)
 {
+	struct chip_area_info_t *flash_info = NULL;
+#if STM32L1_USE_FLASHLOADER
+	struct stm32_fl_cmd_t cmd;
+	struct stm32_fl_result_t result;
+#endif
 	vsf_err_t err = VSFERR_NONE;
 	uint32_t reg;
 	
-	REFERENCE_PARAMETER(context);
 	REFERENCE_PARAMETER(size);
 	REFERENCE_PARAMETER(addr);
 	
-	switch (area)
-	{
-	case FUSE_CHAR:
-		break;
-	case APPLICATION_CHAR:
-		// wait busy
-		do {
-			if (adi_memap_read_reg32(STM32L1_FLASH_SR, &reg, 1))
-			{
-				return VSFERR_FAIL;
-			}
-		} while (reg & STM32L1_FLASH_SR_BSY);
-		if (reg & STM32L1_FLASH_SR_ERRMSK)
-		{
-			return VSFERR_FAIL;
-		}
-		
-		reg = STM32L1_FLASH_PECR_ERASE;
-		adi_memap_write_reg32(STM32L1_FLASH_PECR, &reg, 0);
-		reg = STM32L1_FLASH_PECR_ERASE | STM32L1_FLASH_PECR_PROG;
-		adi_memap_write_reg32(STM32L1_FLASH_PECR, &reg, 0);
-		reg = 0;
-		if (adi_memap_write_reg32(addr, &reg, 1))
-		{
-			return VSFERR_FAIL;
-		}
-		break;
-	default:
-		err = VSFERR_FAIL;
-		break;
-	}
-	return err;
-}
-
-WRITE_TARGET_HANDLER(stm32l1swj)
-{
-	struct chip_area_info_t *flash_info = NULL;
-	vsf_err_t err = VSFERR_NONE;
-	uint32_t reg;
-	
+#if STM32L1_USE_FLASHLOADER
+	cmd.data_unit_round = 1;
+	cmd.sr_busy_mask = STM32L1_FLASH_SR_BSY;
+	cmd.sr_err_mask = STM32L1_FLASH_SR_ERRMSK;
+#endif
 	switch (area)
 	{
 	case FUSE_CHAR:
@@ -192,18 +192,114 @@ WRITE_TARGET_HANDLER(stm32l1swj)
 			return VSFERR_FAIL;
 		}
 		
-		// wait busy
-		do {
-			if (adi_memap_read_reg32(STM32L1_FLASH_SR, &reg, 1))
-			{
-				return VSFERR_FAIL;
-			}
-		} while (reg & STM32L1_FLASH_SR_BSY);
-		if (reg & STM32L1_FLASH_SR_ERRMSK)
+#if STM32L1_USE_FLASHLOADER
+		cmd.cr_addr = STM32L1_FLASH_PECR;
+		cmd.sr_addr = STM32L1_FLASH_SR;
+		cmd.cr_value1 = STM32L1_FLASH_PECR_ERASE;
+		cmd.cr_value2 = cmd.cr_value1 | STM32L1_FLASH_PECR_PROG;
+		cmd.target_addr = addr;
+		if (stm32l1_tick_tock++ & 1)
+		{
+			cmd.ram_addr = STM32L1_FL_PAGE0_ADDR + size;
+		}
+		else
+		{
+			cmd.ram_addr = STM32L1_FL_PAGE0_ADDR;
+		}
+		cmd.data_type = 4;
+		cmd.data_round = 1;
+		reg = 0;
+		if (adi_memap_write_reg32(cmd.ram_addr, &reg, 0)||
+			stm32swj_fl_call(&cmd, &result, true))
+		{
+			err = ERRCODE_FAILURE_OPERATION;
+			break;
+		}
+#else
+		if (stm32l1swj_wait_busy())
+		{
+			return VSFERR_FAIL;
+		}
+		reg = STM32L1_FLASH_PECR_ERASE;
+		adi_memap_write_reg32(STM32L1_FLASH_PECR, &reg, 0);
+		reg = STM32L1_FLASH_PECR_ERASE | STM32L1_FLASH_PECR_PROG;
+		adi_memap_write_reg32(STM32L1_FLASH_PECR, &reg, 0);
+		reg = 0;
+		if (adi_memap_write_reg32(addr, &reg, 1))
+		{
+			return VSFERR_FAIL;
+		}
+#endif
+		break;
+	default:
+		err = VSFERR_FAIL;
+		break;
+	}
+	return err;
+}
+
+WRITE_TARGET_HANDLER(stm32l1swj)
+{
+	struct chip_area_info_t *flash_info = NULL;
+#if STM32L1_USE_FLASHLOADER
+	struct stm32_fl_cmd_t cmd;
+	struct stm32_fl_result_t result;
+	uint32_t round_size;
+#else
+	uint32_t reg;
+#endif
+	vsf_err_t err = VSFERR_NONE;
+	
+#if STM32L1_USE_FLASHLOADER
+	cmd.sr_busy_mask = STM32L1_FLASH_SR_BSY;
+	cmd.sr_err_mask = STM32L1_FLASH_SR_ERRMSK;
+#endif
+	switch (area)
+	{
+	case FUSE_CHAR:
+		break;
+	case APPLICATION_CHAR:
+		flash_info = target_get_chip_area(context->param, APPLICATION_IDX);
+		if ((NULL == flash_info) || (size != flash_info->page_size))
 		{
 			return VSFERR_FAIL;
 		}
 		
+#if STM32L1_USE_FLASHLOADER
+		cmd.data_unit_round = 32;
+		cmd.cr_addr = STM32L1_FLASH_PECR;
+		cmd.sr_addr = STM32L1_FLASH_SR;
+		cmd.cr_value1 = STM32L1_FLASH_PECR_FPRG;
+		cmd.cr_value2 = cmd.cr_value1 | STM32L1_FLASH_PECR_PROG;
+		while (size > 0)
+		{
+			cmd.target_addr = addr;
+			if (stm32l1_tick_tock++ & 1)
+			{
+				cmd.ram_addr = STM32L1_FL_PAGE0_ADDR + size;
+			}
+			else
+			{
+				cmd.ram_addr = STM32L1_FL_PAGE0_ADDR;
+			}
+			cmd.data_type = 4;
+			cmd.data_round = 1;
+			round_size = cmd.data_unit_round * cmd.data_type;
+			if (adi_memap_write_buf(cmd.ram_addr, buff, round_size)||
+				stm32swj_fl_call(&cmd, &result, true))
+			{
+				err = ERRCODE_FAILURE_OPERATION;
+				break;
+			}
+			addr += round_size;
+			buff += round_size;
+			size -= round_size;
+		}
+#else
+		if (stm32l1swj_wait_busy())
+		{
+			return VSFERR_FAIL;
+		}
 		reg = STM32L1_FLASH_PECR_FPRG;
 		adi_memap_write_reg32(STM32L1_FLASH_PECR, &reg, 0);
 		reg = STM32L1_FLASH_PECR_FPRG | STM32L1_FLASH_PECR_PROG;
@@ -216,18 +312,10 @@ WRITE_TARGET_HANDLER(stm32l1swj)
 		addr += size / 2;
 		buff += size / 2;
 		
-		// wait busy
-		do {
-			if (adi_memap_read_reg32(STM32L1_FLASH_SR, &reg, 1))
-			{
-				return VSFERR_FAIL;
-			}
-		} while (reg & STM32L1_FLASH_SR_BSY);
-		if (reg & STM32L1_FLASH_SR_ERRMSK)
+		if (stm32l1swj_wait_busy())
 		{
 			return VSFERR_FAIL;
 		}
-		
 		reg = STM32L1_FLASH_PECR_FPRG;
 		adi_memap_write_reg32(STM32L1_FLASH_PECR, &reg, 0);
 		reg = STM32L1_FLASH_PECR_FPRG | STM32L1_FLASH_PECR_PROG;
@@ -237,6 +325,7 @@ WRITE_TARGET_HANDLER(stm32l1swj)
 		{
 			return VSFERR_FAIL;
 		}
+#endif
 		break;
 	default:
 		err = VSFERR_FAIL;
