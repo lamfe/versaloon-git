@@ -48,82 +48,90 @@
 static uint32_t stm32swj_fl_cnt = 0;
 static uint32_t stm32swj_fl_base = 0;
 static uint8_t fl_code[] = {
-								/* wait_start: */
-	0x28, 0x48,					/* ldr.n	r0, [PC, #0xA0]	;load SYNC */
+								/* wait_start */
+	0x28, 0x48,					/* ldr		r0, [PC, #0xA0]	;load SYNC */
 	0x00, 0x28,					/* cmp		r0, #0 */
-	0xFC, 0xD0,					/* beq.n	wait_start */
-								/* update command: */
-	0x1E, 0x48,					/* ldr.n	r0, [PC, #0x78]	;load CR_ADDR */
-	0x1E, 0x49,					/* ldr.n	r1, [PC, #0x78] ;load CR_VALUE1 */
-	0x1F, 0x4A,					/* ldr.n	r2, [PC, #0x7C] ;load CR_VALUE2 */
-								/* write_cr: */
+	0xFC, 0xD0,					/* beq		wait_start */
+								/* update_command */
+	0x1E, 0x48,					/* ldr		r0, [PC, #0x78]	;load CR_ADDR */
+	0x1E, 0x49,					/* ldr		r1, [PC, #0x78] ;load CR_VALUE1 */
+	0x1F, 0x4A,					/* ldr		r2, [PC, #0x7C] ;load CR_VALUE2 */
+								/* write_cr */
 	0x01, 0x60,					/* str		r1, [r0]		;write CR */
 	0x12, 0x42,					/* tst		r2, r2 */
-	0x00, 0xD0,					/* beq.n	load_parameter */
+	0x00, 0xD0,					/* beq		load_parameter */
 	0x02, 0x60,					/* str		r2, [r0] */
-								/* load_parameter: */
-	0x1D, 0x48,					/* ldr.n	r0, [PC, #0x74] ;load SR_ADDR */
-	0x1E, 0x49,					/* ldr.n	r1, [PC, #0x78] ;load SR_BUSY_MASK */
-	0x1E, 0x4A,					/* ldr.n	r2, [PC, #0x78] ;load TARGET_ADDR */
-	0x1F, 0x4B,					/* ldr.n	r3, [PC, #0x7C] ;load RAM_ADDR */
-	0x1F, 0x4C,					/* ldr.n	r4, [PC, #0x7C] ;load DATA_TYPE */
-	0x20, 0x4D,					/* ldr.n	r5, [PC, #0x80] ;load DATA_SIZE */
-								/* clear_sync: */
-	0x00, 0x26,					/* movs		r6, #0 */
-	0x20, 0xA7,					/* adr.n	r7, PC, #0x80 */
+								/* load_parameter */
+	0x1D, 0x48,					/* ldr		r0, [PC, #0x74] ;load SR_ADDR */
+	0x1E, 0x49,					/* ldr		r1, [PC, #0x78] ;load SR_BUSY_MASK */
+	0x1E, 0x4A,					/* ldr		r2, [PC, #0x78] ;load TARGET_ADDR */
+	0x1F, 0x4B,					/* ldr		r3, [PC, #0x7C] ;load RAM_ADDR */
+	0x1F, 0x4C,					/* ldr		r4, [PC, #0x7C] ;load DATA_TYPE & DATA_ROUND */
+	0x20, 0x4D,					/* ldr		r5, [PC, #0x80] ;load DATA_UNIT_ROUND */
+								/* clear_sync */
+	0x00, 0x26,					/* mov		r6, #0 */
+	0x20, 0xA7,					/* add		r7, PC, #0x80 */
 	0x3E, 0x60,					/* str		r6, [r7] */
+								/* prepare */
+	0xA9, 0x46,					/* mov		r9, r5 */
+	0x26, 0x1C,					/* mov		r6, r4 */
+	0xFF, 0x27,					/* mov		r7, #0xFF */
+	0x3E, 0x40,					/* and		r6, r6, r7 */
+	0xB0, 0x46,					/* mov		r8, r6 */
+	0x24, 0x0C,					/* lsrs		r4, r4, #16 */
 								/* check_data_size */
-	0x2D, 0x42,					/* tst		r5, r5 */
-	0xEA, 0xD0,					/* beq.n	wait_start */
-								/* write_data: */
-	0xA7, 0x44,					/* add		pc, pc, r4 */
+	0x24, 0x42,					/* tst		r4, r4 */
+	0x18, 0xD0,					/* beq		wait_busy */
+								/* write_data_round */
+	0x4D, 0x46,					/* mov		r5, r9 */
+								/* write_data */
+	0xC7, 0x44,					/* add		pc, pc, r8 */
 								/* write_byte:				;offset:-2 */
 	0x1F, 0x78,					/* ldrb		r7, [r3] */
 	0x17, 0x70,					/* strb		r7, [r2] */
 	0x01, 0x32,					/* adds		r2, #1 */
 	0x01, 0x33,					/* adds		r3, #1 */
-	0x0F, 0xE0,					/* b.n		wait_busy */
+	0x0F, 0xE0,					/* b		wait_busy */
 								/* write_hword:				;offset:8 */
 	0x1F, 0x88,					/* ldrh		r7, [r3] */
 	0x17, 0x80,					/* str		r7, [r2] */
-	0x02, 0x32,					/* adds		r2, #1 */
-	0x02, 0x33,					/* adds		r3, #1 */
-	0x0A, 0xE0,					/* b.n		wait_busy */
+	0x02, 0x32,					/* adds		r2, #2 */
+	0x02, 0x33,					/* adds		r3, #2 */
+	0x0A, 0xE0,					/* b		wait_busy */
 								/* write_word:				;offset:18 */
 	0x1F, 0x68,					/* ldrh		r7, [r3] */
 	0x17, 0x60,					/* str		r7, [r2] */
-	0x04, 0x32,					/* adds		r2, #1 */
-	0x04, 0x33,					/* adds		r3, #1 */
-	0x05, 0xE0,					/* b.n		wait_busy */
+	0x04, 0x32,					/* adds		r2, #4 */
+	0x04, 0x33,					/* adds		r3, #4 */
+	0x05, 0xE0,					/* b		wait_busy */
 								/* write_dword:				;offset:28 */
 	0x1F, 0x68,					/* ldr		r7, [r3] */
 	0x17, 0x60,					/* str		r7, [r2] */
 	0x5F, 0x68,					/* ldr		r7, [r3, #4] */
 	0x57, 0x60,					/* str		r7, [r2, #4] */
-	0x08, 0x32,					/* adds		r2, #1 */
-	0x08, 0x33,					/* adds		r3, #1 */
+	0x08, 0x32,					/* adds		r2, #8 */
+	0x08, 0x33,					/* adds		r3, #8 */
+								/* check_round_written */
+	0x6D, 0x1E,					/* sub		r5, r5, #1*/
+	0xE7, 0xD1,					/* bne		write_data */
 								/* wait_busy:				;offset:40 */
 	0x07, 0x68,					/* ldr		r7, [r0] */
-	0x0F, 0x40,					/* ands		r7, r7, r1 */
-	0xFC, 0xD1,					/* bne.n	wait_busy */
+	0x0F, 0x40,					/* and		r7, r7, r1 */
+	0xFC, 0xD1,					/* bne		wait_busy */
 								/* check_all_written: */
-	0x6D, 0x1E,					/* subs		r5, r5, #1 */
-	0xE4, 0xD1,					/* bne.n	write_data */
+	0x64, 0x1E,					/* sub		r4, r4, #1 */
+	0xE1, 0xD1,					/* bne		write_data_round */
 								/* increase_result */
-	0x11, 0x48,					/* ldr.n	r0, [PC, #0x44] */
-	0x40, 0x1C,					/* adds		r0, r0, #1 */
-	0x10, 0xA1,					/* adr.n	r1, PC, #0x40 */
+	0x0D, 0xA1,					/* add		r1, PC, #0x34 */
+	0x08, 0x68,					/* ldr		r0, [r1] */
+	0x40, 0x1C,					/* add		r0, r0, #1 */
 	0x08, 0x60,					/* str		r0, [r1] */
-	0xCA, 0xE7,					/* b.n		wait_start */
+	0xC1, 0xE7,					/* b		wait_start */
 								/* exit: */
 								/* dead_loop: */
 	0xFE, 0xE7,					/* b $ */
 	
-	0x00, 0x00, 0x00, 0x00,
-	0x00, 0x00, 0x00, 0x00,
-	0x00, 0x00, 0x00, 0x00,
-	0x00, 0x00, 0x00, 0x00,
-	0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00,
 								/* offset:0x100 */
 	0x00, 0x00, 0x00, 0x00,		/* cr_addr */
 	0x00, 0x00, 0x00, 0x00,		/* cr_value1 */
@@ -132,8 +140,8 @@ static uint8_t fl_code[] = {
 	0x00, 0x00, 0x00, 0x00,		/* sr_busy_mask */
 	0x00, 0x00, 0x00, 0x00,		/* target_addr */
 	0x00, 0x00, 0x00, 0x00,		/* ram_addr */
-	0x00, 0x00, 0x00, 0x00,		/* data_type */
-	0x00, 0x00, 0x00, 0x00,		/* data_size */
+	0x00, 0x00, 0x00, 0x00,		/* data_type & data_round */
+	0x00, 0x00, 0x00, 0x00,		/* data_unit_round */
 	
 	0x00, 0x00, 0x00, 0x00,		/* sync */
 	
@@ -218,7 +226,8 @@ vsf_err_t stm32swj_fl_run(struct stm32_fl_cmd_t *cmd)
 	default:
 		return VSFERR_FAIL;
 	}
-	buff_tmp[8] = SYS_TO_LE_U32(cmd->data_size);
+	buff_tmp[7] |= SYS_TO_LE_U16(cmd->data_round) << 16;
+	buff_tmp[8] = SYS_TO_LE_U16(cmd->data_unit_round);
 	buff_tmp[9] = SYS_TO_LE_U32(1);
 	
 	// write fl command with sync to target SRAM

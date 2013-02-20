@@ -119,6 +119,7 @@ ERASE_TARGET_HANDLER(stm32f2swj)
 	REFERENCE_PARAMETER(size);
 	REFERENCE_PARAMETER(addr);
 	
+	cmd.data_unit_round = 1;
 	cmd.sr_busy_mask = STM32F2_FLASH_SR_BSY;
 	cmd.sr_err_mask = STM32F2_FLASH_SR_ERRMSK;
 	switch (area)
@@ -131,7 +132,7 @@ ERASE_TARGET_HANDLER(stm32f2swj)
 		cmd.cr_value1 = STM32F2_FLASH_CR_MER;
 		cmd.cr_value2 = cmd.cr_value1 | STM32F2_FLASH_CR_STRT;
 		cmd.data_type = 0;
-		cmd.data_size = 1;
+		cmd.data_round = 1;
 		if (stm32swj_fl_call(&cmd, &result, true))
 		{
 			err = ERRCODE_FAILURE_OPERATION;
@@ -159,6 +160,7 @@ WRITE_TARGET_HANDLER(stm32f2swj)
 	REFERENCE_PARAMETER(buff);
 	REFERENCE_PARAMETER(addr);
 	
+	cmd.data_unit_round = 1;
 	switch (area)
 	{
 	case FUSE_CHAR:
@@ -169,7 +171,7 @@ WRITE_TARGET_HANDLER(stm32f2swj)
 		cmd.target_addr = 0;
 		cmd.ram_addr = 0;
 		cmd.data_type = 0;
-		cmd.data_size = 1;
+		cmd.data_round = 1;
 		if (adi_memap_write_buf(cmd.ram_addr, buff, 4) ||
 			stm32swj_fl_call(&cmd, &result, true))
 		{
@@ -195,7 +197,7 @@ WRITE_TARGET_HANDLER(stm32f2swj)
 		cmd.target_addr = addr;
 		cmd.ram_addr = STM32F2_FL_PAGE0_ADDR;
 		cmd.data_type = 4;
-		cmd.data_size = cur_size / 4;
+		cmd.data_round = (uint16_t)(cur_size / 4);
 		if (adi_memap_write_buf(cmd.ram_addr, buff, cur_size) ||
 			stm32swj_fl_call(&cmd, &result, last))
 		{

@@ -35,8 +35,9 @@ struct stm32_fl_cmd_t
 	uint32_t target_addr;
 	uint32_t ram_addr;
 	
-	uint32_t data_type;
-	uint32_t data_size;
+	uint8_t data_type;
+	uint16_t data_round;
+	uint16_t data_unit_round;
 };
 
 struct stm32_fl_result_t
