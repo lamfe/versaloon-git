@@ -173,7 +173,7 @@ var
   off: integer;
   radix: integer;
   parse_num: boolean;
-  i: integer;
+  i, j: integer;
   str_min_len: integer;
   strPrefix: string;
 begin
@@ -245,13 +245,27 @@ begin
             Exit;
           end;
 
-          value := 0;
-          for i := 1 to param do
+          str := str + strPrefix;
+          if (radix = 16) and (param > 8) then
           begin
-            value := value + (QWord(buffer[buffer_parsed_len]) shl (8 * (i - 1)));
-            Inc(buffer_parsed_len);
+            j := buffer_parsed_len;
+            for i := param downto 1 do
+            begin
+              value := buffer[j + i - 1];
+              str := str + IntToStrRadix(value, radix, 2);
+              Inc(buffer_parsed_len);
+            end;
+          end
+          else
+          begin
+            value := 0;
+            for i := 1 to param do
+            begin
+              value := value + (QWord(buffer[buffer_parsed_len]) shl (8 * (i - 1)));
+              Inc(buffer_parsed_len);
+            end;
+            str := str + IntToStrRadix(value, radix, str_min_len);
           end;
-          str := str + strPrefix + IntToStrRadix(value, radix, str_min_len);
         end;
         if format_parsed_len < Length(format) then
         begin
