@@ -895,9 +895,9 @@ do_write_fuse:
 							STM8_FUSEPAGE_ADDR + fuse_addr,
 							buff[fuse_offset], 1);
 					
-					// commit with out error information for ROP option byte
-					// error will issue if chage ROP from 0xAA to non 0xAA
-					if ((0 == fuse_offset) && (buff[fuse_offset] != 0xAA))
+					// commit without error information for ROP option byte
+					// error will issue here but operation will succeed
+					if (0 == fuse_offset)
 					{
 						LOG_PUSH();
 						LOG_MUTE();
@@ -905,6 +905,14 @@ do_write_fuse:
 						commit();
 						delay_ms(100);
 						LOG_POP();
+						
+						// some STM8 module REQUIRE 2nd write to the ROP option byte
+						err = stm8_program_reg(
+							param->param[STM8_PARAM_FLASH_CR2],
+							param->param[STM8_PARAM_FLASH_NCR2],
+							param->param[STM8_PARAM_FLASH_IAPSR], cmd,
+							STM8_FUSEPAGE_ADDR + fuse_addr,
+							buff[fuse_offset], 1);
 					}
 					
 					// index 1 to 8 is generic fuse

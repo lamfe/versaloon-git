@@ -61,6 +61,7 @@ const struct program_functions_t nuc100swj_program_functions =
 };
 
 static uint32_t nuc100swj_iap_cnt = 0;
+static uint8_t nuc100swj_ticktock = 0;
 
 #define NUC100_IAP_BASE				CM_SRAM_ADDR
 #define NUC100_IAP_COMMAND_OFFSET	0x60
@@ -480,7 +481,6 @@ WRITE_TARGET_HANDLER(nuc100swj)
 	vsf_err_t err = VSFERR_NONE;
 	struct nuc100swj_iap_cmd_t cmd;
 	uint32_t page_size = 512;
-	static uint8_t ticktock = 0;
 	uint32_t ram_addr;
 	
 	REFERENCE_PARAMETER(context);
@@ -511,7 +511,7 @@ WRITE_TARGET_HANDLER(nuc100swj)
 		cmd.cnt = page_size / 4;
 		while (size)
 		{
-			if (ticktock & 1)
+			if (nuc100swj_ticktock & 1)
 			{
 				ram_addr = CM_SRAM_ADDR + 1024 + page_size;
 			}
@@ -527,7 +527,7 @@ WRITE_TARGET_HANDLER(nuc100swj)
 				err = VSFERR_FAIL;
 				break;
 			}
-			ticktock++;
+			nuc100swj_ticktock++;
 			size -= page_size;
 			buff += page_size;
 			addr += page_size;

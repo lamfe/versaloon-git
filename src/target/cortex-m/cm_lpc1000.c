@@ -70,6 +70,7 @@ const struct program_functions_t lpc1000swj_program_functions =
 #define LPC1000_IAP_SYNC_ADDR			(LPC1000_IAP_BASE + 0x98)
 #define LPC1000_IAP_CNT_ADDR			(LPC1000_IAP_BASE + 0xB0)
 static uint32_t lpc1000swj_iap_cnt = 0;
+static uint8_t lpc1000swj_ticktock = 0;
 static uint8_t iap_code[] = {
 							// wait_start:
 	0x25, 0x4C,				// ldr		r4, [PC, #0x94]		// load sync
@@ -322,7 +323,7 @@ ENTER_PROGRAM_MODE_HANDLER(lpc1000swj)
 		if (adi_memap_write_reg32(
 				param->param[LPC1000_PARAM_SYSMEMREMAP_ADDR], &reg, 1))
 		{
-			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "write PC");
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "write SYSMEMREMAP");
 			return ERRCODE_FAILURE_OPERATION;
 		}
 	}
@@ -400,7 +401,6 @@ WRITE_TARGET_HANDLER(lpc1000swj)
 	struct chip_area_info_t *flash_info = NULL;
 	uint32_t iap_cmd_param[5], iap_reply[4];
 	uint32_t start_sector;
-	static uint8_t ticktock = 0;
 	uint32_t buff_addr;
 	uint16_t page_size;
 	uint32_t vectors[8];
@@ -433,7 +433,7 @@ WRITE_TARGET_HANDLER(lpc1000swj)
 			return ERRCODE_FAILURE_OPERATION;
 		}
 		
-		if (ticktock & 1)
+		if (lpc1000swj_ticktock & 1)
 		{
 			buff_addr = LPC1000_IAP_BASE + 512 + page_size;
 		}
@@ -476,7 +476,7 @@ WRITE_TARGET_HANDLER(lpc1000swj)
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "run iap");
 			return ERRCODE_FAILURE_OPERATION;
 		}
-		ticktock++;
+		lpc1000swj_ticktock++;
 		break;
 	default:
 		return VSFERR_FAIL;

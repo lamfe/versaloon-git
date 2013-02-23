@@ -3255,7 +3255,7 @@
     <ee_page_size>128</ee_page_size>
     <ee_page_num>8</ee_page_num>
     <fuse init="0x0000000000000000:0x00" bytesize="9" mask="0x00FFFF00FF00FFFF:0xFF" format="%8x%1x">
-      <setting name="ROP" mask="0x00000000000000FF:0x00" info="Read-out protection" checked="0x00000000000000AA:0x00" unchecked="0x0000000000000000:0x00" />
+      <setting name="ROP" mask="0x00000000000000FF:0x00" info="Read-out protection" checked="0x0000000000000000:0x00" unchecked="0x00000000000000AA:0x00" />
       <setting name="UBC" mask="0x000000000000FF00:0x00" info="User boot code" radix="16" shift="8" bytelen="1"/>
       <setting name="IWDG_HW" mask="0x0000000001000000:0x00" info="Independent watchdog">
         <choice value="0x0000000001000000:0x00" text="Independent watchdog activated by hardware" />
@@ -3315,7 +3315,7 @@
     <ee_page_size>128</ee_page_size>
     <ee_page_num>8</ee_page_num>
     <fuse init="0x0000000000000000:0x00" bytesize="9" mask="0x00FFFF00FF00FFFF:0xFF" format="%8x%1x">
-      <setting name="ROP" mask="0x00000000000000FF:0x00" info="Read-out protection" checked="0x00000000000000AA:0x00" unchecked="0x0000000000000000:0x00" />
+      <setting name="ROP" mask="0x00000000000000FF:0x00" info="Read-out protection" checked="0x0000000000000000:0x00" unchecked="0x00000000000000AA:0x00" />
       <setting name="UBC" mask="0x000000000000FF00:0x00" info="User boot code" radix="16" shift="8" bytelen="1"/>
       <setting name="IWDG_HW" mask="0x0000000001000000:0x00" info="Independent watchdog">
         <choice value="0x0000000001000000:0x00" text="Independent watchdog activated by hardware" />
@@ -3375,7 +3375,7 @@
     <ee_page_size>128</ee_page_size>
     <ee_page_num>8</ee_page_num>
     <fuse init="0x0000000000000000:0x00" bytesize="9" mask="0x00FFFF00FF00FFFF:0xFF" format="%8x%1x">
-      <setting name="ROP" mask="0x00000000000000FF:0x00" info="Read-out protection" checked="0x00000000000000AA:0x00" unchecked="0x0000000000000000:0x00" />
+      <setting name="ROP" mask="0x00000000000000FF:0x00" info="Read-out protection" checked="0x0000000000000000:0x00" unchecked="0x00000000000000AA:0x00" />
       <setting name="UBC" mask="0x000000000000FF00:0x00" info="User boot code" radix="16" shift="8" bytelen="1"/>
       <setting name="IWDG_HW" mask="0x0000000001000000:0x00" info="Independent watchdog">
         <choice value="0x0000000001000000:0x00" text="Independent watchdog activated by hardware" />
@@ -3435,7 +3435,7 @@
     <ee_page_size>128</ee_page_size>
     <ee_page_num>8</ee_page_num>
     <fuse init="0x0000000000000000:0x00" bytesize="9" mask="0x00FFFF00FF00FFFF:0xFF" format="%8x%1x">
-      <setting name="ROP" mask="0x00000000000000FF:0x00" info="Read-out protection" checked="0x00000000000000AA:0x00" unchecked="0x0000000000000000:0x00" />
+      <setting name="ROP" mask="0x00000000000000FF:0x00" info="Read-out protection" checked="0x0000000000000000:0x00" unchecked="0x00000000000000AA:0x00" />
       <setting name="UBC" mask="0x000000000000FF00:0x00" info="User boot code" radix="16" shift="8" bytelen="1"/>
       <setting name="IWDG_HW" mask="0x0000000001000000:0x00" info="Independent watchdog">
         <choice value="0x0000000001000000:0x00" text="Independent watchdog activated by hardware" />
