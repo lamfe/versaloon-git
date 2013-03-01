@@ -85,6 +85,11 @@ void APP_IO_INIT(void)
 	
 }
 
+void APP_IO_FINI(void)
+{
+	
+}
+
 static FILE evsprog_script_file;
 static uint32_t evsprog_script_pos = 0;
 FILE *FOPEN(const char *filename, const char *mode)
