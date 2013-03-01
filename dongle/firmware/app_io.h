@@ -25,6 +25,7 @@
 extern struct vss_cmd_list_t appio_cmd_list;
 
 void APP_IO_INIT(void);
+void APP_IO_FINI(void);
 
 FILE *FOPEN(const char *filename, const char *mode);
 int FCLOSE(FILE *f);
