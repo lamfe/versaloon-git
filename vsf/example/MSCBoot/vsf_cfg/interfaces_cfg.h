@@ -135,7 +135,7 @@
 #define IFS_MICROWIRE_EN					0
 #define IFS_TIMER_EN						0
 #define IFS_EINT_EN							0
-#define IFS_EBI_EN							0
+#define IFS_EBI_EN							1
 #define IFS_SDIO_EN							0
 #define IFS_USBD_EN							1
 
