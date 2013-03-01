@@ -99,6 +99,10 @@ vsf_err_t target_voltage_set(uint8_t index, uint16_t voltage)
 		app_interfaces.delay.delayms(10);
 		// sample 10 times to ensure 
 		// a valid voltage after change before next operation
+		while (PWREXT_FSMState < 2)
+		{
+			target_voltage_poll(index);
+		}
 		for (i = 0; i < 10; i++)
 		{
 			PWREXT_FSMState = 0;
