@@ -612,8 +612,14 @@ vsf_err_t fakefat32_dir_write(struct fakefat32_file_t*file, uint32_t addr,
 		
 		// host can change the size and first_cluster
 		// ONLY one limitation: host MUST guarantee that the space is continuous
-		if (!(file_match->attr & FAKEFAT32_FILEATTR_DIRECTORY))
+		if (!(file_match->attr & FAKEFAT32_FILEATTR_DIRECTORY) &&
+			(file_match->size != want_size))
 		{
+			if ((file_match->callback.change_size != NULL) &&
+				file_match->callback.change_size(file_match, want_size))
+			{
+				return VSFERR_FAIL;
+			}
 			file_match->size = want_size;
 		}
 		file_match->first_cluster = want_first_cluster;

@@ -44,6 +44,7 @@ struct fakefat32_file_t
 									uint8_t *buff, uint32_t page_size);
 		vsf_err_t (*write_isready)(struct fakefat32_file_t*file, uint32_t addr,
 									uint8_t *buff, uint32_t page_size);
+		vsf_err_t (*change_size)(struct fakefat32_file_t*file, uint32_t size);
 	} callback;
 	
 	// filelist under directory
