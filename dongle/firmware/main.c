@@ -35,9 +35,6 @@
 /* Private functions ---------------------------------------------------------*/
 int main(void)
 {
-#if HW_HAS_BEEPER
-	uint16_t start_beeper_cnt = 0x8000;
-#endif
 #if SCRIPTS_EN
 	FILE *script_file = NULL;
 #endif
@@ -46,17 +43,23 @@ int main(void)
 	interfaces->tickclk.init();
 	interfaces->tickclk.start();
 	usb_protocol_init();
+	
+run:
+	KEY_Init();
+	while (1
+#if SCRIPTS_EN
+		&& !KEY_IsDown()
+#endif
+		)
+	{
+		usb_protocol_poll();
+	}
+	
 #if SCRIPTS_EN
 	APP_IO_INIT();
 	vss_init();
 	vss_register_cmd_list(&appio_cmd_list);
 	vss_register_cmd_list(&vsprog_cmd_list);
-	
-	KEY_Init();
-	while (!KEY_IsDown())
-	{
-		usb_protocol_poll();
-	}
 	
 	script_file = FOPEN(EVSPROG_SCRIPT_FILE, "rt");
 	if (script_file != NULL)
@@ -73,26 +76,10 @@ int main(void)
 	{
 		vss_run_script("shell");
 	}
+	APP_IO_FINI();
+	vss_fini();
+	goto run;
 #endif	// if SCRIPTS_EN
-
-#if HW_HAS_BEEPER
-	BEEPER_INIT();
-	BEEPER_ON();
-#endif
-	while (1)
-	{
-		usb_protocol_poll();
-#if HW_HAS_BEEPER
-		if (start_beeper_cnt)
-		{
-			start_beeper_cnt--;
-			if (!start_beeper_cnt)
-			{
-				BEEPER_OFF();
-			}
-		}
-#endif
-	}
 }
 
 /******************* (C) COPYRIGHT 2007 STMicroelectronics *****END OF FILE****/
