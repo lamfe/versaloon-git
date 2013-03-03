@@ -1869,13 +1869,14 @@ target_program_exit:
 	return err;
 }
 
-static vsf_err_t target_init(struct program_info_t *pi)
+static vsf_err_t target_init(struct program_context_t *context)
 {
 	uint16_t i;
 	int8_t area_idx;
 	char mode_buff[4];
 	struct chip_area_info_t *area_info = NULL;
 	struct program_area_t *prog_area = NULL;
+	struct program_info_t *pi = context->pi;
 	
 	LOG_PUSH();
 	LOG_MUTE();
@@ -1910,34 +1911,34 @@ static vsf_err_t target_init(struct program_info_t *pi)
 		
 		if (target_chips.num_of_chips > 1)
 		{
-			struct program_context_t context;
-			struct operation_t opt_tmp;
+			struct operation_t opt_tmp, *opt_orig;
 			
 			LOG_INFO(INFOMSG_TRY_AUTODETECT);
 			
 			memset(&opt_tmp, 0, sizeof(opt_tmp));
 			opt_tmp.read_operations = CHIPID;
-			context.op = &opt_tmp;
-			context.target = cur_target;
-			context.param = &target_chip_param;
-			context.pi = pi;
-			context.prog = interfaces;
-			if (target_enter_progmode(&context))
+			opt_orig = context->op;
+			context->op = &opt_tmp;
+			if (target_enter_progmode(context))
 			{
+				context->op = opt_orig;
 				LOG_ERROR(ERRMSG_AUTODETECT_FAIL, pi->chip_type);
 				return ERRCODE_AUTODETECT_FAIL;
 			}
-			if (target_program(&context))
+			if (target_program(context))
 			{
-				target_leave_progmode(&context, 0);
+				context->op = opt_orig;
+				target_leave_progmode(context, 0);
 				LOG_ERROR(ERRMSG_AUTODETECT_FAIL, pi->chip_type);
 				return ERRCODE_AUTODETECT_FAIL;
 			}
-			if (target_leave_progmode(&context, 1))
+			if (target_leave_progmode(context, 1))
 			{
+				context->op = opt_orig;
 				LOG_ERROR(ERRMSG_AUTODETECT_FAIL, pi->chip_type);
 				return ERRCODE_AUTODETECT_FAIL;
 			}
+			context->op = opt_orig;
 			
 			// insert a dly between 2 operations
 			sleep_ms(100);
@@ -2532,7 +2533,12 @@ VSS_HANDLER(target_memory_detail)
 		}
 	}
 	
-	if (target_init(&program_info))
+	if (NULL == cur_context)
+	{
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "slot");
+		return VSFERR_FAIL;
+	}
+	if (target_init(cur_context))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "initialize target");
 		return VSFERR_FAIL;
@@ -2570,7 +2576,12 @@ VSS_HANDLER(target_parameter_detail)
 		target_char = argv[1][0];
 	}
 	
-	if (target_init(&program_info))
+	if (NULL == cur_context)
+	{
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "slot");
+		return VSFERR_FAIL;
+	}
+	if (target_init(cur_context))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "initialize target");
 		return VSFERR_FAIL;
@@ -2803,28 +2814,26 @@ VSS_HANDLER(target_execute_addr)
 
 VSS_HANDLER(target_prepare)
 {
-	struct program_context_t context;
-	
 	VSS_CHECK_ARGC(1);
 	if (NULL == cur_target)
 	{
 		LOG_ERROR(ERRMSG_NOT_DEFINED, "Target");
 		return VSFERR_FAIL;
 	}
+	if (NULL == cur_context)
+	{
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "slot");
+		return VSFERR_FAIL;
+	}
 	
 	// init target
-	if (target_init(&program_info))
+	if (target_init(cur_context))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "initialize target");
 		return VSFERR_FAIL;
 	}
 	
-	context.op = &operations;
-	context.target = cur_target;
-	context.param = &target_chip_param;
-	context.pi = &program_info;
-	context.prog = interfaces;
-	if (target_data_read(&context))
+	if (target_data_read(cur_context))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "initialize target data");
 		return VSFERR_FAIL;
@@ -2835,7 +2844,7 @@ VSS_HANDLER(target_prepare)
 		return VSFERR_FAIL;
 	}
 	
-	if (target_check_defined(operations))
+	if (target_check_defined(*cur_context->op))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "check target defined content");
 		return VSFERR_FAIL;
@@ -2846,21 +2855,19 @@ VSS_HANDLER(target_prepare)
 
 VSS_HANDLER(target_enter_program_mode)
 {
-	struct program_context_t context;
-	
 	VSS_CHECK_ARGC(1);
 	if (NULL == cur_target)
 	{
 		LOG_ERROR(ERRMSG_NOT_DEFINED, "Target");
 		return VSFERR_FAIL;
 	}
+	if (NULL == cur_context)
+	{
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "slot");
+		return VSFERR_FAIL;
+	}
 	
-	context.op = &operations;
-	context.target = cur_target;
-	context.param = &target_chip_param;
-	context.pi = &program_info;
-	context.prog = interfaces;
-	if (target_enter_progmode(&context))
+	if (target_enter_progmode(cur_context))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATE_DEVICE, cur_target->name);
 		return VSFERR_FAIL;
@@ -2870,7 +2877,6 @@ VSS_HANDLER(target_enter_program_mode)
 
 VSS_HANDLER(target_leave_program_mode)
 {
-	struct program_context_t context;
 	uint8_t success;
 	
 	VSS_CHECK_ARGC(2);
@@ -2879,14 +2885,14 @@ VSS_HANDLER(target_leave_program_mode)
 		LOG_ERROR(ERRMSG_NOT_DEFINED, "Target");
 		return VSFERR_FAIL;
 	}
+	if (NULL == cur_context)
+	{
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "slot");
+		return VSFERR_FAIL;
+	}
 	success = (uint8_t)strtoul(argv[1], NULL, 0);
 	
-	context.op = &operations;
-	context.target = cur_target;
-	context.param = &target_chip_param;
-	context.pi = &program_info;
-	context.prog = interfaces;
-	if (target_leave_progmode(&context, success))
+	if (target_leave_progmode(cur_context, success))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATE_DEVICE, cur_target->name);
 		return VSFERR_FAIL;
@@ -2896,9 +2902,9 @@ VSS_HANDLER(target_leave_program_mode)
 
 VSS_HANDLER(target_erase)
 {
-	struct operation_t operations;
-	struct program_context_t context;
+	struct operation_t operations_tmp, *operations_orig;
 	int8_t index;
+	vsf_err_t err;
 	
 	VSS_CHECK_ARGC_2(1, 2);
 	if (NULL == cur_target)
@@ -2906,11 +2912,16 @@ VSS_HANDLER(target_erase)
 		LOG_ERROR(ERRMSG_NOT_DEFINED, "Target");
 		return VSFERR_FAIL;
 	}
+	if (NULL == cur_context)
+	{
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "slot");
+		return VSFERR_FAIL;
+	}
 	
-	memset(&operations, 0, sizeof(operations));
+	memset(&operations_tmp, 0, sizeof(operations_tmp));
 	if ((1 == argc) || (argv[1][0] == ALL_CHAR))
 	{
-		operations.erase_operations = 0xFFFFFFFF;
+		operations_tmp.erase_operations = 0xFFFFFFFF;
 	}
 	else
 	{
@@ -2920,27 +2931,23 @@ VSS_HANDLER(target_erase)
 			LOG_ERROR(ERRMSG_INVALID_TARGET, "target area");
 			return VSFERR_FAIL;
 		}
-		memset(&operations, 0, sizeof(operations));
-		operations.erase_operations = target_area_name[index].mask;
+		operations_tmp.erase_operations = target_area_name[index].mask;
 	}
 	
-	context.op = &operations;
-	context.target = cur_target;
-	context.param = &target_chip_param;
-	context.pi = &program_info;
-	context.prog = interfaces;
-	if (target_program(&context))
+	operations_orig = cur_context->op;
+	cur_context->op = &operations_tmp;
+	err = target_program(cur_context);
+	cur_context->op = operations_orig;
+	if (err)
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATE_DEVICE, cur_target->name);
-		return VSFERR_FAIL;
 	}
-	return VSFERR_NONE;
+	return err;
 }
 
 VSS_HANDLER(target_write)
 {
-	struct operation_t operations_tmp;
-	struct program_context_t context;
+	struct operation_t operations_tmp, *operations_orig;
 	vsf_err_t err;
 	int8_t index;
 	
@@ -2950,12 +2957,16 @@ VSS_HANDLER(target_write)
 		LOG_ERROR(ERRMSG_NOT_DEFINED, "Target");
 		return VSFERR_FAIL;
 	}
+	if (NULL == cur_context)
+	{
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "slot");
+		return VSFERR_FAIL;
+	}
 	
-	operations_tmp = operations;
-	memset(&operations, 0, sizeof(operations));
+	memset(&operations_tmp, 0, sizeof(operations_tmp));
 	if ((1 == argc) || (argv[1][0] == ALL_CHAR))
 	{
-		operations.write_operations = 0xFFFFFFFF;
+		operations_tmp.write_operations = 0xFFFFFFFF;
 	}
 	else
 	{
@@ -2965,17 +2976,13 @@ VSS_HANDLER(target_write)
 			LOG_ERROR(ERRMSG_INVALID_TARGET, "target area");
 			return VSFERR_FAIL;
 		}
-		memset(&operations, 0, sizeof(operations));
-		operations.write_operations = target_area_name[index].mask;
+		operations_tmp.write_operations = target_area_name[index].mask;
 	}
 	
-	context.op = &operations;
-	context.target = cur_target;
-	context.param = &target_chip_param;
-	context.pi = &program_info;
-	context.prog = interfaces;
-	err = target_program(&context);
-	operations = operations_tmp;
+	operations_orig = cur_context->op;
+	cur_context->op = &operations_tmp;
+	err = target_program(cur_context);
+	cur_context->op = operations_orig;
 	if (err)
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATE_DEVICE, cur_target->name);
@@ -2985,8 +2992,7 @@ VSS_HANDLER(target_write)
 
 VSS_HANDLER(target_verify)
 {
-	struct operation_t operations_tmp;
-	struct program_context_t context;
+	struct operation_t operations_tmp, *operations_orig;
 	vsf_err_t err;
 	int8_t index;
 	
@@ -2996,12 +3002,16 @@ VSS_HANDLER(target_verify)
 		LOG_ERROR(ERRMSG_NOT_DEFINED, "Target");
 		return VSFERR_FAIL;
 	}
+	if (NULL == cur_context)
+	{
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "slot");
+		return VSFERR_FAIL;
+	}
 	
-	operations_tmp = operations;
-	memset(&operations, 0, sizeof(operations));
+	memset(&operations_tmp, 0, sizeof(operations_tmp));
 	if ((1 == argc) || (argv[1][0] == ALL_CHAR))
 	{
-		operations.verify_operations = 0xFFFFFFFF;
+		operations_tmp.verify_operations = 0xFFFFFFFF;
 	}
 	else
 	{
@@ -3011,17 +3021,13 @@ VSS_HANDLER(target_verify)
 			LOG_ERROR(ERRMSG_INVALID_TARGET, "target area");
 			return VSFERR_FAIL;
 		}
-		memset(&operations, 0, sizeof(operations));
-		operations.verify_operations = target_area_name[index].mask;
+		operations_tmp.verify_operations = target_area_name[index].mask;
 	}
 	
-	context.op = &operations;
-	context.target = cur_target;
-	context.param = &target_chip_param;
-	context.pi = &program_info;
-	context.prog = interfaces;
-	err = target_program(&context);
-	operations = operations_tmp;
+	operations_orig = cur_context->op;
+	cur_context->op = &operations_tmp;
+	err = target_program(cur_context);
+	cur_context->op = operations_orig;
 	if (err)
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATE_DEVICE, cur_target->name);
@@ -3031,8 +3037,7 @@ VSS_HANDLER(target_verify)
 
 VSS_HANDLER(target_read)
 {
-	struct operation_t operations_tmp;
-	struct program_context_t context;
+	struct operation_t operations_tmp, *operations_orig;
 	struct chip_area_info_t *area_info = NULL;
 	struct program_area_t *prog_area = NULL;
 	struct memlist *ml_tmp = NULL, *pml_save = NULL;
@@ -3044,6 +3049,11 @@ VSS_HANDLER(target_read)
 	if (NULL == cur_target)
 	{
 		LOG_ERROR(ERRMSG_NOT_DEFINED, "Target");
+		return VSFERR_FAIL;
+	}
+	if (NULL == cur_context)
+	{
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "slot");
 		return VSFERR_FAIL;
 	}
 	
@@ -3061,9 +3071,8 @@ VSS_HANDLER(target_read)
 		return VSFERR_FAIL;
 	}
 	
-	operations_tmp = operations;
-	memset(&operations, 0, sizeof(operations));
-	operations.read_operations = target_area_name[index].mask;
+	memset(&operations_tmp, 0, sizeof(operations_tmp));
+	operations_tmp.read_operations = target_area_name[index].mask;
 	
 	byteaddr = strtoul(argv[2], NULL, 0);
 	bytesize = strtoul(argv[3], NULL, 0);
@@ -3083,15 +3092,13 @@ VSS_HANDLER(target_read)
 	pml_save = prog_area->memlist;
 	prog_area->memlist = ml_tmp;
 	
-	context.op = &operations;
-	context.target = cur_target;
-	context.param = &target_chip_param;
-	context.pi = &program_info;
-	context.prog = interfaces;
-	err = target_program(&context);
+	operations_orig = cur_context->op;
+	cur_context->op = &operations_tmp;
+	err = target_program(cur_context);
+	cur_context->op = operations_orig;
+	
 	prog_area->memlist = pml_save;
 	MEMLIST_Free(&ml_tmp);
-	operations = operations_tmp;
 	if (err)
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATE_DEVICE, cur_target->name);
@@ -3102,7 +3109,7 @@ VSS_HANDLER(target_read)
 
 VSS_HANDLER(target_operate)
 {
-	struct program_context_t context;
+	struct operation_t *op;
 	
 	VSS_CHECK_ARGC(1);
 	if (NULL == cur_target)
@@ -3110,11 +3117,17 @@ VSS_HANDLER(target_operate)
 		LOG_ERROR(ERRMSG_NOT_DEFINED, "Target");
 		return VSFERR_FAIL;
 	}
+	if (NULL == cur_context)
+	{
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "slot");
+		return VSFERR_FAIL;
+	}
+	op = cur_context->op;
 	
 	// in system programmer
-	if ((!(operations.checksum_operations || operations.erase_operations
-			|| operations.read_operations || operations.verify_operations
-			|| operations.write_operations))
+	if ((!(op->checksum_operations || op->erase_operations
+			|| op->read_operations || op->verify_operations
+			|| op->write_operations))
 		&& (NULL == strchr(cur_target->feature, NO_TARGET[0])))
 	{
 		// no operation defined
@@ -3122,18 +3135,13 @@ VSS_HANDLER(target_operate)
 		return VSFERR_NONE;
 	}
 	
-	context.op = &operations;
-	context.target = cur_target;
-	context.param = &target_chip_param;
-	context.pi = &program_info;
-	context.prog = interfaces;
-	if (target_program(&context))
+	if (target_program(cur_context))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATE_DEVICE, cur_target->name);
 		return VSFERR_FAIL;
 	}
 	
-	return target_data_save(&context);
+	return target_data_save(cur_context);
 }
 
 VSS_HANDLER(target_interface_indexes)

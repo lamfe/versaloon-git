@@ -29,7 +29,7 @@ struct operation_t
 };
 
 extern struct vss_cmd_list_t vsprog_cmd_list;
-extern struct operation_t operations;
+extern struct program_context_t *cur_context;
 
 #endif /* __VSPROG_H_INCLUDED__ */
 
