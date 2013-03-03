@@ -358,7 +358,8 @@ ENTER_PROGRAM_MODE_HANDLER(lpc1000swj)
 
 LEAVE_PROGRAM_MODE_HANDLER(lpc1000swj)
 {
-	struct lpc1000_fl_t *fl = &((struct cm_lpc1000_t *)context->priv)->fl;
+	struct cm_lpc1000_t *lpc1000 = (struct cm_lpc1000_t *)context->priv;
+	struct lpc1000_fl_t *fl = &lpc1000->fl;
 	uint32_t result_table[4];
 	
 	REFERENCE_PARAMETER(success);
@@ -368,7 +369,8 @@ LEAVE_PROGRAM_MODE_HANDLER(lpc1000swj)
 
 ERASE_TARGET_HANDLER(lpc1000swj)
 {
-	struct lpc1000_fl_t *fl = &((struct cm_lpc1000_t *)context->priv)->fl;
+	struct cm_lpc1000_t *lpc1000 = (struct cm_lpc1000_t *)context->priv;
+	struct lpc1000_fl_t *fl = &lpc1000->fl;
 	struct program_info_t *pi = context->pi;
 	struct program_area_t *flash_area = NULL;
 	vsf_err_t err = VSFERR_NONE;
@@ -515,7 +517,8 @@ WRITE_TARGET_HANDLER(lpc1000swj)
 
 READ_TARGET_HANDLER(lpc1000swj)
 {
-	struct lpc1000_fl_t *fl = &((struct cm_lpc1000_t *)context->priv)->fl;
+	struct cm_lpc1000_t *lpc1000 = (struct cm_lpc1000_t *)context->priv;
+	struct lpc1000_fl_t *fl = &lpc1000->fl;
 	vsf_err_t err = VSFERR_NONE;
 	uint32_t cur_block_size;
 	uint32_t iap_cmd_param[5], iap_reply[4];

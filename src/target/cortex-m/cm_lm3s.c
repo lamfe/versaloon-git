@@ -387,7 +387,8 @@ ENTER_PROGRAM_MODE_HANDLER(lm3sswj)
 
 LEAVE_PROGRAM_MODE_HANDLER(lm3sswj)
 {
-	struct lm3s_fl_t *fl = &((struct cm_lm3s_t *)context->priv)->fl;
+	struct cm_lm3s_t *lm3s = (struct cm_lm3s_t *)context->priv;
+	struct lm3s_fl_t *fl = &lm3s->fl;
 	
 	REFERENCE_PARAMETER(success);
 	
@@ -396,13 +397,13 @@ LEAVE_PROGRAM_MODE_HANDLER(lm3sswj)
 
 ERASE_TARGET_HANDLER(lm3sswj)
 {
-	struct lm3s_fl_t *fl = &((struct cm_lm3s_t *)context->priv)->fl;
+	struct cm_lm3s_t *lm3s = (struct cm_lm3s_t *)context->priv;
+	struct lm3s_fl_t *fl = &lm3s->fl;
 	vsf_err_t err = VSFERR_NONE;
 	struct lm3sswj_iap_cmd_t cmd;
 	
 	REFERENCE_PARAMETER(size);
 	REFERENCE_PARAMETER(addr);
-	REFERENCE_PARAMETER(context);
 	
 	switch (area)
 	{
@@ -433,8 +434,6 @@ WRITE_TARGET_HANDLER(lm3sswj)
 	struct lm3sswj_iap_cmd_t cmd;
 	uint32_t page_size = 512;
 	uint32_t ram_addr;
-	
-	REFERENCE_PARAMETER(context);
 	
 	switch (area)
 	{

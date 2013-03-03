@@ -133,7 +133,6 @@ ERASE_TARGET_HANDLER(stm32f2swj)
 	struct stm32_fl_cmd_t cmd;
 	struct stm32_fl_result_t result;
 	
-	REFERENCE_PARAMETER(context);
 	REFERENCE_PARAMETER(size);
 	REFERENCE_PARAMETER(addr);
 	
@@ -174,7 +173,6 @@ WRITE_TARGET_HANDLER(stm32f2swj)
 	struct stm32_fl_result_t result;
 	bool last;
 	
-	REFERENCE_PARAMETER(context);
 	REFERENCE_PARAMETER(size);
 	REFERENCE_PARAMETER(buff);
 	REFERENCE_PARAMETER(addr);
@@ -277,8 +275,6 @@ READ_TARGET_HANDLER(stm32f2swj)
 	uint32_t reg;
 	uint32_t cur_block_size;
 	vsf_err_t err = VSFERR_NONE;
-	
-	REFERENCE_PARAMETER(context);
 	
 	switch (area)
 	{
