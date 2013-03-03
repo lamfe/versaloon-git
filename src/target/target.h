@@ -278,6 +278,10 @@ struct program_context_t
 	struct program_info_t *pi;
 	struct chip_param_t *param;
 	struct INTERFACES_INFO_T *prog;
+	
+	// private data
+	// use dedicated buffer to avoid static data or malloc in target code
+	uint8_t private[256];
 };
 
 struct program_functions_t

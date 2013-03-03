@@ -54,6 +54,7 @@ VSS_HANDLER(vsprog_mass);
 VSS_HANDLER(vsprog_free_all);
 VSS_HANDLER(vsprog_init);
 VSS_HANDLER(vsprog_program);
+VSS_HANDLER(vsprog_select_slot);
 
 VSS_HANDLER(vsprog_wait_key_down);
 VSS_HANDLER(vsprog_wait_key_up);
@@ -142,34 +143,45 @@ static const struct vss_cmd_t vsprog_cmd[] =
 				"program target chip, format: program",
 				vsprog_program,
 				NULL),
+	VSS_CMD(	"slot",
+				"select target data slot, format: slot/Y NUMBER",
+				vsprog_select_slot,
+				NULL),
+	VSS_CMD(	"Y",
+				"select target data slot, format: slot/Y NUMBER",
+				vsprog_select_slot,
+				NULL),
 	VSS_CMD_END
 };
 struct vss_cmd_list_t vsprog_cmd_list = VSS_CMD_LIST("vsprog", vsprog_cmd);
 
 int verbosity = LOG_DEFAULT_LEVEL;
 int verbosity_stack[1];
-struct operation_t operations;
+
+static struct operation_t operations[TARGET_SLOT_NUMBER];
+static struct program_context_t context[TARGET_SLOT_NUMBER];
+struct program_context_t *cur_context = NULL;
 
 static void free_all(void)
 {
-	struct program_context_t context;
 	struct program_area_t *prog_area = NULL;
 	uint32_t i;
 	
 	// free program buffer
-	context.op = &operations;
-	context.target = cur_target;
-	context.param = &target_chip_param;
-	context.pi = &program_info;
-	context.prog = interfaces;
-	target_data_free(&context);
+	for (i = 0; i < TARGET_SLOT_NUMBER; i++)
+	{
+		target_data_free(&context[i]);
+		memset(&operations[i], 0, sizeof(operations[i]));
+	}
+#if TARGET_SLOT_NUMBER > 1
+	cur_context = NULL;
+#endif
 	
 	if (cur_target != NULL)
 	{
 		cur_target = NULL;
 	}
 	
-	memset(&operations, 0, sizeof(operations));
 	if (program_info.chip_name != NULL)
 	{
 		free(program_info.chip_name);
@@ -281,6 +293,9 @@ VSS_HANDLER(vsprog_help)
 	PRINTF(_GETTEXT("  -M,  --mass-product                       set mass_product mode"LOG_LINE_END));
 	PRINTF(_GETTEXT("  -G,  --gui-mode                           set gui_mode"LOG_LINE_END));
 	PRINTF(_GETTEXT("  -a,  --address                            set address of target chip" LOG_LINE_END));
+	PRINTF(_GETTEXT("  -E,  --embedded-vsprog-config             generate config data for embedded vsprog"LOG_LINE_END));
+	PRINTF(_GETTEXT("  -Z,  --embedded-vsprog-data               generate target data for embedded vsprog"LOG_LINE_END));
+	PRINTF(_GETTEXT("  -Y,  --slot                               select target data slot"LOG_LINE_END));
 	PRINTF(_GETTEXT(LOG_LINE_END));
 
 	target_print_help();
@@ -365,9 +380,14 @@ VSS_HANDLER(vsprog_operation)
 	
 	VSS_CHECK_ARGC_2(1, 2);
 	
+	if (NULL == cur_context)
+	{
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "slot");
+		return VSFERR_FAIL;
+	}
 	if (1 == argc)
 	{
-		memset(&operations, 0, sizeof(operations));
+		memset(cur_context->op, 0, sizeof(*cur_context->op));
 		return VSFERR_NONE;
 	}
 	
@@ -382,19 +402,19 @@ VSS_HANDLER(vsprog_operation)
 	{
 	case 'e':
 		// Erase
-		popt_tmp = &operations.erase_operations;
+		popt_tmp = &cur_context->op->erase_operations;
 		goto Parse_Operation;
 	case 'r':
 		// Read
-		popt_tmp = &operations.read_operations;
+		popt_tmp = &cur_context->op->read_operations;
 		goto Parse_Operation;
 	case 'v':
 		// Verify
-		popt_tmp = &operations.verify_operations;
+		popt_tmp = &cur_context->op->verify_operations;
 		goto Parse_Operation;
 	case 'w':
 		// Write
-		popt_tmp = &operations.write_operations;
+		popt_tmp = &cur_context->op->write_operations;
 		goto Parse_Operation;
 	case 'i':
 		// Information
@@ -458,6 +478,26 @@ VSS_HANDLER(vsprog_init)
 	vss_register_cmd_list(&comisp_cmd_list);
 	
 	return vss_run_script("free-all");
+}
+
+VSS_HANDLER(vsprog_select_slot)
+{
+	uint8_t number;
+	
+	VSS_CHECK_ARGC(2);
+	number = (uint8_t)strtoul(argv[1], NULL, 0);
+	if (number >= TARGET_SLOT_NUMBER)
+	{
+		LOG_ERROR(ERRMSG_INVALID_INDEX, number, "target slot");
+	}
+	
+	context[number].op = &operations[number];
+	context[number].target = cur_target;
+	context[number].param = &target_chip_param;
+	context[number].pi = &program_info;
+	context[number].prog = interfaces;
+	cur_context = &context[number];
+	return VSFERR_NONE;
 }
 
 VSS_HANDLER(vsprog_wait_key_down)
