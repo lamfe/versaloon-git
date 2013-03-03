@@ -169,9 +169,10 @@ LEAVE_PROGRAM_MODE_HANDLER(stm32l1swj)
 #if STM32L1_USE_FLASHLOADER
 	struct cm_stm32l1_t *cm_stm32l1 = (struct cm_stm32l1_t *)context->priv;
 	struct stm32_fl_result_t result;
+#else
+	REFERENCE_PARAMETER(context);
 #endif
 	
-	REFERENCE_PARAMETER(context);
 	REFERENCE_PARAMETER(success);
 	
 #if STM32L1_USE_FLASHLOADER

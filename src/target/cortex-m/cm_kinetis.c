@@ -317,7 +317,8 @@ ENTER_PROGRAM_MODE_HANDLER(kinetisswj)
 
 LEAVE_PROGRAM_MODE_HANDLER(kinetisswj)
 {
-	struct kinetis_fl_t *fl = &((struct cm_kinetis_t *)context->priv)->fl;
+	struct cm_kinetis_t *kinetis = (struct cm_kinetis_t *)context->priv;
+	struct kinetis_fl_t *fl = &kinetis->fl;
 	struct kinetisswj_iap_rpl_t reply;
 	
 	REFERENCE_PARAMETER(success);
@@ -327,7 +328,8 @@ LEAVE_PROGRAM_MODE_HANDLER(kinetisswj)
 
 ERASE_TARGET_HANDLER(kinetisswj)
 {
-	struct kinetis_fl_t *fl = &((struct cm_kinetis_t *)context->priv)->fl;
+	struct cm_kinetis_t *kinetis = (struct cm_kinetis_t *)context->priv;
+	struct kinetis_fl_t *fl = &kinetis->fl;
 	struct kinetisswj_iap_cmd_t cmd;
 	struct kinetisswj_iap_rpl_t reply;
 	struct chip_area_info_t *flash_info = NULL;
@@ -367,8 +369,8 @@ ERASE_TARGET_HANDLER(kinetisswj)
 
 WRITE_TARGET_HANDLER(kinetisswj)
 {
-	struct cm_kinetis_t *kinetis = (struct cm_kinetis_t *)context->priv;
-	struct kinetis_fl_t *fl = &kinetis->fl;
+//	struct cm_kinetis_t *kinetis = (struct cm_kinetis_t *)context->priv;
+//	struct kinetis_fl_t *fl = &kinetis->fl;
 	struct chip_area_info_t *flash_info = NULL;
 	vsf_err_t err = VSFERR_NONE;
 	

@@ -123,7 +123,7 @@ LEAVE_PROGRAM_MODE_HANDLER(stm32f1swj)
 {
 	struct cm_stm32f1_t *cm_stm32f1 = (struct cm_stm32f1_t *)context->priv;
 	struct stm32_fl_result_t result;
-	REFERENCE_PARAMETER(context);
+	
 	REFERENCE_PARAMETER(success);
 	
 	return stm32swj_fl_wait_ready(&cm_stm32f1->flash_loader, &result, true);

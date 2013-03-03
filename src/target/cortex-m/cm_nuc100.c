@@ -431,7 +431,8 @@ ENTER_PROGRAM_MODE_HANDLER(nuc100swj)
 
 LEAVE_PROGRAM_MODE_HANDLER(nuc100swj)
 {
-	struct nuc100_fl_t *fl = &((struct cm_nuc100_t *)context->priv)->fl;
+	struct cm_nuc100_t *nuc100 = (struct cm_nuc100_t *)context->priv;
+	struct nuc100_fl_t *fl = &nuc100->fl;
 	
 	REFERENCE_PARAMETER(success);
 	
@@ -508,8 +509,6 @@ WRITE_TARGET_HANDLER(nuc100swj)
 	struct nuc100swj_iap_cmd_t cmd;
 	uint32_t page_size = 512;
 	uint32_t ram_addr;
-	
-	REFERENCE_PARAMETER(context);
 	
 	switch (area)
 	{
