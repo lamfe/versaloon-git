@@ -278,6 +278,7 @@ struct program_context_t
 	struct program_info_t *pi;
 	struct chip_param_t *param;
 	struct INTERFACES_INFO_T *prog;
+	struct chip_series_t *series;
 	
 	// private data
 	// use dedicated buffer to avoid static data or malloc in target code
@@ -356,7 +357,6 @@ struct chip_fl_t
 extern struct vss_cmd_list_t target_cmd_list;
 
 extern const struct target_info_t targets_info[];
-extern struct chip_series_t target_chips;
 
 uint32_t target_area_mask(char area_name);
 char* target_area_fullname(char area_name);
