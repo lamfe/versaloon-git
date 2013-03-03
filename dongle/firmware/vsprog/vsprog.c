@@ -162,6 +162,7 @@ static struct operation_t operations[TARGET_SLOT_NUMBER];
 static struct program_context_t context[TARGET_SLOT_NUMBER];
 static struct chip_param_t target_chip_param[TARGET_SLOT_NUMBER];
 static struct program_info_t program_info[TARGET_SLOT_NUMBER];
+static struct chip_series_t target_chips[TARGET_SLOT_NUMBER];
 struct program_context_t *cur_context = NULL;
 
 static void free_all(void)
@@ -211,12 +212,12 @@ static void free_all(void)
 			}
 		}
 		memset(&program_info[i], 0, sizeof(program_info[i]));
+		
+		target_release_chip_series(&target_chips[i]);
 	}
 #if TARGET_SLOT_NUMBER > 1
 	cur_context = NULL;
 #endif
-	
-	target_release_chip_series(&target_chips);
 }
 
 static vsf_err_t parse_operation(uint32_t *operation, const char *opt,
@@ -495,6 +496,7 @@ VSS_HANDLER(vsprog_select_slot)
 	context[number].op = &operations[number];
 	context[number].param = &target_chip_param[number];
 	context[number].pi = &program_info[number];
+	context[number].series = &target_chips[number];
 	cur_context = &context[number];
 	return VSFERR_NONE;
 }

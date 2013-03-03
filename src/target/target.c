@@ -287,8 +287,6 @@ const struct target_area_name_t target_area_name[NUM_OF_TARGET_AREA] =
 	{UNIQUEID_CHAR,				UNIQUEID,			"uniqueid"}
 };
 
-struct chip_series_t target_chips = {NULL, 0, 0, NULL};
-
 const struct target_info_t targets_info[] =
 {
 	// stm32f1
@@ -1046,8 +1044,8 @@ static vsf_err_t target_program_check(struct program_context_t *context)
 	}
 	
 	// check mode
-	if ((target_chips.num_of_chips > 0)
-		&& (target_chips.chips_param[0].program_mode != 0)
+	if ((context->series->num_of_chips > 0)
+		&& (context->series->chips_param[0].program_mode != 0)
 		&& !(param->program_mode & (1 << pi->mode)))
 	{
 		LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, "current mode", pi->chip_name);
@@ -1877,6 +1875,7 @@ static vsf_err_t target_init(struct program_context_t *context)
 	struct program_info_t *pi = context->pi;
 	struct chip_param_t *param = context->param;
 	struct target_info_t *target = context->target;
+	struct chip_series_t *series = context->series;
 	
 	LOG_PUSH();
 	LOG_MUTE();
@@ -1904,11 +1903,11 @@ static vsf_err_t target_init(struct program_context_t *context)
 			target_chip_area_free(param->chip_areas);
 			param->chip_areas = NULL;
 		}
-		memcpy(param, &target_chips.chips_param[0], sizeof(*param));
+		memcpy(param, &series->chips_param[0], sizeof(*param));
 		param->chip_areas =
-			target_chip_area_dup(target_chips.chips_param[0].chip_areas);
+			target_chip_area_dup(series->chips_param[0].chip_areas);
 		
-		if (target_chips.num_of_chips > 1)
+		if (series->num_of_chips > 1)
 		{
 			struct operation_t opt_tmp, *opt_orig;
 			
@@ -1943,11 +1942,11 @@ static vsf_err_t target_init(struct program_context_t *context)
 			sleep_ms(100);
 			
 			LOG_INFO(INFOMSG_AUTODETECT_SIGNATURE, pi->chip_id);
-			for (i = 0; i < target_chips.num_of_chips; i++)
+			for (i = 0; i < series->num_of_chips; i++)
 			{
-				if (pi->chip_id == target_chips.chips_param[i].chip_id)
+				if (pi->chip_id == series->chips_param[i].chip_id)
 				{
-					pi->chip_name = strdup(target_chips.chips_param[i].chip_name);
+					pi->chip_name = strdup(series->chips_param[i].chip_name);
 					if (NULL == pi->chip_name)
 					{
 						LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
@@ -1970,9 +1969,9 @@ static vsf_err_t target_init(struct program_context_t *context)
 	}
 	else
 	{
-		for (i = 0; i < target_chips.num_of_chips; i++)
+		for (i = 0; i < series->num_of_chips; i++)
 		{
-			if (!strcmp(target_chips.chips_param[i].chip_name, pi->chip_name))
+			if (!strcmp(series->chips_param[i].chip_name, pi->chip_name))
 			{
 				goto Post_Init;
 			}
@@ -1982,7 +1981,7 @@ static vsf_err_t target_init(struct program_context_t *context)
 	}
 Post_Init:
 	if ((target->adjust_setting != NULL)
-		&& target->adjust_setting(pi, &target_chips.chips_param[i], pi->mode))
+		&& target->adjust_setting(pi, &series->chips_param[i], pi->mode))
 	{
 		return VSFERR_FAIL;
 	}
@@ -1992,9 +1991,9 @@ Post_Init:
 		target_chip_area_free(param->chip_areas);
 		param->chip_areas = NULL;
 	}
-	memcpy(param, &target_chips.chips_param[i], sizeof(*param));
+	memcpy(param, &series->chips_param[i], sizeof(*param));
 	param->chip_areas =
-			target_chip_area_dup(target_chips.chips_param[i].chip_areas);
+			target_chip_area_dup(series->chips_param[i].chip_areas);
 	
 	i = 0;
 	while (target->program_area_map[i].name != 0)
@@ -2254,19 +2253,21 @@ void target_print_setting(struct program_context_t *context, char type)
 void target_print_target(uint32_t index)
 {
 	uint32_t i, j;
+	struct chip_series_t series;
 	struct chip_param_t *p_param;
 	struct program_area_map_t *p_map;
 	char area[3];
 	
+	memset(&series, 0, sizeof(series));
 	if (target_build_chip_series((struct target_info_t *)&targets_info[index],
-			targets_info[index].program_mode, &target_chips))
+			targets_info[index].program_mode, &series))
 	{
-		target_release_chip_series(&target_chips);
+		target_release_chip_series(&series);
 		LOG_ERROR(ERRMSG_INVALID_TGTCFG_SETTING, targets_info[index].name);
 		return;
 	}
 	
-	if (0 == target_chips.num_of_chips)
+	if (0 == series.num_of_chips)
 	{
 		return;
 	}
@@ -2309,9 +2310,9 @@ void target_print_target(uint32_t index)
 	}
 	else
 	{
-		for (i = 0; i < target_chips.num_of_chips; i++)
+		for (i = 0; i < series.num_of_chips; i++)
 		{
-			p_param = &target_chips.chips_param[i];
+			p_param = &series.chips_param[i];
 			
 			// name
 			PRINTF("%s:", p_param->chip_name);
@@ -2338,7 +2339,7 @@ void target_print_target(uint32_t index)
 		PRINTF(LOG_LINE_END);
 	}
 	
-	target_release_chip_series(&target_chips);
+	target_release_chip_series(&series);
 }
 
 void target_print_list(void)
@@ -2362,7 +2363,7 @@ void target_print_help(void)
 	}
 }
 
-static vsf_err_t target_probe_chip(char *chip_name)
+static vsf_err_t target_probe_chip(struct chip_series_t *series, char *chip_name)
 {
 	uint32_t i;
 	
@@ -2371,14 +2372,14 @@ static vsf_err_t target_probe_chip(char *chip_name)
 		return VSFERR_FAIL;
 	}
 	
-	for (i = 0; i < target_chips.num_of_chips; i++)
+	for (i = 0; i < series->num_of_chips; i++)
 	{
-		if (NULL == target_chips.chips_param[i].chip_name)
+		if (NULL == series->chips_param[i].chip_name)
 		{
 			continue;
 		}
 		
-		if (!strcmp(target_chips.chips_param[i].chip_name, chip_name))
+		if (!strcmp(series->chips_param[i].chip_name, chip_name))
 		{
 			return VSFERR_NONE;
 		}
@@ -2390,8 +2391,9 @@ static vsf_err_t target_probe_chip(char *chip_name)
 static vsf_err_t target_info_init(struct program_context_t *context)
 {
 	uint32_t i;
-	vsf_err_t (*probe_chip)(char *chip_name);
+	vsf_err_t (*probe_chip)(struct chip_series_t *series, char *chip_name);
 	struct program_info_t *pi = context->pi;
+	struct chip_series_t *series = context->series;
 	
 #if PARAM_CHECK
 	if ((NULL == pi) || ((NULL == pi->chip_name) && (NULL == pi->chip_type)))
@@ -2401,7 +2403,7 @@ static vsf_err_t target_info_init(struct program_context_t *context)
 	}
 #endif
 	
-	target_release_chip_series(&target_chips);
+	target_release_chip_series(series);
 	
 	if (NULL == pi->chip_type)
 	{
@@ -2410,7 +2412,7 @@ static vsf_err_t target_info_init(struct program_context_t *context)
 		{
 			if (!target_build_chip_series(
 					(struct target_info_t *)&targets_info[i],
-					targets_info[i].program_mode, &target_chips))
+					targets_info[i].program_mode, series))
 			{
 				// configuration file exists, use default probe function
 				probe_chip = target_probe_chip;
@@ -2421,7 +2423,7 @@ static vsf_err_t target_info_init(struct program_context_t *context)
 				continue;
 			}
 			
-			if (!probe_chip(pi->chip_name))
+			if (!probe_chip(series, pi->chip_name))
 			{
 				context->target = (struct target_info_t *)&targets_info[i];
 				pi->chip_type = strdup(targets_info[i].name);
@@ -2435,7 +2437,7 @@ static vsf_err_t target_info_init(struct program_context_t *context)
 				
 				return VSFERR_NONE;
 			}
-			target_release_chip_series(&target_chips);
+			target_release_chip_series(series);
 		}
 		
 		LOG_ERROR(ERRMSG_NOT_SUPPORT, pi->chip_name);
@@ -2449,7 +2451,7 @@ static vsf_err_t target_info_init(struct program_context_t *context)
 			{
 				if (!target_build_chip_series(
 						(struct target_info_t *)&targets_info[i],
-						targets_info[i].program_mode, &target_chips))
+						targets_info[i].program_mode, series))
 				{
 					// configuration file exists, use default probe function
 					probe_chip = target_probe_chip;
@@ -2467,11 +2469,11 @@ static vsf_err_t target_info_init(struct program_context_t *context)
 				}
 				
 				if ((pi->chip_name != NULL)
-					&& probe_chip(pi->chip_name))
+					&& probe_chip(series, pi->chip_name))
 				{
 					LOG_ERROR(ERRMSG_NOT_SUPPORT_BY, pi->chip_name,
 								targets_info[i].name);
-					target_release_chip_series(&target_chips);
+					target_release_chip_series(series);
 					context->target = NULL;
 					return VSFERR_NOT_SUPPORT;
 				}
