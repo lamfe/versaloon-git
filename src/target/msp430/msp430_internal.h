@@ -67,21 +67,16 @@ extern vsf_err_t (*msp430jtagsbw_poll)(uint8_t index, uint32_t dr, uint32_t mask
 #define ERASE_MAIN				0xA504 // main        of SELECTED mem arrays
 #define ERASE_SGMT				0xA502 // SELECTED segment
 
-#define DeviceHas_TestPin()		target_chip_param.param[MSP430_PARAM_TEST]
-#define DeviceHas_CpuX()		target_chip_param.param[MSP430_PARAM_CPUX]
-#define DeviceHas_DataQuick()	target_chip_param.param[MSP430_PARAM_DATAQUICK]
-#define DeviceHas_FastFlash()	target_chip_param.param[MSP430_PARAM_FASTFLASH]
-#define DeviceHas_EnhVerify()	target_chip_param.param[MSP430_PARAM_ENHVERIFY]
-#define DeviceHas_JTAG()		\
-							(target_chip_param.program_mode & MSP430_MODE_JTAG)
-#define DeviceHas_SpyBiWire()	\
-							(target_chip_param.program_mode & MSP430_MODE_SPW)
-#define Device_RamStart()		\
-						(word)(target_chip_param.param[MSP430_PARAM_RAMSTART])
-#define Device_RamEnd()			\
-						(word)(target_chip_param.param[MSP430_PARAM_RAMEND])
-#define Device_MainStart()		\
-						(word)(target_chip_param.param[MSP430_PARAM_MAINSTART])
+#define DeviceHas_TestPin()		context->param->param[MSP430_PARAM_TEST]
+#define DeviceHas_CpuX()		context->param->param[MSP430_PARAM_CPUX]
+#define DeviceHas_DataQuick()	context->param->param[MSP430_PARAM_DATAQUICK]
+#define DeviceHas_FastFlash()	context->param->param[MSP430_PARAM_FASTFLASH]
+#define DeviceHas_EnhVerify()	context->param->param[MSP430_PARAM_ENHVERIFY]
+#define DeviceHas_JTAG()		(context->param->program_mode & MSP430_MODE_JTAG)
+#define DeviceHas_SpyBiWire()	(context->param->program_mode & MSP430_MODE_SPW)
+#define Device_RamStart()		(word)(context->param->param[MSP430_PARAM_RAMSTART])
+#define Device_RamEnd()			(word)(context->param->param[MSP430_PARAM_RAMEND])
+#define Device_MainStart()		(word)(context->param->param[MSP430_PARAM_MAINSTART])
 
 #endif /* __MSP430_INTERNAL_H_INCLUDED__ */
 

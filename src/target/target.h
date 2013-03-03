@@ -355,10 +355,7 @@ struct chip_fl_t
 
 extern struct vss_cmd_list_t target_cmd_list;
 
-extern struct target_info_t *cur_target;
 extern const struct target_info_t targets_info[];
-extern struct program_info_t program_info;
-extern struct chip_param_t target_chip_param;
 extern struct chip_series_t target_chips;
 
 uint32_t target_area_mask(char area_name);
@@ -379,7 +376,8 @@ struct chip_area_info_t* target_get_chip_area(struct chip_param_t *param,
 												uint32_t area_idx);
 struct program_area_t* target_get_program_area(struct program_info_t *pi,
 												uint32_t area_idx);
-void target_get_target_area(char area, uint8_t **buff, uint32_t *size);
+void target_get_target_area(struct program_info_t *pi, char area,
+							uint8_t **buff, uint32_t *size);
 
 struct target_cfg_data_info_t
 {

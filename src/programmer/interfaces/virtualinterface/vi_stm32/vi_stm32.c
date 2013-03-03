@@ -28,6 +28,7 @@
 #include "app_log.h"
 
 #include "../../interfaces.h"
+#include "vsprog.h"
 #include "target.h"
 #include "scripts.h"
 
@@ -87,7 +88,7 @@ VSS_HANDLER(vi_stm32_support)
 
 static vsf_err_t vi_stm32_init(void *p)
 {
-	struct program_info_t *pi = &program_info;
+	struct program_info_t *pi = cur_context->pi;
 	uint32_t mode = *(uint32_t *)p;
 	struct adi_dpif_t dp;
 	struct cm_param_t *param;

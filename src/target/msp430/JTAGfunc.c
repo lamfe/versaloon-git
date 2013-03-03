@@ -318,7 +318,7 @@ void WriteFLASH(word StartAddr, word Length, word *DataArray)
    Result:    None
    Remark:    Could be extended with erase check via PSA.
 */
-void EraseFLASH(word EraseMode, word EraseAddr)
+void EraseFLASH(struct program_context_t *context, word EraseMode, word EraseAddr)
 {
     word StrobeAmount = 4820;       // default for Segment Erase
     word i, loopcount = 1;          // erase cycle repeating for Mass Erase
@@ -425,7 +425,7 @@ void ExecutePOR(void)
               word *DataArray (Pointer to array with the data, 0 for Erase Check)
    Result:    word (STATUS_OK if comparison was successful, STATUS_ERROR otherwise)
 */
-word VerifyPSA(word StartAddr, word Length, word *DataArray, word *CRC)
+static word VerifyPSA(struct program_context_t *context, word StartAddr, word Length, word *DataArray, word *CRC)
 {
     word i;
     word POLY = 0x0805;           // Polynom value for PSA calculation
@@ -491,9 +491,9 @@ word VerifyPSA(word StartAddr, word Length, word *DataArray, word *CRC)
               word Length (Number of words to be checked)
    Result:    word (STATUS_OK if erase check was successful, STATUS_ERROR otherwise)
 */
-word EraseCheck(word StartAddr, word Length, word *CRC)
+word EraseCheck(struct program_context_t *context, word StartAddr, word Length, word *CRC)
 {
-    return (VerifyPSA(StartAddr, Length, 0, CRC));
+    return (VerifyPSA(context, StartAddr, Length, 0, CRC));
 }
 
 //----------------------------------------------------------------------------
@@ -503,9 +503,9 @@ word EraseCheck(word StartAddr, word Length, word *CRC)
               word *DataArray (Pointer to array with the data)
    Result:    word (STATUS_OK if verification was successful, STATUS_ERROR otherwise)
 */
-word VerifyMem(word StartAddr, word Length, word *DataArray, word *CRC)
+word VerifyMem(struct program_context_t *context, word StartAddr, word Length, word *DataArray, word *CRC)
 {
-    return (VerifyPSA(StartAddr, Length, DataArray, CRC));
+    return (VerifyPSA(context, StartAddr, Length, DataArray, CRC));
 }
 
 //------------------------------------------------------------------------

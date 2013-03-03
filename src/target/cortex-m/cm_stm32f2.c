@@ -75,6 +75,12 @@ ENTER_PROGRAM_MODE_HANDLER(stm32f2swj)
 	struct chip_area_info_t *sram_info = NULL;
 	uint32_t reg;
 	
+	if (sizeof(*cm_stm32f2) > sizeof(context->priv))
+	{
+		LOG_BUG("context->priv overflows");
+		return VSFERR_FAIL;
+	}
+	
 	sram_info = target_get_chip_area(context->param, SRAM_IDX);
 	if (NULL == sram_info)
 	{

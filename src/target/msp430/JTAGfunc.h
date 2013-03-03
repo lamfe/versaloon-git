@@ -65,11 +65,11 @@ typedef uint16_t word;
 
 void ReadMem(word Format, word Addr, word *ptr);
 void ExecutePOR(void);
-void EraseFLASH(word EraseMode, word EraseAddr);
+void EraseFLASH(struct program_context_t *context, word EraseMode, word EraseAddr);
 void ReleaseDevice(word Addr);
-word EraseCheck(word StartAddr, word Length, word *CRC);
+word EraseCheck(struct program_context_t *context, word StartAddr, word Length, word *CRC);
 void WriteFLASH(word StartAddr, word Length, word *DataArray);
-word VerifyMem(word StartAddr, word Length, word *DataArray, word *CRC);
+word VerifyMem(struct program_context_t *context, word StartAddr, word Length, word *DataArray, word *CRC);
 
 #endif /* __JTAGFUNC_H_INCLUDED__ */
 
