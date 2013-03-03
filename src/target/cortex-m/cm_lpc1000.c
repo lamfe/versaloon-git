@@ -456,7 +456,7 @@ WRITE_TARGET_HANDLER(lpc1000swj)
 			{
 				checksum += GET_LE_U32(&buff[i << 2]);
 			}
-			SET_LE_U32(&vectors[7], -checksum);
+			SET_LE_U32(&vectors[7], 0 - checksum);
 			
 			if (adi_memap_write_buf(buff_addr, (uint8_t *)vectors, 32) ||
 				adi_memap_write_buf(buff_addr + 32, buff + 32, page_size - 32))
