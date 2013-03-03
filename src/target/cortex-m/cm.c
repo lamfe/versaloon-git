@@ -197,9 +197,9 @@ SWITCH_TARGET_HANDLER(cm)
 
 ENTER_PROGRAM_MODE_HANDLER(cm)
 {
+	struct adi_dpif_t dpif;
 	struct program_info_t *pi = context->pi;
 	struct cm_info_t *cm = (struct cm_info_t *)context->priv;
-	struct adi_info_t *adi = &cm->cm_common.adi;
 	const struct program_functions_t *pf;
 	
 	if (cm->index >= dimof(cm_chips_param))
@@ -214,56 +214,56 @@ ENTER_PROGRAM_MODE_HANDLER(cm)
 	default:
 		LOG_WARNING("debug port not defined, use JTAG by default.");
 	case ADI_MODE_CHAR_JTAG:
-		adi->dpif.type = ADI_DP_JTAG;
+		dpif.type = ADI_DP_JTAG;
 		break;
 	case ADI_MODE_CHAR_SWD:
-		adi->dpif.type = ADI_DP_SWD;
+		dpif.type = ADI_DP_SWD;
 		break;
 	}
 	
-	switch(adi->dpif.type)
+	switch(dpif.type)
 	{
 	case ADI_DP_JTAG:
 		if (context->pi->frequency)
 		{
-			adi->dpif.dpif_setting.dpif_jtag_setting.jtag_khz =
+			dpif.dpif_setting.dpif_jtag_setting.jtag_khz =
 				context->pi->frequency;
 		}
 		else
 		{
-			adi->dpif.dpif_setting.dpif_jtag_setting.jtag_khz =
+			dpif.dpif_setting.dpif_jtag_setting.jtag_khz =
 				cm_chips_param[cm->index].jtag_khz;
 		}
-		adi->dpif.dpif_setting.dpif_jtag_setting.jtag_pos.ub =
+		dpif.dpif_setting.dpif_jtag_setting.jtag_pos.ub =
 			cm_chips_param[cm->index].jtag_pos.ub + pi->jtag_pos.ub;
-		adi->dpif.dpif_setting.dpif_jtag_setting.jtag_pos.ua =
+		dpif.dpif_setting.dpif_jtag_setting.jtag_pos.ua =
 			cm_chips_param[cm->index].jtag_pos.ua + pi->jtag_pos.ua;
-		adi->dpif.dpif_setting.dpif_jtag_setting.jtag_pos.bb =
+		dpif.dpif_setting.dpif_jtag_setting.jtag_pos.bb =
 			cm_chips_param[cm->index].jtag_pos.bb + pi->jtag_pos.bb;
-		adi->dpif.dpif_setting.dpif_jtag_setting.jtag_pos.ba =
+		dpif.dpif_setting.dpif_jtag_setting.jtag_pos.ba =
 			cm_chips_param[cm->index].jtag_pos.ba + pi->jtag_pos.ba;
 		
 		break;
 	case ADI_DP_SWD:
-		adi->dpif.dpif_setting.dpif_swd_setting.swd_trn =
+		dpif.dpif_setting.dpif_swd_setting.swd_trn =
 				cm_chips_param[cm->index].swd_trn;
 		if (context->pi->wait_state)
 		{
-			adi->dpif.dpif_setting.dpif_swd_setting.swd_dly =
+			dpif.dpif_setting.dpif_swd_setting.swd_dly =
 				context->pi->wait_state;
 		}
 		else
 		{
-			adi->dpif.dpif_setting.dpif_swd_setting.swd_dly =
+			dpif.dpif_setting.dpif_swd_setting.swd_dly =
 				cm_chips_param[cm->index].swd_delay;
 		}
-		adi->dpif.dpif_setting.dpif_swd_setting.swd_retry = 0;
+		dpif.dpif_setting.dpif_swd_setting.swd_retry = 0;
 		
 		break;
 	}
 	
 	// mode independent
-	if (cm_dp_init(context->prog, &adi->dpif))
+	if (cm_dp_init(context->prog, &dpif))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "initialize cm");
 		LOG_ERROR("Maybe your last firmware disable the JTAG/SWD port"
