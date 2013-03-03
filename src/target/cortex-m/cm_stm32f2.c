@@ -47,7 +47,12 @@
 #include "cm_stm32_fl.h"
 
 #define STM32F2_FL_PAGE_SIZE	1024
-static uint32_t STM32F2_FL_PAGE0_ADDR, STM32F2_FL_PAGE1_ADDR;
+struct cm_stm32f2_t
+{
+	uint32_t page0_addr;
+	uint32_t page1_addr;
+	struct stm32_fl_t flash_loader;
+};
 
 ENTER_PROGRAM_MODE_HANDLER(stm32f2swj);
 LEAVE_PROGRAM_MODE_HANDLER(stm32f2swj);
@@ -66,6 +71,7 @@ const struct program_functions_t stm32f2swj_program_functions =
 
 ENTER_PROGRAM_MODE_HANDLER(stm32f2swj)
 {
+	struct cm_stm32f2_t *cm_stm32f2 = (struct cm_stm32f2_t *)context->priv;
 	struct chip_area_info_t *sram_info = NULL;
 	uint32_t reg;
 	
@@ -74,8 +80,9 @@ ENTER_PROGRAM_MODE_HANDLER(stm32f2swj)
 	{
 		return VSFERR_FAIL;
 	}
-	STM32F2_FL_PAGE0_ADDR = sram_info->addr + STM32_FL_BUFFER_OFFSET;
-	STM32F2_FL_PAGE1_ADDR = STM32F2_FL_PAGE0_ADDR + STM32F2_FL_PAGE_SIZE;
+	cm_stm32f2->flash_loader.base = sram_info->addr;
+	cm_stm32f2->page0_addr = sram_info->addr + STM32_FL_BUFFER_OFFSET;
+	cm_stm32f2->page1_addr = cm_stm32f2->page0_addr + STM32F2_FL_PAGE_SIZE;
 	
 	// unlock flash and option bytes
 	reg = STM32F2_FLASH_UNLOCK_KEY1;
@@ -98,7 +105,7 @@ ENTER_PROGRAM_MODE_HANDLER(stm32f2swj)
 					"vsprog -cstm32f2_XX -mX -oeu -owu -tu0xFFFFAAFF");
 	}
 	
-	return stm32swj_fl_init(sram_info->addr);
+	return stm32swj_fl_init(&cm_stm32f2->flash_loader);
 }
 
 LEAVE_PROGRAM_MODE_HANDLER(stm32f2swj)
@@ -111,6 +118,7 @@ LEAVE_PROGRAM_MODE_HANDLER(stm32f2swj)
 
 ERASE_TARGET_HANDLER(stm32f2swj)
 {
+	struct cm_stm32f2_t *cm_stm32f2 = (struct cm_stm32f2_t *)context->priv;
 	vsf_err_t err = VSFERR_NONE;
 	struct stm32_fl_cmd_t cmd;
 	struct stm32_fl_result_t result;
@@ -133,7 +141,7 @@ ERASE_TARGET_HANDLER(stm32f2swj)
 		cmd.cr_value2 = cmd.cr_value1 | STM32F2_FLASH_CR_STRT;
 		cmd.data_type = 0;
 		cmd.data_round = 1;
-		if (stm32swj_fl_call(&cmd, &result, true))
+		if (stm32swj_fl_call(&cm_stm32f2->flash_loader, &cmd, &result, true))
 		{
 			err = ERRCODE_FAILURE_OPERATION;
 			break;
@@ -148,6 +156,7 @@ ERASE_TARGET_HANDLER(stm32f2swj)
 
 WRITE_TARGET_HANDLER(stm32f2swj)
 {
+	struct cm_stm32f2_t *cm_stm32f2 = (struct cm_stm32f2_t *)context->priv;
 	uint8_t tick_tock;
 	uint32_t cur_size;
 	vsf_err_t err = VSFERR_NONE;
@@ -173,7 +182,7 @@ WRITE_TARGET_HANDLER(stm32f2swj)
 		cmd.data_type = 0;
 		cmd.data_round = 1;
 		if (adi_memap_write_buf(cmd.ram_addr, buff, 4) ||
-			stm32swj_fl_call(&cmd, &result, true))
+			stm32swj_fl_call(&cm_stm32f2->flash_loader, &cmd, &result, true))
 		{
 			err = ERRCODE_FAILURE_OPERATION;
 			break;
@@ -195,11 +204,11 @@ WRITE_TARGET_HANDLER(stm32f2swj)
 		cmd.cr_value1 = STM32F2_FLASH_CR_PG | STM32F2_FLASH_CR_PSIZE_32;
 		cmd.cr_value2 = 0;
 		cmd.target_addr = addr;
-		cmd.ram_addr = STM32F2_FL_PAGE0_ADDR;
+		cmd.ram_addr = cm_stm32f2->page0_addr;
 		cmd.data_type = 4;
 		cmd.data_round = (uint16_t)(cur_size / 4);
 		if (adi_memap_write_buf(cmd.ram_addr, buff, cur_size) ||
-			stm32swj_fl_call(&cmd, &result, last))
+			stm32swj_fl_call(&cm_stm32f2->flash_loader, &cmd, &result, last))
 		{
 			err = ERRCODE_FAILURE_OPERATION;
 			break;
@@ -224,14 +233,14 @@ WRITE_TARGET_HANDLER(stm32f2swj)
 			cmd.target_addr = addr;
 			if (tick_tock & 1)
 			{
-				cmd.ram_addr = STM32F2_FL_PAGE1_ADDR;
+				cmd.ram_addr = cm_stm32f2->page1_addr;
 			}
 			else
 			{
-				cmd.ram_addr = STM32F2_FL_PAGE0_ADDR;
+				cmd.ram_addr = cm_stm32f2->page0_addr;
 			}
 			if (adi_memap_write_buf(cmd.ram_addr, buff, cur_size) ||
-				stm32swj_fl_call(&cmd, &result, last))
+				stm32swj_fl_call(&cm_stm32f2->flash_loader, &cmd, &result, last))
 			{
 				err = ERRCODE_FAILURE_OPERATION;
 				break;
