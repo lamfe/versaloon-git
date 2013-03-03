@@ -51,7 +51,7 @@
 #include "comisp/comisp.h"
 #include "usb/usbapi.h"
 
-#define OPTSTR			"hvS:P:s:c:Mp:U:D:Ld:Go:F:m:x:C:I:O:J:b:V:t:K:W:Aqel:i:Q:a:E:Z:Y:"
+#define OPTSTR			"hvS:P:s:c:Mp:U:D:Ld:Go:F:m:x:C:I:O:J:b:V:t:K:W:Aqel:i:Q:a:X:Z:Y:"
 static const struct option long_opts[] =
 {
 	{"help", no_argument, NULL, 'h'},
@@ -87,7 +87,7 @@ static const struct option long_opts[] =
 	{"quiet", no_argument, NULL, 'q'},
 	{"erase-on-demand", no_argument, NULL, 'e'},
 	{"address", required_argument, NULL, 'a'},
-	{"embedded-vsprog-config", required_argument, NULL, 'E'},
+	{"embedded-vsprog-config", required_argument, NULL, 'X'},
 	{"embedded-vsprog-data", required_argument, NULL, 'Z'},
 	{"slot", required_argument, NULL, 'Y'},
 	{NULL, 0, NULL, 0},
@@ -166,12 +166,12 @@ static const struct vss_cmd_t vsprog_cmd[] =
 				NULL),
 	VSS_CMD(	"embedded-vsprog-config",
 				"generate config data for embedded vsprog, "
-				"format: embedded-vsprog-config/E FILE",
+				"format: embedded-vsprog-config/X FILE",
 				embedded_vsprog_config,
 				NULL),
-	VSS_CMD(	"E",
+	VSS_CMD(	"X",
 				"generate config data for embedded vsprog, "
-				"format: embedded-vsprog-config/E FILE",
+				"format: embedded-vsprog-config/X FILE",
 				embedded_vsprog_config,
 				NULL),
 	VSS_CMD(	"embedded-vsprog-data",
