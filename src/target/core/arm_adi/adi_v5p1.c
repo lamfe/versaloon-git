@@ -33,58 +33,61 @@
 #include "adi_v5p1.h"
 #include "adi_v5p1_internal.h"
 
-static struct INTERFACES_INFO_T *adi_prog = NULL;
-static struct adi_dpif_t *adi_dp_if;
-static struct adi_dp_t adi_dp;
-static uint8_t ack_value;
-struct adi_dp_info_t adi_dp_info;
+// something like "this" pointer
+// C will not add "this" pointer parameter, so we swith it
+static struct adi_info_t *adi = NULL;
+vsf_err_t adi_switch(struct adi_info_t *adi_info)
+{
+	adi = adi_info;
+	return VSFERR_NONE;
+}
 
 // Reset
-#define reset_init()			adi_prog->gpio.init(0)
-#define reset_fini()			adi_prog->gpio.fini(0)
+#define reset_init()			adi->prog->gpio.init(0)
+#define reset_fini()			adi->prog->gpio.fini(0)
 #define reset_output()			\
-	adi_prog->gpio.config(0, JTAG_SRST, JTAG_SRST, 0, 0)
+	adi->prog->gpio.config(0, JTAG_SRST, JTAG_SRST, 0, 0)
 #define reset_input()			\
-	adi_prog->gpio.config(0, JTAG_SRST, 0, JTAG_SRST, JTAG_SRST)
+	adi->prog->gpio.config(0, JTAG_SRST, 0, JTAG_SRST, JTAG_SRST)
 #define reset_set()				reset_input()
 #define reset_clr()				reset_output()
 #define trst_output(value)		\
-	adi_prog->gpio.config(0, JTAG_TRST, JTAG_TRST, 0, (value) ? JTAG_TRST : 0)
+	adi->prog->gpio.config(0, JTAG_TRST, JTAG_TRST, 0, (value) ? JTAG_TRST : 0)
 #define trst_input()			\
-	adi_prog->gpio.config(0, JTAG_TRST, 0, JTAG_TRST, JTAG_TRST)
+	adi->prog->gpio.config(0, JTAG_TRST, 0, JTAG_TRST, JTAG_TRST)
 #define trst_set()				trst_output(1)
 #define trst_clr()				trst_output(0)
-#define reset_commit()			adi_prog->peripheral_commit()
+#define reset_commit()			adi->prog->peripheral_commit()
 
 // Delay
-#define delay_ms(ms)			adi_prog->delay.delayms((ms) | 0x8000)
+#define delay_ms(ms)			adi->prog->delay.delayms((ms) | 0x8000)
 
 // JTAG
-#define jtag_init()				adi_prog->jtag_hl.init(0)
-#define jtag_fini()				adi_prog->jtag_hl.fini(0)
-#define jtag_config(kHz,pos)	adi_prog->jtag_hl.config(0, (kHz), (pos))
-#define jtag_tms(m, len)		adi_prog->jtag_hl.tms(0, (m), (len))
-#define jtag_runtest(len)		adi_prog->jtag_hl.runtest(0, len)
+#define jtag_init()				adi->prog->jtag_hl.init(0)
+#define jtag_fini()				adi->prog->jtag_hl.fini(0)
+#define jtag_config(kHz,pos)	adi->prog->jtag_hl.config(0, (kHz), (pos))
+#define jtag_tms(m, len)		adi->prog->jtag_hl.tms(0, (m), (len))
+#define jtag_runtest(len)		adi->prog->jtag_hl.runtest(0, len)
 #define jtag_ir_w(i, len)		\
-	adi_prog->jtag_hl.ir(0, (uint8_t*)(i), (len), 1, 0)
+	adi->prog->jtag_hl.ir(0, (uint8_t*)(i), (len), 1, 0)
 #define jtag_dr_w(d, len)		\
-	adi_prog->jtag_hl.dr(0, (uint8_t*)(d), (len), 1, 0)
+	adi->prog->jtag_hl.dr(0, (uint8_t*)(d), (len), 1, 0)
 #define jtag_dr_rw(d, len)		\
-	adi_prog->jtag_hl.dr(0, (uint8_t*)(d), (len), 1, 1)
+	adi->prog->jtag_hl.dr(0, (uint8_t*)(d), (len), 1, 1)
 
 #define jtag_register_callback(s,r)	\
-	adi_prog->jtag_hl.register_callback(0, (s), (r))
-#define jtag_commit()			adi_prog->peripheral_commit()
+	adi->prog->jtag_hl.register_callback(0, (s), (r))
+#define jtag_commit()			adi->prog->peripheral_commit()
 
 // SWD
-#define swd_init()				adi_prog->swd.init(0)
-#define swd_fini()				adi_prog->swd.fini(0)
-#define swd_seqout(b, l)		adi_prog->swd.seqout(0, (b), (l))
-#define swd_seqin(b, l)			adi_prog->swd.seqin(0, (b), (l))
-#define swd_transact(r, v, a)	adi_prog->swd.transact(0, (r), (v), (a))
-#define swd_config(t, r, d)		adi_prog->swd.config(0, (t), (r), (d))
-#define swd_get_last_ack(ack)	adi_prog->swd.get_last_ack(0, ack)
-#define swd_commit()			adi_prog->peripheral_commit()
+#define swd_init()				adi->prog->swd.init(0)
+#define swd_fini()				adi->prog->swd.fini(0)
+#define swd_seqout(b, l)		adi->prog->swd.seqout(0, (b), (l))
+#define swd_seqin(b, l)			adi->prog->swd.seqin(0, (b), (l))
+#define swd_transact(r, v, a)	adi->prog->swd.transact(0, (r), (v), (a))
+#define swd_config(t, r, d)		adi->prog->swd.config(0, (t), (r), (d))
+#define swd_get_last_ack(ack)	adi->prog->swd.get_last_ack(0, ack)
+#define swd_commit()			adi->prog->peripheral_commit()
 
 static vsf_err_t adi_dp_read_reg(uint8_t reg_addr, uint32_t *value,
 								uint8_t check_result);
@@ -139,7 +142,7 @@ static vsf_err_t adi_dpif_receive_callback(uint8_t index, enum jtag_irdr_t cmd,
 			&& ((ADI_JTAGDP_IR_DPACC == ir) || (ADI_JTAGDP_IR_APACC == ir)))
 		{
 			*processed = 1;
-			adi_dp.ack = src_buffer[0] & 0x07;
+			adi->dp.ack = src_buffer[0] & 0x07;
 			if (dest_buffer != NULL)
 			{
 				dest_buffer[0] = (src_buffer[0] >> 3) | (src_buffer[1] << 5);
@@ -155,7 +158,6 @@ static vsf_err_t adi_dpif_receive_callback(uint8_t index, enum jtag_irdr_t cmd,
 	return VSFERR_FAIL;
 }
 
-static uint8_t adi_dp_first3bits;
 static vsf_err_t adi_dpif_send_callback(uint8_t index, enum jtag_irdr_t cmd,
 					uint32_t ir, uint8_t *dest_buffer, uint8_t *src_buffer,
 					uint16_t bytelen, uint16_t *processed_len)
@@ -178,8 +180,8 @@ static vsf_err_t adi_dpif_send_callback(uint8_t index, enum jtag_irdr_t cmd,
 		{
 			*processed_len = 5;
 			
-			adi_dp_first3bits &= 0x07;
-			dest_buffer[0] = adi_dp_first3bits | (src_buffer[0] << 3);
+			adi->dp_first3bits &= 0x07;
+			dest_buffer[0] = adi->dp_first3bits | (src_buffer[0] << 3);
 			dest_buffer[1] = (src_buffer[0] >> 5) | (src_buffer[1] << 3);
 			dest_buffer[2] = (src_buffer[1] >> 5) | (src_buffer[2] << 3);
 			dest_buffer[3] = (src_buffer[2] >> 5) | (src_buffer[3] << 3);
@@ -194,7 +196,7 @@ static vsf_err_t adi_dpif_send_callback(uint8_t index, enum jtag_irdr_t cmd,
 
 vsf_err_t adi_dp_commit(void)
 {
-	switch (adi_dp_if->type)
+	switch (adi->dpif.type)
 	{
 	case ADI_DP_JTAG:
 		return jtag_commit();
@@ -211,18 +213,12 @@ static vsf_err_t adi_dpif_fini(void)
 {
 	enum adi_dpif_type_t dp_type;
 	
-	if (NULL == adi_dp_if)
-	{
-		LOG_BUG(ERRMSG_NOT_INITIALIZED, "adi dp", "");
-		return VSFERR_FAIL;
-	}
-	
 	trst_input();
 	reset_input();
 	reset_fini();
 	reset_commit();
 	
-	dp_type = adi_dp_if->type;
+	dp_type = adi->dpif.type;
 	switch(dp_type)
 	{
 	case ADI_DP_JTAG:
@@ -230,13 +226,11 @@ static vsf_err_t adi_dpif_fini(void)
 		jtag_register_callback(NULL, NULL);
 		jtag_fini();
 		adi_dp_commit();
-		adi_dp_if = NULL;
 		break;
 	case ADI_DP_SWD:
 		adi_dp_commit();
 		swd_fini();
 		adi_dp_commit();
-		adi_dp_if = NULL;
 		break;
 	default:
 		return VSFERR_FAIL;
@@ -254,22 +248,22 @@ static vsf_err_t adi_dpif_init(struct INTERFACES_INFO_T *ifs, struct adi_dpif_t 
 		return VSFERR_FAIL;
 	}
 	
-	adi_prog = ifs;
+	adi->prog = ifs;
 	
 	reset_init();
 	reset_input();
 	delay_ms(100);
 	reset_commit();
 	
-	switch(adi_dp_if->type)
+	switch(adi->dpif.type)
 	{
 	case ADI_DP_JTAG:
 		trst_output(1);
-		ack_value = ADI_JTAGDP_ACK_OK_FAIL;
+		adi->ack_value = ADI_JTAGDP_ACK_OK_FAIL;
 		jtag_init();
 		jtag_config(
-			adi_dp_if->dpif_setting.dpif_jtag_setting.jtag_khz,
-			&adi_dp_if->dpif_setting.dpif_jtag_setting.jtag_pos);
+			adi->dpif.dpif_setting.dpif_jtag_setting.jtag_khz,
+			&adi->dpif.dpif_setting.dpif_jtag_setting.jtag_pos);
 		jtag_tms((uint8_t*)adi_swd_to_jtag_seq,
 					sizeof(adi_swd_to_jtag_seq) * 8);
 		if (adi_dp_commit())
@@ -285,12 +279,12 @@ static vsf_err_t adi_dpif_init(struct INTERFACES_INFO_T *ifs, struct adi_dpif_t 
 		break;
 	case ADI_DP_SWD:
 		trst_input();
-		ack_value = ADI_SWDDP_ACK_OK;
+		adi->ack_value = ADI_SWDDP_ACK_OK;
 		swd_init();
 		swd_config(
-			adi_dp_if->dpif_setting.dpif_swd_setting.swd_trn,
-			adi_dp_if->dpif_setting.dpif_swd_setting.swd_retry,
-			adi_dp_if->dpif_setting.dpif_swd_setting.swd_dly);
+			adi->dpif.dpif_setting.dpif_swd_setting.swd_trn,
+			adi->dpif.dpif_setting.dpif_swd_setting.swd_retry,
+			adi->dpif.dpif_setting.dpif_swd_setting.swd_dly);
 		swd_seqout((uint8_t*)adi_jtag_to_swd_seq,
 				   sizeof(adi_jtag_to_swd_seq) * 8);
 		return adi_dp_commit();
@@ -304,7 +298,7 @@ static vsf_err_t adi_dpif_init(struct INTERFACES_INFO_T *ifs, struct adi_dpif_t 
 static vsf_err_t adi_dp_scan(uint8_t instr, uint8_t reg_addr, uint8_t RnW,
 							uint32_t *value)
 {
-	switch(adi_dp_if->type)
+	switch(adi->dpif.type)
 	{
 	case ADI_DP_JTAG:
 		// convert to JTAG IR
@@ -322,14 +316,14 @@ static vsf_err_t adi_dp_scan(uint8_t instr, uint8_t reg_addr, uint8_t RnW,
 			break;
 		}
 		// scan ir if necessary
-		if (adi_dp.cur_ir != instr)
+		if (adi->dp.cur_ir != instr)
 		{
-			adi_dp.cur_ir = instr;
+			adi->dp.cur_ir = instr;
 			jtag_ir_w(&instr, ADI_JTAGDP_IRLEN);
 		}
 		
 		// scan dr
-		adi_dp_first3bits = ((reg_addr >> 1) & 0x06) | (RnW & 1);
+		adi->dp_first3bits = ((reg_addr >> 1) & 0x06) | (RnW & 1);
 		if (RnW)
 		{
 			// read
@@ -346,9 +340,9 @@ static vsf_err_t adi_dp_scan(uint8_t instr, uint8_t reg_addr, uint8_t RnW,
 		if ((ADI_JTAGDP_IR_APACC == instr)
 			&& ((reg_addr == ADI_AP_REG_DRW)
 				|| ((reg_addr & 0xF0) == ADI_AP_REG_BD0))
-			&& (adi_dp_info.memaccess_tck != 0))
+			&& (adi->dp_info.memaccess_tck != 0))
 		{
-			jtag_runtest(adi_dp_info.memaccess_tck);
+			jtag_runtest(adi->dp_info.memaccess_tck);
 		}
 		break;
 	case ADI_DP_SWD:
@@ -360,7 +354,7 @@ static vsf_err_t adi_dp_scan(uint8_t instr, uint8_t reg_addr, uint8_t RnW,
 		// switch reg_addr
 		reg_addr = (reg_addr << 1) & 0x18;
 		swd_transact(reg_addr | ((RnW & 1) << 2) | ((instr & 1) << 1), value,
-						&adi_dp.ack);
+						&adi->dp.ack);
 		break;
 	}
 	
@@ -371,13 +365,7 @@ static vsf_err_t adi_dpif_read_id(uint32_t *id)
 {
 	uint8_t ir;
 	
-	if (NULL == adi_dp_if)
-	{
-		LOG_BUG(ERRMSG_NOT_INITIALIZED, "adi dp", "");
-		return VSFERR_FAIL;
-	}
-	
-	switch(adi_dp_if->type)
+	switch(adi->dpif.type)
 	{
 	case ADI_DP_JTAG:
 		ir = ADI_JTAGDP_IR_IDCODE;
@@ -419,7 +407,7 @@ static vsf_err_t adi_dp_rw(uint8_t instr, uint8_t reg_addr, uint8_t RnW,
 	
 	// read result, DP registers of SWD are not posted
 	if ((ADI_DAP_READ == RnW)
-		&& ((adi_dp_if->type == ADI_DP_JTAG) || (instr == ADI_DP_IR_APACC)))
+		&& ((adi->dpif.type == ADI_DP_JTAG) || (instr == ADI_DP_IR_APACC)))
 	{
 		adi_dp_scan(ADI_DP_IR_DPACC, ADI_DP_REG_RDBUFF, ADI_DAP_READ, value);
 	}
@@ -435,12 +423,6 @@ static vsf_err_t adi_dp_rw(uint8_t instr, uint8_t reg_addr, uint8_t RnW,
 static vsf_err_t adi_dp_read_reg(uint8_t reg_addr, uint32_t *value,
 								uint8_t check_result)
 {
-	if (NULL == adi_dp_if)
-	{
-		LOG_BUG(ERRMSG_NOT_INITIALIZED, "adi dp", "");
-		return VSFERR_FAIL;
-	}
-	
 	return adi_dp_rw(ADI_DP_IR_DPACC, reg_addr, ADI_DAP_READ,
 					 value, check_result);
 }
@@ -448,12 +430,6 @@ static vsf_err_t adi_dp_read_reg(uint8_t reg_addr, uint32_t *value,
 static vsf_err_t adi_dp_write_reg(uint8_t reg_addr, uint32_t *value,
 								uint8_t check_result)
 {
-	if (NULL == adi_dp_if)
-	{
-		LOG_BUG(ERRMSG_NOT_INITIALIZED, "adi dp", "");
-		return VSFERR_FAIL;
-	}
-	
 	return adi_dp_rw(ADI_DP_IR_DPACC, reg_addr, ADI_DAP_WRITE,
 					 value, check_result);
 }
@@ -474,7 +450,7 @@ static vsf_err_t adi_dp_transaction_endcheck(void)
 			return ERRCODE_FAILURE_OPERATION;
 		}
 		ctrl_stat = LE_TO_SYS_U32(ctrl_stat);
-	} while ((adi_dp.ack != ack_value) && (--cnt));
+	} while ((adi->dp.ack != adi->ack_value) && (--cnt));
 	
 	if (!cnt)
 	{
@@ -498,12 +474,12 @@ static void adi_ap_select(uint8_t apsel)
 {
 	uint32_t select = (apsel << 24) & 0xFF000000;
 	
-	if (select != adi_dp.ap_sel_value)
+	if (select != adi->dp.ap_sel_value)
 	{
-		adi_dp.ap_sel_value = select;
-		adi_dp.ap_bank_value = 0xFFFFFFFF;
-		adi_dp.ap_csw_value = 0xFFFFFFFF;
-		adi_dp.ap_tar_value = 0xFFFFFFFF;
+		adi->dp.ap_sel_value = select;
+		adi->dp.ap_bank_value = 0xFFFFFFFF;
+		adi->dp.ap_csw_value = 0xFFFFFFFF;
+		adi->dp.ap_tar_value = 0xFFFFFFFF;
 	}
 }
 
@@ -511,10 +487,10 @@ static vsf_err_t adi_ap_bankselect(uint8_t ap_reg)
 {
 	uint32_t select = ap_reg & 0x000000F0;
 	
-	if (select != adi_dp.ap_bank_value)
+	if (select != adi->dp.ap_bank_value)
 	{
-		adi_dp.ap_bank_value = select;
-		select |= adi_dp.ap_sel_value;
+		adi->dp.ap_bank_value = select;
+		select |= adi->dp.ap_sel_value;
 		adi_dp_write_reg(ADI_DP_REG_SELECT, &select, 0);
 	}
 	
@@ -541,19 +517,19 @@ static vsf_err_t adi_dp_setup_accessport(uint32_t csw, uint32_t tar)
 {
 	csw = csw | ADI_AP_REG_CSW_DBGSWENABLE | ADI_AP_REG_CSW_MASTER_DEBUG
 			| ADI_AP_REG_CSW_HPROT;
-	if (csw != adi_dp.ap_csw_value)
+	if (csw != adi->dp.ap_csw_value)
 	{
 		adi_ap_write_reg(ADI_AP_REG_CSW, &csw, 0);
-		adi_dp.ap_csw_value = csw;
+		adi->dp.ap_csw_value = csw;
 	}
-	if (tar != adi_dp.ap_tar_value)
+	if (tar != adi->dp.ap_tar_value)
 	{
 		adi_ap_write_reg(ADI_AP_REG_TAR, &tar, 0);
-		adi_dp.ap_tar_value = tar;
+		adi->dp.ap_tar_value = tar;
 	}
 	if (csw & ADI_AP_REG_CSW_ADDRINC_MASK)
 	{
-		adi_dp.ap_tar_value = 0xFFFFFFFF;
+		adi->dp.ap_tar_value = 0xFFFFFFFF;
 	}
 	return VSFERR_NONE;
 }
@@ -639,8 +615,8 @@ vsf_err_t adi_memap_read_reg8(uint32_t address, uint8_t *reg,
 
 uint32_t adi_memap_get_max_tar_block_size(uint32_t address)
 {
-	return (adi_dp_info.tar_autoincr_block
-			- ((adi_dp_info.tar_autoincr_block - 1) & address)) >> 2;
+	return (adi->dp_info.tar_autoincr_block
+			- ((adi->dp_info.tar_autoincr_block - 1) & address)) >> 2;
 }
 
 // only support 32-bit aligned operation
@@ -745,7 +721,7 @@ vsf_err_t adi_init(struct INTERFACES_INFO_T *ifs, struct adi_dpif_t *interf,
 	uint8_t cnt, retry = 3;
 	
 init:
-	adi_dp_if = interf;
+	adi->dpif = *interf;
 	// initialize interface
 	if (adi_dpif_init(ifs, interf))
 	{
@@ -753,10 +729,10 @@ init:
 					"initialize adi debugport interface");
 		return VSFERR_FAIL;
 	}
-	adi_dp_info.type = adi_dp_if->type;
+	adi->dp_info.type = adi->dpif.type;
 	
 	// read debugport interface id
-	if (adi_dpif_read_id(&adi_dp_info.if_id))
+	if (adi_dpif_read_id(&adi->dp_info.if_id))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read cm3 id");
 		return VSFERR_FAIL;
@@ -764,25 +740,25 @@ init:
 	// 0x0BA00477 is for CortexM3/4
 	// 0x0BB10477 is for CortexM0
 	// 0x0BC11477/0x0BC10477 is for CortexM0+
-	if (0x0BA00477 == (adi_dp_info.if_id & 0x0FFFEFFF))
+	if (0x0BA00477 == (adi->dp_info.if_id & 0x0FFFEFFF))
 	{
-		adi_dp_info.memaccess_tck = 8;
-		adi_dp_info.tar_autoincr_block = (1 << 12);
-		adi_dp_info.core = ADI_DP_CM3;
+		adi->dp_info.memaccess_tck = 8;
+		adi->dp_info.tar_autoincr_block = (1 << 12);
+		adi->dp_info.core = ADI_DP_CM3;
 	}
-	else if ((0x0BB10477 == (adi_dp_info.if_id & 0x0FFFEFFF))  ||
-			(0x0BC11477 == (adi_dp_info.if_id & 0x0FFFEFFF)) ||
-			(0x0BC10477 == (adi_dp_info.if_id & 0x0FFFEFFF)))
+	else if ((0x0BB10477 == (adi->dp_info.if_id & 0x0FFFEFFF))  ||
+			(0x0BC11477 == (adi->dp_info.if_id & 0x0FFFEFFF)) ||
+			(0x0BC10477 == (adi->dp_info.if_id & 0x0FFFEFFF)))
 	{
-		adi_dp_info.memaccess_tck = 8;
-		adi_dp_info.tar_autoincr_block = (1 << 10);
-		adi_dp_info.core = ADI_DP_CM0;
+		adi->dp_info.memaccess_tck = 8;
+		adi->dp_info.tar_autoincr_block = (1 << 10);
+		adi->dp_info.core = ADI_DP_CM0;
 	}
 	else
 	{
 		if (retry-- > 0)
 		{
-			LOG_WARNING(ERRMSG_INVALID_HEX_MESSAGE, adi_dp_info.if_id, "id",
+			LOG_WARNING(ERRMSG_INVALID_HEX_MESSAGE, adi->dp_info.if_id, "id",
 							"retry...");
 			adi_dpif_fini();
 			sleep_ms(100);
@@ -790,24 +766,24 @@ init:
 		}
 		else
 		{
-			LOG_ERROR(ERRMSG_INVALID_HEX, adi_dp_info.if_id, "id");
+			LOG_ERROR(ERRMSG_INVALID_HEX, adi->dp_info.if_id, "id");
 			return ERRCODE_INVALID;
 		}
 	}
 	if (core != NULL)
 	{
-		*core = adi_dp_info.core;
+		*core = adi->dp_info.core;
 	}
 	
 	// initialize debugport
-	adi_dp.ap_sel_value = !0;
+	adi->dp.ap_sel_value = !0;
 	adi_ap_select(0);
-	adi_dp.cur_ir = 0xFF;
+	adi->dp.cur_ir = 0xFF;
 	
 	tmp = 0;
 	adi_dp_read_reg(ADI_DP_REG_CTRL_STAT, &tmp, 0);
 	
-	switch (adi_dp_if->type)
+	switch (adi->dpif.type)
 	{
 	case ADI_DP_JTAG:
 		tmp = ADI_DP_REG_CTRL_STAT_SSTICKYERR;
@@ -861,39 +837,39 @@ init:
 	
 	// activate OVERRUN checking in JTAG mode
 	adi_dp_read_reg(ADI_DP_REG_CTRL_STAT, &tmp, 0);
-	adi_dp.dp_ctrl_stat = ADI_DP_REG_CTRL_STAT_CDBGPWRUPREQ
+	adi->dp.dp_ctrl_stat = ADI_DP_REG_CTRL_STAT_CDBGPWRUPREQ
 							| ADI_DP_REG_CTRL_STAT_CSYSPWRUPREQ
 							| ADI_DP_REG_CTRL_STAT_CORUNDETECT;
-	adi_dp_write_reg(ADI_DP_REG_CTRL_STAT, &adi_dp.dp_ctrl_stat, 0);
+	adi_dp_write_reg(ADI_DP_REG_CTRL_STAT, &adi->dp.dp_ctrl_stat, 0);
 	adi_dp_read_reg(ADI_DP_REG_CTRL_STAT, &tmp, 0);
 	
 	// read AHB-AP ID and Debug ROM address
-	if (adi_ap_read_reg(ADI_AP_REG_IDR, &adi_dp_info.ahb_ap_id, 1))
+	if (adi_ap_read_reg(ADI_AP_REG_IDR, &adi->dp_info.ahb_ap_id, 1))
 	{
 		return VSFERR_FAIL;
 	}
-	adi_dp_info.ahb_ap_id = LE_TO_SYS_U32(adi_dp_info.ahb_ap_id);
-	LOG_INFO(INFOMSG_REG_08X, "AHB-AP_ID", adi_dp_info.ahb_ap_id);
+	adi->dp_info.ahb_ap_id = LE_TO_SYS_U32(adi->dp_info.ahb_ap_id);
+	LOG_INFO(INFOMSG_REG_08X, "AHB-AP_ID", adi->dp_info.ahb_ap_id);
 	
-	if (adi_ap_read_reg(ADI_AP_REG_DBGROMA, &adi_dp_info.rom_address, 1))
+	if (adi_ap_read_reg(ADI_AP_REG_DBGROMA, &adi->dp_info.rom_address, 1))
 	{
 		return VSFERR_FAIL;
 	}
-	adi_dp_info.rom_address = LE_TO_SYS_U32(adi_dp_info.rom_address);
-	LOG_INFO(INFOMSG_REG_08X, "ROM_ADDRESS", adi_dp_info.rom_address);
+	adi->dp_info.rom_address = LE_TO_SYS_U32(adi->dp_info.rom_address);
+	LOG_INFO(INFOMSG_REG_08X, "ROM_ADDRESS", adi->dp_info.rom_address);
 	
-	if (adi_ap_read_reg(ADI_AP_REG_CFG, &adi_dp_info.config, 1))
+	if (adi_ap_read_reg(ADI_AP_REG_CFG, &adi->dp_info.config, 1))
 	{
 		return VSFERR_FAIL;
 	}
-	adi_dp_info.config = LE_TO_SYS_U32(adi_dp_info.config);
-	if (adi_dp_info.config & 1)
+	adi->dp_info.config = LE_TO_SYS_U32(adi->dp_info.config);
+	if (adi->dp_info.config & 1)
 	{
-		LOG_INFO(INFOMSG_REG_08X_STR, "CFG", adi_dp_info.config, "Big-endian");
+		LOG_INFO(INFOMSG_REG_08X_STR, "CFG", adi->dp_info.config, "Big-endian");
 	}
 	else
 	{
-		LOG_INFO(INFOMSG_REG_08X_STR, "CFG", adi_dp_info.config,
+		LOG_INFO(INFOMSG_REG_08X_STR, "CFG", adi->dp_info.config,
 					"Little-endian");
 	}
 	

@@ -24,5 +24,16 @@
 extern struct program_functions_t cm_program_functions;
 extern const struct vss_cmd_t cm_notifier[];
 
+#include "adi_v5p1.h"
+#include "cm_common.h"
+struct cm_info_t
+{
+	// first member should be same as used in cm_common module
+	// because this class in inherited from cm_common
+	struct cm_common_info_t cm_common;
+	
+	uint8_t index;
+};
+
 #endif /* __CM_H_INCLUDED__ */
 

@@ -34,7 +34,12 @@
 #include "adi_v5p1.h"
 #include "cm_common.h"
 
-struct adi_dpif_t cm_dp_if;
+static struct adi_dpif_t *cm_dpif = NULL;
+vsf_err_t cm_switch(struct cm_common_info_t *cm_common)
+{
+	cm_dpif = &cm_common->dpif;
+	return adi_switch(&cm_common->adi);
+}
 
 vsf_err_t cm_dp_fini(void)
 {
@@ -46,10 +51,10 @@ vsf_err_t cm_dp_init(struct INTERFACES_INFO_T *ifs, struct adi_dpif_t *dp)
 	uint32_t cpuid, dcb_dhcsr;
 	enum adi_dp_target_core_t tgt_core = ADI_DP_INVALID;
 	
-	cm_dp_if = *dp;
+	*cm_dpif = *dp;
 	
 	// adi_init will initialize the core type
-	if (adi_init(ifs, &cm_dp_if, &tgt_core))
+	if (adi_init(ifs, cm_dpif, &tgt_core))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "initialize cm interface");
 		return ERRCODE_FAILURE_OPERATION;

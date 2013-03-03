@@ -1079,6 +1079,19 @@ static vsf_err_t target_enter_progmode(struct program_context_t *context)
 		return VSFERR_FAIL;
 	}
 	
+	// switch target first
+	if (pf->switch_target != NULL)
+	{
+		vsf_err_t err;
+		
+		err = pf->switch_target(context);
+		if (err)
+		{
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "swith target");
+			return err;
+		}
+	}
+	
 	if ((pf->enter_program_mode != NULL)
 		&& pf->enter_program_mode(context))
 	{
@@ -1096,6 +1109,19 @@ static vsf_err_t target_leave_progmode(struct program_context_t *context,
 	if (target_program_check(context))
 	{
 		return VSFERR_FAIL;
+	}
+	
+	// switch target first
+	if (pf->switch_target != NULL)
+	{
+		vsf_err_t err;
+		
+		err = pf->switch_target(context);
+		if (err)
+		{
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "swith target");
+			return err;
+		}
 	}
 	
 	// leave with success
@@ -1142,6 +1168,17 @@ static vsf_err_t target_program(struct program_context_t *context)
 	{
 		err = pf->execute(context);
 		goto target_program_exit;
+	}
+	
+	// switch target first
+	if (pf->switch_target != NULL)
+	{
+		err = pf->switch_target(context);
+		if (err)
+		{
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "swith target");
+			goto target_program_exit;
+		}
 	}
 	
 	// read chip id

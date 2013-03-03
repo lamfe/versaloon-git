@@ -30,6 +30,9 @@
 
 #define KINETIS_SERIESID_KL			0x01
 
+#define KINETIS_FTF_BASE			0x40020000
+#define KINETIS_FTF_CMD_ERSALL		(0x44 << 24)
+
 uint32_t kinetis_get_sram_size(uint32_t mcuid);
 uint32_t kinetis_get_flash_size(uint32_t fcfg1);
 void kinetis_print_device(uint32_t mcuid, uint32_t fcfg1);

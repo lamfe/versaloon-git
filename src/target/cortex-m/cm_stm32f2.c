@@ -49,6 +49,10 @@
 #define STM32F2_FL_PAGE_SIZE	1024
 struct cm_stm32f2_t
 {
+	// first member must be same as used in cm module
+	// because this class in inherited from cm_info_t
+	struct cm_info_t cm;
+	
 	uint32_t page0_addr;
 	uint32_t page1_addr;
 	struct stm32_fl_t flash_loader;
