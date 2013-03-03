@@ -281,7 +281,7 @@ struct program_context_t
 	
 	// private data
 	// use dedicated buffer to avoid static data or malloc in target code
-	uint8_t private[256];
+	uint8_t priv[256];
 };
 
 struct program_functions_t

@@ -22,6 +22,12 @@
 
 #define STM32_FL_BUFFER_OFFSET		1024
 
+struct stm32_fl_t
+{
+	uint32_t base;
+	uint32_t cnt;
+};
+
 struct stm32_fl_cmd_t
 {
 	uint32_t cr_addr;
@@ -45,11 +51,13 @@ struct stm32_fl_result_t
 	uint32_t result;
 };
 
-vsf_err_t stm32swj_fl_init(uint32_t fl_base);
-vsf_err_t stm32swj_fl_run(struct stm32_fl_cmd_t *cmd);
-vsf_err_t stm32swj_fl_poll_result(struct stm32_fl_result_t *result);
-vsf_err_t stm32swj_fl_wait_ready(struct stm32_fl_result_t *result, bool last);
-vsf_err_t stm32swj_fl_call(struct stm32_fl_cmd_t *cmd,
+vsf_err_t stm32swj_fl_init(struct stm32_fl_t *fl);
+vsf_err_t stm32swj_fl_run(struct stm32_fl_t *fl, struct stm32_fl_cmd_t *cmd);
+vsf_err_t stm32swj_fl_poll_result(struct stm32_fl_t *fl,
+									struct stm32_fl_result_t *result);
+vsf_err_t stm32swj_fl_wait_ready(struct stm32_fl_t *fl,
+								struct stm32_fl_result_t *result, bool last);
+vsf_err_t stm32swj_fl_call(struct stm32_fl_t *fl, struct stm32_fl_cmd_t *cmd,
 							struct stm32_fl_result_t *result, bool last);
 
 #endif	// __CM3_STM32_FL_H_INCLUDED__
