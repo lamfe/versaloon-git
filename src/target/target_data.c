@@ -129,8 +129,8 @@ static vsf_err_t target_write_buffer_from_file_callback(char * ext,
 	struct program_area_t *prog_area = NULL;
 	uint32_t mem_addr;
 	
-	if ((NULL == context) || (NULL == context->pi) ||
-		(NULL == context->target) || !strlen(target_chip_param.chip_name) ||
+	if ((NULL == context) || (NULL == context->pi) || (NULL == context->param) ||
+		(NULL == context->target) || !strlen(context->param->chip_name) ||
 		(NULL == ext))
 	{
 		LOG_BUG(ERRMSG_NOT_INITIALIZED, "target", "");
@@ -159,7 +159,7 @@ static vsf_err_t target_write_buffer_from_file_callback(char * ext,
 			i++;
 			continue;
 		}
-		area_info = target_get_chip_area(&target_chip_param, (uint32_t)area_idx);
+		area_info = target_get_chip_area(context->param, (uint32_t)area_idx);
 		prog_area = target_get_program_area(context->pi, (uint32_t)area_idx);
 		if ((NULL == area_info) || (NULL == prog_area))
 		{
@@ -316,7 +316,7 @@ vsf_err_t target_data_save(struct program_context_t *context)
 				LOG_ERROR(ERRMSG_INVALID_TARGET, "area");
 				return VSFERR_FAIL;
 			}
-			target_get_target_area(p_map->name, &buff, &size);
+			target_get_target_area(context->pi, p_map->name, &buff, &size);
 			if ((buff != NULL) && (size > 0) && (fl_out != NULL))
 			{
 				if (save_target_to_file(fl_out, buff,

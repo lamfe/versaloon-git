@@ -163,12 +163,12 @@ ERASE_TARGET_HANDLER(msp430jtagsbw)
 		{
 			// Global-Erase Flash
 			// (for all devices with CPU-X)
-			EraseFLASH(ERASE_GLOB, 0xFE00);
+			EraseFLASH(context, ERASE_GLOB, 0xFE00);
 		}
 		else
 		{
 			// Mass-Erase Flash (all types)
-			EraseFLASH(ERASE_MASS, 0xFE00);
+			EraseFLASH(context, ERASE_MASS, 0xFE00);
 			// NOTE: the INFO memory in F2xx device will be not erased,
 			// if the memory still locked.
 			// For more info See EraseFLASH() in JTAGfunc.c
@@ -247,7 +247,7 @@ READ_TARGET_HANDLER(msp430jtagsbw)
 			word CRC_check, CRC_calc;
 			
 			CRC_calc = CRC_check = 0;
-			CRC_calc = VerifyMem((word)addr, (word)(size / 2),
+			CRC_calc = VerifyMem(context, (word)addr, (word)(size / 2),
 									(word*)buff, &CRC_check);
 			if (commit())
 			{

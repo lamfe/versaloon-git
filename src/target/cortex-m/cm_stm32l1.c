@@ -94,6 +94,13 @@ ENTER_PROGRAM_MODE_HANDLER(stm32l1swj)
 #if STM32L1_USE_FLASHLOADER
 	struct cm_stm32l1_t *cm_stm32l1 = (struct cm_stm32l1_t *)context->priv;
 	struct chip_area_info_t *sram_info = NULL;
+	
+	if (sizeof(*cm_stm32l1) > sizeof(context->priv))
+	{
+		LOG_BUG("context->priv overflows");
+		return VSFERR_FAIL;
+	}
+	
 	sram_info = target_get_chip_area(context->param, SRAM_IDX);
 	if (NULL == sram_info)
 	{

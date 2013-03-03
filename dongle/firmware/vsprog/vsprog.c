@@ -160,61 +160,62 @@ int verbosity_stack[1];
 
 static struct operation_t operations[TARGET_SLOT_NUMBER];
 static struct program_context_t context[TARGET_SLOT_NUMBER];
+static struct chip_param_t target_chip_param[TARGET_SLOT_NUMBER];
+static struct program_info_t program_info[TARGET_SLOT_NUMBER];
 struct program_context_t *cur_context = NULL;
 
 static void free_all(void)
 {
 	struct program_area_t *prog_area = NULL;
-	uint32_t i;
+	uint32_t i, j;
 	
 	// free program buffer
 	for (i = 0; i < TARGET_SLOT_NUMBER; i++)
 	{
+		context[i].target = NULL;
 		target_data_free(&context[i]);
+		
 		memset(&operations[i], 0, sizeof(operations[i]));
+		
+		if (target_chip_param[i].chip_areas != NULL)
+		{
+			target_chip_area_free(target_chip_param[i].chip_areas);
+		}
+		memset(&target_chip_param[i], 0, sizeof(target_chip_param[i]));
+		
+		if (program_info[i].chip_name != NULL)
+		{
+			free(program_info[i].chip_name);
+			program_info[i].chip_name = NULL;
+		}
+		if (program_info[i].chip_type != NULL)
+		{
+			free(program_info[i].chip_type);
+			program_info[i].chip_type = NULL;
+		}
+		if (program_info[i].ifs_indexes != NULL)
+		{
+			free(program_info[i].ifs_indexes);
+			program_info[i].ifs_indexes = NULL;
+		}
+		for (j = 0; j < dimof(target_area_name); j++)
+		{
+			prog_area = target_get_program_area(&program_info[i], j);
+			if (prog_area != NULL)
+			{
+				if (prog_area->cli_str != NULL)
+				{
+					free(prog_area->cli_str);
+					prog_area->cli_str = NULL;
+				}
+			}
+		}
+		memset(&program_info[i], 0, sizeof(program_info[i]));
 	}
 #if TARGET_SLOT_NUMBER > 1
 	cur_context = NULL;
 #endif
 	
-	if (cur_target != NULL)
-	{
-		cur_target = NULL;
-	}
-	
-	if (program_info.chip_name != NULL)
-	{
-		free(program_info.chip_name);
-		program_info.chip_name = NULL;
-	}
-	if (program_info.chip_type != NULL)
-	{
-		free(program_info.chip_type);
-		program_info.chip_type = NULL;
-	}
-	if (program_info.ifs_indexes != NULL)
-	{
-		free(program_info.ifs_indexes);
-		program_info.ifs_indexes = NULL;
-	}
-	for (i = 0; i < dimof(target_area_name); i++)
-	{
-		prog_area = target_get_program_area(&program_info, i);
-		if (prog_area != NULL)
-		{
-			if (prog_area->cli_str != NULL)
-			{
-				free(prog_area->cli_str);
-				prog_area->cli_str = NULL;
-			}
-		}
-	}
-	memset(&program_info, 0, sizeof(program_info));
-	if (target_chip_param.chip_areas != NULL)
-	{
-		target_chip_area_free(target_chip_param.chip_areas);
-	}
-	memset(&target_chip_param, 0, sizeof(target_chip_param));
 	target_release_chip_series(&target_chips);
 }
 
@@ -392,7 +393,7 @@ VSS_HANDLER(vsprog_operation)
 	}
 	
 	argu_num = strlen(argv[1]) - 1;
-	if (NULL == cur_target)
+	if (NULL == cur_context->target)
 	{
 		LOG_ERROR(ERRMSG_NOT_DEFINED, "target");
 		return VSFERR_FAIL;
@@ -492,10 +493,8 @@ VSS_HANDLER(vsprog_select_slot)
 	}
 	
 	context[number].op = &operations[number];
-	context[number].target = cur_target;
-	context[number].param = &target_chip_param;
-	context[number].pi = &program_info;
-	context[number].prog = interfaces;
+	context[number].param = &target_chip_param[number];
+	context[number].pi = &program_info[number];
 	cur_context = &context[number];
 	return VSFERR_NONE;
 }
