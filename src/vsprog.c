@@ -390,7 +390,7 @@ VSS_HANDLER(vsprog_help)
 	PRINTF(_GETTEXT("  -M,  --mass-product                       set mass_product mode"LOG_LINE_END));
 	PRINTF(_GETTEXT("  -G,  --gui-mode                           set gui_mode"LOG_LINE_END));
 	PRINTF(_GETTEXT("  -a,  --address                            set address of target chip"LOG_LINE_END));
-	PRINTF(_GETTEXT("  -E,  --embedded-vsprog-config             generate config data for embedded vsprog"LOG_LINE_END));
+	PRINTF(_GETTEXT("  -X,  --embedded-vsprog-config             generate config data for embedded vsprog"LOG_LINE_END));
 	PRINTF(_GETTEXT("  -Z,  --embedded-vsprog-data               generate target data for embedded vsprog"LOG_LINE_END));
 	PRINTF(_GETTEXT("  -Y,  --slot                               select target data slot"LOG_LINE_END));
 	PRINTF(_GETTEXT(LOG_LINE_END));
