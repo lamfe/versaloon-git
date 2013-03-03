@@ -56,6 +56,45 @@ struct adi_dpif_t
 	} dpif_setting;
 };
 
+struct adi_dp_t
+{
+	uint8_t cur_ir;
+	uint8_t ack;
+	uint32_t dp_ctrl_stat;
+	uint32_t ap_sel_value;
+	uint32_t ap_bank_value;
+	uint32_t ap_csw_value;
+	uint32_t ap_tar_value;
+};
+
+struct adi_dp_info_t
+{
+	enum adi_dpif_type_t type;
+	enum adi_dp_target_core_t core;
+	uint8_t memaccess_tck;
+	uint32_t tar_autoincr_block;
+	
+	uint32_t if_id;
+	uint32_t config;			// MEM-AP register: CFG
+	uint32_t rom_address;		// MEM-AP register: BASE
+	uint32_t ahb_ap_id;			// MEM-AP register: IDR
+	struct adi_dp_t dp_state;
+	
+	uint8_t ack_value;
+	uint8_t adi_dp_first3bits;
+};
+
+struct adi_info_t
+{
+	struct INTERFACES_INFO_T *prog;
+	struct adi_dpif_t dpif;
+	struct adi_dp_t dp;
+	struct adi_dp_info_t dp_info;
+	uint8_t ack_value;
+	uint8_t dp_first3bits;
+};
+
+vsf_err_t adi_switch(struct adi_info_t *adi_info);
 vsf_err_t adi_init(struct INTERFACES_INFO_T *ifs, struct adi_dpif_t *interf,
 					enum adi_dp_target_core_t *core);
 vsf_err_t adi_fini(void);

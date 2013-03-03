@@ -80,6 +80,16 @@
 #define CM_REG_NVIC_AIRCR_VECTCLRACTIVE		(1 << 1)
 #define CM_REG_NVIC_AIRCR_VECTRESET			(1 << 0)
 
+struct cm_common_info_t
+{
+	// first member should be same as used in adi_v5p1 module
+	// because this class in inherited from adi_info_t
+	struct adi_info_t adi;
+	
+	struct adi_dpif_t dpif;
+};
+vsf_err_t cm_switch(struct cm_common_info_t *cm_common);
+
 vsf_err_t cm_dp_parameter_init(struct adi_dpif_t *dp);
 vsf_err_t cm_dp_fini(void);
 vsf_err_t cm_dp_init(struct INTERFACES_INFO_T *ifs, struct adi_dpif_t *interf);

@@ -220,6 +220,7 @@ struct chip_param_t
 #define ERASE_TARGET_FUNCNAME(mod)			ASSEMBLE_FUNCNAME(mod, _erase_target)
 #define WRITE_TARGET_FUNCNAME(mod)			ASSEMBLE_FUNCNAME(mod, _write_target)
 #define READ_TARGET_FUNCNAME(mod)			ASSEMBLE_FUNCNAME(mod, _read_target)
+#define SWITCH_TARGET_FUNCNAME(mod)			ASSEMBLE_FUNCNAME(mod, _switch_target)
 
 #define EXECUTE_HANDLER(mod)				\
 			static vsf_err_t EXECUTE_FUNCNAME(mod)\
@@ -242,6 +243,9 @@ struct chip_param_t
 			static vsf_err_t READ_TARGET_FUNCNAME(mod)\
 						(struct program_context_t *context, char area, \
 							uint32_t addr, uint8_t *buff, uint32_t size)
+#define SWITCH_TARGET_HANDLER(mod)			\
+			static vsf_err_t SWITCH_TARGET_FUNCNAME(mod)\
+						(struct program_context_t *context)
 
 #define	PARSE_ARGUMENT_FUNCNAME(mod)		ASSEMBLE_FUNCNAME(mod, _parse_argument)
 #define ADJUST_SETTING_FUNCNAME(mod)		ASSEMBLE_FUNCNAME(mod, _adjust_setting)
@@ -303,6 +307,8 @@ struct program_functions_t
 	// verify one page at addr
 //	vsf_err_t (*verify_target)(struct program_context_t *context, char area,
 //								uint32_t addr, uint8_t *buff, uint32_t size);
+	// switch targets
+	vsf_err_t (*switch_target)(struct program_context_t *context);
 };
 
 struct chip_series_t

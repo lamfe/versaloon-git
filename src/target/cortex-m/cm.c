@@ -54,6 +54,7 @@
 
 ENTER_PROGRAM_MODE_HANDLER(cm);
 LEAVE_PROGRAM_MODE_HANDLER(cm);
+SWITCH_TARGET_HANDLER(cm);
 struct program_functions_t cm_program_functions =
 {
 	NULL,			// execute
@@ -61,7 +62,8 @@ struct program_functions_t cm_program_functions =
 	LEAVE_PROGRAM_MODE_FUNCNAME(cm),
 	NULL,
 	NULL,
-	NULL
+	NULL,
+	SWITCH_TARGET_FUNCNAME(cm)
 };
 
 const struct cm_param_t cm_chips_param[] = {
@@ -130,7 +132,6 @@ const struct cm_param_t cm_chips_param[] = {
 		&kinetisswj_program_functions	// program_functions
 	}
 };
-static uint8_t cm_chip_index = 0;
 
 struct cm_param_t * cm_get_param(char *chip_name)
 {
@@ -148,13 +149,23 @@ struct cm_param_t * cm_get_param(char *chip_name)
 
 VSS_HANDLER(cm_chip)
 {
+	struct cm_info_t *cm;
 	uint8_t i;
+	
 	VSS_CHECK_ARGC(2);
+	
+	if (NULL == cur_context)
+	{
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "slot");
+		return VSFERR_FAIL;
+	}
+	cm = (struct cm_info_t *)cur_context->priv;
+	
 	for (i = 0; i < dimof(cm_chips_param); i++)
 	{
 		if (!strcmp(cm_chips_param[i].chip_name, argv[1]))
 		{
-			cm_chip_index = i;
+			cm->index = i;
 			memcpy(&cm_program_functions,
 					cm_chips_param[i].program_functions,
 					sizeof(cm_program_functions));
@@ -162,6 +173,8 @@ VSS_HANDLER(cm_chip)
 				ENTER_PROGRAM_MODE_FUNCNAME(cm);
 			cm_program_functions.leave_program_mode =
 				LEAVE_PROGRAM_MODE_FUNCNAME(cm);
+			cm_program_functions.switch_target =
+				SWITCH_TARGET_FUNCNAME(cm);
 			return VSFERR_NONE;
 		}
 	}
@@ -177,17 +190,23 @@ const struct vss_cmd_t cm_notifier[] =
 	VSS_CMD_END
 };
 
+SWITCH_TARGET_HANDLER(cm)
+{
+	return cm_switch((struct cm_common_info_t *)context->priv);
+}
+
 ENTER_PROGRAM_MODE_HANDLER(cm)
 {
-	struct adi_dpif_t dp;
 	struct program_info_t *pi = context->pi;
-	const struct program_functions_t *pf =
-		cm_chips_param[cm_chip_index].program_functions;
+	struct cm_info_t *cm = (struct cm_info_t *)context->priv;
+	struct adi_info_t *adi = &cm->cm_common.adi;
+	const struct program_functions_t *pf;
 	
-	if (cm_chip_index >= dimof(cm_chips_param))
+	if (cm->index >= dimof(cm_chips_param))
 	{
 		return VSFERR_FAIL;
 	}
+	pf = cm_chips_param[cm->index].program_functions;
 	
 	// jtag/swd init
 	switch (context->pi->mode_char)
@@ -195,56 +214,56 @@ ENTER_PROGRAM_MODE_HANDLER(cm)
 	default:
 		LOG_WARNING("debug port not defined, use JTAG by default.");
 	case ADI_MODE_CHAR_JTAG:
-		dp.type = ADI_DP_JTAG;
+		adi->dpif.type = ADI_DP_JTAG;
 		break;
 	case ADI_MODE_CHAR_SWD:
-		dp.type = ADI_DP_SWD;
+		adi->dpif.type = ADI_DP_SWD;
 		break;
 	}
 	
-	switch(dp.type)
+	switch(adi->dpif.type)
 	{
 	case ADI_DP_JTAG:
 		if (context->pi->frequency)
 		{
-			dp.dpif_setting.dpif_jtag_setting.jtag_khz =
+			adi->dpif.dpif_setting.dpif_jtag_setting.jtag_khz =
 				context->pi->frequency;
 		}
 		else
 		{
-			dp.dpif_setting.dpif_jtag_setting.jtag_khz =
-				cm_chips_param[cm_chip_index].jtag_khz;
+			adi->dpif.dpif_setting.dpif_jtag_setting.jtag_khz =
+				cm_chips_param[cm->index].jtag_khz;
 		}
-		dp.dpif_setting.dpif_jtag_setting.jtag_pos.ub =
-			cm_chips_param[cm_chip_index].jtag_pos.ub + pi->jtag_pos.ub;
-		dp.dpif_setting.dpif_jtag_setting.jtag_pos.ua =
-			cm_chips_param[cm_chip_index].jtag_pos.ua + pi->jtag_pos.ua;
-		dp.dpif_setting.dpif_jtag_setting.jtag_pos.bb =
-			cm_chips_param[cm_chip_index].jtag_pos.bb + pi->jtag_pos.bb;
-		dp.dpif_setting.dpif_jtag_setting.jtag_pos.ba =
-			cm_chips_param[cm_chip_index].jtag_pos.ba + pi->jtag_pos.ba;
+		adi->dpif.dpif_setting.dpif_jtag_setting.jtag_pos.ub =
+			cm_chips_param[cm->index].jtag_pos.ub + pi->jtag_pos.ub;
+		adi->dpif.dpif_setting.dpif_jtag_setting.jtag_pos.ua =
+			cm_chips_param[cm->index].jtag_pos.ua + pi->jtag_pos.ua;
+		adi->dpif.dpif_setting.dpif_jtag_setting.jtag_pos.bb =
+			cm_chips_param[cm->index].jtag_pos.bb + pi->jtag_pos.bb;
+		adi->dpif.dpif_setting.dpif_jtag_setting.jtag_pos.ba =
+			cm_chips_param[cm->index].jtag_pos.ba + pi->jtag_pos.ba;
 		
 		break;
 	case ADI_DP_SWD:
-		dp.dpif_setting.dpif_swd_setting.swd_trn =
-				cm_chips_param[cm_chip_index].swd_trn;
+		adi->dpif.dpif_setting.dpif_swd_setting.swd_trn =
+				cm_chips_param[cm->index].swd_trn;
 		if (context->pi->wait_state)
 		{
-			dp.dpif_setting.dpif_swd_setting.swd_dly =
+			adi->dpif.dpif_setting.dpif_swd_setting.swd_dly =
 				context->pi->wait_state;
 		}
 		else
 		{
-			dp.dpif_setting.dpif_swd_setting.swd_dly =
-				cm_chips_param[cm_chip_index].swd_delay;
+			adi->dpif.dpif_setting.dpif_swd_setting.swd_dly =
+				cm_chips_param[cm->index].swd_delay;
 		}
-		dp.dpif_setting.dpif_swd_setting.swd_retry = 0;
+		adi->dpif.dpif_setting.dpif_swd_setting.swd_retry = 0;
 		
 		break;
 	}
 	
 	// mode independent
-	if (cm_dp_init(context->prog, &dp))
+	if (cm_dp_init(context->prog, &adi->dpif))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "initialize cm");
 		LOG_ERROR("Maybe your last firmware disable the JTAG/SWD port"
@@ -263,14 +282,15 @@ ENTER_PROGRAM_MODE_HANDLER(cm)
 LEAVE_PROGRAM_MODE_HANDLER(cm)
 {
 	struct program_info_t *pi = context->pi;
-	const struct program_functions_t *pf =
-		cm_chips_param[cm_chip_index].program_functions;
+	struct cm_info_t *cm = (struct cm_info_t *)context->priv;
+	const struct program_functions_t *pf;
 	vsf_err_t err = VSFERR_NONE;
 	
-	if (cm_chip_index >= dimof(cm_chips_param))
+	if (cm->index >= dimof(cm_chips_param))
 	{
 		return VSFERR_FAIL;
 	}
+	pf = cm_chips_param[cm->index].program_functions;
 	
 	if (pf->leave_program_mode != NULL)
 	{

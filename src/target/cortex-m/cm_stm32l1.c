@@ -51,6 +51,10 @@
 #if STM32L1_USE_FLASHLOADER
 struct cm_stm32l1_t
 {
+	// first member must be same as used in cm module
+	// because this class in inherited from cm_info_t
+	struct cm_info_t cm;
+	
 	uint32_t page0_addr;
 	uint8_t tick_tock;
 	struct stm32_fl_t flash_loader;

@@ -60,8 +60,21 @@ const struct program_functions_t nuc100swj_program_functions =
 	READ_TARGET_FUNCNAME(nuc100swj)
 };
 
-static uint32_t nuc100swj_iap_cnt = 0;
-static uint8_t nuc100swj_ticktock = 0;
+struct nuc100_fl_t
+{
+	uint32_t iap_cnt;
+};
+struct cm_nuc100_t
+{
+	// first member must be same as used in cm module
+	// because this class in inherited from cm_info_t
+	struct cm_info_t cm;
+	
+	struct nuc100_fl_t fl;
+	bool apmode;
+	bool ldmode;
+	uint8_t tick_tock;
+};
 
 #define NUC100_IAP_BASE				CM_SRAM_ADDR
 #define NUC100_IAP_COMMAND_OFFSET	0x60
@@ -145,7 +158,7 @@ struct nuc100swj_iap_cmd_t
 	uint32_t cnt;
 };
 
-static vsf_err_t nuc100swj_iap_poll_finish(uint32_t cnt_idx)
+static vsf_err_t nuc100swj_iap_poll_finish(struct nuc100_fl_t *fl)
 {
 	uint32_t iap_cnt, iap_fail;
 	
@@ -169,17 +182,19 @@ static vsf_err_t nuc100swj_iap_poll_finish(uint32_t cnt_idx)
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	iap_cnt = LE_TO_SYS_U32(iap_cnt);
-	if (iap_cnt > nuc100swj_iap_cnt)
+	if (iap_cnt > fl->iap_cnt)
 	{
 		cm_dump(NUC100_IAP_BASE, sizeof(iap_code));
 		return VSFERR_FAIL;
 	}
-	return (iap_cnt == cnt_idx) ? VSFERR_NONE : VSFERR_NOT_READY;
+	return (iap_cnt == fl->iap_cnt) ? VSFERR_NONE : VSFERR_NOT_READY;
 }
 
-static vsf_err_t nuc100swj_iap_poll_param_taken(void)
+static vsf_err_t nuc100swj_iap_poll_param_taken(struct nuc100_fl_t *fl)
 {
 	uint32_t sync;
+	
+	REFERENCE_PARAMETER(fl);
 	
 	// read sync
 	if (adi_memap_read_reg32(NUC100_IAP_SYNC_ADDR, &sync, 1))
@@ -191,7 +206,7 @@ static vsf_err_t nuc100swj_iap_poll_param_taken(void)
 	return (0 == sync) ? VSFERR_NONE : VSFERR_NOT_READY;
 }
 
-static vsf_err_t nuc100swj_iap_wait_param_taken(void)
+static vsf_err_t nuc100swj_iap_wait_param_taken(struct nuc100_fl_t *fl)
 {
 	vsf_err_t err;
 	uint32_t start, end;
@@ -199,7 +214,7 @@ static vsf_err_t nuc100swj_iap_wait_param_taken(void)
 	start = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
 	while (1)
 	{
-		err = nuc100swj_iap_poll_param_taken();
+		err = nuc100swj_iap_poll_param_taken(fl);
 		if (!err)
 		{
 			break;
@@ -222,12 +237,12 @@ static vsf_err_t nuc100swj_iap_wait_param_taken(void)
 	return VSFERR_NONE;
 }
 
-static vsf_err_t nuc100swj_iap_wait_finish(uint32_t cnt_idx)
+static vsf_err_t nuc100swj_iap_wait_finish(struct nuc100_fl_t *fl)
 {
 	vsf_err_t err;
 	uint32_t start, end;
 	
-	if (!cnt_idx)
+	if (!fl->iap_cnt)
 	{
 		return VSFERR_NONE;
 	}
@@ -235,7 +250,7 @@ static vsf_err_t nuc100swj_iap_wait_finish(uint32_t cnt_idx)
 	start = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
 	while (1)
 	{
-		err = nuc100swj_iap_poll_finish(cnt_idx);
+		err = nuc100swj_iap_poll_finish(fl);
 		if (!err)
 		{
 			break;
@@ -258,11 +273,12 @@ static vsf_err_t nuc100swj_iap_wait_finish(uint32_t cnt_idx)
 	return VSFERR_NONE;
 }
 
-static vsf_err_t nuc100swj_iap_run(struct nuc100swj_iap_cmd_t * cmd)
+static vsf_err_t nuc100swj_iap_run(struct nuc100_fl_t *fl,
+									struct nuc100swj_iap_cmd_t * cmd)
 {
 	uint32_t buff_tmp[6];
 	
-	if (nuc100swj_iap_wait_param_taken())
+	if (nuc100swj_iap_wait_param_taken(fl))
 	{
 		return VSFERR_FAIL;
 	}
@@ -283,7 +299,7 @@ static vsf_err_t nuc100swj_iap_run(struct nuc100swj_iap_cmd_t * cmd)
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "load iap cmd to SRAM");
 		return ERRCODE_FAILURE_OPERATION;
 	}
-	nuc100swj_iap_cnt++;
+	fl->iap_cnt++;
 	
 	return VSFERR_NONE;
 }
@@ -395,34 +411,42 @@ static vsf_err_t nuc100swj_init_iap(void)
 	return VSFERR_NONE;
 }
 
-static bool nuc100swj_apmode = false, nuc100swj_ldmode = false;
-
 ENTER_PROGRAM_MODE_HANDLER(nuc100swj)
 {
-	REFERENCE_PARAMETER(context);
-	nuc100swj_iap_cnt = 0;
-	nuc100swj_apmode = false;
-	nuc100swj_ldmode = false;
+	struct cm_nuc100_t *nuc100 = (struct cm_nuc100_t *)context->priv;
+	struct nuc100_fl_t *fl = &nuc100->fl;
+	
+	if (sizeof(*nuc100) > sizeof(context->priv))
+	{
+		LOG_BUG("context->priv overflows");
+		return VSFERR_FAIL;
+	}
+	
+	fl->iap_cnt = 0;
+	nuc100->apmode = false;
+	nuc100->ldmode = false;
 	
 	return VSFERR_NONE;
 }
 
 LEAVE_PROGRAM_MODE_HANDLER(nuc100swj)
 {
-	REFERENCE_PARAMETER(context);
+	struct nuc100_fl_t *fl = &((struct cm_nuc100_t *)context->priv)->fl;
+	
 	REFERENCE_PARAMETER(success);
 	
-	return nuc100swj_iap_wait_finish(nuc100swj_iap_cnt);
+	return nuc100swj_iap_wait_finish(fl);
 }
 
 ERASE_TARGET_HANDLER(nuc100swj)
 {
+	struct cm_nuc100_t *nuc100 = (struct cm_nuc100_t *)context->priv;
+	struct nuc100_fl_t *fl = &nuc100->fl;
 	vsf_err_t err = VSFERR_NONE;
 	struct nuc100swj_iap_cmd_t cmd;
 	
 	REFERENCE_PARAMETER(size);
 	REFERENCE_PARAMETER(addr);
-	REFERENCE_PARAMETER(context);
 	
 	cmd.command = NUC100_REG_ISPCMD_PAGE_ERASE;
 	cmd.src_addr = 0;
@@ -430,7 +454,7 @@ ERASE_TARGET_HANDLER(nuc100swj)
 	switch (area)
 	{
 	case BOOTLOADER_CHAR:
-		if (!nuc100swj_ldmode)
+		if (!nuc100->ldmode)
 		{
 			if (nuc100swj_unlock() || nuc100swj_reset_to_aprom() ||
 				nuc100swj_unlock() || nuc100swj_init_iap())
@@ -438,19 +462,19 @@ ERASE_TARGET_HANDLER(nuc100swj)
 				return VSFERR_FAIL;
 			}
 			
-			nuc100swj_ldmode = true;
-			nuc100swj_apmode = false;
+			nuc100->ldmode = true;
+			nuc100->apmode = false;
 		}
 		
 		cmd.tgt_addr = addr;
-		if (nuc100swj_iap_run(&cmd) ||
-			nuc100swj_iap_wait_finish(nuc100swj_iap_cnt))
+		if (nuc100swj_iap_run(fl, &cmd) ||
+			nuc100swj_iap_wait_finish(fl))
 		{
 			err = VSFERR_FAIL;
 		}
 		break;
 	case APPLICATION_CHAR:
-		if (!nuc100swj_apmode)
+		if (!nuc100->apmode)
 		{
 			if (nuc100swj_unlock() || nuc100swj_reset_to_ldrom() ||
 				nuc100swj_unlock() || nuc100swj_init_iap())
@@ -458,13 +482,13 @@ ERASE_TARGET_HANDLER(nuc100swj)
 				return VSFERR_FAIL;
 			}
 			
-			nuc100swj_apmode = true;
-			nuc100swj_ldmode = false;
+			nuc100->apmode = true;
+			nuc100->ldmode = false;
 		}
 		
 		cmd.tgt_addr = addr;
-		if (nuc100swj_iap_run(&cmd) ||
-			nuc100swj_iap_wait_finish(nuc100swj_iap_cnt))
+		if (nuc100swj_iap_run(fl, &cmd) ||
+			nuc100swj_iap_wait_finish(fl))
 		{
 			err = VSFERR_FAIL;
 		}
@@ -478,6 +502,8 @@ ERASE_TARGET_HANDLER(nuc100swj)
 
 WRITE_TARGET_HANDLER(nuc100swj)
 {
+	struct cm_nuc100_t *nuc100 = (struct cm_nuc100_t *)context->priv;
+	struct nuc100_fl_t *fl = &nuc100->fl;
 	vsf_err_t err = VSFERR_NONE;
 	struct nuc100swj_iap_cmd_t cmd;
 	uint32_t page_size = 512;
@@ -488,7 +514,7 @@ WRITE_TARGET_HANDLER(nuc100swj)
 	switch (area)
 	{
 	case APPLICATION_CHAR:
-		if (!nuc100swj_apmode)
+		if (!nuc100->apmode)
 		{
 			if (nuc100swj_unlock() || nuc100swj_reset_to_ldrom() ||
 				nuc100swj_unlock() || nuc100swj_init_iap())
@@ -496,8 +522,8 @@ WRITE_TARGET_HANDLER(nuc100swj)
 				return VSFERR_FAIL;
 			}
 			
-			nuc100swj_apmode = true;
-			nuc100swj_ldmode = false;
+			nuc100->apmode = true;
+			nuc100->ldmode = false;
 		}
 		
 		// check alignment
@@ -511,7 +537,7 @@ WRITE_TARGET_HANDLER(nuc100swj)
 		cmd.cnt = page_size / 4;
 		while (size)
 		{
-			if (nuc100swj_ticktock & 1)
+			if (nuc100->tick_tock & 1)
 			{
 				ram_addr = CM_SRAM_ADDR + 1024 + page_size;
 			}
@@ -522,12 +548,12 @@ WRITE_TARGET_HANDLER(nuc100swj)
 			cmd.tgt_addr = addr;
 			cmd.src_addr = ram_addr;
 			if (adi_memap_write_buf(ram_addr, buff, page_size) ||
-				nuc100swj_iap_run(&cmd))
+				nuc100swj_iap_run(fl, &cmd))
 			{
 				err = VSFERR_FAIL;
 				break;
 			}
-			nuc100swj_ticktock++;
+			nuc100->tick_tock++;
 			size -= page_size;
 			buff += page_size;
 			addr += page_size;

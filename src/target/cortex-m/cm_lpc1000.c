@@ -61,6 +61,20 @@ const struct program_functions_t lpc1000swj_program_functions =
 	READ_TARGET_FUNCNAME(lpc1000swj)
 };
 
+struct lpc1000_fl_t
+{
+	uint32_t iap_cnt;
+};
+struct cm_lpc1000_t
+{
+	// first member must be same as used in cm module
+	// because this class in inherited from cm_info_t
+	struct cm_info_t cm;
+	
+	struct lpc1000_fl_t fl;
+	uint8_t tick_tock;
+};
+
 #define LPC1000_IAP_BASE				LPC1000_SRAM_ADDR
 #define LPC1000_IAP_COMMAND_OFFSET		0x80
 #define LPC1000_IAP_COMMAND_ADDR		(LPC1000_IAP_BASE + LPC1000_IAP_COMMAND_OFFSET)
@@ -69,8 +83,6 @@ const struct program_functions_t lpc1000swj_program_functions =
 #define LPC1000_IAP_ENTRY_OFFSET		0x3C
 #define LPC1000_IAP_SYNC_ADDR			(LPC1000_IAP_BASE + 0x98)
 #define LPC1000_IAP_CNT_ADDR			(LPC1000_IAP_BASE + 0xB0)
-static uint32_t lpc1000swj_iap_cnt = 0;
-static uint8_t lpc1000swj_ticktock = 0;
 static uint8_t iap_code[] = {
 							// wait_start:
 	0x25, 0x4C,				// ldr		r4, [PC, #0x94]		// load sync
@@ -149,7 +161,7 @@ static uint8_t iap_code[] = {
 	0, 0, 0, 0
 };
 
-static vsf_err_t lpc1000swj_iap_init(void)
+static vsf_err_t lpc1000swj_iap_init(struct lpc1000_fl_t *fl)
 {
 	uint32_t *para_ptr = (uint32_t*)&iap_code[LPC1000_IAP_ENTRY_OFFSET];
 	uint8_t verify_buff[sizeof(iap_code)];
@@ -205,11 +217,12 @@ static vsf_err_t lpc1000swj_iap_init(void)
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "run iap");
 		return ERRCODE_FAILURE_OPERATION;
 	}
-	lpc1000swj_iap_cnt = 0;
+	fl->iap_cnt = 0;
 	return VSFERR_NONE;
 }
 
-static vsf_err_t lpc1000swj_iap_run(uint32_t cmd, uint32_t param_table[5])
+static vsf_err_t lpc1000swj_iap_run(struct lpc1000_fl_t *fl, uint32_t cmd,
+									uint32_t param_table[5])
 {
 	uint32_t buff_tmp[7];
 	
@@ -229,14 +242,17 @@ static vsf_err_t lpc1000swj_iap_run(uint32_t cmd, uint32_t param_table[5])
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "load iap cmd to SRAM");
 		return ERRCODE_FAILURE_OPERATION;
 	}
-	lpc1000swj_iap_cnt++;
+	fl->iap_cnt++;
 	
 	return VSFERR_NONE;
 }
 
-static vsf_err_t lpc1000swj_iap_poll_result(uint32_t result_table[7])
+static vsf_err_t lpc1000swj_iap_poll_result(struct lpc1000_fl_t *fl,
+											uint32_t result_table[7])
 {
 	uint8_t i;
+	
+	REFERENCE_PARAMETER(fl);
 	
 	// read result and sync
 	// sync is 4-byte BEFORE result
@@ -252,7 +268,8 @@ static vsf_err_t lpc1000swj_iap_poll_result(uint32_t result_table[7])
 	return (0 == result_table[0]) ? VSFERR_NONE : VSFERR_NOT_READY;
 }
 
-static vsf_err_t lpc1000swj_iap_wait_ready(uint32_t result_table[4], bool last)
+static vsf_err_t lpc1000swj_iap_wait_ready(struct lpc1000_fl_t *fl,
+										uint32_t result_table[4], bool last)
 {
 	vsf_err_t err;
 	uint32_t start, end;
@@ -261,8 +278,8 @@ static vsf_err_t lpc1000swj_iap_wait_ready(uint32_t result_table[4], bool last)
 	start = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
 	while (1)
 	{
-		err = lpc1000swj_iap_poll_result(buff_tmp);
-		if (!err && (!last || (buff_tmp[6] == lpc1000swj_iap_cnt)))
+		err = lpc1000swj_iap_poll_result(fl, buff_tmp);
+		if (!err && (!last || (buff_tmp[6] == fl->iap_cnt)))
 		{
 			if (buff_tmp[1] != 0)
 			{
@@ -293,11 +310,11 @@ static vsf_err_t lpc1000swj_iap_wait_ready(uint32_t result_table[4], bool last)
 	return VSFERR_NONE;
 }
 
-static vsf_err_t lpc1000swj_iap_call(uint32_t cmd, uint32_t param_table[5],
-									uint32_t result_table[4], bool last)
+static vsf_err_t lpc1000swj_iap_call(struct lpc1000_fl_t *fl, uint32_t cmd,
+				uint32_t param_table[5], uint32_t result_table[4], bool last)
 {
-	if (lpc1000swj_iap_run(cmd, param_table)
-		|| lpc1000swj_iap_wait_ready(result_table, last))
+	if (lpc1000swj_iap_run(fl, cmd, param_table)
+		|| lpc1000swj_iap_wait_ready(fl, result_table, last))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "run iap command");
 		return VSFERR_FAIL;
@@ -307,10 +324,18 @@ static vsf_err_t lpc1000swj_iap_call(uint32_t cmd, uint32_t param_table[5],
 
 ENTER_PROGRAM_MODE_HANDLER(lpc1000swj)
 {
+	struct cm_lpc1000_t *lpc1000 = (struct cm_lpc1000_t *)context->priv;
+	struct lpc1000_fl_t *fl = &lpc1000->fl;
 	uint32_t reg;
 	struct chip_param_t *param = context->param;
 	
-	if (lpc1000swj_iap_init())
+	if (sizeof(*lpc1000) > sizeof(context->priv))
+	{
+		LOG_BUG("context->priv overflows");
+		return VSFERR_FAIL;
+	}
+	
+	if (lpc1000swj_iap_init(fl))
 	{
 		return VSFERR_FAIL;
 	}
@@ -333,16 +358,17 @@ ENTER_PROGRAM_MODE_HANDLER(lpc1000swj)
 
 LEAVE_PROGRAM_MODE_HANDLER(lpc1000swj)
 {
+	struct lpc1000_fl_t *fl = &((struct cm_lpc1000_t *)context->priv)->fl;
 	uint32_t result_table[4];
 	
-	REFERENCE_PARAMETER(context);
 	REFERENCE_PARAMETER(success);
 	
-	return lpc1000swj_iap_wait_ready(result_table, true);
+	return lpc1000swj_iap_wait_ready(fl, result_table, true);
 }
 
 ERASE_TARGET_HANDLER(lpc1000swj)
 {
+	struct lpc1000_fl_t *fl = &((struct cm_lpc1000_t *)context->priv)->fl;
 	struct program_info_t *pi = context->pi;
 	struct program_area_t *flash_area = NULL;
 	vsf_err_t err = VSFERR_NONE;
@@ -367,7 +393,7 @@ ERASE_TARGET_HANDLER(lpc1000swj)
 		iap_cmd_param[0] = 0;				// Start Sector Number
 		iap_cmd_param[1] = sector;			// End Sector Number
 		iap_cmd_param[2] = pi->kernel_khz;	// CPU Clock Frequency(in kHz)
-		if (lpc1000swj_iap_call(LPC1000_IAPCMD_PREPARE_SECTOR,
+		if (lpc1000swj_iap_call(fl, LPC1000_IAPCMD_PREPARE_SECTOR,
 											iap_cmd_param, iap_reply, false))
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "prepare sectors");
@@ -380,7 +406,7 @@ ERASE_TARGET_HANDLER(lpc1000swj)
 		iap_cmd_param[0] = 0;				// Start Sector Number
 		iap_cmd_param[1] = sector;			// End Sector Number
 		iap_cmd_param[2] = pi->kernel_khz;	// CPU Clock Frequency(in kHz)
-		if (lpc1000swj_iap_call(LPC1000_IAPCMD_ERASE_SECTOR,
+		if (lpc1000swj_iap_call(fl, LPC1000_IAPCMD_ERASE_SECTOR,
 											iap_cmd_param, iap_reply, true))
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "erase sectors");
@@ -397,6 +423,8 @@ ERASE_TARGET_HANDLER(lpc1000swj)
 
 WRITE_TARGET_HANDLER(lpc1000swj)
 {
+	struct cm_lpc1000_t *lpc1000 = (struct cm_lpc1000_t *)context->priv;
+	struct lpc1000_fl_t *fl = &lpc1000->fl;
 	struct program_info_t *pi = context->pi;
 	struct chip_area_info_t *flash_info = NULL;
 	uint32_t iap_cmd_param[5], iap_reply[4];
@@ -426,14 +454,14 @@ WRITE_TARGET_HANDLER(lpc1000swj)
 		iap_cmd_param[0] = start_sector;	// Start Sector Number
 		iap_cmd_param[1] = start_sector;	// End Sector Number
 		iap_cmd_param[2] = pi->kernel_khz;	// CPU Clock Frequency(in kHz)
-		if (lpc1000swj_iap_call(LPC1000_IAPCMD_PREPARE_SECTOR,
+		if (lpc1000swj_iap_call(fl, LPC1000_IAPCMD_PREPARE_SECTOR,
 											iap_cmd_param, iap_reply, false))
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "prepare sectors");
 			return ERRCODE_FAILURE_OPERATION;
 		}
 		
-		if (lpc1000swj_ticktock & 1)
+		if (lpc1000->tick_tock & 1)
 		{
 			buff_addr = LPC1000_IAP_BASE + 512 + page_size;
 		}
@@ -470,13 +498,13 @@ WRITE_TARGET_HANDLER(lpc1000swj)
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "run iap");
 			return ERRCODE_FAILURE_OPERATION;
 		}
-		if (lpc1000swj_iap_call(LPC1000_IAPCMD_RAM_TO_FLASH,
+		if (lpc1000swj_iap_call(fl, LPC1000_IAPCMD_RAM_TO_FLASH,
 											iap_cmd_param, iap_reply, false))
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "run iap");
 			return ERRCODE_FAILURE_OPERATION;
 		}
-		lpc1000swj_ticktock++;
+		lpc1000->tick_tock++;
 		break;
 	default:
 		return VSFERR_FAIL;
@@ -487,18 +515,17 @@ WRITE_TARGET_HANDLER(lpc1000swj)
 
 READ_TARGET_HANDLER(lpc1000swj)
 {
+	struct lpc1000_fl_t *fl = &((struct cm_lpc1000_t *)context->priv)->fl;
 	vsf_err_t err = VSFERR_NONE;
 	uint32_t cur_block_size;
 	uint32_t iap_cmd_param[5], iap_reply[4];
-	
-	REFERENCE_PARAMETER(context);
 	
 	switch (area)
 	{
 	case CHIPID_CHAR:
 		memset(iap_cmd_param, 0, sizeof(iap_cmd_param));
 		memset(iap_reply, 0, sizeof(iap_reply));
-		if (lpc1000swj_iap_call(LPC1000_IAPCMD_READ_BOOTVER,
+		if (lpc1000swj_iap_call(fl, LPC1000_IAPCMD_READ_BOOTVER,
 											iap_cmd_param, iap_reply, true))
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read bootver");
@@ -510,7 +537,7 @@ READ_TARGET_HANDLER(lpc1000swj)
 		
 		memset(iap_cmd_param, 0, sizeof(iap_cmd_param));
 		memset(iap_reply, 0, sizeof(iap_reply));
-		if (lpc1000swj_iap_call(LPC1000_IAPCMD_READ_ID,
+		if (lpc1000swj_iap_call(fl, LPC1000_IAPCMD_READ_ID,
 											iap_cmd_param, iap_reply, true))
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read id");
@@ -548,7 +575,7 @@ READ_TARGET_HANDLER(lpc1000swj)
 		break;
 	case UNIQUEID_CHAR:
 		memset(iap_cmd_param, 0, sizeof(iap_cmd_param));
-		if (lpc1000swj_iap_call(LPC1000_IAPCMD_READ_SERIAL,
+		if (lpc1000swj_iap_call(fl, LPC1000_IAPCMD_READ_SERIAL,
 										iap_cmd_param, (uint32_t *)buff, true))
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read serialnum");

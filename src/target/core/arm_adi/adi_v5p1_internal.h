@@ -20,31 +20,6 @@
 #ifndef __ADI_V5P1_INTERNAL_H_INCLUDED__
 #define __ADI_V5P1_INTERNAL_H_INCLUDED__
 
-struct adi_dp_t
-{
-	uint8_t cur_ir;
-	uint8_t ack;
-	uint32_t dp_ctrl_stat;
-	uint32_t ap_sel_value;
-	uint32_t ap_bank_value;
-	uint32_t ap_csw_value;
-	uint32_t ap_tar_value;
-};
-
-struct adi_dp_info_t
-{
-	enum adi_dpif_type_t type;
-	enum adi_dp_target_core_t core;
-	uint8_t memaccess_tck;
-	uint32_t tar_autoincr_block;
-	
-	uint32_t if_id;
-	uint32_t config;			// MEM-AP register: CFG
-	uint32_t rom_address;		// MEM-AP register: BASE
-	uint32_t ahb_ap_id;			// MEM-AP register: IDR
-	struct adi_dp_t dp_state;
-};
-
 #define ADI_DP_IR_DPACC						0
 #define ADI_DP_IR_APACC						1
 

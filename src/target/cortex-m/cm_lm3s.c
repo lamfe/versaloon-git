@@ -60,7 +60,19 @@ const struct program_functions_t lm3sswj_program_functions =
 	READ_TARGET_FUNCNAME(lm3sswj)
 };
 
-static uint32_t lm3sswj_iap_cnt = 0;
+struct lm3s_fl_t
+{
+	uint32_t iap_cnt;
+};
+struct cm_lm3s_t
+{
+	// first member must be same as used in cm module
+	// because this class in inherited from cm_info_t
+	struct cm_info_t cm;
+	
+	struct lm3s_fl_t fl;
+	uint8_t tick_tock;
+};
 
 #define LM3S_IAP_BASE			LM3S_SRAM_ADDR
 #define LM3S_IAP_COMMAND_OFFSET	100
@@ -140,7 +152,7 @@ struct lm3sswj_iap_cmd_t
 	uint32_t cnt;
 };
 
-static vsf_err_t lm3sswj_iap_poll_finish(uint32_t cnt_idx)
+static vsf_err_t lm3sswj_iap_poll_finish(struct lm3s_fl_t *fl)
 {
 	uint32_t iap_cnt;
 	
@@ -151,17 +163,19 @@ static vsf_err_t lm3sswj_iap_poll_finish(uint32_t cnt_idx)
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	iap_cnt = LE_TO_SYS_U32(iap_cnt);
-	if (iap_cnt > lm3sswj_iap_cnt)
+	if (iap_cnt > fl->iap_cnt)
 	{
 		cm_dump(LM3S_IAP_BASE, sizeof(iap_code));
 		return VSFERR_FAIL;
 	}
-	return (iap_cnt == cnt_idx) ? VSFERR_NONE : VSFERR_NOT_READY;
+	return (iap_cnt == fl->iap_cnt) ? VSFERR_NONE : VSFERR_NOT_READY;
 }
 
-static vsf_err_t lm3sswj_iap_poll_param_taken(void)
+static vsf_err_t lm3sswj_iap_poll_param_taken(struct lm3s_fl_t *fl)
 {
 	uint32_t sync;
+	
+	REFERENCE_PARAMETER(fl);
 	
 	// read sync
 	if (adi_memap_read_reg32(LM3S_IAP_SYNC_ADDR, &sync, 1))
@@ -173,7 +187,7 @@ static vsf_err_t lm3sswj_iap_poll_param_taken(void)
 	return (0 == sync) ? VSFERR_NONE : VSFERR_NOT_READY;
 }
 
-static vsf_err_t lm3sswj_iap_wait_param_taken(void)
+static vsf_err_t lm3sswj_iap_wait_param_taken(struct lm3s_fl_t *fl)
 {
 	vsf_err_t err;
 	uint32_t start, end;
@@ -181,7 +195,7 @@ static vsf_err_t lm3sswj_iap_wait_param_taken(void)
 	start = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
 	while (1)
 	{
-		err = lm3sswj_iap_poll_param_taken();
+		err = lm3sswj_iap_poll_param_taken(fl);
 		if (!err)
 		{
 			break;
@@ -204,7 +218,7 @@ static vsf_err_t lm3sswj_iap_wait_param_taken(void)
 	return VSFERR_NONE;
 }
 
-static vsf_err_t lm3sswj_iap_wait_finish(uint32_t cnt_idx)
+static vsf_err_t lm3sswj_iap_wait_finish(struct lm3s_fl_t *fl)
 {
 	vsf_err_t err;
 	uint32_t start, end;
@@ -212,7 +226,7 @@ static vsf_err_t lm3sswj_iap_wait_finish(uint32_t cnt_idx)
 	start = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
 	while (1)
 	{
-		err = lm3sswj_iap_poll_finish(cnt_idx);
+		err = lm3sswj_iap_poll_finish(fl);
 		if (!err)
 		{
 			break;
@@ -235,11 +249,12 @@ static vsf_err_t lm3sswj_iap_wait_finish(uint32_t cnt_idx)
 	return VSFERR_NONE;
 }
 
-static vsf_err_t lm3sswj_iap_run(struct lm3sswj_iap_cmd_t * cmd)
+static vsf_err_t lm3sswj_iap_run(struct lm3s_fl_t *fl,
+									struct lm3sswj_iap_cmd_t * cmd)
 {
 	uint32_t buff_tmp[6];
 	
-	if (lm3sswj_iap_wait_param_taken())
+	if (lm3sswj_iap_wait_param_taken(fl))
 	{
 		return VSFERR_FAIL;
 	}
@@ -260,18 +275,25 @@ static vsf_err_t lm3sswj_iap_run(struct lm3sswj_iap_cmd_t * cmd)
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "load iap cmd to SRAM");
 		return ERRCODE_FAILURE_OPERATION;
 	}
-	lm3sswj_iap_cnt++;
+	fl->iap_cnt++;
 	
 	return VSFERR_NONE;
 }
 
 ENTER_PROGRAM_MODE_HANDLER(lm3sswj)
 {
+	struct cm_lm3s_t *lm3s = (struct cm_lm3s_t *)context->priv;
+	struct lm3s_fl_t *fl = &lm3s->fl;
 	uint32_t reg;
 	uint8_t verify_buff[sizeof(iap_code)];
 	
-	REFERENCE_PARAMETER(context);
-	lm3sswj_iap_cnt = 0;
+	if (sizeof(*lm3s) > sizeof(context->priv))
+	{
+		LOG_BUG("context->priv overflows");
+		return VSFERR_FAIL;
+	}
+	
+	fl->iap_cnt = 0;
 	
 	if (cm_dp_halt())
 	{
@@ -365,14 +387,16 @@ ENTER_PROGRAM_MODE_HANDLER(lm3sswj)
 
 LEAVE_PROGRAM_MODE_HANDLER(lm3sswj)
 {
-	REFERENCE_PARAMETER(context);
+	struct lm3s_fl_t *fl = &((struct cm_lm3s_t *)context->priv)->fl;
+	
 	REFERENCE_PARAMETER(success);
 	
-	return lm3sswj_iap_wait_finish(lm3sswj_iap_cnt);
+	return lm3sswj_iap_wait_finish(fl);
 }
 
 ERASE_TARGET_HANDLER(lm3sswj)
 {
+	struct lm3s_fl_t *fl = &((struct cm_lm3s_t *)context->priv)->fl;
 	vsf_err_t err = VSFERR_NONE;
 	struct lm3sswj_iap_cmd_t cmd;
 	
@@ -388,8 +412,8 @@ ERASE_TARGET_HANDLER(lm3sswj)
 		cmd.src_addr = 0;
 		cmd.command = LM3S_FLASHCTL_FMC_MERASE | LM3S_FLASHCTL_FMC_KEY;
 		cmd.cnt = 1;
-		if (lm3sswj_iap_run(&cmd) ||
-			lm3sswj_iap_wait_finish(lm3sswj_iap_cnt))
+		if (lm3sswj_iap_run(fl, &cmd) ||
+			lm3sswj_iap_wait_finish(fl))
 		{
 			err = VSFERR_FAIL;
 		}
@@ -403,10 +427,11 @@ ERASE_TARGET_HANDLER(lm3sswj)
 
 WRITE_TARGET_HANDLER(lm3sswj)
 {
+	struct cm_lm3s_t *lm3s = (struct cm_lm3s_t *)context->priv;
+	struct lm3s_fl_t *fl = &lm3s->fl;
 	vsf_err_t err = VSFERR_NONE;
 	struct lm3sswj_iap_cmd_t cmd;
 	uint32_t page_size = 512;
-	static uint8_t ticktock = 0;
 	uint32_t ram_addr;
 	
 	REFERENCE_PARAMETER(context);
@@ -426,7 +451,7 @@ WRITE_TARGET_HANDLER(lm3sswj)
 		cmd.cnt = page_size / 4;
 		while (size)
 		{
-			if (ticktock & 1)
+			if (lm3s->tick_tock & 1)
 			{
 				ram_addr = LM3S_SRAM_ADDR + 1024 + page_size;
 			}
@@ -437,12 +462,12 @@ WRITE_TARGET_HANDLER(lm3sswj)
 			cmd.tgt_addr = addr;
 			cmd.src_addr = ram_addr;
 			if (adi_memap_write_buf(ram_addr, buff, page_size) ||
-				lm3sswj_iap_run(&cmd))
+				lm3sswj_iap_run(fl, &cmd))
 			{
 				err = VSFERR_FAIL;
 				break;
 			}
-			ticktock++;
+			lm3s->tick_tock++;
 			size -= page_size;
 			buff += page_size;
 			addr += page_size;
