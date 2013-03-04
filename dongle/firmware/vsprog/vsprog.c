@@ -166,7 +166,8 @@ static const struct vss_cmd_t vsprog_cmd[] =
 struct vss_cmd_list_t vsprog_cmd_list = VSS_CMD_LIST("vsprog", vsprog_cmd);
 
 int verbosity = LOG_DEFAULT_LEVEL;
-int verbosity_stack[1];
+int verbosity_pos = 0;
+int verbosity_stack[16];
 
 static struct operation_t operations[TARGET_SLOT_NUMBER];
 static struct program_context_t context[TARGET_SLOT_NUMBER];
@@ -575,11 +576,27 @@ VSS_HANDLER(vsprog_auto_program)
 	while (1)
 	{
 		// wait for target insert
-		while (vss_run_script("info"));
+		LOG_INFO("Waiting target connection ...\n");
+		LOG_PUSH();
+		LOG_MUTE();
+		while (vss_run_script("info"))
+		{
+			usb_protocol_poll();
+		}
+		LOG_POP();
+		
 		// program
 		vss_run_script("program 1");
+		
 		// wait for target remove
-		while (!vss_run_script("info"));
+		LOG_INFO("Waiting target removal ...\n");
+		LOG_PUSH();
+		LOG_MUTE();
+		while (!vss_run_script("info"))
+		{
+			usb_protocol_poll();
+		}
+		LOG_POP();
 	}
 	return VSFERR_NONE;
 }

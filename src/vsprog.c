@@ -776,11 +776,21 @@ VSS_HANDLER(vsprog_auto_program)
 	while (1)
 	{
 		// wait for target insert
+		LOG_INFO("Waiting target connection ...\n");
+		LOG_PUSH();
+		LOG_MUTE();
 		while (vss_run_script("info"));
+		LOG_POP();
+		
 		// program
 		vss_run_script("program");
+		
 		// wait for target remove
+		LOG_INFO("Waiting target removal ...\n");
+		LOG_PUSH();
+		LOG_MUTE();
 		while (!vss_run_script("info"));
+		LOG_POP();
 	}
 	return VSFERR_NONE;
 }
