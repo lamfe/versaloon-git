@@ -53,8 +53,10 @@ VSS_HANDLER(vsprog_operation);
 VSS_HANDLER(vsprog_mass);
 VSS_HANDLER(vsprog_free_all);
 VSS_HANDLER(vsprog_init);
-VSS_HANDLER(vsprog_program);
 VSS_HANDLER(vsprog_select_slot);
+VSS_HANDLER(vsprog_info);
+VSS_HANDLER(vsprog_program);
+VSS_HANDLER(vsprog_auto_program);
 
 VSS_HANDLER(vsprog_wait_key_down);
 VSS_HANDLER(vsprog_wait_key_up);
@@ -139,10 +141,6 @@ static const struct vss_cmd_t vsprog_cmd[] =
 				"key functions",
 				NULL,
 				vsprog_key_cmd),
-	VSS_CMD(	"program",
-				"program target chip, format: program",
-				vsprog_program,
-				NULL),
 	VSS_CMD(	"slot",
 				"select target data slot, format: slot/Y NUMBER",
 				vsprog_select_slot,
@@ -150,6 +148,18 @@ static const struct vss_cmd_t vsprog_cmd[] =
 	VSS_CMD(	"Y",
 				"select target data slot, format: slot/Y NUMBER",
 				vsprog_select_slot,
+				NULL),
+	VSS_CMD(	"info",
+				"get target information, format: info",
+				vsprog_info,
+				NULL),
+	VSS_CMD(	"program",
+				"run program procedure, format: program",
+				vsprog_program,
+				NULL),
+	VSS_CMD(	"auto_program",
+				"run auto_program procedure, format: auto_program",
+				vsprog_auto_program,
 				NULL),
 	VSS_CMD_END
 };
@@ -501,6 +511,79 @@ VSS_HANDLER(vsprog_select_slot)
 	return VSFERR_NONE;
 }
 
+VSS_HANDLER(vsprog_info)
+{
+	struct operation_t operation_temp, *operation_orig;
+	vsf_err_t err;
+	
+	VSS_CHECK_ARGC(1);
+	
+	operation_orig = cur_context->op;
+	memset(&operation_temp, 0, sizeof(operation_temp));
+	operation_temp.read_operations = CHIPID;
+	cur_context->op = &operation_temp;
+	err = vss_run_script("program 0");
+	cur_context->op = operation_orig;
+	
+	return err;
+}
+
+VSS_HANDLER(vsprog_program)
+{
+	bool led = true;
+	
+	VSS_CHECK_ARGC_2(1, 2);
+	if (2 == argc)
+	{
+		led = (bool)strtoul(argv[1], NULL, 0);
+	}
+	
+	if (led)
+	{
+		LED_STATE_R_OFF();
+		LED_STATE_G_OFF();
+	}
+	if (vss_run_script("enter_program_mode") ||
+		vss_run_script("operate"))
+	{
+		if (led)
+		{
+			LED_STATE_R_ON();
+		}
+		vss_run_script("leave_program_mode 0");
+		return VSFERR_FAIL;
+	}
+	if (vss_run_script("leave_program_mode 1"))
+	{
+		if (led)
+		{
+			LED_STATE_R_ON();
+		}
+		return VSFERR_FAIL;
+	}
+	if (led)
+	{
+		LED_STATE_G_ON();
+	}
+	return VSFERR_NONE;
+}
+
+VSS_HANDLER(vsprog_auto_program)
+{
+	VSS_CHECK_ARGC(1);
+	
+	while (1)
+	{
+		// wait for target insert
+		while (vss_run_script("info"));
+		// program
+		vss_run_script("program 1");
+		// wait for target remove
+		while (!vss_run_script("info"));
+	}
+	return VSFERR_NONE;
+}
+
 VSS_HANDLER(vsprog_wait_key_down)
 {
 	uint32_t key_count = 0;
@@ -558,27 +641,5 @@ VSS_HANDLER(vsprog_wait_key_press)
 	{
 		return VSFERR_FAIL;
 	}
-	return VSFERR_NONE;
-}
-
-VSS_HANDLER(vsprog_program)
-{
-	VSS_CHECK_ARGC(1);
-	
-	LED_STATE_R_OFF();
-	LED_STATE_G_OFF();
-	if (vss_run_script("enter_program_mode") ||
-		vss_run_script("operate"))
-	{
-		LED_STATE_R_ON();
-		vss_run_script("leave_program_mode 0");
-		return VSFERR_FAIL;
-	}
-	if (vss_run_script("leave_program_mode 1"))
-	{
-		LED_STATE_R_ON();
-		return VSFERR_FAIL;
-	}
-	LED_STATE_G_ON();
 	return VSFERR_NONE;
 }
