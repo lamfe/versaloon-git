@@ -68,6 +68,14 @@ static vsf_err_t ReadScriptsArea_isready(struct fakefat32_file_t*file,
 							uint32_t addr, uint8_t *buff, uint32_t page_size);
 static vsf_err_t ChangeScriptsAreaSize(struct fakefat32_file_t *file,
 							uint32_t size);
+static vsf_err_t WriteTargetArea0(struct fakefat32_file_t*file, uint32_t addr,
+							uint8_t *buff, uint32_t page_size);
+static vsf_err_t WriteTargetArea0_isready(struct fakefat32_file_t*file,
+							uint32_t addr, uint8_t *buff, uint32_t page_size);
+static vsf_err_t ReadTargetArea0(struct fakefat32_file_t*file, uint32_t addr,
+							uint8_t *buff, uint32_t page_size);
+static vsf_err_t ReadTargetArea0_isready(struct fakefat32_file_t*file,
+							uint32_t addr, uint8_t *buff, uint32_t page_size);
 #endif
 static struct fakefat32_file_t lost_dir[] =
 {
@@ -83,6 +91,33 @@ static struct fakefat32_file_t lost_dir[] =
 		NULL,
 	}
 };
+#if TARGET_SLOT_NUMBER >= 1
+static struct fakefat32_file_t target_slot0_dir[] =
+{
+	{
+		".", NULL,
+		FAKEFAT32_FILEATTR_DIRECTORY,
+	},
+	{
+		"..", NULL,
+		FAKEFAT32_FILEATTR_DIRECTORY,
+	},
+	{
+		"target", "bin",
+		FAKEFAT32_FILEATTR_ARCHIVE,
+		512,
+		{
+			ReadTargetArea0,
+			ReadTargetArea0_isready,
+			WriteTargetArea0,
+			WriteTargetArea0_isready
+		},
+	},
+	{
+		NULL,
+	}
+};
+#endif
 static struct fakefat32_file_t root_dir[] =
 {
 	{
@@ -136,6 +171,20 @@ static struct fakefat32_file_t root_dir[] =
 			ChangeScriptsAreaSize
 		},
 	},
+#if TARGET_SLOT_NUMBER >= 1
+	{
+		"slot0", NULL,
+		FAKEFAT32_FILEATTR_DIRECTORY,
+		0,
+		{
+			fakefat32_dir_read,
+			NULL,
+			fakefat32_dir_write,
+			NULL
+		},
+		target_slot0_dir
+	},
+#endif
 #endif
 	{
 		"readme", "txt",
@@ -200,7 +249,7 @@ static vsf_err_t WriteProgramArea(struct fakefat32_file_t* file, uint32_t addr,
 	interfaces->flash.unlock(0);
 	interfaces->flash.getcapacity(0, &pagesize, &pagenum);
 #if EVSPROG_EN
-	pagenum = (TARGET_CFG_ADDR - 0x08000000) / pagesize;
+	pagenum = (EVSPROG_TARGET_CFG_ADDR - 0x08000000) / pagesize;
 #endif
 	if (addr > (pagenum - 1) * pagesize)
 	{
@@ -268,7 +317,7 @@ static vsf_err_t ReadProgramArea(struct fakefat32_file_t* file, uint32_t addr,
 	
 	interfaces->flash.getcapacity(0, &pagesize, &pagenum);
 #if EVSPROG_EN
-	pagenum = (TARGET_CFG_ADDR - 0x08000000) / pagesize;
+	pagenum = (EVSPROG_TARGET_CFG_ADDR - 0x08000000) / pagesize;
 #endif
 	if (addr > (pagenum - 1) * pagesize)
 	{
@@ -289,7 +338,7 @@ static vsf_err_t ReadProgramArea_isready(struct fakefat32_file_t* file,
 	
 	interfaces->flash.getcapacity(0, &pagesize, &pagenum);
 #if EVSPROG_EN
-	pagenum = (TARGET_CFG_ADDR - 0x08000000) / pagesize;
+	pagenum = (EVSPROG_TARGET_CFG_ADDR - 0x08000000) / pagesize;
 #endif
 	if (addr > (pagenum - 1) * pagesize)
 	{
@@ -390,7 +439,7 @@ static vsf_err_t WriteConfigArea(struct fakefat32_file_t*file, uint32_t addr,
 	
 	interfaces->flash.unlock(0);
 	interfaces->flash.getcapacity(0, &pagesize, NULL);
-	pagenum = (EVSPROG_SCRIPT_ADDR - TARGET_CFG_ADDR) / pagesize;
+	pagenum = (EVSPROG_SCRIPT_ADDR - EVSPROG_TARGET_CFG_ADDR) / pagesize;
 	if (addr > (pagenum - 1) * pagesize)
 	{
 		// location not valid, ignore
@@ -399,13 +448,13 @@ static vsf_err_t WriteConfigArea(struct fakefat32_file_t*file, uint32_t addr,
 	
 	if (!(addr % pagesize))
 	{
-		interfaces->flash.erasepage(0, addr + TARGET_CFG_ADDR - 0x08000000);
+		interfaces->flash.erasepage(0, addr + EVSPROG_TARGET_CFG_ADDR - 0x08000000);
 		flash_io_fsm = FLASH_IO_ERASE;
 	}
 	else
 	{
-		interfaces->flash.write(0, addr + TARGET_CFG_ADDR - 0x08000000, buff,
-								page_size);
+		interfaces->flash.write(0, addr + EVSPROG_TARGET_CFG_ADDR - 0x08000000,
+								buff, page_size);
 		flash_io_fsm = FLASH_IO_WRITE;
 	}
 	return VSFERR_NONE;
@@ -419,20 +468,20 @@ static vsf_err_t WriteConfigArea_isready(struct fakefat32_file_t*file,
 	{
 	case FLASH_IO_ERASE:
 		ret = interfaces->flash.erasepage_isready(0,
-										addr + TARGET_CFG_ADDR - 0x08000000);
+								addr + EVSPROG_TARGET_CFG_ADDR - 0x08000000);
 		if (ret)
 		{
 			return ret;
 		}
 		else
 		{
-			interfaces->flash.write(0, addr + TARGET_CFG_ADDR - 0x08000000,
+			interfaces->flash.write(0, addr + EVSPROG_TARGET_CFG_ADDR - 0x08000000,
 									buff, page_size);
 			flash_io_fsm = FLASH_IO_WRITE;
 		}
 	case FLASH_IO_WRITE:
 		ret = interfaces->flash.write_isready(0,
-						addr + TARGET_CFG_ADDR - 0x08000000, buff, page_size);
+				addr + EVSPROG_TARGET_CFG_ADDR - 0x08000000, buff, page_size);
 		if (ret)
 		{
 			return ret;
@@ -452,14 +501,14 @@ static vsf_err_t ReadConfigArea(struct fakefat32_file_t*file, uint32_t addr,
 	uint32_t pagesize, pagenum;
 	
 	interfaces->flash.getcapacity(0, &pagesize, NULL);
-	pagenum = (EVSPROG_SCRIPT_ADDR - TARGET_CFG_ADDR) / pagesize;
+	pagenum = (EVSPROG_SCRIPT_ADDR - EVSPROG_TARGET_CFG_ADDR) / pagesize;
 	if (addr > (pagenum - 1) * pagesize)
 	{
 		// location not valid, ignore
 		return VSFERR_NONE;
 	}
-	return interfaces->flash.read(0, addr + TARGET_CFG_ADDR - 0x08000000, buff,
-									page_size);
+	return interfaces->flash.read(0, addr + EVSPROG_TARGET_CFG_ADDR - 0x08000000,
+									buff, page_size);
 }
 static vsf_err_t ReadConfigArea_isready(struct fakefat32_file_t*file,
 							uint32_t addr, uint8_t *buff, uint32_t page_size)
@@ -467,14 +516,14 @@ static vsf_err_t ReadConfigArea_isready(struct fakefat32_file_t*file,
 	uint32_t pagesize, pagenum;
 	
 	interfaces->flash.getcapacity(0, &pagesize, NULL);
-	pagenum = (EVSPROG_SCRIPT_ADDR - TARGET_CFG_ADDR) / pagesize;
+	pagenum = (EVSPROG_SCRIPT_ADDR - EVSPROG_TARGET_CFG_ADDR) / pagesize;
 	if (addr > (pagenum - 1) * pagesize)
 	{
 		// location not valid, ignore
 		return VSFERR_NONE;
 	}
 	return interfaces->flash.read_isready(0,
-						addr + TARGET_CFG_ADDR - 0x08000000, buff, page_size);
+				addr + EVSPROG_TARGET_CFG_ADDR - 0x08000000, buff, page_size);
 }
 static vsf_err_t WriteScriptsArea(struct fakefat32_file_t*file, uint32_t addr,
 							uint8_t *buff, uint32_t page_size)
@@ -581,6 +630,103 @@ static vsf_err_t ChangeScriptsAreaSize(struct fakefat32_file_t *file,
 	}
 	app_cfg.scripts_size = size;
 	return WriteAppCfg(&app_cfg);
+}
+
+static vsf_err_t WriteTargetArea0(struct fakefat32_file_t*file, uint32_t addr,
+									uint8_t *buff, uint32_t page_size)
+{
+	uint32_t pagesize, pagenum;
+	
+	interfaces->flash.unlock(0);
+	interfaces->flash.getcapacity(0, &pagesize, NULL);
+	pagenum = EVSPROG_TARGET_SIZE / pagesize;
+	if (addr > (pagenum - 1) * pagesize)
+	{
+		// location not valid, ignore
+		return VSFERR_NONE;
+	}
+	
+	if (!(addr % pagesize))
+	{
+		interfaces->flash.erasepage(0, addr + EVSPROG_TARGET_ADDR - 0x08000000);
+		flash_io_fsm = FLASH_IO_ERASE;
+	}
+	else
+	{
+		interfaces->flash.write(0, addr + EVSPROG_TARGET_ADDR - 0x08000000,
+								buff, page_size);
+		flash_io_fsm = FLASH_IO_WRITE;
+	}
+	return VSFERR_NONE;
+}
+static vsf_err_t WriteTargetArea0_isready(struct fakefat32_file_t*file,
+							uint32_t addr, uint8_t *buff, uint32_t page_size)
+{
+	vsf_err_t ret;
+	
+	switch (flash_io_fsm)
+	{
+	case FLASH_IO_ERASE:
+		// seems BUG of stm32 XL, a dedicated delay is a MUST when erasing
+		// pages in the 2nd bank
+		interfaces->delay.delayms(50);
+		ret = interfaces->flash.erasepage_isready(0,
+								addr + EVSPROG_TARGET_ADDR - 0x08000000);
+		if (ret)
+		{
+			return ret;
+		}
+		else
+		{
+			interfaces->flash.write(0, addr + EVSPROG_TARGET_ADDR - 0x08000000,
+									buff, page_size);
+			flash_io_fsm = FLASH_IO_WRITE;
+		}
+	case FLASH_IO_WRITE:
+		ret = interfaces->flash.write_isready(0,
+				addr + EVSPROG_TARGET_ADDR - 0x08000000, buff, page_size);
+		if (ret)
+		{
+			return ret;
+		}
+		else
+		{
+			interfaces->flash.lock(0);
+			flash_io_fsm = FLASH_IO_IDLE;
+		}
+	default:
+		return VSFERR_NONE;
+	}
+}
+static vsf_err_t ReadTargetArea0(struct fakefat32_file_t*file, uint32_t addr,
+							uint8_t *buff, uint32_t page_size)
+{
+	uint32_t pagesize, pagenum;
+	
+	interfaces->flash.getcapacity(0, &pagesize, NULL);
+	pagenum = EVSPROG_TARGET_SIZE / pagesize;
+	if (addr > (pagenum - 1) * pagesize)
+	{
+		// location not valid, ignore
+		return VSFERR_NONE;
+	}
+	return interfaces->flash.read(0, addr + EVSPROG_TARGET_ADDR - 0x08000000,
+									buff, page_size);
+}
+static vsf_err_t ReadTargetArea0_isready(struct fakefat32_file_t*file,
+							uint32_t addr, uint8_t *buff, uint32_t page_size)
+{
+	uint32_t pagesize, pagenum;
+	
+	interfaces->flash.getcapacity(0, &pagesize, NULL);
+	pagenum = EVSPROG_TARGET_SIZE / pagesize;
+	if (addr > (pagenum - 1) * pagesize)
+	{
+		// location not valid, ignore
+		return VSFERR_NONE;
+	}
+	return interfaces->flash.read_isready(0,
+				addr + EVSPROG_TARGET_ADDR - 0x08000000, buff, page_size);
 }
 #endif
 
@@ -805,9 +951,12 @@ int main(void)
 		app_cfg.scripts_size = 0;
 		WriteAppCfg(&app_cfg);
 	}
-	root_dir[2].size = TARGET_CFG_ADDR - 0x08000000 - APP_CFG_BOOTSIZE;
-	root_dir[3].size = EVSPROG_SCRIPT_ADDR - TARGET_CFG_ADDR;
+	root_dir[2].size = EVSPROG_TARGET_CFG_ADDR - 0x08000000 - APP_CFG_BOOTSIZE;
+	root_dir[3].size = EVSPROG_SCRIPT_ADDR - EVSPROG_TARGET_CFG_ADDR;
 	root_dir[4].size = app_cfg.scripts_size;
+#if TARGET_SLOT_NUMBER >= 1
+	target_slot0_dir[2].size = EVSPROG_TARGET_SIZE;
+#endif
 #else
 	root_dir[2].size = pagesize * pagenum - APP_CFG_BOOTSIZE;
 #endif
