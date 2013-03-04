@@ -29,11 +29,12 @@
 #define LOG_DEFAULT_LEVEL	INFO_LEVEL
 
 extern int verbosity;
-extern int verbosity_stack[1];
+extern int verbosity_pos;
+extern int verbosity_stack[16];
 
 #define LOG_MUTE()			verbosity = -1
-#define LOG_PUSH()			verbosity_stack[0] = verbosity
-#define LOG_POP()			verbosity = verbosity_stack[0]
+#define LOG_PUSH()			verbosity_stack[verbosity_pos++] = verbosity
+#define LOG_POP()			verbosity = verbosity_stack[--verbosity_pos]
 
 #define _GETTEXT(STR)		STR
 
