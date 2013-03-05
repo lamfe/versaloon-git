@@ -850,6 +850,14 @@ vsf_err_t usb_protocol_init(void)
 	LED_ARRAY_INIT();
 #endif
 	
+	app_interfaces.delay.init();
+#if POWER_SAMPLE_EN
+	core_interfaces.adc.init(TVCC_ADC_PORT);
+	core_interfaces.adc.config(TVCC_ADC_PORT, CORE_APB2_FREQ_HZ / 8, ADC_ALIGNRIGHT);
+	core_interfaces.adc.config_channel(TVCC_ADC_PORT, TVCC_ADC_CHANNEL, 0xFF);
+	core_interfaces.adc.calibrate(TVCC_ADC_PORT, TVCC_ADC_CHANNEL);
+#endif
+	
 	Versaloon_CDCACM_param.stream_tx = &usart_stream_p0.stream_tx;
 	Versaloon_CDCACM_param.stream_rx = &usart_stream_p0.stream_rx;
 	usart_stream_init(&usart_stream_p0);
@@ -875,6 +883,9 @@ vsf_err_t usb_protocol_poll(void)
 	usart_stream_poll(&usart_stream_p0);
 #if SCRIPTS_EN
 	usart_stream_poll(&shell_stream);
+#endif
+#if POWER_OUT_EN
+	app_interfaces.target_voltage.poll(0);
 #endif
 	return vsfusbd_device_poll(&usb_device);
 }

@@ -98,14 +98,6 @@ static vsf_err_t versaloon_usb_init(uint8_t iface, struct vsfusbd_device_t *devi
 	struct vsfusbd_Versaloon_param_t *param = 
 		(struct vsfusbd_Versaloon_param_t *)config->iface[iface].protocol_param;
 	
-	app_interfaces.delay.init();
-#if POWER_SAMPLE_EN
-	core_interfaces.adc.init(TVCC_ADC_PORT);
-	core_interfaces.adc.config(TVCC_ADC_PORT, CORE_APB2_FREQ_HZ / 8, ADC_ALIGNRIGHT);
-	core_interfaces.adc.config_channel(TVCC_ADC_PORT, TVCC_ADC_CHANNEL, 0xFF);
-	core_interfaces.adc.calibrate(TVCC_ADC_PORT, TVCC_ADC_CHANNEL);
-#endif
-	
 #if USB_TO_XXX_EN
 	USB_TO_XXX_Init(asyn_rx_buf + 2048);
 #endif
@@ -166,12 +158,6 @@ static vsf_err_t versaloon_poll(uint8_t iface, struct vsfusbd_device_t *device)
 		}
 		
 		LED_USB_OFF();
-	}
-	else
-	{
-#if POWER_OUT_EN
-			app_interfaces.target_voltage.poll(0);
-#endif
 	}
 	
 	return VSFERR_NONE;
