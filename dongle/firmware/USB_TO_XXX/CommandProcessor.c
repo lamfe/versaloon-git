@@ -49,6 +49,10 @@ static void Versaloon_ProcessCommonCmd(uint8_t *dat, uint16_t len)
 		dat[0] = _HARDWARE_VER;
 		rep_len = 1;
 		break;
+	case VERSALOON_FW_UPDATE:
+		// TODO: Write notifier to bootlaoder and then reset
+		core_interfaces.core.reset();
+		break;
 	}
 }
 
@@ -59,19 +63,29 @@ void ProcessCommand(uint8_t* dat, uint16_t len)
 	// first byte of the USB package is the command byte
 	cmd = dat[0];
 	// check command and call corresponding module
-	if(cmd <= VERSALOON_COMMON_CMD_END)
+	if ((cmd >= VERSALOON_COMMON_CMD_START) &&
+		(cmd <= VERSALOON_COMMON_CMD_END))
 	{
 		// Common Commands
 		Versaloon_ProcessCommonCmd(dat, len);
+		if (rep_len)
+		{
+			rep_len |= VERSALOON_REP_ZLP;
+		}
 	}
 #if USB_TO_XXX_EN
-	else if(cmd <= VERSALOON_USB_TO_XXX_CMD_END)
+	else if ((cmd >= VERSALOON_USB_TO_XXX_CMD_START) &&
+			(cmd <= VERSALOON_USB_TO_XXX_CMD_END))
 	{
 		buffer_reply = dat;
 #if USB_TO_POLL_EN
 		USB_TO_POLL_Index = -1;
 #endif
 		USB_TO_XXX_ProcessCmd(dat, len);
+		if (rep_len)
+		{
+			rep_len |= VERSALOON_REP_ZLP;
+		}
 	}
 #endif		// #if USB_TO_XXX_EN
 }

@@ -59,20 +59,15 @@ static vsf_err_t Versaloon_OUT_hanlder(void *p, uint8_t ep)
 		if(!count_out)
 		{
 			// first package
-			if(buffer_out[0] <= VERSALOON_COMMON_CMD_END)
+			if ((buffer_out[0] >= VERSALOON_COMMON_CMD_START) &&
+				(buffer_out[0] <= VERSALOON_COMMON_CMD_END))
 			{
 				// Common Commands
-				if(buffer_out[0] == VERSALOON_WRITE_OFFLINE_DATA)
-				{
-					cmd_len = buffer_out[1] + ((uint16_t)buffer_out[2] << 8) + 7;
-				}
-				else
-				{
-					cmd_len = pkg_len;
-				}
+				cmd_len = pkg_len;
 			}
 #if USB_TO_XXX_EN
-			else if(buffer_out[0] <= VERSALOON_USB_TO_XXX_CMD_END)
+			else if ((buffer_out[0] >= VERSALOON_USB_TO_XXX_CMD_START) &&
+					(buffer_out[0] <= VERSALOON_USB_TO_XXX_CMD_END))
 			{
 				// USB_TO_XXX Support
 				cmd_len = buffer_out[1] + ((uint16_t)buffer_out[2] << 8);
@@ -148,7 +143,7 @@ static vsf_err_t versaloon_poll(uint8_t iface, struct vsfusbd_device_t *device)
 			
 			buffer->buffer = buffer_out;
 			buffer->size = rep_len & 0xFFFF;
-			transact->pkt.in.zlp = true;
+			transact->pkt.in.zlp = (rep_len & VERSALOON_REP_ZLP) ? true : false;
 			transact->callback.callback = NULL;
 			vsfusbd_ep_send(device, param->ep_in);
 			
