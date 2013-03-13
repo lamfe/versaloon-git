@@ -189,7 +189,7 @@ WRITE_TARGET_HANDLER(stm32f2swj)
 		cmd.ram_addr = 0;
 		cmd.data_type = 0;
 		cmd.data_round = 1;
-		if (adi_memap_write_buf(cmd.ram_addr, buff, 4) ||
+		if (adi_memap_write_buf32(cmd.ram_addr, buff, 4) ||
 			stm32swj_fl_call(&cm_stm32f2->flash_loader, &cmd, &result, true))
 		{
 			err = ERRCODE_FAILURE_OPERATION;
@@ -215,7 +215,7 @@ WRITE_TARGET_HANDLER(stm32f2swj)
 		cmd.ram_addr = cm_stm32f2->page0_addr;
 		cmd.data_type = 4;
 		cmd.data_round = (uint16_t)(cur_size / 4);
-		if (adi_memap_write_buf(cmd.ram_addr, buff, cur_size) ||
+		if (adi_memap_write_buf32(cmd.ram_addr, buff, cur_size) ||
 			stm32swj_fl_call(&cm_stm32f2->flash_loader, &cmd, &result, last))
 		{
 			err = ERRCODE_FAILURE_OPERATION;
@@ -247,7 +247,7 @@ WRITE_TARGET_HANDLER(stm32f2swj)
 			{
 				cmd.ram_addr = cm_stm32f2->page0_addr;
 			}
-			if (adi_memap_write_buf(cmd.ram_addr, buff, cur_size) ||
+			if (adi_memap_write_buf32(cmd.ram_addr, buff, cur_size) ||
 				stm32swj_fl_call(&cm_stm32f2->flash_loader, &cmd, &result, last))
 			{
 				err = ERRCODE_FAILURE_OPERATION;
@@ -318,7 +318,7 @@ READ_TARGET_HANDLER(stm32f2swj)
 			{
 				cur_block_size <<= 2;
 			}
-			if (adi_memap_read_buf(addr, buff, cur_block_size))
+			if (adi_memap_read_buf32(addr, buff, cur_block_size))
 			{
 				LOG_ERROR(ERRMSG_FAILURE_OPERATION_ADDR, "read flash block",
 							addr);

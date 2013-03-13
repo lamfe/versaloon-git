@@ -184,7 +184,7 @@ static vsf_err_t lpc1000swj_iap_init(struct lpc1000_fl_t *fl)
 	}
 	
 	// write iap_code to target SRAM
-	if (adi_memap_write_buf(LPC1000_IAP_BASE, (uint8_t*)iap_code,
+	if (adi_memap_write_buf32(LPC1000_IAP_BASE, (uint8_t*)iap_code,
 											sizeof(iap_code)))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "load iap_code to SRAM");
@@ -192,7 +192,7 @@ static vsf_err_t lpc1000swj_iap_init(struct lpc1000_fl_t *fl)
 	}
 	// verify iap_code
 	memset(verify_buff, 0, sizeof(iap_code));
-	if (adi_memap_read_buf(LPC1000_IAP_BASE, verify_buff,
+	if (adi_memap_read_buf32(LPC1000_IAP_BASE, verify_buff,
 										sizeof(iap_code)))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read flash_loader");
@@ -236,7 +236,7 @@ static vsf_err_t lpc1000swj_iap_run(struct lpc1000_fl_t *fl, uint32_t cmd,
 	buff_tmp[6] = SYS_TO_LE_U32(1);					// sync
 	
 	// write iap command with sync to target SRAM
-	if (adi_memap_write_buf(LPC1000_IAP_COMMAND_ADDR,
+	if (adi_memap_write_buf32(LPC1000_IAP_COMMAND_ADDR,
 										(uint8_t*)buff_tmp, sizeof(buff_tmp)))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "load iap cmd to SRAM");
@@ -256,7 +256,7 @@ static vsf_err_t lpc1000swj_iap_poll_result(struct lpc1000_fl_t *fl,
 	
 	// read result and sync
 	// sync is 4-byte BEFORE result
-	if (adi_memap_read_buf(LPC1000_IAP_SYNC_ADDR, (uint8_t *)result_table, 28))
+	if (adi_memap_read_buf32(LPC1000_IAP_SYNC_ADDR, (uint8_t *)result_table, 28))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read iap sync");
 		return ERRCODE_FAILURE_OPERATION;
@@ -488,14 +488,14 @@ WRITE_TARGET_HANDLER(lpc1000swj)
 			}
 			SET_LE_U32(&vectors[7], 0 - checksum);
 			
-			if (adi_memap_write_buf(buff_addr, (uint8_t *)vectors, 32) ||
-				adi_memap_write_buf(buff_addr + 32, buff + 32, page_size - 32))
+			if (adi_memap_write_buf32(buff_addr, (uint8_t *)vectors, 32) ||
+				adi_memap_write_buf32(buff_addr + 32, buff + 32, page_size - 32))
 			{
 				LOG_ERROR(ERRMSG_FAILURE_OPERATION, "run iap");
 				return ERRCODE_FAILURE_OPERATION;
 			}
 		}
-		else if (adi_memap_write_buf(buff_addr, buff, page_size))
+		else if (adi_memap_write_buf32(buff_addr, buff, page_size))
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "run iap");
 			return ERRCODE_FAILURE_OPERATION;
@@ -562,7 +562,7 @@ READ_TARGET_HANDLER(lpc1000swj)
 			{
 				cur_block_size <<= 2;
 			}
-			if (adi_memap_read_buf(addr, buff, cur_block_size))
+			if (adi_memap_read_buf32(addr, buff, cur_block_size))
 			{
 				LOG_ERROR(ERRMSG_FAILURE_OPERATION_ADDR, "read flash block",
 							addr);

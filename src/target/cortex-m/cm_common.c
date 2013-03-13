@@ -382,7 +382,7 @@ vsf_err_t cm_dump(uint32_t addr, uint32_t size)
 	LOG_INFO(INFOMSG_REG_02X, "control", (reg >> 24) & 0xFF);
 	
 	LOG_INFO("SRAM dump at 0x%08X:", addr);
-	if (adi_memap_read_buf(addr, buffer, size))
+	if (adi_memap_read_buf32(addr, buffer, size))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read sram");
 		err = ERRCODE_FAILURE_OPERATION;

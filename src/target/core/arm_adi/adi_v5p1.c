@@ -89,10 +89,6 @@ vsf_err_t adi_switch(struct adi_info_t *adi_info)
 #define swd_get_last_ack(ack)	adi->prog->swd.get_last_ack(0, ack)
 #define swd_commit()			adi->prog->peripheral_commit()
 
-static vsf_err_t adi_dp_read_reg(uint8_t reg_addr, uint32_t *value,
-								uint8_t check_result);
-static vsf_err_t adi_dp_write_reg(uint8_t reg_addr, uint32_t *value,
-								uint8_t check_result);
 static vsf_err_t adi_dp_transaction_endcheck(void);
 
 static const uint8_t adi_swd_reset_seq[] =
@@ -420,14 +416,14 @@ static vsf_err_t adi_dp_rw(uint8_t instr, uint8_t reg_addr, uint8_t RnW,
 	return VSFERR_NONE;
 }
 
-static vsf_err_t adi_dp_read_reg(uint8_t reg_addr, uint32_t *value,
+vsf_err_t adi_dp_read_reg(uint8_t reg_addr, uint32_t *value,
 								uint8_t check_result)
 {
 	return adi_dp_rw(ADI_DP_IR_DPACC, reg_addr, ADI_DAP_READ,
 					 value, check_result);
 }
 
-static vsf_err_t adi_dp_write_reg(uint8_t reg_addr, uint32_t *value,
+vsf_err_t adi_dp_write_reg(uint8_t reg_addr, uint32_t *value,
 								uint8_t check_result)
 {
 	return adi_dp_rw(ADI_DP_IR_DPACC, reg_addr, ADI_DAP_WRITE,
@@ -470,7 +466,7 @@ static vsf_err_t adi_dp_transaction_endcheck(void)
 	return VSFERR_NONE;
 }
 
-static void adi_ap_select(uint8_t apsel)
+void adi_ap_select(uint8_t apsel)
 {
 	uint32_t select = (apsel << 24) & 0xFF000000;
 	
@@ -497,7 +493,7 @@ static vsf_err_t adi_ap_bankselect(uint8_t ap_reg)
 	return VSFERR_NONE;
 }
 
-static vsf_err_t adi_ap_read_reg(uint8_t reg_addr, uint32_t *value,
+vsf_err_t adi_ap_read_reg(uint8_t reg_addr, uint32_t *value,
 								uint8_t check_result)
 {
 	adi_ap_bankselect(reg_addr);
@@ -505,7 +501,7 @@ static vsf_err_t adi_ap_read_reg(uint8_t reg_addr, uint32_t *value,
 					 check_result);
 }
 
-static vsf_err_t adi_ap_write_reg(uint8_t reg_addr, uint32_t *value,
+vsf_err_t adi_ap_write_reg(uint8_t reg_addr, uint32_t *value,
 								uint8_t check_result)
 {
 	adi_ap_bankselect(reg_addr);
@@ -619,10 +615,10 @@ uint32_t adi_memap_get_max_tar_block_size(uint32_t address)
 			- ((adi->dp_info.tar_autoincr_block - 1) & address)) >> 2;
 }
 
-// only support 32-bit aligned operation
-vsf_err_t adi_memap_write_buf(uint32_t address, uint8_t *buffer, uint32_t len)
+vsf_err_t adi_memap_write_buf8(uint32_t address, uint8_t *buffer, uint32_t len)
 {
-	uint32_t block_dword_size, write_count;
+	uint32_t block_size;
+	uint32_t value;
 	
 	if ((address & 0x03) || (len & 0x03) || (NULL == buffer) || (0 == len))
 	{
@@ -632,16 +628,152 @@ vsf_err_t adi_memap_write_buf(uint32_t address, uint8_t *buffer, uint32_t len)
 	
 	while (len > 0)
 	{
-		block_dword_size = adi_memap_get_max_tar_block_size(address);
-		if (block_dword_size > (len >> 2))
+		block_size = adi_memap_get_max_tar_block_size(address);
+		if (block_size > len)
 		{
-			block_dword_size = len >> 2;
+			block_size = len;
+		}
+		
+		if (block_size > 4)
+		{
+			adi_dp_setup_accessport(
+				ADI_AP_REG_CSW_8BIT | ADI_AP_REG_CSW_ADDRINC_PACKED, address);
+			
+			while (block_size > 4)
+			{
+				value = GET_LE_U32(buffer);
+				adi_ap_write_reg(ADI_AP_REG_DRW, &value, 0);
+				if (adi_dp_transaction_endcheck())
+				{
+					LOG_WARNING("Block write error at 0x%08X, %d dwords", address,
+									block_size);
+					return VSFERR_FAIL;
+				}
+				
+				block_size -= 4;
+				buffer += 4;
+				address += 4;
+			}
+		}
+		if ((block_size > 0) && (block_size < 4))
+		{
+			adi_dp_setup_accessport(
+				ADI_AP_REG_CSW_8BIT | ADI_AP_REG_CSW_ADDRINC_SINGLE, address);
+			
+			while (block_size)
+			{
+				value = (uint32_t)*buffer << (8 * (address & 3));
+				adi_ap_write_reg(ADI_AP_REG_DRW, &value, 0);
+				if (adi_dp_transaction_endcheck())
+				{
+					LOG_WARNING("Block write error at 0x%08X, %d dwords", address,
+									block_size);
+					return VSFERR_FAIL;
+				}
+				
+				block_size -= 1;
+				buffer += 1;
+				address += 1;
+			}
+		}
+		
+		len -= block_size;
+	}
+	
+	return VSFERR_NONE;
+}
+
+vsf_err_t adi_memap_read_buf8(uint32_t address, uint8_t *buffer, uint32_t len)
+{
+	uint32_t block_size;
+	uint32_t value;
+	
+	if ((address & 0x03) || (len & 0x03) || (NULL == buffer) || (0 == len))
+	{
+		LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
+		return VSFERR_INVALID_PARAMETER;
+	}
+	
+	while (len > 0)
+	{
+		block_size = adi_memap_get_max_tar_block_size(address);
+		if (block_size > len)
+		{
+			block_size = len;
+		}
+		
+		if (block_size > 4)
+		{
+			adi_dp_setup_accessport(
+				ADI_AP_REG_CSW_8BIT | ADI_AP_REG_CSW_ADDRINC_PACKED, address);
+			
+			while (block_size > 4)
+			{
+				value = GET_LE_U32(buffer);
+				adi_ap_read_reg(ADI_AP_REG_DRW, &value, 0);
+				if (adi_dp_transaction_endcheck())
+				{
+					LOG_WARNING("Block write error at 0x%08X, %d dwords", address,
+									block_size);
+					return VSFERR_FAIL;
+				}
+				SET_LE_U32(buffer, value);
+				
+				block_size -= 4;
+				buffer += 4;
+				address += 4;
+			}
+		}
+		if ((block_size > 0) && (block_size < 4))
+		{
+			adi_dp_setup_accessport(
+				ADI_AP_REG_CSW_8BIT | ADI_AP_REG_CSW_ADDRINC_SINGLE, address);
+			
+			while (block_size)
+			{
+				adi_ap_read_reg(ADI_AP_REG_DRW, &value, 0);
+				if (adi_dp_transaction_endcheck())
+				{
+					LOG_WARNING("Block write error at 0x%08X, %d dwords", address,
+									block_size);
+					return VSFERR_FAIL;
+				}
+				*buffer = (uint8_t)(value >> (8 * (address & 3)));
+				
+				block_size -= 1;
+				buffer += 1;
+				address += 1;
+			}
+		}
+		
+		len -= block_size;
+	}
+	
+	return VSFERR_NONE;
+}
+
+vsf_err_t adi_memap_write_buf32(uint32_t address, uint8_t *buffer, uint32_t len)
+{
+	uint32_t block_size, write_count;
+	
+	if ((address & 0x03) || (len & 0x03) || (NULL == buffer) || (0 == len))
+	{
+		LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
+		return VSFERR_INVALID_PARAMETER;
+	}
+	
+	while (len > 0)
+	{
+		block_size = adi_memap_get_max_tar_block_size(address);
+		if (block_size > (len >> 2))
+		{
+			block_size = len >> 2;
 		}
 		
 		adi_dp_setup_accessport(
 			ADI_AP_REG_CSW_32BIT | ADI_AP_REG_CSW_ADDRINC_SINGLE, address);
 		
-		for (write_count = 0; write_count < block_dword_size; write_count++)
+		for (write_count = 0; write_count < block_size; write_count++)
 		{
 			adi_ap_write_reg(ADI_AP_REG_DRW,
 							 (uint32_t*)(buffer + 4 * write_count), 0);
@@ -650,21 +782,21 @@ vsf_err_t adi_memap_write_buf(uint32_t address, uint8_t *buffer, uint32_t len)
 		if (adi_dp_transaction_endcheck())
 		{
 			LOG_WARNING("Block write error at 0x%08X, %d dwords", address,
-							block_dword_size);
+							block_size);
 			return VSFERR_FAIL;
 		}
 		
-		len -= (block_dword_size << 2);
-		address += (block_dword_size << 2);
-		buffer += (block_dword_size << 2);
+		len -= (block_size << 2);
+		address += (block_size << 2);
+		buffer += (block_size << 2);
 	}
 	
 	return VSFERR_NONE;
 }
 
-vsf_err_t adi_memap_read_buf(uint32_t address, uint8_t *buffer, uint32_t len)
+vsf_err_t adi_memap_read_buf32(uint32_t address, uint8_t *buffer, uint32_t len)
 {
-	uint32_t block_dword_size, read_count, dummy;
+	uint32_t block_size, read_count, dummy;
 	
 	if ((address & 0x03) || (len & 0x03) || (NULL == buffer) || (0 == len))
 	{
@@ -674,10 +806,10 @@ vsf_err_t adi_memap_read_buf(uint32_t address, uint8_t *buffer, uint32_t len)
 	
 	while (len > 0)
 	{
-		block_dword_size = adi_memap_get_max_tar_block_size(address);
-		if (block_dword_size > (len >> 2))
+		block_size = adi_memap_get_max_tar_block_size(address);
+		if (block_size > (len >> 2))
 		{
-			block_dword_size = len >> 2;
+			block_size = len >> 2;
 		}
 		
 		adi_dp_setup_accessport(
@@ -685,7 +817,7 @@ vsf_err_t adi_memap_read_buf(uint32_t address, uint8_t *buffer, uint32_t len)
 		
 		// first read
 		adi_dp_scan(ADI_DP_IR_APACC, ADI_AP_REG_DRW, ADI_DAP_READ, &dummy);
-		for (read_count = 0; read_count < block_dword_size - 1; read_count++)
+		for (read_count = 0; read_count < block_size - 1; read_count++)
 		{
 			adi_dp_scan(ADI_DP_IR_APACC, ADI_AP_REG_DRW, ADI_DAP_READ,
 							(uint32_t*)(buffer + 4 * read_count));
@@ -697,13 +829,13 @@ vsf_err_t adi_memap_read_buf(uint32_t address, uint8_t *buffer, uint32_t len)
 		if (adi_dp_transaction_endcheck())
 		{
 			LOG_WARNING("Block read error at 0x%08X, %d dwords", address,
-							block_dword_size);
+							block_size);
 			return VSFERR_FAIL;
 		}
 		
-		len -= (block_dword_size << 2);
-		address += (block_dword_size << 2);
-		buffer += (block_dword_size << 2);
+		len -= (block_size << 2);
+		address += (block_size << 2);
+		buffer += (block_size << 2);
 	}
 	
 	return VSFERR_NONE;

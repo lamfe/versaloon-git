@@ -247,7 +247,7 @@ WRITE_TARGET_HANDLER(stm32f1swj)
 		cmd.ram_addr = cm_stm32f1->page0_addr;
 		cmd.data_type = 2;
 		cmd.data_round = STM32F1_OB_SIZE / 2;
-		if (adi_memap_write_buf(cmd.ram_addr, fuse_buff, STM32F1_OB_SIZE) ||
+		if (adi_memap_write_buf32(cmd.ram_addr, fuse_buff, STM32F1_OB_SIZE) ||
 			stm32swj_fl_call(&cm_stm32f1->flash_loader, &cmd, &result, true))
 		{
 			err = ERRCODE_FAILURE_OPERATION;
@@ -284,7 +284,7 @@ WRITE_TARGET_HANDLER(stm32f1swj)
 		}
 		cmd.data_type = 2;
 		cmd.data_round = (uint16_t)(size / 2);
-		if (adi_memap_write_buf(cmd.ram_addr, buff, size) ||
+		if (adi_memap_write_buf32(cmd.ram_addr, buff, size) ||
 			stm32swj_fl_call(&cm_stm32f1->flash_loader, &cmd, &result, false))
 		{
 			err = ERRCODE_FAILURE_OPERATION;
@@ -355,7 +355,7 @@ READ_TARGET_HANDLER(stm32f1swj)
 		}
 		break;
 	case FUSE_CHAR:
-		if (adi_memap_read_buf(STM32F1_OB_ADDR, option_bytes, STM32F1_OB_SIZE))
+		if (adi_memap_read_buf32(STM32F1_OB_ADDR, option_bytes, STM32F1_OB_SIZE))
 		{
 			return VSFERR_FAIL;
 		}
@@ -377,7 +377,7 @@ READ_TARGET_HANDLER(stm32f1swj)
 			{
 				cur_block_size <<= 2;
 			}
-			if (adi_memap_read_buf(addr, buff, cur_block_size))
+			if (adi_memap_read_buf32(addr, buff, cur_block_size))
 			{
 				LOG_ERROR(ERRMSG_FAILURE_OPERATION_ADDR, "read flash block",
 							addr);

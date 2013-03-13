@@ -326,7 +326,7 @@ WRITE_TARGET_HANDLER(stm32l1swj)
 		reg = STM32L1_FLASH_PECR_FPRG | STM32L1_FLASH_PECR_PROG;
 		adi_memap_write_reg32(STM32L1_FLASH_PECR, &reg, 0);
 		reg = 0;
-		if (adi_memap_write_buf(addr, buff, size / 2))
+		if (adi_memap_write_buf32(addr, buff, size / 2))
 		{
 			return VSFERR_FAIL;
 		}
@@ -342,7 +342,7 @@ WRITE_TARGET_HANDLER(stm32l1swj)
 		reg = STM32L1_FLASH_PECR_FPRG | STM32L1_FLASH_PECR_PROG;
 		adi_memap_write_reg32(STM32L1_FLASH_PECR, &reg, 0);
 		reg = 0;
-		if (adi_memap_write_buf(addr, buff, size / 2))
+		if (adi_memap_write_buf32(addr, buff, size / 2))
 		{
 			return VSFERR_FAIL;
 		}
@@ -427,7 +427,7 @@ READ_TARGET_HANDLER(stm32l1swj)
 			{
 				cur_block_size <<= 2;
 			}
-			if (adi_memap_read_buf(addr, buff, cur_block_size))
+			if (adi_memap_read_buf32(addr, buff, cur_block_size))
 			{
 				LOG_ERROR(ERRMSG_FAILURE_OPERATION_ADDR, "read flash block",
 							addr);
