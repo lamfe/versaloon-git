@@ -143,6 +143,45 @@ vsf_err_t cm_read_core_register(uint8_t reg_idx, uint32_t *value)
 	return adi_memap_write_reg32(CM_DCB_DCRDR, &dcrdr, 1);
 }
 
+vsf_err_t cm_set_breakpoint(uint8_t bp_idx, uint32_t bp_addr)
+{
+	uint32_t fp_ctrl, fp_ctrl_enable = 3, compare;
+	
+	if (adi_memap_read_reg32(CM_FPB_CTRL, &fp_ctrl, 1) ||
+		((((fp_ctrl >> 8) & 0x70) | ((fp_ctrl >> 4) & 0x0F)) <= bp_idx))
+	{
+		return VSFERR_FAIL;
+	}
+	
+	compare = (bp_addr & 0x1FFFFFFC) | ((bp_addr & 2) ? (2 << 30) : (1 << 30)) | 1;
+	if (adi_memap_write_reg32(CM_FPB_COMP0 + 4 * bp_idx, &compare, 1))
+	{
+		return VSFERR_FAIL;
+	}
+	
+	// enable fpb if not enabled
+	if (!(fp_ctrl & 1) &&
+		adi_memap_write_reg32(CM_FPB_CTRL, &fp_ctrl_enable, 1))
+	{
+		return VSFERR_FAIL;
+	}
+	
+	return VSFERR_NONE;
+}
+
+vsf_err_t cm_clear_breakpoint(uint8_t bp_idx)
+{
+	uint32_t fp_ctrl, compare = 0;
+	
+	if (adi_memap_read_reg32(CM_FPB_CTRL, &fp_ctrl, 1) ||
+		((((fp_ctrl >> 8) & 0x70) | ((fp_ctrl >> 4) & 0x0F)) <= bp_idx))
+	{
+		return VSFERR_FAIL;
+	}
+	
+	return adi_memap_write_reg32(CM_FPB_COMP0 + 4 * bp_idx, &compare, 1);
+}
+
 uint32_t cm_get_max_block_size(uint32_t address)
 {
 	return adi_memap_get_max_tar_block_size(address);

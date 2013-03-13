@@ -60,6 +60,18 @@
 #define CM_DCB_DHCSR_S_RETIRE_ST			(1 << 24)
 #define CM_DCB_DHCSR_S_RESET_ST				(1 << 25)
 
+// FPB
+#define CM_FPB_CTRL							0xE0002000
+#define CM_FPB_REMAP						0xE0002004
+#define CM_FPB_COMP0						0xE0002008
+#define CM_FPB_COMP1						0xE000200C
+#define CM_FPB_COMP2						0xE0002010
+#define CM_FPB_COMP3						0xE0002014
+#define CM_FPB_COMP4						0xE0002018
+#define CM_FPB_COMP5						0xE000201C
+#define CM_FPB_COMP6						0xE0002020
+#define CM_FPB_COMP7						0xE0002024
+
 #define CM_REG_NVIC_ICTR					0xE000E004
 #define CM_REG_NVIC_ISE0					0xE000E100
 #define CM_REG_NVIC_ICSR					0xE000ED04
@@ -100,6 +112,9 @@ vsf_err_t cm_reset(void);
 
 vsf_err_t cm_read_core_register(uint8_t reg_idx, uint32_t *value);
 vsf_err_t cm_write_core_register(uint8_t reg_idx, uint32_t *value);
+
+vsf_err_t cm_set_breakpoint(uint8_t bp_idx, uint32_t bp_addr);
+vsf_err_t cm_clear_breakpoint(uint8_t bp_idx);
 
 uint32_t cm_get_max_block_size(uint32_t address);
 vsf_err_t cm_dump(uint32_t addr, uint32_t size);
