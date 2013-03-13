@@ -75,7 +75,11 @@
 #define VSS_CFG_MAX_LINE_LENGTH			128
 #define INTERFACES_INFO_T				app_interfaces_info_t
 #define APPIO_BUFFER_SIZE				256
-#define APPIO_DUMMY						0
+#if SCRIPTS_EN
+#	define APPIO_DUMMY					0
+#else
+#	define APPIO_DUMMY					1
+#endif
 #define EVSPROG_SCRIPT_FILE				"evsprog.vts"
 
 #define TARGET_CFG_ADDR					0x08040000
