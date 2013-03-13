@@ -168,7 +168,7 @@ static vsf_err_t kinetisswj_iap_init(struct kinetis_fl_t *fl)
 	}
 	
 	// write iap_code to target SRAM
-	if (adi_memap_write_buf(KINETIS_IAP_BASE, (uint8_t*)iap_code,
+	if (adi_memap_write_buf32(KINETIS_IAP_BASE, (uint8_t*)iap_code,
 											sizeof(iap_code)))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "load iap_code to SRAM");
@@ -176,7 +176,7 @@ static vsf_err_t kinetisswj_iap_init(struct kinetis_fl_t *fl)
 	}
 	// verify iap_code
 	memset(verify_buff, 0, sizeof(iap_code));
-	if (adi_memap_read_buf(KINETIS_IAP_BASE, verify_buff,
+	if (adi_memap_read_buf32(KINETIS_IAP_BASE, verify_buff,
 										sizeof(iap_code)))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read flash_loader");
@@ -218,7 +218,7 @@ static vsf_err_t kinetisswj_iap_run(struct kinetis_fl_t *fl,
 	buff_tmp[4] = SYS_TO_LE_U32(1);					// sync
 	
 	// write iap command with sync to target SRAM
-	if (adi_memap_write_buf(KINETIS_IAP_COMMAND_ADDR,
+	if (adi_memap_write_buf32(KINETIS_IAP_COMMAND_ADDR,
 										(uint8_t*)buff_tmp, sizeof(buff_tmp)))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "load iap cmd to SRAM");
@@ -236,7 +236,7 @@ static vsf_err_t kinetisswj_iap_poll_result(struct kinetis_fl_t *fl,
 	
 	REFERENCE_PARAMETER(fl);
 	
-	if (adi_memap_read_buf(KINETIS_IAP_SYNC_ADDR, (uint8_t *)result_buff,
+	if (adi_memap_read_buf32(KINETIS_IAP_SYNC_ADDR, (uint8_t *)result_buff,
 										sizeof(result_buff)))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read iap sync");
@@ -440,7 +440,7 @@ READ_TARGET_HANDLER(kinetisswj)
 			{
 				cur_block_size <<= 2;
 			}
-			if (adi_memap_read_buf(addr, buff, cur_block_size))
+			if (adi_memap_read_buf32(addr, buff, cur_block_size))
 			{
 				LOG_ERROR(ERRMSG_FAILURE_OPERATION_ADDR, "read flash block",
 							addr);
@@ -454,7 +454,7 @@ READ_TARGET_HANDLER(kinetisswj)
 		}
 		break;
 	case UNIQUEID_CHAR:
-		if (adi_memap_read_buf(KINETIS_SIM_UID, buff, 12))
+		if (adi_memap_read_buf32(KINETIS_SIM_UID, buff, 12))
 		{
 			err = ERRCODE_FAILURE_OPERATION;
 			break;

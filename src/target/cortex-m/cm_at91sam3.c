@@ -373,7 +373,7 @@ ENTER_PROGRAM_MODE_HANDLER(at91sam3swj)
 	}
 	
 	// write iap_code to target SRAM
-	if (adi_memap_write_buf(AT91SAM3_IAP_BASE, (uint8_t*)iap_code,
+	if (adi_memap_write_buf32(AT91SAM3_IAP_BASE, (uint8_t*)iap_code,
 							sizeof(iap_code)))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "load iap_code to SRAM");
@@ -381,7 +381,7 @@ ENTER_PROGRAM_MODE_HANDLER(at91sam3swj)
 	}
 	// verify iap_code
 	memset(verify_buff, 0, sizeof(iap_code));
-	if (adi_memap_read_buf(AT91SAM3_IAP_BASE, verify_buff,
+	if (adi_memap_read_buf32(AT91SAM3_IAP_BASE, verify_buff,
 							sizeof(iap_code)))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read flash_loader");
@@ -575,7 +575,7 @@ do_write:
 			return VSFERR_FAIL;
 		}
 		
-		if (adi_memap_write_buf(addr, buff, size))
+		if (adi_memap_write_buf32(addr, buff, size))
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION, "write flash buffer");
 			return ERRCODE_FAILURE_OPERATION;
@@ -729,7 +729,7 @@ READ_TARGET_HANDLER(at91sam3swj)
 			{
 				cur_block_size <<= 2;
 			}
-			if (adi_memap_read_buf(addr, buff, cur_block_size))
+			if (adi_memap_read_buf32(addr, buff, cur_block_size))
 			{
 				LOG_ERROR(ERRMSG_FAILURE_OPERATION_ADDR, "read flash block",
 							addr);

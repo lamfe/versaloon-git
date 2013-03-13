@@ -159,14 +159,14 @@ vsf_err_t stm32swj_fl_init(struct stm32_fl_t *fl)
 	}
 	
 	// write code to target SRAM
-	if (adi_memap_write_buf(fl->base, fl_code, sizeof(fl_code)))
+	if (adi_memap_write_buf32(fl->base, fl_code, sizeof(fl_code)))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "load flash_loader to SRAM");
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	// verify fl_code
 	memset(verify_buff, 0, sizeof(fl_code));
-	if (adi_memap_read_buf(fl->base, verify_buff, sizeof(fl_code)))
+	if (adi_memap_read_buf32(fl->base, verify_buff, sizeof(fl_code)))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read flash_loader");
 		return ERRCODE_FAILURE_OPERATION;
@@ -229,7 +229,7 @@ vsf_err_t stm32swj_fl_run(struct stm32_fl_t *fl, struct stm32_fl_cmd_t *cmd)
 	
 	// write fl command with sync to target SRAM
 	// sync is 4-byte AFTER command in sram
-	if (adi_memap_write_buf(fl->base + STM32_FL_COMMAND_OFFSET,
+	if (adi_memap_write_buf32(fl->base + STM32_FL_COMMAND_OFFSET,
 							(uint8_t*)buff_tmp, sizeof(buff_tmp)))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "load flashloader cmd to SRAM");
@@ -248,7 +248,7 @@ vsf_err_t stm32swj_fl_poll_result(struct stm32_fl_t *fl,
 	
 	// read result and sync
 	// sync is 4-byte BEFORE result
-	if (adi_memap_read_buf(fl->base + STM32_FL_SYNC_OFFSET,
+	if (adi_memap_read_buf32(fl->base + STM32_FL_SYNC_OFFSET,
 							(uint8_t *)buff_tmp, sizeof(buff_tmp)))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read flashloader sync");

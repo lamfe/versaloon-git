@@ -293,7 +293,7 @@ static vsf_err_t nuc100swj_iap_run(struct nuc100_fl_t *fl,
 	
 	// write iap command with sync to target SRAM
 	// sync is 4-byte AFTER command in sram
-	if (adi_memap_write_buf(NUC100_IAP_COMMAND_ADDR,
+	if (adi_memap_write_buf32(NUC100_IAP_COMMAND_ADDR,
 										(uint8_t*)buff_tmp, sizeof(buff_tmp)))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "load iap cmd to SRAM");
@@ -375,7 +375,7 @@ static vsf_err_t nuc100swj_init_iap(void)
 	}
 	
 	// write iap_code
-	if (adi_memap_write_buf(NUC100_IAP_BASE, (uint8_t*)iap_code,
+	if (adi_memap_write_buf32(NUC100_IAP_BASE, (uint8_t*)iap_code,
 											sizeof(iap_code)))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "load iap_code to SRAM");
@@ -383,7 +383,7 @@ static vsf_err_t nuc100swj_init_iap(void)
 	}
 	// verify iap_code
 	memset(verify_buff, 0, sizeof(iap_code));
-	if (adi_memap_read_buf(NUC100_IAP_BASE, verify_buff,
+	if (adi_memap_read_buf32(NUC100_IAP_BASE, verify_buff,
 										sizeof(iap_code)))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "read flash_loader");
@@ -546,7 +546,7 @@ WRITE_TARGET_HANDLER(nuc100swj)
 			}
 			cmd.tgt_addr = addr;
 			cmd.src_addr = ram_addr;
-			if (adi_memap_write_buf(ram_addr, buff, page_size) ||
+			if (adi_memap_write_buf32(ram_addr, buff, page_size) ||
 				nuc100swj_iap_run(fl, &cmd))
 			{
 				err = VSFERR_FAIL;
@@ -597,7 +597,7 @@ READ_TARGET_HANDLER(nuc100swj)
 			{
 				cur_block_size <<= 2;
 			}
-			if (adi_memap_read_buf(addr, buff, cur_block_size))
+			if (adi_memap_read_buf32(addr, buff, cur_block_size))
 			{
 				LOG_ERROR(ERRMSG_FAILURE_OPERATION_ADDR, "read flash block",
 							addr);

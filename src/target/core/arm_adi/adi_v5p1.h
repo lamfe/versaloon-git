@@ -100,6 +100,17 @@ vsf_err_t adi_init(struct INTERFACES_INFO_T *ifs, struct adi_dpif_t *interf,
 vsf_err_t adi_fini(void);
 vsf_err_t adi_dp_commit(void);
 
+void adi_ap_select(uint8_t apsel);
+
+vsf_err_t adi_dp_read_reg(uint8_t reg_addr, uint32_t *value,
+								uint8_t check_result);
+vsf_err_t adi_dp_write_reg(uint8_t reg_addr, uint32_t *value,
+								uint8_t check_result);
+vsf_err_t adi_ap_read_reg(uint8_t reg_addr, uint32_t *value,
+								uint8_t check_result);
+vsf_err_t adi_ap_write_reg(uint8_t reg_addr, uint32_t *value,
+								uint8_t check_result);
+
 uint32_t adi_memap_get_max_tar_block_size(uint32_t address);
 
 vsf_err_t adi_memap_read_reg8(uint32_t address, uint8_t *reg,
@@ -114,8 +125,10 @@ vsf_err_t adi_memap_read_reg32(uint32_t address, uint32_t *reg,
 								uint8_t check_result);
 vsf_err_t adi_memap_write_reg32(uint32_t address, uint32_t *reg,
 								uint8_t check_result);
-vsf_err_t adi_memap_read_buf(uint32_t address, uint8_t *buffer, uint32_t len);
-vsf_err_t adi_memap_write_buf(uint32_t address, uint8_t *buffer, uint32_t len);
+vsf_err_t adi_memap_read_buf8(uint32_t address, uint8_t *buffer, uint32_t len);
+vsf_err_t adi_memap_write_buf8(uint32_t address, uint8_t *buffer, uint32_t len);
+vsf_err_t adi_memap_read_buf32(uint32_t address, uint8_t *buffer, uint32_t len);
+vsf_err_t adi_memap_write_buf32(uint32_t address, uint8_t *buffer, uint32_t len);
 
 #endif		// __ADI_V5P1_H_INCLUDED__
 
