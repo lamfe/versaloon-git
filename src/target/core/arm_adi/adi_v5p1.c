@@ -617,10 +617,10 @@ uint32_t adi_memap_get_max_tar_block_size(uint32_t address)
 
 vsf_err_t adi_memap_write_buf8(uint32_t address, uint8_t *buffer, uint32_t len)
 {
-	uint32_t block_size;
+	uint32_t block_size, remain_size;
 	uint32_t value;
 	
-	if ((address & 0x03) || (len & 0x03) || (NULL == buffer) || (0 == len))
+	if ((address & 0x03) || (NULL == buffer) || (0 == len))
 	{
 		LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
 		return VSFERR_INVALID_PARAMETER;
@@ -633,45 +633,46 @@ vsf_err_t adi_memap_write_buf8(uint32_t address, uint8_t *buffer, uint32_t len)
 		{
 			block_size = len;
 		}
+		remain_size = block_size;
 		
-		if (block_size > 4)
+		if (remain_size > 4)
 		{
 			adi_dp_setup_accessport(
 				ADI_AP_REG_CSW_8BIT | ADI_AP_REG_CSW_ADDRINC_PACKED, address);
 			
-			while (block_size > 4)
+			while (remain_size > 4)
 			{
 				value = GET_LE_U32(buffer);
 				adi_ap_write_reg(ADI_AP_REG_DRW, &value, 0);
 				if (adi_dp_transaction_endcheck())
 				{
 					LOG_WARNING("Block write error at 0x%08X, %d dwords", address,
-									block_size);
+									remain_size);
 					return VSFERR_FAIL;
 				}
 				
-				block_size -= 4;
+				remain_size -= 4;
 				buffer += 4;
 				address += 4;
 			}
 		}
-		if ((block_size > 0) && (block_size < 4))
+		if ((remain_size > 0) && (remain_size < 4))
 		{
 			adi_dp_setup_accessport(
 				ADI_AP_REG_CSW_8BIT | ADI_AP_REG_CSW_ADDRINC_SINGLE, address);
 			
-			while (block_size)
+			while (remain_size)
 			{
 				value = (uint32_t)*buffer << (8 * (address & 3));
 				adi_ap_write_reg(ADI_AP_REG_DRW, &value, 0);
 				if (adi_dp_transaction_endcheck())
 				{
 					LOG_WARNING("Block write error at 0x%08X, %d dwords", address,
-									block_size);
+									remain_size);
 					return VSFERR_FAIL;
 				}
 				
-				block_size -= 1;
+				remain_size -= 1;
 				buffer += 1;
 				address += 1;
 			}
@@ -685,10 +686,10 @@ vsf_err_t adi_memap_write_buf8(uint32_t address, uint8_t *buffer, uint32_t len)
 
 vsf_err_t adi_memap_read_buf8(uint32_t address, uint8_t *buffer, uint32_t len)
 {
-	uint32_t block_size;
+	uint32_t block_size, remain_size;
 	uint32_t value;
 	
-	if ((address & 0x03) || (len & 0x03) || (NULL == buffer) || (0 == len))
+	if ((address & 0x03) || (NULL == buffer) || (0 == len))
 	{
 		LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
 		return VSFERR_INVALID_PARAMETER;
@@ -701,46 +702,47 @@ vsf_err_t adi_memap_read_buf8(uint32_t address, uint8_t *buffer, uint32_t len)
 		{
 			block_size = len;
 		}
+		remain_size = block_size;
 		
-		if (block_size > 4)
+		if (remain_size > 4)
 		{
 			adi_dp_setup_accessport(
 				ADI_AP_REG_CSW_8BIT | ADI_AP_REG_CSW_ADDRINC_PACKED, address);
 			
-			while (block_size > 4)
+			while (remain_size > 4)
 			{
 				value = GET_LE_U32(buffer);
 				adi_ap_read_reg(ADI_AP_REG_DRW, &value, 0);
 				if (adi_dp_transaction_endcheck())
 				{
 					LOG_WARNING("Block write error at 0x%08X, %d dwords", address,
-									block_size);
+									remain_size);
 					return VSFERR_FAIL;
 				}
 				SET_LE_U32(buffer, value);
 				
-				block_size -= 4;
+				remain_size -= 4;
 				buffer += 4;
 				address += 4;
 			}
 		}
-		if ((block_size > 0) && (block_size < 4))
+		if ((remain_size > 0) && (remain_size < 4))
 		{
 			adi_dp_setup_accessport(
 				ADI_AP_REG_CSW_8BIT | ADI_AP_REG_CSW_ADDRINC_SINGLE, address);
 			
-			while (block_size)
+			while (remain_size)
 			{
 				adi_ap_read_reg(ADI_AP_REG_DRW, &value, 0);
 				if (adi_dp_transaction_endcheck())
 				{
 					LOG_WARNING("Block write error at 0x%08X, %d dwords", address,
-									block_size);
+									remain_size);
 					return VSFERR_FAIL;
 				}
 				*buffer = (uint8_t)(value >> (8 * (address & 3)));
 				
-				block_size -= 1;
+				remain_size -= 1;
 				buffer += 1;
 				address += 1;
 			}
