@@ -73,7 +73,7 @@ const struct cm_param_t cm_chips_param[] = {
 		{0,1,0,5},						// jtag_pos
 		2,								// swd_trn
 		0,								// swd_delay
-		&stm32f1swj_program_functions		// program_functions
+		&stm32f1swj_program_functions	// program_functions
 	},
 	{
 		"cm_stm32f2",					// chip_name

@@ -424,11 +424,23 @@ struct interface_poll_t
 	vsf_err_t (*verifybuff)(uint16_t offset, uint16_t size, uint8_t *buff);
 };
 
+struct interfaces_comm_t
+{
+	vsf_err_t (*init)(void);
+	vsf_err_t (*fini)(void);
+	void (*set_timeout)(uint32_t ms);
+	vsf_err_t (*transact)(uint8_t *buffer_out, uint16_t out_len,
+							uint8_t *buffer_in, uint16_t *in_len);
+	
+	vsf_err_t (*display_all)(void);
+};
+
 struct interfaces_info_t
 {
 	char *name;
 	const struct vss_cmd_t *notifier;
-	uint32_t (*display_programmer)(void);
+	
+	struct interfaces_comm_t *comm;
 	
 	// virtual interface support
 	bool is_virtual;

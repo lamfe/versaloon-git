@@ -83,9 +83,9 @@ VSS_HANDLER(programmer_list)
 	
 	for (i = 0; interfaces_info[i] != NULL; i++)
 	{
-		if (interfaces_info[i]->display_programmer != NULL)
+		if (interfaces_info[i]->comm->display_all != NULL)
 		{
-			j += interfaces_info[i]->display_programmer();
+			j += interfaces_info[i]->comm->display_all();
 		}
 	}
 	if (0 == j)

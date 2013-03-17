@@ -1019,8 +1019,21 @@ vsf_err_t CORE_USBD_EP_ENABLE_OUT(__TARGET_CHIP__)(uint8_t idx);
 
 #endif
 
+struct interfaces_comm_t
+{
+	vsf_err_t (*init)(void);
+	vsf_err_t (*fini)(void);
+	void (*set_timeout)(uint32_t ms);
+	vsf_err_t (*transact)(uint8_t *buffer_out, uint16_t out_len,
+							uint8_t *buffer_in, uint16_t *in_len);
+	
+	vsf_err_t (*display_all)(void);
+};
+
 struct interfaces_info_t
 {
+	struct interfaces_comm_t *comm;
+	
 	struct interface_core_t core;
 #if IFS_FLASH_EN
 	struct interface_flash_t flash;

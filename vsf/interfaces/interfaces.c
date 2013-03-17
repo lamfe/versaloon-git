@@ -24,6 +24,8 @@ vsf_err_t peripheral_commit(void)
 
 const struct interfaces_info_t core_interfaces = 
 {
+	NULL,			// struct interfaes_commit_t *comm;
+	
 	// core
 	{
 		CORE_INIT(__TARGET_CHIP__),
