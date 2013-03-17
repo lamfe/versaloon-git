@@ -45,7 +45,9 @@ int main(void)
 	usb_protocol_init();
 	
 run:
+#if SCRIPTS_EN
 	KEY_Init();
+#endif
 	while (1
 #if SCRIPTS_EN
 		&& !KEY_IsDown()

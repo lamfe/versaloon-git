@@ -25,7 +25,3 @@
 #include "app_io.h"
 #include "app_err.h"
 #include "app_log.h"
-
-#include "usb.h"
-#include "usbapi.h"
-

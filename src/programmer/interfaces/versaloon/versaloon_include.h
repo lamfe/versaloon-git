@@ -27,7 +27,3 @@
 #include "app_log.h"
 
 #include "scripts.h"
-
-#include "usb.h"
-#include "usbapi.h"
-

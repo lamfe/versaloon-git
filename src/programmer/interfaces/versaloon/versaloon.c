@@ -29,6 +29,8 @@
 #include "usbtoxxx/usbtoxxx.h"
 #include "usbtoxxx/usbtoxxx_internal.h"
 
+#include "versaloon_libusb.h"
+
 #define VERSALOON_STRING					"versaloon"
 
 VSS_HANDLER(versaloon_support);
@@ -72,9 +74,6 @@ VSS_HANDLER(versaloon_support)
 	return VSFERR_NONE;
 }
 
-static usb_dev_handle *versaloon_device_handle = NULL;
-static uint32_t versaloon_to = VERSALOON_TIMEOUT;
-
 // usbtoxxx transact structure
 static vsf_err_t versaloon_transact(uint16_t out_len, uint16_t *inlen);
 static struct usbtoxxx_info_t versaloon_usbtoxxx_info =
@@ -83,9 +82,9 @@ static struct usbtoxxx_info_t versaloon_usbtoxxx_info =
 	versaloon_transact
 };
 
-static vsf_err_t versaloon_transact(uint16_t out_len, uint16_t *inlen)
+static vsf_err_t versaloon_transact(uint16_t out_len, uint16_t *in_len)
 {
-	int ret;
+	uint8_t *buffer = versaloon_usbtoxxx_info.buff;
 	
 #if PARAM_CHECK
 	if (NULL == versaloon_usbtoxxx_info.buff)
@@ -100,36 +99,11 @@ static vsf_err_t versaloon_transact(uint16_t out_len, uint16_t *inlen)
 	}
 #endif
 	
-	ret = usb_bulk_write(versaloon_device_handle, usb_param_epout(),
-				(char *)versaloon_usbtoxxx_info.buff, out_len, versaloon_to);
-	if (ret != out_len)
+	if (in_len != NULL)
 	{
-		LOG_ERROR(ERRMSG_FAILURE_OPERATION_ERRSTRING, "send usb data",
-					usb_strerror());
-		return ERRCODE_FAILURE_OPERATION;
+		*in_len = versaloon_usbtoxxx_info.buff_len;
 	}
-	
-	if (inlen != NULL)
-	{
-		ret = usb_bulk_read(versaloon_device_handle, usb_param_epin(),
-							(char *)versaloon_usbtoxxx_info.buff,
-							versaloon_usbtoxxx_info.buff_len, versaloon_to);
-		if (ret > 0)
-		{
-			*inlen = (uint16_t)ret;
-			return VSFERR_NONE;
-		}
-		else
-		{
-			LOG_ERROR(ERRMSG_FAILURE_OPERATION_ERRSTRING, "receive usb data",
-						usb_strerror());
-			return VSFERR_FAIL;
-		}
-	}
-	else
-	{
-		return VSFERR_NONE;
-	}
+	return interfaces->comm->transact(buffer, out_len, buffer, in_len);
 }
 
 
@@ -141,17 +115,9 @@ static vsf_err_t versaloon_transact(uint16_t out_len, uint16_t *inlen)
 // Core
 static vsf_err_t versaloon_fini(void)
 {
-	if (versaloon_device_handle != NULL)
-	{
-		usbtoxxx_fini();
-		usbtoxxx_info = NULL;
-		
-		usb_release_interface(versaloon_device_handle, usb_param_interface());
-		usb_close(versaloon_device_handle);
-		versaloon_device_handle = NULL;
-	}
-	
-	return VSFERR_NONE;
+	usbtoxxx_fini();
+	usbtoxxx_info = NULL;
+	return interfaces->comm->fini();
 }
 
 #define VERSALOON_RETRY_CNT				10
@@ -160,31 +126,11 @@ static vsf_err_t versaloon_init(void *p)
 	struct interfaces_info_t *t = (struct interfaces_info_t *)p;
 	uint16_t ret = 0;
 	uint8_t retry;
-	uint32_t timeout_tmp;
 	vsf_err_t err = VSFERR_NONE;
 	
-	if (!usb_param_valid())
+	if (interfaces->comm->init())
 	{
-		usb_set_param(VERSALOON_VID, VERSALOON_PID, VERSALOON_INP,
-						VERSALOON_OUTP, VERSALOON_IFACE);
-	}
-	versaloon_device_handle = find_usb_device(usb_param_vid(),
-		usb_param_pid(), usb_param_interface(), VERSALOON_SERIALSTRING_INDEX,
-		usb_param_serial(), VERSALOON_PRODUCTSTRING_INDEX,
-						VERSALOON_PRODUCTSTRING);
-	if (NULL == versaloon_device_handle)
-	{
-		if (usb_param_serial() != NULL)
-		{
-			LOG_ERROR("Not found vid=0x%04x,pid = 0x%04x,serial = %s.",
-						usb_param_vid(), usb_param_pid(), usb_param_serial());
-		}
-		else
-		{
-			LOG_ERROR("Not found vid=0x%04x,pid = 0x%04x.", usb_param_vid(),
-						usb_param_pid());
-		}
-		return VSFERR_FAIL;
+		return VSFERR_NONE;
 	}
 	
 	// malloc temporary buffer
@@ -197,7 +143,8 @@ static vsf_err_t versaloon_init(void *p)
 	if (NULL == versaloon_usbtoxxx_info.buff)
 	{
 		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-		return VSFERR_NOT_ENOUGH_RESOURCES;
+		err = VSFERR_NOT_ENOUGH_RESOURCES;
+		goto versaloon_init_fail;
 	}
 	
 	sleep_ms(100);
@@ -205,10 +152,9 @@ static vsf_err_t versaloon_init(void *p)
 	// connect to versaloon
 	LOG_PUSH();
 	LOG_MUTE();
-	timeout_tmp = versaloon_to;
 	// not output error message when connectting
 	// 500ms delay when connect
-	versaloon_to = 100;
+	interfaces->comm->set_timeout(100);
 	for (retry = 0; retry < VERSALOON_RETRY_CNT; retry++)
 	{
 		versaloon_usbtoxxx_info.buff[0] = VERSALOON_GET_INFO;
@@ -218,7 +164,7 @@ static vsf_err_t versaloon_init(void *p)
 		}
 	}
 	LOG_POP();
-	versaloon_to = timeout_tmp;
+	interfaces->comm->set_timeout(VERSALOON_TIMEOUT);
 	if (VERSALOON_RETRY_CNT == retry)
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "communicate with versaloon");
@@ -381,7 +327,7 @@ static vsf_err_t versaloon_reset(void)
 static vsf_err_t versaloon_peripheral_commit(void)
 {
 	vsf_err_t err = usbtoxxx_execute_command();
-	versaloon_to = VERSALOON_TIMEOUT;
+	interfaces->comm->set_timeout(VERSALOON_TIMEOUT);
 	return err;
 }
 
@@ -413,7 +359,7 @@ vsf_err_t versaloon_get_target_voltage(uint8_t index, uint16_t *voltage)
 // POLL
 static vsf_err_t versaloon_poll_start(uint16_t retry_cnt, uint16_t interval_us)
 {
-	versaloon_to = VERSALOON_TIMEOUT_LONG;
+	interfaces->comm->set_timeout(VERSALOON_TIMEOUT_LONG);
 	return usbtopoll_start(retry_cnt, interval_us);
 }
 static vsf_err_t versaloon_poll_end(void)
@@ -447,21 +393,6 @@ static vsf_err_t versaloon_poll_verifybuff(uint16_t offset, uint16_t size, uint8
 	return usbtopoll_verifybuff(offset, size, buff);
 }
 
-static uint32_t versaloon_display_programmer(void)
-{
-	// usb parameter
-	if (!usb_param_valid())
-	{
-		usb_set_param(VERSALOON_VID, VERSALOON_PID, VERSALOON_INP,
-						VERSALOON_OUTP, 1);
-	}
-	
-	PRINTF(_GETTEXT("Supported Programmer by Versaloon driver:\n"));
-	return print_usb_devices(usb_param_vid(), usb_param_pid(),
-					VERSALOON_SERIALSTRING_INDEX, usb_param_serial(),
-					VERSALOON_PRODUCTSTRING_INDEX, VERSALOON_PRODUCTSTRING);
-}
-
 // tick clock
 vsf_err_t versaloon_tickclk_init(void)
 {
@@ -493,7 +424,8 @@ struct interfaces_info_t versaloon_interfaces =
 {
 	VERSALOON_STRING,
 	versaloon_notifier,
-	versaloon_display_programmer,
+	
+	&versaloon_usb_comm,
 	
 	false,
 	NULL,
