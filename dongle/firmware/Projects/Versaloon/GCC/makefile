@@ -307,7 +307,7 @@ else
 		    ifeq ($(TARGET_STM32),XLDensity)
 			  LIBSTM32_ASM_SRCS = \
                 $(STM32_LIB_DIR)/Libraries/CMSIS/CM3/DeviceSupport/ST/STM32F10x/startup/gcc_ride7/startup_stm32f10x_md.s
-              LIBSTM32_DEFS = -DUSE_STDPERIPH_DRIVER -DSTM32F10X_XD
+              LIBSTM32_DEFS = -DUSE_STDPERIPH_DRIVER -DSTM32F10X_XL
 			else
 		      Invalid STM32 Target
 			endif

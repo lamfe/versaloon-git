@@ -169,7 +169,7 @@
         <option>
           <name>CCDefines</name>
           <state>USE_STDPERIPH_DRIVER</state>
-          <state>STM32F10X_XD</state>
+          <state>STM32F10X_XL</state>
           <state>_HARDWARE_VER=0x21</state>
           <state>__TARGET_CHIP__=stm32</state>
           <state>FLASH_LOAD_OFFSET=0x0000</state>
@@ -1108,7 +1108,7 @@
           <name>CCDefines</name>
           <state>NDEBUG</state>
           <state>USE_STDPERIPH_DRIVER</state>
-          <state>STM32F10X_XD</state>
+          <state>STM32F10X_XL</state>
           <state>_HARDWARE_VER=0x21</state>
           <state>__TARGET_CHIP__=stm32</state>
           <state>FLASH_LOAD_OFFSET=0x8000</state>
