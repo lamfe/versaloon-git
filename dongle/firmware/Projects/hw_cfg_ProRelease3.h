@@ -752,9 +752,9 @@
 											\
 											TIM_OCStructInit(&TIM_OCInitStructure);\
 											TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM1;\
-											TIM_OCInitStructure.TIM_OutputNState = TIM_OutputState_Enable;\
+											TIM_OCInitStructure.TIM_OutputNState = TIM_OutputNState_Enable;\
 											TIM_OCInitStructure.TIM_Pulse = 0;\
-											TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_High;\
+											TIM_OCInitStructure.TIM_OCNPolarity = TIM_OCPolarity_High;\
 											TIM_OC1Init(BEEPER_TIMER, &TIM_OCInitStructure);\
 											\
 											TIM_OC1PreloadConfig(BEEPER_TIMER, TIM_OCPreload_Enable);\
