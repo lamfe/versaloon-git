@@ -44,8 +44,8 @@ int main(void)
 	interfaces->tickclk.start();
 	usb_protocol_init();
 	
-run:
 #if SCRIPTS_EN
+run:
 	KEY_Init();
 #endif
 	while (1
