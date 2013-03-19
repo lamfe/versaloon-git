@@ -239,7 +239,9 @@ vsf_err_t usbtoxxx_execute_command(void)
 	usbtoxxx_info->buff[0] = USB_TO_ALL;
 	SET_LE_U16(&usbtoxxx_info->buff[1], usbtoxxx_info->buffer_index);
 	
-	if (usbtoxxx_info->transact(usbtoxxx_info->buffer_index, &inlen))
+	inlen = usbtoxxx_info->buff_len;
+	if (usbtoxxx_info->comm->transact(usbtoxxx_info->buff,
+			usbtoxxx_info->buffer_index, usbtoxxx_info->buff, &inlen))
 	{
 		usbtoxxx_free_want_pos();
 		return VSFERR_FAIL;

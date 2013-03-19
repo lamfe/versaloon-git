@@ -131,12 +131,12 @@ static vsf_err_t vi_stm32_init(void *p)
 	return VSFERR_NONE;
 }
 
-static vsf_err_t vi_stm32_fini(void)
+static vsf_err_t vi_stm32_fini(void *p)
 {
-	return cur_real_interface->core.fini();
+	return cur_real_interface->core.fini(cur_real_interface);
 }
 
-static vsf_err_t vi_stm32_reset(void)
+static vsf_err_t vi_stm32_reset(void *p)
 {
 	return VSFERR_NONE;
 }

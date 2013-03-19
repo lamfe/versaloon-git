@@ -46,12 +46,12 @@ vsf_err_t stm32_interface_get_info(struct stm32_info_t **info)
 	return VSFERR_NONE;
 }
 
-vsf_err_t stm32_interface_fini(void)
+vsf_err_t stm32_interface_fini(void *p)
 {
 	return VSFERR_NONE;
 }
 
-vsf_err_t stm32_interface_reset(void)
+vsf_err_t stm32_interface_reset(void *p)
 {
 	NVIC_SystemReset();
 	return VSFERR_NONE;

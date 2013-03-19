@@ -179,11 +179,11 @@ vsf_err_t interface_init(const char *ifs)
 	{
 		if ((cur_interface != NULL) && (!cur_interface->is_virtual))
 		{
-			cur_interface->core.fini();
+			cur_interface->core.fini(cur_interface);
 		}
 		if ((cur_real_interface != NULL) && (!cur_real_interface->is_virtual))
 		{
-			cur_real_interface->core.fini();
+			cur_real_interface->core.fini(cur_real_interface);
 		}
 		cur_interface = NULL;
 		cur_real_interface = NULL;
@@ -198,7 +198,7 @@ vsf_err_t interface_init(const char *ifs)
 			if (vss_run_script("tvcc.get"))
 			{
 				cur_interface = NULL;
-				interface_tmp->core.fini();
+				interface_tmp->core.fini(interface_tmp);
 				return VSFERR_FAIL;
 			}
 			return VSFERR_NONE;

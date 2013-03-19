@@ -52,8 +52,8 @@ struct stm32_info_t
 };
 
 vsf_err_t stm32_interface_init(void *p);
-vsf_err_t stm32_interface_fini(void);
-vsf_err_t stm32_interface_reset(void);
+vsf_err_t stm32_interface_fini(void *p);
+vsf_err_t stm32_interface_reset(void *p);
 vsf_err_t stm32_interface_get_info(struct stm32_info_t **info);
 
 vsf_err_t stm32_delay_delayms(uint16_t ms);

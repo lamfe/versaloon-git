@@ -308,6 +308,7 @@ const struct app_interfaces_info_t app_interfaces =
 		ebi_init,
 		ebi_fini,
 		ebi_config, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+		NULL, NULL,
 		ebi_read,
 		ebi_write,
 		NULL, NULL, NULL, NULL, NULL, NULL,

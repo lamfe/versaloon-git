@@ -64,7 +64,7 @@ struct usbtoxxx_info_t
 	uint16_t buff_len;
 	
 	// transact
-	vsf_err_t (*transact)(uint16_t out_len, uint16_t *inlen);
+	struct interfaces_comm_t *comm;
 	
 	// private
 	uint8_t abilities[USB_TO_XXX_ABILITIES_LEN];
