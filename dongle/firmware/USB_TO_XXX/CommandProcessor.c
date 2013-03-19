@@ -23,6 +23,10 @@
 #	include "USB_TO_XXX.h"
 #endif
 
+#if STLINK_EN
+#	include "stlink.h"
+#endif
+
 const uint8_t Versaloon_Ver[] = "Versaloon(" _HARDWARE_VER_STR ")by Simon(compiled on " __DATE__ ")";
 
 static void Versaloon_ProcessCommonCmd(uint8_t *dat, uint16_t len)
@@ -88,4 +92,11 @@ void ProcessCommand(uint8_t* dat, uint16_t len)
 		}
 	}
 #endif		// #if USB_TO_XXX_EN
+#if STLINK_EN
+	else if ((cmd >= STLINK_CMD_START) &&
+			(cmd <= STLINK_CMD_END))
+	{
+		rep_len = stlink_process(dat, len);
+	}
+#endif		// #if STLINK_EN
 }

@@ -11,6 +11,10 @@
 #include "app_interfaces.h"
 #include "USB_TO_XXX.h"
 
+#if STLINK_EN
+#include "stlink.h"
+#endif
+
 uint8_t buffer_out[USB_DATA_BUFF_SIZE], asyn_rx_buf[ASYN_DATA_BUFF_SIZE];
 volatile uint32_t count_out = 0;
 volatile uint32_t usb_ovf = 0;
@@ -71,6 +75,14 @@ static vsf_err_t Versaloon_OUT_hanlder(void *p, uint8_t ep)
 			{
 				// USB_TO_XXX Support
 				cmd_len = buffer_out[1] + ((uint16_t)buffer_out[2] << 8);
+			}
+#endif
+#if STLINK_EN
+			else if ((buffer_out[0] >= STLINK_CMD_START) &&
+					(buffer_out[0] <= STLINK_CMD_END))
+			{
+				// STLINK
+				cmd_len = stlink_getpkgsize(buffer_out, pkg_len);
 			}
 #endif
 		}
