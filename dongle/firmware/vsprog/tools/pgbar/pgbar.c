@@ -130,7 +130,9 @@ void pgbar_update(int32_t step)
 		PRINTF("%%%02d", pgbar_get_char_num(position) * 100 / max_num_of_chars);
 		led_mask = pgbar_get_char_num(position) * 8 / max_num_of_chars;
 		led_mask = (1 << led_mask) - 1;
+#if HW_HAS_LEDARRAY
 		LED_ARRAY_SET(led_mask);
+#endif
 		
 		if (gui_mode_flag)
 		{
@@ -183,7 +185,9 @@ vsf_err_t pgbar_init(char *s, char *e, uint32_t min, uint32_t max,
 
 uint32_t pgbar_fini(void)
 {
+#if HW_HAS_LEDARRAY
 	LED_ARRAY_SET(0);
+#endif
 	// print final string
 	if (end_str != NULL)
 	{

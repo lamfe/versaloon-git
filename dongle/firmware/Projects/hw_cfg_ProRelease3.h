@@ -728,8 +728,8 @@
 #define TVCC_SAMPLE_MAXVAL				4096
 
 /****************************** Beeper ******************************/
-#define BEEPER_PORT						2
-#define BEEPER_PIN						6
+#define BEEPER_PORT						0
+#define BEEPER_PIN						7
 #define BEEPER_TIMER					TIM8
 
 #define BEEPER_INIT()					do {\
@@ -752,7 +752,7 @@
 											\
 											TIM_OCStructInit(&TIM_OCInitStructure);\
 											TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM1;\
-											TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;\
+											TIM_OCInitStructure.TIM_OutputNState = TIM_OutputState_Enable;\
 											TIM_OCInitStructure.TIM_Pulse = 0;\
 											TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_High;\
 											TIM_OC1Init(BEEPER_TIMER, &TIM_OCInitStructure);\
@@ -801,6 +801,8 @@
 										} while (0)
 #define LED_STATE_G_ON()				core_interfaces.gpio.out(LED_GREEN_PORT, 1 << LED_GREEN_PIN, 0)
 #define LED_STATE_G_OFF()				core_interfaces.gpio.out(LED_GREEN_PORT, 1 << LED_GREEN_PIN, 1 << LED_GREEN_PIN)
+#define LED_STATE_R_ON()				LED_POWER_ON()
+#define LED_STATE_R_OFF()				LED_POWER_OFF()
 
 #define LED_USB_INIT()					do {\
 											LED_USB_OFF();\
