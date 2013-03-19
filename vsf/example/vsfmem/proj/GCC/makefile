@@ -40,6 +40,7 @@ USR_INCS+= -I $(VSFDIR)/hardware/ext/memory/bsp/ -I .
 
 #interfaces
 USR_SRCS+= $(VersaloonDIR)/versaloon.c \
+  $(VersaloonDIR)/versaloon_libusb.c \
   $(USBTOXXXDIR)/usbtoadc.c \
   $(USBTOXXXDIR)/usbtoebi.c \
   $(USBTOXXXDIR)/usbtogpio.c \

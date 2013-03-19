@@ -38,6 +38,7 @@ USR_LIBS+= -lusb
 
 #interfaces
 USR_SRCS+= $(VersaloonDIR)/versaloon.c \
+  $(VersaloonDIR)/versaloon_libusb.c \
   $(USBTOXXXDIR)/usbtoadc.c \
   $(USBTOXXXDIR)/usbtoebi.c \
   $(USBTOXXXDIR)/usbtogpio.c \
