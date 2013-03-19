@@ -32,36 +32,11 @@
 #include "versaloon_libusb.h"
 
 // usbtoxxx transact structure
-static vsf_err_t versaloon_transact(uint16_t out_len, uint16_t *inlen);
 static struct usbtoxxx_info_t versaloon_usbtoxxx_info =
 {
-	NULL, NULL, 0,
-	versaloon_transact
+	NULL, NULL, 0, NULL
 };
 
-static vsf_err_t versaloon_transact(uint16_t out_len, uint16_t *in_len)
-{
-	uint8_t *buffer = versaloon_usbtoxxx_info.buff;
-	
-#if PARAM_CHECK
-	if (NULL == versaloon_usbtoxxx_info.buff)
-	{
-		LOG_BUG(ERRMSG_INVALID_BUFFER, TO_STR(versaloon_usbtoxxx_info.buff));
-		return ERRCODE_INVALID_BUFFER;
-	}
-	if ((0 == out_len) || (out_len > versaloon_usbtoxxx_info.buff_len))
-	{
-		LOG_BUG(ERRMSG_INVALID_PARAMETER, __FUNCTION__);
-		return VSFERR_INVALID_PARAMETER;
-	}
-#endif
-	
-	if (in_len != NULL)
-	{
-		*in_len = versaloon_usbtoxxx_info.buff_len;
-	}
-	return interfaces->comm->transact(buffer, out_len, buffer, in_len);
-}
 
 
 
@@ -70,21 +45,24 @@ static vsf_err_t versaloon_transact(uint16_t out_len, uint16_t *in_len)
 
 // Interfaces:
 // Core
-static vsf_err_t versaloon_fini(void)
+static vsf_err_t versaloon_fini(void *p)
 {
+	struct interfaces_info_t *t = interfaces;
+	
 	usbtoxxx_fini();
 	usbtoxxx_info = NULL;
-	return interfaces->comm->fini();
+	return t->comm->fini();
 }
 
 #define VERSALOON_RETRY_CNT				10
 static vsf_err_t versaloon_init(void *p)
 {
+	struct interfaces_info_t *t = interfaces;
 	uint16_t ret = 0;
 	uint8_t retry;
 	vsf_err_t err = VSFERR_NONE;
 	
-	if (interfaces->comm->init())
+	if (t->comm->init())
 	{
 		return VSFERR_NONE;
 	}
@@ -109,17 +87,20 @@ static vsf_err_t versaloon_init(void *p)
 	LOG_MUTE();
 	// not output error message when connectting
 	// 500ms delay when connect
-	interfaces->comm->set_timeout(100);
+	t->comm->set_timeout(100);
 	for (retry = 0; retry < VERSALOON_RETRY_CNT; retry++)
 	{
 		versaloon_usbtoxxx_info.buff[0] = VERSALOON_GET_INFO;
-		if (!versaloon_transact(1, &ret) && (ret >= 3))
+		ret = versaloon_usbtoxxx_info.buff_len;
+		if (!t->comm->transact(versaloon_usbtoxxx_info.buff, 1,
+								versaloon_usbtoxxx_info.buff, &ret) &&
+			(ret >= 3))
 		{
 			break;
 		}
 	}
 	LOG_POP();
-	interfaces->comm->set_timeout(VERSALOON_TIMEOUT);
+	t->comm->set_timeout(VERSALOON_TIMEOUT);
 	if (VERSALOON_RETRY_CNT == retry)
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "communicate with versaloon");
@@ -137,6 +118,7 @@ static vsf_err_t versaloon_init(void *p)
 	versaloon_usbtoxxx_info.buff = NULL;
 	
 	usbtoxxx_info = &versaloon_usbtoxxx_info;
+	usbtoxxx_info->comm = t->comm;
 	if (usbtoxxx_init())
 	{
 		err = VSFERR_FAIL;
@@ -145,21 +127,20 @@ static vsf_err_t versaloon_init(void *p)
 	
 	return VSFERR_NONE;
 versaloon_init_fail:
-	versaloon_fini();
+	versaloon_fini(t);
 	return err;
 }
 
-static vsf_err_t versaloon_reset(void)
+static vsf_err_t versaloon_reset(void *p)
 {
+	REFERENCE_PARAMETER(p);
 	return VSFERR_NONE;
 }
 
 // Commit
 static vsf_err_t versaloon_peripheral_commit(void)
 {
-	vsf_err_t err = usbtoxxx_execute_command();
-	interfaces->comm->set_timeout(VERSALOON_TIMEOUT);
-	return err;
+	reutrn usbtoxxx_execute_command();
 }
 
 // tick clock

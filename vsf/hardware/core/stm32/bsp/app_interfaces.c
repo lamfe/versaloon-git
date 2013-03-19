@@ -117,14 +117,14 @@ static vsf_err_t app_interface_init(void *p)
 	return core_interfaces.core.init(p);
 }
 
-static vsf_err_t app_interface_fini(void)
+static vsf_err_t app_interface_fini(void *p)
 {
-	return core_interfaces.core.fini();
+	return core_interfaces.core.fini(p);
 }
 
-static vsf_err_t app_interface_reset(void)
+static vsf_err_t app_interface_reset(void *p)
 {
-	return core_interfaces.core.reset();
+	return core_interfaces.core.reset(p);
 }
 
 static vsf_err_t app_peripheral_commit(void)

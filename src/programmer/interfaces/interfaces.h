@@ -39,8 +39,8 @@ char* get_interface_name(uint64_t i);
 struct interface_core_t
 {
 	vsf_err_t (*init)(void *p);
-	vsf_err_t (*fini)(void);
-	vsf_err_t (*reset)(void);
+	vsf_err_t (*fini)(void *p);
+	vsf_err_t (*reset)(void *p);
 };
 
 enum jtag_irdr_t

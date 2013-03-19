@@ -51,7 +51,7 @@ static void Versaloon_ProcessCommonCmd(uint8_t *dat, uint16_t len)
 		break;
 	case VERSALOON_FW_UPDATE:
 		// TODO: Write notifier to bootlaoder and then reset
-		core_interfaces.core.reset();
+		core_interfaces.core.reset(NULL);
 		break;
 	}
 }

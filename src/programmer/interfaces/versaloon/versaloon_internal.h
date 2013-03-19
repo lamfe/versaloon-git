@@ -20,7 +20,6 @@
 #define __VERSALOON_INTERNAL_H_INCLUDED__
 
 #define VERSALOON_TIMEOUT				5000
-#define VERSALOON_TIMEOUT_LONG			60000
 
 // USB Commands
 // Common Commands

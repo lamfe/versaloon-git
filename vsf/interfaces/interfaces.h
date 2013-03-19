@@ -26,8 +26,8 @@
 struct interface_core_t
 {
 	vsf_err_t (*init)(void *p);
-	vsf_err_t (*fini)(void);
-	vsf_err_t (*reset)(void);
+	vsf_err_t (*fini)(void *p);
+	vsf_err_t (*reset)(void *p);
 };
 
 #define CORE_INIT(m)					__CONNECT(m, _interface_init)
@@ -35,8 +35,8 @@ struct interface_core_t
 #define CORE_RESET(m)					__CONNECT(m, _interface_reset)
 
 vsf_err_t CORE_INIT(__TARGET_CHIP__)(void *p);
-vsf_err_t CORE_FINI(__TARGET_CHIP__)(void);
-vsf_err_t CORE_RESET(__TARGET_CHIP__)(void);
+vsf_err_t CORE_FINI(__TARGET_CHIP__)(void *p);
+vsf_err_t CORE_RESET(__TARGET_CHIP__)(void *p);
 
 #if IFS_FLASH_EN
 

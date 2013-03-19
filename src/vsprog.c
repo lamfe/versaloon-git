@@ -290,7 +290,7 @@ static void free_all(void)
 	
 	if ((cur_interface != NULL) && (cur_interface->core.fini != NULL))
 	{
-		cur_interface->core.fini();
+		cur_interface->core.fini(cur_interface);
 		cur_interface = NULL;
 	}
 }
