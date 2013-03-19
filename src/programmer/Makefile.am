@@ -26,6 +26,7 @@ libprog_a_SOURCES = \
     programmer.c \
     interfaces/interfaces.c \
     interfaces/versaloon/versaloon.c \
+    interfaces/versaloon/versaloon_libusb.c \
     $(vsf_usbtoxxx_srcdir)/usbtoxxx.c \
     $(vsf_usbtoxxx_srcdir)/usbtogpio.c \
     $(vsf_usbtoxxx_srcdir)/usbtospi.c \
