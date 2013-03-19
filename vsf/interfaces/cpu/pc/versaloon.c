@@ -140,7 +140,7 @@ static vsf_err_t versaloon_reset(void *p)
 // Commit
 static vsf_err_t versaloon_peripheral_commit(void)
 {
-	reutrn usbtoxxx_execute_command();
+	return usbtoxxx_execute_command();
 }
 
 // tick clock
