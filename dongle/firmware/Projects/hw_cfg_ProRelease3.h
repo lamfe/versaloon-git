@@ -50,6 +50,7 @@
 #define HW_HAS_BEEPER					1
 #define HW_HAS_LEDARRAY					0
 #define HW_HAS_7COLOR_LED				0
+#define HW_HAS_LCM						1
 
 /****************************** Power ******************************/
 #define PWREXT_EN_PORT					0
@@ -726,6 +727,18 @@
 #define TVCC_SAMPLE_DIV					2
 #define TVCC_SAMPLE_VREF				3300
 #define TVCC_SAMPLE_MAXVAL				4096
+
+/****************************** LCM ******************************/
+#define LCM_BACKLIGHT_PORT				0
+#define LCM_BACKLIGHT_PIN				6
+
+#define LCM_BACKLIGHT_INIT()			do {\
+											LCM_BACKLIGHT_OFF();\
+											core_interfaces.gpio.init(LCM_BACKLIGHT_PORT);\
+											core_interfaces.gpio.config_pin(LCM_BACKLIGHT_PORT, LCM_BACKLIGHT_PIN, GPIO_OUTPP);\
+										} while (0)
+#define LCM_BACKLIGHT_OFF()				core_interfaces.gpio.out(LCM_BACKLIGHT_PORT, 1 << LCM_BACKLIGHT_PIN, 0)
+#define LCM_BACKLIGHT_ON()				core_interfaces.gpio.out(LCM_BACKLIGHT_PORT, 1 << LCM_BACKLIGHT_PIN, 1 << LCM_BACKLIGHT_PIN)
 
 /****************************** Beeper ******************************/
 #define BEEPER_PORT						0

@@ -849,6 +849,9 @@ vsf_err_t usb_protocol_init(void)
 #if HW_HAS_LEDARRAY
 	LED_ARRAY_INIT();
 #endif
+#if HW_HAS_LCM
+	LCM_BACKLIGHT_INIT();
+#endif
 	
 	app_interfaces.delay.init();
 #if POWER_SAMPLE_EN

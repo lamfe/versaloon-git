@@ -67,7 +67,7 @@
 
 #define SYS_CFG_LARGE_MEMORY			0
 
-#if _HARDWARE_VER == ProRelease1
+#if (_HARDWARE_VER == ProRelease1) || (_HARDWARE_VER == ProRelease3)
 #define SCRIPTS_EN						1
 #else
 #define SCRIPTS_EN						0
