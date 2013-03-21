@@ -93,17 +93,6 @@ static vsf_err_t cfi_wait_busy(struct dal_info_t *info, uint64_t address)
 	return VSFERR_NONE;
 }
 
-static vsf_err_t cfi_drv_init_nb(struct dal_info_t *info)
-{
-	struct cfi_drv_interface_t *ifs = (struct cfi_drv_interface_t *)info->ifs;
-	struct cfi_drv_param_t *param = (struct cfi_drv_param_t *)info->param;
-	
-	interfaces->ebi.init(ifs->ebi_port);
-	interfaces->ebi.config(ifs->ebi_port, ifs->nor_index | EBI_TGTTYP_NOR, 
-							&param->nor_info);
-	return VSFERR_NONE;
-}
-
 static vsf_err_t cfi_drv_getinfo(struct dal_info_t *info)
 {
 	uint8_t cfi_info8[256];
@@ -195,11 +184,29 @@ static vsf_err_t cfi_drv_getinfo(struct dal_info_t *info)
 		return VSFERR_FAIL;
 	}
 	cfi_mal_info->erase_page_size = (uint32_t)cfi_mal_info->capacity.block_size;
-	cfi_mal_info->read_page_size = 0;
 	
 	cfi_write_cmd(ifs, 0xAA, data_width, 0x0555 << 1);
 	cfi_write_cmd(ifs, 0x55, data_width, 0x02AA << 1);
 	cfi_write_cmd(ifs, 0xF0, data_width, 0);
+	return VSFERR_NONE;
+}
+
+static vsf_err_t cfi_drv_init_nb(struct dal_info_t *info)
+{
+	struct mal_info_t *cfi_mal_info = (struct mal_info_t *)info->extra;
+	struct cfi_drv_interface_t *ifs = (struct cfi_drv_interface_t *)info->ifs;
+	struct cfi_drv_param_t *param = (struct cfi_drv_param_t *)info->param;
+	
+	interfaces->ebi.init(ifs->ebi_port);
+	interfaces->ebi.config(ifs->ebi_port, ifs->nor_index | EBI_TGTTYP_NOR, 
+							&param->nor_info);
+	
+	if (cfi_drv_getinfo(info))
+	{
+		return VSFERR_FAIL;
+	}
+	
+	cfi_mal_info->read_page_size = 0;
 	return VSFERR_NONE;
 }
 
