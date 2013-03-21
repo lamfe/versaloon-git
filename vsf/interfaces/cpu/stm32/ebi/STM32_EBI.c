@@ -195,6 +195,89 @@ vsf_err_t stm32_ebi_fini(uint8_t index)
 	switch (index & 0x0F)
 	{
 	case 0:
+		// noe nwe
+		GPIOD->CRL = (GPIOD->CRL & ~(0xFF << (4 * 4))) | 
+							(uint32_t)0x44 << (4 * 4);
+		
+		// data gpio
+		GPIOD->CRL = (GPIOD->CRL & ~(0xFF << (0 * 4))) | 
+							(uint32_t)0x44 << (0 * 4);
+		GPIOE->CRL = (GPIOE->CRL & ~(0x0F << (7 * 4))) | 
+							(uint32_t)0x04 << (7 * 4);
+		#if FSMC00_DATA_LEN == 8
+		GPIOD->CRH = (GPIOD->CRH & ~(0xFF << ((14 - 8) * 4))) | 
+							(uint32_t)0x44 << ((14 - 8) * 4);
+		GPIOE->CRH = (GPIOE->CRH & ~(0xFFF << ((8 - 8) * 4))) | 
+							(uint32_t)0x444 << ((8 - 8) * 4);
+		#elif FSMC00_DATA_LEN == 16
+		GPIOD->CRH = (GPIOD->CRH & 0x00FFF000) | 0x44000444;
+		GPIOE->CRH = 0x44444444;
+		#else
+		#error "FSMC00_DATA_LEN MUST be 8 or 16"
+		#endif
+		
+		// address gpio
+		GPIOF->CRL = (GPIOF->CRL & ~(0xFFFFFF << (0 * 4))) | 
+							(uint32_t)0x444444 << (0 * 4);
+		GPIOF->CRH = (GPIOF->CRH & ~(0xFFFF << ((12 - 8) * 4))) | 
+							(uint32_t)0x4444 << ((12 - 8) * 4);
+		GPIOG->CRL = (GPIOG->CRL & ~(0xFFFFFF << (0 * 4))) | 
+							(uint32_t)0x444444 << (0 * 4);
+		#if FSMC00_ADDR_LEN < 16
+		#error "FSMC00_ADDR_LEN MUST be >= 16"
+		#elif FSMC00_ADDR_LEN < 17
+		#elif FSMC00_ADDR_LEN < 18
+		GPIOD->CRH = (GPIOD->CRH & ~(0x0F << ((11 - 8) * 4))) | 
+							(uint32_t)0x04 << ((11 - 8) * 4);
+		#elif FSMC00_ADDR_LEN < 19
+		GPIOD->CRH = (GPIOD->CRH & ~(0xFF << ((11 - 8) * 4))) | 
+							(uint32_t)0x44 << ((11 - 8) * 4);
+		#elif FSMC00_ADDR_LEN < 20
+		GPIOD->CRH = (GPIOD->CRH & ~(0xFFF << ((11 - 8) * 4))) | 
+							(uint32_t)0x444 << ((11 - 8) * 4);
+		#elif FSMC00_ADDR_LEN < 21
+		GPIOD->CRH = (GPIOD->CRH & ~(0xFFF << ((11 - 8) * 4))) | 
+							(uint32_t)0x444 << ((11 - 8) * 4);
+		GPIOE->CRL = (GPIOE->CRL & ~(0x0F << (3 * 4))) | 
+							(uint32_t)0x04 << (3 * 4);
+		#elif FSMC00_ADDR_LEN < 22
+		GPIOD->CRH = (GPIOD->CRH & ~(0xFFF << ((11 - 8) * 4))) | 
+							(uint32_t)0x444 << ((11 - 8) * 4);
+		GPIOE->CRL = (GPIOE->CRL & ~(0xFF << (3 * 4))) | 
+							(uint32_t)0x44 << (3 * 4);
+		#elif FSMC00_ADDR_LEN < 23
+		GPIOD->CRH = (GPIOD->CRH & ~(0xFFF << ((11 - 8) * 4))) | 
+							(uint32_t)0x444 << ((11 - 8) * 4);
+		GPIOE->CRL = (GPIOE->CRL & ~(0xFFF << (3 * 4))) | 
+							(uint32_t)0x444 << (3 * 4);
+		#elif FSMC00_ADDR_LEN < 24
+		GPIOD->CRH = (GPIOD->CRH & ~(0xFFF << ((11 - 8) * 4))) | 
+							(uint32_t)0x444 << ((11 - 8) * 4);
+		GPIOE->CRL = (GPIOE->CRL & ~(0xFFFF << (3 * 4))) | 
+							(uint32_t)0x4444 << (3 * 4);
+		#elif FSMC00_ADDR_LEN < 25
+		GPIOD->CRH = (GPIOD->CRH & ~(0xFFF << ((11 - 8) * 4))) | 
+							(uint32_t)0x444 << ((11 - 8) * 4);
+		GPIOE->CRL = (GPIOE->CRL & ~(0xFFFFF << (2 * 4))) | 
+							(uint32_t)0x44444 << (2 * 4);
+		#elif FSMC00_ADDR_LEN < 26
+		GPIOD->CRH = (GPIOD->CRH & ~(0xFFF << ((11 - 8) * 4))) | 
+							(uint32_t)0x444 << ((11 - 8) * 4);
+		GPIOE->CRL = (GPIOE->CRL & ~(0xFFFFF << (2 * 4))) | 
+							(uint32_t)0x44444 << (2 * 4);
+		GPIOG->CRH = (GPIOG->CRH & ~(0x0F << ((13 - 8) * 4))) | 
+							(uint32_t)0x04 << ((13 - 8) * 4);
+		#elif FSMC00_ADDR_LEN < 27
+		GPIOD->CRH = (GPIOD->CRH & ~(0xFFF << ((11 - 8) * 4))) | 
+							(uint32_t)0x444 << ((11 - 8) * 4);
+		GPIOE->CRL = (GPIOE->CRL & ~(0xFFFFF << (2 * 4))) | 
+							(uint32_t)0x44444 << (2 * 4);
+		GPIOG->CRH = (GPIOG->CRH & ~(0xFF << ((13 - 8) * 4))) | 
+							(uint32_t)0x44 << ((13 - 8) * 4);
+		#else
+		#error "FSMC00_ADDR_LEN MUST be < 27"
+		#endif
+		
 		RCC->AHBENR &= ~STM32_RCC_AHBENR_FSMC;
 		return VSFERR_NONE;
 	default:
