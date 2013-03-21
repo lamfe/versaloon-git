@@ -7,7 +7,7 @@ EMBEDDED_VSPROG_EN = no
 # Available boards:
 # NanoRelease1
 # MiniRelease1
-# ProRelease1
+# ProRelease1(same for ProRelease3)
 # STBee_Mini
 # STM8S_Discovery
 # STM8L_Discovery
@@ -62,6 +62,15 @@ USR_INCS+= -I $(VSFDIR)/compiler/ARMGCC
 USR_SRCS+= $(COMPILER_DIR)/compiler_string.c $(COMPILER_DIR)/syscall.c
 USR_INCS+= -I $(COMPILER_DIR)
 
+#stlink
+USR_SRCS+= $(SRCDIR)/stlink/stlink.c
+USR_INCS+= -I $(SRCDIR)/stlink
+ifeq (${EMBEDDED_VSPROG_EN},no)
+#add files needed by stlink
+USR_SRCS+= $(VSPROGDIR)/target/core/arm_adi/adi_v5p1.c $(VSPROGDIR)/target/cortex-m/cm_common.c
+USR_INCS+= -I $(VSPROGDIR)/target/core/arm_adi -I $(VSPROGDIR)/target/cortex-m
+endif
+
 #vsprog
 ifeq (${EMBEDDED_VSPROG_EN},yes)
 USR_SRCS+= $(SRCDIR)/app_io.c \
@@ -93,15 +102,15 @@ USR_SRCS+= $(SRCDIR)/app_io.c \
   $(VSPROGDIR)/target/comisp/lpcarmisp.c \
   $(VSPROGDIR)/target/comisp/stm32isp.c \
   $(VSPROGDIR)/target/core/arm_adi/adi_v5p1.c \
-  $(VSPROGDIR)/target/cortex-m3/cm3.c \
-  $(VSPROGDIR)/target/cortex-m3/cm3_common.c \
-  $(VSPROGDIR)/target/cortex-m3/cm3_at91sam3.c \
-  $(VSPROGDIR)/target/cortex-m3/cm3_lm3s.c \
-  $(VSPROGDIR)/target/cortex-m3/cm3_lpc1000.c \
-  $(VSPROGDIR)/target/cortex-m3/cm3_stm32_fl.c \
-  $(VSPROGDIR)/target/cortex-m3/cm3_stm32f1.c \
-  $(VSPROGDIR)/target/cortex-m3/cm3_stm32f2.c \
-  $(VSPROGDIR)/target/cortex-m3/cm3_stm32l1.c \
+  $(VSPROGDIR)/target/cortex-m/cm.c \
+  $(VSPROGDIR)/target/cortex-m/cm_common.c \
+  $(VSPROGDIR)/target/cortex-m/cm_at91sam3.c \
+  $(VSPROGDIR)/target/cortex-m/cm_lm3s.c \
+  $(VSPROGDIR)/target/cortex-m/cm_lpc1000.c \
+  $(VSPROGDIR)/target/cortex-m/cm_stm32_fl.c \
+  $(VSPROGDIR)/target/cortex-m/cm_stm32f1.c \
+  $(VSPROGDIR)/target/cortex-m/cm_stm32f2.c \
+  $(VSPROGDIR)/target/cortex-m/cm_stm32l1.c \
   $(VSPROGDIR)/target/df25xx/df25xx.c \
   $(VSPROGDIR)/target/ee24cxx/ee24cxx.c \
   $(VSPROGDIR)/target/ee93cx6/ee93cx6.c \
@@ -134,7 +143,7 @@ USR_INCS+= -I $(VSPROGDIR)/scripts \
   -I $(VSPROGDIR)/target \
   -I $(VSPROGDIR)/target/core/arm_adi \
   -I $(VSPROGDIR)/target/comisp \
-  -I $(VSPROGDIR)/target/cortex-m3 \
+  -I $(VSPROGDIR)/target/cortex-m \
   -I $(VSPROGDIR)/target/at91sam3 \
   -I $(VSPROGDIR)/target/lm3s \
   -I $(VSPROGDIR)/target/lpc1000 \
