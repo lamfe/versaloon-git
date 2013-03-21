@@ -311,6 +311,7 @@
           <state>$PROJ_DIR$\..\..\..\Interfaces\APP\</state>
           <state>$PROJ_DIR$\..\..\..\USB_TO_XXX\</state>
           <state>$PROJ_DIR$\..\..\..\versaloon_usb\</state>
+          <state>$PROJ_DIR$\..\..\..\stlink\</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\compiler\IAR\</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\tool\list</state>
@@ -1271,6 +1272,7 @@
           <state>$PROJ_DIR$\..\..\..\Interfaces\APP\</state>
           <state>$PROJ_DIR$\..\..\..\USB_TO_XXX\</state>
           <state>$PROJ_DIR$\..\..\..\versaloon_usb\</state>
+          <state>$PROJ_DIR$\..\..\..\stlink\</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\compiler\IAR\</state>
           <state>$PROJ_DIR$\..\..\..\..\..\vsf\tool\list</state>
@@ -1936,6 +1938,9 @@
       <name>$PROJ_DIR$\..\..\hw_cfg_ProRelease1.h</name>
     </file>
     <file>
+      <name>$PROJ_DIR$\..\..\hw_cfg_ProRelease3.h</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\..\..\hw_cfg_st_link.h</name>
     </file>
     <file>
@@ -2081,6 +2086,12 @@
     </file>
   </group>
   <group>
+    <name>stlink</name>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\stlink\stlink.c</name>
+    </file>
+  </group>
+  <group>
     <name>usb_protocol</name>
     <file>
       <name>$PROJ_DIR$\..\..\..\usb_protocol_CDCACM.c</name>
@@ -2091,6 +2102,13 @@
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\..\usb_protocol_MSC.c</name>
+      <excluded>
+        <configuration>Debug</configuration>
+        <configuration>Release</configuration>
+      </excluded>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\usb_protocol_stlink.c</name>
       <excluded>
         <configuration>Debug</configuration>
         <configuration>Release</configuration>
