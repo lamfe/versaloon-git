@@ -262,6 +262,7 @@ VSS_HANDLER(app_led7c_set)
 	}
 	else if (!strcmp(argv[1], "unk"))
 	{
+		// any one know what's this color?
 		LED_STATE_B_ON();
 		LED_STATE_G_ON();
 	}
@@ -270,6 +271,10 @@ VSS_HANDLER(app_led7c_set)
 		LED_STATE_R_ON();
 		LED_STATE_G_ON();
 		LED_STATE_B_ON();
+	}
+	else if (!strcmp(argv[1], "none"))
+	{
+		// simply turn all off
 	}
 	else
 	{
