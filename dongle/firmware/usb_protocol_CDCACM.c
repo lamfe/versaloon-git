@@ -233,7 +233,7 @@ static struct vsfusbd_iface_t ifaces[] =
 	{(struct vsfusbd_class_protocol_t *)&vsfusbd_CDCACMMaster_class, (void *)&CDCACM_param},
 	{(struct vsfusbd_class_protocol_t *)&vsfusbd_CDCACMData_class, (void *)&CDCACM_param}
 };
-static struct vsfusbd_config_t config0[] = 
+static struct vsfusbd_config_t configurations[] = 
 {
 	{
 		NULL, NULL, dimof(ifaces), (struct vsfusbd_iface_t *)ifaces
@@ -241,7 +241,7 @@ static struct vsfusbd_config_t config0[] =
 };
 struct vsfusbd_device_t usb_device = 
 {
-	1, (struct vsfusbd_config_t *)config0, 
+	dimof(configurations), (struct vsfusbd_config_t *)configurations, 
 	(struct vsfusbd_desc_filter_t *)descriptors, 0, 
 	(struct interface_usbd_t *)&core_interfaces.usbd
 };
