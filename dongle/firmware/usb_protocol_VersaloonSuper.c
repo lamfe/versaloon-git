@@ -526,16 +526,18 @@ static struct dal_info_t fakefat_dal_info =
 	&fakefat_mal_info,
 };
 
-struct SCSI_LUN_info_t MSCBOT_LunInfo = 
+struct SCSI_LUN_info_t MSCBOT_LunInfo[] = 
 {
-	&fakefat_dal_info, 
 	{
-		true,
-		{'S', 'i', 'm', 'o', 'n', ' ', ' ', ' '},
-		{'S', 'i', 'm', 'o', 'n', ' ', ' ', ' ', 
-		'S', 'i', 'm', 'o', 'n', ' ', ' ', ' '},
-		{'1', '.', '0', '0'},
-		SCSI_PDT_DIRECT_ACCESS_BLOCK
+		&fakefat_dal_info, 
+		{
+			true,
+			{'S', 'i', 'm', 'o', 'n', ' ', ' ', ' '},
+			{'S', 'i', 'm', 'o', 'n', ' ', ' ', ' ', 
+			'S', 'i', 'm', 'o', 'n', ' ', ' ', ' '},
+			{'1', '.', '0', '0'},
+			SCSI_PDT_DIRECT_ACCESS_BLOCK
+		}
 	}
 };
 uint8_t MSCBOT_Buffer0[512], MSCBOT_Buffer1[512];
@@ -545,8 +547,8 @@ struct vsfusbd_MSCBOT_param_t MSCBOT_param =
 	1,							// uint8_t ep_out;
 	1,							// uint8_t ep_in;
 	
-	0,							// uint8_t max_lun;
-	&MSCBOT_LunInfo,			// struct SCSI_LUN_info_t *lun_info;
+	dimof(MSCBOT_LunInfo) - 1,	// uint8_t max_lun;
+	MSCBOT_LunInfo,				// struct SCSI_LUN_info_t *lun_info;
 	NULL, 						// struct SCSI_handler_t *user_handlers;
 	
 	{
@@ -686,7 +688,7 @@ static struct vsfusbd_iface_t ifaces[] =
 //	{(struct vsfusbd_class_protocol_t *)&vsfusbd_CDCACMMaster_class, (void *)&Versaloon_Shell_param},
 //	{(struct vsfusbd_class_protocol_t *)&vsfusbd_CDCACMData_class, (void *)&Versaloon_Shell_param}
 };
-static struct vsfusbd_config_t config0[] = 
+static struct vsfusbd_config_t configurations[] = 
 {
 	{
 		NULL, NULL, dimof(ifaces), (struct vsfusbd_iface_t *)ifaces
@@ -694,7 +696,7 @@ static struct vsfusbd_config_t config0[] =
 };
 struct vsfusbd_device_t usb_device = 
 {
-	1, (struct vsfusbd_config_t *)config0, 
+	dimof(configurations), (struct vsfusbd_config_t *)configurations, 
 	(struct vsfusbd_desc_filter_t *)descriptors, 0, 
 	(struct interface_usbd_t *)&core_interfaces.usbd
 };
