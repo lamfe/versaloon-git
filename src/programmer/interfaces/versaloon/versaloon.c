@@ -108,7 +108,7 @@ static vsf_err_t versaloon_init(void *p)
 	
 	if (t->comm->init())
 	{
-		return VSFERR_NONE;
+		return VSFERR_FAIL;
 	}
 	
 	// malloc temporary buffer
