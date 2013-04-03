@@ -1,4 +1,4 @@
-Cmp-Mod V01 Created by CvPcb (2012-01-19 BZR 3256)-stable date = 21/03/2013 02:33:05
+Cmp-Mod V01 Created by CvPcb (2013-03-31 BZR 4008)-stable date = 03/04/2013 12:56:48
 
 BeginCmp
 TimeStamp = /480A3089;
@@ -297,14 +297,14 @@ EndCmp
 BeginCmp
 TimeStamp = /480A4692;
 Reference = F0;
-ValeurCmp = 200mA_FUSE;
+ValeurCmp = 200mA FUSE;
 IdModule  = SM0805L;
 EndCmp
 
 BeginCmp
 TimeStamp = /491A0163;
 Reference = F90;
-ValeurCmp = 50mA_FUSE;
+ValeurCmp = 50mA FUSE;
 IdModule  = SM0805L;
 EndCmp
 
@@ -556,6 +556,13 @@ EndCmp
 BeginCmp
 TimeStamp = /514A008F;
 Reference = R40;
+ValeurCmp = 10K;
+IdModule  = SM0603L;
+EndCmp
+
+BeginCmp
+TimeStamp = /515BC4CC;
+Reference = R41;
 ValeurCmp = 10K;
 IdModule  = SM0603L;
 EndCmp
