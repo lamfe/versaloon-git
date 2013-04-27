@@ -1,4 +1,4 @@
-PCBNEW-BOARD Version 2 date 25/04/2013 14:20:02
+PCBNEW-BOARD Version 2 date 27/04/2013 20:13:46
 
 # Created by Pcbnew(2013-03-31 BZR 4008)-stable
 
@@ -21,7 +21,7 @@ $EndGENERAL
 $SHEETDESCR
 Sheet A4 11693 8268
 Title ""
-Date "25 apr 2013"
+Date "27 apr 2013"
 Rev ""
 Comp ""
 Comment1 ""
@@ -63,7 +63,7 @@ PadDrill 0
 Pad2MaskClearance 0.254
 SolderMaskMinWidth 0
 AuxiliaryAxisOrg 0 0
-VisibleElements FFFFFFBF
+VisibleElements 7FFFFFBF
 PcbPlotParams (pcbplotparams (layerselection 284983303) (usegerberextensions true) (excludeedgelayer true) (linewidth 60) (plotframeref false) (viasonmask false) (mode 1) (useauxorigin false) (hpglpennumber 1) (hpglpenspeed 20) (hpglpendiameter 15) (hpglpenoverlay 0) (psnegative false) (psa4output false) (plotreference true) (plotvalue true) (plotothertext true) (plotinvisibletext false) (padsonsilk false) (subtractmaskfromsilk false) (outputformat 1) (mirror false) (drillshape 0) (scaleselection 1) (outputdirectory ""))
 $EndSETUP
 
@@ -8187,13 +8187,13 @@ Dl -1.6129 2.70764
 Dl 2.70764 2.70764
 $EndMODULE 
 $MODULE SM0603L
-Po 210.947 147.574 900 15 4A5D0EA6 5178C1A1 ~~
+Po 210.947 147.574 900 15 517BB939 5178C1A1 ~~
 Li SM0603L
 Sc 5178C1A1
 AR /515BC4CC
 Op 0 0 0
 At SMD
-T0 0 0 0.7112 0.4572 900 0.127 N V 21 N "R41"
+T0 2.032 0.127 0.7112 0.4572 1800 0.127 N V 21 N "R41"
 T1 0 0 0.7112 0.4572 900 0.127 N I 21 N "10K"
 DS -1.524 -0.762 1.524 -0.762 0.127 21
 DS 1.524 -0.762 1.524 0.762 0.127 21
