@@ -74,6 +74,24 @@ static const struct vss_cmd_t ledarr_cmd[] =
 };
 #endif
 
+#if HW_HAS_LCM
+VSS_HANDLER(app_lcm_init);
+VSS_HANDLER(app_lcm_backlight);
+
+static const struct vss_cmd_t lcm_cmd[] =
+{
+	VSS_CMD(	"init",
+				"initialize lcm, format: lcm.init",
+				app_lcm_init,
+				NULL),
+	VSS_CMD(	"backlight",
+				"set backlight of lcm, format: lcm.backligh [ON|OFF]",
+				app_lcm_backlight,
+				NULL),
+	VSS_CMD_END
+};
+#endif
+
 VSS_HANDLER(dal_vss_init);
 VSS_HANDLER(dal_vss_fini);
 
@@ -118,6 +136,12 @@ static const struct vss_cmd_t app_cmd[] =
 				"7-color led handler",
 				app_led7c_init,
 				led7c_cmd),
+#endif
+#if HW_HAS_LCM
+	VSS_CMD(	"lcm",
+				"lcm handler",
+				app_lcm_init,
+				lcm_cmd),
 #endif
 	VSS_CMD_END
 };
@@ -299,6 +323,37 @@ VSS_HANDLER(app_ledarr_set)
 	VSS_CHECK_ARGC(2);
 	value = (uint8_t)strtoul(argv[1], NULL, 0);
 	LED_ARRAY_SET(value);
+	return VSFERR_NONE;
+}
+#endif
+
+#if HW_HAS_LCM
+VSS_HANDLER(app_lcm_init)
+{
+	VSS_CHECK_ARGC(1);
+	
+	LCM_BACKLIGHT_INIT();
+	return VSFERR_NONE;
+}
+
+VSS_HANDLER(app_lcm_backlight)
+{
+	VSS_CHECK_ARGC(2);
+	
+	if (!strcmp(argv[1], "ON"))
+	{
+		LCM_BACKLIGHT_ON();
+	}
+	else if (!strcmp(argv[1], "OFF"))
+	{
+		LCM_BACKLIGHT_OFF();
+	}
+	else
+	{
+		LOG_ERROR(ERRMSG_INVALID, argv[1], "backlight state");
+		vss_print_help(argv[0]);
+		return VSFERR_INVALID_PARAMETER;
+	}
 	return VSFERR_NONE;
 }
 #endif
