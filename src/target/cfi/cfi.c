@@ -131,7 +131,7 @@ ENTER_PROGRAM_MODE_HANDLER(cfi)
 	cfi_drv_param.nor_info.param.timing.clock_hz_r = 
 		cfi_drv_param.nor_info.param.timing.clock_hz_w = 0;
 	cfi_drv_param.nor_info.param.timing.address_setup_cycle_r = 
-		cfi_drv_param.nor_info.param.timing.address_setup_cycle_w = 0;
+		cfi_drv_param.nor_info.param.timing.address_setup_cycle_w = 2;
 	cfi_drv_param.nor_info.param.timing.address_hold_cycle_r = 
 		cfi_drv_param.nor_info.param.timing.address_hold_cycle_w = 0;
 	cfi_drv_param.nor_info.param.timing.data_setup_cycle_r = 
