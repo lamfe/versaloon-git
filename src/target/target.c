@@ -93,6 +93,7 @@ VSS_HANDLER(target_write);
 VSS_HANDLER(target_read);
 VSS_HANDLER(target_verify);
 VSS_HANDLER(target_interface_indexes);
+VSS_HANDLER(target_set_specified_param);
 
 static const struct vss_cmd_t target_cmd[] =
 {
@@ -257,6 +258,16 @@ static const struct vss_cmd_t target_cmd[] =
 	VSS_CMD(	"i",
 				"define interfaces indexes used, format: indexes/i INDEX_STR",
 				target_interface_indexes,
+				NULL),
+	VSS_CMD(	"target_param",
+				"set target specified parameter, "
+				"format: target_param/T PARAMETER",
+				target_set_specified_param,
+				NULL),
+	VSS_CMD(	"T",
+				"set target specified parameter, "
+				"format: target_param/T PARAMETER",
+				target_set_specified_param,
 				NULL),
 	VSS_CMD_END
 };
@@ -3310,6 +3321,37 @@ VSS_HANDLER(target_interface_indexes)
 	{
 		pi->ifs_indexes = strdup(argv[1]);
 		if (NULL == pi->ifs_indexes)
+		{
+			LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
+			return VSFERR_NOT_ENOUGH_RESOURCES;
+		}
+	}
+	return VSFERR_NONE;
+}
+
+VSS_HANDLER(target_set_specified_param)
+{
+	struct program_info_t *pi;
+	
+	VSS_CHECK_ARGC_2(1, 2);
+	
+	if (NULL == cur_context)
+	{
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "slot");
+		return VSFERR_FAIL;
+	}
+	pi = cur_context->pi;
+	
+	if (pi->param != NULL)
+	{
+		free(pi->param);
+		pi->param = NULL;
+	}
+	
+	if (2 == argc)
+	{
+		pi->param = strdup(argv[1]);
+		if (NULL == pi->param)
 		{
 			LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 			return VSFERR_NOT_ENOUGH_RESOURCES;
