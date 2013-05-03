@@ -164,6 +164,7 @@ struct program_info_t
 	uint8_t execute_flag;
 	uint32_t execute_addr;
 	char *ifs_indexes;
+	char *param;
 	
 	uint8_t *mass_product_data;
 	uint32_t mass_product_data_size;

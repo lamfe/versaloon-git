@@ -111,6 +111,7 @@ ENTER_PROGRAM_MODE_HANDLER(cfi)
 {
 	struct program_info_t *pi = context->pi;
 	struct chip_area_info_t *flash_info = NULL;
+	uint8_t data_setup;
 	
 	if (pi->ifs_indexes != NULL)
 	{
@@ -134,8 +135,14 @@ ENTER_PROGRAM_MODE_HANDLER(cfi)
 		cfi_drv_param.nor_info.param.timing.address_setup_cycle_w = 2;
 	cfi_drv_param.nor_info.param.timing.address_hold_cycle_r = 
 		cfi_drv_param.nor_info.param.timing.address_hold_cycle_w = 0;
+	
+	data_setup = 255;
+	if (pi->param != NULL)
+	{
+		data_setup = (uint8_t)strtoul(pi->param, NULL, 0);
+	}
 	cfi_drv_param.nor_info.param.timing.data_setup_cycle_r = 
-		cfi_drv_param.nor_info.param.timing.data_setup_cycle_w = 8;
+		cfi_drv_param.nor_info.param.timing.data_setup_cycle_w = data_setup;
 	
 	if (mal.init(&cfi_dal_info) || 
 		mal.getinfo(&cfi_dal_info))
