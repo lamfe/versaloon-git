@@ -264,6 +264,69 @@ static const struct vss_cmd_t pwm_cmd[] =
 };
 #endif
 
+#if INTERFACE_EBI_EN
+VSS_HANDLER(interface_ebi_init);
+VSS_HANDLER(interface_ebi_fini);
+VSS_HANDLER(interface_ebi_config);
+VSS_HANDLER(interface_ebi_read);
+VSS_HANDLER(interface_ebi_write);
+VSS_HANDLER(interface_ebi_read8);
+VSS_HANDLER(interface_ebi_write8);
+VSS_HANDLER(interface_ebi_read16);
+VSS_HANDLER(interface_ebi_write16);
+VSS_HANDLER(interface_ebi_read32);
+VSS_HANDLER(interface_ebi_write32);
+
+static const struct vss_cmd_t ebi_cmd[] =
+{
+	VSS_CMD(	"init",
+				"initialize ebi module, format: ebi.init",
+				interface_ebi_init,
+				NULL),
+	VSS_CMD(	"fini",
+				"finialize ebi module, format: ebi.fini",
+				interface_ebi_fini,
+				NULL),
+	VSS_CMD(	"config",
+				"config ebi port, format: ebi.config PORT",
+				interface_ebi_config,
+				NULL),
+	VSS_CMD(	"read",
+				"read data from ebi port, format: ebi.read PORT ADDR SIZE COUNT",
+				interface_ebi_read,
+				NULL),
+	VSS_CMD(	"write",
+				"write data to ebi port, format: ebi.write PORT ADDR SIZE COUNT [DATA...]",
+				interface_ebi_write,
+				NULL),
+	VSS_CMD(	"read8",
+				"read data8 from ebi port, format: ebi.read PORT ADDR8 COUNT",
+				interface_ebi_read8,
+				NULL),
+	VSS_CMD(	"write8",
+				"write data8 to ebi port, format: ebi.write PORT ADDR8 COUNT [DATA8...]",
+				interface_ebi_write8,
+				NULL),
+	VSS_CMD(	"read16",
+				"read data16 from ebi port, format: ebi.read PORT ADDR16 COUNT",
+				interface_ebi_read16,
+				NULL),
+	VSS_CMD(	"write16",
+				"write data16 to ebi port, format: ebi.write PORT ADDR16 COUNT [DATA16...]",
+				interface_ebi_write16,
+				NULL),
+	VSS_CMD(	"read32",
+				"read data32 from ebi port, format: ebi.read PORT ADDR32 COUNT",
+				interface_ebi_read32,
+				NULL),
+	VSS_CMD(	"write32",
+				"write data32 to ebi port, format: ebi.write PORT ADDR32 SIZE COUNT [DATA32...]",
+				interface_ebi_write32,
+				NULL),
+	VSS_CMD_END
+};
+#endif
+
 VSS_HANDLER(interface_delay_us);
 VSS_HANDLER(interface_delay_ms);
 VSS_HANDLER(interface_commit);
@@ -324,6 +387,12 @@ static const struct vss_cmd_t interface_cmd[] =
 				"pwm interface handler",
 				interface_pwm_init,
 				pwm_cmd),
+#endif
+#if INTERFACE_EBI_EN
+	VSS_CMD(	"ebi",
+				"ebi interface handler",
+				interface_ebi_init,
+				ebi_cmd),
 #endif
 	VSS_CMD(	"delay",
 				"delay interface handler",
@@ -1090,6 +1159,404 @@ VSS_HANDLER(interface_pwm_out)
 	if (!err)
 	{
 		err = ifs->pwm.out(0, count, buff);
+	}
+	
+	if (buff != NULL)
+	{
+		free(buff);
+		buff = NULL;
+	}
+	return err;
+}
+#endif
+
+#if INTERFACE_EBI_EN
+VSS_HANDLER(interface_ebi_init)
+{
+	struct INTERFACES_INFO_T *ifs = NULL;
+	
+	VSS_CHECK_ARGC(1);
+	INTERFACE_ASSERT(IFS_EBI, "ebi");
+	
+	return  ifs->ebi.init(0);
+}
+
+VSS_HANDLER(interface_ebi_fini)
+{
+	struct INTERFACES_INFO_T *ifs = NULL;
+	
+	VSS_CHECK_ARGC(1);
+	INTERFACE_ASSERT(IFS_EBI, "ebi");
+	
+	return ifs->ebi.fini(0);
+}
+
+VSS_HANDLER(interface_ebi_config)
+{
+	struct ebi_nor_info_t nor_info;
+	struct INTERFACES_INFO_T *ifs = NULL;
+	uint8_t index;
+	
+	VSS_CHECK_ARGC(2);
+	INTERFACE_ASSERT(IFS_EBI, "ebi");
+	
+	index = (uint8_t)strtoul(argv[1], NULL, 0);
+	
+	nor_info.common_info.data_width = 16;
+	nor_info.common_info.wait_signal = EBI_WAIT_NONE;
+	nor_info.param.addr_multiplex = false;
+	nor_info.param.timing.clock_hz_r = 
+		nor_info.param.timing.clock_hz_w = 0;
+	nor_info.param.timing.address_setup_cycle_r = 
+		nor_info.param.timing.address_setup_cycle_w = 7;
+	nor_info.param.timing.address_hold_cycle_r = 
+		nor_info.param.timing.address_hold_cycle_w = 7;
+	nor_info.param.timing.data_setup_cycle_r = 
+		nor_info.param.timing.data_setup_cycle_w = 63;
+	return ifs->ebi.config(0, index | EBI_TGTTYP_NOR, &nor_info);
+}
+
+VSS_HANDLER(interface_ebi_read)
+{
+	struct INTERFACES_INFO_T *ifs = NULL;
+	vsf_err_t err = VSFERR_NONE;
+	uint8_t index;
+	uint32_t address;
+	uint8_t size;
+	uint8_t *buff = NULL;
+	uint32_t count;
+	
+	VSS_CHECK_ARGC(5);
+	INTERFACE_ASSERT(IFS_EBI, "ebi");
+	
+	index = (uint8_t)strtoul(argv[1], NULL, 0);
+	address = (uint32_t)strtoul(argv[2], NULL, 0);
+	size = (uint8_t)strtoul(argv[3], NULL, 0);
+	count = (uint32_t)strtoul(argv[4], NULL, 0);
+	
+	switch (size)
+	{
+	case 1:
+		// 8-bit mode
+		break;
+	case 2:
+		// 16-bit mode
+		address <<= 1;
+		break;
+	case 4:
+		// 32-bit mode
+		address <<= 2;
+		break;
+	default:
+		LOG_ERROR(ERRMSG_INVALID_PARAMETER, "size");
+		return VSFERR_INVALID_PARAMETER;
+	}
+	
+	buff = (uint8_t *)malloc(size * count);
+	if (NULL == buff)
+	{
+		return VSFERR_FAIL;
+	}
+	
+	if (!err)
+	{
+		err = ifs->ebi.read(0, index | EBI_TGTTYP_NOR, address, size, buff, count);
+	}
+	if (!err)
+	{
+		err = ifs->peripheral_commit();
+	}
+	if (!err)
+	{
+		LOG_BUF_STD(size, buff, count, LOG_INFO);
+	}
+	
+	if (buff != NULL)
+	{
+		free(buff);
+		buff = NULL;
+	}
+	return err;
+}
+
+VSS_HANDLER(interface_ebi_write)
+{
+	struct INTERFACES_INFO_T *ifs = NULL;
+	vsf_err_t err = VSFERR_NONE;
+	uint8_t index;
+	uint32_t address;
+	uint8_t size;
+	uint8_t *buff = NULL;
+	uint32_t count;
+	
+	VSS_CHECK_ARGC_MIN(5);
+	INTERFACE_ASSERT(IFS_EBI, "ebi");
+	
+	index = (uint8_t)strtoul(argv[1], NULL, 0);
+	address = (uint32_t)strtoul(argv[2], NULL, 0);
+	size = (uint8_t)strtoul(argv[3], NULL, 0);
+	count = (uint32_t)strtoul(argv[4], NULL, 0);
+	
+	switch (size)
+	{
+	case 1:
+		// 8-bit mode
+		break;
+	case 2:
+		// 16-bit mode
+		address <<= 1;
+		break;
+	case 4:
+		// 32-bit mode
+		address <<= 2;
+		break;
+	default:
+		LOG_ERROR(ERRMSG_INVALID_PARAMETER, "size");
+		return VSFERR_INVALID_PARAMETER;
+	}
+	VSS_CHECK_ARGC(count + 5);
+	
+	err = vss_get_binary_buffer(argc - 5, &argv[5], size, count, (void**)&buff);
+	if (!err)
+	{
+		err = ifs->ebi.write(0, index | EBI_TGTTYP_NOR, address, size, buff, count);
+	}
+	
+	if (buff != NULL)
+	{
+		free(buff);
+		buff = NULL;
+	}
+	return err;
+}
+
+VSS_HANDLER(interface_ebi_read8)
+{
+	struct INTERFACES_INFO_T *ifs = NULL;
+	vsf_err_t err = VSFERR_NONE;
+	uint8_t index;
+	uint32_t address;
+	uint8_t size = 1;
+	uint8_t *buff = NULL;
+	uint32_t count;
+	
+	VSS_CHECK_ARGC(4);
+	INTERFACE_ASSERT(IFS_EBI, "ebi");
+	
+	index = (uint8_t)strtoul(argv[1], NULL, 0);
+	address = ((uint32_t)strtoul(argv[2], NULL, 0)) << 0;
+	count = (uint32_t)strtoul(argv[3], NULL, 0);
+	
+	buff = (uint8_t *)malloc(count * size);
+	if (NULL == buff)
+	{
+		return VSFERR_FAIL;
+	}
+	
+	if (!err)
+	{
+		err = ifs->ebi.read(0, index | EBI_TGTTYP_NOR, address, size,
+							(uint8_t *)buff, count);
+	}
+	if (!err)
+	{
+		err = ifs->peripheral_commit();
+	}
+	if (!err)
+	{
+		LOG_BUF_STD(size, buff, count, LOG_INFO);
+	}
+	
+	if (buff != NULL)
+	{
+		free(buff);
+		buff = NULL;
+	}
+	return err;
+}
+
+VSS_HANDLER(interface_ebi_write8)
+{
+	struct INTERFACES_INFO_T *ifs = NULL;
+	vsf_err_t err = VSFERR_NONE;
+	uint8_t index;
+	uint32_t address;
+	uint8_t size = 1;
+	uint8_t *buff = NULL;
+	uint32_t count;
+	
+	VSS_CHECK_ARGC_MIN(4);
+	INTERFACE_ASSERT(IFS_EBI, "ebi");
+	
+	index = (uint8_t)strtoul(argv[1], NULL, 0);
+	address = ((uint32_t)strtoul(argv[2], NULL, 0)) << 0;
+	count = (uint32_t)strtoul(argv[3], NULL, 0);
+	
+	VSS_CHECK_ARGC(count + 4);
+	
+	err = vss_get_binary_buffer(argc - 4, &argv[4], size, count, (void**)&buff);
+	if (!err)
+	{
+		err = ifs->ebi.write(0, index | EBI_TGTTYP_NOR, address, size,
+							(uint8_t *)buff, count);
+	}
+	
+	if (buff != NULL)
+	{
+		free(buff);
+		buff = NULL;
+	}
+	return err;
+}
+
+VSS_HANDLER(interface_ebi_read16)
+{
+	struct INTERFACES_INFO_T *ifs = NULL;
+	vsf_err_t err = VSFERR_NONE;
+	uint8_t index;
+	uint32_t address;
+	uint8_t size = 2;
+	uint16_t *buff = NULL;
+	uint32_t count;
+	
+	VSS_CHECK_ARGC(4);
+	INTERFACE_ASSERT(IFS_EBI, "ebi");
+	
+	index = (uint8_t)strtoul(argv[1], NULL, 0);
+	address = ((uint32_t)strtoul(argv[2], NULL, 0)) << 1;
+	count = (uint32_t)strtoul(argv[3], NULL, 0);
+	
+	buff = (uint16_t *)malloc(count * size);
+	if (NULL == buff)
+	{
+		return VSFERR_FAIL;
+	}
+	
+	if (!err)
+	{
+		err = ifs->ebi.read(0, index | EBI_TGTTYP_NOR, address, size,
+							(uint8_t *)buff, count);
+	}
+	if (!err)
+	{
+		err = ifs->peripheral_commit();
+	}
+	if (!err)
+	{
+		LOG_BUF_STD(size, buff, count, LOG_INFO);
+	}
+	
+	if (buff != NULL)
+	{
+		free(buff);
+		buff = NULL;
+	}
+	return err;
+}
+
+VSS_HANDLER(interface_ebi_write16)
+{
+	struct INTERFACES_INFO_T *ifs = NULL;
+	vsf_err_t err = VSFERR_NONE;
+	uint8_t index;
+	uint32_t address;
+	uint8_t size = 2;
+	uint16_t *buff = NULL;
+	uint32_t count;
+	
+	VSS_CHECK_ARGC_MIN(4);
+	INTERFACE_ASSERT(IFS_EBI, "ebi");
+	
+	index = (uint8_t)strtoul(argv[1], NULL, 0);
+	address = ((uint32_t)strtoul(argv[2], NULL, 0)) << 1;
+	count = (uint32_t)strtoul(argv[3], NULL, 0);
+	
+	VSS_CHECK_ARGC(count + 4);
+	
+	err = vss_get_binary_buffer(argc - 4, &argv[4], size, count, (void**)&buff);
+	if (!err)
+	{
+		err = ifs->ebi.write(0, index | EBI_TGTTYP_NOR, address, size,
+							(uint8_t *)buff, count);
+	}
+	
+	if (buff != NULL)
+	{
+		free(buff);
+		buff = NULL;
+	}
+	return err;
+}
+
+VSS_HANDLER(interface_ebi_read32)
+{
+	struct INTERFACES_INFO_T *ifs = NULL;
+	vsf_err_t err = VSFERR_NONE;
+	uint8_t index;
+	uint32_t address;
+	uint8_t size = 4;
+	uint32_t *buff = NULL;
+	uint32_t count;
+	
+	VSS_CHECK_ARGC(4);
+	INTERFACE_ASSERT(IFS_EBI, "ebi");
+	
+	index = (uint8_t)strtoul(argv[1], NULL, 0);
+	address = ((uint32_t)strtoul(argv[2], NULL, 0)) << 2;
+	count = (uint32_t)strtoul(argv[3], NULL, 0);
+	
+	buff = (uint32_t *)malloc(count * size);
+	if (NULL == buff)
+	{
+		return VSFERR_FAIL;
+	}
+	
+	if (!err)
+	{
+		err = ifs->ebi.read(0, index | EBI_TGTTYP_NOR, address, size,
+							(uint8_t *)buff, count);
+	}
+	if (!err)
+	{
+		err = ifs->peripheral_commit();
+	}
+	if (!err)
+	{
+		LOG_BUF_STD(size, buff, count, LOG_INFO);
+	}
+	
+	if (buff != NULL)
+	{
+		free(buff);
+		buff = NULL;
+	}
+	return err;
+}
+
+VSS_HANDLER(interface_ebi_write32)
+{
+	struct INTERFACES_INFO_T *ifs = NULL;
+	vsf_err_t err = VSFERR_NONE;
+	uint8_t index;
+	uint32_t address;
+	uint8_t size = 4;
+	uint32_t *buff = NULL;
+	uint32_t count;
+	
+	VSS_CHECK_ARGC_MIN(4);
+	INTERFACE_ASSERT(IFS_EBI, "ebi");
+	
+	index = (uint8_t)strtoul(argv[1], NULL, 0);
+	address = ((uint32_t)strtoul(argv[2], NULL, 0)) << 2;
+	count = (uint32_t)strtoul(argv[3], NULL, 0);
+	
+	VSS_CHECK_ARGC(count + 4);
+	
+	err = vss_get_binary_buffer(argc - 4, &argv[4], size, count, (void**)&buff);
+	if (!err)
+	{
+		err = ifs->ebi.write(0, index | EBI_TGTTYP_NOR, address, size,
+							(uint8_t *)buff, count);
 	}
 	
 	if (buff != NULL)
