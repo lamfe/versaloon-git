@@ -288,7 +288,7 @@ static const struct vss_cmd_t ebi_cmd[] =
 				interface_ebi_fini,
 				NULL),
 	VSS_CMD(	"config",
-				"config ebi port, format: ebi.config PORT",
+				"config ebi port, format: ebi.config PORT [ADD_SET DATA_SET]",
 				interface_ebi_config,
 				NULL),
 	VSS_CMD(	"read",
@@ -1196,11 +1196,17 @@ VSS_HANDLER(interface_ebi_config)
 	struct ebi_nor_info_t nor_info;
 	struct INTERFACES_INFO_T *ifs = NULL;
 	uint8_t index;
+	uint8_t add_set = 15, data_set  = 255;
 	
-	VSS_CHECK_ARGC(2);
+	VSS_CHECK_ARGC_2(2, 4);
 	INTERFACE_ASSERT(IFS_EBI, "ebi");
 	
 	index = (uint8_t)strtoul(argv[1], NULL, 0);
+	if (argc == 4)
+	{
+		add_set = (uint8_t)strtoul(argv[2], NULL, 0);
+		data_set = (uint8_t)strtoul(argv[3], NULL, 0);
+	}
 	
 	nor_info.common_info.data_width = 16;
 	nor_info.common_info.wait_signal = EBI_WAIT_NONE;
@@ -1208,11 +1214,11 @@ VSS_HANDLER(interface_ebi_config)
 	nor_info.param.timing.clock_hz_r = 
 		nor_info.param.timing.clock_hz_w = 0;
 	nor_info.param.timing.address_setup_cycle_r = 
-		nor_info.param.timing.address_setup_cycle_w = 7;
+		nor_info.param.timing.address_setup_cycle_w = add_set;
 	nor_info.param.timing.address_hold_cycle_r = 
-		nor_info.param.timing.address_hold_cycle_w = 7;
+		nor_info.param.timing.address_hold_cycle_w = 0;
 	nor_info.param.timing.data_setup_cycle_r = 
-		nor_info.param.timing.data_setup_cycle_w = 63;
+		nor_info.param.timing.data_setup_cycle_w = data_set;
 	return ifs->ebi.config(0, index | EBI_TGTTYP_NOR, &nor_info);
 }
 
