@@ -83,7 +83,8 @@ VSS_HANDLER(programmer_list)
 	
 	for (i = 0; interfaces_info[i] != NULL; i++)
 	{
-		if (interfaces_info[i]->comm->display_all != NULL)
+		if ((interfaces_info[i]->comm != NULL) &&
+			(interfaces_info[i]->comm->display_all != NULL))
 		{
 			j += interfaces_info[i]->comm->display_all();
 		}

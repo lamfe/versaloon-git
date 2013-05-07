@@ -33,6 +33,9 @@
 
 #define STM32_HSI_FREQ_HZ				(8 * 1000 * 1000)
 
+#define STM32_UID_ADDR					0x1FFFF7E8
+#define STM32_UID_SIZE					12
+
 static struct stm32_info_t stm32_info = 
 {
 	CORE_CLKSRC, CORE_PLLSRC, CORE_RTCSRC, CORE_HSE_TYPE, OSC0_FREQ_HZ, 
@@ -180,7 +183,21 @@ vsf_err_t stm32_interface_init(void *p)
 	return VSFERR_NONE;
 }
 
-
+uint32_t stm32_uid_get(uint8_t *buffer, uint32_t size)
+{
+	if (NULL == buffer)
+	{
+		return 0;
+	}
+	
+	if (size > STM32_UID_SIZE)
+	{
+		size = STM32_UID_SIZE;
+	}
+	
+	memcpy(buffer, (uint8_t *)STM32_UID_ADDR, size);
+	return size;
+}
 
 #define CM3_SYSTICK_ENABLE				(1 << 0)
 #define CM3_SYSTICK_CLKSOURCE			(1 << 2)

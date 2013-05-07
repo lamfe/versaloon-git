@@ -56,6 +56,8 @@ vsf_err_t stm32_interface_fini(void *p);
 vsf_err_t stm32_interface_reset(void *p);
 vsf_err_t stm32_interface_get_info(struct stm32_info_t **info);
 
+uint32_t stm32_uid_get(uint8_t *buffer, uint32_t size);
+
 vsf_err_t stm32_delay_delayms(uint16_t ms);
 vsf_err_t stm32_delay_delayus(uint16_t us);
 
