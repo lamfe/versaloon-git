@@ -288,7 +288,7 @@ static const struct vss_cmd_t ebi_cmd[] =
 				interface_ebi_fini,
 				NULL),
 	VSS_CMD(	"config",
-				"config ebi port, format: ebi.config PORT [ADD_SET DATA_SET]",
+				"config ebi port, format: ebi.config PORT WIDTH [ADD_SET DATA_SET]",
 				interface_ebi_config,
 				NULL),
 	VSS_CMD(	"read",
@@ -1196,19 +1196,26 @@ VSS_HANDLER(interface_ebi_config)
 	struct ebi_nor_info_t nor_info;
 	struct INTERFACES_INFO_T *ifs = NULL;
 	uint8_t index;
+	uint8_t width;
 	uint8_t add_set = 15, data_set  = 255;
 	
-	VSS_CHECK_ARGC_2(2, 4);
+	VSS_CHECK_ARGC_2(3, 5);
 	INTERFACE_ASSERT(IFS_EBI, "ebi");
 	
 	index = (uint8_t)strtoul(argv[1], NULL, 0);
-	if (argc == 4)
+	width = (uint8_t)strtoul(argv[2], NULL, 0);
+	if ((width != 8) && (width != 16) && (width != 32))
 	{
-		add_set = (uint8_t)strtoul(argv[2], NULL, 0);
-		data_set = (uint8_t)strtoul(argv[3], NULL, 0);
+		LOG_ERROR(ERRMSG_INVALID_PARAMETER, "width");
+		return VSFERR_INVALID_PARAMETER;
+	}
+	if (argc == 5)
+	{
+		add_set = (uint8_t)strtoul(argv[3], NULL, 0);
+		data_set = (uint8_t)strtoul(argv[4], NULL, 0);
 	}
 	
-	nor_info.common_info.data_width = 16;
+	nor_info.common_info.data_width = width;
 	nor_info.common_info.wait_signal = EBI_WAIT_NONE;
 	nor_info.param.addr_multiplex = false;
 	nor_info.param.timing.clock_hz_r = 
