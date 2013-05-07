@@ -408,7 +408,7 @@ static const uint8_t MSConVersaloon_StringProduct[] =
 };
 #endif
 
-static const uint8_t Versaloon_StringSerial[50] =
+static uint8_t Versaloon_StringSerial[50] =
 {
 	50,
 	USB_DESC_TYPE_STRING,
@@ -875,6 +875,24 @@ vsf_err_t usb_protocol_init(void)
 	fakefat32_param.sectors_per_cluster = 1;
 	usbtoxxx_dir[2].size = usbtoxxx_dir[3].size = fakefat32_param.sector_size;
 #endif
+	
+	// initialize Serial Number of USB Device
+	{
+		int i, pos;
+		uint8_t uid[32];
+		uint32_t uid_size = core_interfaces.uid.get(uid, sizeof(uid));
+		const char hex[] = "0123456789ABCDEF";
+		
+		pos = 2;
+		for (i = 0; i < min(uid_size, (sizeof(Versaloon_StringSerial) - 2) / 2);
+				i++)
+		{
+			Versaloon_StringSerial[pos] = hex[(uid[i] >> 0) & 0x0F];
+			pos += 2;
+			Versaloon_StringSerial[pos] = hex[(uid[i] >> 4) & 0x0F];
+			pos += 2;
+		}
+	}
 	
 	USB_Pull_Init();
 	USB_Connect();

@@ -32,6 +32,12 @@ const struct interfaces_info_t core_interfaces =
 		CORE_FINI(__TARGET_CHIP__),
 		CORE_RESET(__TARGET_CHIP__),
 	}
+#if IFS_UNIQUEID_EN
+	// unique ID
+	,{
+		CORE_UID_GET(__TARGET_CHIP__),
+	}
+#endif
 #if IFS_FLASH_EN
 	// flash
 	,{

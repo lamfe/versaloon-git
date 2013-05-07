@@ -38,6 +38,19 @@ vsf_err_t CORE_INIT(__TARGET_CHIP__)(void *p);
 vsf_err_t CORE_FINI(__TARGET_CHIP__)(void *p);
 vsf_err_t CORE_RESET(__TARGET_CHIP__)(void *p);
 
+#if IFS_UNIQUEID_EN
+
+struct interface_uid_t
+{
+	uint32_t (*get)(uint8_t *buffer, uint32_t size);
+};
+
+#define CORE_UID_GET(m)					__CONNECT(m, _uid_get)
+
+uint32_t CORE_UID_GET(__TARGET_CHIP__)(uint8_t *buffer, uint32_t size);
+
+#endif
+
 #if IFS_FLASH_EN
 
 struct interface_flash_t
@@ -1035,6 +1048,9 @@ struct interfaces_info_t
 	struct interfaces_comm_t *comm;
 	
 	struct interface_core_t core;
+#if IFS_UNIQUEID_EN
+	struct interface_uid_t uid;
+#endif
 #if IFS_FLASH_EN
 	struct interface_flash_t flash;
 #endif

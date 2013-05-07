@@ -13,7 +13,8 @@
  *      YYYY-MM-DD:     What(by Who)                                      *
  *      2008-11-07:     created(by SimonQian)                             *
  **************************************************************************/
- 
+
+#define IFS_UNIQUEID_EN						1
 #define IFS_FLASH_EN						1
 #define IFS_GPIO_EN							1
 #define IFS_TIMER_EN						1
