@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date 03/04/2013 12:57:50
+EESchema Schematic File Version 2  date 08/05/2013 00:56:52
 LIBS:power
 LIBS:simonqian
 LIBS:stm32
@@ -36,7 +36,7 @@ $Descr User 18000 7000
 encoding utf-8
 Sheet 1 1
 Title ""
-Date "3 apr 2013"
+Date "7 may 2013"
 Rev ""
 Comp ""
 Comment1 ""
@@ -2910,7 +2910,7 @@ $EndComp
 Text Label 10050 5000 3    60   ~ 0
 EBI_NCS3
 Text Label 9850 5000 3    60   ~ 0
-EBI_A0
+EBI_A10
 Text Label 9750 5000 3    60   ~ 0
 EBI_NWE
 Text Label 9650 5000 3    60   ~ 0
