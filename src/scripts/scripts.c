@@ -420,7 +420,7 @@ static vsf_err_t vss_function_run(struct vss_function_t *f, uint16_t argc,
 			SNPRINTF(&param_str[2], 5, "%d", (int)i);
 			strcat(param_str, "}");
 			
-			vss_format_cmd(&cmd_str, param_str, (char *)argv[1 + i]);
+			vss_format_cmd(&cmd_str, param_str, (char *)argv[i]);
 			if (NULL == cmd_str)
 			{
 				return VSFERR_FAIL;
