@@ -50,6 +50,34 @@ struct vss_param_list_t
 	struct sllist list;
 };
 
+struct vss_function_cmd_t
+{
+	char *func_cmd;
+	struct vss_function_cmd_t *next;
+};
+struct vss_function_t
+{
+	char *func_name;
+	uint16_t param_number;
+	struct vss_function_cmd_t *cmds;
+	struct vss_function_t *next;
+};
+
+struct vss_env_t
+{
+	// public
+	struct vss_param_list_t *param;
+	struct vss_cmd_list_t *cmd;
+	struct vss_function_t *func;
+	
+	// private
+	int8_t exit_mark;
+	uint32_t loop_cnt;
+	bool fatal_error;
+	uint8_t *quiet_mode_ptr;
+	struct vss_function_t *cur_function;
+};
+
 #define VSS_CMD_LIST(str_name, cmd_array)		\
 			{(str_name), (struct vss_cmd_t *)(cmd_array), {NULL}}
 #define VSS_PARAM_LIST(str_name, param_array)	\
