@@ -49,8 +49,8 @@ static const struct vss_param_t vss_param[] =
 };
 
 VSS_HANDLER(vss_param_register);
-VSS_HANDLER(vss_param_set_value);
-VSS_HANDLER(vss_param_set_str);
+VSS_HANDLER(vss_param_value);
+VSS_HANDLER(vss_param_str);
 VSS_HANDLER(vss_param_free);
 VSS_HANDLER(vss_help);
 VSS_HANDLER(vss_shell);
@@ -77,11 +77,11 @@ static struct vss_cmd_t vss_generic_cmd[] =
 				NULL),
 	VSS_CMD(	"param_val",
 				"set value of parameters, format: param_val NAME VALUE",
-				vss_param_set_value,
+				vss_param_value,
 				NULL),
 	VSS_CMD(	"param_str",
 				"set string of parameters, format: param_str NAME STRING",
-				vss_param_set_str,
+				vss_param_str,
 				NULL),
 	VSS_CMD(	"param_free",
 				"free parameter(s), format: param_free [PARAM_NAME]",
@@ -163,6 +163,39 @@ static struct vss_cmd_t vss_generic_cmd[] =
 };
 static struct vss_cmd_list_t vss_generic_cmd_list = 
 										VSS_CMD_LIST("vss", vss_generic_cmd);
+
+VSS_HANDLER(vss_math_add);
+VSS_HANDLER(vss_math_sub);
+VSS_HANDLER(vss_math_mul);
+VSS_HANDLER(vss_math_div);
+VSS_HANDLER(vss_math_mod);
+
+static struct vss_cmd_t vss_math_cmd[] =
+{
+	VSS_CMD(	"add",
+				"add function, format: add PARAM VAL0 VAL1",
+				vss_math_add,
+				NULL),
+	VSS_CMD(	"sub",
+				"sub function, format: sub PARAM VAL0 VAL1",
+				vss_math_sub,
+				NULL),
+	VSS_CMD(	"mul",
+				"mul function, format: mul PARAM VAL0 VAL1",
+				vss_math_mul,
+				NULL),
+	VSS_CMD(	"div",
+				"div function, format: div PARAM VAL0 VAL1",
+				vss_math_div,
+				NULL),
+	VSS_CMD(	"mod",
+				"mod function, format: mod PARAM VAL0 VAL1",
+				vss_math_sub,
+				NULL),
+	VSS_CMD_END
+};
+static struct vss_cmd_list_t vss_math_cmd_list = 
+										VSS_CMD_LIST("math", vss_math_cmd);
 
 static struct vss_env_t vss_env;
 
@@ -517,6 +550,11 @@ vsf_err_t vss_init(void)
 	vss_env.param = NULL;
 	vss_env.cmd = NULL;
 	err = vss_register_cmd_list(&vss_generic_cmd_list);
+	if (err)
+	{
+		goto error;
+	}
+	err = vss_register_cmd_list(&vss_math_cmd_list);
 	if (err)
 	{
 		goto error;
@@ -1303,11 +1341,11 @@ VSS_HANDLER(vss_param_register)
 	return vss_add_param_to_list(pl, param);
 }
 
-VSS_HANDLER(vss_param_set_value)
+VSS_HANDLER(vss_param_value)
 {
 	struct vss_param_t *param = NULL;
 	
-	VSS_CHECK_ARGC(3);
+	VSS_CHECK_ARGC_2(2, 3);
 	
 	param = vss_search_param_in_lists(vss_env.param, argv[1]);
 	if (NULL == param)
@@ -1317,16 +1355,24 @@ VSS_HANDLER(vss_param_set_value)
 		return VSFERR_FAIL;
 	}
 	
-	param->value = strtoul(argv[2], NULL, 0);
+	if (2 == argc)
+	{
+		LOG_INFO(INFOMSG_REG_08X, param->param_name, (uint32_t)param->value);
+	}
+	else if (3 == argc)
+	{
+		param->value = strtoul(argv[2], NULL, 0);
+		vss_param_value(2, argv);
+	}
 	
 	return VSFERR_NONE;
 }
 
-VSS_HANDLER(vss_param_set_str)
+VSS_HANDLER(vss_param_str)
 {
 	struct vss_param_t *param = NULL;
 	
-	VSS_CHECK_ARGC(3);
+	VSS_CHECK_ARGC_2(2, 3);
 	
 	param = vss_search_param_in_lists(vss_env.param, argv[1]);
 	if (NULL == param)
@@ -1336,11 +1382,26 @@ VSS_HANDLER(vss_param_set_str)
 		return VSFERR_FAIL;
 	}
 	
-	if (param->value_str != NULL)
+	if (2 == argc)
 	{
-		free(param->value_str);
+		if (param->value_str != NULL)
+		{
+			LOG_INFO("%s = %s", param->param_name, param->value_str);
+		}
+		else
+		{
+			LOG_INFO("%s = NULL", param->param_name);
+		}
 	}
-	param->value_str = strdup(argv[2]);
+	else if (3 == argc)
+	{
+		if (param->value_str != NULL)
+		{
+			free(param->value_str);
+		}
+		param->value_str = strdup(argv[2]);
+		vss_param_str(2, argv);
+	}
 	
 	return VSFERR_NONE;
 }
@@ -1823,6 +1884,97 @@ VSS_HANDLER(vss_function_free)
 		}
 	}
 	
+	return VSFERR_NONE;
+}
+
+// math
+VSS_HANDLER(vss_math_add)
+{
+	struct vss_param_t *param = NULL;
+	
+	VSS_CHECK_ARGC(4);
+	
+	param = vss_search_param_in_lists(vss_env.param, argv[1]);
+	if (NULL == param)
+	{
+		LOG_ERROR(ERRMSG_NOT_SUPPORT_AS, argv[1], "parameters");
+		vss_print_help(argv[0]);
+		return VSFERR_FAIL;
+	}
+	
+	param->value = strtoul(argv[2], NULL, 0) + strtoul(argv[3], NULL, 0);
+	return VSFERR_NONE;
+}
+
+VSS_HANDLER(vss_math_sub)
+{
+	struct vss_param_t *param = NULL;
+	
+	VSS_CHECK_ARGC(4);
+	
+	param = vss_search_param_in_lists(vss_env.param, argv[1]);
+	if (NULL == param)
+	{
+		LOG_ERROR(ERRMSG_NOT_SUPPORT_AS, argv[1], "parameters");
+		vss_print_help(argv[0]);
+		return VSFERR_FAIL;
+	}
+	
+	param->value = strtoul(argv[2], NULL, 0) - strtoul(argv[3], NULL, 0);
+	return VSFERR_NONE;
+}
+
+VSS_HANDLER(vss_math_mul)
+{
+	struct vss_param_t *param = NULL;
+	
+	VSS_CHECK_ARGC(4);
+	
+	param = vss_search_param_in_lists(vss_env.param, argv[1]);
+	if (NULL == param)
+	{
+		LOG_ERROR(ERRMSG_NOT_SUPPORT_AS, argv[1], "parameters");
+		vss_print_help(argv[0]);
+		return VSFERR_FAIL;
+	}
+	
+	param->value = strtoul(argv[2], NULL, 0) * strtoul(argv[3], NULL, 0);
+	return VSFERR_NONE;
+}
+
+VSS_HANDLER(vss_math_div)
+{
+	struct vss_param_t *param = NULL;
+	
+	VSS_CHECK_ARGC(4);
+	
+	param = vss_search_param_in_lists(vss_env.param, argv[1]);
+	if (NULL == param)
+	{
+		LOG_ERROR(ERRMSG_NOT_SUPPORT_AS, argv[1], "parameters");
+		vss_print_help(argv[0]);
+		return VSFERR_FAIL;
+	}
+	
+	param->value = strtoul(argv[2], NULL, 0) / strtoul(argv[3], NULL, 0);
+	return VSFERR_NONE;
+}
+
+VSS_HANDLER(vss_math_mod)
+{
+	struct vss_param_t *param = NULL;
+	
+	VSS_CHECK_ARGC(4);
+	
+	param = vss_search_param_in_lists(vss_env.param, argv[1]);
+	if (NULL == param)
+	{
+		LOG_ERROR(ERRMSG_NOT_SUPPORT_AS, argv[1], "parameters");
+		vss_print_help(argv[0]);
+		return VSFERR_FAIL;
+	}
+	
+	param->value = strtoul(argv[2], NULL, 0) % strtoul(argv[3], NULL, 0);
 	return VSFERR_NONE;
 }
 
