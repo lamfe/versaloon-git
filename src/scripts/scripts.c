@@ -388,6 +388,11 @@ vsf_err_t vss_add_param_array_to_list(struct vss_param_list_t *paramlist,
 	
 	for (i = 0; i < n; i++)
 	{
+		if (NULL == param_array[i].param_name)
+		{
+			return VSFERR_FAIL;
+		}
+		
 		param = (struct vss_param_t *)malloc(sizeof(struct vss_param_t));
 		if (NULL == param)
 		{
@@ -398,9 +403,15 @@ vsf_err_t vss_add_param_array_to_list(struct vss_param_list_t *paramlist,
 		sllist_init_node(param->list);
 		
 		param->param_name = strdup(param_array[i].param_name);
-		param->help_str = strdup(param_array[i].help_str);
+		if (param_array[i].help_str != NULL)
+		{
+			param->help_str = strdup(param_array[i].help_str);
+		}
 		param->value = param_array[i].value;
-		param->value_str = strdup(param_array[i].value_str);
+		if (param_array[i].value_str != NULL)
+		{
+			param->value_str = strdup(param_array[i].value_str);
+		}
 		
 		err = vss_add_param_to_list(paramlist, param);
 		if (err)
