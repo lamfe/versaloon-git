@@ -1035,7 +1035,7 @@ vsf_err_t vss_run_cmd(uint16_t argc, char *argv[])
 						free(param->value_str);
 					}
 					param->value_str = (char *)malloc(32);
-					itoa((int)param->value, param->value_str, 10);
+					snprintf(param->value_str, 32, "%d", (int)param->value);
 				}
 				argv[i] = param->value_str;
 			}
