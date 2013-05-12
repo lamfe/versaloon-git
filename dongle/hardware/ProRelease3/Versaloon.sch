@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date 08/05/2013 01:59:13
+EESchema Schematic File Version 2  date 12/05/2013 11:31:59
 LIBS:power
 LIBS:simonqian
 LIBS:stm32
@@ -30,13 +30,14 @@ LIBS:siliconi
 LIBS:contrib
 LIBS:valves
 LIBS:versaloon
+LIBS:Versaloon-cache
 EELAYER 27 0
 EELAYER END
 $Descr User 18000 7000
 encoding utf-8
 Sheet 1 1
 Title ""
-Date "7 may 2013"
+Date "12 may 2013"
 Rev ""
 Comp ""
 Comment1 ""
@@ -326,7 +327,7 @@ Wire Wire Line
 Wire Wire Line
 	5250 6050 5250 6300
 Wire Wire Line
-	5150 6050 5150 6300
+	5150 6050 5150 6350
 Wire Wire Line
 	4850 6050 4850 6300
 Wire Wire Line
@@ -461,8 +462,6 @@ Wire Wire Line
 	1950 700  1950 950 
 Wire Wire Line
 	2050 700  2050 950 
-Wire Wire Line
-	1850 700  1850 950 
 Wire Wire Line
 	1750 700  1750 950 
 Wire Wire Line
@@ -729,7 +728,7 @@ Wire Wire Line
 Wire Wire Line
 	700  4250 950  4250
 Wire Wire Line
-	700  4650 950  4650
+	650  4650 950  4650
 Wire Wire Line
 	700  4750 950  4750
 Wire Wire Line
@@ -1001,8 +1000,6 @@ Wire Wire Line
 Connection ~ 9850 6050
 Wire Wire Line
 	10750 4200 10650 4200
-Wire Wire Line
-	12250 3500 10700 3500
 Wire Wire Line
 	11050 6050 11450 6050
 Wire Wire Line
@@ -1630,7 +1627,7 @@ A0
 Text Label 9500 3150 0    60   ~ 0
 NCS0
 Text Label 10050 3150 2    60   ~ 0
-NCS1
+RDY0
 Text Label 11250 3150 2    60   ~ 0
 NCS0
 Text Label 11250 750  2    60   ~ 0
@@ -1681,8 +1678,6 @@ Text Label 11250 3050 2    60   ~ 0
 NOE
 Text Label 12050 3050 0    60   ~ 0
 NWAIT
-Text Label 12050 3150 0    60   ~ 0
-NCS1
 Text Label 12050 750  0    60   ~ 0
 A1
 Text Label 12050 850  0    60   ~ 0
@@ -2094,8 +2089,8 @@ F 11 "" H 12050 3250 60  0001 C CNN "域8"
 	1    12050 3250
 	0    -1   -1   0   
 $EndComp
-Text Label 11200 3500 0    60   ~ 0
-EBI_NWAIT0
+Text Label 10550 3150 0    60   ~ 0
+EBI_RDY0
 $Comp
 L R R31
 U 1 1 512638F0
@@ -2437,19 +2432,13 @@ Text Label 14300 4250 3    60   ~ 0
 SELECT
 Text Label 14000 1050 0    60   ~ 0
 USB_PU
-Text Label 11750 3500 0    60   ~ 0
-EBI_NWAIT1
 Text Label 9100 3050 2    60   ~ 0
 EBI_A23
-Text Label 10550 3150 0    60   ~ 0
-EBI_NCS1
 Text Label 9000 3150 2    60   ~ 0
 EBI_NCS0
 Text Label 10200 2750 2    60   ~ 0
 EBI_NUB
 Text Label 10200 3050 2    60   ~ 0
-EBI_NWAIT
-Text Label 10700 3500 0    60   ~ 0
 EBI_NWAIT
 Text Label 9100 2950 2    60   ~ 0
 EBI_A22
@@ -2569,7 +2558,6 @@ Text Label 12250 4300 2    60   ~ 0
 CAN_TX
 Text Label 5250 950  1    60   ~ 0
 SWCLK
-NoConn ~ 6050 1950
 Text Label 6050 2050 0    60   ~ 0
 SWDIO
 Text Label 15750 2800 0    60   ~ 0
@@ -2696,12 +2684,12 @@ $EndComp
 $Comp
 L LOGO G0
 U 1 1 511D06BC
-P 750 750
-F 0 "G0" H 750 674 60  0001 C CNN
-F 1 "LOGO" H 750 826 60  0001 C CNN
-F 2 "" H 750 750 60  0001 C CNN
-F 3 "" H 750 750 60  0001 C CNN
-	1    750  750 
+P 600 600
+F 0 "G0" H 600 524 60  0001 C CNN
+F 1 "LOGO" H 600 676 60  0001 C CNN
+F 2 "" H 600 600 60  0001 C CNN
+F 3 "" H 600 600 60  0001 C CNN
+	1    600  600 
 	1    0    0    -1  
 $EndComp
 $Comp
@@ -3402,9 +3390,7 @@ EBI_A14
 Text Label 6050 3550 0    60   ~ 0
 EBI_A15
 Text Label 6050 3450 0    60   ~ 0
-EBI_NWAIT0
-Text Label 6050 3350 0    60   ~ 0
-EBI_NWAIT1
+EBI_RDY0
 Text Label 4750 950  1    60   ~ 0
 EBI_D2
 Text Label 4650 950  1    60   ~ 0
@@ -3443,8 +3429,6 @@ Text Label 950  4850 2    60   ~ 0
 VCC
 Text Label 950  4750 2    60   ~ 0
 GND
-Text Label 950  4650 2    60   ~ 0
-GND
 Text Label 950  4950 2    60   ~ 0
 VCC
 Text Label 950  4150 2    60   ~ 0
@@ -3465,7 +3449,7 @@ Text Label 4950 6050 3    60   ~ 0
 T_TRST
 Text Label 5050 6050 3    60   ~ 0
 T_SRST
-Text Label 5150 6050 3    60   ~ 0
+Text Label 5850 6350 0    60   ~ 0
 GND
 Text Label 5250 6050 3    60   ~ 0
 VCC
@@ -3509,7 +3493,7 @@ Text Label 1750 6050 3    60   ~ 0
 PWR_CTRL
 Text Label 2050 6050 3    60   ~ 0
 KEY
-Text Label 1850 950  1    60   ~ 0
+Text Label 1100 650  2    60   ~ 0
 GND
 Text Label 1750 950  1    60   ~ 0
 VCC
@@ -5104,4 +5088,222 @@ Connection ~ 12050 6050
 Wire Wire Line
 	12050 6350 11950 6350
 Connection ~ 12050 6200
+$Comp
+L R R60
+U 1 1 518F04D0
+P 1350 650
+F 0 "R60" V 1250 650 50  0000 C CNN
+F 1 "NC" V 1350 650 50  0000 C CNN
+F 2 "" H 1350 650 60  0001 C CNN
+F 3 "" H 1350 650 60  0001 C CNN
+F 4 "" H 1350 650 60  0001 C CNN "域1"
+F 5 "" H 1350 650 60  0001 C CNN "域2"
+F 6 "" H 1350 650 60  0001 C CNN "域3"
+F 7 "" H 1350 650 60  0001 C CNN "域4"
+F 8 "" H 1350 650 60  0001 C CNN "域5"
+F 9 "" H 1350 650 60  0001 C CNN "域6"
+F 10 "" H 1350 650 60  0001 C CNN "域7"
+F 11 "" H 1350 650 60  0001 C CNN "域8"
+	1    1350 650 
+	0    1    1    0   
+$EndComp
+$Comp
+L R R61
+U 1 1 518F04EB
+P 1350 750
+F 0 "R61" V 1450 750 50  0000 C CNN
+F 1 "NC" V 1350 750 50  0000 C CNN
+F 2 "" H 1350 750 60  0001 C CNN
+F 3 "" H 1350 750 60  0001 C CNN
+F 4 "" H 1350 750 60  0001 C CNN "域1"
+F 5 "" H 1350 750 60  0001 C CNN "域2"
+F 6 "" H 1350 750 60  0001 C CNN "域3"
+F 7 "" H 1350 750 60  0001 C CNN "域4"
+F 8 "" H 1350 750 60  0001 C CNN "域5"
+F 9 "" H 1350 750 60  0001 C CNN "域6"
+F 10 "" H 1350 750 60  0001 C CNN "域7"
+F 11 "" H 1350 750 60  0001 C CNN "域8"
+	1    1350 750 
+	0    1    1    0   
+$EndComp
+Text Label 1100 750  2    60   ~ 0
+VCC
+Wire Wire Line
+	900  650  1100 650 
+Wire Wire Line
+	900  750  1100 750 
+$Comp
+L C C60
+U 1 1 518F19B5
+P 6400 1950
+F 0 "C60" V 6350 2000 50  0000 L CNN
+F 1 "100nF" V 6250 1850 50  0000 L CNN
+F 2 "" H 6400 1950 60  0001 C CNN
+F 3 "" H 6400 1950 60  0001 C CNN
+F 4 "" H 6400 1950 60  0001 C CNN "域1"
+F 5 "" H 6400 1950 60  0001 C CNN "域2"
+F 6 "" H 6400 1950 60  0001 C CNN "域3"
+F 7 "" H 6400 1950 60  0001 C CNN "域4"
+F 8 "" H 6400 1950 60  0001 C CNN "域5"
+F 9 "" H 6400 1950 60  0001 C CNN "域6"
+F 10 "" H 6400 1950 60  0001 C CNN "域7"
+F 11 "" H 6400 1950 60  0001 C CNN "域8"
+	1    6400 1950
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	6050 1950 6200 1950
+$Comp
+L GND #PWR042
+U 1 1 518F1C85
+P 6600 1950
+F 0 "#PWR042" H 6600 1950 30  0001 C CNN
+F 1 "GND" H 6600 1880 30  0001 C CNN
+F 2 "" H 6600 1950 60  0001 C CNN
+F 3 "" H 6600 1950 60  0001 C CNN
+F 4 "" H 6600 1950 60  0001 C CNN "域1"
+F 5 "" H 6600 1950 60  0001 C CNN "域2"
+F 6 "" H 6600 1950 60  0001 C CNN "域3"
+F 7 "" H 6600 1950 60  0001 C CNN "域4"
+F 8 "" H 6600 1950 60  0001 C CNN "域5"
+F 9 "" H 6600 1950 60  0001 C CNN "域6"
+F 10 "" H 6600 1950 60  0001 C CNN "域7"
+F 11 "" H 6600 1950 60  0001 C CNN "域8"
+	1    6600 1950
+	0    -1   -1   0   
+$EndComp
+$Comp
+L C C62
+U 1 1 518F1F6E
+P 5600 6200
+F 0 "C62" V 5550 6250 50  0000 L CNN
+F 1 "100nF" V 5450 6100 50  0000 L CNN
+F 2 "" H 5600 6200 60  0001 C CNN
+F 3 "" H 5600 6200 60  0001 C CNN
+F 4 "" H 5600 6200 60  0001 C CNN "域1"
+F 5 "" H 5600 6200 60  0001 C CNN "域2"
+F 6 "" H 5600 6200 60  0001 C CNN "域3"
+F 7 "" H 5600 6200 60  0001 C CNN "域4"
+F 8 "" H 5600 6200 60  0001 C CNN "域5"
+F 9 "" H 5600 6200 60  0001 C CNN "域6"
+F 10 "" H 5600 6200 60  0001 C CNN "域7"
+F 11 "" H 5600 6200 60  0001 C CNN "域8"
+	1    5600 6200
+	0    1    1    0   
+$EndComp
+$Comp
+L R R62
+U 1 1 518F1F7C
+P 5600 6350
+F 0 "R62" V 5650 6600 50  0000 C CNN
+F 1 "NC" V 5600 6350 50  0000 C CNN
+F 2 "" H 5600 6350 60  0001 C CNN
+F 3 "" H 5600 6350 60  0001 C CNN
+F 4 "" H 5600 6350 60  0001 C CNN "域1"
+F 5 "" H 5600 6350 60  0001 C CNN "域2"
+F 6 "" H 5600 6350 60  0001 C CNN "域3"
+F 7 "" H 5600 6350 60  0001 C CNN "域4"
+F 8 "" H 5600 6350 60  0001 C CNN "域5"
+F 9 "" H 5600 6350 60  0001 C CNN "域6"
+F 10 "" H 5600 6350 60  0001 C CNN "域7"
+F 11 "" H 5600 6350 60  0001 C CNN "域8"
+	1    5600 6350
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	5150 6350 5350 6350
+Wire Wire Line
+	5350 6350 5350 6200
+Wire Wire Line
+	5350 6200 5400 6200
+Wire Wire Line
+	5800 6200 5850 6200
+Wire Wire Line
+	5850 6200 5850 6350
+Wire Wire Line
+	5850 6350 6050 6350
+Wire Wire Line
+	1850 950  1850 650 
+Wire Wire Line
+	1850 650  1600 650 
+Wire Wire Line
+	1600 650  1600 750 
+$Comp
+L R R63
+U 1 1 518F39DA
+P 650 5600
+F 0 "R63" V 550 5750 50  0000 C CNN
+F 1 "NC" V 650 5600 50  0000 C CNN
+F 2 "" H 650 5600 60  0001 C CNN
+F 3 "" H 650 5600 60  0001 C CNN
+F 4 "" H 650 5600 60  0001 C CNN "域1"
+F 5 "" H 650 5600 60  0001 C CNN "域2"
+F 6 "" H 650 5600 60  0001 C CNN "域3"
+F 7 "" H 650 5600 60  0001 C CNN "域4"
+F 8 "" H 650 5600 60  0001 C CNN "域5"
+F 9 "" H 650 5600 60  0001 C CNN "域6"
+F 10 "" H 650 5600 60  0001 C CNN "域7"
+F 11 "" H 650 5600 60  0001 C CNN "域8"
+	1    650  5600
+	1    0    0    -1  
+$EndComp
+$Comp
+L R R64
+U 1 1 518F39E8
+P 750 5600
+F 0 "R64" V 850 5750 50  0000 C CNN
+F 1 "NC" V 750 5600 50  0000 C CNN
+F 2 "" H 750 5600 60  0001 C CNN
+F 3 "" H 750 5600 60  0001 C CNN
+F 4 "" H 750 5600 60  0001 C CNN "域1"
+F 5 "" H 750 5600 60  0001 C CNN "域2"
+F 6 "" H 750 5600 60  0001 C CNN "域3"
+F 7 "" H 750 5600 60  0001 C CNN "域4"
+F 8 "" H 750 5600 60  0001 C CNN "域5"
+F 9 "" H 750 5600 60  0001 C CNN "域6"
+F 10 "" H 750 5600 60  0001 C CNN "域7"
+F 11 "" H 750 5600 60  0001 C CNN "域8"
+	1    750  5600
+	1    0    0    -1  
+$EndComp
+$Comp
+L C C63
+U 1 1 518F39F6
+P 900 5600
+F 0 "C63" V 850 5650 50  0000 L CNN
+F 1 "100nF" V 750 5500 50  0000 L CNN
+F 2 "" H 900 5600 60  0001 C CNN
+F 3 "" H 900 5600 60  0001 C CNN
+F 4 "" H 900 5600 60  0001 C CNN "域1"
+F 5 "" H 900 5600 60  0001 C CNN "域2"
+F 6 "" H 900 5600 60  0001 C CNN "域3"
+F 7 "" H 900 5600 60  0001 C CNN "域4"
+F 8 "" H 900 5600 60  0001 C CNN "域5"
+F 9 "" H 900 5600 60  0001 C CNN "域6"
+F 10 "" H 900 5600 60  0001 C CNN "域7"
+F 11 "" H 900 5600 60  0001 C CNN "域8"
+	1    900  5600
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	650  4650 650  5350
+Wire Wire Line
+	650  5350 900  5350
+Text Label 650  5850 3    60   ~ 0
+GND
+Text Label 750  5850 3    60   ~ 0
+VCC
+Wire Wire Line
+	650  6050 650  5850
+Wire Wire Line
+	750  6050 750  5850
+Wire Wire Line
+	900  5350 900  5400
+Connection ~ 750  5350
+Text Label 900  5800 3    60   ~ 0
+GND
+Wire Wire Line
+	900  6000 900  5800
+Text Label 12050 3150 0    60   ~ 0
+RDY0
 $EndSCHEMATC
