@@ -323,7 +323,6 @@ static void free_vsprog_system(void)
 static void free_all_and_exit(int exit_code)
 {
 	vss_run_script("free-all");
-	vss_run_script("function_free");
 	vss_fini();
 	free_vsprog_system();
 	exit(exit_code);
@@ -818,7 +817,7 @@ int main(int argc, char* argv[])
 	vss_argv[0] = "init";
 	vss_argv[1] = argv[0];
 	vss_argc = 2;
-	if (vss_run_cmd(vss_argc, (const char **)vss_argv))
+	if (vss_run_cmd(vss_argc, (char **)vss_argv))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "initialize");
 		free_all_and_exit(EXIT_SUCCESS);
@@ -885,7 +884,7 @@ int main(int argc, char* argv[])
 			{
 				lose_argu = 1;
 			}
-			else if (vss_run_cmd(vss_argc, (const char **)vss_argv))
+			else if (vss_run_cmd(vss_argc, (char **)vss_argv))
 			{
 				free_all_and_exit(EXIT_FAILURE);
 			}
@@ -914,7 +913,7 @@ int main(int argc, char* argv[])
 		vss_argv[0] = "run";
 		vss_argv[1] = argv[optind++];
 		vss_argc = 2;
-		if (vss_run_cmd(vss_argc, (const char **)vss_argv))
+		if (vss_run_cmd(vss_argc, (char **)vss_argv))
 		{
 			LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "run", vss_argv[1]);
 			free_all_and_exit(EXIT_SUCCESS);

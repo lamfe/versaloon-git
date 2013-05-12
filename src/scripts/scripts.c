@@ -33,25 +33,25 @@
 #include "interfaces.h"
 #include "scripts.h"
 
-#define PARAM_EXIT_ON_FAIL					0
-#define PARAM_NO_COMMIT						1
-static struct vss_param_t vss_param[] =
+#define VSS_PARAM_EXIT_ON_FAIL				"exit_on_fail"
+#define VSS_PARAM_NO_COMMIT					"no_commit"
+
+static const struct vss_param_t vss_param[] =
 {
-	VSS_PARAM(	"exit_on_fail",
+	VSS_PARAM(	VSS_PARAM_EXIT_ON_FAIL,
 				"whether to exit when execute fail",
 				0,
 				NULL),
-	VSS_PARAM(	"no_commit",
+	VSS_PARAM(	VSS_PARAM_NO_COMMIT,
 				"no commit on command except commit command",
 				0,
 				NULL),
-	VSS_PARAM_END
 };
-static struct vss_param_list_t vss_param_list = VSS_PARAM_LIST("vss", vss_param);
 
-
-
-VSS_HANDLER(vss_set_parameters);
+VSS_HANDLER(vss_param_register);
+VSS_HANDLER(vss_param_set_value);
+VSS_HANDLER(vss_param_set_str);
+VSS_HANDLER(vss_param_free);
 VSS_HANDLER(vss_help);
 VSS_HANDLER(vss_shell);
 VSS_HANDLER(vss_run);
@@ -72,8 +72,20 @@ VSS_HANDLER(vss_out);
 static struct vss_cmd_t vss_generic_cmd[] =
 {
 	VSS_CMD(	"param",
-				"set parameters, format: param NAME VALUE",
-				vss_set_parameters,
+				"register parameter, format: param NAME [HELPER]",
+				vss_param_register,
+				NULL),
+	VSS_CMD(	"param_val",
+				"set value of parameters, format: param_val NAME VALUE",
+				vss_param_set_value,
+				NULL),
+	VSS_CMD(	"param_str",
+				"set string of parameters, format: param_str NAME STRING",
+				vss_param_set_str,
+				NULL),
+	VSS_CMD(	"param_free",
+				"free parameter(s), format: param_free [PARAM_NAME]",
+				vss_param_free,
 				NULL),
 	VSS_CMD(	"vss-help",
 				"print vss-help message, format: vss-help <OBJECT>",
@@ -154,8 +166,8 @@ static struct vss_cmd_list_t vss_generic_cmd_list =
 
 static struct vss_env_t vss_env;
 
-static struct vss_param_t* vss_search_param(struct vss_param_t *param,
-											const char *name)
+static struct vss_param_t* vss_search_param_in_list(struct vss_param_t *param,
+													const char *name)
 {
 	char *name_temp;
 	struct vss_param_t *param_temp;
@@ -168,7 +180,8 @@ static struct vss_param_t* vss_search_param(struct vss_param_t *param,
 				(name[strlen(param->param_name)] == '.'))
 			{
 				name_temp = (char *)&name[strlen(param->param_name) + 1];
-				param_temp = vss_search_param(param->subparam, name_temp);
+				param_temp = vss_search_param_in_list(param->subparam,
+														name_temp);
 				if (param_temp != NULL)
 				{
 					return param_temp;
@@ -183,12 +196,13 @@ static struct vss_param_t* vss_search_param(struct vss_param_t *param,
 			}
 		}
 		
-		param++;
+		param = sllist_get_container(param->list.next, struct vss_param_t,
+										list);
 	}
 	return NULL;
 }
 
-static struct vss_param_t* vss_search_param_in_list(
+static struct vss_param_t* vss_search_param_in_lists(
 				struct vss_param_list_t *param_list, const char *name)
 {
 	struct vss_param_t *param_temp = NULL;
@@ -212,7 +226,8 @@ static struct vss_param_t* vss_search_param_in_list(
 			name_temp = (char *)name;
 		}
 		
-		param_temp = vss_search_param(temp->param, (const char *)name_temp);
+		param_temp = vss_search_param_in_list(temp->param,
+												(const char *)name_temp);
 		if (param_temp != NULL)
 		{
 			return param_temp;
@@ -223,6 +238,47 @@ static struct vss_param_t* vss_search_param_in_list(
 	}
 	
 	return NULL;
+}
+
+static struct vss_param_list_t* vss_search_paramlist(
+				struct vss_param_list_t *param_list, const char *name)
+{
+	while (param_list != NULL)
+	{
+		if (!strcmp(param_list->list_name, name))
+		{
+			return param_list;
+		}
+		param_list = sllist_get_container(param_list->list.next,
+											struct vss_param_list_t, list);
+	}
+	return NULL;
+}
+
+static vsf_err_t vss_add_param_to_list(struct vss_param_list_t *param_list,
+										struct vss_param_t* param)
+{
+	if ((NULL == param_list) || (NULL == param))
+	{
+		return VSFERR_INVALID_PARAMETER;
+	}
+	
+	if (vss_search_param_in_lists(param_list, param->param_name) != NULL)
+	{
+		// already exists
+		return VSFERR_FAIL;
+	}
+	
+	if (NULL == param_list->param)
+	{
+		sllist_init_node(param->list);
+	}
+	else
+	{
+		sllist_insert(param->list, param_list->param->list);
+	}
+	param_list->param = param;
+	return VSFERR_NONE;
 }
 
 static struct vss_cmd_t* vss_search_cmd(struct vss_cmd_t *cmd, const char *name)
@@ -292,70 +348,217 @@ static struct vss_cmd_t* vss_search_cmd_in_list(struct vss_cmd_list_t *cmd_list,
 
 vsf_err_t vss_register_cmd_list(struct vss_cmd_list_t *cmdlist)
 {
-	struct vss_cmd_list_t *temp;
-	
 	if (NULL == vss_env.cmd)
 	{
-		vss_env.cmd = cmdlist;
-		sllist_init_node(vss_env.cmd->list);
+		sllist_init_node(cmdlist->list);
 	}
 	else
 	{
-		temp = vss_env.cmd;
-		while (temp->list.next != NULL)
-		{
-			temp = sllist_get_container(temp->list.next,
-						struct vss_cmd_list_t, list);
-		}
-		sllist_init_node(cmdlist->list);
-		sllist_insert(temp->list, cmdlist->list);
+		sllist_insert(cmdlist->list, vss_env.cmd->list);
 	}
+	vss_env.cmd = cmdlist;
 	return VSFERR_NONE;
 }
 
 vsf_err_t vss_register_param_list(struct vss_param_list_t *paramlist)
 {
-	struct vss_param_list_t *temp;
-	
 	if (NULL == vss_env.param)
 	{
-		vss_env.param = paramlist;
-		sllist_init_node(vss_env.param->list);
+		sllist_init_node(paramlist->list);
 	}
 	else
 	{
-		temp = vss_env.param;
-		while (temp->list.next != NULL)
-		{
-			temp = sllist_get_container(temp->list.next,
-						struct vss_param_list_t, list);
-		}
-		sllist_init_node(paramlist->list);
-		sllist_insert(temp->list, paramlist->list);
+		sllist_insert(paramlist->list, vss_env.param->list);
 	}
+	vss_env.param = paramlist;
 	return VSFERR_NONE;
 }
 
-vsf_err_t vss_init(void)
+vsf_err_t vss_add_param_array_to_list(struct vss_param_list_t *paramlist,
+							const struct vss_param_t *param_array, uint32_t n)
 {
-	memset(&vss_env, 0, sizeof(vss_env));
-	vss_env.fatal_error = false;
+	struct vss_param_t *param;
+	vsf_err_t err = VSFERR_NONE;
+	uint32_t i;
 	
-	vss_env.param = NULL;
-	vss_env.cmd = NULL;
-	vss_register_cmd_list(&vss_generic_cmd_list);
-	vss_register_param_list(&vss_param_list);
+	if ((NULL == paramlist) || ((n > 0) && (NULL == param_array)))
+	{
+		return VSFERR_FAIL;
+	}
+	
+	for (i = 0; i < n; i++)
+	{
+		param = (struct vss_param_t *)malloc(sizeof(struct vss_param_t));
+		if (NULL == param)
+		{
+			err = VSFERR_NOT_ENOUGH_RESOURCES;
+			goto error;
+		}
+		memset(param, 0, sizeof(*param));
+		sllist_init_node(param->list);
+		
+		param->param_name = strdup(param_array[i].param_name);
+		param->help_str = strdup(param_array[i].help_str);
+		param->value = param_array[i].value;
+		param->value_str = strdup(param_array[i].value_str);
+		
+		err = vss_add_param_to_list(paramlist, param);
+		if (err)
+		{
+			goto error;
+		}
+	}
+	return err;
+error:
+	if (param != NULL)
+	{
+		free(param);
+		param = NULL;
+	}
+	return err;
+}
+
+static vsf_err_t vss_free_param_list(struct vss_param_list_t *pl);
+static vsf_err_t vss_free_param_node(struct vss_param_t *param)
+{
+	if (NULL == param)
+	{
+		return VSFERR_NONE;
+	}
+	
+	if (param->param_name != NULL)
+	{
+		free(param->param_name);
+		param->param_name = NULL;
+	}
+	if (param->help_str != NULL)
+	{
+		free(param->help_str);
+		param->help_str = NULL;
+	}
+	if (param->value_str != NULL)
+	{
+		free(param->value_str);
+		param->value_str = NULL;
+	}
+	if (param->subparam != NULL)
+	{
+		struct vss_param_list_t *pl =
+			(struct vss_param_list_t *)malloc(sizeof(struct vss_param_list_t));
+		
+		if (NULL == pl)
+		{
+			return VSFERR_FAIL;
+		}
+		memset(pl, 0, sizeof(struct vss_param_list_t));
+		sllist_init_node(pl->list);
+		pl->param = param->subparam;
+		vss_free_param_list(pl);
+		param->subparam = NULL;
+	}
+	free(param);
+	param = NULL;
+	return VSFERR_NONE;
+}
+
+static vsf_err_t vss_free_param_list(struct vss_param_list_t *pl)
+{
+	struct vss_param_t *param, *param_temp;
+	
+	if (pl->list_name != NULL)
+	{
+		free(pl->list_name);
+		pl->list_name = NULL;
+	}
+	
+	param = pl->param;
+	while (param != NULL)
+	{
+		param_temp = sllist_get_container(param->list.next, struct vss_param_t,
+											list);
+		vss_free_param_node(param);
+		param = param_temp;
+	}
+	
+	free(pl);
+	pl = NULL;
 	return VSFERR_NONE;
 }
 
 vsf_err_t vss_fini(void)
 {
+	vss_run_script("function_free");
+	vss_run_script("param_free");
+	
 	vss_env.param = NULL;
 	vss_env.cmd = NULL;
 	return VSFERR_NONE;
 }
 
-static struct vss_function_t *vss_function_search(struct vss_function_t *f, char *func_name)
+vsf_err_t vss_init(void)
+{
+	struct vss_param_list_t *param_list = NULL;
+	vsf_err_t err = VSFERR_NONE;
+	
+	memset(&vss_env, 0, sizeof(vss_env));
+	vss_env.fatal_error = false;
+	
+	vss_env.param = NULL;
+	vss_env.cmd = NULL;
+	err = vss_register_cmd_list(&vss_generic_cmd_list);
+	if (err)
+	{
+		goto error;
+	}
+	
+	// vss parameter
+	param_list =
+		(struct vss_param_list_t *)malloc(sizeof(struct vss_param_list_t));
+	if (NULL == param_list)
+	{
+		err = VSFERR_NOT_ENOUGH_RESOURCES;
+		goto error;
+	}
+	memset(param_list, 0, sizeof(*param_list));
+	param_list->list_name = strdup("vss");
+	sllist_init_node(param_list->list);
+	err = vss_register_param_list(param_list);
+	if (err)
+	{
+		goto error;
+	}
+	
+	// env parameter
+	param_list =
+		(struct vss_param_list_t *)malloc(sizeof(struct vss_param_list_t));
+	if (NULL == param_list)
+	{
+		err = VSFERR_NOT_ENOUGH_RESOURCES;
+		goto error;
+	}
+	memset(param_list, 0, sizeof(*param_list));
+	param_list->list_name = strdup("env");
+	sllist_init_node(param_list->list);
+	err = vss_register_param_list(param_list);
+	if (err)
+	{
+		goto error;
+	}
+	
+	// add param to vss_param_list
+	err = vss_add_param_array_to_list(param_list, vss_param, dimof(vss_param));
+	if (err)
+	{
+		goto error;
+	}
+	return err;
+error:
+	vss_fini();
+	return err;
+}
+
+static struct vss_function_t *vss_search_function_in_list(
+								struct vss_function_t *f, char *func_name)
 {
 	if (func_name != NULL)
 	{
@@ -365,7 +568,7 @@ static struct vss_function_t *vss_function_search(struct vss_function_t *f, char
 			{
 				return f;
 			}
-			f = f->next;
+			f = sllist_get_container(f->list.next, struct vss_function_t, list);
 		}
 	}
 	return NULL;
@@ -393,7 +596,7 @@ static void vss_format_cmd(char **cmd_str, char *param_str, char *replace_str)
 	} while (str_temp != NULL);
 }
 
-static vsf_err_t vss_function_run(struct vss_function_t *f, uint16_t argc,
+static vsf_err_t vss_run_function(struct vss_function_t *f, uint16_t argc,
 									const char *argv[])
 {
 	struct vss_function_cmd_t *cmd;
@@ -435,14 +638,17 @@ static vsf_err_t vss_function_run(struct vss_function_t *f, uint16_t argc,
 		}
 		free(cmd_str);
 		cmd_str = NULL;
-		cmd = cmd->next;
+		
+		cmd = sllist_get_container(cmd->list.next, struct vss_function_cmd_t,
+									list);
 	}
 	
 	return VSFERR_NONE;
 }
 
-static vsf_err_t vss_function_free_node(struct vss_function_t *f)
+static vsf_err_t vss_free_function_node(struct vss_function_t *f)
 {
+	char *vss_argv[2];
 	struct vss_function_cmd_t *cmd, *cmd_tmp;
 	
 	if (NULL == f)
@@ -454,7 +660,8 @@ static vsf_err_t vss_function_free_node(struct vss_function_t *f)
 	while (cmd != NULL)
 	{
 		cmd_tmp = cmd;
-		cmd = cmd->next;
+		cmd = sllist_get_container(cmd->list.next, struct vss_function_cmd_t,
+									list);
 		if (cmd_tmp->func_cmd != NULL)
 		{
 			free(cmd_tmp->func_cmd);
@@ -462,6 +669,15 @@ static vsf_err_t vss_function_free_node(struct vss_function_t *f)
 		}
 		free(cmd_tmp);
 	}
+	
+	// free function parameters
+	vss_argv[0] = "param_free";
+	vss_argv[1] = f->func_name;
+	if (vss_run_cmd(dimof(vss_argv), (char **)vss_argv))
+	{
+		return VSFERR_FAIL;
+	}
+	
 	if (f->func_name != NULL)
 	{
 		free(f->func_name);
@@ -469,7 +685,6 @@ static vsf_err_t vss_function_free_node(struct vss_function_t *f)
 	}
 	free(f);
 	f = NULL;
-	
 	return VSFERR_NONE;
 }
 
@@ -488,6 +703,7 @@ static vsf_err_t vss_append_function_cmd(struct vss_function_t *func, char * str
 		return VSFERR_FAIL;
 	}
 	memset(cmd, 0, sizeof(*cmd));
+	sllist_init_node(cmd->list);
 	
 	if (str != NULL)
 	{
@@ -507,11 +723,12 @@ static vsf_err_t vss_append_function_cmd(struct vss_function_t *func, char * str
 	}
 	else
 	{
-		while (tmp->next != NULL)
+		while (tmp->list.next != NULL)
 		{
-			tmp = tmp->next;
+			tmp = sllist_get_container(tmp->list.next, struct vss_function_cmd_t,
+										list);
 		}
-		tmp->next = cmd;
+		sllist_insert(tmp->list, cmd->list);
 	}
 	cmd = tmp = NULL;
 	return VSFERR_NONE;
@@ -752,8 +969,12 @@ vsf_err_t vss_cmd_supported(char *name)
 	}
 }
 
-vsf_err_t vss_run_cmd(uint16_t argc, const char *argv[])
+vsf_err_t vss_run_cmd(uint16_t argc, char *argv[])
 {
+	uint16_t i;
+	uint16_t param_len;
+	struct vss_param_list_t *pl = NULL;
+	struct vss_param_t *param = NULL;
 	struct vss_cmd_t *cmd = vss_search_cmd_in_list(vss_env.cmd, argv[0]);
 	
 	if (NULL == cmd)
@@ -761,13 +982,67 @@ vsf_err_t vss_run_cmd(uint16_t argc, const char *argv[])
 		LOG_ERROR(ERRMSG_NOT_SUPPORT, argv[0]);
 		return VSFERR_FAIL;
 	}
-	
 	if (NULL == cmd->processor)
 	{
 		LOG_ERROR(ERRMSG_INVALID_CMD, argv[0]);
 		return VSFERR_FAIL;
 	}
-	else if (cmd->processor(argc, argv))
+	
+	// preprocess
+	for (i = 1; i < argc; i++)
+	{
+		param_len = (uint16_t)strlen(argv[i]);
+
+		if (('$' == argv[i][0]) && (param_len > 3))
+		{
+			char *str = strdup(&argv[i][2]);
+			if (NULL == str)
+			{
+				LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
+				return VSFERR_NOT_ENOUGH_RESOURCES;
+			}
+			str[param_len - 3] = '\0';
+			
+			// first find parameter in "env" list
+			pl = vss_search_paramlist(vss_env.param, "env");
+			if (pl != NULL)
+			{
+				param = vss_search_param_in_list(pl->param, str);
+			}
+			if ((NULL == param) && (vss_env.cur_call_function != NULL))
+			{
+				// find parameter in cur call function list
+				pl = vss_search_paramlist(vss_env.param,
+										vss_env.cur_call_function->func_name);
+				if (pl != NULL)
+				{
+					param = vss_search_param_in_list(pl->param, str);
+				}
+			}
+			free(str);
+			
+			if (param != NULL)
+			{
+				if (('{' == argv[i][1]) && ('}' == argv[i][param_len - 1]))
+				{
+					// use value_str
+				}
+				else if (('[' == argv[i][1]) && (']' == argv[i][param_len - 1]))
+				{
+					// use value
+					if (param->value_str != NULL)
+					{
+						free(param->value_str);
+					}
+					param->value_str = (char *)malloc(32);
+					itoa((int)param->value, param->value_str, 10);
+				}
+				argv[i] = param->value_str;
+			}
+		}
+	}
+	
+	if (cmd->processor(argc, (const char **)argv))
 	{
 		LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "run command:", argv[0]);
 		return VSFERR_FAIL;
@@ -778,6 +1053,8 @@ vsf_err_t vss_run_cmd(uint16_t argc, const char *argv[])
 
 vsf_err_t vss_run_script(char *cmd)
 {
+	struct vss_param_t *param = NULL;
+	uint8_t no_commit = 0, exit_on_fail = 0;
 	char *buff_in_memory = NULL;
 	uint16_t argc;
 	char *argv[VSS_CFG_MAX_ARGC];
@@ -788,7 +1065,7 @@ vsf_err_t vss_run_script(char *cmd)
 	if (NULL == buff_in_memory)
 	{
 		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
-		return VSFERR_FAIL;
+		return VSFERR_NOT_ENOUGH_RESOURCES;
 	}
 	
 	argc = (uint16_t)dimof(argv);
@@ -811,6 +1088,18 @@ vsf_err_t vss_run_script(char *cmd)
 		goto end;
 	}
 	
+	// get param
+	param = vss_search_param_in_lists(vss_env.param, VSS_PARAM_EXIT_ON_FAIL);
+	if (param != NULL)
+	{
+		exit_on_fail = (uint8_t)param->value;
+	}
+	param = vss_search_param_in_lists(vss_env.param, VSS_PARAM_NO_COMMIT);
+	if (param != NULL)
+	{
+		no_commit = (uint8_t)param->value;
+	}
+	
 	// run command
 	run_times = vss_env.loop_cnt;
 	vss_env.loop_cnt = 0;
@@ -820,8 +1109,8 @@ vsf_err_t vss_run_script(char *cmd)
 	}
 	for (i = 0; i < run_times; i++)
 	{
-		err = vss_run_cmd(argc, (const char**)argv);
-		if (err && (vss_env.fatal_error || vss_param[PARAM_EXIT_ON_FAIL].value))
+		err = vss_run_cmd(argc, (char**)argv);
+		if (err && (vss_env.fatal_error || exit_on_fail))
 		{
 			if (run_times > 1)
 			{
@@ -836,7 +1125,7 @@ vsf_err_t vss_run_script(char *cmd)
 	if ((interfaces != NULL)
 		&& (interfaces->peripheral_commit != NULL))
 	{
-		if (0 == vss_param[PARAM_NO_COMMIT].value)
+		if (0 == no_commit)
 		{
 			if (interfaces->peripheral_commit())
 			{
@@ -855,6 +1144,8 @@ end:
 
 static vsf_err_t vss_run_file(FILE *f, char *head, uint8_t quiet)
 {
+	struct vss_param_t *param = NULL;
+	uint8_t exit_on_fail = 0;
 	char cmd_line[VSS_CFG_MAX_LINE_LENGTH], *cmd_ptr;
 	uint8_t cur_cmd_quiet, vss_quiet_mode;
 	uint32_t i;
@@ -911,20 +1202,27 @@ static vsf_err_t vss_run_file(FILE *f, char *head, uint8_t quiet)
 			PRINTF("%s", cmd_line);
 		}
 		
-		if ((vss_env.cur_function != NULL) && (cmd_ptr != strstr(cmd_ptr, "function_end")))
+		// get param
+		param = vss_search_param_in_lists(vss_env.param, VSS_PARAM_EXIT_ON_FAIL);
+		if (param != NULL)
+		{
+			exit_on_fail = (uint8_t)param->value;
+		}
+		
+		if ((vss_env.cur_register_function != NULL) && (cmd_ptr != strstr(cmd_ptr, "function_end")))
 		{
 			if ((cmd_ptr == strstr(cmd_ptr, "function")) && isspace((int)cmd_ptr[strlen("function")]))
 			{
 				LOG_ERROR("function nesting not supported");
 				return VSFERR_FAIL;
 			}
-			if (vss_append_function_cmd(vss_env.cur_function, cmd_ptr))
+			if (vss_append_function_cmd(vss_env.cur_register_function, cmd_ptr))
 			{
 				return VSFERR_FAIL;
 			}
 		}
 		else if (vss_run_script(cmd_ptr) &&
-				(vss_env.fatal_error || vss_param[PARAM_EXIT_ON_FAIL].value))
+				(vss_env.fatal_error || exit_on_fail))
 		{
 			return VSFERR_FAIL;
 		}
@@ -947,13 +1245,60 @@ static vsf_err_t vss_run_file(FILE *f, char *head, uint8_t quiet)
 
 // commands
 // param
-VSS_HANDLER(vss_set_parameters)
+VSS_HANDLER(vss_param_register)
+{
+	struct vss_param_list_t *pl = NULL;
+	struct vss_param_t *param = NULL;
+	char *param_list_name = NULL;
+	
+	VSS_CHECK_ARGC_2(2, 3);
+	
+	param = vss_search_param_in_lists(vss_env.param, argv[1]);
+	if ((param != NULL) || (vss_env.cur_call_function != NULL))
+	{
+		// already registered
+		// or calling function
+		return VSFERR_NONE;
+	}
+	
+	if (vss_env.cur_register_function != NULL)
+	{
+		param_list_name = vss_env.cur_register_function->func_name;
+	}
+	else
+	{
+		param_list_name = "env";
+	}
+	
+	pl = vss_search_paramlist(vss_env.param, param_list_name);
+	if (NULL == pl)
+	{
+		return VSFERR_FAIL;
+	}
+	
+	param = (struct vss_param_t *)malloc(sizeof(struct vss_param_t));
+	if (NULL == param)
+	{
+		return VSFERR_NOT_ENOUGH_RESOURCES;
+	}
+	memset(param, 0, sizeof(*param));
+	sllist_init_node(param->list);
+	
+	param->param_name = strdup(argv[1]);
+	if (3 == argc)
+	{
+		param->help_str = strdup(argv[2]);
+	}
+	return vss_add_param_to_list(pl, param);
+}
+
+VSS_HANDLER(vss_param_set_value)
 {
 	struct vss_param_t *param = NULL;
 	
 	VSS_CHECK_ARGC(3);
 	
-	param = vss_search_param_in_list(vss_env.param, argv[1]);
+	param = vss_search_param_in_lists(vss_env.param, argv[1]);
 	if (NULL == param)
 	{
 		LOG_ERROR(ERRMSG_NOT_SUPPORT_AS, argv[1], "parameters");
@@ -962,6 +1307,148 @@ VSS_HANDLER(vss_set_parameters)
 	}
 	
 	param->value = strtoul(argv[2], NULL, 0);
+	
+	return VSFERR_NONE;
+}
+
+VSS_HANDLER(vss_param_set_str)
+{
+	struct vss_param_t *param = NULL;
+	
+	VSS_CHECK_ARGC(3);
+	
+	param = vss_search_param_in_lists(vss_env.param, argv[1]);
+	if (NULL == param)
+	{
+		LOG_ERROR(ERRMSG_NOT_SUPPORT_AS, argv[1], "parameters");
+		vss_print_help(argv[0]);
+		return VSFERR_FAIL;
+	}
+	
+	if (param->value_str != NULL)
+	{
+		free(param->value_str);
+	}
+	param->value_str = strdup(argv[2]);
+	
+	return VSFERR_NONE;
+}
+
+VSS_HANDLER(vss_param_free)
+{
+	struct vss_param_list_t *pl;
+	
+	VSS_CHECK_ARGC_MAX(2);
+	
+	if ((2 == argc) && (vss_env.param != NULL))
+	{
+		struct vss_param_t *param;
+		
+		// search param_list first
+		pl = vss_search_paramlist(vss_env.param, argv[1]);
+		if (pl != NULL)
+		{
+			// free param_list
+			if (pl == vss_env.param)
+			{
+				vss_env.param = sllist_get_container(pl->list.next,
+											struct vss_param_list_t, list);
+			}
+			else
+			{
+				struct vss_param_list_t *plpoll = vss_env.param, *pltemp;
+				
+				while (plpoll != NULL)
+				{
+					pltemp = sllist_get_container(plpoll->list.next,
+											struct vss_param_list_t, list);
+					if (pltemp == pl)
+					{
+						pltemp = sllist_get_container(pl->list.next,
+											struct vss_param_list_t, list);
+						if (pltemp != NULL)
+						{
+							sllist_insert(plpoll->list, pltemp->list);
+						}
+						else
+						{
+							sllist_init_node(plpoll->list);
+						}
+						break;
+					}
+					plpoll = pltemp;
+				}
+				if (NULL == plpoll)
+				{
+					// shouldn't run here
+					return VSFERR_FAIL;
+				}
+			}
+			
+			return vss_free_param_list(pl);
+		}
+		
+		// search param
+		pl = vss_env.param;
+		while (pl != NULL)
+		{
+			param = vss_search_param_in_list(pl->param, argv[1]);
+			if (param != NULL)
+			{
+				if (param == pl->param)
+				{
+					pl->param = sllist_get_container(param->list.next,
+													struct vss_param_t, list);
+				}
+				else
+				{
+					struct vss_param_t *param_poll = pl->param, *param_temp;
+					
+					while (param_poll != NULL)
+					{
+						param_temp = sllist_get_container(param_poll->list.next,
+													struct vss_param_t, list);
+						if (param_temp == param)
+						{
+							param_temp = sllist_get_container(param->list.next,
+													struct vss_param_t, list);
+							if (param_temp != NULL)
+							{
+								sllist_insert(param_poll->list,
+												param_temp->list);
+							}
+							else
+							{
+								sllist_init_node(param_poll->list);
+							}
+							break;
+						}
+						param_poll = param_temp;
+					}
+					if (NULL == param_poll)
+					{
+						// shouldn't run here
+						return VSFERR_FAIL;
+					}
+				}
+				return vss_free_param_node(param);
+			}
+		}
+	}
+	else
+	{
+		// free all parameters
+		struct vss_param_list_t *ptemp;
+		
+		pl = vss_env.param;
+		while (pl != NULL)
+		{
+			ptemp = sllist_get_container(pl->list.next, struct vss_param_list_t,
+											list);
+			vss_free_param_list(pl);
+			pl = ptemp;
+		}
+	}
 	
 	return VSFERR_NONE;
 }
@@ -1169,17 +1656,18 @@ VSS_HANDLER(vss_quiet)
 
 VSS_HANDLER(vss_function_register)
 {
+	struct vss_param_list_t *param_list;
 	struct vss_function_t *func;
 	
 	VSS_CHECK_ARGC_2(2, 3);
 	
-	if (vss_env.cur_function != NULL)
+	if (vss_env.cur_register_function != NULL)
 	{
 		LOG_ERROR("function nesting");
 		return VSFERR_FAIL;
 	}
 	
-	if (NULL != vss_function_search(vss_env.func, (char *)argv[1]))
+	if (NULL != vss_search_function_in_list(vss_env.func, (char *)argv[1]))
 	{
 		LOG_ERROR("function %s already registered!!", argv[1]);
 		return VSFERR_FAIL;
@@ -1192,6 +1680,7 @@ VSS_HANDLER(vss_function_register)
 		return VSFERR_NOT_ENOUGH_RESOURCES;
 	}
 	memset(func, 0, sizeof(*func));
+	sllist_init_node(func->list);
 	if (3 == argc)
 	{
 		func->param_number = (uint16_t)strtoul(argv[2], NULL, 0);
@@ -1204,9 +1693,28 @@ VSS_HANDLER(vss_function_register)
 		LOG_ERROR(ERRMSG_NOT_ENOUGH_MEMORY);
 		return VSFERR_NOT_ENOUGH_RESOURCES;
 	}
-	func->next = vss_env.func;
-	vss_env.cur_function = vss_env.func = func;
-	return VSFERR_NONE;
+	
+	if (NULL == vss_env.func)
+	{
+		sllist_init_node(func->list);
+	}
+	else
+	{
+		sllist_insert(func->list, vss_env.func->list);
+	}
+	vss_env.cur_register_function = vss_env.func = func;
+	
+	// register function parameters
+	param_list =
+		(struct vss_param_list_t *)malloc(sizeof(struct vss_param_list_t));
+	if (NULL == param_list)
+	{
+		return VSFERR_NOT_ENOUGH_RESOURCES;
+	}
+	memset(param_list, 0, sizeof(*param_list));
+	param_list->list_name = strdup(vss_env.cur_register_function->func_name);
+	sllist_init_node(param_list->list);
+	return vss_register_param_list(param_list);
 }
 
 VSS_HANDLER(vss_function_end)
@@ -1214,88 +1722,96 @@ VSS_HANDLER(vss_function_end)
 	vsf_err_t err;
 	VSS_CHECK_ARGC(1);
 	
-	if (NULL == vss_env.cur_function)
+	if (NULL == vss_env.cur_register_function)
 	{
 		return VSFERR_FAIL;
 	}
 	
-	err = vss_append_function_cmd(vss_env.cur_function, NULL);
-	vss_env.cur_function = NULL;
+	err = vss_append_function_cmd(vss_env.cur_register_function, NULL);
+	vss_env.cur_register_function = NULL;
 	return err;
 }
 
 VSS_HANDLER(vss_function_call)
 {
-	struct vss_function_t *func;
+	struct vss_function_t *func, *cur_call_func;
+	vsf_err_t err;
 	
 	VSS_CHECK_ARGC_MIN(2);
 	
-	func = vss_function_search(vss_env.func, (char *)argv[1]);
-	if ((NULL == func) || (func->param_number != (argc - 2)) ||
-		vss_function_run(func, argc - 1, &argv[1]))
+	func = vss_search_function_in_list(vss_env.func, (char *)argv[1]);
+	if (NULL == func)
 	{
+		LOG_ERROR(ERRMSG_NOT_SUPPORT, argv[1]);
 		return VSFERR_FAIL;
 	}
-	return VSFERR_NONE;
+	
+	if (func->param_number != (argc - 2))
+	{
+		LOG_ERROR(ERRMSG_INVALID_TARGET, "parameter number");
+		return VSFERR_FAIL;
+	}
+	
+	cur_call_func = vss_env.cur_call_function;
+	vss_env.cur_call_function = func;
+	err = vss_run_function(func, argc - 1, &argv[1]);
+	vss_env.cur_call_function = cur_call_func;
+	return err;
 }
 
 VSS_HANDLER(vss_function_free)
 {
-	struct vss_function_t *func_tmp, *func;
-	vsf_err_t err = VSFERR_FAIL;
+	struct vss_function_t *f = vss_env.func;
 	
 	VSS_CHECK_ARGC_MAX(2);
 	
-	func = vss_env.func;
-	if (2 == argc)
+	if ((2 == argc) && (vss_env.func != NULL))
 	{
-		if (NULL == vss_function_search(vss_env.func, (char *)argv[1]))
+		if (!strcmp(f->func_name, argv[1]))
 		{
-			LOG_ERROR("function %s not exists!!", argv[1]);
-			return VSFERR_FAIL;
-		}
-		
-		if (!strcmp(func->func_name, argv[1]))
-		{
-			vss_env.func = func->next;
-			err = vss_function_free_node(func);
-			func = NULL;
+			vss_env.func =
+				sllist_get_container(f->list.next, struct vss_function_t, list);
+			return vss_free_function_node(f);
 		}
 		else
 		{
-			func_tmp = func;
-			func = func->next;
-			while (func != NULL)
+			struct vss_function_t *fnext, *ftemp;
+			
+			while (f != NULL)
 			{
-				if (!strcmp(func->func_name, argv[1]))
+				fnext = sllist_get_container(f->list.next,
+												struct vss_function_t, list);
+				if ((fnext != NULL) && !strcmp(fnext->func_name, argv[1]))
 				{
-					func_tmp->next = func->next;
-					err = vss_function_free_node(func);
-					func = NULL;
-					break;
+					ftemp = sllist_get_container(fnext->list.next,
+												struct vss_function_t, list);
+					if (ftemp != NULL)
+					{
+						sllist_insert(f->list, ftemp->list);
+					}
+					else
+					{
+						sllist_init_node(f->list);
+					}
+					return vss_free_function_node(fnext);
 				}
-				func_tmp = func;
-				func = func->next;
+				f = fnext;
 			}
 		}
 	}
 	else
 	{
 		// free all functions
-		err = VSFERR_NONE;
-		while (func != NULL)
+		struct vss_function_t *ftemp;
+		
+		while (f != NULL)
 		{
-			func_tmp = func;
-			func = func->next;
-			err = vss_function_free_node(func_tmp);
-			func_tmp = NULL;
-			if (err)
-			{
-				break;
-			}
+			ftemp = sllist_get_container(f->list.next, struct vss_function_t, list);
+			vss_free_function_node(f);
+			f = ftemp;
 		}
 	}
 	
-	return err;
+	return VSFERR_NONE;
 }
 

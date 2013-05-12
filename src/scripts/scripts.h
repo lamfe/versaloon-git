@@ -38,10 +38,13 @@ struct vss_cmd_list_t
 
 struct vss_param_t
 {
-	const char *param_name;
-	const char *help_str;
-	uint32_t value;
+	char *param_name;
+	char *help_str;
+	uint64_t value;
+	char *value_str;
 	struct vss_param_t *subparam;
+	
+	struct sllist list;
 };
 struct vss_param_list_t
 {
@@ -53,14 +56,15 @@ struct vss_param_list_t
 struct vss_function_cmd_t
 {
 	char *func_cmd;
-	struct vss_function_cmd_t *next;
+	struct sllist list;
 };
 struct vss_function_t
 {
 	char *func_name;
 	uint16_t param_number;
 	struct vss_function_cmd_t *cmds;
-	struct vss_function_t *next;
+	
+	struct sllist list;
 };
 
 struct vss_env_t
@@ -75,13 +79,12 @@ struct vss_env_t
 	uint32_t loop_cnt;
 	bool fatal_error;
 	uint8_t *quiet_mode_ptr;
-	struct vss_function_t *cur_function;
+	struct vss_function_t *cur_register_function;
+	struct vss_function_t *cur_call_function;
 };
 
 #define VSS_CMD_LIST(str_name, cmd_array)		\
 			{(str_name), (struct vss_cmd_t *)(cmd_array), {NULL}}
-#define VSS_PARAM_LIST(str_name, param_array)	\
-			{(str_name), (struct vss_param_t *)(param_array), {NULL}}
 
 #define VSS_HANDLER(name)						\
 	vsf_err_t (name)(uint16_t argc, const char *argv[])
@@ -99,9 +102,9 @@ struct vss_env_t
 		(name),\
 		(helpstr),\
 		(default),\
+		NULL,\
 		(struct vss_param_t *)(sub)\
 	}
-#define VSS_PARAM_END							VSS_PARAM(NULL, NULL, 0, NULL)
 
 #define VSS_CHECK_ARGC(n)						\
 	if (argc != (n))\
@@ -153,6 +156,8 @@ vsf_err_t vss_init(void);
 vsf_err_t vss_fini(void);
 vsf_err_t vss_register_cmd_list(struct vss_cmd_list_t *cmdlist);
 vsf_err_t vss_register_param_list(struct vss_param_list_t *paramlist);
+vsf_err_t vss_add_param_array_to_list(struct vss_param_list_t *paramlist,
+							const struct vss_param_t *param_array, uint32_t n);
 void vss_set_fatal_error(void);
 vsf_err_t vss_cmd_supported_by_notifier(const struct vss_cmd_t *notifier,
 										char *notify_cmd);
@@ -161,7 +166,7 @@ vsf_err_t vss_call_notifier(const struct vss_cmd_t *notifier,
 vsf_err_t vss_cmd_supported(char *name);
 vsf_err_t vss_print_help(const char *name);
 vsf_err_t vss_run_script(char *cmd);
-vsf_err_t vss_run_cmd(uint16_t argc, const char *argv[]);
+vsf_err_t vss_run_cmd(uint16_t argc, char *argv[]);
 vsf_err_t vss_get_binary_buffer(uint16_t argc, const char *argv[],
 						uint8_t data_size, uint32_t data_num, void **pbuff);
 
