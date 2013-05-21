@@ -381,7 +381,8 @@ static vsf_err_t vsfusbd_MSCBOT_class_poll(uint8_t iface,
 		{
 			if (err > 0)
 			{
-				return err;
+				// not failure here
+				return VSFERR_NONE;
 			}
 			return vsfusbd_MSCBOT_ErrHandler(device, param, USBMSC_CSW_FAIL);
 		}
