@@ -40,7 +40,7 @@ vsf_err_t usbtoebi_config(uint8_t index, uint8_t target_index,
 						void *param)
 {
 	uint8_t target_type = target_index & 0xF0;
-	struct ebi_nor_info_t *nor_info = (struct ebi_nor_info_t *)param;
+	struct ebi_sram_psram_nor_info_t *nor_info = (struct ebi_sram_psram_nor_info_t *)param;
 	struct ebi_nand_info_t *nand_info = (struct ebi_nand_info_t *)param;
 	
 #if PARAM_CHECK

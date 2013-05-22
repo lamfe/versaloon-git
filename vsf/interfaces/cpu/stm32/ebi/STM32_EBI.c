@@ -285,48 +285,13 @@ vsf_err_t stm32_ebi_fini(uint8_t index)
 	}
 }
 
-vsf_err_t stm32_ebi_config_sram(uint8_t index, struct ebi_sram_info_t *info)
-{
-#if __VSF_DEBUG__
-	if (NULL == info)
-	{
-		return VSFERR_INVALID_PARAMETER;
-	}
-#endif
-	
-	switch (index & 0x0F)
-	{
-	case 0:
-		return VSFERR_NONE;
-	default:
-		return VSFERR_NOT_SUPPORT;
-	}
-}
-
-vsf_err_t stm32_ebi_config_psram(uint8_t index, struct ebi_psram_info_t *info)
-{
-#if __VSF_DEBUG__
-	if (NULL == info)
-	{
-		return VSFERR_INVALID_PARAMETER;
-	}
-#endif
-	
-	switch (index & 0x0F)
-	{
-	case 0:
-		return VSFERR_NONE;
-	default:
-		return VSFERR_NOT_SUPPORT;
-	}
-}
-
-vsf_err_t stm32_ebi_config_nor(uint8_t index, struct ebi_nor_info_t *info)
+static vsf_err_t stm32_ebi_config_sram_psram_nor(uint8_t index,
+										uint32_t control, uint32_t timing,
+										struct ebi_sram_psram_nor_info_t *info)
 {
 	uint8_t target_index = (index >> 6) & 0x0F;
-	uint32_t bcr = STM32_FSMC_BCR_MTYP_NOR | STM32_FSMC_BCR_WREN | 
-					STM32_FSMC_BCR_FACCEN | STM32_FSMC_BCR_MBKEN;
-	uint32_t btr = STM32_FSMC_BTR_ACCMOD_B, bwtr = STM32_FSMC_BTR_ACCMOD_B;
+	uint32_t bcr = control | STM32_FSMC_BCR_WREN | STM32_FSMC_BCR_MBKEN;
+	uint32_t btr = timing, bwtr = timing;
 	uint8_t clkdiv;
 	struct stm32_info_t *cpu_info;
 	
@@ -455,7 +420,7 @@ vsf_err_t stm32_ebi_config_nor(uint8_t index, struct ebi_nor_info_t *info)
 			(info->param.timing.data_setup_cycle_w != 
 	 							info->param.timing.data_setup_cycle_r))
 		{
-			btr |= STM32_FSMC_BCR_EXTMOD;
+			bcr |= STM32_FSMC_BCR_EXTMOD;
 			if (info->param.timing.clock_hz_w)
 			{
 				clkdiv = cpu_info->ahb_freq_hz / info->param.timing.clock_hz_w;
@@ -481,6 +446,34 @@ vsf_err_t stm32_ebi_config_nor(uint8_t index, struct ebi_nor_info_t *info)
 	default:
 		return VSFERR_NOT_SUPPORT;
 	}
+}
+
+vsf_err_t stm32_ebi_config_nor(uint8_t index,
+								struct ebi_sram_psram_nor_info_t *info)
+{
+	return stm32_ebi_config_sram_psram_nor(index,
+				STM32_FSMC_BCR_MTYP_NOR | STM32_FSMC_BCR_FACCEN,
+				STM32_FSMC_BTR_ACCMOD_B, info);
+}
+
+vsf_err_t stm32_ebi_config_sram(uint8_t index,
+								struct ebi_sram_psram_nor_info_t *info)
+{
+	GPIOE->CRL = (GPIOE->CRL & ~(0xFF << (0 * 4))) | 
+							(uint32_t)0xBB << (0 * 4);
+	return stm32_ebi_config_sram_psram_nor(index,
+				STM32_FSMC_BCR_MTYP_SRAM,
+				STM32_FSMC_BTR_ACCMOD_B, info);
+}
+
+vsf_err_t stm32_ebi_config_psram(uint8_t index,
+									struct ebi_sram_psram_nor_info_t *info)
+{
+	GPIOE->CRL = (GPIOE->CRL & ~(0xFF << (0 * 4))) | 
+							(uint32_t)0xBB << (0 * 4);
+	return stm32_ebi_config_sram_psram_nor(index,
+				STM32_FSMC_BCR_MTYP_PSRAM,
+				STM32_FSMC_BTR_ACCMOD_B, info);
 }
 
 vsf_err_t stm32_ebi_config_nand(uint8_t index, struct ebi_nand_info_t *info)
@@ -651,7 +644,13 @@ vsf_err_t stm32_ebi_config(uint8_t index, uint8_t target_index, void *param)
 		{
 		case EBI_TGTTYP_NOR:
 			return stm32_ebi_config_nor(
-				(target_index & 0x03) << 6, (struct ebi_nor_info_t *)param);
+				(target_index & 0x03) << 6, (struct ebi_sram_psram_nor_info_t *)param);
+		case EBI_TGTTYP_SRAM:
+			return stm32_ebi_config_sram(
+				(target_index & 0x03) << 6, (struct ebi_sram_psram_nor_info_t *)param);
+		case EBI_TGTTYP_PSRAM:
+			return stm32_ebi_config_psram(
+				(target_index & 0x03) << 6, (struct ebi_sram_psram_nor_info_t *)param);
 		case EBI_TGTTYP_NAND:
 			return stm32_ebi_config_nand(
 				((target_index + 1) & 0x03) << 4, (struct ebi_nand_info_t *)param);

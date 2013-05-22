@@ -565,7 +565,9 @@ vsf_err_t CORE_EINT_TRIGGER(__TARGET_CHIP__)(uint8_t index);
 #if IFS_EBI_EN
 
 #define EBI_TGTTYP_NOR				0x00
-#define EBI_TGTTYP_NAND				0x10
+#define EBI_TGTTYP_SRAM				0x10
+#define EBI_TGTTYP_PSRAM			0x20
+#define EBI_TGTTYP_NAND				0x30
 struct ebi_info_t
 {
 	uint8_t data_width;
@@ -595,17 +597,7 @@ struct ebi_sram_psram_nor_param_t
 		uint32_t clock_hz_w;
 	} timing;
 };
-struct ebi_sram_info_t
-{
-	struct ebi_info_t common_info;
-	struct ebi_sram_psram_nor_param_t param;
-};
-struct ebi_psram_info_t
-{
-	struct ebi_info_t common_info;
-	struct ebi_sram_psram_nor_param_t param;
-};
-struct ebi_nor_info_t
+struct ebi_sram_psram_nor_info_t
 {
 	struct ebi_info_t common_info;
 	struct ebi_sram_psram_nor_param_t param;
@@ -660,9 +652,9 @@ struct interface_ebi_t
 	vsf_err_t (*fini)(uint8_t index);
 	
 	vsf_err_t (*config)(uint8_t index, uint8_t target_index, void *param);
-	vsf_err_t (*config_sram)(uint8_t index, struct ebi_sram_info_t *info);
-	vsf_err_t (*config_psram)(uint8_t index, struct ebi_psram_info_t *info);
-	vsf_err_t (*config_nor)(uint8_t index, struct ebi_nor_info_t *info);
+	vsf_err_t (*config_sram)(uint8_t index, struct ebi_sram_psram_nor_info_t *info);
+	vsf_err_t (*config_psram)(uint8_t index, struct ebi_sram_psram_nor_info_t *info);
+	vsf_err_t (*config_nor)(uint8_t index, struct ebi_sram_psram_nor_info_t *info);
 	vsf_err_t (*config_nand)(uint8_t index, struct ebi_nand_info_t *info);
 	vsf_err_t (*config_sdram)(uint8_t index, struct ebi_sdram_info_t *info);
 	vsf_err_t (*config_ddram)(uint8_t index, struct ebi_ddram_info_t *info);
@@ -729,11 +721,11 @@ vsf_err_t CORE_EBI_FINI(__TARGET_CHIP__)(uint8_t index);
 vsf_err_t CORE_EBI_CONFIG(__TARGET_CHIP__)(uint8_t index, uint8_t target_index, 
 										void *param);
 vsf_err_t CORE_EBI_CONFIG_SRAM(__TARGET_CHIP__)(uint8_t index, 
-												struct ebi_sram_info_t *info);
+										struct ebi_sram_psram_nor_info_t *info);
 vsf_err_t CORE_EBI_CONFIG_PSRAM(__TARGET_CHIP__)(uint8_t index, 
-												struct ebi_psram_info_t *info);
+										struct ebi_sram_psram_nor_info_t *info);
 vsf_err_t CORE_EBI_CONFIG_NOR(__TARGET_CHIP__)(uint8_t index, 
-												struct ebi_nor_info_t *info);
+										struct ebi_sram_psram_nor_info_t *info);
 vsf_err_t CORE_EBI_CONFIG_NAND(__TARGET_CHIP__)(uint8_t index, 
 												struct ebi_nand_info_t *info);
 vsf_err_t CORE_EBI_CONFIG_SDRAM(__TARGET_CHIP__)(uint8_t index, 

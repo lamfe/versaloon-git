@@ -1,8 +1,11 @@
 vsf_err_t stm32_ebi_init(uint8_t index);
 vsf_err_t stm32_ebi_fini(uint8_t index);
-vsf_err_t stm32_ebi_config_sram(uint8_t index, struct ebi_sram_info_t *info);
-vsf_err_t stm32_ebi_config_psram(uint8_t index, struct ebi_psram_info_t *info);
-vsf_err_t stm32_ebi_config_nor(uint8_t index, struct ebi_nor_info_t *info);
+vsf_err_t stm32_ebi_config_sram(uint8_t index,
+								struct ebi_sram_psram_nor_info_t *info);
+vsf_err_t stm32_ebi_config_psram(uint8_t index,
+								struct ebi_sram_psram_nor_info_t *info);
+vsf_err_t stm32_ebi_config_nor(uint8_t index,
+								struct ebi_sram_psram_nor_info_t *info);
 vsf_err_t stm32_ebi_config_nand(uint8_t index, struct ebi_nand_info_t *info);
 vsf_err_t stm32_ebi_config_sdram(uint8_t index, struct ebi_sdram_info_t *info);
 vsf_err_t stm32_ebi_config_ddram(uint8_t index, struct ebi_ddram_info_t *info);
