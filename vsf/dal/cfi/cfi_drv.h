@@ -22,7 +22,7 @@
 
 struct cfi_drv_param_t
 {
-	struct ebi_nor_info_t nor_info;
+	struct ebi_sram_psram_nor_info_t nor_info;
 };
 
 struct cfi_drv_info_t

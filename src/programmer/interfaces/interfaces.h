@@ -119,7 +119,7 @@ struct ebi_sram_psram_nor_param_t
 		uint32_t clock_hz_w;
 	} timing;
 };
-struct ebi_nor_info_t
+struct ebi_sram_psram_nor_info_t
 {
 	struct ebi_info_t common_info;
 	struct ebi_sram_psram_nor_param_t param;

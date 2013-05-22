@@ -1193,7 +1193,7 @@ VSS_HANDLER(interface_ebi_fini)
 
 VSS_HANDLER(interface_ebi_config)
 {
-	struct ebi_nor_info_t nor_info;
+	struct ebi_sram_psram_nor_info_t nor_info;
 	struct INTERFACES_INFO_T *ifs = NULL;
 	uint8_t index;
 	uint8_t width;
