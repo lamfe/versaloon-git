@@ -1,4 +1,4 @@
-Cmp-Mod V01 Created by CvPcb (2013-03-31 BZR 4008)-stable date = 12/05/2013 10:12:22
+Cmp-Mod V01 Created by CvPcb (2013-04-19 BZR 4011)-stable date = 10/06/2013 03:21:39
 
 BeginCmp
 TimeStamp = /480A3089;
@@ -87,13 +87,6 @@ EndCmp
 BeginCmp
 TimeStamp = /511CF6F4;
 Reference = C21;
-ValeurCmp = 100nF;
-IdModule  = SM0603L;
-EndCmp
-
-BeginCmp
-TimeStamp = /511CF6A9;
-Reference = C22;
 ValeurCmp = 100nF;
 IdModule  = SM0603L;
 EndCmp
@@ -318,14 +311,14 @@ EndCmp
 BeginCmp
 TimeStamp = /480A4692;
 Reference = F0;
-ValeurCmp = 200mA_FUSE;
+ValeurCmp = 200mA FUSE;
 IdModule  = SM0805L;
 EndCmp
 
 BeginCmp
 TimeStamp = /491A0163;
 Reference = F90;
-ValeurCmp = 50mA_FUSE;
+ValeurCmp = 50mA FUSE;
 IdModule  = SM0805L;
 EndCmp
 
@@ -470,14 +463,14 @@ IdModule  = SM0603L;
 EndCmp
 
 BeginCmp
-TimeStamp = /511CF651;
+TimeStamp = /51B50B32;
 Reference = R21;
 ValeurCmp = 10K;
 IdModule  = SM0603L;
 EndCmp
 
 BeginCmp
-TimeStamp = /511CF655;
+TimeStamp = /511CF651;
 Reference = R22;
 ValeurCmp = 10K;
 IdModule  = SM0603L;
@@ -564,20 +557,6 @@ BeginCmp
 TimeStamp = /51492E41;
 Reference = R38;
 ValeurCmp = 100K;
-IdModule  = SM0603L;
-EndCmp
-
-BeginCmp
-TimeStamp = /514A008D;
-Reference = R39;
-ValeurCmp = 10K;
-IdModule  = SM0603L;
-EndCmp
-
-BeginCmp
-TimeStamp = /514A008F;
-Reference = R40;
-ValeurCmp = 10K;
 IdModule  = SM0603L;
 EndCmp
 
@@ -904,10 +883,10 @@ IdModule  = TQFP144;
 EndCmp
 
 BeginCmp
-TimeStamp = /511CE5DA;
+TimeStamp = /51B4F8E0;
 Reference = U20;
-ValeurCmp = PARA_NOR_FLASH;
-IdModule  = TSOP56;
+ValeurCmp = PARA_NOR_PSRAM_TSOP;
+IdModule  = TSOP48;
 EndCmp
 
 BeginCmp
