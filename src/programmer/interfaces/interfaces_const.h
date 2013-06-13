@@ -136,7 +136,9 @@
 
 // EBI
 #define EBI_TGTTYP_NOR			0x00
-#define EBI_TGTTYP_NAND			0x10
+#define EBI_TGTTYP_SRAM			0x10
+#define EBI_TGTTYP_PSRAM		0x20
+#define EBI_TGTTYP_NAND			0x30
 
 // ADC
 #define ADC_ALIGNLEFT			0x08
