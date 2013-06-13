@@ -29,7 +29,7 @@ void USB_TO_EBI_ProcessCmd(uint8_t *dat, uint16_t len)
 	uint8_t target_type;
 	uint8_t data_size;
 	uint32_t address, count;
-	struct ebi_nor_info_t nor_info;
+	struct ebi_sram_psram_nor_info_t nor_info;
 	struct ebi_nand_info_t nand_info;
 	vsf_err_t ret;
 	
