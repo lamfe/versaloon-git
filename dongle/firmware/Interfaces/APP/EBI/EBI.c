@@ -79,4 +79,15 @@ vsf_err_t ebi_write(uint8_t index, uint8_t target_index, uint32_t address,
 	}
 }
 
+vsf_err_t ebi_isready(uint8_t index, uint8_t target_index)
+{
+	switch (index)
+	{
+	case 0:
+		return core_interfaces.ebi.isready(0, target_index);
+	default:
+		return VSFERR_NOT_SUPPORT;
+	}
+}
+
 #endif
