@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date 10/06/2013 05:17:00
+EESchema Schematic File Version 2  date 24/06/2013 11:00:50
 LIBS:power
 LIBS:simonqian
 LIBS:stm32
@@ -30,14 +30,13 @@ LIBS:siliconi
 LIBS:contrib
 LIBS:valves
 LIBS:versaloon
-LIBS:Versaloon-cache
 EELAYER 27 0
 EELAYER END
 $Descr User 18000 7000
 encoding utf-8
 Sheet 1 1
 Title ""
-Date "9 jun 2013"
+Date "24 jun 2013"
 Rev ""
 Comp ""
 Comment1 ""
@@ -51,7 +50,7 @@ Wire Wire Line
 	11250 5150 11350 5150
 Connection ~ 9300 3550
 Wire Wire Line
-	9550 3550 8800 3550
+	8800 3550 9800 3550
 Wire Wire Line
 	16300 1400 16300 1550
 Wire Wire Line
@@ -1171,7 +1170,7 @@ Wire Wire Line
 Wire Wire Line
 	11550 4900 11550 4700
 Wire Wire Line
-	8800 3950 9550 3950
+	8800 3950 9800 3950
 Connection ~ 9300 3950
 Wire Wire Line
 	10450 4400 10350 4400
@@ -5207,4 +5206,25 @@ Wire Wire Line
 	6950 3300 7200 3300
 Wire Wire Line
 	6950 3400 7200 3400
+$Comp
+L C C22
+U 1 1 51C7C505
+P 9800 3750
+F 0 "C22" H 9850 3850 50  0000 L CNN
+F 1 "100nF" H 9825 3650 50  0000 L CNN
+F 2 "" H 9800 3750 60  0001 C CNN
+F 3 "" H 9800 3750 60  0001 C CNN
+F 4 "" H 9800 3750 60  0001 C CNN "域1"
+F 5 "" H 9800 3750 60  0001 C CNN "域2"
+F 6 "" H 9800 3750 60  0001 C CNN "域3"
+F 7 "" H 9800 3750 60  0001 C CNN "域4"
+F 8 "" H 9800 3750 60  0001 C CNN "域5"
+F 9 "" H 9800 3750 60  0001 C CNN "域6"
+F 10 "" H 9800 3750 60  0001 C CNN "域7"
+F 11 "" H 9800 3750 60  0001 C CNN "域8"
+	1    9800 3750
+	1    0    0    -1  
+$EndComp
+Connection ~ 9550 3550
+Connection ~ 9550 3950
 $EndSCHEMATC
