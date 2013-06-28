@@ -579,6 +579,11 @@ struct ebi_info_t
 		EBI_WAIT_POLLOW_VI = 3,
 		EBI_WAIT_POLLOW_VN = 4
 	} wait_signal;
+	
+	// mux_addr_mask is used when a multiplexer(eg. 74LS138) is used.
+	// If no multiplexer is used, set mux_addr_mask to 0.
+	// mux_addr_mask defines the address mask to select current chip.
+	uint32_t mux_addr_mask;
 };
 struct ebi_sram_psram_nor_param_t
 {

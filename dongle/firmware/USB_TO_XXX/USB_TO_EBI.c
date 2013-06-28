@@ -63,6 +63,8 @@ void USB_TO_EBI_ProcessCmd(uint8_t *dat, uint16_t len)
 				nor_info.common_info.data_width = dat[index + 1];
 				nor_info.common_info.wait_signal = 
 											(enum wait_signal_t)dat[index + 2];
+				nand_info.common_info.mux_addr_mask = 0;
+				
 				nor_info.param.addr_multiplex = dat[index + 3];
 				nor_info.param.timing.address_setup_cycle_r = 
 												GET_LE_U16(&dat[index + 4]);
@@ -79,6 +81,7 @@ void USB_TO_EBI_ProcessCmd(uint8_t *dat, uint16_t len)
 				nor_info.param.timing.data_setup_cycle_w = 
 												GET_LE_U16(&dat[index + 18]);
 				nor_info.param.timing.clock_hz_w = GET_LE_U32(&dat[index + 20]);
+				
 				if (app_interfaces.ebi.config(device_idx, target_index,
 												&nor_info))
 				{
@@ -93,6 +96,8 @@ void USB_TO_EBI_ProcessCmd(uint8_t *dat, uint16_t len)
 				nand_info.common_info.data_width = dat[index + 1];
 				nand_info.common_info.wait_signal = 
 											(enum wait_signal_t)dat[index + 2];
+				nand_info.common_info.mux_addr_mask = 0;
+				
 				nand_info.param.clock_hz = GET_LE_U32(&dat[index + 3]);
 				nand_info.param.ecc.ecc_enable = dat[index + 7];
 				nand_info.param.ecc.ecc_page_size = GET_LE_U16(&dat[index + 8]);
@@ -110,6 +115,7 @@ void USB_TO_EBI_ProcessCmd(uint8_t *dat, uint16_t len)
 												GET_LE_U16(&dat[index + 20]);
 				nand_info.param.timing.hold_cycle_attr = dat[index + 22];
 				nand_info.param.timing.hiz_cycle_attr = dat[index + 23];
+				
 				if (app_interfaces.ebi.config(device_idx, target_index,
 												&nand_info))
 				{

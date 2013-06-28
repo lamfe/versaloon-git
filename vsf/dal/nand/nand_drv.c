@@ -41,20 +41,22 @@ static vsf_err_t nand_drv_write_command8(struct dal_info_t *info, uint8_t cmd)
 {
 	struct nand_drv_interface_t *ifs = (struct nand_drv_interface_t *)info->ifs;
 	struct nand_drv_param_t *param = (struct nand_drv_param_t *)info->param;
+	uint32_t cmd_addr = param->nand_info.param.addr.cmd +
+						param->nand_info.common_info.mux_addr_mask;
 	
 	return interfaces->ebi.write(ifs->ebi_port, 
-				ifs->nand_index | EBI_TGTTYP_NAND, 
-				param->nand_info.param.addr.cmd, 1, &cmd, 1);
+				ifs->nand_index | EBI_TGTTYP_NAND, cmd_addr, 1, &cmd, 1);
 }
 
 static vsf_err_t nand_drv_write_address8(struct dal_info_t *info, uint8_t addr)
 {
 	struct nand_drv_interface_t *ifs = (struct nand_drv_interface_t *)info->ifs;
 	struct nand_drv_param_t *param = (struct nand_drv_param_t *)info->param;
+	uint32_t addr_addr = param->nand_info.param.addr.addr +
+							param->nand_info.common_info.mux_addr_mask;
 	
 	return interfaces->ebi.write(ifs->ebi_port, 
-				ifs->nand_index | EBI_TGTTYP_NAND, 
-				param->nand_info.param.addr.addr, 1, &addr, 1);
+				ifs->nand_index | EBI_TGTTYP_NAND, addr_addr, 1, &addr, 1);
 }
 
 static vsf_err_t nand_drv_write_data8(struct dal_info_t *info, uint8_t *buff, 
@@ -62,10 +64,11 @@ static vsf_err_t nand_drv_write_data8(struct dal_info_t *info, uint8_t *buff,
 {
 	struct nand_drv_interface_t *ifs = (struct nand_drv_interface_t *)info->ifs;
 	struct nand_drv_param_t *param = (struct nand_drv_param_t *)info->param;
+	uint32_t data_addr = param->nand_info.param.addr.data +
+							param->nand_info.common_info.mux_addr_mask;
 	
 	return interfaces->ebi.write(ifs->ebi_port, 
-				ifs->nand_index | EBI_TGTTYP_NAND, 
-				param->nand_info.param.addr.data, 1, buff, count);
+				ifs->nand_index | EBI_TGTTYP_NAND, data_addr, 1, buff, count);
 }
 
 static vsf_err_t nand_drv_write_data16(struct dal_info_t *info, uint16_t *buff, 
@@ -73,10 +76,12 @@ static vsf_err_t nand_drv_write_data16(struct dal_info_t *info, uint16_t *buff,
 {
 	struct nand_drv_interface_t *ifs = (struct nand_drv_interface_t *)info->ifs;
 	struct nand_drv_param_t *param = (struct nand_drv_param_t *)info->param;
+	uint32_t data_addr = param->nand_info.param.addr.data +
+							param->nand_info.common_info.mux_addr_mask;
 	
 	return interfaces->ebi.write(ifs->ebi_port, 
-				ifs->nand_index | EBI_TGTTYP_NAND, 
-				param->nand_info.param.addr.data, 2, (uint8_t *)buff, count);
+				ifs->nand_index | EBI_TGTTYP_NAND, data_addr, 2,
+				(uint8_t *)buff, count);
 }
 
 static vsf_err_t nand_drv_read_data8(struct dal_info_t *info, uint8_t *buff, 
@@ -84,21 +89,24 @@ static vsf_err_t nand_drv_read_data8(struct dal_info_t *info, uint8_t *buff,
 {
 	struct nand_drv_interface_t *ifs = (struct nand_drv_interface_t *)info->ifs;
 	struct nand_drv_param_t *param = (struct nand_drv_param_t *)info->param;
+	uint32_t data_addr = param->nand_info.param.addr.data +
+							param->nand_info.common_info.mux_addr_mask;
 	
 	return interfaces->ebi.read(ifs->ebi_port, 
-				ifs->nand_index | EBI_TGTTYP_NAND, 
-				param->nand_info.param.addr.data, 1, buff, count);
+				ifs->nand_index | EBI_TGTTYP_NAND, data_addr, 1, buff, count);
 }
 
 static vsf_err_t nand_drv_read_data16(struct dal_info_t *info, uint16_t *buff, 
-									uint32_t count)
+										uint32_t count)
 {
 	struct nand_drv_interface_t *ifs = (struct nand_drv_interface_t *)info->ifs;
 	struct nand_drv_param_t *param = (struct nand_drv_param_t *)info->param;
+	uint32_t data_addr = param->nand_info.param.addr.data +
+							param->nand_info.common_info.mux_addr_mask;
 	
 	return interfaces->ebi.read(ifs->ebi_port, 
-				ifs->nand_index | EBI_TGTTYP_NAND, 
-				param->nand_info.param.addr.data, 2, (uint8_t *)buff, count);
+				ifs->nand_index | EBI_TGTTYP_NAND, data_addr, 2,
+				(uint8_t *)buff, count);
 }
 
 static vsf_err_t nand_drv_read_status(struct dal_info_t *info, uint8_t *status)
