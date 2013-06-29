@@ -359,7 +359,8 @@ static vsf_err_t stm32_ebi_config_sram_psram_nor(uint8_t index,
 		if (info->common_info.wait_signal != EBI_WAIT_NONE)
 		{
 			GPIOD->CRL = (GPIOD->CRL & ~(0x0F << (6 * 4))) | 
-							(uint32_t)stm32_GPIO_AFPP << (6 * 4);
+							(uint32_t)stm32_GPIO_INP << (6 * 4);
+			GPIOD->BSRR = (uint32_t)1 << 6;
 			
 			switch (info->common_info.wait_signal)
 			{

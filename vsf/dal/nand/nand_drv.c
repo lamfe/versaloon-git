@@ -200,8 +200,8 @@ static vsf_err_t nand_drv_eraseblock_nb_isready(struct dal_info_t *info,
 	if (VSFERR_NONE == ret)
 	{
 		if (nand_drv_read_status(info, &status) ||
-				interfaces->peripheral_commit() ||
-				status & 1)
+			interfaces->peripheral_commit() ||
+			(status & 1))
 		{
 			return VSFERR_FAIL;
 		}
@@ -287,7 +287,6 @@ static vsf_err_t nand_drv_readblock_nb_isready(struct dal_info_t *info,
 {
 	struct nand_drv_param_t *param = (struct nand_drv_param_t *)info->param;
 	
-	REFERENCE_PARAMETER(address);
 	REFERENCE_PARAMETER(buff);
 	if (!param->addr_loadded)
 	{
@@ -377,8 +376,8 @@ static vsf_err_t nand_drv_writeblock_nb_isready(struct dal_info_t *info,
 	if (VSFERR_NONE == ret)
 	{
 		if (nand_drv_read_status(info, &status) ||
-				interfaces->peripheral_commit() ||
-				status & 1)
+			interfaces->peripheral_commit() ||
+			(status & 1))
 		{
 			return VSFERR_FAIL;
 		}
