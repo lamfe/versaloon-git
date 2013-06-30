@@ -331,8 +331,10 @@ static vsf_err_t nand_drv_writeblock_nb(struct dal_info_t *info, uint64_t addres
 	uint8_t data_width = param->nand_info.common_info.data_width / 8;
 	struct mal_info_t *mal_info = (struct mal_info_t *)info->extra;
 	uint32_t write_page_size = mal_info->write_page_size;
+#if NAND_DRV_ECC_EN
 	uint32_t ecc_size = 16 * write_page_size / 512;
 	uint8_t ecc_buff[64];
+#endif
 	uint32_t address32 =
 			(uint32_t)((address & ((1UL << (param->col_addr_msb + 1)) - 1)) |
 			((address >> param->row_addr_lsb) << (8 * param->col_addr_size)));
@@ -348,15 +350,19 @@ static vsf_err_t nand_drv_writeblock_nb(struct dal_info_t *info, uint64_t addres
 	{
 	case 1:
 		nand_drv_write_data8(info, buff, write_page_size);
+#if NAND_DRV_ECC_EN
 		// TODO: get ecc into ecc_buff
 		memset(ecc_buff, 0xFF, ecc_size);
 		nand_drv_write_data8(info, ecc_buff, ecc_size);
+#endif
 		break;
 	case 2:
 		nand_drv_write_data16(info, (uint16_t *)buff, write_page_size / 2);
+#if NAND_DRV_ECC_EN
 		// TODO: get ecc into ecc_buff
 		memset(ecc_buff, 0xFF, ecc_size);
 		nand_drv_write_data16(info, (uint16_t *)ecc_buff, ecc_size / 2);
+#endif
 		break;
 	default:
 		return VSFERR_FAIL;

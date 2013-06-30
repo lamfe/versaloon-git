@@ -51,7 +51,7 @@
 #include "comisp/comisp.h"
 #include "usb/usbapi.h"
 
-#define OPTSTR			"hvS:P:s:c:Mp:U:D:Ld:Go:F:m:x:C:I:O:J:b:V:t:K:W:Aqel:i:Q:a:X:Z:Y:T:"
+#define OPTSTR			"hvS:P:s:c:Mp:U:D:Ld:Go:F:m:x:C:I:O:J:b:V:t:K:W:Aqel:i:Q:a:X:Z:Y:T:r"
 static const struct option long_opts[] =
 {
 	{"help", no_argument, NULL, 'h'},
@@ -91,6 +91,7 @@ static const struct option long_opts[] =
 	{"embedded-vsprog-data", required_argument, NULL, 'Z'},
 	{"slot", required_argument, NULL, 'Y'},
 	{"target-param", required_argument, NULL, 'T'},
+	{"raw", no_argument, NULL, 'r'},
 	{NULL, 0, NULL, 0},
 };
 

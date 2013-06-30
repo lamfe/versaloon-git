@@ -86,6 +86,7 @@ VSS_HANDLER(target_interface_mode);
 VSS_HANDLER(target_prepare);
 VSS_HANDLER(target_operate);
 VSS_HANDLER(target_execute_addr);
+VSS_HANDLER(target_raw_mode);
 VSS_HANDLER(target_enter_program_mode);
 VSS_HANDLER(target_leave_program_mode);
 VSS_HANDLER(target_erase);
@@ -226,6 +227,14 @@ static const struct vss_cmd_t target_cmd[] =
 	VSS_CMD(	"x",
 				"execute defined address, format: execute/x ADDR",
 				target_execute_addr,
+				NULL),
+	VSS_CMD(	"raw",
+				"enable raw mode, format: raw/r",
+				target_raw_mode,
+				NULL),
+	VSS_CMD(	"r",
+				"enable raw mode, format: raw/r",
+				target_raw_mode,
 				NULL),
 	VSS_CMD(	"enter_program_mode",
 				"enter program mode, format: enter_program_mode",
@@ -647,7 +656,7 @@ const struct target_info_t targets_info[] =
 		nand_program_mode,					// program_mode
 		&nand_program_functions,			// program_functions
 		nand_notifier,						// notifier
-		NULL,								// adjust_setting
+		nand_adjust_setting,				// adjust_setting
 		NULL,								// adjust_mapping
 	},
 #endif
@@ -2953,6 +2962,28 @@ VSS_HANDLER(target_execute_addr)
 	{
 		cur_context->pi->execute_addr = (uint32_t)strtoul(argv[1], NULL, 0);
 		cur_context->pi->execute_flag = 1;
+	}
+	
+	return VSFERR_NONE;
+}
+
+VSS_HANDLER(target_raw_mode)
+{
+	VSS_CHECK_ARGC_2(1, 2);
+	
+	if (NULL == cur_context)
+	{
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "slot");
+		return VSFERR_FAIL;
+	}
+	
+	if (1 == argc)
+	{
+		cur_context->pi->raw = true;
+	}
+	else
+	{
+		cur_context->pi->raw = ((uint32_t)strtoul(argv[1], NULL, 0)) > 0;
 	}
 	
 	return VSFERR_NONE;
