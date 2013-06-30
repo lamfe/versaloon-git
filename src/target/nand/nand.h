@@ -26,5 +26,7 @@ extern const struct program_mode_t nand_program_mode[];
 extern const struct program_functions_t nand_program_functions;
 extern const struct vss_cmd_t nand_notifier[];
 
+ADJUST_SETTING_HANDLER(nand);
+
 #endif /* __NAND_H_INCLUDED__ */
 

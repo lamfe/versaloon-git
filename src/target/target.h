@@ -163,6 +163,7 @@ struct program_info_t
 	struct jtag_pos_t jtag_pos;
 	uint8_t execute_flag;
 	uint32_t execute_addr;
+	bool raw;
 	char *ifs_indexes;
 	char *param;
 	
