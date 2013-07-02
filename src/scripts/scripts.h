@@ -168,6 +168,6 @@ vsf_err_t vss_print_help(const char *name);
 vsf_err_t vss_run_script(char *cmd);
 vsf_err_t vss_run_cmd(uint16_t argc, char *argv[]);
 vsf_err_t vss_get_binary_buffer(uint16_t argc, const char *argv[],
-						uint8_t data_size, uint32_t data_num, void **pbuff);
+	uint8_t data_size, uint16_t data_num, void **pbuff, uint16_t *parsed_num);
 
 #endif		// __SCRIPTS_H_INCLUDED__

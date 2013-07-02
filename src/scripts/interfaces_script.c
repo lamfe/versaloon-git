@@ -723,7 +723,7 @@ VSS_HANDLER(interface_jtag_dr)
 {
 	uint16_t bitlen, bytelen;
 	uint8_t *dr = NULL, data_size;
-	uint32_t data_num;
+	uint16_t data_num;
 	struct INTERFACES_INFO_T *ifs = NULL;
 	vsf_err_t err;
 	
@@ -744,8 +744,13 @@ VSS_HANDLER(interface_jtag_dr)
 	}
 	
 	err = vss_get_binary_buffer(argc - 3, &argv[3], data_size, data_num,
-								(void**)&dr);
-	if (!err)
+								(void**)&dr, NULL);
+	if (err)
+	{
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "parse data");
+		vss_print_help(argv[0]);
+	}
+	else
 	{
 		err = ifs->jtag_hl.dr(0, dr, bitlen, 1, 1);
 		if (!err)
@@ -763,7 +768,7 @@ VSS_HANDLER(interface_jtag_dr)
 		free(dr);
 		dr = NULL;
 	}
-	return VSFERR_NONE;
+	return err;
 }
 #endif
 
@@ -821,7 +826,8 @@ VSS_HANDLER(interface_spi_config)
 
 VSS_HANDLER(interface_spi_io)
 {
-	uint16_t data_size = 0;
+	uint16_t data_num = 0;
+	uint16_t parsed_num;
 	uint8_t *buff = NULL;
 	vsf_err_t err = VSFERR_NONE;
 	struct INTERFACES_INFO_T *ifs = NULL;
@@ -829,26 +835,35 @@ VSS_HANDLER(interface_spi_io)
 	VSS_CHECK_ARGC_MIN(2);
 	INTERFACE_ASSERT(IFS_SPI, "spi");
 	
-	data_size = (uint16_t)strtoul(argv[1], NULL, 0);
-
-	VSS_CHECK_ARGC_2(2, 2 + data_size);
-	if (0 == data_size)
+	data_num = (uint16_t)strtoul(argv[1], NULL, 0);
+	if (0 == data_num)
 	{
 		LOG_ERROR(ERRMSG_INVALID_TARGET, "data_size");
 		vss_print_help(argv[0]);
 		return VSFERR_FAIL;
 	}
-	
-	err = vss_get_binary_buffer(argc - 2, &argv[2], 1, data_size, (void**)&buff);
-	if (!err)
+
+	VSS_CHECK_ARGC_MAX(2 + data_num);
+	err = vss_get_binary_buffer(argc - 2, &argv[2], 1, data_num, (void**)&buff,
+								&parsed_num);
+	if (err)
 	{
-		err = ifs->spi.io(0, buff, buff, data_size);
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "parse data");
+		vss_print_help(argv[0]);
+	}
+	else
+	{
+		if (parsed_num && (parsed_num < data_num))
+		{
+			memset(&buff[parsed_num], buff[parsed_num - 1], data_num - parsed_num);
+		}
+		err = ifs->spi.io(0, buff, buff, data_num);
 		if (!err)
 		{
 			err = ifs->peripheral_commit();
 			if (!err)
 			{
-				LOG_BUF_STD(1, buff, data_size, LOG_INFO);
+				LOG_BUF_STD(1, buff, data_num, LOG_INFO);
 			}
 		}
 	}
@@ -972,8 +987,14 @@ VSS_HANDLER(interface_iic_write)
 		return VSFERR_FAIL;
 	}
 	
-	err = vss_get_binary_buffer(argc - 4, &argv[4], 1, data_size, (void**)&buff);
-	if (!err)
+	err = vss_get_binary_buffer(argc - 4, &argv[4], 1, data_size, (void**)&buff,
+								NULL);
+	if (err)
+	{
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "parse data");
+		vss_print_help(argv[0]);
+	}
+	else
 	{
 		err = ifs->i2c.write(0, addr, buff, data_size, stop);
 	}
@@ -1054,8 +1075,13 @@ VSS_HANDLER(interface_iic_write_buff8)
 	}
 	
 	err = vss_get_binary_buffer(argc - 3, &argv[3], 1, data_size + 1,
-								(void**)&buff);
-	if (!err)
+								(void**)&buff, NULL);
+	if (err)
+	{
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "parse data");
+		vss_print_help(argv[0]);
+	}
+	else
 	{
 		err = ifs->i2c.write(0, slave_addr, buff, data_size + 1, 1);
 	}
@@ -1155,8 +1181,14 @@ VSS_HANDLER(interface_pwm_out)
 		return VSFERR_FAIL;
 	}
 	
-	err = vss_get_binary_buffer(argc - 2, &argv[2], 2, count, (void**)&buff);
-	if (!err)
+	err = vss_get_binary_buffer(argc - 2, &argv[2], 2, count, (void**)&buff,
+								NULL);
+	if (err)
+	{
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "parse data");
+		vss_print_help(argv[0]);
+	}
+	else
 	{
 		err = ifs->pwm.out(0, count, buff);
 	}
@@ -1300,7 +1332,7 @@ VSS_HANDLER(interface_ebi_write)
 	uint32_t address;
 	uint8_t size;
 	uint8_t *buff = NULL;
-	uint32_t count;
+	uint16_t count, parsed_num;;
 	
 	VSS_CHECK_ARGC_MIN(5);
 	INTERFACE_ASSERT(IFS_EBI, "ebi");
@@ -1308,7 +1340,7 @@ VSS_HANDLER(interface_ebi_write)
 	index = (uint8_t)strtoul(argv[1], NULL, 0);
 	address = (uint32_t)strtoul(argv[2], NULL, 0);
 	size = (uint8_t)strtoul(argv[3], NULL, 0);
-	count = (uint32_t)strtoul(argv[4], NULL, 0);
+	count = (uint16_t)strtoul(argv[4], NULL, 0);
 	
 	switch (size)
 	{
@@ -1327,12 +1359,36 @@ VSS_HANDLER(interface_ebi_write)
 		LOG_ERROR(ERRMSG_INVALID_PARAMETER, "size");
 		return VSFERR_INVALID_PARAMETER;
 	}
-	VSS_CHECK_ARGC(count + 5);
+	VSS_CHECK_ARGC_MAX(count + 5);
 	
-	err = vss_get_binary_buffer(argc - 5, &argv[5], size, count, (void**)&buff);
-	if (!err)
+	err = vss_get_binary_buffer(argc - 5, &argv[5], size, count, (void**)&buff,
+								&parsed_num);
+	if (err)
 	{
-		err = ifs->ebi.write(0, index | EBI_TGTTYP_NOR, address, size, buff, count);
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "parse data");
+		vss_print_help(argv[0]);
+	}
+	else
+	{
+		uint16_t i;
+		
+		for (i = parsed_num; i < count; i++)
+		{
+			switch (size)
+			{
+			case 1:
+				((uint8_t *)buff)[i] = ((uint8_t *)buff)[parsed_num - 1];
+				break;
+			case 2:
+				((uint16_t *)buff)[i] = ((uint16_t *)buff)[parsed_num - 1];
+				break;
+			case 4:
+				((uint32_t *)buff)[i] = ((uint32_t *)buff)[parsed_num - 1];
+				break;
+			}
+		}
+		err = ifs->ebi.write(0, index | EBI_TGTTYP_NOR, address, size,
+								(uint8_t *)buff, count);
 	}
 	
 	if (buff != NULL)
@@ -1396,22 +1452,45 @@ VSS_HANDLER(interface_ebi_write8)
 	uint32_t address;
 	uint8_t size = 1;
 	uint8_t *buff = NULL;
-	uint32_t count;
+	uint16_t count, parsed_num;
 	
 	VSS_CHECK_ARGC_MIN(4);
 	INTERFACE_ASSERT(IFS_EBI, "ebi");
 	
 	index = (uint8_t)strtoul(argv[1], NULL, 0);
 	address = ((uint32_t)strtoul(argv[2], NULL, 0)) << 0;
-	count = (uint32_t)strtoul(argv[3], NULL, 0);
+	count = (uint16_t)strtoul(argv[3], NULL, 0);
 	
-	VSS_CHECK_ARGC(count + 4);
+	VSS_CHECK_ARGC_MAX(count + 4);
 	
-	err = vss_get_binary_buffer(argc - 4, &argv[4], size, count, (void**)&buff);
-	if (!err)
+	err = vss_get_binary_buffer(argc - 4, &argv[4], size, count, (void**)&buff,
+								&parsed_num);
+	if (err)
 	{
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "parse data");
+		vss_print_help(argv[0]);
+	}
+	else
+	{
+		uint16_t i;
+		
+		for (i = parsed_num; i < count; i++)
+		{
+			switch (size)
+			{
+			case 1:
+				((uint8_t *)buff)[i] = ((uint8_t *)buff)[parsed_num - 1];
+				break;
+			case 2:
+				((uint16_t *)buff)[i] = ((uint16_t *)buff)[parsed_num - 1];
+				break;
+			case 4:
+				((uint32_t *)buff)[i] = ((uint32_t *)buff)[parsed_num - 1];
+				break;
+			}
+		}
 		err = ifs->ebi.write(0, index | EBI_TGTTYP_NOR, address, size,
-							(uint8_t *)buff, count);
+								(uint8_t *)buff, count);
 	}
 	
 	if (buff != NULL)
@@ -1475,22 +1554,45 @@ VSS_HANDLER(interface_ebi_write16)
 	uint32_t address;
 	uint8_t size = 2;
 	uint16_t *buff = NULL;
-	uint32_t count;
+	uint16_t count, parsed_num;
 	
 	VSS_CHECK_ARGC_MIN(4);
 	INTERFACE_ASSERT(IFS_EBI, "ebi");
 	
 	index = (uint8_t)strtoul(argv[1], NULL, 0);
 	address = ((uint32_t)strtoul(argv[2], NULL, 0)) << 1;
-	count = (uint32_t)strtoul(argv[3], NULL, 0);
+	count = (uint16_t)strtoul(argv[3], NULL, 0);
 	
 	VSS_CHECK_ARGC(count + 4);
 	
-	err = vss_get_binary_buffer(argc - 4, &argv[4], size, count, (void**)&buff);
-	if (!err)
+	err = vss_get_binary_buffer(argc - 4, &argv[4], size, count, (void**)&buff,
+								&parsed_num);
+	if (err)
 	{
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "parse data");
+		vss_print_help(argv[0]);
+	}
+	else
+	{
+		uint16_t i;
+		
+		for (i = parsed_num; i < count; i++)
+		{
+			switch (size)
+			{
+			case 1:
+				((uint8_t *)buff)[i] = ((uint8_t *)buff)[parsed_num - 1];
+				break;
+			case 2:
+				((uint16_t *)buff)[i] = ((uint16_t *)buff)[parsed_num - 1];
+				break;
+			case 4:
+				((uint32_t *)buff)[i] = ((uint32_t *)buff)[parsed_num - 1];
+				break;
+			}
+		}
 		err = ifs->ebi.write(0, index | EBI_TGTTYP_NOR, address, size,
-							(uint8_t *)buff, count);
+								(uint8_t *)buff, count);
 	}
 	
 	if (buff != NULL)
@@ -1554,20 +1656,43 @@ VSS_HANDLER(interface_ebi_write32)
 	uint32_t address;
 	uint8_t size = 4;
 	uint32_t *buff = NULL;
-	uint32_t count;
+	uint16_t count, parsed_num;
 	
 	VSS_CHECK_ARGC_MIN(4);
 	INTERFACE_ASSERT(IFS_EBI, "ebi");
 	
 	index = (uint8_t)strtoul(argv[1], NULL, 0);
 	address = ((uint32_t)strtoul(argv[2], NULL, 0)) << 2;
-	count = (uint32_t)strtoul(argv[3], NULL, 0);
+	count = (uint16_t)strtoul(argv[3], NULL, 0);
 	
 	VSS_CHECK_ARGC(count + 4);
 	
-	err = vss_get_binary_buffer(argc - 4, &argv[4], size, count, (void**)&buff);
-	if (!err)
+	err = vss_get_binary_buffer(argc - 4, &argv[4], size, count, (void**)&buff,
+								&parsed_num);
+	if (err)
 	{
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "parse data");
+		vss_print_help(argv[0]);
+	}
+	else
+	{
+		uint16_t i;
+		
+		for (i = parsed_num; i < count; i++)
+		{
+			switch (size)
+			{
+			case 1:
+				((uint8_t *)buff)[i] = ((uint8_t *)buff)[parsed_num - 1];
+				break;
+			case 2:
+				((uint16_t *)buff)[i] = ((uint16_t *)buff)[parsed_num - 1];
+				break;
+			case 4:
+				((uint32_t *)buff)[i] = ((uint32_t *)buff)[parsed_num - 1];
+				break;
+			}
+		}
 		err = ifs->ebi.write(0, index | EBI_TGTTYP_NOR, address, size,
 							(uint8_t *)buff, count);
 	}

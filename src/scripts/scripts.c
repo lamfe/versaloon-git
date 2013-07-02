@@ -784,16 +784,16 @@ static vsf_err_t vss_append_function_cmd(struct vss_function_t *func, char * str
 }
 
 vsf_err_t vss_get_binary_buffer(uint16_t argc, const char *argv[],
-						uint8_t data_size, uint32_t data_num, void **pbuff)
+	uint8_t data_size, uint16_t data_num, void **pbuff, uint16_t *parsed_num)
 {
-	uint32_t i;
+	uint16_t i, num_to_parse = min(argc, data_num);
 	uint64_t value;
 	
-	if ((NULL == argv) || (argc < data_num) || (NULL == pbuff)
+	if ((NULL == argv) || !num_to_parse || (NULL == pbuff)
 		|| ((data_size != 1) && (data_size != 2) && (data_size != 4)
 			&& (data_size != 8)))
 	{
-		return VSFERR_FAIL;
+		return VSFERR_INVALID_PARAMETER;
 	}
 	
 	if (NULL == *pbuff)
@@ -801,11 +801,12 @@ vsf_err_t vss_get_binary_buffer(uint16_t argc, const char *argv[],
 		*pbuff = malloc(data_size * data_num);
 		if (NULL == *pbuff)
 		{
-			return VSFERR_FAIL;
+			return VSFERR_NOT_ENOUGH_RESOURCES;
 		}
+		memset(*pbuff, 0, data_size * data_num);
 	}
 	
-	for (i = 0; i < data_num; i++)
+	for (i = 0; i < num_to_parse; i++)
 	{
 		value = strtoull(argv[i], NULL, 0);
 		switch (data_size)
@@ -822,10 +823,11 @@ vsf_err_t vss_get_binary_buffer(uint16_t argc, const char *argv[],
 		case 8:
 			(*(uint64_t **)pbuff)[i] = (uint64_t)value;
 			break;
-		default:
-			return VSFERR_FAIL;
-			break;
 		}
+	}
+	if (parsed_num != NULL)
+	{
+		*parsed_num = num_to_parse;
 	}
 	return VSFERR_NONE;
 }
