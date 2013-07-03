@@ -143,9 +143,10 @@ static vsf_err_t vsfusbd_CDCACMControl_SendBreak_prepare(
 }
 
 static struct vsfusbd_setup_filter_t *vsfusbd_CDCACMControl_get_request_filter(
-								uint8_t iface, struct vsfusbd_device_t *device)
+												struct vsfusbd_device_t *device)
 {
-	return vsfusbd_get_request_filter_do(device, vsfusbd_CDCControl_class.req_filter);
+	return vsfusbd_get_class_request_filter(device,
+				(struct vsfusbd_class_protocol_t *)&vsfusbd_CDCControl_class);
 }
 
 static const struct vsfusbd_setup_filter_t vsfusbd_CDCACMControl_class_setup[] = 
