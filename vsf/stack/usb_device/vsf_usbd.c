@@ -859,7 +859,7 @@ static const struct vsfusbd_setup_filter_t vsfusbd_standard_req_filter[] =
 	VSFUSBD_SETUP_NULL
 };
 
-static struct vsfusbd_setup_filter_t *vsfusbd_get_request_filter_do(
+struct vsfusbd_setup_filter_t *vsfusbd_get_request_filter_do(
 		struct vsfusbd_device_t *device, struct vsfusbd_setup_filter_t *list)
 {
 	struct vsfusbd_ctrl_request_t *request = &device->ctrl_handler.request;
@@ -880,6 +880,8 @@ static struct vsfusbd_setup_filter_t *vsfusbd_get_request_filter(
 		struct vsfusbd_device_t *device, int8_t *iface)
 {
 	struct vsfusbd_ctrl_request_t *request = &device->ctrl_handler.request;
+	struct vsfusbd_class_protocol_t *class_protocol = NULL;
+	struct vsfusbd_setup_filter_t *result;
 	
 	if (USB_REQ_GET_TYPE(request->type) == USB_REQ_TYPE_STANDARD)
 	{
@@ -932,8 +934,16 @@ static struct vsfusbd_setup_filter_t *vsfusbd_get_request_filter(
 			*iface = -1;
 			return NULL;
 		}
-		return vsfusbd_get_request_filter_do(device, 
-							config->iface[*iface].class_protocol->req_filter);
+		
+		class_protocol = config->iface[*iface].class_protocol;
+		result = vsfusbd_get_request_filter_do(device,
+												class_protocol->req_filter);
+		if ((NULL == result) && (class_protocol->get_request_filter != NULL))
+		{
+			// try call class_protocol->get_request_filter
+			result = class_protocol->get_request_filter(*iface, device);
+		}
+		return result;
 	}
 }
 

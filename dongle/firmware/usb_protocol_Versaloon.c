@@ -449,15 +449,13 @@ struct vsfusbd_Versaloon_param_t Versaloon_param =
 extern struct usart_stream_info_t shell_stream;
 struct vsfusbd_CDCACM_param_t Versaloon_Shell_param = 
 {
-	6,			// ep_out
-	6, 			// ep_in
-	
-	NULL, NULL,
-	
 	{
-		NULL
+		6,			// ep_out
+		6, 			// ep_in
 	},
-	
+	{
+		NULL, NULL, NULL, NULL,
+	},
 	{
 		115200,	// bitrate
 		0,		// stopbittype
@@ -783,15 +781,13 @@ vsf_err_t VOM_set_line_coding(struct vsfusbd_CDCACM_line_coding_t *line_coding)
 
 struct vsfusbd_CDCACM_param_t Versaloon_CDCACM_param = 
 {
-	4,			// ep_out
-	4, 			// ep_in
-	
-	NULL, NULL,
-	
 	{
-		VOM_set_line_coding
+		4,			// ep_out
+		4, 			// ep_in
 	},
-	
+	{
+		VOM_set_line_coding,
+	},	
 	{
 		115200,	// bitrate
 		0,		// stopbittype
@@ -803,10 +799,10 @@ struct vsfusbd_CDCACM_param_t Versaloon_CDCACM_param =
 static struct vsfusbd_iface_t ifaces[] = 
 {
 	{(struct vsfusbd_class_protocol_t *)&vsfusbd_Versaloon_class, (void *)&Versaloon_param},
-	{(struct vsfusbd_class_protocol_t *)&vsfusbd_CDCACMMaster_class, (void *)&Versaloon_CDCACM_param},
+	{(struct vsfusbd_class_protocol_t *)&vsfusbd_CDCACMControl_class, (void *)&Versaloon_CDCACM_param},
 	{(struct vsfusbd_class_protocol_t *)&vsfusbd_CDCACMData_class, (void *)&Versaloon_CDCACM_param},
 #if SCRIPTS_EN
-	{(struct vsfusbd_class_protocol_t *)&vsfusbd_CDCACMMaster_class, (void *)&Versaloon_Shell_param},
+	{(struct vsfusbd_class_protocol_t *)&vsfusbd_CDCACMControl_class, (void *)&Versaloon_Shell_param},
 	{(struct vsfusbd_class_protocol_t *)&vsfusbd_CDCACMData_class, (void *)&Versaloon_Shell_param},
 #endif
 #if MSC_ON_VERSALOON_EN
@@ -861,12 +857,12 @@ vsf_err_t usb_protocol_init(void)
 	core_interfaces.adc.calibrate(TVCC_ADC_PORT, TVCC_ADC_CHANNEL);
 #endif
 	
-	Versaloon_CDCACM_param.stream_tx = &usart_stream_p0.stream_tx;
-	Versaloon_CDCACM_param.stream_rx = &usart_stream_p0.stream_rx;
+	Versaloon_CDCACM_param.CDC_param.stream_tx = &usart_stream_p0.stream_tx;
+	Versaloon_CDCACM_param.CDC_param.stream_rx = &usart_stream_p0.stream_rx;
 	usart_stream_init(&usart_stream_p0);
 #if SCRIPTS_EN
-	Versaloon_Shell_param.stream_tx = &shell_stream.stream_tx;
-	Versaloon_Shell_param.stream_rx = &shell_stream.stream_rx;
+	Versaloon_Shell_param.CDC_param.stream_tx = &shell_stream.stream_tx;
+	Versaloon_Shell_param.CDC_param.stream_rx = &shell_stream.stream_rx;
 	usart_stream_init(&shell_stream);
 #endif
 #if MSC_ON_VERSALOON_EN
