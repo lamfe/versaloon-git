@@ -212,15 +212,13 @@ vsf_err_t VOM_set_line_coding(struct vsfusbd_CDCACM_line_coding_t *line_coding)
 
 struct vsfusbd_CDCACM_param_t CDCACM_param = 
 {
-	4,			// ep_out
-	4, 			// ep_in
-	
-	NULL, NULL,
-	
 	{
-		VOM_set_line_coding
+		4,			// ep_out
+		4, 			// ep_in
 	},
-	
+	{
+		VOM_set_line_coding,
+	},
 	{
 		115200,	// bitrate
 		0,		// stopbittype

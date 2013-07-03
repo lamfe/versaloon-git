@@ -96,6 +96,9 @@ struct vsfusbd_class_protocol_t
 				uint8_t index, uint16_t lanid, struct vsf_buffer_t *buffer);
 	struct vsfusbd_desc_filter_t *desc_filter;
 	struct vsfusbd_setup_filter_t *req_filter;
+	// only use get_request_filter when req_filter doesn't contain the request
+	struct vsfusbd_setup_filter_t * (*get_request_filter)(
+							uint8_t iface, struct vsfusbd_device_t *device);
 	
 	vsf_err_t (*init)(uint8_t iface, struct vsfusbd_device_t *device);
 	vsf_err_t (*fini)(uint8_t iface, struct vsfusbd_device_t *device);

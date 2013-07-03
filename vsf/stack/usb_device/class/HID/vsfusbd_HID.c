@@ -459,7 +459,7 @@ vsf_err_t vsfusbd_HID_get_desc(struct vsfusbd_device_t *device, uint8_t type,
 const struct vsfusbd_class_protocol_t vsfusbd_HID_class = 
 {
 	vsfusbd_HID_get_desc, NULL,
-	(struct vsfusbd_setup_filter_t *)vsfusbd_HID_class_setup,
+	(struct vsfusbd_setup_filter_t *)vsfusbd_HID_class_setup, NULL,
 	
 	vsfusbd_HID_class_init, NULL, vsfusbd_HID_class_poll
 };

@@ -172,7 +172,7 @@ static vsf_err_t versaloon_poll(uint8_t iface, struct vsfusbd_device_t *device)
 
 const struct vsfusbd_class_protocol_t vsfusbd_Versaloon_class = 
 {
-	NULL, NULL, NULL, 
+	NULL, NULL, NULL, NULL,
 	versaloon_usb_init,
 	NULL, versaloon_poll
 };

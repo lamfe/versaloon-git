@@ -476,7 +476,7 @@ static const struct vsfusbd_setup_filter_t vsfusbd_MSCBOT_class_setup[] =
 const struct vsfusbd_class_protocol_t vsfusbd_MSCBOT_class = 
 {
 	NULL, NULL,
-	(struct vsfusbd_setup_filter_t *)vsfusbd_MSCBOT_class_setup,
+	(struct vsfusbd_setup_filter_t *)vsfusbd_MSCBOT_class_setup, NULL,
 	
 	vsfusbd_MSCBOT_class_init, NULL, vsfusbd_MSCBOT_class_poll
 };
