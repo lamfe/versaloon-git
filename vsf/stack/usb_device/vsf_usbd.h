@@ -98,7 +98,7 @@ struct vsfusbd_class_protocol_t
 	struct vsfusbd_setup_filter_t *req_filter;
 	// only use get_request_filter when req_filter doesn't contain the request
 	struct vsfusbd_setup_filter_t * (*get_request_filter)(
-							uint8_t iface, struct vsfusbd_device_t *device);
+									struct vsfusbd_device_t *device);
 	
 	vsf_err_t (*init)(uint8_t iface, struct vsfusbd_device_t *device);
 	vsf_err_t (*fini)(uint8_t iface, struct vsfusbd_device_t *device);
@@ -201,6 +201,9 @@ extern struct vsfusbd_transact_t vsfusbd_OUT_transact[VSFUSBD_CFG_MAX_OUT_EP+1];
 vsf_err_t vsfusbd_device_get_descriptor(struct vsfusbd_device_t *device, 
 		struct vsfusbd_desc_filter_t *filter, uint8_t type, uint8_t index, 
 		uint16_t lanid, struct vsf_buffer_t *buffer);
+struct vsfusbd_setup_filter_t *vsfusbd_get_class_request_filter(
+		struct vsfusbd_device_t *device,
+		struct vsfusbd_class_protocol_t *class_protocol);
 
 vsf_err_t vsfusbd_device_init(struct vsfusbd_device_t *device);
 vsf_err_t vsfusbd_auto_init(struct vsfusbd_device_t *device);
