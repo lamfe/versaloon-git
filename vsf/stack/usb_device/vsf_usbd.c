@@ -864,14 +864,17 @@ static struct vsfusbd_setup_filter_t *vsfusbd_get_request_filter_do(
 {
 	struct vsfusbd_ctrl_request_t *request = &device->ctrl_handler.request;
 	
-	while (list->type != VSFUSBD_SETUP_INVALID_TYPE)
+	if (list != NULL)
 	{
-		if ((list->type == request->type) && 
-			(list->request == request->request))
+		while (list->type != VSFUSBD_SETUP_INVALID_TYPE)
 		{
-			return list;
+			if ((list->type == request->type) && 
+				(list->request == request->request))
+			{
+				return list;
+			}
+			list++;
 		}
-		list++;
 	}
 	return NULL;
 }
