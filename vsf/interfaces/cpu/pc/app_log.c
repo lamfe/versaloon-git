@@ -22,5 +22,6 @@
 
 #include "app_log.h"
 
-int verbosity = LOG_DEFAULT_LEVEL, verbosity_stack[1];
+int verbosity_pos = 0;
+int verbosity = LOG_DEFAULT_LEVEL, verbosity_stack[16];
 
