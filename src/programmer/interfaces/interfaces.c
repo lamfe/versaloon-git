@@ -201,12 +201,8 @@ vsf_err_t interface_init(const char *ifs)
 				interface_tmp->core.fini(interface_tmp);
 				return VSFERR_FAIL;
 			}
-			return VSFERR_NONE;
 		}
-		else
-		{
-			return VSFERR_NONE;
-		}
+		return VSFERR_NONE;
 	}
 	else
 	{

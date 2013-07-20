@@ -548,6 +548,8 @@ VSS_HANDLER(vsprog_operation)
 		goto Parse_Operation;
 	case 'i':
 		// Information
+	case 'x':
+		// run file
 Parse_Operation:
 		vsprog_query_cmd = false;
 		if (popt_tmp != NULL)

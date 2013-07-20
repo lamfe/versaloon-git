@@ -29,35 +29,102 @@
 #define LOG_DEFAULT_LEVEL	INFO_LEVEL
 
 extern int verbosity;
-extern int verbosity_stack[1];
+extern int verbosity_pos;
+extern int verbosity_stack[16];
 
 #define LOG_MUTE()			verbosity = -1
-#define LOG_PUSH()			verbosity_stack[0] = verbosity
-#define LOG_POP()			verbosity = verbosity_stack[0]
+#define LOG_PUSH()			verbosity_stack[verbosity_pos++] = verbosity
+#define LOG_POP()			verbosity = verbosity_stack[--verbosity_pos]
 
 #define _GETTEXT(STR)		STR
 
 #define LOG_BUF_STD(size, buff, len, func) \
+			LOG_BUF_STD_ADDR16(0, size, buff, len, func)
+
+#define LOG_BUF(buff, len, func, format, n)	\
+			LOG_BUF_ADDR16(0, buff, len, func, format, n)
+
+#define LOG_BUF_STD_ADDR16(addr16, size, buff, len, func) \
 	switch (size)\
 	{\
 	case 1:\
-		LOG_BUF((uint8_t *)buff, len, func, "%02X", 16);\
+		LOG_BUF_ADDR16(addr16, (uint8_t *)buff, len, func, "%02X", 16);\
 		break;\
 	case 2:\
-		LOG_BUF((uint16_t *)buff, len, func, "%04X", 8);\
+		LOG_BUF_ADDR16(addr16, (uint16_t *)buff, len, func, "%04X", 8);\
 		break;\
 	case 4:\
-		LOG_BUF((unsigned int *)buff, len, func, "%08X", 4);\
+		LOG_BUF_ADDR16(addr16, (unsigned int *)buff, len, func, "%08X", 4);\
 		break;\
 	}
 
-#define LOG_BUF(buff, len, func, format, n)	\
+#define LOG_BUF_ADDR16(addr16, buff, len, func, format, n)	\
 	do{\
 		char line[256], s[16];\
 		int __i, __j;\
 		for (__i = 0; __i < (int)(len); __i += (n))\
 		{\
-			snprintf(line, 5, "%04X", __i);\
+			snprintf(line, 5, "%04X", (uint16_t)((addr16) + __i));\
+			for (__j = __i; __j < __i + (n) && __j < (int)(len); __j++)\
+			{\
+				snprintf(s, sizeof(s), " " format, (buff)[__j]);\
+				strncat(line, s, sizeof(s));\
+			}\
+			func("%s", line);\
+		}\
+	}while(0)
+
+#define LOG_BUF_STD_ADDR32(addr32, size, buff, len, func) \
+	switch (size)\
+	{\
+	case 1:\
+		LOG_BUF_ADDR32(addr32, (uint8_t *)buff, len, func, "%02X", 16);\
+		break;\
+	case 2:\
+		LOG_BUF_ADDR32(addr32, (uint16_t *)buff, len, func, "%04X", 8);\
+		break;\
+	case 4:\
+		LOG_BUF_ADDR32(addr32, (unsigned int *)buff, len, func, "%08X", 4);\
+		break;\
+	}
+
+#define LOG_BUF_ADDR32(addr32, buff, len, func, format, n)	\
+	do{\
+		char line[256], s[16];\
+		int __i, __j;\
+		for (__i = 0; __i < (int)(len); __i += (n))\
+		{\
+			snprintf(line, 9, "%08X", (uint32_t)((addr32) + __i));\
+			for (__j = __i; __j < __i + (n) && __j < (int)(len); __j++)\
+			{\
+				snprintf(s, sizeof(s), " " format, (buff)[__j]);\
+				strncat(line, s, sizeof(s));\
+			}\
+			func("%s", line);\
+		}\
+	}while(0)
+
+#define LOG_BUF_STD_ADDR64(addr64, size, buff, len, func) \
+	switch (size)\
+	{\
+	case 1:\
+		LOG_BUF_ADDR64(addr64, (uint8_t *)buff, len, func, "%02X", 16);\
+		break;\
+	case 2:\
+		LOG_BUF_ADDR64(addr64, (uint16_t *)buff, len, func, "%04X", 8);\
+		break;\
+	case 4:\
+		LOG_BUF_ADDR64(addr64, (unsigned int *)buff, len, func, "%08X", 4);\
+		break;\
+	}
+
+#define LOG_BUF_ADDR64(addr64, buff, len, func, format, n)	\
+	do{\
+		char line[256], s[16];\
+		int __i, __j;\
+		for (__i = 0; __i < (int)(len); __i += (n))\
+		{\
+			snprintf(line, 17, "%016" PRIX64, (uint64_t)((addr64) + __i));\
 			for (__j = __i; __j < __i + (n) && __j < (int)(len); __j++)\
 			{\
 				snprintf(s, sizeof(s), " " format, (buff)[__j]);\
