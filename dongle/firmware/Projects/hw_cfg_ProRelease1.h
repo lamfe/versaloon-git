@@ -46,6 +46,7 @@
 #define HW_HAS_SWIM						1
 #define HW_HAS_BDM						1
 #define HW_HAS_POWERCONTROL				1
+#define HW_HAS_CLKO						1
 
 #define HW_HAS_BEEPER					1
 #define HW_HAS_LEDARRAY					1

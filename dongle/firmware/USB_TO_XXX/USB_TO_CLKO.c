@@ -81,7 +81,6 @@ void USB_TO_CLKO_ProcessCmd(uint8_t *dat, uint16_t len)
 			{
 				buffer_reply[rep_len++] = USB_TO_XXX_FAILED;
 			}
-			rep_len += 4;
 			break;
 		case USB_TO_XXX_DISABLE:
 			if (0 == device_idx)

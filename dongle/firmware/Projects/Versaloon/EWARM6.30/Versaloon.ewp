@@ -1970,6 +1970,12 @@
         </file>
       </group>
       <group>
+        <name>CLKO</name>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\Interfaces\APP\CLKO\CLKO.c</name>
+        </file>
+      </group>
+      <group>
         <name>DUSI</name>
         <file>
           <name>$PROJ_DIR$\..\..\..\Interfaces\APP\DUSI\DUSI.c</name>

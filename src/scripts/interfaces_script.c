@@ -535,7 +535,7 @@ VSS_HANDLER(interface_clko_config)
 	
 	kHz = (uint32_t)strtoul(argv[1], NULL, 0);
 	
-	if (ifs->clko.config_freq(0, kHz) ||
+	if (ifs->clko.config(0, kHz) ||
 		ifs->clko.enable(0) ||
 		ifs->peripheral_commit())
 	{
