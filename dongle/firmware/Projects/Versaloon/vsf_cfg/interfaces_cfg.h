@@ -16,6 +16,7 @@
 
 #define IFS_UNIQUEID_EN						1
 #define IFS_FLASH_EN						1
+#define IFS_CLKO_EN							1
 #define IFS_GPIO_EN							1
 #define IFS_TIMER_EN						1
 #define IFS_EINT_EN							1

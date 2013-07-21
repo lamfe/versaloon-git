@@ -323,6 +323,32 @@ vsf_err_t vi_stm32_pwm_in(uint8_t index, uint16_t count, uint16_t *rate)
 	return VSFERR_NONE;
 }
 
+// clko
+vsf_err_t vi_stm32_clko_init(uint8_t index)
+{
+	return VSFERR_NONE;
+}
+
+vsf_err_t vi_stm32_clko_fini(uint8_t index)
+{
+	return VSFERR_NONE;
+}
+
+vsf_err_t vi_stm32_clko_config(uint8_t index, uint32_t kHz)
+{
+	return VSFERR_NONE;
+}
+
+vsf_err_t vi_stm32_clko_enable(uint8_t index)
+{
+	return VSFERR_NONE;
+}
+
+vsf_err_t vi_stm32_clko_disable(uint8_t index)
+{
+	return VSFERR_NONE;
+}
+
 // tickclk
 vsf_err_t vi_stm32_tickclk_init(void)
 {
@@ -385,6 +411,13 @@ struct interfaces_info_t vi_stm32_interfaces =
 		vi_stm32_init,
 		vi_stm32_fini,
 		vi_stm32_reset
+	},
+	{
+		vi_stm32_clko_init,
+		vi_stm32_clko_fini,
+		vi_stm32_clko_config,
+		vi_stm32_clko_enable,
+		vi_stm32_clko_disable,
 	},
 	{
 		vi_stm32_tickclk_init,
