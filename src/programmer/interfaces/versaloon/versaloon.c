@@ -172,6 +172,11 @@ static vsf_err_t versaloon_init(void *p)
 	// fixes programmer abilities
 	if (t != NULL)
 	{
+		if ((t->support_mask & IFS_CLOCK) &&
+			!usbtoxxx_interface_supported(USB_TO_CLKO))
+		{
+			t->support_mask &= ~IFS_CLOCK;
+		}
 		if ((t->support_mask & IFS_POLL) &&
 			!usbtoxxx_interface_supported(USB_TO_POLL))
 		{
@@ -413,7 +418,7 @@ struct interfaces_info_t versaloon_interfaces =
 	IFS_USART | IFS_SPI | IFS_EBI | IFS_I2C | IFS_GPIO | IFS_POWER | IFS_ISSP |
 	IFS_JTAG_LL | IFS_POLL | IFS_JTAG_HL | IFS_SWIM | IFS_JTAG_RAW | IFS_C2 |
 	IFS_MSP430_JTAG | IFS_LPC_ICP | IFS_SWD | IFS_BDM | IFS_DUSI |
-	IFS_MICROWIRE | IFS_PWM | IFS_ADC,
+	IFS_MICROWIRE | IFS_PWM | IFS_ADC | IFS_CLOCK,
 	
 	{	// core
 		versaloon_init,

@@ -417,7 +417,7 @@ struct interface_clko_t
 {
 	vsf_err_t (*init)(uint8_t index);
 	vsf_err_t (*fini)(uint8_t index);
-	vsf_err_t (*config_freq)(uint8_t index, uint32_t kHz);
+	vsf_err_t (*config)(uint8_t index, uint32_t kHz);
 	vsf_err_t (*enable)(uint8_t index);
 	vsf_err_t (*disable)(uint8_t index);
 };

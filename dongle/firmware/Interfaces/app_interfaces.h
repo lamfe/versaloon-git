@@ -287,6 +287,9 @@ struct app_interfaces_info_t
 #if	INTERFACE_GPIO_EN
 	struct interface_gpio_t gpio;
 #endif
+#if INTERFACE_CLKO_EN
+	struct interface_clko_t clko;
+#endif
 #if	INTERFACE_USART_EN
 	struct app_interface_usart_t usart;
 #endif

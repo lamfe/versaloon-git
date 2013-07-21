@@ -34,6 +34,7 @@
 #define USB_TO_SWIM					(VERSALOON_USB_TO_XXX_CMD_START + 0x09)
 #define USB_TO_DUSI					(VERSALOON_USB_TO_XXX_CMD_START + 0x0A)
 #define USB_TO_EBI					(VERSALOON_USB_TO_XXX_CMD_START + 0x0B)
+#define USB_TO_CLKO					(VERSALOON_USB_TO_XXX_CMD_START + 0x0C)
 // Page1
 #define USB_TO_JTAG_LL				(VERSALOON_USB_TO_XXX_CMD_START + 0x20)
 #define USB_TO_JTAG_HL				(VERSALOON_USB_TO_XXX_CMD_START + 0x21)
@@ -69,6 +70,7 @@ void USB_TO_DAC_ProcessCmd(uint8_t *dat, uint16_t len);
 void USB_TO_SWIM_ProcessCmd(uint8_t *dat, uint16_t len);
 void USB_TO_MICROWIRE_ProcessCmd(uint8_t *dat, uint16_t len);
 void USB_TO_DUSI_ProcessCmd(uint8_t *dat, uint16_t len);
+void USB_TO_CLKO_ProcessCmd(uint8_t *dat, uint16_t len);
 // Page1
 void USB_TO_JTAG_LL_ProcessCmd(uint8_t *dat, uint16_t len);
 void USB_TO_JTAG_HL_ProcessCmd(uint8_t *dat, uint16_t len);

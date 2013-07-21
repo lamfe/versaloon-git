@@ -144,6 +144,7 @@
 #	define USB_TO_MICROWIRE_EN			(1 && HW_HAS_MICROWIRE)
 #	define USB_TO_DUSI_EN				(1 && HW_HAS_DUSI)
 #	define USB_TO_EBI_EN				(1 && HW_HAS_EBI)
+#	define USB_TO_CLKO_EN				(1 && HW_HAS_CLKO)
 // page 1
 #	define USB_TO_JTAG_LL_EN			(1 && HW_HAS_JTAG)
 #	define USB_TO_JTAG_HL_EN			(1 && HW_HAS_JTAG)
@@ -178,6 +179,7 @@
 #define INTERFACE_PWM_EN				HW_HAS_PWM
 #define INTERFACE_EBI_EN				HW_HAS_EBI
 #define INTERFACE_ADC_EN				HW_HAS_ADC
+#define INTERFACE_CLKO_EN				HW_HAS_CLKO
 
 #define INTERFACE_C2_EN					(USB_TO_XXX_EN && USB_TO_C2_EN)
 #define INTERFACE_ISSP_EN				(USB_TO_XXX_EN && USB_TO_ISSP_EN)

@@ -17,6 +17,9 @@
 #include "app_cfg.h"
 #include "app_interfaces.h"
 
+#if INTERFACE_CLKO_EN
+#	include "CLKO/CLKO.h"
+#endif
 #if INTERFACE_USART_EN
 #	include "USART/USART.h"
 #endif
@@ -223,6 +226,9 @@ const struct app_interfaces_info_t app_interfaces =
 #if INTERFACE_GPIO_EN
 	| IFS_GPIO 
 #endif
+#if INTERFACE_CLKO_EN
+	| IFS_CLOCK
+#endif
 #if POWER_OUT_EN
 	| IFS_POWER 
 #endif
@@ -275,6 +281,15 @@ const struct app_interfaces_info_t app_interfaces =
 		gpio_out,
 		gpio_in,
 		NULL
+	}
+#endif
+#if INTERFACE_CLKO_EN
+	,{
+		clko_init,
+		clko_fini,
+		clko_config,
+		clko_enable,
+		clko_disable
 	}
 #endif
 #if INTERFACE_USART_EN

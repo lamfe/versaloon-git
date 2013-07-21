@@ -7,7 +7,7 @@
 #define STM32_RCC_APB2ENR_AFIOEN		((uint32_t)1 << 0)
 
 #define STM32_RCC_CFGR_MCO_SFT			24
-#define STM32_RCC_CFGR_MCO_MSK			((uint32_t)0x03 << \
+#define STM32_RCC_CFGR_MCO_MSK			((uint32_t)0x07 << \
 											STM32_RCC_CFGR_MCO_SFT)
 #define STM32_RCC_CFGR_MCO_NOCLK		((uint32_t)0x00 << \
 											STM32_RCC_CFGR_MCO_SFT)
