@@ -72,6 +72,7 @@
 #define INTERFACE_USART_EN					1
 #define INTERFACE_EBI_EN					1
 #define INTERFACE_MICROWIRE_EN				1
+#define INTERFACE_CLKO_EN					1
 
 #define INTERFACE_C2_EN						1
 #define INTERFACE_ISSP_EN					1

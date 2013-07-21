@@ -413,6 +413,15 @@ struct interface_target_voltage_t
 	vsf_err_t (*set)(uint8_t index, uint16_t voltage);
 };
 
+struct interface_clko_t
+{
+	vsf_err_t (*init)(uint8_t index);
+	vsf_err_t (*fini)(uint8_t index);
+	vsf_err_t (*config_freq)(uint8_t index, uint32_t kHz);
+	vsf_err_t (*enable)(uint8_t index);
+	vsf_err_t (*disable)(uint8_t index);
+};
+
 enum poll_check_type_t
 {
 	POLL_CHECK_EQU,
@@ -453,6 +462,7 @@ struct interfaces_info_t
 	
 	uint64_t support_mask;
 	struct interface_core_t core;
+	struct interface_clko_t clko;
 	struct interface_tickclk_t tickclk;
 	struct interface_delay_t delay;
 	struct interface_gpio_t gpio;

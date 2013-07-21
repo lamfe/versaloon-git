@@ -2140,6 +2140,9 @@
       <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB_TO_C2.c</name>
     </file>
     <file>
+      <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB_TO_CLKO.c</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\..\..\..\USB_TO_XXX\USB_TO_DAC.c</name>
     </file>
     <file>
@@ -2299,6 +2302,12 @@
             <name>adc</name>
             <file>
               <name>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\adc\STM32_ADC.c</name>
+            </file>
+          </group>
+          <group>
+            <name>clko</name>
+            <file>
+              <name>$PROJ_DIR$\..\..\..\..\..\vsf\interfaces\cpu\stm32\clko\STM32_CLKO.c</name>
             </file>
           </group>
           <group>
@@ -2494,6 +2503,9 @@
           <name>CLASS</name>
           <group>
             <name>CDC</name>
+            <file>
+              <name>$PROJ_DIR$\..\..\..\..\..\vsf\stack\usb_device\class\CDC\vsfusbd_CDC.c</name>
+            </file>
             <file>
               <name>$PROJ_DIR$\..\..\..\..\..\vsf\stack\usb_device\class\CDC\vsfusbd_CDCACM.c</name>
             </file>

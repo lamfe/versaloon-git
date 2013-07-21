@@ -420,6 +420,14 @@ struct interfaces_info_t versaloon_interfaces =
 		versaloon_fini,
 		versaloon_reset
 	},
+	{
+		// clko
+		usbtoclko_init,
+		usbtoclko_fini,
+		usbtoclko_config,
+		usbtoclko_enable,
+		usbtoclko_disable,
+	},
 	{	// tickclk
 		versaloon_tickclk_init,
 		versaloon_tickclk_fini,

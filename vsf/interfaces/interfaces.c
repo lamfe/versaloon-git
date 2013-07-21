@@ -60,6 +60,16 @@ const struct interfaces_info_t core_interfaces =
 		CORE_FLASH_PROTECT(__TARGET_CHIP__),
 	}
 #endif
+#if IFS_CLKO_EN
+	// clko
+	,{
+		CORE_CLKO_INIT(__TARGET_CHIP__),
+		CORE_CLKO_FINI(__TARGET_CHIP__),
+		CORE_CLKO_CONFIG(__TARGET_CHIP__),
+		CORE_CLKO_ENABLE(__TARGET_CHIP__),
+		CORE_CLKO_DISABLE(__TARGET_CHIP__),
+	}
+#endif
 #if IFS_GPIO_EN
 	,{
 		// gpio

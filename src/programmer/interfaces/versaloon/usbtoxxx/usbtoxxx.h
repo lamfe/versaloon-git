@@ -101,6 +101,17 @@ bool usbtoxxx_interface_supported(uint8_t cmd);
 // USB_TO_INFO
 vsf_err_t usbtoinfo_get_abilities(uint8_t abilities[USB_TO_XXX_ABILITIES_LEN]);
 
+
+// USB_TO_CLKO
+vsf_err_t usbtoclko_init(uint8_t index);
+vsf_err_t usbtoclko_fini(uint8_t index);
+vsf_err_t usbtoclko_config(uint8_t index, uint32_t kHz);
+vsf_err_t usbtoclko_enable(uint8_t index);
+vsf_err_t usbtoclko_disable(uint8_t index);
+
+
+
+
 // USB_TO_DELAY
 vsf_err_t usbtodelay_init(void);
 vsf_err_t usbtodelay_delayms(uint16_t ms);

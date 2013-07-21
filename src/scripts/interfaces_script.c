@@ -52,6 +52,29 @@ static const struct vss_cmd_t tvcc_cmd[] =
 };
 #endif
 
+#if INTERFACE_CLKO_EN
+VSS_HANDLER(interface_clko_init);
+VSS_HANDLER(interface_clko_fini);
+VSS_HANDLER(interface_clko_config);
+
+static const struct vss_cmd_t clko_cmd[] =
+{
+	VSS_CMD(	"init",
+				"initialize clko, format: clko.init",
+				interface_clko_init,
+				NULL),
+	VSS_CMD(	"fini",
+				"finalize clko, format: clko.fini",
+				interface_clko_fini,
+				NULL),
+	VSS_CMD(	"config",
+				"configure clko, format: clko.config FREQUENCY_KHZ",
+				interface_clko_config,
+				NULL),
+	VSS_CMD_END
+};
+#endif
+
 #if INTERFACE_ADC_EN
 VSS_HANDLER(interface_adc_init);
 VSS_HANDLER(interface_adc_fini);
@@ -394,6 +417,12 @@ static const struct vss_cmd_t interface_cmd[] =
 				interface_ebi_init,
 				ebi_cmd),
 #endif
+#if INTERFACE_CLKO_EN
+	VSS_CMD(	"clko",
+				"clko interface handler",
+				interface_clko_init,
+				clko_cmd),
+#endif
 	VSS_CMD(	"delay",
 				"delay interface handler",
 				NULL,
@@ -457,6 +486,62 @@ VSS_HANDLER(interface_set_target_voltage)
 	}
 
 	vss_run_script("tvcc.get");
+	return VSFERR_NONE;
+}
+#endif
+
+#if INTERFACE_CLKO_EN
+VSS_HANDLER(interface_clko_init)
+{
+	struct INTERFACES_INFO_T *ifs = NULL;
+	
+	VSS_CHECK_ARGC_2(1, 2);
+	INTERFACE_ASSERT(IFS_CLOCK, "clko");
+	
+	if (ifs->clko.init(0))
+	{
+		return VSFERR_FAIL;
+	}
+	
+	if (2 == argc)
+	{
+		return interface_clko_config(argc, argv);
+	}
+	
+	return VSFERR_NONE;
+}
+
+VSS_HANDLER(interface_clko_fini)
+{
+	struct INTERFACES_INFO_T *ifs = NULL;
+	
+	VSS_CHECK_ARGC(1);
+	INTERFACE_ASSERT(IFS_CLOCK, "clko");
+	
+	if (ifs->clko.fini(0) || ifs->peripheral_commit())
+	{
+		return VSFERR_FAIL;
+	}
+	return VSFERR_NONE;
+}
+
+VSS_HANDLER(interface_clko_config)
+{
+	uint32_t kHz;
+	struct INTERFACES_INFO_T *ifs = NULL;
+	
+	VSS_CHECK_ARGC(2);
+	INTERFACE_ASSERT(IFS_CLOCK, "clko");
+	
+	kHz = (uint32_t)strtoul(argv[1], NULL, 0);
+	
+	if (ifs->clko.config_freq(0, kHz) ||
+		ifs->clko.enable(0) ||
+		ifs->peripheral_commit())
+	{
+		return VSFERR_FAIL;
+	}
+	
 	return VSFERR_NONE;
 }
 #endif

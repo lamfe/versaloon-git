@@ -134,6 +134,31 @@ bool CORE_FLASH_ISPROTECTED(__TARGET_CHIP__)(uint8_t index);
 
 #endif
 
+#if IFS_CLKO_EN
+
+struct interface_clko_t
+{
+	vsf_err_t (*init)(uint8_t index);
+	vsf_err_t (*fini)(uint8_t index);
+	vsf_err_t (*config)(uint8_t index, uint32_t kHz);
+	vsf_err_t (*enable)(uint8_t index);
+	vsf_err_t (*disable)(uint8_t index);
+};
+
+#define CORE_CLKO_INIT(m)				__CONNECT(m, _clko_init)
+#define CORE_CLKO_FINI(m)				__CONNECT(m, _clko_fini)
+#define CORE_CLKO_CONFIG(m)				__CONNECT(m, _clko_config)
+#define CORE_CLKO_ENABLE(m)				__CONNECT(m, _clko_enable)
+#define CORE_CLKO_DISABLE(m)			__CONNECT(m, _clko_disable)
+
+vsf_err_t CORE_CLKO_INIT(__TARGET_CHIP__)(uint8_t index);
+vsf_err_t CORE_CLKO_FINI(__TARGET_CHIP__)(uint8_t index);
+vsf_err_t CORE_CLKO_CONFIG(__TARGET_CHIP__)(uint8_t index, uint32_t kHz);
+vsf_err_t CORE_CLKO_ENABLE(__TARGET_CHIP__)(uint8_t index);
+vsf_err_t CORE_CLKO_DISABLE(__TARGET_CHIP__)(uint8_t index);
+
+#endif
+
 #if IFS_USART_EN
 
 #define CORE_USART_MODE0(m)			__CONNECT(m, _USART_MODE0)
@@ -1050,6 +1075,9 @@ struct interfaces_info_t
 #endif
 #if IFS_FLASH_EN
 	struct interface_flash_t flash;
+#endif
+#if IFS_CLKO_EN
+	struct interface_clko_t clko;
 #endif
 #if IFS_GPIO_EN
 	struct interface_gpio_t gpio;
