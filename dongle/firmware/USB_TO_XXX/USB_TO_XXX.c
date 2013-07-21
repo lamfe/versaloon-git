@@ -121,6 +121,9 @@ void USB_TO_XXX_ProcessCmd(uint8_t *dat, uint16_t len)
 #if USB_TO_ADC_EN
 			USB_TO_XXX_AddAbility(USB_TO_XXX_Abilities, USB_TO_ADC);
 #endif
+#if USB_TO_CLKO_EN
+			USB_TO_XXX_AddAbility(USB_TO_XXX_Abilities, USB_TO_CLKO);
+#endif
 #if USB_TO_DAC_EN
 			USB_TO_XXX_AddAbility(USB_TO_XXX_Abilities, USB_TO_DAC);
 #endif
@@ -214,6 +217,11 @@ void USB_TO_XXX_ProcessCmd(uint8_t *dat, uint16_t len)
 #if USB_TO_ADC_EN
 		case USB_TO_ADC:
 			USB_TO_ADC_ProcessCmd(dat + USB_TO_XXX_CmdIdx + 3, USB_TO_XXX_CmdLen_tmp);
+			break;
+#endif
+#if USB_TO_CLKO_EN
+		case USB_TO_CLKO:
+			USB_TO_CLKO_ProcessCmd(dat + USB_TO_XXX_CmdIdx + 3, USB_TO_XXX_CmdLen_tmp);
 			break;
 #endif
 #if USB_TO_DAC_EN
