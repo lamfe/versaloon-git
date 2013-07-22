@@ -439,7 +439,7 @@ static void JTAG_TAP_ProcessDataRW(uint8_t *tdo, uint8_t *tdi,
 		}
 		if((bit_len > 0) && (len_tmp < 8))
 		{
-			if(tdi != (uint8_t*)0)
+			if(tdi != NULL)
 			{
 				if(iSend > 0)
 				{
@@ -515,7 +515,7 @@ static void JTAG_TAP_ProcessDataRW(uint8_t *tdo, uint8_t *tdi,
 		len_tmp = 0;
 		tms_tmp = 0;
 
-		if(tdo != (uint8_t*)0)
+		if(tdo != NULL)
 		{
 			if(iReceive > 0)
 			{
@@ -530,7 +530,14 @@ static void JTAG_TAP_ProcessDataRW(uint8_t *tdo, uint8_t *tdi,
 					if((iTmp == 0) || ((iTmp > 0) && (bit_len_remain > Rec_offset)))
 					{
 						tdo[iTmp] = tdo_tmp >> Rec_offset;
-						bit_len_remain -= 8 - Rec_offset;
+						if (bit_len_remain > (8 - Rec_offset))
+						{
+							bit_len_remain -= 8 - Rec_offset;
+						}
+						else
+						{
+							bit_len_remain = 0;
+						}
 					}
 				}
 			}
@@ -548,7 +555,7 @@ static void JTAG_TAP_ProcessDataRW(uint8_t *tdo, uint8_t *tdi,
 		tdo_tmp = JTAG_TAP_Operate_Asyn(0, JTAG_TAP_TMS_E12UPDATE << (8 - idle));
 		JTAG_TAP_Operate_Asyn(0, JTAG_TAP_TMS_E12UPDATE >> idle);
 	}
-	if((tdo != (uint8_t*)0) && (bit_len_remain > 0))
+	if((tdo != NULL) && (bit_len_remain > 0))
 	{
 		iTmp = iReceive - receiveFromByte;
 		if(iTmp > 0)
@@ -602,7 +609,7 @@ static void JTAG_TAP_InstrPtr(uint8_t *instr, uint8_t *tdo, uint16_t bit_len,
 /*
 static void JTAG_TAP_InstrOutPtr(uint8_t *instr, uint16_t bit_len, uint8_t idle)
 {
-	JTAG_TAP_ProcessDataRW((uint8_t*)0,
+	JTAG_TAP_ProcessDataRW(NULL,
 						   instr,
 						   JTAG_TAP_TMS_UPDATERTI2SI,
 						   JTAG_TAP_TMS_UPDATERTI2SI_LEN,
@@ -614,7 +621,7 @@ static void JTAG_TAP_InstrOutPtr(uint8_t *instr, uint16_t bit_len, uint8_t idle)
 
 static void JTAG_TAP_DataOutPtr(uint8_t *tdi, uint16_t bit_len, uint8_t idle)
 {
-	JTAG_TAP_ProcessDataRW((uint8_t*)0,
+	JTAG_TAP_ProcessDataRW(NULL,
 						   tdi,
 						   JTAG_TAP_TMS_UPDATERTI2SD,
 						   JTAG_TAP_TMS_UPDATERTI2SD_LEN,
@@ -627,7 +634,7 @@ static void JTAG_TAP_DataOutPtr(uint8_t *tdi, uint16_t bit_len, uint8_t idle)
 static void JTAG_TAP_DataInPtr(uint8_t *tdo, uint16_t bit_len, uint8_t idle)
 {
 	JTAG_TAP_ProcessDataRW(tdo,
-						   (uint8_t*)0,
+						   NULL,
 						   JTAG_TAP_TMS_UPDATERTI2SD,
 						   JTAG_TAP_TMS_UPDATERTI2SD_LEN,
 						   bit_len,
@@ -667,7 +674,7 @@ static uint32_t JTAG_TAP_Data(uint32_t tdi, uint16_t bit_len, uint8_t idle)
 
 static void JTAG_TAP_DataOut(uint32_t tdi, uint16_t bit_len, uint8_t idle)
 {
-	JTAG_TAP_ProcessDataRW((uint8_t*)0,
+	JTAG_TAP_ProcessDataRW(NULL,
 						   (uint8_t*)&tdi,
 						   JTAG_TAP_TMS_UPDATERTI2SD,
 						   JTAG_TAP_TMS_UPDATERTI2SD_LEN,
@@ -682,7 +689,7 @@ static uint32_t JTAG_TAP_DataIn(uint16_t bit_len, uint8_t idle)
 	uint32_t tdo;
 
 	JTAG_TAP_ProcessDataRW((uint8_t*)&tdo,
-						   (uint8_t*)0,
+						   NULL,
 						   JTAG_TAP_TMS_UPDATERTI2SD,
 						   JTAG_TAP_TMS_UPDATERTI2SD_LEN,
 						   bit_len,
