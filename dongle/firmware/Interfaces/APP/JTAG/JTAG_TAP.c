@@ -369,7 +369,8 @@ static void JTAG_TAP_ProcessDataRW(uint8_t *tdo, uint8_t *tdi,
 	receiveFromByte = len_of_1s_before + tms_len_before;
 	Rec_offset = receiveFromByte & 0x07;
 	receiveFromByte = receiveFromByte >> 3;
-	last_mask = (1 << (bit_len_remain & 7)) - 1;
+	last_mask = (bit_len_remain & 7) ? (1 << (bit_len_remain & 7)) - 1 :
+		((bit_len_remain > 0) ? 0xFF : 0x00);
 
 	// process TMS scrap
 	if (JTAG_TAP_TMS_scraplen)
