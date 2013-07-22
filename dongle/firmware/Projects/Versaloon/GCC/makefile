@@ -157,6 +157,7 @@ USR_SRCS+= $(SRCDIR)/Interfaces/app_interfaces.c
 USR_INCS+= -I $(SRCDIR)/Interfaces
 
 USR_SRCS+= $(APP_IFACES_DIR)/GPIO/GPIO.c \
+  $(APP_IFACES_DIR)/CLKO/CLKO.c \
   $(APP_IFACES_DIR)/USART/USART.c \
   $(APP_IFACES_DIR)/SPI/SPI.c \
   $(APP_IFACES_DIR)/SDIO/SDIO.c \
@@ -203,6 +204,7 @@ USR_SRCS+= $(VSFDIR)/interfaces/interfaces.c
 USR_INCS+= -I $(VSFDIR) -I $(VSFDIR)/interfaces
 
 USR_SRCS+= $(STM32_IFACES_DIR)/core.c \
+  $(STM32_IFACES_DIR)/clko/STM32_CLKO.c \
   $(STM32_IFACES_DIR)/gpio/STM32_GPIO.c \
   $(STM32_IFACES_DIR)/usbd/STM32_USBD.c \
   $(STM32_IFACES_DIR)/spi/STM32_SPI.c \
@@ -247,6 +249,7 @@ endif
 
 #VSF stack
 USR_SRCS+= $(VSFDIR)/stack/usb_device/vsf_usbd.c \
+  $(VSFDIR)/stack/usb_device/class/CDC/vsfusbd_CDC.c \
   $(VSFDIR)/stack/usb_device/class/CDC/vsfusbd_CDCACM.c \
   $(VSFDIR)/stack/usb_device/class/HID/vsfusbd_HID.c \
   $(VSFDIR)/stack/usb_device/class/MSC/vsfusbd_MSC_BOT.c \
@@ -258,6 +261,7 @@ USR_INCS+= -I $(VSFDIR)/tool/list
 
 # USB_TO_XXX
 USR_SRCS+= $(SRCDIR)/USB_TO_XXX/USB_TO_XXX.c \
+  $(SRCDIR)/USB_TO_XXX/USB_TO_CLKO.c \
   $(SRCDIR)/USB_TO_XXX/USB_TO_USART.c \
   $(SRCDIR)/USB_TO_XXX/USB_TO_SPI.c \
   $(SRCDIR)/USB_TO_XXX/USB_TO_IIC.c \
