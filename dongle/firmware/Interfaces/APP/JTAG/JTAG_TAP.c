@@ -362,13 +362,14 @@ static void JTAG_TAP_ProcessDataRW(uint8_t *tdo, uint8_t *tdi,
 	uint8_t len_of_1s_before, uint8_t len_of_1s_after, uint8_t idle)
 {
 	uint8_t tdi_tmp, tdo_tmp, tms_tmp, len_tmp;
-	uint8_t offset, Rec_offset;
+	uint8_t offset, Rec_offset, last_mask;
 	uint16_t iSend = 0, iReceive = 0, iTmp = 0, bit_len_remain, receiveFromByte;
 
 	bit_len_remain = bit_len;
 	receiveFromByte = len_of_1s_before + tms_len_before;
 	Rec_offset = receiveFromByte & 0x07;
-	receiveFromByte = (receiveFromByte + 7) >> 3;
+	receiveFromByte = receiveFromByte >> 3;
+	last_mask = (1 << (bit_len_remain & 7)) - 1;
 
 	// process TMS scrap
 	if (JTAG_TAP_TMS_scraplen)
@@ -519,13 +520,21 @@ static void JTAG_TAP_ProcessDataRW(uint8_t *tdo, uint8_t *tdi,
 		{
 			if(iReceive > 0)
 			{
-				if((bit_len_remain > 0) && (iReceive >= receiveFromByte))
+				if((bit_len_remain > 0) && ((iReceive - 1) >= receiveFromByte))
 				{
-					iTmp = iReceive - receiveFromByte;
+					iTmp = iReceive - 1 - receiveFromByte;
 					if(iTmp > 0)
 					{
 						tdo[iTmp - 1] |= tdo_tmp << (8 - Rec_offset);
-						bit_len_remain -= Rec_offset;
+						if (bit_len_remain > Rec_offset)
+						{
+							bit_len_remain -= Rec_offset;
+						}
+						else
+						{
+							bit_len_remain = 0;
+							tdo[iTmp - 1] &= last_mask;
+						}
 					}
 					if((iTmp == 0) || ((iTmp > 0) && (bit_len_remain > Rec_offset)))
 					{
@@ -537,6 +546,7 @@ static void JTAG_TAP_ProcessDataRW(uint8_t *tdo, uint8_t *tdi,
 						else
 						{
 							bit_len_remain = 0;
+							tdo[iTmp] &= last_mask;
 						}
 					}
 				}
@@ -557,18 +567,24 @@ static void JTAG_TAP_ProcessDataRW(uint8_t *tdo, uint8_t *tdi,
 	}
 	if((tdo != NULL) && (bit_len_remain > 0))
 	{
-		iTmp = iReceive - receiveFromByte;
+		iTmp = iReceive - 1 - receiveFromByte;
 		if(iTmp > 0)
 		{
 			tdo[iTmp - 1] |= tdo_tmp << (8 - Rec_offset);
 			if(bit_len_remain > Rec_offset)
 			{
 				tdo[iTmp] = tdo_tmp >> Rec_offset;
+				tdo[iTmp] &= last_mask;
+			}
+			else
+			{
+				tdo[iTmp - 1] &= last_mask;
 			}
 		}
 		else
 		{
 			tdo[iTmp] = tdo_tmp >> Rec_offset;
+			tdo[iTmp] &= last_mask;
 		}
 	}
 	len_tmp = idle >> 3;
