@@ -90,13 +90,13 @@ static uint16_t JTAG_TAP_GPIO_Operate_Asyn(uint16_t tdi, uint16_t tms)
 		}
 
 		JTAG_TAP_TCK_CLR();
-		if (!JTAG_kHz)
+		if (JTAG_kHz)
 		{
-			JTAG_TAP_RTCK_Wait(0);
+			app_interfaces.delay.delayus(500 / JTAG_kHz);
 		}
 		else
 		{
-			app_interfaces.delay.delayus(500 / JTAG_kHz);
+			JTAG_TAP_RTCK_Wait(0);
 		}
 		JTAG_TAP_TCK_SET();
 		if (JTAG_kHz)
@@ -135,12 +135,6 @@ static void JTAG_TAP_GPIO_Operate_RAW(uint32_t bit_len, uint8_t *tdi,
 			tdo[offset] = 0;
 		}
 
-		JTAG_TAP_TCK_CLR();
-		if (!JTAG_kHz)
-		{
-			JTAG_TAP_RTCK_Wait(0);
-		}
-
 		if (tdi[offset] & mask)
 		{
 			JTAG_TAP_TDI_SET();
@@ -158,15 +152,16 @@ static void JTAG_TAP_GPIO_Operate_RAW(uint32_t bit_len, uint8_t *tdi,
 			JTAG_TAP_TMS_CLR();
 		}
 
+		JTAG_TAP_TCK_CLR();
 		if (JTAG_kHz)
 		{
 			app_interfaces.delay.delayus(500 / JTAG_kHz);
 		}
-		JTAG_TAP_TCK_SET();
-		if (JTAG_TAP_TDO_GET())
+		else
 		{
-			tdo[offset] |= mask;
+			JTAG_TAP_RTCK_Wait(0);
 		}
+		JTAG_TAP_TCK_SET();
 		if (JTAG_kHz)
 		{
 			app_interfaces.delay.delayus(500 / JTAG_kHz);
@@ -174,6 +169,10 @@ static void JTAG_TAP_GPIO_Operate_RAW(uint32_t bit_len, uint8_t *tdi,
 		else
 		{
 			JTAG_TAP_RTCK_Wait(1);
+		}
+		if (JTAG_TAP_TDO_GET())
+		{
+			tdo[offset] |= mask;
 		}
 	}
 }
