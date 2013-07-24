@@ -71,11 +71,6 @@ static uint16_t JTAG_TAP_GPIO_Operate_Asyn(uint16_t tdi, uint16_t tms)
 	for (i = 0; i < 8; i++)
 	{
 		tdo >>= 1;
-		JTAG_TAP_TCK_CLR();
-		if (!JTAG_kHz)
-		{
-			JTAG_TAP_RTCK_Wait(0);
-		}
 
 		if (tdi & 1)
 		{
@@ -94,15 +89,16 @@ static uint16_t JTAG_TAP_GPIO_Operate_Asyn(uint16_t tdi, uint16_t tms)
 			JTAG_TAP_TMS_CLR();
 		}
 
-		if (JTAG_kHz)
+		JTAG_TAP_TCK_CLR();
+		if (!JTAG_kHz)
+		{
+			JTAG_TAP_RTCK_Wait(0);
+		}
+		else
 		{
 			app_interfaces.delay.delayus(500 / JTAG_kHz);
 		}
 		JTAG_TAP_TCK_SET();
-		if (JTAG_TAP_TDO_GET())
-		{
-			tdo |= 0x80;
-		}
 		if (JTAG_kHz)
 		{
 			app_interfaces.delay.delayus(500 / JTAG_kHz);
@@ -110,6 +106,10 @@ static uint16_t JTAG_TAP_GPIO_Operate_Asyn(uint16_t tdi, uint16_t tms)
 		else
 		{
 			JTAG_TAP_RTCK_Wait(1);
+		}
+		if (JTAG_TAP_TDO_GET())
+		{
+			tdo |= 0x80;
 		}
 
 		tdi >>= 1;
@@ -368,7 +368,7 @@ static void JTAG_TAP_ProcessDataRW(uint8_t *tdo, uint8_t *tdi,
 	bit_len_remain = bit_len;
 	receiveFromByte = len_of_1s_before + tms_len_before;
 	Rec_offset = receiveFromByte & 0x07;
-	receiveFromByte = receiveFromByte >> 3;
+	receiveFromByte = (receiveFromByte >> 3) + 1;
 	last_mask = (bit_len_remain & 7) ? (1 << (bit_len_remain & 7)) - 1 :
 		((bit_len_remain > 0) ? 0xFF : 0x00);
 
@@ -519,36 +519,33 @@ static void JTAG_TAP_ProcessDataRW(uint8_t *tdo, uint8_t *tdi,
 
 		if(tdo != NULL)
 		{
-			if(iReceive > 0)
+			if((bit_len_remain > 0) && (iReceive >= receiveFromByte))
 			{
-				if((bit_len_remain > 0) && ((iReceive - 1) >= receiveFromByte))
+				iTmp = iReceive - receiveFromByte;
+				if(iTmp > 0)
 				{
-					iTmp = iReceive - 1 - receiveFromByte;
-					if(iTmp > 0)
+					tdo[iTmp - 1] |= tdo_tmp << (8 - Rec_offset);
+					if (bit_len_remain > Rec_offset)
 					{
-						tdo[iTmp - 1] |= tdo_tmp << (8 - Rec_offset);
-						if (bit_len_remain > Rec_offset)
-						{
-							bit_len_remain -= Rec_offset;
-						}
-						else
-						{
-							bit_len_remain = 0;
-							tdo[iTmp - 1] &= last_mask;
-						}
+						bit_len_remain -= Rec_offset;
 					}
-					if((iTmp == 0) || ((iTmp > 0) && (bit_len_remain > Rec_offset)))
+					else
 					{
-						tdo[iTmp] = tdo_tmp >> Rec_offset;
-						if (bit_len_remain > (8 - Rec_offset))
-						{
-							bit_len_remain -= 8 - Rec_offset;
-						}
-						else
-						{
-							bit_len_remain = 0;
-							tdo[iTmp] &= last_mask;
-						}
+						bit_len_remain = 0;
+						tdo[iTmp - 1] &= last_mask;
+					}
+				}
+				if((iTmp == 0) || ((iTmp > 0) && (bit_len_remain > Rec_offset)))
+				{
+					tdo[iTmp] = tdo_tmp >> Rec_offset;
+					if (bit_len_remain > (8 - Rec_offset))
+					{
+						bit_len_remain -= 8 - Rec_offset;
+					}
+					else
+					{
+						bit_len_remain = 0;
+						tdo[iTmp] &= last_mask;
 					}
 				}
 			}
@@ -568,7 +565,7 @@ static void JTAG_TAP_ProcessDataRW(uint8_t *tdo, uint8_t *tdi,
 	}
 	if((tdo != NULL) && (bit_len_remain > 0))
 	{
-		iTmp = iReceive - 1 - receiveFromByte;
+		iTmp = iReceive - receiveFromByte;
 		if(iTmp > 0)
 		{
 			tdo[iTmp - 1] |= tdo_tmp << (8 - Rec_offset);
