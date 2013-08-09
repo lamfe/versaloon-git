@@ -35,6 +35,7 @@ libprog_a_SOURCES = \
     $(vsf_usbtoxxx_srcdir)/usbtomicrowire.c \
     $(vsf_usbtoxxx_srcdir)/usbtopwm.c \
     $(vsf_usbtoxxx_srcdir)/usbtoebi.c \
+    $(vsf_usbtoxxx_srcdir)/usbtonand.c \
     $(vsf_usbtoxxx_srcdir)/usbtoclko.c \
     interfaces/versaloon/usbtoxxx/usbtoc2.c \
     interfaces/versaloon/usbtoxxx/usbtoissp.c \
