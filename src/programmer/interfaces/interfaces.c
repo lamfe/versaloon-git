@@ -75,6 +75,8 @@ char* get_interface_name(uint64_t i)
 	interface_case(IFS_HV);
 	interface_case(IFS_PDI);
 	interface_case(IFS_BDM);
+	interface_case(IFS_NAND);
+	interface_case(IFS_EBI);
 	default:
 		return NULL;
 	}

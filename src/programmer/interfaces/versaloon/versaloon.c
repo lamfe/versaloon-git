@@ -418,7 +418,7 @@ struct interfaces_info_t versaloon_interfaces =
 	IFS_USART | IFS_SPI | IFS_EBI | IFS_I2C | IFS_GPIO | IFS_POWER | IFS_ISSP |
 	IFS_JTAG_LL | IFS_POLL | IFS_JTAG_HL | IFS_SWIM | IFS_JTAG_RAW | IFS_C2 |
 	IFS_MSP430_JTAG | IFS_LPC_ICP | IFS_SWD | IFS_BDM | IFS_DUSI |
-	IFS_MICROWIRE | IFS_PWM | IFS_ADC | IFS_CLOCK,
+	IFS_MICROWIRE | IFS_PWM | IFS_ADC | IFS_CLOCK | IFS_NAND,
 	
 	{	// core
 		versaloon_init,
@@ -473,6 +473,16 @@ struct interfaces_info_t versaloon_interfaces =
 		usbtospi_select,
 		usbtospi_deselect,
 		usbtospi_io
+	},
+	{
+		// nand
+		usbtonand_init,
+		usbtonand_fini,
+		usbtonand_config,
+		usbtonand_write_cmd,
+		usbtonand_write_addr,
+		usbtonand_write_data,
+		usbtonand_read_data
 	},
 	{
 		// ebi

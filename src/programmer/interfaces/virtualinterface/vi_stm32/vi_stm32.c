@@ -461,6 +461,10 @@ struct interfaces_info_t vi_stm32_interfaces =
 		vi_stm32_spi_io
 	},
 	{
+		// nand
+		NULL, NULL, NULL, NULL, NULL, NULL, NULL
+	},
+	{
 		// ebi
 		NULL, NULL, NULL, NULL, NULL, NULL
 	},

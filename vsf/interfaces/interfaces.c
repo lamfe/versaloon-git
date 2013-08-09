@@ -238,6 +238,18 @@ const struct interfaces_info_t core_interfaces =
 		NULL, NULL, NULL, NULL, NULL
 	}
 #endif
+#if IFS_NAND_EN
+	,{
+		// nand
+		CORE_NAND_INIT(__TARGET_CHIP__),
+		CORE_NAND_FINI(__TARGET_CHIP__),
+		CORE_NAND_CONFIG(__TARGET_CHIP__),
+		CORE_NAND_WRITE_CMD(__TARGET_CHIP__),
+		CORE_NAND_WRITE_ADDR(__TARGET_CHIP__),
+		CORE_NAND_WRITE_DATA(__TARGET_CHIP__),
+		CORE_NAND_READ_DATA(__TARGET_CHIP__),
+	}
+#endif
 #if IFS_EBI_EN
 	,{
 		// ebi
