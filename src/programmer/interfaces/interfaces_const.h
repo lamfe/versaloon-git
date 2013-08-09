@@ -48,6 +48,7 @@
 #define IFS_PWM					(1ULL << 32)
 #define IFS_SDIO				(1ULL << 33)
 #define IFS_EBI					(1ULL << 34)
+#define IFS_NAND				(1ULL << 35)
 #define IFS_INVALID_INTERFACE	(1ULL << 63)
 
 

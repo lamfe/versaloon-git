@@ -202,5 +202,16 @@ vsf_err_t usbtopwm_config_freq(uint8_t index, uint16_t kHz);
 vsf_err_t usbtopwm_out(uint8_t index, uint16_t count, uint16_t *rate);
 vsf_err_t usbtopwm_in(uint8_t index, uint16_t count, uint16_t *rate);
 
+
+
+// USB_TO_NAND
+vsf_err_t usbtonand_init(uint8_t index);
+vsf_err_t usbtonand_fini(uint8_t index);
+vsf_err_t usbtonand_config(uint8_t index, struct nand_info_t *param);
+vsf_err_t usbtonand_write_cmd(uint8_t index, uint8_t *cmd, uint8_t bytelen);
+vsf_err_t usbtonand_write_addr(uint8_t index, uint8_t *addr, uint8_t bytelen);
+vsf_err_t usbtonand_write_data(uint8_t index, uint8_t *data, uint16_t bytelen);
+vsf_err_t usbtonand_read_data(uint8_t index, uint8_t *data, uint16_t bytelen);
+
 #endif /* __USBTOXXX_H_INCLUDED__ */
 

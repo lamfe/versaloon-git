@@ -272,6 +272,17 @@ struct interfaces_info_t versaloon_interfaces =
 		usbtomicrowire_poll
 	},
 #endif
+#if IFS_NAND_EN
+	{
+		// nand
+		usbtonand_init,
+		usbtonand_fini,
+		usbtonand_write_cmd,
+		usbtonand_write_addr,
+		usbtonand_write_data,
+		usbtonand_read_data
+	},
+#endif
 #if IFS_EBI_EN
 	{
 		// ebi

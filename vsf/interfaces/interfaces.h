@@ -587,6 +587,64 @@ vsf_err_t CORE_EINT_TRIGGER(__TARGET_CHIP__)(uint8_t index);
 
 #endif
 
+#if IFS_NAND_EN
+struct nand_info_t
+{
+	uint32_t clock_hz;
+	struct nand_ecc_t
+	{
+		bool ecc_enable;
+		uint16_t ecc_page_size;
+	} ecc;
+	struct nand_timing_t
+	{
+		uint8_t ale_to_re_cycle;
+		uint8_t cle_to_re_cycle;
+		uint16_t setup_cycle;
+		uint16_t wait_cycle;
+		uint8_t hold_cycle;
+		uint8_t hiz_cycle;
+		uint16_t setup_cycle_attr;
+		uint16_t wait_cycle_attr;
+		uint8_t hold_cycle_attr;
+		uint8_t hiz_cycle_attr;
+	} timing;
+};
+
+struct interface_nand_t
+{
+	vsf_err_t (*init)(uint8_t index);
+	vsf_err_t (*fini)(uint8_t index);
+	vsf_err_t (*config)(uint8_t index, struct nand_info_t *param);
+	vsf_err_t (*write_cmd)(uint8_t index, uint8_t *cmd, uint8_t bytelen);
+	vsf_err_t (*write_addr)(uint8_t index, uint8_t *addr, uint8_t bytelen);
+	vsf_err_t (*write_data)(uint8_t index, uint8_t *data, uint16_t bytelen);
+	vsf_err_t (*read_data)(uint8_t index, uint8_t *data, uint16_t bytelen);
+};
+
+#define CORE_NAND_INIT(m)				__CONNECT(m, _nand_init)
+#define CORE_NAND_FINI(m)				__CONNECT(m, _nand_fini)
+#define CORE_NAND_CONFIG(m)				__CONNECT(m, _nand_config)
+#define CORE_NAND_WRITE_CMD(m)			__CONNECT(m, _nand_write_cmd)
+#define CORE_NAND_WRITE_ADDR(m)			__CONNECT(m, _nand_write_addr)
+#define CORE_NAND_WRITE_DATA(m)			__CONNECT(m, _nand_write_data)
+#define CORE_NAND_READ_DATA(m)			__CONNECT(m, _nand_read_data)
+
+vsf_err_t CORE_NAND_INIT(__TARGET_CHIP__)(uint8_t index);
+vsf_err_t CORE_NAND_FINI(__TARGET_CHIP__)(uint8_t index);
+vsf_err_t CORE_NAND_CONFIG(__TARGET_CHIP__)(uint8_t index,
+												struct nand_info_t *param);
+vsf_err_t CORE_NAND_WRITE_CMD(__TARGET_CHIP__)(uint8_t index, uint8_t *cmd,
+												uint8_t bytelen);
+vsf_err_t CORE_NAND_WRITE_ADDR(__TARGET_CHIP__)(uint8_t index, uint8_t *addr,
+												uint8_t bytelen);
+vsf_err_t CORE_NAND_WRITE_DATA(__TARGET_CHIP__)(uint8_t index, uint8_t *data,
+												uint16_t bytelen);
+vsf_err_t CORE_NAND_READ_DATA(__TARGET_CHIP__)(uint8_t index, uint8_t *data,
+												uint16_t bytelen);
+
+#endif
+
 #if IFS_EBI_EN
 
 #define EBI_TGTTYP_NOR				0x00
