@@ -40,7 +40,9 @@ struct interfaces_info_t *interfaces_info[] =
 	// versaloon
 	&versaloon_interfaces,
 	// virtual interfaces
+#if TARGET_ARM_ADI_EN
 	&vi_stm32_interfaces,
+#endif
 	NULL
 };
 

@@ -23,6 +23,7 @@
 
 #include "port.h"
 #include "app_cfg.h"
+#if TARGET_ARM_ADI_EN
 #include "app_type.h"
 #include "app_io.h"
 #include "app_err.h"
@@ -1009,4 +1010,4 @@ init:
 	
 	return VSFERR_NONE;
 }
-
+#endif

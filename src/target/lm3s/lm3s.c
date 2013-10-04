@@ -25,6 +25,9 @@
 
 #include "app_cfg.h"
 #if TARGET_LM3S_EN
+#if !TARGET_ARM_ADI_EN
+#	error TARGET_ARM_ADI_EN MUST be defined for LM3S
+#endif
 
 #include "app_type.h"
 #include "app_io.h"
@@ -78,6 +81,7 @@ VSS_HANDLER(lm3s_mode)
 	mode = (uint8_t)strtoul(argv[1], NULL,0);
 	switch (mode)
 	{
+#if TARGET_ARM_ADI_EN
 	case LM3S_JTAG:
 	case LM3S_SWD:
 		lm3s_program_area_map[0].attr |= AREA_ATTR_RNP;
@@ -85,6 +89,7 @@ VSS_HANDLER(lm3s_mode)
 		memcpy(&lm3s_program_functions, &cm_program_functions,
 				sizeof(lm3s_program_functions));
 		break;
+#endif
 	default:
 		return VSFERR_FAIL;
 	}

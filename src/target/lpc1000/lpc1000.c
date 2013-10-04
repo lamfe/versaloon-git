@@ -25,6 +25,9 @@
 
 #include "app_cfg.h"
 #if TARGET_LPC1000_EN
+#if !TARGET_ARM_ADI_EN && !TARGET_COMISP_EN
+#	error TARGET_ARM_ADI_EN or TARGET_COMISP_EN MUST be defined for LPC1000
+#endif
 
 #include "app_type.h"
 #include "app_io.h"
@@ -84,6 +87,7 @@ VSS_HANDLER(lpc1000_mode)
 	mode = (uint8_t)strtoul(argv[1], NULL,0);
 	switch (mode)
 	{
+#if TARGET_ARM_ADI_EN
 	case LPC1000_JTAG:
 	case LPC1000_SWD:
 		vss_call_notifier(cm_notifier, "chip", "cm_lpc1000");
@@ -92,6 +96,8 @@ VSS_HANDLER(lpc1000_mode)
 		lpc1000_enter_program_mode_save =
 								cm_program_functions.enter_program_mode;
 		break;
+#endif
+#if TARGET_COMISP_EN
 	case LPC1000_ISP:
 		vss_call_notifier(comisp_notifier, "chip", "comisp_lpcarm");
 		memcpy(&lpc1000_program_functions, &comisp_program_functions,
@@ -99,12 +105,16 @@ VSS_HANDLER(lpc1000_mode)
 		lpc1000_enter_program_mode_save =
 								comisp_program_functions.enter_program_mode;
 		break;
+#endif
+	default:
+		return VSFERR_FAIL;
 	}
 	lpc1000_program_functions.enter_program_mode =
 								ENTER_PROGRAM_MODE_FUNCNAME(lpc1000);
 	return VSFERR_NONE;
 }
 
+#if TARGET_COMISP_EN
 VSS_HANDLER(lpc1000_extra)
 {
 	char cmd[2];
@@ -114,6 +124,7 @@ VSS_HANDLER(lpc1000_extra)
 	cmd[1] = '\0';
 	return vss_call_notifier(comisp_notifier, "E", cmd);
 }
+#endif
 
 const struct vss_cmd_t lpc1000_notifier[] =
 {
@@ -125,10 +136,12 @@ const struct vss_cmd_t lpc1000_notifier[] =
 				"set programming mode of target for internal call",
 				lpc1000_mode,
 				NULL),
+#if TARGET_COMISP_EN
 	VSS_CMD(	"extra",
 				"print extra information for internal call",
 				lpc1000_extra,
 				NULL),
+#endif
 	VSS_CMD_END
 };
 

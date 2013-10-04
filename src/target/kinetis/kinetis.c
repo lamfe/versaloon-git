@@ -25,6 +25,9 @@
 
 #include "app_cfg.h"
 #if TARGET_KINETIS_EN
+#if !TARGET_ARM_ADI_EN
+#	error TARGET_ARM_ADI_EN MUST be defined for KINETIS
+#endif
 
 #include "app_type.h"
 #include "app_io.h"
@@ -82,12 +85,16 @@ VSS_HANDLER(kinetis_mode)
 	mode = (uint8_t)strtoul(argv[1], NULL,0);
 	switch (mode)
 	{
+#if TARGET_ARM_ADI_EN
 	case KINETIS_JTAG:
 	case KINETIS_SWD:
 		vss_call_notifier(cm_notifier, "chip", "cm_kinetis");
 		memcpy(&kinetis_program_functions, &cm_program_functions,
 				sizeof(kinetis_program_functions));
 		break;
+#endif
+	default:
+		return VSFERR_FAIL;
 	}
 	return VSFERR_NONE;
 }

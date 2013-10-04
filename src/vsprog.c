@@ -670,7 +670,9 @@ VSS_HANDLER(vsprog_init)
 	vss_register_cmd_list(&filelist_cmd_list);
 	vss_register_cmd_list(&programmer_cmd_list);
 	vss_register_cmd_list(&interface_cmd_list);
+#if TARGET_COMISP_EN
 	vss_register_cmd_list(&comisp_cmd_list);
+#endif
 	vss_register_cmd_list(&usbapi_cmd_list);
 	vss_register_cmd_list(&app_cmd_list);
 	return VSFERR_NONE;

@@ -28,6 +28,10 @@
 #define FEOF							feof
 #define REWIND							rewind
 #define FFLUSH							fflush
+#define FREAD							fread
+#define FWRITE							fwrite
+#define FSEEK							fseek
+#define FTELL							ftell
 
 #define FPRINTF							fprintf
 #define PRINTF							printf

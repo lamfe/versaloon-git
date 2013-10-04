@@ -488,7 +488,9 @@ VSS_HANDLER(vsprog_init)
 	vss_register_cmd_list(&pgbar_cmd_list);
 	vss_register_cmd_list(&interface_cmd_list);
 	vss_register_cmd_list(&app_cmd_list);
+#if TARGET_COMISP_EN
 	vss_register_cmd_list(&comisp_cmd_list);
+#endif
 	
 	return vss_run_script("free-all");
 }

@@ -25,6 +25,9 @@
 
 #include "app_cfg.h"
 #if TARGET_AT91SAM3_EN
+#if !TARGET_ARM_ADI_EN
+#	error TARGET_ARM_ADI_EN MUST be defined for AT91SAM3
+#endif
 
 #include "app_type.h"
 #include "app_io.h"
@@ -81,6 +84,7 @@ VSS_HANDLER(at91sam3_mode)
 	mode = (uint8_t)strtoul(argv[1], NULL,0);
 	switch (mode)
 	{
+#if TARGET_ARM_ADI_EN
 	case AT91SAM3_JTAG:
 	case AT91SAM3_SWD:
 		at91sam3_program_area_map[0].attr |= AREA_ATTR_RNP;
@@ -88,6 +92,9 @@ VSS_HANDLER(at91sam3_mode)
 		memcpy(&at91sam3_program_functions, &cm_program_functions,
 				sizeof(at91sam3_program_functions));
 		break;
+#endif
+	default:
+		return VSFERR_FAIL;
 	}
 	return VSFERR_NONE;
 }

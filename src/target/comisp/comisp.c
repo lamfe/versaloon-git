@@ -25,6 +25,7 @@
 
 #include "port.h"
 #include "app_cfg.h"
+#if TARGET_COMISP_EN
 #include "app_type.h"
 #include "app_io.h"
 #include "app_err.h"
@@ -72,8 +73,12 @@ struct program_functions_t comisp_program_functions;
 const struct comisp_param_t comisp_chips_param[] = {
 //	chip_name,			com_mode,																												program_functions
 //						{comport,	baudrate,	datalength,	paritybit,			stopbit,		handshake,				aux_pin},
+#if TARGET_STM32F1_EN
 	{"comisp_stm32",	{"",		-1,			8,			COMM_PARITYBIT_EVEN,COMM_STOPBIT_1,	COMM_PARAMETER_UNSURE,	COMM_PARAMETER_UNSURE}, &stm32isp_program_functions},
+#endif
+#if TARGET_LPC1000_EN
 	{"comisp_lpcarm",	{"",		-1,			8,			COMM_PARITYBIT_NONE,COMM_STOPBIT_1,	COMM_PARAMETER_UNSURE,	COMM_PARAMETER_UNSURE}, &lpcarmisp_program_functions},
+#endif
 };
 static uint8_t comisp_chip_index = 0;
 
@@ -323,3 +328,4 @@ LEAVE_PROGRAM_MODE_HANDLER(comisp)
 	comm_close();
 	return err;
 }
+#endif

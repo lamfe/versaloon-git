@@ -33,6 +33,8 @@
 // Target Support Configuration
 #define TARGET_SLOT_NUMBER					1
 
+#define TARGET_ARM_ADI_EN					1
+#define TARGET_COMISP_EN					1
 #define TARGET_AT89S5X_EN					1
 #define TARGET_AT91SAM3_EN					1
 #define TARGET_AVR32_EN						0

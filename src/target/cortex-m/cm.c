@@ -25,6 +25,7 @@
 
 #include "port.h"
 #include "app_cfg.h"
+#if TARGET_ARM_ADI_EN
 #include "app_type.h"
 #include "app_io.h"
 #include "app_err.h"
@@ -67,6 +68,7 @@ struct program_functions_t cm_program_functions =
 };
 
 const struct cm_param_t cm_chips_param[] = {
+#if TARGET_STM32F1_EN
 	{
 		"cm_stm32f1",					// chip_name
 		STM32F1_IRC_KHZ / 6,			// jtag_khz
@@ -75,6 +77,8 @@ const struct cm_param_t cm_chips_param[] = {
 		0,								// swd_delay
 		&stm32f1swj_program_functions	// program_functions
 	},
+#endif
+#if TARGET_STM32F2_EN
 	{
 		"cm_stm32f2",					// chip_name
 		STM32F2_IRC_KHZ / 6,			// jtag_khz
@@ -83,6 +87,8 @@ const struct cm_param_t cm_chips_param[] = {
 		0,								// swd_delay
 		&stm32f2swj_program_functions	// program_functions
 	},
+#endif
+#if TARGET_STM32L1_EN
 	{
 		"cm_stm32l1",					// chip_name
 		STM32L1_IRC_KHZ / 6,			// jtag_khz
@@ -91,6 +97,8 @@ const struct cm_param_t cm_chips_param[] = {
 		0,								// swd_delay
 		&stm32l1swj_program_functions	// program_functions
 	},
+#endif
+#if TARGET_LPC1000_EN
 	{
 		"cm_lpc1000",					// chip_name
 		LPC1000_IRC_KHZ / 6,			// jtag_khz
@@ -99,6 +107,8 @@ const struct cm_param_t cm_chips_param[] = {
 		1,								// swd_delay
 		&lpc1000swj_program_functions	// program_functions
 	},
+#endif
+#if TARGET_AT91SAM3_EN
 	{
 		"cm_at91sam3",					// chip_name
 		AT91SAM3_IRC_KHZ / 6,			// jtag_khz
@@ -107,6 +117,8 @@ const struct cm_param_t cm_chips_param[] = {
 		0,								// swd_delay
 		&at91sam3swj_program_functions	// program_functions
 	},
+#endif
+#if TARGET_LM3S_EN
 	{
 		"cm_lm3s",						// chip_name
 		LM3S_IRC_KHZ / 6,				// jtag_khz
@@ -115,6 +127,8 @@ const struct cm_param_t cm_chips_param[] = {
 		0,								// swd_delay
 		&lm3sswj_program_functions		// program_functions
 	},
+#endif
+#if TARGET_NUC100_EN
 	{
 		"cm_nuc100",					// chip_name
 		0,								// jtag_khz
@@ -123,6 +137,8 @@ const struct cm_param_t cm_chips_param[] = {
 		1,								// swd_delay
 		&nuc100swj_program_functions	// program_functions
 	},
+#endif
+#if TARGET_KINETIS_EN
 	{
 		"cm_kinetis",					// chip_name
 		KINETIS_IRC_KHZ / 6,			// jtag_khz
@@ -130,7 +146,8 @@ const struct cm_param_t cm_chips_param[] = {
 		2,								// swd_trn
 		0,								// swd_delay
 		&kinetisswj_program_functions	// program_functions
-	}
+	},
+#endif
 };
 
 struct cm_param_t * cm_get_param(char *chip_name)
@@ -331,4 +348,4 @@ LEAVE_PROGRAM_MODE_HANDLER(cm)
 	cm_dp_fini();
 	return err;
 }
-
+#endif
