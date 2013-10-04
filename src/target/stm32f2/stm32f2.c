@@ -25,6 +25,9 @@
 
 #include "app_cfg.h"
 #if TARGET_STM32F2_EN || TARGET_STM32F4_EN
+#if !TARGET_ARM_ADI_EN && !TARGET_COMISP_EN
+#	error TARGET_ARM_ADI_EN or TARGET_COMISP_EN MUST be defined for STM32F2/4
+#endif
 
 #include "app_type.h"
 #include "app_io.h"
@@ -94,6 +97,7 @@ VSS_HANDLER(stm32f2_mode)
 	mode = (uint8_t)strtoul(argv[1], NULL,0);
 	switch (mode)
 	{
+#if TARGET_ARM_ADI_EN
 	case STM32F2_JTAG:
 	case STM32F2_SWD:
 		stm32f2_program_area_map[0].attr |= AREA_ATTR_NP;
@@ -101,16 +105,22 @@ VSS_HANDLER(stm32f2_mode)
 		memcpy(&stm32f2_program_functions, &cm_program_functions,
 				sizeof(stm32f2_program_functions));
 		break;
+#endif
+#if TARGET_COMISP_EN
 	case STM32F2_ISP:
 		stm32f2_program_area_map[0].attr &= ~AREA_ATTR_NP;
 		vss_call_notifier(comisp_notifier, "chip", "comisp_stm32f2");
 		memcpy(&stm32f2_program_functions, &comisp_program_functions,
 				sizeof(stm32f2_program_functions));
 		break;
+#endif
+	default:
+		return VSFERR_FAIL;
 	}
 	return VSFERR_NONE;
 }
 
+#if TARGET_COMISP_EN
 VSS_HANDLER(stm32f2_extra)
 {
 	char cmd[2];
@@ -120,6 +130,7 @@ VSS_HANDLER(stm32f2_extra)
 	cmd[1] = '\0';
 	return vss_call_notifier(comisp_notifier, "E", cmd);
 }
+#endif
 
 const struct vss_cmd_t stm32f4_notifier[] =
 {
@@ -131,10 +142,12 @@ const struct vss_cmd_t stm32f4_notifier[] =
 				"set programming mode of target for internal call",
 				stm32f2_mode,
 				NULL),
+#if TARGET_COMISP_EN
 	VSS_CMD(	"extra",
 				"print extra information for internal call",
 				stm32f2_extra,
 				NULL),
+#endif
 	VSS_CMD_END
 };
 

@@ -23,6 +23,7 @@
 #include "compiler.h"
 #include "port.h"
 #include "app_cfg.h"
+#if TARGET_ARM_ADI_EN && (TARGET_STM32F1_EN || TARGET_STM32F2_EN || TARGET_STM32F4_EN || TARGET_STM32L1_EN)
 #include "app_type.h"
 #include "app_io.h"
 #include "app_err.h"
@@ -310,4 +311,4 @@ vsf_err_t stm32swj_fl_call(struct stm32_fl_t *fl, struct stm32_fl_cmd_t *cmd,
 	}
 	return VSFERR_NONE;
 }
-
+#endif

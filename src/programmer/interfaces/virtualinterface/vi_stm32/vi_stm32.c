@@ -23,6 +23,8 @@
 #include <stdlib.h>
 
 #include "app_type.h"
+#include "app_cfg.h"
+#if TARGET_ARM_ADI_EN
 #include "app_io.h"
 #include "app_err.h"
 #include "app_log.h"
@@ -534,4 +536,4 @@ struct interfaces_info_t vi_stm32_interfaces =
 	},
 	vi_stm32_peripheral_commit
 };
-
+#endif
