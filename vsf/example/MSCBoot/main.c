@@ -909,6 +909,7 @@ static uint32_t MSP, RST_VECT;
 int main(void)
 {
 	uint32_t pagesize, pagenum;
+	uint32_t key_val;
 	
 	interfaces->core.init(NULL);
 	
@@ -920,8 +921,9 @@ int main(void)
 	while (VSFERR_NONE != interfaces->flash.read_isready(0, APP_CFG_BOOTSIZE + 4, (uint8_t *)&RST_VECT, sizeof(RST_VECT)));
 	
 	interfaces->gpio.init(KEY_PORT);
-	interfaces->gpio.config_pin(KEY_PORT, KEY_PIN, GPIO_INPU);
-	if ((interfaces->gpio.get(KEY_PORT, 1 << KEY_PIN)) &&
+	interfaces->gpio.config_pin(KEY_PORT, KEY_PIN, KEY_VALID_LOW ? GPIO_INPU : GPIO_INPD);
+	key_val = interfaces->gpio.get(KEY_PORT, 1 << KEY_PIN);
+	if ((KEY_VALID_LOW ? key_val : !key_val) &&
 		((MSP & 0xFF000000) == 0x20000000) &&
 		((RST_VECT & 0xFF000000) == 0x08000000))
 	{
