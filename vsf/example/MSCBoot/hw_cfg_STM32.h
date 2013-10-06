@@ -25,11 +25,13 @@
 #define _SYS_FLASH_VECTOR_TABLE_SHIFT	FLASH_LOAD_OFFSET
 
 /****************************** KEY *****************************/
-// PB2 for MiniRelease1
-// PC4 for ProRelease2
-// PA4 for ProRelease3
+// PB2(Valid_Low) for MiniRelease1
+// PC4(Valid_Low) for ProRelease2
+// PA4(Valid_Low) for ProRelease3
 #define KEY_PORT						1
 #define KEY_PIN							9
+
+#define KEY_VALID_LOW					0
 
 /****************************** USB *****************************/
 #define USB_PULL_PORT					2
