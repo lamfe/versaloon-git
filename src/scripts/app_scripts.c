@@ -48,6 +48,7 @@
 
 VSS_HANDLER(dal_vss_init);
 VSS_HANDLER(dal_vss_fini);
+VSS_HANDLER(dal_vss_test);
 
 static const struct vss_cmd_t dal_cmd[] =
 {
@@ -58,6 +59,10 @@ static const struct vss_cmd_t dal_cmd[] =
 	VSS_CMD(	"fini",
 				"finialize driver abstraction layer, format: dal.fini",
 				dal_vss_fini,
+				NULL),
+	VSS_CMD(	"test",
+				"test for user drivers/applications, format: dal.test",
+				dal_vss_test,
 				NULL),
 	VSS_CMD_END
 };
@@ -168,3 +173,8 @@ VSS_HANDLER(dal_vss_fini)
 	return VSFERR_NONE;
 }
 
+VSS_HANDLER(dal_vss_test)
+{
+	VSS_CHECK_ARGC(1);
+	return VSFERR_NONE;
+}
