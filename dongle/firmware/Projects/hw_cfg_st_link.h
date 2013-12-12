@@ -50,12 +50,17 @@
 #define HW_HAS_SWD						1
 #define HW_HAS_SWIM						0
 #define HW_HAS_BDM						0
-#define HW_HAS_POWERCONTROL				0
+#define HW_HAS_POWERCONTROL				1
 #define HW_HAS_CLKO						0
 
 #define HW_HAS_BEEPER					0
 #define HW_HAS_LEDARRAY					0
 #define HW_HAS_7COLOR_LED				0
+
+/****************************** Power ******************************/
+#define PWREXT_INIT()
+#define PWREXT_ENABLE()
+#define PWREXT_DISABLE()
 
 /****************************** ST_LINK Pins ******************************/
 #define ST_LINK_SWD_PORT				GPIOB
