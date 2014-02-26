@@ -136,12 +136,12 @@ ENTER_PROGRAM_MODE_HANDLER(df25xx)
 	}
 	
 	df25xx_drv_param.spi_khz = pi->frequency;
+	df25xx_mal_info.capacity.block_number = flash_info->page_num;
+	df25xx_mal_info.capacity.block_size = flash_info->page_size;
 	if (mal.init(&df25xx_dal_info))
 	{
 		return VSFERR_FAIL;
 	}
-	df25xx_mal_info.capacity.block_number = flash_info->page_num;
-	df25xx_mal_info.capacity.block_size = flash_info->page_size;
 	
 	return dal_commit();
 }
