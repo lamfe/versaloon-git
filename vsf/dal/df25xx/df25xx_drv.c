@@ -58,12 +58,14 @@ static vsf_err_t df25xx_drv_cs_deassert(struct df25xx_drv_interface_t *ifs)
 {
 	if (ifs->cs_port != IFS_DUMMY_PORT)
 	{
-		return interfaces->gpio.set(ifs->cs_port, ifs->cs_pin);
+		interfaces->gpio.set(ifs->cs_port, ifs->cs_pin);
 	}
 	else
 	{
-		return interfaces->spi.deselect(ifs->spi_port, (uint8_t)ifs->cs_pin);
+		interfaces->spi.deselect(ifs->spi_port, (uint8_t)ifs->cs_pin);
 	}
+	// if the cs port is OD with pull-up, need sometime for the signal to rise
+	return interfaces->delay.delayus(20);
 }
 
 static vsf_err_t df25xx_drv_init_nb(struct dal_info_t *info)
