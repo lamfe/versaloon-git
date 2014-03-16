@@ -16,17 +16,20 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-
-#ifndef __COMPILER_H_INCLUDED__
-#define __COMPILER_H_INCLUDED__
+#ifndef __APP_STRING_H_INCLUDED__
+#define __APP_STRING_H_INCLUDED__
 
 #include <string.h>
 
-#define __VSF_FUNCNAME__				__func__
+#define MALLOC							malloc
+#define FREE							free
 
-#define ROOTFUNC	
-#define PACKED_HEAD	
-#define PACKED_MID	__attribute__ ((packed))
-#define PACKED_TAIL	
+#define STRDUP							strdup
+#define STRCPY							strcpy
+#define STRNCPY							strncpy
+#define STRCAT							strcat
+#define STRNCAT							strncat
+#define STRCMP							strcmp
 
-#endif	// __COMPILER_H_INCLUDED__
+#endif	// __APP_STRING_H_INCLUDED__
+

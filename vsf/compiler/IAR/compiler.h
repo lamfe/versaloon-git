@@ -3,7 +3,7 @@
 
 #include <string.h>
 
-#define __VSF_FUNC__				__FUNCTION__
+#define __VSF_FUNCNAME__				"cur_function"
 
 #define ROOTFUNC	__root
 #define PACKED_HEAD	__packed
