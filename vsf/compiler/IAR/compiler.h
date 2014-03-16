@@ -3,6 +3,8 @@
 
 #include <string.h>
 
+#define __VSF_FUNC__				__FUNCTION__
+
 #define ROOTFUNC	__root
 #define PACKED_HEAD	__packed
 #define PACKED_MID	
