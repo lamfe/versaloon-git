@@ -343,7 +343,7 @@ static void fakefat32_get_shortname(struct fakefat32_file_t* file,
 	}
 	else
 	{
-		uint32_t n = strlen(file->name);
+		uint32_t n = min(strlen(file->name), 6);
 		
 		strncpy_toupper_fill((char *)&shortname[0], file->name, ' ', 8);
 		shortname[n] = '~';
@@ -377,10 +377,11 @@ vsf_err_t fakefat32_dir_read(struct fakefat32_file_t* file, uint32_t addr,
 			return VSFERR_NONE;
 		}
 		
-		if (fakefat32_file_is_longname(file))
+		if ((file->attr != FKAEFAT32_FILEATTR_VOLUMEID) &&
+			fakefat32_file_is_longname(file))
 		{
 			uint32_t longname_len = fakefat32_calc_longname_len(file);
-			uint8_t longname_entry_num = (longname_len + 12) / 13;
+			uint8_t longname_entry_num = (uint8_t)((longname_len + 12) / 13);
 			current_entry_size = (1 + longname_entry_num) * 0x20;
 		} else
 		{
@@ -388,7 +389,7 @@ vsf_err_t fakefat32_dir_read(struct fakefat32_file_t* file, uint32_t addr,
 		}
 		if (addr < current_entry_size)
 		{
-			longname_index_offset = addr / 0x20;
+			longname_index_offset = (uint8_t)(addr / 0x20);
 			break;
 		}
 		addr -= current_entry_size;
@@ -417,7 +418,7 @@ vsf_err_t fakefat32_dir_read(struct fakefat32_file_t* file, uint32_t addr,
 		{
 			// process entries for long file name
 			uint32_t longname_len = fakefat32_calc_longname_len(file);
-			uint8_t longname_entry_num = (longname_len + 12) / 13;
+			uint8_t longname_entry_num = (uint8_t)((longname_len + 12) / 13);
 			uint8_t longname_index;
 			uint32_t i, j;
 			
@@ -431,9 +432,11 @@ vsf_err_t fakefat32_dir_read(struct fakefat32_file_t* file, uint32_t addr,
 			if (!longname_index_offset)
 			{
 				longname_index |= 0x40;
-			} else
+			}
+			else
 			{
 				longname_index -= longname_index_offset;
+				longname_index_offset = 0;
 			}
 			
 			while (page_size && longname_index)
@@ -560,6 +563,8 @@ vsf_err_t fakefat32_dir_write(struct fakefat32_file_t*file, uint32_t addr,
 	uint16_t want_first_cluster;
 	char short_filename[11];
 	
+	REFERENCE_PARAMETER(addr);
+	
 	file = file->filelist;
 	while (page_size)
 	{
@@ -650,6 +655,7 @@ static vsf_err_t fakefat32_drv_init_nb(struct dal_info_t *info)
 
 static vsf_err_t fakefat32_drv_fini(struct dal_info_t *info)
 {
+	REFERENCE_PARAMETER(info);
 	return VSFERR_NONE;
 }
 
@@ -993,6 +999,8 @@ static vsf_err_t fakefat32_drv_writeblock_nb_end(struct dal_info_t *info)
 static vsf_err_t fakefat32_drv_parse_interface(struct dal_info_t *info, 
 												uint8_t *buff)
 {
+	REFERENCE_PARAMETER(info);
+	REFERENCE_PARAMETER(buff);
 	return VSFERR_NONE;
 }
 #endif

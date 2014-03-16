@@ -36,6 +36,8 @@ struct fakefat32_file_t
 	
 	struct fakefat32_file_callback_t
 	{
+//		vsf_err_t (*init)(struct fakefat32_file_t*file);
+//		vsf_err_t (*fini)(struct fakefat32_file_t*file);
 		vsf_err_t (*read)(struct fakefat32_file_t*file, uint32_t addr,
 									uint8_t *buff, uint32_t page_size);
 		vsf_err_t (*read_isready)(struct fakefat32_file_t*file, uint32_t addr,
