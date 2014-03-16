@@ -22,7 +22,7 @@
 
 #include <string.h>
 
-#define __VSF_FUNC__				__func__
+#define __VSF_FUNCNAME__				__func__
 
 #define ROOTFUNC	
 #define PACKED_HEAD	

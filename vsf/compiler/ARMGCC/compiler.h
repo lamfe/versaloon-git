@@ -21,7 +21,7 @@ char* strstr(const char *str, const char *substr);
 char* strdup(const char *source);
 #endif
 
-#define __VSF_FUNC__				__func__
+#define __VSF_FUNCNAME__				__func__
 
 #define ROOTFUNC	
 #define PACKED_HEAD	
