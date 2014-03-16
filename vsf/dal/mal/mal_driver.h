@@ -53,8 +53,8 @@ struct mal_driver_t
 											uint64_t address);
 	vsf_err_t (*eraseblock_nb_end)(struct dal_info_t *param);
 	
-	vsf_err_t (*readblock_nb_start)(struct dal_info_t *param, 
-									uint64_t address, uint64_t count);
+	vsf_err_t (*readblock_nb_start)(struct dal_info_t *param, uint64_t address, 
+										uint64_t count, uint8_t *buff);
 	vsf_err_t (*readblock_nb)(struct dal_info_t *param, uint64_t address, 
 								uint8_t *buff);
 	vsf_err_t (*readblock_nb_isready)(struct dal_info_t *param, uint64_t address, 
@@ -64,7 +64,7 @@ struct mal_driver_t
 	vsf_err_t (*readblock_nb_end)(struct dal_info_t *param);
 	
 	vsf_err_t (*writeblock_nb_start)(struct dal_info_t *param, uint64_t address, 
-										uint64_t count);
+										uint64_t count, uint8_t *buff);
 	vsf_err_t (*writeblock_nb)(struct dal_info_t *param, uint64_t address, 
 								uint8_t *buff);
 	vsf_err_t (*writeblock_nb_isready)(struct dal_info_t *param,

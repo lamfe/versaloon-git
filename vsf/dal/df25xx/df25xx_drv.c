@@ -239,13 +239,14 @@ static vsf_err_t df25xx_drv_eraseblock_nb_end(struct dal_info_t *info)
 }
 
 static vsf_err_t df25xx_drv_readblock_nb_start(struct dal_info_t *info, 
-											uint64_t address, uint64_t count)
+								uint64_t address, uint64_t count, uint8_t *buff)
 {
 	struct df25xx_drv_interface_t *ifs = 
 								(struct df25xx_drv_interface_t *)info->ifs;
 	uint8_t cmd[4];
 	
 	REFERENCE_PARAMETER(count);
+	REFERENCE_PARAMETER(buff);
 	
 	df25xx_drv_cs_assert(ifs);
 	cmd[0] = DF25XX_CMD_PGRD;
@@ -285,7 +286,7 @@ static vsf_err_t df25xx_drv_readblock_nb_end(struct dal_info_t *info)
 }
 
 static vsf_err_t df25xx_drv_writeblock_nb_start(struct dal_info_t *info, 
-											uint64_t address, uint64_t count)
+								uint64_t address, uint64_t count, uint8_t *buff)
 {
 	struct df25xx_drv_interface_t *ifs = 
 								(struct df25xx_drv_interface_t *)info->ifs;
@@ -293,6 +294,7 @@ static vsf_err_t df25xx_drv_writeblock_nb_start(struct dal_info_t *info,
 	
 	REFERENCE_PARAMETER(count);
 	REFERENCE_PARAMETER(address);
+	REFERENCE_PARAMETER(buff);
 	
 	df25xx_drv_cs_assert(ifs);
 	cmd[0] = DF25XX_CMD_WREN;

@@ -224,12 +224,13 @@ static vsf_err_t nand_drv_eraseblock_nb_end(struct dal_info_t *info)
 }
 
 static vsf_err_t nand_drv_readblock_nb_start(struct dal_info_t *info, 
-											uint64_t address, uint64_t count)
+								uint64_t address, uint64_t count, uint8_t *buff)
 {
 	struct nand_drv_param_t *param = (struct nand_drv_param_t *)info->param;
 	
 	REFERENCE_PARAMETER(address);
 	REFERENCE_PARAMETER(count);
+	REFERENCE_PARAMETER(buff);
 	
 	param->addr_loadded = false;
 	return VSFERR_NONE;
@@ -316,11 +317,12 @@ static vsf_err_t nand_drv_readblock_nb_end(struct dal_info_t *info)
 }
 
 static vsf_err_t nand_drv_writeblock_nb_start(struct dal_info_t *info, 
-											uint64_t address, uint64_t count)
+								uint64_t address, uint64_t count, uint8_t *buff)
 {
 	REFERENCE_PARAMETER(info);
 	REFERENCE_PARAMETER(address);
 	REFERENCE_PARAMETER(count);
+	REFERENCE_PARAMETER(buff);
 	return VSFERR_NONE;
 }
 

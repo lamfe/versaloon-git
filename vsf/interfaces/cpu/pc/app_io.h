@@ -32,6 +32,7 @@
 #define FWRITE							fwrite
 #define FSEEK							fseek
 #define FTELL							ftell
+#define FVALID(f)						(f != NULL)
 
 #define FPRINTF							fprintf
 #define PRINTF							printf

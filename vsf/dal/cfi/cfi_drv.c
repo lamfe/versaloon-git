@@ -308,13 +308,14 @@ static vsf_err_t cfi_drv_eraseblock_nb_end(struct dal_info_t *info)
 }
 
 static vsf_err_t cfi_drv_readblock_nb_start(struct dal_info_t *info, 
-											uint64_t address, uint64_t count)
+								uint64_t address, uint64_t count, uint8_t *buff)
 {
 	struct cfi_drv_param_t *param = (struct cfi_drv_param_t *)info->param;
 	uint8_t data_width = param->nor_info.common_info.data_width / 8;
 	
 	REFERENCE_PARAMETER(address);
 	REFERENCE_PARAMETER(count);
+	REFERENCE_PARAMETER(buff);
 	
 	cfi_write_cmd(info, 0xAA, data_width, 0x0555 << 1);
 	cfi_write_cmd(info, 0x55, data_width, 0x02AA << 1);
@@ -367,11 +368,12 @@ static vsf_err_t cfi_drv_readblock_nb_end(struct dal_info_t *info)
 }
 
 static vsf_err_t cfi_drv_writeblock_nb_start(struct dal_info_t *info, 
-											uint64_t address, uint64_t count)
+								uint64_t address, uint64_t count, uint8_t *buff)
 {
 	REFERENCE_PARAMETER(info);
 	REFERENCE_PARAMETER(address);
 	REFERENCE_PARAMETER(count);
+	REFERENCE_PARAMETER(buff);
 	return VSFERR_NONE;
 }
 
