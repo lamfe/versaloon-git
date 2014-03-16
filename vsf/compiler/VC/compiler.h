@@ -22,6 +22,8 @@
 
 #include <string.h>
 
+#define __VSF_FUNCNAME__				__FUNCTION__
+
 #define ROOTFUNC	
 #define PACKED_HEAD	#pragma pack(push, 1)
 #define PACKED_MID	
