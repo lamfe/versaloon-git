@@ -284,7 +284,7 @@ static vsf_err_t mal_eraseall_nb_end(struct dal_info_t *info)
 }
 
 static vsf_err_t mal_readblock_nb_start(struct dal_info_t *info, 
-										uint64_t address, uint64_t count)
+								uint64_t address, uint64_t count, uint8_t *buff)
 {
 	struct mal_driver_t* mal_driver =
 			(struct mal_driver_t *)(((struct mal_info_t*)info->extra)->driver);
@@ -294,7 +294,7 @@ static vsf_err_t mal_readblock_nb_start(struct dal_info_t *info,
 		return VSFERR_NOT_SUPPORT;
 	}
 	
-	return mal_driver->readblock_nb_start(info, address, count);
+	return mal_driver->readblock_nb_start(info, address, count, buff);
 }
 
 static vsf_err_t mal_readblock_nb(struct dal_info_t *info, 
@@ -376,7 +376,7 @@ static vsf_err_t mal_readblock_nb_end(struct dal_info_t *info)
 }
 
 static vsf_err_t mal_writeblock_nb_start(struct dal_info_t *info, 
-											uint64_t address, uint64_t count)
+								uint64_t address, uint64_t count, uint8_t *buff)
 {
 	struct mal_driver_t* mal_driver =
 			(struct mal_driver_t *)(((struct mal_info_t*)info->extra)->driver);
@@ -386,7 +386,7 @@ static vsf_err_t mal_writeblock_nb_start(struct dal_info_t *info,
 		return VSFERR_NOT_SUPPORT;
 	}
 	
-	return mal_driver->writeblock_nb_start(info, address, count);
+	return mal_driver->writeblock_nb_start(info, address, count, buff);
 }
 
 static vsf_err_t mal_writeblock_nb(struct dal_info_t *info, 
@@ -539,7 +539,7 @@ static vsf_err_t mal_readblock(struct dal_info_t *info,
 	uint64_t i;
 	
 	if (!mal_info->read_page_size || 
-		mal_readblock_nb_start(info, address, count))
+		mal_readblock_nb_start(info, address, count, buff))
 	{
 		return VSFERR_FAIL;
 	}
@@ -565,7 +565,7 @@ static vsf_err_t mal_writeblock(struct dal_info_t *info,
 	uint64_t i;
 	
 	if (!mal_info->write_page_size || 
-		mal_writeblock_nb_start(info, address, count))
+		mal_writeblock_nb_start(info, address, count, buff))
 	{
 		return VSFERR_FAIL;
 	}

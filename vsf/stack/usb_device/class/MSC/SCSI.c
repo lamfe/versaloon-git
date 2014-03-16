@@ -248,7 +248,7 @@ static vsf_err_t SCSI_io_WRITE10(struct SCSI_LUN_info_t *info, uint8_t CB[16],
 	{
 	case SCSI_MAL_OPT_INIT:
 		if (mal.writeblock_nb_start(info->dal_info, lba * block_size,
-									info->status.page_num))
+									info->status.page_num, buffer->buffer))
 		{
 			info->status.page_num = 0;
 			info->status.memstat = SCSI_MEMSTAT_NOINIT;
@@ -352,7 +352,7 @@ static vsf_err_t SCSI_io_READ10(struct SCSI_LUN_info_t *info, uint8_t CB[16],
 	{
 	case SCSI_MAL_OPT_INIT:
 		if (mal.readblock_nb_start(info->dal_info, lba * block_size,
-									info->status.page_num))
+									info->status.page_num, buffer->buffer))
 		{
 			info->status.page_num = 0;
 			info->status.memstat = SCSI_MEMSTAT_NOINIT;
