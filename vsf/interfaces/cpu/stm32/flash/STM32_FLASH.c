@@ -109,11 +109,12 @@ vsf_err_t stm32_flash_unlock(uint8_t index)
 vsf_err_t stm32_flash_getcapacity(uint8_t index, uint32_t *pagesize, 
 									uint32_t *pagenum)
 {
-	uint16_t flash_size = STM32_FLASH_SIZE_KB;
+	uint16_t flash_size;
 	
 	switch (index)
 	{
 	case 0:
+		flash_size = STM32_FLASH_SIZE_KB;
 		if (flash_size >= 256)
 		{
 			if (NULL != pagesize)
