@@ -67,6 +67,7 @@ USR_SRCS+= $(VSFDIR)/stack/usb_device/vsf_usbd.c \
 
 #VSF tool
 USR_SRCS+= $(VSFDIR)/tool/buffer/buffer.c $(VSFDIR)/tool/fakefat32/fakefat32.c
+USR_SRCS+= $(VSFDIR)/tool/mal_embflash/mal_embflash.c $(VSFDIR)/tool/mal_in_mal/mal_in_mal.c
 USR_INCS+= -I $(VSFDIR)/tool/list
 
 # LIBSTM32_LIB
