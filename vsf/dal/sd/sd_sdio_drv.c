@@ -423,7 +423,7 @@ static vsf_err_t sd_sdio_getinfo(struct dal_info_t *info)
 }
 
 static vsf_err_t sd_sdio_drv_readblock_nb_start(struct dal_info_t *info, 
-											uint64_t address, uint64_t count)
+								uint64_t address, uint64_t count, uint8_t *buff)
 {
 	struct sd_sdio_drv_info_t *drv_info =
 								(struct sd_sdio_drv_info_t *)info->info;
@@ -434,6 +434,7 @@ static vsf_err_t sd_sdio_drv_readblock_nb_start(struct dal_info_t *info,
 	uint16_t token;
 	uint32_t arg;
 	
+	REFERENCE_PARAMETER(buff);
 	if (SD_CARDTYPE_SD_V2HC == sd_info->cardtype)
 	{
 		arg = (uint32_t)(address >> 9);
@@ -519,7 +520,7 @@ static vsf_err_t sd_sdio_drv_readblock_nb_end(struct dal_info_t *info)
 }
 /*
 static vsf_err_t sd_sdio_drv_writeblock_nb_start(struct dal_info_t *info, 
-											uint64_t address, uint64_t count)
+								uint64_t address, uint64_t count, uint8_t *buff)
 {
 	struct sd_sdio_drv_info_t *drv_info =
 								(struct sd_sdio_drv_info_t *)info->info;
@@ -531,6 +532,7 @@ static vsf_err_t sd_sdio_drv_writeblock_nb_start(struct dal_info_t *info,
 	uint32_t arg;
 	uint8_t resp;
 	
+	REFERENCE_PARAMETER(buff);
 	if (SD_CARDTYPE_SD_V2HC == sd_info->cardtype)
 	{
 		arg = (uint32_t)(address >> 9);
