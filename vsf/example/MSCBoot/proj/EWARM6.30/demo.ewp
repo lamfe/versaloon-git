@@ -2119,6 +2119,18 @@
           <name>$PROJ_DIR$\..\..\..\..\tool\list\list.h</name>
         </file>
       </group>
+      <group>
+        <name>mal_embflash</name>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\tool\mal_embflash\mal_embflash.c</name>
+        </file>
+      </group>
+      <group>
+        <name>mal_in_mal</name>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\tool\mal_in_mal\mal_in_mal.c</name>
+        </file>
+      </group>
     </group>
   </group>
   <group>
