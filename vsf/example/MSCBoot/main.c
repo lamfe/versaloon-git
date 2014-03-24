@@ -433,9 +433,15 @@ static struct dal_info_t fakefat32_dal_info =
 static vsf_err_t ReadInfo(struct fakefat32_file_t*file, uint32_t addr,
 									uint8_t *buff, uint32_t page_size)
 {
-	uint32_t remain_size = sizeof(readme_str) - 1 - addr;
-	
-	memcpy(buff, &readme_str[addr], min(remain_size, page_size));
+	if (addr < (sizeof(readme_str) - 1))
+	{
+		uint32_t remain_size = sizeof(readme_str) - 1 - addr;
+		memcpy(buff, &readme_str[addr], min(remain_size, page_size));
+	}
+	else
+	{
+		memset(buff, 0xFF, page_size);
+	}
 	return VSFERR_NONE;
 }
 
