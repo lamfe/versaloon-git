@@ -2283,6 +2283,12 @@
         </file>
       </group>
       <group>
+        <name>sst32hfxx</name>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\vsf\dal\sst32hfxx\sst32hfxx_drv.c</name>
+        </file>
+      </group>
+      <group>
         <name>stream</name>
         <file>
           <name>$PROJ_DIR$\..\..\..\..\..\vsf\dal\stream\stream.c</name>
@@ -2792,6 +2798,12 @@
         <name>sd</name>
         <file>
           <name>$PROJ_DIR$\..\..\..\..\..\src\target\sd\sd.c</name>
+        </file>
+      </group>
+      <group>
+        <name>sst32fhxx</name>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\src\target\sst32hfxx\sst32hfxx.c</name>
         </file>
       </group>
       <group>

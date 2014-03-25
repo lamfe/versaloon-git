@@ -68,6 +68,7 @@
 #include "stm32l1/stm32l1.h"
 #include "nuc100/nuc100.h"
 #include "kinetis/kinetis.h"
+#include "sst32hfxx/sst32hfxx.h"
 
 VSS_HANDLER(target_memory_detail);
 VSS_HANDLER(target_parameter_detail);
@@ -657,6 +658,19 @@ const struct target_info_t targets_info[] =
 		&nand_program_functions,			// program_functions
 		nand_notifier,						// notifier
 		nand_adjust_setting,				// adjust_setting
+		NULL,								// adjust_mapping
+	},
+#endif
+#if TARGET_SST32HFXX_EN
+	// SST32HFXX
+	{
+		SST32HFXX_STRING,					// name
+		AUTO_DETECT,						// feature
+		sst32hfxx_program_area_map,			// program_area_map
+		sst32hfxx_program_mode,				// program_mode
+		&sst32hfxx_program_functions,		// program_functions
+		sst32hfxx_notifier,					// notifier
+		NULL,								// adjust_setting
 		NULL,								// adjust_mapping
 	},
 #endif

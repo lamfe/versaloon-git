@@ -16,21 +16,15 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
+#ifndef __SST32HFXX_H_INCLUDED__
+#define __SST32HFXX_H_INCLUDED__
 
-#define DAL_INTERFACE_PARSER_EN				1
+#define SST32HFXX_STRING						"sst32hfxx"
 
-#define DAL_MIC2826_EN						1
-#define DAL_NRF24L01_EN						1
-#define DAL_S6B0724_EN						1
+extern struct program_area_map_t sst32hfxx_program_area_map[];
+extern const struct program_mode_t sst32hfxx_program_mode[];
+extern const struct program_functions_t sst32hfxx_program_functions;
+extern const struct vss_cmd_t sst32hfxx_notifier[];
 
-#define DAL_MAL_EN							1
-#define DAL_EE93CX6_EN						1
-#define DAL_EE24CXX_EN						1
-#define DAL_DF25XX_EN						1
-#define DAL_DF45XX_EN						1
-#define DAL_SD_SPI_EN						1
-#define DAL_SD_SDIO_EN						0
-#define DAL_CFI_EN							1
-#define DAL_NAND_EN							1
-#define DAL_SST32HFXX_EN					1
+#endif /* __SST32HFXX_H_INCLUDED__ */
 
