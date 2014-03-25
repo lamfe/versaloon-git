@@ -11,6 +11,7 @@
 
 #include "interfaces.h"
 #include "dal/mal/mal.h"
+#include "dal/sst32hfxx/sst32hfxx_drv.h"
 #include "tool/mal_in_mal/mal_in_mal.h"
 #include "tool/mal_embflash/mal_embflash.h"
 #include "tool/fakefat32/fakefat32.h"
@@ -56,6 +57,26 @@ static struct dal_info_t firmware_dal_info =
 };
 
 #if EVSPROG_EN
+// sst32hf164: extnor
+static struct sst32hfxx_drv_info_t sst32hfxx_drv_info;
+static struct sst32hfxx_drv_param_t sst32hfxx_drv_param;
+static struct sst32hfxx_drv_interface_t sst32hfxx_drv_ifs =
+{
+	0,		// uint8_t ebi_port;
+	1,		// uint8_t nor_index;
+};
+static struct mal_info_t sst32hfxx_mal_info =
+{
+	{0, 0}, NULL, 0, 0, 0, &sst32hfxx_nor_drv
+};
+static struct dal_info_t sst32hfxx_dal_info =
+{
+	&sst32hfxx_drv_ifs,
+	&sst32hfxx_drv_param,
+	&sst32hfxx_drv_info,
+	&sst32hfxx_mal_info,
+};
+
 // evsprog_config
 static struct malinmal_param_t evsprog_config_param =
 {
@@ -92,6 +113,46 @@ static struct dal_info_t evsprog_mainscript_dal_info =
 	&evsprog_mainscript_param,
 	NULL,
 	&evsprog_mainscript_mal_info,
+};
+
+// evsprog_target_extnor
+static struct malinmal_param_t evsprog_target_extnor_param =
+{
+	&sst32hfxx_dal_info,			// struct dal_info_t *maldal;
+	// addr and size will be initialized according to real flash size
+	0,	// uint32_t addr;
+	0,	// uint32_t size;
+};
+static struct mal_info_t evsprog_target_extnor_mal_info = 
+{
+	{0, 0}, NULL, 0, 0, 0, &malinmal_drv
+};
+static struct dal_info_t evsprog_target_extnor_dal_info = 
+{
+	NULL,
+	&evsprog_target_extnor_param,
+	NULL,
+	&evsprog_target_extnor_mal_info,
+};
+
+// evsprog_script_extnor
+static struct malinmal_param_t evsprog_script_extnor_param =
+{
+	&sst32hfxx_dal_info,			// struct dal_info_t *maldal;
+	// addr and size will be initialized according to real flash size
+	0,	// uint32_t addr;
+	0,	// uint32_t size;
+};
+static struct mal_info_t evsprog_script_extnor_mal_info = 
+{
+	{0, 0}, NULL, 0, 0, 0, &malinmal_drv
+};
+static struct dal_info_t evsprog_script_extnor_dal_info = 
+{
+	NULL,
+	&evsprog_script_extnor_param,
+	NULL,
+	&evsprog_script_extnor_mal_info,
 };
 
 // evsprog_target_embflash
@@ -191,6 +252,24 @@ static vsf_err_t ReadMainScriptArea_isready(struct fakefat32_file_t*file,
 							uint32_t addr, uint8_t *buff, uint32_t page_size);
 static vsf_err_t ChangeMainScriptAreaSize(struct fakefat32_file_t *file,
 							uint32_t size);
+static vsf_err_t WriteScriptAreaExtNor(struct fakefat32_file_t*file,
+							uint32_t addr, uint8_t *buff, uint32_t page_size);
+static vsf_err_t WriteScriptAreaExtNor_isready(struct fakefat32_file_t*file,
+							uint32_t addr, uint8_t *buff, uint32_t page_size);
+static vsf_err_t ReadScriptAreaExtNor(struct fakefat32_file_t*file,
+							uint32_t addr, uint8_t *buff, uint32_t page_size);
+static vsf_err_t ReadScriptAreaExtNor_isready(struct fakefat32_file_t*file,
+							uint32_t addr, uint8_t *buff, uint32_t page_size);
+static vsf_err_t ChangeScriptAreaSizeExtNor(struct fakefat32_file_t *file,
+											uint32_t size);
+static vsf_err_t WriteTargetAreaExtNor(struct fakefat32_file_t*file,
+							uint32_t addr, uint8_t *buff, uint32_t page_size);
+static vsf_err_t WriteTargetAreaExtNor_isready(struct fakefat32_file_t*file,
+							uint32_t addr, uint8_t *buff, uint32_t page_size);
+static vsf_err_t ReadTargetAreaExtNor(struct fakefat32_file_t*file,
+							uint32_t addr, uint8_t *buff, uint32_t page_size);
+static vsf_err_t ReadTargetAreaExtNor_isready(struct fakefat32_file_t*file,
+							uint32_t addr, uint8_t *buff, uint32_t page_size);
 static vsf_err_t WriteTargetAreaEmbFlash(struct fakefat32_file_t*file,
 							uint32_t addr, uint8_t *buff, uint32_t page_size);
 static vsf_err_t WriteTargetAreaEmbFlash_isready(struct fakefat32_file_t*file,
@@ -265,8 +344,7 @@ static struct fakefat32_file_t target_slot_embflash_dir[] =
 		NULL,
 	}
 };
-/*
-// TODO: add extnor support
+
 static struct fakefat32_file_t target_slot_extnor_dir[] =
 {
 	{
@@ -304,15 +382,15 @@ static struct fakefat32_file_t target_slot_extnor_dir[] =
 		NULL,
 	}
 };
-*/
 #endif
 
 #define ROOT_FIRMWARE_IDX			3
 #define ROOT_CONFIG_IDX				4
 #define ROOT_MAINSCRIPT_IDX			5
 #define ROOT_TARGETS_IDX			6
-// TODO: add extnor support
-//static uint8_t faktfat32_filename_slotn[] = "slotn";
+#if EVSPROG_EN
+static char faktfat32_filename_slotn[] = "slotn";
+#endif
 static struct fakefat32_file_t root_dir[] =
 {
 	{
@@ -460,8 +538,7 @@ static vsf_err_t MalEraseWrite(struct dal_info_t *info, uint32_t addr,
 	uint32_t mal_pagesize = (uint32_t)mal_info->capacity.block_size;
 	uint32_t mal_pagenum = (uint32_t)mal_info->capacity.block_number;
 	
-	if ((0 == mal_info->capacity.block_size) ||
-		(page_size < mal_info->capacity.block_size) ||
+	if ((0 == mal_pagesize) || (page_size < mal_pagesize) ||
 		(addr >= (mal_pagesize * mal_pagenum)))
 	{
 		return VSFERR_FAIL;
@@ -527,6 +604,7 @@ static vsf_err_t MalEraseWrite_isready(struct dal_info_t *info, uint32_t addr,
 		{
 			mal.writeblock_nb_end(info);
 			mal_io_fsm = MAL_IO_IDLE;
+			return VSFERR_NONE;
 		}
 		else
 		{
@@ -551,8 +629,7 @@ static vsf_err_t MalRead(struct dal_info_t *info, uint32_t addr, uint8_t *buff,
 	uint32_t mal_pagesize = (uint32_t)mal_info->capacity.block_size;
 	uint32_t mal_pagenum = (uint32_t)mal_info->capacity.block_number;
 	
-	if ((0 == mal_info->capacity.block_size) ||
-		(page_size < mal_info->capacity.block_size) ||
+	if ((0 == mal_pagesize) || (page_size < mal_pagesize) ||
 		(addr >= (mal_pagesize * mal_pagenum)))
 	{
 		return VSFERR_FAIL;
@@ -638,9 +715,7 @@ struct app_cfg_t
 	uint16_t main_script_size;
 	uint16_t slot_script_size[2];
 };
-static int8_t slot_idx_embflash;
-// TODO: add extnor support
-// static int8_t slot_idx_extnor;
+static int8_t slot_idx_embflash, slot_idx_extnor;
 static struct app_cfg_t app_cfg;
 static vsf_err_t ReadAppCfg(struct app_cfg_t *cfg)
 {
@@ -714,6 +789,58 @@ static vsf_err_t ChangeMainScriptAreaSize(struct fakefat32_file_t *file,
 	return WriteAppCfg(&app_cfg);
 }
 
+static vsf_err_t WriteScriptAreaExtNor(struct fakefat32_file_t*file,
+							uint32_t addr, uint8_t *buff, uint32_t page_size)
+{
+	return MalEraseWrite(&evsprog_script_extnor_dal_info, addr, buff, page_size);
+}
+static vsf_err_t WriteScriptAreaExtNor_isready(struct fakefat32_file_t*file,
+							uint32_t addr, uint8_t *buff, uint32_t page_size)
+{
+	return MalEraseWrite_isready(&evsprog_script_extnor_dal_info, addr, buff, page_size);
+}
+static vsf_err_t ReadScriptAreaExtNor(struct fakefat32_file_t*file,
+							uint32_t addr, uint8_t *buff, uint32_t page_size)
+{
+	return MalRead(&evsprog_script_extnor_dal_info, addr, buff, page_size);
+}
+static vsf_err_t ReadScriptAreaExtNor_isready(struct fakefat32_file_t*file,
+							uint32_t addr, uint8_t *buff, uint32_t page_size)
+{
+	return MalRead_isready(&evsprog_script_extnor_dal_info, addr, buff, page_size);
+}
+static vsf_err_t ChangeScriptAreaSizeExtNor(struct fakefat32_file_t *file,
+							uint32_t size)
+{
+	if ((slot_idx_extnor < 0) || (size > EVSPROG_MAINSCRIPT_SIZE))
+	{
+		return VSFERR_FAIL;
+	}
+	app_cfg.slot_script_size[slot_idx_extnor] = size;
+	return WriteAppCfg(&app_cfg);
+}
+
+static vsf_err_t WriteTargetAreaExtNor(struct fakefat32_file_t*file,
+							uint32_t addr, uint8_t *buff, uint32_t page_size)
+{
+	return MalEraseWrite(&evsprog_target_extnor_dal_info, addr, buff, page_size);
+}
+static vsf_err_t WriteTargetAreaExtNor_isready(struct fakefat32_file_t*file,
+							uint32_t addr, uint8_t *buff, uint32_t page_size)
+{
+	return MalEraseWrite_isready(&evsprog_target_extnor_dal_info, addr, buff, page_size);
+}
+static vsf_err_t ReadTargetAreaExtNor(struct fakefat32_file_t*file,
+							uint32_t addr, uint8_t *buff, uint32_t page_size)
+{
+	return MalRead(&evsprog_target_extnor_dal_info, addr, buff, page_size);
+}
+static vsf_err_t ReadTargetAreaExtNor_isready(struct fakefat32_file_t*file,
+							uint32_t addr, uint8_t *buff, uint32_t page_size)
+{
+	return MalRead_isready(&evsprog_target_extnor_dal_info, addr, buff, page_size);
+}
+
 static vsf_err_t WriteTargetAreaEmbFlash(struct fakefat32_file_t*file,
 							uint32_t addr, uint8_t *buff, uint32_t page_size)
 {
@@ -758,7 +885,7 @@ static vsf_err_t ReadScriptAreaEmbFlash_isready(struct fakefat32_file_t*file,
 static vsf_err_t ChangeScriptAreaSizeEmbFlash(struct fakefat32_file_t *file,
 							uint32_t size)
 {
-	if (size > EVSPROG_MAINSCRIPT_SIZE)
+	if ((slot_idx_embflash < 0) || (size > EVSPROG_MAINSCRIPT_SIZE))
 	{
 		return VSFERR_FAIL;
 	}
@@ -888,7 +1015,7 @@ struct SCSI_LUN_info_t MSCBOT_LunInfo =
 		SCSI_PDT_DIRECT_ACCESS_BLOCK
 	}
 };
-uint8_t MSCBOT_Buffer0[2048], MSCBOT_Buffer1[2048];
+uint8_t MSCBOT_Buffer0[4096], MSCBOT_Buffer1[4096];
 
 struct vsfusbd_MSCBOT_param_t MSCBOT_param = 
 {
@@ -989,9 +1116,6 @@ int main(void)
 	// delay
 	interfaces->delay.delayms(200);
 	
-	fakefat32_param.sector_size = pagesize;
-	fakefat32_param.sector_number = 128 * 1024 * 1024 / pagesize;
-	fakefat32_param.sectors_per_cluster = 1;
 	// fixes size for firmware.bin, config.bin, script.txt
 #if EVSPROG_EN
 	if (size < (APP_CFG_BOOTSIZE + APP_CFG_FWSIZE + EVSPROG_TARGET_CFG_SIZE + EVSPROG_MAINSCRIPT_SIZE))
@@ -999,7 +1123,9 @@ int main(void)
 		fatal_error();
 	}
 	ReadAppCfg(&app_cfg);
-	if (app_cfg.main_script_size > EVSPROG_MAINSCRIPT_SIZE)
+	if ((app_cfg.main_script_size > EVSPROG_MAINSCRIPT_SIZE) ||
+		(app_cfg.slot_script_size[0] > EVSPROG_TARGETSCRIPT_SIZE) ||
+		(app_cfg.slot_script_size[1] > EVSPROG_TARGETSCRIPT_SIZE))
 	{
 		// initialize app_cfg
 		memset(&app_cfg, 0, sizeof(app_cfg));
@@ -1020,7 +1146,7 @@ int main(void)
 		evsprog_script_embflash_param.addr = evsprog_target_embflash_param.addr + evsprog_target_embflash_param.size;
 		evsprog_script_embflash_param.size = EVSPROG_TARGETSCRIPT_SIZE;
 		target_slot_embflash_dir[TARGET_BIN_IDX].size = evsprog_target_embflash_param.size;
-		target_slot_embflash_dir[TARGET_SCRIPT_IDX].size = EVSPROG_TARGETSCRIPT_SIZE;
+		target_slot_embflash_dir[TARGET_SCRIPT_IDX].size = app_cfg.slot_script_size[slot_idx_embflash];
 		root_dir[ROOT_TARGETS_IDX + slot_idx_embflash].name = "slot0";
 		root_dir[ROOT_TARGETS_IDX + slot_idx_embflash].filelist = target_slot_embflash_dir;
 	}
@@ -1028,9 +1154,30 @@ int main(void)
 	{
 		slot_idx_embflash = -1;
 	}
-/*
-	if (extnor_valid)
+	// sst32hfxx parameter init
+	sst32hfxx_drv_param.nor_info.common_info.data_width = 16;
+	sst32hfxx_drv_param.nor_info.common_info.wait_signal = EBI_WAIT_NONE;
+	sst32hfxx_drv_param.nor_info.param.addr_multiplex = false;
+	sst32hfxx_drv_param.nor_info.param.timing.clock_hz_r = 
+		sst32hfxx_drv_param.nor_info.param.timing.clock_hz_w = 0;
+	sst32hfxx_drv_param.nor_info.param.timing.address_setup_cycle_r = 
+		sst32hfxx_drv_param.nor_info.param.timing.address_setup_cycle_w = 2;
+	sst32hfxx_drv_param.nor_info.param.timing.address_hold_cycle_r = 
+		sst32hfxx_drv_param.nor_info.param.timing.address_hold_cycle_w = 0;
+	sst32hfxx_drv_param.nor_info.param.timing.data_setup_cycle_r = 
+		sst32hfxx_drv_param.nor_info.param.timing.data_setup_cycle_w = 16;
+	sst32hfxx_drv_param.delayus = 20;
+	sst32hfxx_mal_info.capacity.block_size = 4096;
+	sst32hfxx_mal_info.capacity.block_number = 512;
+	if (!mal.init(&sst32hfxx_dal_info))
 	{
+		uint32_t extnor_pagesize = sst32hfxx_mal_info.capacity.block_size;
+		uint32_t extnor_size = (uint32_t)(
+					extnor_pagesize * sst32hfxx_mal_info.capacity.block_number);
+		
+		// fix pagesize for fakefat32
+		pagesize = max(extnor_pagesize, pagesize);
+		
 		slot_idx_extnor = 0;
 		if (slot_idx_embflash >= 0)
 		{
@@ -1039,11 +1186,11 @@ int main(void)
 		faktfat32_filename_slotn[4] = '0' + slot_idx_extnor;
 		// initialize extnor
 		evsprog_target_extnor_param.addr = 0;
-		evsprog_target_extnor_param.size = extnor.size - EVSPROG_TARGETSCRIPT_SIZE;
-		evsprog_script_extnor_param.addr = extnor.size;
+		evsprog_target_extnor_param.size = extnor_size - EVSPROG_TARGETSCRIPT_SIZE;
+		evsprog_script_extnor_param.addr = evsprog_target_extnor_param.size;
 		evsprog_script_extnor_param.size = EVSPROG_TARGETSCRIPT_SIZE;
 		target_slot_extnor_dir[TARGET_BIN_IDX].size = evsprog_target_extnor_param.size;
-		target_slot_extnor_dir[TARGET_SCRIPT_IDX].size = EVSPROG_TARGETSCRIPT_SIZE;
+		target_slot_extnor_dir[TARGET_SCRIPT_IDX].size = app_cfg.slot_script_size[slot_idx_extnor];
 		root_dir[ROOT_TARGETS_IDX + slot_idx_extnor].name = faktfat32_filename_slotn;
 		root_dir[ROOT_TARGETS_IDX + slot_idx_extnor].filelist = target_slot_extnor_dir;
 	}
@@ -1051,7 +1198,6 @@ int main(void)
 	{
 		slot_idx_extnor = -1;
 	}
-*/
 #else
 	// firmware.bin
 	root_dir[ROOT_FIRMWARE_IDX].size = size - APP_CFG_BOOTSIZE;
@@ -1060,9 +1206,15 @@ int main(void)
 #if EVSPROG_EN
 	mal.init(&evsprog_config_dal_info);
 	mal.init(&evsprog_mainscript_dal_info);
+	mal.init(&evsprog_target_extnor_dal_info);
+	mal.init(&evsprog_script_extnor_dal_info);
 	mal.init(&evsprog_target_embflash_dal_info);
 	mal.init(&evsprog_script_embflash_dal_info);
 #endif
+	// fakefat32 parameter init
+	fakefat32_param.sector_size = pagesize;
+	fakefat32_param.sector_number = 128 * 1024 * 1024 / pagesize;
+	fakefat32_param.sectors_per_cluster = 1;
 	mal.init(&fakefat32_dal_info);
 	
 	// Enable USB Pull-up
