@@ -23,6 +23,7 @@
 struct cfi_drv_param_t
 {
 	struct ebi_sram_psram_nor_info_t nor_info;
+	uint32_t base_addr;
 };
 
 struct cfi_drv_info_t
