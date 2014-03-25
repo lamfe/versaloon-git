@@ -132,7 +132,8 @@ USR_SRCS+= $(SRCDIR)/app_io.c \
   $(VSPROGDIR)/target/stm8/stm8.c \
   $(VSPROGDIR)/target/svf_player/byte_tap.c \
   $(VSPROGDIR)/target/svf_player/svf_parser.c \
-  $(VSPROGDIR)/target/svf_player/svf_player.c
+  $(VSPROGDIR)/target/svf_player/svf_player.c \
+  $(VSPROGDIR)/target/sst32hfxx/sst32hfxx.c
 USR_INCS+= -I $(VSPROGDIR)/scripts \
   -I $(SRCDIR)/app_script \
   -I $(SRCDIR)/vsprog \

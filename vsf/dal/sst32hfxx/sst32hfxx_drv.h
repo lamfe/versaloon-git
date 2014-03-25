@@ -17,20 +17,29 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#define DAL_INTERFACE_PARSER_EN				1
+#ifndef __SST32HFXX_DRV_H_INCLUDED__
+#define __SST32HFXX_DRV_H_INCLUDED__
 
-#define DAL_MIC2826_EN						1
-#define DAL_NRF24L01_EN						1
-#define DAL_S6B0724_EN						1
+struct sst32hfxx_drv_param_t
+{
+	struct ebi_sram_psram_nor_info_t nor_info;
+	uint32_t base_addr;
+	uint16_t delayus;
+};
 
-#define DAL_MAL_EN							1
-#define DAL_EE93CX6_EN						1
-#define DAL_EE24CXX_EN						1
-#define DAL_DF25XX_EN						1
-#define DAL_DF45XX_EN						1
-#define DAL_SD_SPI_EN						1
-#define DAL_SD_SDIO_EN						0
-#define DAL_CFI_EN							1
-#define DAL_NAND_EN							1
-#define DAL_SST32HFXX_EN					1
+struct sst32hfxx_drv_info_t
+{
+	uint8_t manufacturer_id;
+	uint16_t device_id;
+};
+
+struct sst32hfxx_drv_interface_t
+{
+	uint8_t ebi_port;
+	uint8_t nor_index;
+};
+
+extern const struct mal_driver_t sst32hfxx_nor_drv;
+
+#endif /* __SST32HFXX_DRV_H_INCLUDED__ */
 
