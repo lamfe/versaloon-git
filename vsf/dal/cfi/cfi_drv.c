@@ -17,6 +17,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#include "app_cfg.h"
 #include "app_type.h"
 
 #include "interfaces.h"
@@ -48,7 +49,7 @@ static vsf_err_t cfi_read(struct dal_info_t *info, uint32_t address,
 	struct cfi_drv_param_t *param = (struct cfi_drv_param_t *)info->param;
 	struct cfi_drv_interface_t *ifs = (struct cfi_drv_interface_t *)info->ifs;
 	
-	address += param->nor_info.common_info.mux_addr_mask;
+	address += param->nor_info.common_info.mux_addr_mask + param->base_addr;
 	return interfaces->ebi.read(ifs->ebi_port, ifs->nor_index | EBI_TGTTYP_NOR,
 								address, data_size, buff, count);
 }
@@ -59,7 +60,7 @@ static vsf_err_t cfi_write(struct dal_info_t *info, uint32_t address,
 	struct cfi_drv_param_t *param = (struct cfi_drv_param_t *)info->param;
 	struct cfi_drv_interface_t *ifs = (struct cfi_drv_interface_t *)info->ifs;
 	
-	address += param->nor_info.common_info.mux_addr_mask;
+	address += param->nor_info.common_info.mux_addr_mask + param->base_addr;
 	return interfaces->ebi.write(ifs->ebi_port, ifs->nor_index | EBI_TGTTYP_NOR,
 									address, data_size, buff, count);
 }
