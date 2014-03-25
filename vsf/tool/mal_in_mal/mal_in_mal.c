@@ -74,7 +74,8 @@ static vsf_err_t malinmal_drv_eraseblock_nb_start(struct dal_info_t *info,
 		return VSFERR_NOT_SUPPORT;
 	}
 	
-	return mal_driver->eraseblock_nb_start(param->maldal, address, count);
+	return mal_driver->eraseblock_nb_start(param->maldal, param->addr + address,
+											count);
 }
 
 static vsf_err_t malinmal_drv_eraseblock_nb(struct dal_info_t *info,
@@ -89,7 +90,7 @@ static vsf_err_t malinmal_drv_eraseblock_nb(struct dal_info_t *info,
 		return VSFERR_NOT_SUPPORT;
 	}
 	
-	return mal_driver->eraseblock_nb(param->maldal, address);
+	return mal_driver->eraseblock_nb(param->maldal, param->addr + address);
 }
 
 static vsf_err_t malinmal_drv_eraseblock_nb_isready(struct dal_info_t *info,
@@ -104,7 +105,7 @@ static vsf_err_t malinmal_drv_eraseblock_nb_isready(struct dal_info_t *info,
 		return VSFERR_NOT_SUPPORT;
 	}
 	
-	return mal_driver->eraseblock_nb_isready(param->maldal, address);
+	return mal_driver->eraseblock_nb_isready(param->maldal, param->addr + address);
 }
 
 static vsf_err_t malinmal_drv_eraseblock_nb_end(struct dal_info_t *info)
