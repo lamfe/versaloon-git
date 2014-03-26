@@ -83,11 +83,19 @@
 #else
 #	define APPIO_DUMMY					1
 #endif
-#define EVSPROG_SCRIPT_FILE				"evsprog.vts"
 
 #define TARGET_CFG_ADDR					0x08040000
+
+#define EVSPROG_SCRIPT_FILE				"/evsprog.vts"
 #define EVSPROG_SCRIPT_ADDR				0x0807C000
 #define EVSPROG_SCRIPT_SIZE				(16 * 1024)
+
+#define SLOT_SCRIPT_SIZE				(16 * 1024)
+#define SLOT0_SCRIPT_FILE				"/slot0/script.vts"
+#define SLOT0_SCRIPT_ADDR				(0x08100000 - SLOT_SCRIPT_SIZE)
+#define SLOT1_SCRIPT_FILE				"/slot1/script.vts"
+#define SLOT1_SCRIPT_ADDR				0x00000000
+
 #define TARGET_DATA_BASE				(EVSPROG_SCRIPT_ADDR + EVSPROG_SCRIPT_SIZE)
 #define TARGET_DATA_SIZE				(0x08100000 - TARGET_DATA_BASE)
 
