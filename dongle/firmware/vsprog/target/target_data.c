@@ -34,7 +34,7 @@
 #include "target.h"
 #include "scripts.h"
 
-static uint32_t TARGET_DATA_ADDR = TARGET_DATA_BASE;
+static uint32_t TARGET_DATA_ADDR;
 
 VSS_HANDLER(target_data_set_base);
 
@@ -47,7 +47,7 @@ static const struct vss_cmd_t target_data_cmd[] =
 	VSS_CMD_END
 };
 struct vss_cmd_list_t target_data_cmd_list =
-							VSS_CMD_LIST("target_datat", target_data_cmd);
+							VSS_CMD_LIST("target_data", target_data_cmd);
 
 VSS_HANDLER(target_data_set_base)
 {
@@ -56,12 +56,7 @@ VSS_HANDLER(target_data_set_base)
 	VSS_CHECK_ARGC(2);
 	
 	temp_addr = (uint32_t)strtoul(argv[1], NULL, 0);
-	if (temp_addr >= TARGET_DATA_SIZE)
-	{
-		return VSFERR_FAIL;
-	}
-	
-	TARGET_DATA_ADDR = temp_addr + TARGET_DATA_BASE;
+	TARGET_DATA_ADDR = temp_addr;
 	return VSFERR_NONE;
 }
 
