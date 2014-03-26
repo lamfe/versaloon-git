@@ -54,6 +54,7 @@ VSS_HANDLER(vsprog_mass);
 VSS_HANDLER(vsprog_free_all);
 VSS_HANDLER(vsprog_init);
 VSS_HANDLER(vsprog_select_slot);
+VSS_HANDLER(vsprog_select_target);
 VSS_HANDLER(vsprog_info);
 VSS_HANDLER(vsprog_program);
 VSS_HANDLER(vsprog_auto_program);
@@ -142,12 +143,16 @@ static const struct vss_cmd_t vsprog_cmd[] =
 				NULL,
 				vsprog_key_cmd),
 	VSS_CMD(	"slot",
-				"select target data slot, format: slot/Y NUMBER",
+				"select programming slot, format: slot/Y NUMBER",
 				vsprog_select_slot,
 				NULL),
 	VSS_CMD(	"Y",
-				"select target data slot, format: slot/Y NUMBER",
+				"select programming slot, format: slot/Y NUMBER",
 				vsprog_select_slot,
+				NULL),
+	VSS_CMD(	"target",
+				"select target data slot, format: target NUMBER",
+				vsprog_select_target,
 				NULL),
 	VSS_CMD(	"info",
 				"get target information, format: info",
@@ -175,6 +180,19 @@ static struct chip_param_t target_chip_param[TARGET_SLOT_NUMBER];
 static struct program_info_t program_info[TARGET_SLOT_NUMBER];
 static struct chip_series_t target_chips[TARGET_SLOT_NUMBER];
 struct program_context_t *cur_context = NULL;
+
+struct vsprog_target_slot_t
+{
+	uint32_t base;
+} static vsprog_target_slot[TARGET_NUMBER] =
+{
+#if TARGET_NUMBER >= 1
+	TARGET0_DATA_BASE
+#endif
+#if TARGET_NUMBER >= 2
+	, TARGET1_DATA_BASE
+#endif
+};
 
 static void free_all(void)
 {
@@ -495,6 +513,22 @@ VSS_HANDLER(vsprog_init)
 	return vss_run_script("free-all");
 }
 
+VSS_HANDLER(vsprog_select_target)
+{
+	char cmd[32] = "set_base 0x";
+	uint8_t number;
+	
+	VSS_CHECK_ARGC(2);
+	number = (uint8_t)strtoul(argv[1], NULL, 0);
+	if (number >= TARGET_NUMBER)
+	{
+		LOG_ERROR(ERRMSG_INVALID_INDEX, number, "target slot");
+	}
+	
+	sprintf(&cmd[strlen(cmd)], "%X", number);
+	return vss_run_script(cmd);
+}
+
 VSS_HANDLER(vsprog_select_slot)
 {
 	uint8_t number;
@@ -503,7 +537,7 @@ VSS_HANDLER(vsprog_select_slot)
 	number = (uint8_t)strtoul(argv[1], NULL, 0);
 	if (number >= TARGET_SLOT_NUMBER)
 	{
-		LOG_ERROR(ERRMSG_INVALID_INDEX, number, "target slot");
+		LOG_ERROR(ERRMSG_INVALID_INDEX, number, "programming slot");
 	}
 	
 	context[number].op = &operations[number];
