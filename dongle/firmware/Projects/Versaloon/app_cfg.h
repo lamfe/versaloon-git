@@ -84,21 +84,21 @@
 #	define APPIO_DUMMY					1
 #endif
 
+// internal flash layout:
+// 0	..	32K		: bootloader
+// 32K	..	256K	: firmware
+// 256K	..	496K	: configuration data
+// 496K ..	512K	: main script
+// 512K	..	1008K	: target data
+// 1008K..	1024K	: target script
 #define TARGET_CFG_ADDR					0x08040000
 
 #define EVSPROG_SCRIPT_FILE				"/evsprog.vts"
 #define EVSPROG_SCRIPT_ADDR				0x0807C000
 #define EVSPROG_SCRIPT_SIZE				(16 * 1024)
-
-// target settings
-#define TARGET_NUMBER					2
-#define TARGET_SCRIPT_SIZE				(16 * 1024)
-#define TARGET0_SCRIPT_FILE				"/target0/script.vts"
-#define TARGET0_SCRIPT_ADDR				(0x08100000 - TARGET_SCRIPT_SIZE)
-#define TARGET0_DATA_BASE				(EVSPROG_SCRIPT_ADDR + EVSPROG_SCRIPT_SIZE)
-#define TARGET1_SCRIPT_FILE				"/target1/script.vts"
-#define TARGET1_SCRIPT_ADDR				(0x64200000 - TARGET_SCRIPT_SIZE)
-#define TARGET1_DATA_BASE				0x64000000
+// EVSPROG_FW_SIZE including bootloader, firmware, configure, main script
+#define EVSPROG_FW_SIZE					(EVSPROG_TARGET_MAINFLASH_ADDR - 0x08000000)
+#define EVSPROG_TARGET_MAINFLASH_ADDR	(EVSPROG_SCRIPT_ADDR + EVSPROG_SCRIPT_SIZE)
 
 #define PARAM_CHECK						1
 
