@@ -512,7 +512,7 @@ VSS_HANDLER(vsprog_operation)
 	
 	if (NULL == cur_context)
 	{
-		LOG_ERROR(ERRMSG_NOT_DEFINED, "slot");
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "programming slot");
 		return VSFERR_FAIL;
 	}
 	if (1 == argc)
@@ -687,7 +687,7 @@ VSS_HANDLER(embedded_vsprog_data)
 	
 	if (NULL == cur_context)
 	{
-		LOG_ERROR(ERRMSG_NOT_DEFINED, "slot");
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "programming slot");
 		return VSFERR_FAIL;
 	}
 	
@@ -715,7 +715,7 @@ VSS_HANDLER(embedded_vsprog_config)
 	
 	if (NULL == cur_context)
 	{
-		LOG_ERROR(ERRMSG_NOT_DEFINED, "slot");
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "programming slot");
 		return VSFERR_FAIL;
 	}
 	
@@ -734,7 +734,7 @@ VSS_HANDLER(vsprog_select_slot)
 	number = (uint8_t)strtoul(argv[1], NULL, 0);
 	if (number >= TARGET_SLOT_NUMBER)
 	{
-		LOG_ERROR(ERRMSG_INVALID_INDEX, number, "target slot");
+		LOG_ERROR(ERRMSG_INVALID_INDEX, number, "programming slot");
 	}
 	
 	context[number].op = &operations[number];

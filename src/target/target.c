@@ -2574,7 +2574,7 @@ VSS_HANDLER(target_memory_detail)
 	
 	if (NULL == cur_context)
 	{
-		LOG_ERROR(ERRMSG_NOT_DEFINED, "slot");
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "programming slot");
 		return VSFERR_FAIL;
 	}
 	target = cur_context->target;
@@ -2635,7 +2635,7 @@ VSS_HANDLER(target_parameter_detail)
 	
 	if (NULL == cur_context)
 	{
-		LOG_ERROR(ERRMSG_NOT_DEFINED, "slot");
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "programming slot");
 		return VSFERR_FAIL;
 	}
 	if ((NULL == cur_context->pi->chip_name)
@@ -2678,7 +2678,7 @@ VSS_HANDLER(target_series)
 	
 	if (NULL == cur_context)
 	{
-		LOG_ERROR(ERRMSG_NOT_DEFINED, "slot");
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "programming slot");
 		return VSFERR_FAIL;
 	}
 	pi = cur_context->pi;
@@ -2711,7 +2711,7 @@ VSS_HANDLER(target_chip)
 	
 	if (NULL == cur_context)
 	{
-		LOG_ERROR(ERRMSG_NOT_DEFINED, "slot");
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "programming slot");
 		return VSFERR_FAIL;
 	}
 	pi = cur_context->pi;
@@ -2746,7 +2746,7 @@ VSS_HANDLER(target_value)
 	
 	if (NULL == cur_context)
 	{
-		LOG_ERROR(ERRMSG_NOT_DEFINED, "slot");
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "programming slot");
 		return VSFERR_FAIL;
 	}
 	
@@ -2789,7 +2789,7 @@ VSS_HANDLER(target_interface_frequency)
 	
 	if (NULL == cur_context)
 	{
-		LOG_ERROR(ERRMSG_NOT_DEFINED, "slot");
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "programming slot");
 		return VSFERR_FAIL;
 	}
 	
@@ -2803,7 +2803,7 @@ VSS_HANDLER(target_kernel_khz)
 	
 	if (NULL == cur_context)
 	{
-		LOG_ERROR(ERRMSG_NOT_DEFINED, "slot");
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "programming slot");
 		return VSFERR_FAIL;
 	}
 	
@@ -2817,7 +2817,7 @@ VSS_HANDLER(target_quartz_khz)
 	
 	if (NULL == cur_context)
 	{
-		LOG_ERROR(ERRMSG_NOT_DEFINED, "slot");
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "programming slot");
 		return VSFERR_FAIL;
 	}
 	
@@ -2833,7 +2833,7 @@ VSS_HANDLER(target_erase_on_demand)
 	
 	if (NULL == cur_context)
 	{
-		LOG_ERROR(ERRMSG_NOT_DEFINED, "slot");
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "programming slot");
 		return VSFERR_FAIL;
 	}
 	
@@ -2862,7 +2862,7 @@ VSS_HANDLER(target_wait_state)
 	
 	if (NULL == cur_context)
 	{
-		LOG_ERROR(ERRMSG_NOT_DEFINED, "slot");
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "programming slot");
 		return VSFERR_FAIL;
 	}
 	
@@ -2876,7 +2876,7 @@ VSS_HANDLER(target_auto_adjust)
 	
 	if (NULL == cur_context)
 	{
-		LOG_ERROR(ERRMSG_NOT_DEFINED, "slot");
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "programming slot");
 		return VSFERR_FAIL;
 	}
 	
@@ -2890,7 +2890,7 @@ VSS_HANDLER(target_address)
 	
 	if (NULL == cur_context)
 	{
-		LOG_ERROR(ERRMSG_NOT_DEFINED, "slot");
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "programming slot");
 		return VSFERR_FAIL;
 	}
 	
@@ -2908,7 +2908,7 @@ VSS_HANDLER(target_jtag_dc)
 	
 	if (NULL == cur_context)
 	{
-		LOG_ERROR(ERRMSG_NOT_DEFINED, "slot");
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "programming slot");
 		return VSFERR_FAIL;
 	}
 	
@@ -2932,7 +2932,7 @@ VSS_HANDLER(target_interface_mode)
 	
 	if (NULL == cur_context)
 	{
-		LOG_ERROR(ERRMSG_NOT_DEFINED, "slot");
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "programming slot");
 		return VSFERR_FAIL;
 	}
 	if (NULL == cur_context->target)
@@ -2963,7 +2963,7 @@ VSS_HANDLER(target_execute_addr)
 	
 	if (NULL == cur_context)
 	{
-		LOG_ERROR(ERRMSG_NOT_DEFINED, "slot");
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "programming slot");
 		return VSFERR_FAIL;
 	}
 	
@@ -2987,7 +2987,7 @@ VSS_HANDLER(target_raw_mode)
 	
 	if (NULL == cur_context)
 	{
-		LOG_ERROR(ERRMSG_NOT_DEFINED, "slot");
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "programming slot");
 		return VSFERR_FAIL;
 	}
 	
@@ -3009,7 +3009,7 @@ VSS_HANDLER(target_prepare)
 	
 	if (NULL == cur_context)
 	{
-		LOG_ERROR(ERRMSG_NOT_DEFINED, "slot");
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "programming slot");
 		return VSFERR_FAIL;
 	}
 	if (NULL == cur_context->target)
@@ -3051,7 +3051,7 @@ VSS_HANDLER(target_enter_program_mode)
 	
 	if (NULL == cur_context)
 	{
-		LOG_ERROR(ERRMSG_NOT_DEFINED, "slot");
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "programming slot");
 		return VSFERR_FAIL;
 	}
 	if (NULL == cur_context->target)
@@ -3076,7 +3076,7 @@ VSS_HANDLER(target_leave_program_mode)
 	
 	if (NULL == cur_context)
 	{
-		LOG_ERROR(ERRMSG_NOT_DEFINED, "slot");
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "programming slot");
 		return VSFERR_FAIL;
 	}
 	if (NULL == cur_context->target)
@@ -3104,7 +3104,7 @@ VSS_HANDLER(target_erase)
 	
 	if (NULL == cur_context)
 	{
-		LOG_ERROR(ERRMSG_NOT_DEFINED, "slot");
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "programming slot");
 		return VSFERR_FAIL;
 	}
 	if (NULL == cur_context->target)
@@ -3150,7 +3150,7 @@ VSS_HANDLER(target_write)
 	
 	if (NULL == cur_context)
 	{
-		LOG_ERROR(ERRMSG_NOT_DEFINED, "slot");
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "programming slot");
 		return VSFERR_FAIL;
 	}
 	if (NULL == cur_context->target)
@@ -3196,7 +3196,7 @@ VSS_HANDLER(target_verify)
 	
 	if (NULL == cur_context)
 	{
-		LOG_ERROR(ERRMSG_NOT_DEFINED, "slot");
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "programming slot");
 		return VSFERR_FAIL;
 	}
 	if (NULL == cur_context->target)
@@ -3246,7 +3246,7 @@ VSS_HANDLER(target_read)
 	
 	if (NULL == cur_context)
 	{
-		LOG_ERROR(ERRMSG_NOT_DEFINED, "slot");
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "programming slot");
 		return VSFERR_FAIL;
 	}
 	if (NULL == cur_context->target)
@@ -3313,7 +3313,7 @@ VSS_HANDLER(target_operate)
 	
 	if (NULL == cur_context)
 	{
-		LOG_ERROR(ERRMSG_NOT_DEFINED, "slot");
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "programming slot");
 		return VSFERR_FAIL;
 	}
 	if (NULL == cur_context->target)
@@ -3351,7 +3351,7 @@ VSS_HANDLER(target_interface_indexes)
 	
 	if (NULL == cur_context)
 	{
-		LOG_ERROR(ERRMSG_NOT_DEFINED, "slot");
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "programming slot");
 		return VSFERR_FAIL;
 	}
 	pi = cur_context->pi;
@@ -3382,7 +3382,7 @@ VSS_HANDLER(target_set_specified_param)
 	
 	if (NULL == cur_context)
 	{
-		LOG_ERROR(ERRMSG_NOT_DEFINED, "slot");
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "programming slot");
 		return VSFERR_FAIL;
 	}
 	pi = cur_context->pi;

@@ -413,7 +413,7 @@ VSS_HANDLER(vsprog_operation)
 	
 	if (NULL == cur_context)
 	{
-		LOG_ERROR(ERRMSG_NOT_DEFINED, "slot");
+		LOG_ERROR(ERRMSG_NOT_DEFINED, "programming slot");
 		return VSFERR_FAIL;
 	}
 	if (1 == argc)
