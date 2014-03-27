@@ -25,6 +25,7 @@
 #	include "app_log.h"
 #	include "scripts.h"
 #	include "vsprog.h"
+#	include "target_data.h"
 #endif
 
 /* Private typedef -----------------------------------------------------------*/
@@ -58,6 +59,7 @@ run:
 	}
 	
 #if SCRIPTS_EN
+	target_init_slot();
 	APP_IO_INIT();
 	vss_init();
 	vss_register_cmd_list(&appio_cmd_list);

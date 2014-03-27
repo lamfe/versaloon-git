@@ -28,6 +28,8 @@
 
 #include "usb_protocol.h"
 
+#include "vsprog/target/target_data.h"
+
 VSS_HANDLER(appio_set_dummy);
 
 static const struct vss_cmd_t appio_cmd[] =
@@ -90,24 +92,34 @@ struct appio_file_t
 	// private
 	uint64_t pos;
 	FILE fn;
-} static appio_filelist[] =
-{
-#if defined(EVSPROG_SCRIPT_FILE) && defined(EVSPROG_SCRIPT_ADDR)
-	{EVSPROG_SCRIPT_FILE, (uint8_t *)EVSPROG_SCRIPT_ADDR},
-#endif
-#if defined(TARGET0_SCRIPT_FILE) && defined(TARGET0_SCRIPT_ADDR)
-	{TARGET0_SCRIPT_FILE, (uint8_t *)TARGET0_SCRIPT_ADDR},
-#endif
-#if defined(TARGET1_SCRIPT_FILE) && defined(TARGET1_SCRIPT_ADDR)
-	{TARGET1_SCRIPT_FILE, (uint8_t *)TARGET1_SCRIPT_ADDR},
-#endif
-};
+} static appio_filelist[8];
 
 void APP_IO_INIT(void)
 {
 	int i;
 	uint8_t ch;
-	for (i = 0; i < dimof(appio_filelist); i++)
+	
+	memset(appio_filelist, 0, sizeof(appio_filelist));
+	// virtual file 0 is the main script file
+	appio_filelist[0].filename = EVSPROG_SCRIPT_FILE;
+	appio_filelist[0].addr = (uint8_t*)EVSPROG_SCRIPT_ADDR;
+	// virtual file 1..n is the target script file
+	for (i = 0; i < min(target_slotnum, dimof(appio_filelist) - 1); i++)
+	{
+		appio_filelist[i + 1].filename = strdup("/target0/script.vts");
+		if (NULL == appio_filelist[i + 1].filename)
+		{
+			break;
+		}
+		// fix filename for the real target number
+		appio_filelist[i + 1].filename[7] += i;
+		appio_filelist[i + 1].addr = (uint8_t *)target_slot[i].script_base;
+	}
+	
+	// calculate size for all virtual files
+	for (i = 0;
+		(i < dimof(appio_filelist)) && (appio_filelist[i].filename != NULL);
+		i++)
 	{
 		appio_filelist[i].size = 0;
 		for (ch = appio_filelist[i].addr[appio_filelist[i].size];
@@ -124,7 +136,9 @@ void APP_IO_FINI(void)
 static struct appio_file_t* appio_file_byname(char *filename)
 {
 	int i;
-	for (i = 0; i < dimof(appio_filelist); i++)
+	for (i = 0;
+		(i < dimof(appio_filelist)) && (appio_filelist[i].filename != NULL);
+		i++)
 	{
 		if (!strcmp(filename, appio_filelist[i].filename))
 		{
@@ -136,7 +150,9 @@ static struct appio_file_t* appio_file_byname(char *filename)
 static struct appio_file_t* appio_file_byfn(FILE *fn)
 {
 	int i;
-	for (i = 0; i < dimof(appio_filelist); i++)
+	for (i = 0;
+		(i < dimof(appio_filelist)) && (appio_filelist[i].filename != NULL);
+		i++)
 	{
 		if (fn == &appio_filelist[i].fn)
 		{

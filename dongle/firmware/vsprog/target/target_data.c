@@ -32,11 +32,69 @@
 #include "vsprog.h"
 #include "interfaces.h"
 #include "target.h"
+#include "target_data.h"
 #include "scripts.h"
 
-static uint32_t TARGET_DATA_ADDR;
+#include "dal/mal/mal.h"
+#include "dal/sst32hfxx/sst32hfxx_drv.h"
+
+uint8_t target_slotnum = 0;
+struct target_slot_t target_slot[8];
+
+static struct sst32hfxx_drv_info_t sst32hfxx_drv_info;
+static struct sst32hfxx_drv_param_t sst32hfxx_drv_param;
+static struct sst32hfxx_drv_interface_t sst32hfxx_drv_ifs =
+{
+	0,		// uint8_t ebi_port;
+	1,		// uint8_t nor_index;
+};
+static struct mal_info_t sst32hfxx_mal_info =
+{
+	{0, 0}, NULL, 0, 0, 0, &sst32hfxx_nor_drv
+};
+static struct dal_info_t sst32hfxx_dal_info =
+{
+	&sst32hfxx_drv_ifs,
+	&sst32hfxx_drv_param,
+	&sst32hfxx_drv_info,
+	&sst32hfxx_mal_info,
+};
+
+vsf_err_t target_init_slots(void)
+{
+	uint32_t pagesize, pagenum;
+	
+	target_slotnum = 0;
+	core_interfaces.flash.init(0);
+	core_interfaces.flash.getcapacity(0, &pagesize, &pagenum);
+	if (pagesize * pagenum > EVSPROG_FW_SIZE)
+	{
+		target_slot[target_slotnum].data_base = EVSPROG_TARGET_MAINFLASH_ADDR;
+		target_slot[target_slotnum].data_size = pagesize * pagenum - EVSPROG_FW_SIZE - EVSPROG_SCRIPT_SIZE;
+		target_slot[target_slotnum].script_base =
+			target_slot[target_slotnum].data_base + target_slot[target_slotnum].data_size;
+		target_slot[target_slotnum].script_size = EVSPROG_SCRIPT_SIZE;
+	}
+	sst32hfxx_mal_info.capacity.block_size = 4096;
+	sst32hfxx_mal_info.capacity.block_number = 512;
+	if (!mal.init(&sst32hfxx_dal_info))
+	{
+		pagesize = (uint32_t)sst32hfxx_mal_info.capacity.block_size;
+		pagenum = (uint32_t)sst32hfxx_mal_info.capacity.block_number;
+		
+		target_slot[target_slotnum].data_base =
+				(uint32_t)core_interfaces.ebi.get_base_addr(
+					sst32hfxx_drv_ifs.ebi_port, sst32hfxx_drv_ifs.nor_index);
+		target_slot[target_slotnum].data_size = pagesize * pagenum - EVSPROG_SCRIPT_SIZE;
+		target_slot[target_slotnum].script_base =
+			target_slot[target_slotnum].data_base + target_slot[target_slotnum].data_size;
+		target_slot[target_slotnum].script_size = EVSPROG_SCRIPT_SIZE;
+	}
+	return VSFERR_NONE;
+}
 
 VSS_HANDLER(target_data_set_base);
+VSS_HANDLER(target_select_slot);
 
 static const struct vss_cmd_t target_data_cmd[] =
 {
@@ -44,11 +102,16 @@ static const struct vss_cmd_t target_data_cmd[] =
 				"set base of target data, format: set_base ADDR",
 				target_data_set_base,
 				NULL),
+	VSS_CMD(	"select_slot",
+				"select target slot, format: select_slot INDEX",
+				target_select_slot,
+				NULL),
 	VSS_CMD_END
 };
 struct vss_cmd_list_t target_data_cmd_list =
 							VSS_CMD_LIST("target_data", target_data_cmd);
 
+static uint32_t TARGET_DATA_ADDR;
 VSS_HANDLER(target_data_set_base)
 {
 	uint32_t temp_addr;
@@ -57,6 +120,21 @@ VSS_HANDLER(target_data_set_base)
 	
 	temp_addr = (uint32_t)strtoul(argv[1], NULL, 0);
 	TARGET_DATA_ADDR = temp_addr;
+	return VSFERR_NONE;
+}
+
+VSS_HANDLER(target_select_slot)
+{
+	uint8_t number;
+	
+	VSS_CHECK_ARGC(2);
+	number = (uint8_t)strtoul(argv[1], NULL, 0);
+	if (number >= target_slotnum)
+	{
+		LOG_ERROR(ERRMSG_INVALID_INDEX, number, "target slot");
+	}
+	
+	TARGET_DATA_ADDR = target_slot[number].data_base;
 	return VSFERR_NONE;
 }
 
