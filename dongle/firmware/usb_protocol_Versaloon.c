@@ -891,6 +891,8 @@ vsf_err_t usb_protocol_init(void)
 	}
 	
 	USB_Pull_Init();
+	USB_Disconnect();
+	interfaces->delay.delayms(100);
 	USB_Connect();
 	return vsfusbd_device_init(&usb_device);
 }
