@@ -331,6 +331,7 @@
           <state>$PROJ_DIR$\..\..\..\vsprog</state>
           <state>$PROJ_DIR$\..\..\..\vsprog\tools\pgbar</state>
           <state>$PROJ_DIR$\..\..\..\vsprog\driver\comport</state>
+          <state>$PROJ_DIR$\..\..\..\vsprog\target</state>
           <state>$PROJ_DIR$\..\..\..\..\..\src\target\core\arm_adi</state>
           <state>$PROJ_DIR$\..\..\..\..\..\src\target\comisp</state>
           <state>$PROJ_DIR$\..\..\..\..\..\src\target\cortex-m</state>
@@ -1292,6 +1293,7 @@
           <state>$PROJ_DIR$\..\..\..\vsprog</state>
           <state>$PROJ_DIR$\..\..\..\vsprog\tools\pgbar</state>
           <state>$PROJ_DIR$\..\..\..\vsprog\driver\comport</state>
+          <state>$PROJ_DIR$\..\..\..\vsprog\target</state>
           <state>$PROJ_DIR$\..\..\..\..\..\src\target\core\arm_adi</state>
           <state>$PROJ_DIR$\..\..\..\..\..\src\target\comisp</state>
           <state>$PROJ_DIR$\..\..\..\..\..\src\target\cortex-m</state>

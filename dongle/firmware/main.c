@@ -59,7 +59,7 @@ run:
 	}
 	
 #if SCRIPTS_EN
-	target_init_slot();
+	target_init_slots();
 	APP_IO_INIT();
 	vss_init();
 	vss_register_cmd_list(&appio_cmd_list);
