@@ -287,7 +287,6 @@ static vsf_err_t fakefat32_init(struct fakefat32_param_t *param,
 {
 	uint32_t cluster_size = param->sector_size * param->sectors_per_cluster;
 	uint32_t clusters;
-	struct fakefat32_file_t *parent;
 	
 	if (NULL == file)
 	{
@@ -314,21 +313,16 @@ static vsf_err_t fakefat32_init(struct fakefat32_param_t *param,
 	
 	if (file->filelist != NULL)
 	{
-		file->filelist->parent = file;
+		struct fakefat32_file_t *parent = file;
 		
-		if (fakefat32_init(param, file->filelist, cur_cluster))
+		file = file->filelist;
+		while (file->name != NULL)
 		{
-			return VSFERR_FAIL;
-		}
-	}
-	parent = file->parent;
-	file++;
-	if (file->name != NULL)
-	{
-		file->parent = parent;
-		if (fakefat32_init(param, file, cur_cluster))
-		{
-			return VSFERR_FAIL;
+			file->parent = parent;
+			if (fakefat32_init(param, file++, cur_cluster))
+			{
+				return VSFERR_FAIL;
+			}
 		}
 	}
 	return VSFERR_NONE;
@@ -360,6 +354,7 @@ vsf_err_t fakefat32_dir_read(struct fakefat32_file_t* file, uint32_t addr,
 	struct fakefat32_file_t* file_dir = file;
 	uint8_t longname_index_offset = 0;
 	
+	memset(buff, 0, page_size);
 	if (!(file->attr & FAKEFAT32_FILEATTR_DIRECTORY))
 	{
 		return VSFERR_FAIL;
@@ -537,8 +532,8 @@ vsf_err_t fakefat32_dir_read(struct fakefat32_file_t* file, uint32_t addr,
 		}
 		// fix for parent directory
 		else if (!strcmp(file->name, "..") && (file_dir->parent != NULL) &&
-				 // if file_dir->parent->parent is NULL, file_dir->parent is root dir
-				 (file_dir->parent->parent != NULL))
+				// if file_dir->parent->parent is NULL, file_dir->parent is root dir
+				(file_dir->parent->parent != NULL))
 		{
 			file->record.FstClusHI = (file_dir->parent->first_cluster >> 16) & 0xFFFF;
 			file->record.FstClusLO = (file_dir->parent->first_cluster >>  0) & 0xFFFF;
