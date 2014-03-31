@@ -29,8 +29,8 @@
 #define DAL_DF45XX_EN						1
 #define DAL_SD_SPI_EN						1
 #define DAL_SD_SDIO_EN						INTERFACE_SDIO_EN
-#define DAL_CFI_EN							1
-#define DAL_NAND_EN							1
-#define DAL_SST32HFXX_EN					1
+#define DAL_CFI_EN							INTERFACE_EBI_EN
+#define DAL_NAND_EN							INTERFACE_EBI_EN
+#define DAL_SST32HFXX_EN					INTERFACE_EBI_EN
 #define DAL_MAL_EMPTY_EN					0
 
