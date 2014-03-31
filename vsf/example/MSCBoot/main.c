@@ -625,21 +625,11 @@ static vsf_err_t MalEraseWrite_isready(struct dal_info_t *info, uint32_t addr,
 static vsf_err_t MalRead(struct dal_info_t *info, uint32_t addr, uint8_t *buff,
 							uint32_t page_size)
 {
-	struct mal_info_t *mal_info = (struct mal_info_t *)info->extra;
-	uint32_t mal_pagesize = (uint32_t)mal_info->capacity.block_size;
-	uint32_t mal_pagenum = (uint32_t)mal_info->capacity.block_number;
-	
-	if ((0 == mal_pagesize) || (page_size < mal_pagesize) ||
-		(addr >= (mal_pagesize * mal_pagenum)))
-	{
-		return VSFERR_FAIL;
-	}
-	mal_io_curcnt = 0;
-	mal_io_cnt = page_size / mal_pagesize;
-	
-	mal_io_fsm = MAL_IO_READ;
-	mal.readblock_nb_start(info, addr, mal_io_cnt, buff);
-	return mal.readblock_nb(info, addr, buff);
+	REFERENCE_PARAMETER(info);
+	REFERENCE_PARAMETER(addr);
+	REFERENCE_PARAMETER(buff);
+	REFERENCE_PARAMETER(page_size);
+	return VSFERR_NONE;
 }
 
 static vsf_err_t MalRead_isready(struct dal_info_t *info, uint32_t addr,
@@ -647,33 +637,45 @@ static vsf_err_t MalRead_isready(struct dal_info_t *info, uint32_t addr,
 {
 	struct mal_info_t *mal_info = (struct mal_info_t *)info->extra;
 	uint32_t mal_pagesize = (uint32_t)mal_info->capacity.block_size;
+	uint32_t mal_pagenum = (uint32_t)mal_info->capacity.block_number;
 	vsf_err_t err;
 	
-	err = mal.readblock_nb_isready(info, addr + mal_pagesize * mal_io_curcnt,
-									buff + mal_pagesize * mal_io_curcnt);
-	if (err)
+	switch (mal_io_fsm)
 	{
-		return err;
-	}
-	mal_io_curcnt++;
-	
-	if (mal_io_curcnt >= mal_io_cnt)
-	{
-		mal.readblock_nb_end(info);
-		mal_io_fsm = MAL_IO_IDLE;
-		return VSFERR_NONE;
-	}
-	else
-	{
-		err = mal.readblock_nb(info,
-								addr + mal_pagesize * mal_io_curcnt,
+	case MAL_IO_IDLE:
+		if ((0 == mal_pagesize) || (page_size < mal_pagesize) ||
+			(addr >= (mal_pagesize * mal_pagenum)))
+		{
+			return VSFERR_FAIL;
+		}
+		mal_io_curcnt = 0;
+		mal_io_cnt = page_size / mal_pagesize;
+		mal.readblock_nb_start(info, addr, mal_io_cnt, buff);
+		mal_io_fsm = MAL_IO_READ;
+	case MAL_IO_READ:
+		err = mal.readblock_nb_isready(info, addr + mal_pagesize * mal_io_curcnt,
+										buff + mal_pagesize * mal_io_curcnt);
+		if (err)
+		{
+			return err;
+		}
+		err = mal.readblock_nb(info, addr + mal_pagesize * mal_io_curcnt,
 								buff + mal_pagesize * mal_io_curcnt);
 		if (err)
 		{
 			return err;
 		}
+		if (++mal_io_curcnt >= mal_io_cnt)
+		{
+			mal.readblock_nb_end(info);
+			mal_io_fsm = MAL_IO_IDLE;
+			return VSFERR_NONE;
+		}
 		return VSFERR_NOT_READY;
+	default:
+		return VSFERR_FAIL;
 	}
+	return VSFERR_NONE;
 }
 
 static vsf_err_t WriteFirmwareArea(struct fakefat32_file_t* file, uint32_t addr,

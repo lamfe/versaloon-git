@@ -680,7 +680,10 @@ static vsf_err_t fakefat32_drv_readblock_nb(struct dal_info_t *info,
 	uint32_t cluster_size = param->sectors_per_cluster * param->sector_size;
 	uint32_t root_cluster = FAT32_ROOT_CLUSTER;
 	
-	memset(buff, 0, page_size);
+	if (block_addr < (FAT32_HIDDEN_SECTORS + FAT32_RES_SECTORS + FAT32_FAT_NUM * fat_sectors))
+	{
+		memset(buff, 0, page_size);
+	}
 	
 	// first sector and first backup copy of boot sector
 	if ((FAT32_HIDDEN_SECTORS > 0) && (0 == block_addr))
