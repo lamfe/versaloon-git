@@ -675,7 +675,6 @@ static vsf_err_t MalRead_isready(struct dal_info_t *info, uint32_t addr,
 	default:
 		return VSFERR_FAIL;
 	}
-	return VSFERR_NONE;
 }
 
 static vsf_err_t WriteFirmwareArea(struct fakefat32_file_t* file, uint32_t addr,
