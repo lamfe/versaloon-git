@@ -166,15 +166,15 @@ uint16_t stm32f1_get_flash_size(uint32_t mcuid, uint32_t flash_sram_reg)
 	}
 	else
 	{
-		if (flash_size < 128)
+		if (flash_size <= 128)
 		{
 			flash_size = 128;
 		}
-		else if (flash_size < 512)
+		else if (flash_size <= 512)
 		{
 			flash_size = 512;
 		}
-		else if (flash_size < 1024)
+		else if (flash_size <= 1024)
 		{
 			flash_size = 1024;
 		}
