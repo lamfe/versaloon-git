@@ -387,6 +387,18 @@ vsf_err_t vss_register_cmd_list(struct vss_cmd_list_t *cmdlist)
 	}
 	else
 	{
+		struct vss_cmd_list_t *templist = vss_env.cmd;
+		
+		while (templist)
+		{
+			if (!strcmp(templist->list_name, cmdlist->list_name))
+			{
+				// cmd_list with same name registered
+				return VSFERR_NONE;
+			}
+			templist = sllist_get_container(templist->list.next,
+					struct vss_cmd_list_t, list);
+		}
 		sllist_insert(cmdlist->list, vss_env.cmd->list);
 	}
 	vss_env.cmd = cmdlist;
