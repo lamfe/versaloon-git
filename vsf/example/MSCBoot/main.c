@@ -1080,8 +1080,15 @@ int main(void)
 	uint32_t pagesize, pagenum, size;
 	uint32_t key_val;
 	
-	if (interfaces->core.init(NULL) ||
-		mal.init(&embflash_dal_info) ||
+	interfaces->core.init(NULL);
+	if (!interfaces->flash.isprotected(0))
+	{
+		interfaces->flash.unlock(0);
+		interfaces->flash.protect(0);
+		interfaces->flash.lock(0);
+	}
+	
+	if (mal.init(&embflash_dal_info) ||
 		(0 == embflash_mal_info.capacity.block_size) ||
 		(sizeof(block_buffer) < embflash_mal_info.capacity.block_size) ||
 		mal.readblock(&embflash_dal_info, APP_CFG_BOOTSIZE, block_buffer, 1))
