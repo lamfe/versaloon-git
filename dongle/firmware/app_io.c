@@ -99,9 +99,19 @@ void APP_IO_INIT(void)
 	int i;
 	uint8_t ch;
 	
+	// free filenames first
+	for (i = 0; i < dimof(appio_filelist); i++)
+	{
+		if (appio_filelist[i].filename != NULL)
+		{
+			free(appio_filelist[i].filename);
+			appio_filelist[i].filename = NULL;
+		}
+	}
+	
 	memset(appio_filelist, 0, sizeof(appio_filelist));
 	// virtual file 0 is the main script file
-	appio_filelist[0].filename = EVSPROG_SCRIPT_FILE;
+	appio_filelist[0].filename = strdup(EVSPROG_SCRIPT_FILE);
 	appio_filelist[0].addr = (uint8_t*)EVSPROG_SCRIPT_ADDR;
 	// virtual file 1..n is the target script file
 	for (i = 0; i < min(target_slotnum, dimof(appio_filelist) - 1); i++)

@@ -74,9 +74,22 @@ vsf_err_t target_init_slots(void)
 		target_slot[target_slotnum].script_base =
 			target_slot[target_slotnum].data_base + target_slot[target_slotnum].data_size;
 		target_slot[target_slotnum].script_size = EVSPROG_SCRIPT_SIZE;
+		target_slotnum++;
 	}
 	sst32hfxx_mal_info.capacity.block_size = 4096;
 	sst32hfxx_mal_info.capacity.block_number = 512;
+	sst32hfxx_drv_param.nor_info.common_info.data_width = 16;
+	sst32hfxx_drv_param.nor_info.common_info.wait_signal = EBI_WAIT_NONE;
+	sst32hfxx_drv_param.nor_info.param.addr_multiplex = false;
+	sst32hfxx_drv_param.nor_info.param.timing.clock_hz_r = 
+		sst32hfxx_drv_param.nor_info.param.timing.clock_hz_w = 0;
+	sst32hfxx_drv_param.nor_info.param.timing.address_setup_cycle_r = 
+		sst32hfxx_drv_param.nor_info.param.timing.address_setup_cycle_w = 2;
+	sst32hfxx_drv_param.nor_info.param.timing.address_hold_cycle_r = 
+		sst32hfxx_drv_param.nor_info.param.timing.address_hold_cycle_w = 0;
+	sst32hfxx_drv_param.nor_info.param.timing.data_setup_cycle_r = 
+		sst32hfxx_drv_param.nor_info.param.timing.data_setup_cycle_w = 16;
+	sst32hfxx_drv_param.delayus = 20;
 	if (!mal.init(&sst32hfxx_dal_info))
 	{
 		pagesize = (uint32_t)sst32hfxx_mal_info.capacity.block_size;
@@ -89,6 +102,7 @@ vsf_err_t target_init_slots(void)
 		target_slot[target_slotnum].script_base =
 			target_slot[target_slotnum].data_base + target_slot[target_slotnum].data_size;
 		target_slot[target_slotnum].script_size = EVSPROG_SCRIPT_SIZE;
+		target_slotnum++;
 	}
 	return VSFERR_NONE;
 }
