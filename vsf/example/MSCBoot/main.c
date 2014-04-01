@@ -834,12 +834,21 @@ static vsf_err_t WriteTargetAreaExtNor_isready(struct fakefat32_file_t*file,
 static vsf_err_t ReadTargetAreaExtNor(struct fakefat32_file_t*file,
 							uint32_t addr, uint8_t *buff, uint32_t page_size)
 {
+#if APP_CFG_MSC_WRITEONLY
+	memset(buff, 0xFF, page_size);
+	return VSFERR_NONE;
+#else
 	return MalRead(&evsprog_target_extnor_dal_info, addr, buff, page_size);
+#endif
 }
 static vsf_err_t ReadTargetAreaExtNor_isready(struct fakefat32_file_t*file,
 							uint32_t addr, uint8_t *buff, uint32_t page_size)
 {
+#if APP_CFG_MSC_WRITEONLY
+	return VSFERR_NONE;
+#else
 	return MalRead_isready(&evsprog_target_extnor_dal_info, addr, buff, page_size);
+#endif
 }
 
 static vsf_err_t WriteTargetAreaEmbFlash(struct fakefat32_file_t*file,
@@ -855,12 +864,21 @@ static vsf_err_t WriteTargetAreaEmbFlash_isready(struct fakefat32_file_t*file,
 static vsf_err_t ReadTargetAreaEmbFlash(struct fakefat32_file_t*file,
 							uint32_t addr, uint8_t *buff, uint32_t page_size)
 {
+#if APP_CFG_MSC_WRITEONLY
+	memset(buff, 0xFF, page_size);
+	return VSFERR_NONE;
+#else
 	return MalRead(&evsprog_target_embflash_dal_info, addr, buff, page_size);
+#endif
 }
 static vsf_err_t ReadTargetAreaEmbFlash_isready(struct fakefat32_file_t*file,
 							uint32_t addr, uint8_t *buff, uint32_t page_size)
 {
+#if APP_CFG_MSC_WRITEONLY
+	return VSFERR_NONE;
+#else
 	return MalRead_isready(&evsprog_target_embflash_dal_info, addr, buff, page_size);
+#endif
 }
 
 static vsf_err_t WriteScriptAreaEmbFlash(struct fakefat32_file_t*file,
