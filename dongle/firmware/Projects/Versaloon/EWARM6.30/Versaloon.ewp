@@ -172,7 +172,7 @@
           <state>STM32F10X_XL</state>
           <state>_HARDWARE_VER=0x15</state>
           <state>__TARGET_CHIP__=stm32</state>
-          <state>FLASH_LOAD_OFFSET=0x0000</state>
+          <state>FLASH_LOAD_OFFSET=0x8000</state>
           <state>CORE_DEBUG=STM32_DBG_SWD</state>
         </option>
         <option>
@@ -2273,6 +2273,12 @@
         </file>
       </group>
       <group>
+        <name>s6b0724</name>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\vsf\dal\s6b0724\s6b0724_drv.c</name>
+        </file>
+      </group>
+      <group>
         <name>sd</name>
         <file>
           <name>$PROJ_DIR$\..\..\..\..\..\vsf\dal\sd\sd_common.c</name>
@@ -2563,6 +2569,12 @@
         <name>list</name>
         <file>
           <name>$PROJ_DIR$\..\..\..\..\..\vsf\tool\list\list.h</name>
+        </file>
+      </group>
+      <group>
+        <name>vsfui_fb</name>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\vsf\tool\vsfui_fb\vsfui_fb.c</name>
         </file>
       </group>
     </group>

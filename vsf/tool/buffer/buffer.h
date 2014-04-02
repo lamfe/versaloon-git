@@ -63,11 +63,9 @@ struct vsf_multibuf_t
 };
 
 vsf_err_t vsf_multibuf_init(struct vsf_multibuf_t *mbuffer);
-vsf_err_t vsf_multibuf_get_empty(struct vsf_multibuf_t *mbuffer, 
-									struct vsf_buffer_t *buffer);
+uint8_t* vsf_multibuf_get_empty(struct vsf_multibuf_t *mbuffer);
 vsf_err_t vsf_multibuf_push(struct vsf_multibuf_t *mbuffer);
-vsf_err_t vsf_multibuf_get_payload(struct vsf_multibuf_t *mbuffer, 
-									struct vsf_buffer_t *buffer);
+uint8_t* vsf_multibuf_get_payload(struct vsf_multibuf_t *mbuffer);
 vsf_err_t vsf_multibuf_pop(struct vsf_multibuf_t *mbuffer);
 
 // buffer_manager
