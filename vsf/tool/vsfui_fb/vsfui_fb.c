@@ -75,8 +75,8 @@ vsf_err_t vsfui_fb_poll(struct vsfui_fb_t *vsfui_fb)
 		if ((NULL == driver->display_isready) ||
 			!driver->display_isready(dal, buffer))
 		{
-			driver->display_isready = false;
 			vsf_multibuf_pop(vsfui_fb->mbuffer);
+			vsfui_fb->displaying = false;
 		}
 	}
 	else if (!driver->display(dal, buffer))
