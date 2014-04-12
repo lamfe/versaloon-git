@@ -30,6 +30,10 @@
 
 #include "vsprog/target/target_data.h"
 
+#if HW_HAS_LCM
+#include "vsprog_ui.h"
+#endif
+
 VSS_HANDLER(appio_set_dummy);
 
 static const struct vss_cmd_t appio_cmd[] =
@@ -98,6 +102,10 @@ void APP_IO_INIT(void)
 {
 	int i;
 	uint8_t ch;
+	
+#if HW_HAS_LCM
+	vsprog_ui_init();
+#endif
 	
 	// free filenames first
 	for (i = 0; i < dimof(appio_filelist); i++)
@@ -311,6 +319,9 @@ char* FGETS(char *buf, int count, FILE *f)
 	{
 		if (!appio_dummy)
 		{
+#if HW_HAS_LCM
+			char vsprog_ui_buf[2];
+#endif
 			pos = 0;
 			cur_char = '\0';
 			while ((size < count) && (cur_char != '\r'))
@@ -324,6 +335,9 @@ char* FGETS(char *buf, int count, FILE *f)
 					if ('\r' == cur_char)
 					{
 						vsf_fifo_push8(&shell_stream.stream_rx.fifo, '\n');
+#if HW_HAS_LCM
+						vsprog_ui_print("\n\0");
+#endif
 					}
 					else if ('\b' == cur_char)
 					{
@@ -332,6 +346,9 @@ char* FGETS(char *buf, int count, FILE *f)
 							vsf_fifo_push8(&shell_stream.stream_rx.fifo, '\b');
 							vsf_fifo_push8(&shell_stream.stream_rx.fifo, ' ');
 							vsf_fifo_push8(&shell_stream.stream_rx.fifo, '\b');
+#if HW_HAS_LCM
+							vsprog_ui_print("\b \b\0");
+#endif
 							pos--;
 						}
 						cur_size--;
@@ -343,7 +360,11 @@ char* FGETS(char *buf, int count, FILE *f)
 						continue;
 					}
 					vsf_fifo_push8(&shell_stream.stream_rx.fifo, (uint8_t)cur_char);
-					
+#if HW_HAS_LCM
+					vsprog_ui_buf[0] = cur_char;
+					vsprog_ui_buf[1] = '\0';
+					vsprog_ui_print(vsprog_ui_buf);
+#endif
 					buf[pos++] = cur_char;
 					size++;
 					cur_size--;
@@ -401,6 +422,15 @@ static void APPIO_OUTBUFF(uint8_t *buff, uint32_t size)
 {
 	uint32_t free_space, cur_size;
 	
+#if HW_HAS_LCM
+	vsprog_ui_print((char *)buff);
+#endif
+	
+	if (appio_dummy)
+	{
+		return;
+	}
+	
 	while (size > 0)
 	{
 		do
@@ -444,10 +474,7 @@ int FPRINTF(FILE *f, const char *format, ...)
 	
 	if ((stdout == f) || (stderr == f))
 	{
-		if (!appio_dummy)
-		{
-			APPIO_OUTBUFF((uint8_t *)pbuff, (uint32_t)number);
-		}
+		APPIO_OUTBUFF((uint8_t *)pbuff, (uint32_t)number);
 	}
 	else
 	{
@@ -461,13 +488,10 @@ int PRINTF(const char *format, ...)
 	char *pbuff = app_io_local_buff;
 	va_list ap;
 	
-	if (!appio_dummy)
-	{
-		va_start(ap, format);
-		number = vsnprintf(app_io_local_buff, sizeof(app_io_local_buff), format, ap);
-		va_end(ap);
-	
-		APPIO_OUTBUFF((uint8_t *)pbuff, (uint32_t)number);
-	}
+	va_start(ap, format);
+	number = vsnprintf(app_io_local_buff, sizeof(app_io_local_buff), format, ap);
+	va_end(ap);
+
+	APPIO_OUTBUFF((uint8_t *)pbuff, (uint32_t)number);
 	return number;
 }

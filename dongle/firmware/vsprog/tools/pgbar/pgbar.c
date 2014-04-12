@@ -35,6 +35,10 @@
 #include "pgbar.h"
 #include "scripts.h"
 
+#if HW_HAS_LCM
+#include "vsprog_ui.h"
+#endif
+
 VSS_HANDLER(pgbar_gui);
 static struct vss_cmd_t pgbar_cmd[] =
 {
@@ -94,6 +98,7 @@ void pgbar_update(int32_t step)
 	if (noc != 0)
 	{
 		uint8_t erase = 0;
+		uint8_t percentage;
 		// update
 		// erase previous characters
 		if (100 == pgbar_get_char_num(pos_pre) * 100 / max_num_of_chars)
@@ -127,7 +132,11 @@ void pgbar_update(int32_t step)
 		}
 		
 		// output percentage
-		PRINTF("%%%02d", pgbar_get_char_num(position) * 100 / max_num_of_chars);
+		percentage = pgbar_get_char_num(position) * 100 / max_num_of_chars;
+		PRINTF("%%%02d", percentage);
+#if HW_HAS_LCM
+		vsprog_ui_set_progress(percentage);
+#endif
 		led_mask = pgbar_get_char_num(position) * 8 / max_num_of_chars;
 		led_mask = (1 << led_mask) - 1;
 #if HW_HAS_LEDARRAY
@@ -167,9 +176,15 @@ vsf_err_t pgbar_init(char *s, char *e, uint32_t min, uint32_t max,
 	if (NULL != s)
 	{
 		PRINTF("%s", s);
+#if HW_HAS_LCM
+		vsprog_ui_set_task(s);
+#endif
 	}
 	// print initial percentage
 	PRINTF("%%00");
+#if HW_HAS_LCM
+	vsprog_ui_set_progress(0);
+#endif
 	if (gui_mode_flag)
 	{
 		PRINTF(LOG_LINE_END);

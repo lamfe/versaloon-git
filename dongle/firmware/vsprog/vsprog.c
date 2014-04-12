@@ -45,6 +45,8 @@
 #include "strparser.h"
 #include "comisp.h"
 
+#include "vsprog_ui.h"
+
 VSS_HANDLER(vsprog_help);
 VSS_HANDLER(vsprog_version);
 VSS_HANDLER(vsprog_debug_level);
@@ -482,6 +484,7 @@ VSS_HANDLER(vsprog_init)
 	VSS_CHECK_ARGC(1);
 	
 	print_title();
+	vsprog_ui_set_title(VSPROG_VERSION);
 	
 	vss_register_cmd_list(&target_cmd_list);
 	vss_register_cmd_list(&target_data_cmd_list);
