@@ -88,6 +88,7 @@ VSS_HANDLER(vi_stm32_support)
 
 
 
+struct cm_common_info_t vi_stm32_cm_info;
 static vsf_err_t vi_stm32_init(void *p)
 {
 	struct program_info_t *pi = cur_context->pi;
@@ -126,6 +127,7 @@ static vsf_err_t vi_stm32_init(void *p)
 	default:
 		return VSFERR_FAIL;
 	}
+	cm_switch(&vi_stm32_cm_info);
 	if (cm_dp_init(cur_real_interface, &dp))
 	{
 		return VSFERR_FAIL;
