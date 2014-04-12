@@ -20,8 +20,6 @@
 #ifndef __S6B0724_DRV_H_INCLUDED__
 #define __S6B0724_DRV_H_INCLUDED__
 
-#include "tool/vsfui_fb/vsfui_fb.h"
-
 struct s6b0724_drv_param_t
 {
 	struct ebi_sram_psram_nor_info_t nor_info;
@@ -36,13 +34,7 @@ struct s6b0724_drv_interface_t
 	uint32_t data_addr;
 };
 
-struct s6b0724_drv_t
-{
-	struct dal_driver_t dal_driver;
-	struct vsfui_fb_driver_t fb_driver;
-};
-
-extern const struct s6b0724_drv_t s6b0724_drv;
+extern const struct mal_driver_t s6b0724_drv;
 
 #endif	// __S6B0724_DRV_H_INCLUDED__
 

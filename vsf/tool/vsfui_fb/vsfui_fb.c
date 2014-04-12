@@ -20,7 +20,7 @@
 #include "app_type.h"
 #include "tool/buffer/buffer.h"
 
-#include "dal/dal.h"
+#include "dal/mal/mal.h"
 #include "vsfui_fb.h"
 
 // frame_buffer driver for vsfui
@@ -29,10 +29,7 @@ vsf_err_t vsfui_fb_init(struct vsfui_fb_t *vsfui_fb)
 {
 	if (vsf_multibuf_init(vsfui_fb->mbuffer) ||
 		(NULL == vsfui_fb->screen.dal) ||
-		(NULL == vsfui_fb->screen.driver) ||
-		(NULL == vsfui_fb->screen.driver->display) ||
-		((vsfui_fb->screen.driver->init != NULL) &&
-			vsfui_fb->screen.driver->init(vsfui_fb->screen.dal)))
+		mal.init(vsfui_fb->screen.dal))
 	{
 		return VSFERR_FAIL;
 	}
@@ -42,11 +39,7 @@ vsf_err_t vsfui_fb_init(struct vsfui_fb_t *vsfui_fb)
 
 vsf_err_t vsfui_fb_fini(struct vsfui_fb_t *vsfui_fb)
 {
-	if (vsfui_fb->screen.driver->fini != NULL)
-	{
-		vsfui_fb->screen.driver->fini(vsfui_fb->screen.dal);
-	}
-	return VSFERR_NONE;
+	return mal.fini(vsfui_fb->screen.dal);
 }
 
 void* vsfui_fb_get_buffer(struct vsfui_fb_t *vsfui_fb)
@@ -61,8 +54,11 @@ vsf_err_t vsfui_fb_validate_buffer(struct vsfui_fb_t *vsfui_fb)
 
 vsf_err_t vsfui_fb_poll(struct vsfui_fb_t *vsfui_fb)
 {
-	struct vsfui_fb_driver_t *driver = vsfui_fb->screen.driver;
-	struct dal_info_t *dal = vsfui_fb->screen.dal;
+	struct dal_info_t *dal_info = vsfui_fb->screen.dal;
+	struct mal_info_t *mal_info = (struct mal_info_t *)dal_info->extra;
+	uint64_t block_size = mal_info->capacity.block_size;
+	uint64_t block_num = mal_info->capacity.block_number;
+	uint64_t cur_addr;
 	uint8_t *buffer = vsf_multibuf_get_payload(vsfui_fb->mbuffer);
 	
 	if (NULL == buffer)
@@ -72,15 +68,40 @@ vsf_err_t vsfui_fb_poll(struct vsfui_fb_t *vsfui_fb)
 	
 	if (vsfui_fb->displaying)
 	{
-		if ((NULL == driver->display_isready) ||
-			!driver->display_isready(dal, buffer))
+		vsf_err_t err;
+		
+		cur_addr = vsfui_fb->cur_block * block_size;
+		
+		err = mal.writeblock_nb_isready(dal_info, cur_addr, buffer);
+		if (err < 0)
 		{
-			vsf_multibuf_pop(vsfui_fb->mbuffer);
-			vsfui_fb->displaying = false;
+			return err;
+		}
+		if (!err)
+		{
+			vsfui_fb->cur_block++;
+			cur_addr = vsfui_fb->cur_block * block_size;
+			if (vsfui_fb->cur_block >= block_num)
+			{
+				mal.writeblock_nb_end(dal_info);
+				vsf_multibuf_pop(vsfui_fb->mbuffer);
+				vsfui_fb->displaying = false;
+			}
+			else
+			{
+				return mal.writeblock_nb(dal_info, cur_addr, &buffer[cur_addr]);
+			}
 		}
 	}
-	else if (!driver->display(dal, buffer))
+	else
 	{
+		vsfui_fb->cur_block = 0;
+		cur_addr = vsfui_fb->cur_block * block_size;
+		if (mal.writeblock_nb_start(dal_info, 0, block_num, buffer) ||
+			mal.writeblock_nb(dal_info, cur_addr, &buffer[cur_addr]))
+		{
+			return VSFERR_NONE;
+		}
 		vsfui_fb->displaying  = true;
 	}
 	return VSFERR_NONE;
