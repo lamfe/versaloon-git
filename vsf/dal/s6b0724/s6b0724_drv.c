@@ -21,7 +21,8 @@
 #include "app_type.h"
 
 #include "interfaces.h"
-#include "../dal.h"
+#include "../mal/mal.h"
+#include "../mal/mal_driver.h"
 
 #if DAL_S6B0724_EN
 
@@ -104,6 +105,19 @@ static vsf_err_t s6b0724_drv_write_data(struct dal_info_t *info, uint8_t *data,
 									addr, 1, data, len);
 }
 
+static vsf_err_t s6b0724_drv_read_data(struct dal_info_t *info, uint8_t *data,
+										uint32_t len)
+{
+	struct s6b0724_drv_param_t *param =
+									(struct s6b0724_drv_param_t *)info->param;
+	struct s6b0724_drv_interface_t *ifs =
+									(struct s6b0724_drv_interface_t *)info->ifs;
+	uint32_t addr = ifs->data_addr + param->nor_info.common_info.mux_addr_mask;
+	
+	return interfaces->ebi.read(ifs->ebi_port, ifs->lcd_index | EBI_TGTTYP_NOR,
+									addr, 1, data, len);
+}
+
 static vsf_err_t s6b0724_drv_set_addr(struct dal_info_t *info,
 										uint8_t page, uint8_t col)
 {
@@ -124,6 +138,10 @@ static vsf_err_t s6b0724_drv_init(struct dal_info_t *info)
 								(struct s6b0724_drv_interface_t *)info->ifs;
 	struct s6b0724_drv_param_t *param = 
 								(struct s6b0724_drv_param_t *)info->param;
+	struct mal_info_t *mal_info = (struct mal_info_t *)info->extra;
+	
+	mal_info->capacity.block_size = S6B0724_SEG_SIZE;
+	mal_info->capacity.block_number = S6B0724_SEG_NUM;
 	
 	interfaces->ebi.init(ifs->ebi_port);
 	interfaces->ebi.config(ifs->ebi_port, ifs->lcd_index | EBI_TGTTYP_NOR,
@@ -158,29 +176,57 @@ static vsf_err_t s6b0724_drv_fini(struct dal_info_t *info)
 	return VSFERR_NONE;
 }
 
-static vsf_err_t s6b0724_drv_display(struct dal_info_t *info, uint8_t *buff)
+static vsf_err_t s6b0724_drv_nb_start(struct dal_info_t *info,
+								uint64_t address, uint64_t count, uint8_t *buff)
 {
-	uint8_t i;
-	
-	for(i = 0; i < S6B0724_SEG_NUM; i++)
+	REFERENCE_PARAMETER(info);
+	REFERENCE_PARAMETER(address);
+	REFERENCE_PARAMETER(count);
+	REFERENCE_PARAMETER(buff);
+	return VSFERR_NONE;
+}
+
+static vsf_err_t s6b0724_drv_nb_isready(struct dal_info_t *info,
+											uint64_t address, uint8_t *buff)
+{
+	REFERENCE_PARAMETER(info);
+	REFERENCE_PARAMETER(address);
+	REFERENCE_PARAMETER(buff);
+	return VSFERR_NONE;
+}
+
+static vsf_err_t s6b0724_drv_nb_end(struct dal_info_t *info)
+{
+	REFERENCE_PARAMETER(info);
+	return VSFERR_NONE;
+}
+
+static vsf_err_t s6b0724_drv_readblock_nb(struct dal_info_t *info,
+											uint64_t address, uint8_t *buff)
+{
+	if (s6b0724_drv_set_addr(info, (uint8_t)(address / S6B0724_SEG_SIZE), 0) ||
+		s6b0724_drv_read_data(info, buff, S6B0724_SEG_SIZE))
 	{
-		if (s6b0724_drv_set_addr(info, i, 0) ||
-			s6b0724_drv_write_data(info, buff, S6B0724_SEG_SIZE))
-		{
-			return VSFERR_FAIL;
-		}
-		buff += S6B0724_SEG_SIZE;
+		return VSFERR_FAIL;
 	}
-	
+	return interfaces->peripheral_commit();
+}
+
+static vsf_err_t s6b0724_drv_writeblock_nb(struct dal_info_t *info,
+											uint64_t address, uint8_t *buff)
+{
+	if (s6b0724_drv_set_addr(info, (uint8_t)(address / S6B0724_SEG_SIZE), 0) ||
+		s6b0724_drv_write_data(info, buff, S6B0724_SEG_SIZE))
+	{
+		return VSFERR_FAIL;
+	}
 	return interfaces->peripheral_commit();
 }
 
 #if DAL_INTERFACE_PARSER_EN
-static vsf_err_t s6b0724_drv_parse_interface(struct dal_info_t *info, 
-											uint8_t *buff)
+static vsf_err_t s6b0724_drv_parse_interface(struct dal_info_t *info, uint8_t *buff)
 {
-	struct s6b0724_drv_interface_t *ifs = 
-								(struct s6b0724_drv_interface_t *)info->ifs;
+	struct s6b0724_drv_interface_t *ifs = (struct s6b0724_drv_interface_t *)info->ifs;
 	
 	ifs->ebi_port = buff[0];
 	ifs->lcd_index = buff[1];
@@ -190,7 +236,7 @@ static vsf_err_t s6b0724_drv_parse_interface(struct dal_info_t *info,
 }
 #endif
 
-const struct s6b0724_drv_t s6b0724_drv = 
+const struct mal_driver_t s6b0724_drv = 
 {
 	{
 		"s6b0724",
@@ -199,12 +245,32 @@ const struct s6b0724_drv_t s6b0724_drv =
 		s6b0724_drv_parse_interface,
 #endif
 	},
-	{
-		s6b0724_drv_init,
-		s6b0724_drv_fini,
-		s6b0724_drv_display,
-		NULL
-	}
+	
+	MAL_SUPPORT_READBLOCK | MAL_SUPPORT_WRITEBLOCK,
+	
+	s6b0724_drv_init,
+	NULL,
+	s6b0724_drv_fini,
+	NULL,
+	NULL,
+	
+	NULL, NULL, NULL, NULL,
+	
+	NULL, NULL, NULL, NULL,
+	
+	NULL, NULL, NULL, NULL, NULL,
+	
+	s6b0724_drv_nb_start,
+	s6b0724_drv_readblock_nb,
+	s6b0724_drv_nb_isready,
+	NULL,
+	s6b0724_drv_nb_end,
+	
+	s6b0724_drv_nb_start,
+	s6b0724_drv_writeblock_nb,
+	s6b0724_drv_nb_isready,
+	NULL,
+	s6b0724_drv_nb_end
 };
 
 #endif

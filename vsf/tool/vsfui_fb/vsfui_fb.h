@@ -20,14 +20,6 @@
 #ifndef __VSFUI_FB_H_INCLUDED__
 #define __VSFUI_FB_H_INCLUDED__
 
-struct vsfui_fb_driver_t
-{
-	vsf_err_t (*init)(struct dal_info_t *info);
-	vsf_err_t (*fini)(struct dal_info_t *info);
-	vsf_err_t (*display)(struct dal_info_t *info, uint8_t *buffer);
-	vsf_err_t (*display_isready)(struct dal_info_t *info, uint8_t *buffer);
-};
-
 struct vsfui_fb_t
 {
 	struct vsfui_fb_screen_t
@@ -37,7 +29,6 @@ struct vsfui_fb_t
 		uint8_t pixel_size;
 		
 		struct dal_info_t *dal;
-		struct vsfui_fb_driver_t *driver;
 	} screen;
 	
 	// buffer
@@ -45,6 +36,7 @@ struct vsfui_fb_t
 	
 	// private
 	bool displaying;
+	uint32_t cur_block;
 };
 
 vsf_err_t vsfui_fb_init(struct vsfui_fb_t *vsfui_fb);
