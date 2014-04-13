@@ -1,1 +1,4 @@
-This document is not in use.
+1. remove library from ST, reuse only the defines for registers
+2. use same interface driver code for stm32 and vi_stm32
+3. make interfaces calls non-block(for ebi, spi etc.)
+4. make usart_stream standard dal_info_t driver
