@@ -33,7 +33,12 @@
 #	define NULL						((void *)0)
 #endif
 
-#define dimof(arr)					(sizeof(arr) / sizeof((arr)[0]))
+#ifndef dimof
+#	define dimof(arr)				(sizeof(arr) / sizeof((arr)[0]))
+#endif
+#ifndef offsetof
+#	define offsetof(s, m)			(uint32_t)(&(((struct s *)0)->m))
+#endif
 #ifndef min
 #	define min(a, b)				(((a) < (b)) ? (a) : (b))
 #endif
