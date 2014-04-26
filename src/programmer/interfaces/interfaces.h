@@ -202,8 +202,8 @@ struct interface_nand_t
 	vsf_err_t (*config)(uint8_t index, struct nand_info_t *param);
 	vsf_err_t (*write_cmd)(uint8_t index, uint8_t *cmd, uint8_t bytelen);
 	vsf_err_t (*write_addr)(uint8_t index, uint8_t *addr, uint8_t bytelen);
-	vsf_err_t (*write_data)(uint8_t index, uint8_t *data, uint16_t bytelen);
-	vsf_err_t (*read_data)(uint8_t index, uint8_t *data, uint16_t bytelen);
+	vsf_err_t (*write_data)(uint8_t index, uint8_t *data, uint32_t bytelen);
+	vsf_err_t (*read_data)(uint8_t index, uint8_t *data, uint32_t bytelen);
 };
 
 struct interface_gpio_t
