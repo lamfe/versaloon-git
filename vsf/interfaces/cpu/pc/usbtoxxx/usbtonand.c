@@ -94,8 +94,11 @@ vsf_err_t usbtonand_write_addr(uint8_t index, uint8_t *addr, uint8_t bytelen)
 									addr, bytelen, 0, NULL, 0, 0, 0);
 }
 
-vsf_err_t usbtonand_write_data(uint8_t index, uint8_t *data, uint16_t bytelen)
+vsf_err_t usbtonand_write_data(uint8_t index, uint8_t *data, uint32_t bytelen)
 {
+	uint16_t current_len;
+	vsf_err_t err = VSFERR_NONE;
+	
 #if PARAM_CHECK
 	if (index > 7)
 	{
@@ -104,11 +107,27 @@ vsf_err_t usbtonand_write_data(uint8_t index, uint8_t *data, uint16_t bytelen)
 	}
 #endif
 	
-	return usbtoxxx_out_command(USB_TO_NAND, index, data, bytelen, 0);
+	while (bytelen)
+	{
+		current_len =
+			(uint16_t)min(bytelen, (uint32_t)(usbtoxxx_info->buff_len - 16));
+		
+		err = usbtoxxx_out_command(USB_TO_NAND, index, data, current_len, 0);
+		if (err)
+		{
+			return err;
+		}
+		bytelen -= current_len;
+		data += current_len;
+	}
+	return err;
 }
 
-vsf_err_t usbtonand_read_data(uint8_t index, uint8_t *data, uint16_t bytelen)
+vsf_err_t usbtonand_read_data(uint8_t index, uint8_t *data, uint32_t bytelen)
 {
+	uint16_t current_len;
+	vsf_err_t err = VSFERR_NONE;
+	
 #if PARAM_CHECK
 	if (index > 7)
 	{
@@ -117,6 +136,19 @@ vsf_err_t usbtonand_read_data(uint8_t index, uint8_t *data, uint16_t bytelen)
 	}
 #endif
 	
-	return usbtoxxx_in_command(USB_TO_NAND, index, data, bytelen, bytelen, data,
-								0, bytelen, 0);
+	while (bytelen)
+	{
+		current_len =
+			(uint16_t)min(bytelen, (uint32_t)(usbtoxxx_info->buff_len - 16));
+		
+		err = usbtoxxx_in_command(USB_TO_NAND, index, data, current_len,
+									current_len, data, 0, current_len, 0);
+		if (err)
+		{
+			return err;
+		}
+		bytelen -= current_len;
+		data += current_len;
+	}
+	return err;
 }

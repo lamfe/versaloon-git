@@ -20,6 +20,7 @@
 #define __APP_STRING_H_INCLUDED__
 
 #include <string.h>
+#include <stdlib.h>
 
 #define MALLOC							malloc
 #define FREE							free

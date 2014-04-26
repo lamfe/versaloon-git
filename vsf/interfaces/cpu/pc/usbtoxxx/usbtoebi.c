@@ -119,6 +119,8 @@ vsf_err_t usbtoebi_isready(uint8_t index, uint8_t target_index)
 vsf_err_t usbtoebi_read(uint8_t index, uint8_t target_index,
 			uint32_t address,uint8_t data_size, uint8_t *buff, uint32_t count)
 {
+	uint16_t cur_count;
+	
 #if PARAM_CHECK
 	if (index > 7)
 	{
@@ -127,19 +129,34 @@ vsf_err_t usbtoebi_read(uint8_t index, uint8_t target_index,
 	}
 #endif
 	
-	usbtoxxx_info->cmd_buff[0] = target_index;
-	usbtoxxx_info->cmd_buff[1] = data_size;
-	SET_LE_U32(&usbtoxxx_info->cmd_buff[2], address);
-	SET_LE_U32(&usbtoxxx_info->cmd_buff[6], count);
-	return usbtoxxx_in_command(USB_TO_EBI, index, usbtoxxx_info->cmd_buff,
-				(uint16_t)(10 + count * data_size), 
-				(uint16_t)(count * data_size), buff, 0, 
-				(uint16_t)(count * data_size), 0);
+	while (count)
+	{
+		cur_count = (uint16_t)min(count,
+			(uint32_t)((usbtoxxx_info->buff_len - 16) / data_size));
+		
+		usbtoxxx_info->cmd_buff[0] = target_index;
+		usbtoxxx_info->cmd_buff[1] = data_size;
+		SET_LE_U32(&usbtoxxx_info->cmd_buff[2], address);
+		SET_LE_U32(&usbtoxxx_info->cmd_buff[6], cur_count);
+		
+		if (usbtoxxx_in_command(USB_TO_EBI, index, usbtoxxx_info->cmd_buff,
+				(uint16_t)(10 + cur_count * data_size), 
+				(uint16_t)(cur_count * data_size), buff, 0, 
+				(uint16_t)(cur_count * data_size), 0))
+		{
+			return VSFERR_FAIL;
+		}
+		
+		count -= cur_count;
+		address += cur_count * data_size;
+	}
+	return VSFERR_NONE;
 }
 
 vsf_err_t usbtoebi_write(uint8_t index, uint8_t target_index,
 			uint32_t address,uint8_t data_size, uint8_t *buff, uint32_t count)
 {
+	uint16_t cur_count;
 	uint32_t i;
 	
 #if PARAM_CHECK
@@ -150,32 +167,45 @@ vsf_err_t usbtoebi_write(uint8_t index, uint8_t target_index,
 	}
 #endif
 	
-	usbtoxxx_info->cmd_buff[0] = target_index;
-	usbtoxxx_info->cmd_buff[1] = data_size;
-	SET_LE_U32(&usbtoxxx_info->cmd_buff[2], address);
-	SET_LE_U32(&usbtoxxx_info->cmd_buff[6], count);
-	switch (data_size)
+	while (count)
 	{
-	case 1:
-		memcpy(&usbtoxxx_info->cmd_buff[10], buff, data_size * count);
-		break;
-	case 2:
-		for (i = 0; i < count; i++)
+		cur_count = (uint16_t)min(count,
+			(uint32_t)((usbtoxxx_info->buff_len - 16) / data_size));
+		
+		usbtoxxx_info->cmd_buff[0] = target_index;
+		usbtoxxx_info->cmd_buff[1] = data_size;
+		SET_LE_U32(&usbtoxxx_info->cmd_buff[2], address);
+		SET_LE_U32(&usbtoxxx_info->cmd_buff[6], cur_count);
+		switch (data_size)
 		{
-			SET_LE_U16(&usbtoxxx_info->cmd_buff[10 + i * 2], 
-						GET_SYS_U16(&buff[i * 2]));
+		case 1:
+			memcpy(&usbtoxxx_info->cmd_buff[10], buff, data_size * cur_count);
+			break;
+		case 2:
+			for (i = 0; i < cur_count; i++)
+			{
+				SET_LE_U16(&usbtoxxx_info->cmd_buff[10 + i * 2], 
+							GET_SYS_U16(&buff[i * 2]));
+			}
+			break;
+		case 4:
+			for (i = 0; i < cur_count; i++)
+			{
+				SET_LE_U32(&usbtoxxx_info->cmd_buff[10 + i * 4], 
+							GET_SYS_U32(&buff[i * 4]));
+			}
+			break;
+		default:
+			return VSFERR_FAIL;
 		}
-		break;
-	case 4:
-		for (i = 0; i < count; i++)
+		if (usbtoxxx_out_command(USB_TO_EBI, index, usbtoxxx_info->cmd_buff,
+									(uint16_t)(10 + cur_count * data_size), 0))
 		{
-			SET_LE_U32(&usbtoxxx_info->cmd_buff[10 + i * 4], 
-						GET_SYS_U32(&buff[i * 4]));
+			return VSFERR_FAIL;
 		}
-		break;
-	default:
-		return VSFERR_FAIL;
+		
+		count -= cur_count;
+		address += cur_count * data_size;
 	}
-	return usbtoxxx_out_command(USB_TO_EBI, index, usbtoxxx_info->cmd_buff,
-									(uint16_t)(10 + count * data_size), 0);
+	return VSFERR_NONE;
 }

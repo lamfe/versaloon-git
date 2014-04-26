@@ -403,8 +403,8 @@ vsf_err_t usbtonand_fini(uint8_t index);
 vsf_err_t usbtonand_config(uint8_t index, struct nand_info_t *param);
 vsf_err_t usbtonand_write_cmd(uint8_t index, uint8_t *cmd, uint8_t bytelen);
 vsf_err_t usbtonand_write_addr(uint8_t index, uint8_t *addr, uint8_t bytelen);
-vsf_err_t usbtonand_write_data(uint8_t index, uint8_t *data, uint16_t bytelen);
-vsf_err_t usbtonand_read_data(uint8_t index, uint8_t *data, uint16_t bytelen);
+vsf_err_t usbtonand_write_data(uint8_t index, uint8_t *data, uint32_t bytelen);
+vsf_err_t usbtonand_read_data(uint8_t index, uint8_t *data, uint32_t bytelen);
 
 #endif /* __USBTOXXX_H_INCLUDED__ */
 
