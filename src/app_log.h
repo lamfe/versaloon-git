@@ -64,10 +64,10 @@ extern int verbosity_stack[16];
 		int __i, __j;\
 		for (__i = 0; __i < (int)(len); __i += (n))\
 		{\
-			snprintf(line, 5, "%04X", (uint16_t)((addr16) + __i));\
+			SNPRINTF(line, 5, "%04X", (uint16_t)((addr16) + __i));\
 			for (__j = __i; __j < __i + (n) && __j < (int)(len); __j++)\
 			{\
-				snprintf(s, sizeof(s), " " format, (buff)[__j]);\
+				SNPRINTF(s, sizeof(s), " " format, (buff)[__j]);\
 				strncat(line, s, sizeof(s));\
 			}\
 			func("%s", line);\
@@ -94,10 +94,10 @@ extern int verbosity_stack[16];
 		int __i, __j;\
 		for (__i = 0; __i < (int)(len); __i += (n))\
 		{\
-			snprintf(line, 9, "%08X", (uint32_t)((addr32) + __i));\
+			SNPRINTF(line, 9, "%08X", (uint32_t)((addr32) + __i));\
 			for (__j = __i; __j < __i + (n) && __j < (int)(len); __j++)\
 			{\
-				snprintf(s, sizeof(s), " " format, (buff)[__j]);\
+				SNPRINTF(s, sizeof(s), " " format, (buff)[__j]);\
 				strncat(line, s, sizeof(s));\
 			}\
 			func("%s", line);\
@@ -124,10 +124,10 @@ extern int verbosity_stack[16];
 		int __i, __j;\
 		for (__i = 0; __i < (int)(len); __i += (n))\
 		{\
-			snprintf(line, 17, "%016" PRIX64, (uint64_t)((addr64) + __i));\
+			SNPRINTF(line, 17, "%016" PRIX64, (uint64_t)((addr64) + __i));\
 			for (__j = __i; __j < __i + (n) && __j < (int)(len); __j++)\
 			{\
-				snprintf(s, sizeof(s), " " format, (buff)[__j]);\
+				SNPRINTF(s, sizeof(s), " " format, (buff)[__j]);\
 				strncat(line, s, sizeof(s));\
 			}\
 			func("%s", line);\
