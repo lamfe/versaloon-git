@@ -247,6 +247,9 @@ const struct app_interfaces_info_t app_interfaces =
 #if INTERFACE_MSP430_JTAG_EN
 	| IFS_MSP430_JTAG 
 #endif
+#if INTERFACE_MSP430_SBW_EN
+	| IFS_MSP430_SBW
+#endif
 #if INTERFACE_LPC_ICP_EN
 	| IFS_LPC_ICP 
 #endif
@@ -267,6 +270,12 @@ const struct app_interfaces_info_t app_interfaces =
 #endif
 #if INTERFACE_ADC_EN
 	| IFS_ADC
+#endif
+#if INTERFACE_EBI_EN
+	| IFS_EBI
+#endif
+#if INTERFACE_SDIO_EN
+	| IFS_SDIO
 #endif
 	
 #if INTERFACE_GPIO_EN
