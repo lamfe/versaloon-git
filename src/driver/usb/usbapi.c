@@ -180,7 +180,7 @@ uint32_t print_usb_devices(uint16_t VID, uint16_t PID, int8_t serialindex,
 				if (((productstring != NULL) && (productindex >= 0)
 						&& !usb_check_string(dev_handle, productindex,
 												productstring, NULL, 0))
-				    || ((serialstring != NULL) && (serialindex >= 0)
+				    || ((serialindex >= 0)
 						&& !usb_check_string(dev_handle, serialindex, serialstring,
 								 (char*)buf, sizeof(buf))))
 				{
