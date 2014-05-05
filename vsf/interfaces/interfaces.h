@@ -327,6 +327,7 @@ struct interface_adc_t
 	vsf_err_t (*fini)(uint8_t index);
 	vsf_err_t (*config)(uint8_t index, uint32_t clock_hz, uint8_t mode);
 	vsf_err_t (*config_channel)(uint8_t index, uint8_t channel, uint8_t cycles);
+	uint32_t (*get_max_value)(uint8_t index);
 	vsf_err_t (*calibrate)(uint8_t index, uint8_t channel);
 	vsf_err_t (*start)(uint8_t index, uint8_t channel);
 	vsf_err_t (*isready)(uint8_t index, uint8_t channel);
@@ -339,6 +340,7 @@ struct interface_adc_t
 #define CORE_ADC_CONFIG(m)				__CONNECT(m, _adc_config)
 #define CORE_ADC_CONFIG_CHANNEL(m)		__CONNECT(m, _adc_config_channel)
 #define CORE_ADC_CALIBRATE(m)			__CONNECT(m, _adc_calibrate)
+#define CORE_ADC_GET_MAX_VALUE(m)		__CONNECT(m, _adc_get_max_value)
 #define CORE_ADC_START(m)				__CONNECT(m, _adc_start)
 #define CORE_ADC_ISREADY(m)				__CONNECT(m, _adc_isready)
 #define CORE_ADC_GET(m)					__CONNECT(m, _adc_get)
@@ -351,6 +353,7 @@ vsf_err_t CORE_ADC_CONFIG(__TARGET_CHIP__)(uint8_t index, uint32_t clock_hz,
 vsf_err_t CORE_ADC_CONFIG_CHANNEL(__TARGET_CHIP__)(uint8_t index, 
 											uint8_t channel, uint8_t cycles);
 vsf_err_t CORE_ADC_CALIBRATE(__TARGET_CHIP__)(uint8_t index, uint8_t channel);
+uint32_t CORE_ADC_GET_MAX_VALUE(__TARGET_CHIP__)(uint8_t index);
 vsf_err_t CORE_ADC_START(__TARGET_CHIP__)(uint8_t index, uint8_t channel);
 vsf_err_t CORE_ADC_ISREADY(__TARGET_CHIP__)(uint8_t index, uint8_t channel);
 uint32_t CORE_ADC_GET(__TARGET_CHIP__)(uint8_t index, uint8_t channel);

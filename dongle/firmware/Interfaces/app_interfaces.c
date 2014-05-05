@@ -532,6 +532,7 @@ const struct app_interfaces_info_t app_interfaces =
 		adc_fini,
 		adc_config,
 		adc_config_channel,
+		adc_get_max_value,
 		adc_calibrate,
 		adc_start,
 		adc_isready,

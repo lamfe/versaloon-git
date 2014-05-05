@@ -18,6 +18,7 @@ vsf_err_t adc_init(uint8_t index);
 vsf_err_t adc_fini(uint8_t index);
 vsf_err_t adc_config(uint8_t index, uint32_t clock_hz, uint8_t mode);
 vsf_err_t adc_config_channel(uint8_t index, uint8_t channel, uint8_t cycles);
+uint32_t adc_get_max_value(uint8_t index);
 vsf_err_t adc_calibrate(uint8_t index, uint8_t channel);
 vsf_err_t adc_start(uint8_t index, uint8_t channel);
 vsf_err_t adc_isready(uint8_t index, uint8_t channel);

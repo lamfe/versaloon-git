@@ -64,6 +64,11 @@ vsf_err_t adc_config_channel(uint8_t index, uint8_t channel, uint8_t cycles)
 	}
 }
 
+uint32_t adc_get_max_value(uint8_t index)
+{
+	return 3300;
+}
+
 vsf_err_t adc_calibrate(uint8_t index, uint8_t channel)
 {
 	switch (index)

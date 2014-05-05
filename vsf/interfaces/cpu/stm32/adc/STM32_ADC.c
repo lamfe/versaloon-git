@@ -226,6 +226,12 @@ vsf_err_t stm32_adc_calibrate(uint8_t index, uint8_t channel)
 	return VSFERR_NONE;
 }
 
+uint32_t stm32_adc_get_max_value(uint8_t index)
+{
+	REFERENCE_PARAMETER(index);
+	return (1 << 12);
+}
+
 vsf_err_t stm32_adc_start(uint8_t index, uint8_t channel)
 {
 	ADC_TypeDef *adc;
