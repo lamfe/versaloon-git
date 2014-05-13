@@ -365,7 +365,7 @@ static vsf_err_t cfi_drv_parse_interface(struct dal_info_t *info, uint8_t *buff)
 const struct mal_driver_t sst32hfxx_nor_drv = 
 {
 	{
-		"cfi",
+		"sst32hfxx",
 #if DAL_INTERFACE_PARSER_EN
 		"ebi:%1dnor:%1d",
 		cfi_drv_parse_interface,

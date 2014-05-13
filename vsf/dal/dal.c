@@ -66,6 +66,10 @@
 #include "dal/nand/nand_drv.h"
 #endif
 
+#if DAL_SST32HFXX_EN
+#include "dal/sst32hfxx/sst32hfxx_drv.h"
+#endif
+
 struct dal_driver_t *dal_drivers[] = 
 {
 #if DAL_EE93CX6_EN
@@ -97,6 +101,9 @@ struct dal_driver_t *dal_drivers[] =
 #endif
 #if DAL_NAND_EN
 	(struct dal_driver_t *)&nand_drv,
+#endif
+#if DAL_SST32HFXX_EN
+	(struct dal_driver_t *)&sst32hfxx_nor_drv,
 #endif
 	NULL
 };
