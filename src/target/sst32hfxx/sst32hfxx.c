@@ -138,6 +138,7 @@ ENTER_PROGRAM_MODE_HANDLER(sst32hfxx)
 		sst32hfxx_drv_param.nor_info.param.timing.address_hold_cycle_w = 0;
 	// parameter 0 is the us delay of word programming
 	sst32hfxx_drv_param.delayus = (uint16_t)param->param[0];
+	sst32hfxx_drv_param.nor_info.common_info.mux_addr_mask = pi->chip_address;
 	
 	data_setup = 255;
 	if (pi->param != NULL)
