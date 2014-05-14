@@ -143,6 +143,7 @@ ENTER_PROGRAM_MODE_HANDLER(cfi)
 	}
 	cfi_drv_param.nor_info.param.timing.data_setup_cycle_r = 
 		cfi_drv_param.nor_info.param.timing.data_setup_cycle_w = data_setup;
+	cfi_drv_param.nor_info.common_info.mux_addr_mask = pi->chip_address;
 	
 	if (mal.init(&cfi_dal_info) || 
 		mal.getinfo(&cfi_dal_info))
