@@ -4,3 +4,5 @@
 4. make usart_stream standard dal_info_t driver
 5. make param in dal_info_t constant, and info in dal_info_t volatile
 	means parameter of a driver is constand, and info is used for variables
+6. make address parameter in EBI interface correspond to the read signals in address port
+7. in vsfusbd, remove all static variables
