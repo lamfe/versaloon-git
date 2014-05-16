@@ -156,17 +156,12 @@ static vsf_err_t vsfusbd_HID_class_poll(uint8_t iface,
 		(struct vsfusbd_HID_param_t *)config->iface[iface].protocol_param;
 	struct vsfusbd_HID_report_t *report;
 	uint8_t ep = param->ep_in;
-	struct vsfusbd_transact_t *transact = &vsfusbd_IN_transact[ep];
+	struct vsfusbd_transact_t *transact = &device->vsfusbd_IN_transact[ep];
 	struct vsf_buffer_t *buffer = &transact->tbuffer.buffer;
 	
 	if (NULL == param)
 	{
 		return VSFERR_FAIL;
-	}
-	
-	if (param->poll_report_idx >= param->num_of_report)
-	{
-		param->poll_report_idx = 0;
 	}
 	
 	report = &param->reports[param->poll_report_idx];
@@ -177,16 +172,23 @@ static vsf_err_t vsfusbd_HID_class_poll(uint8_t iface,
 	switch (report->type)
 	{
 	case USB_HID_REPORT_TYPE_INPUT:
-		if (vsfusbd_HID_class_update_report(report, &param->temp_buffer))
-		{
-			return VSFERR_FAIL;
-		}
-		
 		// TODO: process multi-report and idle, need 1 ms systick module
-		if ((vsfusbd_ep_send_nb_isready(device, ep) < 0) ||
-			vsfusbd_ep_send_nb(device, ep))
+		if (!vsfusbd_ep_send_nb_isready(device, ep))
 		{
-			return VSFERR_FAIL;
+			if (vsfusbd_HID_class_update_report(report, &param->temp_buffer))
+			{
+				return VSFERR_FAIL;
+			}
+			transact->tbuffer.buffer = param->temp_buffer;
+			if (vsfusbd_ep_send_nb(device, ep))
+			{
+				return VSFERR_FAIL;
+			}
+			param->poll_report_idx++;
+			if (param->poll_report_idx >= param->num_of_report)
+			{
+				param->poll_report_idx = 0;
+			}
 		}
 		break;
 	case USB_HID_REPORT_TYPE_OUTPUT:
