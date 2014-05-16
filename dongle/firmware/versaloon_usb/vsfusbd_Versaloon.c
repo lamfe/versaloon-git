@@ -150,7 +150,7 @@ static vsf_err_t versaloon_poll(uint8_t iface, struct vsfusbd_device_t *device)
 		if(rep_len & 0x80000000)	// there is valid data to be sent to PC
 		{
 			struct vsfusbd_transact_t *transact =
-											&vsfusbd_IN_transact[param->ep_in];
+									&device->vsfusbd_IN_transact[param->ep_in];
 			struct vsf_buffer_t *buffer = &transact->tbuffer.buffer;
 			
 			buffer->buffer = buffer_out;

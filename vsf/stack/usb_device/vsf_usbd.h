@@ -130,6 +130,29 @@ struct vsfusbd_config_t
 	int8_t ep_IN_iface_map[VSFUSBD_CFG_MAX_IN_EP + 1];
 };
 
+struct vsfusbd_transact_callback_t
+{
+	void (*callback)(void *param);
+	void *param;
+};
+struct vsfusbd_transact_t
+{
+	struct vsf_transaction_buffer_t tbuffer;
+	union
+	{
+		struct
+		{
+			uint16_t num;	// used for IN, indicating the number of package
+			bool zlp;
+		} in;
+		struct
+		{
+			bool isshort;	// used for OUT, indicating the short package
+		} out;
+	} pkt;
+	struct vsfusbd_transact_callback_t callback;
+};
+
 struct vsfusbd_device_t
 {
 	// public
@@ -170,33 +193,10 @@ struct vsfusbd_device_t
 	uint8_t configuration;
 	uint8_t feature;
 	struct vsfusbd_ctrl_handler_t ctrl_handler;
+	
+	struct vsfusbd_transact_t vsfusbd_IN_transact[VSFUSBD_CFG_MAX_IN_EP+1];
+	struct vsfusbd_transact_t vsfusbd_OUT_transact[VSFUSBD_CFG_MAX_OUT_EP+1];
 };
-
-struct vsfusbd_transact_callback_t
-{
-	void (*callback)(void *param);
-	void *param;
-};
-struct vsfusbd_transact_t
-{
-	struct vsf_transaction_buffer_t tbuffer;
-	union
-	{
-		struct
-		{
-			uint16_t num;	// used for IN, indicating the number of package
-			bool zlp;
-		} in;
-		struct
-		{
-			bool isshort;	// used for OUT, indicating the short package
-		} out;
-	} pkt;
-	struct vsfusbd_transact_callback_t callback;
-};
-
-extern struct vsfusbd_transact_t vsfusbd_IN_transact[VSFUSBD_CFG_MAX_IN_EP+1];
-extern struct vsfusbd_transact_t vsfusbd_OUT_transact[VSFUSBD_CFG_MAX_OUT_EP+1];
 
 vsf_err_t vsfusbd_device_get_descriptor(struct vsfusbd_device_t *device, 
 		struct vsfusbd_desc_filter_t *filter, uint8_t type, uint8_t index, 

@@ -6,3 +6,4 @@
 	means parameter of a driver is constand, and info is used for variables
 6. make address parameter in EBI interface correspond to the read signals in address port
 7. in vsfusbd, remove all static variables
+		---- done
