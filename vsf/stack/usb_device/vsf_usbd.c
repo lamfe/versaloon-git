@@ -120,7 +120,6 @@ vsf_err_t vsfusbd_device_poll(struct vsfusbd_device_t *device)
 	struct vsfusbd_config_t *config = &device->config[device->configuration];
 	struct vsfusbd_transact_t *transact = NULL;
 	uint8_t i;
-	uint16_t size;
 	
 	if (device->drv->poll() || 
 		((device->callback.poll != NULL) && device->callback.poll()))
@@ -134,8 +133,10 @@ vsf_err_t vsfusbd_device_poll(struct vsfusbd_device_t *device)
 			transact = &device->vsfusbd_OUT_transact[i];
 			if (transact->need_poll)
 			{
-				size = transact->tbuffer.buffer.size;
-				if ((0 == size) || (vsfusbd_data_io(transact) != NULL))
+				struct vsf_transaction_buffer_t *tbuffer = &transact->tbuffer;
+				uint16_t remain_size = tbuffer->buffer.size - tbuffer->position;
+				
+				if ((remain_size > 0) && (vsfusbd_data_io(transact) != NULL))
 				{
 					device->drv->ep.enable_OUT(i);
 					transact->need_poll = false;
