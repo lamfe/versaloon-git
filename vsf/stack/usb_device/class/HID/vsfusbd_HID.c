@@ -244,7 +244,8 @@ static vsf_err_t vsfusbd_HID_class_init(uint8_t iface,
 }
 
 static vsf_err_t vsfusbd_HID_GetReport_prepare(
-	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
+	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer,
+		uint8_t* (*data_io)(void *param))
 {
 	struct vsfusbd_ctrl_request_t *request = &device->ctrl_handler.request;
 	uint8_t iface = request->index;
@@ -273,7 +274,8 @@ static vsf_err_t vsfusbd_HID_GetReport_prepare(
 }
 
 static vsf_err_t vsfusbd_HID_GetIdle_prepare(
-	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
+	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer,
+		uint8_t* (*data_io)(void *param))
 {
 	struct vsfusbd_ctrl_request_t *request = &device->ctrl_handler.request;
 	uint8_t id = request->value;
@@ -295,7 +297,8 @@ static vsf_err_t vsfusbd_HID_GetIdle_prepare(
 }
 
 static vsf_err_t vsfusbd_HID_GetProtocol_prepare(
-	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
+	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer,
+		uint8_t* (*data_io)(void *param))
 {
 	struct vsfusbd_ctrl_request_t *request = &device->ctrl_handler.request;
 	uint8_t iface = request->index;
@@ -314,7 +317,8 @@ static vsf_err_t vsfusbd_HID_GetProtocol_prepare(
 }
 
 static vsf_err_t vsfusbd_HID_SetReport_prepare(
-	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
+	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer,
+		uint8_t* (*data_io)(void *param))
 {
 	struct vsfusbd_ctrl_request_t *request = &device->ctrl_handler.request;
 	uint8_t type = request->value >> 8, id = request->value;
@@ -359,7 +363,8 @@ static vsf_err_t vsfusbd_HID_SetReport_process(
 }
 
 static vsf_err_t vsfusbd_HID_SetIdle_prepare(
-	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
+	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer,
+		uint8_t* (*data_io)(void *param))
 {
 	struct vsfusbd_ctrl_request_t *request = &device->ctrl_handler.request;
 	uint8_t id = request->value;
@@ -380,7 +385,8 @@ static vsf_err_t vsfusbd_HID_SetIdle_prepare(
 }
 
 static vsf_err_t vsfusbd_HID_SetProtocol_prepare(
-	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
+	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer,
+		uint8_t* (*data_io)(void *param))
 {
 	struct vsfusbd_ctrl_request_t *request = &device->ctrl_handler.request;
 	uint8_t iface = request->index;
