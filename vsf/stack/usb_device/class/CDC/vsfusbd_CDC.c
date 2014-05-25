@@ -136,7 +136,8 @@ static vsf_err_t vsfusbd_CDCData_class_poll(uint8_t iface,
 }
 
 static vsf_err_t vsfusbd_CDCControl_SendEncapsulatedCommand_prepare(
-	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
+	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer,
+		uint8_t* (*data_io)(void *param))
 {
 	struct vsfusbd_ctrl_request_t *request = &device->ctrl_handler.request;
 	uint8_t iface = request->index;
@@ -172,7 +173,8 @@ static vsf_err_t vsfusbd_CDCControl_SendEncapsulatedCommand_process(
 }
 
 static vsf_err_t vsfusbd_CDCControl_GetEncapsulatedResponse_prepare(
-	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
+	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer,
+		uint8_t* (*data_io)(void *param))
 {
 	struct vsfusbd_ctrl_request_t *request = &device->ctrl_handler.request;
 	uint8_t iface = request->index;

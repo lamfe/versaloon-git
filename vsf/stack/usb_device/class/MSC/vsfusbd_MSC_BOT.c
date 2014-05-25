@@ -416,7 +416,8 @@ static vsf_err_t vsfusbd_MSCBOT_class_poll(uint8_t iface,
 }
 
 static vsf_err_t vsfusbd_MSCBOT_GetMaxLun_prepare(
-	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
+	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer,
+		uint8_t* (*data_io)(void *param))
 {
 	struct vsfusbd_ctrl_request_t *request = &device->ctrl_handler.request;
 	struct vsfusbd_config_t *config = &device->config[device->configuration];
@@ -436,7 +437,8 @@ static vsf_err_t vsfusbd_MSCBOT_GetMaxLun_prepare(
 }
 
 static vsf_err_t vsfusbd_MSCBOT_Reset_prepare(
-	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer)
+	struct vsfusbd_device_t *device, struct vsf_buffer_t *buffer,
+		uint8_t* (*data_io)(void *param))
 {
 	struct interface_usbd_t *drv = device->drv;
 	struct vsfusbd_ctrl_request_t *request = &device->ctrl_handler.request;
