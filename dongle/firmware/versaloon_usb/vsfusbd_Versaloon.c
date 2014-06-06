@@ -1,14 +1,14 @@
 #include "app_cfg.h"
 #include "app_type.h"
 
+#include "app_interfaces.h"
+
 #include "vsf_usbd_cfg.h"
 #include "stack/usb_device/vsf_usbd_const.h"
 #include "stack/usb_device/vsf_usbd.h"
-#include "stack/usb_device/vsf_usbd_drv_callback.h"
 
 #include "vsfusbd_Versaloon.h"
 
-#include "app_interfaces.h"
 #include "USB_TO_XXX.h"
 
 #if STLINK_EN
@@ -22,9 +22,9 @@ volatile uint32_t cmd_len = 0;
 
 volatile uint32_t rep_len = 0;
 
-static vsf_err_t Versaloon_OUT_hanlder(void *p, uint8_t ep)
+static vsf_err_t Versaloon_OUT_hanlder(struct vsfusbd_device_t *device,
+										uint8_t ep)
 {
-	struct vsfusbd_device_t *device = p;
 	uint32_t pkg_len;
 #if VSFUSBD_CFG_DBUFFER_EN
 	struct vsfusbd_config_t *config = &device->config[device->configuration];
@@ -109,7 +109,7 @@ static vsf_err_t versaloon_usb_init(uint8_t iface, struct vsfusbd_device_t *devi
 	USB_TO_XXX_Init(asyn_rx_buf + 2048);
 #endif
 	
-	if (device->drv->ep.set_OUT_handler(param->ep_out, Versaloon_OUT_hanlder) ||
+	if (vsfusbd_set_OUT_handler(device, param->ep_out, Versaloon_OUT_hanlder) ||
 #if VSFUSBD_CFG_DBUFFER_EN
 		(param->dbuffer_en && 
 		(	device->drv->ep.set_IN_dbuffer(param->ep_in) || 
@@ -150,7 +150,7 @@ static vsf_err_t versaloon_poll(uint8_t iface, struct vsfusbd_device_t *device)
 		if(rep_len & 0x80000000)	// there is valid data to be sent to PC
 		{
 			struct vsfusbd_transact_t *transact =
-									&device->vsfusbd_IN_transact[param->ep_in];
+											&device->IN_transact[param->ep_in];
 			struct vsf_buffer_t *buffer = &transact->tbuffer.buffer;
 			
 			buffer->buffer = buffer_out;

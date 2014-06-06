@@ -3,13 +3,12 @@
 
 #include "stack/usb_device/vsf_usbd_const.h"
 #include "stack/usb_device/vsf_usbd.h"
-#include "stack/usb_device/vsf_usbd_drv_callback.h"
 
 #include "vsfusbd_CDC.h"
 
-static vsf_err_t vsfusbd_CDCData_OUT_hanlder(void *p, uint8_t ep)
+static vsf_err_t vsfusbd_CDCData_OUT_hanlder(struct vsfusbd_device_t *device,
+												uint8_t ep)
 {
-	struct vsfusbd_device_t *device = p;
 	struct vsfusbd_config_t *config = &device->config[device->configuration];
 	int8_t iface = config->ep_OUT_iface_map[ep];
 	struct vsfusbd_CDC_param_t *param = NULL;
@@ -49,9 +48,9 @@ static vsf_err_t vsfusbd_CDCData_OUT_hanlder(void *p, uint8_t ep)
 				VSFERR_NONE : VSFERR_FAIL;
 }
 
-static vsf_err_t vsfusbd_CDCData_IN_hanlder(void *p, uint8_t ep)
+static vsf_err_t vsfusbd_CDCData_IN_hanlder(struct vsfusbd_device_t *device,
+											uint8_t ep)
 {
-	struct vsfusbd_device_t *device = p;
 	struct vsfusbd_config_t *config = &device->config[device->configuration];
 	int8_t iface = config->ep_IN_iface_map[ep];
 	struct vsfusbd_CDC_param_t *param = NULL;
@@ -97,11 +96,11 @@ static vsf_err_t vsfusbd_CDCData_class_init(uint8_t iface,
 	
 	if ((NULL == param) || 
 		(NULL == param->stream_tx) || (NULL == param->stream_rx) || 
-		device->drv->ep.set_IN_handler(param->ep_in,
-										vsfusbd_CDCData_IN_hanlder) || 
+		vsfusbd_set_IN_handler(device, param->ep_in,
+												vsfusbd_CDCData_IN_hanlder) ||
 		device->drv->ep.set_IN_count(param->ep_in, 0) || 
-		device->drv->ep.set_OUT_handler(param->ep_out,
-										vsfusbd_CDCData_OUT_hanlder))
+		vsfusbd_set_OUT_handler(device, param->ep_out,
+												vsfusbd_CDCData_OUT_hanlder))
 	{
 		return VSFERR_FAIL;
 	}

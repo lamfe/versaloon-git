@@ -3,7 +3,6 @@
 
 #include "stack/usb_device/vsf_usbd_const.h"
 #include "stack/usb_device/vsf_usbd.h"
-#include "stack/usb_device/vsf_usbd_drv_callback.h"
 
 #include "vsfusbd_HID.h"
 
@@ -58,9 +57,9 @@ static vsf_err_t vsfusbd_HID_class_update_report(
 	return VSFERR_NONE;
 }
 
-static vsf_err_t vsfusbd_HID_OUT_hanlder(void *p, uint8_t ep)
+static vsf_err_t vsfusbd_HID_OUT_hanlder(struct vsfusbd_device_t *device,
+											uint8_t ep)
 {
-	struct vsfusbd_device_t *device = p;
 	struct interface_usbd_t *drv = device->drv;
 	struct vsfusbd_config_t *config = &device->config[device->configuration];
 	int8_t iface = config->ep_OUT_iface_map[ep];
@@ -156,7 +155,7 @@ static vsf_err_t vsfusbd_HID_class_poll(uint8_t iface,
 		(struct vsfusbd_HID_param_t *)config->iface[iface].protocol_param;
 	struct vsfusbd_HID_report_t *report;
 	uint8_t ep = param->ep_in;
-	struct vsfusbd_transact_t *transact = &device->vsfusbd_IN_transact[ep];
+	struct vsfusbd_transact_t *transact = &device->IN_transact[ep];
 	struct vsf_buffer_t *buffer = &transact->tbuffer.buffer;
 	
 	if (NULL == param)
@@ -211,8 +210,9 @@ static vsf_err_t vsfusbd_HID_class_init(uint8_t iface,
 	uint8_t i;
 	
 	if ((param->ep_out != 0) && 
-		(	(drv->ep.set_OUT_handler(param->ep_out, vsfusbd_HID_OUT_hanlder) || 
-			drv->ep.enable_OUT(param->ep_out))))
+		(	vsfusbd_set_OUT_handler(device, param->ep_out,
+												vsfusbd_HID_OUT_hanlder) ||
+			drv->ep.enable_OUT(param->ep_out)))
 	{
 		return VSFERR_FAIL;
 	}

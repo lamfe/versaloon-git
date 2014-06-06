@@ -15,8 +15,9 @@
  **************************************************************************/
 
 extern const uint8_t stm32_usbd_ep_num;
+extern struct interface_usbd_callback_t stm32_usbd_callback;
 
-vsf_err_t stm32_usbd_init(void *device);
+vsf_err_t stm32_usbd_init(void);
 vsf_err_t stm32_usbd_fini(void);
 vsf_err_t stm32_usbd_reset(void);
 vsf_err_t stm32_usbd_poll(void);
@@ -31,45 +32,34 @@ uint32_t stm32_usbd_get_frame_number(void);
 vsf_err_t stm32_usbd_get_setup(uint8_t *buffer);
 
 vsf_err_t stm32_usbd_ep_reset(uint8_t idx);
-vsf_err_t stm32_usbd_ep_set_type(uint8_t idx, enum usb_ep_type_t type);
+vsf_err_t stm32_usbd_ep_set_type(uint8_t idx,
+									enum interface_usbd_eptype_t type);
 
-vsf_err_t stm32_usbd_ep_set_IN_handler(uint8_t idx,
-										vsfusbd_IN_hanlder_t handler);
-#if VSFUSBD_CFG_DBUFFER_EN
 vsf_err_t stm32_usbd_ep_set_IN_dbuffer(uint8_t idx);
 bool stm32_usbd_ep_is_IN_dbuffer(uint8_t idx);
 vsf_err_t stm32_usbd_ep_switch_IN_buffer(uint8_t idx);
-#endif
 vsf_err_t stm32_usbd_ep_set_IN_epsize(uint8_t idx, uint16_t epsize);
 uint16_t stm32_usbd_ep_get_IN_epsize(uint8_t idx);
 vsf_err_t stm32_usbd_ep_set_IN_stall(uint8_t idx);
 vsf_err_t stm32_usbd_ep_clear_IN_stall(uint8_t idx);
 bool stm32_usbd_ep_is_IN_stall(uint8_t idx);
-#if VSFUSBD_CFG_DATATOGGLE_CTRL
 vsf_err_t stm32_usbd_ep_reset_IN_toggle(uint8_t idx);
 vsf_err_t stm32_usbd_ep_toggle_IN_toggle(uint8_t idx);
-#endif
 enum usb_ep_state_t stm32_usbd_ep_get_IN_state(uint8_t idx);
 vsf_err_t stm32_usbd_ep_set_IN_count(uint8_t idx, uint16_t size);
 vsf_err_t stm32_usbd_ep_write_IN_buffer(uint8_t idx, uint8_t *buffer,
 										uint16_t size);
 
-vsf_err_t stm32_usbd_ep_set_OUT_handler(uint8_t idx,
-										vsfusbd_OUT_hanlder_t handler);
-#if VSFUSBD_CFG_DBUFFER_EN
 vsf_err_t stm32_usbd_ep_set_OUT_dbuffer(uint8_t idx);
 bool stm32_usbd_ep_is_OUT_dbuffer(uint8_t idx);
 vsf_err_t stm32_usbd_ep_switch_OUT_buffer(uint8_t idx);
-#endif
 vsf_err_t stm32_usbd_ep_set_OUT_epsize(uint8_t idx, uint16_t epsize);
 uint16_t stm32_usbd_ep_get_OUT_epsize(uint8_t idx);
 vsf_err_t stm32_usbd_ep_set_OUT_stall(uint8_t idx);
 vsf_err_t stm32_usbd_ep_clear_OUT_stall(uint8_t idx);
 bool stm32_usbd_ep_is_OUT_stall(uint8_t idx);
-#if VSFUSBD_CFG_DATATOGGLE_CTRL
 vsf_err_t stm32_usbd_ep_reset_OUT_toggle(uint8_t idx);
 vsf_err_t stm32_usbd_ep_toggle_OUT_toggle(uint8_t idx);
-#endif
 vsf_err_t stm32_usbd_ep_set_OUT_state(uint8_t idx, enum usb_ep_state_t state);
 enum usb_ep_state_t stm32_usbd_ep_get_OUT_state(uint8_t idx);
 uint16_t stm32_usbd_ep_get_OUT_count(uint8_t idx);

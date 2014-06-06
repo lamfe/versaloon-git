@@ -30,40 +30,26 @@
 #include "usb_regs.h"
 #include "usb_mem.h"
 
-#if VSFUSBD_CFG_MAX_IN_EP > VSFUSBD_CFG_MAX_OUT_EP
-#define STM32_USBD_EP_NUM					(VSFUSBD_CFG_MAX_IN_EP + 1)
-#else
-#define STM32_USBD_EP_NUM					(VSFUSBD_CFG_MAX_OUT_EP + 1)
-#endif
-
+#define STM32_USBD_EP_NUM					8
 const uint8_t stm32_usbd_ep_num = STM32_USBD_EP_NUM;
-static void *USBD_Device = NULL;
+struct interface_usbd_callback_t stm32_usbd_callback;
 static uint16_t EP_Cfg_Ptr = 0x200;
 
-vsfusbd_IN_hanlder_t stm32_usbd_IN_handlers[STM32_USBD_EP_NUM];
-vsfusbd_OUT_hanlder_t stm32_usbd_OUT_handlers[STM32_USBD_EP_NUM];
 uint16_t stm32_usbd_IN_epsize[STM32_USBD_EP_NUM];
 uint16_t stm32_usbd_OUT_epsize[STM32_USBD_EP_NUM];
-#if VSFUSBD_CFG_DBUFFER_EN
 bool stm32_usbd_IN_dbuffer[STM32_USBD_EP_NUM];
 bool stm32_usbd_OUT_dbuffer[STM32_USBD_EP_NUM];
-#endif
 int8_t stm32_usbd_epaddr[STM32_USBD_EP_NUM];
 
-vsf_err_t stm32_usbd_init(void *device)
+vsf_err_t stm32_usbd_init(void)
 {
 	struct stm32_info_t *stm32_info;
 	
-	memset(stm32_usbd_IN_handlers, 0, sizeof(stm32_usbd_IN_handlers));
-	memset(stm32_usbd_OUT_handlers, 0, sizeof(stm32_usbd_OUT_handlers));
 	memset(stm32_usbd_IN_epsize, 0, sizeof(stm32_usbd_IN_epsize));
 	memset(stm32_usbd_OUT_epsize, 0, sizeof(stm32_usbd_OUT_epsize));
-#if VSFUSBD_CFG_DBUFFER_EN
 	memset(stm32_usbd_IN_dbuffer, 0, sizeof(stm32_usbd_IN_dbuffer));
 	memset(stm32_usbd_OUT_dbuffer, 0, sizeof(stm32_usbd_OUT_dbuffer));
-#endif
 	memset(stm32_usbd_epaddr, -1, sizeof(stm32_usbd_epaddr));
-	USBD_Device = device;
 	
 	if (stm32_interface_get_info(&stm32_info))
 	{
@@ -166,12 +152,12 @@ uint32_t stm32_usbd_get_frame_number(void)
 
 vsf_err_t stm32_usbd_get_setup(uint8_t *buffer)
 {
-	if (USB_SETUP_PKG_SIZE != stm32_usbd_ep_get_OUT_count(0))
+	if (8 != stm32_usbd_ep_get_OUT_count(0))
 	{
 		return VSFERR_FAIL;
 	}
 	
-	return stm32_usbd_ep_read_OUT_buffer(0, buffer, USB_SETUP_PKG_SIZE);
+	return stm32_usbd_ep_read_OUT_buffer(0, buffer, 8);
 }
 
 vsf_err_t stm32_usbd_prepare_buffer(void)
@@ -221,7 +207,7 @@ vsf_err_t stm32_usbd_ep_reset(uint8_t idx)
 	return VSFERR_NONE;
 }
 
-vsf_err_t stm32_usbd_ep_set_type(uint8_t idx, enum usb_ep_type_t type)
+vsf_err_t stm32_usbd_ep_set_type(uint8_t idx, enum interface_usbd_eptype_t type)
 {
 	int8_t index;
 	
@@ -254,21 +240,6 @@ vsf_err_t stm32_usbd_ep_set_type(uint8_t idx, enum usb_ep_type_t type)
 	return VSFERR_NONE;
 }
 
-vsf_err_t stm32_usbd_ep_set_IN_handler(uint8_t idx, vsfusbd_IN_hanlder_t handler)
-{
-	int8_t index;
-	
-	index = stm32_usbd_ep(idx);
-	if (index < 0)
-	{
-		return VSFERR_FAIL;
-	}
-	idx = (uint8_t)index;
-	stm32_usbd_IN_handlers[idx] = handler;
-	return VSFERR_NONE;
-}
-
-#if VSFUSBD_CFG_DBUFFER_EN
 vsf_err_t stm32_usbd_ep_set_IN_dbuffer(uint8_t idx)
 {
 	uint16_t epsize = stm32_usbd_ep_get_IN_epsize(idx);
@@ -324,7 +295,6 @@ vsf_err_t stm32_usbd_ep_switch_IN_buffer(uint8_t idx)
 	FreeUserBuffer(idx, EP_DBUF_IN);
 	return VSFERR_NONE;
 }
-#endif
 
 vsf_err_t stm32_usbd_ep_set_IN_epsize(uint8_t idx, uint16_t epsize)
 {
@@ -406,7 +376,6 @@ bool stm32_usbd_ep_is_IN_stall(uint8_t idx)
 	return (EP_TX_STALL == GetEPTxStatus(idx));
 }
 
-#if VSFUSBD_CFG_DATATOGGLE_CTRL
 vsf_err_t stm32_usbd_ep_reset_IN_toggle(uint8_t idx)
 {
 	int8_t index;
@@ -434,7 +403,6 @@ vsf_err_t stm32_usbd_ep_toggle_IN_toggle(uint8_t idx)
 	ToggleDTOG_TX(idx);
 	return VSFERR_NONE;
 }
-#endif
 
 
 vsf_err_t stm32_usbd_ep_set_IN_count(uint8_t idx, uint16_t size)
@@ -448,7 +416,6 @@ vsf_err_t stm32_usbd_ep_set_IN_count(uint8_t idx, uint16_t size)
 	}
 	idx = (uint8_t)index;
 	
-#if VSFUSBD_CFG_DBUFFER_EN
 	if (stm32_usbd_IN_dbuffer[idx])
 	{
 		if(GetENDPOINT(idx) & EP_DTOG_RX)
@@ -461,7 +428,6 @@ vsf_err_t stm32_usbd_ep_set_IN_count(uint8_t idx, uint16_t size)
 		}
 	}
 	else
-#endif
 	{
 		SetEPTxCount(idx, size);
 	}
@@ -469,7 +435,8 @@ vsf_err_t stm32_usbd_ep_set_IN_count(uint8_t idx, uint16_t size)
 	return VSFERR_NONE;
 }
 
-vsf_err_t stm32_usbd_ep_write_IN_buffer(uint8_t idx, uint8_t *buffer, uint16_t size)
+vsf_err_t stm32_usbd_ep_write_IN_buffer(uint8_t idx, uint8_t *buffer,
+										uint16_t size)
 {
 	uint32_t PMA_ptr;
 	int8_t index;
@@ -481,7 +448,6 @@ vsf_err_t stm32_usbd_ep_write_IN_buffer(uint8_t idx, uint8_t *buffer, uint16_t s
 	}
 	idx = (uint8_t)index;
 	
-#if VSFUSBD_CFG_DBUFFER_EN
 	if (stm32_usbd_IN_dbuffer[idx])
 	{
 		if(GetENDPOINT(idx) & EP_DTOG_RX)
@@ -494,7 +460,6 @@ vsf_err_t stm32_usbd_ep_write_IN_buffer(uint8_t idx, uint8_t *buffer, uint16_t s
 		}
 	}
 	else
-#endif
 	{
 		PMA_ptr = GetEPTxAddr(idx);
 	}
@@ -502,21 +467,6 @@ vsf_err_t stm32_usbd_ep_write_IN_buffer(uint8_t idx, uint8_t *buffer, uint16_t s
 	return VSFERR_NONE;
 }
 
-vsf_err_t stm32_usbd_ep_set_OUT_handler(uint8_t idx, vsfusbd_OUT_hanlder_t handler)
-{
-	int8_t index;
-	
-	index = stm32_usbd_ep(idx);
-	if (index < 0)
-	{
-		return VSFERR_FAIL;
-	}
-	idx = (uint8_t)index;
-	stm32_usbd_OUT_handlers[idx] = handler;
-	return VSFERR_NONE;
-}
-
-#if VSFUSBD_CFG_DBUFFER_EN
 vsf_err_t stm32_usbd_ep_set_OUT_dbuffer(uint8_t idx)
 {
 	uint16_t epsize = stm32_usbd_ep_get_OUT_epsize(idx);
@@ -573,7 +523,6 @@ vsf_err_t stm32_usbd_ep_switch_OUT_buffer(uint8_t idx)
 	FreeUserBuffer(idx, EP_DBUF_OUT);
 	return VSFERR_NONE;
 }
-#endif
 
 vsf_err_t stm32_usbd_ep_set_OUT_epsize(uint8_t idx, uint16_t epsize)
 {
@@ -673,7 +622,6 @@ bool stm32_usbd_ep_is_OUT_stall(uint8_t idx)
 	return (EP_RX_STALL == GetEPRxStatus(idx));
 }
 
-#if VSFUSBD_CFG_DATATOGGLE_CTRL
 vsf_err_t stm32_usbd_ep_reset_OUT_toggle(uint8_t idx)
 {
 	int8_t index;
@@ -701,7 +649,6 @@ vsf_err_t stm32_usbd_ep_toggle_OUT_toggle(uint8_t idx)
 	ToggleDTOG_RX(idx);
 	return VSFERR_NONE;
 }
-#endif
 
 uint16_t stm32_usbd_ep_get_OUT_count(uint8_t idx)
 {
@@ -714,7 +661,6 @@ uint16_t stm32_usbd_ep_get_OUT_count(uint8_t idx)
 	}
 	idx = (uint8_t)index;
 	
-#if VSFUSBD_CFG_DBUFFER_EN
 	if (stm32_usbd_OUT_dbuffer[idx])
 	{
 		if(GetENDPOINT(idx) & EP_DTOG_TX)
@@ -727,13 +673,13 @@ uint16_t stm32_usbd_ep_get_OUT_count(uint8_t idx)
 		}
 	}
 	else
-#endif
 	{
 		return GetEPRxCount(idx);
 	}
 }
 
-vsf_err_t stm32_usbd_ep_read_OUT_buffer(uint8_t idx, uint8_t *buffer, uint16_t size)
+vsf_err_t stm32_usbd_ep_read_OUT_buffer(uint8_t idx, uint8_t *buffer,
+										uint16_t size)
 {
 	int8_t index;
 	
@@ -744,7 +690,6 @@ vsf_err_t stm32_usbd_ep_read_OUT_buffer(uint8_t idx, uint8_t *buffer, uint16_t s
 	}
 	idx = (uint8_t)index;
 	
-#if VSFUSBD_CFG_DBUFFER_EN
 	if (stm32_usbd_OUT_dbuffer[idx])
 	{
 		if(GetENDPOINT(idx) & EP_DTOG_TX)
@@ -757,7 +702,6 @@ vsf_err_t stm32_usbd_ep_read_OUT_buffer(uint8_t idx, uint8_t *buffer, uint16_t s
 		}
 	}
 	else
-#endif
 	{
 		PMAToUserBufferCopy(buffer, GetEPRxAddr(idx), size);
 	}
@@ -787,21 +731,24 @@ vsf_err_t stm32_usbd_ep_enable_OUT(uint8_t idx)
 void CTR_LP(void)
 {
 	uint8_t EPindex;
+	int8_t epaddr;
 	uint16_t wIstr;
 	volatile uint16_t wEPVal = 0;
 	
 	while (((wIstr = _GetISTR()) & ISTR_CTR) != 0)
 	{
 		EPindex = (uint8_t)(wIstr & ISTR_EP_ID);
+		epaddr = stm32_usbd_epaddr[EPindex];
 		
-		if (stm32_usbd_epaddr[EPindex] == 0)
+		if (epaddr == 0)
 		{
 			if ((wIstr & ISTR_DIR) == 0)
 			{
 				_ClearEP_CTR_TX(ENDP0);
-				if (stm32_usbd_IN_handlers[EPindex] != NULL)
+				if (stm32_usbd_callback.on_in != NULL)
 				{
-					stm32_usbd_IN_handlers[EPindex](USBD_Device, 0);
+					stm32_usbd_callback.on_in(stm32_usbd_callback.param,
+												epaddr);
 				}
 				return;
 			}
@@ -811,13 +758,17 @@ void CTR_LP(void)
 				_ClearEP_CTR_RX(ENDP0);
 				if ((wEPVal & EP_SETUP) != 0)
 				{
-					vsfusbd_on_SETUP(USBD_Device);
+					if (stm32_usbd_callback.on_setup != NULL)
+					{
+						stm32_usbd_callback.on_setup(stm32_usbd_callback.param);
+					}
 				}
 				else if ((wEPVal & EP_CTR_RX) != 0)
 				{
-					if (stm32_usbd_OUT_handlers[EPindex] != NULL)
+					if (stm32_usbd_callback.on_out != NULL)
 					{
-						stm32_usbd_OUT_handlers[EPindex](USBD_Device, 0);
+						stm32_usbd_callback.on_out(stm32_usbd_callback.param,
+													epaddr);
 					}
 				}
 				return;
@@ -829,21 +780,19 @@ void CTR_LP(void)
 			if ((wEPVal & EP_CTR_RX) != 0)
 			{
 				_ClearEP_CTR_RX(EPindex);
-				if ((stm32_usbd_OUT_handlers[EPindex] != NULL) && 
-					(stm32_usbd_epaddr[EPindex] >= 0))
+				if ((stm32_usbd_callback.on_out != NULL) && (epaddr >= 0))
 				{
-					stm32_usbd_OUT_handlers[EPindex](USBD_Device, 
-													stm32_usbd_epaddr[EPindex]);
+					stm32_usbd_callback.on_out(stm32_usbd_callback.param,
+												epaddr);
 				}
 			}
 			if ((wEPVal & EP_CTR_TX) != 0)
 			{
 				_ClearEP_CTR_TX(EPindex);
-				if ((stm32_usbd_IN_handlers[EPindex] != NULL) && 
-					(stm32_usbd_epaddr[EPindex] >= 0))
+				if ((stm32_usbd_callback.on_in != NULL) && (epaddr >= 0))
 				{
-					stm32_usbd_IN_handlers[EPindex](USBD_Device, 
-													stm32_usbd_epaddr[EPindex]);
+					stm32_usbd_callback.on_in(stm32_usbd_callback.param,
+												epaddr);
 				}
 			}
 		}
@@ -853,6 +802,7 @@ void CTR_LP(void)
 void CTR_HP(void)
 {
 	uint8_t EPindex;
+	int8_t epaddr;
 	uint16_t wIstr;
 	uint32_t wEPVal = 0;
 	
@@ -861,25 +811,22 @@ void CTR_HP(void)
 		_SetISTR((uint16_t)CLR_CTR);
 		
 		EPindex = (uint8_t)(wIstr & ISTR_EP_ID);
+		epaddr = stm32_usbd_epaddr[EPindex];
 		wEPVal = _GetENDPOINT(EPindex);
 		if ((wEPVal & EP_CTR_RX) != 0)
 		{
 			_ClearEP_CTR_RX(EPindex);
-			if ((stm32_usbd_OUT_handlers[EPindex] != NULL) && 
-				(stm32_usbd_epaddr[EPindex] >= 0))
+			if ((stm32_usbd_callback.on_out != NULL) && (epaddr >= 0))
 			{
-				stm32_usbd_OUT_handlers[EPindex](USBD_Device, 
-													stm32_usbd_epaddr[EPindex]);
+				stm32_usbd_callback.on_out(stm32_usbd_callback.param, epaddr);
 			}
 		}
 		else if ((wEPVal & EP_CTR_TX) != 0)
 		{
 			_ClearEP_CTR_TX(EPindex);
-			if ((stm32_usbd_IN_handlers[EPindex] != NULL) && 
-				(stm32_usbd_epaddr[EPindex] >= 0))
+			if ((stm32_usbd_callback.on_in != NULL) && (epaddr >= 0))
 			{
-				stm32_usbd_IN_handlers[EPindex](USBD_Device, 
-													stm32_usbd_epaddr[EPindex]);
+				stm32_usbd_callback.on_in(stm32_usbd_callback.param, epaddr);
 			}
 		}
 	}
@@ -892,7 +839,10 @@ void USB_Istr(void)
 	if (wIstr & ISTR_RESET)
 	{
 		_SetISTR((uint16_t)CLR_RESET);
-		vsfusbd_on_RESET(USBD_Device);
+		if (stm32_usbd_callback.on_reset != NULL)
+		{
+			stm32_usbd_callback.on_reset(stm32_usbd_callback.param);
+		}
 	}
 	if (wIstr & ISTR_DOVR)
 	{
@@ -901,27 +851,44 @@ void USB_Istr(void)
 	if (wIstr & ISTR_ERR)
 	{
 		_SetISTR((uint16_t)CLR_ERR);
-		vsfusbd_on_ERROR(USBD_Device, USBERR_ERROR);
+		if (stm32_usbd_callback.on_error != NULL)
+		{
+			stm32_usbd_callback.on_error(stm32_usbd_callback.param,
+											USBERR_ERROR);
+		}
 	}
 	if (wIstr & ISTR_WKUP)
 	{
 		_SetISTR((uint16_t)CLR_WKUP);
-		vsfusbd_on_WAKEUP(USBD_Device);
+		if (stm32_usbd_callback.on_wakeup != NULL)
+		{
+			stm32_usbd_callback.on_wakeup(stm32_usbd_callback.param);
+		}
 	}
 	if (wIstr & ISTR_SUSP)
 	{
-		vsfusbd_on_SUSPEND(USBD_Device);
+		if (stm32_usbd_callback.on_suspend != NULL)
+		{
+			stm32_usbd_callback.on_suspend(stm32_usbd_callback.param);
+		}
 		_SetISTR((uint16_t)CLR_SUSP);
 	}
 	if (wIstr & ISTR_SOF)
 	{
 		_SetISTR((uint16_t)CLR_SOF);
-		vsfusbd_on_SOF(USBD_Device);
+		if (stm32_usbd_callback.on_sof != NULL)
+		{
+			stm32_usbd_callback.on_sof(stm32_usbd_callback.param);
+		}
 	}
 	if (wIstr & ISTR_ESOF)
 	{
 		_SetISTR((uint16_t)CLR_ESOF);
-		vsfusbd_on_ERROR(USBD_Device, USBERR_SOF_TO);
+		if (stm32_usbd_callback.on_error != NULL)
+		{
+			stm32_usbd_callback.on_error(stm32_usbd_callback.param,
+											USBERR_SOF_TO);
+		}
 	}
 	if (wIstr & ISTR_CTR)
 	{
