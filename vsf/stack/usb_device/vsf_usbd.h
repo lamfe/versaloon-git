@@ -20,7 +20,9 @@
 #ifndef __VSF_USBD_H_INCLUDED__
 #define __VSF_USBD_H_INCLUDED__
 
+#include "interfaces.h"
 #include "tool/buffer/buffer.h"
+#include "vsf_usbd_cfg.h"
 
 struct vsfusbd_device_t;
 
@@ -175,7 +177,7 @@ struct vsfusbd_device_t
 		void (*on_ATTACH)(void);
 		void (*on_DETACH)(void);
 		void (*on_RESET)(void);
-		void (*on_ERROR)(enum usb_err_type_t type);
+		void (*on_ERROR)(enum interface_usbd_error_t type);
 		void (*on_WAKEUP)(void);
 		void (*on_SUSPEND)(void);
 		void (*on_RESUME)(void);
@@ -196,8 +198,13 @@ struct vsfusbd_device_t
 	uint8_t feature;
 	struct vsfusbd_ctrl_handler_t ctrl_handler;
 	
-	struct vsfusbd_transact_t vsfusbd_IN_transact[VSFUSBD_CFG_MAX_IN_EP + 1];
-	struct vsfusbd_transact_t vsfusbd_OUT_transact[VSFUSBD_CFG_MAX_OUT_EP + 1];
+	struct vsfusbd_transact_t IN_transact[VSFUSBD_CFG_MAX_IN_EP];
+	struct vsfusbd_transact_t OUT_transact[VSFUSBD_CFG_MAX_OUT_EP];
+	
+	vsf_err_t (*IN_handler[VSFUSBD_CFG_MAX_IN_EP])(struct vsfusbd_device_t*,
+													uint8_t);
+	vsf_err_t (*OUT_handler[VSFUSBD_CFG_MAX_OUT_EP])(struct vsfusbd_device_t*,
+													uint8_t);
 };
 
 vsf_err_t vsfusbd_device_get_descriptor(struct vsfusbd_device_t *device, 
@@ -211,6 +218,11 @@ vsf_err_t vsfusbd_device_init(struct vsfusbd_device_t *device);
 vsf_err_t vsfusbd_auto_init(struct vsfusbd_device_t *device);
 vsf_err_t vsfusbd_device_fini(struct vsfusbd_device_t *device);
 vsf_err_t vsfusbd_device_poll(struct vsfusbd_device_t *device);
+
+vsf_err_t vsfusbd_set_IN_handler(struct vsfusbd_device_t *device,
+		uint8_t ep, vsf_err_t (*handler)(struct vsfusbd_device_t*, uint8_t));
+vsf_err_t vsfusbd_set_OUT_handler(struct vsfusbd_device_t *device,
+		uint8_t ep, vsf_err_t (*handler)(struct vsfusbd_device_t*, uint8_t));
 
 vsf_err_t vsfusbd_ep_receive_nb(struct vsfusbd_device_t *device, uint8_t ep);
 vsf_err_t vsfusbd_ep_receive_nb_isready(struct vsfusbd_device_t *device,

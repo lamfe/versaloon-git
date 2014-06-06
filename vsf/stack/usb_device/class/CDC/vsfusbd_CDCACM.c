@@ -3,7 +3,6 @@
 
 #include "stack/usb_device/vsf_usbd_const.h"
 #include "stack/usb_device/vsf_usbd.h"
-#include "stack/usb_device/vsf_usbd_drv_callback.h"
 
 #include "vsfusbd_CDCACM.h"
 

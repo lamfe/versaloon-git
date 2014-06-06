@@ -3,7 +3,6 @@
 
 #include "stack/usb_device/vsf_usbd_const.h"
 #include "stack/usb_device/vsf_usbd.h"
-#include "stack/usb_device/vsf_usbd_drv_callback.h"
 
 #include "vsfusbd_MSC_BOT.h"
 
@@ -33,7 +32,8 @@ static uint16_t vsfusbd_MSCBOT_GetInPkgSize(struct interface_usbd_t *drv,
 	}
 }
 
-static vsf_err_t vsfusbd_MSCBOT_IN_hanlder(void *p, uint8_t ep);
+static vsf_err_t vsfusbd_MSCBOT_IN_hanlder(struct vsfusbd_device_t *device,
+											uint8_t ep);
 static vsf_err_t vsfusbd_MSCBOT_SendCSW(struct vsfusbd_device_t *device, 
 							struct vsfusbd_MSCBOT_param_t *param)
 {
@@ -85,9 +85,9 @@ static vsf_err_t vsfusbd_MSCBOT_ErrHandler(struct vsfusbd_device_t *device,
 	return VSFERR_NONE;
 }
 
-static vsf_err_t vsfusbd_MSCBOT_IN_hanlder(void *p, uint8_t ep)
+static vsf_err_t vsfusbd_MSCBOT_IN_hanlder(struct vsfusbd_device_t *device,
+											uint8_t ep)
 {
-	struct vsfusbd_device_t *device = p;
 	struct interface_usbd_t *drv = device->drv;
 	struct vsfusbd_config_t *config = &device->config[device->configuration];
 	int8_t iface = config->ep_OUT_iface_map[ep];
@@ -135,7 +135,7 @@ static vsf_err_t vsfusbd_MSCBOT_IN_hanlder(void *p, uint8_t ep)
 		{
 			param->idle = false;
 			param->tbuffer.buffer = *vsfusbd_MSCBOT_GetBuffer(param);
-			return vsfusbd_MSCBOT_IN_hanlder(p, ep);
+			return vsfusbd_MSCBOT_IN_hanlder(device, ep);
 		}
 		else
 		{
@@ -148,9 +148,9 @@ static vsf_err_t vsfusbd_MSCBOT_IN_hanlder(void *p, uint8_t ep)
 	return VSFERR_NONE;
 }
 
-static vsf_err_t vsfusbd_MSCBOT_OUT_hanlder(void *p, uint8_t ep)
+static vsf_err_t vsfusbd_MSCBOT_OUT_hanlder(struct vsfusbd_device_t *device,
+											uint8_t ep)
 {
-	struct vsfusbd_device_t *device = p;
 	struct interface_usbd_t *drv = device->drv;
 	struct vsfusbd_config_t *config = &device->config[device->configuration];
 	int8_t iface = config->ep_OUT_iface_map[ep];
@@ -236,7 +236,7 @@ static vsf_err_t vsfusbd_MSCBOT_OUT_hanlder(void *p, uint8_t ep)
 				param->bot_status = VSFUSBD_MSCBOT_STATUS_IN;
 				if (param->tbuffer.buffer.size)
 				{
-					return vsfusbd_MSCBOT_IN_hanlder(p, param->ep_in);
+					return vsfusbd_MSCBOT_IN_hanlder(device, param->ep_in);
 				}
 				else
 				{
@@ -322,8 +322,10 @@ static vsf_err_t vsfusbd_MSCBOT_class_init(uint8_t iface,
 		// so that CBW and CSW can be transfered in one package
 		(drv->ep.get_IN_epsize(param->ep_in) < 32) || 
 		(drv->ep.get_OUT_epsize(param->ep_in) < 32) || 
-		drv->ep.set_IN_handler(param->ep_in, vsfusbd_MSCBOT_IN_hanlder) || 
-		drv->ep.set_OUT_handler(param->ep_out, vsfusbd_MSCBOT_OUT_hanlder) || 
+		vsfusbd_set_IN_handler(device, param->ep_in,
+											vsfusbd_MSCBOT_IN_hanlder) || 
+		vsfusbd_set_OUT_handler(device, param->ep_out,
+											vsfusbd_MSCBOT_OUT_hanlder) || 
 		drv->ep.enable_OUT(param->ep_out))
 	{
 		return VSFERR_FAIL;

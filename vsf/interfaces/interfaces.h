@@ -912,11 +912,7 @@ vsf_err_t CORE_SDIO_DATA_RX_ISREADY(__TARGET_CHIP__)(uint8_t index,
 
 #if IFS_USBD_EN
 
-#include "vsf_usbd_cfg.h"
-#include "stack/usb_device/vsf_usbd_const.h"
-#include "stack/usb_device/vsf_usbd_drv_callback.h"
-
-enum usb_ep_type_t
+enum interface_usbd_eptype_t
 {
 	USB_EP_TYPE_CONTROL,
 	USB_EP_TYPE_INTERRUPT,
@@ -924,9 +920,33 @@ enum usb_ep_type_t
 	USB_EP_TYPE_ISO
 };
 
+enum interface_usbd_error_t
+{
+	USBERR_ERROR,
+	USBERR_INVALID_CRC,
+	USBERR_SOF_TO,
+};
+
+struct interface_usbd_callback_t
+{
+	void *param;
+	vsf_err_t (*on_attach)(void*);
+	vsf_err_t (*on_detach)(void*);
+	vsf_err_t (*on_reset)(void*);
+	vsf_err_t (*on_setup)(void*);
+	vsf_err_t (*on_error)(void*, enum interface_usbd_error_t error);
+	vsf_err_t (*on_wakeup)(void*);
+	vsf_err_t (*on_suspend)(void*);
+	vsf_err_t (*on_sof)(void*);
+	vsf_err_t (*on_underflow)(void*, uint8_t);
+	vsf_err_t (*on_overflow)(void*, uint8_t);
+	vsf_err_t (*on_in)(void*, uint8_t);
+	vsf_err_t (*on_out)(void*, uint8_t);
+};
+
 struct interface_usbd_t
 {
-	vsf_err_t (*init)(void *device);
+	vsf_err_t (*init)(void);
 	vsf_err_t (*fini)(void);
 	vsf_err_t (*reset)(void);
 	vsf_err_t (*poll)(void);
@@ -950,48 +970,38 @@ struct interface_usbd_t
 		const uint8_t *num_of_ep;
 		
 		vsf_err_t (*reset)(uint8_t idx);
-		vsf_err_t (*set_type)(uint8_t idx, enum usb_ep_type_t type);
+		vsf_err_t (*set_type)(uint8_t idx, enum interface_usbd_eptype_t type);
 		
-		vsf_err_t (*set_IN_handler)(uint8_t idx, vsfusbd_IN_hanlder_t handler);
-#if VSFUSBD_CFG_DBUFFER_EN
 		vsf_err_t (*set_IN_dbuffer)(uint8_t idx);
 		bool (*is_IN_dbuffer)(uint8_t idx);
 		vsf_err_t (*switch_IN_buffer)(uint8_t idx);
-#endif
 		vsf_err_t (*set_IN_epsize)(uint8_t idx, uint16_t size);
 		uint16_t (*get_IN_epsize)(uint8_t idx);
 		vsf_err_t (*set_IN_stall)(uint8_t idx);
 		vsf_err_t (*clear_IN_stall)(uint8_t idx);
 		bool (*is_IN_stall)(uint8_t idx);
-#if VSFUSBD_CFG_DATATOGGLE_CTRL
 		vsf_err_t (*reset_IN_toggle)(uint8_t idx);
 		vsf_err_t (*toggle_IN_toggle)(uint8_t idx);
-#endif
 		vsf_err_t (*set_IN_count)(uint8_t idx, uint16_t size);
 		vsf_err_t (*write_IN_buffer)(uint8_t idx, uint8_t *buffer, 
 										uint16_t size);
 		
-		vsf_err_t (*set_OUT_handler)(uint8_t idx, 
-										vsfusbd_OUT_hanlder_t handler);
-#if VSFUSBD_CFG_DBUFFER_EN
 		vsf_err_t (*set_OUT_dbuffer)(uint8_t idx);
 		bool (*is_OUT_dbuffer)(uint8_t idx);
 		vsf_err_t (*switch_OUT_buffer)(uint8_t idx);
-#endif
 		vsf_err_t (*set_OUT_epsize)(uint8_t idx, uint16_t size);
 		uint16_t (*get_OUT_epsize)(uint8_t idx);
 		vsf_err_t (*set_OUT_stall)(uint8_t idx);
 		vsf_err_t (*clear_OUT_stall)(uint8_t idx);
 		bool (*is_OUT_stall)(uint8_t idx);
-#if VSFUSBD_CFG_DATATOGGLE_CTRL
 		vsf_err_t (*reset_OUT_toggle)(uint8_t idx);
 		vsf_err_t (*toggle_OUT_toggle)(uint8_t idx);
-#endif
 		uint16_t (*get_OUT_count)(uint8_t idx);
 		vsf_err_t (*read_OUT_buffer)(uint8_t idx, uint8_t *buffer, 
 										uint16_t size);
 		vsf_err_t (*enable_OUT)(uint8_t idx);
 	} ep;
+	struct interface_usbd_callback_t *callback;
 };
 
 #define CORE_USBD_INIT(m)				__CONNECT(m, _usbd_init)
@@ -1011,48 +1021,39 @@ struct interface_usbd_t
 #define CORE_USBD_EP_NUM(m)				__CONNECT(m, _usbd_ep_num)
 #define CORE_USBD_EP_RESET(m)			__CONNECT(m, _usbd_ep_reset)
 #define CORE_USBD_EP_SET_TYPE(m)		__CONNECT(m, _usbd_ep_set_type)
-#define CORE_USBD_EP_SET_IN_HANDLER(m)	__CONNECT(m, _usbd_ep_set_IN_handler)
-#if VSFUSBD_CFG_DBUFFER_EN
 #define CORE_USBD_EP_SET_IN_DBUFFER(m)	__CONNECT(m, _usbd_ep_set_IN_dbuffer)
 #define CORE_USBD_EP_IS_IN_DBUFFER(m)	__CONNECT(m, _usbd_ep_is_IN_dbuffer)
 #define CORE_USBD_EP_SWITCH_IN_BUFFER(m)\
 										__CONNECT(m, _usbd_ep_switch_IN_buffer)
-#endif
 #define CORE_USBD_EP_SET_IN_EPSIZE(m)	__CONNECT(m, _usbd_ep_set_IN_epsize)
 #define CORE_USBD_EP_GET_IN_EPSIZE(m)	__CONNECT(m, _usbd_ep_get_IN_epsize)
 #define CORE_USBD_EP_SET_IN_STALL(m)	__CONNECT(m, _usbd_ep_set_IN_stall)
 #define CORE_USBD_EP_CLEAR_IN_STALL(m)	__CONNECT(m, _usbd_ep_clear_IN_stall)
 #define CORE_USBD_EP_IS_IN_STALL(m)		__CONNECT(m, _usbd_ep_is_IN_stall)
-#if VSFUSBD_CFG_DATATOGGLE_CTRL
 #define CORE_USBD_EP_RESET_IN_TOGGLE(m)	__CONNECT(m, _usbd_ep_reset_IN_toggle)
 #define CORE_USBD_EP_TOGGLE_IN_TOGGLE(m)\
 										__CONNECT(m, _usbd_ep_toggle_IN_toggle)
-#endif
 #define CORE_USBD_EP_SET_IN_COUNT(m)	__CONNECT(m, _usbd_ep_set_IN_count)
 #define CORE_USBD_EP_WRITE_IN_BUFFER(m)	__CONNECT(m, _usbd_ep_write_IN_buffer)
-#define CORE_USBD_EP_SET_OUT_HANDLER(m)	__CONNECT(m, _usbd_ep_set_OUT_handler)
-#if VSFUSBD_CFG_DBUFFER_EN
 #define CORE_USBD_EP_SET_OUT_DBUFFER(m)	__CONNECT(m, _usbd_ep_set_OUT_dbuffer)
 #define CORE_USBD_EP_IS_OUT_DBUFFER(m)	__CONNECT(m, _usbd_ep_is_OUT_dbuffer)
 #define CORE_USBD_EP_SWITCH_OUT_BUFFER(m)\
 										__CONNECT(m, _usbd_ep_switch_OUT_buffer)
-#endif
 #define CORE_USBD_EP_SET_OUT_EPSIZE(m)	__CONNECT(m, _usbd_ep_set_OUT_epsize)
 #define CORE_USBD_EP_GET_OUT_EPSIZE(m)	__CONNECT(m, _usbd_ep_get_OUT_epsize)
 #define CORE_USBD_EP_SET_OUT_STALL(m)	__CONNECT(m, _usbd_ep_set_OUT_stall)
 #define CORE_USBD_EP_CLEAR_OUT_STALL(m)	__CONNECT(m, _usbd_ep_clear_OUT_stall)
 #define CORE_USBD_EP_IS_OUT_STALL(m)	__CONNECT(m, _usbd_ep_is_OUT_stall)
-#if VSFUSBD_CFG_DATATOGGLE_CTRL
 #define CORE_USBD_EP_RESET_OUT_TOGGLE(m)\
 										__CONNECT(m, _usbd_ep_reset_OUT_toggle)
 #define CORE_USBD_EP_TOGGLE_OUT_TOGGLE(m)\
 										__CONNECT(m, _usbd_ep_toggle_OUT_toggle)
-#endif
 #define CORE_USBD_EP_GET_OUT_COUNT(m)	__CONNECT(m, _usbd_ep_get_OUT_count)
 #define CORE_USBD_EP_READ_OUT_BUFFER(m)	__CONNECT(m, _usbd_ep_read_OUT_buffer)
 #define CORE_USBD_EP_ENABLE_OUT(m)		__CONNECT(m, _usbd_ep_enable_OUT)
+#define CORE_USBD_CALLBACK(m)			__CONNECT(m, _usbd_callback)
 
-vsf_err_t CORE_USBD_INIT(__TARGET_CHIP__)(void *device);
+vsf_err_t CORE_USBD_INIT(__TARGET_CHIP__)(void);
 vsf_err_t CORE_USBD_FINI(__TARGET_CHIP__)(void);
 vsf_err_t CORE_USBD_RESET(__TARGET_CHIP__)(void);
 vsf_err_t CORE_USBD_POLL(__TARGET_CHIP__)(void);
@@ -1069,49 +1070,38 @@ vsf_err_t CORE_USBD_PREPARE_BUFFER(__TARGET_CHIP__)(void);
 extern const uint8_t CORE_USBD_EP_NUM(__TARGET_CHIP__);
 vsf_err_t CORE_USBD_EP_RESET(__TARGET_CHIP__)(uint8_t idx);
 vsf_err_t CORE_USBD_EP_SET_TYPE(__TARGET_CHIP__)(uint8_t idx, 
-		enum usb_ep_type_t type);
-vsf_err_t CORE_USBD_EP_SET_IN_HANDLER(__TARGET_CHIP__)(uint8_t idx, 
-		vsfusbd_IN_hanlder_t handler);
-#if VSFUSBD_CFG_DBUFFER_EN
+		enum interface_usbd_eptype_t type);
 vsf_err_t CORE_USBD_EP_SET_IN_DBUFFER(__TARGET_CHIP__)(uint8_t idx);
 bool CORE_USBD_EP_IS_IN_DBUFFER(__TARGET_CHIP__)(uint8_t idx);
 vsf_err_t CORE_USBD_EP_SWITCH_IN_BUFFER(__TARGET_CHIP__)(uint8_t idx);
-#endif
 vsf_err_t CORE_USBD_EP_SET_IN_EPSIZE(__TARGET_CHIP__)(uint8_t idx, 
 														uint16_t size);
 uint16_t CORE_USBD_EP_GET_IN_EPSIZE(__TARGET_CHIP__)(uint8_t idx);
 vsf_err_t CORE_USBD_EP_SET_IN_STALL(__TARGET_CHIP__)(uint8_t idx);
 vsf_err_t CORE_USBD_EP_CLEAR_IN_STALL(__TARGET_CHIP__)(uint8_t idx);
 bool CORE_USBD_EP_IS_IN_STALL(__TARGET_CHIP__)(uint8_t idx);
-#if VSFUSBD_CFG_DATATOGGLE_CTRL
 vsf_err_t CORE_USBD_EP_RESET_IN_TOGGLE(__TARGET_CHIP__)(uint8_t idx);
 vsf_err_t CORE_USBD_EP_TOGGLE_IN_TOGGLE(__TARGET_CHIP__)(uint8_t idx);
-#endif
 vsf_err_t CORE_USBD_EP_SET_IN_COUNT(__TARGET_CHIP__)(uint8_t idx, 
 														uint16_t size);
 vsf_err_t CORE_USBD_EP_WRITE_IN_BUFFER(__TARGET_CHIP__)(uint8_t idx, 
 		uint8_t *buffer, uint16_t size);
-vsf_err_t CORE_USBD_EP_SET_OUT_HANDLER(__TARGET_CHIP__)(uint8_t idx, 
-		vsfusbd_OUT_hanlder_t handler);
-#if VSFUSBD_CFG_DBUFFER_EN
 vsf_err_t CORE_USBD_EP_SET_OUT_DBUFFER(__TARGET_CHIP__)(uint8_t idx);
 bool CORE_USBD_EP_IS_OUT_DBUFFER(__TARGET_CHIP__)(uint8_t idx);
 vsf_err_t CORE_USBD_EP_SWITCH_OUT_BUFFER(__TARGET_CHIP__)(uint8_t idx);
-#endif
 vsf_err_t CORE_USBD_EP_SET_OUT_EPSIZE(__TARGET_CHIP__)(uint8_t idx, 
 														uint16_t size);
 uint16_t CORE_USBD_EP_GET_OUT_EPSIZE(__TARGET_CHIP__)(uint8_t idx);
 vsf_err_t CORE_USBD_EP_SET_OUT_STALL(__TARGET_CHIP__)(uint8_t idx);
 vsf_err_t CORE_USBD_EP_CLEAR_OUT_STALL(__TARGET_CHIP__)(uint8_t idx);
 bool CORE_USBD_EP_IS_OUT_STALL(__TARGET_CHIP__)(uint8_t idx);
-#if VSFUSBD_CFG_DATATOGGLE_CTRL
 vsf_err_t CORE_USBD_EP_RESET_OUT_TOGGLE(__TARGET_CHIP__)(uint8_t idx);
 vsf_err_t CORE_USBD_EP_TOGGLE_OUT_TOGGLE(__TARGET_CHIP__)(uint8_t idx);
-#endif
 uint16_t CORE_USBD_EP_GET_OUT_COUNT(__TARGET_CHIP__)(uint8_t idx);
 vsf_err_t CORE_USBD_EP_READ_OUT_BUFFER(__TARGET_CHIP__)(uint8_t idx, 
 		uint8_t *buffer, uint16_t size);
 vsf_err_t CORE_USBD_EP_ENABLE_OUT(__TARGET_CHIP__)(uint8_t idx);
+extern struct interface_usbd_callback_t CORE_USBD_CALLBACK(__TARGET_CHIP__);
 
 #endif
 
