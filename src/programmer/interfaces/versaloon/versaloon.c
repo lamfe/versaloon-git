@@ -93,8 +93,11 @@ static vsf_err_t versaloon_fini(void *p)
 {
 	struct interfaces_info_t *t = (struct interfaces_info_t *)p;
 	
-	usbtoxxx_fini();
-	usbtoxxx_info = NULL;
+	if (usbtoxxx_info != NULL)
+	{
+		usbtoxxx_fini();
+		usbtoxxx_info = NULL;
+	}
 	return t->comm->fini();
 }
 
