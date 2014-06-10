@@ -44,6 +44,7 @@
 #include "cm_lm3s.h"
 #include "cm_stm32f2.h"
 #include "cm_nuc100.h"
+#include "cm_nuc400.h"
 #include "cm_kinetis.h"
 
 #include "cm_internal.h"
@@ -136,6 +137,16 @@ const struct cm_param_t cm_chips_param[] = {
 		2,								// swd_trn
 		1,								// swd_delay
 		&nuc100swj_program_functions	// program_functions
+	},
+#endif
+#if TARGET_NUC400_EN
+	{
+		"cm_nuc400",					// chip_name
+		0,								// jtag_khz
+		{0,0,0,0},						// jtag_pos
+		2,								// swd_trn
+		1,								// swd_delay
+		&nuc400swj_program_functions	// program_functions
 	},
 #endif
 #if TARGET_KINETIS_EN
