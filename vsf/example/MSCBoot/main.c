@@ -1130,7 +1130,7 @@ int main(void)
 	{
 		mal.fini(&embflash_dal_info);
 		interfaces->gpio.fini(KEY_PORT);
-		__set_MSP(MSP);
+		interfaces->core.set_stack(MSP);
 		((void (*)(void))RST_VECT)();
 		while (1);
 	}

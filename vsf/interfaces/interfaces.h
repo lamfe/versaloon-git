@@ -28,15 +28,18 @@ struct interface_core_t
 	vsf_err_t (*init)(void *p);
 	vsf_err_t (*fini)(void *p);
 	vsf_err_t (*reset)(void *p);
+	vsf_err_t (*set_stack)(uint32_t sp);
 };
 
 #define CORE_INIT(m)					__CONNECT(m, _interface_init)
 #define CORE_FINI(m)					__CONNECT(m, _interface_fini)
 #define CORE_RESET(m)					__CONNECT(m, _interface_reset)
+#define CORE_SET_STACK(m)				__CONNECT(m, _interface_set_stack)
 
 vsf_err_t CORE_INIT(__TARGET_CHIP__)(void *p);
 vsf_err_t CORE_FINI(__TARGET_CHIP__)(void *p);
 vsf_err_t CORE_RESET(__TARGET_CHIP__)(void *p);
+vsf_err_t CORE_SET_STACK(__TARGET_CHIP__)(uint32_t sp);
 
 #if IFS_UNIQUEID_EN
 

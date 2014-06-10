@@ -23,6 +23,7 @@
 #include "interfaces.h"
 #include "tool/buffer/buffer.h"
 #include "vsf_usbd_cfg.h"
+#include "vsf_usbd_const.h"
 
 struct vsfusbd_device_t;
 
