@@ -60,6 +60,12 @@ vsf_err_t stm32_interface_reset(void *p)
 	return VSFERR_NONE;
 }
 
+vsf_err_t stm32_interface_set_stack(uint32_t sp)
+{
+	__set_MSP(sp);
+	return VSFERR_NONE;
+}
+
 static uint32_t __log2__(uint32_t n)
 {
 	uint32_t i, value = 1;
