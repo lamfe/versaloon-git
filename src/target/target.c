@@ -67,6 +67,7 @@
 #include "nand/nand.h"
 #include "stm32l1/stm32l1.h"
 #include "nuc100/nuc100.h"
+#include "nuc400/nuc400.h"
 #include "kinetis/kinetis.h"
 #include "sst32hfxx/sst32hfxx.h"
 
@@ -410,6 +411,19 @@ const struct target_info_t targets_info[] =
 		nuc100_program_mode,				// program_mode
 		&nuc100_program_functions,			// program_functions
 		nuc100_notifier,					// notifier
+		NULL,								// adjust_setting
+		NULL,								// adjust_mapping
+	},
+#endif
+#if	TARGET_NUC400_EN
+	// nuc400
+	{
+		NUC400_STRING,						// name
+		AUTO_DETECT CAN_EXECUTE,			// feature
+		nuc400_program_area_map,			// program_area_map
+		nuc400_program_mode,				// program_mode
+		&nuc400_program_functions,			// program_functions
+		nuc400_notifier,					// notifier
 		NULL,								// adjust_setting
 		NULL,								// adjust_mapping
 	},
