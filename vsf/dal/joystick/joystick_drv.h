@@ -17,20 +17,47 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#define DAL_INTERFACE_PARSER_EN				1
+#ifndef __JOYSTICK_DRV_H_INCLUDED__
+#define __JOYSTICK_DRV_H_INCLUDED__
 
-#define DAL_MIC2826_EN						1
-#define DAL_NRF24L01_EN						1
+struct joystick_interface_t
+{
+	uint8_t adc_port_x;
+	uint8_t adc_channel_x;
+	uint8_t adc_port_y;
+	uint8_t adc_channel_y;
+};
 
-#define DAL_MAL_EN							1
-#define DAL_EE93CX6_EN						1
-#define DAL_EE24CXX_EN						1
-#define DAL_DF25XX_EN						1
-#define DAL_DF45XX_EN						1
-#define DAL_SD_SPI_EN						1
-#define DAL_SD_SDIO_EN						0
-#define DAL_CFI_EN							1
-#define DAL_NAND_EN							1
-#define DAL_KEY_EN							1
-#define DAL_JOYSTICK_EN						1
+struct joystick_param_t
+{
+	uint32_t sample_interval_ms;
+	uint32_t resolution;
+	uint32_t adc_clock;
+	uint8_t adc_sample_cycles;
+};
 
+struct joystick_info_t
+{
+	// private
+	uint32_t adc_value_x;
+	uint32_t adc_max_value_x;
+	uint32_t adc_value_y;
+	uint32_t adc_max_value_y;
+	
+	uint32_t adc_sample_tickcnt;
+	
+	enum adc_state_t
+	{
+		JOYSTICK_IDLE,
+		JOYSTICK_X_STARTED,
+		JOYSTICK_Y_STARTED,
+	} state;
+};
+
+vsf_err_t joystick_init(struct dal_info_t *info);
+vsf_err_t joystick_fini(struct dal_info_t *info);
+uint32_t joystick_get_x(struct dal_info_t *info);
+uint32_t joystick_get_y(struct dal_info_t *info);
+vsf_err_t joystick_poll(struct dal_info_t *info);
+
+#endif
