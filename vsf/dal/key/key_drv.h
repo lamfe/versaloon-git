@@ -17,20 +17,37 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#define DAL_INTERFACE_PARSER_EN				1
+#ifndef __KEY_DRV_H_INCLUDED__
+#define __KEY_DRV_H_INCLUDED__
 
-#define DAL_MIC2826_EN						1
-#define DAL_NRF24L01_EN						1
+struct key_interface_t
+{
+	uint8_t port;
+	uint8_t pin;
+};
 
-#define DAL_MAL_EN							1
-#define DAL_EE93CX6_EN						1
-#define DAL_EE24CXX_EN						1
-#define DAL_DF25XX_EN						1
-#define DAL_DF45XX_EN						1
-#define DAL_SD_SPI_EN						1
-#define DAL_SD_SDIO_EN						0
-#define DAL_CFI_EN							1
-#define DAL_NAND_EN							1
-#define DAL_KEY_EN							1
-#define DAL_JOYSTICK_EN						1
+struct key_param_t
+{
+	bool valid_low;
+	uint32_t filter_ms;
+	struct
+	{
+		void (*on_PRESS)(struct dal_info_t *info);
+		void (*on_PRESSED)(struct dal_info_t *info, uint32_t ms);
+	} callback;
+};
 
+struct key_info_t
+{
+	// private
+	uint32_t tickcnt_on_press;
+	bool isdown_unfiltered;
+	bool isdown_filtered;
+};
+
+vsf_err_t key_init(struct dal_info_t *info);
+vsf_err_t key_fini(struct dal_info_t *info);
+bool key_isdown_unfiltered(struct dal_info_t *info);
+vsf_err_t key_poll(struct dal_info_t *info);
+
+#endif
