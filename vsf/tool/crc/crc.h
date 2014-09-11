@@ -16,43 +16,22 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#ifndef __USBAPI_H_INCLUDED__
-#define __USBAPI_H_INCLUDED__
 
-#include "libusb.h"
+#ifndef __CRC_H_INCLUDED__
+#define __CRC_H_INCLUDED__
 
-extern struct vss_cmd_list_t usbapi_cmd_list;
-
-struct usbapi_param_t
+struct crc_t
 {
-	uint8_t valid;
-	uint16_t vid;
-	uint16_t pid;
-	uint8_t epin;
-	uint8_t epout;
-	uint8_t interface;
-	char typestring[256];
-	char serialstring[256];
+	enum crc_bitlen_t
+	{
+		CRC_BITLEN_8 = 8,
+		CRC_BITLEN_16 = 16,
+		CRC_BITLEN_32 = 32,
+	} bitlen;
+	uint32_t result;
+	uint32_t poly;
 };
-extern struct usbapi_param_t usb_param;
 
-uint8_t usb_param_valid(void);
-uint16_t usb_param_vid(void);
-uint16_t usb_param_pid(void);
-uint8_t usb_param_epin(void);
-uint8_t usb_param_epout(void);
-uint8_t usb_param_interface(void);
-char *usb_param_type(void);
-char *usb_param_serial(void);
-void usb_set_param(uint16_t vid, uint16_t pid, uint8_t epin, uint8_t epout,
-					uint8_t interface);
-uint32_t print_usb_devices(uint16_t VID, uint16_t PID, int8_t serialindex,
-							char *serialstring, int8_t productindex,
-							char *productstring);
-struct libusb_device_handle* find_usb_device(uint16_t VID, uint16_t PID,
-							uint8_t interface, int8_t serialindex,
-							char *serialstring, int8_t productindex,
-							char *productstring);
+uint32_t crc_calc(struct crc_t *crc, void *buff, uint32_t num);
 
-#endif /* __USBAPI_H_INCLUDED__ */
-
+#endif	// __CRC_H_INCLUDED__

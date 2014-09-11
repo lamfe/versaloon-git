@@ -33,15 +33,28 @@
 #	define NULL						((void *)0)
 #endif
 
-#define dimof(arr)					(sizeof(arr) / sizeof((arr)[0]))
+#ifndef dimof
+#	define dimof(arr)				(sizeof(arr) / sizeof((arr)[0]))
+#endif
+#ifndef offset_of
+#	define offset_of(s, m)			(uint32_t)(&(((s *)0)->m))
+#endif
+#ifndef container_of
+#	define container_of(ptr, type, member)	\
+		(ptr ? (type *)((char *)(ptr) - offset_of(type, member)) : NULL)
+#endif
 #ifndef min
 #	define min(a, b)				(((a) < (b)) ? (a) : (b))
 #endif
 #ifndef max
 #	define max(a, b)				(((a) > (b)) ? (a) : (b))
 #endif
-#define TO_STR(name)				#name
-#define REFERENCE_PARAMETER(a)		(a) = (a)
+#ifndef TO_STR
+#	define TO_STR(name)				#name
+#endif
+#ifndef REFERENCE_PARAMETER
+#	define REFERENCE_PARAMETER(a)	(a) = (a)
+#endif
 
 
 
@@ -257,5 +270,5 @@
 #	define GET_SYS_U64(p)			GET_LE_U64(p)
 #endif
 
-#endif /* __APP_TYPE_H_INCLUDED__ */
+#endif	// __APP_TYPE_H_INCLUDED__
 

@@ -16,43 +16,46 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#ifndef __USBAPI_H_INCLUDED__
-#define __USBAPI_H_INCLUDED__
 
-#include "libusb.h"
+#include "app_type.h"
 
-extern struct vss_cmd_list_t usbapi_cmd_list;
+#include "crc.h"
 
-struct usbapi_param_t
+uint32_t crc_calc(struct crc_t *crc, void *buff, uint32_t num)
 {
-	uint8_t valid;
-	uint16_t vid;
-	uint16_t pid;
-	uint8_t epin;
-	uint8_t epout;
-	uint8_t interface;
-	char typestring[256];
-	char serialstring[256];
-};
-extern struct usbapi_param_t usb_param;
-
-uint8_t usb_param_valid(void);
-uint16_t usb_param_vid(void);
-uint16_t usb_param_pid(void);
-uint8_t usb_param_epin(void);
-uint8_t usb_param_epout(void);
-uint8_t usb_param_interface(void);
-char *usb_param_type(void);
-char *usb_param_serial(void);
-void usb_set_param(uint16_t vid, uint16_t pid, uint8_t epin, uint8_t epout,
-					uint8_t interface);
-uint32_t print_usb_devices(uint16_t VID, uint16_t PID, int8_t serialindex,
-							char *serialstring, int8_t productindex,
-							char *productstring);
-struct libusb_device_handle* find_usb_device(uint16_t VID, uint16_t PID,
-							uint8_t interface, int8_t serialindex,
-							char *serialstring, int8_t productindex,
-							char *productstring);
-
-#endif /* __USBAPI_H_INCLUDED__ */
-
+	uint8_t bitlen = (uint8_t)crc->bitlen, i;
+	uint32_t result = crc->result;
+	uint8_t *buff8 = (uint8_t *)buff;
+	uint16_t *buff16 = (uint16_t *)buff;
+	uint32_t *buff32 = (uint32_t *)buff;
+	
+	while (num--)
+	{
+		switch (crc->bitlen)
+		{
+		case CRC_BITLEN_8:
+			result ^= *buff8++;
+			break;
+		case CRC_BITLEN_16:
+			result ^= *buff16++;
+			break;
+		case CRC_BITLEN_32:
+			result ^= *buff32++;
+			break;
+		}
+		for (i = 0; i < bitlen; i++)
+		{
+			if (result & 0x80)
+			{
+				result = (result << 1) ^ crc->poly;
+			}
+			else
+			{
+				result <<= 1;
+			}
+		}
+	}
+	result &= (1 << bitlen) - 1;
+	crc->result = result;
+	return result;
+}
