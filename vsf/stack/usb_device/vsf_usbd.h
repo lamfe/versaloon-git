@@ -199,13 +199,13 @@ struct vsfusbd_device_t
 	uint8_t feature;
 	struct vsfusbd_ctrl_handler_t ctrl_handler;
 	
-	struct vsfusbd_transact_t IN_transact[VSFUSBD_CFG_MAX_IN_EP];
-	struct vsfusbd_transact_t OUT_transact[VSFUSBD_CFG_MAX_OUT_EP];
+	struct vsfusbd_transact_t IN_transact[VSFUSBD_CFG_MAX_IN_EP + 1];
+	struct vsfusbd_transact_t OUT_transact[VSFUSBD_CFG_MAX_OUT_EP + 1];
 	
-	vsf_err_t (*IN_handler[VSFUSBD_CFG_MAX_IN_EP])(struct vsfusbd_device_t*,
-													uint8_t);
-	vsf_err_t (*OUT_handler[VSFUSBD_CFG_MAX_OUT_EP])(struct vsfusbd_device_t*,
-													uint8_t);
+	vsf_err_t (*IN_handler[VSFUSBD_CFG_MAX_IN_EP + 1])(
+										struct vsfusbd_device_t*, uint8_t);
+	vsf_err_t (*OUT_handler[VSFUSBD_CFG_MAX_OUT_EP + 1])(
+										struct vsfusbd_device_t*, uint8_t);
 };
 
 vsf_err_t vsfusbd_device_get_descriptor(struct vsfusbd_device_t *device, 
