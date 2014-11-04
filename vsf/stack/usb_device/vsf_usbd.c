@@ -53,7 +53,7 @@ vsf_err_t vsfusbd_device_get_descriptor(struct vsfusbd_device_t *device,
 vsf_err_t vsfusbd_set_IN_handler(struct vsfusbd_device_t *device,
 		uint8_t ep, vsf_err_t (*handler)(struct vsfusbd_device_t*, uint8_t))
 {
-	if (ep >= VSFUSBD_CFG_MAX_IN_EP)
+	if (ep > VSFUSBD_CFG_MAX_IN_EP)
 	{
 		return VSFERR_INVALID_PARAMETER;
 	}
@@ -65,7 +65,7 @@ vsf_err_t vsfusbd_set_IN_handler(struct vsfusbd_device_t *device,
 vsf_err_t vsfusbd_set_OUT_handler(struct vsfusbd_device_t *device,
 		uint8_t ep, vsf_err_t (*handler)(struct vsfusbd_device_t*, uint8_t))
 {
-	if (ep >= VSFUSBD_CFG_MAX_OUT_EP)
+	if (ep > VSFUSBD_CFG_MAX_OUT_EP)
 	{
 		return VSFERR_INVALID_PARAMETER;
 	}
@@ -1226,7 +1226,7 @@ static vsf_err_t vsfusbd_on_IN_do(struct vsfusbd_device_t *device, uint8_t ep)
 static vsf_err_t vsfusbd_on_IN(void *p, uint8_t ep)
 {
 	struct vsfusbd_device_t *device = (struct vsfusbd_device_t *)p;
-	if ((ep < VSFUSBD_CFG_MAX_IN_EP) && (device->IN_handler[ep] != NULL))
+	if ((ep <= VSFUSBD_CFG_MAX_IN_EP) && (device->IN_handler[ep] != NULL))
 	{
 		return device->IN_handler[ep](device, ep);
 	}
@@ -1304,7 +1304,7 @@ static vsf_err_t vsfusbd_on_OUT_do(struct vsfusbd_device_t *device, uint8_t ep)
 static vsf_err_t vsfusbd_on_OUT(void *p, uint8_t ep)
 {
 	struct vsfusbd_device_t *device = (struct vsfusbd_device_t *)p;
-	if ((ep < VSFUSBD_CFG_MAX_OUT_EP) && (device->OUT_handler[ep] != NULL))
+	if ((ep <= VSFUSBD_CFG_MAX_OUT_EP) && (device->OUT_handler[ep] != NULL))
 	{
 		return device->OUT_handler[ep](device, ep);
 	}
