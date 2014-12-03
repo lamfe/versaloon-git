@@ -135,17 +135,14 @@ int32_t comm_read_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 	}
 	
 	data_read = 0;
-	start = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
+	start = interfaces->tickclk.get_count();
 	while (data_read < num_of_bytes)
 	{
 		sbuffer.size = num_of_bytes - data_read;
 		sbuffer.buffer = buffer + data_read;
 		usart_stream_poll(&usart_stream_p0);
-		if (usart_stream_rx(&usart_stream_p0, &sbuffer))
-		{
-			return -1;
-		}
-		end = (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
+		usart_stream_rx(&usart_stream_p0, &sbuffer);
+		end = interfaces->tickclk.get_count();
 		if (sbuffer.size)
 		{
 			data_read += sbuffer.size;
@@ -163,6 +160,7 @@ int32_t comm_read_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 int32_t comm_write_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 {
 	struct vsf_buffer_t sbuffer;
+	uint32_t start, end;
 	int32_t data_write;
 	
 	if (!usbtocomm_open)
@@ -171,18 +169,22 @@ int32_t comm_write_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 	}
 	
 	data_write = 0;
+	start = interfaces->tickclk.get_count();
 	while (data_write < num_of_bytes)
 	{
 		sbuffer.size = num_of_bytes - data_write;
 		sbuffer.buffer = buffer + data_write;
 		usart_stream_poll(&usart_stream_p0);
-		if (usart_stream_tx(&usart_stream_p0, &sbuffer))
-		{
-			return -1;
-		}
+		usart_stream_tx(&usart_stream_p0, &sbuffer);
+		end = interfaces->tickclk.get_count();
 		if (sbuffer.size)
 		{
 			data_write += sbuffer.size;
+			start = end;
+		}
+		else if ((end - start) > 3000)
+		{
+			break;
 		}
 	}
 	while (vsf_fifo_get_data_length(&usart_stream_p0.stream_tx.fifo) > 0)
