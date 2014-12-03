@@ -141,7 +141,7 @@ int32_t comm_read_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 		sbuffer.size = num_of_bytes - data_read;
 		sbuffer.buffer = buffer + data_read;
 		usart_stream_poll(&usart_stream_p0);
-		usart_stream_rx(&usart_stream_p0, &sbuffer);
+		sbuffer.size = usart_stream_rx(&usart_stream_p0, &sbuffer);
 		end = interfaces->tickclk.get_count();
 		if (sbuffer.size)
 		{
@@ -175,7 +175,7 @@ int32_t comm_write_usbtocomm(uint8_t *buffer, uint32_t num_of_bytes)
 		sbuffer.size = num_of_bytes - data_write;
 		sbuffer.buffer = buffer + data_write;
 		usart_stream_poll(&usart_stream_p0);
-		usart_stream_tx(&usart_stream_p0, &sbuffer);
+		sbuffer.size = usart_stream_tx(&usart_stream_p0, &sbuffer);
 		end = interfaces->tickclk.get_count();
 		if (sbuffer.size)
 		{
