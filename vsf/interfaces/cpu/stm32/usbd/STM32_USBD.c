@@ -300,7 +300,7 @@ vsf_err_t stm32_usbd_ep_set_IN_epsize(uint8_t idx, uint16_t epsize)
 {
 	int8_t index;
 	
-	index = stm32_usbd_ep(idx);
+	index = stm32_usbd_get_ep(idx);
 	if (index < 0)
 	{
 		return VSFERR_FAIL;
@@ -529,7 +529,7 @@ vsf_err_t stm32_usbd_ep_set_OUT_epsize(uint8_t idx, uint16_t epsize)
 	bool ep0;
 	int8_t index;
 	
-	index = stm32_usbd_ep(idx);
+	index = stm32_usbd_get_ep(idx);
 	if (index < 0)
 	{
 		return VSFERR_FAIL;
