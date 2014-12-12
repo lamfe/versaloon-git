@@ -569,7 +569,7 @@ LEAVE_PROGRAM_MODE_HANDLER(nuc400swj)
 	
 	REFERENCE_PARAMETER(success);
 	
-	return nuc400swj_iap_wait_finish(fl);
+	return chip_protected ? VSFERR_NONE: nuc400swj_iap_wait_finish(fl);
 }
 
 ERASE_TARGET_HANDLER(nuc400swj)
