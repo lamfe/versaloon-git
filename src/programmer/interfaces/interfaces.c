@@ -34,8 +34,29 @@
 #include "scripts.h"
 #include "target.h"
 
+#include <time.h>
+static uint32_t default_tickclk_get_count(void)
+{
+	return (uint32_t)(clock() / (CLOCKS_PER_SEC / 1000));
+}
+// default interfaces supports tickclk only, which will call clock in time.h
+// so tickclk will be working without any hardware interface is initialized
+static struct interfaces_info_t default_interfaces =
+{
+	"default", NULL, NULL, false, NULL, 0,
+	
+	// core
+	{NULL},
+	// clko
+	{NULL},
+	// tickclk
+	{NULL,  NULL, NULL, NULL, default_tickclk_get_count},
+};
+
 struct interfaces_info_t *interfaces_info[] =
 {
+	// default interfaces
+	&default_interfaces,
 	// real interfaces
 	// versaloon
 	&versaloon_interfaces,
@@ -46,7 +67,7 @@ struct interfaces_info_t *interfaces_info[] =
 	NULL
 };
 
-struct interfaces_info_t *cur_interface = NULL;
+struct interfaces_info_t *cur_interface = &default_interfaces;
 struct interfaces_info_t *cur_real_interface = NULL;
 
 char* get_interface_name(uint64_t i)
