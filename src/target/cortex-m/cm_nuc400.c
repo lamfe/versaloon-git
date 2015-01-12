@@ -497,6 +497,7 @@ static vsf_err_t nuc400swj_init_iap(void)
 			{
 				// read protected
 				chip_protected = true;
+				LOG_INFO("chip protected");
 				return VSFERR_NONE;
 			}
 		}
@@ -582,6 +583,12 @@ ERASE_TARGET_HANDLER(nuc400swj)
 	REFERENCE_PARAMETER(size);
 	REFERENCE_PARAMETER(addr);
 	
+	if (chip_protected)
+	{
+		// issue erase all sequence
+		// you need IDA from nuvoton to have these code
+	}
+	
 	cmd.command = NUC400_REG_ISPCMD_PAGE_ERASE;
 	cmd.src_addr = 0;
 	cmd.cnt = 1;
@@ -609,23 +616,11 @@ ERASE_TARGET_HANDLER(nuc400swj)
 		}
 		
 do_erase_flash:
-		if (chip_protected)
+		cmd.tgt_addr = addr;
+		if (nuc400swj_iap_run(fl, &cmd) || interfaces->delay.delayms(20) ||
+			nuc400swj_iap_wait_finish(fl))
 		{
-			if (nuc400swj_isp_run(NUC400_REG_ISPCMD_PAGE_ERASE,
-										NUC400_REG_CFG_BA, NULL, 1, false))
-			{
-				err = ERRCODE_FAILURE_OPERATION;
-				break;
-			}
-		}
-		else
-		{
-			cmd.tgt_addr = addr;
-			if (nuc400swj_iap_run(fl, &cmd) || interfaces->delay.delayms(20) ||
-				nuc400swj_iap_wait_finish(fl))
-			{
-				err = VSFERR_FAIL;
-			}
+			err = VSFERR_FAIL;
 		}
 		break;
 	case FUSE_CHAR:
