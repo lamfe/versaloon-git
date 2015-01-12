@@ -77,10 +77,6 @@ static vsf_err_t vsfusbd_MSCBOT_ErrHandler(struct vsfusbd_device_t *device,
 		param->tbuffer.position = 0;
 		device->drv->ep.set_IN_count(param->ep_in, 0);
 	}
-	else
-	{
-		vsfusbd_MSCBOT_SendCSW(device, param);
-	}
 	
 	return VSFERR_NONE;
 }
@@ -301,8 +297,6 @@ static vsf_err_t vsfusbd_MSCBOT_OUT_hanlder(struct vsfusbd_device_t *device,
 		break;
 	default:
 		vsfusbd_MSCBOT_ErrHandler(device, param, USBMSC_CSW_PHASE_ERROR);
-		lun_info->status.sense_key = SCSI_SENSEKEY_ILLEGAL_REQUEST;
-		lun_info->status.asc = SCSI_ASC_INVALID_FIELED_IN_COMMAND;
 		return VSFERR_FAIL;
 	}
 	return VSFERR_NONE;
@@ -377,16 +371,19 @@ static vsf_err_t vsfusbd_MSCBOT_class_poll(uint8_t iface,
 		struct vsf_buffer_t *buffer = &param->page_buffer[index];
 		vsf_err_t err;
 		
-		err = SCSI_IO(param->cur_handlers, lun_info, param->CBW.CBWCB, buffer,
-						param->cur_scsi_page);
-		if (err != VSFERR_NONE)
+		if (USBMSC_CSW_OK == param->dCSWStatus)
 		{
-			if (err > 0)
+			err = SCSI_IO(param->cur_handlers, lun_info, param->CBW.CBWCB,
+							buffer, param->cur_scsi_page);
+			if (err != VSFERR_NONE)
 			{
-				// not failure here
-				return VSFERR_NONE;
+				if (err > 0)
+				{
+					// not failure here
+					return VSFERR_NONE;
+				}
+				return vsfusbd_MSCBOT_ErrHandler(device, param, USBMSC_CSW_FAIL);
 			}
-			return vsfusbd_MSCBOT_ErrHandler(device, param, USBMSC_CSW_FAIL);
 		}
 		param->cur_scsi_page++;
 		
