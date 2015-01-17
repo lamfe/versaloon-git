@@ -53,10 +53,9 @@ static struct interfaces_info_t default_interfaces =
 	{NULL,  NULL, NULL, NULL, default_tickclk_get_count},
 };
 
+#define INTERFACE_DEFAULT				0
 struct interfaces_info_t *interfaces_info[] =
 {
-	// default interfaces
-	&default_interfaces,
 	// real interfaces
 	// versaloon
 	&versaloon_interfaces,
@@ -64,6 +63,8 @@ struct interfaces_info_t *interfaces_info[] =
 #if TARGET_ARM_ADI_EN
 	&vi_stm32_interfaces,
 #endif
+	// default interfaces
+	&default_interfaces,
 	NULL
 };
 
@@ -104,8 +105,6 @@ char* get_interface_name(uint64_t i)
 		return NULL;
 	}
 }
-
-#define INTERFACE_DEFAULT				0
 
 static struct interfaces_info_t *find_interface_by_name(const char *ifs)
 {
@@ -202,11 +201,13 @@ vsf_err_t interface_init(const char *ifs)
 	
 	if ((interface_tmp != NULL) && (!interface_tmp->is_virtual))
 	{
-		if ((cur_interface != NULL) && (!cur_interface->is_virtual))
+		if ((cur_interface != NULL) && (!cur_interface->is_virtual) &&
+			(cur_interface->core.fini != NULL))
 		{
 			cur_interface->core.fini(cur_interface);
 		}
-		if ((cur_real_interface != NULL) && (!cur_real_interface->is_virtual))
+		if ((cur_real_interface != NULL) && (!cur_real_interface->is_virtual) &&
+			(cur_real_interface->core.fini != NULL))
 		{
 			cur_real_interface->core.fini(cur_real_interface);
 		}
@@ -237,7 +238,7 @@ vsf_err_t interface_init(const char *ifs)
 
 vsf_err_t interface_assert(struct interfaces_info_t **ifs)
 {
-	if (NULL == cur_interface)
+	if ((NULL == cur_interface) || (cur_interface == &default_interfaces))
 	{
 		if (interface_init(NULL) || (NULL == cur_interface))
 		{
