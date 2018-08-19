@@ -29,7 +29,7 @@ vsprog_CPPFLAGS += -DPKGBLDDATE=\"`date +%F-%R`\"
 if RELEASE
   vsprog_CPPFLAGS += -DRELSTR=\"Release\" -DPKGBLDREV=\"\"
 else
-  vsprog_CPPFLAGS += -DRELSTR=\"svn:\" -DPKGBLDREV=\"`$(top_srcdir)/guess-rev.sh $(top_srcdir)`\"
+  vsprog_CPPFLAGS += -DRELSTR=\"git:\" -DPKGBLDREV=\"`$(top_srcdir)/guess-rev.sh`\"
 endif
 
 vsprog_LDFLAGS = $(all_libraries)
