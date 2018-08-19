@@ -367,6 +367,7 @@ vsf_err_t svf_parser_get_command(FILE *file, char **cmd_buffer,
 			break;
 		case '\n':
 			svf_line_number++;
+			__attribute__ ((fallthrough));
 		case '\r':
 			slash = 0;
 			comment = 0;
@@ -375,6 +376,7 @@ vsf_err_t svf_parser_get_command(FILE *file, char **cmd_buffer,
 			{
 				break;
 			}
+			__attribute__ ((fallthrough));
 		default:
 			if (!comment)
 			{
