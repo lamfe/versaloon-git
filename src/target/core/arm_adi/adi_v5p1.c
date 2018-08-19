@@ -92,11 +92,11 @@ vsf_err_t adi_switch(struct adi_info_t *adi_info)
 
 static vsf_err_t adi_dp_transaction_endcheck(void);
 
-static const uint8_t adi_swd_reset_seq[] =
+/*static const uint8_t adi_swd_reset_seq[] =
 {
 	// at least 50-bit '1'
 	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
-};
+};*/
 
 static const uint8_t adi_jtag_to_swd_seq[] =
 {

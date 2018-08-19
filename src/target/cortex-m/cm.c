@@ -241,6 +241,7 @@ ENTER_PROGRAM_MODE_HANDLER(cm)
 	{
 	default:
 		LOG_WARNING("debug port not defined, use JTAG by default.");
+		__attribute__ ((fallthrough));
 	case ADI_MODE_CHAR_JTAG:
 		dpif.type = ADI_DP_JTAG;
 		break;
