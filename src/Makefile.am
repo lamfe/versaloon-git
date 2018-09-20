@@ -24,7 +24,7 @@ INCLUDES = \
     -I$(top_srcdir)/src/scripts
 
 vsprog_CPPFLAGS = @CPPFLAGS@
-vsprog_CPPFLAGS += -DPKGBLDDATE=\"`date +%F-%R`\"
+vsprog_CPPFLAGS += -DPKGBLDDATE="\"`date --rfc-3339=seconds`\""
 
 if RELEASE
   vsprog_CPPFLAGS += -DRELSTR=\"Release\" -DPKGBLDREV=\"\"

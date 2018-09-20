@@ -17,8 +17,9 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 #define VSPROG_VERSION		"VSProg " VERSION " " RELSTR PKGBLDREV
+#define VSPROG_DATE			"Build date: " PKGBLDDATE
 #define VSPROG_COPYRIGHT	\
-				"CopyRight(c) 2008-2010 by SimonQian <SimonQian@SimonQian.com>"
+				"CopyRight(c) 2008-2016 by SimonQian <SimonQian@SimonQian.com>"
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -360,10 +361,9 @@ static vsf_err_t parse_operation(uint32_t *operation, const char *opt,
 
 static void print_title(void)
 {
-	PRINTF(_GETTEXT(VSPROG_VERSION LOG_LINE_END VSPROG_COPYRIGHT LOG_LINE_END));
-	PRINTF(_GETTEXT(LOG_LINE_END));
-	PRINTF(_GETTEXT("URL: http://www.SimonQian.com/en/Versaloon" LOG_LINE_END));
-	PRINTF(_GETTEXT("mail: SimonQian@SimonQian.com" LOG_LINE_END));
+	PRINTF(_GETTEXT(VSPROG_VERSION LOG_LINE_END VSPROG_DATE LOG_LINE_END));
+	PRINTF(_GETTEXT(VSPROG_COPYRIGHT LOG_LINE_END LOG_LINE_END));
+	PRINTF(_GETTEXT("URL: https://github.com/lamfe/versaloon-git" LOG_LINE_END));
 	PRINTF(_GETTEXT(LOG_LINE_END));
 }
 
@@ -421,8 +421,6 @@ VSS_HANDLER(vsprog_version)
 {
 	VSS_CHECK_ARGC(1);
 	
-	PRINTF(_GETTEXT(VSPROG_VERSION LOG_LINE_END VSPROG_COPYRIGHT LOG_LINE_END));
-	PRINTF(_GETTEXT(LOG_LINE_END));
 	PRINTF(_GETTEXT("This is free software; see the source for copying conditions."LOG_LINE_END));
 	PRINTF(_GETTEXT("There is NO warranty; not even for MERCHANTABILITY or FITNESS"LOG_LINE_END));
 	PRINTF(_GETTEXT("FOR A PARTICULAR PURPOSE." LOG_LINE_END));
@@ -828,11 +826,12 @@ int main(int argc, char* argv[])
 		free_all_and_exit(EXIT_SUCCESS);
 	}
 	
-	// if no argument, print help
+	// if no argument, print version
 	if (1 == argc)
 	{
 		// no parameter
-		vss_run_script("help");
+		LOG_INFO(ERRMSG_TRY_HELP LOG_LINE_END);
+		vss_run_script("version");
 		free_all_and_exit(EXIT_SUCCESS);
 	}
 	
