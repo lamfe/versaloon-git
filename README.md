@@ -51,6 +51,12 @@ make
 #### Installation
 `sudo make install-strip`
 
+#### Adding udev rules for Versaloon
+```
+sudo cp -v dongle/driver/linux/60-versaloon.rules /etc/udev/rules.d
+sudo udevadm control --reload-rules
+```
+
 #### Cleaning
 `make maintainer-clean`
 
