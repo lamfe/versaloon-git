@@ -251,12 +251,17 @@ vsf_err_t usbtoxxx_execute_command(void)
 	usbtoxxx_info->buffer_index = 0;
 	for (i = 0; i < usbtoxxx_info->pending_idx; i++)
 	{
-		// check result
+		// check result (first byte)
 		if ((0 == i) || !((usbtoxxx_info->pending[i].collect)
 							&& (usbtoxxx_info->pending[i - 1].collect)
 							&& (usbtoxxx_info->pending[i].cmd
 								== usbtoxxx_info->pending[i - 1].cmd)))
 		{
+			/*LOG_DEBUG("command 0x%02x return 0x%02x (%d out of %d)",
+				usbtoxxx_info->pending[i].cmd,
+				usbtoxxx_info->buff[usbtoxxx_info->buffer_index],
+				i, usbtoxxx_info->pending_idx-1);*/
+
 			if (USB_TO_XXX_CMD_NOT_SUPPORT
 				== usbtoxxx_info->buff[usbtoxxx_info->buffer_index])
 			{
@@ -264,16 +269,19 @@ vsf_err_t usbtoxxx_execute_command(void)
 							usbtoxxx_get_type_name(usbtoxxx_info->pending[i].type),
 							"current dongle");
 				err = VSFERR_FAIL;
+				usbtoxxx_info->buffer_index++;
 				break;
 			}
 			else if (USB_TO_XXX_OK !=
 						usbtoxxx_info->buff[usbtoxxx_info->buffer_index])
 			{
-				LOG_ERROR("%s command 0x%02x failed with 0x%02x",
+				LOG_ERROR("%s command 0x%02x failed with 0x%02x (%d out of %d)",
 					usbtoxxx_get_type_name(usbtoxxx_info->pending[i].type),
 					usbtoxxx_info->pending[i].cmd,
-					usbtoxxx_info->buff[usbtoxxx_info->buffer_index]);
+					usbtoxxx_info->buff[usbtoxxx_info->buffer_index],
+					i, usbtoxxx_info->pending_idx-1);
 				err = VSFERR_FAIL;
+				usbtoxxx_info->buffer_index++;
 				break;
 			}
 			usbtoxxx_info->buffer_index++;
@@ -344,6 +352,7 @@ vsf_err_t usbtoxxx_execute_command(void)
 	if (inlen != usbtoxxx_info->buffer_index)
 	{
 		LOG_ERROR(ERRMSG_INVALID_TARGET, "length of return data");
+		LOG_DEBUG("wanted %d, got %d \n", (int)usbtoxxx_info->buffer_index, (int)inlen);
 		err = VSFERR_FAIL;
 	}
 	
@@ -609,6 +618,7 @@ vsf_err_t usbtopoll_end(void)
 	if (!usbtoxxx_info->poll_nesting)
 	{
 		LOG_BUG(ERRMSG_FAILURE_OPERATION, "check poll nesting");
+		LOG_DEBUG("file: %s, line: %d", __FILE__,(int)__LINE__);
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	if (usbtoxxx_ensure_buffer_size(3 + 1))
@@ -643,6 +653,7 @@ vsf_err_t usbtopoll_checkok(uint8_t equ, uint16_t offset, uint8_t size,
 	if (!usbtoxxx_info->poll_nesting)
 	{
 		LOG_BUG(ERRMSG_FAILURE_OPERATION, "check poll nesting");
+		LOG_DEBUG("file: %s, line: %d", __FILE__,(int)__LINE__);
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	if (usbtoxxx_ensure_buffer_size(3 + 4 + 2 * size))
@@ -690,6 +701,7 @@ vsf_err_t usbtopoll_checkfail(uint8_t equ, uint16_t offset, uint8_t size,
 	if (!usbtoxxx_info->poll_nesting)
 	{
 		LOG_BUG(ERRMSG_FAILURE_OPERATION, "check poll nesting");
+		LOG_DEBUG("file: %s, line: %d", __FILE__,(int)__LINE__);
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	if (usbtoxxx_ensure_buffer_size(3 + 4 + 2 * size))
@@ -729,6 +741,7 @@ vsf_err_t usbtopoll_verifybuff(uint16_t offset, uint16_t size, uint8_t *buff)
 	if (!usbtoxxx_info->poll_nesting)
 	{
 		LOG_BUG(ERRMSG_FAILURE_OPERATION, "check poll nesting");
+		LOG_DEBUG("file: %s, line: %d", __FILE__,(int)__LINE__);
 		return ERRCODE_FAILURE_OPERATION;
 	}
 	if (usbtoxxx_ensure_buffer_size(3 + 5 + size))

@@ -61,25 +61,25 @@ struct program_functions_t c8051fc2_program_functions =
 
 #define c2_init()				prog->c2.init(0)
 #define c2_fini()				prog->c2.fini(0)
-#define c2_write_ir(ir)			prog->c2.addr_write(0, ir)
-#define c2_read_ir(ir)			prog->c2.addr_read(0, ir);
-#define c2_write_dr(dr)			prog->c2.data_write(0, &dr, 1)
+#define c2_write_ir(ir)			prog->c2.addr_write(0, ir) //write address register
+#define c2_read_ir(ir)			prog->c2.addr_read(0, ir); //read address register
+#define c2_write_dr(dr)			prog->c2.data_write(0, &dr, 1) //write data register
 #define c2_read_dr(dr)			prog->c2.data_read(0, dr, 1)
-#define c2_poll_out_ready()		c8051f_c2_addr_poll(0x01, 0x01, 500)
-#define c2_poll_in_busy()		c8051f_c2_addr_poll(0x02, 0x00, 500)
+#define c2_poll_out_ready()		c8051f_c2_addr_poll(0x01, 0x01, 500) //wait for data
+#define c2_poll_in_busy()		c8051f_c2_addr_poll(0x02, 0x00, 500) //wait for write ready
 
-#define poll_start(cnt)			prog->poll.start((cnt), 100)
+#define poll_start(cnt)			prog->poll.start((cnt), 100) //cnt=retrycnt, 100=interval [us]
 #define poll_end()				prog->poll.end()
 #define poll_ok(o, m, v)		\
 	prog->poll.checkok(POLL_CHECK_EQU, (o), 1, (m), (v))
 
-#define commit()				prog->peripheral_commit()
+#define commit()				prog->peripheral_commit() //execute command
 
 static struct INTERFACES_INFO_T *prog = NULL;
 
 vsf_err_t c8051f_c2_addr_poll(uint8_t mask, uint8_t value, uint16_t poll_cnt)
-{
-	poll_start(poll_cnt * 10);
+{ //check device status
+	poll_start(poll_cnt * 10); // max wait = poll_cnt*10*interval=5000*0,0001=0,5s
 	
 	c2_read_ir(NULL);
 	poll_ok(0, mask, value);
@@ -95,24 +95,34 @@ ENTER_PROGRAM_MODE_HANDLER(c8051fc2)
 	uint8_t dr;
 	
 	prog = context->prog;
-	c2_init();
+	c2_init(); //reset
 	// enable flash programming
 	c2_write_ir((uint8_t)param->param[C8051F_PARAM_FPCTL_ADDR]);
 	dr = 0x02;
 	c2_write_dr(dr);
+	dr = 0x04; //halt core
+	c2_write_dr(dr);
 	dr = 0x01;
 	c2_write_dr(dr);
 	delay_ms(30);
-	return commit();
+
+	vsf_err_t com = commit();
+	LOG_DEBUG("flash unlock %d", com);
+	if(com) LOG_ERROR("flash unlock failed %d", com);
+	return com;
 }
 
 LEAVE_PROGRAM_MODE_HANDLER(c8051fc2)
 {
 	REFERENCE_PARAMETER(context);
 	REFERENCE_PARAMETER(success);
-	
+	//c2_init();//reset
 	c2_fini();
-	return commit();
+
+	vsf_err_t com = commit();
+	LOG_DEBUG("leave %d", com);
+	if(com) LOG_ERROR("leave failed %d", com);
+	return com;
 }
 
 ERASE_TARGET_HANDLER(c8051fc2)
@@ -150,9 +160,9 @@ ERASE_TARGET_HANDLER(c8051fc2)
 		c2_write_dr(dr);
 		c2_poll_in_busy();
 		
-		c2_poll_out_ready();
-		if (commit())
-		{
+		/*c2_poll_out_ready();
+		c2_read_dr(&dr);*/
+		if (commit()){
 			err = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
@@ -184,7 +194,8 @@ WRITE_TARGET_HANDLER(c8051fc2)
 		c2_read_dr(&dr);
 		if (commit() || (dr != C8051F_C2_REP_COMMAND_OK))
 		{
-			LOG_ERROR(ERRMSG_FAILURE_OPERATION_ADDR, "program flash", addr);
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION_ADDR, "program flash - init", addr);
+			LOG_DEBUG("file: %s, line: %d", __FILE__,(int)__LINE__);
 			err = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
@@ -198,29 +209,36 @@ WRITE_TARGET_HANDLER(c8051fc2)
 		dr = (uint8_t)(addr & 0xFF);
 		c2_write_dr(dr);
 		c2_poll_in_busy();
-		dr = 0;
+		dr = 0; //block size 256 bytes
 		c2_write_dr(dr);
 		c2_poll_in_busy();
 		
-		c2_poll_out_ready();
-		c2_read_dr(&dr);
-		if (commit() || (dr != C8051F_C2_REP_COMMAND_OK))
-		{
-			LOG_ERROR(ERRMSG_FAILURE_OPERATION_ADDR, "program flash", addr);
+		if (commit()){
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION_ADDR, "program flash - set address", addr);
+			LOG_DEBUG("file: %s, line: %d", __FILE__,(int)__LINE__);
 			err = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
 		
 		for (i = 0; i < size; i++)
 		{
-			c2_write_dr(buff[i]);
 			c2_poll_in_busy();
+			c2_write_dr(buff[i]);
+			if (commit()){
+				LOG_ERROR(ERRMSG_FAILURE_OPERATION_ADDR, "program flash - write block", addr+i);
+				LOG_DEBUG("file: %s, line: %d", __FILE__,(int)__LINE__);
+				err = ERRCODE_FAILURE_OPERATION;
+				break;
+			}
+			delay_ms(1);
 		}
-		
 		c2_poll_out_ready();
-		if (commit())
-		{
-			LOG_ERROR(ERRMSG_FAILURE_OPERATION_ADDR, "program flash", addr);
+		c2_read_dr(&dr);
+
+		c2_init();
+		if (commit() || (dr != C8051F_C2_REP_COMMAND_OK)){
+			LOG_ERROR(ERRMSG_FAILURE_OPERATION_ADDR, "program flash - leave", addr);
+			LOG_DEBUG("file: %s, line: %d, DR 0x%02X", __FILE__,(int)__LINE__, dr);
 			err = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
@@ -242,7 +260,7 @@ READ_TARGET_HANDLER(c8051fc2)
 	switch (area)
 	{
 	case CHIPID_CHAR:
-		c2_write_ir(C8051F_C2_DEVICEID);
+		c2_write_ir(C8051F_C2_DEVICEID);//read device ID
 		c2_read_dr(&dr);
 		if (commit())
 		{
@@ -263,6 +281,7 @@ READ_TARGET_HANDLER(c8051fc2)
 		if (commit() || (dr != C8051F_C2_REP_COMMAND_OK))
 		{
 			LOG_ERROR(ERRMSG_FAILURE_OPERATION_ADDR, "read flash", addr);
+			LOG_DEBUG("file: %s, line: %d", __FILE__,(int)__LINE__);
 			err = ERRCODE_FAILURE_OPERATION;
 			break;
 		}
@@ -289,7 +308,7 @@ READ_TARGET_HANDLER(c8051fc2)
 		
 		for (i = 0; i < size; i++)
 		{
-//			c2_poll_out_ready();
+			c2_poll_out_ready();
 			c2_read_dr(&buff[i]);
 		}
 		
