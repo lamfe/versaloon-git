@@ -14,35 +14,38 @@ SECTIONS
     /* for Cortex devices, the beginning of the startup code is stored in the .isr_vector section, which goes to FLASH */
     .isr_vector :
     {
-	. = ALIGN(4);
+    . = ALIGN(4);
         KEEP(*(.isr_vector))            /* Startup code */
-	. = ALIGN(4);
+    . = ALIGN(4);
     } >FLASH
  
     /* for some STRx devices, the beginning of the startup code is stored in the .flashtext section, which goes to FLASH */
     .flashtext :
     {
-	. = ALIGN(4);
+    . = ALIGN(4);
         *(.flashtext)            /* Startup code */
-	. = ALIGN(4);
+    . = ALIGN(4);
     } >FLASH
  
     
     /* the program code is stored in the .text section, which goes to Flash */
     .text :
     {
-	    . = ALIGN(4);
-	    
+        . = ALIGN(4);
         *(.text)                   /* remaining code */
-        *(.text.*)                   /* remaining code */
+        *(.text.*)                 /* remaining code */
         *(.rodata)                 /* read-only data (constants) */
         *(.rodata*)
         *(.glue_7)
         *(.glue_7t)
 
-	    . = ALIGN(4);
+        /* Those two sections are needed by arm-gcc */
+        KEEP (*(.init))            /* initialization section*/
+        KEEP (*(.fini))
+
+        . = ALIGN(4);
    	 _etext = .;
-	    /* This is used by the startup in order to initialize the .data secion */
+        /* This is used by the startup in order to initialize the .data secion */
    	 _sidata = _etext;
     } >FLASH
     
@@ -54,15 +57,15 @@ SECTIONS
     It is one task of the startup to copy the initial values from FLASH to RAM. */
     .data  : AT ( _sidata )
     {
-	    . = ALIGN(4);
+        . = ALIGN(4);
         /* This is used by the startup in order to initialize the .data secion */
         _sdata = . ;
         
         *(.data)
         *(.data.*)
 
-	    . = ALIGN(4);
-	    /* This is used by the startup in order to initialize the .data secion */
+        . = ALIGN(4);
+        /* This is used by the startup in order to initialize the .data secion */
    	 _edata = . ;
     } >RAM
     
@@ -71,15 +74,15 @@ SECTIONS
     /* This is the uninitialized data section */
     .bss :
     {
-	    . = ALIGN(4);
+        . = ALIGN(4);
         /* This is used by the startup in order to initialize the .bss secion */
         _sbss = .;
         
         *(.bss)
         *(COMMON)
         
-	    . = ALIGN(4);
-	    /* This is used by the startup in order to initialize the .bss secion */
+        . = ALIGN(4);
+        /* This is used by the startup in order to initialize the .bss secion */
         _ebss = . ;
     } >RAM
     
@@ -92,10 +95,10 @@ SECTIONS
      */
     ._user_heap_stack :
     {
-	    . = ALIGN(4);
+        . = ALIGN(4);
         . = . + _Heap_Size ;
         . = . + _Stack_Size ;
-	    . = ALIGN(4);
+        . = ALIGN(4);
     } >RAM
     
 
