@@ -34,7 +34,7 @@
 
 #define IFS_DUMMY_PORT						0xFF
 
-char* get_interface_name(uint64_t i);
+const char* get_interface_name(uint64_t i);
 
 struct interface_core_t
 {

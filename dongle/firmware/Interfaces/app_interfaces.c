@@ -78,37 +78,34 @@
 #	include "ADC/ADC.h"
 #endif
 
-char* get_interface_name(uint64_t i)
+const char* get_interface_name(uint64_t i)
 {
-#define interface_case(i) case i: return #i
-	
-	switch (i)
-	{
-		interface_case(IFS_USART);
-		interface_case(IFS_SPI);
-		interface_case(IFS_I2C);
-		interface_case(IFS_GPIO);
-		interface_case(IFS_CAN);
-		interface_case(IFS_CLOCK);
-		interface_case(IFS_ADC);
-		interface_case(IFS_DAC);
-		interface_case(IFS_POWER);
-		interface_case(IFS_ISSP);
-		interface_case(IFS_JTAG_LL);
-		interface_case(IFS_JTAG_HL);
-		interface_case(IFS_JTAG_RAW);
-		interface_case(IFS_C2);
-		interface_case(IFS_MSP430_SBW);
-		interface_case(IFS_MSP430_JTAG);
-		interface_case(IFS_LPC_ICP);
-		interface_case(IFS_SWD);
-		interface_case(IFS_SWIM);
-		interface_case(IFS_HV);
-		interface_case(IFS_PDI);
-		interface_case(IFS_BDM);
-	default:
-		return NULL;
-	}
+#define interface_case(j, str) if(j & i) return (str)
+	// Sorted from the highest value to lowest, to return the top level interface
+
+	interface_case(IFS_BDM, "BDM");
+	interface_case(IFS_PDI, "PDI");
+	interface_case(IFS_HV, "HV");
+	interface_case(IFS_SWIM, "SWIM");
+	interface_case(IFS_SWD, "SWD");
+	interface_case(IFS_LPC_ICP, "LPC_ICP");
+	interface_case(IFS_MSP430_JTAG, "MSP430_JTAG");
+	interface_case(IFS_MSP430_SBW, "MSP430_SBW");
+	interface_case(IFS_C2, "C2");
+	interface_case(IFS_JTAG_RAW, "JTAG_RAW");
+	interface_case(IFS_JTAG_HL, "JTAG_HL");
+	interface_case(IFS_JTAG_LL, "JTAG_LL");
+	interface_case(IFS_ISSP, "ISSP");
+	interface_case(IFS_POWER, "POWER");
+	interface_case(IFS_DAC, "DAC");
+	interface_case(IFS_ADC, "ADC");
+	interface_case(IFS_CLOCK, "CLOCK");
+	interface_case(IFS_CAN, "CAN");
+	interface_case(IFS_GPIO, "GPIO");
+	interface_case(IFS_I2C, "I2C");
+	interface_case(IFS_SPI, "SPI");
+	interface_case(IFS_USART, "USART");
+	return NULL;
 }
 
 // GPIO

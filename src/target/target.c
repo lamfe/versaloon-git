@@ -1102,8 +1102,10 @@ static vsf_err_t target_program_check(struct program_context_t *context)
 	
 	// assert programmer
 	i = context->target->program_mode[context->pi->mode].interface_needed;
+
 	if (i)
 	{
+		LOG_DEBUG("Trying to use interface %s", get_interface_name(i));
 		if (interface_assert(&context->prog) || (NULL == context->prog))
 		{
 			LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "assert", "programmer module");
@@ -1111,8 +1113,7 @@ static vsf_err_t target_program_check(struct program_context_t *context)
 		}
 		if ((context->prog->support_mask & i) != i)
 		{
-			LOG_ERROR("interface not supported: %s (%i).",
-				get_interface_name(i), i);
+			LOG_ERROR("interface not supported: %s (%i).", get_interface_name(i), i);
 			return VSFERR_FAIL;
 		}
 	}
