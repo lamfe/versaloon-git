@@ -52,6 +52,17 @@ TARGET_STM32		= XLDensity
 USR_DEFS+=-DCORE_DEBUG=STM32_DBG_NONE
 else
 ########################################################################
+ifeq ($(HW_BOARD),BluePill)
+########################################################################
+_HARDWARE_VER		= 0x16
+FLASH_LOAD_OFFSET	= 0x0
+HSE_VALUE			= 8000000
+LD_FILE				= versaloonSTM32.ld
+TARGET_CHIP			= stm32
+TARGET_STM32		= XLDensity
+USR_DEFS+=-DCORE_DEBUG=STM32_DBG_NONE
+else
+########################################################################
 ifeq ($(HW_BOARD),ProRelease1)
 ########################################################################
 _HARDWARE_VER		= 0x21
@@ -167,6 +178,7 @@ else
 # Unknown board error
 ########################################################################
 $(error Missing or unknown HW_BOARD defined in makefile)
+endif
 endif
 endif
 endif

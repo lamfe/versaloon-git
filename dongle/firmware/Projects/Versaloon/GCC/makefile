@@ -19,7 +19,7 @@ EMBEDDED_VSPROG_EN = no
 # ST_Link
 # STM32F0_Discovery
 #
-HW_BOARD = MiniRelease1
+HW_BOARD = BluePill
 
 #
 include	../../board_defs.mk

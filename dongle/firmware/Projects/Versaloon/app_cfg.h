@@ -25,6 +25,8 @@
 //
 #define NanoRelease1					0x01
 #define MiniRelease1					0x15
+//Blue Pill STM32F103C8, derived from MiniRelease1
+#define BluePill						0x16
 #define ProRelease1						0x21
 #define ProRelease3						0x23
 #define STBee_Mini						0x31
@@ -39,6 +41,8 @@
 
 #if _HARDWARE_VER == NanoRelease1
 #include "hw_cfg_NanoRelease1.h"
+#elif _HARDWARE_VER == BluePill
+#include "hw_cfg_BluePill.h"
 #elif _HARDWARE_VER == MiniRelease1
 #include "hw_cfg_MiniRelease1.h"
 #elif _HARDWARE_VER == ProRelease1
