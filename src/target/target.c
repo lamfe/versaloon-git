@@ -1111,7 +1111,8 @@ static vsf_err_t target_program_check(struct program_context_t *context)
 		}
 		if ((context->prog->support_mask & i) != i)
 		{
-			LOG_ERROR("interface not supported: %s.", get_interface_name(i));
+			LOG_ERROR("interface not supported: %s (%i).",
+				get_interface_name(i), i);
 			return VSFERR_FAIL;
 		}
 	}

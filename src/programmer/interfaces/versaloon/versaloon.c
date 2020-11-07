@@ -151,7 +151,7 @@ static vsf_err_t versaloon_init(void *p)
 	t->comm->set_timeout(VERSALOON_TIMEOUT);
 	if (VERSALOON_RETRY_CNT == retry)
 	{
-		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "communicate with versaloon");
+		LOG_ERROR(ERRMSG_FAILURE_OPERATION, "communicate with versaloon: timeout");
 		err = ERRCODE_FAILURE_OPERATION;
 		goto versaloon_init_fail;
 	}

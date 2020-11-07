@@ -127,7 +127,8 @@ static bool usb_check_string(struct libusb_device_handle *dev,
 	if (libusb_get_string_descriptor_ascii(dev, stringidx,
 										(unsigned char *)buff, buf_size) < 0)
 	{
-		ret = false;
+		ret = true;// make it possible to show this device as a programmer
+		LOG_DEBUG("%s: Failed reading usb descriptor.", __FUNCTION__);
 		goto free_and_return;
 	}
 	
@@ -166,7 +167,8 @@ uint32_t print_usb_devices(uint16_t VID, uint16_t PID, int8_t serialindex,
 	usb_devices_num = libusb_get_device_list(libusb_ctx, &usb_devices);
 	if (usb_devices_num > 0)
 	{
-		LOG_DEBUG("Searching for VID:PID 0x%04X:0x%04X, product:%s, serial:%s", VID, PID, productstring, serialstring);
+		LOG_INFO("Searching for VID:PID 0x%04X:0x%04X, product:%s, serial:%s",
+			VID, PID, productstring, serialstring);
 		ssize_t i;
 		libusb_device *dev;
 		struct libusb_device_descriptor device_desc;
@@ -177,21 +179,24 @@ uint32_t print_usb_devices(uint16_t VID, uint16_t PID, int8_t serialindex,
 			dev = usb_devices[i];
 			if (libusb_get_device_descriptor(dev, &device_desc)) continue;
 			if( (device_desc.idVendor != VID) || (device_desc.idProduct != PID)){
-				LOG_DEBUG("Found unknown device %d: 0x%04X:0x%04X.",  (int)i, device_desc.idVendor, device_desc.idProduct);
+				LOG_DEBUG("Found unknown device %d: 0x%04X:0x%04X.",  (int)i,
+					device_desc.idVendor, device_desc.idProduct);
 				continue;
 			}
 			if(libusb_open(dev, &dev_handle)){
-				LOG_DEBUG("Failed to open device %d: 0x%04X:0x%04X.",  (int)i, device_desc.idVendor, device_desc.idProduct);
+				LOG_INFO("Failed to open device %d: 0x%04X:0x%04X.",  (int)i,
+					device_desc.idVendor, device_desc.idProduct);
 				continue;
 			}
 			if (((productstring != NULL) && (productindex >= 0) &&
 					!usb_check_string(dev_handle, productindex, productstring,
 										NULL, 0))
-			    || ((serialstring != NULL) && (serialindex >= 0) &&
+				|| ((serialstring != NULL) && (serialindex >= 0) &&
 					!usb_check_string(dev_handle, serialindex, serialstring,
 										(char*)buf, sizeof(buf))))
 			{
-				LOG_DEBUG("Device description isn't correct: 0x%04X:0x%04X.", device_desc.idVendor, device_desc.idProduct);
+				LOG_INFO("Device description isn't correct: 0x%04X:0x%04X",
+					device_desc.idVendor, device_desc.idProduct);
 				libusb_close(dev_handle);
 				dev_handle = NULL;
 				continue;
@@ -253,7 +258,7 @@ struct libusb_device_handle* find_usb_device(uint16_t VID, uint16_t PID,
 			if (((productstring != NULL) && (productindex >= 0) &&
 					!usb_check_string(dev_handle, productindex, productstring,
 										NULL, 0))
-			    || ((serialstring != NULL) && (serialindex >= 0) &&
+				|| ((serialstring != NULL) && (serialindex >= 0) &&
 					!usb_check_string(dev_handle, serialindex, serialstring,
 										(char*)buf, sizeof(buf))))
 			{
