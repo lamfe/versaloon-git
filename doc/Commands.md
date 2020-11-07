@@ -1,5 +1,10 @@
 # Using vsprog
 
+## General usage
+
+List connected Versaloon programmers (in debug mode)  
+`vsprog -d 2 -L`
+
 ## Target Area Char and Target Area String
 
 Every target MCU area (fuse, lock, flash, eeprom, calibration byte...) can be defined as one single character.
