@@ -26,7 +26,7 @@ This project has several parts (***folder of the part***):
 	- `vsgui` - graphical interface for vsprog (***vsgui***)
 - documentation (***doc***)
 - the programmer firmware and hardware (***dongle***)
-- built programmer firmware (***release***)
+- built programmer firmware [outdated] (***release***)
 - Versaloon framework - _unfinished_ (***vsf***)
 - Versaloon framework for android - only .apk file (***Vsfand***)
 - files for build environment (***codelite***)

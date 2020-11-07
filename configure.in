@@ -1,5 +1,5 @@
 AC_PREREQ(2.59)
-AC_INIT([vsprog], [1.0],
+AC_INIT([vsprog], [1.1],
   [VSProg Mailling List <Versaloon-development@simonqian.com>])
 AC_CONFIG_SRCDIR([src/vsprog.c])
 

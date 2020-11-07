@@ -15,11 +15,15 @@ PB11 |JTAG_SRST/C2_C2D/ICP_PDA/ISSP_SDATA
 PA9  |UART_TXD
 PA10 |UART_RXD
 
-> \* Pins are connected
+> \* Pins are connected on board
 
 > () Pin probably not used
 
 # Supported interfaces
+Pins in brackets are pins on the Blue Pill.
+
+*Warning: most interfaces are unstable/buggy*
+
 ## JTAG
 *    JTAG_TRST
 *    JTAG_SRST
@@ -28,21 +32,21 @@ PA10 |UART_RXD
 *    JTAG_TDI
 *    JTAG_TMS
 *    JTAG_RTCK
-## SWD
-*    SWD_SWCLK
-*    SWD_SWDIO
-*    Reset: JTAG_SRST
+## STM32 SWD
+*    SWD_SWCLK	[PB13]
+*    SWD_SWDIO	[PB6 + PB4]
+*    Reset: JTAG_SRST	[PB11]
 ## STM8_SWIM
-*    SWIM
-*    Reset: JTAG_SRST
+*    SWIM	[PB6]
+*    Reset: JTAG_SRST	[PB11]
 ## AVR8/S51_ISP
-*    SPI_SCK
-*    SPI_MOSI
-*    SPI_MISO
-*    Reset: JTAG_SRST
+*    SPI_SCK	[PB13]
+*    SPI_MOSI	[PB14]
+*    SPI_MISO	[PB15]
+*    Reset: JTAG_SRST [PB11]
 ## C8051F_C2
-*    C2_C2CK
-*    C2_C2D
+*    C2_C2CK	[PB13]
+*    C2_C2D		[PB11]
 ## LPC900_ICP
 *    ICP_PCL
 *    ICP_PDA
