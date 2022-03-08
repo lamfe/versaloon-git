@@ -218,6 +218,7 @@ static vsf_err_t target_write_buffer_from_file_callback(char * ext,
 	}
 	
 	// not found
+	LOG_ERROR("%s: Target memory not found", __FILE__);
 	return VSFERR_FAIL;
 }
 
@@ -268,7 +269,7 @@ vsf_err_t target_data_read(struct program_context_t *context)
 		{
 			if (parse_file(fl->path, fl->file, (void *)context,
 								&target_write_buffer_from_file_callback,
-								fl->seg_offset, fl->addr_offset))
+								fl->seg_offset, fl->addr_offset) != VSFERR_NONE)
 			{
 				LOG_ERROR(ERRMSG_FAILURE_HANDLE_DEVICE, "parse input file",
 							fl->path);

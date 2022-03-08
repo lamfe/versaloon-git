@@ -74,6 +74,7 @@ vsf_err_t read_hex_file(FILE *hex_file, WRITE_MEMORY_CALLBACK callback,
 		// check first character of a line, which MUST be ':'
 		if (ch != ':')
 		{
+			LOG_DEBUG("%s: Line does not start with ':'", __FILE__);
 			return VSFERR_FAIL;
 		}
 		length = 0;
@@ -87,6 +88,7 @@ vsf_err_t read_hex_file(FILE *hex_file, WRITE_MEMORY_CALLBACK callback,
 		// process line
 		if ((length < 10) || ((length % 2) == 1))
 		{
+			LOG_DEBUG("%s: Wrong line length", __FILE__);
 			return VSFERR_FAIL;
 		}
 		tmp_buff[2] = '\0';
@@ -98,6 +100,7 @@ vsf_err_t read_hex_file(FILE *hex_file, WRITE_MEMORY_CALLBACK callback,
 												&ptr, 16);
 			if (ptr != &tmp_buff[2])
 			{
+				LOG_DEBUG("%s: Invalid value", __FILE__);
 				return VSFERR_FAIL;
 			}
 		}
@@ -107,6 +110,7 @@ vsf_err_t read_hex_file(FILE *hex_file, WRITE_MEMORY_CALLBACK callback,
 		length = line_buf[0];
 		if ((length + 5) != i)
 		{
+			LOG_DEBUG("%s: Length not valid", __FILE__);
 			return VSFERR_FAIL;
 		}
 		checksum = 0;
@@ -116,6 +120,7 @@ vsf_err_t read_hex_file(FILE *hex_file, WRITE_MEMORY_CALLBACK callback,
 		}
 		if (checksum != 0)
 		{
+			LOG_DEBUG("%s: Wrong checksum", __FILE__);
 			return VSFERR_FAIL;
 		}
 		
@@ -129,6 +134,7 @@ vsf_err_t read_hex_file(FILE *hex_file, WRITE_MEMORY_CALLBACK callback,
 					ext_addr0 + ext_addr1 + addr_offset + addr,
 					seg_addr + seg_offset, &line_buf[4], length, buffer))
 			{
+				LOG_DEBUG("%s: Parsing callback failed", __FILE__);
 				return VSFERR_FAIL;
 			}
 			break;
@@ -140,6 +146,7 @@ vsf_err_t read_hex_file(FILE *hex_file, WRITE_MEMORY_CALLBACK callback,
 			// bit 4-19 of address
 			if ((length != 2) || (addr != 0))
 			{
+				LOG_DEBUG("%s: Wrong address", __FILE__);
 				return VSFERR_FAIL;
 			}
 			ext_addr0 = (line_buf[4] << 12) | (line_buf[5] << 4);
@@ -148,6 +155,7 @@ vsf_err_t read_hex_file(FILE *hex_file, WRITE_MEMORY_CALLBACK callback,
 			// segment address
 			if (addr != 0)
 			{
+				LOG_DEBUG("%s: Wrong address", __FILE__);
 				return VSFERR_FAIL;
 			}
 			seg_addr = (line_buf[4] << 8) | line_buf[5];
@@ -156,6 +164,7 @@ vsf_err_t read_hex_file(FILE *hex_file, WRITE_MEMORY_CALLBACK callback,
 			// high 16 bit of address
 			if ((length != 2) || (addr != 0))
 			{
+				LOG_DEBUG("%s: Unexpected value", __FILE__);
 				return VSFERR_FAIL;
 			}
 			ext_addr1 = (line_buf[4] << 24) | (line_buf[5] << 16);
