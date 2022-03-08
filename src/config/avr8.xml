@@ -2668,6 +2668,125 @@
       <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" bytelen="1"/>
     </calibration>
   </chip>
+  <chip name="atmega328">
+    <program_mode>ip</program_mode>
+    <chip_id>0x001E9406</chip_id>
+    <app_page_size>128</app_page_size>
+    <app_page_num>256</app_page_num>
+    <ee_page_size>4</ee_page_size>
+    <ee_page_num>128</ee_page_num>
+    <param0>0</param0>
+    <param1>1</param1>
+    <fuse init="0xFFFFFF" bytesize="3">
+      <warning>
+        <w mask="0x008000" value="0x000000" msg="WARNING! Disabling external reset will make the ISP interface inaccessible!" />
+        <w mask="0x002000" value="0x002000" msg="WARNING! These fuse settings will disable the ISP interface!" />
+      </warning>
+      <setting name="BOOTSZ" mask="0x060000" info="Select Boot Size">
+        <choice value="0x060000" text="Boot Flash size=128 words start address=$1F80" />
+        <choice value="0x040000" text="Boot Flash size=256 words start address=$1F00" />
+        <choice value="0x020000" text="Boot Flash size=512 words start address=$1E00" />
+        <choice value="0x000000" text="Boot Flash size=1024 words start address=$1C00" />
+      </setting>
+      <setting name="BOOTRST" mask="0x010000" info="Boot Reset vector Enabled" checked="0" />
+      <setting name="RSTDISBL" mask="0x008000" info="Reset Disabled (Enable PC6 as i/o pin)" checked="0" />
+      <setting name="DWEN" mask="0x004000" info="Debug Wire enable" checked="0" />
+      <setting name="SPIEN" mask="0x002000" ban="i" info="Serial program downloading (SPI) enabled" checked="0" />
+      <setting name="WDTON" mask="0x001000" info="Watchdog Timer always on" checked="0" />
+      <setting name="EESAVE" mask="0x000800" info="Preserve EEPROM memory through the Chip Erase cycle" checked="0" />
+      <setting name="BODLEVEL" mask="0x000700" info="Brown-out Detector trigger level">
+        <choice value="0x000400" text="Brown-out detection at VCC=4.3 V" />
+        <choice value="0x000500" text="Brown-out detection at VCC=2.7 V" />
+        <choice value="0x000600" text="Brown-out detection at VCC=1.8 V" />
+        <choice value="0x000700" text="Brown-out detection disabled" />
+      </setting>
+      <setting name="CKDIV8" mask="0x000080" info="Divide clock by 8 internally" checked="0" />
+      <setting name="CKOUT" mask="0x000040" info="Clock output on PORTB0" checked="0" />
+      <setting name="SUT_CKSEL" mask="0x00003F" info="Select Clock Source">
+        <choice value="0x000000" text="Ext. Clock; Start-up time PWRDWN/RESET: 6 CK/14 CK + 0 ms" />
+        <choice value="0x000010" text="Ext. Clock; Start-up time PWRDWN/RESET: 6 CK/14 CK + 4.1 ms" />
+        <choice value="0x000020" text="Ext. Clock; Start-up time PWRDWN/RESET: 6 CK/14 CK + 65 ms" />
+        <choice value="0x000002" text="Int. RC Osc. 8 MHz; Start-up time PWRDWN/RESET: 6 CK/14 CK + 0 ms" />
+        <choice value="0x000012" text="Int. RC Osc. 8 MHz; Start-up time PWRDWN/RESET: 6 CK/14 CK + 4.1 ms" />
+        <choice value="0x000022" text="Int. RC Osc. 8 MHz; Start-up time PWRDWN/RESET: 6 CK/14 CK + 65 ms; default value" />
+        <choice value="0x000003" text="Int. RC Osc. 128kHz; Start-up time PWRDWN/RESET: 6 CK/14 CK + 0 ms" />
+        <choice value="0x000013" text="Int. RC Osc. 128kHz; Start-up time PWRDWN/RESET: 6 CK/14 CK + 4.1 ms" />
+        <choice value="0x000023" text="Int. RC Osc. 128kHz; Start-up time PWRDWN/RESET: 6 CK/14 CK + 65 ms" />
+        <choice value="0x000004" text="Ext. Low-Freq. Crystal; Start-up time PWRDWN/RESET: 1K CK/14 CK + 0 ms" />
+        <choice value="0x000014" text="Ext. Low-Freq. Crystal; Start-up time PWRDWN/RESET: 1K CK/14 CK + 4.1 ms" />
+        <choice value="0x000024" text="Ext. Low-Freq. Crystal; Start-up time PWRDWN/RESET: 1K CK/14 CK + 65 ms" />
+        <choice value="0x000005" text="Ext. Low-Freq. Crystal; Start-up time PWRDWN/RESET: 32K CK/14 CK + 0 ms" />
+        <choice value="0x000015" text="Ext. Low-Freq. Crystal; Start-up time PWRDWN/RESET: 32K CK/14 CK + 4.1 ms" />
+        <choice value="0x000025" text="Ext. Low-Freq. Crystal; Start-up time PWRDWN/RESET: 32K CK/14 CK + 65 ms" />
+        <choice value="0x000006" text="Ext. Full-swing Crystal; Start-up time PWRDWN/RESET: 258 CK/14 CK + 4.1 ms" />
+        <choice value="0x000016" text="Ext. Full-swing Crystal; Start-up time PWRDWN/RESET: 258 CK/14 CK + 65 ms" />
+        <choice value="0x000026" text="Ext. Full-swing Crystal; Start-up time PWRDWN/RESET: 1K CK /14 CK + 0 ms" />
+        <choice value="0x000036" text="Ext. Full-swing Crystal; Start-up time PWRDWN/RESET: 1K CK /14 CK + 4.1 ms" />
+        <choice value="0x000007" text="Ext. Full-swing Crystal; Start-up time PWRDWN/RESET: 1K CK /14 CK + 65 ms" />
+        <choice value="0x000017" text="Ext. Full-swing Crystal; Start-up time PWRDWN/RESET: 16K CK/14 CK + 0 ms" />
+        <choice value="0x000027" text="Ext. Full-swing Crystal; Start-up time PWRDWN/RESET: 16K CK/14 CK + 4.1 ms" />
+        <choice value="0x000037" text="Ext. Full-swing Crystal; Start-up time PWRDWN/RESET: 16K CK/14 CK + 65 ms" />
+        <choice value="0x000008" text="Ext. Crystal Osc. 0.4-0.9 MHz; Start-up time PWRDWN/RESET: 258 CK/14 CK + 4.1 ms" />
+        <choice value="0x000018" text="Ext. Crystal Osc. 0.4-0.9 MHz; Start-up time PWRDWN/RESET: 258 CK/14 CK + 65 ms" />
+        <choice value="0x000028" text="Ext. Crystal Osc. 0.4-0.9 MHz; Start-up time PWRDWN/RESET: 1K CK /14 CK + 0 ms" />
+        <choice value="0x000038" text="Ext. Crystal Osc. 0.4-0.9 MHz; Start-up time PWRDWN/RESET: 1K CK /14 CK + 4.1 ms" />
+        <choice value="0x000009" text="Ext. Crystal Osc. 0.4-0.9 MHz; Start-up time PWRDWN/RESET: 1K CK /14 CK + 65 ms" />
+        <choice value="0x000019" text="Ext. Crystal Osc. 0.4-0.9 MHz; Start-up time PWRDWN/RESET: 16K CK/14 CK + 0 ms" />
+        <choice value="0x000029" text="Ext. Crystal Osc. 0.4-0.9 MHz; Start-up time PWRDWN/RESET: 16K CK/14 CK + 4.1 ms" />
+        <choice value="0x000039" text="Ext. Crystal Osc. 0.4-0.9 MHz; Start-up time PWRDWN/RESET: 16K CK/14 CK + 65 ms" />
+        <choice value="0x00000A" text="Ext. Crystal Osc. 0.9-3.0 MHz; Start-up time PWRDWN/RESET: 258 CK/14 CK + 4.1 ms" />
+        <choice value="0x00001A" text="Ext. Crystal Osc. 0.9-3.0 MHz; Start-up time PWRDWN/RESET: 258 CK/14 CK + 65 ms" />
+        <choice value="0x00002A" text="Ext. Crystal Osc. 0.9-3.0 MHz; Start-up time PWRDWN/RESET: 1K CK /14 CK + 0 ms" />
+        <choice value="0x00003A" text="Ext. Crystal Osc. 0.9-3.0 MHz; Start-up time PWRDWN/RESET: 1K CK /14 CK + 4.1 ms" />
+        <choice value="0x00000B" text="Ext. Crystal Osc. 0.9-3.0 MHz; Start-up time PWRDWN/RESET: 1K CK /14 CK + 65 ms" />
+        <choice value="0x00001B" text="Ext. Crystal Osc. 0.9-3.0 MHz; Start-up time PWRDWN/RESET: 16K CK/14 CK + 0 ms" />
+        <choice value="0x00002B" text="Ext. Crystal Osc. 0.9-3.0 MHz; Start-up time PWRDWN/RESET: 16K CK/14 CK + 4.1 ms" />
+        <choice value="0x00003B" text="Ext. Crystal Osc. 0.9-3.0 MHz; Start-up time PWRDWN/RESET: 16K CK/14 CK + 65 ms" />
+        <choice value="0x00000C" text="Ext. Crystal Osc. 3.0-8.0 MHz; Start-up time PWRDWN/RESET: 258 CK/14 CK + 4.1 ms" />
+        <choice value="0x00001C" text="Ext. Crystal Osc. 3.0-8.0 MHz; Start-up time PWRDWN/RESET: 258 CK/14 CK + 65 ms" />
+        <choice value="0x00002C" text="Ext. Crystal Osc. 3.0-8.0 MHz; Start-up time PWRDWN/RESET: 1K CK /14 CK + 0 ms" />
+        <choice value="0x00003C" text="Ext. Crystal Osc. 3.0-8.0 MHz; Start-up time PWRDWN/RESET: 1K CK /14 CK + 4.1 ms" />
+        <choice value="0x00000D" text="Ext. Crystal Osc. 3.0-8.0 MHz; Start-up time PWRDWN/RESET: 1K CK /14 CK + 65 ms" />
+        <choice value="0x00001D" text="Ext. Crystal Osc. 3.0-8.0 MHz; Start-up time PWRDWN/RESET: 16K CK/14 CK + 0 ms" />
+        <choice value="0x00002D" text="Ext. Crystal Osc. 3.0-8.0 MHz; Start-up time PWRDWN/RESET: 16K CK/14 CK + 4.1 ms" />
+        <choice value="0x00003D" text="Ext. Crystal Osc. 3.0-8.0 MHz; Start-up time PWRDWN/RESET: 16K CK/14 CK + 65 ms" />
+        <choice value="0x00000E" text="Ext. Crystal Osc. 8.0- MHz; Start-up time PWRDWN/RESET: 258 CK/14 CK + 4.1 ms" />
+        <choice value="0x00001E" text="Ext. Crystal Osc. 8.0- MHz; Start-up time PWRDWN/RESET: 258 CK/14 CK + 65 ms" />
+        <choice value="0x00002E" text="Ext. Crystal Osc. 8.0- MHz; Start-up time PWRDWN/RESET: 1K CK /14 CK + 0 ms" />
+        <choice value="0x00003E" text="Ext. Crystal Osc. 8.0- MHz; Start-up time PWRDWN/RESET: 1K CK /14 CK + 4.1 ms" />
+        <choice value="0x00000F" text="Ext. Crystal Osc. 8.0- MHz; Start-up time PWRDWN/RESET: 1K CK /14 CK + 65 ms" />
+        <choice value="0x00001F" text="Ext. Crystal Osc. 8.0- MHz; Start-up time PWRDWN/RESET: 16K CK/14 CK + 0 ms" />
+        <choice value="0x00002F" text="Ext. Crystal Osc. 8.0- MHz; Start-up time PWRDWN/RESET: 16K CK/14 CK + 4.1 ms" />
+        <choice value="0x00003F" text="Ext. Crystal Osc. 8.0- MHz; Start-up time PWRDWN/RESET: 16K CK/14 CK + 65 ms" />
+      </setting>
+      <setting name="EXTENDED" mask="0xFF0000" info="EXTENDED" radix="16" shift="16" bytelen="1" />
+      <setting name="HIGH" mask="0x00FF00" info="HIGH" radix="16" shift="8" bytelen="1" />
+      <setting name="LOW" mask="0x0000FF" info="LOW" radix="16" shift="0" bytelen="1" />
+    </fuse>
+    <lock init="0xFF" bytesize="1">
+      <setting name="LB" mask="0x03" info="Memory Lock">
+        <choice value="0x00" text="Further programming and verification disabled" />
+        <choice value="0x02" text="Further programming disabled" />
+        <choice value="0x03" text="No memory lock features enabled" />
+      </setting>
+      <setting name="BLB0" mask="0x0C" info="Application Protection Mode">
+        <choice value="0x00" text="LPM and SPM prohibited in Application Section" />
+        <choice value="0x04" text="LPM prohibited in Application Section" />
+        <choice value="0x08" text="SPM prohibited in Application Section" />
+        <choice value="0x0C" text="No lock on SPM and LPM in Application Section" />
+      </setting>
+      <setting name="BLB1" mask="0x30" info="Boot Loader Protection Mode">
+        <choice value="0x00" text="LPM and SPM prohibited in Boot Loader Section" />
+        <choice value="0x10" text="LPM prohibited in Boot Loader Section" />
+        <choice value="0x20" text="SPM prohibited in Boot Loader Section" />
+        <choice value="0x30" text="No lock on SPM and LPM in Boot Loader Section" />
+      </setting>
+      <setting name="LOCKBIT" mask="0xFF" info="LOCKBIT" radix="16" shift="0" bytelen="1" />
+    </lock>
+    <calibration init="0xFF" bytesize="1">
+      <setting name="8.0 MHz" mask="0xFF" info="OSCCAL at 8.0 MHz" ban="*" radix="16" shift="0" bytelen="1"/>
+    </calibration>
+  </chip>
   <chip name="atmega162">
     <program_mode>ijp</program_mode>
     <chip_id>0x001E9404</chip_id>
